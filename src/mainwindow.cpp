@@ -2505,7 +2505,10 @@ void MainWindow::slotRemoveNode() {
 		( QInputDialog::getInteger(this,"Remove node",tr("Choose a node to remove between ("
 		+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"),
 		min, 1, max , 1, &ok ) )   ;
-
+	if (!ok) {
+		statusBar()->showMessage("Remove node operation cancelled.", statusBarDuration);
+		return;
+	}
 	qDebug("MW: clickedJimNumber is %i. Deleting node %i from GraphicsWidget", clickedJimNumber, doomedJim);
 	graphicsWidget->removeNode(doomedJim);
 	qDebug ("MW: removing vertice with number %i from activeGraph", doomedJim);
