@@ -1,0 +1,44 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+	<file>images/new.png</file>
+	<file>images/open.png</file>
+	<file>images/save.png</file>
+	<file>images/saved.png</file>
+	<file>images/exit.png</file>
+	<file>images/add.png</file>
+	<file>images/remove.png</file>
+	<file>images/print.png</file>
+	<file>images/help.png</file>
+	<file>images/color.png</file>
+	<file>images/colorize.png</file>
+	<file>images/find.png</file>
+	<file>images/letters.png</file>
+	<file>images/line.png</file>	
+	<file>images/node.png</file>
+	<file>images/nodes.png</file>
+	<file>images/sm.png</file>
+	<file>images/snv.png</file> 
+	<file>images/net.png</file>
+	<file>images/net1.png</file>
+	<file>images/net2.png</file>
+	<file>images/net3.png</file>
+	<file>images/box.png</file>
+	<file>images/circle.png</file>
+	<file>images/diamond.png</file>
+	<file>images/symmetry.png</file>
+	<file>images/plines.png</file>
+	<file>images/zoomin.png</file>
+	<file>images/zoomout.png</file>
+	<file>images/connect.png</file>
+	<file>images/disconnect.png</file>
+	<file>images/resize.png</file>
+	<file>images/nodecolor.png</file>
+	<file>images/view.png</file>
+	<file>images/diameter.png</file>
+	<file>images/distance.png</file>
+	<file>images/back.png</file>
+	<file>images/forward.png</file>
+	<file>images/home.png</file>
+
+</qresource>
+</RCC>

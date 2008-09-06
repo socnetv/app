@@ -1,0 +1,36 @@
+*Network netname
+*Vertices 14
+1 "1" ic red		0.439698 	0.0872093
+2 "2" ic red		0.704774 	0.686047
+3 "3" ic red		0.0288945 	0.49031
+4 "4" ic red		0.344221 	0.492248
+5 "5" ic red		0.428392 	0.682171
+6 "6" ic red		0.123116 	0.74031
+7 "7" ic red		0.688442 	0.472868
+8 "8" ic red		0.146985 	0.49031
+9 "9" ic red		0.876884 	0.697674
+10 "10" ic red		0.468593 	0.482558
+11 "11" ic red		0.430905 	0.885659
+12 "12" ic red		0.080402 	0.887597
+13 "13" ic red		0.286432 	0.687984
+14 "14" ic red		0.741206 	0.885659
+*Arcs 
+*Edges 
+1 3 1 c black
+1 4 1 c black
+1 7 1 c black
+1 8 1 c black
+1 10 1 c black
+2 5 4 c black
+2 7 4 c black
+2 14 5 c black
+3 8 1 c black
+3 6 1 c black
+4 8 1 c black
+4 13 1 c black
+5 7 1 c black
+5 8 1 c black
+5 10 1 c black
+5 11 1 c black
+6 12 1 c black
+7 9 1 c black

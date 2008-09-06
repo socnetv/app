@@ -1,0 +1,156 @@
+
+body {
+  background: white none;
+  color: black;
+  font-family: sans-serif;
+  padding: 0 15px 0 5px;
+  margin: 0; 
+}
+
+
+
+p, h1, h2, h3, h4, h5, h6, td, th { 
+  font-family: sans-serif;
+}
+
+
+p { 
+  text-align: justify; 
+}
+
+
+
+h1, h2, h3, h4, h5, h6 { 
+  color: rgb(160,80,82);
+  background-color: transparent;
+}
+
+
+
+.text {
+  color: #1e3a47; 
+  padding: 0 15px 0 15px;
+ 
+}
+
+.author {
+  color: rgb(82,80,82);
+  font-weight: bolder;
+  padding: 0;
+  margin: 0;
+}
+
+.credits {
+  line-height: 1em;
+  color: #1e3a47; 
+}
+
+
+.legalnotice, .copyright {
+  padding: 0;
+  margin: 0; 
+}
+
+
+a { 
+  color: #8598f7;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+
+}
+
+
+a:visited { 
+  color: #8587f7;
+}
+
+.toc ul {
+  color: rgb(160,80,82);
+    
+}
+
+
+.toc ol {
+    color: #8598f7;
+  color: rgb(160,80,82);
+}
+
+   
+.toc a {
+    color: #8598f7;
+}
+
+
+
+
+.logo {
+  background: transparent;
+  line-height: 2.5em;
+  margin: 0px;
+  padding:  0px 20px 0px 5px;
+  vertical-align: middle;
+}
+
+.header {
+  background: #CFD1D5 none; 
+  border-bottom: 1px solid #CFD1D5;
+  border-top: 2px solid white;
+  color: white;
+  font-size: small;
+  height: 2.7em;
+  line-height: 0.5em;
+  margin: 0px;
+  padding:  0px 2px 0px 5px;
+  vertical-align: middle;
+}
+
+
+
+
+.footer{
+  background: #CFD1D5 none; 
+  border-bottom: 1px solid #CFD1D5;
+  border-top: 1px solid white;
+  color: white;
+  font-size: small;
+  height: 2.0em;
+  line-height: 1em;
+  margin: 0px;
+  padding:  0px 0em 0px 0px;
+#  vertical-align: middle;
+}
+
+
+.contents{
+
+  font-size: small;
+  text-align: center;
+  vertical-align: middle;
+
+}
+
+
+.license { 
+#  background-color: rgb(255,255,255);
+  font-family: monospace;
+  color: rgb(0,0,0);
+  font-size: small;
+  padding:  5px 1em 0px 0px;
+}
+
+
+
+
+.code { 
+  background-color: rgb(255,255,255);
+  padding: 0 15px 0 25px;
+  color: rgb(0,96,160);
+  font-family: monospace;
+  font-size: small;
+}
+
+
+

@@ -1,0 +1,281 @@
+**************************************************
+* Social Networks Visualiser (SocNetV) for Linux *
+**************************************************
+
+
+ChangeLog:
+
+Version 0.45 - Aug 30 2008
+Codename: "Changes"
+------------------------------
+
+- GraphML initial support.
+- New man page and updated online documentation.
+- HtmlViewer renders online help with the help of QtWebKit (openSUSE: libQtWebKit-devel)
+- New widget for network rotation.
+- New widget for zooming replaces the old one.
+- Nodes may have 4 different shapes: circles, diamonds, triangles, boxes and ellipses are supported.
+- There was a bug in Qt 4.3 QGraphicsView causing redraw delays. Is fixed in Qt 4.4 :)
+- Cosmetic changes, i.e. new icons, new layout for the left dock.
+- Code clean-up in MainWindows Class and Matrix. Deleted obsolete members and functions such as nodeExists(), mousePosGW(), Dijkstra, etc. 
+- Fixed bugs on loading Pajek networks and layout algorithm.
+
+
+
+Version 0.44 - May 1st 2008
+Codename: "Strike"
+------------------------------
+- Changed license to GPL3
+- Complete code rewrite, build on Qt 4.x and Graphics View framework.
+- New, improved graphical user interface (GUI) with docks.
+- Splitted GUI from algorithms. 
+- Threaded loading of networks. This leaves the GUI responsive when reading a file.
+- New improved Shortest Path algorithm (BFS/dijkstra).
+- Centralities are calculated much faster.
+- Real-time, on-demand, reallocation of nodes (Spring Embedder) which works :).
+- Layout in circles and levels by centrality.
+- Simple zoom in/out on the networks.
+- Better graphics and antialiasing (disabled - enable by pressing F8).
+- New centrality index: Eccentricity.
+
+
+Version 0.43 - September, 2006
+Codename:  "Tux"
+-------------------------------
+- NEW LAYOUT: Spring Embedder algorithm
+- FIX: Actor Numbers are once again displayed outside actors' shapes by default. 
+
+
+Version 0.42 - late June, 2006
+Codename:  "Amused to death"
+-------------------------------
+- NEW: Actor Numbers are displayed inside actors' shapes by default. 
+- NEW: Actors can be added just by double-clicking on the canvas
+- UPDATE: Help files
+- UPDATE: Some Options menu items were reformed.
+- FIX: "View Network File" bug.
+- FIX: "Diameter error in weighted networks" bug. 
+- FIX: "Segmentation fault in degreeCentrality after remove/add new actor" bug.
+
+
+
+Version 0.41 -  March 08, 2006
+Codename: "Conservatification :-)"
+-----------------------------
+- NEW: Actors may have more shapes: boxes, triangles, circles, ellipses, diamonds, etc.
+- NEW: Can import and export pajek nets with shapes.
+- FIX: In-Degree/Out-Degree Centralities were implemented.
+- UPDATE: Dot import improved.
+- ATTEMPT: Dot export implemented partially.
+- List import implemented partially.
+- FIX: in pow(double, double) fixed
+
+
+Version 0.40  -  Feb, 18  2006
+Codename: "A Greek Big Brother"
+-------------------------------
+- Stress Centrality was implemented.
+- Fixed bugs in centralities calculation
+- Simplified layout of centralities' reports.
+- Fixed circular layout by degree, closeness and betweeness.
+- Circular layout by centralities shows helpfull red-dashed circles.
+
+
+
+Version 0.39  -  Feb, 05  2006
+Codename: "Dazed and Confused"
+------------------------------
+- Fixed bug on betweeness centrality.
+- Betweeness and closeness centralities work with undirected graphs.
+- Graph Centrality was implemented. 
+- 
+
+
+Version 0.38  -  Feb 2006
+Codename: "Back to Metropolis - Back to the village"
+---------------------------------------------------
+
+- Code has been rewriten from scratch.
+- Most menus have been redesigned.
+- Faster loading of large networks (>100 actors).
+- New network format can be imported (DOT from graphviz).
+- Sociomatrix viewer has its own nice wigdet.
+- Support for the X color database (found in rgb.txt).
+- Window resize causes a nice reposition of all actors and links, maintaining proportion (I think).
+- Busy cursor when loading networks.
+- The user may change even the size of the actor numbers and labels.
+- Dijkstra's algorithm for weighted networks has been implemented. It is fast enough for networks up to 150 actors.
+- Breadth-First algorithm for non-weighted nets has been implemented ?
+- Degree Centrality and Layout take weights into account. The user may define negative weights as well.
+- Negative link weights are displayed as dashed lines.
+- Weight numbers can be displayed nicely above links.
+- Can transform all arcs to links with one click.
+- Circular lattice network generation.
+- Random same degree network generation.
+- Quick Tips by pressing F2.
+- Helpful tips displayed on StatusBar for every meny option. Also a new What's This menu item may become handy.
+- Bug fixes ("#include math.h" was the most silly of them).
+- SOME FEATURES FROM PREVIOUS VERSIONS (i.e. COMPONENTS ANALYSIS) WERE DROPPED.
+
+
+
+VERSION 0.37 (codename "Evros Iceman - You're in the army now...")
+------------
+- Now uniform random network is really a random process.
+- Bug fixes.
+- Changing node label is now an "on the fly" process.
+- Filtering edges by their weights is now supported.
+- Layout by centrality is now more comprehensive:
+    A background circle is drawn for every centrality value.
+- Arcs/Edges calculation is now correct.     
+- Directed networks/centralities/layout were flawed. Still it is...
+
+
+VERSION 0.36 (codename "fine")
+------------
+- Bug Fixes
+- Acceleration Keys work fine.
+- Messages are multilingual now. Only Spanish support for now.
+- Context Menu appears when right-clicking on canvas.
+- Layouts by closeness and betweeness centralities now work fine.
+- Exporting networks to BMP and PNG format is now supported.
+
+
+
+VERSION 0.35 (Jan 22 2005)
+------------
+- Bug fixes.
+- d-regular network support
+- Multilingual support. 
+- Spanish menu support. Thanks to David De Ugarte. Set locale "es" et voila!
+
+
+
+
+Version 0.34 (JAN 14 2005)
+------------
+- Countless bug fixes, ie:
+    Blank name when blank network is created.
+    Loading a network file after Creating New Network had undesirable effectes.
+    ASSERT: "i < ..."  when nodes <-> edges
+    When removing a link it keeps on reporting it.
+- Random network creation
+- Row index form (beta)
+- Betweeness and closeness centralities now work fine.
+    
+
+
+version 0.33 (22 May 2004)
+-------------------------
+- Countless bug fixes.
+
+- Betweeness centrality.
+
+- New layouts, by centrality (did not work!).
+
+- Edges' weights can be changed by right-clicking on the edge and selecting the relevant command.
+
+- Matrix algebra: inverse, power, determinant, etc.
+
+
+
+
+version 0.32 (15 May 2004)
+---------------------------
+- Countless Bug Fixes.
+
+- With a click on the "display database" menu option,
+  you can view (and print if you like) the complete Database.
+
+- New Transformation: edges <-> nodes 
+
+- Re-reading Wasserman and Faust is always good. Now reachability works well.
+  Distance is really ok. Centralities (informational, etc) are implemented, too.
+
+
+
+
+
+version 0.31  (May 2004)  
+------------------------
+
+- Countless Bug Fixes.
+
+- Clicking on a link causes the StatusBar to display info about the specific link.
+
+- Thanks to QT examples, a simple Help viewer has been incorporated.
+
+
+
+
+version 0.3  (March 2004)
+-----------
+- Somewhat improved memory mngmt; at least, there are no more segmentation faults :)
+
+- Changed internal representation of links: 
+  Every link has a source A and a target actor B.
+  The source actor A is 'OutLinked' with the target B, while the latter is 'InLinked' from
+  the source actor A. This relationship is denoted as A->B.
+  If the target actor B of a link (A->B) is also OutLinked with the source, i.e. B->A, 
+  then this (two-way) link is an edge. This relationship is denoted as A<->B.
+  Else the (one-way) link is just an arc.
+  Thus, this representation is compatible to PAJEK's arcs and edges  (or at least what I
+   assume that PAJEK does).
+
+- SocNetV can write adjacency matrix ("sociomatrix") to a text file. <NL: MANDRAKE 9.1>
+- SocNetV can write PAJEK-formatted network in a file. It saves the on-screen node
+  coordinates as well.
+
+- Some interesting node/actor data are displayed in the Status Bar. Also, 
+  tooltips w/ coordinates are known to emerge when you leave the mouse pointer on
+   the canvas.
+
+- Right-clicking on a node causes a node-specific menu to popup.
+
+- The statistics menu tries to be more relevant to its name! Now it is
+  populated by : density, distance, reachability, diameter, centralities.
+
+- The user can remove any node by the appropriate (context) menu command.
+  Edges can also be removed using the relevant menu command. There is no
+  mouse interactivity with the edges at the moment.  (April 2004)
+
+- Network components (maximal linked subnets) can be calculated. It can also
+  paint the nodes of each component with the same color.
+
+
+
+
+version 0.2
+-----------
+- Somewhat improved mouse interactivity with vertices.
+
+- Now SocNetV can read even adjacency-matrix network files :-)
+
+- New features: network layout options, rudimentary descr. statistics, etc
+
+- New menu (still inactive): Transform Menu
+
+
+
+version 0.1
+-----------
+- First Version of SocNetV (Feb 2004, in the end of an inexpectably heavy
+  winter). Initially i planned to name it something like 'nwd', although 
+  I cannot even remember what this supposed to meant!
+
+- SocNetV should normally read plain PAJEK-formatted network files. At this
+  point, only vertices and edges are supported. Also you can read but you cannot write :(
+
+- Efforts to add mouse interactivity to vertices.
+
+- Separate text editor to view and tickle with the text files.
+
+- SocNetV is unabled to directly save network files, although this can be done
+using the esoteric text editor.
+
+
+
+
+
+  
+x

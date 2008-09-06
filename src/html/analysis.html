@@ -1,0 +1,68 @@
+<link rel="stylesheet" href="socnetv.css" type="text/css" />
+
+<h4><a name="Analysis" id="Analysis"></a>Analysis</h4>
+
+<p class="text">
+Once you have loaded or created a network you can analyse it using the commands in the Statistics menu. The first three options of that menu enable you to see how many nodes and links are active on the canvas, calculate the network density and find out if the the network is Symmetric or not.  
+</p>
+<p class="text">
+The next three commands calculate the geodesic distance between any two nodes, the distance matrix and the diameter. 
+</p>
+<p class="text">
+The Geodesic Distance is the length of the shortest path between two connected nodes. By clicking on the "Geodesic Distance" option (or Ctrl+G) you will be asked for source and target nodes, and then their geodesic will be calculated and displayed. 
+</p>
+<p class="text">
+The "Distance Matrix" calculates two matrices. One with all the distances between nodes and one (sigma) with the number of shortest paths between any two nodes. The latter is used in Dijkstra's shortest path algorithm and Betweeness Centrality calculation (see below).
+</p>
+
+<h4><a name="Centralities" id="Centralities"></a>Centralities</h4>
+<p class="text"> 
+The last option in the Statistics menu opens the Centralities sub-menu.
+ <p class="text">
+Centralities are calculated for each node and for the whole network. Thus, when you click on a centrality option, SocNetV will calculate the corresponding index of every node and the whole network and it will display them in a new window (a small text editor). From there you can save the analysis into a text file of your choice. By default, analysis files are saved on bin/ subfolder.
+</p>
+
+<h4><a name="In" id="In"></a>In-Degree Centrality</h4>
+<p class="text"> 
+In-Degree Centrality (IDC) is the number of arcs ending at each node. 
+The degree is a measure of the 'activity' of the node. Most in-degree central node might be consider more prominent among others. 
+</p>
+
+<h4><a name="Out" id="Out"></a>Out-Degree Centrality</h4>
+<p class="text">
+Out-Degree Centrality (ODC) is the number of arcs starting from each node. Again this is a measure of activity and a more out-degree central node 
+</p>
+
+
+<h4><a name="Closeness" id="Closeness"></a>Closeness Centrality</h4>
+<p class="text"> 
+Closeness Centrality (CC) is the invert sum of the shortest distances between each node and every other node.
+It is interpreted as the ability to access information through the "grapevine" of network members. 
+
+</p>
+
+<h4><a name="Betweeness" id="Betweeness"></a>Betweeness Centrality</h4>
+<p class="text"> 
+The Betweeness Centrality (BC) is the ratio of all geodesics between pairs of nodes which run through each node. 
+It reflects how often an node lies on the geodesics between the other nodes of the network. 
+</p>
+
+<h4><a name="Stress" id="Stress"></a>Stress Centrality</h4>
+<p class="text"> 
+The Stress Centrality (SC) of a node k is the total number of geodesics between all other nodes which run through k. 
+When one node falls on all other geodesics between all the remaining (N-1) nodes, then we have a star graph with maximum Graph Centrality. 
+</p>
+<h4><a name="Graph" id="Graph"></a>Graph Centrality</h4>
+<p class="text"> 
+Graph Centrality (GC) is the invert of the maximum of all geodesic distances from a node to all other nodes in the network. 
+Nodes with high GC have short distances to all other nodes in the graph. 
+In not-connected networks, the centrality values of all nodes will be zero, since the distance to some nodes is infinite. 
+</p>
+
+<h4><a name="Eccentricity" id="Eccentricity"></a>Eccentricity Centrality</h4>
+<p class="text"> 
+The Eccentricity Centrality (EC) of a node k is the largest geodesic distance (k,t) from every other vertex. 
+Therefore, EC(u) reflects how far, at most, is each node from every other node.
+
+</p>
+

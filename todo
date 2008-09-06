@@ -1,0 +1,81 @@
+FIXED
+=====
+TODO-> Transform actors to links //COMMENTED OUT
+--TODO edges do not need to be drawed twice...
+--FIXME: GraphML files may crash SocNetV.
+--FIXME: isSymmetric not functioning (check a-symmetry.net)
+--FIXME: When many lines intersect, right-click > removeLink may remove wrong link!
+
+
+-- FIXED: Clearing background circles bug.
+-- NEW: background layout lines for level layout algorithms
+--NEW: There is a new widget enabling the user to rotate the network
+--NEW: Nodes may have 4 different shapes: circles, diamonds, triangles, boxes and ellipses are supported.
+--FIXED: Crashes when loading pajek file with nodes having labels with dots inside. 
+--FIXED: There was a bug in Qt 4.3 QGraphicsView causing redraw delays. Is fixed in Qt 4.4 :)
+--FIXED: New zooming widget replaces old and untrustworthy one
+--FIXED: Cosmetic changes, i.e. new icons, new layout for the sidebar, 
+--FIXED: Code clean-up in MainWindows Class and Matrix. Deleted obsolete members and functions such as nodeExists(), mousePosGW(), Dijkstra, etc. Commented out messageboxes when networks are loaded.)
+
+
+
+
+TODO & KNOWN BUGS
+=================
+--FIXME Matrix class declares a maximum of 1500x1500 in the constructor. So if we compute something with BFS() for a bigger network, a crash will most definitely occur... 
+- TODO: CLUSTERING by betweeness, see http://iv.slis.indiana.edu/sw/bc.html
+http://tyna.gersteinlab.org/tyna/supp.jsp
+-- FIXME FIXME Directed Network (BFS) & Centralities (maxIndex and standard). Crashes must be stopped! 
+-- FIXME FIXME BFS() causes a crash when you create a new net, then remove/add some edges & nodes and compute Betweeness.
+TODO-> for() loops should not exist in MW. Move all computations away...
+
+TODO->Filter Links by their weights
+TODO->NetLayout is not needed...
+
+--FIXME: Centralities dont work when the network is directed.
+--FIXME: At last, do something for sceneRect etc.
+
+--FIXME: graphicsWidget removeItem is called from clear()..is this good?
+
+- FIXME: CreatePhysLattice then add links, then layout closeness then calc betweeness CRASHES!
+
++ Add GraphML (XML) support. See visone documents. DL package.
+
+
+- TODO: load network from command line. Then compute something and export it!
+- TODO: XML. List and .DOT Import/Export, with shapes
+- TODO: Web crawler
+- TODO: hash maps
+- NEW: Texts on canvas (i.e. layouts display some text explaining what method is used).
+
+- GROUP Stress & Graph centralities 
+
+- Standard Stress Centrality index.
+
+- FIXME: Export to a format does not ask for a filename if the network is loaded from a file.
+
+- FIXME: fileSaved is obsolete.
+
+--TODO: PAJEK Filelists, see cite.net / kocka.net
+	/kvadrat.net 
+
+
+
+TODO IN SUBSEQUENT RELEASES:
+============================
+
++ Colorization  //COMMENTED
+- Filter actors //COMMENTED OUT
++ An rpm package
++ Greek Language Support
++ Network file format: DL (read/save)
++ Network file format: GW (read/save)
++ Network file format: list (read/save)
++ Network file format: GDL (read/save)
++ Export: SVG  (html-embedded images)
++ Centrality: Informational
+- Layout: Random Circle 
+- Layout: Circle by Informational Index
++ Layout: distance model (does anything like this exist?)
++ Layout: Cluster by centrality class
++ Simulations, connectivity through the command line, or a GUI... 

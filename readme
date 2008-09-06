@@ -1,0 +1,61 @@
+Social Networks Visualiser (SocNetV) 
+      - version 0.45  -
+
+Homepage: http://socnetv.sourceforge.net
+
+Author: Dimitris V. Kalamaras
+email:  dimitris.kalamaras@gmail.com
+	
+
+1. Overview
+
+Social Networks Visualiser (SocNetV) is an application which allows you to draw and visualise social networks (think of them as mathematical graphs) as well as compute some network statistics, i.e. distances, centralities, diameter etc. Various network file formats are supported, such as PAJEK .nets, adjacency matrices (sociomatrix) and dot (GraphViz). 
+
+You can modify an existing network or draw a new network using your mouse. Also, you can ask the program to create random networks for you. 
+
+SocNetV is developed in Qt, an cross-platform application development toolkit based on C++. The program was developed in Linux, but you could run it on Mac and Windows. It is Free Software, published under the General Public Licence Version 3 (see section 5).  
+
+Warning: 
+SocNetV is not a finished product. Be aware that there is no warranty of efficiency, correctness or usability. 
+	
+
+2. Installation
+
+To install this application you need is a working Linux distro, with Qt version 4.4+.
+Most distros have these packages installed by default. Please note that SocNetV uses QtWebKit to display online help. QtWebKit has been added to Qt from version 4.4, so you can't compile SocNetV in distros with older releases of Qt.
+
+If you have the above, you can install SocNetV by compiling it from source or using binary packages. 
+	
+To compile from source code, download the tarball archive with the source code of SocNetV (you probably already have this :P). 
+Then, untar (decompress) the archive using a command like this:
+
+tar zxfv SocNetV-v0.XX.tar.gz
+
+Then enter the new directory and compile with these commands:
+
+cd socnetv
+$QTDIR/bin/qmake-qt4  or $QTDIR/bin/qmake
+make
+
+If everything is ok, then you can run SocNetV by issuing:
+./socnetv
+
+To install a binary package, check http://socnetv.sourceforge.net and see if there is a package for your distribution. You can find versions for Mac and Windows on the Net, although these are not supported.
+
+
+3. Command Line Options
+	
+SocNetV is primarily a GUI program. Nevertheless, some command line options are available. Type:
+1) ./socnetv filename.net
+   to start snv with network named filename.net loaded.
+2) ./socnetv -v
+   to print version of snv and exit.
+3) ./socnetv -d 
+   to enable debugging mode, in which snv prints comprehensive messages about what it is doing.
+
+
+
+4. Usage 
+
+For usage documentation, see online help. Press F1 to diplay the SocNetV Handbook.
+ 

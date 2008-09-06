@@ -1,0 +1,9 @@
+DL N = 5 FORMAT = FULLMATRIX 
+LABELS: 
+1,2,3,4,5
+DATA: 
+0 1 0 0 0
+0 0 1 0 0
+0 0 0 1 0
+0 0 0 0 1
+0 0 0 0 0

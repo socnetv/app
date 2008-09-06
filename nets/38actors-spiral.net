@@ -1,0 +1,79 @@
+*Network 
+*Vertices 38
+1 "1" ic PaleVioletRed1		0.827261 	0.5	diamond
+2 "2" ic PaleVioletRed1		0.805809 	0.577966	diamond
+3 "3" ic PaleVioletRed1		0.776947 	0.64526	diamond
+4 "4" ic PaleVioletRed1		0.742373 	0.700399	diamond
+5 "5" ic PaleVioletRed1		0.703886 	0.742452	diamond
+6 "6" ic PaleVioletRed1		0.66332 	0.771056	diamond
+7 "7" ic PaleVioletRed1		0.62247 	0.786399	diamond
+8 "8" ic PaleVioletRed1		0.583027 	0.789192	diamond
+9 "9" ic PaleVioletRed1		0.546511 	0.780616	diamond
+10 "10" ic PaleVioletRed1		0.514224 	0.762259	diamond
+11 "11" ic PaleVioletRed1		0.487199 	0.736033	diamond
+12 "12" ic PaleVioletRed1		0.466174 	0.704084	diamond
+13 "13" ic PaleVioletRed1		0.451568 	0.668695	diamond
+14 "14" ic PaleVioletRed1		0.443475 	0.632184	diamond
+15 "15" ic PaleVioletRed1		0.441672 	0.596806	diamond
+16 "16" ic PaleVioletRed1		0.44563 	0.564654	diamond
+17 "17" ic PaleVioletRed1		0.454555 	0.537575	diamond
+18 "18" ic PaleVioletRed1		0.467418 	0.517089	diamond
+19 "19" ic PaleVioletRed1		0.483011 	0.504331	diamond
+20 "20" ic PaleVioletRed1		0.482776 	0.5	diamond
+21 "21" ic PaleVioletRed1		0.466021 	0.491337	diamond
+22 "22" ic PaleVioletRed1		0.451127 	0.474366	diamond
+23 "23" ic PaleVioletRed1		0.439407 	0.4499	diamond
+24 "24" ic PaleVioletRed1		0.432038 	0.419183	diamond
+25 "25" ic PaleVioletRed1		0.430006 	0.383833	diamond
+26 "26" ic PaleVioletRed1		0.434054 	0.345785	diamond
+27 "27" ic PaleVioletRed1		0.444649 	0.307206	diamond
+28 "28" ic PaleVioletRed1		0.461945 	0.270405	diamond
+29 "29" ic PaleVioletRed1		0.485776 	0.237741	diamond
+30 "30" ic PaleVioletRed1		0.515646 	0.211515	diamond
+31 "31" ic PaleVioletRed1		0.55074 	0.193874	diamond
+32 "32" ic PaleVioletRed1		0.589946 	0.186709	diamond
+33 "33" ic PaleVioletRed1		0.631891 	0.19157	diamond
+34 "34" ic PaleVioletRed1		0.674985 	0.209583	diamond
+35 "35" ic PaleVioletRed1		0.717478 	0.241384	diamond
+36 "36" ic PaleVioletRed1		0.757521 	0.287076	diamond
+37 "37" ic PaleVioletRed1		0.793238 	0.346195	diamond
+38 "38" ic PaleVioletRed1		0.822798 	0.417703	diamond
+*Arcs 
+1 2 1 c black
+2 3 1 c black
+3 4 1 c black
+4 5 1 c black
+5 6 1 c black
+6 7 1 c black
+7 8 1 c black
+8 9 1 c black
+9 10 1 c black
+10 11 1 c black
+11 12 1 c black
+12 13 1 c black
+13 14 1 c black
+14 15 1 c black
+15 16 1 c black
+16 17 1 c black
+17 18 1 c black
+18 19 1 c black
+19 20 1 c black
+20 21 1 c black
+21 22 1 c black
+22 23 1 c black
+23 24 1 c black
+24 25 1 c black
+25 26 1 c black
+26 27 1 c black
+27 28 1 c black
+28 29 1 c black
+29 30 1 c black
+30 31 1 c black
+31 32 1 c black
+32 33 1 c black
+33 34 1 c black
+34 35 1 c black
+35 36 1 c black
+36 37 1 c black
+37 38 1 c black
+*Edges 

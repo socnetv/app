@@ -1,0 +1,84 @@
+*Network 
+*Vertices 32
+1 "1" ic red		0.447236 	0.544933	circle
+2 "2" ic red		0.484925 	0.374761	circle
+3 "3" ic red		0.213568 	0.65392	circle
+4 "4" ic red		0.675879 	0.198853	circle
+5 "5" ic red		0.26005 	0.739962	circle
+6 "6" ic red		0.360553 	0.717017	circle
+7 "7" ic red		0.58794 	0.0554493	circle
+8 "8" ic red		0.571608 	0.204589	circle
+9 "9" ic red		0.756281 	0.0344168	circle
+10 "10" ic red		0.56407 	0.489484	circle
+11 "11" ic red		0.449749 	0.818356	circle
+12 "12" ic red		0.643216 	0.128107	circle
+13 "13" ic red		0.111809 	0.961759	circle
+14 "14" ic red		0.447236 	0.0764818	circle
+15 "15" ic red		0.332915 	0.0554493	circle
+16 "16" ic red		0.257538 	0.0745698	circle
+17 "17" ic red		0.771357 	0.183556	circle
+18 "18" ic red		0.379397 	0.90631	circle
+19 "19" ic red		0.341709 	0.793499	circle
+20 "20" ic red		0.214824 	0.83174	circle
+21 "21" ic red		0.521357 	0.776291	circle
+22 "22" ic red		0.222362 	0.160612	circle
+23 "23" ic red		0.288945 	0.183556	circle
+24 "24" ic red		0.379397 	0.131931	circle
+25 "25" ic red		0.434673 	0.212237	circle
+26 "26" ic red		0.232412 	0.90631	circle
+27 "27" ic red		0.33794 	0.85086	circle
+28 "28" ic red		0.278894 	0.892925	circle
+29 "29" ic red		0.579146 	0.869981	circle
+30 "30" ic red		0.498744 	0.963671	circle
+31 "31" ic red		0.601759 	0.956023	circle
+32 "32" ic red		0.396985 	0.975143	circle
+*Arcs 
+*Edges 
+1 2 1 c cadetblue
+1 3 1 c cadetblue
+1 6 1 c cadetblue
+1 10 1 c cadetblue
+2 4 1 c cadetblue
+2 8 1 c cadetblue
+2 10 1 c cadetblue
+2 17 1 c cadetblue
+3 5 1 c cadetblue
+3 6 1 c cadetblue
+3 13 1 c cadetblue
+4 8 1 c cadetblue
+4 9 1 c cadetblue
+4 17 1 c cadetblue
+5 6 1 c cadetblue
+5 20 1 c cadetblue
+6 11 1 c cadetblue
+6 21 1 c cadetblue
+7 8 1 c cadetblue
+7 9 1 c cadetblue
+7 12 1 c cadetblue
+7 14 1 c cadetblue
+8 12 1 c cadetblue
+9 12 1 c cadetblue
+9 17 1 c cadetblue
+11 18 1 c cadetblue
+11 19 1 c cadetblue
+11 27 1 c cadetblue
+13 18 1 c cadetblue
+13 20 1 c cadetblue
+13 26 1 c cadetblue
+13 32 1 c cadetblue
+14 15 1 c cadetblue
+14 25 1 c cadetblue
+15 16 1 c cadetblue
+15 23 1 c cadetblue
+15 24 1 c cadetblue
+16 22 1 c cadetblue
+19 20 1 c cadetblue
+21 29 1 c cadetblue
+22 23 1 c cadetblue
+23 25 1 c cadetblue
+24 25 1 c cadetblue
+26 28 1 c cadetblue
+27 28 1 c cadetblue
+29 31 1 c cadetblue
+30 31 1 c cadetblue
+30 32 1 c cadetblue
