@@ -33,17 +33,17 @@ SOURCES += src/backgrcircle.cpp \
 RESOURCES = src/src.qrc
 
 TEMPLATE = app
-CONFIG  += qt thread warn_on release
+CONFIG  += qt thread warn_on @ac_debug@
 LANGUAGE = C++
 
 #LIBS    += @ac_libs@
-INCPATH += /usr/share/qt4/include /usr/local/include /usr/include /usr/include/qt4 
+INCPATH += @ac_incpath@
 
 # support
 QT += webkit
 
 # Extra optimization flags
-QMAKE_CXXFLAGS += -msse -mfpmath=sse -ffast-math 
+QMAKE_CXXFLAGS += @ac_cflags@
 
 
 

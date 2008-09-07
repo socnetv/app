@@ -1,0 +1,83 @@
+%define name    NAME@
+%define version @PACKAGE_VERSION@
+%define release 1
+%define prefix  @ac_prefix@
+
+
+%define is_mandrake %(test -e /etc/mandrake-release && echo 1 || echo 0)
+%define is_suse %(test -e /etc/SuSE-release && echo 1 || echo 0)
+%define is_fedora %(test -e /etc/fedora-release && echo 1 || echo 0)
+%define qmake qmake
+%define lrelease lrelease
+
+%if %is_fedora
+%define distr %(cat /etc/fedora-release)
+%define qmake qmake-qt4
+%define lrelease lrelease-qt4
+%endif
+%if %is_suse
+%define distr %(head -1 /etc/SuSE-release)
+%endif
+%if %is_mandrake
+%define distr %(cat /etc/mandrake-release)
+%endif
+
+
+Name:		%{name}
+Summary:	A Social Networks Analyser and Visualiser
+License:	GPL
+Group:		Science/Math
+URL:		http://socnetv.sourceforge.net/
+Version:	%{version}
+Release:	%{release}
+
+
+Prefix:		%{prefix}
+
+Source0:	%{name}-%{version}.tar.gz
+
+Packager:	Dimitris Kalamaras
+Distribution:   %{distr}
+
+BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
+
+BuildRequires:	qt-devel >= 4.4
+
+%description
+SocNetV (Social Networks Visualiser) is a flexible and 
+user-friendly tool for Social Networks Analysis and Visualisation. 
+It lets you create new networks (graphs) with a few clicks on a 
+virtual canvas or load networks of various formats (GraphViz, 
+GraphML, Adjacency, Pajek, etc) and modify them to suit your needs.
+
+The application can compute network properties, such as density, 
+diameter and distances, as well as node and network centralities. 
+Various layout algorithms (i.e. Spring-embedder, circular and in 
+levels according to centralities) are supported for meaningful 
+visualisations of your networks. Furthermore, simple random 
+networks (lattice, same degree, etc) can be created. 
+
+%prep
+%setup 
+[ -f Makefile.cvs ] && %__make -f Makefile.cvs
+
+%build
+%configure
+%__make
+
+%install
+%makeinstall
+
+%clean
+[ -d %{buildroot} -a "%{buildroot}" != "" ] && %__rm -rf  %{buildroot}
+
+%files
+%defattr(-,root,root)
+%doc AUTHORS COPYING ChangeLog README TODO
+%{_bindir}/%{name}
+%{_datadir}/%{name}.desktop
+%{_datadir}/images/%{name}.png
+
+%changelog
+* Sun Sep 07 2008 Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
+- First RPM release
