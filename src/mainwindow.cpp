@@ -73,7 +73,7 @@ void myMessageOutput( QtMsgType type, const char *msg )     {
 MainWindow::MainWindow(const QString &fName) {
 	fileName=fName;
 	qInstallMsgHandler( myMessageOutput );
-	setWindowIcon (QIcon(":/images/snv.png"));
+	setWindowIcon (QIcon(":/images/socnetv.png"));
 	VERSION="0.46";
 
 	/** inits that invoke all other construction parts **/
