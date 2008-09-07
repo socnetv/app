@@ -29,13 +29,12 @@ Written in Qt 4.4 with KDevelop
 #include <QtGui>
 #include <QtWebKit>
 
-HTMLViewer::HTMLViewer( const QString& home, const QString& _path, QWidget* parent)
+HTMLViewer::HTMLViewer( const QString& manPath,  QWidget* parent)
     :QMainWindow( parent ),
       pathCombo( 0 )
 {
-    Q_UNUSED(_path);
     view = new QWebView(this);
-    view->load(QUrl(home));
+    view->load(QUrl(manPath));
   
     this->setCentralWidget( view);
 
@@ -105,7 +104,7 @@ HTMLViewer::HTMLViewer( const QString& home, const QString& _path, QWidget* pare
     connect( pathCombo, SIGNAL( activated( const QString & ) ),
 	     this, SLOT( pathSelected( const QString & ) ) );
 
-    pathCombo->addItem( home);
+    pathCombo->addItem(manPath);
 
     toolbar->addAction(fileBack);
     toolbar->addAction(fileForward);

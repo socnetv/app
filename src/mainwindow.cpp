@@ -4797,20 +4797,22 @@ void MainWindow::slotHelp(){
 	QString helpPath; 
 	QDir d( QCoreApplication::applicationDirPath() );
 	qDebug( QCoreApplication::applicationDirPath().toAscii());
-	if ( d.exists("manual.html") ) 
+	if ( d.exists("manual.html") ) { 
   		helpPath=d.filePath("manual.html");
+	}
 	else {
 		if (d.dirName()=="bin") {
 			d.cdUp();
 		}
-		if (d.cd("doc") ) {
+		if (d.cd("./doc") ) {
 			if ( d.exists("manual.html") ) {
 				helpPath=d.filePath("manual.html");
 			}
 		}
-		else if (d.cd("/usr/local/doc/socnetv/") ) {
+		if (d.cd("/usr/local/doc/socnetv/") ) {
 			if ( d.exists("manual.html") ) {
 				helpPath=d.filePath("manual.html");
+				qDebug ("path" + helpPath.toAscii());
 			}
 			else {
 				qDebug("help file does not exist.");
@@ -4829,7 +4831,8 @@ void MainWindow::slotHelp(){
 			qDebug("Cannot chdir to html");
 		}
 	}
-	HTMLViewer *helpViewer = new HTMLViewer (helpPath, ".", this);
+        qDebug ("help path is: " + helpPath.toAscii());
+	HTMLViewer *helpViewer = new HTMLViewer (helpPath, this);
 	helpViewer -> setWindowTitle ( "-SocNetV- "+ VERSION + tr(" Manual-"));
 	helpViewer->show();
 

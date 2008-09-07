@@ -52,14 +52,16 @@ install:	$(name) src/images/$(name).png
 	@install -d -v -m 0755 $(DESTDIR)$(prefix)/share/pixmaps
 	@install -d -v -m 0755 $(DESTDIR)$(prefix)/share/applications
 	@install -v -m 0755 $(name) $(DESTDIR)$(prefix)/bin/$(name)
-	@install -v -m 0644 icons/$(name).png $(DESTDIR)$(prefix)/share/pixmaps/$(name).png
+	@install -v -m 0644 src/images/$(name).png $(DESTDIR)$(prefix)/share/pixmaps/$(name).png
 	@install -v -m 0644 $(name).desktop $(DESTDIR)$(prefix)/share/applications/$(name).desktop
+	mkdir $(DESTDIR)$(prefix)/doc/$(name)
+	@install -v -m 0755 doc/* $(DESTDIR)$(prefix)/doc/$(name)/
 
 uninstall:	$(DESTDIR)$(prefix)/bin/$(name)
 	@rm -vf $(DESTDIR)$(prefix)/bin/$(name)
 	@rm -vf $(DESTDIR)$(prefix)/share/pixmaps/$(name).png
 	@rm -vf $(DESTDIR)$(prefix)/share/applications/$(name).desktop
-
+	@rm -rf $(DESTDIR)$(prefix)/doc/$(name)
 clean:	$(name).mak
 	@make -f $(name).mak clean
 	@rm -f $(name) $(name).mak

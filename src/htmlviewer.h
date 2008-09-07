@@ -38,7 +38,7 @@ class QWebView;
 class HTMLViewer : public QMainWindow {
     Q_OBJECT
 public:
-    HTMLViewer( const QString& home_,  const QString& path, QWidget* parent = 0);
+    HTMLViewer( const QString& manualPath,   QWidget* parent = 0);
     ~HTMLViewer();
 private slots:
     void openFile();
