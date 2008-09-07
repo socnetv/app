@@ -47,7 +47,7 @@ $(name).mak:	$(name).pro
 $(name):	$(name).mak ${forms} $(sources) $(headers)
 	@make -f $(name).mak
 
-install:	$(name) images/$(name).png
+install:	$(name) src/images/$(name).png
 	@install -d -v -m 0755 $(DESTDIR)$(prefix)/bin
 	@install -d -v -m 0755 $(DESTDIR)$(prefix)/share/pixmaps
 	@install -d -v -m 0755 $(DESTDIR)$(prefix)/share/applications
