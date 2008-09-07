@@ -4803,12 +4803,12 @@ void MainWindow::slotHelp(){
 		if (d.dirName()=="bin") {
 			d.cdUp();
 		}
-		if (d.cd("./src/html") ) {
+		if (d.cd("doc") ) {
 			if ( d.exists("manual.html") ) {
 				helpPath=d.filePath("manual.html");
 			}
 		}
-		else if (d.cd("/usr/share/socnetv/html") ) {
+		else if (d.cd("/usr/local/doc/socnetv/") ) {
 			if ( d.exists("manual.html") ) {
 				helpPath=d.filePath("manual.html");
 			}
@@ -4816,6 +4816,15 @@ void MainWindow::slotHelp(){
 				qDebug("help file does not exist.");
 			}
 		}
+               else if (d.cd("/usr/share/doc/socnetv/") ) {
+                       if ( d.exists("manual.html") ) {
+                                helpPath=d.filePath("manual.html");
+                        }
+                        else {
+                                qDebug("help file does not exist.");
+                        }
+                }
+
 		else	{
 			qDebug("Cannot chdir to html");
 		}
