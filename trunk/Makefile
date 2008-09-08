@@ -54,8 +54,9 @@ install:	$(name) src/images/$(name).png
 	@install -v -m 0755 $(name) $(DESTDIR)$(prefix)/bin/$(name)
 	@install -v -m 0644 src/images/$(name).png $(DESTDIR)$(prefix)/share/pixmaps/$(name).png
 	@install -v -m 0644 $(name).desktop $(DESTDIR)$(prefix)/share/applications/$(name).desktop
-	mkdir $(DESTDIR)$(prefix)/doc/$(name)
-	@install -v -m 0755 doc/* $(DESTDIR)$(prefix)/doc/$(name)/
+	mkdir -p $(DESTDIR)$(prefix)/doc/$(name)/manual
+	@install -v -m 0755 doc/* $(DESTDIR)$(prefix)/doc/$(name)/manual/
+	@install -v -m 0755 README NEWS TODO ChangeLog $(DESTDIR)$(prefix)/doc/$(name)/ 
 
 uninstall:	$(DESTDIR)$(prefix)/bin/$(name)
 	@rm -vf $(DESTDIR)$(prefix)/bin/$(name)

@@ -58,4 +58,7 @@ SocNetV is primarily a GUI program. Nevertheless, some command line options are 
 4. Usage 
 
 For usage documentation, see online help. Press F1 to diplay the SocNetV Handbook.
- 
+
+5. Packagers
+
+Packagers: please note that the SocNetV manual is copied to $(DESTDIR)$(prefix)/doc/$(name)/manual

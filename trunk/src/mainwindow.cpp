@@ -4810,6 +4810,7 @@ void MainWindow::slotHelp(){
 			}
 		}
 		if (d.cd("/usr/local/doc/socnetv/") ) {
+			if (d.exists("manual/")) d.cd("manual/");
 			if ( d.exists("manual.html") ) {
 				helpPath=d.filePath("manual.html");
 				qDebug ("path" + helpPath.toAscii());
@@ -4819,6 +4820,7 @@ void MainWindow::slotHelp(){
 			}
 		}
                else if (d.cd("/usr/share/doc/socnetv/") ) {
+		       if (d.exists("manual/")) d.cd("manual/");
                        if ( d.exists("manual.html") ) {
                                 helpPath=d.filePath("manual.html");
                         }
