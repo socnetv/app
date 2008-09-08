@@ -87,6 +87,9 @@ are available. Type:
 For usage documentation, see online help.
 When running SocNetV, press F1 to display the SocNetV Manual.
 
+There are some example networks inside the /usr/local/doc/socnetv/net folder.
+Just press Ctrl+O, go there  and choose one file.
+
 
 5. Bugs
 -------
