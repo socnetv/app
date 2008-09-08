@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser 
- version: 0.45
+ version: 0.46
  Written in Qt 4.4 with KDevelop   
 
                         main.cpp  -  description
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 				return -1;
 			}
 			else if (option=="-V" || option=="--version") {
-				cout<< "\n\nSocial Networks Visualiser \n\nVersion 0.45\n";
+				cout<< "\n\nSocial Networks Visualiser \n\nVersion 0.46\n";
 				return -1;
 			}
 			else {
