@@ -182,6 +182,8 @@ public slots:
 	void slotZoomIn();
 	void slotZoomOut();
 
+	void  slotLayoutNodeSizeProportionalEdges(bool);
+
 	//STATISTICS MENU
 	void slotViewDistanceMatrix();
 	void slotDistance();
@@ -267,7 +269,7 @@ private:
 	QComboBox *sceneScaleCombo;
 	QGroupBox *mainGroup;
 	QDockWidget *leftDock;
-	QCheckBox *moveSpringEmbedderBx, *moveFruchtermanBx, *moveKamandaBx;
+	QCheckBox *moveSpringEmbedderBx, *moveFruchtermanBx, *moveKamandaBx, *nodeSizeProportionalEdgesBx ;
 
 	QSpinBox *rotateSpinBox ;
 	QPushButton *addNodeBt, *addLinkBt, *removeNodeBt, *removeLinkBt;
@@ -295,7 +297,7 @@ private:
 	QAction *circleBetweenessLayoutAct, *circleInformationalLayoutAct, *levelClosenessLayoutAct;
 	QAction *levelInDegreeLayoutAct, *levelOutDegreeLayoutAct, *levelBetweenessLayoutAct, *levelInformationalLayoutAct;
 	QAction *strongColorationAct, *regularColorationAct, *showProgressBarAct, *printDebugAct;
-	QAction *springLayoutAct, *FRLayoutAct;
+	QAction *springLayoutAct, *FRLayoutAct, *nodeSizeProportionalEdgesAct;
 	QAction *zoomInAct, *zoomOutAct ;
 
 	QString fileName, networkName;

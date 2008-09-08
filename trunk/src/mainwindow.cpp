@@ -100,6 +100,7 @@ MainWindow::MainWindow(const QString &fName) {
 	connect( &activeGraph, SIGNAL( addBackgrHLine (int) ), graphicsWidget, SLOT(addBackgrHLine(int) ) ) ;
 
 	connect(moveSpringEmbedderBx, SIGNAL(stateChanged(int)),graphicsWidget, SLOT(startNodeMovement(int)));
+	connect(nodeSizeProportionalEdgesBx , SIGNAL(clicked(bool)),this, SLOT(slotLayoutNodeSizeProportionalEdges(bool)));
 
 	connect (graphicsWidget, SIGNAL(updateNodeCoords(int, int, int)), this, SLOT(updateNodeCoords(int, int, int)) );
 	connect (addNodeBt,SIGNAL(clicked()), this, SLOT(createNode()));
@@ -567,6 +568,13 @@ void MainWindow::initActions(){
 	zoomOutAct->setStatusTip(tr("Zooms out of the actual network."));
 	zoomOutAct->setWhatsThis(tr("Zoom out.\n\nZooms out. What else did you expect?"));
 
+	nodeSizeProportionalEdgesAct= new QAction(tr("NodeSize = F (OutDegree)"), this);
+	nodeSizeProportionalEdgesAct->setStatusTip(tr("Changes the size of nodes according to their out edges."));
+	nodeSizeProportionalEdgesAct->setWhatsThis(tr("NodeSize = F (OutDegree) \n\n Adjusts the size of each node according to their out-edges (OutDegree). The more edges a node has, the bigger will appear..."));
+	nodeSizeProportionalEdgesAct->setCheckable(true);
+	nodeSizeProportionalEdgesAct->setChecked(false);
+	connect(nodeSizeProportionalEdgesAct, SIGNAL(triggered(bool)), this, SLOT(slotLayoutNodeSizeProportionalEdges(bool)));
+
 
 
 	/**
@@ -925,12 +933,14 @@ void MainWindow::initMenuBar() {
 	layoutMenu -> addMenu (physicalLayoutMenu);
 	physicalLayoutMenu -> addAction (springLayoutAct);
 	physicalLayoutMenu -> addAction (FRLayoutAct);
-
+	layoutMenu->addSeparator();
+	layoutMenu->addAction(nodeSizeProportionalEdgesAct);
 	layoutMenu->addSeparator();
 	layoutMenu -> addAction (circleClearBackgrCirclesAct);
 	layoutMenu->addSeparator();
 	layoutMenu->addAction(zoomInAct);
 	layoutMenu->addAction(zoomOutAct);
+	
 
 
 /** menuBar entry: statistics menu */
@@ -1154,11 +1164,15 @@ void MainWindow::initDockWidget(){
 	moveKamandaBx->setToolTip(tr("!"));
 
 
+	nodeSizeProportionalEdgesBx = new QCheckBox(tr("NodeSize = F (OutDegree)") );
+	nodeSizeProportionalEdgesBx ->setEnabled(true);
+	nodeSizeProportionalEdgesBx ->setToolTip(tr("!"));
+
 	QVBoxLayout *moveGroupLayout = new QVBoxLayout(moveGroup);
     	moveGroupLayout->addWidget(moveSpringEmbedderBx);
     	moveGroupLayout->addWidget(moveFruchtermanBx );
     	moveGroupLayout->addWidget(moveKamandaBx);
-
+	moveGroupLayout->addWidget(nodeSizeProportionalEdgesBx);
 
 	QGroupBox *rotateGroup = new QGroupBox(downGroup);
     	//rotateGroup->setAttribute(Qt::WA_ContentsPropagated);
@@ -1325,6 +1339,9 @@ void MainWindow::initNet(){
 	inLinkedNodesLCD -> display(activeGraph.verticesWithInEdges());
 	outLinkedNodesLCD-> display(activeGraph.verticesWithOutEdges());
 	reciprocalLinkedNodesLCD->display(activeGraph.verticesWithReciprocalEdges());
+
+	nodeSizeProportionalEdgesBx ->setChecked(false);
+
 	//set window title
 	setWindowTitle(tr("Social Network Visualiser "));
 	QApplication::restoreOverrideCursor();
@@ -1387,7 +1404,7 @@ void MainWindow::slotChooseFile() {
 	bool m_fileLoaded=fileLoaded;
 	QString m_fileName=fileName;
 	statusBar()->showMessage(tr("Choose a network file..."));
-	fileName = QFileDialog::getOpenFileName(this,   tr("Select one file to open"), "", tr("GraphML (*.graphml);;GraphViz (*.dot);;Adjacency (*.txt *.csv *.net);;Pajek (*.net);;All (*.*)"));
+	fileName = QFileDialog::getOpenFileName(this,   tr("Select one file to open"), "", tr("All (*.*);;GraphML (*.graphml);;GraphViz (*.dot);;Adjacency (*.txt *.csv *.net);;Pajek (*.net)"));
 	
 	if (!fileName.isEmpty()) {
 		fileNameNoPath=fileName.split ("/" );
@@ -3105,6 +3122,83 @@ void MainWindow::slotLayoutRandomCircle(){
 
 
 
+void MainWindow::slotLayoutNodeSizeProportionalEdges(bool checked){
+	if (!fileLoaded && !networkModified  )  {
+		QMessageBox::information(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		statusBar()->showMessage(tr("I am really sorry. You must really load a file first... ") ,statusBarDuration);
+		return;
+	}
+
+	qDebug("MW: slotLayoutNodeSizeProportionalEdges()");
+	QList<QGraphicsItem *> list=scene->items();
+	int edges = 0, size = initNodeSize ;
+/*
+	if (nodeSizeProportionalEdgesBx->checkState() == Qt::Unchecked){
+		checked=false;
+	}*/
+	
+	if (checked != true) {
+		for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)  {
+			if ( (*it) -> type() == TypeNode ){
+				Node *jim = (Node*) (*it);
+				(*jim).setSize(size);
+				(*jim).moveBy(1,1);(*jim).moveBy(-1,-1);
+			}
+		}
+		nodeSizeProportionalEdgesAct->setChecked(false);
+		nodeSizeProportionalEdgesBx->setChecked(false);
+		return;
+	}
+	nodeSizeProportionalEdgesAct->setChecked(true);
+	nodeSizeProportionalEdgesBx->setChecked(true);
+	statusBar()->showMessage(tr("Embedding node size model on the network.... ") ,statusBarDuration);	
+	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
+		if ( (*it) -> type() == TypeNode ){
+			Node *jim = (Node*) (*it);
+			edges = activeGraph.edgesFrom(  (*jim).nodeNumber() ) ;
+			qDebug("Node %i has %i edges ", (*jim).nodeNumber(), edges);
+			
+			if (edges == 0 ) {
+				size = initNodeSize; 
+			}
+			else if (edges == 1 ) {
+				size = initNodeSize + 1; 
+			}
+			else if (edges > 1 && edges <= 2  ) {
+				size = initNodeSize + 2; 	
+			}
+			else if (edges > 2 && edges <= 3  ) {
+				size = initNodeSize + 3; 
+			}
+			else if (edges > 3 && edges <= 4  ) {
+				size = initNodeSize + 4; 
+			}
+			else if (edges > 4 && edges <= 6  ) {
+				size = initNodeSize + 4; 
+			}
+			else if (edges > 5 && edges <= 7  ) {
+				size = initNodeSize+5 ; 
+			}
+			else if (edges > 7 && edges <= 10  ) {
+				size = initNodeSize+6 ; 
+			}
+			else if (edges > 10 && edges <= 15  ) {
+				size = initNodeSize+7 ; 
+			}
+			else if (edges > 15 && edges <= 25  ) {
+				size = initNodeSize+8 ; 
+			}
+			else  if (edges > 25 ) {
+				size = initNodeSize+9; 
+			}
+			qDebug("Changing size of %i to %i", (*jim).nodeNumber(), size);
+			(*jim).setSize(size);
+			(*jim).moveBy(1,1);(*jim).moveBy(-1,-1);
+		}
+
+	}
+
+}
 
 
 
