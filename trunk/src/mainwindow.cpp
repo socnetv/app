@@ -332,8 +332,8 @@ void MainWindow::initActions(){
 	connect(changeAllNodesSizeAct, SIGNAL(activated()), this, SLOT(slotChangeAllNodesSize()) );
 
 	changeAllNodesShapeAct = new QAction( tr("Change all Nodes Shape"),	this);
-	changeAllNodesShapeAct->setStatusTip(tr("This option lets you change the size of all nodes"));
-	changeAllNodesShapeAct->setWhatsThis(tr("Nodes Shape\n\nThis option lets you change the size of all nodes"));
+	changeAllNodesShapeAct->setStatusTip(tr("This option lets you change the shape of all nodes"));
+	changeAllNodesShapeAct->setWhatsThis(tr("Nodes Shape\n\nThis option lets you change the shape of all nodes"));
 	connect(changeAllNodesShapeAct, SIGNAL(activated()), this, SLOT(slotChangeAllNodesShape()) );
 
 	changeNodeBoxAct = new QAction(QIcon(":/images/box.png"), tr("Change Node Shape to Box"),this);
@@ -4428,27 +4428,25 @@ void MainWindow::changeAllNodesSize(int size) {
 *  Changes the shape of all nodes. 
 */
 void MainWindow::slotChangeAllNodesShape() {
-/*	bool ok=false;
+	bool ok=false;
 	QStringList lst;
     	lst << "box"<< "circle"<< "diamond"<< "ellipse"<< "triangle";
-    	QString newShape = QInputDialog::getItem(
-            "-SocNetV-", "Select a shape for all the nodes from the list: ", lst, 1, TRUE, &ok,
-            this );
+    	QString newShape = QInputDialog::getItem(this, "Node shapes", "Select a shape for all nodes: ", lst, 1, TRUE, &ok);
 	if ( ok ) {
-	        // user selected an item and pressed OK
+	        //user selected an item and pressed OK
 		QList<QGraphicsItem *> list=scene->items();
 		for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
-			if ( (*it) -> type() == Node_Rtti ){
+			if ( (*it) -> type() == TypeNode ){
 				Node *jim = (Node*) (*it);
 				(*jim).setShape(newShape);
 			}
 		graphChanged();
 		statusBar()->showMessage (QString(tr("All shapes have been changed. Ready")), statusBarDuration) ;
 	} else {
-		// user pressed Cancel
-		statusBar()->showMessage (QString(tr("Aborting")), statusBarDuration) ;
+		//user pressed Cancel
+		statusBar()->showMessage (QString(tr("Change node shapes aborted...")), statusBarDuration) ;
 	}
-*/
+
 }
 
 
@@ -4945,7 +4943,7 @@ void MainWindow::slotHelpAbout(){
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualiser " +VERSION+ "  codename: <b>SNAIL</b>"
 	"<p>(C) 2005-2008 by Dimitris V. Kalamaras"
 	"<br> dimitris.kalamaras@gmail.com"
-	"<p><b>Last revision: </b> Thu, Aug 28, 2008</p>"
+	"<p><b>Last revision: </b> Mon, Sep 09, 2008</p>"
 
 
 	"<p><b>Fortune cookie: </b><br> \""  + fortuneCookie[randomCookie]  +"\""
@@ -4976,8 +4974,9 @@ void MainWindow::createFortuneCookies(){
 	fortuneCookie+="I will never apologize for the United States of America; I don't care what the facts are. <br> --President G. Bush (Senior), after the Iranian airliner shooting down by U.S. warship, killing 290 passengers. Quoted in Newsweek, August 15, 1989";
 	fortuneCookie+="Man must not check reason by tradition, but contrawise, must check tradition by reason.<br> --Leo Tolstoy";
 	fortuneCookie+="Only after the last tree has been cut down, <br>only after the last river has been poisoned,<br> only after the last fish has been caught,<br>only then will you realize that money cannot be eaten. <br> --The Cree People";
+	fortuneCookie+="Stat rosa pristina nomine, nomina nuda tenemus <br > --Unknown";
 
-	fortuneCookiesCounter=7;
+	fortuneCookiesCounter=8;
 //   return fortuneCookie.count();
 }
 
