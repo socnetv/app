@@ -330,7 +330,10 @@ void Node::remove () {
 
 
 void Node::setLabel ( QString label) {
-	m_label=label;	
+	m_label=label;
+	foreach (NodeLabel *lab, gfxLabelList) {
+		lab->setPlainText(label);
+	}
 }
 
 

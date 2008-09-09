@@ -205,10 +205,14 @@ void GraphicsWidget::addNode(int num, int val, int size, QString nodeColor, QStr
 	NodeLabel *labelJim =new  NodeLabel (jim, nodeLabel, scene() );
 	labelJim ->setPos(p.x()+m_labelDistance, p.y()-m_labelDistance);
 	labelJim->setDefaultTextColor (labelColor);
+
+	if (showLabels) qDebug("GW: addNode: will display label "+ nodeLabel.toAscii() + " for %i", num);
+	else qDebug("GW: addNode: NOT display labels for %i", num);
+
 	if (!showLabels){
 		labelJim->hide();
 	}
-	//FIXME nodenumber should be an indipendent variable
+	//FIXME nodenumber should be an indipendant variable
 	NodeNumber *numberJim =new  NodeNumber (jim, size+2, QString::number(num), scene());
 	numberJim -> setPos(p.x()+m_numberDistance, p.y()+m_numberDistance);
 	numberJim -> setDefaultTextColor (m_numberColor);
@@ -454,9 +458,10 @@ void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
 	//Why use p (Qpointf) when e->pos() is Qpoint?  Because QGraphicsItem::Node and setPos works with QPointF
 	int m_nodeNumber = ( (MainWindow*)parent() )->lastAvailableNodeNumber() +1;
 	bool labels=( (MainWindow*)parent() )->showLabels();
+	m_nodeLabel=QString::number(m_nodeNumber);
 	bool numbers=( (MainWindow*)parent() )->showNumbers();
 	qDebug("GW: lastAvailableNodeNumber is %i", m_nodeNumber);
-	m_nodeColor= ( (MainWindow*)parent() )->initNodeColor;
+	m_nodeColor= ( (MainWindow*)parent() )->initNodeColor;	
 	addNode(m_nodeNumber, 1, m_nodeSize, m_nodeColor, m_nodeLabel, m_labelColor,  p,  "circle", labels, numbers);
 	//Emit a signal to MW to create a new node in graph.
 	qDebug("GW: emitting userDoubleClicked to MW"); 

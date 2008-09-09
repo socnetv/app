@@ -2676,6 +2676,7 @@ void MainWindow::slotChangeNodeLabel(){
 	QString text = QInputDialog::getText(this, "Change node label", tr("Enter new node label:"), QLineEdit::Normal,
             QString::null, &ok );
     	if ( ok && !text.isEmpty() ) {
+		qDebug("MW: change label to " + text.toAscii());
 		clickedJim-> setLabel (text);
 		activeGraph.setVertexLabel( clickedJimNumber, text);
 		if (!showLabels()) 
