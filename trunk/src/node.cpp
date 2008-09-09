@@ -44,7 +44,9 @@ Node::Node( GraphicsWidget* gw, int num, int val, int size, QString col, QString
 	m_num=num;
 	m_val=val;
 	m_size=size;
-	m_label=label;
+	Q_UNUSED (label);
+//	m_label->setPlainText(label);
+	hasLabel=false;
 	m_shape=shape;
 	m_col_str=col;
 	m_col=QColor(col);
@@ -315,30 +317,29 @@ void Node::remove () {
 	foreach (NodeNumber *num, gfxNumberList) {
 		qDebug("Node: removing number in gfxNumberList");
 		num->hide();
+		this->deleteNumber(num);
 		graphicsWidget->removeItem(num);
 	}
-	foreach (NodeLabel *lab, gfxLabelList) {
-		qDebug("Node: removing labels in gfxLabelList");
-		lab->hide();
-		graphicsWidget->removeItem(lab);
-	}
+	this->deleteLabel();
+
 	inEdgeList.clear();
 	outEdgeList.clear();
 	this->hide();
 	graphicsWidget->removeItem(this);
+
 }
 
 
 void Node::setLabel ( QString label) {
-	m_label=label;
-	foreach (NodeLabel *lab, gfxLabelList) {
-		lab->setPlainText(label);
-	}
+	m_label->setPlainText(label);
+	hasLabel=true;
 }
 
 
 QString Node::label ( ) { 
-	return m_label;	
+	if (hasLabel)
+		return m_label->toPlainText();	
+	else return "";
 }
 
 
@@ -360,12 +361,9 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
 				edge->adjust();
 			foreach (NodeNumber *num, gfxNumberList) 	//Move its graphic number
 				num->setPos( x()+m_nd, y()+m_nd);
-			foreach (NodeLabel *lab, gfxLabelList)		//Move its graphic label
-				lab->setPos( x()+m_ld, y()-m_ld);
+			if (hasLabel)
+				m_label->setPos( x()+m_ld, y()-m_ld);
 			//graphicsWidget->itemMoved();	
-			//FIXME The next IF statement is workaround. Without it the app crashes on first Vertice::setX(). Has problems with isolated nodes
-/*			if (x()!=0 && y()!=0)
-				graphicsWidget->nodeMoved(nodeNumber() , (int) x(), (int) y());*/
 			break;
 		}
 		case ItemVisibleChange: {	
@@ -452,16 +450,18 @@ void Node::deleteOutLink(Edge *link){
 
 
 
-void Node::deleteLabel(NodeLabel *label){
+void Node::deleteLabel(){
 	qDebug ("Node: deleteLabel ");
-//	qDebug ("Node: labelList has %i items", gfxLabelList.size());
-	gfxLabelList.remove( label);
-//	qDebug ("Node: labelList has now %i items", gfxLabelList.size());
+	hasLabel=false;
+	m_label->hide();
+	graphicsWidget->removeItem(m_label);
+	//delete m_label;
+
 }
 
 
 void Node::clearLabel(){
-
+	hasLabel=false;
 }
 
 
@@ -480,7 +480,9 @@ void Node::clearNumber(){
 
 
 void Node::addLabel (NodeLabel* gfxLabel  )  { 
-	gfxLabelList.push_back(gfxLabel) ; 
+	qDebug("NODE: add label");
+	m_label=gfxLabel ;
+	hasLabel=true;
 }
 
 void Node::addNumber (NodeNumber *gfxNum ) {

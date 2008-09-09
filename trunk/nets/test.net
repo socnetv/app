@@ -1,6 +1,6 @@
 *Network 
 *Vertices 9
-1 "1" ic gold		0.144286 	0.299841	box
+1 "makis" ic gold		0.144286 	0.299841	circle
 2 "2" ic gold		0.22 	0.314195	box
 3 "3" ic gold		0.24 	0.483254	box
 4 "4" ic gold		0.537143 	0.821372	box

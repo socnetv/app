@@ -419,19 +419,24 @@ void GraphicsWidget::removeItem( Node *node){
 		i++;
 	}
 	nodeVector.erase(nodeVector.begin()+i);
+	node->deleteLater ();
+	qDebug("GW items now: %i ", items().size());
 }
 
 
 void GraphicsWidget::removeItem( Edge * edge){
 	edge->remove();
+	delete (edge);
 }
 
 void GraphicsWidget::removeItem( NodeLabel *nodeLabel){
-	Q_UNUSED(nodeLabel);
+	qDebug("GW items now: %i ", items().size());
+	delete (nodeLabel);
+	qDebug("GW items now: %i ", items().size());
 }
 
 void GraphicsWidget::removeItem( NodeNumber *nodeNumber){
-	Q_UNUSED(nodeNumber);
+	delete (nodeNumber);
 }
 
 

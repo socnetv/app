@@ -39,7 +39,7 @@ NodeLabel::NodeLabel( Node *jim ,  QString labelText,  QGraphicsScene *scene) :Q
 }
 
 void NodeLabel::removeRefs(){
-	source->deleteLabel(this);
+	source->deleteLabel();
 
 }
 

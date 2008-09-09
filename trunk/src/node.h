@@ -95,7 +95,7 @@ public:
 	void deleteOutLink(Edge*);
 
 	void addLabel (NodeLabel* gfxLabel  ) ;
-	void deleteLabel (NodeLabel*);
+	void deleteLabel ();
 	void clearLabel(); //clears labelList
 
 	void addNumber (NodeNumber *gfxNum ) ;
@@ -120,14 +120,14 @@ private:
 	QPointF newPos;
 	QPolygon *m_poly_t, *m_poly_d;
 	int m_num, m_val, m_size, m_nd, m_ld;
-	QString m_label, m_shape, m_lcol, m_col_str;
+	QString  m_shape, m_lcol, m_col_str;
 	QColor m_col, m_col_dark;
-
+	bool hasLabel;
 	/**Lists of elements attached to this node */
 	list<Edge*> inEdgeList, outEdgeList;
-	list<NodeLabel*> gfxLabelList;
+//	list<NodeLabel*> gfxLabelList;
 	list<NodeNumber*> gfxNumberList;
-
+	NodeLabel* m_label;
 };
 
 #endif
