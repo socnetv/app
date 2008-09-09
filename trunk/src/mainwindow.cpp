@@ -2679,7 +2679,7 @@ void MainWindow::slotChangeNodeLabel(){
 		clickedJim-> setLabel (text);
 		activeGraph.setVertexLabel( clickedJimNumber, text);
 		if (!showLabels()) 
-			showNumbersAct->setChecked(TRUE);
+			showLabelsAct->setChecked(TRUE);
 		clickedJim->moveBy(1,1);clickedJim->moveBy(-1,-1);
         	statusBar()->showMessage(tr("Changed label to %1. Ready. ").arg(text) ,statusBarDuration);
 		graphChanged();
@@ -2799,7 +2799,9 @@ void MainWindow::slotChangeNodeValue(){
 *	Changes the shape of the clicked node to box
 */
 void MainWindow::slotChangeNodeBox(){
+	activeGraph.setVertexShape( clickedJim->nodeNumber(), "box");
 	clickedJim->setShape("box");
+	graphChanged();
 }
 
 
@@ -2808,7 +2810,9 @@ void MainWindow::slotChangeNodeBox(){
 *	Changes the shape of the clicked node to triangle
 */
 void MainWindow::slotChangeNodeTriangle(){
+	activeGraph.setVertexShape( clickedJim->nodeNumber(), "triangle");
 	clickedJim->setShape("triangle");
+	graphChanged();
 }
 
 
@@ -2817,7 +2821,9 @@ void MainWindow::slotChangeNodeTriangle(){
 *	Changes the shape of the clicked node to circle
 */
 void MainWindow::slotChangeNodeCircle(){
+	activeGraph.setVertexShape( clickedJim->nodeNumber(), "circle");
 	clickedJim->setShape("circle");
+	graphChanged();
 }
 
 
@@ -2826,7 +2832,9 @@ void MainWindow::slotChangeNodeCircle(){
 *	Changes the shape of the clicked node to diamond
 */
 void MainWindow::slotChangeNodeDiamond(){
+	activeGraph.setVertexShape( clickedJim->nodeNumber(), "diamond");
 	clickedJim->setShape("diamond");
+	graphChanged();
 }
 
 
@@ -2835,7 +2843,9 @@ void MainWindow::slotChangeNodeDiamond(){
 *	Changes the shape of the clicked node to ellipse
 */
 void MainWindow::slotChangeNodeEllipse(){
+	activeGraph.setVertexShape( clickedJim->nodeNumber(), "ellipse");
 	clickedJim->setShape("ellipse");
+	graphChanged();
 }
 
  
@@ -4439,6 +4449,7 @@ void MainWindow::slotChangeAllNodesShape() {
 			if ( (*it) -> type() == TypeNode ){
 				Node *jim = (Node*) (*it);
 				(*jim).setShape(newShape);
+				activeGraph.setVertexShape ((*jim).nodeNumber(), newShape);
 			}
 		graphChanged();
 		statusBar()->showMessage (QString(tr("All shapes have been changed. Ready")), statusBarDuration) ;

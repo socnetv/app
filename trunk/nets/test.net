@@ -1,6 +1,28 @@
-0 1 0 0 0 0 
-0 0 0 1 0 0 
-1 0 0 0 0 0 
-0 0 0 0 1 0 
-1 1 1 0 0 0 
-0 0 0 0 1 0 
+*Network 
+*Vertices 9
+1 "1" ic gold		0.144286 	0.299841	box
+2 "2" ic gold		0.22 	0.314195	box
+3 "3" ic gold		0.24 	0.483254	box
+4 "4" ic gold		0.537143 	0.821372	box
+5 "Makis" ic aliceblue		0.124286 	0.221691	box
+6 "6" ic gold		0.29 	0.837321	box
+7 "7" ic gold		0.791429 	0.899522	box
+8 "8" ic gold		0.617143 	0.574163	box
+9 "9" ic gold		0.24 	0.786284	box
+*Arcs 
+1 2 1 c black
+1 6 1 c black
+2 8 1 c black
+3 1 1 c black
+3 2 1 c black
+3 4 1 c black
+3 6 1 c black
+4 5 1 c black
+5 1 1 c black
+5 2 1 c black
+6 7 1 c black
+7 1 1 c black
+7 8 1 c black
+8 4 1 c black
+9 1 1 c black
+*Edges 

@@ -85,6 +85,9 @@ public:
 	int hasVertex(QString);		//Checks if a vertex with a label exists
 	int hasEdge (int v1, int v2);		//Checks if edge between v1 and v2 exists. Returns weight
 
+	void setVertexShape(int v, QString shape); //Changes the shape.of vertex v 
+	QString shape(int v);	//returns the shape of this vertex
+
 	void setVertexLabel(int v, QString label); //Changes the label.of vertex v 
 	QString label(int);
 

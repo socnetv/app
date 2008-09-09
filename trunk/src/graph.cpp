@@ -412,6 +412,20 @@ int Graph::hasVertex(QString label){
 }
 
 
+
+//Changes the shape.of vertex v 
+void Graph::setVertexShape(int v1, QString shape){
+	m_graph[ index[v1] ]->setShape(shape);
+}
+
+
+//returns the shape of this vertex
+QString Graph::shape(int v1){
+	return m_graph[ index[v1] ]->shape();
+
+}
+
+
 /**Changes the label.of vertex v  */
 void Graph::setVertexLabel(int v1, QString label){
 	qDebug()<< "Graph: setVertexLabel for "<< v1 << ", index " << index[v1]<< " with label"<< label;
