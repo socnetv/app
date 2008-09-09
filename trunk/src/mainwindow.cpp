@@ -3892,7 +3892,7 @@ void MainWindow::slotCentralityOutDegree(){
 
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
-	ed->setWindowTitle("-SocNetV- In-Degree - " + tempFileNameNoPath.last());
+	ed->setWindowTitle("-SocNetV- Out-Degree - " + tempFileNameNoPath.last());
 	ed->show();
 }
 

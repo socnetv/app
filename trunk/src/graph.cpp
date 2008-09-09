@@ -1313,7 +1313,7 @@ void Graph::centralityOutDegree(bool weights){
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
 		ODC=0;
 		for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){	
-			if ( (weight=this->hasEdge ( (*it1)->name(), (*it)->name() ) ) !=0  )   {	
+			if ( (weight=this->hasEdge ( (*it)->name(), (*it1)->name() ) ) !=0  )   {	
 //			if ( (weight= SM.item( index[(*it)->name()],  index[(*it1)->name()] ) )!=0 ) {
 				qDebug("Graph: vertex %i isLinkedTo= %i", (*it)->name(), (*it1)->name());
 				if (weights)
