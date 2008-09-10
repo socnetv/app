@@ -56,8 +56,6 @@ Node::Node( GraphicsWidget* gw, int num, int val, int size, QString col, QString
 	m_ld=ldist;
 	m_poly_t=new QPolygon(3);
 	m_poly_d=new QPolygon(4);
-	m_poly_t -> setPoints (3 ,   0,-m_size,  -m_size,m_size, m_size,+m_size);
-	m_poly_d -> setPoints (4 ,   0,-m_size,  -m_size,0,       0,+m_size,     +m_size,0);
 /*	connect (this, SIGNAL(nodeClicked(Node*)),graphicsWidget , SLOT(nodeClicked(Node*)));
 	connect (this, SIGNAL(startNodeMovement(int)), graphicsWidget, SLOT(startNodeMovement(int)));
 	connect (this, SIGNAL(openNodeContextMenu()), graphicsWidget, SLOT(openNodeContextMenu()));
@@ -122,7 +120,6 @@ void Node::calculateForces(bool dynamicMovement){
 	newPos = pos() + QPointF(xvel, yvel);
 	newPos.setX(qMin(qMax(newPos.x(), sceneRect.left() + 10), sceneRect.right() - 10));
 	newPos.setY(qMin(qMax(newPos.y(), sceneRect.top() + 10), sceneRect.bottom() - 10));
-
 }
 
 
@@ -254,41 +251,13 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 		painter->drawRect( QRectF(-m_size , -m_size , 1.8*m_size , 1.8*m_size ) );
 	}
 	else if ( m_shape == "triangle") {
+		m_poly_t -> setPoints (3 ,   0,-m_size,  -m_size,m_size, m_size,+m_size);	
 		painter->drawPolygon( *m_poly_t);
-	}
+	}	
 	else if ( m_shape == "diamond"){
+		m_poly_d -> setPoints (4 ,   0,-m_size,  -m_size,0,       0,+m_size,     +m_size,0);
 		painter->drawPolygon(*m_poly_d);
 	}
-
-
-
-/** The following is for dropping shadows and gradients. This is left out, because it is slow.
-
-	//draw the shadow of the node, if you want
-// 	painter->setPen(Qt::NoPen);
-// 	painter->setBrush(Qt::darkGray);
-// 	painter->drawEllipse(-m_size+3, -m_size+3, 2*m_size, 2*m_size);
-
-	//draw the gradient color of the node
-	QRadialGradient gradient(-m_size+5, -m_size+5, m_size);
-	if (option->state & QStyle::State_Sunken) {
-		setZValue(255);
-		gradient.setCenter(3, 3);
- 		gradient.setFocalPoint(3, 3);
-		gradient.setColorAt(1, m_col.dark(160));
-		gradient.setColorAt(0, m_col_dark.dark(160));
-		painter->setBrush(m_col_dark.dark(160));
-	} else {
-		setZValue(254);
-		gradient.setColorAt(0, m_col);
-		gradient.setColorAt(1, m_col_dark);
-		painter->setBrush(m_col);
-	}
-	painter->setBrush(gradient);
-
-	painter->setPen(QPen(Qt::black, 0));
-	painter->drawEllipse(-m_size, -m_size, 2*m_size, 2*m_size);
-*/
 }
 
 

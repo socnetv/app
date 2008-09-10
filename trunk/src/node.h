@@ -95,7 +95,7 @@ public:
 
 	void addLabel (NodeLabel* gfxLabel  ) ;
 	void deleteLabel ();
-	void clearLabel(); //clears labelList
+	void clearLabel(); 
 
 	void addNumber (NodeNumber *gfxNum ) ;
 	void deleteNumber(NodeNumber*);
