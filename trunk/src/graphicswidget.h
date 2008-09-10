@@ -110,7 +110,7 @@ private:
 	QGraphicsItem *moving;
 	QPointF moving_start;
 	Node *firstNode, *secondNode ;
-	vector<Node*> nodeVector;
+	vector<Node*> nodeVector;	//used by addEdge() method
 };
 
 #endif

@@ -198,7 +198,7 @@ void GraphicsWidget::setAllItemsVisibility(int type, bool visible){
 void GraphicsWidget::addNode(int num, int val, int size, QString nodeColor, QString nodeLabel, QString labelColor, QPointF p, QString ns, bool showLabels, bool showNumbers) {
 	qDebug("GW: addNode()");
 	Node *jim= new Node (this, num, val, size, nodeColor, nodeLabel, labelColor, ns, m_labelDistance, m_numberDistance);
-// 	Node *jim= new Node (scene(), num, val, size, nodeColor, nodeLabel, labelColor, ns, m_labelDistance, m_numberDistance);
+
 	jim->setPos(p);
 	qDebug("GW: new node position is now at %f, %f", jim->pos().x(), jim-> pos().y());
 	
@@ -212,14 +212,14 @@ void GraphicsWidget::addNode(int num, int val, int size, QString nodeColor, QStr
 	if (!showLabels){
 		labelJim->hide();
 	}
-	//FIXME nodenumber should be an indipendant variable
+	//FIXME nodenumber should be an independant variable
 	NodeNumber *numberJim =new  NodeNumber (jim, size+2, QString::number(num), scene());
 	numberJim -> setPos(p.x()+m_numberDistance, p.y()+m_numberDistance);
 	numberJim -> setDefaultTextColor (m_numberColor);
 	if (!showNumbers){
 		numberJim->hide();
         }
-	//add new node to nodeVector so its easier to find which node has a specific nodeNumber 
+	//add new node to a nodeVector so its easier to find which node has a specific nodeNumber 
 	//This is used during addEdge
 	nodeVector.push_back(jim);
 
@@ -249,7 +249,6 @@ void GraphicsWidget::clearBackgrCircles(){
 		if ( (item)->type()==TypeBackgrCircle) {
 			qDebug("GW: Deleting a background Circle now...");
 			(item)->hide();
-			//scene()->removeItem (item);
 			delete (item);
 		}
 	}
@@ -579,12 +578,10 @@ void GraphicsWidget::wheelEvent(QWheelEvent *e) {
 	qDebug("GW: wheel event");
 	qDebug("GW: delta = %i", e->delta());	
   	m_scale += e->delta() / qreal(600);
-    	m_scale = qMax(qreal(0.2), qMin(qreal(4), m_scale));
+    	m_scale = qMax(qreal(0.25), qMin(qreal(1.25), m_scale)); 
 	//m_scale=qreal(pow((double)2, -e->delta() / 240.0));
 	qDebug("GW: m_scale = %f", m_scale);	
 	scale(m_scale, m_scale);
-
-//	qDebug("GW: m_scale = %f", m_scale);	
     	emit scaleChanged(int(m_scale));
 }
 
