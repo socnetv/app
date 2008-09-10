@@ -1,6 +1,6 @@
 /****************************************************************************
 SocNetV: Social Networks Visualiser 
-version: 0.44
+version: 0.46
 Written in Qt 4.4 with KDevelop   
 
                                texteditor.cpp 
@@ -296,18 +296,18 @@ QString TextEditor::strippedName(const QString &fullFileName)
 
 void TextEditor::about()
 {
-   QMessageBox::about( this, "-SocNetV-",
-"<b>S</b>ocial <b>N</b>etwork <b>V</b>isualiser version 0.44"
+   QMessageBox::about( this, "SocNetV Editor",
+"<b>S</b>ocial <b>N</b>etwork <b>V</b>isualiser version 0.46"
       "<p>Written by <br>Dimitris V. Kalamaras<br>"
       "<br>email: dimitris.kalamaras@gmail.com"
-      "<p>Last revision: X.XXII.2006</p>"
+      "<p>Last revision: Sep 2008</p>"
       "<p>Fortune cookie:  <br>sic itur ad astra/sic transit gloria mundi?"
 
     "<p>Note: This text editor was adapted from Trolltech's application example."
 
     "<p>This program is free software; you can redistribute it and/or modify"
     "<br>it under the terms of the GNU General Public License as published by"
-    "<br>the Free Software Foundation; either version 2 of the License, or"
+    "<br>the Free Software Foundation; either version 3 of the License, or"
     "<br>(at your option) any later version.</p>"
 
     "<p>This program is distributed in the hope that it will be useful,"
