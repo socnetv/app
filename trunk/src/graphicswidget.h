@@ -104,7 +104,7 @@ private:
 	int timerId,  m_nodeSize, m_numberDistance, m_labelDistance;
 	qreal m_scale;
 	QTransform init_Transform;
-	qreal scaleFactor, oldFactor;
+	qreal zoomPercentNow;
 	QString m_nodeLabel, m_numberColor, m_nodeColor, m_labelColor, m_linkColor;
 	bool secondDoubleClick, dynamicMovement;
 	QGraphicsItem *moving;

@@ -51,8 +51,8 @@ GraphicsWidget::GraphicsWidget( QGraphicsScene *sc, MainWindow* par)  : QGraphic
 	m_numberColor="black";
 	m_nodeLabel="";
 	m_scale=1;	
-	scaleFactor=0;oldFactor=0;
 	init_Transform = transform();
+	zoomPercentNow=0;
 }
 
 
@@ -577,27 +577,50 @@ void GraphicsWidget::timerEvent(QTimerEvent *event) {
 void GraphicsWidget::wheelEvent(QWheelEvent *e) {
 	qDebug("GW: wheel event");
 	qDebug("GW: delta = %i", e->delta());	
-  	m_scale += e->delta() / qreal(600);
-    	m_scale = qMax(qreal(0.25), qMin(qreal(1.25), m_scale)); 
-	//m_scale=qreal(pow((double)2, -e->delta() / 240.0));
+  	m_scale = e->delta() / qreal(600);
 	qDebug("GW: m_scale = %f", m_scale);	
-	scale(m_scale, m_scale);
+	if ( m_scale > 0 && zoomPercentNow < 150){
+		scale(1.25, 1.25);
+		zoomPercentNow+=25;
+	}
+	else  if ( m_scale < 0 && zoomPercentNow > -175) {
+		scale(0.75, 0.75);
+		zoomPercentNow-=25;
+	}
+	else m_scale=1;
+
     	emit scaleChanged(int(m_scale));
 }
 
 
-
+/** 
+	Called from MW magnifier widgets
+*/
 void GraphicsWidget::zoomOut (){
-	scale(0.75, 0.75);
-	qDebug("GW: ZoomIn()");
+	qDebug("GW: ZoomOut()");
 	
-}
+	if (zoomPercentNow > -175) {
+		setTransform (init_Transform); 
+		scale(0.75, 0.75);
+		zoomPercentNow-=25;
+	}
+	else return;
+}	
 
 
+/** 
+	Called from MW magnifier widgets
+*/
 
 void GraphicsWidget::zoomIn(){
-	scale(1.25, 1.25);
-	qDebug("GW: ZoomOut()");
+	qDebug("GW: ZoomIn()");
+	if (zoomPercentNow < 150) {
+		setTransform (init_Transform); 
+		scale(1.25, 1.25);
+		zoomPercentNow+=25;
+	}
+	else return;
+
 }
 
 
