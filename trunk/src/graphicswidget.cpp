@@ -50,9 +50,8 @@ GraphicsWidget::GraphicsWidget( QGraphicsScene *sc, MainWindow* par)  : QGraphic
 	timerId=0;
 	m_numberColor="black";
 	m_nodeLabel="";
-	m_scale=1;	
 	init_Transform = transform();
-	zoomPercentNow=0;
+	zoomIndex=3;
 }
 
 
@@ -575,21 +574,15 @@ void GraphicsWidget::timerEvent(QTimerEvent *event) {
 	It passes delta as new m_scale
 */
 void GraphicsWidget::wheelEvent(QWheelEvent *e) {
-	qDebug("GW: wheel event");
+	qDebug("GW: Mouse wheel event");
 	qDebug("GW: delta = %i", e->delta());	
-  	m_scale = e->delta() / qreal(600);
+  	float m_scale = e->delta() / qreal(600);
 	qDebug("GW: m_scale = %f", m_scale);	
-	if ( m_scale > 0 && zoomPercentNow < 150){
-		scale(1.25, 1.25);
-		zoomPercentNow+=25;
-	}
-	else  if ( m_scale < 0 && zoomPercentNow > -175) {
-		scale(0.75, 0.75);
-		zoomPercentNow-=25;
-	}
+	if ( m_scale > 0)
+		zoomIn();
+	else  if ( m_scale < 0) 
+		zoomOut();
 	else m_scale=1;
-
-    	emit scaleChanged(int(m_scale));
 }
 
 
@@ -597,57 +590,56 @@ void GraphicsWidget::wheelEvent(QWheelEvent *e) {
 	Called from MW magnifier widgets
 */
 void GraphicsWidget::zoomOut (){
-	qDebug("GW: ZoomOut()");
-	
-	if (zoomPercentNow > -175) {
-		setTransform (init_Transform); 
-		scale(0.75, 0.75);
-		zoomPercentNow-=25;
+	if (zoomIndex > 0) {
+		zoomIndex--;
+		changeZoom(zoomIndex);
 	}
-	else return;
+	qDebug("GW: ZoomOut() index %i", zoomIndex);
+    	emit zoomChanged(zoomIndex);
 }	
 
 
 /** 
 	Called from MW magnifier widgets
 */
-
 void GraphicsWidget::zoomIn(){
 	qDebug("GW: ZoomIn()");
-	if (zoomPercentNow < 150) {
-		setTransform (init_Transform); 
-		scale(1.25, 1.25);
-		zoomPercentNow+=25;
+	if (zoomIndex < 6) {
+		zoomIndex++;
+		changeZoom(zoomIndex);
 	}
-	else return;
-
+	qDebug("GW: ZoomIn() index %i", zoomIndex);
+    	emit zoomChanged(zoomIndex);
 }
 
 
 /**
-      Initiated from MW widget to zoom in or out.
+      Initiated from MW zoomCombo widget to zoom in or out.
 */
-void GraphicsWidget::changeScale(int sliderVal) {
-
-	switch (sliderVal) {
+void GraphicsWidget::changeZoom(int value) {
+	switch (value) {
 		case 0:	setTransform (init_Transform); 
+			scale(0.25, 0.25);
+			break;
+		case 1:	setTransform (init_Transform); 
 			scale(0.5, 0.5);
 			break;
-		case 1:	setTransform (init_Transform);
+		case 2:	setTransform (init_Transform);
 			scale(0.75, 0.75);
 			break;
-		case 2: setTransform (init_Transform);
+		case 3: setTransform (init_Transform);
 			scale(1, 1);
 			break;
-		case 3: setTransform (init_Transform);
+		case 4: setTransform (init_Transform);
 			scale(1.25, 1.25);
 			break;
-		case 4: setTransform (init_Transform);
+		case 5: setTransform (init_Transform);
 			scale(1.5, 1.5);
 			break;
+		case 6: setTransform (init_Transform);
+			scale(1.75, 1.75);
+			break;
 	}
-
-	return;
 }
 
 
@@ -662,24 +654,24 @@ void GraphicsWidget::rot(int angle){
 /** Resizing the view causes a repositioning of the nodes maintaining the same pattern*/
 void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
 	Q_UNUSED(e);
-/*
-	qDebug ("GraphicsWidget: resizeEvent");
-	int w=e->size().width();
-	int h=e->size().height();
-	int w0=e->oldSize().width();
-	int h0=e->oldSize().height();
-	qreal fX=  (double)(w)/(double)(w0);
-	qreal fY= (double)(h)/(double)(h0);
-	foreach (QGraphicsItem *item, scene()->items()) {
-		qDebug ("item will move by %f, %f", fX, fY);
-		if (qgraphicsitem_cast<Node *>(item)) {
-			qDebug("Node original position %f, %f", item->x(), item->y());
-			qDebug("Node will move to %f, %f",item->x()*fX, item->y()*fY);
-			item->setPos(mapToScene(item->x()*fX, item->y()*fY));
-		}
-	}
-	emit windowResized(w, h);
-*/
+// 	qDebug ("GraphicsWidget: resizeEvent");
+// 	int w=e->size().width();
+// 	int h=e->size().height();
+// 	int w0=e->oldSize().width();
+// 	int h0=e->oldSize().height();
+// 	qreal fX=  (double)(w)/(double)(w0);
+// 	qreal fY= (double)(h)/(double)(h0);
+// 	foreach (QGraphicsItem *item, scene()->items()) {
+// 		qDebug ("item will move by %f, %f", fX, fY);
+// 		if (Node *node = qgraphicsitem_cast<Node *>(item) ) {
+// 			qDebug("Node original position %f, %f", item->x(), item->y());
+// 			qDebug("Node will move to %f, %f",item->x()*fX, item->y()*fY);
+// 			node->setPos(mapToScene(item->x()*fX, item->y()*fY));
+// 		}	
+// 		else 	item->setPos(mapToScene(item->x()*fX, item->y()*fY));
+// 	}
+// 	emit windowResized(w, h);
+
 }
 
 

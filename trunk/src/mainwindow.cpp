@@ -108,12 +108,13 @@ MainWindow::MainWindow(const QString &fName) {
 	connect (removeNodeBt,SIGNAL(clicked()), this, SLOT(slotRemoveNode()));
 	connect (removeLinkBt,SIGNAL(clicked()), this, SLOT(slotRemoveLink()));
 	connect (this, SIGNAL(setInitLinkColor(QString)) , &activeGraph, SLOT(setInitEdgeColor(QString) ) );
-	connect(sceneScaleCombo, SIGNAL(currentIndexChanged(const int &)),graphicsWidget, SLOT(changeScale(int)));
+	connect(zoomCombo, SIGNAL(currentIndexChanged(const int &)),graphicsWidget, SLOT(changeZoom(int)));
 	connect(zoomOutAct, SIGNAL(triggered()), graphicsWidget, SLOT(zoomOut()));
 	connect(zoomInAct, SIGNAL(triggered()), graphicsWidget, SLOT(zoomIn()));
+	connect(graphicsWidget, SIGNAL(zoomChanged(int)),zoomCombo, SLOT(setCurrentIndex(int)));
 	connect(rotateSpinBox, SIGNAL(valueChanged(int)), graphicsWidget, SLOT(rot(int) ) );
 	connect(circleClearBackgrCirclesAct, SIGNAL(activated()), graphicsWidget, SLOT(clearBackgrCircles()));
-
+ 
 	initNet();
 
 	/** DEFAULTING HERE DOES NOT CHANGE BOOL VALUE **/
@@ -1024,13 +1025,13 @@ void MainWindow::initToolBar(){
 	fileToolbar -> addAction(zoomInAct);
 
 	//Create zooming widget
-	sceneScaleCombo = new QComboBox;
+	zoomCombo = new QComboBox;
 	QStringList scales;
-     	scales << tr("50%") << tr("75%") << tr("100%") << tr("125%") << tr("150%");
-     	sceneScaleCombo->addItems(scales);
-     	sceneScaleCombo->setCurrentIndex(2);
+     	scales << tr("25%") << tr("50%") << tr("75%") << tr("100%") << tr("125%") << tr("150%")<<tr("175%")  ;
+     	zoomCombo->addItems(scales);
+     	zoomCombo->setCurrentIndex(3);
 
-	fileToolbar -> addWidget(sceneScaleCombo);
+	fileToolbar -> addWidget(zoomCombo);
 	fileToolbar -> addAction(zoomOutAct);
 
 	fileToolbar -> addSeparator();

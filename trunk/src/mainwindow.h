@@ -266,7 +266,7 @@ private:
 	QMenu *randomLayoutMenu, *circleLayoutMenu, *levelLayoutMenu, *physicalLayoutMenu;
 	QMenu *colorationMenu;
 	QToolBar *fileToolbar, *actionToolBar;
-	QComboBox *sceneScaleCombo;
+	QComboBox *zoomCombo;
 	QGroupBox *mainGroup;
 	QDockWidget *leftDock;
 	QCheckBox *moveSpringEmbedderBx, *moveFruchtermanBx, *moveKamandaBx, *nodeSizeProportionalEdgesBx ;

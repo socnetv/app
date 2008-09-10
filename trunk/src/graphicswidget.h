@@ -79,7 +79,7 @@ public slots:
 	void openNodeContextMenu();
 	void openEdgeContextMenu();
 	void startNodeMovement(int state);
-	void changeScale(int sliderValue); 
+	void changeZoom(int value); 
 	void edgeNodes(Node *node);	
 	void clearBackgrCircles();
 	void addBackgrCircle( int x0, int y0, int radius);
@@ -98,13 +98,12 @@ signals:
 	void selectedNode(Node *);
 	void selectedEdge(Edge *);
  	void changed();
-	void scaleChanged(int);
+	void zoomChanged(int);
 	
 private:
 	int timerId,  m_nodeSize, m_numberDistance, m_labelDistance;
-	qreal m_scale;
 	QTransform init_Transform;
-	qreal zoomPercentNow;
+	int zoomIndex;
 	QString m_nodeLabel, m_numberColor, m_nodeColor, m_labelColor, m_linkColor;
 	bool secondDoubleClick, dynamicMovement;
 	QGraphicsItem *moving;
