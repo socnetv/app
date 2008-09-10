@@ -1,9 +1,9 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser 
- version: 0.44
- Written in Qt 4.4 with KDevelop   
+ version: 0.46
+ Written in Qt 4.4 
  
-                         vertice.cpp  -  description
+                         vertex.cpp  -  description
                              -------------------
     copyright            : (C) 2005-2008 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
