@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser 
- version: 0.44
+ version: 0.46
  Written in Qt 4.4 with KDevelop   
  
                          nodenumber.h  -  description
@@ -42,7 +42,7 @@ public:
 	enum { Type = UserType + 3 };
 	int type() const { return Type; }
 	~NodeNumber();
-  private:
+private:
 	Node *source;
 };
 

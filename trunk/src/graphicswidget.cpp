@@ -199,7 +199,7 @@ void GraphicsWidget::addNode(int num, int val, int size, QString nodeColor, QStr
 	qDebug("GW: addNode()");
 	Node *jim= new Node (this, num, val, size, nodeColor, nodeLabel, labelColor, ns, m_labelDistance, m_numberDistance);
 // 	Node *jim= new Node (scene(), num, val, size, nodeColor, nodeLabel, labelColor, ns, m_labelDistance, m_numberDistance);
-	jim->setNewPos(p);
+	jim->setPos(p);
 	qDebug("GW: new node position is now at %f, %f", jim->pos().x(), jim-> pos().y());
 	
 	NodeLabel *labelJim =new  NodeLabel (jim, nodeLabel, scene() );
@@ -555,7 +555,7 @@ void GraphicsWidget::timerEvent(QTimerEvent *event) {
 	bool itemsMoved = false;
 	foreach (Node *node, nodeVector) { 
 		if (node->advance()){
-			qDebug("GW: timerEvent() a node is advancing!!!");
+			qDebug("GW: timerEvent() a node is moving!");
 			itemsMoved = true;
 		}
 	}

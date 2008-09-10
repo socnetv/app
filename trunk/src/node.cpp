@@ -40,7 +40,7 @@
 Node::Node( GraphicsWidget* gw, int num, int val, int size, QString col, QString label, QString lcol, QString shape, int ldist, int ndist) : graphicsWidget (gw) {
 	qDebug("Node() - constructor");
 	graphicsWidget->scene()->addItem(this); //Without this nodes dont appear on the screen...
-	setFlag(ItemIsMovable); //Essential - without this, nodes do not move...
+	setFlag(ItemIsMovable); //Without this, nodes do not move...
 	m_num=num;
 	m_val=val;
 	m_size=size;
@@ -122,25 +122,21 @@ void Node::calculateForces(bool dynamicMovement){
 	newPos = pos() + QPointF(xvel, yvel);
 	newPos.setX(qMin(qMax(newPos.x(), sceneRect.left() + 10), sceneRect.right() - 10));
 	newPos.setY(qMin(qMax(newPos.y(), sceneRect.top() + 10), sceneRect.bottom() - 10));
+
 }
 
 
-
+/** 
+	Called from GraphicsWidget->timerEvent() to move continuously the node 
+*/
 bool Node::advance(){
 	if (newPos == pos())
 		return false;
-	qDebug("Node: is at x = %f, y=%f", x(), y());
-	qDebug("Node: advance to x = %f, y=%f", newPos.x(), newPos.y());
-	setPos(newPos); //FIXME
+	qDebug("Node: at x = %f, y=%f will advance to x = %f, y=%f", x(), y(), newPos.x(), newPos.y() );
+	setPos(newPos);
 	return true;
 }
 
-
-void Node::setNewPos(QPointF p){
-	newPos=p;
-	setPos(newPos);
-	update();
-}
 
 /** 
 	Used by MW::slotChangeNodeColor
