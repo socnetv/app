@@ -6,16 +6,11 @@ TODO-> Transform actors to links //COMMENTED OUT
 --FIXME: isSymmetric not functioning (check a-symmetry.net)
 --FIXME: When many lines intersect, right-click > removeLink may remove wrong link!
 
-
--- FIXED: Clearing background circles bug.
--- NEW: background layout lines for level layout algorithms
---NEW: There is a new widget enabling the user to rotate the network
---NEW: Nodes may have 4 different shapes: circles, diamonds, triangles, boxes and ellipses are supported.
---FIXED: Crashes when loading pajek file with nodes having labels with dots inside. 
---FIXED: There was a bug in Qt 4.3 QGraphicsView causing redraw delays. Is fixed in Qt 4.4 :)
---FIXED: New zooming widget replaces old and untrustworthy one
---FIXED: Cosmetic changes, i.e. new icons, new layout for the sidebar, 
---FIXED: Code clean-up in MainWindows Class and Matrix. Deleted obsolete members and functions such as nodeExists(), mousePosGW(), Dijkstra, etc. Commented out messageboxes when networks are loaded.)
+--FIXED: Zoom in and out via mouse wheel is smoother.
+--FIXED: Nodes (triangles, diamonds) resize as they should.
+--FIXED: Node shapes are now saved as they should.
+--NEW: New layout method displaying node sizes according to their outdegrees.
+--CLEAN: Removed setNewPos
 
 
 
