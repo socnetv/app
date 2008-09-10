@@ -2517,12 +2517,13 @@ void MainWindow::slotRemoveNode() {
 	qDebug("MW: min is %i and max is %i", min, max);
 
 	if (min==-1 || max==-1 ) { qDebug("ERROR in finding min max nodeNumbers. Abort"); return;}	
+	
 	doomedJim =  (clickedJimNumber >= 0 && clickedJimNumber<= max )  ?
                       clickedJimNumber :
 		( QInputDialog::getInteger(this,"Remove node",tr("Choose a node to remove between ("
 		+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"),
 		min, 1, max , 1, &ok ) )   ;
-	if (!ok) {
+	if (!ok && doomedJim == -1) {
 		statusBar()->showMessage("Remove node operation cancelled.", statusBarDuration);
 		return;
 	}
