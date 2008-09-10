@@ -18,9 +18,7 @@ The latest version  of  this  program  can  be  found  at  <a href="http://socne
 
 <h4><a name="Install" id="Install"></a>Installation</h4>
 <p class="text">
-To compile SocNetV, you need the Qt4 development libraries installed - most Linux distros offer Qt4 via their package manager (i.e. Synaptic in Ubuntu). 
-
-Also, from 0.45 and onwards you also need QtWebKit development files. For instance in openSUSE, for instance. you need libQtWebKit-devel.
+To compile SocNetV, you need the Qt4 development libraries installed - most Linux distros offer Qt4 via their package manager (i.e. Synaptic in Ubuntu). You also need QtWebKit development files. For instance in openSUSE, install the package "libQtWebKit-devel". 
 
 Then, download the archive with the source code from the link above, untar it, enter the new directory, and compile with the following commands:
 </p>
@@ -28,10 +26,10 @@ Then, download the archive with the source code from the link above, untar it, e
 <p class="code">
 tar zxfv SocNetV-0.XX.tar.gz <br />
 cd socnetv  <br />
-qmake-qt4 or qmake <br />
+./configure<br />
 make<br />
-cd bin<br />
-./socnetv 
+sudo make install<br />
+
 </p>	
 
 <h4><a name="RunOptions" id="RunOtions"></a>Execution Options</h4>
