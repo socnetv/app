@@ -474,42 +474,52 @@ void MainWindow::initActions(){
 	connect(randCircleLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutRandomCircle()));
 	
 	circleOutDegreeLayoutAct = new QAction( tr("Out-Degree"),	this);
+	circleOutDegreeLayoutAct ->setShortcut(tr("Ctrl+1"));
 	circleOutDegreeLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Out-Degree Central Nodes are positioned towards the centre."));
 	circleOutDegreeLayoutAct->setWhatsThis(tr("Circle Out-Degree Centrality Layout\n\n Repositions the nodes on circles of different radius. More Out-Degree Central Nodes are positioned towards the centre."));
 	connect(circleOutDegreeLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityOutDegree()));
 
 	circleInDegreeLayoutAct = new QAction( tr("In-Degree"),	this);
+	circleInDegreeLayoutAct ->setShortcut(tr("Ctrl+2"));
 	circleInDegreeLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More In-Degree Central Nodes are positioned towards the centre."));
 	circleInDegreeLayoutAct->setWhatsThis(tr("Circle In-Degree Centrality Layout\n\n Repositions the nodes on circles of different radius. More In-Degree Central Nodes are positioned towards the centre."));
 	connect(circleInDegreeLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityInDegree()));
 
 	circleClosenessLayoutAct = new QAction( tr("Closeness"),	this);
+	circleClosenessLayoutAct ->setShortcut(tr("Ctrl+3"));
 	circleClosenessLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Closeness Central Nodes are positioned towards the centre."));
 	circleClosenessLayoutAct->setWhatsThis(tr("Circle Closeness Centrality Layout\n\n Repositions the nodes on circles of different radius. More Closeness Central Nodes are positioned towards the centre."));
 	connect(circleClosenessLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityCloseness()));
 
 	circleBetweenessLayoutAct = new QAction( tr("Betweeness"), this);
+	circleBetweenessLayoutAct ->setShortcut(tr("Ctrl+4"));
 	circleBetweenessLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Betweeness Central Nodes are positioned towards the centre."));
 	circleBetweenessLayoutAct->setWhatsThis(tr("Circle Betweeness Centrality Layout\n\n Repositions the nodes on circles of different radius. More Betweeness Central Nodes are positioned towards the centre."));
 	connect(circleBetweenessLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityBetweeness()));
 
 	circleInformationalLayoutAct = new QAction( tr("Informational"),	this);
+		circleInformationalLayoutAct ->setEnabled(false);
+	circleInformationalLayoutAct ->setShortcut(tr("Ctrl+5"));
 	circleInformationalLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Informational Central Nodes are situated towards the centre."));
 	circleInformationalLayoutAct->setWhatsThis(tr("Circle Informational Centrality Layout\n\n Repositions the nodes on circles of different radius. More Informational Central Nodes are positioned towards the centre."));
 	connect(circleInformationalLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityInformational()));
 
 	circleStressLayoutAct = new QAction( tr("Stress"),	this);
+	circleStressLayoutAct ->setShortcut(tr("Ctrl+6"));
 	circleStressLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Stressed Central Nodes are positioned towards the centre."));
 	circleStressLayoutAct->setWhatsThis(tr("Circle Stress Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes having greater Stress Centrality are situated towards the centre."));
 	connect(circleStressLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityStress() ) );
 	
 	circleGraphLayoutAct = new QAction( tr("Graph"),	this);
+	circleGraphLayoutAct ->setShortcut(tr("Ctrl+7"));
 	circleGraphLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Graphed Central Nodes are positioned towards the centre."));
 	circleGraphLayoutAct->setWhatsThis(tr("Circle Graph Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes having greater Graph Centrality are situated towards the centre."));
 	connect(circleGraphLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityGraph() ) );
 
 	
 	circleEccentrLayoutAct = new QAction( tr("Eccentricity"),	this);
+	circleEccentrLayoutAct ->setShortcut(tr("Ctrl+8"));
+
 	circleEccentrLayoutAct  ->setStatusTip(tr("Repositions the nodes on circles of different radius. Nodes of large eccentricity are positioned towards the centre."));
 	circleEccentrLayoutAct ->setWhatsThis(tr("Circle Eccentricity Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes having greater Eccentricity Centrality are situated towards the centre."));
 	connect(circleEccentrLayoutAct , SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityEccentr() ) );
@@ -521,38 +531,44 @@ void MainWindow::initActions(){
 
 	
 	levelInDegreeLayoutAct = new QAction( tr("In-Degree"),this);
+	levelInDegreeLayoutAct ->setShortcut(tr("Ctrl+Shift+1"));
 	levelInDegreeLayoutAct ->setStatusTip(tr("Repositions the nodes on levels of different height. More In-Degree Central Nodes are situated on higher levels."));
 	levelInDegreeLayoutAct->setWhatsThis(tr("Level In-Degree Centrality Layout\n\n Repositions the nodes on levels of different height. More In-Degree Central Nodes are situated on higher levels."));
 	connect(levelInDegreeLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutLevelCentralityInDegree()));
 
 	levelOutDegreeLayoutAct  = new QAction( tr("Out-Degree"),this);
+	levelOutDegreeLayoutAct  ->setShortcut(tr("Ctrl+Shift+2"));
 	levelOutDegreeLayoutAct  ->setStatusTip(tr("Repositions the nodes on levels of different height. More Out-Degree Central Nodes are situated on higher levels."));
 	levelOutDegreeLayoutAct ->setWhatsThis(tr("Level Out-Degree Centrality Layout\n\n Repositions the nodes on levels of different height. More Out-Degree Central Nodes are situated on higher levels."));
 	connect(levelOutDegreeLayoutAct , SIGNAL(activated()), this, SLOT(slotLayoutLevelCentralityOutDegree()));
 
 	levelClosenessLayoutAct = new QAction( tr("Closeness"),	this);
+	levelClosenessLayoutAct ->setShortcut(tr("Ctrl+Shift+3"));
 	levelClosenessLayoutAct ->setStatusTip(tr("Repositions the nodes on levels of different height. More Closeness Central Nodes are situated on higher levels."));
 	levelClosenessLayoutAct->setWhatsThis(tr("level Closeness Centrality Layout\n\n Repositions the nodes on levels of different height. More Closeness Central Nodes are situated on higher levels."));
 	connect(levelClosenessLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutLevelCentralityCloseness()));
 
 	levelBetweenessLayoutAct = new QAction( tr("Betweeness"),	this);
+	levelBetweenessLayoutAct ->setShortcut(tr("Ctrl+Shift+4"));
 	levelBetweenessLayoutAct ->setStatusTip(tr("Repositions the nodes on levels of different height. More Betweeness Central Nodes are situated on higher levels."));
 	levelBetweenessLayoutAct->setWhatsThis(tr("level Betweeness Centrality Layout\n\n Repositions the nodes on levels of different height. More Betweeness Central Nodes are situated on higher levels."));
 	connect(levelBetweenessLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutLevelCentralityBetweeness()));
 
 	levelInformationalLayoutAct = new QAction( tr("Informational"),	this);
+	levelInformationalLayoutAct ->setShortcut(tr("Ctrl+Shift+5"));
+	levelInformationalLayoutAct -> setEnabled(false);
 	levelInformationalLayoutAct ->setStatusTip(tr("Repositions the nodes on levels of different height. More Informational Central Nodes are situated on higher levels."));
 	levelInformationalLayoutAct->setWhatsThis(tr("Level Informational Centrality Layout\n\n Repositions the nodes on levels of different height. More Informational Central Nodes are situated on higher levels."));
 	connect(levelInformationalLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutLevelCentralityInformational()));
 
 	springLayoutAct= new QAction(tr("Spring Embedder"), this);
-	springLayoutAct->setShortcut(tr("Ctrl+1"));
+	springLayoutAct->setShortcut(tr("Alt+1"));
 	springLayoutAct->setStatusTip(tr("This model substitutes nodes and edges with charged balls and connecting springs, respectively.	The algorithm continues until the system retains an equilibrium state in which all forces cancel each other."));
 	springLayoutAct->setWhatsThis(tr("Spring Embedder Layout\n\n Repositions all nodes according to a model that substitutes nodes and edges with charged balls and connecting springs, respectively. The algorithm continues until the system retains its equilibrium state where all forces cancel each other."));
 	connect(springLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutSpringEmbedder()));
 
 	FRLayoutAct= new QAction( tr("Fruchterman-Reingold"),	this);
-	FRLayoutAct->setShortcut(tr("Ctrl+2"));
+	FRLayoutAct->setShortcut(tr("Alt+2"));
 	FRLayoutAct->setEnabled(FALSE);
 	FRLayoutAct->setStatusTip(tr("Repelling forces between all nodes, and attracting forces between adjacent nodes."));
 	FRLayoutAct->setWhatsThis(tr("Fruchterman-Reingold Layout\n\n Repositions all nodes according to a model in which	repelling forces are used between every pair of nodes, while attracting forces are used only between adjacent nodes. The algorithm continues until the system retains its equilibrium state where all forces cancel each other."));
@@ -573,7 +589,7 @@ void MainWindow::initActions(){
 	zoomOutAct->setWhatsThis(tr("Zoom out.\n\nZooms out. What else did you expect?"));
 
 	nodeSizeProportionalEdgesAct= new QAction(tr("NodeSize = F (OutDegree)"), this);
-	nodeSizeProportionalEdgesAct->setShortcut(tr("Ctrl+3"));
+	nodeSizeProportionalEdgesAct->setShortcut(tr("Alt+3"));
 	nodeSizeProportionalEdgesAct->setStatusTip(tr("Changes the size of nodes according to their out edges."));
 	nodeSizeProportionalEdgesAct->setWhatsThis(tr("NodeSize = F (OutDegree) \n\n Adjusts the size of each node according to their out-edges (OutDegree). The more edges a node has, the bigger will appear..."));
 	nodeSizeProportionalEdgesAct->setCheckable(true);
