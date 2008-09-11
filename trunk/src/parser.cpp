@@ -67,7 +67,7 @@ int Parser::loadPajek(){
 	QFile file ( fileName );
 	if ( ! file.open(QIODevice::ReadOnly )) return -1;
 	QTextStream ts( &file );
-	QString str, label, nodeColor,linkColor, nodeShape ;
+	QString str, label, nodeColor, linkColor, nodeShape, temp;
 	
 	QStringList lineElement;
 	bool ok=FALSE, intOk=FALSE, check1=FALSE, check2=FALSE;
@@ -75,7 +75,7 @@ int Parser::loadPajek(){
 	bool fileContainsNodeColors=FALSE, fileContainsNodesCoords=FALSE;
 	bool fileContainsLinksColors=FALSE;
 	bool zero_flag=FALSE;
-	int  j,miss, source = -1, target=-1, weight=1, nodeNum, colorIndex=-1;
+	int  j,miss, source = -1, target=-1, weight=1, nodeNum, colorIndex=-1, coordIndex=-1;
 	list<int> listDummiesPajek;
 	networkName="noname";
 	totalLinks=0;
@@ -135,7 +135,6 @@ int Parser::loadPajek(){
 			if (zero_flag){
 				nodeNum++;
 			}
-			/** NODELABEL */
 			if (lineElement.size() < 2 ){
 				label=lineElement[0];
 				randX=rand()%gwWidth;
@@ -143,14 +142,14 @@ int Parser::loadPajek(){
 				nodeColor=initNodeColor;
 				nodeShape=initNodeShape;
 			}
-			else {
+			else {	/** NODELABEL */
 				label=lineElement[1];
 				qDebug("node label: " + lineElement[1].toAscii());
 				str.remove (1, str.lastIndexOf(label)+label.size() );	
 				qDebug("cropped str: "+ str.toAscii());
 				if (label.contains('"', Qt::CaseInsensitive) )
 					label=label.remove('\"');
-				qDebug("node label now: " + label[1].toAscii());
+				qDebug("node label now: " + label.toAscii());
 								
 				/** NODESHAPE: There are four possible . */
 				if (str.contains("Ellipse", Qt::CaseInsensitive) ) nodeShape="ellipse";
@@ -178,10 +177,13 @@ int Parser::loadPajek(){
 					
 				}
 				/**NODE COORDINATES */
-				if (str.contains(".",Qt::CaseInsensitive)) { 
+				if ( str.contains(".",Qt::CaseInsensitive) ) { 
 					for (register int c=0; c< lineElement.count(); c++)   {
-						if ( lineElement[c].contains(".", Qt::CaseInsensitive) )  {
-							randX=lineElement[c].toDouble(&check1);
+						temp=lineElement[c];
+						if ( (coordIndex=temp.indexOf(".", Qt::CaseInsensitive) ) )  {	
+							if ( !temp[coordIndex-1].isDigit()) continue;
+							qDebug ("coords: " + temp.toAscii() + " " +lineElement[c+1].toAscii());
+							randX=temp.toDouble(&check1);
 							randY=lineElement[c+1].toDouble(&check2);
 							if (check1 && check2)    {
 								randX=randX * gwWidth;

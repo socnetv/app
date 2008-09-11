@@ -1,11 +1,1469 @@
 *Network 
-*Vertices 4
-1 "" ic gold		0.29 	0.325	circle
-2 "" ic gold		0.572857 	0.276667	circle
-3 "" ic gold		0.422857 	0.548333	circle
-4 "" ic gold		0.587143 	0.568333	circle
+*Vertices 327
+1 "" ic black		0.71 	0.499203	circle
+2 "" ic black		0.71 	0.503987	circle
+3 "" ic black		0.747143 	0.510367	circle
+4 "" ic black		0.822857 	0.519936	circle
+5 "" ic black		0.86 	0.529506	circle
+6 "" ic black		0.821429 	0.53429	circle
+7 "" ic black		0.782857 	0.535885	circle
+8 "" ic black		0.82 	0.547049	circle
+9 "" ic black		0.707143 	0.535885	circle
+10 "" ic black		0.818571 	0.561404	circle
+11 "" ic black		0.742857 	0.551834	circle
+12 "" ic black		0.668571 	0.539075	circle
+13 "" ic black		0.777143 	0.572568	circle
+14 "" ic black		0.85 	0.599681	circle
+15 "" ic black		0.665714 	0.550239	circle
+16 "" ic black		0.772857 	0.590112	circle
+17 "" ic black		0.771429 	0.596491	circle
+18 "" ic black		0.698571 	0.574163	circle
+19 "" ic black		0.732857 	0.593301	circle
+20 "" ic black		0.661429 	0.567783	circle
+21 "" ic black		0.73 	0.602871	circle
+22 "" ic black		0.658571 	0.575758	circle
+23 "" ic black		0.691429 	0.596491	circle
+24 "" ic black		0.791429 	0.653907	circle
+25 "" ic black		0.755714 	0.641148	circle
+26 "" ic black		0.72 	0.626794	circle
+27 "" ic black		0.75 	0.652313	circle
+28 "" ic black		0.682857 	0.61563	circle
+29 "" ic black		0.777143 	0.684211	circle
+30 "" ic black		0.614286 	0.578947	circle
+31 "" ic black		0.738571 	0.673046	circle
+32 "" ic black		0.704286 	0.655502	circle
+33 "" ic black		0.732857 	0.684211	circle
+34 "" ic black		0.7 	0.663477	circle
+35 "" ic black		0.755714 	0.719298	circle
+36 "" ic black		0.605714 	0.593301	circle
+37 "" ic black		0.72 	0.703349	circle
+38 "" ic black		0.715714 	0.708134	circle
+39 "" ic black		0.768571 	0.76874	circle
+40 "" ic black		0.735714 	0.744817	circle
+41 "" ic black		0.758571 	0.779904	circle
+42 "" ic black		0.727143 	0.755981	circle
+43 "" ic black		0.697143 	0.730463	circle
+44 "" ic black		0.744286 	0.795853	circle
+45 "" ic black		0.588571 	0.61244	circle
+46 "" ic black		0.684286 	0.741627	circle
+47 "" ic black		0.657143 	0.712919	circle
+48 "" ic black		0.675714 	0.749601	circle
+49 "" ic black		0.627143 	0.6874	circle
+50 "" ic black		0.645714 	0.724083	circle
+51 "" ic black		0.684286 	0.795853	circle
+52 "" ic black		0.637143 	0.728868	circle
+53 "" ic black		0.654286 	0.767145	circle
+54 "" ic black		0.63 	0.735247	circle
+55 "" ic black		0.644286 	0.773525	circle
+56 "" ic black		0.621429 	0.740032	circle
+57 "" ic black		0.617143 	0.743222	circle
+58 "" ic black		0.63 	0.783094	circle
+59 "" ic black		0.625714 	0.786284	circle
+60 "" ic black		0.635714 	0.826156	circle
+61 "" ic black		0.615714 	0.791069	circle
+62 "" ic black		0.61 	0.794258	circle
+63 "" ic black		0.591429 	0.757576	circle
+64 "" ic black		0.6 	0.797448	circle
+65 "" ic black		0.607143 	0.84051	circle
+66 "" ic black		0.59 	0.802233	circle
+67 "" ic black		0.551429 	0.684211	circle
+68 "" ic black		0.537143 	0.644338	circle
+69 "" ic black		0.594286 	0.888357	circle
+70 "" ic black		0.56 	0.76874	circle
+71 "" ic black		0.554286 	0.76874	circle
+72 "" ic black		0.55 	0.770335	circle
+73 "" ic black		0.567143 	0.896332	circle
+74 "" ic black		0.541429 	0.77193	circle
+75 "" ic black		0.558571 	0.939394	circle
+76 "" ic black		0.527143 	0.732057	circle
+77 "" ic black		0.534286 	0.858054	circle
+78 "" ic black		0.521429 	0.77512	circle
+79 "" ic black		0.511429 	0.692185	circle
+80 "" ic black		0.515714 	0.859649	circle
+81 "" ic black		0.504286 	0.650718	circle
+82 "" ic black		0.502857 	0.818182	circle
+83 "" ic black		0.497143 	0.861244	circle
+84 "" ic black		0.494286 	0.735247	circle
+85 "" ic black		0.485714 	0.859649	circle
+86 "" ic black		0.481429 	0.818182	circle
+87 "" ic black		0.475714 	0.818182	circle
+88 "" ic black		0.467143 	0.858054	circle
+89 "" ic black		0.482857 	0.649123	circle
+90 "" ic black		0.454286 	0.856459	circle
+91 "" ic black		0.46 	0.773525	circle
+92 "" ic black		0.461429 	0.730463	circle
+93 "" ic black		0.442857 	0.811802	circle
+94 "" ic black		0.445714 	0.770335	circle
+95 "" ic black		0.485714 	0.564593	circle
+96 "" ic black		0.445714 	0.727273	circle
+97 "" ic black		0.452857 	0.685805	circle
+98 "" ic black		0.427143 	0.763955	circle
+99 "" ic black		0.422857 	0.763955	circle
+100 "" ic black		0.43 	0.722488	circle
+101 "" ic black		0.44 	0.681021	circle
+102 "" ic black		0.382857 	0.835726	circle
+103 "" ic black		0.405714 	0.755981	circle
+104 "" ic black		0.4 	0.754386	circle
+105 "" ic black		0.395714 	0.751196	circle
+106 "" ic black		0.375714 	0.787879	circle
+107 "" ic black		0.354286 	0.821372	circle
+108 "" ic black		0.312857 	0.893142	circle
+109 "" ic black		0.378571 	0.741627	circle
+110 "" ic black		0.337143 	0.811802	circle
+111 "" ic black		0.39 	0.700159	circle
+112 "" ic black		0.367143 	0.733652	circle
+113 "" ic black		0.301429 	0.835726	circle
+114 "" ic black		0.358571 	0.727273	circle
+115 "" ic black		0.332857 	0.759171	circle
+116 "" ic black		0.418571 	0.620415	circle
+117 "" ic black		0.392857 	0.652313	circle
+118 "" ic black		0.344286 	0.716108	circle
+119 "" ic black		0.242857 	0.84051	circle
+120 "" ic black		0.435714 	0.582137	circle
+121 "" ic black		0.332857 	0.704944	circle
+122 "" ic black		0.251429 	0.792663	circle
+123 "" ic black		0.325714 	0.69697	circle
+124 "" ic black		0.241429 	0.783094	circle
+125 "" ic black		0.291429 	0.719298	circle
+126 "" ic black		0.344286 	0.657097	circle
+127 "" ic black		0.255714 	0.738437	circle
+128 "" ic black		0.338571 	0.650718	circle
+129 "" ic black		0.335714 	0.647528	circle
+130 "" ic black		0.302857 	0.669856	circle
+131 "" ic black		0.21 	0.741627	circle
+132 "" ic black		0.267143 	0.685805	circle
+133 "" ic black		0.232857 	0.704944	circle
+134 "" ic black		0.261429 	0.676236	circle
+135 "" ic black		0.321429 	0.625199	circle
+136 "" ic black		0.255714 	0.665072	circle
+137 "" ic black		0.317143 	0.617225	circle
+138 "" ic black		0.25 	0.655502	circle
+139 "" ic black		0.312857 	0.60925	circle
+140 "" ic black		0.244286 	0.644338	circle
+141 "" ic black		0.275714 	0.620415	circle
+142 "" ic black		0.308571 	0.598086	circle
+143 "" ic black		0.271429 	0.610845	circle
+144 "" ic black		0.374286 	0.556619	circle
+145 "" ic black		0.338571 	0.569378	circle
+146 "" ic black		0.265714 	0.596491	circle
+147 "" ic black		0.264286 	0.590112	circle
+148 "" ic black		0.227143 	0.598086	circle
+149 "" ic black		0.261429 	0.580542	circle
+150 "" ic black		0.224286 	0.586922	circle
+151 "" ic black		0.222857 	0.580542	circle
+152 "" ic black		0.221429 	0.575758	circle
+153 "" ic black		0.11 	0.596491	circle
+154 "" ic black		0.218571 	0.562998	circle
+155 "" ic black		0.181429 	0.564593	circle
+156 "" ic black		0.254286 	0.54386	circle
+157 "" ic black		0.178571 	0.551834	circle
+158 "" ic black		0.252857 	0.53429	circle
+159 "" ic black		0.214286 	0.532695	circle
+160 "" ic black		0.251429 	0.523126	circle
+161 "" ic black		0.251429 	0.518341	circle
+162 "" ic black		0.251429 	0.511962	circle
+163 "" ic black		0.212857 	0.508772	circle
+164 "" ic black		0.212857 	0.502392	circle
+165 "" ic black		0.175714 	0.496013	circle
+166 "" ic black		0.138571 	0.488038	circle
+167 "" ic black		0.212857 	0.483254	circle
+168 "" ic black		0.251429 	0.480064	circle
+169 "" ic black		0.177143 	0.467305	circle
+170 "" ic black		0.214286 	0.46571	circle
+171 "" ic black		0.178571 	0.454545	circle
+172 "" ic black		0.215714 	0.452951	circle
+173 "" ic black		0.217143 	0.446571	circle
+174 "" ic black		0.328571 	0.464115	circle
+175 "" ic black		0.367143 	0.4689	circle
+176 "" ic black		0.182857 	0.419458	circle
+177 "" ic black		0.221429 	0.422648	circle
+178 "" ic black		0.15 	0.395534	circle
+179 "" ic black		0.26 	0.422648	circle
+180 "" ic black		0.261429 	0.417863	circle
+181 "" ic black		0.155714 	0.373206	circle
+182 "" ic black		0.3 	0.421053	circle
+183 "" ic black		0.231429 	0.38756	circle
+184 "" ic black		0.232857 	0.382775	circle
+185 "" ic black		0.27 	0.392344	circle
+186 "" ic black		0.237143 	0.371611	circle
+187 "" ic black		0.274286 	0.382775	circle
+188 "" ic black		0.31 	0.397129	circle
+189 "" ic black		0.311429 	0.392344	circle
+190 "" ic black		0.214286 	0.328549	circle
+191 "" ic black		0.217143 	0.323764	circle
+192 "" ic black		0.252857 	0.338118	circle
+193 "" ic black		0.222857 	0.311005	circle
+194 "" ic black		0.225714 	0.304625	circle
+195 "" ic black		0.292857 	0.346093	circle
+196 "" ic black		0.264286 	0.317384	circle
+197 "" ic black		0.237143 	0.288676	circle
+198 "" ic black		0.24 	0.282297	circle
+199 "" ic black		0.244286 	0.277512	circle
+200 "" ic black		0.307143 	0.323764	circle
+201 "" ic black		0.367143 	0.374801	circle
+202 "" ic black		0.227143 	0.232855	circle
+203 "" ic black		0.288571 	0.283892	circle
+204 "" ic black		0.264286 	0.250399	circle
+205 "" ic black		0.348571 	0.333333	circle
+206 "" ic black		0.325714 	0.301435	circle
+207 "" ic black		0.277143 	0.236045	circle
+208 "" ic black		0.282857 	0.23126	circle
+209 "" ic black		0.385714 	0.354067	circle
+210 "" ic black		0.315714 	0.253589	circle
+211 "" ic black		0.295714 	0.216906	circle
+212 "" ic black		0.324286 	0.247209	circle
+213 "" ic black		0.305714 	0.208931	circle
+214 "" ic black		0.332857 	0.239234	circle
+215 "" ic black		0.401429 	0.339713	circle
+216 "" ic black		0.342857 	0.232855	circle
+217 "" ic black		0.447143 	0.406699	circle
+218 "" ic black		0.312857 	0.15311	circle
+219 "" ic black		0.394286 	0.295056	circle
+220 "" ic black		0.342857 	0.183413	circle
+221 "" ic black		0.331429 	0.141946	circle
+222 "" ic black		0.387143 	0.251994	circle
+223 "" ic black		0.391429 	0.248804	circle
+224 "" ic black		0.365714 	0.170654	circle
+225 "" ic black		0.355714 	0.129187	circle
+226 "" ic black		0.377143 	0.164274	circle
+227 "" ic black		0.382857 	0.162679	circle
+228 "" ic black		0.401429 	0.199362	circle
+229 "" ic black		0.418571 	0.23764	circle
+230 "" ic black		0.468571 	0.395534	circle
+231 "" ic black		0.417143 	0.192982	circle
+232 "" ic black		0.421429 	0.191388	circle
+233 "" ic black		0.445714 	0.271132	circle
+234 "" ic black		0.458571 	0.311005	circle
+235 "" ic black		0.445714 	0.22807	circle
+236 "" ic black		0.435714 	0.145136	circle
+237 "" ic black		0.428571 	0.0606061	circle
+238 "" ic black		0.465714 	0.266348	circle
+239 "" ic black		0.475714 	0.307815	circle
+240 "" ic black		0.46 	0.140351	circle
+241 "" ic black		0.462857 	0.0972887	circle
+242 "" ic black		0.488571 	0.347687	circle
+243 "" ic black		0.484286 	0.221691	circle
+244 "" ic black		0.491429 	0.30622	circle
+245 "" ic black		0.49 	0.0956938	circle
+246 "" ic black		0.497143 	0.137161	circle
+247 "" ic black		0.502857 	0.263158	circle
+248 "" ic black		0.508571 	0.180223	circle
+249 "" ic black		0.512857 	0.221691	circle
+250 "" ic black		0.522857 	0.138756	circle
+251 "" ic black		0.532857 	0.0972887	circle
+252 "" ic black		0.522857 	0.264753	circle
+253 "" ic black		0.527143 	0.266348	circle
+254 "" ic black		0.558571 	0.0590112	circle
+255 "" ic black		0.552857 	0.143541	circle
+256 "" ic black		0.56 	0.143541	circle
+257 "" ic black		0.542857 	0.269537	circle
+258 "" ic black		0.538571 	0.311005	circle
+259 "" ic black		0.55 	0.271132	circle
+260 "" ic black		0.544286 	0.3126	circle
+261 "" ic black		0.568571 	0.232855	circle
+262 "" ic black		0.584286 	0.194577	circle
+263 "" ic black		0.542857 	0.355662	circle
+264 "" ic black		0.594286 	0.197767	circle
+265 "" ic black		0.612857 	0.161085	circle
+266 "" ic black		0.632857 	0.124402	circle
+267 "" ic black		0.567143 	0.320574	circle
+268 "" ic black		0.615714 	0.207337	circle
+269 "" ic black		0.635714 	0.172249	circle
+270 "" ic black		0.641429 	0.175439	circle
+271 "" ic black		0.664286 	0.140351	circle
+272 "" ic black		0.617143 	0.255183	circle
+273 "" ic black		0.658571 	0.185008	circle
+274 "" ic black		0.664286 	0.188198	circle
+275 "" ic black		0.55 	0.406699	circle
+276 "" ic black		0.634286 	0.266348	circle
+277 "" ic black		0.658571 	0.23445	circle
+278 "" ic black		0.598571 	0.341308	circle
+279 "" ic black		0.578571 	0.376396	circle
+280 "" ic black		0.717143 	0.177033	circle
+281 "" ic black		0.63 	0.314195	circle
+282 "" ic black		0.68 	0.251994	circle
+283 "" ic black		0.734286 	0.192982	circle
+284 "" ic black		0.664286 	0.291866	circle
+285 "" ic black		0.718571 	0.232855	circle
+286 "" ic black		0.645714 	0.328549	circle
+287 "" ic black		0.701429 	0.272727	circle
+288 "" ic black		0.624286 	0.365231	circle
+289 "" ic black		0.708571 	0.282297	circle
+290 "" ic black		0.712857 	0.285486	circle
+291 "" ic black		0.715714 	0.290271	circle
+292 "" ic black		0.748571 	0.267943	circle
+293 "" ic black		0.752857 	0.274322	circle
+294 "" ic black		0.697143 	0.330144	circle
+295 "" ic black		0.668571 	0.360447	circle
+296 "" ic black		0.732857 	0.314195	circle
+297 "" ic black		0.642857 	0.39075	circle
+298 "" ic black		0.707143 	0.347687	circle
+299 "" ic black		0.678571 	0.374801	circle
+300 "" ic black		0.744286 	0.334928	circle
+301 "" ic black		0.682857 	0.382775	circle
+302 "" ic black		0.817143 	0.30622	circle
+303 "" ic black		0.72 	0.371611	circle
+304 "" ic black		0.755714 	0.357257	circle
+305 "" ic black		0.69 	0.398724	circle
+306 "" ic black		0.691429 	0.401914	circle
+307 "" ic black		0.865714 	0.323764	circle
+308 "" ic black		0.52 	0.489633	circle
+309 "" ic black		0.731429 	0.400319	circle
+310 "" ic black		0.874286 	0.347687	circle
+311 "" ic black		0.805714 	0.382775	circle
+312 "" ic black		0.664286 	0.440191	circle
+313 "" ic black		0.772857 	0.408293	circle
+314 "" ic black		0.884286 	0.38118	circle
+315 "" ic black		0.74 	0.430622	circle
+316 "" ic black		0.704286 	0.444976	circle
+317 "" ic black		0.815714 	0.422648	circle
+318 "" ic black		0.78 	0.438596	circle
+319 "" ic black		0.744286 	0.451356	circle
+320 "" ic black		0.781429 	0.449761	circle
+321 "" ic black		0.782857 	0.45614	circle
+322 "" ic black		0.782857 	0.46252	circle
+323 "" ic black		0.784286 	0.4689	circle
+324 "" ic black		0.784286 	0.475279	circle
+325 "" ic black		0.634286 	0.491228	circle
+326 "" ic black		0.785714 	0.486443	circle
+327 "" ic black		0.785714 	0.492823	circle
 *Arcs 
-1 3 1 c black
-2 4 1 c black
-3 4 1 c black
+1 69 1 c black
+1 162 1 c black
+1 186 1 c black
+1 196 1 c black
+1 295 1 c black
+2 23 1 c black
+2 94 1 c black
+2 143 1 c black
+2 283 1 c black
+3 24 1 c black
+3 43 1 c black
+3 176 1 c black
+4 41 1 c black
+4 316 1 c black
+5 170 1 c black
+6 129 1 c black
+6 284 1 c black
+7 70 1 c black
+7 171 1 c black
+7 216 1 c black
+8 69 1 c black
+8 92 1 c black
+9 44 1 c black
+9 234 1 c black
+9 237 1 c black
+9 242 1 c black
+9 247 1 c black
+10 188 1 c black
+10 300 1 c black
+11 134 1 c black
+11 172 1 c black
+11 200 1 c black
+11 203 1 c black
+12 25 1 c black
+12 123 1 c black
+12 163 1 c black
+12 186 1 c black
+12 220 1 c black
+12 249 1 c black
+13 140 1 c black
+13 184 1 c black
+13 271 1 c black
+14 167 1 c black
+15 146 1 c black
+15 158 1 c black
+15 214 1 c black
+15 278 1 c black
+15 298 1 c black
+15 316 1 c black
+16 136 1 c black
+16 158 1 c black
+16 299 1 c black
+17 79 1 c black
+17 144 1 c black
+17 222 1 c black
+18 40 1 c black
+18 41 1 c black
+18 167 1 c black
+18 219 1 c black
+18 232 1 c black
+19 51 1 c black
+19 126 1 c black
+19 274 1 c black
+19 276 1 c black
+20 62 1 c black
+20 66 1 c black
+20 162 1 c black
+20 175 1 c black
+20 258 1 c black
+20 293 1 c black
+21 14 1 c black
+21 84 1 c black
+21 227 1 c black
+22 45 1 c black
+22 105 1 c black
+22 244 1 c black
+22 296 1 c black
+22 302 1 c black
+22 307 1 c black
+23 31 1 c black
+23 80 1 c black
+23 90 1 c black
+23 117 1 c black
+24 83 1 c black
+24 263 1 c black
+25 60 1 c black
+25 178 1 c black
+26 40 1 c black
+26 63 1 c black
+26 102 1 c black
+26 307 1 c black
+27 42 1 c black
+27 53 1 c black
+27 203 1 c black
+28 58 1 c black
+28 212 1 c black
+28 232 1 c black
+28 270 1 c black
+28 289 1 c black
+29 234 1 c black
+29 319 1 c black
+30 36 1 c black
+30 42 1 c black
+30 74 1 c black
+30 78 1 c black
+30 100 1 c black
+30 270 1 c black
+30 287 1 c black
+31 107 1 c black
+31 175 1 c black
+31 291 1 c black
+32 184 1 c black
+32 301 1 c black
+32 308 1 c black
+32 319 1 c black
+33 214 1 c black
+33 228 1 c black
+33 303 1 c black
+34 52 1 c black
+34 58 1 c black
+34 181 1 c black
+34 267 1 c black
+35 71 1 c black
+35 185 1 c black
+36 5 1 c black
+36 43 1 c black
+36 78 1 c black
+36 106 1 c black
+36 142 1 c black
+36 179 1 c black
+36 300 1 c black
+37 118 1 c black
+37 191 1 c black
+37 207 1 c black
+38 20 1 c black
+38 95 1 c black
+38 162 1 c black
+39 306 1 c black
+40 142 1 c black
+40 230 1 c black
+41 327 1 c black
+42 129 1 c black
+42 281 1 c black
+43 127 1 c black
+43 167 1 c black
+43 286 1 c black
+44 33 1 c black
+45 72 1 c black
+45 79 1 c black
+45 117 1 c black
+45 118 1 c black
+45 167 1 c black
+45 196 1 c black
+45 297 1 c black
+46 22 1 c black
+46 178 1 c black
+46 269 1 c black
+47 54 1 c black
+47 212 1 c black
+47 228 1 c black
+47 239 1 c black
+48 192 1 c black
+48 193 1 c black
+48 259 1 c black
+49 98 1 c black
+49 160 1 c black
+49 205 1 c black
+49 313 1 c black
+49 315 1 c black
+50 149 1 c black
+50 196 1 c black
+50 286 1 c black
+50 306 1 c black
+51 3 1 c black
+51 42 1 c black
+52 28 1 c black
+52 58 1 c black
+52 130 1 c black
+52 326 1 c black
+53 29 1 c black
+53 45 1 c black
+53 129 1 c black
+54 258 1 c black
+54 265 1 c black
+54 319 1 c black
+55 189 1 c black
+55 245 1 c black
+55 279 1 c black
+56 62 1 c black
+56 135 1 c black
+56 136 1 c black
+56 214 1 c black
+57 187 1 c black
+57 203 1 c black
+57 221 1 c black
+57 247 1 c black
+58 60 1 c black
+58 150 1 c black
+58 300 1 c black
+59 50 1 c black
+59 64 1 c black
+59 269 1 c black
+60 123 1 c black
+60 166 1 c black
+61 32 1 c black
+61 46 1 c black
+61 314 1 c black
+62 220 1 c black
+62 253 1 c black
+62 273 1 c black
+63 137 1 c black
+63 193 1 c black
+63 231 1 c black
+63 254 1 c black
+64 12 1 c black
+64 33 1 c black
+64 316 1 c black
+65 121 1 c black
+65 278 1 c black
+66 86 1 c black
+66 218 1 c black
+66 248 1 c black
+67 71 1 c black
+67 149 1 c black
+67 218 1 c black
+67 270 1 c black
+67 297 1 c black
+67 306 1 c black
+68 16 1 c black
+68 64 1 c black
+68 184 1 c black
+68 211 1 c black
+68 236 1 c black
+68 260 1 c black
+68 284 1 c black
+69 287 1 c black
+70 74 1 c black
+70 99 1 c black
+70 269 1 c black
+70 303 1 c black
+71 209 1 c black
+71 234 1 c black
+71 287 1 c black
+71 323 1 c black
+72 62 1 c black
+72 66 1 c black
+72 199 1 c black
+72 222 1 c black
+73 327 1 c black
+74 15 1 c black
+74 71 1 c black
+74 240 1 c black
+74 316 1 c black
+76 70 1 c black
+76 87 1 c black
+76 192 1 c black
+76 259 1 c black
+76 297 1 c black
+77 50 1 c black
+77 278 1 c black
+78 89 1 c black
+78 123 1 c black
+78 158 1 c black
+78 171 1 c black
+79 50 1 c black
+79 76 1 c black
+79 102 1 c black
+79 221 1 c black
+79 238 1 c black
+79 311 1 c black
+80 194 1 c black
+81 38 1 c black
+81 61 1 c black
+81 94 1 c black
+81 220 1 c black
+81 262 1 c black
+81 279 1 c black
+81 301 1 c black
+82 159 1 c black
+82 173 1 c black
+82 249 1 c black
+83 147 1 c black
+83 207 1 c black
+84 15 1 c black
+84 32 1 c black
+84 101 1 c black
+84 243 1 c black
+84 273 1 c black
+85 69 1 c black
+85 301 1 c black
+86 9 1 c black
+86 113 1 c black
+86 174 1 c black
+87 81 1 c black
+87 309 1 c black
+87 320 1 c black
+88 137 1 c black
+88 250 1 c black
+89 17 1 c black
+89 21 1 c black
+89 70 1 c black
+89 145 1 c black
+89 147 1 c black
+89 160 1 c black
+89 221 1 c black
+90 113 1 c black
+90 216 1 c black
+91 68 1 c black
+91 113 1 c black
+91 186 1 c black
+91 237 1 c black
+92 47 1 c black
+92 49 1 c black
+92 68 1 c black
+92 271 1 c black
+92 311 1 c black
+93 144 1 c black
+93 150 1 c black
+93 323 1 c black
+94 17 1 c black
+94 204 1 c black
+94 215 1 c black
+95 10 1 c black
+95 17 1 c black
+95 39 1 c black
+95 145 1 c black
+95 160 1 c black
+95 243 1 c black
+95 287 1 c black
+95 321 1 c black
+96 50 1 c black
+96 132 1 c black
+96 143 1 c black
+96 239 1 c black
+96 287 1 c black
+97 2 1 c black
+97 27 1 c black
+97 204 1 c black
+97 207 1 c black
+97 249 1 c black
+97 301 1 c black
+98 28 1 c black
+98 127 1 c black
+98 191 1 c black
+98 262 1 c black
+99 26 1 c black
+99 49 1 c black
+99 105 1 c black
+99 303 1 c black
+100 38 1 c black
+100 76 1 c black
+100 95 1 c black
+100 237 1 c black
+100 279 1 c black
+101 8 1 c black
+101 52 1 c black
+101 83 1 c black
+101 119 1 c black
+101 307 1 c black
+101 316 1 c black
+102 214 1 c black
+102 301 1 c black
+103 64 1 c black
+103 105 1 c black
+103 284 1 c black
+103 289 1 c black
+104 60 1 c black
+104 65 1 c black
+104 128 1 c black
+104 150 1 c black
+105 31 1 c black
+105 285 1 c black
+105 305 1 c black
+105 318 1 c black
+106 182 1 c black
+106 229 1 c black
+107 120 1 c black
+107 193 1 c black
+109 139 1 c black
+109 299 1 c black
+109 311 1 c black
+110 67 1 c black
+110 206 1 c black
+111 57 1 c black
+111 82 1 c black
+111 97 1 c black
+111 196 1 c black
+111 237 1 c black
+112 178 1 c black
+112 207 1 c black
+112 234 1 c black
+112 324 1 c black
+113 252 1 c black
+114 85 1 c black
+114 159 1 c black
+114 315 1 c black
+114 327 1 c black
+115 86 1 c black
+115 92 1 c black
+115 256 1 c black
+116 32 1 c black
+116 67 1 c black
+116 83 1 c black
+116 262 1 c black
+116 266 1 c black
+116 282 1 c black
+116 297 1 c black
+117 35 1 c black
+117 120 1 c black
+117 128 1 c black
+117 143 1 c black
+117 176 1 c black
+117 244 1 c black
+118 176 1 c black
+118 229 1 c black
+118 288 1 c black
+118 321 1 c black
+120 13 1 c black
+120 41 1 c black
+120 44 1 c black
+120 67 1 c black
+120 110 1 c black
+120 230 1 c black
+120 237 1 c black
+120 276 1 c black
+121 6 1 c black
+121 27 1 c black
+121 74 1 c black
+121 182 1 c black
+122 155 1 c black
+123 46 1 c black
+123 104 1 c black
+123 280 1 c black
+123 311 1 c black
+124 204 1 c black
+125 11 1 c black
+125 150 1 c black
+125 305 1 c black
+126 134 1 c black
+126 152 1 c black
+126 154 1 c black
+126 174 1 c black
+126 306 1 c black
+127 155 1 c black
+127 194 1 c black
+128 22 1 c black
+128 103 1 c black
+128 160 1 c black
+128 306 1 c black
+128 309 1 c black
+129 97 1 c black
+129 114 1 c black
+129 174 1 c black
+129 290 1 c black
+129 293 1 c black
+130 10 1 c black
+130 102 1 c black
+130 198 1 c black
+130 308 1 c black
+131 327 1 c black
+132 153 1 c black
+132 191 1 c black
+132 259 1 c black
+133 160 1 c black
+133 217 1 c black
+134 46 1 c black
+134 239 1 c black
+134 316 1 c black
+135 15 1 c black
+135 162 1 c black
+135 220 1 c black
+135 320 1 c black
+136 46 1 c black
+136 172 1 c black
+136 221 1 c black
+137 43 1 c black
+137 127 1 c black
+137 152 1 c black
+137 178 1 c black
+137 262 1 c black
+138 12 1 c black
+138 163 1 c black
+138 222 1 c black
+139 5 1 c black
+139 38 1 c black
+139 52 1 c black
+139 202 1 c black
+139 226 1 c black
+140 180 1 c black
+140 208 1 c black
+140 222 1 c black
+141 79 1 c black
+141 133 1 c black
+141 162 1 c black
+141 186 1 c black
+142 4 1 c black
+142 74 1 c black
+142 91 1 c black
+142 101 1 c black
+142 143 1 c black
+143 51 1 c black
+143 65 1 c black
+143 198 1 c black
+143 280 1 c black
+144 11 1 c black
+144 69 1 c black
+144 90 1 c black
+144 165 1 c black
+144 171 1 c black
+144 194 1 c black
+144 259 1 c black
+145 112 1 c black
+145 169 1 c black
+145 174 1 c black
+145 302 1 c black
+145 315 1 c black
+145 317 1 c black
+146 72 1 c black
+146 114 1 c black
+146 172 1 c black
+146 231 1 c black
+147 72 1 c black
+147 207 1 c black
+147 279 1 c black
+147 302 1 c black
+148 23 1 c black
+148 217 1 c black
+148 323 1 c black
+149 107 1 c black
+149 125 1 c black
+149 199 1 c black
+149 290 1 c black
+150 81 1 c black
+150 136 1 c black
+150 211 1 c black
+151 215 1 c black
+151 220 1 c black
+151 323 1 c black
+152 36 1 c black
+152 93 1 c black
+152 206 1 c black
+154 12 1 c black
+154 44 1 c black
+154 53 1 c black
+155 31 1 c black
+155 240 1 c black
+156 71 1 c black
+156 87 1 c black
+156 93 1 c black
+156 288 1 c black
+157 198 1 c black
+157 256 1 c black
+158 70 1 c black
+158 149 1 c black
+158 196 1 c black
+158 315 1 c black
+159 81 1 c black
+159 182 1 c black
+159 205 1 c black
+160 3 1 c black
+160 144 1 c black
+160 146 1 c black
+160 153 1 c black
+161 75 1 c black
+161 134 1 c black
+161 214 1 c black
+161 308 1 c black
+162 14 1 c black
+162 94 1 c black
+162 111 1 c black
+162 239 1 c black
+163 102 1 c black
+163 151 1 c black
+164 179 1 c black
+164 192 1 c black
+164 275 1 c black
+165 69 1 c black
+165 247 1 c black
+166 201 1 c black
+167 4 1 c black
+167 138 1 c black
+167 247 1 c black
+168 19 1 c black
+168 49 1 c black
+168 118 1 c black
+168 325 1 c black
+169 195 1 c black
+169 227 1 c black
+170 10 1 c black
+170 94 1 c black
+170 155 1 c black
+171 13 1 c black
+171 241 1 c black
+172 57 1 c black
+172 60 1 c black
+172 298 1 c black
+173 126 1 c black
+173 147 1 c black
+173 310 1 c black
+174 3 1 c black
+174 34 1 c black
+174 146 1 c black
+174 223 1 c black
+174 286 1 c black
+174 302 1 c black
+175 28 1 c black
+175 46 1 c black
+175 137 1 c black
+175 189 1 c black
+175 227 1 c black
+175 244 1 c black
+175 279 1 c black
+176 68 1 c black
+176 270 1 c black
+177 29 1 c black
+177 167 1 c black
+177 306 1 c black
+178 140 1 c black
+179 90 1 c black
+179 174 1 c black
+179 241 1 c black
+179 310 1 c black
+180 1 1 c black
+180 192 1 c black
+180 275 1 c black
+180 311 1 c black
+181 281 1 c black
+182 9 1 c black
+182 109 1 c black
+182 144 1 c black
+182 191 1 c black
+182 277 1 c black
+183 5 1 c black
+183 62 1 c black
+183 298 1 c black
+184 136 1 c black
+184 141 1 c black
+184 263 1 c black
+185 6 1 c black
+185 139 1 c black
+185 262 1 c black
+185 264 1 c black
+186 113 1 c black
+186 203 1 c black
+186 223 1 c black
+187 98 1 c black
+187 134 1 c black
+187 276 1 c black
+187 278 1 c black
+188 8 1 c black
+188 9 1 c black
+188 13 1 c black
+188 225 1 c black
+188 266 1 c black
+189 2 1 c black
+189 79 1 c black
+189 142 1 c black
+189 191 1 c black
+189 200 1 c black
+190 267 1 c black
+190 306 1 c black
+191 58 1 c black
+191 202 1 c black
+192 157 1 c black
+192 255 1 c black
+192 315 1 c black
+193 28 1 c black
+193 92 1 c black
+194 226 1 c black
+194 234 1 c black
+195 13 1 c black
+195 55 1 c black
+195 213 1 c black
+195 311 1 c black
+196 6 1 c black
+196 133 1 c black
+196 206 1 c black
+197 63 1 c black
+197 151 1 c black
+198 98 1 c black
+199 94 1 c black
+199 272 1 c black
+200 62 1 c black
+200 159 1 c black
+200 170 1 c black
+200 202 1 c black
+201 84 1 c black
+201 94 1 c black
+201 119 1 c black
+201 194 1 c black
+201 264 1 c black
+201 308 1 c black
+202 298 1 c black
+203 130 1 c black
+203 192 1 c black
+203 264 1 c black
+204 129 1 c black
+204 173 1 c black
+205 2 1 c black
+205 75 1 c black
+205 134 1 c black
+205 136 1 c black
+205 266 1 c black
+206 27 1 c black
+206 245 1 c black
+206 248 1 c black
+206 293 1 c black
+207 105 1 c black
+207 284 1 c black
+208 73 1 c black
+208 149 1 c black
+209 7 1 c black
+209 22 1 c black
+209 33 1 c black
+209 99 1 c black
+209 159 1 c black
+209 227 1 c black
+210 154 1 c black
+210 215 1 c black
+210 230 1 c black
+211 35 1 c black
+211 69 1 c black
+212 67 1 c black
+212 103 1 c black
+212 173 1 c black
+213 287 1 c black
+213 312 1 c black
+214 170 1 c black
+214 172 1 c black
+214 259 1 c black
+215 18 1 c black
+215 28 1 c black
+215 88 1 c black
+215 243 1 c black
+215 246 1 c black
+216 15 1 c black
+216 30 1 c black
+216 96 1 c black
+217 49 1 c black
+217 71 1 c black
+217 72 1 c black
+217 225 1 c black
+217 234 1 c black
+217 253 1 c black
+217 256 1 c black
+217 283 1 c black
+218 27 1 c black
+219 56 1 c black
+219 141 1 c black
+219 188 1 c black
+219 269 1 c black
+219 314 1 c black
+220 147 1 c black
+220 159 1 c black
+221 282 1 c black
+222 158 1 c black
+222 205 1 c black
+222 216 1 c black
+222 286 1 c black
+223 44 1 c black
+223 103 1 c black
+223 169 1 c black
+223 322 1 c black
+224 102 1 c black
+224 304 1 c black
+225 5 1 c black
+226 243 1 c black
+226 288 1 c black
+227 73 1 c black
+227 254 1 c black
+228 129 1 c black
+228 215 1 c black
+228 281 1 c black
+229 25 1 c black
+229 29 1 c black
+229 129 1 c black
+229 278 1 c black
+230 102 1 c black
+230 139 1 c black
+230 168 1 c black
+230 184 1 c black
+230 186 1 c black
+230 196 1 c black
+230 198 1 c black
+230 199 1 c black
+231 28 1 c black
+231 75 1 c black
+231 127 1 c black
+232 32 1 c black
+232 53 1 c black
+232 197 1 c black
+233 132 1 c black
+233 144 1 c black
+233 159 1 c black
+233 206 1 c black
+233 301 1 c black
+234 131 1 c black
+234 159 1 c black
+234 167 1 c black
+234 173 1 c black
+234 315 1 c black
+234 317 1 c black
+235 62 1 c black
+235 188 1 c black
+235 262 1 c black
+235 288 1 c black
+236 214 1 c black
+236 278 1 c black
+238 5 1 c black
+238 73 1 c black
+238 117 1 c black
+238 149 1 c black
+238 156 1 c black
+239 154 1 c black
+239 172 1 c black
+239 179 1 c black
+239 180 1 c black
+239 296 1 c black
+239 314 1 c black
+240 12 1 c black
+240 162 1 c black
+241 265 1 c black
+242 39 1 c black
+242 43 1 c black
+242 44 1 c black
+242 82 1 c black
+242 178 1 c black
+242 204 1 c black
+242 256 1 c black
+243 22 1 c black
+243 142 1 c black
+243 147 1 c black
+243 283 1 c black
+244 27 1 c black
+244 37 1 c black
+244 127 1 c black
+244 162 1 c black
+244 219 1 c black
+244 279 1 c black
+245 238 1 c black
+246 147 1 c black
+246 161 1 c black
+247 108 1 c black
+247 117 1 c black
+247 118 1 c black
+247 235 1 c black
+247 307 1 c black
+248 50 1 c black
+248 123 1 c black
+248 147 1 c black
+249 17 1 c black
+249 164 1 c black
+249 177 1 c black
+249 202 1 c black
+250 158 1 c black
+250 177 1 c black
+251 49 1 c black
+252 1 1 c black
+252 59 1 c black
+252 108 1 c black
+252 163 1 c black
+252 220 1 c black
+253 32 1 c black
+253 48 1 c black
+253 60 1 c black
+253 63 1 c black
+253 72 1 c black
+255 182 1 c black
+255 316 1 c black
+256 73 1 c black
+256 257 1 c black
+257 1 1 c black
+257 123 1 c black
+257 135 1 c black
+257 196 1 c black
+257 219 1 c black
+258 87 1 c black
+258 108 1 c black
+258 206 1 c black
+258 271 1 c black
+258 277 1 c black
+258 312 1 c black
+259 64 1 c black
+259 188 1 c black
+259 211 1 c black
+259 241 1 c black
+260 71 1 c black
+260 93 1 c black
+260 101 1 c black
+260 199 1 c black
+260 215 1 c black
+260 323 1 c black
+261 2 1 c black
+261 206 1 c black
+261 267 1 c black
+261 316 1 c black
+262 24 1 c black
+262 186 1 c black
+262 217 1 c black
+263 21 1 c black
+263 66 1 c black
+263 77 1 c black
+263 116 1 c black
+263 250 1 c black
+263 303 1 c black
+263 320 1 c black
+264 113 1 c black
+264 122 1 c black
+264 292 1 c black
+265 113 1 c black
+265 313 1 c black
+266 87 1 c black
+267 6 1 c black
+267 27 1 c black
+267 92 1 c black
+267 127 1 c black
+267 228 1 c black
+267 293 1 c black
+268 129 1 c black
+268 152 1 c black
+268 320 1 c black
+269 29 1 c black
+269 66 1 c black
+270 132 1 c black
+270 199 1 c black
+271 6 1 c black
+272 71 1 c black
+272 157 1 c black
+272 263 1 c black
+272 281 1 c black
+273 41 1 c black
+273 187 1 c black
+274 4 1 c black
+274 54 1 c black
+275 1 1 c black
+275 12 1 c black
+275 36 1 c black
+275 129 1 c black
+275 219 1 c black
+275 220 1 c black
+275 305 1 c black
+275 317 1 c black
+276 40 1 c black
+276 59 1 c black
+276 110 1 c black
+276 303 1 c black
+277 43 1 c black
+277 167 1 c black
+277 291 1 c black
+278 21 1 c black
+278 147 1 c black
+278 162 1 c black
+278 272 1 c black
+278 285 1 c black
+279 54 1 c black
+279 68 1 c black
+279 150 1 c black
+279 292 1 c black
+279 295 1 c black
+279 300 1 c black
+279 301 1 c black
+280 288 1 c black
+281 3 1 c black
+281 13 1 c black
+281 31 1 c black
+281 174 1 c black
+281 209 1 c black
+282 61 1 c black
+282 267 1 c black
+282 268 1 c black
+283 125 1 c black
+284 76 1 c black
+284 79 1 c black
+284 116 1 c black
+284 169 1 c black
+285 111 1 c black
+285 262 1 c black
+286 55 1 c black
+286 110 1 c black
+286 116 1 c black
+286 242 1 c black
+286 258 1 c black
+287 162 1 c black
+287 164 1 c black
+287 249 1 c black
+288 24 1 c black
+288 74 1 c black
+288 112 1 c black
+288 115 1 c black
+288 164 1 c black
+288 198 1 c black
+289 3 1 c black
+289 193 1 c black
+289 288 1 c black
+290 152 1 c black
+290 225 1 c black
+290 315 1 c black
+291 107 1 c black
+291 185 1 c black
+291 307 1 c black
+292 125 1 c black
+292 163 1 c black
+293 243 1 c black
+293 315 1 c black
+294 26 1 c black
+294 109 1 c black
+294 218 1 c black
+294 225 1 c black
+295 18 1 c black
+295 75 1 c black
+295 126 1 c black
+295 174 1 c black
+295 293 1 c black
+296 108 1 c black
+296 142 1 c black
+296 169 1 c black
+297 13 1 c black
+297 63 1 c black
+297 136 1 c black
+297 143 1 c black
+297 171 1 c black
+297 197 1 c black
+298 180 1 c black
+298 187 1 c black
+298 272 1 c black
+298 310 1 c black
+299 62 1 c black
+299 127 1 c black
+299 136 1 c black
+299 235 1 c black
+299 313 1 c black
+300 188 1 c black
+300 253 1 c black
+300 327 1 c black
+301 105 1 c black
+301 115 1 c black
+301 185 1 c black
+301 258 1 c black
+301 313 1 c black
+302 205 1 c black
+303 56 1 c black
+303 91 1 c black
+303 191 1 c black
+303 234 1 c black
+304 39 1 c black
+304 268 1 c black
+304 320 1 c black
+305 34 1 c black
+305 38 1 c black
+305 155 1 c black
+305 229 1 c black
+305 242 1 c black
+306 14 1 c black
+306 18 1 c black
+306 52 1 c black
+306 58 1 c black
+306 243 1 c black
+308 18 1 c black
+308 73 1 c black
+308 76 1 c black
+308 101 1 c black
+308 117 1 c black
+308 119 1 c black
+308 158 1 c black
+308 202 1 c black
+308 221 1 c black
+309 35 1 c black
+309 123 1 c black
+309 320 1 c black
+311 188 1 c black
+311 257 1 c black
+312 12 1 c black
+312 33 1 c black
+312 39 1 c black
+312 231 1 c black
+312 235 1 c black
+312 315 1 c black
+313 4 1 c black
+313 219 1 c black
+315 171 1 c black
+315 210 1 c black
+315 260 1 c black
+315 284 1 c black
+316 23 1 c black
+316 33 1 c black
+316 120 1 c black
+316 129 1 c black
+316 136 1 c black
+317 102 1 c black
+317 120 1 c black
+318 20 1 c black
+318 215 1 c black
+318 285 1 c black
+319 19 1 c black
+319 56 1 c black
+319 144 1 c black
+319 289 1 c black
+320 18 1 c black
+320 231 1 c black
+320 249 1 c black
+321 167 1 c black
+321 194 1 c black
+321 262 1 c black
+322 56 1 c black
+322 78 1 c black
+322 270 1 c black
+323 43 1 c black
+323 87 1 c black
+323 276 1 c black
+324 136 1 c black
+324 159 1 c black
+324 204 1 c black
+325 81 1 c black
+325 86 1 c black
+325 95 1 c black
+325 109 1 c black
+325 137 1 c black
+325 158 1 c black
+325 287 1 c black
+326 21 1 c black
+326 168 1 c black
+326 251 1 c black
+327 18 1 c black
+327 72 1 c black
+327 150 1 c black
 *Edges 
+2 2 1 c black
+3 3 1 c black
+21 21 1 c black
+23 198 1 c black
+25 106 1 c black
+54 54 1 c black
+80 215 1 c black
+94 259 1 c black
+95 308 1 c black
+109 163 1 c black
+135 135 1 c black
+278 278 1 c black
+309 313 1 c black

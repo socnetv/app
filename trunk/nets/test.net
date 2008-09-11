@@ -1,28 +1,30 @@
-*Network 
-*Vertices 9
-1 "makis" ic gold		0.144286 	0.299841	circle
-2 "2" ic gold		0.22 	0.314195	box
-3 "3" ic gold		0.24 	0.483254	box
-4 "4" ic gold		0.537143 	0.821372	box
-5 "Makis" ic aliceblue		0.124286 	0.221691	box
-6 "6" ic gold		0.29 	0.837321	box
-7 "7" ic gold		0.791429 	0.899522	box
-8 "8" ic gold		0.617143 	0.574163	box
-9 "9" ic gold		0.24 	0.786284	box
-*Arcs 
-1 2 1 c black
-1 6 1 c black
-2 8 1 c black
-3 1 1 c black
-3 2 1 c black
-3 4 1 c black
-3 6 1 c black
-4 5 1 c black
-5 1 1 c black
-5 2 1 c black
-6 7 1 c black
-7 1 1 c black
-7 8 1 c black
-8 4 1 c black
-9 1 1 c black
-*Edges 
+*Vertices    131
+     1 "Bavelas-48"                             0.5758    0.5449
+     2 "Leavitt-49"                             0.7038    0.2600
+     3 "Smith..-50"                             0.6095    0.2242
+     4 "Bavelas-50"                             0.5709    0.5247
+     5 "Smith..-51"                             0.3866    0.1981
+     6 "Leavitt-51"                             0.5076    0.4997
+     7 "Guetzko-51"                             0.2414    0.7535
+     8 "BavelaB-51"                             0.6117    0.3027
+     9 "HeiseM.-51"                             0.4924    0.5336
+    10 "Luce...-51"                             0.1269    0.6331
+    11 "ChrisLM-52"                             0.3950    0.5333
+    12 "Shaw...-53"                             0.6785    0.6607
+    13 "--- 13 -)"                              0.7607    0.8008
+    14 "DeSoto.-53"                             0.6131    0.8984
+    15 "--- 15 -)"                              0.2401    0.7372
+    16 "Hirota.-53"                             0.6838    0.4809
+    17 "Rogge..-53"                             0.2275    0.5311
+    18 "MacyCL.-53"                             0.4870    0.3726
+    19 "LuceMCH-53"                             0.3699    0.5973
+    20 "Shelly.-53"                             0.6031    0.6948
+    21 "GilchSW-54"                             0.4491    0.6879
+    22 "Shaw...B54"                             0.4406    0.5080
+    23 "Shaw...A54"                             0.5380    0.4378
+    24 "Shaw...C54"                             0.4480    0.5593
+*Arcs
+      2      1       1
+      3      2       1
+      5      2       1
+*Edges
