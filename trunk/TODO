@@ -5,6 +5,7 @@ TODO-> Transform actors to links //COMMENTED OUT
 --FIXME: GraphML files may crash SocNetV.
 --FIXME: isSymmetric not functioning (check a-symmetry.net)
 --FIXME: When many lines intersect, right-click > removeLink may remove wrong link!
+--FIXME: Pajek files may offer adjacency matrix instead lists of links 
 
 --FIXED: Zoom in and out via mouse wheel is smoother.
 --FIXED: Nodes (triangles, diamonds) resize as they should.

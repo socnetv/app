@@ -164,11 +164,13 @@ int Parser::loadPajek(){
 						if (lineElement[c] == "ic") { 
 							//the colourname is at c+1 position.
 							nodeColor=lineElement[c+1];
+							
 							fileContainsNodeColors=TRUE;
 							break;
 						}
 					}
 					qDebug()<<"nodeColor:" << nodeColor;
+					if (nodeColor.contains (".") )  nodeColor=initNodeColor;
 				}
 				else { //there is no nodeColor. Use the default
 					qDebug("No nodeColor");
@@ -180,7 +182,9 @@ int Parser::loadPajek(){
 				if ( str.contains(".",Qt::CaseInsensitive) ) { 
 					for (register int c=0; c< lineElement.count(); c++)   {
 						temp=lineElement[c];
-						if ( (coordIndex=temp.indexOf(".", Qt::CaseInsensitive) ) )  {	
+						qDebug( temp.toAscii());
+						if ((coordIndex=temp.indexOf(".", Qt::CaseInsensitive)) != -1 ){ 	
+							if (lineElement[c-1] == "ic" ) continue;  //pajek declares colors with numbers!
 							if ( !temp[coordIndex-1].isDigit()) continue;
 							qDebug ("coords: " + temp.toAscii() + " " +lineElement[c+1].toAscii());
 							randX=temp.toDouble(&check1);
@@ -268,6 +272,7 @@ int Parser::loadPajek(){
 					colorIndex=lineElement.indexOf( QRegExp("[c]"), 0 )  +1;
 					if (colorIndex >= lineElement.count()) linkColor=initLinkColor;
 					else 	linkColor=lineElement [ colorIndex ];
+					if (linkColor.contains (".") )  linkColor=initLinkColor;
 					qDebug()<< " current color "<< linkColor;
  				}
 				else  {
