@@ -2135,6 +2135,7 @@ void MainWindow::slotViewAdjacencyMatrix(){
 	Link creation is controlled by a user specified possibility.
 */
 void MainWindow::slotCreateUniformRandomNetwork(){
+	bool ok;
 	statusBar()->showMessage("You have selected to create a random network. ", statusBarDuration);
 	aNodes=( QInputDialog::getInteger(this, "Create random network", tr("Number of nodes:"),1, 1, 3000, 1, &ok ) ) ;
 	if (!ok) { 
@@ -2147,7 +2148,7 @@ void MainWindow::slotCreateUniformRandomNetwork(){
 		return;
 	}
 	statusBar()->showMessage("Erasing any existing network. ", statusBarDuration);
-	bool ok;
+
 	initNet();  
 	makeThingsLookRandom();  
 	statusBar()->showMessage(tr("Creating uniform random network. Please wait... ") ,statusBarDuration);
@@ -2185,9 +2186,6 @@ void MainWindow::slotCreateConnectedRandomNetwork() {
 */
 void MainWindow::slotCreateSameDegreeRandomNetwork(){
 	bool ok;
-	statusBar()->showMessage("Erasing any existing network. ", statusBarDuration);
-	initNet();  
-	makeThingsLookRandom();  
 	statusBar()->showMessage("You have selected to create a pseudo-random network where each node has the same degree. ", statusBarDuration);
 	aNodes=( QInputDialog::getInteger(this, "Create same degree network", tr("Number of nodes:"),1, 1, 3000, 1, &ok ) ) ;
 	if (!ok) { 
@@ -2199,6 +2197,9 @@ void MainWindow::slotCreateSameDegreeRandomNetwork(){
 		QMessageBox::information(this, "Error",tr(" Sorry. I cannot create such a network. Links must be even number"), "OK",0);
 		return;
 	}
+	statusBar()->showMessage("Erasing any existing network. ", statusBarDuration);
+	initNet();  
+	makeThingsLookRandom();  
 	statusBar()->showMessage("Creating a pseudo-random network where each node has the same degree... ", statusBarDuration);
 
 	activeGraph.createSameDegreeRandomNetwork (aNodes, degree);
@@ -2241,9 +2242,6 @@ void MainWindow::slotCreateGaussianRandomNetwork(){
 */
 void MainWindow::slotCreatePhysicistLatticeNetwork(){
 	bool ok;
-	statusBar()->showMessage("Erasing any existing network. ", statusBarDuration);
-	initNet();  
-	makeThingsLookRandom();  
 	statusBar()->showMessage("You have selected to create a physicist's lattice network. ", statusBarDuration);
 	aNodes=( QInputDialog::getInteger(this, "Create physicist's lattice", tr("Number of nodes:"),1, 1, 3000, 1, &ok ) ) ;
 	if (!ok) { 
@@ -2255,6 +2253,11 @@ void MainWindow::slotCreatePhysicistLatticeNetwork(){
 		QMessageBox::information(this, "Error",tr(" Sorry. I cannot create such a network. Links must be even number"), "OK",0);
 		return;
 	}
+
+
+	statusBar()->showMessage("Erasing any existing network. ", statusBarDuration);
+	initNet();  
+	makeThingsLookRandom();  
 	statusBar()->showMessage("Creating physicist's lattice network. Please wait...", statusBarDuration);
 	double x0=scene->width()/2.0;
 	double y0=scene->height()/2.0;
