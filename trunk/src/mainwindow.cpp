@@ -546,11 +546,13 @@ void MainWindow::initActions(){
 	connect(levelInformationalLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutLevelCentralityInformational()));
 
 	springLayoutAct= new QAction(tr("Spring Embedder"), this);
+	springLayoutAct->setShortcut(tr("Ctrl+1"));
 	springLayoutAct->setStatusTip(tr("This model substitutes nodes and edges with charged balls and connecting springs, respectively.	The algorithm continues until the system retains an equilibrium state in which all forces cancel each other."));
 	springLayoutAct->setWhatsThis(tr("Spring Embedder Layout\n\n Repositions all nodes according to a model that substitutes nodes and edges with charged balls and connecting springs, respectively. The algorithm continues until the system retains its equilibrium state where all forces cancel each other."));
 	connect(springLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutSpringEmbedder()));
 
 	FRLayoutAct= new QAction( tr("Fruchterman-Reingold"),	this);
+	FRLayoutAct->setShortcut(tr("Ctrl+2"));
 	FRLayoutAct->setEnabled(FALSE);
 	FRLayoutAct->setStatusTip(tr("Repelling forces between all nodes, and attracting forces between adjacent nodes."));
 	FRLayoutAct->setWhatsThis(tr("Fruchterman-Reingold Layout\n\n Repositions all nodes according to a model in which	repelling forces are used between every pair of nodes, while attracting forces are used only between adjacent nodes. The algorithm continues until the system retains its equilibrium state where all forces cancel each other."));
@@ -571,6 +573,7 @@ void MainWindow::initActions(){
 	zoomOutAct->setWhatsThis(tr("Zoom out.\n\nZooms out. What else did you expect?"));
 
 	nodeSizeProportionalEdgesAct= new QAction(tr("NodeSize = F (OutDegree)"), this);
+	nodeSizeProportionalEdgesAct->setShortcut(tr("Ctrl+3"));
 	nodeSizeProportionalEdgesAct->setStatusTip(tr("Changes the size of nodes according to their out edges."));
 	nodeSizeProportionalEdgesAct->setWhatsThis(tr("NodeSize = F (OutDegree) \n\n Adjusts the size of each node according to their out-edges (OutDegree). The more edges a node has, the bigger will appear..."));
 	nodeSizeProportionalEdgesAct->setCheckable(true);
