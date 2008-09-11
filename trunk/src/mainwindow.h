@@ -1,7 +1,7 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser
- version: 0.46
- Written in Qt 4.4 with KDevelop   
+ version: 0.47
+ Written in Qt 4.4
  
                          mainwindow.h  -  description
                              -------------------
@@ -38,7 +38,7 @@
 #include <utility> //declares pair construct
 #include <list>
 #include <vector>
- #include <QSpinBox>
+#include <QSpinBox>
 #include "graph.h"
 
 

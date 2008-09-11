@@ -1,6 +1,6 @@
 /****************************************************************************
  SocNetV: Social Networks Visualiser 
- version: 0.46
+ version: 0.47
  Written in Qt 4.4 with KDevelop   
  
 C++ implementation: layout.cpp
