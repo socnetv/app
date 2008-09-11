@@ -1168,7 +1168,7 @@ void MainWindow::initDockWidget(){
 
 	nodeSizeProportionalEdgesBx = new QCheckBox(tr("NodeSize = F (OutDegree)") );
 	nodeSizeProportionalEdgesBx ->setEnabled(true);
-	nodeSizeProportionalEdgesBx ->setToolTip(tr("!"));
+	nodeSizeProportionalEdgesBx ->setToolTip(tr("If you enable this checkbox, all nodes will be redrawn so that their size reflect their outdegree (the amount of links from them). To put it simply, more out-linked nodes will be bigger..."));
 
 	QVBoxLayout *moveGroupLayout = new QVBoxLayout(moveGroup);
     	moveGroupLayout->addWidget(moveSpringEmbedderBx);
@@ -2137,7 +2137,7 @@ void MainWindow::slotViewAdjacencyMatrix(){
 void MainWindow::slotCreateUniformRandomNetwork(){
 	bool ok;
 	statusBar()->showMessage("You have selected to create a random network. ", statusBarDuration);
-	aNodes=( QInputDialog::getInteger(this, "Create random network", tr("Number of nodes:"),1, 1, 3000, 1, &ok ) ) ;
+	int newNodes=( QInputDialog::getInteger(this, "Create random network", tr("Number of nodes:"),1, 1, 3000, 1, &ok ) ) ;
 	if (!ok) { 
 		statusBar()->showMessage("You did not enter an integer. Aborting.", statusBarDuration);
 		return;
@@ -2154,7 +2154,7 @@ void MainWindow::slotCreateUniformRandomNetwork(){
 	statusBar()->showMessage(tr("Creating uniform random network. Please wait... ") ,statusBarDuration);
 	qDebug("MW Uniform network:  Create uniform random network of %i nodes and %i link probability.",aNodes, probability);
 	
-	activeGraph.createUniformRandomNetwork (aNodes, probability);
+	activeGraph.createUniformRandomNetwork (newNodes, probability);
 
   	fileContainsNodeColors=FALSE;
 	fileContainsLinksColors=FALSE;
@@ -2187,7 +2187,7 @@ void MainWindow::slotCreateConnectedRandomNetwork() {
 void MainWindow::slotCreateSameDegreeRandomNetwork(){
 	bool ok;
 	statusBar()->showMessage("You have selected to create a pseudo-random network where each node has the same degree. ", statusBarDuration);
-	aNodes=( QInputDialog::getInteger(this, "Create same degree network", tr("Number of nodes:"),1, 1, 3000, 1, &ok ) ) ;
+	int newNodes=( QInputDialog::getInteger(this, "Create same degree network", tr("Number of nodes:"),1, 1, 3000, 1, &ok ) ) ;
 	if (!ok) { 
 		statusBar()->showMessage("You did not enter an integer. Aborting.", statusBarDuration);
 		return;
@@ -2202,7 +2202,7 @@ void MainWindow::slotCreateSameDegreeRandomNetwork(){
 	makeThingsLookRandom();  
 	statusBar()->showMessage("Creating a pseudo-random network where each node has the same degree... ", statusBarDuration);
 
-	activeGraph.createSameDegreeRandomNetwork (aNodes, degree);
+	activeGraph.createSameDegreeRandomNetwork (newNodes, degree);
   	fileContainsNodeColors=FALSE;
 	fileContainsLinksColors=FALSE;
 	fileContainsNodesCoords=FALSE;
@@ -2243,7 +2243,7 @@ void MainWindow::slotCreateGaussianRandomNetwork(){
 void MainWindow::slotCreatePhysicistLatticeNetwork(){
 	bool ok;
 	statusBar()->showMessage("You have selected to create a physicist's lattice network. ", statusBarDuration);
-	aNodes=( QInputDialog::getInteger(this, "Create physicist's lattice", tr("Number of nodes:"),1, 1, 3000, 1, &ok ) ) ;
+	int newNodes=( QInputDialog::getInteger(this, "Create physicist's lattice", tr("Number of nodes:"),1, 1, 3000, 1, &ok ) ) ;
 	if (!ok) { 
 		statusBar()->showMessage("You did not enter an integer. Aborting.", statusBarDuration);
 		return;
@@ -2265,7 +2265,7 @@ void MainWindow::slotCreatePhysicistLatticeNetwork(){
 
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
-	activeGraph.createPhysicistLatticeNetwork (aNodes, degree, x0, y0, radius);
+	activeGraph.createPhysicistLatticeNetwork (newNodes, degree, x0, y0, radius);
 
 	QApplication::restoreOverrideCursor();
 
