@@ -381,6 +381,7 @@ void MainWindow::initActions(){
 	connect(addLinkAct, SIGNAL(activated()), this, SLOT(slotAddLink()));
 	
 	removeLinkAct = new QAction(QIcon(":/images/disconnect.png"), tr("Remove"), this);
+	removeLinkAct ->setShortcut(tr("Ctrl+Shift+L"));
 	removeLinkAct->setStatusTip(tr("Removes a Link"));
 	removeLinkAct->setWhatsThis(tr("Remove Link\n\nRemoves a Link from the network"));
 	connect(removeLinkAct, SIGNAL(activated()), this, SLOT(slotRemoveLink()));
@@ -2134,10 +2135,6 @@ void MainWindow::slotViewAdjacencyMatrix(){
 	Link creation is controlled by a user specified possibility.
 */
 void MainWindow::slotCreateUniformRandomNetwork(){
-	statusBar()->showMessage("Erasing any existing network. ", statusBarDuration);
-	bool ok;
-	initNet();  
-	makeThingsLookRandom();  
 	statusBar()->showMessage("You have selected to create a random network. ", statusBarDuration);
 	aNodes=( QInputDialog::getInteger(this, "Create random network", tr("Number of nodes:"),1, 1, 3000, 1, &ok ) ) ;
 	if (!ok) { 
@@ -2149,6 +2146,10 @@ void MainWindow::slotCreateUniformRandomNetwork(){
 		statusBar()->showMessage("You did not enter an integer. Aborting.", statusBarDuration);
 		return;
 	}
+	statusBar()->showMessage("Erasing any existing network. ", statusBarDuration);
+	bool ok;
+	initNet();  
+	makeThingsLookRandom();  
 	statusBar()->showMessage(tr("Creating uniform random network. Please wait... ") ,statusBarDuration);
 	qDebug("MW Uniform network:  Create uniform random network of %i nodes and %i link probability.",aNodes, probability);
 	
@@ -2518,15 +2519,16 @@ void MainWindow::slotRemoveNode() {
 	qDebug("MW: min is %i and max is %i", min, max);
 
 	if (min==-1 || max==-1 ) { qDebug("ERROR in finding min max nodeNumbers. Abort"); return;}	
-	
-	doomedJim =  (clickedJimNumber >= 0 && clickedJimNumber<= max )  ?
-                      clickedJimNumber :
-		( QInputDialog::getInteger(this,"Remove node",tr("Choose a node to remove between ("
-		+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"),
-		min, 1, max , 1, &ok ) )   ;
-	if (!ok && doomedJim == -1) {
-		statusBar()->showMessage("Remove node operation cancelled.", statusBarDuration);
-		return;
+	else if (clickedJimNumber >= 0 && clickedJimNumber<= max ) { 
+		doomedJim=clickedJimNumber ;
+	}
+	else if (clickedJimNumber == -1 ) {
+		doomedJim =  QInputDialog::getInteger(this,"Remove node",tr("Choose a node to remove between ("
+			+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"),min, 1, max, 1, &ok);
+		if (!ok) {
+			statusBar()->showMessage("Remove node operation cancelled.", statusBarDuration);
+			return;
+		}
 	}
 	qDebug("MW: clickedJimNumber is %i. Deleting node %i from GraphicsWidget", clickedJimNumber, doomedJim);
 	graphicsWidget->removeNode(doomedJim);
@@ -2618,7 +2620,7 @@ void MainWindow::slotAddLink(){
 *	
 */
 void MainWindow::slotRemoveLink(){ 
-	if (!fileLoaded && !networkModified )  {
+	if ( (!fileLoaded && !networkModified) || activeGraph.totalEdges() ==0 )  {
 		QMessageBox::information(this, "-SocNetV-",tr("No links present. Load a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("No links to remove - sorry.") ,statusBarDuration);
 		return;
@@ -2646,6 +2648,12 @@ void MainWindow::slotRemoveLink(){
 			graphicsWidget->removeEdge(sourceNode, targetNode);
 			activeGraph.removeEdge(sourceNode, targetNode);
 		}
+		else {
+			QMessageBox::information(this, "-SocNetV-",tr("There is no such link."), "OK",0);
+			statusBar()->showMessage(tr("There are no nodes yet...") ,statusBarDuration);
+			return;
+		}
+
 	}
 	else {
 		graphicsWidget->removeItem(clickedLink);

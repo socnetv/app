@@ -71,7 +71,7 @@ public:
 	QPainterPath shape() const;
 	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
-	void remove (); 
+	void die(); 
 	int nodeNumber() {return m_num;}
 
 	void setSize(int);

@@ -265,7 +265,7 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 
 /** Removes the node */
 
-void Node::remove () {
+void Node::die() {
 	qDebug ("Node: Remove() node= %i", nodeNumber());
 /*	emit removeOutEdge();
 	emit removeInEdge();*/

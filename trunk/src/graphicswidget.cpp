@@ -379,7 +379,7 @@ void GraphicsWidget::removeNode(int doomedJim){
 			Node *jim=(Node*) (*it);
 			if ( jim->nodeNumber()==doomedJim)	{
 				qDebug("GW: found doomedJim %i. Calling node->remove()", jim->nodeNumber());
-				jim->remove();
+				jim->die();
 				delete *it;
 				break;
 			}
@@ -390,23 +390,25 @@ void GraphicsWidget::removeNode(int doomedJim){
 }
 
 /**
-	Called from MainWindow
+	Called from MainWindow when removing links by vertex numbers
 */
 void GraphicsWidget::removeEdge(int sourceNode, int targetNode){
+	qDebug("GW: Scene items= %i - View items : %i",scene()->items().size(), items().size());
 	QList<QGraphicsItem *>  list=scene()->items();
 	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!= list.end() ; it++){
 		if ( (*it)->type()==TypeEdge ) {
 			Edge *edge=(Edge*) (*it);
 			if ( edge->sourceNodeNumber()==sourceNode && edge->targetNodeNumber()==targetNode ) {
 				removeItem(edge);
-				delete *it;
 				break;
 			}
 		}
 	}
+	qDebug("GW: Scene items now= %i - View items now= %i ", scene()->items().size(), items().size() );
 }
 
 
+//Called from Node::die() to removeItem from nodeVector...
 void GraphicsWidget::removeItem( Node *node){
 	vector<Node*>::iterator it;
 	int i=0;
@@ -422,6 +424,7 @@ void GraphicsWidget::removeItem( Node *node){
 }
 
 
+//Called from Node::die() to removeItem from nodeVector...
 void GraphicsWidget::removeItem( Edge * edge){
 	edge->remove();
 	delete (edge);
