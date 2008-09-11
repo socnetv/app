@@ -244,11 +244,24 @@ int Parser::loadPajek(){
 				qDebug()<<lineElement;
 				source =  lineElement[0].toInt(&ok, 10);
 				target = lineElement[1].toInt(&ok,10);
-				if (lineElement.count()>2)
-					weight =  lineElement[2].toInt(&ok,10);
-				else weight=1;
-				qDebug("Parser-loadPajek(): weight %i", weight);
 				if (source == 0 || target == 0 ) return -1;  //  i --> (i-1)   internally
+				else if (source < 0 && target >0  ) {  //weights come first...
+					weight = lineElement[0].toInt(&ok, 10);
+					source=  lineElement[1].toInt(&ok, 10);
+					if (lineElement.count()>2) {
+						target = lineElement[2].toInt(&ok,10);
+					}
+					else {
+						target = lineElement[1].toInt(&ok,10);  //self link
+					}
+				}
+				else if (lineElement.count()>2)
+					weight =lineElement[2].toInt(&ok,10);
+				else 
+					weight=1;
+
+				qDebug("Parser-loadPajek(): weight %i", weight);
+
 				if (lineElement.contains("c", Qt::CaseSensitive ) ) {
 					qDebug("Parser-loadPajek(): file with link colours");
 					fileContainsLinksColors=TRUE;
@@ -273,11 +286,22 @@ int Parser::loadPajek(){
 				qDebug("Parser-loadPajek(): === Reading arcs ===");
 				source=  lineElement[0].toInt(&ok, 10);
 				target = lineElement[1].toInt(&ok,10);
-				if (lineElement.count()>2)
+				if (source == 0 || target == 0 ) return -1;   //  i --> (i-1)   internally
+				else if (source < 0 && target >0 ) {  //weights come first...
+					weight = lineElement[0].toInt(&ok, 10);
+					source=  lineElement[1].toInt(&ok, 10);
+					if (lineElement.count()>2) {
+						target = lineElement[2].toInt(&ok,10);
+					}
+					else {
+						target = lineElement[1].toInt(&ok,10);  //self link
+					}
+				}
+				else if (lineElement.count()>2)
 					weight =lineElement[2].toInt(&ok,10);
 				else 
 					weight=1;
-				if (source == 0 || target == 0 ) return -1;   //  i --> (i-1)   internally
+
 				if (lineElement.contains("c", Qt::CaseSensitive ) ) {
 					qDebug("Parser-loadPajek(): file with link colours");
 					linkColor=lineElement [ lineElement.indexOf( QRegExp("[c]"), 0 ) + 1 ];
