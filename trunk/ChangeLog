@@ -5,9 +5,23 @@
 
 ChangeLog:
 
-Version 0.46 - Sep 30 2008
-Codename: "Autumn leafes"
+Version 0.47 - Sep 30 2008
+Codename: "En leukw"
 ------------------------------
+
+
+
+
+Version 0.46 - Sep 11 2008
+Codename: "Autumn leaves"
+------------------------------
+
+--Zoom in and out via mouse wheel work nice.
+--Nodes (triangles, diamonds) resize as they should.
+--Node shapes are now saved to Pajek files.
+--New layout method displaying node sizes according to their outdegrees.
+--Code cleanup and bugfixes in loading Pajek files.
+
 
 
 Version 0.45 - Aug 30 2008

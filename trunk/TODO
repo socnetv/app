@@ -1,56 +1,33 @@
 FIXED
 =====
-TODO-> Transform actors to links //COMMENTED OUT
+--TODO Transform actors to links //COMMENTED OUT
 --TODO edges do not need to be drawed twice...
 --FIXME: GraphML files may crash SocNetV.
 --FIXME: isSymmetric not functioning (check a-symmetry.net)
 --FIXME: When many lines intersect, right-click > removeLink may remove wrong link!
 --FIXME: Pajek files may offer adjacency matrix instead lists of links 
 
---FIXED: Zoom in and out via mouse wheel is smoother.
---FIXED: Nodes (triangles, diamonds) resize as they should.
---FIXED: Node shapes are now saved as they should.
---NEW: New layout method displaying node sizes according to their outdegrees.
---CLEAN: Removed setNewPos
-
-
-
 
 TODO & KNOWN BUGS
 =================
---FIXME Matrix class declares a maximum of 1500x1500 in the constructor. So if we compute something with BFS() for a bigger network, a crash will most definitely occur... 
+--FIXME SocNetV is limited to a maximum of 3000x3000 nodes.
 - TODO: CLUSTERING by betweeness, see http://iv.slis.indiana.edu/sw/bc.html
 http://tyna.gersteinlab.org/tyna/supp.jsp
--- FIXME FIXME Directed Network (BFS) & Centralities (maxIndex and standard). Crashes must be stopped! 
+-- FIXME FIXME Directed Network (BFS) & Centralities (maxIndex and standard). 
 -- FIXME FIXME BFS() causes a crash when you create a new net, then remove/add some edges & nodes and compute Betweeness.
-TODO-> for() loops should not exist in MW. Move all computations away...
-
 TODO->Filter Links by their weights
 TODO->NetLayout is not needed...
 
 --FIXME: Centralities dont work when the network is directed.
---FIXME: At last, do something for sceneRect etc.
-
---FIXME: graphicsWidget removeItem is called from clear()..is this good?
-
-- FIXME: CreatePhysLattice then add links, then layout closeness then calc betweeness CRASHES!
-
-+ Add GraphML (XML) support. See visone documents. DL package.
-
 
 - TODO: load network from command line. Then compute something and export it!
-- TODO: XML. List and .DOT Import/Export, with shapes
+
 - TODO: Web crawler
-- TODO: hash maps
 - NEW: Texts on canvas (i.e. layouts display some text explaining what method is used).
 
 - GROUP Stress & Graph centralities 
 
 - Standard Stress Centrality index.
-
-- FIXME: Export to a format does not ask for a filename if the network is loaded from a file.
-
-- FIXME: fileSaved is obsolete.
 
 --TODO: PAJEK Filelists, see cite.net / kocka.net
 	/kvadrat.net 

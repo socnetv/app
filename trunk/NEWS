@@ -7,8 +7,9 @@ SocNetV News
 Sep 2008
 ========
 - Version 0.46 released.
+  Lots of bugfixes.
   New features:
-
+  - Node sizes may follow their Outdegree.
 
 Aug 2008
 ========

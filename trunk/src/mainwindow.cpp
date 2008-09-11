@@ -442,6 +442,7 @@ void MainWindow::initActions(){
 	connect(transformNodes2LinksAct, SIGNAL(activated()), this, SLOT(slotTransformNodes2Links()));
 
 	transform2UndirectedAct= new QAction(tr("Transform to Undirected"), this);
+	transform2UndirectedAct->setShortcut(tr("Ctrl+U"));
 	transform2UndirectedAct->setStatusTip(tr("Transforms the network to undirected network."));
 	transform2UndirectedAct->setWhatsThis(tr("Transform to Undirected\n\nTransforms all arcs to double links. The result is a undirected (symmetric) network"));
 	connect(transform2UndirectedAct, SIGNAL(activated()), this, SLOT(slotTransform2Undirected()));	
