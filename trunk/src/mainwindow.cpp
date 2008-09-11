@@ -1743,10 +1743,8 @@ void MainWindow::displayRandomLink( int i, int j, int weight, bool undirected){
 	bool drawArrows=showLinksArrowsAct ->isChecked();
 	qDebug()<< "drawArrows" << drawArrows;
 	graphicsWidget->addEdge(i, j, undirected, drawArrows, initLinkColor, bezier);
-//	totalLinks++;
 /*	if (undirected) {
 		graphicsWidget->addEdge(j, i, undirected, drawArrows, "black", bezier);
-		totalLinks++;
 	}*/
 }
 
@@ -2510,7 +2508,6 @@ void MainWindow::addLinkWithMouse(int i, int j, int weight){
 	qDebug ("MW: addLinkWithMouse between %i and %i weight %i",i, j, weight ); 
 	bool drawArrows=showLinksArrowsAct ->isChecked();
 	qDebug()<< "drawArrows" << drawArrows;
-	totalLinks++;// ONLY ON LOAD IT IS PERMITTED TO CALCULATE TOTAL
 	qDebug("MW: adding an edge to graph between %i and %i", i, j);
 	activeGraph.addEdge(i,j, weight, initLinkColor, false);
 	graphChanged();

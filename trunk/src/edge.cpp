@@ -1,7 +1,7 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser 
  version: 0.47
- Written in Qt 4.4 with KDevelop 
+ Written in Qt 4.4
 
                         edge.cpp  -  description
                              -------------------
@@ -161,7 +161,7 @@ void Edge::clearWeightList(){
 
 //leaves space 
 void Edge::adjust(){
-	qDebug("Edge: adjust()");
+//	qDebug("Edge: adjust()");
 	if (!source || !target)
 		return;
 	QLineF line(mapFromItem(source, 0, 0), mapFromItem(target, 0, 0));

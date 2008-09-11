@@ -58,7 +58,6 @@ class Node :  public QObject,  public QGraphicsItem {
 	
 public:
 	Node(GraphicsWidget*, int num, int val, int size, QString col, QString lab, QString lCol, QString shape, int, int) ;
-	
 //	~Node();
 
 	enum { Type = UserType + 1 };
