@@ -12,7 +12,7 @@ HEADERS += src/backgrcircle.h \
            src/nodenumber.h \
            src/texteditor.h \
            src/vertex.h \
- 		src/parser.h
+  	   src/parser.h
 
 SOURCES += src/backgrcircle.cpp \
            src/graphicswidget.cpp \
@@ -28,7 +28,7 @@ SOURCES += src/backgrcircle.cpp \
            src/nodenumber.cpp \
            src/texteditor.cpp \
            src/vertex.cpp \
- 		src/parser.cpp
+           src/parser.cpp
 
 RESOURCES = src/src.qrc
 
