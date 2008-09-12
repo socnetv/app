@@ -1,7 +1,7 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser 
  version: 0.47
- Written in Qt 4.4 with KDevelop
+ Written in Qt 4.4
  
                          edge.h  -  description
                              -------------------
@@ -71,6 +71,8 @@ public:
 	int lineWidth(); 
 	void showArrows(bool);
 	void toggleAntialiasing(bool);
+
+	void makeReciprocal();
 public slots:
 	void adjust ();
 	void remove();
@@ -90,7 +92,7 @@ private:
 	int eFrom, eTo, m_weight;
 	int tox1, tox2, toy1, toy2, size;
 	double rad, theta, theta1, theta2;
-	bool eBez, m_drawArrows, m_undirected;
+	bool eBez, m_drawArrows, m_reciprocal;
 };
 
 #endif

@@ -1,7 +1,7 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser 
  version: 0.47
- Written in Qt 4.4 with KDevelop   
+ Written in Qt 4.4
  
                          graph.h  -  description
                              -------------------
@@ -38,6 +38,7 @@
 
 #include <map>
 #include <QList>
+#include <QTextStream>
 #include "parser.h"
 
 
@@ -104,8 +105,10 @@ public:
 	int verticesWithOutEdges();		//Returns the sum of vertices having outEdges
 	int verticesWithInEdges();		//Returns the sum of vertices having inEdges
 	int verticesWithReciprocalEdges();	//Returns the sum of vertices having reciprocal edges
-	Matrix&  adjacencyMatrix(); 		//Returns the adjacency matrix
-	void writeAdjacencyMatrix(const char*, const char*);		//Writes the adjacency matrix to a file.
+	void writeAdjacencyMatrixTo(QTextStream& os); 		//exports the adjacency matrix to a given textstream
+	void writeAdjacencyMatrix(const char*, const char*);		//Writes the adjacency matrix to a given file.
+	friend QTextStream& operator <<  (QTextStream& os, Graph& m);  //
+
 	bool isSymmetric();			//Returns TRUE if symmetricAdjacencyMatrix=TRUE
 	int distance( int, int);		//Returns the geodesic distance between two vertices
 	int diameter();				//Returns the diameter of the graph
@@ -119,10 +122,9 @@ public:
 
 	void writeDistanceMatrix(const char*, const char*, const char*);//Writes the distance matrix to a file
 
-	
 	void eccentr_JordanCenter(); // FIXME ?
 	
-	void transform2Undirected();
+	void makeEdgesReciprocal();
 
 	void centralityInDegree(bool);		//Calculates the inDegree centrality of each vertex
 	void centralityOutDegree(bool);		//Calculates the outDegree centrality of each vertex
@@ -171,6 +173,8 @@ public:
 	void setParent(QMainWindow*);
 	QMainWindow* parent();
 	
+
+
 public slots:
 	//called by Parser
 	void createNode(int,int,QString, QString, QString, QPointF, QString, bool);

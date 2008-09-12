@@ -41,7 +41,7 @@ static const double Pi = 3.14159265;
 static double TwoPi = 2.0 * Pi;
 
 
-Edge::Edge(  GraphicsWidget *gw, Node *from, Node *to, int weight, int nodeSize, QString color, bool undirected, bool drawArrows, bool bez): graphicsWidget(gw){
+Edge::Edge(  GraphicsWidget *gw, Node *from, Node *to, int weight, int nodeSize, QString color, bool reciprocal, bool drawArrows, bool bez): graphicsWidget(gw){
 	qDebug("Edge: Edge()");
 	Q_UNUSED(nodeSize);
 	graphicsWidget->scene()->addItem(this);  //Without this, edges dont appear on the screen...
@@ -53,7 +53,7 @@ Edge::Edge(  GraphicsWidget *gw, Node *from, Node *to, int weight, int nodeSize,
 	target=to;			//Saves the targetNode
 	m_color=color;
 	m_drawArrows=drawArrows;
-	m_undirected=undirected;
+	m_reciprocal=reciprocal;
 	m_startOffset=source->width();  //used to offset edge from the centre of node
 	m_endOffset=target->width();  //used to offset edge from the centre of node	
 	qDebug("Edge() m_startOffset %i",(int) m_startOffset);
@@ -188,6 +188,12 @@ QRectF Edge::boundingRect() const {
 			).normalized().adjusted(-extra, -extra, extra, extra);
 }
 
+
+void Edge::makeReciprocal(){
+	m_reciprocal= true;
+}
+
+
 void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *){
 	if (!source || !target)
 		return;
@@ -210,8 +216,8 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
                                               cos(angle - Pi + Pi / 3) * m_arrowSize);
 		painter->setBrush(QColor(m_color));
 		painter->drawPolygon(QPolygonF() << line.p2() << destArrowP1 << destArrowP2);
-		if (m_undirected) { 
-//			qDebug("EDGE: UNDIRECTED!");
+		if (m_reciprocal) { 
+			qDebug("EDGE: >>>>>>>>>>>>> UNDIRECTED!");
 			QPointF srcArrowP1 = sourcePoint + QPointF(sin(angle +Pi / 3) * m_arrowSize,
                 	                              cos(angle +Pi / 3) * m_arrowSize);
 			QPointF srcArrowP2 = sourcePoint + QPointF(sin(angle +Pi - Pi  / 3) * m_arrowSize,

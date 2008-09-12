@@ -31,6 +31,7 @@
 #include <QtGui/QGraphicsView>
 #include "graph.h"
 #include <QGraphicsScene>
+#include <QMap>
 
 class MainWindow;
 //class QGraphicsSceneMouseEvent;
@@ -39,6 +40,9 @@ class Edge;
 class NodeNumber;
 class NodeLabel;
 class BackgrCircle;
+
+typedef QMap<QString, Edge*> StringToEdgeMap;
+
 
 class GraphicsWidget : public QGraphicsView {
 	Q_OBJECT
@@ -66,6 +70,7 @@ public:
 	bool setNodeColor(int, QString);
 	bool setEdgeColor(int, int, QString);
 	void setAllItemsVisibility(int, bool);
+	void makeEdgeReciprocal(int, int);
 
 protected:
 	void timerEvent(QTimerEvent *event);
@@ -110,6 +115,7 @@ private:
 	QPointF moving_start;
 	Node *firstNode, *secondNode ;
 	vector<Node*> nodeVector;	//used by addEdge() method
+	StringToEdgeMap edgesMap;
 };
 
 #endif

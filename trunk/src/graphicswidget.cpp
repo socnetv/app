@@ -1,7 +1,7 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser
  version: 0.47
- Written in Qt 4.4 with KDevelop
+ Written in Qt 4.4
 
                         graphicswidget.cpp description
                              -------------------
@@ -211,7 +211,7 @@ void GraphicsWidget::addNode(int num, int val, int size, QString nodeColor, QStr
 	if (!showLabels){
 		labelJim->hide();
 	}
-	//FIXME nodenumber should be an independant variable
+	//FIXME nodenumber should be an independent variable
 	NodeNumber *numberJim =new  NodeNumber (jim, size+2, QString::number(num), scene());
 	numberJim -> setPos(p.x()+m_numberDistance, p.y()+m_numberDistance);
 	numberJim -> setDefaultTextColor (m_numberColor);
@@ -267,6 +267,10 @@ void GraphicsWidget::addEdge(Node *source, Node *target, bool drawArrows, QStrin
 	Edge *edge=new Edge (this, source, target, weight, m_nodeSize, color, false, drawArrows, bezier);
 
 	edge->setColor(color);
+
+	QString edgeName = QString::number(i) + QString(">") + QString::number(j);
+	qDebug("GW: adding edge between %i and % to edgesMap. Name: "+edgeName.toAscii(), i, j);
+	edgesMap [edgeName] =  edge;
 	
 	/**Notify MW that graph has changed. Usefull on saving/exiting the program.*/
 	emit changed(); 
@@ -282,16 +286,31 @@ void GraphicsWidget::addEdge(Node *source, Node *target, bool drawArrows, QStrin
 	This is used only when we load a network file, 
 	because in that case we dont have references to nodes - only nodeNumbers
 */
-void GraphicsWidget::addEdge(int i, int j, bool undirected, bool drawArrows, QString color, bool bezier){
+void GraphicsWidget::addEdge(int i, int j, bool reciprocal, bool drawArrows, QString color, bool bezier){
 	qDebug("GW: addEdge (%i, %i)", i, j);
 	int weight=1;
 	//FIXME nodeVector indeces must change when add/removing items
 	qDebug()<<"GW: nodeVector reports"<< nodeVector.size()<<"items";
-	Edge *edge=new Edge (this, nodeVector.at(i-1), nodeVector.at(j-1), weight, m_nodeSize, color, undirected, drawArrows, bezier);
+	Edge *edge=new Edge (this, nodeVector.at(i-1), nodeVector.at(j-1), weight, m_nodeSize, color, reciprocal, drawArrows, bezier);
 	edge->setColor(color);
+
+	QString edgeName = QString::number(i) + QString(">")+ QString::number(j);
+	qDebug("GW: adding edge between %i and % to edgesMap. Name: "+edgeName.toAscii(), i, j);
+	edgesMap [edgeName] =  edge;
+
 	/**Notify MW that graph has been changed. Usefull on saving/exiting the program.*/
 	emit changed(); 
 }
+
+
+
+void GraphicsWidget::makeEdgeReciprocal(int source, int target){
+	qDebug("GW: makeEdgeReciprocal ()");
+	QString edgeName = QString::number(source) + QString(">")+ QString::number(target);
+	qDebug("GW: making existing edge between %i and % reciprocal. Name: "+edgeName.toAscii(), source, target );
+	edgesMap [edgeName]->makeReciprocal();
+}
+
 
 
 
@@ -357,8 +376,8 @@ void GraphicsWidget::nodeMoved(int number, int x, int y){
 
 
 /** 
-	Called from each node when it moves.
-	Updates node coordinates in activeGraph of MainWindow
+	Called from activeGraph to update node coordinates 
+	on the canvas  
 */
 void GraphicsWidget::updateNode(int number, int x, int y){
 	qDebug ("GW: updateNode() %i with %i, %i", number, x,y);
@@ -545,10 +564,6 @@ void GraphicsWidget::timerEvent(QTimerEvent *event) {
 	qDebug("GW: timerEvent()");
 	Q_UNUSED(event);
 	QList<Node *> nodes;
-// 	foreach (QGraphicsItem *item, scene()->items()) {
-// 		if (Node *node = qgraphicsitem_cast<Node *>(item))
-// 			nodes << node;
-// 	}
 
  	foreach (Node *node, nodeVector)
   		node->calculateForces(dynamicMovement);
@@ -564,9 +579,7 @@ void GraphicsWidget::timerEvent(QTimerEvent *event) {
 	if (!itemsMoved) {
 		killTimer(timerId);
 		timerId = 0;
-//		qDebug("GW: timerEvent: KillTimer()");
 	}
-
 }
 
 

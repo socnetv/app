@@ -75,7 +75,7 @@ int Parser::loadPajek(){
 	bool fileContainsNodeColors=FALSE, fileContainsNodesCoords=FALSE;
 	bool fileContainsLinksColors=FALSE;
 	bool zero_flag=FALSE;
-	int  j,miss, source = -1, target=-1, weight=1, nodeNum, colorIndex=-1, coordIndex=-1;
+	int  lineCounter=0, j,miss, source = -1, target=-1, weight=1, nodeNum, colorIndex=-1, coordIndex=-1;
 	list<int> listDummiesPajek;
 	networkName="noname";
 	totalLinks=0;
@@ -86,10 +86,11 @@ int Parser::loadPajek(){
 	QList <int> toBeDeleted;
 	while ( !ts.atEnd() )   {
 		str= ts.readLine();
+		lineCounter++;
 		if (str.isEmpty() ) continue;
 		if (!edges_flag && !arcs_flag && !nodes_flag) {
 			qDebug("Parser-loadPajek(): reading headlines");
-			if (str.contains ("digraph", Qt::CaseInsensitive) || str.startsWith ("graph", Qt::CaseInsensitive) || str.startsWith("<?xml", Qt::CaseInsensitive) || str.startsWith("graphml", Qt::CaseInsensitive)) {  
+			if ( (lineCounter == 1) &&  (!str.contains("network",Qt::CaseInsensitive) && !str.contains("vertices",Qt::CaseInsensitive) ) ) {  
 				//this is not a pajek file. Abort
 				qDebug("Parser-loadPajek(): not a pajek file. Aborting!");
 				file.close();

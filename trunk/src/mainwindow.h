@@ -156,7 +156,7 @@ public slots:
 	void slotFilterNodes();
 	void slotFilterLinks();
 	void slotTransformNodes2Links();
-	void slotTransform2Undirected();
+	void slotMakeEdgesReciprocal();
 
 	// LAYOUT MENU
 	void slotColorationStrongStructural();
@@ -284,7 +284,7 @@ private:
 	QAction *changeLabelsSizeAct, *changeAllNodesSizeAct, *changeAllNodesShapeAct;
 	QAction *changeNodeBoxAct, *changeNodeCircleAct, *changeNodeTriangleAct, *changeNodeDiamondAct, *changeNodeEllipseAct;
 	QAction *changeLinkLabelAct, *changeLinkColorAct, *changeLinkWeightAct;
-	QAction *filterNodesAct, *filterLinksAct, *transformNodes2LinksAct, *transform2UndirectedAct;
+	QAction *filterNodesAct, *filterLinksAct, *transformNodes2LinksAct, *makeEdgesReciprocalAct;
 	QAction *changeBackColorAct, *changeAllNodesColorAct, *changeAllLinksColorAct, *changeNumbersColorAct;
 	QAction *drawLinksWeightsAct, *showNumbersLinksWeightsAct, *showLinksAct , *showLinksArrowsAct, *drawLinksBezier;
 	QAction *viewToolBar, *viewStatusBar, *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;

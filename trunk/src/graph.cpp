@@ -1,7 +1,7 @@
 /******************************************************************************
  SocNetV: Social Networks Visualiser 
  version: 0.47
- Written in Qt 4.4 with KDevelop   
+ Written in Qt 4.4
  
                          graph.cpp  -  description
                              -------------------
@@ -42,8 +42,6 @@ Graph::Graph() {
 	outEdgesVert=0;
 	inEdgesVert=0;
 	reciprocalEdgesVert=0;
-/*	SM.fillMatrix(0);
-	SM.setSize(0);*/
 	order=TRUE;		//returns true if the indexes of the list is ordered.
 	graphModified=FALSE;
 	symmetricAdjacencyMatrix=TRUE;
@@ -70,9 +68,8 @@ void Graph::parserFinished(){
 }
 
 /**
-	slot connected with homonymous signal from Parser. 
+	slot associated with homonymous signal from Parser. 
 	Adds a Vertex to the Graph and calls addNode of GraphicsWidget 
-	
 	p holds the desired position of the new node.
 */
 void Graph::createNode(int i,int size,QString nodeColor, QString label, QString lColor, QPointF p, QString nodeShape, bool showLabels){
@@ -83,14 +80,31 @@ void Graph::createNode(int i,int size,QString nodeColor, QString label, QString 
 
 
 /**
-	slot connected with the homonymous signal from Parser class. 
+	slot associated with homonymous signal from Parser. 
 	Adds an Edge to the activeGraph and calls addEdge of GraphicsWidget to update the Graphics View. 
-	also called from MW :: addLink
 */
-void Graph::createEdge(int v1, int v2, int weight, QString color, bool undirected, bool drawArrows, bool bezier){
+void Graph::createEdge(int v1, int v2, int weight, QString color, bool reciprocal, bool drawArrows, bool bezier){
 	qDebug()<<"** Graph: createEdge():"<<v1<<" "<<v2<<" "<<weight;
-	addEdge ( v1, v2, weight, color, undirected);
-	( (MainWindow*)parent() )->graphicsWidget->addEdge(v1, v2, undirected, drawArrows, color, bezier);
+	addEdge ( v1, v2, weight, color, reciprocal);
+//	( (MainWindow*)parent() )->graphicsWidget->addEdge(v1, v2, reciprocal , drawArrows, color, bezier);
+	if ( reciprocal ) {
+		qDebug (" Graph:: createEdge asks for a RECIPROCAL NEW LINK -- creating new one. ");
+		reciprocal = true;
+		( (MainWindow*)parent() )->graphicsWidget->addEdge(v1, v2, reciprocal, drawArrows, color, bezier);
+
+	}
+	else if (this->hasEdge( v2, v1) )  {  //pajek edges will instantly load ...
+		qDebug (" Graph:: createEdge() LINK EXISTS - making it RECIPROCAL. ");
+		reciprocal = true;
+		( (MainWindow*)parent() )->graphicsWidget->makeEdgeReciprocal(v2, v1);
+
+	}
+	else {
+		qDebug (" Graph:: createEdge() creating a NEW LINK - NOT RECIPROCAL. ");
+		reciprocal = false;
+		( (MainWindow*)parent() )->graphicsWidget->addEdge(v1, v2, reciprocal, drawArrows, color, bezier);
+
+	}
 }
 
 /**
@@ -114,7 +128,7 @@ QMainWindow* Graph::parent(){
 
 /**	Adds a Vertex 
 	named v1, valued val, sized nszm colored nc, labeled nl, labelColored lc, shaped nsp, at point p
-	This method is called by AddNode() method
+	This method is called by createNode() method
 */
 void Graph::addVertex (int v1, int val, int nsz, QString nc, QString nl, QString lc, QPointF p,QString nsp){ 
 	qDebug ("Graph: addVertex(), appending vertex %i to graph", v1);
@@ -129,7 +143,6 @@ void Graph::addVertex (int v1, int val, int nsz, QString nc, QString nl, QString
 
 	qDebug("Graph: Vertex named %i has index=%i",m_graph.back()->name(), index[v1]);
 	qDebug ("Graph: m_graph size  %i", m_graph.size() );
-//	SM.setSize(m_totalVertices);
 	graphModified=true;
 }
 
@@ -153,7 +166,6 @@ void Graph::addVertex (int v1){
 	qDebug("Graph: Vertex named %i has index=%i",m_graph.back()->name(), index[v1]);
 	qDebug ("Graph: m_graph size  %i. ", m_graph.size() );
 
-//	SM.setSize(m_totalVertices);
 	graphModified=true;
 }
 
@@ -190,21 +202,17 @@ int Graph::firstVertexNumber() {
 
 
 /**	Removes the vertex named Doomed from the graph 
-	First removes the corresponding row and column from SM.
-	Then it removes edges to Doomed from other vertices
+	It removes edges to Doomed from other vertices
 	Then it changes the index of all subsequent vertices inside m_graph
 	Finally, it removes the vertex.
 */
 void Graph::removeVertex(int Doomed){
 	qDebug("Graph: removeVertex %i. Graph has %i=%i total Vertices and %i total Edges", Doomed, vertices(), m_graph.size(), totalEdges());
 	int indexOfDoomed=index[Doomed];
-	int outEdgesOfDoomed= m_graph[indexOfDoomed]->outLinks(); //SM.edgesFrom(indexOfdoomed);
+	int outEdgesOfDoomed= m_graph[indexOfDoomed]->outLinks(); 
 	int inEdgesOfDoomed = m_graph[indexOfDoomed]->inLinks(); 
 	qDebug("Graph: Vertex %i with index=%i has %i OutEdges and %i InEdges.",m_graph[ index[Doomed] ]->name(), index[Doomed], outEdgesOfDoomed, inEdgesOfDoomed);
 	
-	//Remove the row and column of SM corresponding to Doomed 
-//	SM.deleteRowColumn(indexOfDoomed);
-
 	//Decrease the variable which count vertices with in- and out-edges
 	if (!isSymmetric()) {
 		if (outEdgesOfDoomed>0) {
@@ -252,7 +260,7 @@ void Graph::removeVertex(int Doomed){
 		qDebug("Graph: Now inEdgesVert = %i, outEdgesVert = %i  and reciprocal = %i.",inEdgesVert, outEdgesVert, reciprocalEdgesVert);
 	}
 	//Update the index mapping vertices inside m_graph
-	qDebug("Graph: Finished with SM and vertices. Updating index");
+	qDebug("Graph: Finished with vertices. Updating index");
 	int prevIndex=indexOfDoomed;
 	int tempIndex=-1;
 	//Find the position of the Vertex inside m_graph
@@ -316,7 +324,6 @@ void Graph::addEdge (int v1, int v2, int weight, QString color, bool undirected)
 	}
 
 
-//	SM.setItem(source, target, weight);
 	m_graph [ source ]->addLinkTo(v2, weight );
 	m_graph [ target ]->addLinkFrom(v1);
 	m_totalEdges++;
@@ -331,7 +338,6 @@ void Graph::addEdge (int v1, int v2, int weight, QString color, bool undirected)
 			m_graph [ source]->setInLinked(TRUE);
 		}
 
-//		SM.setItem(target, source, weight);
 		m_graph [ target ]->addLinkTo(v1, weight );
 		m_graph [ source ]->addLinkFrom(target);
 		m_totalEdges++;
@@ -351,7 +357,6 @@ void Graph::addEdge (int v1, int v2, int weight, QString color, bool undirected)
 */
 void Graph::setEdgeWeight (int v1, int v2, int weight) {
 	qDebug("Graph: setEdgeWeight between %i (%i) and %i (%i), weight %i", v1, index[v1],v2,index[v2], weight);
-//	SM.setItem(index[v1], index[v2], weight);
 	m_graph [ index[v1] ]->changeLinkWeightTo(v2, weight);
 	qDebug("Graph: setEdgeWeight between %i (%i) and %i (%i), NOW weight %i", v1, index[v1],v2,index[v2], this->hasEdge(v1, v2) );
 	qDebug("Graph: setEdgeWeight between %i (%i) and %i (%i), NOW vertex weight %i", v1, index[v1],v2,index[v2],	m_graph [ index[v1] ]->isLinkedTo(v2) );
@@ -364,7 +369,6 @@ void Graph::setEdgeWeight (int v1, int v2, int weight) {
 void Graph::removeEdge (int v1, int v2) {	
 	qDebug ("Graph: edge (%i, %i) to be removed from graph", v1, v2);
 	qDebug("Graph: Vertex named %i has index=%i",m_graph[ index[v1] ]->name(), index[v1]);
-//	SM.setItem(index[v1], index[v2], 0);
 	m_graph [ index[v1] ]->removeLinkTo(v2);
 	m_graph [ index[v2] ]->removeLinkFrom(v1);
 	qDebug("Graph: removeEdge between %i (%i) and %i (%i), NOW vertex v1 reports edge weight %i", v1, index[v1],v2,index[v2],	m_graph [ index[v1] ]->isLinkedTo(v2) );
@@ -498,7 +502,6 @@ void Graph::updateVertCoords(int v1, int  x, int y){
 */
 int Graph::edgesFrom (int v1) {  
 	qDebug("Graph: edgesFrom()");
-	//return SM.edgesFrom(index[v1] );
 	return m_graph[ index[v1] ]->outLinks();
 }
 
@@ -508,7 +511,6 @@ int Graph::edgesFrom (int v1) {
 */
 int Graph::edgesTo (int v1) {  
 	qDebug("Graph: edgesTo()");
-	//return SM.edgesTo(index[v1] );
 	QList<Vertex*>::iterator it;
 	int m_edgesTo=0;
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
@@ -523,7 +525,6 @@ int Graph::edgesTo (int v1) {
 */
 int Graph::totalEdges () {
 	qDebug("Graph: totalEdges()");
-	//return SM.totalEdges();
 	int tEdges=0;
 	QList<Vertex*>::iterator it;
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
@@ -572,8 +573,6 @@ void Graph::clear() {
 	qDebug("Graph: m_graph reports size %i", m_graph.size());
 	m_graph.clear();
 	index.clear();
-/*	SM.fillMatrix(0);
-	SM.setSize(0);*/
 	discreteIDCs.clear();
 	discreteODCs.clear();
 	m_totalVertices=0;
@@ -629,17 +628,18 @@ bool Graph::isSymmetric(){
 /**
 *	Transform the directed network to undirected by making all links reciprocal.
 */
-void Graph::transform2Undirected(){
+void Graph::makeEdgesReciprocal(){
+	qDebug("Graph: makeEdgesReciprocal");
 	QList<Vertex*>::iterator it;
 	imap_i::iterator it1;
 	int y;
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
 		//for all edges (u,y) of u, do
-		qDebug("Graph: Transforming to Undirected. First iterate over all edges of u...");
+		qDebug("Graph: making all edges reciprocal. First iterate over all edges of u...");
 		for( it1 = (*it)->m_edges.begin(); it1 != (*it)->m_edges.end(); it1++ ) {
 			y=index[it1->first];	
 			if ( ! m_graph[y]->isLinkedTo( (*it)->name() )) {
-				qDebug("Graph: trans2Undirected: u = %i IS NOT inLinked from y = %i", (*it)->name(), it1->first  );
+				qDebug("Graph: makeEdgesReciprocal: u = %i IS NOT inLinked from y = %i", (*it)->name(), it1->first  );
 				createEdge(it1->first, (*it)->name(), it1->second, initEdgeColor, false, true, false);
 			}
 			else 
@@ -656,11 +656,51 @@ void Graph::transform2Undirected(){
 	This is called from MainWindow::slotExportSM() using << operator of Matrix class
 	The resulting matrix HAS spaces between elements.
 */
-Matrix&  Graph::adjacencyMatrix(){
-	qDebug("Graph: adjacencyMatrix(), returning SM with %i vertices", vertices());
+// Matrix&  Graph::adjacencyMatrix(){
+// 	qDebug("Graph: adjacencyMatrix(), returning SM with %i vertices", vertices());
+// 	graphModified=false;
+// 	return SM;
+// }
+
+
+void Graph::writeAdjacencyMatrixTo(QTextStream& os){
+	qDebug("Graph: adjacencyMatrix(), writing matrix with %i vertices", vertices());
+	QList<Vertex*>::iterator it, it1;	
+	int weight=-1;
+	for (it=m_graph.begin(); it!=m_graph.end(); it++){
+		for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){	
+			if ( (weight = hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
+				os << weight << " ";
+			}
+			else
+				os << "0 ";
+		}
+ 		os << endl;
+	}
 	graphModified=false;
-	return SM;
 }
+
+
+		
+/**  	Outputs adjacency matrix to a text stream
+*	Used in slotExportSM() of MainWindow class.
+*/
+QTextStream& operator <<  (QTextStream& os, Graph& m){
+	QList<Vertex*>::iterator it, it1;	
+	int weight=-1;
+	for (it=m.m_graph.begin(); it!=m.m_graph.end(); it++){
+		for (it1=m.m_graph.begin(); it1!=m.m_graph.end(); it1++){	
+			if ( (weight = m.hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
+				os << weight << " ";
+			}
+			else
+				os << "0 ";
+		}
+ 		os << endl;
+	}
+	return os;
+}
+
 
 
 /** 
@@ -674,7 +714,6 @@ void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
 	int sum=0, weight;
 	file << "-Social Network Visualiser- \n";
 	file << "Adjacency matrix of "<< netName<<": \n\n";
-//	SM.printMatrixConsole();
 	QList<Vertex*>::iterator it, it1;	
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
 		for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){	
@@ -1192,7 +1231,6 @@ void Graph::centralityInDegree(bool weights){
 		IDC=0;
 		for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
 			if ( (weight=this->hasEdge ( (*it1)->name(), (*it)->name() ) ) !=0  )   {	
-//			if ( (weight=SM.item ( index[(*it1)->name()], index[(*it)->name()] ) ) !=0  )   {
 				if (weights)
 					IDC+=weight;
 				else
@@ -1314,7 +1352,6 @@ void Graph::centralityOutDegree(bool weights){
 		ODC=0;
 		for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){	
 			if ( (weight=this->hasEdge ( (*it)->name(), (*it1)->name() ) ) !=0  )   {	
-//			if ( (weight= SM.item( index[(*it)->name()],  index[(*it1)->name()] ) )!=0 ) {
 				qDebug("Graph: vertex %i isLinkedTo= %i", (*it)->name(), (*it1)->name());
 				if (weights)
 					ODC+=weight;

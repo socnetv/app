@@ -441,11 +441,11 @@ void MainWindow::initActions(){
 	transformNodes2LinksAct->setWhatsThis(tr("Transform Nodes LinksAct\n\nTransforms network so that nodes become links and vice versa"));
 	connect(transformNodes2LinksAct, SIGNAL(activated()), this, SLOT(slotTransformNodes2Links()));
 
-	transform2UndirectedAct= new QAction(tr("Transform to Undirected"), this);
-	transform2UndirectedAct->setShortcut(tr("Ctrl+U"));
-	transform2UndirectedAct->setStatusTip(tr("Transforms the network to undirected network."));
-	transform2UndirectedAct->setWhatsThis(tr("Transform to Undirected\n\nTransforms all arcs to double links. The result is a undirected (symmetric) network"));
-	connect(transform2UndirectedAct, SIGNAL(activated()), this, SLOT(slotTransform2Undirected()));	
+	makeEdgesReciprocalAct= new QAction(tr("Reciprocal Edges"), this);
+	makeEdgesReciprocalAct->setShortcut(tr("Ctrl+U"));
+	makeEdgesReciprocalAct->setStatusTip(tr("Transforms the network to undirected network."));
+	makeEdgesReciprocalAct->setWhatsThis(tr("Transform to Undirected\n\nTransforms all arcs to double links (edges). The result is a undirected (symmetric) network"));
+	connect(makeEdgesReciprocalAct, SIGNAL(activated()), this, SLOT(slotMakeEdgesReciprocal()));	
 
 
 
@@ -525,10 +525,9 @@ void MainWindow::initActions(){
 	circleEccentrLayoutAct ->setWhatsThis(tr("Circle Eccentricity Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes having greater Eccentricity Centrality are situated towards the centre."));
 	connect(circleEccentrLayoutAct , SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityEccentr() ) );
 
-	circleClearBackgrCirclesAct = new QAction( tr("Remove Layout Circles"),	this);
-	circleClearBackgrCirclesAct ->setStatusTip(tr("Removes circles of circular layout."));
-	circleClearBackgrCirclesAct->setWhatsThis(tr("Remove Circles\n\n Removes any circles created for the circular layout of the network."));
-
+	circleClearBackgrCirclesAct = new QAction( tr("Remove Layout GuideLines"), this);
+	circleClearBackgrCirclesAct ->setStatusTip(tr("Removes Red GuideLines from the canvas."));
+	circleClearBackgrCirclesAct->setWhatsThis(tr("Remove GuideLines\n\n Removes any guidelines (circles or horizontal lines) created for the network layout."));
 
 	
 	levelInDegreeLayoutAct = new QAction( tr("In-Degree"),this);
@@ -906,7 +905,7 @@ void MainWindow::initMenuBar() {
 	
 	editMenu ->addSeparator();
 //   transformNodes2LinksAct -> addTo (editMenu);
-	editMenu -> addAction (transform2UndirectedAct);
+	editMenu -> addAction (makeEdgesReciprocalAct);
 	
 	colorOptionsMenu=new QMenu(tr("Colors"));
 	colorOptionsMenu -> setIcon(QIcon(":/images/colorize.png"));
@@ -1232,7 +1231,7 @@ void MainWindow::initDockWidget(){
 }
 
 
-
+//FIXME this is a bug: Graph calls GraphicsWidget which calls this to call Graph!
 void MainWindow::updateNodeCoords(int nodeNumber, int x, int y){
 //	qDebug("MW: updateNodeCoords() for %i with x %i and y %i", nodeNumber, x, y);
 	activeGraph.updateVertCoords(nodeNumber, x, y);
@@ -1920,12 +1919,8 @@ bool MainWindow::slotExportPajek(){
 
 
 
-/**
-	FIXME: Import/Export belongs to Graph class
-
-	Exports the network to a adjacency matrix-formatted file
+/**	Exports the network to a adjacency matrix-formatted file
 	Does not preserve node properties
-	Uses the << operator which we have defined in Matrix class
 */
 bool MainWindow::slotExportSM(){
 	qDebug("MW: slotExportSM()");
@@ -1953,8 +1948,8 @@ bool MainWindow::slotExportSM(){
 	}
 	QTextStream t( &f );
 	qDebug("MW: slotExportSM() for %i activeNodes", activeNodes());
-	//We can use << operator because we have defined it in Matrix class
-	t<< activeGraph.adjacencyMatrix();
+
+	activeGraph.writeAdjacencyMatrixTo(t);
 
 	f.close();
 	statusBar()->showMessage( QString( tr("Adjacency matrix-formatted network saved into file %1") ).arg( fileNameNoPath.last() ), statusBarDuration );
@@ -1962,6 +1957,8 @@ bool MainWindow::slotExportSM(){
 	pajekFileLoaded=FALSE;
 	return true;
 }
+
+
 
 
 
@@ -2121,8 +2118,8 @@ void MainWindow::slotViewAdjacencyMatrix(){
 	statusBar() ->  showMessage ( QString (tr ("creating adjacency adjacency matrix of %1 nodes")).arg(aNodes), statusBarDuration );
 	qDebug ("MW: calling writeAdjacencyMatrix with %i nodes", aNodes);
 	char fn[]= "adjacency-matrix.dat";
-//	if (networkModified)
-		activeGraph.writeAdjacencyMatrix(fn, networkName.toLocal8Bit()) ;
+
+	activeGraph.writeAdjacencyMatrix(fn, networkName.toLocal8Bit()) ;
 
 	//Open a text editor window for the new file created by graph class
 	QString qfn=QString::fromLocal8Bit("adjacency-matrix.dat");
@@ -2131,17 +2128,6 @@ void MainWindow::slotViewAdjacencyMatrix(){
 	ed->setWindowTitle(tr("-SocNetV- Adjacency matrix - ") + tempFileNameNoPath.last());
 	ed->show();
 
-/*	qDebug("MW: slotExportSM() for %i activeNodes", activeNodes());
-
-	QFile f( "test.dat");
-	if ( !f.open( QIODevice::WriteOnly ) )  {
-		statusBar()->showMessage( QString(tr("Could not write to %1")).arg(fileName), statusBarDuration );
-		return ;
-	}
-	QTextStream t( &f );
-	t<< activeGraph.adjacencyMatrix();
-	TextEditor *ed1 = new TextEditor("test.dat");
-	ed1->show();*/
 }
 
 
@@ -2581,7 +2567,7 @@ void MainWindow::slotAddLink(){
 	int max=activeGraph.lastVertexNumber();
 	//one node -> no link
 	if (min==max) return;
-	//FIXME rendering problem when adding samelink
+
 	if (clickedJimNumber == -1) {
 		sourceNode=QInputDialog::getInteger(this, "Create new link, Step 1",tr("Choose source node ("+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"), min, 1, max , 1, &ok ) ;
 		if (!ok) {
@@ -2624,7 +2610,6 @@ void MainWindow::slotAddLink(){
 	bool undirected=false;
 	activeGraph.addEdge ( sourceNode, targetNode, weight, initLinkColor, undirected);
 	graphicsWidget->addEdge(sourceNode, targetNode, undirected, drawArrows, initLinkColor, bezier);
-//	graphicsWidget->createEdge(sourceNode, targetNode, weight, initLinkColor, undirected, drawArrows, bezier);
 	graphChanged();
 	statusBar()->showMessage(tr("Ready. ") ,statusBarDuration);
 
@@ -3126,8 +3111,8 @@ void MainWindow::slotTransformNodes2Links(){
 /**
 *	Converts all edges to double edges, so that the network becomes undirected (symmetric adjacency matrix).
 */
-void MainWindow::slotTransform2Undirected(){
-	activeGraph.transform2Undirected();
+void MainWindow::slotMakeEdgesReciprocal(){
+	activeGraph.makeEdgesReciprocal();
 }
 
 

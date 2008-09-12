@@ -8,7 +8,7 @@ ChangeLog:
 Version 0.47 - Sep 30 2008
 Codename: "En leukw"
 ------------------------------
-
+--Fixed bug in adjacency matrix loading.
 
 
 

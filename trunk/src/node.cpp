@@ -351,7 +351,7 @@ void Node::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 	if ( event->button()==Qt::LeftButton ) {
 		qDebug("Node: pressEvent() left click > startNodeMovement");
 //		emit startNodeMovement(0);
-		graphicsWidget->startNodeMovement(0);
+//		graphicsWidget->startNodeMovement(0);
 	}
 	if ( event->button()==Qt::RightButton ) {
 		qDebug("Node: Right-click on node, at %i, %i", event->screenPos().x(), event->screenPos().y()); 
