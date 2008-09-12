@@ -107,7 +107,7 @@ MainWindow::MainWindow(const QString &fName) {
 	connect (addLinkBt,SIGNAL(clicked()), this, SLOT(slotAddLink()));
 	connect (removeNodeBt,SIGNAL(clicked()), this, SLOT(slotRemoveNode()));
 	connect (removeLinkBt,SIGNAL(clicked()), this, SLOT(slotRemoveLink()));
-	connect (this, SIGNAL(setInitLinkColor(QString)) , &activeGraph, SLOT(setInitEdgeColor(QString) ) );
+
 	connect(zoomCombo, SIGNAL(currentIndexChanged(const int &)),graphicsWidget, SLOT(changeZoom(int)));
 	connect(zoomOutAct, SIGNAL(triggered()), graphicsWidget, SLOT(zoomOut()));
 	connect(zoomInAct, SIGNAL(triggered()), graphicsWidget, SLOT(zoomIn()));
@@ -4738,7 +4738,6 @@ void MainWindow::slotAllLinksColor(){
 				graphChanged();
 			}
 		graphicsWidget->setInitLinkColor(initLinkColor);
-		emit setInitLinkColor(initLinkColor);
 		QApplication::restoreOverrideCursor();
 		statusBar()->showMessage(tr("Ready. ") ,statusBarDuration);
 

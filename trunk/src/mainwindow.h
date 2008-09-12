@@ -253,7 +253,7 @@ protected:
 
 //	void myMessageOutput(QtMsgType type, const char *msg);
 signals:
-	void setInitLinkColor(QString);	
+
 
 private:
 	QGraphicsScene *scene;
