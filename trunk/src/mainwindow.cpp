@@ -2299,7 +2299,6 @@ void MainWindow::slotFindNode(){
 	if (markedNodeExists) {
 		markedNode->setSize(preSize);
 		markedNode->setColor ( QColor( markedNode->color() ).dark(150) );
-		markedNode->moveBy(1,1);markedNode->moveBy(-1,-1);
 		markedNodeExists=FALSE;
 		return;
 	}
@@ -2328,7 +2327,6 @@ void MainWindow::slotFindNode(){
 				markedNodeExists=TRUE;
 				markedNode=jim;
 				statusBar()->showMessage(tr("Node found!"));
-				jim->moveBy(1,1);jim->moveBy(-1,-1);
 				return;
 				
 			}
@@ -2339,7 +2337,6 @@ void MainWindow::slotFindNode(){
 				jim->setColor ( QColor( jim->color() ).light(150) );
 				markedNodeExists=TRUE;
 				markedNode=jim;
-				jim->moveBy(1,1);jim->moveBy(-1,-1);
 				statusBar()->showMessage(tr("Node found!"));
 				return;
 			}
@@ -2696,7 +2693,6 @@ void MainWindow::slotChangeNodeLabel(){
 		activeGraph.setVertexLabel( clickedJimNumber, text);
 		if (!showLabels()) 
 			showLabelsAct->setChecked(TRUE);
-		clickedJim->moveBy(1,1);clickedJim->moveBy(-1,-1);
         	statusBar()->showMessage(tr("Changed label to %1. Ready. ").arg(text) ,statusBarDuration);
 		graphChanged();
     	} 
@@ -2750,7 +2746,6 @@ void MainWindow::slotChangeNodeColor(){
 			clickedJim->setColor(nodeColor);
 			activeGraph.setVertexColor (clickedJimNumber, nodeColor);
 			graphChanged();
-			clickedJim->moveBy(1,1);clickedJim->moveBy(-1,-1);
 			statusBar()->showMessage(tr("Ready. "), statusBarDuration);
     		} 
 		else {
@@ -2784,7 +2779,6 @@ void MainWindow::slotChangeNodeSize(){
 		return;
 	}
 	clickedJim->setSize(newSize);
-	clickedJim->moveBy(1,1);clickedJim->moveBy(-1,-1);
 	graphChanged();
 	statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
 	return;
@@ -2803,7 +2797,6 @@ void MainWindow::slotChangeNodeValue(){
 //	bool ok=FALSE;
 	//int newSize =   QInputDialog::getInteger(this, "Change node value", tr("Change node size to: (1-16)"),1, 1, 16, 1, &ok ) ;
 //	clickedJim->setSize(newSize);
-	//clickedJim->moveBy(1,1);clickedJim->moveBy(-1,-1);
 	graphChanged();
 	statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
 	return;
@@ -3168,7 +3161,6 @@ void MainWindow::slotLayoutNodeSizeProportionalEdges(bool checked){
 			if ( (*it) -> type() == TypeNode ){
 				Node *jim = (Node*) (*it);
 				(*jim).setSize(size);
-				(*jim).moveBy(1,1);(*jim).moveBy(-1,-1);
 			}
 		}
 		nodeSizeProportionalEdgesAct->setChecked(false);
@@ -3219,7 +3211,6 @@ void MainWindow::slotLayoutNodeSizeProportionalEdges(bool checked){
 			}
 			qDebug("Changing size of %i to %i", (*jim).nodeNumber(), size);
 			(*jim).setSize(size);
-			(*jim).moveBy(1,1);(*jim).moveBy(-1,-1);
 		}
 
 	}
@@ -4445,7 +4436,6 @@ void MainWindow::changeAllNodesSize(int size) {
 		if ( (*it) -> type() == TypeNode ){
 		Node *jim = (Node*) (*it);
 		(*jim).setSize(size);
-		(*jim).moveBy(1,1);(*jim).moveBy(-1,-1);
 	}
 }
 
@@ -4496,7 +4486,6 @@ void MainWindow::slotChangeNumbersSize() {
 		NodeNumber * number= (NodeNumber*) (*it2);
 		qDebug ("MW: slotChangeNumbersSize Found");
 		number->setFont( QFont (number->font().family(), newSize, QFont::Light, FALSE) );
-		number->moveBy(1,1);number->moveBy(-1,-1);
 	}
 	statusBar()->showMessage(tr("Changed numbers size. Ready."), statusBarDuration);
 }
@@ -4714,7 +4703,6 @@ void MainWindow::slotAllNodesColor(){
 				jim->setColor(initNodeColor);
 				qDebug ("MW: Changed color");
 				activeGraph.setVertexColor (jim->nodeNumber(), initNodeColor);
-				jim->moveBy(1,1);jim->moveBy(-1,-1);
 				graphChanged();
 			}
 		graphicsWidget->setInitNodeColor(initNodeColor);

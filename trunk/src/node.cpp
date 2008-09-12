@@ -139,6 +139,7 @@ bool Node::advance(){
 	Used by MW::slotChangeNodeColor
 */
 void Node::setColor(QString str) {
+	prepareGeometryChange();
 	m_col=QColor(str);
 	m_col_dark=m_col.dark(160);
 }
@@ -159,6 +160,7 @@ QString Node::color () {
 /** Sets the size of the node */
 void Node::setSize(int size){
 	qDebug("Node: setSize()");
+ 	prepareGeometryChange();
 	m_size=size;
 	foreach (Edge *edge, inEdgeList) {
 		qDebug("Node: updating edges in inEdgeList");
@@ -183,9 +185,9 @@ int Node::width(){
 /**  Called every time the user needs to change the shape of an node. */
 void Node::setShape(QString shape) {
 	qDebug("Node: setShape()");
+	prepareGeometryChange();
 	m_shape=shape;
 	qDebug ("Node: setShape(): node is at x=%f and y=%f", x(), y());
-	prepareGeometryChange();
 }
 
 
@@ -296,6 +298,7 @@ void Node::die() {
 
 
 void Node::setLabel ( QString label) {
+	prepareGeometryChange();
 	m_label->setPlainText(label);
 	hasLabel=true;
 }

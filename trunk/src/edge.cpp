@@ -92,8 +92,7 @@ void Edge::remove(){
 
 void Edge::setColor( QString str) {
 	m_color=str;
-	this->hide();
-	this->show();
+ 	prepareGeometryChange();
 }
 
 
@@ -190,6 +189,7 @@ QRectF Edge::boundingRect() const {
 
 
 void Edge::makeReciprocal(){
+ 	prepareGeometryChange();
 	m_reciprocal= true;
 }
 
