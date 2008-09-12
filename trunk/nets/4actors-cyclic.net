@@ -1,9 +1,9 @@
 *Network 
 *Vertices 4
-1 "1" ic red		0.198571 	0.916667	diamond
-2 "2" ic red		0.454286 	0.916667	diamond
-3 "3" ic red		0.464286 	0.916667	diamond
-4 "4" ic red		0.874286 	0.916667	diamond
+1 "1" ic red		0.804286 	0.499203	diamond
+2 "2" ic red		0.5 	0.803828	diamond
+3 "3" ic red		0.225714 	0.499203	diamond
+4 "4" ic red		0.498571 	0.15949	diamond
 *Arcs 
 *Edges 
 1 2 1 c black

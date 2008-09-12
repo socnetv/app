@@ -1736,15 +1736,14 @@ void MainWindow::createNode() {
 
 
 
-/**Called from activeGraph to update GraphicsWidget when creating random networks*/
+/**
+	Called from activeGraph to update GraphicsWidget when creating random networks
+*/
 void MainWindow::displayRandomLink( int i, int j, int weight, bool undirected){
 	qDebug ("MW: createRandomLink() between node %i and node %i, weight %i", i, j, weight);
 	bool drawArrows=showLinksArrowsAct ->isChecked();
 	qDebug()<< "drawArrows" << drawArrows;
-	graphicsWidget->addEdge(i, j, undirected, drawArrows, initLinkColor, bezier);
-/*	if (undirected) {
-		graphicsWidget->addEdge(j, i, undirected, drawArrows, "black", bezier);
-	}*/
+	graphicsWidget->addEdge(i, j, undirected, drawArrows, initLinkColor, bezier, false);
 }
 
 
@@ -2552,6 +2551,7 @@ void MainWindow::slotRemoveNode() {
 
 /**
 *	Adds a new link between two nodes specified by the user.
+	Called when she clicks on the button.
 */
 void MainWindow::slotAddLink(){
 	qDebug ("MW: slotAddLink()");
@@ -2609,7 +2609,7 @@ void MainWindow::slotAddLink(){
 	bool drawArrows=showLinksArrowsAct ->isChecked();
 	bool undirected=false;
 	activeGraph.addEdge ( sourceNode, targetNode, weight, initLinkColor, undirected);
-	graphicsWidget->addEdge(sourceNode, targetNode, undirected, drawArrows, initLinkColor, bezier);
+	graphicsWidget->addEdge(sourceNode, targetNode, undirected, drawArrows, initLinkColor, bezier, true);
 	graphChanged();
 	statusBar()->showMessage(tr("Ready. ") ,statusBarDuration);
 
@@ -4970,7 +4970,7 @@ void MainWindow::slotHelpAbout(){
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualiser " +VERSION+ "  codename: <b>SNAIL</b>"
 	"<p>(C) 2005-2008 by Dimitris V. Kalamaras"
 	"<br> dimitris.kalamaras@gmail.com"
-	"<p><b>Last revision: </b> Mon, Sep 09, 2008</p>"
+	"<p><b>Last revision: </b> Fri, Sep 12, 2008</p>"
 
 
 	"<p><b>Fortune cookie: </b><br> \""  + fortuneCookie[randomCookie]  +"\""

@@ -1,6 +1,6 @@
 #!/bin/bash
-old=0.45;
-new=0.46;
+old=0.46;
+new=0.47;
 perl -p -i.bak -e 's/'$old'/'$new'/g' src/*.cpp 
 perl -p -i.bak -e 's/'$old'/'$new'/g' src/*.h
 mkdir ../temp

@@ -281,16 +281,35 @@ void GraphicsWidget::addEdge(Node *source, Node *target, bool drawArrows, QStrin
 
 
 
-/** 	
-	Draws an edge from source to target Node. 
-	This is used only when we load a network file, 
-	because in that case we dont have references to nodes - only nodeNumbers
+/** 	Draws an edge from source to target Node. 
+	This is used when we dont have references to nodes - only nodeNumbers:
+	a) when we load a network file (check = FALSE)
+	b) when the user clicks on the AddLink button on the MW.
 */
-void GraphicsWidget::addEdge(int i, int j, bool reciprocal, bool drawArrows, QString color, bool bezier){
+void GraphicsWidget::addEdge(int i, int j, bool reciprocal, bool drawArrows, QString color, bool bezier, bool check){
 	qDebug("GW: addEdge (%i, %i)", i, j);
 	int weight=1;
-	//FIXME nodeVector indeces must change when add/removing items
 	qDebug()<<"GW: nodeVector reports"<< nodeVector.size()<<"items";
+	if (check) {
+		vector<Node*>::iterator it;
+		int index=1;
+		for ( it=nodeVector.begin() ; it < nodeVector.end(); it++ ) {
+			if ((*it)->nodeNumber() == i ) {		
+				break;
+			}
+			index++;
+		}
+		i=index;
+		index=1;
+		for ( it=nodeVector.begin() ; it < nodeVector.end(); it++ ) {
+			if ((*it)->nodeNumber() == j ) {		
+				break;
+			}
+			index++;
+		}
+		j=index;
+
+	}
 	Edge *edge=new Edge (this, nodeVector.at(i-1), nodeVector.at(j-1), weight, m_nodeSize, color, reciprocal, drawArrows, bezier);
 	edge->setColor(color);
 
@@ -303,7 +322,9 @@ void GraphicsWidget::addEdge(int i, int j, bool reciprocal, bool drawArrows, QSt
 }
 
 
-
+/**
+	Called from Graph to make an existing arc symmetric (reciprocal)
+*/
 void GraphicsWidget::makeEdgeReciprocal(int source, int target){
 	qDebug("GW: makeEdgeReciprocal ()");
 	QString edgeName = QString::number(source) + QString(">")+ QString::number(target);

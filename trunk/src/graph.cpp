@@ -85,24 +85,25 @@ void Graph::createNode(int i,int size,QString nodeColor, QString label, QString 
 */
 void Graph::createEdge(int v1, int v2, int weight, QString color, bool reciprocal, bool drawArrows, bool bezier){
 	qDebug()<<"** Graph: createEdge():"<<v1<<" "<<v2<<" "<<weight;
-	addEdge ( v1, v2, weight, color, reciprocal);
-//	( (MainWindow*)parent() )->graphicsWidget->addEdge(v1, v2, reciprocal , drawArrows, color, bezier);
+
 	if ( reciprocal ) {
 		qDebug (" Graph:: createEdge asks for a RECIPROCAL NEW LINK -- creating new one. ");
-		reciprocal = true;
-		( (MainWindow*)parent() )->graphicsWidget->addEdge(v1, v2, reciprocal, drawArrows, color, bezier);
+		addEdge ( v2, v1, weight, color, reciprocal);
+		( (MainWindow*)parent() )->graphicsWidget->addEdge(v1, v2, reciprocal, drawArrows, color, bezier, false);
 
 	}
 	else if (this->hasEdge( v2, v1) )  {  //pajek edges will instantly load ...
 		qDebug (" Graph:: createEdge() LINK EXISTS - making it RECIPROCAL. ");
 		reciprocal = true;
+		addEdge ( v2, v1, weight, color, reciprocal);
 		( (MainWindow*)parent() )->graphicsWidget->makeEdgeReciprocal(v2, v1);
 
 	}
 	else {
 		qDebug (" Graph:: createEdge() creating a NEW LINK - NOT RECIPROCAL. ");
 		reciprocal = false;
-		( (MainWindow*)parent() )->graphicsWidget->addEdge(v1, v2, reciprocal, drawArrows, color, bezier);
+		addEdge ( v2, v1, weight, color, reciprocal);
+		( (MainWindow*)parent() )->graphicsWidget->addEdge(v1, v2, reciprocal, drawArrows, color, bezier, false);
 
 	}
 }
@@ -294,9 +295,9 @@ void Graph::removeVertex(int Doomed){
 
 
 
-/**	Creates an edge (arc) between v1 and v2
+/**	Creates an edge between v1 and v2
 */
-void Graph::addEdge (int v1, int v2, int weight, QString color, bool undirected) {
+void Graph::addEdge (int v1, int v2, int weight, QString color, bool reciprocal) {
 	int source=index[v1];
 	int target=index[v2];
 
@@ -328,7 +329,7 @@ void Graph::addEdge (int v1, int v2, int weight, QString color, bool undirected)
 	m_graph [ target ]->addLinkFrom(v1);
 	m_totalEdges++;
 
-	if (undirected) {
+	if (reciprocal) {
 		if (! m_graph [ target ]->isOutLinked() ) {
 			outEdgesVert++;
 			m_graph [ target ]->setOutLinked(TRUE);
@@ -626,7 +627,7 @@ bool Graph::isSymmetric(){
 
 
 /**
-*	Transform the directed network to undirected by making all links reciprocal.
+*	Transform the directed network to symmetric (all edges reciprocal) 
 */
 void Graph::makeEdgesReciprocal(){
 	qDebug("Graph: makeEdgesReciprocal");
@@ -1680,8 +1681,7 @@ void Graph::createUniformRandomNetwork(int vert, int probability){
 			qDebug("Random Experiment for link creation between %i and %i:", i+1, j+1);
 			if (rand() %100 < probability)    {
 				qDebug("Creating link!");
-				addEdge(i+1, j+1,1, "black", false);
-				( (MainWindow*)parent() )->displayRandomLink(i+1, j+1,  1, false);
+				createEdge(i+1, j+1, 1, "black", false, true, false);
 			}
 			else 
 				qDebug("Will not create link!");
@@ -1716,9 +1716,7 @@ void Graph::createPhysicistLatticeNetwork(int vert, int degree,double x0, double
 			if ( target > (vert-1)) 
 				target = target-vert; 
 			qDebug("Creating Link between %i  and %i", i+1, target+1);
-			addEdge(i+1, target+1, 1, "black", false);
-			addEdge(target+1, i+1, 1, "black", false);
-			( (MainWindow*)parent() )->displayRandomLink(i+1, target+1,  1, true);
+			createEdge(i+1, target+1, 1, "black", true, true, false);
 		}
 	}
 }
@@ -1744,9 +1742,7 @@ void Graph::createSameDegreeRandomNetwork(int vert, int degree){
 			if ( target > (vert-1)) 
 				target = target-vert; 
 			qDebug("Creating Link between %i  and %i", i+1, target+1);
-			addEdge(i+1, target+1, 1, "black", false);
-			addEdge(target+1, i+1, 1, "black", false);
-			( (MainWindow*)parent() )->displayRandomLink(i+1, target+1,  1, true);
+			createEdge(i+1, target+1, 1, "black", true, true, false);
 		}
 	}
 

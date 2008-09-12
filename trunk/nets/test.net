@@ -1,8 +1,24 @@
 *Network 
-*Vertices 80
-1 "1" ic gold		0.57 	0.9	diamond
-2 "2" ic gold		0.452857 	0.92	diamond
-
+*Vertices 10
+1 "1" ic gold		0.134286 	0.642743	circle
+2 "2" ic gold		0.0514286 	0.60925	circle
+3 "3" ic gold		0.734286 	0.569378	circle
+4 "4" ic gold		0.9 	0.625199	circle
+5 "5" ic gold		0.577143 	0.637959	circle
+6 "6" ic gold		0.381429 	0.725678	circle
+7 "7" ic gold		0.934286 	0.545455	circle
+8 "8" ic gold		0.307143 	0.749601	circle
+9 "9" ic gold		0.507143 	0.942584	circle
+10 "10" ic gold		0.564286 	0.808612	circle
 *Arcs 
 *Edges 
-1 2 2 c black
+1 2 1 c black
+1 10 1 c black
+2 3 1 c black
+3 4 1 c black
+4 5 1 c black
+5 6 1 c black
+6 7 1 c black
+7 8 1 c black
+8 9 1 c black
+9 10 1 c black
