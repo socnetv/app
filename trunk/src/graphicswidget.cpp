@@ -254,32 +254,6 @@ void GraphicsWidget::clearBackgrCircles(){
 }
 
 
-/** 	
-	This method draws an edge from source to target node. 
-	It is called by edgeNodes() only on middle clicks.
-*/
-// void GraphicsWidget::addEdge(Node *source, Node *target, bool drawArrows, QString color, bool bezier){
-// 	qDebug("GW: addEdge (node, node)");
-// 	int i=source->nodeNumber();
-// 	int j=target->nodeNumber();
-// 	int weight=1;
-// 
-// 	Edge *edge=new Edge (this, source, target, weight, m_nodeSize, color, false, drawArrows, bezier);
-// 
-// 	edge->setColor(color);
-// 
-// 	QString edgeName = QString::number(i) + QString(">") + QString::number(j);
-// 	qDebug("GW: adding edge between %i and % to edgesMap. Name: "+edgeName.toAscii(), i, j);
-// 	edgesMap [edgeName] =  edge;
-// 	
-// 	/**Notify MW that graph has changed. Usefull on saving/exiting the program.*/
-// 	emit changed(); 
-// 	/** Emit a signal to MW to create a new edge in the activeGraph. */
-// 	qDebug("GW: emitting userMiddleClicked to MW, source=%i, target=%i", i, j); 
-// 	emit userMiddleClicked(i, j, weight);
-// }
-
-
 
 /** 	Draws an edge from source to target Node. 
 	This is used when we dont have references to nodes - only nodeNumbers:

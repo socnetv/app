@@ -52,7 +52,6 @@ public:
 	void clear();
 	void addNode(int i, int value, int size, QString aColor, QString label, QString lColor, QPointF p, QString nodeShape, bool showLabels, bool showNnumbers) ;
 	void removeNode(int doomedJim);
-	//void addEdge(Node*,Node*, bool, QString, bool);
 	void addEdge(int, int, bool, bool, QString, bool, bool);
 	void removeEdge(int, int);
 	void removeItem(Edge*);

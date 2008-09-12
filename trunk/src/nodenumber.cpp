@@ -33,7 +33,7 @@ NodeNumber::NodeNumber( Node *jim , int size, QString labelText, QGraphicsScene 
 	jim -> addNumber(this);
 	setPlainText( labelText ); 
 	setFont( QFont ("Courier", size, QFont::Light, FALSE) );
-	setZValue(253);
+	setZValue(254);
 }
 
 void NodeNumber::removeRefs(){
