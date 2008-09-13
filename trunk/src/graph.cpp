@@ -776,29 +776,57 @@ void Graph::writeDistanceMatrix (const char* fn, const char* fn1, const char* ne
 	ofstream file (fn);
 	ofstream file1 (fn1);
 	int dist=-1, sigma=-1;
+	char aspace[] = "       ";
+	char bspace[] = "     ";
+	char cspace[] = "   ";
+	char dspace[] = "   ";
+
 	file << "-Social Network Visualiser- \n";
 	file << "Distance matrix of "<< netName<<": \n\n";
 	//write out matrix of geodesic distances
 	QList<Vertex*>::iterator it, it1;	
-	int i=1;
-	file << "    ";
+	int i=0, j=0;
+	file << "         ";
+	
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
-		file << i++<<"  ";
-		//if (i>9) i=1;
+		file << i++<<aspace;
+
 	}
 	file<<endl;
-	i=1;
+	i=0;
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
-		file << i++<<"  "; //if (i>9) i=1;
+		file << ++i ;
+		if (i>999)
+			file << " "; 
+		else if (i>99)
+			file << cspace; 
+		else if(i>9) 
+			file << bspace; 
+		else 
+ 			file << aspace; 
+ 		j=0;
 		for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){	
+			++j;
 			if ( (dist= DM.item( index[(*it)->name()],  index[(*it1)->name()] ) )!=-1 ) {
 				file << dist;
-				if ( dist/100.0 < 1) file << "  ";
-				if ( dist/100.0 > 1 && dist/100.0 < 10 ) file << " ";
-				if ( dist/100.0 > 10 && dist/100.0 < 100 ) file << "";
+				if (dist>999)
+					file << " "; 
+				else if (dist>99)
+					file << cspace; 
+				else if(dist>9) 
+					file << bspace; 
+				else 
+					file << aspace; 
 			}
 			else
-				file << "0  ";
+				file << "0"<<aspace;
+			if (j>999)
+				file << cspace; 
+			else if (j>99)
+				file << cspace; 
+			else if(j>9) 
+				file << dspace; 
+
 		}
  		file << endl;
 	}
@@ -1030,8 +1058,14 @@ void Graph::createDistanceMatrix(bool calc_centralities) {
 					for ( it2=m_graph[w]->Ps().begin(); it2 != m_graph[w]->Ps().end(); it2++ ){
 						y=(*it2);
 						qDebug("Selecting Ps[w] element y=%i with delta_y=%f. TM(s,y)=%i, TM(s,w)=%i, delta_w=%f ", y, m_graph[y]->delta(),TM.item(s,y), TM.item(s,w), m_graph[w]->delta());
-						//delta[y]=delta[y]+(1+delta[w])*(sigma[y]/sigma[w]) ;
-						d_sy=m_graph[y]->delta()+(1.0+m_graph[w]->delta() ) * ( (float)TM.item(s,y)/(float)TM.item(s,w) );
+						if ( TM.item(s,w) > 0) {
+							//delta[y]=delta[y]+(1+delta[w])*(sigma[y]/sigma[w]) ;
+							d_sy=m_graph[y]->delta()+(1.0+m_graph[w]->delta() ) * ( (float)TM.item(s,y)/(float)TM.item(s,w) );
+						}
+						else {
+							d_sy=m_graph[y]->delta();
+							qDebug("TM sw zero - using SAME DELTA ");
+						}
 						qDebug("d_sy = %f. Setting it to y", d_sy);
 						m_graph[y]->setDelta( d_sy);
 					}
