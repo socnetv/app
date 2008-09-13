@@ -5,11 +5,14 @@
 
 ChangeLog:
 
-Version 0.47 - Sep 30 2008
+Version 0.47 - Sep 12 2008
 Codename: "En leukw"
 ------------------------------
---Fixed bug in adjacency matrix loading.
---Edges are drawed once even the reciprocal ones.
+--Fixed bug in adjacency matrix loading/saving.
+--Edges are drawed once, even the reciprocal ones. 
+  This makes network loading faster...
+--Cosmetic changes in canvas (labels stay above edges, etc).
+--Fixed another bug in loadPajek().
 
 
 

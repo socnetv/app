@@ -2513,7 +2513,7 @@ void MainWindow::slotRemoveNode() {
 		statusBar()->showMessage(tr("Nothing to remove.") ,statusBarDuration);
 		return;
 	}
-	int doomedJim=-1, min=RAND_MAX, max=-1;
+	int doomedJim=-1, min=-1, max=-1;
 	bool ok=false; 
 
 	min = activeGraph.firstVertexNumber();
