@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser 
- version: 0.47
+ version: 0.48
  Written in Qt 4.4
  
                          edge.h  -  description

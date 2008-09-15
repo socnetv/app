@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser
- version: 0.47
+ version: 0.48
  Written in Qt 4.4
 
                         graphicswidget.cpp description
@@ -290,7 +290,8 @@ void GraphicsWidget::addEdge(int i, int j, bool reciprocal, bool drawArrows, QSt
 	QString edgeName = QString::number(i) + QString(">")+ QString::number(j);
 	qDebug("GW: adding edge between %i and % to edgesMap. Name: "+edgeName.toAscii(), i, j);
 	edgesMap [edgeName] =  edge;
-
+	qDebug("Scene items now: %i ", scene()->items().size());
+	qDebug("GW items now: %i ", items().size());
 	/**Notify MW that graph has been changed. Usefull on saving/exiting the program.*/
 	emit changed(); 
 }
@@ -476,7 +477,6 @@ void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
 	qDebug("GW: e->pos() (%i, %i)", e->pos().x(),e->pos().y());
 	qDebug("GW: at %f, %f", p.x(),p.y());
 
-	//Why use p (Qpointf) when e->pos() is Qpoint?  Because QGraphicsItem::Node and setPos works with QPointF
 	int m_nodeNumber = ( (MainWindow*)parent() )->lastAvailableNodeNumber() +1;
 	bool labels=( (MainWindow*)parent() )->showLabels();
 	m_nodeLabel=QString::number(m_nodeNumber);

@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser 
- version: 0.47
+ version: 0.48
  Written in Qt 4.4 with KDevelop   
 
                            mainwindow.cpp  -  description
@@ -74,7 +74,7 @@ MainWindow::MainWindow(const QString &fName) {
 	fileName=fName;
 	qInstallMsgHandler( myMessageOutput );
 	setWindowIcon (QIcon(":/images/socnetv.png"));
-	VERSION="0.47";
+	VERSION="0.48";
 
 	/** inits that invoke all other construction parts **/
 	initActions();  //register and construct menu Actions 
