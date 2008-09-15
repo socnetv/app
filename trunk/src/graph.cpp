@@ -429,6 +429,15 @@ int Graph::hasVertex(QString label){
 
 
 
+
+void Graph::setInitVertexSize (int size) {
+	initVertexSize=size;
+}
+
+void Graph::setInitVertexShape(QString shape) {
+	initVertexShape=shape;
+}
+
 //Changes the shape.of vertex v 
 void Graph::setVertexShape(int v1, QString shape){
 	m_graph[ index[v1] ]->setShape(shape);
@@ -442,10 +451,18 @@ QString Graph::shape(int v1){
 }
 
 
+
+
 /**Changes the label.of vertex v  */
 void Graph::setVertexLabel(int v1, QString label){
 	qDebug()<< "Graph: setVertexLabel for "<< v1 << ", index " << index[v1]<< " with label"<< label;
 	m_graph[ index[v1] ]->setLabel ( label);
+}
+
+
+
+void Graph::setInitVertexLabelColor(QString color){
+	initVertexLabelColor=color;
 }
 
 
@@ -461,6 +478,13 @@ void Graph::setVertexColor(int v1, QString color){
 	qDebug()<< "Graph: setVertexColor for "<< v1 << ", index " << index[v1]<< " with color "<< color;
 	m_graph[ index[v1] ]->setColor ( color );
 }
+
+
+void Graph::setInitVertexColor(QString color){
+	initVertexColor=color;
+}
+
+
 
 
 void Graph::setInitEdgeColor(QString color){
@@ -668,11 +692,7 @@ void Graph::makeEdgesReciprocal(){
 	This is called from MainWindow::slotExportSM() using << operator of Matrix class
 	The resulting matrix HAS spaces between elements.
 */
-// Matrix&  Graph::adjacencyMatrix(){
-// 	qDebug("Graph: adjacencyMatrix(), returning SM with %i vertices", vertices());
-// 	graphModified=false;
-// 	return SM;
-// }
+
 
 
 void Graph::writeAdjacencyMatrixTo(QTextStream& os){
@@ -1714,12 +1734,15 @@ void Graph::layoutLevelCentrality(double maxWidth, double maxHeight, int Central
 */
 void Graph::createUniformRandomNetwork(int vert, int probability){
 	qDebug("Graph: createUniformRandomNetwork");
+	bool showLabels = false;
+	showLabels = ( (MainWindow*)parent() )->showLabels();
 	for (register int i=0; i< vert ; i++) {
-		addVertex(i+1);
+//		addVertex(i+1);
 		int x=10+rand() %640;
 		int y=10+rand() %480;
 		qDebug("Graph: createUniformRandomNetwork, new node i=%i, at x=%i, y=%i", i+1, x,y);
-		( (MainWindow*)parent() )->displayRandomNode(i+1,  x,  y);
+		createNode(i+1,initVertexSize,initVertexColor, QString::number (i+1), initVertexLabelColor, QPoint(x, y), initVertexShape, showLabels);
+//		( (MainWindow*)parent() )->displayRandomNode(i+1,  x,  y);
 	}
 	for (register int i=0;i<vert; i++)
 		for (register int j=0; j<vert; j++) {
@@ -1743,15 +1766,18 @@ void Graph::createPhysicistLatticeNetwork(int vert, int degree,double x0, double
 	qDebug("Graph: createPhysicistLatticeNetwork");
 	int x=0;
 	int y=0;
-
+	bool showLabels = false;
+	showLabels = ( (MainWindow*)parent() )->showLabels();
 	double Pi = 3.14159265;
 	double rad= (2.0* Pi/ vert );
 	for (register int i=0; i< vert ; i++) {
-		addVertex(i+1);
 		x=x0 + radius * cos(i * rad);
 		y=y0 + radius * sin(i * rad);
+
+		createNode(i+1,initVertexSize,initVertexColor, QString::number (i+1), initVertexLabelColor, QPoint(x, y), initVertexShape, showLabels);
+//		addVertex(i+1);
 		qDebug("Graph: createPhysicistLatticeNetwork, new node i=%i, at x=%i, y=%i", i+1, x,y);
-		( (MainWindow*)parent() )->displayRandomNode(i+1,  x,  y);
+//		( (MainWindow*)parent() )->displayRandomNode(i+1,  x,  y);
 	}
 	int target = 0;
 	for (register int i=0;i<vert; i++){
@@ -1772,12 +1798,13 @@ void Graph::createPhysicistLatticeNetwork(int vert, int degree,double x0, double
 
 void Graph::createSameDegreeRandomNetwork(int vert, int degree){
 	qDebug("Graph: createUniformRandomNetwork");
+	bool showLabels = false;
+	showLabels = ( (MainWindow*)parent() )->showLabels();
 	for (register int i=0; i< vert ; i++) {
-		addVertex(i+1);
 		int x=10+rand() %640;
 		int y=10+rand() %480;
 		qDebug("Graph: createUniformRandomNetwork, new node i=%i, at x=%i, y=%i", i+1, x,y);
-		( (MainWindow*)parent() )->displayRandomNode(i+1,  x,  y);
+		createNode(i+1,initVertexSize,initVertexColor, QString::number (i+1), initVertexLabelColor, QPoint(x, y), initVertexShape, showLabels);
 	}
 	int target = 0;
 	for (register int i=0;i<vert; i++){

@@ -71,8 +71,6 @@ public:
 	void addVertex (int v1, int val, int nsz, QString nc, QString nl, QString lc, QPointF p,QString nsp);	
 	void addVertex (int v1);		//adds a new Vertex named v1 to m_graph
 
-
-
 	int lastVertexNumber();		//returns the number of the last vertex
 	int firstVertexNumber();		//returns the number of the first vertex
 	
@@ -86,11 +84,17 @@ public:
 	int hasVertex(QString);		//Checks if a vertex with a label exists
 	int hasEdge (int v1, int v2);		//Checks if edge between v1 and v2 exists. Returns weight
 
+	void setInitVertexSize (int); //Changes the init size used by all new vertices.
+	
+	void setInitVertexShape (QString); //Changes the init shape used by all new vertices.
 	void setVertexShape(int v, QString shape); //Changes the shape.of vertex v 
 	QString shape(int v);	//returns the shape of this vertex
 
+	void setInitVertexLabelColor(QString color); //Changes the init color used by all new vertices' labels
 	void setVertexLabel(int v, QString label); //Changes the label.of vertex v 
 	QString label(int);
+
+	void setInitVertexColor (QString color);  //Changes the init color used by all new vertices
 
 	void setVertexColor(int v, QString color); //Changes the color.of vertex v 
 	void setInitEdgeColor(QString);
@@ -201,7 +205,8 @@ private:
 	int outEdgesVert, inEdgesVert, reciprocalEdgesVert;
 	QMainWindow *m_parent;
 	bool adjacencyMatrixCreated, symmetricAdjacencyMatrix, graphModified, distanceMatrixCreated;
-	QString networkName, initEdgeColor;
+	QString networkName, initEdgeColor, initVertexColor, initVertexLabelColor, initVertexShape;
+	int initVertexSize;
 };
 
 #endif

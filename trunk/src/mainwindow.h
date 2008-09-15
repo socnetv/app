@@ -97,7 +97,6 @@ public:		/**PUBLIC FUNCTIONS NOT VISIBLE BY OTHER WIDGETS NOR BY SLOT/LINK MECHA
 	int distance(int, int);
 	
 	void createNode(int i, int size, QString col, QString lab, QString lCol, QPointF p, QString shape);
-	void displayRandomNode(int, int,int);
 
 	void displayRandomLink( int from, int to, int weight, bool undirected);
 

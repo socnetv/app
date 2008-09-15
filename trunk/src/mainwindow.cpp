@@ -1312,7 +1312,7 @@ void MainWindow::initNet(){
 	initLinkColor="black";
 	initLabelColor="black";
 	initNumberColor="black";
- 	initNumberSize=8; //FIXME unused
+ 	initNumberSize=8; 
 	initNodeShape="circle";
 	
 	minDuration=3000; //dialogue duration - obsolete
@@ -1337,17 +1337,19 @@ void MainWindow::initNet(){
 
 	markedNodeExists=FALSE;
 
-
 	cursorPosGW=QPointF(-1,-1);
 	clickedJimNumber=-1;
 	linkClicked=FALSE;
 	nodeClicked=FALSE;
-
 	
 	/** Clear previous network data */
 	activeGraph.clear();
 	
-	
+	activeGraph.setInitVertexColor(initNodeColor);
+	activeGraph.setInitEdgeColor(initLinkColor);
+	activeGraph.setInitVertexLabelColor(initLabelColor);
+	activeGraph.setInitVertexShape(initNodeShape);
+	activeGraph.setInitVertexSize(initNodeSize);
 	/** Clear scene **/
 	graphicsWidget->clear();
 	
@@ -1654,19 +1656,6 @@ void MainWindow::addNodeWithMouse(int i, int x, int y){
 	activeGraph.addVertex(i, 1, initNodeSize,  initNodeColor, QString::number(i), initLabelColor, p, initNodeShape);
 }
 
-
-/**
-	Called from activeGraph to update GraphicsWidget when creating random networks
-*/
-void MainWindow::displayRandomNode(int i,  int x, int y){
-	qDebug("MW: addRandomNode i=%i, at x=%i, y=%i", i, x,y);
-	//Check if labels and numbers are needed.
-
-	qDebug()<<"MW: addRandomNode, calling AddNode";
-	QPointF p(x,y);
-	graphicsWidget->addNode ( i, 1, initNodeSize, initNodeColor, "", initLabelColor, p, initNodeShape, showLabels(), showNumbers());
-			
-}
 
 
 /**
