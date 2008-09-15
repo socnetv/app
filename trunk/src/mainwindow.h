@@ -236,7 +236,6 @@ public slots:
 	void windowInfoStatusBar(int, int);
 	void graphChanged();
 	void addNodeWithMouse(int, int, int);
-	void addLinkWithMouse(int, int, int);
 
 	//Called by graphicswidget to update node coords in activeGraph
 	void updateNodeCoords(int no, int x, int y);

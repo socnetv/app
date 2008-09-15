@@ -319,7 +319,7 @@ void GraphicsWidget::edgeNodes(Node *node){
 	if (secondDoubleClick){
 		qDebug("GW: this is the second double click. Creating edge");
 		secondNode=node;
-		addEdge(firstNode->nodeNumber(), secondNode->nodeNumber(), false, true, m_linkColor, false, true);
+		//addEdge(firstNode->nodeNumber(), secondNode->nodeNumber(), false, true, m_linkColor, false, true);
 		emit userMiddleClicked(firstNode->nodeNumber(), secondNode->nodeNumber(), 1);
 		( (MainWindow*)parent() )->setCursor(Qt::ArrowCursor);
 		secondDoubleClick=FALSE;

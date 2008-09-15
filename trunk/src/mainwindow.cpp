@@ -93,7 +93,7 @@ MainWindow::MainWindow(const QString &fName) {
 	connect( graphicsWidget, SIGNAL( changed() ), this, SLOT( graphChanged() ) ) ;
 
 	connect( graphicsWidget, SIGNAL( userDoubleClicked(int,int,int) ), this, SLOT( addNodeWithMouse(int, int,int) ) ) ;
-	connect( graphicsWidget, SIGNAL( userMiddleClicked(int, int, int) ), this, SLOT( addLinkWithMouse(int, int, int) ) );
+	connect( graphicsWidget, SIGNAL( userMiddleClicked(int, int, int) ), &activeGraph, SLOT( createEdge(int, int, int) ) );
 	connect( graphicsWidget, SIGNAL( openNodeMenu() ), this, SLOT(openNodeContextMenu() ) ) ;
 	connect( graphicsWidget, SIGNAL( openEdgeMenu() ), this, SLOT(openLinkContextMenu() ) ) ;
 	connect( &activeGraph, SIGNAL( addBackgrCircle (int, int, int) ), graphicsWidget, SLOT(addBackgrCircle(int, int, int) ) ) ;
@@ -2483,21 +2483,6 @@ void MainWindow::linkInfoStatusBar (Edge* link) {
 
 
 
-/**
-*	Updates the Graph with the new arc which was created by the user with middle click.
-*/
-void MainWindow::addLinkWithMouse(int i, int j, int weight){
-	qDebug ("MW: addLinkWithMouse between %i and %i weight %i",i, j, weight ); 
-	bool drawArrows=showLinksArrowsAct ->isChecked();
-	qDebug()<< "drawArrows" << drawArrows;
-	qDebug("MW: adding an edge to graph between %i and %i", i, j);
-	activeGraph.addEdge(i,j, weight, initLinkColor, false);
-	graphChanged();
-}
-
-
-
-
 
 
 /**
@@ -2604,9 +2589,8 @@ void MainWindow::slotAddLink(){
 		return;
 	}
 	bool drawArrows=showLinksArrowsAct ->isChecked();
-	bool undirected=false;
-	activeGraph.addEdge ( sourceNode, targetNode, weight, initLinkColor, undirected);
-	graphicsWidget->addEdge(sourceNode, targetNode, undirected, drawArrows, initLinkColor, bezier, true);
+	bool reciprocal=false;
+	activeGraph.createEdge(sourceNode, targetNode, weight, initLinkColor, reciprocal, drawArrows, bezier);
 	graphChanged();
 	statusBar()->showMessage(tr("Ready. ") ,statusBarDuration);
 

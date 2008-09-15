@@ -82,31 +82,42 @@ void Graph::createNode(int i,int size,QString nodeColor, QString label, QString 
 /**
 	slot associated with homonymous signal from Parser. 
 	Adds an Edge to the activeGraph and calls addEdge of GraphicsWidget to update the Graphics View. 
+	Also called from MW when user clicks on the "add link" button.
 */
-void Graph::createEdge(int v1, int v2, int weight, QString color, bool reciprocal, bool drawArrows, bool bezier){
+void Graph::createEdge(int v1, int v2, int weight, QString color, bool reciprocal=false, bool drawArrows=true, bool bezier=false){
 	qDebug()<<"** Graph: createEdge():"<<v1<<" "<<v2<<" "<<weight;
 
 	if ( reciprocal ) {
 		qDebug (" Graph:: createEdge asks for a RECIPROCAL NEW LINK -- creating new one. ");
-		addEdge ( v2, v1, weight, color, reciprocal);
+		addEdge ( v1, v2, weight, color, reciprocal);
 		( (MainWindow*)parent() )->graphicsWidget->addEdge(v1, v2, reciprocal, drawArrows, color, bezier, false);
 
 	}
 	else if (this->hasEdge( v2, v1) )  {  //pajek edges will instantly load ...
 		qDebug (" Graph:: createEdge() LINK EXISTS - making it RECIPROCAL. ");
 		reciprocal = true;
-		addEdge ( v2, v1, weight, color, reciprocal);
+		addEdge ( v1, v2, weight, color, reciprocal);
 		( (MainWindow*)parent() )->graphicsWidget->makeEdgeReciprocal(v2, v1);
 
 	}
 	else {
 		qDebug (" Graph:: createEdge() creating a NEW LINK - NOT RECIPROCAL. ");
 		reciprocal = false;
-		addEdge ( v2, v1, weight, color, reciprocal);
+		addEdge ( v1, v2, weight, color, reciprocal);
 		( (MainWindow*)parent() )->graphicsWidget->addEdge(v1, v2, reciprocal, drawArrows, color, bezier, false);
 
 	}
 }
+
+/** Called from GraphicsWidget when user middle clicks
+*/
+void Graph::createEdge(int v1, int v2, int weight) {
+	bool reciprocal=false;
+	bool drawArrows=true, bezier=false;
+	QString color = "black";
+	createEdge(v1, v2, weight, color, reciprocal, drawArrows, bezier);
+}
+
 
 /**
 *	This is called from loadPajek method of Parser in order to delete any redundant (dummy) nodes.

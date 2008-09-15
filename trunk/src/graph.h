@@ -179,6 +179,7 @@ public slots:
 	//called by Parser
 	void createNode(int,int,QString, QString, QString, QPointF, QString, bool);
 	void createEdge (int, int, int, QString, bool, bool, bool);
+	void createEdge (int, int, int);
 	void fileType(int, QString, int,int);	
 	void removeDummyNode(int);
 	void parserFinished();
