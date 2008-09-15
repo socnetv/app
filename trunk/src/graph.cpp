@@ -1625,7 +1625,6 @@ void Graph::layoutCircleCentrality(double x0, double y0, double maxRadius, int C
 		//Move node to new position
 		( (MainWindow*)parent() )->graphicsWidget-> updateNode((*it)->name(),  new_x,  new_y);
 		i++;
-		//( (MainWindow*)parent() )->graphicsWidget->addBackgrCircle((int)x0, (int)y0, (int)new_radius);
 		emit addBackgrCircle((int)x0, (int)y0, (int)new_radius);
 	}
 	graphModified=false;
@@ -1722,7 +1721,6 @@ void Graph::layoutLevelCentrality(double maxWidth, double maxHeight, int Central
 		//Move node to new position
 		( (MainWindow*)parent() )->graphicsWidget-> updateNode((*it)->name(),  new_x,  new_y);
 		i++;
-		//( (MainWindow*)parent() )->graphicsWidget->addBackgrCircle((int)x0, (int)y0, (int)new_radius);
 		emit addBackgrHLine((int)new_y);
 	}
 	graphModified=false;
@@ -1737,12 +1735,10 @@ void Graph::createUniformRandomNetwork(int vert, int probability){
 	bool showLabels = false;
 	showLabels = ( (MainWindow*)parent() )->showLabels();
 	for (register int i=0; i< vert ; i++) {
-//		addVertex(i+1);
 		int x=10+rand() %640;
 		int y=10+rand() %480;
 		qDebug("Graph: createUniformRandomNetwork, new node i=%i, at x=%i, y=%i", i+1, x,y);
 		createNode(i+1,initVertexSize,initVertexColor, QString::number (i+1), initVertexLabelColor, QPoint(x, y), initVertexShape, showLabels);
-//		( (MainWindow*)parent() )->displayRandomNode(i+1,  x,  y);
 	}
 	for (register int i=0;i<vert; i++)
 		for (register int j=0; j<vert; j++) {
@@ -1773,11 +1769,8 @@ void Graph::createPhysicistLatticeNetwork(int vert, int degree,double x0, double
 	for (register int i=0; i< vert ; i++) {
 		x=x0 + radius * cos(i * rad);
 		y=y0 + radius * sin(i * rad);
-
 		createNode(i+1,initVertexSize,initVertexColor, QString::number (i+1), initVertexLabelColor, QPoint(x, y), initVertexShape, showLabels);
-//		addVertex(i+1);
 		qDebug("Graph: createPhysicistLatticeNetwork, new node i=%i, at x=%i, y=%i", i+1, x,y);
-//		( (MainWindow*)parent() )->displayRandomNode(i+1,  x,  y);
 	}
 	int target = 0;
 	for (register int i=0;i<vert; i++){

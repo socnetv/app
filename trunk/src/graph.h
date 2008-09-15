@@ -49,11 +49,12 @@ using namespace std;
 class QPointF;
 
 
-/**	This is the main class for a Graph, used in conjuction with Vertex and Matrix objects.
+/**	This is the main class for a Graph, used in conjuction with Vertex, Parser and Matrix objects.
 	
 	Graph class has the interface and the various network algorithms 
 	Vertex class holds each vertex data (colors, strings, statistics, etc)
 	Matrix class holds the adjacency matrix of the network.
+	Parser class loads files of networks.
 	
 */
 

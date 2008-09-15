@@ -603,78 +603,78 @@ void MainWindow::initActions(){
 	*/
 	countNodes = new QAction(QIcon(":/images/node.png"), tr("Total &Nodes"), this);
 	countNodes->setStatusTip(tr("Counts all nodes of the network"));
-	countNodes->setWhatsThis(tr("Nodes' sum\n\n Calculates and shows the number of nodes"));
+	countNodes->setWhatsThis(tr("Total Nodes\n\n This is the total number of nodes in the network."));
 	connect(countNodes, SIGNAL(activated()), this, SLOT(slotActiveNodes()));
 
 	countLinks = new QAction(QIcon(":/images/net.png"), tr("Total In-Out &Links (Edges)"), this);
-	countLinks->setStatusTip(tr("Counts all links of the network"));
-	countLinks->setWhatsThis(tr("Links' sum\n\n Calculates and shows the number of in and out links"));
+	countLinks->setStatusTip(tr("Counts all (in and out) links of the network"));
+	countLinks->setWhatsThis(tr("Total Edges\n\n This is the total number of in and out links in the network."));
 	connect(countLinks, SIGNAL(activated()), this, SLOT(slotActiveLinks()));
 
-	symmetryAct = new QAction(QIcon(":/images/symmetry.png"), tr("Network (a)Symmetry"), this);
+	symmetryAct = new QAction(QIcon(":/images/symmetry.png"), tr("Network Symmetry"), this);
 	symmetryAct ->setShortcut(tr("Shift+S"));
-	symmetryAct->setStatusTip(tr("Tells you if the network is undirected (symmetric) or not"));
-	symmetryAct->setWhatsThis(tr("Network Symmetry\n\n Finds out the symmetry or not of the adjacency matrix"));
+	symmetryAct->setStatusTip(tr("Tests if the network is symmetric or not"));
+	symmetryAct->setWhatsThis(tr("Network Symmetry\n\n A network is symmetric when all edges are reciprocal, or, in mathematical language, when the adjacency matrix is symmetric."));
 	connect(symmetryAct, SIGNAL(activated()), this, SLOT(slotCheckSymmetry()));
 
  
-	netDensity = new QAction( tr("&Density"), this);
+	netDensity = new QAction( tr("Network &Density"), this);
 	netDensity->setStatusTip(tr("Calculates the network density"));
-	netDensity->setWhatsThis(tr("Density\n\n Calculates and displays the density of the active network"));
+	netDensity->setWhatsThis(tr("Density\n\n The density of a network is the ratio of existing links to maximum links (n(n-1))"));
 	connect(netDensity, SIGNAL(activated()), this, SLOT(slotNetworkDensity()));
 
-	distanceAct = new QAction(QIcon(":/images/distance.png"),  tr("Distance of Two Nodes"), this);
+	distanceAct = new QAction(QIcon(":/images/distance.png"),  tr("Geodesic Distance"), this);
 	distanceAct ->setShortcut(tr("Ctrl+G"));
-	distanceAct->setStatusTip(tr("Displays the geodesic distance of two nodes (the number of edges between them)."));
-	distanceAct->setWhatsThis(tr("Geodesic Distance\n\n This is the number of edges between two nodes."));
+	distanceAct->setStatusTip(tr("Calculates the number of edges between two nodes..."));
+	distanceAct->setWhatsThis(tr("Geodesic Distance\n\n The geodesic distance of two nodes is the number of edges between them."));
 	connect(distanceAct, SIGNAL(activated()), this, SLOT(slotDistance()));
 
 	distanceMatrixAct = new QAction(tr("Distance &Matrix"),this);
 	distanceMatrixAct ->setShortcut(tr("Ctrl+M"));
 	distanceMatrixAct->setStatusTip(tr("Displays the matrix of geodesic distances between all nodes"));
-	distanceMatrixAct->setWhatsThis(tr("Matrix of distances\n\n Displays a NxN matrix, where the (i,j) element is the geodesic distance from node i to node j."));
+	distanceMatrixAct->setWhatsThis(tr("Distance Matrix\n\n A distance matrix is a NxN matrix, where its (i,j) element is the geodesic distance from node i to node j."));
 	connect(distanceMatrixAct, SIGNAL(activated()), this, SLOT( slotViewDistanceMatrix() ) );
 	
 	diameterAct = new QAction(QIcon(":/images/diameter.png"), tr("Diameter"),this);
 	diameterAct ->setShortcut(tr("Ctrl+D"));
 	diameterAct->setStatusTip(tr("Calculates and displays the diameter of the active network."));
-	diameterAct->setWhatsThis(tr("Diameter\n\n Diameter is the maximum shortest path between two nodes of the network."));
+	diameterAct->setWhatsThis(tr("Diameter\n\n Diameter is the maximum shortest path between any two nodes of the network."));
 	connect(diameterAct, SIGNAL(activated()), this, SLOT(slotDiameter()));
 		
 	cOutDegreeAct = new QAction(tr("OutDegree"),	this);
 	cOutDegreeAct->setStatusTip(tr("Calculates and displays OutDegree Centralities"));
-	cOutDegreeAct->setWhatsThis(tr("OutDegree Centrality\n\n Calculate and display OutDegree Centrality"));
+	cOutDegreeAct->setWhatsThis(tr("OutDegree Centrality\n\n For each node k, this is the number of arcs starting from it. This is oftenly a measure of activity."));
 	connect(cOutDegreeAct, SIGNAL(activated()), this, SLOT(slotCentralityOutDegree()));
 
 	cInDegreeAct = new QAction(tr("InDegree"),	 this);
 	cInDegreeAct->setStatusTip(tr("Calculates and displays InDegree Centralities"));
-	cInDegreeAct->setWhatsThis(tr("InDegree Centrality\n\n Calculate and display InDegree Centrality"));
+	cInDegreeAct->setWhatsThis(tr("InDegree Centrality\n\n For each node k, this the number of arcs ending at k. Most in-degree central node might be considered more prominent among others. "));
 	connect(cInDegreeAct, SIGNAL(activated()), this, SLOT(slotCentralityInDegree()));
 
 	cClosenessAct = new QAction(tr("Closeness"),	 this);
 	cClosenessAct->setStatusTip(tr("Calculates and displays Closeness Centralities"));
-	cClosenessAct->setWhatsThis(tr("Closeness Centrality\n\n Calculate and display Closeness Centrality"));
+	cClosenessAct->setWhatsThis(tr("Closeness Centrality\n\n For each node k, this the invert sum of the shortest distances between k and every other node. It is interpreted as the ability to access information through the \"grapevine\" of network members. "));
 	connect(cClosenessAct, SIGNAL(activated()), this, SLOT(slotCentralityCloseness()));
 
 	cBetweenessAct = new QAction(tr("Betweeness"),	 this);
 	cBetweenessAct->setStatusTip(tr("Calculates and displays Betweeness Centralities"));
-	cBetweenessAct->setWhatsThis(tr("Betweeness Centrality\n\n Calculate and display Betweeness Centrality"));
+	cBetweenessAct->setWhatsThis(tr("Betweeness Centrality\n\n For each node k, this is the ratio of all geodesics between pairs of nodes which run through k. It reflects how often an node lies on the geodesics between the other nodes of the network. It can be interpreted as a measure of control."));
 	connect(cBetweenessAct, SIGNAL(activated()), this, SLOT(slotCentralityBetweeness()));
 
 	cGraphAct = new QAction(tr("Graph"),	this);
 	cGraphAct->setStatusTip(tr("Calculates and displays Graph Centralities"));
-	cGraphAct->setWhatsThis(tr("Graph Centrality\n\n Calculate and display Graph Centrality"));
+	cGraphAct->setWhatsThis(tr("Graph Centrality\n\n For each node k, this is the invert of the maximum of all geodesic distances from k to all other nodes in the network. Nodes with high GC have short distances to all other nodes in the graph. "));
 	connect(cGraphAct, SIGNAL(activated()), this, SLOT(slotCentralityGraph()));
 
 	cStressAct = new QAction(tr("Stress"),	 this);
 	cStressAct->setStatusTip(tr("Calculate and display Stress Centrality"));
-	cStressAct->setWhatsThis(tr("Stress Centrality\n\n Calculate and display Stress Centrality"));
+	cStressAct->setWhatsThis(tr("Stress Centrality\n\n For each node k, this is the total number of geodesics between all other nodes which run through k. When one node falls on all other geodesics between all the remaining (N-1) nodes, then we have a star graph with maximum Stress Centrality"));
 	connect(cStressAct, SIGNAL(activated()), this, SLOT(slotCentralityStress()));
 
 
 	cEccentAct = new QAction(tr("Eccentricity"), this);
 	cEccentAct ->setStatusTip(tr("Calculate and display Eccentricity Centrality"));
-	cEccentAct ->setWhatsThis(tr("Stress Centrality\n\n Calculate and display Eccentricity Centrality"));
+	cEccentAct ->setWhatsThis(tr("Stress Centrality\n\n For each node k, this is the largest geodesic distance (k,t) from every other vertex t. Therefore, EC(u) reflects how far, at most, is each node from every other node."));
 	connect(cEccentAct , SIGNAL(activated()), this, SLOT(slotCentralityEccentricity()));
 
 	cInformationalAct = new QAction(tr("Informational"),	this);
@@ -2184,7 +2184,7 @@ void MainWindow::slotCreateSameDegreeRandomNetwork(){
 		statusBar()->showMessage("You did not enter an integer. Aborting.", statusBarDuration);
 		return;
 	}
-	int degree = QInputDialog::getInteger(this,"Create same degree network...", "Enter an even number d of links for each node:", 2, 2, aNodes-1, 2, &ok);
+	int degree = QInputDialog::getInteger(this,"Create same degree network...", "Enter an even number d of links for each node:", 2, 2, newNodes-1, 2, &ok);
 	if ( (degree% 2)==1 ) {
 		QMessageBox::information(this, "Error",tr(" Sorry. I cannot create such a network. Links must be even number"), "OK",0);
 		return;
@@ -2240,7 +2240,7 @@ void MainWindow::slotCreatePhysicistLatticeNetwork(){
 		statusBar()->showMessage("You did not enter an integer. Aborting.", statusBarDuration);
 		return;
 	}
-	int degree = QInputDialog::getInteger(this,"Create physicist's lattice...", "Enter an even number d of links for each node:", 2, 2, aNodes-1, 2, &ok);
+	int degree = QInputDialog::getInteger(this,"Create physicist's lattice...", "Enter an even number d of links for each node:", 2, 2, newNodes-1, 2, &ok);
 	if ( (degree% 2)==1 ) {
 		QMessageBox::information(this, "Error",tr(" Sorry. I cannot create such a network. Links must be even number"), "OK",0);
 		return;

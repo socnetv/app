@@ -1,7 +1,7 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser 
  version: 0.48
- Written in Qt 4.4 with KDevelop   
+ Written in Qt 4.4
  
                          parser.h  -  description
                              -------------------
@@ -34,6 +34,11 @@ using namespace std;
 #include <QMutex>
 #include <QObject>
 
+
+/** 	
+	Main class for network file parsing and loading
+	Currently, it supports Pajek, Adjacency, Graphviz, GraphML
+*/
 class Parser :  public QThread {
 	Q_OBJECT
 public:
