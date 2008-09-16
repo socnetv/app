@@ -1,7 +1,7 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser 
  version: 0.48
- Written in Qt 4.4 with KDevelop   
+ Written in Qt 4.4
 
                            mainwindow.cpp  -  description
                              -------------------
@@ -965,6 +965,7 @@ void MainWindow::initMenuBar() {
 	physicalLayoutMenu -> addAction (FRLayoutAct);
 	layoutMenu->addSeparator();
 	layoutMenu->addAction(nodeSizeProportionalOutDegreeAct);
+	layoutMenu->addAction(nodeSizeProportionalInDegreeAct);
 	layoutMenu->addSeparator();
 	layoutMenu -> addAction (circleClearBackgrCirclesAct);
 	layoutMenu->addSeparator();
@@ -1401,7 +1402,7 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
 		ce->accept();
 		return;
 	}
-	switch( QMessageBox::information( this, "-SocNetV-",
+	switch( QMessageBox::information( this, "Save file",
 				      tr("Do you want to save the changes") +
 				      tr(" to the network file?"),
 				      tr("Yes"), tr("No"), tr("Cancel"),
@@ -1489,7 +1490,7 @@ void MainWindow::slotFileSave() {
 		else  fileSaved=FALSE; 
 	}
 	else 
-	switch( QMessageBox::information( this, "-SocNetV-",
+	switch( QMessageBox::information( this, "File Format-",
 				      tr("Do you want to save this network ")+
 				      tr("in Pajek-formatted or SocioMatrix - formatted file?"),
 				      tr("Pajek"), tr("Sociomatrix"), tr("Cancel"),
@@ -1546,7 +1547,7 @@ void MainWindow::slotFileSaveAs() {
 void MainWindow::slotFileClose() {
 	statusBar()->showMessage(tr("Closing file..."));
 	if (networkModified) {
-		switch ( QMessageBox::information (this, "-SocNetV-",tr("Network has not been saved. Do you want to save before closing it?"), "Yes", "No",0,1))
+		switch ( QMessageBox::information (this, "Closing Network...",tr("Network has not been saved. Do you want to save before closing it?"), "Yes", "No",0,1))
 		{
 			case 0: slotFileSave(); break;
 			case 1: break;
@@ -1642,7 +1643,7 @@ void MainWindow::fileType(int type, QString networkName, int aNodes, int totalLi
 			pajekFileLoaded=FALSE;
 			adjacencyFileLoaded=FALSE;
 			fileLoaded=FALSE;
-			QMessageBox::information(this, "-SocNetV-","Unrecognized format. \nPlease specify"
+			QMessageBox::critical(this, "Error","Unrecognized format. \nPlease specify"
 			" which is the file-format using Import Menu.","OK",0);
 			break;
 	}
@@ -1674,35 +1675,6 @@ void MainWindow::addNodeWithMouse(int i, int x, int y){
 
 
 
-/**
-	Creates and Draws the node with the specified number, label, color, position etc
-	Called when loading files
-*/
-// void MainWindow::createNode(int i, int size, QString nodeColor, QString label, QString lColor, QPointF p, QString nodeShape) {
-// 	qDebug("MW: createNode(): Cursor at %f, %f ", p.x(),p.y() );
-// 	if ( p.x()<0 || p.y()<0) {
-//         	p.setX(rand()%graphicsWidget->width());
-//         	p.setY(rand()%graphicsWidget->height());
-// 		qDebug("MW: createNode(): Node out of bounds. Using random coordinates: (%d, %d).", (int) p.x(), (int) p.y());
-// 	}
-// 
-// 	/** Arguments of addNode method in order of appearance:
-// 	NodeNumber
-// 	NodeValue
-// 	shapeSize
-// 	NodeColor
-// 	NodeLabel
-// 	LabelColor
-// 	QPoint p with coordinates (X, Y)
-// 	NodeShape
-// 	ShowLabels
-// 	ShowNumbers 
-// 	*/
-// 	qDebug ("MW: Calling addVertex for vertice %i",i);
-// 	activeGraph.addVertex(i, 1, size,  nodeColor, label, lColor, p, nodeShape);
-// 
-// 	graphicsWidget->addNode ( i, 1, size,  nodeColor, label, lColor, p, nodeShape, showLabels(), showNumbers()) ;	
-// }
 
 
 /**
@@ -1715,42 +1687,15 @@ void MainWindow::createNode() {
 	p.setX(rand()%graphicsWidget->width());
        	p.setY(rand()%graphicsWidget->height());
 	qDebug("MW: createNode(): Node out of bounds. Using random coordinates: (%d, %d).", (int) p.x(), (int) p.y());
-
-	/** Arguments of addNode method in order of appearance:
-	NodeNumber
-	NodeValue
-	shapeSize
-	NodeColor
-	NodeLabel
-	LabelColor
-	QPoint p with coordinates (X, Y)
-	NodeShape
-	ShowLabels
-	ShowNumbers 
-	*/
 	
 	int i=activeGraph.lastVertexNumber()+1;
 	QString label=QString::number(i);
-	qDebug ("MW: createNode(). Calling addVertex for vertice %i",i);
+	qDebug ("MW: createNode(). Calling Graph::addVertex for vertice %i",i);
 	activeGraph.addVertex(i, 1, initNodeSize,  initNodeColor, label, initLabelColor, p, initNodeShape);
-	qDebug ("MW: createNode(). Calling addNode for vertice %i",i);
+	qDebug ("MW: createNode(). Calling GW::addNode for vertice %i",i);
 	graphicsWidget->addNode (i, 1, initNodeSize,  initNodeColor, label, initLabelColor, p, initNodeShape,  showLabels(), showNumbers()) ;	
 
 }
-
-
-
-
-/**
-	Called from activeGraph to update GraphicsWidget when creating random networks
-*/
-void MainWindow::displayRandomLink( int i, int j, int weight, bool undirected){
-	qDebug ("MW: createRandomLink() between node %i and node %i, weight %i", i, j, weight);
-	bool drawArrows=showLinksArrowsAct ->isChecked();
-	qDebug()<< "drawArrows" << drawArrows;
-	graphicsWidget->addEdge(i, j, undirected, drawArrows, initLinkColor, bezier, false);
-}
-
 
 
 
@@ -1762,7 +1707,7 @@ void MainWindow::displayRandomLink( int i, int j, int weight, bool undirected){
 
 bool MainWindow::slotExportPNG(){
 	if (!fileLoaded && !networkModified )  {
-		QMessageBox::information(this, "-SocNetV-",tr("Load a network file or create a new network first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("Cannot export PNG.") ,statusBarDuration);
 		return false;
 	}
@@ -1782,11 +1727,11 @@ bool MainWindow::slotExportPNG(){
 	p.end();
 	if (fn.contains("png", Qt::CaseInsensitive) ) {
 		picture.toImage().save(fn, "PNG");
-		QMessageBox::information(this, "-SocNetV-",tr("Image Saved as: ")+tempFileNameNoPath.last(), "OK",0);
+		QMessageBox::information(this, "Export to PNG...",tr("Image Saved as: ")+tempFileNameNoPath.last(), "OK",0);
  	}
 	else {
 		picture.toImage().save(fn+".png", "PNG");
-		QMessageBox::information(this, "-SocNetV-",tr("Image Saved as: ")+tempFileNameNoPath.last()+".png" , "OK",0);
+		QMessageBox::information(this, "Export to PNG...",tr("Image Saved as: ")+tempFileNameNoPath.last()+".png" , "OK",0);
 	}
 	
 	statusBar()->showMessage( tr("Exporting completed"), statusBarDuration );
@@ -1801,7 +1746,7 @@ bool MainWindow::slotExportPNG(){
 */
 bool MainWindow::slotExportBMP(){
 	if (!fileLoaded && !networkModified )  {
-		QMessageBox::information(this, "-SocNetV-",tr("Load a network file or create a new network first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("Cannot export BMP.") ,statusBarDuration);
 		return false;
 	}
@@ -1822,11 +1767,11 @@ bool MainWindow::slotExportBMP(){
 	p.end();
 	if (fn.contains(format, Qt::CaseInsensitive) ) {
 		picture.toImage().save(fn, format.toAscii());
-		QMessageBox::information(this, "-SocNetV-",tr("Image Saved as: ")+tempFileNameNoPath.last(), "OK",0);
+		QMessageBox::information(this, "Export to BMP...",tr("Image Saved as: ")+tempFileNameNoPath.last(), "OK",0);
  	}
 	else {
 		picture.toImage().save(fn+"."+format, format.toAscii());
-		QMessageBox::information(this, "-SocNetV-",tr("Image Saved as: ")+tempFileNameNoPath.last()+"."+format , "OK",0);
+		QMessageBox::information(this, "Export to BMP...",tr("Image Saved as: ")+tempFileNameNoPath.last()+"."+format , "OK",0);
 	}
 	
 	statusBar()->showMessage( tr("Exporting completed"), statusBarDuration );
@@ -1845,7 +1790,7 @@ bool MainWindow::slotExportBMP(){
 bool MainWindow::slotExportPajek(){
 	qDebug ("MW: slotExportPajek");
 	if (!fileLoaded && !networkModified )  {
-		QMessageBox::information(this, "-SocNetV-",tr("Load a network file or create a new network first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("Cannot export to Pajek.") ,statusBarDuration);
 		return false;
 	}
@@ -1929,7 +1874,7 @@ bool MainWindow::slotExportPajek(){
 bool MainWindow::slotExportSM(){
 	qDebug("MW: slotExportSM()");
 	if (!fileLoaded && !networkModified )  {
-		QMessageBox::information(this, "-SocNetV-",tr("Load a network file or create a new network first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("Cannot export to Adjacency Matrix.") ,statusBarDuration);
 		return false;
 	}
@@ -1973,7 +1918,7 @@ bool MainWindow::slotExportSM(){
 */
 bool MainWindow::slotExportDL(){
 	if (!fileLoaded && !networkModified )  {
-		QMessageBox::information(this, "-SocNetV-",tr("Load a network file or create a new network first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("Cannot export to DL.") ,statusBarDuration);
 		return false;
 	}
@@ -2001,7 +1946,7 @@ return true;
 */ 
 bool MainWindow::slotExportGW(){
 	if (!fileLoaded && !networkModified )  {
-		QMessageBox::information(this, "-SocNetV-",tr("Load a network file or create a new network first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("Cannot export to GW.") ,statusBarDuration);
 		return false;
 	}
@@ -2076,24 +2021,24 @@ void MainWindow::slotViewNetworkFile(){
 			return;
 		}
 		TextEditor *ed = new TextEditor(fileName);//OPEN A TEXT EDITOR WINDOW
-		ed->setWindowTitle(tr("-SocNetV- Text editor - ") + fileNameNoPath.last() );
+		ed->setWindowTitle(tr("Viewing network file - ") + fileNameNoPath.last() );
 		ed->show();
 		statusBar()->showMessage( tr("Loaded network text file " )+ fileNameNoPath.last() , statusBarDuration );
 	}
 	else if (fileName.isEmpty() && networkModified)     {  //New network + something
-		QMessageBox::information (this, "-SocNetV-",
-		tr("Network not saved yet. Please save it now."), "OK",0);
+		QMessageBox::information (this, "Viewing network file",
+		tr("Network not saved yet. I will open a dialog for you to save it now."), "OK",0);
 		slotFileSaveAs();
 	}
 	else if (fileLoaded && networkModified )     {   //file network + modified
-		QMessageBox::information (this, "-SocNetV-",
+		QMessageBox::information (this, "Viewing network file",
 		//FIXME maybe better to save automatigally than asking?
 		tr("Network has been modified. Please save it now."), "OK",0);
 		slotFileSave();
 	}
 
 	else	{
-		QMessageBox::information (this, "-SocNetV-",
+		QMessageBox::critical(this, "Error",
 		tr("Load a network file first or create and save a new one..."), "OK",0);
 		statusBar()->showMessage( tr("Nothing here. Not my fault, though!"), statusBarDuration );
 	}
@@ -2112,7 +2057,7 @@ void MainWindow::slotViewNetworkFile(){
 void MainWindow::slotViewAdjacencyMatrix(){
 
 	if ( !fileLoaded && !networkModified) {
-		QMessageBox::information (this, "-SocNetV-",
+		QMessageBox::critical (this, "Error",
 		tr("Load a network file first or create something by double-clicking on the canvas!"), "OK",0);
 
         	statusBar()->showMessage( tr("Nothing to show!"), statusBarDuration );
@@ -2129,7 +2074,7 @@ void MainWindow::slotViewAdjacencyMatrix(){
 	QString qfn=QString::fromLocal8Bit("adjacency-matrix.dat");
 	TextEditor *ed = new TextEditor(fn);
 	tempFileNameNoPath=qfn.split( "/");
-	ed->setWindowTitle(tr("-SocNetV- Adjacency matrix - ") + tempFileNameNoPath.last());
+	ed->setWindowTitle(tr("View Adjacency Matrix - ") + tempFileNameNoPath.last());
 	ed->show();
 
 }
@@ -2202,7 +2147,7 @@ void MainWindow::slotCreateSameDegreeRandomNetwork(){
 	}
 	int degree = QInputDialog::getInteger(this,"Create same degree network...", "Enter an even number d of links for each node:", 2, 2, newNodes-1, 2, &ok);
 	if ( (degree% 2)==1 ) {
-		QMessageBox::information(this, "Error",tr(" Sorry. I cannot create such a network. Links must be even number"), "OK",0);
+		QMessageBox::critical(this, "Error",tr(" Sorry. I cannot create such a network. Links must be even number"), "OK",0);
 		return;
 	}
 	statusBar()->showMessage("Erasing any existing network. ", statusBarDuration);
@@ -2258,10 +2203,9 @@ void MainWindow::slotCreatePhysicistLatticeNetwork(){
 	}
 	int degree = QInputDialog::getInteger(this,"Create physicist's lattice...", "Enter an even number d of links for each node:", 2, 2, newNodes-1, 2, &ok);
 	if ( (degree% 2)==1 ) {
-		QMessageBox::information(this, "Error",tr(" Sorry. I cannot create such a network. Links must be even number"), "OK",0);
+		QMessageBox::critical(this, "Error",tr(" Sorry. I cannot create such a network. Links must be even number"), "OK",0);
 		return;
 	}
-
 
 	statusBar()->showMessage("Erasing any existing network. ", statusBarDuration);
 	initNet();  
@@ -2308,7 +2252,7 @@ void MainWindow::slotFindNode(){
 		return;
 	}
 	if (!fileLoaded && !networkModified  )     {
-		QMessageBox::critical( this, "-SocNetV-",
+		QMessageBox::critical( this, "Find Node",
 				      tr("Load a network file first or create some nodes..."), tr("OK"),0 );
 		statusBar()->showMessage( QString(tr("Nothing to find!")) , statusBarDuration);
 		return;
@@ -2499,7 +2443,7 @@ void MainWindow::linkInfoStatusBar (Edge* link) {
 void MainWindow::slotRemoveNode() {
 	qDebug("MW: slotRemoveNode()");
 	if (!fileLoaded && !networkModified )  {
-		QMessageBox::information(this, "-SocNetV-",tr("Load a network file or add some nodes first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or add some nodes first."), "OK",0);
 		statusBar()->showMessage(tr("Nothing to remove.") ,statusBarDuration);
 		return;
 	}
@@ -2543,7 +2487,7 @@ void MainWindow::slotRemoveNode() {
 void MainWindow::slotAddLink(){
 	qDebug ("MW: slotAddLink()");
 	if (!fileLoaded && !networkModified )  {
-		QMessageBox::information(this, "-SocNetV-",tr("Create some nodes first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Create some nodes first."), "OK",0);
 		statusBar()->showMessage(tr("There are no nodes yet...") ,statusBarDuration);
 		return;
 	}
@@ -2612,7 +2556,7 @@ void MainWindow::slotAddLink(){
 */
 void MainWindow::slotRemoveLink(){ 
 	if ( (!fileLoaded && !networkModified) || activeGraph.totalEdges() ==0 )  {
-		QMessageBox::information(this, "-SocNetV-",tr("No links present. Load a network file or create a new network first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("No links present. Load a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("No links to remove - sorry.") ,statusBarDuration);
 		return;
 	}
@@ -2640,7 +2584,7 @@ void MainWindow::slotRemoveLink(){
 			activeGraph.removeEdge(sourceNode, targetNode);
 		}
 		else {
-			QMessageBox::information(this, "-SocNetV-",tr("There is no such link."), "OK",0);
+			QMessageBox::critical(this, "Remove link",tr("There is no such link."), "OK",0);
 			statusBar()->showMessage(tr("There are no nodes yet...") ,statusBarDuration);
 			return;
 		}
@@ -2664,7 +2608,7 @@ void MainWindow::slotRemoveLink(){
 */
 void MainWindow::slotChangeNodeLabel(){
 	if (!fileLoaded && !networkModified )  {
-		QMessageBox::information(this, "-SocNetV-",tr("There are no nodes. Load a network file or create a new network first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("There are no nodes. Load a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("No nodes created.") ,statusBarDuration);
 		return;
 	}
@@ -2699,7 +2643,7 @@ void MainWindow::slotChangeNodeLabel(){
 */
 void MainWindow::slotChangeNodeColor(){
 	if (!fileLoaded && !networkModified )  {
-		QMessageBox::information(this, "-SocNetV-",tr("There are no nodes. Load a network file or create a new network first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("There are no nodes. Load a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("No nodes...") ,statusBarDuration);
 		return;
 	}
@@ -2751,7 +2695,7 @@ void MainWindow::slotChangeNodeColor(){
 */
 void MainWindow::slotChangeNodeSize(){
 	if (!fileLoaded && !networkModified )  {
-		QMessageBox::information(this, "-SocNetV-",tr("There are no nodes. Load a network file or create a new network first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("There are no nodes. Load a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("Cannot change nothing.") ,statusBarDuration);
 		return;
 	}
@@ -2860,7 +2804,7 @@ void MainWindow::slotChangeLinkLabel(){
 */
 void MainWindow::slotChangeLinkColor(){
 	if (!fileLoaded && !networkModified )  {
-		QMessageBox::information(this, "-SocNetV-",tr("No links here. Load a network file or create a new network first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("No links here. Load a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("No links present...") ,statusBarDuration);
 		return;
 	}
@@ -3002,7 +2946,7 @@ void MainWindow::slotChangeLinkWeight(){
 void MainWindow::slotFilterNodes(){
 
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::information(this, "Error",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
 
 		statusBar()->showMessage( QString(tr("Nothing to filter!")) , statusBarDuration);
 		return;
@@ -3026,17 +2970,17 @@ void MainWindow::slotFilterLinks(){
 	bool ok=FALSE, moreWeighted=FALSE;
 	int selectedWeight=0;
 	switch (
-             QMessageBox::information(this, "-SocNetV-",tr(" Do you want to filter out links weighted greater-equal or less-equal than a number?"), ">=","<=",0,1)
+             QMessageBox::information(this, "Filter Links",tr(" Do you want to filter out links weighted greater-equal or less-equal than a number?"), ">=","<=",0,1)
             )
 	{
 		case 0:  moreWeighted = TRUE;
 			selectedWeight =   QInputDialog::getInteger(
-			"-SocNetV-", tr("Filter all links with weight greater-equal than: "),
+			"Filter Links", tr("Filter all links with weight greater-equal than: "),
 			0, 0, 10, 1, &ok, this ) ;
 			break;
 		case 1:  moreWeighted=FALSE;
 			selectedWeight =   QInputDialog::getInteger(
-			"-SocNetV-", tr("Filter all links with weight less-equal than: "),
+			"Filter Links", tr("Filter all links with weight less-equal than: "),
 			0, 0, 10, 1, &ok, this ) ;
 			break;
 	}
@@ -3132,7 +3076,7 @@ void MainWindow::slotLayoutRandomCircle(){
 
 void MainWindow::slotLayoutNodeSizeProportionalEdges(bool checked){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::information(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
 		statusBar()->showMessage(tr("I am really sorry. You must really load a file first... ") ,statusBarDuration);
 		return;
 	}
@@ -3216,7 +3160,7 @@ void MainWindow::slotLayoutNodeSizeProportionalEdges(bool checked){
 */
 void MainWindow::slotLayoutCircleCentralityInDegree(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::information(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
 
 		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
 		return;
@@ -3240,7 +3184,7 @@ void MainWindow::slotLayoutCircleCentralityInDegree(){
 */
 void MainWindow::slotLayoutCircleCentralityOutDegree(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::information(this, "Error",tr("Load a network file or create a new network first!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first!"), "OK",0);
 		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
 		return;
 	}
@@ -3265,7 +3209,7 @@ void MainWindow::slotLayoutCircleCentralityOutDegree(){
 */
 void MainWindow::slotLayoutCircleCentralityCloseness(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::information(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
 
 		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
 		return;
@@ -3292,7 +3236,7 @@ void MainWindow::slotLayoutCircleCentralityCloseness(){
 */
 void MainWindow::slotLayoutCircleCentralityBetweeness(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::information(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
 
 		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
 		return;
@@ -3321,7 +3265,7 @@ void MainWindow::slotLayoutCircleCentralityBetweeness(){
 */
 void MainWindow::slotLayoutCircleCentralityStress(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::information(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
 		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
 		return;
 	}
@@ -3346,7 +3290,7 @@ void MainWindow::slotLayoutCircleCentralityStress(){
 */
 void MainWindow::slotLayoutCircleCentralityGraph(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::information(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
 		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
 		return;
 	}
@@ -3371,7 +3315,7 @@ void MainWindow::slotLayoutCircleCentralityGraph(){
 */
 void MainWindow::slotLayoutCircleCentralityEccentr(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::information(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
 		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
 		return;
 	}
@@ -3405,7 +3349,7 @@ void MainWindow::slotLayoutCircleCentralityInformational(){
 */
 void MainWindow::slotLayoutLevelCentralityInDegree(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::information(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
 		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
 		return;
 	}
@@ -3430,7 +3374,7 @@ void MainWindow::slotLayoutLevelCentralityInDegree(){
 */
 void MainWindow::slotLayoutLevelCentralityOutDegree(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::information(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
 		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
 		return;
 	}
@@ -3455,7 +3399,7 @@ void MainWindow::slotLayoutLevelCentralityOutDegree(){
 */
 void MainWindow::slotLayoutLevelCentralityCloseness(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::information(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
 		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
 		return;
 	}
@@ -3479,7 +3423,7 @@ void MainWindow::slotLayoutLevelCentralityCloseness(){
 */
 void MainWindow::slotLayoutLevelCentralityBetweeness(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::information(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
 		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
 		return;
 	}
@@ -3506,7 +3450,7 @@ void MainWindow::slotLayoutLevelCentralityInformational(){
 */
 void MainWindow::slotLayoutSpringEmbedder(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::information(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
 		statusBar()->showMessage(tr("I am really sorry. You must really load a file first... ") ,statusBarDuration);
 		return;
 	}
@@ -3615,7 +3559,7 @@ void MainWindow::slotActiveNodes(){
 		return;
 	}
 	else
-		QMessageBox::information(this,"Total Nodes","Active Nodes: "+QString::number(aNodes),"OK",0);
+		QMessageBox::information(this,"Total Nodes","Nodes in active network: "+QString::number(aNodes),"OK",0);
 	statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
 
 }
@@ -3679,7 +3623,7 @@ void MainWindow::slotNetworkDensity() {
 		return;
 	}
 	float density  =   (float) activeGraph.totalEdges()/(float)(activeGraph.vertices()*(activeGraph.vertices()-1.0));
-	QMessageBox::information(this, "Density", tr("Network density :  ")+QString::number(density),"OK",0);
+	QMessageBox::information(this, "Density", tr("Network density =   ")+QString::number(density),"OK",0);
 	statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
 }
 
@@ -3748,8 +3692,8 @@ void MainWindow::slotViewDistanceMatrix(){
 	TextEditor *ed = new TextEditor(fn);
 	TextEditor *ed1 = new TextEditor(fn1);
 
-	ed1->setWindowTitle(tr("-SocNetV- Sigmas Matrix - "));
-	ed->setWindowTitle(tr("-SocNetV- Distance Matrix - "));
+	ed1->setWindowTitle(tr("Matrix of sigmas "));
+	ed->setWindowTitle(tr("Matrix of distances "));
 	ed1->show();	
 	ed->show();
 
@@ -3809,7 +3753,7 @@ void MainWindow::slotCentralityOutDegree(){
 	}
 	bool considerWeights=FALSE;
 	
-	switch( QMessageBox::information( this, "-SocNetV-",
+	switch( QMessageBox::information( this, "Centrality Out-Degree",
 				      tr("Take weights into account (Default: No)?"),
 				      tr("Yes"), tr("No"),
 				      0, 1 ) )
@@ -3884,7 +3828,7 @@ void MainWindow::slotCentralityOutDegree(){
 
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
-	ed->setWindowTitle("-SocNetV- Out-Degree - " + tempFileNameNoPath.last());
+	ed->setWindowTitle("Out-Degree - " + tempFileNameNoPath.last());
 	ed->show();
 }
 
@@ -3896,13 +3840,13 @@ void MainWindow::slotCentralityOutDegree(){
 */
 void MainWindow::slotCentralityInDegree(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::information(this, "-SocNetV-",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
 		statusBar()->showMessage( QString(tr("Nothing to do...")) , statusBarDuration);
 		return;
 	}
 	bool considerWeights=FALSE;
 	
-	switch( QMessageBox::information( this, "-SocNetV-",
+	switch( QMessageBox::information( this, "Centrality In-Degree",
 				      tr("Take weights into account (Default: No)?"),
 				      tr("Yes"), tr("No"),
 				      0, 1 ) )
@@ -3976,7 +3920,7 @@ void MainWindow::slotCentralityInDegree(){
 
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
-	ed->setWindowTitle("-SocNetV- In-Degree - " + tempFileNameNoPath.last());
+	ed->setWindowTitle("In-Degree - " + tempFileNameNoPath.last());
 	ed->show();
 }
 
@@ -3988,7 +3932,7 @@ void MainWindow::slotCentralityInDegree(){
 */
 void MainWindow::slotCentralityCloseness(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::information(this, "-SocNetV-",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
 
 		statusBar()->showMessage( QString(tr("Nothing to do...")) , statusBarDuration);
 		return;
@@ -4041,7 +3985,7 @@ void MainWindow::slotCentralityCloseness(){
 	f.close();
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
-	ed->setWindowTitle("-SocNetV- Closeness - " + tempFileNameNoPath.last());
+	ed->setWindowTitle("Closeness Centrality - " + tempFileNameNoPath.last());
 	ed->show();
 }
 
@@ -4053,7 +3997,7 @@ void MainWindow::slotCentralityCloseness(){
 */
 void MainWindow::slotCentralityBetweeness(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::information(this, "-SocNetV-",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
 
 		statusBar()->showMessage( QString(tr(" Nothing to do...")) , statusBarDuration);
 		return;
@@ -4104,7 +4048,7 @@ void MainWindow::slotCentralityBetweeness(){
 	f.close();
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
-	ed->setWindowTitle("-SocNetV- Betweeness - " + tempFileNameNoPath.last());
+	ed->setWindowTitle("Betweeness Centrality " + tempFileNameNoPath.last());
 	ed->show();
 	QApplication::restoreOverrideCursor();
 }
@@ -4127,7 +4071,7 @@ void MainWindow::slotCentralityInformational(){
 */
 void MainWindow::slotCentralityStress(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::information(this, "-SocNetV-",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
 
 		statusBar()->showMessage( QString(tr(" Nothing to do! Why dont you try creating something first?")) , statusBarDuration);
 		return;
@@ -4179,7 +4123,7 @@ void MainWindow::slotCentralityStress(){
 	f.close();
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
-	ed->setWindowTitle("-SocNetV- Stress - " + tempFileNameNoPath.last());
+	ed->setWindowTitle("Stress Centrality " + tempFileNameNoPath.last());
 	ed->show();
 }
 
@@ -4190,7 +4134,7 @@ void MainWindow::slotCentralityStress(){
 */
 void MainWindow::slotCentralityGraph(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::information(this, "-SocNetV-",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
 
 		statusBar()->showMessage( QString(tr(" Try creating a network first. Then I compute whatever you want...")) , statusBarDuration);
 		return;
@@ -4243,7 +4187,7 @@ void MainWindow::slotCentralityGraph(){
 
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/" );
-	ed->setWindowTitle("-SocNetV- Graph - " + tempFileNameNoPath.last());
+	ed->setWindowTitle("Graph Centrality " + tempFileNameNoPath.last());
 	ed->show();
 }
 
@@ -4255,7 +4199,7 @@ void MainWindow::slotCentralityGraph(){
 */
 void MainWindow::slotCentralityEccentricity(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::information(this, "-SocNetV-",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
 
 		statusBar()->showMessage( QString(tr(" Nothing to do...")) , statusBarDuration);
 		return;
@@ -4304,7 +4248,7 @@ void MainWindow::slotCentralityEccentricity(){
 	f.close();
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
-	ed->setWindowTitle("-SocNetV- Betweeness - " + tempFileNameNoPath.last());
+	ed->setWindowTitle("Eccentricity " + tempFileNameNoPath.last());
 	ed->show();
 	QApplication::restoreOverrideCursor();
 
@@ -4325,7 +4269,7 @@ bool MainWindow::showNumbers(){
 */
 void MainWindow::slotShowNumbers(bool toggle) {
  	if (!fileLoaded && ! networkModified) {
-		QMessageBox::information(this, "-SocNetV-",tr("Load a network file or create a new network. There are no nodes!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. There are no nodes!"), "OK",0);
 		statusBar()->showMessage(tr("Errr...no nodes here. Sorry!"), statusBarDuration);
 		return;
 	}
@@ -4354,7 +4298,7 @@ bool MainWindow::showLabels(){
 */
 void MainWindow::slotShowLabels(bool toggle){
  	if (!fileLoaded && ! networkModified) {
-		QMessageBox::information(this, "-SocNetV-",tr("Load a network file or create a new network first. There are no nodes!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. There are no nodes!"), "OK",0);
 		statusBar()->showMessage(tr("No nodes found. Sorry..."), statusBarDuration);
 		return;
 	}
@@ -4381,7 +4325,7 @@ void MainWindow::slotShowLabels(bool toggle){
 void MainWindow::slotChangeAllNodesSize() {
 	bool ok=FALSE;
 	
-	int newSize = QInputDialog::getInteger(this, "-SocNetV-", tr("Change all nodes size to: (1-16)"),initNodeSize, 1, 16, 1, &ok );
+	int newSize = QInputDialog::getInteger(this, "Change node size", tr("Select new size for all nodes: (1-16)"),initNodeSize, 1, 16, 1, &ok );
 	if (!ok) {
 		statusBar()->showMessage("Change node size operation cancelled.", statusBarDuration);
 		return;
@@ -4460,7 +4404,7 @@ void MainWindow::slotChangeAllNodesShape() {
 void MainWindow::slotChangeNumbersSize() {
 	bool ok=false;
 	int newSize;
-	newSize = QInputDialog::getInteger(this, "-SocNetV-", tr("Change all nodenumbers size to: (1-16)"),initNumberSize, 1, 16, 1, &ok );
+	newSize = QInputDialog::getInteger(this, "Change text size", tr("Change all nodenumbers size to: (1-16)"),initNumberSize, 1, 16, 1, &ok );
 	if (!ok) {
 		statusBar()->showMessage(tr("Change font size: Aborted."), statusBarDuration);
 	return;
@@ -4483,7 +4427,7 @@ void MainWindow::slotChangeNumbersSize() {
 void MainWindow::slotChangeLabelsSize() {
 /*  bool ok=false;
   int newSize;
-  newSize= QInputDialog::getInteger("-SocNetV-",
+  newSize= QInputDialog::getInteger("Change text size",
      tr("Choose a new font size for the labels: "),
      7, 7, 14 , 1, &ok, this )   ;
   if (!ok) {
@@ -4563,7 +4507,7 @@ void MainWindow::slotNumbersLinksWeights(bool toggle) {
 */
 void MainWindow::slotToggleLinks(bool toggle){
 	if (!fileLoaded && ! networkModified) {
-		QMessageBox::information(this, "-SocNetV-",tr("Load a network file or create a new network with some links first!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network with some links first!"), "OK",0);
 
 		statusBar()->showMessage(tr("No links found..."), statusBarDuration);
 		return;
@@ -4587,7 +4531,7 @@ void MainWindow::slotToggleLinks(bool toggle){
 */
 void MainWindow::slotLinksArrows(bool toggle){
 	if (!fileLoaded && ! networkModified) {
-		QMessageBox::information(this, "-SocNetV-",tr("Load a network file or create a new network first!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first!"), "OK",0);
 
 		statusBar()->showMessage(tr("No links found..."), statusBarDuration);
 		return;
@@ -4624,7 +4568,7 @@ void MainWindow::slotLinksArrows(bool toggle){
 */
 void MainWindow::slotLinksBezier(bool toggle){
 	if (!fileLoaded && ! networkModified) {
-		QMessageBox::information(this, "-SocNetV-",tr("Load a network file or create a new network!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network!"), "OK",0);
 
 		statusBar()->showMessage(tr("There are NO links here!"), statusBarDuration);
 		return;
@@ -4849,7 +4793,7 @@ void MainWindow::slotViewStatusBar(bool toggle) {
 */
 void MainWindow::slotTips() {
 	int randomTip=rand()%tipsCounter; //Pick a tip.
-	QMessageBox::about( this, "-SocNetV-", "<b>Tip of the day</b> <br>"  + tips[randomTip]);
+	QMessageBox::about( this, "Tip Of The Day", tips[randomTip]);
 }
 
 
@@ -4927,7 +4871,7 @@ void MainWindow::slotHelp(){
 	}
         qDebug ("help path is: " + helpPath.toAscii());
 	HTMLViewer *helpViewer = new HTMLViewer (helpPath, this);
-	helpViewer -> setWindowTitle ( "-SocNetV- "+ VERSION + tr(" Manual-"));
+	helpViewer -> setWindowTitle ( "SocNetV "+ VERSION + tr(" Manual"));
 	helpViewer->show();
 
 }
@@ -4939,11 +4883,11 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-     QMessageBox::about( this, "-SocNetV-",
+     QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualiser " +VERSION+ "  codename: <b>SNAIL</b>"
 	"<p>(C) 2005-2008 by Dimitris V. Kalamaras"
 	"<br> dimitris.kalamaras@gmail.com"
-	"<p><b>Last revision: </b> Fri, Sep 12, 2008</p>"
+	"<p><b>Last revision: </b> Fri, Sep 16, 2008</p>"
 
 
 	"<p><b>Fortune cookie: </b><br> \""  + fortuneCookie[randomCookie]  +"\""
@@ -4987,7 +4931,7 @@ void MainWindow::createFortuneCookies(){
 	Displays a short message about the Qt Toolbox.
 */
 void MainWindow::slotAboutQt(){
-	QMessageBox::aboutQt(this, "-SocNetV-"+ VERSION );
+	QMessageBox::aboutQt(this, "About Qt - SocNetV");
 }
 
 

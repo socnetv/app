@@ -83,22 +83,18 @@ public:		/**PUBLIC FUNCTIONS NOT VISIBLE BY OTHER WIDGETS NOR BY SLOT/LINK MECHA
 	void initNet();
 	void initView();
 
-	int loadNetworkFile( QString);
-	void fileType(int , QString , int , int ); 
-
-
-	int activeLinks();
-	int activeNodes();
-	bool symmetricAdjacency();
 	void createFortuneCookies();
 	void createTips();
 	void makeThingsLookRandom();
 
-	int distance(int, int);
-	
-	void createNode(int i, int size, QString col, QString lab, QString lCol, QPointF p, QString shape);
 
-	void displayRandomLink( int from, int to, int weight, bool undirected);
+	int loadNetworkFile( QString);
+	void fileType(int , QString , int , int ); 
+
+	int activeLinks();
+	int activeNodes();
+	bool symmetricAdjacency();
+	int distance(int, int);
 
 	bool showLabels();
 	bool showNumbers();
