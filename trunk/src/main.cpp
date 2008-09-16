@@ -1,7 +1,7 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser 
  version: 0.48
- Written in Qt 4.4 with KDevelop   
+ Written in Qt 4.4
 
                         main.cpp  -  description
                              -------------------
@@ -44,10 +44,9 @@ int main(int argc, char *argv[])
 	QString option;
 	if ( app.argc() > 1 )     {
 		option = app.argv()[1];
-		if ( option.endsWith( ".net" ) ||  option.endsWith( ".csv" ) || option.endsWith( ".txt" ) || option.endsWith( ".graphml" ) || option.endsWith( ".gml" ) || option.endsWith( ".dot" ) ) {
 			if (option=="--help" || option=="-h" ) {
-
-				cout<<"\n Usage:\n socnetv [flags] [file]\n";
+				cout<<"\nSocial Networks Visualiser v.0.48\n";
+				cout<<"\nUsage: socnetv [flags] [file]\n";
 				cout<<"-h, --help 	Displayes this help message\n";
 				cout<<"-V, --version	Displays version number\n\n";
 				
@@ -55,17 +54,22 @@ int main(int argc, char *argv[])
 				cout<<"socnetv file.net \n";
 				cout<<"where file.net/csv/dot/graphml must be of valid format. See README\n\n";
 
-				cout<<"Please send any bug reports to dimitris.kalamaras@gmail.com.";
+				cout<<"Please send any bug reports to dimitris.kalamaras@gmail.com.\n\n";
 				return -1;
 			}
 			else if (option=="-V" || option=="--version") {
-				cout<< "\n\nSocial Networks Visualiser \n\nVersion 0.48\n";
+				cout<< "\nSocial Networks Visualiser, version 0.48; \nCopyright Dimitris V. Kalamaras, \nLicense: GPL3\n\n";
 				return -1;
 			}
+			else if ( option.endsWith( ".net" ) ||  option.endsWith( ".csv" ) || option.endsWith( ".txt" ) || option.endsWith( ".graphml" ) || option.endsWith( ".gml" ) || option.endsWith( ".dot" ) ) {
+				cout<< "\n\nSocial Networks Visualiser \n \t Version 0.48\n";
+				cout<<"\t Loading file...";
+			}
 			else {
+
 				option = QString::null;
 			}
-		}
+		
 	}
 	MainWindow *socnetv=new MainWindow(option);
 	socnetv->show();
