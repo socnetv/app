@@ -3173,7 +3173,7 @@ void MainWindow::slotLayoutCircleCentralityInDegree(){
 	graphicsWidget->clearBackgrCircles();
 	activeGraph.layoutCircleCentrality(x0, y0, maxRadius,1);
 	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage(tr("Nodes in inner circles are more central. Ready. "),statusBarDuration);	
+	statusBar()->showMessage(tr("Nodes in inner circles have greater In-Degree Centrality."),statusBarDuration);	
 }
 
 
@@ -3196,7 +3196,7 @@ void MainWindow::slotLayoutCircleCentralityOutDegree(){
 	graphicsWidget->clearBackgrCircles();
 	activeGraph.layoutCircleCentrality(x0, y0, maxRadius, 2);
 	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage(tr("Nodes in inner circles are more central. Ready. "),statusBarDuration);	
+	statusBar()->showMessage(tr("Nodes in inner circles have greater Out-Degree Centrality. "),statusBarDuration);	
 }
 
 
@@ -3222,7 +3222,7 @@ void MainWindow::slotLayoutCircleCentralityCloseness(){
 	graphicsWidget->clearBackgrCircles();
 	activeGraph.layoutCircleCentrality(x0, y0, maxRadius,3);
 	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage(tr("Nodes in inner circles are more central. Ready. "),statusBarDuration);	
+	statusBar()->showMessage(tr("Nodes in inner circles have greater Closeness Centrality. "),statusBarDuration);	
 }
 
 
@@ -3250,7 +3250,7 @@ void MainWindow::slotLayoutCircleCentralityBetweeness(){
 	activeGraph.layoutCircleCentrality(x0, y0, maxRadius,4);
 	QApplication::restoreOverrideCursor();
 
-	statusBar()->showMessage(tr("Nodes in inner circles are more central. Ready. "),statusBarDuration);	
+	statusBar()->showMessage(tr("Nodes in inner circles have greater Betweeness Centrality. "),statusBarDuration);	
 }
 
 
@@ -3277,7 +3277,7 @@ void MainWindow::slotLayoutCircleCentralityStress(){
 	graphicsWidget->clearBackgrCircles();
 	activeGraph.layoutCircleCentrality(x0, y0, maxRadius,5);
 	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage(tr("Nodes in inner circles are more central. Ready. "),statusBarDuration);	
+	statusBar()->showMessage(tr("Nodes in inner circles have greater Stress Centrality. "),statusBarDuration);	
 }
 
 
@@ -3302,7 +3302,7 @@ void MainWindow::slotLayoutCircleCentralityGraph(){
 	graphicsWidget->clearBackgrCircles();
 	activeGraph.layoutCircleCentrality(x0, y0, maxRadius,6);
 	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage(tr("Nodes in inner circles are more central. Ready. "),statusBarDuration);	
+	statusBar()->showMessage(tr("Nodes in inner circles have greater Graph Centrality. "),statusBarDuration);	
 
 }
 
@@ -3327,7 +3327,7 @@ void MainWindow::slotLayoutCircleCentralityEccentr(){
 	graphicsWidget->clearBackgrCircles();
 	activeGraph.layoutCircleCentrality(x0, y0, maxRadius,7);
 	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage(tr("Nodes in inner circles are more central. Ready. "),statusBarDuration);	
+	statusBar()->showMessage(tr("Nodes in inner circles have greater Eccentricity Centrality. "),statusBarDuration);	
 
 }
 
@@ -3360,7 +3360,7 @@ void MainWindow::slotLayoutLevelCentralityInDegree(){
 	graphicsWidget->clearBackgrCircles();
 	activeGraph.layoutLevelCentrality(maxWidth, maxHeight, 1);
 	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage(tr("Nodes in inner circles are more central. Ready. "),statusBarDuration);	
+	statusBar()->showMessage(tr("Nodes in upper levels have greater In-Degree Centrality. "),statusBarDuration);	
 
 }
 
@@ -3385,7 +3385,7 @@ void MainWindow::slotLayoutLevelCentralityOutDegree(){
 	graphicsWidget->clearBackgrCircles();
 	activeGraph.layoutLevelCentrality(maxWidth, maxHeight, 2);
 	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage(tr("Nodes in inner circles are more central. Ready. "),statusBarDuration);	
+	statusBar()->showMessage(tr("Nodes in upper levels have greater Out-Degree Centrality. "),statusBarDuration);	
 
 }
 
@@ -3410,7 +3410,7 @@ void MainWindow::slotLayoutLevelCentralityCloseness(){
 	graphicsWidget->clearBackgrCircles();
 	activeGraph.layoutLevelCentrality(maxWidth, maxHeight, 3);
 	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage(tr("Nodes in inner circles are more central. Ready. "),statusBarDuration);	
+	statusBar()->showMessage(tr("Nodes in upper levels have greater Closeness Centrality."),statusBarDuration);	
 }
 
 
@@ -3434,7 +3434,7 @@ void MainWindow::slotLayoutLevelCentralityBetweeness(){
 	graphicsWidget->clearBackgrCircles();
 	activeGraph.layoutLevelCentrality(maxWidth, maxHeight, 4);
 	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage(tr("Nodes in inner circles are more central. Ready. "),statusBarDuration);	
+	statusBar()->showMessage(tr("Nodes in upper levels have greater Betweeness Centrality. "),statusBarDuration);	
 }
 
 
