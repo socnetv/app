@@ -196,7 +196,7 @@ signals:
 protected: 
 
 private:
-	Matrix  SM, TM, PM, DM;
+	Matrix  TM, DM;
 	int *test;
 	stack<int> Stack;
 	Parser parser;	
