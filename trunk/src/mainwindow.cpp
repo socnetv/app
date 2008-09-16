@@ -615,7 +615,7 @@ void MainWindow::initActions(){
 	countNodes->setWhatsThis(tr("Total Nodes\n\n This is the total number of nodes in the network."));
 	connect(countNodes, SIGNAL(activated()), this, SLOT(slotActiveNodes()));
 
-	countLinks = new QAction(QIcon(":/images/net.png"), tr("Total In-Out &Links (Edges)"), this);
+	countLinks = new QAction(QIcon(":/images/net.png"), tr("Total &Links (In and Out)"), this);
 	countLinks->setStatusTip(tr("Counts all (in and out) links of the network"));
 	countLinks->setWhatsThis(tr("Total Edges\n\n This is the total number of in and out links in the network."));
 	connect(countLinks, SIGNAL(activated()), this, SLOT(slotActiveLinks()));
@@ -2567,7 +2567,7 @@ void MainWindow::slotRemoveLink(){
 	max=activeGraph.lastVertexNumber();
 
   	if (!linkClicked) {
-		sourceNode=QInputDialog::getInteger(this,"-Remove link",tr("Source node:  (")+QString::number(min)+"..."+QString::number(max)+"):", min, 1, max , 1, &ok )   ;
+		sourceNode=QInputDialog::getInteger(this,"Remove link",tr("Source node:  (")+QString::number(min)+"..."+QString::number(max)+"):", min, 1, max , 1, &ok )   ;
 		if (!ok) {
 			statusBar()->showMessage("Remove link operation cancelled.", statusBarDuration);
 			return;
@@ -4146,7 +4146,7 @@ void MainWindow::slotCentralityGraph(){
 	QApplication::restoreOverrideCursor();
 
 	float maximumIndexValue=1;
-	QString fn = "c_graph.dat";
+	QString fn = "centrality_graph.dat";
 	QFile f( fn );
 	if ( !f.open( QIODevice::WriteOnly ) )
 		return;
