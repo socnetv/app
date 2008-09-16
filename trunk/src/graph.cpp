@@ -434,6 +434,13 @@ void Graph::setInitVertexSize (int size) {
 	initVertexSize=size;
 }
 
+
+//Changes the size.of vertex v 
+void Graph::setVertexSize(int v, int size) { 
+	m_graph[ index[v] ]->setSize(size);
+}
+
+
 void Graph::setInitVertexShape(QString shape) {
 	initVertexShape=shape;
 }

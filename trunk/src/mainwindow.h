@@ -267,7 +267,7 @@ private:
 	QComboBox *zoomCombo;
 	QGroupBox *mainGroup;
 	QDockWidget *leftDock;
-	QCheckBox *moveSpringEmbedderBx, *moveFruchtermanBx, *moveKamandaBx, *nodeSizeProportionalEdgesBx ;
+	QCheckBox *moveSpringEmbedderBx, *moveFruchtermanBx, *moveKamandaBx, *nodeSizeProportional2OutDegreeBx, *nodeSizeProportional2InDegreeBx ;
 
 	QSpinBox *rotateSpinBox ;
 	QPushButton *addNodeBt, *addLinkBt, *removeNodeBt, *removeLinkBt;
@@ -295,7 +295,7 @@ private:
 	QAction *circleBetweenessLayoutAct, *circleInformationalLayoutAct, *levelClosenessLayoutAct;
 	QAction *levelInDegreeLayoutAct, *levelOutDegreeLayoutAct, *levelBetweenessLayoutAct, *levelInformationalLayoutAct;
 	QAction *strongColorationAct, *regularColorationAct, *showProgressBarAct, *printDebugAct;
-	QAction *springLayoutAct, *FRLayoutAct, *nodeSizeProportionalEdgesAct;
+	QAction *springLayoutAct, *FRLayoutAct, *nodeSizeProportionalOutDegreeAct,  *nodeSizeProportionalInDegreeAct;
 	QAction *zoomInAct, *zoomOutAct ;
 
 	QString fileName, networkName;

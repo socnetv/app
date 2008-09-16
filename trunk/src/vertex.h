@@ -71,6 +71,10 @@ public:
 	bool isInLinked() { return m_inLinked;}
 	void setInLinked(bool inLinked) { m_inLinked=inLinked;}
 	
+
+	void setSize(int );
+	int  size();
+	
 	void setLabel (QString);
 	QString label();
 	

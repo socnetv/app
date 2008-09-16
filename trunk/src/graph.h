@@ -86,7 +86,8 @@ public:
 	int hasEdge (int v1, int v2);		//Checks if edge between v1 and v2 exists. Returns weight
 
 	void setInitVertexSize (int); //Changes the init size used by all new vertices.
-	
+	void setVertexSize(int v, int ); //Changes the size.of vertex v 
+
 	void setInitVertexShape (QString); //Changes the init shape used by all new vertices.
 	void setVertexShape(int v, QString shape); //Changes the shape.of vertex v 
 	QString shape(int v);	//returns the shape of this vertex

@@ -100,7 +100,7 @@ MainWindow::MainWindow(const QString &fName) {
 	connect( &activeGraph, SIGNAL( addBackgrHLine (int) ), graphicsWidget, SLOT(addBackgrHLine(int) ) ) ;
 
 	connect(moveSpringEmbedderBx, SIGNAL(stateChanged(int)),graphicsWidget, SLOT(startNodeMovement(int)));
-	connect(nodeSizeProportionalEdgesBx , SIGNAL(clicked(bool)),this, SLOT(slotLayoutNodeSizeProportionalEdges(bool)));
+	connect(nodeSizeProportional2OutDegreeBx , SIGNAL(clicked(bool)),this, SLOT(slotLayoutNodeSizeProportionalEdges(bool)));
 
 	connect (graphicsWidget, SIGNAL(updateNodeCoords(int, int, int)), this, SLOT(updateNodeCoords(int, int, int)) );
 	connect (addNodeBt,SIGNAL(clicked()), this, SLOT(createNode()));
@@ -588,13 +588,22 @@ void MainWindow::initActions(){
 	zoomOutAct->setStatusTip(tr("Zooms out of the actual network."));
 	zoomOutAct->setWhatsThis(tr("Zoom out.\n\nZooms out. What else did you expect?"));
 
-	nodeSizeProportionalEdgesAct= new QAction(tr("NodeSize = F (OutDegree)"), this);
-	nodeSizeProportionalEdgesAct->setShortcut(tr("Alt+3"));
-	nodeSizeProportionalEdgesAct->setStatusTip(tr("Changes the size of nodes according to their out edges."));
-	nodeSizeProportionalEdgesAct->setWhatsThis(tr("NodeSize = F (OutDegree) \n\n Adjusts the size of each node according to their out-edges (OutDegree). The more edges a node has, the bigger will appear..."));
-	nodeSizeProportionalEdgesAct->setCheckable(true);
-	nodeSizeProportionalEdgesAct->setChecked(false);
-	connect(nodeSizeProportionalEdgesAct, SIGNAL(triggered(bool)), this, SLOT(slotLayoutNodeSizeProportionalEdges(bool)));
+	nodeSizeProportionalOutDegreeAct= new QAction(tr("NodeSize = F (OutDegree)"), this);
+	nodeSizeProportionalOutDegreeAct->setShortcut(tr("Alt+3"));
+	nodeSizeProportionalOutDegreeAct->setStatusTip(tr("Resizes all nodes according to their out edges."));
+	nodeSizeProportionalOutDegreeAct->setWhatsThis(tr("NodeSize = F (OutDegree) \n\n Adjusts the size of each node according to their out-edges (OutDegree). The more out-likned a node is, the bigger will appear..."));
+	nodeSizeProportionalOutDegreeAct->setCheckable(true);
+	nodeSizeProportionalOutDegreeAct->setChecked(false);
+	connect(nodeSizeProportionalOutDegreeAct, SIGNAL(triggered(bool)), this, SLOT(slotLayoutNodeSizeProportionalEdges(bool)));
+
+
+	nodeSizeProportionalInDegreeAct= new QAction(tr("NodeSize = F (InDegree)"), this);
+	nodeSizeProportionalInDegreeAct->setShortcut(tr("Alt+4"));
+	nodeSizeProportionalInDegreeAct->setStatusTip(tr("Resizes all nodes according to their in edges."));
+	nodeSizeProportionalInDegreeAct->setWhatsThis(tr("NodeSize = F (InDegree) \n\n This method adjusts the size of each node according to their in-edges (InDegree). The more in-linked a node is, the bigger will appear..."));
+	nodeSizeProportionalInDegreeAct->setCheckable(true);
+	nodeSizeProportionalInDegreeAct->setChecked(false);
+	connect(nodeSizeProportionalInDegreeAct, SIGNAL(triggered(bool)), this, SLOT(slotLayoutNodeSizeProportionalEdges(bool)));
 
 
 
@@ -955,7 +964,7 @@ void MainWindow::initMenuBar() {
 	physicalLayoutMenu -> addAction (springLayoutAct);
 	physicalLayoutMenu -> addAction (FRLayoutAct);
 	layoutMenu->addSeparator();
-	layoutMenu->addAction(nodeSizeProportionalEdgesAct);
+	layoutMenu->addAction(nodeSizeProportionalOutDegreeAct);
 	layoutMenu->addSeparator();
 	layoutMenu -> addAction (circleClearBackgrCirclesAct);
 	layoutMenu->addSeparator();
@@ -1185,15 +1194,20 @@ void MainWindow::initDockWidget(){
 	moveKamandaBx->setToolTip(tr("!"));
 
 
-	nodeSizeProportionalEdgesBx = new QCheckBox(tr("NodeSize = F (OutDegree)") );
-	nodeSizeProportionalEdgesBx ->setEnabled(true);
-	nodeSizeProportionalEdgesBx ->setToolTip(tr("If you enable this checkbox, all nodes will be redrawn so that their size reflect their outdegree (the amount of links from them). To put it simply, more out-linked nodes will be bigger..."));
+	nodeSizeProportional2OutDegreeBx = new QCheckBox(tr("NodeSize = F (OutDegree)") );
+	nodeSizeProportional2OutDegreeBx ->setEnabled(true);
+	nodeSizeProportional2OutDegreeBx->setToolTip(tr("If you enable this, all nodes will be resized so that their size reflect their out-degree (the amount of links from them). To put it simply, more out-linked nodes will be bigger..."));
+
+	nodeSizeProportional2InDegreeBx = new QCheckBox(tr("NodeSize = F (InDegree)") );
+	nodeSizeProportional2InDegreeBx ->setEnabled(true);
+	nodeSizeProportional2InDegreeBx->setToolTip(tr("If you enable this, all nodes will be resized so that their size reflect their in-degree (the amount of links to them from other nodes). To put it simply, more in-linked nodes will be bigger..."));
 
 	QVBoxLayout *moveGroupLayout = new QVBoxLayout(moveGroup);
     	moveGroupLayout->addWidget(moveSpringEmbedderBx);
     	moveGroupLayout->addWidget(moveFruchtermanBx );
     	moveGroupLayout->addWidget(moveKamandaBx);
-	moveGroupLayout->addWidget(nodeSizeProportionalEdgesBx);
+	moveGroupLayout->addWidget(nodeSizeProportional2OutDegreeBx);
+	moveGroupLayout->addWidget(nodeSizeProportional2InDegreeBx);
 
 	QGroupBox *rotateGroup = new QGroupBox(downGroup);
     	//rotateGroup->setAttribute(Qt::WA_ContentsPropagated);
@@ -1363,7 +1377,9 @@ void MainWindow::initNet(){
 	outLinkedNodesLCD-> display(activeGraph.verticesWithOutEdges());
 	reciprocalLinkedNodesLCD->display(activeGraph.verticesWithReciprocalEdges());
 
-	nodeSizeProportionalEdgesBx ->setChecked(false);
+	nodeSizeProportional2OutDegreeBx->setChecked(false);
+	nodeSizeProportional2InDegreeBx->setChecked(false);
+
 
 	//set window title
 	setWindowTitle(tr("Social Network Visualiser "));
@@ -1662,31 +1678,31 @@ void MainWindow::addNodeWithMouse(int i, int x, int y){
 	Creates and Draws the node with the specified number, label, color, position etc
 	Called when loading files
 */
-void MainWindow::createNode(int i, int size, QString nodeColor, QString label, QString lColor, QPointF p, QString nodeShape) {
-	qDebug("MW: createNode(): Cursor at %f, %f ", p.x(),p.y() );
-	if ( p.x()<0 || p.y()<0) {
-        	p.setX(rand()%graphicsWidget->width());
-        	p.setY(rand()%graphicsWidget->height());
-		qDebug("MW: createNode(): Node out of bounds. Using random coordinates: (%d, %d).", (int) p.x(), (int) p.y());
-	}
-
-	/** Arguments of addNode method in order of appearance:
-	NodeNumber
-	NodeValue
-	shapeSize
-	NodeColor
-	NodeLabel
-	LabelColor
-	QPoint p with coordinates (X, Y)
-	NodeShape
-	ShowLabels
-	ShowNumbers 
-	*/
-	qDebug ("MW: Calling addVertex for vertice %i",i);
-	activeGraph.addVertex(i, 1, size,  nodeColor, label, lColor, p, nodeShape);
-
-	graphicsWidget->addNode ( i, 1, size,  nodeColor, label, lColor, p, nodeShape, showLabels(), showNumbers()) ;	
-}
+// void MainWindow::createNode(int i, int size, QString nodeColor, QString label, QString lColor, QPointF p, QString nodeShape) {
+// 	qDebug("MW: createNode(): Cursor at %f, %f ", p.x(),p.y() );
+// 	if ( p.x()<0 || p.y()<0) {
+//         	p.setX(rand()%graphicsWidget->width());
+//         	p.setY(rand()%graphicsWidget->height());
+// 		qDebug("MW: createNode(): Node out of bounds. Using random coordinates: (%d, %d).", (int) p.x(), (int) p.y());
+// 	}
+// 
+// 	/** Arguments of addNode method in order of appearance:
+// 	NodeNumber
+// 	NodeValue
+// 	shapeSize
+// 	NodeColor
+// 	NodeLabel
+// 	LabelColor
+// 	QPoint p with coordinates (X, Y)
+// 	NodeShape
+// 	ShowLabels
+// 	ShowNumbers 
+// 	*/
+// 	qDebug ("MW: Calling addVertex for vertice %i",i);
+// 	activeGraph.addVertex(i, 1, size,  nodeColor, label, lColor, p, nodeShape);
+// 
+// 	graphicsWidget->addNode ( i, 1, size,  nodeColor, label, lColor, p, nodeShape, showLabels(), showNumbers()) ;	
+// }
 
 
 /**
@@ -3124,10 +3140,6 @@ void MainWindow::slotLayoutNodeSizeProportionalEdges(bool checked){
 	qDebug("MW: slotLayoutNodeSizeProportionalEdges()");
 	QList<QGraphicsItem *> list=scene->items();
 	int edges = 0, size = initNodeSize ;
-/*
-	if (nodeSizeProportionalEdgesBx->checkState() == Qt::Unchecked){
-		checked=false;
-	}*/
 	
 	if (checked != true) {
 		for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)  {
@@ -3136,12 +3148,13 @@ void MainWindow::slotLayoutNodeSizeProportionalEdges(bool checked){
 				(*jim).setSize(size);
 			}
 		}
-		nodeSizeProportionalEdgesAct->setChecked(false);
-		nodeSizeProportionalEdgesBx->setChecked(false);
+		
+		nodeSizeProportionalOutDegreeAct->setChecked(false);
+		nodeSizeProportional2OutDegreeBx->setChecked(false);
 		return;
 	}
-	nodeSizeProportionalEdgesAct->setChecked(true);
-	nodeSizeProportionalEdgesBx->setChecked(true);
+	nodeSizeProportionalOutDegreeAct->setChecked(true);
+	nodeSizeProportional2OutDegreeBx->setChecked(true);
 	statusBar()->showMessage(tr("Embedding node size model on the network.... ") ,statusBarDuration);	
 	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
 		if ( (*it) -> type() == TypeNode ){

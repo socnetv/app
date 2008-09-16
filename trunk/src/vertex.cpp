@@ -158,6 +158,16 @@ void Vertex::setName (int v1) {
 	m_name=v1; 
 }
 
+
+void Vertex::setSize(int size) {
+	m_size=size;
+}
+
+int  Vertex::size(){
+	return m_size;
+}
+
+
 void Vertex::setLabel(QString label){
 	m_label=label;
 }
