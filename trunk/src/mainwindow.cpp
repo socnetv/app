@@ -3529,7 +3529,7 @@ void MainWindow::slotActiveLinks() {
 		return;
 	}
 	else
-		QMessageBox::information(this,"Total Links","Active in and out Links: "+QString::number(totalLinks), "OK",0);
+		QMessageBox::information(this,"Total Links","In and out Links = "+QString::number(totalLinks), "OK",0);
 	statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
 }
 
@@ -3559,7 +3559,7 @@ void MainWindow::slotActiveNodes(){
 		return;
 	}
 	else
-		QMessageBox::information(this,"Total Nodes","Nodes in active network: "+QString::number(aNodes),"OK",0);
+		QMessageBox::information(this,"Total Nodes","Nodes in active network = "+QString::number(aNodes),"OK",0);
 	statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
 
 }
@@ -3623,7 +3623,7 @@ void MainWindow::slotNetworkDensity() {
 		return;
 	}
 	float density  =   (float) activeGraph.totalEdges()/(float)(activeGraph.vertices()*(activeGraph.vertices()-1.0));
-	QMessageBox::information(this, "Density", tr("Network density =   ")+QString::number(density),"OK",0);
+	QMessageBox::information(this, "Density", tr("Network density = ")+QString::number(density),"OK",0);
 	statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
 }
 
@@ -3666,7 +3666,7 @@ void MainWindow::slotDistance(){
 	if (symmetricAdjacency() && i>j) {
 		qSwap(i,j);
 	}
-	QMessageBox::information(this, "Distance", tr("Network distance between (")+QString::number(i)+", "+QString::number(j)+") ="+QString::number(activeGraph.distance(i,j)),"OK",0);
+	QMessageBox::information(this, "Distance", tr("Network distance (")+QString::number(i)+", "+QString::number(j)+") = "+QString::number(activeGraph.distance(i,j)),"OK",0);
 }
 
 
@@ -3720,7 +3720,7 @@ void MainWindow::slotDiameter() {
 	if (netDiameter > (activeGraph.vertices()-1) ) 
 		QMessageBox::information(this, "Diameter", "Network diameter = "+ QString::number(netDiameter)+"  > (vertices()-1).", "OK",0);
 	else 
-		QMessageBox::information(this, "Diameter", "The diameter is " + QString::number(netDiameter), "OK",0);
+		QMessageBox::information(this, "Diameter", "Network diameter = " + QString::number(netDiameter), "OK",0);
 	statusBar()->showMessage(tr("Diameter calculated. Ready."), statusBarDuration);
 
 }
@@ -3828,7 +3828,7 @@ void MainWindow::slotCentralityOutDegree(){
 
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
-	ed->setWindowTitle("Out-Degree - " + tempFileNameNoPath.last());
+	ed->setWindowTitle("Out-Degree Centralities saved as: " + tempFileNameNoPath.last());
 	ed->show();
 }
 
@@ -3920,7 +3920,7 @@ void MainWindow::slotCentralityInDegree(){
 
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
-	ed->setWindowTitle("In-Degree - " + tempFileNameNoPath.last());
+	ed->setWindowTitle("In-Degree Centralities saved as: " + tempFileNameNoPath.last());
 	ed->show();
 }
 
@@ -3985,7 +3985,7 @@ void MainWindow::slotCentralityCloseness(){
 	f.close();
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
-	ed->setWindowTitle("Closeness Centrality - " + tempFileNameNoPath.last());
+	ed->setWindowTitle("Closeness Centralities  saved as: " + tempFileNameNoPath.last());
 	ed->show();
 }
 
@@ -4048,7 +4048,7 @@ void MainWindow::slotCentralityBetweeness(){
 	f.close();
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
-	ed->setWindowTitle("Betweeness Centrality " + tempFileNameNoPath.last());
+	ed->setWindowTitle("Betweeness Centralities saved as: " + tempFileNameNoPath.last());
 	ed->show();
 	QApplication::restoreOverrideCursor();
 }
@@ -4123,7 +4123,7 @@ void MainWindow::slotCentralityStress(){
 	f.close();
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
-	ed->setWindowTitle("Stress Centrality " + tempFileNameNoPath.last());
+	ed->setWindowTitle("Stress Centralities saved as: " + tempFileNameNoPath.last());
 	ed->show();
 }
 
@@ -4187,7 +4187,7 @@ void MainWindow::slotCentralityGraph(){
 
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/" );
-	ed->setWindowTitle("Graph Centrality " + tempFileNameNoPath.last());
+	ed->setWindowTitle("Graph Centralities saved as: " + tempFileNameNoPath.last());
 	ed->show();
 }
 
@@ -4248,7 +4248,7 @@ void MainWindow::slotCentralityEccentricity(){
 	f.close();
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
-	ed->setWindowTitle("Eccentricity " + tempFileNameNoPath.last());
+	ed->setWindowTitle("Eccentricity Centralities saved as: " + tempFileNameNoPath.last());
 	ed->show();
 	QApplication::restoreOverrideCursor();
 
