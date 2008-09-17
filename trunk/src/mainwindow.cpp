@@ -756,7 +756,7 @@ void MainWindow::initActions(){
 	antialiasingAct = new QAction(tr("Anti-Aliasing"), this);
 	antialiasingAct ->setShortcut(tr("F8"));
 	antialiasingAct ->setStatusTip(tr("Enables/disables anti-aliasing"));
-	antialiasingAct ->setWhatsThis(tr("Anti-Aliasing\n\nEnables/disables anti-aliasing of nodes, lines and text, as well as smooth pixmaps."));
+	antialiasingAct ->setWhatsThis(tr("Enable or disable Anti-Aliasing\n\n Anti-aliasing is a technique which makes nodes, lines and text, smoother and fancier. But it comes at the cost of speed..."));
 	antialiasingAct ->setCheckable(TRUE);
 	antialiasingAct ->setChecked (false);
 	connect(antialiasingAct , SIGNAL(toggled(bool)), this, SLOT(slotAntialiasing(bool)));
@@ -765,7 +765,7 @@ void MainWindow::initActions(){
 	showProgressBarAct = new QAction(tr("Progress Bars"), this);
 	showProgressBarAct ->setShortcut(tr("F10"));
 	showProgressBarAct->setStatusTip(tr("Enables/disables Progress Bars"));
-	showProgressBarAct->setWhatsThis(tr("Progress Bars\n\nEnables/disables progress bar during time-cost operations. Enabling progressBar has a significant cpu cost but lets you know about the progress of a given operation."));
+	showProgressBarAct->setWhatsThis(tr("Enable or disable Progress Bars\n\nProgress Bars may appear during time-cost operations. Enabling progressBar has a significant cpu cost but lets you know about the progress of a given operation."));
 	showProgressBarAct->setCheckable(true);
 	showProgressBarAct->setChecked (false);
 	connect(showProgressBarAct, SIGNAL(toggled(bool)), this, SLOT(slotShowProgressBar(bool)));
@@ -773,7 +773,7 @@ void MainWindow::initActions(){
 	printDebugAct = new QAction(tr("Debug Messages"),	this);
 	printDebugAct ->setShortcut(tr("F9"));
 	printDebugAct->setStatusTip(tr("Enables/disables printing debug messages to stdout"));
-	printDebugAct->setWhatsThis(tr("Debug Messages\n\nEnables/disables printing debug messages to strerr. Enabling has a significant cpu cost but lets you know what SocNetV is actually doing."));
+	printDebugAct->setWhatsThis(tr("Enables or disable Debug Messages\n\nPrinting debug messages to strerr. Enabling has a significant cpu cost but lets you know what SocNetV is actually doing."));
 	printDebugAct->setCheckable(true);
 	printDebugAct->setChecked (FALSE);
 	connect(printDebugAct, SIGNAL(toggled(bool)), this, SLOT(slotPrintDebug(bool)));
@@ -782,14 +782,14 @@ void MainWindow::initActions(){
 
 	viewToolBar = new QAction(tr("Toolbar"), this);
 	viewToolBar->setStatusTip(tr("Enables/disables the toolbar"));
-	viewToolBar->setWhatsThis(tr("Toolbar\n\nEnables/disables the toolbar"));
+	viewToolBar->setWhatsThis(tr("Enable or disable Toolbar\n\nThe toolbar is the widget right below the menu, and carries useful icons. You can disable it if you like..."));
 	viewToolBar->setCheckable(true);
 	viewToolBar->setChecked(true);
 	connect(viewToolBar, SIGNAL(toggled(bool)), this, SLOT(slotViewToolBar(bool)));
 
 	viewStatusBar = new QAction(tr("Statusbar"),	this);
 	viewStatusBar->setStatusTip(tr("Enables/disables the statusbar"));
-	viewStatusBar->setWhatsThis(tr("Statusbar\n\nEnables/disables the statusbar"));
+	viewStatusBar->setWhatsThis(tr("Enable or disable Statusbar\n\nThe statusbar is the widget at the bottom of the window, where messages appear. You might want to disable it..."));
 	viewStatusBar->setCheckable(true);
 	viewStatusBar->setChecked(true);
 	connect(viewStatusBar, SIGNAL(toggled(bool)), this, SLOT(slotViewStatusBar(bool)));
@@ -801,18 +801,18 @@ void MainWindow::initActions(){
 	*/
 	helpApp = new QAction(QIcon(":/images/help.png"), tr("Manual"),	this);
 	helpApp ->setShortcut(tr("F1"));
-	helpApp->setStatusTip(tr("Displays the documentation of this program"));
-	helpApp->setWhatsThis(tr("Help\n\nDisplays documentation"));
+	helpApp->setStatusTip(tr("Read the manual..."));
+	helpApp->setWhatsThis(tr("Manual\n\nDisplays the documentation of SocNetV"));
 	connect(helpApp, SIGNAL(activated()), this, SLOT(slotHelp()));
 
 	tipsApp = new QAction(tr("Tip of the Day"), this);
-	tipsApp->setStatusTip(tr("Displays useful tips"));
+	tipsApp->setStatusTip(tr("Read useful tips"));
 	tipsApp->setWhatsThis(tr("Quick Tips\n\nDisplays some useful and quick tips"));
 	connect(tipsApp, SIGNAL(activated()), this, SLOT(slotTips()));
 
 	helpAboutApp = new QAction(tr("About SocNetV"), this);
 	helpAboutApp->setStatusTip(tr("About SocNetV"));
-	helpAboutApp->setWhatsThis(tr("About\n\nAbout SocNetV"));
+	helpAboutApp->setWhatsThis(tr("About\n\nBasic information about SocNetV"));
 	connect(helpAboutApp, SIGNAL(activated()), this, SLOT(slotHelpAbout()));
 
 
