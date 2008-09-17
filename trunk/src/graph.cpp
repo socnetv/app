@@ -1740,20 +1740,23 @@ void Graph::layoutLevelCentrality(double maxWidth, double maxHeight, int Central
 void Graph::createUniformRandomNetwork(int vert, int probability){
 	qDebug("Graph: createUniformRandomNetwork");
 	bool showLabels = false;
+	int progressCounter=0;
 	showLabels = ( (MainWindow*)parent() )->showLabels();
-	//emit execProgressDialog();
+
 	for (register int i=0; i< vert ; i++) {
 		int x=10+rand() %640;
 		int y=10+rand() %480;
 		qDebug("Graph: createUniformRandomNetwork, new node i=%i, at x=%i, y=%i", i+1, x,y);
 		createNode(i+1,initVertexSize,initVertexColor, QString::number (i+1), initVertexLabelColor, QPoint(x, y), initVertexShape, showLabels);
+		progressCounter++;
+		emit updateProgressDialog( progressCounter );
 	}
 	for (register int i=0;i<vert; i++)
 		for (register int j=0; j<vert; j++) {
 			qDebug("Random Experiment for link creation between %i and %i:", i+1, j+1);
-
-			emit updateProgressDialog( (i+1)*(j+1) );
-			qDebug("Emitting UPDATE PROGRESS %i", (i+1)*(j+1));
+			progressCounter++;
+			emit updateProgressDialog(progressCounter );
+			qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
 			if (rand() %100 < probability)    {
 				qDebug("Creating link!");
 				createEdge(i+1, j+1, 1, "black", false, true, false);
@@ -1773,6 +1776,7 @@ void Graph::createPhysicistLatticeNetwork(int vert, int degree,double x0, double
 	qDebug("Graph: createPhysicistLatticeNetwork");
 	int x=0;
 	int y=0;
+	int progressCounter=0;
 	bool showLabels = false;
 	showLabels = ( (MainWindow*)parent() )->showLabels();
 	double Pi = 3.14159265;
@@ -1782,12 +1786,17 @@ void Graph::createPhysicistLatticeNetwork(int vert, int degree,double x0, double
 		y=y0 + radius * sin(i * rad);
 		createNode(i+1,initVertexSize,initVertexColor, QString::number (i+1), initVertexLabelColor, QPoint(x, y), initVertexShape, showLabels);
 		qDebug("Graph: createPhysicistLatticeNetwork, new node i=%i, at x=%i, y=%i", i+1, x,y);
+		progressCounter++;
+		emit updateProgressDialog( progressCounter );
+
 	}
 	int target = 0;
 	for (register int i=0;i<vert; i++){
 		qDebug("Creating links for node %i = ", i+1);	
 		for (register int j=0; j< degree/2 ; j++) {
 			target = i + j+1 ; 
+			progressCounter++;
+			emit updateProgressDialog( progressCounter );
 			if ( target > (vert-1)) 
 				target = target-vert; 
 			qDebug("Creating Link between %i  and %i", i+1, target+1);
@@ -1803,17 +1812,24 @@ void Graph::createPhysicistLatticeNetwork(int vert, int degree,double x0, double
 void Graph::createSameDegreeRandomNetwork(int vert, int degree){
 	qDebug("Graph: createSameDegreeRandomNetwork");
 	bool showLabels = false;
+	int progressCounter=0;
 	showLabels = ( (MainWindow*)parent() )->showLabels();
 	for (register int i=0; i< vert ; i++) {
 		int x=10+rand() %640;
 		int y=10+rand() %480;
 		qDebug("Graph: createUniformRandomNetwork, new node i=%i, at x=%i, y=%i", i+1, x,y);
 		createNode(i+1,initVertexSize,initVertexColor, QString::number (i+1), initVertexLabelColor, QPoint(x, y), initVertexShape, showLabels);
+		progressCounter++;
+		emit updateProgressDialog( progressCounter );
+
 	}
 	int target = 0;
 	for (register int i=0;i<vert; i++){
 		qDebug("Creating links for node %i = ", i+1);	
 		for (register int j=0; j< degree/2 ; j++) {
+			progressCounter++;
+			emit updateProgressDialog( progressCounter );
+
 			target = i + j+1 ; 
 			if ( target > (vert-1)) 
 				target = target-vert; 

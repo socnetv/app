@@ -31,7 +31,7 @@
 #include <QtGui>
 #include <QtDebug>
 
-//#include <QPushButton>
+
 #include "mainwindow.h"
 #include "graphicswidget.h"
 #include "node.h"
@@ -87,7 +87,6 @@ MainWindow::MainWindow(const QString &fName) {
 
  	initView(); //clear everything on the canvas
 
-	progressDialog= new QProgressDialog(this);
 
 	connect( graphicsWidget, SIGNAL( selectedNode(Node*) ), this, SLOT( nodeInfoStatusBar(Node*) ) );
 	connect( graphicsWidget, SIGNAL( selectedEdge(Edge*) ), this, SLOT ( linkInfoStatusBar(Edge*) ) );
@@ -101,9 +100,6 @@ MainWindow::MainWindow(const QString &fName) {
 	connect( &activeGraph, SIGNAL( addBackgrCircle (int, int, int) ), graphicsWidget, SLOT(addBackgrCircle(int, int, int) ) ) ;
 	connect( &activeGraph, SIGNAL( addBackgrHLine (int) ), graphicsWidget, SLOT(addBackgrHLine(int) ) ) ;
 	
-	connect( &activeGraph, SIGNAL( execProgressDialog() ), progressDialog, SLOT(show() ) ) ;
-	connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
-
 	connect(moveSpringEmbedderBx, SIGNAL(stateChanged(int)),graphicsWidget, SLOT(startNodeMovement(int)));
 	connect(nodeSizeProportional2OutDegreeBx , SIGNAL(clicked(bool)),this, SLOT(slotLayoutNodeSizeProportionalEdges(bool)));
 
@@ -766,9 +762,10 @@ void MainWindow::initActions(){
 	connect(antialiasingAct , SIGNAL(toggled(bool)), this, SLOT(slotAntialiasing(bool)));
 
 
-	showProgressBarAct = new QAction(tr("ProgressBar"), this);
+	showProgressBarAct = new QAction(tr("Progress Bars"), this);
+	showProgressBarAct ->setShortcut(tr("F10"));
 	showProgressBarAct->setStatusTip(tr("Enables/disables Progress Bars"));
-	showProgressBarAct->setWhatsThis(tr("ProgressBar\n\nEnables/disables progress bar during time-cost operations. Enabling progressBar has a significant cpu cost but lets you know about the progress of a given operation."));
+	showProgressBarAct->setWhatsThis(tr("Progress Bars\n\nEnables/disables progress bar during time-cost operations. Enabling progressBar has a significant cpu cost but lets you know about the progress of a given operation."));
 	showProgressBarAct->setCheckable(true);
 	showProgressBarAct->setChecked (false);
 	connect(showProgressBarAct, SIGNAL(toggled(bool)), this, SLOT(slotShowProgressBar(bool)));
@@ -1028,8 +1025,8 @@ void MainWindow::initMenuBar() {
 	viewOptionsMenu -> setIcon(QIcon(":/images/view.png"));
 	optionsMenu -> addMenu (viewOptionsMenu);
 	viewOptionsMenu-> addAction (antialiasingAct);
-	viewOptionsMenu-> addAction (showProgressBarAct);
 	viewOptionsMenu-> addAction (printDebugAct);
+	viewOptionsMenu-> addAction (showProgressBarAct);
 	viewOptionsMenu-> addAction (viewToolBar);
 	viewOptionsMenu-> addAction (viewStatusBar);
  
@@ -1071,6 +1068,8 @@ void MainWindow::initToolBar(){
 
 	fileToolbar -> addSeparator();
 	fileToolbar -> addAction ( QWhatsThis::createAction (this));
+
+
 
 
 }
@@ -2112,24 +2111,26 @@ void MainWindow::slotCreateUniformRandomNetwork(){
 	statusBar()->showMessage(tr("Creating uniform random network. Please wait... ") ,statusBarDuration);
 
 	qDebug("MW Uniform network:  Create uniform random network of %i nodes and %i link probability.",newNodes, probability);
-	qDebug("MW Uniform network creating dialog");
-	//"Operation in progress.", "Cancel", 0, 100, this);
-     	progressDialog->setLabelText("Calculating");
-	qDebug("MW Uniform network --");
-	progressDialog->setCancelButtonText("Cancel");
-	qDebug("MW Uniform network---");
-	progressDialog->setRange(0, newNodes*newNodes);
-	qDebug("MW Uniform network ----");
-	progressDialog->setMinimumDuration(0);
-//	progressBar  = new QProgressBar (statusBar());
+
+	if (showProgressBarAct->isChecked()){
+		progressDialog= new QProgressDialog("Creating random network. Please wait (or disable me from Options > View > ProgressBar, next time ;)).", "Cancel", 0, newNodes+newNodes*newNodes, this);
+		progressDialog -> setWindowModality(Qt::WindowModal);
+		connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
+		progressDialog->setMinimumDuration(0);
+	}
 	
+	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+
 	activeGraph.createUniformRandomNetwork (newNodes, probability);
-//	progressDialog->deleteLater();
+	QApplication::restoreOverrideCursor();
+
+	if (showProgressBarAct->isChecked())
+		progressDialog->deleteLater();	
 
   	fileContainsNodeColors=FALSE;
 	fileContainsLinksColors=FALSE;
 	fileContainsNodesCoords=FALSE;
-	//symmetricAdjacency=false;
+
 	fileLoaded=false;
 	
 	graphChanged();
@@ -2172,11 +2173,26 @@ void MainWindow::slotCreateSameDegreeRandomNetwork(){
 	makeThingsLookRandom();  
 	statusBar()->showMessage("Creating a pseudo-random network where each node has the same degree... ", statusBarDuration);
 
+	if (showProgressBarAct->isChecked()){
+		progressDialog= new QProgressDialog("Creating random network. Please wait (or disable me from Options > View > ProgressBar, next time ;)).", "Cancel", 0, (int) (newNodes+newNodes*degree/2.0), this);
+		progressDialog -> setWindowModality(Qt::WindowModal);
+		connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
+		progressDialog->setMinimumDuration(0);
+	}
+
+	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+
 	activeGraph.createSameDegreeRandomNetwork (newNodes, degree);
+
+	QApplication::restoreOverrideCursor();
+
+	if (showProgressBarAct->isChecked())
+		progressDialog->deleteLater();	
+
   	fileContainsNodeColors=FALSE;
 	fileContainsLinksColors=FALSE;
 	fileContainsNodesCoords=FALSE;
-	//symmetricAdjacency=false;
+
 	fileLoaded=false;
 	
 	graphChanged();
@@ -2232,11 +2248,24 @@ void MainWindow::slotCreatePhysicistLatticeNetwork(){
 	double y0=scene->height()/2.0;
 	double radius=(graphicsWidget->height()/2.0)-50;          //pixels
 
+
+
+	if (showProgressBarAct->isChecked()){
+		progressDialog= new QProgressDialog("Creating random network. Please wait (or disable me from Options > View > ProgressBar, next time ;)).", "Cancel", 0, (int) (newNodes+newNodes*degree/2.0), this);
+		progressDialog -> setWindowModality(Qt::WindowModal);
+		connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
+		progressDialog->setMinimumDuration(0);
+	}
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
 	activeGraph.createPhysicistLatticeNetwork (newNodes, degree, x0, y0, radius);
 
 	QApplication::restoreOverrideCursor();
+
+	if (showProgressBarAct->isChecked())
+		progressDialog->deleteLater();	
+
+
 
 
   	fileContainsNodeColors=FALSE;

@@ -194,7 +194,7 @@ signals:
 	void addBackgrCircle(int, int, int);
 	void addBackgrHLine (int);
 	void updateProgressDialog(int );
-//	void execProgressDialog();
+
 protected: 
 
 private:

@@ -57,7 +57,6 @@ using namespace std;
 class QMenu;
 class QAction;
 class QCheckBox;
-//class QProgressBar;
 class QProgressDialog;
 class Edge;
 class Node;
@@ -256,7 +255,6 @@ private:
 	Graph activeGraph;
 	QPrinter *printer;	
 	QProgressDialog *progressDialog;
-//	QProgressBar* progressBar;
 	QMenu *importSubMenu, *exportSubMenu, *editMenu, *statMenu,  *helpMenu;
 	QMenu *optionsMenu, *colorOptionsMenu, *linkOptionsMenu, *nodeOptionsMenu, *viewOptionsMenu;
 	QMenu *editNodeMenu, *editLinkMenu, *centrlMenu, *layoutMenu;
