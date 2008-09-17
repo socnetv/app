@@ -193,11 +193,12 @@ public slots:
 signals:
 	void addBackgrCircle(int, int, int);
 	void addBackgrHLine (int);
+	void updateProgressDialog(int );
+//	void execProgressDialog();
 protected: 
 
 private:
 	Matrix  TM, DM;
-	int *test;
 	stack<int> Stack;
 	Parser parser;	
 	bool order;

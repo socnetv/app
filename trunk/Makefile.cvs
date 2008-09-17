@@ -1,6 +1,6 @@
 all:	configure
 
-configure:	Makefile.in configure.ac
+configure:	socnetv.spec.in Makefile.in configure.ac
 		@autoheader
 		@autoconf
 		@rm -rf *.cache

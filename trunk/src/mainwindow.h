@@ -57,6 +57,7 @@ using namespace std;
 class QMenu;
 class QAction;
 class QCheckBox;
+//class QProgressBar;
 class QProgressDialog;
 class Edge;
 class Node;
@@ -73,6 +74,7 @@ class MainWindow : public QMainWindow
 
 public:		/**PUBLIC FUNCTIONS NOT VISIBLE BY OTHER WIDGETS NOR BY SLOT/LINK MECHANISM */
 	GraphicsWidget *graphicsWidget;
+
 	MainWindow(const QString &f);
 	~MainWindow();
 	void initActions();
@@ -243,7 +245,7 @@ public slots:
 protected:
 	void resizeEvent( QResizeEvent * );
 	void closeEvent( QCloseEvent* ce );
-	QProgressDialog *actionProgress;
+
 
 //	void myMessageOutput(QtMsgType type, const char *msg);
 signals:
@@ -253,6 +255,8 @@ private:
 	QGraphicsScene *scene;
 	Graph activeGraph;
 	QPrinter *printer;	
+	QProgressDialog *progressDialog;
+//	QProgressBar* progressBar;
 	QMenu *importSubMenu, *exportSubMenu, *editMenu, *statMenu,  *helpMenu;
 	QMenu *optionsMenu, *colorOptionsMenu, *linkOptionsMenu, *nodeOptionsMenu, *viewOptionsMenu;
 	QMenu *editNodeMenu, *editLinkMenu, *centrlMenu, *layoutMenu;
@@ -294,11 +298,12 @@ private:
 	QAction *springLayoutAct, *FRLayoutAct, *nodeSizeProportionalOutDegreeAct,  *nodeSizeProportionalInDegreeAct;
 	QAction *zoomInAct, *zoomOutAct ;
 
+	
 	QString fileName, networkName;
 	QStringList fileNameNoPath, fortuneCookie, rgbValues;
 	QStringList tempFileNameNoPath, colorList, tips;
 	int statusBarDuration,  minDuration, progressCounter;
-	int aNodes; 
+	int maxNodes;
 	int initNodeSize, labelDistance, numberDistance,initNumberSize;
 	int totalLinks, fortuneCookiesCounter, preSize, tipsCounter;
 	QString VERSION;

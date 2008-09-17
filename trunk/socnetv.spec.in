@@ -1,4 +1,4 @@
-%define name    NAME@
+%define name    socnetv
 %define version @PACKAGE_VERSION@
 %define release 1
 %define prefix  @ac_prefix@
@@ -25,23 +25,26 @@
 
 Name:		%{name}
 Summary:	A Social Networks Analyser and Visualiser
-License:	GPL
-Group:		Science/Math
+License:	GPLv3
+Group:		Science/Mathematics
 URL:		http://socnetv.sourceforge.net/
 Version:	%{version}
 Release:	%{release}
 
 
+
 Prefix:		%{prefix}
 
-Source0:	%{name}-%{version}.tar.gz
+Source0:	SocNetV-%{version}.tar.gz
 
-Packager:	Dimitris Kalamaras
+Packager:	Dimitris V. Kalamaras
 Distribution:   %{distr}
 
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
-BuildRequires:	qt-devel >= 4.4
+BuildRequires:	libqt4-devel >= 4.4
+
+
 
 %description
 SocNetV (Social Networks Visualiser) is a flexible and 
@@ -57,6 +60,8 @@ levels according to centralities) are supported for meaningful
 visualisations of your networks. Furthermore, simple random 
 networks (lattice, same degree, etc) can be created. 
 
+Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
+
 %prep
 %setup 
 [ -f Makefile.cvs ] && %__make -f Makefile.cvs
@@ -71,13 +76,38 @@ networks (lattice, same degree, etc) can be created.
 %clean
 [ -d %{buildroot} -a "%{buildroot}" != "" ] && %__rm -rf  %{buildroot}
 
+
+%define mkmanual %(mkdir -p %{_datadir}/doc/$(name)/manual)
+%define wrmanual %(doc/*  %{_datadir}/doc/$(name)/manual)
+
+	
+
 %files
 %defattr(-,root,root)
-%doc AUTHORS COPYING ChangeLog README TODO
+
+%doc AUTHORS COPYING ChangeLog README TODO 
 %{_bindir}/%{name}
-%{_datadir}/%{name}.desktop
-%{_datadir}/images/%{name}.png
+%{_datadir}/applications/%{name}.desktop
+%{_datadir}/pixmaps/%{name}.png
+%{_datadir}/doc/%{name}/ChangeLog
+%{_datadir}/doc/%{name}/NEWS
+%{_datadir}/doc/%{name}/README
+%{_datadir}/doc/%{name}/TODO
+%{_datadir}/doc/%{name}/manual/analysis.html
+%{_datadir}/doc/%{name}/manual/bugs.html
+%{_datadir}/doc/%{name}/manual/credits.html
+%{_datadir}/doc/%{name}/manual/footer.html
+%{_datadir}/doc/%{name}/manual/formats.html
+%{_datadir}/doc/%{name}/manual/gui.html
+%{_datadir}/doc/%{name}/manual/header.html
+%{_datadir}/doc/%{name}/manual/intro.html
+%{_datadir}/doc/%{name}/manual/manual.html
+%{_datadir}/doc/%{name}/manual/socnetv.css
+%{_datadir}/doc/%{name}/manual/socnetv.png
+%{_datadir}/doc/%{name}/manual/toc.html
+%{_datadir}/doc/%{name}/manual/trademark5.png
+%{_datadir}/doc/%{name}/manual/visualisation.html
 
 %changelog
-* Sun Sep 07 2008 Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
+* Tue Sep 7 2008 Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
 - First RPM release

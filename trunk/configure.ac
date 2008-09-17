@@ -1,9 +1,9 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT(SocNetV, 0.47, dimitris.kalamaras@gmail.com, socnetv)
+AC_INIT(SocNetV, 0.48, dimitris.kalamaras@gmail.com, socnetv)
 
 AC_CONFIG_SRCDIR(src/mainwindow.cpp)
 AC_CONFIG_HEADERS(config.h)
-AC_CONFIG_FILES(Makefile socnetv.pro socnetv.desktop)
+AC_CONFIG_FILES(Makefile socnetv.pro socnetv.spec socnetv.desktop)
 
 # Set default installation prefix.
 AC_PREFIX_DEFAULT(/usr/local)
@@ -152,7 +152,6 @@ fi
 
 AC_SUBST(ac_cflags)
 
-
 # A common error message:
 ac_errmsg="not found in current PATH. Maybe QT development environment isn't available (qt-devel)."
 
@@ -184,14 +183,10 @@ AC_CHECK_LIB(X11, main)
 AC_CHECK_LIB(Xext, main)
 
 
-
 # Checks for header files.
 #AC_HEADER_STDC
 #AC_HEADER_SYS_WAIT
 #AC_CHECK_HEADERS(fcntl.h sys/ioctl.h sys/stat.h unistd.h signal.h)
-
-
-
 
 AC_SUBST(ac_incpath)
 

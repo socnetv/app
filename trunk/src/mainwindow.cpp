@@ -87,6 +87,8 @@ MainWindow::MainWindow(const QString &fName) {
 
  	initView(); //clear everything on the canvas
 
+	progressDialog= new QProgressDialog(this);
+
 	connect( graphicsWidget, SIGNAL( selectedNode(Node*) ), this, SLOT( nodeInfoStatusBar(Node*) ) );
 	connect( graphicsWidget, SIGNAL( selectedEdge(Edge*) ), this, SLOT ( linkInfoStatusBar(Edge*) ) );
 	connect( graphicsWidget, SIGNAL( windowResized(int, int)),this, SLOT( windowInfoStatusBar(int, int)) );  
@@ -98,6 +100,9 @@ MainWindow::MainWindow(const QString &fName) {
 	connect( graphicsWidget, SIGNAL( openEdgeMenu() ), this, SLOT(openLinkContextMenu() ) ) ;
 	connect( &activeGraph, SIGNAL( addBackgrCircle (int, int, int) ), graphicsWidget, SLOT(addBackgrCircle(int, int, int) ) ) ;
 	connect( &activeGraph, SIGNAL( addBackgrHLine (int) ), graphicsWidget, SLOT(addBackgrHLine(int) ) ) ;
+	
+	connect( &activeGraph, SIGNAL( execProgressDialog() ), progressDialog, SLOT(show() ) ) ;
+	connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
 
 	connect(moveSpringEmbedderBx, SIGNAL(stateChanged(int)),graphicsWidget, SLOT(startNodeMovement(int)));
 	connect(nodeSizeProportional2OutDegreeBx , SIGNAL(clicked(bool)),this, SLOT(slotLayoutNodeSizeProportionalEdges(bool)));
@@ -1331,10 +1336,10 @@ void MainWindow::initNet(){
 	initNodeShape="circle";
 	
 	minDuration=3000; //dialogue duration - obsolete
+	maxNodes=5000;		//Max nodes used by createRandomNetwork dialogues
 	labelDistance=7;
 	numberDistance=5;
 	totalLinks=0;
-	aNodes=0;
 	networkName="";
 	pajekFileLoaded=FALSE;
 	adjacencyFileLoaded=FALSE;
@@ -2063,7 +2068,7 @@ void MainWindow::slotViewAdjacencyMatrix(){
         	statusBar()->showMessage( tr("Nothing to show!"), statusBarDuration );
 		return;
 	}	
-	aNodes=activeNodes();
+	int aNodes=activeNodes();
 	statusBar() ->  showMessage ( QString (tr ("creating adjacency adjacency matrix of %1 nodes")).arg(aNodes), statusBarDuration );
 	qDebug ("MW: calling writeAdjacencyMatrix with %i nodes", aNodes);
 	char fn[]= "adjacency-matrix.dat";
@@ -2090,7 +2095,7 @@ void MainWindow::slotViewAdjacencyMatrix(){
 void MainWindow::slotCreateUniformRandomNetwork(){
 	bool ok;
 	statusBar()->showMessage("You have selected to create a random network. ", statusBarDuration);
-	int newNodes=( QInputDialog::getInteger(this, "Create random network", tr("Number of nodes:"),1, 1, 3000, 1, &ok ) ) ;
+	int newNodes=( QInputDialog::getInteger(this, "Create random network", tr("Number of nodes:"),1, 1, maxNodes, 1, &ok ) ) ;
 	if (!ok) { 
 		statusBar()->showMessage("You did not enter an integer. Aborting.", statusBarDuration);
 		return;
@@ -2105,9 +2110,21 @@ void MainWindow::slotCreateUniformRandomNetwork(){
 	initNet();  
 	makeThingsLookRandom();  
 	statusBar()->showMessage(tr("Creating uniform random network. Please wait... ") ,statusBarDuration);
-	qDebug("MW Uniform network:  Create uniform random network of %i nodes and %i link probability.",aNodes, probability);
+
+	qDebug("MW Uniform network:  Create uniform random network of %i nodes and %i link probability.",newNodes, probability);
+	qDebug("MW Uniform network creating dialog");
+	//"Operation in progress.", "Cancel", 0, 100, this);
+     	progressDialog->setLabelText("Calculating");
+	qDebug("MW Uniform network --");
+	progressDialog->setCancelButtonText("Cancel");
+	qDebug("MW Uniform network---");
+	progressDialog->setRange(0, newNodes*newNodes);
+	qDebug("MW Uniform network ----");
+	progressDialog->setMinimumDuration(0);
+//	progressBar  = new QProgressBar (statusBar());
 	
 	activeGraph.createUniformRandomNetwork (newNodes, probability);
+//	progressDialog->deleteLater();
 
   	fileContainsNodeColors=FALSE;
 	fileContainsLinksColors=FALSE;
@@ -2117,7 +2134,7 @@ void MainWindow::slotCreateUniformRandomNetwork(){
 	
 	graphChanged();
 	setWindowTitle("Untitled");
-	statusBar()->showMessage("Uniform random network created: "+QString::number(activeNodes())+" aNodes, "+QString::number( activeLinks())+" Links", statusBarDuration);
+	statusBar()->showMessage("Uniform random network created: "+QString::number(activeNodes())+" Nodes, "+QString::number( activeLinks())+" Links", statusBarDuration);
 
 }
 
@@ -2140,7 +2157,7 @@ void MainWindow::slotCreateConnectedRandomNetwork() {
 void MainWindow::slotCreateSameDegreeRandomNetwork(){
 	bool ok;
 	statusBar()->showMessage("You have selected to create a pseudo-random network where each node has the same degree. ", statusBarDuration);
-	int newNodes=( QInputDialog::getInteger(this, "Create same degree network", tr("Number of nodes:"),1, 1, 3000, 1, &ok ) ) ;
+	int newNodes=( QInputDialog::getInteger(this, "Create same degree network", tr("Number of nodes:"),1, 1, maxNodes, 1, &ok ) ) ;
 	if (!ok) { 
 		statusBar()->showMessage("You did not enter an integer. Aborting.", statusBarDuration);
 		return;
@@ -2164,7 +2181,7 @@ void MainWindow::slotCreateSameDegreeRandomNetwork(){
 	
 	graphChanged();
 	setWindowTitle("Untitled");
-	statusBar()->showMessage("Uniform random network created: "+QString::number(activeNodes())+" aNodes, "+QString::number( activeLinks())+" Links", statusBarDuration);
+	statusBar()->showMessage("Uniform random network created: "+QString::number(activeNodes())+" Nodes, "+QString::number( activeLinks())+" Links", statusBarDuration);
 // 	if (showProgressBar) {
 // 		actionProgress->setValue (  aNodes+(source+1)) ;
 // 		qApp->processEvents();
@@ -2196,7 +2213,7 @@ void MainWindow::slotCreateGaussianRandomNetwork(){
 void MainWindow::slotCreatePhysicistLatticeNetwork(){
 	bool ok;
 	statusBar()->showMessage("You have selected to create a physicist's lattice network. ", statusBarDuration);
-	int newNodes=( QInputDialog::getInteger(this, "Create physicist's lattice", tr("Number of nodes:"),1, 1, 3000, 1, &ok ) ) ;
+	int newNodes=( QInputDialog::getInteger(this, "Create physicist's lattice", tr("Number of nodes:"),1, 1, maxNodes, 1, &ok ) ) ;
 	if (!ok) { 
 		statusBar()->showMessage("You did not enter an integer. Aborting.", statusBarDuration);
 		return;
@@ -3554,6 +3571,7 @@ int MainWindow::activeLinks(){
 *	Displays the amount of active nodes on the scene.
 */
 void MainWindow::slotActiveNodes(){
+	int aNodes=-1;
 	if ((aNodes=activeNodes())==-1 ) {
 		statusBar()->showMessage (QString(tr("ERROR IN ACTORS COUNT.")), statusBarDuration) ;
 		return;
@@ -4736,7 +4754,7 @@ void MainWindow::slotShowProgressBar(bool toggle) {
 
 
 /**
-*  Turns progressbar on or off
+*  Turns debugging messages on or off
 */
 void MainWindow::slotPrintDebug(bool toggle){
 	if (!toggle)   {

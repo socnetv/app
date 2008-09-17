@@ -54,15 +54,15 @@ install:	$(name) src/images/$(name).png
 	@install -v -m 0755 $(name) $(DESTDIR)$(prefix)/bin/$(name)
 	@install -v -m 0644 src/images/$(name).png $(DESTDIR)$(prefix)/share/pixmaps/$(name).png
 	@install -v -m 0644 $(name).desktop $(DESTDIR)$(prefix)/share/applications/$(name).desktop
-	mkdir -p $(DESTDIR)$(prefix)/doc/$(name)/manual
-	@install -v -m 0755 doc/* $(DESTDIR)$(prefix)/doc/$(name)/manual/
-	@install -v -m 0755 README NEWS TODO ChangeLog $(DESTDIR)$(prefix)/doc/$(name)/ 
+	mkdir -p $(DESTDIR)$(prefix)/share/doc/$(name)/manual
+	@install -v -m 0755 doc/* $(DESTDIR)$(prefix)/share/doc/$(name)/manual/
+	@install -v -m 0755 README NEWS TODO ChangeLog $(DESTDIR)$(prefix)/share/doc/$(name)/ 
 
 uninstall:	$(DESTDIR)$(prefix)/bin/$(name)
 	@rm -vf $(DESTDIR)$(prefix)/bin/$(name)
 	@rm -vf $(DESTDIR)$(prefix)/share/pixmaps/$(name).png
 	@rm -vf $(DESTDIR)$(prefix)/share/applications/$(name).desktop
-	@rm -rf $(DESTDIR)$(prefix)/doc/$(name)
+	@rm -rf $(DESTDIR)$(prefix)/share/doc/$(name)
 clean:	$(name).mak
 	@make -f $(name).mak clean
 	@rm -f $(name) $(name).mak
