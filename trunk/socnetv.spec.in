@@ -14,12 +14,17 @@
 %define distr %(cat /etc/fedora-release)
 %define qmake qmake-qt4
 %define lrelease lrelease-qt4
+BuildRequires:  libqt4-devel >= 4.4 
 %endif
+
 %if %is_suse
 %define distr %(head -1 /etc/SuSE-release)
+BuildRequires:  libqt4-devel >= 4.4 libQtWebKit-devel
 %endif
+
 %if %is_mandrake
 %define distr %(cat /etc/mandrake-release)
+BuildRequires:  libqt4-devel >= 4.4
 %endif
 
 
@@ -41,9 +46,7 @@ Packager:	Dimitris V. Kalamaras
 Distribution:   %{distr}
 
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
-
-BuildRequires:	libqt4-devel >= 4.4
-
+BuildRequires:	libqt4-devel >= 4.4 libQtWebKit-devel
 
 
 %description
