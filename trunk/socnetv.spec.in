@@ -40,7 +40,7 @@ Release:	%{release}
 
 Prefix:		%{prefix}
 
-Source0:	SocNetV-%{version}.tar.gz
+Source0:	SocNetV-%{version}.tar.bz2
 
 Packager:	Dimitris V. Kalamaras
 Distribution:   %{distr}
