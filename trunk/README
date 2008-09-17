@@ -43,7 +43,7 @@ tar zxfv SocNetV-v0.XX.tar.gz
 
 Then enter the new directory and compile with these commands:
 
-cd socnetv
+cd socnetv-0.XX
 ./configure
 make
 

@@ -7,7 +7,7 @@ If you have Qt4 installed, all you have to do is to type in the following comman
 
 1) untar zxfv SocNetV-0.XX.tar.gz
 
-2) cd SocNetV
+2) cd socnetv-0.XX
 
 3) ./configure
 

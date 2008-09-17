@@ -6,7 +6,9 @@ SocNetV News
 
 Sep 2008
 ========
-- Version 0.47
+- New openSUSE package repo.
+- Version 0.48 released
+- Version 0.47 released
 - Version 0.46 released.
   Lots of bugfixes.
   New features:
@@ -14,6 +16,7 @@ Sep 2008
 
 Aug 2008
 ========
+- New Debian Package
 - Version 0.45 released. 
   New features:
   - GraphML initial support.
