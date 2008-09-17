@@ -19,7 +19,7 @@ BuildRequires:  libqt4-devel >= 4.4
 
 %if %is_suse
 %define distr %(head -1 /etc/SuSE-release)
-BuildRequires:  libqt4-devel >= 4.4 libQtWebKit-devel
+BuildRequires:  libqt4-devel >= 4.4 libQtWebKit-devel update-desktop-files
 %endif
 
 %if %is_mandrake
@@ -36,17 +36,14 @@ URL:		http://socnetv.sourceforge.net/
 Version:	%{version}
 Release:	%{release}
 
-
-
 Prefix:		%{prefix}
 
 Source0:	SocNetV-%{version}.tar.bz2
 
-Packager:	Dimitris V. Kalamaras
 Distribution:   %{distr}
 
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
-BuildRequires:	libqt4-devel >= 4.4 libQtWebKit-devel
+
 
 
 %description
@@ -74,6 +71,7 @@ Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 %__make
 
 %install
+%suse_update_desktop_file %{name} Math Visualiser
 %makeinstall
 
 %clean
@@ -111,6 +109,6 @@ Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 %{_datadir}/doc/%{name}/manual/visualisation.html
 
 %changelog
-* %{lastrev}  Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
+* Wed Sep 17 2008  Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
 0.48-1
 - First RPM release
