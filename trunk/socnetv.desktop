@@ -3,6 +3,6 @@ Name=Social Networks Visualiser (SocNetV)
 Comment=SocNetV is a Social Networks Visualisation and Analysis application.
 Exec=/usr/local/bin/socnetv
 Icon=/usr/local/share/pixmaps/socnetv.png
-Categories=Qt;Education;Math;X-Mathematics;
+Categories=Applications;Science;Mathematics;Qt;
 Terminal=false
 Type=Application

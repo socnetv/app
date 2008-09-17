@@ -80,15 +80,12 @@ Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 [ -d %{buildroot} -a "%{buildroot}" != "" ] && %__rm -rf  %{buildroot}
 
 
-%define mkmanual %(mkdir -p %{_datadir}/doc/$(name)/manual)
-%define wrmanual %(doc/*  %{_datadir}/doc/$(name)/manual)
-
-	
+%define lastrev %(LANG=en_US.UTF-8 && date +"%a %b %e %Y")
 
 %files
 %defattr(-,root,root)
 
-%doc AUTHORS COPYING ChangeLog README TODO 
+ 
 %{_bindir}/%{name}
 %{_datadir}/applications/%{name}.desktop
 %{_datadir}/pixmaps/%{name}.png
@@ -96,6 +93,8 @@ Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 %{_datadir}/doc/%{name}/NEWS
 %{_datadir}/doc/%{name}/README
 %{_datadir}/doc/%{name}/TODO
+%{_datadir}/doc/%{name}/COPYING
+%{_datadir}/doc/%{name}/AUTHORS
 %{_datadir}/doc/%{name}/manual/analysis.html
 %{_datadir}/doc/%{name}/manual/bugs.html
 %{_datadir}/doc/%{name}/manual/credits.html
@@ -112,5 +111,6 @@ Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 %{_datadir}/doc/%{name}/manual/visualisation.html
 
 %changelog
-* Tue Sep 7 2008 Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
+* %{lastrev}  Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
+0.48-1
 - First RPM release
