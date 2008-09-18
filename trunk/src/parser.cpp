@@ -71,7 +71,7 @@ int Parser::loadPajek(){
 	
 	QStringList lineElement;
 	bool ok=FALSE, intOk=FALSE, check1=FALSE, check2=FALSE;
-	bool nodes_flag=FALSE, edges_flag=FALSE, arcs_flag=FALSE;
+	bool nodes_flag=FALSE, edges_flag=FALSE, arcs_flag=FALSE, arcslist_flag=FALSE;
 	bool fileContainsNodeColors=FALSE, fileContainsNodesCoords=FALSE;
 	bool fileContainsLinksColors=FALSE;
 	bool zero_flag=FALSE;
@@ -119,16 +119,20 @@ int Parser::loadPajek(){
 		/**SPLIT EACH LINE (ON EMPTY SPACE CHARACTERS) IN SEVERAL ELEMENTS*/
 		lineElement=str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
 
-		if ( str.contains( "edges", Qt::CaseInsensitive) ) {
+		if ( str.endsWith( "edges", Qt::CaseInsensitive) ) {
 		 	edges_flag=true; arcs_flag=false; 
 			continue;
 		}
-		else if ( str.contains( "arcs", Qt::CaseInsensitive) ) { 
+		else if ( str.endsWith( "arcs", Qt::CaseInsensitive) ) { 
 			arcs_flag=true; edges_flag=false;
 			continue;
 		}
+		else if ( str.endsWith( "arcslist", Qt::CaseInsensitive) ) { 
+			arcs_flag=false; edges_flag=false; arcslist_flag=true;
+			continue;
+		}
 		/** READING NODES */
-		if (!edges_flag && !arcs_flag) {
+		if (!edges_flag && !arcs_flag && !arcslist_flag) {
 			qDebug("=== Reading nodes ===");
 			nodes_flag=TRUE;
 			nodeNum=lineElement[0].toInt(&intOk, 10);
@@ -212,7 +216,7 @@ int Parser::loadPajek(){
 				}
 			}
 			/**START NODE CREATION */
-			qDebug ("Creating node numbered %i", nodeNum);
+			qDebug ("Creating node numbered %i. Real nodes count (j) %i: ", nodeNum, j+1);
 			j++;  //Controls the real number of nodes.
 			//If the file misses some nodenumbers then we create dummies and delete them afterwards!
 			if ( j + miss < nodeNum)  {
@@ -228,7 +232,6 @@ int Parser::loadPajek(){
 				qDebug ("Error: This Pajek net declares this node with nodeNumber smaller than previous nodes. Aborting");
 				return -1;	
 			}
-// 			parameters....: nodeNum, nodeSize, nodeColor, nodeLabel, labelColor, Point of origin, nodeShape, showLabels
 			emit createNode(nodeNum,initNodeSize, nodeColor, label, nodeColor, QPointF(randX, randY), nodeShape, initShowLabels);
 			initNodeColor=nodeColor; 
 		} 	
@@ -328,6 +331,22 @@ int Parser::loadPajek(){
 				emit createEdge(source, target, weight, linkColor, undirected, arrows, bezier);
 				totalLinks++;
 			} //else if ARCS
+			else if (arcslist_flag)   {  /** ARCSlist */
+				qDebug("Parser-loadPajek(): === Reading arcs list===");
+				source=  lineElement[0].toInt(&ok, 10);
+				fileContainsLinksColors=FALSE;
+				linkColor=initLinkColor;
+				undirected=false;
+				arrows=true;
+				bezier=false;
+				for (register int i= 1; i< lineElement.size(); i++) {
+					target = lineElement[i].toInt(&ok,10);					
+					qDebug("Parser-loadPajek(): Creating arc source %i target %i with weight %i", source, target, weight);
+					emit createEdge(source, target, weight, linkColor, undirected, arrows, bezier);
+					totalLinks++;
+				}
+			} //else if ARCSLIST
+
 		} //end if BOTH ARCS AND EDGES
 	} //end WHILE
 	file.close();

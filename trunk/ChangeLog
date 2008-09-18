@@ -11,6 +11,7 @@ Codename: "Road to nowhere?"
 ------------------------------
 --New layout method: node sizes according to their indegrees.
 --No node limit. Load any network you want.
+--loadPajek() recognizes Arcslists.
 --Fixed bug in Edges which made them drawed twice.
 --Graph API simplification
 --Fixed bugs in removeNode methods.
