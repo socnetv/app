@@ -4892,7 +4892,7 @@ void MainWindow::slotHelp(){
 				helpPath=d.filePath("manual.html");
 			}
 		}
-		if (d.cd("/usr/local/doc/socnetv/") ) {
+		if (d.cd("/usr/local/share/doc/socnetv/") ) {
 			if (d.exists("manual/")) d.cd("manual/");
 			if ( d.exists("manual.html") ) {
 				helpPath=d.filePath("manual.html");
