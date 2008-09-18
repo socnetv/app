@@ -71,11 +71,11 @@ int Parser::loadPajek(){
 	
 	QStringList lineElement;
 	bool ok=FALSE, intOk=FALSE, check1=FALSE, check2=FALSE;
-	bool nodes_flag=FALSE, edges_flag=FALSE, arcs_flag=FALSE, arcslist_flag=FALSE;
+	bool nodes_flag=FALSE, edges_flag=FALSE, arcs_flag=FALSE, arcslist_flag=FALSE, matrix_flag=FALSE;
 	bool fileContainsNodeColors=FALSE, fileContainsNodesCoords=FALSE;
 	bool fileContainsLinksColors=FALSE;
 	bool zero_flag=FALSE;
-	int  lineCounter=0, j,miss, source = -1, target=-1, weight=1, nodeNum, colorIndex=-1, coordIndex=-1;
+	int  lineCounter=0, i=0, j=0, miss=0, source= -1, target=-1, weight=1, nodeNum, colorIndex=-1, coordIndex=-1;
 	list<int> listDummiesPajek;
 	networkName="noname";
 	totalLinks=0;
@@ -88,7 +88,7 @@ int Parser::loadPajek(){
 		str= ts.readLine();
 		lineCounter++;
 		if (str.isEmpty() ) continue;
-		if (!edges_flag && !arcs_flag && !nodes_flag) {
+		if (!edges_flag && !arcs_flag && !nodes_flag && !arcslist_flag && !matrix_flag) {
 			qDebug("Parser-loadPajek(): reading headlines");
 			if ( (lineCounter == 1) &&  (!str.contains("network",Qt::CaseInsensitive) && !str.contains("vertices",Qt::CaseInsensitive) ) ) {  
 				//this is not a pajek file. Abort
@@ -119,20 +119,25 @@ int Parser::loadPajek(){
 		/**SPLIT EACH LINE (ON EMPTY SPACE CHARACTERS) IN SEVERAL ELEMENTS*/
 		lineElement=str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
 
-		if ( str.endsWith( "edges", Qt::CaseInsensitive) ) {
-		 	edges_flag=true; arcs_flag=false; 
+		if ( str.contains( "*edges", Qt::CaseInsensitive) ) {
+		 	edges_flag=true; arcs_flag=false; arcslist_flag=false; matrix_flag=false;
 			continue;
 		}
-		else if ( str.endsWith( "arcs", Qt::CaseInsensitive) ) { 
-			arcs_flag=true; edges_flag=false;
+		else if ( str.contains( "*arcs", Qt::CaseInsensitive) ) { 
+			arcs_flag=true; edges_flag=false; arcslist_flag=false; matrix_flag=false;
 			continue;
 		}
-		else if ( str.endsWith( "arcslist", Qt::CaseInsensitive) ) { 
-			arcs_flag=false; edges_flag=false; arcslist_flag=true;
+		else if ( str.contains( "*arcslist", Qt::CaseInsensitive) ) { 
+			arcs_flag=false; edges_flag=false; arcslist_flag=true; matrix_flag=false;
 			continue;
 		}
+		else if ( str.contains( "*matrix", Qt::CaseInsensitive) ) { 
+			arcs_flag=false; edges_flag=false; arcslist_flag=false; matrix_flag=true;
+			continue;
+		}
+
 		/** READING NODES */
-		if (!edges_flag && !arcs_flag && !arcslist_flag) {
+		if (!edges_flag && !arcs_flag && !arcslist_flag && !matrix_flag) {
 			qDebug("=== Reading nodes ===");
 			nodes_flag=TRUE;
 			nodeNum=lineElement[0].toInt(&intOk, 10);
@@ -221,10 +226,10 @@ int Parser::loadPajek(){
 			//If the file misses some nodenumbers then we create dummies and delete them afterwards!
 			if ( j + miss < nodeNum)  {
 				qDebug ("MW There are %i nodes but this node has number %i", j, nodeNum);
-				for (int i=j; i< nodeNum; i++) {
-					qDebug( "Parser-loadPajek(): Creating dummy node number i = %i ", i);
-					emit createNode(i,initNodeSize, nodeColor, label, lineElement[3], QPointF(randX, randY), nodeShape, initShowLabels);
-					listDummiesPajek.push_back(i);  //FIXME Pajek import
+				for (int num=j; num< nodeNum; num++) {
+					qDebug( "Parser-loadPajek(): Creating dummy node number num = %i ", num);
+					emit createNode(num,initNodeSize, nodeColor, label, lineElement[3], QPointF(randX, randY), nodeShape, initShowLabels);
+					listDummiesPajek.push_back(num);  //FIXME Pajek import
 					miss++;
 				}
 			}
@@ -243,11 +248,11 @@ int Parser::loadPajek(){
 			}
 			else if (j==0) {  //if there were no nodes at all, we need to create them now.
 				qDebug("The Pajek file declares %i but I didnt found any nodes. I will create them....", aNodes);
-				for (register int i=j+1; i<= aNodes; i++) {
-					qDebug( "Parser-loadPajek(): Creating node number i = %i ", i);
+				for (int num=j+1; num<= aNodes; num++) {
+					qDebug( "Parser-loadPajek(): Creating node number i = %i ", num);
 					randX=rand()%gwWidth;
 					randY=rand()%gwHeight;
-					emit createNode(i,initNodeSize, initNodeColor, QString::number(i), "black", QPointF(randX, randY), initNodeShape, initShowLabels);
+					emit createNode(num,initNodeSize, initNodeColor, QString::number(i), "black", QPointF(randX, randY), initNodeShape, initShowLabels);
 				}
 				j=aNodes;
 			}
@@ -317,7 +322,7 @@ int Parser::loadPajek(){
 
 				if (lineElement.contains("c", Qt::CaseSensitive ) ) {
 					qDebug("Parser-loadPajek(): file with link colours");
-					linkColor=lineElement [ lineElement.indexOf( QRegExp("[c]"), 0 ) + 1 ];
+					linkColor=lineElement.at ( lineElement.indexOf( QRegExp("[c]"), 0 ) + 1 );
 					fileContainsLinksColors=TRUE;
 				}
 				else  {
@@ -333,20 +338,38 @@ int Parser::loadPajek(){
 			} //else if ARCS
 			else if (arcslist_flag)   {  /** ARCSlist */
 				qDebug("Parser-loadPajek(): === Reading arcs list===");
-				source=  lineElement[0].toInt(&ok, 10);
+				if (lineElement[0].startsWith("-") ) lineElement[0].remove(0,1);
+				source= lineElement[0].toInt(&ok, 10);
 				fileContainsLinksColors=FALSE;
 				linkColor=initLinkColor;
 				undirected=false;
 				arrows=true;
 				bezier=false;
-				for (register int i= 1; i< lineElement.size(); i++) {
-					target = lineElement[i].toInt(&ok,10);					
+				for (register int index = 1; index < lineElement.size(); index++) {
+					target = lineElement.at(index).toInt(&ok,10);					
 					qDebug("Parser-loadPajek(): Creating arc source %i target %i with weight %i", source, target, weight);
 					emit createEdge(source, target, weight, linkColor, undirected, arrows, bezier);
 					totalLinks++;
 				}
 			} //else if ARCSLIST
-
+			else if (matrix_flag)   {  /** matrix */
+				qDebug("Parser-loadPajek(): === Reading matrix of edges===");
+				i++;
+				source= i;
+				fileContainsLinksColors=FALSE;
+				linkColor=initLinkColor;
+				undirected=false;
+				arrows=true;
+				bezier=false;
+				for (target = 0; target < lineElement.size(); target ++) {
+					if ( lineElement.at(target) != "0" ) {
+						weight = lineElement.at(target).toInt(&ok,10);					
+						qDebug("Parser-loadPajek(): Creating arc source %i target %i with weight %i", source, target+1, weight);
+						emit createEdge(source, target+1, weight, linkColor, undirected, arrows, bezier);
+						totalLinks++;
+					}
+				}
+			} //else if matrix
 		} //end if BOTH ARCS AND EDGES
 	} //end WHILE
 	file.close();
