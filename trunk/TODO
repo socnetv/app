@@ -1,7 +1,6 @@
 FIXED
 =====
 --TODO Transform actors to links //COMMENTED OUT
---TODO edges do not need to be drawed twice...
 --FIXME: GraphML files may crash SocNetV.
 --FIXME: isSymmetric not functioning (check a-symmetry.net)
 --FIXME: When many lines intersect, right-click > removeLink may remove wrong link!
@@ -10,7 +9,7 @@ FIXED
 
 TODO & KNOWN BUGS
 =================
---FIXME SocNetV is limited to a maximum of 3000x3000 nodes.
+
 - TODO: CLUSTERING by betweeness, see http://iv.slis.indiana.edu/sw/bc.html
 http://tyna.gersteinlab.org/tyna/supp.jsp
 -- FIXME FIXME Directed Network (BFS) & Centralities (maxIndex and standard). 

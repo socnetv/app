@@ -9,12 +9,15 @@ ChangeLog:
 Version 0.48 - Sep 21 2008
 Codename: "Road to nowhere?"
 ------------------------------
---Fixed bug edges which made them drawed twice.
+--New layout method: node sizes according to their indegrees.
+--No node limit. Load any network you want.
+--Fixed bug in Edges which made them drawed twice.
 --Graph API simplification
 --Fixed bugs in removeNode methods.
 --Fixed bugs in loadPajek().
 --Documentation update
-
+--Progress Bars (F10) appear when creating random nets.
+--RPM repository for openSUSE at http://download.opensuse.org/repositories/home:/oxy86/openSUSE_11.0
 
 Version 0.47 - Sep 12 2008
 Codename: "En leukw"
