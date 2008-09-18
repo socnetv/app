@@ -160,7 +160,7 @@ int Parser::loadPajek(){
 			else {	/** NODELABEL */
 				label=lineElement[1];
 				qDebug("node label: " + lineElement[1].toAscii());
-				str.remove (1, str.lastIndexOf(label)+label.size() );	
+				str.remove (0, str.lastIndexOf(label)+label.size() );	
 				qDebug("cropped str: "+ str.toAscii());
 				if (label.contains('"', Qt::CaseInsensitive) )
 					label=label.remove('\"');
@@ -196,14 +196,22 @@ int Parser::loadPajek(){
 				/**NODE COORDINATES */
 				if ( str.contains(".",Qt::CaseInsensitive) ) { 
 					for (register int c=0; c< lineElement.count(); c++)   {
-						temp=lineElement[c];
+						temp=lineElement.at(c);
 						qDebug( temp.toAscii());
 						if ((coordIndex=temp.indexOf(".", Qt::CaseInsensitive)) != -1 ){ 	
-							if (lineElement[c-1] == "ic" ) continue;  //pajek declares colors with numbers!
-							if ( !temp[coordIndex-1].isDigit()) continue;
-							qDebug ("coords: " + temp.toAscii() + " " +lineElement[c+1].toAscii());
-							randX=temp.toDouble(&check1);
-							randY=lineElement[c+1].toDouble(&check2);
+							if (lineElement.at(c-1) == "ic" ) continue;  //pajek declares colors with numbers!
+							if ( !temp[coordIndex-1].isDigit()) continue;  //needs 0.XX
+							if (c+1 == lineElement.count() ) {//first coord zero, i.e: 0  0.455
+								qDebug ("coords: " +lineElement.at(c-1).toAscii() + " " +temp.toAscii() );
+								randX=lineElement.at(c-1).toDouble(&check1);
+								randY=temp.toDouble(&check2);
+							}
+							else {
+								qDebug ("coords: " + temp.toAscii() + " " +lineElement[c+1].toAscii());
+								randX=temp.toDouble(&check1);
+								randY=lineElement[c+1].toDouble(&check2);
+							}
+
 							if (check1 && check2)    {
 								randX=randX * gwWidth;
 								randY=randY * gwHeight;
