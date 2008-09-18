@@ -639,10 +639,10 @@ void MainWindow::initActions(){
 	distanceAct->setWhatsThis(tr("Geodesic Distance\n\n The geodesic distance of two nodes is the number of edges between them."));
 	connect(distanceAct, SIGNAL(activated()), this, SLOT(slotDistance()));
 
-	distanceMatrixAct = new QAction(tr("Distance &Matrix"),this);
+	distanceMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Distance &Matrix"),this);
 	distanceMatrixAct ->setShortcut(tr("Ctrl+M"));
 	distanceMatrixAct->setStatusTip(tr("Displays the matrix of geodesic distances between all nodes"));
-	distanceMatrixAct->setWhatsThis(tr("Distance Matrix\n\n A distance matrix is a NxN matrix, where its (i,j) element is the geodesic distance from node i to node j."));
+	distanceMatrixAct->setWhatsThis(tr("Distance Matrix\n\n A distance matrix is a NxN matrix, where the (i,j) element is the geodesic distance from node i to node j."));
 	connect(distanceMatrixAct, SIGNAL(activated()), this, SLOT( slotViewDistanceMatrix() ) );
 	
 	diameterAct = new QAction(QIcon(":/images/diameter.png"), tr("Diameter"),this);
