@@ -134,7 +134,7 @@ Note the 'Pajek-like' part. This is because real Pajek files can be much more co
 The first line (*Network) declares that this is a Pajek network. 
 </p>
  <p class="text">
-The second line (*Vertices 6) declares the number of vertices of the network and identifies that the following lines will describe node properties. 
+The second line (*Vertices 6) declares the number of vertices of the network and identifies that the following lines describe node properties. 
 </p>
 <p class="text">
 Each one of the following 6 lines (3-8) construct one node. Each node's line has 7 columns-properties: <br />
@@ -172,5 +172,64 @@ Note that it is legal to have mixed columns in Pajek-like network file. For inst
  Colour names are not arbitrarily created. Valid colour names for nodes and arcs/edges are those specified in the X11 file: /usr/X11R6/lib/X11/rgb.txt, i.e. red, gray, violet, navy, green, etc. You can change colours of all network elements from inside SocNetV.
 </p>
 
+<p class="text">
+SocNetV also supports Pajek files which declare edges/arcs in matrices, like this:
+<div class="code">
+<pre>
+*Vertices     11
+     1 "minister1"                              0.2912    0.2004 ellipse
+     2 "pminister"                              0.4875    0.0153 diamond
+     3 "minister2"                              0.3537    0.3416 ellipse
+     3 "minister2"                              0.3537    0.3416 ellipse
+     4 "minister3"                              0.4225    0.5477 ellipse
+     5 "minister4"                              0.4538    0.1603 ellipse
+     6 "minister5"                              0.4900    0.3836 ellipse
+     7 "minister6"                              0.6212    0.5038 ellipse
+     8 "minister7"                              0.6450    0.2023 ellipse
+     9 "advisor1"                               0.6488    0.6031 box
+    10 "advisor2"                               0.3212    0.5515 box
+    11 "advisor3"                               0.7188    0.4218 box
+*Matrix
+ 0 1 1 0 0 1 0 0 0 0 0
+ 0 0 0 0 0 0 0 1 0 0 0
+ 1 1 0 1 0 1 1 1 0 0 0
+ 0 0 0 0 0 0 1 1 0 0 0
+ 0 1 0 1 0 1 1 1 0 0 0
+ 0 1 0 1 1 0 1 1 0 0 0
+ 0 0 0 1 0 0 0 1 1 0 1
+ 0 1 0 1 0 0 1 0 0 0 1
+ 0 0 0 1 0 0 1 1 0 0 1
+ 1 0 1 1 1 0 0 0 0 0 0
+ 0 0 0 0 0 1 0 1 1 0 0
+</pre>
+</div>
 
+Here, the *Matrix tag replaces *Arcs or *Edges. An ordinary adjacency matrix follows describing all links.
+</p>
 
+<p class="text">
+
+Another possibility, is the *ArcsList tag. When SocNetV finds that tag in a Pajek file, it expects each node to declare list of its link to other nodes. Here is an example:
+<div class="code">
+<pre>
+*Vertices 9
+1
+2
+3
+4
+5
+6
+7
+8
+9
+*Arcslist
+2 1 3 9
+1 3 4 5
+3 1 4 7
+4 1 2 3
+5 1 3 4
+7 2 8 9
+</pre>
+</div>
+
+For instance, the first line after *Arcslist means: "node 2 is connected to nodes 1, 3 and 9". It is very simple.
