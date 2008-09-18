@@ -87,7 +87,8 @@ int Parser::loadPajek(){
 	while ( !ts.atEnd() )   {
 		str= ts.readLine();
 		lineCounter++;
-		if (str.isEmpty() ) continue;
+		if ( str.startsWith("%") || str.isEmpty() ) continue;
+
 		if (!edges_flag && !arcs_flag && !nodes_flag && !arcslist_flag && !matrix_flag) {
 			qDebug("Parser-loadPajek(): reading headlines");
 			if ( (lineCounter == 1) &&  (!str.contains("network",Qt::CaseInsensitive) && !str.contains("vertices",Qt::CaseInsensitive) ) ) {  
@@ -208,6 +209,10 @@ int Parser::loadPajek(){
 								randY=randY * gwHeight;
 								fileContainsNodesCoords=TRUE;
 							}
+							if (randX <= 0.0 || randY <= 0.0 ) {
+								randX=rand()%gwWidth;
+								randY=rand()%gwHeight;
+							}
 							break;
 						}
 					}
@@ -229,7 +234,7 @@ int Parser::loadPajek(){
 				for (int num=j; num< nodeNum; num++) {
 					qDebug( "Parser-loadPajek(): Creating dummy node number num = %i ", num);
 					emit createNode(num,initNodeSize, nodeColor, label, lineElement[3], QPointF(randX, randY), nodeShape, initShowLabels);
-					listDummiesPajek.push_back(num);  //FIXME Pajek import
+					listDummiesPajek.push_back(num);  
 					miss++;
 				}
 			}
