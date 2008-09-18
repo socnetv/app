@@ -97,10 +97,14 @@ int Parser::loadPajek(){
 				return -1;
 			}
    			else if (str.contains( "network",Qt::CaseInsensitive) )  { //NETWORK NAME
-				lineElement=str.split(QRegExp("\\s+"));	//split at one or more spaces
-				qDebug()<<"Parser-loadPajek(): possible net name: "<<lineElement[1];
-				if (lineElement[1]!="") //FIXME size
-					networkName=lineElement[1];
+				if (str.contains(" ")) {
+					lineElement=str.split(QRegExp("\\s+"));	//split at one or more spaces
+					qDebug()<<"Parser-loadPajek(): possible net name: "<<lineElement[1];
+					if (lineElement[1]!="") 
+						networkName=lineElement[1];
+				}
+				else 
+					networkName = "Unknown";
 				qDebug()<<"Parser-loadPajek(): network name: "<<networkName;
 				continue;
 			}

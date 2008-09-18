@@ -1448,7 +1448,7 @@ void MainWindow::slotChooseFile() {
 	bool m_fileLoaded=fileLoaded;
 	QString m_fileName=fileName;
 	statusBar()->showMessage(tr("Choose a network file..."));
-	fileName = QFileDialog::getOpenFileName(this,   tr("Select one file to open"), "", tr("All (*.*);;GraphML (*.graphml);;GraphViz (*.dot);;Adjacency (*.txt *.csv *.net);;Pajek (*.net)"));
+	fileName = QFileDialog::getOpenFileName(this,   tr("Select one file to open"), "", tr("All (*);;GraphML (*.graphml);;GraphViz (*.dot);;Adjacency (*.txt *.csv *.net);;Pajek (*.net)"));
 	
 	if (!fileName.isEmpty()) {
 		fileNameNoPath=fileName.split ("/" );
