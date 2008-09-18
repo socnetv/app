@@ -105,7 +105,6 @@ Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 %{_datadir}/doc/%{name}/manual/socnetv.css
 %{_datadir}/doc/%{name}/manual/socnetv.png
 %{_datadir}/doc/%{name}/manual/toc.html
-%{_datadir}/doc/%{name}/manual/trademark5.png
 %{_datadir}/doc/%{name}/manual/visualisation.html
 
 %changelog

@@ -193,7 +193,7 @@ int Parser::loadPajek(){
 					nodeColor=initNodeColor;
 					
 				}
-				/**NODE COORDINATES */
+				/**READ NODE COORDINATES */
 				if ( str.contains(".",Qt::CaseInsensitive) ) { 
 					for (register int c=0; c< lineElement.count(); c++)   {
 						temp=lineElement.at(c);
