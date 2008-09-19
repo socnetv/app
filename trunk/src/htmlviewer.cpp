@@ -112,6 +112,8 @@ HTMLViewer::HTMLViewer( const QString& manPath,  QWidget* parent)
     toolbar->addWidget( pathCombo );
 
     view->setFocus();
+
+	this-> resize(700,650);
 }
 
 

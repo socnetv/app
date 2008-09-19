@@ -2113,7 +2113,7 @@ void MainWindow::slotCreateUniformRandomNetwork(){
 	qDebug("MW Uniform network:  Create uniform random network of %i nodes and %i link probability.",newNodes, probability);
 
 	if (showProgressBarAct->isChecked()){
-		progressDialog= new QProgressDialog("Creating random network. Please wait (or disable me from Options > View > ProgressBar, next time ;)).", "Cancel", 0, newNodes+newNodes*newNodes, this);
+		progressDialog= new QProgressDialog("Creating random network. Please wait (or disable me from Options > View > ProgressBar, next time ;)).", "Cancel", 0, newNodes+newNodes, this);
 		progressDialog -> setWindowModality(Qt::WindowModal);
 		connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
 		progressDialog->setMinimumDuration(0);
@@ -2174,7 +2174,7 @@ void MainWindow::slotCreateSameDegreeRandomNetwork(){
 	statusBar()->showMessage("Creating a pseudo-random network where each node has the same degree... ", statusBarDuration);
 
 	if (showProgressBarAct->isChecked()){
-		progressDialog= new QProgressDialog("Creating random network. Please wait (or disable me from Options > View > ProgressBar, next time ;)).", "Cancel", 0, (int) (newNodes+newNodes*degree/2.0), this);
+		progressDialog= new QProgressDialog("Creating random network. Please wait (or disable me from Options > View > ProgressBar, next time ;)).", "Cancel", 0, (int) (newNodes+newNodes), this);
 		progressDialog -> setWindowModality(Qt::WindowModal);
 		connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
 		progressDialog->setMinimumDuration(0);
@@ -2251,7 +2251,7 @@ void MainWindow::slotCreatePhysicistLatticeNetwork(){
 
 
 	if (showProgressBarAct->isChecked()){
-		progressDialog= new QProgressDialog("Creating random network. Please wait (or disable me from Options > View > ProgressBar, next time ;)).", "Cancel", 0, (int) (newNodes+newNodes*degree/2.0), this);
+		progressDialog= new QProgressDialog("Creating random network. Please wait (or disable me from Options > View > ProgressBar, next time ;)).", "Cancel", 0, (int) (newNodes+newNodes), this);
 		progressDialog -> setWindowModality(Qt::WindowModal);
 		connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
 		progressDialog->setMinimumDuration(0);
@@ -3084,6 +3084,12 @@ void MainWindow::slotTransformNodes2Links(){
 *	Converts all edges to double edges, so that the network becomes undirected (symmetric adjacency matrix).
 */
 void MainWindow::slotMakeEdgesReciprocal(){
+	if (!fileLoaded && !networkModified )  {
+		QMessageBox::critical(this, "Error",tr("No links here. Load a network file or create a new network first."), "OK",0);
+		statusBar()->showMessage(tr("No links present...") ,statusBarDuration);
+		return;
+	}
+
 	activeGraph.makeEdgesReciprocal();
 }
 

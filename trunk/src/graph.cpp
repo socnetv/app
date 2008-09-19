@@ -1751,12 +1751,9 @@ void Graph::createUniformRandomNetwork(int vert, int probability){
 		progressCounter++;
 		emit updateProgressDialog( progressCounter );
 	}
-	for (register int i=0;i<vert; i++)
+	for (register int i=0;i<vert; i++) {
 		for (register int j=0; j<vert; j++) {
 			qDebug("Random Experiment for link creation between %i and %i:", i+1, j+1);
-			progressCounter++;
-			emit updateProgressDialog(progressCounter );
-			qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
 			if (rand() %100 < probability)    {
 				qDebug("Creating link!");
 				createEdge(i+1, j+1, 1, "black", false, true, false);
@@ -1764,6 +1761,11 @@ void Graph::createUniformRandomNetwork(int vert, int probability){
 			else 
 				qDebug("Will not create link!");
 		}
+		progressCounter++;
+		emit updateProgressDialog(progressCounter );
+		qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
+
+	}
 }
 
 
@@ -1795,13 +1797,15 @@ void Graph::createPhysicistLatticeNetwork(int vert, int degree,double x0, double
 		qDebug("Creating links for node %i = ", i+1);	
 		for (register int j=0; j< degree/2 ; j++) {
 			target = i + j+1 ; 
-			progressCounter++;
-			emit updateProgressDialog( progressCounter );
 			if ( target > (vert-1)) 
 				target = target-vert; 
 			qDebug("Creating Link between %i  and %i", i+1, target+1);
 			createEdge(i+1, target+1, 1, "black", true, true, false);
 		}
+		progressCounter++;
+		emit updateProgressDialog(progressCounter );
+		qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
+
 	}
 }
 
@@ -1827,15 +1831,16 @@ void Graph::createSameDegreeRandomNetwork(int vert, int degree){
 	for (register int i=0;i<vert; i++){
 		qDebug("Creating links for node %i = ", i+1);	
 		for (register int j=0; j< degree/2 ; j++) {
-			progressCounter++;
-			emit updateProgressDialog( progressCounter );
-
 			target = i + j+1 ; 
 			if ( target > (vert-1)) 
 				target = target-vert; 
 			qDebug("Creating Link between %i  and %i", i+1, target+1);
 			createEdge(i+1, target+1, 1, "black", true, true, false);
 		}
+		progressCounter++;
+		emit updateProgressDialog(progressCounter );
+		qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
+
 	}
 
 }
