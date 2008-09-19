@@ -258,7 +258,7 @@ void MainWindow::initActions(){
 	connect(viewSociomatrixAct, SIGNAL(activated()), this, SLOT(slotViewAdjacencyMatrix()));
 
 	createUniformRandomNetworkAct = new QAction(QIcon(":/images/net.png"), tr("Uniform (probability)"),  this);
-	createUniformRandomNetworkAct ->setShortcut(tr("Shift+R"));
+	createUniformRandomNetworkAct ->setShortcut(tr("Shift+U"));
 	createUniformRandomNetworkAct->setStatusTip(tr("Creates a uniformly distributed random network"));
 	createUniformRandomNetworkAct->setWhatsThis(tr("Uniform \n\nCreates a random network of uniform distribution"));
 	connect(createUniformRandomNetworkAct, SIGNAL(activated()), this, SLOT(slotCreateUniformRandomNetwork()));
@@ -443,7 +443,7 @@ void MainWindow::initActions(){
 	connect(transformNodes2LinksAct, SIGNAL(activated()), this, SLOT(slotTransformNodes2Links()));
 
 	makeEdgesReciprocalAct= new QAction(tr("Reciprocal Edges"), this);
-	makeEdgesReciprocalAct->setShortcut(tr("Ctrl+U"));
+	makeEdgesReciprocalAct->setShortcut(tr("Shift+R"));
 	makeEdgesReciprocalAct->setStatusTip(tr("Transforms the network to undirected network."));
 	makeEdgesReciprocalAct->setWhatsThis(tr("Transform to Undirected\n\nTransforms all arcs to double links (edges). The result is a undirected (symmetric) network"));
 	connect(makeEdgesReciprocalAct, SIGNAL(activated()), this, SLOT(slotMakeEdgesReciprocal()));	
