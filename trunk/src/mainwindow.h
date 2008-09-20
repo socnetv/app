@@ -178,7 +178,8 @@ public slots:
 	void slotZoomIn();
 	void slotZoomOut();
 
-	void  slotLayoutNodeSizeProportionalEdges(bool);
+	void  slotLayoutNodeSizeProportionalOutEdges(bool);
+	void  slotLayoutNodeSizeProportionalInEdges(bool);
 
 	//STATISTICS MENU
 	void slotViewDistanceMatrix();

@@ -101,7 +101,8 @@ MainWindow::MainWindow(const QString &fName) {
 	connect( &activeGraph, SIGNAL( addBackgrHLine (int) ), graphicsWidget, SLOT(addBackgrHLine(int) ) ) ;
 	
 	connect(moveSpringEmbedderBx, SIGNAL(stateChanged(int)),graphicsWidget, SLOT(startNodeMovement(int)));
-	connect(nodeSizeProportional2OutDegreeBx , SIGNAL(clicked(bool)),this, SLOT(slotLayoutNodeSizeProportionalEdges(bool)));
+	connect(nodeSizeProportional2OutDegreeBx , SIGNAL(clicked(bool)),this, SLOT(slotLayoutNodeSizeProportionalOutEdges(bool)));
+	connect(nodeSizeProportional2InDegreeBx , SIGNAL(clicked(bool)),this, SLOT(slotLayoutNodeSizeProportionalInEdges(bool)));
 
 	connect (graphicsWidget, SIGNAL(updateNodeCoords(int, int, int)), this, SLOT(updateNodeCoords(int, int, int)) );
 	connect (addNodeBt,SIGNAL(clicked()), this, SLOT(createNode()));
@@ -595,7 +596,7 @@ void MainWindow::initActions(){
 	nodeSizeProportionalOutDegreeAct->setWhatsThis(tr("NodeSize = F (OutDegree) \n\n Adjusts the size of each node according to their out-edges (OutDegree). The more out-likned a node is, the bigger will appear..."));
 	nodeSizeProportionalOutDegreeAct->setCheckable(true);
 	nodeSizeProportionalOutDegreeAct->setChecked(false);
-	connect(nodeSizeProportionalOutDegreeAct, SIGNAL(triggered(bool)), this, SLOT(slotLayoutNodeSizeProportionalEdges(bool)));
+	connect(nodeSizeProportionalOutDegreeAct, SIGNAL(triggered(bool)), this, SLOT(slotLayoutNodeSizeProportionalOutEdges(bool)));
 
 
 	nodeSizeProportionalInDegreeAct= new QAction(tr("NodeSize = F (InDegree)"), this);
@@ -604,7 +605,7 @@ void MainWindow::initActions(){
 	nodeSizeProportionalInDegreeAct->setWhatsThis(tr("NodeSize = F (InDegree) \n\n This method adjusts the size of each node according to their in-edges (InDegree). The more in-linked a node is, the bigger will appear..."));
 	nodeSizeProportionalInDegreeAct->setCheckable(true);
 	nodeSizeProportionalInDegreeAct->setChecked(false);
-	connect(nodeSizeProportionalInDegreeAct, SIGNAL(triggered(bool)), this, SLOT(slotLayoutNodeSizeProportionalEdges(bool)));
+	connect(nodeSizeProportionalInDegreeAct, SIGNAL(triggered(bool)), this, SLOT(slotLayoutNodeSizeProportionalInEdges(bool)));
 
 
 
@@ -3126,14 +3127,17 @@ void MainWindow::slotLayoutRandomCircle(){
 
 
 
-void MainWindow::slotLayoutNodeSizeProportionalEdges(bool checked){
+/** 
+	Resizes all nodes according to the amount of their out-Links from other nodes.
+*/
+void MainWindow::slotLayoutNodeSizeProportionalOutEdges(bool checked){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
 		statusBar()->showMessage(tr("I am really sorry. You must really load a file first... ") ,statusBarDuration);
 		return;
 	}
 
-	qDebug("MW: slotLayoutNodeSizeProportionalEdges()");
+	qDebug("MW: slotLayoutNodeSizeProportionalOutEdges()");
 	QList<QGraphicsItem *> list=scene->items();
 	int edges = 0, size = initNodeSize ;
 	
@@ -3156,7 +3160,7 @@ void MainWindow::slotLayoutNodeSizeProportionalEdges(bool checked){
 		if ( (*it) -> type() == TypeNode ){
 			Node *jim = (Node*) (*it);
 			edges = activeGraph.edgesFrom(  (*jim).nodeNumber() ) ;
-			qDebug("Node %i has %i edges ", (*jim).nodeNumber(), edges);
+			qDebug("Node %i outDegree: %i ", (*jim).nodeNumber(), edges);
 			
 			if (edges == 0 ) {
 				size = initNodeSize; 
@@ -3201,6 +3205,84 @@ void MainWindow::slotLayoutNodeSizeProportionalEdges(bool checked){
 
 
 
+
+
+
+
+/** 
+	Resizes all nodes according to the amount of their in-Links from other nodes.
+*/
+void MainWindow::slotLayoutNodeSizeProportionalInEdges(bool checked){
+	if (!fileLoaded && !networkModified  )  {
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		statusBar()->showMessage(tr("I am really sorry. You must really load a file first... ") ,statusBarDuration);
+		return;
+	}
+
+	qDebug("MW: slotLayoutNodeSizeProportionalInEdges()");
+	QList<QGraphicsItem *> list=scene->items();
+	int edges = 0, size = initNodeSize ;
+	
+	if (checked != true) {
+		for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)  {
+			if ( (*it) -> type() == TypeNode ){
+				Node *jim = (Node*) (*it);
+				(*jim).setSize(size);
+			}
+		}
+		nodeSizeProportionalInDegreeAct->setChecked(false);
+		nodeSizeProportional2InDegreeBx->setChecked(false);
+		return;
+	}
+	nodeSizeProportionalInDegreeAct->setChecked(true);
+	nodeSizeProportional2InDegreeBx->setChecked(true);
+	statusBar()->showMessage(tr("Embedding node size model on the network.... ") ,statusBarDuration);	
+	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
+		if ( (*it) -> type() == TypeNode ){
+			Node *jim = (Node*) (*it);
+			edges = activeGraph.edgesTo(  (*jim).nodeNumber() ) ;
+			qDebug("Node %i inDegree: %i ", (*jim).nodeNumber(), edges);
+			
+			if (edges == 0 ) {
+				size = initNodeSize; 
+			}
+			else if (edges == 1 ) {
+				size = initNodeSize + 1; 
+			}
+			else if (edges > 1 && edges <= 2  ) {
+				size = initNodeSize + 2; 	
+			}
+			else if (edges > 2 && edges <= 3  ) {
+				size = initNodeSize + 3; 
+			}
+			else if (edges > 3 && edges <= 4  ) {
+				size = initNodeSize + 4; 
+			}
+			else if (edges > 4 && edges <= 6  ) {
+				size = initNodeSize + 4; 
+			}
+			else if (edges > 5 && edges <= 7  ) {
+				size = initNodeSize+5 ; 
+			}
+			else if (edges > 7 && edges <= 10  ) {
+				size = initNodeSize+6 ; 
+			}
+			else if (edges > 10 && edges <= 15  ) {
+				size = initNodeSize+7 ; 
+			}
+			else if (edges > 15 && edges <= 25  ) {
+				size = initNodeSize+8 ; 
+			}
+			else  if (edges > 25 ) {
+				size = initNodeSize+9; 
+			}
+			qDebug("Changing size of %i to %i", (*jim).nodeNumber(), size);
+			(*jim).setSize(size);
+		}
+
+	}
+
+}
 
 
 
