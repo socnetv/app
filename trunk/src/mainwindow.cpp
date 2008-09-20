@@ -444,8 +444,8 @@ void MainWindow::initActions(){
 
 	makeEdgesReciprocalAct= new QAction(tr("Reciprocal Edges"), this);
 	makeEdgesReciprocalAct->setShortcut(tr("Shift+R"));
-	makeEdgesReciprocalAct->setStatusTip(tr("Transforms the network to undirected network."));
-	makeEdgesReciprocalAct->setWhatsThis(tr("Transform to Undirected\n\nTransforms all arcs to double links (edges). The result is a undirected (symmetric) network"));
+	makeEdgesReciprocalAct->setStatusTip(tr("Makes all edges reciprocal (symmetric graph)."));
+	makeEdgesReciprocalAct->setWhatsThis(tr("Reciprocal Edges\n\nTransforms all arcs to double links (edges). The result is a symmetric network"));
 	connect(makeEdgesReciprocalAct, SIGNAL(activated()), this, SLOT(slotMakeEdgesReciprocal()));	
 
 
