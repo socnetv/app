@@ -100,7 +100,10 @@ MainWindow::MainWindow(const QString &fName) {
 	connect( &activeGraph, SIGNAL( addBackgrCircle (int, int, int) ), graphicsWidget, SLOT(addBackgrCircle(int, int, int) ) ) ;
 	connect( &activeGraph, SIGNAL( addBackgrHLine (int) ), graphicsWidget, SLOT(addBackgrHLine(int) ) ) ;
 	
-	connect(moveSpringEmbedderBx, SIGNAL(stateChanged(int)),graphicsWidget, SLOT(startNodeMovement(int)));
+
+	connect(moveSpringEmbedderBx, SIGNAL(stateChanged(int)),this, SLOT(layoutSpringEmbedder(int)));
+	connect(moveFruchtermanBx, SIGNAL(stateChanged(int)),this, SLOT(layoutFruchterman(int)));
+
 	connect(nodeSizeProportional2OutDegreeBx , SIGNAL(clicked(bool)),this, SLOT(slotLayoutNodeSizeProportionalOutEdges(bool)));
 	connect(nodeSizeProportional2InDegreeBx , SIGNAL(clicked(bool)),this, SLOT(slotLayoutNodeSizeProportionalInEdges(bool)));
 
@@ -501,7 +504,7 @@ void MainWindow::initActions(){
 	connect(circleBetweenessLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityBetweeness()));
 
 	circleInformationalLayoutAct = new QAction( tr("Informational"),	this);
-		circleInformationalLayoutAct ->setEnabled(false);
+	circleInformationalLayoutAct ->setEnabled(false);
 	circleInformationalLayoutAct ->setShortcut(tr("Ctrl+5"));
 	circleInformationalLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Informational Central Nodes are situated towards the centre."));
 	circleInformationalLayoutAct->setWhatsThis(tr("Circle Informational Centrality Layout\n\n Repositions the nodes on circles of different radius. More Informational Central Nodes are positioned towards the centre."));
@@ -565,16 +568,15 @@ void MainWindow::initActions(){
 
 	springLayoutAct= new QAction(tr("Spring Embedder"), this);
 	springLayoutAct->setShortcut(tr("Alt+1"));
-	springLayoutAct->setStatusTip(tr("This model substitutes nodes and edges with charged balls and connecting springs, respectively.	The algorithm continues until the system retains an equilibrium state in which all forces cancel each other."));
-	springLayoutAct->setWhatsThis(tr("Spring Embedder Layout\n\n Repositions all nodes according to a model that substitutes nodes and edges with charged balls and connecting springs, respectively. The algorithm continues until the system retains its equilibrium state where all forces cancel each other."));
+	springLayoutAct->setStatusTip(tr("All nodes repel each other while the connected ones are attracted as if connected by springs."));
+	springLayoutAct->setWhatsThis(tr("Spring Embedder Layout\n\n This model substitutes nodes and edges with charged balls and connecting springs, respectively.	The algorithm continues until the system retains an equilibrium state in which all forces cancel each other "));
 	connect(springLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutSpringEmbedder()));
 
 	FRLayoutAct= new QAction( tr("Fruchterman-Reingold"),	this);
 	FRLayoutAct->setShortcut(tr("Alt+2"));
-	FRLayoutAct->setEnabled(FALSE);
 	FRLayoutAct->setStatusTip(tr("Repelling forces between all nodes, and attracting forces between adjacent nodes."));
 	FRLayoutAct->setWhatsThis(tr("Fruchterman-Reingold Layout\n\n Repositions all nodes according to a model in which	repelling forces are used between every pair of nodes, while attracting forces are used only between adjacent nodes. The algorithm continues until the system retains its equilibrium state where all forces cancel each other."));
-	connect(FRLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutFR()));
+	connect(FRLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutFruchterman()));
 
 
 	zoomInAct = new QAction(QIcon(":/images/zoomin.png"), tr("Zoom &in"),  this);
@@ -1192,7 +1194,6 @@ void MainWindow::initDockWidget(){
 	moveSpringEmbedderBx->setToolTip(tr("Embeds a spring-gravitational model on the network: \nEach node has a gravity force attracting all \nother nodes, while springs between pairs of connected \nnodes are repelling them. The result is \nconstant movement. This is very SLOW on networks with N>100!"));
 
 	moveFruchtermanBx = new QCheckBox(tr("Fruchterman-Reingold") );
-	moveFruchtermanBx ->setEnabled(false);
 	moveFruchtermanBx->setToolTip(tr("!"));
 
 	moveKamandaBx= new QCheckBox(tr("Kamanda-Kwei") );
@@ -3127,6 +3128,74 @@ void MainWindow::slotLayoutRandomCircle(){
 
 
 
+
+/**
+	slotLayoutSpringEmbedder called from menu
+*/
+void MainWindow::slotLayoutSpringEmbedder(){
+	if (!fileLoaded && !networkModified  )  {
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		statusBar()->showMessage(tr("I am really sorry. You must really load a file first... ") ,statusBarDuration);
+		return;
+	}
+	if (moveSpringEmbedderBx->checkState() == Qt::Unchecked){
+		statusBar()->showMessage(tr("Embedding a spring-gravitational model on the network.... ") ,statusBarDuration);
+		moveSpringEmbedderBx->setCheckState(Qt::Checked);
+		statusBar()->showMessage(tr("Click on the checkbox \"Spring-Embedder\" to stop movement!"), statusBarDuration);
+	}
+	else { 
+		moveSpringEmbedderBx->setCheckState(Qt::Unchecked);
+		statusBar()->showMessage(tr("Movement stopped!"), statusBarDuration);
+	}
+	
+}
+
+
+
+/** 
+	Called from moveSpringEmbedderBx button. 
+	Calls GraphicsWidget::startNodeMovement to embed a spring Embedder layout...
+*/
+void MainWindow::layoutSpringEmbedder (int state){
+	qDebug("MW: layoutSpringEmbedder ()");
+	graphicsWidget->nodeMovement(state, 1);
+}
+
+
+
+
+/**
+	slotLayoutFruchterman called from menu
+*/
+void MainWindow::slotLayoutFruchterman(){
+	if (!fileLoaded && !networkModified  )  {
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		statusBar()->showMessage(tr("I am really sorry. You must really load a file first... ") ,statusBarDuration);
+		return;
+	}
+	if (moveFruchtermanBx->checkState() == Qt::Unchecked){
+		statusBar()->showMessage(tr("Embedding a repelling-attracting forces model on the network.... ") ,statusBarDuration);
+		moveSpringEmbedderBx->setCheckState(Qt::Checked);
+		statusBar()->showMessage(tr("Click on the checkbox \"Fruchterman-Reingold\" to stop movement!"), statusBarDuration);
+	}
+	else { 
+		moveFruchtermanBx->setCheckState(Qt::Unchecked);
+		statusBar()->showMessage(tr("Movement stopped!"), statusBarDuration);
+	}
+	
+}
+
+
+/** 
+	Called from moveSpringEmbedderBx button. 
+	Calls GraphicsWidget::startNodeMovement to embed a repelling-attracting forces layout...
+*/
+void MainWindow::layoutFruchterman (int state){
+	qDebug("MW: layoutFruchterman ()");
+	graphicsWidget->nodeMovement(state, 2);
+}
+
+
 /** 
 	Resizes all nodes according to the amount of their out-Links from other nodes.
 */
@@ -3579,80 +3648,7 @@ void MainWindow::slotLayoutLevelCentralityInformational(){
 }
 
 
-/**
-	slotLayoutSpringEmbedder
-*/
-void MainWindow::slotLayoutSpringEmbedder(){
-	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
-		statusBar()->showMessage(tr("I am really sorry. You must really load a file first... ") ,statusBarDuration);
-		return;
-	}
-	if (moveSpringEmbedderBx->checkState() == Qt::Unchecked){
-		statusBar()->showMessage(tr("Embedding a spring-gravitational model on the network.... ") ,statusBarDuration);
-		moveSpringEmbedderBx->setCheckState(Qt::Checked);
-		statusBar()->showMessage(tr("Click on the checkbox \"Spring-Embedder\" to stop movement!"), statusBarDuration);
-	}
-	else { 
-		moveSpringEmbedderBx->setCheckState(Qt::Unchecked);
-		statusBar()->showMessage(tr("Movement stopped!"), statusBarDuration);
-	}
-	
-}
 
-
-
-void MainWindow::slotLayoutFR(){
-/*
-	if (!fileLoaded && !networkModified  )  {
-		statusBar()->showMessage(tr("You must load a file first... ") ,statusBarDuration);
-		return;
-	}
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-	statusBar()->showMessage(tr("Calculating.... ") ,statusBarDuration);
-	createSociomatrix() ;
-
- 	vector<double> c(2);
-	vector<vector<double> >   p(aNodes,c), pp(aNodes,c);	//vector of original coordinates
-	
-// 	vector<double> pp(aNodes);		//vector of final coordinates
-
-	int i=0;
-	for (vector<Node*>::iterator it=aVector.begin(); it!=aVector.end(); it++) {
-		p[i][0]= (*it)->x();
-		p[i][1]= (*it)->y();
-		pp[i][0]=p[i][0];
-		pp[i][1]=p[i][1];
-		i++;
-
-	}
-
-	NetLayout *net=new NetLayout();
-	net->FR(p, pp, 5, SM, scene->width(), scene->height());	//PARAMETERS: original coords, final coords, iterations
-
-	i=0;
-	for (vector<Node*>::iterator it=aVector.begin(); it!=aVector.end(); it++) {
-		qDebug ("NEW coords of i=%i will be: X=%f, Y=%f", i+1, p[i][0], p[i][1]);
-		(*it)->setX( p[i][0] );
-		(*it)->setY( p[i][1]);
-		i++;
-	}
-	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage(tr("Fructhterman-Reingold Layout. Ready. ") ,statusBarDuration);
-	*/
-
-}
-
-
-
-void MainWindow::slotZoomIn(){
-
-}
-
-
-void MainWindow::slotZoomOut(){
-
-}
 
 /**
 *	Displays the amount of active links on the scene.

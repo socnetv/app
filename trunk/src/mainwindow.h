@@ -174,9 +174,9 @@ public slots:
 	void slotLayoutLevelCentralityInformational();
 	
 	void slotLayoutSpringEmbedder();
-	void slotLayoutFR();
-	void slotZoomIn();
-	void slotZoomOut();
+	void layoutSpringEmbedder (int);
+	void slotLayoutFruchterman();
+	void layoutFruchterman(int);
 
 	void  slotLayoutNodeSizeProportionalOutEdges(bool);
 	void  slotLayoutNodeSizeProportionalInEdges(bool);

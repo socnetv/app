@@ -63,7 +63,8 @@ public:
 	enum { Type = UserType + 1 };
 	int type() const { return Type; }
 
-	void calculateForces(bool dynamicMovement);
+	void calculateForcesSpringEmbedder(bool dynamicMovement);
+	void calculateForcesFruchterman(bool dynamicMovement);
 	bool advance();
 
 	QRectF boundingRect() const;
@@ -123,7 +124,6 @@ private:
 	bool hasLabel;
 	/**Lists of elements attached to this node */
 	list<Edge*> inEdgeList, outEdgeList;
-//	list<NodeLabel*> gfxLabelList;
 	list<NodeNumber*> gfxNumberList;
 	NodeLabel* m_label;
 };

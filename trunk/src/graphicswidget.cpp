@@ -48,6 +48,7 @@ GraphicsWidget::GraphicsWidget( QGraphicsScene *sc, MainWindow* par)  : QGraphic
 	dynamicMovement=FALSE;
 	moving=0;
 	timerId=0;
+	layoutType=0;
 	m_numberColor="black";
 	m_nodeLabel="";
 	init_Transform = transform();
@@ -521,48 +522,48 @@ void GraphicsWidget::openEdgeContextMenu(){
 
 
 
-/** 	
-	This method starts the timer used in node movement
-	Called by startNodeMovement()
-	and by each node changing position.
-*/
-void GraphicsWidget::itemMoved(){
-//	qDebug("GW: itemMoved()");
-	if (!timerId) {
-		//timerId = startTimer(1000 / 100);	//increase denom to increase
-		timerId = startTimer(100);	
-		qDebug("GW: startTimer()");
-	}
-}
-
-
-
 /** 
-	This slot is activated when the user clicks on the checkbox to start or stop 
-	the movement of nodes.
+	This slot is activated when the user clicks on the relevant MainWindow checkbox (SpringEmbedder, Fruchterman) to start or stop 
+	the movement of nodes, according to the requested model. 
+	state: toggle 
+	type:  controls the type of model requested.
 */
-void GraphicsWidget::startNodeMovement(int state){
+void GraphicsWidget::nodeMovement(int state, int type){
 	qDebug("GW: startNodeMovement()");	
 	if (state == Qt::Checked){
 		dynamicMovement = TRUE;
-		itemMoved();
+		layoutType=type;
+		if (!timerId) {
+			timerId = startTimer(100);	
+			qDebug("GW: startTimer()");
+		}
 	}
 	else
 		dynamicMovement = FALSE;
 }
 
 
+
+
 /**	This method is called automatically when a QTimerEvent occurs
 	It makes all nodes calculate the forces applied to them 
-
 */
 void GraphicsWidget::timerEvent(QTimerEvent *event) {	
 	qDebug("GW: timerEvent()");
 	Q_UNUSED(event);
 	QList<Node *> nodes;
 
- 	foreach (Node *node, nodeVector)
-  		node->calculateForces(dynamicMovement);
+ 	foreach (Node *node, nodeVector) {
+		switch (layoutType){
+			case 1: 
+				node->calculateForcesSpringEmbedder(dynamicMovement);
+				break;
+			case 2: 
+				node->calculateForcesFruchterman(dynamicMovement);
+				break;
+		
+		}
+	}
 
 	bool itemsMoved = false;
 	foreach (Node *node, nodeVector) { 

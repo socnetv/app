@@ -58,7 +58,6 @@ public:
 	void removeItem(Node*);
 	void removeItem(NodeNumber*);
 	void removeItem(NodeLabel*);
-	void itemMoved();
 	void nodeMoved(int, int,int);
 	void updateNode(int, int, int);
 	void setInitNodeColor(QString);
@@ -82,7 +81,7 @@ public slots:
 	void edgeClicked(Edge *);
 	void openNodeContextMenu();
 	void openEdgeContextMenu();
-	void startNodeMovement(int state);
+	void nodeMovement(int state, int type); //used by dynamic layouts: Spring Embedder, Fruchterman, etc...
 	void changeZoom(int value); 
 	void edgeNodes(Node *node);	
 	void clearBackgrCircles();
@@ -105,7 +104,7 @@ signals:
 	void zoomChanged(int);
 	
 private:
-	int timerId,  m_nodeSize, m_numberDistance, m_labelDistance;
+	int timerId,  layoutType, m_nodeSize, m_numberDistance, m_labelDistance;
 	QTransform init_Transform;
 	int zoomIndex;
 	QString m_nodeLabel, m_numberColor, m_nodeColor, m_labelColor, m_linkColor;
