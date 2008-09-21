@@ -446,10 +446,10 @@ void MainWindow::initActions(){
 	transformNodes2LinksAct->setWhatsThis(tr("Transform Nodes LinksAct\n\nTransforms network so that nodes become links and vice versa"));
 	connect(transformNodes2LinksAct, SIGNAL(activated()), this, SLOT(slotTransformNodes2Links()));
 
-	makeEdgesReciprocalAct= new QAction(tr("Reciprocal Edges"), this);
+	makeEdgesReciprocalAct= new QAction(tr("Symmetrize Edges"), this);
 	makeEdgesReciprocalAct->setShortcut(tr("Shift+R"));
-	makeEdgesReciprocalAct->setStatusTip(tr("Makes all edges reciprocal (symmetric graph)."));
-	makeEdgesReciprocalAct->setWhatsThis(tr("Reciprocal Edges\n\nTransforms all arcs to double links (edges). The result is a symmetric network"));
+	makeEdgesReciprocalAct->setStatusTip(tr("Makes all edges reciprocal (thus, a symmetric graph)."));
+	makeEdgesReciprocalAct->setWhatsThis(tr("Symmetrize Edges\n\nTransforms all arcs to double links (edges). The result is a symmetric network"));
 	connect(makeEdgesReciprocalAct, SIGNAL(activated()), this, SLOT(slotMakeEdgesReciprocal()));	
 
 
@@ -575,7 +575,7 @@ void MainWindow::initActions(){
 	FRLayoutAct= new QAction( tr("Fruchterman-Reingold"),	this);
 	FRLayoutAct->setShortcut(tr("Alt+2"));
 	FRLayoutAct->setStatusTip(tr("Repelling forces between all nodes, and attracting forces between adjacent nodes."));
-	FRLayoutAct->setWhatsThis(tr("Fruchterman-Reingold Layout\n\n Repositions all nodes according to a model in which	repelling forces are used between every pair of nodes, while attracting forces are used only between adjacent nodes. The algorithm continues until the system retains its equilibrium state where all forces cancel each other."));
+	FRLayoutAct->setWhatsThis(tr("Fruchterman-Reingold Layout\n\n Embeds a layout all nodes according to a model in which	repelling forces are used between every pair of nodes, while attracting forces are used only between adjacent nodes. The algorithm continues until the system retains its equilibrium state where all forces cancel each other."));
 	connect(FRLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutFruchterman()));
 
 
@@ -1191,7 +1191,7 @@ void MainWindow::initDockWidget(){
 //	moveGroup ->setTitle("");
 
 	moveSpringEmbedderBx = new QCheckBox(tr("Spring Embedder") );
-	moveSpringEmbedderBx->setToolTip(tr("Embeds a spring-gravitational model on the network: \nEach node has a gravity force attracting all \nother nodes, while springs between pairs of connected \nnodes are repelling them. The result is \nconstant movement. This is very SLOW on networks with N>100!"));
+	moveSpringEmbedderBx->setToolTip(tr("Embeds a spring-gravitational model on the network, where \neach node is regarded as physical object reppeling all \nother nodes, while springs between connected nodes attact them. \nThe result is \nconstant movement. This is a very SLOW process on networks with N > 100!"));
 
 	moveFruchtermanBx = new QCheckBox(tr("Fruchterman-Reingold") );
 	moveFruchtermanBx->setToolTip(tr("!"));
@@ -3158,6 +3158,7 @@ void MainWindow::slotLayoutSpringEmbedder(){
 */
 void MainWindow::layoutSpringEmbedder (int state){
 	qDebug("MW: layoutSpringEmbedder ()");
+	moveFruchtermanBx->setChecked(false);
 	graphicsWidget->nodeMovement(state, 1);
 }
 
@@ -3175,7 +3176,7 @@ void MainWindow::slotLayoutFruchterman(){
 	}
 	if (moveFruchtermanBx->checkState() == Qt::Unchecked){
 		statusBar()->showMessage(tr("Embedding a repelling-attracting forces model on the network.... ") ,statusBarDuration);
-		moveSpringEmbedderBx->setCheckState(Qt::Checked);
+		moveFruchtermanBx->setCheckState(Qt::Checked);
 		statusBar()->showMessage(tr("Click on the checkbox \"Fruchterman-Reingold\" to stop movement!"), statusBarDuration);
 	}
 	else { 
@@ -3192,6 +3193,7 @@ void MainWindow::slotLayoutFruchterman(){
 */
 void MainWindow::layoutFruchterman (int state){
 	qDebug("MW: layoutFruchterman ()");
+	moveSpringEmbedderBx->setChecked(false);
 	graphicsWidget->nodeMovement(state, 2);
 }
 

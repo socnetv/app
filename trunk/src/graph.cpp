@@ -162,25 +162,25 @@ void Graph::addVertex (int v1, int val, int nsz, QString nc, QString nl, QString
 /**	Adds a Vertex named v1
 	This method is called by CreateUniformRandomNetwork() method
 */
-void Graph::addVertex (int v1){ 
-	qDebug ("Graph: addVertex(), appending vertex %i to graph", v1);
-	if (order)
-		index[v1]=m_totalVertices; 
-	else 
-		index[v1]=m_graph.size();
-
-	m_graph.append(new Vertex(v1));
-	//set a random pos
-	m_graph.last()->setX(rand() %640);
-	m_graph.last()->setY(rand() %480);
-
-	m_totalVertices++;		
-	qDebug("Graph: Vertex named %i has index=%i",m_graph.back()->name(), index[v1]);
-	qDebug ("Graph: m_graph size  %i. ", m_graph.size() );
-
-	graphModified=true;
-}
-
+// void Graph::addVertex (int v1){ 
+// 	qDebug ("Graph: addVertex(), appending vertex %i to graph", v1);
+// 	if (order)
+// 		index[v1]=m_totalVertices; 
+// 	else 
+// 		index[v1]=m_graph.size();
+// 
+// 	m_graph.append(new Vertex(v1));
+// 	//set a random pos
+// 	m_graph.last()->setX(rand() %640);
+// 	m_graph.last()->setY(rand() %480);
+// 
+// 	m_totalVertices++;		
+// 	qDebug("Graph: Vertex named %i has index=%i",m_graph.back()->name(), index[v1]);
+// 	qDebug ("Graph: m_graph size  %i. ", m_graph.size() );
+// 
+// 	graphModified=true;
+// }
+// 
 
 /**
 	updates MW  with the file type (0=nofile, 1=Pajek, 2=Adjacency etc)

@@ -70,7 +70,7 @@ public:
 	int loadFile(QString, int, QString, QString, QString, bool, int maxWidth, int maxHeight);
 	
 	void addVertex (int v1, int val, int nsz, QString nc, QString nl, QString lc, QPointF p,QString nsp);	
-	void addVertex (int v1);		//adds a new Vertex named v1 to m_graph
+//	void addVertex (int v1);		//adds a new Vertex named v1 to m_graph
 
 	int lastVertexNumber();		//returns the number of the last vertex
 	int firstVertexNumber();		//returns the number of the first vertex

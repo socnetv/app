@@ -6,18 +6,24 @@
                         main.cpp  -  description
                              -------------------
     begin                :  9 21:10:04 EET 2005
-    copyright            : (C) 2005, 2006, 2007 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2008 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+/*******************************************************************************
+*     This program is free software: you can redistribute it and/or modify     *
+*     it under the terms of the GNU General Public License as published by     *
+*     the Free Software Foundation, either version 3 of the License, or        *
+*     (at your option) any later version.                                      *
+*                                                                              *
+*     This program is distributed in the hope that it will be useful,          *
+*     but WITHOUT ANY WARRANTY; without even the implied warranty of           *
+*     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            *
+*     GNU General Public License for more details.                             *
+*                                                                              *
+*     You should have received a copy of the GNU General Public License        *
+*     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
+********************************************************************************/
 
 #include <QApplication>		//core Qt functionality
 #include <QTranslator>		//for text translations
@@ -61,13 +67,9 @@ int main(int argc, char *argv[])
 				cout<< "\nSocial Networks Visualiser, version 0.48; \nCopyright Dimitris V. Kalamaras, \nLicense: GPL3\n\n";
 				return -1;
 			}
-			else if ( option.endsWith( ".net" ) ||  option.endsWith( ".csv" ) || option.endsWith( ".txt" ) || option.endsWith( ".graphml" ) || option.endsWith( ".gml" ) || option.endsWith( ".dot" ) ) {
-				cout<< "\n\nSocial Networks Visualiser \n \t Version 0.48\n";
-				cout<<"\t Loading file...";
-			}
-			else {
-
-				option = QString::null;
+			else  {
+				cout<< "\n\nSocial Networks Visualiser\nVersion 0.48\n\n";
+				cout<<"\nFile loaded...\n\n";
 			}
 		
 	}
