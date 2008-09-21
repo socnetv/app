@@ -316,7 +316,7 @@ void GraphicsWidget::makeEdgeReciprocal(int source, int target){
 	It saves the source & target nodes that were clicked 
 	On the second double/middle click event, it calls addEdge method. 
 */
-void GraphicsWidget::edgeNodes(Node *node){
+void GraphicsWidget::startEdge(Node *node){
 	qDebug("GW: edgesNodes()");
 	if (secondDoubleClick){
 		qDebug("GW: this is the second double click. Creating edge");
@@ -476,7 +476,10 @@ void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
 	QPointF p = matrix().inverted().map(e->pos());
 	qDebug("GW: e->pos() (%i, %i) at %f, %f ", e->pos().x(),e->pos().y(), p.x(),p.y());
 	//Emit a signal to MW to create a new node in graph.
-	emit userDoubleClicked(-1, p);
+	if (zoomIndex >= 3)
+		emit userDoubleClicked(-1, p);
+	else 
+		emit userDoubleClicked(-1, e->pos());
 	qDebug("Scene items now: %i ", scene()->items().size());
 	qDebug("GW items now: %i ", items().size());
 	emit changed();

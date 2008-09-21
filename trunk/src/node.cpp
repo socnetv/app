@@ -59,7 +59,7 @@ Node::Node( GraphicsWidget* gw, int num, int size, QString col, QString label, Q
 /*	connect (this, SIGNAL(nodeClicked(Node*)),graphicsWidget , SLOT(nodeClicked(Node*)));
 	connect (this, SIGNAL(startNodeMovement(int)), graphicsWidget, SLOT(startNodeMovement(int)));
 	connect (this, SIGNAL(openNodeContextMenu()), graphicsWidget, SLOT(openNodeContextMenu()));
-	connect (this, SIGNAL(startEdge(Node*)),graphicsWidget, SLOT(edgeNodes(Node*)));*/
+	connect (this, SIGNAL(startEdge(Node*)),graphicsWidget, SLOT(startEdge(Node*)));*/
 	qDebug("Node() - End of constructor");
 } 
 
@@ -296,28 +296,12 @@ QPainterPath Node::shape() const {
 	QPainterPath path;
 
 	path.addEllipse(-m_size, -m_size, 2*m_size, 2*m_size);		
-/*	if ( m_shape == "circle") {
-		path.addEllipse(-m_size, -m_size, 2*m_size, 2*m_size);		
-	}
-	else if ( m_shape == "ellipse") {
-		path.addEllipse(-m_size, -m_size, 2*m_size, 2* m_size);		
-	}
-	else if ( m_shape == "box") {
-		path.addRect( QRectF(-m_size , -m_size , 1.8*m_size , 1.8*m_size ) );
-	}
-	else if ( m_shape == "triangle") {
-		path.addPolygon( *m_poly_t);
-	}
-	else if ( m_shape == "diamond"){
-		path.addPolygon(*m_poly_d);
-	}*/
 	return path;
 }
 
 
 /** Returns the bounding rectangle of the node */
 QRectF Node::boundingRect() const {
-//	qDebug ("Node: boundingRect()");
 	qreal adjust = 10;
 	return QRectF(-m_size -adjust , -m_size-adjust , 2*m_size+adjust , 2*m_size +adjust);
 
@@ -427,7 +411,7 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
 				num->setPos( x()+m_nd, y()+m_nd);
 			if (hasLabel)
 				m_label->setPos( x()+m_ld, y()-m_ld);
-			//graphicsWidget->itemMoved();	
+			graphicsWidget->nodeMoved(nodeNumber(), x(), y());	
 			break;
 		}
 		case ItemVisibleChange: {	
@@ -444,7 +428,7 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
 
 /** handles the events of a click on a node */
 void Node::mousePressEvent(QGraphicsSceneMouseEvent *event) {  
-	qDebug("Node: pressEvent() emitting nodeClicked");
+	qDebug("Node: >> pressEvent() emitting nodeClicked");
 //	emit nodeClicked(this);
 	graphicsWidget->nodeClicked(this);
 	if ( event->button()==Qt::LeftButton ) {
@@ -463,7 +447,7 @@ void Node::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 	if ( event->button()==Qt::MidButton) {
 		qDebug("Node: Middle-Click on a node. Calling GraphicsWidget edgeNodes");
 //		emit startEdge(this);
-		graphicsWidget->edgeNodes(this);
+		graphicsWidget->startEdge(this);
 	}
 }
 

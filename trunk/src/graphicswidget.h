@@ -83,7 +83,7 @@ public slots:
 	void openEdgeContextMenu();
 	void nodeMovement(int state, int type); //used by dynamic layouts: Spring Embedder, Fruchterman, etc...
 	void changeZoom(int value); 
-	void edgeNodes(Node *node);	
+	void startEdge(Node *node);	
 	void clearBackgrCircles();
 	void addBackgrCircle( int x0, int y0, int radius);
 	void addBackgrHLine(int y0);
