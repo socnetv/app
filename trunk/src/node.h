@@ -57,7 +57,7 @@ class Node :  public QObject,  public QGraphicsItem {
   Q_OBJECT
 	
 public:
-	Node(GraphicsWidget*, int num, int val, int size, QString col, QString lab, QString lCol, QString shape, int, int) ;
+	Node(GraphicsWidget*, int num, int size, QString col, QString lab, QString lCol, QString shape, int, int) ;
 //	~Node();
 
 	enum { Type = UserType + 1 };
@@ -118,7 +118,7 @@ private:
 	GraphicsWidget *graphicsWidget;
 	QPointF newPos;
 	QPolygon *m_poly_t, *m_poly_d;
-	int m_num, m_val, m_size, m_nd, m_ld;
+	int m_num, m_size, m_nd, m_ld;
 	QString  m_shape, m_lcol, m_col_str;
 	QColor m_col, m_col_dark;
 	bool hasLabel;

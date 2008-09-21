@@ -51,33 +51,66 @@ Graph::Graph() {
 	calculatedODC=FALSE;
 	calculatedCentralities=FALSE;
 	parser.setParent(this);
-	connect (&parser, SIGNAL( createNode (int,int,QString, QString, QString, QPointF, QString, bool) ), this, SLOT(createNode(int,int,QString, QString, QString, QPointF, QString, bool) ) ) ;
+	connect (&parser, SIGNAL( createNode (int,int,QString, QString, QString, QPointF, QString, bool) ), this, SLOT(createVertex(int,int,QString, QString, QString, QPointF, QString) ) ) ;
 
 	connect (&parser, SIGNAL(createEdge (int, int, int, QString, bool, bool, bool)), this, SLOT(createEdge (int, int, int, QString, bool, bool, bool) ) );
 
 	connect (&parser, SIGNAL(fileType(int, QString, int, int)), this, SLOT(fileType(int, QString, int, int)) );
 	connect (&parser, SIGNAL(removeDummyNode(int)), this, SLOT (removeDummyNode(int)) );
-	//FIXME : not needed anymore
+	//not needed anymore
 	connect (&parser, SIGNAL(finished ()), this, SLOT(parserFinished()) );
 	
 }
 
-//FIXME : not needed anymore
+//not needed anymore
 void Graph::parserFinished(){
 	qDebug("=====Graph===== parser says has finished!");
 }
 
 /**
-	slot associated with homonymous signal from Parser. 
+	main node creation slot, associated with homonymous signal from Parser. 
 	Adds a Vertex to the Graph and calls addNode of GraphicsWidget 
 	p holds the desired position of the new node.
 */
-void Graph::createNode(int i,int size,QString nodeColor, QString label, QString lColor, QPointF p, QString nodeShape, bool showLabels){
-	qDebug()<<" createNode():"<<i<< " "<<size<<" "<<nodeColor<<" "<<label<<" "<<lColor<<" "<<p.x()<<" " <<p.y()<<" "<<nodeShape;
+void Graph::createVertex(int i, int size, QString nodeColor, QString label, QString lColor, QPointF p, QString nodeShape){
+	qDebug()<<" Graph:: createVertex():"<<i<< " "<<size<<" "<<nodeColor<<" "<<label<<" "<<lColor<<" "<<p.x()<<" " <<p.y()<<" "<<nodeShape;
+	//add the vertex to the Graph.
 	addVertex(i, 1, size,  nodeColor, label, lColor, p, nodeShape);
-	( (MainWindow*)parent() )->graphicsWidget->addNode ( i, 1, size,  nodeColor, label, lColor, p, nodeShape, showLabels, true);
+	//emit a signal for MW to create the new node onto the canvas.
+	emit drawNode( i, size ,  nodeColor, label, lColor, p, nodeShape, initShowLabels);
+
 } 
 
+
+
+/**
+	auxilliary node creation slot. 
+	Called from GW, with i and p as parameters.
+	p holds the desired position of the new node.
+	Calls the main creation slot with init node values.
+	
+*/
+void Graph::createVertex(int i, QPointF p){
+	if ( i < 0 )  i = lastVertexNumber() +1;
+	qDebug("Graph:: lastVertexNumber is %i", i);
+	createVertex(i, initVertexSize,  initVertexColor, QString::number(i), initVertexLabelColor, p, initVertexShape);
+}
+
+
+/**
+	second auxilliary node creation slot. 
+	Called from MW only with parameter i.
+	Calculates a random position p from canvasWidth and Height.
+	Then calls the main creation slot with init node values.
+*/
+void Graph::createVertex(int i, int canvasWidth, int canvasHeight){
+	if ( i < 0 )  i = lastVertexNumber() +1;
+	qDebug("Graph:: lastVertexNumber is %i", i);
+	QPointF p;
+	p.setX(rand()%canvasWidth);
+       	p.setY(rand()%canvasHeight);
+	createVertex(i, initVertexSize,  initVertexColor, QString::number(i), initVertexLabelColor, p, initVertexShape);
+}
 
 /**
 	slot associated with homonymous signal from Parser. 
@@ -140,7 +173,7 @@ QMainWindow* Graph::parent(){
 
 /**	Adds a Vertex 
 	named v1, valued val, sized nszm colored nc, labeled nl, labelColored lc, shaped nsp, at point p
-	This method is called by createNode() method
+	This method is called by createVertex() method
 */
 void Graph::addVertex (int v1, int val, int nsz, QString nc, QString nl, QString lc, QPointF p,QString nsp){ 
 	qDebug ("Graph: addVertex(), appending vertex %i to graph", v1);
@@ -159,28 +192,7 @@ void Graph::addVertex (int v1, int val, int nsz, QString nc, QString nl, QString
 }
 
 
-/**	Adds a Vertex named v1
-	This method is called by CreateUniformRandomNetwork() method
-*/
-// void Graph::addVertex (int v1){ 
-// 	qDebug ("Graph: addVertex(), appending vertex %i to graph", v1);
-// 	if (order)
-// 		index[v1]=m_totalVertices; 
-// 	else 
-// 		index[v1]=m_graph.size();
-// 
-// 	m_graph.append(new Vertex(v1));
-// 	//set a random pos
-// 	m_graph.last()->setX(rand() %640);
-// 	m_graph.last()->setY(rand() %480);
-// 
-// 	m_totalVertices++;		
-// 	qDebug("Graph: Vertex named %i has index=%i",m_graph.back()->name(), index[v1]);
-// 	qDebug ("Graph: m_graph size  %i. ", m_graph.size() );
-// 
-// 	graphModified=true;
-// }
-// 
+
 
 /**
 	updates MW  with the file type (0=nofile, 1=Pajek, 2=Adjacency etc)
@@ -1747,7 +1759,7 @@ void Graph::createUniformRandomNetwork(int vert, int probability){
 		int x=10+rand() %640;
 		int y=10+rand() %480;
 		qDebug("Graph: createUniformRandomNetwork, new node i=%i, at x=%i, y=%i", i+1, x,y);
-		createNode(i+1,initVertexSize,initVertexColor, QString::number (i+1), initVertexLabelColor, QPoint(x, y), initVertexShape, showLabels);
+		createVertex(i+1,initVertexSize,initVertexColor, QString::number (i+1), initVertexLabelColor, QPoint(x, y), initVertexShape);
 		progressCounter++;
 		emit updateProgressDialog( progressCounter );
 	}
@@ -1786,7 +1798,7 @@ void Graph::createPhysicistLatticeNetwork(int vert, int degree,double x0, double
 	for (register int i=0; i< vert ; i++) {
 		x=x0 + radius * cos(i * rad);
 		y=y0 + radius * sin(i * rad);
-		createNode(i+1,initVertexSize,initVertexColor, QString::number (i+1), initVertexLabelColor, QPoint(x, y), initVertexShape, showLabels);
+		createVertex(i+1,initVertexSize,initVertexColor, QString::number (i+1), initVertexLabelColor, QPoint(x, y), initVertexShape);
 		qDebug("Graph: createPhysicistLatticeNetwork, new node i=%i, at x=%i, y=%i", i+1, x,y);
 		progressCounter++;
 		emit updateProgressDialog( progressCounter );
@@ -1822,7 +1834,7 @@ void Graph::createSameDegreeRandomNetwork(int vert, int degree){
 		int x=10+rand() %640;
 		int y=10+rand() %480;
 		qDebug("Graph: createUniformRandomNetwork, new node i=%i, at x=%i, y=%i", i+1, x,y);
-		createNode(i+1,initVertexSize,initVertexColor, QString::number (i+1), initVertexLabelColor, QPoint(x, y), initVertexShape, showLabels);
+		createVertex(i+1,initVertexSize,initVertexColor, QString::number (i+1), initVertexLabelColor, QPoint(x, y), initVertexShape);
 		progressCounter++;
 		emit updateProgressDialog( progressCounter );
 
@@ -1861,6 +1873,13 @@ int Graph::loadFile(QString fileName, int iNS, QString iNC, QString iNL, QString
 
 }
 
+
+
+
+void Graph::setShowLabels(bool toggle){
+	initShowLabels=toggle;
+
+}
 
 
 Graph::~Graph() {

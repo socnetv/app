@@ -232,14 +232,17 @@ public slots:
 	void openLinkContextMenu() ;
 	void windowInfoStatusBar(int, int);
 	void graphChanged();
-	void addNodeWithMouse(int, int, int);
+
 
 	//Called by graphicswidget to update node coords in activeGraph
 	void updateNodeCoords(int no, int x, int y);
-	//Called by graphicswidget to determine the lastAvailable NodeNumber;
-	int lastAvailableNodeNumber();
+
+	//Called by graphicswidget 
+	void addNodeWithMouse(int, QPointF);
 	//Called when user pushes the New Node button on the MW
-	void createNode();
+ 	void addNode();
+	//Called from Graph to call GW::addNode
+	void drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool);
 	
 
 protected:

@@ -63,64 +63,76 @@ typedef map<int,int> imap_i;
 
 class Graph:  public QObject{
 	Q_OBJECT
+
+public slots:
+	void createVertex(int,int,QString, QString, QString, QPointF, QString); 	//Main vertex creation call
+	void createVertex(int i, QPointF p); 					//Called by GW
+	void createVertex(int i, int canvasWidth, int canvasHeight); 		//Called by MW
+	void createEdge (int, int, int, QString, bool, bool, bool);				//
+	void createEdge (int, int, int);							//
+	void fileType(int, QString, int,int);	
+	void removeDummyNode(int);
+	void parserFinished();
+
+
+signals:
+	void addBackgrCircle(int, int, int);
+	void addBackgrHLine (int);
+	void updateProgressDialog(int );
+	void drawNode( int ,int,  QString, QString,QString, QPointF, QString, bool);
+
 public: 	
-    	Graph(); /** adds a new Vertex named v1 to m_graph, with:
-	         * Value=val, Size=nsz, Color=nc, Label=nl, labelColor=lc, Shape=nsp
-	         * at Point=p */
-	int loadFile(QString, int, QString, QString, QString, bool, int maxWidth, int maxHeight);
+    	Graph(); // adds a new Vertex named v1 to m_graph, with:
+	         // Value=val, Size=nsz, Color=nc, Label=nl, labelColor=lc, Shape=nsp
+	         // at Point=p */
 	
-	void addVertex (int v1, int val, int nsz, QString nc, QString nl, QString lc, QPointF p,QString nsp);	
-//	void addVertex (int v1);		//adds a new Vertex named v1 to m_graph
-
-	int lastVertexNumber();		//returns the number of the last vertex
-	int firstVertexNumber();		//returns the number of the first vertex
+	int loadFile(QString, int, QString, QString, QString, bool, int maxWidth, int maxHeight);	//Almost universal network loader. :)
 	
-	void removeVertex (int );		//removes given vertex from m_graph
-	//adds an edge between v1 and v2, weight w, colored
-	void addEdge (int v1, int v2, int w, QString color, bool undirected); 
-	void setEdgeWeight (int v1, int v2, int w); 		//sets the edge weight between v1 and v2
-	void removeEdge (int v1, int v2);			//removes the edge between v1 and v2
+	int lastVertexNumber();										//returns the number of the last vertex
+	int firstVertexNumber();									//returns the number of the first vertex
+	void removeVertex (int );									//removes given vertex from m_graph
 
-	int hasVertex(int );			//Checks if a vertex exists
-	int hasVertex(QString);		//Checks if a vertex with a label exists
-	int hasEdge (int v1, int v2);		//Checks if edge between v1 and v2 exists. Returns weight
+	void addEdge (int v1, int v2, int w, QString color, bool undirected); 		//adds an edge between v1 and v2, weight w, colored
+	void setEdgeWeight (int v1, int v2, int w); 					//sets the edge weight between v1 and v2
+	void removeEdge (int v1, int v2);						//removes the edge between v1 and v2
 
-	void setInitVertexSize (int); //Changes the init size used by all new vertices.
-	void setVertexSize(int v, int ); //Changes the size.of vertex v 
+	int hasVertex(int );						//Checks if a vertex exists
+	int hasVertex(QString);						//Checks if a vertex with a label exists
+	int hasEdge (int v1, int v2);					//Checks if edge between v1 and v2 exists. Returns weight
 
-	void setInitVertexShape (QString); //Changes the init shape used by all new vertices.
-	void setVertexShape(int v, QString shape); //Changes the shape.of vertex v 
-	QString shape(int v);	//returns the shape of this vertex
+	void setInitVertexSize (int); 					//Changes the init size used by all new vertices.
+	void setVertexSize(int v, int );				//Changes the size.of vertex v 
 
-	void setInitVertexLabelColor(QString color); //Changes the init color used by all new vertices' labels
-	void setVertexLabel(int v, QString label); //Changes the label.of vertex v 
-	QString label(int);
+	void setInitVertexShape (QString); 				//Changes the init shape used by all new vertices.
+	void setVertexShape(int v, QString shape); 			//Changes the shape.of vertex v 
+	QString shape(int v);						//returns the shape of this vertex
 
-	void setInitVertexColor (QString color);  //Changes the init color used by all new vertices
+	void setInitVertexLabelColor(QString color); 			//Changes the init color used by all new vertices' labels
+	void setVertexLabel(int v, QString label); 			//Changes the label.of vertex v 
+	QString label(int);			
 
-	void setVertexColor(int v, QString color); //Changes the color.of vertex v 
+	void setInitVertexColor (QString color);  			//Changes the init color used by all new vertices
+
+	void setVertexColor(int v, QString color); 			//Changes the color.of vertex v 
 	void setInitEdgeColor(QString);
-	void updateVertCoords(int v, int x, int y); //Updates vertex v with coords x,y
+	void updateVertCoords(int v, int x, int y);			 //Updates vertex v with coords x,y
 
-	void setEdgeColor(int s, int t, QString color);	//Changes the color of edge (s,t).
+	void setEdgeColor(int s, int t, QString color);			//Changes the color of edge (s,t).
 
-	int edgesFrom (int i) ;			//Returns the number of edges starting from v1
-	int edgesTo (int i) ;			//Returns the number of edges ending to v1  
-	int totalEdges ();			//Returns the sum of edges inside m_graph
-	int vertices() ;			//Returns the sum of vertices inside m_graph
-	int verticesWithOutEdges();		//Returns the sum of vertices having outEdges
-	int verticesWithInEdges();		//Returns the sum of vertices having inEdges
-	int verticesWithReciprocalEdges();	//Returns the sum of vertices having reciprocal edges
-	void writeAdjacencyMatrixTo(QTextStream& os); 		//exports the adjacency matrix to a given textstream
+	int edgesFrom (int i) ;						//Returns the number of edges starting from v1
+	int edgesTo (int i) ;						//Returns the number of edges ending to v1  
+	int totalEdges ();						//Returns the sum of edges inside m_graph
+	int vertices() ;						//Returns the sum of vertices inside m_graph
+	int verticesWithOutEdges();					//Returns the sum of vertices having outEdges
+	int verticesWithInEdges();					//Returns the sum of vertices having inEdges
+	int verticesWithReciprocalEdges();				//Returns the sum of vertices having reciprocal edges
+	void writeAdjacencyMatrixTo(QTextStream& os);	 		//Exports the adjacency matrix to a given textstream
 	void writeAdjacencyMatrix(const char*, const char*);		//Writes the adjacency matrix to a given file.
-	friend QTextStream& operator <<  (QTextStream& os, Graph& m);  //
+	friend QTextStream& operator <<  (QTextStream& os, Graph& m);  	//
 
-	bool isSymmetric();			//Returns TRUE if symmetricAdjacencyMatrix=TRUE
-	int distance( int, int);		//Returns the geodesic distance between two vertices
-	int diameter();				//Returns the diameter of the graph
-	void minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int &minNode) ;
-	void resolveClasses(float C, fmap_i &discreteClasses, int &classes);
-	void resolveClasses(float C, fmap_i &discreteClasses, int &classes, int name);  
+	bool isSymmetric();						//Returns TRUE if symmetricAdjacencyMatrix=TRUE
+	int distance( int, int);					//Returns the geodesic distance between two vertices
+	int diameter();							//Returns the diameter of the graph
 
 	//Creates the distance matrix and calculates the centralities, if bool is true.
 	void createDistanceMatrix(bool);		
@@ -149,7 +161,7 @@ public:
 	QList<Vertex*> m_graph;	//List of pointers to the vertices. 
 	//A vertex stores all the info: outLinks, colours, centralities, positions, etc
 
-	int m_totalEdges, m_totalVertices;
+
 
 	/** index stores the index of each vertex inside m_graph. It starts at zero (0).
 	This is crucial when we want to find the place of a vertex inside m_graph after adding or removing many vertices */
@@ -158,7 +170,7 @@ public:
 	/** maps have O(logN) lookup complexity
 		Consider using tr1::hashmap which has O(1) lookup, but this is not ISO C++ yet :(  
 	*/
-	fmap_i	discreteIDCs, discreteODCs, discreteCCs, discreteBCs, discreteSCs, discreteGCs, discreteECs;
+
 	float meanDegree, varianceDegree;
 	float minIDC, maxIDC, sumIDC, groupIDC;
 	float minODC, maxODC, sumODC, groupODC;
@@ -179,29 +191,22 @@ public:
 	void setParent(QMainWindow*);
 	QMainWindow* parent();
 	
-
-
-public slots:
-	//called by Parser
-	void createNode(int,int,QString, QString, QString, QPointF, QString, bool);
-	void createEdge (int, int, int, QString, bool, bool, bool);
-	void createEdge (int, int, int);
-	void fileType(int, QString, int,int);	
-	void removeDummyNode(int);
-	void parserFinished();
-
-signals:
-	void addBackgrCircle(int, int, int);
-	void addBackgrHLine (int);
-	void updateProgressDialog(int );
+	void setShowLabels(bool toggle);
 
 protected: 
 
 private:
+	void addVertex (int v1, int val, int nsz, QString nc, QString nl, QString lc, QPointF p,QString nsp);	
+	void minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int &minNode) ;
+	void resolveClasses(float C, fmap_i &discreteClasses, int &classes);
+	void resolveClasses(float C, fmap_i &discreteClasses, int &classes, int name);  
+
+	fmap_i	discreteIDCs, discreteODCs, discreteCCs, discreteBCs, discreteSCs, discreteGCs, discreteECs;
+	int m_totalEdges, m_totalVertices;
 	Matrix  TM, DM;
 	stack<int> Stack;
 	Parser parser;	
-	bool order;
+	bool order, initShowLabels;
 	int *eccentricities;
 	int graphDiameter;
 	//These are used in the calculation of standard betweeness centrality on directed graphs:

@@ -93,14 +93,14 @@ MainWindow::MainWindow(const QString &fName) {
 	connect( graphicsWidget, SIGNAL( windowResized(int, int)),this, SLOT( windowInfoStatusBar(int, int)) );  
 	connect( graphicsWidget, SIGNAL( changed() ), this, SLOT( graphChanged() ) ) ;
 
-	connect( graphicsWidget, SIGNAL( userDoubleClicked(int,int,int) ), this, SLOT( addNodeWithMouse(int, int,int) ) ) ;
+	connect( graphicsWidget, SIGNAL( userDoubleClicked(int, QPointF) ), this, SLOT( addNodeWithMouse(int, QPointF) ) ) ;
 	connect( graphicsWidget, SIGNAL( userMiddleClicked(int, int, int) ), &activeGraph, SLOT( createEdge(int, int, int) ) );
 	connect( graphicsWidget, SIGNAL( openNodeMenu() ), this, SLOT(openNodeContextMenu() ) ) ;
 	connect( graphicsWidget, SIGNAL( openEdgeMenu() ), this, SLOT(openLinkContextMenu() ) ) ;
 	connect( &activeGraph, SIGNAL( addBackgrCircle (int, int, int) ), graphicsWidget, SLOT(addBackgrCircle(int, int, int) ) ) ;
 	connect( &activeGraph, SIGNAL( addBackgrHLine (int) ), graphicsWidget, SLOT(addBackgrHLine(int) ) ) ;
+	connect( &activeGraph, SIGNAL( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool) ), this, SLOT( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool)  ) ) ;
 	
-
 	connect(moveSpringEmbedderBx, SIGNAL(stateChanged(int)),this, SLOT(layoutSpringEmbedder(int)));
 	connect(moveFruchtermanBx, SIGNAL(stateChanged(int)),this, SLOT(layoutFruchterman(int)));
 
@@ -108,7 +108,7 @@ MainWindow::MainWindow(const QString &fName) {
 	connect(nodeSizeProportional2InDegreeBx , SIGNAL(clicked(bool)),this, SLOT(slotLayoutNodeSizeProportionalInEdges(bool)));
 
 	connect (graphicsWidget, SIGNAL(updateNodeCoords(int, int, int)), this, SLOT(updateNodeCoords(int, int, int)) );
-	connect (addNodeBt,SIGNAL(clicked()), this, SLOT(createNode()));
+	connect (addNodeBt,SIGNAL(clicked()), this, SLOT(addNode()));
 	connect (addLinkBt,SIGNAL(clicked()), this, SLOT(slotAddLink()));
 	connect (removeNodeBt,SIGNAL(clicked()), this, SLOT(slotRemoveNode()));
 	connect (removeLinkBt,SIGNAL(clicked()), this, SLOT(slotRemoveLink()));
@@ -303,7 +303,7 @@ void MainWindow::initActions(){
 	addNodeAct->setShortcut(tr("Ctrl+A"));
 	addNodeAct->setStatusTip(tr("Adds a node"));
 	addNodeAct->setWhatsThis(tr("Add Node\n\nAdds a node to the network"));
-	connect(addNodeAct, SIGNAL(activated()), this, SLOT(createNode()));
+	connect(addNodeAct, SIGNAL(activated()), this, SLOT(addNode()));
 
 	removeNodeAct = new QAction(QIcon(":/images/remove.png"),tr("Remove Node"), this);
 	removeNodeAct ->setShortcut(tr("Ctrl+R"));
@@ -454,7 +454,6 @@ void MainWindow::initActions(){
 
 
 
-		
 
 	/**
 	Layout menu actions
@@ -1366,11 +1365,13 @@ void MainWindow::initNet(){
 	/** Clear previous network data */
 	activeGraph.clear();
 	
+	activeGraph.setShowLabels(showLabelsAct->isChecked());
 	activeGraph.setInitVertexColor(initNodeColor);
 	activeGraph.setInitEdgeColor(initLinkColor);
 	activeGraph.setInitVertexLabelColor(initLabelColor);
 	activeGraph.setInitVertexShape(initNodeShape);
 	activeGraph.setInitVertexSize(initNodeSize);
+
 	/** Clear scene **/
 	graphicsWidget->clear();
 	
@@ -1661,22 +1662,14 @@ void MainWindow::fileType(int type, QString networkName, int aNodes, int totalLi
 
 
 
-/**
-	Called from GraphicsWidget when the user double-clicks to create a new node 
-*/
-int MainWindow::lastAvailableNodeNumber(){
-	return activeGraph.lastVertexNumber();
-}
-
 
 /**
-	Called from GraphicsWidget to update activeGraph 
+	Calls Graph::createVertex method to add a new node (of number i and position p), into the activeGraph.
+	Called from GraphicsWidget when the user double clicks on the canvas.
 */
-void MainWindow::addNodeWithMouse(int i, int x, int y){
-	qDebug("MW: addNodeWithMouse");
-	//These are default values
-	QPointF p(x, y);
-	activeGraph.addVertex(i, 1, initNodeSize,  initNodeColor, QString::number(i), initLabelColor, p, initNodeShape);
+void MainWindow::addNodeWithMouse(int i, QPointF p){
+	qDebug("MW: addNodeWithMouse. Calling activeGraph::createVertex() for vertex %i and x= %f and y= %f", i, p.x(), p.y());
+	activeGraph.createVertex(i, p);
 }
 
 
@@ -1684,26 +1677,24 @@ void MainWindow::addNodeWithMouse(int i, int x, int y){
 
 
 /**
-	Creates and Draws the node with the specified number, label, color, position etc
-	Called when Create Node button is clicked
+	Calls Graph::createVertex method to add a new RANDOM node into the activeGraph.
+	Called when "Create Node" button is clicked on the Main Window.
 */
-void MainWindow::createNode() {
-	qDebug ("MW: createNode() void");
-       	QPointF p;
-	p.setX(rand()%graphicsWidget->width());
-       	p.setY(rand()%graphicsWidget->height());
-	qDebug("MW: createNode(): Node out of bounds. Using random coordinates: (%d, %d).", (int) p.x(), (int) p.y());
-	
-	int i=activeGraph.lastVertexNumber()+1;
-	QString label=QString::number(i);
-	qDebug ("MW: createNode(). Calling Graph::addVertex for vertice %i",i);
-	activeGraph.addVertex(i, 1, initNodeSize,  initNodeColor, label, initLabelColor, p, initNodeShape);
-	qDebug ("MW: createNode(). Calling GW::addNode for vertice %i",i);
-	graphicsWidget->addNode (i, 1, initNodeSize,  initNodeColor, label, initLabelColor, p, initNodeShape,  showLabels(), showNumbers()) ;	
-
+void MainWindow::addNode() {
+	qDebug("MW: addNode(). Calling activeGraph::createVertex() for a vertice named -1");
+	activeGraph.createVertex(-1, graphicsWidget->width(),  graphicsWidget->height());
 }
 
 
+
+/** 
+	Calls GraphicsWidget::drawNode  to draw a new node on the canvas.
+	Called from Graph::createVertex() main slot.
+*/
+void MainWindow::drawNode(int num, int size, QString nodeColor, QString nodeLabel, QString labelColor, QPointF p, QString ns, bool labels) {
+	qDebug("MW: drawNode called from Graph. Calling GraphicsWidget::addNode");
+	graphicsWidget->drawNode(num, size, nodeColor, nodeLabel, labelColor, p, ns, labels, true);
+}
 
 
 /**
@@ -4446,7 +4437,7 @@ void MainWindow::slotShowLabels(bool toggle){
 		graphicsWidget->setAllItemsVisibility(TypeLabel, true);
 		statusBar()->showMessage(tr("Node Labels are visible again..."), statusBarDuration);
 	}
-
+	activeGraph.setShowLabels(toggle);
 }
 
 
@@ -5020,7 +5011,7 @@ void MainWindow::slotHelpAbout(){
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualiser " +VERSION+ "  codename: <b>SNAIL</b>"
 	"<p>(C) 2005-2008 by Dimitris V. Kalamaras"
 	"<br> dimitris.kalamaras@gmail.com"
-	"<p><b>Last revision: </b> Fri, Sep 16, 2008</p>"
+	"<p><b>Last revision: </b> Sun, Sep 21, 2008</p>"
 
 
 	"<p><b>Fortune cookie: </b><br> \""  + fortuneCookie[randomCookie]  +"\""

@@ -38,12 +38,11 @@
 
 #include <math.h> //sqrt
 
-Node::Node( GraphicsWidget* gw, int num, int val, int size, QString col, QString label, QString lcol, QString shape, int ldist, int ndist) : graphicsWidget (gw) {
+Node::Node( GraphicsWidget* gw, int num, int size, QString col, QString label, QString lcol, QString shape, int ldist, int ndist) : graphicsWidget (gw) {
 	qDebug("Node() - constructor");
 	graphicsWidget->scene()->addItem(this); //Without this nodes dont appear on the screen...
 	setFlag(ItemIsMovable); //Without this, nodes do not move...
 	m_num=num;
-	m_val=val;
 	m_size=size;
 	Q_UNUSED (label);
 //	m_label->setPlainText(label);

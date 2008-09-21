@@ -195,9 +195,9 @@ void GraphicsWidget::setAllItemsVisibility(int type, bool visible){
 	This method is called from mouseDoubleClickEvent, when the user double clicks somewhere.
 	It is also called from MW, on loading files or pressing "Add Node" button.
 */
-void GraphicsWidget::addNode(int num, int val, int size, QString nodeColor, QString nodeLabel, QString labelColor, QPointF p, QString ns, bool showLabels, bool showNumbers) {
-	qDebug("GW: addNode()");
-	Node *jim= new Node (this, num, val, size, nodeColor, nodeLabel, labelColor, ns, m_labelDistance, m_numberDistance);
+void GraphicsWidget::drawNode(int num, int size, QString nodeColor, QString nodeLabel, QString labelColor, QPointF p, QString ns, bool showLabels, bool showNumbers) {
+	qDebug("GW: drawNode()");
+	Node *jim= new Node (this, num, size, nodeColor, nodeLabel, labelColor, ns, m_labelDistance, m_numberDistance);
 
 	jim->setPos(p);
 	qDebug("GW: new node position is now at %f, %f", jim->pos().x(), jim-> pos().y());
@@ -206,8 +206,8 @@ void GraphicsWidget::addNode(int num, int val, int size, QString nodeColor, QStr
 	labelJim ->setPos(p.x()+m_labelDistance, p.y()-m_labelDistance);
 	labelJim->setDefaultTextColor (labelColor);
 
-	if (showLabels) qDebug("GW: addNode: will display label "+ nodeLabel.toAscii() + " for %i", num);
-	else qDebug("GW: addNode: NOT display labels for %i", num);
+	if (showLabels) qDebug("GW: drawNode: will display label "+ nodeLabel.toAscii() + " for %i", num);
+	else qDebug("GW: drawNode: NOT display labels for %i", num);
 
 	if (!showLabels){
 		labelJim->hide();
@@ -463,7 +463,6 @@ void GraphicsWidget::removeItem( NodeNumber *nodeNumber){
 
 /** 	
 	Creates a new node when the user double-clicks somewhere
-	Calls addNode
 */
 void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
 	qDebug("GW: double click detected!");
@@ -475,20 +474,9 @@ void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
 		}
 	}
 	QPointF p = matrix().inverted().map(e->pos());
-	qDebug("GW: e->pos() (%i, %i)", e->pos().x(),e->pos().y());
-	qDebug("GW: at %f, %f", p.x(),p.y());
-
-	int m_nodeNumber = ( (MainWindow*)parent() )->lastAvailableNodeNumber() +1;
-	bool labels=( (MainWindow*)parent() )->showLabels();
-	m_nodeLabel=QString::number(m_nodeNumber);
-	bool numbers=( (MainWindow*)parent() )->showNumbers();
-	qDebug("GW: lastAvailableNodeNumber is %i", m_nodeNumber);
-	m_nodeColor= ( (MainWindow*)parent() )->initNodeColor;	
-	addNode(m_nodeNumber, 1, m_nodeSize, m_nodeColor, m_nodeLabel, m_labelColor,  p,  "circle", labels, numbers);
+	qDebug("GW: e->pos() (%i, %i) at %f, %f ", e->pos().x(),e->pos().y(), p.x(),p.y());
 	//Emit a signal to MW to create a new node in graph.
-	qDebug("GW: emitting userDoubleClicked to MW"); 
-	emit userDoubleClicked(m_nodeNumber, (int) p.x(), (int) p.y());
-
+	emit userDoubleClicked(-1, p);
 	qDebug("Scene items now: %i ", scene()->items().size());
 	qDebug("GW items now: %i ", items().size());
 	emit changed();

@@ -50,7 +50,6 @@ public:
  	GraphicsWidget(QGraphicsScene*, MainWindow* parent);
 	~GraphicsWidget();
 	void clear();
-	void addNode(int i, int value, int size, QString aColor, QString label, QString lColor, QPointF p, QString nodeShape, bool showLabels, bool showNnumbers) ;
 	void removeNode(int doomedJim);
 	void addEdge(int, int, bool, bool, QString, bool, bool);
 	void removeEdge(int, int);
@@ -77,6 +76,7 @@ protected:
 	void resizeEvent( QResizeEvent *e );
 
 public slots:
+	void drawNode(int i, int size, QString aColor, QString label, QString lColor, QPointF p, QString nodeShape, bool showLabels, bool showNnumbers) ;
 	void nodeClicked(Node *);
 	void edgeClicked(Edge *);
 	void openNodeContextMenu();
@@ -93,7 +93,7 @@ public slots:
 
 signals:
 	void windowResized(int,int);
-	void userDoubleClicked(int, int, int);
+	void userDoubleClicked(int, QPointF);
 	void userMiddleClicked(int, int, int);
 	void openNodeMenu();
 	void openEdgeMenu();
