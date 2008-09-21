@@ -33,8 +33,7 @@
 #include "vertex.h"
 #include "matrix.h"
 
-#include <stack> 
-//FYI: stack is a wrapper around <deque> in C++, see: www.cplusplus.com/reference/stl/stack
+#include <stack>  //FYI: stack is a wrapper around <deque> in C++, see: www.cplusplus.com/reference/stl/stack
 
 #include <map>
 #include <QList>
@@ -82,23 +81,30 @@ signals:
 	void drawNode( int ,int,  QString, QString,QString, QPointF, QString, bool);
 
 public: 	
+	/**INIT AND CLEAR*/
     	Graph(); // adds a new Vertex named v1 to m_graph, with:
 	         // Value=val, Size=nsz, Color=nc, Label=nl, labelColor=lc, Shape=nsp
 	         // at Point=p */
+
+	void clear();				//Clears m_graph
+	~Graph();				//destroy
+
+	void setParent(QMainWindow*);
+	QMainWindow* parent();
 	
+	void setShowLabels(bool toggle);
+
+	/**FILES (READ AND WRITE)*/
 	int loadFile(QString, int, QString, QString, QString, bool, int maxWidth, int maxHeight);	//Almost universal network loader. :)
 	
-	int lastVertexNumber();										//returns the number of the last vertex
-	int firstVertexNumber();									//returns the number of the first vertex
-	void removeVertex (int );									//removes given vertex from m_graph
 
-	void addEdge (int v1, int v2, int w, QString color, bool undirected); 		//adds an edge between v1 and v2, weight w, colored
-	void setEdgeWeight (int v1, int v2, int w); 					//sets the edge weight between v1 and v2
-	void removeEdge (int v1, int v2);						//removes the edge between v1 and v2
+	/** VERTICES */
+	int lastVertexNumber();						//Returns the number of the last vertex
+	int firstVertexNumber();					//Returns the number of the first vertex
 
 	int hasVertex(int );						//Checks if a vertex exists
 	int hasVertex(QString);						//Checks if a vertex with a label exists
-	int hasEdge (int v1, int v2);					//Checks if edge between v1 and v2 exists. Returns weight
+	void removeVertex (int );					//removes given vertex from m_graph
 
 	void setInitVertexSize (int); 					//Changes the init size used by all new vertices.
 	void setVertexSize(int v, int );				//Changes the size.of vertex v 
@@ -107,69 +113,83 @@ public:
 	void setVertexShape(int v, QString shape); 			//Changes the shape.of vertex v 
 	QString shape(int v);						//returns the shape of this vertex
 
+	void setInitVertexColor (QString color);  			//Changes the init color used by all new vertices
+	void setVertexColor(int v, QString color); 			//Changes the color.of vertex v 
+
 	void setInitVertexLabelColor(QString color); 			//Changes the init color used by all new vertices' labels
 	void setVertexLabel(int v, QString label); 			//Changes the label.of vertex v 
 	QString label(int);			
 
-	void setInitVertexColor (QString color);  			//Changes the init color used by all new vertices
-
-	void setVertexColor(int v, QString color); 			//Changes the color.of vertex v 
-	void setInitEdgeColor(QString);
 	void updateVertCoords(int v, int x, int y);			 //Updates vertex v with coords x,y
 
-	void setEdgeColor(int s, int t, QString color);			//Changes the color of edge (s,t).
+	int vertices() ;						//Returns the sum of vertices inside m_graph
 
 	int edgesFrom (int i) ;						//Returns the number of edges starting from v1
 	int edgesTo (int i) ;						//Returns the number of edges ending to v1  
-	int totalEdges ();						//Returns the sum of edges inside m_graph
-	int vertices() ;						//Returns the sum of vertices inside m_graph
+
 	int verticesWithOutEdges();					//Returns the sum of vertices having outEdges
 	int verticesWithInEdges();					//Returns the sum of vertices having inEdges
 	int verticesWithReciprocalEdges();				//Returns the sum of vertices having reciprocal edges
-	void writeAdjacencyMatrixTo(QTextStream& os);	 		//Exports the adjacency matrix to a given textstream
-	void writeAdjacencyMatrix(const char*, const char*);		//Writes the adjacency matrix to a given file.
-	friend QTextStream& operator <<  (QTextStream& os, Graph& m);  	//
+
+
+	/**EDGES*/
+	int hasEdge (int v1, int v2);					//Checks if edge between v1 and v2 exists. Returns weight
+	void removeEdge (int v1, int v2);				//removes the edge between v1 and v2
+	void setEdgeWeight (int v1, int v2, int w); 			//sets the edge weight between v1 and v2
+	void setInitEdgeColor(QString);
+
+	void setEdgeColor(int s, int t, QString color);			//Changes the color of edge (s,t).
+
+	int totalEdges ();						//Returns the sum of edges inside m_graph
 
 	bool isSymmetric();						//Returns TRUE if symmetricAdjacencyMatrix=TRUE
-	int distance( int, int);					//Returns the geodesic distance between two vertices
-	int diameter();							//Returns the diameter of the graph
+	void makeEdgesReciprocal();					//Symmetrize all edges so that the network is undirected.
 
-	//Creates the distance matrix and calculates the centralities, if bool is true.
-	void createDistanceMatrix(bool);		
-	void BFS(int, bool);			// Breadth-first search used by createDistanceMatrix()
 
+	/**PRINT OUT*/
+	void writeAdjacencyMatrixTo(QTextStream& os);	 		//Exports the adjacency matrix to a given textstream
+	void writeAdjacencyMatrix(const char*, const char*);		//Writes the adjacency matrix to a given file.
 	void writeDistanceMatrix(const char*, const char*, const char*);//Writes the distance matrix to a file
+	void writeCentralityInDegree();					//Writes the in-degree centralities to a file
+	void writeCentralityOutDegree();				//Writes the out-degree centralities to a file
 
-	void eccentr_JordanCenter(); // FIXME ?
-	
-	void makeEdgesReciprocal();
+	friend QTextStream& operator <<  (QTextStream& os, Graph& m);  	//
 
-	void centralityInDegree(bool);		//Calculates the inDegree centrality of each vertex
-	void centralityOutDegree(bool);		//Calculates the outDegree centrality of each vertex
-	void writeCentralityInDegree();		//Writes the in-degree centralities to a file
-	void writeCentralityOutDegree();	//Writes the out-degree centralities to a file
 
-	void createUniformRandomNetwork(int, int);	//Creates a uniform random network
-	void createPhysicistLatticeNetwork(int, int, double, double, double); 	//Creates a Circular lattice
-	void createSameDegreeRandomNetwork(int, int); 	//Creates a random network with the same degree in all nodes
-	
+	/**DISTANCES & CENTRALITIES*/
+	int distance( int, int);				//Returns the geodesic distance between two vertices
+	int diameter();						//Returns the diameter of the graph
+
+	void createDistanceMatrix(bool);			//Creates the distance matrix and calculates the centralities, if bool is true.
+
+	void centralityInDegree(bool);				//Calculates the inDegree centrality of each vertex
+	void centralityOutDegree(bool);				//Calculates the outDegree centrality of each vertex
+
+	void eccentr_JordanCenter(); 				// FIXME ?
+
+
+	/**LAYOUTS*/	
 	void layoutCircleCentrality(double x0, double y0, double maxRadius, int CentralityType);
 	void layoutLevelCentrality(double maxWidth, double maxHeight, int CentralityType);
-	void clear();				//Clears m_graph
-	~Graph();
-	
-	QList<Vertex*> m_graph;	//List of pointers to the vertices. 
-	//A vertex stores all the info: outLinks, colours, centralities, positions, etc
 
+
+	/**RANDOM NETWORKS*/
+	void createUniformRandomNetwork(int, int);				//Creates a uniform random network
+	void createPhysicistLatticeNetwork(int, int, double, double, double); 	//Creates a Circular lattice
+	void createSameDegreeRandomNetwork(int, int); 				//Creates a random network with the same degree in all nodes
+
+
+	/** List of pointers to the vertices. A vertex stores all the info: links, colours, etc */
+	QList<Vertex*> m_graph;			
 
 
 	/** index stores the index of each vertex inside m_graph. It starts at zero (0).
 	This is crucial when we want to find the place of a vertex inside m_graph after adding or removing many vertices */
 	imap_i index;			
-
 	/** maps have O(logN) lookup complexity
 		Consider using tr1::hashmap which has O(1) lookup, but this is not ISO C++ yet :(  
 	*/
+
 
 	float meanDegree, varianceDegree;
 	float minIDC, maxIDC, sumIDC, groupIDC;
@@ -186,35 +206,39 @@ public:
 	int classesGC, maxNodeGC, minNodeGC;
 	int classesSC, maxNodeSC, minNodeSC;
 	int classesEC, maxNodeEC, minNodeEC;
-	bool calculatedIDC, calculatedODC, calculatedCentralities;
 
-	void setParent(QMainWindow*);
-	QMainWindow* parent();
-	
-	void setShowLabels(bool toggle);
+
 
 protected: 
 
 private:
+	QMainWindow *m_parent;		//stores the parent of this class.
+	Parser parser;		//file loader threaded class.
+
+	/** private member functions */
 	void addVertex (int v1, int val, int nsz, QString nc, QString nl, QString lc, QPointF p,QString nsp);	
+	void addEdge (int v1, int v2, int w, QString color, bool undirected); 		//adds an edge between v1 and v2, weight w, colored
 	void minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int &minNode) ;
+	void BFS(int, bool);			// Breadth-first search used by createDistanceMatrix()
 	void resolveClasses(float C, fmap_i &discreteClasses, int &classes);
 	void resolveClasses(float C, fmap_i &discreteClasses, int &classes, int name);  
 
+	/** used in createDistanceMatrix() */
 	fmap_i	discreteIDCs, discreteODCs, discreteCCs, discreteBCs, discreteSCs, discreteGCs, discreteECs;
-	int m_totalEdges, m_totalVertices;
+	int *eccentricities;
+	bool calculatedIDC, calculatedODC, calculatedCentralities;
 	Matrix  TM, DM;
 	stack<int> Stack;
-	Parser parser;	
-	bool order, initShowLabels;
-	int *eccentricities;
-	int graphDiameter;
-	//These are used in the calculation of standard betweeness centrality on directed graphs:
+
+	/** General & initialisation variables */
+	int m_totalEdges, m_totalVertices, graphDiameter, initVertexSize;
 	int outEdgesVert, inEdgesVert, reciprocalEdgesVert;
-	QMainWindow *m_parent;
+	
+	bool order, initShowLabels;
 	bool adjacencyMatrixCreated, symmetricAdjacencyMatrix, graphModified, distanceMatrixCreated;
+
 	QString networkName, initEdgeColor, initVertexColor, initVertexLabelColor, initVertexShape;
-	int initVertexSize;
+
 };
 
 #endif

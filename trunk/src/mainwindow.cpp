@@ -1325,7 +1325,7 @@ void MainWindow::resizeEvent( QResizeEvent * ){
 	Also used when erasing a network to start a new one
 */
 void MainWindow::initNet(){
-	qDebug("MW: initNet()");
+	qDebug("MW: initNet() START INITIALISATON");
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 	initNodeSize=4;
 	initNodeColor="gold";
@@ -1393,7 +1393,7 @@ void MainWindow::initNet(){
 	setWindowTitle(tr("Social Network Visualiser "));
 	QApplication::restoreOverrideCursor();
 	statusBar()->showMessage(tr("Ready"), statusBarDuration);
-	qDebug("MW: initNet() end");
+	qDebug("MW: initNet() INITIALISATION END");
 }
 
 
