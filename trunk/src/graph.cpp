@@ -57,29 +57,23 @@ Graph::Graph() {
 
 	connect (&parser, SIGNAL(fileType(int, QString, int, int)), this, SLOT(fileType(int, QString, int, int)) );
 	connect (&parser, SIGNAL(removeDummyNode(int)), this, SLOT (removeDummyNode(int)) );
-	//not needed anymore
-//	connect (&parser, SIGNAL(finished ()), this, SLOT(parserFinished()) );
-	
 }
 
-// //not needed anymore
-// void Graph::parserFinished(){
-// 	qDebug("=====Graph===== parser says has finished!");
-// }
+
+
 
 /**
 	main node creation slot, associated with homonymous signal from Parser. 
 	Adds a Vertex to the Graph and calls addNode of GraphicsWidget 
 	p holds the desired position of the new node.
+	The new Vertex is named i and stores its color, label, label color, shape and position p.
 */
 void Graph::createVertex(int i, int size, QString nodeColor, QString label, QString lColor, QPointF p, QString nodeShape){
 	qDebug()<<" Graph:: createVertex(): "<<i<< " "<<size<<" "<<nodeColor<<" "<<label<<" "<<lColor<<" "<<p.x()<<" " <<p.y()<<" "<<nodeShape;
 	//add the vertex to the Graph.
 	addVertex(i, 1, size,  nodeColor, label, lColor, p, nodeShape);
 	//emit a signal for MW to create the new node onto the canvas.
-
 	emit drawNode( i, size ,  nodeColor, label, lColor, p, nodeShape, initShowLabels);
-
 } 
 
 

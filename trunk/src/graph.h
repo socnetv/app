@@ -68,10 +68,8 @@ public slots:
 	void createVertex(int,int,QString, QString, QString, QPointF, QString); 	//Main vertex creation call
 	void fileType(int, QString, int,int);	
 	void removeDummyNode(int);
-//	void parserFinished();
 
 	/** Slots to signals from GraphicsWidget and Parser*/
-	
 	void createEdge (int, int, int, QString, bool, bool, bool);				//GW and Parser.
 	void createEdge (int, int, int);							//
 
@@ -90,17 +88,15 @@ signals:
 
 public: 	
 	/**INIT AND CLEAR*/
-    	Graph(); // adds a new Vertex named v1 to m_graph, with:
-	         // Value=val, Size=nsz, Color=nc, Label=nl, labelColor=lc, Shape=nsp
-	         // at Point=p */
-
-	void clear();				//Clears m_graph
+    	Graph(); 				//Creates a new graph.
+	void clear();				//Clears m_graph 
 	~Graph();				//destroy
 
 	void setParent(QMainWindow*);
 	QMainWindow* parent();
 	
 	void setShowLabels(bool toggle);
+
 
 	/**FILES (READ AND WRITE)*/
 	int loadFile(QString, int, QString, QString, QString, bool, int maxWidth, int maxHeight);	//Almost universal network loader. :)
@@ -178,7 +174,7 @@ public:
 	void centralityInDegree(bool);				//Calculates the inDegree centrality of each vertex
 	void centralityOutDegree(bool);				//Calculates the outDegree centrality of each vertex
 
-	void eccentr_JordanCenter(); 				// FIXME ?
+//	void eccentr_JordanCenter(); 				// TODO
 
 
 	/**LAYOUTS*/	
@@ -224,17 +220,20 @@ public:
 
 protected: 
 
+
 private:
 	QMainWindow *m_parent;		//stores the parent of this class.
-	Parser parser;		//file loader threaded class.
+	Parser parser;			//file loader threaded class.
 
 	/** private member functions */
 	void addVertex (int v1, int val, int nsz, QString nc, QString nl, QString lc, QPointF p,QString nsp);	
 	void addEdge (int v1, int v2, int w, QString color, bool undirected); 		//adds an edge between v1 and v2, weight w, colored
-	void minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int &minNode) ;
-	void BFS(int, bool);			// Breadth-first search used by createDistanceMatrix()
-	void resolveClasses(float C, fmap_i &discreteClasses, int &classes);
-	void resolveClasses(float C, fmap_i &discreteClasses, int &classes, int name);  
+
+	/** methods used by createDistanceMatrix()  */
+	void BFS(int, bool);									//Breadth-first search 
+	void minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int &minNode) ;	//helper
+	void resolveClasses(float C, fmap_i &discreteClasses, int &classes);			//helper
+	void resolveClasses(float C, fmap_i &discreteClasses, int &classes, int name);  	//helper
 
 	/** used in createDistanceMatrix() */
 	fmap_i	discreteIDCs, discreteODCs, discreteCCs, discreteBCs, discreteSCs, discreteGCs, discreteECs;
