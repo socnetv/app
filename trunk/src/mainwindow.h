@@ -152,7 +152,7 @@ public slots:
 	void slotFilterNodes();
 	void slotFilterLinks();
 	void slotTransformNodes2Links();
-	void slotMakeEdgesReciprocal();
+	void slotSymmetrize();
 
 	// LAYOUT MENU
 	void slotColorationStrongStructural();
