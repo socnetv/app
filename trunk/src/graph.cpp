@@ -58,14 +58,14 @@ Graph::Graph() {
 	connect (&parser, SIGNAL(fileType(int, QString, int, int)), this, SLOT(fileType(int, QString, int, int)) );
 	connect (&parser, SIGNAL(removeDummyNode(int)), this, SLOT (removeDummyNode(int)) );
 	//not needed anymore
-	connect (&parser, SIGNAL(finished ()), this, SLOT(parserFinished()) );
+//	connect (&parser, SIGNAL(finished ()), this, SLOT(parserFinished()) );
 	
 }
 
-//not needed anymore
-void Graph::parserFinished(){
-	qDebug("=====Graph===== parser says has finished!");
-}
+// //not needed anymore
+// void Graph::parserFinished(){
+// 	qDebug("=====Graph===== parser says has finished!");
+// }
 
 /**
 	main node creation slot, associated with homonymous signal from Parser. 

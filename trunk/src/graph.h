@@ -64,12 +64,17 @@ class Graph:  public QObject{
 	Q_OBJECT
 
 public slots:
-	/** Slots to signals from GraphicsWidget */
+	/** Slots to signals from Parser */
+	void createVertex(int,int,QString, QString, QString, QPointF, QString); 	//Main vertex creation call
+	void fileType(int, QString, int,int);	
+	void removeDummyNode(int);
+//	void parserFinished();
+
+	/** Slots to signals from GraphicsWidget and Parser*/
+	
 	void createEdge (int, int, int, QString, bool, bool, bool);				//GW and Parser.
 	void createEdge (int, int, int);							//
 
-	void removeDummyNode(int);
-	void parserFinished();
 
 signals:
 	/** Signals to MainWindow */
@@ -99,11 +104,10 @@ public:
 
 	/**FILES (READ AND WRITE)*/
 	int loadFile(QString, int, QString, QString, QString, bool, int maxWidth, int maxHeight);	//Almost universal network loader. :)
-	void fileType(int, QString, int,int);	
+
 	
 
 	/** VERTICES */
-	void createVertex(int,int,QString, QString, QString, QPointF, QString); 	//Main vertex creation call
 	void createVertex(int i, QPointF p); 						//Called by GW
 	void createVertex(int i, int canvasWidth, int canvasHeight); 			//Called by MW
 
