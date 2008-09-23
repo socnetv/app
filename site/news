@@ -1,0 +1,58 @@
+Social Networks Visualiser (SocNetV) 
+
+
+SocNetV News
+-==========-
+
+May 2008
+========
+- Version 0.44 released one year after v.0.43.
+  New features: 
+	Ported to Qt4: Code rewritten almost from scratch.
+	Splitted MainWindow/GUI from algorithms via a new Graph Class. 
+	Improved GUI with docks.
+	Network zooming via mouse wheel.
+	Spring Embedder: Dynamic network reallocation
+	Thread support.
+	Much faster calculation of distances and centralities (BFS/dijkstra).
+	Betweeness centrality now is much more efficiently calculated. 
+	Changed license to GPL3
+	Layout in circles and levels by centrality.
+	Better graphics and antialiasing (disabled - enable by pressing F8).
+	New centrality index: Eccentricity.
+	
+
+Sep 2006
+========
+- version 0.43 released with new layout features.
+
+June 2006
+=========
+- version 0.42 released with updated help files.
+
+May 2006
+========
+- I did some work on the webpages at http://socnetv.sourceforge.net. Hope it is better now. 
+
+April 2006
+==========
+
+March 2006
+==========
+- version 0.41 released. 
+
+
+February 2006
+-------------
+- version 0.40 released. Efforts to be a pretty trustworthy release.
+- sourceforge project downloads are more than enough daily, but there is no feedback yet for versions 0.38 and 0.39.
+- version 0.39 released. Somewhat rushed release.
+- constant changes in the homepage. 
+- updated links in www.insna.org 
+
+
+January 2006
+------------
+- version 0.38 released after one year of silence.
+- The project moved to sourceforge.net
+- The homepage is http://socnetv.sourceforge.net

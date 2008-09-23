@@ -1,0 +1,103 @@
+<link rel="stylesheet" href="socnetv.css" type="text/css" />
+
+
+<h4><a name="Overview" id="Overview"></a>Overview</h4>
+<p class="text">
+<p class="text">
+SocNetV	has  a	simple	Graphical  User	 Interface  (GUI) with a menu, a toolbar, a "canvas", a dock and a status bar. 
+
+<p class="text">
+The biggest (right) part of the window is occupied by a virtual "canvas" where network  nodes and edges appear. The initial background color of the canvas is gainboro, but you can changed it from the Edit menu. 
+<br />
+The dock, on the left of the window, has 4 buttons (add/remove node, add/remove link) and some LCDs which display statistics for the active network.   
+<br />
+The toolbar provides the usual icons: new network creation, load a network, save, zoom in-out and display help messages for the menu options. 
+</p>
+
+
+</p>
+<p class="text">
+On the top of the window, there is the menu with all commands and options, and at the bottom there is a  status  bar, where messages appear.
+The menu bar provides 6 menus:
+</p>
+<div class="text">
+<ul>
+<li> <b>Network menu </b> has options to load and save a network, export it, create random nets etc.</li>
+<li> <b>Edit menu </b> with action to add/remove nodes and edges, change colors, filter links/nodes, etc.</li>
+<li> <b>Layout menu </b> enables you to select a layout method, i.e. reposition all nodes according to their centrality.</li>
+<li> <b>Statistics menu </b> gives you tools to analyse the active network (density, diameter, centralities, distance matrix, etc).</li>
+<li> <b>Options menu </b>allows you to show/hide edges, edge arrows, turn on/off antialiasing, etc.</li>
+</ul>
+</div>
+
+
+<h4><a name="Create" id="Create"></a>Network creation</h4>
+<p class="text">
+To start working with SocNetV you need network data, i.e. a graph of nodes and edges. SocNetV enables you to create such networks or load them from files. 
+There are multiple ways to create or edit nodes and edges in SocNetV:
+<div class="text">
+<ul>
+<li>from the menus </li>
+<li> from the dock buttons, or</li>
+<li> by right/left/middle-clicking on the canvas. </li>
+</ul>
+</div>
+
+</p>
+<h4><a name="NodeCreate" id="NodeCreate"></a>Create a node</h4>
+
+<p class="text">
+To  create  a new node, you can double-click on the canvas or click on the "Add node" button. The keyboard shortcut is Ctrl+A.
+<br />
+You can move a node by left-clicking on it and moving the pointer.
+</p>
+
+
+<h4><a name="LinkCreate" id="LinkCreate"></a>Create a link</h4>
+<p  class="text">
+To create a new link, you can middle-click on the source node and  then on the	target	node.	Alternatively, you can click on the "Add link" button from the dock. The keyboard shortcut is Ctrl+L.
+</p>
+<p class="text">
+Say you created two nodes, numbered 1 and 2, on the canvas. To create a new link from node 1 to node 2, middle click on node 1 (the mouse pointer will become a hand) and afterwards middle-click on node 2. A new link will be drawn instantly. If you want an edge (double link) repeat the process from node 2 to node 1. 
+</p>
+<p class="text">
+Each link created by this automatic way it has the default weight 1 and black colour.
+</p>
+ 
+
+<h4><a name="Interaction" id="Interaction"></a>Interaction and Node Shapes</h4>
+<p class="text">
+       You move a node by left-clicking and dragging it. When you  right-click on  a node, a context menu appears. From there you can remove the node, change its color, label, size as well as its  shape.  A similar menu  appears when you right click on a link.
+</p>
+<p class="text">
+	SocNetV  supports many  kinds  of node shapes, i.e rectangles, diamond, ellipse, circle, etc. To change the shape of a node, right-click on it and in the context menu select Options > Change shape to...
+</p>
+
+<h4><a name="Random" id="Random"></a>Random network creation</h4>
+<p class="text">
+SocNetV can create a random network for you. At the moment, it can create three kinds of random networks.
+<div class="text">
+<ul>
+<li><b>Uniform random networks</b>: where each node has random number of links. From the menu Network select Create Random Network > Uniform (or press Shift+R). You will be asked for the number of nodes and a link probability. </li>
+
+<li><b>Physicist's lattices</b>: where each node has the same even number of links L with her "neighbourhood", namely she is linked with the L/2 nodes before and L/2 nodes after her. For instance in a lattice of 4-lattice of 10 nodes, node 6 will be linked with 4,5,7,8. To create such a network do Network > Create Random Network > Lattice (or press Shift+L). You will be asked for the number of nodes and the number of links each node will have.</li>
+
+<li><b>Same degree networks</b>: these are graphs where each node has the same degree but is arbitrarily linked with other nodes (not just the neighbours). </li>
+</ul>
+</div>
+
+
+<h4><a name="Load" id="Load"></a>Load a network</h4>
+<p class="text">
+The easiest way to start working with SocNetV is when you have already a network in a supported format (see <a href="formats.html" target="2">Formats</a>). 
+</p>
+<p class="text">
+For instance, you might have another program (for example a simulation) creating adjacency networks which you want to visualise. In that case, from the SocNetV's menu go File > Load. In the dialogue that will appear, navigate to the desired folder and select the appropriate network file. SocNetV will automatically recognise the format and, if it is supported, it will visualise the network.
+</p>
+
+<h4><a name="Save" id="Save"></a>Save the active network</h4>
+<p class="text">
+Just press Ctrl+S or click on the menu File > Save. Select a network format and you're done. Note that some <a href="formats.html" target="2">formats</a> are supported only for loading - not for saving. 
+</p>
+
+

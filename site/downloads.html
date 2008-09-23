@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="Description" content="Homepage of Social Networks Visualiser for Linux, a Qt program which enables anyone to create, interact and analyse social networks."/>
+<meta name="GENERATOR" content="Dimitris Kalamaras"/>
+<meta name="AUTHOR"  content="Dimitris Kalamaras"/>
+<meta name="CREATED" content="20070111"/>
+<meta name="CHANGED" content="20070111"/>
+<meta name="KEYWORDS"    content="Social Networks Visualiser, linux, SNA, graphs, visualisation, layout, Dimitris Kalamaras,GNU,GPL"/>
+<meta name="SUBJECT"     content="Social Networks Visualiser"/>
+<meta name="robots" content="all"/>
+<meta name="revisit-after" content="4 days"/>
+<title>SocNetV - Downloads</title>
+<link rel="stylesheet" href="default.css" type="text/css"/>
+
+</head>
+
+<body bgcolor="#ffffff">
+<table width="100" border="0" align="center" cellpadding="0" cellspacing="0">
+	<tr>
+			<td><img name="lf_r1_c1" src="./images/logo.png" width="296" height="122" border="0" id="lf_r1_c1" alt="" />
+			</td>
+	</tr>
+	<tr>
+    		<td>
+				<table width="100%" border="0" cellpadding="0" cellspacing="0">
+					<tr>
+						<td valign="top"><img name="lf_r2_c1" src="./images/lf_r2_c1.gif" width="1" height="31" border="0" id="lf_r2_c1" alt="" />
+						</td>
+						<td valign="top">
+							<div  class="basictab">
+							<ul>
+								<li><a href="index.html">About</a></li>
+								<li><a href="news.html">News</a></li>
+								<li><a href="downloads.html"><u>Downloads</u></a></li>
+								<li><a href="screenshots.html" >Screenshots</a></li>
+								<li><a href="documentation.html" >Documentation</a></li>
+								<li><a href="references.html" >References</a></li>
+								<li><a href="links.html" >Links</a></li>
+								<li><a href="author.html">Author</a></li>
+							</ul>
+							</div>
+						</td>
+						<td valign="top"><img name="lf_r2_c3" src="./images/lf_r2_c3.gif" width="0" height="31" border="0" id="lf_r2_c3" alt="" />
+						</td>
+					</tr>
+					<tr>
+						<td valign="top"><img name="lf_r3_c1" src="./images/lf_r3_c1.gif" width="0" height="31" border="0" id="lf_r3_c1" alt="" />
+						</td>
+						<td rowspan="2" valign="top">
+							<table border="0" cellspacing="0" cellpadding="6" class="text">
+										<tr><td>
+										&nbsp;
+										</td></tr>
+										<tr>
+											<td>
+To compile or install SocNetV, you need <em>Qt 4.4 and QtWebKit</em> development files. For instance, in openSUSE 11+ and Debian-based distros, install libQtWebKit-devel and libqt4-webkit, respectively. 
+ 
+<br />Note that, SocNetV 0.45+ is incompatible with Qt &lt;  4.4. Upgrade your Qt version! ;)
+
+<br /><br/>
+At the moment, there are four ways to install SocNetV:											
+											</td></tr>
+										<tr><td> 
+											<b>A. Compile from Source code</b>
+												<ul>
+												<li><a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0.47.tar.gz?download" target="_blank">SocNetV-0.47.tar.gz</a>
+<br />
+
+<br />Click on the link above and download the archive with the source code. Then decompress it: 
+<br /> <br />
+<code>tar zxfv SocNetV-0.XX.tar.gz</code>
+<br /><br />
+Enter the new directory: 
+<br /><br />
+<code>cd socnetv</code>
+<br /><br />
+And type: 
+<br/><br />
+<code>./configure</code>
+
+<br />  <br/>          
+to run the configuration script. If you have Qt4 installed you' ll see no errors. <br />
+Afterwards, compile and install with:
+<br/><br />
+<code>
+make<br />
+sudo make install</code>
+<br />  <br/>
+In the end, you can run SocNetV with the command:<br /><br />
+<code>
+socnetv
+</code>
+
+												</li>
+												</ul>
+										</td></tr>
+										<tr><td> 
+											<b>B. Install from Binary packages</b>
+											<ul>
+											<li><em>For Debian &amp; Debian-derived distros</em><br /> <br />Add  the line <br /><br />
+<code> deb http://ftp.debian.org/debian/ experimental main </code>
+<br />
+<br /> to your sources.list; save it, then type in:<br /><br />
+<code>
+sudo apt-get update <br />
+sudo apt-get install -t experimental socnetv
+</code>
+<br /><br /> <br />
+</li>
+											<li><em>For Gentoo</em> <br /> <br /> There is an <a href="http://php.apsique.com/files/SocNetV-0.43.1.ebuild" target="_blank">older Gentoo (ebuild) package</a> maintained by Gentoo Foundation.
+											</li>
+											</ul>
+										</td></tr>
+										<tr> <td> 
+											<b>C. Klik-able setup</b>
+												<ul>
+												<li>If you have Linux, you can run SocNetV without installing it. Go to <br />
+<a href="http://socnetv.klik.atekon.de/" target="_blank">http://socnetv.klik.atekon.de/</a> <br /> 
+and then click on the large blue "download" button (to the bottom of the page). Many thanks to the klik team. :)
+												</li>
+												</ul>
+
+										</td></tr>
+
+                                                                                <tr> <td>
+
+        <b>D. Development version</b>
+
+                <ul>
+
+                <li>If you want to test the latest/current development version of SocNetV, check it out using this command (you need to have installed the Subversion package): 
+		<br /><br />
+			 <code>svn co http://socnetv.svn.sourceforge.net/svnroot/socnetv/trunk</code>
+	<br/><br />Then, type the commands:
+	<br /><br />
+			<code>
+				cd trunk<br/>
+				./configure <br />
+				make <br/>
+				socnetv
+			</code>
+	
+		<br /><br /> Please note that this version is <em>not always stable</em>.
+
+                </li>
+
+                </ul>
+
+
+</td></tr>
+       										<tr><td> 
+											<b>Older versions</b>
+												<ul>
+												<li><a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0.46.tar.gz?download" target="_blank">version 0.46</a>
+                                                                                                </li>
+                                                                                                <li><a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0.45.tar.gz?download" target="_blank">version 0.45</a>
+                                                                                                </li>
+
+                                                                                                <li><a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0
+.44.tar.gz?download" target="_blank">version 0.44</a>
+                                                                                                </li>
+
+                                                                                                <li><a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0
+.43.1-2.tar.gz?download" target="_blank">version 0.43.1</a>
+                                                                                                </li>
+                                                                                                
+
+
+												<li>
+												<a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0.43.tar.gz?download" target="_blank">Version 0.43</a>
+												</li>
+												<li><a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0.42.tar.gz?download" target="_blank">Version 0.42</a>
+												</li>
+												<li><a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0.41.tar.gz?download" target="_blank">Version 0.41</a>
+												</li>
+												<li><a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0.40.tar.gz?download" target="_blank">Version 0.40</a>
+												</li>
+												<li><a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0.39.tar.gz?download" target="_blank">Version 0.39</a>	
+												</li>
+												<li><a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0.38.tar.gz?download" target="_blank">Version 0.38</a>	
+												</li>
+												<li><a href="http://socnetv.tripod.com/SocNetV-0.37.tar.gz" target="_blank">Version 0.37</a>
+												</li>
+												</ul>
+										</td></tr>
+							</table>
+					</td>
+					<td valign="top"><img name="lf_r3_c3" src="./images/lf_r3_c3.gif" width="0" height="228" border="0" id="lf_r3_c3" alt="" /></td>
+				</tr>
+				<tr>
+					<td width="19" valign="bottom"><img name="lf_r6_c1" src="./images/lf_r6_c1.jpg" width="19" height="200" border="0" id="lf_r6_c1" alt="" /></td>
+					<td width="20" valign="bottom"><img name="lf_r5_c3" src="./images/lf_r5_c3.jpg" width="20" height="200" border="0" id="lf_r5_c3" alt="" /></td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		<tr>
+	   	<td><img name="lf_r7_c1" src="./images/lf_r7_c1.jpg" width="768" height="32" border="0" id="lf_r7_c1" alt="" /></td>
+		</tr>
+</table>
+
+<table width="100" border="0" align="center" cellpadding="0" cellspacing="10">
+		<tr>
+			<td><a href="http://sourceforge.net/projects/socnetv" target="_blank"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=158546&amp;type=1" width="88" height="31" border="0" alt="SourceForge.net Logo"/> </a>
+
+			</td>
+			<td><a href="http://clustrmaps.com/counter/maps.php?url=http://socnetv.sourceforge.net" id="clustrMapsLink" target="_blank"><img src="http://clustrmaps.com/counter/index2.php?url=http://socnetv.sourceforge.net" border="0" width="158" height="101" alt="Locations of visitors to this page" />
+				</a>
+			</td>
+			<td><p>
+				    <a href="http://validator.w3.org/check?uri=referer"><img
+					src="http://www.w3.org/Icons/valid-xhtml10"
+			        alt="Valid XHTML 1.0 Transitional" height="31" width="88" border="0" /></a>
+			  </p>
+
+			</td>
+
+		</tr>
+</table>
+
+</body>
+</html>

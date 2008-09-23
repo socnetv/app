@@ -1,0 +1,57 @@
+<link rel="stylesheet" href="socnetv.css" type="text/css" />
+
+<h4><a name="Fundamentals" id="Fundamentals"></a>Fundamentals</h4>
+<p  class="text">
+       Social  Networks	 Visualiser  (SocNetV) is a flexible and user-friendly tool for <a href="http://en.wikipedia.org/wiki/Social_network">Social Networks Analysis</a> and Visualisation. It lets you create new  networks  (graphs) with  a few clicks on a virtual canvas or load networks of various formats (GraphViz, GraphML, Adjacency, Pajek,  etc) them, and modify them to suit your needs.
+
+       The application can compute network properties, such as density, diameter and distances, as well as node and  network	centralities.  Various layout algorithms (i.e. Spring-embedder, circular and in levels according to centralities) are supported  for	meaningful  visualisations  of your  networks.	Furthermore,  simple  random  networks	(lattice, same
+       degree, etc) can be created.
+</p>
+<p class="text">
+       SocNetV is being developed in C++ with the Qt GUI development  toolkit. Qt is the only dependancy.  
+</p>
+
+<h4><a name="Availability" id="Availability"></a>Availability</h4>
+<p class="text">
+The latest version  of  this  program  can  be  found  at  <a href="http://socnetv.sourceforge.net">http://socnetv.sourceforge.net</a>. It  is distributed  both in source code and binary  packages for Linux distributions. SocNetV can also compile and run in OS X and Windows.
+</p>
+
+<h4><a name="Install" id="Install"></a>Installation</h4>
+<p class="text">
+To compile SocNetV, you need the Qt4 development libraries installed - most Linux distros offer Qt4 via their package manager (i.e. Synaptic in Ubuntu). Also, from 0.45 and onwards you also need QtWebKit development files. For instance in openSUSE, you need to install libQtWebKit-devel before you compile SocNetV. 
+
+<br />
+Then, download the archive with the source code from the link above, untar it, enter the new directory, and compile with the following commands:
+</p>
+
+<p class="code">
+tar zxfv SocNetV-0.XX.tar.gz <br />
+cd socnetv  <br />
+qmake-qt4 or qmake <br />
+make<br />
+cd bin<br />
+./socnetv 
+</p>	
+
+<h4><a name="RunOptions" id="RunOtions"></a>Execution Options</h4>
+<div class="text">
+If you run SocNetV from the command prompt, there are three (at the moment) options:
+<p class="code">
+       --version | -V
+</p>
+	      Displays the version of the program.
+
+<p class="code">
+       --help | -H
+</p>
+	      Displays a short help message.
+
+<p class="code">
+       file.net
+</p>
+	      The name of the file you want to open.
+
+
+
+</div>
+

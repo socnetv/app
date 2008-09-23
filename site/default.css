@@ -1,0 +1,61 @@
+/* Basic tags */
+
+.text {
+font: normal 13px Arial;
+}
+
+.mainheading {
+	font: bold 11px Verdana;
+	FONT-WEIGHT: bold; FONT-SIZE: 12pt; COLOR: #336699; FONT-FAMILY: arial
+}
+
+.basictab ul{
+margin: 4px;
+padding: 3px 0;
+margin-left: 0;
+font: bold 12px Verdana;
+border-bottom: 1px solid gray;
+list-style-type: none;
+text-align: left; /*set to left, center, or right to align the menu as desired*/
+}
+
+.basictab li{
+display: inline;
+margin: 0;
+}
+
+.basictab li a{
+text-decoration: none;
+
+padding: 3px 7px;
+margin-right: 3px;
+border: 1px solid gray;
+border-bottom: none;
+background-color: #f6ffd5;
+color: #2d2b2b;
+
+}
+
+.basictab li a:visited{
+color: #2d2b2b;
+}
+
+.basictab li a:hover, .basictab li a.current{
+background-color:   #DBFF6C;
+color: black;
+}
+
+.basictab li a:active{
+color: black;
+text-decoration: underline;
+}
+
+
+.tabcontent{
+display:none;
+width:95%; /*width of 2nd level content*/
+height:1.5em; /*height of 2nd level content. Set to largest's content height to avoid jittering.*/
+color: gray;
+font: bold 11px Arial;
+
+}
