@@ -102,13 +102,13 @@ MainWindow::MainWindow(const QString &fName) {
 
 	connect( &activeGraph, SIGNAL( addBackgrCircle (int, int, int) ), graphicsWidget, SLOT(addBackgrCircle(int, int, int) ) ) ;
 	connect( &activeGraph, SIGNAL( addBackgrHLine (int) ), graphicsWidget, SLOT(addBackgrHLine(int) ) ) ;
-
+	connect( &activeGraph, SIGNAL( moveNode(int, int, int) ), graphicsWidget, SLOT(moveNode(int, int, int) ) ) ;
 	connect( &activeGraph, SIGNAL( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool, bool) ), graphicsWidget, SLOT( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool, bool)  ) ) ;
 	
 
 	connect( &activeGraph, SIGNAL( drawEdge( int, int, bool, bool, QString, bool, bool)), graphicsWidget, SLOT( drawEdge( int, int, bool, bool, QString, bool, bool  ) )  ) ;
 
-	connect( &activeGraph, SIGNAL(makeEdgeReciprocal(int, int)),  graphicsWidget, SLOT(makeEdgeReciprocal(int, int)));
+	connect( &activeGraph, SIGNAL(drawEdgeReciprocal(int, int)),  graphicsWidget, SLOT(makeEdgeReciprocal(int, int)));
 	
 
 	connect(moveSpringEmbedderBx, SIGNAL(stateChanged(int)),this, SLOT(layoutSpringEmbedder(int)));
@@ -130,6 +130,8 @@ MainWindow::MainWindow(const QString &fName) {
 	connect(rotateSpinBox, SIGNAL(valueChanged(int)), graphicsWidget, SLOT(rot(int) ) );
 	connect(circleClearBackgrCirclesAct, SIGNAL(activated()), graphicsWidget, SLOT(clearBackgrCircles()));
  
+
+
 	initNet();
 
 	/** DEFAULTING HERE DOES NOT CHANGE BOOL VALUE **/

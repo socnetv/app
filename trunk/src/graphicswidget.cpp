@@ -169,8 +169,8 @@ void GraphicsWidget::drawEdge(int i, int j, bool reciprocal, bool drawArrows, QS
 /**
 	Called from Graph to make an existing arc symmetric (reciprocal)
 */
-void GraphicsWidget::makeEdgeReciprocal(int source, int target){
-	qDebug("GW: makeEdgeReciprocal ()");
+void GraphicsWidget::drawEdgeReciprocal(int source, int target){
+	qDebug("GW: drawEdgeReciprocal ()");
 	QString edgeName = QString::number(source) + QString(">")+ QString::number(target);
 	qDebug("GW: making existing edge between %i and % reciprocal. Name: "+edgeName.toAscii(), source, target );
 	edgesMap [edgeName]->unmakeReciprocal();
@@ -259,7 +259,7 @@ void GraphicsWidget::nodeMoved(int number, int x, int y){
 	Called from activeGraph to update node coordinates 
 	on the canvas  
 */
-void GraphicsWidget::updateNode(int number, int x, int y){
+void GraphicsWidget::moveNode(int number, int x, int y){
 	qDebug ("GW: updateNode() %i with %i, %i", number, x,y);
 	nodeVector.at(number-1)->setPos(x,y);
 	if (nodeVector.at(number-1)->nodeNumber()!=number) qDebug("ERRRRRRRRRRRRRRRRRRROOOOR");

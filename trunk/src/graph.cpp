@@ -123,10 +123,11 @@ void Graph::createEdge(int v1, int v2, int weight, QString color, bool reciproca
 		emit drawEdge(v1, v2, reciprocal, drawArrows, color, bezier, false);
 	}
 	else if (this->hasEdge( v2, v1) )  {  
-		qDebug (" Graph:: createEdge() opposite link EXISTS - Adding new edge to Graph and emitting makeEdgeReciprocal() to make the original RECIPROCAL. ");
+		qDebug (" Graph:: createEdge() opposite link EXISTS - Adding new edge to Graph and emitting drawEdgeReciprocal() to make the original RECIPROCAL. ");
 		reciprocal = true;
 		addEdge ( v1, v2, weight, color, reciprocal);
-		emit makeEdgeReciprocal(v2, v1);
+		qDebug (" Graph: createEdge()  - emitting drawEdgeReciprocal() to make the original RECIPROCAL. ");
+		emit drawEdgeReciprocal(v2, v1);
 
 	}
 	else {
@@ -322,7 +323,7 @@ void Graph::addEdge (int v1, int v2, int weight, QString color, bool reciprocal)
 	qDebug("Graph: addEdge FROM %i with %i TO  %i with %i, weight %i", v1, source,v2,target, weight);
 
 	if ( !m_graph [ source ]->isOutLinked() ) {
-		qDebug("Graph: addEdge() SOURCE %i reports no outlinks", v1);
+		qDebug("Graph: addEdge() SOURCE %i reports no outlinks -- setting outLinked TRUE for it.", v1);
 		m_graph [ source ]->setOutLinked(TRUE) ;
 		outEdgesVert++;
 	}
@@ -337,7 +338,7 @@ void Graph::addEdge (int v1, int v2, int weight, QString color, bool reciprocal)
 	}
 	
 	if ( !m_graph [ target ]->isInLinked() ) {
-		qDebug("Graph: addEdge() TARGET %i reports no inLinks", v2);
+		qDebug("Graph: addEdge() TARGET %i reports no inLinks -- setting inLinked TRUE for it", v2);
 		inEdgesVert++;
 		m_graph [ target ]->setInLinked(TRUE) ;
 	}
@@ -362,7 +363,7 @@ void Graph::addEdge (int v1, int v2, int weight, QString color, bool reciprocal)
 		m_totalEdges++;
 	}
 	qDebug()<<"Graph: vertex "<< v1 << " reports that it has an edge to vertex "<< v2<< " with weight " << m_graph [ source ]->isLinkedTo(v2) << " and color "<<  color;
-	qDebug()<<"Continuing with color";
+	qDebug()<<"Graph: Storing edge color...";
 	m_graph[ source]->setOutLinkColor(v2, color);
 
 	qDebug( "Graph: Now vertex %i has %i edges. Total Edges %i. Printing Matrix...", v1,  edgesFrom(v1), m_totalEdges);
@@ -1652,7 +1653,7 @@ void Graph::layoutCircleCentrality(double x0, double y0, double maxRadius, int C
 		(*it)->setY( new_y );
 		qDebug("Finished Calculation. Vertice will move to x=%f and y=%f ",new_x, new_y);
 		//Move node to new position
-		( (MainWindow*)parent() )->graphicsWidget-> updateNode((*it)->name(),  new_x,  new_y);
+		emit moveNode((*it)->name(),  new_x,  new_y);
 		i++;
 		emit addBackgrCircle((int)x0, (int)y0, (int)new_radius);
 	}
@@ -1748,7 +1749,7 @@ void Graph::layoutLevelCentrality(double maxWidth, double maxHeight, int Central
 		(*it)->setY( new_y );
 		qDebug("Finished Calculation. Vertice will move to x=%f and y=%f ",new_x, new_y);
 		//Move node to new position
-		( (MainWindow*)parent() )->graphicsWidget-> updateNode((*it)->name(),  new_x,  new_y);
+		emit moveNode((*it)->name(),  new_x,  new_y);
 		i++;
 		emit addBackgrHLine((int)new_y);
 	}

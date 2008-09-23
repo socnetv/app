@@ -83,10 +83,10 @@ signals:
 	/** Signals to GraphicsWidget */
 	void drawNode( int ,int,  QString, QString,QString, QPointF, QString, bool, bool);	//call GW to draw a node
 	void drawEdge(int, int, bool, bool, QString, bool, bool);				//call GW to draw an edge
-	void makeEdgeReciprocal(int, int);							//call GW to make an edge symmetric
+	void drawEdgeReciprocal(int, int);							//call GW to draw the edge as symmetric one
 	void addBackgrCircle(int, int, int);							//call GW to draw a layout line somewhere.
 	void addBackgrHLine (int);								//call GW to draw a layout line somewhere.
-
+	void moveNode(int, int, int);
 
 public: 	
 	/**INIT AND CLEAR*/

@@ -57,7 +57,7 @@ public:
 	void removeItem(NodeNumber*);
 	void removeItem(NodeLabel*);
 	void nodeMoved(int, int, int);
-	void updateNode(int, int, int);
+
 	void setInitNodeColor(QString);
 	void setInitLinkColor(QString);
 	void setInitNodeSize(int);
@@ -81,9 +81,10 @@ public slots:
 	void openNodeContextMenu();
 	void openEdgeContextMenu();
 	void nodeMovement(int state, int type); //used by dynamic layouts: Spring Embedder, Fruchterman, etc...
+	void moveNode(int, int, int);			//Called from Graph when creating random nets.
 	void changeZoom(int value); 
 	void startEdge(Node *node);	
-	void makeEdgeReciprocal(int, int);
+	void drawEdgeReciprocal(int, int);
 	void unmakeEdgeReciprocal(int, int);
 
 	void clearBackgrCircles();
