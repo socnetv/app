@@ -446,11 +446,11 @@ void MainWindow::initActions(){
 	transformNodes2LinksAct->setWhatsThis(tr("Transform Nodes LinksAct\n\nTransforms network so that nodes become links and vice versa"));
 	connect(transformNodes2LinksAct, SIGNAL(activated()), this, SLOT(slotTransformNodes2Links()));
 
-	slotSymmetrizeAct= new QAction(tr("Symmetrize Edges"), this);
-	slotSymmetrizeAct->setShortcut(tr("Shift+R"));
-	slotSymmetrizeAct->setStatusTip(tr("Makes all edges reciprocal (thus, a symmetric graph)."));
-	slotSymmetrizeAct->setWhatsThis(tr("Symmetrize Edges\n\nTransforms all arcs to double links (edges). The result is a symmetric network"));
-	connect(slotSymmetrizeAct, SIGNAL(activated()), this, SLOT(slotSymmetrize()));	
+	symmetrizeAct= new QAction(tr("Symmetrize Edges"), this);
+	symmetrizeAct->setShortcut(tr("Shift+R"));
+	symmetrizeAct->setStatusTip(tr("Makes all edges reciprocal (thus, a symmetric graph)."));
+	symmetrizeAct->setWhatsThis(tr("Symmetrize Edges\n\nTransforms all arcs to double links (edges). The result is a symmetric network"));
+	connect(symmetrizeAct, SIGNAL(activated()), this, SLOT(slotSymmetrize()));	
 
 
 
