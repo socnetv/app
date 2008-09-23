@@ -1451,7 +1451,7 @@ void MainWindow::slotChooseFile() {
 	bool m_fileLoaded=fileLoaded;
 	QString m_fileName=fileName;
 	statusBar()->showMessage(tr("Choose a network file..."));
-	fileName = QFileDialog::getOpenFileName(this,   tr("Select one file to open"), "", tr("All (*);;GraphML (*.graphml);;GraphViz (*.dot);;Adjacency (*.txt *.csv *.net);;Pajek (*.net)"));
+	fileName = QFileDialog::getOpenFileName(this, tr("Select one file to open"), "", tr("All (*);;GraphML (*.graphml *.gml);;GraphViz (*.dot);;Adjacency (*.txt *.csv *.net);;Pajek (*.net *.pajek)"));
 	
 	if (!fileName.isEmpty()) {
 		fileNameNoPath=fileName.split ("/" );
@@ -1692,7 +1692,7 @@ void MainWindow::addNode() {
 	Called from Graph::createVertex() main slot.
 */
 void MainWindow::drawNode(int num, int size, QString nodeColor, QString nodeLabel, QString labelColor, QPointF p, QString ns, bool labels) {
-	qDebug("MW: drawNode called from Graph. Calling GraphicsWidget::addNode");
+	qDebug("MW: drawNode() slot: called from Graph. Calling GraphicsWidget::drawNode");
 	graphicsWidget->drawNode(num, size, nodeColor, nodeLabel, labelColor, p, ns, labels, true);
 }
 
@@ -3204,6 +3204,7 @@ void MainWindow::slotLayoutNodeSizeProportionalOutEdges(bool checked){
 	int edges = 0, size = initNodeSize ;
 	
 	if (checked != true) {
+		QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 		for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)  {
 			if ( (*it) -> type() == TypeNode ){
 				Node *jim = (Node*) (*it);
@@ -3213,11 +3214,13 @@ void MainWindow::slotLayoutNodeSizeProportionalOutEdges(bool checked){
 		
 		nodeSizeProportionalOutDegreeAct->setChecked(false);
 		nodeSizeProportional2OutDegreeBx->setChecked(false);
+		QApplication::restoreOverrideCursor();
 		return;
 	}
 	nodeSizeProportionalOutDegreeAct->setChecked(true);
 	nodeSizeProportional2OutDegreeBx->setChecked(true);
 	statusBar()->showMessage(tr("Embedding node size model on the network.... ") ,statusBarDuration);	
+	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
 		if ( (*it) -> type() == TypeNode ){
 			Node *jim = (Node*) (*it);
@@ -3262,6 +3265,7 @@ void MainWindow::slotLayoutNodeSizeProportionalOutEdges(bool checked){
 		}
 
 	}
+	QApplication::restoreOverrideCursor( );
 
 }
 

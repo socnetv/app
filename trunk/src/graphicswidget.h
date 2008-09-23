@@ -57,7 +57,7 @@ public:
 	void removeItem(Node*);
 	void removeItem(NodeNumber*);
 	void removeItem(NodeLabel*);
-	void nodeMoved(int, int,int);
+	void nodeMoved(int, int, int);
 	void updateNode(int, int, int);
 	void setInitNodeColor(QString);
 	void setInitLinkColor(QString);

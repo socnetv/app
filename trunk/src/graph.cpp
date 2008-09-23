@@ -73,10 +73,11 @@ void Graph::parserFinished(){
 	p holds the desired position of the new node.
 */
 void Graph::createVertex(int i, int size, QString nodeColor, QString label, QString lColor, QPointF p, QString nodeShape){
-	qDebug()<<" Graph:: createVertex():"<<i<< " "<<size<<" "<<nodeColor<<" "<<label<<" "<<lColor<<" "<<p.x()<<" " <<p.y()<<" "<<nodeShape;
+	qDebug()<<" Graph:: createVertex(): "<<i<< " "<<size<<" "<<nodeColor<<" "<<label<<" "<<lColor<<" "<<p.x()<<" " <<p.y()<<" "<<nodeShape;
 	//add the vertex to the Graph.
 	addVertex(i, 1, size,  nodeColor, label, lColor, p, nodeShape);
 	//emit a signal for MW to create the new node onto the canvas.
+
 	emit drawNode( i, size ,  nodeColor, label, lColor, p, nodeShape, initShowLabels);
 
 } 
@@ -92,7 +93,7 @@ void Graph::createVertex(int i, int size, QString nodeColor, QString label, QStr
 */
 void Graph::createVertex(int i, QPointF p){
 	if ( i < 0 )  i = lastVertexNumber() +1;
-	qDebug("Graph:: lastVertexNumber is %i", i);
+	qDebug("Graph::createVertex(). Using vertex number %i with FIXED coords...", i);
 	createVertex(i, initVertexSize,  initVertexColor, QString::number(i), initVertexLabelColor, p, initVertexShape);
 }
 
@@ -105,7 +106,7 @@ void Graph::createVertex(int i, QPointF p){
 */
 void Graph::createVertex(int i, int canvasWidth, int canvasHeight){
 	if ( i < 0 )  i = lastVertexNumber() +1;
-	qDebug("Graph:: lastVertexNumber is %i", i);
+	qDebug("Graph:: createVertex(). Using vertex number %i with RANDOM node coords...", i);
 	QPointF p;
 	p.setX(rand()%canvasWidth);
        	p.setY(rand()%canvasHeight);
@@ -176,18 +177,17 @@ QMainWindow* Graph::parent(){
 	This method is called by createVertex() method
 */
 void Graph::addVertex (int v1, int val, int nsz, QString nc, QString nl, QString lc, QPointF p,QString nsp){ 
-	qDebug ("Graph: addVertex(), appending vertex %i to graph", v1);
-	qDebug ("Graph: addVertex(),  new vertex lies at %i, %i", (int) p.x(), (int) p.y());
+	qDebug ("Graph: addVertex(): appending vertex %i to graph", v1);
 	if (order)
 		index[v1]=m_totalVertices; 
 	else 
 		index[v1]=m_graph.size();
-	//Vertex *a=new Vertex(v1, val, nsz, nc, nl, lc, p, nsp);			
+
 	m_graph.append( new Vertex(v1, val, nsz, nc, nl, lc, p, nsp) );
 	m_totalVertices++;		
 
-	qDebug("Graph: Vertex named %i has index=%i",m_graph.back()->name(), index[v1]);
-	qDebug ("Graph: m_graph size  %i", m_graph.size() );
+	qDebug("Graph: addVerted(): Vertex named %i appended with index=%i. Now, m_graph size %i. New vertex position: %f, %f",m_graph.back()->name(), index[v1], m_graph.size(), p.x(), p.y() );
+
 	graphModified=true;
 }
 

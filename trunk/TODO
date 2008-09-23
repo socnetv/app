@@ -1,27 +1,38 @@
 FIXED
 =====
+
+--FIXME: Remove SYMMETRIC EDGE, THEN ADD NEW ONE CRASHES SOCNETV.
+
 --TODO Transform actors to links //COMMENTED OUT
 --FIXME: GraphML files may crash SocNetV.
+
 --FIXME: isSymmetric not functioning (check a-symmetry.net)
+
 --FIXME: When many lines intersect, right-click > removeLink may remove wrong link!
---FIXME: Pajek files may offer adjacency matrix instead lists of links 
---FIXME:
+
+
+--FIXME: When removing double link, should ask what to remove.
+
+--FIXME: 40-actors-non-symmetric crashed on Betweeness centr.
+
 
 TODO & KNOWN BUGS
 =================
+
+-- TODO: ERdos-Renyi, Small Worlds.
 
 - TODO: CLUSTERING by betweeness, see http://iv.slis.indiana.edu/sw/bc.html
 http://tyna.gersteinlab.org/tyna/supp.jsp
 -- FIXME FIXME Directed Network (BFS) & Centralities (maxIndex and standard). 
 -- FIXME FIXME BFS() causes a crash when you create a new net, then remove/add some edges & nodes and compute Betweeness.
+
 TODO->Filter Links by their weights
 TODO->NetLayout is not needed...
-
---FIXME: Centralities dont work when the network is directed.
 
 - TODO: load network from command line. Then compute something and export it!
 
 - TODO: Web crawler
+
 - NEW: Texts on canvas (i.e. layouts display some text explaining what method is used).
 
 - GROUP Stress & Graph centralities 

@@ -29,6 +29,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QStyleOption>
 #include <QPainter>
+#include <QDebug>
  
 #include "graphicswidget.h"
 #include "node.h"
@@ -38,14 +39,13 @@
 
 #include <math.h> //sqrt
 
-Node::Node( GraphicsWidget* gw, int num, int size, QString col, QString label, QString lcol, QString shape, int ldist, int ndist) : graphicsWidget (gw) {
+Node::Node( GraphicsWidget* gw, int num, int size, QString col, QString label, QString lcol, QString shape, int ldist, int ndist, QPointF p) : graphicsWidget (gw) {
 	qDebug("Node() - constructor");
 	graphicsWidget->scene()->addItem(this); //Without this nodes dont appear on the screen...
 	setFlag(ItemIsMovable); //Without this, nodes do not move...
 	m_num=num;
 	m_size=size;
 	Q_UNUSED (label);
-//	m_label->setPlainText(label);
 	hasLabel=false;
 	m_shape=shape;
 	m_col_str=col;
@@ -56,6 +56,10 @@ Node::Node( GraphicsWidget* gw, int num, int size, QString col, QString label, Q
 	m_ld=ldist;
 	m_poly_t=new QPolygon(3);
 	m_poly_d=new QPolygon(4);
+	qDebug()<< "Node: constructor: initial position at: "<< this->x()<<", "<<this->y()<< " Moving now at: "<< p.x()<<", "<<p.y();;
+	setPos(p);
+	graphicsWidget->nodeMoved(num, (int) p.x(), (int) p.y());	
+
 /*	connect (this, SIGNAL(nodeClicked(Node*)),graphicsWidget , SLOT(nodeClicked(Node*)));
 	connect (this, SIGNAL(startNodeMovement(int)), graphicsWidget, SLOT(startNodeMovement(int)));
 	connect (this, SIGNAL(openNodeContextMenu()), graphicsWidget, SLOT(openNodeContextMenu()));
@@ -411,7 +415,12 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
 				num->setPos( x()+m_nd, y()+m_nd);
 			if (hasLabel)
 				m_label->setPos( x()+m_ld, y()-m_ld);
-			graphicsWidget->nodeMoved(nodeNumber(), x(), y());	
+			if ( x() !=0 && y() != 0 ){
+				qDebug()<<  "Node: ItemChange(): Emitting nodeMoved() for "<< nodeNumber()<< " at: "<<  x()<< ", "<<  y();
+				graphicsWidget->nodeMoved(nodeNumber(), (int) x(), (int) y());	
+			}
+			else qDebug()<<  "Node: ItemChange(): Not emitting nodeMoved. Node "<< nodeNumber()<<" is at 0,0";
+
 			break;
 		}
 		case ItemVisibleChange: {	

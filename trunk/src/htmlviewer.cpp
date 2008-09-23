@@ -78,7 +78,7 @@ HTMLViewer::HTMLViewer( const QString& manPath,  QWidget* parent)
 
 
     file->addAction( fileOpen);
-    file->addAction( filePrint);
+//    file->addAction( filePrint);
     file->addSeparator();
     file->addAction( fileQuit);
 

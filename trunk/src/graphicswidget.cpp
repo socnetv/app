@@ -196,12 +196,9 @@ void GraphicsWidget::setAllItemsVisibility(int type, bool visible){
 	It is also called from MW, on loading files or pressing "Add Node" button.
 */
 void GraphicsWidget::drawNode(int num, int size, QString nodeColor, QString nodeLabel, QString labelColor, QPointF p, QString ns, bool showLabels, bool showNumbers) {
-	qDebug("GW: drawNode()");
-	Node *jim= new Node (this, num, size, nodeColor, nodeLabel, labelColor, ns, m_labelDistance, m_numberDistance);
+	qDebug()<< "GW: drawNode(): drawing new node at: "<< p.x()<<", "<<p.y();
+	Node *jim= new Node (this, num, size, nodeColor, nodeLabel, labelColor, ns, m_labelDistance, m_numberDistance, p);
 
-	jim->setPos(p);
-	qDebug("GW: new node position is now at %f, %f", jim->pos().x(), jim-> pos().y());
-	
 	NodeLabel *labelJim =new  NodeLabel (jim, nodeLabel, scene() );
 	labelJim ->setPos(p.x()+m_labelDistance, p.y()-m_labelDistance);
 	labelJim->setDefaultTextColor (labelColor);
