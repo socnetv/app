@@ -2,18 +2,17 @@ FIXED
 =====
 
 --FIXME: Remove SYMMETRIC EDGE, THEN ADD NEW ONE CRASHES SOCNETV.
+--FIXME: When removing double link, should ask what to remove.
+--FIXME: isSymmetric not functioning (check a-symmetry.net)
+--FIXME: When many lines intersect, right-click > removeLink may remove wrong link!
 
 --TODO Transform actors to links //COMMENTED OUT
 --FIXME: GraphML files may crash SocNetV.
 
---FIXME: isSymmetric not functioning (check a-symmetry.net)
-
---FIXME: When many lines intersect, right-click > removeLink may remove wrong link!
-
-
---FIXME: When removing double link, should ask what to remove.
 
 --FIXME: 40-actors-non-symmetric crashed on Betweeness centr.
+
+--FIXME: Nodes dont appear where mouse double-clicks if rotation > 0.
 
 
 TODO & KNOWN BUGS

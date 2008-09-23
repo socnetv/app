@@ -194,6 +194,13 @@ void Edge::makeReciprocal(){
 }
 
 
+
+void Edge::unmakeReciprocal(){
+ 	prepareGeometryChange();
+	m_reciprocal= false;
+}
+
+
 void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *){
 	if (!source || !target)
 		return;
@@ -217,7 +224,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 		painter->setBrush(QColor(m_color));
 		painter->drawPolygon(QPolygonF() << line.p2() << destArrowP1 << destArrowP2);
 		if (m_reciprocal) { 
-			qDebug("EDGE: >>>>>>>>>>>>> UNDIRECTED!");
+			qDebug("EDGE: SYMMETRIC EDGE!");
 			QPointF srcArrowP1 = sourcePoint + QPointF(sin(angle +Pi / 3) * m_arrowSize,
                 	                              cos(angle +Pi / 3) * m_arrowSize);
 			QPointF srcArrowP2 = sourcePoint + QPointF(sin(angle +Pi - Pi  / 3) * m_arrowSize,
@@ -225,6 +232,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 			painter->setBrush(QColor(m_color));
 			painter->drawPolygon(QPolygonF() << line.p1() << srcArrowP1 << srcArrowP2);
 		}
+		else qDebug("EDGE: NOT SYMMETRIC EDGE!");
 	}
 }
 

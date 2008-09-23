@@ -302,9 +302,19 @@ void GraphicsWidget::makeEdgeReciprocal(int source, int target){
 	qDebug("GW: makeEdgeReciprocal ()");
 	QString edgeName = QString::number(source) + QString(">")+ QString::number(target);
 	qDebug("GW: making existing edge between %i and % reciprocal. Name: "+edgeName.toAscii(), source, target );
-	edgesMap [edgeName]->makeReciprocal();
+	edgesMap [edgeName]->unmakeReciprocal();
 }
 
+
+/**
+	Called from Graph to unmake an existing symmetric (reciprocal) edge to one-directed only.
+*/
+void GraphicsWidget::unmakeEdgeReciprocal(int source, int target){
+	qDebug("GW: unmakeEdgeReciprocal ()");
+	QString edgeName = QString::number(source) + QString(">")+ QString::number(target);
+	qDebug("GW: removing edge between %i and %i. Name: "+edgeName.toAscii(), source, target );
+	edgesMap [edgeName]->makeReciprocal();
+}
 
 
 

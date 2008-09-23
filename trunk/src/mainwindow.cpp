@@ -2606,13 +2606,13 @@ void MainWindow::slotRemoveLink(){
 	max=activeGraph.lastVertexNumber();
 
   	if (!linkClicked) {
-		sourceNode=QInputDialog::getInteger(this,"Remove link",tr("Source node:  (")+QString::number(min)+"..."+QString::number(max)+"):", min, 1, max , 1, &ok )   ;
+		sourceNode=QInputDialog::getInteger(this,tr("Remove link"),tr("Source node:  (")+QString::number(min)+"..."+QString::number(max)+"):", min, 1, max , 1, &ok )   ;
 		if (!ok) {
 			statusBar()->showMessage("Remove link operation cancelled.", statusBarDuration);
 			return;
 		}
 
-		targetNode=QInputDialog::getInteger(this, "Remove link", tr("Target node:  (")+QString::number(min)+"..."+QString::number(max)+"):",min, 1, max , 1, &ok )   ;
+		targetNode=QInputDialog::getInteger(this, tr("Remove link"), tr("Target node:  (")+QString::number(min)+"..."+QString::number(max)+"):",min, 1, max , 1, &ok )   ;
 		if (!ok) {
 			statusBar()->showMessage("Remove link operation cancelled.", statusBarDuration);
 			return;
@@ -2630,8 +2630,38 @@ void MainWindow::slotRemoveLink(){
 
 	}
 	else {
-		graphicsWidget->removeItem(clickedLink);
-		activeGraph.removeEdge(clickedLink->sourceNodeNumber(), clickedLink->targetNodeNumber());
+		if (activeGraph.symmetricEdge(clickedLink->sourceNodeNumber(), clickedLink->targetNodeNumber()) ) {
+			QString s=QString::number(clickedLink->sourceNodeNumber());
+			QString t=QString::number(clickedLink->targetNodeNumber());
+			switch (QMessageBox::information( this, tr("Remove link"),
+				      tr("This link is reciprocal. \n") +
+				      tr("Select what Direction to delete or Both..."),
+				      s+" -> "+ t, t+" -> "+s, tr("Both"), 0, 1 ))
+
+				{
+					case 0:
+						
+						graphicsWidget->unmakeEdgeReciprocal(clickedLink->targetNodeNumber(), clickedLink->sourceNodeNumber());
+						activeGraph.removeEdge(clickedLink->sourceNodeNumber(), clickedLink->targetNodeNumber());
+						break;
+					case 1:
+						clickedLink->unmakeReciprocal();
+						activeGraph.removeEdge(clickedLink->targetNodeNumber(), clickedLink->sourceNodeNumber());
+						break;
+					case 2:
+						graphicsWidget->removeItem(clickedLink);
+						activeGraph.removeEdge(clickedLink->sourceNodeNumber(), clickedLink->targetNodeNumber());
+						activeGraph.removeEdge(clickedLink->targetNodeNumber(), clickedLink->sourceNodeNumber());
+				}
+
+
+		}
+		else {
+			graphicsWidget->removeItem(clickedLink);
+			activeGraph.removeEdge(sourceNode, targetNode);
+
+			}
+
 		
 	}
 	graphChanged();

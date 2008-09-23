@@ -68,6 +68,7 @@ public:
 	bool setEdgeColor(int, int, QString);
 	void setAllItemsVisibility(int, bool);
 	void makeEdgeReciprocal(int, int);
+	void unmakeEdgeReciprocal(int, int);
 
 protected:
 	void timerEvent(QTimerEvent *event);

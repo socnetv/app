@@ -73,6 +73,8 @@ public:
 	void toggleAntialiasing(bool);
 
 	void makeReciprocal();
+	void unmakeReciprocal();
+
 public slots:
 	void adjust ();
 	void remove();
