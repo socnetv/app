@@ -217,7 +217,7 @@ void GraphicsWidget::drawNode(int num, int size, QString nodeColor, QString node
 		numberJim->hide();
         }
 	//add new node to a nodeVector so its easier to find which node has a specific nodeNumber 
-	//This is used during addEdge
+	//This is used during drawEdge
 	nodeVector.push_back(jim);
 
 	//Notify MW that graph has changed so that the networkModified flag be raised.
@@ -258,8 +258,8 @@ void GraphicsWidget::clearBackgrCircles(){
 	a) when we load a network file (check = FALSE)
 	b) when the user clicks on the AddLink button on the MW.
 */
-void GraphicsWidget::addEdge(int i, int j, bool reciprocal, bool drawArrows, QString color, bool bezier, bool check){
-	qDebug("GW: addEdge (%i, %i)", i, j);
+void GraphicsWidget::drawEdge(int i, int j, bool reciprocal, bool drawArrows, QString color, bool bezier, bool check){
+	qDebug("GW: drawEdge (%i, %i)", i, j);
 	int weight=1;
 	qDebug()<<"GW: nodeVector reports"<< nodeVector.size()<<"items";
 	if (check) {
@@ -321,14 +321,14 @@ void GraphicsWidget::unmakeEdgeReciprocal(int source, int target){
 /** 	
 	This method is called when the user middle clicks on two nodes consecutively. .
 	It saves the source & target nodes that were clicked 
-	On the second double/middle click event, it calls addEdge method. 
+	On the second double/middle click event, it calls drawEdge method. 
 */
 void GraphicsWidget::startEdge(Node *node){
 	qDebug("GW: edgesNodes()");
 	if (secondDoubleClick){
 		qDebug("GW: this is the second double click. Creating edge");
 		secondNode=node;
-		//addEdge(firstNode->nodeNumber(), secondNode->nodeNumber(), false, true, m_linkColor, false, true);
+		//drawEdge(firstNode->nodeNumber(), secondNode->nodeNumber(), false, true, m_linkColor, false, true);
 		emit userMiddleClicked(firstNode->nodeNumber(), secondNode->nodeNumber(), 1);
 		( (MainWindow*)parent() )->setCursor(Qt::ArrowCursor);
 		secondDoubleClick=FALSE;

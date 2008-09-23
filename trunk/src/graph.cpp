@@ -124,21 +124,23 @@ void Graph::createEdge(int v1, int v2, int weight, QString color, bool reciproca
 	if ( reciprocal ) {
 		qDebug (" Graph:: createEdge asks for a RECIPROCAL NEW LINK -- creating new one. ");
 		addEdge ( v1, v2, weight, color, reciprocal);
-		( (MainWindow*)parent() )->graphicsWidget->addEdge(v1, v2, reciprocal, drawArrows, color, bezier, false);
-
+		//( (MainWindow*)parent() )->graphicsWidget->drawEdge(v1, v2, reciprocal, drawArrows, color, bezier, false);
+		emit drawEdge(v1, v2, reciprocal, drawArrows, color, bezier, false);
 	}
 	else if (this->hasEdge( v2, v1) )  {  //pajek edges will instantly load ...
 		qDebug (" Graph:: createEdge() LINK EXISTS - making it RECIPROCAL. ");
 		reciprocal = true;
 		addEdge ( v1, v2, weight, color, reciprocal);
-		( (MainWindow*)parent() )->graphicsWidget->makeEdgeReciprocal(v2, v1);
+		//( (MainWindow*)parent() )->graphicsWidget->makeEdgeReciprocal(v2, v1);
+		emit makeEdgeReciprocal(v2, v1);
 
 	}
 	else {
 		qDebug (" Graph:: createEdge() creating a NEW LINK - NOT RECIPROCAL. ");
 		reciprocal = false;
 		addEdge ( v1, v2, weight, color, reciprocal);
-		( (MainWindow*)parent() )->graphicsWidget->addEdge(v1, v2, reciprocal, drawArrows, color, bezier, false);
+		//( (MainWindow*)parent() )->graphicsWidget->drawEdge(v1, v2, reciprocal, drawArrows, color, bezier, false);
+		emit drawEdge(v1, v2, reciprocal, drawArrows, color, bezier, false);
 
 	}
 }

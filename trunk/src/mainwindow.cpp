@@ -97,17 +97,23 @@ MainWindow::MainWindow(const QString &fName) {
 	connect( graphicsWidget, SIGNAL( userMiddleClicked(int, int, int) ), &activeGraph, SLOT( createEdge(int, int, int) ) );
 	connect( graphicsWidget, SIGNAL( openNodeMenu() ), this, SLOT(openNodeContextMenu() ) ) ;
 	connect( graphicsWidget, SIGNAL( openEdgeMenu() ), this, SLOT(openLinkContextMenu() ) ) ;
+	connect( graphicsWidget, SIGNAL(updateNodeCoords(int, int, int)), this, SLOT(updateNodeCoords(int, int, int)) );
+	connect( graphicsWidget, SIGNAL(zoomChanged(int)),zoomCombo, SLOT(setCurrentIndex(int)));
+
 	connect( &activeGraph, SIGNAL( addBackgrCircle (int, int, int) ), graphicsWidget, SLOT(addBackgrCircle(int, int, int) ) ) ;
 	connect( &activeGraph, SIGNAL( addBackgrHLine (int) ), graphicsWidget, SLOT(addBackgrHLine(int) ) ) ;
 	connect( &activeGraph, SIGNAL( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool) ), this, SLOT( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool)  ) ) ;
+	connect( &activeGraph, SIGNAL( drawEdge( int, int, bool, bool, QString, bool, bool)), graphicsWidget, SLOT( drawEdge( int, int, bool, bool, QString, bool, bool  ) )  ) ;
+	connect( &activeGraph, SIGNAL(makeEdgeReciprocal(int, int)),  graphicsWidget, SLOT(makeEdgeReciprocal(int, int)));
 	
+
 	connect(moveSpringEmbedderBx, SIGNAL(stateChanged(int)),this, SLOT(layoutSpringEmbedder(int)));
 	connect(moveFruchtermanBx, SIGNAL(stateChanged(int)),this, SLOT(layoutFruchterman(int)));
 
 	connect(nodeSizeProportional2OutDegreeBx , SIGNAL(clicked(bool)),this, SLOT(slotLayoutNodeSizeProportionalOutEdges(bool)));
 	connect(nodeSizeProportional2InDegreeBx , SIGNAL(clicked(bool)),this, SLOT(slotLayoutNodeSizeProportionalInEdges(bool)));
 
-	connect (graphicsWidget, SIGNAL(updateNodeCoords(int, int, int)), this, SLOT(updateNodeCoords(int, int, int)) );
+	
 	connect (addNodeBt,SIGNAL(clicked()), this, SLOT(addNode()));
 	connect (addLinkBt,SIGNAL(clicked()), this, SLOT(slotAddLink()));
 	connect (removeNodeBt,SIGNAL(clicked()), this, SLOT(slotRemoveNode()));
@@ -116,7 +122,7 @@ MainWindow::MainWindow(const QString &fName) {
 	connect(zoomCombo, SIGNAL(currentIndexChanged(const int &)),graphicsWidget, SLOT(changeZoom(int)));
 	connect(zoomOutAct, SIGNAL(triggered()), graphicsWidget, SLOT(zoomOut()));
 	connect(zoomInAct, SIGNAL(triggered()), graphicsWidget, SLOT(zoomIn()));
-	connect(graphicsWidget, SIGNAL(zoomChanged(int)),zoomCombo, SLOT(setCurrentIndex(int)));
+
 	connect(rotateSpinBox, SIGNAL(valueChanged(int)), graphicsWidget, SLOT(rot(int) ) );
 	connect(circleClearBackgrCirclesAct, SIGNAL(activated()), graphicsWidget, SLOT(clearBackgrCircles()));
  
@@ -2087,7 +2093,7 @@ void MainWindow::slotViewAdjacencyMatrix(){
 void MainWindow::slotCreateUniformRandomNetwork(){
 	bool ok;
 	statusBar()->showMessage("You have selected to create a random network. ", statusBarDuration);
-	int newNodes=( QInputDialog::getInteger(this, "Create random network", tr("Number of nodes:"),1, 1, maxNodes, 1, &ok ) ) ;
+	int newNodes=( QInputDialog::getInteger(this, "Create random network", tr("This will create a new random network. \nPlease enter the number of nodes you want:"),1, 1, maxNodes, 1, &ok ) ) ;
 	if (!ok) { 
 		statusBar()->showMessage("You did not enter an integer. Aborting.", statusBarDuration);
 		return;
@@ -2151,12 +2157,12 @@ void MainWindow::slotCreateConnectedRandomNetwork() {
 void MainWindow::slotCreateSameDegreeRandomNetwork(){
 	bool ok;
 	statusBar()->showMessage("You have selected to create a pseudo-random network where each node has the same degree. ", statusBarDuration);
-	int newNodes=( QInputDialog::getInteger(this, "Create same degree network", tr("Number of nodes:"),1, 1, maxNodes, 1, &ok ) ) ;
+	int newNodes=( QInputDialog::getInteger(this, "Create same degree network", tr("This will create a same degree network. \nPlease enter the number of nodes you want:"),1, 1, maxNodes, 1, &ok ) ) ;
 	if (!ok) { 
 		statusBar()->showMessage("You did not enter an integer. Aborting.", statusBarDuration);
 		return;
 	}
-	int degree = QInputDialog::getInteger(this,"Create same degree network...", "Enter an even number d of links for each node:", 2, 2, newNodes-1, 2, &ok);
+	int degree = QInputDialog::getInteger(this,"Create same degree network...", "Now, select an even number d. \nThis will be the number of links of each node:", 2, 2, newNodes-1, 2, &ok);
 	if ( (degree% 2)==1 ) {
 		QMessageBox::critical(this, "Error",tr(" Sorry. I cannot create such a network. Links must be even number"), "OK",0);
 		return;
@@ -2222,12 +2228,12 @@ void MainWindow::slotCreateGaussianRandomNetwork(){
 void MainWindow::slotCreatePhysicistLatticeNetwork(){
 	bool ok;
 	statusBar()->showMessage("You have selected to create a physicist's lattice network. ", statusBarDuration);
-	int newNodes=( QInputDialog::getInteger(this, "Create physicist's lattice", tr("Number of nodes:"),1, 1, maxNodes, 1, &ok ) ) ;
+	int newNodes=( QInputDialog::getInteger(this, "Create physicist's lattice", tr("This will create a phycisist's lattice network. \nPlease enter the number of nodes you want:"),1, 1, maxNodes, 1, &ok ) ) ;
 	if (!ok) { 
 		statusBar()->showMessage("You did not enter an integer. Aborting.", statusBarDuration);
 		return;
 	}
-	int degree = QInputDialog::getInteger(this,"Create physicist's lattice...", "Enter an even number d of links for each node:", 2, 2, newNodes-1, 2, &ok);
+	int degree = QInputDialog::getInteger(this,"Create physicist's lattice...", "Now, enter an even number d. \nThis is the number of links each new node will have:", 2, 2, newNodes-1, 2, &ok);
 	if ( (degree% 2)==1 ) {
 		QMessageBox::critical(this, "Error",tr(" Sorry. I cannot create such a network. Links must be even number"), "OK",0);
 		return;
@@ -2640,11 +2646,13 @@ void MainWindow::slotRemoveLink(){
 
 				{
 					case 0:
-						
+						graphicsWidget->removeItem(clickedLink);
+						//make new link
 						graphicsWidget->unmakeEdgeReciprocal(clickedLink->targetNodeNumber(), clickedLink->sourceNodeNumber());
 						activeGraph.removeEdge(clickedLink->sourceNodeNumber(), clickedLink->targetNodeNumber());
 						break;
 					case 1:
+						//
 						clickedLink->unmakeReciprocal();
 						activeGraph.removeEdge(clickedLink->targetNodeNumber(), clickedLink->sourceNodeNumber());
 						break;
@@ -3114,6 +3122,8 @@ void MainWindow::slotSymmetrize(){
 	}
 	qDebug("MW: slotSymmetrize() calling symmetrize");
 	activeGraph.symmetrize();
+	QMessageBox::information(this, "Symmetrize",tr("All links are reciprocal. \nYour network is symmetric..."), "OK",0);
+	statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
 }
 
 

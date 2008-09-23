@@ -64,21 +64,24 @@ class Graph:  public QObject{
 	Q_OBJECT
 
 public slots:
-	void createVertex(int,int,QString, QString, QString, QPointF, QString); 	//Main vertex creation call
-	void createVertex(int i, QPointF p); 					//Called by GW
-	void createVertex(int i, int canvasWidth, int canvasHeight); 		//Called by MW
-	void createEdge (int, int, int, QString, bool, bool, bool);				//
+	/** Slots to signals from GraphicsWidget */
+	void createEdge (int, int, int, QString, bool, bool, bool);				//GW and Parser.
 	void createEdge (int, int, int);							//
-	void fileType(int, QString, int,int);	
+
 	void removeDummyNode(int);
 	void parserFinished();
 
-
 signals:
-	void addBackgrCircle(int, int, int);
-	void addBackgrHLine (int);
+	/** Signals to MainWindow */
 	void updateProgressDialog(int );
-	void drawNode( int ,int,  QString, QString,QString, QPointF, QString, bool);
+
+	/** Signals to GraphicsWidget */
+	void drawNode( int ,int,  QString, QString,QString, QPointF, QString, bool);	//call GW to draw a node
+	void drawEdge(int, int, bool, bool, QString, bool, bool);			//call GW to draw an edge
+	void makeEdgeReciprocal(int, int);						//call GW to make an edge symmetric
+	void addBackgrCircle(int, int, int);						//call GW to draw a layout line somewhere.
+	void addBackgrHLine (int);							//call GW to draw a layout line somewhere.
+
 
 public: 	
 	/**INIT AND CLEAR*/
@@ -96,9 +99,14 @@ public:
 
 	/**FILES (READ AND WRITE)*/
 	int loadFile(QString, int, QString, QString, QString, bool, int maxWidth, int maxHeight);	//Almost universal network loader. :)
+	void fileType(int, QString, int,int);	
 	
 
 	/** VERTICES */
+	void createVertex(int,int,QString, QString, QString, QPointF, QString); 	//Main vertex creation call
+	void createVertex(int i, QPointF p); 						//Called by GW
+	void createVertex(int i, int canvasWidth, int canvasHeight); 			//Called by MW
+
 	int lastVertexNumber();						//Returns the number of the last vertex
 	int firstVertexNumber();					//Returns the number of the first vertex
 
