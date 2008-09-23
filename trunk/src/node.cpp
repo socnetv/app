@@ -454,7 +454,7 @@ void Node::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 //		QGraphicsItem::mousePressEvent(event);
 	}
 	if ( event->button()==Qt::MidButton) {
-		qDebug("Node: Middle-Click on a node. Calling GraphicsWidget edgeNodes");
+		qDebug("Node: Middle-Click on a node. Calling GraphicsWidget startEdge()");
 //		emit startEdge(this);
 		graphicsWidget->startEdge(this);
 	}

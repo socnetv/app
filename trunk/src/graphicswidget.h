@@ -66,8 +66,6 @@ public:
 	bool setNodeColor(int, QString);
 	bool setEdgeColor(int, int, QString);
 	void setAllItemsVisibility(int, bool);
-	void makeEdgeReciprocal(int, int);
-	void unmakeEdgeReciprocal(int, int);
 
 protected:
 	void timerEvent(QTimerEvent *event);
@@ -85,6 +83,9 @@ public slots:
 	void nodeMovement(int state, int type); //used by dynamic layouts: Spring Embedder, Fruchterman, etc...
 	void changeZoom(int value); 
 	void startEdge(Node *node);	
+	void makeEdgeReciprocal(int, int);
+	void unmakeEdgeReciprocal(int, int);
+
 	void clearBackgrCircles();
 	void addBackgrCircle( int x0, int y0, int radius);
 	void addBackgrHLine(int y0);

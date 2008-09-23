@@ -107,6 +107,7 @@ MainWindow::MainWindow(const QString &fName) {
 	
 
 	connect( &activeGraph, SIGNAL( drawEdge( int, int, bool, bool, QString, bool, bool)), graphicsWidget, SLOT( drawEdge( int, int, bool, bool, QString, bool, bool  ) )  ) ;
+
 	connect( &activeGraph, SIGNAL(makeEdgeReciprocal(int, int)),  graphicsWidget, SLOT(makeEdgeReciprocal(int, int)));
 	
 

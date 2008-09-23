@@ -69,7 +69,7 @@ Graph::Graph() {
 	The new Vertex is named i and stores its color, label, label color, shape and position p.
 */
 void Graph::createVertex(int i, int size, QString nodeColor, QString label, QString lColor, QPointF p, QString nodeShape){
-	qDebug()<<" Graph:: createVertex(): Calling AddVertex for node: "<<i<< " Attributes: "<<size<<" "<<nodeColor<<" "<<label<<" "<<lColor<<" "<<p.x()<<" " <<p.y()<<" "<<nodeShape;
+	qDebug()<<"*** Graph:: createVertex(): Calling AddVertex for node: "<<i<< " Attributes: "<<size<<" "<<nodeColor<<" "<<label<<" "<<lColor<<" "<<p.x()<<" " <<p.y()<<" "<<nodeShape;
 	//add the vertex to the Graph.
 	addVertex(i, 1, size,  nodeColor, label, lColor, p, nodeShape);
 	//emit a signal for MW to create the new node onto the canvas.
@@ -107,45 +107,44 @@ void Graph::createVertex(int i, int canvasWidth, int canvasHeight){
 	createVertex(i, initVertexSize,  initVertexColor, QString::number(i), initVertexLabelColor, p, initVertexShape);
 }
 
+
 /**
 	slot associated with homonymous signal from Parser. 
 	Adds an Edge to the activeGraph and calls addEdge of GraphicsWidget to update the Graphics View. 
 	Also called from MW when user clicks on the "add link" button.
 */
 void Graph::createEdge(int v1, int v2, int weight, QString color, bool reciprocal=false, bool drawArrows=true, bool bezier=false){
-	qDebug()<<"** Graph: createEdge():"<<v1<<" "<<v2<<" "<<weight;
+	qDebug()<<"*** Graph: createEdge():"<<v1<<" "<<v2<<" "<<weight;
 
 	if ( reciprocal ) {
-		qDebug (" Graph:: createEdge asks for a RECIPROCAL NEW LINK -- creating new one. ");
+		qDebug (" Graph:: createEdge() RECIPROCAL new link -- Adding new edge to Graph and calling GW::drawEdge(). ");
 		addEdge ( v1, v2, weight, color, reciprocal);
-		//( (MainWindow*)parent() )->graphicsWidget->drawEdge(v1, v2, reciprocal, drawArrows, color, bezier, false);
+		
 		emit drawEdge(v1, v2, reciprocal, drawArrows, color, bezier, false);
 	}
-	else if (this->hasEdge( v2, v1) )  {  //pajek edges will instantly load ...
-		qDebug (" Graph:: createEdge() LINK EXISTS - making it RECIPROCAL. ");
+	else if (this->hasEdge( v2, v1) )  {  
+		qDebug (" Graph:: createEdge() opposite link EXISTS - Adding new edge to Graph and emitting makeEdgeReciprocal() to make the original RECIPROCAL. ");
 		reciprocal = true;
 		addEdge ( v1, v2, weight, color, reciprocal);
-		//( (MainWindow*)parent() )->graphicsWidget->makeEdgeReciprocal(v2, v1);
 		emit makeEdgeReciprocal(v2, v1);
 
 	}
 	else {
-		qDebug (" Graph:: createEdge() creating a NEW LINK - NOT RECIPROCAL. ");
+		qDebug (" Graph:: createEdge() NOT RECIPROCAL new link -- Adding new edge to Graph and calling GW::drawEdge(). ");
 		reciprocal = false;
 		addEdge ( v1, v2, weight, color, reciprocal);
-		//( (MainWindow*)parent() )->graphicsWidget->drawEdge(v1, v2, reciprocal, drawArrows, color, bezier, false);
 		emit drawEdge(v1, v2, reciprocal, drawArrows, color, bezier, false);
 
 	}
 }
+
 
 /** Called from GraphicsWidget when user middle clicks
 */
 void Graph::createEdge(int v1, int v2, int weight) {
 	bool reciprocal=false;
 	bool drawArrows=true, bezier=false;
-	QString color = "black";
-	createEdge(v1, v2, weight, color, reciprocal, drawArrows, bezier);
+	createEdge(v1, v2, weight, initEdgeColor, reciprocal, drawArrows, bezier);
 }
 
 

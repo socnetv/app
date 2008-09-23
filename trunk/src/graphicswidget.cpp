@@ -159,9 +159,11 @@ void GraphicsWidget::drawEdge(int i, int j, bool reciprocal, bool drawArrows, QS
 	edgesMap [edgeName] =  edge;
 	qDebug("Scene items now: %i ", scene()->items().size());
 	qDebug("GW items now: %i ", items().size());
-	/**Notify MW that graph has been changed. Usefull on saving/exiting the program.*/
+	// Notify MW that graph has been changed. Usefull on saving/exiting the program. 
 	emit changed(); 
 }
+
+
 
 
 /**
@@ -193,18 +195,17 @@ void GraphicsWidget::unmakeEdgeReciprocal(int source, int target){
 	On the second double/middle click event, it calls drawEdge method. 
 */
 void GraphicsWidget::startEdge(Node *node){
-	qDebug("GW: edgesNodes()");
+	qDebug("GW: startEdge()");
 	if (secondDoubleClick){
-		qDebug("GW: this is the second double click. Creating edge");
+		qDebug("GW: startEdge(): this is the second double click. Emitting userMiddleClicked() to create edge");
 		secondNode=node;
-		//drawEdge(firstNode->nodeNumber(), secondNode->nodeNumber(), false, true, m_linkColor, false, true);
 		emit userMiddleClicked(firstNode->nodeNumber(), secondNode->nodeNumber(), 1);
 		( (MainWindow*)parent() )->setCursor(Qt::ArrowCursor);
 		secondDoubleClick=FALSE;
 		
 	}
 	else{
-		qDebug("GW: this is the first double click.");
+		qDebug("GW: startEdge(): this is the first double click.");
 		firstNode=node;
 		secondDoubleClick=TRUE;
 		( (MainWindow*)parent() )->setCursor( Qt::PointingHandCursor); 
@@ -287,6 +288,8 @@ void GraphicsWidget::removeNode(int doomedJim){
 
 }
 
+
+
 /**
 	Called from MainWindow when removing links by vertex numbers
 */
@@ -306,7 +309,9 @@ void GraphicsWidget::removeEdge(int sourceNode, int targetNode){
 }
 
 
-//Called from Node::die() to removeItem from nodeVector...
+/** 
+	Called from Node::die() to removeItem from nodeVector...
+*/
 void GraphicsWidget::removeItem( Node *node){
 	vector<Node*>::iterator it;
 	int i=0;
@@ -328,11 +333,14 @@ void GraphicsWidget::removeItem( Edge * edge){
 	delete (edge);
 }
 
+
 void GraphicsWidget::removeItem( NodeLabel *nodeLabel){
 	qDebug("GW items now: %i ", items().size());
 	delete (nodeLabel);
 	qDebug("GW items now: %i ", items().size());
 }
+
+
 
 void GraphicsWidget::removeItem( NodeNumber *nodeNumber){
 	delete (nodeNumber);
@@ -396,8 +404,6 @@ bool GraphicsWidget::setEdgeColor(int source, int target, QString color){
 			Edge *edge=(Edge*) (*it);
 			if ( edge->sourceNodeNumber()==source && edge->targetNodeNumber()==target ) {
 				edge->setColor(color);
-/*				(*it)->hide();
-				(*it)->show();*/
 				emit changed();
 				return true;
 			}
