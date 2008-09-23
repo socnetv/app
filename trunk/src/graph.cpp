@@ -69,7 +69,7 @@ Graph::Graph() {
 	The new Vertex is named i and stores its color, label, label color, shape and position p.
 */
 void Graph::createVertex(int i, int size, QString nodeColor, QString label, QString lColor, QPointF p, QString nodeShape){
-	qDebug()<<" Graph:: createVertex(): "<<i<< " "<<size<<" "<<nodeColor<<" "<<label<<" "<<lColor<<" "<<p.x()<<" " <<p.y()<<" "<<nodeShape;
+	qDebug()<<" Graph:: createVertex(): Calling AddVertex for node: "<<i<< " Attributes: "<<size<<" "<<nodeColor<<" "<<label<<" "<<lColor<<" "<<p.x()<<" " <<p.y()<<" "<<nodeShape;
 	//add the vertex to the Graph.
 	addVertex(i, 1, size,  nodeColor, label, lColor, p, nodeShape);
 	//emit a signal for MW to create the new node onto the canvas.
@@ -173,7 +173,7 @@ QMainWindow* Graph::parent(){
 	This method is called by createVertex() method
 */
 void Graph::addVertex (int v1, int val, int nsz, QString nc, QString nl, QString lc, QPointF p,QString nsp){ 
-	qDebug ("Graph: addVertex(): appending vertex %i to graph", v1);
+	qDebug ("Graph: addVertex(): Appending vertex %i to graph", v1);
 	if (order)
 		index[v1]=m_totalVertices; 
 	else 
@@ -182,7 +182,7 @@ void Graph::addVertex (int v1, int val, int nsz, QString nc, QString nl, QString
 	m_graph.append( new Vertex(v1, val, nsz, nc, nl, lc, p, nsp) );
 	m_totalVertices++;		
 
-	qDebug("Graph: addVerted(): Vertex named %i appended with index=%i. Now, m_graph size %i. New vertex position: %f, %f",m_graph.back()->name(), index[v1], m_graph.size(), p.x(), p.y() );
+	qDebug("Graph: addVertex(): Vertex named %i appended with index=%i. Now, m_graph size %i. New vertex position: %f, %f",m_graph.back()->name(), index[v1], m_graph.size(), p.x(), p.y() );
 
 	graphModified=true;
 }

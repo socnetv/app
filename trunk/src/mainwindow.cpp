@@ -2408,8 +2408,9 @@ void MainWindow::openContextMenu( const QPointF &mPos) {
 
 
 /**
-*	This method is a slot activated when something has been changed in the graph.
-	It is alsco alled from graphicsWidget.
+*	A slot activated when something has been changed in the graph.
+	Makes the fileSave icon active and refreshes any LCD values. 
+	Also called from graphicsWidget.
 */
 void MainWindow::graphChanged(){
 	qDebug("MW: graphChanged");

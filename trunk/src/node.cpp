@@ -40,7 +40,6 @@
 #include <math.h> //sqrt
 
 Node::Node( GraphicsWidget* gw, int num, int size, QString col, QString label, QString lcol, QString shape, int ldist, int ndist, QPointF p) : graphicsWidget (gw) {
-	qDebug("Node() - constructor");
 	graphicsWidget->scene()->addItem(this); //Without this nodes dont appear on the screen...
 	setFlag(ItemIsMovable); //Without this, nodes do not move...
 	m_num=num;
@@ -64,7 +63,7 @@ Node::Node( GraphicsWidget* gw, int num, int size, QString col, QString label, Q
 	connect (this, SIGNAL(startNodeMovement(int)), graphicsWidget, SLOT(startNodeMovement(int)));
 	connect (this, SIGNAL(openNodeContextMenu()), graphicsWidget, SLOT(openNodeContextMenu()));
 	connect (this, SIGNAL(startEdge(Node*)),graphicsWidget, SLOT(startEdge(Node*)));*/
-	qDebug("Node() - End of constructor");
+	//qDebug("Node() - End of constructor");
 } 
 
 /** 

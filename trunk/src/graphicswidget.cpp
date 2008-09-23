@@ -114,10 +114,6 @@ void GraphicsWidget::drawNode(int num, int size, QString nodeColor, QString node
 	//This is used during drawEdge
 	nodeVector.push_back(jim);
 
-	//Notify MW that graph has changed so that the networkModified flag be raised.
-	//Usefull on saving/exiting the program.
-	qDebug("GW: emitting changed signal");
-	emit changed(); 
 }
 
 
@@ -226,6 +222,8 @@ void GraphicsWidget::nodeClicked(Node *node){
 	emit selectedNode(node);
 }
 
+
+
 /** 
 	This is called from each edge when the user clicks on it.
 	It emits the selectedEdge signal to MW which is used to
@@ -242,11 +240,14 @@ void GraphicsWidget::edgeClicked(Edge *edge){
 
 /** 
 	Called from each node when it moves.
-	Updates node coordinates in activeGraph of MainWindow
+	Updates 
+	- node coordinates in activeGraph (via updateNodeCoords() signal)
+	- LCD Values (via changed() signal) 
 */
 void GraphicsWidget::nodeMoved(int number, int x, int y){
-	qDebug ("GW: Emitting nodeMoved() for %i with %i, %i", number, x,y);
-	/**Notify MW that graph has changed. Usefull on saving/exiting the program.*/
+	qDebug ("GW: nodeMoved() for %i with %i, %i. Emitting GW::changed() and updateNodeCoords() signals", number, x,y);
+	//Notify MW that graph has changed so that the networkModified flag be raised.
+	//Usefull on saving/exiting the program.
 	emit changed(); 
 	emit updateNodeCoords(number, x, y);
 }
@@ -321,7 +322,7 @@ void GraphicsWidget::removeItem( Node *node){
 }
 
 
-//Called from Node::die() to removeItem from nodeVector...
+/** Called from Node::die() to removeItem from nodeVector... */
 void GraphicsWidget::removeItem( Edge * edge){
 	edge->remove();
 	delete (edge);
