@@ -683,8 +683,8 @@ bool Graph::isSymmetric(){
 /**
 *	Transform the directed network to symmetric (all edges reciprocal) 
 */
-void Graph::makeEdgesReciprocal(){
-	qDebug("Graph: makeEdgesReciprocal");
+void Graph::symmetrize(){
+	qDebug("Graph: symmetrize");
 	QList<Vertex*>::iterator it;
 	imap_i::iterator it1;
 	int y;
@@ -694,15 +694,30 @@ void Graph::makeEdgesReciprocal(){
 		for( it1 = (*it)->m_edges.begin(); it1 != (*it)->m_edges.end(); it1++ ) {
 			y=index[it1->first];	
 			if ( ! m_graph[y]->isLinkedTo( (*it)->name() )) {
-				qDebug("Graph: makeEdgesReciprocal: u = %i IS NOT inLinked from y = %i", (*it)->name(), it1->first  );
+				qDebug("Graph: symmetrize: u = %i IS NOT inLinked from y = %i", (*it)->name(), it1->first  );
 				createEdge(it1->first, (*it)->name(), it1->second, initEdgeColor, false, true, false);
 			}
 			else 
-				qDebug("Graph: isSymmetric():  u = %i IS inLinked from y = %i",it1->first, (*it)->name()  );
+				qDebug("Graph: symmetrize:  u = %i IS inLinked from y = %i",it1->first, (*it)->name()  );
 		}
 	}
 	graphModified=TRUE;
 	symmetricAdjacencyMatrix=TRUE;
+}
+
+
+
+bool Graph::symmetricEdge(int v1, int v2){
+	qDebug("Graph: symmetricEdge");
+	if ( (this->hasEdge ( v1, v2 ) ) > 0  &&  (this->hasEdge ( v2, v1 ) ) > 0   ) { 
+		qDebug("Graph: symmetricEdge: YES");
+		return true;
+	}
+	else {
+		qDebug("Graph: symmetricEdge: NO");
+		return false;
+	}
+
 }
 
 

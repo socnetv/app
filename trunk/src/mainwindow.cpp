@@ -446,11 +446,11 @@ void MainWindow::initActions(){
 	transformNodes2LinksAct->setWhatsThis(tr("Transform Nodes LinksAct\n\nTransforms network so that nodes become links and vice versa"));
 	connect(transformNodes2LinksAct, SIGNAL(activated()), this, SLOT(slotTransformNodes2Links()));
 
-	makeEdgesReciprocalAct= new QAction(tr("Symmetrize Edges"), this);
-	makeEdgesReciprocalAct->setShortcut(tr("Shift+R"));
-	makeEdgesReciprocalAct->setStatusTip(tr("Makes all edges reciprocal (thus, a symmetric graph)."));
-	makeEdgesReciprocalAct->setWhatsThis(tr("Symmetrize Edges\n\nTransforms all arcs to double links (edges). The result is a symmetric network"));
-	connect(makeEdgesReciprocalAct, SIGNAL(activated()), this, SLOT(slotMakeEdgesReciprocal()));	
+	slotSymmetrizeAct= new QAction(tr("Symmetrize Edges"), this);
+	slotSymmetrizeAct->setShortcut(tr("Shift+R"));
+	slotSymmetrizeAct->setStatusTip(tr("Makes all edges reciprocal (thus, a symmetric graph)."));
+	slotSymmetrizeAct->setWhatsThis(tr("Symmetrize Edges\n\nTransforms all arcs to double links (edges). The result is a symmetric network"));
+	connect(slotSymmetrizeAct, SIGNAL(activated()), this, SLOT(slotSymmetrize()));	
 
 
 
@@ -918,7 +918,7 @@ void MainWindow::initMenuBar() {
 	
 	editMenu ->addSeparator();
 //   transformNodes2LinksAct -> addTo (editMenu);
-	editMenu -> addAction (makeEdgesReciprocalAct);
+	editMenu -> addAction (symmetrizeAct);
 	
 	colorOptionsMenu=new QMenu(tr("Colors"));
 	colorOptionsMenu -> setIcon(QIcon(":/images/colorize.png"));
@@ -3076,14 +3076,14 @@ void MainWindow::slotTransformNodes2Links(){
 /**
 *	Converts all edges to double edges, so that the network becomes undirected (symmetric adjacency matrix).
 */
-void MainWindow::slotMakeEdgesReciprocal(){
+void MainWindow::slotSymmetrize(){
 	if (!fileLoaded && !networkModified )  {
 		QMessageBox::critical(this, "Error",tr("No links here. Load a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("No links present...") ,statusBarDuration);
 		return;
 	}
-
-	activeGraph.makeEdgesReciprocal();
+	qDebug("MW: slotSymmetrize() calling symmetrize");
+	activeGraph.symmetrize();
 }
 
 

@@ -142,8 +142,9 @@ public:
 
 	int totalEdges ();						//Returns the sum of edges inside m_graph
 
+	bool symmetricEdge(int v1, int v2);				//Returns TRUE if (v1, v2) is symmetric.
 	bool isSymmetric();						//Returns TRUE if symmetricAdjacencyMatrix=TRUE
-	void makeEdgesReciprocal();					//Symmetrize all edges so that the network is undirected.
+	void symmetrize();						//Symmetrize all edges so that the network is undirected.
 
 
 	/**PRINT OUT*/

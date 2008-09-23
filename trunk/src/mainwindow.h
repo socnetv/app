@@ -284,7 +284,7 @@ private:
 	QAction *changeLabelsSizeAct, *changeAllNodesSizeAct, *changeAllNodesShapeAct;
 	QAction *changeNodeBoxAct, *changeNodeCircleAct, *changeNodeTriangleAct, *changeNodeDiamondAct, *changeNodeEllipseAct;
 	QAction *changeLinkLabelAct, *changeLinkColorAct, *changeLinkWeightAct;
-	QAction *filterNodesAct, *filterLinksAct, *transformNodes2LinksAct, *makeEdgesReciprocalAct;
+	QAction *filterNodesAct, *filterLinksAct, *transformNodes2LinksAct, *symmetrizeAct;
 	QAction *changeBackColorAct, *changeAllNodesColorAct, *changeAllLinksColorAct, *changeNumbersColorAct;
 	QAction *drawLinksWeightsAct, *showNumbersLinksWeightsAct, *showLinksAct , *showLinksArrowsAct, *drawLinksBezier;
 	QAction *viewToolBar, *viewStatusBar, *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
