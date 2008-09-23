@@ -72,18 +72,20 @@ public slots:
 	/** Slots to signals from GraphicsWidget and Parser*/
 	void createEdge (int, int, int, QString, bool, bool, bool);				//GW and Parser.
 	void createEdge (int, int, int);							//
-
+	
+	void createVertex(int i, QPointF p); 							//Called by GW
+	void createVertex(int i, int canvasWidth, int canvasHeight); 				//Called by MW
 
 signals:
 	/** Signals to MainWindow */
 	void updateProgressDialog(int );
 
 	/** Signals to GraphicsWidget */
-	void drawNode( int ,int,  QString, QString,QString, QPointF, QString, bool);	//call GW to draw a node
-	void drawEdge(int, int, bool, bool, QString, bool, bool);			//call GW to draw an edge
-	void makeEdgeReciprocal(int, int);						//call GW to make an edge symmetric
-	void addBackgrCircle(int, int, int);						//call GW to draw a layout line somewhere.
-	void addBackgrHLine (int);							//call GW to draw a layout line somewhere.
+	void drawNode( int ,int,  QString, QString,QString, QPointF, QString, bool, bool);	//call GW to draw a node
+	void drawEdge(int, int, bool, bool, QString, bool, bool);				//call GW to draw an edge
+	void makeEdgeReciprocal(int, int);							//call GW to make an edge symmetric
+	void addBackgrCircle(int, int, int);							//call GW to draw a layout line somewhere.
+	void addBackgrHLine (int);								//call GW to draw a layout line somewhere.
 
 
 public: 	
@@ -104,9 +106,6 @@ public:
 	
 
 	/** VERTICES */
-	void createVertex(int i, QPointF p); 						//Called by GW
-	void createVertex(int i, int canvasWidth, int canvasHeight); 			//Called by MW
-
 	int lastVertexNumber();						//Returns the number of the last vertex
 	int firstVertexNumber();					//Returns the number of the first vertex
 

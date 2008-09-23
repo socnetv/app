@@ -73,7 +73,7 @@ void Graph::createVertex(int i, int size, QString nodeColor, QString label, QStr
 	//add the vertex to the Graph.
 	addVertex(i, 1, size,  nodeColor, label, lColor, p, nodeShape);
 	//emit a signal for MW to create the new node onto the canvas.
-	emit drawNode( i, size ,  nodeColor, label, lColor, p, nodeShape, initShowLabels);
+	emit drawNode( i, size ,  nodeColor, label, lColor, p, nodeShape, initShowLabels, true);
 } 
 
 

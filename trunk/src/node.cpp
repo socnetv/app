@@ -83,6 +83,7 @@ void Node::calculateForcesSpringEmbedder(bool dynamicMovement){
 	qreal yvel = 0;
 	double dist =0;
 	qreal l=15.0;
+	qreal weight_coefficient=20;		//affects speed and line length. Try 10...
 	if (dynamicMovement){
 		// Sum up all forces pushing this item away (i.e. electron)
 		foreach (QGraphicsItem *item, scene()->items()) {
@@ -100,7 +101,7 @@ void Node::calculateForcesSpringEmbedder(bool dynamicMovement){
 		}
 
 	    // Now subtract all forces pulling items together (spring)
-		double weight = (inEdgeList.size() + 1) * 20;
+		double weight = (inEdgeList.size() + 1) * weight_coefficient;
 //		double weight1 = (outEdgeList.size() + 1) * 20;
 		qDebug("Node: edge weight %f", weight);
 		foreach (Edge *edge, inEdgeList) {

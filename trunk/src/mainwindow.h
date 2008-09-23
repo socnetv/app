@@ -237,8 +237,6 @@ public slots:
 	//Called by graphicswidget to update node coords in activeGraph
 	void updateNodeCoords(int no, int x, int y);
 
-	//Called by graphicswidget 
-	void addNodeWithMouse(int, QPointF);
 	//Called when user pushes the New Node button on the MW
  	void addNode();
 	//Called from Graph to call GW::addNode

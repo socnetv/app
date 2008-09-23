@@ -93,7 +93,7 @@ MainWindow::MainWindow(const QString &fName) {
 	connect( graphicsWidget, SIGNAL( windowResized(int, int)),this, SLOT( windowInfoStatusBar(int, int)) );  
 	connect( graphicsWidget, SIGNAL( changed() ), this, SLOT( graphChanged() ) ) ;
 
-	connect( graphicsWidget, SIGNAL( userDoubleClicked(int, QPointF) ), this, SLOT( addNodeWithMouse(int, QPointF) ) ) ;
+	connect( graphicsWidget, SIGNAL( userDoubleClicked(int, QPointF) ), &activeGraph, SLOT( createVertex(int, QPointF) ) ) ;
 	connect( graphicsWidget, SIGNAL( userMiddleClicked(int, int, int) ), &activeGraph, SLOT( createEdge(int, int, int) ) );
 	connect( graphicsWidget, SIGNAL( openNodeMenu() ), this, SLOT(openNodeContextMenu() ) ) ;
 	connect( graphicsWidget, SIGNAL( openEdgeMenu() ), this, SLOT(openLinkContextMenu() ) ) ;
@@ -102,7 +102,9 @@ MainWindow::MainWindow(const QString &fName) {
 
 	connect( &activeGraph, SIGNAL( addBackgrCircle (int, int, int) ), graphicsWidget, SLOT(addBackgrCircle(int, int, int) ) ) ;
 	connect( &activeGraph, SIGNAL( addBackgrHLine (int) ), graphicsWidget, SLOT(addBackgrHLine(int) ) ) ;
-	connect( &activeGraph, SIGNAL( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool) ), this, SLOT( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool)  ) ) ;
+	connect( &activeGraph, SIGNAL( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool) ), graphicsWidget, SLOT( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool)  ) ) ;
+	
+
 	connect( &activeGraph, SIGNAL( drawEdge( int, int, bool, bool, QString, bool, bool)), graphicsWidget, SLOT( drawEdge( int, int, bool, bool, QString, bool, bool  ) )  ) ;
 	connect( &activeGraph, SIGNAL(makeEdgeReciprocal(int, int)),  graphicsWidget, SLOT(makeEdgeReciprocal(int, int)));
 	
@@ -156,6 +158,8 @@ MainWindow::MainWindow(const QString &fName) {
 		createFortuneCookies();	
 		createTips();
 	}
+	
+	statusBar()->showMessage(tr("Welcome to Social Networks Visualiser, Version ")+VERSION, statusBarDuration);
 
 }
 
@@ -637,6 +641,7 @@ void MainWindow::initActions(){
 
  
 	netDensity = new QAction( tr("Network &Density"), this);
+	netDensity ->setShortcut(tr("Shift+D"));
 	netDensity->setStatusTip(tr("Calculates the network density"));
 	netDensity->setWhatsThis(tr("Density\n\n The density of a network is the ratio of existing links to maximum links (n(n-1))"));
 	connect(netDensity, SIGNAL(activated()), this, SLOT(slotNetworkDensity()));
@@ -1394,9 +1399,12 @@ void MainWindow::initNet(){
 	nodeSizeProportional2OutDegreeBx->setChecked(false);
 	nodeSizeProportional2InDegreeBx->setChecked(false);
 
-
+//	showLabelsAct->setChecked(FALSE);
+//	showNumbersAct->setChecked(TRUE);
+//	showLinksAct->setChecked(TRUE);
+//	showLinksArrowsAct->setChecked(TRUE);
 	//set window title
-	setWindowTitle(tr("Social Network Visualiser "));
+	setWindowTitle(tr("Social Network Visualiser ")+VERSION);
 	QApplication::restoreOverrideCursor();
 	statusBar()->showMessage(tr("Ready"), statusBarDuration);
 	qDebug("MW: initNet() INITIALISATION END");
@@ -1666,17 +1674,6 @@ void MainWindow::fileType(int type, QString networkName, int aNodes, int totalLi
 
 
 
-
-
-
-/**
-	Calls Graph::createVertex method to add a new node (of number i and position p), into the activeGraph.
-	Called from GraphicsWidget when the user double clicks on the canvas.
-*/
-void MainWindow::addNodeWithMouse(int i, QPointF p){
-	qDebug("MW: addNodeWithMouse. Calling activeGraph::createVertex() for vertex %i and x= %f and y= %f", i, p.x(), p.y());
-	activeGraph.createVertex(i, p);
-}
 
 
 
@@ -2636,9 +2633,11 @@ void MainWindow::slotRemoveLink(){
 
 	}
 	else {
-		if (activeGraph.symmetricEdge(clickedLink->sourceNodeNumber(), clickedLink->targetNodeNumber()) ) {
-			QString s=QString::number(clickedLink->sourceNodeNumber());
-			QString t=QString::number(clickedLink->targetNodeNumber());
+		sourceNode = clickedLink->sourceNodeNumber();
+		targetNode = clickedLink->targetNodeNumber();
+		if (activeGraph.symmetricEdge(sourceNode, targetNode) ) {
+			QString s=QString::number(sourceNode);
+			QString t=QString::number(targetNode);
 			switch (QMessageBox::information( this, tr("Remove link"),
 				      tr("This link is reciprocal. \n") +
 				      tr("Select what Direction to delete or Both..."),
@@ -2647,19 +2646,22 @@ void MainWindow::slotRemoveLink(){
 				{
 					case 0:
 						graphicsWidget->removeItem(clickedLink);
+						activeGraph.removeEdge(sourceNode, targetNode);
 						//make new link
-						graphicsWidget->unmakeEdgeReciprocal(clickedLink->targetNodeNumber(), clickedLink->sourceNodeNumber());
-						activeGraph.removeEdge(clickedLink->sourceNodeNumber(), clickedLink->targetNodeNumber());
+// 						graphicsWidget->unmakeEdgeReciprocal(clickedLink->targetNodeNumber(), clickedLink->sourceNodeNumber());
+						graphicsWidget->drawEdge(targetNode, sourceNode, false, showLinksArrowsAct->isChecked(), initLinkColor, false, false);
+
 						break;
 					case 1:
-						//
-						clickedLink->unmakeReciprocal();
-						activeGraph.removeEdge(clickedLink->targetNodeNumber(), clickedLink->sourceNodeNumber());
+						clickedLink->unmakeReciprocal();  
+						graphicsWidget->removeItem(clickedLink);
+						activeGraph.removeEdge(targetNode, sourceNode);
+//						graphicsWidget->drawEdge(i, j, false, drawArrowsAct->isChecked(), initLinkColor, false, false);
 						break;
 					case 2:
 						graphicsWidget->removeItem(clickedLink);
-						activeGraph.removeEdge(clickedLink->sourceNodeNumber(), clickedLink->targetNodeNumber());
-						activeGraph.removeEdge(clickedLink->targetNodeNumber(), clickedLink->sourceNodeNumber());
+						activeGraph.removeEdge(sourceNode, targetNode);
+						activeGraph.removeEdge(targetNode, sourceNode);
 				}
 
 

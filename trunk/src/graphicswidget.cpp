@@ -76,115 +76,7 @@ void GraphicsWidget::clear() {
 
 
 
-/** 
-	Passes initial node color from MW.
-	It is called from MW on startup and when user changes it.
-*/
-void GraphicsWidget::setInitNodeColor(QString color){
-	qDebug("GW setting initNodeColor");
-	m_nodeColor=color;
-}
 
-
-
-/** 
-	Passes initial node color from MW.
-	It is called from MW on startup and when user changes it.
-*/
-void GraphicsWidget::setInitLinkColor(QString color){
-	qDebug("GW setting initLinkColor");
-	m_linkColor=color;
-}
-
-
-
-/** 
-	Changes/Sets the color of an node.
-	It is called from MW when the user changes the color of a node (right-clicking).
-*/
-bool GraphicsWidget::setNodeColor(int nodeNumber, QString color){
-	QList<QGraphicsItem *> list=scene()->items();
-	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!= list.end() ; it++){
-		if ( (*it)->type()==TypeNode) {
-			Node *node=(Node*) (*it);
-			if ( node->nodeNumber()==nodeNumber ) {
-				node->setColor(color);
-				emit changed();
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
-
-/** 
-	Changes/Sets the color of an edge.
-	It is called from MW when the user changes the color of an edge (right-clicking).
-*/
-bool GraphicsWidget::setEdgeColor(int source, int target, QString color){
-	QList<QGraphicsItem *> list=scene()->items();
-	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!= list.end() ; it++){
-		if ( (*it)->type()==TypeEdge) {
-			Edge *edge=(Edge*) (*it);
-			if ( edge->sourceNodeNumber()==source && edge->targetNodeNumber()==target ) {
-				edge->setColor(color);
-/*				(*it)->hide();
-				(*it)->show();*/
-				emit changed();
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
-
-
-
-/** 
-	Passes initial node size from MW.
-	It is called from MW on startup and when user changes it.
-*/
-void GraphicsWidget::setInitNodeSize(int size){
-	qDebug("GW setting initNodeSize");
-	m_nodeSize=size;
-}
-
-
-
-/** 
-	Passes initial number distance from node 
-	It is called from MW on startup and when user changes it.
-*/
-void GraphicsWidget::setInitNumberDistance(int numberDistance){
-	qDebug("GW setting initNumberDistance");
-	m_numberDistance=numberDistance;
-}
-
-
-/** 
-	Passes initial label distance from node 
-	It is called from MW on startup and when user changes it.
-*/
-void GraphicsWidget::setInitLabelDistance(int labelDistance){
-	qDebug("GW setting initLabelDistance");
-	m_labelDistance=labelDistance;
-}
-
-
-/**
-*	Changes the visibility of an GraphicsView item (number, label, edge, etc)
-*/
-void GraphicsWidget::setAllItemsVisibility(int type, bool visible){
-	QList<QGraphicsItem *> list = scene()->items();
-	for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
-		if ( (*item)->type() == type){
-			if (visible)	(*item)->show();
-			else	(*item)->hide();
-		}
-	}
-}
 
 
 /**	
@@ -192,8 +84,10 @@ void GraphicsWidget::setAllItemsVisibility(int type, bool visible){
 	Calls MW to get lastAvailableNodeNumber from graph and 
 	and signals MW to update graph.
 
-	This method is called from mouseDoubleClickEvent, when the user double clicks somewhere.
-	It is also called from MW, on loading files or pressing "Add Node" button.
+	This method is called from: 
+	- mouseDoubleClickEvent, when the user double clicks somewhere.
+	- Graph::createVertex method (on loading files or pressing "Add Node" button.
+
 */
 void GraphicsWidget::drawNode(int num, int size, QString nodeColor, QString nodeLabel, QString labelColor, QPointF p, QString ns, bool showLabels, bool showNumbers) {
 	qDebug()<< "GW: drawNode(): drawing new node at: "<< p.x()<<", "<<p.y();
@@ -228,28 +122,7 @@ void GraphicsWidget::drawNode(int num, int size, QString nodeColor, QString node
 
 
 
-void GraphicsWidget::addBackgrCircle( int x0, int y0, int radius){
-	BackgrCircle *circ=new BackgrCircle (this, x0, y0, radius);
-	circ->show();
 
-}
-
-
-void GraphicsWidget::addBackgrHLine( int y0){
-	BackgrCircle *circ=new BackgrCircle (this, y0, 	this->width());
-	circ->show();
-}
-
-void GraphicsWidget::clearBackgrCircles(){
-	QList<QGraphicsItem *> allItems=scene()->items();
-	foreach (QGraphicsItem *item, allItems ) {
-		if ( (item)->type()==TypeBackgrCircle) {
-			qDebug("GW: Deleting a background Circle now...");
-			(item)->hide();
-			delete (item);
-		}
-	}
-}
 
 
 
@@ -462,6 +335,146 @@ void GraphicsWidget::removeItem( NodeLabel *nodeLabel){
 
 void GraphicsWidget::removeItem( NodeNumber *nodeNumber){
 	delete (nodeNumber);
+}
+
+
+
+
+
+
+/** 
+	Passes initial node color from MW.
+	It is called from MW on startup and when user changes it.
+*/
+void GraphicsWidget::setInitNodeColor(QString color){
+	qDebug("GW setting initNodeColor");
+	m_nodeColor=color;
+}
+
+
+
+/** 
+	Passes initial node color from MW.
+	It is called from MW on startup and when user changes it.
+*/
+void GraphicsWidget::setInitLinkColor(QString color){
+	qDebug("GW setting initLinkColor");
+	m_linkColor=color;
+}
+
+
+
+/** 
+	Changes/Sets the color of an node.
+	It is called from MW when the user changes the color of a node (right-clicking).
+*/
+bool GraphicsWidget::setNodeColor(int nodeNumber, QString color){
+	QList<QGraphicsItem *> list=scene()->items();
+	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!= list.end() ; it++){
+		if ( (*it)->type()==TypeNode) {
+			Node *node=(Node*) (*it);
+			if ( node->nodeNumber()==nodeNumber ) {
+				node->setColor(color);
+				emit changed();
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+
+/** 
+	Changes/Sets the color of an edge.
+	It is called from MW when the user changes the color of an edge (right-clicking).
+*/
+bool GraphicsWidget::setEdgeColor(int source, int target, QString color){
+	QList<QGraphicsItem *> list=scene()->items();
+	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!= list.end() ; it++){
+		if ( (*it)->type()==TypeEdge) {
+			Edge *edge=(Edge*) (*it);
+			if ( edge->sourceNodeNumber()==source && edge->targetNodeNumber()==target ) {
+				edge->setColor(color);
+/*				(*it)->hide();
+				(*it)->show();*/
+				emit changed();
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+
+
+
+/** 
+	Passes initial node size from MW.
+	It is called from MW on startup and when user changes it.
+*/
+void GraphicsWidget::setInitNodeSize(int size){
+	qDebug("GW setting initNodeSize");
+	m_nodeSize=size;
+}
+
+
+
+/** 
+	Passes initial number distance from node 
+	It is called from MW on startup and when user changes it.
+*/
+void GraphicsWidget::setInitNumberDistance(int numberDistance){
+	qDebug("GW setting initNumberDistance");
+	m_numberDistance=numberDistance;
+}
+
+
+/** 
+	Passes initial label distance from node 
+	It is called from MW on startup and when user changes it.
+*/
+void GraphicsWidget::setInitLabelDistance(int labelDistance){
+	qDebug("GW setting initLabelDistance");
+	m_labelDistance=labelDistance;
+}
+
+
+/**
+*	Changes the visibility of an GraphicsView item (number, label, edge, etc)
+*/
+void GraphicsWidget::setAllItemsVisibility(int type, bool visible){
+	QList<QGraphicsItem *> list = scene()->items();
+	for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
+		if ( (*item)->type() == type){
+			if (visible)	(*item)->show();
+			else	(*item)->hide();
+		}
+	}
+}
+
+
+
+void GraphicsWidget::addBackgrCircle( int x0, int y0, int radius){
+	BackgrCircle *circ=new BackgrCircle (this, x0, y0, radius);
+	circ->show();
+
+}
+
+
+void GraphicsWidget::addBackgrHLine( int y0){
+	BackgrCircle *circ=new BackgrCircle (this, y0, 	this->width());
+	circ->show();
+}
+
+void GraphicsWidget::clearBackgrCircles(){
+	QList<QGraphicsItem *> allItems=scene()->items();
+	foreach (QGraphicsItem *item, allItems ) {
+		if ( (item)->type()==TypeBackgrCircle) {
+			qDebug("GW: Deleting a background Circle now...");
+			(item)->hide();
+			delete (item);
+		}
+	}
 }
 
 
