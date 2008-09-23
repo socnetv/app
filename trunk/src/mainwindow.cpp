@@ -1691,14 +1691,6 @@ void MainWindow::addNode() {
 
 
 
-/** 
-	Calls GraphicsWidget::drawNode  to draw a new node on the canvas.
-	Called from Graph::createVertex() main slot.
-*/
-void MainWindow::drawNode(int num, int size, QString nodeColor, QString nodeLabel, QString labelColor, QPointF p, QString ns, bool labels) {
-	qDebug("MW: drawNode() slot: called from Graph. Calling GraphicsWidget::drawNode");
-	graphicsWidget->drawNode(num, size, nodeColor, nodeLabel, labelColor, p, ns, labels, true);
-}
 
 
 /**
@@ -3746,12 +3738,7 @@ int MainWindow::activeNodes(){
 }
 
 
-/**
-*	Returns true if the adjacency matrix is symmetric
-*/
-bool MainWindow::symmetricAdjacency(){ 
-	return activeGraph.isSymmetric();
-}
+
 
 
 
@@ -3766,7 +3753,7 @@ void MainWindow::slotCheckSymmetry(){
 		statusBar()->showMessage( QString(tr("There is no network!")) , statusBarDuration);
 		return;
 	}
-	if (symmetricAdjacency())
+	if (activeGraph.isSymmetric())
 		QMessageBox::information(this, "Network Symmetry", tr("Adjacency matrix symmetry = YES "),"OK",0);
 	else
 		QMessageBox::information(this, "Network Symmetry", tr("Adjacency matrix symmetry = NO "),"OK",0);
@@ -3834,7 +3821,7 @@ void MainWindow::slotDistance(){
 
 	qDebug("source %i target %i",i, j);
 		
-	if (symmetricAdjacency() && i>j) {
+	if (activeGraph.isSymmetric() && i>j) {
 		qSwap(i,j);
 	}
 	QMessageBox::information(this, "Distance", tr("Network distance (")+QString::number(i)+", "+QString::number(j)+") = "+QString::number(activeGraph.distance(i,j)),"OK",0);

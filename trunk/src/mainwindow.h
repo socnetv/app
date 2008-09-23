@@ -76,6 +76,7 @@ public:		/**PUBLIC FUNCTIONS NOT VISIBLE BY OTHER WIDGETS NOR BY SLOT/LINK MECHA
 
 	MainWindow(const QString &f);
 	~MainWindow();
+
 	void initActions();
 	void initMenuBar();
 	void initToolBar();
@@ -88,17 +89,14 @@ public:		/**PUBLIC FUNCTIONS NOT VISIBLE BY OTHER WIDGETS NOR BY SLOT/LINK MECHA
 	void createTips();
 	void makeThingsLookRandom();
 
+	bool showLabels();
+	bool showNumbers();
 
 	int loadNetworkFile( QString);
 	void fileType(int , QString , int , int ); 
 
 	int activeLinks();
 	int activeNodes();
-	bool symmetricAdjacency();
-	int distance(int, int);
-
-	bool showLabels();
-	bool showNumbers();
 
 	void openContextMenu(const QPointF & mPos);
 
@@ -239,8 +237,6 @@ public slots:
 
 	//Called when user pushes the New Node button on the MW
  	void addNode();
-	//Called from Graph to call GW::addNode
-	void drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool);
 	
 
 protected:
