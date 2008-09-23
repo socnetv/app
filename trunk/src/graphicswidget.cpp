@@ -172,8 +172,8 @@ void GraphicsWidget::drawEdge(int i, int j, bool reciprocal, bool drawArrows, QS
 void GraphicsWidget::drawEdgeReciprocal(int source, int target){
 	qDebug("GW: drawEdgeReciprocal ()");
 	QString edgeName = QString::number(source) + QString(">")+ QString::number(target);
-	qDebug("GW: making existing edge between %i and % reciprocal. Name: "+edgeName.toAscii(), source, target );
-	edgesMap [edgeName]->unmakeReciprocal();
+	qDebug("GW: making existing edge between %i and %i reciprocal. Name: "+edgeName.toAscii(), source, target );
+	edgesMap [edgeName]->makeReciprocal();
 }
 
 
@@ -184,7 +184,7 @@ void GraphicsWidget::unmakeEdgeReciprocal(int source, int target){
 	qDebug("GW: unmakeEdgeReciprocal ()");
 	QString edgeName = QString::number(source) + QString(">")+ QString::number(target);
 	qDebug("GW: removing edge between %i and %i. Name: "+edgeName.toAscii(), source, target );
-	edgesMap [edgeName]->makeReciprocal();
+	edgesMap [edgeName]->unmakeReciprocal();
 }
 
 

@@ -126,7 +126,6 @@ void Graph::createEdge(int v1, int v2, int weight, QString color, bool reciproca
 		qDebug (" Graph:: createEdge() opposite link EXISTS - Adding new edge to Graph and emitting drawEdgeReciprocal() to make the original RECIPROCAL. ");
 		reciprocal = true;
 		addEdge ( v1, v2, weight, color, reciprocal);
-		qDebug (" Graph: createEdge()  - emitting drawEdgeReciprocal() to make the original RECIPROCAL. ");
 		emit drawEdgeReciprocal(v2, v1);
 
 	}
@@ -362,11 +361,10 @@ void Graph::addEdge (int v1, int v2, int weight, QString color, bool reciprocal)
 		m_graph [ source ]->addLinkFrom(target);
 		m_totalEdges++;
 	}
-	qDebug()<<"Graph: vertex "<< v1 << " reports that it has an edge to vertex "<< v2<< " with weight " << m_graph [ source ]->isLinkedTo(v2) << " and color "<<  color;
-	qDebug()<<"Graph: Storing edge color...";
+	qDebug()<<"Graph: addEdge() vertex "<< v1 << " reports that it has an edge to vertex "<< v2<< " with weight " << m_graph [ source ]->isLinkedTo(v2) << " and color "<<  color<<" -- Storing edge color...";
 	m_graph[ source]->setOutLinkColor(v2, color);
 
-	qDebug( "Graph: Now vertex %i has %i edges. Total Edges %i. Printing Matrix...", v1,  edgesFrom(v1), m_totalEdges);
+	qDebug( "Graph: addEdge():: Now vertex %i has %i edges. Total Edges %i. Printing Matrix...", v1,  edgesFrom(v1), m_totalEdges);
 	graphModified=true;
 }
 

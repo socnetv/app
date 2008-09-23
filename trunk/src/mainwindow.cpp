@@ -108,7 +108,7 @@ MainWindow::MainWindow(const QString &fName) {
 
 	connect( &activeGraph, SIGNAL( drawEdge( int, int, bool, bool, QString, bool, bool)), graphicsWidget, SLOT( drawEdge( int, int, bool, bool, QString, bool, bool  ) )  ) ;
 
-	connect( &activeGraph, SIGNAL(drawEdgeReciprocal(int, int)),  graphicsWidget, SLOT(makeEdgeReciprocal(int, int)));
+	connect( &activeGraph, SIGNAL( drawEdgeReciprocal(int, int) ),  graphicsWidget, SLOT( drawEdgeReciprocal(int, int) ) );
 	
 
 	connect(moveSpringEmbedderBx, SIGNAL(stateChanged(int)),this, SLOT(layoutSpringEmbedder(int)));
@@ -276,7 +276,7 @@ void MainWindow::initActions(){
 	connect(viewSociomatrixAct, SIGNAL(activated()), this, SLOT(slotViewAdjacencyMatrix()));
 
 	createUniformRandomNetworkAct = new QAction(QIcon(":/images/net.png"), tr("Uniform (probability)"),  this);
-	createUniformRandomNetworkAct ->setShortcut(tr("Shift+U"));
+	createUniformRandomNetworkAct ->setShortcut(tr("Ctrl+U"));
 	createUniformRandomNetworkAct->setStatusTip(tr("Creates a uniformly distributed random network"));
 	createUniformRandomNetworkAct->setWhatsThis(tr("Uniform \n\nCreates a random network of uniform distribution"));
 	connect(createUniformRandomNetworkAct, SIGNAL(activated()), this, SLOT(slotCreateUniformRandomNetwork()));
@@ -287,7 +287,7 @@ void MainWindow::initActions(){
 	connect(createConnectedRandomNetworkAct, SIGNAL(activated()), this, SLOT(slotCreateConnectedRandomNetwork()));
 
 	createLatticeNetworkAct = new QAction( QIcon(":/images/net1.png"), tr("Physicist's Lattice"), this);
-	createLatticeNetworkAct ->setShortcut(tr("Shift+L"));
+	createLatticeNetworkAct ->setShortcut(tr("Ctrl+L"));
 	createLatticeNetworkAct->setStatusTip(tr("Creates a \"physicist's lattice\" network"));
 	createLatticeNetworkAct->setWhatsThis(tr("Lattice \n\nCreates a physicist's Lattice"));
 	connect(createLatticeNetworkAct, SIGNAL(activated()), this, SLOT(slotCreatePhysicistLatticeNetwork()));
@@ -320,7 +320,7 @@ void MainWindow::initActions(){
 	connect(addNodeAct, SIGNAL(activated()), this, SLOT(addNode()));
 
 	removeNodeAct = new QAction(QIcon(":/images/remove.png"),tr("Remove Node"), this);
-	removeNodeAct ->setShortcut(tr("Ctrl+R"));
+	removeNodeAct ->setShortcut(tr("Ctrl+Shift+A"));
 	removeNodeAct->setStatusTip(tr("Removes a node"));
 	removeNodeAct->setWhatsThis(tr("Remove Node\n\nRemoves a node from the network"));
 	connect(removeNodeAct, SIGNAL(activated()), this, SLOT(slotRemoveNode()));
@@ -394,13 +394,13 @@ void MainWindow::initActions(){
 
 
 	addLinkAct = new QAction(QIcon(":/images/plines.png"), tr("Add Link"),this);
-	addLinkAct->setShortcut(tr("Ctrl+L"));
+	addLinkAct->setShortcut(tr("Ctrl+E"));
 	addLinkAct->setStatusTip(tr("Adds a Link to a Node"));
 	addLinkAct->setWhatsThis(tr("Add Link\n\nAdds a Link to the network"));
 	connect(addLinkAct, SIGNAL(activated()), this, SLOT(slotAddLink()));
 	
 	removeLinkAct = new QAction(QIcon(":/images/disconnect.png"), tr("Remove"), this);
-	removeLinkAct ->setShortcut(tr("Ctrl+Shift+L"));
+	removeLinkAct ->setShortcut(tr("Ctrl+Shift+E"));
 	removeLinkAct->setStatusTip(tr("Removes a Link"));
 	removeLinkAct->setWhatsThis(tr("Remove Link\n\nRemoves a Link from the network"));
 	connect(removeLinkAct, SIGNAL(activated()), this, SLOT(slotRemoveLink()));
@@ -460,7 +460,7 @@ void MainWindow::initActions(){
 	transformNodes2LinksAct->setWhatsThis(tr("Transform Nodes LinksAct\n\nTransforms network so that nodes become links and vice versa"));
 	connect(transformNodes2LinksAct, SIGNAL(activated()), this, SLOT(slotTransformNodes2Links()));
 
-	symmetrizeAct= new QAction(tr("Symmetrize Edges"), this);
+	symmetrizeAct= new QAction(tr("Symmetrize Links"), this);
 	symmetrizeAct->setShortcut(tr("Shift+R"));
 	symmetrizeAct->setStatusTip(tr("Makes all edges reciprocal (thus, a symmetric graph)."));
 	symmetrizeAct->setWhatsThis(tr("Symmetrize Edges\n\nTransforms all arcs to double links (edges). The result is a symmetric network"));
@@ -2539,7 +2539,7 @@ void MainWindow::slotAddLink(){
 	if (min==max) return;
 
 	if (clickedJimNumber == -1) {
-		sourceNode=QInputDialog::getInteger(this, "Create new link, Step 1",tr("Choose source node ("+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"), min, 1, max , 1, &ok ) ;
+		sourceNode=QInputDialog::getInteger(this, "Create new link, Step 1",tr("This will draw a new link between two nodes. \nEnter source node ("+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"), min, 1, max , 1, &ok ) ;
 		if (!ok) {
 			statusBar()->showMessage("Add link operation cancelled.", statusBarDuration);
 			return;
@@ -2552,7 +2552,7 @@ void MainWindow::slotAddLink(){
 		qDebug ("MW: slotAddLink: Cant find sourceNode %i.", sourceNode);
 		return;
 	}
-	targetNode=QInputDialog::getInteger(this, "Create new link, Step 2", tr("Choose target node ("+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"),min, 1, max , 1, &ok)     ;
+	targetNode=QInputDialog::getInteger(this, "Create new link, Step 2", tr("Source node accepted. \n Now enter target node ("+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"),min, 1, max , 1, &ok)     ;
 	if (!ok) {
 		statusBar()->showMessage("Add link target operation cancelled.", statusBarDuration);
 		return;
@@ -2564,7 +2564,7 @@ void MainWindow::slotAddLink(){
 		return;
 	}
 	
-	weight=QInputDialog::getInteger(this, "Create new link, Step 3", tr("Choose weight of new link :"),1, 1, 10, 1, &ok);
+	weight=QInputDialog::getInteger(this, "Create new link, Step 3", tr("Source and target nodes accepted. \n Please, enter the weight of new link: "),1, 1, 10, 1, &ok);
 	if (!ok) {
 		statusBar()->showMessage("Add link operation cancelled.", statusBarDuration);
 		return;
@@ -2651,7 +2651,7 @@ void MainWindow::slotRemoveLink(){
 						break;
 					case 1:
 						clickedLink->unmakeReciprocal();  
-						graphicsWidget->removeItem(clickedLink);
+						//graphicsWidget->removeItem(clickedLink);
 						activeGraph.removeEdge(targetNode, sourceNode);
 //						graphicsWidget->drawEdge(i, j, false, drawArrowsAct->isChecked(), initLinkColor, false, false);
 						break;
