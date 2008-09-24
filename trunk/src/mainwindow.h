@@ -236,7 +236,9 @@ public slots:
 	void updateNodeCoords(int no, int x, int y);
 
 	//Called when user pushes the New Node button on the MW
- 	void addNode();
+ 	void addNode();	
+	//Called by graphicswidget when the user doubleclicks
+	void addNodeWithMouse(int, QPointF);
 	
 
 protected:

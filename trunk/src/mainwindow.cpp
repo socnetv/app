@@ -93,7 +93,7 @@ MainWindow::MainWindow(const QString &fName) {
 	connect( graphicsWidget, SIGNAL( windowResized(int, int)),this, SLOT( windowInfoStatusBar(int, int)) );  
 	connect( graphicsWidget, SIGNAL( changed() ), this, SLOT( graphChanged() ) ) ;
 
-	connect( graphicsWidget, SIGNAL( userDoubleClicked(int, QPointF) ), &activeGraph, SLOT( createVertex(int, QPointF) ) ) ;
+	connect( graphicsWidget, SIGNAL( userDoubleClicked(int, QPointF) ), this, SLOT( addNodeWithMouse(int, QPointF) ) ) ;
 	connect( graphicsWidget, SIGNAL( userMiddleClicked(int, int, int) ), &activeGraph, SLOT( createEdge(int, int, int) ) );
 	connect( graphicsWidget, SIGNAL( openNodeMenu() ), this, SLOT(openNodeContextMenu() ) ) ;
 	connect( graphicsWidget, SIGNAL( openEdgeMenu() ), this, SLOT(openLinkContextMenu() ) ) ;
@@ -1110,7 +1110,7 @@ void MainWindow::initDockWidget(){
 	addNodeBt->setToolTip(tr("Add a new node to the network (Ctrl+A). \n\n Alternately, you can create a new node \nin a specific position by double-clicking \non that spot of the canvas."));
 	removeNodeBt= new QPushButton(QIcon(":/images/remove.png"),tr("&Remove Node"));	
 	removeNodeBt->setFocusPolicy(Qt::NoFocus);	
-	removeNodeBt->setToolTip(tr("Remove a node from the network (Ctrl+R). \n\n Alternately, you can remove a node \nby right-clicking on it."));
+	removeNodeBt->setToolTip(tr("Remove a node from the network (Ctrl+Shift+A). \n\n Alternately, you can remove a node \nby right-clicking on it."));
 
 	addLinkBt= new QPushButton(QIcon(":/images/connect.png"),tr("Add &Link"));	
 	addLinkBt->setFocusPolicy(Qt::NoFocus);	
@@ -1690,6 +1690,18 @@ void MainWindow::fileType(int type, QString networkName, int aNodes, int totalLi
 void MainWindow::addNode() {
 	qDebug("MW: addNode(). Calling activeGraph::createVertex() for a vertice named -1");
 	activeGraph.createVertex(-1, graphicsWidget->width(),  graphicsWidget->height());
+	statusBar()->showMessage(tr("New node (numbered %1) added.").arg(activeGraph.lastVertexNumber()) ,statusBarDuration);
+}
+
+
+/**
+	Calls Graph::createVertex method to add a new node into the activeGraph.
+	Called on double clicking
+*/
+void MainWindow::addNodeWithMouse(int num, QPointF p) {
+	qDebug("MW: addNodeWithMouse(). Calling activeGraph::createVertex() for a vertice named %i", num);
+	activeGraph.createVertex(num, p);
+	statusBar()->showMessage(tr("New node (numbered %i) added.").arg(activeGraph.lastVertexNumber()) ,statusBarDuration);
 }
 
 
@@ -2552,7 +2564,7 @@ void MainWindow::slotAddLink(){
 		qDebug ("MW: slotAddLink: Cant find sourceNode %i.", sourceNode);
 		return;
 	}
-	targetNode=QInputDialog::getInteger(this, "Create new link, Step 2", tr("Source node accepted. \n Now enter target node ("+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"),min, 1, max , 1, &ok)     ;
+	targetNode=QInputDialog::getInteger(this, "Create new link, Step 2", tr("Source node accepted. \nNow enter target node ("+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"),min, 1, max , 1, &ok)     ;
 	if (!ok) {
 		statusBar()->showMessage("Add link target operation cancelled.", statusBarDuration);
 		return;
