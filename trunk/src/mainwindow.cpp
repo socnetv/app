@@ -276,7 +276,7 @@ void MainWindow::initActions(){
 	connect(viewSociomatrixAct, SIGNAL(activated()), this, SLOT(slotViewAdjacencyMatrix()));
 
 	createUniformRandomNetworkAct = new QAction(QIcon(":/images/net.png"), tr("Uniform (probability)"),  this);
-	createUniformRandomNetworkAct ->setShortcut(tr("Ctrl+U"));
+	createUniformRandomNetworkAct ->setShortcut(tr("Shift+U"));
 	createUniformRandomNetworkAct->setStatusTip(tr("Creates a uniformly distributed random network"));
 	createUniformRandomNetworkAct->setWhatsThis(tr("Uniform \n\nCreates a random network of uniform distribution"));
 	connect(createUniformRandomNetworkAct, SIGNAL(activated()), this, SLOT(slotCreateUniformRandomNetwork()));
@@ -287,7 +287,7 @@ void MainWindow::initActions(){
 	connect(createConnectedRandomNetworkAct, SIGNAL(activated()), this, SLOT(slotCreateConnectedRandomNetwork()));
 
 	createLatticeNetworkAct = new QAction( QIcon(":/images/net1.png"), tr("Physicist's Lattice"), this);
-	createLatticeNetworkAct ->setShortcut(tr("Ctrl+L"));
+	createLatticeNetworkAct ->setShortcut(tr("Shift+L"));
 	createLatticeNetworkAct->setStatusTip(tr("Creates a \"physicist's lattice\" network"));
 	createLatticeNetworkAct->setWhatsThis(tr("Lattice \n\nCreates a physicist's Lattice"));
 	connect(createLatticeNetworkAct, SIGNAL(activated()), this, SLOT(slotCreatePhysicistLatticeNetwork()));
@@ -394,13 +394,13 @@ void MainWindow::initActions(){
 
 
 	addLinkAct = new QAction(QIcon(":/images/plines.png"), tr("Add Link"),this);
-	addLinkAct->setShortcut(tr("Ctrl+E"));
+	addLinkAct->setShortcut(tr("Ctrl+L"));
 	addLinkAct->setStatusTip(tr("Adds a Link to a Node"));
 	addLinkAct->setWhatsThis(tr("Add Link\n\nAdds a Link to the network"));
 	connect(addLinkAct, SIGNAL(activated()), this, SLOT(slotAddLink()));
 	
 	removeLinkAct = new QAction(QIcon(":/images/disconnect.png"), tr("Remove"), this);
-	removeLinkAct ->setShortcut(tr("Ctrl+Shift+E"));
+	removeLinkAct ->setShortcut(tr("Ctrl+Shift+L"));
 	removeLinkAct->setStatusTip(tr("Removes a Link"));
 	removeLinkAct->setWhatsThis(tr("Remove Link\n\nRemoves a Link from the network"));
 	connect(removeLinkAct, SIGNAL(activated()), this, SLOT(slotRemoveLink()));
