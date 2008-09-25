@@ -627,15 +627,6 @@ void MainWindow::initActions(){
 	/**
 	Statistics menu actions
 	*/
-	countNodes = new QAction(QIcon(":/images/node.png"), tr("Total &Nodes"), this);
-	countNodes->setStatusTip(tr("Counts all nodes of the network"));
-	countNodes->setWhatsThis(tr("Total Nodes\n\n This is the total number of nodes in the network."));
-	connect(countNodes, SIGNAL(activated()), this, SLOT(slotActiveNodes()));
-
-	countLinks = new QAction(QIcon(":/images/net.png"), tr("Total &Links (In and Out)"), this);
-	countLinks->setStatusTip(tr("Counts all (in and out) links of the network"));
-	countLinks->setWhatsThis(tr("Total Edges\n\n This is the total number of in and out links in the network."));
-	connect(countLinks, SIGNAL(activated()), this, SLOT(slotActiveLinks()));
 
 	symmetryAct = new QAction(QIcon(":/images/symmetry.png"), tr("Network Symmetry"), this);
 	symmetryAct ->setShortcut(tr("Shift+S"));
@@ -3698,19 +3689,6 @@ void MainWindow::slotLayoutLevelCentralityInformational(){
 
 
 
-/**
-*	Displays the amount of active links on the scene.
-*/
-void MainWindow::slotActiveLinks() {
-	if ((totalLinks=activeLinks())==-1 ) {
-		statusBar()->showMessage (QString(tr("ERROR IN LINKS COUNT.")), statusBarDuration) ;
-		return;
-	}
-	else
-		QMessageBox::information(this,"Total Links","In and out Links = "+QString::number(totalLinks), "OK",0);
-	statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
-}
-
 
 
 
@@ -3726,22 +3704,6 @@ int MainWindow::activeLinks(){
 
 
 
-
-
-/**
-*	Displays the amount of active nodes on the scene.
-*/
-void MainWindow::slotActiveNodes(){
-	int aNodes=-1;
-	if ((aNodes=activeNodes())==-1 ) {
-		statusBar()->showMessage (QString(tr("ERROR IN ACTORS COUNT.")), statusBarDuration) ;
-		return;
-	}
-	else
-		QMessageBox::information(this,"Total Nodes","Nodes in active network = "+QString::number(aNodes),"OK",0);
-	statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
-
-}
 
 
 
