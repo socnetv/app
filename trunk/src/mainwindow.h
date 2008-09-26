@@ -130,7 +130,6 @@ public slots:
 	void slotCreatePhysicistLatticeNetwork();
 
 	//EDIT MENU
-	
 	void slotFindNode();
 	void slotAddLink();
 	void slotRemoveNode();
@@ -183,8 +182,6 @@ public slots:
 	void slotViewDistanceMatrix();
 	void slotDistance();
 	void slotDiameter();
-	void slotActiveNodes();
-	void slotActiveLinks();
 	void slotCheckSymmetry();
 	void slotNetworkDensity();
 	void slotCentralityOutDegree();
@@ -284,7 +281,7 @@ private:
 	QAction *changeBackColorAct, *changeAllNodesColorAct, *changeAllLinksColorAct, *changeNumbersColorAct;
 	QAction *drawLinksWeightsAct, *showNumbersLinksWeightsAct, *showLinksAct , *showLinksArrowsAct, *drawLinksBezier;
 	QAction *viewToolBar, *viewStatusBar, *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
-	QAction *netDensity, *symmetryAct, *countNodes, *countLinks,  *distanceAct, *distanceMatrixAct, *diameterAct;
+	QAction *netDensity, *symmetryAct,   *distanceAct, *distanceMatrixAct, *diameterAct;
 	QAction *cOutDegreeAct, *cInDegreeAct, *cClosenessAct, *cBetweenessAct, *cInformationalAct, *cGraphAct, *cStressAct, *cEccentAct;
 	QAction *randLayoutAct, *randCircleLayoutAct, *circleOutDegreeLayoutAct, *circleInDegreeLayoutAct, *circleClosenessLayoutAct;
 	QAction *antialiasingAct;

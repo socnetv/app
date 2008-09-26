@@ -986,8 +986,6 @@ void MainWindow::initMenuBar() {
 
 /** menuBar entry: statistics menu */
 	statMenu = menuBar()->addMenu(tr("&Statistics"));
-	statMenu -> addAction (countNodes);
-	statMenu -> addAction (countLinks);
 	statMenu -> addAction (symmetryAct);
 	statMenu -> addAction (netDensity);
 
