@@ -7,7 +7,7 @@
 <meta name="GENERATOR" content="Dimitris Kalamaras"/>
 <meta name="AUTHOR"  content="Dimitris Kalamaras"/>
 <meta name="CREATED" content="20070111"/>
-<meta name="CHANGED" content="20070111"/>
+<meta name="CHANGED" content="20080926"/>
 <meta name="KEYWORDS"    content="Social Networks Visualiser, linux, SNA, graphs, visualisation, layout, Dimitris Kalamaras,GNU,GPL"/>
 <meta name="SUBJECT"     content="Social Networks Visualiser"/>
 <meta name="robots" content="all"/>
@@ -61,7 +61,8 @@ To compile or install SocNetV, you need <em>Qt 4.4 and QtWebKit</em> development
 <br />Note that, SocNetV 0.45+ is incompatible with Qt &lt;  4.4. Upgrade your Qt version! ;)
 
 <br /><br/>
-At the moment, there are four ways to install SocNetV:											
+At the moment, there are four ways to install SocNetV:
+
 											</td></tr>
 										<tr><td> 
 											<b>A. Compile from Source code</b>
@@ -100,7 +101,7 @@ socnetv
 										<tr><td> 
 											<b>B. Install from Binary packages</b>
 											<ul>
-											<li><em>For Debian &amp; Debian-derived distros</em><br /> <br />Add  the line <br /><br />
+											<li><em>For Debian &amp; Debian-derived distros</em><br /> <br />SocNetV is in 'experimental' repo. Add  the line <br /><br />
 <code> deb http://ftp.debian.org/debian/ experimental main </code>
 <br />
 <br /> to your sources.list; save it, then type in:<br /><br />
@@ -110,6 +111,20 @@ sudo apt-get install -t experimental socnetv
 </code>
 <br /><br /> <br />
 </li>
+
+											<li><em>For openSUSE</em> <br /> <br /> We maintain a <a href="http://download.opensuse.org/repositories/home:/oxy86/openSUSE_11.0/repodata/repoview/socnetv-0-0.48-6.1.html" target="_blank">repository of binary packages</a>. To add it, copy/paste this line (it is one line, not two!) into a terminal: 
+<br /><br />
+<code>
+sudo zypper ar http://download.opensuse.org/repositories/home:/oxy86/openSUSE_11.0/home:oxy86.repo
+</code>
+
+<br /><br /> and then install the application with: <br /><br />
+<code>
+sudo zypper in socnetv
+</code>
+<br /><br /> <br />
+											</li>
+
 											<li><em>For Gentoo</em> <br /> <br /> There is an <a href="http://php.apsique.com/files/SocNetV-0.43.1.ebuild" target="_blank">older Gentoo (ebuild) package</a> maintained by Gentoo Foundation.
 											</li>
 											</ul>
@@ -117,9 +132,7 @@ sudo apt-get install -t experimental socnetv
 										<tr> <td> 
 											<b>C. Klik-able setup</b>
 												<ul>
-												<li>If you have Linux, you can run SocNetV without installing it. Go to <br />
-<a href="http://socnetv.klik.atekon.de/" target="_blank">http://socnetv.klik.atekon.de/</a> <br /> 
-and then click on the large blue "download" button (to the bottom of the page). Many thanks to the klik team. :)
+												<li>If you have Linux, and don't mind running an older version, you can try SocNetV without actually installing it. Just go to <a href="http://socnetv.klik.atekon.de/" target="_blank">http://socnetv.klik.atekon.de/</a> and then click on the large blue "download" button (to the bottom of the page). Many thanks to the klik team. <br />Warning: klik service is not always updated with the latest version of SocNetV. 
 												</li>
 												</ul>
 
