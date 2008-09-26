@@ -1,7 +1,7 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser
  version: 0.48
- Written in Qt 4.4 with KDevelop 
+ Written in Qt 4.4
  
                          graphicswidget.h  -  description
                              -------------------
@@ -80,7 +80,7 @@ public slots:
 	void edgeClicked(Edge *);
 	void openNodeContextMenu();
 	void openEdgeContextMenu();
-	void nodeMovement(int state, int type); //used by dynamic layouts: Spring Embedder, Fruchterman, etc...
+	void nodeMovement(int state, int type); 	//used by dynamic layouts: Spring Embedder, Fruchterman, etc...
 	void moveNode(int, int, int);			//Called from Graph when creating random nets.
 	void changeZoom(int value); 
 	void startEdge(Node *node);	
@@ -115,7 +115,7 @@ private:
 	QGraphicsItem *moving;
 	QPointF moving_start;
 	Node *firstNode, *secondNode ;
-	vector<Node*> nodeVector;	//used by addEdge() method
+	vector<Node*> nodeVector;					//used by addEdge() method
 	StringToEdgeMap edgesMap;
 };
 
