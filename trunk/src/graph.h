@@ -149,6 +149,8 @@ public:
 
 	int totalEdges ();						//Returns the sum of edges inside m_graph
 
+	float density();						//Returns ratio of present edges to total possible edges.
+
 	bool symmetricEdge(int v1, int v2);				//Returns TRUE if (v1, v2) is symmetric.
 	bool isSymmetric();						//Returns TRUE if symmetricAdjacencyMatrix=TRUE
 	void symmetrize();						//Symmetrize all edges so that the network is undirected.
@@ -182,7 +184,7 @@ public:
 
 
 	/**RANDOM NETWORKS*/
-	void createUniformRandomNetwork(int, int);				//Creates a uniform random network
+	void createUniformRandomNetwork(int, double);				//Creates a uniform random network
 	void createPhysicistLatticeNetwork(int, int, double, double, double); 	//Creates a Circular lattice
 	void createSameDegreeRandomNetwork(int, int); 				//Creates a random network with the same degree in all nodes
 

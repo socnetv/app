@@ -1131,6 +1131,13 @@ void MainWindow::initDockWidget(){
 	edgesLCD=new QLCDNumber(5);
 	edgesLCD->setSegmentStyle(QLCDNumber::Flat);
 	edgesLCD->setToolTip(tr("Counts how many edges (in and out-Links) exist in the whole network."));
+
+	QLabel *labelDensityLCD = new QLabel;
+	labelDensityLCD->setText(tr("Density"));
+	densityLCD=new QLCDNumber(7);
+	densityLCD->setSegmentStyle(QLCDNumber::Flat);
+	densityLCD->setToolTip(tr("The density of a network is the ratio of existing links to all possible links (n(n-1)) between nodes."));
+
 	QLabel * labelOutLinkedNodesLCD= new QLabel;
 	labelOutLinkedNodesLCD -> setText (tr("OutLinked Nodes:"));
 	outLinkedNodesLCD=new QLCDNumber(5);
@@ -1170,21 +1177,24 @@ void MainWindow::initDockWidget(){
 	propertiesGrid -> addWidget(labelEdgesLCD, 0,1);
 	propertiesGrid -> addWidget(nodesLCD,1,0);
 	propertiesGrid -> addWidget(edgesLCD,1,1);
-	propertiesGrid -> addWidget(labelOutLinkedNodesLCD,2,0);
-	propertiesGrid -> addWidget(outLinkedNodesLCD,2,1);
-	propertiesGrid -> addWidget(labelInLinkedNodesLCD,3,0);
-	propertiesGrid -> addWidget(inLinkedNodesLCD,3,1);
-	propertiesGrid -> addWidget(labelReciprocalLinkedNodesLCD, 4,0);
-	propertiesGrid -> addWidget(reciprocalLinkedNodesLCD,4,1);
-	propertiesGrid -> addWidget(labelInLinksLCD, 5,0);
-	propertiesGrid -> addWidget(inLinksLCD,5,1);
-	propertiesGrid -> addWidget(labelOutLinksLCD, 6,0);
-	propertiesGrid -> addWidget(outLinksLCD,6,1);
+
+	propertiesGrid -> addWidget(labelDensityLCD, 2,0);
+	propertiesGrid -> addWidget(densityLCD,2,1);
+
+	propertiesGrid -> addWidget(labelOutLinkedNodesLCD,3,0);
+	propertiesGrid -> addWidget(outLinkedNodesLCD,3,1);
+	propertiesGrid -> addWidget(labelInLinkedNodesLCD,4,0);
+	propertiesGrid -> addWidget(inLinkedNodesLCD,4,1);
+	propertiesGrid -> addWidget(labelReciprocalLinkedNodesLCD, 5,0);
+	propertiesGrid -> addWidget(reciprocalLinkedNodesLCD,5,1);
+	propertiesGrid -> addWidget(labelInLinksLCD, 6,0);
+	propertiesGrid -> addWidget(inLinksLCD,6,1);
+	propertiesGrid -> addWidget(labelOutLinksLCD, 7,0);
+	propertiesGrid -> addWidget(outLinksLCD,7,1);
 
 	//create a box with title
 	QGroupBox *middleGroup = new QGroupBox(tr("Properties"), leftDock );
 	middleGroup-> setLayout (propertiesGrid);
-
 
 	// create some more widgets for the final box: "Layout"
 	QGroupBox *downGroup= new QGroupBox(tr("Layout"), mainGroup);
@@ -1383,8 +1393,10 @@ void MainWindow::initNet(){
 	//Clear LCDs
 	nodesLCD->display(activeGraph.vertices());
 	edgesLCD->display(activeGraph.totalEdges());
+	densityLCD->display(activeGraph.density());
 	inLinksLCD->display(0);
 	outLinksLCD->display(0);
+
 	inLinkedNodesLCD -> display(activeGraph.verticesWithInEdges());
 	outLinkedNodesLCD-> display(activeGraph.verticesWithOutEdges());
 	reciprocalLinkedNodesLCD->display(activeGraph.verticesWithReciprocalEdges());
@@ -2092,7 +2104,7 @@ void MainWindow::slotCreateUniformRandomNetwork(){
 		statusBar()->showMessage("You did not enter an integer. Aborting.", statusBarDuration);
 		return;
 	}
-	int probability= QInputDialog::getInteger(this,"Create random network", "Enter a link probability (0, 100):", 0, 0, 100, 2, &ok );
+	double probability= QInputDialog::getDouble(this,"Create random network", "Enter a link probability (0, 100):", 0.0, 0.0, 100.0, 2, &ok );
 	if (!ok) { 
 		statusBar()->showMessage("You did not enter an integer. Aborting.", statusBarDuration);
 		return;
@@ -2103,7 +2115,7 @@ void MainWindow::slotCreateUniformRandomNetwork(){
 	makeThingsLookRandom();  
 	statusBar()->showMessage(tr("Creating uniform random network. Please wait... ") ,statusBarDuration);
 
-	qDebug("MW Uniform network:  Create uniform random network of %i nodes and %i link probability.",newNodes, probability);
+	qDebug("MW Uniform network:  Create uniform random network of %i nodes and %f link probability.",newNodes, probability);
 
 	if (showProgressBarAct->isChecked()){
 		progressDialog= new QProgressDialog("Creating random network. Please wait (or disable me from Options > View > ProgressBar, next time ;)).", "Cancel", 0, newNodes+newNodes, this);
@@ -2424,7 +2436,8 @@ void MainWindow::graphChanged(){
 	
 	nodesLCD->display(activeGraph.vertices());
 	edgesLCD->display(activeGraph.totalEdges());
-	
+	densityLCD->display( activeGraph.density() );
+
 	inLinkedNodesLCD -> display(activeGraph.verticesWithInEdges());
 	outLinkedNodesLCD-> display(activeGraph.verticesWithOutEdges());
 	reciprocalLinkedNodesLCD -> display(activeGraph.verticesWithReciprocalEdges());
@@ -3756,8 +3769,8 @@ void MainWindow::slotNetworkDensity() {
 		statusBar()->showMessage (QString(tr("ERROR in nodes count")), statusBarDuration) ;
 		return;
 	}
-	float density  =   (float) activeGraph.totalEdges()/(float)(activeGraph.vertices()*(activeGraph.vertices()-1.0));
-	QMessageBox::information(this, "Density", tr("Network density = ")+QString::number(density),"OK",0);
+	
+	QMessageBox::information(this, "Density", tr("Network density = ")+QString::number(activeGraph.density()),"OK",0);
 	statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
 }
 

@@ -593,6 +593,15 @@ int Graph::vertices () {
 }
 
 
+float Graph::density() {
+	qDebug("Graph: density()");
+	int vert=vertices();
+	if (vert!=0 && vert!=1)
+		return  (float) totalEdges() / (float)(vert*(vert-1.0));
+	else return 0;
+}
+
+
 /**
 	Returns the sum of vertices having outEdges
 */
@@ -1758,7 +1767,7 @@ void Graph::layoutLevelCentrality(double maxWidth, double maxHeight, int Central
 
 /** layman's attempt to create a random network
 */
-void Graph::createUniformRandomNetwork(int vert, int probability){
+void Graph::createUniformRandomNetwork(int vert, double probability){
 	qDebug("Graph: createUniformRandomNetwork");
 	bool showLabels = false;
 	int progressCounter=0;
@@ -1775,7 +1784,7 @@ void Graph::createUniformRandomNetwork(int vert, int probability){
 	for (register int i=0;i<vert; i++) {
 		for (register int j=0; j<vert; j++) {
 			qDebug("Random Experiment for link creation between %i and %i:", i+1, j+1);
-			if (rand() %100 < probability)    {
+			if (rand() % 100 < probability)    {
 				qDebug("Creating link!");
 				createEdge(i+1, j+1, 1, "black", false, true, false);
 			}
