@@ -1116,19 +1116,19 @@ void MainWindow::initDockWidget(){
 	buttonsGrid -> addWidget(addLinkBt,1,0);
 	buttonsGrid -> addWidget(removeLinkBt,1,1);
 	//create a box with a title & a frame. Inside, display the vertical layout of widgets
-	QGroupBox *upperGroup= new QGroupBox(tr("Edit"), leftDock);
+	QGroupBox *upperGroup= new QGroupBox(tr("Edit Network"), leftDock);
 	upperGroup->setLayout(buttonsGrid);
 
 
 	//create widgets for middle group Properties 
-	QLabel *labelNodeLCD = new QLabel;
-	labelNodeLCD->setText(tr("Total Nodes"));
+	QLabel *labelNodesLCD = new QLabel;
+	labelNodesLCD->setText(tr("Total Nodes"));
 	QLabel *labelEdgesLCD = new QLabel;
 	labelEdgesLCD->setText(tr("Total Edges"));
-	nodesLCD=new QLCDNumber(5);
+	nodesLCD=new QLCDNumber(7);
 	nodesLCD->setSegmentStyle(QLCDNumber::Flat);
 	nodesLCD->setToolTip(tr("Counts how many nodes (vertices) exist in the whole network."));
-	edgesLCD=new QLCDNumber(5);
+	edgesLCD=new QLCDNumber(7);
 	edgesLCD->setSegmentStyle(QLCDNumber::Flat);
 	edgesLCD->setToolTip(tr("Counts how many edges (in and out-Links) exist in the whole network."));
 
@@ -1140,32 +1140,19 @@ void MainWindow::initDockWidget(){
 
 	QLabel * labelOutLinkedNodesLCD= new QLabel;
 	labelOutLinkedNodesLCD -> setText (tr("OutLinked Nodes:"));
-	outLinkedNodesLCD=new QLCDNumber(5);
+	outLinkedNodesLCD=new QLCDNumber(7);
 	outLinkedNodesLCD->setSegmentStyle(QLCDNumber::Flat);
 	outLinkedNodesLCD->setToolTip(tr("This the number of nodes with outLinks\n to another node. They may also have \ninLinks or reciprocal links. \nMeaningful on directed graphs."));
 	QLabel * labelInLinkedNodesLCD = new QLabel;
 	labelInLinkedNodesLCD -> setText (tr("InLinked Nodes:"));
-	inLinkedNodesLCD=new QLCDNumber(5);
+	inLinkedNodesLCD=new QLCDNumber(7);
 	inLinkedNodesLCD->setSegmentStyle(QLCDNumber::Flat);
 	inLinkedNodesLCD->setToolTip(tr("This the number of nodes with inLinks \nfrom another node. These may also have \noutLinks or reciprocal links.\nMeaningful on directed graphs."));
 	QLabel * labelReciprocalLinkedNodesLCD = new QLabel;
 	labelReciprocalLinkedNodesLCD-> setText (tr("Reciprocal-Linked:"));
-	reciprocalLinkedNodesLCD=new QLCDNumber(5);
+	reciprocalLinkedNodesLCD=new QLCDNumber(7);
 	reciprocalLinkedNodesLCD->setSegmentStyle(QLCDNumber::Flat);
 	reciprocalLinkedNodesLCD->setToolTip(tr("This the number of nodes with reciprocal links, \nnamely, both inLinks and outLinks to another node."));
-
-	QLabel *labelInLinksLCD = new QLabel;
-	labelInLinksLCD -> setText (tr("Node InLinks:"));
-	labelInLinksLCD -> setToolTip (tr("This is the number of inLinks of the last node you clicked on."));
-	inLinksLCD=new QLCDNumber(5);
-	inLinksLCD->setSegmentStyle(QLCDNumber::Flat);
-	inLinksLCD -> setToolTip (tr("This is the number of inLinks of the last node you clicked on."));
-	QLabel *labelOutLinksLCD = new QLabel;
-	labelOutLinksLCD -> setText (tr("Node OutLinks:"));
-	labelOutLinksLCD -> setToolTip (tr("This is the number of outLinks of the last node you clicked on."));
-	outLinksLCD=new QLCDNumber(5);
-	outLinksLCD->setSegmentStyle(QLCDNumber::Flat);
-	outLinksLCD -> setToolTip (tr("This is the number of outLinks of the last node you clicked on."));
 
 	//create a grid layout
 	QGridLayout *propertiesGrid = new QGridLayout(leftDock);
@@ -1173,7 +1160,7 @@ void MainWindow::initDockWidget(){
 	propertiesGrid -> setColumnMinimumWidth(0, 10);
 	propertiesGrid -> setColumnMinimumWidth(1, 10);
 
-	propertiesGrid -> addWidget(labelNodeLCD, 0,0);
+	propertiesGrid -> addWidget(labelNodesLCD, 0,0);
 	propertiesGrid -> addWidget(labelEdgesLCD, 0,1);
 	propertiesGrid -> addWidget(nodesLCD,1,0);
 	propertiesGrid -> addWidget(edgesLCD,1,1);
@@ -1187,14 +1174,46 @@ void MainWindow::initDockWidget(){
 	propertiesGrid -> addWidget(inLinkedNodesLCD,4,1);
 	propertiesGrid -> addWidget(labelReciprocalLinkedNodesLCD, 5,0);
 	propertiesGrid -> addWidget(reciprocalLinkedNodesLCD,5,1);
-	propertiesGrid -> addWidget(labelInLinksLCD, 6,0);
-	propertiesGrid -> addWidget(inLinksLCD,6,1);
-	propertiesGrid -> addWidget(labelOutLinksLCD, 7,0);
-	propertiesGrid -> addWidget(outLinksLCD,7,1);
+
 
 	//create a box with title
-	QGroupBox *middleGroup = new QGroupBox(tr("Properties"), leftDock );
+	QGroupBox *middleGroup = new QGroupBox(tr("Network Properties"), leftDock );
 	middleGroup-> setLayout (propertiesGrid);
+
+
+	//create a grid layout for node properties
+	QGridLayout *nodeGrid = new QGridLayout(leftDock);
+
+	QLabel *labelSelectedNodeLCD = new QLabel;
+	labelSelectedNodeLCD -> setText (tr("Node Number:"));
+	labelSelectedNodeLCD -> setToolTip (tr("This is the number of the last selected node."));
+
+	selectedNodeLCD =new QLCDNumber(7);
+	selectedNodeLCD ->setSegmentStyle(QLCDNumber::Flat);
+
+	QLabel *labelInLinksLCD = new QLabel;
+	labelInLinksLCD -> setText (tr("Node InLinks:"));
+	labelInLinksLCD -> setToolTip (tr("This is the number of inLinks of the last node you clicked on."));
+	inLinksLCD=new QLCDNumber(7);
+	inLinksLCD->setSegmentStyle(QLCDNumber::Flat);
+	inLinksLCD -> setToolTip (tr("This is the number of inLinks of the last node you clicked on."));
+	QLabel *labelOutLinksLCD = new QLabel;
+	labelOutLinksLCD -> setText (tr("Node OutLinks:"));
+	labelOutLinksLCD -> setToolTip (tr("This is the number of outLinks of the last node you clicked on."));
+	outLinksLCD=new QLCDNumber(7);
+	outLinksLCD->setSegmentStyle(QLCDNumber::Flat);
+	outLinksLCD -> setToolTip (tr("This is the number of outLinks of the last node you clicked on."));
+
+	nodeGrid -> addWidget(labelSelectedNodeLCD , 0,0);
+	nodeGrid -> addWidget(selectedNodeLCD ,0,1);
+	nodeGrid -> addWidget(labelInLinksLCD, 1,0);
+	nodeGrid -> addWidget(inLinksLCD,1,1);
+	nodeGrid -> addWidget(labelOutLinksLCD, 2,0);
+	nodeGrid -> addWidget(outLinksLCD,2,1);
+
+	//create a box with title
+	QGroupBox *nodeGroup = new QGroupBox(tr("Selected Node"), leftDock );
+	nodeGroup -> setLayout (nodeGrid);	
 
 	// create some more widgets for the final box: "Layout"
 	QGroupBox *downGroup= new QGroupBox(tr("Layout"), mainGroup);
@@ -1258,6 +1277,7 @@ void MainWindow::initDockWidget(){
 	QVBoxLayout *mainGroupLayout = new QVBoxLayout(mainGroup);
     	mainGroupLayout->addWidget(upperGroup);
     	mainGroupLayout->addWidget(middleGroup);
+	mainGroupLayout->addWidget(nodeGroup);
 	mainGroupLayout->addWidget(downGroup);
     	mainGroupLayout->addStretch(1);	
 
@@ -1396,7 +1416,7 @@ void MainWindow::initNet(){
 	densityLCD->display(activeGraph.density());
 	inLinksLCD->display(0);
 	outLinksLCD->display(0);
-
+	selectedNodeLCD->display(0);
 	inLinkedNodesLCD -> display(activeGraph.verticesWithInEdges());
 	outLinkedNodesLCD-> display(activeGraph.verticesWithOutEdges());
 	reciprocalLinkedNodesLCD->display(activeGraph.verticesWithReciprocalEdges());
@@ -2456,6 +2476,7 @@ void MainWindow::nodeInfoStatusBar ( Node *jim) {
 	clickedJimNumber=clickedJim->nodeNumber();
 	int inLinks=activeGraph.edgesTo(clickedJimNumber);
 	int outLinks=activeGraph.edgesFrom(clickedJimNumber);
+	selectedNodeLCD->display (clickedJimNumber);
 	inLinksLCD->display (inLinks);
 	outLinksLCD->display (outLinks);
 
@@ -5034,7 +5055,7 @@ void MainWindow::slotHelpAbout(){
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualiser " +VERSION+ "  codename: <b>SNAIL</b>"
 	"<p>(C) 2005-2008 by Dimitris V. Kalamaras"
 	"<br> dimitris.kalamaras@gmail.com"
-	"<p><b>Last revision: </b> Sun, Sep 21, 2008</p>"
+	"<p><b>Last revision: </b> Fri, Sep 27, 2008</p>"
 
 
 	"<p><b>Fortune cookie: </b><br> \""  + fortuneCookie[randomCookie]  +"\""
