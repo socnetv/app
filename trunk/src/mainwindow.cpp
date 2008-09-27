@@ -422,11 +422,13 @@ void MainWindow::initActions(){
 	connect(changeLinkWeightAct, SIGNAL(activated()), this, SLOT(slotChangeLinkWeight()));
 
 	filterNodesAct = new QAction(tr("Filter Nodes"), this);
+	filterNodesAct -> setEnabled(false);
 	filterNodesAct->setStatusTip(tr("Filters Nodes of some value out of the network"));
 	filterNodesAct->setWhatsThis(tr("Filter Nodes\n\nFilters Nodes of some value out of the network."));
 	connect(filterNodesAct, SIGNAL(activated()), this, SLOT(slotFilterNodes()));
 
 	filterLinksAct = new QAction(tr("Filter Links"), this);
+	filterLinksAct -> setEnabled(false);
 	filterLinksAct->setStatusTip(tr("Filters Links of some weight out of the network"));
 	filterLinksAct->setWhatsThis(tr("Filter Links\n\nFilters Link of some weight out of the network."));
 	connect(filterLinksAct, SIGNAL(activated()), this, SLOT(slotFilterLinks()));
@@ -587,6 +589,7 @@ void MainWindow::initActions(){
 
 	FRLayoutAct= new QAction( tr("Fruchterman-Reingold"),	this);
 	FRLayoutAct->setShortcut(tr("Alt+2"));
+	FRLayoutAct->setEnabled(false);
 	FRLayoutAct->setStatusTip(tr("Repelling forces between all nodes, and attracting forces between adjacent nodes."));
 	FRLayoutAct->setWhatsThis(tr("Fruchterman-Reingold Layout\n\n Embeds a layout all nodes according to a model in which	repelling forces are used between every pair of nodes, while attracting forces are used only between adjacent nodes. The algorithm continues until the system retains its equilibrium state where all forces cancel each other."));
 	connect(FRLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutFruchterman()));
@@ -1226,6 +1229,7 @@ void MainWindow::initDockWidget(){
 	moveSpringEmbedderBx->setToolTip(tr("Embeds a spring-gravitational model on the network, where \neach node is regarded as physical object reppeling all \nother nodes, while springs between connected nodes attact them. \nThe result is \nconstant movement. This is a very SLOW process on networks with N > 100!"));
 
 	moveFruchtermanBx = new QCheckBox(tr("Fruchterman-Reingold") );
+	moveFruchtermanBx ->setEnabled(false);
 	moveFruchtermanBx->setToolTip(tr("!"));
 
 	moveKamandaBx= new QCheckBox(tr("Kamanda-Kwei") );
@@ -4552,7 +4556,8 @@ void MainWindow::changeAllNodesSize(int size) {
 		}
 	}
 	initNodeSize = size;
-	graphicsWidget->setInitNodeSize(initNodeSize);
+	//graphicsWidget->setInitNodeSize(initNodeSize);
+	activeGraph.setInitVertexSize(initNodeSize);
 	qDebug ("MW: changeAllNodesSize: changing to %i", size);
 	QList<QGraphicsItem *> list=scene->items();
 	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) 
@@ -4581,6 +4586,7 @@ void MainWindow::slotChangeAllNodesShape() {
 				activeGraph.setVertexShape ((*jim).nodeNumber(), newShape);
 			}
 		graphChanged();
+		activeGraph.setInitVertexShape(newShape);
 		statusBar()->showMessage (QString(tr("All shapes have been changed. Ready")), statusBarDuration) ;
 	} else {
 		//user pressed Cancel
@@ -4830,7 +4836,8 @@ void MainWindow::slotAllNodesColor(){
 				activeGraph.setVertexColor (jim->nodeNumber(), initNodeColor);
 				graphChanged();
 			}
-		graphicsWidget->setInitNodeColor(initNodeColor);
+//		graphicsWidget->setInitNodeColor(initNodeColor);
+		activeGraph.setInitVertexColor(initNodeColor);
 		QApplication::restoreOverrideCursor();
 		statusBar()->showMessage(tr("Ready. ") ,statusBarDuration);
     	} 
@@ -4861,7 +4868,8 @@ void MainWindow::slotAllLinksColor(){
 				activeGraph.setEdgeColor (link->sourceNodeNumber(), link->targetNodeNumber(), initLinkColor);
 				graphChanged();
 			}
-		graphicsWidget->setInitLinkColor(initLinkColor);
+		activeGraph.setInitEdgeColor(initLinkColor);
+		//graphicsWidget->setInitLinkColor(initLinkColor);
 		QApplication::restoreOverrideCursor();
 		statusBar()->showMessage(tr("Ready. ") ,statusBarDuration);
 

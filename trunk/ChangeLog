@@ -6,19 +6,21 @@
 ChangeLog:
 
 
-Version 0.48 - Sep 30 2008
+Version 0.48 - Sep 28 2008
 Codename: "Road to nowhere?"
 ------------------------------
---Removing symmetric edges, asks what to remove.
+--Removing symmetric edges, now asks what direction to remove.
 --New layout method: node sizes according to their indegrees.
 --No node limit. Load any network you want (make a coffee while waiting :)).
 --loadPajek() recognizes Arcslists and Matrix edges formats.
 --Edges are being drawed once (faster loading and node movement).
 --Graph API simplification and "standardization"
+--New LCD widget displaying network density and some improvements to the dock.
+--In-file declared  node colors and shapes are used as they should.
 --Fixed bugs in removeNode methods.
---Fixed lots of bugs in loadPajek(). We declare it stable. :)
+--Lots of bugfixes in loadPajek() method. 
 --Documentation update
---Progress Bars (F10) appear when creating random nets.
+--Progress Bars (F10) appear when creating random nets > 300 nodes.
 --RPM repository for openSUSE at http://download.opensuse.org/repositories/home:/oxy86/openSUSE_11.0
 --SocNetV has a new, modern logo. It still resembles a snail though. ;)
 
