@@ -9,6 +9,7 @@ ChangeLog:
 Version 0.48 - Sep 28 2008
 Codename: "Road to nowhere?"
 ------------------------------
+--Erdos-Renyi random network creation.
 --Removing symmetric edges, now asks what direction to remove.
 --New layout method: node sizes according to their indegrees.
 --No node limit. Load any network you want (make a coffee while waiting :)).

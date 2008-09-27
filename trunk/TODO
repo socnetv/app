@@ -1,12 +1,12 @@
 FIXED
 =====
 
---FIXME: isSymmetric not functioning (check a-symmetry.net)
+--FIXME: draw own links.
+--FIXME: isSymmetric not functioning well (check a-symmetry.net)
 --FIXME: When many lines intersect, right-click > removeLink may remove wrong link!
 
 --TODO Transform actors to links //COMMENTED OUT
 --FIXME: GraphML files may crash SocNetV.
-
 
 --FIXME: 40-actors-non-symmetric crashed on Betweeness centr.
 
@@ -16,7 +16,7 @@ FIXED
 TODO & KNOWN BUGS
 =================
 
--- TODO: ERdos-Renyi, Small Worlds.
+-- TODO: Small Worlds.
 
 - TODO: CLUSTERING by betweeness, see http://iv.slis.indiana.edu/sw/bc.html
 http://tyna.gersteinlab.org/tyna/supp.jsp
