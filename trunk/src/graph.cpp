@@ -1767,8 +1767,8 @@ void Graph::layoutLevelCentrality(double maxWidth, double maxHeight, int Central
 
 /** layman's attempt to create a random network
 */
-void Graph::createUniformRandomNetwork(int vert, double probability){
-	qDebug("Graph: createUniformRandomNetwork");
+void Graph::createRandomNetErdos(int vert, double probability){
+	qDebug("Graph: createRandomNetErdos");
 	bool showLabels = false;
 	int progressCounter=0;
 	showLabels = ( (MainWindow*)parent() )->showLabels();
@@ -1776,7 +1776,7 @@ void Graph::createUniformRandomNetwork(int vert, double probability){
 	for (register int i=0; i< vert ; i++) {
 		int x=10+rand() %640;
 		int y=10+rand() %480;
-		qDebug("Graph: createUniformRandomNetwork, new node i=%i, at x=%i, y=%i", i+1, x,y);
+		qDebug("Graph: createRandomNetErdos, new node i=%i, at x=%i, y=%i", i+1, x,y);
 		createVertex(i+1,initVertexSize,initVertexColor, QString::number (i+1), initVertexLabelColor, QPoint(x, y), initVertexShape);
 		progressCounter++;
 		emit updateProgressDialog( progressCounter );
@@ -1786,7 +1786,7 @@ void Graph::createUniformRandomNetwork(int vert, double probability){
 			qDebug("Random Experiment for link creation between %i and %i:", i+1, j+1);
 			if (rand() % 100 < probability)    {
 				qDebug("Creating link!");
-				createEdge(i+1, j+1, 1, "black", false, true, false);
+				createEdge(i+1, j+1, 1, "black", true, true, false);
 			}
 			else 
 				qDebug("Will not create link!");
@@ -1804,7 +1804,7 @@ void Graph::createUniformRandomNetwork(int vert, double probability){
 /** layman's attempt to create a random Lattice network.
 */
 
-void Graph::createPhysicistLatticeNetwork(int vert, int degree,double x0, double y0, double radius){
+void Graph::createRandomNetPhysLattice(int vert, int degree,double x0, double y0, double radius){
 	qDebug("Graph: createPhysicistLatticeNetwork");
 	int x=0;
 	int y=0;
@@ -1875,6 +1875,17 @@ void Graph::createSameDegreeRandomNetwork(int vert, int degree){
 
 }
 
+
+
+/** 
+	Calculates x! factorial...
+*/
+int Graph:: factorial(int x) {
+	int tmp;
+	if(x <= 1) return 1;
+	tmp = x * factorial(x - 1);
+	return tmp;
+}
 
 
 

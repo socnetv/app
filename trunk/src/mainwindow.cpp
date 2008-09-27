@@ -275,11 +275,11 @@ void MainWindow::initActions(){
 	viewSociomatrixAct->setWhatsThis(tr("View Network file\n\nDisplays the adjacency matrix of the active network"));
 	connect(viewSociomatrixAct, SIGNAL(activated()), this, SLOT(slotViewAdjacencyMatrix()));
 
-	createUniformRandomNetworkAct = new QAction(QIcon(":/images/net.png"), tr("Uniform (probability)"),  this);
+	createUniformRandomNetworkAct = new QAction(QIcon(":/images/net.png"), tr("Erdos-Renyi G(n,p)"),  this);
 	createUniformRandomNetworkAct ->setShortcut(tr("Shift+U"));
-	createUniformRandomNetworkAct->setStatusTip(tr("Creates a uniformly distributed random network"));
-	createUniformRandomNetworkAct->setWhatsThis(tr("Uniform \n\nCreates a random network of uniform distribution"));
-	connect(createUniformRandomNetworkAct, SIGNAL(activated()), this, SLOT(slotCreateUniformRandomNetwork()));
+	createUniformRandomNetworkAct->setStatusTip(tr("Creates a random network where each edge is included with a given probability"));
+	createUniformRandomNetworkAct->setWhatsThis(tr("Uniform \n\nCreates a random network of G(n, p) model by connecting nodes randomly. Each edge is included in the graph with equal probability p, independently of the other edges"));
+	connect(createUniformRandomNetworkAct, SIGNAL(activated()), this, SLOT(slotCreateRandomNetErdos()));
 
 	createConnectedRandomNetworkAct = new QAction( tr("Connected"),  this);
 	createConnectedRandomNetworkAct->setStatusTip(tr("Creates a connected random network"));
@@ -290,7 +290,7 @@ void MainWindow::initActions(){
 	createLatticeNetworkAct ->setShortcut(tr("Shift+L"));
 	createLatticeNetworkAct->setStatusTip(tr("Creates a \"physicist's lattice\" network"));
 	createLatticeNetworkAct->setWhatsThis(tr("Lattice \n\nCreates a physicist's Lattice"));
-	connect(createLatticeNetworkAct, SIGNAL(activated()), this, SLOT(slotCreatePhysicistLatticeNetwork()));
+	connect(createLatticeNetworkAct, SIGNAL(activated()), this, SLOT(slotCreateRandomNetPhysLattice()));
 
 	createSameDegreeRandomNetworkAct = new QAction(QIcon(":/images/net.png"), tr("Same Degree"), this);
 	createSameDegreeRandomNetworkAct->setStatusTip(tr("Creates a random network where all nodes have the same degree."));
@@ -1124,13 +1124,13 @@ void MainWindow::initDockWidget(){
 	QLabel *labelNodesLCD = new QLabel;
 	labelNodesLCD->setText(tr("Total Nodes"));
 	QLabel *labelEdgesLCD = new QLabel;
-	labelEdgesLCD->setText(tr("Total Edges"));
+	labelEdgesLCD->setText(tr("Total Links"));
 	nodesLCD=new QLCDNumber(7);
 	nodesLCD->setSegmentStyle(QLCDNumber::Flat);
 	nodesLCD->setToolTip(tr("Counts how many nodes (vertices) exist in the whole network."));
 	edgesLCD=new QLCDNumber(7);
 	edgesLCD->setSegmentStyle(QLCDNumber::Flat);
-	edgesLCD->setToolTip(tr("Counts how many edges (in and out-Links) exist in the whole network."));
+	edgesLCD->setToolTip(tr("Counts how many links (in and out) exist in the whole network."));
 
 	QLabel *labelDensityLCD = new QLabel;
 	labelDensityLCD->setText(tr("Density"));
@@ -2112,19 +2112,18 @@ void MainWindow::slotViewAdjacencyMatrix(){
 
 
 /**
-	Calls activeGraph.createUniformRandomNetwork()
-	to create a uniformly distributed random network.
-	Link creation is controlled by a user specified possibility.
+	Calls activeGraph.createRandomNetErdos () to create a symmetric network
+	Link existance is controlled by a user specified possibility.
 */
-void MainWindow::slotCreateUniformRandomNetwork(){
+void MainWindow::slotCreateRandomNetErdos(){
 	bool ok;
-	statusBar()->showMessage("You have selected to create a random network. ", statusBarDuration);
-	int newNodes=( QInputDialog::getInteger(this, "Create random network", tr("This will create a new random network. \nPlease enter the number of nodes you want:"),1, 1, maxNodes, 1, &ok ) ) ;
+	statusBar()->showMessage("You have selected to create a random symmetric network. ", statusBarDuration);
+	int newNodes=( QInputDialog::getInteger(this, "Create random network", tr("This will create a new random symmetric network of G(n,p) model, \nwhere n is the nodes and p is the edge probability. \nPlease enter the number n of nodes you want:"),1, 1, maxNodes, 1, &ok ) ) ;
 	if (!ok) { 
 		statusBar()->showMessage("You did not enter an integer. Aborting.", statusBarDuration);
 		return;
 	}
-	double probability= QInputDialog::getDouble(this,"Create random network", "Enter a link probability (0, 100):", 0.0, 0.0, 100.0, 2, &ok );
+	double probability= QInputDialog::getDouble(this,"Create random network", "Enter an edge probability % (0-100):", 0, 0, 100, 1, &ok );
 	if (!ok) { 
 		statusBar()->showMessage("You did not enter an integer. Aborting.", statusBarDuration);
 		return;
@@ -2133,9 +2132,9 @@ void MainWindow::slotCreateUniformRandomNetwork(){
 
 	initNet();  
 	makeThingsLookRandom();  
-	statusBar()->showMessage(tr("Creating uniform random network. Please wait... ") ,statusBarDuration);
+	statusBar()->showMessage(tr("Creating random network. Please wait... ") ,statusBarDuration);
 
-	qDebug("MW Uniform network:  Create uniform random network of %i nodes and %f link probability.",newNodes, probability);
+	qDebug("MW Erdos network:  Create random network of %i nodes and %f edge probability.",newNodes, probability);
 
 	if (showProgressBarAct->isChecked()){
 		progressDialog= new QProgressDialog("Creating random network. Please wait (or disable me from Options > View > ProgressBar, next time ;)).", "Cancel", 0, newNodes+newNodes, this);
@@ -2146,7 +2145,7 @@ void MainWindow::slotCreateUniformRandomNetwork(){
 	
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
-	activeGraph.createUniformRandomNetwork (newNodes, probability);
+	activeGraph.createRandomNetErdos (newNodes, probability);
 	QApplication::restoreOverrideCursor();
 
 	if (showProgressBarAct->isChecked())
@@ -2159,10 +2158,27 @@ void MainWindow::slotCreateUniformRandomNetwork(){
 	fileLoaded=false;
 	
 	graphChanged();
+
+	
 	setWindowTitle("Untitled");
-	statusBar()->showMessage("Uniform random network created: "+QString::number(activeNodes())+" Nodes, "+QString::number( activeLinks())+" Links", statusBarDuration);
+	double threshold = log(newNodes)/newNodes;
+	if ( (probability/100 ) > threshold )
+		QMessageBox::information(this, "New Random Network",
+		tr("Random network created. \n")+  QString::number(activeNodes())+ tr(" nodes, and ")+QString::number( activeLinks()/2.0)+ tr(" edges.\nThe average edges would be ") +QString::number(probability * newNodes*(newNodes-1)/100) + tr("\nThis graph is almost surely connected since: \nprobability > ln(n)/n, that is ") + QString::number(probability/100)+ " bigger than "+ QString::number(threshold) , "OK",0);
+
+	else 
+		QMessageBox::information(this, "New Random Network",
+		tr("Random network created. \n")+  QString::number(activeNodes())+ tr(" nodes, and ")+QString::number( activeLinks()/2.0)+ tr(" edges.\nThe average edges would be ") +QString::number(probability * newNodes*(newNodes-1)/100) + tr("\nThis graph is almost surely not connected since: \nprobability < ln(n)/n, that is ") + QString::number(probability/100)+ " smaller than "+ QString::number(threshold) , "OK",0);
+
+	statusBar()->showMessage("Random network created. ", statusBarDuration);
 
 }
+
+
+
+
+
+
 
 
 
@@ -2251,7 +2267,7 @@ void MainWindow::slotCreateGaussianRandomNetwork(){
 	Creates a lattice network, i.e. a connected network where every node
 	has the same degree and is linked with its neighborhood.
 */
-void MainWindow::slotCreatePhysicistLatticeNetwork(){
+void MainWindow::slotCreateRandomNetPhysLattice(){
 	bool ok;
 	statusBar()->showMessage("You have selected to create a physicist's lattice network. ", statusBarDuration);
 	int newNodes=( QInputDialog::getInteger(this, "Create physicist's lattice", tr("This will create a phycisist's lattice network. \nPlease enter the number of nodes you want:"),1, 1, maxNodes, 1, &ok ) ) ;
@@ -2283,7 +2299,7 @@ void MainWindow::slotCreatePhysicistLatticeNetwork(){
 	}
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
-	activeGraph.createPhysicistLatticeNetwork (newNodes, degree, x0, y0, radius);
+	activeGraph.createRandomNetPhysLattice(newNodes, degree, x0, y0, radius);
 
 	QApplication::restoreOverrideCursor();
 
@@ -5079,11 +5095,12 @@ void MainWindow::createFortuneCookies(){
 	fortuneCookie+="sic itur ad astra / sic transit gloria mundi ? <br> --Unknown";
 	fortuneCookie+="losers of yesterday, the winners of tomorrow... <br> --B.Brecht";
 	fortuneCookie+="Patriotism is the virtue of the wicked... <br> --O. Wilde";
+ 
 	fortuneCookie+="No tengo nunca mas, no tengo siempre. En la arena <br>" 
 			"la victoria dejo sus piers perdidos.<br>"
 		   	"Soy un pobre hombre dispuesto a amar a sus semejantes.<br>"
 		   	"No se quien eres. Te amo. No doy, no vendo espinas. <br> --Pablo Neruda"  ;
-	fortuneCookie+="I will never apologize for the United States of America; I don't care what the facts are. <br> --President G. Bush (Senior), after the Iranian airliner shooting down by U.S. warship, killing 290 passengers. Quoted in Newsweek, August 15, 1989";
+	fortuneCookie+="I will never apologize for the United States of America. I don't care what it has done. I don't care what the facts are. <br> --Vice President George H.W. Bush, after the Iranian airliner flight IR655 (an Airbus A300) was shot down by a U.S. missile cruiser (USS Vincennes), killing all 290 civilian passengers...";
 	fortuneCookie+="Man must not check reason by tradition, but contrawise, must check tradition by reason.<br> --Leo Tolstoy";
 	fortuneCookie+="Only after the last tree has been cut down, <br>only after the last river has been poisoned,<br> only after the last fish has been caught,<br>only then will you realize that money cannot be eaten. <br> --The Cree People";
 	fortuneCookie+="Stat rosa pristina nomine, nomina nuda tenemus <br > --Unknown";

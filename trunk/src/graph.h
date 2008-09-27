@@ -184,10 +184,10 @@ public:
 
 
 	/**RANDOM NETWORKS*/
-	void createUniformRandomNetwork(int, double);				//Creates a uniform random network
-	void createPhysicistLatticeNetwork(int, int, double, double, double); 	//Creates a Circular lattice
+	void createRandomNetErdos(int, double);				//Creates a uniform random network
+	void createRandomNetPhysLattice(int, int, double, double, double); 	//Creates a Circular lattice
 	void createSameDegreeRandomNetwork(int, int); 				//Creates a random network with the same degree in all nodes
-
+	int factorial(int);						// for  (n 2)p edges calculation
 
 	/** List of pointers to the vertices. A vertex stores all the info: links, colours, etc */
 	QList<Vertex*> m_graph;			

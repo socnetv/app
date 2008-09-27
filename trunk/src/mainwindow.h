@@ -123,11 +123,11 @@ public slots:
 	//NETWORK MENU
 	void slotViewNetworkFile();
 	void slotViewAdjacencyMatrix();
-	void slotCreateUniformRandomNetwork();
+	void slotCreateRandomNetErdos();
 	void slotCreateSameDegreeRandomNetwork();
 	void slotCreateConnectedRandomNetwork();
 	void slotCreateGaussianRandomNetwork();
-	void slotCreatePhysicistLatticeNetwork();
+	void slotCreateRandomNetPhysLattice();
 
 	//EDIT MENU
 	void slotFindNode();
