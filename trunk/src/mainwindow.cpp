@@ -94,7 +94,7 @@ MainWindow::MainWindow(const QString &fName) {
 	connect( graphicsWidget, SIGNAL( changed() ), this, SLOT( graphChanged() ) ) ;
 
 	connect( graphicsWidget, SIGNAL( userDoubleClicked(int, QPointF) ), this, SLOT( addNodeWithMouse(int, QPointF) ) ) ;
-	connect( graphicsWidget, SIGNAL( userMiddleClicked(int, int, int) ), &activeGraph, SLOT( createEdge(int, int, int) ) );
+	connect( graphicsWidget, SIGNAL( userMiddleClicked(int, int, int) ), this, SLOT( addLink(int, int, int) ) );
 	connect( graphicsWidget, SIGNAL( openNodeMenu() ), this, SLOT(openNodeContextMenu() ) ) ;
 	connect( graphicsWidget, SIGNAL( openEdgeMenu() ), this, SLOT(openLinkContextMenu() ) ) ;
 	connect( graphicsWidget, SIGNAL(updateNodeCoords(int, int, int)), this, SLOT(updateNodeCoords(int, int, int)) );
@@ -2136,7 +2136,7 @@ void MainWindow::slotCreateRandomNetErdos(){
 
 	qDebug("MW Erdos network:  Create random network of %i nodes and %f edge probability.",newNodes, probability);
 
-	if (showProgressBarAct->isChecked()){
+	if (showProgressBarAct->isChecked() || newNodes > 300){
 		progressDialog= new QProgressDialog("Creating random network. Please wait (or disable me from Options > View > ProgressBar, next time ;)).", "Cancel", 0, newNodes+newNodes, this);
 		progressDialog -> setWindowModality(Qt::WindowModal);
 		connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
@@ -2148,7 +2148,7 @@ void MainWindow::slotCreateRandomNetErdos(){
 	activeGraph.createRandomNetErdos (newNodes, probability);
 	QApplication::restoreOverrideCursor();
 
-	if (showProgressBarAct->isChecked())
+	if (showProgressBarAct->isChecked() || newNodes > 300)
 		progressDialog->deleteLater();	
 
   	fileContainsNodeColors=FALSE;
@@ -2214,7 +2214,7 @@ void MainWindow::slotCreateSameDegreeRandomNetwork(){
 	makeThingsLookRandom();  
 	statusBar()->showMessage("Creating a pseudo-random network where each node has the same degree... ", statusBarDuration);
 
-	if (showProgressBarAct->isChecked()){
+	if (showProgressBarAct->isChecked() || newNodes > 300){
 		progressDialog= new QProgressDialog("Creating random network. Please wait (or disable me from Options > View > ProgressBar, next time ;)).", "Cancel", 0, (int) (newNodes+newNodes), this);
 		progressDialog -> setWindowModality(Qt::WindowModal);
 		connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
@@ -2227,7 +2227,7 @@ void MainWindow::slotCreateSameDegreeRandomNetwork(){
 
 	QApplication::restoreOverrideCursor();
 
-	if (showProgressBarAct->isChecked())
+	if (showProgressBarAct->isChecked() || newNodes > 300)
 		progressDialog->deleteLater();	
 
   	fileContainsNodeColors=FALSE;
@@ -2627,16 +2627,25 @@ void MainWindow::slotAddLink(){
 		QMessageBox::critical(this,"Error","Link already exists.", "OK",0);
 		return;
 	}
-	bool drawArrows=showLinksArrowsAct ->isChecked();
-	bool reciprocal=false;
-	activeGraph.createEdge(sourceNode, targetNode, weight, initLinkColor, reciprocal, drawArrows, bezier);
+
+	addLink(sourceNode, targetNode, weight);
 	graphChanged();
 	statusBar()->showMessage(tr("Ready. ") ,statusBarDuration);
 
 }
 
 
-
+/** 	
+	helper to the above 
+	Also called from GW
+	Helps to set the correct edge color...
+*/
+void MainWindow::addLink (int v1, int v2, int weight) {
+	bool drawArrows=showLinksArrowsAct ->isChecked();
+	bool reciprocal=false;
+	bool bezier = false;
+	activeGraph.createEdge(v1, v2, weight,  reciprocal, drawArrows, bezier);
+}
 
 /**
 *	Erases the clicked link. Otherwise asks the user to specify one link.
@@ -4710,6 +4719,8 @@ void MainWindow::slotToggleLinks(bool toggle){
 	
 }
 
+
+
 /**
 *  Turns on/off the arrows of links
 */
@@ -4848,7 +4859,6 @@ void MainWindow::slotAllLinksColor(){
 				link->setColor(initLinkColor );
 				qDebug ("MW: Changed color");
 				activeGraph.setEdgeColor (link->sourceNodeNumber(), link->targetNodeNumber(), initLinkColor);
-				link->hide();link->show();// update
 				graphChanged();
 			}
 		graphicsWidget->setInitLinkColor(initLinkColor);

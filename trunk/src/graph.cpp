@@ -74,6 +74,9 @@ void Graph::createVertex(int i, int size, QString nodeColor, QString label, QStr
 	addVertex(i, 1, size,  nodeColor, label, lColor, p, nodeShape);
 	//emit a signal for MW to create the new node onto the canvas.
 	emit drawNode( i, size ,  nodeColor, label, lColor, p, nodeShape, initShowLabels, true);
+	initVertexColor=nodeColor; //just to draw new nodes of the same color with that of the file loaded, when user clicks on the canvas
+	initVertexShape=nodeShape;
+	initVertexSize=size;
 } 
 
 
@@ -136,14 +139,13 @@ void Graph::createEdge(int v1, int v2, int weight, QString color, bool reciproca
 		emit drawEdge(v1, v2, reciprocal, drawArrows, color, bezier, false);
 
 	}
+	initEdgeColor=color; //just to draw new edges of the same color with those of the file loaded, when user clicks on the canvas
 }
 
 
 /** Called from GraphicsWidget when user middle clicks
 */
-void Graph::createEdge(int v1, int v2, int weight) {
-	bool reciprocal=false;
-	bool drawArrows=true, bezier=false;
+void Graph::createEdge(int v1, int v2, int weight, bool reciprocal=false, bool drawArrows=true, bool bezier=false){
 	createEdge(v1, v2, weight, initEdgeColor, reciprocal, drawArrows, bezier);
 }
 

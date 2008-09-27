@@ -71,7 +71,7 @@ public slots:
 
 	/** Slots to signals from GraphicsWidget and Parser*/
 	void createEdge (int, int, int, QString, bool, bool, bool);				//GW and Parser.
-	void createEdge (int, int, int);							//
+	void createEdge (int, int, int, bool, bool, bool);							//
 	
 	void createVertex(int i, QPointF p); 							//Called by GW
 	void createVertex(int i, int canvasWidth, int canvasHeight); 				//Called by MW
