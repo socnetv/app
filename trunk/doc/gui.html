@@ -2,23 +2,23 @@
 
 
 <h4><a name="Overview" id="Overview"></a>Overview</h4>
-<p class="text">
-<p class="text">
-SocNetV	has  a	simple	Graphical  User	 Interface  (GUI) with a menu, a toolbar, a "canvas", a dock and a status bar. 
 
 <p class="text">
-The biggest (right) part of the window is occupied by a virtual "canvas" where network  nodes and edges appear. The initial background color of the canvas is gainboro, but you can changed it from the Edit menu. 
-<br />
-The dock, on the left of the window, has 4 buttons (add/remove node, add/remove link) and some LCDs which display statistics for the active network.   
-<br />
-The toolbar provides the usual icons: new network creation, load a network, save, zoom in-out and display help messages for the menu options. 
+SocNetV	has  a	simple	Graphical  User	 Interface  (GUI) which is composed of:
+
+<div class="text">
+<ul>
+<li>a <b>menu bar</b>	</li>
+<li>a <b>toolbar</b></li>
+<li>a <b>dock</b> </li>
+<li>a <b>"canvas"</b></li>
+<li>a <b>status bar</b>.</li> 
+</ul>
+</div>
 </p>
 
-
-</p>
 <p class="text">
-On the top of the window, there is the menu with all commands and options, and at the bottom there is a  status  bar, where messages appear.
-The menu bar provides 6 menus:
+On the top, you' ll find the menu bar, filled with commands and options, organized in 6 menus:
 </p>
 <div class="text">
 <ul>
@@ -30,11 +30,23 @@ The menu bar provides 6 menus:
 </ul>
 </div>
 
+<p class="text">
+Below the menu, the toolbar provides the usual icons: new network creation, load a network, save, zoom in-out and display help messages for the menu options. 
+</p>
+
+<p class="text">
+The middle part of the window is occupied by the dock (left-side) and a virtual "canvas" (right-side) where network nodes and edges appear. 
+
+The dock, on the left of the window, has 4 buttons (add/remove node, add/remove link), some LCDs and some checkboxes. The LCDs display statistics for the active network (i.e. node and edges counters, density, counters of inLinked/outLinked nodes, etc) as well as the selected node (its number, in-Links and out-Links). Below the LCDs, there are some checkboxes to activate dynamic layout methods (i.e. Force directed) and/or change the way node sizes are calculated.
+
+<p class="text">
+The canvas is the main area of interaction. The initial background color is set to "gainboro", but you can changed it from the Edit menu. Below, we describe how to work with SocNetV.
+
+</p>
 
 <h4><a name="Create" id="Create"></a>Network creation</h4>
 <p class="text">
-To start working with SocNetV you need network data, i.e. a graph of nodes and edges. SocNetV enables you to create such networks or load them from files. 
-There are multiple ways to create or edit nodes and edges in SocNetV:
+To start working with SocNetV you need network data, i.e. a graph of nodes and edges. SocNetV enables you to create such networks or load them from files. There are multiple ways to create or edit nodes and edges in SocNetV:
 <div class="text">
 <ul>
 <li>from the menus </li>
