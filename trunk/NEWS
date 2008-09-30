@@ -13,7 +13,7 @@ Sep 2008
 - Version 0.46 released.
   Lots of bugfixes.
   New features:
-  - Node sizes may follow their Outdegree.
+  - Node sizes may reflect degree.
 
 Aug 2008
 ========

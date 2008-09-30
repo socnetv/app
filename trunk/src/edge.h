@@ -75,17 +75,20 @@ public:
 	void makeReciprocal();
 	void unmakeReciprocal();
 
+	QPainterPath shape() const;
+
 public slots:
 	void adjust ();
 	void remove();
 protected:
 	QRectF boundingRect() const;
+
 	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 	void mousePressEvent(QGraphicsSceneMouseEvent *event);
 
+
 private:
 	GraphicsWidget *graphicsWidget;
-	//QPainterPath *path;
 	Node *source, *target;
 	QPointF sourcePoint, targetPoint;
 	qreal m_arrowSize, m_startOffset, m_endOffset;
@@ -94,7 +97,8 @@ private:
 	int eFrom, eTo, m_weight;
 	int tox1, tox2, toy1, toy2, size;
 	double rad, theta, theta1, theta2;
-	bool eBez, m_drawArrows, m_reciprocal;
+	bool m_Bezier, m_drawArrows, m_reciprocal;
+
 };
 
 #endif

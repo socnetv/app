@@ -1,43 +1,32 @@
-FIXED
-=====
+KNOW BUGS
+========
 
---FIXME: draw own links.
+--FIXME: Centralities and Layout by centralities crash SocNetV when network is not connected.
+--FIXME: draw own links (nodes linked to themselves).
 --FIXME: isSymmetric not functioning well (check a-symmetry.net)
 --FIXME: When many lines intersect, right-click > removeLink may remove wrong link!
 
---TODO Transform actors to links //COMMENTED OUT
---FIXME: GraphML files may crash SocNetV.
 
+--FIXME: GraphML files may crash SocNetV
 --FIXME: 40-actors-non-symmetric crashed on Betweeness centr.
+--FIXME: Nodes dont appear where user clicks, if the rotation > 0.
+- FIXME: GROUP Stress & Graph centralities missing
+- FIXME: Standard Stress Centrality index missing.
 
---FIXME: Nodes dont appear where mouse double-clicks if rotation > 0.
 
 
-TODO & KNOWN BUGS
-=================
+TODO
+====
 
--- TODO: Small Worlds.
+--TODO: Filter Links by their weights
+--TODO: Small Worlds.
+--TODO Transform actors to links //COMMENTED OUT
 
-- TODO: CLUSTERING by betweeness, see http://iv.slis.indiana.edu/sw/bc.html
-http://tyna.gersteinlab.org/tyna/supp.jsp
--- FIXME FIXME Directed Network (BFS) & Centralities (maxIndex and standard). 
--- FIXME FIXME BFS() causes a crash when you create a new net, then remove/add some edges & nodes and compute Betweeness.
-
-TODO->Filter Links by their weights
-TODO->NetLayout is not needed...
-
-- TODO: load network from command line. Then compute something and export it!
-
+--TODO: CLUSTERING by betweeness, see http://iv.slis.indiana.edu/sw/bc.html
+	http://tyna.gersteinlab.org/tyna/supp.jsp
+--TODO: Blockmodelling
 - TODO: Web crawler
-
-- NEW: Texts on canvas (i.e. layouts display some text explaining what method is used).
-
-- GROUP Stress & Graph centralities 
-
-- Standard Stress Centrality index.
-
---TODO: PAJEK Filelists, see cite.net / kocka.net
-	/kvadrat.net 
+- TODO: Texts on canvas (i.e. layouts display some text explaining what method is used).
 
 
 
@@ -45,8 +34,7 @@ TODO IN SUBSEQUENT RELEASES:
 ============================
 
 + Colorization  //COMMENTED
-- Filter actors //COMMENTED OUT
-+ An rpm package
+- Filter actors //COMMENTED 
 + Greek Language Support
 + Network file format: DL (read/save)
 + Network file format: GW (read/save)

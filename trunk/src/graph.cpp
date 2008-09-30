@@ -366,7 +366,7 @@ void Graph::addEdge (int v1, int v2, int weight, QString color, bool reciprocal)
 	qDebug()<<"Graph: addEdge() vertex "<< v1 << " reports that it has an edge to vertex "<< v2<< " with weight " << m_graph [ source ]->isLinkedTo(v2) << " and color "<<  color<<" -- Storing edge color...";
 	m_graph[ source]->setOutLinkColor(v2, color);
 
-	qDebug( "Graph: addEdge():: Now vertex %i has %i edges. Total Edges %i. Printing Matrix...", v1,  edgesFrom(v1), m_totalEdges);
+	qDebug( "Graph: addEdge():: Now vertex %i has %i edges. Total Edges %i....", v1,  edgesFrom(v1), m_totalEdges);
 	graphModified=true;
 }
 

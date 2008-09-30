@@ -64,9 +64,10 @@ Edge::Edge(  GraphicsWidget *gw, Node *from, Node *to, int weight, int nodeSize,
 	eFrom = source->nodeNumber() ;
 	eTo = target->nodeNumber() ;
 	m_weight = weight ;
-	eBez = bez; 
+	m_Bezier = bez; 
 	this-> setZValue(253);		//Edges have lower z than nodes. Nodes always appear above edges.
-
+	//this->setBoundingRegionGranularity(0.1);				//slows down the universe...
+	//this->setCacheMode (QGraphicsItem::DeviceCoordinateCache);  //slows down
 	adjust();
 }
 
@@ -173,7 +174,16 @@ void Edge::adjust(){
 }
 
 
+
+QPainterPath Edge::shape () const {
+	QPainterPath path;
+	path.addRegion(boundingRegion(QTransform()));
+	return path;
+} 
+
+
 QRectF Edge::boundingRect() const {
+
 	if (!source || !target)
         	return QRectF();
 	
@@ -186,6 +196,7 @@ QRectF Edge::boundingRect() const {
 			targetPoint.y() - sourcePoint.y())
 			).normalized().adjusted(-extra, -extra, extra, extra);
 }
+
 
 
 void Edge::makeReciprocal(){
@@ -206,15 +217,31 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 		return;
 
 	// Draw the line itself
-	QLineF line(sourcePoint, targetPoint);
+	QPainterPath line(sourcePoint);
+
+	QPointF c = QPointF( targetPoint.x() + 10,  targetPoint.y()+10 );
+	if ( !m_Bezier) {
+// 		QLineF line(sourcePoint, targetPoint);
+
+		line.lineTo(targetPoint);
+
+
+
+
+//		painter->drawLine(line);
+
+	}
+	else 	 {
+		line.quadTo( c, targetPoint);
+	}
 	painter->setPen(QPen(QColor(m_color), 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-	painter->drawLine(line);
 
 	//Draw the arrows
 	if (m_drawArrows) {
-		double angle = ::acos(line.dx() / line.length());
-	
-		if (line.dy() >= 0)
+// 		double angle = ::acos(line.dx() / line.length());
+		double angle = ::acos((targetPoint.x()-sourcePoint.x()) / line.length());
+//		if (line.dy() >= 0)
+		if ((targetPoint.y()-sourcePoint.y())  >= 0)
 			angle = TwoPi - angle;
 
 		QPointF destArrowP1 = targetPoint + QPointF(sin(angle - Pi / 3) * m_arrowSize,
@@ -222,18 +249,25 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 		QPointF destArrowP2 = targetPoint + QPointF(sin(angle - Pi + Pi / 3) * m_arrowSize,
                                               cos(angle - Pi + Pi / 3) * m_arrowSize);
 		painter->setBrush(QColor(m_color));
-		painter->drawPolygon(QPolygonF() << line.p2() << destArrowP1 << destArrowP2);
+		QPolygonF destP;
+		destP << targetPoint << destArrowP1 << destArrowP2;
+		line.addPolygon ( destP);
+		//painter->drawPolygon(QPolygonF() << line.p2() << destArrowP1 << destArrowP2);
 		if (m_reciprocal) { 
 			qDebug("Edge: This edge is SYMMETRIC!");
 			QPointF srcArrowP1 = sourcePoint + QPointF(sin(angle +Pi / 3) * m_arrowSize,
                 	                              cos(angle +Pi / 3) * m_arrowSize);
 			QPointF srcArrowP2 = sourcePoint + QPointF(sin(angle +Pi - Pi  / 3) * m_arrowSize,
                                               cos(angle +Pi - Pi / 3) * m_arrowSize);
-			painter->setBrush(QColor(m_color));
-			painter->drawPolygon(QPolygonF() << line.p1() << srcArrowP1 << srcArrowP2);
+			QPolygonF srcP;
+			srcP << sourcePoint<< srcArrowP1<< srcArrowP2;
+			line.addPolygon ( srcP);
+			
+//			painter->drawPolygon(QPolygonF() << line.p1() << srcArrowP1 << srcArrowP2);
 		}
 		else qDebug("Edge: This edges IS NOT SYMMETRIC!");
 	}
+	painter->drawPath(line);
 }
 
 

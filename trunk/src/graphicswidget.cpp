@@ -151,6 +151,7 @@ void GraphicsWidget::drawEdge(int i, int j, bool reciprocal, bool drawArrows, QS
 		j=index;
 
 	}
+	if (i == j ) bezier = true;
 	Edge *edge=new Edge (this, nodeVector.at(i-1), nodeVector.at(j-1), weight, m_nodeSize, color, reciprocal, drawArrows, bezier);
 	edge->setColor(color);
 
