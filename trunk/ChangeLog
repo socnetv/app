@@ -6,6 +6,16 @@
 ChangeLog:
 
 
+Version 0.49 - Oct 20 2008
+Codename: "Simplification"
+------------------------------
+-Bug fix: Zoom while rotate.
+-Icon for Windows.
+-tend: GraphML load/save
+-tend: Small Worlds
+-tend: Layouts
+
+
 Version 0.48 - Sep 30 2008
 Codename: "Road to nowhere?"
 ------------------------------

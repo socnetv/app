@@ -108,6 +108,10 @@ signals:
 	
 private:
 	int timerId,  layoutType, m_nodeSize, m_numberDistance, m_labelDistance;
+	double m_currentScaleFactor;
+	int m_currentRotationAngle;
+
+
 	QTransform init_Transform;
 	int zoomIndex;
 	QString m_nodeLabel, m_numberColor, m_nodeColor, m_labelColor, m_linkColor;

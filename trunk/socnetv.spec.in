@@ -10,22 +10,22 @@
 %define qmake qmake
 %define lrelease lrelease
 
-%if %is_fedora
+
+
+%if %{is_fedora}
 %define distr %(cat /etc/fedora-release)
 %define qmake qmake-qt4
 %define lrelease lrelease-qt4
-BuildRequires:  qt-devel >= 4.4 WebKit-qt-devel
 %endif
 
-%if %is_suse
+%if %{is_suse}
 %define distr %(head -1 /etc/SuSE-release)
-BuildRequires:  libqt4-devel >= 4.4 libQtWebKit-devel update-desktop-files
 %endif
 
-%if %is_mandrake
+%if %{is_mandrake}
 %define distr %(cat /etc/mandrake-release)
-BuildRequires:  libqt4-devel >= 4.4 libqtwebkit4
 %endif
+
 
 
 Name:		%{name}
@@ -43,6 +43,19 @@ Source0:	SocNetV-%{version}.tar.bz2
 Distribution:   %{distr}
 
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
+
+%if %{is_fedora}
+BuildRequires:  qt-devel >= 4.4 WebKit-qt-devel
+%endif
+
+%if %{is_suse}
+BuildRequires:  libqt4-devel >= 4.4 libQtWebKit-devel update-desktop-files
+%endif
+
+%if %{is_mandrake}
+BuildRequires:  libqt4-devel >= 4.4 libqtwebkit4
+%endif
+
 
 
 

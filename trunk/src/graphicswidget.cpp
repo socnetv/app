@@ -53,6 +53,10 @@ GraphicsWidget::GraphicsWidget( QGraphicsScene *sc, MainWindow* par)  : QGraphic
 	m_nodeLabel="";
 	init_Transform = transform();
 	zoomIndex=3;
+	
+	m_currentScaleFactor = 1;
+	m_currentRotationAngle = 0;
+
 }
 
 
@@ -649,7 +653,15 @@ void GraphicsWidget::zoomIn(){
       Initiated from MW zoomCombo widget to zoom in or out.
 */
 void GraphicsWidget::changeZoom(int value) {
-	switch (value) {
+	double scaleFactor = 0.25;
+	scaleFactor *= (value + 1);
+	m_currentScaleFactor = scaleFactor;
+	
+	setTransform (init_Transform);
+	scale(scaleFactor, scaleFactor);
+	rotate(m_currentRotationAngle);
+
+/*	switch (value) {
 		case 0:	setTransform (init_Transform); 
 			scale(0.25, 0.25);
 			break;
@@ -672,13 +684,16 @@ void GraphicsWidget::changeZoom(int value) {
 			scale(1.75, 1.75);
 			break;
 	}
+	m_currentScaleFactor = scaleFactor;*/
 }
 
 
 
 void GraphicsWidget::rot(int angle){
 	qDebug("rotating");
+	m_currentRotationAngle = angle;
 	setTransform (init_Transform);	
+	scale(m_currentScaleFactor, m_currentScaleFactor);
 	rotate(angle);
 
 }

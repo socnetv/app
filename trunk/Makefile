@@ -1,5 +1,5 @@
-prefix  = /usr
-qmake   = /usr/bin/qmake
+prefix  = /usr/local
+qmake   = /usr/lib/qt4/bin/qmake
 
 name    = socnetv
 

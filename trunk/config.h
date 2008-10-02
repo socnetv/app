@@ -8,7 +8,7 @@
 #define CONFIG_FLOAT32 1
 
 /* Default installation prefix. */
-#define CONFIG_PREFIX "/usr"
+#define CONFIG_PREFIX "/usr/local"
 
 /* Define to 1 if you have the `m' library (-lm). */
 #define HAVE_LIBM 1
