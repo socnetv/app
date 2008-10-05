@@ -92,6 +92,7 @@ MainWindow::MainWindow(const QString &fName) {
 	connect( graphicsWidget, SIGNAL( selectedEdge(Edge*) ), this, SLOT ( linkInfoStatusBar(Edge*) ) );
 	connect( graphicsWidget, SIGNAL( windowResized(int, int)),this, SLOT( windowInfoStatusBar(int, int)) );  
 	connect( graphicsWidget, SIGNAL( changed() ), this, SLOT( graphChanged() ) ) ;
+	
 
 	connect( graphicsWidget, SIGNAL( userDoubleClicked(int, QPointF) ), this, SLOT( addNodeWithMouse(int, QPointF) ) ) ;
 	connect( graphicsWidget, SIGNAL( userMiddleClicked(int, int, int) ), this, SLOT( addLink(int, int, int) ) );
@@ -104,7 +105,7 @@ MainWindow::MainWindow(const QString &fName) {
 	connect( &activeGraph, SIGNAL( addBackgrHLine (int) ), graphicsWidget, SLOT(addBackgrHLine(int) ) ) ;
 	connect( &activeGraph, SIGNAL( moveNode(int, int, int) ), graphicsWidget, SLOT(moveNode(int, int, int) ) ) ;
 	connect( &activeGraph, SIGNAL( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool, bool) ), graphicsWidget, SLOT( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool, bool)  ) ) ;
-	
+	connect( &activeGraph, SIGNAL( graphChanged() ), this, SLOT( graphChanged() ) ) ;
 
 	connect( &activeGraph, SIGNAL( drawEdge( int, int, bool, bool, QString, bool, bool)), graphicsWidget, SLOT( drawEdge( int, int, bool, bool, QString, bool, bool  ) )  ) ;
 
@@ -493,18 +494,19 @@ void MainWindow::initActions(){
 	randCircleLayoutAct ->setStatusTip(tr("Repositions the nodes randomly on a circle"));
 	randCircleLayoutAct->setWhatsThis(tr("Random Circle Layout\n\n Repositions the nodes randomly on a circle"));
 	connect(randCircleLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutRandomCircle()));
-	
-	circleOutDegreeLayoutAct = new QAction( tr("Out-Degree"),	this);
-	circleOutDegreeLayoutAct ->setShortcut(tr("Ctrl+1"));
-	circleOutDegreeLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Out-Degree Central Nodes are positioned towards the centre."));
-	circleOutDegreeLayoutAct->setWhatsThis(tr("Circle Out-Degree Centrality Layout\n\n Repositions the nodes on circles of different radius. More Out-Degree Central Nodes are positioned towards the centre."));
-	connect(circleOutDegreeLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityOutDegree()));
 
 	circleInDegreeLayoutAct = new QAction( tr("In-Degree"),	this);
-	circleInDegreeLayoutAct ->setShortcut(tr("Ctrl+2"));
+	circleInDegreeLayoutAct ->setShortcut(tr("Ctrl+1"));
 	circleInDegreeLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More In-Degree Central Nodes are positioned towards the centre."));
 	circleInDegreeLayoutAct->setWhatsThis(tr("Circle In-Degree Centrality Layout\n\n Repositions the nodes on circles of different radius. More In-Degree Central Nodes are positioned towards the centre."));
 	connect(circleInDegreeLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityInDegree()));
+
+	
+	circleOutDegreeLayoutAct = new QAction( tr("Out-Degree"),	this);
+	circleOutDegreeLayoutAct ->setShortcut(tr("Ctrl+2"));
+	circleOutDegreeLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Out-Degree Central Nodes are positioned towards the centre."));
+	circleOutDegreeLayoutAct->setWhatsThis(tr("Circle Out-Degree Centrality Layout\n\n Repositions the nodes on circles of different radius. More Out-Degree Central Nodes are positioned towards the centre."));
+	connect(circleOutDegreeLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityOutDegree()));
 
 	circleClosenessLayoutAct = new QAction( tr("Closeness"),	this);
 	circleClosenessLayoutAct ->setShortcut(tr("Ctrl+3"));
@@ -1088,7 +1090,7 @@ void MainWindow::initToolBar(){
 void MainWindow::initDockWidget(){
 	//create dock and add it to main window
 	leftDock = new QDockWidget (tr(""), this);
-	leftDock->setAllowedAreas(Qt::LeftDockWidgetArea);
+	leftDock->setAllowedAreas(Qt::LeftDockWidgetArea );
 	leftDock->setFeatures( QDockWidget::NoDockWidgetFeatures);
 	this->addDockWidget(Qt::LeftDockWidgetArea, leftDock);
 
@@ -1335,7 +1337,7 @@ void MainWindow::initView() {
 	scene->setSceneRect(0, 0, this->width()-graphicsWidget->width(), this->height()-graphicsWidget->height());
 	qDebug ("MW initView(): window size %i, %i, graphicsWidget size %i, %i",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height());
 
-	//this->resize(800,768);
+//	this->resize(800,600);
 // 	graphicsWidget->clear();
 
 }
@@ -1726,7 +1728,7 @@ void MainWindow::addNode() {
 void MainWindow::addNodeWithMouse(int num, QPointF p) {
 	qDebug("MW: addNodeWithMouse(). Calling activeGraph::createVertex() for a vertice named %i", num);
 	activeGraph.createVertex(num, p);
-	statusBar()->showMessage(tr("New node (numbered %i) added.").arg(activeGraph.lastVertexNumber()) ,statusBarDuration);
+	statusBar()->showMessage(tr("New node (numbered %1) added.").arg(activeGraph.lastVertexNumber()) ,statusBarDuration);
 }
 
 
@@ -2168,11 +2170,12 @@ void MainWindow::slotCreateRandomNetErdos(){
 	double threshold = log(newNodes)/newNodes;
 	if ( (probability/100 ) > threshold )
 		QMessageBox::information(this, "New Random Network",
-		tr("Random network created. \n")+  QString::number(activeNodes())+ tr(" nodes, and ")+QString::number( activeLinks()/2.0)+ tr(" edges.\nThe average edges would be ") +QString::number(probability * newNodes*(newNodes-1)/100) + tr("\nThis graph is almost surely connected since: \nprobability > ln(n)/n, that is ") + QString::number(probability/100)+ " bigger than "+ QString::number(threshold) , "OK",0);
+		tr("Random network created. \n")+ tr("It has ")+ QString::number(activeNodes())+ tr(" nodes, and ")+QString::number( activeLinks()/2.0)+ tr(" edges (or double links).\n")+tr("On the average, edges should be ") +QString::number(probability * newNodes*(newNodes-1)/100) + tr("\nThis graph is almost surely connected because: \nprobability > ln(n)/n, that is: \n") + QString::number(probability/100)+ " bigger than "+ QString::number(threshold) , "OK",0);
 
 	else 
+
 		QMessageBox::information(this, "New Random Network",
-		tr("Random network created. \n")+  QString::number(activeNodes())+ tr(" nodes, and ")+QString::number( activeLinks()/2.0)+ tr(" edges.\nThe average edges would be ") +QString::number(probability * newNodes*(newNodes-1)/100) + tr("\nThis graph is almost surely not connected since: \nprobability < ln(n)/n, that is ") + QString::number(probability/100)+ " smaller than "+ QString::number(threshold) , "OK",0);
+		tr("Random network created. \n")+ tr("It has ")+ QString::number(activeNodes())+ tr(" nodes, and ")+QString::number( activeLinks()/2.0)+ tr(" edges (or double links).\n")+tr("On the average, edges should be ") +QString::number(probability * newNodes*(newNodes-1)/100) + tr("\nThis graph is almost surely not connected because: \nprobability < ln(n)/n, that is: \n") + QString::number(probability/100)+ " smaller than "+ QString::number(threshold) , "OK",0);
 
 	statusBar()->showMessage("Random network created. ", statusBarDuration);
 
@@ -2536,7 +2539,7 @@ void MainWindow::linkInfoStatusBar (Edge* link) {
 */
 void MainWindow::slotRemoveNode() {
 	qDebug("MW: slotRemoveNode()");
-	if (!fileLoaded && !networkModified )  {
+	if (!activeGraph.vertices())  {
 		QMessageBox::critical(this, "Error",tr("Load a network file or add some nodes first."), "OK",0);
 		statusBar()->showMessage(tr("Nothing to remove.") ,statusBarDuration);
 		return;
@@ -3464,7 +3467,6 @@ void MainWindow::slotLayoutNodeSizeProportionalInEdges(bool checked){
 void MainWindow::slotLayoutCircleCentralityInDegree(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
-
 		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
 		return;
 	}
@@ -3854,7 +3856,7 @@ void MainWindow::slotDistance(){
 
 	j=QInputDialog::getInteger(this, tr("Distance between two nodes"), tr("Select target node:  ("+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"),min, 1, max , 1, &ok )   ;
 	if (!ok) {
-		statusBar()->showMessage("Distance calculation operation cancelled.", statusBarDuration);
+		statusBar()->showMessage(tr("Distance calculation operation cancelled."), statusBarDuration);
 		return;
 	}
 
@@ -3863,7 +3865,7 @@ void MainWindow::slotDistance(){
 	if (activeGraph.isSymmetric() && i>j) {
 		qSwap(i,j);
 	}
-	QMessageBox::information(this, "Distance", tr("Network distance (")+QString::number(i)+", "+QString::number(j)+") = "+QString::number(activeGraph.distance(i,j)),"OK",0);
+	QMessageBox::information(this, tr("Distance"), tr("Network distance (")+QString::number(i)+", "+QString::number(j)+") = "+QString::number(activeGraph.distance(i,j))+tr("\nThe nodes are not connected."),"OK",0);
 }
 
 

@@ -103,7 +103,6 @@ signals:
 	void updateNodeCoords(int, int, int);
 	void selectedNode(Node *);
 	void selectedEdge(Edge *);
- 	void changed();
 	void zoomChanged(int);
 	
 private:

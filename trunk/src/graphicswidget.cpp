@@ -117,7 +117,7 @@ void GraphicsWidget::drawNode(int num, int size, QString nodeColor, QString node
 	//add new node to a nodeVector so its easier to find which node has a specific nodeNumber 
 	//This is used during drawEdge
 	nodeVector.push_back(jim);
-
+	
 }
 
 
@@ -164,8 +164,6 @@ void GraphicsWidget::drawEdge(int i, int j, bool reciprocal, bool drawArrows, QS
 	edgesMap [edgeName] =  edge;
 	qDebug("Scene items now: %i ", scene()->items().size());
 	qDebug("GW items now: %i ", items().size());
-	// Notify MW that graph has been changed. Usefull on saving/exiting the program. 
-	emit changed(); 
 }
 
 
@@ -248,13 +246,10 @@ void GraphicsWidget::edgeClicked(Edge *edge){
 	Called from each node when it moves.
 	Updates 
 	- node coordinates in activeGraph (via updateNodeCoords() signal)
-	- LCD Values (via changed() signal) 
+
 */
 void GraphicsWidget::nodeMoved(int number, int x, int y){
-	qDebug ("GW: nodeMoved() for %i with %i, %i. Emitting GW::changed() and updateNodeCoords() signals", number, x,y);
-	//Notify MW that graph has changed so that the networkModified flag be raised.
-	//Usefull on saving/exiting the program.
-	emit changed(); 
+	qDebug ("GW: nodeMoved() for %i with %i, %i. Emitting updateNodeCoords() signal", number, x,y);
 	emit updateNodeCoords(number, x, y);
 }
 
@@ -389,7 +384,6 @@ bool GraphicsWidget::setNodeColor(int nodeNumber, QString color){
 			Node *node=(Node*) (*it);
 			if ( node->nodeNumber()==nodeNumber ) {
 				node->setColor(color);
-				emit changed();
 				return true;
 			}
 		}
@@ -409,7 +403,6 @@ bool GraphicsWidget::setEdgeColor(int source, int target, QString color){
 			Edge *edge=(Edge*) (*it);
 			if ( edge->sourceNodeNumber()==source && edge->targetNodeNumber()==target ) {
 				edge->setColor(color);
-				emit changed();
 				return true;
 			}
 		}
@@ -497,7 +490,7 @@ void GraphicsWidget::clearBackgrCircles(){
 	Creates a new node when the user double-clicks somewhere
 */
 void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
-	qDebug("GW: double click detected!");
+	qDebug("GW: mouseDoubleClickEvent() double click detected!");
 	if ( QGraphicsItem *item= itemAt(e->pos() ) ) {
 		if (Node *node = qgraphicsitem_cast<Node *>(item)) {
 			Q_UNUSED(node);
@@ -506,15 +499,15 @@ void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
 		}
 	}
 	QPointF p = matrix().inverted().map(e->pos());
-	qDebug("GW: e->pos() (%i, %i) at %f, %f ", e->pos().x(),e->pos().y(), p.x(),p.y());
-	//Emit a signal to MW to create a new node in graph.
+	qDebug("GW: mouseDoubleClickEvent(): Emit a signal to MW to create a new node in graph. e->pos() (%i, %i) at %f, %f ", e->pos().x(),e->pos().y(), p.x(),p.y());
+	//
 	if (zoomIndex >= 3)
 		emit userDoubleClicked(-1, p);
 	else 
 		emit userDoubleClicked(-1, e->pos());
-	qDebug("Scene items now: %i ", scene()->items().size());
-	qDebug("GW items now: %i ", items().size());
-	emit changed();
+	qDebug("GW: mouseDoubleClickEvent(): Scene and GW items now: %i and %i. Emitting Changed() signal... ", scene()->items().size(), items().size());
+
+
 }
 
 

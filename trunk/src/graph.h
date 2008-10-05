@@ -79,7 +79,7 @@ public slots:
 signals:
 	/** Signals to MainWindow */
 	void updateProgressDialog(int );
-
+	void graphChanged();									//call to update MW widgets
 	/** Signals to GraphicsWidget */
 	void drawNode( int ,int,  QString, QString,QString, QPointF, QString, bool, bool);	//call GW to draw a node
 	void drawEdge(int, int, bool, bool, QString, bool, bool);				//call GW to draw an edge

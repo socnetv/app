@@ -74,9 +74,11 @@ void Graph::createVertex(int i, int size, QString nodeColor, QString label, QStr
 	addVertex(i, 1, size,  nodeColor, label, lColor, p, nodeShape);
 	//emit a signal for MW to create the new node onto the canvas.
 	emit drawNode( i, size ,  nodeColor, label, lColor, p, nodeShape, initShowLabels, true);
+	emit graphChanged(); 
 	initVertexColor=nodeColor; //just to draw new nodes of the same color with that of the file loaded, when user clicks on the canvas
 	initVertexShape=nodeShape;
 	initVertexSize=size;
+
 } 
 
 
@@ -140,10 +142,13 @@ void Graph::createEdge(int v1, int v2, int weight, QString color, bool reciproca
 
 	}
 	initEdgeColor=color; //just to draw new edges of the same color with those of the file loaded, when user clicks on the canvas
+	emit graphChanged(); 
 }
 
 
-/** Called from GraphicsWidget when user middle clicks
+/**
+	Called from GraphicsWidget when user middle clicks
+	Calls main createEdge() method with initEdgeColor.
 */
 void Graph::createEdge(int v1, int v2, int weight, bool reciprocal=false, bool drawArrows=true, bool bezier=false){
 	createEdge(v1, v2, weight, initEdgeColor, reciprocal, drawArrows, bezier);
@@ -311,6 +316,7 @@ void Graph::removeVertex(int Doomed){
 
 	order=false;
 	graphModified=true;
+	emit graphChanged(); 
 }
 
 
@@ -373,7 +379,8 @@ void Graph::addEdge (int v1, int v2, int weight, QString color, bool reciprocal)
 
 
 
-/**	Creates an edge (arc) between v1 and v2
+/**	
+	Change edge (arc) weight between v1 and v2
 */
 void Graph::setEdgeWeight (int v1, int v2, int weight) {
 	qDebug("Graph: setEdgeWeight between %i (%i) and %i (%i), weight %i", v1, index[v1],v2,index[v2], weight);
@@ -381,6 +388,7 @@ void Graph::setEdgeWeight (int v1, int v2, int weight) {
 	qDebug("Graph: setEdgeWeight between %i (%i) and %i (%i), NOW weight %i", v1, index[v1],v2,index[v2], this->hasEdge(v1, v2) );
 	qDebug("Graph: setEdgeWeight between %i (%i) and %i (%i), NOW vertex weight %i", v1, index[v1],v2,index[v2],	m_graph [ index[v1] ]->isLinkedTo(v2) );
 	graphModified=true;
+	emit graphChanged(); 
 }
 
 	
@@ -397,6 +405,7 @@ void Graph::removeEdge (int v1, int v2) {
 	outEdgesVert--;
 	inEdgesVert--;
 	graphModified=true;
+	emit graphChanged(); 
 }
 
 
@@ -446,6 +455,8 @@ void Graph::setInitVertexSize (int size) {
 //Changes the size.of vertex v 
 void Graph::setVertexSize(int v, int size) { 
 	m_graph[ index[v] ]->setSize(size);
+	graphModified=true;
+	emit graphChanged(); 
 }
 
 
@@ -456,6 +467,8 @@ void Graph::setInitVertexShape(QString shape) {
 //Changes the shape.of vertex v 
 void Graph::setVertexShape(int v1, QString shape){
 	m_graph[ index[v1] ]->setShape(shape);
+	graphModified=true;
+	emit graphChanged(); 
 }
 
 
@@ -472,6 +485,8 @@ QString Graph::shape(int v1){
 void Graph::setVertexLabel(int v1, QString label){
 	qDebug()<< "Graph: setVertexLabel for "<< v1 << ", index " << index[v1]<< " with label"<< label;
 	m_graph[ index[v1] ]->setLabel ( label);
+	graphModified=true;
+	emit graphChanged(); 
 }
 
 
@@ -492,6 +507,8 @@ QString Graph::label(int v1){
 void Graph::setVertexColor(int v1, QString color){
 	qDebug()<< "Graph: setVertexColor for "<< v1 << ", index " << index[v1]<< " with color "<< color;
 	m_graph[ index[v1] ]->setColor ( color );
+	graphModified=true;
+	emit graphChanged(); 
 }
 
 
@@ -516,6 +533,7 @@ void Graph::setEdgeColor(int s, int t, QString color){
 	if (isSymmetric()) {
 		m_graph[ index[t] ]->setOutLinkColor(s, color);
 	}
+	emit graphChanged(); 
 }	
 
 
@@ -649,7 +667,6 @@ void Graph::clear() {
 	adjacencyMatrixCreated=FALSE;
 	graphModified=FALSE;
 	symmetricAdjacencyMatrix=TRUE;
-	
 	qDebug("Graph: m_graph cleared. Now reports size %i", m_graph.size());
 }
 
@@ -708,6 +725,7 @@ void Graph::symmetrize(){
 	}
 	graphModified=TRUE;
 	symmetricAdjacencyMatrix=TRUE;
+	emit graphChanged(); 
 }
 
 
@@ -1004,7 +1022,7 @@ void Graph::createDistanceMatrix(bool calc_centralities) {
 	int vert=vertices();
 
 
-	if (totalEdges() == 0 ) 
+	if (totalEdges() == 0 ) //can user m_totalEdges here to save some time...
 		DM.fillMatrix(0);	
 	else{
 		//for all vertices set their distances to infinum, aka -1
@@ -1015,8 +1033,8 @@ void Graph::createDistanceMatrix(bool calc_centralities) {
 
 		QList<Vertex*>::iterator it, it1;	
 		QList<int>::iterator it2;
-		int w=0, y=0,s=0;
-		float d_sw=0, d_sy=0;	
+		int w=0, u=0,s=0;
+		float d_sw=0, d_su=0;	
 		reciprocalEdgesVert=0;
 		outEdgesVert=0;
 		inEdgesVert=0;
@@ -1027,6 +1045,7 @@ void Graph::createDistanceMatrix(bool calc_centralities) {
 		fmap_i::iterator it3; 
 
 		float CC=0, BC=0, SC=0, GC=0, EC=0, stdGC=0, stdEC=0;
+		qDebug("Graph: createDistanceMatrix() - initialising variables for maximum centrality indeces");
 		if (symmetricAdjacencyMatrix) {
 			maxIndexBC=( vert-1.0) *  (vert-2.0)  / 2.0;
 			maxIndexSC=( vert-1.0) *  (vert-2.0) / 2.0;
@@ -1038,11 +1057,11 @@ void Graph::createDistanceMatrix(bool calc_centralities) {
 			maxIndexBC= ( ( outEdgesVert-1.0) *  (inEdgesVert-2.0) - (reciprocalEdgesVert-1.0))/ 2.0;
 			maxIndexSC=1;
 			maxIndexEC=(vert-1.0);
-			maxIndexCC=1.0/(vert-1.0);  //FIXME This is only for undirected graphs
+			maxIndexCC=1.0/(vert-1.0);  //FIXME This applies only on undirected graphs
 			qDebug("############# maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
 		}
 		//float maxIndexBC-directed= (n1-1) * (n2-1)-(ns-1) , n1  vert outgoing n2 ingoing vert ns self  // all this divided by two.
-		
+		qDebug("Graph: createDistanceMatrix() - initialising variables for centrality index");
 		maxCC=0; minCC=RAND_MAX; nomCC=0; denomCC=0; groupCC=0; maxNodeCC=0; minNodeCC=0; sumCC=0;
 		discreteCCs.clear(); classesCC=0;
 		maxBC=0; minBC=RAND_MAX; nomBC=0; denomBC=0; groupBC=0; maxNodeBC=0; minNodeBC=0; sumBC=0;
@@ -1061,29 +1080,27 @@ void Graph::createDistanceMatrix(bool calc_centralities) {
 				(*it)->setGC( 0.0 );
 				(*it)->setCC( 0.0 );
 		}
-		//for every s in V do
+		qDebug("MAIN LOOP: for every s in V do (solve the single source shortest path problem...");
 		for (it=m_graph.begin(); it!=m_graph.end(); it++){
-			//s is the source vertex of BFS algorithm
 			s=index[(*it)->name()];
-
+			qDebug("Source vertex s=%i of BFS algorithm has index %i. Clearing Stack ...", (*it)->name(), s);
 			if (calc_centralities){
-				qDebug("Clearing Stack ...");
-				//empty stack Stack which will return vertices in order of their (non increasing) distance from S - Complexity linear O(n) 
+				qDebug("Empty stack Stack which will return vertices in order of their (non increasing) distance from S ...");
+				//- Complexity linear O(n) 
 				while ( !Stack.empty() )  
 					Stack.pop();
-				qDebug("...and list Ps of each vertex");
-				//for each vertex: empty list Ps of predecessors - Complexity linear O(n)
+				qDebug("...and for each vertex: empty list Ps of predecessors");
+				//Complexity linear O(n)
  				for (it1=m_graph.begin(); it1!=m_graph.end(); it1++) 
  					(*it1)->clearPs();
 			}
 
-			qDebug("Call BFS for source vertex %i  with index s=%i", (*it)->name(), s);
+			qDebug("PHASE 1 (SSSP): Call BFS for source vertex %i to determine distances and shortest path counts from s to every vertex t", (*it)->name());
 			BFS(s,calc_centralities );
-			qDebug("Finished BFS");
-			//set delta[u]=0 for every u
+			qDebug("Finished BFS. Continuing to calculate centralities");
 			if (calc_centralities){
-				//Closeness centrality must be inverted 	
-				if ( (*it)->CC() != 0 )
+				qDebug("Set centrality for current source vertex %i  with index s=%i", (*it)->name(), s);
+				if ( (*it)->CC() != 0 ) //Closeness centrality must be inverted 	
 					CC=1.0/(*it)->CC();
 				else CC=0;
 				(*it)->setSCC ( CC * ( vert-1.0)  );
@@ -1112,35 +1129,39 @@ void Graph::createDistanceMatrix(bool calc_centralities) {
 				(*it)->setSEC(stdEC);
 				sumEC+=EC;
 				minmax( EC, (*it), maxEC, minEC, maxNodeEC, minNodeEC) ;
-				//Continue to calculate betweeness centrality
-				qDebug("Setting pair dependency delta=0 on each vertex");
+				
+				
+				qDebug("PHASE 2 (ACCUMULATION): Start back propagation of dependencies. Set dependency delta[u]=0 on each vertex");
 				for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
-					//Setting pair dependency delta=0 on each vertex
 					(*it1)->setDelta(0.0);
 					qDebug("vertex %i with index %i has delta = %F", (*it1)->name(),index[(*it1)->name()], (*it1)->delta());
 				}
-				//qDebug("Stack size has %i", Stack.size());
+
+				qDebug("Visit all vertices in reverse order of their discovery (from s = %i) to sum dependencies. Initial Stack size has %i", s, Stack.size());
+
 				while ( !Stack.empty() ) {
 					w=Stack.top(); 
-					qDebug("Stack top is vertex w=%i. Popping it.", w);
+					qDebug("Stack top is vertex w=%i. This is the furthest vertex from s. Popping it.", w);
 					Stack.pop();
-					//for every vertex y in the list of predecessors Ps[w] of w	
+					qDebug("preLOOP: Checking size of predecessors list Ps[w]...  = %i ",m_graph[w]->Ps().size());
+					qDebug("LOOP: for every other vertex u in the list of predecessors Ps[w] of w....");
+					if (m_graph[w]->Ps().size() > 0) // just in case...do a sanity check
 					for ( it2=m_graph[w]->Ps().begin(); it2 != m_graph[w]->Ps().end(); it2++ ){
-						y=(*it2);
-						qDebug("Selecting Ps[w] element y=%i with delta_y=%f. TM(s,y)=%i, TM(s,w)=%i, delta_w=%f ", y, m_graph[y]->delta(),TM.item(s,y), TM.item(s,w), m_graph[w]->delta());
+						u=(*it2);
+						qDebug("Selecting Ps[w] element u=%i with delta_u=%f. TM(s,u)=%i, TM(s,w)=%i, delta_w=%f ", u, m_graph[u]->delta(),TM.item(s,u), TM.item(s,w), m_graph[w]->delta());
 						if ( TM.item(s,w) > 0) {
-							//delta[y]=delta[y]+(1+delta[w])*(sigma[y]/sigma[w]) ;
-							d_sy=m_graph[y]->delta()+(1.0+m_graph[w]->delta() ) * ( (float)TM.item(s,y)/(float)TM.item(s,w) );
+							//delta[u]=delta[u]+(1+delta[w])*(sigma[u]/sigma[w]) ;
+							d_su=m_graph[u]->delta()+(1.0+m_graph[w]->delta() ) * ( (float)TM.item(s,u)/(float)TM.item(s,w) );
 						}
 						else {
-							d_sy=m_graph[y]->delta();
-							qDebug("TM sw zero - using SAME DELTA ");
+							d_su=m_graph[u]->delta();
+							qDebug("TM (s,w) zero, i.e. zero shortest path counts from s to w - using SAME DELTA for vertex u");
 						}
-						qDebug("d_sy = %f. Setting it to y", d_sy);
-						m_graph[y]->setDelta( d_sy);
+						qDebug("Assigning new delta d_su = %f to u = %i", d_su, u);
+						m_graph[u]->setDelta( d_su);
 					}
 					if  (w!=s) { 
-						qDebug("w!=s. Calculating d_sw = BC + delta = %f, %f",m_graph[w]->BC(),  m_graph[w]->delta());
+						qDebug("w!=s. For this furthest vertex we need to add its new delta %f to old BC index: %f",m_graph[w]->delta(), m_graph[w]->BC());
 						d_sw = m_graph[w]->BC() + m_graph[w]->delta();
 						qDebug("New BC = d_sw = %f", d_sw);
 						m_graph[w]->setBC (d_sw);
@@ -1151,10 +1172,11 @@ void Graph::createDistanceMatrix(bool calc_centralities) {
 		
 		if (calc_centralities) {
 			for (it=m_graph.begin(); it!=m_graph.end(); it++) {
-				//Betweeness centrality must be divided by two if the graph is undirected			
-				if (symmetricAdjacencyMatrix) 
+
+				if (symmetricAdjacencyMatrix) {
+					qDebug("Betweeness centrality must be divided by two if the graph is undirected");
 					(*it)->setBC ( (*it)->BC()/2.0);
-					
+				}
 
 				BC=(*it)->BC();
 				//Resolve classes Betweeness centrality
@@ -1232,48 +1254,44 @@ void Graph::createDistanceMatrix(bool calc_centralities) {
 	
 */ 
 void Graph::BFS(int s, bool calc_centralities){
-	int u,y, dist_u, temp=0;
+	int u,w, dist_u, temp=0;
 
 	//set distance of s from s equal to 0	
 	DM.setItem(s,s,0);
 	//set sigma of s from s equal to 1
 	TM.setItem(s,s,1);
 
-	//Construct a queue Q of integers 
+	//
+	qDebug("BFS: Construct a queue Q of integers and push source vertex s=%i to Q as initial vertex", s);
 	queue<int> Q;
 //	qDebug("BFS: Q size %i", Q.size());
-	//push source vertex, aka first vertex to Q
-	qDebug("BFS: push s=%i to Q", s);
+
 	Q.push(s);
-	//while Q is not empty
-	qDebug("BFS: Start loop over Q");
+
+	qDebug("BFS: LOOP: While Q not empty ");
 	while ( !Q.empty() ) {
-		// Dequeue, namely take the first element standing in front of queue Q
 		qDebug("BFS: Dequeue: first element of Q is u=%i", Q.front());
 		u=Q.front(); Q.pop();
 		if (calc_centralities){
-			//If we are to calculate centralities, we must add this step:
-			//push first element of Q to a stack S (this is a global).
-			qDebug("BFS: Pushing u=%i to Stack ", u);
+			qDebug("BFS: If we are to calculate centralities, we must push u=%i to global stack Stack ", u);
 			Stack.push(u);
 		}
 		imap_i::iterator it;
-		//for all edges of u, (u,y)
-		qDebug("BFS: Iterate over all edges of u, that is all neighbors y of u");
+		qDebug("BFS: LOOP over every edge (u,w) e E, that is all neighbors w of vertex u");
 		for( it = m_graph [ u ]->m_edges.begin(); it != m_graph [ u ]->m_edges.end(); it++ ) {
-			//if distance (s,y) is infinite
-			y=index[it->first];	
-			qDebug("BFS: u=%i is connected with y %i of index %i", u, it->first, y);
-			if (	DM.item(s, y) == -1 ) {
-				//append y to Q
-				qDebug("BFS: first time visiting y=%i. Pushing y to the end of Q", y);
-				Q.push(y);
-				//set its distance from s equal to distance(s,u) plus 1
+			
+			w=index[it->first];	
+			qDebug("BFS: u=%i is connected with w=%i of index %i. ", u, it->first, w);
+			qDebug("BFS: Start path discovery");
+			if (	DM.item(s, w) == -1 ) { //if distance (s,w) is infinite, w found for the first time.
+				//append w to Q
+				qDebug("BFS: first time visiting w=%i. Pushing w to the end of Q", w);
+				Q.push(w);
 				//First check if distance(s,u) = -1 (aka infinite :)) and set it to zero
 				dist_u=DM.item(s,u);
 // 				if (dist_u <0) dist_u=0;
-				qDebug("BFS: Setting distance of y=%i from s=%i as %i",y,s, dist_u+1);
-				DM.setItem(s, y, dist_u+1);
+				qDebug("BFS: Setting distance of w=%i from s=%i equal to distance(s,u) plus 1. New distance = %i",w,s, dist_u+1);
+				DM.setItem(s, w, dist_u+1);
 				
 				if (calc_centralities){
 					//Calculate CC: the sum of distances (will invert it l8r)
@@ -1288,21 +1306,19 @@ void Graph::BFS(int s, bool calc_centralities){
 					qDebug("BFS: new graphDiameter = %i",graphDiameter );
 				}
 			}		
-			//Is this a shortest path from s to y via u?
-			if ( DM.item(s,y)==DM.item(s,u)+1) {
-				temp= TM.item(s,y)+TM.item(s,u);
-				qDebug("BFS: Found a NEW SHORTEST PATH from s to y via u. Setting Sigma(s=%i, y=%i) ==  %i",s, y,temp);
-				if (s!=y)
-					TM.setItem(s,y, temp);
+
+			qDebug("BFS: Start path counting"); 	//Is edge (u,w) on a shortest path from s to w via u?
+			if ( DM.item(s,w)==DM.item(s,u)+1) {
+				temp= TM.item(s,w)+TM.item(s,u);
+				qDebug("BFS: Found a NEW SHORTEST PATH from s=%i to w=%i via u=%i. Setting Sigma(%i, %i) = %i",s, w, u, s, w,temp);
+				if (s!=w)
+					TM.setItem(s,w, temp);
 				if (calc_centralities){
-					//If we are to calculate centralities, we must do these too:
-					//Calculate SC as well
+					qDebug("If we are to calculate centralities, we must calculate SC as well");
 					m_graph[u]->setSC(m_graph[u]->SC()+1);
 
-					//For BC, append y to the list P (this is a global)
-					//P holds the predecessors of y on all all shortest paths from s 
-					qDebug("BFS: appending u=%i to Ps[y=%i] ", u, y);
-					m_graph[y]->appendToPs(u);
+					qDebug("BFS: appending u=%i to list Ps[w=%i] with the predecessors of w on all shortest paths from s ", u, w);
+					m_graph[w]->appendToPs(u);
 				}
 			}
 		}
