@@ -1,5 +1,6 @@
 [Desktop Entry]
-Name=Social Networks Visualiser (SocNetV)
+Name=SocNetV
+GenericName=Social Networks Analysis and Visualisation
 Comment=SocNetV is a Social Networks Visualisation and Analysis application.
 Exec=@ac_prefix@/bin/socnetv
 Icon=@ac_prefix@/share/pixmaps/socnetv.png

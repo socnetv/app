@@ -1249,8 +1249,8 @@ void MainWindow::initDockWidget(){
 
 	QVBoxLayout *moveGroupLayout = new QVBoxLayout(moveGroup);
     	moveGroupLayout->addWidget(moveSpringEmbedderBx);
-    	moveGroupLayout->addWidget(moveFruchtermanBx );
-    	moveGroupLayout->addWidget(moveKamandaBx);
+/*    	moveGroupLayout->addWidget(moveFruchtermanBx );
+    	moveGroupLayout->addWidget(moveKamandaBx);*/
 	moveGroupLayout->addWidget(nodeSizeProportional2OutDegreeBx);
 	moveGroupLayout->addWidget(nodeSizeProportional2InDegreeBx);
 
@@ -1332,7 +1332,7 @@ void MainWindow::initView() {
  	graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
  	graphicsWidget->setResizeAnchor(QGraphicsView::AnchorViewCenter);
 	
-	graphicsWidget->setMinimumSize(700,600);
+	graphicsWidget->setMinimumSize(800,600);
 	this->setCentralWidget(graphicsWidget);
 	scene->setSceneRect(0, 0, this->width()-graphicsWidget->width(), this->height()-graphicsWidget->height());
 	qDebug ("MW initView(): window size %i, %i, graphicsWidget size %i, %i",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height());
