@@ -5091,7 +5091,7 @@ void MainWindow::slotHelpAbout(){
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualiser " +VERSION+ "  codename: <b>SNAIL</b>"
 	"<p>(C) 2005-2008 by Dimitris V. Kalamaras"
 	"<br> dimitris.kalamaras@gmail.com"
-	"<p><b>Last revision: </b> Fri, Sep 27, 2008</p>"
+	"<p><b>Last revision: </b> Fri, Oct 8, 2008</p>"
 
 
 	"<p><b>Fortune cookie: </b><br> \""  + fortuneCookie[randomCookie]  +"\""
