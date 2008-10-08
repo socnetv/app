@@ -121,6 +121,9 @@ Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 %{_datadir}/doc/%{name}/manual/visualisation.html
 
 %changelog
+* Mon Oct 20 2008 Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
+0.49-1
+Updated to 0.49
 * Wed Sep 17 2008  Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
 0.48-1
 - First RPM release

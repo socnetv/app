@@ -1,6 +1,6 @@
 /****************************************************************************
 SocNetV: Social Networks Visualiser 
-version: 0.48
+version: 0.49
 Written in Qt 4.4 with KDevelop   
 
                                texteditor.cpp 
@@ -297,7 +297,7 @@ QString TextEditor::strippedName(const QString &fullFileName)
 void TextEditor::about()
 {
    QMessageBox::about( this, "SocNetV Editor",
-"<b>S</b>ocial <b>N</b>etwork <b>V</b>isualiser version 0.48"
+"<b>S</b>ocial <b>N</b>etwork <b>V</b>isualiser version 0.49"
       "<p>Written by <br>Dimitris V. Kalamaras<br>"
       "<br>email: dimitris.kalamaras@gmail.com"
       "<p>Last revision: Sep 2008</p>"
