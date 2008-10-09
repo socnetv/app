@@ -66,6 +66,7 @@ class QLCDNumber;
 class QSlider;
 class QComboBox;	
 class QGroupBox;
+class QTabWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -81,6 +82,7 @@ public:		/**PUBLIC FUNCTIONS NOT VISIBLE BY OTHER WIDGETS NOR BY SLOT/LINK MECHA
 	void initMenuBar();
 	void initToolBar();
 	void initDockWidget();
+	void initToolBox();
 	void initStatusBar();
 	void initNet();
 	void initView();
@@ -264,6 +266,7 @@ private:
 	QComboBox *zoomCombo;
 	QGroupBox *mainGroup;
 	QDockWidget *leftDock;
+	QTabWidget *toolBox;
 	QCheckBox *moveSpringEmbedderBx, *moveFruchtermanBx, *moveKamandaBx, *nodeSizeProportional2OutDegreeBx, *nodeSizeProportional2InDegreeBx ;
 
 	QSpinBox *rotateSpinBox ;
