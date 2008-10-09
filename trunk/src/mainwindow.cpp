@@ -82,7 +82,7 @@ MainWindow::MainWindow(const QString &fName) {
 	initToolBar();  //build the toolbar
 	
 	initStatusBar();  //and now add the status bar.
-	//initDockWidget(); //finally, build the dock widgets 
+
 
 	initToolBox(); //finally, build the toolbox
 	colorList = QColor::colorNames();  //and fill a stringList with all X-supported color names
@@ -140,7 +140,8 @@ MainWindow::MainWindow(const QString &fName) {
 
 	setCentralWidget(widget);
 
-
+	this->setMinimumSize(800,600);
+	
 	initNet();
 
 	/** DEFAULTING HERE DOES NOT CHANGE BOOL VALUE **/
@@ -172,7 +173,7 @@ MainWindow::MainWindow(const QString &fName) {
 		createTips();
 	}
 	
-	setMinimumSize(900,600);
+	
 	statusBar()->showMessage(tr("Welcome to Social Networks Visualiser, Version ")+VERSION, statusBarDuration);
 
 }
@@ -780,7 +781,7 @@ void MainWindow::initActions(){
 	antialiasingAct ->setStatusTip(tr("Enables/disables anti-aliasing"));
 	antialiasingAct ->setWhatsThis(tr("Enable or disable Anti-Aliasing\n\n Anti-aliasing is a technique which makes nodes, lines and text, smoother and fancier. But it comes at the cost of speed..."));
 	antialiasingAct ->setCheckable(TRUE);
-	antialiasingAct ->setChecked (false);
+	antialiasingAct ->setChecked (true);
 	connect(antialiasingAct , SIGNAL(toggled(bool)), this, SLOT(slotAntialiasing(bool)));
 
 
@@ -1324,6 +1325,8 @@ void MainWindow::updateNodeCoords(int nodeNumber, int x, int y){
 }
 
 
+
+
 /**
 	Initializes the status bar
 */
@@ -1344,23 +1347,20 @@ void MainWindow::initStatusBar() {
 void MainWindow::initView() {
 	qDebug ("MW initView()");
 	scene=new  QGraphicsScene();
-	scene->setSceneRect(0, 0, 2000, 2000);
-	scene->setItemIndexMethod(QGraphicsScene::NoIndex);
+	scene->setSceneRect(0, 0, 5000, 5000);
+	//scene->setItemIndexMethod(QGraphicsScene::NoIndex);
 	initBackgroundColor="gainsboro";
 	
 	graphicsWidget=new GraphicsWidget(scene, this);
 
  	graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor)); 
 	graphicsWidget->setCacheMode(QGraphicsView::CacheBackground); 
- 	graphicsWidget->setRenderHint(QPainter::Antialiasing, false);
-	graphicsWidget->setRenderHint(QPainter::TextAntialiasing, false);
-	graphicsWidget->setRenderHint(QPainter::SmoothPixmapTransform, false);
+ 	graphicsWidget->setRenderHint(QPainter::Antialiasing, true);
+	graphicsWidget->setRenderHint(QPainter::TextAntialiasing, true);
+	graphicsWidget->setRenderHint(QPainter::SmoothPixmapTransform, true);
  	graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
  	graphicsWidget->setResizeAnchor(QGraphicsView::AnchorViewCenter);
-	
 
-
-	qDebug ("MW initView(): window size %i, %i, graphicsWidget size %i, %i",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height());
 
 }
 

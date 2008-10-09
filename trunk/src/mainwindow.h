@@ -81,7 +81,6 @@ public:		/**PUBLIC FUNCTIONS NOT VISIBLE BY OTHER WIDGETS NOR BY SLOT/LINK MECHA
 	void initActions();
 	void initMenuBar();
 	void initToolBar();
-	void initDockWidget();
 	void initToolBox();
 	void initStatusBar();
 	void initNet();
@@ -265,7 +264,6 @@ private:
 	QToolBar *fileToolbar, *actionToolBar;
 	QComboBox *zoomCombo;
 	QGroupBox *mainGroup;
-	QDockWidget *leftDock;
 	QTabWidget *toolBox;
 	QCheckBox *moveSpringEmbedderBx, *moveFruchtermanBx, *moveKamandaBx, *nodeSizeProportional2OutDegreeBx, *nodeSizeProportional2InDegreeBx ;
 
