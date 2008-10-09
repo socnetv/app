@@ -1249,7 +1249,7 @@ void MainWindow::initToolBox(){
 	propertiesGrid -> addWidget(inLinksLCD,8,1);
 	propertiesGrid -> addWidget(labelOutLinksLCD, 9,0);
 	propertiesGrid -> addWidget(outLinksLCD,9,1);
-
+	propertiesGrid -> setRowStretch(10,1);
 	//create a box with title
 	QGroupBox *networkPropertiesGroup = new QGroupBox(tr("Network"));
 	networkPropertiesGroup -> setLayout (propertiesGrid);
