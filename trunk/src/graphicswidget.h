@@ -82,7 +82,7 @@ public slots:
 	void openEdgeContextMenu();
 	void nodeMovement(int state, int type); 	//used by dynamic layouts: Spring Embedder, Fruchterman, etc...
 	void moveNode(int, int, int);			//Called from Graph when creating random nets.
-	void changeZoom(int value); 
+	void changeZoom(const int value); 
 	void startEdge(Node *node);	
 	void drawEdgeReciprocal(int, int);
 	void unmakeEdgeReciprocal(int, int);
@@ -109,9 +109,6 @@ private:
 	int timerId,  layoutType, m_nodeSize, m_numberDistance, m_labelDistance;
 	double m_currentScaleFactor;
 	int m_currentRotationAngle;
-
-
-	QTransform init_Transform;
 	int zoomIndex;
 	QString m_nodeLabel, m_numberColor, m_nodeColor, m_labelColor, m_linkColor;
 	bool secondDoubleClick, dynamicMovement;

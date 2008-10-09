@@ -124,7 +124,7 @@ MainWindow::MainWindow(const QString &fName) {
 	connect (removeNodeBt,SIGNAL(clicked()), this, SLOT(slotRemoveNode()));
 	connect (removeLinkBt,SIGNAL(clicked()), this, SLOT(slotRemoveLink()));
 
-	connect(zoomCombo, SIGNAL(currentIndexChanged(const int &)),graphicsWidget, SLOT(changeZoom(int)));
+	connect(zoomCombo, SIGNAL(currentIndexChanged(const int &)),graphicsWidget, SLOT(changeZoom(const int &)));
 	connect(zoomOutAct, SIGNAL(triggered()), graphicsWidget, SLOT(zoomOut()));
 	connect(zoomInAct, SIGNAL(triggered()), graphicsWidget, SLOT(zoomIn()));
 
@@ -1078,6 +1078,28 @@ void MainWindow::initToolBar(){
 	fileToolbar -> addAction(zoomOutAct);
 
 	fileToolbar -> addSeparator();
+
+	QLabel *labelRotateSpinBox= new QLabel;
+	labelRotateSpinBox ->setText(tr("Rotation:"));
+
+	
+	rotateSpinBox = new QSpinBox;
+	rotateSpinBox ->setRange(-360, 360);
+	rotateSpinBox->setSingleStep(1);
+	rotateSpinBox->setValue(0);
+
+	QGroupBox *rotateGroup = new QGroupBox();
+	QHBoxLayout *rotateGroupLayout = new QHBoxLayout(rotateGroup);
+	rotateGroupLayout->addWidget(labelRotateSpinBox);
+    	rotateGroupLayout->addWidget(rotateSpinBox);
+
+	fileToolbar -> addWidget(rotateGroup);
+
+
+
+
+
+	fileToolbar -> addSeparator();
 	fileToolbar -> addAction ( QWhatsThis::createAction (this));
 
 
@@ -1094,9 +1116,14 @@ void MainWindow::initDockWidget(){
 	leftDock->setFeatures( QDockWidget::NoDockWidgetFeatures);
 	this->addDockWidget(Qt::LeftDockWidgetArea, leftDock);
 
+
 	//Create the main box - inside we will create other boxes...
 	QGroupBox *mainGroup= new QGroupBox(tr("Dock"), leftDock );
-	mainGroup->setFixedWidth(250);
+//	mainGroup->setFixedWidth(250);
+
+	//create a vertical layout for the whole left dock
+	QVBoxLayout *mainGroupLayout = new QVBoxLayout(mainGroup);
+
 
 	//create widgets for the upper group
 	addNodeBt= new QPushButton(QIcon(":/images/add.png"),tr("&Add Node"));	
@@ -1123,6 +1150,9 @@ void MainWindow::initDockWidget(){
 	//create a box with a title & a frame. Inside, display the vertical layout of widgets
 	QGroupBox *upperGroup= new QGroupBox(tr("Edit Network"), leftDock);
 	upperGroup->setLayout(buttonsGrid);
+
+	//add it to main group
+    	mainGroupLayout->addWidget(upperGroup);
 
 
 	//create widgets for middle group Properties 
@@ -1185,6 +1215,9 @@ void MainWindow::initDockWidget(){
 	QGroupBox *middleGroup = new QGroupBox(tr("Network Properties"), leftDock );
 	middleGroup-> setLayout (propertiesGrid);
 
+	//add it to main group
+    	mainGroupLayout->addWidget(middleGroup);
+
 
 	//create a grid layout for node properties
 	QGridLayout *nodeGrid = new QGridLayout(leftDock);
@@ -1220,6 +1253,9 @@ void MainWindow::initDockWidget(){
 	QGroupBox *nodeGroup = new QGroupBox(tr("Selected Node"), leftDock );
 	nodeGroup -> setLayout (nodeGrid);	
 
+	//add it to main group
+	mainGroupLayout->addWidget(nodeGroup);
+
 	// create some more widgets for the final box: "Layout"
 	QGroupBox *downGroup= new QGroupBox(tr("Layout"), mainGroup);
 
@@ -1254,37 +1290,18 @@ void MainWindow::initDockWidget(){
 	moveGroupLayout->addWidget(nodeSizeProportional2OutDegreeBx);
 	moveGroupLayout->addWidget(nodeSizeProportional2InDegreeBx);
 
-	QGroupBox *rotateGroup = new QGroupBox(downGroup);
+	//QGroupBox *rotateGroup = new QGroupBox(downGroup);
     	//rotateGroup->setAttribute(Qt::WA_ContentsPropagated);
     	//rotateGroup->setTitle("Rotation");
 
 
-	QLabel *labelRotateSpinBox= new QLabel;
-	labelRotateSpinBox ->setText(tr("Rotation:"));
-
-	
-	rotateSpinBox = new QSpinBox;
-	rotateSpinBox ->setRange(-360, 360);
-	rotateSpinBox->setSingleStep(1);
-	rotateSpinBox->setValue(0);
-
-
-	QHBoxLayout *rotateGroupLayout = new QHBoxLayout(rotateGroup);
-	rotateGroupLayout->addWidget(labelRotateSpinBox);
-    	rotateGroupLayout->addWidget(rotateSpinBox);
-
 	//create a vertical layout for downDown
-	QVBoxLayout *downGroupLayout = new QVBoxLayout(downGroup);
-	downGroupLayout ->addWidget(moveGroup);
-    	downGroupLayout ->addWidget(rotateGroup);
+// 	QVBoxLayout *downGroupLayout = new QVBoxLayout(downGroup);
+// 	downGroupLayout ->addWidget(moveGroup);
+
 	
 
-	//create a vertical layout for the whole left dock
-	QVBoxLayout *mainGroupLayout = new QVBoxLayout(mainGroup);
-    	mainGroupLayout->addWidget(upperGroup);
-    	mainGroupLayout->addWidget(middleGroup);
-	mainGroupLayout->addWidget(nodeGroup);
-	mainGroupLayout->addWidget(downGroup);
+	//mainGroupLayout->addWidget(downGroup);
     	mainGroupLayout->addStretch(1);	
 
 	leftDock -> setWidget (mainGroup);
@@ -1318,7 +1335,7 @@ void MainWindow::initStatusBar() {
 void MainWindow::initView() {
 	qDebug ("MW initView()");
 	scene=new  QGraphicsScene();
-	//scene->setSceneRect(0, 0, 400, 400);
+	scene->setSceneRect(0, 0, 2000, 2000);
 	scene->setItemIndexMethod(QGraphicsScene::NoIndex);
 	initBackgroundColor="gainsboro";
 	
@@ -1332,13 +1349,9 @@ void MainWindow::initView() {
  	graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
  	graphicsWidget->setResizeAnchor(QGraphicsView::AnchorViewCenter);
 	
-	graphicsWidget->setMinimumSize(800,600);
+	//graphicsWidget->setMinimumSize(800,600);
 	this->setCentralWidget(graphicsWidget);
-	scene->setSceneRect(0, 0, this->width()-graphicsWidget->width(), this->height()-graphicsWidget->height());
 	qDebug ("MW initView(): window size %i, %i, graphicsWidget size %i, %i",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height());
-
-//	this->resize(800,600);
-// 	graphicsWidget->clear();
 
 }
 

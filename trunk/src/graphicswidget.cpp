@@ -51,7 +51,7 @@ GraphicsWidget::GraphicsWidget( QGraphicsScene *sc, MainWindow* par)  : QGraphic
 	layoutType=0;
 	m_numberColor="black";
 	m_nodeLabel="";
-	init_Transform = transform();
+	
 	zoomIndex=3;
 	
 	m_currentScaleFactor = 1;
@@ -649,35 +649,11 @@ void GraphicsWidget::changeZoom(int value) {
 	double scaleFactor = 0.25;
 	scaleFactor *= (value + 1);
 	m_currentScaleFactor = scaleFactor;
-	
-	setTransform (init_Transform);
-	scale(scaleFactor, scaleFactor);
+	QMatrix oldMatrix = matrix();
+	resetMatrix();
+	translate(oldMatrix.dx(), oldMatrix.dy());
+	this->scale(scaleFactor, scaleFactor);
 	rotate(m_currentRotationAngle);
-
-/*	switch (value) {
-		case 0:	setTransform (init_Transform); 
-			scale(0.25, 0.25);
-			break;
-		case 1:	setTransform (init_Transform); 
-			scale(0.5, 0.5);
-			break;
-		case 2:	setTransform (init_Transform);
-			scale(0.75, 0.75);
-			break;
-		case 3: setTransform (init_Transform);
-			scale(1, 1);
-			break;
-		case 4: setTransform (init_Transform);
-			scale(1.25, 1.25);
-			break;
-		case 5: setTransform (init_Transform);
-			scale(1.5, 1.5);
-			break;
-		case 6: setTransform (init_Transform);
-			scale(1.75, 1.75);
-			break;
-	}
-	m_currentScaleFactor = scaleFactor;*/
 }
 
 
@@ -685,7 +661,7 @@ void GraphicsWidget::changeZoom(int value) {
 void GraphicsWidget::rot(int angle){
 	qDebug("rotating");
 	m_currentRotationAngle = angle;
-	setTransform (init_Transform);	
+	resetMatrix();
 	scale(m_currentScaleFactor, m_currentScaleFactor);
 	rotate(angle);
 
