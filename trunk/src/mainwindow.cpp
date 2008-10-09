@@ -1150,7 +1150,7 @@ void MainWindow::initToolBox(){
 	buttonsGrid -> addWidget(removeNodeBt, 0,1);
 	buttonsGrid -> addWidget(addLinkBt,1,0);
 	buttonsGrid -> addWidget(removeLinkBt,1,1);
-	buttonsGrid -> setRowStretch(2,1);
+	buttonsGrid -> setRowStretch(2,1);   //fix vertical stretch
 	//create a box with a title & a frame. Inside, display the vertical layout of widgets
 	QGroupBox *buttonsGroup= new QGroupBox(tr("Edit Network"));
 	buttonsGrid->setSpacing(0);
@@ -1249,7 +1249,7 @@ void MainWindow::initToolBox(){
 	propertiesGrid -> addWidget(inLinksLCD,8,1);
 	propertiesGrid -> addWidget(labelOutLinksLCD, 9,0);
 	propertiesGrid -> addWidget(outLinksLCD,9,1);
-	propertiesGrid -> setRowStretch(10,1);
+	propertiesGrid -> setRowStretch(10,1);   //fix stretch
 	//create a box with title
 	QGroupBox *networkPropertiesGroup = new QGroupBox(tr("Network"));
 	networkPropertiesGroup -> setLayout (propertiesGrid);
@@ -1257,59 +1257,54 @@ void MainWindow::initToolBox(){
 	
  	toolBox->addTab(buttonsGroup, tr("Edit"));
  	toolBox->addTab(networkPropertiesGroup , tr("Statistics"));
-	toolBox->setMinimumWidth(networkPropertiesGroup ->sizeHint().width());
+	toolBox->setMinimumWidth(buttonsGroup->sizeHint().width());
 
 
 
 
 	// create some more widgets for the final box: "Layout"
-// 	QGroupBox *downGroup= new QGroupBox(tr("Layout"), mainGroup);
-// 
-// 	QGroupBox *moveGroup = new QGroupBox(downGroup);
-//  	moveGroup ->setAttribute(Qt::WA_ContentsPropagated);
-// 
-// 	moveSpringEmbedderBx = new QCheckBox(tr("Spring Embedder") );
-// 	moveSpringEmbedderBx->setToolTip(tr("Embeds a spring-gravitational model on the network, where \neach node is regarded as physical object reppeling all \nother nodes, while springs between connected nodes attact them. \nThe result is \nconstant movement. This is a very SLOW process on networks with N > 100!"));
-// 
-// 	moveFruchtermanBx = new QCheckBox(tr("Fruchterman-Reingold") );
-// 	moveFruchtermanBx ->setEnabled(false);
-// 	moveFruchtermanBx->setToolTip(tr("!"));
-// 
-// 	moveKamandaBx= new QCheckBox(tr("Kamanda-Kwei") );
-// 	moveKamandaBx->setEnabled(false);
-// 	moveKamandaBx->setToolTip(tr("!"));
-// 
-// 
-// 	nodeSizeProportional2OutDegreeBx = new QCheckBox(tr("NodeSize = F (OutDegree)") );
-// 	nodeSizeProportional2OutDegreeBx ->setEnabled(true);
-// 	nodeSizeProportional2OutDegreeBx->setToolTip(tr("If you enable this, all nodes will be resized so that their size reflect their out-degree (the amount of links from them). To put it simply, more out-linked nodes will be bigger..."));
-// 
-// 	nodeSizeProportional2InDegreeBx = new QCheckBox(tr("NodeSize = F (InDegree)") );
-// 	nodeSizeProportional2InDegreeBx ->setEnabled(true);
-// 	nodeSizeProportional2InDegreeBx->setToolTip(tr("If you enable this, all nodes will be resized so that their size reflect their in-degree (the amount of links to them from other nodes). To put it simply, more in-linked nodes will be bigger..."));
-// 
-// 	QVBoxLayout *moveGroupLayout = new QVBoxLayout(moveGroup);
-//     	moveGroupLayout->addWidget(moveSpringEmbedderBx);
-// 	moveGroupLayout->addWidget(nodeSizeProportional2OutDegreeBx);
-// 	moveGroupLayout->addWidget(nodeSizeProportional2InDegreeBx);
-// 
 
-	//create a vertical layout for downDown
-// 	QVBoxLayout *downGroupLayout = new QVBoxLayout(downGroup);
-// 	downGroupLayout ->addWidget(moveGroup);
 
-	
 
-	//mainGroupLayout->addWidget(downGroup);
-//    	mainGroupLayout->addStretch(1);	
+	moveSpringEmbedderBx = new QCheckBox(tr("Spring Embedder") );
+	moveSpringEmbedderBx->setToolTip(tr("Embeds a spring-gravitational model on the network, where \neach node is regarded as physical object reppeling all \nother nodes, while springs between connected nodes attact them. \nThe result is \nconstant movement. This is a very SLOW process on networks with N > 100!"));
 
-//	leftDock -> setWidget (mainGroup);
+	moveFruchtermanBx = new QCheckBox(tr("Fruchterman-Reingold") );
+	moveFruchtermanBx ->setEnabled(false);
+	moveFruchtermanBx->setToolTip(tr("!"));
 
-//	connect(moveSpringEmbedderBx, SIGNAL(stateChanged(int)),this, SLOT(layoutSpringEmbedder(int)));
-//	connect(moveFruchtermanBx, SIGNAL(stateChanged(int)),this, SLOT(layoutFruchterman(int)));
+	moveKamandaBx= new QCheckBox(tr("Kamanda-Kwei") );
+	moveKamandaBx->setEnabled(false);
+	moveKamandaBx->setToolTip(tr("!"));
 
-//	connect(nodeSizeProportional2OutDegreeBx , SIGNAL(clicked(bool)),this, SLOT(slotLayoutNodeSizeProportionalOutEdges(bool)));
-//	connect(nodeSizeProportional2InDegreeBx , SIGNAL(clicked(bool)),this, SLOT(slotLayoutNodeSizeProportionalInEdges(bool)));
+
+	nodeSizeProportional2OutDegreeBx = new QCheckBox(tr("NodeSize = F (OutDegree)") );
+	nodeSizeProportional2OutDegreeBx ->setEnabled(true);
+	nodeSizeProportional2OutDegreeBx->setToolTip(tr("If you enable this, all nodes will be resized so that their size reflect their out-degree (the amount of links from them). To put it simply, more out-linked nodes will be bigger..."));
+
+	nodeSizeProportional2InDegreeBx = new QCheckBox(tr("NodeSize = F (InDegree)") );
+	nodeSizeProportional2InDegreeBx ->setEnabled(true);
+	nodeSizeProportional2InDegreeBx->setToolTip(tr("If you enable this, all nodes will be resized so that their size reflect their in-degree (the amount of links to them from other nodes). To put it simply, more in-linked nodes will be bigger..."));
+
+	QGridLayout *layoutGroupLayout = new QGridLayout();
+    	layoutGroupLayout -> addWidget(moveSpringEmbedderBx, 0,0);
+    	layoutGroupLayout -> addWidget(moveKamandaBx, 1,0);
+	layoutGroupLayout -> addWidget(nodeSizeProportional2OutDegreeBx, 2,0);
+	layoutGroupLayout -> addWidget(nodeSizeProportional2InDegreeBx, 3,0);
+
+	layoutGroupLayout -> setRowStretch(4,1);   //fix stretch	
+
+	//create a box with title
+	QGroupBox *layoutGroup= new QGroupBox(tr("Layout"));
+	layoutGroup->setLayout (layoutGroupLayout );
+ 	toolBox->addTab(layoutGroup, tr("Layout"));
+
+
+	connect(moveSpringEmbedderBx, SIGNAL(stateChanged(int)),this, SLOT(layoutSpringEmbedder(int)));
+	connect(moveFruchtermanBx, SIGNAL(stateChanged(int)),this, SLOT(layoutFruchterman(int)));
+
+	connect(nodeSizeProportional2OutDegreeBx , SIGNAL(clicked(bool)),this, SLOT(slotLayoutNodeSizeProportionalOutEdges(bool)));
+	connect(nodeSizeProportional2InDegreeBx , SIGNAL(clicked(bool)),this, SLOT(slotLayoutNodeSizeProportionalInEdges(bool)));
 
 }
 
@@ -1453,8 +1448,8 @@ void MainWindow::initNet(){
 	outLinkedNodesLCD-> display(activeGraph.verticesWithOutEdges());
 	reciprocalLinkedNodesLCD->display(activeGraph.verticesWithReciprocalEdges());
 
-// 	nodeSizeProportional2OutDegreeBx->setChecked(false);
-// 	nodeSizeProportional2InDegreeBx->setChecked(false);
+	nodeSizeProportional2OutDegreeBx->setChecked(false);
+	nodeSizeProportional2InDegreeBx->setChecked(false);
 
 //	showLabelsAct->setChecked(FALSE);
 //	showNumbersAct->setChecked(TRUE);
@@ -3261,15 +3256,15 @@ void MainWindow::slotLayoutSpringEmbedder(){
 		statusBar()->showMessage(tr("I am really sorry. You must really load a file first... ") ,statusBarDuration);
 		return;
 	}
-// 	if (moveSpringEmbedderBx->checkState() == Qt::Unchecked){
-// 		statusBar()->showMessage(tr("Embedding a spring-gravitational model on the network.... ") ,statusBarDuration);
-// 		moveSpringEmbedderBx->setCheckState(Qt::Checked);
-// 		statusBar()->showMessage(tr("Click on the checkbox \"Spring-Embedder\" to stop movement!"), statusBarDuration);
-// 	}
-// 	else { 
-/*		moveSpringEmbedderBx->setCheckState(Qt::Unchecked);
-		statusBar()->showMessage(tr("Movement stopped!"), statusBarDuration);*/
-// 	}
+	if (moveSpringEmbedderBx->checkState() == Qt::Unchecked){
+		statusBar()->showMessage(tr("Embedding a spring-gravitational model on the network.... ") ,statusBarDuration);
+		moveSpringEmbedderBx->setCheckState(Qt::Checked);
+		statusBar()->showMessage(tr("Click on the checkbox \"Spring-Embedder\" to stop movement!"), statusBarDuration);
+	}
+	else { 
+		moveSpringEmbedderBx->setCheckState(Qt::Unchecked);
+		statusBar()->showMessage(tr("Movement stopped!"), statusBarDuration);
+	}
 	
 }
 
@@ -3281,7 +3276,7 @@ void MainWindow::slotLayoutSpringEmbedder(){
 */
 void MainWindow::layoutSpringEmbedder (int state){
 	qDebug("MW: layoutSpringEmbedder ()");
-//	moveFruchtermanBx->setChecked(false);
+	moveFruchtermanBx->setChecked(false);
 	graphicsWidget->nodeMovement(state, 1);
 }
 
@@ -3297,15 +3292,15 @@ void MainWindow::slotLayoutFruchterman(){
 		statusBar()->showMessage(tr("I am really sorry. You must really load a file first... ") ,statusBarDuration);
 		return;
 	}
-// 	if (moveFruchtermanBx->checkState() == Qt::Unchecked){
-// 		statusBar()->showMessage(tr("Embedding a repelling-attracting forces model on the network.... ") ,statusBarDuration);
-// 		moveFruchtermanBx->setCheckState(Qt::Checked);
-// 		statusBar()->showMessage(tr("Click on the checkbox \"Fruchterman-Reingold\" to stop movement!"), statusBarDuration);
-// 	}
-// 	else { 
-// 		moveFruchtermanBx->setCheckState(Qt::Unchecked);
-// 		statusBar()->showMessage(tr("Movement stopped!"), statusBarDuration);
-// 	}
+	if (moveFruchtermanBx->checkState() == Qt::Unchecked){
+		statusBar()->showMessage(tr("Embedding a repelling-attracting forces model on the network.... ") ,statusBarDuration);
+		moveFruchtermanBx->setCheckState(Qt::Checked);
+		statusBar()->showMessage(tr("Click on the checkbox \"Fruchterman-Reingold\" to stop movement!"), statusBarDuration);
+	}
+	else { 
+		moveFruchtermanBx->setCheckState(Qt::Unchecked);
+		statusBar()->showMessage(tr("Movement stopped!"), statusBarDuration);
+	}
 	
 }
 
@@ -3316,7 +3311,7 @@ void MainWindow::slotLayoutFruchterman(){
 */
 void MainWindow::layoutFruchterman (int state){
 	qDebug("MW: layoutFruchterman ()");
-	//moveSpringEmbedderBx->setChecked(false);
+	moveSpringEmbedderBx->setChecked(false);
 	graphicsWidget->nodeMovement(state, 2);
 }
 
@@ -3344,13 +3339,13 @@ void MainWindow::slotLayoutNodeSizeProportionalOutEdges(bool checked){
 			}
 		}
 		
-/*		nodeSizeProportionalOutDegreeAct->setChecked(false);
-		nodeSizeProportional2OutDegreeBx->setChecked(false);*/
+		nodeSizeProportionalOutDegreeAct->setChecked(false);
+		nodeSizeProportional2OutDegreeBx->setChecked(false);
 		QApplication::restoreOverrideCursor();
 		return;
 	}
-/*	nodeSizeProportionalOutDegreeAct->setChecked(true);
-	nodeSizeProportional2OutDegreeBx->setChecked(true);*/
+	nodeSizeProportionalOutDegreeAct->setChecked(true);
+	nodeSizeProportional2OutDegreeBx->setChecked(true);
 	statusBar()->showMessage(tr("Embedding node size model on the network.... ") ,statusBarDuration);	
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
@@ -3428,12 +3423,12 @@ void MainWindow::slotLayoutNodeSizeProportionalInEdges(bool checked){
 				(*jim).setSize(size);
 			}
 		}
-/*		nodeSizeProportionalInDegreeAct->setChecked(false);
-		nodeSizeProportional2InDegreeBx->setChecked(false);*/
+		nodeSizeProportionalInDegreeAct->setChecked(false);
+		nodeSizeProportional2InDegreeBx->setChecked(false);
 		return;
 	}
-/*	nodeSizeProportionalInDegreeAct->setChecked(true);
-	nodeSizeProportional2InDegreeBx->setChecked(true);*/
+	nodeSizeProportionalInDegreeAct->setChecked(true);
+	nodeSizeProportional2InDegreeBx->setChecked(true);
 	statusBar()->showMessage(tr("Embedding node size model on the network.... ") ,statusBarDuration);	
 	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
 		if ( (*it) -> type() == TypeNode ){
