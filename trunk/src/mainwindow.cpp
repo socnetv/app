@@ -172,6 +172,7 @@ MainWindow::MainWindow(const QString &fName) {
 		createTips();
 	}
 	
+	setMinimumSize(900,600);
 	statusBar()->showMessage(tr("Welcome to Social Networks Visualiser, Version ")+VERSION, statusBarDuration);
 
 }
@@ -1349,7 +1350,7 @@ void MainWindow::initView() {
 	
 	graphicsWidget=new GraphicsWidget(scene, this);
 
- 	graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor)); //Qt::gray
+ 	graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor)); 
 	graphicsWidget->setCacheMode(QGraphicsView::CacheBackground); 
  	graphicsWidget->setRenderHint(QPainter::Antialiasing, false);
 	graphicsWidget->setRenderHint(QPainter::TextAntialiasing, false);
@@ -1357,8 +1358,8 @@ void MainWindow::initView() {
  	graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
  	graphicsWidget->setResizeAnchor(QGraphicsView::AnchorViewCenter);
 	
-	//graphicsWidget->setMinimumSize(800,600);
-	this->setCentralWidget(graphicsWidget);
+
+
 	qDebug ("MW initView(): window size %i, %i, graphicsWidget size %i, %i",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height());
 
 }
