@@ -1070,13 +1070,13 @@ void MainWindow::initMenuBar() {
 	Initializes the toolbar
 */
 void MainWindow::initToolBar(){
-	fileToolbar = addToolBar("file operations");
-	fileToolbar -> addAction (fileNew);
-	fileToolbar -> addAction (fileOpen);
-	fileToolbar -> addAction (fileSave);
-	fileToolbar -> addSeparator();
+	toolBar = addToolBar("operations");
+	toolBar -> addAction (fileNew);
+	toolBar -> addAction (fileOpen);
+	toolBar -> addAction (fileSave);
+	toolBar -> addSeparator();
 	
-	fileToolbar -> addAction(zoomInAct);
+	toolBar -> addAction(zoomInAct);
 
 	//Create zooming widget
 	zoomCombo = new QComboBox;
@@ -1085,10 +1085,10 @@ void MainWindow::initToolBar(){
      	zoomCombo->addItems(scales);
      	zoomCombo->setCurrentIndex(3);
 
-	fileToolbar -> addWidget(zoomCombo);
-	fileToolbar -> addAction(zoomOutAct);
+	toolBar -> addWidget(zoomCombo);
+	toolBar -> addAction(zoomOutAct);
 
-	fileToolbar -> addSeparator();
+	toolBar -> addSeparator();
 
 	QLabel *labelRotateSpinBox= new QLabel;
 	labelRotateSpinBox ->setText(tr("Rotation:"));
@@ -1104,16 +1104,11 @@ void MainWindow::initToolBar(){
 	rotateGroupLayout->addWidget(labelRotateSpinBox);
     	rotateGroupLayout->addWidget(rotateSpinBox);
 
-	fileToolbar -> addWidget(rotateGroup);
+	toolBar -> addWidget(rotateGroup);
 
 
-
-
-
-	fileToolbar -> addSeparator();
-	fileToolbar -> addAction ( QWhatsThis::createAction (this));
-
-
+	toolBar -> addSeparator();
+	toolBar -> addAction ( QWhatsThis::createAction (this));
 
 
 }
@@ -1365,7 +1360,8 @@ void MainWindow::initView() {
 
 	printDebugAct->setChecked (true);
 	//set minimum size of canvas
-	graphicsWidget->setMinimumSize((qreal)  ( this->width()-toolBox->sizeHint().width()) , (qreal)  ( this->width()-toolBox->sizeHint().width()));
+ 	graphicsWidget->setMinimumSize((qreal)  ( this->width()-toolBox->sizeHint().width()) , (qreal) ( this->width()-toolBox->sizeHint().width() ) );
+//	graphicsWidget->setMinimumSize((qreal)  ( this->width()-toolBox->sizeHint().width()) , (qreal) ( this->height()-toolBar->sizeHint().height()   -menuBar()->sizeHint().height() -statusBar()->sizeHint().height() ) );
 	scene->setSceneRect(0, 0, graphicsWidget->width(), (qreal) (graphicsWidget->height() ) );
 	qDebug ("MW initView(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
 	printDebugAct->setChecked (FALSE);
@@ -1380,8 +1376,9 @@ void MainWindow::initView() {
 */
 void MainWindow::resizeEvent( QResizeEvent * ){
 	qDebug ("MW resizeEvent():INITIAL window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
+
 	//the area of the scene displayed by the CanvasView
-	scene->setSceneRect(0, 0, (qreal) (this->width()- ( this->width()-graphicsWidget->width()) ), (qreal) (this->height() - ( this->height()-graphicsWidget->height()) ) );
+	scene->setSceneRect(0, 0, (qreal)( graphicsWidget->width() ), (qreal) (  graphicsWidget->height() ) );
 
 	qDebug ("MW resizeEvent(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
 //	graphicsWidget -> fitInView( scene->sceneRect());
@@ -4997,11 +4994,11 @@ void MainWindow::slotPrintDebug(bool toggle){
 void MainWindow::slotViewToolBar(bool toggle) {
 	statusBar()->showMessage(tr("Toggle toolbar..."));
 	if (toggle== false)   {
-		fileToolbar->hide();
+		toolBar->hide();
 		statusBar()->showMessage(tr("Toolbar off."), statusBarDuration);	
 	}
 	else  {
-		fileToolbar->show();
+		toolBar->show();
 		statusBar()->showMessage(tr("Toolbar on."), statusBarDuration);	
 	}
 }

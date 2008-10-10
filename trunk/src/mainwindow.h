@@ -254,17 +254,18 @@ private:
 	QGraphicsScene *scene;
 	Graph activeGraph;
 	QPrinter *printer;	
+	QToolBar *toolBar;
+	QComboBox *zoomCombo;
+	QTabWidget *toolBox;
+
 	QProgressDialog *progressDialog;
+
 	QMenu *importSubMenu, *exportSubMenu, *editMenu, *statMenu,  *helpMenu;
 	QMenu *optionsMenu, *colorOptionsMenu, *linkOptionsMenu, *nodeOptionsMenu, *viewOptionsMenu;
 	QMenu *editNodeMenu, *editLinkMenu, *centrlMenu, *layoutMenu;
 	QMenu *networkMenu, *randomNetworkMenu, *filterMenu;
 	QMenu *randomLayoutMenu, *circleLayoutMenu, *levelLayoutMenu, *physicalLayoutMenu;
 	QMenu *colorationMenu;
-	QToolBar *fileToolbar, *actionToolBar;
-	QComboBox *zoomCombo;
-	QGroupBox *mainGroup;
-	QTabWidget *toolBox;
 	QCheckBox *moveSpringEmbedderBx, *moveFruchtermanBx, *moveKamandaBx, *nodeSizeProportional2OutDegreeBx, *nodeSizeProportional2InDegreeBx ;
 
 	QSpinBox *rotateSpinBox ;

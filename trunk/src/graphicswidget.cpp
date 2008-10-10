@@ -501,10 +501,15 @@ void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
 	QPointF p = matrix().inverted().map(e->pos());
 	qDebug("GW: mouseDoubleClickEvent(): Emit a signal to MW to create a new node in graph. e->pos() (%i, %i) at %f, %f ", e->pos().x(),e->pos().y(), p.x(),p.y());
 	//
-	if (zoomIndex >= 3)
-		emit userDoubleClicked(-1, p);
-	else 
-		emit userDoubleClicked(-1, e->pos());
+	qDebug("GW: zoomIndex %i, scaleFactor %f",zoomIndex, m_currentScaleFactor);
+	emit userDoubleClicked(-1, p);
+// 	if (zoomIndex >= 3)
+// 		emit userDoubleClicked(-1, p);
+// 	else {
+// 		QPointF z = QPointF (p.x()*m_currentScaleFactor, p.y()*m_currentScaleFactor);
+// 		qDebug("GW: mouseDoubleClickEvent() 2 : Emit a signal to MW to create a new node in graph. e->pos() (%i, %i) at %f, %f ", e->pos().x(),e->pos().y(), z.x(),z.y());
+// 		emit userDoubleClicked(-1, z);
+// 	}
 	qDebug("GW: mouseDoubleClickEvent(): Scene and GW items now: %i and %i. Emitting Changed() signal... ", scene()->items().size(), items().size());
 
 
@@ -651,7 +656,7 @@ void GraphicsWidget::changeZoom(int value) {
 	m_currentScaleFactor = scaleFactor;
 	QMatrix oldMatrix = matrix();
 	resetMatrix();
-	translate(oldMatrix.dx(), oldMatrix.dy());
+//	translate(oldMatrix.dx(), oldMatrix.dy());
 	this->scale(scaleFactor, scaleFactor);
 	rotate(m_currentRotationAngle);
 }
