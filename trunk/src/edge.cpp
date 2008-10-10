@@ -238,6 +238,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 
 	//Draw the arrows
 	if (m_drawArrows) {
+		qDebug("Edge: Building arrows for this edge. First create Arrow at target node");
 // 		double angle = ::acos(line.dx() / line.length());
 		double angle = ::acos((targetPoint.x()-sourcePoint.x()) / line.length());
 //		if (line.dy() >= 0)
@@ -254,7 +255,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 		line.addPolygon ( destP);
 		//painter->drawPolygon(QPolygonF() << line.p2() << destArrowP1 << destArrowP2);
 		if (m_reciprocal) { 
-			qDebug("Edge: This edge is SYMMETRIC!");
+			qDebug("Edge: This edge is SYMMETRIC! So, we need to create Arrow at src node as well");
 			QPointF srcArrowP1 = sourcePoint + QPointF(sin(angle +Pi / 3) * m_arrowSize,
                 	                              cos(angle +Pi / 3) * m_arrowSize);
 			QPointF srcArrowP2 = sourcePoint + QPointF(sin(angle +Pi - Pi  / 3) * m_arrowSize,

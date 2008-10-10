@@ -83,13 +83,16 @@ MainWindow::MainWindow(const QString &fName) {
 	
 	initStatusBar();  //and now add the status bar.
 
-
 	initToolBox(); //finally, build the toolbox
+
 	colorList = QColor::colorNames();  //and fill a stringList with all X-supported color names
 
- 	initView(); //clear everything on the canvas
+	//set MW minimum size, before creating scene and canvas, so that we may have a clue about their sizes..
+	this->setMinimumSize(800,600);
 
+ 	initView(); //create the canvas
 
+	//Connect some signals to/from the canvas and the Graph
 	connect( graphicsWidget, SIGNAL( selectedNode(Node*) ), this, SLOT( nodeInfoStatusBar(Node*) ) );
 	connect( graphicsWidget, SIGNAL( selectedEdge(Edge*) ), this, SLOT ( linkInfoStatusBar(Edge*) ) );
 	connect( graphicsWidget, SIGNAL( windowResized(int, int)),this, SLOT( windowInfoStatusBar(int, int)) );  
@@ -114,8 +117,7 @@ MainWindow::MainWindow(const QString &fName) {
 	connect( &activeGraph, SIGNAL( drawEdgeReciprocal(int, int) ),  graphicsWidget, SLOT( drawEdgeReciprocal(int, int) ) );
 	
 
-
-	
+	//connect some signals/slots with MW widgets
 	connect (addNodeBt,SIGNAL(clicked()), this, SLOT(addNode()));
 	connect (addLinkBt,SIGNAL(clicked()), this, SLOT(slotAddLink()));
 	connect (removeNodeBt,SIGNAL(clicked()), this, SLOT(slotRemoveNode()));
@@ -128,27 +130,28 @@ MainWindow::MainWindow(const QString &fName) {
 	connect(rotateSpinBox, SIGNAL(valueChanged(int)), graphicsWidget, SLOT(rot(int) ) );
 	connect(circleClearBackgrCirclesAct, SIGNAL(activated()), graphicsWidget, SLOT(clearBackgrCircles()));
  
-
-
+	
+	//create an horizontal layout for the toolbox and the canvas. This will be our MW layout.
 	QHBoxLayout *layout = new QHBoxLayout;
+	//add them 
 	layout->addWidget(toolBox);
-
 	layout->addWidget(graphicsWidget);
-
+	//create a dummy widget, for the above layout
 	QWidget *widget = new QWidget;
 	widget->setLayout(layout);
-
+	//now set this as central widget of MW
 	setCentralWidget(widget);
 
-	this->setMinimumSize(800,600);
-	
+	//initialise default network parameters
 	initNet();
+
+	activeGraph.setParent(this);	//Used by random-network creation methods to update ASAP the view
 
 	/** DEFAULTING HERE DOES NOT CHANGE BOOL VALUE **/
 	/** EVERY TIME INITNET IS CALLED **/
 	bezier=FALSE; 
 	firstTime=TRUE;
-
+	showProgressBar=FALSE;	
 
 	graphicsWidget->setInitNodeColor(initNodeColor);	
 	graphicsWidget->setInitNumberDistance(numberDistance);
@@ -156,9 +159,8 @@ MainWindow::MainWindow(const QString &fName) {
 	graphicsWidget->setInitNodeSize(initNodeSize);
 	graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor)); //Qt::gray
 
-	showProgressBar=FALSE;	
 
-	activeGraph.setParent(this);	//Used by random-network creation methods to update ASAP the view
+
 
 	
 
@@ -171,9 +173,8 @@ MainWindow::MainWindow(const QString &fName) {
 	if (firstTime) {
 		createFortuneCookies();	
 		createTips();
-	}
-	
-	
+	}	
+
 	statusBar()->showMessage(tr("Welcome to Social Networks Visualiser, Version ")+VERSION, statusBarDuration);
 
 }
@@ -1346,14 +1347,14 @@ void MainWindow::initStatusBar() {
 */
 void MainWindow::initView() {
 	qDebug ("MW initView()");
+	//create a scene
 	scene=new  QGraphicsScene();
-	scene->setSceneRect(0, 0, 5000, 5000);
+
 	//scene->setItemIndexMethod(QGraphicsScene::NoIndex);
-	initBackgroundColor="gainsboro";
-	
+
+	//create a view for this scene
 	graphicsWidget=new GraphicsWidget(scene, this);
 
- 	graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor)); 
 	graphicsWidget->setCacheMode(QGraphicsView::CacheBackground); 
  	graphicsWidget->setRenderHint(QPainter::Antialiasing, true);
 	graphicsWidget->setRenderHint(QPainter::TextAntialiasing, true);
@@ -1361,6 +1362,13 @@ void MainWindow::initView() {
  	graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
  	graphicsWidget->setResizeAnchor(QGraphicsView::AnchorViewCenter);
 
+
+	printDebugAct->setChecked (true);
+	//set minimum size of canvas
+	graphicsWidget->setMinimumSize((qreal)  ( this->width()-toolBox->sizeHint().width()) , (qreal)  ( this->width()-toolBox->sizeHint().width()));
+	scene->setSceneRect(0, 0, graphicsWidget->width(), (qreal) (graphicsWidget->height() ) );
+	qDebug ("MW initView(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
+	printDebugAct->setChecked (FALSE);
 
 }
 
@@ -1396,7 +1404,8 @@ void MainWindow::initNet(){
 	initNumberColor="black";
  	initNumberSize=8; 
 	initNodeShape="circle";
-	
+	initBackgroundColor="gainsboro";
+
 	minDuration=3000; //dialogue duration - obsolete
 	maxNodes=5000;		//Max nodes used by createRandomNetwork dialogues
 	labelDistance=7;
