@@ -502,7 +502,7 @@ void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
 	QPointF p = mapToScene(e->pos());
 	qDebug("GW: mouseDoubleClickEvent(): Emit a signal to MW to create a new node in graph. e->pos() (%i, %i) at %f, %f", e->pos().x(),e->pos().y(), p.x(),p.y());
 	
-	emit userDoubleClicked(-1, z);
+	emit userDoubleClicked(-1, p);
 	qDebug("GW: mouseDoubleClickEvent(): Scene and GW items now: %i and %i. Emitting Changed() signal... ", scene()->items().size(), items().size());
 }
 
