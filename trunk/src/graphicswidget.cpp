@@ -499,7 +499,8 @@ void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
 		}
 	}
 	QPointF p = matrix().inverted().map(e->pos());
-	qDebug("GW: mouseDoubleClickEvent(): Emit a signal to MW to create a new node in graph. e->pos() (%i, %i) at %f, %f ", e->pos().x(),e->pos().y(), p.x(),p.y());
+	QPointF z = matrix().map(e->pos());
+	qDebug("GW: mouseDoubleClickEvent(): Emit a signal to MW to create a new node in graph. e->pos() (%i, %i) at %f, %f or at %f, %f ", e->pos().x(),e->pos().y(), p.x(),p.y(), z.x(),z.y());
 	//
 	qDebug("GW: zoomIndex %i, scaleFactor %f",zoomIndex, m_currentScaleFactor);
 	emit userDoubleClicked(-1, p);
