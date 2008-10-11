@@ -651,11 +651,11 @@ void MainWindow::initActions(){
 	connect(symmetryAct, SIGNAL(activated()), this, SLOT(slotCheckSymmetry()));
 
  
-	netDensity = new QAction( tr("Network &Density"), this);
-	netDensity ->setShortcut(tr("Shift+D"));
-	netDensity->setStatusTip(tr("Calculates the network density"));
-	netDensity->setWhatsThis(tr("Density\n\n The density of a network is the ratio of existing links to maximum links (n(n-1))"));
-	connect(netDensity, SIGNAL(activated()), this, SLOT(slotNetworkDensity()));
+// 	netDensity = new QAction( tr("Network &Density"), this);
+// 	netDensity ->setShortcut(tr("Shift+D"));
+// 	netDensity->setStatusTip(tr("Calculates the network density"));
+// 	netDensity->setWhatsThis(tr("Density\n\n The density of a network is the ratio of existing links to maximum links (n(n-1))"));
+// 	connect(netDensity, SIGNAL(activated()), this, SLOT(slotNetworkDensity()));
 
 	distanceAct = new QAction(QIcon(":/images/distance.png"),  tr("Geodesic Distance"), this);
 	distanceAct ->setShortcut(tr("Ctrl+G"));
@@ -1003,7 +1003,7 @@ void MainWindow::initMenuBar() {
 /** menuBar entry: statistics menu */
 	statMenu = menuBar()->addMenu(tr("&Statistics"));
 	statMenu -> addAction (symmetryAct);
-	statMenu -> addAction (netDensity);
+//	statMenu -> addAction (netDensity);
 
 	statMenu -> addSeparator();
 	statMenu -> addAction (distanceAct);
@@ -3840,22 +3840,22 @@ void MainWindow::slotCheckSymmetry(){
 *	Calculates and displays the density of the network.
 */
 void MainWindow::slotNetworkDensity() {
-	if (!fileLoaded && !networkModified  )   {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
-		statusBar()->showMessage( QString(tr("No network created or loaded yet!")) , statusBarDuration);
-		return;
-	}
-	if ( activeGraph.totalEdges() ==-1 ){
-		statusBar()->showMessage (QString(tr("ERROR in Links count")), statusBarDuration) ;
-		return;
-	}
-	if ( activeGraph.vertices() ==-1 ){
-		statusBar()->showMessage (QString(tr("ERROR in nodes count")), statusBarDuration) ;
-		return;
-	}
-	
-	QMessageBox::information(this, "Density", tr("Network density = ")+QString::number(activeGraph.density()),"OK",0);
-	statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
+// 	if (!fileLoaded && !networkModified  )   {
+// 		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
+// 		statusBar()->showMessage( QString(tr("No network created or loaded yet!")) , statusBarDuration);
+// 		return;
+// 	}
+// 	if ( activeGraph.totalEdges() ==-1 ){
+// 		statusBar()->showMessage (QString(tr("ERROR in Links count")), statusBarDuration) ;
+// 		return;
+// 	}
+// 	if ( activeGraph.vertices() ==-1 ){
+// 		statusBar()->showMessage (QString(tr("ERROR in nodes count")), statusBarDuration) ;
+// 		return;
+// 	}
+// 	
+// 	QMessageBox::information(this, "Density", tr("Network density = ")+QString::number(activeGraph.density()),"OK",0);
+// 	statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
 }
 
 

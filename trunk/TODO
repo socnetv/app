@@ -17,7 +17,9 @@ KNOW BUGS
 
 TODO
 ====
-
+--Load nets from database connections.
+--TODO: Add additional properties to vertices (i.e. date, class, etc).
+--TODO: constrain layout to one direction (i.e. date).
 --TODO: Filter Links by their weights
 --TODO: Small Worlds.
 --TODO Transform actors to links //COMMENTED OUT
