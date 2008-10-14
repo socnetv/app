@@ -1361,7 +1361,7 @@ void MainWindow::initView() {
 	printDebugAct->setChecked (true);
 	//set minimum size of canvas
  	graphicsWidget->setMinimumSize((qreal)  ( this->width()-toolBox->sizeHint().width()) , (qreal) ( this->width()-toolBox->sizeHint().width() ) );
-//	graphicsWidget->setMinimumSize((qreal)  ( this->width()-toolBox->sizeHint().width()) , (qreal) ( this->height()-toolBar->sizeHint().height()   -menuBar()->sizeHint().height() -statusBar()->sizeHint().height() ) );
+
 	scene->setSceneRect(0, 0, graphicsWidget->width(), (qreal) (graphicsWidget->height() ) );
 	qDebug ("MW initView(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
 	printDebugAct->setChecked (FALSE);
@@ -3285,7 +3285,8 @@ void MainWindow::layoutSpringEmbedder (int state){
 	qDebug("MW: layoutSpringEmbedder ()");
 	scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
 	moveFruchtermanBx->setChecked(false);
-	graphicsWidget->nodeMovement(state, 1);
+	//graphicsWidget->nodeMovement(state, 1);
+	activeGraph.nodeMovement(state, 1, graphicsWidget->width(), graphicsWidget->height());
 	scene->setItemIndexMethod (QGraphicsScene::BspTreeIndex); //best when not moving items
 }
 

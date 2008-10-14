@@ -73,6 +73,8 @@ public slots:
 	void createEdge (int, int, int, QString, bool, bool, bool);				//GW and Parser.
 	void createEdge (int, int, int, bool, bool, bool);							//
 	
+	void nodeMovement(int state, int type, int cW, int cH);					//Called by MW to start movement
+
 	void createVertex(int i, QPointF p); 							//Called by GW
 	void createVertex(int i, int canvasWidth, int canvasHeight); 				//Called by MW
 
@@ -181,7 +183,7 @@ public:
 	/**LAYOUTS*/	
 	void layoutCircleCentrality(double x0, double y0, double maxRadius, int CentralityType);
 	void layoutLevelCentrality(double maxWidth, double maxHeight, int CentralityType);
-
+	void calculateForcesSpringEmbedder(bool dynamicMovement);
 
 	/**RANDOM NETWORKS*/
 	void createRandomNetErdos(int, double);				//Creates a uniform random network
@@ -221,7 +223,7 @@ public:
 
 protected: 
 
-
+	void timerEvent(QTimerEvent *event);			// Called from nodeMovement when a timerEvent occurs
 private:
 	QMainWindow *m_parent;		//stores the parent of this class.
 	Parser parser;			//file loader threaded class.
@@ -239,13 +241,14 @@ private:
 	/** used in createDistanceMatrix() */
 	fmap_i	discreteIDCs, discreteODCs, discreteCCs, discreteBCs, discreteSCs, discreteGCs, discreteECs;
 	int *eccentricities;
-	bool calculatedIDC, calculatedODC, calculatedCentralities;
+	bool calculatedIDC, calculatedODC, calculatedCentralities, dynamicMovement;
 	Matrix  TM, DM;
 	stack<int> Stack;
 
 	/** General & initialisation variables */
 	int m_totalEdges, m_totalVertices, graphDiameter, initVertexSize;
 	int outEdgesVert, inEdgesVert, reciprocalEdgesVert;
+	int timerId,  layoutType, canvasWidth, canvasHeight;
 	
 	bool order, initShowLabels;
 	bool adjacencyMatrixCreated, symmetricAdjacencyMatrix, graphModified, distanceMatrixCreated;

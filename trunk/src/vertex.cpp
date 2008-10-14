@@ -215,6 +215,11 @@ int Vertex::y(){
 }
 
 
+QPointF Vertex::pos () { 
+	return QPointF ( x(), y() ); 
+}
+
+
 void Vertex::setOutLinkColor(int target, QString color){
 	qDebug("Vertex: update linkColor to %i", target);
 	outLinkColors[target]=color;
@@ -237,6 +242,21 @@ void Vertex::appendToPs( int vertex ) {
 	qDebug("adding %i to myPs", vertex); 
 	myPs.append(vertex); 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 Vertex::~Vertex() {

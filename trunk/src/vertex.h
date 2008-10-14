@@ -90,6 +90,9 @@ public:
 	void setY(int );
 	int y();
 	
+	QPointF pos ();
+
+
 	void setOutLinkColor(int, QString);
 	QString outLinkColor(int);
 

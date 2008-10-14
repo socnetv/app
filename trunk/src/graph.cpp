@@ -50,6 +50,11 @@ Graph::Graph() {
 	calculatedIDC=FALSE;
 	calculatedODC=FALSE;
 	calculatedCentralities=FALSE;
+
+	dynamicMovement=FALSE;
+	timerId=0;
+	layoutType=0;
+
 	parser.setParent(this);
 	connect (&parser, SIGNAL( createNode (int,int,QString, QString, QString, QPointF, QString, bool) ), this, SLOT(createVertex(int,int,QString, QString, QString, QPointF, QString) ) ) ;
 
@@ -103,12 +108,12 @@ void Graph::createVertex(int i, QPointF p){
 	Calculates a random position p from canvasWidth and Height.
 	Then calls the main creation slot with init node values.
 */
-void Graph::createVertex(int i, int canvasWidth, int canvasHeight){
+void Graph::createVertex(int i, int cWidth, int cHeight){
 	if ( i < 0 )  i = lastVertexNumber() +1;
 	qDebug("Graph:: createVertex(). Using vertex number %i with RANDOM node coords...", i);
 	QPointF p;
-	p.setX(rand()%canvasWidth);
-       	p.setY(rand()%canvasHeight);
+	p.setX(rand()%cWidth);
+       	p.setY(rand()%cHeight);
 	createVertex(i, initVertexSize,  initVertexColor, QString::number(i), initVertexLabelColor, p, initVertexShape);
 }
 
@@ -1927,6 +1932,169 @@ void Graph::setShowLabels(bool toggle){
 	initShowLabels=toggle;
 
 }
+
+
+
+
+
+/** 
+	This slot is activated when the user clicks on the relevant MainWindow checkbox (SpringEmbedder, Fruchterman) to start or stop 
+	the movement of nodes, according to the requested model. 
+	state: toggle 
+	type:  controls the type of model requested.
+*/
+void Graph::nodeMovement(int state, int type, int cW, int cH){
+	qDebug("Graph: startNodeMovement()");
+	canvasWidth = cW;
+	canvasHeight = cH;
+	if (state == Qt::Checked){
+		dynamicMovement = TRUE;
+		layoutType=type;
+		if (!timerId) {
+			qDebug("Graph: startTimer()");
+			timerId = startTimer(50);	
+		}
+	}
+	else
+		dynamicMovement = FALSE;
+}
+
+
+
+
+/**	This method is called automatically when a QTimerEvent occurs
+	It makes all vertices calculate the forces applied to them 
+*/
+void Graph::timerEvent(QTimerEvent *event) {	
+	qDebug("Graph: timerEvent()");
+	Q_UNUSED(event);
+
+ 	
+		switch (layoutType){
+			case 1: 
+				calculateForcesSpringEmbedder(dynamicMovement);
+				break;
+/*			case 2: 
+				vertex->calculateForcesFruchterman(dynamicMovement);
+				break;*/
+		
+		}
+
+
+/*	bool itemsMoved = false;
+	foreach (Vertex *vertex, m_graph) { 
+		if (vertex->advance()){
+			qDebug("GW: timerEvent() a node is moving!");
+			itemsMoved = true;
+		}
+	}
+
+	if (!itemsMoved) {
+		killTimer(timerId);
+		timerId = 0;
+	}*/
+	if (!graphModified) {
+		qDebug("TIMER WILL BE KILLED NOW!");
+		killTimer(timerId);
+		timerId = 0;
+	}
+}
+
+
+
+
+/** 
+	Assigns forces to the edges and nodes, as if the edges were springs (i.e. Hooke's law) 
+	and the nodes were electrically charged particles (Coulomb's law).
+	These forces are applied to the nodes iteratively, pulling them closer together or pushing them further apart, 
+	until the system comes to an equilibrium state (node positions do not change anymore).
+*/
+
+void Graph::calculateForcesSpringEmbedder(bool dynamicMovement){
+/*	if (!scene() || scene()->mouseGrabberItem() == this) {
+		newPos = pos();
+		return;
+	}*/
+	qreal xvel = 0;
+	qreal yvel = 0;
+	double dist =0;
+	qreal l=40, c1=10;
+	QPointF curPos, newPos, pos ;
+	int targetVertex=0;
+	qreal weight_coefficient=1;		//affects speed and line length. Try 10...
+	imap_i::iterator it1; //delete me.
+	if (dynamicMovement){
+		foreach (Vertex *v1, m_graph)  {
+			// Sum up all pushing forces (i.e. imagine nodes are electrons)
+			xvel=0; yvel=0;
+			qDebug("<----------->  Calculate total repelling Force for vertex %i with index %i and pos %i, %i ", v1->name(), index[v1->name()], v1->x(), v1->y());
+			foreach (Vertex *v2, m_graph)  {
+				if (v2 == v1 || hasEdge(v1->name(), v2->name()) ) continue;
+				QLineF line(v1->x(), v1->y(),  v2->x(), v2->y() );
+				qreal dx = line.dx();
+				qreal dy = line.dy();
+				dist = (dx * dx + dy * dy);
+				qDebug("dx, dy, dist: %f, %f, %f", dx, dy, dist);
+				
+				if (dist > 0) {
+					xvel += (dx * c1) / dist;
+					yvel += (dy * c1) / dist;
+				}
+				qDebug("%i is pushed away from %i of index %i  and  pos (%f, %f) with xvel, yvel = %f, %f", v1->name(), v2->name(), index[v2->name()], v2->pos().x(), v2->pos().y(),  (dx * l) / dist,  (dy * l) / dist);
+			}
+			qDebug(" ========== After push, Total Velocity for %i xvel, yvel  %f, %f", v1->name(), xvel, yvel);
+			// Now subtract all pulling forces (i.e. springs)
+			qDebug(">-------------<  Calculate pulling force for %i", v1->name());
+				double weight = (v1->m_edges.size() + 1) * weight_coefficient;
+				qDebug("weight %f", weight);
+				for( it1 = (*v1).m_edges.begin(); it1 != (*v1).m_edges.end(); it1++ ) {
+//				foreach (int targetVertex, (*v1).m_edges	 ) {
+					//get other node's coordinates
+					targetVertex=index[it1->first];	
+					pos = m_graph[targetVertex]->pos();
+					QLineF line( v1->x(), v1->y(),  m_graph[targetVertex]->x(), m_graph[targetVertex]->y());
+					qreal dx = line.dx();
+					qreal dy = line.dy();
+					dist = sqrt(dx * dx + dy * dy);
+
+					qreal dux = log ( abs(dx)*  dist/l ); 
+					qreal duy = log ( abs(dy)*  dist/l );
+					qDebug("%i with index %i is linked with %i of index %i  and  pos (%f, %f) ", v1->name(), index[v1->name()], it1->first, targetVertex,pos.x(), pos.y());
+					qDebug("dx, dy, dist: %f, %f, %f, log x is %f and log y is %f", dx, dy, dist, dux, duy) ;
+					if ( dx > 0 ) {
+					xvel +=  dux ;	
+					qDebug("add to xvel  += %f", dux);
+					}
+					else {
+					xvel -=  dux ;	
+						qDebug("sub from xvel -= %f", -dux);
+					}
+					if ( dy > 0 ) {
+					yvel +=  duy;
+						qDebug("add to  yvel += %f", duy);
+					}
+					else { 
+					yvel -=  duy;
+						qDebug("sub from yvel -= %f", -duy);
+					}
+
+				}
+			qDebug(" ========== After PULL, Total Velocity for %i xvel, yvel  %f, %f", v1->name(), xvel, yvel);
+			//Move node to new position
+			newPos = QPointF(v1->x()+ xvel, v1->y()+yvel);
+			qDebug("current x and y: %i, %i. Possible new pos is to new x new y = %f, %f", v1->x(), v1->y(),  newPos.x(), newPos.y());
+			if (newPos.x() < 5.0  ||newPos.y() < 5.0   || newPos.x() >= canvasWidth ||   newPos.y() >= canvasHeight || (v1->x() == newPos.x() && v1->y() == newPos.y() )) continue;  
+/*			newPos.setX( qMin ( qMax( newPos.x(), 5.0 ), (qreal ) canvasWidth - 20) );
+			newPos.setY( qMin ( qMax( newPos.y(),  5.0), (qreal ) canvasHeight- 20) );*/
+			qDebug("current x and y: %i, %i. This node will move to new x new y = %f, %f", v1->x(), v1->y(),  newPos.x(), newPos.y());
+			emit moveNode((*v1).name(),  newPos.x(),  newPos.y());
+		}
+
+	
+	}
+
+}
+
 
 
 Graph::~Graph() {
