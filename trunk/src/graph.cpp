@@ -2113,7 +2113,7 @@ times called n -body problems.
 
 */
 
-void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
+void Graph::x(bool dynamicMovement){
 	qreal xvel = 0, yvel = 0, dx=0, dy=0;
 	double dist =0;
 	qreal l=440, c1=canvasHeight/10.0;
