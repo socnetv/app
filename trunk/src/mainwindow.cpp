@@ -597,7 +597,7 @@ void MainWindow::initActions(){
 	springLayoutAct= new QAction(tr("Spring Embedder"), this);
 	springLayoutAct->setShortcut(tr("Alt+1"));
 	springLayoutAct->setStatusTip(tr("All nodes repel each other while the connected ones are attracted as if connected by springs."));
-	springLayoutAct->setWhatsThis(tr("Spring Embedder Layout\n\n This model substitutes nodes and edges with charged balls and connecting springs, respectively.	The algorithm continues until the system retains an equilibrium state in which all forces cancel each other "));
+	springLayoutAct->setWhatsThis(tr("Spring Embedder Layout\n\n In this model, nodes are regarded as physical bodies (i.e. electrons) which exert repelling forces to each other, while edges are springs connecting adjacents nodes. Non-adjacent nodes repel each other while connected nodes are The algorithm continues until the system retains an equilibrium state in which all forces cancel each other. "));
 	connect(springLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutSpringEmbedder()));
 
 	FRLayoutAct= new QAction( tr("Fruchterman-Reingold"),	this);

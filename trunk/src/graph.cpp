@@ -1947,12 +1947,13 @@ void Graph::nodeMovement(int state, int type, int cW, int cH){
 	qDebug("Graph: startNodeMovement()");
 	canvasWidth = cW;
 	canvasHeight = cH;
+	int factor=100;		//factor controls speed. Decrease it to increase speed...
 	if (state == Qt::Checked){
 		dynamicMovement = TRUE;
 		layoutType=type;
 		if (!timerId) {
 			qDebug("Graph: startTimer()");
-			timerId = startTimer(50);	
+			timerId = startTimer(factor);		
 		}
 	}
 	else
@@ -1968,8 +1969,6 @@ void Graph::nodeMovement(int state, int type, int cW, int cH){
 void Graph::timerEvent(QTimerEvent *event) {	
 	qDebug("Graph: timerEvent()");
 	Q_UNUSED(event);
-
- 	
 		switch (layoutType){
 			case 1: 
 				calculateForcesSpringEmbedder(dynamicMovement);
@@ -2011,34 +2010,48 @@ void Graph::timerEvent(QTimerEvent *event) {
 */
 
 void Graph::calculateForcesSpringEmbedder(bool dynamicMovement){
-/*	if (!scene() || scene()->mouseGrabberItem() == this) {
-		newPos = pos();
-		return;
-	}*/
-	qreal xvel = 0;
-	qreal yvel = 0;
+	qreal xvel = 0, yvel = 0, dx=0, dy=0;
 	double dist =0;
-	qreal l=40, c1=10;
+	qreal l=440, c1=10;
+	qreal dux=0, duy=0;
 	QPointF curPos, newPos, pos ;
 	int targetVertex=0;
 	qreal weight_coefficient=1;		//affects speed and line length. Try 10...
 	imap_i::iterator it1; //delete me.
 	if (dynamicMovement){
 		foreach (Vertex *v1, m_graph)  {
-			// Sum up all pushing forces (i.e. imagine nodes are electrons)
+			// Sum up all repelling forces (i.e. imagine nodes are electrons)
 			xvel=0; yvel=0;
 			qDebug("<----------->  Calculate total repelling Force for vertex %i with index %i and pos %i, %i ", v1->name(), index[v1->name()], v1->x(), v1->y());
 			foreach (Vertex *v2, m_graph)  {
-				if (v2 == v1 || hasEdge(v1->name(), v2->name()) ) continue;
+				if (v2 == v1 || hasEdge(v1->name(), v2->name()) ) continue;  //Spring embedder counts repelling forces only between non-adjacent vertices. Compare with F-R.
+
 				QLineF line(v1->x(), v1->y(),  v2->x(), v2->y() );
-				qreal dx = line.dx();
-				qreal dy = line.dy();
+				dx = line.dx();
+				dy = line.dy();
 				dist = (dx * dx + dy * dy);
 				qDebug("dx, dy, dist: %f, %f, %f", dx, dy, dist);
 				
 				if (dist > 0) {
-					xvel += (dx * c1) / dist;
-					yvel += (dy * c1) / dist;
+					dux = (dx * c1) / dist;
+					duy = (dy * c1) / dist;
+				
+					if ( dx < 0 ) {
+					xvel +=  dux ;	
+					qDebug("add to xvel  += %f", dux);
+					}
+					else {
+					xvel -=  dux ;	
+						qDebug("sub from xvel -= %f", -dux);
+					}
+					if ( dy < 0 ) {
+					yvel +=  duy;
+						qDebug("add to  yvel += %f", duy);
+					}
+					else { 
+					yvel -=  duy;
+						qDebug("sub from yvel -= %f", -duy);
+					}
 				}
 				qDebug("%i is pushed away from %i of index %i  and  pos (%f, %f) with xvel, yvel = %f, %f", v1->name(), v2->name(), index[v2->name()], v2->pos().x(), v2->pos().y(),  (dx * l) / dist,  (dy * l) / dist);
 			}
@@ -2053,12 +2066,12 @@ void Graph::calculateForcesSpringEmbedder(bool dynamicMovement){
 					targetVertex=index[it1->first];	
 					pos = m_graph[targetVertex]->pos();
 					QLineF line( v1->x(), v1->y(),  m_graph[targetVertex]->x(), m_graph[targetVertex]->y());
-					qreal dx = line.dx();
-					qreal dy = line.dy();
+					dx = line.dx();
+					dy = line.dy();
 					dist = sqrt(dx * dx + dy * dy);
 
-					qreal dux = log ( abs(dx)*  dist/l ); 
-					qreal duy = log ( abs(dy)*  dist/l );
+					dux = log ( abs(dx)*  dist/l ); 
+					duy = log ( abs(dy)*  dist/l );
 					qDebug("%i with index %i is linked with %i of index %i  and  pos (%f, %f) ", v1->name(), index[v1->name()], it1->first, targetVertex,pos.x(), pos.y());
 					qDebug("dx, dy, dist: %f, %f, %f, log x is %f and log y is %f", dx, dy, dist, dux, duy) ;
 					if ( dx > 0 ) {
