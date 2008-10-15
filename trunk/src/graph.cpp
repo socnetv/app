@@ -1938,10 +1938,10 @@ void Graph::setShowLabels(bool toggle){
 
 
 /** 
-	This slot is activated when the user clicks on the relevant MainWindow checkbox (SpringEmbedder, Fruchterman) to start or stop 
-	the movement of nodes, according to the requested model. 
+	This slot is activated when the user clicks on the relevant MainWindow checkbox (SpringEmbedder, Fruchterman) to start or stop the movement of nodes, according to the requested model. 
 	state: toggle 
-	type:  controls the type of model requested.
+	type:  controls the type of layout model requested.
+	cW, cH: control the current canvasWidth and canvasHeight
 */
 void Graph::nodeMovement(int state, int type, int cW, int cH){
 	qDebug("Graph: startNodeMovement()");
@@ -1963,37 +1963,24 @@ void Graph::nodeMovement(int state, int type, int cW, int cH){
 
 
 
-/**	This method is called automatically when a QTimerEvent occurs
-	It makes all vertices calculate the forces applied to them 
+/**	
+	This method is automatically invoked when a QTimerEvent occurs
+	It checks layoutType to call the appropriate method with the Force Directed Placement algorithm. 
 */
 void Graph::timerEvent(QTimerEvent *event) {	
 	qDebug("Graph: timerEvent()");
 	Q_UNUSED(event);
 		switch (layoutType){
 			case 1: 
-				calculateForcesSpringEmbedder(dynamicMovement);
+				layoutForceDirectedSpringEmbedder(dynamicMovement);
 				break;
-/*			case 2: 
-				vertex->calculateForcesFruchterman(dynamicMovement);
-				break;*/
+			case 2: 
+				layoutForceDirectedFruchtermanReingold(dynamicMovement);
+				break;
 		
 		}
-
-
-/*	bool itemsMoved = false;
-	foreach (Vertex *vertex, m_graph) { 
-		if (vertex->advance()){
-			qDebug("GW: timerEvent() a node is moving!");
-			itemsMoved = true;
-		}
-	}
-
-	if (!itemsMoved) {
-		killTimer(timerId);
-		timerId = 0;
-	}*/
 	if (!graphModified) {
-		qDebug("TIMER WILL BE KILLED NOW!");
+		qDebug("Timer will be KILLED since no vertex is movin any more...");
 		killTimer(timerId);
 		timerId = 0;
 	}
@@ -2003,16 +1990,18 @@ void Graph::timerEvent(QTimerEvent *event) {
 
 
 /** 
-	Assigns forces to the edges and nodes, as if the edges were springs (i.e. Hooke's law) 
-	and the nodes were electrically charged particles (Coulomb's law).
-	These forces are applied to the nodes iteratively, pulling them closer together or pushing them further apart, 
-	until the system comes to an equilibrium state (node positions do not change anymore).
+
+The Spring Embedder model (Eades, 1984) assigns forces to all vertices and edges, as if nodes were electrically charged particles (Coulomb's law) and all edges were springs (i.e. Hooke's law).
+
+These forces are applied to the nodes iteratively, pulling them closer together or pushing them further apart,  until the system comes to an equilibrium state (node positions do not change anymore).
+
+Note that, following Eades, we dont need to have a faithful simulation; we can apply unrealistic forces in an unrealistic manner.
 */
 
-void Graph::calculateForcesSpringEmbedder(bool dynamicMovement){
+void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
 	qreal xvel = 0, yvel = 0, dx=0, dy=0;
 	double dist =0;
-	qreal l=440, c1=10;
+	qreal l=440, c1=canvasHeight/10.0;
 	qreal dux=0, duy=0;
 	QPointF curPos, newPos, pos ;
 	int targetVertex=0;
@@ -2024,81 +2013,83 @@ void Graph::calculateForcesSpringEmbedder(bool dynamicMovement){
 			xvel=0; yvel=0;
 			qDebug("<----------->  Calculate total repelling Force for vertex %i with index %i and pos %i, %i ", v1->name(), index[v1->name()], v1->x(), v1->y());
 			foreach (Vertex *v2, m_graph)  {
-				if (v2 == v1 || hasEdge(v1->name(), v2->name()) ) continue;  //Spring embedder counts repelling forces only between non-adjacent vertices. Compare with F-R.
-
-				QLineF line(v1->x(), v1->y(),  v2->x(), v2->y() );
-				dx = line.dx();
-				dy = line.dy();
-				dist = (dx * dx + dy * dy);
-				qDebug("dx, dy, dist: %f, %f, %f", dx, dy, dist);
-				
-				if (dist > 0) {
-					dux = (dx * c1) / dist;
-					duy = (dy * c1) / dist;
-				
-					if ( dx < 0 ) {
-					xvel +=  dux ;	
-					qDebug("add to xvel  += %f", dux);
-					}
-					else {
-					xvel -=  dux ;	
-						qDebug("sub from xvel -= %f", -dux);
-					}
-					if ( dy < 0 ) {
-					yvel +=  duy;
-						qDebug("add to  yvel += %f", duy);
-					}
-					else { 
-					yvel -=  duy;
-						qDebug("sub from yvel -= %f", -duy);
-					}
-				}
-				qDebug("%i is pushed away from %i of index %i  and  pos (%f, %f) with xvel, yvel = %f, %f", v1->name(), v2->name(), index[v2->name()], v2->pos().x(), v2->pos().y(),  (dx * l) / dist,  (dy * l) / dist);
-			}
-			qDebug(" ========== After push, Total Velocity for %i xvel, yvel  %f, %f", v1->name(), xvel, yvel);
-			// Now subtract all pulling forces (i.e. springs)
-			qDebug(">-------------<  Calculate pulling force for %i", v1->name());
-				double weight = (v1->m_edges.size() + 1) * weight_coefficient;
-				qDebug("weight %f", weight);
-				for( it1 = (*v1).m_edges.begin(); it1 != (*v1).m_edges.end(); it1++ ) {
-//				foreach (int targetVertex, (*v1).m_edges	 ) {
-					//get other node's coordinates
-					targetVertex=index[it1->first];	
-					pos = m_graph[targetVertex]->pos();
-					QLineF line( v1->x(), v1->y(),  m_graph[targetVertex]->x(), m_graph[targetVertex]->y());
+				if ( ! hasEdge(v1->name(), v2->name()) )   //Spring embedder counts repelling forces only between non-adjacent vertices. Compare with F-R.
+				{
+					if ( v2 == v1 ) continue;
+					QLineF line(v1->x(), v1->y(),  v2->x(), v2->y() );	//imaginary line v1 --> v2
 					dx = line.dx();
 					dy = line.dy();
-					dist = sqrt(dx * dx + dy * dy);
-
-					dux = log ( abs(dx)*  dist/l ); 
-					duy = log ( abs(dy)*  dist/l );
-					qDebug("%i with index %i is linked with %i of index %i  and  pos (%f, %f) ", v1->name(), index[v1->name()], it1->first, targetVertex,pos.x(), pos.y());
-					qDebug("dx, dy, dist: %f, %f, %f, log x is %f and log y is %f", dx, dy, dist, dux, duy) ;
-					if ( dx > 0 ) {
-					xvel +=  dux ;	
-					qDebug("add to xvel  += %f", dux);
+					dist = (dx * dx + dy * dy);
+					qDebug("c1, dx, dy, dist: %f, %f, %f, %f", c1, dx, dy, dist);
+					
+					if (dist > 0) { //only if dist is positive.
+						dux = (dx * c1) / dist; 	
+						duy = (dy * c1) / dist;
+						qDebug("%i is pushed away from %i of index %i  and  pos (%f, %f) with.... ", v1->name(), v2->name(), index[v2->name()], v2->pos().x(), v2->pos().y());
+						if ( dx < 0 ) {
+							xvel +=  -dux ;	
+							qDebug("add to xvel  += %f", dux);
+						}
+						else {
+							xvel -=  dux ;	
+							qDebug("sub from xvel -= %f", -dux);
+						}
+						if ( dy < 0 ) {
+							yvel +=  -duy;
+							qDebug("add to  yvel += %f", duy);
+						}
+						else { 
+							yvel -=  duy;
+							qDebug("sub from yvel -= %f", -duy);
+						}
 					}
-					else {
-					xvel -=  dux ;	
-						qDebug("sub from xvel -= %f", -dux);
-					}
-					if ( dy > 0 ) {
-					yvel +=  duy;
-						qDebug("add to  yvel += %f", duy);
-					}
-					else { 
-					yvel -=  duy;
-						qDebug("sub from yvel -= %f", -duy);
-					}
+					qDebug(" ========== After push, Total Velocity for %i xvel, yvel  %f, %f", v1->name(), xvel, yvel);
 
 				}
+				else {
+				}
+			}
+			// Now subtract all pulling forces (i.e. springs)
+			qDebug(">-------------<  Calculate pulling force for %i", v1->name());
+			double weight = (v1->m_edges.size() + 1) * weight_coefficient;
+			qDebug("weight %f", weight);
+			for( it1 = (*v1).m_edges.begin(); it1 != (*v1).m_edges.end(); it1++ ) {
+//				foreach (int targetVertex, (*v1).m_edges	 ) {
+					//get other node's coordinates
+				targetVertex=index[it1->first];	
+				pos = m_graph[targetVertex]->pos();
+				QLineF line( v1->x(), v1->y(),  m_graph[targetVertex]->x(), m_graph[targetVertex]->y());
+				dx = line.dx();
+				dy = line.dy();
+				dist = sqrt(dx * dx + dy * dy);
+
+				dux = log ( abs(dx)*  dist/l ); 
+				duy = log ( abs(dy)*  dist/l );
+				qDebug("%i with index %i is linked with %i of index %i  and  pos (%f, %f) ", v1->name(), index[v1->name()], it1->first, targetVertex,pos.x(), pos.y());
+				qDebug("dx, dy, dist: %f, %f, %f, log x is %f and log y is %f", dx, dy, dist, dux, duy) ;
+				if ( dx > 0 ) {
+					xvel +=  dux ;	
+					qDebug("add to xvel  += %f", dux);
+				}
+				else {
+					xvel -=  dux ;	
+					qDebug("sub from xvel -= %f", -dux);
+				}
+				if ( dy > 0 ) {
+					yvel +=  duy;
+						qDebug("add to  yvel += %f", duy);
+				}
+				else { 
+					yvel -=  duy;
+					qDebug("sub from yvel -= %f", -duy);
+				}
+
+			}
 			qDebug(" ========== After PULL, Total Velocity for %i xvel, yvel  %f, %f", v1->name(), xvel, yvel);
 			//Move node to new position
 			newPos = QPointF(v1->x()+ xvel, v1->y()+yvel);
 			qDebug("current x and y: %i, %i. Possible new pos is to new x new y = %f, %f", v1->x(), v1->y(),  newPos.x(), newPos.y());
-			if (newPos.x() < 5.0  ||newPos.y() < 5.0   || newPos.x() >= canvasWidth ||   newPos.y() >= canvasHeight || (v1->x() == newPos.x() && v1->y() == newPos.y() )) continue;  
-/*			newPos.setX( qMin ( qMax( newPos.x(), 5.0 ), (qreal ) canvasWidth - 20) );
-			newPos.setY( qMin ( qMax( newPos.y(),  5.0), (qreal ) canvasHeight- 20) );*/
+			if (newPos.x() < 5.0  ||newPos.y() < 5.0   || newPos.x() >= (canvasWidth -5)||   newPos.y() >= (canvasHeight-5)|| (v1->x() == newPos.x() && v1->y() == newPos.y() )) continue;  
 			qDebug("current x and y: %i, %i. This node will move to new x new y = %f, %f", v1->x(), v1->y(),  newPos.x(), newPos.y());
 			emit moveNode((*v1).name(),  newPos.x(),  newPos.y());
 		}
@@ -2109,6 +2100,119 @@ void Graph::calculateForcesSpringEmbedder(bool dynamicMovement){
 }
 
 
+
+
+
+/**
+Fruchterman and Reingold (1991) refined the Spring Embedder model by replacing the forces. 
+
+In FR model, the vertices behave as atomic particles or celestial bodies, exerting attractive and repulsive forces on one another. Again, only vertices that are neighbours attract each other but, unlike Spring Embedder, all vertices repel each other. 
+
+These forces induce movement. The algorithm might resemble molecular or planetary simulations, some-
+times called n -body problems. 
+
+*/
+
+void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
+	qreal xvel = 0, yvel = 0, dx=0, dy=0;
+	double dist =0;
+	qreal l=440, c1=canvasHeight/10.0;
+	qreal dux=0, duy=0;
+	QPointF curPos, newPos, pos ;
+	int targetVertex=0;
+	qreal weight_coefficient=1;		//affects speed and line length. Try 10...
+	imap_i::iterator it1; //delete me.
+	if (dynamicMovement){
+		foreach (Vertex *v1, m_graph)  {
+			// Sum up all repelling forces (i.e. imagine nodes are electrons)
+			xvel=0; yvel=0;
+			qDebug("<----------->  Calculate total repelling Force for vertex %i with index %i and pos %i, %i ", v1->name(), index[v1->name()], v1->x(), v1->y());
+			foreach (Vertex *v2, m_graph)  {
+				if ( ! hasEdge(v1->name(), v2->name()) )   //Spring embedder counts repelling forces only between non-adjacent vertices. Compare with F-R.
+				{
+					if ( v2 == v1 ) continue;
+					QLineF line(v1->x(), v1->y(),  v2->x(), v2->y() );	//imaginary line v1 --> v2
+					dx = line.dx();
+					dy = line.dy();
+					dist = (dx * dx + dy * dy);
+					qDebug("c1, dx, dy, dist: %f, %f, %f, %f", c1, dx, dy, dist);
+					
+					if (dist > 0) { //only if dist is positive.
+						dux = (dx * c1) / dist; 	
+						duy = (dy * c1) / dist;
+						qDebug("%i is pushed away from %i of index %i  and  pos (%f, %f) with.... ", v1->name(), v2->name(), index[v2->name()], v2->pos().x(), v2->pos().y());
+						if ( dx < 0 ) {
+							xvel +=  -dux ;	
+							qDebug("add to xvel  += %f", dux);
+						}
+						else {
+							xvel -=  dux ;	
+							qDebug("sub from xvel -= %f", -dux);
+						}
+						if ( dy < 0 ) {
+							yvel +=  -duy;
+							qDebug("add to  yvel += %f", duy);
+						}
+						else { 
+							yvel -=  duy;
+							qDebug("sub from yvel -= %f", -duy);
+						}
+					}
+					qDebug(" ========== After push, Total Velocity for %i xvel, yvel  %f, %f", v1->name(), xvel, yvel);
+
+				}
+				else {
+				}
+			}
+			// Now subtract all pulling forces (i.e. springs)
+			qDebug(">-------------<  Calculate pulling force for %i", v1->name());
+			double weight = (v1->m_edges.size() + 1) * weight_coefficient;
+			qDebug("weight %f", weight);
+			for( it1 = (*v1).m_edges.begin(); it1 != (*v1).m_edges.end(); it1++ ) {
+//				foreach (int targetVertex, (*v1).m_edges	 ) {
+					//get other node's coordinates
+				targetVertex=index[it1->first];	
+				pos = m_graph[targetVertex]->pos();
+				QLineF line( v1->x(), v1->y(),  m_graph[targetVertex]->x(), m_graph[targetVertex]->y());
+				dx = line.dx();
+				dy = line.dy();
+				dist = sqrt(dx * dx + dy * dy);
+
+				dux = log ( abs(dx)*  dist/l ); 
+				duy = log ( abs(dy)*  dist/l );
+				qDebug("%i with index %i is linked with %i of index %i  and  pos (%f, %f) ", v1->name(), index[v1->name()], it1->first, targetVertex,pos.x(), pos.y());
+				qDebug("dx, dy, dist: %f, %f, %f, log x is %f and log y is %f", dx, dy, dist, dux, duy) ;
+				if ( dx > 0 ) {
+					xvel +=  dux ;	
+					qDebug("add to xvel  += %f", dux);
+				}
+				else {
+					xvel -=  dux ;	
+					qDebug("sub from xvel -= %f", -dux);
+				}
+				if ( dy > 0 ) {
+					yvel +=  duy;
+						qDebug("add to  yvel += %f", duy);
+				}
+				else { 
+					yvel -=  duy;
+					qDebug("sub from yvel -= %f", -duy);
+				}
+
+			}
+			qDebug(" ========== After PULL, Total Velocity for %i xvel, yvel  %f, %f", v1->name(), xvel, yvel);
+			//Move node to new position
+			newPos = QPointF(v1->x()+ xvel, v1->y()+yvel);
+			qDebug("current x and y: %i, %i. Possible new pos is to new x new y = %f, %f", v1->x(), v1->y(),  newPos.x(), newPos.y());
+			if (newPos.x() < 5.0  ||newPos.y() < 5.0   || newPos.x() >= (canvasWidth -5)||   newPos.y() >= (canvasHeight-5)|| (v1->x() == newPos.x() && v1->y() == newPos.y() )) continue;  
+			qDebug("current x and y: %i, %i. This node will move to new x new y = %f, %f", v1->x(), v1->y(),  newPos.x(), newPos.y());
+			emit moveNode((*v1).name(),  newPos.x(),  newPos.y());
+		}
+
+	
+	}
+
+}
 
 Graph::~Graph() {
  	clear();

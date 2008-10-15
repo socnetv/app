@@ -9,7 +9,6 @@ KNOW BUGS
 
 --FIXME: GraphML files may crash SocNetV
 --FIXME: 40-actors-non-symmetric crashed on Betweeness centr.
---FIXME: Nodes dont appear where user clicks, if the rotation > 0.
 - FIXME: GROUP Stress & Graph centralities missing
 - FIXME: Standard Stress Centrality index missing.
 

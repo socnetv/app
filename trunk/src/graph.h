@@ -183,7 +183,8 @@ public:
 	/**LAYOUTS*/	
 	void layoutCircleCentrality(double x0, double y0, double maxRadius, int CentralityType);
 	void layoutLevelCentrality(double maxWidth, double maxHeight, int CentralityType);
-	void calculateForcesSpringEmbedder(bool dynamicMovement);
+	void layoutForceDirectedSpringEmbedder(bool dynamicMovement);
+	void layoutForceDirectedFruchtermanReingold(bool dynamicMovement);
 
 	/**RANDOM NETWORKS*/
 	void createRandomNetErdos(int, double);				//Creates a uniform random network
