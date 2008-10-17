@@ -263,7 +263,6 @@ void GraphicsWidget::moveNode(int number, int x, int y){
 	qDebug ("GW: updateNode() %i with %i, %i", number, x,y);
 	nodeVector.at(number-1)->setPos(x,y);
 	if (nodeVector.at(number-1)->nodeNumber()!=number) qDebug("ERRRRRRRRRRRRRRRRRRROOOOR");
-	nodeVector.at(number-1)->moveBy(1,1);nodeVector.at(number-1)->moveBy(-1,-1);
 }
 
 
@@ -578,12 +577,12 @@ void GraphicsWidget::timerEvent(QTimerEvent *event) {
 	}
 
 	bool itemsMoved = false;
-	foreach (Node *node, nodeVector) { 
-		if (node->advance()){
-			qDebug("GW: timerEvent() a node is moving!");
-			itemsMoved = true;
-		}
-	}
+// 	foreach (Node *node, nodeVector) { 
+// 		if (node->advance()){
+// 			qDebug("GW: timerEvent() a node is moving!");
+// 			itemsMoved = true;
+// 		}
+// 	}
 
 	if (!itemsMoved) {
 		killTimer(timerId);

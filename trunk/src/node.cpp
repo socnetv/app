@@ -223,17 +223,6 @@ void Node::calculateForcesFruchterman(bool dynamicMovement){
 }
 
 
-/** 
-	Called from GraphicsWidget->timerEvent() to move continuously the node 
-*/
-bool Node::advance(){
-	if (newPos == pos())
-		return false;
-	qDebug("Node: at x = %f, y=%f will advance to x = %f, y=%f", x(), y(), newPos.x(), newPos.y() );
-	setPos(newPos);
-	return true;
-}
-
 
 /** 
 	Used by MW::slotChangeNodeColor
@@ -403,8 +392,9 @@ QString Node::label ( ) {
  */
 QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
 // 	qDebug("Node: itemChange()");
+	QPointF newPos = value.toPointF();
 	switch (change) {
-		case ItemPositionChange:{
+		case ItemPositionHasChanged:{  //ItemPositionChange
 // 			emit adjustOutEdge();
 // 			emit adjustInEdge();
 			foreach (Edge *edge, inEdgeList) 		//Move each inEdge of this node
@@ -412,17 +402,17 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
 			foreach (Edge *edge, outEdgeList)		//Move each outEdge of this node
 				edge->adjust();
 			foreach (NodeNumber *num, gfxNumberList) 	//Move its graphic number
-				num->setPos( x()+m_nd, y()+m_nd);
+				num->setPos( newPos.x()+m_nd, newPos.y()+m_nd);
 			if (hasLabel)
-				m_label->setPos( x()+m_ld, y()-m_ld);
-			if ( x() !=0 && y() != 0 ){
-				qDebug()<<  "Node: ItemChange(): Emitting nodeMoved() for "<< nodeNumber()<< " at: "<<  x()<< ", "<<  y();
-				graphicsWidget->nodeMoved(nodeNumber(), (int) x(), (int) y());	
+				m_label->setPos( newPos.x()+m_ld, newPos.y()-m_ld);
+			if ( newPos.x() !=0 && newPos.y() != 0 ){
+				qDebug()<<  "Node: ItemChange(): Emitting nodeMoved() for "<< nodeNumber()<< " at: "<<  newPos.x()<< ", "<<  newPos.y();
+				graphicsWidget->nodeMoved(nodeNumber(), (int) newPos.x(), (int) newPos.y());	
 			}
 			else qDebug()<<  "Node: ItemChange(): Not emitting nodeMoved. Node "<< nodeNumber()<<" is at 0,0";
 
 			break;
-		}
+		} 
 		case ItemVisibleChange: {	
 			return 0;
 		}

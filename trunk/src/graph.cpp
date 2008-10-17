@@ -2138,13 +2138,12 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 				dx = line.dx();
 				dy = line.dy();
 				dist = (dx * dx + dy * dy);
-
-				
 				if (dist > 0) { //only if dist is positive.
 					xvel += (dx * c) / dist;
 					yvel += (dy * c) / dist;
 				}
-				qDebug("v1 %i is pushed away of %i.  c1, dx, dy, dist: %f, %f, %f, %f, addx, addy %f,%f,  xvel, yvel = ", v1->name(), v2->name(), c1, dx, dy, dist, (dx * c)/ dist, (dy * c) / dist, xvel, yvel);
+				qDebug("v1 %i is pushed away of %i.  c1, dx, dy, dist: %f, %f, %f, %f, addx, addy %f,%f", v1->name(), v2->name(), c1, dx, dy, dist, (dx * c)/ dist, (dy * c) / dist);
+				qDebug("xvel, yvel = ", xvel, yvel);
 			}
 			// Now subtract all pulling forces (i.e. springs)
 			qDebug(">-------------<  Calculate pulling force for %i", v1->name());
@@ -2161,8 +2160,8 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 				xvel += pos.x() / weight;
 				yvel += pos.y() / weight;
 
-
- 				qDebug("%i (%i) linked with %i (%i) of pos (%f, %f), dx, dy, dist %f, %f, %f, ADD TO VEL %f  - VELOCITY %f, %f", v1->name(), index[v1->name()], it1->first, targetVertex,pos.x(), pos.y(), dx, dy, dist, pos.x() / weight,  xvel, yvel);
+ 				qDebug("%i (%i) linked with %i (%i) of pos (%f, %f), dx, dy, dist %f, %f, %f, ADD TO VEL %f ", v1->name(), index[v1->name()], it1->first, targetVertex,pos.x(), pos.y(), dx, dy, dist, pos.x() / weight);
+ 				qDebug("VELOCITY %f, %f",  xvel, yvel);
 			}
 
 			//Move node to new position
@@ -2170,6 +2169,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 			qDebug("current x and y: %i, %i. Possible new pos is to new x new y = %f, %f", v1->x(), v1->y(),  newPos.x(), newPos.y());
 			if (newPos.x() < 5.0  ||newPos.y() < 5.0   || newPos.x() >= (canvasWidth -5)||   newPos.y() >= (canvasHeight-5)|| (v1->x() == newPos.x() && v1->y() == newPos.y() )) continue;  
 			qDebug("current x and y: %i, %i. This node will move to new x new y = %f, %f", v1->x(), v1->y(),  newPos.x(), newPos.y());
+			qDebug("Graph: emitting signal to move node to newPos");
 			emit moveNode((*v1).name(),  newPos.x(),  newPos.y());
 		}
 

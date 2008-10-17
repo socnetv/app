@@ -65,7 +65,7 @@ public:
 
 	void calculateForcesSpringEmbedder(bool dynamicMovement);
 	void calculateForcesFruchterman(bool dynamicMovement);
-	bool advance();
+
 
 	QRectF boundingRect() const;
 	QPainterPath shape() const;
