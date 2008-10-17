@@ -81,7 +81,7 @@ void Node::calculateForcesSpringEmbedder(bool dynamicMovement){
 	qreal xvel = 0;
 	qreal yvel = 0;
 	double dist =0;
-	qreal l=15.0;
+	qreal c=15.0;
 	qreal weight_coefficient=10;		//affects speed and line length. Try 10...
 	if (dynamicMovement){
 		// Sum up all pushing forces (i.e. imagine nodes are electrons)
@@ -89,13 +89,13 @@ void Node::calculateForcesSpringEmbedder(bool dynamicMovement){
 			Node *node = qgraphicsitem_cast<Node *>(item);
 			if (!node)
 				continue;
-			QLineF line(mapFromItem(node, 0, 0) , QPointF(0, 0));
+			QLineF line(mapFromItem(node, 0, 0) , QPointF(0, 0) );
 			qreal dx = line.dx();
 			qreal dy = line.dy();
 			dist = (dx * dx + dy * dy);
 			if (dist > 0) {
-				xvel += (dx * l) / dist;
-				yvel += (dy * l) / dist;
+				xvel += (dx * c) / dist;
+				yvel += (dy * c) / dist;
 			}
 		}
 

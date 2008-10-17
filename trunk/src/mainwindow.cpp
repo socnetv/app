@@ -602,7 +602,7 @@ void MainWindow::initActions(){
 
 	FRLayoutAct= new QAction( tr("Fruchterman-Reingold"),	this);
 	FRLayoutAct->setShortcut(tr("Alt+2"));
-	FRLayoutAct->setEnabled(false);
+	FRLayoutAct->setEnabled(true);
 	FRLayoutAct->setStatusTip(tr("Repelling forces between all nodes, and attracting forces between adjacent nodes."));
 	FRLayoutAct->setWhatsThis(tr("Fruchterman-Reingold Layout\n\n Embeds a layout all nodes according to a model in which	repelling forces are used between every pair of nodes, while attracting forces are used only between adjacent nodes. The algorithm continues until the system retains its equilibrium state where all forces cancel each other."));
 	connect(FRLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutFruchterman()));
@@ -1269,7 +1269,7 @@ void MainWindow::initToolBox(){
 
 	moveFruchtermanBx = new QCheckBox(tr("Fruchterman-Reingold") );
 	moveFruchtermanBx ->setEnabled(false);
-	moveFruchtermanBx->setToolTip(tr("!"));
+	moveFruchtermanBx->setToolTip(tr("In Fruchterman-Reingold model, the vertices behave as atomic particles or celestial bodies, exerting attractive and repulsive forces to each other. Again, only vertices that are neighbours attract each other but, unlike Spring Embedder, all vertices repel each other. "));
 
 	moveKamandaBx= new QCheckBox(tr("Kamanda-Kwei") );
 	moveKamandaBx->setEnabled(false);
@@ -3323,7 +3323,9 @@ void MainWindow::layoutFruchterman (int state){
 	qDebug("MW: layoutFruchterman ()");
 	moveSpringEmbedderBx->setChecked(false);
 	scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
-	graphicsWidget->nodeMovement(state, 2);
+
+	activeGraph.nodeMovement(state, 2, graphicsWidget->width(), graphicsWidget->height());
+// graphicsWidget->nodeMovement(state, 2);
 	scene->setItemIndexMethod (QGraphicsScene::BspTreeIndex); //best when not moving items
 }
 
