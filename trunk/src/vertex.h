@@ -84,11 +84,11 @@ public:
 	void setColor(QString);
 	QString color();
 
-	void setX(int );
-	int  x();
+	void setX(float );
+	float x();
 
-	void setY(int );
-	int y();
+	void setY(float );
+	float y();
 	
 	QPointF pos ();
 

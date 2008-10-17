@@ -195,22 +195,22 @@ QString Vertex::color(){
 }
 
 
-void Vertex::setX(int  x){
-	qDebug("Vertex setX with %i",x);
+void Vertex::setX(float  x){
+	qDebug("Vertex setX with %f",x);
 	m_x=x;
 }
 
-int Vertex::x(){
+float Vertex::x(){
 	return m_x;	
 }
 
 
-void Vertex::setY(int y){
-	qDebug("Vertex setY with %i", y);
+void Vertex::setY(float y){
+	qDebug("Vertex setY with %f", y);
 	m_y=y;
 }
 
-int Vertex::y(){
+float	Vertex::y(){
 	return m_y;	
 }
 
@@ -218,6 +218,7 @@ int Vertex::y(){
 QPointF Vertex::pos () { 
 	return QPointF ( x(), y() ); 
 }
+
 
 
 void Vertex::setOutLinkColor(int target, QString color){

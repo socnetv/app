@@ -1658,7 +1658,7 @@ void Graph::layoutCircleCentrality(double x0, double y0, double maxRadius, int C
 					break;
 			}
 		};
-		qDebug ("Vertice %i at x=%i, y=%i: C=%f, stdC=%f, maxradius %f",(*it)->name(), (*it)->x(), (*it)->y(), C, std, maxRadius);
+		qDebug ("Vertice %i at x=%f, y=%f: C=%f, stdC=%f, maxradius %f",(*it)->name(), (*it)->x(), (*it)->y(), C, std, maxRadius);
 		
 		qDebug ("C %f, maxC %f, C/maxC %f, *maxRadius %f",C , maxC, (C/maxC), (C/maxC - 0.06)*maxRadius);
 		switch ((int) ceil(maxC)){
@@ -1759,7 +1759,7 @@ void Graph::layoutLevelCentrality(double maxWidth, double maxHeight, int Central
 					break;
 			}
 		};
-		qDebug ("Vertice %i at x=%i, y=%i: C=%f, stdC=%f, maxC %f, maxWidth %f, maxHeight %f",(*it)->name(), (*it)->x(), (*it)->y(), C, std, maxC, maxWidth, maxHeight);
+		qDebug ("Vertice %i at x=%f, y=%f: C=%f, stdC=%f, maxC %f, maxWidth %f, maxHeight %f",(*it)->name(), (*it)->x(), (*it)->y(), C, std, maxC, maxWidth, maxHeight);
 		//Calculate new position
 		qDebug ("C/maxC %f, *maxHeight %f, +maxHeight %f ",C/maxC, (C/maxC)*maxHeight, maxHeight-(C/maxC)*maxHeight );
 		switch ((int) ceil(maxC)){
@@ -2012,7 +2012,7 @@ void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
 		foreach (Vertex *v1, m_graph)  {
 			// Sum up all repelling forces (i.e. imagine nodes are electrons)
 			xvel=0; yvel=0;
-			qDebug("<----------->  Calculate total repelling Force for vertex %i with index %i and pos %i, %i ", v1->name(), index[v1->name()], v1->x(), v1->y());
+			qDebug("<----------->  Calculate total repelling Force for vertex %i with index %i and pos %f, %f ", v1->name(), index[v1->name()], v1->x(), v1->y());
 			foreach (Vertex *v2, m_graph)  {
 				if ( ! hasEdge(v1->name(), v2->name()) )   //Spring embedder counts repelling forces only between non-adjacent vertices. Compare with F-R.
 				{
@@ -2090,9 +2090,9 @@ void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
 			qDebug(" ========== After PULL, Total Velocity for %i xvel, yvel  %f, %f", v1->name(), xvel, yvel);
 			//Move node to new position
 			newPos = QPointF(v1->x()+ xvel, v1->y()+yvel);
-			qDebug("current x and y: %i, %i. Possible new pos is to new x new y = %f, %f", v1->x(), v1->y(),  newPos.x(), newPos.y());
+			qDebug("current x and y: %f, %f. Possible new pos is to new x new y = %f, %f", v1->x(), v1->y(),  newPos.x(), newPos.y());
 			if (newPos.x() < 5.0  ||newPos.y() < 5.0   || newPos.x() >= (canvasWidth -5)||   newPos.y() >= (canvasHeight-5)|| (v1->x() == newPos.x() && v1->y() == newPos.y() )) continue;  
-			qDebug("current x and y: %i, %i. This node will move to new x new y = %f, %f", v1->x(), v1->y(),  newPos.x(), newPos.y());
+			qDebug("current x and y: %f, %f. This node will move to new x new y = %f, %f", v1->x(), v1->y(),  newPos.x(), newPos.y());
 			emit moveNode((*v1).name(),  newPos.x(),  newPos.y());
 		}
 
@@ -2115,11 +2115,12 @@ times called n -body problems.
 
 */
 
+
 void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 	qreal xvel = 0, yvel = 0, dx=0, dy=0;
 	double dist =0;
-	qreal c=15, c1=canvasHeight/10.0;
-	qreal dux=0, duy=0;
+	qreal c=0.1, c1= (canvasHeight* canvasWidth);
+	qreal l = c* sqrt (c1/m_totalVertices);
 	QPointF curPos, newPos, pos ;
 	int targetVertex=0;
 	qreal weight_coefficient=10;		//affects speed and line length. Try 10...
@@ -2130,47 +2131,49 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 			qDebug("FRFRFR");
 			// Sum up all repelling forces (i.e. imagine nodes are electrons)
 			xvel=0; yvel=0;
-			qDebug("<----------->  Calculate total repelling Force for vertex %i with index %i and pos %i, %i ", v1->name(), index[v1->name()], v1->x(), v1->y());
+			curPos = QPointF ( v1->x(), v1->y());  //convert to real....
+			qDebug("<----------->  Calculate total repelling Force for vertex %i with index %i and pos %f, %f ", v1->name(), index[v1->name()], curPos.x(), curPos.y());
 			foreach (Vertex *v2, m_graph)  {
 				if ( v2 == v1 ) continue;
-//				QLineF line( mapFromItem(node, 0, 0) , QPointF(0, 0) );
-				QLineF line(  v2->x(), v2->y(),0, 0);	//imaginary line v1 --> v2
+				QLineF line(  v2->x(), v2->y(), curPos.x(), curPos.y()); //imaginary line v2 --> v1
 				dx = line.dx();
 				dy = line.dy();
-				dist = (dx * dx + dy * dy);
+				dist = sqrt(dx * dx + dy * dy);
 				if (dist > 0) { //only if dist is positive.
-					xvel += (dx * c) / dist;
-					yvel += (dy * c) / dist;
+					xvel += (dx / dist )  *  (l * l) / dist;
+					yvel += (dy / dist ) * (l * l) / dist;
 				}
-				qDebug("v1 %i is pushed away of %i.  c1, dx, dy, dist: %f, %f, %f, %f, addx, addy %f,%f", v1->name(), v2->name(), c1, dx, dy, dist, (dx * c)/ dist, (dy * c) / dist);
-				qDebug("xvel, yvel = ", xvel, yvel);
+				qDebug("v1 %i is pushed away of %i.  c1 %f, l %f, dx %f, dy %f, dist %f, (addx, addy) = (%f, %f)", v1->name(), v2->name(), c1, l, dx, dy, dist,  (dx / dist )  *  (l * l) / dist, (dy / dist )  *  (l * l) / dist);
+				qDebug("xvel, yvel = %f, %f ", xvel, yvel);
 			}
 			// Now subtract all pulling forces (i.e. springs)
 			qDebug(">-------------<  Calculate pulling force for %i", v1->name());
 			double weight = (v1->m_edges.size() + 1) * weight_coefficient;
 			qDebug("weight %f", weight);
-			for( it1 = (*v1).m_edges.begin(); it1 != (*v1).m_edges.end(); it1++ ) {
+			for ( it1 = (*v1).m_edges.begin(); it1 != (*v1).m_edges.end(); it1++ ) {
 				targetVertex=index[it1->first];	
 				pos = m_graph[targetVertex]->pos();
-// 				QLineF line( v1->x(), v1->y(),  m_graph[targetVertex]->x(), m_graph[targetVertex]->y());
-// 				dx = line.dx();
-// 				dy = line.dy();
-// 				dist = sqrt(dx * dx + dy * dy);
+				QLineF line( curPos.x(), curPos.y(),  m_graph[targetVertex]->x(), m_graph[targetVertex]->y());
+				dx = line.dx();
+				dy = line.dy();
+				dist = sqrt(dx * dx + dy * dy);
 
-				xvel += pos.x() / weight;
-				yvel += pos.y() / weight;
+				xvel += dx / weight;
+				yvel += dy / weight;
 
- 				qDebug("%i (%i) linked with %i (%i) of pos (%f, %f), dx, dy, dist %f, %f, %f, ADD TO VEL %f ", v1->name(), index[v1->name()], it1->first, targetVertex,pos.x(), pos.y(), dx, dy, dist, pos.x() / weight);
+ 				qDebug("%i (%i) linked with %i (%i) of pos (%f, %f), dx %f, dy %f, dist %f, ADD TO VEL %f ", v1->name(), index[v1->name()], it1->first, targetVertex, pos.x(), pos.y(), dx, dy, dist, dx / weight);
  				qDebug("VELOCITY %f, %f",  xvel, yvel);
 			}
 
 			//Move node to new position
-			newPos = QPointF(v1->x()+ xvel, v1->y()+yvel);
-			qDebug("current x and y: %i, %i. Possible new pos is to new x new y = %f, %f", v1->x(), v1->y(),  newPos.x(), newPos.y());
-			if (newPos.x() < 5.0  ||newPos.y() < 5.0   || newPos.x() >= (canvasWidth -5)||   newPos.y() >= (canvasHeight-5)|| (v1->x() == newPos.x() && v1->y() == newPos.y() )) continue;  
-			qDebug("current x and y: %i, %i. This node will move to new x new y = %f, %f", v1->x(), v1->y(),  newPos.x(), newPos.y());
-			qDebug("Graph: emitting signal to move node to newPos");
+			newPos = QPointF(curPos.x()+ xvel, curPos.y()+yvel);
+			qDebug("current x and y: %f, %f. Possible new pos is to new x new y = %f, %f", curPos.x(), curPos.y(),  newPos.x(), newPos.y());
+			if (newPos.x() < 15.0  ||newPos.y() < 15.0   || newPos.x() >= (canvasWidth -15)||   newPos.y() >= (canvasHeight-15) ) continue;
+			if (( curPos.x() == newPos.x() ) && (curPos.y() == newPos.y()) )  continue;
+			qDebug(" Graph: Emitting signal for node %i to move from %f, %f to new x new y = %f, %f",(*v1).name(), curPos.x(), curPos.y(),  newPos.x(), newPos.y());
 			emit moveNode((*v1).name(),  newPos.x(),  newPos.y());
+			(*v1).setX( newPos.x());
+			(*v1).setY( newPos.y());
 		}
 
 	
