@@ -2114,53 +2114,51 @@ These forces induce movement. The algorithm might resemble molecular or planetar
 times called n -body problems. 
 
 */
-
-
 void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 	qreal xvel = 0, yvel = 0, dx=0, dy=0;
 	double dist =0;
-	qreal c=0.1, c1= (canvasHeight* canvasWidth);
-	qreal l = c* sqrt (c1/m_totalVertices);
+	qreal c=0.1, area= (canvasHeight* canvasWidth);
+	qreal k = c* sqrt (area/m_totalVertices);
 	QPointF curPos, newPos, pos ;
 	int targetVertex=0;
 	qreal weight_coefficient=10;		//affects speed and line length. Try 10...
 	imap_i::iterator it1; //delete me.
 	if (dynamicMovement){
-		qDebug("FRFRFR");
+		qDebug("layoutForceDirectedFruchtermanReingold");
 		foreach (Vertex *v1, m_graph)  {
-			qDebug("FRFRFR");
 			// Sum up all repelling forces (i.e. imagine nodes are electrons)
 			xvel=0; yvel=0;
 			curPos = QPointF ( v1->x(), v1->y());  //convert to real....
-			qDebug("<----------->  Calculate total repelling Force for vertex %i with index %i and pos %f, %f ", v1->name(), index[v1->name()], curPos.x(), curPos.y());
+			qDebug("<----------->  Calculate total repelling force for vertex %i with index %i and pos %f, %f ", v1->name(), index[v1->name()], curPos.x(), curPos.y());
 			foreach (Vertex *v2, m_graph)  {
-				if ( v2 == v1 ) continue;
+				if ( v2 == v1 ) continue; // F-R counts repelling forces between all vertices. Compare with S-E.
 				QLineF line(  v2->x(), v2->y(), curPos.x(), curPos.y()); //imaginary line v2 --> v1
 				dx = line.dx();
 				dy = line.dy();
 				dist = sqrt(dx * dx + dy * dy);
 				if (dist > 0) { //only if dist is positive.
-					xvel += (dx / dist )  *  (l * l) / dist;
-					yvel += (dy / dist ) * (l * l) / dist;
+					xvel += (dx / dist )  *  (k * k) / dist;
+					yvel += (dy / dist ) * (k * k) / dist;
 				}
-				qDebug("v1 %i is pushed away of %i.  c1 %f, l %f, dx %f, dy %f, dist %f, (addx, addy) = (%f, %f)", v1->name(), v2->name(), c1, l, dx, dy, dist,  (dx / dist )  *  (l * l) / dist, (dy / dist )  *  (l * l) / dist);
+				qDebug("v1 %i is pushed away of %i.  area %f, k %f, dx %f, dy %f, dist %f, (addx, addy) = (%f, %f)", v1->name(), v2->name(), area, k, dx, dy, dist,  (dx / dist )  *  (k * k) / dist, (dy / dist )  *  (k * k) / dist);
 				qDebug("xvel, yvel = %f, %f ", xvel, yvel);
 			}
-			// Now subtract all pulling forces (i.e. springs)
-			qDebug(">-------------<  Calculate pulling force for %i", v1->name());
+			// Now calculate and subtract all attractive forces (i.e. imagine nodes springs)
+			qDebug(">-------------<  Calculate total attractive force for %i", v1->name());
 			double weight = (v1->m_edges.size() + 1) * weight_coefficient;
 			qDebug("weight %f", weight);
 			for ( it1 = (*v1).m_edges.begin(); it1 != (*v1).m_edges.end(); it1++ ) {
 				targetVertex=index[it1->first];	
 				pos = m_graph[targetVertex]->pos();
-				QLineF line( curPos.x(), curPos.y(),  m_graph[targetVertex]->x(), m_graph[targetVertex]->y());
+				QLineF line( curPos.x(), curPos.y(),  m_graph[targetVertex]->x(),  m_graph[targetVertex]->y() );
 				dx = line.dx();
 				dy = line.dy();
-				dist = sqrt(dx * dx + dy * dy);
+				dist = (dx * dx + dy * dy);
 
-				xvel += dx / weight;
-				yvel += dy / weight;
-
+// 				xvel += dx / weight;
+// 				yvel += dy / weight;
+				xvel += (dx / dist )  * dist / k ;
+				yvel += (dy / dist )  * dist / k ;
  				qDebug("%i (%i) linked with %i (%i) of pos (%f, %f), dx %f, dy %f, dist %f, ADD TO VEL %f ", v1->name(), index[v1->name()], it1->first, targetVertex, pos.x(), pos.y(), dx, dy, dist, dx / weight);
  				qDebug("VELOCITY %f, %f",  xvel, yvel);
 			}
