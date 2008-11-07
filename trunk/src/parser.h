@@ -50,6 +50,8 @@ public:
 	int loadGraphML();
 	int loadGML();
 	int loadGW();
+	int loadDL();
+
 	void dotProperties(QString str, int &nValue, QString &label, QString &shape, QString &color, QString &fontName, QString &fontColor );
 signals:
 	void createNode(int,int,QString, QString, QString, QPointF, QString, bool);

@@ -37,7 +37,7 @@ CONFIG  += qt thread warn_on release
 LANGUAGE = C++
 
 #LIBS    += @ac_libs@
-INCPATH += /usr/lib/qt4/include /usr/local/include /usr/include 
+INCPATH += /usr/share/qt4/include /usr/local/include /usr/include /usr/include/qt4 
 
 # support
 QT += webkit

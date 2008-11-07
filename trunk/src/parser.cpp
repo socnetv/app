@@ -58,6 +58,100 @@ void Parser::load(QString fn, int iNS, QString iNC, QString iLC, QString iNSh, b
 
 
 
+/**
+	Tries to load a file as DL-formatted network. If not it returns -1
+*/
+int Parser::loadDL(){
+	qDebug ("Parser: loadDL");
+	QFile file ( fileName );
+	if ( ! file.open(QIODevice::ReadOnly )) return -1;
+	QTextStream ts( &file );
+
+	QString str, label;
+	
+	int i=0, j=0, lineCounter=0, mark=0, nodeNum=0, weight=0;
+	bool labels_flag=false, data_flag=false, intOK=false;
+	QStringList lineElement;
+	networkName="";
+	totalLinks=0;
+
+	while ( !ts.atEnd() )   {
+		str= ts.readLine();
+		lineCounter++;
+		if ( str.startsWith("%") || str.startsWith("#")  || str.isEmpty() ) continue;  //neglect comments
+	
+		if ( (lineCounter == 1) &&  (!str.startsWith("DL",Qt::CaseInsensitive)  ) ) {  
+			//this is not a DL file. Abort
+			qDebug("Parser-loadDL(): not a DL file. Aborting!");
+			file.close();
+			return -1;
+		}
+
+		if (str.startsWith( "N=", Qt::CaseInsensitive) ||  str.startsWith( "N =", Qt::CaseInsensitive) )  {   
+			mark=str.indexOf("=");
+			str=str.right(str.size()-mark-1);
+			qDebug()<< "N = : " << str.toAscii() ;
+			aNodes=str.toInt(&intOK,10);   
+			if (!intOK) { qDebug()<< "Parser: loadDL(): conversion error..." ; return -1;}
+		}
+
+		if (str.startsWith( "FORMAT =", Qt::CaseInsensitive) || str.startsWith( "FORMAT=", Qt::CaseInsensitive))  {   
+			mark=str.indexOf("=");
+			str=str.right(str.size()-mark-1);
+			qDebug()<<  "FORMAT = : " <<  str.toAscii() ;
+		}
+
+		if (str.startsWith( "labels", Qt::CaseInsensitive) ) {
+		 	labels_flag=true; data_flag=false;
+			continue;
+		}
+		else if ( str.startsWith( "data:", Qt::CaseInsensitive) || str.startsWith( "data :", Qt::CaseInsensitive) ) {
+		 	data_flag=true; labels_flag=false;
+			continue;
+		}
+
+		if (labels_flag) {  //read a label and create a node in a random position
+			label=str;
+			randX=rand()%gwWidth;
+			randY=rand()%gwHeight;
+			nodeNum++;
+			emit createNode(nodeNum, initNodeSize, initNodeColor, label, initNodeColor, QPointF(randX, randY), initNodeShape, initShowLabels);
+		
+		}
+		if ( data_flag){		//read edges
+			//SPLIT EACH LINE (ON EMPTY SPACE CHARACTERS) 
+			lineElement=str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+			j=0;
+			for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
+				if ( (*it1)!="0"){ //here is an non-zero edge weight...
+					qDebug()<<  "Parser-loadDL(): there is an edge here";
+					weight=(*it1).toInt(&intOK, 10); 
+					undirected=false;
+					arrows=true;
+					bezier=false;
+					emit createEdge(i+1, j+1, weight, initLinkColor, undirected, arrows, bezier);
+					totalLinks++;
+					qDebug()<<  "Link from Node i= " <<  i+1 << " to j= "<< j+1;
+					qDebug() << "TotalLinks= " << totalLinks;
+
+				}
+				j++;
+			}
+			i++;
+		
+
+		}
+	}
+	//sanity check
+	if (nodeNum != aNodes) { 
+		qDebug()<< "Error: aborting";
+		return -1;
+	}
+	emit fileType(5, networkName, aNodes, totalLinks);
+	qDebug() << "Parser-loadDL()";
+	return 1;
+
+}
 
 /**
 	Tries to load the file as Pajek-formatted network. If not it returns -1
@@ -1122,6 +1216,9 @@ void Parser::run()  {
 	}
 	else if (loadGML()==1){
 		qDebug("Parser: this is an GML (gml) network");
+	}
+	else if (loadDL()==1){
+		qDebug("Parser: this is an DL formatted (.dl) network");
 	}
 	else{
 	qDebug("**** QThread/Parser: end of routine!");

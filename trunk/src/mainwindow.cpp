@@ -1524,7 +1524,7 @@ void MainWindow::slotChooseFile() {
 	bool m_fileLoaded=fileLoaded;
 	QString m_fileName=fileName;
 	statusBar()->showMessage(tr("Choose a network file..."));
-	fileName = QFileDialog::getOpenFileName(this, tr("Select one file to open"), "", tr("All (*);;GraphML (*.graphml *.gml);;GraphViz (*.dot);;Adjacency (*.txt *.csv *.net);;Pajek (*.net *.pajek)"));
+	fileName = QFileDialog::getOpenFileName(this, tr("Select one file to open"), "", tr("All (*);;GraphML (*.graphml *.gml);;GraphViz (*.dot);;Adjacency (*.txt *.csv *.net);;Pajek (*.net *.pajek);;DL (*.dl *.net)"));
 	
 	if (!fileName.isEmpty()) {
 		fileNameNoPath=fileName.split ("/" );
@@ -1718,6 +1718,15 @@ void MainWindow::fileType(int type, QString networkName, int aNodes, int totalLi
 			fileLoaded=TRUE;
 			networkModified=FALSE;
 			statusBar()->showMessage( QString(tr("GraphML formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ), statusBarDuration);
+			break;
+
+		case 5:
+			pajekFileLoaded=FALSE;
+			adjacencyFileLoaded=FALSE;
+			dotFileLoaded=FALSE;
+			fileLoaded=TRUE;
+			networkModified=FALSE;
+			statusBar()->showMessage( QString(tr("DL-formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ), statusBarDuration);
 			break;
 		default: // just for sanity
 			pajekFileLoaded=FALSE;
