@@ -59,6 +59,7 @@ class QPointF;
 
 typedef map<float,int> fmap_i;
 typedef map<int,int> imap_i;
+typedef map<int,float> imap_f;
 
 class Graph:  public QObject{
 	Q_OBJECT
@@ -70,8 +71,8 @@ public slots:
 	void removeDummyNode(int);
 
 	/** Slots to signals from GraphicsWidget and Parser*/
-	void createEdge (int, int, int, QString, bool, bool, bool);				//GW and Parser.
-	void createEdge (int, int, int, bool, bool, bool);							//
+	void createEdge (int, int, float, QString, bool, bool, bool);				//GW and Parser.
+	void createEdge (int, int, int, bool, bool, bool);					//
 	
 	void nodeMovement(int state, int type, int cW, int cH);					//Called by MW to start movement
 
@@ -142,9 +143,9 @@ public:
 
 
 	/**EDGES*/
-	int hasEdge (int v1, int v2);					//Checks if edge between v1 and v2 exists. Returns weight
+	float hasEdge (int v1, int v2);					//Checks if edge between v1 and v2 exists. Returns weight or -1
 	void removeEdge (int v1, int v2);				//removes the edge between v1 and v2
-	void setEdgeWeight (int v1, int v2, int w); 			//sets the edge weight between v1 and v2
+	void setEdgeWeight (int v1, int v2, float w); 			//sets the edge weight between v1 and v2
 	void setInitEdgeColor(QString);
 
 	void setEdgeColor(int s, int t, QString color);			//Changes the color of edge (s,t).
@@ -231,7 +232,7 @@ private:
 
 	/** private member functions */
 	void addVertex (int v1, int val, int nsz, QString nc, QString nl, QString lc, QPointF p,QString nsp);	
-	void addEdge (int v1, int v2, int w, QString color, bool undirected); 		//adds an edge between v1 and v2, weight w, colored
+	void addEdge (int v1, int v2, float w, QString color, bool undirected); 		//adds an edge between v1 and v2, weight w, colored
 
 	/** methods used by createDistanceMatrix()  */
 	void BFS(int, bool);									//Breadth-first search 

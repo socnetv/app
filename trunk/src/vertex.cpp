@@ -70,7 +70,7 @@ Vertex::Vertex(int v1) {
 }
 
 
-void Vertex::addLinkTo (int v2, int weight) {
+void Vertex::addLinkTo (int v2, float weight) {
 	qDebug("Vertex: addLinkTo %i", v2);
 // 	m_edges.append(v2);
 	m_edges[v2]=weight;
@@ -85,7 +85,7 @@ void Vertex::addLinkFrom (int source) {
 
 }
 
-void Vertex::changeLinkWeightTo(int target, int weight){
+void Vertex::changeLinkWeightTo(int target, float weight){
 	qDebug("Vertex: changeEdgeWeightTo %i", target);
 // 	m_edges.append(v2);
 	m_edges[target]=weight;
@@ -100,7 +100,7 @@ void Vertex::removeLinkTo (int v2) {
 		m_outLinks--;
 /*		qSort(m_edges.begin(), m_edges.end());
 		QList<int>::iterator i = qBinaryFind(m_edges.begin(), m_edges.end(), v2);*/
-		imap_i::iterator i=m_edges.find(v2);
+		imap_f::iterator i=m_edges.find(v2);
 		if ( i != m_edges.end() ) {
 			qDebug("Vertex: edge exists. Removing it");
 			m_edges.erase(i);
@@ -139,8 +139,8 @@ int Vertex::inLinks() {
 }
 
 //Checks if this vertex is outlinked to v2 and returns the weight of the link
-int Vertex::isLinkedTo(int v2){
-	imap_i::iterator weight=m_edges.find(v2);
+float Vertex::isLinkedTo(int v2){
+	imap_f::iterator weight=m_edges.find(v2);
 	if (weight  != m_edges.end())
 		return (*weight).second;
 	else 

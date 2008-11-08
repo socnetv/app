@@ -38,7 +38,7 @@ using namespace std;
 
 class QPointF;
 
-typedef map<int,int> imap_i;
+typedef map<int,float> imap_f;
 typedef QHash<int,QString> ihash_s;
 
 
@@ -50,9 +50,9 @@ public:
 	int name();
 	void setName (int ); 
 
-	void addLinkTo (int target, int w);	/** Adds an outLink to target with weight w */
+	void addLinkTo (int target, float weight);	/** Adds an outLink to target with weight w */
 	void addLinkFrom(int source);
-	void changeLinkWeightTo (int target, int weight);
+	void changeLinkWeightTo (int target, float weight);
 	void removeLinkTo (int target);		/** Removes specified edge to target vertex*/
 	void removeLinkFrom(int source);
 	int outLinks();			/**Returns the numbers of links from this vertex */
@@ -64,7 +64,7 @@ public:
 
 	/** Returns true if there is an outLink from this vertex */
 	bool isOutLinked() { return m_outLinked;}
-	int isLinkedTo(int V);		/**Returns the weight of the link from to vertexc V, otherwise zero*/
+	float isLinkedTo(int V);		/**Returns the weight of the link from to vertexc V, otherwise zero*/
 
 	void setOutLinked(bool outLinked) { m_outLinked=outLinked;}
 	/** Returns true if there is an outLink from this vertex */
@@ -141,7 +141,7 @@ public:
 	float EC() { return m_EC;}		/** Returns max Geodesic Distance to all other vertices*/
 	float SEC() { return m_SEC;}
 
-	imap_i m_edges;			
+	imap_f m_edges;			//holds all edges starting from this vertex.
 	
 protected:
 

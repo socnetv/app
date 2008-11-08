@@ -58,7 +58,7 @@ Graph::Graph() {
 	parser.setParent(this);
 	connect (&parser, SIGNAL( createNode (int,int,QString, QString, QString, QPointF, QString, bool) ), this, SLOT(createVertex(int,int,QString, QString, QString, QPointF, QString) ) ) ;
 
-	connect (&parser, SIGNAL(createEdge (int, int, int, QString, bool, bool, bool)), this, SLOT(createEdge (int, int, int, QString, bool, bool, bool) ) );
+	connect (&parser, SIGNAL(createEdge (int, int, float, QString, bool, bool, bool)), this, SLOT(createEdge (int, int, float, QString, bool, bool, bool) ) );
 
 	connect (&parser, SIGNAL(fileType(int, QString, int, int)), this, SLOT(fileType(int, QString, int, int)) );
 	connect (&parser, SIGNAL(removeDummyNode(int)), this, SLOT (removeDummyNode(int)) );
@@ -123,7 +123,7 @@ void Graph::createVertex(int i, int cWidth, int cHeight){
 	Adds an Edge to the activeGraph and calls addEdge of GraphicsWidget to update the Graphics View. 
 	Also called from MW when user clicks on the "add link" button.
 */
-void Graph::createEdge(int v1, int v2, int weight, QString color, bool reciprocal=false, bool drawArrows=true, bool bezier=false){
+void Graph::createEdge(int v1, int v2, float weight, QString color, bool reciprocal=false, bool drawArrows=true, bool bezier=false){
 	qDebug()<<"*** Graph: createEdge():"<<v1<<" "<<v2<<" "<<weight;
 
 	if ( reciprocal ) {
@@ -156,7 +156,7 @@ void Graph::createEdge(int v1, int v2, int weight, QString color, bool reciproca
 	Calls main createEdge() method with initEdgeColor.
 */
 void Graph::createEdge(int v1, int v2, int weight, bool reciprocal=false, bool drawArrows=true, bool bezier=false){
-	createEdge(v1, v2, weight, initEdgeColor, reciprocal, drawArrows, bezier);
+	createEdge(v1, v2, (float) weight, initEdgeColor, reciprocal, drawArrows, bezier);
 }
 
 
@@ -328,11 +328,11 @@ void Graph::removeVertex(int Doomed){
 
 /**	Creates an edge between v1 and v2
 */
-void Graph::addEdge (int v1, int v2, int weight, QString color, bool reciprocal) {
+void Graph::addEdge (int v1, int v2, float weight, QString color, bool reciprocal) {
 	int source=index[v1];
 	int target=index[v2];
 
-	qDebug("Graph: addEdge FROM %i with %i TO  %i with %i, weight %i", v1, source,v2,target, weight);
+	qDebug("Graph: addEdge FROM %i with %i TO  %i with %i, weight %f", v1, source,v2,target, weight);
 
 	if ( !m_graph [ source ]->isOutLinked() ) {
 		qDebug("Graph: addEdge() SOURCE %i reports no outlinks -- setting outLinked TRUE for it.", v1);
@@ -387,11 +387,11 @@ void Graph::addEdge (int v1, int v2, int weight, QString color, bool reciprocal)
 /**	
 	Change edge (arc) weight between v1 and v2
 */
-void Graph::setEdgeWeight (int v1, int v2, int weight) {
-	qDebug("Graph: setEdgeWeight between %i (%i) and %i (%i), weight %i", v1, index[v1],v2,index[v2], weight);
+void Graph::setEdgeWeight (int v1, int v2, float weight) {
+	qDebug("Graph: setEdgeWeight between %i (%i) and %i (%i), weight %f", v1, index[v1],v2,index[v2], weight);
 	m_graph [ index[v1] ]->changeLinkWeightTo(v2, weight);
-	qDebug("Graph: setEdgeWeight between %i (%i) and %i (%i), NOW weight %i", v1, index[v1],v2,index[v2], this->hasEdge(v1, v2) );
-	qDebug("Graph: setEdgeWeight between %i (%i) and %i (%i), NOW vertex weight %i", v1, index[v1],v2,index[v2],	m_graph [ index[v1] ]->isLinkedTo(v2) );
+	qDebug("Graph: setEdgeWeight between %i (%i) and %i (%i), NOW weight %f", v1, index[v1],v2,index[v2], this->hasEdge(v1, v2) );
+	qDebug("Graph: setEdgeWeight between %i (%i) and %i (%i), NOW vertex weight %f", v1, index[v1],v2,index[v2], m_graph [ index[v1] ]->isLinkedTo(v2) );
 	graphModified=true;
 	emit graphChanged(); 
 }
@@ -404,7 +404,7 @@ void Graph::removeEdge (int v1, int v2) {
 	qDebug("Graph: Vertex named %i has index=%i",m_graph[ index[v1] ]->name(), index[v1]);
 	m_graph [ index[v1] ]->removeLinkTo(v2);
 	m_graph [ index[v2] ]->removeLinkFrom(v1);
-	qDebug("Graph: removeEdge between %i (%i) and %i (%i), NOW vertex v1 reports edge weight %i", v1, index[v1],v2,index[v2],	m_graph [ index[v1] ]->isLinkedTo(v2) );
+	qDebug("Graph: removeEdge between %i (%i) and %i (%i), NOW vertex v1 reports edge weight %f", v1, index[v1],v2,index[v2], m_graph [ index[v1] ]->isLinkedTo(v2) );
 	if ( hasEdge(v2,v1) !=0) symmetricAdjacencyMatrix=false;
 	m_totalEdges--;
 	outEdgesVert--;
@@ -547,10 +547,10 @@ void Graph::setEdgeColor(int s, int t, QString color){
 /**	Checks if there is an edge from v1 to v2
 	Complexity:  O(logN) for index retrieval + O(1) for QList index rerieval + O(logN) for checking edge(v2) 
 */
-int Graph::hasEdge (int v1, int v2) {		
-	int weight=0;
+float Graph::hasEdge (int v1, int v2) {		
+	float weight=0;
 	if ( (weight=  m_graph[ index[v1] ]->isLinkedTo(v2) ) != 0 ) {
-		qDebug("Graph: hasEdge() between %i (%i) and %i (%i) = %i", v1, index[v1], v2, index[v2], weight);
+		qDebug("Graph: hasEdge() between %i (%i) and %i (%i) = %f", v1, index[v1], v2, index[v2], weight);
 		return weight;
 	}
 	else {	
@@ -682,7 +682,7 @@ bool Graph::isSymmetric(){
 	qDebug("=========================Graph: isSymmetric ");
 	if (graphModified){
 		symmetricAdjacencyMatrix=TRUE;
-		imap_i::iterator it1;
+		imap_f::iterator it1;
 		int y;
 		QList<Vertex*>::iterator it;
 		for (it=m_graph.begin(); it!=m_graph.end(); it++){
@@ -713,7 +713,7 @@ bool Graph::isSymmetric(){
 void Graph::symmetrize(){
 	qDebug("Graph: symmetrize");
 	QList<Vertex*>::iterator it;
-	imap_i::iterator it1;
+	imap_f::iterator it1;
 	int y;
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
 		//for all edges (u,y) of u, do
@@ -760,7 +760,7 @@ bool Graph::symmetricEdge(int v1, int v2){
 void Graph::writeAdjacencyMatrixTo(QTextStream& os){
 	qDebug("Graph: adjacencyMatrix(), writing matrix with %i vertices", vertices());
 	QList<Vertex*>::iterator it, it1;	
-	int weight=-1;
+	float weight=-1;
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
 		for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){	
 			if ( (weight = hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
@@ -781,7 +781,7 @@ void Graph::writeAdjacencyMatrixTo(QTextStream& os){
 */
 QTextStream& operator <<  (QTextStream& os, Graph& m){
 	QList<Vertex*>::iterator it, it1;	
-	int weight=-1;
+	float weight=-1;
 	for (it=m.m_graph.begin(); it!=m.m_graph.end(); it++){
 		for (it1=m.m_graph.begin(); it1!=m.m_graph.end(); it1++){	
 			if ( (weight = m.hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
@@ -805,7 +805,8 @@ QTextStream& operator <<  (QTextStream& os, Graph& m){
 void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
 	qDebug("writeAdjacencyMatrix() ");
 	ofstream file (fn);
-	int sum=0, weight;
+	int sum=0;
+	float weight=0;
 	file << "-Social Network Visualiser- \n";
 	file << "Adjacency matrix of "<< netName<<": \n\n";
 	QList<Vertex*>::iterator it, it1;	
@@ -1281,7 +1282,7 @@ void Graph::BFS(int s, bool calc_centralities){
 			qDebug("BFS: If we are to calculate centralities, we must push u=%i to global stack Stack ", u);
 			Stack.push(u);
 		}
-		imap_i::iterator it;
+		imap_f::iterator it;
 		qDebug("BFS: LOOP over every edge (u,w) e E, that is all neighbors w of vertex u");
 		for( it = m_graph [ u ]->m_edges.begin(); it != m_graph [ u ]->m_edges.end(); it++ ) {
 			
@@ -1342,7 +1343,7 @@ void Graph::BFS(int s, bool calc_centralities){
 void Graph::centralityInDegree(bool weights){
 	qDebug("Graph:: centralityInDegree()");
 	float IDC=0, nom=0, denom=0;
-	int weight;
+	float weight;
 	classesIDC=0;
 	sumIDC=0; 
 	maxIDC=0;
@@ -1462,7 +1463,7 @@ void Graph::writeCentralityInDegree(){
 void Graph::centralityOutDegree(bool weights){
 	qDebug("Graph:: centralityOutDegree()");
 	float ODC=0, nom=0, denom=0;
-	int weight;
+	float weight;
 	classesODC=0;
 	discreteODCs.clear();
 	sumODC=0; 
@@ -2007,7 +2008,7 @@ void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
 	QPointF curPos, newPos, pos ;
 	int targetVertex=0;
 	qreal weight_coefficient=1;		//affects speed and line length. Try 10...
-	imap_i::iterator it1; //delete me.
+	imap_f::iterator it1; //delete me.
 	if (dynamicMovement){
 		foreach (Vertex *v1, m_graph)  {
 			// Sum up all repelling forces (i.e. imagine nodes are electrons)
@@ -2122,7 +2123,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 	QPointF curPos, newPos, pos ;
 	int targetVertex=0;
 	qreal weight_coefficient=10;		//affects speed and line length. Try 10...
-	imap_i::iterator it1; //delete me.
+	imap_f::iterator it1; 
 	if (dynamicMovement){
 		qDebug("layoutForceDirectedFruchtermanReingold");
 		foreach (Vertex *v1, m_graph)  {

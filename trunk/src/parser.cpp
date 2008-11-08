@@ -69,8 +69,9 @@ int Parser::loadDL(){
 
 	QString str, label;
 	
-	int i=0, j=0, lineCounter=0, mark=0, nodeNum=0, weight=0;
-	bool labels_flag=false, data_flag=false, intOK=false;
+	int i=0, j=0, lineCounter=0, mark=0, nodeNum=0;
+	float weight=0;
+	bool labels_flag=false, data_flag=false, intOK=false, floatOK=false;
 	QStringList lineElement;
 	networkName="";
 	totalLinks=0;
@@ -123,9 +124,10 @@ int Parser::loadDL(){
 			lineElement=str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
 			j=0;
 			for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
+				qDebug()<< (*it1).toAscii() ;
 				if ( (*it1)!="0"){ //here is an non-zero edge weight...
 					qDebug()<<  "Parser-loadDL(): there is an edge here";
-					weight=(*it1).toInt(&intOK, 10); 
+					weight=(*it1).toFloat(&floatOK); 
 					undirected=false;
 					arrows=true;
 					bezier=false;
@@ -169,7 +171,8 @@ int Parser::loadPajek(){
 	bool fileContainsNodeColors=FALSE, fileContainsNodesCoords=FALSE;
 	bool fileContainsLinksColors=FALSE;
 	bool zero_flag=FALSE;
-	int  lineCounter=0, i=0, j=0, miss=0, source= -1, target=-1, weight=1, nodeNum, colorIndex=-1, coordIndex=-1;
+	int  lineCounter=0, i=0, j=0, miss=0, source= -1, target=-1, nodeNum, colorIndex=-1, coordIndex=-1;
+	float weight=1;
 	list<int> listDummiesPajek;
 	networkName="noname";
 	totalLinks=0;
@@ -370,7 +373,7 @@ int Parser::loadPajek(){
 				target = lineElement[1].toInt(&ok,10);
 				if (source == 0 || target == 0 ) return -1;  //  i --> (i-1)   internally
 				else if (source < 0 && target >0  ) {  //weights come first...
-					weight = lineElement[0].toInt(&ok, 10);
+					weight = lineElement[0].toFloat(&ok);
 					source=  lineElement[1].toInt(&ok, 10);
 					if (lineElement.count()>2) {
 						target = lineElement[2].toInt(&ok,10);
@@ -380,11 +383,11 @@ int Parser::loadPajek(){
 					}
 				}
 				else if (lineElement.count()>2)
-					weight =lineElement[2].toInt(&ok,10);
+					weight =lineElement[2].toFloat(&ok);
 				else 
 					weight=1;
 
-				qDebug("Parser-loadPajek(): weight %i", weight);
+				qDebug("Parser-loadPajek(): weight %f", weight);
 
 				if (lineElement.contains("c", Qt::CaseSensitive ) ) {
 					qDebug("Parser-loadPajek(): file with link colours");
@@ -413,7 +416,7 @@ int Parser::loadPajek(){
 				target = lineElement[1].toInt(&ok,10);
 				if (source == 0 || target == 0 ) return -1;   //  i --> (i-1)   internally
 				else if (source < 0 && target >0 ) {  //weights come first...
-					weight = lineElement[0].toInt(&ok, 10);
+					weight = lineElement[0].toFloat(&ok);
 					source=  lineElement[1].toInt(&ok, 10);
 					if (lineElement.count()>2) {
 						target = lineElement[2].toInt(&ok,10);
@@ -423,7 +426,7 @@ int Parser::loadPajek(){
 					}
 				}
 				else if (lineElement.count()>2)
-					weight =lineElement[2].toInt(&ok,10);
+					weight =lineElement[2].toFloat(&ok);
 				else 
 					weight=1;
 
@@ -439,7 +442,7 @@ int Parser::loadPajek(){
 				undirected=false;
 				arrows=true;
 				bezier=false;
-				qDebug("Parser-loadPajek(): Creating arc source %i target %i with weight %i", source, target, weight);
+				qDebug("Parser-loadPajek(): Creating arc source %i target %i with weight %f", source, target, weight);
 				emit createEdge(source, target, weight, linkColor, undirected, arrows, bezier);
 				totalLinks++;
 			} //else if ARCS
@@ -454,7 +457,7 @@ int Parser::loadPajek(){
 				bezier=false;
 				for (register int index = 1; index < lineElement.size(); index++) {
 					target = lineElement.at(index).toInt(&ok,10);					
-					qDebug("Parser-loadPajek(): Creating arc source %i target %i with weight %i", source, target, weight);
+					qDebug("Parser-loadPajek(): Creating arc source %i target %i with weight %f", source, target, weight);
 					emit createEdge(source, target, weight, linkColor, undirected, arrows, bezier);
 					totalLinks++;
 				}
@@ -470,8 +473,8 @@ int Parser::loadPajek(){
 				bezier=false;
 				for (target = 0; target < lineElement.size(); target ++) {
 					if ( lineElement.at(target) != "0" ) {
-						weight = lineElement.at(target).toInt(&ok,10);					
-						qDebug("Parser-loadPajek(): Creating arc source %i target %i with weight %i", source, target+1, weight);
+						weight = lineElement.at(target).toFloat(&ok);					
+						qDebug("Parser-loadPajek(): Creating arc source %i target %i with weight %f", source, target+1, weight);
 						emit createEdge(source, target+1, weight, linkColor, undirected, arrows, bezier);
 						totalLinks++;
 					}
@@ -515,7 +518,8 @@ int Parser::loadAdjacency(){
 	networkName="";
 	QString str;
 	QStringList lineElement;
-	int i=0, j=0, weight=1, aNodes=0;
+	int i=0, j=0,  aNodes=0;
+	float weight=1;
 	bool intOK=FALSE;
 
 
@@ -547,7 +551,7 @@ int Parser::loadAdjacency(){
 		for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
 			if ( (*it1)!="0"){
 				qDebug("Parser-loadAdjacency(): there is a link here");
-				weight=(*it1).toInt(&intOK, 10);
+				weight=(*it1).toFloat(&intOK);
 				undirected=false;
 				arrows=true;
 				bezier=false;

@@ -9,6 +9,7 @@ ChangeLog:
 Version 0.49 - Oct 20 2008
 Codename: "Simplification"
 ------------------------------
+-DL network format initial support.
 -Bug fix: Show correct new node number instead of %i
 -Bug fix: Zoom while rotate works (thanks Andre!).
 -Bug fix: No longer BFS crashes. SocNetV is more reliable.
