@@ -754,9 +754,6 @@ bool Graph::symmetricEdge(int v1, int v2){
 	This is called from MainWindow::slotExportSM() using << operator of Matrix class
 	The resulting matrix HAS spaces between elements.
 */
-
-
-
 void Graph::writeAdjacencyMatrixTo(QTextStream& os){
 	qDebug("Graph: adjacencyMatrix(), writing matrix with %i vertices", vertices());
 	QList<Vertex*>::iterator it, it1;	
@@ -764,7 +761,8 @@ void Graph::writeAdjacencyMatrixTo(QTextStream& os){
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
 		for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){	
 			if ( (weight = hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
-				os << weight << " ";
+				
+				os << static_cast<int> (weight) << " ";
 			}
 			else
 				os << "0 ";
@@ -785,7 +783,7 @@ QTextStream& operator <<  (QTextStream& os, Graph& m){
 	for (it=m.m_graph.begin(); it!=m.m_graph.end(); it++){
 		for (it1=m.m_graph.begin(); it1!=m.m_graph.end(); it1++){	
 			if ( (weight = m.hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
-				os << weight << " ";
+				os << static_cast<int> (weight) << " ";
 			}
 			else
 				os << "0 ";
@@ -814,7 +812,10 @@ void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
 		for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){	
 			if ( (weight =  this->hasEdge ( (*it)->name(), (*it1)->name() )  )!=0 ) {
 				sum++;
-				file << weight;
+				if (weight >= 1)
+					file << static_cast<int> (weight);
+				else 
+					file << "1";
 			}
 			else
 				file << "0";

@@ -1542,7 +1542,7 @@ void MainWindow::slotChooseFile() {
 		if (m_fileLoaded) { fileLoaded=m_fileLoaded;  fileName=m_fileName; }
   	}
 
-	qDebug("FILENAME IS NOW:" +fileName.toAscii());
+	qDebug()<<"FILENAME IS NOW:" <<fileName.toAscii();
 }
 
 
@@ -1951,6 +1951,7 @@ bool MainWindow::slotExportSM(){
 		return false;
 	}
 
+	QMessageBox::information(this, "Warning",tr("Note that exporting to an adjacency matrix does not save floating-point weight values; adjacency matrices consist of integers, only. \n If your network had any floating point weights in some edges, these are being truncated to the nearest integer or 1.)"), "OK",0);
 	if (fileName.isEmpty()) {
 		statusBar()->showMessage(tr("Saving network under new filename..."));
   		QString fn = QFileDialog::getSaveFileName(this, 0, 0);
@@ -2801,7 +2802,7 @@ void MainWindow::slotChangeNodeLabel(){
 	QString text = QInputDialog::getText(this, "Change node label", tr("Enter new node label:"), QLineEdit::Normal,
             QString::null, &ok );
     	if ( ok && !text.isEmpty() ) {
-		qDebug("MW: change label to " + text.toAscii());
+		qDebug()<<"MW: change label to "<< text.toAscii();
 		clickedJim-> setLabel (text);
 		activeGraph.setVertexLabel( clickedJimNumber, text);
 		if (!showLabels()) 
@@ -5080,7 +5081,8 @@ void MainWindow::slotHelp(){
 
 	QString helpPath; 
 	QDir d( QCoreApplication::applicationDirPath() );
-	qDebug( QCoreApplication::applicationDirPath().toAscii());
+	qDebug()<< QCoreApplication::applicationDirPath().toAscii();
+
 	if ( d.exists("manual.html") ) { 
   		helpPath=d.filePath("manual.html");
 	}
@@ -5097,10 +5099,10 @@ void MainWindow::slotHelp(){
 			if (d.exists("manual/")) d.cd("manual/");
 			if ( d.exists("manual.html") ) {
 				helpPath=d.filePath("manual.html");
-				qDebug ("path" + helpPath.toAscii());
+				qDebug()<< "path" << helpPath.toAscii();
 			}
 			else {
-				qDebug("help file does not exist.");
+				qDebug()<< "help file does not exist.";
 			}
 		}
                else if (d.cd("/usr/share/doc/socnetv/") ) {
@@ -5117,7 +5119,7 @@ void MainWindow::slotHelp(){
 			qDebug("Cannot chdir to html");
 		}
 	}
-        qDebug ("help path is: " + helpPath.toAscii());
+        qDebug () << "help path is: " << helpPath.toAscii();
 	HTMLViewer *helpViewer = new HTMLViewer (helpPath, this);
 	helpViewer -> setWindowTitle ( "SocNetV "+ VERSION + tr(" Manual"));
 	helpViewer->show();

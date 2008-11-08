@@ -26,7 +26,8 @@
 
 #include "vertex.h"
 
-#include <QtGlobal>		//used for qDebug messages
+
+#include <QtDebug>		//used for qDebug messages
 #include <QPointF>
 
 Vertex::Vertex(int v1, int val, int nsz, QString nc, QString nl, QString lc, QPointF p,QString nsp) { 
@@ -141,8 +142,10 @@ int Vertex::inLinks() {
 //Checks if this vertex is outlinked to v2 and returns the weight of the link
 float Vertex::isLinkedTo(int v2){
 	imap_f::iterator weight=m_edges.find(v2);
-	if (weight  != m_edges.end())
+	if (weight  != m_edges.end()) {
+		qDebug()<< (*weight).second;
 		return (*weight).second;
+	}
 	else 
 		return 0;
 }
