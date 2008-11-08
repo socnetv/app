@@ -1941,7 +1941,7 @@ bool MainWindow::slotExportPajek(){
 
 
 /**	Exports the network to a adjacency matrix-formatted file
-	Does not preserve node properties
+	Does not preserve node properties nor floating point weights.
 */
 bool MainWindow::slotExportSM(){
 	qDebug("MW: slotExportSM()");
@@ -3910,7 +3910,10 @@ void MainWindow::slotDistance(){
 	if (activeGraph.isSymmetric() && i>j) {
 		qSwap(i,j);
 	}
-	QMessageBox::information(this, tr("Distance"), tr("Network distance (")+QString::number(i)+", "+QString::number(j)+") = "+QString::number(activeGraph.distance(i,j))+tr("\nThe nodes are not connected."),"OK",0);
+	if ( activeGraph.distance(i,j) )
+		QMessageBox::information(this, tr("Distance"), tr("Network distance (")+QString::number(i)+", "+QString::number(j)+") = "+QString::number(activeGraph.distance(i,j))+tr("\nThe nodes are connected."),"OK",0);
+	else 
+		QMessageBox::information(this, tr("Distance"), tr("Network distance (")+QString::number(i)+", "+QString::number(j)+") = "+QString::number(activeGraph.distance(i,j))+tr("\nThe nodes are not connected."),"OK",0);
 }
 
 
