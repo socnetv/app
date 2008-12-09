@@ -435,12 +435,12 @@ int Graph::hasVertex(int num){
 
 */
 int Graph::hasVertex(QString label){			
-	qDebug ("Graph: hasVertex( "+ label.toAscii()+ " ) ?" );
+	qDebug ()<<"Graph: hasVertex( "<< label.toAscii() <<" ) ?" ;
 	QList<Vertex*>::iterator it;
 	int i=0;
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
 		if ( (*it) ->label() == label)  {
-			qDebug("Graph: hasVertex() at pos %i", i);
+			qDebug()<< "Graph: hasVertex() at pos %i" << i;
 			return i;
 		}
 		i++;
@@ -837,7 +837,7 @@ void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
 *  Returns the distance between nodes numbered (i-1) and (j-1)
 */
 int Graph::distance(int i, int j){
-	if (graphModified){
+	if (graphModified ||  !distanceMatrixCreated ){
 		createDistanceMatrix(false);
 		graphModified=false;
 	}

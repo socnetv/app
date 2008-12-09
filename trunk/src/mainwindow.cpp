@@ -3910,7 +3910,7 @@ void MainWindow::slotDistance(){
 	if (activeGraph.isSymmetric() && i>j) {
 		qSwap(i,j);
 	}
-	if ( activeGraph.distance(i,j) )
+	if ( activeGraph.distance(i,j) != 0 )
 		QMessageBox::information(this, tr("Distance"), tr("Network distance (")+QString::number(i)+", "+QString::number(j)+") = "+QString::number(activeGraph.distance(i,j))+tr("\nThe nodes are connected."),"OK",0);
 	else 
 		QMessageBox::information(this, tr("Distance"), tr("Network distance (")+QString::number(i)+", "+QString::number(j)+") = "+QString::number(activeGraph.distance(i,j))+tr("\nThe nodes are not connected."),"OK",0);
