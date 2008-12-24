@@ -212,7 +212,7 @@ void Edge::unmakeReciprocal(){
 }
 
 
-void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *){
+void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *){
 	if (!source || !target)
 		return;
 

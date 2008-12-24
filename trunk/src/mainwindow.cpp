@@ -1080,6 +1080,7 @@ void MainWindow::initToolBar(){
 
 	//Create zooming widget
 	zoomCombo = new QComboBox;
+	zoomCombo -> setFocusPolicy(Qt::NoFocus);
 	QStringList scales;
      	scales << tr("25%") << tr("50%") << tr("75%") << tr("100%") << tr("125%") << tr("150%")<<tr("175%")  ;
      	zoomCombo->addItems(scales);
@@ -1356,7 +1357,7 @@ void MainWindow::initView() {
 	graphicsWidget->setRenderHint(QPainter::SmoothPixmapTransform, true);
  	graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
  	graphicsWidget->setResizeAnchor(QGraphicsView::AnchorViewCenter);
-
+	graphicsWidget->setFocusPolicy(Qt::StrongFocus);	
 
 	printDebugAct->setChecked (true);
 	//set minimum size of canvas
