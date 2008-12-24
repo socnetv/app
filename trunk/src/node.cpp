@@ -306,6 +306,8 @@ QRectF Node::boundingRect() const {
 	Called by GraphicsView in every update() 
 */
 void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) {
+	painter->setClipRect( option->exposedRect );
+
 	//if the node is being dragged aroung, darken it!
 	if (option->state & QStyle::State_Sunken) {
 		setZValue(255);

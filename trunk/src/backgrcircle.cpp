@@ -25,7 +25,7 @@
 ********************************************************************************/
 
 #include "backgrcircle.h"
-
+#include <QStyleOptionGraphicsItem>
 #include "graphicswidget.h"
 
 BackgrCircle::BackgrCircle ( GraphicsWidget *gw, int x0, int y0, int radius ) : graphicsWidget ( gw ){
@@ -61,7 +61,7 @@ QRectF BackgrCircle::boundingRect() const {
 
 
 void BackgrCircle::paint ( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget * ){
-	Q_UNUSED(option);
+	painter->setClipRect( option->exposedRect );
 	painter->setPen ( QPen ( QColor ( "red" ), 1, Qt::DotLine ) );
 	if (circle) {
 		painter->drawArc ( m_x0-m_radius, m_y0-m_radius, 2*m_radius, 2*m_radius, 0, 5760 );

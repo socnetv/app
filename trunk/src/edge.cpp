@@ -26,6 +26,7 @@
 
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
+#include <QStyleOptionGraphicsItem>
 #include <QPainter>
 #include <math.h>
 
@@ -215,19 +216,14 @@ void Edge::unmakeReciprocal(){
 void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *){
 	if (!source || !target)
 		return;
-
+	painter->setClipRect( option->exposedRect );
 	// Draw the line itself
 	QPainterPath line(sourcePoint);
 
 	QPointF c = QPointF( targetPoint.x() + 10,  targetPoint.y()+10 );
 	if ( !m_Bezier) {
 // 		QLineF line(sourcePoint, targetPoint);
-
 		line.lineTo(targetPoint);
-
-
-
-
 //		painter->drawLine(line);
 
 	}
