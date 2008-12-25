@@ -60,6 +60,16 @@ GraphicsWidget::GraphicsWidget( QGraphicsScene *sc, MainWindow* par)  : QGraphic
 }
 
 
+/**
+	http://thesmithfam.org/blog/2007/02/03/qt-improving-qgraphicsview-performance/#comment-7215
+*/
+
+void GraphicsWidget::paintEvent ( QPaintEvent * event ){
+	QPaintEvent *newEvent=new QPaintEvent(event->region().boundingRect());
+	QGraphicsView::paintEvent(newEvent);
+	delete newEvent;
+}
+
 
 /** 
 	Clears the scene 

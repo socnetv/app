@@ -67,7 +67,7 @@ Edge::Edge(  GraphicsWidget *gw, Node *from, Node *to, int weight, int nodeSize,
 	m_weight = weight ;
 	m_Bezier = bez; 
 	this-> setZValue(253);		//Edges have lower z than nodes. Nodes always appear above edges.
-	//this->setBoundingRegionGranularity(0.1);				//slows down the universe...
+	this->setBoundingRegionGranularity(0.04);				//slows down the universe...
 	//this->setCacheMode (QGraphicsItem::DeviceCoordinateCache);  //slows down
 	adjust();
 }
@@ -178,7 +178,8 @@ void Edge::adjust(){
 
 QPainterPath Edge::shape () const {
 	QPainterPath path;
-	path.addRegion(boundingRegion(QTransform()));
+	//path.addRegion(boundingRegion(QTransform()));
+	path.addRect(boundingRect());
 	return path;
 } 
 
@@ -188,7 +189,6 @@ QRectF Edge::boundingRect() const {
 	if (!source || !target)
         	return QRectF();
 	
-
 	qreal penWidth = 1;
 	qreal extra = (penWidth + m_arrowSize) / 2.0;
 
@@ -214,9 +214,11 @@ void Edge::unmakeReciprocal(){
 
 
 void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *){
+//	painter->setClipRect( option->exposedRect );
+
 	if (!source || !target)
 		return;
-	painter->setClipRect( option->exposedRect );
+
 	// Draw the line itself
 	QPainterPath line(sourcePoint);
 
@@ -273,7 +275,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 int Edge::lineWidth(){
 	if (weight()<0)
 		return abs(weight());
-	else if (weight() == 0) {
+else if (weight() == 0) {
 		return 1; //?
 	}
 	else if (weight() > 0 && weight() <=5) {

@@ -72,6 +72,7 @@ protected:
 	void wheelEvent(QWheelEvent *event);
 	void mouseDoubleClickEvent ( QMouseEvent * e );
 	void resizeEvent( QResizeEvent *e );
+	void paintEvent ( QPaintEvent * event );
 
 public slots:
 	void drawNode(int i, int size, QString aColor, QString label, QString lColor, QPointF p, QString nodeShape, bool showLabels, bool showNumbers);

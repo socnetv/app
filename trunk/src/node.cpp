@@ -295,7 +295,7 @@ QPainterPath Node::shape() const {
 
 /** Returns the bounding rectangle of the node */
 QRectF Node::boundingRect() const {
-	qreal adjust = 10;
+	qreal adjust = 5;
 	return QRectF(-m_size -adjust , -m_size-adjust , 2*m_size+adjust , 2*m_size +adjust);
 
 }
@@ -306,7 +306,7 @@ QRectF Node::boundingRect() const {
 	Called by GraphicsView in every update() 
 */
 void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) {
-	painter->setClipRect( option->exposedRect );
+//	painter->setClipRect( option->exposedRect );
 
 	//if the node is being dragged aroung, darken it!
 	if (option->state & QStyle::State_Sunken) {

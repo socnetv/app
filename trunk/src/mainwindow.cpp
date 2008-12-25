@@ -1346,15 +1346,26 @@ void MainWindow::initView() {
 	//create a scene
 	scene=new  QGraphicsScene();
 
-	//scene->setItemIndexMethod(QGraphicsScene::NoIndex);
+	
 
 	//create a view for this scene
 	graphicsWidget=new GraphicsWidget(scene, this);
+	//QGraphicsView can cache pre-rendered content in a QPixmap, which is then drawn onto the viewport. 
+	graphicsWidget->setCacheMode(QGraphicsView::CacheNone);  //CacheBackground | CacheNone
 
-	graphicsWidget->setCacheMode(QGraphicsView::CacheBackground); 
  	graphicsWidget->setRenderHint(QPainter::Antialiasing, true);
 	graphicsWidget->setRenderHint(QPainter::TextAntialiasing, true);
-	graphicsWidget->setRenderHint(QPainter::SmoothPixmapTransform, true);
+	graphicsWidget->setRenderHint(QPainter::SmoothPixmapTransform, false);
+	//Optimization flags:
+	// By enabling the flag below, QGraphicsView will completely disable its implicit clipping
+	graphicsWidget->setOptimizationFlag(QGraphicsView::DontClipPainter, false); 
+	//
+	graphicsWidget->setOptimizationFlag(QGraphicsView::DontSavePainterState, false);
+	//Disables QGraphicsView's antialiasing auto-adjustment of exposed areas.
+	graphicsWidget->setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, false);
+	//"QGraphicsScene applies an indexing algorithm to the scene, to speed up item discovery functions like items() and itemAt(). Indexing is most efficient for static scenes (i.e., where items don't move around). For dynamic scenes, or scenes with many animated items, the index bookkeeping can outweight the fast lookup speeds." So...
+	scene->setItemIndexMethod(QGraphicsScene::NoIndex); //NoIndex | BspTreeIndex
+
  	graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
  	graphicsWidget->setResizeAnchor(QGraphicsView::AnchorViewCenter);
 	graphicsWidget->setFocusPolicy(Qt::StrongFocus);	
