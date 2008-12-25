@@ -67,7 +67,7 @@ Edge::Edge(  GraphicsWidget *gw, Node *from, Node *to, int weight, int nodeSize,
 	m_weight = weight ;
 	m_Bezier = bez; 
 	this-> setZValue(253);		//Edges have lower z than nodes. Nodes always appear above edges.
-	this->setBoundingRegionGranularity(0.04);				//slows down the universe...
+	this->setBoundingRegionGranularity(0.05);				//slows down the universe...
 	//this->setCacheMode (QGraphicsItem::DeviceCoordinateCache);  //slows down
 	adjust();
 }
