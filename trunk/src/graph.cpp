@@ -129,8 +129,7 @@ void Graph::createEdge(int v1, int v2, float weight, QString color, bool recipro
 	if ( reciprocal ) {
 		qDebug (" Graph:: createEdge() RECIPROCAL new link -- Adding new edge to Graph and calling GW::drawEdge(). ");
 		addEdge ( v1, v2, weight, color, reciprocal);
-		
-		emit drawEdge(v1, v2, reciprocal, drawArrows, color, bezier, false);
+		emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier, false);
 	}
 	else if (this->hasEdge( v2, v1) )  {  
 		qDebug (" Graph:: createEdge() opposite link EXISTS - Adding new edge to Graph and emitting drawEdgeReciprocal() to make the original RECIPROCAL. ");
@@ -143,7 +142,7 @@ void Graph::createEdge(int v1, int v2, float weight, QString color, bool recipro
 		qDebug (" Graph:: createEdge() NOT RECIPROCAL new link -- Adding new edge to Graph and calling GW::drawEdge(). ");
 		reciprocal = false;
 		addEdge ( v1, v2, weight, color, reciprocal);
-		emit drawEdge(v1, v2, reciprocal, drawArrows, color, bezier, false);
+		emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier, false);
 
 	}
 	initEdgeColor=color; //just to draw new edges of the same color with those of the file loaded, when user clicks on the canvas

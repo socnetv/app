@@ -38,6 +38,7 @@
 #include "nodenumber.h"
 #include "nodelabel.h"
 #include "backgrcircle.h"
+#include "edgeweight.h"
 
 /** 
 	Constructor method. Called when a GraphicsWidget object is created in MW 
@@ -56,19 +57,19 @@ GraphicsWidget::GraphicsWidget( QGraphicsScene *sc, MainWindow* par)  : QGraphic
 	
 	m_currentScaleFactor = 1;
 	m_currentRotationAngle = 0;
-
 }
+
 
 
 /**
 	http://thesmithfam.org/blog/2007/02/03/qt-improving-qgraphicsview-performance/#comment-7215
 */
-
 void GraphicsWidget::paintEvent ( QPaintEvent * event ){
 	QPaintEvent *newEvent=new QPaintEvent(event->region().boundingRect());
 	QGraphicsView::paintEvent(newEvent);
 	delete newEvent;
 }
+
 
 
 /** 
@@ -87,7 +88,6 @@ void GraphicsWidget::clear() {
 	qDebug("GW: Removed %i items from scene. Scene items now: %i ",i, scene()->items().size());
 	qDebug("GW: items now: %i ", this->items().size());
 }
-
 
 
 
@@ -145,10 +145,9 @@ void GraphicsWidget::drawNode(int num, int size, QString nodeColor, QString node
 	a) when we load a network file (check = FALSE)
 	b) when the user clicks on the AddLink button on the MW.
 */
-void GraphicsWidget::drawEdge(int i, int j, bool reciprocal, bool drawArrows, QString color, bool bezier, bool check){
-	qDebug("GW: drawEdge (%i, %i)", i, j);
-	int weight=1;
-	qDebug()<<"GW: nodeVector reports"<< nodeVector.size()<<"items";
+void GraphicsWidget::drawEdge(int i, int j, int weight, bool reciprocal, bool drawArrows, QString color, bool bezier, bool check){
+	qDebug("GW: drawEdge (%i, %i) weight %i", i, j, weight);
+	qDebug()<<"GW: nodeVector reports "<< nodeVector.size()<<" items";
 	if (check) {
 		vector<Node*>::iterator it;
 		int index=1;
@@ -170,14 +169,26 @@ void GraphicsWidget::drawEdge(int i, int j, bool reciprocal, bool drawArrows, QS
 
 	}
 	if (i == j ) bezier = true;
+	
 	Edge *edge=new Edge (this, nodeVector.at(i-1), nodeVector.at(j-1), weight, m_nodeSize, color, reciprocal, drawArrows, bezier);
 	edge->setColor(color);
-
+	
 	QString edgeName = QString::number(i) + QString(">")+ QString::number(j);
 	qDebug("GW: adding edge between %i and % to edgesMap. Name: "+edgeName.toAscii(), i, j);
 	edgesMap [edgeName] =  edge;
+
 	qDebug("Scene items now: %i ", scene()->items().size());
 	qDebug("GW items now: %i ", items().size());
+
+	qDebug()<< "GW: drawNode(): drawing edge weight...";
+	double x = ( (nodeVector.at(i-1))->x() + (nodeVector.at(j-1))->x() ) / 2.0;
+	double y = ( (nodeVector.at(i-1))->y() + (nodeVector.at(j-1))->y() ) / 2.0;
+	EdgeWeight *edgeWeight = new  EdgeWeight (edge, 7, QString::number(weight), scene() );
+	edgeWeight-> setPos(x,y);
+	edgeWeight-> setDefaultTextColor (color);
+	qDebug("Scene items now: %i ", scene()->items().size());
+	qDebug("GW items now: %i ", items().size());
+
 }
 
 
@@ -192,6 +203,7 @@ void GraphicsWidget::drawEdgeReciprocal(int source, int target){
 	qDebug("GW: making existing edge between %i and %i reciprocal. Name: "+edgeName.toAscii(), source, target );
 	edgesMap [edgeName]->makeReciprocal();
 }
+
 
 
 /**
@@ -228,6 +240,8 @@ void GraphicsWidget::startEdge(Node *node){
 		( (MainWindow*)parent() )->setCursor( Qt::PointingHandCursor); 
 	}
 }
+
+
 
 /** 
 	This is called from each node when the user clicks on it.
@@ -338,6 +352,8 @@ void GraphicsWidget::removeItem( Node *node){
 	node->deleteLater ();
 	qDebug("GW items now: %i ", items().size());
 }
+
+
 
 
 /** Called from Node::die() to removeItem from nodeVector... */

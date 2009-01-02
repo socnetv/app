@@ -85,7 +85,7 @@ signals:
 	void graphChanged();									//call to update MW widgets
 	/** Signals to GraphicsWidget */
 	void drawNode( int ,int,  QString, QString,QString, QPointF, QString, bool, bool);	//call GW to draw a node
-	void drawEdge(int, int, bool, bool, QString, bool, bool);				//call GW to draw an edge
+	void drawEdge(int, int, int, bool, bool, QString, bool, bool);				//call GW to draw an edge
 	void drawEdgeReciprocal(int, int);							//call GW to draw the edge as symmetric one
 	void addBackgrCircle(int, int, int);							//call GW to draw a layout line somewhere.
 	void addBackgrHLine (int);								//call GW to draw a layout line somewhere.

@@ -28,12 +28,12 @@
 #include <QFont>
 
 
-EdgeWeight::EdgeWeight( Edge *link ,  QString labelText, QGraphicsScene *scene )
+EdgeWeight::EdgeWeight( Edge *link , int size, QString labelText, QGraphicsScene *scene )
 : QGraphicsTextItem( 0, scene)
 {
 	link -> addWeight(this);
 	setPlainText( labelText );
-	this->setFont( QFont ("Helvetica", 7, QFont::Light, TRUE) );
+	this->setFont( QFont ("Courier", size, QFont::Light, TRUE) );
 }
 
 void EdgeWeight::move(double x, double y) {

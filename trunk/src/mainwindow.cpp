@@ -112,7 +112,7 @@ MainWindow::MainWindow(const QString &fName) {
 	connect( &activeGraph, SIGNAL( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool, bool) ), graphicsWidget, SLOT( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool, bool)  ) ) ;
 	connect( &activeGraph, SIGNAL( graphChanged() ), this, SLOT( graphChanged() ) ) ;
 
-	connect( &activeGraph, SIGNAL( drawEdge( int, int, bool, bool, QString, bool, bool)), graphicsWidget, SLOT( drawEdge( int, int, bool, bool, QString, bool, bool  ) )  ) ;
+	connect( &activeGraph, SIGNAL( drawEdge( int, int, int, bool, bool, QString, bool, bool)), graphicsWidget, SLOT( drawEdge( int, int,int, bool, bool, QString, bool, bool  ) )  ) ;
 
 	connect( &activeGraph, SIGNAL( drawEdgeReciprocal(int, int) ),  graphicsWidget, SLOT( drawEdgeReciprocal(int, int) ) );
 	
@@ -2612,7 +2612,7 @@ void MainWindow::slotRemoveNode() {
 
 /**
 *	Adds a new link between two nodes specified by the user.
-	Called when she clicks on the button.
+	Called when user clicks on the MW button "Add Node".
 */
 void MainWindow::slotAddLink(){
 	qDebug ("MW: slotAddLink()");
@@ -2622,12 +2622,13 @@ void MainWindow::slotAddLink(){
 		return;
 	}
 
-	int sourceNode=-1, targetNode=-1, weight=1, sourceIndex=-1, targetIndex=-1;
+	int sourceNode=-1, targetNode=-1, sourceIndex=-1, targetIndex=-1;
+	int weight=1; 	//weight of this new edge should be one...
 	bool ok=FALSE;
 	int min=activeGraph.firstVertexNumber();
 	int max=activeGraph.lastVertexNumber();
-	//one node -> no link
-	if (min==max) return;
+
+	if (min==max) return;		//if there is only one node -> no link 
 
 	if (clickedJimNumber == -1) {
 		sourceNode=QInputDialog::getInteger(this, "Create new link, Step 1",tr("This will draw a new link between two nodes. \nEnter source node ("+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"), min, 1, max , 1, &ok ) ;
@@ -2671,12 +2672,12 @@ void MainWindow::slotAddLink(){
 	addLink(sourceNode, targetNode, weight);
 	graphChanged();
 	statusBar()->showMessage(tr("Ready. ") ,statusBarDuration);
-
 }
 
 
+
 /** 	
-	helper to the above 
+	helper to slotAddLink() above
 	Also called from GW
 	Helps to set the correct edge color...
 */
@@ -2687,12 +2688,13 @@ void MainWindow::addLink (int v1, int v2, int weight) {
 	activeGraph.createEdge(v1, v2, weight,  reciprocal, drawArrows, bezier);
 }
 
+
+
 /**
 *	Erases the clicked link. Otherwise asks the user to specify one link.
 *	First deletes arc reference from object nodeVector
 *	then deletes arc item from scene
-*	
-*/
+**/
 void MainWindow::slotRemoveLink(){ 
 	if ( (!fileLoaded && !networkModified) || activeGraph.totalEdges() ==0 )  {
 		QMessageBox::critical(this, "Error",tr("No links present. Load a network file or create a new network first."), "OK",0);
@@ -2746,7 +2748,8 @@ void MainWindow::slotRemoveLink(){
 						activeGraph.removeEdge(sourceNode, targetNode);
 						//make new link
 // 						graphicsWidget->unmakeEdgeReciprocal(clickedLink->targetNodeNumber(), clickedLink->sourceNodeNumber());
-						graphicsWidget->drawEdge(targetNode, sourceNode, false, displayLinksArrowsAct->isChecked(), initLinkColor, false, false);
+						//FIXME weight should be the same 
+						graphicsWidget->drawEdge(targetNode, sourceNode, 1, false, displayLinksArrowsAct->isChecked(), initLinkColor, false, false);
 
 						break;
 					case 1:
@@ -4719,13 +4722,13 @@ void MainWindow::slotDisplayLinksWeightNumbers(bool toggle) {
 	statusBar()->showMessage(tr("Toggle Edges Weights. Please wait..."), statusBarDuration);
 
 	if (!toggle) 	{
-		graphicsWidget->setAllItemsVisibility(TypeLabel, false);
-		statusBar()->showMessage(tr("Node Labels are invisible now. Click the same option again to display them."), statusBarDuration);
+		graphicsWidget->setAllItemsVisibility(TypeEdgeWeight, false);
+		statusBar()->showMessage(tr("Edge weights are invisible now. Click the same option again to display them."), statusBarDuration);
 		return;
 	}
 	else{
-		graphicsWidget->setAllItemsVisibility(TypeLabel, true);
-		statusBar()->showMessage(tr("Node Labels are visible again..."), statusBarDuration);
+		graphicsWidget->setAllItemsVisibility(TypeEdgeWeight, true);
+		statusBar()->showMessage(tr("Edge weights are visible again..."), statusBarDuration);
 	}
 	activeGraph.setShowLabels(toggle);
 

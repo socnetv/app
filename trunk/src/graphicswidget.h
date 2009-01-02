@@ -40,6 +40,7 @@ class Edge;
 class NodeNumber;
 class NodeLabel;
 class BackgrCircle;
+class EdgeWeight;
 
 typedef QMap<QString, Edge*> StringToEdgeMap;
 
@@ -76,7 +77,7 @@ protected:
 
 public slots:
 	void drawNode(int i, int size, QString aColor, QString label, QString lColor, QPointF p, QString nodeShape, bool showLabels, bool showNumbers);
-	void drawEdge(int, int, bool, bool, QString, bool, bool);
+	void drawEdge(int, int, int, bool, bool, QString, bool, bool);
 	void nodeClicked(Node *);
 	void edgeClicked(Edge *);
 	void openNodeContextMenu();
