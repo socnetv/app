@@ -201,7 +201,7 @@ public slots:
 	void slotChangeNumbersSize();
 	void slotChangeLabelsSize();
 	void slotLinksThickWeights();
-	void slotNumbersLinksWeights(bool toggle);
+	void slotShowLinksWeights(bool toggle);
 	void slotToggleLinks(bool toggle);
 	void slotLinksArrows(bool toggle);
 	void slotLinksBezier(bool toggle);
@@ -283,7 +283,7 @@ private:
 	QAction *changeLinkLabelAct, *changeLinkColorAct, *changeLinkWeightAct;
 	QAction *filterNodesAct, *filterLinksAct, *transformNodes2LinksAct, *symmetrizeAct;
 	QAction *changeBackColorAct, *changeAllNodesColorAct, *changeAllLinksColorAct, *changeNumbersColorAct;
-	QAction *drawLinksWeightsAct, *showNumbersLinksWeightsAct, *showLinksAct , *showLinksArrowsAct, *drawLinksBezier;
+	QAction *drawLinksWeightsAct, *showShowLinksWeightsAct, *showLinksAct , *showLinksArrowsAct, *drawLinksBezier;
 	QAction *viewToolBar, *viewStatusBar, *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
 	QAction *netDensity, *symmetryAct,   *distanceAct, *distanceMatrixAct, *diameterAct;
 	QAction *cOutDegreeAct, *cInDegreeAct, *cClosenessAct, *cBetweenessAct, *cInformationalAct, *cGraphAct, *cStressAct, *cEccentAct;

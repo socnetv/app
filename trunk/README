@@ -99,8 +99,9 @@ efficiency, correctness or usability.
 
 Please, send any bug reports to dimitris.kalamaras@gmail.com.
 
-6. Packagers
-------------
+
+6. Note to packagers
+--------------------
 
 Packagers: please note that the SocNetV manual is copied to 
 $(DESTDIR)$(prefix)/doc/$(name)/manual

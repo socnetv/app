@@ -747,7 +747,7 @@ void MainWindow::initActions(){
 	showNumbersLinksWeightsAct->setWhatsThis(tr("Display Weight Numbers\n\nClick to enable or disable displaying numbers of links weight"));
 	showNumbersLinksWeightsAct->setCheckable(true);
 	showNumbersLinksWeightsAct->setChecked(false);
-	connect(showNumbersLinksWeightsAct, SIGNAL(toggled(bool)), this, SLOT(slotNumbersLinksWeights(bool)) );
+	connect(showShowLinksWeightsAct, SIGNAL(toggled(bool)), this, SLOT(slotShowLinksWeights(bool)) );
 
 	showLinksArrowsAct  = new QAction( tr("Display Arrows"),this);
 	showLinksArrowsAct ->setStatusTip(tr("Toggles displaying of arrows in the end of links"));
@@ -4722,8 +4722,26 @@ void MainWindow::slotLinksThickWeights() {
 /**
 *  Turns on/off displaying weights of links
 */
-void MainWindow::slotNumbersLinksWeights(bool toggle) {
-	Q_UNUSED(toggle);
+void MainWindow::slotShowLinksWeights(bool toggle) {
+ 	if (!fileLoaded && ! networkModified) {
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. There are no nodes!"), "OK",0);
+		statusBar()->showMessage(tr("No nodes or edges found. Sorry..."), statusBarDuration);
+		return;
+	}
+	statusBar()->showMessage(tr("Toggle Edges Weights. Please wait..."), statusBarDuration);
+
+	if (!toggle) 	{
+		graphicsWidget->setAllItemsVisibility(TypeLabel, false);
+		statusBar()->showMessage(tr("Node Labels are invisible now. Click the same option again to display them."), statusBarDuration);
+		return;
+	}
+	else{
+		graphicsWidget->setAllItemsVisibility(TypeLabel, true);
+		statusBar()->showMessage(tr("Node Labels are visible again..."), statusBarDuration);
+	}
+	activeGraph.setShowLabels(toggle);
+
+
 // 	pair<int,int> pair1;	
 // 	QList<QGraphicsItem *> list=scene->items();
 // 	if ( toggle )   {  //draw Edge Weight Numbers
@@ -5149,10 +5167,10 @@ void MainWindow::slotHelp(){
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
      QMessageBox::about( this, "About SocNetV",
-	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualiser " +VERSION+ "  codename: <b>SNAIL</b>"
-	"<p>(C) 2005-2008 by Dimitris V. Kalamaras"
+	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualiser " +VERSION+".5  codename: <b>SNAIL</b>"
+	"<p>(C) 2005-2009 by Dimitris V. Kalamaras"
 	"<br> dimitris.kalamaras@gmail.com"
-	"<p><b>Last revision: </b> Fri, Oct 10, 2008</p>"
+	"<p><b>Last revision: </b> Fri, Jan 01, 2009</p>"
 
 
 	"<p><b>Fortune cookie: </b><br> \""  + fortuneCookie[randomCookie]  +"\""

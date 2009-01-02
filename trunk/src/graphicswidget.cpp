@@ -23,7 +23,7 @@
 *     You should have received a copy of the GNU General Public License        *
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
-
+http://dimitris.apeiro.gr/?p=306
 #include "graphicswidget.h"
 
 #include <QGraphicsScene>
@@ -104,12 +104,14 @@ void GraphicsWidget::clear() {
 
 */
 void GraphicsWidget::drawNode(int num, int size, QString nodeColor, QString nodeLabel, QString labelColor, QPointF p, QString ns, bool showLabels, bool showNumbers) {
-	qDebug()<< "GW: drawNode(): drawing new node at: "<< p.x()<<", "<<p.y();
+	qDebug()<< "GW: drawNode(): drawing new node at: " << p.x() << ", "<< p.y();
+
 	Node *jim= new Node (this, num, size, nodeColor, nodeLabel, labelColor, ns, m_labelDistance, m_numberDistance, p);
 
-	NodeLabel *labelJim =new  NodeLabel (jim, nodeLabel, scene() );
-	labelJim ->setPos(p.x()+m_labelDistance, p.y()-m_labelDistance);
-	labelJim->setDefaultTextColor (labelColor);
+	qDebug()<< "GW: drawNode(): drawing node label...";
+	NodeLabel *labelJim = new  NodeLabel (jim, nodeLabel, scene() );
+	labelJim -> setPos(p.x()+m_labelDistance, p.y()-m_labelDistance);
+	labelJim -> setDefaultTextColor (labelColor);
 
 	if (showLabels) qDebug("GW: drawNode: will display label "+ nodeLabel.toAscii() + " for %i", num);
 	else qDebug("GW: drawNode: NOT display labels for %i", num);
@@ -117,17 +119,19 @@ void GraphicsWidget::drawNode(int num, int size, QString nodeColor, QString node
 	if (!showLabels){
 		labelJim->hide();
 	}
-	//FIXME nodenumber should be an independent variable
-	NodeNumber *numberJim =new  NodeNumber (jim, size+2, QString::number(num), scene());
-	numberJim -> setPos(p.x()+m_numberDistance, p.y()+m_numberDistance);
+
+	qDebug()<< "GW: drawNode(): drawing node number...";
+	NodeNumber *numberJim = new  NodeNumber ( jim, size+2, QString::number(num), scene() );
+	numberJim -> setPos( p.x()+m_numberDistance, p.y()+m_numberDistance );
 	numberJim -> setDefaultTextColor (m_numberColor);
+
 	if (!showNumbers){
 		numberJim->hide();
         }
-	//add new node to a nodeVector so its easier to find which node has a specific nodeNumber 
-	//This is used during drawEdge
+
+	//add the new node to a nodeVector to ease finding which node has a specific nodeNumber 
+	//The nodeVector is used in drawEdge() method
 	nodeVector.push_back(jim);
-	
 }
 
 
@@ -253,7 +257,7 @@ void GraphicsWidget::edgeClicked(Edge *edge){
 
 
 /** 
-	Called from each node when it moves.
+	Called from each node when they move.
 	Updates 
 	- node coordinates in activeGraph (via updateNodeCoords() signal)
 
