@@ -256,7 +256,7 @@ int Parser::loadPajek(){
 			}
 			else {	/** NODELABEL */
 				label=lineElement[1];
-				qDebug("node label: " + lineElement[1].toAscii());
+				qDebug()<< "node label: " << lineElement[1].toAscii();
 				str.remove (0, str.lastIndexOf(label)+label.size() );	
 				qDebug("cropped str: "+ str.toAscii());
 				if (label.contains('"', Qt::CaseInsensitive) )

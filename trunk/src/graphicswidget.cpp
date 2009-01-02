@@ -23,7 +23,7 @@
 *     You should have received a copy of the GNU General Public License        *
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
-http://dimitris.apeiro.gr/?p=306
+
 #include "graphicswidget.h"
 
 #include <QGraphicsScene>

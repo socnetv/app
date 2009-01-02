@@ -130,7 +130,6 @@ MainWindow::MainWindow(const QString &fName) {
 	connect(rotateSpinBox, SIGNAL(valueChanged(int)), graphicsWidget, SLOT(rot(int) ) );
 	connect(circleClearBackgrCirclesAct, SIGNAL(activated()), graphicsWidget, SLOT(clearBackgrCircles()));
  
-	
 	//create an horizontal layout for the toolbox and the canvas. This will be our MW layout.
 	QHBoxLayout *layout = new QHBoxLayout;
 	//add them 
@@ -159,11 +158,6 @@ MainWindow::MainWindow(const QString &fName) {
 	graphicsWidget->setInitNodeSize(initNodeSize);
 	graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor)); //Qt::gray
 
-
-
-
-	
-
 	 /**Load file one exec time*/
 	if (!fileName.isEmpty())     {
                  fileNameNoPath=fileName.split ("/");
@@ -176,7 +170,6 @@ MainWindow::MainWindow(const QString &fName) {
 	}	
 
 	statusBar()->showMessage(tr("Welcome to Social Networks Visualiser, Version ")+VERSION, statusBarDuration);
-
 }
 
 
@@ -210,8 +203,7 @@ void MainWindow::initActions(){
 	fileOpen->setWhatsThis(tr("Open\n\nOpens a file of an existing network"));
 	connect(fileOpen, SIGNAL(activated()), this, SLOT(slotChooseFile()));
 
-  
-	fileSave = new QAction(QIcon(":/images/save.png"), tr("&Save"),  this);
+  	fileSave = new QAction(QIcon(":/images/save.png"), tr("&Save"),  this);
 	fileSave->setShortcut(tr("Ctrl+S"));
 	fileSave->setToolTip(tr("Save network (Ctrl+S)"));
 	fileSave->setStatusTip(tr("Saves the actual network to the current file"));
@@ -352,7 +344,6 @@ void MainWindow::initActions(){
 	changeNodeSizeAct->setWhatsThis(tr("Change Size\n\nChanges the actual size of a node"));
 	connect(changeNodeSizeAct, SIGNAL(activated()), this, SLOT(slotChangeNodeSize()));
 
-
 	changeNodeValueAct = new QAction(tr("Change Value"), this);
 	changeNodeValueAct->setStatusTip(tr("Changes the value of a node"));
 	changeNodeValueAct->setWhatsThis(tr("Change Value\n\nChanges the value of a node"));
@@ -403,8 +394,6 @@ void MainWindow::initActions(){
 	changeLabelsSizeAct->setWhatsThis(tr("Labels Size\n\nChange the fontsize of the labels of all nodes"));
 	connect(changeLabelsSizeAct, SIGNAL(activated()), this, SLOT(slotChangeLabelsSize()) );
 	
-
-
 	addLinkAct = new QAction(QIcon(":/images/plines.png"), tr("Add Link"),this);
 	addLinkAct->setShortcut(tr("Ctrl+L"));
 	addLinkAct->setStatusTip(tr("Adds a Link to a Node"));
@@ -444,8 +433,6 @@ void MainWindow::initActions(){
 	filterLinksAct->setStatusTip(tr("Filters Links of some weight out of the network"));
 	filterLinksAct->setWhatsThis(tr("Filter Links\n\nFilters Link of some weight out of the network."));
 	connect(filterLinksAct, SIGNAL(activated()), this, SLOT(slotFilterLinks()));
-
-
 
 	changeBackColorAct = new QAction(QIcon(":/images/color.png"), tr("Change Background Color"), this);
 	changeBackColorAct->setStatusTip(tr("Click to change the background color"));
@@ -721,40 +708,40 @@ void MainWindow::initActions(){
 	/**
 	Options menu actions
 	*/
-	showNumbersAct = new QAction( tr("Display Num&bers"), this );
-	showNumbersAct->setStatusTip(tr("Toggles displaying of node numbers"));
-	showNumbersAct->setWhatsThis(tr("Display Numbers\n\nEnables/disables node numbers"));
-	showNumbersAct-> setCheckable (true);
-	showNumbersAct->setChecked(true);
-	connect(showNumbersAct, SIGNAL(toggled(bool)), this, SLOT(slotShowNumbers(bool)));
+	displayNodeNumbersAct = new QAction( tr("Display Num&bers"), this );
+	displayNodeNumbersAct->setStatusTip(tr("Toggles displaying of node numbers"));
+	displayNodeNumbersAct->setWhatsThis(tr("Display Numbers\n\nEnables/disables node numbers"));
+	displayNodeNumbersAct->setCheckable (true);
+	displayNodeNumbersAct->setChecked(true);
+	connect(displayNodeNumbersAct, SIGNAL(toggled(bool)), this, SLOT(slotDisplayNodeNumbers(bool)));
 		
-	showLabelsAct = new QAction(tr("Display Labels"),	this );
-	showLabelsAct->setStatusTip(tr("Toggles displaying of node labels"));
-	showLabelsAct->setWhatsThis(tr("Display Labels\n\nEnables/disables node labels"));
- 	showLabelsAct->setCheckable (true);
-	showLabelsAct->setChecked(false);
-	connect(showLabelsAct, SIGNAL(toggled(bool)), this, SLOT(slotShowLabels(bool)));
+	displayNodeLabelsAct= new QAction(tr("Display Labels"),	this );
+	displayNodeLabelsAct->setStatusTip(tr("Toggles displaying of node labels"));
+	displayNodeLabelsAct->setWhatsThis(tr("Display Labels\n\nEnables/disables node labels"));
+ 	displayNodeLabelsAct->setCheckable (true);
+	displayNodeLabelsAct->setChecked(false);
+	connect(displayNodeLabelsAct, SIGNAL(toggled(bool)), this, SLOT(slotDisplayNodeLabels(bool)));
 
-	showLinksAct = new QAction(tr("Display Links"),	this);
-	showLinksAct ->setStatusTip(tr("Toggle to display or not links"));
-	showLinksAct ->setWhatsThis(tr("Display Links\n\nClick to enable or disable displaying of links"));
-	showLinksAct ->setCheckable(true);
-	showLinksAct ->setChecked(true);
-	connect(showLinksAct , SIGNAL(toggled(bool)), this, SLOT(slotToggleLinks(bool)) );
+	displayLinksAct = new QAction(tr("Display Links"),	this);
+	displayLinksAct->setStatusTip(tr("Toggle to display or not links"));
+	displayLinksAct->setWhatsThis(tr("Display Links\n\nClick to enable or disable displaying of links"));
+	displayLinksAct->setCheckable(true);
+	displayLinksAct->setChecked(true);
+	connect(displayLinksAct, SIGNAL(toggled(bool)), this, SLOT(slotToggleLinks(bool)) );
 
-	showNumbersLinksWeightsAct = new QAction(tr("Display Weight Numbers"),	this);
-	showNumbersLinksWeightsAct->setStatusTip(tr("Toggles displaying of numbers of links weights"));
-	showNumbersLinksWeightsAct->setWhatsThis(tr("Display Weight Numbers\n\nClick to enable or disable displaying numbers of links weight"));
-	showNumbersLinksWeightsAct->setCheckable(true);
-	showNumbersLinksWeightsAct->setChecked(false);
-	connect(showShowLinksWeightsAct, SIGNAL(toggled(bool)), this, SLOT(slotShowLinksWeights(bool)) );
+	displayLinksWeightNumbersAct = new QAction(tr("Display Weight Numbers"),	this);
+	displayLinksWeightNumbersAct->setStatusTip(tr("Toggles displaying of numbers of links weights"));
+	displayLinksWeightNumbersAct->setWhatsThis(tr("Display Weight Numbers\n\nClick to enable or disable displaying numbers of links weight"));
+	displayLinksWeightNumbersAct->setCheckable(true);
+	displayLinksWeightNumbersAct->setChecked(false);
+	connect(displayLinksWeightNumbersAct, SIGNAL(toggled(bool)), this, SLOT(slotDisplayLinksWeightNumbers(bool)) );
 
-	showLinksArrowsAct  = new QAction( tr("Display Arrows"),this);
-	showLinksArrowsAct ->setStatusTip(tr("Toggles displaying of arrows in the end of links"));
-	showLinksArrowsAct ->setWhatsThis(tr("Display Arrows\n\nClick to enable or disable displaying of arrows in the end of links"));
-	showLinksArrowsAct ->setCheckable(true);
-	showLinksArrowsAct ->setChecked(true);
-	connect(showLinksArrowsAct , SIGNAL(toggled(bool)), this, SLOT(slotLinksArrows(bool)) );
+	displayLinksArrowsAct = new QAction( tr("Display Arrows"),this);
+	displayLinksArrowsAct->setStatusTip(tr("Toggles displaying of arrows in the end of links"));
+	displayLinksArrowsAct->setWhatsThis(tr("Display Arrows\n\nClick to enable or disable displaying of arrows in the end of links"));
+	displayLinksArrowsAct->setCheckable(true);
+	displayLinksArrowsAct->setChecked(true);
+	connect(displayLinksArrowsAct, SIGNAL(toggled(bool)), this, SLOT(slotLinksArrows(bool)) );
 
 	drawLinksWeightsAct = new QAction( tr("Thickness=Weight"), this);
 	drawLinksWeightsAct->setStatusTip(tr("Draws links as thick as their weights (if specified)"));
@@ -1029,16 +1016,16 @@ void MainWindow::initMenuBar() {
 	nodeOptionsMenu -> setIcon(QIcon(":/images/nodes.png")); 
 
 	optionsMenu -> addMenu (nodeOptionsMenu);
-	nodeOptionsMenu -> addAction (showLabelsAct);
-	nodeOptionsMenu -> addAction (showNumbersAct);
+	nodeOptionsMenu -> addAction (displayNodeLabelsAct);
+	nodeOptionsMenu -> addAction (displayNodeNumbersAct);
 
 	linkOptionsMenu=new QMenu(tr("Links"));
 	linkOptionsMenu -> setIcon(QIcon(":/images/line.png"));
 
 	optionsMenu -> addMenu (linkOptionsMenu);
-	linkOptionsMenu -> addAction (showLinksAct);
-	linkOptionsMenu -> addAction (showNumbersLinksWeightsAct);
-	linkOptionsMenu -> addAction (showLinksArrowsAct );
+	linkOptionsMenu -> addAction (displayLinksAct);
+	linkOptionsMenu -> addAction (displayLinksWeightNumbersAct);
+	linkOptionsMenu -> addAction (displayLinksArrowsAct );
 	linkOptionsMenu -> addSeparator();
 	linkOptionsMenu -> addAction (drawLinksWeightsAct);
 	linkOptionsMenu -> addAction (drawLinksBezier);
@@ -1445,7 +1432,7 @@ void MainWindow::initNet(){
 	/** Clear previous network data */
 	activeGraph.clear();
 	
-	activeGraph.setShowLabels(showLabelsAct->isChecked());
+	activeGraph.setShowLabels(this->showLabels());
 	activeGraph.setInitVertexColor(initNodeColor);
 	activeGraph.setInitEdgeColor(initLinkColor);
 	activeGraph.setInitVertexLabelColor(initLabelColor);
@@ -1470,10 +1457,6 @@ void MainWindow::initNet(){
 	nodeSizeProportional2OutDegreeBx->setChecked(false);
 	nodeSizeProportional2InDegreeBx->setChecked(false);
 
-//	showLabelsAct->setChecked(FALSE);
-//	showNumbersAct->setChecked(TRUE);
-//	showLinksAct->setChecked(TRUE);
-//	showLinksArrowsAct->setChecked(TRUE);
 	//set window title
 	setWindowTitle(tr("Social Network Visualiser ")+VERSION);
 	QApplication::restoreOverrideCursor();
@@ -1678,7 +1661,7 @@ int MainWindow::loadNetworkFile(QString fileName){
 	initNet(); 
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 	qDebug("MW: calling activeGraph loadFile gw height %i", graphicsWidget->height() ) ;
-	int loadFileStatus=activeGraph.loadFile(fileName, initNodeSize, initNodeColor, initLinkColor, initNodeShape, showLabelsAct->isChecked(), graphicsWidget->width(), graphicsWidget->height() );
+	int loadFileStatus=activeGraph.loadFile(fileName, initNodeSize, initNodeColor, initLinkColor, initNodeShape, displayNodeLabelsAct->isChecked(), graphicsWidget->width(), graphicsWidget->height() );
 	qDebug("MW: OK activeGraph.loadFile()  has finished. You should be seeing nodes by now! ");
 	QApplication::restoreOverrideCursor();
 	return loadFileStatus;
@@ -2502,8 +2485,8 @@ void MainWindow::openContextMenu( const QPointF &mPos) {
 	options -> addAction(changeAllNodesShapeAct  );
 	options -> addAction(changeAllNodesColorAct );
 	options -> addAction(changeAllLinksColorAct  );
-	options -> addAction (showNumbersAct);
-	options -> addAction (showLabelsAct);
+	options -> addAction (displayNodeNumbersAct);
+	options -> addAction (displayNodeLabelsAct);
 	//QCursor::pos() is good only for menus not related with node coordinates
 	contextMenu -> exec(QCursor::pos() );
 	delete  contextMenu;
@@ -2698,7 +2681,7 @@ void MainWindow::slotAddLink(){
 	Helps to set the correct edge color...
 */
 void MainWindow::addLink (int v1, int v2, int weight) {
-	bool drawArrows=showLinksArrowsAct ->isChecked();
+	bool drawArrows=displayLinksArrowsAct->isChecked();
 	bool reciprocal=false;
 	bool bezier = false;
 	activeGraph.createEdge(v1, v2, weight,  reciprocal, drawArrows, bezier);
@@ -2763,7 +2746,7 @@ void MainWindow::slotRemoveLink(){
 						activeGraph.removeEdge(sourceNode, targetNode);
 						//make new link
 // 						graphicsWidget->unmakeEdgeReciprocal(clickedLink->targetNodeNumber(), clickedLink->sourceNodeNumber());
-						graphicsWidget->drawEdge(targetNode, sourceNode, false, showLinksArrowsAct->isChecked(), initLinkColor, false, false);
+						graphicsWidget->drawEdge(targetNode, sourceNode, false, displayLinksArrowsAct->isChecked(), initLinkColor, false, false);
 
 						break;
 					case 1:
@@ -2818,7 +2801,7 @@ void MainWindow::slotChangeNodeLabel(){
 		clickedJim-> setLabel (text);
 		activeGraph.setVertexLabel( clickedJimNumber, text);
 		if (!showLabels()) 
-			showLabelsAct->setChecked(TRUE);
+			displayNodeLabelsAct->setChecked(TRUE);
         	statusBar()->showMessage(tr("Changed label to %1. Ready. ").arg(text) ,statusBarDuration);
 		graphChanged();
     	} 
@@ -4514,9 +4497,11 @@ void MainWindow::slotCentralityEccentricity(){
 }
 
 
-
+/**
+*	Called from Graph::
+*/ 
 bool MainWindow::showNumbers(){
-	return showNumbersAct->isChecked();
+	return displayNodeNumbersAct->isChecked();
 }
 
 
@@ -4526,7 +4511,7 @@ bool MainWindow::showNumbers(){
 /**
 *  Turns on/off displaying the numbers of nodes (outside ones)
 */
-void MainWindow::slotShowNumbers(bool toggle) {
+void MainWindow::slotDisplayNodeNumbers(bool toggle) {
  	if (!fileLoaded && ! networkModified) {
 		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. There are no nodes!"), "OK",0);
 		statusBar()->showMessage(tr("Errr...no nodes here. Sorry!"), statusBarDuration);
@@ -4546,16 +4531,19 @@ void MainWindow::slotShowNumbers(bool toggle) {
 }
 
 
-
+/**
+*	Called by Graph:: and this->initNet()
+*/
 bool MainWindow::showLabels(){
-	return showLabelsAct->isChecked();
+	return displayNodeLabelsAct->isChecked();
 }
+
 
 
 /**
 *  Turns on/off displaying the labels of the nodes.
 */
-void MainWindow::slotShowLabels(bool toggle){
+void MainWindow::slotDisplayNodeLabels(bool toggle){
  	if (!fileLoaded && ! networkModified) {
 		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. There are no nodes!"), "OK",0);
 		statusBar()->showMessage(tr("No nodes found. Sorry..."), statusBarDuration);
@@ -4711,18 +4699,18 @@ void MainWindow::slotChangeLabelsSize() {
 
 /**
 	Turns on/off drawing links as thick as their weights.
-	TODO slotLinksThickWeights
+	TODO 
 */
-void MainWindow::slotLinksThickWeights() {
+void MainWindow::slotDrawLinksThickAsWeights() {
 
 }
 
 
 
 /**
-*  Turns on/off displaying weights of links
+*  Turns on/off displaying link weight numbers
 */
-void MainWindow::slotShowLinksWeights(bool toggle) {
+void MainWindow::slotDisplayLinksWeightNumbers(bool toggle) {
  	if (!fileLoaded && ! networkModified) {
 		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. There are no nodes!"), "OK",0);
 		statusBar()->showMessage(tr("No nodes or edges found. Sorry..."), statusBarDuration);
@@ -4782,9 +4770,9 @@ void MainWindow::slotShowLinksWeights(bool toggle) {
 
 
 /**
-*  Turns on/off links
+*  Turns on/off displaying links
 */
-void MainWindow::slotToggleLinks(bool toggle){
+void MainWindow::slotDisplayLinks(bool toggle){
 	if (!fileLoaded && ! networkModified) {
 		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network with some links first!"), "OK",0);
 
@@ -4810,7 +4798,7 @@ void MainWindow::slotToggleLinks(bool toggle){
 /**
 *  Turns on/off the arrows of links
 */
-void MainWindow::slotLinksArrows(bool toggle){
+void MainWindow::slotDisplayLinksArrows(bool toggle){
 	if (!fileLoaded && ! networkModified) {
 		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first!"), "OK",0);
 
@@ -4847,7 +4835,7 @@ void MainWindow::slotLinksArrows(bool toggle){
 /**
 *  FIXME links Bezier 
 */
-void MainWindow::slotLinksBezier(bool toggle){
+void MainWindow::slotDrawLinksBezier(bool toggle){
 	if (!fileLoaded && ! networkModified) {
 		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network!"), "OK",0);
 
@@ -5170,7 +5158,7 @@ void MainWindow::slotHelpAbout(){
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualiser " +VERSION+".5  codename: <b>SNAIL</b>"
 	"<p>(C) 2005-2009 by Dimitris V. Kalamaras"
 	"<br> dimitris.kalamaras@gmail.com"
-	"<p><b>Last revision: </b> Fri, Jan 01, 2009</p>"
+	"<p><b>Last revision: </b> Fri, Jan 1, 2009</p>"
 
 
 	"<p><b>Fortune cookie: </b><br> \""  + fortuneCookie[randomCookie]  +"\""

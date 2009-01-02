@@ -194,17 +194,18 @@ public slots:
 	void slotCentralityStress();
 	void slotCentralityEccentricity();
 	//OPTIONS MENU
-	void slotShowNumbers(bool toggle);
-	void slotShowLabels(bool toggle);
+	void slotDisplayNodeNumbers(bool toggle);
+	void slotDisplayNodeLabels(bool toggle);
 	void slotChangeAllNodesSize();
 	void slotChangeAllNodesShape();
 	void slotChangeNumbersSize();
 	void slotChangeLabelsSize();
-	void slotLinksThickWeights();
-	void slotShowLinksWeights(bool toggle);
-	void slotToggleLinks(bool toggle);
-	void slotLinksArrows(bool toggle);
-	void slotLinksBezier(bool toggle);
+	void slotDrawLinksThickAsWeights();
+	void slotDrawLinksBezier(bool toggle);
+	void slotDisplayLinksWeightNumbers(bool toggle);
+	void slotDisplayLinks(bool toggle);
+	void slotDisplayLinksArrows(bool toggle);
+
 	void slotBackgroundColor ();
 	void slotAllNodesColor();
 	void slotAllLinksColor();
@@ -275,7 +276,7 @@ private:
 	QAction *exportBMP, *exportPNG, *exportPajek, *exportDL, *exportGW, *exportSM, *exportList;
 	QAction *viewNetworkFileAct, *viewSociomatrixAct, *createUniformRandomNetworkAct;
 	QAction *createGaussianRandomNetworkAct, *createLatticeNetworkAct, *createConnectedRandomNetworkAct,*createSameDegreeRandomNetworkAct;
-	QAction *showNumbersAct, *showLabelsAct;
+	QAction *displayNodeNumbersAct, *displayNodeLabelsAct;
 	QAction *findNodeAct,*addNodeAct, *addLinkAct, *removeNodeAct, *removeLinkAct;
 	QAction *changeNumbersSizeAct, *changeNodeLabelAct, *changeNodeColorAct, *changeNodeValueAct, *changeNodeSizeAct;
 	QAction *changeLabelsSizeAct, *changeAllNodesSizeAct, *changeAllNodesShapeAct;
@@ -283,7 +284,7 @@ private:
 	QAction *changeLinkLabelAct, *changeLinkColorAct, *changeLinkWeightAct;
 	QAction *filterNodesAct, *filterLinksAct, *transformNodes2LinksAct, *symmetrizeAct;
 	QAction *changeBackColorAct, *changeAllNodesColorAct, *changeAllLinksColorAct, *changeNumbersColorAct;
-	QAction *drawLinksWeightsAct, *showShowLinksWeightsAct, *showLinksAct , *showLinksArrowsAct, *drawLinksBezier;
+	QAction *drawLinksWeightsAct, *displayLinksWeightNumbersAct, *displayLinksAct, *displayLinksArrowsAct, *drawLinksBezier;
 	QAction *viewToolBar, *viewStatusBar, *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
 	QAction *netDensity, *symmetryAct,   *distanceAct, *distanceMatrixAct, *diameterAct;
 	QAction *cOutDegreeAct, *cInDegreeAct, *cClosenessAct, *cBetweenessAct, *cInformationalAct, *cGraphAct, *cStressAct, *cEccentAct;
