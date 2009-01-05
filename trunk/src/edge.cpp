@@ -172,6 +172,9 @@ void Edge::adjust(){
  	prepareGeometryChange();
 	sourcePoint = line.p1() + edgeOffset;
 	targetPoint = line.p2() - edgeOffset;
+
+	foreach (EdgeWeight *wgt, weightList) 		//Move the weight of this edge
+		wgt->setPos( (source->x()+target->x())/2.0, (source->y()+target->y())/2.0 );
 }
 
 

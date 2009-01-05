@@ -1456,7 +1456,8 @@ void MainWindow::initNet(){
 
 	nodeSizeProportional2OutDegreeBx->setChecked(false);
 	nodeSizeProportional2InDegreeBx->setChecked(false);
-
+  
+	displayLinksWeightNumbersAct->setChecked(false);
 	//set window title
 	setWindowTitle(tr("Social Network Visualiser ")+VERSION);
 	QApplication::restoreOverrideCursor();

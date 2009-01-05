@@ -1,5 +1,5 @@
 prefix  = /usr/local
-qmake   = /usr/share/qt4/bin/qmake
+qmake   = /usr/lib/qt4/bin/qmake
 
 name    = socnetv
 

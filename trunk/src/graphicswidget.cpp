@@ -186,6 +186,7 @@ void GraphicsWidget::drawEdge(int i, int j, int weight, bool reciprocal, bool dr
 	EdgeWeight *edgeWeight = new  EdgeWeight (edge, 7, QString::number(weight), scene() );
 	edgeWeight-> setPos(x,y);
 	edgeWeight-> setDefaultTextColor (color);
+	edgeWeight-> hide();
 	qDebug("Scene items now: %i ", scene()->items().size());
 	qDebug("GW items now: %i ", items().size());
 
