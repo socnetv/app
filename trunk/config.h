@@ -29,10 +29,10 @@
 #define PACKAGE_NAME "SocNetV"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "SocNetV 0.48"
+#define PACKAGE_STRING "SocNetV 0.49"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "socnetv"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.48"
+#define PACKAGE_VERSION "0.49"
