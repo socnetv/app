@@ -741,7 +741,7 @@ void MainWindow::initActions(){
 	displayLinksArrowsAct->setWhatsThis(tr("Display Arrows\n\nClick to enable or disable displaying of arrows in the end of links"));
 	displayLinksArrowsAct->setCheckable(true);
 	displayLinksArrowsAct->setChecked(true);
-	connect(displayLinksArrowsAct, SIGNAL(toggled(bool)), this, SLOT(slotLinksArrows(bool)) );
+	connect(displayLinksArrowsAct, SIGNAL(toggled(bool)), this, SLOT(slotDisplayLinksArrows(bool)) );
 
 	drawLinksWeightsAct = new QAction( tr("Thickness=Weight"), this);
 	drawLinksWeightsAct->setStatusTip(tr("Draws links as thick as their weights (if specified)"));

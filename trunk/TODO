@@ -7,7 +7,6 @@ KNOW BUGS
 --FIXME: When many lines intersect, right-click > removeLink may remove wrong link!
 --FIXME: Weights should be updated when changed and floating point weights should be supported...
 
-
 --FIXME: GraphML files may crash SocNetV
 --FIXME: 40-actors-non-symmetric crashed on Betweeness centr.
 - FIXME: GROUP Stress & Graph centralities missing
