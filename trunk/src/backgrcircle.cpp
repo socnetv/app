@@ -25,7 +25,6 @@
 ********************************************************************************/
 
 #include "backgrcircle.h"
-//#include <QStyleOptionGraphicsItem>
 #include "graphicswidget.h"
 
 BackgrCircle::BackgrCircle ( GraphicsWidget *gw, int x0, int y0, int radius ) : graphicsWidget ( gw ){

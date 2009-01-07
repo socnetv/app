@@ -60,7 +60,6 @@ class QCheckBox;
 class QProgressDialog;
 class Edge;
 class Node;
-class CanvasView;	
 class QPushButton;	
 class QLCDNumber;
 class QSlider;

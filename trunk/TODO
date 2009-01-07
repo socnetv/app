@@ -5,6 +5,7 @@ KNOW BUGS
 --FIXME: draw own links (nodes linked to themselves).
 --FIXME: isSymmetric not functioning well (check a-symmetry.net)
 --FIXME: When many lines intersect, right-click > removeLink may remove wrong link!
+--FIXME: Weights should be updated when changed and floating point weights should be supported...
 
 
 --FIXME: GraphML files may crash SocNetV
