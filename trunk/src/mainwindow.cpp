@@ -5159,10 +5159,10 @@ void MainWindow::slotHelp(){
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
      QMessageBox::about( this, "About SocNetV",
-	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualiser " +VERSION+".5  codename: <b>SNAIL</b>"
+	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualiser " +VERSION+" codename: <b>SNAIL</b>"
 	"<p>(C) 2005-2009 by Dimitris V. Kalamaras"
 	"<br> dimitris.kalamaras@gmail.com"
-	"<p><b>Last revision: </b> Fri, Jan 1, 2009</p>"
+	"<p><b>Last revision: </b> Tue, Jan 13, 2009</p>"
 
 
 	"<p><b>Fortune cookie: </b><br> \""  + fortuneCookie[randomCookie]  +"\""
