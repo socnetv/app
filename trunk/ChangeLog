@@ -6,20 +6,18 @@
 ChangeLog:
 
 
-Version 0.49 - Jan 20 2009
+Version 0.49 - Jan 13 2009
 Codename: "Simplification"
 ------------------------------
--Weights are displayed over links.
--DL network format support.
+-Weight numbers can be displayed over links.
+-DL network format initial support.
 -Floating point edge weights are now supported...
 -Bug fix: Show correct new node number instead of %i
 -Bug fix: Zoom while rotate works (thanks Andre!).
 -Bug fix: No longer BFS crashes. SocNetV is more reliable.
 -Bug fix: Changed shortcut of OutDegree to Ctrl+1.
 -Icon for Windows (thanks Andre!).
--tend: GraphML load/save
--tend: Small Worlds
--tend: Layouts
+-Added GraphML loading
 
 
 Version 0.48 - Sep 30 2008
