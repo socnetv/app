@@ -3,11 +3,11 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<meta name="Description" content="Homepage of Social Networks Visualiser for Linux, a Qt program which enables anyone to create, interact and analyse social networks."/>
+<meta name="Description" content="SocNetV is a  user-friendly graphical application for Social Networks Analysis and Visualisation, developed in Qt4."/>
 <meta name="GENERATOR" content="Dimitris Kalamaras"/>
 <meta name="AUTHOR"  content="Dimitris Kalamaras"/>
 <meta name="CREATED" content="20070111"/>
-<meta name="CHANGED" content="20081008"/>
+<meta name="CHANGED" content="20090113"/>
 <meta name="KEYWORDS"    content="Social Networks Visualiser, linux, SNA, graphs, visualisation, layout, Dimitris Kalamaras,GNU,GPL"/>
 <meta name="SUBJECT"     content="Social Networks Visualiser"/>
 <meta name="robots" content="all"/>
@@ -65,9 +65,10 @@ At the moment, there are four ways to install SocNetV:
 
 											</td></tr>
 										<tr><td> 
+
 											<b>A. Compile from Source code</b>
 												<ul>
-												<li>Latest version: <a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0.48.tar.gz?download" target="_blank">SocNetV-0.48.tar.gz</a>
+												<li>Latest version: <a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0.49.tar.gz?download" target="_blank">SocNetV-0.49.tar.gz</a>
 <br />
 
 <br />Click on the link above and download the archive with the source code. Then decompress it: 
@@ -97,10 +98,29 @@ socnetv
 
 												</li>
 												</ul>
+
 										</td></tr>
+
 										<tr><td> 
 											<b>B. Install from Binary packages</b>
 											<ul>
+
+
+											<li><em>For Ubuntu/Kubuntu</em><br /> 
+<br />We maintain our own Personal Package Archive at Launchpad. This means that all you have to do is add the line <br /><br />
+<code> deb http://ppa.launchpad.net/dimitris-kalamaras/ubuntu intrepid main
+deb-src http://ppa.launchpad.net/dimitris-kalamaras/ubuntu intrepid main</code>
+<br />
+<br /> to your sources.list; save it, then type in:<br /><br />
+<code>
+sudo apt-get update <br />
+sudo apt-get install socnetv
+</code>
+<br /><br /> <br />
+</li>
+
+
+
 											<li><em>For Debian &amp; Debian-derived distros</em><br /> <br />An older version of SocNetV is in the 'experimental' repository. Add  the line <br /><br />
 <code> deb http://ftp.debian.org/debian/ experimental main </code>
 <br />
@@ -112,10 +132,10 @@ sudo apt-get install -t experimental socnetv
 <br /><br /> <br />
 </li>
 
-											<li><em>For openSUSE</em> <br /> <br /> We maintain a <a href="http://download.opensuse.org/repositories/home:/oxy86/openSUSE_11.0/repodata/" target="_blank">repository of binary packages</a>. To add it, copy/paste this line (it is one line, not two!) into a terminal: 
+											<li><em>For openSUSE 11.1</em> <br /> <br /> We maintain a <a href="http://download.opensuse.org/repositories/home:/oxy86/openSUSE_11.1/repodata/" target="_blank">repository of binary packages</a>. To add it, copy/paste this line (it is one line, not two!) into a terminal: 
 <br /><br />
 <code>
-sudo zypper ar http://download.opensuse.org/repositories/home:/oxy86/openSUSE_11.0/home:oxy86.repo
+sudo zypper ar http://download.opensuse.org/repositories/home:/oxy86/openSUSE_11.1/home:oxy86.repo
 </code>
 
 <br /><br /> and then install the application with: <br /><br />
@@ -129,6 +149,7 @@ sudo zypper in socnetv
 											</li>
 											</ul>
 										</td></tr>
+
 										<tr> <td> 
 											<b>C. Klik-able setup</b>
 												<ul>

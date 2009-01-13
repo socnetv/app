@@ -5,6 +5,41 @@
 
 ChangeLog:
 
+
+Version 0.49 - Jan 13 2009
+Codename: "Simplification"
+------------------------------
+-Weight numbers can be displayed over links.
+-DL network format initial support.
+-Floating point edge weights are now supported...
+-Bug fix: Show correct new node number instead of %i
+-Bug fix: Zoom while rotate works (thanks Andre!).
+-Bug fix: No longer BFS crashes. SocNetV is more reliable.
+-Bug fix: Changed shortcut of OutDegree to Ctrl+1.
+-Icon for Windows (thanks Andre!).
+-Added GraphML loading
+
+
+Version 0.48 - Sep 30 2008
+Codename: "Road to nowhere?"
+------------------------------
+--Erdos-Renyi random network creation.
+--Removing symmetric edges, now asks what direction to remove.
+--New layout method: node sizes according to their indegrees.
+--No node limit. Load any network you want (make a coffee while waiting :)).
+--loadPajek() recognizes Arcslists and Matrix edges formats.
+--Edges are being drawed once (faster loading and node movement).
+--Graph API simplification and "standardization"
+--New LCD widget displaying network density and some improvements to the dock.
+--In-file declared  node colors and shapes are used as they should.
+--Fixed bugs in removeNode methods.
+--Lots of bugfixes in loadPajek() method. 
+--Documentation update
+--Progress Bars (F10) appear when creating random nets > 300 nodes.
+--RPM repository for openSUSE at http://download.opensuse.org/repositories/home:/oxy86/openSUSE_11.0
+--SocNetV has a new, modern logo. It still resembles a snail though. ;)
+
+
 Version 0.47 - Sep 12 2008
 Codename: "En leukw"
 ------------------------------

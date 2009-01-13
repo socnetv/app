@@ -1,9 +1,9 @@
 [Desktop Entry]
 Name=SocNetV
 GenericName=Social Networks Analysis and Visualisation
-Comment=SocNetV is a Social Networks Visualisation and Analysis application.
-Exec=/usr/bin/socnetv
-Icon=/usr/share/pixmaps/socnetv.png
-Categories=Education;Science;Math;Qt;
+Comment=Social Networks Visualisation and Analysis.
+Exec=/usr/local/bin/socnetv
+Icon=/usr/local/share/pixmaps/socnetv.png
+Categories=Education;Science;Math;Qt; 
 Terminal=false
 Type=Application
