@@ -1,0 +1,13 @@
+socnetv (0.49-0ubuntu2) intrepid; urgency=low
+
+  * Changed Standards to 3.8.0
+  * Added missind clean Ubuntu environment dependancy.
+
+ -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Tue, 13 Jan 2009 17:39:46 +0200
+
+socnetv (0.49-0ubuntu1) intrepid; urgency=low
+
+  * Initial release
+
+ -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Tue, 13 Jan 2009 15:52:01 +0200
+

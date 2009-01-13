@@ -1,0 +1,75 @@
+.TH socnetv 1 "September 2008" "SocNetV-0.46" "Social Networks Visualiser"
+.SH NAME
+ socnetv - Visualize and analyze social networks
+.SH SYNOPSIS
+.B socnetv  
+< 
+.I file.net
+>  
+
+.B socnetv   
+.B \-V | \-\-version 
+
+.B socnetv   
+.B \-h | \-\-help
+.SH DESCRIPTION
+Social Networks Visualiser (SocNetV) is a flexible and user-friendly tool for Social Networks Analysis and Visualisation. It lets you create new networks (graphs) with a few clicks on a virtual canvas or load networks of various formats (GraphViz, GraphML, Adjacency, Pajek, etc) them, and modify them to suit your needs.
+
+The application can compute network properties, such as density, diameter and distances, as well as node and network centralities. Various layout algorithms (i.e. Spring-embedder, circular and in levels according to centralities) are supported for meaningful visualisations of your networks. Furthermore, simple random networks (lattice, same degree, etc) can be created.
+
+SocNetV is being developed in C++ with the Qt GUI development toolkit. Qt is the only dependancy.
+.SH OPTIONS
+.TP
+.B \-\-version | \-V
+Displays the version of the program.
+
+.TP
+.B \-\-help | \-H
+Displays a short help message.
+
+.TP
+.I file.net
+The name of the file you want to open.
+.SH USAGE
+SocNetV has a simple Graphical User Interface (GUI). The biggest (right) part of the window is occupied by a virtual "canvas" where network nodes and edges appear. To the left of it, there is a dock with 4 buttons (add/remove node, add/remove link) and some LCDs which display statistics. On the top of the window, you will find the menu with all commands and options, and at the bottom there is a status bar, where messages appear.
+
+To create a new node, you can double-click on the canvas or click on the "add node" button. 
+
+To create a new link, you can middle-click on the source node and then on the target node. 
+Alternatively, you can click on the "add link" button from the dock.
+
+You move a node by left-clicking and dragging it. When you right-click on a node, a context menu appears. From there you can remove the node, change its color, label, size as well as its shape. SocNetV supports many kinds of node shapes, i.e rectangles, diamond, ellipse, circle, etc. A similar menu  appears when you right click on a link.
+
+.B Supported Formats 
+
+SocNetV supports many network formats, i.e. GraphViz (.dot), GraphML (.graphml), Pajek (.net), Adjacency matrix (.net, .txt). You can load these kinds of files by clicking on menu File > Load or by specifying them explicitly at the command line. 
+SocNetV uses simple inspection routines to check the format of the given file. In most cases, it will load the file, no matter what the file extension is.
+
+.B Layout algorithms
+
+SocNetV also supports a variety of layout algorithms, such as spring-embedder (i.e. energy based) and centralities-based. The latter reposition all nodes in circles of different radiuses (i.e. more central nodes appear near the centre of the canvas) or in levels of different height (more central nodes appear near to the top). 
+
+You can apply layout algorithms from the menu Layout or by clicking on the checkboxes on the dock. Not all layouts appear on the dock, though.
+
+.SH KNOWN BUGS 
+The network file parser is not 100% trustworthy. For instance, complicated Pajek or GraphML files can crash the application.
+
+Antialiasing is off by default to boost the speed of node movement. You can enable antialiasing by pressing F8.
+.SH AUTHOR
+Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
+.SH BUG REPORTS
+Report bugs to <dimitris.kalamaras@gmail.com>. Please, to send a meaningful bug report, run 
+.BR socnetv 
+from a terminal, press F9 and repeat the steps which lead to bug manifestation. SocNetV will be printing debug messages on the standard output -- the terminal in Linux.
+.SH AVAILABILITY
+The latest version of this program can be found at <http://socnetv.sourceforge.net>. 
+It is distributed in source code and binary packages for Linux distributions. It can also compile and run in OS X and Windows.
+
+To get the latest development version use: 
+svn co https://socnetv.svn.sourceforge.net/svnroot/socnetv/trunk
+
+.SH COPYRIGHT
+This program is distributed under the terms of the GNU General Public License 3 as published by the Free Software Foundation <http://www.gnu.org/licenses/gpl.html>. See the built-in help for details on the License and the lack of warranty. 
+.SH SEE ALSO
+.BR graphviz (1)
+

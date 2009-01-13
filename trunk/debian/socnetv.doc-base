@@ -1,0 +1,14 @@
+Document: socnetv
+Title: Debian socnetv Manual
+Author: Dimitris Kalamaras
+Abstract: This manual describes what socnetv is
+ and how it can be used to
+ manage online manuals on Debian systems.
+Section: unknown
+
+
+Format: HTML
+Index: /usr/share/doc/socnetv/html/index.html
+Files: /usr/share/doc/socnetv/html/*.html
+
+

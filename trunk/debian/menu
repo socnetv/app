@@ -1,0 +1,5 @@
+?package(socnetv): \
+		needs="X11" \
+		section="Applications/Science/Data Analysis"\
+		title="socnetv" command="/usr/bin/socnetv" \
+		icon="/usr/share/pixmaps/socnetc.png"
