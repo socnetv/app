@@ -124,7 +124,7 @@ Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 %{_datadir}/doc/%{name}/manual/visualisation.html
 
 %changelog
-* Tue Jan 14 2008 Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
+* Wed Jan 14 2008 Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
 0.49-2
 Package .spec fixes
 * Tue Jan 13 2008 Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
