@@ -1,19 +1,23 @@
 #!/bin/bash
+
+
 echo  --------------------
 echo  . copying webfiles .
 echo  --------------------
 cd ~/Documents/socnetv/site
+rm ~/Documents/socnetv/site/docs/*
+cp ~/Documents/socnetv/trunk/doc/* ~/Documents/socnetv/site/docs/
 rsync -rvP -del -e ssh  *  oxy86,socnetv@web.sourceforge.net:htdocs/
 
 
 
-echo "Copy Manual also? (Y/N)"
+echo "Update Manual also? (Y/N)"
 read ans
 if [ $ans = "N" ]; then
-	exit;
+        exit;
 
 elif [ $ans = "n" ]; then
-	exit;
+        exit;
 fi
 
 echo  --------------------

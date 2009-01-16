@@ -233,3 +233,25 @@ Another possibility, is the *ArcsList tag. When SocNetV finds that tag in a Paje
 </div>
 
 <p class="text"> For instance, the first line after *Arcslist means: "node 2 is connected to nodes 1, 3 and 9". It is very simple.</p>
+
+
+<h4><a name="DL" id="DL"></a>DL files</h4>
+<p class="text">
+DL format is one of the easiest to understand. Each file starts with the "DL" mark; then the amount N of nodes is declared and the format (i.e. if a diagonal is present or not). Then, after the "LABELS:" mark we read the labels of each node line by line. That is, if N was 100 then we expect to read 100 labels. In the end, a DL file declares network data ("DATA") which is only the edges. For instance the network below, contains 4 nodes and 7 arcs/edges: 
+<div class="code">
+<pre>
+DL
+N=4
+FORMAT = FULLMATRIX DIAGONAL PRESENT
+LABELS:
+On the normalization and visualization of author co-citation data:Salton's cosine versus the Jaccard index
+Caveats for the use of citation indicators in research and journalevaluations
+Should co-occurrence data be normalized? A rejoinder
+Home on the range - What and where is the middle in science andtechnology studies?
+DATA:
+0 0 0.158114 0
+0.201234 0 1 0
+1 0 0 0
+0.1 1 1 0
+</pre>
+</div>
