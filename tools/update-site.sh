@@ -3,9 +3,21 @@ echo  --------------------
 echo  . copying webfiles .
 echo  --------------------
 cd ~/Documents/socnetv/site
-rsync -Rv -del -e ssh  *  oxy86,socnetv@web.sourceforge.net:htdocs/
+rsync -rvP -del -e ssh  *  oxy86,socnetv@web.sourceforge.net:htdocs/
+
+
+
+echo "Copy Manual also? (Y/N)"
+read ans
+if [ $ans = "N" ]; then
+	exit;
+
+elif [ $ans = "n" ]; then
+	exit;
+fi
+
 echo  --------------------
 echo  . copying manual   .
 echo  -------------------- 
 cd ~/Documents/socnetv/trunk/doc
-rsync -Rv -del -e ssh * oxy86,socnetv@web.sourceforge.net:htdocs/docs/
+rsync -rvP -del -e ssh * oxy86,socnetv@web.sourceforge.net:htdocs/docs/
