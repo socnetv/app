@@ -1,6 +1,7 @@
 KNOW BUGS
 ========
 
+--FIXME: Segmentation fault when exporting to BMP/PNG/WHATEVER!
 --FIXME: Centralities and Layout by centralities crash SocNetV when network is not connected.
 --FIXME: draw own links (nodes linked to themselves).
 --FIXME: isSymmetric not functioning well (check a-symmetry.net)
