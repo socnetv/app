@@ -32,6 +32,10 @@ SOURCES += src/backgrcircle.cpp \
 
 RESOURCES = src/src.qrc
 
+win32 {
+     RC_FILE = src/icon.rc
+}
+
 TEMPLATE = app
 CONFIG  += qt thread warn_on release
 LANGUAGE = C++

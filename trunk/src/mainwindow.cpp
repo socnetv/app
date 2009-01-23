@@ -1333,8 +1333,6 @@ void MainWindow::initView() {
 	//create a scene
 	scene=new  QGraphicsScene();
 
-	
-
 	//create a view for this scene
 	graphicsWidget=new GraphicsWidget(scene, this);
 	//QGraphicsView can cache pre-rendered content in a QPixmap, which is then drawn onto the viewport. 
@@ -1365,6 +1363,7 @@ void MainWindow::initView() {
 	qDebug ("MW initView(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
 	printDebugAct->setChecked (FALSE);
 
+	this->resize(850,700);
 }
 
 
@@ -1395,12 +1394,12 @@ void MainWindow::initNet(){
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 	initNodeSize=4;
 	initNodeColor="gold";
-	initLinkColor="black";
+	initLinkColor="grey"; //"black";
 	initLabelColor="black";
 	initNumberColor="black";
  	initNumberSize=8; 
 	initNodeShape="circle";
-	initBackgroundColor="gainsboro";
+	initBackgroundColor="white"; //"gainsboro";
 
 	minDuration=3000; //dialogue duration - obsolete
 	maxNodes=5000;		//Max nodes used by createRandomNetwork dialogues
