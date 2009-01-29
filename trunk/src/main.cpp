@@ -1,12 +1,12 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser 
- version: 0.49
+ version: 0.50
  Written in Qt 4.4
 
                         main.cpp  -  description
                              -------------------
     begin                :  9 21:10:04 EET 2005
-    copyright            : (C) 2005-2008 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2009 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
 	if ( app.argc() > 1 )     {
 		option = app.argv()[1];
 			if (option=="--help" || option=="-h" ) {
-				cout<<"\nSocial Networks Visualiser v.0.49\n";
+				cout<<"\nSocial Networks Visualiser v.0.50\n";
 				cout<<"\nUsage: socnetv [flags] [file]\n";
 				cout<<"-h, --help 	Displayes this help message\n";
 				cout<<"-V, --version	Displays version number\n\n";
@@ -64,11 +64,11 @@ int main(int argc, char *argv[])
 				return -1;
 			}
 			else if (option=="-V" || option=="--version") {
-				cout<< "\nSocial Networks Visualiser, version 0.49; \nCopyright Dimitris V. Kalamaras, \nLicense: GPL3\n\n";
+				cout<< "\nSocial Networks Visualiser, version 0.50; \nCopyright Dimitris V. Kalamaras, \nLicense: GPL3\n\n";
 				return -1;
 			}
 			else  {
-				cout<< "\n\nSocial Networks Visualiser\nVersion 0.49\n\n";
+				cout<< "\n\nSocial Networks Visualiser\nVersion 0.50\n\n";
 				cout<<"\nFile loaded...\n\n";
 			}
 		

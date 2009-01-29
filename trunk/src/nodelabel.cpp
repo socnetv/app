@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser 
- version: 0.49
+ version: 0.50
  Written in Qt 4.4 with KDevelop 
 
                         nodelabel.cpp  -  description
                              -------------------
-    copyright            : (C) 2005-2008 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2009 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -33,9 +33,8 @@ NodeLabel::NodeLabel( Node *jim ,  QString labelText,  QGraphicsScene *scene) :Q
 	source=jim;
 	jim -> addLabel(this);
 	setPlainText( labelText );
+	setFont( QFont ("Courier", 6, QFont::Light, FALSE) );
 	setZValue (253);
-	setFont( QFont ("Helvetica", 8, QFont::Normal, FALSE) );
-
 }
 
 void NodeLabel::removeRefs(){

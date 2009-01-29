@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser 
- version: 0.49
+ version: 0.50
  Written in Qt 4.4
 
                            mainwindow.cpp  -  description
                              -------------------
-    copyright            : (C) 2005-2008 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2009 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -74,7 +74,7 @@ MainWindow::MainWindow(const QString &fName) {
 	fileName=fName;
 	qInstallMsgHandler( myMessageOutput );
 	setWindowIcon (QIcon(":/images/socnetv.png"));
-	VERSION="0.49";
+	VERSION="0.50";
 
 	/** inits that invoke all other construction parts **/
 	initActions();  //register and construct menu Actions 
@@ -1403,7 +1403,7 @@ void MainWindow::initNet(){
 
 	minDuration=3000; //dialogue duration - obsolete
 	maxNodes=5000;		//Max nodes used by createRandomNetwork dialogues
-	labelDistance=7;
+	labelDistance=6;
 	numberDistance=5;
 	totalLinks=0;
 	networkName="";

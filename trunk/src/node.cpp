@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser 
- version: 0.49
+ version: 0.50
  Written in Qt 4.4
 
                         node.cpp  -  description
                         -------------------
-    copyright            : (C) 2005-2008 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2009 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -404,9 +404,9 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
 			foreach (Edge *edge, outEdgeList)		//Move each outEdge of this node
 				edge->adjust();
 			foreach (NodeNumber *num, gfxNumberList) 	//Move its graphic number
-				num->setPos( newPos.x()+m_nd, newPos.y()+m_nd);
+				num->setPos( newPos.x()+m_nd, newPos.y());
 			if (hasLabel)
-				m_label->setPos( newPos.x()+m_ld, newPos.y()-m_ld);
+				m_label->setPos( newPos.x()-2, newPos.y()+m_ld);
 			if ( newPos.x() !=0 && newPos.y() != 0 ){
 				qDebug()<<  "Node: ItemChange(): Emitting nodeMoved() for "<< nodeNumber()<< " at: "<<  newPos.x()<< ", "<<  newPos.y();
 				graphicsWidget->nodeMoved(nodeNumber(), (int) newPos.x(), (int) newPos.y());	

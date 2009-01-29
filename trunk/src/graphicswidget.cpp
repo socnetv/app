@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser
- version: 0.49
+ version: 0.50
  Written in Qt 4.4
 
                         graphicswidget.cpp description
                              -------------------
-    copyright            : (C) 2005-2008 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2009 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -110,7 +110,7 @@ void GraphicsWidget::drawNode(int num, int size, QString nodeColor, QString node
 
 	qDebug()<< "GW: drawNode(): drawing node label...";
 	NodeLabel *labelJim = new  NodeLabel (jim, nodeLabel, scene() );
-	labelJim -> setPos(p.x()+m_labelDistance, p.y()-m_labelDistance);
+	labelJim -> setPos(p.x()-2, p.y()+m_labelDistance);
 	labelJim -> setDefaultTextColor (labelColor);
 
 	if (showLabels) qDebug("GW: drawNode: will display label "+ nodeLabel.toAscii() + " for %i", num);
@@ -122,7 +122,7 @@ void GraphicsWidget::drawNode(int num, int size, QString nodeColor, QString node
 
 	qDebug()<< "GW: drawNode(): drawing node number...";
 	NodeNumber *numberJim = new  NodeNumber ( jim, size+2, QString::number(num), scene() );
-	numberJim -> setPos( p.x()+m_numberDistance, p.y()+m_numberDistance );
+	numberJim -> setPos( p.x()+m_numberDistance, p.y() );
 	numberJim -> setDefaultTextColor (m_numberColor);
 
 	if (!showNumbers){

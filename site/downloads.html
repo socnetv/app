@@ -7,7 +7,7 @@
 <meta name="GENERATOR" content="Dimitris Kalamaras"/>
 <meta name="AUTHOR"  content="Dimitris Kalamaras"/>
 <meta name="CREATED" content="20070111"/>
-<meta name="CHANGED" content="20090116"/>
+<meta name="CHANGED" content="20090129"/>
 <meta name="KEYWORDS"    content="Social Networks Visualiser, linux, SNA, graphs, visualisation, layout, Dimitris Kalamaras,GNU,GPL"/>
 <meta name="SUBJECT"     content="Social Networks Visualiser"/>
 <meta name="robots" content="all"/>
@@ -20,7 +20,7 @@
 <body bgcolor="#ffffff">
 <table width="100" border="0" align="center" cellpadding="0" cellspacing="0">
 	<tr>
-			<td><img name="lf_r1_c1" src="./images/logo.png" width="296" height="122" border="0" id="lf_r1_c1" alt="" />
+			<td><img name="lf_r1_c1" src="./images/socnetv-logo.png" width="342" height="122" border="0" id="lf_r1_c1" alt="" />
 			</td>
 	</tr>
 	<tr>
@@ -56,12 +56,12 @@
 										</td></tr>
 										<tr>
 											<td>
-To compile or install SocNetV, you need <em>Qt 4.4 and QtWebKit</em> development files. For instance, in openSUSE 11+ and Debian-based distros, install libQtWebKit-devel and libqt4-webkit, respectively. 
- 
-<br />Note that, SocNetV 0.45+ is incompatible with Qt &lt;  4.4. Upgrade your Qt version! ;)
+To compile or install SocNetV, <em>you need Qt 4.4 and QtWebKit</em> development files. For instance, in openSUSE 11+ and Debian-based distros, install libQtWebKit-devel and libqt4-webkit, respectively. 
 
-<br /><br/>
-At the moment, there are four ways to install SocNetV:
+
+<br /><br />
+
+There are four ways to install SocNetV:
 
 											</td></tr>
 										<tr><td> 
@@ -71,27 +71,17 @@ At the moment, there are four ways to install SocNetV:
 												<li>Latest version: <a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0.49.tar.gz?download" target="_blank">SocNetV-0.49.tar.gz</a>
 <br />
 
-<br />Click on the link above and download the archive with the source code. Then decompress it: 
-<br /> <br />
-<code>tar zxfv SocNetV-0.XX.tar.gz</code>
-<br /><br />
-Enter the new directory: 
-<br /><br />
-<code>cd socnetv</code>
-<br /><br />
-And type: 
-<br/><br />
-<code>./configure</code>
-
-<br />  <br/>          
-to run the configuration script. If you have Qt4 installed you' ll see no errors. <br />
-Afterwards, compile and install with:
-<br/><br />
+<br />Click on the link above and download the archive with the source code. Then decompress it, and compile it with these commands: 
+<br /> 
 <code>
+tar zxfv SocNetV-0.XX.tar.gz <br />
+cd socnetv<br />
+./configure<br />
 make<br />
-sudo make install</code>
-<br />  <br/>
-In the end, you can run SocNetV with the command:<br /><br />
+sudo make install<br />
+</code>
+<br />  
+In the end, run SocNetV with:<br />
 <code>
 socnetv
 </code>
@@ -108,14 +98,20 @@ socnetv
 
 											<li><em>For Ubuntu/Kubuntu</em><br /> 
 <br />We maintain our own Personal Package Archive at Launchpad. This means that all you have to do is add the line <br /><br />
-<code> deb http://ppa.launchpad.net/dimitris-kalamaras/ubuntu intrepid main
-deb-src http://ppa.launchpad.net/dimitris-kalamaras/ubuntu intrepid main</code>
+
+
+<code> 
+
+deb http://ppa.launchpad.net/dimitris-kalamaras/ppa/ubuntu intrepid main<br />
+deb-src http://ppa.launchpad.net/dimitris-kalamaras/ppa/ubuntu intrepid main</code>
 <br />
 <br /> to your sources.list; save it, then type in:<br /><br />
 <code>
 sudo apt-get update <br />
 sudo apt-get install socnetv
 </code>
+<br /><br />
+This repository is signed with <a href="http://keyserver.ubuntu.com:11371/pks/lookup?search=0x61AE869C37A4FCC5A73FD02EE088941209CFE071&op=index">61AE869C37A4FCC5A73FD02EE088941209CFE071</a> OpenPGP key. See <a href="https://help.launchpad.net/Packaging/PPA#Adding a PPA to your Ubuntu repositories">instructions</a> to add the key to your system, if you like.
 <br /><br /> <br />
 </li>
 
@@ -134,18 +130,9 @@ sudo apt-get install -t experimental socnetv
 											</ul>
 										</td></tr>
 
-										<tr> <td> 
-											<b>C. Klik-able setup</b>
-												<ul>
-												<li>If you have Linux, and don't mind running an older version, you can try SocNetV without actually installing it. Just go to <a href="http://socnetv.klik.atekon.de/" target="_blank">http://socnetv.klik.atekon.de/</a> and then click on the large blue "download" button (to the bottom of the page). Many thanks to the klik team. <br />Warning: klik service is not always updated with the latest version of SocNetV. 
-												</li>
-												</ul>
-
-										</td></tr>
-
                                                                                 <tr> <td>
 
-        <b>D. Development version</b>
+        <b>C. Development version</b>
 
                 <ul>
 
@@ -169,6 +156,18 @@ sudo apt-get install -t experimental socnetv
 
 
 </td></tr>
+
+
+
+										<tr> <td> 
+											<b>D. Klik-able setup</b>
+												<ul>
+												<li>Finally, for  Linux users who don't mind running an older version, you can try SocNetV without actually installing it. Just go to <a href="http://socnetv.klik.atekon.de/" target="_blank">http://socnetv.klik.atekon.de/</a> and then click on the large blue "download" button (to the bottom of the page). <br />Warning: klik service is not always updated with the latest version of SocNetV. 
+												</li>
+												</ul>
+
+										</td></tr>
+
        										<tr><td> 
 											<b>Older versions</b>
 												<ul>
@@ -241,6 +240,14 @@ sudo apt-get install -t experimental socnetv
 
 		</tr>
 </table>
-
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-2921241-3");
+pageTracker._trackPageview();
+} catch(err) {}</script>
 </body>
 </html>
