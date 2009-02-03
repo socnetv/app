@@ -1,7 +1,7 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser 
  version: 0.50
- Written in Qt 4.4 with KDevelop 
+ Written in Qt 4.4
 
                         nodelabel.cpp  -  description
                              -------------------
@@ -33,7 +33,7 @@ NodeLabel::NodeLabel( Node *jim ,  QString labelText,  QGraphicsScene *scene) :Q
 	source=jim;
 	jim -> addLabel(this);
 	setPlainText( labelText );
-	setFont( QFont ("Courier", 6, QFont::Light, FALSE) );
+	setFont( QFont ("Times", 6, QFont::Light, TRUE) );
 	setZValue (253);
 }
 

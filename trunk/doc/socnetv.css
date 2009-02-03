@@ -95,15 +95,15 @@ a:visited {
 }
 
 .header {
-  background: #CFD1D5 none; 
-  border-bottom: 1px solid #CFD1D5;
-  border-top: 2px solid white;
+  background: #aba8a8 none; 
+#  border-bottom: 1px solid #CFD1D5;
+#  border-top: 2px solid white;
   color: white;
   font-size: small;
-  height: 2.7em;
-  line-height: 0.5em;
+#  height: 4.7em;
+#  line-height: 0.1em;
   margin: 0px;
-  padding:  0px 2px 0px 5px;
+#  padding:  0px 0px 0px 0px;
   vertical-align: middle;
 }
 
@@ -111,13 +111,14 @@ a:visited {
 
 
 .footer{
-  background: #CFD1D5 none; 
-  border-bottom: 1px solid #CFD1D5;
-  border-top: 1px solid white;
+  background: #aba8a8;
+#  background: #CFD1D5 none; 
+#  border-bottom: 1px solid #CFD1D5;
+#  border-top: 1px solid white;
   color: white;
   font-size: small;
-  height: 2.0em;
-  line-height: 1em;
+#  height: 2.0em;
+#  line-height: 1em;
   margin: 0px;
   padding:  0px 0em 0px 0px;
 #  vertical-align: middle;

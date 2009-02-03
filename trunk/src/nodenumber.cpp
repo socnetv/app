@@ -1,7 +1,7 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser 
  version: 0.50
- Written in Qt 4.4 with KDevelop   
+ Written in Qt 4.4   
 
                         nodenumber.cpp  -  description
                              -------------------
@@ -32,7 +32,7 @@ NodeNumber::NodeNumber( Node *jim , int size, QString labelText, QGraphicsScene 
 	source=jim;
 	jim -> addNumber(this);
 	setPlainText( labelText ); 
-	setFont( QFont ("Courier", size, QFont::Normal, FALSE) );
+	setFont( QFont ("Times", size, QFont::Black, FALSE) );
 	setZValue(254);
 }
 

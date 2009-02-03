@@ -115,6 +115,7 @@ public slots:
 	void slotPrintView();
 	bool slotExportBMP();
 	bool slotExportPNG();
+	bool slotExportPDF();
 	bool slotExportPajek();
 	bool slotExportSM();
 	bool slotExportDL();
@@ -272,7 +273,7 @@ private:
 	QPushButton *addNodeBt, *addLinkBt, *removeNodeBt, *removeLinkBt;
 
 	QAction *fileNew, *fileOpen, *fileSave, *fileSaveAs,*fileClose, *filePrint,*fileQuit;
-	QAction *exportBMP, *exportPNG, *exportPajek, *exportDL, *exportGW, *exportSM, *exportList;
+	QAction *exportBMP, *exportPNG, *exportPajek, *exportPDF, *exportDL, *exportGW, *exportSM, *exportList;
 	QAction *viewNetworkFileAct, *viewSociomatrixAct, *createUniformRandomNetworkAct;
 	QAction *createGaussianRandomNetworkAct, *createLatticeNetworkAct, *createConnectedRandomNetworkAct,*createSameDegreeRandomNetworkAct;
 	QAction *displayNodeNumbersAct, *displayNodeLabelsAct;

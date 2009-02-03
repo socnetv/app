@@ -226,6 +226,12 @@ void MainWindow::initActions(){
 	exportPNG->setWhatsThis(tr("Export PNG \n\n Export network to a PNG image"));
 	connect(exportPNG, SIGNAL(activated()), this, SLOT(slotExportPNG()));
 
+
+	exportPDF = new QAction( QIcon(":/images/save.png"), tr("&PDF..."), this);
+	exportPDF->setStatusTip(tr("Export network to a PDF file"));
+	exportPDF->setWhatsThis(tr("Export PDF\n\n Export network to a PDF document"));
+	connect(exportPDF, SIGNAL(activated()), this, SLOT(slotExportPDF()));
+
 	exportSM = new QAction( QIcon(":/images/save.png"), tr("&Adjacency Matrix"), this);
 	exportSM->setStatusTip(tr("Export network to an adjacency matrix file"));
 	exportSM->setWhatsThis(tr("Export Sociomatrix \n\n Export network to a adjacency matrix-formatted file"));
@@ -873,6 +879,7 @@ void MainWindow::initMenuBar() {
 	
 	exportSubMenu -> addAction (exportBMP);
 	exportSubMenu -> addAction (exportPNG);
+	exportSubMenu -> addAction (exportPDF);
 	exportSubMenu -> addSeparator();
 	exportSubMenu -> addAction (exportSM);
 	exportSubMenu -> addAction (exportPajek);
@@ -1069,9 +1076,9 @@ void MainWindow::initToolBar(){
 	zoomCombo = new QComboBox;
 	zoomCombo -> setFocusPolicy(Qt::NoFocus);
 	QStringList scales;
-     	scales << tr("25%") << tr("50%") << tr("75%") << tr("100%") << tr("125%") << tr("150%")<<tr("175%")  ;
-     	zoomCombo->addItems(scales);
-     	zoomCombo->setCurrentIndex(3);
+   	scales << tr("25%") << tr("50%") << tr("75%") << tr("100%") << tr("125%") << tr("150%")<<tr("175%")  ;
+   	zoomCombo->addItems(scales);
+   	zoomCombo->setCurrentIndex(3);
 
 	toolBar -> addWidget(zoomCombo);
 	toolBar -> addAction(zoomOutAct);
@@ -1113,8 +1120,7 @@ void MainWindow::initToolBox(){
 	toolBox->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Ignored));
 
 
-
-	//create widgets for the buttons group
+	//create widgets for the buttons group/tab
 	addNodeBt= new QPushButton(QIcon(":/images/add.png"),tr("&Add Node"));	
 	addNodeBt->setFocusPolicy(Qt::NoFocus);	
 	addNodeBt->setToolTip(tr("Add a new node to the network (Ctrl+A). \n\n Alternately, you can create a new node \nin a specific position by double-clicking \non that spot of the canvas."));
@@ -1145,8 +1151,7 @@ void MainWindow::initToolBox(){
 
 
 
-
-	//create widgets for group Properties/Statistics 
+	//create widgets for Properties/Statistics group/tab
 	QLabel *labelNodesLCD = new QLabel;
 	labelNodesLCD->setText(tr("Total Nodes"));
 	QLabel *labelEdgesLCD = new QLabel;
@@ -1247,11 +1252,7 @@ void MainWindow::initToolBox(){
 
 
 
-
-	// create some more widgets for the final box: "Layout"
-
-
-
+	// create some more widgets for the final tab: "Layout"
 	moveSpringEmbedderBx = new QCheckBox(tr("Spring Embedder") );
 	moveSpringEmbedderBx->setToolTip(tr("Embeds a spring-gravitational model on the network, where \neach node is regarded as physical object reppeling all \nother nodes, while springs between connected nodes attact them. \nThe result is \nconstant movement. This is a very SLOW process on networks with N > 100!"));
 
@@ -1273,8 +1274,8 @@ void MainWindow::initToolBox(){
 	nodeSizeProportional2InDegreeBx->setToolTip(tr("If you enable this, all nodes will be resized so that their size reflect their in-degree (the amount of links to them from other nodes). To put it simply, more in-linked nodes will be bigger..."));
 
 	QGridLayout *layoutGroupLayout = new QGridLayout();
-    	layoutGroupLayout -> addWidget(moveSpringEmbedderBx, 0,0);
-    	layoutGroupLayout -> addWidget(moveKamandaBx, 1,0);
+    layoutGroupLayout -> addWidget(moveSpringEmbedderBx, 0,0);
+    layoutGroupLayout -> addWidget(moveKamandaBx, 1,0);
 	layoutGroupLayout -> addWidget(nodeSizeProportional2OutDegreeBx, 2,0);
 	layoutGroupLayout -> addWidget(nodeSizeProportional2InDegreeBx, 3,0);
 
@@ -1359,11 +1360,11 @@ void MainWindow::initView() {
 	//set minimum size of canvas
  	graphicsWidget->setMinimumSize((qreal)  ( this->width()-toolBox->sizeHint().width()) , (qreal) ( this->width()-toolBox->sizeHint().width() ) );
 
-	scene->setSceneRect(0, 0, graphicsWidget->width(), (qreal) (graphicsWidget->height() ) );
+	//scene->setSceneRect(0, 0, graphicsWidget->width(), (qreal) (graphicsWidget->height() ) );
 	qDebug ("MW initView(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
 	printDebugAct->setChecked (FALSE);
 
-	this->resize(850,700);
+	this->resize(900,700);
 }
 
 
@@ -1379,7 +1380,7 @@ void MainWindow::resizeEvent( QResizeEvent * ){
 	scene->setSceneRect(0, 0, (qreal)( graphicsWidget->width() ), (qreal) (  graphicsWidget->height() ) );
 
 	qDebug ("MW resizeEvent(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
-//	graphicsWidget -> fitInView( scene->sceneRect());
+	graphicsWidget -> fitInView( scene->sceneRect());
 	
 
 }
@@ -1640,7 +1641,7 @@ void MainWindow::slotFileClose() {
 */
 void MainWindow::slotPrintView() {
 	statusBar()->showMessage(tr("Printing..."));
-	 QPrintDialog dialog(printer, this);
+	QPrintDialog dialog(printer, this);
 	if ( dialog.exec() )   {
 		QPainter painter;
 		painter.begin(printer);
@@ -1747,8 +1748,9 @@ void MainWindow::fileType(int type, QString networkName, int aNodes, int totalLi
 	Called when "Create Node" button is clicked on the Main Window.
 */
 void MainWindow::addNode() {
-	qDebug("MW: addNode(). Calling activeGraph::createVertex() for a vertice named -1");
-	activeGraph.createVertex(-1, graphicsWidget->width(),  graphicsWidget->height());
+	qDebug("MW: addNode(). Calling activeGraph::createVertex() for a new vertex (named -1)");
+	activeGraph.createVertex(-1, graphicsWidget->width()-10,  graphicsWidget->height()-10);  // minus a  screen edge offset...
+	qDebug("MW: addNode(). Calling activeGraph::createVertex() max width and height %i, %i", graphicsWidget->width()-10,  graphicsWidget->height()-10);
 	statusBar()->showMessage(tr("New node (numbered %1) added.").arg(activeGraph.lastVertexNumber()) ,statusBarDuration);
 }
 
@@ -1773,6 +1775,7 @@ void MainWindow::addNodeWithMouse(int num, QPointF p) {
 */
 
 bool MainWindow::slotExportPNG(){
+	qDebug("slotExportPNG");
 	if (!fileLoaded && !networkModified )  {
 		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("Cannot export PNG.") ,statusBarDuration);
@@ -1784,14 +1787,16 @@ bool MainWindow::slotExportPNG(){
 		return false;
 	}	
 	tempFileNameNoPath=fn.split ("/");
-
+	qDebug("slotExportPNG 1");
 	QPixmap picture;
 	picture=QPixmap::grabWidget(graphicsWidget, graphicsWidget->rect());
+	qDebug("slotExportPNG 2");
 	QPainter p;
 	p.begin(&picture);
 		p.setFont(QFont ("Helvetica", 10, QFont::Normal, FALSE));
 		p.drawText(5,10,"SocNetV: "+fileNameNoPath.last());
 	p.end();
+	qDebug("slotExportPNG 3");
 	if (fn.contains("png", Qt::CaseInsensitive) ) {
 		picture.toImage().save(fn, "PNG");
 		QMessageBox::information(this, "Export to PNG...",tr("Image Saved as: ")+tempFileNameNoPath.last(), "OK",0);
@@ -1802,6 +1807,7 @@ bool MainWindow::slotExportPNG(){
 	}
 	
 	statusBar()->showMessage( tr("Exporting completed"), statusBarDuration );
+	
 	return true;   
 }
 
@@ -1812,6 +1818,7 @@ bool MainWindow::slotExportPNG(){
 	Better Quality but larger file
 */
 bool MainWindow::slotExportBMP(){
+	qDebug(	"slotExportBMP()");
 	if (!fileLoaded && !networkModified )  {
 		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("Cannot export BMP.") ,statusBarDuration);
@@ -1826,7 +1833,7 @@ bool MainWindow::slotExportBMP(){
 	tempFileNameNoPath=fn.split ("/");
 
 	QPixmap picture;
-	picture=QPixmap::grabWidget(graphicsWidget, graphicsWidget->rect());
+	picture=QPixmap::grabWidget(graphicsWidget, graphicsWidget->viewport()->rect());
 	QPainter p;
 	p.begin(&picture);
 		p.setFont(QFont ("Helvetica", 10, QFont::Normal, FALSE));
@@ -1834,15 +1841,50 @@ bool MainWindow::slotExportBMP(){
 	p.end();
 	if (fn.contains(format, Qt::CaseInsensitive) ) {
 		picture.toImage().save(fn, format.toAscii());
-		QMessageBox::information(this, "Export to BMP...",tr("Image Saved as: ")+tempFileNameNoPath.last(), "OK",0);
+		QMessageBox::information(this, tr("Export to BMP..."),tr("Image Saved as: ")+tempFileNameNoPath.last(), "OK",0);
  	}
 	else {
 		picture.toImage().save(fn+"."+format, format.toAscii());
-		QMessageBox::information(this, "Export to BMP...",tr("Image Saved as: ")+tempFileNameNoPath.last()+"."+format , "OK",0);
+		QMessageBox::information(this, tr("Export to BMP..."),tr("Image Saved as: ")+tempFileNameNoPath.last()+"."+format , "OK",0);
 	}
 	
 	statusBar()->showMessage( tr("Exporting completed"), statusBarDuration );
+	qDebug("Export finished!");
 	return true;   
+}
+
+
+
+
+
+
+/**
+	Exports the network to a PDF Document 
+	Best Quality 
+*/
+bool MainWindow::slotExportPDF(){
+	qDebug(	"slotExportPDF()");
+	if (!fileLoaded && !networkModified )  {
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first."), "OK",0);
+		statusBar()->showMessage(tr("Cannot export PDF.") ,statusBarDuration);
+		return false;
+	}
+	
+	QString fileName = QFileDialog::getSaveFileName(this, tr("Export PDF"), QString(), "*.pdf");
+	if (fileName.isEmpty())  {
+		statusBar()->showMessage(tr("Saving aborted"), statusBarDuration);
+		return false;
+	}	
+    else {
+		if (QFileInfo(fileName).suffix().isEmpty())
+			fileName.append(".pdf");
+			QPrinter printer(QPrinter::HighResolution);
+			printer.setOutputFormat(QPrinter::PdfFormat);
+			printer.setOutputFileName(fileName);
+			QPainter painter(&printer);
+			graphicsWidget->render(&painter);
+	}
+	return true;
 }
 
 

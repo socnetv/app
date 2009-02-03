@@ -61,6 +61,7 @@ QRectF BackgrCircle::boundingRect() const {
 
 void BackgrCircle::paint ( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget * ){
 //	painter->setClipRect( option->exposedRect );
+	Q_UNUSED(option);
 	painter->setPen ( QPen ( QColor ( "red" ), 1, Qt::DotLine ) );
 	if (circle) {
 		painter->drawArc ( m_x0-m_radius, m_y0-m_radius, 2*m_radius, 2*m_radius, 0, 5760 );
