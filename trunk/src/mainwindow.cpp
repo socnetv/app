@@ -96,8 +96,6 @@ MainWindow::MainWindow(const QString &fName) {
 	connect( graphicsWidget, SIGNAL( selectedNode(Node*) ), this, SLOT( nodeInfoStatusBar(Node*) ) );
 	connect( graphicsWidget, SIGNAL( selectedEdge(Edge*) ), this, SLOT ( linkInfoStatusBar(Edge*) ) );
 	connect( graphicsWidget, SIGNAL( windowResized(int, int)),this, SLOT( windowInfoStatusBar(int, int)) );  
-	//connect( graphicsWidget, SIGNAL( changed() ), this, SLOT( graphChanged() ) ) ;
-	
 
 	connect( graphicsWidget, SIGNAL( userDoubleClicked(int, QPointF) ), this, SLOT( addNodeWithMouse(int, QPointF) ) ) ;
 	connect( graphicsWidget, SIGNAL( userMiddleClicked(int, int, int) ), this, SLOT( addLink(int, int, int) ) );
@@ -1406,7 +1404,7 @@ void MainWindow::initNet(){
 
 	minDuration=3000; //dialogue duration - obsolete
 	maxNodes=5000;		//Max nodes used by createRandomNetwork dialogues
-	labelDistance=6;
+	labelDistance=8;
 	numberDistance=5;
 	totalLinks=0;
 	networkName="";
@@ -2656,7 +2654,7 @@ void MainWindow::slotRemoveNode() {
 
 /**
 *	Adds a new link between two nodes specified by the user.
-	Called when user clicks on the MW button "Add Node".
+	Called when user clicks on the MW button "Add Link".
 */
 void MainWindow::slotAddLink(){
 	qDebug ("MW: slotAddLink()");
@@ -2682,12 +2680,14 @@ void MainWindow::slotAddLink(){
 		}
 	}
 	else sourceNode=clickedJimNumber;
+	
 	if ( (sourceIndex =activeGraph.hasVertex(sourceNode)) ==-1 ) {
 		statusBar()->showMessage(tr("Aborting. ") ,statusBarDuration);
 		QMessageBox::critical(this,"Error","No such node.", "OK",0);
 		qDebug ("MW: slotAddLink: Cant find sourceNode %i.", sourceNode);
 		return;
 	}
+	
 	targetNode=QInputDialog::getInteger(this, "Create new link, Step 2", tr("Source node accepted. \nNow enter target node ("+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"),min, 1, max , 1, &ok)     ;
 	if (!ok) {
 		statusBar()->showMessage("Add link target operation cancelled.", statusBarDuration);
@@ -2722,14 +2722,14 @@ void MainWindow::slotAddLink(){
 
 /** 	
 	helper to slotAddLink() above
-	Also called from GW
-	Helps to set the correct edge color...
+	Also called from GW::userMiddleClicked() signal when user creates links with middle-clicks
+	Calls Graph::createEdge method to add the new edge to the active Graph 
 */
 void MainWindow::addLink (int v1, int v2, int weight) {
 	bool drawArrows=displayLinksArrowsAct->isChecked();
 	bool reciprocal=false;
 	bool bezier = false;
-	activeGraph.createEdge(v1, v2, weight,  reciprocal, drawArrows, bezier);
+	activeGraph.createEdge(v1, v2, weight, reciprocal, drawArrows, bezier);
 }
 
 
@@ -2835,27 +2835,25 @@ void MainWindow::slotChangeNodeLabel(){
 		statusBar()->showMessage(tr("No nodes created.") ,statusBarDuration);
 		return;
 	}
-
 	if (clickedJimNumber==-1) {
 		statusBar()->showMessage(tr("Please click on a node first... ") ,statusBarDuration);
 		return;
 	}
 	bool ok;
 	QString text = QInputDialog::getText(this, "Change node label", tr("Enter new node label:"), QLineEdit::Normal,
-            QString::null, &ok );
-    	if ( ok && !text.isEmpty() ) {
+	QString::null, &ok );
+	if ( ok && !text.isEmpty() ) {
 		qDebug()<<"MW: change label to "<< text.toAscii();
-		clickedJim-> setLabel (text);
+		clickedJim->setLabel(text);
 		activeGraph.setVertexLabel( clickedJimNumber, text);
 		if (!showLabels()) 
 			displayNodeLabelsAct->setChecked(TRUE);
-        	statusBar()->showMessage(tr("Changed label to %1. Ready. ").arg(text) ,statusBarDuration);
-		graphChanged();
-    	} 
+			statusBar()->showMessage(tr("Changed label to %1. Ready. ").arg(text) ,statusBarDuration);
+			graphChanged();
+	} 
 	else {
 		statusBar()->showMessage(tr("No label text. Abort. ") ,statusBarDuration);
 	}
-
 }
 
 
@@ -5010,6 +5008,7 @@ void MainWindow::slotAllNumbersColor(){
 	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
 		if ( (*it)->type() == TypeNumber) 		{
 			NodeNumber *jimNumber = (NodeNumber *) (*it);
+			jimNumber->update();
 			jimNumber->setDefaultTextColor(textColor);
 		}
 	QApplication::restoreOverrideCursor();
@@ -5029,6 +5028,7 @@ void MainWindow::slotAllLabelsColor(){
 	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
 		if ( (*it)->type() == TypeLabel) 		{
 			NodeLabel *jimLabel = (NodeLabel *) (*it);
+			jimLabel->update();
 			jimLabel->setDefaultTextColor(textColor);
 		}
 	QApplication::restoreOverrideCursor();

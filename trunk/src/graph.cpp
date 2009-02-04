@@ -78,6 +78,7 @@ void Graph::createVertex(int i, int size, QString nodeColor, QString label, QStr
 	//add the vertex to the Graph.
 	addVertex(i, 1, size,  nodeColor, label, lColor, p, nodeShape);
 	//emit a signal for MW to create the new node onto the canvas.
+	qDebug()<<"*** Graph:: createVertex(): emitting drawNode signal to GW";
 	emit drawNode( i, size ,  nodeColor, label, lColor, p, nodeShape, initShowLabels, true);
 	emit graphChanged(); 
 	initVertexColor=nodeColor; //just to draw new nodes of the same color with that of the file loaded, when user clicks on the canvas
@@ -93,7 +94,6 @@ void Graph::createVertex(int i, int size, QString nodeColor, QString label, QStr
 	Called from GW, with i and p as parameters.
 	p holds the desired position of the new node.
 	Calls the main creation slot with init node values.
-	
 */
 void Graph::createVertex(int i, QPointF p){
 	if ( i < 0 )  i = lastVertexNumber() +1;
@@ -119,9 +119,10 @@ void Graph::createVertex(int i, int cWidth, int cHeight){
 
 
 /**
-	slot associated with homonymous signal from Parser. 
-	Adds an Edge to the activeGraph and calls addEdge of GraphicsWidget to update the Graphics View. 
-	Also called from MW when user clicks on the "add link" button.
+	Called from homonymous signal of Parser class. 
+	Adds an Edge to the Graph, then emits drawEdge() which calls GraphicsWidget::addEdge() to draw the new edge. 
+	Also called from MW when user clicks on the "add link" button 
+	Alse called from GW (via createEdge() below) when user middle-clicks.
 */
 void Graph::createEdge(int v1, int v2, float weight, QString color, bool reciprocal=false, bool drawArrows=true, bool bezier=false){
 	qDebug()<<"*** Graph: createEdge():"<<v1<<" "<<v2<<" "<<weight;
@@ -136,7 +137,6 @@ void Graph::createEdge(int v1, int v2, float weight, QString color, bool recipro
 		reciprocal = true;
 		addEdge ( v1, v2, weight, color, reciprocal);
 		emit drawEdgeReciprocal(v2, v1);
-
 	}
 	else {
 		qDebug (" Graph:: createEdge() NOT RECIPROCAL new link -- Adding new edge to Graph and calling GW::drawEdge(). ");
@@ -151,8 +151,8 @@ void Graph::createEdge(int v1, int v2, float weight, QString color, bool recipro
 
 
 /**
-	Called from GraphicsWidget when user middle clicks
-	Calls main createEdge() method with initEdgeColor.
+	Called (via MW::addLink()) from GW when user middle-clicks on two nodes.
+	Calls the above createEdge() method with initEdgeColor to set the default edge color.
 */
 void Graph::createEdge(int v1, int v2, int weight, bool reciprocal=false, bool drawArrows=true, bool bezier=false){
 	createEdge(v1, v2, (float) weight, initEdgeColor, reciprocal, drawArrows, bezier);
@@ -876,6 +876,7 @@ void Graph::writeDistanceMatrix (const char* fn, const char* fn1, const char* ne
 	char dspace[] = "   ";
 
 	file << "-Social Network Visualiser- \n";
+	if (!netName) netName="Unnamed network";
 	file << "Distance matrix of "<< netName<<": \n\n";
 	//write out matrix of geodesic distances
 	QList<Vertex*>::iterator it, it1;	
@@ -883,7 +884,7 @@ void Graph::writeDistanceMatrix (const char* fn, const char* fn1, const char* ne
 	file << "         ";
 	
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
-		file << i++<<aspace;
+		file << ++i<<aspace;
 
 	}
 	file<<endl;
@@ -1957,8 +1958,10 @@ void Graph::nodeMovement(int state, int type, int cW, int cH){
 			timerId = startTimer(factor);		
 		}
 	}
-	else
+	else {
 		dynamicMovement = FALSE;
+	}
+		
 }
 
 

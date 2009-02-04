@@ -28,6 +28,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QStyleOptionGraphicsItem>
 #include <QPainter>
+#include <QtDebug>		//used for qDebug messages
 #include <math.h>
 
 #include "graphicswidget.h"
@@ -35,9 +36,7 @@
 #include "node.h"
 #include "edgeweight.h"
 
-/*
-static const double Pi = 3.14159265358979323846264338327950288419717;
-*/
+
 static const double Pi = 3.14159265;
 static double TwoPi = 2.0 * Pi;
 
@@ -58,7 +57,7 @@ Edge::Edge(  GraphicsWidget *gw, Node *from, Node *to, int weight, int nodeSize,
 	m_startOffset=source->width();  //used to offset edge from the centre of node
 	m_endOffset=target->width();  //used to offset edge from the centre of node	
 	qDebug("Edge() m_startOffset %i",(int) m_startOffset);
-	qDebug("Edge() m_startOffset %i",(int) m_endOffset);
+	qDebug("Edge() m_endOffset %i",(int) m_endOffset);
 
 	m_arrowSize=5;		//controls the width of the edge arrow
 
@@ -77,6 +76,8 @@ Edge::Edge(  GraphicsWidget *gw, Node *from, Node *to, int weight, int nodeSize,
 void Edge::showArrows(bool drawArrows){
 	m_drawArrows=drawArrows;
 }
+
+
 
 void Edge::removeRefs(){
 	//FIXME Need to disconnect signals from node to this "erased" edge
@@ -162,17 +163,21 @@ void Edge::clearWeightList(){
 
 //leaves space 
 void Edge::adjust(){
-//	qDebug("Edge: adjust()");
+	qDebug("Edge: adjust()");
 	if (!source || !target)
 		return;
 	QLineF line(mapFromItem(source, 0, 0), mapFromItem(target, 0, 0));
-
- 	qreal length = line.length();
-	QPointF edgeOffset((line.dx() * m_endOffset) / length, (line.dy() *m_endOffset) / length);
+	QPointF edgeOffset;
+	if (source!=target) {
+	 	qreal length = line.length();
+		edgeOffset = QPointF((line.dx() * m_endOffset) / length, (line.dy() *m_endOffset) / length);		
+	}
+	else edgeOffset = QPointF(0, 0);  
+	
  	prepareGeometryChange();
 	sourcePoint = line.p1() + edgeOffset;
 	targetPoint = line.p2() - edgeOffset;
-
+	qDebug()<<"----Edge: adjust() "<< sourcePoint.x()<< " "<<sourcePoint.y();
 	foreach (EdgeWeight *wgt, weightList) 		//Move the weight of this edge
 		wgt->setPos( (source->x()+target->x())/2.0, (source->y()+target->y())/2.0 );
 }
@@ -190,11 +195,15 @@ QPainterPath Edge::shape () const {
 QRectF Edge::boundingRect() const {
 
 	if (!source || !target)
-        	return QRectF();
+		return QRectF();
 	
 	qreal penWidth = 1;
 	qreal extra = (penWidth + m_arrowSize) / 2.0;
 
+	if (source==target) {
+			return QRectF (
+			sourcePoint-QPointF(30,30), QSizeF(60,30)).normalized().adjusted(-extra, -extra, extra, extra);
+	}
 	return QRectF (
 			sourcePoint, QSizeF(targetPoint.x() - sourcePoint.x(),
 			targetPoint.y() - sourcePoint.y())
@@ -217,28 +226,34 @@ void Edge::unmakeReciprocal(){
 
 
 void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *){
-//	painter->setClipRect( option->exposedRect );
-
 	if (!source || !target)
 		return;
+	Q_UNUSED(option); //	painter->setClipRect( option->exposedRect );
+	qDebug()<<"***EDGE::paint() edge from "<< sourceNodeNumber()<< " to "<<targetNodeNumber();
 
-	// Draw the line itself
+	//Define the path upon which we'' ll draw the line 
 	QPainterPath line(sourcePoint);
-
-	QPointF c = QPointF( targetPoint.x() + 10,  targetPoint.y()+10 );
-	if ( !m_Bezier) {
-// 		QLineF line(sourcePoint, targetPoint);
-		line.lineTo(targetPoint);
-//		painter->drawLine(line);
-
+	qDebug()<<"SourceNode x and y :"<<(sourceNode())->x() <<","<< (sourceNode())->y();
+	//Construct the path
+	if (source!=target) {
+		if ( !m_Bezier){
+			qDebug("Edge::paint(). Constructing a line");
+			line.lineTo(targetPoint);
+		}
+		else {
+			qDebug("Edge::paint(). Constructing a bezier curve");
+		}
 	}
-	else 	 {
-		line.quadTo( c, targetPoint);
+	else { //self-link
+		QPointF c1 = QPointF( targetPoint.x() -30,  targetPoint.y() -30 );
+		QPointF c2 = QPointF( targetPoint.x() +30,  targetPoint.y() -30 );
+		qDebug()<<"Edge::paint(). Constructing a bezier self curve c1 "<<c1.x()<<","<<c1.y()<< " and c2 "<<c2.x()<<","<<c2.y();
+		line.cubicTo( c1, c2, targetPoint);
 	}
 	painter->setPen(QPen(QColor(m_color), 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
 
-	//Draw the arrows
-	if (m_drawArrows) {
+	//Draw the arrows only if we have different nodes.
+	if (m_drawArrows && source!=target) {
 		qDebug("Edge: Building arrows for this edge. First create Arrow at target node");
 // 		double angle = ::acos(line.dx() / line.length());
 		double angle = ::acos((targetPoint.x()-sourcePoint.x()) / line.length());
@@ -267,7 +282,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 			
 //			painter->drawPolygon(QPolygonF() << line.p1() << srcArrowP1 << srcArrowP2);
 		}
-		else qDebug("Edge: This edges IS NOT SYMMETRIC!");
+		else qDebug("Edge: This edge is not symmetric. Therefore, I dont have anything else to do...");
 	}
 	painter->drawPath(line);
 }

@@ -39,18 +39,16 @@
 
 #include <math.h> //sqrt
 
-Node::Node( GraphicsWidget* gw, int num, int size, QString col, QString label, QString lcol, QString shape, int ldist, int ndist, QPointF p) : graphicsWidget (gw) {
+Node::Node( GraphicsWidget* gw, int num, int size, QString col, QString shape, int ldist, int ndist, QPointF p) : graphicsWidget (gw) {
 	graphicsWidget->scene()->addItem(this); //Without this nodes dont appear on the screen...
 	setFlag(ItemIsMovable); //Without this, nodes do not move...
 	m_num=num;
 	m_size=size;
-	Q_UNUSED (label);
 	hasLabel=false;
 	m_shape=shape;
 	m_col_str=col;
 	m_col=QColor(col);
 	m_col_dark=m_col.dark(150);
-	m_lcol=lcol;
 	m_nd=ndist;
 	m_ld=ldist;
 	m_poly_t=new QPolygon(3);
@@ -72,7 +70,6 @@ Node::Node( GraphicsWidget* gw, int num, int size, QString col, QString label, Q
 	These forces are applied to the nodes iteratively, pulling them closer together or pushing them further apart, 
 	until the system comes to an equilibrium state (node positions do not change anymore).
 */
-
 void Node::calculateForcesSpringEmbedder(bool dynamicMovement){
 	if (!scene() || scene()->mouseGrabberItem() == this) {
 		newPos = pos();
@@ -108,8 +105,8 @@ void Node::calculateForcesSpringEmbedder(bool dynamicMovement){
 			if (edge->sourceNode() == this)	//get other node's coordinates
 				pos = mapFromItem(edge->targetNode(), 0, 0);
 			else
-	            		pos = mapFromItem(edge->sourceNode(), 0, 0);
-        		xvel += pos.x() / weight;
+				pos = mapFromItem(edge->sourceNode(), 0, 0);
+			xvel += pos.x() / weight;
 			yvel += pos.y() / weight;
 		}
 	
@@ -119,12 +116,12 @@ void Node::calculateForcesSpringEmbedder(bool dynamicMovement){
 			if (edge->sourceNode() == this)
 				pos = mapFromItem(edge->targetNode(), 0, 0);
 			else
-	            		pos = mapFromItem(edge->sourceNode(), 0, 0);
-        		xvel += pos.x() / weight;
+				pos = mapFromItem(edge->sourceNode(), 0, 0);
+			xvel += pos.x() / weight;
 			yvel += pos.y() / weight;
 		}
 		if (qAbs(xvel) < 0.1 && qAbs(yvel) < 0.1)
-	        	xvel = yvel = 0;
+			xvel = yvel = 0;
 	}
 	QRectF sceneRect = scene()->sceneRect();
 	newPos = pos() + QPointF(xvel, yvel);
@@ -241,6 +238,7 @@ void Node::setColor(QColor color){
 	m_col_dark=m_col.dark(160);
 }
 
+
 QString Node::color () { 
 	return m_col_str;
 }
@@ -264,7 +262,7 @@ void Node::setSize(int size){
 
 
 
-/**  Used by MainWindow::findActor()  */
+/**  Used by MainWindow::findNode()  */
 int Node::width(){
 	qDebug("width()");
 	return m_size;  

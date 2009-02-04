@@ -1,7 +1,7 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser 
  version: 0.50
- Written in Qt 4.4 with KDevelop   
+ Written in Qt 4.4
  
                          nodelabel.h  -  description
                              -------------------

@@ -82,7 +82,6 @@ public slots:
 	void remove();
 protected:
 	QRectF boundingRect() const;
-
 	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 	void mousePressEvent(QGraphicsSceneMouseEvent *event);
 
@@ -98,7 +97,6 @@ private:
 	int tox1, tox2, toy1, toy2, size;
 	double rad, theta, theta1, theta2;
 	bool m_Bezier, m_drawArrows, m_reciprocal;
-
 };
 
 #endif

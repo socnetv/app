@@ -57,7 +57,7 @@ class Node :  public QObject,  public QGraphicsItem {
   Q_OBJECT
 	
 public:
-	Node(GraphicsWidget*, int num, int size, QString col, QString lab, QString lCol, QString shape, int, int, QPointF p) ;
+	Node(GraphicsWidget*, int num, int size, QString col, QString shape, int, int, QPointF p) ;
 //	~Node();
 
 	enum { Type = UserType + 1 };
@@ -84,7 +84,7 @@ public:
 	void setColor(QColor color);
 	QString color ();
 	
-	void setLabel ( QString label) ;
+	void setLabel ( QString label) ;		//Only used by MW to update graphic labels
 	QString label ( ) ;
 
 	void addInLink( Edge *edge ) ;
@@ -119,7 +119,7 @@ private:
 	QPointF newPos;
 	QPolygon *m_poly_t, *m_poly_d;
 	int m_num, m_size, m_nd, m_ld;
-	QString  m_shape, m_lcol, m_col_str;
+	QString  m_shape,  m_col_str;
 	QColor m_col, m_col_dark;
 	bool hasLabel;
 	/**Lists of elements attached to this node */

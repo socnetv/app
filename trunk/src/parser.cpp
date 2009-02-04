@@ -258,10 +258,10 @@ int Parser::loadPajek(){
 				label=lineElement[1];
 				qDebug()<< "node label: " << lineElement[1].toAscii();
 				str.remove (0, str.lastIndexOf(label)+label.size() );	
-				qDebug("cropped str: "+ str.toAscii());
+				qDebug()<<"cropped str: "<< str.toAscii();
 				if (label.contains('"', Qt::CaseInsensitive) )
 					label=label.remove('\"');
-				qDebug("node label now: " + label.toAscii());
+				qDebug()<<"node label now: " << label.toAscii();
 								
 				/** NODESHAPE: There are four possible . */
 				if (str.contains("Ellipse", Qt::CaseInsensitive) ) nodeShape="ellipse";
@@ -294,17 +294,17 @@ int Parser::loadPajek(){
 				if ( str.contains(".",Qt::CaseInsensitive) ) { 
 					for (register int c=0; c< lineElement.count(); c++)   {
 						temp=lineElement.at(c);
-						qDebug( temp.toAscii());
+						qDebug()<< temp.toAscii();
 						if ((coordIndex=temp.indexOf(".", Qt::CaseInsensitive)) != -1 ){ 	
 							if (lineElement.at(c-1) == "ic" ) continue;  //pajek declares colors with numbers!
 							if ( !temp[coordIndex-1].isDigit()) continue;  //needs 0.XX
 							if (c+1 == lineElement.count() ) {//first coord zero, i.e: 0  0.455
-								qDebug ("coords: " +lineElement.at(c-1).toAscii() + " " +temp.toAscii() );
+								qDebug ()<<"coords: " <<lineElement.at(c-1).toAscii() << " " <<temp.toAscii() ;
 								randX=lineElement.at(c-1).toDouble(&check1);
 								randY=temp.toDouble(&check2);
 							}
 							else {
-								qDebug ("coords: " + temp.toAscii() + " " +lineElement[c+1].toAscii());
+								qDebug ()<<"coords: " << temp.toAscii() << " " <<lineElement[c+1].toAscii();
 								randX=temp.toDouble(&check1);
 								randY=lineElement[c+1].toDouble(&check2);
 							}
@@ -331,13 +331,13 @@ int Parser::loadPajek(){
 				}
 			}
 			/**START NODE CREATION */
-			qDebug ("Creating node numbered %i. Real nodes count (j) %i: ", nodeNum, j+1);
+			qDebug ()<<"Creating node numbered "<< nodeNum << " Real nodes count (j)= "<< j+1;
 			j++;  //Controls the real number of nodes.
 			//If the file misses some nodenumbers then we create dummies and delete them afterwards!
 			if ( j + miss < nodeNum)  {
-				qDebug ("MW There are %i nodes but this node has number %i", j, nodeNum);
+				qDebug ()<<"MW There are "<< j << " nodes but this node has number "<< nodeNum;
 				for (int num=j; num< nodeNum; num++) {
-					qDebug( "Parser-loadPajek(): Creating dummy node number num = %i ", num);
+					qDebug()<< "Parser-loadPajek(): Creating dummy node number num = "<< num;
 					emit createNode(num,initNodeSize, nodeColor, label, lineElement[3], QPointF(randX, randY), nodeShape, initShowLabels);
 					listDummiesPajek.push_back(num);  
 					miss++;
@@ -353,13 +353,13 @@ int Parser::loadPajek(){
 		/**NODES CREATED. CREATE EDGES/ARCS NOW. */		
 		else {
 			if (j && j!=aNodes)  {  //if there were more or less nodes than the file declared
-				qDebug("The Pajek file declares %i nodes, but I found %i nodes....", aNodes, j);
+				qDebug()<<"The Pajek file declares " << aNodes <<"  nodes, but I found " <<  j << " nodes...." ;
 				aNodes=j;
 			}
 			else if (j==0) {  //if there were no nodes at all, we need to create them now.
-				qDebug("The Pajek file declares %i but I didnt found any nodes. I will create them....", aNodes);
+				qDebug()<< "The Pajek file declares "<< aNodes<< " but I didnt found any nodes. I will create them....";
 				for (int num=j+1; num<= aNodes; num++) {
-					qDebug( "Parser-loadPajek(): Creating node number i = %i ", num);
+					qDebug() << "Parser-loadPajek(): Creating node number i = "<< num;
 					randX=rand()%gwWidth;
 					randY=rand()%gwHeight;
 					emit createNode(num,initNodeSize, initNodeColor, QString::number(i), "black", QPointF(randX, randY), initNodeShape, initShowLabels);
@@ -387,7 +387,7 @@ int Parser::loadPajek(){
 				else 
 					weight=1;
 
-				qDebug("Parser-loadPajek(): weight %f", weight);
+				qDebug()<<"Parser-loadPajek(): weight "<< weight;
 
 				if (lineElement.contains("c", Qt::CaseSensitive ) ) {
 					qDebug("Parser-loadPajek(): file with link colours");
@@ -405,7 +405,7 @@ int Parser::loadPajek(){
 				undirected=true;
 				arrows=true;
 				bezier=false;
-				qDebug("Parser-loadPajek(): Create edge between %i - %i", source, target);
+				qDebug()<< "Parser-loadPajek(): Create edge between " << source << " - "<< target;
 				emit createEdge(source, target, weight, linkColor, undirected, arrows, bezier);
 				totalLinks=totalLinks+2;
 
@@ -442,7 +442,7 @@ int Parser::loadPajek(){
 				undirected=false;
 				arrows=true;
 				bezier=false;
-				qDebug("Parser-loadPajek(): Creating arc source %i target %i with weight %f", source, target, weight);
+				qDebug()<<"Parser-loadPajek(): Creating arc source "<< source << " target "<< target << " with weight "<< weight;
 				emit createEdge(source, target, weight, linkColor, undirected, arrows, bezier);
 				totalLinks++;
 			} //else if ARCS
@@ -457,7 +457,7 @@ int Parser::loadPajek(){
 				bezier=false;
 				for (register int index = 1; index < lineElement.size(); index++) {
 					target = lineElement.at(index).toInt(&ok,10);					
-					qDebug("Parser-loadPajek(): Creating arc source %i target %i with weight %f", source, target, weight);
+					qDebug()<<"Parser-loadPajek(): Creating arc source "<< source << " target "<< target << " with weight "<< weight;
 					emit createEdge(source, target, weight, linkColor, undirected, arrows, bezier);
 					totalLinks++;
 				}
@@ -474,7 +474,7 @@ int Parser::loadPajek(){
 				for (target = 0; target < lineElement.size(); target ++) {
 					if ( lineElement.at(target) != "0" ) {
 						weight = lineElement.at(target).toFloat(&ok);					
-						qDebug("Parser-loadPajek(): Creating arc source %i target %i with weight %f", source, target+1, weight);
+						qDebug()<<"Parser-loadPajek(): Creating arc source "<< source << " target "<< target +1<< " with weight "<< weight;
 						emit createEdge(source, target+1, weight, linkColor, undirected, arrows, bezier);
 						totalLinks++;
 					}
@@ -703,7 +703,7 @@ int Parser::loadGraphML(){
 				end=str.indexOf("\"", start+1);
 	// 			qDebug("end \"= %i ",end);
 				id=str.mid(start+1, end-start-1);  //keep whatever is inside 
-				qDebug("node ID: " + id.toAscii() );
+				qDebug()<<"node ID: " << id.toAscii() ;
 				str=str.right(str.size()-end-1);
 	//			qDebug("remains: " + str.toAscii() );
 				nodeNumber[id]=aNodes;
@@ -818,7 +818,7 @@ int Parser::loadGraphML(){
 				end=str.indexOf("\"", start+1);
 	// 			qDebug("end \"= %i ",end);
 				id=str.mid(start+1, end-start-1);  //keep whatever is inside 
-				qDebug("edge ID: " + id.toAscii() );
+				qDebug()<<"edge ID: " << id.toAscii() ;
 				str=str.right(str.size()-end-1);
 	//			qDebug("remains: " + str.toAscii() );
 			}
@@ -832,7 +832,7 @@ int Parser::loadGraphML(){
 // 			qDebug("end \"= %i ",end);
 			name=str.mid(start+1, end-start-1);  //keep whatever is inside 
 			source=nodeNumber[name];
-			qDebug("edge source %i", source);
+			qDebug()<<"edge source "<<source;
 			str=str.right(str.size()-end-1);
 
 			start=str.indexOf("target");
@@ -843,7 +843,7 @@ int Parser::loadGraphML(){
 // 			qDebug("end \"= %i ",end);
 			name=str.mid(start+1, end-start-1);  //keep whatever is inside 
 			target=nodeNumber[name];
-			qDebug("edge target %i", target);
+			qDebug()<<"edge target "<< target;
 			str=str.right(str.size()-end-1);
 			totalLinks++;
 
@@ -877,7 +877,7 @@ int Parser::loadGraphML(){
 				if ( node_flag) {
 					if (key_name[id] == "color") {
 						nodecolor=name;	
-						qDebug("nodecolor " + nodecolor.toAscii() );	
+						qDebug()<<"nodecolor " << nodecolor.toAscii() ;	
 					}
 				}
 				else if (edge_flag) {
@@ -915,9 +915,9 @@ int Parser::loadGML(){
 	while (!ts.atEnd() )   {
 		str= ts.readLine() ;
 		fileLine++;
-		qDebug ("Reading fileLine %i. ", fileLine);
+		qDebug ()<<"Reading fileLine "<< fileLine;
 		if ( fileLine == 1 ) {
-			qDebug ("Reading fileLine= %i ", fileLine);
+			qDebug ()<<"Reading fileLine = "<< fileLine;
 			if ( !str.startsWith("graph", Qt::CaseInsensitive) ) 
 				return -1;  // Abort
 		}
@@ -961,12 +961,12 @@ int Parser::loadDot(){
 	while (!ts.atEnd() )   {
 		str= ts.readLine() ;
 		fileLine++;
-		qDebug ("Reading fileLine %i. ", fileLine);
+		qDebug ()<<"Reading fileLine "<< fileLine;
 		if (str.isEmpty() ) continue;
 		str=str.simplified();
 		str=str.trimmed();
 		if ( fileLine == 1 ) {
-			qDebug ("Reading fileLine= %i ", fileLine);
+			qDebug ()<<"Reading fileLine = " <<fileLine;
 			if ( str.contains("vertices",Qt::CaseInsensitive) || (str.contains("network",Qt::CaseInsensitive) || str.contains("DL",Qt::CaseInsensitive) || str.contains("list",Qt::CaseInsensitive)) || str.startsWith("<graphml",Qt::CaseInsensitive) || str.startsWith("<?xml",Qt::CaseInsensitive)) 
 			 return -1;    
 
@@ -995,10 +995,10 @@ int Parser::loadDot(){
 			end=str.indexOf(']');
 			temp=str.right(str.size()-end-1);
 			str=str.mid(start+1, end-start-1);  //keep whatever is inside [ and ]
-			qDebug("Properties start at %i and end at %i", start, end);
-			qDebug(str.toAscii());
+			qDebug()<<"Properties start at "<< start<< " and end at "<< end;
+			qDebug()<<str.toAscii();
 			str=str.simplified();
-			qDebug(str.toAscii());
+			qDebug()<<str.toAscii();
 			start=0;
 			end=str.count();
 
@@ -1006,24 +1006,24 @@ int Parser::loadDot(){
 
 			qDebug ("Ooola! Finished node properties - let's see if there are any nodes after that!");
 			temp.remove(';');
-			qDebug(temp.toAscii());
+			qDebug()<<temp.toAscii();
 			temp=temp.simplified();
-			qDebug(temp.toAscii());
+			qDebug()<<temp.toAscii();
 			if ( temp.contains(',') )
 				labels=temp.split(' ');	
 			else if (temp.contains(' ') )
 				labels=temp.split(' ');
 			for (j=0; j<(int)labels.count(); j++) {
-				qDebug("node label: "+labels[j].toAscii()+"." );
+				qDebug()<<"node label: "<<labels[j].toAscii()<<"." ;
 				if (nodesDiscovered.contains(labels[j])) {qDebug("discovered"); continue;}
 				aNodes++;
 				randX=rand()%gwWidth;
 				randY=rand()%gwHeight;
-				qDebug("Creating node at %f, %f, label "+labels[j].toAscii(), randX, randY); 
+				qDebug()<<"Creating node at "<< randX<<","<< randY<<" label " << labels[j].toAscii(); 
 				emit createNode(aNodes, initNodeSize, nodeColor, labels[j], nodeColor, QPointF(randX,randY), nodeShape, initShowLabels);
 				aNum=aNodes;
 				nodesDiscovered.push_back( labels[j]);
-				qDebug(" Total aNodes: %i, nodesDiscovered = %i",  aNodes, nodesDiscovered.size());
+				qDebug()<<" Total aNodes: "<<  aNodes<< " nodesDiscovered = "<< nodesDiscovered.size();
 			}
 		}
 		else if ( str.startsWith("edge",Qt::CaseInsensitive) ) { //Default edge properties
@@ -1031,10 +1031,10 @@ int Parser::loadDot(){
 			start=str.indexOf('[');
 			end=str.indexOf(']');
 			str=str.mid(start+1, end-start-1);  //keep whatever is inside [ and ]
-			qDebug("Properties start at %i and end at %i", start, end);
-			qDebug(str.toAscii());
+			qDebug()<<"Properties start at "<< start <<" and end at "<< end;
+			qDebug()<<str.toAscii();
 			str=str.simplified();
-			qDebug(str.toAscii());
+			qDebug()<<str.toAscii();
 			start=0;
 			end=str.count();
 //			dotProperties(str, edgeValue, nodeLabel, nodeShape, edgeColor, fontName, fontColor );
@@ -1049,13 +1049,13 @@ int Parser::loadDot(){
 			if (end!=-1) {
 				temp=str.right(str.size()-end-1); //keep the properties
 				temp=temp.remove(']');
-				qDebug("edge properties "+temp.toAscii());
+				qDebug()<<"edge properties "<<temp.toAscii();
 				dotProperties(temp, edgeValue, edgeLabel, edgeShape, edgeColor, fontName, fontColor );
 			}
 			else end=str.indexOf(';');
 			//FIXME It cannot parse nodes with names containing the '-' character!!!!
 			str=str.mid(0, end).remove('\"');  //keep only edges
-			qDebug("edges "+str.toAscii());
+			qDebug()<<"edges "<<str.toAscii();
 			
 			if (!str.contains("->",Qt::CaseInsensitive)){  //non directed = symmetric links
 				nodeSequence=str.split("-");
@@ -1069,13 +1069,13 @@ int Parser::loadDot(){
 					aNodes++;
 					randX=rand()%gwWidth;
 					randY=rand()%gwHeight;
-					qDebug("Creating node at %f, %f, label "+node.toAscii()+".", randX, randY); 
+					qDebug()<<"Creating node at "<< randX <<","<< randY<<" label "<<node.toAscii(); 
 					emit createNode(aNodes, initNodeSize, nodeColor, node , nodeColor, QPointF(randX,randY), nodeShape, initShowLabels);
 					nodesDiscovered.push_back( node  );
-					qDebug(" Total aNodes: %i, nodesDiscovered = %i",  aNodes, nodesDiscovered.size());
+					qDebug()<<" Total aNodes " << aNodes<< " nodesDiscovered  "<< nodesDiscovered.size() ;
 					target=aNodes;
 					if (it!=nodeSequence.begin()) {
-						qDebug("Drawing Link between node %i and node %i.",source,target);
+						qDebug()<<"Drawing Link between node "<< source<< " and node " <<target;
 						emit createEdge(source,target, edgeValue, edgeColor, undirected, arrows, bezier);
 					}
 				}
@@ -1083,7 +1083,7 @@ int Parser::loadDot(){
 					target=aNum+1;
 					qDebug("Node already exists. Vector num: %i ",target);
 					if (it!=nodeSequence.begin()) {
-						qDebug("Drawing Link between node %i and node %i.",source,target);
+						qDebug()<<"Drawing Link between node "<<source<<" and node " << target;
 						emit createEdge(source,target, edgeValue, edgeColor, undirected, arrows, bezier);
 					}
 				}
@@ -1097,25 +1097,25 @@ int Parser::loadDot(){
 			start=str.indexOf('[');
 			end=str.indexOf(']');
 			temp=str.mid(start+1, end-start-1);  //keep whatever is inside [ and ]
-			qDebug("Properties start at %i and end at %i", start, end);
+			qDebug()<<"Properties start at "<< start<< " and end at " << end;
 			temp=temp.simplified();
-			qDebug(temp.toAscii());
+			qDebug()<<temp.toAscii();
 			dotProperties(temp, nodeValue, label, nodeShape, nodeColor, fontName, fontColor );
 			qDebug ("Finished the properties!");
 
 			if (start > 2 ) {//there is a node definition here
 				node=str.left(start).remove('\"').simplified();
-				qDebug("node label: "+node.toAscii()+"." );
+				qDebug()<<"node label: "<<node.toAscii()<<"." ;
 				if (!nodesDiscovered.contains(node)) {
 					qDebug("not discovered node"); 
 					aNodes++;
 					randX=rand()%gwWidth;
 					randY=rand()%gwHeight;
-					qDebug("Creating node at %f, %f, label "+node.toAscii(), randX, randY); 
+					qDebug()<<"Creating node at "<<  randX << " "<< randY<< " label "<<node.toAscii(); 
 					emit createNode(aNodes, initNodeSize, nodeColor, label, nodeColor, QPointF(randX,randY), nodeShape, initShowLabels);
 					aNum=aNodes;
 					nodesDiscovered.push_back( node);
-					qDebug(" Total aNodes: %i, nodesDiscovered = %i",  aNodes, nodesDiscovered.size());
+					qDebug()<<" Total aNodes: "<<  aNodes<< " nodesDiscovered = "<< nodesDiscovered.size();
 				}
 				else {
 					qDebug("discovered node - skipping it!");
@@ -1143,25 +1143,25 @@ void Parser::dotProperties(QString str, int &nValue, QString &label, QString &sh
 				next=str.indexOf('=', 1);
 				qDebug("Found next = at %i. Start is at %i", next, 1);
 				prop=str.mid(0, next).simplified();	
-				qDebug("Prop: "+prop.toAscii() );
+				qDebug()<<"Prop: "<<prop.toAscii() ;
 				str=str.right(str.count()-next-1).simplified();
-				qDebug("whatsleft: "+str.toAscii() );
+				qDebug()<<"whatsleft: "<<str.toAscii() ;
 				if ( str.indexOf('\"') == 0) {
 					qDebug("found text, parsing...");
 					next=str.indexOf('\"', 1);
 					value=str.left(next).simplified().remove('\"');
 					
 					if (prop=="label") {
-						qDebug("Found label "+value.toAscii());
+						qDebug()<<"Found label "<<value.toAscii();
 						label=value.trimmed();
-						qDebug("Assigned label "+label.toAscii());
+						qDebug()<<"Assigned label "<<label.toAscii();
 					}
 					else if (prop=="fontname"){
-						qDebug("Found fontname"+value.toAscii());
+						qDebug()<<"Found fontname"<<value.toAscii();
 						fontName=value.trimmed();
 					}
 					str=str.right(str.count()-next-1).simplified();
-					qDebug("whatsleft: "+str.toAscii() +".");
+					qDebug()<<"whatsleft: "<<str.toAscii() <<".";
 				}
 				else {
 					if (str.isEmpty()) break;
@@ -1171,28 +1171,28 @@ void Parser::dotProperties(QString str, int &nValue, QString &label, QString &sh
 						next=str.indexOf(' ');
 					value=str.mid(0, next).simplified();
 					
-					qDebug("Prop Value: "+value.toAscii() );
+					qDebug()<<"Prop Value: "<<value.toAscii() ;
 					if (prop=="value") {
-						qDebug("Found value "+value.toAscii());
+						qDebug()<<"Found value "<<value.toAscii();
 						nValue=value.trimmed().toInt(&ok, 10);
-						qDebug("Assigned value %i",nValue); 
+						qDebug()<<"Assigned value %i"<<nValue; 
 					}
 					else if (prop=="color") {
-						qDebug("Found color "+value.toAscii());
+						qDebug()<<"Found color "<<value.toAscii();
 						color=value.trimmed();
-						qDebug("Assigned node color "+color.toAscii()+".");
+						qDebug()<<"Assigned node color "<<color.toAscii()<<".";
 					}
 					else if (prop=="fontcolor") {
-						qDebug("Found fontcolor "+value.toAscii());
+						qDebug()<<"Found fontcolor "<<value.toAscii();
 						fontColor=value.trimmed();
 					}
 					else if (prop=="shape") {
 						shape=value.trimmed();
-						qDebug("Found node shape "+shape.toAscii());
+						qDebug()<<"Found node shape "<<shape.toAscii();
 					}
-					qDebug("count %i, next %i", str.count(), next);
+					qDebug()<<"count"<< str.count()<<  " next "<< next;
 					str=str.right(str.count()-next).simplified();
-					qDebug("whatsleft: "+str.toAscii() +".");
+					qDebug()<<"whatsleft: "<<str.toAscii()<<".";
 					if ( (next=str.indexOf('=', 1))==-1) break;
 				}
 			} while (!str.isEmpty());

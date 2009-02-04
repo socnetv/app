@@ -71,13 +71,13 @@ public slots:
 	void removeDummyNode(int);
 
 	/** Slots to signals from GraphicsWidget and Parser*/
-	void createEdge (int, int, float, QString, bool, bool, bool);				//GW and Parser.
+	void createEdge (int, int, float, QString, bool, bool, bool);		//GW and Parser.
 	void createEdge (int, int, int, bool, bool, bool);					//
 	
-	void nodeMovement(int state, int type, int cW, int cH);					//Called by MW to start movement
+	void nodeMovement(int state, int type, int cW, int cH);			//Called by MW to start movement
 
 	void createVertex(int i, QPointF p); 							//Called by GW
-	void createVertex(int i, int canvasWidth, int canvasHeight); 				//Called by MW
+	void createVertex(int i, int canvasWidth, int canvasHeight); 	//Called by MW
 
 signals:
 	/** Signals to MainWindow */
@@ -93,8 +93,8 @@ signals:
 
 public: 	
 	/**INIT AND CLEAR*/
-    	Graph(); 				//Creates a new graph.
-	void clear();				//Clears m_graph 
+	Graph(); 				//Creates a new graph.
+	void clear();			//Clears m_graph 
 	~Graph();				//destroy
 
 	void setParent(QMainWindow*);
@@ -102,10 +102,8 @@ public:
 	
 	void setShowLabels(bool toggle);
 
-
 	/**FILES (READ AND WRITE)*/
 	int loadFile(QString, int, QString, QString, QString, bool, int maxWidth, int maxHeight);	//Almost universal network loader. :)
-
 	
 
 	/** VERTICES */

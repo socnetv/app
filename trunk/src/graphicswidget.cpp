@@ -106,13 +106,13 @@ void GraphicsWidget::clear() {
 void GraphicsWidget::drawNode(int num, int size, QString nodeColor, QString nodeLabel, QString labelColor, QPointF p, QString ns, bool showLabels, bool showNumbers) {
 	qDebug()<< "GW: drawNode(): drawing new node at: " << p.x() << ", "<< p.y();
 
-	Node *jim= new Node (this, num, size, nodeColor, nodeLabel, labelColor, ns, m_labelDistance, m_numberDistance, p);
+	Node *jim= new Node (this, num, size, nodeColor, ns, m_labelDistance, m_numberDistance, p);
 
-	qDebug()<< "GW: drawNode(): drawing node label...";
+	//drawing node label
 	NodeLabel *labelJim = new  NodeLabel (jim, nodeLabel, scene() );
 	labelJim -> setPos(p.x()-2, p.y()+m_labelDistance);
 	labelJim -> setDefaultTextColor (labelColor);
-	labelJim -> setTextInteractionFlags(Qt::TextEditorInteraction);
+//	labelJim -> setTextInteractionFlags(Qt::TextEditorInteraction);
 	if (showLabels) qDebug("GW: drawNode: will display label "+ nodeLabel.toAscii() + " for %i", num);
 	else qDebug("GW: drawNode: NOT display labels for %i", num);
 
@@ -127,7 +127,7 @@ void GraphicsWidget::drawNode(int num, int size, QString nodeColor, QString node
 
 	if (!showNumbers){
 		numberJim->hide();
-        }
+	}
 
 	//add the new node to a nodeVector to ease finding which node has a specific nodeNumber 
 	//The nodeVector is used in drawEdge() method
@@ -139,8 +139,7 @@ void GraphicsWidget::drawNode(int num, int size, QString nodeColor, QString node
 
 
 
-
-/** 	Draws an edge from source to target Node. 
+/** Draws an edge from source to target Node. 
 	This is used when we dont have references to nodes - only nodeNumbers:
 	a) when we load a network file (check = FALSE)
 	b) when the user clicks on the AddLink button on the MW.
@@ -168,17 +167,18 @@ void GraphicsWidget::drawEdge(int i, int j, int weight, bool reciprocal, bool dr
 		j=index;
 
 	}
-	if (i == j ) bezier = true;
+	if (i == j ) {
+		bezier = true;		
+	}
 	
 	Edge *edge=new Edge (this, nodeVector.at(i-1), nodeVector.at(j-1), weight, m_nodeSize, color, reciprocal, drawArrows, bezier);
 	edge->setColor(color);
 	
 	QString edgeName = QString::number(i) + QString(">")+ QString::number(j);
-	qDebug("GW: adding edge between %i and % to edgesMap. Name: "+edgeName.toAscii(), i, j);
+	qDebug()<<"GW: adding edge between "<<i << " and "<< j<< " to edgesMap. Name: "<<edgeName.toAscii();
 	edgesMap [edgeName] =  edge;
 
-	qDebug("Scene items now: %i ", scene()->items().size());
-	qDebug("GW items now: %i ", items().size());
+	qDebug()<<"Scene items now: " << scene()->items().size() <<" GW items: "<<items().size();
 
 	qDebug()<< "GW: drawNode(): drawing edge weight...";
 	double x = ( (nodeVector.at(i-1))->x() + (nodeVector.at(j-1))->x() ) / 2.0;
@@ -220,9 +220,10 @@ void GraphicsWidget::unmakeEdgeReciprocal(int source, int target){
 
 
 /** 	
-	This method is called when the user middle clicks on two nodes consecutively. .
+	Called when the user middle-clicks on two nodes consecutively. .
 	It saves the source & target nodes that were clicked 
-	On the second double/middle click event, it calls drawEdge method. 
+	On the second middle-click, it emits the userMiddleClicked() signal to MW, 
+	which will notify activeGraph, which in turn will signal back to drawEdge()...
 */
 void GraphicsWidget::startEdge(Node *node){
 	qDebug("GW: startEdge()");
@@ -232,7 +233,6 @@ void GraphicsWidget::startEdge(Node *node){
 		emit userMiddleClicked(firstNode->nodeNumber(), secondNode->nodeNumber(), 1);
 		( (MainWindow*)parent() )->setCursor(Qt::ArrowCursor);
 		secondDoubleClick=FALSE;
-		
 	}
 	else{
 		qDebug("GW: startEdge(): this is the first double click.");
