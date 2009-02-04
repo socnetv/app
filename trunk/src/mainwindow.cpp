@@ -311,6 +311,11 @@ void MainWindow::initActions(){
 	connect(createGaussianRandomNetworkAct, SIGNAL(activated()), this, SLOT(slotCreateGaussianRandomNetwork()));
 
 
+	createSmallWorldRandomNetworkAct = new QAction(tr("Small World"),	this);
+	createSmallWorldRandomNetworkAct->setStatusTip(tr("Creates a random network with small world properties"));
+	createSmallWorldRandomNetworkAct->setWhatsThis(tr("Small World \n\nA Small World, according to the Watts and Strogatz model, is a random network with short average path lengths and high clustering."));
+	connect(createSmallWorldRandomNetworkAct, SIGNAL(activated()), this, SLOT(slotCreateSmallWorldRandomNetwork()));
+
 	
 	/**
 	Edit menu actions
