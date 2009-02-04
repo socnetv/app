@@ -294,11 +294,11 @@ void MainWindow::initActions(){
 	createConnectedRandomNetworkAct->setWhatsThis(tr("Uniform Connected\n\nCreates a connected random network "));
 	connect(createConnectedRandomNetworkAct, SIGNAL(activated()), this, SLOT(slotCreateConnectedRandomNetwork()));
 
-	createLatticeNetworkAct = new QAction( QIcon(":/images/net1.png"), tr("Physicist's Lattice"), this);
+	createLatticeNetworkAct = new QAction( QIcon(":/images/net1.png"), tr("Ring Lattice"), this);
 	createLatticeNetworkAct ->setShortcut(tr("Shift+L"));
-	createLatticeNetworkAct->setStatusTip(tr("Creates a \"physicist's lattice\" network"));
-	createLatticeNetworkAct->setWhatsThis(tr("Lattice \n\nCreates a physicist's Lattice"));
-	connect(createLatticeNetworkAct, SIGNAL(activated()), this, SLOT(slotCreateRandomNetPhysLattice()));
+	createLatticeNetworkAct->setStatusTip(tr("Creates a ring lattice random network"));
+	createLatticeNetworkAct->setWhatsThis(tr("Ring Lattice \n\nA ring lattice or a physicist's lattice is a graph with N nodes each connected to K neighbors, K / 2 on each side."));
+	connect(createLatticeNetworkAct, SIGNAL(activated()), this, SLOT(slotCreateRandomNetRingLattice()));
 
 	createSameDegreeRandomNetworkAct = new QAction(QIcon(":/images/net.png"), tr("Same Degree"), this);
 	createSameDegreeRandomNetworkAct->setStatusTip(tr("Creates a random network where all nodes have the same degree."));
@@ -869,6 +869,7 @@ void MainWindow::initMenuBar() {
 	networkMenu ->addSeparator();
 	randomNetworkMenu = new QMenu(tr("Create Random Network"));
 	networkMenu ->addMenu (randomNetworkMenu);
+	randomNetworkMenu -> addAction (createSmallWorldRandomNetworkAct);
 	randomNetworkMenu -> addAction (createUniformRandomNetworkAct );
 //  createConnectedRandomNetworkAct -> addTo(randomNetworkMenu);
 // createGaussianRandomNetworkAct -> addTo(randomNetworkMenu);
@@ -2349,12 +2350,20 @@ void MainWindow::slotCreateGaussianRandomNetwork(){
 
 
 
+void MainWindow::slotCreateSmallWorldRandomNetwork(){
+	graphChanged();
+
+}
+
+
+
+
 
 /**
 	Creates a lattice network, i.e. a connected network where every node
 	has the same degree and is linked with its neighborhood.
 */
-void MainWindow::slotCreateRandomNetPhysLattice(){
+void MainWindow::slotCreateRandomNetRingLattice(){
 	bool ok;
 	statusBar()->showMessage("You have selected to create a physicist's lattice network. ", statusBarDuration);
 	int newNodes=( QInputDialog::getInteger(this, "Create physicist's lattice", tr("This will create a phycisist's lattice network. \nPlease enter the number of nodes you want:"),1, 1, maxNodes, 1, &ok ) ) ;

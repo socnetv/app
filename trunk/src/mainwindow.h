@@ -128,8 +128,8 @@ public slots:
 	void slotCreateSameDegreeRandomNetwork();
 	void slotCreateConnectedRandomNetwork();
 	void slotCreateGaussianRandomNetwork();
-	void slotCreateRandomNetPhysLattice();
-
+	void slotCreateRandomNetRingLattice();
+	void slotCreateSmallWorldRandomNetwork();
 	//EDIT MENU
 	void slotFindNode();
 	void slotAddLink();
@@ -276,7 +276,8 @@ private:
 	QAction *fileNew, *fileOpen, *fileSave, *fileSaveAs,*fileClose, *filePrint,*fileQuit;
 	QAction *exportBMP, *exportPNG, *exportPajek, *exportPDF, *exportDL, *exportGW, *exportSM, *exportList;
 	QAction *viewNetworkFileAct, *viewSociomatrixAct, *createUniformRandomNetworkAct;
-	QAction *createGaussianRandomNetworkAct, *createLatticeNetworkAct, *createConnectedRandomNetworkAct,*createSameDegreeRandomNetworkAct;
+	QAction *createGaussianRandomNetworkAct, *createLatticeNetworkAct, *createConnectedRandomNetworkAct;
+	QAction *createSmallWorldRandomNetworkAct, *createSameDegreeRandomNetworkAct;
 	QAction *displayNodeNumbersAct, *displayNodeLabelsAct;
 	QAction *findNodeAct,*addNodeAct, *addLinkAct, *removeNodeAct, *removeLinkAct;
 	QAction *changeNumbersSizeAct, *changeNodeLabelAct, *changeNodeColorAct, *changeNodeValueAct, *changeNodeSizeAct;
