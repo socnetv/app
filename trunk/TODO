@@ -1,7 +1,6 @@
 KNOW BUGS
 ========
 
---FIXME: Segmentation fault when exporting to BMP/PNG/WHATEVER!
 --FIXME: Centralities and Layout by centralities crash SocNetV when network is not connected.
 --FIXME: draw own links (nodes linked to themselves).
 --FIXME: isSymmetric not functioning well (check a-symmetry.net)
@@ -19,9 +18,8 @@ KNOW BUGS
 TODO
 ====
 --distribution of number of in-/out- links, not just average values.
--- filter out links and nodes, maybe also by aggregating them. For example, I wrote a small shell program that, given a node, extracts only the nodes connected to it along with the connections among them.
-
---  ability of processing streams of data (in that case, I will need some decaying function to delete "old", ie not used for long, links and nodes).
+--filter out links and nodes, maybe also by aggregating them. For example, I wrote a small shell program that, given a node, extracts only the nodes connected to it along with the connections among them.
+--ability of processing streams of data (in that case, I will need some decaying function to delete "old", ie not used for long, links and nodes).
 --Load nets from database connections.
 --TODO: Add additional properties to vertices (i.e. date, class, etc).
 --TODO: constrain layout to one direction (i.e. date).

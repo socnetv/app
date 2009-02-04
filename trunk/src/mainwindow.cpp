@@ -45,7 +45,7 @@
 #include "vertex.h"
 
 
-//#define PI 3.14159265358979323846264338327950288419717
+
 
 bool printDebug=FALSE;
 
@@ -96,7 +96,7 @@ MainWindow::MainWindow(const QString &fName) {
 	connect( graphicsWidget, SIGNAL( selectedNode(Node*) ), this, SLOT( nodeInfoStatusBar(Node*) ) );
 	connect( graphicsWidget, SIGNAL( selectedEdge(Edge*) ), this, SLOT ( linkInfoStatusBar(Edge*) ) );
 	connect( graphicsWidget, SIGNAL( windowResized(int, int)),this, SLOT( windowInfoStatusBar(int, int)) );  
-	connect( graphicsWidget, SIGNAL( changed() ), this, SLOT( graphChanged() ) ) ;
+	//connect( graphicsWidget, SIGNAL( changed() ), this, SLOT( graphChanged() ) ) ;
 	
 
 	connect( graphicsWidget, SIGNAL( userDoubleClicked(int, QPointF) ), this, SLOT( addNodeWithMouse(int, QPointF) ) ) ;
@@ -450,10 +450,15 @@ void MainWindow::initActions(){
 	changeAllNodesColorAct->setWhatsThis(tr("All Nodes\n\nChanges all nodes color at once."));
 	connect(changeAllNodesColorAct, SIGNAL(activated()), this, SLOT(slotAllNodesColor()) );
 
-	changeNumbersColorAct = new QAction( tr("Change all Numbers Colors"),	this);
-	changeNumbersColorAct->setStatusTip(tr("Click to change the color of all numbers."));
-	changeNumbersColorAct->setWhatsThis(tr("Numbers\n\nChanges the color of all numbers."));
-	connect(changeNumbersColorAct, SIGNAL(activated()), this, SLOT(slotNumbersColor()));
+	changeAllNumbersColorAct = new QAction( tr("Change all Numbers Colors"),	this);
+	changeAllNumbersColorAct->setStatusTip(tr("Click to change the color of all numbers."));
+	changeAllNumbersColorAct->setWhatsThis(tr("Numbers\n\nChanges the color of all numbers."));
+	connect(changeAllNumbersColorAct, SIGNAL(activated()), this, SLOT(slotAllNumbersColor()));
+
+	changeAllLabelsColorAct = new QAction( tr("Change all Labels Colors"),	this);
+	changeAllLabelsColorAct->setStatusTip(tr("Click to change the color of all node labels."));
+	changeAllLabelsColorAct->setWhatsThis(tr("Numbers\n\nChanges the color of all node labels."));
+	connect(changeAllLabelsColorAct, SIGNAL(activated()), this, SLOT(slotAllLabelsColor()));
 
 	changeAllLinksColorAct = new QAction( tr("Change all Links Colors"), this);
 	changeAllLinksColorAct->setStatusTip(tr("Click to change the color of all links."));
@@ -792,7 +797,8 @@ void MainWindow::initActions(){
 	printDebugAct->setStatusTip(tr("Enables/disables printing debug messages to stdout"));
 	printDebugAct->setWhatsThis(tr("Enables or disable Debug Messages\n\nPrinting debug messages to strerr. Enabling has a significant cpu cost but lets you know what SocNetV is actually doing."));
 	printDebugAct->setCheckable(true);
-	printDebugAct->setChecked (FALSE);
+	printDebugAct->setChecked (TRUE);
+	printDebug=TRUE;
 	connect(printDebugAct, SIGNAL(toggled(bool)), this, SLOT(slotPrintDebug(bool)));
 
 
@@ -942,7 +948,8 @@ void MainWindow::initMenuBar() {
 	colorOptionsMenu -> addAction (changeBackColorAct);
 	colorOptionsMenu -> addAction (changeAllNodesColorAct);
 	colorOptionsMenu -> addAction (changeAllLinksColorAct);
-	colorOptionsMenu -> addAction (changeNumbersColorAct);
+	colorOptionsMenu -> addAction (changeAllNumbersColorAct);
+	colorOptionsMenu -> addAction (changeAllLabelsColorAct);
 
 
 
@@ -1332,9 +1339,9 @@ void MainWindow::initStatusBar() {
 void MainWindow::initView() {
 	qDebug ("MW initView()");
 	//create a scene
-	scene=new  QGraphicsScene();
+	scene=new QGraphicsScene();
 
-	//create a view for this scene
+	//create a view widget for this scene
 	graphicsWidget=new GraphicsWidget(scene, this);
 	//QGraphicsView can cache pre-rendered content in a QPixmap, which is then drawn onto the viewport. 
 	graphicsWidget->setCacheMode(QGraphicsView::CacheNone);  //CacheBackground | CacheNone
@@ -1357,14 +1364,13 @@ void MainWindow::initView() {
 	graphicsWidget->setFocusPolicy(Qt::StrongFocus);	
 
 	printDebugAct->setChecked (true);
-	//set minimum size of canvas
- 	graphicsWidget->setMinimumSize((qreal)  ( this->width()-toolBox->sizeHint().width()) , (qreal) ( this->width()-toolBox->sizeHint().width() ) );
-
-	//scene->setSceneRect(0, 0, graphicsWidget->width(), (qreal) (graphicsWidget->height() ) );
-	qDebug ("MW initView(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
-	printDebugAct->setChecked (FALSE);
 
 	this->resize(900,700);
+
+	//set minimum size of canvas
+ 	graphicsWidget->setMinimumSize( (qreal)  ( this->width()-toolBox->sizeHint().width() -30) , (qreal) ( this->height()-statusBar()->sizeHint().height() -toolBar->sizeHint().height() -menuBar()->sizeHint().height() -20 ) );
+	qDebug ("MW initView(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
+//	printDebugAct->setChecked (FALSE);
 }
 
 
@@ -1377,12 +1383,8 @@ void MainWindow::resizeEvent( QResizeEvent * ){
 	qDebug ("MW resizeEvent():INITIAL window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
 
 	//the area of the scene displayed by the CanvasView
-	scene->setSceneRect(0, 0, (qreal)( graphicsWidget->width() ), (qreal) (  graphicsWidget->height() ) );
-
+	scene->setSceneRect(0, 0, (qreal) ( graphicsWidget->width() ), (qreal) (graphicsWidget->height() ) );
 	qDebug ("MW resizeEvent(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
-	graphicsWidget -> fitInView( scene->sceneRect());
-	
-
 }
 
 
@@ -1391,7 +1393,7 @@ void MainWindow::resizeEvent( QResizeEvent * ){
 	Also used when erasing a network to start a new one
 */
 void MainWindow::initNet(){
-	qDebug("MW: initNet() START INITIALISATON");
+	qDebug("MW: initNet() START INITIALISATION");
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 	initNodeSize=4;
 	initNodeColor="gold";
@@ -4999,18 +5001,38 @@ void MainWindow::slotAllLinksColor(){
 /**
 *  Changes the color of nodes' numbers
 */
-void MainWindow::slotNumbersColor(){
-/*
-	QColor textColor = QColorDialog::getColor( QColor(Qt::black), this, "Text color dialog" );
+void MainWindow::slotAllNumbersColor(){
+	// = QInputDialog::getItem(this, "Links' colors", "Select a new color:", colorList, 1, TRUE, &ok);
+	QColor textColor = QColorDialog::getColor( Qt::black, this );
+	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	qDebug ("MW: Will change color");
 	QList<QGraphicsItem *> list= scene->items();
 	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
-		if ( (*it)->type() == TypeNumber)
-		{
+		if ( (*it)->type() == TypeNumber) 		{
 			NodeNumber *jimNumber = (NodeNumber *) (*it);
-			jimNumber->setColor (textColor);
+			jimNumber->setDefaultTextColor(textColor);
 		}
+	QApplication::restoreOverrideCursor();
 	statusBar()->showMessage(tr("Ready. ") ,statusBarDuration);
+}
+
+
+
+/**
+*  Changes the color of nodes' labels
 */
+void MainWindow::slotAllLabelsColor(){
+	QColor textColor = QColorDialog::getColor( Qt::black, this );
+	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	qDebug ("MW: Will change label color");
+	QList<QGraphicsItem *> list= scene->items();
+	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
+		if ( (*it)->type() == TypeLabel) 		{
+			NodeLabel *jimLabel = (NodeLabel *) (*it);
+			jimLabel->setDefaultTextColor(textColor);
+		}
+	QApplication::restoreOverrideCursor();
+	statusBar()->showMessage(tr("Label colors changed. Ready. ") ,statusBarDuration);
 }
 
 

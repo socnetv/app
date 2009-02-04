@@ -8,11 +8,12 @@ ChangeLog:
 Version 0.50 - Feb 10 2009
 Codename: "Recession"
 ------------------------------
--Networks can be exported to PDF documents directly.
+-PDF export with one click.
+-Node labels are fully editable.
+-Number and label colors are editable.
 -Fixed number and label font size problem.
--Fixed PNG and BMP export bug
- 
--Icon for Windows Executable
+-Fixed PNG and BMP export regression.
+-Icon for Windows executable
 
 
 

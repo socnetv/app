@@ -209,7 +209,8 @@ public slots:
 	void slotBackgroundColor ();
 	void slotAllNodesColor();
 	void slotAllLinksColor();
-	void slotNumbersColor();
+	void slotAllNumbersColor();
+	void slotAllLabelsColor();
 	//VIEW MENU
 	void slotAntialiasing(bool );
 	void slotShowProgressBar(bool toggle);
@@ -283,7 +284,7 @@ private:
 	QAction *changeNodeBoxAct, *changeNodeCircleAct, *changeNodeTriangleAct, *changeNodeDiamondAct, *changeNodeEllipseAct;
 	QAction *changeLinkLabelAct, *changeLinkColorAct, *changeLinkWeightAct;
 	QAction *filterNodesAct, *filterLinksAct, *transformNodes2LinksAct, *symmetrizeAct;
-	QAction *changeBackColorAct, *changeAllNodesColorAct, *changeAllLinksColorAct, *changeNumbersColorAct;
+	QAction *changeBackColorAct, *changeAllNodesColorAct, *changeAllLinksColorAct, *changeAllNumbersColorAct, *changeAllLabelsColorAct;
 	QAction *drawLinksWeightsAct, *displayLinksWeightNumbersAct, *displayLinksAct, *displayLinksArrowsAct, *drawLinksBezier;
 	QAction *viewToolBar, *viewStatusBar, *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
 	QAction *netDensity, *symmetryAct,   *distanceAct, *distanceMatrixAct, *diameterAct;

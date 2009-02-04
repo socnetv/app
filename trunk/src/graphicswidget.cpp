@@ -112,7 +112,7 @@ void GraphicsWidget::drawNode(int num, int size, QString nodeColor, QString node
 	NodeLabel *labelJim = new  NodeLabel (jim, nodeLabel, scene() );
 	labelJim -> setPos(p.x()-2, p.y()+m_labelDistance);
 	labelJim -> setDefaultTextColor (labelColor);
-
+	labelJim -> setTextInteractionFlags(Qt::TextEditorInteraction);
 	if (showLabels) qDebug("GW: drawNode: will display label "+ nodeLabel.toAscii() + " for %i", num);
 	else qDebug("GW: drawNode: NOT display labels for %i", num);
 
