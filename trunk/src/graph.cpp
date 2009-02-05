@@ -1877,21 +1877,25 @@ void Graph::createRandomNetSmallWorld(int vert, int degree, double beta, double 
 
 	int candidate;
 	
-	for (register int i=0;i<vert; i++) {
-		for (register int j=i;j<vert; j++) {
+	for (register int i=1;i<vert; i++) {
+		for (register int j=i+1;j<vert; j++) {
+			qDebug()<<">>>>> REWIRING: Check if  "<< i << " is linked to " << j;
 			if ( hasEdge(i, j) ) {
-				qDebug(">>>>> Random REWIRING Experiment between %i and %i:", i+1, j+1);
+				qDebug()<<">>>>> REWIRING: They're linked. Do a random REWIRING Experiment between "<< i<< " and " << j;
 				if (rand() % 100 > (beta * 100))  {
-					qDebug("breaking edge!");
+					qDebug(">>>>> REWIRING: We'l break this edge!");
 					removeEdge(i, j);
 					removeEdge(j, i);
+					qDebug()<<">>>>> REWIRING: OK. Let's create a new edge!";
 					for (;;) {	//do until we create a new edge
-						candidate=rand() % vert ;		//pick another vertex.
-						if (!hasEdge(i, candidate) && candidate!=i)	//Only if differs from i and hasnot edge with it
-								qDebug("<----> Random New Edge Experiment between %i and %i:", i+1, candidate);
+						candidate=rand() % (vert+1) ;		//pick another vertex.
+						if (candidate == 0 || candidate == i) continue;
+						qDebug()<<">>>>> REWIRING: Candidate: "<< candidate;
+						if (!hasEdge(i, candidate) )	//Only if differs from i and hasnot edge with it
+								qDebug("<----> Random New Edge Experiment between %i and %i:", i, candidate);
 								if (rand() % 100 > 0.5) {
 									qDebug("Creating new link!");
-									createEdge(i+1, candidate+1, 1, "black", true, true, false);
+									createEdge(i, candidate, 1, "black", true, true, false);
 									break;
 								}
 					}
