@@ -312,7 +312,8 @@ void MainWindow::initActions(){
 	connect(createGaussianRandomNetworkAct, SIGNAL(activated()), this, SLOT(slotCreateGaussianRandomNetwork()));
 
 
-	createSmallWorldRandomNetworkAct = new QAction(tr("Small World"),	this);
+	createSmallWorldRandomNetworkAct = new QAction(QIcon(":/images/sw.png"), tr("Small World"),	this);
+	createSmallWorldRandomNetworkAct->setShortcut(tr("Shift+W"));
 	createSmallWorldRandomNetworkAct->setStatusTip(tr("Creates a random network with small world properties"));
 	createSmallWorldRandomNetworkAct->setWhatsThis(tr("Small World \n\nA Small World, according to the Watts and Strogatz model, is a random network with short average path lengths and high clustering."));
 	connect(createSmallWorldRandomNetworkAct, SIGNAL(activated()), this, SLOT(slotCreateSmallWorldRandomNetwork()));
@@ -2384,7 +2385,7 @@ void MainWindow::slotCreateSmallWorldRandomNetwork(){
 	double beta = QInputDialog::getDouble(this,"Create small world...",
 			 tr("Now, enter a parameter beta. \n")+
 			 tr("This is the edge rewiring probability:"), 
-			 0.50, 0, 1, 2, &ok);
+			 0.50, 0.00, 1.00, 2, &ok);
 
 	statusBar()->showMessage(tr("Erasing any existing network. "), statusBarDuration);
 	initNet();  

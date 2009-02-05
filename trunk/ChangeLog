@@ -6,23 +6,22 @@
 ChangeLog:
 
 Version 0.50 - Feb 10 2009
-Codename: "Recession"
+Codename: "Recession (or the ballad of the lost statesmen)"
 ------------------------------
--Added algorithms for 'Small World' random network creation.
+-'Small World' random network creation (Watts and Strogatz model).
 -Nodes can be linked to themselves with nice bezier curves.
 -PDF export with one click.
--Node labels are fully editable.
 -Number and label colors are editable.
 -Fixed number and label font size problem.
 -Fixed PNG and BMP export regression.
--New program logo and icon!
--Icon for Windows executable
--Code cleanup and minor memory optimisations.
+-New program logo and icon.
+-Icon for Windows executable.
+-Code cleanup (no more compile warnings) and minor memory optimisations.
 
 
 
 Version 0.49 - Jan 13 2009
-Codename: "Simplification"
+Codename: "Alexis Grigoropoulos"
 ------------------------------
 -Weight numbers can be displayed over links.
 -DL network format initial support.
@@ -79,7 +78,7 @@ Codename: "Autumn leaves"
 
 
 Version 0.45 - Aug 30 2008
-Codename: "Changes"
+Codename: "Changes (I' going through)"
 ------------------------------
 
 - GraphML initial support.
@@ -333,8 +332,9 @@ version 0.2
 version 0.1
 -----------
 - First Version of SocNetV (Feb 2004, in the end of an inexpectably heavy
-  winter). Initially i planned to name it something like 'nwd', although 
-  I cannot even remember what this supposed to meant!
+  winter). Initially i planned to name it something like 'nwd' 
+  or snail (social network analysis in Linux), although 
+  I cannot even remember what 'nwd' was supposed to meant!
 
 - SocNetV should normally read plain PAJEK-formatted network files. At this
   point, only vertices and edges are supported. Also you can read but you cannot write :(

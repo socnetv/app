@@ -7,7 +7,7 @@ KNOW BUGS
 --FIXME: Weights should be updated when changed and floating point weights should be supported...
 --FIXME: Graphviz (dot) files not loaded well. See test2.dot. Cant read when one line and nodes dont appear...
 
---FIXME: GraphML files may crash SocNetV
+--FIXME: Very complex GraphML files may crash SocNetV
 --FIXME: 40-actors-non-symmetric crashed on Betweeness centr.
 - FIXME: GROUP Stress & Graph centralities missing
 - FIXME: Standard Stress Centrality index missing.
@@ -23,7 +23,6 @@ TODO
 --TODO: Add additional properties to vertices (i.e. date, class, etc).
 --TODO: constrain layout to one direction (i.e. date).
 --TODO: Filter Links by their weights
---TODO: Small Worlds.
 --TODO Transform actors to links //COMMENTED OUT
 
 --TODO: CLUSTERING by betweeness, see http://iv.slis.indiana.edu/sw/bc.html

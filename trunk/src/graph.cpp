@@ -1881,7 +1881,7 @@ void Graph::createRandomNetSmallWorld(int vert, int degree, double beta, double 
 		for (register int j=i+1;j<vert; j++) {
 			qDebug()<<">>>>> REWIRING: Check if  "<< i << " is linked to " << j;
 			if ( hasEdge(i, j) ) {
-				qDebug()<<">>>>> REWIRING: They're linked. Do a random REWIRING Experiment between "<< i<< " and " << j;
+				qDebug()<<">>>>> REWIRING: They're linked. Do a random REWIRING Experiment between "<< i<< " and " << j << " Beta parameter is " << beta;
 				if (rand() % 100 > (beta * 100))  {
 					qDebug(">>>>> REWIRING: We'l break this edge!");
 					removeEdge(i, j);

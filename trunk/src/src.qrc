@@ -40,6 +40,7 @@
 	<file>images/back.png</file>
 	<file>images/forward.png</file>
 	<file>images/home.png</file>
+	<file>images/sw.png</file>
 
 </qresource>
 </RCC>
