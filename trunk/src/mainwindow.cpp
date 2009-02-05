@@ -108,6 +108,7 @@ MainWindow::MainWindow(const QString &fName) {
 	connect( &activeGraph, SIGNAL( addBackgrHLine (int) ), graphicsWidget, SLOT(addBackgrHLine(int) ) ) ;
 	connect( &activeGraph, SIGNAL( moveNode(int, int, int) ), graphicsWidget, SLOT(moveNode(int, int, int) ) ) ;
 	connect( &activeGraph, SIGNAL( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool, bool) ), graphicsWidget, SLOT( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool, bool)  ) ) ;
+	connect( &activeGraph, SIGNAL( eraseEdge(int, int)), graphicsWidget, SLOT( eraseEdge(int, int) ) );
 	connect( &activeGraph, SIGNAL( graphChanged() ), this, SLOT( graphChanged() ) ) ;
 
 	connect( &activeGraph, SIGNAL( drawEdge( int, int, int, bool, bool, QString, bool, bool)), graphicsWidget, SLOT( drawEdge( int, int,int, bool, bool, QString, bool, bool  ) )  ) ;
@@ -1793,16 +1794,16 @@ bool MainWindow::slotExportPNG(){
 		return false;
 	}	
 	tempFileNameNoPath=fn.split ("/");
-	qDebug("slotExportPNG 1");
+	qDebug("slotExportPNG: grabing canvas");
 	QPixmap picture;
 	picture=QPixmap::grabWidget(graphicsWidget, graphicsWidget->rect());
-	qDebug("slotExportPNG 2");
+	qDebug("slotExportPNG: adding logo");
 	QPainter p;
 	p.begin(&picture);
 		p.setFont(QFont ("Helvetica", 10, QFont::Normal, FALSE));
-		p.drawText(5,10,"SocNetV: "+fileNameNoPath.last());
+		p.drawText(5,10,"SocNetV: "+tempFileNameNoPath.last());
 	p.end();
-	qDebug("slotExportPNG 3");
+	qDebug("slotExportPNG: checking filename");
 	if (fn.contains("png", Qt::CaseInsensitive) ) {
 		picture.toImage().save(fn, "PNG");
 		QMessageBox::information(this, "Export to PNG...",tr("Image Saved as: ")+tempFileNameNoPath.last(), "OK",0);
@@ -1839,12 +1840,15 @@ bool MainWindow::slotExportBMP(){
 	tempFileNameNoPath=fn.split ("/");
 
 	QPixmap picture;
+	qDebug("slotExportBMP: grabing canvas");
 	picture=QPixmap::grabWidget(graphicsWidget, graphicsWidget->viewport()->rect());
 	QPainter p;
+	qDebug("slotExportBMP: adding logo");
 	p.begin(&picture);
 		p.setFont(QFont ("Helvetica", 10, QFont::Normal, FALSE));
-		p.drawText(5,10,"SocNetV: "+fileNameNoPath.last());
+		p.drawText(5,10,"SocNetV: "+tempFileNameNoPath.last());
 	p.end();
+	qDebug("slotExportBMP: checking file");
 	if (fn.contains(format, Qt::CaseInsensitive) ) {
 		picture.toImage().save(fn, format.toAscii());
 		QMessageBox::information(this, tr("Export to BMP..."),tr("Image Saved as: ")+tempFileNameNoPath.last(), "OK",0);
@@ -1853,7 +1857,8 @@ bool MainWindow::slotExportBMP(){
 		picture.toImage().save(fn+"."+format, format.toAscii());
 		QMessageBox::information(this, tr("Export to BMP..."),tr("Image Saved as: ")+tempFileNameNoPath.last()+"."+format , "OK",0);
 	}
-	
+	qDebug()<< "Exporting BMP to "<< fn;
+
 	statusBar()->showMessage( tr("Exporting completed"), statusBarDuration );
 	qDebug("Export finished!");
 	return true;   
@@ -1876,7 +1881,7 @@ bool MainWindow::slotExportPDF(){
 		return false;
 	}
 	
-	QString fileName = QFileDialog::getSaveFileName(this, tr("Export PDF"), QString(), "*.pdf");
+	QString fileName = QFileDialog::getSaveFileName(this, tr("Export to PDF"), 0, tr("Portable Document Format files (*.pdf)"));
 	if (fileName.isEmpty())  {
 		statusBar()->showMessage(tr("Saving aborted"), statusBarDuration);
 		return false;
@@ -1884,12 +1889,17 @@ bool MainWindow::slotExportPDF(){
     else {
 		if (QFileInfo(fileName).suffix().isEmpty())
 			fileName.append(".pdf");
-			QPrinter printer(QPrinter::HighResolution);
-			printer.setOutputFormat(QPrinter::PdfFormat);
-			printer.setOutputFileName(fileName);
-			QPainter painter(&printer);
-			graphicsWidget->render(&painter);
+
+		QPrinter printer(QPrinter::HighResolution);
+		printer.setOutputFormat(QPrinter::PdfFormat);
+		printer.setOutputFileName(fileName);
+		QPainter painter(&printer);
+		graphicsWidget->render(&painter);
 	}
+	qDebug()<< "Exporting PDF to "<< fileName;	
+	tempFileNameNoPath=fileName.split ("/");
+	QMessageBox::information(this, tr("Export to PDF..."),tr("File saved as: ")+tempFileNameNoPath.last() , "OK",0);
+	statusBar()->showMessage( tr("Exporting completed"), statusBarDuration );
 	return true;
 }
 
@@ -2351,8 +2361,63 @@ void MainWindow::slotCreateGaussianRandomNetwork(){
 
 
 void MainWindow::slotCreateSmallWorldRandomNetwork(){
-	graphChanged();
+	bool ok=false;
+	statusBar()->showMessage("You have selected to create a small world network.", statusBarDuration);
+	int newNodes=( QInputDialog::getInteger(this, "Create small world", 
+			tr("This will create a small world network, \n")+
+			tr("that is an undirected graph with N nodes and N*d/2 edges,\n")+
+			tr("where d is the mean edge degree.\n")+
+			tr("Please enter the number N of nodes you want:"),
+			1, 1, maxNodes, 1, &ok ) ) ;
+	if (!ok) { 
+		statusBar()->showMessage("You did not enter an integer. Aborting.", statusBarDuration);
+		return;
+	}
+	int degree = QInputDialog::getInteger(this,"Create small world...",
+			 tr("Now, enter an even number d. \n")+
+			 tr("This is the mean edge degree each new node will have:"), 
+			 2, 2, newNodes-1, 2, &ok);
+	if ( (degree% 2)==1 ) {
+		QMessageBox::critical(this, "Error",tr(" Sorry. I cannot create such a network. Links must be even number"), "OK",0);
+		return;
+	}
+	double beta = QInputDialog::getDouble(this,"Create small world...",
+			 tr("Now, enter a parameter beta. \n")+
+			 tr("This is the edge rewiring probability:"), 
+			 0.50, 0, 1, 2, &ok);
 
+	statusBar()->showMessage(tr("Erasing any existing network. "), statusBarDuration);
+	initNet();  
+	makeThingsLookRandom();  
+	statusBar()->showMessage(tr("Creating small world. Please wait..."), statusBarDuration);
+	double x0=scene->width()/2.0;
+	double y0=scene->height()/2.0;
+	double radius=(graphicsWidget->height()/2.0)-50;          //pixels
+
+	if (showProgressBarAct->isChecked()){
+		progressDialog= new QProgressDialog(
+			tr("Creating random network. Please wait \n (or disable me from Options > View > ProgressBar, next time )."), 
+			"Cancel", 0, (int) (newNodes+newNodes), this);
+		progressDialog -> setWindowModality(Qt::WindowModal);
+		connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
+		progressDialog->setMinimumDuration(0);
+	}
+	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	activeGraph.createRandomNetSmallWorld(newNodes, degree, beta, x0, y0, radius);
+	QApplication::restoreOverrideCursor();
+
+	if (showProgressBarAct->isChecked())
+		progressDialog->deleteLater();	
+
+  	fileContainsNodeColors=FALSE;
+	fileContainsLinksColors=FALSE;
+	fileContainsNodesCoords=FALSE;
+
+	fileLoaded=false;
+
+	graphChanged();
+	setWindowTitle("Untitled");
+	statusBar()->showMessage(tr("Small world random network created: ")+QString::number(activeNodes())+" nodes, "+QString::number( activeLinks())+" links", statusBarDuration);	
 }
 
 
@@ -2385,8 +2450,6 @@ void MainWindow::slotCreateRandomNetRingLattice(){
 	double y0=scene->height()/2.0;
 	double radius=(graphicsWidget->height()/2.0)-50;          //pixels
 
-
-
 	if (showProgressBarAct->isChecked()){
 		progressDialog= new QProgressDialog("Creating random network. Please wait (or disable me from Options > View > ProgressBar, next time ;)).", "Cancel", 0, (int) (newNodes+newNodes), this);
 		progressDialog -> setWindowModality(Qt::WindowModal);
@@ -2395,17 +2458,14 @@ void MainWindow::slotCreateRandomNetRingLattice(){
 	}
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
-	activeGraph.createRandomNetPhysLattice(newNodes, degree, x0, y0, radius);
+	activeGraph.createRandomNetRingLattice(newNodes, degree, x0, y0, radius);
 
 	QApplication::restoreOverrideCursor();
 
 	if (showProgressBarAct->isChecked())
 		progressDialog->deleteLater();	
 
-
-
-
-  	fileContainsNodeColors=FALSE;
+ 	fileContainsNodeColors=FALSE;
 	fileContainsLinksColors=FALSE;
 	fileContainsNodesCoords=FALSE;
 
@@ -2413,7 +2473,7 @@ void MainWindow::slotCreateRandomNetRingLattice(){
 	
 	graphChanged();
 	setWindowTitle("Untitled");
-	statusBar()->showMessage("Lattice network created: "+QString::number(activeNodes())+" nodes, "+QString::number( activeLinks())+" links", statusBarDuration);	
+	statusBar()->showMessage("Ring lattice random network created: "+QString::number(activeNodes())+" nodes, "+QString::number( activeLinks())+" links", statusBarDuration);	
 }
 
 
@@ -2779,7 +2839,7 @@ void MainWindow::slotRemoveLink(){
 		}
 
 		if ( activeGraph.hasEdge(sourceNode, targetNode)!=0 ) {	
-			graphicsWidget->removeEdge(sourceNode, targetNode);
+			graphicsWidget->eraseEdge(sourceNode, targetNode);
 			activeGraph.removeEdge(sourceNode, targetNode);
 		}
 		else {

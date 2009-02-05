@@ -86,6 +86,7 @@ signals:
 	/** Signals to GraphicsWidget */
 	void drawNode( int ,int,  QString, QString,QString, QPointF, QString, bool, bool);	//call GW to draw a node
 	void drawEdge(int, int, int, bool, bool, QString, bool, bool);				//call GW to draw an edge
+	void eraseEdge(int, int);		//emited from removeEdge() to GW to clear the edge item.
 	void drawEdgeReciprocal(int, int);							//call GW to draw the edge as symmetric one
 	void addBackgrCircle(int, int, int);							//call GW to draw a layout line somewhere.
 	void addBackgrHLine (int);								//call GW to draw a layout line somewhere.
@@ -187,8 +188,9 @@ public:
 
 	/**RANDOM NETWORKS*/
 	void createRandomNetErdos(int, double);				//Creates a uniform random network
-	void createRandomNetPhysLattice(int, int, double, double, double); 	//Creates a Circular lattice
+	void createRandomNetRingLattice(int, int, double, double, double); 	//Creates a ring lattice network
 	void createSameDegreeRandomNetwork(int, int); 				//Creates a random network with the same degree in all nodes
+	void createRandomNetSmallWorld(int, int, double, double, double, double); 	//Creates a small world network
 	int factorial(int);						// for  (n 2)p edges calculation
 
 	/** List of pointers to the vertices. A vertex stores all the info: links, colours, etc */

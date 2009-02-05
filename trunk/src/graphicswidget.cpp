@@ -319,9 +319,9 @@ void GraphicsWidget::removeNode(int doomedJim){
 
 
 /**
-	Called from MainWindow when removing links by vertex numbers
+	Called from MainWindow when erasing edges using vertex numbers
 */
-void GraphicsWidget::removeEdge(int sourceNode, int targetNode){
+void GraphicsWidget::eraseEdge(int sourceNode, int targetNode){
 	qDebug("GW: Scene items= %i - View items : %i",scene()->items().size(), items().size());
 	QList<QGraphicsItem *>  list=scene()->items();
 	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!= list.end() ; it++){

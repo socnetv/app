@@ -608,7 +608,7 @@ int Parser::loadGraphML(){
 		str= ts.readLine() ;
 		fileLine++;
 		qDebug ("Reading fileLine %i: ", fileLine);
-		qDebug(str.toAscii());
+		qDebug()<<str.toAscii();
 		if (str.isEmpty() ) continue;	
 
 		if ( str.contains("<!",Qt::CaseInsensitive) ) { 	 //comments
@@ -635,7 +635,7 @@ int Parser::loadGraphML(){
 			end=str.indexOf("\"", start+1);
 // 			qDebug("end \"= %i ",end);
 			id=str.mid(start+1, end-start-1);  //keep whatever is inside 
-			qDebug("key ID: " + id.toAscii() );
+			qDebug()<<"key ID: " << id.toAscii() ;
 			str=str.right(str.size()-end-1);
 //			qDebug("remains: " + str.toAscii() );
 
@@ -649,7 +649,7 @@ int Parser::loadGraphML(){
 // 			qDebug("end \"= %i ",end);
 			tgt=str.mid(start+1, end-start-1);  //keep whatever is inside 
 			key_for[ id ] = tgt;
-			qDebug("key FOR: " + key_for[ id ].toAscii() );
+			qDebug()<<"key FOR: " << key_for[ id ].toAscii() ;
 			str=str.right(str.size()-end-1);
 //			qDebug("remains: " + str.toAscii() );
 
@@ -665,7 +665,7 @@ int Parser::loadGraphML(){
 //			qDebug("end \"= %i ",end);
 			name=str.mid(start+1, end-start-1);  //keep whatever is inside 
 			key_name[ id ] = name;
-			qDebug("key ATTR.name: " + key_name[ id ].toAscii() );
+			qDebug()<<"key ATTR.name: " << key_name[ id ].toAscii() ;
 			str=str.right(str.size()-end-1);
 //			qDebug("remains: " + str.toAscii() );
 
@@ -680,7 +680,7 @@ int Parser::loadGraphML(){
 //			qDebug("end \"= %i ",end);
 			name=str.mid(start+1, end-start-1);  //keep whatever is inside 
 			key_type[ id ] = name;
-			qDebug("key ATTR.type: " + key_type[ id ].toAscii() );
+			qDebug()<<"key ATTR.type: " << key_type[ id ].toAscii() ;
 			str=str.right(str.size()-end-1);
 // 			qDebug("remains: " + str.toAscii() );
 		}
@@ -730,7 +730,7 @@ int Parser::loadGraphML(){
 				end=str.indexOf("\"", start+1);
 				name=str.mid(start+1, end-start-1);  //keep whatever is inside 
 				posx = name;
-				qDebug("x: " + posx.toAscii() );
+				qDebug()<<"x: " << posx.toAscii() ;
 				str=str.right(str.size()-end-1);
 
 				start=str.indexOf("y");
@@ -738,7 +738,7 @@ int Parser::loadGraphML(){
 				end=str.indexOf("\"", start+1);
 				name=str.mid(start+1, end-start-1);  //keep whatever is inside 
 				posy= name;
-				qDebug("y: " + posy.toAscii() );
+				qDebug()<<"y: " << posy.toAscii() ;
 				randX=posx.toDouble(&check1);
 				randY=posy.toDouble(&check1);
 				qDebug("x: %f,  y: %f ", randX, randY );
@@ -755,7 +755,7 @@ int Parser::loadGraphML(){
 				end=str.indexOf("\"", start+1);
 				name=str.mid(start+1, end-start-1);  //keep whatever is inside 
 				nodecolor = name;
-				qDebug("color: " + nodecolor.toAscii() );
+				qDebug()<<"color: " << nodecolor.toAscii() ;
 				str=str.right(str.size()-end-1);
 			}
 
@@ -772,14 +772,14 @@ int Parser::loadGraphML(){
 				end=str.indexOf("\"", start+1);
 				name=str.mid(start+1, end-start-1);  //keep whatever is inside 
 				label_visible = name;
-				qDebug("visible: " + label_visible.toAscii() );
+				qDebug()<<"visible: " << label_visible.toAscii() ;
 				str=str.right(str.size()-end-1);
 			}
 			start=str.indexOf(">", start+1);
 			end=str.indexOf("<", start+1);
 			name=str.mid(start+1, end-start-1);  //keep whatever is inside 
 			nodelabel=name;
-			qDebug("nodelabel: " + nodelabel.toAscii() );
+			qDebug()<<"nodelabel: " << nodelabel.toAscii() ;
 		
 	
 		}
@@ -796,7 +796,7 @@ int Parser::loadGraphML(){
 			else
 				nodeshape = name;
 
-			qDebug("type: " + nodeshape.toAscii() );
+			qDebug()<<"type: " << nodeshape.toAscii() ;
 		}
 		
 		if ( str.contains("</node",Qt::CaseInsensitive) ) { 	 //end node declarations
@@ -868,7 +868,7 @@ int Parser::loadGraphML(){
 				end=str.indexOf("\"", start+1);
 	// 			qDebug("end \"= %i ",end);
 				id=str.mid(start+1, end-start-1);  //keep whatever is inside 
-				qDebug("key: " + id.toAscii() );
+				qDebug()<<"key: "<< id.toAscii() ;
 				str=str.right(str.size()-end-1);
 	//			qDebug("remains: " + str.toAscii() );
 				start=str.indexOf(">", start+1);

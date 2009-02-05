@@ -8,7 +8,7 @@ ChangeLog:
 Version 0.50 - Feb 10 2009
 Codename: "Recession"
 ------------------------------
--'Small World' random networks
+-Added algorithms for 'Small World' random network creation.
 -Nodes can be linked to themselves with nice bezier curves.
 -PDF export with one click.
 -Node labels are fully editable.

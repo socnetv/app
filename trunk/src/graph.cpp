@@ -399,7 +399,7 @@ void Graph::setEdgeWeight (int v1, int v2, float weight) {
 /** 	Removes the edge (arc) between v1 and v2
 */
 void Graph::removeEdge (int v1, int v2) {	
-	qDebug ("Graph: edge (%i, %i) to be removed from graph", v1, v2);
+	qDebug ("Graph: removeEdge edge %i -> %i to be removed from graph", v1, v2);
 	qDebug("Graph: Vertex named %i has index=%i",m_graph[ index[v1] ]->name(), index[v1]);
 	m_graph [ index[v1] ]->removeLinkTo(v2);
 	m_graph [ index[v2] ]->removeLinkFrom(v1);
@@ -409,6 +409,8 @@ void Graph::removeEdge (int v1, int v2) {
 	outEdgesVert--;
 	inEdgesVert--;
 	graphModified=true;
+	qDebug("Graph: removeEdge(): emitting eraseEdge to GW"); 
+	emit eraseEdge(v1,v2);
 	emit graphChanged(); 
 }
 
@@ -1826,11 +1828,11 @@ void Graph::createRandomNetErdos(int vert, double probability){
 
 
 
-/** layman's attempt to create a random Lattice network.
+/** layman's attempt to create a random ring lattice network.
 */
 
-void Graph::createRandomNetPhysLattice(int vert, int degree,double x0, double y0, double radius){
-	qDebug("Graph: createPhysicistLatticeNetwork");
+void Graph::createRandomNetRingLattice(int vert, int degree,double x0, double y0, double radius){
+	qDebug("Graph: createRingLatticeNetwork");
 	int x=0;
 	int y=0;
 	int progressCounter=0;
@@ -1845,7 +1847,6 @@ void Graph::createRandomNetPhysLattice(int vert, int degree,double x0, double y0
 		qDebug("Graph: createPhysicistLatticeNetwork, new node i=%i, at x=%i, y=%i", i+1, x,y);
 		progressCounter++;
 		emit updateProgressDialog( progressCounter );
-
 	}
 	int target = 0;
 	for (register int i=0;i<vert; i++){
@@ -1860,9 +1861,49 @@ void Graph::createRandomNetPhysLattice(int vert, int degree,double x0, double y0
 		progressCounter++;
 		emit updateProgressDialog(progressCounter );
 		qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
-
 	}
 }
+
+
+
+
+
+void Graph::createRandomNetSmallWorld(int vert, int degree, double beta, double x0, double y0, double radius){
+	qDebug("Graph: createRandomNetSmallWorld. First creating a ring lattice");
+
+	createRandomNetRingLattice(vert, degree, x0, y0, radius);
+
+	qDebug("******** Graph: REWIRING starts...");
+
+	int candidate;
+	
+	for (register int i=0;i<vert; i++) {
+		for (register int j=i;j<vert; j++) {
+			if ( hasEdge(i, j) ) {
+				qDebug(">>>>> Random REWIRING Experiment between %i and %i:", i+1, j+1);
+				if (rand() % 100 > (beta * 100))  {
+					qDebug("breaking edge!");
+					removeEdge(i, j);
+					removeEdge(j, i);
+					for (;;) {	//do until we create a new edge
+						candidate=rand() % vert ;		//pick another vertex.
+						if (!hasEdge(i, candidate) && candidate!=i)	//Only if differs from i and hasnot edge with it
+								qDebug("<----> Random New Edge Experiment between %i and %i:", i+1, candidate);
+								if (rand() % 100 > 0.5) {
+									qDebug("Creating new link!");
+									createEdge(i+1, candidate+1, 1, "black", true, true, false);
+									break;
+								}
+					}
+				}
+				else  qDebug("Will not break link!");
+			}
+		}
+	}
+}
+
+
+
 
 
 /** layman's attempt to create a random network where nodes have the same degree.

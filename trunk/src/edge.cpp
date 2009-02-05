@@ -284,6 +284,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 		}
 		else qDebug("Edge: This edge is not symmetric. Therefore, I dont have anything else to do...");
 	}
+	qDebug()<<"Arrow created. We'll draw the edge now...";
 	painter->drawPath(line);
 }
 
