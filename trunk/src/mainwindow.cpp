@@ -284,7 +284,7 @@ void MainWindow::initActions(){
 	viewSociomatrixAct->setWhatsThis(tr("View Network file\n\nDisplays the adjacency matrix of the active network"));
 	connect(viewSociomatrixAct, SIGNAL(activated()), this, SLOT(slotViewAdjacencyMatrix()));
 
-	createUniformRandomNetworkAct = new QAction(QIcon(":/images/net.png"), tr("Erdos-Renyi G(n,p)"),  this);
+	createUniformRandomNetworkAct = new QAction(QIcon(":/images/erdos.png"), tr("Erdos-Renyi G(n,p)"),  this);
 	createUniformRandomNetworkAct ->setShortcut(tr("Shift+U"));
 	createUniformRandomNetworkAct->setStatusTip(tr("Creates a random network where each edge is included with a given probability"));
 	createUniformRandomNetworkAct->setWhatsThis(tr("Uniform \n\nCreates a random network of G(n, p) model by connecting nodes randomly. Each edge is included in the graph with equal probability p, independently of the other edges"));
@@ -310,7 +310,6 @@ void MainWindow::initActions(){
 	createGaussianRandomNetworkAct->setStatusTip(tr("Creates a Gaussian distributed random network"));
 	createGaussianRandomNetworkAct->setWhatsThis(tr("Gaussian \n\nCreates a random network of Gaussian distribution"));
 	connect(createGaussianRandomNetworkAct, SIGNAL(activated()), this, SLOT(slotCreateGaussianRandomNetwork()));
-
 
 	createSmallWorldRandomNetworkAct = new QAction(QIcon(":/images/sw.png"), tr("Small World"),	this);
 	createSmallWorldRandomNetworkAct->setShortcut(tr("Shift+W"));
