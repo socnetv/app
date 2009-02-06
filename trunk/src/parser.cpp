@@ -385,7 +385,7 @@ int Parser::loadPajek(){
 				else if (lineElement.count()>2)
 					weight =lineElement[2].toFloat(&ok);
 				else 
-					weight=1;
+					weight=1.0;
 
 				qDebug()<<"Parser-loadPajek(): weight "<< weight;
 
@@ -428,7 +428,7 @@ int Parser::loadPajek(){
 				else if (lineElement.count()>2)
 					weight =lineElement[2].toFloat(&ok);
 				else 
-					weight=1;
+					weight=1.0;
 
 				if (lineElement.contains("c", Qt::CaseSensitive ) ) {
 					qDebug("Parser-loadPajek(): file with link colours");

@@ -225,7 +225,7 @@ QPointF Vertex::pos () {
 
 
 void Vertex::setOutLinkColor(int target, QString color){
-	qDebug("Vertex: update linkColor to %i", target);
+	qDebug()<<"Vertex: update linkColor to vertex "<< target<< " color: "<< color;
 	outLinkColors[target]=color;
 }
 

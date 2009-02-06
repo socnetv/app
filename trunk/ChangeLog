@@ -9,15 +9,16 @@ Codename: "Recession (or the ballad of the deranged Greek statesmen)"
 ------------------------------
 -'Small World' random network creation (Watts and Strogatz model).
 -Nodes can be linked to themselves with nice bezier curves.
--Negative and decimal edge weights are now supported.
--Dashed edges signify negative edge weights. 
--PDF export with one click.
+-Negative and decimal edge weights are now fully supported.
+-Dashed lines are nicely used to signify negative edge weights. 
+-Export current network to PDF with one click.
 -Number and label colors are editable.
 -Fixed number and label font size problem.
 -Fixed PNG and BMP export regression.
 -New program logo and icon.
 -Icon for Windows executable.
 -Code cleanup (no more compile warnings) and minor memory optimisations.
+-User messages/warnings update.
 -The usual bugfixes...
 
 

@@ -145,7 +145,7 @@ void GraphicsWidget::drawNode(int num, int size, QString nodeColor, QString node
 	b) when the user clicks on the AddLink button on the MW.
 */
 void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool drawArrows, QString color, bool bezier, bool check){
-	qDebug()<<"GW: drawEdge ("<< i<< ","<< j<< " weight "<<weight;
+	qDebug()<<"GW: drawEdge ("<< i<< ","<< j<< ") with weight "<<weight;
 	qDebug()<<"GW: nodeVector reports "<< nodeVector.size()<<" items";
 	if (check) {
 		vector<Node*>::iterator it;

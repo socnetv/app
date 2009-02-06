@@ -957,7 +957,6 @@ void MainWindow::initMenuBar() {
 	colorOptionsMenu -> addAction (changeAllLabelsColorAct);
 
 
-
 /** menuBar entry layoutMenu  */
 	
 	layoutMenu = menuBar()->addMenu(tr("&Layout"));
@@ -971,7 +970,7 @@ void MainWindow::initMenuBar() {
 //   randLayoutAct -> addTo (randomLayoutMenu);
 //   randCircleLayoutAct -> addTo( randomLayoutMenu); 
 	circleLayoutMenu = new QMenu(tr("In circles by centrality..."));
-	circleLayoutMenu -> setIcon(QIcon(":/images/net1.png"));
+	circleLayoutMenu -> setIcon(QIcon(":/images/circular.png"));
 	layoutMenu -> addMenu (circleLayoutMenu);
 	circleLayoutMenu -> addAction (circleOutDegreeLayoutAct);
 	circleLayoutMenu -> addAction (circleInDegreeLayoutAct);
@@ -1630,7 +1629,7 @@ void MainWindow::slotFileSaveAs() {
 void MainWindow::slotFileClose() {
 	statusBar()->showMessage(tr("Closing file..."));
 	if (networkModified) {
-		switch ( QMessageBox::information (this, "Closing Network...",tr("Network has not been saved. Do you want to save before closing it?"), "Yes", "No",0,1))
+		switch ( QMessageBox::information (this, "Closing Network...",tr("Network has not been saved. \nDo you want to save before closing it?"), "Yes", "No",0,1))
 		{
 			case 0: slotFileSave(); break;
 			case 1: break;
@@ -1784,7 +1783,7 @@ void MainWindow::addNodeWithMouse(int num, QPointF p) {
 bool MainWindow::slotExportPNG(){
 	qDebug("slotExportPNG");
 	if (!fileLoaded && !networkModified )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("The canvas is empty!\nLoad a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("Cannot export PNG.") ,statusBarDuration);
 		return false;
 	}
@@ -1827,7 +1826,7 @@ bool MainWindow::slotExportPNG(){
 bool MainWindow::slotExportBMP(){
 	qDebug(	"slotExportBMP()");
 	if (!fileLoaded && !networkModified )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Nothing to export! \nLoad a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("Cannot export BMP.") ,statusBarDuration);
 		return false;
 	}
@@ -1876,7 +1875,7 @@ bool MainWindow::slotExportBMP(){
 bool MainWindow::slotExportPDF(){
 	qDebug(	"slotExportPDF()");
 	if (!fileLoaded && !networkModified )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("The canvas is empty!\nLoad a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("Cannot export PDF.") ,statusBarDuration);
 		return false;
 	}
@@ -1915,7 +1914,7 @@ bool MainWindow::slotExportPDF(){
 bool MainWindow::slotExportPajek(){
 	qDebug ("MW: slotExportPajek");
 	if (!fileLoaded && !networkModified )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Nothing to export! \nLoad a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("Cannot export to Pajek.") ,statusBarDuration);
 		return false;
 	}
@@ -1999,7 +1998,7 @@ bool MainWindow::slotExportPajek(){
 bool MainWindow::slotExportSM(){
 	qDebug("MW: slotExportSM()");
 	if (!fileLoaded && !networkModified )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Nothing to export!\nLoad a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("Cannot export to Adjacency Matrix.") ,statusBarDuration);
 		return false;
 	}
@@ -2044,7 +2043,7 @@ bool MainWindow::slotExportSM(){
 */
 bool MainWindow::slotExportDL(){
 	if (!fileLoaded && !networkModified )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Nothing to export!\nLoad a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("Cannot export to DL.") ,statusBarDuration);
 		return false;
 	}
@@ -2072,7 +2071,7 @@ return true;
 */ 
 bool MainWindow::slotExportGW(){
 	if (!fileLoaded && !networkModified )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Nothing to export!\nLoad a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("Cannot export to GW.") ,statusBarDuration);
 		return false;
 	}
@@ -2165,7 +2164,7 @@ void MainWindow::slotViewNetworkFile(){
 
 	else	{
 		QMessageBox::critical(this, "Error",
-		tr("Load a network file first or create and save a new one..."), "OK",0);
+		tr("Empty network! \nLoad a network file first or create and save a new one..."), "OK",0);
 		statusBar()->showMessage( tr("Nothing here. Not my fault, though!"), statusBarDuration );
 	}
 }
@@ -2184,7 +2183,7 @@ void MainWindow::slotViewAdjacencyMatrix(){
 
 	if ( !fileLoaded && !networkModified) {
 		QMessageBox::critical (this, "Error",
-		tr("Load a network file first or create something by double-clicking on the canvas!"), "OK",0);
+		tr("Empty network! \nLoad a network file or create something by double-clicking on the canvas!"), "OK",0);
 
         	statusBar()->showMessage( tr("Nothing to show!"), statusBarDuration );
 		return;
@@ -2430,13 +2429,13 @@ void MainWindow::slotCreateSmallWorldRandomNetwork(){
 */
 void MainWindow::slotCreateRandomNetRingLattice(){
 	bool ok;
-	statusBar()->showMessage("You have selected to create a physicist's lattice network. ", statusBarDuration);
-	int newNodes=( QInputDialog::getInteger(this, "Create physicist's lattice", tr("This will create a phycisist's lattice network. \nPlease enter the number of nodes you want:"),1, 1, maxNodes, 1, &ok ) ) ;
+	statusBar()->showMessage("You have selected to create a ring lattice network. ", statusBarDuration);
+	int newNodes=( QInputDialog::getInteger(this, "Create ring lattice", tr("This will create a ring lattice network, where each node has degree d:\n d/2 edges to the right and d/2 to the left.\n Please enter the number of nodes you want:"),1, 1, maxNodes, 1, &ok ) ) ;
 	if (!ok) { 
 		statusBar()->showMessage("You did not enter an integer. Aborting.", statusBarDuration);
 		return;
 	}
-	int degree = QInputDialog::getInteger(this,"Create physicist's lattice...", "Now, enter an even number d. \nThis is the number of links each new node will have:", 2, 2, newNodes-1, 2, &ok);
+	int degree = QInputDialog::getInteger(this,"Create ring lattice...", "Now, enter an even number d. \nThis is the total number of links each new node will have:", 2, 2, newNodes-1, 2, &ok);
 	if ( (degree% 2)==1 ) {
 		QMessageBox::critical(this, "Error",tr(" Sorry. I cannot create such a network. Links must be even number"), "OK",0);
 		return;
@@ -2445,7 +2444,7 @@ void MainWindow::slotCreateRandomNetRingLattice(){
 	statusBar()->showMessage("Erasing any existing network. ", statusBarDuration);
 	initNet();  
 	makeThingsLookRandom();  
-	statusBar()->showMessage("Creating physicist's lattice network. Please wait...", statusBarDuration);
+	statusBar()->showMessage("Creating ring lattice network. Please wait...", statusBarDuration);
 	double x0=scene->width()/2.0;
 	double y0=scene->height()/2.0;
 	double radius=(graphicsWidget->height()/2.0)-50;          //pixels
@@ -2496,7 +2495,7 @@ void MainWindow::slotFindNode(){
 	}
 	if (!fileLoaded && !networkModified  )     {
 		QMessageBox::critical( this, "Find Node",
-				      tr("Load a network file first or create some nodes..."), tr("OK"),0 );
+				      tr("No nodes present! \nLoad a network file first or create some nodes..."), tr("OK"),0 );
 		statusBar()->showMessage( QString(tr("Nothing to find!")) , statusBarDuration);
 		return;
 	}
@@ -2689,7 +2688,7 @@ void MainWindow::linkInfoStatusBar (Edge* link) {
 void MainWindow::slotRemoveNode() {
 	qDebug("MW: slotRemoveNode()");
 	if (!activeGraph.vertices())  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or add some nodes first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or add some nodes first."), "OK",0);
 		statusBar()->showMessage(tr("Nothing to remove.") ,statusBarDuration);
 		return;
 	}
@@ -2733,7 +2732,7 @@ void MainWindow::slotRemoveNode() {
 void MainWindow::slotAddLink(){
 	qDebug ("MW: slotAddLink()");
 	if (!fileLoaded && !networkModified )  {
-		QMessageBox::critical(this, "Error",tr("Create some nodes first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Nothing to link to! \nCreate some nodes first."), "OK",0);
 		statusBar()->showMessage(tr("There are no nodes yet...") ,statusBarDuration);
 		return;
 	}
@@ -2816,7 +2815,7 @@ void MainWindow::addLink (int v1, int v2, float weight) {
 **/
 void MainWindow::slotRemoveLink(){ 
 	if ( (!fileLoaded && !networkModified) || activeGraph.totalEdges() ==0 )  {
-		QMessageBox::critical(this, "Error",tr("No links present. Load a network file or create a new network first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("No links present! \nLoad a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("No links to remove - sorry.") ,statusBarDuration);
 		return;
 	}
@@ -2906,7 +2905,7 @@ void MainWindow::slotRemoveLink(){
 */
 void MainWindow::slotChangeNodeLabel(){
 	if (!fileLoaded && !networkModified )  {
-		QMessageBox::critical(this, "Error",tr("There are no nodes. Load a network file or create a new network first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("There are no nodes! \nLoad a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("No nodes created.") ,statusBarDuration);
 		return;
 	}
@@ -2939,7 +2938,7 @@ void MainWindow::slotChangeNodeLabel(){
 */
 void MainWindow::slotChangeNodeColor(){
 	if (!fileLoaded && !networkModified )  {
-		QMessageBox::critical(this, "Error",tr("There are no nodes. Load a network file or create a new network first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("There are no nodes! \nLoad a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("No nodes...") ,statusBarDuration);
 		return;
 	}
@@ -2991,7 +2990,7 @@ void MainWindow::slotChangeNodeColor(){
 */
 void MainWindow::slotChangeNodeSize(){
 	if (!fileLoaded && !networkModified )  {
-		QMessageBox::critical(this, "Error",tr("There are no nodes. Load a network file or create a new network first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("There are no nodes! \nLoad a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("Cannot change nothing.") ,statusBarDuration);
 		return;
 	}
@@ -3100,7 +3099,7 @@ void MainWindow::slotChangeLinkLabel(){
 */
 void MainWindow::slotChangeLinkColor(){
 	if (!fileLoaded && !networkModified )  {
-		QMessageBox::critical(this, "Error",tr("No links here. Load a network file or create a new network first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("No links here! \nLoad a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("No links present...") ,statusBarDuration);
 		return;
 	}
@@ -3158,6 +3157,12 @@ void MainWindow::slotChangeLinkColor(){
 *	If no link is clicked, then it asks the user to specify one.
 */
 void MainWindow::slotChangeLinkWeight(){
+	if (!fileLoaded && !networkModified )  {
+		QMessageBox::critical(this, "Error",tr("There are no links here! \nLoad a network file or create a new network first."), "OK",0);
+		statusBar()->showMessage(tr("No links present...") ,statusBarDuration);
+		return;
+	}
+
 	qDebug("MW: slotChangeLinkWeight()");
 	int  sourceNode=-1, targetNode=-1;
 	double newWeight=1.0;
@@ -3236,7 +3241,7 @@ void MainWindow::slotChangeLinkWeight(){
 void MainWindow::slotFilterNodes(){
 
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Nothing to filter! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 
 		statusBar()->showMessage( QString(tr("Nothing to filter!")) , statusBarDuration);
 		return;
@@ -3254,7 +3259,7 @@ void MainWindow::slotFilterNodes(){
 void MainWindow::slotFilterLinks(){
 /*	mapEdges.clear();
 	if (!fileLoaded && !networkModified  )   {
-		statusBar()->showMessage( QString(tr("Load a network file first. Then you may ask me to compute something!")) , statusBarDuration);
+		statusBar()->showMessage( QString(tr("Load a network file first. \nThen you may ask me to compute something!")) , statusBarDuration);
 		return;
 	}
 	bool ok=FALSE, moreWeighted=FALSE;
@@ -3329,7 +3334,7 @@ void MainWindow::slotTransformNodes2Links(){
 */
 void MainWindow::slotSymmetrize(){
 	if (!fileLoaded && !networkModified )  {
-		QMessageBox::critical(this, "Error",tr("No links here. Load a network file or create a new network first."), "OK",0);
+		QMessageBox::critical(this, "Error",tr("No links here! \nLoad a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("No links present...") ,statusBarDuration);
 		return;
 	}
@@ -3378,7 +3383,7 @@ void MainWindow::slotLayoutRandomCircle(){
 */
 void MainWindow::slotLayoutSpringEmbedder(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("There are node nodes yet!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 		statusBar()->showMessage(tr("I am really sorry. You must really load a file first... ") ,statusBarDuration);
 		return;
 	}
@@ -3417,7 +3422,7 @@ void MainWindow::layoutSpringEmbedder (int state){
 */
 void MainWindow::slotLayoutFruchterman(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("There are no nodes yet!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 		statusBar()->showMessage(tr("I am really sorry. You must really load a file first... ") ,statusBarDuration);
 		return;
 	}
@@ -3454,7 +3459,7 @@ void MainWindow::layoutFruchterman (int state){
 */
 void MainWindow::slotLayoutNodeSizeProportionalOutEdges(bool checked){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Wake up! \nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 		statusBar()->showMessage(tr("I am really sorry. You must really load a file first... ") ,statusBarDuration);
 		return;
 	}
@@ -3540,7 +3545,7 @@ void MainWindow::slotLayoutNodeSizeProportionalOutEdges(bool checked){
 */
 void MainWindow::slotLayoutNodeSizeProportionalInEdges(bool checked){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("You must be dreaming! \nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 		statusBar()->showMessage(tr("I am really sorry. You must really load a file first... ") ,statusBarDuration);
 		return;
 	}
@@ -3620,7 +3625,7 @@ void MainWindow::slotLayoutNodeSizeProportionalInEdges(bool checked){
 */
 void MainWindow::slotLayoutCircleCentralityInDegree(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Sorry, I can't follow! \nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
 		return;
 	}
@@ -3668,7 +3673,7 @@ void MainWindow::slotLayoutCircleCentralityOutDegree(){
 */
 void MainWindow::slotLayoutCircleCentralityCloseness(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Sorry, there are no nodes yet!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 
 		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
 		return;
@@ -3695,7 +3700,7 @@ void MainWindow::slotLayoutCircleCentralityCloseness(){
 */
 void MainWindow::slotLayoutCircleCentralityBetweeness(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("No nodes yet!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 
 		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
 		return;
@@ -3724,7 +3729,7 @@ void MainWindow::slotLayoutCircleCentralityBetweeness(){
 */
 void MainWindow::slotLayoutCircleCentralityStress(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
 		return;
 	}
@@ -3749,7 +3754,7 @@ void MainWindow::slotLayoutCircleCentralityStress(){
 */
 void MainWindow::slotLayoutCircleCentralityGraph(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Nothing to do here!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
 		return;
 	}
@@ -3774,7 +3779,7 @@ void MainWindow::slotLayoutCircleCentralityGraph(){
 */
 void MainWindow::slotLayoutCircleCentralityEccentr(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
 		return;
 	}
@@ -3808,7 +3813,7 @@ void MainWindow::slotLayoutCircleCentralityInformational(){
 */
 void MainWindow::slotLayoutLevelCentralityInDegree(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
 		return;
 	}
@@ -3833,7 +3838,7 @@ void MainWindow::slotLayoutLevelCentralityInDegree(){
 */
 void MainWindow::slotLayoutLevelCentralityOutDegree(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
 		return;
 	}
@@ -3858,7 +3863,7 @@ void MainWindow::slotLayoutLevelCentralityOutDegree(){
 */
 void MainWindow::slotLayoutLevelCentralityCloseness(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
 		return;
 	}
@@ -3882,7 +3887,7 @@ void MainWindow::slotLayoutLevelCentralityCloseness(){
 */
 void MainWindow::slotLayoutLevelCentralityBetweeness(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. Then we can talk about layouts!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
 		return;
 	}
@@ -3944,7 +3949,7 @@ int MainWindow::activeNodes(){
 
 void MainWindow::slotCheckSymmetry(){
 		if (!fileLoaded && !networkModified  )   {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 		statusBar()->showMessage( QString(tr("There is no network!")) , statusBarDuration);
 		return;
 	}
@@ -3963,7 +3968,7 @@ void MainWindow::slotCheckSymmetry(){
 */
 void MainWindow::slotNetworkDensity() {
 // 	if (!fileLoaded && !networkModified  )   {
-// 		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
+// 		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 // 		statusBar()->showMessage( QString(tr("No network created or loaded yet!")) , statusBarDuration);
 // 		return;
 // 	}
@@ -3989,7 +3994,7 @@ void MainWindow::slotNetworkDensity() {
 */
 void MainWindow::slotDistance(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 		statusBar()->showMessage( QString(tr("There are no nodes. Nothing to do...")) , statusBarDuration);
 		return;
 	}
@@ -4034,7 +4039,7 @@ void MainWindow::slotDistance(){
 void MainWindow::slotViewDistanceMatrix(){
 	qDebug("MW: slotViewDistanceMatrix()");
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("There are no nodes nor links!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 		statusBar()->showMessage( QString(tr("Nothing to do!")) , statusBarDuration);
 		return;
 	}
@@ -4064,7 +4069,7 @@ void MainWindow::slotViewDistanceMatrix(){
 /**  Displays the network diameter (largest geodesic) */
 void MainWindow::slotDiameter() {
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("There are no nodes nor links!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 
 		statusBar()->showMessage( QString(tr("Cannot find the diameter of nothing...")) , statusBarDuration);
 		return;
@@ -4103,7 +4108,7 @@ void MainWindow::windowInfoStatusBar(int w, int h){
 */
 void MainWindow::slotCentralityOutDegree(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 		statusBar()->showMessage( QString(tr(" No network here. Sorry. Nothing to do.")) , statusBarDuration);
 		return;
 	}
@@ -4196,7 +4201,7 @@ void MainWindow::slotCentralityOutDegree(){
 */
 void MainWindow::slotCentralityInDegree(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 		statusBar()->showMessage( QString(tr("Nothing to do...")) , statusBarDuration);
 		return;
 	}
@@ -4288,7 +4293,7 @@ void MainWindow::slotCentralityInDegree(){
 */
 void MainWindow::slotCentralityCloseness(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 
 		statusBar()->showMessage( QString(tr("Nothing to do...")) , statusBarDuration);
 		return;
@@ -4353,7 +4358,7 @@ void MainWindow::slotCentralityCloseness(){
 */
 void MainWindow::slotCentralityBetweeness(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 
 		statusBar()->showMessage( QString(tr(" Nothing to do...")) , statusBarDuration);
 		return;
@@ -4427,7 +4432,7 @@ void MainWindow::slotCentralityInformational(){
 */
 void MainWindow::slotCentralityStress(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 
 		statusBar()->showMessage( QString(tr(" Nothing to do! Why dont you try creating something first?")) , statusBarDuration);
 		return;
@@ -4490,9 +4495,9 @@ void MainWindow::slotCentralityStress(){
 */
 void MainWindow::slotCentralityGraph(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 
-		statusBar()->showMessage( QString(tr(" Try creating a network first. Then I compute whatever you want...")) , statusBarDuration);
+		statusBar()->showMessage( QString(tr(" Try creating a network first. \nThen I compute whatever you want...")) , statusBarDuration);
 		return;
 	}
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
@@ -4555,7 +4560,7 @@ void MainWindow::slotCentralityGraph(){
 */
 void MainWindow::slotCentralityEccentricity(){
 	if (!fileLoaded && !networkModified  )  {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. Then ask me to compute something!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 
 		statusBar()->showMessage( QString(tr(" Nothing to do...")) , statusBarDuration);
 		return;
@@ -4627,7 +4632,7 @@ bool MainWindow::showNumbers(){
 */
 void MainWindow::slotDisplayNodeNumbers(bool toggle) {
  	if (!fileLoaded && ! networkModified) {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. There are no nodes!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("There are no nodes! \nLoad a network file or create a new network."), "OK",0);
 		statusBar()->showMessage(tr("Errr...no nodes here. Sorry!"), statusBarDuration);
 		return;
 	}
@@ -4659,7 +4664,7 @@ bool MainWindow::showLabels(){
 */
 void MainWindow::slotDisplayNodeLabels(bool toggle){
  	if (!fileLoaded && ! networkModified) {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. There are no nodes!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("There are no nodes! \nLoad a network file or create a new network first. "), "OK",0);
 		statusBar()->showMessage(tr("No nodes found. Sorry..."), statusBarDuration);
 		return;
 	}
@@ -4826,7 +4831,7 @@ void MainWindow::slotDrawLinksThickAsWeights() {
 */
 void MainWindow::slotDisplayLinksWeightNumbers(bool toggle) {
  	if (!fileLoaded && ! networkModified) {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. There are no nodes!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("There are no links! \nLoad a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("No nodes or edges found. Sorry..."), statusBarDuration);
 		return;
 	}
@@ -4888,7 +4893,7 @@ void MainWindow::slotDisplayLinksWeightNumbers(bool toggle) {
 */
 void MainWindow::slotDisplayLinks(bool toggle){
 	if (!fileLoaded && ! networkModified) {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network with some links first!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("There are no nodes nor links! \nLoad a network file or create a new network first!"), "OK",0);
 
 		statusBar()->showMessage(tr("No links found..."), statusBarDuration);
 		return;
@@ -4914,7 +4919,7 @@ void MainWindow::slotDisplayLinks(bool toggle){
 */
 void MainWindow::slotDisplayLinksArrows(bool toggle){
 	if (!fileLoaded && ! networkModified) {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("There are no links! \nLoad a network file or create a new network first!"), "OK",0);
 
 		statusBar()->showMessage(tr("No links found..."), statusBarDuration);
 		return;
@@ -4951,7 +4956,7 @@ void MainWindow::slotDisplayLinksArrows(bool toggle){
 */
 void MainWindow::slotDrawLinksBezier(bool toggle){
 	if (!fileLoaded && ! networkModified) {
-		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network!"), "OK",0);
+		QMessageBox::critical(this, "Error",tr("There are no links! \nLoad a network file or create a new network!"), "OK",0);
 
 		statusBar()->showMessage(tr("There are NO links here!"), statusBarDuration);
 		return;
