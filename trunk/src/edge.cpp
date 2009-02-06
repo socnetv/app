@@ -212,7 +212,7 @@ QRectF Edge::boundingRect() const {
 		return QRectF();
 	
 	qreal penWidth = 1;
-	qreal extra = ( 2 + m_arrowSize) / 2.0;
+	qreal extra = ( penWidth + m_arrowSize) / 2.0;
 	QRectF a = QRectF (
 			sourcePoint, 
 			QSizeF(
@@ -332,9 +332,9 @@ float Edge::width(){
 	else if (abs(m_weight) >20 && abs(m_weight)<=30) {
 		return 8;
 	}
-	else return 9;
+	else if ( abs(m_weight) > 30 ) return 9;
 	
-	return 1;	//	Default or if  m_weight = 0  
+	return 1;	//	Default, if  m_weight in (-1, 1) space  
 }
 
 
