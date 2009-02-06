@@ -144,8 +144,8 @@ void GraphicsWidget::drawNode(int num, int size, QString nodeColor, QString node
 	a) when we load a network file (check = FALSE)
 	b) when the user clicks on the AddLink button on the MW.
 */
-void GraphicsWidget::drawEdge(int i, int j, int weight, bool reciprocal, bool drawArrows, QString color, bool bezier, bool check){
-	qDebug("GW: drawEdge (%i, %i) weight %i", i, j, weight);
+void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool drawArrows, QString color, bool bezier, bool check){
+	qDebug()<<"GW: drawEdge ("<< i<< ","<< j<< " weight "<<weight;
 	qDebug()<<"GW: nodeVector reports "<< nodeVector.size()<<" items";
 	if (check) {
 		vector<Node*>::iterator it;
@@ -226,11 +226,10 @@ void GraphicsWidget::unmakeEdgeReciprocal(int source, int target){
 	which will notify activeGraph, which in turn will signal back to drawEdge()...
 */
 void GraphicsWidget::startEdge(Node *node){
-	qDebug("GW: startEdge()");
 	if (secondDoubleClick){
 		qDebug("GW: startEdge(): this is the second double click. Emitting userMiddleClicked() to create edge");
 		secondNode=node;
-		emit userMiddleClicked(firstNode->nodeNumber(), secondNode->nodeNumber(), 1);
+		emit userMiddleClicked(firstNode->nodeNumber(), secondNode->nodeNumber(), 1.0);
 		( (MainWindow*)parent() )->setCursor(Qt::ArrowCursor);
 		secondDoubleClick=FALSE;
 	}

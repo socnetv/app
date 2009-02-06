@@ -72,7 +72,7 @@ public slots:
 
 	/** Slots to signals from GraphicsWidget and Parser*/
 	void createEdge (int, int, float, QString, bool, bool, bool);		//GW and Parser.
-	void createEdge (int, int, int, bool, bool, bool);					//
+	void createEdge (int, int, float, bool, bool, bool);				//GW
 	
 	void nodeMovement(int state, int type, int cW, int cH);			//Called by MW to start movement
 
@@ -85,7 +85,7 @@ signals:
 	void graphChanged();									//call to update MW widgets
 	/** Signals to GraphicsWidget */
 	void drawNode( int ,int,  QString, QString,QString, QPointF, QString, bool, bool);	//call GW to draw a node
-	void drawEdge(int, int, int, bool, bool, QString, bool, bool);				//call GW to draw an edge
+	void drawEdge(int, int, float, bool, bool, QString, bool, bool);				//call GW to draw an edge
 	void eraseEdge(int, int);		//emited from removeEdge() to GW to clear the edge item.
 	void drawEdgeReciprocal(int, int);							//call GW to draw the edge as symmetric one
 	void addBackgrCircle(int, int, int);							//call GW to draw a layout line somewhere.

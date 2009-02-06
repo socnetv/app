@@ -46,7 +46,7 @@ static const int TypeEdge= QGraphicsItem::UserType+2;
 class Edge : public QObject, public QGraphicsItem {
 	Q_OBJECT
 public:
-	Edge(GraphicsWidget *, Node*, Node*, int, int, QString, bool, bool, bool);
+	Edge(GraphicsWidget *, Node*, Node*, float, int, QString, bool, bool, bool);
 
 	enum { Type = UserType + 2 };
 	int type() const { return Type; }
@@ -62,8 +62,8 @@ public:
 
 	int sourceNodeNumber();
 	int targetNodeNumber();
-	void setWeight( int w) ;
-	int weight();
+	void setWeight( float  w) ;
+	float weight();
 	void setColor( QString str) ;
 	QString color() ;
 	void addWeight (EdgeWeight* canvasWeight  ) ;
@@ -93,7 +93,8 @@ private:
 	qreal m_arrowSize, m_startOffset, m_endOffset;
 	list<EdgeWeight*> weightList;
 	QString m_color;
-	int eFrom, eTo, m_weight;
+	int eFrom, eTo;
+	float m_weight;
 	int tox1, tox2, toy1, toy2, size;
 	double rad, theta, theta1, theta2;
 	bool m_Bezier, m_drawArrows, m_reciprocal;

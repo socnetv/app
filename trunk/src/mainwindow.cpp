@@ -98,7 +98,7 @@ MainWindow::MainWindow(const QString &fName) {
 	connect( graphicsWidget, SIGNAL( windowResized(int, int)),this, SLOT( windowInfoStatusBar(int, int)) );  
 
 	connect( graphicsWidget, SIGNAL( userDoubleClicked(int, QPointF) ), this, SLOT( addNodeWithMouse(int, QPointF) ) ) ;
-	connect( graphicsWidget, SIGNAL( userMiddleClicked(int, int, int) ), this, SLOT( addLink(int, int, int) ) );
+	connect( graphicsWidget, SIGNAL( userMiddleClicked(int, int, float) ), this, SLOT( addLink(int, int, float) ) );
 	connect( graphicsWidget, SIGNAL( openNodeMenu() ), this, SLOT(openNodeContextMenu() ) ) ;
 	connect( graphicsWidget, SIGNAL( openEdgeMenu() ), this, SLOT(openLinkContextMenu() ) ) ;
 	connect( graphicsWidget, SIGNAL(updateNodeCoords(int, int, int)), this, SLOT(updateNodeCoords(int, int, int)) );
@@ -111,7 +111,7 @@ MainWindow::MainWindow(const QString &fName) {
 	connect( &activeGraph, SIGNAL( eraseEdge(int, int)), graphicsWidget, SLOT( eraseEdge(int, int) ) );
 	connect( &activeGraph, SIGNAL( graphChanged() ), this, SLOT( graphChanged() ) ) ;
 
-	connect( &activeGraph, SIGNAL( drawEdge( int, int, int, bool, bool, QString, bool, bool)), graphicsWidget, SLOT( drawEdge( int, int,int, bool, bool, QString, bool, bool  ) )  ) ;
+	connect( &activeGraph, SIGNAL( drawEdge( int, int, float, bool, bool, QString, bool, bool)), graphicsWidget, SLOT( drawEdge( int, int,float, bool, bool, QString, bool, bool  ) )  ) ;
 
 	connect( &activeGraph, SIGNAL( drawEdgeReciprocal(int, int) ),  graphicsWidget, SLOT( drawEdgeReciprocal(int, int) ) );
 	
@@ -2739,7 +2739,7 @@ void MainWindow::slotAddLink(){
 	}
 
 	int sourceNode=-1, targetNode=-1, sourceIndex=-1, targetIndex=-1;
-	int weight=1; 	//weight of this new edge should be one...
+	float weight=1; 	//weight of this new edge should be one...
 	bool ok=FALSE;
 	int min=activeGraph.firstVertexNumber();
 	int max=activeGraph.lastVertexNumber();
@@ -2774,7 +2774,7 @@ void MainWindow::slotAddLink(){
 		return;
 	}
 	
-	weight=QInputDialog::getInteger(this, "Create new link, Step 3", tr("Source and target nodes accepted. \n Please, enter the weight of new link: "),1, 1, 10, 1, &ok);
+	weight=QInputDialog::getDouble(this, "Create new link, Step 3", tr("Source and target nodes accepted. \n Please, enter the weight of new link: "),1.0, -20.0, 20.0, 1, &ok);
 	if (!ok) {
 		statusBar()->showMessage("Add link operation cancelled.", statusBarDuration);
 		return;
@@ -2799,7 +2799,8 @@ void MainWindow::slotAddLink(){
 	Also called from GW::userMiddleClicked() signal when user creates links with middle-clicks
 	Calls Graph::createEdge method to add the new edge to the active Graph 
 */
-void MainWindow::addLink (int v1, int v2, int weight) {
+void MainWindow::addLink (int v1, int v2, float weight) {
+	qDebug("MW: addLink() - setting user preferences and calling Graph::createEdge(...)");
 	bool drawArrows=displayLinksArrowsAct->isChecked();
 	bool reciprocal=false;
 	bool bezier = false;
@@ -3158,7 +3159,8 @@ void MainWindow::slotChangeLinkColor(){
 */
 void MainWindow::slotChangeLinkWeight(){
 	qDebug("MW: slotChangeLinkWeight()");
-	int newWeight=1, sourceNode=-1, targetNode=-1;
+	int  sourceNode=-1, targetNode=-1;
+	double newWeight=1.0;
 	int min=activeGraph.firstVertexNumber();
 	int max=activeGraph.lastVertexNumber();
 
@@ -3184,18 +3186,14 @@ void MainWindow::slotChangeLinkWeight(){
 				qDebug ("MW: searching link...");
 				if ( link->sourceNodeNumber()==sourceNode && link->targetNodeNumber()==targetNode ) {
 					qDebug("MW: link found");
-					newWeight=QInputDialog::getInteger(this, "Change link weight...",tr("New link Weight: "), 1, 1, 100 ,1, &ok ) ;
+					newWeight=QInputDialog::getDouble(this, "Change link weight...",tr("New link Weight: "), 1, -100, 100 ,1, &ok ) ;
 					if (ok) {
 						link->setWeight(newWeight);
+						link->update();
 						activeGraph.setEdgeWeight(sourceNode, targetNode, newWeight);
-/*						if (newWeight>0)
-							link->setPen( QPen(link->pen().color(), lineWidth(newWeight),Qt::SolidLine));
-						else
-							link->setPen( QPen(link->pen().color(), lineWidth(newWeight),Qt::DashLine));*/
 						graphChanged();
 						statusBar()->showMessage( QString(tr("Ready.")) ,statusBarDuration);
 						return;
-						
 					}
 					else {
 						statusBar()->showMessage( QString(tr("input error. Abort.")) , statusBarDuration);
@@ -3210,13 +3208,10 @@ void MainWindow::slotChangeLinkWeight(){
 		qDebug("MW: slotChangeLinkWeight()  %i -> %i", sourceNode, targetNode);
 		newWeight=QInputDialog::getInteger(this, "Change link weight...",tr("New link weight: "), 1, -100, 100 ,1, &ok) ;
 		if (ok) {
-			clickedLink->setWeight(newWeight);	
-			qDebug("MW: newWeight will be %i", newWeight); 
+			clickedLink->setWeight(newWeight);
+			clickedLink->update();	
+			qDebug()<<"MW: newWeight will be "<< newWeight; 
 			activeGraph.setEdgeWeight(sourceNode, targetNode, newWeight);
-/*			if (newWeight>0)
-				clickedLink->setPen( QPen(clickedLink->pen().color(), lineWidth(newWeight),Qt::SolidLine));
-			else 
-				clickedLink->setPen( QPen(clickedLink->pen().color(), lineWidth(newWeight),Qt::DashLine));*/
 			statusBar()->showMessage( QString(tr("Ready.")) ,statusBarDuration);
 			graphChanged();
 			return;
@@ -5296,11 +5291,11 @@ void MainWindow::slotHelp(){
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
      QMessageBox::about( this, "About SocNetV",
-	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualiser " +VERSION+" codename: <b>SNAIL</b>"
+	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualiser, version: " + VERSION + ""
+	"<p><b>Build: </b> Thu, Feb 05, 2009</p>"
+	
 	"<p>(C) 2005-2009 by Dimitris V. Kalamaras"
 	"<br> dimitris.kalamaras@gmail.com"
-	"<p><b>Last revision: </b> Tue, Jan 13, 2009</p>"
-
 
 	"<p><b>Fortune cookie: </b><br> \""  + fortuneCookie[randomCookie]  +"\""
 	

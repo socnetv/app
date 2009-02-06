@@ -1,15 +1,16 @@
-**************************************************
-* Social Networks Visualiser (SocNetV) for Linux *
-**************************************************
-
+******************************************
+*  Social Networks Visualiser (SocNetV)  *
+******************************************
 
 ChangeLog:
 
 Version 0.50 - Feb 10 2009
-Codename: "Recession (or the ballad of the lost statesmen)"
+Codename: "Recession (or the ballad of the deranged Greek statesmen)"
 ------------------------------
 -'Small World' random network creation (Watts and Strogatz model).
 -Nodes can be linked to themselves with nice bezier curves.
+-Negative and decimal edge weights are now supported.
+-Dashed edges signify negative edge weights. 
 -PDF export with one click.
 -Number and label colors are editable.
 -Fixed number and label font size problem.
@@ -17,11 +18,12 @@ Codename: "Recession (or the ballad of the lost statesmen)"
 -New program logo and icon.
 -Icon for Windows executable.
 -Code cleanup (no more compile warnings) and minor memory optimisations.
+-The usual bugfixes...
 
 
 
 Version 0.49 - Jan 13 2009
-Codename: "Alexis Grigoropoulos"
+Codename: "Alexis Grigoropoulos (R.I.P.)"
 ------------------------------
 -Weight numbers can be displayed over links.
 -DL network format initial support.
@@ -30,7 +32,6 @@ Codename: "Alexis Grigoropoulos"
 -Bug fix: Zoom while rotate works (thanks Andre!).
 -Bug fix: No longer BFS crashes. SocNetV is more reliable.
 -Bug fix: Changed shortcut of OutDegree to Ctrl+1.
--Icon for Windows (thanks Andre!).
 -Added GraphML loading
 
 

@@ -77,7 +77,7 @@ protected:
 
 public slots:
 	void drawNode(int i, int size, QString aColor, QString label, QString lColor, QPointF p, QString nodeShape, bool showLabels, bool showNumbers);
-	void drawEdge(int, int, int, bool, bool, QString, bool, bool);
+	void drawEdge(int, int, float, bool, bool, QString, bool, bool);
 	void eraseEdge(int, int);
 	void nodeClicked(Node *);
 	void edgeClicked(Edge *);
@@ -100,7 +100,7 @@ public slots:
 signals:
 	void windowResized(int,int);
 	void userDoubleClicked(int, QPointF);
-	void userMiddleClicked(int, int, int);
+	void userMiddleClicked(int, int, float);
 	void openNodeMenu();
 	void openEdgeMenu();
 	void updateNodeCoords(int, int, int);

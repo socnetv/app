@@ -41,7 +41,8 @@ static const double Pi = 3.14159265;
 static double TwoPi = 2.0 * Pi;
 
 
-Edge::Edge(  GraphicsWidget *gw, Node *from, Node *to, int weight, int nodeSize, QString color, bool reciprocal, bool drawArrows, bool bez): graphicsWidget(gw){
+Edge::Edge(  GraphicsWidget *gw, Node *from, Node *to, float weight, int nodeSize, QString color, bool reciprocal, bool drawArrows, bool bez): graphicsWidget(gw) {
+
 	qDebug("Edge: Edge()");
 	Q_UNUSED(nodeSize);
 	graphicsWidget->scene()->addItem(this);  //Without this, edges dont appear on the screen...
@@ -103,11 +104,11 @@ QString Edge::color() {
 	return m_color; 
 }
 
-void Edge::setWeight( int w) {
+void Edge::setWeight( float w) {
 	m_weight = w;
 }
 
-int Edge::weight() { 
+float Edge::weight() { 
 	return m_weight; 
 }
 
@@ -250,8 +251,13 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 		qDebug()<<"Edge::paint(). Constructing a bezier self curve c1 "<<c1.x()<<","<<c1.y()<< " and c2 "<<c2.x()<<","<<c2.y();
 		line.cubicTo( c1, c2, targetPoint);
 	}
-	painter->setPen(QPen(QColor(m_color), 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
 
+	//Prepare the pen
+	if (m_weight > 0)
+			painter->setPen(QPen(QColor(m_color), lineWidth(), Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+	else 
+			painter->setPen(QPen(QColor(m_color), lineWidth(), Qt::DashLine, Qt::RoundCap, Qt::RoundJoin));
+			
 	//Draw the arrows only if we have different nodes.
 	if (m_drawArrows && source!=target) {
 		qDebug("Edge: Building arrows for this edge. First create Arrow at target node");
@@ -289,24 +295,23 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 }
 
 
-/** Controls the width of the edge; is a function of edge weight
+/** 
+	Controls the width of the edge; is a function of edge weight
 */
 int Edge::lineWidth(){
-	if (weight()<0)
-		return abs(weight());
-else if (weight() == 0) {
-		return 1; //?
+	if ( m_weight == 0) {
+		return 1; 
 	}
-	else if (weight() > 0 && weight() <=5) {
-		return weight();
+	else if ( abs(m_weight) > 0 && abs(m_weight) <=5) {
+		return (int) abs(m_weight);
 	}
-	else if (weight() > 5 && weight() <=10) {
+	else if (abs(m_weight)  > 5 && abs(m_weight) <=10) {
 		 return 6;
 	}
-	else if (weight() >10 && weight() <=20) {
+	else if (abs(m_weight) >10 && abs(m_weight) <=20) {
 		return 7;
 	}
-	else if (weight() >20 && weight() <=30) {
+	else if (abs(m_weight) >20 && abs(m_weight)<=30) {
 		return 8;
 	}
 	else return 9;

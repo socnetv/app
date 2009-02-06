@@ -237,9 +237,9 @@ public slots:
 
 	//Called when user pushes the New Node button on the MW
  	void addNode();	
-
-	void addLink (int v1, int v2, int weight);
-	//Called by graphicswidget when the user doubleclicks
+	//Called by graphicswidget when the user middle-clicks
+	void addLink (int v1, int v2, float weight); 
+	//Called by graphicswidget when the user double-clicks
 	void addNodeWithMouse(int, QPointF);
 	
 
