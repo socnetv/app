@@ -75,7 +75,7 @@ public:
 	int nodeNumber() {return m_num;}
 
 	void setSize(int);
-	int width();
+	int size();
 
 	void setShape (QString);
 	QString nodeShape() {return m_shape;}

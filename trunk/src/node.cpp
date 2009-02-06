@@ -262,9 +262,9 @@ void Node::setSize(int size){
 
 
 
-/**  Used by MainWindow::findNode()  */
-int Node::width(){
-	qDebug("width()");
+/**  Used by MainWindow::findNode() and Edge::Edge()  */
+int Node::size(){
+	qDebug("size()");
 	return m_size;  
 }
 

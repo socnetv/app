@@ -55,8 +55,8 @@ Edge::Edge(  GraphicsWidget *gw, Node *from, Node *to, float weight, int nodeSiz
 	m_color=color;
 	m_drawArrows=drawArrows;
 	m_reciprocal=reciprocal;
-	m_startOffset=source->width();  //used to offset edge from the centre of node
-	m_endOffset=target->width();  //used to offset edge from the centre of node	
+	m_startOffset=source->size();  //used to offset edge from the centre of node
+	m_endOffset=target->size();  //used to offset edge from the centre of node	
 	qDebug("Edge() m_startOffset %i",(int) m_startOffset);
 	qDebug("Edge() m_endOffset %i",(int) m_endOffset);
 
@@ -66,8 +66,8 @@ Edge::Edge(  GraphicsWidget *gw, Node *from, Node *to, float weight, int nodeSiz
 	eTo = target->nodeNumber() ;
 	m_weight = weight ;
 	m_Bezier = bez; 
-	this-> setZValue(253);		//Edges have lower z than nodes. Nodes always appear above edges.
-	this->setBoundingRegionGranularity(0.05);				//slows down the universe...
+	//this-> setZValue(253);		//Edges have lower z than nodes. Nodes always appear above edges.
+	//this->setBoundingRegionGranularity(0.05);				//slows down the universe...
 	//this->setCacheMode (QGraphicsItem::DeviceCoordinateCache);  //slows down
 	adjust();
 }
@@ -162,7 +162,10 @@ void Edge::clearWeightList(){
 }
 
 
-//leaves space 
+/*
+	-leaves some empty space (offset) from node
+	-make the edge weight appear on the centre of the edge
+*/
 void Edge::adjust(){
 	qDebug("Edge: adjust()");
 	if (!source || !target)
@@ -176,6 +179,7 @@ void Edge::adjust(){
 	else edgeOffset = QPointF(0, 0);  
 	
  	prepareGeometryChange();
+ 	
 	sourcePoint = line.p1() + edgeOffset;
 	targetPoint = line.p2() - edgeOffset;
 	qDebug()<<"----Edge: adjust() "<< sourcePoint.x()<< " "<<sourcePoint.y();
@@ -206,22 +210,24 @@ All painting will be restricted to inside the edge's bounding rect.
 Qt uses this bounding rect to determine whether the edge requires redrawing.
 */
 QRectF Edge::boundingRect() const {
-	qDebug()<<"Edge::boundingRect()";
+
 	if (!source || !target)
 		return QRectF();
 	
 	qreal penWidth = 1;
-	qreal extra = (penWidth + m_arrowSize) / 2.0;
-
+	qreal extra = ( 2 + m_arrowSize) / 2.0;
+	QRectF a = QRectF (
+			sourcePoint, 
+			QSizeF(
+			targetPoint.x() - sourcePoint.x(), targetPoint.y() - sourcePoint.y())
+			).normalized().adjusted(-extra, -extra, extra, extra);
+	qDebug()<<"Edge::boundingRect() extra = " << extra << "QSizeF width "<< a.width() << " QSizeF height "<< a.height();
 	if (source==target) {		//self-edge has different bounding rect.
 			return QRectF (
 			sourcePoint-QPointF(30,30), 
 			QSizeF(60,30)).normalized().adjusted(-extra, -extra, extra, extra);
 	}
-	return QRectF (
-			sourcePoint, QSizeF(targetPoint.x() - sourcePoint.x(),
-			targetPoint.y() - sourcePoint.y())
-			).normalized().adjusted(-extra, -extra, extra, extra);
+	return a;
 }
 
 
@@ -266,11 +272,10 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 	}
 
 	//Prepare the pen
-	qreal width=lineWidth();
-	qDebug()<<" Edge::paint(). Preparing the pen with width "<< width;
+	qDebug()<<" Edge::paint(). Preparing the pen with width "<< width();
 	
 	if (m_weight > 0)
-			painter->setPen(QPen(QColor(m_color), width, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+			painter->setPen(QPen(QColor(m_color), width(), Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
 	else 
 			painter->setPen(QPen(QColor(m_color), 1, Qt::DashLine, Qt::RoundCap, Qt::RoundJoin));
 			
@@ -316,12 +321,9 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 /** 
 	Controls the width of the edge; is a function of edge weight
 */
-qreal Edge::lineWidth(){
-	if ( m_weight == 0) {
-		return 1; 
-	}
-	else if ( abs(m_weight) > 0 && abs(m_weight) <=5) {
-		qDebug()<< "Linewidth will return "<< abs(m_weight);
+float Edge::width(){
+	if ( abs(m_weight) > 0 && abs(m_weight) <=5) {
+		qDebug()<< "Edge::width() will return "<< abs(m_weight);
 		return  abs(m_weight);
 	}
 	else if (abs(m_weight)  > 5 && abs(m_weight) <=10) {
@@ -334,6 +336,8 @@ qreal Edge::lineWidth(){
 		return 8;
 	}
 	else return 9;
+	
+	return 1;	//	Default or if  m_weight = 0  
 }
 
 

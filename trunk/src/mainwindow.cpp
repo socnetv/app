@@ -2513,7 +2513,7 @@ void MainWindow::slotFindNode(){
 			if ( jim->nodeNumber()==text.toInt(&ok, 10))	{
 				qDebug("MW: found.");
 				jim->setColor ( QColor( jim->color() ).light(150) );
-				preSize=jim->width();
+				preSize=jim->size();
 				jim->setSize(2*preSize-1);
 				markedNodeExists=TRUE;
 				markedNode=jim;
@@ -2522,7 +2522,7 @@ void MainWindow::slotFindNode(){
 				
 			}
 			if (jim->label().contains (text, Qt::CaseInsensitive) ) {
-				preSize=jim->width();
+				preSize=jim->size();
 				jim->setSize(2*preSize-1);
 				qDebug("MW: found.");
 				jim->setColor ( QColor( jim->color() ).light(150) );

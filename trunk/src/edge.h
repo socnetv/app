@@ -68,7 +68,7 @@ public:
 	QString color() ;
 	void addWeight (EdgeWeight* canvasWeight  ) ;
 	void clearWeightList();
-	qreal lineWidth(); 
+	float width(); 
 	void showArrows(bool);
 	void toggleAntialiasing(bool);
 
