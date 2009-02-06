@@ -169,9 +169,14 @@ void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool 
 	if (i == j ) {
 		bezier = true;		
 	}
+
 	qDebug()<< "GW: drawEdge() now!"<< " From node "<<  nodeVector.at(i-1)->nodeNumber()<< " to "<<  nodeVector.at(j-1)->nodeNumber() << " weight "<< weight << " nodesize "<<  m_nodeSize << " edgecolor "<< color ;
 	Edge *edge=new Edge (this, nodeVector.at(i-1), nodeVector.at(j-1), weight, m_nodeSize, color, reciprocal, drawArrows, bezier);
-//	edge->setColor(color);
+	edge -> setZValue(253);		//Edges have lower z than nodes. Nodes always appear above edges.
+	//ssetBoundingRegionGranularity() is a real headache. Keep it here so that it doesnt interfere with dashed lines.
+	edge->setBoundingRegionGranularity(0.05);	// Slows down the universe...Keep it 0.05...
+	//edge->setCacheMode (QGraphicsItem::DeviceCoordinateCache);  //Also slows down the universe...
+
 	
 	qDebug()<<"GW: drawEdge() - Preparing to add new edge to edgesMap";
 	QString edgeName = QString::number(i) + QString(">")+ QString::number(j);

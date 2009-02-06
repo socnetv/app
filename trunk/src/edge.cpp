@@ -66,9 +66,6 @@ Edge::Edge(  GraphicsWidget *gw, Node *from, Node *to, float weight, int nodeSiz
 	eTo = target->nodeNumber() ;
 	m_weight = weight ;
 	m_Bezier = bez; 
-	//this-> setZValue(253);		//Edges have lower z than nodes. Nodes always appear above edges.
-	//this->setBoundingRegionGranularity(0.05);				//slows down the universe...
-	//this->setCacheMode (QGraphicsItem::DeviceCoordinateCache);  //slows down
 	adjust();
 }
 
@@ -277,7 +274,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 	if (m_weight > 0)
 			painter->setPen(QPen(QColor(m_color), width(), Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
 	else 
-			painter->setPen(QPen(QColor(m_color), 1, Qt::DashLine, Qt::RoundCap, Qt::RoundJoin));
+			painter->setPen(QPen(QColor(m_color), width(), Qt::DashLine, Qt::RoundCap, Qt::RoundJoin));
 			
 
 	
