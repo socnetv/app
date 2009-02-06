@@ -55,7 +55,7 @@ Node::Node( GraphicsWidget* gw, int num, int size, QString col, QString shape, i
 	m_poly_d=new QPolygon(4);
 	qDebug()<< "Node: constructor: initial position at: "<< this->x()<<", "<<this->y()<< " Moving now at: "<< p.x()<<", "<<p.y();;
 	setPos(p);
-	graphicsWidget->nodeMoved(num, (int) p.x(), (int) p.y());	
+
 
 /*	connect (this, SIGNAL(nodeClicked(Node*)),graphicsWidget , SLOT(nodeClicked(Node*)));
 	connect (this, SIGNAL(startNodeMovement(int)), graphicsWidget, SLOT(startNodeMovement(int)));

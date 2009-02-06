@@ -7,6 +7,8 @@ KNOWN BUGS
 --FIXME: 40-actors-non-symmetric crashed on Betweeness centr.
 - FIXME: GROUP Stress & Graph centralities missing
 - FIXME: Standard Stress Centrality index missing.
+--FIXME: Negative weights break centralities layout and pajek read
+
 
 OLD, NOT EASILY FIXED BUT NOT CRITICAL BUGS
 ===========================================

@@ -184,8 +184,15 @@ void Edge::adjust(){
 }
 
 
-
+/*
+	Returns the shape of this edge as a QPainterPath in local coordinates. 
+	The shape is used for many things, including collision detection, hit tests, and for the QGraphicsScene::items() functions.
+	The default implementation calls boundingRect() to return a simple rectangular shape,
+	 but subclasses can reimplement this function to return a more accurate shape for non-rectangular items.
+	For example, a round item may choose to return an elliptic shape for better collision detection
+*/
 QPainterPath Edge::shape () const {
+	qDebug()<<"Edge::shape()";
 	QPainterPath path;
 	//path.addRegion(boundingRegion(QTransform()));
 	path.addRect(boundingRect());
@@ -193,17 +200,23 @@ QPainterPath Edge::shape () const {
 } 
 
 
+/*
+Defines the outer bounds of the edge as a rectangle; 
+All painting will be restricted to inside the edge's bounding rect. 
+Qt uses this bounding rect to determine whether the edge requires redrawing.
+*/
 QRectF Edge::boundingRect() const {
-
+	qDebug()<<"Edge::boundingRect()";
 	if (!source || !target)
 		return QRectF();
 	
 	qreal penWidth = 1;
 	qreal extra = (penWidth + m_arrowSize) / 2.0;
 
-	if (source==target) {
+	if (source==target) {		//self-edge has different bounding rect.
 			return QRectF (
-			sourcePoint-QPointF(30,30), QSizeF(60,30)).normalized().adjusted(-extra, -extra, extra, extra);
+			sourcePoint-QPointF(30,30), 
+			QSizeF(60,30)).normalized().adjusted(-extra, -extra, extra, extra);
 	}
 	return QRectF (
 			sourcePoint, QSizeF(targetPoint.x() - sourcePoint.x(),
@@ -230,11 +243,11 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 	if (!source || !target)
 		return;
 	Q_UNUSED(option); //	painter->setClipRect( option->exposedRect );
-	qDebug()<<"***EDGE::paint() edge from "<< sourceNodeNumber()<< " to "<<targetNodeNumber();
+	qDebug()<<"***Edge::paint() edge from "<< sourceNodeNumber() << " at (" <<(sourceNode())->x() <<","<< (sourceNode())->y() << ") to node "<<targetNodeNumber() << " at ("<<(targetNode())->x() <<","<< (targetNode())->y() << ") of weight "<< m_weight;
 
-	//Define the path upon which we'' ll draw the line 
+	//Define the path upon which we' ll draw the line 
 	QPainterPath line(sourcePoint);
-	qDebug()<<"SourceNode x and y :"<<(sourceNode())->x() <<","<< (sourceNode())->y();
+	
 	//Construct the path
 	if (source!=target) {
 		if ( !m_Bezier){
@@ -253,11 +266,16 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 	}
 
 	//Prepare the pen
+	qreal width=lineWidth();
+	qDebug()<<" Edge::paint(). Preparing the pen with width "<< width;
+	
 	if (m_weight > 0)
-			painter->setPen(QPen(QColor(m_color), lineWidth(), Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+			painter->setPen(QPen(QColor(m_color), width, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
 	else 
-			painter->setPen(QPen(QColor(m_color), lineWidth(), Qt::DashLine, Qt::RoundCap, Qt::RoundJoin));
+			painter->setPen(QPen(QColor(m_color), 1, Qt::DashLine, Qt::RoundCap, Qt::RoundJoin));
 			
+
+	
 	//Draw the arrows only if we have different nodes.
 	if (m_drawArrows && source!=target) {
 		qDebug("Edge: Building arrows for this edge. First create Arrow at target node");
@@ -298,12 +316,13 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 /** 
 	Controls the width of the edge; is a function of edge weight
 */
-int Edge::lineWidth(){
+qreal Edge::lineWidth(){
 	if ( m_weight == 0) {
 		return 1; 
 	}
 	else if ( abs(m_weight) > 0 && abs(m_weight) <=5) {
-		return (int) abs(m_weight);
+		qDebug()<< "Linewidth will return "<< abs(m_weight);
+		return  abs(m_weight);
 	}
 	else if (abs(m_weight)  > 5 && abs(m_weight) <=10) {
 		 return 6;

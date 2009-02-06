@@ -108,15 +108,15 @@ void GraphicsWidget::drawNode(int num, int size, QString nodeColor, QString node
 
 	Node *jim= new Node (this, num, size, nodeColor, ns, m_labelDistance, m_numberDistance, p);
 
-	//drawing node label
+	//Drawing node label
 	NodeLabel *labelJim = new  NodeLabel (jim, nodeLabel, scene() );
 	labelJim -> setPos(p.x()-2, p.y()+m_labelDistance);
 	labelJim -> setDefaultTextColor (labelColor);
 //	labelJim -> setTextInteractionFlags(Qt::TextEditorInteraction);
-	if (showLabels) qDebug("GW: drawNode: will display label "+ nodeLabel.toAscii() + " for %i", num);
-	else qDebug("GW: drawNode: NOT display labels for %i", num);
-
-	if (!showLabels){
+	if (showLabels) 
+		qDebug()<< "GW: drawNode: display label " <<  nodeLabel.toAscii() << " for node " << num;
+	else {
+		qDebug()<<"GW: drawNode: hiding label for node " << num;
 		labelJim->hide();
 	}
 
@@ -124,7 +124,6 @@ void GraphicsWidget::drawNode(int num, int size, QString nodeColor, QString node
 	NodeNumber *numberJim = new  NodeNumber ( jim, size+2, QString::number(num), scene() );
 	numberJim -> setPos( p.x()+m_numberDistance, p.y() );
 	numberJim -> setDefaultTextColor (m_numberColor);
-
 	if (!showNumbers){
 		numberJim->hide();
 	}
@@ -146,7 +145,7 @@ void GraphicsWidget::drawNode(int num, int size, QString nodeColor, QString node
 */
 void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool drawArrows, QString color, bool bezier, bool check){
 	qDebug()<<"GW: drawEdge ("<< i<< ","<< j<< ") with weight "<<weight;
-	qDebug()<<"GW: nodeVector reports "<< nodeVector.size()<<" items";
+	qDebug()<<"GW: nodeVector reports "<< nodeVector.size()<<" nodes.";
 	if (check) {
 		vector<Node*>::iterator it;
 		int index=1;
@@ -170,10 +169,11 @@ void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool 
 	if (i == j ) {
 		bezier = true;		
 	}
-	
+	qDebug()<< "GW: drawEdge() now!"<< " From node "<<  nodeVector.at(i-1)->nodeNumber()<< " to "<<  nodeVector.at(j-1)->nodeNumber() << " weight "<< weight << " nodesize "<<  m_nodeSize << " edgecolor "<< color ;
 	Edge *edge=new Edge (this, nodeVector.at(i-1), nodeVector.at(j-1), weight, m_nodeSize, color, reciprocal, drawArrows, bezier);
-	edge->setColor(color);
+//	edge->setColor(color);
 	
+	qDebug()<<"GW: drawEdge() - Preparing to add new edge to edgesMap";
 	QString edgeName = QString::number(i) + QString(">")+ QString::number(j);
 	qDebug()<<"GW: adding edge between "<<i << " and "<< j<< " to edgesMap. Name: "<<edgeName.toAscii();
 	edgesMap [edgeName] =  edge;
@@ -187,9 +187,8 @@ void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool 
 	edgeWeight-> setPos(x,y);
 	edgeWeight-> setDefaultTextColor (color);
 	edgeWeight-> hide();
-	qDebug("Scene items now: %i ", scene()->items().size());
-	qDebug("GW items now: %i ", items().size());
 
+	qDebug()<< "Scene items now: "<< scene()->items().size() << " - GW items now: "<< items().size();
 }
 
 

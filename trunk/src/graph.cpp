@@ -125,23 +125,26 @@ void Graph::createVertex(int i, int cWidth, int cHeight){
 	Alse called from GW (via createEdge() below) when user middle-clicks.
 */
 void Graph::createEdge(int v1, int v2, float weight, QString color, bool reciprocal=false, bool drawArrows=true, bool bezier=false){
-	qDebug()<<"*** Graph: createEdge():"<<v1<<" "<<v2<<" "<<weight;
+	qDebug()<<"*** Graph: createEdge() from "<<v1<<" to "<<v2<<" of weight "<<weight;
 
 	if ( reciprocal ) {
-		qDebug (" Graph:: createEdge() RECIPROCAL new link -- Adding new edge to Graph and calling GW::drawEdge(). ");
+		qDebug (" Graph:: createEdge() RECIPROCAL new link -- Adding new edge to Graph...");
 		addEdge ( v1, v2, weight, color, reciprocal);
+		qDebug()<< "Graph:: createEdge() ...And emitting drawEdge signal to GW::drawEdge().";
 		emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier, false);
 	}
 	else if (this->hasEdge( v2, v1) )  {  
-		qDebug (" Graph:: createEdge() opposite link EXISTS - Adding new edge to Graph and emitting drawEdgeReciprocal() to make the original RECIPROCAL. ");
+		qDebug (" Graph:: createEdge() opposite link EXISTS - Adding new edge to Graph.. ");
 		reciprocal = true;
 		addEdge ( v1, v2, weight, color, reciprocal);
+		qDebug()<< "Graph:: createEdge() ...and emitting drawEdgeReciprocal() to make the original RECIPROCAL.";
 		emit drawEdgeReciprocal(v2, v1);
 	}
 	else {
-		qDebug (" Graph:: createEdge() NOT RECIPROCAL new link -- Adding new edge to Graph and emitting drawEdge signal to GW::drawEdge(). ");
+		qDebug (" Graph:: createEdge() NOT RECIPROCAL new link - Adding new edge to Graph... ");
 		reciprocal = false;
 		addEdge ( v1, v2, weight, color, reciprocal);
+		qDebug()<< "Graph:: createEdge() ...And emitting drawEdge signal to GW::drawEdge().";
 		emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier, false);
 	}
 	initEdgeColor=color; //just to draw new edges of the same color with those of the file loaded, when user clicks on the canvas
@@ -182,7 +185,7 @@ QMainWindow* Graph::parent(){
 	This method is called by createVertex() method
 */
 void Graph::addVertex (int v1, int val, int nsz, QString nc, QString nl, QString lc, QPointF p,QString nsp){ 
-	qDebug ("Graph: addVertex(): Appending vertex %i to graph", v1);
+	qDebug() <<"Graph: addVertex(): Adding vertex "<< v1 << " to graph.";
 	if (order)
 		index[v1]=m_totalVertices; 
 	else 
@@ -330,10 +333,10 @@ void Graph::addEdge (int v1, int v2, float weight, QString color, bool reciproca
 	int source=index[v1];
 	int target=index[v2];
 
-	qDebug("Graph: addEdge FROM %i with %i TO  %i with %i, weight %f", v1, source,v2,target, weight);
+	qDebug()<< "Graph: addEdge() from vertex "<< v1 << "["<< source<< "] to vertex "<< v2 << "["<< target << "] of weight "<<weight;
 
 	if ( !m_graph [ source ]->isOutLinked() ) {
-		qDebug("Graph: addEdge() SOURCE %i reports no outlinks -- setting outLinked TRUE for it.", v1);
+		qDebug("Graph: addEdge() SOURCE VERTEX %i reports no outlinks -- setting outLinked TRUE for it.", v1);
 		m_graph [ source ]->setOutLinked(TRUE) ;
 		outEdgesVert++;
 	}
@@ -348,7 +351,7 @@ void Graph::addEdge (int v1, int v2, float weight, QString color, bool reciproca
 	}
 	
 	if ( !m_graph [ target ]->isInLinked() ) {
-		qDebug("Graph: addEdge() TARGET %i reports no inLinks -- setting inLinked TRUE for it", v2);
+		qDebug("Graph: addEdge() TARGET VERTEX %i reports no inLinks -- setting inLinked TRUE for it", v2);
 		inEdgesVert++;
 		m_graph [ target ]->setInLinked(TRUE) ;
 	}

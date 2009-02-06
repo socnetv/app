@@ -353,7 +353,7 @@ int Parser::loadPajek(){
 		/**NODES CREATED. CREATE EDGES/ARCS NOW. */		
 		else {
 			if (j && j!=aNodes)  {  //if there were more or less nodes than the file declared
-				qDebug()<<"The Pajek file declares " << aNodes <<"  nodes, but I found " <<  j << " nodes...." ;
+				qDebug()<<"*** WARNING ***: The Pajek file declares " << aNodes <<"  nodes, but I found " <<  j << " nodes...." ;
 				aNodes=j;
 			}
 			else if (j==0) {  //if there were no nodes at all, we need to create them now.
@@ -442,7 +442,7 @@ int Parser::loadPajek(){
 				undirected=false;
 				arrows=true;
 				bezier=false;
-				qDebug()<<"Parser-loadPajek(): Creating arc source "<< source << " target "<< target << " with weight "<< weight;
+				qDebug()<<"Parser-loadPajek(): Creating arc from node "<< source << " to node "<< target << " with weight "<< weight;
 				emit createEdge(source, target, weight, linkColor, undirected, arrows, bezier);
 				totalLinks++;
 			} //else if ARCS

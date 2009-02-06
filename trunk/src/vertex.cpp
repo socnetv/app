@@ -72,8 +72,7 @@ Vertex::Vertex(int v1) {
 
 
 void Vertex::addLinkTo (int v2, float weight) {
-	qDebug("Vertex: addLinkTo %i", v2);
-// 	m_edges.append(v2);
+	qDebug() <<"Vertex: "<< name() << " addLinkTo() "<< v2 << " of weight "<< weight;
 	m_edges[v2]=weight;
 	m_outLinks++;
 }
@@ -81,14 +80,13 @@ void Vertex::addLinkTo (int v2, float weight) {
 
 
 void Vertex::addLinkFrom (int source) {
-	qDebug("Vertex: addLinkFrom %i", source);
+	qDebug() <<"Vertex: "<< name() << " addLinkFrom() "<< source;
 	m_inLinks++;
 
 }
 
 void Vertex::changeLinkWeightTo(int target, float weight){
 	qDebug("Vertex: changeEdgeWeightTo %i", target);
-// 	m_edges.append(v2);
 	m_edges[target]=weight;
 }
 
@@ -229,6 +227,7 @@ void Vertex::setOutLinkColor(int target, QString color){
 	outLinkColors[target]=color;
 }
 
+//FIXME: See MW line 1965
 QString Vertex::outLinkColor(int target){
 	if (outLinkColors.contains(target))
 		return outLinkColors.value(target);	
