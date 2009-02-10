@@ -133,8 +133,8 @@ public:
 
 	int vertices() ;						//Returns the sum of vertices inside m_graph
 
-	int edgesFrom (int i) ;						//Returns the number of edges starting from v1
-	int edgesTo (int i) ;						//Returns the number of edges ending to v1  
+	int edgesFrom (int i) ;						//Returns the number of edges starting from v1 (outDegree)
+	int edgesTo (int i) ;						//Returns the number of edges ending to v1 (inDegree)  
 
 	int verticesWithOutEdges();					//Returns the sum of vertices having outEdges
 	int verticesWithInEdges();					//Returns the sum of vertices having inEdges
@@ -177,6 +177,9 @@ public:
 	void centralityInDegree(bool);				//Calculates the inDegree centrality of each vertex
 	void centralityOutDegree(bool);				//Calculates the outDegree centrality of each vertex
 
+	float vertexClusteringCoefficient(int v1);	
+	float graphClusteringCoefficient ();
+	
 //	void eccentr_JordanCenter(); 				// TODO
 
 

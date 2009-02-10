@@ -1160,6 +1160,7 @@ void MainWindow::initToolBox(){
 	buttonsGrid->setMargin(10);
 	buttonsGroup->setLayout(buttonsGrid);
 
+ 	toolBox->addTab(buttonsGroup, tr("Edit"));
 
 
 	//create widgets for Properties/Statistics group/tab
@@ -1219,9 +1220,10 @@ void MainWindow::initToolBox(){
 
 
 
-
+	QLabel *dummyLabel = new QLabel;
+	dummyLabel-> setText (" ");
 	QLabel *labelNode = new QLabel;
-	labelNode-> setText (tr("Active Node:"));
+	labelNode-> setText (tr("Active Node"));
 
 	QLabel *labelSelectedNodeLCD = new QLabel;
 	labelSelectedNodeLCD -> setText (tr("Node Number:"));
@@ -1231,34 +1233,44 @@ void MainWindow::initToolBox(){
 	selectedNodeLCD ->setSegmentStyle(QLCDNumber::Flat);
 
 	QLabel *labelInLinksLCD = new QLabel;
-	labelInLinksLCD -> setText (tr("Node InLinks:"));
-	labelInLinksLCD -> setToolTip (tr("This is the number of inLinks of the last node you clicked on."));
+	labelInLinksLCD -> setText (tr("Node In-Degree:"));
+	labelInLinksLCD -> setToolTip (tr("This is the number of edges ending at the node you clicked on."));
 	inLinksLCD=new QLCDNumber(7);
-	inLinksLCD->setSegmentStyle(QLCDNumber::Flat);
-	inLinksLCD -> setToolTip (tr("This is the number of inLinks of the last node you clicked on."));
+	inLinksLCD -> setSegmentStyle(QLCDNumber::Flat);
+	inLinksLCD -> setToolTip (tr("This is the number of edges ending at the node you clicked on."));
 	QLabel *labelOutLinksLCD = new QLabel;
-	labelOutLinksLCD -> setText (tr("Node OutLinks:"));
-	labelOutLinksLCD -> setToolTip (tr("This is the number of outLinks of the last node you clicked on."));
+	labelOutLinksLCD -> setText (tr("Node Out-Degree:"));
+	labelOutLinksLCD -> setToolTip (tr("This is the number of edges starting from the node you clicked on."));
 	outLinksLCD=new QLCDNumber(7);
-	outLinksLCD->setSegmentStyle(QLCDNumber::Flat);
-	outLinksLCD -> setToolTip (tr("This is the number of outLinks of the last node you clicked on."));
+	outLinksLCD -> setSegmentStyle(QLCDNumber::Flat);
+	outLinksLCD -> setToolTip (tr("This is the number of edges starting from the node you clicked on."));
 
-
-	propertiesGrid -> addWidget(labelNode, 6,0);
-	propertiesGrid -> addWidget(labelSelectedNodeLCD , 7,0);
-	propertiesGrid -> addWidget(selectedNodeLCD ,7,1);
-	propertiesGrid -> addWidget(labelInLinksLCD, 8,0);
-	propertiesGrid -> addWidget(inLinksLCD,8,1);
-	propertiesGrid -> addWidget(labelOutLinksLCD, 9,0);
-	propertiesGrid -> addWidget(outLinksLCD,9,1);
-	propertiesGrid -> setRowStretch(10,1);   //fix stretch
+	QLabel *labelClucofLCD  = new QLabel;
+	labelClucofLCD -> setText (tr("Clustering Coef."));
+	labelClucofLCD -> setToolTip (tr("The Clustering Coefficient quantifies how close the vertex and its neighbors are to being a clique."));
+	clucofLCD = new QLCDNumber(7);
+	clucofLCD -> setSegmentStyle(QLCDNumber::Flat);
+	clucofLCD -> setToolTip (tr("The proportion of links between the vertices within the neighbourhood of the clicked vertex, divided by the number of links that could possibly exist between them."));
+	
+	
+	propertiesGrid -> addWidget(dummyLabel, 6,0);
+	propertiesGrid -> addWidget(labelNode, 7,0);
+	propertiesGrid -> addWidget(labelSelectedNodeLCD , 8,0);
+	propertiesGrid -> addWidget(selectedNodeLCD ,8,1);
+	propertiesGrid -> addWidget(labelInLinksLCD, 9,0);
+	propertiesGrid -> addWidget(inLinksLCD, 9,1);
+	propertiesGrid -> addWidget(labelOutLinksLCD, 10,0);
+	propertiesGrid -> addWidget(outLinksLCD,10,1);
+	propertiesGrid -> addWidget(labelClucofLCD, 11,0);
+	propertiesGrid -> addWidget(clucofLCD,11,1);
+	propertiesGrid -> setRowStretch(12,1);   //fix stretch
+	
 	//create a box with title
 	QGroupBox *networkPropertiesGroup = new QGroupBox(tr("Network"));
 	networkPropertiesGroup -> setLayout (propertiesGrid);
 
-	
- 	toolBox->addTab(buttonsGroup, tr("Edit"));
- 	toolBox->addTab(networkPropertiesGroup , tr("Statistics"));
+
+ 	toolBox->addTab( networkPropertiesGroup, tr("Statistics"));
 	toolBox->setMinimumWidth(buttonsGroup->sizeHint().width());
 
 
@@ -1455,6 +1467,7 @@ void MainWindow::initNet(){
 	densityLCD->display(activeGraph.density());
 	inLinksLCD->display(0);
 	outLinksLCD->display(0);
+	clucofLCD->display(0);
 	selectedNodeLCD->display(0);
 	inLinkedNodesLCD -> display(activeGraph.verticesWithInEdges());
 	outLinkedNodesLCD-> display(activeGraph.verticesWithOutEdges());
@@ -2650,7 +2663,8 @@ void MainWindow::nodeInfoStatusBar ( Node *jim) {
 	selectedNodeLCD->display (clickedJimNumber);
 	inLinksLCD->display (inLinks);
 	outLinksLCD->display (outLinks);
-
+	clucofLCD->display(activeGraph.vertexClusteringCoefficient(clickedJimNumber));
+	
 	statusBar()->showMessage( QString(tr("(%1, %2);  Node %3, with label %4, "
 		"has %5 in-Links and %6 out-Links.")).arg( ceil( clickedJim->x() ) )
 		.arg( ceil( clickedJim->y() )).arg( clickedJimNumber ).arg( clickedJim->label() )
@@ -3154,7 +3168,7 @@ void MainWindow::slotChangeLinkColor(){
 
 /**
 *	Changes the weight of the clicked link. 
-*	If no link is clicked, then it asks the user to specify one.
+*	If no link is clicked, asks the user to specify a link.
 */
 void MainWindow::slotChangeLinkWeight(){
 	if (!fileLoaded && !networkModified )  {
@@ -3184,6 +3198,7 @@ void MainWindow::slotChangeLinkWeight(){
 		}
 
 		qDebug("source %i target %i",sourceNode, targetNode);
+		
 		QList<QGraphicsItem *> list=scene->items();	
 		for (QList<QGraphicsItem *>::iterator it=list.begin(); it!= list.end() ; it++)
 			if ( (*it)->type()==TypeEdge) {
@@ -3210,22 +3225,94 @@ void MainWindow::slotChangeLinkWeight(){
 	else {  //linkClicked
 		sourceNode=clickedLink->sourceNodeNumber();
 		targetNode=clickedLink->targetNodeNumber();
-		qDebug("MW: slotChangeLinkWeight()  %i -> %i", sourceNode, targetNode);
-		newWeight=QInputDialog::getInteger(this, "Change link weight...",tr("New link weight: "), 1, -100, 100 ,1, &ok) ;
-		if (ok) {
-			clickedLink->setWeight(newWeight);
-			clickedLink->update();	
-			qDebug()<<"MW: newWeight will be "<< newWeight; 
-			activeGraph.setEdgeWeight(sourceNode, targetNode, newWeight);
-			statusBar()->showMessage( QString(tr("Ready.")) ,statusBarDuration);
-			graphChanged();
-			return;
+		if (activeGraph.symmetricEdge(sourceNode, targetNode) ) {
+			QString s=QString::number(sourceNode);
+			QString t=QString::number(targetNode);
+			switch (QMessageBox::information( this, tr("Change link weight"),
+				      tr("This link is reciprocal. \n") +
+				      tr("Select what Direction to change or Both..."),
+				      s+" -> "+ t, t+" -> "+s, tr("Both"), 0, 1 ))
+				{
+					case 0:
+						qDebug("MW: slotChangeLinkWeight()  %i -> %i", sourceNode, targetNode);
+						newWeight=QInputDialog::getInteger(this, "Change link weight...",tr("New link weight: "), 1, -100, 100 ,1, &ok) ;
+						if (ok) {
+							clickedLink->setWeight(newWeight);
+							clickedLink->update();	
+							qDebug()<<"MW: newWeight will be "<< newWeight; 
+							activeGraph.setEdgeWeight(sourceNode, targetNode, newWeight);
+							statusBar()->showMessage( QString(tr("Ready.")) ,statusBarDuration);
+							graphChanged();
+							return;
+						}
+						else {
+							statusBar()->showMessage( QString(tr("Change link weight cancelled.")) , statusBarDuration);
+							return;
+						}
+						break;
+					case 1:
+						qDebug("MW: slotChangeLinkWeight()  %i -> %i",targetNode , sourceNode);
+						newWeight=QInputDialog::getInteger(this, "Change link weight...",tr("New link weight: "), 1, -100, 100 ,1, &ok) ;
+						if (ok) {
+							if (graphicsWidget->setEdgeWeight( targetNode, sourceNode, newWeight) ) {
+								qDebug()<<"MW: newWeight will be "<< newWeight; 
+								activeGraph.setEdgeWeight( targetNode, sourceNode, newWeight);
+								statusBar()->showMessage( QString(tr("Ready.")) ,statusBarDuration);
+								graphChanged();
+							}
+							else statusBar()->showMessage( QString(tr("Weight not changed. Sorry.")) ,statusBarDuration);
+								
+							return;
+						}
+						else {
+							statusBar()->showMessage( QString(tr("Change link weight cancelled.")) , statusBarDuration);
+							return;
+						}
+						break;
+					case 2:
+						qDebug("MW: slotChangeLinkWeight()  both directions %i <-> %i",targetNode , sourceNode);
+						newWeight=QInputDialog::getInteger(this, "Change link weight...",tr("New link weight: "), 1, -100, 100 ,1, &ok) ;
+						if (ok) {
+							if (
+								graphicsWidget->setEdgeWeight( targetNode, sourceNode, newWeight) &&
+								graphicsWidget->setEdgeWeight( sourceNode, targetNode, newWeight)
+								)  	{
+								qDebug()<<"MW: Changing first direction. NewWeight will be "<< newWeight;
+								activeGraph.setEdgeWeight(sourceNode, targetNode, newWeight);
+								qDebug()<<"MW: Changing opposite direction. NewWeight will be "<< newWeight; 
+								activeGraph.setEdgeWeight( targetNode, sourceNode, newWeight);
+								statusBar()->showMessage( QString(tr("Ready.")) ,statusBarDuration);
+								graphChanged();
+							}
+							else 
+								statusBar()->showMessage( QString(tr("Weight not changed. Sorry.")) ,statusBarDuration);
+			 				return;
+						}
+						else {
+							statusBar()->showMessage( QString(tr("Change link weight cancelled.")) , statusBarDuration);
+							return;
+						}
+						break;
+				}
 		}
 		else {
-			statusBar()->showMessage( QString(tr("Change link weight cancelled.")) , statusBarDuration);
-			return;
+			qDebug("MW: slotChangeLinkWeight()  %i -> %i", sourceNode, targetNode);
+			newWeight=QInputDialog::getInteger(this, "Change link weight...",tr("New link weight: "), 1, -100, 100 ,1, &ok) ;
+			if (ok) {
+				clickedLink->setWeight(newWeight);
+				clickedLink->update();	
+				qDebug()<<"MW: newWeight will be "<< newWeight; 
+				activeGraph.setEdgeWeight(sourceNode, targetNode, newWeight);
+				statusBar()->showMessage( QString(tr("Ready.")) ,statusBarDuration);
+				graphChanged();
+				return;
+			}
+			else {
+				statusBar()->showMessage( QString(tr("Change link weight cancelled.")) , statusBarDuration);
+				return;
+			}
 		}
-		
+		linkClicked=FALSE;
 	}
 	
 }
@@ -5296,8 +5383,9 @@ void MainWindow::slotHelp(){
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
      QMessageBox::about( this, "About SocNetV",
-	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualiser, version: " + VERSION + ""
-	"<p><b>Build: </b> Thu, Feb 05, 2009</p>"
+	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualiser (SocNetV)"
+	"<p>Version: " + VERSION + "</p>"
+	"<p><b>Build: </b> Thu, Feb 10, 2009</p>"
 	
 	"<p>(C) 2005-2009 by Dimitris V. Kalamaras"
 	"<br> dimitris.kalamaras@gmail.com"

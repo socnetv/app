@@ -101,8 +101,15 @@ QString Edge::color() {
 	return m_color; 
 }
 
+/*
+	Called from MW when user wants to change an edge's weight.
+	Updates both the width and the EdgeWeight
+*/
 void Edge::setWeight( float w) {
 	m_weight = w;
+	foreach (EdgeWeight *wgt, weightList) 		///update the edgeWeight of this edge as well.
+		wgt->setPlainText (QString::number(w));
+
 }
 
 float Edge::weight() { 
@@ -149,6 +156,7 @@ int Edge::targetNodeNumber() {
 }
 
 
+//Called from EdgeWeight objects to 'connect' them to this edge. 
 void Edge::addWeight (EdgeWeight* canvasWeight  )  {
 	weightList.push_back( canvasWeight) ; 
 }

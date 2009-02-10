@@ -316,7 +316,8 @@ private:
 	QString initLinkColor, initNodeShape, initLabelColor;
 	QColor initNumberColor,initBackgroundColor;
 	QPointF cursorPosGW;	//Carries the position of the cursor in graphicsWidget coordinates
-	QLCDNumber *nodesLCD, *edgesLCD, *densityLCD, *inLinksLCD, *outLinksLCD, *outLinkedNodesLCD, *inLinkedNodesLCD, *reciprocalLinkedNodesLCD, *selectedNodeLCD;
+	QLCDNumber  *inLinksLCD, *outLinksLCD , *selectedNodeLCD, *clucofLCD;
+	QLCDNumber *nodesLCD, *edgesLCD, *densityLCD, *outLinkedNodesLCD, *inLinkedNodesLCD, *reciprocalLinkedNodesLCD;
 
 	Node *clickedJim;	
 	Node *markedNode;

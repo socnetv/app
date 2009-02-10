@@ -66,6 +66,7 @@ public:
 	void setInitLabelDistance(int);
 	bool setNodeColor(int, QString);
 	bool setEdgeColor(int, int, QString);
+	bool setEdgeWeight(int, int, float);
 	void setAllItemsVisibility(int, bool);
 
 protected:

@@ -1949,6 +1949,55 @@ void Graph::createSameDegreeRandomNetwork(int vert, int degree){
 
 
 
+/**
+	Returns the clustering coefficient (CLUCOF) of a vertex v1
+	CLUCOF in a graph quantifies how close the vertex and its neighbors are to being a clique 
+	A clique is (complete graph). 
+	This is used to determine whether a graph is a small-world network.
+*/
+float Graph:: vertexClusteringCoefficient(int v1){
+	float clucof=0, ejk=0, denom=0;
+	int totalDegree=0, connectedVertex1=0, connectedVertex2=0;
+	qDebug("*** Graph::vertexClusteringCoefficient() Source vertex %i [%i] has %i inDegree and %i outDegree ", v1 , index[ v1 ], edgesTo(v1), edgesFrom(v1) );
+	imap_f::iterator it1, it2;
+	for( it1 =  m_graph[ index[v1] ] -> m_edges.begin(); it1 !=  m_graph[ index[v1] ] ->m_edges.end(); it1++ ) {
+		connectedVertex1=it1->first;	
+		qDebug("Graph::vertexClusteringCoefficient() connectedVertex1 %i [%i] ",connectedVertex1, index[connectedVertex1]);
+		for( it2 =  m_graph[ index[v1] ] -> m_edges.begin(); it2 !=  m_graph[ index[v1] ] ->m_edges.end(); it2++ ) {
+			connectedVertex2=it2->first;
+			if (connectedVertex1 == connectedVertex2) continue;
+			else {
+				qDebug("Graph::vertexClusteringCoefficient() connectedVertex2 %i [%i] ",connectedVertex2, index[connectedVertex2]);
+				if ( hasEdge( connectedVertex1, connectedVertex2 ) ) {
+					qDebug("Graph::vertexClusteringCoefficient()  %i  is connected to %i ", connectedVertex1, connectedVertex2);
+					qDebug("Graph::vertexClusteringCoefficient() ejk = %f" ,  ejk);
+					ejk ++;
+				}
+			}
+		}
+	}
+	totalDegree=edgesFrom(v1) + edgesTo(v1);
+	denom = totalDegree * (totalDegree -1.0);
+	qDebug("Graph::vertexClusteringCoefficient() dividing with %f", denom);
+	clucof = ejk / denom;
+	qDebug("=== Graph::vertexClusteringCoefficient() Source vertex %i [%i] has %f CLUCOF", v1, index[v1], clucof);
+	return clucof;
+}
+
+
+float Graph::graphClusteringCoefficient (){
+	qDebug("=== Graph::graphClusteringCoefficient()  ");
+	float clucof=0;
+	foreach (Vertex *v1, m_graph)  {
+		clucof += vertexClusteringCoefficient(v1->name());
+	}
+
+	clucof = clucof / vertices();
+	qDebug("=== Graph::graphClusteringCoefficient()  is equal to %f", clucof);
+	return clucof; 
+}
+
+
 /** 
 	Calculates x! factorial...
 */

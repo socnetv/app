@@ -447,6 +447,27 @@ bool GraphicsWidget::setEdgeColor(int source, int target, QString color){
 
 
 /** 
+	Changes/Sets the weight of an edge.
+	It is called from MW when the user changes the weight of an edge (right-clicking).
+*/
+bool GraphicsWidget::setEdgeWeight(int source, int target, float weight){
+	QList<QGraphicsItem *> list=scene()->items();
+	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!= list.end() ; it++){
+		if ( (*it)->type()==TypeEdge) {
+			Edge *edge=(Edge*) (*it);
+			if ( edge->sourceNodeNumber()==source && edge->targetNodeNumber()==target ) {
+				edge->setWeight(weight);
+				edge->update();
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+
+
+/** 
 	Passes initial node size from MW.
 	It is called from MW on startup and when user changes it.
 */

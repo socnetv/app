@@ -8,6 +8,7 @@ Version 0.50 - Feb 10 2009
 Codename: "Recession (or the ballad of the deranged Greek statesmen)"
 ------------------------------
 -'Small World' random network creation (Watts and Strogatz model).
+-Clustering Coefficient calculation. 
 -Nodes can be linked to themselves with nice bezier curves.
 -Negative and decimal edge weights are now fully supported.
 -Dashed lines are nicely used to signify negative edge weights. 
