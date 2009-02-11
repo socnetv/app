@@ -73,42 +73,43 @@ Vertex::Vertex(int v1) {
 
 void Vertex::addLinkTo (int v2, float weight) {
 	qDebug() <<"Vertex: "<< name() << " addLinkTo() "<< v2 << " of weight "<< weight;
-	m_edges[v2]=weight;
+	m_outEdges[v2]=weight;
 	m_outLinks++;
 }
 
 
 
-void Vertex::addLinkFrom (int source) {
+void Vertex::addLinkFrom (int source, float weight) {
 	qDebug() <<"Vertex: "<< name() << " addLinkFrom() "<< source;
+	m_inEdges[source]=weight;
 	m_inLinks++;
 
 }
 
 void Vertex::changeLinkWeightTo(int target, float weight){
 	qDebug("Vertex: changeEdgeWeightTo %i", target);
-	m_edges[target]=weight;
+	m_outEdges[target]=weight;
 }
 
 
 //finds and removes a link to vertice v2
 void Vertex::removeLinkTo (int v2) {
 	qDebug("Vertex: removeEdgeTo %i", v2);
-	qDebug("Vertex: vertice %i has %i edges",m_name, outLinks() );
-	if (outLinks()>0) {
+	qDebug("Vertex: vertice %i has %i edges",m_name, outDegree() );
+	if (outDegree()>0) {
 		m_outLinks--;
-/*		qSort(m_edges.begin(), m_edges.end());
-		QList<int>::iterator i = qBinaryFind(m_edges.begin(), m_edges.end(), v2);*/
-		imap_f::iterator i=m_edges.find(v2);
-		if ( i != m_edges.end() ) {
+/*		qSort(m_outEdges.begin(), m_outEdges.end());
+		QList<int>::iterator i = qBinaryFind(m_outEdges.begin(), m_outEdges.end(), v2);*/
+		imap_f::iterator i=m_outEdges.find(v2);
+		if ( i != m_outEdges.end() ) {
 			qDebug("Vertex: edge exists. Removing it");
-			m_edges.erase(i);
+			m_outEdges.erase(i);
 		}
 		else {
 			qDebug("Vertex: edge doesnt exist.");
 		}
 //		sorted=true;		
-		qDebug("Vertex: vertice %i now has %i edges",m_name, outLinks() );
+		qDebug("Vertex: vertice %i now has %i edges",m_name, outDegree() );
 	}
 	else {
 		qDebug("Vertex: vertice %i has no edges", m_name);
@@ -124,23 +125,24 @@ void Vertex::removeLinkFrom(int v2){
 
 
 //Returns the numbers of links from this vertice
-int Vertex::outLinks() { 
-//	qDebug("Vertex: size %i", m_edges.size()); 
-	return m_edges.size(); 
+int Vertex::outDegree() { 
+//	qDebug("Vertex: size %i", m_outEdges.size()); 
+	//return m_outLinks;
+	return m_outEdges.size(); 
 }
 
 
 
 //Returns the numbers of links to this vertice
-int Vertex::inLinks() { 
-//	qDebug("Vertex: size %i", m_edges.size()); 
+int Vertex::inDegree() { 
+//	qDebug("Vertex: size %i", m_outEdges.size()); 
 	return m_inLinks; 
 }
 
 //Checks if this vertex is outlinked to v2 and returns the weight of the link
 float Vertex::isLinkedTo(int v2){
-	imap_f::iterator weight=m_edges.find(v2);
-	if (weight  != m_edges.end()) {
+	imap_f::iterator weight=m_outEdges.find(v2);
+	if (weight  != m_outEdges.end()) {
 		qDebug()<< (*weight).second;
 		return (*weight).second;
 	}
@@ -263,5 +265,5 @@ void Vertex::appendToPs( int vertex ) {
 
 
 Vertex::~Vertex() {
-	m_edges.clear();
+	m_outEdges.clear();
 }

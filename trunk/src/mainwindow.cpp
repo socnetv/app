@@ -999,9 +999,9 @@ void MainWindow::initMenuBar() {
 	layoutMenu->addAction(nodeSizeProportionalInDegreeAct);
 	layoutMenu->addSeparator();
 	layoutMenu -> addAction (circleClearBackgrCirclesAct);
-	layoutMenu->addSeparator();
-	layoutMenu->addAction(zoomInAct);
-	layoutMenu->addAction(zoomOutAct);
+//	layoutMenu->addSeparator();
+//	layoutMenu->addAction(zoomInAct);
+//	layoutMenu->addAction(zoomOutAct);
 	
 
 
@@ -2663,7 +2663,7 @@ void MainWindow::nodeInfoStatusBar ( Node *jim) {
 	selectedNodeLCD->display (clickedJimNumber);
 	inLinksLCD->display (inLinks);
 	outLinksLCD->display (outLinks);
-	clucofLCD->display(activeGraph.vertexClusteringCoefficient(clickedJimNumber));
+	clucofLCD->display(activeGraph.clusteringCoefficient(clickedJimNumber));
 	
 	statusBar()->showMessage( QString(tr("(%1, %2);  Node %3, with label %4, "
 		"has %5 in-Links and %6 out-Links.")).arg( ceil( clickedJim->x() ) )

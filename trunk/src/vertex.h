@@ -51,12 +51,13 @@ public:
 	void setName (int ); 
 
 	void addLinkTo (int target, float weight);	/** Adds an outLink to target with weight w */
-	void addLinkFrom(int source);
+	void addLinkFrom(int source, float weight);
 	void changeLinkWeightTo (int target, float weight);
 	void removeLinkTo (int target);		/** Removes specified edge to target vertex*/
 	void removeLinkFrom(int source);
-	int outLinks();			/**Returns the numbers of links from this vertex */
-	int inLinks();		/**Returns the number of links to this vertex */
+	
+	int outDegree();	/**Returns the number of outward directed graph edges from this vertex   */
+	int inDegree();		/**Returns the number of inward directed graph edges from this vertex   */
 
 	/** Returns true if there is a reciprocal link from this vertex */
 	bool isReciprocalLinked() { return m_reciprocalLinked;}
@@ -141,7 +142,8 @@ public:
 	float EC() { return m_EC;}		/** Returns max Geodesic Distance to all other vertices*/
 	float SEC() { return m_SEC;}
 
-	imap_f m_edges;			//holds all edges starting from this vertex.
+	imap_f m_outEdges;			//holds all edges starting from this vertex.
+	imap_f m_inEdges;			//holds all edges starting from this vertex.
 	
 protected:
 

@@ -201,7 +201,7 @@ void Edge::adjust(){
 	For example, a round item may choose to return an elliptic shape for better collision detection
 */
 QPainterPath Edge::shape () const {
-	qDebug()<<"Edge::shape()";
+	//qDebug()<<"Edge::shape()";		//too many debug messages...
 	QPainterPath path;
 	//path.addRegion(boundingRegion(QTransform()));
 	path.addRect(boundingRect());
@@ -226,7 +226,7 @@ QRectF Edge::boundingRect() const {
 			QSizeF(
 			targetPoint.x() - sourcePoint.x(), targetPoint.y() - sourcePoint.y())
 			).normalized().adjusted(-extra, -extra, extra, extra);
-	qDebug()<<"Edge::boundingRect() extra = " << extra << "QSizeF width "<< a.width() << " QSizeF height "<< a.height();
+	//qDebug()<<"Edge::boundingRect() extra = " << extra << "QSizeF width "<< a.width() << " QSizeF height "<< a.height();
 	if (source==target) {		//self-edge has different bounding rect.
 			return QRectF (
 			sourcePoint-QPointF(30,30), 
