@@ -653,12 +653,6 @@ void MainWindow::initActions(){
 	connect(symmetryAct, SIGNAL(activated()), this, SLOT(slotCheckSymmetry()));
 
  
-// 	netDensity = new QAction( tr("Network &Density"), this);
-// 	netDensity ->setShortcut(tr("Shift+D"));
-// 	netDensity->setStatusTip(tr("Calculates the network density"));
-// 	netDensity->setWhatsThis(tr("Density\n\n The density of a network is the ratio of existing links to maximum links (n(n-1))"));
-// 	connect(netDensity, SIGNAL(activated()), this, SLOT(slotNetworkDensity()));
-
 	distanceAct = new QAction(QIcon(":/images/distance.png"),  tr("Geodesic Distance"), this);
 	distanceAct ->setShortcut(tr("Ctrl+G"));
 	distanceAct->setStatusTip(tr("Calculates the number of edges between two nodes..."));
@@ -676,6 +670,14 @@ void MainWindow::initActions(){
 	diameterAct->setStatusTip(tr("Calculates and displays the diameter of the active network."));
 	diameterAct->setWhatsThis(tr("Diameter\n\n Diameter is the maximum shortest path between any two nodes of the network."));
 	connect(diameterAct, SIGNAL(activated()), this, SLOT(slotDiameter()));
+
+
+	clusteringCoefAct = new QAction(QIcon(":/images/triangle.png"), tr("Diameter"),this);
+	clusteringCoefAct ->setShortcut(tr("Ctrl+D"));
+	clusteringCoefAct->setStatusTip(tr("Calculates and displays the diameter of the active network."));
+	clusteringCoefAct->setWhatsThis(tr("Diameter\n\n Diameter is the maximum shortest path between any two nodes of the network."));
+	connect(diameterAct, SIGNAL(activated()), this, SLOT(slotDiameter()));
+
 		
 	cOutDegreeAct = new QAction(tr("OutDegree"),	this);
 	cOutDegreeAct->setStatusTip(tr("Calculates and displays OutDegree Centralities"));

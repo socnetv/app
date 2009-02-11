@@ -47,6 +47,8 @@ Vertex::Vertex(int v1, int val, int nsz, QString nc, QString nl, QString lc, QPo
 	m_outLinks=0;
 	m_inLinks=0;
 	m_ODC=0; m_SODC=0; m_IDC=0; m_SIDC=0; m_CC=0; m_SCC=0; m_BC=0; m_SBC=0; m_GC=0; m_SGC=0; m_SC=0; m_SSC=0;
+	m_CLC=0; m_hasCLC=FALSE;
+	
 	m_inLinked=FALSE;
 	m_outLinked=FALSE;
 	m_reciprocalLinked=FALSE;
@@ -94,33 +96,44 @@ void Vertex::changeLinkWeightTo(int target, float weight){
 
 //finds and removes a link to vertice v2
 void Vertex::removeLinkTo (int v2) {
-	qDebug("Vertex: removeEdgeTo %i", v2);
-	qDebug("Vertex: vertice %i has %i edges",m_name, outDegree() );
+	qDebug("Vertex: removeLinkTo() vertex %i has %i edges. RemovingEdgeTo %i",m_name, outDegree(),v2 );
 	if (outDegree()>0) {
 		m_outLinks--;
-/*		qSort(m_outEdges.begin(), m_outEdges.end());
-		QList<int>::iterator i = qBinaryFind(m_outEdges.begin(), m_outEdges.end(), v2);*/
 		imap_f::iterator i=m_outEdges.find(v2);
 		if ( i != m_outEdges.end() ) {
 			qDebug("Vertex: edge exists. Removing it");
 			m_outEdges.erase(i);
+			if ( m_outLinks == 0 ) setOutLinked(FALSE);
 		}
 		else {
 			qDebug("Vertex: edge doesnt exist.");
 		}
-//		sorted=true;		
-		qDebug("Vertex: vertice %i now has %i edges",m_name, outDegree() );
+		qDebug("Vertex: vertex %i now has %i edges",m_name, outDegree() );
 	}
 	else {
-		qDebug("Vertex: vertice %i has no edges", m_name);
+		qDebug("Vertex: vertex  %i has no edges", m_name);
 	}
-
 }
 
 
 void Vertex::removeLinkFrom(int v2){
-	Q_UNUSED(v2);
-	m_inLinks--;
+	qDebug("Vertex: removeLinkFrom() vertex %i has %i edges. RemovingEdgeFrom %i",m_name, outDegree(),v2 );
+	if (outDegree()>0) {
+		m_inLinks--;
+		imap_f::iterator i=m_inEdges.find(v2);
+		if ( i != m_inEdges.end() ) {
+			qDebug("Vertex: edge exists. Removing it");
+			m_inEdges.erase(i);
+			if ( m_inLinks == 0 ) setInLinked(FALSE);
+		}
+		else {
+			qDebug("Vertex: edge doesnt exist.");
+		}
+		qDebug("Vertex: vertex %i now has %i edges",m_name, inDegree() );
+	}
+	else {
+		qDebug("Vertex: vertex  %i has no edges", m_name);
+	}
 }
 
 
@@ -139,17 +152,46 @@ int Vertex::inDegree() {
 	return m_inLinks; 
 }
 
+
+
+/**
+ 	localDegree is the outDegree + inDegree minus the edges counted twice.
+*/
+int Vertex::localDegree(){
+	imap_f::iterator it1;
+	int v2=0; 
+	int m_localDegree = (outDegree() + inDegree() );
+	for( it1 =  m_outEdges.begin(); it1 !=  m_outEdges.end(); it1++ ) {
+		v2=it1->first;		
+		if (this->isLinkedFrom (v2) ) m_localDegree--; 
+	}
+	qDebug("Vertex:: localDegree() for %i is  %i", this->name(), m_localDegree);
+	return m_localDegree;
+}
+
+
 //Checks if this vertex is outlinked to v2 and returns the weight of the link
 float Vertex::isLinkedTo(int v2){
 	imap_f::iterator weight=m_outEdges.find(v2);
 	if (weight  != m_outEdges.end()) {
-		qDebug()<< (*weight).second;
+		//	qDebug()<< "link to " << v2 << " weight "<<(*weight).second;
 		return (*weight).second;
 	}
 	else 
 		return 0;
 }
 
+
+
+float Vertex::isLinkedFrom(int v2){
+	imap_f::iterator weight=m_inEdges.find(v2);
+	if (weight  != m_inEdges.end()) {
+		//	qDebug()<< "link to " << v2 << " weight "<<(*weight).second;
+		return (*weight).second;
+	}
+	else 
+		return 0;
+}
 
 
 int Vertex::name() {
@@ -247,20 +289,6 @@ void Vertex::appendToPs( int vertex ) {
 	qDebug("adding %i to myPs", vertex); 
 	myPs.append(vertex); 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -249,18 +249,18 @@ void Graph::removeVertex(int Doomed){
 	if (!isSymmetric()) {
 		if (outEdgesOfDoomed>0) {
 			outEdgesVert--;
-			m_graph[indexOfDoomed]->setOutLinked(FALSE);
+			if (outEdgesVert < 0) outEdgesVert=0;
 		}
 		if (inEdgesOfDoomed>0) {
 			inEdgesVert--;
-			m_graph[indexOfDoomed]->setInLinked(FALSE);
+			if (inEdgesVert < 0) inEdgesVert=0;
 		}
 
 	}
-	else {//FIXME
+	else {
 		if (m_graph[indexOfDoomed]->isReciprocalLinked())
 			reciprocalEdgesVert--;
-			m_graph[indexOfDoomed]->setReciprocalLinked(FALSE);
+			if (reciprocalEdgesVert < 0) reciprocalEdgesVert=0;
 	}
 
 	//Remove links to Doomed from each other vertex	
@@ -268,29 +268,29 @@ void Graph::removeVertex(int Doomed){
 		if  ( (*it)->isLinkedTo(Doomed) != 0) {
 			qDebug("Graph: Vertex %i  is linked to selected and has %i outDegree.",(*it)->name(), (*it)->outDegree());
 			//Decrease the variables which count vertices with out and reciprocal edges 
-			if ( (*it)->outDegree()==1 && !isSymmetric()) {
+			if ( (*it)->outDegree()==1 ) {
 				qDebug("Graph: decreasing outEdgesVert");
 				outEdgesVert--;
-				(*it)->setOutLinked(FALSE);
+				if (outEdgesVert < 0) outEdgesVert=0;
 			}
-			else if ( (*it)->outDegree()==1 && isSymmetric() )	{
+			if ( (*it)->outDegree()==1 && (*it)->isLinkedFrom(Doomed) != 0 )	{
 				qDebug("Graph: decreasing reciprocalEdgesVert");
 				reciprocalEdgesVert--;
-				outEdgesVert--;
+				if (reciprocalEdgesVert < 0) reciprocalEdgesVert=0;
 				(*it)->setReciprocalLinked(FALSE);
-				(*it)->setOutLinked(FALSE);
 			}
 			(*it)->removeLinkTo(Doomed) ;
 		}
-		else if (m_graph [indexOfDoomed]->isLinkedTo ((*it)->name()) !=0 ) {
+		if (  (*it)->isLinkedFrom(Doomed) != 0 ) { 
 			if ( (*it)->inDegree()==1 ) {
 				inEdgesVert--;
-				(*it)->setInLinked(FALSE);
+				if (inEdgesVert < 0) inEdgesVert=0;
 				(*it)->removeLinkFrom(Doomed);
 			}
 		}
 		qDebug("Graph: Now inEdgesVert = %i, outEdgesVert = %i  and reciprocal = %i.",inEdgesVert, outEdgesVert, reciprocalEdgesVert);
 	}
+	
 	//Update the index mapping vertices inside m_graph
 	qDebug("Graph: Finished with vertices. Updating index");
 	int prevIndex=indexOfDoomed;
@@ -408,8 +408,11 @@ void Graph::removeEdge (int v1, int v2) {
 	qDebug("Graph: removeEdge between %i (%i) and %i (%i), NOW vertex v1 reports edge weight %f", v1, index[v1],v2,index[v2], m_graph [ index[v1] ]->isLinkedTo(v2) );
 	if ( hasEdge(v2,v1) !=0) symmetricAdjacencyMatrix=false;
 	m_totalEdges--;
+	if (m_totalEdges<0) m_totalEdges=0;
 	outEdgesVert--;
+	if (outEdgesVert<0) outEdgesVert=0;
 	inEdgesVert--;
+	if (inEdgesVert<0) inEdgesVert=0;
 	graphModified=true;
 	qDebug("Graph: removeEdge(): emitting eraseEdge to GW"); 
 	emit eraseEdge(v1,v2);
@@ -697,6 +700,7 @@ bool Graph::isSymmetric(){
 				if ( ! m_graph[y]->isLinkedTo( (*it)->name() )) {
 					//qDebug("Graph: isSymmetric():  u = %i IS NOT inLinked from y = %i", (*it)->name(), it1->first  );
 					symmetricAdjacencyMatrix=FALSE;
+					qDebug("Graph: isSymmetric()  NO");
 					return symmetricAdjacencyMatrix;
 				}
 				else {
@@ -706,6 +710,7 @@ bool Graph::isSymmetric(){
 		}
 		graphModified=false;
 	}
+	qDebug("Graph: isSymmetric() YES");
 	return symmetricAdjacencyMatrix;
 }
 
@@ -1955,24 +1960,25 @@ void Graph::createSameDegreeRandomNetwork(int vert, int degree){
 	A clique (or triangle) is a complete subgraph of three nodes.
 */	
 float Graph:: numberOfCliques(int v1){
+	qDebug("*** Graph::numberOfCliques(%i) ", v1);
 	float cliques=0;
 	int  connectedVertex1=0, connectedVertex2=0;
-	qDebug("*** Graph::vertexNumberOfCliques() Source vertex %i [%i] has %i inDegree and %i outDegree ", v1 , index[ v1 ], edgesTo(v1), edgesFrom(v1) );
+	qDebug("*** Graph::numberOfCliques() Source vertex %i [%i] has %i inDegree and %i outDegree ", v1 , index[ v1 ], edgesTo(v1), edgesFrom(v1) );
 	imap_f::iterator it1, it2;
 	bool symmetric=FALSE;
 	if (! (symmetric = isSymmetric()) ) {
 		for( it1 =  m_graph[ index[v1] ] -> m_inEdges.begin(); it1 !=  m_graph[ index[v1] ] ->m_inEdges.end(); it1++ ) {
 			connectedVertex1=it1->first;	
-			qDebug("Graph::vertexNumberOfCliques() In-connectedVertex1 %i [%i] ",connectedVertex1, index[connectedVertex1]);
+			qDebug("Graph::numberOfCliques() In-connectedVertex1 %i [%i] ",connectedVertex1, index[connectedVertex1]);
 			for( it2 =  m_graph[ index[v1] ] -> m_inEdges.begin(); it2 !=  m_graph[ index[v1] ] ->m_inEdges.end(); it2++ ) {
 				connectedVertex2=it2->first;
 				if (connectedVertex1 == connectedVertex2) continue;
 				else {
-					qDebug("Graph::vertexNumberOfCliques() In-connectedVertex2 %i [%i] ",connectedVertex2, index[connectedVertex2]);
+					qDebug("Graph::numberOfCliques() In-connectedVertex2 %i [%i] ",connectedVertex2, index[connectedVertex2]);
 					if ( hasEdge( connectedVertex1, connectedVertex2 ) ) {
-						qDebug("Graph::vertexNumberOfCliques()  %i  is connected to %i. Therefore we found a clique!", connectedVertex1, connectedVertex2);
+						qDebug("Graph::numberOfCliques()  %i  is connected to %i. Therefore we found a clique!", connectedVertex1, connectedVertex2);
 						cliques++;
-						qDebug("Graph::vertexNumberOfCliques() cliques = %f" ,  cliques);
+						qDebug("Graph::numberOfCliques() cliques = %f" ,  cliques);
 					}
 				}
 			}
@@ -1980,26 +1986,24 @@ float Graph:: numberOfCliques(int v1){
 		
 	}
 
-
-
 	for( it1 =  m_graph[ index[v1] ] -> m_outEdges.begin(); it1 !=  m_graph[ index[v1] ] ->m_outEdges.end(); it1++ ) {
 		connectedVertex1=it1->first;	
-		qDebug("Graph::vertexNumberOfCliques() Out-connectedVertex1 %i [%i] ",connectedVertex1, index[connectedVertex1]);
+		qDebug("Graph::numberOfCliques() Out-connectedVertex1 %i [%i] ",connectedVertex1, index[connectedVertex1]);
 		for( it2 =  m_graph[ index[v1] ] -> m_outEdges.begin(); it2 !=  m_graph[ index[v1] ] ->m_outEdges.end(); it2++ ) {
 			connectedVertex2=it2->first;
 			if (connectedVertex1 == connectedVertex2) continue;
 			else {
-				qDebug("Graph::vertexNumberOfCliques() Out-connectedVertex2 %i [%i] ",connectedVertex2, index[connectedVertex2]);
+				qDebug("Graph::numberOfCliques() Out-connectedVertex2 %i [%i] ",connectedVertex2, index[connectedVertex2]);
 				if ( hasEdge( connectedVertex1, connectedVertex2 ) ) {
-					qDebug("Graph::vertexNumberOfCliques()  %i  is out-connected to %i. Therefore we found a clique!", connectedVertex1, connectedVertex2);
+					qDebug("Graph::numberOfCliques()  %i  is out-connected to %i. Therefore we found a clique!", connectedVertex1, connectedVertex2);
 					cliques++;
-					qDebug("Graph::vertexNumberOfCliques() cliques = %f" ,  cliques);
+					qDebug("Graph::numberOfCliques() cliques = %f" ,  cliques);
 				}
 				if (!symmetric)
 					if ( hasEdge( connectedVertex2, connectedVertex1 ) ) {
-						qDebug("Graph::vertexNumberOfCliques()  %i  is also in-connected to %i. Therefore we found a clique!", connectedVertex2, connectedVertex1);
+						qDebug("Graph::numberOfCliques()  %i  is also in-connected to %i. Therefore we found a clique!", connectedVertex2, connectedVertex1);
 						cliques++;
-						qDebug("Graph::vertexNumberOfCliques() cliques = %f" ,  cliques);
+						qDebug("Graph::numberOfCliques() cliques = %f" ,  cliques);
 					}
 			}
 		}
@@ -2015,9 +2019,9 @@ float Graph:: numberOfCliques(int v1){
 	sums the total number, then divides it by 3 because each vertex has been counted three times.
 */	
 float Graph::numberOfCliques(){
-	qDebug("Graph::	numberOfCliques");
+	qDebug("Graph::	numberOfCliques()");
 	float cliques=0;
-		foreach (Vertex *v1, m_graph)  {
+	foreach (Vertex *v1, m_graph)  {
 		cliques += numberOfCliques(v1->name());
 		qDebug("Graph::	numberOfCliques now %f", cliques );
 	}
@@ -2050,26 +2054,39 @@ float Graph::numberOfTriples(int v1){
 	This is used to determine whether a graph is a small-world network.
 */
 float Graph:: clusteringCoefficient(int v1){
-	qDebug("Graph::	vertexClusteringCoefficient calling vertexNumberOfCliques()...");
+	float clucof=0;
+	if ( !graphModified && (m_graph[ index [v1] ] -> hasCLC() ) )  {
+		float clucof=m_graph[ index [v1] ] ->CLC(); 
+		qDebug("Graph: clusteringCoefficient(%i) not mofified. Returning previous clucof = %f", v1, clucof);
+		return clucof;
+	}
+
+	qDebug("Graph::	clusteringCoefficient(v1) - Graph changed or clucof not calculated. Calling numberOfCliques() for vertex %i", v1);
 	float totalCliques=numberOfCliques(v1);
-	qDebug("Graph::	vertexClusteringCoefficient Number of Cliques for %i is %f", v1, totalCliques);
-	float clucof=0, denom=0;
+	qDebug("Graph::	Number of Cliques for %i is %f.", v1, totalCliques);
+
+	if (totalCliques==0) return 0;	//stop if we're at a leaf.
+	
+	float denom=0, totalDegree=0;
 	
 	if (isSymmetric()){
 		totalCliques = totalCliques / 2.0;
-
-		denom = numberOfTriples(v1);
-		qDebug("Graph::vertexClusteringCoefficient() Graph is symmetric. Dividing with %f", denom);
+		qDebug(" Graph::Calculating number of triples");
+		totalDegree=edgesFrom(v1);
+		denom =	totalDegree * (totalDegree -1.0) / 2.0;
+		qDebug("Graph:: Symmetric. Number of triples is %f.  Dividing number of cliques with it", denom);
 		
 	}
 	else {
-		
-		denom = numberOfTriples(v1);
-		qDebug("Graph::vertexClusteringCoefficient() Graph not symmetric. Dividing with %f", denom);
+		qDebug(" Graph::Calculating number of triples");
+		totalDegree=edgesFrom(v1) + edgesTo(v1);  //FIXEM
+		denom = totalDegree * (totalDegree -1.0);
+		qDebug("Graph:: Symmetric. Number of triples is %f.  Dividing number of cliques with it", denom);
 	}
 
 	clucof = totalCliques / denom;
-	qDebug("=== Graph::vertexClusteringCoefficient() Source vertex %i [%i] has %f CLUCOF", v1, index[v1], clucof);
+	qDebug("=== Graph::clusteringCoefficient() - vertex %i [%i] has CLUCOF = %f ", v1, index[v1], clucof);
+	m_graph[ index [v1] ] ->setCLC(clucof);
 	return clucof;
 }
 

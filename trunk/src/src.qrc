@@ -43,6 +43,7 @@
 	<file>images/sw.png</file>
 	<file>images/erdos.png</file>
 	<file>images/circular.png</file>
+	<file>images/clique.png</file>
 
 </qresource>
 </RCC>

@@ -53,12 +53,13 @@ public:
 	void addLinkTo (int target, float weight);	/** Adds an outLink to target with weight w */
 	void addLinkFrom(int source, float weight);
 	void changeLinkWeightTo (int target, float weight);
-	void removeLinkTo (int target);		/** Removes specified edge to target vertex*/
-	void removeLinkFrom(int source);
+	void removeLinkTo (int target);		/** Removes edge to vertex t */
+	void removeLinkFrom(int source);	/** Removes edge from vertex s	*/
 	
 	int outDegree();	/**Returns the number of outward directed graph edges from this vertex   */
 	int inDegree();		/**Returns the number of inward directed graph edges from this vertex   */
-
+	int localDegree();
+	
 	/** Returns true if there is a reciprocal link from this vertex */
 	bool isReciprocalLinked() { return m_reciprocalLinked;}
 	void setReciprocalLinked(bool reciprocal) { m_reciprocalLinked=reciprocal;}
@@ -71,6 +72,7 @@ public:
 	/** Returns true if there is an outLink from this vertex */
 	bool isInLinked() { return m_inLinked;}
 	void setInLinked(bool inLinked) { m_inLinked=inLinked;}
+	float isLinkedFrom (int v);
 	
 
 	void setSize(int );
@@ -142,6 +144,10 @@ public:
 	float EC() { return m_EC;}		/** Returns max Geodesic Distance to all other vertices*/
 	float SEC() { return m_SEC;}
 
+	float CLC() { return m_CLC;	}
+	void setCLC(float clucof)  { m_CLC=clucof; m_hasCLC=TRUE; }
+	bool hasCLC() { 	return m_hasCLC; }
+
 	imap_f m_outEdges;			//holds all edges starting from this vertex.
 	imap_f m_inEdges;			//holds all edges starting from this vertex.
 	
@@ -150,13 +156,14 @@ protected:
 private:
 	QList<int> myPs;
 	int m_name, m_value, m_size, m_outLinks, m_inLinks;
-	bool m_inLinked, m_outLinked, m_reciprocalLinked;
+	bool m_inLinked, m_outLinked, m_reciprocalLinked, m_hasCLC;
 	QString m_color, m_label, m_labelColor, m_shape;
 	//QString *outLinkColors;
 	ihash_s outLinkColors;
 	//FIXME vertice coords
 	
 	double m_x, m_y;
+	float m_CLC;
 	float m_delta, m_EC, m_SEC;
 	float m_ODC, m_SODC, m_IDC, m_SIDC, m_CC, m_SCC, m_BC, m_SBC, m_GC, m_SGC, m_SC, m_SSC;
 
