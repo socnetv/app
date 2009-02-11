@@ -238,6 +238,7 @@ QRectF Edge::boundingRect() const {
 
 
 void Edge::makeReciprocal(){
+	qDebug("Edge::makeReciprocal()");
  	prepareGeometryChange();
 	m_reciprocal= true;
 }
@@ -245,6 +246,7 @@ void Edge::makeReciprocal(){
 
 
 void Edge::unmakeReciprocal(){
+	qDebug("Edge::unmakeReciprocal()");
  	prepareGeometryChange();
 	m_reciprocal= false;
 }

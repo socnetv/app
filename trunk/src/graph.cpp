@@ -740,7 +740,7 @@ void Graph::symmetrize(){
 
 
 bool Graph::symmetricEdge(int v1, int v2){
-	qDebug("Graph: symmetricEdge");
+	qDebug("***Graph: symmetricEdge()");
 	if ( (this->hasEdge ( v1, v2 ) ) > 0  &&  (this->hasEdge ( v2, v1 ) ) > 0   ) { 
 		qDebug("Graph: symmetricEdge: YES");
 		return true;
@@ -751,6 +751,8 @@ bool Graph::symmetricEdge(int v1, int v2){
 	}
 
 }
+
+
 
 
 /** 
@@ -1956,28 +1958,49 @@ float Graph:: numberOfCliques(int v1){
 	float cliques=0;
 	int  connectedVertex1=0, connectedVertex2=0;
 	qDebug("*** Graph::vertexNumberOfCliques() Source vertex %i [%i] has %i inDegree and %i outDegree ", v1 , index[ v1 ], edgesTo(v1), edgesFrom(v1) );
-	foreach (Vertex *v1, m_graph)  {
-		foreach (Vertex *v2, m_graph)  {
-			if ( hasEdge( v1->name(), v2->name() ) ) {
-				
+	imap_f::iterator it1, it2;
+	bool symmetric=FALSE;
+	if (! (symmetric = isSymmetric()) ) {
+		for( it1 =  m_graph[ index[v1] ] -> m_inEdges.begin(); it1 !=  m_graph[ index[v1] ] ->m_inEdges.end(); it1++ ) {
+			connectedVertex1=it1->first;	
+			qDebug("Graph::vertexNumberOfCliques() In-connectedVertex1 %i [%i] ",connectedVertex1, index[connectedVertex1]);
+			for( it2 =  m_graph[ index[v1] ] -> m_inEdges.begin(); it2 !=  m_graph[ index[v1] ] ->m_inEdges.end(); it2++ ) {
+				connectedVertex2=it2->first;
+				if (connectedVertex1 == connectedVertex2) continue;
+				else {
+					qDebug("Graph::vertexNumberOfCliques() In-connectedVertex2 %i [%i] ",connectedVertex2, index[connectedVertex2]);
+					if ( hasEdge( connectedVertex1, connectedVertex2 ) ) {
+						qDebug("Graph::vertexNumberOfCliques()  %i  is connected to %i. Therefore we found a clique!", connectedVertex1, connectedVertex2);
+						cliques++;
+						qDebug("Graph::vertexNumberOfCliques() cliques = %f" ,  cliques);
+					}
+				}
 			}
 		}
 		
 	}
-	imap_f::iterator it1, it2;
+
+
+
 	for( it1 =  m_graph[ index[v1] ] -> m_outEdges.begin(); it1 !=  m_graph[ index[v1] ] ->m_outEdges.end(); it1++ ) {
 		connectedVertex1=it1->first;	
-		qDebug("Graph::vertexNumberOfCliques() connectedVertex1 %i [%i] ",connectedVertex1, index[connectedVertex1]);
+		qDebug("Graph::vertexNumberOfCliques() Out-connectedVertex1 %i [%i] ",connectedVertex1, index[connectedVertex1]);
 		for( it2 =  m_graph[ index[v1] ] -> m_outEdges.begin(); it2 !=  m_graph[ index[v1] ] ->m_outEdges.end(); it2++ ) {
 			connectedVertex2=it2->first;
 			if (connectedVertex1 == connectedVertex2) continue;
 			else {
-				qDebug("Graph::vertexNumberOfCliques() connectedVertex2 %i [%i] ",connectedVertex2, index[connectedVertex2]);
+				qDebug("Graph::vertexNumberOfCliques() Out-connectedVertex2 %i [%i] ",connectedVertex2, index[connectedVertex2]);
 				if ( hasEdge( connectedVertex1, connectedVertex2 ) ) {
-					qDebug("Graph::vertexNumberOfCliques()  %i  is connected to %i. Therefore we found a clique!", connectedVertex1, connectedVertex2);
+					qDebug("Graph::vertexNumberOfCliques()  %i  is out-connected to %i. Therefore we found a clique!", connectedVertex1, connectedVertex2);
 					cliques++;
 					qDebug("Graph::vertexNumberOfCliques() cliques = %f" ,  cliques);
 				}
+				if (!symmetric)
+					if ( hasEdge( connectedVertex2, connectedVertex1 ) ) {
+						qDebug("Graph::vertexNumberOfCliques()  %i  is also in-connected to %i. Therefore we found a clique!", connectedVertex2, connectedVertex1);
+						cliques++;
+						qDebug("Graph::vertexNumberOfCliques() cliques = %f" ,  cliques);
+					}
 			}
 		}
 	}

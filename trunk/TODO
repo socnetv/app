@@ -13,7 +13,7 @@ KNOWN BUGS
 OLD, NOT EASILY FIXED BUT NOT CRITICAL BUGS
 ===========================================
 --FIXME: When many lines intersect, right-click > removeLink may remove wrong link!
---FIXME: Very complex GraphML files may crash SocNetV
+--FIXME: Complex GraphML files may crash SocNetV
 
 TODO
 ====
@@ -32,19 +32,12 @@ TODO
 - TODO: Web crawler
 - TODO: Texts on canvas (i.e. layouts display some text explaining what method is used).
 
-
-
-TODO IN SUBSEQUENT RELEASES:
-============================
-
 + Colorization  //COMMENTED
 - Filter actors //COMMENTED 
-+ Greek Language Support
 + Network file format: DL (read/save)
 + Network file format: GW (read/save)
 + Network file format: list (read/save)
 + Network file format: GDL (read/save)
-+ Export: SVG  (html-embedded images)
 + Centrality: Informational
 - Layout: Random Circle 
 - Layout: Circle by Informational Index
