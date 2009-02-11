@@ -2851,11 +2851,11 @@ void MainWindow::slotRemoveLink(){
 			statusBar()->showMessage("Remove link operation cancelled.", statusBarDuration);
 			return;
 		}
-		if ( activeGraph.hasEdge(sourceNode, targetNode)!=0 ) {	
-			graphicsWidget->eraseEdge(sourceNode, targetNode);
-			activeGraph.removeEdge(sourceNode, targetNode);
+		if ( activeGraph.hasEdge(sourceNode, targetNode)!=0 ) {
 			if (activeGraph.symmetricEdge(sourceNode, targetNode) ) 
 				graphicsWidget->unmakeEdgeReciprocal(targetNode, sourceNode);
+			graphicsWidget->eraseEdge(sourceNode, targetNode);
+			activeGraph.removeEdge(sourceNode, targetNode);
 		}
 		else {
 			QMessageBox::critical(this, "Remove link",tr("There is no such link."), "OK",0);
