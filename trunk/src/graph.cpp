@@ -2096,14 +2096,27 @@ float Graph:: clusteringCoefficient(int v1){
 */
 float Graph::clusteringCoefficient (){
 	qDebug("=== Graph::graphClusteringCoefficient()  ");
-	float clucof=0;
+	averageCLC=0;
+	maxCLC=0; minCLC=1;
+	float temp=0;
 	foreach (Vertex *v1, m_graph)  {
-		clucof += clusteringCoefficient(v1->name());
+		temp = clusteringCoefficient(v1->name());
+		if (temp > maxCLC)  {
+			maxCLC = temp;
+			maxNodeCLC = v1->name();			 
+		}
+		
+		if ( temp < minCLC ) {
+			 minNodeCLC = v1->name();
+			 minCLC= temp;		
+		}
+		averageCLC += temp;
 	}
-
-	clucof = clucof / vertices();
-	qDebug("=== Graph::graphClusteringCoefficient()  is equal to %f", clucof);
-	return clucof; 
+	
+	averageCLC = averageCLC / vertices();
+	qDebug("=== Graph::graphClusteringCoefficient()  is equal to %f", averageCLC);
+	
+	return averageCLC; 
 }
 
 

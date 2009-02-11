@@ -671,14 +671,12 @@ void MainWindow::initActions(){
 	diameterAct->setWhatsThis(tr("Diameter\n\n Diameter is the maximum shortest path between any two nodes of the network."));
 	connect(diameterAct, SIGNAL(activated()), this, SLOT(slotDiameter()));
 
+	clusteringCoefAct = new QAction(QIcon(":/images/clique.png"), tr("Clustering Coefficient"),this);
+	clusteringCoefAct ->setShortcut(tr("Ctrl+C"));
+	clusteringCoefAct->setStatusTip(tr("Calculates and displays the average Clustering Coefficient of the network."));
+	clusteringCoefAct->setWhatsThis(tr("Clustering Coefficient\n\n The Clustering Coefficient of a vertex quantifies how close the vertex and its neighbors are to being a clique. \n "));
+	connect(clusteringCoefAct, SIGNAL(activated()), this, SLOT(slotClusteringCoefficient() )  );
 
-	clusteringCoefAct = new QAction(QIcon(":/images/triangle.png"), tr("Diameter"),this);
-	clusteringCoefAct ->setShortcut(tr("Ctrl+D"));
-	clusteringCoefAct->setStatusTip(tr("Calculates and displays the diameter of the active network."));
-	clusteringCoefAct->setWhatsThis(tr("Diameter\n\n Diameter is the maximum shortest path between any two nodes of the network."));
-	connect(diameterAct, SIGNAL(activated()), this, SLOT(slotDiameter()));
-
-		
 	cOutDegreeAct = new QAction(tr("OutDegree"),	this);
 	cOutDegreeAct->setStatusTip(tr("Calculates and displays OutDegree Centralities"));
 	cOutDegreeAct->setWhatsThis(tr("OutDegree Centrality\n\n For each node k, this is the number of arcs starting from it. This is oftenly a measure of activity."));
@@ -1016,6 +1014,8 @@ void MainWindow::initMenuBar() {
 	statMenu -> addAction (distanceAct);
 	statMenu -> addAction (distanceMatrixAct);
 	statMenu -> addAction (diameterAct);
+	statMenu -> addSeparator();
+	statMenu -> addAction (clusteringCoefAct);
 
 	statMenu->addSeparator();
 	centrlMenu = new QMenu(tr("Centralities"));
@@ -4190,6 +4190,70 @@ void MainWindow::windowInfoStatusBar(int w, int h){
 
 
 
+/**
+*	Writes Clustering Coefficients into a file, then displays it.
+*/
+void MainWindow::slotClusteringCoefficient (){
+	if (!fileLoaded && !networkModified  )  {
+		QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+		statusBar()->showMessage( QString(tr(" No network here. Sorry. Nothing to do.")) , statusBarDuration);
+		return;
+	}
+	float clucof=0;
+	
+	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	clucof=activeGraph.clusteringCoefficient();
+	QApplication::restoreOverrideCursor();
+	
+	QString fn = "clustering-coefficients.dat";
+	QFile file( fn );
+	if ( !file.open( QIODevice::WriteOnly ) )
+		return;
+	QTextStream ts(&file  );
+
+
+	ts <<"-SocNetV- "<<VERSION<<"\n\n";
+	ts <<tr("CLUSTERING COEFFICIENT REPORT \n");
+	ts <<tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+	ts<< tr("CLUSTERING COEFFICIENT (CLC) OF EACH NODE\n");
+	ts<< tr("CLC  range: 0 < C < 1") <<"\n";
+	ts << "Node"<<"\tCLC\n";
+
+	
+	QList<Vertex*>::iterator it;
+	for (it=activeGraph.m_graph.begin(); it!=activeGraph.m_graph.end(); it++){ 
+		ts<<(*it)->name()<<"\t"<<(*it)->CLC() <<endl;
+	}
+	if (activeGraph.isSymmetric()) {
+		ts<< "\nAverage Clustering Coefficient = "<< activeGraph.averageCLC<<"\n" ;
+	//	ts<< "DC Variance = "<< activeGraph.varianceDegree<<"\n\n";
+	}
+	else{
+		ts<< "\nAverage Clustering Coefficient= "<< activeGraph.averageCLC<<"\n" ;
+//		ts<< "ODC Variance = "<< activeGraph.varianceDegree<<"\n\n";
+	}
+	if ( activeGraph.minCLC == activeGraph.maxCLC )
+		ts<< "\nAll nodes have the same clustering coefficient value.\n";
+	else  {
+		ts<< "\nNode "<< activeGraph.maxNodeCLC << " has the maximum Clustering Coefficient: " << activeGraph.maxCLC <<"  \n";
+		ts<< "\nNode "<< activeGraph.minNodeCLC << " has the minimum Clustering Coefficient: " << activeGraph.minCLC <<"  \n";
+	}
+
+	
+	ts<<"\nGRAPH CLUSTERING COEFFICIENT (GCLC)\n\n";
+	ts<<"GCLC = " << activeGraph.averageCLC<<"\n\n";
+	ts<<tr("Range: 0 < GCLC < 1\n");
+	ts<<tr("GCLC = 0, when there are no cliques (i.e. acyclic tree).\n");
+	ts<<tr("GCLC = 1, when every node and its neighborhood are complete cliques.\n");
+
+	file.close();
+
+	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+	tempFileNameNoPath=fn.split( "/");
+	ed->setWindowTitle("Clustering Coefficients saved as: " + tempFileNameNoPath.last());
+	ed->show();
+	
+}
 
 
 

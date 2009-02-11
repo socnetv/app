@@ -219,6 +219,8 @@ public:
 	float minGC, maxGC, nomGC, denomGC, sumGC, groupGC, maxIndexGC;
 	float minSC, maxSC, nomSC, denomSC, sumSC, groupSC, maxIndexSC;
 	float minEC, maxEC, nomEC, denomEC, sumEC, groupEC, maxIndexEC;
+	float minCLC, maxCLC, averageCLC;
+	int maxNodeCLC, minNodeCLC;
 	int classesIDC, maxNodeIDC, minNodeIDC;
 	int classesODC, maxNodeODC, minNodeODC;
 	int classesCC, maxNodeCC, minNodeCC;

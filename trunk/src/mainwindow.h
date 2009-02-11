@@ -183,6 +183,7 @@ public slots:
 	void slotViewDistanceMatrix();
 	void slotDistance();
 	void slotDiameter();
+	void slotClusteringCoefficient();
 	void slotCheckSymmetry();
 	void slotNetworkDensity();
 	void slotCentralityOutDegree();
@@ -288,7 +289,7 @@ private:
 	QAction *changeBackColorAct, *changeAllNodesColorAct, *changeAllLinksColorAct, *changeAllNumbersColorAct, *changeAllLabelsColorAct;
 	QAction *drawLinksWeightsAct, *displayLinksWeightNumbersAct, *displayLinksAct, *displayLinksArrowsAct, *drawLinksBezier;
 	QAction *viewToolBar, *viewStatusBar, *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
-	QAction *netDensity, *symmetryAct,   *distanceAct, *distanceMatrixAct, *diameterAct;
+	QAction *netDensity, *symmetryAct,   *distanceAct, *distanceMatrixAct, *diameterAct, *clusteringCoefAct;
 	QAction *cOutDegreeAct, *cInDegreeAct, *cClosenessAct, *cBetweenessAct, *cInformationalAct, *cGraphAct, *cStressAct, *cEccentAct;
 	QAction *randLayoutAct, *randCircleLayoutAct, *circleOutDegreeLayoutAct, *circleInDegreeLayoutAct, *circleClosenessLayoutAct;
 	QAction *antialiasingAct;
