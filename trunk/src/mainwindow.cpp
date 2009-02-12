@@ -263,8 +263,8 @@ void MainWindow::initActions(){
 
 	printNetwork = new QAction(QIcon(":/images/print.png"), tr("&Print"), this);
 	printNetwork->setShortcut(tr("Ctrl+P"));
-	printNetwork->setStatusTip(tr("Prints the network"));
-	printNetwork->setWhatsThis(tr("Print \n\nPrints the network"));
+	printNetwork->setStatusTip(tr("Prints whatever is viewable on the canvas."));
+	printNetwork->setWhatsThis(tr("Printing \n\n This function prints whatever is viewable on the canvas. \nTo print the whole network, you might want to zoom-out."));
 	connect(printNetwork, SIGNAL(activated()), this, SLOT(slotPrintView()));
 
 	fileQuit = new QAction(QIcon(":/images/exit.png"), tr("E&xit"), this);
@@ -1668,7 +1668,7 @@ void MainWindow::slotFileClose() {
 
 
 /**
-	Prints whatever is on the Graphics widget
+	Prints whatever is viewable on the Graphics widget
 */
 void MainWindow::slotPrintView() {
 	statusBar()->showMessage(tr("Printing..."));
