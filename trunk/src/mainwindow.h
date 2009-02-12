@@ -275,7 +275,7 @@ private:
 	QSpinBox *rotateSpinBox ;
 	QPushButton *addNodeBt, *addLinkBt, *removeNodeBt, *removeLinkBt;
 
-	QAction *fileNew, *fileOpen, *fileSave, *fileSaveAs,*fileClose, *filePrint,*fileQuit;
+	QAction *fileNew, *fileOpen, *fileSave, *fileSaveAs,*fileClose, *printNetwork,*fileQuit;
 	QAction *exportBMP, *exportPNG, *exportPajek, *exportPDF, *exportDL, *exportGW, *exportSM, *exportList;
 	QAction *viewNetworkFileAct, *viewSociomatrixAct, *createUniformRandomNetworkAct;
 	QAction *createGaussianRandomNetworkAct, *createLatticeNetworkAct, *createConnectedRandomNetworkAct;

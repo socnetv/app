@@ -261,10 +261,11 @@ void MainWindow::initActions(){
 	fileClose->setWhatsThis(tr("Close \n\nCloses the actual network"));
 	connect(fileClose, SIGNAL(activated()), this, SLOT(slotFileClose()));
 
-	filePrint = new QAction(QIcon(":/images/print.png"), tr("&Print"), this);
-	filePrint->setStatusTip(tr("Prints out the actual network"));
-	filePrint->setWhatsThis(tr("Print \n\nPrints out the actual network"));
-	connect(filePrint, SIGNAL(activated()), this, SLOT(slotPrintView()));
+	printNetwork = new QAction(QIcon(":/images/print.png"), tr("&Print"), this);
+	printNetwork->setShortcut(tr("Ctrl+P"));
+	printNetwork->setStatusTip(tr("Prints the network"));
+	printNetwork->setWhatsThis(tr("Print \n\nPrints the network"));
+	connect(printNetwork, SIGNAL(activated()), this, SLOT(slotPrintView()));
 
 	fileQuit = new QAction(QIcon(":/images/exit.png"), tr("E&xit"), this);
 	fileQuit->setShortcut(tr("Ctrl+Q"));
@@ -906,7 +907,7 @@ void MainWindow::initMenuBar() {
 	//   exportGW->addTo(exportSubMenu);
 
 	networkMenu  -> addSeparator();
-	networkMenu  -> addAction(filePrint);
+	networkMenu  -> addAction(printNetwork);
 	networkMenu  -> addSeparator();
 	networkMenu  -> addAction(fileClose);
 	networkMenu  -> addAction(fileQuit);
@@ -1667,15 +1668,15 @@ void MainWindow::slotFileClose() {
 
 
 /**
-	Prints whatever is one the scene.
+	Prints whatever is on the Graphics widget
 */
 void MainWindow::slotPrintView() {
 	statusBar()->showMessage(tr("Printing..."));
 	QPrintDialog dialog(printer, this);
 	if ( dialog.exec() )   {
-		QPainter painter;
-		painter.begin(printer);
-		painter.end();
+ 		QPainter painter(printer);
+//		 QRect viewport = view.viewport()->rect();
+ 		graphicsWidget->render(&painter);
 	};
 	statusBar()->showMessage(tr("Ready."));
 }
