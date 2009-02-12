@@ -7,7 +7,7 @@ KNOWN BUGS
 --FIXME: 40-actors-non-symmetric crashed on Betweeness centr.
 - FIXME: GROUP Stress & Graph centralities missing
 - FIXME: Standard Stress Centrality index missing.
---FIXME: Negative weights break centralities layout and pajek read
+--FIXME: Negative weights break centralities 
 
 
 OLD, NOT EASILY FIXED BUT NOT CRITICAL BUGS
@@ -17,13 +17,14 @@ OLD, NOT EASILY FIXED BUT NOT CRITICAL BUGS
 
 TODO
 ====
+--TODO: Filter Links by their weights
 --distribution of number of in-/out- links, not just average values.
 --filter out links and nodes, maybe also by aggregating them. For example, I wrote a small shell program that, given a node, extracts only the nodes connected to it along with the connections among them.
 --ability of processing streams of data (in that case, I will need some decaying function to delete "old", ie not used for long, links and nodes).
 --Load nets from database connections.
 --TODO: Add additional properties to vertices (i.e. date, class, etc).
 --TODO: constrain layout to one direction (i.e. date).
---TODO: Filter Links by their weights
+
 --TODO Transform actors to links //COMMENTED OUT
 
 --TODO: CLUSTERING by betweeness, see http://iv.slis.indiana.edu/sw/bc.html

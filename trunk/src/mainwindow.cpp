@@ -442,7 +442,7 @@ void MainWindow::initActions(){
 	filterLinksAct = new QAction(tr("Filter Links"), this);
 	filterLinksAct -> setEnabled(false);
 	filterLinksAct->setStatusTip(tr("Filters Links of some weight out of the network"));
-	filterLinksAct->setWhatsThis(tr("Filter Links\n\nFilters Link of some weight out of the network."));
+	filterLinksAct->setWhatsThis(tr("Filter Links\n\nFilters Link of some specific weight out of the network."));
 	connect(filterLinksAct, SIGNAL(activated()), this, SLOT(slotFilterLinks()));
 
 	changeBackColorAct = new QAction(QIcon(":/images/color.png"), tr("Change Background Color"), this);
@@ -1091,6 +1091,7 @@ void MainWindow::initToolBar(){
 	toolBar -> addAction (fileNew);
 	toolBar -> addAction (fileOpen);
 	toolBar -> addAction (fileSave);
+	toolBar -> addAction (printNetwork);
 	toolBar -> addSeparator();
 	
 	toolBar -> addAction(zoomInAct);
@@ -3352,10 +3353,10 @@ void MainWindow::slotFilterNodes(){
 
 
 /**
-*	Filters links according to their weight w
+*	Filters links according to their weight 
 *	All links weighted more (or less) than the specified w will be removed.
 */ 
-//TODO slotFilterLinks
+
 void MainWindow::slotFilterLinks(){
 /*	mapEdges.clear();
 	if (!fileLoaded && !networkModified  )   {
@@ -5483,8 +5484,8 @@ void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualiser (SocNetV)"
-	"<p>Version: " + VERSION + "</p>"
-	"<p><b>Build: </b> Thu, Feb 10, 2009</p>"
+	"<p><b>Version</b>: " + VERSION + "</p>"
+	"<p><b>Build: </b> Fri, Feb 13, 2009</p>"
 	
 	"<p>(C) 2005-2009 by Dimitris V. Kalamaras"
 	"<br> dimitris.kalamaras@gmail.com"
