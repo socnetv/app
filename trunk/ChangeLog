@@ -9,6 +9,7 @@ Codename: "Recession (or the ballad of the deranged Greek statesmen)"
 ------------------------------
 -'Small World' random network creation (Watts and Strogatz model).
 -Clustering Coefficient calculation. 
+-Average Graph Distance (shortest path length) calculation. 
 -Nodes can be linked to themselves with nice bezier curves.
 -Negative and decimal edge weights are now fully supported.
 -Dashed lines are nicely used to signify negative edge weights. 
@@ -16,11 +17,12 @@ Codename: "Recession (or the ballad of the deranged Greek statesmen)"
 -Number and label colors are editable.
 -Fixed number and label font size problem.
 -Fixed PNG and BMP export regression.
+-Fixed Printing regression. Printing is OK now. 
 -New program logo and icon.
 -Icon for Windows executable.
 -Code cleanup (no more compile warnings) and minor memory optimisations.
 -User messages/warnings and menu icons update.
--The usual bugfixes...
+
 
 
 

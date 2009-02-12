@@ -46,7 +46,7 @@ The canvas is the main area of interaction. The initial background color is set 
 
 <h4><a name="Create" id="Create"></a>Network creation</h4>
 <p class="text">
-To start working with SocNetV you need network data, i.e. a graph of nodes and edges. SocNetV enables you to create such networks or load them from files. There are multiple ways to create or edit nodes and edges in SocNetV:
+To start working with SocNetV you need network data, i.e. a graph of nodes (vertices) and links (edges). SocNetV enables you to create such networks or load them from files. There are multiple ways to create or edit nodes and links in SocNetV:
 <div class="text">
 <ul>
 <li>from the menus </li>
@@ -56,7 +56,7 @@ To start working with SocNetV you need network data, i.e. a graph of nodes and e
 </div>
 
 </p>
-<h4><a name="NodeCreate" id="NodeCreate"></a>Create a node</h4>
+<h4><a name="NodeCreate" id="NodeCreate"></a>Creating a new node</h4>
 
 <p class="text">
 To  create  a new node, you can double-click on the canvas or click on the "Add node" button. The keyboard shortcut is Ctrl+A.
@@ -65,7 +65,7 @@ You can move a node by left-clicking on it and moving the pointer.
 </p>
 
 
-<h4><a name="LinkCreate" id="LinkCreate"></a>Create a link</h4>
+<h4><a name="LinkCreate" id="LinkCreate"></a>Creating a new link</h4>
 <p  class="text">
 To create a new link, you can middle-click on the source node and  then on the	target	node.	Alternatively, you can click on the "Add link" button from the dock. The keyboard shortcut is Ctrl+L.
 </p>
@@ -104,7 +104,7 @@ namely she is linked with the L/2 nodes before and L/2 nodes after her. For inst
 </div>
 
 
-<h4><a name="Load" id="Load"></a>Load a network</h4>
+<h4><a name="Load" id="Load"></a>Loading a network</h4>
 <p class="text">
 The easiest way to start working with SocNetV is when you have already a network in a supported format (see <a href="formats.html" target="2">Formats</a>). 
 </p>
@@ -112,9 +112,19 @@ The easiest way to start working with SocNetV is when you have already a network
 For instance, you might have another program (for example a simulation) creating adjacency networks which you want to visualise. In that case, from the SocNetV's menu go File > Load. In the dialogue that will appear, navigate to the desired folder and select the appropriate network file. SocNetV will automatically recognise the format and, if it is supported, it will visualise the network.
 </p>
 
-<h4><a name="Save" id="Save"></a>Save the active network</h4>
+<h4><a name="Save" id="Save"></a>Saving the active network</h4>
 <p class="text">
-Just press Ctrl+S or click on the menu File > Save. Select a network format and you're done. Note that some <a href="formats.html" target="2">formats</a> are supported only for loading - not for saving. 
+To save the active network, just press Ctrl+S or click on the menu entry File > Save. Select a network format and you're done. Note that some <a href="formats.html" target="2">formats</a> are supported only for loading - not for saving. 
+</p>
+
+
+<h4><a name="Export" id="Export"></a>Printing and Exporting</h4>
+<p class="text">
+SocNetV allows you to print the network or a small portion of it directly to your printer (press Ctrl+P). Keep in mind, that SocNetV follows the "what you see is what you print" principle:  we print what is viewable in the canvas, i.e. if you zoom-in to a network, the application will only print that specific network portion. So, you might need to zoom-out enough so that the whole network is viewable and therefore printable.  
+</p>
+
+<p class="text">
+Except printing, you can export your work into raster (BMP and PNG) images, as well as PDF documents. The latter are vector-based, and therefore offer the best quality. Again, keep in mind the rule "what you see is what you print". 
 </p>
 
 
