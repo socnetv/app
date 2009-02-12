@@ -45,6 +45,7 @@
 	<file>images/circular.png</file>
 	<file>images/clique.png</file>
 	<file>images/avdistance.png</file>
+	<file>images/symmetrize.png</file>
 
 </qresource>
 </RCC>

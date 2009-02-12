@@ -477,7 +477,7 @@ void MainWindow::initActions(){
 	transformNodes2LinksAct->setWhatsThis(tr("Transform Nodes LinksAct\n\nTransforms network so that nodes become links and vice versa"));
 	connect(transformNodes2LinksAct, SIGNAL(activated()), this, SLOT(slotTransformNodes2Links()));
 
-	symmetrizeAct= new QAction(tr("Symmetrize Links"), this);
+	symmetrizeAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Symmetrize Links"), this);
 	symmetrizeAct->setShortcut(tr("Shift+R"));
 	symmetrizeAct->setStatusTip(tr("Makes all edges reciprocal (thus, a symmetric graph)."));
 	symmetrizeAct->setWhatsThis(tr("Symmetrize Edges\n\nTransforms all arcs to double links (edges). The result is a symmetric network"));
@@ -674,8 +674,8 @@ void MainWindow::initActions(){
 
 	averGraphDistanceAct = new QAction(QIcon(":/images/avdistance.png"), tr("Average Graph Distance"),this);
 	averGraphDistanceAct ->setShortcut(tr("Ctrl+B"));
-	averGraphDistanceAct->setStatusTip(tr("Calculates and displays the average shortest path length between the nodes."));
-	averGraphDistanceAct->setWhatsThis(tr("Average Graph Distance\n\n Diameter is the maximum shortest path between any two nodes of the network."));
+	averGraphDistanceAct->setStatusTip(tr("Calculates and displays the average shortest path length."));
+	averGraphDistanceAct->setWhatsThis(tr("Average Graph Distance\n\n This the average length of all shortest paths between the connected pair of nodes of the network."));
 	connect(averGraphDistanceAct, SIGNAL(activated()), this, SLOT(slotAverageGraphDistance()));
 
 
