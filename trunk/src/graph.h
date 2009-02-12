@@ -169,8 +169,9 @@ public:
 
 
 	/**DISTANCES & CENTRALITIES*/
-	int distance( int, int);				//Returns the geodesic distance between two vertices
-	int diameter();						//Returns the diameter of the graph
+	int distance( int, int);					//Returns the geodesic distance between two vertices
+	int diameter();								//Returns the diameter of the graph (maximum shortest path).
+	float averageGraphDistance();					//Returns the average shortest path length (average geodesic).
 
 	void createDistanceMatrix(bool);			//Creates the distance matrix and calculates the centralities, if bool is true.
 
@@ -257,6 +258,7 @@ private:
 
 	/** General & initialisation variables */
 	int m_totalEdges, m_totalVertices, graphDiameter, initVertexSize;
+	float m_averGraphDistance, nonZeroDistancesCounter;
 	int outEdgesVert, inEdgesVert, reciprocalEdgesVert;
 	int timerId,  layoutType, canvasWidth, canvasHeight;
 	

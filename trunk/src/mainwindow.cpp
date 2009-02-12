@@ -653,23 +653,30 @@ void MainWindow::initActions(){
 	connect(symmetryAct, SIGNAL(activated()), this, SLOT(slotCheckSymmetry()));
 
  
-	distanceAct = new QAction(QIcon(":/images/distance.png"),  tr("Geodesic Distance"), this);
-	distanceAct ->setShortcut(tr("Ctrl+G"));
-	distanceAct->setStatusTip(tr("Calculates the number of edges between two nodes..."));
-	distanceAct->setWhatsThis(tr("Geodesic Distance\n\n The geodesic distance of two nodes is the number of edges between them."));
-	connect(distanceAct, SIGNAL(activated()), this, SLOT(slotDistance()));
+	graphDistanceAct = new QAction(QIcon(":/images/distance.png"),  tr("Graph Distance"), this);
+	graphDistanceAct ->setShortcut(tr("Ctrl+G"));
+	graphDistanceAct->setStatusTip(tr("Calculates the length of the shortest path between two nodes..."));
+	graphDistanceAct->setWhatsThis(tr("Graph Distance\n\n The graph distance (or geodesic distance) of two nodes is the length (number of edges) of the shortest path between them."));
+	connect(graphDistanceAct, SIGNAL(activated()), this, SLOT(slotGraphDistance()));
 
 	distanceMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Distance &Matrix"),this);
 	distanceMatrixAct ->setShortcut(tr("Ctrl+M"));
-	distanceMatrixAct->setStatusTip(tr("Displays the matrix of geodesic distances between all nodes"));
-	distanceMatrixAct->setWhatsThis(tr("Distance Matrix\n\n A distance matrix is a NxN matrix, where the (i,j) element is the geodesic distance from node i to node j."));
+	distanceMatrixAct->setStatusTip(tr("Displays the matrix of graph distances between all nodes"));
+	distanceMatrixAct->setWhatsThis(tr("Distance Matrix\n\n A distance matrix is a NxN matrix, where the (i,j) element is the graph distance from node i to node j."));
 	connect(distanceMatrixAct, SIGNAL(activated()), this, SLOT( slotViewDistanceMatrix() ) );
 	
 	diameterAct = new QAction(QIcon(":/images/diameter.png"), tr("Diameter"),this);
 	diameterAct ->setShortcut(tr("Ctrl+D"));
-	diameterAct->setStatusTip(tr("Calculates and displays the diameter of the active network."));
-	diameterAct->setWhatsThis(tr("Diameter\n\n Diameter is the maximum shortest path between any two nodes of the network."));
+	diameterAct->setStatusTip(tr("Calculates and displays the diameter of the network."));
+	diameterAct->setWhatsThis(tr("Diameter\n\n The Diameter of a network is the maximum graph distance (maximum shortest path length) between any two nodes of the network."));
 	connect(diameterAct, SIGNAL(activated()), this, SLOT(slotDiameter()));
+
+	averGraphDistanceAct = new QAction(QIcon(":/images/avdistance.png"), tr("Average Graph Distance"),this);
+	averGraphDistanceAct ->setShortcut(tr("Ctrl+B"));
+	averGraphDistanceAct->setStatusTip(tr("Calculates and displays the average shortest path length between the nodes."));
+	averGraphDistanceAct->setWhatsThis(tr("Average Graph Distance\n\n Diameter is the maximum shortest path between any two nodes of the network."));
+	connect(averGraphDistanceAct, SIGNAL(activated()), this, SLOT(slotAverageGraphDistance()));
+
 
 	clusteringCoefAct = new QAction(QIcon(":/images/clique.png"), tr("Clustering Coefficient"),this);
 	clusteringCoefAct ->setShortcut(tr("Ctrl+C"));
@@ -1011,7 +1018,9 @@ void MainWindow::initMenuBar() {
 //	statMenu -> addAction (netDensity);
 
 	statMenu -> addSeparator();
-	statMenu -> addAction (distanceAct);
+	statMenu -> addAction (graphDistanceAct);
+	statMenu -> addAction (averGraphDistanceAct);
+	
 	statMenu -> addAction (distanceMatrixAct);
 	statMenu -> addAction (diameterAct);
 	statMenu -> addSeparator();
@@ -4080,9 +4089,10 @@ void MainWindow::slotNetworkDensity() {
 
 
 /**
-*  Displays the distance between two user-specified nodes
+*  Displays the graph distance (geodesic distance) between two user-specified nodes
+	This is the length of the shortest path between them.
 */
-void MainWindow::slotDistance(){
+void MainWindow::slotGraphDistance(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 		statusBar()->showMessage( QString(tr("There are no nodes. Nothing to do...")) , statusBarDuration);
@@ -4155,7 +4165,6 @@ void MainWindow::slotViewDistanceMatrix(){
 
 
 
-
 /**  Displays the network diameter (largest geodesic) */
 void MainWindow::slotDiameter() {
 	if (!fileLoaded && !networkModified  )  {
@@ -4173,6 +4182,28 @@ void MainWindow::slotDiameter() {
 	else 
 		QMessageBox::information(this, "Diameter", "Network diameter = " + QString::number(netDiameter), "OK",0);
 	statusBar()->showMessage(tr("Diameter calculated. Ready."), statusBarDuration);
+
+}
+
+
+
+
+
+/**  Displays the  average shortest path length (average graph distance) */
+void MainWindow::slotAverageGraphDistance() {
+	if (!fileLoaded && !networkModified  )  {
+		QMessageBox::critical(this, "Error",tr("There are no nodes nor links!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+
+		statusBar()->showMessage( QString(tr("Cannot find the diameter of nothing...")) , statusBarDuration);
+		return;
+	}
+	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	float averGraphDistance=activeGraph.averageGraphDistance();
+	QApplication::restoreOverrideCursor();	
+
+
+	QMessageBox::information(this, "Average Graph Distance", "The average shortest path length is  = " + QString::number(averGraphDistance), "OK",0);
+	statusBar()->showMessage(tr("Average distance calculated. Ready."), statusBarDuration);
 
 }
 

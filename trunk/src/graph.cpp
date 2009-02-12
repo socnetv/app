@@ -870,7 +870,13 @@ int Graph::diameter(){
 
 
 
-
+float Graph::averageGraphDistance(){
+	if (graphModified){
+		createDistanceMatrix(false);
+		graphModified=false;
+	}
+  	return m_averGraphDistance;
+}
 
 /**
 *  Writes the matrix of distances to a file
@@ -1040,7 +1046,6 @@ void Graph::createDistanceMatrix(bool calc_centralities) {
 
 	int vert=vertices();
 
-
 	if (totalEdges() == 0 ) //can user m_totalEdges here to save some time...
 		DM.fillMatrix(0);	
 	else{
@@ -1060,6 +1065,9 @@ void Graph::createDistanceMatrix(bool calc_centralities) {
 		maxIndexBC=0;
 		maxIndexSC=0;
 		maxIndexEC=0;
+		
+		m_averGraphDistance=0;
+		nonZeroDistancesCounter=0;
 		//The following are for CC
 		fmap_i::iterator it3; 
 
@@ -1091,6 +1099,7 @@ void Graph::createDistanceMatrix(bool calc_centralities) {
 		discreteGCs.clear(); classesGC=0;
 		maxEC=0; minEC=RAND_MAX; nomEC=0; denomEC=0; groupEC=0; maxNodeEC=0; minNodeEC=0; sumEC=0;
 		discreteECs.clear(); classesEC=0;
+		
 		//Zero closeness indeces of each vertex
 		if (calc_centralities) 
 			for (it=m_graph.begin(); it!=m_graph.end(); it++) {
@@ -1188,6 +1197,8 @@ void Graph::createDistanceMatrix(bool calc_centralities) {
 				}
 			}
 		}
+		if (m_averGraphDistance!=0)
+			m_averGraphDistance = m_averGraphDistance / (nonZeroDistancesCounter);
 		
 		if (calc_centralities) {
 			for (it=m_graph.begin(); it!=m_graph.end(); it++) {
@@ -1311,7 +1322,8 @@ void Graph::BFS(int s, bool calc_centralities){
 // 				if (dist_u <0) dist_u=0;
 				qDebug("BFS: Setting distance of w=%i from s=%i equal to distance(s,u) plus 1. New distance = %i",w,s, dist_u+1);
 				DM.setItem(s, w, dist_u+1);
-				
+				m_averGraphDistance += dist_u+1;
+				nonZeroDistancesCounter++;
 				if (calc_centralities){
 					//Calculate CC: the sum of distances (will invert it l8r)
 					m_graph [s]->setCC (m_graph [s]->CC() + dist_u+1);
@@ -1969,13 +1981,26 @@ float Graph:: numberOfCliques(int v1){
 	if (! (symmetric = isSymmetric()) ) {
 		for( it1 =  m_graph[ index[v1] ] -> m_inEdges.begin(); it1 !=  m_graph[ index[v1] ] ->m_inEdges.end(); it1++ ) {
 			connectedVertex1=it1->first;	
-			qDebug("Graph::numberOfCliques() In-connectedVertex1 %i [%i] ",connectedVertex1, index[connectedVertex1]);
+			qDebug("Graph::numberOfCliques() In-connectedVertex1:  %i [%i]...Checking inLinks.... ",connectedVertex1, index[connectedVertex1]);
 			for( it2 =  m_graph[ index[v1] ] -> m_inEdges.begin(); it2 !=  m_graph[ index[v1] ] ->m_inEdges.end(); it2++ ) {
 				connectedVertex2=it2->first;
 				if (connectedVertex1 == connectedVertex2) continue;
 				else {
-					qDebug("Graph::numberOfCliques() In-connectedVertex2 %i [%i] ",connectedVertex2, index[connectedVertex2]);
+					qDebug("Graph::numberOfCliques() In-connectedVertex2: %i [%i] ",connectedVertex2, index[connectedVertex2]);
 					if ( hasEdge( connectedVertex1, connectedVertex2 ) ) {
+						qDebug("Graph::numberOfCliques()  %i  is connected to %i. Therefore we found a clique!", connectedVertex1, connectedVertex2);
+						cliques++;
+						qDebug("Graph::numberOfCliques() cliques = %f" ,  cliques);
+					}
+				}
+			}
+			qDebug("Graph::numberOfCliques()  .....Checking outLinks.... ");
+			for( it2 =  m_graph[ index[v1] ] -> m_outEdges.begin(); it2 !=  m_graph[ index[v1] ] ->m_outEdges.end(); it2++ ) {
+				connectedVertex2=it2->first;
+				if (connectedVertex1 == connectedVertex2) continue;
+				else {
+					qDebug("Graph::numberOfCliques() Out-connectedVertex2:  %i [%i] ",connectedVertex2, index[connectedVertex2]);
+					if ( hasEdge( connectedVertex1, connectedVertex2 ) ||  hasEdge( connectedVertex2, connectedVertex1 ) ) {
 						qDebug("Graph::numberOfCliques()  %i  is connected to %i. Therefore we found a clique!", connectedVertex1, connectedVertex2);
 						cliques++;
 						qDebug("Graph::numberOfCliques() cliques = %f" ,  cliques);
@@ -2104,8 +2129,7 @@ float Graph::clusteringCoefficient (){
 		if (temp > maxCLC)  {
 			maxCLC = temp;
 			maxNodeCLC = v1->name();			 
-		}
-		
+		}		
 		if ( temp < minCLC ) {
 			 minNodeCLC = v1->name();
 			 minCLC= temp;		
