@@ -3,10 +3,11 @@
 <h4><a name="Analysis" id="Analysis"></a>Analysis</h4>
 
 <p class="text">
-Once you have loaded or created a network you can analyse it using the commands in the Statistics menu. The first three options of that menu enable you to see how many nodes and links are active on the canvas, calculate the network density and find out if the the network is Symmetric or not.  
+Once you have loaded or created a network you can analyse it using the commands in the Statistics menu. 
+For instance, the first option of Statistics menu (<em>Network Symmetry</em>) tells you whether the network is symmetric or not. A network is symmetric when for every edge (i,j) in the set E, the 'opposite' (j,i) edge also exists in E.    
 </p>
 <p class="text">
-The next three commands calculate the geodesic distance between any two nodes, the distance matrix and the diameter. 
+The next three commands (<em>Geodesic Distance</em>, <em>Distance Matrix</em> and <em>Diameter</em>) let you calculate the geodesic distance between any two nodes you define, print the network distance matrix and calculate the network diameter, respectively. 
 </p>
 <p class="text">
 The Geodesic Distance is the length of the shortest path between two connected nodes. By clicking on the "Geodesic Distance" option (or Ctrl+G) you will be asked for source and target nodes, and then their geodesic will be calculated and displayed. 
@@ -15,6 +16,9 @@ The Geodesic Distance is the length of the shortest path between two connected n
 The "Distance Matrix" calculates two matrices. One with all the distances between nodes and one (sigma) with the number of shortest paths between any two nodes. The latter is used in Dijkstra's shortest path algorithm and Betweeness Centrality calculation (see below).
 </p>
 
+<p class="text">
+<em>Tip</em>: All the basic network statistics, such as nodes, edges and density are constantly displayed in the Statistics tab of the left dock.
+ </p>
 <h4><a name="Centralities" id="Centralities"></a>Centralities</h4>
 <p class="text"> 
 The last option in the Statistics menu opens the Centralities sub-menu.

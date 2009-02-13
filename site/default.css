@@ -1,7 +1,7 @@
 /* Basic tags */
 
 .text {
-font: normal 13px Arial;
+font: normal 13px Sans;
 }
 
 .mainheading {
@@ -53,9 +53,54 @@ text-decoration: underline;
 
 .tabcontent{
 display:none;
-width:95%; /*width of 2nd level content*/
-height:1.5em; /*height of 2nd level content. Set to largest's content height to avoid jittering.*/
+width:55%; /*width of 2nd level content*/
+height:0.6em; /*height of 2nd level content. Set to largest's content height to avoid jittering.*/
 color: gray;
-font: bold 11px Arial;
+font: bold 10px Arial;
+}
+
+
+
+.tabcontent ul{
+margin: 4px;
+padding: 3px 0;
+margin-left: 0;
+font: bold 10px Verdana;
+border-bottom: 0px solid gray;
+list-style-type: none;
+text-align: center; /*set to left, center, or right to align the menu as desired*/
+}
+
+.tabcontent li{
+display: inline;
+margin: 0;
+}
+
+.tabcontent li a{
+text-decoration: none;
+padding: 3px 7px;
+margin-right: 3px;
+border: 1px solid gray;
+border-bottom: none;
+background-color: #d4e5fe ; /* #f6ffd5 */
+color: #2d2b2b;
 
 }
+
+
+.tabcontent li a:visited{
+color: #2d2b2b;
+}
+
+.tabcontent li a:hover, .basictab li a.current{
+background-color:   #DBFF6C;
+color: black;
+}
+
+.tabcontent li a:active{
+color: black;
+text-decoration: underline;
+}
+
+
+

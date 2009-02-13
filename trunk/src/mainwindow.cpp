@@ -315,7 +315,7 @@ void MainWindow::initActions(){
 	createSmallWorldRandomNetworkAct = new QAction(QIcon(":/images/sw.png"), tr("Small World"),	this);
 	createSmallWorldRandomNetworkAct->setShortcut(tr("Shift+W"));
 	createSmallWorldRandomNetworkAct->setStatusTip(tr("Creates a random network with small world properties"));
-	createSmallWorldRandomNetworkAct->setWhatsThis(tr("Small World \n\nA Small World, according to the Watts and Strogatz model, is a random network with short average path lengths and high clustering."));
+	createSmallWorldRandomNetworkAct->setWhatsThis(tr("Small World \n\nA Small World, according to the Watts and Strogatz model, is a random network with short average path lengths and high clustering coefficient."));
 	connect(createSmallWorldRandomNetworkAct, SIGNAL(activated()), this, SLOT(slotCreateSmallWorldRandomNetwork()));
 
 	
@@ -2280,18 +2280,32 @@ void MainWindow::slotCreateRandomNetErdos(){
 	fileLoaded=false;
 	
 	graphChanged();
-
 	
 	setWindowTitle("Untitled");
 	double threshold = log(newNodes)/newNodes;
+	float avGraphDistance=activeGraph.averageGraphDistance();
+	float clucof=activeGraph.clusteringCoefficient();
 	if ( (probability/100 ) > threshold )
 		QMessageBox::information(this, "New Random Network",
-		tr("Random network created. \n")+ tr("It has ")+ QString::number(activeNodes())+ tr(" nodes, and ")+QString::number( activeLinks()/2.0)+ tr(" edges (or double links).\n")+tr("On the average, edges should be ") +QString::number(probability * newNodes*(newNodes-1)/100) + tr("\nThis graph is almost surely connected because: \nprobability > ln(n)/n, that is: \n") + QString::number(probability/100)+ " bigger than "+ QString::number(threshold) , "OK",0);
+		tr("Random network created. \n")+ 
+		tr("\nNodes: ")+ QString::number(activeNodes())+
+		tr("\nEdges: ")+  QString::number( activeLinks()/2.0)+
+		tr("\nAverage path length: ") + QString::number(avGraphDistance)+
+		tr("\nClustering coefficient: ")+QString::number(clucof)+	
+		tr("\n\nOn the average, edges should be ") + QString::number(probability * newNodes*(newNodes-1)/100) +
+		tr("\nThis graph is almost surely connected because: \nprobability > ln(n)/n, that is: \n") + QString::number(probability/100)+ 
+		tr(" bigger than ")+ QString::number(threshold) , "OK",0);
 
 	else 
-
 		QMessageBox::information(this, "New Random Network",
-		tr("Random network created. \n")+ tr("It has ")+ QString::number(activeNodes())+ tr(" nodes, and ")+QString::number( activeLinks()/2.0)+ tr(" edges (or double links).\n")+tr("On the average, edges should be ") +QString::number(probability * newNodes*(newNodes-1)/100) + tr("\nThis graph is almost surely not connected because: \nprobability < ln(n)/n, that is: \n") + QString::number(probability/100)+ " smaller than "+ QString::number(threshold) , "OK",0);
+		tr("Random network created. \n")+ 
+		tr("\nNodes: ")+ QString::number(activeNodes())+
+		tr("\nEdges: ")+  QString::number( activeLinks()/2.0)+
+		tr("\nAverage path length: ") + QString::number(avGraphDistance)+
+		tr("\nClustering coefficient: ")+QString::number(clucof)+
+ 		tr("\n\nOn the average, edges should be ") +QString::number(probability * newNodes*(newNodes-1)/100) +
+		tr("\nThis graph is almost surely not connected because: \nprobability < ln(n)/n, that is: \n") +
+		QString::number(probability/100)+ " smaller than "+ QString::number(threshold) , "OK",0);
 
 	statusBar()->showMessage("Random network created. ", statusBarDuration);
 
@@ -2362,18 +2376,6 @@ void MainWindow::slotCreateSameDegreeRandomNetwork(){
 	graphChanged();
 	setWindowTitle("Untitled");
 	statusBar()->showMessage("Uniform random network created: "+QString::number(activeNodes())+" Nodes, "+QString::number( activeLinks())+" Links", statusBarDuration);
-// 	if (showProgressBar) {
-// 		actionProgress->setValue (  aNodes+(source+1)) ;
-// 		qApp->processEvents();
-// 	}
-
-/*	if (showProgressBar) {
-		actionProgress->setValue (  2*aNodes ) ;
-		delete actionProgress;
-	}	*/
-	//Layout the network according to degree centrality of each node!
-	//FIXME layOutDegreeCentrality
-	// layoutOutDegreeCentrality(false);
 
 }
 
@@ -2442,7 +2444,17 @@ void MainWindow::slotCreateSmallWorldRandomNetwork(){
 
 	graphChanged();
 	setWindowTitle("Untitled");
-	statusBar()->showMessage(tr("Small world random network created: ")+QString::number(activeNodes())+" nodes, "+QString::number( activeLinks())+" links", statusBarDuration);	
+	statusBar()->showMessage(tr("Small world random network created: ")+QString::number(activeNodes())+" nodes, "+QString::number( activeLinks())+" links", statusBarDuration);
+	float avGraphDistance=activeGraph.averageGraphDistance();
+	float clucof=activeGraph.clusteringCoefficient();
+	QMessageBox::information(this, "New Small World",
+		tr("Small world network created.\n")+ 
+		tr("\nNodes: ")+ QString::number(activeNodes())+
+		tr("\nEdges: ")+  QString::number( activeLinks()/2.0)+ 
+		tr("\nAverage path length: ") + QString::number(avGraphDistance)+
+		tr("\nClustering coefficient: ")+QString::number(clucof)	
+		 , "OK",0);
+		
 }
 
 
@@ -2498,6 +2510,16 @@ void MainWindow::slotCreateRandomNetRingLattice(){
 	
 	graphChanged();
 	setWindowTitle("Untitled");
+	float avGraphDistance=activeGraph.averageGraphDistance();
+	float clucof=activeGraph.clusteringCoefficient();
+	QMessageBox::information(this, "Ring Lattice",
+		tr("Ring lattice network created.\n")+ 
+		tr("\nNodes: ")+ QString::number(activeNodes())+
+		tr("\nEdges: ")+  QString::number( activeLinks()/2.0)+ 
+		tr("\nAverage path length: ") + QString::number(avGraphDistance)+
+		tr("\nClustering coefficient: ")+QString::number(clucof)	
+		 , "OK",0);
+
 	statusBar()->showMessage("Ring lattice random network created: "+QString::number(activeNodes())+" nodes, "+QString::number( activeLinks())+" links", statusBarDuration);	
 }
 
@@ -5520,8 +5542,11 @@ void MainWindow::createFortuneCookies(){
 	fortuneCookie+="Man must not check reason by tradition, but contrawise, must check tradition by reason.<br> --Leo Tolstoy";
 	fortuneCookie+="Only after the last tree has been cut down, <br>only after the last river has been poisoned,<br> only after the last fish has been caught,<br>only then will you realize that money cannot be eaten. <br> --The Cree People";
 	fortuneCookie+="Stat rosa pristina nomine, nomina nuda tenemus <br > --Unknown";
+	fortuneCookie+="Jupiter and Saturn, Oberon, Miranda"
+					"And Titania, Neptune, Titan."
+					"Stars can frighten. <br > Syd Barrett";
 
-	fortuneCookiesCounter=8;
+	fortuneCookiesCounter=9;
 //   return fortuneCookie.count();
 }
 
