@@ -2,8 +2,8 @@
 
 cd ~/Documents/socnetv/trunk
 
-VER=0.49;   
 #CHANGE THIS TO NEW VERSION NUMBERS
+VER=0.50;   
 echo $VER
 
 echo .
@@ -18,8 +18,10 @@ echo ---------------------------------
 echo !  COPY FILES TO WORKING DIRS   ! 
 echo ---------------------------------
 
-find . -not -path *.svn* -not -path *test-nets* -print0  | cpio -pmd0 ../socnetv/socnetv-$VER
-find . -not -path *.svn* -not -path *test-nets* -print0  | cpio -pmd0 ../socnetv/socnetv-$VER.orig
+
+find . -not -path "*.svn*" -not -path "*./test-nets*"  -print0  | cpio -pmd0 ../ubuntu/socnetv-$VER
+find . -not -path "*.svn*" -not -path "*./test-nets*"  -print0  | cpio -pmd0 ../ubuntu/socnetv-$VER.orig
+
 
 
 echo .
@@ -27,7 +29,7 @@ echo ---------------------------------
 echo !  GOTO TO WORKING DIRECTORY    !
 echo ---------------------------------
 
-cd ../socnetv/
+cd ../ubuntu/
 echo "Make tarballs? (Y/N)"
 read ans
 if [ $ans = "N" ]; then
@@ -42,22 +44,6 @@ tar jcfv SocNetV-$VER.tar.bz2 socnetv-$VER/
 
 
 
-echo "Upload tarballs to Sourceforge also? (Y/N)"
-read ans
-if [ $ans = "N" ]; then
-        exit;
-
-elif [ $ans = "n" ]; then    
-        exit;
-fi
-
-echo ---------------------------------
-echo ! UPLOAD TO SOURCEFORGE         !
-echo ---------------------------------
-echo .
-
-rsync -avP -e ssh SocNetV-$VER.tar.gz  oxy86@frs.sourceforge.net:uploads/
-rsync -avP -e ssh SocNetV-$VER.tar.bz2  oxy86@frs.sourceforge.net:uploads/
 cd socnetv-$VER/
 
 

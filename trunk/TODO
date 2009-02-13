@@ -2,12 +2,12 @@ KNOWN BUGS
 ==========
 
 --FIXME: Centralities and Layout by centralities crash SocNetV when network is not connected.
---FIXME: isSymmetric() not functioning well (check a-symmetry.net)
---FIXME: Graphviz (dot) files not loaded well. See test2.dot. Cant read when one line and nodes dont appear...
---FIXME: 40-actors-non-symmetric crashed on Betweeness centr.
+--FIXME: 40actors-non-symmetric.net crashes SocNetV...
+--FIXME: Negative weights break centralities 
+--FIXME: isSymmetric() not 100% (check a-symmetry.net)
+--FIXME: Some Graphviz (dot) files do not load. See test2.dot. Cant read when one line and nodes dont appear...
 - FIXME: GROUP Stress & Graph centralities missing
 - FIXME: Standard Stress Centrality index missing.
---FIXME: Negative weights break centralities 
 
 
 OLD, NOT EASILY FIXED BUT NOT CRITICAL BUGS
