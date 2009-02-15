@@ -1314,27 +1314,26 @@ void Graph::BFS(int s, bool calc_centralities){
 			qDebug("BFS: u=%i is connected with w=%i of index %i. ", u, it->first, w);
 			qDebug("BFS: Start path discovery");
 			if (	DM.item(s, w) == -1 ) { //if distance (s,w) is infinite, w found for the first time.
-				//append w to Q
-				qDebug("BFS: first time visiting w=%i. Pushing w to the end of Q", w);
+				qDebug("BFS: first time visiting w=%i. Enqueuing w to the end of Q", w);
 				Q.push(w);
-				//First check if distance(s,u) = -1 (aka infinite :)) and set it to zero
+				qDebug()<<"First check if distance(s,u) = -1 (aka infinite :)) and set it to zero";
 				dist_u=DM.item(s,u);
-// 				if (dist_u <0) dist_u=0;
+ 				if (dist_u <0) dist_u=0;
 				qDebug("BFS: Setting distance of w=%i from s=%i equal to distance(s,u) plus 1. New distance = %i",w,s, dist_u+1);
 				DM.setItem(s, w, dist_u+1);
 				m_averGraphDistance += dist_u+1;
 				nonZeroDistancesCounter++;
 				if (calc_centralities){
-					//Calculate CC: the sum of distances (will invert it l8r)
+					qDebug()<<"Calculate CC: the sum of distances (will invert it l8r)";
 					m_graph [s]->setCC (m_graph [s]->CC() + dist_u+1);
-					//Calculate GC: the maximum distance (will invert it l8r) - also for Eccentricity
+					qDebug()<<"Calculate GC: the maximum distance (will invert it l8r) - also for Eccentricity";
 					if (m_graph [s]->GC() < dist_u+1 ) m_graph [s]->setGC(dist_u+1);
 
 				}
 				qDebug("BFS: Checking graphDiameter");
 				if ( dist_u+1 > graphDiameter){
 					graphDiameter=dist_u+1;
-					qDebug("BFS: new graphDiameter = %i",graphDiameter );
+					qDebug("BFS: new graphDiameter = %i", graphDiameter );
 				}
 			}		
 
