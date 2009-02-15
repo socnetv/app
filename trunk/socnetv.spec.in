@@ -124,6 +124,9 @@ Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 %{_datadir}/doc/%{name}/manual/visualisation.html
 
 %changelog
+* Fri Feb 16 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
+0.51-1
+Updated to upstream version 0.51
 * Fri Feb 13 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
 0.50-1
 Updated to upstream version 0.50
