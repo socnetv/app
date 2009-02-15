@@ -1,6 +1,6 @@
 #!/bin/bash
-old=0.49;
-new=0.50;
+old=0.50;
+new=0.51;
 dateold=2008;
 datenew=2009;
 perl -p -i.bak -e 's/'$old'/'$new'/g' src/*.cpp 

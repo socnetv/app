@@ -1,8 +1,9 @@
 socnetv (0.50-1) intrepid; urgency=low
 
-   * Update to upstream 0.50.
+  * Update to 0.50
+  * Fixes
 
- -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Fri, 13 Feb 2009 15:39:46 +0200
+ -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Sat, 14 Feb 2009 02:58:40 +0200
 
 socnetv (0.49-2) intrepid; urgency=low
 

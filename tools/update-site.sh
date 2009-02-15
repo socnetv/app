@@ -7,7 +7,7 @@ echo  --------------------
 cd ~/Documents/socnetv/site
 rm ~/Documents/socnetv/site/docs/*
 cp ~/Documents/socnetv/trunk/doc/* ~/Documents/socnetv/site/docs/
-rsync -rvP -del -e ssh  *  oxy86,socnetv@web.sourceforge.net:htdocs/
+rsync -rvPC -delete -e ssh  *  oxy86,socnetv@web.sourceforge.net:htdocs/
 
 
 

@@ -1,4 +1,4 @@
-.TH socnetv 1 "September 2008" "SocNetV-0.46" "Social Networks Visualiser"
+.TH socnetv 1 "March 2009" "SocNetV-0.51" "Social Networks Visualiser"
 .SH NAME
  socnetv - Visualize and analyze social networks
 .SH SYNOPSIS
@@ -13,9 +13,11 @@
 .B socnetv   
 .B \-h | \-\-help
 .SH DESCRIPTION
-Social Networks Visualiser (SocNetV) is a flexible and user-friendly tool for Social Networks Analysis and Visualisation. It lets you create new networks (graphs) with a few clicks on a virtual canvas or load networks of various formats (GraphViz, GraphML, Adjacency, Pajek, etc) them, and modify them to suit your needs.
+Social Networks Visualiser (SocNetV) is a flexible and user-friendly tool for Social Networks Analysis and Visualisation. It lets you construct networks (mathematical graphs) with a few clicks on a virtual canvas or load networks of various formats (GraphViz, GraphML, Adjacency, Pajek, etc) and modify them to suit your needs.
 
-The application can compute network properties, such as density, diameter and distances, as well as node and network centralities. Various layout algorithms (i.e. Spring-embedder, circular and in levels according to centralities) are supported for meaningful visualisations of your networks. Furthermore, simple random networks (lattice, same degree, etc) can be created.
+The application can compute basic network properties, such as density, diameter and distances (shortest path lengths), as well as more advanced structural statistics, such as node and network centralities (i.e. closeness, betweeness, graph), clustering coefficient, etc.
+
+It supports various layout algorithms (i.e. Spring-embedder, circular and in levels according to various centrality indeces) for meaningful visualisations of social networks. Furthermore, random networks (Erdos-Renyi, Watts-Strogatz, ring lattice, etc) can be created with a few clicks.
 
 SocNetV is being developed in C++ with the Qt GUI development toolkit. Qt is the only dependancy.
 .SH OPTIONS
@@ -60,7 +62,7 @@ Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
 .SH BUG REPORTS
 Report bugs to <dimitris.kalamaras@gmail.com>. Please, to send a meaningful bug report, run 
 .BR socnetv 
-from a terminal, press F9 and repeat the steps which lead to bug manifestation. SocNetV will be printing debug messages on the standard output -- the terminal in Linux.
+from a terminal, press F9 and repeat the steps which lead to bug manifestation. SocNetV will be printing debug messages on the standard output (the terminal in Linux).
 .SH AVAILABILITY
 The latest version of this program can be found at <http://socnetv.sourceforge.net>. 
 It is distributed in source code and binary packages for Linux distributions. It can also compile and run in OS X and Windows.

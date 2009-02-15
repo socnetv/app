@@ -31,7 +31,7 @@
 Name:		%{name}
 Summary:	A Social Networks Analyser and Visualiser
 License:	GPLv3
-Group:		Science/Mathematics
+Group:		Productivity/Scientific/Math 
 URL:		http://socnetv.sourceforge.net/
 Version:	%{version}
 Release:	%{release}
@@ -124,10 +124,13 @@ Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 %{_datadir}/doc/%{name}/manual/visualisation.html
 
 %changelog
-* Wed Jan 14 2008 Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
+* Fri Feb 13 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
+0.50-1
+Updated to upstream version 0.50
+* Wed Jan 14 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
 0.49-2
 Package .spec fixes
-* Tue Jan 13 2008 Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
+* Tue Jan 13 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
 0.49-1
 Updated to 0.49
 * Wed Sep 17 2008  Dimitris Kalamaras <dimitris.kalamaras@gmail.com>

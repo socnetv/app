@@ -2,20 +2,29 @@
 
 cd ~/Documents/socnetv/trunk
 
+echo Removing old ubuntu directory
+rm -rf ../ubuntu
+
+
 #CHANGE THIS TO NEW VERSION NUMBERS
 VER=0.50;   
 echo $VER
 
 echo .
 echo ---------------------------------
-echo !  CLEANING UP COMPILED FILES   !
+echo    CLEANING UP COMPILED FILES   
 echo ---------------------------------
 
 make clean
+rm socnetv 
+
+echo Asking for changelog....
+
+dch -i
 
 echo .
 echo ---------------------------------
-echo !  COPY FILES TO WORKING DIRS   ! 
+echo   COPY FILES TO WORKING DIRS     
 echo ---------------------------------
 
 
@@ -26,7 +35,7 @@ find . -not -path "*.svn*" -not -path "*./test-nets*"  -print0  | cpio -pmd0 ../
 
 echo .
 echo ---------------------------------
-echo !  GOTO TO WORKING DIRECTORY    !
+echo    GOTO TO WORKING DIRECTORY    
 echo ---------------------------------
 
 cd ../ubuntu/
@@ -58,7 +67,7 @@ fi
 
 echo .
 echo ---------------------------------
-echo !  START PACKAGE CREATION       !
+echo    START PACKAGE CREATION       
 echo ---------------------------------
 
 debuild 
@@ -66,28 +75,28 @@ debuild
 
 echo .
 echo ---------------------------------
-echo !   SOURCE PACKAGE CREATION     |
+echo     SOURCE PACKAGE CREATION     
 echo ---------------------------------
 echo .
 debuild -S
 
 echo .
 echo ---------------------------------
-echo !       TESTING PACKAGE         !
+echo        TESTING PACKAGE         
 echo ---------------------------------
 cd ..
 lintian -Ivi *.dsc
 
 echo .
 echo ---------------------------------
-echo !    INITIAL PACKAGES READY     !
+echo      INITIAL PACKAGES READY     
 echo ---------------------------------
 echo .
 ls
 
 echo .
 echo ---------------------------------
-echo !  START FINAL PACKAGE CREATION !
+echo    START FINAL PACKAGE CREATION 
 echo ---------------------------------
 echo .
 cd socnetv-$VER/
@@ -109,12 +118,12 @@ fi
 
 echo .
 echo ---------------------------------
-echo ! UPLOAD FINAL PACKAGE CREATION !
+echo   UPLOAD FINAL PACKAGE CREATION 
 echo ---------------------------------
 echo .
 echo "enter version number, i.e. 0.49-2"
 read VER
-dput ppa socnetv_$VER_source.changes
+dput ppa socnetv_"$VER"_source.changes
 
 
 

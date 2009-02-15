@@ -6,6 +6,8 @@
 # dh-make output file, you may use that output file without restriction.
 # This special exception was added by Craig Small in version 0.37 of dh-make.
 
+package=socnetv
+
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
@@ -57,15 +59,20 @@ clean:
 	rm -f config.sub config.guess
 
 	dh_clean 
+	
 
 install: build
 	dh_testdir
 	dh_testroot
-	dh_clean -k 
+	# dh_clean -k 
+
+
 	dh_installdirs
 
 	# Add here commands to install the package into debian/socnetv.
-	$(MAKE) prefix=$(CURDIR)/debian/socnetv/usr install
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/$(package)/usr 
+                mandir=$(CURDIR)/debian/$(package)/usr/share/man \
+		install
 
 
 # Build architecture-independent files here.
@@ -74,34 +81,22 @@ binary-indep: build install
 
 # Build architecture-dependent files here.
 binary-arch: build install
-	dh_testdir
-	dh_testroot
-	dh_installchangelogs ChangeLog
-	dh_installdocs
-	dh_installexamples
-#	dh_install
-#	dh_installmenu
-#	dh_installdebconf	
-#	dh_installlogrotate
-#	dh_installemacsen
-#	dh_installpam
-#	dh_installmime
-#	dh_python
-#	dh_installinit
-#	dh_installcron
-#	dh_installinfo
+	dh_testdir -a
+	dh_testroot -a
+	dh_installdocs -a NEWS
+	dh_installchangelogs -a ChangeLog
+	dh_install
 	dh_installman
 	dh_link
-	dh_strip
-	dh_compress
-	dh_fixperms
-#	dh_perl
-#	dh_makeshlibs
-	dh_installdeb
-	dh_shlibdeps
-	dh_gencontrol
-	dh_md5sums
-	dh_builddeb
+	dh_strip -a
+	dh_compress -a
+	dh_fixperms -a
+	dh_installdeb -a
+	dh_shlibdeps -a
+	dh_gencontrol -a
+	dh_md5sums -a
+	dh_builddeb -a
+
 
 binary: binary-indep binary-arch
 .PHONY: build clean binary-indep binary-arch binary install 

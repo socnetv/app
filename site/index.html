@@ -7,7 +7,7 @@
 <meta name="GENERATOR" content="Dimitris Kalamaras"/>
 <meta name="AUTHOR"  content="Dimitris Kalamaras"/>
 <meta name="CREATED" content="20070111"/>
-<meta name="CHANGED" content="20090129"/>
+<meta name="CHANGED" content="20090215"/>
 <meta name="KEYWORDS"    content="Social Networks Visualiser, linux, SNA, graphs, visualisation, layout, Dimitris Kalamaras,GNU,GPL"/>
 <meta name="SUBJECT"     content="Social Networks Visualiser"/>
 <meta name="robots" content="all"/>
@@ -62,14 +62,17 @@
 SocNetV (<em>Social Networks Visualiser</em>) is a flexible and user-friendly tool for <a href="http://en.wikipedia.org/wiki/Social_network">Social Networks Analysis and Visualisation</a>. It lets you construct networks (mathematical graphs) with a few clicks on a virtual canvas or load networks of  various formats (<em>GraphViz</em>, <em>GraphML</em>, <em>Adjacency</em>, <em>Pajek</em>, etc) and modify them to suit your needs. 
 
 <br /> <br />
-The application can compute basic network properties, such as density, diameter and distances, as well as more advanced structural statistics, such as node and network centralities. Various layout algorithms (i.e. Spring-embedder, circular and in levels according to centralities) are supported for meaningful visualisations of your networks. Furthermore, random networks (Erdos-Renyi, lattice, same degree, etc) can be created with a few clicks.
+The application can compute basic network properties, such as density, diameter and distances (<em>shortest path lengths</em>), as well as more advanced structural statistics, such as node and network centralities (i.e. <em>closeness</em>, <em>betweeness</em>, <em>graph</em>), clustering coefficient, etc. 
 
 <br /><br />
-SocNetV is being developed in C++ and <a href="http://www.qtsoftware.com/products/appdev">Qt</a>, an open-source GUI development toolkit from Nokia. Our primary target platform is Linux, but you can compile and run SocNetV on OS X and Windows as well, as long as you have Qt4 installed.
+Various layout algorithms (i.e. <em>Spring-embedder</em>, circular and in levels according to various centrality indeces) are supported for meaningful visualisations of your networks. Furthermore, random networks (<em>Erdos-Renyi</em>, <em>Watts-Strogatz</em>, ring lattice, etc) can be created with a few clicks.
+
+<br /><br />
+SocNetV is a work in progress and is being developed in C++ and <a href="http://www.qtsoftware.com/products/appdev">Qt</a>, an open-source GUI development toolkit from Nokia. Our primary target platform is Linux, but you can compile and run SocNetV on OS X and Windows as well, as long as you have Qt4 libraries installed.
 
 <br /> <br />
 The program is Free Software, licensed under the <a href="http://www.gnu.org/copyleft/gpl.html">GNU General Public License 3 (GPL3)</a>.  <br />
-Be aware, there is no warranty of efficiency, correctness or usability. But you can copy and modify it as many times as you wish, provided you keep the same license. 
+Be aware, there is <em>no warranty</em> of efficiency, correctness or usability. But you can copy it as many times as you wish, or modify it, provided you keep the same license for the new code. 
 											
 <br/><br/>
 To install SocNetV, see instructions in the menu "<a href="downloads.html">Downloads</a>". 
