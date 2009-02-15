@@ -1,5 +1,5 @@
 #!/bin/bash
-old=0.50;
+old=0.51;
 new=0.51;
 dateold=2008;
 datenew=2009;
