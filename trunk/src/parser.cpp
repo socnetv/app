@@ -112,6 +112,7 @@ int Parser::loadDL(){
 		}
 
 		if (labels_flag) {  //read a label and create a node in a random position
+
 			label=str;
 			randX=rand()%gwWidth;
 			randY=rand()%gwHeight;
@@ -986,7 +987,10 @@ int Parser::loadDot(){
 				else networkName=lineElement[1];
 				continue;
 			}
-			else return -1;  // Abort: dot format can only start with " (di)graph netname {"
+			else {
+				qDebug()<<" Not a GraphViz file. Abort: dot format can only start with \" (di)graph netname {\"";
+				return -1;  				
+			}
 			
 		}
 		if ( str.startsWith("node",Qt::CaseInsensitive) ) { 	 //Default node properties
