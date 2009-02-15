@@ -1,12 +1,11 @@
-Main developer:
+Developer:
+
   Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
 
 Translators:
   - Greek:      None
 
-Critical Comments:
-  - Greg Koutsoyiannis
 
-Debian package:
+Debian packagers:
   - Serafeim Zanikolas (>0.43)
   - Alejandro Garrido Mota (<0.44)

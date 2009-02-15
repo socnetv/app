@@ -809,8 +809,8 @@ void MainWindow::initActions(){
 	printDebugAct->setStatusTip(tr("Enables/disables printing debug messages to stdout"));
 	printDebugAct->setWhatsThis(tr("Enables or disable Debug Messages\n\nPrinting debug messages to strerr. Enabling has a significant cpu cost but lets you know what SocNetV is actually doing."));
 	printDebugAct->setCheckable(true);
-	printDebugAct->setChecked (TRUE);
-	printDebug=TRUE;
+	printDebugAct->setChecked (FALSE);
+	printDebug=FALSE;
 	connect(printDebugAct, SIGNAL(toggled(bool)), this, SLOT(slotPrintDebug(bool)));
 
 
@@ -1392,7 +1392,7 @@ void MainWindow::initView() {
  	graphicsWidget->setResizeAnchor(QGraphicsView::AnchorViewCenter);
 	graphicsWidget->setFocusPolicy(Qt::StrongFocus);	
 
-	printDebugAct->setChecked (true);
+	printDebugAct->setChecked (FALSE);
 
 	this->resize(900,700);
 
