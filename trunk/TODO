@@ -1,7 +1,7 @@
 KNOWN BUGS
 ==========
 
-1: Centralities and Layout by centralities crash SocNetV when network is not connected.  (or 40actors-non-symmetric.net crashes SocNetV)
+1: Centralities and Layout by centralities crash SocNetV when network is not connected. (la.net)
 2: Negative weights break centralities 
 3: isSymmetric() not 100% (check a-symmetry.net)
 4: Some Graphviz (dot) files do not load. See test2.dot. Cant read when one line and nodes dont appear...
