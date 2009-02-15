@@ -279,10 +279,8 @@ QString Vertex::outLinkColor(int target){
 }
 
 
-void Vertex::clearPs()	{ 
-	qDebug("clearPs"); 
+void Vertex::clearPs()	{  
 	myPs.clear();
-	qDebug("clearedPs");
 }
 	
 void Vertex::appendToPs( int vertex ) {

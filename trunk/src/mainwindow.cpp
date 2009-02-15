@@ -2581,6 +2581,8 @@ void MainWindow::slotFindNode(){
 			}
 		}
 	}
+	QMessageBox::information(this, "Find Node", tr("Sorry. There is no such node in this network. \n Try again."), "OK",0);
+
 }
 
 
