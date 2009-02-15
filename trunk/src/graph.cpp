@@ -1171,18 +1171,11 @@ void Graph::createDistanceMatrix(bool calc_centralities) {
 					w=Stack.top(); 
 					qDebug("Stack top is vertex w=%i. This is the furthest vertex from s. Popping it.", w);
 					Stack.pop();
-					qDebug("preLOOP: Checking size of predecessors list Ps[w]...  = %i ",m_graph[w]->Ps().size());
-					int counter=0;
 					QList<int> lst=m_graph[w]->Ps();
-					for ( it2=lst.begin(); it2 != lst.end(); it2++ ){
-							u=(*it2);
-							counter++;
-							qDebug("%i:  Ps[w] element u=%i  ", counter, u);
-					}
-
+					qDebug("preLOOP: Checking size of predecessors list Ps[w]...  = %i ",lst.size());
 					qDebug("LOOP: for every other vertex u in the list of predecessors Ps[w] of w....");
-					if (m_graph[w]->Ps().size() > 0) // just in case...do a sanity check
-						for ( it2=m_graph[w]->Ps().begin(); it2 != m_graph[w]->Ps().end(); it2++ ){
+					if (lst.size() > 0) // just in case...do a sanity check
+						for ( it2=lst.begin(); it2 != lst.end(); it2++ ){
 							u=(*it2);
 							qDebug("Selecting Ps[w] element u=%i with delta_u=%f. sigma(u)=TM(s,u)=%i, sigma(w)=TM(s,w)=%i, delta_w=%f ", u, m_graph[u]->delta(),TM.item(s,u), TM.item(s,w), m_graph[w]->delta());
 							if ( TM.item(s,w) > 0) {

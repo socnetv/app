@@ -149,12 +149,12 @@ public:
 
 	imap_f m_outEdges;			//holds all edges starting from this vertex.
 	imap_f m_inEdges;			//holds all edges starting from this vertex.
-	QList<int> myPs;
+
 		
 protected:
 
 private:
-
+	QList<int> myPs;
 	int m_name, m_value, m_size, m_outLinks, m_inLinks;
 	bool m_inLinked, m_outLinked, m_reciprocalLinked, m_hasCLC;
 	QString m_color, m_label, m_labelColor, m_shape;
