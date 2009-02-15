@@ -289,6 +289,9 @@ void Vertex::appendToPs( int vertex ) {
 }
 
 
+QList<int> Ps() {
+	 return myPs;
+}
 
 Vertex::~Vertex() {
 	m_outEdges.clear();

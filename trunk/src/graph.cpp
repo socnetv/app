@@ -1125,7 +1125,7 @@ void Graph::createDistanceMatrix(bool calc_centralities) {
 
 			qDebug("PHASE 1 (SSSP): Call BFS for source vertex %i to determine distances and shortest path counts from s to every vertex t", (*it)->name());
 			BFS(s,calc_centralities );
-			qDebug("Finished BFS. Continuing to calculate centralities");
+			qDebug("***** FINISHED PHASE 1 (SSSP) BFS ALGORITHM. Continuing to calculate centralities");
 			if (calc_centralities){
 				qDebug("Set centrality for current source vertex %i  with index s=%i", (*it)->name(), s);
 				if ( (*it)->CC() != 0 ) //Closeness centrality must be inverted 	
@@ -1162,7 +1162,7 @@ void Graph::createDistanceMatrix(bool calc_centralities) {
 				qDebug("PHASE 2 (ACCUMULATION): Start back propagation of dependencies. Set dependency delta[u]=0 on each vertex");
 				for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
 					(*it1)->setDelta(0.0);
-					qDebug("vertex %i with index %i has delta = %F", (*it1)->name(),index[(*it1)->name()], (*it1)->delta());
+//					qDebug("vertex %i with index %i has delta = %F", (*it1)->name(),index[(*it1)->name()], (*it1)->delta());
 				}
 
 				qDebug("Visit all vertices in reverse order of their discovery (from s = %i) to sum dependencies. Initial Stack size has %i", s, Stack.size());
@@ -1172,22 +1172,31 @@ void Graph::createDistanceMatrix(bool calc_centralities) {
 					qDebug("Stack top is vertex w=%i. This is the furthest vertex from s. Popping it.", w);
 					Stack.pop();
 					qDebug("preLOOP: Checking size of predecessors list Ps[w]...  = %i ",m_graph[w]->Ps().size());
+					int counter=0;
+					QList<int> lst=m_graph[w]->Ps();
+					for ( it2=lst.begin(); it2 != lst.end(); it2++ ){
+							u=(*it2);
+							counter++;
+							qDebug("%i:  Ps[w] element u=%i  ", counter, u);
+					}
+
 					qDebug("LOOP: for every other vertex u in the list of predecessors Ps[w] of w....");
 					if (m_graph[w]->Ps().size() > 0) // just in case...do a sanity check
-					for ( it2=m_graph[w]->Ps().begin(); it2 != m_graph[w]->Ps().end(); it2++ ){
-						u=(*it2);
-						qDebug("Selecting Ps[w] element u=%i with delta_u=%f. TM(s,u)=%i, TM(s,w)=%i, delta_w=%f ", u, m_graph[u]->delta(),TM.item(s,u), TM.item(s,w), m_graph[w]->delta());
-						if ( TM.item(s,w) > 0) {
-							//delta[u]=delta[u]+(1+delta[w])*(sigma[u]/sigma[w]) ;
-							d_su=m_graph[u]->delta()+(1.0+m_graph[w]->delta() ) * ( (float)TM.item(s,u)/(float)TM.item(s,w) );
+						for ( it2=m_graph[w]->Ps().begin(); it2 != m_graph[w]->Ps().end(); it2++ ){
+							u=(*it2);
+							qDebug("Selecting Ps[w] element u=%i with delta_u=%f. sigma(u)=TM(s,u)=%i, sigma(w)=TM(s,w)=%i, delta_w=%f ", u, m_graph[u]->delta(),TM.item(s,u), TM.item(s,w), m_graph[w]->delta());
+							if ( TM.item(s,w) > 0) {
+								//delta[u]=delta[u]+(1+delta[w])*(sigma[u]/sigma[w]) ;
+								d_su=m_graph[u]->delta()+(1.0+m_graph[w]->delta() ) * ( (float)TM.item(s,u)/(float)TM.item(s,w) );
+							}
+							else {
+								d_su=m_graph[u]->delta();
+								qDebug("TM (s,w) zero, i.e. zero shortest path counts from s to w - using SAME DELTA for vertex u");
+							}
+							qDebug("Assigning new delta d_su = %f to u = %i", d_su, u);
+							m_graph[u]->setDelta( d_su);
 						}
-						else {
-							d_su=m_graph[u]->delta();
-							qDebug("TM (s,w) zero, i.e. zero shortest path counts from s to w - using SAME DELTA for vertex u");
-						}
-						qDebug("Assigning new delta d_su = %f to u = %i", d_su, u);
-						m_graph[u]->setDelta( d_su);
-					}
+					qDebug()<<" Adding delta_w to BC of w";
 					if  (w!=s) { 
 						qDebug("w!=s. For this furthest vertex we need to add its new delta %f to old BC index: %f",m_graph[w]->delta(), m_graph[w]->BC());
 						d_sw = m_graph[w]->BC() + m_graph[w]->delta();
