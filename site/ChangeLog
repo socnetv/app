@@ -4,7 +4,15 @@
 
 ChangeLog:
 
-Version 0.50 - Feb 10 2009
+Version 0.51 - Feb 16 2009
+Codename: "Maria"
+------------------------------
+- Fixed serious bug in DistanceMatrix method, affecting centralities and layout. 
+- Fixed debug messages output default status to false, so that SocNetV is more responsive.
+- Officially added  DL (Data Language) file format support. This is UCINETs FULMATRIX mode.  
+
+
+Version 0.50 - Feb 13 2009
 Codename: "Recession (or the ballad of the deranged Greek statesmen)"
 ------------------------------
 -'Small World' random network creation (Watts and Strogatz model).

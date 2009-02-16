@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser 
- version: 0.51
+ version: 0.52
  Written in Qt 4.4 with KDevelop   
 
                         matrix  -  description
