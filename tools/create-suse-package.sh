@@ -31,7 +31,7 @@ echo ---------------------------------
 echo   COPY FILES TO WORKING DIRS     
 echo ---------------------------------
 
-find . -not -name "qdevelop-*" -not -name "pajek*" -not -path "*./autom4te.cache*" -not -path "*.svn*" -not -path "*./test-nets*" -not -path "./debian*"  -print0  | cpio -pmd0 ../release/socnetv-$VER
+find . -not -name "qdevelop-*" -not -name "pajek*" -not -path "*./autom4te.cache*" -not -path "*.svn*" -not -path "*./test-nets*" -not -path "./debian*"  -print0  | cpio -pmd0 ../opensuse/socnetv-$VER
 
 
 
@@ -71,7 +71,30 @@ echo ---------------------------------
 echo    START PACKAGE CREATION       
 echo ---------------------------------
 
-cp socnetv.spec /usr/src/packages/SPECS/ 
+echo Enter password to copy spec to /usr/src/packages/SPECS/
+su  -c 'cp socnetv.spec /usr/src/packages/SPECS/'
+   
+
+if [ -f /usr/src/packages/SPECS/*.spec ];    then
+        echo spec file copied ok;
+else
+        echo Sorry. No spec file copied....
+        exit;
+fi
+
+
+echo Enter password to copy bz2 to /usr/src/packages/SOURCES/
+su -c 'cp ../*.bz2  /usr/src/packages/SOURCES/'
+
+if [ -f /usr/src/packages/SOURCES/*.bz2 ];    then
+        echo bz2 file copied ok;
+else
+        echo Sorry. No bz2 file copied....
+        exit;
+fi
+
+
+
 cd /usr/src/packages/SPECS/
 
 echo .
@@ -80,7 +103,9 @@ echo     RPM PACKAGE CREATION
 echo ---------------------------------
 echo .
 
-rpmbuild -ba socnetv.spec
+echo Enter password to start package creation
+
+su -c  'rpmbuild -ba socnetv.spec'
 
 
 if [ -f /usr/src/packages/RPMS/i586/*.rpm ];  	then
