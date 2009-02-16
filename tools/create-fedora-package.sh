@@ -24,9 +24,20 @@ else
 
 fi
 
+if [ -f ~/rpmbuild/SOURCES/*.bz2 ];    then
+        echo Removing old bz2
+	rm ~/rpmbuild/SOURCES/*.bz2
+else
+        echo No older bz2 file. Continuing...
+
+fi
+
+
+
 if [ -f ~/rpmbuild/RPMS/*.rpm ];    then
-        echo Seems there are old rpms in ../RPMS/i586/... Enter password to remove them:
-        rm ~/rpmbuild/RPMS/*.rpm
+        echo Removing old rpms in ../RPMS/i586/
+        rm ~/rpmbuild/RPMS/*.rpm ;
+	rm ~/rpmbuild/SPECS/socnetv.spec ;
         echo removed old rpm;
 else
         echo No older rpms. Continuing....
@@ -89,7 +100,7 @@ echo ---------------------------------
 echo    START PACKAGE CREATION       
 echo ---------------------------------
 
-echo Enter password to copy spec to ~/rpmbuild/SPECS/
+echo Copying spec to ~/rpmbuild/SPECS/
 cp socnetv.spec ~/rpmbuild/SPECS/
    
 
@@ -101,10 +112,10 @@ else
 fi
 
 
-echo Enter password to copy bz2 to ~/rpmbuild/SOURCES/
+echo Copying bz2 to ~/rpmbuild/SOURCES/
 cp ../*.bz2  ~/rpmbuild/SOURCES/
 
-if [ -f /rpmbuild/SOURCES/*.bz2 ];    then
+if [ -f ~/rpmbuild/SOURCES/*.bz2 ];    then
         echo bz2 file copied ok;
 else
         echo Sorry. No bz2 file copied....
