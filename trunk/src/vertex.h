@@ -40,7 +40,7 @@ class QPointF;
 
 typedef map<int,float> imap_f;
 typedef QHash<int,QString> ihash_s;
-
+typedef QList<int> ilist;
 
 class Vertex {
 public:
@@ -105,7 +105,7 @@ public:
 	void clearPs()	;
 	
 	void appendToPs( int vertex ) ;
-	QList<int> Ps();
+	ilist Ps(void);
 	
 	void setODC (float c){ m_ODC=c;} 	/** Sets vertex Out-Degree Centrality*/
 	void setSODC (float c ) { m_SODC=c;}	/** Sets standard vertex Out-Degree Centrality*/
@@ -154,7 +154,7 @@ public:
 protected:
 
 private:
-	QList<int> myPs;
+	ilist myPs;
 	int m_name, m_value, m_size, m_outLinks, m_inLinks;
 	bool m_inLinked, m_outLinked, m_reciprocalLinked, m_hasCLC;
 	QString m_color, m_label, m_labelColor, m_shape;

@@ -289,7 +289,7 @@ void Vertex::appendToPs( int vertex ) {
 }
 
 
-QList<int> Ps() {
+ilist Vertex::Ps(void) {
 	 return myPs;
 }
 
