@@ -329,20 +329,20 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 	Controls the width of the edge; is a function of edge weight
 */
 float Edge::width(){
-	if ( abs(m_weight) > 0 && abs(m_weight) <=5) {
-		qDebug()<< "Edge::width() will return "<< abs(m_weight);
-		return  abs(m_weight);
+	if ( fabs(m_weight) > 0 && fabs(m_weight) <=5) {
+		qDebug()<< "Edge::width() will return "<< fabs(m_weight);
+		return  fabs(m_weight);
 	}
-	else if (abs(m_weight)  > 5 && abs(m_weight) <=10) {
+	else if (fabs(m_weight)  > 5 && fabs(m_weight) <=10) {
 		 return 6;
 	}
-	else if (abs(m_weight) >10 && abs(m_weight) <=20) {
+	else if (fabs(m_weight) >10 && fabs(m_weight) <=20) {
 		return 7;
 	}
-	else if (abs(m_weight) >20 && abs(m_weight)<=30) {
+	else if (fabs(m_weight) >20 && fabs(m_weight)<=30) {
 		return 8;
 	}
-	else if ( abs(m_weight) > 30 ) return 9;
+	else if ( fabs(m_weight) > 30 ) return 9;
 	
 	return 1;	//	Default, if  m_weight in (-1, 1) space  
 }
