@@ -6,29 +6,31 @@ echo $VER
 
 echo .
 echo ---------------------------------
-echo   openSUSE RPM Package Creator
+echo   Fedora RPM Package Creator
 echo    Author: Dimitris Kalamaras
 echo ---------------------------------
 
+echo Setting up rpmdev-tree
+
+rpmdev-setuptree
+
 cd ~/Documents/socnetv/trunk
 
-if [ -d ../opensuse ];    then
-        echo Removing old opensuse directory
-	rm -rf ../opensuse
+if [ -d ../fedora ];    then
+        echo Removing old fedoradirectory
+        rm -rf ../fedora
 else
-        echo No older opensuse directory. Continuing...
-      
+        echo No older fedora directory. Continuing...
+
 fi
 
-if [ -f /usr/src/packages/RPMS/i586/*.rpm ];    then
-	echo Seems there are old rpms in /usr/src/packages/RPMS/i586/... Enter password to remove them:
-	su -c 'rm /usr/src/packages/RPMS/i586/*.rpm'
+if [ -f ~/rpmbuild/RPMS/*.rpm ];    then
+        echo Seems there are old rpms in ../RPMS/i586/... Enter password to remove them:
+        rm ~/rpmbuild/RPMS/*.rpm
         echo removed old rpm;
 else
         echo No older rpms. Continuing....
 fi
-
-
 
 
 echo .
@@ -37,6 +39,7 @@ echo    CLEANING UP COMPILED FILES
 echo ---------------------------------
 
 ./configure > /dev/null 2>&1
+
 make clean
 rm socnetv 
 
@@ -46,7 +49,7 @@ echo ---------------------------------
 echo   COPY FILES TO WORKING DIRS     
 echo ---------------------------------
 
-find . -not -name "qdevelop-*" -not -name "pajek*" -not -path "*./autom4te.cache*" -not -path "*.svn*" -not -path "*./test-nets*" -not -path "./debian*"  -print0  | cpio -pmd0 ../opensuse/socnetv-$VER
+find . -not -name "qdevelop-*" -not -name "pajek*" -not -path "*./autom4te.cache*" -not -path "*.svn*" -not -path "*./test-nets*" -not -path "./debian*"  -print0  | cpio -pmd0 ../fedora/socnetv-$VER
 
 
 
@@ -55,7 +58,7 @@ echo ---------------------------------
 echo    GOTO TO WORKING DIRECTORY    
 echo ---------------------------------
 
-cd ../opensuse/
+cd ../fedora/
 echo "Make tarballs? (Y/N)"
 read ans
 if [ $ans = "N" ]; then
@@ -86,11 +89,11 @@ echo ---------------------------------
 echo    START PACKAGE CREATION       
 echo ---------------------------------
 
-echo Enter password to copy spec to /usr/src/packages/SPECS/
-su  -c 'cp socnetv.spec /usr/src/packages/SPECS/'
+echo Enter password to copy spec to ~/rpmbuild/SPECS/
+cp socnetv.spec ~/rpmbuild/SPECS/
    
 
-if [ -f /usr/src/packages/SPECS/*.spec ];    then
+if [ -f ~/rpmbuild/SPECS/*.spec ];    then
         echo spec file copied ok;
 else
         echo Sorry. No spec file copied....
@@ -98,10 +101,10 @@ else
 fi
 
 
-echo Enter password to copy bz2 to /usr/src/packages/SOURCES/
-su -c 'cp ../*.bz2  /usr/src/packages/SOURCES/'
+echo Enter password to copy bz2 to ~/rpmbuild/SOURCES/
+cp ../*.bz2  ~/rpmbuild/SOURCES/
 
-if [ -f /usr/src/packages/SOURCES/*.bz2 ];    then
+if [ -f /rpmbuild/SOURCES/*.bz2 ];    then
         echo bz2 file copied ok;
 else
         echo Sorry. No bz2 file copied....
@@ -110,7 +113,7 @@ fi
 
 
 
-cd /usr/src/packages/SPECS/
+cd ~/rpmbuild/SPECS/
 
 echo .
 echo ---------------------------------
@@ -120,10 +123,10 @@ echo .
 
 echo Enter password to start package creation
 
-su -c  'rpmbuild -ba socnetv.spec'
+rpmbuild -ba socnetv.spec
 
 
-if [ -f /usr/src/packages/RPMS/i586/*.rpm ];  	then
+if [ -f ~/rpmbuild/RPMS/i586/*.rpm ];  	then
 	echo file ok; 
 else 
 	echo Sorry. No RPM package....
@@ -134,9 +137,8 @@ echo .
 echo ---------------------------------
 echo        TESTING PACKAGE         
 echo ---------------------------------
-
-cd /usr/src/packages/RPMS/i586
-ls -lsh
+cd ~/rpmbuild/RPMS/i586
+ls -ls
 
 rpmlint *
 
@@ -146,7 +148,7 @@ echo      RPM PACKAGE READY
 echo ---------------------------------
 echo .
 
-ls -lsh
+ls -ls
 
 echo "Upload package to Sourceforge? (Y/N)"
 read ans
