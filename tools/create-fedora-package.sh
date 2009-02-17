@@ -137,7 +137,7 @@ echo Enter password to start package creation
 rpmbuild -ba socnetv.spec
 
 
-if [ -f ~/rpmbuild/RPMS/i586/*.rpm ];  	then
+if [ -f ~/rpmbuild/RPMS/i386/*.rpm ];  	then
 	echo file ok; 
 else 
 	echo Sorry. No RPM package....
@@ -148,7 +148,7 @@ echo .
 echo ---------------------------------
 echo        TESTING PACKAGE         
 echo ---------------------------------
-cd ~/rpmbuild/RPMS/i586
+cd ~/rpmbuild/RPMS/i386
 ls -ls
 
 rpmlint *
