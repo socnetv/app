@@ -70,8 +70,8 @@ install: build
 	dh_installdirs
 
 	# Add here commands to install the package into debian/socnetv.
-	$(MAKE) install DESTDIR=$(CURDIR)/debian/$(package)/usr 
-                mandir=$(CURDIR)/debian/$(package)/usr/share/man \
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/$(package)/ 
+                mandir=$(CURDIR)/debian/$(package)/share/man \
 		install
 
 
@@ -85,8 +85,8 @@ binary-arch: build install
 	dh_testroot -a
 	dh_installdocs -a NEWS
 	dh_installchangelogs -a ChangeLog
-	dh_install
-	dh_installman
+	dh_install -a
+	dh_installman 
 	dh_link
 	dh_strip -a
 	dh_compress -a
