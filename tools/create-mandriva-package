@@ -64,6 +64,12 @@ make clean
 rm socnetv 
 
 
+oldfiles=`find . -type f -name *~`;
+for i in $oldfiles; do 
+	echo Removing $i; 
+	rm $i;
+done;
+
 echo .
 
 echo ---------------------------------
