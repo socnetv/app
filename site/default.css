@@ -127,6 +127,7 @@ background-color: #f6ffd5;
 
 .dltext {
 display: normal;
+text-decoration: none;
 }
 
 .dltext ul{
@@ -191,6 +192,7 @@ border-bottom: 1px solid gray;
 display: block;
 color: black;
 text-align: center;
+text-decoration: none;
 background-color: #DBFF6C; //orange;
 }
 
@@ -232,7 +234,6 @@ color: gray;
 font: normal 10px Arial;
 text-decoration: underline;
 }
-
 
 
 
