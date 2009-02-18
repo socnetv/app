@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser 
- version: 0.52
+ version: 0.51
  Written in Qt 4.4
 
                            mainwindow.cpp  -  description
@@ -74,7 +74,7 @@ MainWindow::MainWindow(const QString &fName) {
 	fileName=fName;
 	qInstallMsgHandler( myMessageOutput );
 	setWindowIcon (QIcon(":/images/socnetv.png"));
-	VERSION="0.52";
+	VERSION="0.51";
 
 	/** inits that invoke all other construction parts **/
 	initActions();  //register and construct menu Actions 
@@ -2411,7 +2411,7 @@ void MainWindow::slotCreateSmallWorldRandomNetwork(){
 	double beta = QInputDialog::getDouble(this,"Create small world...",
 			 tr("Now, enter a parameter beta. \n")+
 			 tr("This is the edge rewiring probability:"), 
-			 0.52, 0.00, 1.00, 2, &ok);
+			 0.51, 0.00, 1.00, 2, &ok);
 
 	statusBar()->showMessage(tr("Erasing any existing network. "), statusBarDuration);
 	initNet();  

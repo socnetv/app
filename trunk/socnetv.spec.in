@@ -1,6 +1,6 @@
 %define name    socnetv
 %define version @PACKAGE_VERSION@
-%define release 1
+%define release 3
 %define prefix  @ac_prefix@
 
 
@@ -14,16 +14,19 @@
 
 %if %{is_fedora}
 %define distr %(cat /etc/fedora-release)
+%define distribution fc
 %define qmake qmake-qt4
 %define lrelease lrelease-qt4
 %endif
 
 %if %{is_suse}
 %define distr %(head -1 /etc/SuSE-release)
+%define distribution suse
 %endif
 
 %if %{is_mandrake}
 %define distr %(cat /etc/mandrake-release)
+%define distribution mdv
 %endif
 
 
@@ -33,6 +36,7 @@ Summary:	A Social Networks Analyser and Visualiser
 License:	GPLv3
 Group:		Productivity/Scientific/Math 
 URL:		http://socnetv.sourceforge.net/
+Packager:	Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
 Version:	%{version}
 Release:	%{release}
 
@@ -47,16 +51,19 @@ BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 %if %{is_fedora}
 BuildRequires:  qt-devel >= 4.4 
 BuildRequires:  qt-x11 >= 4.4
+BuildRequires:  desktop-file-utils >= 0.15
 %endif
 
 %if %{is_suse}
 BuildRequires:  libqt4-devel >= 4.4 
 BuildRequires:  libQtWebKit4 >= 4.4
+BuildRequires:  update-desktop-files >= 3.7
 %endif
 
 %if %{is_mandrake}
 BuildRequires:  libqt4-devel >= 4.4 
 BuildRequires:  libqtwebkit4 >= 4.4  
+BuildRequires:  desktop-file-utils >= 0.15
 %endif
 
 
@@ -87,7 +94,16 @@ Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 %__make
 
 %install
+%if %{is_suse}
 %suse_update_desktop_file %{name} Math Visualiser
+%endif
+
+%if %{is_fedora}
+desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
+
+#desktop-file-install --add-category="Math" --delete-original  --dir=%{buildroot}%{_datadir}/applications  %{buildroot}/%{_datadir}/applnk/Edutainment/%{name}.desktop
+%endif
+
 %makeinstall
 
 %clean
@@ -98,8 +114,6 @@ Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 
 %files
 %defattr(-,root,root)
-
- 
 %{_bindir}/%{name}
 %{_datadir}/applications/%{name}.desktop
 %{_datadir}/pixmaps/%{name}.png
@@ -122,20 +136,21 @@ Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 %{_datadir}/doc/%{name}/manual/socnetv.png
 %{_datadir}/doc/%{name}/manual/toc.html
 %{_datadir}/doc/%{name}/manual/visualisation.html
+%{_datadir}/doc/%{name}/manual/gfdl.html
 
 %changelog
-* Fri Feb 16 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
-0.51-1
-Updated to upstream version 0.51
-* Fri Feb 13 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
-0.50-1
-Updated to upstream version 0.50
-* Wed Jan 14 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
-0.49-2
-Package .spec fixes
-* Tue Jan 13 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
-0.49-1
-Updated to 0.49
-* Wed Sep 17 2008  Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
-0.48-1
+* Tue Feb 17 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.51-3
+- Bugfixes into .spec.in for Fedora and Mandriva. 
+- RPM for Fedora
+* Mon Feb 16 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.51-2
+- Minor changes to RPM
+* Mon Feb 16 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.51-1
+- Updated to upstream version 0.51
+* Fri Feb 13 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.50-1
+- Updated to upstream version 0.50
+* Wed Jan 14 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.49-2
+- Package .spec fixes
+* Tue Jan 13 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.49-1
+- Updated to 0.49
+* Wed Sep 17 2008 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.48-1
 - First RPM release

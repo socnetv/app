@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser 
- version: 0.52
+ version: 0.51
  Written in Qt 4.4
 
                         edge.cpp  -  description
@@ -29,7 +29,7 @@
 #include <QStyleOptionGraphicsItem>
 #include <QPainter>
 #include <QtDebug>		//used for qDebug messages
-#include <math.h>
+#include <cmath>
 
 #include "graphicswidget.h"
 #include "edge.h"
