@@ -58,7 +58,7 @@ sudo apt-get install -t experimental socnetv
 
 <h4><a name="Ubuntu" id="Ubuntu"></a>Ubuntu</h4>
 <p class="text">
-Ubuntu users may use our repository. All you have to do is add the following lines in your /etc/apt/sources.list file: <br />
+Ubuntu users may use <a href="https://launchpad.net/~dimitris-kalamaras/+archive/ppa">our repository</a>. All you have to do is add the following lines in your /etc/apt/sources.list file: <br />
 </p>
 
 <p class="code"> 
@@ -75,7 +75,13 @@ sudo apt-get install socnetv
 </p>
 
 <p class="text">
-This repository is signed with <a href="http://keyserver.ubuntu.com:11371/pks/lookup?search=0x61AE869C37A4FCC5A73FD02EE088941209CFE071&op=index">61AE869C37A4FCC5A73FD02EE088941209CFE071</a> OpenPGP key. See <a href="https://help.launchpad.net/Packaging/PPA#Adding a PPA to your Ubuntu repositories">instructions</a> to add the key to your system, if you like.
+This repository is signed with <a href="http://keyserver.ubuntu.com:11371/pks/lookup?search=0x61AE869C37A4FCC5A73FD02EE088941209CFE071&op=index">61AE869C37A4FCC5A73FD02EE088941209CFE071</a> OpenPGP key. 
+
+Until you add the PPA's key to your own system, you'll see warnings that you're downloading from an untrusted source. To add our PPA's key to your system, open a terminal and enter this command:
+
+sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 61AE869C37A4FCC5A73FD02EE088941209CFE071
+
+If you want more information about keys and repository signing in Ubuntu, read <a href="https://help.launchpad.net/Packaging/PPA#Adding a PPA to your Ubuntu repositories">the official instructions</a>.
 </p>
 
 

@@ -7,33 +7,47 @@ echo $VER
 echo .
 echo ---------------------------------
 echo   Fedora RPM Package Creator
-echo    Author: Dimitris Kalamaras
+echo   Copyright Dimitris Kalamaras
+echo   License: GNU GPL v3
 echo ---------------------------------
 
-echo Setting up rpmdev-tree
 
-rpmdev-setuptree
+
+echo
+echo Checking if home RPM development tree exists...
+if [ -d ~/rpmbuild/SOURCES ];    then
+	echo Home RPM development tree exists. Continuing.
+else
+        echo Seems there is no RPM development tree. Creating it...
+        rpmdev-setuptree
+        echo  OK;
+fi
+
+
+
 
 cd ~/Documents/socnetv/trunk
 
+
+echo Checking for old working dir...
 if [ -d ../fedora ];    then
-        echo Removing old fedoradirectory
+        echo Removing old fedora working directory
         rm -rf ../fedora
 else
-        echo No older fedora directory. Continuing...
-
+        echo No older fedora directory. Continuing.
 fi
 
-if [ -f ~/rpmbuild/SOURCES/*.bz2 ];    then
-        echo Removing old bz2
+echo Checking for old bz2s...
+if [ -f ~/rpmbuild/SOURCES/*.bz2 ];   then
+        echo Removing old bz2.
 	rm ~/rpmbuild/SOURCES/*.bz2
 else
-        echo No older bz2 file. Continuing...
+        echo No older bz2 file. Continuing.
 
 fi
 
 
-
+echo Checking for old RPMs...
 if [ -f ~/rpmbuild/RPMS/*.rpm ];    then
         echo Removing old rpms in ../RPMS/i586/
         rm ~/rpmbuild/RPMS/*.rpm ;
@@ -53,6 +67,14 @@ echo ---------------------------------
 
 make clean
 rm socnetv 
+
+echo removing old backup files
+oldfiles=`find . -type f -name *~`;
+for i in $oldfiles; do 
+	echo Removing $i; 
+	rm $i;
+done;
+
 
 
 echo .
@@ -85,7 +107,7 @@ tar jcfv SocNetV-$VER.tar.bz2 socnetv-$VER/
 
 cd socnetv-$VER/
 
-
+echo .
 echo "Start package creation? (Y/N)"
 read ans
 if [ $ans = "N" ]; then

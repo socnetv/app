@@ -7,7 +7,8 @@ echo $VER
 echo .
 echo ---------------------------------
 echo   Mandriva RPM Package Creator
-echo    Author: Dimitris Kalamaras
+echo    Copyright Dimitris Kalamaras
+echo	License: GNU GPL v3
 echo ---------------------------------
 echo 
 
@@ -150,14 +151,15 @@ echo Enter sudo password to start package creation
 
 sudo rpmbuild -ba socnetv.spec
 
-
-if [ -f /usr/src/rpm/RPMS/i586/*.rpm ];  	then
-	echo file ok; 
-else 
-	echo Sorry. No RPM package....
-	exit;
-fi
-
+newrpm=`find /usr/src/rpm/RPMS -type f -name *.rpm`;
+for file in $newrpm; do
+	if [ -f "$file" ];  then
+		echo RPM $file .... OK; 
+	else 
+		echo Sorry. No RPM package....
+		exit;
+	fi
+done
 echo .
 echo ---------------------------------
 echo        TESTING PACKAGE         

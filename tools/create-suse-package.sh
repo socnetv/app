@@ -20,6 +20,18 @@ else
       
 fi
 
+
+echo
+echo Checking if RPM development tree exists...
+if [ -d /usr/src/packages/RPMS ];    then
+        echo RPM development tree exists. Continuing.
+else
+        echo Seems there is no RPM development tree. Enter sudo password to create it
+        sudo rpmdev-setuptree
+        echo  OK;
+fi
+
+
 if [ -f /usr/src/packages/RPMS/i586/*.rpm ];    then
 	echo Seems there are old rpms in /usr/src/packages/RPMS/i586/... Enter password to remove them:
 	su -c 'rm /usr/src/packages/RPMS/i586/*.rpm'
