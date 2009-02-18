@@ -18,9 +18,9 @@ The latest version  of  this  program  can  be  found  at  <a href="http://socne
 
 <h4><a name="Install" id="Install"></a>Installation</h4>
 <p class="text">
-To compile SocNetV, you need the Qt4 development libraries installed - most Linux distros offer Qt4 via their package manager (i.e. Synaptic in Ubuntu). You also need QtWebKit development files. For instance in openSUSE, install the package "libQtWebKit-devel". 
+To compile SocNetV, you need the Qt4 development libraries installed - most Linux distros offer Qt4 via their package manager (i.e. Synaptic in Ubuntu). You also need QtWebKit development files. For instance, in openSUSE 11+ and Debian-based distros, install libQtWebKit-devel and libqt4-webkit, respectively. 
 
-If you have Qt4 and QtWebKit installed, download the archive with the source code from the link above, untar it, enter the new directory, and compile with the following commands:
+If you have Qt4 and QtWebKit installed, download the archive with the source code from the <a href="http://socnetv.sourceforge.net/downloads.html">Downloads menu</a>, untar it, enter the new directory, and compile with the following commands:
 </p>
 
 <p class="code">
@@ -33,8 +33,94 @@ sudo make install<br />
 </p>	
 
 <p class="text">
-To avoid compiling, we also offer binary packages for Ubuntu, Debian and openSUSE available from the project's website (see link above).
+
+To avoid compiling, we also offer binary packages for Ubuntu, Debian and openSUSE available from <a href="http://socnetv.sourceforge.net/downloads.html">the project's website</a>.
+
+<h4><a name="Debian" id="Debian"></a>Debian</h4>
+
+<p class="text">
+For Debian &amp; Debian-derived distros, an (not always updated) version of SocNetV is in the 'experimental' repository (thanks to Serafeim Zanikolas). Add  the line:
 </p>
+<p class="code">
+deb http://ftp.debian.org/debian/ experimental main
+</p>
+<p class="text">
+to your sources.list; save it, then type in:
+</p>
+<p class="code">
+sudo apt-get update <br />
+sudo apt-get install -t experimental socnetv
+</p>
+
+
+
+
+
+<h4><a name="Ubuntu" id="Ubuntu"></a>Ubuntu</h4>
+<p class="text">
+Ubuntu users may use our repository. All you have to do is add the following lines in your /etc/apt/sources.list file: <br />
+</p>
+
+<p class="code"> 
+deb http://ppa.launchpad.net/dimitris-kalamaras/ppa/ubuntu intrepid main<br />
+deb-src http://ppa.launchpad.net/dimitris-kalamaras/ppa/ubuntu intrepid main
+</p>
+
+<p class="text">
+Then save it, exit the text editor, and type in:
+</p>
+<p class="code"> 
+sudo apt-get update <br />
+sudo apt-get install socnetv
+</p>
+
+<p class="text">
+This repository is signed with <a href="http://keyserver.ubuntu.com:11371/pks/lookup?search=0x61AE869C37A4FCC5A73FD02EE088941209CFE071&op=index">61AE869C37A4FCC5A73FD02EE088941209CFE071</a> OpenPGP key. See <a href="https://help.launchpad.net/Packaging/PPA#Adding a PPA to your Ubuntu repositories">instructions</a> to add the key to your system, if you like.
+</p>
+
+
+
+
+<h4><a name="Gentoo" id="Gentoo"></a>Gentoo builders</h4>
+<p class="text">
+Markos Chandras (<a href="http://hwoarang.silverarrow.gr/?p=193">hwoarang</a>) added SocNetV into the '<a href="http://github.com/gentoo-qt/qting-edge/tree/master">qting-edge</a>' <a href="http://www.gentoo.org/proj/en/overlays/userguide.xml">overlay</a>, which also houses new Qt4 and KDE4 software. To install the qting-edge overlay type in this command:
+</p>
+<p class="code"> 
+layman -a qting-edge 
+</p>
+
+
+
+<h4><a name="Windows" id="Windows"></a>Windows XP/Vista</h4>
+<p class="text">
+
+To run SocNetV in Windows XP/Vista, you need to install <a href="ftp://ftp.trolltech.com/qt/source/qt-win-opensource-4.4.3-mingw.exe">Qt4 libraries for Windows</a>. Then, the latest SocNetV zipped archive for Windows, unzip it, and double-click on the "socnetv" executable. The program will run immediately. Warning: this version is not tested and therefore not supported.
+</p>
+
+
+<h4><a name="Development" id="Development"></a>Development version</h4>
+<p class="text">
+
+If you want to test the latest/current development version of SocNetV, check it out using this command (you need the Subversion package): 
+</p>
+<p class="code"> 
+svn co http://socnetv.svn.sourceforge.net/svnroot/socnetv/trunk
+</p>
+
+<p class="text">
+or download the latest tarball from the <a href="http://socnetv.svn.sourceforge.net/viewvc/socnetv/trunk.tar.gz?view=tar">Sourceforge SVN repository</a>. Then, type in the commands:
+</p>
+<p class="code"> 
+cd trunk<br/>
+./configure <br />
+make <br/>
+socnetv
+</p>
+	
+<p class="text">
+Please note that this version is <em>not always stable</em>.
+</p>
+
 
 <h4><a name="RunOptions" id="RunOtions"></a>Execution Options</h4>
 <div class="text">

@@ -26,7 +26,6 @@ margin: 0;
 
 .basictab li a{
 text-decoration: none;
-
 padding: 3px 7px;
 margin-right: 3px;
 border: 1px solid gray;
@@ -103,4 +102,145 @@ text-decoration: underline;
 }
 
 
+
+
+.caption {
+color: gray;
+font: normal 8px Sans;
+background-color: #f6ffd5;
+border: 1px solid lightgray;
+text-align: center;
+}
+
+.screenshots a {
+color: lightgray;
+display: normal;
+border: none;
+border-bottom: none;
+background-color: #f6ffd5;
+}
+
+
+
+
+
+
+.dltext {
+display: normal;
+}
+
+.dltext ul{
+margin-top: 10px;
+margin-left: 0px;
+font: normal 12px Sans;
+list-style-type: none;
+text-align: left; 
+}
+
+
+.dltext li{
+display: normal;
+margin-top: 15px;
+}
+
+
+.dltext img {
+text-align: center;
+height=64px;
+}
+
+.dltext img.centered {
+display: block;
+margin-left: auto;
+margin-right: auto;
+padding: 0px;
+}
+
+.dltext .alignleft {
+display: block;
+margin-left: 0;
+margin-right: auto;
+}
+.dltext .aligncenter {
+display: block;
+margin-left: auto;
+margin-right: auto;
+}
+.dltext .alignright {
+display: block;
+margin-left: auto;
+margin-right: 0;
+}
+
+
+
+.dlbutton a{
+display: block;
+text-align: center;
+color: gray;
+font: normal 12px Arial;
+text-decoration: none;
+background-color: lightgray;
+border-right: 1px solid gray;
+border-bottom: 1px solid gray;
+}
+
+
+
+.dlbutton  a:hover {
+display: block;
+color: black;
+text-align: center;
+background-color: #DBFF6C; //orange;
+}
+
+
+.dltext em {
+font: normal 11px Sans;
+color: gray;
+}
+
+
+.dltext b {
+font: normal 11px Sans;
+color: gray;
+}
+
+
+
+.dlwarn {
+display: block;
+text-align: center;
+color: gray;
+font: normal 10px Arial;
+text-decoration: none;
+}
+
+
+.dlwarn a{
+text-align: center;
+color: gray;
+font: normal 10px Arial;
+}
+
+
+
+.dlwarn a:hover{
+
+text-align: center;
+color: gray;
+font: normal 10px Arial;
+text-decoration: underline;
+}
+
+
+
+
+.dlcaption {
+color: gray;
+font: normal 8px Sans;
+background-color: #f6ffd5;
+border: 1px solid lightgray;
+text-align: center;
+}
 

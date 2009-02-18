@@ -7,7 +7,7 @@
 <meta name="GENERATOR" content="Dimitris Kalamaras"/>
 <meta name="AUTHOR"  content="Dimitris Kalamaras"/>
 <meta name="CREATED" content="20070111"/>
-<meta name="CHANGED" content="20090216"/>
+<meta name="CHANGED" content="20090217"/>
 <meta name="KEYWORDS"    content="Social Networks Visualiser, linux, SNA, graphs, visualisation, layout, Dimitris Kalamaras,GNU,GPL"/>
 <meta name="SUBJECT"     content="Social Networks Visualiser"/>
 <meta name="robots" content="all"/>
@@ -43,13 +43,6 @@
 							</ul>
 							</div>
 
-							<div  class="tabcontent">
-							<ul>
-								<li><a href="install-source.html">Source</a></li>
-								<li><a href="install-binary.html">Binary</a></li>
-								<li><a href="install-development.html">Development</a></li>
-							</ul>
-							</div> 
 
 						</td>
 						<td valign="top"><img name="lf_r2_c3" src="./images/lf_r2_c3.gif" width="0" height="31" border="0" id="lf_r2_c3" alt="" />
@@ -59,174 +52,89 @@
 						<td valign="top"><img name="lf_r3_c1" src="./images/lf_r3_c1.gif" width="0" height="31" border="0" id="lf_r3_c1" alt="" />
 						</td>
 						<td rowspan="2" valign="top">
-							<table border="0" cellspacing="0" cellpadding="6" class="text">
-										<tr><td>
-										&nbsp;
-										</td></tr>
-										<tr>
-											<td>
-To compile or install SocNetV, <em>you need Qt 4.4 and QtWebKit</em> development files. For instance, in openSUSE 11+ and Debian-based distros, install libQtWebKit-devel and libqt4-webkit, respectively. 
 
+<div class="dlwarn">Warning: To compile or install SocNetV, you need Qt 4.4 and QtWebKit development files. See <a href="docs/intro.html#Install" target="_blank">Instructions</a>
 
-<br /><br />
+<table border="0" cellspacing="0" cellpadding="12" class="dltext">
 
-There are four ways to install SocNetV:
+</div>
+<tr>
 
-											</td></tr>
-										<tr><td> 
+	<td>
+	<img src="images/distros/src.png" alt="source" class="centered" /><br />
+	<div class="dlcaption">Source code:</div>
+	<div class="dlbutton"><a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0.51.tar.gz?download" target="_blank">SocNetV-0.51.tar.gz</a></div>
 
-											<b>A. Compile from Source code</b>
-												<ul>
-												<li>Latest version: <a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0.51.tar.gz?download" target="_blank">SocNetV-0.51.tar.gz</a>
-<br />
+	</td>
 
-<br />Click on the link above and download the archive with the source code. Then decompress it, and compile it with these commands: 
-<br /> 
-<code>
-tar zxfv SocNetV-0.XX.tar.gz <br />
-cd socnetv<br />
-./configure<br />
-make<br />
-sudo make install<br />
-</code>
-<br />  
-In the end, run SocNetV with:<br />
-<code>
-socnetv
-</code>
+	<td>
+	<img src="images/distros/fedora.png"  alt="fedora" class="centered" /> <br />
+	<div class="dlcaption">Fedora packages:</div>
+	<div class="dlbutton"><a href="http://downloads.sourceforge.net/socnetv/socnetv-0.51-3.fc10.i386.rpm?" target="_blank"> 32bit .RPM</a></div>
 
-												</li>
-												</ul>
+	</td>
+	<td>
+	<img src="images/distros/suse.png" alt="suse" class="centered" /> <br />
+	<div class="dlcaption">openSUSE packages:</div>
+	<div class="dlbutton"><a href="http://downloads.sourceforge.net/socnetv/socnetv-0.51-2.opensuse_11.1_i586.rpm?" target="_blank">32bit .RPM</a></div>
 
-										</td></tr>
+	</td>
 
-										<tr><td> 
-											<b>B. Install from Binary packages</b>
-											<ul>
-
-
-											<li><em>For Ubuntu/Kubuntu</em><br /> 
-<br />All you have to do is add the following lines in your /etc/apt/sources.list file: <br /><br />
-
-
-<code> 
-
-deb http://ppa.launchpad.net/dimitris-kalamaras/ppa/ubuntu intrepid main<br />
-deb-src http://ppa.launchpad.net/dimitris-kalamaras/ppa/ubuntu intrepid main</code>
-<br />
-<br /> Then save it, exit the text editor, and type in:<br /><br />
-<code>
-sudo apt-get update <br />
-sudo apt-get install socnetv
-</code>
-<br /><br />
-This repository is signed with <a href="http://keyserver.ubuntu.com:11371/pks/lookup?search=0x61AE869C37A4FCC5A73FD02EE088941209CFE071&op=index">61AE869C37A4FCC5A73FD02EE088941209CFE071</a> OpenPGP key. See <a href="https://help.launchpad.net/Packaging/PPA#Adding a PPA to your Ubuntu repositories">instructions</a> to add the key to your system, if you like.
-<br /><br /> <br />
-</li>
+	<td>
+	<img src="images/distros/debian.png" alt="debian" class="centered" /> <br />
+	<div class="dlcaption">Debian packages:</div>
+	<div class="dlbutton"><a href="http://packages.debian.org/experimental/i386/socnetv/download" target="_blank">32bit .DEB</a> <a href="http://packages.debian.org/experimental/amd64/socnetv/download" target="_blank">64bit .DEB</a></div>
 
 
 
-											<li><em>For Debian &amp; Debian-derived distros</em><br /> <br />An older version of SocNetV is in the 'experimental' repository. Add  the line <br /><br />
-<code> deb http://ftp.debian.org/debian/ experimental main </code>
-<br />
-<br /> to your sources.list; save it, then type in:<br /><br />
-<code>
-sudo apt-get update <br />
-sudo apt-get install -t experimental socnetv
-</code>
-<br /><br /> <br />
-</li>
-
-											<li><em>For Gentoo builders</em><br /> <br />
-Markos Chandras (<a href="http://hwoarang.silverarrow.gr/?p=193">hwoarang</a>) added SocNetV into the '<a href="http://github.com/gentoo-qt/qting-edge/tree/master">qting-edge</a>' <a href="http://www.gentoo.org/proj/en/overlays/userguide.xml">overlay</a>, which also houses new Qt4 and KDE4 software. To install the <em>qting-edge</em> overlay type in this command:
-<br /><br />
-<code> layman -a qting-edge 
-</code>
-<br />
-
-	</li>
+	</td>
+	<td>
+	<img src="images/distros/ubuntu.png"  alt="ubuntu" class="centered" /><br />
+	<div class="dlcaption">Ubuntu packages:</div>
+	<div class="dlbutton"><a href="http://ppa.launchpad.net/dimitris-kalamaras/ppa/ubuntu/pool/main/s/socnetv/socnetv_0.49-2_i386.deb" target="_blank">32bit .DEB</a> <a href="http://ppa.launchpad.net/dimitris-kalamaras/ppa/ubuntu/pool/main/s/socnetv/socnetv_0.49-2_amd64.deb" target="_blank"> 64bit .DEB</a></div>
+	</td>
 
 
+	<td>
+	<img src="images/distros/gentoo.png" alt="gentoo" class="centered" /><br />
+	<div class="dlcaption">Gentoo packages:</div>
+	<div class="dlbutton"><a href="http://github.com/gentoo-qt/qting-edge/tree/master" target="_blank">qting-edge overlay</a></div>
+	</td>
+
+</tr>
+
+<tr>
 
 
-											</ul>
-										</td></tr>
+	<td>
+	<img src="images/distros/mandriva.png" alt="mandriva" class="centered" /><br />
+	<div class="dlcaption">Mandriva packages:</div>
+	<div class="dlbutton"><a href="http://downloads.sourceforge.net/socnetv/socnetv-0.51-2.opensuse_11.1_i586.rpm?" target="_blank">32bit .RPM</a></div>
+	</td>
 
-                                                                                <tr> <td>
+	<td>
+	<img src="images/distros/windows.png" alt="windows" class="centered" /><br />
+	<div class="dlcaption">Windows zipfile:</div>
+	<div class="dlbutton"><a href="http://downloads.sourceforge.net/socnetv/SocNetV-0.51.zip?" target="_blank">32bit .ZIP</a></div>
+	</td>
 
-        <b>C. Development version</b>
+	<td>
+	<img src="images/distros/klik.png" alt="klik" class="centered" /><br />
+	<div class="dlcaption">Klik (Linux):</div>
+	<div class="dlbutton"><a href="http://socnetv.klik.atekon.de" target="_blank">Run Live</a></div>
+	</td>
 
-                <ul>
+</tr>
+<tr>
+	<td>
+	<img src="images/distros/subversion.png" alt="subversion" class="centered" /><br />
+	<div class="dlcaption">Development version:</div>
+	<div class="dlbutton"><a href="http://socnetv.svn.sourceforge.net/viewvc/socnetv/trunk.tar.gz?view=tar" target="_blank">Latest tarball</a></div>
+	</td>
 
-                <li>If you want to test the latest/current development version of SocNetV, check it out using this command (you need to have installed the Subversion package): 
-		<br /><br />
-			 <code>svn co http://socnetv.svn.sourceforge.net/svnroot/socnetv/trunk</code>
-	<br/><br />Then, type the commands:
-	<br /><br />
-			<code>
-				cd trunk<br/>
-				./configure <br />
-				make <br/>
-				socnetv
-			</code>
-	
-		<br /><br /> Please note that this version is <em>not always stable</em>.
+</tr>
 
-                </li>
-
-                </ul>
-
-
-</td></tr>
-
-
-
-										<tr> <td> 
-											<b>D. Klik-able setup</b>
-												<ul>
-												<li>Finally, for  Linux users who don't mind running an older version, you can try SocNetV without actually installing it. Just go to <a href="http://socnetv.klik.atekon.de/" target="_blank">http://socnetv.klik.atekon.de/</a> and then click on the large blue "download" button (to the bottom of the page). <br />Warning: klik service is not always updated with the latest version of SocNetV. 
-												</li>
-												</ul>
-
-										</td></tr>
-
-       										<tr><td> 
-											<b>Older versions</b>
-												<ul>
-												<li><a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0.48.tar.gz?download" target="_blank">version 0.48</a>
-												<li><a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0.47.tar.gz?download" target="_blank">version 0.47</a>
-                                                                                                </li>
-												<li><a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0.46.tar.gz?download" target="_blank">version 0.46</a>
-                                                                                                </li>
-                                                                                                <li><a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0.45.tar.gz?download" target="_blank">version 0.45</a>
-                                                                                                </li>
-
-                                                                                                <li><a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0
-.44.tar.gz?download" target="_blank">version 0.44</a>
-                                                                                                </li>
-
-                                                                                                <li><a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0
-.43.1-2.tar.gz?download" target="_blank">version 0.43.1</a>
-                                                                                                </li>
-                                                                                                
-
-
-												<li>
-												<a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0.43.tar.gz?download" target="_blank">Version 0.43</a>
-												</li>
-												<li><a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0.42.tar.gz?download" target="_blank">Version 0.42</a>
-												</li>
-												<li><a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0.41.tar.gz?download" target="_blank">Version 0.41</a>
-												</li>
-												<li><a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0.40.tar.gz?download" target="_blank">Version 0.40</a>
-												</li>
-												<li><a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0.39.tar.gz?download" target="_blank">Version 0.39</a>	
-												</li>
-												<li><a href="http://prdownloads.sourceforge.net/socnetv/SocNetV-0.38.tar.gz?download" target="_blank">Version 0.38</a>	
-												
-												</ul>
-										</td></tr>
-							</table>
+</table>
 					</td>
 					<td valign="top"><img name="lf_r3_c3" src="./images/lf_r3_c3.gif" width="0" height="228" border="0" id="lf_r3_c3" alt="" /></td>
 				</tr>
