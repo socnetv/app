@@ -111,12 +111,10 @@ a:visited {
 #  border-bottom: 1px solid #CFD1D5;
 #  border-top: 1px solid white;
   color: white;
-  font-size: small;
-#  height: 2.0em;
-#  line-height: 1em;
+  font-size: 12px;
   margin: 0px;
   padding:  0px 0em 0px 0px;
-#  vertical-align: middle;
+  text-align: left;
 }
 
 
