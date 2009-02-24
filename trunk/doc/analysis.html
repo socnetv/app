@@ -3,22 +3,44 @@
 <h4><a name="Analysis" id="Analysis"></a>Analysis</h4>
 
 <p class="text">
-Once you have loaded or created a network you can analyse it using the commands in the Statistics menu. 
-For instance, the first option of Statistics menu (<em>Network Symmetry</em>) tells you whether the network is symmetric or not. A network is symmetric when for every edge (i,j) in the set E, the 'opposite' (j,i) edge also exists in E.    
+Once you have loaded or created a network you can analyse it using the commands in the Statistics menu. <br /> <br />
+
+For instance, the first option of Statistics menu (<em>Network Symmetry</em>) tells you whether the network is symmetric or not. 
+A network is symmetric when for every edge (i,j) in the set E, the 'opposite' (j,i) edge also exists in E.    
 </p>
 <p class="text">
-The next three commands (<em>Geodesic Distance</em>, <em>Distance Matrix</em> and <em>Diameter</em>) let you calculate the geodesic distance between any two nodes you define, print the network distance matrix and calculate the network diameter, respectively. 
+The next menu options (<em>Graph Distance</em>, <em>Average Graph Distance</em>, <em>Distance Matrix</em> and <em>Diameter</em>) let you calculate the geodesic distance between any two nodes and the mean distance between all nodes, print the network distance matrix and calculate the network diameter, respectively. 
 </p>
 <p class="text">
-The Geodesic Distance is the length of the shortest path between two connected nodes. By clicking on the "Geodesic Distance" option (or Ctrl+G) you will be asked for source and target nodes, and then their geodesic will be calculated and displayed. 
+<em><a name="Distance" id="Distance"></a>Distance</em><br/>
+The geodesic distance is the length of the shortest path between two connected nodes. By clicking on the "Geodesic Distance" option (or Ctrl+G) you will be asked for source and target nodes, and then their geodesic will be calculated and displayed. 
 </p>
+
+
 <p class="text">
-The "Distance Matrix" calculates two matrices. One with all the distances between nodes and one (sigma) with the number of shortest paths between any two nodes. The latter is used in Dijkstra's shortest path algorithm and Betweeness Centrality calculation (see below).
+<em><a name="DistanceMatrix" id="DistanceMatrix"></a>Distance Matrix</em><br/>
+The 'Distance Matrix' option calculates and displays two matrices; the first is the matrix of distances and the second (sigma) the matrix of the number of shortest paths between any two nodes. 
+The latter is used in Centralities calculation (see below).
 </p>
+
+<p class="text">
+<em><a name="Diameter" id="Diameter"></a>Graph Diameter</em><br/>
+The diameter of a network is the maximum length of all shortest paths between any two connected nodes. 
+</p>
+
+
+<p class="text">
+<em><a name="Coefficient" id="Coefficient"></a>Clustering Coefficient</em><br/>
+The Clustering Coefficient of a node quantifies how close the node and its neighbors are to being a clique. 
+This is used to determine whether a network is a small-world or not. <br />
+This option calculates and displays the clustering coefficients of all nodes. 
+</p>
+
 
 <p class="text">
 <em>Tip</em>: All the basic network statistics, such as nodes, edges and density are constantly displayed in the Statistics tab of the left dock.
  </p>
+
 <h4><a name="Centralities" id="Centralities"></a>Centralities</h4>
 <p class="text"> 
 The last option in the Statistics menu opens the Centralities sub-menu.
