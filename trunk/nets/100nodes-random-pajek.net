@@ -1,0 +1,302 @@
+*Network 
+*Vertices 100
+1 "1" ic gold		0.707661 	0.499218	circle
+2 "2" ic gold		0.752016 	0.524257	circle
+3 "3" ic gold		0.759073 	0.550861	circle
+4 "4" ic gold		0.680444 	0.552426	circle
+5 "5" ic gold		0.702621 	0.580595	circle
+6 "6" ic gold		0.746976 	0.624413	circle
+7 "7" ic gold		0.721774 	0.635368	circle
+8 "8" ic gold		0.670363 	0.624413	circle
+9 "9" ic gold		0.738911 	0.704225	circle
+10 "10" ic gold		0.69254 	0.690141	circle
+11 "11" ic gold		0.665323 	0.687011	circle
+12 "12" ic gold		0.674395 	0.72457	circle
+13 "13" ic gold		0.608871 	0.658842	circle
+14 "14" ic gold		0.649194 	0.746479	circle
+15 "15" ic gold		0.68246 	0.843505	circle
+16 "16" ic gold		0.669267 	0.861677	circle
+17 "17" ic gold		0.63004 	0.820031	circle
+18 "18" ic gold		0.611895 	0.816901	circle
+19 "19" ic gold		0.580645 	0.765258	circle
+20 "20" ic gold		0.586694 	0.841941	circle
+21 "21" ic gold		0.58871 	0.923318	circle
+22 "22" ic gold		0.512097 	0.577465	circle
+23 "23" ic gold		0.538306 	0.812207	circle
+24 "24" ic gold		0.522177 	0.777778	circle
+25 "25" ic gold		0.514113 	0.871674	circle
+26 "26" ic gold		0.5 	0.809077	circle
+27 "27" ic gold		0.481855 	0.929577	circle
+28 "28" ic gold		0.469758 	0.87011	circle
+29 "29" ic gold		0.458669 	0.830986	circle
+30 "30" ic gold		0.428427 	0.931142	circle
+31 "31" ic gold		0.424395 	0.85759	circle
+32 "32" ic gold		0.416331 	0.824726	circle
+33 "33" ic gold		0.377016 	0.902973	circle
+34 "34" ic gold		0.383065 	0.827856	circle
+35 "35" ic gold		0.359879 	0.840376	circle
+36 "36" ic gold		0.365927 	0.785603	circle
+37 "37" ic gold		0.361895 	0.757433	circle
+38 "38" ic gold		0.376008 	0.70266	circle
+39 "39" ic gold		0.326613 	0.751174	circle
+40 "40" ic gold		0.319556 	0.730829	circle
+41 "41" ic gold		0.313508 	0.70892	circle
+42 "42" ic gold		0.316532 	0.679186	circle
+43 "43" ic gold		0.298387 	0.671362	circle
+44 "44" ic gold		0.353831 	0.605634	circle
+45 "45" ic gold		0.467742 	0.519562	circle
+46 "46" ic gold		0.3125 	0.593114	circle
+47 "47" ic gold		0.25 	0.597809	circle
+48 "48" ic gold		0.22379 	0.580595	circle
+49 "49" ic gold		0.214718 	0.555556	circle
+50 "50" ic gold		0.224798 	0.525822	circle
+51 "51" ic gold		0.211694 	0.499218	circle
+52 "52" ic gold		0.352823 	0.485133	circle
+53 "53" ic gold		0.245968 	0.449139	circle
+54 "54" ic gold		0.216734 	0.416275	circle
+55 "55" ic gold		0.274194 	0.408451	circle
+56 "56" ic gold		0.308468 	0.402191	circle
+57 "57" ic gold		0.311492 	0.383412	circle
+58 "58" ic gold		0.238911 	0.309859	circle
+59 "59" ic gold		0.273185 	0.306729	circle
+60 "60" ic gold		0.304435 	0.306729	circle
+61 "61" ic gold		0.345766 	0.325509	circle
+62 "62" ic gold		0.284274 	0.222222	circle
+63 "63" ic gold		0.290323 	0.194053	circle
+64 "64" ic gold		0.354839 	0.261346	circle
+65 "65" ic gold		0.34879 	0.217527	circle
+66 "66" ic gold		0.379032 	0.242567	circle
+67 "67" ic gold		0.353831 	0.14241	circle
+68 "68" ic gold		0.387097 	0.181534	circle
+69 "69" ic gold		0.433468 	0.28169	circle
+70 "70" ic gold		0.412298 	0.156495	circle
+71 "71" ic gold		0.410282 	0.0751174	circle
+72 "72" ic gold		0.466734 	0.302034	circle
+73 "73" ic gold		0.457661 	0.15493	circle
+74 "74" ic gold		0.47379 	0.181534	circle
+75 "75" ic gold		0.483871 	0.114241	circle
+76 "76" ic gold		0.498992 	0.164319	circle
+77 "77" ic gold		0.514113 	0.134585	circle
+78 "78" ic gold		0.527218 	0.153365	circle
+79 "79" ic gold		0.543347 	0.14554	circle
+80 "80" ic gold		0.559476 	0.13615	circle
+81 "81" ic gold		0.584677 	0.0938967	circle
+82 "82" ic gold		0.585685 	0.162754	circle
+83 "83" ic gold		0.622613 	0.0954899	circle
+84 "84" ic gold		0.622984 	0.150235	circle
+85 "85" ic gold		0.650202 	0.12989	circle
+86 "86" ic gold		0.662298 	0.150235	circle
+87 "87" ic gold		0.629032 	0.256651	circle
+88 "88" ic gold		0.696573 	0.173709	circle
+89 "89" ic gold		0.694556 	0.215962	circle
+90 "90" ic gold		0.575605 	0.400626	circle
+91 "91" ic gold		0.731855 	0.237872	circle
+92 "92" ic gold		0.689516 	0.311424	circle
+93 "93" ic gold		0.516129 	0.485133	circle
+94 "94" ic gold		0.757056 	0.298905	circle
+95 "95" ic gold		0.681452 	0.386541	circle
+96 "96" ic gold		0.75 	0.372457	circle
+97 "97" ic gold		0.778226 	0.388106	circle
+98 "98" ic gold		0.763105 	0.42097	circle
+99 "99" ic gold		0.774194 	0.446009	circle
+100 "100" ic gold		0.78629 	0.471049	circle
+*Arcs 
+*Edges 
+1 5 1 c black
+1 10 1 c black
+1 27 1 c black
+1 69 1 c black
+1 91 1 c black
+2 18 1 c black
+2 19 1 c black
+2 59 1 c black
+2 65 1 c black
+3 5 1 c black
+3 6 1 c black
+3 95 1 c black
+4 7 1 c black
+4 61 1 c black
+4 66 1 c black
+4 71 1 c black
+4 93 1 c black
+5 73 1 c black
+5 74 1 c black
+5 79 1 c black
+6 12 1 c black
+6 61 1 c black
+7 8 1 c black
+7 88 1 c black
+8 19 1 c black
+8 40 1 c black
+8 45 1 c black
+8 50 1 c black
+9 25 1 c black
+9 40 1 c black
+10 41 1 c black
+10 78 1 c black
+10 94 1 c black
+11 28 1 c black
+11 55 1 c black
+11 67 1 c black
+11 69 1 c black
+11 70 1 c black
+12 22 1 c black
+12 39 1 c black
+12 45 1 c black
+13 29 1 c black
+13 34 1 c black
+13 51 1 c black
+13 57 1 c black
+13 62 1 c black
+13 68 1 c black
+13 75 1 c black
+14 20 1 c black
+14 22 1 c black
+14 26 1 c black
+14 37 1 c black
+14 52 1 c black
+15 15 1 c black
+15 93 1 c black
+17 19 1 c black
+17 48 1 c black
+17 90 1 c black
+18 45 1 c black
+18 74 1 c black
+18 90 1 c black
+19 23 1 c black
+19 86 1 c black
+19 95 1 c black
+20 41 1 c black
+20 52 1 c black
+20 85 1 c black
+21 76 1 c black
+22 42 1 c black
+22 44 1 c black
+22 53 1 c black
+22 57 1 c black
+22 60 1 c black
+22 74 1 c black
+22 80 1 c black
+22 82 1 c black
+23 35 1 c black
+23 40 1 c black
+23 45 1 c black
+23 81 1 c black
+24 26 1 c black
+24 31 1 c black
+24 58 1 c black
+24 70 1 c black
+24 72 1 c black
+24 92 1 c black
+25 29 1 c black
+25 90 1 c black
+26 46 1 c black
+26 47 1 c black
+26 97 1 c black
+27 87 1 c black
+28 42 1 c black
+28 62 1 c black
+28 78 1 c black
+29 55 1 c black
+29 70 1 c black
+29 75 1 c black
+30 77 1 c black
+31 35 1 c black
+31 36 1 c black
+31 46 1 c black
+32 42 1 c black
+32 53 1 c black
+32 60 1 c black
+32 75 1 c black
+32 87 1 c black
+33 92 1 c black
+34 60 1 c black
+34 73 1 c black
+34 98 1 c black
+35 69 1 c black
+36 39 1 c black
+36 45 1 c black
+36 69 1 c black
+37 56 1 c black
+37 95 1 c black
+37 96 1 c black
+37 98 1 c black
+38 45 1 c black
+38 52 1 c black
+38 64 1 c black
+38 67 1 c black
+38 77 1 c black
+39 72 1 c black
+39 90 1 c black
+40 48 1 c black
+41 45 1 c black
+41 64 1 c black
+42 52 1 c black
+42 78 1 c black
+43 44 1 c black
+43 46 1 c black
+43 50 1 c black
+43 89 1 c black
+44 47 1 c black
+44 52 1 c black
+44 61 1 c black
+44 87 1 c black
+45 81 1 c black
+45 82 1 c black
+45 93 1 c black
+45 96 1 c black
+46 56 1 c black
+46 57 1 c black
+46 92 1 c black
+47 92 1 c black
+49 94 1 c black
+52 79 1 c black
+52 94 1 c black
+53 69 1 c black
+54 94 1 c black
+55 93 1 c black
+55 94 1 c black
+56 66 1 c black
+56 72 1 c black
+56 93 1 c black
+57 66 1 c black
+57 93 1 c black
+59 80 1 c black
+59 86 1 c black
+60 64 1 c black
+61 65 1 c black
+61 100 1 c black
+63 72 1 c black
+64 76 1 c black
+64 85 1 c black
+65 90 1 c black
+65 94 1 c black
+66 76 1 c black
+66 89 1 c black
+68 74 1 c black
+68 82 1 c black
+68 93 1 c black
+68 94 1 c black
+69 72 1 c black
+69 91 1 c black
+70 84 1 c black
+72 73 1 c black
+72 75 1 c black
+73 93 1 c black
+74 89 1 c black
+76 87 1 c black
+77 78 1 c black
+78 90 1 c black
+79 84 1 c black
+79 95 1 c black
+80 90 1 c black
+81 93 1 c black
+82 98 1 c black
+84 87 1 c black
+90 94 1 c black
+90 99 1 c black
+93 94 1 c black
+93 99 1 c black
+94 95 1 c black
+94 96 1 c black
+95 95 1 c black

@@ -1,0 +1,98 @@
+*Network 
+*Vertices 50
+1 "1" ic gold		0.927481 	0.5	circle
+2 "2" ic gold		0.925473 	0.55375	circle
+3 "3" ic gold		0.75 	0.562977	circle
+4 "4" ic gold		0.898739 	0.657872	circle
+5 "5" ic gold		0.874046 	0.706107	circle
+6 "6" ic gold		0.519084 	0.513359	circle
+7 "7" ic gold		0.812622 	0.793571	circle
+8 "8" ic gold		0.748092 	0.799618	circle
+9 "9" ic gold		0.725191 	0.85687	circle
+10 "10" ic gold		0.681298 	0.887405	circle
+11 "11" ic gold		0.631679 	0.906489	circle
+12 "12" ic gold		0.580153 	0.919847	circle
+13 "13" ic gold		0.505725 	0.614504	circle
+14 "14" ic gold		0.471374 	0.927481	circle
+15 "15" ic gold		0.419641 	0.921259	circle
+16 "16" ic gold		0.366412 	0.906489	circle
+17 "17" ic gold		0.317402 	0.88804	circle
+18 "18" ic gold		0.301527 	0.811069	circle
+19 "19" ic gold		0.226638 	0.830438	circle
+20 "20" ic gold		0.208015 	0.770992	circle
+21 "21" ic gold		0.301527 	0.64313	circle
+22 "22" ic gold		0.175573 	0.677481	circle
+23 "23" ic gold		0.208015 	0.614504	circle
+24 "24" ic gold		0.40458 	0.522901	circle
+25 "25" ic gold		0.263359 	0.528626	circle
+26 "26" ic gold		0.26145 	0.5	circle
+27 "27" ic gold		0.232824 	0.465649	circle
+28 "28" ic gold		0.0839695 	0.39313	circle
+29 "29" ic gold		0.110687 	0.34542	circle
+30 "30" ic gold		0.124046 	0.291985	circle
+31 "31" ic gold		0.276718 	0.337786	circle
+32 "32" ic gold		0.187023 	0.206107	circle
+33 "33" ic gold		0.406489 	0.387405	circle
+34 "34" ic gold		0.270208 	0.137906	circle
+35 "35" ic gold		0.316794 	0.110687	circle
+36 "36" ic gold		0.366412 	0.0916031	circle
+37 "37" ic gold		0.417939 	0.0782443	circle
+38 "38" ic gold		0.473072 	0.0719913	circle
+39 "39" ic gold		0.522901 	0.125954	circle
+40 "40" ic gold		0.580153 	0.0782443	circle
+41 "41" ic gold		0.627863 	0.103053	circle
+42 "42" ic gold		0.667939 	0.139313	circle
+43 "43" ic gold		0.729008 	0.137405	circle
+44 "44" ic gold		0.772901 	0.167939	circle
+45 "45" ic gold		0.541985 	0.458015	circle
+46 "46" ic gold		0.687023 	0.362595	circle
+47 "47" ic gold		0.875808 	0.293398	circle
+48 "48" ic gold		0.896947 	0.341603	circle
+49 "49" ic gold		0.914122 	0.39313	circle
+50 "50" ic gold		0.585878 	0.48855	circle
+*Arcs 
+*Edges 
+1 27 1 c black
+3 22 1 c black
+3 33 1 c black
+3 40 1 c black
+5 23 1 c black
+6 24 1 c black
+6 27 1 c black
+6 31 1 c black
+6 50 1 c black
+8 24 1 c black
+8 31 1 c black
+9 11 1 c black
+9 30 1 c black
+9 37 1 c black
+10 22 1 c black
+12 31 1 c black
+13 21 1 c black
+13 23 1 c black
+13 26 1 c black
+13 28 1 c black
+13 36 1 c black
+14 31 1 c black
+16 18 1 c black
+18 25 1 c black
+20 25 1 c black
+20 39 1 c black
+21 50 1 c black
+23 43 1 c black
+24 42 1 c black
+24 45 1 c black
+25 46 1 c black
+25 49 1 c black
+26 44 1 c black
+26 45 1 c black
+27 39 1 c black
+27 41 1 c black
+29 33 1 c black
+29 42 1 c black
+31 41 1 c black
+32 33 1 c black
+33 45 1 c black
+35 48 1 c black
+43 43 1 c black
+46 50 1 c black
