@@ -1,9 +1,10 @@
 [Desktop Entry]
+X-SuSE-translate=true
 Name=SocNetV
 GenericName=Social Networks Analysis and Visualisation
 Comment=Social Networks Visualisation and Analysis.
-Exec=/usr/local/bin/socnetv
-Icon=/usr/local/share/pixmaps/socnetv.png
-Categories=Education;Science;Math;Qt; 
+Exec=socnetv
+Icon=socnetv
+Categories=Education;Science;Math;Qt;
 Terminal=false
 Type=Application

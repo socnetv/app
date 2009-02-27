@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #CHANGE THIS TO NEW VERSION NUMBERS
-VER=0.51;
+VER=0.52;
 echo $VER
 
 echo .
@@ -27,18 +27,36 @@ if [ -d /usr/src/packages/RPMS ];    then
         echo RPM development tree exists. Continuing.
 else
         echo Seems there is no RPM development tree. Enter sudo password to create it
-        sudo rpmdev-setuptree
+        sudo mkdir /usr/src/packages/BUILD  /usr/src/packages/RPMS  /usr/src/packages/SOURCES  /usr/src/packages/SPECS  /usr/src/packages/SRPMS
         echo  OK;
 fi
 
 
-if [ -f /usr/src/packages/RPMS/i586/*.rpm ];    then
-	echo Seems there are old rpms in /usr/src/packages/RPMS/i586/... Enter password to remove them:
-	su -c 'rm /usr/src/packages/RPMS/i586/*.rpm'
-        echo removed old rpm;
-else
-        echo No older rpms. Continuing....
-fi
+
+oldrpm=`find /usr/src/packages/RPMS -type f -name *.rpm`;
+for file in $oldrpm; do
+        if [ -f "$file" ];  then
+		echo old RPM $file;
+		echo Seems there are old rpms in /usr/src/packages/RPMS/... Enter password to remove them
+                sudo rm $file
+        else
+                echo No older RPM packages.Continuing....
+                exit;
+        fi
+done
+
+
+oldbz2=`find /usr/src/packages/SOURCES -type f -name *.bz2`;
+for file in $oldbz2; do
+        if [ -f "$file" ];  then
+                echo old bz2 $file;
+                echo Seems there are old rpms in /usr/src/packages/SOURCES/... Enter password to remove them
+                sudo rm $file
+        else
+                echo No older sources packages.Continuing....
+                exit;
+        fi
+done
 
 
 
@@ -50,7 +68,21 @@ echo ---------------------------------
 
 ./configure > /dev/null 2>&1
 make clean
-rm socnetv 
+if [ -f socnetv ];    then
+        echo Removing old SocNetV binary
+	rm socnetv 
+else
+        echo No older binary. Continuing....
+fi
+
+
+
+oldfiles=`find . -type f -name *~`;
+for i in $oldfiles; do
+        echo Removing $i;
+        rm $i;
+done;
+
 
 
 echo .
@@ -132,7 +164,7 @@ echo .
 
 echo Enter password to start package creation
 
-su -c  'rpmbuild -ba socnetv.spec'
+sudo rpmbuild -ba socnetv.spec
 
 
 if [ -f /usr/src/packages/RPMS/i586/*.rpm ];  	then
@@ -141,6 +173,8 @@ else
 	echo Sorry. No RPM package....
 	exit;
 fi
+
+
 
 echo .
 echo ---------------------------------

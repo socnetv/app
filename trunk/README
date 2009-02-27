@@ -105,5 +105,3 @@ Please, send any bug reports to dimitris.kalamaras@gmail.com.
 
 Packagers: please note that the SocNetV manual is copied to 
 $(DESTDIR)$(prefix)/doc/$(name)/manual
-
-

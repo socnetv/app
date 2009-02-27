@@ -5453,6 +5453,7 @@ void MainWindow::createTips(){
 void MainWindow::slotHelp(){
 
 	QString helpPath; 
+	bool manualFound = FALSE;
 	QDir d( QCoreApplication::applicationDirPath() );
 	qDebug()<< QCoreApplication::applicationDirPath().toAscii();
 
@@ -5463,34 +5464,51 @@ void MainWindow::slotHelp(){
 		if (d.dirName()=="bin") {
 			d.cdUp();
 		}
-		if (d.cd("./doc") ) {
+		if (d.cd("./manual") ) {
 			if ( d.exists("manual.html") ) {
 				helpPath=d.filePath("manual.html");
+				manualFound = TRUE;	
 			}
+			else 	{
+			      qDebug()<< "help file does not exist here.";
+			      manualFound = FALSE;
+		        }
 		}
-		if (d.cd("/usr/local/share/doc/socnetv/") ) {
+		if ( !manualFound && d.cd("/usr/local/share/doc/socnetv/") ) {			//for compile installation
 			if (d.exists("manual/")) d.cd("manual/");
 			if ( d.exists("manual.html") ) {
 				helpPath=d.filePath("manual.html");
 				qDebug()<< "path" << helpPath.toAscii();
+				manualFound = TRUE;	
 			}
 			else {
 				qDebug()<< "help file does not exist.";
+				manualFound = FALSE;
 			}
 		}
-               else if (d.cd("/usr/share/doc/socnetv/") ) {
+               if (!manualFound && d.cd("/usr/share/doc/socnetv/") ) {     //for Debian Ubuntu
 		       if (d.exists("manual/")) d.cd("manual/");
                        if ( d.exists("manual.html") ) {
                                 helpPath=d.filePath("manual.html");
+				manualFound = TRUE;	
+                        }
+                        else {
+                                qDebug("help file does not exist in /usr/share/doc/socnetv/.");
+				manualFound = FALSE;
+                        }
+                }             
+               if ( !manualFound && d.cd("/usr/share/doc/packages/socnetv/") ) {  //for opensuse file hierarchy
+		       if (d.exists("manual/")) d.cd("manual/");
+                       if ( d.exists("manual.html") ) {
+                                helpPath=d.filePath("manual.html");
+				manualFound = TRUE;	
                         }
                         else {
                                 qDebug("help file does not exist.");
                         }
                 }
 
-		else	{
-			qDebug("Cannot chdir to html");
-		}
+
 	}
         qDebug () << "help path is: " << helpPath.toAscii();
 	HTMLViewer *helpViewer = new HTMLViewer (helpPath, this);
