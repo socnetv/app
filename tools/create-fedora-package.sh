@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #CHANGE THIS TO NEW VERSION NUMBERS
-VER=0.51;
+VER=0.52;
 echo $VER
 
 echo .
@@ -10,6 +10,15 @@ echo   Fedora RPM Package Creator
 echo   Copyright Dimitris Kalamaras
 echo   License: GNU GPL v3
 echo ---------------------------------
+
+echo Testing if rpmlint and rpmdevtools are installed...
+ans=`rpm -qa | grep rpmlint `
+if [ $ans =  "rpmlint" ]; then
+        echo OK. Necessary tools are installed;
+else
+        echo No rpmlint or rpmdevtools. Enter sudo password to install them: 
+        sudo yum install rpmlint rpmdevtools  autoconf
+fi
 
 
 
@@ -37,24 +46,42 @@ else
         echo No older fedora directory. Continuing.
 fi
 
-echo Checking for old bz2s...
-if [ -f ~/rpmbuild/SOURCES/*.bz2 ];   then
-        echo Removing old bz2.
-	rm ~/rpmbuild/SOURCES/*.bz2
-else
-        echo No older bz2 file. Continuing.
 
-fi
+oldbz2=`find ~/rpmbuild/SOURCES/  -type f -name *.bz2`;
+for file in $oldbz2; do
+        if [ -f "$file" ];  then
+                echo old bz2 $file;
+                echo Seems there are old bz2 in ~... Enter password to remove them
+                sudo rm $file
+        else
+                echo No older bz2s.Continuing....
+                exit;
+        fi
+done
 
 
-echo Checking for old RPMs...
-if [ -f ~/rpmbuild/RPMS/*.rpm ];    then
-        echo Removing old rpms in ../RPMS/i586/
-        rm ~/rpmbuild/RPMS/*.rpm ;
+
+
+oldrpm=`find ~/rpmbuild/RPMS/  -type f -name *.rpm`;
+for file in $oldrpm; do
+        if [ -f "$file" ];  then
+                echo old RPM $file;
+                echo Seems there are old rpms in ~... Enter password to remove them
+                sudo rm $file
+        else
+                echo No older RPM packages.Continuing....
+                exit;
+        fi
+done
+
+
+
+echo Checking for old SPECs...
+if [ -f ~/rpmbuild/SPECS/*.spec ];    then
+        echo Removing old specs
 	rm ~/rpmbuild/SPECS/socnetv.spec ;
-        echo removed old rpm;
 else
-        echo No older rpms. Continuing....
+        echo No older specs. Continuing....
 fi
 
 

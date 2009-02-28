@@ -5507,6 +5507,18 @@ void MainWindow::slotHelp(){
                                 qDebug("help file does not exist.");
                         }
                 }
+	      QString fedoraPath = "/usr/share/doc/socnetv-" + VERSION;
+               if ( !manualFound && d.cd(fedoraPath) ) {  //for Fedora file hierarchy
+		       if (d.exists("manual/")) d.cd("manual/");
+                       if ( d.exists("manual.html") ) {
+                                helpPath=d.filePath("manual.html");
+				manualFound = TRUE;	
+                        }
+                        else {
+                                qDebug("help file does not exist.");
+                        }
+                }
+
 
 
 	}
