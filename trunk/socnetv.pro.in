@@ -1,3 +1,11 @@
+TEMPLATE = app
+CONFIG  += qt thread warn_on @ac_debug@
+LANGUAGE = C++
+
+# support
+QT += webkit
+QT += xml
+
 INCPATH += ./src
 HEADERS += src/backgrcircle.h \
            src/graphicswidget.h \
@@ -30,24 +38,24 @@ SOURCES += src/backgrcircle.cpp \
            src/vertex.cpp \
            src/parser.cpp
 
-RESOURCES = src/src.qrc
 
-win32 {
-     RC_FILE = src/icon.rc
-}
 
-TEMPLATE = app
-CONFIG  += qt thread warn_on @ac_debug@
-LANGUAGE = C++
+
+
+
+# Extra optimization flags
+QMAKE_CXXFLAGS += @ac_cflags@
 
 #LIBS    += @ac_libs@
 INCPATH += @ac_incpath@
 
-# support
-QT += webkit
 
-# Extra optimization flags
-QMAKE_CXXFLAGS += @ac_cflags@
+RESOURCES = src/src.qrc
+win32 {
+     RC_FILE = src/icon.rc
+}
+
+TRANSLATIONS    = socnetv_es.ts 
 
 
 

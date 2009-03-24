@@ -33,6 +33,7 @@ using namespace std;
 #include <QPointF>
 #include <QMutex>
 #include <QObject>
+#include <QtXml>	
 
 
 /** 	
@@ -53,6 +54,12 @@ public:
 	int loadDL();
 
 	void dotProperties(QString str, int &nValue, QString &label, QString &shape, QString &color, QString &fontName, QString &fontColor );
+	void readGraphML (QXmlStreamReader &);
+	void readGraphMLGraphProperties(QXmlStreamReader &);
+	void readGraphMLNodeProperties (QXmlStreamReader &);
+	void readGraphMLEdgeProperties (QXmlStreamReader &);
+	void readGraphMLUnknownElement (QXmlStreamReader &);
+	void readGraphMLKeys(QXmlStreamReader &);
 signals:
 	void createNode(int,int,QString, QString, QString, QPointF, QString, bool);
 	void createEdge (int, int, float, QString, bool, bool, bool);
@@ -62,7 +69,11 @@ protected:
 	void run();
 private: 
 	QMutex mutex;
+	QMap<QString, int> nodeNumber;
+	QMap<QString, QString> keyFor, keyName, keyType, keyDefaultValue ;
+	QXmlStreamReader *xml;
 	QString fileName, networkName, initNodeColor, initLinkColor, initNodeShape;
+  
 	int gwWidth, gwHeight, totalLinks, aNodes, initNodeSize, source, target;
 	bool initShowLabels;
 	bool undirected, arrows, bezier;

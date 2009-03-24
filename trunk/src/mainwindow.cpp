@@ -198,7 +198,7 @@ void MainWindow::initActions(){
 	fileOpen = new QAction(QIcon(":/images/open.png"), tr("&Open"), this);
 	fileOpen->setShortcut(tr("Ctrl+O"));
 	fileOpen->setToolTip(tr("Open network (Ctrl+O)"));
-	fileOpen->setStatusTip(tr("Opens a a file of an existing network"));
+	fileOpen->setStatusTip(tr("Opens a file of an existing network"));
 	fileOpen->setWhatsThis(tr("Open\n\nOpens a file of an existing network"));
 	connect(fileOpen, SIGNAL(activated()), this, SLOT(slotChooseFile()));
 
@@ -4820,7 +4820,7 @@ void MainWindow::slotCentralityEccentricity(){
 	f.close();
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
-	ed->setWindowTitle("Eccentricity Centralities saved as: " + tempFileNameNoPath.last());
+	ed->setWindowTitle(tr("Eccentricity Centralities saved as: ") + tempFileNameNoPath.last());
 	ed->show();
 	QApplication::restoreOverrideCursor();
 
@@ -5297,7 +5297,7 @@ void MainWindow::slotAllNumbersColor(){
 			jimNumber->setDefaultTextColor(textColor);
 		}
 	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage(tr("Ready. ") ,statusBarDuration);
+	statusBar()->showMessage(tr("Numbers' colors changed. Ready. ") ,statusBarDuration);
 }
 
 
@@ -5415,7 +5415,7 @@ void MainWindow::slotViewStatusBar(bool toggle) {
 */
 void MainWindow::slotTips() {
 	int randomTip=rand()%tipsCounter; //Pick a tip.
-	QMessageBox::about( this, "Tip Of The Day", tips[randomTip]);
+	QMessageBox::about( this, tr("Tip Of The Day"), tips[randomTip]);
 }
 
 
@@ -5424,22 +5424,22 @@ void MainWindow::slotTips() {
 	Creates our tips.
 */
 void MainWindow::createTips(){
-	tips+="You can add a new node by double-clicking on the scene.";	
-	tips+="You can add a new node by clicking on Add button.";
-	tips+="You can remove a node by clicking on Remove button.";		
-	tips+="You can rotate the network by selecting a new angle on the dock.";	
-	tips+="You can add a new link between two nodes, by middle-clicking (or pressing both mouse buttons simultanesously) on the first and then on the second node.";	
-	tips+="You can remove a node by right-clicking on it and selecting Remove.";
-	tips+="You can change background color (from the menu Edit > Colors).";
-	tips+="Nodes can have the colors of your choice. Just right-click on a node and then select > Options > Change Color. You can select every color supported by the X.org pallette.";
-	tips+="The dock on the left shows information about the network (nodes, edges, nodes with inlinks and nodes with outLinks) as well as information about any node you clicked on.";
-	tips+="You can move a node easily by dragging it with your mouse.";
-	tips+="SocNetV can save the positions of the nodes in a network, only if you save it in Pajek format.";
-	tips+="You can apply layout algorithms on the network from the menu Layout or by clicking on the dock checkboxes";
-	tips+="You can change the label of node by right-clicking on it, and selecting Options > Change Label.";
-	tips+="The basic operations of SocNetV are available from the dock menu on the left, or by right-clicking on a node or a link.";
-	tips+="Node information is displayed on the Status bar, when you left-click on it.";
-	tips+="Link information is displayed on the Status bar, when you left-click on it.";
+	tips+=tr("You can add a new node by double-clicking on the scene.");	
+	tips+=tr("You can add a new node by clicking on Add button.");
+	tips+=tr("You can remove a node by clicking on Remove button.");		
+	tips+=tr("You can rotate the network by selecting a new angle on the dock.");	
+	tips+=tr("You can add a new link between two nodes, by middle-clicking (or pressing both mouse buttons simultanesously) on the first and then on the second node.");	
+	tips+=tr("You can remove a node by right-clicking on it and selecting Remove.");
+	tips+=tr("You can change background color (from the menu Edit > Colors).");
+	tips+=tr("Nodes can have the colors of your choice. Just right-click on a node and then select > Options > Change Color. You can select every color supported by the X.org pallette.");
+	tips+=tr("The tabs on the left dock show information about the network (nodes, edges, density, etc) as well as information about any node you clicked on (inDegrees, outDegrees, clustering).");
+	tips+=tr("You can move a node easily by dragging it with your mouse.");
+	tips+=tr("SocNetV can save the positions of the nodes in a network, if you save it in Pajek/GraphML format.");
+	tips+=tr("You can apply layout algorithms on the network from the menu Layout or by clicking on the Dock > Layout tab checkboxes");
+	tips+=tr("You can change the label of node by right-clicking on it, and selecting Options > Change Label.");
+	tips+=tr("All basic operations of SocNetV are available from the dock on the left, or by right-clicking on a node or a link.");
+	tips+=tr("Node information is displayed on the Status bar, when you left-click on it.");
+	tips+=tr("Link information is displayed on the Status bar, when you left-click on it.");
 
    	tipsCounter = 16;
 }

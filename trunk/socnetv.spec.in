@@ -138,6 +138,7 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 %{_bindir}/%{name}
 %{_datadir}/applications/%{name}.desktop
 %{_datadir}/pixmaps/%{name}.png
+%{_mandir}/man8/*
 %doc ChangeLog NEWS README TODO COPYING AUTHORS INSTALL manual
 
 

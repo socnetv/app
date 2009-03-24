@@ -82,8 +82,7 @@ int Parser::loadDL(){
 		if ( str.startsWith("%") || str.startsWith("#")  || str.isEmpty() ) continue;  //neglect comments
 	
 		if ( (lineCounter == 1) &&  (!str.startsWith("DL",Qt::CaseInsensitive)  ) ) {  
-			//this is not a DL file. Abort
-			qDebug("Parser-loadDL(): not a DL file. Aborting!");
+			qDebug("*** Parser-loadDL(): not a DL file. Aborting!");
 			file.close();
 			return -1;
 		}
@@ -191,7 +190,7 @@ int Parser::loadPajek(){
 			qDebug("Parser-loadPajek(): reading headlines");
 			if ( (lineCounter == 1) &&  (!str.contains("network",Qt::CaseInsensitive) && !str.contains("vertices",Qt::CaseInsensitive) ) ) {  
 				//this is not a pajek file. Abort
-				qDebug("Parser-loadPajek(): not a pajek file. Aborting!");
+				qDebug("*** Parser-loadPajek(): Not a Pajek file. Aborting!");
 				file.close();
 				return -1;
 			}
@@ -528,13 +527,16 @@ int Parser::loadAdjacency(){
 		str= ts.readLine() ;
 		str=str.simplified();  // transforms "/t", "  ", etc to plain " ".
 		if (str.isEmpty() ) continue;	
-		if ( str.contains("vertices",Qt::CaseInsensitive) || (str.contains("network",Qt::CaseInsensitive) || str.contains("graph",Qt::CaseInsensitive)  || str.contains("digraph",Qt::CaseInsensitive) ||  str.contains("DL",Qt::CaseInsensitive) || str.contains("list",Qt::CaseInsensitive)) || str.contains("graphml",Qt::CaseInsensitive) || str.contains("xml",Qt::CaseInsensitive)  )
- 			 return -1;    //  this is not a adjacency matrix file
+		if ( str.contains("vertices",Qt::CaseInsensitive) || (str.contains("network",Qt::CaseInsensitive) || str.contains("graph",Qt::CaseInsensitive)  || str.contains("digraph",Qt::CaseInsensitive) ||  str.contains("DL",Qt::CaseInsensitive) || str.contains("list",Qt::CaseInsensitive)) || str.contains("graphml",Qt::CaseInsensitive) || str.contains("xml",Qt::CaseInsensitive)  ) {
+			qDebug()<< "*** Parser:loadAdjacency(): Not an Adjacency-formatted file. Aborting!!";
+			file.close();		
+ 		 	return -1;    
+		}
 
 		lineElement=str.split(" ");
 		if (i == 0 ) {
 			aNodes=lineElement.count();
-			qDebug("Parser-loadPajek(): There are %i nodes in this file", aNodes);		
+			qDebug("Parser-loadAdjacency(): There are %i nodes in this file", aNodes);		
 			for (j=0; j<aNodes; j++) {
 				qDebug("Parser-loadAdjacency(): Calling createNode() for node %i", j+1);
 				randX=rand()%gwWidth;
@@ -589,316 +591,144 @@ int Parser::loadAdjacency(){
 
 
 /**
-	Tries to load a file as GraphML (not GML) formatted network. If not it returns -1
+	Tries to load a file as GraphML (not GML) formatted network. 
+	If not it returns -1
 */
 int Parser::loadGraphML(){
 	qDebug("Parser: loadGraphML()");
+	aNodes=1;
+	nodeNumber.clear();
 	QFile file ( fileName );
 	if ( ! file.open(QIODevice::ReadOnly )) return -1;
-	QTextStream ts( &file );
 
-	QString str, temp, id, tgt, name, type, nodecolor, nodelabel, nodeshape, label_visible, posx, posy ;
-	int fileLine=0, start=0, end=0;
-	QMap<QString, QString> key_for, key_name, key_type;
-	QMap<QString, int> nodeNumber;
-	bool node_flag=FALSE, edge_flag=FALSE, key_flag=FALSE, data_flag=FALSE, shapenode_flag=FALSE, check1;
-
-	aNodes=0;
-
-	while (!ts.atEnd() )   {
-		str= ts.readLine() ;
-		fileLine++;
-		qDebug ("Reading fileLine %i: ", fileLine);
-		qDebug()<<str.toAscii();
-		if (str.isEmpty() ) continue;	
-
-		if ( str.contains("<!",Qt::CaseInsensitive) ) { 	 //comments
-			continue;
-		}
-		if ( fileLine == 1  && ! str.contains("?xml", Qt::CaseInsensitive) ) {
-			qDebug ("Not GraphML. Aborting.");
-			return -1;  // Abort
-		}
-		else if  ( fileLine == 2 && !str.contains("graphml", Qt::CaseInsensitive) ) {
-			qDebug ("Not GraphML. Aborting.");
-			return -1;  // Abort
-		}
-		
-		
-		if ( str.contains("<key",Qt::CaseInsensitive) ) { 	 //key declarations
-			key_flag=true;
-			//find id
-// 			qDebug ("find ID");
-			start=str.indexOf("id");
-// 			qDebug("ID is at = %i ",start);
-			start=str.indexOf("\"", start+1);
-// 			qDebug("after \" at %i remains: " + str.right(str.size()-start).toAscii(), start );
-			end=str.indexOf("\"", start+1);
-// 			qDebug("end \"= %i ",end);
-			id=str.mid(start+1, end-start-1);  //keep whatever is inside 
-			qDebug()<<"key ID: " << id.toAscii() ;
-			str=str.right(str.size()-end-1);
-//			qDebug("remains: " + str.toAscii() );
-
-			//find for
-// 			qDebug ("find FOR");
-			start=str.indexOf("for");
-//			qDebug("FOR is at = %i ",start);
-			start=str.indexOf("\"", start+1);
-// 			qDebug("after \" at %i remains: " + str.right(str.size()-start).toAscii(), start );
-			end=str.indexOf("\"", start+1);
-// 			qDebug("end \"= %i ",end);
-			tgt=str.mid(start+1, end-start-1);  //keep whatever is inside 
-			key_for[ id ] = tgt;
-			qDebug()<<"key FOR: " << key_for[ id ].toAscii() ;
-			str=str.right(str.size()-end-1);
-//			qDebug("remains: " + str.toAscii() );
-
-
-			//find attr.name
-			if ( !str.contains("attr.name",Qt::CaseInsensitive) ) continue; 	 //comments
-// 			qDebug ("find ATTR.NAME");
-			start=str.indexOf("attr.name");
-//			qDebug("ATTR is at = %i ",start);
-			start=str.indexOf("\"", start+1);
-//			qDebug("after \" at %i remains: " + str.right(str.size()-start).toAscii(), start );
-			end=str.indexOf("\"", start+1);
-//			qDebug("end \"= %i ",end);
-			name=str.mid(start+1, end-start-1);  //keep whatever is inside 
-			key_name[ id ] = name;
-			qDebug()<<"key ATTR.name: " << key_name[ id ].toAscii() ;
-			str=str.right(str.size()-end-1);
-//			qDebug("remains: " + str.toAscii() );
-
-			//find attr.type
-			if ( !str.contains("attr.type",Qt::CaseInsensitive) ) continue; 	 //comments
-//			qDebug ("find ATTR.TYPE");
-			start=str.indexOf("attr.type");
-//			qDebug("ATTR is at = %i ",start);
-			start=str.indexOf("\"", start+1);
-//			qDebug("after \" at %i remains: " + str.right(str.size()-start).toAscii(), start );
-			end=str.indexOf("\"", start+1);
-//			qDebug("end \"= %i ",end);
-			name=str.mid(start+1, end-start-1);  //keep whatever is inside 
-			key_type[ id ] = name;
-			qDebug()<<"key ATTR.type: " << key_type[ id ].toAscii() ;
-			str=str.right(str.size()-end-1);
-// 			qDebug("remains: " + str.toAscii() );
-		}
-		if ( str.contains("</key",Qt::CaseInsensitive) ) { 	 //key declarations
-			key_flag=false;
-		}
-		if ( str.contains("<graph",Qt::CaseInsensitive) ) { 	 //key declarations
-		}
-
-		if ( str.contains("<node",Qt::CaseInsensitive) ) { 	 //start node declarations
-			node_flag=true;
-			qDebug("a node is here");
-			aNodes++;
-			if ( str.contains("id",Qt::CaseInsensitive) ) { 	 //start id declarations
-				//find id
-				start=str.indexOf("id");
-	// 			qDebug("ID is at = %i ",start);
-				start=str.indexOf("\"", start+1);
-	// 			qDebug("after \" at %i remains: " + str.right(str.size()-start).toAscii(), start );
-				end=str.indexOf("\"", start+1);
-	// 			qDebug("end \"= %i ",end);
-				id=str.mid(start+1, end-start-1);  //keep whatever is inside 
-				qDebug()<<"node ID: " << id.toAscii() ;
-				str=str.right(str.size()-end-1);
-	//			qDebug("remains: " + str.toAscii() );
-				nodeNumber[id]=aNodes;
-			}
-			if ( str.contains("/>",Qt::CaseInsensitive)  )
-			node_flag = false;
-		}
-
-		if ( node_flag && str.contains("<y:ShapeNode",Qt::CaseInsensitive) ) { 	 //start shapenode declarations
-			shapenode_flag=true;	
-			qDebug ("node shape starts here");
-			if ( str.contains("/>",Qt::CaseInsensitive)  )
-				shapenode_flag= false;
-		}
-		if ( node_flag && str.contains("</y:ShapeNode",Qt::CaseInsensitive) ) { 	 //start shapenode declarations
-			shapenode_flag=false;	 
-			qDebug ("node shape ends here");
-		}
-		if ( shapenode_flag && str.contains("y:Geometry",Qt::CaseInsensitive) ) { 	 //start shapenode declarations
-			qDebug ("node geometry ");
-			if ( str.contains("x",Qt::CaseInsensitive) && str.contains("y",Qt::CaseInsensitive) )  {
-				start=str.indexOf("x");
-				start=str.indexOf("\"", start+1);
-				end=str.indexOf("\"", start+1);
-				name=str.mid(start+1, end-start-1);  //keep whatever is inside 
-				posx = name;
-				qDebug()<<"x: " << posx.toAscii() ;
-				str=str.right(str.size()-end-1);
-
-				start=str.indexOf("y");
-				start=str.indexOf("\"", start+1);
-				end=str.indexOf("\"", start+1);
-				name=str.mid(start+1, end-start-1);  //keep whatever is inside 
-				posy= name;
-				qDebug()<<"y: " << posy.toAscii() ;
-				randX=posx.toDouble(&check1);
-				randY=posy.toDouble(&check1);
-				qDebug("x: %f,  y: %f ", randX, randY );
-				str=str.right(str.size()-end-1);
-
-			}
-
-		}
-		if ( shapenode_flag && str.contains("y:Fill",Qt::CaseInsensitive) ) { 	 //start shapenode declarations
-			qDebug ("node fill ");
-			if ( str.contains("color",Qt::CaseInsensitive) )  {
-				start=str.indexOf("color");
-				start=str.indexOf("\"", start+1);
-				end=str.indexOf("\"", start+1);
-				name=str.mid(start+1, end-start-1);  //keep whatever is inside 
-				nodecolor = name;
-				qDebug()<<"color: " << nodecolor.toAscii() ;
-				str=str.right(str.size()-end-1);
-			}
-
-		}
-		if ( shapenode_flag && str.contains("y:BorderStyle",Qt::CaseInsensitive) ) { 	 //start shapenode declarations
-				qDebug ("node borderstyle ");
-		}
-		if ( shapenode_flag && str.contains("<y:NodeLabel",Qt::CaseInsensitive) ) { 	 //start shapenode declarations
-			qDebug ("nodelabel");
-			//find label
-			if ( str.contains("visible",Qt::CaseInsensitive) )  {
-				start=str.indexOf("visible");
-				start=str.indexOf("\"", start+1);
-				end=str.indexOf("\"", start+1);
-				name=str.mid(start+1, end-start-1);  //keep whatever is inside 
-				label_visible = name;
-				qDebug()<<"visible: " << label_visible.toAscii() ;
-				str=str.right(str.size()-end-1);
-			}
-			start=str.indexOf(">", start+1);
-			end=str.indexOf("<", start+1);
-			name=str.mid(start+1, end-start-1);  //keep whatever is inside 
-			nodelabel=name;
-			qDebug()<<"nodelabel: " << nodelabel.toAscii() ;
-		
+	QXmlStreamReader *xml = new QXmlStreamReader();
+	xml->setDevice(&file);
 	
-		}
-		if ( shapenode_flag && str.contains("<y:Shape",Qt::CaseInsensitive) ) { 	 //start shapenode declarations
-			//find shape
-			qDebug ("nodeshape");
-			if ( !str.contains("type",Qt::CaseInsensitive) ) continue; 	 //comments
-			start=str.indexOf("type");
-			start=str.indexOf("\"", start+1);
-			end=str.indexOf("\"", start+1);
-			name=str.mid(start+1, end-start-1);  //keep whatever is inside 
-			if (name == "rectangle") 
-				nodeshape = "box";
-			else
-				nodeshape = name;
-
-			qDebug()<<"type: " << nodeshape.toAscii() ;
-		}
-		
-		if ( str.contains("</node",Qt::CaseInsensitive) ) { 	 //end node declarations
-			node_flag=false;
-			emit createNode(aNodes, initNodeSize, nodecolor, nodelabel, nodecolor, QPointF(randX,randY), nodeshape, initShowLabels);
-			
-		}
-
-		if ( str.contains("<edge",Qt::CaseInsensitive) ) { 	 //key declarations
-			edge_flag=true;
-			qDebug("an edge is here");
-
-			if ( str.contains("id",Qt::CaseInsensitive) ) { 	 //start id declarations
-				//find id
-				start=str.indexOf("id");
-	// 			qDebug("ID is at = %i ",start);
-				start=str.indexOf("\"", start+1);
-	// 			qDebug("after \" at %i remains: " + str.right(str.size()-start).toAscii(), start );
-				end=str.indexOf("\"", start+1);
-	// 			qDebug("end \"= %i ",end);
-				id=str.mid(start+1, end-start-1);  //keep whatever is inside 
-				qDebug()<<"edge ID: " << id.toAscii() ;
-				str=str.right(str.size()-end-1);
-	//			qDebug("remains: " + str.toAscii() );
+	while (!xml->atEnd()) {
+		xml->readNext();
+		qDebug()<< " loadGraphML(): xml->token"<< xml->tokenString();
+		if (xml->isStartElement()) {
+			qDebug()<< " loadGraphML(): element name "<< xml->name()<<" version " << xml->attributes().value("version")  ;
+			if (xml->name() == "graphml") {
+				qDebug()<< " loadGraphML(): OK. NamespaceUri is "<< xml->namespaceUri();
+				readGraphML(*xml);				
 			}
-			if ( !str.contains("source",Qt::CaseInsensitive) || !str.contains("target",Qt::CaseInsensitive) )
-				continue;
-			start=str.indexOf("source");
-// 			qDebug("ID is at = %i ",start);
-			start=str.indexOf("\"", start+1);
-// 			qDebug("after \" at %i remains: " + str.right(str.size()-start).toAscii(), start );
-			end=str.indexOf("\"", start+1);
-// 			qDebug("end \"= %i ",end);
-			name=str.mid(start+1, end-start-1);  //keep whatever is inside 
-			source=nodeNumber[name];
-			qDebug()<<"edge source "<<source;
-			str=str.right(str.size()-end-1);
-
-			start=str.indexOf("target");
-// 			qDebug("ID is at = %i ",start);
-			start=str.indexOf("\"", start+1);
-// 			qDebug("after \" at %i remains: " + str.right(str.size()-start).toAscii(), start );
-			end=str.indexOf("\"", start+1);
-// 			qDebug("end \"= %i ",end);
-			name=str.mid(start+1, end-start-1);  //keep whatever is inside 
-			target=nodeNumber[name];
-			qDebug()<<"edge target "<< target;
-			str=str.right(str.size()-end-1);
-			totalLinks++;
-
-			if ( str.contains("/>",Qt::CaseInsensitive)  )
-				edge_flag = false;
-		}
-		//if (edge_flag &&
-
-		if ( str.contains("</edge",Qt::CaseInsensitive) ) { 	 //key declarations
-			edge_flag=false;
-			emit createEdge(source, target, 1, initLinkColor, undirected, arrows, bezier);
-
-		}
-		if ( str.contains("<data",Qt::CaseInsensitive) ) { 	 //start node declarations
-			data_flag=true;
-			if ( str.contains("key",Qt::CaseInsensitive) ) { 	 //start id declarations
-				//find id
-				start=str.indexOf("key");
-	// 			qDebug("ID is at = %i ",start);
-				start=str.indexOf("\"", start+1);
-	// 			qDebug("after \" at %i remains: " + str.right(str.size()-start).toAscii(), start );
-				end=str.indexOf("\"", start+1);
-	// 			qDebug("end \"= %i ",end);
-				id=str.mid(start+1, end-start-1);  //keep whatever is inside 
-				qDebug()<<"key: "<< id.toAscii() ;
-				str=str.right(str.size()-end-1);
-	//			qDebug("remains: " + str.toAscii() );
-				start=str.indexOf(">", start+1);
-				end=str.indexOf("<", start+1);
-				name=str.mid(start+1, end-start-1);  //keep whatever is inside 
-				if ( node_flag) {
-					if (key_name[id] == "color") {
-						nodecolor=name;	
-						qDebug()<<"nodecolor " << nodecolor.toAscii() ;	
-					}
-				}
-				else if (edge_flag) {
-
-				}
-
-
+			else {
+				xml->raiseError(QObject::tr(" loadGraphML(): The file is not an GraphML version 1.0 file."));
+				qDebug()<< "*** loadGraphML(): Error in startElement  ";
+ 				return -1;
 			}
-
 		}
-		if ( str.contains("</data",Qt::CaseInsensitive) ) { 	 //end node declarations
-			data_flag=false;
-		}
-
-
 	}
 	emit fileType(4, networkName, aNodes, totalLinks);
 	return 1;
 }
 
+
+//Called from loadGraphML
+void Parser::readGraphML(QXmlStreamReader &xml){
+	qDebug()<< " Parser: readGraphML()";
+	Q_ASSERT(xml.isStartElement() && xml.name() == "graph");
+
+	while (!xml.atEnd()) {
+		xml.readNext();
+		if (xml.isStartElement()) {
+			qDebug()<< "  readGraphML(): element name "<< xml.name() ;
+			if (xml.name() == "graph")
+				readGraphMLGraphProperties(xml);
+			else if (xml.name() == "key")
+				readGraphMLKeys(xml);
+			else if (xml.name() == "node")
+				readGraphMLNodeProperties(xml);
+			else if (xml.name() == "edge")
+				readGraphMLEdgeProperties(xml);
+			else
+				readGraphMLUnknownElement(xml);
+		}
+	}
+	
+}
+
+
+void Parser::readGraphMLKeys(QXmlStreamReader &xml){
+	qDebug()<< "   Parser: readGraphMLKeys()";
+	QString id = xml.attributes().value("id").toString();
+ 	qDebug()<< "    id "<< id;
+	QString what = xml.attributes().value("for").toString();
+	keyFor [id] = what;
+	qDebug()<< "    for "<< what;
+	QString name =xml.attributes().value("attr.name").toString();
+	keyName [id] = name;
+	qDebug()<< "    attr. name "<< name;
+	QString type=xml.attributes().value("attr.type").toString();
+	keyType [id] = type;
+	qDebug()<< "    type "<< type;
+//	if (xml.isEndElement())
+
+
+	xml.readNext();
+	if (xml.name() == "default") {
+		QString value=xml.readElementText();
+		keyDefaultValue [id] = value;
+	}
+}
+
+
+void Parser::readGraphMLGraphProperties(QXmlStreamReader &xml){
+	qDebug()<< "   Parser: readGraphMLGraphProperties()";
+	qDebug()<< "    edgedefault "<< xml.attributes().value("edgedefault");
+}
+
+
+
+void Parser::readGraphMLNodeProperties(QXmlStreamReader &xml){
+	qDebug()<<"   Parser: readGraphMLNodeProperties()";
+	QString  id = (xml.attributes().value("id")).toString();
+	qDebug()<<"    node id "<<  id << " index " << aNodes;
+
+	nodeNumber[id]=aNodes;
+	QString color = initNodeColor;
+	QString shape = initNodeShape;
+	randX=rand()%gwWidth;
+	randY=rand()%gwHeight;
+
+	emit createNode(aNodes, initNodeSize, color, id, color, QPointF(randX,randY), shape, initShowLabels);
+	
+	aNodes++;
+}
+
+
+void Parser::readGraphMLEdgeProperties(QXmlStreamReader &xml){
+	qDebug()<< "  Parser: readGraphMLEdgeProperties()";
+	QString s = xml.attributes().value("source").toString();
+	QString t = xml.attributes().value("target").toString();
+	if ( (xml.attributes().value("directed")).toString() == "false") 
+		undirected = "true";
+	source = nodeNumber [s];
+	target = nodeNumber [t];
+	qDebug()<< "   edge source "<< s << " num "<< source;
+	qDebug()<< "   edge target "<< t << " num "<< target;
+
+	emit createEdge(source, target, 1, initLinkColor, undirected, arrows, bezier);	
+}
+
+
+
+
+void Parser::readGraphMLUnknownElement(QXmlStreamReader &xml) {
+	qDebug()<< "Parser: readGraphMLUnknownElement()";
+    Q_ASSERT(xml.isStartElement());
+
+    while (!xml.atEnd()) {
+        xml.readNext();
+
+        if (xml.isEndElement())
+            break;
+
+        if (xml.isStartElement())
+            readGraphMLUnknownElement(xml);
+    }
+}
 
 /**
 	Tries to load a file as GML formatted network. If not it returns -1
@@ -919,8 +749,12 @@ int Parser::loadGML(){
 		qDebug ()<<"Reading fileLine "<< fileLine;
 		if ( fileLine == 1 ) {
 			qDebug ()<<"Reading fileLine = "<< fileLine;
-			if ( !str.startsWith("graph", Qt::CaseInsensitive) ) 
-				return -1;  // Abort
+			if ( !str.startsWith("graph", Qt::CaseInsensitive) ) {
+				qDebug() << "*** Parser:loadGML(): Not an GML-formatted file. Aborting";
+				file.close();
+				return -1;  
+			}
+
 		}
 		if ( str.startsWith("directed",Qt::CaseInsensitive) ) { 	 //key declarations
 		}
@@ -968,9 +802,11 @@ int Parser::loadDot(){
 		str=str.trimmed();
 		if ( fileLine == 1 ) {
 			qDebug ()<<"Reading fileLine = " <<fileLine;
-			if ( str.contains("vertices",Qt::CaseInsensitive) || (str.contains("network",Qt::CaseInsensitive) || str.contains("DL",Qt::CaseInsensitive) || str.contains("list",Qt::CaseInsensitive)) || str.startsWith("<graphml",Qt::CaseInsensitive) || str.startsWith("<?xml",Qt::CaseInsensitive)) 
-			 return -1;    
-
+			if ( str.contains("vertices",Qt::CaseInsensitive) || (str.contains("network",Qt::CaseInsensitive) || str.contains("DL",Qt::CaseInsensitive) || str.contains("list",Qt::CaseInsensitive)) || str.startsWith("<graphml",Qt::CaseInsensitive) || str.startsWith("<?xml",Qt::CaseInsensitive)) {
+				qDebug() << "*** Parser:loadDot(): Not an GraphViz -formatted file. Aborting";
+				file.close();				
+				return -1;
+			}
 			if ( str.contains("digraph", Qt::CaseInsensitive) ) {
 				qDebug("This is a digraph");
 				//symmetricAdjacency=FALSE; 
@@ -988,7 +824,7 @@ int Parser::loadDot(){
 				continue;
 			}
 			else {
-				qDebug()<<" Not a GraphViz file. Abort: dot format can only start with \" (di)graph netname {\"";
+				qDebug()<<" *** Parser:loadDot(): Not a GraphViz file. Abort: dot format can only start with \" (di)graph netname {\"";
 				return -1;  				
 			}
 			
