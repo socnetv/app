@@ -1,22 +1,55 @@
 /* Basic tags */
 
 .text {
-font: normal 13px Sans;
+font: normal 12px sans-serif;
 }
 
+.text lititle {
+font: bold 12px sans-serif;
+margin-bottom: 0;
+margin: 0;
+padding-bottom: 0;
+}
+
+.text li {
+font: normal 12px sans-serif;
+margin-bottom: 0;
+margin-bottom: 2px;
+padding-bottom: 2px;
+}
+
+
+
+.text a{
+color: #2d2b8b;
+text-decoration: none;
+border-bottom: 1px dashed black;
+}
+
+.text a:visited{
+color: #2d2b1f;
+}
+
+.text a:hover {
+background-color:   #DBFF6C ; // #aaaa00;
+color: #2d2bff;
+}
+
+
+
 .mainheading {
-	font: bold 11px Verdana;
-	FONT-WEIGHT: bold; FONT-SIZE: 12pt; COLOR: #336699; FONT-FAMILY: arial
+	font: bold 11px sans-serif;
+	COLOR: #336699; 
 }
 
 .basictab ul{
 margin: 4px;
 padding: 3px 0;
 margin-left: 0;
-font: bold 12px Verdana;
+font: bold 11px sans-serif;
 border-bottom: 1px solid gray;
 list-style-type: none;
-text-align: left; /*set to left, center, or right to align the menu as desired*/
+text-align: left; 
 }
 
 .basictab li{
@@ -50,63 +83,10 @@ text-decoration: underline;
 }
 
 
-.tabcontent{
-display:none;
-width:55%; /*width of 2nd level content*/
-height:0.6em; /*height of 2nd level content. Set to largest's content height to avoid jittering.*/
-color: gray;
-font: bold 10px Arial;
-}
-
-
-
-.tabcontent ul{
-margin: 4px;
-padding: 3px 0;
-margin-left: 0;
-font: bold 10px Verdana;
-border-bottom: 0px solid gray;
-list-style-type: none;
-text-align: center; /*set to left, center, or right to align the menu as desired*/
-}
-
-.tabcontent li{
-display: inline;
-margin: 0;
-}
-
-.tabcontent li a{
-text-decoration: none;
-padding: 3px 7px;
-margin-right: 3px;
-border: 1px solid gray;
-border-bottom: none;
-background-color: #d4e5fe ; /* #f6ffd5 */
-color: #2d2b2b;
-
-}
-
-
-.tabcontent li a:visited{
-color: #2d2b2b;
-}
-
-.tabcontent li a:hover, .basictab li a.current{
-background-color:   #DBFF6C;
-color: black;
-}
-
-.tabcontent li a:active{
-color: black;
-text-decoration: underline;
-}
-
-
-
 
 .caption {
 color: gray;
-font: normal 8px Sans;
+font: normal 8px sans-serif;
 background-color: #f6ffd5;
 border: 1px solid lightgray;
 text-align: center;
@@ -123,17 +103,16 @@ background-color: #f6ffd5;
 
 
 
-
-
 .dltext {
 display: normal;
 text-decoration: none;
 }
 
+
 .dltext ul{
 margin-top: 10px;
 margin-left: 0px;
-font: normal 12px Sans;
+font: normal 12px sans-serif;
 list-style-type: none;
 text-align: left; 
 }
@@ -147,7 +126,7 @@ margin-top: 15px;
 
 .dltext img {
 text-align: center;
-height=64px;
+height = 64px;
 }
 
 .dltext img.centered {
@@ -198,13 +177,13 @@ background-color: #DBFF6C; //orange;
 
 
 .dltext em {
-font: normal 11px Sans;
+font: normal 11px sans-serif;
 color: gray;
 }
 
 
 .dltext b {
-font: normal 11px Sans;
+font: normal 11px sans-serif;
 color: gray;
 }
 
@@ -223,6 +202,8 @@ text-decoration: none;
 text-align: center;
 color: gray;
 font: normal 10px Arial;
+text-decoration: none;
+border-bottom: 1px dashed black;
 }
 
 
@@ -232,16 +213,33 @@ font: normal 10px Arial;
 text-align: center;
 color: gray;
 font: normal 10px Arial;
-text-decoration: underline;
+
+text-decoration: none;
+border-bottom: 1px dashed black;
+background-color: #DBFF6C;
 }
 
 
 
 .dlcaption {
 color: gray;
-font: normal 8px Sans;
+font: normal 8px sans-serif;
 background-color: #f6ffd5;
 border: 1px solid lightgray;
 text-align: center;
 }
 
+
+
+.code {
+color: black;
+font: normal 10px monospace;
+background-color: #eceae9;
+border: 1px dashed lightgray;
+text-align: left;
+margin:0;
+margin-bottom:2px;
+padding-bottom:1px;
+margin-top:2px;
+padding-top:1px;
+}

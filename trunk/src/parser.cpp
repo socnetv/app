@@ -663,7 +663,7 @@ void Parser::readGraphMLKeys(QXmlStreamReader &xml){
 	QString type=xml.attributes().value("attr.type").toString();
 	keyType [id] = type;
 	qDebug()<< "    type "<< type;
-//	if (xml.isEndElement())
+
 
 
 	xml.readNext();
@@ -677,6 +677,7 @@ void Parser::readGraphMLKeys(QXmlStreamReader &xml){
 void Parser::readGraphMLGraphProperties(QXmlStreamReader &xml){
 	qDebug()<< "   Parser: readGraphMLGraphProperties()";
 	qDebug()<< "    edgedefault "<< xml.attributes().value("edgedefault");
+	qDebug()<< "    graph id  "  << xml.attributes().value("id");	
 }
 
 

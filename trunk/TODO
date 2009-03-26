@@ -12,35 +12,22 @@ KNOWN BUGS
 OLD, NOT EASILY FIXED BUT NOT CRITICAL BUGS
 ===========================================
 101: When many lines intersect, right-click > removeLink may remove wrong link!
-101: Complex GraphML files may crash SocNetV
+
 
 TODO
 ====
---TODO: Filter Links by their weights
---distribution of number of in-/out- links, not just average values.
---filter out links and nodes, maybe also by aggregating them. For example, I wrote a small shell program that, given a node, extracts only the nodes connected to it along with the connections among them.
---ability of processing streams of data (in that case, I will need some decaying function to delete "old", ie not used for long, links and nodes).
---Load nets from database connections.
---TODO: Add additional properties to vertices (i.e. date, class, etc).
---TODO: constrain layout to one direction (i.e. date).
+To request a feature and/or see the TODO list of SocNetV, visit :
 
---TODO Transform actors to links //COMMENTED OUT
+https://blueprints.launchpad.net/socnetv
 
---TODO: CLUSTERING by betweeness, see http://iv.slis.indiana.edu/sw/bc.html
-	http://tyna.gersteinlab.org/tyna/supp.jsp
---TODO: Blockmodelling
-- TODO: Web crawler
-- TODO: Texts on canvas (i.e. layouts display some text explaining what method is used).
 
-+ Colorization  //COMMENTED
-- Filter actors //COMMENTED 
-+ Network file format: DL (read/save)
-+ Network file format: GW (read/save)
-+ Network file format: list (read/save)
-+ Network file format: GDL (read/save)
-+ Centrality: Informational
-- Layout: Random Circle 
-- Layout: Circle by Informational Index
-+ Layout: distance model (does anything like this exist?)
-+ Layout: Cluster by centrality class
-+ Simulations, connectivity through the command line, or a GUI... 
+
+
+
+
+
+
+
+
+
+
