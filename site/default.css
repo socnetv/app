@@ -92,7 +92,7 @@ border: 1px solid lightgray;
 text-align: center;
 }
 
-.screenshots a {
+.screenshots a, .screenshots a:visited  {
 color: lightgray;
 display: normal;
 border: none;
@@ -100,6 +100,14 @@ border-bottom: none;
 background-color: #f6ffd5;
 }
 
+
+.screenshots a:hover{
+color: gray;
+display: normal;
+border: none;
+border-bottom: none;
+background-color: #f6ffd5;
+}
 
 
 
@@ -116,6 +124,7 @@ font: normal 12px sans-serif;
 list-style-type: none;
 text-align: left; 
 }
+
 
 
 .dltext li{
@@ -141,11 +150,14 @@ display: block;
 margin-left: 0;
 margin-right: auto;
 }
+
 .dltext .aligncenter {
 display: block;
 margin-left: auto;
 margin-right: auto;
 }
+
+
 .dltext .alignright {
 display: block;
 margin-left: auto;

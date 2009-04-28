@@ -1168,7 +1168,7 @@ void MainWindow::initToolBox(){
 	buttonsGrid -> addWidget(removeLinkBt,1,1);
 	buttonsGrid -> setRowStretch(2,1);   //fix vertical stretch
 	//create a box with a title & a frame. Inside, display the vertical layout of widgets
-	QGroupBox *buttonsGroup= new QGroupBox(tr("Edit Network"));
+	QGroupBox *buttonsGroup= new QGroupBox(tr(""));
 	buttonsGrid->setSpacing(0);
 	buttonsGrid->setMargin(10);
 	buttonsGroup->setLayout(buttonsGrid);
@@ -1279,7 +1279,7 @@ void MainWindow::initToolBox(){
 	propertiesGrid -> setRowStretch(12,1);   //fix stretch
 	
 	//create a box with title
-	QGroupBox *networkPropertiesGroup = new QGroupBox(tr("Network"));
+	QGroupBox *networkPropertiesGroup = new QGroupBox(tr(""));
 	networkPropertiesGroup -> setLayout (propertiesGrid);
 
 
@@ -1318,7 +1318,7 @@ void MainWindow::initToolBox(){
 	layoutGroupLayout -> setRowStretch(4,1);   //fix stretch	
 
 	//create a box with title
-	QGroupBox *layoutGroup= new QGroupBox(tr("Layout"));
+	QGroupBox *layoutGroup= new QGroupBox(tr(""));
 	layoutGroup->setLayout (layoutGroupLayout );
  	toolBox->addTab(layoutGroup, tr("Layout"));
 
