@@ -46,6 +46,9 @@
 	<file>images/clique.png</file>
 	<file>images/avdistance.png</file>
 	<file>images/symmetrize.png</file>
+	<file>images/nodeout.png</file>
+        <file>images/nodein.png</file>
+	<file>images/gridlines.png</file>
 
 </qresource>
 </RCC>

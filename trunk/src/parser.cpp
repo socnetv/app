@@ -632,18 +632,27 @@ void Parser::readGraphML(QXmlStreamReader &xml){
 	//start reading the GraphML document until QXmlStreamReader reaches the end().
 	while (!xml.atEnd()) {
 		xml.readNext();	//read next token
+		
 		if (xml.isStartElement()) {		//new token (graph, node, or edge) starts here
-			qDebug()<< "  readGraphML(): element name "<< xml.name() ;
+			qDebug()<< "  readGraphML(): element starts here: "<< xml.name() ;
 			if (xml.name() == "graph")	//graph definition token
-				readGraphMLGraphProperties(xml);
+				readGraphMLGraphElement(xml);
 			else if (xml.name() == "key")	//key definition token
 				readGraphMLKeys(xml);
 			else if (xml.name() == "node")	//graph definition token
-				readGraphMLNodeProperties(xml);
+				readGraphMLNodeElement(xml);
+			else if (xml.name() == "data")	//data definition token
+				readGraphMLDataElement(xml);
+
 			else if (xml.name() == "edge")	//edge definition token
-				readGraphMLEdgeProperties(xml);
+				readGraphMLEdgeElement(xml);
 			else
 				readGraphMLUnknownElement(xml);
+		}
+		if (xml.isEndElement()) {		//token ends here
+			qDebug()<< "  readGraphML():  element ends here: "<< xml.name() ;
+				if (xml.name() == "node")	//node definition end 
+					endGraphMLNodeElement(xml);
 		}
 	}
 	
@@ -653,18 +662,16 @@ void Parser::readGraphML(QXmlStreamReader &xml){
 void Parser::readGraphMLKeys(QXmlStreamReader &xml){
 	qDebug()<< "   Parser: readGraphMLKeys()";
 	QString id = xml.attributes().value("id").toString();
- 	qDebug()<< "    id "<< id;
+ 	qDebug()<< "    key id "<< id;
 	QString what = xml.attributes().value("for").toString();
 	keyFor [id] = what;
-	qDebug()<< "    for "<< what;
+	qDebug()<< "    key for "<< what;
 	QString name =xml.attributes().value("attr.name").toString();
 	keyName [id] = name;
-	qDebug()<< "    attr. name "<< name;
+	qDebug()<< "    key attr.name "<< name;
 	QString type=xml.attributes().value("attr.type").toString();
 	keyType [id] = type;
-	qDebug()<< "    attr.type "<< type;
-
-
+	qDebug()<< "    key attr.type "<< type;
 
 	xml.readNext();
 	if (xml.name() == "default") {
@@ -674,16 +681,16 @@ void Parser::readGraphMLKeys(QXmlStreamReader &xml){
 }
 
 
-void Parser::readGraphMLGraphProperties(QXmlStreamReader &xml){
-	qDebug()<< "   Parser: readGraphMLGraphProperties()";
+void Parser::readGraphMLGraphElement(QXmlStreamReader &xml){
+	qDebug()<< "   Parser: readGraphMLGraphElement()";
 	qDebug()<< "    edgedefault "<< xml.attributes().value("edgedefault");
 	qDebug()<< "    graph id  "  << xml.attributes().value("id");	
 }
 
 
 
-void Parser::readGraphMLNodeProperties(QXmlStreamReader &xml){
-	qDebug()<<"   Parser: readGraphMLNodeProperties()";
+void Parser::readGraphMLNodeElement(QXmlStreamReader &xml){
+	qDebug()<<"   Parser: readGraphMLNodeElement()";
 	QString  id = (xml.attributes().value("id")).toString();
 	qDebug()<<"    node id "<<  id << " index " << aNodes;
 
@@ -698,9 +705,21 @@ void Parser::readGraphMLNodeProperties(QXmlStreamReader &xml){
 	aNodes++;
 }
 
+void Parser::endGraphMLNodeElement(QXmlStreamReader &xml){
+	qDebug()<<"   Parser: endGraphMLNodeElement()";
+}
 
-void Parser::readGraphMLEdgeProperties(QXmlStreamReader &xml){
-	qDebug()<< "  Parser: readGraphMLEdgeProperties()";
+
+void Parser::readGraphMLDataElement (QXmlStreamReader &xml){
+	qDebug()<< "  Parser: readGraphMLDataElement()";
+	QString id = xml.attributes().value("key").toString();
+	QString value=xml.readElementText();
+	keyDefaultValue [id] = value;
+	
+}
+	
+void Parser::readGraphMLEdgeElement(QXmlStreamReader &xml){
+	qDebug()<< "  Parser: readGraphMLEdgeElement()";
 	QString s = xml.attributes().value("source").toString();
 	QString t = xml.attributes().value("target").toString();
 	if ( (xml.attributes().value("directed")).toString() == "false") 

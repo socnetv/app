@@ -55,9 +55,11 @@ public:
 
 	void dotProperties(QString str, int &nValue, QString &label, QString &shape, QString &color, QString &fontName, QString &fontColor );
 	void readGraphML (QXmlStreamReader &);
-	void readGraphMLGraphProperties(QXmlStreamReader &);
-	void readGraphMLNodeProperties (QXmlStreamReader &);
-	void readGraphMLEdgeProperties (QXmlStreamReader &);
+	void readGraphMLGraphElement(QXmlStreamReader &);
+	void readGraphMLNodeElement (QXmlStreamReader &);
+	void endGraphMLNodeElement (QXmlStreamReader &);
+	void readGraphMLEdgeElement (QXmlStreamReader &);
+	void readGraphMLDataElement (QXmlStreamReader &);
 	void readGraphMLUnknownElement (QXmlStreamReader &);
 	void readGraphMLKeys(QXmlStreamReader &);
 signals:

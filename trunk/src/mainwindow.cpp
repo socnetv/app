@@ -561,7 +561,7 @@ void MainWindow::initActions(){
 	circleEccentrLayoutAct ->setWhatsThis(tr("Circle Eccentricity Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes having greater Eccentricity Centrality are situated towards the centre."));
 	connect(circleEccentrLayoutAct , SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityEccentr() ) );
 
-	circleClearBackgrCirclesAct = new QAction( tr("Remove Layout GuideLines"), this);
+	circleClearBackgrCirclesAct = new QAction(QIcon(":/images/gridlines.png"), tr("Remove Layout GuideLines"), this);
 	circleClearBackgrCirclesAct ->setStatusTip(tr("Removes Red GuideLines from the canvas."));
 	circleClearBackgrCirclesAct->setWhatsThis(tr("Remove GuideLines\n\n Removes any guidelines (circles or horizontal lines) created for the network layout."));
 
@@ -624,7 +624,7 @@ void MainWindow::initActions(){
 	zoomOutAct->setStatusTip(tr("Zooms out of the actual network."));
 	zoomOutAct->setWhatsThis(tr("Zoom out.\n\nZooms out. What else did you expect?"));
 
-	nodeSizeProportionalOutDegreeAct= new QAction(tr("NodeSize = F (OutDegree)"), this);
+	nodeSizeProportionalOutDegreeAct= new QAction(QIcon(":/images/nodeout.png"),tr("NodeSize = F (OutDegree)"), this);
 	nodeSizeProportionalOutDegreeAct->setShortcut(tr("Alt+3"));
 	nodeSizeProportionalOutDegreeAct->setStatusTip(tr("Resizes all nodes according to their out edges."));
 	nodeSizeProportionalOutDegreeAct->setWhatsThis(tr("NodeSize = F (OutDegree) \n\n Adjusts the size of each node according to their out-edges (OutDegree). The more out-likned a node is, the bigger will appear..."));
@@ -633,7 +633,7 @@ void MainWindow::initActions(){
 	connect(nodeSizeProportionalOutDegreeAct, SIGNAL(triggered(bool)), this, SLOT(slotLayoutNodeSizeProportionalOutEdges(bool)));
 
 
-	nodeSizeProportionalInDegreeAct= new QAction(tr("NodeSize = F (InDegree)"), this);
+	nodeSizeProportionalInDegreeAct= new QAction(QIcon(":/images/nodein.png"),tr("NodeSize = F (InDegree)"), this);
 	nodeSizeProportionalInDegreeAct->setShortcut(tr("Alt+4"));
 	nodeSizeProportionalInDegreeAct->setStatusTip(tr("Resizes all nodes according to their in edges."));
 	nodeSizeProportionalInDegreeAct->setWhatsThis(tr("NodeSize = F (InDegree) \n\n This method adjusts the size of each node according to their in-edges (InDegree). The more in-linked a node is, the bigger will appear..."));
