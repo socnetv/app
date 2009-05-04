@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser 
- version: 0.52
+ version: 0.6
  Written in Qt 4.4
 
                            mainwindow.cpp  -  description
@@ -74,7 +74,7 @@ MainWindow::MainWindow(const QString &fName) {
 	fileName=fName;
 	qInstallMsgHandler( myMessageOutput );
 	setWindowIcon (QIcon(":/images/socnetv.png"));
-	VERSION="0.52";
+	VERSION="0.6";
 
 	/** inits that invoke all other construction parts **/
 	initActions();  //register and construct menu Actions 
@@ -2411,7 +2411,7 @@ void MainWindow::slotCreateSmallWorldRandomNetwork(){
 	double beta = QInputDialog::getDouble(this,"Create small world...",
 			 tr("Now, enter a parameter beta. \n")+
 			 tr("This is the edge rewiring probability:"), 
-			 0.52, 0.00, 1.00, 2, &ok);
+			 0.6, 0.00, 1.00, 2, &ok);
 
 	statusBar()->showMessage(tr("Erasing any existing network. "), statusBarDuration);
 	initNet();  
@@ -5539,7 +5539,7 @@ void MainWindow::slotHelpAbout(){
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualiser (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"
-	"<p><b>Build: </b> Sun, Feb 15, 2009</p>"
+	"<p><b>Build: </b> Wed, May 4, 2009</p>"
 	
 	"<p>(C) 2005-2009 by Dimitris V. Kalamaras"
 	"<br> dimitris.kalamaras@gmail.com"
@@ -5562,21 +5562,21 @@ void MainWindow::slotHelpAbout(){
 	Creates the fortune cookies displayed on the above message.
 */
 void MainWindow::createFortuneCookies(){
-	fortuneCookie+="sic itur ad astra / sic transit gloria mundi ? <br> --Unknown";
-	fortuneCookie+="losers of yesterday, the winners of tomorrow... <br> --B.Brecht";
-	fortuneCookie+="Patriotism is the virtue of the wicked... <br> --O. Wilde";
+	fortuneCookie+="sic itur ad astra / sic transit gloria mundi ? <br /> --Unknown";
+	fortuneCookie+="losers of yesterday, the winners of tomorrow... <br /> --B.Brecht";
+	fortuneCookie+="Patriotism is the virtue of the wicked... <br /> --O. Wilde";
  
-	fortuneCookie+="No tengo nunca mas, no tengo siempre. En la arena <br>" 
-			"la victoria dejo sus piers perdidos.<br>"
-		   	"Soy un pobre hombre dispuesto a amar a sus semejantes.<br>"
-		   	"No se quien eres. Te amo. No doy, no vendo espinas. <br> --Pablo Neruda"  ;
+	fortuneCookie+="No tengo nunca mas, no tengo siempre. En la arena <br />" 
+			"la victoria dejo sus piers perdidos.<br />"
+		   	"Soy un pobre hombre dispuesto a amar a sus semejantes.<br />"
+		   	"No se quien eres. Te amo. No doy, no vendo espinas. <br /> --Pablo Neruda"  ;
 	fortuneCookie+="I will never apologize for the United States of America. I don't care what it has done. I don't care what the facts are. <br> --Vice President George H.W. Bush, after the Iranian airliner flight IR655 (an Airbus A300) was shot down by a U.S. missile cruiser (USS Vincennes), killing all 290 civilian passengers...";
 	fortuneCookie+="Man must not check reason by tradition, but contrawise, must check tradition by reason.<br> --Leo Tolstoy";
 	fortuneCookie+="Only after the last tree has been cut down, <br>only after the last river has been poisoned,<br> only after the last fish has been caught,<br>only then will you realize that money cannot be eaten. <br> --The Cree People";
 	fortuneCookie+="Stat rosa pristina nomine, nomina nuda tenemus <br > --Unknown";
-	fortuneCookie+="Jupiter and Saturn, Oberon, Miranda"
-					"And Titania, Neptune, Titan."
-					"Stars can frighten. <br > Syd Barrett";
+	fortuneCookie+="Jupiter and Saturn, Oberon, Miranda <br />"
+					"And Titania, Neptune, Titan. <br />"
+					"Stars can frighten. <br /> Syd Barrett";
 
 	fortuneCookiesCounter=9;
 //   return fortuneCookie.count();

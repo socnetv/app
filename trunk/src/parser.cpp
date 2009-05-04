@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualiser 
- version: 0.52
+ version: 0.6
  Written in Qt 4.4
  
                          parser.cpp  -  description
@@ -629,18 +629,18 @@ int Parser::loadGraphML(){
 void Parser::readGraphML(QXmlStreamReader &xml){
 	qDebug()<< " Parser: readGraphML()";
 	Q_ASSERT(xml.isStartElement() && xml.name() == "graph");
-
+	//start reading the GraphML document until QXmlStreamReader reaches the end().
 	while (!xml.atEnd()) {
-		xml.readNext();
-		if (xml.isStartElement()) {
+		xml.readNext();	//read next token
+		if (xml.isStartElement()) {		//new token (graph, node, or edge) starts here
 			qDebug()<< "  readGraphML(): element name "<< xml.name() ;
-			if (xml.name() == "graph")
+			if (xml.name() == "graph")	//graph definition token
 				readGraphMLGraphProperties(xml);
-			else if (xml.name() == "key")
+			else if (xml.name() == "key")	//key definition token
 				readGraphMLKeys(xml);
-			else if (xml.name() == "node")
+			else if (xml.name() == "node")	//graph definition token
 				readGraphMLNodeProperties(xml);
-			else if (xml.name() == "edge")
+			else if (xml.name() == "edge")	//edge definition token
 				readGraphMLEdgeProperties(xml);
 			else
 				readGraphMLUnknownElement(xml);
@@ -662,7 +662,7 @@ void Parser::readGraphMLKeys(QXmlStreamReader &xml){
 	qDebug()<< "    attr. name "<< name;
 	QString type=xml.attributes().value("attr.type").toString();
 	keyType [id] = type;
-	qDebug()<< "    type "<< type;
+	qDebug()<< "    attr.type "<< type;
 
 
 

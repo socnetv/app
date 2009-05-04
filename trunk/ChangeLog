@@ -4,10 +4,12 @@
 
 ChangeLog:
 
-Version 0.52 - March 16 2009
-Codename: "Unknown"
+Version 0.6 - May 16 2009
+Codename: "Spring"
 ----------------------------
-- ....
+- New version name scheme (0.5 < 0.6 < 0.7 etc). 0.6.x will be used for
+bugfixes.
+- Improved GraphML support.
 
 
 Version 0.51 - Feb 16 2009

@@ -146,6 +146,8 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 
 
 %changelog
+* Mon May 04 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.6-1
+- Synced with upstream
 * Thu Feb 26 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.52-1
 - Synced with upstream.
 - Bugfixes into .spec.in for RPMs (Fedora, openSUSE and Mandriva).

@@ -4,9 +4,13 @@ Social Networks Visualiser (SocNetV)
 SocNetV News
 -==========-
 
+May 2009
+- Version 0.6 (release)
+- GraphML becomes native SocNetV load format
 
 Feb 2009
 =======
+- Version 0.51 (bugfix release)
 - Version 0.50 (released)
 - Small world creation
 - Clustering coefficient
