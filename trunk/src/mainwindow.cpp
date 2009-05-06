@@ -1,5 +1,5 @@
 /***************************************************************************
- SocNetV: Social Networks Visualiser 
+ SocNetV: Social Networks Visualizer 
  version: 0.6
  Written in Qt 4.4
 
@@ -168,7 +168,7 @@ MainWindow::MainWindow(const QString &fName) {
 		createTips();
 	}	
 
-	statusBar()->showMessage(tr("Welcome to Social Networks Visualiser, Version ")+VERSION, statusBarDuration);
+	statusBar()->showMessage(tr("Welcome to Social Networks Visualizer, Version ")+VERSION, statusBarDuration);
 }
 
 
@@ -1491,7 +1491,7 @@ void MainWindow::initNet(){
   
 	displayLinksWeightNumbersAct->setChecked(false);
 	//set window title
-	setWindowTitle(tr("Social Network Visualiser ")+VERSION);
+	setWindowTitle(tr("Social Network Visualizer ")+VERSION);
 	QApplication::restoreOverrideCursor();
 	statusBar()->showMessage(tr("Ready"), statusBarDuration);
 	qDebug("MW: initNet() INITIALISATION END");
@@ -5537,7 +5537,7 @@ void MainWindow::slotHelp(){
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
      QMessageBox::about( this, "About SocNetV",
-	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualiser (SocNetV)"
+	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"
 	"<p><b>Build: </b> Wed, May 4, 2009</p>"
 	

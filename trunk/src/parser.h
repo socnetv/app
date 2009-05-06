@@ -1,5 +1,5 @@
 /***************************************************************************
- SocNetV: Social Networks Visualiser 
+ SocNetV: Social Networks Visualizer 
  version: 0.6
  Written in Qt 4.4
  
@@ -55,13 +55,15 @@ public:
 
 	void dotProperties(QString str, int &nValue, QString &label, QString &shape, QString &color, QString &fontName, QString &fontColor );
 	void readGraphML (QXmlStreamReader &);
-	void readGraphMLGraphElement(QXmlStreamReader &);
-	void readGraphMLNodeElement (QXmlStreamReader &);
-	void endGraphMLNodeElement (QXmlStreamReader &);
-	void readGraphMLEdgeElement (QXmlStreamReader &);
-	void readGraphMLDataElement (QXmlStreamReader &);
-	void readGraphMLUnknownElement (QXmlStreamReader &);
-	void readGraphMLKeys(QXmlStreamReader &);
+	void readGraphMLElementGraph(QXmlStreamReader &);
+	void readGraphMLElementNode (QXmlStreamReader &);
+	void endGraphMLElementNode (QXmlStreamReader &);
+	void readGraphMLElementEdge (QXmlStreamReader &);
+	void endGraphMLElementEdge (QXmlStreamReader &);
+	void readGraphMLElementData (QXmlStreamReader &);
+	void readGraphMLElementUnknown (QXmlStreamReader &);
+	void readGraphMLElementKey (QXmlStreamReader &);
+	void readGraphMLElementDefaultValue(QXmlStreamReader &);
 signals:
 	void createNode(int,int,QString, QString, QString, QPointF, QString, bool);
 	void createEdge (int, int, float, QString, bool, bool, bool);
@@ -74,11 +76,18 @@ private:
 	QMap<QString, int> nodeNumber;
 	QMap<QString, QString> keyFor, keyName, keyType, keyDefaultValue ;
 	QXmlStreamReader *xml;
-	QString fileName, networkName, initNodeColor, initLinkColor, initNodeShape;
-  
-	int gwWidth, gwHeight, totalLinks, aNodes, initNodeSize, source, target;
+	QString fileName, networkName, initNodeColor, initEdgeColor, initNodeShape;
+	QString nodeColor, edgeColor, nodeShape;
+	  
+	int gwWidth, gwHeight;
+	int totalLinks, aNodes;
+	int initNodeSize, initEdgeWeight, source, target, nodeSize, edgeWeight;
+	
 	bool initShowLabels;
-	bool undirected, arrows, bezier;
+	bool undirected, arrows, bezier, conv_OK;
+	bool bool_key, bool_node, bool_edge;
+	QString key_id, key_value, key_name, key_what, key_type;
+	QString node_id, edge_id, edge_source, edge_target; 
 	double randX, randY;
 };
 

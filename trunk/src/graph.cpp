@@ -1,5 +1,5 @@
 /******************************************************************************
- SocNetV: Social Networks Visualiser 
+ SocNetV: Social Networks Visualizer 
  version: 0.6
  Written in Qt 4.4
  
@@ -816,7 +816,7 @@ void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
 	ofstream file (fn);
 	int sum=0;
 	float weight=0;
-	file << "-Social Network Visualiser- \n";
+	file << "-Social Network Visualizer- \n";
 	file << "Adjacency matrix of "<< netName<<": \n\n";
 	QList<Vertex*>::iterator it, it1;	
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
@@ -893,7 +893,7 @@ void Graph::writeDistanceMatrix (const char* fn, const char* fn1, const char* ne
 	char cspace[] = "   ";
 	char dspace[] = "   ";
 
-	file << "-Social Network Visualiser- \n";
+	file << "-Social Network Visualizer- \n";
 	if (!netName) netName="Unnamed network";
 	file << "Distance matrix of "<< netName<<": \n\n";
 	//write out matrix of geodesic distances
