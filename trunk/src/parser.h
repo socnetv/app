@@ -53,7 +53,7 @@ public:
 	int loadGW();
 	int loadDL();
 
-	void dotProperties(QString str, int &nValue, QString &label, QString &shape, QString &color, QString &fontName, QString &fontColor );
+	void dotProperties(QString str, float &, QString &label, QString &shape, QString &color, QString &fontName, QString &fontColor );
 	void readGraphML (QXmlStreamReader &);
 	void readGraphMLElementGraph(QXmlStreamReader &);
 	void readGraphMLElementNode (QXmlStreamReader &);
@@ -81,8 +81,8 @@ private:
 	  
 	int gwWidth, gwHeight;
 	int totalLinks, aNodes;
-	int initNodeSize, initEdgeWeight, source, target, nodeSize, edgeWeight;
-	
+	int initNodeSize, source, target, nodeSize;
+	float initEdgeWeight, edgeWeight;
 	bool initShowLabels;
 	bool undirected, arrows, bezier, conv_OK;
 	bool bool_key, bool_node, bool_edge;
