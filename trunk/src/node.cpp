@@ -322,7 +322,7 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 	else if ( m_shape == "ellipse") {
 		painter->drawEllipse(-m_size, -m_size, 2*m_size, 1.5* m_size);		
 	}
-	else if ( m_shape == "box") {
+	else if ( m_shape == "box" || m_shape == "rectangle"  ) {  //rectangle: for GraphML compliance
 		painter->drawRect( QRectF(-m_size , -m_size , 1.8*m_size , 1.8*m_size ) );
 	}
 	else if ( m_shape == "triangle") {
