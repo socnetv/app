@@ -64,6 +64,8 @@ public:
 	void readGraphMLElementUnknown (QXmlStreamReader &);
 	void readGraphMLElementKey (QXmlStreamReader &);
 	void readGraphMLElementDefaultValue(QXmlStreamReader &);
+	void readGraphMLElementNodeGraphics (QXmlStreamReader &);
+	void readGraphMLElementEdgeGraphics (QXmlStreamReader &);
 signals:
 	void createNode(int,int,QString, QString, QString, QPointF, QString, bool);
 	void createEdge (int, int, float, QString, bool, bool, bool);
@@ -77,7 +79,7 @@ private:
 	QMap<QString, QString> keyFor, keyName, keyType, keyDefaultValue ;
 	QXmlStreamReader *xml;
 	QString fileName, networkName, initNodeColor, initEdgeColor, initNodeShape;
-	QString nodeColor, edgeColor, nodeShape;
+	QString nodeColor, edgeColor, nodeShape, nodeLabel;
 	  
 	int gwWidth, gwHeight;
 	int totalLinks, aNodes;
