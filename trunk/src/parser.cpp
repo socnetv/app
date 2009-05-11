@@ -822,17 +822,15 @@ void Parser::endGraphMLElementEdge(QXmlStreamReader &xml){
  */ 
 void Parser::readGraphMLElementData (QXmlStreamReader &xml){
 	key_id = xml.attributes().value("key").toString();
-	if (xml.isCharacters() ) {
-		key_value=xml.readElementText();  //see if there's simple text after the StartElement
-		//if (!xml.hasError())	//probably there's more than simple text after StartElement 
-			qDebug()<< "   Parser: readGraphMLElementData(): key_id " << key_id << " value " <<key_value;		
+	if (xml.isCharacters() ) { //if there's simple text after the StartElement, 
+		key_value=xml.readElementText();    //read it
+		qDebug()<< "   Parser: readGraphMLElementData(): key_id " << key_id << " value " <<key_value;		
 	}
-	else {
+	else {  //no text, probably more tags. Return...
 		qDebug()<< "   Parser: readGraphMLElementData(): key_id " << key_id << " for " <<keyFor.value(key_id);
 		qDebug()<< "   Parser: readGraphMLElementData(): There must be more elements nested here, continuing";
 		return;  
 	}
-		
 	if (keyName.value(key_id) == "color" && keyFor.value(key_id) == "node" ) {
 			qDebug()<< "     Data found. Node color: "<< key_value << " for this node";
 			nodeColor= key_value; 
@@ -855,7 +853,7 @@ void Parser::readGraphMLElementData (QXmlStreamReader &xml){
 void Parser::readGraphMLElementNodeGraphics(QXmlStreamReader &xml) {
 	qDebug()<< "       Parser: readGraphMLElementNodeGraphics(): element name "<< xml.name();
 	float tempX =-1, tempY=-1, temp=-1;
-
+	QString color;
 	//qDebug()<< " loadGraphML(): element qualified name "<< xml.qualifiedName().toString();
 	if ( xml.name() == "Geometry" ) {
 
@@ -886,6 +884,10 @@ void Parser::readGraphMLElementNodeGraphics(QXmlStreamReader &xml) {
 
 	}
 	else if (xml.name() == "Fill" ){
+		if ( xml.attributes().hasAttribute("color") ) {
+			nodeColor= xml.attributes().value("color").toString();	
+			qDebug()<< "        Node color: " << nodeColor;
+		}
 		
 	}
 	else if ( xml.name() == "BorderStyle" ) {
