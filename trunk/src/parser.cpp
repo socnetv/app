@@ -906,8 +906,8 @@ void Parser::readGraphMLElementNodeGraphics(QXmlStreamReader &xml) {
 		}
 	}
 	else if (xml.name() == "Shape" ) {
-		if ( xml.attributes().hasAttribute("shape") ) {
-			nodeShape= xml.attributes().value("shape").toString();	
+		if ( xml.attributes().hasAttribute("type") ) {
+			nodeShape= xml.attributes().value("type").toString();	
 			qDebug()<< "        Node shape: " << nodeShape;
 		}
 	
