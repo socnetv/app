@@ -758,9 +758,8 @@ void Parser::readGraphMLElementDefaultValue(QXmlStreamReader &xml) {
 // this method reads basic node attributes and sets the nodeNumber.
 // called at the start of a node element
 void Parser::readGraphMLElementNode(QXmlStreamReader &xml){
-	qDebug()<<"   Parser: readGraphMLElementNode()";
 	node_id = (xml.attributes().value("id")).toString();
-	qDebug()<<"    node id "<<  node_id << " index " << aNodes << " added to nodeNumber map";
+	qDebug()<<"   Parser: readGraphMLElementNode() node id "<<  node_id << " index " << aNodes << " added to nodeNumber map";
 
 	nodeNumber[node_id]=aNodes;
 
@@ -791,7 +790,7 @@ void Parser::endGraphMLElementNode(QXmlStreamReader &xml){
 // this method reads basic edge creation properties.
 // called at the start of an edge element
 void Parser::readGraphMLElementEdge(QXmlStreamReader &xml){
-	qDebug()<< "  Parser: readGraphMLElementEdge() id: " <<	xml.attributes().value("id").toString();
+	qDebug()<< "   Parser: readGraphMLElementEdge() id: " <<	xml.attributes().value("id").toString();
 	QString s = xml.attributes().value("source").toString();
 	QString t = xml.attributes().value("target").toString();
 	if ( (xml.attributes().value("directed")).toString() == "false") 
@@ -800,8 +799,8 @@ void Parser::readGraphMLElementEdge(QXmlStreamReader &xml){
 	target = nodeNumber [t];
 	edgeWeight=initEdgeWeight;
 	bool_edge= true;
-	qDebug()<< "   edge source "<< s << " num "<< source;
-	qDebug()<< "   edge target "<< t << " num "<< target;
+	qDebug()<< "    edge source "<< s << " num "<< source;
+	qDebug()<< "    edge target "<< t << " num "<< target;
 
 	
 }
@@ -823,12 +822,14 @@ void Parser::endGraphMLElementEdge(QXmlStreamReader &xml){
  */ 
 void Parser::readGraphMLElementData (QXmlStreamReader &xml){
 	key_id = xml.attributes().value("key").toString();
-	key_value=xml.readElementText();  //see if there's simple text after the StartElement
-	if (!xml.hasError())	//probably there's more than simple text after StartElement 
-		qDebug()<< "  Parser: readGraphMLElementData(): key_id " << key_id << " value " <<key_value;
+	if (xml.isCharacters() ) {
+		key_value=xml.readElementText();  //see if there's simple text after the StartElement
+		//if (!xml.hasError())	//probably there's more than simple text after StartElement 
+			qDebug()<< "   Parser: readGraphMLElementData(): key_id " << key_id << " value " <<key_value;		
+	}
 	else {
-		qDebug()<< "  Parser: readGraphMLElementData(): key_id " << key_id << " for " <<keyFor.value(key_id);
-		qDebug()<< "  Parser: readGraphMLElementData(): There must be more elements nested here, continuing";
+		qDebug()<< "   Parser: readGraphMLElementData(): key_id " << key_id << " for " <<keyFor.value(key_id);
+		qDebug()<< "   Parser: readGraphMLElementData(): There must be more elements nested here, continuing";
 		return;  
 	}
 		
@@ -841,7 +842,7 @@ void Parser::readGraphMLElementData (QXmlStreamReader &xml){
 			conv_OK=false;
 			edgeWeight= key_value.toFloat( &conv_OK );
 			if (!conv_OK) edgeWeight = 1;  			 
-			qDebug()<< "        Edge weight = "<< edgeWeight << " for this edge";
+			qDebug()<< "      Edge weight = "<< edgeWeight << " for this edge";
 	}
 	
 }
