@@ -778,6 +778,7 @@ void Parser::readGraphMLElementDefaultValue(QXmlStreamReader &xml) {
 // called at the start of a node element
 void Parser::readGraphMLElementNode(QXmlStreamReader &xml){
 	node_id = (xml.attributes().value("id")).toString();
+	aNodes++;
 	qDebug()<<"   Parser: readGraphMLElementNode() node id "<<  node_id << " index " << aNodes << " added to nodeNumber map";
 
 	nodeNumber[node_id]=aNodes;
@@ -799,10 +800,11 @@ void Parser::readGraphMLElementNode(QXmlStreamReader &xml){
 // called at the end of a node element   
 void Parser::endGraphMLElementNode(QXmlStreamReader &xml){
 	Q_UNUSED(xml);
+	
 	qDebug()<<"   Parser: endGraphMLElementNode() *** emitting signal to create node with id "<< node_id << " nodenumber "<< aNodes;
 	emit createNode(aNodes, nodeSize, nodeColor, nodeLabel, nodeColor, QPointF(randX,randY), nodeShape, initShowLabels);
 	bool_node = false;
-	aNodes++;
+	
 }
 
 
@@ -856,13 +858,27 @@ void Parser::readGraphMLElementData (QXmlStreamReader &xml){
 			qDebug()<< "     Data found. Node color: "<< key_value << " for this node";
 			nodeColor= key_value; 
 	}
-	else if (keyName.value(key_id) == "weight" && keyFor.value(key_id) == "edge" ) {
-			qDebug()<< "     Data found. Edge weight:  "<< key_value << " for this edge";
+	
+	else if (keyName.value(key_id) == "color" && keyFor.value(key_id) == "edge" ) {
+			qDebug()<< "     Data found. Edge color: "<< key_value << " for this edge";
+			edgeColor= key_value; 
+	}
+	else if ( ( keyName.value(key_id) == "value" ||  keyName.value(key_id) == "weight" ) && keyFor.value(key_id) == "edge" ) {
 			conv_OK=false;
 			edgeWeight= key_value.toFloat( &conv_OK );
-			if (!conv_OK) edgeWeight = 1;  			 
-			qDebug()<< "      Edge weight = "<< edgeWeight << " for this edge";
+			if (!conv_OK) edgeWeight = 1;  	
+			else edgeWeight=1.0; 
+ 			qDebug()<< "     Data found. Edge value: "<< key_value << " Using "<< edgeWeight << " for this edge";       
 	}
+	else if ( keyName.value(key_id) == "size of arrow"  && keyFor.value(key_id) == "edge" ) {
+			conv_OK=false;
+			float temp = key_value.toFloat( &conv_OK );
+			if (!conv_OK) arrowSize = 1;
+			else  arrowSize = 1;
+			qDebug()<< "     Data found. Edge arrow size: "<< key_value << " Using  "<< arrowSize << " for this edge";
+	}
+
+
 	
 }
 
@@ -949,25 +965,29 @@ void Parser::readGraphMLElementEdgeGraphics(QXmlStreamReader &xml) {
 				conv_OK=false;
 				tempX = xml.attributes().value("sx").toString().toFloat (&conv_OK) ;
 				if (conv_OK) 
-					bez_p1_x = tempX;	
+					bez_p1_x = tempX;
+				else bez_p1_x = 0 ;
 			}
 			if ( xml.attributes().hasAttribute("sy") ) {
 				conv_OK=false;
 				tempY = xml.attributes().value("sy").toString().toFloat (&conv_OK) ;
 				if (conv_OK)
 					bez_p1_y = tempY;
+				else bez_p1_y = 0 ;
 			}
 			if ( xml.attributes().hasAttribute("tx") ) {
 				conv_OK=false;
 				tempX = xml.attributes().value("tx").toString().toFloat (&conv_OK) ;
 				if (conv_OK) 
-					bez_p2_x = tempX;	
+					bez_p2_x = tempX;
+				else bez_p2_x = 0 ;
 			}
 			if ( xml.attributes().hasAttribute("ty") ) {
 				conv_OK=false;
 				tempY = xml.attributes().value("ty").toString().toFloat (&conv_OK) ;
 				if (conv_OK)
 					bez_p2_y = tempY;
+				else bez_p2_y = 0 ;
 			}
 			qDebug()<< "        Edge Path control points: " << bez_p1_x << " " << bez_p1_y << " " << bez_p2_x << " " << bez_p2_y;
 	}
@@ -981,8 +1001,7 @@ void Parser::readGraphMLElementEdgeGraphics(QXmlStreamReader &xml) {
 			qDebug()<< "        Edge type: " << edgeType;
 		}
 		if ( xml.attributes().hasAttribute("width") ) {
-			temp = xml.attributes().value("width").toString().toFloat (&conv_OK) ;;	
-			qDebug()<< "        Edge width: " << edgeWeight;
+			temp = xml.attributes().value("width").toString().toFloat (&conv_OK) ;
 			if (conv_OK)
 				edgeWeight = temp;
 			else 

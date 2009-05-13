@@ -84,7 +84,7 @@ private:
 	int gwWidth, gwHeight;
 	int totalLinks, aNodes;
 	int initNodeSize, source, target, nodeSize;
-	float initEdgeWeight, edgeWeight;
+	float initEdgeWeight, edgeWeight, arrowSize;
 	float bez_p1_x,bez_p1_y, bez_p2_x, bez_p2_y;
 	  
 	bool initShowLabels;
