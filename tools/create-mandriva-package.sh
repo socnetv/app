@@ -36,7 +36,7 @@ fi
 
 echo
 echo Checking for old RPMs...
-if [ -f /usr/src/rpm/RPMS/i586/*.rpm ];    then
+if [ -f ~/rpmbuild/RPMS/i586/*.rpm ];    then
 	echo Seems there are old rpms in /usr/src/packages/RPMS/i586/... Enter sudo password to remove them:
 	sudo rm /usr/src/rpm/RPMS/i586/*.rpm
         echo removed old rpm;
@@ -46,7 +46,7 @@ fi
 
 echo
 echo Checking if RPM development tree exists...
-if [ -d /usr/src/rpm/RPMS ];    then
+if [ -d ~/rpmbuild/RPMS ];    then
 	echo RPM development tree exists. Continuing.
 else
         echo Seems there is no RPM development tree. Enter sudo password to create it
@@ -115,11 +115,11 @@ echo ---------------------------------
 echo    START PACKAGE CREATION       
 echo ---------------------------------
 
-echo Enter password to copy spec to /usr/src/rpm/SPECS/
-sudo cp socnetv.spec /usr/src/rpm/SPECS/
+echo Enter password to copy spec to ~/rpmbuild/SPECS/
+sudo cp socnetv.spec ~/rpmbuild/SPECS/
    
 
-if [ -f /usr/src/rpm/SPECS/*.spec ];    then
+if [ -f ~/rpmbuild/SPECS/*.spec ];    then
         echo spec file copied ok;
 else
         echo Sorry. No spec file copied....
@@ -128,9 +128,9 @@ fi
 
 
 echo Enter password to copy bz2 to /usr/src/rpm/SOURCES/
-sudo cp ../*.bz2  /usr/src/rpm/SOURCES/
+sudo cp ../*.bz2  ~/rpmbuild/SOURCES/
 
-if [ -f /usr/src/rpm/SOURCES/*.bz2 ];    then
+if [ -f ~/rpmbuild/SOURCES/*.bz2 ];    then
         echo bz2 file copied ok;
 else
         echo Sorry. No bz2 file copied....
@@ -138,7 +138,7 @@ else
 fi
 
 
-cd /usr/src/rpm/SPECS/
+cd ~/rpmbuild/SPECS/
 
 
 echo .
@@ -151,7 +151,7 @@ echo Enter sudo password to start package creation
 
 sudo rpmbuild -ba socnetv.spec
 
-newrpm=`find /usr/src/rpm/RPMS -type f -name *.rpm`;
+newrpm=`find ~/rpmbuild/RPMS -type f -name *.rpm`;
 for file in $newrpm; do
 	if [ -f "$file" ];  then
 		echo RPM $file .... OK; 
@@ -165,7 +165,7 @@ echo ---------------------------------
 echo        TESTING PACKAGE         
 echo ---------------------------------
 
-cd /usr/src/rpm/RPMS/i586
+cd ~/rpmbuild/RPMS/i586
 ls -lsh
 
 rpmlint *

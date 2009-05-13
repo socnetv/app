@@ -79,15 +79,18 @@ private:
 	QMap<QString, QString> keyFor, keyName, keyType, keyDefaultValue ;
 	QXmlStreamReader *xml;
 	QString fileName, networkName, initNodeColor, initEdgeColor, initNodeShape;
-	QString nodeColor, edgeColor, nodeShape, nodeLabel;
+	QString nodeColor, edgeColor, edgeType, nodeShape, nodeLabel, edgeLabel;
 	  
 	int gwWidth, gwHeight;
 	int totalLinks, aNodes;
 	int initNodeSize, source, target, nodeSize;
 	float initEdgeWeight, edgeWeight;
+	float bez_p1_x,bez_p1_y, bez_p2_x, bez_p2_y;
+	  
 	bool initShowLabels;
 	bool undirected, arrows, bezier, conv_OK;
 	bool bool_key, bool_node, bool_edge;
+	
 	QString key_id, key_value, key_name, key_what, key_type;
 	QString node_id, edge_id, edge_source, edge_target; 
 	double randX, randY;

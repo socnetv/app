@@ -591,7 +591,8 @@ int Parser::loadAdjacency(){
 */
 int Parser::loadGraphML(){
 	qDebug("Parser: loadGraphML()");
-	aNodes=1;
+	aNodes=0;
+	totalLinks=0;
 	nodeNumber.clear();
 	bool_key=false; bool_node=false; bool_edge=false;
 	key_id = "";
@@ -626,7 +627,10 @@ int Parser::loadGraphML(){
 }
 
 
-//Called from loadGraphML
+/*
+ * Called from loadGraphML
+ * This method checks the xml token name and calls the appropriate function.
+ */
 void Parser::readGraphML(QXmlStreamReader &xml){
 	qDebug()<< " Parser: readGraphML()";
 	bool_node=false;
@@ -638,7 +642,7 @@ void Parser::readGraphML(QXmlStreamReader &xml){
 		xml.readNext();	//read next token
 	
 		if (xml.isStartElement()) {	//new token (graph, node, or edge) here
-			qDebug()<< "  readGraphML(): an element starts here: "<< xml.name() ;
+			qDebug()<< "\n  readGraphML(): an element starts here: "<< xml.name() ;
 			if (xml.name() == "graph")	//graph definition token
 				readGraphMLElementGraph(xml);
 				
@@ -656,7 +660,7 @@ void Parser::readGraphML(QXmlStreamReader &xml){
 			
 			else if ( xml.name() == "ShapeNode") {
 				bool_node =  true;
-			}
+			}			
 			else if (	 ( 
 							xml.name() == "Geometry" 
 							|| xml.name() == "Fill"
@@ -671,6 +675,20 @@ void Parser::readGraphML(QXmlStreamReader &xml){
 			
 			else if (xml.name() == "edge")	//edge definition token
 				readGraphMLElementEdge(xml);
+			else if ( xml.name() == "BezierEdge") {
+				bool_edge =  true;
+			}			
+
+			else if (	 ( 
+							xml.name() == "Path"
+							|| xml.name() == "LineStyle"
+							|| xml.name() == "Arrows"
+							|| xml.name() == "EdgeLabel" 
+						)
+						&& 	bool_edge 
+					) {
+				readGraphMLElementEdgeGraphics(xml);
+			}
 			
 			else
 				readGraphMLElementUnknown(xml);
@@ -688,7 +706,8 @@ void Parser::readGraphML(QXmlStreamReader &xml){
 }
 
 
-
+// this method reads a graph definition 
+// called at Graph element
 void Parser::readGraphMLElementGraph(QXmlStreamReader &xml){
 	qDebug()<< "   Parser: readGraphMLElementGraph()";
 	
@@ -726,8 +745,8 @@ void Parser::readGraphMLElementKey (QXmlStreamReader &xml){
 		qDebug()<< "    key yfiles.type "<< key_type;
 	}
 
-
 }
+
 
 // this method reads default key values 
 // called at a default element (usually nested inside key element)
@@ -780,7 +799,7 @@ void Parser::readGraphMLElementNode(QXmlStreamReader &xml){
 // called at the end of a node element   
 void Parser::endGraphMLElementNode(QXmlStreamReader &xml){
 	Q_UNUSED(xml);
-	qDebug()<<"   Parser: endGraphMLElementNode() *** emitting signal to create node with id "<< node_id;
+	qDebug()<<"   Parser: endGraphMLElementNode() *** emitting signal to create node with id "<< node_id << " nodenumber "<< aNodes;
 	emit createNode(aNodes, nodeSize, nodeColor, nodeLabel, nodeColor, QPointF(randX,randY), nodeShape, initShowLabels);
 	bool_node = false;
 	aNodes++;
@@ -811,7 +830,9 @@ void Parser::readGraphMLElementEdge(QXmlStreamReader &xml){
 void Parser::endGraphMLElementEdge(QXmlStreamReader &xml){
 	Q_UNUSED(xml);
 	qDebug()<<"   Parser: endGraphMLElementEdge() *** emitting signal to create edge from "<< source << " to " << target;
+	//FIXME need to return edge label as well!
 	emit createEdge(source, target, edgeWeight, edgeColor, undirected, arrows, bezier);
+	totalLinks++;
 	bool_edge= false;
 }
 
@@ -917,22 +938,94 @@ void Parser::readGraphMLElementNodeGraphics(QXmlStreamReader &xml) {
 }
 
 void Parser::readGraphMLElementEdgeGraphics(QXmlStreamReader &xml) {
-		qDebug()<< "       Parser: readGraphMLElementEdgeGraphics()";
+	qDebug()<< "       Parser: readGraphMLElementEdgeGraphics() element name "<< xml.name();
+
+	float tempX =-1, tempY=-1, temp=-1;
+	QString color, tempString;
+
+	if ( xml.name() == "Path" ) {
+
+			if ( xml.attributes().hasAttribute("sx") ) {
+				conv_OK=false;
+				tempX = xml.attributes().value("sx").toString().toFloat (&conv_OK) ;
+				if (conv_OK) 
+					bez_p1_x = tempX;	
+			}
+			if ( xml.attributes().hasAttribute("sy") ) {
+				conv_OK=false;
+				tempY = xml.attributes().value("sy").toString().toFloat (&conv_OK) ;
+				if (conv_OK)
+					bez_p1_y = tempY;
+			}
+			if ( xml.attributes().hasAttribute("tx") ) {
+				conv_OK=false;
+				tempX = xml.attributes().value("tx").toString().toFloat (&conv_OK) ;
+				if (conv_OK) 
+					bez_p2_x = tempX;	
+			}
+			if ( xml.attributes().hasAttribute("ty") ) {
+				conv_OK=false;
+				tempY = xml.attributes().value("ty").toString().toFloat (&conv_OK) ;
+				if (conv_OK)
+					bez_p2_y = tempY;
+			}
+			qDebug()<< "        Edge Path control points: " << bez_p1_x << " " << bez_p1_y << " " << bez_p2_x << " " << bez_p2_y;
+	}
+	else if (xml.name() == "LineStyle" ){
+		if ( xml.attributes().hasAttribute("color") ) {
+			edgeColor= xml.attributes().value("color").toString();	
+			qDebug()<< "        Edge color: " << edgeColor;
+		}
+		if ( xml.attributes().hasAttribute("type") ) {
+			edgeType= xml.attributes().value("type").toString();	
+			qDebug()<< "        Edge type: " << edgeType;
+		}
+		if ( xml.attributes().hasAttribute("width") ) {
+			temp = xml.attributes().value("width").toString().toFloat (&conv_OK) ;;	
+			qDebug()<< "        Edge width: " << edgeWeight;
+			if (conv_OK)
+				edgeWeight = temp;
+			else 
+				edgeWeight=1.0;
+			qDebug()<< "        Edge width: " << edgeWeight;
+		}
+		
+	}
+	else if ( xml.name() == "Arrows" ) {
+		if ( xml.attributes().hasAttribute("source") ) {
+			tempString = xml.attributes().value("source").toString();	
+			qDebug()<< "        Edge source arrow type: " << tempString;
+		}
+		if ( xml.attributes().hasAttribute("target") ) {
+			tempString = xml.attributes().value("target").toString();	
+			qDebug()<< "        Edge target arrow type: " << tempString;
+		}
+
+	
+		
+	}
+	else if (xml.name() == "EdgeLabel" ) {
+		key_value=xml.readElementText();  //see if there's simple text after the StartElement
+		if (!xml.hasError()) {
+			qDebug()<< "         Edge Label "<< key_value;		
+			//probably there's more than simple text after StartElement
+			edgeLabel = key_value;
+		}
+		else {
+			qDebug()<< "         Can't read Edge Label. More elements nested ? Continuing with blank edge label....";
+			edgeLabel = "" ;  
+		}
+	}
+		 
+
+
 }
+
 
 void Parser::readGraphMLElementUnknown(QXmlStreamReader &xml) {
 	qDebug()<< "Parser: readGraphMLElementUnknown()";
     Q_ASSERT(xml.isStartElement());
-
-    while (!xml.atEnd()) {
-        xml.readNext();
-
-        if (xml.isEndElement())
-            break;
-
-        if (xml.isStartElement())
-            readGraphMLElementUnknown(xml);
-    }
+	qDebug()<< "   "<< xml.name() ;
 }
 
 
