@@ -3053,7 +3053,7 @@ void MainWindow::slotChangeNodeSize(){
 		return;
 	}
 	bool ok=FALSE;
-	int newSize = QInputDialog::getInteger(this, "Change node size", tr("Change node size to: (1-16)"),initNodeSize, 1, 16, 1, &ok ) ;
+	int newSize = QInputDialog::getInteger(this, "Change node size", tr("Change node size to: (1-100)"),initNodeSize, 1, 100, 1, &ok ) ;
 	if (!ok) {
 		statusBar()->showMessage("Change size operation cancelled.", statusBarDuration);
 		return;

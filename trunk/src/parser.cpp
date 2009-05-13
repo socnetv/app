@@ -623,6 +623,12 @@ int Parser::loadGraphML(){
 		}
 	}
 	emit fileType(4, networkName, aNodes, totalLinks);
+	//clear our mess remove every hash element...
+	keyFor.clear();
+	keyName.clear();
+	keyType.clear(); 
+	keyDefaultValue.clear();
+	nodeNumber.clear();
 	return 1;
 }
 
