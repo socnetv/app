@@ -75,8 +75,8 @@ protected:
 	void run();
 private: 
 	QMutex mutex;
-	QMap<QString, int> nodeNumber;
-	QMap<QString, QString> keyFor, keyName, keyType, keyDefaultValue ;
+	QHash<QString, int> nodeNumber;
+	QHash<QString, QString> keyFor, keyName, keyType, keyDefaultValue ;
 	QXmlStreamReader *xml;
 	QString fileName, networkName, initNodeColor, initEdgeColor, initNodeShape;
 	QString nodeColor, edgeColor, edgeType, nodeShape, nodeLabel, edgeLabel;
