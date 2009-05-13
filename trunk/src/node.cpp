@@ -279,22 +279,24 @@ void Node::setShape(QString shape) {
 
 
 
-/** 	Returns the shape of the node as a path (an accurate outline of the item's shape)
-	Used by the collision algorithm in collidesWithItem() 
+/* 
+*	Returns the shape of the node as a path (an accurate outline of the item's shape)
+*	Used by the collision algorithm in collidesWithItem() 
 */
 QPainterPath Node::shape() const {
-// 	qDebug ("Node: shape()");
-	QPainterPath path;
-
-	path.addEllipse(-m_size, -m_size, 2*m_size, 2*m_size);		
-	return path;
+ 	//qDebug ("Node: shape()");
+	return (*m_path);
 }
 
 
-/** Returns the bounding rectangle of the node */
+/*
+ *  Returns the bounding rectangle of the node
+ *  That is the rectangle where all painting will take place.
+ */
 QRectF Node::boundingRect() const {
-	qreal adjust = 5;
+	qreal adjust = 6;
 	return QRectF(-m_size -adjust , -m_size-adjust , 2*m_size+adjust , 2*m_size +adjust);
+	
 
 }
 
@@ -315,24 +317,32 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 		painter->setBrush(m_col);
 	}
 	painter->setPen(QPen(Qt::black, 0));
-
+	
+	m_path = new QPainterPath;
 	if ( m_shape == "circle") {
-		painter->drawEllipse(-m_size, -m_size, 2*m_size, 2*m_size);		
+		m_path->addEllipse (-m_size, -m_size, 2*m_size, 2*m_size);
 	}
 	else if ( m_shape == "ellipse") {
-		painter->drawEllipse(-m_size, -m_size, 2*m_size, 1.5* m_size);		
+		m_path->addEllipse(-m_size, -m_size, 2*m_size, 1.5* m_size);
 	}
 	else if ( m_shape == "box" || m_shape == "rectangle"  ) {  //rectangle: for GraphML compliance
-		painter->drawRect( QRectF(-m_size , -m_size , 1.8*m_size , 1.8*m_size ) );
+		m_path->addRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size );
+	}
+	else if (m_shape == "roundrectangle"  ) {  //roundrectangle: GraphML only
+		m_path->addRoundedRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size, 60.0, 60.0, Qt::RelativeSize );
 	}
 	else if ( m_shape == "triangle") {
-		m_poly_t -> setPoints (3 ,   0,-m_size,  -m_size,m_size, m_size,+m_size);	
-		painter->drawPolygon( *m_poly_t);
+		m_poly_t -> setPoints (3,  0,-m_size,  -m_size,m_size, m_size,+m_size);
+		m_path->addPolygon(*m_poly_t);
+		m_path->closeSubpath();
 	}	
 	else if ( m_shape == "diamond"){
-		m_poly_d -> setPoints (4 ,   0,-m_size,  -m_size,0,       0,+m_size,     +m_size,0);
-		painter->drawPolygon(*m_poly_d);
+		m_poly_d -> setPoints (4, 0,-m_size,  -m_size,0,       0,+m_size,     +m_size,0);
+		m_path->addPolygon(*m_poly_d);
+		m_path->closeSubpath();
 	}
+
+	painter->drawPath (*m_path);
 }
 
 
