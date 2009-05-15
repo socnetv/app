@@ -64,9 +64,16 @@ public:
 	void setInitNodeSize(int);
 	void setInitNumberDistance(int);
 	void setInitLabelDistance(int);
+
+	void setLabelInsideNode(int, bool);
+	
 	bool setNodeColor(int, QString);
+	
+
+	
 	bool setEdgeColor(int, int, QString);
 	bool setEdgeWeight(int, int, float);
+	
 	void setAllItemsVisibility(int, bool);
 
 protected:
@@ -77,7 +84,7 @@ protected:
 	void paintEvent ( QPaintEvent * event );
 
 public slots:
-	void drawNode(int i, int size, QString aColor, QString label, QString lColor, QPointF p, QString nodeShape, bool showLabels, bool showNumbers);
+	void drawNode(int i, int size, QString aColor, QString label, QString lColor, QPointF p, QString nodeShape, bool showLabels, bool labelIn, bool showNumbers);
 	void drawEdge(int, int, float, bool, bool, QString, bool, bool);
 	void eraseEdge(int, int);
 	void nodeClicked(Node *);

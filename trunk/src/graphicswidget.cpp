@@ -95,30 +95,49 @@ void GraphicsWidget::clear() {
 
 /**	
 	Adds a new node onto the scene 
-	Calls MW to get lastAvailableNodeNumber from graph and 
-	and signals MW to update graph.
 
-	This method is called from: 
-	- mouseDoubleClickEvent, when the user double clicks somewhere.
-	- Graph::createVertex method (on loading files or pressing "Add Node" button.
+	Called from Graph::createVertex method when:
+			 we load files or
+			 the user presses "Add Node" button or
+			 the user double clicks (mouseDoubleClickEvent() calls Graph::createVertex
 
 */
-void GraphicsWidget::drawNode(int num, int size, QString nodeColor, QString nodeLabel, QString labelColor, QPointF p, QString ns, bool showLabels, bool showNumbers) {
+void GraphicsWidget::drawNode(
+								int num, int size, QString nodeColor, 
+								QString nodeLabel, QString labelColor, 
+								QPointF p, 
+								QString shape, 
+								bool showLabels, bool labelInsideNode, bool showNumbers
+								) {
 	qDebug()<< "GW: drawNode(): drawing new node at: " << p.x() << ", "<< p.y();
 
-	Node *jim= new Node (this, num, size, nodeColor, ns, m_labelDistance, m_numberDistance, p);
+	Node *jim= new Node (
+						this, 
+						num, size, nodeColor, shape, 
+						labelInsideNode, m_labelDistance, m_numberDistance, 
+						p
+						);
 
 	//Drawing node label
 	NodeLabel *labelJim = new  NodeLabel (jim, nodeLabel, scene() );
-	labelJim -> setPos(p.x()-2, p.y()+m_labelDistance);
 	labelJim -> setDefaultTextColor (labelColor);
-//	labelJim -> setTextInteractionFlags(Qt::TextEditorInteraction);
+	labelJim -> setTextInteractionFlags(Qt::TextEditorInteraction);
+	if (!labelInsideNode){
+		qDebug() << " GW: The node will display the label outside of it! ";
+		labelJim -> setPos(p.x()-2, p.y()+m_labelDistance);
+	}
+	else {
+		qDebug() << " GW: We're told the node will display the label inside it! ";
+		labelJim -> setPos(p.x(), p.y());
+	}
+	
 	if (showLabels) 
 		qDebug()<< "GW: drawNode: display label " <<  nodeLabel.toAscii() << " for node " << num;
 	else {
 		qDebug()<<"GW: drawNode: hiding label for node " << num;
 		labelJim->hide();
 	}
+
 
 	qDebug()<< "GW: drawNode(): drawing node number...";
 	NodeNumber *numberJim = new  NodeNumber ( jim, size+2, QString::number(num), scene() );
@@ -385,7 +404,7 @@ void GraphicsWidget::removeItem( NodeNumber *nodeNumber){
 
 
 /** 
-	Passes initial node color from MW.
+	Accepts initial node color from MW.
 	It is called from MW on startup and when user changes it.
 */
 void GraphicsWidget::setInitNodeColor(QString color){
@@ -396,8 +415,8 @@ void GraphicsWidget::setInitNodeColor(QString color){
 
 
 /** 
-	Passes initial node color from MW.
-	It is called from MW on startup and when user changes it.
+	Sets initial edge color.
+	Called from MW on startup and when user changes it.
 */
 void GraphicsWidget::setInitLinkColor(QString color){
 	qDebug("GW setting initLinkColor");
@@ -407,8 +426,8 @@ void GraphicsWidget::setInitLinkColor(QString color){
 
 
 /** 
-	Changes/Sets the color of an node.
-	It is called from MW when the user changes the color of a node (right-clicking).
+	Sets the color of an node.
+	Called from MW when the user changes the color of a node (right-clicking).
 */
 bool GraphicsWidget::setNodeColor(int nodeNumber, QString color){
 	QList<QGraphicsItem *> list=scene()->items();
@@ -426,8 +445,25 @@ bool GraphicsWidget::setNodeColor(int nodeNumber, QString color){
 
 
 /** 
+	Makes node label appear inside node.
+	Called from MW on user request.
+*/
+void   GraphicsWidget::setLabelInsideNode(int nodeNumber, bool labIn){
+	QList<QGraphicsItem *> list=scene()->items();
+	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!= list.end() ; it++){
+		if ( (*it)->type()==TypeNode) {
+			Node *node=(Node*) (*it);
+			if ( node->nodeNumber()==nodeNumber ) {
+				node->setLabelInside(labIn);
+			}
+		}
+	}
+}
+
+
+/** 
 	Changes/Sets the color of an edge.
-	It is called from MW when the user changes the color of an edge (right-clicking).
+	Called from MW when the user changes the color of an edge (right-clicking).
 */
 bool GraphicsWidget::setEdgeColor(int source, int target, QString color){
 	QList<QGraphicsItem *> list=scene()->items();
@@ -448,7 +484,7 @@ bool GraphicsWidget::setEdgeColor(int source, int target, QString color){
 
 /** 
 	Changes/Sets the weight of an edge.
-	It is called from MW when the user changes the weight of an edge (right-clicking).
+	Called from MW when the user changes the weight of an edge (right-clicking).
 */
 bool GraphicsWidget::setEdgeWeight(int source, int target, float weight){
 	QList<QGraphicsItem *> list=scene()->items();
@@ -468,8 +504,8 @@ bool GraphicsWidget::setEdgeWeight(int source, int target, float weight){
 
 
 /** 
-	Passes initial node size from MW.
-	It is called from MW on startup and when user changes it.
+	Sets initial node size from MW.
+	It is Called from MW on startup and when user changes it.
 */
 void GraphicsWidget::setInitNodeSize(int size){
 	qDebug("GW setting initNodeSize");
@@ -479,8 +515,8 @@ void GraphicsWidget::setInitNodeSize(int size){
 
 
 /** 
-	Passes initial number distance from node 
-	It is called from MW on startup and when user changes it.
+	Sets initial number distance from node 
+	Called from MW on startup and when user changes it.
 */
 void GraphicsWidget::setInitNumberDistance(int numberDistance){
 	qDebug("GW setting initNumberDistance");
@@ -496,6 +532,8 @@ void GraphicsWidget::setInitLabelDistance(int labelDistance){
 	qDebug("GW setting initLabelDistance");
 	m_labelDistance=labelDistance;
 }
+
+
 
 
 /**
@@ -541,7 +579,11 @@ void GraphicsWidget::clearBackgrCircles(){
 
 
 /** 	
-	Creates a new node when the user double-clicks somewhere
+	Starts a new node when the user double-clicks somewhere
+	Emits userDoubleClicked to MW slot addNodeWithMouse() which
+		- displays node info on MW status bar and 
+		- calls Graph::createVertex(), which in turn calls this->drawNode()...
+		Yes, we make a full circle! :) 
 */
 void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
 	qDebug("GW: mouseDoubleClickEvent() double click detected!");
@@ -555,7 +597,6 @@ void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
 
 	QPointF p = mapToScene(e->pos());
 	qDebug("GW: mouseDoubleClickEvent(): Emit a signal to MW to create a new node in graph. e->pos() (%i, %i) at %f, %f", e->pos().x(),e->pos().y(), p.x(),p.y());
-	
 	emit userDoubleClicked(-1, p);
 	qDebug("GW: mouseDoubleClickEvent(): Scene and GW items now: %i and %i. Emitting Changed() signal... ", scene()->items().size(), items().size());
 }

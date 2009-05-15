@@ -84,7 +84,7 @@ signals:
 	void updateProgressDialog(int );
 	void graphChanged();									//call to update MW widgets
 	/** Signals to GraphicsWidget */
-	void drawNode( int ,int,  QString, QString,QString, QPointF, QString, bool, bool);	//call GW to draw a node
+	void drawNode( int ,int,  QString, QString,QString, QPointF, QString, bool, bool, bool);	//call GW to draw a node
 	void drawEdge(int, int, float, bool, bool, QString, bool, bool);				//call GW to draw an edge
 	void eraseEdge(int, int);		//emited from removeEdge() to GW to clear the edge item.
 	void drawEdgeReciprocal(int, int);							//call GW to draw the edge as symmetric one
@@ -102,10 +102,22 @@ public:
 	QMainWindow* parent();
 	
 	void setShowLabels(bool toggle);
+	void setShowLabelsInsideNodes(bool toggle);
 
 	/**FILES (READ AND WRITE)*/
-	int loadFile(QString, int, QString, QString, QString, bool, int maxWidth, int maxHeight);	//Almost universal network loader. :)
+	int loadGraph (	
+					QString, int, QString, 
+					QString, QString, bool, 
+					int maxWidth, int maxHeight
+				);	//Our almost universal network loader. :)
 	
+	bool  saveGraph( QString fileName, int fileType,
+					 int maxWidth, int maxHeight 
+				);
+	bool saveGraphToPajekFormat (QString fileName, int maxWidth, int maxHeight);
+	bool saveGraphToAdjacencyFormat (QString fileName, int maxWidth, int maxHeight);
+	bool saveGraphToDotFormat (QString fileName, int maxWidth, int maxHeight);
+	bool saveGraphToGraphMLFormat (QString fileName, int maxWidth, int maxHeight);
 
 	/** VERTICES */
 	int lastVertexNumber();						//Returns the number of the last vertex
@@ -262,7 +274,7 @@ private:
 	int outEdgesVert, inEdgesVert, reciprocalEdgesVert;
 	int timerId,  layoutType, canvasWidth, canvasHeight;
 	
-	bool order, initShowLabels;
+	bool order, initShowLabels, initLabelsInsideNodes;
 	bool adjacencyMatrixCreated, symmetricAdjacencyMatrix, graphModified, distanceMatrixCreated;
 
 	QString networkName, initEdgeColor, initVertexColor, initVertexLabelColor, initVertexShape;

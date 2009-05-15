@@ -31,7 +31,7 @@
 #include <QtDebug>		//used for qDebug messages
 #include <list>			//for list iterators
 #include <queue>		//for BFS queue Q
-
+#include <QStatusBar> 		// used in saveTo() to inform user via MW statusBar
 #include "graph.h"
 #include "mainwindow.h" //for parent
 
@@ -79,7 +79,7 @@ void Graph::createVertex(int i, int size, QString nodeColor, QString label, QStr
 	addVertex(i, 1, size,  nodeColor, label, lColor, p, nodeShape);
 	//emit a signal for MW to create the new node onto the canvas.
 	qDebug()<<"*** Graph:: createVertex(): emitting drawNode signal to GW";
-	emit drawNode( i, size,  nodeColor, label, lColor, p, nodeShape, initShowLabels, true);
+	emit drawNode( i, size,  nodeColor, label, lColor, p, nodeShape, initShowLabels, initLabelsInsideNodes, true);
 	emit graphChanged(); 
 	initVertexColor=nodeColor; //just to draw new nodes of the same color with that of the file loaded, when user clicks on the canvas
 	initVertexShape=nodeShape;
@@ -207,7 +207,7 @@ void Graph::addVertex (int v1, int val, int nsz, QString nc, QString nl, QString
 */
 void Graph::fileType(int type, QString networkName, int aNodes, int totalLinks){
 	qDebug("Graph: fileType %i", type);
-	( (MainWindow*)parent() )->fileType(type, networkName, aNodes, totalLinks);
+	((MainWindow*) parent()) ->fileType(type, networkName, aNodes, totalLinks);
 }
 
 
@@ -1819,9 +1819,9 @@ void Graph::layoutLevelCentrality(double maxWidth, double maxHeight, int Central
 */
 void Graph::createRandomNetErdos(int vert, double probability){
 	qDebug("Graph: createRandomNetErdos");
-	bool showLabels = false;
+
 	int progressCounter=0;
-	showLabels = ( (MainWindow*)parent() )->showLabels();
+	bool showLabels = ((MainWindow*) parent())->showLabels();
 
 	for (register int i=0; i< vert ; i++) {
 		int x=10+rand() %640;
@@ -1860,7 +1860,7 @@ void Graph::createRandomNetRingLattice(int vert, int degree,double x0, double y0
 	int y=0;
 	int progressCounter=0;
 	bool showLabels = false;
-	showLabels = ( (MainWindow*)parent() )->showLabels();
+	showLabels = ((MainWindow*) parent()) ->showLabels();
 	double Pi = 3.14159265;
 	double rad= (2.0* Pi/ vert );
 	for (register int i=0; i< vert ; i++) {
@@ -1940,7 +1940,7 @@ void Graph::createSameDegreeRandomNetwork(int vert, int degree){
 	qDebug("Graph: createSameDegreeRandomNetwork");
 	bool showLabels = false;
 	int progressCounter=0;
-	showLabels = ( (MainWindow*)parent() )->showLabels();
+	showLabels = ((MainWindow*) parent()) ->showLabels();
 	for (register int i=0; i< vert ; i++) {
 		int x=10+rand() %640;
 		int y=10+rand() %480;
@@ -2161,20 +2161,191 @@ int Graph:: factorial(int x) {
 	Our almost universal network loader. :)
 	Actually it calls the load() method of parser/qthread class.
 */
-int Graph::loadFile(QString fileName, int iNS, QString iNC, QString iNL, QString iNSh, bool iSL, int maxWidth, int maxHeight){
-	qDebug("Calling thread");
+int Graph::loadGraph (
+						QString fileName, int iNS, QString iNC, 
+						QString iNL, QString iNSh, bool iSL, 
+						int maxWidth, int maxHeight
+					){
+	qDebug() << "Graph:: loadGraph - Calling thread";
 	parser.load(fileName, iNS, iNC, iNL, iNSh, iSL, maxWidth, maxHeight);
-	qDebug("See the thread?");
-
+	qDebug("See the thread? :)");
 	return 1;
+}
+
+
+
+/**
+	Our almost universal graph saver. :)
+	Actually it just checks the requested file type and 
+	calls the right saveGraphTo...() method  
+*/
+bool Graph::saveGraph ( 
+				QString fileName, int fileType,	int maxWidth, int maxHeight
+	) {
+	qDebug() << "Graph::saveGraph to ...";
+	switch (fileType) {
+		case 1 : {			//Pajek
+				qDebug() << " 	... Pajek formatted file";
+				return saveGraphToPajekFormat(fileName, maxWidth, maxHeight);
+				break;			
+		}
+		case 2: {			// Adjacency
+				qDebug() << " 	... Adjacency formatted file";
+				return saveGraphToAdjacencyFormat(fileName, maxWidth,maxHeight);
+				break;
+		}
+		case 3: {			// Dot
+				qDebug() << " 	... Dot formatted file";
+				return saveGraphToDotFormat(fileName, maxWidth, maxHeight);
+				break;
+		}
+		case 4: {			// GraphML
+				qDebug() << " 	... GraphML formatted file";
+				return saveGraphToGraphMLFormat(fileName, maxWidth, maxHeight);
+				break;
+		}
+	};
+}
+
+
+
+
+/**
+	Saves the active graph to a Pajek-formatted file
+	Preserves node properties (positions, colours, etc)
+*/
+bool Graph::saveGraphToPajekFormat (
+			QString fileName, int maxWidth, int maxHeight)
+{
+	qDebug () << " Graph::saveGraphToPajekFormat to file: " << fileName.toAscii();
+
+	int weight=0;
+	int statusBarDuration = 1000;
+	QFile f( fileName );
+	if ( !f.open( QIODevice::WriteOnly ) )  {
+		((MainWindow*) parent())->statusBar()->showMessage( 
+						QString(tr("Could not write to %1")).arg(fileName), 
+						statusBarDuration 
+						);
+		return false;
+	}
+	QTextStream t( &f );
+   	t<<"*Network "<<networkName<<"\n";
+	
+   	t<<"*Vertices "<< vertices() <<"\n";
+	QList<Vertex*>::iterator it;
+	QList<Vertex*>::iterator jt;
+	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
+		qDebug()<<" Name x "<<  (*it)->name()  ;
+		t<<(*it)->name()  <<" "<<"\""<<(*it)->label()<<"\"" ;
+		t << " ic ";
+		t<<  (*it)->color() ;
+		qDebug()<<" Coordinates x " << (*it)->x()<< " "<<maxWidth<<" y " << (*it)->y()<< " "<<maxHeight;
+		t << "\t\t" <<(*it)->x()/(maxWidth)<<" \t"<<(*it)->y()/(maxHeight);
+		t << "\t"<<(*it)->shape();
+		t<<"\n";
+	}
+
+	t<<"*Arcs \n";
+	qDebug("Graph::saveGraphToPajekFormat: Arcs");
+	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
+		for (jt=m_graph.begin(); jt!=m_graph.end(); jt++){ 
+			qDebug("Graph::saveGraphToPajekFormat:  it=%i, jt=%i", (*it)->name(), (*jt)->name() );
+			if  ( (weight=this->hasEdge( (*it)->name(), (*jt)->name())) !=0  
+				 &&   ( this->hasEdge((*jt)->name(), (*it)->name())) == 0  
+				 )  {
+				qDebug()<<"Graph::saveGraphToPajekFormat  weight "<< weight << " color "<<  (*it)->outLinkColor( (*jt)->name() ) ;
+			        t << (*it)->name() <<" "<<(*jt)->name()<< " "<<weight;
+				//FIXME bug in outLinkColor() when we remove then add many nodes from the end
+				t<< " c "<< (*it)->outLinkColor( (*jt)->name() );
+          			t <<"\n";
+			}
+
+		}
+	}
+	
+	t<<"*Edges \n";
+	qDebug("Graph::saveGraphToPajekFormat: Edges");
+	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
+		for (jt=m_graph.begin(); jt!=m_graph.end(); jt++){ 
+			qDebug("Graph::saveGraphToPajekFormat:  it=%i, jt=%i", (*it)->name(), (*jt)->name() );
+			if  ( (weight=this->hasEdge((*it)->name(), (*jt)->name()))!=0   &&   
+					(this->hasEdge((*jt)->name(), (*it)->name()))!=0  
+				)  {
+				if ( (*it)->name() > (*jt)->name() ) 
+					continue;
+				t << (*it)->name() <<" "<<(*jt)->name()<< " "<<weight;
+				t << " c "<< (*it)->outLinkColor( (*jt)->name() );
+				t <<"\n";
+			}
+		}
+	}
+	f.close();
+	QString fileNameNoPath=fileName.split("/").last();
+	parent() ->statusBar()->showMessage( 
+				QString(tr( "File %1 saved" ) ).arg( fileNameNoPath ), 
+				statusBarDuration );
+
+	return true;
+
+	
 
 }
+
+
+
+bool Graph::saveGraphToAdjacencyFormat (
+			QString fileName, int maxWidth, int maxHeight)
+{
+	int statusBarDuration = 1000;
+	QFile f( fileName );
+	if ( !f.open( QIODevice::WriteOnly ) )  {
+		parent()->statusBar()->showMessage( 
+					QString(tr("Could not write to %1")).arg(fileName), 
+					statusBarDuration 
+					);
+		return false;
+	}
+	QTextStream t( &f );
+	qDebug("Graph: saveGraphToAdjacencyFormat() for %i vertices", vertices());
+
+	writeAdjacencyMatrixTo(t);
+
+	f.close();
+	QString fileNameNoPath=fileName.split("/").last();
+
+	parent()->statusBar()->showMessage( 
+					QString( tr("Adjacency matrix-formatted network saved into file %1") ).arg( fileNameNoPath ), statusBarDuration );
+	return true;
+}
+
+
+
+bool Graph::saveGraphToDotFormat (
+			QString fileName, int maxWidth, int maxHeight)
+{
+	
+}
+
+
+
+bool Graph::saveGraphToGraphMLFormat (
+			QString fileName, int maxWidth, int maxHeight)
+{
+	
+}
+
 
 
 
 
 void Graph::setShowLabels(bool toggle){
 	initShowLabels=toggle;
+
+}
+
+void Graph::setShowLabelsInsideNodes(bool toggle){
+	initLabelsInsideNodes=toggle;
 
 }
 

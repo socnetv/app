@@ -1,16 +1,20 @@
-*Network 3cliques
-*Vertices 10
-1 "G1" ic Blue		0.447402 	0.883772
-2 "G2" ic Blue		0.652725 	0.129386
-3 "G3" ic Blue		0.166033 	0.160088
-4 "G4" ic Blue		0.286439 	0.274123
-5 "G5" ic Blue		0.809886 	0.39693
-6 "G6" ic Blue		0.263625 	0.79386
-7 "G7" ic Blue		0.60076 	0.502193
-8 "G8" ic Blue		0.108999 	0.361842
-9 "G9" ic Blue		0.347275 	0.557018
-10 "G10" ic Blue		0.515843 	0.703947
+*Network 
+*Vertices 12
+1 "G1" ic Blue		0.473958 	0.918228	diamond
+2 "G2" ic Blue		0.692708 	0.132879	diamond
+3 "G3" ic Blue		0.453125 	0.0681431	diamond
+4 "G4" ic Blue		0.454861 	0.369676	diamond
+5 "G5" ic Blue		0.861111 	0.410562	diamond
+6 "G6" ic Blue		0.277778 	0.824531	diamond
+7 "G7" ic Blue		0.637153 	0.521295	diamond
+8 "G8" ic Blue		0.206597 	0.223169	diamond
+9 "G9" ic Blue		0.368056 	0.577513	diamond
+10 "G10" ic Blue		0.546875 	0.730835	diamond
+11 "11" ic Blue		0.184028 	0.451448	diamond
+12 "12" ic Blue		0.0694444 	0.289608	diamond
 *Arcs 
+11 8 1 c Yellow
+12 8 1 c Yellow
 *Edges 
 1 6 5 c Yellow
 1 9 1 c Yellow

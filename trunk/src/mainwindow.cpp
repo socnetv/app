@@ -107,7 +107,7 @@ MainWindow::MainWindow(const QString &fName) {
 	connect( &activeGraph, SIGNAL( addBackgrCircle (int, int, int) ), graphicsWidget, SLOT(addBackgrCircle(int, int, int) ) ) ;
 	connect( &activeGraph, SIGNAL( addBackgrHLine (int) ), graphicsWidget, SLOT(addBackgrHLine(int) ) ) ;
 	connect( &activeGraph, SIGNAL( moveNode(int, int, int) ), graphicsWidget, SLOT(moveNode(int, int, int) ) ) ;
-	connect( &activeGraph, SIGNAL( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool, bool) ), graphicsWidget, SLOT( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool, bool)  ) ) ;
+	connect( &activeGraph, SIGNAL( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool, bool, bool) ), graphicsWidget, SLOT( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool, bool, bool)  ) ) ;
 	connect( &activeGraph, SIGNAL( eraseEdge(int, int)), graphicsWidget, SLOT( eraseEdge(int, int) ) );
 	connect( &activeGraph, SIGNAL( graphChanged() ), this, SLOT( graphChanged() ) ) ;
 
@@ -745,6 +745,15 @@ void MainWindow::initActions(){
 	displayNodeLabelsAct->setChecked(false);
 	connect(displayNodeLabelsAct, SIGNAL(toggled(bool)), this, SLOT(slotDisplayNodeLabels(bool)));
 
+
+	displayLabelsInsideNodesAct= new QAction(tr("Display Labels Inside Nodes"),	this );
+	displayLabelsInsideNodesAct->setStatusTip(tr("Toggles displaying labels inside nodes"));
+	displayLabelsInsideNodesAct->setWhatsThis(tr("Display Labels Inside Nodes\n\nTurns on/off displaying labels inside nodes"));
+ 	displayLabelsInsideNodesAct->setCheckable (true);
+	displayLabelsInsideNodesAct->setChecked(false);
+	connect(displayLabelsInsideNodesAct, SIGNAL(toggled(bool)), this, SLOT(slotDisplayLabelsInsideNodes(bool)));
+
+
 	displayLinksAct = new QAction(tr("Display Links"),	this);
 	displayLinksAct->setStatusTip(tr("Toggle to display or not links"));
 	displayLinksAct->setWhatsThis(tr("Display Links\n\nClick to enable or disable displaying of links"));
@@ -1046,8 +1055,9 @@ void MainWindow::initMenuBar() {
 	nodeOptionsMenu -> setIcon(QIcon(":/images/nodes.png")); 
 
 	optionsMenu -> addMenu (nodeOptionsMenu);
-	nodeOptionsMenu -> addAction (displayNodeLabelsAct);
 	nodeOptionsMenu -> addAction (displayNodeNumbersAct);
+	nodeOptionsMenu -> addAction (displayNodeLabelsAct);
+	nodeOptionsMenu -> addAction (displayLabelsInsideNodesAct);
 
 	linkOptionsMenu=new QMenu(tr("Links"));
 	linkOptionsMenu -> setIcon(QIcon(":/images/line.png"));
@@ -1444,7 +1454,7 @@ void MainWindow::initNet(){
 
 	dotFileLoaded=FALSE;
 	fileLoaded=FALSE;
-	fileSaved=FALSE;
+
 	networkModified=FALSE;
 	fileSave->setIcon(QIcon(":/images/saved.png"));
 	fileSave->setEnabled(false);
@@ -1580,6 +1590,7 @@ void MainWindow::slotChooseFile() {
 */
 void MainWindow::slotFileSave() {
 	statusBar()->showMessage(tr("Saving file..."));
+
 	if (!fileLoaded && !networkModified ) {
 		statusBar()->showMessage( QString(tr("No network loaded.")), statusBarDuration );
 		return;
@@ -1588,14 +1599,21 @@ void MainWindow::slotFileSave() {
 		slotFileSaveAs();
 		return;
 	}
+
+	int maxWidth=scene->width();
+	int maxHeight=scene->height();	
 	fileNameNoPath=fileName.split ("/");
 	if (pajekFileLoaded) {
-		if ( slotExportPajek() )  fileSaved=TRUE;  
-		else  fileSaved=FALSE; 
+		if ( activeGraph.saveGraph(fileName, 1, maxWidth,maxHeight) )
+			networkSaved(1);
+		else 
+			networkSaved(0); 
 	}
 	else if (adjacencyFileLoaded){
-		if (slotExportSM() ) fileSaved=TRUE; 
-		else  fileSaved=FALSE; 
+		if ( activeGraph.saveGraph(fileName, 2, maxWidth,maxHeight) )
+			networkSaved(2);
+		else 
+			networkSaved(0);
 	}
 	else 
 	switch( QMessageBox::information( this, "File Format-",
@@ -1605,24 +1623,20 @@ void MainWindow::slotFileSave() {
 				      0, 1 ) )
 	{
 		case 0:
-			if ( slotExportPajek() )  fileSaved=TRUE; 
-			else  fileSaved=FALSE; 
-			break;
+			if ( activeGraph.saveGraph(fileName, 1, maxWidth,maxHeight) )
+				networkSaved(1);
+			else 
+				networkSaved(0); 
+ 			break;
 		case 1:
-			if (slotExportSM() ) fileSaved=TRUE;
-			else  fileSaved=FALSE; 
+			if ( activeGraph.saveGraph(fileName, 2, maxWidth,maxHeight) )
+				networkSaved(2);
+			else 
+				networkSaved(0);
 			break;
 	}
-	if (fileSaved)	{
-		fileSave->setIcon(QIcon(":/images/saved.png"));
-		fileSave->setEnabled(false);
-		fileLoaded=TRUE; networkModified=FALSE;
-	}
-	else 
-		 graphChanged();
 
-	setWindowTitle( fileNameNoPath.last() );
-	statusBar()->showMessage(tr("Network saved under filename: ")+fileNameNoPath.last()+tr("."), statusBarDuration );
+
 }
 
 
@@ -1647,6 +1661,43 @@ void MainWindow::slotFileSaveAs() {
 
 
 
+/*
+ *	Called from Graph when we try to save file  
+ */
+void MainWindow::networkSaved(int saved_ok)
+{
+	if (saved_ok <= 0) 
+	{
+		graphChanged();
+		statusBar()->showMessage(tr("Error! Could not save this file... ")+fileNameNoPath.last()+tr("."), statusBarDuration );
+	}
+	else	
+	{
+		fileSave->setIcon(QIcon(":/images/saved.png"));
+		fileSave->setEnabled(false);
+		fileLoaded=TRUE; networkModified=FALSE;
+		setWindowTitle( fileNameNoPath.last() );
+		statusBar()->showMessage(tr("Network saved under filename: ")+fileNameNoPath.last()+tr("."), statusBarDuration );
+		switch (saved_ok){
+			case 1: 
+				adjacencyFileLoaded=false;
+				pajekFileLoaded=true;
+				break;
+			case 2:
+				adjacencyFileLoaded=true;
+				pajekFileLoaded=false;
+				break;
+			case 3:
+				adjacencyFileLoaded=false;
+				pajekFileLoaded=false;
+				break;
+			case 4:
+				adjacencyFileLoaded=false;
+				pajekFileLoaded=false;
+				break;			
+		}
+	}		
+}
 
 /**
 	Closes the network. Saves it if necessary. 
@@ -1687,17 +1738,23 @@ void MainWindow::slotPrintView() {
 
 /**
 	inits everything to defaults.
-	Then calls loadFile function of activeGraph to load the network...
+	Then calls loadGraph function of activeGraph to load the network...
 */
 int MainWindow::loadNetworkFile(QString fileName){
 	qDebug("MW: loadNetworkFile");
 	initNet(); 
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-	qDebug("MW: calling activeGraph loadFile gw height %i", graphicsWidget->height() ) ;
-	int loadFileStatus=activeGraph.loadFile(fileName, initNodeSize, initNodeColor, initLinkColor, initNodeShape, displayNodeLabelsAct->isChecked(), graphicsWidget->width(), graphicsWidget->height() );
-	qDebug("MW: OK activeGraph.loadFile()  has finished. You should be seeing nodes by now! ");
+	qDebug("MW: calling activeGraph loadgraph gw height %i", graphicsWidget->height() ) ;
+	int loadGraphStatus=activeGraph.loadGraph ( 
+										fileName, initNodeSize, initNodeColor, 
+										initLinkColor, initNodeShape,
+										 displayNodeLabelsAct->isChecked(), 
+										 graphicsWidget->width(), 
+										 graphicsWidget->height() 
+									 );
+	qDebug("MW: OK activeGraph.loadGraph()  has finished. You should be seeing nodes by now! ");
 	QApplication::restoreOverrideCursor();
-	return loadFileStatus;
+	return loadGraphStatus;
 }
 
 
@@ -1718,10 +1775,6 @@ void MainWindow::fileType(int type, QString networkName, int aNodes, int totalLi
 			adjacencyFileLoaded=FALSE;
 			fileLoaded=TRUE;
 			networkModified=FALSE;
-// 			QMessageBox::information (this, "File Loaded", "Pajek formatted network\n"
-// 			"\nNamed: "+QString(networkName)
-// 			+"\nNodes: "+QString::number(aNodes)
-// 			+"\nLinks: "+QString::number(totalLinks)+ ".", "OK",0);
 			statusBar()->showMessage( QString(tr("Pajek formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ), statusBarDuration);
 			break;
 		case 2:
@@ -1932,88 +1985,38 @@ bool MainWindow::slotExportPDF(){
 
 
 /**
-	FIXME: Import/Export belongs to Graph class
-
 	Exports the network to a Pajek-formatted file
-	Preserves node properties (positions, colours, etc)
+	Calles the relevant Graph method.
 */
-bool MainWindow::slotExportPajek(){
+bool MainWindow::slotExportPajek()
+{
 	qDebug ("MW: slotExportPajek");
+
 	if (!fileLoaded && !networkModified )  {
 		QMessageBox::critical(this, "Error",tr("Nothing to export! \nLoad a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("Cannot export to Pajek.") ,statusBarDuration);
 		return false;
 	}
-
-	int weight=0;
-	if (fileName.isEmpty()) {
-		statusBar()->showMessage(tr("Saving network under new filename..."));
-  		QString fn = QFileDialog::getSaveFileName(this,tr("Save"), 0,0);
- 	 	if (!fn.isEmpty())  {
+		if (fileName.isEmpty()) {
+			statusBar()->showMessage(tr("Saving network under new filename..."));
+		QString fn =  QFileDialog::getSaveFileName(this, 0, 0);
+	 	if (!fn.isEmpty())  {
 			fileName=fn;
-  		}
-  		else  {
-   		 	statusBar()->showMessage(tr("Saving aborted"), statusBarDuration);
+		}
+		else  {
+	 		statusBar()->showMessage(tr("Saving aborted"), statusBarDuration);
 			return false;
- 		}
-	}
-
-	QFile f( fileName );
-	if ( !f.open( QIODevice::WriteOnly ) )  {
-		statusBar()->showMessage( QString(tr("Could not write to %1")).arg(fileName), statusBarDuration );
-		return false;
-	}
-	QTextStream t( &f );
-   	t<<"*Network "<<networkName<<"\n";
-	
-   	t<<"*Vertices "<< activeNodes() <<"\n";
-	QList<Vertex*>::iterator it;
-	QList<Vertex*>::iterator jt;
-	for (it=activeGraph.m_graph.begin(); it!=activeGraph.m_graph.end(); it++){ 
-		qDebug()<<" Name x "<<  (*it)->name()  ;
-		t<<(*it)->name()  <<" "<<"\""<<(*it)->label()<<"\"" ;
-		t << " ic ";
-		t<<  (*it)->color() ;
-		qDebug()<<" Coordinates x " << (*it)->x()<< " "<<scene->width()<<" y " << (*it)->y()<< " "<<scene->height();
-		t << "\t\t" <<(*it)->x()/(scene->width())<<" \t"<<(*it)->y()/(scene->height());
-		t << "\t"<<(*it)->shape();
-		t<<"\n";
-	}
-
-	t<<"*Arcs \n";
-	qDebug("MW: Arcs");
-	for (it=activeGraph.m_graph.begin(); it!=activeGraph.m_graph.end(); it++){ 
-		for (jt=activeGraph.m_graph.begin(); jt!=activeGraph.m_graph.end(); jt++){ 
-			qDebug("MW:  it=%i, jt=%i", (*it)->name(), (*jt)->name() );
-			if  ( (weight=activeGraph.hasEdge( (*it)->name(), (*jt)->name())) !=0   &&   (activeGraph.hasEdge((*jt)->name(), (*it)->name())) == 0  )  {
-				qDebug()<<"MW: slotExportPajek weight "<< weight << " color "<<  (*it)->outLinkColor( (*jt)->name() ) ;
-			        t << (*it)->name() <<" "<<(*jt)->name()<< " "<<weight;
-				//FIXME bug in outLinkColor() when we remove then add many nodes from the end
-				t<< " c "<< (*it)->outLinkColor( (*jt)->name() );
-          			t <<"\n";
-			}
-
 		}
 	}
+
+	int maxWidth=scene->width();
+	int maxHeight=scene->height();	
+
+	if ( activeGraph.saveGraph(fileName, 1, maxWidth,maxHeight ) )  
+		networkSaved(1);
+	else 
+		networkSaved(0); 
 	
-	t<<"*Edges \n";
-	qDebug("MW: Edges");
-	for (it=activeGraph.m_graph.begin(); it!=activeGraph.m_graph.end(); it++){ 
-		for (jt=activeGraph.m_graph.begin(); jt!=activeGraph.m_graph.end(); jt++){ 
-			qDebug("MW:  it=%i, jt=%i", (*it)->name(), (*jt)->name() );
-			if  ( (weight=activeGraph.hasEdge((*it)->name(), (*jt)->name()))!=0   &&   (activeGraph.hasEdge((*jt)->name(), (*it)->name()))!=0  )  {
-				if ( (*it)->name() > (*jt)->name() ) continue;
-			        t << (*it)->name() <<" "<<(*jt)->name()<< " "<<weight;
-				t<< " c "<< (*it)->outLinkColor( (*jt)->name() );
-          			t <<"\n";
-			}
-
-		}
-	}
-	f.close();
-	statusBar()->showMessage( QString(tr( "File %1 saved" ) ).arg( fileNameNoPath.last() ), statusBarDuration );
-
-	return true;
 }
 
 
@@ -2028,34 +2031,53 @@ bool MainWindow::slotExportSM(){
 		statusBar()->showMessage(tr("Cannot export to Adjacency Matrix.") ,statusBarDuration);
 		return false;
 	}
-
-	QMessageBox::information(this, "Warning",tr("Note that exporting to an adjacency matrix does not save floating-point weight values; adjacency matrices consist of integers, only. \n If your network had any floating point weights in some edges, these are being truncated to the nearest integer or 1.)"), "OK",0);
 	if (fileName.isEmpty()) {
 		statusBar()->showMessage(tr("Saving network under new filename..."));
-  		QString fn = QFileDialog::getSaveFileName(this, 0, 0);
- 	 	if (!fn.isEmpty())  {
+		QString fn =  QFileDialog::getSaveFileName(this, 0, 0);
+	 	if (!fn.isEmpty())  {
 			fileName=fn;
-  		}
-  		else  {
-   		 	statusBar()->showMessage(tr("Saving aborted"), statusBarDuration);
+		}
+		else  {
+	 		statusBar()->showMessage(tr("Saving aborted"), statusBarDuration);
 			return false;
- 		}
+		}
 	}
-	QFile f( fileName );
-	if ( !f.open( QIODevice::WriteOnly ) )  {
-		statusBar()->showMessage( QString(tr("Could not write to %1")).arg(fileName), statusBarDuration );
-		return false;
-	}
-	QTextStream t( &f );
-	qDebug("MW: slotExportSM() for %i activeNodes", activeNodes());
 
-	activeGraph.writeAdjacencyMatrixTo(t);
+	QMessageBox::information(this, "Warning",tr("Note that exporting to an adjacency matrix does not save floating-point weight values; adjacency matrices consist of integers, only. \n If your network had any floating point weights in some edges, these are being truncated to the nearest integer or 1.)"), "OK",0);
+	int maxWidth=scene->width();
+	int maxHeight=scene->height();	
 
-	f.close();
-	statusBar()->showMessage( QString( tr("Adjacency matrix-formatted network saved into file %1") ).arg( fileNameNoPath.last() ), statusBarDuration );
-	adjacencyFileLoaded=TRUE;
-	pajekFileLoaded=FALSE;
-	return true;
+	if ( activeGraph.saveGraph(fileName, 2, maxWidth,maxHeight ) )  
+		networkSaved(1);
+	else 
+		networkSaved(0); 
+
+	//if (fileName.isEmpty()) {
+		//statusBar()->showMessage(tr("Saving network under new filename..."));
+  		//QString fn = QFileDialog::getSaveFileName(this, 0, 0);
+ 	 	//if (!fn.isEmpty())  {
+			//fileName=fn;
+  		//}
+  		//else  {
+   		 	//statusBar()->showMessage(tr("Saving aborted"), statusBarDuration);
+			//return false;
+ 		//}
+	//}
+	//QFile f( fileName );
+	//if ( !f.open( QIODevice::WriteOnly ) )  {
+		//statusBar()->showMessage( QString(tr("Could not write to %1")).arg(fileName), statusBarDuration );
+		//return false;
+	//}
+	//QTextStream t( &f );
+	//qDebug("MW: slotExportSM() for %i activeNodes", activeNodes());
+
+	//activeGraph.writeAdjacencyMatrixTo(t);
+
+	//f.close();
+	//statusBar()->showMessage( QString( tr("Adjacency matrix-formatted network saved into file %1") ).arg( fileNameNoPath.last() ), statusBarDuration );
+	//adjacencyFileLoaded=TRUE;
+	//pajekFileLoaded=FALSE;
+	//return true;
 }
 
 
@@ -4871,7 +4893,39 @@ bool MainWindow::showLabels(){
 
 
 /**
+*	Called by Graph:: and this->initNet()
+*/
+bool MainWindow::showLabelsInsideNodes(){
+	return displayLabelsInsideNodesAct->isChecked();
+}
+
+
+
+/**
 *  Turns on/off displaying the labels of the nodes.
+*/
+void MainWindow::slotDisplayLabelsInsideNodes(bool toggle){
+ 	if (!fileLoaded && ! networkModified) {
+		QMessageBox::critical(this, "Error",tr("There are no nodes! \nLoad a network file or create a new network first. "), "OK",0);
+		statusBar()->showMessage(tr("No nodes found. Sorry..."), statusBarDuration);
+		return;
+	}
+	statusBar()->showMessage(tr("Toggle Nodes Labels. Please wait..."), statusBarDuration);
+
+	if (!toggle) 	{
+//		graphicsWidget->setAllItemsVisibility(TypeLabel, false);
+		statusBar()->showMessage(tr("Node Labels are invisible now. Click the same option again to display them."), statusBarDuration);
+		return;
+	}
+	else{
+		graphicsWidget->setAllItemsVisibility(TypeLabel, true);
+		statusBar()->showMessage(tr("Node Labels are visible again..."), statusBarDuration);
+	}
+	activeGraph.setShowLabelsInsideNodes(toggle);
+}
+
+/**
+*  Turns on/off displaying labels inside nodes.
 */
 void MainWindow::slotDisplayNodeLabels(bool toggle){
  	if (!fileLoaded && ! networkModified) {

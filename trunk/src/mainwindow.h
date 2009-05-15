@@ -90,6 +90,7 @@ public:		/**PUBLIC FUNCTIONS NOT VISIBLE BY OTHER WIDGETS NOR BY SLOT/LINK MECHA
 	void makeThingsLookRandom();
 
 	bool showLabels();
+	bool showLabelsInsideNodes();
 	bool showNumbers();
 
 	int loadNetworkFile( QString);
@@ -198,6 +199,7 @@ public slots:
 	//OPTIONS MENU
 	void slotDisplayNodeNumbers(bool toggle);
 	void slotDisplayNodeLabels(bool toggle);
+	void slotDisplayLabelsInsideNodes(bool toggle);
 	void slotChangeAllNodesSize();
 	void slotChangeAllNodesShape();
 	void slotChangeNumbersSize();
@@ -244,7 +246,9 @@ public slots:
 	//Called by graphicswidget when the user double-clicks
 	void addNodeWithMouse(int, QPointF);
 	
-
+	//Called by Graph on saving file. int is the network type saved.
+	void networkSaved(int);
+	
 protected:
 	void resizeEvent( QResizeEvent * );
 	void closeEvent( QCloseEvent* ce );
@@ -280,7 +284,7 @@ private:
 	QAction *viewNetworkFileAct, *viewSociomatrixAct, *createUniformRandomNetworkAct;
 	QAction *createGaussianRandomNetworkAct, *createLatticeNetworkAct, *createConnectedRandomNetworkAct;
 	QAction *createSmallWorldRandomNetworkAct, *createSameDegreeRandomNetworkAct;
-	QAction *displayNodeNumbersAct, *displayNodeLabelsAct;
+	QAction *displayNodeNumbersAct, *displayNodeLabelsAct, *displayLabelsInsideNodesAct;
 	QAction *findNodeAct,*addNodeAct, *addLinkAct, *removeNodeAct, *removeLinkAct;
 	QAction *changeNumbersSizeAct, *changeNodeLabelAct, *changeNodeColorAct, *changeNodeValueAct, *changeNodeSizeAct;
 	QAction *changeLabelsSizeAct, *changeAllNodesSizeAct, *changeAllNodesShapeAct;
@@ -311,7 +315,7 @@ private:
 	int initNodeSize, labelDistance, numberDistance,initNumberSize;
 	int totalLinks, fortuneCookiesCounter, preSize, tipsCounter;
 	QString VERSION;
-	bool pajekFileLoaded, adjacencyFileLoaded, dotFileLoaded, fileLoaded,  fileSaved;
+	bool pajekFileLoaded, adjacencyFileLoaded, dotFileLoaded, fileLoaded;
 	bool networkModified;
 	bool fileContainsNodesCoords, fileContainsNodeColors, fileContainsLinksColors;
 	bool bezier,  linkClicked, nodeClicked, markedNodeExists, showProgressBar, firstTime;

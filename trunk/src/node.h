@@ -57,7 +57,7 @@ class Node :  public QObject,  public QGraphicsItem {
   Q_OBJECT
 	
 public:
-	Node(GraphicsWidget*, int num, int size, QString col, QString shape, int, int, QPointF p) ;
+	Node(GraphicsWidget*, int num, int size, QString col, QString shape, bool, int, int, QPointF p) ;
 //	~Node();
 
 	enum { Type = UserType + 1 };
@@ -94,8 +94,9 @@ public:
 	void deleteOutLink(Edge*);
 
 	void addLabel (NodeLabel* gfxLabel  ) ;
-	void deleteLabel ();
-	void clearLabel(); 
+	void deleteLabel();
+	void clearLabel();
+	void setLabelInside(bool);
 
 	void addNumber (NodeNumber *gfxNum ) ;
 	void deleteNumber(NodeNumber*);
@@ -120,9 +121,9 @@ private:
 	QPointF newPos;
 	QPolygon *m_poly_t, *m_poly_d;
 	int m_num, m_size, m_nd, m_ld;
-	QString  m_shape,  m_col_str;
+	QString  m_shape,  m_col_str, m_labelIn;
 	QColor m_col, m_col_dark;
-	bool hasLabel;
+	bool m_hasLabel, m_isLabelInside;
 	/**Lists of elements attached to this node */
 	list<Edge*> inEdgeList, outEdgeList;
 	list<NodeNumber*> gfxNumberList;

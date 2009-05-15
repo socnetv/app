@@ -39,12 +39,13 @@
 
 #include <math.h> //sqrt
 
-Node::Node( GraphicsWidget* gw, int num, int size, QString col, QString shape, int ldist, int ndist, QPointF p) : graphicsWidget (gw) {
+Node::Node( GraphicsWidget* gw, int num, int size, QString col, QString shape, bool labIn, int ldist, int ndist, QPointF p) : graphicsWidget (gw) {
 	graphicsWidget->scene()->addItem(this); //Without this nodes dont appear on the screen...
 	setFlag(ItemIsMovable); //Without this, nodes do not move...
 	m_num=num;
 	m_size=size;
-	hasLabel=false;
+	m_hasLabel=false;
+	m_isLabelInside = labIn;
 	m_shape=shape;
 	m_col_str=col;
 	m_col=QColor(col);
@@ -342,6 +343,12 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 		m_path->closeSubpath();
 	}
 
+	//if (m_isLabelInside) {
+		//m_path->addText(
+							//QPointF (0, 0), 
+							//QFont ("Times", 8, QFont::Black, FALSE) ,
+							//m_labelIn);
+	//}
 	painter->drawPath (*m_path);
 }
 
@@ -382,17 +389,31 @@ void Node::die() {
 
 void Node::setLabel ( QString label) {
 	prepareGeometryChange();
-	m_label->setPlainText(label);
-	hasLabel=true;
+	//if (!m_isLabelInside)
+		m_label->setPlainText(label);
+	//else 
+		//m_labelIn=label;
+	m_hasLabel=true;
 }
 
 
 QString Node::label ( ) { 
-	if (hasLabel)
-		return m_label->toPlainText();	
+	if (m_hasLabel) {
+		//if (!m_isLabelInside) {
+			return m_label->toPlainText();	
+		//}
+		//else 
+			//return m_labelIn;
+			
+	}	
 	else return "";
 }
 
+
+
+void Node::setLabelInside (bool){
+	
+}
 
 
 
@@ -413,8 +434,18 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
 				edge->adjust();
 			foreach (NodeNumber *num, gfxNumberList) 	//Move its graphic number
 				num->setPos( newPos.x()+m_nd, newPos.y());
-			if (hasLabel)
-				m_label->setPos( newPos.x()-2, newPos.y()+m_ld);
+				
+			if (m_hasLabel) {
+				if (!m_isLabelInside) 		//move the label outside 
+					m_label->setPos( newPos.x()-2, newPos.y()+m_ld);
+				else 			//move the label inside	 
+					m_label->setPos( newPos.x(), newPos.y());
+				m_label->setZValue(256);
+			}
+			
+				
+
+				
 			if ( newPos.x() !=0 && newPos.y() != 0 ){
 				qDebug()<<  "Node: ItemChange(): Emitting nodeMoved() for "<< nodeNumber()<< " at: "<<  newPos.x()<< ", "<<  newPos.y();
 				graphicsWidget->nodeMoved(nodeNumber(), (int) newPos.x(), (int) newPos.y());	
@@ -509,16 +540,18 @@ void Node::deleteOutLink(Edge *link){
 
 void Node::deleteLabel(){
 	qDebug ("Node: deleteLabel ");
-	hasLabel=false;
-	m_label->hide();
-	graphicsWidget->removeItem(m_label);
+	m_hasLabel=false;
+	//if (m_isLabelInside) {
+		m_label->hide();
+		graphicsWidget->removeItem(m_label);		
+	//}
 	//delete m_label;
 
 }
 
 
 void Node::clearLabel(){
-	hasLabel=false;
+	m_hasLabel=false;
 }
 
 
@@ -539,7 +572,7 @@ void Node::clearNumber(){
 void Node::addLabel (NodeLabel* gfxLabel  )  { 
 	qDebug("NODE: add label");
 	m_label=gfxLabel ;
-	hasLabel=true;
+	m_hasLabel=true;
 }
 
 void Node::addNumber (NodeNumber *gfxNum ) {
