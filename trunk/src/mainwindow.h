@@ -117,8 +117,8 @@ public slots:
 	bool slotExportBMP();
 	bool slotExportPNG();
 	bool slotExportPDF();
-	bool slotExportPajek();
-	bool slotExportSM();
+	void slotExportPajek();
+	void slotExportSM();
 	bool slotExportDL();
 	bool slotExportGW();
 	bool slotExportList();

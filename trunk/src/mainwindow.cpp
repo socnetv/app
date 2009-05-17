@@ -1986,16 +1986,16 @@ bool MainWindow::slotExportPDF(){
 
 /**
 	Exports the network to a Pajek-formatted file
-	Calles the relevant Graph method.
+	Calls the relevant Graph method.
 */
-bool MainWindow::slotExportPajek()
+void MainWindow::slotExportPajek()
 {
 	qDebug ("MW: slotExportPajek");
 
 	if (!fileLoaded && !networkModified )  {
 		QMessageBox::critical(this, "Error",tr("Nothing to export! \nLoad a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("Cannot export to Pajek.") ,statusBarDuration);
-		return false;
+		return;
 	}
 		if (fileName.isEmpty()) {
 			statusBar()->showMessage(tr("Saving network under new filename..."));
@@ -2005,7 +2005,7 @@ bool MainWindow::slotExportPajek()
 		}
 		else  {
 	 		statusBar()->showMessage(tr("Saving aborted"), statusBarDuration);
-			return false;
+			return;
 		}
 	}
 
@@ -2022,14 +2022,14 @@ bool MainWindow::slotExportPajek()
 
 
 /**	Exports the network to a adjacency matrix-formatted file
-	Does not preserve node properties nor floating point weights.
+	Calls the relevant Graph method.
 */
-bool MainWindow::slotExportSM(){
+void MainWindow::slotExportSM(){
 	qDebug("MW: slotExportSM()");
 	if (!fileLoaded && !networkModified )  {
 		QMessageBox::critical(this, "Error",tr("Nothing to export!\nLoad a network file or create a new network first."), "OK",0);
 		statusBar()->showMessage(tr("Cannot export to Adjacency Matrix.") ,statusBarDuration);
-		return false;
+		return;
 	}
 	if (fileName.isEmpty()) {
 		statusBar()->showMessage(tr("Saving network under new filename..."));
@@ -2039,7 +2039,7 @@ bool MainWindow::slotExportSM(){
 		}
 		else  {
 	 		statusBar()->showMessage(tr("Saving aborted"), statusBarDuration);
-			return false;
+			return;
 		}
 	}
 
@@ -2051,33 +2051,6 @@ bool MainWindow::slotExportSM(){
 		networkSaved(1);
 	else 
 		networkSaved(0); 
-
-	//if (fileName.isEmpty()) {
-		//statusBar()->showMessage(tr("Saving network under new filename..."));
-  		//QString fn = QFileDialog::getSaveFileName(this, 0, 0);
- 	 	//if (!fn.isEmpty())  {
-			//fileName=fn;
-  		//}
-  		//else  {
-   		 	//statusBar()->showMessage(tr("Saving aborted"), statusBarDuration);
-			//return false;
- 		//}
-	//}
-	//QFile f( fileName );
-	//if ( !f.open( QIODevice::WriteOnly ) )  {
-		//statusBar()->showMessage( QString(tr("Could not write to %1")).arg(fileName), statusBarDuration );
-		//return false;
-	//}
-	//QTextStream t( &f );
-	//qDebug("MW: slotExportSM() for %i activeNodes", activeNodes());
-
-	//activeGraph.writeAdjacencyMatrixTo(t);
-
-	//f.close();
-	//statusBar()->showMessage( QString( tr("Adjacency matrix-formatted network saved into file %1") ).arg( fileNameNoPath.last() ), statusBarDuration );
-	//adjacencyFileLoaded=TRUE;
-	//pajekFileLoaded=FALSE;
-	//return true;
 }
 
 

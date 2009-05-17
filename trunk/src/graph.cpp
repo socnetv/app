@@ -1821,13 +1821,16 @@ void Graph::createRandomNetErdos(int vert, double probability){
 	qDebug("Graph: createRandomNetErdos");
 
 	int progressCounter=0;
-	bool showLabels = ((MainWindow*) parent())->showLabels();
-
+	
 	for (register int i=0; i< vert ; i++) {
 		int x=10+rand() %640;
 		int y=10+rand() %480;
 		qDebug("Graph: createRandomNetErdos, new node i=%i, at x=%i, y=%i", i+1, x,y);
-		createVertex(i+1,initVertexSize,initVertexColor, QString::number (i+1), initVertexLabelColor, QPoint(x, y), initVertexShape);
+		createVertex (
+						i+1, initVertexSize, initVertexColor, 
+						QString::number (i+1), initVertexLabelColor, 
+						QPoint(x, y), initVertexShape
+					);
 		progressCounter++;
 		emit updateProgressDialog( progressCounter );
 	}
@@ -1844,7 +1847,6 @@ void Graph::createRandomNetErdos(int vert, double probability){
 		progressCounter++;
 		emit updateProgressDialog(progressCounter );
 		qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
-
 	}
 }
 
@@ -2253,12 +2255,13 @@ bool Graph::saveGraphToPajekFormat (
 			qDebug("Graph::saveGraphToPajekFormat:  it=%i, jt=%i", (*it)->name(), (*jt)->name() );
 			if  ( (weight=this->hasEdge( (*it)->name(), (*jt)->name())) !=0  
 				 &&   ( this->hasEdge((*jt)->name(), (*it)->name())) == 0  
-				 )  {
+				 ) 
+			{
 				qDebug()<<"Graph::saveGraphToPajekFormat  weight "<< weight << " color "<<  (*it)->outLinkColor( (*jt)->name() ) ;
-			        t << (*it)->name() <<" "<<(*jt)->name()<< " "<<weight;
+				t << (*it)->name() <<" "<<(*jt)->name()<< " "<<weight;
 				//FIXME bug in outLinkColor() when we remove then add many nodes from the end
 				t<< " c "<< (*it)->outLinkColor( (*jt)->name() );
-          			t <<"\n";
+				t <<"\n";
 			}
 
 		}
@@ -2324,7 +2327,7 @@ bool Graph::saveGraphToAdjacencyFormat (
 bool Graph::saveGraphToDotFormat (
 			QString fileName, int maxWidth, int maxHeight)
 {
-	
+		return true;
 }
 
 
@@ -2332,7 +2335,7 @@ bool Graph::saveGraphToDotFormat (
 bool Graph::saveGraphToGraphMLFormat (
 			QString fileName, int maxWidth, int maxHeight)
 {
-	
+	return true;
 }
 
 
