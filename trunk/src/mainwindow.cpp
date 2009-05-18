@@ -1595,7 +1595,8 @@ void MainWindow::slotFileSave() {
 		statusBar()->showMessage( QString(tr("No network loaded.")), statusBarDuration );
 		return;
 	}
-	if ( fileName.isEmpty() )    {
+	if ( fileName.isEmpty() )
+	{
 		slotFileSaveAs();
 		return;
 	}
@@ -1603,15 +1604,24 @@ void MainWindow::slotFileSave() {
 	int maxWidth=scene->width();
 	int maxHeight=scene->height();	
 	fileNameNoPath=fileName.split ("/");
-	if (pajekFileLoaded) {
+	if (pajekFileLoaded) 
+	{
 		if ( activeGraph.saveGraph(fileName, 1, networkName, maxWidth,maxHeight) )
 			networkSaved(1);
 		else 
 			networkSaved(0); 
 	}
-	else if (adjacencyFileLoaded){
+	else if (adjacencyFileLoaded)
+	{
 		if ( activeGraph.saveGraph(fileName, 2, networkName, maxWidth,maxHeight) )
 			networkSaved(2);
+		else 
+			networkSaved(0);
+	}
+	else if (graphMLFileLoaded || ( !fileLoaded && networkModified) )
+	{	//new file or GraphML
+		if ( activeGraph.saveGraph(fileName, 4, networkName, maxWidth,maxHeight) )
+			networkSaved(4);
 		else 
 			networkSaved(0);
 	}
@@ -1682,18 +1692,22 @@ void MainWindow::networkSaved(int saved_ok)
 			case 1: 
 				adjacencyFileLoaded=false;
 				pajekFileLoaded=true;
+				graphMLFileLoaded=false;
 				break;
 			case 2:
 				adjacencyFileLoaded=true;
 				pajekFileLoaded=false;
+				graphMLFileLoaded=false;
 				break;
 			case 3:
 				adjacencyFileLoaded=false;
 				pajekFileLoaded=false;
+				graphMLFileLoaded=false;
 				break;
 			case 4:
 				adjacencyFileLoaded=false;
 				pajekFileLoaded=false;
+				graphMLFileLoaded=true;
 				break;			
 		}
 	}		
@@ -1727,7 +1741,6 @@ void MainWindow::slotPrintView() {
 	QPrintDialog dialog(printer, this);
 	if ( dialog.exec() )   {
  		QPainter painter(printer);
-//		 QRect viewport = view.viewport()->rect();
  		graphicsWidget->render(&painter);
 	};
 	statusBar()->showMessage(tr("Ready."));
@@ -1769,11 +1782,13 @@ void MainWindow::fileType(int type, QString netName, int aNodes, int totalLinks)
 		case 0:
 			pajekFileLoaded=FALSE;
 			adjacencyFileLoaded=FALSE;
+			graphMLFileLoaded=false;
 			fileLoaded=FALSE;
 			break;
 		case 1:
 			pajekFileLoaded=TRUE;
 			adjacencyFileLoaded=FALSE;
+			graphMLFileLoaded=false;
 			fileLoaded=TRUE;
 			networkModified=FALSE;
 			statusBar()->showMessage( QString(tr("Pajek formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ), statusBarDuration);
@@ -1781,6 +1796,7 @@ void MainWindow::fileType(int type, QString netName, int aNodes, int totalLinks)
 		case 2:
 			pajekFileLoaded=FALSE;
 			adjacencyFileLoaded=TRUE;
+			graphMLFileLoaded=false;
 			fileLoaded=TRUE;
 			networkModified=FALSE;
 			statusBar()->showMessage( QString(tr("Adjacency formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ), statusBarDuration);
@@ -1789,6 +1805,7 @@ void MainWindow::fileType(int type, QString netName, int aNodes, int totalLinks)
 			pajekFileLoaded=FALSE;
 			adjacencyFileLoaded=FALSE;
 			dotFileLoaded=TRUE;
+			graphMLFileLoaded=false;
 			fileLoaded=TRUE;
 			networkModified=FALSE;
 			statusBar()->showMessage( QString(tr("Dot formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ), statusBarDuration);
@@ -1797,6 +1814,7 @@ void MainWindow::fileType(int type, QString netName, int aNodes, int totalLinks)
 			pajekFileLoaded=FALSE;
 			adjacencyFileLoaded=FALSE;
 			dotFileLoaded=FALSE;
+			graphMLFileLoaded=true;
 			fileLoaded=TRUE;
 			networkModified=FALSE;
 			statusBar()->showMessage( QString(tr("GraphML formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ), statusBarDuration);
@@ -1806,6 +1824,7 @@ void MainWindow::fileType(int type, QString netName, int aNodes, int totalLinks)
 			pajekFileLoaded=FALSE;
 			adjacencyFileLoaded=FALSE;
 			dotFileLoaded=FALSE;
+			graphMLFileLoaded=false;
 			fileLoaded=TRUE;
 			networkModified=FALSE;
 			statusBar()->showMessage( QString(tr("DL-formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ), statusBarDuration);
@@ -1813,6 +1832,7 @@ void MainWindow::fileType(int type, QString netName, int aNodes, int totalLinks)
 		default: // just for sanity
 			pajekFileLoaded=FALSE;
 			adjacencyFileLoaded=FALSE;
+			graphMLFileLoaded=false;
 			fileLoaded=FALSE;
 			QMessageBox::critical(this, "Error","Unrecognized format. \nPlease specify"
 			" which is the file-format using Import Menu.","OK",0);

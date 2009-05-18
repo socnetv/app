@@ -604,6 +604,7 @@ int Parser::loadGraphML(){
 	if ( ! file.open(QIODevice::ReadOnly )) return -1;
 
 	QXmlStreamReader *xml = new QXmlStreamReader();
+	
 	xml->setDevice(&file);
 	
 	while (!xml->atEnd()) {

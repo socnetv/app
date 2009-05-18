@@ -2365,37 +2365,49 @@ bool Graph::saveGraphToGraphMLFormat (
 		return false;
 	}
 	QTextStream t( &f );
-	t<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n";
-	t<< " <!-- Created by SocNetV--> \n";
+	qDebug()<< "		... writing xml version";
+	t<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n"; 
+	t<< " <!-- Created by SocNetV--> \n" ;
 	t<< "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" " 
-		"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance \" "  
-		" xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns " 
-		" http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">";
-	t<<"\n";
-	t<<" Graph id=\"G\"  edgedefault=\"directed\" \n";
+		"      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance \" "  
+		"      xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns " 
+		"      http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">"
+		"\n";
+	
+	qDebug()<< "		... writing keys ";
+	t<<"<key id=\"d0\" for=\"node\" attr.name=\"color\" attr.type=\"string\"> \n" 
+		"  <default>yellow</default> \n" 
+		"</key> \n";
+
+	t<<"<key id=\"d1\" for=\"edge\" attr.name=\"weight\" attr.type=\"double\"> \n"
+		"  <default>1.0</default> \n"
+		"</key> \n";
+	
+	
+	t<<"<graph id=\"G\"  edgedefault=\"directed\" \n";
 	QList<Vertex*>::iterator it;
 	QList<Vertex*>::iterator jt;
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
-		qDebug()<<" Name x "<<  (*it)->name()  ;
-		t<<(*it)->name()  <<" "<<"\""<<(*it)->label()<<"\"" ;
-		t << " ic ";
-		t<<  (*it)->color() ;
-		qDebug()<<" Coordinates x " << (*it)->x()<< " "<<maxWidth<<" y " << (*it)->y()<< " "<<maxHeight;
-		t << "\t\t" <<(*it)->x()/(maxWidth)<<" \t"<<(*it)->y()/(maxHeight);
-		t << "\t"<<(*it)->shape();
-		t<<"\n";
+		qDebug()<<" 	Node id: "<<  (*it)->name()  ;
+		t<< "  <node id=\"" << (*it)->name() <<"\"/> \n";
+		t<< "    <data key=\"d0\">" << (*it)->color()<<"</data>\n";
+		t<<"  </node>\n";
+		//qDebug()<<" Coordinates x " << (*it)->x()<< " "<<maxWidth<<" y " << (*it)->y()<< " "<<maxHeight;
+		//t<< "\t\t" <<(*it)->x()/(maxWidth)<<" \t"<<(*it)->y()/(maxHeight);
+		//t<< "\t"<<(*it)->shape();
+
 	}
 
 	t<<"*Arcs \n";
-	qDebug("Graph::saveGraphToPajekFormat: Arcs");
+	qDebug("Graph::saveGraphToGraphMLFormat: Arcs");
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
 		for (jt=m_graph.begin(); jt!=m_graph.end(); jt++){ 
-			qDebug("Graph::saveGraphToPajekFormat:  it=%i, jt=%i", (*it)->name(), (*jt)->name() );
+			qDebug("Graph::saveGraphToGraphMLFormat:  it=%i, jt=%i", (*it)->name(), (*jt)->name() );
 			if  ( (weight=this->hasEdge( (*it)->name(), (*jt)->name())) !=0  
 				 &&   ( this->hasEdge((*jt)->name(), (*it)->name())) == 0  
 				 ) 
 			{
-				qDebug()<<"Graph::saveGraphToPajekFormat  weight "<< weight << " color "<<  (*it)->outLinkColor( (*jt)->name() ) ;
+				qDebug()<<"Graph::saveGraphToGraphMLFormat  weight "<< weight << " color "<<  (*it)->outLinkColor( (*jt)->name() ) ;
 				t << (*it)->name() <<" "<<(*jt)->name()<< " "<<weight;
 				//FIXME bug in outLinkColor() when we remove then add many nodes from the end
 				t<< " c "<< (*it)->outLinkColor( (*jt)->name() );
@@ -2406,10 +2418,10 @@ bool Graph::saveGraphToGraphMLFormat (
 	}
 	
 	t<<"*Edges \n";
-	qDebug("Graph::saveGraphToPajekFormat: Edges");
+	qDebug("Graph::saveGraphToGraphMLFormat: Edges");
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
 		for (jt=m_graph.begin(); jt!=m_graph.end(); jt++){ 
-			qDebug("Graph::saveGraphToPajekFormat:  it=%i, jt=%i", (*it)->name(), (*jt)->name() );
+			qDebug("Graph::saveGraphToGraphMLFormat:  it=%i, jt=%i", (*it)->name(), (*jt)->name() );
 			if  ( (weight=this->hasEdge((*it)->name(), (*jt)->name()))!=0   &&   
 					(this->hasEdge((*jt)->name(), (*it)->name()))!=0  
 				)  {

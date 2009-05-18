@@ -315,7 +315,7 @@ private:
 	int initNodeSize, labelDistance, numberDistance,initNumberSize;
 	int totalLinks, fortuneCookiesCounter, preSize, tipsCounter;
 	QString VERSION;
-	bool pajekFileLoaded, adjacencyFileLoaded, dotFileLoaded, fileLoaded;
+	bool pajekFileLoaded, adjacencyFileLoaded, dotFileLoaded, graphMLFileLoaded, fileLoaded;
 	bool networkModified;
 	bool fileContainsNodesCoords, fileContainsNodeColors, fileContainsLinksColors;
 	bool bezier,  linkClicked, nodeClicked, markedNodeExists, showProgressBar, firstTime;
