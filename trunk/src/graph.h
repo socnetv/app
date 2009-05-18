@@ -111,13 +111,13 @@ public:
 					int maxWidth, int maxHeight
 				);	//Our almost universal network loader. :)
 	
-	bool  saveGraph( QString fileName, int fileType,
-					 int maxWidth, int maxHeight 
+	bool  saveGraph( QString fileName, int fileType, 
+						QString networkName, int maxWidth, int maxHeight 
 				);
-	bool saveGraphToPajekFormat (QString fileName, int maxWidth, int maxHeight);
+	bool saveGraphToPajekFormat (QString fileName,QString networkName,  int maxWidth, int maxHeight);
 	bool saveGraphToAdjacencyFormat (QString fileName, int maxWidth, int maxHeight);
-	bool saveGraphToDotFormat (QString fileName, int maxWidth, int maxHeight);
-	bool saveGraphToGraphMLFormat (QString fileName, int maxWidth, int maxHeight);
+	bool saveGraphToDotFormat (QString fileName, QString networkName, int maxWidth, int maxHeight);
+	bool saveGraphToGraphMLFormat (QString fileName,QString networkName,  int maxWidth, int maxHeight);
 
 	/** VERTICES */
 	int lastVertexNumber();						//Returns the number of the last vertex

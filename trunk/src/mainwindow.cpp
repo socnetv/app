@@ -1604,13 +1604,13 @@ void MainWindow::slotFileSave() {
 	int maxHeight=scene->height();	
 	fileNameNoPath=fileName.split ("/");
 	if (pajekFileLoaded) {
-		if ( activeGraph.saveGraph(fileName, 1, maxWidth,maxHeight) )
+		if ( activeGraph.saveGraph(fileName, 1, networkName, maxWidth,maxHeight) )
 			networkSaved(1);
 		else 
 			networkSaved(0); 
 	}
 	else if (adjacencyFileLoaded){
-		if ( activeGraph.saveGraph(fileName, 2, maxWidth,maxHeight) )
+		if ( activeGraph.saveGraph(fileName, 2, networkName, maxWidth,maxHeight) )
 			networkSaved(2);
 		else 
 			networkSaved(0);
@@ -1623,13 +1623,13 @@ void MainWindow::slotFileSave() {
 				      0, 1 ) )
 	{
 		case 0:
-			if ( activeGraph.saveGraph(fileName, 1, maxWidth,maxHeight) )
+			if ( activeGraph.saveGraph(fileName, 1, networkName, maxWidth,maxHeight) )
 				networkSaved(1);
 			else 
 				networkSaved(0); 
  			break;
 		case 1:
-			if ( activeGraph.saveGraph(fileName, 2, maxWidth,maxHeight) )
+			if ( activeGraph.saveGraph(fileName, 2, networkName, maxWidth,maxHeight) )
 				networkSaved(2);
 			else 
 				networkSaved(0);
@@ -1762,8 +1762,9 @@ int MainWindow::loadNetworkFile(QString fileName){
 *	This method is called from Graph when a network file is loaded.
 *	It informs the MW about the type of the network so that it can display the appropiate message.
 */
-void MainWindow::fileType(int type, QString networkName, int aNodes, int totalLinks){
-	qDebug("MW: fileType()");
+void MainWindow::fileType(int type, QString netName, int aNodes, int totalLinks){
+	qDebug()<< "MW: fileType() networkName is: " << netName;
+	networkName=netName ;
 	switch( type ) 	{
 		case 0:
 			pajekFileLoaded=FALSE;
@@ -2012,7 +2013,7 @@ void MainWindow::slotExportPajek()
 	int maxWidth=scene->width();
 	int maxHeight=scene->height();	
 
-	if ( activeGraph.saveGraph(fileName, 1, maxWidth,maxHeight ) )  
+	if ( activeGraph.saveGraph(fileName, 1, networkName, maxWidth,maxHeight ) )  
 		networkSaved(1);
 	else 
 		networkSaved(0); 
@@ -2047,7 +2048,7 @@ void MainWindow::slotExportSM(){
 	int maxWidth=scene->width();
 	int maxHeight=scene->height();	
 
-	if ( activeGraph.saveGraph(fileName, 2, maxWidth,maxHeight ) )  
+	if ( activeGraph.saveGraph(fileName, 2, networkName,maxWidth,maxHeight ) )  
 		networkSaved(1);
 	else 
 		networkSaved(0); 

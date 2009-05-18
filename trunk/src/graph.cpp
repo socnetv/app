@@ -760,90 +760,6 @@ bool Graph::symmetricEdge(int v1, int v2){
 
 
 
-/** 
-	Returns the adjacency matrix of G
-	This is called from MainWindow::slotExportSM() using << operator of Matrix class
-	The resulting matrix HAS spaces between elements.
-*/
-void Graph::writeAdjacencyMatrixTo(QTextStream& os){
-	qDebug("Graph: adjacencyMatrix(), writing matrix with %i vertices", vertices());
-	QList<Vertex*>::iterator it, it1;	
-	float weight=-1;
-	for (it=m_graph.begin(); it!=m_graph.end(); it++){
-		for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){	
-			if ( (weight = hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
-				
-				os << static_cast<int> (weight) << " ";
-			}
-			else
-				os << "0 ";
-		}
- 		os << endl;
-	}
-	graphModified=false;
-}
-
-
-		
-/**  	Outputs adjacency matrix to a text stream
-*	Used in slotExportSM() of MainWindow class.
-*/
-QTextStream& operator <<  (QTextStream& os, Graph& m){
-	QList<Vertex*>::iterator it, it1;	
-	float weight=-1;
-	for (it=m.m_graph.begin(); it!=m.m_graph.end(); it++){
-		for (it1=m.m_graph.begin(); it1!=m.m_graph.end(); it1++){	
-			if ( (weight = m.hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
-				os << static_cast<int> (weight) << " ";
-			}
-			else
-				os << "0 ";
-		}
- 		os << endl;
-	}
-	return os;
-}
-
-
-
-/** 
-	Writes the adjacency matrix of G to a specified file  
-	This is called by MainWindow::slotViewAdjacencyMatrix()
-	The resulting matrix HAS NO spaces between elements.
-*/
-void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
-	qDebug("writeAdjacencyMatrix() ");
-	ofstream file (fn);
-	int sum=0;
-	float weight=0;
-	file << "-Social Network Visualizer- \n";
-	file << "Adjacency matrix of "<< netName<<": \n\n";
-	QList<Vertex*>::iterator it, it1;	
-	for (it=m_graph.begin(); it!=m_graph.end(); it++){
-		for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){	
-			if ( (weight =  this->hasEdge ( (*it)->name(), (*it1)->name() )  )!=0 ) {
-				sum++;
-				if (weight >= 1)
-					file << static_cast<int> (weight);
-				else 
-					file << "1";
-			}
-			else
-				file << "0";
-		}
- 		file << endl;
-	}
-
-	qDebug("Graph: Found a total of %i edge",sum);
-	if ( sum != totalEdges() ) qDebug ("Error in edge count found!!!");
-	else qDebug("Edge count OK!");
-	file.close();
-}
-
-
-
-
-
 /**
 *  Returns the distance between nodes numbered (i-1) and (j-1)
 */
@@ -1688,7 +1604,7 @@ void Graph::layoutCircleCentrality(double x0, double y0, double maxRadius, int C
 		qDebug ("Vertice %i at x=%f, y=%f: C=%f, stdC=%f, maxradius %f",(*it)->name(), (*it)->x(), (*it)->y(), C, std, maxRadius);
 		
 		qDebug ("C %f, maxC %f, C/maxC %f, *maxRadius %f",C , maxC, (C/maxC), (C/maxC - 0.06)*maxRadius);
-		switch ((int) ceil(maxC)){
+		switch (static_cast<int> (ceil(maxC)) ){
 			case 0: {	
 				qDebug("maxC=0.   Using maxHeight");
 				new_radius=maxRadius; 	
@@ -1712,7 +1628,11 @@ void Graph::layoutCircleCentrality(double x0, double y0, double maxRadius, int C
 		//Move node to new position
 		emit moveNode((*it)->name(),  new_x,  new_y);
 		i++;
-		emit addBackgrCircle((int)x0, (int)y0, (int)new_radius);
+		emit addBackgrCircle (
+							static_cast<int> (x0), 
+							static_cast<int> (y0), 
+							static_cast<int> (new_radius)
+							);
 	}
 	graphModified=false;
 }
@@ -1789,7 +1709,7 @@ void Graph::layoutLevelCentrality(double maxWidth, double maxHeight, int Central
 		qDebug ("Vertice %i at x=%f, y=%f: C=%f, stdC=%f, maxC %f, maxWidth %f, maxHeight %f",(*it)->name(), (*it)->x(), (*it)->y(), C, std, maxC, maxWidth, maxHeight);
 		//Calculate new position
 		qDebug ("C/maxC %f, *maxHeight %f, +maxHeight %f ",C/maxC, (C/maxC)*maxHeight, maxHeight-(C/maxC)*maxHeight );
-		switch ((int) ceil(maxC)){
+		switch ( static_cast<int> (ceil(maxC)) ){
 			case 0: {	
 				qDebug("maxC=0.   Using maxHeight");
 				new_y=maxHeight; 	
@@ -1800,7 +1720,7 @@ void Graph::layoutLevelCentrality(double maxWidth, double maxHeight, int Central
 				break;
 			}
 		};
-		new_x=offset/2.0+rand()%(int)maxWidth;
+		new_x=offset/2.0 + rand() % ( static_cast<int> (maxWidth) );
 		qDebug ("new_x %f, new_y %f", new_x, new_y);
 		(*it)->setX( new_x );
 		(*it)->setY( new_y );
@@ -1808,7 +1728,7 @@ void Graph::layoutLevelCentrality(double maxWidth, double maxHeight, int Central
 		//Move node to new position
 		emit moveNode((*it)->name(),  new_x,  new_y);
 		i++;
-		emit addBackgrHLine((int)new_y);
+		emit addBackgrHLine(static_cast<int> ( new_y ) );
 	}
 	graphModified=false;
 }
@@ -2182,13 +2102,14 @@ int Graph::loadGraph (
 	calls the right saveGraphTo...() method  
 */
 bool Graph::saveGraph ( 
-				QString fileName, int fileType,	int maxWidth, int maxHeight
-	) {
+				QString fileName, int fileType, 
+				QString networkName, int maxWidth, int maxHeight ) 
+{
 	qDebug() << "Graph::saveGraph to ...";
 	switch (fileType) {
 		case 1 : {			//Pajek
 				qDebug() << " 	... Pajek formatted file";
-				return saveGraphToPajekFormat(fileName, maxWidth, maxHeight);
+				return saveGraphToPajekFormat(fileName, networkName, maxWidth, maxHeight);
 				break;			
 		}
 		case 2: {			// Adjacency
@@ -2198,15 +2119,20 @@ bool Graph::saveGraph (
 		}
 		case 3: {			// Dot
 				qDebug() << " 	... Dot formatted file";
-				return saveGraphToDotFormat(fileName, maxWidth, maxHeight);
+				return saveGraphToDotFormat(fileName, networkName, maxWidth, maxHeight);
 				break;
 		}
 		case 4: {			// GraphML
 				qDebug() << " 	... GraphML formatted file";
-				return saveGraphToGraphMLFormat(fileName, maxWidth, maxHeight);
+				return saveGraphToGraphMLFormat(fileName, networkName, maxWidth, maxHeight);
 				break;
 		}
+		default: {
+				qDebug() << " 	... Error! What format number is this anyway?";
+				break;				
+		}
 	};
+	return true;
 }
 
 
@@ -2217,7 +2143,7 @@ bool Graph::saveGraph (
 	Preserves node properties (positions, colours, etc)
 */
 bool Graph::saveGraphToPajekFormat (
-			QString fileName, int maxWidth, int maxHeight)
+			QString fileName, QString networkName, int maxWidth, int maxHeight)
 {
 	qDebug () << " Graph::saveGraphToPajekFormat to file: " << fileName.toAscii();
 
@@ -2232,9 +2158,9 @@ bool Graph::saveGraphToPajekFormat (
 		return false;
 	}
 	QTextStream t( &f );
-   	t<<"*Network "<<networkName<<"\n";
+	t<<"*Network "<<networkName<<"\n";
 	
-   	t<<"*Vertices "<< vertices() <<"\n";
+	t<<"*Vertices "<< vertices() <<"\n";
 	QList<Vertex*>::iterator it;
 	QList<Vertex*>::iterator jt;
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
@@ -2324,17 +2250,183 @@ bool Graph::saveGraphToAdjacencyFormat (
 
 
 
+
+/** 
+	Returns the adjacency matrix of G
+	This is called from saveGraphToAdjacency() using << operator of Matrix class
+	The resulting matrix HAS spaces between elements.
+*/
+void Graph::writeAdjacencyMatrixTo(QTextStream& os){
+	qDebug("Graph: adjacencyMatrix(), writing matrix with %i vertices", vertices());
+	QList<Vertex*>::iterator it, it1;	
+	float weight=-1;
+	for (it=m_graph.begin(); it!=m_graph.end(); it++){
+		for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){	
+			if ( (weight = hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
+				
+				os << static_cast<int> (weight) << " ";
+			}
+			else
+				os << "0 ";
+		}
+ 		os << endl;
+	}
+	graphModified=false;
+}
+
+
+		
+/**  	Outputs adjacency matrix to a text stream
+*	Used in slotExportSM() of MainWindow class.
+*/
+QTextStream& operator <<  (QTextStream& os, Graph& m){
+	QList<Vertex*>::iterator it, it1;	
+	float weight=-1;
+	for (it=m.m_graph.begin(); it!=m.m_graph.end(); it++){
+		for (it1=m.m_graph.begin(); it1!=m.m_graph.end(); it1++){	
+			if ( (weight = m.hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
+				os << static_cast<int> (weight) << " ";
+			}
+			else
+				os << "0 ";
+		}
+ 		os << endl;
+	}
+	return os;
+}
+
+
+
+/** 
+	Writes the adjacency matrix of G to a specified file  
+	This is called by MainWindow::slotViewAdjacencyMatrix()
+	The resulting matrix HAS NO spaces between elements.
+*/
+void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
+	qDebug("writeAdjacencyMatrix() ");
+	ofstream file (fn);
+	int sum=0;
+	float weight=0;
+	file << "-Social Network Visualizer- \n";
+	file << "Adjacency matrix of "<< netName<<": \n\n";
+	QList<Vertex*>::iterator it, it1;	
+	for (it=m_graph.begin(); it!=m_graph.end(); it++){
+		for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){	
+			if ( (weight =  this->hasEdge ( (*it)->name(), (*it1)->name() )  )!=0 ) {
+				sum++;
+				if (weight >= 1)
+					file << static_cast<int> (weight);
+				else 
+					file << "1";
+			}
+			else
+				file << "0";
+		}
+ 		file << endl;
+	}
+
+	qDebug("Graph: Found a total of %i edge",sum);
+	if ( sum != totalEdges() ) qDebug ("Error in edge count found!!!");
+	else qDebug("Edge count OK!");
+	file.close();
+}
+
+
+
+
+
+
+
 bool Graph::saveGraphToDotFormat (
-			QString fileName, int maxWidth, int maxHeight)
+			QString fileName, QString networkName, int maxWidth, int maxHeight)
 {
-		return true;
+	Q_UNUSED(fileName);
+	Q_UNUSED(networkName);
+	Q_UNUSED(maxWidth);
+	Q_UNUSED(maxHeight);
+	return true;
 }
 
 
 
 bool Graph::saveGraphToGraphMLFormat (
-			QString fileName, int maxWidth, int maxHeight)
+			QString fileName, QString networkName, int maxWidth, int maxHeight)
 {
+		qDebug () << " Graph::saveGraphToGraphMLFormat to file: " << fileName.toAscii();
+
+	int weight=0;
+	int statusBarDuration = 1000;
+	QFile f( fileName );
+	if ( !f.open( QIODevice::WriteOnly ) )  {
+		((MainWindow*) parent())->statusBar()->showMessage( 
+						QString(tr("Could not write to %1")).arg(fileName), 
+						statusBarDuration 
+						);
+		return false;
+	}
+	QTextStream t( &f );
+	t<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n";
+	t<< " <!-- Created by SocNetV--> \n";
+	t<< "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" " 
+		"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance \" "  
+		" xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns " 
+		" http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">";
+	t<<"\n";
+	t<<" Graph id=\"G\"  edgedefault=\"directed\" \n";
+	QList<Vertex*>::iterator it;
+	QList<Vertex*>::iterator jt;
+	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
+		qDebug()<<" Name x "<<  (*it)->name()  ;
+		t<<(*it)->name()  <<" "<<"\""<<(*it)->label()<<"\"" ;
+		t << " ic ";
+		t<<  (*it)->color() ;
+		qDebug()<<" Coordinates x " << (*it)->x()<< " "<<maxWidth<<" y " << (*it)->y()<< " "<<maxHeight;
+		t << "\t\t" <<(*it)->x()/(maxWidth)<<" \t"<<(*it)->y()/(maxHeight);
+		t << "\t"<<(*it)->shape();
+		t<<"\n";
+	}
+
+	t<<"*Arcs \n";
+	qDebug("Graph::saveGraphToPajekFormat: Arcs");
+	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
+		for (jt=m_graph.begin(); jt!=m_graph.end(); jt++){ 
+			qDebug("Graph::saveGraphToPajekFormat:  it=%i, jt=%i", (*it)->name(), (*jt)->name() );
+			if  ( (weight=this->hasEdge( (*it)->name(), (*jt)->name())) !=0  
+				 &&   ( this->hasEdge((*jt)->name(), (*it)->name())) == 0  
+				 ) 
+			{
+				qDebug()<<"Graph::saveGraphToPajekFormat  weight "<< weight << " color "<<  (*it)->outLinkColor( (*jt)->name() ) ;
+				t << (*it)->name() <<" "<<(*jt)->name()<< " "<<weight;
+				//FIXME bug in outLinkColor() when we remove then add many nodes from the end
+				t<< " c "<< (*it)->outLinkColor( (*jt)->name() );
+				t <<"\n";
+			}
+
+		}
+	}
+	
+	t<<"*Edges \n";
+	qDebug("Graph::saveGraphToPajekFormat: Edges");
+	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
+		for (jt=m_graph.begin(); jt!=m_graph.end(); jt++){ 
+			qDebug("Graph::saveGraphToPajekFormat:  it=%i, jt=%i", (*it)->name(), (*jt)->name() );
+			if  ( (weight=this->hasEdge((*it)->name(), (*jt)->name()))!=0   &&   
+					(this->hasEdge((*jt)->name(), (*it)->name()))!=0  
+				)  {
+				if ( (*it)->name() > (*jt)->name() ) 
+					continue;
+				t << (*it)->name() <<" "<<(*jt)->name()<< " "<<weight;
+				t << " c "<< (*it)->outLinkColor( (*jt)->name() );
+				t <<"\n";
+			}
+		}
+	}
+	f.close();
+	QString fileNameNoPath=fileName.split("/").last();
+	parent() ->statusBar()->showMessage( 
+				QString(tr( "File %1 saved" ) ).arg( fileNameNoPath ), 
+				statusBarDuration );
+
 	return true;
 }
 
