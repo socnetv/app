@@ -263,7 +263,7 @@ protected:
 
 	void timerEvent(QTimerEvent *event);			// Called from nodeMovement when a timerEvent occurs
 private:
-	QMainWindow *m_parent;		//stores the parent of this class.
+
 	Parser parser;			//file loader threaded class.
 
 	/** private member functions */

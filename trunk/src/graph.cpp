@@ -35,7 +35,7 @@
 #include <queue>		//for BFS queue Q
 
 #include "graph.h"
-#include "mainwindow.h" //for parent
+
 
 
 
@@ -58,6 +58,7 @@ Graph::Graph() {
 	layoutType=0;
 
 	parser.setParent(this);
+	
 	connect (&parser, SIGNAL( createNode (int,int,QString, QString, QString, QPointF, QString, bool) ), this, SLOT(createVertex(int,int,QString, QString, QString, QPointF, QString) ) ) ;
 
 	connect (&parser, SIGNAL(createEdge (int, int, float, QString, bool, bool, bool)), this, SLOT(createEdge (int, int, float, QString, bool, bool, bool) ) );
@@ -174,14 +175,6 @@ void Graph::removeDummyNode(int i){
 }
 
 
-
-void Graph::setParent( QMainWindow *mp){
-	m_parent=mp;
-}
-
-QMainWindow* Graph::parent(){
-	return m_parent;
-}
 
 /**	Adds a Vertex 
 	named v1, valued val, sized nszm colored nc, labeled nl, labelColored lc, shaped nsp, at point p
