@@ -1365,49 +1365,59 @@ void Graph::centralityInDegree(bool weights){
 }
 
 
-void Graph::writeCentralityInDegree(const char* fileName, bool considerWeights)
+void Graph::writeCentralityInDegree
+		(const QString fileName, const bool considerWeights)
 {
-	ofstream file (fileName);
+	QFile file ( fileName );
+	if ( !file.open( QIODevice::WriteOnly ) )  {
+		qDebug()<< "Error opening file!";
+		emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+		return;
+	}
+	QTextStream outText ( &file );
+
 	centralityInDegree(considerWeights);
 	float maximumIndexValue=vertices()-1.0;
 	
-	file <<"-SocNetV- \n\n";
-	file<< "IN-DEGREE CENTRALITIES (IDC) OF EACH NODE\n";
-	file<< "IDC  range: 0 < C < "<<maximumIndexValue<<"\n";
-	file<< "IDC' range: 0 < C'< 1"<<"\n\n";
+	outText <<"-SocNetV- \n\n";
+	outText <<tr("IN-DEGREE CENTRALITY REPORT \n");
+	outText <<tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+	outText<< tr("IN-DEGREE CENTRALITIES (IDC) OF EACH NODE\n");
+	outText<< tr("IDC  range: 0 < C < ")<<maximumIndexValue<<"\n";
+	outText<< "IDC' range: 0 < C'< 1"<<"\n\n";
 
-	file << "Node"<<"\tIDC\tIDC'\t%IDC\n";
+	outText << "Node"<<"\tIDC\tIDC'\t%IDC\n";
+
+
 	QList<Vertex*>::iterator it;
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
-		file<<(*it)->name()<<"\t"<<(*it)->IDC() << "\t"<< (*it)->SIDC() << "\t" <<  (100* ((*it)->IDC()) / sumIDC)<<endl;
+		outText<<(*it)->name()<<"\t"<<(*it)->IDC() << "\t"<< (*it)->SIDC() << "\t" <<  (100* ((*it)->IDC()) / sumIDC)<<endl;
 	}
 	if (symmetricAdjacencyMatrix) {
-		file << "Mean Nodal Degree = "<< meanDegree<<"\n" ;
-		file << "Degree Variance = "<< varianceDegree<<"\n\n";
+		outText << "Mean Nodal Degree = "<< meanDegree<<"\n" ;
+		outText << "Degree Variance = "<< varianceDegree<<"\n\n";
 	}
 	else{
-		file << "Mean Nodal InDegree = "<< meanDegree<<"\n" ;
-		file << "InDegree Variance = "<< varianceDegree<<"\n\n";
+		outText << "Mean Nodal InDegree = "<< meanDegree<<"\n" ;
+		outText << "InDegree Variance = "<< varianceDegree<<"\n\n";
 	}
 	if ( minIDC == maxIDC )
-		file << "\nAll nodes have the same IDC value.\n";
+		outText << "\nAll nodes have the same IDC value.\n";
 	else  {
-		file << "\nNode "<< maxNodeIDC << " has the maximum IDC value (std): " << maxIDC <<"  \n";
-		file << "\nNode "<< minNodeIDC << " has the minimum IDC value (std): " << minIDC <<"  \n";
+		outText << "\nNode "<< maxNodeIDC << " has the maximum IDC value (std): " << maxIDC <<"  \n";
+		outText << "\nNode "<< minNodeIDC << " has the minimum IDC value (std): " << minIDC <<"  \n";
 	}
 	if (classesIDC!=1)
-		file<< "\nThere are "<<classesIDC<<" different IDC classes.\n";	
+		outText<< "\nThere are "<<classesIDC<<" different IDC classes.\n";	
 	else 
-		file<< "\nThere is only "<<classesIDC<<" IDC class.\n";	
-	file<<"\nGROUP IN-DEGREE CENTRALISATION (GIDC)\n\n";
-	file<<"GIDC = " << groupIDC<<"\n\n";
-	file<<"GIDC range: 0 < GIDC < 1\n";
-	file<<"GIDC = 0, when all in-degrees are equal (i.e. regular lattice).\n";
-	file<<"GIDC = 1, when one node is linked from every other node.\n";
-	file<<"The in-degree of the node is a measure of the \'activity\' of the node it represents\n";
-	file<<"(Wasserman & Faust, p. 101)\n";
-	file.close();
-
+		outText<< "\nThere is only "<<classesIDC<<" IDC class.\n";	
+	outText<<"\nGROUP IN-DEGREE CENTRALISATION (GIDC)\n\n";
+	outText<<"GIDC = " << groupIDC<<"\n\n";
+	outText<<"GIDC range: 0 < GIDC < 1\n";
+	outText<<"GIDC = 0, when all in-degrees are equal (i.e. regular lattice).\n";
+	outText<<"GIDC = 1, when one node is linked from every other node.\n";
+	outText<<"The in-degree of the node is a measure of the \'activity\' of the node it represents\n";
+	outText<<"(Wasserman & Faust, p. 101)\n";
 }
 
 
@@ -1506,7 +1516,7 @@ void Graph::writeCentralityOutDegree (
 	outText<<tr("Created: ")<<
 			 actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) 
 			 << "\n\n";
-	outText<< "OUT-DEGREE CENTRALITIES (ODC) FOR EACH NODE\n";
+	outText<< tr("OUT-DEGREE CENTRALITIES (ODC) FOR EACH NODE\n");
 
 	outText<< tr("ODC  range: 0 < C < ")<<QString::number(maximumIndexValue)<<"\n";
 	outText<< "ODC' range: 0 < C'< 1"<<"\n\n";

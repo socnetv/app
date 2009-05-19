@@ -4427,63 +4427,9 @@ void MainWindow::slotCentralityOutDegree(){
 
 	QString fn = "centrality-out-degree.dat";
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-	//activeGraph.centralityOutDegree(considerWeights);
 	activeGraph.writeCentralityOutDegree(fn, considerWeights);
 	QApplication::restoreOverrideCursor();
 	
-	
-	//QString fn = "centrality-out-degree.dat";
-	
-	//QFile file( fn );
-	//if ( !file.open( QIODevice::WriteOnly ) )
-		//return;
-	//QTextStream ts(&file  );
-
-	//float maximumIndexValue=activeGraph.vertices()-1.0;
-	//ts <<"-SocNetV- "<<VERSION<<"\n\n";
-	//ts <<tr("OUT-DEGREE CENTRALITY REPORT \n");
-	//ts <<tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
-	//ts<< tr("OUT-DEGREE CENTRALITIES (ODC) OF EACH NODE\n");
-	//ts<< tr("ODC  range: 0 < C < ")<<QString::number(maximumIndexValue)<<"\n";
-	//ts<< tr("ODC' range: 0 < C'< 1")<<"\n\n";
-	//ts << "Node"<<"\tODC\tODC'\t\t%ODC\n";
-
-	//
-	//QList<Vertex*>::iterator it;
-	//for (it=activeGraph.m_graph.begin(); it!=activeGraph.m_graph.end(); it++){ 
-		//ts<<(*it)->name()<<"\t"<<(*it)->ODC() << "\t"<< (*it)->SODC() << "\t\t" <<  (100* ((*it)->ODC()) / activeGraph.sumODC)<<endl;
-	//}
-	//if (activeGraph.isSymmetric()) {
-		//ts<< "Mean DC= "<< activeGraph.meanDegree<<"\n" ;
-		//ts<< "DC Variance = "<< activeGraph.varianceDegree<<"\n\n";
-	//}
-	//else{
-		//ts<< "Mean ODC= "<< activeGraph.meanDegree<<"\n" ;
-		//ts<< "ODC Variance = "<< activeGraph.varianceDegree<<"\n\n";
-	//}
-	//if ( activeGraph.minODC == activeGraph.maxODC )
-		//ts<< "\nAll nodes have the same ODC value.\n";
-	//else  {
-		//ts<< "\nNode "<< activeGraph.maxNodeODC << " has the maximum ODC value (std): " << activeGraph.maxODC <<"  \n";
-		//ts<< "\nNode "<< activeGraph.minNodeODC << " has the minimum ODC value (std): " << activeGraph.minODC <<"  \n";
-	//}
-	//if (activeGraph.classesODC!=1)
-		//ts<< "\nThere are "<<activeGraph.classesODC<<" different ODC classes.\n";	
-	//else 
-		//ts<< "\nThere is only "<<activeGraph.classesODC<<" ODC class.\n";	
-
-	//
-	//ts<<"\nGROUP OUT-DEGREE CENTRALISATION (GODC)\n\n";
-	//ts<<"GODC = " << activeGraph.groupODC<<"\n\n";
-	//ts<<tr("GODC range: 0 < GODC < 1\n");
-	//ts<<tr("GODC = 0, when all in-degrees are equal (i.e. regular lattice).\n");
-	//ts<<tr("GODC = 1, when one node completely dominates or overshadows the other nodes.\n");
-	//ts<<"(Wasserman & Faust, formula 5.5, p. 177)\n\n";
-	//ts<<tr("The degree of the node is a measure of the \'activity\' of the node it represents\n");
-	//ts<<"(Wasserman & Faust, p. 101)\n";
-
-	//file.close();
-
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
 	ed->setWindowTitle("Out-Degree Centralities saved as: " + tempFileNameNoPath.last());
@@ -4520,61 +4466,10 @@ void MainWindow::slotCentralityInDegree(){
 			return;
 		break;
 	}
-
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-
-	activeGraph.centralityInDegree(considerWeights);
-	
-	QApplication::restoreOverrideCursor();
-			
 	QString fn = "centrality-in-degree.dat";
-	QFile file( fn );
-	if ( !file.open( QIODevice::WriteOnly ) )
-		return;
-	QTextStream ts(&file  );
-
-	float maximumIndexValue=activeGraph.vertices()-1.0;
-	ts <<"-SocNetV- "<<VERSION<<"\n\n";
-	ts <<tr("IN-DEGREE CENTRALITY REPORT \n");
-	ts <<tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
-	ts<< tr("IN-DEGREE CENTRALITIES (IDC) OF EACH NODE\n");
-	ts<< tr("IDC  range: 0 < C < ")<<QString::number(maximumIndexValue)<<"\n";
-	ts<< tr("IDC' range: 0 < C'< 1")<<"\n\n";
-	ts << "Node"<<"\tIDC\tIDC'\t\t%IDC\n";
-
-	QList<Vertex*>::iterator it;
-	for (it=activeGraph.m_graph.begin(); it!=activeGraph.m_graph.end(); it++){ 
-		ts<<(*it)->name()<<"\t"<<(*it)->IDC() << "\t"<< (*it)->SIDC() << "\t\t" <<  (100* ((*it)->IDC()) / activeGraph.sumIDC)<<endl;
-	}
-	if (activeGraph.isSymmetric()) {
-		ts<< "Mean DC = "<< activeGraph.meanDegree<<"\n" ;
-		ts<< "DC Variance = "<< activeGraph.varianceDegree<<"\n\n";
-	}
-	else{
-		ts<< "Mean IDC = "<< activeGraph.meanDegree<<"\n" ;
-		ts<< "IDC Variance = "<< activeGraph.varianceDegree<<"\n\n";
-	}
-	if ( activeGraph.minIDC == activeGraph.maxIDC )
-		ts<< "\nAll nodes have the same IDC value.\n";
-	else  {
-		ts<< "\nNode "<< activeGraph.maxNodeIDC << " has the maximum IDC value (std): " << activeGraph.maxIDC <<"  \n";
-		ts<< "\nNode "<< activeGraph.minNodeIDC << " has the minimum IDC value (std): " << activeGraph.minIDC <<"  \n";
-	}
-	if (activeGraph.classesIDC!=1)
-		ts<< "\nThere are "<<activeGraph.classesIDC<<" different IDC classes.\n";	
-	else 
-		ts<< "\nThere is only "<<activeGraph.classesIDC<<" IDC class.\n";	
-
-
-	ts<<"\nGROUP IN-DEGREE CENTRALISATION (GIDC)\n\n";
-	ts<<"GIDC = " << activeGraph.groupIDC<<"\n\n";
-	ts<<tr("GIDC range: 0 < GIDC < 1\n");
-	ts<<tr("GIDC = 0, when all in-degrees are equal (i.e. regular lattice).\n");
-	ts<<tr("GIDC = 1, when one node is linked from every other node.\n");
-	ts<<tr("The in-degree of the node is a measure of the \'activity\' of the node it represents\n");
-	ts<<"(Wasserman & Faust, p. 101)\n";
-
-	file.close();
+	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	activeGraph.writeCentralityInDegree(fn, considerWeights);
+	QApplication::restoreOverrideCursor();
 
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");

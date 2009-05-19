@@ -177,7 +177,7 @@ public:
 	void writeAdjacencyMatrixTo(QTextStream& os);	 		//Exports the adjacency matrix to a given textstream
 	void writeAdjacencyMatrix(const char*, const char*);		//Writes the adjacency matrix to a given file.
 	void writeDistanceMatrix(const char*, const char*, const char*);//Writes the distance matrix to a file
-	void writeCentralityInDegree(const char*, bool);					//Writes the in-degree centralities to a file
+	void writeCentralityInDegree(const QString, bool);					//Writes the in-degree centralities to a file
 	void writeCentralityOutDegree(const QString, const bool);				//Writes the out-degree centralities to a file
 
 	friend QTextStream& operator <<  (QTextStream& os, Graph& m);  	//
