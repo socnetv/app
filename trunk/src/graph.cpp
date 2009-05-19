@@ -170,6 +170,7 @@ void Graph::removeDummyNode(int i){
 	qDebug("**Graph: RemoveDummyNode %i", i);
 //	removeVertex(i);
 	( (MainWindow*)parent() )->clickedJimNumber=i;
+	emit setSelectedVertex(i);
 	( (MainWindow*)parent() )->slotRemoveNode();
 
 }
@@ -1483,7 +1484,7 @@ void Graph::writeCentralityOutDegree (
 	QFile file ( fileName );
 	if ( !file.open( QIODevice::WriteOnly ) )  {
 		qDebug()<< "Error opening file!";
-		statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+		emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
 		return;
 	}
 	QTextStream outText ( &file );

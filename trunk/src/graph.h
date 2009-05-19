@@ -83,6 +83,7 @@ signals:
 	/** Signals to MainWindow */
 	void updateProgressDialog(int );
 	void graphChanged();									//call to update MW widgets
+	void statusMessage (QString);
 	/** Signals to GraphicsWidget */
 	void drawNode( int ,int,  QString, QString,QString, QPointF, QString, bool, bool, bool);	//call GW to draw a node
 	void drawEdge(int, int, float, bool, bool, QString, bool, bool);				//call GW to draw an edge
@@ -91,7 +92,8 @@ signals:
 	void addBackgrCircle(int, int, int);							//call GW to draw a layout line somewhere.
 	void addBackgrHLine (int);								//call GW to draw a layout line somewhere.
 	void moveNode(int, int, int);
-	void statusMessage (QString);
+
+	
 public: 	
 	/**INIT AND CLEAR*/
 	Graph(); 				//Creates a new graph.
