@@ -46,7 +46,7 @@ using namespace std;
 
 
 class QPointF;
-
+class QDateTime;
 
 /**	This is the main class for a Graph, used in conjuction with Vertex, Parser and Matrix objects.
 	
@@ -91,7 +91,7 @@ signals:
 	void addBackgrCircle(int, int, int);							//call GW to draw a layout line somewhere.
 	void addBackgrHLine (int);								//call GW to draw a layout line somewhere.
 	void moveNode(int, int, int);
-
+	void statusMessage (QString);
 public: 	
 	/**INIT AND CLEAR*/
 	Graph(); 				//Creates a new graph.
@@ -174,8 +174,8 @@ public:
 	void writeAdjacencyMatrixTo(QTextStream& os);	 		//Exports the adjacency matrix to a given textstream
 	void writeAdjacencyMatrix(const char*, const char*);		//Writes the adjacency matrix to a given file.
 	void writeDistanceMatrix(const char*, const char*, const char*);//Writes the distance matrix to a file
-	void writeCentralityInDegree();					//Writes the in-degree centralities to a file
-	void writeCentralityOutDegree();				//Writes the out-degree centralities to a file
+	void writeCentralityInDegree(const char*, bool);					//Writes the in-degree centralities to a file
+	void writeCentralityOutDegree(const QString, const bool);				//Writes the out-degree centralities to a file
 
 	friend QTextStream& operator <<  (QTextStream& os, Graph& m);  	//
 
@@ -189,6 +189,7 @@ public:
 
 	void centralityInDegree(bool);				//Calculates the inDegree centrality of each vertex
 	void centralityOutDegree(bool);				//Calculates the outDegree centrality of each vertex
+
 
 	float numberOfTriples(int v1); 		//Returns the number of triples at vertex v1
 	float numberOfCliques(int v1);		//Calculates the number of cliques (triangles) of vertex v1
@@ -278,7 +279,8 @@ private:
 	bool adjacencyMatrixCreated, symmetricAdjacencyMatrix, graphModified, distanceMatrixCreated;
 
 	QString networkName, initEdgeColor, initVertexColor, initVertexLabelColor, initVertexShape;
-
+	
+	QDateTime actualDateTime;
 };
 
 #endif

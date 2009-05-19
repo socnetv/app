@@ -29,9 +29,11 @@
 #include <cmath>		//for pow(float/double, float/double) function
 #include <QPointF>
 #include <QtDebug>		//used for qDebug messages
+
+#include <QDateTime> 	// used in exporting centrality files 
 #include <list>			//for list iterators
 #include <queue>		//for BFS queue Q
-#include <QStatusBar> 		// used in saveTo() to inform user via MW statusBar
+
 #include "graph.h"
 #include "mainwindow.h" //for parent
 
@@ -1354,10 +1356,10 @@ void Graph::centralityInDegree(bool weights){
 }
 
 
-void Graph::writeCentralityInDegree(){
-
-	ofstream file ("centrality-in-degree.dat");
-	centralityInDegree(true);
+void Graph::writeCentralityInDegree(const char* fileName, bool considerWeights)
+{
+	ofstream file (fileName);
+	centralityInDegree(considerWeights);
 	float maximumIndexValue=vertices()-1.0;
 	
 	file <<"-SocNetV- \n\n";
@@ -1475,51 +1477,65 @@ void Graph::centralityOutDegree(bool weights){
 	graphModified=false;
 }
 
-void Graph::writeCentralityOutDegree(){
+void Graph::writeCentralityOutDegree (
+				const QString fileName, const bool considerWeights)
+{
+	QFile file ( fileName );
+	if ( !file.open( QIODevice::WriteOnly ) )  {
+		qDebug()<< "Error opening file!";
+		statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+		return;
+	}
+	QTextStream outText ( &file );
 
-	ofstream file ("centrality-out-degree.dat");
-	centralityOutDegree(true);
+
+	centralityOutDegree(considerWeights);
 	float maximumIndexValue=vertices()-1.0;
 	
-	file <<"-SocNetV- \n\n";
-	file<< "OUT-DEGREE CENTRALITIES (ODC) OF EACH NODE\n";
-	file<< "ODC  range: 0 < C < "<<maximumIndexValue<<"\n";
-	file<< "ODC' range: 0 < C'< 1"<<"\n\n";
+	outText<<"-SocNetV- \n\n";
+	outText<<tr("OUT-DEGREE CENTRALITY REPORT \n");
+	outText<<tr("Created: ")<<
+			 actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) 
+			 << "\n\n";
+	outText<< "OUT-DEGREE CENTRALITIES (ODC) FOR EACH NODE\n";
 
-	file << "Node"<<"\tODC\tODC'\t%ODC\n";
+	outText<< tr("ODC  range: 0 < C < ")<<QString::number(maximumIndexValue)<<"\n";
+	outText<< "ODC' range: 0 < C'< 1"<<"\n\n";
+
+	outText << "Node"<<"\tODC\tODC'\t%ODC\n";
 	QList<Vertex*>::iterator it;
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
-		file<<(*it)->name()<<"\t"<<(*it)->ODC() << "\t"<< (*it)->SODC() << "\t" <<  (100* ((*it)->ODC()) / sumODC)<<endl;
+		outText<<(*it)->name()<<"\t"<<(*it)->ODC() << "\t"<< (*it)->SODC() << "\t" <<  (100* ((*it)->ODC()) / sumODC)<<endl;
 	}
 	if (symmetricAdjacencyMatrix) {
-		file << "Mean Node Degree = "<< meanDegree<<"\n" ;
-		file << "Degree Variance = "<< varianceDegree<<"\n\n";
+		outText << "Mean Node Degree = "<< meanDegree<<"\n" ;
+		outText << "Degree Variance = "<< varianceDegree<<"\n\n";
 	}
 	else{
-		file << "Mean Vertex OutDegree = "<< meanDegree<<"\n" ;
-		file << "OutDegree Variance = "<< varianceDegree<<"\n\n";
+		outText << "Mean Vertex OutDegree = "<< meanDegree<<"\n" ;
+		outText << "OutDegree Variance = "<< varianceDegree<<"\n\n";
 	}
 	if ( minODC == maxODC )
-		file << "\nAll nodes have the same ODC value.\n";
+		outText << "\nAll nodes have the same ODC value.\n";
 	else  {
-		file << "\nNode "<< maxNodeODC << " has the maximum ODC value (std): " << maxODC <<"  \n";
-		file << "\nNode "<< minNodeODC << " has the minimum ODC value (std): " << minODC <<"  \n";
+		outText << "\nNode "<< maxNodeODC << " has the maximum ODC value (std): " << maxODC <<"  \n";
+		outText << "\nNode "<< minNodeODC << " has the minimum ODC value (std): " << minODC <<"  \n";
 	}
 	if (classesODC!=1)
-		file<< "\nThere are "<<classesODC<<" different out-degree centrality classes.\n";		
+		outText<< "\nThere are "<<classesODC<<" different out-degree centrality classes.\n";		
 	else 
-		file<< "\nThere is only "<<classesODC<<" out-degree centrality class.\n";	
+		outText<< "\nThere is only "<<classesODC<<" out-degree centrality class.\n";	
 	
-	file<<"\nGROUP OUT-DEGREE CENTRALISATION (GODC)\n\n";
-	file<<"GODC = " << groupODC<<"\n\n";
-	file<<"GODC range: 0 < GODC < 1\n";
-	file<<"GODC = 0, when all out-degrees are equal (i.e. regular lattice).\n";
-	file<<"GODC = 1, when one node completely dominates or overshadows the other nodes.\n";
-	file<<"(Wasserman & Faust, formula 5.5, p. 177)\n\n";
-	file<<"The degree of the node is a measure of the \'activity\' of the node it represents\n";
-	file<<"(Wasserman & Faust, p. 101)\n";
+	outText<<"\nGROUP OUT-DEGREE CENTRALISATION (GODC)\n\n";
+	outText<<"GODC = " << groupODC<<"\n\n";
+	outText<<"GODC range: 0 < GODC < 1\n";
+	outText<<"GODC = 0, when all out-degrees are equal (i.e. regular lattice).\n";
+	outText<<"GODC = 1, when one node completely dominates or overshadows the other nodes.\n";
+	outText<<"(Wasserman & Faust, formula 5.5, p. 177)\n\n";
+	outText<<"The degree of the node is a measure of the \'activity\' of the node it represents\n";
+	outText<<"(Wasserman & Faust, p. 101)\n";
 
-	file.close();
+
 
 }
 
@@ -2148,13 +2164,10 @@ bool Graph::saveGraphToPajekFormat (
 	qDebug () << " Graph::saveGraphToPajekFormat to file: " << fileName.toAscii();
 
 	int weight=0;
-	int statusBarDuration = 1000;
+
 	QFile f( fileName );
 	if ( !f.open( QIODevice::WriteOnly ) )  {
-		((MainWindow*) parent())->statusBar()->showMessage( 
-						QString(tr("Could not write to %1")).arg(fileName), 
-						statusBarDuration 
-						);
+		statusMessage (QString(tr("Could not write to %1")).arg(fileName));
 		return false;
 	}
 	QTextStream t( &f );
@@ -2211,10 +2224,7 @@ bool Graph::saveGraphToPajekFormat (
 	}
 	f.close();
 	QString fileNameNoPath=fileName.split("/").last();
-	parent() ->statusBar()->showMessage( 
-				QString(tr( "File %1 saved" ) ).arg( fileNameNoPath ), 
-				statusBarDuration );
-
+	statusMessage (QString(tr( "File %1 saved" ) ).arg( fileNameNoPath ));
 	return true;
 
 	
@@ -2226,13 +2236,10 @@ bool Graph::saveGraphToPajekFormat (
 bool Graph::saveGraphToAdjacencyFormat (
 			QString fileName, int maxWidth, int maxHeight)
 {
-	int statusBarDuration = 1000;
+
 	QFile f( fileName );
 	if ( !f.open( QIODevice::WriteOnly ) )  {
-		parent()->statusBar()->showMessage( 
-					QString(tr("Could not write to %1")).arg(fileName), 
-					statusBarDuration 
-					);
+		statusMessage(QString(tr("Could not write to %1")).arg(fileName));
 		return false;
 	}
 	QTextStream t( &f );
@@ -2242,9 +2249,7 @@ bool Graph::saveGraphToAdjacencyFormat (
 
 	f.close();
 	QString fileNameNoPath=fileName.split("/").last();
-
-	parent()->statusBar()->showMessage( 
-					QString( tr("Adjacency matrix-formatted network saved into file %1") ).arg( fileNameNoPath ), statusBarDuration );
+	statusMessage (QString( tr("Adjacency matrix-formatted network saved into file %1") ).arg( fileNameNoPath ));
 	return true;
 }
 
@@ -2355,13 +2360,11 @@ bool Graph::saveGraphToGraphMLFormat (
 		qDebug () << " Graph::saveGraphToGraphMLFormat to file: " << fileName.toAscii();
 
 	int weight=0;
-	int statusBarDuration = 1000;
+
 	QFile f( fileName );
 	if ( !f.open( QIODevice::WriteOnly ) )  {
-		((MainWindow*) parent())->statusBar()->showMessage( 
-						QString(tr("Could not write to %1")).arg(fileName), 
-						statusBarDuration 
-						);
+
+		statusMessage( QString(tr("Could not write to %1")).arg(fileName) );
 		return false;
 	}
 	QTextStream t( &f );
@@ -2435,10 +2438,7 @@ bool Graph::saveGraphToGraphMLFormat (
 	}
 	f.close();
 	QString fileNameNoPath=fileName.split("/").last();
-	parent() ->statusBar()->showMessage( 
-				QString(tr( "File %1 saved" ) ).arg( fileNameNoPath ), 
-				statusBarDuration );
-
+	statusMessage( QString(tr( "File %1 saved" ) ).arg( fileNameNoPath ) );
 	return true;
 }
 

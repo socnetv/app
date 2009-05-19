@@ -115,6 +115,9 @@ MainWindow::MainWindow(const QString &fName) {
 
 	connect( &activeGraph, SIGNAL( drawEdgeReciprocal(int, int) ),  graphicsWidget, SLOT( drawEdgeReciprocal(int, int) ) );
 	
+	
+	connect( &activeGraph, SIGNAL( 	statusMessage (QString) ), this, SLOT( 	statusMessage (QString) ) ) ;
+
 
 	//connect some signals/slots with MW widgets
 	connect (addNodeBt,SIGNAL(clicked()), this, SLOT(addNode()));
@@ -1508,6 +1511,14 @@ void MainWindow::initNet(){
 }
 
 
+
+
+/*
+ * Slot called by Graph::statusMessage to display some message to the user 
+ */
+void MainWindow::statusMessage(const QString message){
+ 	statusBar()->showMessage(message, statusBarDuration);
+}
 
 
 

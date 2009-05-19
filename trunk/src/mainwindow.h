@@ -249,6 +249,9 @@ public slots:
 	//Called by Graph on saving file. int is the network type saved.
 	void networkSaved(int);
 	
+	//Called by Graph to display some message to the user
+	void statusMessage(const QString);
+	
 protected:
 	void resizeEvent( QResizeEvent * );
 	void closeEvent( QCloseEvent* ce );
