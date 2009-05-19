@@ -4455,7 +4455,6 @@ void MainWindow::slotCentralityCloseness(){
 	QApplication::restoreOverrideCursor();
 	statusMessage( QString(tr(" displaying file...")));
 
-	
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
 	ed->setWindowTitle("Closeness Centralities  saved as: " + tempFileNameNoPath.last());

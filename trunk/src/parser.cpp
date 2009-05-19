@@ -611,9 +611,9 @@ int Parser::loadGraphML(){
 		xml->readNext();
 		qDebug()<< " loadGraphML(): xml->token "<< xml->tokenString();
 		if (xml->isStartElement()) {
-			qDebug()<< " loadGraphML(): element name "<< xml->name()<<" version " << xml->attributes().value("version")  ;
+			qDebug()<< " loadGraphML(): element name "<< xml->name().toString()<<" version " << xml->attributes().value("version").toString()  ;
 			if (xml->name() == "graphml") {	//this is a GraphML document, call method.
-				qDebug()<< " loadGraphML(): OK. NamespaceUri is "<< xml->namespaceUri();
+				qDebug()<< " loadGraphML(): OK. NamespaceUri is "<< xml->namespaceUri().toString();
 				readGraphML(*xml);				
 			}
 			else {	//not a GraphML doc, return -1.
@@ -649,7 +649,7 @@ void Parser::readGraphML(QXmlStreamReader &xml){
 		xml.readNext();	//read next token
 	
 		if (xml.isStartElement()) {	//new token (graph, node, or edge) here
-			qDebug()<< "\n  readGraphML(): an element starts here: "<< xml.name() ;
+			qDebug()<< "\n  readGraphML(): an element starts here: "<< xml.name().toString() ;
 			if (xml.name() == "graph")	//graph definition token
 				readGraphMLElementGraph(xml);
 				
@@ -702,7 +702,7 @@ void Parser::readGraphML(QXmlStreamReader &xml){
 		}
 		
 		if (xml.isEndElement()) {		//token ends here
-			qDebug()<< "  readGraphML():  element ends here: "<< xml.name() ;
+			qDebug()<< "  readGraphML():  element ends here: "<< xml.name().toString() ;
 				if (xml.name() == "node")	//node definition end 
 					endGraphMLElementNode(xml);
 				else if (xml.name() == "edge")	//edge definition end 
@@ -718,7 +718,7 @@ void Parser::readGraphML(QXmlStreamReader &xml){
 void Parser::readGraphMLElementGraph(QXmlStreamReader &xml){
 	qDebug()<< "   Parser: readGraphMLElementGraph()";
 	
-	qDebug()<< "    edgedefault "<< xml.attributes().value("edgedefault");
+	qDebug()<< "    edgedefault "<< xml.attributes().value("edgedefault").toString();
 	 	
 	networkName = xml.attributes().value("id").toString();
 	qDebug()<< "    graph id  "  << networkName; //store graph id to return it afterwards 
