@@ -110,15 +110,23 @@ MainWindow::MainWindow(const QString &fName) {
 	connect( &activeGraph, SIGNAL( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool, bool, bool) ), graphicsWidget, SLOT( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool, bool, bool)  ) ) ;
 	connect( &activeGraph, SIGNAL( eraseEdge(int, int)), graphicsWidget, SLOT( eraseEdge(int, int) ) );
 	connect( &activeGraph, SIGNAL( graphChanged() ), this, SLOT( graphChanged() ) ) ;
-
+	
+	connect( 
+		&activeGraph, SIGNAL( signalFileType(int , QString , int , int ) ), 
+		this, SLOT( fileType(int , QString , int , int ) ) 
+		) ;
+	
 	connect( &activeGraph, SIGNAL( drawEdge( int, int, float, bool, bool, QString, bool, bool)), graphicsWidget, SLOT( drawEdge( int, int,float, bool, bool, QString, bool, bool  ) )  ) ;
 
 	connect( &activeGraph, SIGNAL( drawEdgeReciprocal(int, int) ),  graphicsWidget, SLOT( drawEdgeReciprocal(int, int) ) );
 	
+	connect( &activeGraph, SIGNAL( statusMessage (QString) ), this, SLOT( 	statusMessage (QString) ) ) ;
+
+	connect( &activeGraph, SIGNAL( selectedVertex(int) ), this, SLOT( selectedNode(int) ) ) ;
+
+	connect( &activeGraph, SIGNAL( eraseNode(int) ),  graphicsWidget, SLOT(  eraseNode(int) ) );
 	
-	connect( &activeGraph, SIGNAL( 	statusMessage (QString) ), this, SLOT( 	statusMessage (QString) ) ) ;
-
-
+	
 	//connect some signals/slots with MW widgets
 	connect (addNodeBt,SIGNAL(clicked()), this, SLOT(addNode()));
 	connect (addLinkBt,SIGNAL(clicked()), this, SLOT(slotAddLink()));
@@ -2520,9 +2528,10 @@ void MainWindow::slotCreateRandomNetRingLattice(){
 		connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
 		progressDialog->setMinimumDuration(0);
 	}
+	
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
-	activeGraph.createRandomNetRingLattice(newNodes, degree, x0, y0, radius);
+	activeGraph.createRandomNetRingLattice(newNodes, degree, x0, y0, radius );
 
 	QApplication::restoreOverrideCursor();
 
@@ -2610,6 +2619,15 @@ void MainWindow::slotFindNode(){
 	}
 	QMessageBox::information(this, "Find Node", tr("Sorry. There is no such node in this network. \n Try again."), "OK",0);
 
+}
+
+
+
+/*
+ * Called by Graph to update what the selected node is.
+ */
+void MainWindow::selectedNode (const int vertex){
+	clickedJimNumber=vertex;
 }
 
 
@@ -2789,10 +2807,10 @@ void MainWindow::slotRemoveNode() {
 			return;
 		}
 	}
-	qDebug("MW: clickedJimNumber is %i. Deleting node %i from GraphicsWidget", clickedJimNumber, doomedJim);
-	graphicsWidget->removeNode(doomedJim);
-	qDebug ("MW: removing vertice with number %i from activeGraph", doomedJim);
+	
+	qDebug ("MW: removing vertice with number %i from Graph", doomedJim);
 	activeGraph.removeVertex(doomedJim);
+	
 	clickedJimNumber=-1;
 	graphChanged();
 	qDebug("MW: removeNode() completed. Node %i removed completely.",doomedJim);

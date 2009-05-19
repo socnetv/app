@@ -67,7 +67,7 @@ class Graph:  public QObject{
 public slots:
 	/** Slots to signals from Parser */
 	void createVertex(int,int,QString, QString, QString, QPointF, QString); 	//Main vertex creation call
-	void fileType(int, QString, int,int);	
+	void slotFileType(int, QString, int,int);	
 	void removeDummyNode(int);
 
 	/** Slots to signals from GraphicsWidget and Parser*/
@@ -82,10 +82,14 @@ public slots:
 signals:
 	/** Signals to MainWindow */
 	void updateProgressDialog(int );
-	void graphChanged();									//call to update MW widgets
-	void statusMessage (QString);
+	void graphChanged();						//call to update MW widgets
+	void selectedVertex(int);				//notifies MW who is the selected node
+	void signalFileType (int, QString, int,int); //notifies MW what we have loaded.
+	void statusMessage (QString message);		//updates statusbar message
+	
 	/** Signals to GraphicsWidget */
 	void drawNode( int ,int,  QString, QString,QString, QPointF, QString, bool, bool, bool);	//call GW to draw a node
+	void eraseNode (int);		//erase node from GW  
 	void drawEdge(int, int, float, bool, bool, QString, bool, bool);				//call GW to draw an edge
 	void eraseEdge(int, int);		//emited from removeEdge() to GW to clear the edge item.
 	void drawEdgeReciprocal(int, int);							//call GW to draw the edge as symmetric one
@@ -209,11 +213,19 @@ public:
 	void layoutForceDirectedFruchtermanReingold(bool dynamicMovement);
 
 	/**RANDOM NETWORKS*/
-	void createRandomNetErdos(int, double);				//Creates a uniform random network
-	void createRandomNetRingLattice(int, int, double, double, double); 	//Creates a ring lattice network
-	void createSameDegreeRandomNetwork(int, int); 				//Creates a random network with the same degree in all nodes
-	void createRandomNetSmallWorld(int, int, double, double, double, double); 	//Creates a small world network
-	int factorial(int);						// for  (n 2)p edges calculation
+	void createRandomNetErdos 
+			(int, double);				//Creates a uniform random network
+	
+	void createRandomNetRingLattice
+			(int, int, double, double, double); 	//Creates a ring lattice network
+				
+	void createSameDegreeRandomNetwork
+			(int, int); 				//Creates a random network with the same degree in all nodes
+				
+	void createRandomNetSmallWorld 
+			(int, int, double, double, double, double); 	//Creates a small world network
+				
+	int factorial (int);				// for  (n 2)p edges calculation
 
 	/** List of pointers to the vertices. A vertex stores all the info: links, colours, etc */
 	QList<Vertex*> m_graph;			

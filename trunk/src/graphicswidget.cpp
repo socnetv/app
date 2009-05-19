@@ -318,16 +318,17 @@ void GraphicsWidget::moveNode(int number, int x, int y){
 
 
 /**
-	Called from MainWindow
+	Called from Graph signal eraseNode(int) 
 */
-void GraphicsWidget::removeNode(int doomedJim){
+void GraphicsWidget::eraseNode(int doomedJim){
+	qDebug("GW: Deleting node %i ", doomedJim);
 	QList<QGraphicsItem *> list=scene()->items();
 	qDebug("GW: Scene items= %i - View items : %i",scene()->items().size(), items().size());
 	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
 		if ( (*it)->type()==TypeNode) {
 			Node *jim=(Node*) (*it);
 			if ( jim->nodeNumber()==doomedJim)	{
-				qDebug("GW: found doomedJim %i. Calling node->remove()", jim->nodeNumber());
+				qDebug("GW: found doomedJim %i. Demanding node->die() :)", jim->nodeNumber());
 				jim->die();
 				delete *it;
 				break;

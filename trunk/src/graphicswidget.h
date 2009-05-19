@@ -51,7 +51,7 @@ public:
  	GraphicsWidget(QGraphicsScene*, MainWindow* parent);
 	~GraphicsWidget();
 	void clear();
-	void removeNode(int doomedJim);
+
 	
 	void removeItem(Edge*);
 	void removeItem(Node*);
@@ -85,6 +85,7 @@ protected:
 
 public slots:
 	void drawNode(int i, int size, QString aColor, QString label, QString lColor, QPointF p, QString nodeShape, bool showLabels, bool labelIn, bool showNumbers);
+	void eraseNode(int doomedJim);
 	void drawEdge(int, int, float, bool, bool, QString, bool, bool);
 	void eraseEdge(int, int);
 	void nodeClicked(Node *);

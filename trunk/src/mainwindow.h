@@ -94,7 +94,7 @@ public:		/**PUBLIC FUNCTIONS NOT VISIBLE BY OTHER WIDGETS NOR BY SLOT/LINK MECHA
 	bool showNumbers();
 
 	int loadNetworkFile( QString);
-	void fileType(int , QString , int , int ); 
+
 
 	int activeLinks();
 	int activeNodes();
@@ -252,6 +252,12 @@ public slots:
 	//Called by Graph to display some message to the user
 	void statusMessage(const QString);
 	
+	//Called by Graph to update what the selected node is. 
+	void selectedNode (const int);
+	
+	//Called from Graph when a network file is loaded.	
+	void fileType(int , QString , int , int );
+	 
 protected:
 	void resizeEvent( QResizeEvent * );
 	void closeEvent( QCloseEvent* ce );

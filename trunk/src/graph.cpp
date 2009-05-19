@@ -62,7 +62,7 @@ Graph::Graph() {
 
 	connect (&parser, SIGNAL(createEdge (int, int, float, QString, bool, bool, bool)), this, SLOT(createEdge (int, int, float, QString, bool, bool, bool) ) );
 
-	connect (&parser, SIGNAL(fileType(int, QString, int, int)), this, SLOT(fileType(int, QString, int, int)) );
+	connect (&parser, SIGNAL(fileType(int, QString, int, int)), this, SLOT(slotFileType(int, QString, int, int)) );
 	connect (&parser, SIGNAL(removeDummyNode(int)), this, SLOT (removeDummyNode(int)) );
 }
 
@@ -168,12 +168,12 @@ void Graph::createEdge(int v1, int v2, float weight, bool reciprocal=false, bool
 */
 void Graph::removeDummyNode(int i){
 	qDebug("**Graph: RemoveDummyNode %i", i);
-//	removeVertex(i);
-	( (MainWindow*)parent() )->clickedJimNumber=i;
-	emit setSelectedVertex(i);
-	( (MainWindow*)parent() )->slotRemoveNode();
+	removeVertex(i);
+//	emit selectedVertex(i);
 
 }
+
+
 
 void Graph::setParent( QMainWindow *mp){
 	m_parent=mp;
@@ -208,9 +208,9 @@ void Graph::addVertex (int v1, int val, int nsz, QString nc, QString nl, QString
 /**
 	updates MW  with the file type (0=nofile, 1=Pajek, 2=Adjacency etc)
 */
-void Graph::fileType(int type, QString networkName, int aNodes, int totalLinks){
-	qDebug("Graph: fileType %i", type);
-	((MainWindow*) parent()) ->fileType(type, networkName, aNodes, totalLinks);
+void Graph::slotFileType(int type, QString networkName, int aNodes, int totalLinks){
+	qDebug("Graph: slotFileType %i", type);
+	emit signalFileType (type, networkName, aNodes, totalLinks);
 }
 
 
@@ -325,7 +325,9 @@ void Graph::removeVertex(int Doomed){
 
 	order=false;
 	graphModified=true;
-	emit graphChanged(); 
+
+	emit graphChanged();
+	emit eraseNode(Doomed); 
 }
 
 
@@ -1793,13 +1795,16 @@ void Graph::createRandomNetErdos(int vert, double probability){
 /** layman's attempt to create a random ring lattice network.
 */
 
-void Graph::createRandomNetRingLattice(int vert, int degree,double x0, double y0, double radius){
+void Graph::createRandomNetRingLattice( 
+			int vert, int degree, 
+			double x0, double y0, double radius)
+{
 	qDebug("Graph: createRingLatticeNetwork");
 	int x=0;
 	int y=0;
 	int progressCounter=0;
-	bool showLabels = false;
-	showLabels = ((MainWindow*) parent()) ->showLabels();
+
+
 	double Pi = 3.14159265;
 	double rad= (2.0* Pi/ vert );
 	for (register int i=0; i< vert ; i++) {
@@ -1830,7 +1835,10 @@ void Graph::createRandomNetRingLattice(int vert, int degree,double x0, double y0
 
 
 
-void Graph::createRandomNetSmallWorld(int vert, int degree, double beta, double x0, double y0, double radius){
+void Graph::createRandomNetSmallWorld (
+				int vert, int degree, double beta, 
+				double x0, double y0, double radius)
+{
 	qDebug("Graph: createRandomNetSmallWorld. First creating a ring lattice");
 
 	createRandomNetRingLattice(vert, degree, x0, y0, radius);
@@ -1877,9 +1885,9 @@ void Graph::createRandomNetSmallWorld(int vert, int degree, double beta, double 
 
 void Graph::createSameDegreeRandomNetwork(int vert, int degree){
 	qDebug("Graph: createSameDegreeRandomNetwork");
-	bool showLabels = false;
+
 	int progressCounter=0;
-	showLabels = ((MainWindow*) parent()) ->showLabels();
+
 	for (register int i=0; i< vert ; i++) {
 		int x=10+rand() %640;
 		int y=10+rand() %480;
@@ -2168,7 +2176,7 @@ bool Graph::saveGraphToPajekFormat (
 
 	QFile f( fileName );
 	if ( !f.open( QIODevice::WriteOnly ) )  {
-		statusMessage (QString(tr("Could not write to %1")).arg(fileName));
+		emit statusMessage (QString(tr("Could not write to %1")).arg(fileName));
 		return false;
 	}
 	QTextStream t( &f );
@@ -2225,7 +2233,7 @@ bool Graph::saveGraphToPajekFormat (
 	}
 	f.close();
 	QString fileNameNoPath=fileName.split("/").last();
-	statusMessage (QString(tr( "File %1 saved" ) ).arg( fileNameNoPath ));
+	emit statusMessage (QString(tr( "File %1 saved" ) ).arg( fileNameNoPath ));
 	return true;
 
 	
@@ -2240,7 +2248,7 @@ bool Graph::saveGraphToAdjacencyFormat (
 
 	QFile f( fileName );
 	if ( !f.open( QIODevice::WriteOnly ) )  {
-		statusMessage(QString(tr("Could not write to %1")).arg(fileName));
+		emit statusMessage(QString(tr("Could not write to %1")).arg(fileName));
 		return false;
 	}
 	QTextStream t( &f );
@@ -2250,7 +2258,7 @@ bool Graph::saveGraphToAdjacencyFormat (
 
 	f.close();
 	QString fileNameNoPath=fileName.split("/").last();
-	statusMessage (QString( tr("Adjacency matrix-formatted network saved into file %1") ).arg( fileNameNoPath ));
+	emit statusMessage (QString( tr("Adjacency matrix-formatted network saved into file %1") ).arg( fileNameNoPath ));
 	return true;
 }
 
@@ -2365,7 +2373,7 @@ bool Graph::saveGraphToGraphMLFormat (
 	QFile f( fileName );
 	if ( !f.open( QIODevice::WriteOnly ) )  {
 
-		statusMessage( QString(tr("Could not write to %1")).arg(fileName) );
+		emit statusMessage( QString(tr("Could not write to %1")).arg(fileName) );
 		return false;
 	}
 	QTextStream t( &f );
@@ -2439,7 +2447,7 @@ bool Graph::saveGraphToGraphMLFormat (
 	}
 	f.close();
 	QString fileNameNoPath=fileName.split("/").last();
-	statusMessage( QString(tr( "File %1 saved" ) ).arg( fileNameNoPath ) );
+	emit statusMessage( QString(tr( "File %1 saved" ) ).arg( fileNameNoPath ) );
 	return true;
 }
 
