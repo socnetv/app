@@ -4486,56 +4486,17 @@ void MainWindow::slotCentralityInDegree(){
 void MainWindow::slotCentralityCloseness(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-
 		statusBar()->showMessage( QString(tr("Nothing to do...")) , statusBarDuration);
 		return;
 	}
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-	activeGraph.createDistanceMatrix(true);
-//	activeGraph.centralityCloseness();
-	QApplication::restoreOverrideCursor();
 
-	//float maximumIndexValue=1.0/(activeGraph.vertices()-1.0);
 	QString fn = "centrality_closeness.dat";
-
-	QFile f( fn );
-	if ( !f.open( QIODevice::WriteOnly ) )
-		return;
-	QTextStream ts(&f  );
-	ts <<"-SocNetV- "<<VERSION<<"\n\n";
-	ts <<tr("CLOSENESS - CENTRALITY REPORT \n");
-	ts <<tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
-	ts<< tr("CLOSENESS CENTRALITY (CC) OF EACH NODE")<<"\n";
-	ts<< tr("CC(u) is the invert sum of the distances of node u from all other nodes.")<<"\n";
-	ts<< tr("CC' is the standardized CC")<<"\n";
+	bool considerWeights=true;
+	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	activeGraph.writeCentralityCloseness(fn, considerWeights);
+	QApplication::restoreOverrideCursor();
+	statusBar()->showMessage( QString(tr(" Reading...")));
 	
-	ts<< tr("CC  range:  0 < C < ")<<QString::number(activeGraph.maxIndexCC)<<"\n";
-	ts<< tr("CC' range:  0 < C'< 1")<<"\n\n";
-	ts << "Node"<<"\tCC\t\tCC'\t\t%CC\n";
-	QList<Vertex*>::iterator it;
-	for (it=activeGraph.m_graph.begin(); it!=activeGraph.m_graph.end(); it++){ 
-		ts<<(*it)->name()<<"\t"<<(*it)->CC() << "\t\t"<< (*it)->SCC() << "\t\t" <<  (100* ((*it)->CC()) / activeGraph.sumCC)<<endl;
-	}
-	qDebug ("min %f, max %f", activeGraph.minCC, activeGraph.maxCC);
-	if ( activeGraph.minCC == activeGraph.maxCC )
-		ts << tr("\nAll nodes have the same CC value.\n");
-	else  {
-		ts << tr("\nNode ")<< activeGraph.maxNodeCC << tr(" has the maximum ACC value (std): ") <<activeGraph.maxCC  <<"  \n";
-		ts << tr("\nNode ")<< activeGraph.minNodeCC << tr(" has the minimum ACC value (std): ") <<activeGraph.minCC <<"  \n";
-	}
-	
-	ts << tr("\nThere are ")<<activeGraph.classesCC<<tr(" different Closeness Centrality classes.\n");	
-	ts<<tr("\nGROUP CLOSENESS CENTRALISATION (GCC)\n\n");
-	ts<< tr("GCC = ") << activeGraph.groupCC<<"\n\n";
-	ts<<tr("GCC range: 0 < GCC < 1\n");
-	ts<<tr("GCC = 0, when the lengths of the geodesics are all equal (i.e. a complete or a circle graph).\n");
-	ts<<tr("GCC = 1, when one node has geodesics of length 1 to all the other nodes, and the other nodes have geodesics of length 2 to the remaining (N-2) nodes. This is exactly the situation realised by a star graph.\n");
-	ts<<"(Wasserman & Faust, formula 5.9, p. 187)\n\n";
-	ts<<tr("This measure focuses on how close a node is to all\n");
-	ts<<tr("the other nodes in the set of nodes. The idea is that a node\n");
-	ts<<tr("is central if it can quickly interact with all others\n");
-	ts<<"(Wasserman & Faust, p. 181)\n";
-	f.close();
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
 	ed->setWindowTitle("Closeness Centralities  saved as: " + tempFileNameNoPath.last());
@@ -4555,50 +4516,13 @@ void MainWindow::slotCentralityBetweeness(){
 		statusBar()->showMessage( QString(tr(" Nothing to do...")) , statusBarDuration);
 		return;
 	}
-
+	QString fn = "centrality_betweeness.dat";
+	bool considerWeights=true;
 	statusBar()->showMessage( QString(tr(" Please wait...")));
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	activeGraph.writeCentralityBetweeness(fn, considerWeights);	
+	statusBar()->showMessage( QString(tr(" Reading...")));
 
-	activeGraph.createDistanceMatrix(true);	
-	statusBar()->showMessage( QString(tr(" Finished with shortest-path distances...")));
-
-	//float maximumIndexValue=;//vertices()-1.0)*(activeGraph.vertices()-2.0)/2.0;
-	QString fn = "centrality_betweeness.dat";
-	QFile f( fn );
-	if ( !f.open( QIODevice::WriteOnly ) )
-		return;
-	QTextStream ts(&f  );
-	
-	ts <<"-SocNetV- "<<VERSION<<"\n\n";
-	ts <<tr("BETWEENESS - CENTRALITY REPORT \n");
-	ts <<tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
-	ts<< tr("BETWEENESS CENTRALITY (BC) OF EACH NODE")<<"\n";
-	ts<< tr("BC of a node u is the sum of delta (s,t,u) for all s,t in V")<<"\n"; 
-	ts<< tr("Delta(s,t,u) is the ratio of all geodesics between s and t which run through u.")<<"\n";
-	ts<< tr("Therefore, BC(u) reflects how often the node u lies on the geodesics between the other nodes of the network")<<"\n";
-	ts<< tr("BC' is the standardized BC")<<"\n";
-	ts<< tr("BC  range: 0 < BC < ")<<QString::number(activeGraph.maxIndexBC)<< tr(" (Number of pairs of nodes excluding i)")<<"\n";
-	ts<< tr("BC' range: 0 < BC'< 1  (C' is 1 when the node falls on all geodesics)\n\n");
-	ts << "Node"<<"\tBC\t\tBC'\t\t%BC\n";
-	QList<Vertex*>::iterator it;
-	for (it=activeGraph.m_graph.begin(); it!=activeGraph.m_graph.end(); it++){ 
-		ts<<(*it)->name()<<"\t"<<(*it)->BC() << "\t\t"<< (*it)->SBC() << "\t\t" <<  (100* ((*it)->BC()) / activeGraph.sumBC)<<endl;
-	}
-	if (activeGraph.minBC == activeGraph.maxBC)
-		ts << tr("\nAll nodes have the same BC value.\n");
-	else {
-		ts<<tr("\n Node ")<<activeGraph.maxNodeBC<< tr(" has the maximum BC value: ") <<activeGraph.maxBC <<"  \n";
-		ts<<tr("\n Node ")<<activeGraph.minNodeBC<< tr(" has the minimum BC value: ") <<activeGraph.minBC <<"  \n";
-	}
-
-	ts << tr("\nThere are ")<<activeGraph.classesBC<<tr(" different Betweeness Centrality classes.\n");	
-	ts<<tr("\nGROUP BETWEENESS CENTRALISATION (GBC)\n\n");
-	ts<< tr("GBC = ") << activeGraph.groupBC<<"\n\n";
-	ts<<tr("GBC range: 0 < GBC < 1\n");
-	ts<<tr("GBC = 0, when all the nodes have exactly the same betweeness index.\n");
-	ts<<tr("GBC = 1, when one node falls on all other geodesics between all the remaining (N-1) nodes. This is exactly the situation realised by a star graph.\n");
-	ts<<"(Wasserman & Faust, formula 5.13, p. 192)\n\n";
-	f.close();
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
 	ed->setWindowTitle("Betweeness Centralities saved as: " + tempFileNameNoPath.last());

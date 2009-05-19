@@ -1379,12 +1379,12 @@ void Graph::writeCentralityInDegree
 	centralityInDegree(considerWeights);
 	float maximumIndexValue=vertices()-1.0;
 	
-	outText <<"-SocNetV- \n\n";
-	outText <<tr("IN-DEGREE CENTRALITY REPORT \n");
-	outText <<tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
-	outText<< tr("IN-DEGREE CENTRALITIES (IDC) OF EACH NODE\n");
-	outText<< tr("IDC  range: 0 < C < ")<<maximumIndexValue<<"\n";
-	outText<< "IDC' range: 0 < C'< 1"<<"\n\n";
+	outText << "-SocNetV- \n\n";
+	outText << tr("IN-DEGREE CENTRALITY REPORT \n");
+	outText << tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+	outText << tr("IN-DEGREE CENTRALITIES (IDC) OF EACH NODE\n");
+	outText << tr("IDC  range: 0 < C < ")<<maximumIndexValue<<"\n";
+	outText << "IDC' range: 0 < C'< 1"<<"\n\n";
 
 	outText << "Node"<<"\tIDC\tIDC'\t%IDC\n";
 
@@ -1408,16 +1408,16 @@ void Graph::writeCentralityInDegree
 		outText << "\nNode "<< minNodeIDC << " has the minimum IDC value (std): " << minIDC <<"  \n";
 	}
 	if (classesIDC!=1)
-		outText<< "\nThere are "<<classesIDC<<" different IDC classes.\n";	
+		outText << "\nThere are "<<classesIDC<<" different IDC classes.\n";	
 	else 
-		outText<< "\nThere is only "<<classesIDC<<" IDC class.\n";	
-	outText<<"\nGROUP IN-DEGREE CENTRALISATION (GIDC)\n\n";
-	outText<<"GIDC = " << groupIDC<<"\n\n";
-	outText<<"GIDC range: 0 < GIDC < 1\n";
-	outText<<"GIDC = 0, when all in-degrees are equal (i.e. regular lattice).\n";
-	outText<<"GIDC = 1, when one node is linked from every other node.\n";
-	outText<<"The in-degree of the node is a measure of the \'activity\' of the node it represents\n";
-	outText<<"(Wasserman & Faust, p. 101)\n";
+		outText << "\nThere is only "<<classesIDC<<" IDC class.\n";	
+	outText << "\nGROUP IN-DEGREE CENTRALISATION (GIDC)\n\n";
+	outText << "GIDC = " << groupIDC<<"\n\n";
+	outText << "GIDC range: 0 < GIDC < 1\n";
+	outText << "GIDC = 0, when all in-degrees are equal (i.e. regular lattice).\n";
+	outText << "GIDC = 1, when one node is linked from every other node.\n";
+	outText << "The in-degree of the node is a measure of the \'activity\' of the node it represents\n";
+	outText << "(Wasserman & Faust, p. 101)\n";
 }
 
 
@@ -1496,6 +1496,9 @@ void Graph::centralityOutDegree(bool weights){
 	graphModified=false;
 }
 
+
+
+
 void Graph::writeCentralityOutDegree (
 				const QString fileName, const bool considerWeights)
 {
@@ -1507,24 +1510,24 @@ void Graph::writeCentralityOutDegree (
 	}
 	QTextStream outText ( &file );
 
-
 	centralityOutDegree(considerWeights);
+
 	float maximumIndexValue=vertices()-1.0;
 	
-	outText<<"-SocNetV- \n\n";
-	outText<<tr("OUT-DEGREE CENTRALITY REPORT \n");
-	outText<<tr("Created: ")<<
+	outText << "-SocNetV- \n\n";
+	outText << tr("OUT-DEGREE CENTRALITY REPORT \n");
+	outText << tr("Created: ")<<
 			 actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) 
 			 << "\n\n";
-	outText<< tr("OUT-DEGREE CENTRALITIES (ODC) FOR EACH NODE\n");
+	outText << tr("OUT-DEGREE CENTRALITIES (ODC) FOR EACH NODE\n");
 
-	outText<< tr("ODC  range: 0 < C < ")<<QString::number(maximumIndexValue)<<"\n";
-	outText<< "ODC' range: 0 < C'< 1"<<"\n\n";
+	outText << tr("ODC  range: 0 < C < ")<<QString::number(maximumIndexValue)<<"\n";
+	outText << "ODC' range: 0 < C'< 1"<<"\n\n";
 
 	outText << "Node"<<"\tODC\tODC'\t%ODC\n";
 	QList<Vertex*>::iterator it;
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
-		outText<<(*it)->name()<<"\t"<<(*it)->ODC() << "\t"<< (*it)->SODC() << "\t" <<  (100* ((*it)->ODC()) / sumODC)<<endl;
+		outText << (*it)->name()<<"\t"<<(*it)->ODC() << "\t"<< (*it)->SODC() << "\t" <<  (100* ((*it)->ODC()) / sumODC)<<endl;
 	}
 	if (symmetricAdjacencyMatrix) {
 		outText << "Mean Node Degree = "<< meanDegree<<"\n" ;
@@ -1541,25 +1544,135 @@ void Graph::writeCentralityOutDegree (
 		outText << "\nNode "<< minNodeODC << " has the minimum ODC value (std): " << minODC <<"  \n";
 	}
 	if (classesODC!=1)
-		outText<< "\nThere are "<<classesODC<<" different out-degree centrality classes.\n";		
+		outText << "\nThere are "<<classesODC<<" different out-degree centrality classes.\n";		
 	else 
-		outText<< "\nThere is only "<<classesODC<<" out-degree centrality class.\n";	
+		outText << "\nThere is only "<<classesODC<<" out-degree centrality class.\n";	
 	
-	outText<<"\nGROUP OUT-DEGREE CENTRALISATION (GODC)\n\n";
-	outText<<"GODC = " << groupODC<<"\n\n";
-	outText<<"GODC range: 0 < GODC < 1\n";
-	outText<<"GODC = 0, when all out-degrees are equal (i.e. regular lattice).\n";
-	outText<<"GODC = 1, when one node completely dominates or overshadows the other nodes.\n";
-	outText<<"(Wasserman & Faust, formula 5.5, p. 177)\n\n";
-	outText<<"The degree of the node is a measure of the \'activity\' of the node it represents\n";
-	outText<<"(Wasserman & Faust, p. 101)\n";
+	outText << "\nGROUP OUT-DEGREE CENTRALISATION (GODC)\n\n";
+	outText << "GODC = " << groupODC<<"\n\n";
+	outText << "GODC range: 0 < GODC < 1\n";
+	outText << "GODC = 0, when all out-degrees are equal (i.e. regular lattice).\n";
+	outText << "GODC = 1, when one node completely dominates or overshadows the other nodes.\n";
+	outText << "(Wasserman & Faust, formula 5.5, p. 177)\n\n";
+	outText << "The degree of the node is a measure of the \'activity\' of the node it represents\n";
+	outText << "(Wasserman & Faust, p. 101)\n";
+}
 
 
+//Writes the closeness centralities to a file
+void Graph::writeCentralityCloseness(
+		const QString fileName, const bool considerWeights)
+{
+	QFile file ( fileName );
+	if ( !file.open( QIODevice::WriteOnly ) )  {
+		qDebug()<< "Error opening file!";
+		emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+		return;
+	}
+	QTextStream outText ( &file );
+
+	emit statusMessage ( (tr("Calculating shortest paths")) );
+	createDistanceMatrix(true);
+	emit statusMessage ( QString(tr("Writing closeness centralities to file:")).arg(fileName) );
+
+	outText << "-SocNetV- "<<"\n\n";
+	outText << tr("CLOSENESS - CENTRALITY REPORT \n");
+	outText << tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+	outText << tr("CLOSENESS CENTRALITY (CC) OF EACH NODE")<<"\n";
+	outText << tr("CC(u) is the invert sum of the distances of node u from all other nodes.")<<"\n";
+	outText << tr("CC' is the standardized CC")<<"\n";
+	
+	outText << tr("CC  range:  0 < C < ")<<QString::number(maxIndexCC)<<"\n";
+	outText << tr("CC' range:  0 < C'< 1")<<"\n\n";
+	outText << "Node"<<"\tCC\t\tCC'\t\t%CC\n";
+	QList<Vertex*>::iterator it;
+	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
+		outText << (*it)->name()<<"\t"<<(*it)->CC() << "\t\t"<< (*it)->SCC() << "\t\t" <<  (100* ((*it)->CC()) / sumCC)<<endl;
+	}
+	qDebug ("min %f, max %f", minCC, maxCC);
+	if ( minCC == maxCC )
+		outText << tr("\nAll nodes have the same CC value.\n");
+	else  {
+		outText << tr("\nNode ")<< maxNodeCC << tr(" has the maximum ACC value (std): ") <<maxCC  <<"  \n";
+		outText << tr("\nNode ")<< minNodeCC << tr(" has the minimum ACC value (std): ") <<minCC <<"  \n";
+	}
+	
+	outText << tr("\nThere are ")<<classesCC<<tr(" different Closeness Centrality classes.\n");	
+	outText << tr("\nGROUP CLOSENESS CENTRALISATION (GCC)\n\n");
+	outText << tr("GCC = ") << groupCC<<"\n\n";
+	outText << tr("GCC range: 0 < GCC < 1\n");
+	outText << tr("GCC = 0, when the lengths of the geodesics are all equal (i.e. a complete or a circle graph).\n");
+	outText << tr("GCC = 1, when one node has geodesics of length 1 to all the other nodes, and the other nodes have geodesics of length 2 to the remaining (N-2) nodes. This is exactly the situation realised by a star graph.\n");
+	outText <<"(Wasserman & Faust, formula 5.9, p. 187)\n\n";
+	outText << tr("This measure focuses on how close a node is to all\n");
+	outText << tr("the other nodes in the set of nodes. The idea is that a node\n");
+	outText << tr("is central if it can quickly interact with all others\n");
+	outText << "(Wasserman & Faust, p. 181)\n";
+}
+
+
+//Writes the betweeness centralities to a file
+void Graph::writeCentralityBetweeness(
+		const QString fileName, const bool considerWeights)
+{
+	QFile file ( fileName );
+	if ( !file.open( QIODevice::WriteOnly ) )  {
+		qDebug()<< "Error opening file!";
+		emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+		return;
+	}
+	QTextStream outText ( &file );
+
+	emit statusMessage ( (tr("Calculating shortest paths")) );
+	createDistanceMatrix(true);
+	emit statusMessage ( QString(tr("Writing betweeness centralities to file:")).arg(fileName) );
+	
+	outText << "-SocNetV- "<<"\n\n";
+	outText << tr("BETWEENESS - CENTRALITY REPORT \n");
+	outText << tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+	outText << tr("BETWEENESS CENTRALITY (BC) OF EACH NODE")<<"\n";
+	outText << tr("BC of a node u is the sum of delta (s,t,u) for all s,t in V")<<"\n"; 
+	outText << tr("Delta(s,t,u) is the ratio of all geodesics between s and t which run through u.")<<"\n";
+	outText << tr("Therefore, BC(u) reflects how often the node u lies on the geodesics between the other nodes of the network")<<"\n";
+	outText << tr("BC' is the standardized BC")<<"\n";
+	outText << tr("BC  range: 0 < BC < ")<<QString::number( maxIndexBC)<< tr(" (Number of pairs of nodes excluding i)")<<"\n";
+	outText << tr("BC' range: 0 < BC'< 1  (C' is 1 when the node falls on all geodesics)\n\n");
+	outText << "Node"<<"\tBC\t\tBC'\t\t%BC\n";
+	QList<Vertex*>::iterator it;
+	for (it= m_graph.begin(); it!= m_graph.end(); it++){ 
+		outText<<(*it)->name()<<"\t"<<(*it)->BC() << "\t\t"<< (*it)->SBC() << "\t\t" <<  (100* ((*it)->BC()) /  sumBC)<<endl;
+	}
+	if ( minBC ==  maxBC)
+		outText << tr("\nAll nodes have the same BC value.\n");
+	else {
+		outText << tr("\n Node ")<< maxNodeBC<< tr(" has the maximum BC value: ") << maxBC <<"  \n";
+		outText << tr("\n Node ")<< minNodeBC<< tr(" has the minimum BC value: ") << minBC <<"  \n";
+	}
+
+	outText << tr("\nThere are ")<< classesBC<<tr(" different Betweeness Centrality classes.\n");	
+	outText << tr("\nGROUP BETWEENESS CENTRALISATION (GBC)\n\n");
+	outText << tr("GBC = ") <<  groupBC<<"\n\n";
+	outText << tr("GBC range: 0 < GBC < 1\n");
+	outText << tr("GBC = 0, when all the nodes have exactly the same betweeness index.\n");
+	outText << tr("GBC = 1, when one node falls on all other geodesics between all the remaining (N-1) nodes. This is exactly the situation realised by a star graph.\n");
+	outText << "(Wasserman & Faust, formula 5.13, p. 192)\n\n";
 
 }
 
 
+//Writes the Graph centralities to a file
+void Graph::writeCentralityGraph(const QString, const bool){
+	
+	
+}
 
+
+//Writes the Stress centralities to a file
+void Graph::writeCentralityStress(
+		const QString fileName, const bool considerWeights)
+{
+	
+}
 
 
 /** 
