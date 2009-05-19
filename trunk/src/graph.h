@@ -177,14 +177,18 @@ public:
 	void writeAdjacencyMatrixTo(QTextStream& os);	 			//Exports the adjacency matrix to a given textstream
 	void writeAdjacencyMatrix(const char*, const char*);		//Writes the adjacency matrix to a given file.
 	void writeDistanceMatrix(const char*, const char*, const char*);//Writes the distance matrix to a file
+	friend QTextStream& operator <<  (QTextStream& os, Graph& m);  	//
+
 	void writeCentralityInDegree(const QString, bool);				//Writes the in-degree centralities to a file
 	void writeCentralityOutDegree(const QString, const bool);		//Writes the out-degree centralities to a file
 	void writeCentralityCloseness(const QString, const bool);		//Writes the closeness centralities to a file
 	void writeCentralityBetweeness(const QString, const bool);		//Writes the betweeness centralities to a file
 	void writeCentralityGraph(const QString, const bool);		//Writes the Graph centralities to a file
 	void writeCentralityStress(const QString, const bool);		//Writes the Stress centralities to a file	
-
-	friend QTextStream& operator <<  (QTextStream& os, Graph& m);  	//
+	void writeCentralityEccentricity(const QString, const bool);		//Writes the Eccentr centralities to a file
+	void writeClusteringCoefficient(const QString, const bool);		//Writes the clustering coefficients to a file
+	
+	
 
 
 	/**DISTANCES & CENTRALITIES*/
@@ -228,9 +232,6 @@ public:
 				
 	int factorial (int);				// for  (n 2)p edges calculation
 
-	/** List of pointers to the vertices. A vertex stores all the info: links, colours, etc */
-	QList<Vertex*> m_graph;			
-
 
 	/** index stores the index of each vertex inside m_graph. It starts at zero (0).
 	This is crucial when we want to find the place of a vertex inside m_graph after adding or removing many vertices */
@@ -240,23 +241,6 @@ public:
 	*/
 
 
-	float meanDegree, varianceDegree;
-	float minIDC, maxIDC, sumIDC, groupIDC;
-	float minODC, maxODC, sumODC, groupODC;
-	float minCC, maxCC, nomCC, denomCC, sumCC, groupCC, maxIndexCC;
-	float minBC, maxBC, nomBC, denomBC, sumBC, groupBC, maxIndexBC;
-	float minGC, maxGC, nomGC, denomGC, sumGC, groupGC, maxIndexGC;
-	float minSC, maxSC, nomSC, denomSC, sumSC, groupSC, maxIndexSC;
-	float minEC, maxEC, nomEC, denomEC, sumEC, groupEC, maxIndexEC;
-	float minCLC, maxCLC, averageCLC;
-	int maxNodeCLC, minNodeCLC;
-	int classesIDC, maxNodeIDC, minNodeIDC;
-	int classesODC, maxNodeODC, minNodeODC;
-	int classesCC, maxNodeCC, minNodeCC;
-	int classesBC, maxNodeBC, minNodeBC;
-	int classesGC, maxNodeGC, minNodeGC;
-	int classesSC, maxNodeSC, minNodeSC;
-	int classesEC, maxNodeEC, minNodeEC;
 
 
 
@@ -264,6 +248,9 @@ protected:
 
 	void timerEvent(QTimerEvent *event);			// Called from nodeMovement when a timerEvent occurs
 private:
+
+	/** List of pointers to the vertices. A vertex stores all the info: links, colours, etc */
+	QList<Vertex*> m_graph;			
 
 	Parser parser;			//file loader threaded class.
 
@@ -284,7 +271,27 @@ private:
 	Matrix  TM, DM;
 	stack<int> Stack;
 
+	float meanDegree, varianceDegree;
+	float minIDC, maxIDC, sumIDC, groupIDC;
+	float minODC, maxODC, sumODC, groupODC;
+	float minCC, maxCC, nomCC, denomCC, sumCC, groupCC, maxIndexCC;
+	float minBC, maxBC, nomBC, denomBC, sumBC, groupBC, maxIndexBC;
+	float minGC, maxGC, nomGC, denomGC, sumGC, groupGC, maxIndexGC;
+	float minSC, maxSC, nomSC, denomSC, sumSC, groupSC, maxIndexSC;
+	float minEC, maxEC, nomEC, denomEC, sumEC, groupEC, maxIndexEC;
+	float minCLC, maxCLC, averageCLC;
+	int maxNodeCLC, minNodeCLC;
+	int classesIDC, maxNodeIDC, minNodeIDC;
+	int classesODC, maxNodeODC, minNodeODC;
+	int classesCC, maxNodeCC, minNodeCC;
+	int classesBC, maxNodeBC, minNodeBC;
+	int classesGC, maxNodeGC, minNodeGC;
+	int classesSC, maxNodeSC, minNodeSC;
+	int classesEC, maxNodeEC, minNodeEC;
+
+
 	/** General & initialisation variables */
+
 	int m_totalEdges, m_totalVertices, graphDiameter, initVertexSize;
 	float m_averGraphDistance, nonZeroDistancesCounter;
 	int outEdgesVert, inEdgesVert, reciprocalEdgesVert;

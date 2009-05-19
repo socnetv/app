@@ -4310,7 +4310,6 @@ void MainWindow::slotAverageGraphDistance() {
 	float averGraphDistance=activeGraph.averageGraphDistance();
 	QApplication::restoreOverrideCursor();	
 
-
 	QMessageBox::information(this, "Average Graph Distance", "The average shortest path length is  = " + QString::number(averGraphDistance), "OK",0);
 	statusBar()->showMessage(tr("Average distance calculated. Ready."), statusBarDuration);
 
@@ -4339,60 +4338,17 @@ void MainWindow::slotClusteringCoefficient (){
 		statusBar()->showMessage( QString(tr(" No network here. Sorry. Nothing to do.")) , statusBarDuration);
 		return;
 	}
-	float clucof=0;
-	
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-	clucof=activeGraph.clusteringCoefficient();
-	QApplication::restoreOverrideCursor();
-	
 	QString fn = "clustering-coefficients.dat";
-	QFile file( fn );
-	if ( !file.open( QIODevice::WriteOnly ) )
-		return;
-	QTextStream ts(&file  );
+	bool considerWeights=true;
+	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	activeGraph.writeClusteringCoefficient(fn, considerWeights);
+	QApplication::restoreOverrideCursor();
 
-
-	ts <<"-SocNetV- "<<VERSION<<"\n\n";
-	ts <<tr("CLUSTERING COEFFICIENT REPORT \n");
-	ts <<tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
-	ts<< tr("CLUSTERING COEFFICIENT (CLC) OF EACH NODE\n");
-	ts<< tr("CLC  range: 0 < C < 1") <<"\n";
-	ts << "Node"<<"\tCLC\n";
-
-	
-	QList<Vertex*>::iterator it;
-	for (it=activeGraph.m_graph.begin(); it!=activeGraph.m_graph.end(); it++){ 
-		ts<<(*it)->name()<<"\t"<<(*it)->CLC() <<endl;
-	}
-	if (activeGraph.isSymmetric()) {
-		ts<< "\nAverage Clustering Coefficient = "<< activeGraph.averageCLC<<"\n" ;
-	//	ts<< "DC Variance = "<< activeGraph.varianceDegree<<"\n\n";
-	}
-	else{
-		ts<< "\nAverage Clustering Coefficient= "<< activeGraph.averageCLC<<"\n" ;
-//		ts<< "ODC Variance = "<< activeGraph.varianceDegree<<"\n\n";
-	}
-	if ( activeGraph.minCLC == activeGraph.maxCLC )
-		ts<< "\nAll nodes have the same clustering coefficient value.\n";
-	else  {
-		ts<< "\nNode "<< activeGraph.maxNodeCLC << " has the maximum Clustering Coefficient: " << activeGraph.maxCLC <<"  \n";
-		ts<< "\nNode "<< activeGraph.minNodeCLC << " has the minimum Clustering Coefficient: " << activeGraph.minCLC <<"  \n";
-	}
-
-	
-	ts<<"\nGRAPH CLUSTERING COEFFICIENT (GCLC)\n\n";
-	ts<<"GCLC = " << activeGraph.averageCLC<<"\n\n";
-	ts<<tr("Range: 0 < GCLC < 1\n");
-	ts<<tr("GCLC = 0, when there are no cliques (i.e. acyclic tree).\n");
-	ts<<tr("GCLC = 1, when every node and its neighborhood are complete cliques.\n");
-
-	file.close();
 
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
 	ed->setWindowTitle("Clustering Coefficients saved as: " + tempFileNameNoPath.last());
 	ed->show();
-	
 }
 
 
@@ -4429,6 +4385,7 @@ void MainWindow::slotCentralityOutDegree(){
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 	activeGraph.writeCentralityOutDegree(fn, considerWeights);
 	QApplication::restoreOverrideCursor();
+	statusMessage( QString(tr(" displaying file...")));
 	
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
@@ -4470,7 +4427,8 @@ void MainWindow::slotCentralityInDegree(){
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 	activeGraph.writeCentralityInDegree(fn, considerWeights);
 	QApplication::restoreOverrideCursor();
-
+	statusMessage( QString(tr(" displaying file...")));
+	
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
 	ed->setWindowTitle("In-Degree Centralities saved as: " + tempFileNameNoPath.last());
@@ -4495,7 +4453,8 @@ void MainWindow::slotCentralityCloseness(){
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 	activeGraph.writeCentralityCloseness(fn, considerWeights);
 	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage( QString(tr(" Reading...")));
+	statusMessage( QString(tr(" displaying file...")));
+
 	
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
@@ -4521,7 +4480,7 @@ void MainWindow::slotCentralityBetweeness(){
 	statusBar()->showMessage( QString(tr(" Please wait...")));
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 	activeGraph.writeCentralityBetweeness(fn, considerWeights);	
-	statusBar()->showMessage( QString(tr(" Reading...")));
+	statusMessage( QString(tr(" displaying file...")));
 
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
@@ -4553,51 +4512,14 @@ void MainWindow::slotCentralityStress(){
 		statusBar()->showMessage( QString(tr(" Nothing to do! Why dont you try creating something first?")) , statusBarDuration);
 		return;
 	}
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-
-	activeGraph.createDistanceMatrix(true);
-	//activeGraph.centralityStress();
-	QApplication::restoreOverrideCursor();
-	
-	float maximumIndexValue=(activeGraph.vertices()-1.0)*(activeGraph.vertices()-2.0)/2.0;   //When u lies on all geodesics
-	
 	QString fn = "centrality_stress.dat";
-	QFile f( fn );
-	if ( !f.open( QIODevice::WriteOnly ) )
-		return;
-	QTextStream ts(&f  );
-	ts <<"-SocNetV- "<<VERSION<<"\n\n";
-	ts <<tr("STRESS CENTRALITY REPORT \n");
-	ts <<tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
-
-	ts<< tr("STRESS CENTRALITY (SC) OF EACH NODE")<<"\n";
-	ts<< tr("SC(u) is the sum of sigma(s,t,u): the number of geodesics from s to t through u.")<<"\n"; 
-	ts<< tr("SC(u) reflects the total number of geodesics between all other nodes which run through u")<<"\n";
-
-	ts<< tr("SC  range: 0 < SC < ")<<QString::number(maximumIndexValue)<<"\n";
-	ts<< tr("SC' range: 0 < SC'< 1  (SC'=1 when the node falls on all geodesics)\n\n");
-	ts << "Node"<<"\tSC\t\tSC'\t\t%SC\n";
-	QList<Vertex*>::iterator it;
-	for (it=activeGraph.m_graph.begin(); it!=activeGraph.m_graph.end(); it++){ 
-		ts<<(*it)->name()<<"\t"<<(*it)->SC() << "\t\t"<< (*it)->SSC() << "\t\t" <<  (100* ((*it)->SC()) / activeGraph.sumSC)<<endl;
-	}
 	
-	if (activeGraph.minSC == activeGraph.maxSC)
-		ts << tr("\nAll nodes have the same SC value.\n");
-	else {
-		ts<<tr("\n Node ")<<activeGraph.maxNodeSC<< tr(" has the maximum SC value: ") <<activeGraph.maxSC <<"  \n";
-		ts<<tr("\n Node ")<<activeGraph.minNodeSC<< tr(" has the minimum SC value: ") <<activeGraph.minSC <<"  \n";
-	}
+	bool considerWeights=true;
+	statusBar()->showMessage( QString(tr(" Please wait...")));
+	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	activeGraph.writeCentralityStress(fn, considerWeights);	
+	statusMessage( QString(tr(" displaying file...")));
 
-	ts << tr("\nThere are ")<<activeGraph.classesSC<<tr(" different Stress Centrality classes.\n");	
-
-	ts<<tr("GROUP STRESS CENTRALISATION (GSC)")<<"\n";
-	ts<< tr("GSC = ") << activeGraph.groupSC<<"\n\n";
-	
-	ts<<tr("GSC range: 0 < GSC < 1\n");
-	ts<<tr("GSC = 0, when all the nodes have exactly the same stress index.\n");
-	ts<<tr("GSC = 1, when one node falls on all other geodesics between all the remaining (N-1) nodes. This is exactly the situation realised by a star graph.\n");
-	f.close();
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
 	ed->setWindowTitle("Stress Centralities saved as: " + tempFileNameNoPath.last());
@@ -4616,51 +4538,12 @@ void MainWindow::slotCentralityGraph(){
 		statusBar()->showMessage( QString(tr(" Try creating a network first. \nThen I compute whatever you want...")) , statusBarDuration);
 		return;
 	}
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-	
- 	activeGraph.createDistanceMatrix(true);
-	//activeGraph.centralityGraph();
-	QApplication::restoreOverrideCursor();
-
-	float maximumIndexValue=1;
 	QString fn = "centrality_graph.dat";
-	QFile f( fn );
-	if ( !f.open( QIODevice::WriteOnly ) )
-		return;
-	QTextStream ts(&f  );
-
-	ts<<"-SocNetV- "<< VERSION<<"\n\n";
-	ts<<tr("GRAPH - CENTRALITY REPORT \n" );
-	ts<<tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss"))<<"\n\n"  ;
-	ts<<tr("GRAPH CENTRALITY (GC) OF EACH NODE")<<"\n";
-	ts<<tr("GC  range: 0 < GC < ")<<maximumIndexValue<< " (GC=1 => distance from other nodes is max 1)\n";
-	ts<<tr("GC' range: 0 < GC'< 1  (GC'=1 => directly linked with all nodes)")<<"\n\n";
-
-	ts << "Node"<<"\tGC\t\tGC'\t\t%GC\n";
-	QList<Vertex*>::iterator it;
-	for (it=activeGraph.m_graph.begin(); it!=activeGraph.m_graph.end(); it++){ 
-		ts<<(*it)->name()<<"\t"<<(*it)->GC() << "\t\t"<< (*it)->SGC() << "\t\t" <<  (100* ((*it)->GC()) / activeGraph.sumGC)<<endl;
-	}
-	
-	if (activeGraph.minGC == activeGraph.maxGC)
-		ts << tr("\nAll nodes have the same GC value.\n");
-	else {
-		ts<<tr("\n Node ")<<activeGraph.maxNodeGC<< tr(" has the maximum GC value: ") <<activeGraph.maxGC <<"  \n";
-		ts<<tr("\n Node ")<<activeGraph.minNodeGC<< tr(" has the minimum GC value: ") <<activeGraph.minGC <<"  \n";
-	}
-
-	ts << tr("\nThere are ")<<activeGraph.classesGC<<tr(" different Graph Centrality classes.\n");	
-
-	ts<<tr("\nGROUP GRAPH CENTRALISATION (GGC)\n\n");
-
-	ts<< tr("GGC = ") << activeGraph.groupGC<<"\n\n";
-
-	ts<<tr("GGC range: 0 < GGC < 1\n");
-	ts<<tr("GGC = 0, when all the nodes have exactly the same graph index.\n");
-	ts<<tr("GGC = 1, when one node falls on all other geodesics between all the remaining (N-1) nodes. This is exactly the situation realised by a star graph.\n");
-	ts<<"(Wasserman & Faust, formula 5.13, p. 192)\n\n";
-
-	f.close();
+	bool considerWeights=true;
+	statusBar()->showMessage( QString(tr(" Please wait...")));
+	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	activeGraph.writeCentralityGraph(fn, considerWeights);	
+	statusMessage( QString(tr(" displaying file...")));
 
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/" );
@@ -4681,48 +4564,13 @@ void MainWindow::slotCentralityEccentricity(){
 		statusBar()->showMessage( QString(tr(" Nothing to do...")) , statusBarDuration);
 		return;
 	}
-
+	QString fn = "centrality_eccentricity.dat";
+	bool considerWeights=true;
 	statusBar()->showMessage( QString(tr(" Please wait...")));
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	activeGraph.writeCentralityEccentricity(fn, considerWeights);	
+	statusMessage( QString(tr(" displaying file...")));
 
-	activeGraph.createDistanceMatrix(true);	
-	statusBar()->showMessage( QString(tr(" Finished with shortest-path distances...")));
-
-	QString fn = "centrality_eccentricity.dat";
-	QFile f( fn );
-	if ( !f.open( QIODevice::WriteOnly ) )
-		return;
-	QTextStream ts(&f  );
-	
-	ts <<"-SocNetV- "<<VERSION<<"\n\n";
-	ts <<tr("ECCENTRICITY- CENTRALITY REPORT \n");
-	ts <<tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
-	ts<< tr("ECCENTRICITY CENTRALITY (EC) OF EACH NODE")<<"\n";
-	ts<< tr("EC of a node u is the largest geodesic distance (u,t) for t in V")<<"\n"; 
-	ts<< tr("Therefore, EC(u) reflects how far, at most, is each node from every other node.")<<"\n";
-	ts<< tr("EC' is the standardized EC")<<"\n";
-	ts<< tr("EC  range: 0 < EC < ")<<QString::number(activeGraph.maxIndexEC)<< tr(" (max geodesic distance)")<<"\n";
-	ts<< tr("EC' range: 0 < EC'< 1 \n\n");
-	ts << "Node"<<"\tEC\t\tEC'\t\t%EC\n";
-	QList<Vertex*>::iterator it;
-	for (it=activeGraph.m_graph.begin(); it!=activeGraph.m_graph.end(); it++){ 
-		ts<<(*it)->name()<<"\t"<<(*it)->EC() << "\t\t"<< (*it)->SEC() << "\t\t" <<  (100* ((*it)->EC()) / activeGraph.sumEC)<<endl;
-	}
-	if (activeGraph.minEC == activeGraph.maxEC)
-		ts << tr("\nAll nodes have the same EC value.\n");
-	else {
-		ts<<tr("\n Node ")<<activeGraph.maxNodeEC<< tr(" has the maximum EC value: ") <<activeGraph.maxEC <<"  \n";
-		ts<<tr("\n Node ")<<activeGraph.minNodeEC<< tr(" has the minimum EC value: ") <<activeGraph.minEC <<"  \n";
-	}
-
-	ts << tr("\nThere are ")<<activeGraph.classesEC<<tr(" different eccentricity Centrality classes.\n");	
-	ts<<tr("\nGROUP ECCENTRICITY CENTRALISATION (GEC)\n\n");
-	ts<< tr("GEC = ") << activeGraph.groupEC<<"\n\n";
-	ts<<tr("GEC range: 0 < GEC < 1\n");
-	ts<<tr("GEC = 0, when all the nodes have exactly the same betweeness index.\n");
-	ts<<tr("GEC = 1, when one node falls on all other geodesics between all the remaining (N-1) nodes. This is exactly the situation realised by a star graph.\n");
-	ts<<"(Wasserman & Faust, formula 5.13, p. 192)\n\n";
-	f.close();
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
 	ed->setWindowTitle(tr("Eccentricity Centralities saved as: ") + tempFileNameNoPath.last());

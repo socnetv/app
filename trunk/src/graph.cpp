@@ -1391,7 +1391,7 @@ void Graph::writeCentralityInDegree
 
 	QList<Vertex*>::iterator it;
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
-		outText<<(*it)->name()<<"\t"<<(*it)->IDC() << "\t"<< (*it)->SIDC() << "\t" <<  (100* ((*it)->IDC()) / sumIDC)<<endl;
+		outText <<(*it)->name()<<"\t"<<(*it)->IDC() << "\t"<< (*it)->SIDC() << "\t" <<  (100* ((*it)->IDC()) / sumIDC)<<endl;
 	}
 	if (symmetricAdjacencyMatrix) {
 		outText << "Mean Nodal Degree = "<< meanDegree<<"\n" ;
@@ -1563,6 +1563,7 @@ void Graph::writeCentralityOutDegree (
 void Graph::writeCentralityCloseness(
 		const QString fileName, const bool considerWeights)
 {
+	Q_UNUSED(considerWeights);
 	QFile file ( fileName );
 	if ( !file.open( QIODevice::WriteOnly ) )  {
 		qDebug()<< "Error opening file!";
@@ -1597,7 +1598,7 @@ void Graph::writeCentralityCloseness(
 		outText << tr("\nNode ")<< minNodeCC << tr(" has the minimum ACC value (std): ") <<minCC <<"  \n";
 	}
 	
-	outText << tr("\nThere are ")<<classesCC<<tr(" different Closeness Centrality classes.\n");	
+	outText << tr("\nThere are ")<<classesCC<< tr(" different Closeness Centrality classes.\n");	
 	outText << tr("\nGROUP CLOSENESS CENTRALISATION (GCC)\n\n");
 	outText << tr("GCC = ") << groupCC<<"\n\n";
 	outText << tr("GCC range: 0 < GCC < 1\n");
@@ -1615,6 +1616,7 @@ void Graph::writeCentralityCloseness(
 void Graph::writeCentralityBetweeness(
 		const QString fileName, const bool considerWeights)
 {
+	Q_UNUSED(considerWeights);
 	QFile file ( fileName );
 	if ( !file.open( QIODevice::WriteOnly ) )  {
 		qDebug()<< "Error opening file!";
@@ -1640,7 +1642,7 @@ void Graph::writeCentralityBetweeness(
 	outText << "Node"<<"\tBC\t\tBC'\t\t%BC\n";
 	QList<Vertex*>::iterator it;
 	for (it= m_graph.begin(); it!= m_graph.end(); it++){ 
-		outText<<(*it)->name()<<"\t"<<(*it)->BC() << "\t\t"<< (*it)->SBC() << "\t\t" <<  (100* ((*it)->BC()) /  sumBC)<<endl;
+		outText <<(*it)->name()<<"\t"<<(*it)->BC() << "\t\t"<< (*it)->SBC() << "\t\t" <<  (100* ((*it)->BC()) /  sumBC)<<endl;
 	}
 	if ( minBC ==  maxBC)
 		outText << tr("\nAll nodes have the same BC value.\n");
@@ -1649,7 +1651,7 @@ void Graph::writeCentralityBetweeness(
 		outText << tr("\n Node ")<< minNodeBC<< tr(" has the minimum BC value: ") << minBC <<"  \n";
 	}
 
-	outText << tr("\nThere are ")<< classesBC<<tr(" different Betweeness Centrality classes.\n");	
+	outText << tr("\nThere are ")<< classesBC<< tr(" different Betweeness Centrality classes.\n");	
 	outText << tr("\nGROUP BETWEENESS CENTRALISATION (GBC)\n\n");
 	outText << tr("GBC = ") <<  groupBC<<"\n\n";
 	outText << tr("GBC range: 0 < GBC < 1\n");
@@ -1661,17 +1663,205 @@ void Graph::writeCentralityBetweeness(
 
 
 //Writes the Graph centralities to a file
-void Graph::writeCentralityGraph(const QString, const bool){
+void Graph::writeCentralityGraph(
+		const QString fileName, const bool considerWeights)
+{
+	Q_UNUSED(considerWeights);
 	
+	QFile file ( fileName );
+	if ( !file.open( QIODevice::WriteOnly ) )  {
+		qDebug()<< "Error opening file!";
+		emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+		return;
+	}
+	QTextStream outText ( &file );
+
+	emit statusMessage ( (tr("Calculating shortest paths")) );
+	createDistanceMatrix(true);
+	emit statusMessage ( QString(tr("Writing graph centralities to file:")).arg(fileName) );
+
+	outText <<"-SocNetV- "<< "\n\n";
+	outText << tr("GRAPH - CENTRALITY REPORT \n" );
+	outText << tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss"))<<"\n\n"  ;
+	outText << tr("GRAPH CENTRALITY (GC) OF EACH NODE")<<"\n";
+	outText << tr("GC  range: 0 < GC < ")<<maxIndexGC<< " (GC=1 => distance from other nodes is max 1)\n";
+	outText << tr("GC' range: 0 < GC'< 1  (GC'=1 => directly linked with all nodes)")<<"\n\n";
+
+	outText << "Node"<<"\tGC\t\tGC'\t\t%GC\n";
+	QList<Vertex*>::iterator it;
+	for (it= m_graph.begin(); it!= m_graph.end(); it++){ 
+		outText <<(*it)->name()<<"\t"<<(*it)->GC() << "\t\t"<< (*it)->SGC() << "\t\t" <<  (100* ((*it)->GC()) /  sumGC)<<endl;
+	}
 	
+	if ( minGC ==  maxGC)
+		outText << tr("\nAll nodes have the same GC value.\n");
+	else {
+		outText << tr("\n Node ")<< maxNodeGC<< tr(" has the maximum GC value: ") << maxGC <<"  \n";
+		outText << tr("\n Node ")<< minNodeGC<< tr(" has the minimum GC value: ") << minGC <<"  \n";
+	}
+
+	outText << tr("\nThere are ")<< classesGC<< tr(" different Graph Centrality classes.\n");	
+
+	outText << tr("\nGROUP GRAPH CENTRALISATION (GGC)\n\n");
+
+	outText << tr("GGC = ") <<  groupGC<<"\n\n";
+
+	outText << tr("GGC range: 0 < GGC < 1\n");
+	outText << tr("GGC = 0, when all the nodes have exactly the same graph index.\n");
+	outText << tr("GGC = 1, when one node falls on all other geodesics between all the remaining (N-1) nodes. This is exactly the situation realised by a star graph.\n");
+	outText << "(Wasserman & Faust, formula 5.13, p. 192)\n\n";	
 }
 
 
 //Writes the Stress centralities to a file
 void Graph::writeCentralityStress(
 		const QString fileName, const bool considerWeights)
-{
+{	
+	Q_UNUSED(considerWeights);
+	QFile file ( fileName );
+	if ( !file.open( QIODevice::WriteOnly ) )  {
+		qDebug()<< "Error opening file!";
+		emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+		return;
+	}
+	QTextStream outText ( &file );
+
+	emit statusMessage ( (tr("Calculating shortest paths")) );
+	createDistanceMatrix(true);
+	emit statusMessage ( QString(tr("Writing stress centralities to file:")).arg(fileName) );
+
+	outText <<"-SocNetV- "<<"\n\n";
+	outText << tr("STRESS CENTRALITY REPORT \n");
+	outText << tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+
+	outText << tr("STRESS CENTRALITY (SC) OF EACH NODE")<<"\n";
+	outText << tr("SC(u) is the sum of sigma(s,t,u): the number of geodesics from s to t through u.")<<"\n"; 
+	outText << tr("SC(u) reflecoutText the total number of geodesics between all other nodes which run through u")<<"\n";
+
+	outText << tr("SC  range: 0 < SC < ")<<QString::number(maxIndexSC)<<"\n";
+	outText << tr("SC' range: 0 < SC'< 1  (SC'=1 when the node falls on all geodesics)\n\n");
+	outText  << "Node"<<"\tSC\t\tSC'\t\t%SC\n";
+	QList<Vertex*>::iterator it;
+	for (it= m_graph.begin(); it!= m_graph.end(); it++){ 
+		outText <<(*it)->name()<<"\t"<<(*it)->SC() << "\t\t"<< (*it)->SSC() << "\t\t" <<  (100* ((*it)->SC()) /  sumSC)<<endl;
+	}
 	
+	if ( minSC ==  maxSC)
+		outText  << tr("\nAll nodes have the same SC value.\n");
+	else {
+		outText << tr("\n Node ")<< maxNodeSC<< tr(" has the maximum SC value: ") << maxSC <<"  \n";
+		outText << tr("\n Node ")<< minNodeSC<< tr(" has the minimum SC value: ") << minSC <<"  \n";
+	}
+
+	outText  << tr("\nThere are ")<< classesSC<< tr(" different Stress Centrality classes.\n");	
+	outText << tr("GROUP STRESS CENTRALISATION (GSC)")<<"\n";
+	outText << tr("GSC = ") <<  groupSC<<"\n\n";
+	
+	outText << tr("GSC range: 0 < GSC < 1\n");
+	outText << tr("GSC = 0, when all the nodes have exactly the same stress index.\n");
+	outText << tr("GSC = 1, when one node falls on all other geodesics between all the remaining (N-1) nodes. This is exactly the situation realised by a star graph.\n");
+}
+
+
+
+void Graph::writeCentralityEccentricity(
+		const QString fileName, const bool considerWeights)
+{
+	Q_UNUSED(considerWeights);
+	QFile file ( fileName );
+	if ( !file.open( QIODevice::WriteOnly ) )  {
+		qDebug()<< "Error opening file!";
+		emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+		return;
+	}
+	QTextStream outText ( &file );
+
+	emit statusMessage ( (tr("Calculating shortest paths")) );
+	createDistanceMatrix(true);
+	emit statusMessage ( QString(tr("Writing eccentricity centralities to file:")).arg(fileName) );
+	
+	outText <<"-SocNetV- "<<"\n\n";
+	outText << tr("ECCENTRICITY- CENTRALITY REPORT \n");
+	outText << tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+	outText << tr("ECCENTRICITY CENTRALITY (EC) OF EACH NODE") << "\n";
+	outText << tr("EC of a node u is the largest geodesic distance (u,t) for t in V") << "\n"; 
+	outText << tr("Therefore, EC(u) reflects how far, at most, is each node from every other node.") << "\n";
+	outText << tr("EC' is the standardized EC") << "\n";
+	outText << tr("EC  range: 0 < EC < ") << QString::number(maxIndexEC)<< tr(" (max geodesic distance)")<<"\n";
+	outText << tr("EC' range: 0 < EC'< 1 \n\n");
+	outText << "Node"<<"\tEC\t\tEC'\t\t%EC\n";
+	QList<Vertex*>::iterator it;
+	for (it= m_graph.begin(); it!= m_graph.end(); it++){ 
+		outText << (*it)->name()<<"\t"<<(*it)->EC() << "\t\t"<< (*it)->SEC() << "\t\t" <<  (100* ((*it)->EC()) /  sumEC)<<endl;
+	}
+	if ( minEC ==  maxEC)
+		outText << tr("\nAll nodes have the same EC value.\n");
+	else {
+		outText << tr("\n Node ")<< maxNodeEC<< tr(" has the maximum EC value: ") << maxEC <<"  \n";
+		outText << tr("\n Node ")<< minNodeEC<< tr(" has the minimum EC value: ") << minEC <<"  \n";
+	}
+
+	outText << tr("\nThere are ")<< classesEC<< tr(" different eccentricity Centrality classes.\n");	
+	outText << tr("\nGROUP ECCENTRICITY CENTRALISATION (GEC)\n\n");
+	outText << tr("GEC = ") <<  groupEC<<"\n\n";
+	outText << tr("GEC range: 0 < GEC < 1\n");
+	outText << tr("GEC = 0, when all the nodes have exactly the same betweeness index.\n");
+	outText << tr("GEC = 1, when one node falls on all other geodesics between all the remaining (N-1) nodes. This is exactly the situation realised by a star graph.\n");
+	outText << "(Wasserman & Faust, formula 5.13, p. 192)\n\n";
+}
+
+
+
+void Graph::writeClusteringCoefficient(
+		const QString fileName, const bool considerWeights)
+{
+	Q_UNUSED(considerWeights);
+	QFile file ( fileName );
+	if ( !file.open( QIODevice::WriteOnly ) )  {
+		qDebug()<< "Error opening file!";
+		emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+		return;
+	}
+	QTextStream outText ( &file );
+
+	emit statusMessage ( (tr("Calculating shortest paths")) );
+	float clucof= clusteringCoefficient();
+	Q_UNUSED(clucof);
+	emit statusMessage ( QString(tr("Writing clustering coefficients to file:")).arg(fileName) );
+	
+	outText <<"-SocNetV- "<<"\n\n";
+	outText << tr("CLUSTERING COEFFICIENT REPORT \n");
+	outText << tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+	outText << tr("CLUSTERING COEFFICIENT (CLC) OF EACH NODE\n");
+	outText << tr("CLC  range: 0 < C < 1") <<"\n";
+	outText << "Node"<<"\tCLC\n";
+
+	
+	QList<Vertex*>::iterator it;
+	for (it= m_graph.begin(); it!= m_graph.end(); it++){ 
+		outText << (*it)->name()<<"\t"<<(*it)->CLC() <<endl;
+	}
+	if ( isSymmetric()) {
+		outText << "\nAverage Clustering Coefficient = "<<  averageCLC<<"\n" ;
+	//	outText << "DC Variance = "<<  varianceDegree<<"\n\n";
+	}
+	else{
+		outText << "\nAverage Clustering Coefficient= "<<  averageCLC<<"\n" ;
+//		outText << "ODC Variance = "<<  varianceDegree<<"\n\n";
+	}
+	if (  minCLC ==  maxCLC )
+		outText << "\nAll nodes have the same clustering coefficient value.\n";
+	else  {
+		outText << "\nNode "<<  maxNodeCLC << " has the maximum Clustering Coefficient: " <<  maxCLC <<"  \n";
+		outText << "\nNode "<<  minNodeCLC << " has the minimum Clustering Coefficient: " <<  minCLC <<"  \n";
+	}
+	
+	outText << "\nGRAPH CLUSTERING COEFFICIENT (GCLC)\n\n";
+	outText << "GCLC = " <<  averageCLC<<"\n\n";
+	outText << tr("Range: 0 < GCLC < 1\n");
+	outText << tr("GCLC = 0, when there are no cliques (i.e. acyclic tree).\n");
+	outText << tr("GCLC = 1, when every node and its neighborhood are complete cliques.\n");
+
 }
 
 
