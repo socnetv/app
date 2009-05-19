@@ -27,20 +27,20 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
-#include <QMainWindow> //for parent
+
 #include <QObject>
+#include <QList>
+#include <QTextStream>
+
+
+#include <stack>  //FYI: stack is a wrapper around <deque> in C++, see: www.cplusplus.com/reference/stl/stack
+#include <map>
+
+
 
 #include "vertex.h"
 #include "matrix.h"
-
-#include <stack>  //FYI: stack is a wrapper around <deque> in C++, see: www.cplusplus.com/reference/stl/stack
-
-#include <map>
-#include <QList>
-#include <QTextStream>
 #include "parser.h"
-
-
 
 using namespace std;
 
@@ -103,9 +103,6 @@ public:
 	Graph(); 				//Creates a new graph.
 	void clear();			//Clears m_graph 
 	~Graph();				//destroy
-
-	void setParent(QMainWindow*);
-	QMainWindow* parent();
 	
 	void setShowLabels(bool toggle);
 	void setShowLabelsInsideNodes(bool toggle);
@@ -117,7 +114,7 @@ public:
 					int maxWidth, int maxHeight
 				);	//Our almost universal network loader. :)
 	
-	bool  saveGraph( QString fileName, int fileType, 
+	bool saveGraph( QString fileName, int fileType, 
 						QString networkName, int maxWidth, int maxHeight 
 				);
 	bool saveGraphToPajekFormat (QString fileName,QString networkName,  int maxWidth, int maxHeight);
@@ -133,47 +130,47 @@ public:
 	int hasVertex(QString);						//Checks if a vertex with a label exists
 	void removeVertex (int );					//removes given vertex from m_graph
 
-	void setInitVertexSize (int); 					//Changes the init size used by all new vertices.
-	void setVertexSize(int v, int );				//Changes the size.of vertex v 
+	void setInitVertexSize (int); 				//Changes the init size used by all new vertices.
+	void setVertexSize(int v, int );			//Changes the size.of vertex v 
 
-	void setInitVertexShape (QString); 				//Changes the init shape used by all new vertices.
-	void setVertexShape(int v, QString shape); 			//Changes the shape.of vertex v 
+	void setInitVertexShape (QString); 			//Changes the init shape used by all new vertices.
+	void setVertexShape(int v, QString shape); 	//Changes the shape.of vertex v 
 	QString shape(int v);						//returns the shape of this vertex
 
-	void setInitVertexColor (QString color);  			//Changes the init color used by all new vertices
-	void setVertexColor(int v, QString color); 			//Changes the color.of vertex v 
+	void setInitVertexColor (QString color);  	//Changes the init color used by all new vertices
+	void setVertexColor(int v, QString color); 	//Changes the color.of vertex v 
 
-	void setInitVertexLabelColor(QString color); 			//Changes the init color used by all new vertices' labels
-	void setVertexLabel(int v, QString label); 			//Changes the label.of vertex v 
+	void setInitVertexLabelColor(QString color);//Changes the init color used by all new vertices' labels
+	void setVertexLabel(int v, QString label); 	//Changes the label.of vertex v 
 	QString label(int);			
 
-	void updateVertCoords(int v, int x, int y);			 //Updates vertex v with coords x,y
+	void updateVertCoords(int v, int x, int y);	 //Updates vertex v with coords x,y
 
-	int vertices() ;						//Returns the sum of vertices inside m_graph
+	int vertices() ;							//Returns the sum of vertices inside m_graph
 
 	int edgesFrom (int i) ;						//Returns the number of edges starting from v1 (outDegree)
 	int edgesTo (int i) ;						//Returns the number of edges ending to v1 (inDegree)  
 
 	int verticesWithOutEdges();					//Returns the sum of vertices having outEdges
 	int verticesWithInEdges();					//Returns the sum of vertices having inEdges
-	int verticesWithReciprocalEdges();				//Returns the sum of vertices having reciprocal edges
+	int verticesWithReciprocalEdges();			//Returns the sum of vertices having reciprocal edges
 
 
 	/**EDGES*/
-	float hasEdge (int v1, int v2);					//Checks if edge between v1 and v2 exists. Returns weight or -1
-	void removeEdge (int v1, int v2);				//removes the edge between v1 and v2
-	void setEdgeWeight (int v1, int v2, float w); 			//sets the edge weight between v1 and v2
+	float hasEdge (int v1, int v2);				//Checks if edge between v1 and v2 exists. Returns weight or -1
+	void removeEdge (int v1, int v2);			//removes the edge between v1 and v2
+	void setEdgeWeight (int v1, int v2, float w); 	//Sets the edge weight between v1 and v2
 	void setInitEdgeColor(QString);
 
-	void setEdgeColor(int s, int t, QString color);			//Changes the color of edge (s,t).
+	void setEdgeColor(int s, int t, QString color);	//Changes the color of edge (s,t).
 
-	int totalEdges ();						//Returns the sum of edges inside m_graph
+	int totalEdges ();							//Returns the sum of edges inside m_graph
 
-	float density();						//Returns ratio of present edges to total possible edges.
+	float density();							//Returns ratio of present edges to total possible edges.
 
-	bool symmetricEdge(int v1, int v2);				//Returns TRUE if (v1, v2) is symmetric.
-	bool isSymmetric();						//Returns TRUE if symmetricAdjacencyMatrix=TRUE
-	void symmetrize();						//Symmetrize all edges so that the network is undirected.
+	bool symmetricEdge(int v1, int v2);			//Returns TRUE if (v1, v2) is symmetric.
+	bool isSymmetric();							//Returns TRUE if symmetricAdjacencyMatrix=TRUE
+	void symmetrize();							//Symmetrize all edges so that the network is undirected.
 
 
 	/**PRINT OUT*/

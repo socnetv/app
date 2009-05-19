@@ -4,15 +4,15 @@
 
 ChangeLog:
 
-Version 0.6 - May 16 2009
+Version 0.6.0 - May 31 2009
 Codename: "Spring"
 ----------------------------
 - GraphML becomes the native load/save format.
 - New rounded rectangle shape for nodes.
-- The GraphML parser recognizes XML.
-- New version name scheme (0.5 < 0.6 < 0.7 etc). 0.6.x will be used for
-bugfixes.
-
+- Fresh icons in shades of gold and gray. 
+- New version name scheme. Main versions: 0.x Bugfixes: 0.x.y 
+- Project admin, code, bug tracking etc moved to Launchpad/Bazaar
+- SocNetV joins the QtDesktop project (http://code.google.com/p/qtdesktop/)
 
 Version 0.51 - Feb 16 2009
 Codename: "Maria"

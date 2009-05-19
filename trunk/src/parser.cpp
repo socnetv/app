@@ -881,7 +881,7 @@ void Parser::readGraphMLElementData (QXmlStreamReader &xml){
 			conv_OK=false;
 			float temp = key_value.toFloat( &conv_OK );
 			if (!conv_OK) arrowSize = 1;
-			else  arrowSize = 1;
+			else  arrowSize = temp;
 			qDebug()<< "     Data found. Edge arrow size: "<< key_value << " Using  "<< arrowSize << " for this edge";
 	}
 

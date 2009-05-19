@@ -59,12 +59,25 @@ Graph::Graph() {
 
 	parser.setParent(this);
 	
-	connect (&parser, SIGNAL( createNode (int,int,QString, QString, QString, QPointF, QString, bool) ), this, SLOT(createVertex(int,int,QString, QString, QString, QPointF, QString) ) ) ;
+	connect (	
+			&parser, SIGNAL( createNode (int,int,QString, QString, QString, QPointF, QString, bool) ), 
+			this, SLOT(createVertex(int,int,QString, QString, QString, QPointF, QString) ) 
+			) ;
 
-	connect (&parser, SIGNAL(createEdge (int, int, float, QString, bool, bool, bool)), this, SLOT(createEdge (int, int, float, QString, bool, bool, bool) ) );
+	connect (
+		&parser, SIGNAL(createEdge (int, int, float, QString, bool, bool, bool)), 
+		this, SLOT(createEdge (int, int, float, QString, bool, bool, bool) ) 
+		);
 
-	connect (&parser, SIGNAL(fileType(int, QString, int, int)), this, SLOT(slotFileType(int, QString, int, int)) );
-	connect (&parser, SIGNAL(removeDummyNode(int)), this, SLOT (removeDummyNode(int)) );
+	connect (
+		&parser, SIGNAL(fileType(int, QString, int, int)),
+		this, SLOT(slotFileType(int, QString, int, int)) 
+		);
+		
+	connect (
+		&parser, SIGNAL(removeDummyNode(int)),
+		this, SLOT (removeDummyNode(int)) 
+		);
 }
 
 

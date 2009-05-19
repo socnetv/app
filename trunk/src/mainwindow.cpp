@@ -93,52 +93,90 @@ MainWindow::MainWindow(const QString &fName) {
  	initView(); //create the canvas
 
 	//Connect some signals to/from the canvas and the Graph
-	connect( graphicsWidget, SIGNAL( selectedNode(Node*) ), this, SLOT( nodeInfoStatusBar(Node*) ) );
-	connect( graphicsWidget, SIGNAL( selectedEdge(Edge*) ), this, SLOT ( linkInfoStatusBar(Edge*) ) );
-	connect( graphicsWidget, SIGNAL( windowResized(int, int)),this, SLOT( windowInfoStatusBar(int, int)) );  
+	connect( graphicsWidget, SIGNAL( selectedNode(Node*) ), 
+			this, SLOT( nodeInfoStatusBar(Node*) ) 	);
+			
+	connect( graphicsWidget, SIGNAL( selectedEdge(Edge*) ), 
+			this, SLOT ( linkInfoStatusBar(Edge*) )  );
+			
+	connect( graphicsWidget, SIGNAL( windowResized(int, int)),
+			this, SLOT( windowInfoStatusBar(int,int)) 	);  
 
-	connect( graphicsWidget, SIGNAL( userDoubleClicked(int, QPointF) ), this, SLOT( addNodeWithMouse(int, QPointF) ) ) ;
-	connect( graphicsWidget, SIGNAL( userMiddleClicked(int, int, float) ), this, SLOT( addLink(int, int, float) ) );
-	connect( graphicsWidget, SIGNAL( openNodeMenu() ), this, SLOT(openNodeContextMenu() ) ) ;
-	connect( graphicsWidget, SIGNAL( openEdgeMenu() ), this, SLOT(openLinkContextMenu() ) ) ;
-	connect( graphicsWidget, SIGNAL(updateNodeCoords(int, int, int)), this, SLOT(updateNodeCoords(int, int, int)) );
-	connect( graphicsWidget, SIGNAL(zoomChanged(int)),zoomCombo, SLOT(setCurrentIndex(int)));
+	connect( graphicsWidget, SIGNAL( userDoubleClicked(int, QPointF) ), 
+			this, SLOT( addNodeWithMouse(int,QPointF) ) ) ;
+			
+	connect( graphicsWidget, SIGNAL( userMiddleClicked(int, int, float) ), 
+			this, SLOT( addLink(int, int, float) ) 	);
+			
+	connect( graphicsWidget, SIGNAL( openNodeMenu() ), 
+			this, SLOT( openNodeContextMenu() ) ) ;
 
-	connect( &activeGraph, SIGNAL( addBackgrCircle (int, int, int) ), graphicsWidget, SLOT(addBackgrCircle(int, int, int) ) ) ;
-	connect( &activeGraph, SIGNAL( addBackgrHLine (int) ), graphicsWidget, SLOT(addBackgrHLine(int) ) ) ;
-	connect( &activeGraph, SIGNAL( moveNode(int, int, int) ), graphicsWidget, SLOT(moveNode(int, int, int) ) ) ;
-	connect( &activeGraph, SIGNAL( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool, bool, bool) ), graphicsWidget, SLOT( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool, bool, bool)  ) ) ;
-	connect( &activeGraph, SIGNAL( eraseEdge(int, int)), graphicsWidget, SLOT( eraseEdge(int, int) ) );
-	connect( &activeGraph, SIGNAL( graphChanged() ), this, SLOT( graphChanged() ) ) ;
+	connect( graphicsWidget, SIGNAL( openEdgeMenu() ), 
+			this, SLOT( openLinkContextMenu() ) ) ;
+
+	connect( graphicsWidget, SIGNAL(updateNodeCoords(int, int, int)), 
+			this, SLOT( updateNodeCoords(int, int, int) ) );
 	
-	connect( 
-		&activeGraph, SIGNAL( signalFileType(int , QString , int , int ) ), 
-		this, SLOT( fileType(int , QString , int , int ) ) 
-		) ;
+	connect( graphicsWidget, SIGNAL(zoomChanged(int)),
+			zoomCombo, SLOT( setCurrentIndex(int)) );
+
+	connect( &activeGraph, SIGNAL( addBackgrCircle(int, int, int) ), 
+			graphicsWidget, SLOT(  addBackgrCircle(int, int, int) ) ) ;
+			
+	connect( &activeGraph, SIGNAL( addBackgrHLine(int) ), 
+			graphicsWidget, SLOT(  addBackgrHLine(int) ) ) ;
+			
+	connect( &activeGraph, SIGNAL( moveNode(int, int, int) ), 
+			graphicsWidget, SLOT( moveNode(int, int, int) ) ) ;
+			
+	connect( &activeGraph, SIGNAL( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool, bool, bool) ), 
+			graphicsWidget, SLOT( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool, bool, bool)  ) ) ;
+			
+	connect( &activeGraph, SIGNAL( eraseEdge(int, int)), 
+			graphicsWidget, SLOT( eraseEdge(int, int) ) );
 	
-	connect( &activeGraph, SIGNAL( drawEdge( int, int, float, bool, bool, QString, bool, bool)), graphicsWidget, SLOT( drawEdge( int, int,float, bool, bool, QString, bool, bool  ) )  ) ;
-
-	connect( &activeGraph, SIGNAL( drawEdgeReciprocal(int, int) ),  graphicsWidget, SLOT( drawEdgeReciprocal(int, int) ) );
+	connect( &activeGraph, SIGNAL( graphChanged() ), 
+			this, SLOT( graphChanged() ) ) ;
 	
-	connect( &activeGraph, SIGNAL( statusMessage (QString) ), this, SLOT( 	statusMessage (QString) ) ) ;
+	connect( &activeGraph, SIGNAL( signalFileType(int , QString , int , int ) ), 
+			this, SLOT( fileType(int , QString , int , int ) ) 	) ;
+	
+	connect( &activeGraph, SIGNAL( drawEdge( int, int, float, bool, bool, QString, bool, bool)), 
+			graphicsWidget, SLOT( drawEdge( int, int,float, bool, bool, QString, bool, bool  ) )  ) ;
 
-	connect( &activeGraph, SIGNAL( selectedVertex(int) ), this, SLOT( selectedNode(int) ) ) ;
+	connect( &activeGraph, SIGNAL( drawEdgeReciprocal(int, int) ), 
+			graphicsWidget, SLOT( drawEdgeReciprocal(int, int) ) );
+	
+	connect( &activeGraph, SIGNAL( statusMessage (QString) ),
+					 this, SLOT( statusMessage (QString) ) ) ;
 
-	connect( &activeGraph, SIGNAL( eraseNode(int) ),  graphicsWidget, SLOT(  eraseNode(int) ) );
+	connect( &activeGraph, SIGNAL( selectedVertex(int) ), 
+					this, SLOT( selectedNode(int) ) ) ;
+
+	connect( &activeGraph, SIGNAL( eraseNode(int) ), 
+			 graphicsWidget, SLOT(  eraseNode(int) ) );
 	
 	
 	//connect some signals/slots with MW widgets
-	connect (addNodeBt,SIGNAL(clicked()), this, SLOT(addNode()));
-	connect (addLinkBt,SIGNAL(clicked()), this, SLOT(slotAddLink()));
-	connect (removeNodeBt,SIGNAL(clicked()), this, SLOT(slotRemoveNode()));
-	connect (removeLinkBt,SIGNAL(clicked()), this, SLOT(slotRemoveLink()));
+	connect( addNodeBt,SIGNAL(clicked()), this, SLOT( addNode() ) );
+	
+	connect( addLinkBt,SIGNAL(clicked()), this, SLOT( slotAddLink() ) );
+	
+	connect( removeNodeBt,SIGNAL(clicked()), this, SLOT( slotRemoveNode() ) );
+	
+	connect( removeLinkBt,SIGNAL(clicked()), this, SLOT( slotRemoveLink() ) );
 
-	connect(zoomCombo, SIGNAL(currentIndexChanged(const int &)),graphicsWidget, SLOT(changeZoom(const int &)));
-	connect(zoomOutAct, SIGNAL(triggered()), graphicsWidget, SLOT(zoomOut()));
-	connect(zoomInAct, SIGNAL(triggered()), graphicsWidget, SLOT(zoomIn()));
+ 	connect( zoomCombo, SIGNAL(currentIndexChanged(const int &)),
+			graphicsWidget, SLOT( changeZoom(const int &))  );
+			
+	connect( zoomOutAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomOut() ) );
+	connect( zoomInAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomIn() ) );
 
-	connect(rotateSpinBox, SIGNAL(valueChanged(int)), graphicsWidget, SLOT(rot(int) ) );
-	connect(circleClearBackgrCirclesAct, SIGNAL(activated()), graphicsWidget, SLOT(clearBackgrCircles()));
+	connect( rotateSpinBox, SIGNAL(valueChanged(int)), graphicsWidget, SLOT( rot(int) ) );
+	
+	connect( circleClearBackgrCirclesAct, SIGNAL(activated()), 
+			graphicsWidget, SLOT(clearBackgrCircles()));
+
  
 	//create an horizontal layout for the toolbox and the canvas. This will be our MW layout.
 	QHBoxLayout *layout = new QHBoxLayout;
@@ -154,7 +192,7 @@ MainWindow::MainWindow(const QString &fName) {
 	//initialise default network parameters
 	initNet();
 
-	activeGraph.setParent(this);	//Used by random-network creation methods to update ASAP the view
+
 
 	/** DEFAULTING HERE DOES NOT CHANGE BOOL VALUE **/
 	/** EVERY TIME INITNET IS CALLED **/
@@ -4387,61 +4425,64 @@ void MainWindow::slotCentralityOutDegree(){
 		break;
 	}
 
+	QString fn = "centrality-out-degree.dat";
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-	activeGraph.centralityOutDegree(considerWeights);
+	//activeGraph.centralityOutDegree(considerWeights);
+	activeGraph.writeCentralityOutDegree(fn, considerWeights);
 	QApplication::restoreOverrideCursor();
 	
 	
-	QString fn = "centrality-out-degree.dat";
-	QFile file( fn );
-	if ( !file.open( QIODevice::WriteOnly ) )
-		return;
-	QTextStream ts(&file  );
-
-	float maximumIndexValue=activeGraph.vertices()-1.0;
-	ts <<"-SocNetV- "<<VERSION<<"\n\n";
-	ts <<tr("OUT-DEGREE CENTRALITY REPORT \n");
-	ts <<tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
-	ts<< tr("OUT-DEGREE CENTRALITIES (ODC) OF EACH NODE\n");
-	ts<< tr("ODC  range: 0 < C < ")<<QString::number(maximumIndexValue)<<"\n";
-	ts<< tr("ODC' range: 0 < C'< 1")<<"\n\n";
-	ts << "Node"<<"\tODC\tODC'\t\t%ODC\n";
-
+	//QString fn = "centrality-out-degree.dat";
 	
-	QList<Vertex*>::iterator it;
-	for (it=activeGraph.m_graph.begin(); it!=activeGraph.m_graph.end(); it++){ 
-		ts<<(*it)->name()<<"\t"<<(*it)->ODC() << "\t"<< (*it)->SODC() << "\t\t" <<  (100* ((*it)->ODC()) / activeGraph.sumODC)<<endl;
-	}
-	if (activeGraph.isSymmetric()) {
-		ts<< "Mean DC= "<< activeGraph.meanDegree<<"\n" ;
-		ts<< "DC Variance = "<< activeGraph.varianceDegree<<"\n\n";
-	}
-	else{
-		ts<< "Mean ODC= "<< activeGraph.meanDegree<<"\n" ;
-		ts<< "ODC Variance = "<< activeGraph.varianceDegree<<"\n\n";
-	}
-	if ( activeGraph.minODC == activeGraph.maxODC )
-		ts<< "\nAll nodes have the same ODC value.\n";
-	else  {
-		ts<< "\nNode "<< activeGraph.maxNodeODC << " has the maximum ODC value (std): " << activeGraph.maxODC <<"  \n";
-		ts<< "\nNode "<< activeGraph.minNodeODC << " has the minimum ODC value (std): " << activeGraph.minODC <<"  \n";
-	}
-	if (activeGraph.classesODC!=1)
-		ts<< "\nThere are "<<activeGraph.classesODC<<" different ODC classes.\n";	
-	else 
-		ts<< "\nThere is only "<<activeGraph.classesODC<<" ODC class.\n";	
+	//QFile file( fn );
+	//if ( !file.open( QIODevice::WriteOnly ) )
+		//return;
+	//QTextStream ts(&file  );
 
-	
-	ts<<"\nGROUP OUT-DEGREE CENTRALISATION (GODC)\n\n";
-	ts<<"GODC = " << activeGraph.groupODC<<"\n\n";
-	ts<<tr("GODC range: 0 < GODC < 1\n");
-	ts<<tr("GODC = 0, when all in-degrees are equal (i.e. regular lattice).\n");
-	ts<<tr("GODC = 1, when one node completely dominates or overshadows the other nodes.\n");
-	ts<<"(Wasserman & Faust, formula 5.5, p. 177)\n\n";
-	ts<<tr("The degree of the node is a measure of the \'activity\' of the node it represents\n");
-	ts<<"(Wasserman & Faust, p. 101)\n";
+	//float maximumIndexValue=activeGraph.vertices()-1.0;
+	//ts <<"-SocNetV- "<<VERSION<<"\n\n";
+	//ts <<tr("OUT-DEGREE CENTRALITY REPORT \n");
+	//ts <<tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+	//ts<< tr("OUT-DEGREE CENTRALITIES (ODC) OF EACH NODE\n");
+	//ts<< tr("ODC  range: 0 < C < ")<<QString::number(maximumIndexValue)<<"\n";
+	//ts<< tr("ODC' range: 0 < C'< 1")<<"\n\n";
+	//ts << "Node"<<"\tODC\tODC'\t\t%ODC\n";
 
-	file.close();
+	//
+	//QList<Vertex*>::iterator it;
+	//for (it=activeGraph.m_graph.begin(); it!=activeGraph.m_graph.end(); it++){ 
+		//ts<<(*it)->name()<<"\t"<<(*it)->ODC() << "\t"<< (*it)->SODC() << "\t\t" <<  (100* ((*it)->ODC()) / activeGraph.sumODC)<<endl;
+	//}
+	//if (activeGraph.isSymmetric()) {
+		//ts<< "Mean DC= "<< activeGraph.meanDegree<<"\n" ;
+		//ts<< "DC Variance = "<< activeGraph.varianceDegree<<"\n\n";
+	//}
+	//else{
+		//ts<< "Mean ODC= "<< activeGraph.meanDegree<<"\n" ;
+		//ts<< "ODC Variance = "<< activeGraph.varianceDegree<<"\n\n";
+	//}
+	//if ( activeGraph.minODC == activeGraph.maxODC )
+		//ts<< "\nAll nodes have the same ODC value.\n";
+	//else  {
+		//ts<< "\nNode "<< activeGraph.maxNodeODC << " has the maximum ODC value (std): " << activeGraph.maxODC <<"  \n";
+		//ts<< "\nNode "<< activeGraph.minNodeODC << " has the minimum ODC value (std): " << activeGraph.minODC <<"  \n";
+	//}
+	//if (activeGraph.classesODC!=1)
+		//ts<< "\nThere are "<<activeGraph.classesODC<<" different ODC classes.\n";	
+	//else 
+		//ts<< "\nThere is only "<<activeGraph.classesODC<<" ODC class.\n";	
+
+	//
+	//ts<<"\nGROUP OUT-DEGREE CENTRALISATION (GODC)\n\n";
+	//ts<<"GODC = " << activeGraph.groupODC<<"\n\n";
+	//ts<<tr("GODC range: 0 < GODC < 1\n");
+	//ts<<tr("GODC = 0, when all in-degrees are equal (i.e. regular lattice).\n");
+	//ts<<tr("GODC = 1, when one node completely dominates or overshadows the other nodes.\n");
+	//ts<<"(Wasserman & Faust, formula 5.5, p. 177)\n\n";
+	//ts<<tr("The degree of the node is a measure of the \'activity\' of the node it represents\n");
+	//ts<<"(Wasserman & Faust, p. 101)\n";
+
+	//file.close();
 
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
