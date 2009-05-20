@@ -163,7 +163,8 @@ public:
 	void setInitEdgeColor(QString);
 
 	void setEdgeColor(int s, int t, QString color);	//Changes the color of edge (s,t).
-
+	QString edgeColor (int s, int t); 				//Returns the edgeColor
+	 
 	int totalEdges ();							//Returns the sum of edges inside m_graph
 
 	float density();							//Returns ratio of present edges to total possible edges.

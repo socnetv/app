@@ -1051,7 +1051,7 @@ void Parser::readGraphMLElementEdgeGraphics(QXmlStreamReader &xml) {
 void Parser::readGraphMLElementUnknown(QXmlStreamReader &xml) {
 	qDebug()<< "Parser: readGraphMLElementUnknown()";
     Q_ASSERT(xml.isStartElement());
-	qDebug()<< "   "<< xml.name() ;
+	qDebug()<< "   "<< xml.name().toString() ;
 }
 
 

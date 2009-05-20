@@ -1483,6 +1483,7 @@ void MainWindow::resizeEvent( QResizeEvent * ){
 void MainWindow::initNet(){
 	qDebug("MW: initNet() START INITIALISATION");
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	
 	initNodeSize=4;
 	initNodeColor="gold";
 	initLinkColor="grey"; //"black";
@@ -1498,6 +1499,7 @@ void MainWindow::initNet(){
 	numberDistance=5;
 	totalLinks=0;
 	networkName="";
+	fileName="";
 	pajekFileLoaded=FALSE;
 	adjacencyFileLoaded=FALSE;
 
@@ -1506,11 +1508,7 @@ void MainWindow::initNet(){
 
 	networkModified=FALSE;
 	fileSave->setIcon(QIcon(":/images/saved.png"));
-	fileSave->setEnabled(false);
-
-	fileContainsNodesCoords=false;
-	fileContainsNodeColors=false;
-	fileContainsLinksColors=false;
+	fileSave->setEnabled(true);
 
 	markedNodeExists=FALSE;
 
@@ -2346,10 +2344,6 @@ void MainWindow::slotCreateRandomNetErdos(){
 	if (showProgressBarAct->isChecked() || newNodes > 300)
 		progressDialog->deleteLater();	
 
-  	fileContainsNodeColors=FALSE;
-	fileContainsLinksColors=FALSE;
-	fileContainsNodesCoords=FALSE;
-
 	fileLoaded=false;
 	
 	graphChanged();
@@ -2440,10 +2434,6 @@ void MainWindow::slotCreateSameDegreeRandomNetwork(){
 	if (showProgressBarAct->isChecked() || newNodes > 300)
 		progressDialog->deleteLater();	
 
-  	fileContainsNodeColors=FALSE;
-	fileContainsLinksColors=FALSE;
-	fileContainsNodesCoords=FALSE;
-
 	fileLoaded=false;
 	
 	graphChanged();
@@ -2509,10 +2499,6 @@ void MainWindow::slotCreateSmallWorldRandomNetwork(){
 	if (showProgressBarAct->isChecked())
 		progressDialog->deleteLater();	
 
-  	fileContainsNodeColors=FALSE;
-	fileContainsLinksColors=FALSE;
-	fileContainsNodesCoords=FALSE;
-
 	fileLoaded=false;
 
 	graphChanged();
@@ -2575,10 +2561,6 @@ void MainWindow::slotCreateRandomNetRingLattice(){
 
 	if (showProgressBarAct->isChecked())
 		progressDialog->deleteLater();	
-
- 	fileContainsNodeColors=FALSE;
-	fileContainsLinksColors=FALSE;
-	fileContainsNodesCoords=FALSE;
 
 	fileLoaded=false;
 	

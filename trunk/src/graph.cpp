@@ -560,7 +560,13 @@ void Graph::setEdgeColor(int s, int t, QString color){
 
 
 
+//Returns the edgeColor
+QString Graph::edgeColor (int s, int t){
+	return m_graph[ index[s] ]->outLinkColor(t);
+}
 
+
+	
 /**	Checks if there is an edge from v1 to v2
 	Complexity:  O(logN) for index retrieval + O(1) for QList index rerieval + O(logN) for checking edge(v2) 
 */
@@ -2687,83 +2693,111 @@ bool Graph::saveGraphToGraphMLFormat (
 {
 		qDebug () << " Graph::saveGraphToGraphMLFormat to file: " << fileName.toAscii();
 
-	int weight=0;
-
+	int weight=0, source=0, target=0, edgeCount=0;
+	QString color;
+	bool openToken;
 	QFile f( fileName );
 	if ( !f.open( QIODevice::WriteOnly ) )  {
 
 		emit statusMessage( QString(tr("Could not write to %1")).arg(fileName) );
 		return false;
 	}
-	QTextStream t( &f );
+	QTextStream outText( &f );
 	qDebug()<< "		... writing xml version";
-	t<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n"; 
-	t<< " <!-- Created by SocNetV--> \n" ;
-	t<< "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" " 
+	outText << "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n"; 
+	outText << " <!-- Created by SocNetV--> \n" ;
+	outText << "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" " 
 		"      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance \" "  
 		"      xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns " 
 		"      http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">"
 		"\n";
 	
 	qDebug()<< "		... writing keys ";
-	t<<"<key id=\"d0\" for=\"node\" attr.name=\"color\" attr.type=\"string\"> \n" 
-		"  <default>yellow</default> \n" 
-		"</key> \n";
+	outText <<	"  <key id=\"d0\" for=\"node\" attr.name=\"color\" attr.type=\"string\"> \n" 
+				"    <default>" << initVertexColor << "</default> \n" 
+				"  </key> \n";
 
-	t<<"<key id=\"d1\" for=\"edge\" attr.name=\"weight\" attr.type=\"double\"> \n"
-		"  <default>1.0</default> \n"
-		"</key> \n";
+	outText <<	"  <key id=\"d1\" for=\"edge\" attr.name=\"weight\" attr.type=\"double\"> \n"
+				"    <default>1.0</default> \n"
+				"  </key> \n";
+				
+	outText <<	"  <key id=\"d2\" for=\"edge\" attr.name=\"color\" attr.type=\"string\"> \n"
+				"    <default>" << initEdgeColor << "</default> \n"
+				"  </key> \n";
 	
+	qDebug()<< "		... writing graph tag";
+	outText << "  <graph id=\"G\"  edgedefault=\"directed\"> \n";
 	
-	t<<"<graph id=\"G\"  edgedefault=\"directed\" \n";
 	QList<Vertex*>::iterator it;
 	QList<Vertex*>::iterator jt;
+	
+	qDebug()<< "		... writing nodes data";
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
-		qDebug()<<" 	Node id: "<<  (*it)->name()  ;
-		t<< "  <node id=\"" << (*it)->name() <<"\"/> \n";
-		t<< "    <data key=\"d0\">" << (*it)->color()<<"</data>\n";
-		t<<"  </node>\n";
+		qDebug() << " 	Node id: "<<  (*it)->name()  ;
+		outText << "    <node id=\"" << (*it)->name() << "\"";
+		color = (*it)->color();
+		openToken=true;
+		if (  QString::compare ( initVertexColor, color,  Qt::CaseInsensitive) != 0) {
+			outText << "> \n";
+			outText << "      <data key=\"d0\">" << color <<"</data>\n";
+			outText << "    </node>\n";	
+			openToken=false;		
+		}
+		if (openToken) 
+			outText << "/> \n";
+		else 				
+			outText << "    </node>\n";
+		
 		//qDebug()<<" Coordinates x " << (*it)->x()<< " "<<maxWidth<<" y " << (*it)->y()<< " "<<maxHeight;
 		//t<< "\t\t" <<(*it)->x()/(maxWidth)<<" \t"<<(*it)->y()/(maxHeight);
 		//t<< "\t"<<(*it)->shape();
 
 	}
 
-	t<<"*Arcs \n";
-	qDebug("Graph::saveGraphToGraphMLFormat: Arcs");
-	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
-		for (jt=m_graph.begin(); jt!=m_graph.end(); jt++){ 
-			qDebug("Graph::saveGraphToGraphMLFormat:  it=%i, jt=%i", (*it)->name(), (*jt)->name() );
-			if  ( (weight=this->hasEdge( (*it)->name(), (*jt)->name())) !=0  
-				 &&   ( this->hasEdge((*jt)->name(), (*it)->name())) == 0  
-				 ) 
+	qDebug() << "		... writing edges data";
+	edgeCount=0;
+	for (it=m_graph.begin(); it!=m_graph.end(); it++)
+	{ 
+		for (jt=m_graph.begin(); jt!=m_graph.end(); jt++)
+		{ 
+			source=(*it)->name();
+			target=(*jt)->name();
+
+			if  ( 	(weight= this->hasEdge( source,target ) ) !=0  ) 
 			{
-				qDebug()<<"Graph::saveGraphToGraphMLFormat  weight "<< weight << " color "<<  (*it)->outLinkColor( (*jt)->name() ) ;
-				t << (*it)->name() <<" "<<(*jt)->name()<< " "<<weight;
-				//FIXME bug in outLinkColor() when we remove then add many nodes from the end
-				t<< " c "<< (*it)->outLinkColor( (*jt)->name() );
-				t <<"\n";
+				++edgeCount;
+				color = (*it)->outLinkColor( target );
+				qDebug()<< "				edge no "<< edgeCount 
+						<< " from n1=" << source << " to n2=" << target
+						<< " with weight " << weight 
+						<< " and color " << color.toAscii() ;
+				outText << "    <edge id=\""<< "e"+QString::number(edgeCount) 
+					<< "\" source=\"" << source << "\" target=\"" << target << "\"";
+					
+				openToken = true;
+				if (weight > 1) {
+					outText << "> \n";
+					outText << "      <data key=\"d1\">" << weight<<"</data>" <<" \n";
+					openToken=false;
+				}
+				if (  QString::compare ( initEdgeColor, color,  Qt::CaseInsensitive) != 0) {
+					if (openToken) 
+						outText << "> \n";
+					outText << "      <data key=\"d2\">" << color <<"</data>" <<" \n";	
+					openToken=false;
+				}
+				if (openToken) 
+					outText << "/> \n";
+				else 				
+					outText << "    </edge>\n";
+
 			}
 
 		}
 	}
-	
-	t<<"*Edges \n";
-	qDebug("Graph::saveGraphToGraphMLFormat: Edges");
-	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
-		for (jt=m_graph.begin(); jt!=m_graph.end(); jt++){ 
-			qDebug("Graph::saveGraphToGraphMLFormat:  it=%i, jt=%i", (*it)->name(), (*jt)->name() );
-			if  ( (weight=this->hasEdge((*it)->name(), (*jt)->name()))!=0   &&   
-					(this->hasEdge((*jt)->name(), (*it)->name()))!=0  
-				)  {
-				if ( (*it)->name() > (*jt)->name() ) 
-					continue;
-				t << (*it)->name() <<" "<<(*jt)->name()<< " "<<weight;
-				t << " c "<< (*it)->outLinkColor( (*jt)->name() );
-				t <<"\n";
-			}
-		}
-	}
+	outText << "  </graph>\n";
+	outText << "</graphml>\n";
+
 	f.close();
 	QString fileNameNoPath=fileName.split("/").last();
 	emit statusMessage( QString(tr( "File %1 saved" ) ).arg( fileNameNoPath ) );

@@ -326,7 +326,6 @@ private:
 	QString VERSION;
 	bool pajekFileLoaded, adjacencyFileLoaded, dotFileLoaded, graphMLFileLoaded, fileLoaded;
 	bool networkModified;
-	bool fileContainsNodesCoords, fileContainsNodeColors, fileContainsLinksColors;
 	bool bezier,  linkClicked, nodeClicked, markedNodeExists, showProgressBar, firstTime;
 	QString initLinkColor, initNodeShape, initLabelColor;
 	QColor initNumberColor,initBackgroundColor;
