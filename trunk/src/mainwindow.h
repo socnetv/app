@@ -256,7 +256,7 @@ public slots:
 	void selectedNode (const int);
 	
 	//Called from Graph when a network file is loaded.	
-	void fileType(int , QString , int , int );
+	void fileType(int, QString , int, int, bool);
 	 
 protected:
 	void resizeEvent( QResizeEvent * );

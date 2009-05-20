@@ -138,8 +138,8 @@ MainWindow::MainWindow(const QString &fName) {
 	connect( &activeGraph, SIGNAL( graphChanged() ), 
 			this, SLOT( graphChanged() ) ) ;
 	
-	connect( &activeGraph, SIGNAL( signalFileType(int , QString , int , int ) ), 
-			this, SLOT( fileType(int , QString , int , int ) ) 	) ;
+	connect( &activeGraph, SIGNAL( signalFileType(int , QString , int , int, bool) ), 
+			this, SLOT( fileType(int , QString , int , int, bool) ) 	) ;
 	
 	connect( &activeGraph, SIGNAL( drawEdge( int, int, float, bool, bool, QString, bool, bool)), 
 			graphicsWidget, SLOT( drawEdge( int, int,float, bool, bool, QString, bool, bool  ) )  ) ;
@@ -1830,7 +1830,9 @@ int MainWindow::loadNetworkFile(QString fileName){
 *	This method is called from Graph when a network file is loaded.
 *	It informs the MW about the type of the network so that it can display the appropiate message.
 */
-void MainWindow::fileType(int type, QString netName, int aNodes, int totalLinks){
+void MainWindow::fileType (
+		int type, QString netName, int aNodes, int totalLinks, bool undirected)
+{
 	qDebug()<< "MW: fileType() networkName is: " << netName;
 	networkName=netName ;
 	switch( type ) 	{

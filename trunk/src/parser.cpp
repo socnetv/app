@@ -149,7 +149,7 @@ int Parser::loadDL(){
 		qDebug()<< "Error: aborting";
 		return -1;
 	}
-	emit fileType(5, networkName, aNodes, totalLinks);
+	emit fileType(5, networkName, aNodes, totalLinks, undirected);
 	qDebug() << "Parser-loadDL()";
 	return 1;
 
@@ -489,7 +489,8 @@ int Parser::loadPajek(){
 	/** 
 		0 means no file, 1 means Pajek, 2 means Adjacency etc	
 	**/
-	emit fileType(1, networkName, aNodes, totalLinks);
+	emit fileType(1, networkName, aNodes, totalLinks, undirected);
+	
 	qDebug("Parser-loadPajek(): Removing all dummy aNodes, if any");
 	if (listDummiesPajek.size() > 0 ) {
 		qDebug("Trying to delete the dummies now");
@@ -524,7 +525,6 @@ int Parser::loadAdjacency(){
 	edgeWeight=1.0;
 	bool intOK=FALSE;
 
-
 	while ( !ts.atEnd() )   {
 		str= ts.readLine() ;
 		str=str.simplified();  // transforms "/t", "  ", etc to plain " ".
@@ -546,7 +546,11 @@ int Parser::loadAdjacency(){
 				qDebug()<<"Parser-loadAdjacency(): no coords. Using random "<<randX << randY;
 
 	// 			nodeNum,initNodeSize,nodeColor, label, lColor, QPointF(X, Y), nodeShape
-				emit createNode(j+1,initNodeSize, initNodeColor, QString::number(j+1), "black", QPointF(randX, randY), initNodeShape, false);
+				emit createNode( j+1,initNodeSize, 
+								initNodeColor, QString::number(j+1), 
+								"black", QPointF(randX, randY), 
+								initNodeShape, false
+								);
 			}
 		}
 		qDebug("Parser-loadAdjacency(): Finished creating new nodes");
@@ -576,7 +580,7 @@ int Parser::loadAdjacency(){
 	/** 
 		0 means no file, 1 means Pajek, 2 means Adjacency etc	
 	**/
-	emit fileType(2, networkName, aNodes, totalLinks);
+	emit fileType(2, networkName, aNodes, totalLinks, undirected);
 	return 1;
 }
 
@@ -623,8 +627,8 @@ int Parser::loadGraphML(){
 			}
 		}
 	}
-	emit fileType(4, networkName, aNodes, totalLinks);
-	//clear our mess remove every hash element...
+	emit fileType(4, networkName, aNodes, totalLinks, undirected);
+	//clear our mess - remove every hash element...
 	keyFor.clear();
 	keyName.clear();
 	keyType.clear(); 
@@ -717,9 +721,14 @@ void Parser::readGraphML(QXmlStreamReader &xml){
 // called at Graph element
 void Parser::readGraphMLElementGraph(QXmlStreamReader &xml){
 	qDebug()<< "   Parser: readGraphMLElementGraph()";
-	
-	qDebug()<< "    edgedefault "<< xml.attributes().value("edgedefault").toString();
-	 	
+	QString defaultDirection = xml.attributes().value("edgedefault").toString();
+	qDebug()<< "    edgedefault "<< defaultDirection;
+	if (defaultDirection=="undirected"){
+		undirected = true;
+	}
+	else {
+		undirected = false;
+	}
 	networkName = xml.attributes().value("id").toString();
 	qDebug()<< "    graph id  "  << networkName; //store graph id to return it afterwards 
 }
@@ -1097,7 +1106,7 @@ int Parser::loadGML(){
 
 
 	}
-	emit fileType(5, networkName, aNodes, totalLinks);
+	emit fileType(5, networkName, aNodes, totalLinks, undirected);
 	return 1;
 }
 
@@ -1119,7 +1128,7 @@ int Parser::loadDot(){
 	QList<QString> nodeSequence;   //holds edges
 	QList<QString> nodesDiscovered; //holds nodes;
 	initShowLabels=TRUE;	
-	undirected=FALSE; arrows=TRUE; bezier=FALSE;
+	undirected=false; arrows=TRUE; bezier=FALSE;
 	source=0, target=0;
 	QFile file ( fileName );
 	if ( ! file.open(QIODevice::ReadOnly )) return -1;
@@ -1297,7 +1306,7 @@ int Parser::loadDot(){
 	/** 
 		0 means no file, 1 means Pajek, 2 means Adjacency etc	
 	**/
-	emit fileType(3, networkName, aNodes, totalLinks);
+	emit fileType(3, networkName, aNodes, totalLinks, undirected);
 	return 1;
 }
 

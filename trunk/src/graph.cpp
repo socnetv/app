@@ -44,16 +44,17 @@ Graph::Graph() {
 	outEdgesVert=0;
 	inEdgesVert=0;
 	reciprocalEdgesVert=0;
-	order=TRUE;		//returns true if the indexes of the list is ordered.
-	graphModified=FALSE;
-	symmetricAdjacencyMatrix=TRUE;
-	adjacencyMatrixCreated=FALSE;
-	distanceMatrixCreated=FALSE;
-	calculatedIDC=FALSE;
-	calculatedODC=FALSE;
-	calculatedCentralities=FALSE;
+	order=true;		//returns true if the indexes of the list is ordered.
+	graphModified=false;
+	m_undirected=false;
+	symmetricAdjacencyMatrix=true;
+	adjacencyMatrixCreated=false;
+	distanceMatrixCreated=false;
+	calculatedIDC=false;
+	calculatedODC=false;
+	calculatedCentralities=false;
 
-	dynamicMovement=FALSE;
+	dynamicMovement=false;
 	timerId=0;
 	layoutType=0;
 
@@ -70,8 +71,8 @@ Graph::Graph() {
 		);
 
 	connect (
-		&parser, SIGNAL(fileType(int, QString, int, int)),
-		this, SLOT(slotFileType(int, QString, int, int)) 
+		&parser, SIGNAL(fileType(int, QString, int, int, bool)),
+		this, SLOT(slotFileType(int, QString, int, int, bool)) 
 		);
 		
 	connect (
@@ -214,9 +215,12 @@ void Graph::addVertex (int v1, int val, int nsz, QString nc, QString nl, QString
 /**
 	updates MW  with the file type (0=nofile, 1=Pajek, 2=Adjacency etc)
 */
-void Graph::slotFileType(int type, QString networkName, int aNodes, int totalLinks){
+void Graph::slotFileType (
+		int type, QString networkName, int aNodes, int totalLinks, bool undirected)
+{
 	qDebug("Graph: slotFileType %i", type);
-	emit signalFileType (type, networkName, aNodes, totalLinks);
+	m_undirected = undirected;
+	emit signalFileType (type, networkName, aNodes, totalLinks, m_undirected);
 }
 
 
@@ -688,13 +692,13 @@ void Graph::clear() {
 	reciprocalEdgesVert=0;
 	
 	order=true;		//returns true if the indexes of the list is ordered.
-
-	calculatedIDC=FALSE;
-	calculatedODC=FALSE;
-	calculatedCentralities=FALSE;
-	adjacencyMatrixCreated=FALSE;
-	graphModified=FALSE;
-	symmetricAdjacencyMatrix=TRUE;
+	m_undirected=false;
+	calculatedIDC=false;
+	calculatedODC=false;
+	calculatedCentralities=false;
+	adjacencyMatrixCreated=false;
+	graphModified=false;
+	symmetricAdjacencyMatrix=true;
 	qDebug("Graph: m_graph cleared. Now reports size %i", m_graph.size());
 }
 
@@ -2570,7 +2574,8 @@ bool Graph::saveGraphToPajekFormat (
 bool Graph::saveGraphToAdjacencyFormat (
 			QString fileName, int maxWidth, int maxHeight)
 {
-
+	Q_UNUSED(maxWidth);
+	Q_UNUSED(maxHeight);
 	QFile f( fileName );
 	if ( !f.open( QIODevice::WriteOnly ) )  {
 		emit statusMessage(QString(tr("Could not write to %1")).arg(fileName));
@@ -2717,40 +2722,51 @@ bool Graph::saveGraphToGraphMLFormat (
 				"    <default>" << initVertexColor << "</default> \n" 
 				"  </key> \n";
 
-	outText <<	"  <key id=\"d1\" for=\"edge\" attr.name=\"weight\" attr.type=\"double\"> \n"
+	outText <<	"  <key id=\"d1\" for=\"node\" attr.name=\"x_coordinate\" attr.type=\"double\"> \n" 
+				"    <default>" << "0.0" << "</default> \n" 
+				"  </key> \n";
+
+	outText <<	"  <key id=\"d2\" for=\"node\" attr.name=\"y_coordinate\" attr.type=\"double\"> \n" 
+				"    <default>" << "0.0" << "</default> \n" 
+				"  </key> \n";
+				
+	outText <<	"  <key id=\"d3\" for=\"node\" attr.name=\"shape\" attr.type=\"string\"> \n" 
+				"    <default>" << initVertexShape << "</default> \n" 
+				"  </key> \n";
+
+	outText <<	"  <key id=\"d4\" for=\"edge\" attr.name=\"weight\" attr.type=\"double\"> \n"
 				"    <default>1.0</default> \n"
 				"  </key> \n";
 				
-	outText <<	"  <key id=\"d2\" for=\"edge\" attr.name=\"color\" attr.type=\"string\"> \n"
+	outText <<	"  <key id=\"d5\" for=\"edge\" attr.name=\"color\" attr.type=\"string\"> \n"
 				"    <default>" << initEdgeColor << "</default> \n"
 				"  </key> \n";
 	
 	qDebug()<< "		... writing graph tag";
-	outText << "  <graph id=\"G\"  edgedefault=\"directed\"> \n";
-	
+	if (m_undirected)
+		outText << "  <graph id=\""<< networkName << "\" edgedefault=\"undirected\"> \n";
+	else 
+		outText << "  <graph id=\""<< networkName << "\" edgedefault=\"directed\"> \n";
+
 	QList<Vertex*>::iterator it;
 	QList<Vertex*>::iterator jt;
 	
 	qDebug()<< "		... writing nodes data";
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
 		qDebug() << " 	Node id: "<<  (*it)->name()  ;
-		outText << "    <node id=\"" << (*it)->name() << "\"";
+		outText << "    <node id=\"" << (*it)->name() << "\"> \n";
 		color = (*it)->color();
-		openToken=true;
+
 		if (  QString::compare ( initVertexColor, color,  Qt::CaseInsensitive) != 0) {
-			outText << "> \n";
 			outText << "      <data key=\"d0\">" << color <<"</data>\n";
-			outText << "    </node>\n";	
-			openToken=false;		
 		}
-		if (openToken) 
-			outText << "/> \n";
-		else 				
-			outText << "    </node>\n";
-		
-		//qDebug()<<" Coordinates x " << (*it)->x()<< " "<<maxWidth<<" y " << (*it)->y()<< " "<<maxHeight;
-		//t<< "\t\t" <<(*it)->x()/(maxWidth)<<" \t"<<(*it)->y()/(maxHeight);
-		//t<< "\t"<<(*it)->shape();
+		qDebug()<<" 		... Coordinates x " << (*it)->x()<< " "<<maxWidth
+										<<" y " << (*it)->y()<< " "<<maxHeight;
+		outText << "      <data key=\"d1\">" << (*it)->x()/(maxWidth) <<"</data>\n";
+		outText << "      <data key=\"d2\">" << (*it)->y()/(maxHeight) <<"</data>\n";
+		outText << "      <data key=\"d3\">" << (*it)->shape() <<"</data>\n";
+
+		outText << "    </node>\n";
 
 	}
 
@@ -2763,7 +2779,7 @@ bool Graph::saveGraphToGraphMLFormat (
 			source=(*it)->name();
 			target=(*jt)->name();
 
-			if  ( 	(weight= this->hasEdge( source,target ) ) !=0  ) 
+			if  ( 	(weight= this->hasEdge( source,target ) ) !=0 ) 
 			{
 				++edgeCount;
 				color = (*it)->outLinkColor( target );
@@ -2772,18 +2788,19 @@ bool Graph::saveGraphToGraphMLFormat (
 						<< " with weight " << weight 
 						<< " and color " << color.toAscii() ;
 				outText << "    <edge id=\""<< "e"+QString::number(edgeCount) 
-					<< "\" source=\"" << source << "\" target=\"" << target << "\"";
+						<< "\" directed=\"" << "true" << "\" source=\"" << source 
+						<< "\" target=\"" << target << "\"";
 					
 				openToken = true;
 				if (weight > 1) {
 					outText << "> \n";
-					outText << "      <data key=\"d1\">" << weight<<"</data>" <<" \n";
+					outText << "      <data key=\"d4\">" << weight<<"</data>" <<" \n";
 					openToken=false;
 				}
 				if (  QString::compare ( initEdgeColor, color,  Qt::CaseInsensitive) != 0) {
 					if (openToken) 
 						outText << "> \n";
-					outText << "      <data key=\"d2\">" << color <<"</data>" <<" \n";	
+					outText << "      <data key=\"d5\">" << color <<"</data>" <<" \n";	
 					openToken=false;
 				}
 				if (openToken) 

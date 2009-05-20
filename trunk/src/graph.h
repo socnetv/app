@@ -67,7 +67,7 @@ class Graph:  public QObject{
 public slots:
 	/** Slots to signals from Parser */
 	void createVertex(int,int,QString, QString, QString, QPointF, QString); 	//Main vertex creation call
-	void slotFileType(int, QString, int,int);	
+	void slotFileType(int, QString, int,int, bool);	
 	void removeDummyNode(int);
 
 	/** Slots to signals from GraphicsWidget and Parser*/
@@ -84,7 +84,7 @@ signals:
 	void updateProgressDialog(int );
 	void graphChanged();						//call to update MW widgets
 	void selectedVertex(int);				//notifies MW who is the selected node
-	void signalFileType (int, QString, int,int); //notifies MW what we have loaded.
+	void signalFileType (int, QString, int,int, bool); //notifies MW what we have loaded.
 	void statusMessage (QString message);		//updates statusbar message
 	
 	/** Signals to GraphicsWidget */
@@ -300,6 +300,7 @@ private:
 	
 	bool order, initShowLabels, initLabelsInsideNodes;
 	bool adjacencyMatrixCreated, symmetricAdjacencyMatrix, graphModified, distanceMatrixCreated;
+	bool m_undirected;
 
 	QString networkName, initEdgeColor, initVertexColor, initVertexLabelColor, initVertexShape;
 	

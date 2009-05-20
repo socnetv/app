@@ -69,7 +69,7 @@ public:
 signals:
 	void createNode(int,int,QString, QString, QString, QPointF, QString, bool);
 	void createEdge (int, int, float, QString, bool, bool, bool);
-	void fileType(int, QString, int, int);
+	void fileType(int, QString, int, int, bool);
 	void removeDummyNode (int);
 protected:
 	void run();
