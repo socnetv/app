@@ -47,7 +47,7 @@
 
 
 
-bool printDebug=FALSE;
+bool printDebug=false;
 
 
 void myMessageOutput( QtMsgType type, const char *msg )     {
@@ -196,9 +196,9 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
 	/** DEFAULTING HERE DOES NOT CHANGE BOOL VALUE **/
 	/** EVERY TIME INITNET IS CALLED **/
-	bezier=FALSE; 
-	firstTime=TRUE;
-	showProgressBar=FALSE;	
+	bezier=false; 
+	firstTime=true;
+	showProgressBar=false;	
 
 	graphicsWidget->setInitNodeColor(initNodeColor);	
 	graphicsWidget->setInitNumberDistance(numberDistance);
@@ -772,7 +772,7 @@ void MainWindow::initActions(){
 	connect(cEccentAct , SIGNAL(activated()), this, SLOT(slotCentralityEccentricity()));
 
 	cInformationalAct = new QAction(tr("Informational"),	this);
-	cInformationalAct ->setEnabled(FALSE);
+	cInformationalAct ->setEnabled(false);
 	cInformationalAct->setStatusTip(tr("Calculate and display Informational Centrality"));
 	cInformationalAct->setWhatsThis(tr("Informational Centrality\n\n Calculate and display Informational Centrality"));
 	connect(cInformationalAct, SIGNAL(activated()), this, SLOT(slotCentralityInformational()));
@@ -850,7 +850,7 @@ void MainWindow::initActions(){
 	antialiasingAct ->setShortcut(tr("F8"));
 	antialiasingAct ->setStatusTip(tr("Enables/disables anti-aliasing"));
 	antialiasingAct ->setWhatsThis(tr("Enable or disable Anti-Aliasing\n\n Anti-aliasing is a technique which makes nodes, lines and text, smoother and fancier. But it comes at the cost of speed..."));
-	antialiasingAct ->setCheckable(TRUE);
+	antialiasingAct ->setCheckable(true);
 	antialiasingAct ->setChecked (true);
 	connect(antialiasingAct , SIGNAL(toggled(bool)), this, SLOT(slotAntialiasing(bool)));
 
@@ -868,8 +868,8 @@ void MainWindow::initActions(){
 	printDebugAct->setStatusTip(tr("Enables/disables printing debug messages to stdout"));
 	printDebugAct->setWhatsThis(tr("Enables or disable Debug Messages\n\nPrinting debug messages to strerr. Enabling has a significant cpu cost but lets you know what SocNetV is actually doing."));
 	printDebugAct->setCheckable(true);
-	printDebugAct->setChecked (FALSE);
-	printDebug=FALSE;
+	printDebugAct->setChecked (false);
+	printDebug=false;
 	connect(printDebugAct, SIGNAL(toggled(bool)), this, SLOT(slotPrintDebug(bool)));
 
 
@@ -1452,14 +1452,14 @@ void MainWindow::initView() {
  	graphicsWidget->setResizeAnchor(QGraphicsView::AnchorViewCenter);
 	graphicsWidget->setFocusPolicy(Qt::StrongFocus);	
 
-	printDebugAct->setChecked (FALSE);
+	printDebugAct->setChecked (false);
 
 	this->resize(900,700);
 
 	//set minimum size of canvas
  	graphicsWidget->setMinimumSize( (qreal)  ( this->width()-toolBox->sizeHint().width() -30) , (qreal) ( this->height()-statusBar()->sizeHint().height() -toolBar->sizeHint().height() -menuBar()->sizeHint().height() -20 ) );
 	qDebug ("MW initView(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
-//	printDebugAct->setChecked (FALSE);
+//	printDebugAct->setChecked (false);
 }
 
 
@@ -1501,22 +1501,22 @@ void MainWindow::initNet(){
 	totalLinks=0;
 	networkName="";
 	fileName="";
-	pajekFileLoaded=FALSE;
-	adjacencyFileLoaded=FALSE;
+	pajekFileLoaded=false;
+	adjacencyFileLoaded=false;
 
-	dotFileLoaded=FALSE;
-	fileLoaded=FALSE;
+	dotFileLoaded=false;
+	fileLoaded=false;
 
-	networkModified=FALSE;
+	networkModified=false;
 	fileSave->setIcon(QIcon(":/images/saved.png"));
 	fileSave->setEnabled(true);
 
-	markedNodeExists=FALSE;
+	markedNodeExists=false;
 
 	cursorPosGW=QPointF(-1,-1);
 	clickedJimNumber=-1;
-	linkClicked=FALSE;
-	nodeClicked=FALSE;
+	linkClicked=false;
+	nodeClicked=false;
 	
 	/** Clear previous network data */
 	activeGraph.clear();
@@ -1695,27 +1695,26 @@ void MainWindow::slotFileSave() {
 		else 
 			networkSaved(0);
 	}
-	else 
-	switch( QMessageBox::information( this, "File Format-",
-				      tr("Do you want to save this network ")+
-				      tr("in Pajek-formatted or SocioMatrix - formatted file?"),
-				      tr("Pajek"), tr("Sociomatrix"), tr("Cancel"),
-				      0, 1 ) )
+	else
 	{
-		case 0:
-			if ( activeGraph.saveGraph(fileName, 1, networkName, maxWidth,maxHeight) )
-				networkSaved(1);
-			else 
-				networkSaved(0); 
- 			break;
-		case 1:
-			if ( activeGraph.saveGraph(fileName, 2, networkName, maxWidth,maxHeight) )
-				networkSaved(2);
-			else 
-				networkSaved(0);
-			break;
+			switch( QMessageBox::information( this, "GraphML File Format",
+						tr("This network will be saved in GraphML format. \n")+
+						tr("Is this OK? \n\n") +
+						tr("If not, press Cancel, then go to Network > Export menu..."),
+						"Yes", "No",0,1 ) 
+			)
+			{
+				case 0:
+					if ( activeGraph.saveGraph(fileName, 4, networkName, maxWidth,maxHeight) )
+						networkSaved(4);
+					else 
+						networkSaved(0);
+		 			break;
+				case 1:
+					statusMessage( tr("Save aborted...") );
+					break;
+			}
 	}
-
 
 }
 
@@ -1729,9 +1728,9 @@ void MainWindow::slotFileSaveAs() {
 	QString fn = QFileDialog::getSaveFileName(this, 0, 0);
 	if (!fn.isEmpty())  {
 		fileName=fn;
-		adjacencyFileLoaded=FALSE;
-		pajekFileLoaded=FALSE;
-		
+		adjacencyFileLoaded=false;
+		pajekFileLoaded=false;
+		graphMLFileLoaded=false;
 		slotFileSave();
 	}
 	else  
@@ -1755,7 +1754,7 @@ void MainWindow::networkSaved(int saved_ok)
 	{
 		fileSave->setIcon(QIcon(":/images/saved.png"));
 		fileSave->setEnabled(false);
-		fileLoaded=TRUE; networkModified=FALSE;
+		fileLoaded=true; networkModified=false;
 		setWindowTitle( fileNameNoPath.last() );
 		statusMessage( tr("Network saved under filename: ")+fileNameNoPath.last()+tr(".") );
 		switch (saved_ok){
@@ -1790,7 +1789,10 @@ void MainWindow::networkSaved(int saved_ok)
 void MainWindow::slotFileClose() {
 	statusMessage( tr("Closing file..."));
 	if (networkModified) {
-		switch ( QMessageBox::information (this, "Closing Network...",tr("Network has not been saved. \nDo you want to save before closing it?"), "Yes", "No",0,1))
+		switch ( QMessageBox::information (this, 
+					"Closing Network...",
+					tr("Network has not been saved. \nDo you want to save before closing it?"), 
+					"Yes", "No",0,1))
 		{
 			case 0: slotFileSave(); break;
 			case 1: break;
@@ -1852,60 +1854,60 @@ void MainWindow::fileType (
 	networkName=netName ;
 	switch( type ) 	{
 		case 0:
-			pajekFileLoaded=FALSE;
-			adjacencyFileLoaded=FALSE;
+			pajekFileLoaded=false;
+			adjacencyFileLoaded=false;
 			graphMLFileLoaded=false;
-			fileLoaded=FALSE;
+			fileLoaded=false;
 			break;
 		case 1:
-			pajekFileLoaded=TRUE;
-			adjacencyFileLoaded=FALSE;
+			pajekFileLoaded=true;
+			adjacencyFileLoaded=false;
 			graphMLFileLoaded=false;
-			fileLoaded=TRUE;
-			networkModified=FALSE;
+			fileLoaded=true;
+			networkModified=false;
 			statusMessage( QString(tr("Pajek formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ));
 			break;
 		case 2:
-			pajekFileLoaded=FALSE;
-			adjacencyFileLoaded=TRUE;
+			pajekFileLoaded=false;
+			adjacencyFileLoaded=true;
 			graphMLFileLoaded=false;
-			fileLoaded=TRUE;
-			networkModified=FALSE;
+			fileLoaded=true;
+			networkModified=false;
 			statusMessage( QString(tr("Adjacency formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
 			break;
 		case 3:
-			pajekFileLoaded=FALSE;
-			adjacencyFileLoaded=FALSE;
-			dotFileLoaded=TRUE;
+			pajekFileLoaded=false;
+			adjacencyFileLoaded=false;
+			dotFileLoaded=true;
 			graphMLFileLoaded=false;
-			fileLoaded=TRUE;
-			networkModified=FALSE;
+			fileLoaded=true;
+			networkModified=false;
 			statusMessage( QString(tr("Dot formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
 			break;
 		case 4:
-			pajekFileLoaded=FALSE;
-			adjacencyFileLoaded=FALSE;
-			dotFileLoaded=FALSE;
+			pajekFileLoaded=false;
+			adjacencyFileLoaded=false;
+			dotFileLoaded=false;
 			graphMLFileLoaded=true;
-			fileLoaded=TRUE;
-			networkModified=FALSE;
+			fileLoaded=true;
+			networkModified=false;
 			statusMessage( QString(tr("GraphML formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
 			break;
 
 		case 5:
-			pajekFileLoaded=FALSE;
-			adjacencyFileLoaded=FALSE;
-			dotFileLoaded=FALSE;
+			pajekFileLoaded=false;
+			adjacencyFileLoaded=false;
+			dotFileLoaded=false;
 			graphMLFileLoaded=false;
-			fileLoaded=TRUE;
-			networkModified=FALSE;
+			fileLoaded=true;
+			networkModified=false;
 			statusMessage( QString(tr("DL-formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
 			break;
 		default: // just for sanity
-			pajekFileLoaded=FALSE;
-			adjacencyFileLoaded=FALSE;
+			pajekFileLoaded=false;
+			adjacencyFileLoaded=false;
 			graphMLFileLoaded=false;
-			fileLoaded=FALSE;
+			fileLoaded=false;
 			QMessageBox::critical(this, "Error","Unrecognized format. \nPlease specify"
 			" which is the file-format using Import Menu.","OK",0);
 			break;
@@ -1971,7 +1973,7 @@ bool MainWindow::slotExportPNG(){
 	qDebug("slotExportPNG: adding logo");
 	QPainter p;
 	p.begin(&picture);
-		p.setFont(QFont ("Helvetica", 10, QFont::Normal, FALSE));
+		p.setFont(QFont ("Helvetica", 10, QFont::Normal, false));
 		p.drawText(5,10,"SocNetV: "+tempFileNameNoPath.last());
 	p.end();
 	qDebug("slotExportPNG: checking filename");
@@ -2016,7 +2018,7 @@ bool MainWindow::slotExportBMP(){
 	QPainter p;
 	qDebug("slotExportBMP: adding logo");
 	p.begin(&picture);
-		p.setFont(QFont ("Helvetica", 10, QFont::Normal, FALSE));
+		p.setFont(QFont ("Helvetica", 10, QFont::Normal, false));
 		p.drawText(5,10,"SocNetV: "+tempFileNameNoPath.last());
 	p.end();
 	qDebug("slotExportBMP: checking file");
@@ -2612,7 +2614,7 @@ void MainWindow::slotFindNode(){
 	if (markedNodeExists) {
 		markedNode->setSize(preSize);
 		markedNode->setColor ( QColor( markedNode->color() ).dark(150) );
-		markedNodeExists=FALSE;
+		markedNodeExists=false;
 		return;
 	}
 	if (!fileLoaded && !networkModified  )     {
@@ -2621,7 +2623,7 @@ void MainWindow::slotFindNode(){
 		statusMessage(  QString(tr("Nothing to find!"))  );
 		return;
 	}
-	bool ok=FALSE;
+	bool ok=false;
 	QString text = QInputDialog::getText(this, "Find a node", tr("Enter node label or number:"), QLineEdit::Normal,QString::null, &ok );
 	if (!ok) {
 		statusMessage( "Find node operation cancelled." );
@@ -2637,7 +2639,7 @@ void MainWindow::slotFindNode(){
 				jim->setColor ( QColor( jim->color() ).light(150) );
 				preSize=jim->size();
 				jim->setSize(2*preSize-1);
-				markedNodeExists=TRUE;
+				markedNodeExists=true;
 				markedNode=jim;
 				statusMessage( tr("Node found!"));
 				return;
@@ -2648,7 +2650,7 @@ void MainWindow::slotFindNode(){
 				jim->setSize(2*preSize-1);
 				qDebug("MW: found.");
 				jim->setColor ( QColor( jim->color() ).light(150) );
-				markedNodeExists=TRUE;
+				markedNodeExists=true;
 				markedNode=jim;
 				statusMessage( tr("Node found!"));
 				return;
@@ -2754,7 +2756,7 @@ void MainWindow::openContextMenu( const QPointF &mPos) {
 */
 void MainWindow::graphChanged(){
 	qDebug("MW: graphChanged");
-	networkModified=TRUE;
+	networkModified=true;
 	fileSave->setIcon(QIcon(":/images/save.png"));
 	fileSave->setEnabled(true);
 	
@@ -2774,8 +2776,8 @@ void MainWindow::graphChanged(){
 */
 void MainWindow::nodeInfoStatusBar ( Node *jim) {
 	qDebug ("MW: NodeInfoStatusBar()");	
-	linkClicked=FALSE;
-	nodeClicked=TRUE;
+	linkClicked=false;
+	nodeClicked=true;
 	clickedJim=jim;
 	clickedJimNumber=clickedJim->nodeNumber();
 	int inLinks=activeGraph.edgesTo(clickedJimNumber);
@@ -2799,12 +2801,9 @@ void MainWindow::nodeInfoStatusBar ( Node *jim) {
 */
 void MainWindow::linkInfoStatusBar (Edge* link) {
 	clickedLink=link;
-	linkClicked=TRUE;
-	nodeClicked=FALSE;
-	if (bezier)
-		statusMessage(  QString(tr("Link from Node %1 to Node %2, has weight %3 and color %4.")).arg( link->sourceNodeNumber() ).arg(link->targetNodeNumber()).arg(link->weight()).arg(link->color() ) );
-	else
-		statusMessage(  QString(tr("Link between node %1 and node %2, weight %3 and color %4.")).arg( link->sourceNodeNumber() ).arg(link->targetNodeNumber()).arg(link->weight()).arg(link->color() ) );
+	linkClicked=true;
+	nodeClicked=false;
+	statusMessage(  QString(tr("Link between node %1 and node %2, weight %3 and color %4.")).arg( link->sourceNodeNumber() ).arg(link->targetNodeNumber()).arg(link->weight()).arg(link->color() ) );
 }
 
 
@@ -2873,7 +2872,7 @@ void MainWindow::slotAddLink(){
 
 	int sourceNode=-1, targetNode=-1, sourceIndex=-1, targetIndex=-1;
 	float weight=1; 	//weight of this new edge should be one...
-	bool ok=FALSE;
+	bool ok=false;
 	int min=activeGraph.firstVertexNumber();
 	int max=activeGraph.lastVertexNumber();
 
@@ -2955,7 +2954,7 @@ void MainWindow::slotRemoveLink(){
 	}
 
 	int min=0, max=0, sourceNode=-1, targetNode=-1;
-	bool ok=FALSE;
+	bool ok=false;
 	min=activeGraph.firstVertexNumber();
 	max=activeGraph.lastVertexNumber();
 
@@ -3056,7 +3055,7 @@ void MainWindow::slotChangeNodeLabel(){
 		clickedJim->setLabel(text);
 		activeGraph.setVertexLabel( clickedJimNumber, text);
 		if (!showLabels()) 
-			displayNodeLabelsAct->setChecked(TRUE);
+			displayNodeLabelsAct->setChecked(true);
 			statusMessage( tr("Changed label to %1. Ready. ").arg(text)  );
 			graphChanged();
 	} 
@@ -3089,7 +3088,7 @@ void MainWindow::slotChangeNodeColor(){
 			return;
 		}
 
-		QString newColor = QInputDialog::getItem(this,"Change node color", "Select a  new color:", colorList, 1, TRUE, &ok);
+		QString newColor = QInputDialog::getItem(this,"Change node color", "Select a  new color:", colorList, 1, true, &ok);
 		if (!ok) {
 			statusMessage( "Change clicked node color operation cancelled." );
 			return;
@@ -3104,7 +3103,7 @@ void MainWindow::slotChangeNodeColor(){
 		
 	}
 	else{
-		QString nodeColor = QInputDialog::getItem(this,"Change node color", "Select a  color:", colorList, 1, TRUE, &ok);
+		QString nodeColor = QInputDialog::getItem(this,"Change node color", "Select a  color:", colorList, 1, true, &ok);
     		if ( ok ) {
 			clickedJim->setColor(nodeColor);
 			activeGraph.setVertexColor (clickedJimNumber, nodeColor);
@@ -3135,7 +3134,7 @@ void MainWindow::slotChangeNodeSize(){
 		statusMessage( tr("Error. ")  );
 		return;
 	}
-	bool ok=FALSE;
+	bool ok=false;
 	int newSize = QInputDialog::getInteger(this, "Change node size", tr("Change node size to: (1-100)"),initNodeSize, 1, 100, 1, &ok ) ;
 	if (!ok) {
 		statusMessage( "Change size operation cancelled." );
@@ -3157,7 +3156,7 @@ void MainWindow::slotChangeNodeValue(){
 		statusMessage( tr("Error. ")  );
 		return;
 	}
-//	bool ok=FALSE;
+//	bool ok=false;
 	//int newSize =   QInputDialog::getInteger(this, "Change node value", tr("Change node size to: (1-16)"),1, 1, 16, 1, &ok ) ;
 //	clickedJim->setSize(newSize);
 	graphChanged();
@@ -3240,7 +3239,7 @@ void MainWindow::slotChangeLinkColor(){
 	}
 
 	int sourceNode=-1, targetNode=-1;
-	bool ok=FALSE;
+	bool ok=false;
 	QString newColor;
 	int min=activeGraph.firstVertexNumber();
 	int max=activeGraph.lastVertexNumber();
@@ -3259,7 +3258,7 @@ void MainWindow::slotChangeLinkColor(){
 
 		qDebug("source %i target %i",sourceNode, targetNode);
 
-		newColor = QInputDialog::getItem(this , "Change link color....", "Select a  color:", colorList, 1, FALSE, &ok );
+		newColor = QInputDialog::getItem(this , "Change link color....", "Select a  color:", colorList, 1, false, &ok );
 		if ( ok ) {
 			if (graphicsWidget->setEdgeColor(sourceNode, targetNode, newColor))
 				activeGraph.setEdgeColor( sourceNode, targetNode, newColor);
@@ -3271,7 +3270,7 @@ void MainWindow::slotChangeLinkColor(){
 
 	}
 	else {	//edge has been clicked. Just ask the color and call the appropriate methods.
-		newColor = QInputDialog::getItem(this, "Change link color....", "Select a new color for the clicked link:", colorList, 1, FALSE, &ok );
+		newColor = QInputDialog::getItem(this, "Change link color....", "Select a new color for the clicked link:", colorList, 1, false, &ok );
 		if ( ok ) {
 			clickedLink->setColor(newColor);
 			activeGraph.setEdgeColor( clickedLink->sourceNodeNumber(), clickedLink->targetNodeNumber(), newColor);
@@ -3304,7 +3303,7 @@ void MainWindow::slotChangeLinkWeight(){
 	int min=activeGraph.firstVertexNumber();
 	int max=activeGraph.lastVertexNumber();
 
-	bool ok=FALSE;
+	bool ok=false;
 	if (!linkClicked) {	
 		sourceNode=QInputDialog::getInteger(this, "Change link weight",tr("Select link source node:  ("+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"), min, 1, max , 1, &ok)   ;
 		if (!ok) {
@@ -3433,7 +3432,7 @@ void MainWindow::slotChangeLinkWeight(){
 				return;
 			}
 		}
-		linkClicked=FALSE;
+		linkClicked=false;
 	}
 	
 }
@@ -3470,18 +3469,18 @@ void MainWindow::slotFilterLinks(){
 		statusMessage(  QString(tr("Load a network file first. \nThen you may ask me to compute something!"))  );
 		return;
 	}
-	bool ok=FALSE, moreWeighted=FALSE;
+	bool ok=false, moreWeighted=false;
 	int selectedWeight=0;
 	switch (
              QMessageBox::information(this, "Filter Links",tr(" Do you want to filter out links weighted greater-equal or less-equal than a number?"), ">=","<=",0,1)
             )
 	{
-		case 0:  moreWeighted = TRUE;
+		case 0:  moreWeighted = true;
 			selectedWeight =   QInputDialog::getInteger(
 			"Filter Links", tr("Filter all links with weight greater-equal than: "),
 			0, 0, 10, 1, &ok, this ) ;
 			break;
-		case 1:  moreWeighted=FALSE;
+		case 1:  moreWeighted=false;
 			selectedWeight =   QInputDialog::getInteger(
 			"Filter Links", tr("Filter all links with weight less-equal than: "),
 			0, 0, 10, 1, &ok, this ) ;
@@ -4185,7 +4184,7 @@ void MainWindow::slotGraphDistance(){
 		statusMessage(  QString(tr("There are no nodes. Nothing to do..."))  );
 		return;
 	}
-	bool ok=FALSE;
+	bool ok=false;
 	int  min=1, max=1, i=-1, j=-1;
 	QList<QGraphicsItem *> list=scene->items();
 	for (QList<QGraphicsItem *> ::iterator it=list.begin(); it!=list.end(); it++)
@@ -4339,7 +4338,7 @@ void MainWindow::slotCentralityOutDegree(){
 		statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
 		return;
 	}
-	bool considerWeights=FALSE;
+	bool considerWeights=false;
 	
 	switch( QMessageBox::information( this, "Centrality Out-Degree",
 				      tr("Take weights into account (Default: No)?"),
@@ -4347,13 +4346,13 @@ void MainWindow::slotCentralityOutDegree(){
 				      0, 1 ) )
 	{
 		case 0:
-			considerWeights=TRUE;
+			considerWeights=true;
 			break;
 		case 1:
-			considerWeights=FALSE;
+			considerWeights=false;
 			break;
 		default: // just for sanity
-			considerWeights=TRUE;
+			considerWeights=true;
 			return;
 		break;
 	}
@@ -4382,7 +4381,7 @@ void MainWindow::slotCentralityInDegree(){
 		statusMessage(  QString(tr("Nothing to do..."))  );
 		return;
 	}
-	bool considerWeights=FALSE;
+	bool considerWeights=false;
 	
 	switch( QMessageBox::information( this, "Centrality In-Degree",
 				      tr("Take weights into account (Default: No)?"),
@@ -4390,13 +4389,13 @@ void MainWindow::slotCentralityInDegree(){
 				      0, 1 ) )
 	{
 		case 0:
-			considerWeights=TRUE;
+			considerWeights=true;
 			break;
 		case 1:
-			considerWeights=FALSE;
+			considerWeights=false;
 			break;
 		default: // just for sanity
-			considerWeights=TRUE;
+			considerWeights=true;
 			return;
 		break;
 	}
@@ -4661,7 +4660,7 @@ void MainWindow::slotDisplayNodeLabels(bool toggle){
 *   Changes the size of all nodes
 */
 void MainWindow::slotChangeAllNodesSize() {
-	bool ok=FALSE;
+	bool ok=false;
 	
 	int newSize = QInputDialog::getInteger(this, "Change node size", tr("Select new size for all nodes: (1-16)"),initNodeSize, 1, 16, 1, &ok );
 	if (!ok) {
@@ -4716,7 +4715,7 @@ void MainWindow::slotChangeAllNodesShape() {
 	bool ok=false;
 	QStringList lst;
     	lst << "box"<< "circle"<< "diamond"<< "ellipse"<< "triangle";
-    	QString newShape = QInputDialog::getItem(this, "Node shapes", "Select a shape for all nodes: ", lst, 1, TRUE, &ok);
+    	QString newShape = QInputDialog::getItem(this, "Node shapes", "Select a shape for all nodes: ", lst, 1, true, &ok);
 	if ( ok ) {
 	        //user selected an item and pressed OK
 		QList<QGraphicsItem *> list=scene->items();
@@ -4755,7 +4754,7 @@ void MainWindow::slotChangeNumbersSize() {
 		if ( (*it2)->type()==TypeNumber) {
 		NodeNumber * number= (NodeNumber*) (*it2);
 		qDebug ("MW: slotChangeNumbersSize Found");
-		number->setFont( QFont (number->font().family(), newSize, QFont::Light, FALSE) );
+		number->setFont( QFont (number->font().family(), newSize, QFont::Light, false) );
 	}
 	statusMessage( tr("Changed numbers size. Ready.") );
 }
@@ -4778,7 +4777,7 @@ void MainWindow::slotChangeLabelsSize() {
   for (QList<QGraphicsItem *>::iterator it2=list.begin();it2!=list.end(); it2++)
      if ( (*it2)->type()==TypeLabel) {
        NodeLabel * number= (NodeLabel*) (*it2);
-      number->setFont( QFont ("Helvetica", newSize, QFont::Normal, FALSE) );
+      number->setFont( QFont ("Helvetica", newSize, QFont::Normal, false) );
      }
 
   statusMessage( tr("Changed labels size. Ready.") );*/
@@ -4824,7 +4823,7 @@ void MainWindow::slotDisplayLinksWeightNumbers(bool toggle) {
 // 	pair<int,int> pair1;	
 // 	QList<QGraphicsItem *> list=scene->items();
 // 	if ( toggle )   {  //draw Edge Weight Numbers
-// 		qDebug ("toogle is TRUE. Will show weight numbers");
+// 		qDebug ("toogle is true. Will show weight numbers");
 // 		for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
 // 			if ( (*it)->type() ==   Link_Rtti ){
 // 				Edge* link= (Edge*) (*it);
@@ -4841,7 +4840,7 @@ void MainWindow::slotDisplayLinksWeightNumbers(bool toggle) {
 // 			}
 // 	}
 // 	else { //delete them
-// 		qDebug ("toogle is FALSE. Deleting all numbers");
+// 		qDebug ("toogle is false. Deleting all numbers");
 // 		for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++){
 // 			if ( (*item)->type() ==   Weight_Rtti ) {
 // 				delete *item;
@@ -4981,8 +4980,8 @@ void MainWindow::slotBackgroundColor () {
 *  Changes the color of all nodes
 */
 void MainWindow::slotAllNodesColor(){
-	bool ok=FALSE;
-	initNodeColor = QInputDialog::getItem(this, "Nodes' colors", "Select a new color:", colorList, 1, TRUE, &ok);
+	bool ok=false;
+	initNodeColor = QInputDialog::getItem(this, "Nodes' colors", "Select a new color:", colorList, 1, true, &ok);
     	if ( ok ) {
 		QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 		qDebug ("MW: Will change color");
@@ -5013,8 +5012,8 @@ void MainWindow::slotAllNodesColor(){
 *  Changes the color of all links
 */
 void MainWindow::slotAllLinksColor(){
-	bool ok=FALSE;
-	initLinkColor = QInputDialog::getItem(this, "Links' colors", "Select a new color:", colorList, 1, TRUE, &ok);
+	bool ok=false;
+	initLinkColor = QInputDialog::getItem(this, "Links' colors", "Select a new color:", colorList, 1, true, &ok);
     	if ( ok ) {
 		QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 		qDebug ("MW: Will change color");
@@ -5046,7 +5045,7 @@ void MainWindow::slotAllLinksColor(){
 *  Changes the color of nodes' numbers
 */
 void MainWindow::slotAllNumbersColor(){
-	// = QInputDialog::getItem(this, "Links' colors", "Select a new color:", colorList, 1, TRUE, &ok);
+	// = QInputDialog::getItem(this, "Links' colors", "Select a new color:", colorList, 1, true, &ok);
 	QColor textColor = QColorDialog::getColor( Qt::black, this );
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 	qDebug ("MW: Will change color");
@@ -5107,11 +5106,11 @@ void MainWindow::slotAntialiasing(bool toggle) {
 void MainWindow::slotShowProgressBar(bool toggle) {
 	statusMessage( tr("Toggle progressbar..."));
 	if (!toggle)  {
-		showProgressBar=FALSE;
+		showProgressBar=false;
 		statusMessage( tr("Progress bars off.") );	
 	}
 	else   {
-		showProgressBar=TRUE;
+		showProgressBar=true;
 		statusMessage( tr("Progress bars on.") );	
 	}
 }
@@ -5123,11 +5122,11 @@ void MainWindow::slotShowProgressBar(bool toggle) {
 */
 void MainWindow::slotPrintDebug(bool toggle){
 	if (!toggle)   {
-		printDebug=FALSE;
+		printDebug=false;
 		statusMessage( tr("Debug messages off.") );
 	}
 	else  {
-		printDebug=TRUE;
+		printDebug=true;
 		statusMessage( tr("Debug messages on.") );
 	}
 }
@@ -5214,7 +5213,7 @@ void MainWindow::createTips(){
 void MainWindow::slotHelp(){
 
 	QString helpPath; 
-	bool manualFound = FALSE;
+	bool manualFound = false;
 	QDir d( QCoreApplication::applicationDirPath() );
 	qDebug()<< QCoreApplication::applicationDirPath().toAscii();
 
@@ -5228,11 +5227,11 @@ void MainWindow::slotHelp(){
 		if (d.cd("./manual") ) {
 			if ( d.exists("manual.html") ) {
 				helpPath=d.filePath("manual.html");
-				manualFound = TRUE;	
+				manualFound = true;	
 			}
 			else 	{
 			      qDebug()<< "help file does not exist here.";
-			      manualFound = FALSE;
+			      manualFound = false;
 		        }
 		}
 		if ( !manualFound && d.cd("/usr/local/share/doc/socnetv/") ) {			//for compile installation
@@ -5240,29 +5239,29 @@ void MainWindow::slotHelp(){
 			if ( d.exists("manual.html") ) {
 				helpPath=d.filePath("manual.html");
 				qDebug()<< "path" << helpPath.toAscii();
-				manualFound = TRUE;	
+				manualFound = true;	
 			}
 			else {
 				qDebug()<< "help file does not exist.";
-				manualFound = FALSE;
+				manualFound = false;
 			}
 		}
                if (!manualFound && d.cd("/usr/share/doc/socnetv/") ) {     //for Debian Ubuntu
 		       if (d.exists("manual/")) d.cd("manual/");
                        if ( d.exists("manual.html") ) {
                                 helpPath=d.filePath("manual.html");
-				manualFound = TRUE;	
+				manualFound = true;	
                         }
                         else {
                                 qDebug("help file does not exist in /usr/share/doc/socnetv/.");
-				manualFound = FALSE;
+				manualFound = false;
                         }
                 }             
                if ( !manualFound && d.cd("/usr/share/doc/packages/socnetv/") ) {  //for opensuse file hierarchy
 		       if (d.exists("manual/")) d.cd("manual/");
                        if ( d.exists("manual.html") ) {
                                 helpPath=d.filePath("manual.html");
-				manualFound = TRUE;	
+				manualFound = true;	
                         }
                         else {
                                 qDebug("help file does not exist.");
@@ -5273,7 +5272,7 @@ void MainWindow::slotHelp(){
 		       if (d.exists("manual/")) d.cd("manual/");
                        if ( d.exists("manual.html") ) {
                                 helpPath=d.filePath("manual.html");
-				manualFound = TRUE;	
+				manualFound = true;	
                         }
                         else {
                                 qDebug("help file does not exist.");

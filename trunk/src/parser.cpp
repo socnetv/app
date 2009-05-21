@@ -116,6 +116,7 @@ int Parser::loadDL(){
 			randX=rand()%gwWidth;
 			randY=rand()%gwHeight;
 			nodeNum++;
+			qDebug()<<"Creating node at "<< randX<<","<< randY;
 			emit createNode(nodeNum, initNodeSize, initNodeColor, label, initNodeColor, QPointF(randX, randY), initNodeShape, initShowLabels);
 		
 		}
@@ -340,6 +341,7 @@ int Parser::loadPajek(){
 				qDebug ()<<"MW There are "<< j << " nodes but this node has number "<< nodeNum;
 				for (int num=j; num< nodeNum; num++) {
 					qDebug()<< "Parser-loadPajek(): Creating dummy node number num = "<< num;
+					qDebug()<<"Creating node at "<< randX<<","<< randY;
 					emit createNode(num,initNodeSize, nodeColor, label, lineElement[3], QPointF(randX, randY), nodeShape, initShowLabels);
 					listDummiesPajek.push_back(num);  
 					miss++;
@@ -349,6 +351,7 @@ int Parser::loadPajek(){
 				qDebug ("Error: This Pajek net declares this node with nodeNumber smaller than previous nodes. Aborting");
 				return -1;	
 			}
+			qDebug()<<"Creating node at "<< randX<<","<< randY;
 			emit createNode(nodeNum,initNodeSize, nodeColor, label, nodeColor, QPointF(randX, randY), nodeShape, initShowLabels);
 			initNodeColor=nodeColor; 
 		} 	
@@ -817,7 +820,8 @@ void Parser::readGraphMLElementNode(QXmlStreamReader &xml){
 void Parser::endGraphMLElementNode(QXmlStreamReader &xml){
 	Q_UNUSED(xml);
 	
-	qDebug()<<"   Parser: endGraphMLElementNode() *** emitting signal to create node with id "<< node_id << " nodenumber "<< aNodes;
+	qDebug()<<"   Parser: endGraphMLElementNode() *** signal to create node with id "
+		<< node_id << " nodenumber "<< aNodes << " coords " << randX << ", " << randY;
 	emit createNode(aNodes, nodeSize, nodeColor, nodeLabel, nodeColor, QPointF(randX,randY), nodeShape, initShowLabels);
 	bool_node = false;
 	
@@ -862,26 +866,46 @@ void Parser::endGraphMLElementEdge(QXmlStreamReader &xml){
 void Parser::readGraphMLElementData (QXmlStreamReader &xml){
 	key_id = xml.attributes().value("key").toString();
 
-	if (xml.isCharacters()   ) { //if there's simple text after the StartElement, 
-		key_value=xml.readElementText();    //read it
-		qDebug()<< "   Parser: readGraphMLElementData(): key_id " << key_id << " value " <<key_value;		
+	key_value=xml.text().toString();
+	qDebug()<< "   Parser: readGraphMLElementData(): text: " << key_value; 
+	if (  key_value != "" ) { //if there's simple text after the StartElement,
+			key_value=xml.readElementText(); 
+			qDebug()<< "   Parser: readGraphMLElementData(): key_id " << key_id << " value is simple text " <<key_value.toAscii() ;
 	}
-	else if (xml.isCDATA()   ) { //if there's simple text after the StartElement,
-		key_value=xml.readElementText();    //read it
-		qDebug()<< "   Parser: readGraphMLElementData(): key_id " << key_id << " value " <<key_value;
-
-	}
-	
 	else {  //no text, probably more tags. Return...
 		qDebug()<< "   Parser: readGraphMLElementData(): key_id " << key_id << " for " <<keyFor.value(key_id);
 		qDebug()<< "   Parser: readGraphMLElementData(): There must be more elements nested here, continuing";
 		return;  
 	}
+	
 	if (keyName.value(key_id) == "color" && keyFor.value(key_id) == "node" ) {
 			qDebug()<< "     Data found. Node color: "<< key_value << " for this node";
 			nodeColor= key_value; 
 	}
-	
+	else if (keyName.value(key_id) == "x_coordinate" && keyFor.value(key_id) == "node" ) {
+			qDebug()<< "     Data found. Node x: "<< key_value << " for this node";
+			conv_OK=false;
+			randX= key_value.toFloat( &conv_OK ) ;
+			if (!conv_OK)
+				randX = 0; 
+			else 
+				randX=randX * gwWidth;
+			qDebug()<< "     Using: "<< randX;
+	}
+	else if (keyName.value(key_id) == "y_coordinate" && keyFor.value(key_id) == "node" ) {
+			qDebug()<< "     Data found. Node y: "<< key_value << " for this node"; 
+			conv_OK=false;
+			randY= key_value.toFloat( &conv_OK );
+			if (!conv_OK)
+				randY = 0;  
+			else 
+				randY=randY * gwHeight;	
+			qDebug()<< "     Using: "<< randY;
+	}
+	else if (keyName.value(key_id) == "shape" && keyFor.value(key_id) == "node" ) {
+			qDebug()<< "     Data found. Node shape: "<< key_value << " for this node";
+			nodeShape= key_value; 
+	}	
 	else if (keyName.value(key_id) == "color" && keyFor.value(key_id) == "edge" ) {
 			qDebug()<< "     Data found. Edge color: "<< key_value << " for this edge";
 			edgeColor= key_value; 
@@ -889,8 +913,8 @@ void Parser::readGraphMLElementData (QXmlStreamReader &xml){
 	else if ( ( keyName.value(key_id) == "value" ||  keyName.value(key_id) == "weight" ) && keyFor.value(key_id) == "edge" ) {
 			conv_OK=false;
 			edgeWeight= key_value.toFloat( &conv_OK );
-			if (!conv_OK) edgeWeight = 1;  	
-			else edgeWeight=1.0; 
+			if (!conv_OK) 
+				edgeWeight = 1.0;  	
  			qDebug()<< "     Data found. Edge value: "<< key_value << " Using "<< edgeWeight << " for this edge";       
 	}
 	else if ( keyName.value(key_id) == "size of arrow"  && keyFor.value(key_id) == "edge" ) {
