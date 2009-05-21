@@ -108,7 +108,7 @@ public:
 	void setShowLabelsInsideNodes(bool toggle);
 
 	/**FILES (READ AND WRITE)*/
-	int loadGraph (	
+	bool loadGraph (	
 					QString, int, QString, 
 					QString, QString, bool, 
 					int maxWidth, int maxHeight

@@ -70,8 +70,8 @@ void myMessageOutput( QtMsgType type, const char *msg )     {
 
 
 /** MainWindow contruction method **/
-MainWindow::MainWindow(const QString &fName) {
-	fileName=fName;
+MainWindow::MainWindow(const QString & m_fileName) {
+	fileName=m_fileName;
 	qInstallMsgHandler( myMessageOutput );
 	setWindowIcon (QIcon(":/images/socnetv.png"));
 	VERSION="0.6";
@@ -207,10 +207,11 @@ MainWindow::MainWindow(const QString &fName) {
 	graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor)); //Qt::gray
 
 	 /**Load file one exec time*/
-	if (!fileName.isEmpty())     {
-                 fileNameNoPath=fileName.split ("/");
-                this->loadNetworkFile(fileName);
-      	}
+	if (!fileName.isEmpty())     
+	{
+		fileNameNoPath=fileName.split ("/");
+		loadNetworkFile(fileName);
+	}
 
 	if (firstTime) {
 		createFortuneCookies();	
@@ -1614,14 +1615,22 @@ void MainWindow::slotCreateNew() {
 */
 void MainWindow::slotChooseFile() {
 	qDebug("slotChooseFile()");
-	bool m_fileLoaded=fileLoaded;
-	QString m_fileName=fileName;
-	statusBar()->showMessage(tr("Choose a network file..."));
-	fileName = QFileDialog::getOpenFileName(this, tr("Select one file to open"), "", tr("All (*);;GraphML (*.graphml *.gml);;GraphViz (*.dot);;Adjacency (*.txt *.csv *.net);;Pajek (*.net *.pajek);;DL (*.dl *.net)"));
 	
-	if (!fileName.isEmpty()) {
-		fileNameNoPath=fileName.split ("/" );
-		if ( loadNetworkFile ( fileName ) == 1 ) {
+	bool a_file_was_already_loaded=fileLoaded;
+	QString previous_filename=fileName;
+	QString m_fileName;
+	
+	statusBar()->showMessage(tr("Choose a network file..."));
+	m_fileName = QFileDialog::getOpenFileName( this, tr("Select one file to open"), "", 
+		tr("All (*);;GraphML (*.graphml *.gml);;GraphViz (*.dot);;Adjacency (*.txt *.csv *.net);;Pajek (*.net *.pajek);;DL (*.dl *.net)")
+	);
+	
+	if (!m_fileName.isEmpty()) {
+		qDebug()<<"MW: file selected: " << m_fileName;		
+		fileNameNoPath=m_fileName.split ("/" );
+		if ( loadNetworkFile ( m_fileName ) ) 
+		{
+			fileName=m_fileName;
 			setWindowTitle("SocNetV "+ VERSION +" - "+fileNameNoPath.last());
 			QString message=tr("Loaded network: ")+fileNameNoPath.last();
 			statusBar()->showMessage(message, statusBarDuration);
@@ -1630,12 +1639,18 @@ void MainWindow::slotChooseFile() {
 			statusBar()->showMessage(tr("Error loading requested file. Aborted."), statusBarDuration);
 	}
 	else  {
+		qDebug() << "MW: opening file aborted..." ;
 		statusBar()->showMessage(tr("Opening aborted"), statusBarDuration);	
-		//in case a file was opened
-		if (m_fileLoaded) { fileLoaded=m_fileLoaded;  fileName=m_fileName; }
+
+		//if a file was previously opened, get back to it.
+		if (a_file_was_already_loaded) 
+		{ 
+				fileLoaded=true;  
+				fileName=previous_filename; 
+		}
   	}
 
-	qDebug()<<"FILENAME IS NOW:" <<fileName.toAscii();
+	qDebug()<<"MW: FILENAME IS NOW:" << fileName.toAscii();
 }
 
 
@@ -1808,13 +1823,13 @@ void MainWindow::slotPrintView() {
 	inits everything to defaults.
 	Then calls loadGraph function of activeGraph to load the network...
 */
-int MainWindow::loadNetworkFile(QString fileName){
+bool MainWindow::loadNetworkFile(QString m_fileName){
 	qDebug("MW: loadNetworkFile");
 	initNet(); 
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 	qDebug("MW: calling activeGraph loadgraph gw height %i", graphicsWidget->height() ) ;
-	int loadGraphStatus=activeGraph.loadGraph ( 
-										fileName, initNodeSize, initNodeColor, 
+	bool loadGraphStatus=activeGraph.loadGraph ( 
+										m_fileName, initNodeSize, initNodeColor, 
 										initLinkColor, initNodeShape,
 										 displayNodeLabelsAct->isChecked(), 
 										 graphicsWidget->width(), 
@@ -2037,23 +2052,23 @@ bool MainWindow::slotExportPDF(){
 		return false;
 	}
 	
-	QString fileName = QFileDialog::getSaveFileName(this, tr("Export to PDF"), 0, tr("Portable Document Format files (*.pdf)"));
-	if (fileName.isEmpty())  {
+	QString m_fileName = QFileDialog::getSaveFileName(this, tr("Export to PDF"), 0, tr("Portable Document Format files (*.pdf)"));
+	if (m_fileName.isEmpty())  {
 		statusBar()->showMessage(tr("Saving aborted"), statusBarDuration);
 		return false;
 	}	
     else {
-		if (QFileInfo(fileName).suffix().isEmpty())
-			fileName.append(".pdf");
+		if (QFileInfo(m_fileName).suffix().isEmpty())
+			m_fileName.append(".pdf");
 
 		QPrinter printer(QPrinter::HighResolution);
 		printer.setOutputFormat(QPrinter::PdfFormat);
-		printer.setOutputFileName(fileName);
+		printer.setOutputFileName(m_fileName);
 		QPainter painter(&printer);
 		graphicsWidget->render(&painter);
 	}
-	qDebug()<< "Exporting PDF to "<< fileName;	
-	tempFileNameNoPath=fileName.split ("/");
+	qDebug()<< "Exporting PDF to "<< m_fileName;	
+	tempFileNameNoPath=m_fileName.split ("/");
 	QMessageBox::information(this, tr("Export to PDF..."),tr("File saved as: ")+tempFileNameNoPath.last() , "OK",0);
 	statusBar()->showMessage( tr("Exporting completed"), statusBarDuration );
 	return true;
@@ -2237,8 +2252,9 @@ void MainWindow::makeThingsLookRandom()   {
 	Otherwise it will ask the user to first save the network, then view its file.
 */
 void MainWindow::slotViewNetworkFile(){
-	qDebug("slotViewNetworkFile()");
+	qDebug() << "slotViewNetworkFile() : " << fileName.toAscii();
 	if ( fileLoaded && !networkModified )    { //file network unmodified
+
 		QFile f( fileName );
 		if ( !f.open( QIODevice::ReadOnly ) ) {
 			qDebug ("Error in open!");

@@ -93,7 +93,7 @@ public:		/**PUBLIC FUNCTIONS NOT VISIBLE BY OTHER WIDGETS NOR BY SLOT/LINK MECHA
 	bool showLabelsInsideNodes();
 	bool showNumbers();
 
-	int loadNetworkFile( QString);
+	bool loadNetworkFile( QString);
 
 
 	int activeLinks();

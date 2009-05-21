@@ -861,10 +861,17 @@ void Parser::endGraphMLElementEdge(QXmlStreamReader &xml){
  */ 
 void Parser::readGraphMLElementData (QXmlStreamReader &xml){
 	key_id = xml.attributes().value("key").toString();
-	if (xml.isCharacters() ) { //if there's simple text after the StartElement, 
+
+	if (xml.isCharacters()   ) { //if there's simple text after the StartElement, 
 		key_value=xml.readElementText();    //read it
 		qDebug()<< "   Parser: readGraphMLElementData(): key_id " << key_id << " value " <<key_value;		
 	}
+	else if (xml.isCDATA()   ) { //if there's simple text after the StartElement,
+		key_value=xml.readElementText();    //read it
+		qDebug()<< "   Parser: readGraphMLElementData(): key_id " << key_id << " value " <<key_value;
+
+	}
+	
 	else {  //no text, probably more tags. Return...
 		qDebug()<< "   Parser: readGraphMLElementData(): key_id " << key_id << " for " <<keyFor.value(key_id);
 		qDebug()<< "   Parser: readGraphMLElementData(): There must be more elements nested here, continuing";
