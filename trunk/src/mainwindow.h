@@ -187,7 +187,7 @@ public slots:
 	void slotDiameter();
 	void slotClusteringCoefficient();
 	void slotCheckSymmetry();
-	void slotNetworkDensity();
+
 	void slotCentralityOutDegree();
 	void slotCentralityInDegree();
 	void slotCentralityCloseness();

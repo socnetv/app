@@ -218,7 +218,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
 		createTips();
 	}	
 
-	statusBar()->showMessage(tr("Welcome to Social Networks Visualizer, Version ")+VERSION, statusBarDuration);
+	statusMessage( tr("Welcome to Social Networks Visualizer, Version ")+VERSION);
 }
 
 
@@ -1413,7 +1413,7 @@ void MainWindow::updateNodeCoords(int nodeNumber, int x, int y){
 */
 void MainWindow::initStatusBar() {
 	statusBarDuration=2000;
-	statusBar()->showMessage(tr("Ready."), statusBarDuration);
+	statusMessage( tr("Ready."));
 }
 
 
@@ -1551,7 +1551,7 @@ void MainWindow::initNet(){
 	//set window title
 	setWindowTitle(tr("Social Network Visualizer ")+VERSION);
 	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage(tr("Ready"), statusBarDuration);
+	statusMessage( tr("Ready"));
 	qDebug("MW: initNet() INITIALISATION END");
 }
 
@@ -1562,7 +1562,7 @@ void MainWindow::initNet(){
  * Slot called by Graph::statusMessage to display some message to the user 
  */
 void MainWindow::statusMessage(const QString message){
- 	statusBar()->showMessage(message, statusBarDuration);
+	statusBar()->showMessage( message, statusBarDuration );
 }
 
 
@@ -1620,7 +1620,7 @@ void MainWindow::slotChooseFile() {
 	QString previous_filename=fileName;
 	QString m_fileName;
 	
-	statusBar()->showMessage(tr("Choose a network file..."));
+	statusMessage( tr("Choose a network file..."));
 	m_fileName = QFileDialog::getOpenFileName( this, tr("Select one file to open"), "", 
 		tr("All (*);;GraphML (*.graphml *.gml);;GraphViz (*.dot);;Adjacency (*.txt *.csv *.net);;Pajek (*.net *.pajek);;DL (*.dl *.net)")
 	);
@@ -1633,14 +1633,14 @@ void MainWindow::slotChooseFile() {
 			fileName=m_fileName;
 			setWindowTitle("SocNetV "+ VERSION +" - "+fileNameNoPath.last());
 			QString message=tr("Loaded network: ")+fileNameNoPath.last();
-			statusBar()->showMessage(message, statusBarDuration);
+			statusMessage( message);
 		}
 		else
-			statusBar()->showMessage(tr("Error loading requested file. Aborted."), statusBarDuration);
+			statusMessage( tr("Error loading requested file. Aborted."));
 	}
 	else  {
 		qDebug() << "MW: opening file aborted..." ;
-		statusBar()->showMessage(tr("Opening aborted"), statusBarDuration);	
+		statusMessage( tr("Opening aborted"));	
 
 		//if a file was previously opened, get back to it.
 		if (a_file_was_already_loaded) 
@@ -1659,10 +1659,10 @@ void MainWindow::slotChooseFile() {
 	Saves the network in the same file
 */
 void MainWindow::slotFileSave() {
-	statusBar()->showMessage(tr("Saving file..."));
+	statusMessage( tr("Saving file..."));
 
 	if (!fileLoaded && !networkModified ) {
-		statusBar()->showMessage( QString(tr("No network loaded.")), statusBarDuration );
+		statusMessage(  QString(tr("No network loaded.")) );
 		return;
 	}
 	if ( fileName.isEmpty() )
@@ -1725,7 +1725,7 @@ void MainWindow::slotFileSave() {
 	Saves the network in a new file
 */
 void MainWindow::slotFileSaveAs() {
-	statusBar()->showMessage(tr("Saving network under new filename..."));
+	statusMessage( tr("Saving network under new filename..."));
 	QString fn = QFileDialog::getSaveFileName(this, 0, 0);
 	if (!fn.isEmpty())  {
 		fileName=fn;
@@ -1735,8 +1735,8 @@ void MainWindow::slotFileSaveAs() {
 		slotFileSave();
 	}
 	else  
-		statusBar()->showMessage(tr("Saving aborted"), statusBarDuration);
-	statusBar()->showMessage(tr("Ready."));
+		statusMessage( tr("Saving aborted"));
+	statusMessage( tr("Ready."));
 }
 
 
@@ -1749,7 +1749,7 @@ void MainWindow::networkSaved(int saved_ok)
 	if (saved_ok <= 0) 
 	{
 		graphChanged();
-		statusBar()->showMessage(tr("Error! Could not save this file... ")+fileNameNoPath.last()+tr("."), statusBarDuration );
+		statusMessage( tr("Error! Could not save this file... ")+fileNameNoPath.last()+tr(".") );
 	}
 	else	
 	{
@@ -1757,7 +1757,7 @@ void MainWindow::networkSaved(int saved_ok)
 		fileSave->setEnabled(false);
 		fileLoaded=TRUE; networkModified=FALSE;
 		setWindowTitle( fileNameNoPath.last() );
-		statusBar()->showMessage(tr("Network saved under filename: ")+fileNameNoPath.last()+tr("."), statusBarDuration );
+		statusMessage( tr("Network saved under filename: ")+fileNameNoPath.last()+tr(".") );
 		switch (saved_ok){
 			case 1: 
 				adjacencyFileLoaded=false;
@@ -1788,7 +1788,7 @@ void MainWindow::networkSaved(int saved_ok)
 	Used by createNew.
 */
 void MainWindow::slotFileClose() {
-	statusBar()->showMessage(tr("Closing file..."));
+	statusMessage( tr("Closing file..."));
 	if (networkModified) {
 		switch ( QMessageBox::information (this, "Closing Network...",tr("Network has not been saved. \nDo you want to save before closing it?"), "Yes", "No",0,1))
 		{
@@ -1796,9 +1796,9 @@ void MainWindow::slotFileClose() {
 			case 1: break;
 		}
 	}
-	statusBar()->showMessage(tr("Erasing old network data...."), statusBarDuration);
+	statusMessage( tr("Erasing old network data...."));
 	initNet();	
-	statusBar()->showMessage(tr("Ready."));
+	statusMessage( tr("Ready."));
 }
 
 
@@ -1807,13 +1807,13 @@ void MainWindow::slotFileClose() {
 	Prints whatever is viewable on the Graphics widget
 */
 void MainWindow::slotPrintView() {
-	statusBar()->showMessage(tr("Printing..."));
+	statusMessage( tr("Printing..."));
 	QPrintDialog dialog(printer, this);
 	if ( dialog.exec() )   {
  		QPainter painter(printer);
  		graphicsWidget->render(&painter);
 	};
-	statusBar()->showMessage(tr("Ready."));
+	statusMessage( tr("Ready."));
 }
 
 
@@ -1863,7 +1863,7 @@ void MainWindow::fileType (
 			graphMLFileLoaded=false;
 			fileLoaded=TRUE;
 			networkModified=FALSE;
-			statusBar()->showMessage( QString(tr("Pajek formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ), statusBarDuration);
+			statusMessage( QString(tr("Pajek formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ));
 			break;
 		case 2:
 			pajekFileLoaded=FALSE;
@@ -1871,7 +1871,7 @@ void MainWindow::fileType (
 			graphMLFileLoaded=false;
 			fileLoaded=TRUE;
 			networkModified=FALSE;
-			statusBar()->showMessage( QString(tr("Adjacency formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ), statusBarDuration);
+			statusMessage( QString(tr("Adjacency formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
 			break;
 		case 3:
 			pajekFileLoaded=FALSE;
@@ -1880,7 +1880,7 @@ void MainWindow::fileType (
 			graphMLFileLoaded=false;
 			fileLoaded=TRUE;
 			networkModified=FALSE;
-			statusBar()->showMessage( QString(tr("Dot formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ), statusBarDuration);
+			statusMessage( QString(tr("Dot formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
 			break;
 		case 4:
 			pajekFileLoaded=FALSE;
@@ -1889,7 +1889,7 @@ void MainWindow::fileType (
 			graphMLFileLoaded=true;
 			fileLoaded=TRUE;
 			networkModified=FALSE;
-			statusBar()->showMessage( QString(tr("GraphML formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ), statusBarDuration);
+			statusMessage( QString(tr("GraphML formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
 			break;
 
 		case 5:
@@ -1899,7 +1899,7 @@ void MainWindow::fileType (
 			graphMLFileLoaded=false;
 			fileLoaded=TRUE;
 			networkModified=FALSE;
-			statusBar()->showMessage( QString(tr("DL-formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ), statusBarDuration);
+			statusMessage( QString(tr("DL-formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
 			break;
 		default: // just for sanity
 			pajekFileLoaded=FALSE;
@@ -1929,7 +1929,7 @@ void MainWindow::addNode() {
 	qDebug("MW: addNode(). Calling activeGraph::createVertex() for a new vertex (named -1)");
 	activeGraph.createVertex(-1, graphicsWidget->width()-10,  graphicsWidget->height()-10);  // minus a  screen edge offset...
 	qDebug("MW: addNode(). Calling activeGraph::createVertex() max width and height %i, %i", graphicsWidget->width()-10,  graphicsWidget->height()-10);
-	statusBar()->showMessage(tr("New node (numbered %1) added.").arg(activeGraph.lastVertexNumber()) ,statusBarDuration);
+	statusMessage( tr("New node (numbered %1) added.").arg(activeGraph.lastVertexNumber())  );
 }
 
 
@@ -1940,7 +1940,7 @@ void MainWindow::addNode() {
 void MainWindow::addNodeWithMouse(int num, QPointF p) {
 	qDebug("MW: addNodeWithMouse(). Calling activeGraph::createVertex() for a vertice named %i", num);
 	activeGraph.createVertex(num, p);
-	statusBar()->showMessage(tr("New node (numbered %1) added.").arg(activeGraph.lastVertexNumber()) ,statusBarDuration);
+	statusMessage( tr("New node (numbered %1) added.").arg(activeGraph.lastVertexNumber())  );
 }
 
 
@@ -1956,12 +1956,12 @@ bool MainWindow::slotExportPNG(){
 	qDebug("slotExportPNG");
 	if (!fileLoaded && !networkModified )  {
 		QMessageBox::critical(this, "Error",tr("The canvas is empty!\nLoad a network file or create a new network first."), "OK",0);
-		statusBar()->showMessage(tr("Cannot export PNG.") ,statusBarDuration);
+		statusMessage( tr("Cannot export PNG.") );
 		return false;
 	}
 	QString fn = QFileDialog::getSaveFileName(this,tr("Save"), 0, tr("Image Files (*.png)"));
 	if (fn.isEmpty())  {
-		statusBar()->showMessage(tr("Saving aborted"), statusBarDuration);
+		statusMessage( tr("Saving aborted") );
 		return false;
 	}	
 	tempFileNameNoPath=fn.split ("/");
@@ -1984,7 +1984,7 @@ bool MainWindow::slotExportPNG(){
 		QMessageBox::information(this, "Export to PNG...",tr("Image Saved as: ")+tempFileNameNoPath.last()+".png" , "OK",0);
 	}
 	
-	statusBar()->showMessage( tr("Exporting completed"), statusBarDuration );
+	statusMessage( tr("Exporting completed") );
 	
 	return true;   
 }
@@ -1999,13 +1999,13 @@ bool MainWindow::slotExportBMP(){
 	qDebug(	"slotExportBMP()");
 	if (!fileLoaded && !networkModified )  {
 		QMessageBox::critical(this, "Error",tr("Nothing to export! \nLoad a network file or create a new network first."), "OK",0);
-		statusBar()->showMessage(tr("Cannot export BMP.") ,statusBarDuration);
+		statusMessage( tr("Cannot export BMP.") );
 		return false;
 	}
 	QString format="bmp";
 	QString fn = QFileDialog::getSaveFileName(this,tr("Save Image as"), 0,tr("Image Files (*.bmp)"));
 	if (fn.isEmpty())  {
-		statusBar()->showMessage(tr("Saving aborted"), statusBarDuration);
+		statusMessage( tr("Saving aborted") );
 		return false;
 	}	
 	tempFileNameNoPath=fn.split ("/");
@@ -2030,7 +2030,7 @@ bool MainWindow::slotExportBMP(){
 	}
 	qDebug()<< "Exporting BMP to "<< fn;
 
-	statusBar()->showMessage( tr("Exporting completed"), statusBarDuration );
+	statusMessage( tr("Exporting completed") );
 	qDebug("Export finished!");
 	return true;   
 }
@@ -2048,13 +2048,13 @@ bool MainWindow::slotExportPDF(){
 	qDebug(	"slotExportPDF()");
 	if (!fileLoaded && !networkModified )  {
 		QMessageBox::critical(this, "Error",tr("The canvas is empty!\nLoad a network file or create a new network first."), "OK",0);
-		statusBar()->showMessage(tr("Cannot export PDF.") ,statusBarDuration);
+		statusMessage( tr("Cannot export PDF.")  );
 		return false;
 	}
 	
 	QString m_fileName = QFileDialog::getSaveFileName(this, tr("Export to PDF"), 0, tr("Portable Document Format files (*.pdf)"));
 	if (m_fileName.isEmpty())  {
-		statusBar()->showMessage(tr("Saving aborted"), statusBarDuration);
+		statusMessage( tr("Saving aborted"));
 		return false;
 	}	
     else {
@@ -2070,7 +2070,7 @@ bool MainWindow::slotExportPDF(){
 	qDebug()<< "Exporting PDF to "<< m_fileName;	
 	tempFileNameNoPath=m_fileName.split ("/");
 	QMessageBox::information(this, tr("Export to PDF..."),tr("File saved as: ")+tempFileNameNoPath.last() , "OK",0);
-	statusBar()->showMessage( tr("Exporting completed"), statusBarDuration );
+	statusMessage(  tr("Exporting completed") );
 	return true;
 }
 
@@ -2087,17 +2087,17 @@ void MainWindow::slotExportPajek()
 
 	if (!fileLoaded && !networkModified )  {
 		QMessageBox::critical(this, "Error",tr("Nothing to export! \nLoad a network file or create a new network first."), "OK",0);
-		statusBar()->showMessage(tr("Cannot export to Pajek.") ,statusBarDuration);
+		statusMessage( tr("Cannot export to Pajek.")  );
 		return;
 	}
 		if (fileName.isEmpty()) {
-			statusBar()->showMessage(tr("Saving network under new filename..."));
+			statusMessage( tr("Saving network under new filename..."));
 		QString fn =  QFileDialog::getSaveFileName(this, 0, 0);
 	 	if (!fn.isEmpty())  {
 			fileName=fn;
 		}
 		else  {
-	 		statusBar()->showMessage(tr("Saving aborted"), statusBarDuration);
+	 		statusMessage( tr("Saving aborted"));
 			return;
 		}
 	}
@@ -2121,17 +2121,17 @@ void MainWindow::slotExportSM(){
 	qDebug("MW: slotExportSM()");
 	if (!fileLoaded && !networkModified )  {
 		QMessageBox::critical(this, "Error",tr("Nothing to export!\nLoad a network file or create a new network first."), "OK",0);
-		statusBar()->showMessage(tr("Cannot export to Adjacency Matrix.") ,statusBarDuration);
+		statusMessage( tr("Cannot export to Adjacency Matrix.")  );
 		return;
 	}
 	if (fileName.isEmpty()) {
-		statusBar()->showMessage(tr("Saving network under new filename..."));
+		statusMessage( tr("Saving network under new filename..."));
 		QString fn =  QFileDialog::getSaveFileName(this, 0, 0);
 	 	if (!fn.isEmpty())  {
 			fileName=fn;
 		}
 		else  {
-	 		statusBar()->showMessage(tr("Saving aborted"), statusBarDuration);
+	 		statusMessage( tr("Saving aborted"));
 			return;
 		}
 	}
@@ -2158,18 +2158,18 @@ void MainWindow::slotExportSM(){
 bool MainWindow::slotExportDL(){
 	if (!fileLoaded && !networkModified )  {
 		QMessageBox::critical(this, "Error",tr("Nothing to export!\nLoad a network file or create a new network first."), "OK",0);
-		statusBar()->showMessage(tr("Cannot export to DL.") ,statusBarDuration);
+		statusMessage( tr("Cannot export to DL.")  );
 		return false;
 	}
 
 	if (fileName.isEmpty()) {
-		statusBar()->showMessage(tr("Saving network under new filename..."));
+		statusMessage( tr("Saving network under new filename..."));
   		QString fn = QFileDialog::getSaveFileName(this, 0, 0);
  	 	if (!fn.isEmpty())  {
 			fileName=fn;
   		}
   		else  {
-   		 	statusBar()->showMessage(tr("Saving aborted"), statusBarDuration);
+   		 	statusMessage( tr("Saving aborted"));
 			return false;
  		}
 	}
@@ -2186,18 +2186,18 @@ return true;
 bool MainWindow::slotExportGW(){
 	if (!fileLoaded && !networkModified )  {
 		QMessageBox::critical(this, "Error",tr("Nothing to export!\nLoad a network file or create a new network first."), "OK",0);
-		statusBar()->showMessage(tr("Cannot export to GW.") ,statusBarDuration);
+		statusMessage( tr("Cannot export to GW.")  );
 		return false;
 	}
 
 	if (fileName.isEmpty()) {
-		statusBar()->showMessage(tr("Saving network under new filename..."));
+		statusMessage( tr("Saving network under new filename..."));
   		QString fn = QFileDialog::getSaveFileName(this, 0, 0);
  	 	if (!fn.isEmpty())  {
 			fileName=fn;
   		}
   		else  {
-   		 	statusBar()->showMessage(tr("Saving aborted"), statusBarDuration);
+   		 	statusMessage( tr("Saving aborted"));
 			return false;
  		}
 	}
@@ -2214,13 +2214,13 @@ return true;
 */
 bool MainWindow::slotExportList(){
 	if (fileName.isEmpty()) {
-		statusBar()->showMessage(tr("Saving network under new filename..."));
+		statusMessage( tr("Saving network under new filename..."));
   		QString fn = QFileDialog::getSaveFileName(this, 0, 0);
  	 	if (!fn.isEmpty())  {
 			fileName=fn;
   		}
   		else  {
-   		 	statusBar()->showMessage(tr("Saving aborted"), statusBarDuration);
+   		 	statusMessage( tr("Saving aborted"));
 			return false;
  		}
 	}
@@ -2263,7 +2263,7 @@ void MainWindow::slotViewNetworkFile(){
 		TextEditor *ed = new TextEditor(fileName);//OPEN A TEXT EDITOR WINDOW
 		ed->setWindowTitle(tr("Viewing network file - ") + fileNameNoPath.last() );
 		ed->show();
-		statusBar()->showMessage( tr("Loaded network text file " )+ fileNameNoPath.last() , statusBarDuration );
+		statusMessage(  tr("Loaded network text file " )+ fileNameNoPath.last()  );
 	}
 	else if (fileName.isEmpty() && networkModified)     {  //New network + something
 		QMessageBox::information (this, "Viewing network file",
@@ -2280,7 +2280,7 @@ void MainWindow::slotViewNetworkFile(){
 	else	{
 		QMessageBox::critical(this, "Error",
 		tr("Empty network! \nLoad a network file first or create and save a new one..."), "OK",0);
-		statusBar()->showMessage( tr("Nothing here. Not my fault, though!"), statusBarDuration );
+		statusMessage(  tr("Nothing here. Not my fault, though!") );
 	}
 }
 
@@ -2300,11 +2300,11 @@ void MainWindow::slotViewAdjacencyMatrix(){
 		QMessageBox::critical (this, "Error",
 		tr("Empty network! \nLoad a network file or create something by double-clicking on the canvas!"), "OK",0);
 
-        	statusBar()->showMessage( tr("Nothing to show!"), statusBarDuration );
+        	statusMessage(  tr("Nothing to show!") );
 		return;
 	}	
 	int aNodes=activeNodes();
-	statusBar() ->  showMessage ( QString (tr ("creating adjacency adjacency matrix of %1 nodes")).arg(aNodes), statusBarDuration );
+	statusBar() ->  showMessage ( QString (tr ("creating adjacency adjacency matrix of %1 nodes")).arg(aNodes) );
 	qDebug ("MW: calling writeAdjacencyMatrix with %i nodes", aNodes);
 	char fn[]= "adjacency-matrix.dat";
 
@@ -2328,22 +2328,22 @@ void MainWindow::slotViewAdjacencyMatrix(){
 */
 void MainWindow::slotCreateRandomNetErdos(){
 	bool ok;
-	statusBar()->showMessage("You have selected to create a random symmetric network. ", statusBarDuration);
+	statusMessage( "You have selected to create a random symmetric network. ");
 	int newNodes=( QInputDialog::getInteger(this, "Create random network", tr("This will create a new random symmetric network of G(n,p) model, \nwhere n is the nodes and p is the edge probability. \nPlease enter the number n of nodes you want:"),1, 1, maxNodes, 1, &ok ) ) ;
 	if (!ok) { 
-		statusBar()->showMessage("You did not enter an integer. Aborting.", statusBarDuration);
+		statusMessage( "You did not enter an integer. Aborting.");
 		return;
 	}
 	double probability= QInputDialog::getDouble(this,"Create random network", "Enter an edge probability % (0-100):", 0, 0, 100, 1, &ok );
 	if (!ok) { 
-		statusBar()->showMessage("You did not enter an integer. Aborting.", statusBarDuration);
+		statusMessage( "You did not enter an integer. Aborting.");
 		return;
 	}
-	statusBar()->showMessage("Erasing any existing network. ", statusBarDuration);
+	statusMessage( "Erasing any existing network. ");
 
 	initNet();  
 	makeThingsLookRandom();  
-	statusBar()->showMessage(tr("Creating random network. Please wait... ") ,statusBarDuration);
+	statusMessage( tr("Creating random network. Please wait... ")  );
 
 	qDebug("MW Erdos network:  Create random network of %i nodes and %f edge probability.",newNodes, probability);
 
@@ -2392,7 +2392,7 @@ void MainWindow::slotCreateRandomNetErdos(){
 		tr("\nThis graph is almost surely not connected because: \nprobability < ln(n)/n, that is: \n") +
 		QString::number(probability/100)+ " smaller than "+ QString::number(threshold) , "OK",0);
 
-	statusBar()->showMessage("Random network created. ", statusBarDuration);
+	statusMessage( "Random network created. ");
 
 }
 
@@ -2409,8 +2409,8 @@ void MainWindow::slotCreateRandomNetErdos(){
 */
 
 void MainWindow::slotCreateConnectedRandomNetwork() {
-	statusBar()->showMessage("Erasing any existing network. ", statusBarDuration);
-	statusBar()->showMessage(tr("Creating uniform random network. Please wait... ") ,statusBarDuration);
+	statusMessage( "Erasing any existing network. ");
+	statusMessage( tr("Creating uniform random network. Please wait... ")  );
 }
 
 
@@ -2420,10 +2420,10 @@ void MainWindow::slotCreateConnectedRandomNetwork() {
 */
 void MainWindow::slotCreateSameDegreeRandomNetwork(){
 	bool ok;
-	statusBar()->showMessage("You have selected to create a pseudo-random network where each node has the same degree. ", statusBarDuration);
+	statusMessage( "You have selected to create a pseudo-random network where each node has the same degree. ");
 	int newNodes=( QInputDialog::getInteger(this, "Create same degree network", tr("This will create a same degree network. \nPlease enter the number of nodes you want:"),1, 1, maxNodes, 1, &ok ) ) ;
 	if (!ok) { 
-		statusBar()->showMessage("You did not enter an integer. Aborting.", statusBarDuration);
+		statusMessage( "You did not enter an integer. Aborting.");
 		return;
 	}
 	int degree = QInputDialog::getInteger(this,"Create same degree network...", "Now, select an even number d. \nThis will be the number of links of each node:", 2, 2, newNodes-1, 2, &ok);
@@ -2431,10 +2431,10 @@ void MainWindow::slotCreateSameDegreeRandomNetwork(){
 		QMessageBox::critical(this, "Error",tr(" Sorry. I cannot create such a network. Links must be even number"), "OK",0);
 		return;
 	}
-	statusBar()->showMessage("Erasing any existing network. ", statusBarDuration);
+	statusMessage( "Erasing any existing network. ");
 	initNet();  
 	makeThingsLookRandom();  
-	statusBar()->showMessage("Creating a pseudo-random network where each node has the same degree... ", statusBarDuration);
+	statusMessage( "Creating a pseudo-random network where each node has the same degree... ");
 
 	if (showProgressBarAct->isChecked() || newNodes > 300){
 		progressDialog= new QProgressDialog("Creating random network. Please wait (or disable me from Options > View > ProgressBar, next time ;)).", "Cancel", 0, (int) (newNodes+newNodes), this);
@@ -2456,7 +2456,7 @@ void MainWindow::slotCreateSameDegreeRandomNetwork(){
 	
 	graphChanged();
 	setWindowTitle("Untitled");
-	statusBar()->showMessage("Uniform random network created: "+QString::number(activeNodes())+" Nodes, "+QString::number( activeLinks())+" Links", statusBarDuration);
+	statusMessage( "Uniform random network created: "+QString::number(activeNodes())+" Nodes, "+QString::number( activeLinks())+" Links");
 
 }
 
@@ -2470,7 +2470,7 @@ void MainWindow::slotCreateGaussianRandomNetwork(){
 
 void MainWindow::slotCreateSmallWorldRandomNetwork(){
 	bool ok=false;
-	statusBar()->showMessage("You have selected to create a small world network.", statusBarDuration);
+	statusMessage( "You have selected to create a small world network.");
 	int newNodes=( QInputDialog::getInteger(this, "Create small world", 
 			tr("This will create a small world network, \n")+
 			tr("that is an undirected graph with N nodes and N*d/2 edges,\n")+
@@ -2478,7 +2478,7 @@ void MainWindow::slotCreateSmallWorldRandomNetwork(){
 			tr("Please enter the number N of nodes you want:"),
 			1, 1, maxNodes, 1, &ok ) ) ;
 	if (!ok) { 
-		statusBar()->showMessage("You did not enter an integer. Aborting.", statusBarDuration);
+		statusMessage( "You did not enter an integer. Aborting.");
 		return;
 	}
 	int degree = QInputDialog::getInteger(this,"Create small world...",
@@ -2494,10 +2494,10 @@ void MainWindow::slotCreateSmallWorldRandomNetwork(){
 			 tr("This is the edge rewiring probability:"), 
 			 0.6, 0.00, 1.00, 2, &ok);
 
-	statusBar()->showMessage(tr("Erasing any existing network. "), statusBarDuration);
+	statusMessage( tr("Erasing any existing network. "));
 	initNet();  
 	makeThingsLookRandom();  
-	statusBar()->showMessage(tr("Creating small world. Please wait..."), statusBarDuration);
+	statusMessage( tr("Creating small world. Please wait..."));
 	double x0=scene->width()/2.0;
 	double y0=scene->height()/2.0;
 	double radius=(graphicsWidget->height()/2.0)-50;          //pixels
@@ -2521,7 +2521,7 @@ void MainWindow::slotCreateSmallWorldRandomNetwork(){
 
 	graphChanged();
 	setWindowTitle("Untitled");
-	statusBar()->showMessage(tr("Small world random network created: ")+QString::number(activeNodes())+" nodes, "+QString::number( activeLinks())+" links", statusBarDuration);
+	statusMessage( tr("Small world random network created: ")+QString::number(activeNodes())+" nodes, "+QString::number( activeLinks())+" links");
 	float avGraphDistance=activeGraph.averageGraphDistance();
 	float clucof=activeGraph.clusteringCoefficient();
 	QMessageBox::information(this, "New Small World",
@@ -2544,10 +2544,10 @@ void MainWindow::slotCreateSmallWorldRandomNetwork(){
 */
 void MainWindow::slotCreateRandomNetRingLattice(){
 	bool ok;
-	statusBar()->showMessage("You have selected to create a ring lattice network. ", statusBarDuration);
+	statusMessage( "You have selected to create a ring lattice network. ");
 	int newNodes=( QInputDialog::getInteger(this, "Create ring lattice", tr("This will create a ring lattice network, where each node has degree d:\n d/2 edges to the right and d/2 to the left.\n Please enter the number of nodes you want:"),1, 1, maxNodes, 1, &ok ) ) ;
 	if (!ok) { 
-		statusBar()->showMessage("You did not enter an integer. Aborting.", statusBarDuration);
+		statusMessage( "You did not enter an integer. Aborting.");
 		return;
 	}
 	int degree = QInputDialog::getInteger(this,"Create ring lattice...", "Now, enter an even number d. \nThis is the total number of links each new node will have:", 2, 2, newNodes-1, 2, &ok);
@@ -2556,10 +2556,10 @@ void MainWindow::slotCreateRandomNetRingLattice(){
 		return;
 	}
 
-	statusBar()->showMessage("Erasing any existing network. ", statusBarDuration);
+	statusMessage( "Erasing any existing network. ");
 	initNet();  
 	makeThingsLookRandom();  
-	statusBar()->showMessage("Creating ring lattice network. Please wait...", statusBarDuration);
+	statusMessage( "Creating ring lattice network. Please wait...");
 	double x0=scene->width()/2.0;
 	double y0=scene->height()/2.0;
 	double radius=(graphicsWidget->height()/2.0)-50;          //pixels
@@ -2594,7 +2594,7 @@ void MainWindow::slotCreateRandomNetRingLattice(){
 		tr("\nClustering coefficient: ")+QString::number(clucof)	
 		 , "OK",0);
 
-	statusBar()->showMessage("Ring lattice random network created: "+QString::number(activeNodes())+" nodes, "+QString::number( activeLinks())+" links", statusBarDuration);	
+	statusMessage( "Ring lattice random network created: "+QString::number(activeNodes())+" nodes, "+QString::number( activeLinks())+" links");	
 }
 
 
@@ -2618,13 +2618,13 @@ void MainWindow::slotFindNode(){
 	if (!fileLoaded && !networkModified  )     {
 		QMessageBox::critical( this, "Find Node",
 				      tr("No nodes present! \nLoad a network file first or create some nodes..."), tr("OK"),0 );
-		statusBar()->showMessage( QString(tr("Nothing to find!")) , statusBarDuration);
+		statusMessage(  QString(tr("Nothing to find!"))  );
 		return;
 	}
 	bool ok=FALSE;
 	QString text = QInputDialog::getText(this, "Find a node", tr("Enter node label or number:"), QLineEdit::Normal,QString::null, &ok );
 	if (!ok) {
-		statusBar()->showMessage("Find node operation cancelled.", statusBarDuration);
+		statusMessage( "Find node operation cancelled." );
 		return;
 	}
 
@@ -2639,7 +2639,7 @@ void MainWindow::slotFindNode(){
 				jim->setSize(2*preSize-1);
 				markedNodeExists=TRUE;
 				markedNode=jim;
-				statusBar()->showMessage(tr("Node found!"));
+				statusMessage( tr("Node found!"));
 				return;
 				
 			}
@@ -2650,7 +2650,7 @@ void MainWindow::slotFindNode(){
 				jim->setColor ( QColor( jim->color() ).light(150) );
 				markedNodeExists=TRUE;
 				markedNode=jim;
-				statusBar()->showMessage(tr("Node found!"));
+				statusMessage( tr("Node found!"));
 				return;
 			}
 		}
@@ -2785,10 +2785,10 @@ void MainWindow::nodeInfoStatusBar ( Node *jim) {
 	outLinksLCD->display (outLinks);
 	clucofLCD->display(activeGraph.clusteringCoefficient(clickedJimNumber));
 	
-	statusBar()->showMessage( QString(tr("(%1, %2);  Node %3, with label %4, "
+	statusMessage(  QString(tr("(%1, %2);  Node %3, with label %4, "
 		"has %5 in-Links and %6 out-Links.")).arg( ceil( clickedJim->x() ) )
 		.arg( ceil( clickedJim->y() )).arg( clickedJimNumber ).arg( clickedJim->label() )
-		.arg(inLinks).arg(outLinks), statusBarDuration);
+		.arg(inLinks).arg(outLinks) );
 	clickedJimNumber=-1;
 }
 
@@ -2802,9 +2802,9 @@ void MainWindow::linkInfoStatusBar (Edge* link) {
 	linkClicked=TRUE;
 	nodeClicked=FALSE;
 	if (bezier)
-		statusBar()->showMessage( QString(tr("Link from Node %1 to Node %2, has weight %3 and color %4.")).arg( link->sourceNodeNumber() ).arg(link->targetNodeNumber()).arg(link->weight()).arg(link->color() ), statusBarDuration);
+		statusMessage(  QString(tr("Link from Node %1 to Node %2, has weight %3 and color %4.")).arg( link->sourceNodeNumber() ).arg(link->targetNodeNumber()).arg(link->weight()).arg(link->color() ) );
 	else
-		statusBar()->showMessage( QString(tr("Link between node %1 and node %2, weight %3 and color %4.")).arg( link->sourceNodeNumber() ).arg(link->targetNodeNumber()).arg(link->weight()).arg(link->color() ), statusBarDuration);
+		statusMessage(  QString(tr("Link between node %1 and node %2, weight %3 and color %4.")).arg( link->sourceNodeNumber() ).arg(link->targetNodeNumber()).arg(link->weight()).arg(link->color() ) );
 }
 
 
@@ -2823,7 +2823,7 @@ void MainWindow::slotRemoveNode() {
 	qDebug("MW: slotRemoveNode()");
 	if (!activeGraph.vertices())  {
 		QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or add some nodes first."), "OK",0);
-		statusBar()->showMessage(tr("Nothing to remove.") ,statusBarDuration);
+		statusMessage( tr("Nothing to remove.")  );
 		return;
 	}
 	int doomedJim=-1, min=-1, max=-1;
@@ -2841,7 +2841,7 @@ void MainWindow::slotRemoveNode() {
 		doomedJim =  QInputDialog::getInteger(this,"Remove node",tr("Choose a node to remove between ("
 			+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"),min, 1, max, 1, &ok);
 		if (!ok) {
-			statusBar()->showMessage("Remove node operation cancelled.", statusBarDuration);
+			statusMessage( "Remove node operation cancelled." );
 			return;
 		}
 	}
@@ -2852,7 +2852,7 @@ void MainWindow::slotRemoveNode() {
 	clickedJimNumber=-1;
 	graphChanged();
 	qDebug("MW: removeNode() completed. Node %i removed completely.",doomedJim);
-	statusBar()->showMessage(tr("Node removed completely. Ready. "),statusBarDuration);
+	statusMessage( tr("Node removed completely. Ready. ") );
 }
 
 
@@ -2867,7 +2867,7 @@ void MainWindow::slotAddLink(){
 	qDebug ("MW: slotAddLink()");
 	if (!fileLoaded && !networkModified )  {
 		QMessageBox::critical(this, "Error",tr("Nothing to link to! \nCreate some nodes first."), "OK",0);
-		statusBar()->showMessage(tr("There are no nodes yet...") ,statusBarDuration);
+		statusMessage( tr("There are no nodes yet...")  );
 		return;
 	}
 
@@ -2882,14 +2882,14 @@ void MainWindow::slotAddLink(){
 	if (clickedJimNumber == -1) {
 		sourceNode=QInputDialog::getInteger(this, "Create new link, Step 1",tr("This will draw a new link between two nodes. \nEnter source node ("+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"), min, 1, max , 1, &ok ) ;
 		if (!ok) {
-			statusBar()->showMessage("Add link operation cancelled.", statusBarDuration);
+			statusMessage( "Add link operation cancelled." );
 			return;
 		}
 	}
 	else sourceNode=clickedJimNumber;
 	
 	if ( (sourceIndex =activeGraph.hasVertex(sourceNode)) ==-1 ) {
-		statusBar()->showMessage(tr("Aborting. ") ,statusBarDuration);
+		statusMessage( tr("Aborting. ")  );
 		QMessageBox::critical(this,"Error","No such node.", "OK",0);
 		qDebug ("MW: slotAddLink: Cant find sourceNode %i.", sourceNode);
 		return;
@@ -2897,11 +2897,11 @@ void MainWindow::slotAddLink(){
 	
 	targetNode=QInputDialog::getInteger(this, "Create new link, Step 2", tr("Source node accepted. \nNow enter target node ("+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"),min, 1, max , 1, &ok)     ;
 	if (!ok) {
-		statusBar()->showMessage("Add link target operation cancelled.", statusBarDuration);
+		statusMessage( "Add link target operation cancelled." );
 		return;
 	}
 	if ( (targetIndex=activeGraph.hasVertex(targetNode)) ==-1 ) {
-		statusBar()->showMessage(tr("Aborting. ") ,statusBarDuration);	
+		statusMessage( tr("Aborting. ")  );	
 		QMessageBox::critical(this,"Error","No such node.", "OK",0);
 		qDebug ("MW: slotAddLink: Cant find targetNode %i",targetNode);
 		return;
@@ -2909,20 +2909,20 @@ void MainWindow::slotAddLink(){
 	
 	weight=QInputDialog::getDouble(this, "Create new link, Step 3", tr("Source and target nodes accepted. \n Please, enter the weight of new link: "),1.0, -20.0, 20.0, 1, &ok);
 	if (!ok) {
-		statusBar()->showMessage("Add link operation cancelled.", statusBarDuration);
+		statusMessage( "Add link operation cancelled." );
 		return;
 	}
 	//Check if this link already exists...
 	if (activeGraph.hasEdge(sourceNode, targetNode)!=0 ) {
 		qDebug("Link exists. Aborting");
-		statusBar()->showMessage(tr("Aborting. ") ,statusBarDuration);
+		statusMessage( tr("Aborting. ")  );
 		QMessageBox::critical(this,"Error","Link already exists.", "OK",0);
 		return;
 	}
 
 	addLink(sourceNode, targetNode, weight);
 	graphChanged();
-	statusBar()->showMessage(tr("Ready. ") ,statusBarDuration);
+	statusMessage( tr("Ready. ")  );
 }
 
 
@@ -2950,7 +2950,7 @@ void MainWindow::addLink (int v1, int v2, float weight) {
 void MainWindow::slotRemoveLink(){ 
 	if ( (!fileLoaded && !networkModified) || activeGraph.totalEdges() ==0 )  {
 		QMessageBox::critical(this, "Error",tr("No links present! \nLoad a network file or create a new network first."), "OK",0);
-		statusBar()->showMessage(tr("No links to remove - sorry.") ,statusBarDuration);
+		statusMessage( tr("No links to remove - sorry.")  );
 		return;
 	}
 
@@ -2962,13 +2962,13 @@ void MainWindow::slotRemoveLink(){
   	if (!linkClicked) {
 		sourceNode=QInputDialog::getInteger(this,tr("Remove link"),tr("Source node:  (")+QString::number(min)+"..."+QString::number(max)+"):", min, 1, max , 1, &ok )   ;
 		if (!ok) {
-			statusBar()->showMessage("Remove link operation cancelled.", statusBarDuration);
+			statusMessage( "Remove link operation cancelled." );
 			return;
 		}
 
 		targetNode=QInputDialog::getInteger(this, tr("Remove link"), tr("Target node:  (")+QString::number(min)+"..."+QString::number(max)+"):",min, 1, max , 1, &ok )   ;
 		if (!ok) {
-			statusBar()->showMessage("Remove link operation cancelled.", statusBarDuration);
+			statusMessage( "Remove link operation cancelled." );
 			return;
 		}
 		if ( activeGraph.hasEdge(sourceNode, targetNode)!=0 ) {
@@ -2979,7 +2979,7 @@ void MainWindow::slotRemoveLink(){
 		}
 		else {
 			QMessageBox::critical(this, "Remove link",tr("There is no such link."), "OK",0);
-			statusBar()->showMessage(tr("There are no nodes yet...") ,statusBarDuration);
+			statusMessage( tr("There are no nodes yet...")  );
 			return;
 		}
 
@@ -3041,11 +3041,11 @@ void MainWindow::slotRemoveLink(){
 void MainWindow::slotChangeNodeLabel(){
 	if (!fileLoaded && !networkModified )  {
 		QMessageBox::critical(this, "Error",tr("There are no nodes! \nLoad a network file or create a new network first."), "OK",0);
-		statusBar()->showMessage(tr("No nodes created.") ,statusBarDuration);
+		statusMessage( tr("No nodes created.")  );
 		return;
 	}
 	if (clickedJimNumber==-1) {
-		statusBar()->showMessage(tr("Please click on a node first... ") ,statusBarDuration);
+		statusMessage( tr("Please click on a node first... ")  );
 		return;
 	}
 	bool ok;
@@ -3057,11 +3057,11 @@ void MainWindow::slotChangeNodeLabel(){
 		activeGraph.setVertexLabel( clickedJimNumber, text);
 		if (!showLabels()) 
 			displayNodeLabelsAct->setChecked(TRUE);
-			statusBar()->showMessage(tr("Changed label to %1. Ready. ").arg(text) ,statusBarDuration);
+			statusMessage( tr("Changed label to %1. Ready. ").arg(text)  );
 			graphChanged();
 	} 
 	else {
-		statusBar()->showMessage(tr("No label text. Abort. ") ,statusBarDuration);
+		statusMessage( tr("No label text. Abort. ")  );
 	}
 }
 
@@ -3074,7 +3074,7 @@ void MainWindow::slotChangeNodeLabel(){
 void MainWindow::slotChangeNodeColor(){
 	if (!fileLoaded && !networkModified )  {
 		QMessageBox::critical(this, "Error",tr("There are no nodes! \nLoad a network file or create a new network first."), "OK",0);
-		statusBar()->showMessage(tr("No nodes...") ,statusBarDuration);
+		statusMessage( tr("No nodes...")  );
 		return;
 	}
 
@@ -3083,15 +3083,15 @@ void MainWindow::slotChangeNodeColor(){
 		int min=activeGraph.firstVertexNumber();
 		int max=activeGraph.lastVertexNumber();
 		int node=QInputDialog::getInteger(this, "Change node color",tr("Select node:  	("+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"), min, 1, max , 1, &ok)   ;
-		statusBar()->showMessage(tr("Error. ") ,statusBarDuration);
+		statusMessage( tr("Error. ")  );
 		if (!ok) {
-			statusBar()->showMessage("Change clicked node color operation cancelled.", statusBarDuration);
+			statusMessage( "Change clicked node color operation cancelled." );
 			return;
 		}
 
 		QString newColor = QInputDialog::getItem(this,"Change node color", "Select a  new color:", colorList, 1, TRUE, &ok);
 		if (!ok) {
-			statusBar()->showMessage("Change clicked node color operation cancelled.", statusBarDuration);
+			statusMessage( "Change clicked node color operation cancelled." );
 			return;
 		}
 
@@ -3100,7 +3100,7 @@ void MainWindow::slotChangeNodeColor(){
 			graphChanged();
 		}
 		else
-			statusBar()->showMessage(tr("There is no such link. "), statusBarDuration);
+			statusMessage( tr("There is no such link. ") );
 		
 	}
 	else{
@@ -3109,11 +3109,11 @@ void MainWindow::slotChangeNodeColor(){
 			clickedJim->setColor(nodeColor);
 			activeGraph.setVertexColor (clickedJimNumber, nodeColor);
 			graphChanged();
-			statusBar()->showMessage(tr("Ready. "), statusBarDuration);
+			statusMessage( tr("Ready. ") );
     		} 
 		else {
 		        // user pressed Cancel
-			statusBar()->showMessage(tr("Change node color aborted. "),statusBarDuration);
+			statusMessage( tr("Change node color aborted. ") );
     		}
 	}
 }
@@ -3126,19 +3126,19 @@ void MainWindow::slotChangeNodeColor(){
 void MainWindow::slotChangeNodeSize(){
 	if (!fileLoaded && !networkModified )  {
 		QMessageBox::critical(this, "Error",tr("There are no nodes! \nLoad a network file or create a new network first."), "OK",0);
-		statusBar()->showMessage(tr("Cannot change nothing.") ,statusBarDuration);
+		statusMessage( tr("Cannot change nothing.")  );
 		return;
 	}
 
 //TODO nodeSize = f(nodeValue) ...
 	if (clickedJimNumber==-1) { 
-		statusBar()->showMessage(tr("Error. ") ,statusBarDuration);
+		statusMessage( tr("Error. ")  );
 		return;
 	}
 	bool ok=FALSE;
 	int newSize = QInputDialog::getInteger(this, "Change node size", tr("Change node size to: (1-100)"),initNodeSize, 1, 100, 1, &ok ) ;
 	if (!ok) {
-		statusBar()->showMessage("Change size operation cancelled.", statusBarDuration);
+		statusMessage( "Change size operation cancelled." );
 		return;
 	}
 	clickedJim->setSize(newSize);
@@ -3154,7 +3154,7 @@ void MainWindow::slotChangeNodeSize(){
 */
 void MainWindow::slotChangeNodeValue(){
 	if (clickedJimNumber==-1) { 
-		statusBar()->showMessage(tr("Error. ") ,statusBarDuration);
+		statusMessage( tr("Error. ")  );
 		return;
 	}
 //	bool ok=FALSE;
@@ -3235,7 +3235,7 @@ void MainWindow::slotChangeLinkLabel(){
 void MainWindow::slotChangeLinkColor(){
 	if (!fileLoaded && !networkModified )  {
 		QMessageBox::critical(this, "Error",tr("No links here! \nLoad a network file or create a new network first."), "OK",0);
-		statusBar()->showMessage(tr("No links present...") ,statusBarDuration);
+		statusMessage( tr("No links present...")  );
 		return;
 	}
 
@@ -3248,12 +3248,12 @@ void MainWindow::slotChangeLinkColor(){
   	if (!linkClicked) {	//no edge clicked. Ask user to define an edge.
 		sourceNode=QInputDialog::getInteger(this, "Change link color",tr("Select link source node:  ("+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"), min, 1, max , 1, &ok)   ;
 		if (!ok) {
-			statusBar()->showMessage("Change link color operation cancelled.", statusBarDuration);
+			statusMessage( "Change link color operation cancelled." );
 			return;
 		}
 		targetNode=QInputDialog::getInteger(this, "Change link color...", tr("Select link target node:  ("+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"),min, 1, max , 1, &ok  )   ;
 		if (!ok) {
-			statusBar()->showMessage("Change link color operation cancelled.", statusBarDuration);
+			statusMessage( "Change link color operation cancelled." );
 			return;
 		}
 
@@ -3264,10 +3264,10 @@ void MainWindow::slotChangeLinkColor(){
 			if (graphicsWidget->setEdgeColor(sourceNode, targetNode, newColor))
 				activeGraph.setEdgeColor( sourceNode, targetNode, newColor);
 			else
-				statusBar()->showMessage(tr("There is no such link. "), statusBarDuration);
+				statusMessage( tr("There is no such link. ") );
 		}
 		else	
-			statusBar()->showMessage(tr("Change link color cancelled. "), statusBarDuration);
+			statusMessage( tr("Change link color cancelled. ") );
 
 	}
 	else {	//edge has been clicked. Just ask the color and call the appropriate methods.
@@ -3275,11 +3275,11 @@ void MainWindow::slotChangeLinkColor(){
 		if ( ok ) {
 			clickedLink->setColor(newColor);
 			activeGraph.setEdgeColor( clickedLink->sourceNodeNumber(), clickedLink->targetNodeNumber(), newColor);
-			statusBar()->showMessage(tr("Ready. ") ,statusBarDuration);
+			statusMessage( tr("Ready. ")  );
 			
     		} 
 		else {       // user pressed Cancel
-			statusBar()->showMessage(tr("User abort. ") ,statusBarDuration);
+			statusMessage( tr("User abort. ")  );
 		}
 	}
 }
@@ -3294,7 +3294,7 @@ void MainWindow::slotChangeLinkColor(){
 void MainWindow::slotChangeLinkWeight(){
 	if (!fileLoaded && !networkModified )  {
 		QMessageBox::critical(this, "Error",tr("There are no links here! \nLoad a network file or create a new network first."), "OK",0);
-		statusBar()->showMessage(tr("No links present...") ,statusBarDuration);
+		statusMessage( tr("No links present...")  );
 		return;
 	}
 
@@ -3308,13 +3308,13 @@ void MainWindow::slotChangeLinkWeight(){
 	if (!linkClicked) {	
 		sourceNode=QInputDialog::getInteger(this, "Change link weight",tr("Select link source node:  ("+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"), min, 1, max , 1, &ok)   ;
 		if (!ok) {
-			statusBar()->showMessage("Change link weight operation cancelled.", statusBarDuration);
+			statusMessage( "Change link weight operation cancelled." );
 			return;
 		}
 
 		targetNode=QInputDialog::getInteger(this, "Change link weight...", tr("Select link target node:  ("+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"),min, 1, max , 1, &ok  )   ;
 		if (!ok) {
-			statusBar()->showMessage("Change link weight operation cancelled.", statusBarDuration);
+			statusMessage( "Change link weight operation cancelled." );
 			return;
 		}
 
@@ -3333,11 +3333,11 @@ void MainWindow::slotChangeLinkWeight(){
 						link->update();
 						activeGraph.setEdgeWeight(sourceNode, targetNode, newWeight);
 						graphChanged();
-						statusBar()->showMessage( QString(tr("Ready.")) ,statusBarDuration);
+						statusMessage(  QString(tr("Ready."))  );
 						return;
 					}
 					else {
-						statusBar()->showMessage( QString(tr("input error. Abort.")) , statusBarDuration);
+						statusMessage(  QString(tr("input error. Abort."))  );
 						return;
 					}
 				}
@@ -3362,12 +3362,12 @@ void MainWindow::slotChangeLinkWeight(){
 							clickedLink->update();	
 							qDebug()<<"MW: newWeight will be "<< newWeight; 
 							activeGraph.setEdgeWeight(sourceNode, targetNode, newWeight);
-							statusBar()->showMessage( QString(tr("Ready.")) ,statusBarDuration);
+							statusMessage(  QString(tr("Ready."))  );
 							graphChanged();
 							return;
 						}
 						else {
-							statusBar()->showMessage( QString(tr("Change link weight cancelled.")) , statusBarDuration);
+							statusMessage(  QString(tr("Change link weight cancelled."))  );
 							return;
 						}
 						break;
@@ -3378,15 +3378,15 @@ void MainWindow::slotChangeLinkWeight(){
 							if (graphicsWidget->setEdgeWeight( targetNode, sourceNode, newWeight) ) {
 								qDebug()<<"MW: newWeight will be "<< newWeight; 
 								activeGraph.setEdgeWeight( targetNode, sourceNode, newWeight);
-								statusBar()->showMessage( QString(tr("Ready.")) ,statusBarDuration);
+								statusMessage(  QString(tr("Ready."))  );
 								graphChanged();
 							}
-							else statusBar()->showMessage( QString(tr("Weight not changed. Sorry.")) ,statusBarDuration);
+							else statusMessage(  QString(tr("Weight not changed. Sorry."))  );
 								
 							return;
 						}
 						else {
-							statusBar()->showMessage( QString(tr("Change link weight cancelled.")) , statusBarDuration);
+							statusMessage(  QString(tr("Change link weight cancelled."))  );
 							return;
 						}
 						break;
@@ -3402,15 +3402,15 @@ void MainWindow::slotChangeLinkWeight(){
 								activeGraph.setEdgeWeight(sourceNode, targetNode, newWeight);
 								qDebug()<<"MW: Changing opposite direction. NewWeight will be "<< newWeight; 
 								activeGraph.setEdgeWeight( targetNode, sourceNode, newWeight);
-								statusBar()->showMessage( QString(tr("Ready.")) ,statusBarDuration);
+								statusMessage(  QString(tr("Ready."))  );
 								graphChanged();
 							}
 							else 
-								statusBar()->showMessage( QString(tr("Weight not changed. Sorry.")) ,statusBarDuration);
+								statusMessage(  QString(tr("Weight not changed. Sorry."))  );
 			 				return;
 						}
 						else {
-							statusBar()->showMessage( QString(tr("Change link weight cancelled.")) , statusBarDuration);
+							statusMessage(  QString(tr("Change link weight cancelled."))  );
 							return;
 						}
 						break;
@@ -3424,12 +3424,12 @@ void MainWindow::slotChangeLinkWeight(){
 				clickedLink->update();	
 				qDebug()<<"MW: newWeight will be "<< newWeight; 
 				activeGraph.setEdgeWeight(sourceNode, targetNode, newWeight);
-				statusBar()->showMessage( QString(tr("Ready.")) ,statusBarDuration);
+				statusMessage(  QString(tr("Ready."))  );
 				graphChanged();
 				return;
 			}
 			else {
-				statusBar()->showMessage( QString(tr("Change link weight cancelled.")) , statusBarDuration);
+				statusMessage(  QString(tr("Change link weight cancelled."))  );
 				return;
 			}
 		}
@@ -3451,7 +3451,7 @@ void MainWindow::slotFilterNodes(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Nothing to filter! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 
-		statusBar()->showMessage( QString(tr("Nothing to filter!")) , statusBarDuration);
+		statusMessage(  QString(tr("Nothing to filter!"))  );
 		return;
 	}
 }
@@ -3467,7 +3467,7 @@ void MainWindow::slotFilterNodes(){
 void MainWindow::slotFilterLinks(){
 /*	mapEdges.clear();
 	if (!fileLoaded && !networkModified  )   {
-		statusBar()->showMessage( QString(tr("Load a network file first. \nThen you may ask me to compute something!")) , statusBarDuration);
+		statusMessage(  QString(tr("Load a network file first. \nThen you may ask me to compute something!"))  );
 		return;
 	}
 	bool ok=FALSE, moreWeighted=FALSE;
@@ -3543,7 +3543,7 @@ void MainWindow::slotTransformNodes2Links(){
 void MainWindow::slotSymmetrize(){
 	if (!fileLoaded && !networkModified )  {
 		QMessageBox::critical(this, "Error",tr("No links here! \nLoad a network file or create a new network first."), "OK",0);
-		statusBar()->showMessage(tr("No links present...") ,statusBarDuration);
+		statusMessage( tr("No links present...")  );
 		return;
 	}
 	qDebug("MW: slotSymmetrize() calling symmetrize");
@@ -3592,17 +3592,17 @@ void MainWindow::slotLayoutRandomCircle(){
 void MainWindow::slotLayoutSpringEmbedder(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("There are node nodes yet!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-		statusBar()->showMessage(tr("I am really sorry. You must really load a file first... ") ,statusBarDuration);
+		statusMessage( tr("I am really sorry. You must really load a file first... ")  );
 		return;
 	}
 	if (moveSpringEmbedderBx->checkState() == Qt::Unchecked){
-		statusBar()->showMessage(tr("Embedding a spring-gravitational model on the network.... ") ,statusBarDuration);
+		statusMessage( tr("Embedding a spring-gravitational model on the network.... ")  );
 		moveSpringEmbedderBx->setCheckState(Qt::Checked);
-		statusBar()->showMessage(tr("Click on the checkbox \"Spring-Embedder\" to stop movement!"), statusBarDuration);
+		statusMessage( tr("Click on the checkbox \"Spring-Embedder\" to stop movement!") );
 	}
 	else { 
 		moveSpringEmbedderBx->setCheckState(Qt::Unchecked);
-		statusBar()->showMessage(tr("Movement stopped!"), statusBarDuration);
+		statusMessage( tr("Movement stopped!") );
 	}
 	
 }
@@ -3631,17 +3631,17 @@ void MainWindow::layoutSpringEmbedder (int state){
 void MainWindow::slotLayoutFruchterman(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("There are no nodes yet!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-		statusBar()->showMessage(tr("I am really sorry. You must really load a file first... ") ,statusBarDuration);
+		statusMessage( tr("I am really sorry. You must really load a file first... ")  );
 		return;
 	}
 	if (moveFruchtermanBx->checkState() == Qt::Unchecked){
-		statusBar()->showMessage(tr("Embedding a repelling-attracting forces model on the network.... ") ,statusBarDuration);
+		statusMessage( tr("Embedding a repelling-attracting forces model on the network.... ")  );
 		moveFruchtermanBx->setCheckState(Qt::Checked);
-		statusBar()->showMessage(tr("Click on the checkbox \"Fruchterman-Reingold\" to stop movement!"), statusBarDuration);
+		statusMessage( tr("Click on the checkbox \"Fruchterman-Reingold\" to stop movement!") );
 	}
 	else { 
 		moveFruchtermanBx->setCheckState(Qt::Unchecked);
-		statusBar()->showMessage(tr("Movement stopped!"), statusBarDuration);
+		statusMessage( tr("Movement stopped!") );
 	}
 	
 }
@@ -3668,7 +3668,7 @@ void MainWindow::layoutFruchterman (int state){
 void MainWindow::slotLayoutNodeSizeProportionalOutEdges(bool checked){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Wake up! \nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-		statusBar()->showMessage(tr("I am really sorry. You must really load a file first... ") ,statusBarDuration);
+		statusMessage( tr("I am really sorry. You must really load a file first... ")  );
 		return;
 	}
 
@@ -3692,7 +3692,7 @@ void MainWindow::slotLayoutNodeSizeProportionalOutEdges(bool checked){
 	}
 	nodeSizeProportionalOutDegreeAct->setChecked(true);
 	nodeSizeProportional2OutDegreeBx->setChecked(true);
-	statusBar()->showMessage(tr("Embedding node size model on the network.... ") ,statusBarDuration);	
+	statusMessage( tr("Embedding node size model on the network.... ")  );	
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
 		if ( (*it) -> type() == TypeNode ){
@@ -3754,7 +3754,7 @@ void MainWindow::slotLayoutNodeSizeProportionalOutEdges(bool checked){
 void MainWindow::slotLayoutNodeSizeProportionalInEdges(bool checked){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("You must be dreaming! \nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-		statusBar()->showMessage(tr("I am really sorry. You must really load a file first... ") ,statusBarDuration);
+		statusMessage( tr("I am really sorry. You must really load a file first... ")  );
 		return;
 	}
 
@@ -3775,7 +3775,7 @@ void MainWindow::slotLayoutNodeSizeProportionalInEdges(bool checked){
 	}
 	nodeSizeProportionalInDegreeAct->setChecked(true);
 	nodeSizeProportional2InDegreeBx->setChecked(true);
-	statusBar()->showMessage(tr("Embedding node size model on the network.... ") ,statusBarDuration);	
+	statusMessage( tr("Embedding node size model on the network.... ")  );	
 	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
 		if ( (*it) -> type() == TypeNode ){
 			Node *jim = (Node*) (*it);
@@ -3834,18 +3834,18 @@ void MainWindow::slotLayoutNodeSizeProportionalInEdges(bool checked){
 void MainWindow::slotLayoutCircleCentralityInDegree(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Sorry, I can't follow! \nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
+		statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
 		return;
 	}
 	double x0=scene->width()/2.0;
 	double y0=scene->height()/2.0;
 	double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-	statusBar()->showMessage( QString(tr("Calculating new nodes positions. Please wait...")) , 10*statusBarDuration);
+	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
 	activeGraph.layoutCircleCentrality(x0, y0, maxRadius,1);
 	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage(tr("Nodes in inner circles have greater In-Degree Centrality."),statusBarDuration);	
+	statusMessage( tr("Nodes in inner circles have greater In-Degree Centrality.") );	
 }
 
 
@@ -3857,18 +3857,18 @@ void MainWindow::slotLayoutCircleCentralityInDegree(){
 void MainWindow::slotLayoutCircleCentralityOutDegree(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first!"), "OK",0);
-		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
+		statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
 		return;
 	}
 	double x0=scene->width()/2.0;
 	double y0=scene->height()/2.0;
 	double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-	statusBar()->showMessage( QString(tr("Calculating new nodes positions. Please wait...")) , 10*statusBarDuration);
+	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
 	activeGraph.layoutCircleCentrality(x0, y0, maxRadius, 2);
 	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage(tr("Nodes in inner circles have greater Out-Degree Centrality. "),statusBarDuration);	
+	statusMessage( tr("Nodes in inner circles have greater Out-Degree Centrality. ") );	
 }
 
 
@@ -3883,18 +3883,18 @@ void MainWindow::slotLayoutCircleCentralityCloseness(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Sorry, there are no nodes yet!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 
-		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
+		statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
 		return;
 	}
 	double x0=scene->width()/2.0;
 	double y0=scene->height()/2.0;
 	double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-	statusBar()->showMessage( QString(tr("Calculating new nodes positions. Please wait...")) , 10*statusBarDuration);
+	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
 	activeGraph.layoutCircleCentrality(x0, y0, maxRadius,3);
 	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage(tr("Nodes in inner circles have greater Closeness Centrality. "),statusBarDuration);	
+	statusMessage( tr("Nodes in inner circles have greater Closeness Centrality. ") );	
 }
 
 
@@ -3910,19 +3910,19 @@ void MainWindow::slotLayoutCircleCentralityBetweeness(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("No nodes yet!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 
-		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
+		statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
 		return;
 	}
 	double x0=scene->width()/2.0;
 	double y0=scene->height()/2.0;
 	double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-	statusBar()->showMessage( QString(tr("Calculating new nodes positions. Please wait...")) , 10*statusBarDuration);
+	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
 	activeGraph.layoutCircleCentrality(x0, y0, maxRadius,4);
 	QApplication::restoreOverrideCursor();
 
-	statusBar()->showMessage(tr("Nodes in inner circles have greater Betweeness Centrality. "),statusBarDuration);	
+	statusMessage( tr("Nodes in inner circles have greater Betweeness Centrality. ") );	
 }
 
 
@@ -3938,18 +3938,18 @@ void MainWindow::slotLayoutCircleCentralityBetweeness(){
 void MainWindow::slotLayoutCircleCentralityStress(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
+		statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
 		return;
 	}
 	double x0=scene->width()/2.0;
 	double y0=scene->height()/2.0;
 	double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-	statusBar()->showMessage( QString(tr("Calculating new nodes positions. Please wait...")) , 10*statusBarDuration);
+	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
 	activeGraph.layoutCircleCentrality(x0, y0, maxRadius,5);
 	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage(tr("Nodes in inner circles have greater Stress Centrality. "),statusBarDuration);	
+	statusMessage( tr("Nodes in inner circles have greater Stress Centrality. ") );	
 }
 
 
@@ -3963,18 +3963,18 @@ void MainWindow::slotLayoutCircleCentralityStress(){
 void MainWindow::slotLayoutCircleCentralityGraph(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Nothing to do here!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
+		statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
 		return;
 	}
 	double x0=scene->width()/2.0;
 	double y0=scene->height()/2.0;
 	double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-	statusBar()->showMessage( QString(tr("Calculating new nodes positions. Please wait...")) , 10*statusBarDuration);
+	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
 	activeGraph.layoutCircleCentrality(x0, y0, maxRadius,6);
 	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage(tr("Nodes in inner circles have greater Graph Centrality. "),statusBarDuration);	
+	statusMessage( tr("Nodes in inner circles have greater Graph Centrality. ") );	
 
 }
 
@@ -3988,18 +3988,18 @@ void MainWindow::slotLayoutCircleCentralityGraph(){
 void MainWindow::slotLayoutCircleCentralityEccentr(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
+		statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
 		return;
 	}
 	double x0=scene->width()/2.0;
 	double y0=scene->height()/2.0;
 	double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-	statusBar()->showMessage( QString(tr("Calculating new nodes positions. Please wait...")) , 10*statusBarDuration);
+	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
 	activeGraph.layoutCircleCentrality(x0, y0, maxRadius,7);
 	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage(tr("Nodes in inner circles have greater Eccentricity Centrality. "),statusBarDuration);	
+	statusMessage( tr("Nodes in inner circles have greater Eccentricity Centrality. ") );	
 
 }
 
@@ -4022,17 +4022,17 @@ void MainWindow::slotLayoutCircleCentralityInformational(){
 void MainWindow::slotLayoutLevelCentralityInDegree(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
+		statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
 		return;
 	}
 	double maxWidth=scene->width();
 	double maxHeight=scene->height(); //pixels
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-	statusBar()->showMessage( QString(tr("Calculating new nodes positions. Please wait...")) , 10*statusBarDuration);
+	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
 	activeGraph.layoutLevelCentrality(maxWidth, maxHeight, 1);
 	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage(tr("Nodes in upper levels have greater In-Degree Centrality. "),statusBarDuration);	
+	statusMessage( tr("Nodes in upper levels have greater In-Degree Centrality. ") );	
 
 }
 
@@ -4047,17 +4047,17 @@ void MainWindow::slotLayoutLevelCentralityInDegree(){
 void MainWindow::slotLayoutLevelCentralityOutDegree(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
+		statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
 		return;
 	}
 	double maxWidth=scene->width();
 	double maxHeight=scene->height(); //pixels
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-	statusBar()->showMessage( QString(tr("Calculating new nodes positions. Please wait...")) , 10*statusBarDuration);
+	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
 	activeGraph.layoutLevelCentrality(maxWidth, maxHeight, 2);
 	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage(tr("Nodes in upper levels have greater Out-Degree Centrality. "),statusBarDuration);	
+	statusMessage( tr("Nodes in upper levels have greater Out-Degree Centrality. ") );	
 
 }
 
@@ -4072,17 +4072,17 @@ void MainWindow::slotLayoutLevelCentralityOutDegree(){
 void MainWindow::slotLayoutLevelCentralityCloseness(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
+		statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
 		return;
 	}
 	double maxWidth=scene->width();
 	double maxHeight=scene->height(); //pixels
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-	statusBar()->showMessage( QString(tr("Calculating new nodes positions. Please wait...")) , statusBarDuration);
+	statusMessage(  QString(tr("Calculating new nodes positions. Please wait..."))  );
 	graphicsWidget->clearBackgrCircles();
 	activeGraph.layoutLevelCentrality(maxWidth, maxHeight, 3);
 	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage(tr("Nodes in upper levels have greater Closeness Centrality."),statusBarDuration);	
+	statusMessage( tr("Nodes in upper levels have greater Closeness Centrality.") );	
 }
 
 
@@ -4096,17 +4096,17 @@ void MainWindow::slotLayoutLevelCentralityCloseness(){
 void MainWindow::slotLayoutLevelCentralityBetweeness(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-		statusBar()->showMessage( QString(tr("Nothing to layout! Are you dreaming?")) , statusBarDuration);
+		statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
 		return;
 	}
 	double maxWidth=scene->width();
 	double maxHeight=scene->height(); //pixels
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-	statusBar()->showMessage( QString(tr("Calculating new nodes positions. Please wait...")) , 10*statusBarDuration);
+	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
 	activeGraph.layoutLevelCentrality(maxWidth, maxHeight, 4);
 	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage(tr("Nodes in upper levels have greater Betweeness Centrality. "),statusBarDuration);	
+	statusMessage( tr("Nodes in upper levels have greater Betweeness Centrality. ") );	
 }
 
 
@@ -4158,7 +4158,7 @@ int MainWindow::activeNodes(){
 void MainWindow::slotCheckSymmetry(){
 		if (!fileLoaded && !networkModified  )   {
 		QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-		statusBar()->showMessage( QString(tr("There is no network!")) , statusBarDuration);
+		statusMessage(  QString(tr("There is no network!"))  );
 		return;
 	}
 	if (activeGraph.isSymmetric())
@@ -4166,32 +4166,10 @@ void MainWindow::slotCheckSymmetry(){
 	else
 		QMessageBox::information(this, "Network Symmetry", tr("Adjacency matrix symmetry = NO "),"OK",0);
 	
-	statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
+	statusMessage (QString(tr("Ready")) );
 
 }
 
-
-/**
-*	Calculates and displays the density of the network.
-*/
-void MainWindow::slotNetworkDensity() {
-// 	if (!fileLoaded && !networkModified  )   {
-// 		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-// 		statusBar()->showMessage( QString(tr("No network created or loaded yet!")) , statusBarDuration);
-// 		return;
-// 	}
-// 	if ( activeGraph.totalEdges() ==-1 ){
-// 		statusBar()->showMessage (QString(tr("ERROR in Links count")), statusBarDuration) ;
-// 		return;
-// 	}
-// 	if ( activeGraph.vertices() ==-1 ){
-// 		statusBar()->showMessage (QString(tr("ERROR in nodes count")), statusBarDuration) ;
-// 		return;
-// 	}
-// 	
-// 	QMessageBox::information(this, "Density", tr("Network density = ")+QString::number(activeGraph.density()),"OK",0);
-// 	statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
-}
 
 
 
@@ -4204,7 +4182,7 @@ void MainWindow::slotNetworkDensity() {
 void MainWindow::slotGraphDistance(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-		statusBar()->showMessage( QString(tr("There are no nodes. Nothing to do...")) , statusBarDuration);
+		statusMessage(  QString(tr("There are no nodes. Nothing to do..."))  );
 		return;
 	}
 	bool ok=FALSE;
@@ -4218,13 +4196,13 @@ void MainWindow::slotGraphDistance(){
 		}
 	i=QInputDialog::getInteger(this, tr("Distance between two nodes"),tr("Select source node:  ("+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"), min, 1, max , 1, &ok )   ;
 	if (!ok) {
-		statusBar()->showMessage("Distance calculation operation cancelled.", statusBarDuration);
+		statusMessage( "Distance calculation operation cancelled." );
 		return;
 	}
 
 	j=QInputDialog::getInteger(this, tr("Distance between two nodes"), tr("Select target node:  ("+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"),min, 1, max , 1, &ok )   ;
 	if (!ok) {
-		statusBar()->showMessage(tr("Distance calculation operation cancelled."), statusBarDuration);
+		statusMessage( tr("Distance calculation operation cancelled.") );
 		return;
 	}
 
@@ -4249,11 +4227,10 @@ void MainWindow::slotViewDistanceMatrix(){
 	qDebug("MW: slotViewDistanceMatrix()");
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("There are no nodes nor links!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-		statusBar()->showMessage( QString(tr("Nothing to do!")) , statusBarDuration);
+		statusMessage(  QString(tr("Nothing to do!"))  );
 		return;
 	}
-
-	statusBar()->showMessage(tr("Creating distance matrix. Please wait..."), statusBarDuration+2000);	
+	statusMessage( tr("Creating distance matrix. Please wait...") );	
 	char fn[]= "distance-matrix.dat";
 	char fn1[]="sigmas-matrix.dat";
 	activeGraph.writeDistanceMatrix(fn, fn1, networkName.toLocal8Bit());
@@ -4279,7 +4256,7 @@ void MainWindow::slotDiameter() {
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("There are no nodes nor links!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 
-		statusBar()->showMessage( QString(tr("Cannot find the diameter of nothing...")) , statusBarDuration);
+		statusMessage(  QString(tr("Cannot find the diameter of nothing..."))  );
 		return;
 	}
 	activeGraph.createDistanceMatrix(false);
@@ -4290,7 +4267,7 @@ void MainWindow::slotDiameter() {
 		QMessageBox::information(this, "Diameter", "Network diameter = "+ QString::number(netDiameter)+"  > (vertices()-1).", "OK",0);
 	else 
 		QMessageBox::information(this, "Diameter", "Network diameter = " + QString::number(netDiameter), "OK",0);
-	statusBar()->showMessage(tr("Diameter calculated. Ready."), statusBarDuration);
+	statusMessage( tr("Diameter calculated. Ready.") );
 
 }
 
@@ -4303,7 +4280,7 @@ void MainWindow::slotAverageGraphDistance() {
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("There are no nodes nor links!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 
-		statusBar()->showMessage( QString(tr("Cannot find the diameter of nothing...")) , statusBarDuration);
+		statusMessage(  QString(tr("Cannot find the diameter of nothing..."))  );
 		return;
 	}
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
@@ -4311,7 +4288,7 @@ void MainWindow::slotAverageGraphDistance() {
 	QApplication::restoreOverrideCursor();	
 
 	QMessageBox::information(this, "Average Graph Distance", "The average shortest path length is  = " + QString::number(averGraphDistance), "OK",0);
-	statusBar()->showMessage(tr("Average distance calculated. Ready."), statusBarDuration);
+	statusMessage( tr("Average distance calculated. Ready.") );
 
 }
 
@@ -4324,7 +4301,7 @@ void MainWindow::slotAverageGraphDistance() {
 *	Displays a message	on the status bar when you resize the window.
 */
 void MainWindow::windowInfoStatusBar(int w, int h){
-	statusBar()->showMessage( QString(tr("Window resized to (%1, %2) pixels.")).arg(w).arg(h), statusBarDuration);
+	statusMessage(  QString(tr("Window resized to (%1, %2) pixels.")).arg(w).arg(h) );
 }
 
 
@@ -4335,7 +4312,7 @@ void MainWindow::windowInfoStatusBar(int w, int h){
 void MainWindow::slotClusteringCoefficient (){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-		statusBar()->showMessage( QString(tr(" No network here. Sorry. Nothing to do.")) , statusBarDuration);
+		statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
 		return;
 	}
 	QString fn = "clustering-coefficients.dat";
@@ -4359,7 +4336,7 @@ void MainWindow::slotClusteringCoefficient (){
 void MainWindow::slotCentralityOutDegree(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-		statusBar()->showMessage( QString(tr(" No network here. Sorry. Nothing to do.")) , statusBarDuration);
+		statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
 		return;
 	}
 	bool considerWeights=FALSE;
@@ -4402,7 +4379,7 @@ void MainWindow::slotCentralityOutDegree(){
 void MainWindow::slotCentralityInDegree(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-		statusBar()->showMessage( QString(tr("Nothing to do...")) , statusBarDuration);
+		statusMessage(  QString(tr("Nothing to do..."))  );
 		return;
 	}
 	bool considerWeights=FALSE;
@@ -4444,7 +4421,7 @@ void MainWindow::slotCentralityInDegree(){
 void MainWindow::slotCentralityCloseness(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-		statusBar()->showMessage( QString(tr("Nothing to do...")) , statusBarDuration);
+		statusMessage(  QString(tr("Nothing to do..."))  );
 		return;
 	}
 
@@ -4471,12 +4448,12 @@ void MainWindow::slotCentralityBetweeness(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 
-		statusBar()->showMessage( QString(tr(" Nothing to do...")) , statusBarDuration);
+		statusMessage(  QString(tr(" Nothing to do..."))  );
 		return;
 	}
 	QString fn = "centrality_betweeness.dat";
 	bool considerWeights=true;
-	statusBar()->showMessage( QString(tr(" Please wait...")));
+	statusMessage(  QString(tr(" Please wait...")));
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 	activeGraph.writeCentralityBetweeness(fn, considerWeights);	
 	statusMessage( QString(tr(" displaying file...")));
@@ -4508,13 +4485,13 @@ void MainWindow::slotCentralityStress(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 
-		statusBar()->showMessage( QString(tr(" Nothing to do! Why dont you try creating something first?")) , statusBarDuration);
+		statusMessage(  QString(tr(" Nothing to do! Why dont you try creating something first?"))  );
 		return;
 	}
 	QString fn = "centrality_stress.dat";
 	
 	bool considerWeights=true;
-	statusBar()->showMessage( QString(tr(" Please wait...")));
+	statusMessage(  QString(tr(" Please wait...")));
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 	activeGraph.writeCentralityStress(fn, considerWeights);	
 	statusMessage( QString(tr(" displaying file...")));
@@ -4534,12 +4511,12 @@ void MainWindow::slotCentralityGraph(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 
-		statusBar()->showMessage( QString(tr(" Try creating a network first. \nThen I compute whatever you want...")) , statusBarDuration);
+		statusMessage(  QString(tr(" Try creating a network first. \nThen I compute whatever you want..."))  );
 		return;
 	}
 	QString fn = "centrality_graph.dat";
 	bool considerWeights=true;
-	statusBar()->showMessage( QString(tr(" Please wait...")));
+	statusMessage(  QString(tr(" Please wait...")));
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 	activeGraph.writeCentralityGraph(fn, considerWeights);	
 	statusMessage( QString(tr(" displaying file...")));
@@ -4560,12 +4537,12 @@ void MainWindow::slotCentralityEccentricity(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 
-		statusBar()->showMessage( QString(tr(" Nothing to do...")) , statusBarDuration);
+		statusMessage(  QString(tr(" Nothing to do..."))  );
 		return;
 	}
 	QString fn = "centrality_eccentricity.dat";
 	bool considerWeights=true;
-	statusBar()->showMessage( QString(tr(" Please wait...")));
+	statusMessage(  QString(tr(" Please wait...")));
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 	activeGraph.writeCentralityEccentricity(fn, considerWeights);	
 	statusMessage( QString(tr(" displaying file...")));
@@ -4596,19 +4573,19 @@ bool MainWindow::showNumbers(){
 void MainWindow::slotDisplayNodeNumbers(bool toggle) {
  	if (!fileLoaded && ! networkModified) {
 		QMessageBox::critical(this, "Error",tr("There are no nodes! \nLoad a network file or create a new network."), "OK",0);
-		statusBar()->showMessage(tr("Errr...no nodes here. Sorry!"), statusBarDuration);
+		statusMessage( tr("Errr...no nodes here. Sorry!") );
 		return;
 	}
-	statusBar()->showMessage(tr("Toggle Nodes Numbers. Please wait..."), statusBarDuration);
+	statusMessage( tr("Toggle Nodes Numbers. Please wait...") );
 
 	if (!toggle) 	{
 		graphicsWidget->setAllItemsVisibility(TypeNumber, false);
-		statusBar()->showMessage(tr("Node Numbers are invisible now. Click the same option again to display them."), statusBarDuration);
+		statusMessage( tr("Node Numbers are invisible now. Click the same option again to display them.") );
 		return;
 	}
 	else{
 		graphicsWidget->setAllItemsVisibility(TypeNumber, true);
-		statusBar()->showMessage(tr("Node Labels are visible again..."), statusBarDuration);
+		statusMessage( tr("Node Labels are visible again...") );
 	}
 }
 
@@ -4637,19 +4614,19 @@ bool MainWindow::showLabelsInsideNodes(){
 void MainWindow::slotDisplayLabelsInsideNodes(bool toggle){
  	if (!fileLoaded && ! networkModified) {
 		QMessageBox::critical(this, "Error",tr("There are no nodes! \nLoad a network file or create a new network first. "), "OK",0);
-		statusBar()->showMessage(tr("No nodes found. Sorry..."), statusBarDuration);
+		statusMessage( tr("No nodes found. Sorry...") );
 		return;
 	}
-	statusBar()->showMessage(tr("Toggle Nodes Labels. Please wait..."), statusBarDuration);
+	statusMessage( tr("Toggle Nodes Labels. Please wait...") );
 
 	if (!toggle) 	{
 //		graphicsWidget->setAllItemsVisibility(TypeLabel, false);
-		statusBar()->showMessage(tr("Node Labels are invisible now. Click the same option again to display them."), statusBarDuration);
+		statusMessage( tr("Node Labels are invisible now. Click the same option again to display them.") );
 		return;
 	}
 	else{
 		graphicsWidget->setAllItemsVisibility(TypeLabel, true);
-		statusBar()->showMessage(tr("Node Labels are visible again..."), statusBarDuration);
+		statusMessage( tr("Node Labels are visible again...") );
 	}
 	activeGraph.setShowLabelsInsideNodes(toggle);
 }
@@ -4660,19 +4637,19 @@ void MainWindow::slotDisplayLabelsInsideNodes(bool toggle){
 void MainWindow::slotDisplayNodeLabels(bool toggle){
  	if (!fileLoaded && ! networkModified) {
 		QMessageBox::critical(this, "Error",tr("There are no nodes! \nLoad a network file or create a new network first. "), "OK",0);
-		statusBar()->showMessage(tr("No nodes found. Sorry..."), statusBarDuration);
+		statusMessage( tr("No nodes found. Sorry...") );
 		return;
 	}
-	statusBar()->showMessage(tr("Toggle Nodes Labels. Please wait..."), statusBarDuration);
+	statusMessage( tr("Toggle Nodes Labels. Please wait...") );
 
 	if (!toggle) 	{
 		graphicsWidget->setAllItemsVisibility(TypeLabel, false);
-		statusBar()->showMessage(tr("Node Labels are invisible now. Click the same option again to display them."), statusBarDuration);
+		statusMessage( tr("Node Labels are invisible now. Click the same option again to display them.") );
 		return;
 	}
 	else{
 		graphicsWidget->setAllItemsVisibility(TypeLabel, true);
-		statusBar()->showMessage(tr("Node Labels are visible again..."), statusBarDuration);
+		statusMessage( tr("Node Labels are visible again...") );
 	}
 	activeGraph.setShowLabels(toggle);
 }
@@ -4688,7 +4665,7 @@ void MainWindow::slotChangeAllNodesSize() {
 	
 	int newSize = QInputDialog::getInteger(this, "Change node size", tr("Select new size for all nodes: (1-16)"),initNodeSize, 1, 16, 1, &ok );
 	if (!ok) {
-		statusBar()->showMessage("Change node size operation cancelled.", statusBarDuration);
+		statusMessage( "Change node size operation cancelled." );
 		return;
 	}
 
@@ -4769,7 +4746,7 @@ void MainWindow::slotChangeNumbersSize() {
 	int newSize;
 	newSize = QInputDialog::getInteger(this, "Change text size", tr("Change all nodenumbers size to: (1-16)"),initNumberSize, 1, 16, 1, &ok );
 	if (!ok) {
-		statusBar()->showMessage(tr("Change font size: Aborted."), statusBarDuration);
+		statusMessage( tr("Change font size: Aborted.") );
 	return;
 	}
 	QList<QGraphicsItem *> list=scene->items();
@@ -4780,7 +4757,7 @@ void MainWindow::slotChangeNumbersSize() {
 		qDebug ("MW: slotChangeNumbersSize Found");
 		number->setFont( QFont (number->font().family(), newSize, QFont::Light, FALSE) );
 	}
-	statusBar()->showMessage(tr("Changed numbers size. Ready."), statusBarDuration);
+	statusMessage( tr("Changed numbers size. Ready.") );
 }
 
 
@@ -4794,7 +4771,7 @@ void MainWindow::slotChangeLabelsSize() {
      tr("Choose a new font size for the labels: "),
      7, 7, 14 , 1, &ok, this )   ;
   if (!ok) {
-     statusBar()->showMessage(tr("Change font size: Aborted."), statusBarDuration);
+     statusMessage( tr("Change font size: Aborted.") );
     return;
   }
   QList<QGraphicsItem *> list=scene->items();
@@ -4804,7 +4781,7 @@ void MainWindow::slotChangeLabelsSize() {
       number->setFont( QFont ("Helvetica", newSize, QFont::Normal, FALSE) );
      }
 
-  statusBar()->showMessage(tr("Changed labels size. Ready."), statusBarDuration);*/
+  statusMessage( tr("Changed labels size. Ready.") );*/
 }
 
 
@@ -4827,19 +4804,19 @@ void MainWindow::slotDrawLinksThickAsWeights() {
 void MainWindow::slotDisplayLinksWeightNumbers(bool toggle) {
  	if (!fileLoaded && ! networkModified) {
 		QMessageBox::critical(this, "Error",tr("There are no links! \nLoad a network file or create a new network first."), "OK",0);
-		statusBar()->showMessage(tr("No nodes or edges found. Sorry..."), statusBarDuration);
+		statusMessage( tr("No nodes or edges found. Sorry...") );
 		return;
 	}
-	statusBar()->showMessage(tr("Toggle Edges Weights. Please wait..."), statusBarDuration);
+	statusMessage( tr("Toggle Edges Weights. Please wait...") );
 
 	if (!toggle) 	{
 		graphicsWidget->setAllItemsVisibility(TypeEdgeWeight, false);
-		statusBar()->showMessage(tr("Edge weights are invisible now. Click the same option again to display them."), statusBarDuration);
+		statusMessage( tr("Edge weights are invisible now. Click the same option again to display them.") );
 		return;
 	}
 	else{
 		graphicsWidget->setAllItemsVisibility(TypeEdgeWeight, true);
-		statusBar()->showMessage(tr("Edge weights are visible again..."), statusBarDuration);
+		statusMessage( tr("Edge weights are visible again...") );
 	}
 	activeGraph.setShowLabels(toggle);
 
@@ -4890,19 +4867,19 @@ void MainWindow::slotDisplayLinks(bool toggle){
 	if (!fileLoaded && ! networkModified) {
 		QMessageBox::critical(this, "Error",tr("There are no nodes nor links! \nLoad a network file or create a new network first!"), "OK",0);
 
-		statusBar()->showMessage(tr("No links found..."), statusBarDuration);
+		statusMessage( tr("No links found...") );
 		return;
 	}
-	statusBar()->showMessage(tr("Toggle Edges Arrows. Please wait..."), statusBarDuration);
+	statusMessage( tr("Toggle Edges Arrows. Please wait...") );
 
 	if (!toggle) 	{
 		graphicsWidget->setAllItemsVisibility(TypeEdge, false);
-		statusBar()->showMessage(tr("Links are invisible now. Click again the same menu to display them."), statusBarDuration);
+		statusMessage( tr("Links are invisible now. Click again the same menu to display them.") );
 		return;
 	}
 	else{
 		graphicsWidget->setAllItemsVisibility(TypeEdge, true);
-		statusBar()->showMessage(tr("Links visible again..."), statusBarDuration);
+		statusMessage( tr("Links visible again...") );
 	}
 	
 }
@@ -4916,10 +4893,10 @@ void MainWindow::slotDisplayLinksArrows(bool toggle){
 	if (!fileLoaded && ! networkModified) {
 		QMessageBox::critical(this, "Error",tr("There are no links! \nLoad a network file or create a new network first!"), "OK",0);
 
-		statusBar()->showMessage(tr("No links found..."), statusBarDuration);
+		statusMessage( tr("No links found...") );
 		return;
 	}
-	statusBar()->showMessage(tr("Toggle Edges Arrows. Please wait..."), statusBarDuration);
+	statusMessage( tr("Toggle Edges Arrows. Please wait...") );
 
 	if (!toggle) 	{
 		QList<QGraphicsItem *> list = scene->items();
@@ -4941,7 +4918,7 @@ void MainWindow::slotDisplayLinksArrows(bool toggle){
 				(*item)->hide();(*item)->show();
 			}
 	}
-	statusBar()->showMessage(tr("Ready."));
+	statusMessage( tr("Ready."));
 }
 
 
@@ -4953,10 +4930,10 @@ void MainWindow::slotDrawLinksBezier(bool toggle){
 	if (!fileLoaded && ! networkModified) {
 		QMessageBox::critical(this, "Error",tr("There are no links! \nLoad a network file or create a new network!"), "OK",0);
 
-		statusBar()->showMessage(tr("There are NO links here!"), statusBarDuration);
+		statusMessage( tr("There are NO links here!") );
 		return;
 	}
-	statusBar()->showMessage(tr("Toggle links bezier. Please wait..."), statusBarDuration);
+	statusMessage( tr("Toggle links bezier. Please wait...") );
 // //	graphicsWidget->setBezier(toggle);
 	if (!toggle) 	{
 // 		QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
@@ -4996,7 +4973,7 @@ void MainWindow::slotBackgroundColor () {
 	qDebug("MW: slotBackgroundColor ");
 	QColor backgrColor = QColorDialog::getColor( initBackgroundColor, this );
 	graphicsWidget ->setBackgroundBrush(QBrush(backgrColor));	
-	statusBar()->showMessage(tr("Ready. "), statusBarDuration);
+	statusMessage( tr("Ready. ") );
 }
 
 
@@ -5021,11 +4998,11 @@ void MainWindow::slotAllNodesColor(){
 //		graphicsWidget->setInitNodeColor(initNodeColor);
 		activeGraph.setInitVertexColor(initNodeColor);
 		QApplication::restoreOverrideCursor();
-		statusBar()->showMessage(tr("Ready. ") ,statusBarDuration);
+		statusMessage( tr("Ready. ")  );
     	} 
 	else {
 	        // user pressed Cancel
-		statusBar()->showMessage(tr("Change node color aborted. ") ,statusBarDuration);
+		statusMessage( tr("Change node color aborted. ")  );
     	}
 
 }
@@ -5053,12 +5030,12 @@ void MainWindow::slotAllLinksColor(){
 		activeGraph.setInitEdgeColor(initLinkColor);
 		//graphicsWidget->setInitLinkColor(initLinkColor);
 		QApplication::restoreOverrideCursor();
-		statusBar()->showMessage(tr("Ready. ") ,statusBarDuration);
+		statusMessage( tr("Ready. ")  );
 
     	} 
 	else {
 	        // user pressed Cancel
-		statusBar()->showMessage(tr("Change link color aborted. ") ,statusBarDuration);
+		statusMessage( tr("Change link color aborted. ")  );
     	}
 }
 
@@ -5081,7 +5058,7 @@ void MainWindow::slotAllNumbersColor(){
 			jimNumber->setDefaultTextColor(textColor);
 		}
 	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage(tr("Numbers' colors changed. Ready. ") ,statusBarDuration);
+	statusMessage( tr("Numbers' colors changed. Ready. ")  );
 }
 
 
@@ -5101,7 +5078,7 @@ void MainWindow::slotAllLabelsColor(){
 			jimLabel->setDefaultTextColor(textColor);
 		}
 	QApplication::restoreOverrideCursor();
-	statusBar()->showMessage(tr("Label colors changed. Ready. ") ,statusBarDuration);
+	statusMessage( tr("Label colors changed. Ready. ")  );
 }
 
 
@@ -5110,7 +5087,7 @@ void MainWindow::slotAllLabelsColor(){
 *  turns antialiasing on or off
 */
 void MainWindow::slotAntialiasing(bool toggle) {
-	statusBar()->showMessage(tr("Toggle anti-aliasing. This will take some time if the network is large (>500)..."), statusBarDuration);
+	statusMessage( tr("Toggle anti-aliasing. This will take some time if the network is large (>500)...") );
 	//Inform graphicsWidget about the change
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
  	graphicsWidget->setRenderHint(QPainter::Antialiasing, toggle);
@@ -5118,9 +5095,9 @@ void MainWindow::slotAntialiasing(bool toggle) {
 	graphicsWidget->setRenderHint(QPainter::SmoothPixmapTransform, toggle);
 	QApplication::restoreOverrideCursor();
 	if (!toggle) 
-		statusBar()->showMessage(tr("Anti-aliasing off."), statusBarDuration);
+		statusMessage( tr("Anti-aliasing off.") );
 	else  
-		statusBar()->showMessage(tr("Anti-aliasing on."), statusBarDuration);
+		statusMessage( tr("Anti-aliasing on.") );
 	
 }
 
@@ -5128,14 +5105,14 @@ void MainWindow::slotAntialiasing(bool toggle) {
 *  turn progressbar on or off
 */
 void MainWindow::slotShowProgressBar(bool toggle) {
-	statusBar()->showMessage(tr("Toggle progressbar..."));
+	statusMessage( tr("Toggle progressbar..."));
 	if (!toggle)  {
 		showProgressBar=FALSE;
-		statusBar()->showMessage(tr("Progress bars off."), statusBarDuration);	
+		statusMessage( tr("Progress bars off.") );	
 	}
 	else   {
 		showProgressBar=TRUE;
-		statusBar()->showMessage(tr("Progress bars on."), statusBarDuration);	
+		statusMessage( tr("Progress bars on.") );	
 	}
 }
 
@@ -5147,11 +5124,11 @@ void MainWindow::slotShowProgressBar(bool toggle) {
 void MainWindow::slotPrintDebug(bool toggle){
 	if (!toggle)   {
 		printDebug=FALSE;
-		statusBar()->showMessage(tr("Debug messages off."), statusBarDuration);
+		statusMessage( tr("Debug messages off.") );
 	}
 	else  {
 		printDebug=TRUE;
-		statusBar()->showMessage(tr("Debug messages on."), statusBarDuration);
+		statusMessage( tr("Debug messages on.") );
 	}
 }
 
@@ -5162,14 +5139,14 @@ void MainWindow::slotPrintDebug(bool toggle){
 *  Turns Toolbar on or off
 */
 void MainWindow::slotViewToolBar(bool toggle) {
-	statusBar()->showMessage(tr("Toggle toolbar..."));
+	statusMessage( tr("Toggle toolbar..."));
 	if (toggle== false)   {
 		toolBar->hide();
-		statusBar()->showMessage(tr("Toolbar off."), statusBarDuration);	
+		statusMessage( tr("Toolbar off.") );	
 	}
 	else  {
 		toolBar->show();
-		statusBar()->showMessage(tr("Toolbar on."), statusBarDuration);	
+		statusMessage( tr("Toolbar on.") );	
 	}
 }
 
@@ -5179,15 +5156,15 @@ void MainWindow::slotViewToolBar(bool toggle) {
 *  Turns Statusbar on or off
 */
 void MainWindow::slotViewStatusBar(bool toggle) {
-	statusBar()->showMessage(tr("Toggle statusbar..."));
+	statusMessage( tr("Toggle statusbar..."));
 
 	if (toggle == false)   {
 		statusBar()->hide();
-		statusBar()->showMessage(tr("Status bar off."), statusBarDuration);	
+		statusMessage( tr("Status bar off.") );	
 	}
 	else   {
 		statusBar()->show();	
-		statusBar()->showMessage(tr("Status bar on."), statusBarDuration);	
+		statusMessage( tr("Status bar on.") );	
 	}
 
 }
