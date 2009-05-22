@@ -2730,15 +2730,19 @@ bool Graph::saveGraphToGraphMLFormat (
 				"    <default>" << "0.0" << "</default> \n" 
 				"  </key> \n";
 				
-	outText <<	"  <key id=\"d3\" for=\"node\" attr.name=\"shape\" attr.type=\"string\"> \n" 
+	outText <<	"  <key id=\"d3\" for=\"node\" attr.name=\"label\" attr.type=\"string\"> \n" 
+				"    <default>" "</default> \n" 
+				"  </key> \n";
+				
+	outText <<	"  <key id=\"d4\" for=\"node\" attr.name=\"shape\" attr.type=\"string\"> \n" 
 				"    <default>" << initVertexShape << "</default> \n" 
 				"  </key> \n";
 
-	outText <<	"  <key id=\"d4\" for=\"edge\" attr.name=\"weight\" attr.type=\"double\"> \n"
+	outText <<	"  <key id=\"d5\" for=\"edge\" attr.name=\"weight\" attr.type=\"double\"> \n"
 				"    <default>1.0</default> \n"
 				"  </key> \n";
 				
-	outText <<	"  <key id=\"d5\" for=\"edge\" attr.name=\"color\" attr.type=\"string\"> \n"
+	outText <<	"  <key id=\"d6\" for=\"edge\" attr.name=\"color\" attr.type=\"string\"> \n"
 				"    <default>" << initEdgeColor << "</default> \n"
 				"  </key> \n";
 	
@@ -2766,10 +2770,9 @@ bool Graph::saveGraphToGraphMLFormat (
 										<<" y " << (*it)->y()<< " "<<maxHeight;
 		outText << "      <data key=\"d1\">" << (*it)->x()/(maxWidth) <<"</data>\n";
 		outText << "      <data key=\"d2\">" << (*it)->y()/(maxHeight) <<"</data>\n";
-		outText << "      <data key=\"d3\">" << (*it)->shape() <<"</data>\n";
-
+		outText << "      <data key=\"d3\">" << (*it)->label() <<"</data>\n";
+		outText << "      <data key=\"d4\">" << (*it)->shape() <<"</data>\n";
 		outText << "    </node>\n";
-
 	}
 
 	qDebug() << "		... writing edges data";
@@ -2796,13 +2799,13 @@ bool Graph::saveGraphToGraphMLFormat (
 				openToken = true;
 				if (weight > 1) {
 					outText << "> \n";
-					outText << "      <data key=\"d4\">" << weight<<"</data>" <<" \n";
+					outText << "      <data key=\"d5\">" << weight<<"</data>" <<" \n";
 					openToken=false;
 				}
 				if (  QString::compare ( initEdgeColor, color,  Qt::CaseInsensitive) != 0) {
 					if (openToken) 
 						outText << "> \n";
-					outText << "      <data key=\"d5\">" << color <<"</data>" <<" \n";	
+					outText << "      <data key=\"d6\">" << color <<"</data>" <<" \n";	
 					openToken=false;
 				}
 				if (openToken) 

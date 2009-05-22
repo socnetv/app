@@ -656,7 +656,7 @@ void Parser::readGraphML(QXmlStreamReader &xml){
 		xml.readNext();	//read next token
 	
 		if (xml.isStartElement()) {	//new token (graph, node, or edge) here
-			qDebug()<< "\n  readGraphML(): an element starts here: "<< xml.name().toString() ;
+			qDebug()<< "\n  readGraphML(): start of element: "<< xml.name().toString() ;
 			if (xml.name() == "graph")	//graph definition token
 				readGraphMLElementGraph(xml);
 				
@@ -865,17 +865,23 @@ void Parser::endGraphMLElementEdge(QXmlStreamReader &xml){
  */ 
 void Parser::readGraphMLElementData (QXmlStreamReader &xml){
 	key_id = xml.attributes().value("key").toString();
-
 	key_value=xml.text().toString();
-	qDebug()<< "   Parser: readGraphMLElementData(): text: " << key_value; 
-	if (  key_value != "" ) { //if there's simple text after the StartElement,
-			key_value=xml.readElementText(); 
-			qDebug()<< "   Parser: readGraphMLElementData(): key_id " << key_id << " value is simple text " <<key_value.toAscii() ;
-	}
-	else {  //no text, probably more tags. Return...
-		qDebug()<< "   Parser: readGraphMLElementData(): key_id " << key_id << " for " <<keyFor.value(key_id);
-		qDebug()<< "   Parser: readGraphMLElementData(): There must be more elements nested here, continuing";
-		return;  
+	if (key_value.trimmed() == "") 
+	{
+		qDebug()<< "   Parser: readGraphMLElementData(): text: " << key_value;
+		xml.readNext();
+		key_value=xml.text().toString();
+		qDebug()<< "   Parser: readGraphMLElementData(): text: " << key_value; 
+		if (  key_value.trimmed() != "" ) { //if there's simple text after the StartElement,
+				qDebug()<< "   Parser: readGraphMLElementData(): key_id " << key_id 
+						<< " value is simple text " <<key_value ;
+		}
+		else {  //no text, probably more tags. Return...
+			qDebug()<< "   Parser: readGraphMLElementData(): key_id " << key_id 
+							<< " for " <<keyFor.value(key_id) << ". More elements nested here, continuing";
+			return;  
+		}
+		
 	}
 	
 	if (keyName.value(key_id) == "color" && keyFor.value(key_id) == "node" ) {
@@ -982,7 +988,6 @@ void Parser::readGraphMLElementNodeGraphics(QXmlStreamReader &xml) {
 		key_value=xml.readElementText();  //see if there's simple text after the StartElement
 		if (!xml.hasError()) {
 			qDebug()<< "         Node Label "<< key_value;		
-			//probably there's more than simple text after StartElement
 			nodeLabel = key_value;
 		}
 		else {
