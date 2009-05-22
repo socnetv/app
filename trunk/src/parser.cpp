@@ -908,6 +908,14 @@ void Parser::readGraphMLElementData (QXmlStreamReader &xml){
 				randY=randY * gwHeight;	
 			qDebug()<< "     Using: "<< randY;
 	}
+	else if (keyName.value(key_id) == "size" && keyFor.value(key_id) == "node" ) {
+			qDebug()<< "     Data found. Node size: "<< key_value << " for this node"; 
+			conv_OK=false;
+			nodeSize= key_value.toInt ( &conv_OK );
+			if (!conv_OK)
+				nodeSize = initNodeSize;  
+			qDebug()<< "     Using: "<< nodeSize;
+	}
 	else if (keyName.value(key_id) == "shape" && keyFor.value(key_id) == "node" ) {
 			qDebug()<< "     Data found. Node shape: "<< key_value << " for this node";
 			nodeShape= key_value; 

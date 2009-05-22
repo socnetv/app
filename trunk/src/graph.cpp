@@ -2698,8 +2698,8 @@ bool Graph::saveGraphToGraphMLFormat (
 {
 		qDebug () << " Graph::saveGraphToGraphMLFormat to file: " << fileName.toAscii();
 
-	int weight=0, source=0, target=0, edgeCount=0;
-	QString color;
+	int weight=0, source=0, target=0, edgeCount=0, m_size=1;
+	QString m_color;
 	bool openToken;
 	QFile f( fileName );
 	if ( !f.open( QIODevice::WriteOnly ) )  {
@@ -2718,8 +2718,9 @@ bool Graph::saveGraphToGraphMLFormat (
 		"\n";
 	
 	qDebug()<< "		... writing keys ";
-	outText <<	"  <key id=\"d0\" for=\"node\" attr.name=\"color\" attr.type=\"string\"> \n" 
-				"    <default>" << initVertexColor << "</default> \n" 
+	
+	outText <<	"  <key id=\"d0\" for=\"node\" attr.name=\"label\" attr.type=\"string\"> \n" 
+				"    <default>" "</default> \n" 
 				"  </key> \n";
 
 	outText <<	"  <key id=\"d1\" for=\"node\" attr.name=\"x_coordinate\" attr.type=\"double\"> \n" 
@@ -2729,20 +2730,23 @@ bool Graph::saveGraphToGraphMLFormat (
 	outText <<	"  <key id=\"d2\" for=\"node\" attr.name=\"y_coordinate\" attr.type=\"double\"> \n" 
 				"    <default>" << "0.0" << "</default> \n" 
 				"  </key> \n";
-				
-	outText <<	"  <key id=\"d3\" for=\"node\" attr.name=\"label\" attr.type=\"string\"> \n" 
-				"    <default>" "</default> \n" 
+	outText <<	"  <key id=\"d3\" for=\"node\" attr.name=\"size\" attr.type=\"double\"> \n" 
+				"    <default>"<< initVertexSize << "</default> \n" 
+				"  </key> \n";
+
+	outText <<	"  <key id=\"d4\" for=\"node\" attr.name=\"color\" attr.type=\"string\"> \n" 
+				"    <default>" << initVertexColor << "</default> \n" 
 				"  </key> \n";
 				
-	outText <<	"  <key id=\"d4\" for=\"node\" attr.name=\"shape\" attr.type=\"string\"> \n" 
+	outText <<	"  <key id=\"d5\" for=\"node\" attr.name=\"shape\" attr.type=\"string\"> \n" 
 				"    <default>" << initVertexShape << "</default> \n" 
 				"  </key> \n";
 
-	outText <<	"  <key id=\"d5\" for=\"edge\" attr.name=\"weight\" attr.type=\"double\"> \n"
+	outText <<	"  <key id=\"d6\" for=\"edge\" attr.name=\"weight\" attr.type=\"double\"> \n"
 				"    <default>1.0</default> \n"
 				"  </key> \n";
 				
-	outText <<	"  <key id=\"d6\" for=\"edge\" attr.name=\"color\" attr.type=\"string\"> \n"
+	outText <<	"  <key id=\"d7\" for=\"edge\" attr.name=\"color\" attr.type=\"string\"> \n"
 				"    <default>" << initEdgeColor << "</default> \n"
 				"  </key> \n";
 	
@@ -2761,17 +2765,26 @@ bool Graph::saveGraphToGraphMLFormat (
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
 		qDebug() << " 	Node id: "<<  (*it)->name()  ;
 		outText << "    <node id=\"" << (*it)->name() << "\"> \n";
-		color = (*it)->color();
+		m_color = (*it)->color();
+		m_size = (*it)->size() ;
 
-		if (  QString::compare ( initVertexColor, color,  Qt::CaseInsensitive) != 0) {
-			outText << "      <data key=\"d0\">" << color <<"</data>\n";
-		}
+		outText << "      <data key=\"d0\">" << (*it)->label() <<"</data>\n";
+
 		qDebug()<<" 		... Coordinates x " << (*it)->x()<< " "<<maxWidth
 										<<" y " << (*it)->y()<< " "<<maxHeight;
+
 		outText << "      <data key=\"d1\">" << (*it)->x()/(maxWidth) <<"</data>\n";
 		outText << "      <data key=\"d2\">" << (*it)->y()/(maxHeight) <<"</data>\n";
-		outText << "      <data key=\"d3\">" << (*it)->label() <<"</data>\n";
-		outText << "      <data key=\"d4\">" << (*it)->shape() <<"</data>\n";
+		
+		if (  initVertexSize != m_size ) {
+			outText << "      <data key=\"d3\">" << m_size  <<"</data>\n";
+		}
+
+		if (  QString::compare ( initVertexColor, m_color,  Qt::CaseInsensitive) != 0) {
+			outText << "      <data key=\"d4\">" << m_color <<"</data>\n";
+		}
+		
+		outText << "      <data key=\"d5\">" << (*it)->shape() <<"</data>\n";
 		outText << "    </node>\n";
 	}
 
@@ -2787,11 +2800,11 @@ bool Graph::saveGraphToGraphMLFormat (
 			if  ( 	(weight= this->hasEdge( source,target ) ) !=0 ) 
 			{
 				++edgeCount;
-				color = (*it)->outLinkColor( target );
+				m_color = (*it)->outLinkColor( target );
 				qDebug()<< "				edge no "<< edgeCount 
 						<< " from n1=" << source << " to n2=" << target
 						<< " with weight " << weight 
-						<< " and color " << color.toAscii() ;
+						<< " and color " << m_color.toAscii() ;
 				outText << "    <edge id=\""<< "e"+QString::number(edgeCount) 
 						<< "\" directed=\"" << "true" << "\" source=\"" << source 
 						<< "\" target=\"" << target << "\"";
@@ -2799,13 +2812,13 @@ bool Graph::saveGraphToGraphMLFormat (
 				openToken = true;
 				if (weight > 1) {
 					outText << "> \n";
-					outText << "      <data key=\"d5\">" << weight<<"</data>" <<" \n";
+					outText << "      <data key=\"d6\">" << weight<<"</data>" <<" \n";
 					openToken=false;
 				}
-				if (  QString::compare ( initEdgeColor, color,  Qt::CaseInsensitive) != 0) {
+				if (  QString::compare ( initEdgeColor, m_color,  Qt::CaseInsensitive) != 0) {
 					if (openToken) 
 						outText << "> \n";
-					outText << "      <data key=\"d6\">" << color <<"</data>" <<" \n";	
+					outText << "      <data key=\"d7\">" << m_color <<"</data>" <<" \n";	
 					openToken=false;
 				}
 				if (openToken) 
