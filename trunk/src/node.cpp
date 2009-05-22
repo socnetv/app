@@ -343,12 +343,6 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 		m_path->closeSubpath();
 	}
 
-	//if (m_isLabelInside) {
-		//m_path->addText(
-							//QPointF (0, 0), 
-							//QFont ("Times", 8, QFont::Black, FALSE) ,
-							//m_labelIn);
-	//}
 	painter->drawPath (*m_path);
 }
 
@@ -389,22 +383,14 @@ void Node::die() {
 
 void Node::setLabel ( QString label) {
 	prepareGeometryChange();
-	//if (!m_isLabelInside)
-		m_label->setPlainText(label);
-	//else 
-		//m_labelIn=label;
+	m_label->setPlainText(label);
 	m_hasLabel=true;
 }
 
 
 QString Node::label ( ) { 
 	if (m_hasLabel) {
-		//if (!m_isLabelInside) {
-			return m_label->toPlainText();	
-		//}
-		//else 
-			//return m_labelIn;
-			
+		return m_label->toPlainText();				
 	}	
 	else return "";
 }
@@ -541,12 +527,8 @@ void Node::deleteOutLink(Edge *link){
 void Node::deleteLabel(){
 	qDebug ("Node: deleteLabel ");
 	m_hasLabel=false;
-	//if (m_isLabelInside) {
-		m_label->hide();
-		graphicsWidget->removeItem(m_label);		
-	//}
-	//delete m_label;
-
+	m_label->hide();
+	graphicsWidget->removeItem(m_label);		
 }
 
 

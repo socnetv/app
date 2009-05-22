@@ -1522,12 +1522,14 @@ void MainWindow::initNet(){
 	activeGraph.clear();
 	
 	activeGraph.setShowLabels(this->showLabels());
+	activeGraph.setShowLabelsInsideNodes( this->showLabelsInsideNodes());
 	activeGraph.setInitVertexColor(initNodeColor);
 	activeGraph.setInitEdgeColor(initLinkColor);
 	activeGraph.setInitVertexLabelColor(initLabelColor);
 	activeGraph.setInitVertexShape(initNodeShape);
 	activeGraph.setInitVertexSize(initNodeSize);
 
+	
 	/** Clear scene **/
 	graphicsWidget->clear();
 	
@@ -1928,9 +1930,8 @@ void MainWindow::fileType (
 	Called when "Create Node" button is clicked on the Main Window.
 */
 void MainWindow::addNode() {
-	qDebug("MW: addNode(). Calling activeGraph::createVertex() for a new vertex (named -1)");
+	qDebug("MW: addNode(). Calling activeGraph::createVertex() for -1 - max width and height %i, %i", graphicsWidget->width()-10,  graphicsWidget->height()-10);
 	activeGraph.createVertex(-1, graphicsWidget->width()-10,  graphicsWidget->height()-10);  // minus a  screen edge offset...
-	qDebug("MW: addNode(). Calling activeGraph::createVertex() max width and height %i, %i", graphicsWidget->width()-10,  graphicsWidget->height()-10);
 	statusMessage( tr("New node (numbered %1) added.").arg(activeGraph.lastVertexNumber())  );
 }
 
