@@ -3129,8 +3129,6 @@ void MainWindow::slotChangeNodeSize(){
 		statusMessage( tr("Cannot change nothing.")  );
 		return;
 	}
-
-//TODO nodeSize = f(nodeValue) ...
 	if (clickedJimNumber==-1) { 
 		statusMessage( tr("Error. ")  );
 		return;
@@ -3142,6 +3140,7 @@ void MainWindow::slotChangeNodeSize(){
 		return;
 	}
 	clickedJim->setSize(newSize);
+	activeGraph.setVertexSize(clickedJimNumber,newSize);
 	graphChanged();
 	statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
 	return;
