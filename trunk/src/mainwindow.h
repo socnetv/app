@@ -221,6 +221,7 @@ public slots:
 	void slotPrintDebug(bool toggle);
 	void slotViewToolBar(bool toggle);
 	void slotViewStatusBar(bool toggle);
+	void slotBackgroundImage(bool toggle);
 	
 	//HELP MENU
 	void slotTips();
@@ -302,7 +303,7 @@ private:
 	QAction *filterNodesAct, *filterLinksAct, *transformNodes2LinksAct, *symmetrizeAct;
 	QAction *changeBackColorAct, *changeAllNodesColorAct, *changeAllLinksColorAct, *changeAllNumbersColorAct, *changeAllLabelsColorAct;
 	QAction *drawLinksWeightsAct, *displayLinksWeightNumbersAct, *displayLinksAct, *displayLinksArrowsAct, *drawLinksBezier;
-	QAction *viewToolBar, *viewStatusBar, *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
+	QAction *backgroundImageAct, *viewToolBar, *viewStatusBar, *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
 	QAction *netDensity, *symmetryAct,   *graphDistanceAct, *averGraphDistanceAct, *distanceMatrixAct, *diameterAct, *clusteringCoefAct;
 	QAction *cOutDegreeAct, *cInDegreeAct, *cClosenessAct, *cBetweenessAct, *cInformationalAct, *cGraphAct, *cStressAct, *cEccentAct;
 	QAction *randLayoutAct, *randCircleLayoutAct, *circleOutDegreeLayoutAct, *circleInDegreeLayoutAct, *circleClosenessLayoutAct;

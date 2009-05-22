@@ -19,8 +19,13 @@ Blog:   http://dimitris.apeiro.gr
 
 SocNetV is a cross-platform application, developed in Qt4/C++. 
 This means you can run in on Linux, Mac and Windows. 
+
 It is Free Software, distributed under the General Public Licence Version 3 
-(see COPYING).
+(see COPYING below). The application is not a "finished" product. There is no warranty of
+efficiency, correctness or usability. 
+
+Nevertheless, we are looking forward to help you if you have any problem. See section 5 (bug reporting) below.
+
 
 
 2. Installation
@@ -85,19 +90,18 @@ are available. Type:
 --------
 
 For usage documentation, see online help.
-When running SocNetV, press F1 to display the SocNetV Manual.
+
+Or, when running SocNetV, press F1 to display the SocNetV Manual.
 
 There are some example networks inside the /usr/local/doc/socnetv/net folder.
 Just press Ctrl+O, go there  and choose one file.
 
 
-5. Bugs
--------
+5. Bug reporting
+----------------
 
-SocNetV is not a "finished" product. There is no warranty of 
-efficiency, correctness or usability.
-
-Please, send any bug reports to dimitris.kalamaras@gmail.com.
+Please, file any bug reports in our bug tracker:
+https://bugs.launchpad.net/socnetv/+filebug
 
 
 6. Note to packagers

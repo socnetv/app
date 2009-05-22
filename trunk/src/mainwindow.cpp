@@ -888,6 +888,13 @@ void MainWindow::initActions(){
 	viewStatusBar->setChecked(true);
 	connect(viewStatusBar, SIGNAL(toggled(bool)), this, SLOT(slotViewStatusBar(bool)));
 	
+	backgroundImageAct = new QAction(tr("Background Image"),	this);
+	backgroundImageAct->setStatusTip(tr("Enables/disables displaying a custim image in the background"));
+	backgroundImageAct->setWhatsThis(tr("Enable or disable background image\n\n If you enable it, you will be asked for a image file, which will be displayed in the background instead of plain color.."));
+	backgroundImageAct->setCheckable(true);
+	backgroundImageAct->setChecked(false);
+	connect(backgroundImageAct, SIGNAL(toggled(bool)), this, SLOT(slotBackgroundImage(bool)));
+	
 
 
 	/**
@@ -1123,6 +1130,7 @@ void MainWindow::initMenuBar() {
 	viewOptionsMenu = new QMenu (tr("&View"));
 	viewOptionsMenu -> setIcon(QIcon(":/images/view.png"));
 	optionsMenu -> addMenu (viewOptionsMenu);
+	viewOptionsMenu-> addAction (backgroundImageAct);
 	viewOptionsMenu-> addAction (antialiasingAct);
 	viewOptionsMenu-> addAction (printDebugAct);
 	viewOptionsMenu-> addAction (showProgressBarAct);
@@ -5169,6 +5177,25 @@ void MainWindow::slotViewStatusBar(bool toggle) {
 }
 
 
+void MainWindow::slotBackgroundImage(bool toggle) {
+	statusMessage( tr("Toggle BackgroundImage..."));
+	QString m_fileName ; 
+	if (toggle == false)   {
+		statusMessage( tr("BackgroundImage off.") );	
+		graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor)); 
+	}
+	else   {
+		m_fileName = QFileDialog::getOpenFileName( this, tr("Select one image"), "", 
+					tr("All (*);;PNG (*.png);;JPG (*.jpg)")
+					);
+		graphicsWidget->setBackgroundBrush(QImage(m_fileName));
+	 	graphicsWidget->setCacheMode(QGraphicsView::CacheBackground);
+
+		statusMessage( tr("BackgroundImage on.") );	
+	}
+
+	
+}
 
 /**
 *  Displays a random tip
