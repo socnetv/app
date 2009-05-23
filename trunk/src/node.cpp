@@ -39,13 +39,18 @@
 
 #include <math.h> //sqrt
 
-Node::Node( GraphicsWidget* gw, int num, int size, QString col, QString shape, bool labIn, int ldist, int ndist, QPointF p) : graphicsWidget (gw) {
+Node::Node( GraphicsWidget* gw, int num, int size, 
+			QString col, QString shape, bool numIn, 
+			int ldist, int ndist, QPointF p 
+			) : graphicsWidget (gw) 
+{
 	graphicsWidget->scene()->addItem(this); //Without this nodes dont appear on the screen...
 	setFlag(ItemIsMovable); //Without this, nodes do not move...
 	m_num=num;
 	m_size=size;
 	m_hasLabel=false;
-	m_isLabelInside = labIn;
+	m_hasNumber=false;
+	m_isNumberInside = numIn;
 	m_shape=shape;
 	m_col_str=col;
 	m_col=QColor(col);
@@ -55,7 +60,7 @@ Node::Node( GraphicsWidget* gw, int num, int size, QString col, QString shape, b
 	m_poly_t=new QPolygon(3);
 	m_poly_d=new QPolygon(4);
 	qDebug()<< "Node: constructor: initial position at: "<< this->x()<<", "<<this->y()<< " Moving now at: "<< p.x()<<", "<<p.y();;
-	setPos(p);
+
 
 
 /*	connect (this, SIGNAL(nodeClicked(Node*)),graphicsWidget , SLOT(nodeClicked(Node*)));
@@ -365,14 +370,8 @@ void Node::die() {
 		edge->remove();
 		graphicsWidget->removeItem(edge);
 	}
-	foreach (NodeNumber *num, gfxNumberList) {
-		qDebug("Node: removing number in gfxNumberList");
-		num->hide();
-		this->deleteNumber(num);
-		graphicsWidget->removeItem(num);
-	}
+	this->deleteNumber();
 	this->deleteLabel();
-
 	inEdgeList.clear();
 	outEdgeList.clear();
 	this->hide();
@@ -397,8 +396,25 @@ QString Node::label ( ) {
 
 
 
-void Node::setLabelInside (bool){
+void Node::setNumberInside (bool numIn){
+
+
+	m_isNumberInside = numIn;
 	
+	//Move its graphic number
+	QPointF myPos = this->pos();
+	if ( m_hasNumber ) 
+			{
+				if (!m_isNumberInside) 	{ //move it outside
+						m_number -> setZValue(254);
+						m_number -> setPos( myPos.x()+m_nd, myPos.y() );
+					}	 
+					else { 				//move it inside node
+						this->setSize(m_size+2); //increase size to display nicely the number  
+						m_number -> setZValue(255);
+						m_number->setPos( myPos.x() - m_size-2, myPos.y() - m_size-2 );
+					}	 
+			}
 }
 
 
@@ -418,19 +434,24 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
 				edge->adjust();
 			foreach (Edge *edge, outEdgeList)		//Move each outEdge of this node
 				edge->adjust();
-			foreach (NodeNumber *num, gfxNumberList) 	//Move its graphic number
-				num->setPos( newPos.x()+m_nd, newPos.y());
-				
-			if (m_hasLabel) {
-				if (!m_isLabelInside) 		//move the label outside 
-					m_label->setPos( newPos.x()-2, newPos.y()+m_ld);
-				else 			//move the label inside	 
-					m_label->setPos( newPos.x(), newPos.y());
-				m_label->setZValue(256);
+			
+			//Move its graphic number
+			if ( m_hasNumber ) 
+			{
+				qDebug()<< "Node: itemChange() moving number to " << newPos.x() << " " << newPos.y();
+				if (!m_isNumberInside) 	{ //move it outside
+						m_number -> setZValue(254);
+						m_number -> setPos( newPos.x()+m_nd, newPos.y());
+					}	 
+					else { 				//move it inside node
+						m_number -> setZValue(255);
+						m_number->setPos( newPos.x() - m_size-2, newPos.y() - m_size-2 );
+					}	 
 			}
 			
-				
-
+			if (m_hasLabel) {
+				m_label->setPos( newPos.x()-2, newPos.y()+m_ld);
+			}
 				
 			if ( newPos.x() !=0 && newPos.y() != 0 ){
 				qDebug()<<  "Node: ItemChange(): Emitting nodeMoved() for "<< nodeNumber()<< " at: "<<  newPos.x()<< ", "<<  newPos.y();
@@ -537,17 +558,12 @@ void Node::clearLabel(){
 }
 
 
-void Node::deleteNumber( NodeNumber *number ){
+void Node::deleteNumber( ){
 	qDebug ("Node: deleteNumber ");
-//	qDebug ("Node: numberList has %i items", gfxNumberList.size());
-	gfxNumberList.remove( number);
-//	qDebug ("Node: numberList has now %i items", gfxNumberList.size());
-
+	m_number->hide();
+	graphicsWidget->removeItem(m_number);	
 }
 
-void Node::clearNumber(){
-	//gfxNumberList
-}
 
 
 
@@ -558,7 +574,8 @@ void Node::addLabel (NodeLabel* gfxLabel  )  {
 }
 
 void Node::addNumber (NodeNumber *gfxNum ) {
-	 gfxNumberList.push_back(gfxNum) ;
+	 m_number=gfxNum ;
+	 m_hasNumber=true;
 }
 
 // Node::~Node(){

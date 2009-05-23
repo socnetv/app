@@ -65,7 +65,7 @@ public:
 	void setInitNumberDistance(int);
 	void setInitLabelDistance(int);
 
-	void setLabelInsideNode(int, bool);
+	void setNumbersInsideNodes(bool);
 	
 	bool setNodeColor(int, QString);
 	

@@ -96,11 +96,13 @@ public:
 	void addLabel (NodeLabel* gfxLabel  ) ;
 	void deleteLabel();
 	void clearLabel();
-	void setLabelInside(bool);
+	
+	void setNumberInside(bool);
 
 	void addNumber (NodeNumber *gfxNum ) ;
-	void deleteNumber(NodeNumber*);
-	void clearNumber(); //clears numberList
+	void deleteNumber();
+	
+	
 	void toggleAntialiasing(bool);
 protected:
  	QVariant itemChange(GraphicsItemChange change, const QVariant &value);
@@ -123,11 +125,12 @@ private:
 	int m_num, m_size, m_nd, m_ld;
 	QString  m_shape,  m_col_str, m_labelIn;
 	QColor m_col, m_col_dark;
-	bool m_hasLabel, m_isLabelInside;
+	bool m_hasNumber, m_hasLabel, m_isNumberInside;
 	/**Lists of elements attached to this node */
 	list<Edge*> inEdgeList, outEdgeList;
 	list<NodeNumber*> gfxNumberList;
-	NodeLabel* m_label;
+	NodeLabel *m_label;
+	NodeNumber *m_number;
 };
 
 #endif

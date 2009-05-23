@@ -241,7 +241,7 @@ QString Vertex::color(){
 
 
 void Vertex::setX(float  x){
-	qDebug("Vertex setX with %f",x);
+//	qDebug("Vertex setX with %f",x);
 	m_x=x;
 }
 
@@ -251,7 +251,7 @@ float Vertex::x(){
 
 
 void Vertex::setY(float y){
-	qDebug("Vertex setY with %f", y);
+//	qDebug("Vertex setY with %f", y);
 	m_y=y;
 }
 

@@ -107,29 +107,26 @@ void GraphicsWidget::drawNode(
 								QString nodeLabel, QString labelColor, 
 								QPointF p, 
 								QString shape, 
-								bool showLabels, bool labelInsideNode, bool showNumbers
+								bool showLabels, bool numberInsideNode, bool showNumbers
 								) {
-	qDebug()<< "GW: drawNode(): drawing new node at: " << p.x() << ", "<< p.y();
+	qDebug()<< "GW: drawNode(): drawing new node at: " 
+			<< p.x() << ", "<< p.y() 
+			<< " First we create node, then label/number, finally move node" ;
 
+	if (numberInsideNode)
+		size = size +3;
+	
 	Node *jim= new Node (
 						this, 
 						num, size, nodeColor, shape, 
-						labelInsideNode, m_labelDistance, m_numberDistance, 
+						numberInsideNode, m_labelDistance, m_numberDistance, 
 						p
 						);
 
-	//Drawing node label
+	//Drawing node label - label will be moved by the node movement (see last code line in this method)
 	NodeLabel *labelJim = new  NodeLabel (jim, nodeLabel, scene() );
 	labelJim -> setDefaultTextColor (labelColor);
 	labelJim -> setTextInteractionFlags(Qt::TextEditorInteraction);
-	if (!labelInsideNode){
-		qDebug() << " GW: The node will display the label outside of it! ";
-		labelJim -> setPos(p.x()-2, p.y()+m_labelDistance);
-	}
-	else {
-		qDebug() << " GW: We're told the node will display the label inside it! ";
-		labelJim -> setPos(p.x(), p.y());
-	}
 	
 	if (showLabels) 
 		qDebug()<< "GW: drawNode: display label " <<  nodeLabel.toAscii() << " for node " << num;
@@ -138,11 +135,16 @@ void GraphicsWidget::drawNode(
 		labelJim->hide();
 	}
 
-
-	qDebug()<< "GW: drawNode(): drawing node number...";
-	NodeNumber *numberJim = new  NodeNumber ( jim, size+2, QString::number(num), scene() );
-	numberJim -> setPos( p.x()+m_numberDistance, p.y() );
+	// drawing node number - label will be moved by the node movement (see last code line in this method)
+	int numSize;
+	if (!numberInsideNode)
+		numSize = size + 2;
+	else 
+		numSize = size;
+		
+	NodeNumber *numberJim = new  NodeNumber ( jim, numSize, QString::number(num), scene() );
 	numberJim -> setDefaultTextColor (m_numberColor);
+	
 	if (!showNumbers){
 		numberJim->hide();
 	}
@@ -150,6 +152,9 @@ void GraphicsWidget::drawNode(
 	//add the new node to a nodeVector to ease finding which node has a specific nodeNumber 
 	//The nodeVector is used in drawEdge() method
 	nodeVector.push_back(jim);
+	
+	//finally, move the node where it belongs!
+	jim -> setPos(p.x(), p.y());
 }
 
 
@@ -449,17 +454,18 @@ bool GraphicsWidget::setNodeColor(int nodeNumber, QString color){
 	Makes node label appear inside node.
 	Called from MW on user request.
 */
-void   GraphicsWidget::setLabelInsideNode(int nodeNumber, bool labIn){
-	QList<QGraphicsItem *> list=scene()->items();
-	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!= list.end() ; it++){
-		if ( (*it)->type()==TypeNode) {
-			Node *node=(Node*) (*it);
-			if ( node->nodeNumber()==nodeNumber ) {
-				node->setLabelInside(labIn);
-			}
-		}
+void   GraphicsWidget::setNumbersInsideNodes(bool numIn){
+	qDebug("GW setting initNumberDistance");
+	foreach (Node *node, nodeVector) {
+		qDebug("GW: Number foundMovin it now...");
+		node->setNumberInside(numIn);
+		if (numIn)
+			this->setInitNodeSize(m_nodeSize+2);
+		else 
+			this->setInitNodeSize(m_nodeSize-2);
 	}
 }
+
 
 
 /** 
@@ -512,6 +518,7 @@ void GraphicsWidget::setInitNodeSize(int size){
 	qDebug("GW setting initNodeSize");
 	m_nodeSize=size;
 }
+
 
 
 

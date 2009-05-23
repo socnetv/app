@@ -796,12 +796,12 @@ void MainWindow::initActions(){
 	connect(displayNodeLabelsAct, SIGNAL(toggled(bool)), this, SLOT(slotDisplayNodeLabels(bool)));
 
 
-	displayLabelsInsideNodesAct= new QAction(tr("Display Labels Inside Nodes"),	this );
-	displayLabelsInsideNodesAct->setStatusTip(tr("Toggles displaying labels inside nodes"));
-	displayLabelsInsideNodesAct->setWhatsThis(tr("Display Labels Inside Nodes\n\nTurns on/off displaying labels inside nodes"));
- 	displayLabelsInsideNodesAct->setCheckable (true);
-	displayLabelsInsideNodesAct->setChecked(false);
-	connect(displayLabelsInsideNodesAct, SIGNAL(toggled(bool)), this, SLOT(slotDisplayLabelsInsideNodes(bool)));
+	displayNumbersInsideNodesAct= new QAction(tr("Display Numbers Inside Nodes"),	this );
+	displayNumbersInsideNodesAct->setStatusTip(tr("Toggles displaying numbers inside nodes"));
+	displayNumbersInsideNodesAct->setWhatsThis(tr("Display Numbers Inside Nodes\n\nTurns on/off displaying nodenumbers inside nodes"));
+ 	displayNumbersInsideNodesAct->setCheckable (true);
+	displayNumbersInsideNodesAct->setChecked(false);
+	connect(displayNumbersInsideNodesAct, SIGNAL(toggled(bool)), this, SLOT(slotDisplayNumbersInsideNodes(bool)));
 
 
 	displayLinksAct = new QAction(tr("Display Links"),	this);
@@ -889,7 +889,7 @@ void MainWindow::initActions(){
 	connect(viewStatusBar, SIGNAL(toggled(bool)), this, SLOT(slotViewStatusBar(bool)));
 	
 	backgroundImageAct = new QAction(tr("Background Image"),	this);
-	backgroundImageAct->setStatusTip(tr("Enables/disables displaying a custim image in the background"));
+	backgroundImageAct->setStatusTip(tr("Enables/disables displaying a user-defined custom image in the background"));
 	backgroundImageAct->setWhatsThis(tr("Enable or disable background image\n\n If you enable it, you will be asked for a image file, which will be displayed in the background instead of plain color.."));
 	backgroundImageAct->setCheckable(true);
 	backgroundImageAct->setChecked(false);
@@ -1114,7 +1114,7 @@ void MainWindow::initMenuBar() {
 	optionsMenu -> addMenu (nodeOptionsMenu);
 	nodeOptionsMenu -> addAction (displayNodeNumbersAct);
 	nodeOptionsMenu -> addAction (displayNodeLabelsAct);
-	nodeOptionsMenu -> addAction (displayLabelsInsideNodesAct);
+	nodeOptionsMenu -> addAction (displayNumbersInsideNodesAct);
 
 	linkOptionsMenu=new QMenu(tr("Links"));
 	linkOptionsMenu -> setIcon(QIcon(":/images/line.png"));
@@ -1530,7 +1530,7 @@ void MainWindow::initNet(){
 	activeGraph.clear();
 	
 	activeGraph.setShowLabels(this->showLabels());
-	activeGraph.setShowLabelsInsideNodes( this->showLabelsInsideNodes());
+	activeGraph.setShowNumbersInsideNodes( this->showNumbersInsideNodes());
 	activeGraph.setInitVertexColor(initNodeColor);
 	activeGraph.setInitEdgeColor(initLinkColor);
 	activeGraph.setInitVertexLabelColor(initLabelColor);
@@ -4592,7 +4592,7 @@ void MainWindow::slotDisplayNodeNumbers(bool toggle) {
 	}
 	else{
 		graphicsWidget->setAllItemsVisibility(TypeNumber, true);
-		statusMessage( tr("Node Labels are visible again...") );
+		statusMessage( tr("Node Numbers are visible again...") );
 	}
 }
 
@@ -4609,37 +4609,40 @@ bool MainWindow::showLabels(){
 /**
 *	Called by Graph:: and this->initNet()
 */
-bool MainWindow::showLabelsInsideNodes(){
-	return displayLabelsInsideNodesAct->isChecked();
+bool MainWindow::showNumbersInsideNodes(){
+	return displayNumbersInsideNodesAct->isChecked();
 }
 
 
 
 /**
-*  Turns on/off displaying the labels of the nodes.
+*  Turns on/off displaying the nodenumbers inside the nodes.
 */
-void MainWindow::slotDisplayLabelsInsideNodes(bool toggle){
- 	if (!fileLoaded && ! networkModified) {
-		QMessageBox::critical(this, "Error",tr("There are no nodes! \nLoad a network file or create a new network first. "), "OK",0);
-		statusMessage( tr("No nodes found. Sorry...") );
-		return;
-	}
-	statusMessage( tr("Toggle Nodes Labels. Please wait...") );
+void MainWindow::slotDisplayNumbersInsideNodes(bool toggle){
+	statusMessage( tr("Toggle Numbers inside nodes. Please wait...") );
 
-	if (!toggle) 	{
-//		graphicsWidget->setAllItemsVisibility(TypeLabel, false);
-		statusMessage( tr("Node Labels are invisible now. Click the same option again to display them.") );
-		return;
+	if ( showNumbers() ) 	{
+		// ?
 	}
 	else{
-		graphicsWidget->setAllItemsVisibility(TypeLabel, true);
-		statusMessage( tr("Node Labels are visible again...") );
+		displayNodeNumbersAct->setChecked(true);
 	}
-	activeGraph.setShowLabelsInsideNodes(toggle);
+	
+	activeGraph.setShowNumbersInsideNodes(toggle);
+	graphicsWidget -> setNumbersInsideNodes(toggle);
+	
+	if (toggle){
+
+		statusMessage( tr("Numbers inside nodes...") );		
+	}
+	else {
+		
+		statusMessage( tr("Numbers outside nodes...") );
+	}
 }
 
 /**
-*  Turns on/off displaying labels inside nodes.
+*  Turns on/off displaying labels
 */
 void MainWindow::slotDisplayNodeLabels(bool toggle){
  	if (!fileLoaded && ! networkModified) {
@@ -5177,6 +5180,9 @@ void MainWindow::slotViewStatusBar(bool toggle) {
 }
 
 
+/*
+ * Enables/disables displaying a user-defined custom image in the background
+ */ 
 void MainWindow::slotBackgroundImage(bool toggle) {
 	statusMessage( tr("Toggle BackgroundImage..."));
 	QString m_fileName ; 

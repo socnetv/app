@@ -90,7 +90,7 @@ public:		/**PUBLIC FUNCTIONS NOT VISIBLE BY OTHER WIDGETS NOR BY SLOT/LINK MECHA
 	void makeThingsLookRandom();
 
 	bool showLabels();
-	bool showLabelsInsideNodes();
+	bool showNumbersInsideNodes();
 	bool showNumbers();
 
 	bool loadNetworkFile( QString);
@@ -199,7 +199,7 @@ public slots:
 	//OPTIONS MENU
 	void slotDisplayNodeNumbers(bool toggle);
 	void slotDisplayNodeLabels(bool toggle);
-	void slotDisplayLabelsInsideNodes(bool toggle);
+	void slotDisplayNumbersInsideNodes(bool toggle);
 	void slotChangeAllNodesSize();
 	void slotChangeAllNodesShape();
 	void slotChangeNumbersSize();
@@ -294,7 +294,7 @@ private:
 	QAction *viewNetworkFileAct, *viewSociomatrixAct, *createUniformRandomNetworkAct;
 	QAction *createGaussianRandomNetworkAct, *createLatticeNetworkAct, *createConnectedRandomNetworkAct;
 	QAction *createSmallWorldRandomNetworkAct, *createSameDegreeRandomNetworkAct;
-	QAction *displayNodeNumbersAct, *displayNodeLabelsAct, *displayLabelsInsideNodesAct;
+	QAction *displayNodeNumbersAct, *displayNodeLabelsAct, *displayNumbersInsideNodesAct;
 	QAction *findNodeAct,*addNodeAct, *addLinkAct, *removeNodeAct, *removeLinkAct;
 	QAction *changeNumbersSizeAct, *changeNodeLabelAct, *changeNodeColorAct, *changeNodeValueAct, *changeNodeSizeAct;
 	QAction *changeLabelsSizeAct, *changeAllNodesSizeAct, *changeAllNodesShapeAct;

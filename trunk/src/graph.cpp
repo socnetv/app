@@ -96,7 +96,7 @@ void Graph::createVertex(int i, int size, QString nodeColor, QString label, QStr
 	addVertex(i, 1, size,  nodeColor, label, lColor, p, nodeShape);
 	//emit a signal for MW to create the new node onto the canvas.
 	qDebug()<<"*** Graph:: createVertex(): emitting drawNode signal to GW";
-	emit drawNode( i, size,  nodeColor, label, lColor, p, nodeShape, initShowLabels, initLabelsInsideNodes, true);
+	emit drawNode( i, size,  nodeColor, label, lColor, p, nodeShape, initShowLabels, initNumbersInsideNodes, true);
 	emit graphChanged(); 
 	initVertexColor=nodeColor; //just to draw new nodes of the same color with that of the file loaded, when user clicks on the canvas
 	initVertexShape=nodeShape;
@@ -2848,8 +2848,8 @@ void Graph::setShowLabels(bool toggle){
 
 }
 
-void Graph::setShowLabelsInsideNodes(bool toggle){
-	initLabelsInsideNodes=toggle;
+void Graph::setShowNumbersInsideNodes(bool toggle){
+	initNumbersInsideNodes=toggle;
 
 }
 

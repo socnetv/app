@@ -37,7 +37,7 @@ NodeNumber::NodeNumber( Node *jim , int size, QString labelText, QGraphicsScene 
 }
 
 void NodeNumber::removeRefs(){
-	source->deleteNumber(this);
+	source->deleteNumber();
 
 }
 

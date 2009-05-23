@@ -105,7 +105,7 @@ public:
 	~Graph();				//destroy
 	
 	void setShowLabels(bool toggle);
-	void setShowLabelsInsideNodes(bool toggle);
+	void setShowNumbersInsideNodes(bool toggle);
 
 	/**FILES (READ AND WRITE)*/
 	bool loadGraph (	
@@ -234,8 +234,10 @@ public:
 	int factorial (int);				// for  (n 2)p edges calculation
 
 
-	/** index stores the index of each vertex inside m_graph. It starts at zero (0).
-	This is crucial when we want to find the place of a vertex inside m_graph after adding or removing many vertices */
+	/*
+	*   index stores the index of each vertex inside m_graph. It starts at zero (0).
+	*   This is crucial when we want to find the place of a vertex inside m_graph after adding or removing many vertices 
+	*/
 	imap_i index;			
 	/** maps have O(logN) lookup complexity
 		Consider using tr1::hashmap which has O(1) lookup, but this is not ISO C++ yet :(  
@@ -298,7 +300,7 @@ private:
 	int outEdgesVert, inEdgesVert, reciprocalEdgesVert;
 	int timerId,  layoutType, canvasWidth, canvasHeight;
 	
-	bool order, initShowLabels, initLabelsInsideNodes;
+	bool order, initShowLabels, initNumbersInsideNodes;
 	bool adjacencyMatrixCreated, symmetricAdjacencyMatrix, graphModified, distanceMatrixCreated;
 	bool m_undirected;
 
