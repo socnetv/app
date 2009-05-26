@@ -58,11 +58,12 @@ public:
 	void readGraphMLElementGraph(QXmlStreamReader &);
 	void readGraphMLElementNode (QXmlStreamReader &);
 	void endGraphMLElementNode (QXmlStreamReader &);
-	void readGraphMLElementEdge (QXmlStreamReader &);
+	void readGraphMLElementEdge (QXmlStreamAttributes &);
 	void endGraphMLElementEdge (QXmlStreamReader &);
 	void readGraphMLElementData (QXmlStreamReader &);
 	void readGraphMLElementUnknown (QXmlStreamReader &);
-	void readGraphMLElementKey (QXmlStreamReader &);
+	void readGraphMLElementKey (QXmlStreamAttributes &);
+	bool xmlStreamHasAttribute( QXmlStreamAttributes &, QString ) const ;
 	void readGraphMLElementDefaultValue(QXmlStreamReader &);
 	void readGraphMLElementNodeGraphics (QXmlStreamReader &);
 	void readGraphMLElementEdgeGraphics (QXmlStreamReader &);

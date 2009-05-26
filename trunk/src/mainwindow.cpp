@@ -30,6 +30,7 @@
 
 #include <QtGui>
 #include <QtDebug>
+#include <QSpinBox>
 
 
 #include "mainwindow.h"
@@ -41,6 +42,7 @@
 #include "edgeweight.h"
 #include "htmlviewer.h"
 #include "texteditor.h"
+#include "filteredgesdialog.h"
 #include "backgrcircle.h"
 #include "vertex.h"
 
@@ -173,6 +175,10 @@ MainWindow::MainWindow(const QString & m_fileName) {
 	connect( zoomInAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomIn() ) );
 
 	connect( rotateSpinBox, SIGNAL(valueChanged(int)), graphicsWidget, SLOT( rot(int) ) );
+	
+	
+	connect( m_filterEdgesDialog, SIGNAL(userChoices( double, bool) ), 
+				graphicsWidget, SLOT( filterEdges(double, bool) ) );	
 	
 	connect( circleClearBackgrCirclesAct, SIGNAL(activated()), 
 			graphicsWidget, SLOT(clearBackgrCircles()));
@@ -489,11 +495,11 @@ void MainWindow::initActions(){
 	filterNodesAct->setWhatsThis(tr("Filter Nodes\n\nFilters Nodes of some value out of the network."));
 	connect(filterNodesAct, SIGNAL(activated()), this, SLOT(slotFilterNodes()));
 
-	filterLinksAct = new QAction(tr("Filter Links"), this);
-	filterLinksAct -> setEnabled(false);
-	filterLinksAct->setStatusTip(tr("Filters Links of some weight out of the network"));
-	filterLinksAct->setWhatsThis(tr("Filter Links\n\nFilters Link of some specific weight out of the network."));
-	connect(filterLinksAct, SIGNAL(activated()), this, SLOT(slotFilterLinks()));
+	filterEdgesAct = new QAction(tr("Filter Links"), this);
+	filterEdgesAct  -> setEnabled(true);
+	filterEdgesAct ->setStatusTip(tr("Filters Links of some weight out of the network"));
+	filterEdgesAct ->setWhatsThis(tr("Filter Links\n\nFilters Link of some specific weight out of the network."));
+	connect(filterEdgesAct , SIGNAL(activated()), this, SLOT(slotShowFilterEdgesDialog()));
 
 	changeBackColorAct = new QAction(QIcon(":/images/color.png"), tr("Change Background Color"), this);
 	changeBackColorAct->setStatusTip(tr("Click to change the background color"));
@@ -1014,8 +1020,8 @@ void MainWindow::initMenuBar() {
 	filterMenu = new QMenu ( tr("Filter..."));
 	editMenu ->addMenu(filterMenu);
 	
-//   filterNodesAct -> addTo(filterMenu);
-	filterMenu -> addAction(filterLinksAct);
+	filterMenu -> addAction(filterNodesAct );
+	filterMenu -> addAction(filterEdgesAct );
 	
 	editMenu ->addSeparator();
 //   transformNodes2LinksAct -> addTo (editMenu);
@@ -3465,67 +3471,64 @@ void MainWindow::slotFilterNodes(){
 
 
 
-
 /**
-*	Filters links according to their weight 
-*	All links weighted more (or less) than the specified w will be removed.
+*	Shows a dialog where the user selects what edges to filter  
 */ 
-
-void MainWindow::slotFilterLinks(){
-/*	mapEdges.clear();
+void MainWindow::slotShowFilterEdgesDialog() {
 	if (!fileLoaded && !networkModified  )   {
 		statusMessage(  QString(tr("Load a network file first. \nThen you may ask me to compute something!"))  );
 		return;
 	}
-	bool ok=false, moreWeighted=false;
-	int selectedWeight=0;
-	switch (
-             QMessageBox::information(this, "Filter Links",tr(" Do you want to filter out links weighted greater-equal or less-equal than a number?"), ">=","<=",0,1)
-            )
-	{
-		case 0:  moreWeighted = true;
-			selectedWeight =   QInputDialog::getInteger(
-			"Filter Links", tr("Filter all links with weight greater-equal than: "),
-			0, 0, 10, 1, &ok, this ) ;
-			break;
-		case 1:  moreWeighted=false;
-			selectedWeight =   QInputDialog::getInteger(
-			"Filter Links", tr("Filter all links with weight less-equal than: "),
-			0, 0, 10, 1, &ok, this ) ;
-			break;
+	m_filterEdgesDialog = new FilterEdgesDialog(this);
+	m_filterEdgesDialog -> show();	
+}
+
+
+/**
+*	Filters links according to their weight 
+*	All links weighted more (or less) than the specified w will be removed.
+* 	Called from FilterEdgesDialog signal
+*/ 
+void MainWindow::slotFilterEdges(double m_threshold, bool overThreshold){
+
+	if (!fileLoaded && !networkModified  )   {
+		statusMessage(  QString(tr("Load a network file first. \nThen you may ask me to compute something!"))  );
+		return;
 	}
-	QList<QGraphicsItem *> list=scene->items();
-	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
-		if ( (*it) -> type() == Link_Rtti ){
-			Edge *link = (Edge*) (*it);
-			if ( link->weight()>=selectedWeight && moreWeighted){
-				(*it)->setVisible(false);
-				mapEdges [ link->sourceNodeNumber() ] = link->targetNodeNumber();
-				qDebug("GT: Hiding link from node %i to node %i",link->sourceNodeNumber(),mapEdges[link->sourceNodeNumber() ]);
+	bool ok=false;
+	
+	//QList<QGraphicsItem *> list=scene->items();
+	//for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
+		//if ( (*it) -> type() == Link_Rtti ){
+			//Edge *link = (Edge*) (*it);
+			//if ( link->weight()>=selectedWeight && moreWeighted){
+				//(*it)->setVisible(false);
+				//mapEdges [ link->sourceNodeNumber() ] = link->targetNodeNumber();
+				//qDebug("GT: Hiding link from node %i to node %i",link->sourceNodeNumber(),mapEdges[link->sourceNodeNumber() ]);
 
-			}
-			else if ( link->weight()<=selectedWeight && !moreWeighted) {
-				(*it)->setVisible(false);
-				mapEdges [ link->sourceNodeNumber() ] = link->targetNodeNumber();
-				qDebug("LT: Hiding link from node %i to node %i",link->sourceNodeNumber(),mapEdges[link->sourceNodeNumber() ]);
-			}
-			else {
-// 				mapEdges [link->sourceNodeNumber() ]= -1; 
-				(*it)->setVisible(true);
-			}
-		}
-	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
-		if ( (*it) -> type() == Arrow_Rtti ){
-			Arrow *arrow = (Arrow*) (*it);
-			qDebug("Arrow from node %i to node %i",arrow->fromNode(),mapEdges[arrow->sourceNodeNumber() ]);
-			if ( mapEdges[arrow->sourceNodeNumber() ]  ){
-				qDebug(" Hiding arrow from node %i to node %i",arrow->sourceNodeNumber(),mapEdges[arrow->sourceNodeNumber() ]);
-				arrow->setVisible(false);
-			}
-			else (*it)->setVisible(true);
-		}
+			//}
+			//else if ( link->weight()<=selectedWeight && !moreWeighted) {
+				//(*it)->setVisible(false);
+				//mapEdges [ link->sourceNodeNumber() ] = link->targetNodeNumber();
+				//qDebug("LT: Hiding link from node %i to node %i",link->sourceNodeNumber(),mapEdges[link->sourceNodeNumber() ]);
+			//}
+			//else {
+ 				//mapEdges [link->sourceNodeNumber() ]= -1; 
+				//(*it)->setVisible(true);
+			//}
+		//}
+	//for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
+		//if ( (*it) -> type() == Arrow_Rtti ){
+			//Arrow *arrow = (Arrow*) (*it);
+			//qDebug("Arrow from node %i to node %i",arrow->fromNode(),mapEdges[arrow->sourceNodeNumber() ]);
+			//if ( mapEdges[arrow->sourceNodeNumber() ]  ){
+				//qDebug(" Hiding arrow from node %i to node %i",arrow->sourceNodeNumber(),mapEdges[arrow->sourceNodeNumber() ]);
+				//arrow->setVisible(false);
+			//}
+			//else (*it)->setVisible(true);
+		//}
 
-	statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;*/
+	statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
 }
 
 

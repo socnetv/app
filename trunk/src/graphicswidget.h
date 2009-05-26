@@ -88,6 +88,9 @@ public slots:
 	void eraseNode(int doomedJim);
 	void drawEdge(int, int, float, bool, bool, QString, bool, bool);
 	void eraseEdge(int, int);
+	
+	void filterEdges(double, bool);
+	
 	void nodeClicked(Node *);
 	void edgeClicked(Edge *);
 	void openNodeContextMenu();

@@ -825,10 +825,17 @@ void Graph::writeDistanceMatrix (const char* fn, const char* fn1, const char* ne
 	ofstream file (fn);
 	ofstream file1 (fn1);
 	int dist=-1, sigma=-1;
-	char aspace[] = "       ";
-	char bspace[] = "     ";
-	char cspace[] = "   ";
-	char dspace[] = "   ";
+	
+	char one_space[]     = " ";
+	char two_spaces[]    = "  ";
+	char three_spaces[]  = "   ";
+	char four_spaces[]   = "    ";
+	char five_spaces[]   = "     ";
+	char six_spaces[]    = "      ";
+	char seven_spaces[]  = "       ";
+	char eight_spaces[]  = "        ";
+	char nine_spaces[]   = "         ";
+	char ten_spaces[]    = "          ";
 
 	file << "-Social Network Visualizer- \n";
 	if (!netName) netName="Unnamed network";
@@ -836,47 +843,61 @@ void Graph::writeDistanceMatrix (const char* fn, const char* fn1, const char* ne
 	//write out matrix of geodesic distances
 	QList<Vertex*>::iterator it, it1;	
 	int i=0, j=0;
-	file << "         ";
 	
+	file << ten_spaces << two_spaces;   
+
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
-		file << ++i<<aspace;
+		
+		file << ++i ;
+		if (i>9999)
+			file << six_spaces;
+		else if (i>999)
+			file << seven_spaces;
+		else if (i>99)
+			file << eight_spaces;
+		else if(i>9) 
+			file << nine_spaces;
+		else 
+ 			file << ten_spaces ; 
 
 	}
+	
 	file<<endl;
+	
 	i=0;
+	
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
-		file << ++i ;
+		file << ++i ;	
+
+		if (i>9999)
+			file << two_spaces;
 		if (i>999)
-			file << " "; 
+			file << four_spaces;
 		else if (i>99)
-			file << cspace; 
+			file << six_spaces ;
 		else if(i>9) 
-			file << bspace; 
+			file << eight_spaces;
 		else 
- 			file << aspace; 
+ 			file << ten_spaces; 
+ 			
  		j=0;
+ 		
 		for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){	
 			++j;
+
 			if ( (dist= DM.item( index[(*it)->name()],  index[(*it1)->name()] ) )!=-1 ) {
 				file << dist;
 				if (dist>999)
-					file << " "; 
+					file <<  seven_spaces;
 				else if (dist>99)
-					file << cspace; 
+					file <<  eight_spaces;  
 				else if(dist>9) 
-					file << bspace; 
+					file << nine_spaces;  
 				else 
-					file << aspace; 
+					file << ten_spaces; 
 			}
 			else
-				file << "0"<<aspace;
-			if (j>999)
-				file << cspace; 
-			else if (j>99)
-				file << cspace; 
-			else if(j>9) 
-				file << dspace; 
-
+				file << "0"<< ten_spaces;
 		}
  		file << endl;
 	}

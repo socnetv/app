@@ -35,10 +35,7 @@
 /** SocNetV specific includes*/
 #include <graphicswidget.h>
 #include <math.h>
-#include <utility> //declares pair construct
-#include <list>
-#include <vector>
-#include <QSpinBox>
+
 #include "graph.h"
 
 
@@ -60,12 +57,15 @@ class QCheckBox;
 class QProgressDialog;
 class Edge;
 class Node;
+class FilterEdgesDialog;
 class QPushButton;	
 class QLCDNumber;
 class QSlider;
 class QComboBox;	
 class QGroupBox;
 class QTabWidget;
+class QSpinBox;
+
 
 class MainWindow : public QMainWindow
 {
@@ -149,7 +149,8 @@ public slots:
 	void slotChangeLinkColor();
 	void slotChangeLinkWeight();
 	void slotFilterNodes();
-	void slotFilterLinks();
+	void slotFilterEdges(double, bool);
+	void slotShowFilterEdgesDialog();
 	void slotTransformNodes2Links();
 	void slotSymmetrize();
 
@@ -278,6 +279,11 @@ private:
 
 	QProgressDialog *progressDialog;
 
+	Node *clickedJim;	
+	Node *markedNode;
+	Edge *clickedLink;
+	FilterEdgesDialog *m_filterEdgesDialog ;
+	
 	QMenu *importSubMenu, *exportSubMenu, *editMenu, *statMenu,  *helpMenu;
 	QMenu *optionsMenu, *colorOptionsMenu, *linkOptionsMenu, *nodeOptionsMenu, *viewOptionsMenu;
 	QMenu *editNodeMenu, *editLinkMenu, *centrlMenu, *layoutMenu;
@@ -300,7 +306,7 @@ private:
 	QAction *changeLabelsSizeAct, *changeAllNodesSizeAct, *changeAllNodesShapeAct;
 	QAction *changeNodeBoxAct, *changeNodeCircleAct, *changeNodeTriangleAct, *changeNodeDiamondAct, *changeNodeEllipseAct;
 	QAction *changeLinkLabelAct, *changeLinkColorAct, *changeLinkWeightAct;
-	QAction *filterNodesAct, *filterLinksAct, *transformNodes2LinksAct, *symmetrizeAct;
+	QAction *filterNodesAct, *filterEdgesAct, *transformNodes2LinksAct, *symmetrizeAct;
 	QAction *changeBackColorAct, *changeAllNodesColorAct, *changeAllLinksColorAct, *changeAllNumbersColorAct, *changeAllLabelsColorAct;
 	QAction *drawLinksWeightsAct, *displayLinksWeightNumbersAct, *displayLinksAct, *displayLinksArrowsAct, *drawLinksBezier;
 	QAction *backgroundImageAct, *viewToolBar, *viewStatusBar, *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
@@ -334,10 +340,8 @@ private:
 	QLCDNumber  *inLinksLCD, *outLinksLCD , *selectedNodeLCD, *clucofLCD;
 	QLCDNumber *nodesLCD, *edgesLCD, *densityLCD, *outLinkedNodesLCD, *inLinkedNodesLCD, *reciprocalLinkedNodesLCD;
 
-	Node *clickedJim;	
-	Node *markedNode;
-	Edge *clickedLink;
 
+	
 	QDateTime actualDateTime, actualDate, actualTime;
 	QTime eTime;     //used  to time algorithms.	
 };
