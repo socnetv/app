@@ -974,7 +974,7 @@ void Parser::readGraphMLElementData (QXmlStreamReader &xml){
  * 	Reads node graphics data and properties: label, color, shape, size, coordinates, etc.
  */
 void Parser::readGraphMLElementNodeGraphics(QXmlStreamReader &xml) {
-	qDebug()<< "       Parser: readGraphMLElementNodeGraphics(): element name "<< xml.name();
+	qDebug()<< "       Parser: readGraphMLElementNodeGraphics(): element name "<< xml.name().toString();
 	float tempX =-1, tempY=-1, temp=-1;
 	QString color;
 	QXmlStreamAttributes xmlStreamAttr = xml.attributes();
@@ -1040,7 +1040,7 @@ void Parser::readGraphMLElementNodeGraphics(QXmlStreamReader &xml) {
 }
 
 void Parser::readGraphMLElementEdgeGraphics(QXmlStreamReader &xml) {
-	qDebug()<< "       Parser: readGraphMLElementEdgeGraphics() element name "<< xml.name();
+	qDebug()<< "       Parser: readGraphMLElementEdgeGraphics() element name "<< xml.name().toString();
 
 	float tempX =-1, tempY=-1, temp=-1;
 	QString color, tempString;
