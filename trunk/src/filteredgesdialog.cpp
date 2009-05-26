@@ -37,6 +37,8 @@ FilterEdgesDialog::FilterEdgesDialog (QWidget *parent) : QDialog (parent)
 	(ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
 	
 	(ui.overThresholdBt)-> setChecked(true);
+	
+	//connect( this, SIGNAL( userChoices( float, bool) ), parent, SLOT( slotFilterEdges (float, bool) ) );	
 } 
 
 
@@ -45,7 +47,7 @@ FilterEdgesDialog::FilterEdgesDialog (QWidget *parent) : QDialog (parent)
 void FilterEdgesDialog::gatherData(){
 	qDebug()<< "Dialog: gathering Data!...";
 	bool overThreshold=false;
-	double my_threshold = (ui.weightTheshold)->value();
+	float my_threshold = static_cast <float> ( (ui.weightTheshold)->value() );
 	if ( ui.overThresholdBt -> isChecked() ) {
 		qDebug()<< "Dialog: more than threshold " << my_threshold;
 		overThreshold = true;
@@ -53,6 +55,7 @@ void FilterEdgesDialog::gatherData(){
 	else {
 		qDebug()<< "Dialog: less than threshold " << my_threshold;
 		overThreshold = false;
-	}
-	emit userChoices( my_threshold, overThreshold);		
+	}	
+	qDebug()<< "Dialog: emitting userChoices" ;
+	emit userChoices( my_threshold, overThreshold );		
 }

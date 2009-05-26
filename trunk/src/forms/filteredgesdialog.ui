@@ -30,7 +30,7 @@
        <bool>true</bool>
       </property>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QLabel" name="label">
@@ -41,6 +41,9 @@
        </item>
        <item>
         <widget class="QDoubleSpinBox" name="weightTheshold">
+         <property name="decimals">
+          <number>1</number>
+         </property>
          <property name="minimum">
           <double>-100.000000000000000</double>
          </property>

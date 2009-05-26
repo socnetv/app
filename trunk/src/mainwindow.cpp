@@ -175,10 +175,12 @@ MainWindow::MainWindow(const QString & m_fileName) {
 	connect( zoomInAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomIn() ) );
 
 	connect( rotateSpinBox, SIGNAL(valueChanged(int)), graphicsWidget, SLOT( rot(int) ) );
+
+	connect( &m_filterEdgesDialog, SIGNAL( userChoices( float, bool) ), 
+			graphicsWidget, SLOT( filterEdges (float, bool) ) );	
 	
 	
-	connect( m_filterEdgesDialog, SIGNAL(userChoices( double, bool) ), 
-				graphicsWidget, SLOT( filterEdges(double, bool) ) );	
+
 	
 	connect( circleClearBackgrCirclesAct, SIGNAL(activated()), 
 			graphicsWidget, SLOT(clearBackgrCircles()));
@@ -496,9 +498,9 @@ void MainWindow::initActions(){
 	connect(filterNodesAct, SIGNAL(activated()), this, SLOT(slotFilterNodes()));
 
 	filterEdgesAct = new QAction(tr("Filter Links"), this);
-	filterEdgesAct  -> setEnabled(true);
-	filterEdgesAct ->setStatusTip(tr("Filters Links of some weight out of the network"));
-	filterEdgesAct ->setWhatsThis(tr("Filter Links\n\nFilters Link of some specific weight out of the network."));
+	filterEdgesAct -> setEnabled(true);
+	filterEdgesAct -> setStatusTip(tr("Filters Links of some weight out of the network"));
+	filterEdgesAct -> setWhatsThis(tr("Filter Links\n\nFilters Link of some specific weight out of the network."));
 	connect(filterEdgesAct , SIGNAL(activated()), this, SLOT(slotShowFilterEdgesDialog()));
 
 	changeBackColorAct = new QAction(QIcon(":/images/color.png"), tr("Change Background Color"), this);
@@ -3479,8 +3481,8 @@ void MainWindow::slotShowFilterEdgesDialog() {
 		statusMessage(  QString(tr("Load a network file first. \nThen you may ask me to compute something!"))  );
 		return;
 	}
-	m_filterEdgesDialog = new FilterEdgesDialog(this);
-	m_filterEdgesDialog -> show();	
+	///m_filterEdgesDialog = new FilterEdgesDialog(this);
+	m_filterEdgesDialog.exec() ; // show();	
 }
 
 
@@ -3489,44 +3491,16 @@ void MainWindow::slotShowFilterEdgesDialog() {
 *	All links weighted more (or less) than the specified w will be removed.
 * 	Called from FilterEdgesDialog signal
 */ 
-void MainWindow::slotFilterEdges(double m_threshold, bool overThreshold){
+void MainWindow::slotFilterEdges(float m_threshold, bool overThreshold){
 
 	if (!fileLoaded && !networkModified  )   {
 		statusMessage(  QString(tr("Load a network file first. \nThen you may ask me to compute something!"))  );
 		return;
 	}
-	bool ok=false;
+	graphChanged();
 	
-	//QList<QGraphicsItem *> list=scene->items();
-	//for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
-		//if ( (*it) -> type() == Link_Rtti ){
-			//Edge *link = (Edge*) (*it);
-			//if ( link->weight()>=selectedWeight && moreWeighted){
-				//(*it)->setVisible(false);
-				//mapEdges [ link->sourceNodeNumber() ] = link->targetNodeNumber();
-				//qDebug("GT: Hiding link from node %i to node %i",link->sourceNodeNumber(),mapEdges[link->sourceNodeNumber() ]);
+	qDebug() << "MW: slotFilterEdges";
 
-			//}
-			//else if ( link->weight()<=selectedWeight && !moreWeighted) {
-				//(*it)->setVisible(false);
-				//mapEdges [ link->sourceNodeNumber() ] = link->targetNodeNumber();
-				//qDebug("LT: Hiding link from node %i to node %i",link->sourceNodeNumber(),mapEdges[link->sourceNodeNumber() ]);
-			//}
-			//else {
- 				//mapEdges [link->sourceNodeNumber() ]= -1; 
-				//(*it)->setVisible(true);
-			//}
-		//}
-	//for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
-		//if ( (*it) -> type() == Arrow_Rtti ){
-			//Arrow *arrow = (Arrow*) (*it);
-			//qDebug("Arrow from node %i to node %i",arrow->fromNode(),mapEdges[arrow->sourceNodeNumber() ]);
-			//if ( mapEdges[arrow->sourceNodeNumber() ]  ){
-				//qDebug(" Hiding arrow from node %i to node %i",arrow->sourceNodeNumber(),mapEdges[arrow->sourceNodeNumber() ]);
-				//arrow->setVisible(false);
-			//}
-			//else (*it)->setVisible(true);
-		//}
 
 	statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
 }

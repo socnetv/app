@@ -372,7 +372,7 @@ void GraphicsWidget::eraseEdge(int sourceNode, int targetNode){
 /**
 	Called from MainWindow when erasing edges using vertex numbers
 */
-void GraphicsWidget::filterEdges(double m_threshold, bool overThreshold){
+void GraphicsWidget::filterEdges(float m_threshold, bool overThreshold){
 	qDebug()<< " filterEdges ";
 	qDebug("GW: FilterEdges - Scene items= %i - View items : %i",scene()->items().size(), items().size());
 	QList<QGraphicsItem *>  list=scene()->items();

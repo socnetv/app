@@ -29,15 +29,14 @@
 
 
 #include <QMainWindow>
-#include <QDateTime>
 #include <QGraphicsScene>
 
 /** SocNetV specific includes*/
-#include <graphicswidget.h>
+
 #include <math.h>
-
+#include "graphicswidget.h"
 #include "graph.h"
-
+#include "filteredgesdialog.h"
 
 
 
@@ -57,7 +56,7 @@ class QCheckBox;
 class QProgressDialog;
 class Edge;
 class Node;
-class FilterEdgesDialog;
+//class FilterEdgesDialog;
 class QPushButton;	
 class QLCDNumber;
 class QSlider;
@@ -73,7 +72,7 @@ class MainWindow : public QMainWindow
 
 public:		/**PUBLIC FUNCTIONS NOT VISIBLE BY OTHER WIDGETS NOR BY SLOT/LINK MECHANISM */
 	GraphicsWidget *graphicsWidget;
-
+	
 	MainWindow(const QString &f);
 	~MainWindow();
 
@@ -149,7 +148,7 @@ public slots:
 	void slotChangeLinkColor();
 	void slotChangeLinkWeight();
 	void slotFilterNodes();
-	void slotFilterEdges(double, bool);
+	void slotFilterEdges(float, bool);
 	void slotShowFilterEdgesDialog();
 	void slotTransformNodes2Links();
 	void slotSymmetrize();
@@ -270,7 +269,11 @@ signals:
 
 
 private:
+
+	
 	QGraphicsScene *scene;
+
+	FilterEdgesDialog m_filterEdgesDialog;
 	Graph activeGraph;
 	QPrinter *printer;	
 	QToolBar *toolBar;
@@ -279,10 +282,12 @@ private:
 
 	QProgressDialog *progressDialog;
 
+
+	
 	Node *clickedJim;	
 	Node *markedNode;
 	Edge *clickedLink;
-	FilterEdgesDialog *m_filterEdgesDialog ;
+
 	
 	QMenu *importSubMenu, *exportSubMenu, *editMenu, *statMenu,  *helpMenu;
 	QMenu *optionsMenu, *colorOptionsMenu, *linkOptionsMenu, *nodeOptionsMenu, *viewOptionsMenu;

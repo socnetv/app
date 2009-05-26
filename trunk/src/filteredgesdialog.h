@@ -41,7 +41,7 @@ public:
 public slots:
 	void gatherData ();
 signals:
-	void userChoices( double, bool);	
+	void userChoices( float, bool);	
 private:
 	Ui::FilterEdgesDialog ui;
 
