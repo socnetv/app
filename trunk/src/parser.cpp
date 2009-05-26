@@ -987,14 +987,14 @@ void Parser::readGraphMLElementNodeGraphics(QXmlStreamReader &xml) {
 				if (conv_OK) 
 					randX = tempX;	
 			}
-			if ( xml.attributes().hasAttribute("y") ) {
+			if ( xmlStreamHasAttribute ( xmlStreamAttr, "y") ) {
 				conv_OK=false;
 				tempY = xml.attributes().value("y").toString().toFloat (&conv_OK) ;
 				if (conv_OK)
 					randY = tempY;
 			}
 			qDebug()<< "        Node Coordinates: " << tempX << " " << tempY << " Using coordinates" << randX<< " "<<randY;
-			if (xml.attributes().hasAttribute("width") ) {
+			if (xmlStreamHasAttribute ( xmlStreamAttr, "width") ) {
 				conv_OK=false;
 				temp = xmlStreamAttr.value("width").toString().toFloat (&conv_OK) ;
 				if (conv_OK)
