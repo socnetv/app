@@ -750,7 +750,7 @@ bool Parser::xmlStreamHasAttribute( QXmlStreamAttributes &xmlStreamAttr, QString
 {
 	int size = xmlStreamAttr.size();
 	for (register int  i = 0 ; i < size ; i++) {
-		qDebug() << xmlStreamAttr.at(i).name() << endl;
+		qDebug() << xmlStreamAttr.at(i).name().toString() << endl;
 		if ( xmlStreamAttr.at(i).name() == str) 
 			return true;
 	}
