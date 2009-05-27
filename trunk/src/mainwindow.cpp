@@ -76,7 +76,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
 	fileName=m_fileName;
 	qInstallMsgHandler( myMessageOutput );
 	setWindowIcon (QIcon(":/images/socnetv.png"));
-	VERSION="0.6";
+	VERSION="0.6.0";
 
 	/** inits that invoke all other construction parts **/
 	initActions();  //register and construct menu Actions 
@@ -5243,43 +5243,43 @@ void MainWindow::slotHelp(){
 				manualFound = false;
 			}
 		}
-               if (!manualFound && d.cd("/usr/share/doc/socnetv/") ) {     //for Debian Ubuntu
-		       if (d.exists("manual/")) d.cd("manual/");
-                       if ( d.exists("manual.html") ) {
-                                helpPath=d.filePath("manual.html");
-				manualFound = true;	
-                        }
-                        else {
-                                qDebug("help file does not exist in /usr/share/doc/socnetv/.");
-				manualFound = false;
-                        }
-                }             
-               if ( !manualFound && d.cd("/usr/share/doc/packages/socnetv/") ) {  //for opensuse file hierarchy
-		       if (d.exists("manual/")) d.cd("manual/");
-                       if ( d.exists("manual.html") ) {
-                                helpPath=d.filePath("manual.html");
-				manualFound = true;	
-                        }
-                        else {
-                                qDebug("help file does not exist.");
-                        }
-                }
-	      QString fedoraPath = "/usr/share/doc/socnetv-" + VERSION;
-               if ( !manualFound && d.cd(fedoraPath) ) {  //for Fedora file hierarchy
-		       if (d.exists("manual/")) d.cd("manual/");
-                       if ( d.exists("manual.html") ) {
-                                helpPath=d.filePath("manual.html");
-				manualFound = true;	
-                        }
-                        else {
-                                qDebug("help file does not exist.");
-                        }
-                }
-
-
+		if (!manualFound && d.cd("/usr/share/doc/socnetv/") ) {     //for Debian Ubuntu
+			if (d.exists("manual/")) d.cd("manual/");
+				if ( d.exists("manual.html") ) {
+					helpPath=d.filePath("manual.html");
+					manualFound = true;	
+				}
+				else {
+					qDebug("help file does not exist in /usr/share/doc/socnetv/.");
+					manualFound = false;
+				}
+			}             
+			if ( !manualFound && d.cd("/usr/share/doc/packages/socnetv/") ) {  //for opensuse file hierarchy
+				if (d.exists("manual/")) 
+					d.cd("manual/");
+				if ( d.exists("manual.html") ) {
+					helpPath=d.filePath("manual.html");
+					manualFound = true;	
+				}
+				else {
+					qDebug("help file does not exist.");
+				}
+			}
+			QString fedoraPath = "/usr/share/doc/socnetv-" + VERSION;
+			if ( !manualFound && d.cd(fedoraPath) ) {  //for Fedora file hierarchy
+				if (d.exists("manual/")) 
+					d.cd("manual/");
+				if ( d.exists("manual.html") ) {
+					helpPath=d.filePath("manual.html");
+					manualFound = true;	
+				}
+				else {
+					qDebug("help file does not exist.");
+				}
+			}
 
 	}
-        qDebug () << "help path is: " << helpPath.toAscii();
+	qDebug () << "help path is: " << helpPath.toAscii();
 	HTMLViewer *helpViewer = new HTMLViewer (helpPath, this);
 	helpViewer -> setWindowTitle ( "SocNetV "+ VERSION + tr(" Manual"));
 	helpViewer->show();
@@ -5296,7 +5296,7 @@ void MainWindow::slotHelpAbout(){
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"
-	"<p><b>Build: </b> Wed, May 4, 2009</p>"
+	"<p><b>Build: </b> Wed, May 27, 2009</p>"
 	
 	"<p>(C) 2005-2009 by Dimitris V. Kalamaras"
 	"<br> dimitris.kalamaras@gmail.com"

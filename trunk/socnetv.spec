@@ -1,5 +1,5 @@
 %define name    socnetv
-%define version 0.6
+%define version 0.6.0
 %define release 1
 %define prefix  /usr/local
 %define lastrev %(LANG=en_US.UTF-8 && date +"%a %b %e %Y")
@@ -118,7 +118,7 @@ chmod -R a-x+X COPYING ChangeLog INSTALL NEWS README TODO manual man nets src
 
 %install
 %if %{is_fedora}
-desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
+#desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 #desktop-file-install --add-category="Math" --delete-original  --dir=%{buildroot}%{_datadir}/applications  %{buildroot}/%{_datadir}/applnk/Edutainment/%{name}.desktop
 %endif
 
@@ -138,7 +138,7 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 %{_bindir}/%{name}
 %{_datadir}/applications/%{name}.desktop
 %{_datadir}/pixmaps/%{name}.png
-%{_mandir}/man8/*
+%{_mandir}/man1/*
 %doc ChangeLog NEWS README TODO COPYING AUTHORS INSTALL manual
 
 
@@ -146,7 +146,7 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 
 
 %changelog
-* Mon May 04 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.6-1
+* Mon May 27 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.6.0-1
 - Synced with upstream
 * Thu Feb 26 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.52-1
 - Synced with upstream.

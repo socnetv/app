@@ -138,7 +138,7 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 %{_bindir}/%{name}
 %{_datadir}/applications/%{name}.desktop
 %{_datadir}/pixmaps/%{name}.png
-%{_mandir}/man8/*
+%{_mandir}/man1/*
 %doc ChangeLog NEWS README TODO COPYING AUTHORS INSTALL manual
 
 
@@ -146,7 +146,7 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 
 
 %changelog
-* Mon May 04 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.6-1
+* Mon May 27 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.6.0-1
 - Synced with upstream
 * Thu Feb 26 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.52-1
 - Synced with upstream.
