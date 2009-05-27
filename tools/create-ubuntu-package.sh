@@ -23,7 +23,7 @@ if [ $ans =  "lintian" ]; then
 	echo OK. Necessary tools are installed; 
 else 
 	echo No lintian or devscripts. Enter sudo password to install them: 
-	sudo apt-get install devscripts pbuilder lintian dput
+	sudo apt-get install devscripts pbuilder lintian dput debhelper
 fi
 
 
@@ -69,9 +69,9 @@ echo ---------------------------------
 
 
 
-find . -not -name "qdevelop-*" -not -name "pajek*" -not -path "*./autom4te.cache*" -not -path "*.svn*" -not -path "*./test-nets*"  -print0  | cpio -pmd0 ../ubuntu/socnetv-$VER
+find . -not -name "qdevelop-*" -not -name "socnetv" -not -name ".qdevelop"  -not -name "pajek*" -not -path "*./autom4te.cache*" -not -path "*.svn*" -not -path "*./test-nets*"  -print0  | cpio -pmd0 ../ubuntu/socnetv-$VER
 
-find . -not -name "qdevelop-*" -not -name "pajek*" -not -path "*./autom4te.cache*" -not -path "*.svn*" -not -path "*./test-nets*"  -print0  | cpio -pmd0 ../ubuntu/socnetv-$VER.orig
+find . -not -name "qdevelop-*" -not -name "socnetv" -not -name ".qdevelop"  -not -name "pajek*" -not -path "*./autom4te.cache*" -not -path "*.svn*" -not -path "*./test-nets*"  -print0  | cpio -pmd0 ../ubuntu/socnetv-$VER.orig
 
 
 

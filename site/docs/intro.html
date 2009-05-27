@@ -2,18 +2,19 @@
 
 <h4><a name="Fundamentals" id="Fundamentals"></a>Fundamentals</h4>
 <p  class="text">
-A <em>Social Network</em> is a social structure which facilitates communication between a group of <em>actors</em> (individuals or organizations), that are related by, for instance, a common interest, shared values, financial exchange, friendship, kinship, dislike, conflict etc.
-Research in various academic fields has shown that social networks operate on many levels, from families up to the level of nations, and play a critical role in determining the way problems are solved, organizations are run, and the degree to which individuals succeed in achieving their goals.
+A <em>Social Network</em> is the social structure which facilitates communication between a group of <em>actors</em> (individuals or organizations) that are related somehow (i.e. by common interests, shared values, financial exchanges, friendship, dislike, etc). 
+For instance, your friends and you form a social network. But, social networks operate on many more levels, from family relations and disease spreading up to the level of company strategies, social movements or even nations. 
+Furthermore, research in many scientific areas has shown that social networks are important when we study the way problems are solved, diseases are spreaded, organizations are run, and the degree to which individuals succeed in achieving their goals.
 </p>
 <p  class="text">
-<em>Social Network Analysis</em> (SNA), a beautiful blend of Sociology and Mathematics, has emerged as a set of interdisciplinary techniques for the study of such social networks. 
-To start with, SNA theorizes social relationships in terms of <em>nodes</em> and <em>edges</em> (links) in <em>mathematical graphs</em>. 
+<em>Social Network Analysis</em> (SNA) is a beautiful blend of Sociology and Mathematics, composed of various interdisciplinary techniques for the study of such social networks. 
+SNA researchers conceptualize social relationships in terms of <em>nodes</em> and <em>edges</em> (links) in <em>mathematical graphs</em>. 
 Nodes represent the individual <em>actors</em> within the networks, while edges visualise the relationships between those actors. 
 The result is graph-based structures which are often very complex. 
 </p>
 <h4><a name="Capabilities" id="Capabilities"></a>Capabilities</h4>
 <p  class="text">
-Social Networks Visualiser (SocNetV) is our project to build a flexible and user-friendly, cross-platform tool for the analysis and visualisation 
+Social Networks Visualizer (SocNetV) is our project to build a flexible and user-friendly, cross-platform tool for the analysis and visualisation 
 of social networks, targeting primarily the researcher. 
 
 SocNetV lets you construct social networks with a few clicks on a virtual canvas or load networks of various formats 
@@ -61,17 +62,18 @@ To avoid compiling, we also offer binary packages for Ubuntu, Debian and openSUS
 <h4><a name="Debian" id="Debian"></a>Debian</h4>
 
 <p class="text">
-For Debian &amp; Debian-derived distros, an (not always updated) version of SocNetV is in the 'experimental' repository (thanks to Serafeim Zanikolas). Add  the line:
+For Debian &amp; Debian-derived distros, an (not always updated) version of SocNetV is in the 'unstable' repository (thanks to Serafeim Zanikolas). 
+Add  the line:
 </p>
 <p class="code">
-deb http://ftp.debian.org/debian/ experimental main
+deb http://ftp.debian.org/debian/ unstable main
 </p>
 <p class="text">
 to your sources.list; save it, then type in:
 </p>
 <p class="code">
 sudo apt-get update <br />
-sudo apt-get install -t experimental socnetv
+sudo apt-get install socnetv
 </p>
 
 
@@ -80,7 +82,8 @@ sudo apt-get install -t experimental socnetv
 
 <h4><a name="Ubuntu" id="Ubuntu"></a>Ubuntu</h4>
 <p class="text">
-Ubuntu users may use <a href="https://launchpad.net/~dimitris-kalamaras/+archive/ppa">our repository</a>. All you have to do is add the following lines in your /etc/apt/sources.list file: <br />
+Ubuntu users may use <a href="https://launchpad.net/~dimitris-kalamaras/+archive/ppa">our repository</a>. 
+All you have to do is add the following lines in your /etc/apt/sources.list file: <br />
 </p>
 
 <p class="code"> 
@@ -107,6 +110,50 @@ sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 61AE869C37A4FCC5A7
 <p class="text">
 If you want more information about keys and repository signing in Ubuntu, read <a href="https://help.launchpad.net/Packaging/PPA#Adding a PPA to your Ubuntu repositories">the official instructions</a>.
 </p>
+
+
+
+
+
+<h4><a name="openSUSE" id="openSUSE"></a>openSUSE</h4>
+
+<p class="text">
+For openSUSE and Novell SLED, you may download binary RPM packages from our <a href="http://download.opensuse.org/repositories/home:/oxy86/">our repository</a>. 
+When you download the RPM, become root user and install it, like this:
+</p>
+
+  <p class="code">
+    su
+    rpm -ivh socnetv-0.52-8.1.i586.rpm
+  </p>
+
+
+
+<h4><a name="Fedora" id="Fedora"></a>Fedora</h4>
+
+<p class="text">
+Fedora and RedHat users may download binary RPM packages from our <a href="http://download.opensuse.org/repositories/home:/oxy86/">our repository</a>. 
+Afterwards, become root user and install the package, i.e.:
+  <p class="code">
+    su
+    rpm -ivh socnetv-0.52-8.1.i586.rpm
+  </p>
+
+
+
+
+
+<h4><a name="Mandriva" id="Mandriva"></a>Mandriva</h4>
+
+<p class="text">
+Mandriva users may download binary RPM packages from our <a href="http://download.opensuse.org/repositories/home:/oxy86/">our repository</a>. 
+To install the package, use commands like these:
+</p>
+  <p class="code">
+    su
+    rpm -ivh socnetv-0.52-8.1.i586.rpm
+  </p>
+
 
 
 

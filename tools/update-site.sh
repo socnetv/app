@@ -4,7 +4,7 @@
 echo  --------------------
 echo  . copying webfiles .
 echo  --------------------
-cd /media/oxy/socnetv/site
+cd /media/oxy/Code/Qt/socnetv/site
 rsync -rvPC -delete -e ssh  *  oxy86,socnetv@web.sourceforge.net:htdocs/
 
 
@@ -21,8 +21,8 @@ fi
 echo  --------------------
 echo  . copying manual   .
 echo  -------------------- 
-cd /media/oxy/socnetv/trunk/manual
-rm /media/oxy/socnetv/site/docs/*
-cp /media/oxy/socnetv/trunk/manual/* /media/oxy/socnetv/site/docs/
+cd /media/oxy/Code/Qt/socnetv/trunk/manual
+rm /media/oxy/Code/Qt/socnetv/site/docs/*
+cp /media/oxy/Code/Qt/socnetv/trunk/manual/* /media/oxy/Code/Qt/socnetv/site/docs/
 
 rsync -rvP -delete -e ssh * oxy86,socnetv@web.sourceforge.net:htdocs/docs/

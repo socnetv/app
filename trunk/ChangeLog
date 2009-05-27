@@ -4,11 +4,11 @@
 
 ChangeLog:
 
-Version 0.6.0 - May 31 2009
+Version 0.6.0 - May 27 2009
 Codename: "Spring"
 ----------------------------
 - GraphML becomes our native load/save format ( partially support for yFiles)
-- Filter edges by their weights now works ok. 
+- New filter edges by their weights functionality. 
 - The background can be a custom image (via menu View > Background Image)
 - New rounded rectangle shape for nodes.
 - Nodenumbers can be displayed inside nodes, once again. Sorry, labels are

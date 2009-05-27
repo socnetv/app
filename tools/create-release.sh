@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ~/Documents/socnetv/trunk
+cd ~/Documents/Code/Qt/socnetv/trunk
 if [ -d "../release" ]; then
 	echo .
 	echo ---------------------------------
@@ -10,7 +10,7 @@ if [ -d "../release" ]; then
 fi
 
 #CHANGE THIS TO NEW VERSION NUMBERS
-VER=0.51;   
+VER=0.6.0;   
 echo $VER
 
 echo .
@@ -19,6 +19,7 @@ echo !  CLEANING UP COMPILED FILES   !
 echo ---------------------------------
 
 make clean
+rm socnetv
 
 echo .
 echo ---------------------------------
@@ -31,7 +32,7 @@ echo ---------------------------------
 echo !  COPY FILES TO WORKING DIRS   ! 
 echo ---------------------------------
 
-find . -not -name "qdevelop-*" -not -name "pajek*" -not -path "*./autom4te.cache*" -not -path "*.svn*" -not -path "*./test-nets*" -not -path "./debian*"  -print0  | cpio -pmd0 ../release/socnetv-$VER
+find . -not -name "qdevelop-*" -not -name "socnetv" -not -name ".qdevelop" -not -name "pajek*" -not -name "*.dat" -not -path "*./autom4te.cache*" -not -path "*.svn*" -not -path "*./test-nets*" -not -path "./debian*"  -print0  | cpio -pmd0 ../release/socnetv-$VER
 
 
 

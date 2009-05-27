@@ -8,7 +8,7 @@ Section: unknown
 
 
 Format: HTML
-Index: /usr/share/doc/socnetv/html/index.html
-Files: /usr/share/doc/socnetv/html/*.html
+Index: /usr/share/doc/socnetv/manual/index.html
+Files: /usr/share/doc/socnetv/manual/*.html
 
 
