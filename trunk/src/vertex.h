@@ -27,24 +27,30 @@
 #ifndef VERTEX_H
 #define VERTEX_H
 
+#include <QObject>
 
 #include <QString>
-#include <map>
 #include <QHash>
 #include <QList>
+
+#include <map>
+
 
 using namespace std;
 
 
 class QPointF;
+class Graph;
 
 typedef map<int,float> imap_f;
 typedef QHash<int,QString> ihash_s;
+typedef QHash<int,int> ihash_i;  
 typedef QList<int> ilist;
 
-class Vertex {
+class Vertex : public QObject{
+	Q_OBJECT
 public:
-	Vertex(int v1, int val, int nsz, QString nc, QString nl, QString lc, QPointF p,QString nsp);
+	Vertex ( Graph* parent, int v1, int val, int nsz, QString nc, QString nl, QString lc, QPointF p,QString nsp );
 	Vertex(int v1);
 	~Vertex();
 	int name();
@@ -67,7 +73,8 @@ public:
 	/** Returns true if there is an outLink from this vertex */
 	bool isOutLinked() { return m_outLinked;}
 	float isLinkedTo(int V);		/**Returns the weight of the link from to vertexc V, otherwise zero*/
-
+	void filterEdges(float m_threshold, bool overThreshold);
+	
 	void setOutLinked(bool outLinked) { m_outLinked=outLinked;}
 	/** Returns true if there is an outLink from this vertex */
 	bool isInLinked() { return m_inLinked;}
@@ -150,10 +157,13 @@ public:
 	imap_f m_outEdges;			//holds all edges starting from this vertex.
 	imap_f m_inEdges;			//holds all edges starting from this vertex.
 
+signals:
+	void setEdgeVisible ( int, int, bool);
 		
 protected:
 
 private:
+	Graph *parentGraph;
 	ilist myPs;
 	int m_name, m_value, m_size, m_outLinks, m_inLinks;
 	bool m_inLinked, m_outLinked, m_reciprocalLinked, m_hasCLC;
@@ -162,6 +172,7 @@ private:
 	ihash_s outLinkColors;
 	//FIXME vertice coords
 	
+	ihash_i m_enabled_outEdges;
 	double m_x, m_y;
 	float m_CLC;
 	float m_delta, m_EC, m_SEC;

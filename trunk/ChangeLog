@@ -7,7 +7,8 @@ ChangeLog:
 Version 0.6.0 - May 31 2009
 Codename: "Spring"
 ----------------------------
-- GraphML becomes the native load/save format. Initial yFiles import filter.
+- GraphML becomes our native load/save format ( partially support for yFiles)
+- Filter edges by their weights now works ok. 
 - The background can be a custom image (via menu View > Background Image)
 - New rounded rectangle shape for nodes.
 - Nodenumbers can be displayed inside nodes, once again. Sorry, labels are

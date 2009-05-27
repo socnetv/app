@@ -79,6 +79,9 @@ public slots:
 	void createVertex(int i, QPointF p); 							//Called by GW
 	void createVertex(int i, int canvasWidth, int canvasHeight); 	//Called by MW
 
+	void filterEdges (float, bool);									//Called by MW to filter edges over/under a weight
+	void slotSetEdgeVisible( int, int, bool);
+	
 signals:
 	/** Signals to MainWindow */
 	void updateProgressDialog(int );
@@ -92,6 +95,8 @@ signals:
 	void eraseNode (int);		//erase node from GW  
 	void drawEdge(int, int, float, bool, bool, QString, bool, bool);				//call GW to draw an edge
 	void eraseEdge(int, int);		//emited from removeEdge() to GW to clear the edge item.
+	void setEdgeVisible ( int, int, bool); // emitted from each Vertex via slotSetEdgeVisible
+	
 	void drawEdgeReciprocal(int, int);							//call GW to draw the edge as symmetric one
 	void addBackgrCircle(int, int, int);							//call GW to draw a layout line somewhere.
 	void addBackgrHLine (int);								//call GW to draw a layout line somewhere.
@@ -159,6 +164,8 @@ public:
 	/**EDGES*/
 	float hasEdge (int v1, int v2);				//Checks if edge between v1 and v2 exists. Returns weight or -1
 	void removeEdge (int v1, int v2);			//removes the edge between v1 and v2
+	
+ 
 	void setEdgeWeight (int v1, int v2, float w); 	//Sets the edge weight between v1 and v2
 	void setInitEdgeColor(QString);
 

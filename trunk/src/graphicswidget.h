@@ -72,6 +72,7 @@ public:
 
 	
 	bool setEdgeColor(int, int, QString);
+	
 	bool setEdgeWeight(int, int, float);
 	
 	void setAllItemsVisibility(int, bool);
@@ -88,7 +89,7 @@ public slots:
 	void eraseNode(int doomedJim);
 	void drawEdge(int, int, float, bool, bool, QString, bool, bool);
 	void eraseEdge(int, int);
-	
+	void setEdgeVisible ( int, int, bool);
 	void filterEdges(float, bool);
 	
 	void nodeClicked(Node *);

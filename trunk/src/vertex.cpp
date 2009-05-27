@@ -29,8 +29,11 @@
 
 #include <QtDebug>		//used for qDebug messages
 #include <QPointF>
+#include "graph.h"
 
-Vertex::Vertex(int v1, int val, int nsz, QString nc, QString nl, QString lc, QPointF p,QString nsp) { 
+Vertex::Vertex(Graph *parent, int v1, int val, int nsz, QString nc, QString nl, QString lc, QPointF p,QString nsp)
+: parentGraph (parent)  
+{ 
 	m_name=v1; 
 	m_value=val;
 	m_size=nsz;
@@ -52,7 +55,7 @@ Vertex::Vertex(int v1, int val, int nsz, QString nc, QString nl, QString lc, QPo
 	m_inLinked=FALSE;
 	m_outLinked=FALSE;
 	m_reciprocalLinked=FALSE;
-
+	connect (this, SIGNAL (setEdgeVisible ( int, int, bool) ), parent, SLOT (slotSetEdgeVisible ( int, int, bool)) );
 }
 
 Vertex::Vertex(int v1) { 
@@ -76,6 +79,7 @@ Vertex::Vertex(int v1) {
 void Vertex::addLinkTo (int v2, float weight) {
 	qDebug() <<"Vertex: "<< name() << " addLinkTo() "<< v2 << " of weight "<< weight;
 	m_outEdges[v2]=weight;
+	m_enabled_outEdges [v2]=1;
 	m_outLinks++;
 }
 
@@ -91,6 +95,7 @@ void Vertex::addLinkFrom (int source, float weight) {
 void Vertex::changeLinkWeightTo(int target, float weight){
 	qDebug("Vertex: changeEdgeWeightTo %i", target);
 	m_outEdges[target]=weight;
+	m_enabled_outEdges[target] = 1;
 }
 
 
@@ -99,10 +104,11 @@ void Vertex::removeLinkTo (int v2) {
 	qDebug("Vertex: removeLinkTo() vertex %i has %i edges. RemovingEdgeTo %i",m_name, outDegree(),v2 );
 	if (outDegree()>0) {
 		m_outLinks--;
-		imap_f::iterator i=m_outEdges.find(v2);
-		if ( i != m_outEdges.end() ) {
+		imap_f::iterator it=m_outEdges.find(v2);
+		if ( it != m_outEdges.end() ) {
 			qDebug("Vertex: edge exists. Removing it");
-			m_outEdges.erase(i);
+			m_outEdges.erase(it);
+			m_enabled_outEdges[ it->first ] = 0;
 			if ( m_outLinks == 0 ) setOutLinked(FALSE);
 		}
 		else {
@@ -137,6 +143,48 @@ void Vertex::removeLinkFrom(int v2){
 }
 
 
+
+
+void Vertex::filterEdges(float m_threshold, bool overThreshold){
+	qDebug() << "Vertex::filterEdges";
+	imap_f::iterator it1;
+	int target=0;
+	float m_weight; 
+	for( it1 =  m_outEdges.begin(); it1 !=  m_outEdges.end(); it1++ ) {
+		target=it1->first;
+		m_weight = it1->first; 
+		
+		if (overThreshold) {
+			if ( m_weight >= m_threshold ) {
+				qDebug() << "Vertex::filterEdges" << " Edge  to " << target 
+				<< " has weight " << m_weight << " - will be disabled";
+				m_enabled_outEdges[target] = 0;
+				emit setEdgeVisible ( m_name, target, false ); 
+			}
+			else {
+				qDebug() << "Vertex::filterEdges" << " Edge to " << target 
+				<< " has weight " << m_weight << " - will be enabled";
+
+				m_enabled_outEdges[target] = 1;
+				emit setEdgeVisible ( m_name, target, true );
+			}
+		}
+		else {
+			 if ( m_weight <= m_threshold ) {
+				qDebug() << "Vertex::filterEdges" << " Edge  to " << target 
+				<< " has weight " << m_weight << " - will be disabled";
+				m_enabled_outEdges[target] = 0;
+				emit setEdgeVisible ( m_name, target, false );
+			}
+			else {
+				qDebug() << "Vertex::filterEdges" << " Edge  to " << target 
+				<< " has weight " << m_weight << " - will be enabled";
+				m_enabled_outEdges[target] = 1;
+				emit setEdgeVisible ( m_name, target, true );
+			}	
+		} 
+	}
+}
 //Returns the numbers of links from this vertice
 int Vertex::outDegree() { 
 //	qDebug("Vertex: size %i", m_outEdges.size()); 
@@ -174,8 +222,12 @@ int Vertex::localDegree(){
 float Vertex::isLinkedTo(int v2){
 	imap_f::iterator weight=m_outEdges.find(v2);
 	if (weight  != m_outEdges.end()) {
-		//	qDebug()<< "link to " << v2 << " weight "<<(*weight).second;
-		return (*weight).second;
+		if  ( m_enabled_outEdges[ (*weight).first ] == 1) {
+			//	qDebug()<< "link to " << v2 << " weight "<<(*weight).second;
+			return (*weight).second;			
+		}
+		else 
+			return 0;
 	}
 	else 
 		return 0;

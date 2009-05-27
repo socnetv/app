@@ -168,8 +168,7 @@ void GraphicsWidget::drawNode(
 	b) when the user clicks on the AddLink button on the MW.
 */
 void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool drawArrows, QString color, bool bezier, bool check){
-	qDebug()<<"GW: drawEdge ("<< i<< ","<< j<< ") with weight "<<weight;
-	qDebug()<<"GW: nodeVector reports "<< nodeVector.size()<<" nodes.";
+	qDebug()<<"GW: drawEdge ("<< i<< ","<< j<< ") with weight "<<weight << " - nodeVector reports "<< nodeVector.size()<<" nodes.";
 	if (check) {
 		vector<Node*>::iterator it;
 		int index=1;
@@ -194,22 +193,18 @@ void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool 
 		bezier = true;		
 	}
 
-	qDebug()<< "GW: drawEdge() now!"<< " From node "<<  nodeVector.at(i-1)->nodeNumber()<< " to "<<  nodeVector.at(j-1)->nodeNumber() << " weight "<< weight << " nodesize "<<  m_nodeSize << " edgecolor "<< color ;
+	qDebug()<< "GW: drawEdge() drawing edge now!"<< " From node "<<  nodeVector.at(i-1)->nodeNumber()<< " to "<<  nodeVector.at(j-1)->nodeNumber() << " weight "<< weight << " nodesize "<<  m_nodeSize << " edgecolor "<< color ;
 	Edge *edge=new Edge (this, nodeVector.at(i-1), nodeVector.at(j-1), weight, m_nodeSize, color, reciprocal, drawArrows, bezier);
 	edge -> setZValue(253);		//Edges have lower z than nodes. Nodes always appear above edges.
 	//ssetBoundingRegionGranularity() is a real headache. Keep it here so that it doesnt interfere with dashed lines.
 	edge->setBoundingRegionGranularity(0.05);	// Slows down the universe...Keep it 0.05...
 	//edge->setCacheMode (QGraphicsItem::DeviceCoordinateCache);  //Also slows down the universe...
 
-	
-	qDebug()<<"GW: drawEdge() - Preparing to add new edge to edgesMap";
 	QString edgeName = QString::number(i) + QString(">")+ QString::number(j);
-	qDebug()<<"GW: adding edge between "<<i << " and "<< j<< " to edgesMap. Name: "<<edgeName.toAscii();
+	qDebug()<<"GW: drawEdge() - adding new edge between "<<i << " and "<< j<< " to edgesMap. Name: "<<edgeName.toAscii();
 	edgesMap [edgeName] =  edge;
 
-	qDebug()<<"Scene items now: " << scene()->items().size() <<" GW items: "<<items().size();
-
-	qDebug()<< "GW: drawNode(): drawing edge weight...";
+	qDebug()<< "GW: drawNode(): drawing edge weight number...";
 	double x = ( (nodeVector.at(i-1))->x() + (nodeVector.at(j-1))->x() ) / 2.0;
 	double y = ( (nodeVector.at(i-1))->y() + (nodeVector.at(j-1))->y() ) / 2.0;
 	EdgeWeight *edgeWeight = new  EdgeWeight (edge, 7, QString::number(weight), scene() );
@@ -382,17 +377,21 @@ void GraphicsWidget::filterEdges(float m_threshold, bool overThreshold){
 			if (overThreshold) {
 				if ( edge->weight() >= m_threshold ) {
 					edge->hide();
+					//emit setEdgeVisible ( edge->sourceNodeNumber(), edge->targetNodeNumber(), false ); 
 				}
 				else {
 					edge->show();
+					//emit setEdgeVisible ( edge->sourceNodeNumber(), edge->targetNodeNumber(), true );
 				}
 			}
 			else {
 				 if ( edge->weight() <= m_threshold ) {
 					edge->hide();
+					//emit setEdgeVisible ( edge->sourceNodeNumber(), edge->targetNodeNumber(), false );
 				}
 				else {
 					edge->show();
+					//emit setEdgeVisible ( edge->sourceNodeNumber(), edge->targetNodeNumber(), true );
 				}	
 			}
 		}
@@ -581,8 +580,33 @@ void GraphicsWidget::setInitLabelDistance(int labelDistance){
 
 
 
+
+
 /**
-*	Changes the visibility of an GraphicsView item (number, label, edge, etc)
+*	Changes the visibility of an GraphicsView edge (number, label, edge, etc)
+*/
+void GraphicsWidget::setEdgeVisible(int source, int target, bool visible){
+	qDebug()<<"GW: drawEdge() setEdgeVisible" ;
+	QString edgeName = QString::number( source ) + QString(">")+ QString::number( target );
+	if (visible) {
+		qDebug()<<"GW: drawEdge() - making edge between "<< source  << " and "<< target 
+		<< " visible ";
+		edgesMap [edgeName] -> show();
+	}
+	else {
+		qDebug()<<"GW: drawEdge() - making edge between "<< source  << " and "<< target 
+		<< " not visible ";
+		edgesMap [edgeName] -> hide();
+		
+	}
+}
+
+
+
+
+
+/**
+*	Changes the visibility of all items of certain type (i.e. number, label, edge, etc)
 */
 void GraphicsWidget::setAllItemsVisibility(int type, bool visible){
 	QList<QGraphicsItem *> list = scene()->items();

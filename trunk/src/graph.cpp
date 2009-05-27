@@ -201,7 +201,8 @@ void Graph::addVertex (int v1, int val, int nsz, QString nc, QString nl, QString
 	else 
 		index[v1]=m_graph.size();
 
-	m_graph.append( new Vertex(v1, val, nsz, nc, nl, lc, p, nsp) );
+
+	m_graph.append( new Vertex(this, v1, val, nsz, nc, nl, lc, p, nsp) );
 	m_totalVertices++;		
 
 	qDebug("Graph: addVertex(): Vertex named %i appended with index=%i. Now, m_graph size %i. New vertex position: %f, %f",m_graph.back()->name(), index[v1], m_graph.size(), p.x(), p.y() );
@@ -434,6 +435,31 @@ void Graph::removeEdge (int v1, int v2) {
 	emit graphChanged(); 
 }
 
+
+
+
+
+
+/**
+	Called from MainWindow 
+	to filter edges over/under a weight m_threshold
+*/
+void Graph::filterEdges(float m_threshold, bool overThreshold){
+	if (overThreshold)
+		qDebug() << "Graph: FilterEdges: " << " over " << m_threshold ;
+	else 
+		qDebug() << "Graph: FilterEdges: " << " below " << m_threshold ;
+	
+	for (QList<Vertex*>::iterator it=m_graph.begin(); it!=m_graph.end(); it++){ 
+		(*it)->filterEdges( m_threshold, overThreshold);
+	}
+}
+
+
+void Graph::slotSetEdgeVisible ( int source, int target, bool visible) {
+	qDebug() << "Graph: slotSetEdgeVisible  - emitting signal setEdgeVisible to GW";  
+	emit setEdgeVisible ( source, target, visible); 
+}
 
 
 /**	Checks if there is a specific vertex in the graph

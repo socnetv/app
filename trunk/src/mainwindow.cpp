@@ -176,11 +176,16 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
 	connect( rotateSpinBox, SIGNAL(valueChanged(int)), graphicsWidget, SLOT( rot(int) ) );
 
+	//connect( &m_filterEdgesDialog, SIGNAL( userChoices( float, bool) ), 
+			//graphicsWidget, SLOT( filterEdges (float, bool) ) );	
+	
 	connect( &m_filterEdgesDialog, SIGNAL( userChoices( float, bool) ), 
-			graphicsWidget, SLOT( filterEdges (float, bool) ) );	
-	
-	
+			&activeGraph, SLOT( filterEdges (float, bool) ) );
 
+	connect( &activeGraph, SIGNAL( setEdgeVisible ( int, int, bool) ), 
+			 graphicsWidget, SLOT(  setEdgeVisible ( int, int, bool) ) );
+	
+	
 	
 	connect( circleClearBackgrCirclesAct, SIGNAL(activated()), 
 			graphicsWidget, SLOT(clearBackgrCircles()));
@@ -226,7 +231,10 @@ MainWindow::MainWindow(const QString & m_fileName) {
 		createTips();
 	}	
 
+	graphicsWidget->setFocus();
+	
 	statusMessage( tr("Welcome to Social Networks Visualizer, Version ")+VERSION);
+
 }
 
 
@@ -1174,7 +1182,6 @@ void MainWindow::initToolBar(){
 
 	//Create zooming widget
 	zoomCombo = new QComboBox;
-	zoomCombo -> setFocusPolicy(Qt::NoFocus);
 	QStringList scales;
    	scales << tr("25%") << tr("50%") << tr("75%") << tr("100%") << tr("125%") << tr("150%")<<tr("175%")  ;
    	zoomCombo->addItems(scales);
@@ -1467,15 +1474,14 @@ void MainWindow::initView() {
  	graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
  	graphicsWidget->setResizeAnchor(QGraphicsView::AnchorViewCenter);
 	graphicsWidget->setFocusPolicy(Qt::StrongFocus);	
-
-	printDebugAct->setChecked (false);
+	graphicsWidget->setFocus();
 
 	this->resize(900,700);
 
 	//set minimum size of canvas
  	graphicsWidget->setMinimumSize( (qreal)  ( this->width()-toolBox->sizeHint().width() -30) , (qreal) ( this->height()-statusBar()->sizeHint().height() -toolBar->sizeHint().height() -menuBar()->sizeHint().height() -20 ) );
 	qDebug ("MW initView(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
-//	printDebugAct->setChecked (false);
+
 }
 
 
