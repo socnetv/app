@@ -442,7 +442,8 @@ void Graph::removeEdge (int v1, int v2) {
 
 /**
 	Called from MainWindow 
-	to filter edges over/under a weight m_threshold
+	to filter edges over or under a specified weight (m_threshold)
+	For each Vertex in the Graph, calls the homonymous method of Vertex class.
 */
 void Graph::filterEdges(float m_threshold, bool overThreshold){
 	if (overThreshold)
@@ -852,11 +853,11 @@ void Graph::writeDistanceMatrix (const char* fn, const char* fn1, const char* ne
 	ofstream file1 (fn1);
 	int dist=-1, sigma=-1;
 	
-	char one_space[]     = " ";
+	char one_space[]     = " ";	Q_UNUSED (one_space);
 	char two_spaces[]    = "  ";
-	char three_spaces[]  = "   ";
+	char three_spaces[]  = "   ";	Q_UNUSED (three_spaces);
 	char four_spaces[]   = "    ";
-	char five_spaces[]   = "     ";
+	char five_spaces[]   = "     ";	Q_UNUSED (five_spaces);
 	char six_spaces[]    = "      ";
 	char seven_spaces[]  = "       ";
 	char eight_spaces[]  = "        ";

@@ -148,7 +148,6 @@ public slots:
 	void slotChangeLinkColor();
 	void slotChangeLinkWeight();
 	void slotFilterNodes();
-	void slotFilterEdges(float, bool);
 	void slotShowFilterEdgesDialog();
 	void slotTransformNodes2Links();
 	void slotSymmetrize();

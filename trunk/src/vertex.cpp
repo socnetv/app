@@ -144,7 +144,10 @@ void Vertex::removeLinkFrom(int v2){
 
 
 
-
+/**
+	Called from Graph parent 
+	to filter edges over or under a specified weight (m_threshold)
+*/
 void Vertex::filterEdges(float m_threshold, bool overThreshold){
 	qDebug() << "Vertex::filterEdges";
 	imap_f::iterator it1;
@@ -185,19 +188,21 @@ void Vertex::filterEdges(float m_threshold, bool overThreshold){
 		} 
 	}
 }
+
+
+
+
 //Returns the numbers of links from this vertice
 int Vertex::outDegree() { 
-//	qDebug("Vertex: size %i", m_outEdges.size()); 
 	//return m_outLinks;
-	return m_outEdges.size(); 
+	return m_outEdges.size();		//FIXME: What if the user has filtered out links? 
 }
 
 
 
 //Returns the numbers of links to this vertice
 int Vertex::inDegree() { 
-//	qDebug("Vertex: size %i", m_outEdges.size()); 
-	return m_inLinks; 
+	return m_inLinks; 			//FIXME: What if the user has filtered out links?
 }
 
 

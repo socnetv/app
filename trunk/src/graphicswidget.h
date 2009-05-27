@@ -90,7 +90,7 @@ public slots:
 	void drawEdge(int, int, float, bool, bool, QString, bool, bool);
 	void eraseEdge(int, int);
 	void setEdgeVisible ( int, int, bool);
-	void filterEdges(float, bool);
+
 	
 	void nodeClicked(Node *);
 	void edgeClicked(Edge *);

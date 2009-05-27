@@ -175,16 +175,12 @@ MainWindow::MainWindow(const QString & m_fileName) {
 	connect( zoomInAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomIn() ) );
 
 	connect( rotateSpinBox, SIGNAL(valueChanged(int)), graphicsWidget, SLOT( rot(int) ) );
-
-	//connect( &m_filterEdgesDialog, SIGNAL( userChoices( float, bool) ), 
-			//graphicsWidget, SLOT( filterEdges (float, bool) ) );	
 	
 	connect( &m_filterEdgesDialog, SIGNAL( userChoices( float, bool) ), 
 			&activeGraph, SLOT( filterEdges (float, bool) ) );
 
 	connect( &activeGraph, SIGNAL( setEdgeVisible ( int, int, bool) ), 
 			 graphicsWidget, SLOT(  setEdgeVisible ( int, int, bool) ) );
-	
 	
 	
 	connect( circleClearBackgrCirclesAct, SIGNAL(activated()), 
@@ -1875,6 +1871,7 @@ void MainWindow::fileType (
 		int type, QString netName, int aNodes, int totalLinks, bool undirected)
 {
 	qDebug()<< "MW: fileType() networkName is: " << netName;
+	Q_UNUSED (undirected);
 	networkName=netName ;
 	switch( type ) 	{
 		case 0:
@@ -3480,7 +3477,9 @@ void MainWindow::slotFilterNodes(){
 
 
 /**
-*	Shows a dialog where the user selects what edges to filter  
+*	Shows a dialog from where the user may  
+*	filter edges according to their weight 
+*	All edges weighted more (or less) than the specified weight  will be disabled.
 */ 
 void MainWindow::slotShowFilterEdgesDialog() {
 	if (!fileLoaded && !networkModified  )   {
@@ -3492,24 +3491,6 @@ void MainWindow::slotShowFilterEdgesDialog() {
 }
 
 
-/**
-*	Filters links according to their weight 
-*	All links weighted more (or less) than the specified w will be removed.
-* 	Called from FilterEdgesDialog signal
-*/ 
-void MainWindow::slotFilterEdges(float m_threshold, bool overThreshold){
-
-	if (!fileLoaded && !networkModified  )   {
-		statusMessage(  QString(tr("Load a network file first. \nThen you may ask me to compute something!"))  );
-		return;
-	}
-	graphChanged();
-	
-	qDebug() << "MW: slotFilterEdges";
-
-
-	statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
-}
 
 
 

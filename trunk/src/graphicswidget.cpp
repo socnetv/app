@@ -364,41 +364,6 @@ void GraphicsWidget::eraseEdge(int sourceNode, int targetNode){
 
 
 
-/**
-	Called from MainWindow when erasing edges using vertex numbers
-*/
-void GraphicsWidget::filterEdges(float m_threshold, bool overThreshold){
-	qDebug()<< " filterEdges ";
-	qDebug("GW: FilterEdges - Scene items= %i - View items : %i",scene()->items().size(), items().size());
-	QList<QGraphicsItem *>  list=scene()->items();
-	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!= list.end() ; it++){
-		if ( (*it)->type()==TypeEdge ) {
-			Edge *edge=(Edge*) (*it);
-			if (overThreshold) {
-				if ( edge->weight() >= m_threshold ) {
-					edge->hide();
-					//emit setEdgeVisible ( edge->sourceNodeNumber(), edge->targetNodeNumber(), false ); 
-				}
-				else {
-					edge->show();
-					//emit setEdgeVisible ( edge->sourceNodeNumber(), edge->targetNodeNumber(), true );
-				}
-			}
-			else {
-				 if ( edge->weight() <= m_threshold ) {
-					edge->hide();
-					//emit setEdgeVisible ( edge->sourceNodeNumber(), edge->targetNodeNumber(), false );
-				}
-				else {
-					edge->show();
-					//emit setEdgeVisible ( edge->sourceNodeNumber(), edge->targetNodeNumber(), true );
-				}	
-			}
-		}
-	}
-	qDebug("GW: FilterEdges Scene items now= %i - View items now= %i ", scene()->items().size(), items().size() );
-}
-
 
 
 /** 
