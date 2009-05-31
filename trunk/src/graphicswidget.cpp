@@ -552,19 +552,42 @@ void GraphicsWidget::setInitLabelDistance(int labelDistance){
 */
 void GraphicsWidget::setEdgeVisibility(int source, int target, bool visible){
 	QString edgeName = QString::number( source ) + QString(">")+ QString::number( target );
+	
 	if (visible) {
-		qDebug()<<"GW: setEdgeVisibility(). Making edge between "<< source  << " and "<< target 
-		<< " VISIBLE.";
-		edgesMap [edgeName] -> show();
+		if  ( edgesMap.contains (edgeName) ) {
+			qDebug()<<"GW: setEdgeVisibility(). Making edge between "<< source  << " and "<< target 
+				<< " VISIBLE.";
+			edgesMap [edgeName] -> show();			
+		}
+		else {
+			
+		}
 	}
 	else {
-		qDebug()<<"GW: setEdgeVisibility(). Making edge between "<< source  << " and "<< target 
-		<< " NOT VISIBLE.";
-		edgesMap [edgeName] -> hide();
+		if  ( edgesMap.contains (edgeName) ) {
+			qDebug()<<"GW: setEdgeVisibility(). Making edge between "<< source  << " and "<< target 
+				<< " NOT VISIBLE.";
+			edgesMap [edgeName] -> hide();
+		}
 	}
 }
 
 
+/*
+ *  OBSOLETE?
+ */
+bool GraphicsWidget::hasEdge (int source, int target){
+	QString edgeName = QString::number( source ) + QString(">")+ QString::number( target );
+	if  ( edgesMap.contains (edgeName) ){
+		qDebug() << "GW: DOES hasEdge() from " << source << " to " << target ;
+		return true;
+	}
+	else {
+		qDebug() << "GW: DOES NOT hasEdge() from " << source << " to " << target ;
+		return false;
+	}
+		
+}
 
 
 

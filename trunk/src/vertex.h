@@ -158,7 +158,7 @@ public:
 
 	imap_f m_outEdges;			//holds all edges starting from this vertex.
 	imap_f m_inEdges;			//holds all edges starting from this vertex.
-
+	ihash_i m_enabled_outEdges;
 signals:
 	void setEdgeVisibility ( int, int, bool);
 		
@@ -174,7 +174,7 @@ private:
 	ihash_s outLinkColors;
 	//FIXME vertice coords
 	
-	ihash_i m_enabled_outEdges;
+
 	double m_x, m_y;
 	float m_CLC;
 	float m_delta, m_EC, m_SEC;

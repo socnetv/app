@@ -77,6 +77,9 @@ public:
 	
 	void setAllItemsVisibility(int, bool);
 
+	bool hasEdge (int source, int target);
+	
+	
 protected:
 	void timerEvent(QTimerEvent *event);
 	void wheelEvent(QWheelEvent *event);

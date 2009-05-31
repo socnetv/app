@@ -190,6 +190,11 @@ void Vertex::filterEdgesByWeight(float m_threshold, bool overThreshold){
 
 
 
+
+
+
+
+
 //Returns the numbers of links from this vertice
 int Vertex::outDegree() { 
 	//return m_outLinks;
