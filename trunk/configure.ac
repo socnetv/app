@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT(SocNetV, 0.6.0, dimitris.kalamaras@gmail.com, socnetv)
+AC_INIT(SocNetV, 0.70, dimitris.kalamaras@gmail.com, socnetv)
 
 AC_CONFIG_SRCDIR(src/mainwindow.cpp)
 AC_CONFIG_HEADERS(config.h)
