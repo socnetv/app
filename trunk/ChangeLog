@@ -4,6 +4,14 @@
 
 ChangeLog:
 
+
+Version 0.70 - June 30  2009
+Codename: "Summertime"
+----------------------------
+- Fixed bug crashing SocNetV in Edge Filtering when an edge was reciprocal.
+- 
+
+
 Version 0.6.0 - May 27 2009
 Codename: "Spring"
 ----------------------------

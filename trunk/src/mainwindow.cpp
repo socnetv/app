@@ -3318,7 +3318,7 @@ void MainWindow::slotChangeLinkWeight(){
 
 	qDebug("MW: slotChangeLinkWeight()");
 	int  sourceNode=-1, targetNode=-1;
-	double newWeight=1.0;
+	float newWeight=1.0;
 	int min=activeGraph.firstVertexNumber();
 	int max=activeGraph.lastVertexNumber();
 
@@ -3345,12 +3345,12 @@ void MainWindow::slotChangeLinkWeight(){
 				qDebug ("MW: searching link...");
 				if ( link->sourceNodeNumber()==sourceNode && link->targetNodeNumber()==targetNode ) {
 					qDebug("MW: link found");
-					newWeight=QInputDialog::getDouble(this, "Change link weight...",tr("New link Weight: "), 1, -100, 100 ,1, &ok ) ;
+					newWeight=(float) QInputDialog::getDouble(this, 
+						"Change link weight...",tr("New link Weight: "), 1, -100, 100 ,1, &ok ) ;
 					if (ok) {
 						link->setWeight(newWeight);
 						link->update();
 						activeGraph.setEdgeWeight(sourceNode, targetNode, newWeight);
-						graphChanged();
 						statusMessage(  QString(tr("Ready."))  );
 						return;
 					}
@@ -3364,7 +3364,7 @@ void MainWindow::slotChangeLinkWeight(){
 	else {  //linkClicked
 		sourceNode=clickedLink->sourceNodeNumber();
 		targetNode=clickedLink->targetNodeNumber();
-		if (activeGraph.symmetricEdge(sourceNode, targetNode) ) {
+		if ( activeGraph.symmetricEdge(sourceNode, targetNode) ) {
 			QString s=QString::number(sourceNode);
 			QString t=QString::number(targetNode);
 			switch (QMessageBox::information( this, tr("Change link weight"),
@@ -3373,15 +3373,15 @@ void MainWindow::slotChangeLinkWeight(){
 				      s+" -> "+ t, t+" -> "+s, tr("Both"), 0, 1 ))
 				{
 					case 0:
-						qDebug("MW: slotChangeLinkWeight()  %i -> %i", sourceNode, targetNode);
-						newWeight=QInputDialog::getInteger(this, "Change link weight...",tr("New link weight: "), 1, -100, 100 ,1, &ok) ;
+						qDebug("MW: slotChangeLinkWeight()  real edge %i -> %i", sourceNode, targetNode);
+						newWeight=QInputDialog::getDouble(this, 
+						"Change link weight...",tr("New link weight: "), 1.0, -20.0, 20.00 ,1, &ok) ;
 						if (ok) {
 							clickedLink->setWeight(newWeight);
 							clickedLink->update();	
 							qDebug()<<"MW: newWeight will be "<< newWeight; 
 							activeGraph.setEdgeWeight(sourceNode, targetNode, newWeight);
 							statusMessage(  QString(tr("Ready."))  );
-							graphChanged();
 							return;
 						}
 						else {
@@ -3390,17 +3390,13 @@ void MainWindow::slotChangeLinkWeight(){
 						}
 						break;
 					case 1:
-						qDebug("MW: slotChangeLinkWeight()  %i -> %i",targetNode , sourceNode);
-						newWeight=QInputDialog::getInteger(this, "Change link weight...",tr("New link weight: "), 1, -100, 100 ,1, &ok) ;
+						qDebug("MW: slotChangeLinkWeight() virtual edge %i -> %i",targetNode , sourceNode);
+						newWeight=(float) QInputDialog::getDouble(this, 
+						"Change link weight...",tr("New link Weight: "), 1, -100, 100 ,1, &ok ) ;
 						if (ok) {
-							if (graphicsWidget->setEdgeWeight( targetNode, sourceNode, newWeight) ) {
-								qDebug()<<"MW: newWeight will be "<< newWeight; 
-								activeGraph.setEdgeWeight( targetNode, sourceNode, newWeight);
-								statusMessage(  QString(tr("Ready."))  );
-								graphChanged();
-							}
-							else statusMessage(  QString(tr("Weight not changed. Sorry."))  );
-								
+							qDebug()<<"MW: newWeight will be "<< newWeight;
+							activeGraph.setEdgeWeight( targetNode, sourceNode, newWeight);
+							statusMessage(  QString(tr("Ready."))  );								
 							return;
 						}
 						else {
@@ -3410,21 +3406,15 @@ void MainWindow::slotChangeLinkWeight(){
 						break;
 					case 2:
 						qDebug("MW: slotChangeLinkWeight()  both directions %i <-> %i",targetNode , sourceNode);
-						newWeight=QInputDialog::getInteger(this, "Change link weight...",tr("New link weight: "), 1, -100, 100 ,1, &ok) ;
+						newWeight=(float) QInputDialog::getDouble(this, 
+						"Change link weight...",tr("New link Weight: "), 1, -100, 100 ,1, &ok ) ;
+
 						if (ok) {
-							if (
-								graphicsWidget->setEdgeWeight( targetNode, sourceNode, newWeight) &&
-								graphicsWidget->setEdgeWeight( sourceNode, targetNode, newWeight)
-								)  	{
-								qDebug()<<"MW: Changing first direction. NewWeight will be "<< newWeight;
-								activeGraph.setEdgeWeight(sourceNode, targetNode, newWeight);
-								qDebug()<<"MW: Changing opposite direction. NewWeight will be "<< newWeight; 
-								activeGraph.setEdgeWeight( targetNode, sourceNode, newWeight);
-								statusMessage(  QString(tr("Ready."))  );
-								graphChanged();
-							}
-							else 
-								statusMessage(  QString(tr("Weight not changed. Sorry."))  );
+							qDebug()<<"MW: Changing first direction. NewWeight will be "<< newWeight;
+							activeGraph.setEdgeWeight(sourceNode, targetNode, newWeight);
+							qDebug()<<"MW: Changing opposite direction. NewWeight will be "<< newWeight; 
+							activeGraph.setEdgeWeight( targetNode, sourceNode, newWeight);
+							statusMessage(  QString(tr("Ready."))  );
 			 				return;
 						}
 						else {
@@ -3433,23 +3423,6 @@ void MainWindow::slotChangeLinkWeight(){
 						}
 						break;
 				}
-		}
-		else {
-			qDebug("MW: slotChangeLinkWeight()  %i -> %i", sourceNode, targetNode);
-			newWeight=QInputDialog::getInteger(this, "Change link weight...",tr("New link weight: "), 1, -100, 100 ,1, &ok) ;
-			if (ok) {
-				clickedLink->setWeight(newWeight);
-				clickedLink->update();	
-				qDebug()<<"MW: newWeight will be "<< newWeight; 
-				activeGraph.setEdgeWeight(sourceNode, targetNode, newWeight);
-				statusMessage(  QString(tr("Ready."))  );
-				graphChanged();
-				return;
-			}
-			else {
-				statusMessage(  QString(tr("Change link weight cancelled."))  );
-				return;
-			}
 		}
 		linkClicked=false;
 	}
@@ -5292,7 +5265,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Sun May 31 19:46:20 EEST 2009";
+QString BUILD="Sun May 31 20:47:10 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"
