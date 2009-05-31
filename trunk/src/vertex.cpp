@@ -149,23 +149,22 @@ void Vertex::removeLinkFrom(int v2){
 	to filter edges over or under a specified weight (m_threshold)
 */
 void Vertex::filterEdgesByWeight(float m_threshold, bool overThreshold){
-	qDebug() << "Vertex::filterEdges of vertex " << this->m_name;
+	qDebug() << "Vertex::filterEdgesByWeight of vertex " << this->m_name;
 	imap_f::iterator it1;
 	int target=0;
-	float m_weight; 
+	float m_weight=0; 
 	for( it1 =  m_outEdges.begin(); it1 !=  m_outEdges.end(); it1++ ) {
 		target=it1->first;
-		m_weight = it1->first; 
-		
+		m_weight = it1->second; 
 		if (overThreshold) {
 			if ( m_weight >= m_threshold ) {
-				qDebug() << "Vertex::filterEdges. Edge  to " << target 
+				qDebug() << "Vertex::filterEdgesByWeight(). Edge  to " << target 
 				<< " has weight " << m_weight << ". It will be disabled. Emitting signal to Graph....";
 				m_enabled_outEdges[target] = 0;
 				emit setEdgeVisibility ( m_name, target, false ); 
 			}
 			else {
-				qDebug() << "Vertex::filterEdges. Edge to " << target 
+				qDebug() << "Vertex::filterEdgesByWeight(). Edge to " << target 
 				<< " has weight " << m_weight << ". It will be enabled. Emitting signal to Graph....";
 				m_enabled_outEdges[target] = 1;
 				emit setEdgeVisibility ( m_name, target, true );
@@ -173,13 +172,13 @@ void Vertex::filterEdgesByWeight(float m_threshold, bool overThreshold){
 		}
 		else {
 			 if ( m_weight <= m_threshold ) {
-				qDebug() << "Vertex::filterEdges. Edge  to " << target 
+				qDebug() << "Vertex::filterEdgesByWeight(). Edge  to " << target 
 				<< " has weight " << m_weight << ". It will be disabled. Emitting signal to Graph....";
 				m_enabled_outEdges[target] = 0;
 				emit setEdgeVisibility ( m_name, target, false );
 			}
 			else {
-				qDebug() << "Vertex::filterEdges. Edge  to " << target 
+				qDebug() << "Vertex::filterEdgesByWeight(). Edge  to " << target 
 				<< " has weight " << m_weight << ". It will be enabled. Emitting signal to Graph....";
 				m_enabled_outEdges[target] = 1;
 				emit setEdgeVisibility ( m_name, target, true );

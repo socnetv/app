@@ -551,16 +551,15 @@ void GraphicsWidget::setInitLabelDistance(int labelDistance){
 *	Changes the visibility of an GraphicsView edge (number, label, edge, etc)
 */
 void GraphicsWidget::setEdgeVisibility(int source, int target, bool visible){
-	qDebug()<<"GW: setEdgeVisibility()" ;
 	QString edgeName = QString::number( source ) + QString(">")+ QString::number( target );
 	if (visible) {
 		qDebug()<<"GW: setEdgeVisibility(). Making edge between "<< source  << " and "<< target 
-		<< " visible ";
+		<< " VISIBLE.";
 		edgesMap [edgeName] -> show();
 	}
 	else {
 		qDebug()<<"GW: setEdgeVisibility(). Making edge between "<< source  << " and "<< target 
-		<< " not visible ";
+		<< " NOT VISIBLE.";
 		edgesMap [edgeName] -> hide();
 	}
 }

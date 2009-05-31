@@ -447,12 +447,16 @@ void Graph::removeEdge (int v1, int v2) {
 */
 void Graph::filterEdgesByWeight(float m_threshold, bool overThreshold){
 	if (overThreshold)
-		qDebug() << "Graph: Filtering edges weighted over " << m_threshold ;
+		qDebug() << "Graph: filterEdgesByWeight() over " << m_threshold ;
 	else 
-		qDebug() << "Graph: Filtering edges weighted below "<< m_threshold ;
+		qDebug() << "Graph: filterEdgesByWeight()  below "<< m_threshold ;
 	
 	for (QList<Vertex*>::iterator it=m_graph.begin(); it!=m_graph.end(); it++){ 
-		(*it)->filterEdgesByWeight ( m_threshold, overThreshold );
+		if ( (*it)->isOutLinked() )
+			(*it)->filterEdgesByWeight ( m_threshold, overThreshold );
+		else 
+			qDebug() << "Graph:filterEdgesByWeight() Vertex " << (*it)->name() 
+				<< " not linked. Proceeding...";
 	}
 }
 
