@@ -1,5 +1,5 @@
 %define name    socnetv
-%define version 0.6.0
+%define version 0.70
 %define release 1
 %define prefix  /usr/local
 %define lastrev %(LANG=en_US.UTF-8 && date +"%a %b %e %Y")
@@ -118,7 +118,7 @@ chmod -R a-x+X COPYING ChangeLog INSTALL NEWS README TODO manual man nets src
 
 %install
 %if %{is_fedora}
-#desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
+desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 #desktop-file-install --add-category="Math" --delete-original  --dir=%{buildroot}%{_datadir}/applications  %{buildroot}/%{_datadir}/applnk/Edutainment/%{name}.desktop
 %endif
 

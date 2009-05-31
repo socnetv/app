@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #CHANGE THIS TO NEW VERSION NUMBERS
-VER=0.51;
+VER=0.6.0;
 echo $VER
 
 echo .
@@ -24,7 +24,7 @@ fi
 
 echo
 echo Checking for old working dir...
-cd ~/Documents/socnetv/trunk
+cd ~/Documents/Code/Qt/socnetv/trunk
 
 if [ -d ../mandriva ];    then
         echo Removing old mandriva directory
@@ -48,6 +48,9 @@ echo
 echo Checking if RPM development tree exists...
 if [ -d ~/rpmbuild/RPMS ];    then
 	echo RPM development tree exists. Continuing.
+	sudo rm -f ~/rpmbuild/SOURCES/*
+	sudo rm -f ~/rpmbuild/RPMS/*
+	sudo rm -f ~/rpmbuild/SPECS/*
 else
         echo Seems there is no RPM development tree. Enter sudo password to create it
         sudo rpmdev-setuptree
@@ -77,7 +80,7 @@ echo ---------------------------------
 echo   COPY FILES TO WORKING DIRS     
 echo ---------------------------------
 
-find . -not -name "qdevelop-*" -not -name "pajek*" -not -path "*./autom4te.cache*" -not -path "*.svn*" -not -path "*./test-nets*" -not -path "./debian*"  -print0  | cpio -pmd0 ../mandriva/socnetv-$VER
+find . -not -name ".qdevelop" -not -name "*.dat" -not -name "qdevelop-*" -not -name "pajek*" -not -path "*./autom4te.cache*" -not -path "*.svn*" -not -path "*./test-nets*" -not -path "./debian*"  -print0  | cpio -pmd0 ../mandriva/socnetv-$VER
 
 
 

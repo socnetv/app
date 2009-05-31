@@ -3,7 +3,7 @@
  version: 0.70
  Written in Qt 4.4
  
-                         filteredgesdialog.h  -  description
+                         filteredgesbyweightdialog.h  -  description
                              -------------------
     copyright            : (C) 2005-2009 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
@@ -24,26 +24,26 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef FILTEREDGESDIALOG_H
-#define FILTEREDGESDIALOG_H
+#ifndef FILTEREDGESBYWEIGHTDIALOG_H
+#define FILTEREDGESBYWEIGHTDIALOG_H
 
 
 #include <QDialog>
 
-#include "ui_filteredgesdialog.h"
+#include "ui_filteredgesbyweightdialog.h"
  
 
-class FilterEdgesDialog : public QDialog
+class FilterEdgesByWeightDialog : public QDialog
 {
 	Q_OBJECT
 public:
-	FilterEdgesDialog (QWidget *parent = 0);
+	FilterEdgesByWeightDialog (QWidget *parent = 0);
 public slots:
 	void gatherData ();
 signals:
 	void userChoices( float, bool);	
 private:
-	Ui::FilterEdgesDialog ui;
+	Ui::FilterEdgesByWeightDialog ui;
 
 };
 

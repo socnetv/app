@@ -79,27 +79,27 @@ public slots:
 	void createVertex(int i, QPointF p); 							//Called by GW
 	void createVertex(int i, int canvasWidth, int canvasHeight); 	//Called by MW
 
-	void filterEdges (float, bool);									//Called by MW to filter edges over/under a weight
-	void slotSetEdgeVisible( int, int, bool);
+	void filterEdgesByWeight (float, bool);				//Called by MW to filter edges over/under a weight
+	void slotSetEdgeVisibility( int, int, bool);
 	
 signals:
 	/** Signals to MainWindow */
 	void updateProgressDialog(int );
-	void graphChanged();						//call to update MW widgets
-	void selectedVertex(int);				//notifies MW who is the selected node
+	void graphChanged();								//call to update MW widgets
+	void selectedVertex(int);							//notifies MW who is the selected node
 	void signalFileType (int, QString, int,int, bool); //notifies MW what we have loaded.
-	void statusMessage (QString message);		//updates statusbar message
+	void statusMessage (QString message);				//updates statusbar message
 	
 	/** Signals to GraphicsWidget */
 	void drawNode( int ,int,  QString, QString,QString, QPointF, QString, bool, bool, bool);	//call GW to draw a node
 	void eraseNode (int);		//erase node from GW  
-	void drawEdge(int, int, float, bool, bool, QString, bool, bool);				//call GW to draw an edge
+	void drawEdge(int, int, float, bool, bool, QString, bool, bool);	//call GW to draw an edge
 	void eraseEdge(int, int);		//emited from removeEdge() to GW to clear the edge item.
-	void setEdgeVisible ( int, int, bool); // emitted from each Vertex via slotSetEdgeVisible
+	void setEdgeVisibility ( int, int, bool); // emitted from each Vertex 
 	
-	void drawEdgeReciprocal(int, int);							//call GW to draw the edge as symmetric one
-	void addBackgrCircle(int, int, int);							//call GW to draw a layout line somewhere.
-	void addBackgrHLine (int);								//call GW to draw a layout line somewhere.
+	void drawEdgeReciprocal(int, int);		//call GW to draw the edge as symmetric one
+	void addBackgrCircle(int, int, int);	//call GW to draw a circular layout line somewhere.
+	void addBackgrHLine (int);				//call GW to draw a horizontal layout line somewhere.
 	void moveNode(int, int, int);
 
 	

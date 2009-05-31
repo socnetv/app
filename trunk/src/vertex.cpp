@@ -55,7 +55,7 @@ Vertex::Vertex(Graph *parent, int v1, int val, int nsz, QString nc, QString nl, 
 	m_inLinked=FALSE;
 	m_outLinked=FALSE;
 	m_reciprocalLinked=FALSE;
-	connect (this, SIGNAL (setEdgeVisible ( int, int, bool) ), parent, SLOT (slotSetEdgeVisible ( int, int, bool)) );
+	connect (this, SIGNAL (setEdgeVisibility ( int, int, bool) ), parent, SLOT (slotSetEdgeVisibility ( int, int, bool)) );
 }
 
 Vertex::Vertex(int v1) { 
@@ -148,8 +148,8 @@ void Vertex::removeLinkFrom(int v2){
 	Called from Graph parent 
 	to filter edges over or under a specified weight (m_threshold)
 */
-void Vertex::filterEdges(float m_threshold, bool overThreshold){
-	qDebug() << "Vertex::filterEdges";
+void Vertex::filterEdgesByWeight(float m_threshold, bool overThreshold){
+	qDebug() << "Vertex::filterEdges of vertex " << this->m_name;
 	imap_f::iterator it1;
 	int target=0;
 	float m_weight; 
@@ -159,31 +159,30 @@ void Vertex::filterEdges(float m_threshold, bool overThreshold){
 		
 		if (overThreshold) {
 			if ( m_weight >= m_threshold ) {
-				qDebug() << "Vertex::filterEdges" << " Edge  to " << target 
-				<< " has weight " << m_weight << " - will be disabled";
+				qDebug() << "Vertex::filterEdges. Edge  to " << target 
+				<< " has weight " << m_weight << ". It will be disabled. Emitting signal to Graph....";
 				m_enabled_outEdges[target] = 0;
-				emit setEdgeVisible ( m_name, target, false ); 
+				emit setEdgeVisibility ( m_name, target, false ); 
 			}
 			else {
-				qDebug() << "Vertex::filterEdges" << " Edge to " << target 
-				<< " has weight " << m_weight << " - will be enabled";
-
+				qDebug() << "Vertex::filterEdges. Edge to " << target 
+				<< " has weight " << m_weight << ". It will be enabled. Emitting signal to Graph....";
 				m_enabled_outEdges[target] = 1;
-				emit setEdgeVisible ( m_name, target, true );
+				emit setEdgeVisibility ( m_name, target, true );
 			}
 		}
 		else {
 			 if ( m_weight <= m_threshold ) {
-				qDebug() << "Vertex::filterEdges" << " Edge  to " << target 
-				<< " has weight " << m_weight << " - will be disabled";
+				qDebug() << "Vertex::filterEdges. Edge  to " << target 
+				<< " has weight " << m_weight << ". It will be disabled. Emitting signal to Graph....";
 				m_enabled_outEdges[target] = 0;
-				emit setEdgeVisible ( m_name, target, false );
+				emit setEdgeVisibility ( m_name, target, false );
 			}
 			else {
-				qDebug() << "Vertex::filterEdges" << " Edge  to " << target 
-				<< " has weight " << m_weight << " - will be enabled";
+				qDebug() << "Vertex::filterEdges. Edge  to " << target 
+				<< " has weight " << m_weight << ". It will be enabled. Emitting signal to Graph....";
 				m_enabled_outEdges[target] = 1;
-				emit setEdgeVisible ( m_name, target, true );
+				emit setEdgeVisibility ( m_name, target, true );
 			}	
 		} 
 	}

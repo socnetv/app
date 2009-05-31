@@ -36,7 +36,7 @@
 #include <math.h>
 #include "graphicswidget.h"
 #include "graph.h"
-#include "filteredgesdialog.h"
+#include "filteredgesbyweightdialog.h"
 
 
 
@@ -56,7 +56,7 @@ class QCheckBox;
 class QProgressDialog;
 class Edge;
 class Node;
-//class FilterEdgesDialog;
+
 class QPushButton;	
 class QLCDNumber;
 class QSlider;
@@ -272,7 +272,7 @@ private:
 	
 	QGraphicsScene *scene;
 
-	FilterEdgesDialog m_filterEdgesDialog;
+	FilterEdgesByWeightDialog m_filterEdgesByWeightDialog;
 	Graph activeGraph;
 	QPrinter *printer;	
 	QToolBar *toolBar;

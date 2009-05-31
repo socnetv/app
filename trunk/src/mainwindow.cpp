@@ -42,7 +42,7 @@
 #include "edgeweight.h"
 #include "htmlviewer.h"
 #include "texteditor.h"
-#include "filteredgesdialog.h"
+#include "filteredgesbyweightdialog.h"
 #include "backgrcircle.h"
 #include "vertex.h"
 
@@ -176,11 +176,11 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
 	connect( rotateSpinBox, SIGNAL(valueChanged(int)), graphicsWidget, SLOT( rot(int) ) );
 	
-	connect( &m_filterEdgesDialog, SIGNAL( userChoices( float, bool) ), 
-			&activeGraph, SLOT( filterEdges (float, bool) ) );
+	connect( &m_filterEdgesByWeightDialog, SIGNAL( userChoices( float, bool) ), 
+			&activeGraph, SLOT( filterEdgesByWeight (float, bool) ) );
 
-	connect( &activeGraph, SIGNAL( setEdgeVisible ( int, int, bool) ), 
-			 graphicsWidget, SLOT(  setEdgeVisible ( int, int, bool) ) );
+	connect( &activeGraph, SIGNAL( setEdgeVisibility ( int, int, bool) ), 
+			 graphicsWidget, SLOT(  setEdgeVisibility ( int, int, bool) ) );
 	
 	
 	connect( circleClearBackgrCirclesAct, SIGNAL(activated()), 
@@ -3486,8 +3486,7 @@ void MainWindow::slotShowFilterEdgesDialog() {
 		statusMessage(  QString(tr("Load a network file first. \nThen you may ask me to compute something!"))  );
 		return;
 	}
-	///m_filterEdgesDialog = new FilterEdgesDialog(this);
-	m_filterEdgesDialog.exec() ; // show();	
+	m_filterEdgesByWeightDialog.exec() ;
 }
 
 
@@ -5293,11 +5292,11 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-     QString BUILD="Wed, May 27, 2009";
+QString BUILD="Sun May 31 18:07:35 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"
-	"<p><b>Build</b>"  + BUILD + " </p>"
+	"<p><b>Build</b>: "  + BUILD + " </p>"
 	
 	"<p>(C) 2005-2009 by Dimitris V. Kalamaras"
 	"<br> dimitris.kalamaras@gmail.com"

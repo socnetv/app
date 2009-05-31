@@ -441,25 +441,25 @@ void Graph::removeEdge (int v1, int v2) {
 
 
 /**
-	Called from MainWindow 
+	Called from filterEdgesDialog via MainWindow 
 	to filter edges over or under a specified weight (m_threshold)
 	For each Vertex in the Graph, calls the homonymous method of Vertex class.
 */
-void Graph::filterEdges(float m_threshold, bool overThreshold){
+void Graph::filterEdgesByWeight(float m_threshold, bool overThreshold){
 	if (overThreshold)
-		qDebug() << "Graph: FilterEdges: " << " over " << m_threshold ;
+		qDebug() << "Graph: Filtering edges weighted over " << m_threshold ;
 	else 
-		qDebug() << "Graph: FilterEdges: " << " below " << m_threshold ;
+		qDebug() << "Graph: Filtering edges weighted below "<< m_threshold ;
 	
 	for (QList<Vertex*>::iterator it=m_graph.begin(); it!=m_graph.end(); it++){ 
-		(*it)->filterEdges( m_threshold, overThreshold);
+		(*it)->filterEdgesByWeight ( m_threshold, overThreshold );
 	}
 }
 
 
-void Graph::slotSetEdgeVisible ( int source, int target, bool visible) {
-	qDebug() << "Graph: slotSetEdgeVisible  - emitting signal setEdgeVisible to GW";  
-	emit setEdgeVisible ( source, target, visible); 
+void Graph::slotSetEdgeVisibility ( int source, int target, bool visible) {
+	qDebug() << "Graph: slotSetEdgeVisibility  - emitting signal to GW";  
+	emit setEdgeVisibility ( source, target, visible); 
 }
 
 

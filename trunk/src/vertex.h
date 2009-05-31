@@ -1,7 +1,7 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer 
  version: 0.70
- Written in Qt 4.4 with KDevelop   
+ Written in Qt 4.4   
  
                          vertex.h  -  description
                              -------------------
@@ -73,7 +73,9 @@ public:
 	/** Returns true if there is an outLink from this vertex */
 	bool isOutLinked() { return m_outLinked;}
 	float isLinkedTo(int V);		/**Returns the weight of the link from to vertexc V, otherwise zero*/
-	void filterEdges(float m_threshold, bool overThreshold);
+
+	void filterEdgesByWeight(float m_threshold, bool overThreshold);
+//	void filterEdgesByColor(float m_threshold, bool overThreshold);
 	
 	void setOutLinked(bool outLinked) { m_outLinked=outLinked;}
 	/** Returns true if there is an outLink from this vertex */
@@ -158,7 +160,7 @@ public:
 	imap_f m_inEdges;			//holds all edges starting from this vertex.
 
 signals:
-	void setEdgeVisible ( int, int, bool);
+	void setEdgeVisibility ( int, int, bool);
 		
 protected:
 

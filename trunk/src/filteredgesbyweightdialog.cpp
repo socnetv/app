@@ -3,7 +3,7 @@
  version: 0.70
  Written in Qt 4.4
  
-                         filteredgesdialog.cpp  -  description
+                         filteredgesbyweightdialog.cpp  -  description
                              -------------------
     copyright            : (C) 2005-2009 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
@@ -25,11 +25,11 @@
 ********************************************************************************/
 
 
-#include "filteredgesdialog.h"
+#include "filteredgesbyweightdialog.h"
 #include <QPushButton>
 #include <QDebug>
 
-FilterEdgesDialog::FilterEdgesDialog (QWidget *parent) : QDialog (parent)
+FilterEdgesByWeightDialog::FilterEdgesByWeightDialog (QWidget *parent) : QDialog (parent)
 {
 	ui.setupUi(this);	
 	connect ( ui.buttonBox,SIGNAL(accepted()), this, SLOT(gatherData()) );
@@ -37,23 +37,22 @@ FilterEdgesDialog::FilterEdgesDialog (QWidget *parent) : QDialog (parent)
 	(ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
 	
 	(ui.overThresholdBt)-> setChecked(true);
-	
-	//connect( this, SIGNAL( userChoices( float, bool) ), parent, SLOT( slotFilterEdges (float, bool) ) );	
+		
 } 
 
 
 
 
-void FilterEdgesDialog::gatherData(){
+void FilterEdgesByWeightDialog::gatherData(){
 	qDebug()<< "Dialog: gathering Data!...";
 	bool overThreshold=false;
 	float my_threshold = static_cast <float> ( (ui.weightTheshold)->value() );
 	if ( ui.overThresholdBt -> isChecked() ) {
-		qDebug()<< "Dialog: more than threshold " << my_threshold;
+		qDebug()<< "Dialog: We will filter edges weighted more than threshold: " << my_threshold;
 		overThreshold = true;
 	}
 	else {
-		qDebug()<< "Dialog: less than threshold " << my_threshold;
+		qDebug()<< "Dialog: We will filter edges weighted less than threshold: " << my_threshold;
 		overThreshold = false;
 	}	
 	qDebug()<< "Dialog: emitting userChoices" ;
