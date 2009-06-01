@@ -45,7 +45,8 @@ Node::Node( GraphicsWidget* gw, int num, int size,
 			) : graphicsWidget (gw) 
 {
 	graphicsWidget->scene()->addItem(this); //Without this nodes dont appear on the screen...
-	setFlag(ItemIsMovable); //Without this, nodes do not move...
+	setFlags(ItemIsSelectable | ItemIsMovable); //Without this, cannon not move nor be selected ...
+	setAcceptsHoverEvents(true);
 	m_num=num;
 	m_size=size;
 	m_hasLabel=false;
@@ -315,15 +316,27 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 //	painter->setClipRect( option->exposedRect );
 
 	//if the node is being dragged aroung, darken it!
-	if (option->state & QStyle::State_Sunken) {
-		setZValue(255);
-		painter->setBrush(m_col_dark.dark(160));
-	} else { //no, just paint it with the usual color.
-		setZValue(254);
+	if (option->state & QStyle::State_Selected) {
+		qDebug()<< " node : selected ";
+		painter->setBrush(m_col_dark.dark(150));
+	}
+	else if (option->state & QStyle::State_MouseOver) {
+		qDebug()<< " node : mouse over";	
+		painter->setBrush(m_col.dark(150));
+		setZValue(255);		
+	}
+	//else if (option->state & QStyle::State_Sunken) {
+		//qDebug()<< " node : sunken ";
+		//setZValue(255);
+		//painter->setBrush(m_col_dark.dark(160));
+	//}
+ 	else { //no, just paint it with the usual color.
+ 		qDebug()<< " node : nothing";
+		setZValue(254);		
 		painter->setBrush(m_col);
 	}
 	painter->setPen(QPen(Qt::black, 0));
-	
+
 	m_path = new QPainterPath;
 	if ( m_shape == "circle") {
 		m_path->addEllipse (-m_size, -m_size, 2*m_size, 2*m_size);

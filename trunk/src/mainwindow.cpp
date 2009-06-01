@@ -1451,6 +1451,7 @@ void MainWindow::initView() {
 
 	//create a view widget for this scene
 	graphicsWidget=new GraphicsWidget(scene, this);
+	graphicsWidget->setViewportUpdateMode(QGraphicsView::FullViewportUpdate); //SmartViewportUpdate
 	//QGraphicsView can cache pre-rendered content in a QPixmap, which is then drawn onto the viewport. 
 	graphicsWidget->setCacheMode(QGraphicsView::CacheNone);  //CacheBackground | CacheNone
 
@@ -1460,15 +1461,18 @@ void MainWindow::initView() {
 	//Optimization flags:
 	// By enabling the flag below, QGraphicsView will completely disable its implicit clipping
 	graphicsWidget->setOptimizationFlag(QGraphicsView::DontClipPainter, false); 
-	//
+	//if items do restore their state, it's not needed for graphicsWidget to do the same...
 	graphicsWidget->setOptimizationFlag(QGraphicsView::DontSavePainterState, false);
 	//Disables QGraphicsView's antialiasing auto-adjustment of exposed areas.
 	graphicsWidget->setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, false);
 	//"QGraphicsScene applies an indexing algorithm to the scene, to speed up item discovery functions like items() and itemAt(). Indexing is most efficient for static scenes (i.e., where items don't move around). For dynamic scenes, or scenes with many animated items, the index bookkeeping can outweight the fast lookup speeds." So...
-	scene->setItemIndexMethod(QGraphicsScene::NoIndex); //NoIndex | BspTreeIndex
+	scene->setItemIndexMethod(QGraphicsScene::BspTreeIndex); //NoIndex (for anime) | BspTreeIndex
 
- 	graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+ 	graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorUnderMouse); 	
  	graphicsWidget->setResizeAnchor(QGraphicsView::AnchorViewCenter);
+ 	// sets dragging the mouse over the scene while the left mouse button is pressed.
+ 	
+ 	graphicsWidget->setDragMode(QGraphicsView::RubberBandDrag);
 	graphicsWidget->setFocusPolicy(Qt::StrongFocus);	
 	graphicsWidget->setFocus();
 
@@ -5268,7 +5272,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Mon Jun  1 14:56:38 EEST 2009";
+QString BUILD="Tue Jun  2 01:38:42 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"

@@ -84,7 +84,8 @@ protected:
 	void timerEvent(QTimerEvent *event);
 	void wheelEvent(QWheelEvent *event);
 	void mouseDoubleClickEvent ( QMouseEvent * e );
-	void mousePressEvent ( QMouseEvent * e );
+	//void mousePressEvent ( QMouseEvent * e );
+	//void mouseReleaseEvent(QMouseEvent * e );
 	void resizeEvent( QResizeEvent *e );
 	void paintEvent ( QPaintEvent * event );
 
@@ -133,7 +134,7 @@ private:
 	QString m_nodeLabel, m_numberColor, m_nodeColor, m_labelColor, m_linkColor;
 	bool secondDoubleClick, dynamicMovement;
 	QGraphicsItem *moving;
-	QPointF moving_start;
+	QPointF startPoint, endPoint;
 	Node *firstNode, *secondNode ;
 	vector<Node*> nodeVector;					//used by addEdge() method
 	StringToEdgeMap edgesMap;
