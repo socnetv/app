@@ -1568,6 +1568,8 @@ void MainWindow::initNet(){
 	nodeSizeProportional2InDegreeBx->setChecked(false);
   
 	displayLinksWeightNumbersAct->setChecked(false);
+	//displayLinksArrowsAct->setChecked(false);
+	
 	//set window title
 	setWindowTitle(tr("Social Network Visualizer ")+VERSION);
 	QApplication::restoreOverrideCursor();
@@ -4850,7 +4852,7 @@ void MainWindow::slotDisplayLinksArrows(bool toggle){
 			if ( (*item)->type() ==TypeEdge){
 				Edge *edge = (Edge*) (*item);
 				edge->showArrows(false);
-				(*item)->hide();(*item)->show();
+				//(*item)->hide();(*item)->show();
 			}
 		}
 		return;
@@ -4861,7 +4863,7 @@ void MainWindow::slotDisplayLinksArrows(bool toggle){
 			if ( (*item)->type() ==TypeEdge){
 				Edge *edge = (Edge*) (*item);
 				edge->showArrows(true);
-				(*item)->hide();(*item)->show();
+				//(*item)->hide();(*item)->show();
 			}
 	}
 	statusMessage( tr("Ready."));
@@ -5265,7 +5267,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Sun May 31 20:47:10 EEST 2009";
+QString BUILD="Mon Jun  1 14:26:14 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"

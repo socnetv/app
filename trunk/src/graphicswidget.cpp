@@ -658,6 +658,31 @@ void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
 
 
 
+
+/*
+ * 
+ */
+void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
+	QPointF p = mapToScene(e->pos());
+	qDebug() << "GW: mousePressEvent() single click detected at " 
+		<< e->pos().x() << ","<< e->pos().y() << " or "<<  p.x() << ","<<p.y();
+	if ( QGraphicsItem *item= itemAt(e->pos() ) ) {
+		if (Node *node = qgraphicsitem_cast<Node *>(item)) {
+			Q_UNUSED(node);
+			//node->mousePressEvent(&e);
+			QGraphicsView::mousePressEvent(e);
+			return;
+		}
+	}
+	else{
+		qDebug() << "GW: mousePressEvent(). No item here. Maybe start a selection rectangle? " 
+				<< "I will save this pos"; 
+	} 
+
+}
+
+
+
 /** 	
 	On the event of a right-click on a node, the node calls this function
 	to emit a signal to MW to open a context menu at the mouse position.
