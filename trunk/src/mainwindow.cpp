@@ -2392,15 +2392,15 @@ void MainWindow::slotCreateRandomNetErdos(){
 	
 	setWindowTitle("Untitled");
 	double threshold = log(newNodes)/newNodes;
-	float avGraphDistance=activeGraph.averageGraphDistance();
-	float clucof=activeGraph.clusteringCoefficient();
+	//float avGraphDistance=activeGraph.averageGraphDistance();
+	//float clucof=activeGraph.clusteringCoefficient();
 	if ( (probability/100 ) > threshold )
 		QMessageBox::information(this, "New Random Network",
 		tr("Random network created. \n")+ 
 		tr("\nNodes: ")+ QString::number(activeNodes())+
 		tr("\nEdges: ")+  QString::number( activeLinks()/2.0)+
-		tr("\nAverage path length: ") + QString::number(avGraphDistance)+
-		tr("\nClustering coefficient: ")+QString::number(clucof)+	
+		//tr("\nAverage path length: ") + QString::number(avGraphDistance)+
+		//tr("\nClustering coefficient: ")+QString::number(clucof)+	
 		tr("\n\nOn the average, edges should be ") + QString::number(probability * newNodes*(newNodes-1)/100) +
 		tr("\nThis graph is almost surely connected because: \nprobability > ln(n)/n, that is: \n") + QString::number(probability/100)+ 
 		tr(" bigger than ")+ QString::number(threshold) , "OK",0);
@@ -2410,8 +2410,8 @@ void MainWindow::slotCreateRandomNetErdos(){
 		tr("Random network created. \n")+ 
 		tr("\nNodes: ")+ QString::number(activeNodes())+
 		tr("\nEdges: ")+  QString::number( activeLinks()/2.0)+
-		tr("\nAverage path length: ") + QString::number(avGraphDistance)+
-		tr("\nClustering coefficient: ")+QString::number(clucof)+
+		//tr("\nAverage path length: ") + QString::number(avGraphDistance)+
+		//tr("\nClustering coefficient: ")+QString::number(clucof)+
  		tr("\n\nOn the average, edges should be ") +QString::number(probability * newNodes*(newNodes-1)/100) +
 		tr("\nThis graph is almost surely not connected because: \nprobability < ln(n)/n, that is: \n") +
 		QString::number(probability/100)+ " smaller than "+ QString::number(threshold) , "OK",0);
@@ -2546,14 +2546,14 @@ void MainWindow::slotCreateSmallWorldRandomNetwork(){
 	graphChanged();
 	setWindowTitle("Untitled");
 	statusMessage( tr("Small world random network created: ")+QString::number(activeNodes())+" nodes, "+QString::number( activeLinks())+" links");
-	float avGraphDistance=activeGraph.averageGraphDistance();
-	float clucof=activeGraph.clusteringCoefficient();
+	//float avGraphDistance=activeGraph.averageGraphDistance();
+	//float clucof=activeGraph.clusteringCoefficient();
 	QMessageBox::information(this, "New Small World",
 		tr("Small world network created.\n")+ 
 		tr("\nNodes: ")+ QString::number(activeNodes())+
-		tr("\nEdges: ")+  QString::number( activeLinks()/2.0)+ 
-		tr("\nAverage path length: ") + QString::number(avGraphDistance)+
-		tr("\nClustering coefficient: ")+QString::number(clucof)	
+		tr("\nEdges: ")+  QString::number( activeLinks()/2.0)
+		//+  tr("\nAverage path length: ") + QString::number(avGraphDistance)
+		//+ tr("\nClustering coefficient: ")+QString::number(clucof)	
 		 , "OK",0);
 		
 }
@@ -2606,19 +2606,20 @@ void MainWindow::slotCreateRandomNetRingLattice(){
 
 	fileLoaded=false;
 	
-	graphChanged();
+//	graphChanged();
+	
+	statusMessage( "Ring lattice random network created: "+QString::number(activeNodes())+" nodes, "+QString::number( activeLinks())+" links");
+		
 	setWindowTitle("Untitled");
-	float avGraphDistance=activeGraph.averageGraphDistance();
-	float clucof=activeGraph.clusteringCoefficient();
+	//float avGraphDistance=activeGraph.averageGraphDistance();
+	//float clucof=activeGraph.clusteringCoefficient();
 	QMessageBox::information(this, "Ring Lattice",
 		tr("Ring lattice network created.\n")+ 
 		tr("\nNodes: ")+ QString::number(activeNodes())+
-		tr("\nEdges: ")+  QString::number( activeLinks()/2.0)+ 
-		tr("\nAverage path length: ") + QString::number(avGraphDistance)+
-		tr("\nClustering coefficient: ")+QString::number(clucof)	
-		 , "OK",0);
-
-	statusMessage( "Ring lattice random network created: "+QString::number(activeNodes())+" nodes, "+QString::number( activeLinks())+" links");	
+		tr("\nEdges: ")+  QString::number( activeLinks()/2.0) 
+		// + tr("\nAverage path length: ") + QString::number(avGraphDistance)
+		//+ tr("\nClustering coefficient: ")+QString::number(clucof)	
+		 , "OK",0);	
 }
 
 
@@ -5267,7 +5268,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Mon Jun  1 14:26:14 EEST 2009";
+QString BUILD="Mon Jun  1 14:56:38 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"
