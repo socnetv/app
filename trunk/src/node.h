@@ -124,7 +124,7 @@ private:
 	QPolygon *m_poly_t, *m_poly_d;
 	int m_num, m_size, m_nd, m_ld;
 	QString  m_shape,  m_col_str, m_labelIn;
-	QColor m_col, m_col_dark;
+	QColor m_col;
 	bool m_hasNumber, m_hasLabel, m_isNumberInside;
 	/**Lists of elements attached to this node */
 	list<Edge*> inEdgeList, outEdgeList;

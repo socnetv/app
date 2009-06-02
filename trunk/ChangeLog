@@ -13,6 +13,7 @@ Codename: "Summertime"
 - Fixed bug #381094 weight changes not recorded correctly in symmetric edges.
 - To speed things up, the on-the-fly Clustering Coef. and Average Distance
 calculation was removed from random network creation routines.
+- Speed improvement in FindNode method.
 - Tom Tryfonidis prepared Arch PKGBUILDs for SocNetV. You can install it from
 AUR.
 

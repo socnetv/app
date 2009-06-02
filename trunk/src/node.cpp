@@ -55,7 +55,6 @@ Node::Node( GraphicsWidget* gw, int num, int size,
 	m_shape=shape;
 	m_col_str=col;
 	m_col=QColor(col);
-	m_col_dark=m_col.dark(150);
 	m_nd=ndist;
 	m_ld=ldist;
 	m_poly_t=new QPolygon(3);
@@ -234,7 +233,6 @@ void Node::calculateForcesFruchterman(bool dynamicMovement){
 void Node::setColor(QString str) {
 	prepareGeometryChange();
 	m_col=QColor(str);
-	m_col_dark=m_col.dark(160);
 }
 
 /** 
@@ -242,7 +240,6 @@ void Node::setColor(QString str) {
 */
 void Node::setColor(QColor color){
 	m_col=color;
-	m_col_dark=m_col.dark(160);
 }
 
 
@@ -318,7 +315,7 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 	//if the node is being dragged aroung, darken it!
 	if (option->state & QStyle::State_Selected) {
 		qDebug()<< " node : selected ";
-		painter->setBrush(m_col_dark.dark(150));
+		painter->setBrush(m_col.dark(150));
 	}
 	else if (option->state & QStyle::State_MouseOver) {
 		qDebug()<< " node : mouse over";	

@@ -52,6 +52,9 @@ public:
 	~GraphicsWidget();
 	void clear();
 
+	Node* hasNode(QString text);
+	Node* hasNode(int number);
+	bool setMarkedNode(QString text);
 	
 	void removeItem(Edge*);
 	void removeItem(Node*);
@@ -68,8 +71,6 @@ public:
 	void setNumbersInsideNodes(bool);
 	
 	bool setNodeColor(int, QString);
-	
-
 	
 	bool setEdgeColor(int, int, QString);
 	
@@ -130,12 +131,12 @@ private:
 	int timerId,  layoutType, m_nodeSize, m_numberDistance, m_labelDistance;
 	double m_currentScaleFactor;
 	int m_currentRotationAngle;
-	int zoomIndex;
+	int zoomIndex, originalNodeSize;
 	QString m_nodeLabel, m_numberColor, m_nodeColor, m_labelColor, m_linkColor;
-	bool secondDoubleClick, dynamicMovement;
+	bool secondDoubleClick, dynamicMovement, markedNodeExists;
 	QGraphicsItem *moving;
 	QPointF startPoint, endPoint;
-	Node *firstNode, *secondNode ;
+	Node *firstNode, *secondNode, *markedNode, *tempNode ;
 	vector<Node*> nodeVector;					//used by addEdge() method
 	StringToEdgeMap edgesMap;
 };

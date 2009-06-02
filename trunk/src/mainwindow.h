@@ -333,7 +333,7 @@ private:
 	int statusBarDuration,  minDuration, progressCounter;
 	int maxNodes;
 	int initNodeSize, labelDistance, numberDistance,initNumberSize;
-	int totalLinks, fortuneCookiesCounter, preSize, tipsCounter;
+	int totalLinks, fortuneCookiesCounter,  tipsCounter;
 	QString VERSION;
 	bool pajekFileLoaded, adjacencyFileLoaded, dotFileLoaded, graphMLFileLoaded, fileLoaded;
 	bool networkModified;

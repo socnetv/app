@@ -57,6 +57,8 @@ GraphicsWidget::GraphicsWidget( QGraphicsScene *sc, MainWindow* par)  : QGraphic
 	
 	m_currentScaleFactor = 1;
 	m_currentRotationAngle = 0;
+	
+	markedNodeExists=false; //used in findNode()
 }
 
 
@@ -588,6 +590,70 @@ bool GraphicsWidget::hasEdge (int source, int target){
 	}
 		
 }
+
+
+
+// unused
+Node* GraphicsWidget::hasNode( int number ){
+	vector<Node*>::iterator it;
+	for ( it=nodeVector.begin() ; it < nodeVector.end(); it++ ) {
+		if ((*it)->nodeNumber() == number ) {
+			qDebug() << "GW: hasNode(): Node numbered " << number << " found!";
+			markedNodeExists=true;
+			return (*it);	
+			break;
+		}
+	}
+	return markedNode;	//dummy return. We check markedNodeExists flag first...
+}
+
+
+
+/*
+ * Used by findNode. 
+ * Returns, if any, Node with label or number 'text'
+ */
+Node* GraphicsWidget::hasNode( QString text ){
+	vector<Node*>::iterator it;
+	bool ok = false;
+	for ( it=nodeVector.begin() ; it < nodeVector.end(); it++ ) {
+		if ( 	(*it)->nodeNumber()==text.toInt(&ok, 10)  || 
+				(*it)->label().contains (text, Qt::CaseInsensitive)
+			 ) {
+			qDebug() << "GW: hasNode(): Node " << text << " found!";
+			markedNodeExists=true;
+			return (*it);	
+			break;
+		}
+	}
+	return markedNode;	//dummy return. We check markedNodeExists flag first...
+}
+
+
+
+/**
+	 Marks (by double-sizing and highlighting) or unmarks a node, given its number or label.
+	 Called by MW:slotFindNode()
+*/
+bool GraphicsWidget::setMarkedNode(QString nodeText){
+	qDebug ("GW: setMarkedNode()");
+	if (markedNodeExists) {
+		markedNode->setSelected(false);		//unselect it, so that it restores its color
+		markedNode->setSize(originalNodeSize);	//restore its size
+		markedNodeExists=false;
+		return true;
+	}
+	
+	markedNode = hasNode (nodeText);
+	if (!markedNodeExists)
+		return false;
+	
+	markedNode->setSelected(true);		//select it, so that it changes color
+	originalNodeSize=markedNode->size(); // save its original size
+	markedNode->setSize(2*originalNodeSize-1);	//now, make it larger 
+	return true;	
+}
+
 
 
 

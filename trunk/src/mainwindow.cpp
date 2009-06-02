@@ -1533,7 +1533,7 @@ void MainWindow::initNet(){
 	fileSave->setIcon(QIcon(":/images/saved.png"));
 	fileSave->setEnabled(true);
 
-	markedNodeExists=false;
+	markedNodeExists=false;	//used by slotFindNode()
 
 	cursorPosGW=QPointF(-1,-1);
 	clickedJimNumber=-1;
@@ -2634,58 +2634,44 @@ void MainWindow::slotCreateRandomNetRingLattice(){
 
 
 /**
-	 Finds and marks (by double-sizing and highlighting) a node by its number.
+	 Calls GW: findNode() to find a node by its number or label. The node is then marked.
 */
 void MainWindow::slotFindNode(){
 	qDebug ("MW: slotFindNode()");
-	if (markedNodeExists) {
-		markedNode->setSize(preSize);
-		markedNode->setColor ( QColor( markedNode->color() ).dark(150) );
-		markedNodeExists=false;
-		return;
-	}
-	if (!fileLoaded && !networkModified  )     {
-		QMessageBox::critical( this, "Find Node",
-				      tr("No nodes present! \nLoad a network file first or create some nodes..."), tr("OK"),0 );
+	if (!fileLoaded && !networkModified  ) {
+		QMessageBox::critical( this, tr("Find Node"),
+				tr("No nodes present! \nLoad a network file first or create some nodes..."),
+				 tr("OK"),0 );
 		statusMessage(  QString(tr("Nothing to find!"))  );
 		return;
 	}
+
+	if ( markedNodeExists ) {				// if a node has been already marked
+		graphicsWidget->setMarkedNode(""); 	// call setMarkedNode to just unmark it.
+		markedNodeExists=false;
+		statusMessage( tr("Node unmarked.") );
+		return;								// and return to MW
+	}
+
 	bool ok=false;
-	QString text = QInputDialog::getText(this, "Find a node", tr("Enter node label or number:"), QLineEdit::Normal,QString::null, &ok );
+	QString nodeText = QInputDialog::getText(this, tr("Find Node"), 
+					tr("Enter node label or node number:"), 
+					QLineEdit::Normal,QString::null, &ok );
 	if (!ok) {
-		statusMessage( "Find node operation cancelled." );
+		statusMessage( tr("Find node operation cancelled.") );
 		return;
 	}
-
-	QList<QGraphicsItem *> list=scene->items();
-	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
-		if ( (*it)->type()==TypeNode) {
-			Node *jim=(Node*) (*it);
-			if ( jim->nodeNumber()==text.toInt(&ok, 10))	{
-				qDebug("MW: found.");
-				jim->setColor ( QColor( jim->color() ).light(150) );
-				preSize=jim->size();
-				jim->setSize(2*preSize-1);
-				markedNodeExists=true;
-				markedNode=jim;
-				statusMessage( tr("Node found!"));
-				return;
-				
-			}
-			if (jim->label().contains (text, Qt::CaseInsensitive) ) {
-				preSize=jim->size();
-				jim->setSize(2*preSize-1);
-				qDebug("MW: found.");
-				jim->setColor ( QColor( jim->color() ).light(150) );
-				markedNodeExists=true;
-				markedNode=jim;
-				statusMessage( tr("Node found!"));
-				return;
-			}
+	
+	else {
+		if	( graphicsWidget->setMarkedNode(nodeText) ) {
+			markedNodeExists=true;
+			statusMessage( tr("Node found and marked. Press Ctrl+F again to unmark...") );
+		}
+		else {
+			QMessageBox::information(this, tr("Find Node"), 
+			tr("Sorry. There is no such node in this network. \n Try again."), "OK",0);	
 		}
 	}
-	QMessageBox::information(this, "Find Node", tr("Sorry. There is no such node in this network. \n Try again."), "OK",0);
-
 }
 
 
@@ -5272,7 +5258,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Tue Jun  2 01:38:42 EEST 2009";
+QString BUILD="Tue Jun  2 12:15:20 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"
