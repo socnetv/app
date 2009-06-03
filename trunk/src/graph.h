@@ -41,6 +41,8 @@
 #include "vertex.h"
 #include "matrix.h"
 #include "parser.h"
+#include "analyzer.h"
+
 
 using namespace std;
 
@@ -60,6 +62,7 @@ class QDateTime;
 typedef map<float,int> fmap_i;
 typedef map<int,int> imap_i;
 typedef map<int,float> imap_f;
+typedef QList<Vertex*> Vertices;
 
 class Graph:  public QObject{
 	Q_OBJECT
@@ -260,19 +263,20 @@ protected:
 private:
 
 	/** List of pointers to the vertices. A vertex stores all the info: links, colours, etc */
-	QList<Vertex*> m_graph;			
+	Vertices m_graph;			
 
 	Parser parser;			//file loader threaded class.
-
+	Analyzer analyzer;		//network analyzer
+	
 	/** private member functions */
 	void addVertex (int v1, int val, int nsz, QString nc, QString nl, QString lc, QPointF p,QString nsp);	
 	void addEdge (int v1, int v2, float w, QString color, bool undirected); 		//adds an edge between v1 and v2, weight w, colored
 
 	/** methods used by createDistanceMatrix()  */
-	void BFS(int, bool);									//Breadth-first search 
-	void minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int &minNode) ;	//helper
-	void resolveClasses(float C, fmap_i &discreteClasses, int &classes);			//helper
-	void resolveClasses(float C, fmap_i &discreteClasses, int &classes, int name);  	//helper
+//	void BFS(int, bool);									//Breadth-first search 
+//	void minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int &minNode) ;	//helper
+//	void resolveClasses(float C, fmap_i &discreteClasses, int &classes);			//helper
+///	void resolveClasses(float C, fmap_i &discreteClasses, int &classes, int name);  	//helper
 
 	/** used in createDistanceMatrix() */
 	fmap_i	discreteIDCs, discreteODCs, discreteCCs, discreteBCs, discreteSCs, discreteGCs, discreteECs;
@@ -303,7 +307,7 @@ private:
 	/** General & initialisation variables */
 
 	int m_totalEdges, m_totalVertices, graphDiameter, initVertexSize;
-	float m_averGraphDistance, nonZeroDistancesCounter;
+	float averGraphDistance, nonZeroDistancesCounter;
 	int outEdgesVert, inEdgesVert, reciprocalEdgesVert;
 	int timerId,  layoutType, canvasWidth, canvasHeight;
 	

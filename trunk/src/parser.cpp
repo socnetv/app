@@ -37,7 +37,8 @@
 #include <list>
 #include "graph.h"	//needed for setParent
 
-void Parser::load(QString fn, int iNS, QString iNC, QString iLC, QString iNSh, bool iSL, int width, int height){
+void Parser::load(QString fn, int iNS, QString iNC, QString iLC, QString iNSh, bool iSL, int width, int height)
+{
 	qDebug("Parser: load()");
 	initNodeSize=iNS;
 	initNodeColor=iNC;

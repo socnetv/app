@@ -22,7 +22,8 @@ HEADERS += src/backgrcircle.h \
            src/texteditor.h \
            src/vertex.h \ 
   	   src/parser.h \
-	   src/filteredgesbyweightdialog.h
+	   src/filteredgesbyweightdialog.h \
+	   src/analyzer.h
 
 SOURCES += src/backgrcircle.cpp \
            src/graphicswidget.cpp \
@@ -39,10 +40,8 @@ SOURCES += src/backgrcircle.cpp \
            src/texteditor.cpp \
            src/vertex.cpp \
            src/parser.cpp \
-	   src/filteredgesbyweightdialog.cpp
-
-
-
+	   src/filteredgesbyweightdialog.cpp \
+	   src/analyzer.cpp
 
 
 
