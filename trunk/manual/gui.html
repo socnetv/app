@@ -61,27 +61,37 @@ To start working with SocNetV you need network data, i.e. a graph of nodes (vert
 <p class="text">
 To  create  a new node, you can double-click on the canvas or click on the "Add node" button. The keyboard shortcut is Ctrl+A.
 <br />
-You can move a node by left-clicking on it and moving the pointer.
+You can move a node by left-clicking on it and moving the mouse.
 </p>
 
 
 <h4><a name="LinkCreate" id="LinkCreate"></a>Creating a new link</h4>
 <p  class="text">
-To create a new link, you can middle-click on the source node and  then on the	target	node.	Alternatively, you can click on the "Add link" button from the dock. The keyboard shortcut is Ctrl+L.
+To create a new link, middle-click on the source node and then middle-click again on the target	node. By default, all links created this way are weighted 1. If your mouse doesn't have middle button (did you try pressing the mouse wheel?), or you find it difficult, you can right-click on the source node, then select "Create Link". In the dialog, just enter the target node number and the desired link weight. Alternatively, you can click on the "Add link" button from the dock. In that case, you will be asked for both the source and the target node numbers (and the link weight). The keyboard shortcut for this action is Ctrl+L.
 </p>
 <p class="text">
-Say you created two nodes, numbered 1 and 2, on the canvas. To create a new link from node 1 to node 2, middle click on node 1 (the mouse pointer will become a hand) and afterwards middle-click on node 2. A new link will be drawn instantly. If you want an edge (double link) repeat the process from node 2 to node 1. 
+Link Creation Example: Say you created two nodes, numbered 1 and 2, on the canvas. To create a new link from node 1 to node 2, middle click on node 1 (the mouse pointer will become a hand) and afterwards middle-click on node 2. A new link will be drawn instantly. If you want an edge (double link) repeat the process from node 2 to node 1. 
 </p>
 <p class="text">
-Each link created by this automatic way it has the default weight 1 and black colour.
+Remember, each link you create this way has the default weight 1 and black colour.
 </p>
  
 
-<h4><a name="Interaction" id="Interaction"></a>Interaction and Node Shapes</h4>
+<h4><a name="Interaction" id="Interaction"></a>Interaction and Group Selection</h4>
 <p class="text">
-       You move a node by left-clicking and dragging it. When you  right-click on  a node, a context menu appears. From there you can remove the node, change its color, label, size as well as its  shape.  A similar menu  appears when you right click on a link.
+As we mentioned in the beginning, you move any node by left-clicking and dragging it. 
+<br />
+If you want to select more than one node, press and hold down the left mouse button on the canvas. By moving your mouse, a rectangle will be drawed. All nodes inside this rectangle will be selected the moment you release the mouse button. 
+<br />
+Warning: in networks with thousands of edges, the group selection process is dramatically slow...
 </p>
+
+<h4><a name="Interaction" id="Interaction"></a>Node Menu and Node Shapes</h4>
 <p class="text">
+When you right-click on  a node, a context menu appears. From there you can remove the node, change its color, label, size as well as its  shape.  A similar menu  appears when you right click on a link.
+
+<br />
+
 	SocNetV  supports many  kinds  of node shapes, i.e rectangles, diamond, ellipse, circle, etc. To change the shape of a node, right-click on it and in the context menu select Options > Change shape to...
 </p>
 
@@ -114,7 +124,7 @@ For instance, you might have another program (for example a simulation) creating
 
 <h4><a name="Save" id="Save"></a>Saving the active network</h4>
 <p class="text">
-To save the active network, just press Ctrl+S or click on the menu entry File > Save. Select a network format and you're done. Note that some <a href="formats.html" target="2">formats</a> are supported only for loading - not for saving. 
+To save the active network, just press Ctrl+S or click on the menu entry File > Save. By default, it will be saved in GraphML format. If you like, you can export it to another supported format (menu Network > Export To). Note that some <a href="formats.html" target="2">formats</a> are supported only for loading - not for saving. 
 </p>
 
 

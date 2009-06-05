@@ -14,6 +14,8 @@ Codename: "Summertime"
 - To speed things up, the on-the-fly Clustering Coef. and Average Distance
 calculation was removed from random network creation routines.
 - Speed improvement in FindNode method.
+- Progress Bars now appear whenever a distance-related calculation is
+happening, so that the user knows what is happening and how long it will take.
 - Tom Tryfonidis prepared Arch PKGBUILDs for SocNetV. You can install it from
 AUR.
 
