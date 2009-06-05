@@ -41,7 +41,7 @@
 #include "vertex.h"
 #include "matrix.h"
 #include "parser.h"
-#include "analyzer.h"
+
 
 
 using namespace std;
@@ -70,7 +70,7 @@ class Graph:  public QObject{
 public slots:
 	/** Slots to signals from Parser */
 	void createVertex(int,int,QString, QString, QString, QPointF, QString); 	//Main vertex creation call
-	void slotFileType(int, QString, int,int, bool);	
+	void setFileType(int, QString, int,int, bool);	
 	void removeDummyNode(int);
 
 	/** Slots to signals from GraphicsWidget and Parser*/
@@ -84,6 +84,8 @@ public slots:
 
 	void filterEdgesByWeight (float, bool);				//Called by MW to filter edges over/under a weight
 	void slotSetEdgeVisibility( int, int, bool);
+	
+
 	
 signals:
 	/** Signals to MainWindow */
@@ -223,6 +225,7 @@ public:
 
 
 	/**LAYOUTS*/	
+	void layoutRandom(double maxWidth, double maxHeight);
 	void layoutCircleCentrality(double x0, double y0, double maxRadius, int CentralityType);
 	void layoutLevelCentrality(double maxWidth, double maxHeight, int CentralityType);
 	void layoutForceDirectedSpringEmbedder(bool dynamicMovement);
@@ -266,17 +269,17 @@ private:
 	Vertices m_graph;			
 
 	Parser parser;			//file loader threaded class.
-	Analyzer analyzer;		//network analyzer
+
 	
 	/** private member functions */
 	void addVertex (int v1, int val, int nsz, QString nc, QString nl, QString lc, QPointF p,QString nsp);	
 	void addEdge (int v1, int v2, float w, QString color, bool undirected); 		//adds an edge between v1 and v2, weight w, colored
 
 	/** methods used by createDistanceMatrix()  */
-//	void BFS(int, bool);									//Breadth-first search 
-//	void minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int &minNode) ;	//helper
-//	void resolveClasses(float C, fmap_i &discreteClasses, int &classes);			//helper
-///	void resolveClasses(float C, fmap_i &discreteClasses, int &classes, int name);  	//helper
+	void BFS(int, bool);									//Breadth-first search 
+	void minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int &minNode) ;	//helper
+	void resolveClasses(float C, fmap_i &discreteClasses, int &classes);			//helper
+	void resolveClasses(float C, fmap_i &discreteClasses, int &classes, int name);  	//helper
 
 	/** used in createDistanceMatrix() */
 	fmap_i	discreteIDCs, discreteODCs, discreteCCs, discreteBCs, discreteSCs, discreteGCs, discreteECs;

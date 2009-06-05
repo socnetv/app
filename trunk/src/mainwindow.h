@@ -105,6 +105,9 @@ public:		/**PUBLIC FUNCTIONS NOT VISIBLE BY OTHER WIDGETS NOR BY SLOT/LINK MECHA
 	QString initNodeColor;
 	int clickedJimNumber; //its public because we need to be visible from activegraph.
 
+	void createProgressBar();
+	void destroyProgressBar();
+	
 public slots:
 	//FILE MENU
 	void slotCreateNew();

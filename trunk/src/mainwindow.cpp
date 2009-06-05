@@ -562,8 +562,9 @@ void MainWindow::initActions(){
 	connect(regularColorationAct, SIGNAL(activated() ), this, SLOT(slotColorationRegular()) );
 	
 	randLayoutAct = new QAction( tr("Random"),	this);
-	randLayoutAct ->setStatusTip(tr("Repositions the nodes in random places"));
-	randLayoutAct->setWhatsThis(tr("Random Layout\n\n Repositions the nodes in random places"));
+	randLayoutAct -> setShortcut(tr("Ctrl+0"));
+	randLayoutAct -> setStatusTip(tr("Repositions all nodes in random places"));
+	randLayoutAct -> setWhatsThis(tr("Random Layout\n\n Repositions all nodes in random places"));
 	connect(randLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutRandom()));
 
 	randCircleLayoutAct = new QAction(tr("Random Circle"),	this);
@@ -1051,10 +1052,11 @@ void MainWindow::initMenuBar() {
 //   strongColorationAct -> addTo(colorationMenu);
 //   regularColorationAct-> addTo(colorationMenu);
 //   layoutMenu->insertSeparator();
-//   randomLayoutMenu = new QPopupMenu();
-//   layoutMenu -> insertItem (tr("Random"), randomLayoutMenu );
-//   randLayoutAct -> addTo (randomLayoutMenu);
-//   randCircleLayoutAct -> addTo( randomLayoutMenu); 
+	randomLayoutMenu = new QMenu(tr("Random..."));
+	layoutMenu -> addMenu (randomLayoutMenu );
+	randomLayoutMenu ->  addAction(randLayoutAct);
+	randomLayoutMenu ->  addAction( randCircleLayoutAct );
+	 
 	circleLayoutMenu = new QMenu(tr("In circles by centrality..."));
 	circleLayoutMenu -> setIcon(QIcon(":/images/circular.png"));
 	layoutMenu -> addMenu (circleLayoutMenu);
@@ -3288,7 +3290,7 @@ void MainWindow::slotChangeLinkColor(){
 			activeGraph.setEdgeColor( clickedLink->sourceNodeNumber(), clickedLink->targetNodeNumber(), newColor);
 			statusMessage( tr("Ready. ")  );
 			
-    		} 
+		} 
 		else {       // user pressed Cancel
 			statusMessage( tr("User abort. ")  );
 		}
@@ -3504,10 +3506,28 @@ void MainWindow::slotColorationRegular() {
 }
 
 
-/**
-	TODO slotLayoutRandom
+
+	/**
+*	Calls Graph::layoutCircleCentrality()
+*	to reposition all nodes on a circular layout based on their In-Degree Centralities. 
+*	More central nodes are closer to the centre
 */
 void MainWindow::slotLayoutRandom(){
+	if (!fileLoaded && !networkModified  )  {
+		QMessageBox::critical(this, "Error",tr("Sorry, I can't follow! \nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
+		statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
+		return;
+	}
+
+	double maxWidth=graphicsWidget->width();
+	double maxHeight=graphicsWidget->height();
+	
+	statusMessage(  QString(tr("Randomizing nodes positions. Please wait...")) );
+	graphicsWidget->clearBackgrCircles();
+	createProgressBar();
+	activeGraph.layoutRandom(maxWidth, maxHeight);
+	destroyProgressBar();
+	statusMessage( tr("Node positions are now randomized.") );	
 
 }
 
@@ -3776,11 +3796,12 @@ void MainWindow::slotLayoutCircleCentralityInDegree(){
 	double x0=scene->width()/2.0;
 	double y0=scene->height()/2.0;
 	double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	
 	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
+	createProgressBar();
 	activeGraph.layoutCircleCentrality(x0, y0, maxRadius,1);
-	QApplication::restoreOverrideCursor();
+	destroyProgressBar();
 	statusMessage( tr("Nodes in inner circles have greater In-Degree Centrality.") );	
 }
 
@@ -3799,11 +3820,12 @@ void MainWindow::slotLayoutCircleCentralityOutDegree(){
 	double x0=scene->width()/2.0;
 	double y0=scene->height()/2.0;
 	double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	
 	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
+	createProgressBar();
 	activeGraph.layoutCircleCentrality(x0, y0, maxRadius, 2);
-	QApplication::restoreOverrideCursor();
+	destroyProgressBar();
 	statusMessage( tr("Nodes in inner circles have greater Out-Degree Centrality. ") );	
 }
 
@@ -3825,11 +3847,11 @@ void MainWindow::slotLayoutCircleCentralityCloseness(){
 	double x0=scene->width()/2.0;
 	double y0=scene->height()/2.0;
 	double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	createProgressBar();
 	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
 	activeGraph.layoutCircleCentrality(x0, y0, maxRadius,3);
-	QApplication::restoreOverrideCursor();
+	destroyProgressBar();
 	statusMessage( tr("Nodes in inner circles have greater Closeness Centrality. ") );	
 }
 
@@ -3852,12 +3874,12 @@ void MainWindow::slotLayoutCircleCentralityBetweeness(){
 	double x0=scene->width()/2.0;
 	double y0=scene->height()/2.0;
 	double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	
 	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
+	createProgressBar();
 	activeGraph.layoutCircleCentrality(x0, y0, maxRadius,4);
-	QApplication::restoreOverrideCursor();
-
+	destroyProgressBar();
 	statusMessage( tr("Nodes in inner circles have greater Betweeness Centrality. ") );	
 }
 
@@ -3880,11 +3902,12 @@ void MainWindow::slotLayoutCircleCentralityStress(){
 	double x0=scene->width()/2.0;
 	double y0=scene->height()/2.0;
 	double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+
 	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
+	createProgressBar();
 	activeGraph.layoutCircleCentrality(x0, y0, maxRadius,5);
-	QApplication::restoreOverrideCursor();
+	destroyProgressBar();
 	statusMessage( tr("Nodes in inner circles have greater Stress Centrality. ") );	
 }
 
@@ -3905,11 +3928,12 @@ void MainWindow::slotLayoutCircleCentralityGraph(){
 	double x0=scene->width()/2.0;
 	double y0=scene->height()/2.0;
 	double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	
 	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
+	createProgressBar();
 	activeGraph.layoutCircleCentrality(x0, y0, maxRadius,6);
-	QApplication::restoreOverrideCursor();
+	destroyProgressBar();
 	statusMessage( tr("Nodes in inner circles have greater Graph Centrality. ") );	
 
 }
@@ -3930,13 +3954,13 @@ void MainWindow::slotLayoutCircleCentralityEccentr(){
 	double x0=scene->width()/2.0;
 	double y0=scene->height()/2.0;
 	double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+
 	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
+	createProgressBar();
 	activeGraph.layoutCircleCentrality(x0, y0, maxRadius,7);
-	QApplication::restoreOverrideCursor();
+	destroyProgressBar();
 	statusMessage( tr("Nodes in inner circles have greater Eccentricity Centrality. ") );	
-
 }
 
 /**
@@ -3963,11 +3987,12 @@ void MainWindow::slotLayoutLevelCentralityInDegree(){
 	}
 	double maxWidth=scene->width();
 	double maxHeight=scene->height(); //pixels
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	
 	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
+	createProgressBar();
 	activeGraph.layoutLevelCentrality(maxWidth, maxHeight, 1);
-	QApplication::restoreOverrideCursor();
+	destroyProgressBar();
 	statusMessage( tr("Nodes in upper levels have greater In-Degree Centrality. ") );	
 
 }
@@ -3988,11 +4013,12 @@ void MainWindow::slotLayoutLevelCentralityOutDegree(){
 	}
 	double maxWidth=scene->width();
 	double maxHeight=scene->height(); //pixels
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+
 	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
+	createProgressBar();
 	activeGraph.layoutLevelCentrality(maxWidth, maxHeight, 2);
-	QApplication::restoreOverrideCursor();
+	destroyProgressBar();
 	statusMessage( tr("Nodes in upper levels have greater Out-Degree Centrality. ") );	
 
 }
@@ -4013,11 +4039,13 @@ void MainWindow::slotLayoutLevelCentralityCloseness(){
 	}
 	double maxWidth=scene->width();
 	double maxHeight=scene->height(); //pixels
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	
 	statusMessage(  QString(tr("Calculating new nodes positions. Please wait..."))  );
 	graphicsWidget->clearBackgrCircles();
+	createProgressBar();
 	activeGraph.layoutLevelCentrality(maxWidth, maxHeight, 3);
-	QApplication::restoreOverrideCursor();
+	destroyProgressBar();
+	
 	statusMessage( tr("Nodes in upper levels have greater Closeness Centrality.") );	
 }
 
@@ -4037,11 +4065,12 @@ void MainWindow::slotLayoutLevelCentralityBetweeness(){
 	}
 	double maxWidth=scene->width();
 	double maxHeight=scene->height(); //pixels
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	
 	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
+	createProgressBar();
 	activeGraph.layoutLevelCentrality(maxWidth, maxHeight, 4);
-	QApplication::restoreOverrideCursor();
+	destroyProgressBar();	
 	statusMessage( tr("Nodes in upper levels have greater Betweeness Centrality. ") );	
 }
 
@@ -4169,7 +4198,13 @@ void MainWindow::slotViewDistanceMatrix(){
 	statusMessage( tr("Creating distance matrix. Please wait...") );	
 	char fn[]= "distance-matrix.dat";
 	char fn1[]="sigmas-matrix.dat";
+	
+	createProgressBar();
+	
 	activeGraph.writeDistanceMatrix(fn, fn1, networkName.toLocal8Bit());
+
+	destroyProgressBar();
+	
 	//Open a text editor window for the new file created by graph class
 	QString qfn1=QString::fromLocal8Bit(fn1);
 	TextEditor *ed = new TextEditor(fn);
@@ -4195,9 +4230,12 @@ void MainWindow::slotDiameter() {
 		statusMessage(  QString(tr("Cannot find the diameter of nothing..."))  );
 		return;
 	}
-	activeGraph.createDistanceMatrix(false);
+	
+	createProgressBar();	
+
 	int netDiameter=activeGraph.diameter();
-	QApplication::restoreOverrideCursor();	
+
+	destroyProgressBar();
 
 	if (netDiameter > (activeGraph.vertices()-1) ) 
 		QMessageBox::information(this, "Diameter", "Network diameter = "+ QString::number(netDiameter)+"  > (vertices()-1).", "OK",0);
@@ -4219,9 +4257,12 @@ void MainWindow::slotAverageGraphDistance() {
 		statusMessage(  QString(tr("Cannot find the diameter of nothing..."))  );
 		return;
 	}
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+			
+	createProgressBar();	
+
 	float averGraphDistance=activeGraph.averageGraphDistance();
-	QApplication::restoreOverrideCursor();	
+	
+	destroyProgressBar();
 
 	QMessageBox::information(this, "Average Graph Distance", "The average shortest path length is  = " + QString::number(averGraphDistance), "OK",0);
 	statusMessage( tr("Average distance calculated. Ready.") );
@@ -4253,10 +4294,12 @@ void MainWindow::slotClusteringCoefficient (){
 	}
 	QString fn = "clustering-coefficients.dat";
 	bool considerWeights=true;
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	
+	createProgressBar();
+	
 	activeGraph.writeClusteringCoefficient(fn, considerWeights);
-	QApplication::restoreOverrideCursor();
-
+	
+	destroyProgressBar();
 
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
@@ -4295,9 +4338,13 @@ void MainWindow::slotCentralityOutDegree(){
 	}
 
 	QString fn = "centrality-out-degree.dat";
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+
+	createProgressBar();
+
 	activeGraph.writeCentralityOutDegree(fn, considerWeights);
-	QApplication::restoreOverrideCursor();
+	
+	destroyProgressBar();
+	
 	statusMessage( QString(tr(" displaying file...")));
 	
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
@@ -4337,9 +4384,13 @@ void MainWindow::slotCentralityInDegree(){
 		break;
 	}
 	QString fn = "centrality-in-degree.dat";
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	
+	createProgressBar();
+	
 	activeGraph.writeCentralityInDegree(fn, considerWeights);
-	QApplication::restoreOverrideCursor();
+	
+	destroyProgressBar();
+
 	statusMessage( QString(tr(" displaying file...")));
 	
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
@@ -4363,9 +4414,13 @@ void MainWindow::slotCentralityCloseness(){
 
 	QString fn = "centrality_closeness.dat";
 	bool considerWeights=true;
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+
+	createProgressBar();
+	
 	activeGraph.writeCentralityCloseness(fn, considerWeights);
-	QApplication::restoreOverrideCursor();
+	
+	destroyProgressBar();
+
 	statusMessage( QString(tr(" displaying file...")));
 
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
@@ -4390,8 +4445,11 @@ void MainWindow::slotCentralityBetweeness(){
 	QString fn = "centrality_betweeness.dat";
 	bool considerWeights=true;
 	statusMessage(  QString(tr(" Please wait...")));
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-	activeGraph.writeCentralityBetweeness(fn, considerWeights);	
+
+	createProgressBar();
+	activeGraph.writeCentralityBetweeness(fn, considerWeights);
+	destroyProgressBar();
+					
 	statusMessage( QString(tr(" displaying file...")));
 
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
@@ -4428,10 +4486,13 @@ void MainWindow::slotCentralityStress(){
 	
 	bool considerWeights=true;
 	statusMessage(  QString(tr(" Please wait...")));
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-	activeGraph.writeCentralityStress(fn, considerWeights);	
-	statusMessage( QString(tr(" displaying file...")));
 
+	createProgressBar();
+	
+	activeGraph.writeCentralityStress(fn, considerWeights);	
+
+	destroyProgressBar();
+				
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
 	ed->setWindowTitle("Stress Centralities saved as: " + tempFileNameNoPath.last());
@@ -4453,10 +4514,13 @@ void MainWindow::slotCentralityGraph(){
 	QString fn = "centrality_graph.dat";
 	bool considerWeights=true;
 	statusMessage(  QString(tr(" Please wait...")));
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	
+	createProgressBar();
+		
 	activeGraph.writeCentralityGraph(fn, considerWeights);	
-	statusMessage( QString(tr(" displaying file...")));
 
+	destroyProgressBar();
+	
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/" );
 	ed->setWindowTitle("Graph Centralities saved as: " + tempFileNameNoPath.last());
@@ -4479,9 +4543,10 @@ void MainWindow::slotCentralityEccentricity(){
 	QString fn = "centrality_eccentricity.dat";
 	bool considerWeights=true;
 	statusMessage(  QString(tr(" Please wait...")));
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+
+	createProgressBar();
 	activeGraph.writeCentralityEccentricity(fn, considerWeights);	
-	statusMessage( QString(tr(" displaying file...")));
+	destroyProgressBar();
 
 	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
 	tempFileNameNoPath=fn.split( "/");
@@ -4490,6 +4555,31 @@ void MainWindow::slotCentralityEccentricity(){
 	QApplication::restoreOverrideCursor();
 
 }
+
+
+
+void MainWindow::createProgressBar(){
+		
+	if (showProgressBarAct->isChecked() || activeGraph.totalEdges() > 1000){
+		progressDialog= new QProgressDialog("Please wait, for distance matrix creation....", "Cancel", 0, activeGraph.vertices(), this);
+		progressDialog -> setWindowModality(Qt::WindowModal);
+		connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
+		progressDialog->setMinimumDuration(0);
+	}
+	
+	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	
+}
+
+
+void MainWindow::destroyProgressBar(){
+		QApplication::restoreOverrideCursor();
+
+	if (showProgressBarAct->isChecked() || activeGraph.totalEdges() > 1000)
+		progressDialog->deleteLater();
+}
+
+
 
 
 /**
@@ -5258,7 +5348,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Thu Jun  4 01:23:04 EEST 2009";
+QString BUILD="Sat Jun  6 00:23:57 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"
