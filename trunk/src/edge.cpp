@@ -72,6 +72,7 @@ Edge::Edge(  GraphicsWidget *gw, Node *from, Node *to, float weight, int nodeSiz
 
 
 void Edge::showArrows(bool drawArrows){
+	prepareGeometryChange();
 	m_drawArrows=drawArrows;
 }
 

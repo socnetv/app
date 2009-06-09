@@ -1574,7 +1574,8 @@ void MainWindow::initNet(){
 	nodeSizeProportional2InDegreeBx->setChecked(false);
   
 	displayLinksWeightNumbersAct->setChecked(false);
-	//displayLinksArrowsAct->setChecked(false);
+	//displayLinksArrowsAct->setChecked(false);		//FIXME: USER PREFS EMITTED TO GRAPH?
+
 	
 	//set window title
 	setWindowTitle(tr("Social Network Visualizer ")+VERSION);
@@ -3357,6 +3358,7 @@ void MainWindow::slotChangeLinkWeight(){
 			}
 	}
 	else {  //linkClicked
+		qDebug() << "MW: slotChangeLinkWeight() - a link has already been clicked";
 		sourceNode=clickedLink->sourceNodeNumber();
 		targetNode=clickedLink->targetNodeNumber();
 		if ( activeGraph.symmetricEdge(sourceNode, targetNode) ) {
@@ -3418,6 +3420,24 @@ void MainWindow::slotChangeLinkWeight(){
 						}
 						break;
 				}
+		}
+		else {
+			qDebug("MW: slotChangeLinkWeight()  real edge %i -> %i", sourceNode, targetNode);
+			newWeight=QInputDialog::getDouble(this, 
+					"Change link weight...",tr("New link weight: "), 1.0, -20.0, 20.00 ,1, &ok) ;
+			if (ok) {
+				clickedLink->setWeight(newWeight);
+				clickedLink->update();	
+				qDebug()<<"MW: newWeight will be "<< newWeight; 
+				activeGraph.setEdgeWeight(sourceNode, targetNode, newWeight);
+				statusMessage(  QString(tr("Ready."))  );
+				return;
+			}
+			else {
+				statusMessage(  QString(tr("Change link weight cancelled."))  );
+				return;
+			}
+
 		}
 		linkClicked=false;
 	}
@@ -4794,23 +4814,22 @@ void MainWindow::slotChangeNumbersSize() {
 *  Changes size of all nodes' labels
 */
 void MainWindow::slotChangeLabelsSize() {
-/*  bool ok=false;
-  int newSize;
-  newSize= QInputDialog::getInteger("Change text size",
-     tr("Choose a new font size for the labels: "),
-     7, 7, 14 , 1, &ok, this )   ;
-  if (!ok) {
-     statusMessage( tr("Change font size: Aborted.") );
-    return;
-  }
-  QList<QGraphicsItem *> list=scene->items();
-  for (QList<QGraphicsItem *>::iterator it2=list.begin();it2!=list.end(); it2++)
-     if ( (*it2)->type()==TypeLabel) {
-       NodeLabel * number= (NodeLabel*) (*it2);
-      number->setFont( QFont ("Helvetica", newSize, QFont::Normal, false) );
-     }
-
-  statusMessage( tr("Changed labels size. Ready.") );*/
+	bool ok=false;
+	int newSize;
+	newSize = QInputDialog::getInteger(this, "Change text size", tr("Change all node labels size to: (1-16)"),initNumberSize, 1, 16, 1, &ok );
+	if (!ok) {
+		statusMessage( tr("Change font size: Aborted.") );
+	return;
+	}
+	QList<QGraphicsItem *> list=scene->items();
+	for (QList<QGraphicsItem *>::iterator it2=list.begin();it2!=list.end(); it2++)
+		
+		if ( (*it2)->type()==TypeLabel) {
+		 	NodeLabel *label= (NodeLabel*) (*it2);
+			qDebug ("MW: slotChangeLabelsSize Found");
+			label->setFont( QFont (label->font().family(), newSize, QFont::Light, false) );
+	}
+	statusMessage( tr("Changed labels size. Ready.") );
 }
 
 
@@ -4933,7 +4952,6 @@ void MainWindow::slotDisplayLinksArrows(bool toggle){
 			if ( (*item)->type() ==TypeEdge){
 				Edge *edge = (Edge*) (*item);
 				edge->showArrows(false);
-				//(*item)->hide();(*item)->show();
 			}
 		}
 		return;
@@ -4944,7 +4962,6 @@ void MainWindow::slotDisplayLinksArrows(bool toggle){
 			if ( (*item)->type() ==TypeEdge){
 				Edge *edge = (Edge*) (*item);
 				edge->showArrows(true);
-				//(*item)->hide();(*item)->show();
 			}
 	}
 	statusMessage( tr("Ready."));
@@ -5348,7 +5365,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Sat Jun  6 00:24:31 EEST 2009";
+QString BUILD="Tue Jun  9 22:34:35 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"
