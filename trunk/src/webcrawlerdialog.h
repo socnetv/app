@@ -3,7 +3,7 @@
  version: 0.70
  Written in Qt 4.4
  
-                         filteredgesbyweightdialog.cpp  -  description
+                         webcrawlerdialog.h  -  description
                              -------------------
     copyright            : (C) 2005-2009 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
@@ -24,37 +24,29 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
+#ifndef WEBCRAWLERDIALOG_H
+#define WEBCRAWLERDIALOG_H
 
-#include "filteredgesbyweightdialog.h"
-#include <QPushButton>
-#include <QDebug>
 
-FilterEdgesByWeightDialog::FilterEdgesByWeightDialog (QWidget *parent) : QDialog (parent)
+#include <QDialog>
+
+#include "ui_webcrawlerdialog.h"
+ 
+
+class WebCrawlerDialog: public QDialog
 {
-	ui.setupUi(this);	
-	connect ( ui.buttonBox,SIGNAL(accepted()), this, SLOT(gatherData()) );
-	
-	(ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
-	
-	(ui.overThresholdBt)-> setChecked(true);
-		
-} 
+	Q_OBJECT
+public:
+	WebCrawlerDialog (QWidget *parent = 0);
+public slots:
+	void gatherData ();
+signals:
+	void userChoices( QString, int, int, bool);	
+private:
+	Ui::WebCrawlerDialog ui;
+
+};
 
 
 
-
-void FilterEdgesByWeightDialog::gatherData(){
-	qDebug()<< "Dialog: gathering Data!...";
-	bool overThreshold=false;
-	float my_threshold = static_cast <float> ( (ui.weightThreshold)->value() );
-	if ( ui.overThresholdBt -> isChecked() ) {
-		qDebug()<< "Dialog: We will filter edges weighted more than threshold: " << my_threshold;
-		overThreshold = true;
-	}
-	else {
-		qDebug()<< "Dialog: We will filter edges weighted less than threshold: " << my_threshold;
-		overThreshold = false;
-	}	
-	qDebug()<< "Dialog: emitting userChoices" ;
-	emit userChoices( my_threshold, overThreshold );		
-}
+#endif

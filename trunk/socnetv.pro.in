@@ -7,7 +7,9 @@ QT += webkit
 QT += xml
 
 INCPATH += ./src
-FORMS += src/forms/filteredgesbyweightdialog.ui
+FORMS += src/forms/filteredgesbyweightdialog.ui \
+	src/forms/webcrawlerdialog.ui
+
 HEADERS += src/backgrcircle.h \
            src/graphicswidget.h \
            src/edge.h \
@@ -23,6 +25,7 @@ HEADERS += src/backgrcircle.h \
            src/vertex.h \ 
   	   src/parser.h \
 	   src/filteredgesbyweightdialog.h \
+	   src/webcrawlerdialog.h
 
 SOURCES += src/backgrcircle.cpp \
            src/graphicswidget.cpp \
@@ -40,6 +43,7 @@ SOURCES += src/backgrcircle.cpp \
            src/vertex.cpp \
            src/parser.cpp \
 	   src/filteredgesbyweightdialog.cpp \
+	   src/webcrawlerdialog.cpp 
 
 
 

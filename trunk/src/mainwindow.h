@@ -38,6 +38,7 @@
 #include "graph.h"
 #include "filteredgesbyweightdialog.h"
 
+#include "webcrawlerdialog.h"
 
 
 
@@ -133,6 +134,9 @@ public slots:
 	void slotCreateGaussianRandomNetwork();
 	void slotCreateRandomNetRingLattice();
 	void slotCreateSmallWorldRandomNetwork();
+	
+	void slotShowWebCrawlerDialog();
+	
 	//EDIT MENU
 	void slotFindNode();
 	void slotAddLink();
@@ -276,6 +280,7 @@ private:
 	QGraphicsScene *scene;
 
 	FilterEdgesByWeightDialog m_filterEdgesByWeightDialog;
+	WebCrawlerDialog m_WebCrawlerDialog;
 	Graph activeGraph;
 	QPrinter *printer;	
 	QToolBar *toolBar;
@@ -321,6 +326,7 @@ private:
 	QAction *cOutDegreeAct, *cInDegreeAct, *cClosenessAct, *cBetweenessAct, *cInformationalAct, *cGraphAct, *cStressAct, *cEccentAct;
 	QAction *randLayoutAct, *randCircleLayoutAct, *circleOutDegreeLayoutAct, *circleInDegreeLayoutAct, *circleClosenessLayoutAct;
 	QAction *antialiasingAct;
+	QAction *webCrawlerAct;
 
 	QAction *circleStressLayoutAct, *circleGraphLayoutAct,*circleClearBackgrCirclesAct, *circleEccentrLayoutAct;
 	QAction *circleBetweenessLayoutAct, *circleInformationalLayoutAct, *levelClosenessLayoutAct;

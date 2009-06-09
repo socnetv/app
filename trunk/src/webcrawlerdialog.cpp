@@ -3,7 +3,7 @@
  version: 0.70
  Written in Qt 4.4
  
-                         filteredgesbyweightdialog.cpp  -  description
+                         webcrawlerdialog.h  -  description
                              -------------------
     copyright            : (C) 2005-2009 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
@@ -24,37 +24,41 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
+ 
 
-#include "filteredgesbyweightdialog.h"
+#include "webcrawlerdialog.h"
+#include  <QDebug>
 #include <QPushButton>
-#include <QDebug>
 
-FilterEdgesByWeightDialog::FilterEdgesByWeightDialog (QWidget *parent) : QDialog (parent)
+WebCrawlerDialog::WebCrawlerDialog(QWidget *parent) : QDialog (parent)
 {
 	ui.setupUi(this);	
 	connect ( ui.buttonBox,SIGNAL(accepted()), this, SLOT(gatherData()) );
 	
 	(ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
 	
-	(ui.overThresholdBt)-> setChecked(true);
-		
-} 
+	(ui.goOutCheckBox)-> setChecked(true);
+	
+}
 
 
 
-
-void FilterEdgesByWeightDialog::gatherData(){
+void WebCrawlerDialog::gatherData(){
 	qDebug()<< "Dialog: gathering Data!...";
-	bool overThreshold=false;
-	float my_threshold = static_cast <float> ( (ui.weightThreshold)->value() );
-	if ( ui.overThresholdBt -> isChecked() ) {
-		qDebug()<< "Dialog: We will filter edges weighted more than threshold: " << my_threshold;
-		overThreshold = true;
+	bool goOut=false;
+	QString website = (ui.websiteLineEdit)->text() ;
+	int maxRecursion = (ui.maxRecursionLevelSpinBox) -> value();
+	int maxTime = (ui.maxTimeSpinBox) -> value();
+	
+	if ( ui.goOutCheckBox -> isChecked() ) {
+		qDebug()<< "Dialog: We will go out of this site... " ;
+		goOut = true;
 	}
 	else {
-		qDebug()<< "Dialog: We will filter edges weighted less than threshold: " << my_threshold;
-		overThreshold = false;
+		qDebug()<< "Dialog: We will not go out of this site... ";
+		goOut = false;
 	}	
-	qDebug()<< "Dialog: emitting userChoices" ;
-	emit userChoices( my_threshold, overThreshold );		
+	qDebug()<< "Dialog:  Website: " << website;  
+	qDebug()<< " maxRecursion " << maxRecursion << "  maxTime " << maxTime  ;
+	emit userChoices( website ,maxRecursion,  maxTime, goOut );		
 }

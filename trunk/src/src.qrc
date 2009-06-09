@@ -49,6 +49,7 @@
 	<file>images/nodeout.png</file>
         <file>images/nodein.png</file>
 	<file>images/gridlines.png</file>
+	<file>images/webcrawler.png</file>
 
 </qresource>
 </RCC>

@@ -40,7 +40,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QDoubleSpinBox" name="weightTheshold">
+        <widget class="QDoubleSpinBox" name="weightThreshold">
          <property name="decimals">
           <number>1</number>
          </property>

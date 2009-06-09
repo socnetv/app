@@ -380,6 +380,15 @@ void MainWindow::initActions(){
 	createSmallWorldRandomNetworkAct->setWhatsThis(tr("Small World \n\nA Small World, according to the Watts and Strogatz model, is a random network with short average path lengths and high clustering coefficient."));
 	connect(createSmallWorldRandomNetworkAct, SIGNAL(activated()), this, SLOT(slotCreateSmallWorldRandomNetwork()));
 
+
+
+
+	webCrawlerAct = new QAction(QIcon(":/images/webcrawler.png"), tr("Web Crawler"),	this);
+	webCrawlerAct->setShortcut(tr("Shift+C"));
+	webCrawlerAct->setStatusTip(tr("Creates then network of all links from a given website"));
+	webCrawlerAct->setWhatsThis(tr("Web Crawler \n\nA Web crawler is a built-in bot, which starts with a given URL (website or webpage) to visit. As the algorithm crawls this webpage, it identifies all the links in the page and adds them to a list of URLs (called frontier). Then, all the URLs from the frontier are recursively visited. You must provide maximum recursion level (how many URLs from the frontier will be visited) and maximum running time, along with the initial web address..."));
+	connect(webCrawlerAct, SIGNAL(activated()), this, SLOT(slotShowWebCrawlerDialog()));
+
 	
 	/**
 	Edit menu actions
@@ -965,7 +974,7 @@ void MainWindow::initMenuBar() {
 	randomNetworkMenu -> addAction (createSameDegreeRandomNetworkAct);
 	networkMenu->addSeparator();
 
-	
+	networkMenu  -> addAction(webCrawlerAct);
 	
 	networkMenu  -> addSeparator();
 	networkMenu  -> addAction(fileSave);
@@ -2635,6 +2644,20 @@ void MainWindow::slotCreateRandomNetRingLattice(){
 
 
 
+/**
+*	Shows a dialog from where the user   
+*	creates a new network by crawling a given website 
+*/ 
+void MainWindow::slotShowWebCrawlerDialog() {
+	m_WebCrawlerDialog.exec() ;
+}
+
+
+
+
+
+
+
 
 /**
 	 Calls GW: findNode() to find a node by its number or label. The node is then marked.
@@ -3476,6 +3499,8 @@ void MainWindow::slotShowFilterEdgesDialog() {
 	}
 	m_filterEdgesByWeightDialog.exec() ;
 }
+
+
 
 
 
@@ -5365,7 +5390,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Tue Jun  9 22:34:35 EEST 2009";
+QString BUILD="Tue Jun  9 23:46:27 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"
