@@ -4,7 +4,8 @@ LANGUAGE = C++
 
 # support
 QT += webkit
-QT += xml
+QT += xml 
+QT += network
 
 INCPATH += ./src
 FORMS += src/forms/filteredgesbyweightdialog.ui \
@@ -25,7 +26,8 @@ HEADERS += src/backgrcircle.h \
            src/vertex.h \ 
   	   src/parser.h \
 	   src/filteredgesbyweightdialog.h \
-	   src/webcrawlerdialog.h
+	   src/webcrawlerdialog.h \
+	   src/webcrawler.h
 
 SOURCES += src/backgrcircle.cpp \
            src/graphicswidget.cpp \
@@ -43,7 +45,8 @@ SOURCES += src/backgrcircle.cpp \
            src/vertex.cpp \
            src/parser.cpp \
 	   src/filteredgesbyweightdialog.cpp \
-	   src/webcrawlerdialog.cpp 
+	   src/webcrawlerdialog.cpp \
+	   src/webcrawler.cpp
 
 
 

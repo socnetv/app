@@ -80,6 +80,15 @@ Graph::Graph() {
 		this, SLOT (removeDummyNode(int)) 
 		);
 		
+	connect (	
+			&crawler, SIGNAL( createNode (QString, int) ), 
+			this, SLOT(createVertex(QString, int ) ) 
+			) ;
+
+	connect (
+		&crawler, SIGNAL(createEdge (int, int)), 
+		this, SLOT(createEdge (int, int) ) 
+		);
 				
 
 }
@@ -122,6 +131,8 @@ void Graph::createVertex(int i, QPointF p){
 }
 
 
+
+
 /**
 	second auxilliary node creation slot. 
 	Called from MW only with parameter i.
@@ -137,6 +148,31 @@ void Graph::createVertex(int i, int cWidth, int cHeight){
 	createVertex(i, initVertexSize,  initVertexColor, QString::number(i), initVertexLabelColor, p, initVertexShape);
 }
 
+
+
+/**
+	third auxilliary node creation slot. 
+	Called from WebCrawler with parameter i.
+	Calculates a random position p from canvasWidth and Height.
+	Then calls the main creation slot with init node values.
+*/
+
+void Graph::createVertex(QString label, int i) {
+	if ( i < 0 )  i = lastVertexNumber() +1;
+	qDebug("Graph:: createVertex(). Using vertex number %i with RANDOM node coords but with LABEL...", i);
+	QPointF p;
+	p.setX(rand()%canvasWidth);
+	p.setY(rand()%canvasHeight);
+	createVertex(i, initVertexSize,  initVertexColor, label, initVertexLabelColor, p, initVertexShape);
+	
+}
+
+
+void Graph::setCanvasDimensions(int w, int h){
+	qDebug() << "Graph:: setCanvasDimensions() to " << w << " " << h ; 
+	canvasWidth = w;
+	canvasHeight= h;
+}
 
 /**
 	Called from homonymous signal of Parser class. 
@@ -180,6 +216,18 @@ void Graph::createEdge(int v1, int v2, float weight, bool reciprocal=false, bool
 	createEdge(v1, v2, (float) weight, initEdgeColor, reciprocal, drawArrows, bezier);
 }
 
+
+/**
+	Called from WebCrawler when it finds an new link 
+	Calls the above createEdge() method with initEdgeColor 
+*/
+void Graph::createEdge (int source, int target){
+	float weight = 1.0;
+	bool reciprocal=false;
+	bool drawArrows=true; 
+	bool bezier=false;
+	createEdge(source, target, weight, initEdgeColor, reciprocal, drawArrows, bezier);	
+}
 
 /**
 *	This is called from loadPajek method of Parser in order to delete any redundant (dummy) nodes.
@@ -440,6 +488,14 @@ void Graph::removeEdge (int v1, int v2) {
 
 
 
+
+
+//Called by MW to start a web crawler...
+void Graph::webCrawl( QString seed, int maxRecursion, int maxTime, bool goOut){
+	qDebug() << "Graph:: webCrawl - Calling thread for " << seed ;
+	crawler.load(seed, maxRecursion, maxTime, goOut);
+	qDebug("See the thread? :)");
+}
 
 
 

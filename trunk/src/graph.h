@@ -41,7 +41,7 @@
 #include "vertex.h"
 #include "matrix.h"
 #include "parser.h"
-
+#include "webcrawler.h"
 
 
 using namespace std;
@@ -76,15 +76,21 @@ public slots:
 	/** Slots to signals from GraphicsWidget and Parser*/
 	void createEdge (int, int, float, QString, bool, bool, bool);		//GW and Parser.
 	void createEdge (int, int, float, bool, bool, bool);				//GW
-	
+	void createEdge (int, int);											//WebCrawler
 	void nodeMovement(int state, int type, int cW, int cH);			//Called by MW to start movement
 
-	void createVertex(int i, QPointF p); 							//Called by GW
-	void createVertex(int i, int canvasWidth, int canvasHeight); 	//Called by MW
-
-	void filterEdgesByWeight (float, bool);				//Called by MW to filter edges over/under a weight
 	void slotSetEdgeVisibility( int, int, bool);
 	
+	void createVertex(int i, QPointF p); 							//Called by GW
+	void createVertex(int i, int canvasWidth, int canvasHeight); 	//Called by MW
+	void createVertex(QString label, int i) ; 						//Called by WebCrawler
+	
+	/** Slots to signals from MainWindow */
+	void setCanvasDimensions(int w, int h);				
+	void filterEdgesByWeight (float, bool);				//Called by MW to filter edges over/under a weight
+	
+	
+	void webCrawl( QString, int, int, bool);	//Called by MW to start a web crawler...
 
 	
 signals:
@@ -270,6 +276,7 @@ private:
 
 	Parser parser;			//file loader threaded class.
 
+	WebCrawler crawler; 
 	
 	/** private member functions */
 	void addVertex (int v1, int val, int nsz, QString nc, QString nl, QString lc, QPointF p,QString nsp);	

@@ -179,6 +179,10 @@ MainWindow::MainWindow(const QString & m_fileName) {
 	connect( &m_filterEdgesByWeightDialog, SIGNAL( userChoices( float, bool) ), 
 			&activeGraph, SLOT( filterEdgesByWeight (float, bool) ) );
 
+	connect( &m_WebCrawlerDialog, SIGNAL( userChoices( QString, int, int, bool)  ), 
+			&activeGraph, SLOT(  webCrawl( QString, int, int, bool) ) );
+
+
 	connect( &activeGraph, SIGNAL( setEdgeVisibility ( int, int, bool) ), 
 			 graphicsWidget, SLOT(  setEdgeVisibility ( int, int, bool) ) );
 	
@@ -2649,6 +2653,9 @@ void MainWindow::slotCreateRandomNetRingLattice(){
 *	creates a new network by crawling a given website 
 */ 
 void MainWindow::slotShowWebCrawlerDialog() {
+	qDebug () << "MW: slotShowWebCrawlerDialog() - sending canvasWidth and Height";
+	activeGraph.setCanvasDimensions(graphicsWidget->width(), graphicsWidget->height());
+	
 	m_WebCrawlerDialog.exec() ;
 }
 
@@ -5390,7 +5397,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Tue Jun  9 23:46:27 EEST 2009";
+QString BUILD="Wed Jun 10 01:21:14 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"
