@@ -494,7 +494,7 @@ void Graph::removeEdge (int v1, int v2) {
 void Graph::webCrawl( QString seed, int maxRecursion, int maxTime, bool goOut){
 	qDebug() << "Graph:: webCrawl - Calling thread for " << seed ;
 	crawler.load(seed, maxRecursion, maxTime, goOut);
-	qDebug("See the thread? :)");
+	qDebug("Graph:: See the thread? :)");
 }
 
 

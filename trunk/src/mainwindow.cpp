@@ -389,7 +389,7 @@ void MainWindow::initActions(){
 
 	webCrawlerAct = new QAction(QIcon(":/images/webcrawler.png"), tr("Web Crawler"),	this);
 	webCrawlerAct->setShortcut(tr("Shift+C"));
-	webCrawlerAct->setStatusTip(tr("Creates then network of all links from a given website"));
+	webCrawlerAct->setStatusTip(tr("Creates a network from all links found in a given website"));
 	webCrawlerAct->setWhatsThis(tr("Web Crawler \n\nA Web crawler is a built-in bot, which starts with a given URL (website or webpage) to visit. As the algorithm crawls this webpage, it identifies all the links in the page and adds them to a list of URLs (called frontier). Then, all the URLs from the frontier are recursively visited. You must provide maximum recursion level (how many URLs from the frontier will be visited) and maximum running time, along with the initial web address..."));
 	connect(webCrawlerAct, SIGNAL(activated()), this, SLOT(slotShowWebCrawlerDialog()));
 
@@ -5397,7 +5397,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Wed Jun 10 01:21:14 EEST 2009";
+QString BUILD="Thu Jun 11 01:24:05 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"

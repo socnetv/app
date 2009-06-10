@@ -44,83 +44,76 @@ QMutex mutex;
 
 
 void WebCrawler::load (QString seed, int maxRecursion, int maxTime, bool goOut){ 
-    if (seed.contains(" ")) return; 
-    //maxnodes we'll check
-    maxNodes=maxRecursion;
-    //put the seed to a queue
-    frontier.enqueue(seed);
-    //είμαστε στον πρώτο κόμβο
-    num=1;	
-    //Βάλε τον αριθμό στο διάνυσμα
-    //με τους δείκτες των σελίδων
-    source.append(num);
-    http = new QHttp(this); 
-    //connect done() signal of http to load() of 2ond Reader class
-    connect (http,SIGNAL( done(bool) ), &reader, SLOT( load() ) ); 
-	qDebug("Start a new QThread!");
 
-    //start thread
-    if (!isRunning()) 
-        start(QThread::TimeCriticalPriority);
+	if (seed.contains(" "))		//urls can't have spaces... 
+		return; 
+	
+	maxNodes=maxRecursion;		//maxnodes we'll check
+	frontier.enqueue(seed);		//put the seed to a queue
+	num=1;						//start at node 1	
+	source.append(num);			//append num to the source vector, holding page index
+	http = new QHttp(this); 	
+	//connect done() signal of http to load() of 2ond Reader class
+	connect (http,SIGNAL( done(bool) ), &reader, SLOT( load() ) ); 
+	
+	qDebug() << "WebCrawler:: I will start a new QThread!";
+	
+	if (!isRunning()) 
+		start(QThread::TimeCriticalPriority);
 }
 
 
+
+
 void WebCrawler::run(){
-    do{ 
-        //πάρε το πρώτο url από την ουρά
-        baseUrl = frontier.head();
-        //φτιάξε έναν κόμβο
-        emit createNode(baseUrl, num);
-        int src;
-        if (num>1) {
-            //αν δεν είναι το πρώτο μας
-            //φτιάξε και την ακμή
-            qDebug()<< "Creating edge " << source[num-1] << " " <<  num;
-            //Στο source έχουμε κρατήσει τον δείκτη
-            //της σελίδας όπου βρήκαμε το url
-            emit createEdge (source[num-1], num); 
-        }
-        qDebug ("Nodes %i", num);
-        //Αν ο χρήστης έχει δώσει και http
-        //αφαίρεσέ το
-        if (baseUrl.contains ("http://" ) ) 
-                baseUrl=baseUrl.remove ("http://");
-        qDebug() << "Scanning " <<  baseUrl.toAscii();	
-        int index;
-        //Σπάσε το URL, αν χρειάζεται
-        //σε domain και σελίδα
-        if ( (index=baseUrl.indexOf ("/")) !=-1 ) {
-            qDebug() << baseUrl.left(index).toAscii();
-            qDebug() <<baseUrl.remove(0, index).toAscii() ;
-            http->setHost(baseUrl.left(index) ); 		
-            http->get(baseUrl.remove(0, index) ); 
-        }
-        else {
-            http->setHost(baseUrl); 		
-            http->get("/"); 
-        }
-        //κλείδωσε το mutex
-        mutex.lock();
-        qDebug() << "ZZzz We should wait a bit...";
-        //Βάλε το thread για ύπνο 
-        //και όσες μεταβλητές περιλαμβάνονται στο mutex
-        newDataRead.wait(&mutex);
-        //Ξεκλείδωσέ το
-        mutex.unlock();
-        qDebug ("OK. Continuing: frontier size= %i", frontier.size());
-        //Μείωσε τα maxnodes
-        maxNodes--;
-        //Αύξησε τo num
-        num++;
-        //Αφαίρεσε το head
-        frontier.dequeue();
-        //Αν δεν έχουμε άλλο URL,
-        //τερμάτισε την επανάληψη
-        if (frontier.size() ==0 ) break;
-        
-        
-    } while ( maxNodes>0 );
-    qDebug() << "Finished!";
+	
+	do{ 	//until we reach maxRecursion=maxNodes level.
+		
+		baseUrl = frontier.head();	//take the first url from the frontier : this is our baseUrl
+		qDebug()<< "			Creating node " << num << " label " << baseUrl;
+		emit createNode(baseUrl, num);
+		if (num>1) {
+			//if ain't the 1st node, then create an edge from the previous node.  
+			qDebug()<< "			Creating edge from " << source[num-1] << " -> " <<  num;
+			//source vector holds the index of the page where this url was found.
+			emit createEdge (source[num-1], num); 
+		}
+		qDebug() << "			Nodes now: " << num;
+		//If baseUrl includes http, erase it.
+		if (baseUrl.contains ("http://" ) ) 
+				baseUrl=baseUrl.remove ("http://");
+		qDebug() << "			Now, I will start scanning " <<  baseUrl.toAscii();	
+		int index;
+		//break baseUrl, if needed, to domain and page.
+		if ( (index=baseUrl.indexOf ("/")) !=-1 ) {
+			qDebug() << "			Host domain: "<<  baseUrl.left(index).toAscii();
+			qDebug() << "			Webpage to get: "<<  baseUrl.remove(0, index).toAscii() ;
+			http->setHost(baseUrl.left(index) ); 		
+			http->get(baseUrl.remove(0, index) ); 
+		}
+		else { 
+			qDebug() << " 			clean domain detected " << baseUrl.toAscii();
+			http->setHost(baseUrl); 		
+			http->get("/"); 
+		}
+		//lock mutex
+		mutex.lock();
+		qDebug() << "			ZZzz We should wait a bit...";
+		//Thread goes to sleep to protect all variables (locked by mutex). 
+		newDataRead.wait(&mutex);
+		//Unlock it
+		mutex.unlock();
+		qDebug () <<"				OK. Continuing: frontier size = " << frontier.size();
+		qDebug () <<"				Decrease maxnodes";
+		maxNodes--;
+		qDebug () <<"				Increase num";
+		num++;
+		frontier.dequeue();			//Dequeue head
+		qDebug () <<"				Check: if frontier is empty, break recursion " <<frontier.size()  ; 
+		if (frontier.size() ==0 ) break;
+
+	} while ( maxNodes>0 );
+	qDebug() << "			Finished!";
 }
 
 
@@ -129,15 +122,15 @@ void WebCrawler::run(){
 
 
 void Reader::load(){
-    if (!isRunning()) 
-        start(QThread::NormalPriority);
+	if (!isRunning()) 
+		start(QThread::NormalPriority);
 }
 
 
 
 
 void Reader::run(){
-    qDebug()  << "READER: read something!";	
+    qDebug()  << "		READER: read something!";	
     QString newUrl;
     int at, at1;
     ba=http->readAll(); 
@@ -145,44 +138,44 @@ void Reader::run(){
     int src=source.size();
     //if a href doesnt exist, return   
     if (!page.contains ("a href"))  {
-         qDebug() << "READER: Empty or not usefull data from " << baseUrl.toAscii();
-         newDataRead.wakeAll();
-         return;
+		 qDebug() << "		READER: Empty or not usefull data from " << baseUrl.toAscii();
+		 newDataRead.wakeAll();
+		 return;
     }
     mutex.lock();    
     //as long there is a href in the page...
     while (page.contains("a href")) {
-        page=page.simplified();
-        //Find its pos
-        at=page.indexOf ("a href");
+		page=page.simplified();
+		//Find its pos
+		at=page.indexOf ("a href");
 	    //Erase everything 8 chars  -- FIXME
-        page.remove(0, at+8); 
-        if (page.startsWith("\"") ) newUrl.remove(0,1);
-        //Τι γίνεται όμως αν υπάρχει ' ;
-        //SOS: Βρες το τέλος
-        at1=page.indexOf ("\"");
-        //Κράτα το URL
-        newUrl=page.left(at1);
-        newUrl=newUrl.simplified();
-        //Τύπωσε το
-        qDebug() << "NewUrl = " << newUrl.toAscii();
-        //SOS: Κάποιοι έλεγχοι χρειάζονται εδώ...
-        //Αν δεν ξεκινάει με http://...
-        if ( !newUrl.startsWith ("http://") ) {
-            newUrl=baseUrl+"/"+page.left(at1); 
-        }
-        qDebug() << "NewUrl =" << newUrl.toAscii() << ".";
-        //Αν δεν το έχουμε βρει ήδη...
-        if (!frontier.contains (newUrl) ) {
-            frontier.enqueue(newUrl);
-            source.append(src);
-            qDebug()<< "frontier size "<<  frontier.size() << " source= " <<  src;
-        }
-        else //αλλιώς μην το βάλεις στην ουρά
-            qDebug() << "BaseUrl "  <<  baseUrl.toAscii() << " already scanner. Skipping";
-    }
-    newDataRead.wakeAll();
-    mutex.unlock();
+		page.remove(0, at+8); 
+		if (page.startsWith("\"") ) newUrl.remove(0,1);
+		//Τι γίνεται όμως αν υπάρχει ' ;
+		//SOS: Βρες το τέλος
+		at1=page.indexOf ("\"");
+		//Κράτα το URL
+		newUrl=page.left(at1);
+		newUrl=newUrl.simplified();
+		//Τύπωσε το
+		qDebug() << "		READER: NewUrl = " << newUrl.toAscii();
+		//SOS: Κάποιοι έλεγχοι χρειάζονται εδώ...
+		//Αν δεν ξεκινάει με http://...
+		if ( !newUrl.startsWith ("http://") ) {
+			newUrl=baseUrl+"/"+page.left(at1); 
+		}
+		qDebug() << "		READER: NewUrl =" << newUrl.toAscii() << ".";
+		//Αν δεν το έχουμε βρει ήδη...
+		if (!frontier.contains (newUrl) ) {
+			frontier.enqueue(newUrl);
+			source.append(src);
+			qDebug()<< "		READER: frontier size "<<  frontier.size() << " source= " <<  src;
+		}
+		else //αλλιώς μην το βάλεις στην ουρά
+			qDebug() << "		READER: BaseUrl "  <<  baseUrl.toAscii() << " already scanned. Skipping";
+	}
+	newDataRead.wakeAll();
+	mutex.unlock();
 }
 
 

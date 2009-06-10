@@ -51,14 +51,14 @@ void WebCrawlerDialog::gatherData(){
 	int maxTime = (ui.maxTimeSpinBox) -> value();
 	
 	if ( ui.goOutCheckBox -> isChecked() ) {
-		qDebug()<< "Dialog: We will go out of this site... " ;
+		qDebug()<< "	We will go out of this site... " ;
 		goOut = true;
 	}
 	else {
-		qDebug()<< "Dialog: We will not go out of this site... ";
+		qDebug()<< "	We will not go out of this site... ";
 		goOut = false;
 	}	
-	qDebug()<< "Dialog:  Website: " << website;  
-	qDebug()<< " maxRecursion " << maxRecursion << "  maxTime " << maxTime  ;
+	qDebug()<< "	Website: " << website;  
+	qDebug()<< "	maxRecursion " << maxRecursion << "  maxTime " << maxTime  ;
 	emit userChoices( website ,maxRecursion,  maxTime, goOut );		
 }
