@@ -66,7 +66,7 @@ void WebCrawler::load (QString seed, int maxRecursion, int maxTime, bool goOut){
 
 
 void WebCrawler::run(){
-	
+	QString domain, path; 
 	do{ 	//until we reach maxRecursion=maxNodes level.
 		
 		baseUrl = frontier.head();	//take the first url from the frontier : this is our baseUrl
@@ -86,10 +86,12 @@ void WebCrawler::run(){
 		int index;
 		//break baseUrl, if needed, to domain and page.
 		if ( (index=baseUrl.indexOf ("/")) !=-1 ) {
-			qDebug() << "			Host domain: "<<  baseUrl.left(index).toAscii();
-			qDebug() << "			Webpage to get: "<<  baseUrl.remove(0, index).toAscii() ;
-			http->setHost(baseUrl.left(index) ); 		
-			http->get(baseUrl.remove(0, index) ); 
+			domain = baseUrl.left(index);
+			qDebug() << "			Host domain: "<<  domain.toAscii();
+			path = baseUrl.remove(0, index);
+			qDebug() << "			Webpage to get: "<<  path.toAscii() ;
+			http->setHost( domain ); 		
+			http->get( path ); 
 		}
 		else { 
 			qDebug() << " 			clean domain detected " << baseUrl.toAscii();
@@ -135,6 +137,7 @@ void Reader::run(){
     int at, at1;
     ba=http->readAll(); 
     QString page(ba);
+    qDebug()  << "		"<< page.toAscii();
     int src=source.size();
     //if a href doesnt exist, return   
     if (!page.contains ("a href"))  {
