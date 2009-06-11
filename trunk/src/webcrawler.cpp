@@ -53,6 +53,7 @@ void WebCrawler::load (QString seed, int maxRecursion, int maxTime, bool goOut){
 	num=1;						//start at node 1	
 	source.append(num);			//append num to the source vector, holding page index
 	http = new QHttp(this); 	
+	
 	//connect done() signal of http to load() of 2ond Reader class
 	connect (http,SIGNAL( done(bool) ), &reader, SLOT( load() ) ); 
 	
@@ -105,13 +106,13 @@ void WebCrawler::run(){
 		newDataRead.wait(&mutex);
 		//Unlock it
 		mutex.unlock();
-		qDebug () <<"				OK. Continuing: frontier size = " << frontier.size();
+		qDebug () <<"				OK. Waking up to continue: frontier size = " << frontier.size();
 		qDebug () <<"				Decrease maxnodes";
 		maxNodes--;
 		qDebug () <<"				Increase num";
 		num++;
 		frontier.dequeue();			//Dequeue head
-		qDebug () <<"				Check: if frontier is empty, break recursion " <<frontier.size()  ; 
+		qDebug () <<"				if frontier is empty, break recursion " <<frontier.size()  ; 
 		if (frontier.size() ==0 ) break;
 
 	} while ( maxNodes>0 );
@@ -121,8 +122,12 @@ void WebCrawler::run(){
 
 
 
-
-
+ 
+/* 
+*  This method starts the Reader thread
+* 	It is called when the http object has emitted the done() signal
+* 	(that is, when last pending request has finished).
+*/ 
 void Reader::load(){
 	if (!isRunning()) 
 		start(QThread::NormalPriority);
@@ -130,11 +135,16 @@ void Reader::load(){
 
 
 
-
+/*
+ * This method is all that the Reader thread does.
+ * Essentially, it's called when http has finished all pending requests.
+ * First, we start by reading all from http to the QString page.
+ * Then we parse the page string, searching for url substrings. 
+ */ 
 void Reader::run(){
     qDebug()  << "		READER: read something!";	
     QString newUrl;
-    int at, at1;
+    int start=-1, end=-1, equal=-1;
     ba=http->readAll(); 
     QString page(ba);
     qDebug()  << "		"<< page.toAscii();
@@ -150,29 +160,36 @@ void Reader::run(){
     while (page.contains("a href")) {
 		page=page.simplified();
 		//Find its pos
-		at=page.indexOf ("a href");
-	    //Erase everything 8 chars  -- FIXME
-		page.remove(0, at+8); 
-		if (page.startsWith("\"") ) newUrl.remove(0,1);
-		//Τι γίνεται όμως αν υπάρχει ' ;
-		//SOS: Βρες το τέλος
-		at1=page.indexOf ("\"");
-		//Κράτα το URL
-		newUrl=page.left(at1);
-		newUrl=newUrl.simplified();
-		//Τύπωσε το
-		qDebug() << "		READER: NewUrl = " << newUrl.toAscii();
-		//SOS: Κάποιοι έλεγχοι χρειάζονται εδώ...
-		//Αν δεν ξεκινάει με http://...
-		if ( !newUrl.startsWith ("http://") ) {
-			newUrl=baseUrl+"/"+page.left(at1); 
+		start=page.indexOf ("a href");
+		page = page.remove(0, start);
+		qDebug() << "		READER: New Url??? : " << page.left(20);
+		equal=page.indexOf ("=");
+		//Erase everything up to =
+		page = page.remove(0, equal+1); 
+		qDebug() << "		READER: New Url??? : " << page.left(20);
+		if (page.startsWith("\"") ) {
+			page.remove(0,1);
+			end=page.indexOf ("\"");
 		}
+		else if (page.startsWith("\'") ){
+			page.remove(0,1);
+			end=page.indexOf ("\'");
+		}
+		else {
+			//end=page.indexOf ("\'");
+		}
+		
+		//Save new url to newUrl :)
+		newUrl=page.left(end);
+		newUrl=newUrl.simplified();
+		//Print it
+
 		qDebug() << "		READER: NewUrl =" << newUrl.toAscii() << ".";
 		//Αν δεν το έχουμε βρει ήδη...
 		if (!frontier.contains (newUrl) ) {
 			frontier.enqueue(newUrl);
 			source.append(src);
-			qDebug()<< "		READER: frontier size "<<  frontier.size() << " source= " <<  src;
+			qDebug()<< "		READER: Adding that to frontier. Frontier Size "<<  frontier.size() << " Current source= " <<  src;
 		}
 		else //αλλιώς μην το βάλεις στην ουρά
 			qDebug() << "		READER: BaseUrl "  <<  baseUrl.toAscii() << " already scanned. Skipping";

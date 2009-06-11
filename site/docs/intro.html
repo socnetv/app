@@ -33,15 +33,21 @@ SocNetV is a work in progress and is being developed in C++ and Qt, an open-sour
 Our primary target platform is Linux, but you can compile and run SocNetV on OS X and Windows as well, as long as you have Qt4 libraries installed. 
 </p>
 
-<h4><a name="Availability" id="Availability"></a>Availability</h4>
-<p class="text">
-The latest version  of  this  program  can  be  found  at  <a href="http://socnetv.sourceforge.net">http://socnetv.sourceforge.net</a>. 
-It  is distributed  both in source code and binary packages for Linux distributions, and Windows. An older version of SocNetV for OS X is also available from third party site.
-</p>
+
 
 <h4><a name="Install" id="Install"></a>Installation</h4>
+
+
 <p class="text">
-To compile SocNetV from source code, you need the Qt4 development libraries installed - most Linux distros offer Qt4 via their package manager (i.e. Synaptic in Ubuntu). 
+The latest version  of  SocNetV  can  be  found  at  <a href="http://socnetv.sourceforge.net">http://socnetv.sourceforge.net</a>. 
+It is distributed  both in source code and binary packages for Linux distributions, and executables for Windows. 
+Mac OS X users may install SocNetV using the Fink project. See instructions below.
+ 
+</p>
+
+<h5><a name="Compile" id="Compile"></a>Source Code Compilation</h5>
+<p class="text">
+In any Linux distribution, to compile SocNetV from source code, you need the Qt4 development libraries installed - most Linux distros offer Qt4 via their package manager (i.e. Synaptic in Ubuntu). 
 You also need QtWebKit development files. For instance, in openSUSE 11+ and Debian-based distros, install libQtWebKit-devel and libqt4-webkit, respectively. 
 
 If you have Qt4 and QtWebKit installed, download the archive with the source code from the <a href="http://socnetv.sourceforge.net/downloads.html">Downloads menu</a>, untar it, enter the new directory, and compile with the following commands:
@@ -57,9 +63,14 @@ sudo make install<br />
 </p>	
 
 <p class="text">
-To avoid compiling, we also offer binary packages for Ubuntu, Debian and openSUSE available from <a href="http://socnetv.sourceforge.net/downloads.html">the project's website</a>.
+In Windows, to compile SocNetV, you need to have installed Qt4 development files, and a compiler, like MinGW. If you wish you can avoid compilation, by using the executables we offer (see below). Please note, that you still need to have Qt4 installed!
+</p>
+<p class="text">
+To avoid compiling in Linux, we also offer binary packages for Ubuntu, Debian and openSUSE available from <a href="http://socnetv.sourceforge.net/downloads.html">the project's website</a>.
 
-<h4><a name="Debian" id="Debian"></a>Debian</h4>
+
+
+<h5><a name="Debian" id="Debian"></a>Debian packages</h5>
 
 <p class="text">
 For Debian &amp; Debian-derived distros, an (not always updated) version of SocNetV is in the 'unstable' repository (thanks to Serafeim Zanikolas). 
@@ -80,7 +91,7 @@ sudo apt-get install socnetv
 
 
 
-<h4><a name="Ubuntu" id="Ubuntu"></a>Ubuntu</h4>
+<h5><a name="Ubuntu" id="Ubuntu"></a>Ubuntu packages</h5>
 <p class="text">
 Ubuntu users may use <a href="https://launchpad.net/~dimitris-kalamaras/+archive/ppa">our repository</a>. 
 All you have to do is add the following lines in your /etc/apt/sources.list file: <br />
@@ -115,7 +126,7 @@ If you want more information about keys and repository signing in Ubuntu, read <
 
 
 
-<h4><a name="openSUSE" id="openSUSE"></a>openSUSE</h4>
+<h5><a name="openSUSE" id="openSUSE"></a>openSUSE packages</h5>
 
 <p class="text">
 For openSUSE and Novell SLED, you may download binary RPM packages from our <a href="http://download.opensuse.org/repositories/home:/oxy86/">our repository</a>. 
@@ -129,7 +140,7 @@ When you download the RPM, become root user and install it, like this:
 
 
 
-<h4><a name="Fedora" id="Fedora"></a>Fedora</h4>
+<h5><a name="Fedora" id="Fedora"></a>Fedora packages</h5>
 
 <p class="text">
 Fedora and RedHat users may download binary RPM packages from our <a href="http://download.opensuse.org/repositories/home:/oxy86/">our repository</a>. 
@@ -143,7 +154,7 @@ Afterwards, become root user and install the package, i.e.:
 
 
 
-<h4><a name="Mandriva" id="Mandriva"></a>Mandriva</h4>
+<h5><a name="Mandriva" id="Mandriva"></a>Mandriva packages</h5>
 
 <p class="text">
 Mandriva users may download binary RPM packages from our <a href="http://download.opensuse.org/repositories/home:/oxy86/">our repository</a>. 
@@ -158,7 +169,7 @@ To install the package, use commands like these:
 
 
 
-<h4><a name="Gentoo" id="Gentoo"></a>Gentoo builders</h4>
+<h5><a name="Gentoo" id="Gentoo"></a>Gentoo builders</h5>
 <p class="text">
 Markos Chandras (<a href="http://hwoarang.silverarrow.gr/?p=193">hwoarang</a>) added SocNetV into the '<a href="http://github.com/gentoo-qt/qting-edge/tree/master">qting-edge</a>' <a href="http://www.gentoo.org/proj/en/overlays/userguide.xml">overlay</a>, which also houses new Qt4 and KDE4 software. To install the qting-edge overlay type in this command:
 </p>
@@ -168,12 +179,23 @@ layman -a qting-edge
 
 
 
-<h4><a name="Windows" id="Windows"></a>Windows XP/Vista</h4>
+<h5><a name="Windows" id="Windows"></a>Windows executables</h5>
 <p class="text">
 
 To run SocNetV in Windows XP/Vista, you need to install <a href="ftp://ftp.trolltech.com/qt/source/qt-win-opensource-4.4.3-mingw.exe">Qt4 libraries for Windows</a>. Then, the latest SocNetV zipped archive for Windows, unzip it, and double-click on the "socnetv" executable. The program will run immediately. Warning: this version is not tested and therefore not supported.
 </p>
 
+
+<h5><a name="Mac" id="Mac"></a>Mac OS installation</h5>
+<p class="text">
+If you are a Mac user, you can install and run SocNetV using the Fink project tools. Fink is like "bringing linux to Mac"! Unfortunately, we don't use Mac, so we don't really know what problems you may encounter. Nevertheless, it seems that SocNetV is in the unstable section of Fink. Therefore, you will need to configure Fink to use the unstable. There are usefull instructions for this here:
+http://www.finkproject.org/faq/usage-fink.php#unstable
+After that, you only need commands like these (I think!):
+<p class="code">
+sudo apt-get update <br />
+sudo apt-get install socnetv
+</p>
+</p>
 
 <h4><a name="Development" id="Development"></a>Development version</h4>
 <p class="text">
