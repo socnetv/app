@@ -42,17 +42,16 @@ protected:
 
 
 class WebCrawler :  public QThread {
-    Q_OBJECT
+	Q_OBJECT
 public:
-    void load(QString seed, int maxRecursion, int maxTime, bool goOut);
+	void load(QString seed, int maxNodes, int maxRecursion, bool goOut);
 signals:
-    void createNode(QString url, int no);
-    void createEdge (int source, int target);
+	void createNode(QString url, int no);
+	void createEdge (int source, int target);
 protected:
-    void run();
+	void run();
 private: 
-    QString url;
-    int maxNodes, num;
-    Reader reader;
+	QString url;
+	Reader reader;
 };
 #endif

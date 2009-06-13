@@ -314,11 +314,11 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 
 	//if the node is being dragged aroung, darken it!
 	if (option->state & QStyle::State_Selected) {
-		qDebug()<< " node : selected ";
+		//qDebug()<< " node : selected ";
 		painter->setBrush(m_col.dark(150));
 	}
 	else if (option->state & QStyle::State_MouseOver) {
-		qDebug()<< " node : mouse over";	
+		//qDebug()<< " node : mouse over";	
 		painter->setBrush(m_col.dark(150));
 		setZValue(255);		
 	}
@@ -328,7 +328,7 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 		//painter->setBrush(m_col_dark.dark(160));
 	//}
  	else { //no, just paint it with the usual color.
- 		qDebug()<< " node : nothing";
+ 		//qDebug()<< " node : nothing";
 		setZValue(254);		
 		painter->setBrush(m_col);
 	}

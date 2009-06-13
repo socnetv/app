@@ -48,7 +48,7 @@ void WebCrawlerDialog::gatherData(){
 	bool goOut=false;
 	QString website = (ui.websiteLineEdit)->text() ;
 	int maxRecursion = (ui.maxRecursionLevelSpinBox) -> value();
-	int maxTime = (ui.maxTimeSpinBox) -> value();
+	int maxNodes = (ui.maxNodesSpinBox) -> value();
 	
 	if ( ui.goOutCheckBox -> isChecked() ) {
 		qDebug()<< "	We will go out of this site... " ;
@@ -59,6 +59,6 @@ void WebCrawlerDialog::gatherData(){
 		goOut = false;
 	}	
 	qDebug()<< "	Website: " << website;  
-	qDebug()<< "	maxRecursion " << maxRecursion << "  maxTime " << maxTime  ;
-	emit userChoices( website ,maxRecursion,  maxTime, goOut );		
+	qDebug()<< "	maxRecursion " << maxRecursion << "  maxNodes " << maxNodes  ;
+	emit userChoices( website, maxNodes, maxRecursion,  goOut );		
 }

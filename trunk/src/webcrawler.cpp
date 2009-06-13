@@ -40,15 +40,18 @@ QVector<int> source;
 QByteArray ba;
 QWaitCondition newDataRead;
 QMutex mutex;
+QString domain="", previous_domain="", path="";
+int maxNodes, num, maxRecursion;
+bool goOut=false;
 
-
-
-void WebCrawler::load (QString seed, int maxRecursion, int maxTime, bool goOut){ 
+void WebCrawler::load (QString seed, int mxNodes, int mxRecursion, bool gOut){ 
 
 	if (seed.contains(" "))		//urls can't have spaces... 
 		return; 
 	
-	maxNodes=maxRecursion;		//maxnodes we'll check
+	maxNodes=mxNodes;		//maxnodes we'll check
+	maxRecursion = mxRecursion;
+	goOut = gOut; 
 	frontier.enqueue(seed);		//put the seed to a queue
 	num=1;						//start at node 1	
 	source.append(num);			//append num to the source vector, holding page index
@@ -67,9 +70,18 @@ void WebCrawler::load (QString seed, int maxRecursion, int maxTime, bool goOut){
 
 
 void WebCrawler::run(){
-	QString domain, path; 
-	do{ 	//until we reach maxRecursion=maxNodes level.
+	int index;
+	do{ 	//until we reach maxNodes.
 		
+		if (frontier.size() ==0 ) {		
+			break;
+		}
+			
+
+		if ( maxRecursion  == 0 ) {	
+			break;
+		}
+
 		baseUrl = frontier.head();	//take the first url from the frontier : this is our baseUrl
 		qDebug()<< "			Creating node " << num << " label " << baseUrl;
 		emit createNode(baseUrl, num);
@@ -84,7 +96,7 @@ void WebCrawler::run(){
 		if (baseUrl.contains ("http://" ) ) 
 				baseUrl=baseUrl.remove ("http://");
 		qDebug() << "			Now, I will start scanning " <<  baseUrl.toAscii();	
-		int index;
+
 		//break baseUrl, if needed, to domain and page.
 		if ( (index=baseUrl.indexOf ("/")) !=-1 ) {
 			domain = baseUrl.left(index);
@@ -96,9 +108,21 @@ void WebCrawler::run(){
 		}
 		else { 
 			qDebug() << " 			clean domain detected " << baseUrl.toAscii();
-			http->setHost(baseUrl); 		
+			domain = baseUrl;
+			http->setHost(domain); 		
 			http->get("/"); 
 		}
+		
+		if (num>1  && domain != previous_domain) {
+			maxRecursion --; 
+			qDebug () << 			"**** NEW DOMAIN - DECREASING RECURSION DEPTH INDEX TO " << maxRecursion   ;
+
+		}
+		else {
+			qDebug () << 			"**** SAME DOMAIN - RECURSION DEPTH INDEX IS THE SAME" << maxRecursion ;
+			
+		}
+   
 		//lock mutex
 		mutex.lock();
 		qDebug() << "			ZZzz We should wait a bit...";
@@ -112,10 +136,14 @@ void WebCrawler::run(){
 		qDebug () <<"				Increase num";
 		num++;
 		frontier.dequeue();			//Dequeue head
-		qDebug () <<"				if frontier is empty, break recursion " <<frontier.size()  ; 
-		if (frontier.size() ==0 ) break;
+		qDebug () <<"				if frontier is empty, break recursion " <<frontier.size()  ;
 
+		previous_domain = domain;		//set previous domain
+			
 	} while ( maxNodes>0 );
+
+	if (reader.isRunning() )		//tell the other thread that we must quit! 
+		reader.quit();
 	qDebug() << "			Finished!";
 }
 
