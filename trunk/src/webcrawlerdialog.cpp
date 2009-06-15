@@ -38,6 +38,7 @@ WebCrawlerDialog::WebCrawlerDialog(QWidget *parent) : QDialog (parent)
 	(ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
 	
 	(ui.goOutCheckBox)-> setChecked(true);
+	(ui.websiteLineEdit)->setFocus();
 	
 }
 

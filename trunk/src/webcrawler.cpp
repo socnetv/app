@@ -40,9 +40,9 @@ QVector<int> source;
 QByteArray ba;
 QWaitCondition newDataRead;
 QMutex mutex;
-QString domain="", previous_domain="", path="";
+QString domain="", previous_domain="", path="", urlPrefix="";
 int maxNodes, num, maxRecursion;
-bool goOut=false;
+bool goOut=false, hasUrlPrefix=false;
 
 void WebCrawler::load (QString seed, int mxNodes, int mxRecursion, bool gOut){ 
 
@@ -70,77 +70,95 @@ void WebCrawler::load (QString seed, int mxNodes, int mxRecursion, bool gOut){
 
 
 void WebCrawler::run(){
-	int index;
+	int index, second_index;
 	do{ 	//until we reach maxNodes.
-		
+
+
+
 		if (frontier.size() ==0 ) {		
+			qDebug () <<"		WebCrawler #### Frontier is empty: " <<frontier.size() << " - we will stop now "  ;			
 			break;
 		}
 			
 
-		if ( maxRecursion  == 0 ) {	
+		if ( maxRecursion  == 0 ) {
+			qDebug () <<"		WebCrawler #### Reached maxRecursion: " <<maxRecursion << " - we will stop now "  ;	
 			break;
 		}
 
 		baseUrl = frontier.head();	//take the first url from the frontier : this is our baseUrl
-		qDebug()<< "			Creating node " << num << " label " << baseUrl;
+		qDebug()<< "		WebCrawler: Creating node " << num << " with label " << baseUrl;
 		emit createNode(baseUrl, num);
+		
 		if (num>1) {
 			//if ain't the 1st node, then create an edge from the previous node.  
-			qDebug()<< "			Creating edge from " << source[num-1] << " -> " <<  num;
+			qDebug()<< "		WebCrawler: Creating edge from " << source[num-1] << " -> " <<  num;
 			//source vector holds the index of the page where this url was found.
 			emit createEdge (source[num-1], num); 
 		}
-		qDebug() << "			Nodes now: " << num;
-		//If baseUrl includes http, erase it.
-		if (baseUrl.contains ("http://" ) ) 
-				baseUrl=baseUrl.remove ("http://");
-		qDebug() << "			Now, I will start scanning " <<  baseUrl.toAscii();	
 
-		//break baseUrl, if needed, to domain and page.
-		if ( (index=baseUrl.indexOf ("/")) !=-1 ) {
-			domain = baseUrl.left(index);
-			qDebug() << "			Host domain: "<<  domain.toAscii();
-			path = baseUrl.remove(0, index);
-			qDebug() << "			Webpage to get: "<<  path.toAscii() ;
-			http->setHost( domain ); 		
-			http->get( path ); 
+		//If baseUrl includes http, erase it.
+		if (baseUrl.contains ("http://" ) ) {
+				qDebug() << "		WebCrawler: external baseUrl detected: "<<baseUrl << " Removing http:// and setting this as get token"; 
+				baseUrl=baseUrl.remove ("http://");
+				if ( (index=baseUrl.indexOf ("/")) !=-1 ) { //break baseUrl, if needed, to domain and page.
+					domain = baseUrl.left(index);
+					qDebug() << "		WebCrawler: Host domain: "<<  domain.toAscii();
+					path = baseUrl.remove(0, index);
+					qDebug() << "		WebCrawler: Webpage to get: "<<  path.toAscii() ;
+					http->setHost( domain ); 		
+					http->get( path ); 
+					if ( (second_index=path.lastIndexOf ("/")) !=-1 ){
+						urlPrefix = path.left(second_index);
+						hasUrlPrefix=true;
+						qDebug() << "		WebCrawler: urlPrefix: "<<  urlPrefix.toAscii() ;
+					}
+				}
 		}
-		else { 
-			qDebug() << " 			clean domain detected " << baseUrl.toAscii();
-			domain = baseUrl;
-			http->setHost(domain); 		
-			http->get("/"); 
+		else {
+			qDebug() << "		WebCrawler: internal domain detected " << baseUrl.toAscii() << " I will use previous domain "<< domain.toAscii();
+				//domain = baseUrl;
+				http->setHost(previous_domain); 		
+				http->get(baseUrl); 
 		}
 		
 		if (num>1  && domain != previous_domain) {
 			maxRecursion --; 
-			qDebug () << 			"**** NEW DOMAIN - DECREASING RECURSION DEPTH INDEX TO " << maxRecursion   ;
+			qDebug () << 		"**** NEW DOMAIN - DECREASING RECURSION DEPTH INDEX TO " << maxRecursion   ;
 
 		}
 		else {
-			qDebug () << 			"**** SAME DOMAIN - RECURSION DEPTH INDEX IS THE SAME" << maxRecursion ;
+			qDebug () << 		"**** SAME DOMAIN - RECURSION DEPTH INDEX IS THE SAME" << maxRecursion ;
 			
 		}
    
 		//lock mutex
 		mutex.lock();
-		qDebug() << "			ZZzz We should wait a bit...";
+		qDebug() << "		WebCrawler: ZZzz We should wait a bit...";
 		//Thread goes to sleep to protect all variables (locked by mutex). 
 		newDataRead.wait(&mutex);
 		//Unlock it
 		mutex.unlock();
-		qDebug () <<"				OK. Waking up to continue: frontier size = " << frontier.size();
-		qDebug () <<"				Decrease maxnodes";
-		maxNodes--;
-		qDebug () <<"				Increase num";
+		qDebug () <<"		WebCrawler: OK. Waking up to continue: frontier size = " << frontier.size();
+
+		if (maxNodes>0) {
+			qDebug () <<"		WebCrawler: Decrease maxnodes";
+			--maxNodes;
+			if (maxNodes == 0) {
+				qDebug () <<"		WebCrawler: OOOops! Seems we have reached maxnodes! Returning";
+				break;
+			}
+				
+		}
+
+
+		qDebug () <<"				Increase num, dequeuing frontier and setting previous domain to domain";
 		num++;
 		frontier.dequeue();			//Dequeue head
-		qDebug () <<"				if frontier is empty, break recursion " <<frontier.size()  ;
 
 		previous_domain = domain;		//set previous domain
 			
-	} while ( maxNodes>0 );
+	} while ( 1 ); 
 
 	if (reader.isRunning() )		//tell the other thread that we must quit! 
 		reader.quit();
@@ -170,31 +188,31 @@ void Reader::load(){
  * Then we parse the page string, searching for url substrings. 
  */ 
 void Reader::run(){
-    qDebug()  << "		READER: read something!";	
+    qDebug()  << "			READER: read something!";	
     QString newUrl;
     int start=-1, end=-1, equal=-1;
     ba=http->readAll(); 
     QString page(ba);
-    qDebug()  << "		"<< page.toAscii();
+    //qDebug()  << "		"<< page.toAscii();
     int src=source.size();
-    //if a href doesnt exist, return   
-    if (!page.contains ("a href"))  {
-		 qDebug() << "		READER: Empty or not usefull data from " << baseUrl.toAscii();
+
+    if (!page.contains ("a href"))  { //if a href doesnt exist, return   
+		 qDebug() << "			READER: Empty or not usefull data from " << baseUrl.toAscii();
 		 newDataRead.wakeAll();
 		 return;
     }
     mutex.lock();    
-    //as long there is a href in the page...
-    while (page.contains("a href")) {
+
+    while (page.contains("href")) {	//as long there is a href in the page...
 		page=page.simplified();
-		//Find its pos
-		start=page.indexOf ("a href");
+
+		start=page.indexOf ("href");				//Find its pos
 		page = page.remove(0, start);
-		qDebug() << "		READER: New Url??? : " << page.left(20);
+//		qDebug() << "			READER: New Url??? : " << page.left(20);
 		equal=page.indexOf ("=");
-		//Erase everything up to =
-		page = page.remove(0, equal+1); 
-		qDebug() << "		READER: New Url??? : " << page.left(20);
+
+		page = page.remove(0, equal+1);				//Erase everything up to = 
+		//qDebug() << "			READER: New Url??? : " << page.left(20);
 		if (page.startsWith("\"") ) {
 			page.remove(0,1);
 			end=page.indexOf ("\"");
@@ -207,20 +225,20 @@ void Reader::run(){
 			//end=page.indexOf ("\'");
 		}
 		
-		//Save new url to newUrl :)
-		newUrl=page.left(end);
-		newUrl=newUrl.simplified();
-		//Print it
 
-		qDebug() << "		READER: NewUrl =" << newUrl.toAscii() << ".";
-		//Αν δεν το έχουμε βρει ήδη...
-		if (!frontier.contains (newUrl) ) {
+		newUrl=page.left(end);			//Save new url to newUrl :)
+		newUrl=newUrl.simplified();
+		
+
+		qDebug() << "			READER: *** NewUrl =" << newUrl.toAscii() << ".";	//Print it
+		
+		if (!frontier.contains (newUrl) ) {	//If this is the first time visiting this url, add it to frontier...
 			frontier.enqueue(newUrl);
 			source.append(src);
-			qDebug()<< "		READER: Adding that to frontier. Frontier Size "<<  frontier.size() << " Current source= " <<  src;
+			qDebug()<< "			READER: Adding NewUrl to frontier. Frontier Size "<<  frontier.size() << " Current source= " <<  src;
 		}
-		else //αλλιώς μην το βάλεις στην ουρά
-			qDebug() << "		READER: BaseUrl "  <<  baseUrl.toAscii() << " already scanned. Skipping";
+		else //else dont do nothing!
+			qDebug() << "			READER: BaseUrl "  <<  baseUrl.toAscii() << " already scanned. Skipping";
 	}
 	newDataRead.wakeAll();
 	mutex.unlock();

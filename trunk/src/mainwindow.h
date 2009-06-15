@@ -136,6 +136,7 @@ public slots:
 	void slotCreateSmallWorldRandomNetwork();
 	
 	void slotShowWebCrawlerDialog();
+	void slotWebCrawl(QString, int, int, bool);
 	
 	//EDIT MENU
 	void slotFindNode();

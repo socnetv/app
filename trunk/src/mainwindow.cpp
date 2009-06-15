@@ -180,7 +180,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
 			&activeGraph, SLOT( filterEdgesByWeight (float, bool) ) );
 
 	connect( &m_WebCrawlerDialog, SIGNAL( userChoices( QString, int, int, bool)  ), 
-			&activeGraph, SLOT(  webCrawl( QString, int, int, bool) ) );
+			this, SLOT(  webCrawl( QString, int, int, bool) ) );
 
 
 	connect( &activeGraph, SIGNAL( setEdgeVisibility ( int, int, bool) ), 
@@ -2655,7 +2655,7 @@ void MainWindow::slotCreateRandomNetRingLattice(){
 void MainWindow::slotShowWebCrawlerDialog() {
 	qDebug () << "MW: slotShowWebCrawlerDialog() - sending canvasWidth and Height";
 	activeGraph.setCanvasDimensions(graphicsWidget->width(), graphicsWidget->height());
-	
+
 	m_WebCrawlerDialog.exec() ;
 }
 
@@ -2663,6 +2663,16 @@ void MainWindow::slotShowWebCrawlerDialog() {
 
 
 
+
+/**
+*	Called from m_WebCrawlerDialog
+*   Clears the loaded network (saving if needed)    
+*	then passes parameters to webCrawl of ActiveGraph class.  
+*/ 
+void MainWindow::slotWebCrawl(QString  seed, int maxNodes, int maxRecursion,  bool goOut ) {
+	this->slotFileClose();
+	activeGraph.webCrawl( seed, maxNodes, maxRecursion,  goOut ) ;
+}
 
 
 
@@ -5397,7 +5407,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Sat Jun 13 19:09:59 EEST 2009";
+QString BUILD="Tue Jun 16 01:47:21 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"
