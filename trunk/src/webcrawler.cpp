@@ -34,13 +34,12 @@
 #include <QWaitCondition>
 
 QHttp *http;
-QString baseUrl;
 QQueue<QString> frontier;
 QVector<int> source;
 QByteArray ba;
 QWaitCondition newDataRead;
 QMutex mutex;
-QString domain="", previous_domain="", path="", urlPrefix="";
+QString baseUrl="", domain="", previous_domain="", path="", urlPrefix="";
 int maxNodes, num, maxRecursion;
 bool goOut=false, hasUrlPrefix=false;
 
@@ -48,10 +47,17 @@ void WebCrawler::load (QString seed, int mxNodes, int mxRecursion, bool gOut){
 
 	if (seed.contains(" "))		//urls can't have spaces... 
 		return; 
-	
+
 	maxNodes=mxNodes;		//maxnodes we'll check
 	maxRecursion = mxRecursion;
 	goOut = gOut; 
+
+	//clear global variables	
+	frontier.clear();
+	source.clear();
+	baseUrl="", domain="", previous_domain="", path="", urlPrefix="";
+	
+	//add our seed to frontier.
 	frontier.enqueue(seed);		//put the seed to a queue
 	num=1;						//start at node 1	
 	source.append(num);			//append num to the source vector, holding page index
