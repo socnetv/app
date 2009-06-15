@@ -180,7 +180,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
 			&activeGraph, SLOT( filterEdgesByWeight (float, bool) ) );
 
 	connect( &m_WebCrawlerDialog, SIGNAL( userChoices( QString, int, int, bool)  ), 
-			this, SLOT(  webCrawl( QString, int, int, bool) ) );
+			this, SLOT(  slotWebCrawl( QString, int, int, bool) ) );
 
 
 	connect( &activeGraph, SIGNAL( setEdgeVisibility ( int, int, bool) ), 
