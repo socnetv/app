@@ -39,17 +39,18 @@ QVector<int> source;
 QByteArray ba;
 QWaitCondition newDataRead;
 QMutex mutex;
-QString baseUrl="", domain="", previous_domain="", path="", urlPrefix="";
+QString baseUrl="", seed="", domain="", seed_domain = "", previous_domain="", path="", urlPrefix="";
 int maxNodes, num, maxRecursion;
 bool goOut=false, hasUrlPrefix=false;
 
-void WebCrawler::load (QString seed, int mxNodes, int mxRecursion, bool gOut){ 
+void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){ 
 
 	if (seed.contains(" "))		//urls can't have spaces... 
 		return; 
 
-	maxNodes=mxNodes;		//maxnodes we'll check
-	maxRecursion = mxRecursion;
+	seed=url;
+	maxNodes=maxN;		//maxnodes we'll check
+	maxRecursion = maxRec;
 	goOut = gOut; 
 
 	//clear global variables	
@@ -57,8 +58,7 @@ void WebCrawler::load (QString seed, int mxNodes, int mxRecursion, bool gOut){
 	source.clear();
 	baseUrl="", domain="", previous_domain="", path="", urlPrefix="";
 	
-	//add our seed to frontier.
-	frontier.enqueue(seed);		//put the seed to a queue
+	frontier.enqueue(seed);		//queue the seed to frontier
 	num=1;						//start at node 1	
 	source.append(num);			//append num to the source vector, holding page index
 	http = new QHttp(this); 	
@@ -120,6 +120,13 @@ void WebCrawler::run(){
 						qDebug() << "		WebCrawler: urlPrefix: "<<  urlPrefix.toAscii() ;
 					}
 				}
+				else {
+					qDebug() << "		WebCrawler: Host domain is the url: " << baseUrl.toAscii() << " I' ll just get /...";
+					domain = baseUrl;
+					http->setHost(domain); 		
+					http->get("/"); 
+				}
+
 		}
 		else {
 			qDebug() << "		WebCrawler: internal domain detected " << baseUrl.toAscii() << " I will use previous domain "<< domain.toAscii();
@@ -132,6 +139,9 @@ void WebCrawler::run(){
 			maxRecursion --; 
 			qDebug () << 		"**** NEW DOMAIN - DECREASING RECURSION DEPTH INDEX TO " << maxRecursion   ;
 
+		}
+		else if (num==1) {
+			seed_domain = domain;
 		}
 		else {
 			qDebug () << 		"**** SAME DOMAIN - RECURSION DEPTH INDEX IS THE SAME" << maxRecursion ;
@@ -194,31 +204,33 @@ void Reader::load(){
  * Then we parse the page string, searching for url substrings. 
  */ 
 void Reader::run(){
-    qDebug()  << "			READER: read something!";	
-    QString newUrl;
-    int start=-1, end=-1, equal=-1;
-    ba=http->readAll(); 
-    QString page(ba);
-    //qDebug()  << "		"<< page.toAscii();
-    int src=source.size();
+	qDebug()  << "			READER: read something!";	
+	QString newUrl;
+	int start=-1, end=-1, equal=-1;
+	ba=http->readAll(); 
+	QString page(ba);
+	//qDebug()  << "		"<< page.toAscii();
+	int src=source.size();
 
-    if (!page.contains ("a href"))  { //if a href doesnt exist, return   
-		 qDebug() << "			READER: Empty or not usefull data from " << baseUrl.toAscii();
+	if (!page.contains ("a href"))  { //if a href doesnt exist, return   
+		 qDebug() << "			READER: ### Empty or not usefull data from " << baseUrl.toAscii() << " RETURN";
 		 newDataRead.wakeAll();
 		 return;
-    }
-    mutex.lock();    
+	}
+	mutex.lock(); 
 
-    while (page.contains("href")) {	//as long there is a href in the page...
-		page=page.simplified();
+	while (page.contains("href")) {	//as long there is a href in the page...
+		page=page.simplified();		// remove whitespace from the start and the end - all whitespace sequence becomes single space
 
-		start=page.indexOf ("href");				//Find its pos
-		page = page.remove(0, start);
-//		qDebug() << "			READER: New Url??? : " << page.left(20);
-		equal=page.indexOf ("=");
+		start=page.indexOf ("href");		//Find its pos
 
-		page = page.remove(0, equal+1);				//Erase everything up to = 
+		page = page.remove(0, start);		//erase everything up to href
+
+		equal=page.indexOf ("=");			// Find next equal sign (=)
+
+		page = page.remove(0, equal+1);		//Erase everything up to = 
 		//qDebug() << "			READER: New Url??? : " << page.left(20);
+
 		if (page.startsWith("\"") ) {
 			page.remove(0,1);
 			end=page.indexOf ("\"");
@@ -231,20 +243,25 @@ void Reader::run(){
 			//end=page.indexOf ("\'");
 		}
 		
-
 		newUrl=page.left(end);			//Save new url to newUrl :)
 		newUrl=newUrl.simplified();
 		
-
-		qDebug() << "			READER: *** NewUrl =" << newUrl.toAscii() << ".";	//Print it
-		
 		if (!frontier.contains (newUrl) ) {	//If this is the first time visiting this url, add it to frontier...
-			frontier.enqueue(newUrl);
-			source.append(src);
-			qDebug()<< "			READER: Adding NewUrl to frontier. Frontier Size "<<  frontier.size() << " Current source= " <<  src;
+
+			if ( !goOut &&  !newUrl.contains( seed_domain, Qt::CaseInsensitive)  && !newUrl.contains( urlPrefix , Qt::CaseInsensitive)   ) {
+				  	qDebug()<< "			READER: newUrl "  <<  newUrl.toAscii() 
+				  		<< " is outside the original domain. Skipping...";
+			}
+			else {
+				frontier.enqueue(newUrl);
+				source.append(src);
+				qDebug()<< "			READER: newUrl "  <<  newUrl.toAscii() 
+							<<  " first time visited. Frontier size: "<<  frontier.size() << " - source: " <<  src;				
+			}
 		}
 		else //else dont do nothing!
-			qDebug() << "			READER: BaseUrl "  <<  baseUrl.toAscii() << " already scanned. Skipping";
+			qDebug() << "			READER: newUrl "  <<  newUrl.toAscii() << " already scanned. Skipping.";
+
 	}
 	newDataRead.wakeAll();
 	mutex.unlock();
