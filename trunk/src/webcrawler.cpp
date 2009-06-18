@@ -35,8 +35,8 @@
 
 QHttp *http;
 QQueue<QString> frontier;
-QVector<int> source;
 QMap <int, int> sourceMap;
+QMap <QString, bool> checkedMap;
 QByteArray ba;
 QWaitCondition newDataRead;
 QMutex mutex;
@@ -56,13 +56,12 @@ void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){
 
 	//clear global variables	
 	frontier.clear();
-	source.clear();
 	sourceMap.clear();
+	checkedMap.clear();
 	baseUrl="", domain="", previous_domain="", path="", urlPrefix="";
 	
 	frontier.enqueue(seed);		//queue the seed to frontier
 	currentNode=1;						//start at node 1	
-	source.append(currentNode);			//append currentNode to the source vector, holding page index
 	discoveredNodes = 1;
 	
 	http = new QHttp(this); 	
@@ -81,59 +80,94 @@ void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){
 
 void WebCrawler::run(){
 	int pos, second_pos;
-	do{ 	//until we reach maxNodes.
+	do{ 	//repeat until we reach maxNodes.
 
-		if (frontier.size() ==0 ) {		
+		if (frontier.size() ==0 ) { 	//or until we reach frontier's end.		
 			qDebug () <<"		WebCrawler #### Frontier is empty: " <<frontier.size() << " - we will stop now "  ;			
 			break;
 		}
 			
-		if ( maxRecursion  == 0 ) {
+		if ( maxRecursion  == 0 ) { 	//or until we reach maxRecursion
 			qDebug () <<"		WebCrawler #### Reached maxRecursion: " <<maxRecursion << " - we will stop now "  ;	
 			break;
 		}
 
 		baseUrl = frontier.head();	//take the first url from the frontier : this is our baseUrl
-		qDebug()<< "		WebCrawler: Creating node " << currentNode << " with label " << baseUrl;
+		qDebug()<< "		WebCrawler: Creating node " << currentNode << " with label this baselUrl " << baseUrl;
 		emit createNode(baseUrl, currentNode);
-		
-		if (currentNode>1) {
-			//if ain't the 1st node, then create an edge from the previous node.  
-			qDebug()<< "		WebCrawler: Creating edge from " << sourceMap [ currentNode ] << " -> " <<  currentNode;
+
+		if (currentNode>1) {	//if ain't the 1st node, then create an edge from the previous node.
+  			qDebug()<< "		WebCrawler: Creating edge from " << sourceMap [ currentNode ] 
+  					<< " -> " <<  currentNode;
 			//source vector holds the index of the page where this url was found.
 			emit createEdge (sourceMap [ currentNode ], currentNode); 
 		}
 
-		//If baseUrl includes http, erase it.
-		if (baseUrl.contains ("http://" ) ) {
-				qDebug() << "		WebCrawler: external baseUrl detected: "<<baseUrl << " Removing http:// and setting this as get token"; 
-				baseUrl=baseUrl.remove ("http://");
-				if ( (pos=baseUrl.indexOf ("/")) !=-1 ) { //break baseUrl, if needed, to domain and page.
-					domain = baseUrl.left(pos);
-					qDebug() << "		WebCrawler: Host domain: "<<  domain.toAscii();
-					path = baseUrl.remove(0, pos);
-					qDebug() << "		WebCrawler: Webpage to get: "<<  path.toAscii() ;
-					http->setHost( domain ); 		
-					http->get( path ); 
-					if ( (second_pos=path.lastIndexOf ("/")) !=-1 ){
-						urlPrefix = path.left(second_pos);
-						hasUrlPrefix=true;
-						qDebug() << "		WebCrawler: urlPrefix: "<<  urlPrefix.toAscii() ;
+		
+		if ( ! checkedMap[baseUrl] ){
+			checkedMap[baseUrl]=true;
+			if (baseUrl.contains ("http://" ) ) {	//If baseUrl contains http, it is external, erase http and parse the rest.
+					qDebug() << "		WebCrawler: external baseUrl detected: "<<baseUrl 
+							<< " Removing http:// and setting this as get token"; 
+					baseUrl=baseUrl.remove ("http://");
+					if ( (pos=baseUrl.indexOf ("/")) !=-1 ) { //break baseUrl, if needed, to domain and page.
+						domain = baseUrl.left(pos);
+						qDebug() << "		WebCrawler: Host domain: "<<  domain.toAscii();
+						path = baseUrl.remove(0, pos);
+						qDebug() << "		WebCrawler: Webpage to get: "<<  path.toAscii() ;
+						http->setHost( domain ); 		
+						http->get( path );
+						 
+						if ( (second_pos=path.lastIndexOf ("/")) !=-1 ){
+							urlPrefix = path.left(second_pos);
+							hasUrlPrefix=true;
+							qDebug() << "		WebCrawler: urlPrefix: "<<  urlPrefix.toAscii() ;
+						}
 					}
-				}
-				else {
-					qDebug() << "		WebCrawler: Host domain is the url: " << baseUrl.toAscii() << " I' ll just get /...";
-					domain = baseUrl;
-					http->setHost(domain); 		
-					http->get("/"); 
-				}
-
+					else {
+						qDebug() << "		WebCrawler: Host domain is the url: " << baseUrl.toAscii() << " I' ll just get /...";
+						domain = baseUrl;
+						http->setHost(domain); 		
+						http->get("/"); 
+					}
+	
+			}
+			else {
+					if (currentNode==1) {
+						if ( (pos=baseUrl.indexOf ("/")) !=-1 ) {
+							domain = baseUrl.left(pos);
+							qDebug() << "		WebCrawler: Initial Host domain: "<<  domain.toAscii();
+							path = baseUrl.remove(0, pos);
+							qDebug() << "		WebCrawler: Initial Webpage to get: "<<  path.toAscii() ;
+							http->setHost( domain ); 		
+							http->get( path ); 
+						}
+						else {
+							qDebug() << "		WebCrawler: Initial url: " << baseUrl.toAscii() << " I' ll just get /...";
+							domain = baseUrl;
+							http->setHost(domain); 		
+							http->get("/"); 					
+						}
+					}
+					else {
+						qDebug() << "		WebCrawler: internal url detected " << baseUrl.toAscii() << " I will use previous domain "<< domain.toAscii();
+						if (baseUrl.startsWith('.', Qt::CaseInsensitive) ) 
+							baseUrl=baseUrl.remove(0, 1);
+						else if (!baseUrl.startsWith('/',  Qt::CaseInsensitive) ) {
+							baseUrl = "/"+baseUrl;
+							qDebug() << " adding / to baseUrl " << baseUrl;
+						}
+								
+						http->setHost(previous_domain); 		
+						http->get(baseUrl); 
+					}
+			}
+			
 		}
-		else {
-			qDebug() << "		WebCrawler: internal domain detected " << baseUrl.toAscii() << " I will use previous domain "<< domain.toAscii();
-				//domain = baseUrl;
-				http->setHost(previous_domain); 		
-				http->get(baseUrl); 
+		else { //else dont do nothing!
+			qDebug() << "		WebCrawler: baseUrl "  <<  baseUrl.toAscii() << " already scanned. Skipping.";
+			frontier.dequeue();			//Dequeue head
+			continue;
 		}
 		
 		if (currentNode>1  && domain != previous_domain) {
@@ -247,7 +281,7 @@ void Reader::run(){
 		newUrl=page.left(end);			//Save new url to newUrl :)
 		newUrl=newUrl.simplified();
 		
-		if (!frontier.contains (newUrl) ) {	//If this is the first time visiting this url, add it to frontier...
+		//if ( frontier.indexOf(newUrl) ==-1  ||  frontier.indexOf(newUrl)   ) {	//If this is the first time visiting this url, add it to frontier...
 
 			if ( newUrl.contains("http://", Qt::CaseInsensitive) ) {	//if this is an absolute url
 				if ( !goOut &&  !newUrl.contains( seed_domain, Qt::CaseInsensitive)  && 
@@ -266,15 +300,14 @@ void Reader::run(){
 			}
 			else {
 				frontier.enqueue(newUrl);
-				//source.append(src);
 				discoveredNodes++;
 				sourceMap[ discoveredNodes ] = currentNode;
 				qDebug()<< "			READER: non-absolute newUrl "  <<  newUrl.toAscii() 
 							<<  " first time visited. Frontier size: "<<  frontier.size() << " = discoveredNodes: " <<discoveredNodes<<  " - source: " <<  sourceMap[ discoveredNodes ];
 			}
-		}
-		else //else dont do nothing!
-			qDebug() << "			READER: newUrl "  <<  newUrl.toAscii() << " already scanned. Skipping.";
+		//}
+		//else //else dont do nothing!
+		//	qDebug() << "			READER: newUrl "  <<  newUrl.toAscii() << " already scanned. Skipping.";
 
 	}
 	newDataRead.wakeAll();
