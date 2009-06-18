@@ -248,15 +248,25 @@ void Reader::run(){
 		
 		if (!frontier.contains (newUrl) ) {	//If this is the first time visiting this url, add it to frontier...
 
-			if ( !goOut &&  !newUrl.contains( seed_domain, Qt::CaseInsensitive)  && !newUrl.contains( urlPrefix , Qt::CaseInsensitive)   ) {
-				  	qDebug()<< "			READER: newUrl "  <<  newUrl.toAscii() 
-				  		<< " is outside the original domain. Skipping...";
+			if ( newUrl.contains("http://", Qt::CaseInsensitive) ) {	//if this is an absolute url
+				if ( !goOut &&  !newUrl.contains( seed_domain, Qt::CaseInsensitive)  && 
+						!newUrl.contains( urlPrefix , Qt::CaseInsensitive)   ) {
+					  	qDebug()<< "			READER: absolute newUrl "  <<  newUrl.toAscii() 
+					  		<< " is outside the original domain. Skipping...";
+				}
+				else {
+					frontier.enqueue(newUrl);
+					source.append(src);
+					qDebug()<< "			READER: absolute newUrl "  <<  newUrl.toAscii() 
+								<<  " first time visited. Frontier size: "<<  frontier.size() << " - source: " <<  src;				
+				}
+	
 			}
 			else {
 				frontier.enqueue(newUrl);
 				source.append(src);
-				qDebug()<< "			READER: newUrl "  <<  newUrl.toAscii() 
-							<<  " first time visited. Frontier size: "<<  frontier.size() << " - source: " <<  src;				
+				qDebug()<< "			READER: non-absolute newUrl "  <<  newUrl.toAscii() 
+							<<  " first time visited. Frontier size: "<<  frontier.size() << " - source: " <<  src;
 			}
 		}
 		else //else dont do nothing!
