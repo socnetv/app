@@ -36,11 +36,12 @@
 QHttp *http;
 QQueue<QString> frontier;
 QVector<int> source;
+QMap <int, int> sourceMap;
 QByteArray ba;
 QWaitCondition newDataRead;
 QMutex mutex;
 QString baseUrl="", seed="", domain="", seed_domain = "", previous_domain="", path="", urlPrefix="";
-int maxNodes, num, maxRecursion;
+int maxNodes, discoveredNodes=0, currentNode, maxRecursion;
 bool goOut=false, hasUrlPrefix=false;
 
 void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){ 
@@ -56,11 +57,14 @@ void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){
 	//clear global variables	
 	frontier.clear();
 	source.clear();
+	sourceMap.clear();
 	baseUrl="", domain="", previous_domain="", path="", urlPrefix="";
 	
 	frontier.enqueue(seed);		//queue the seed to frontier
-	num=1;						//start at node 1	
-	source.append(num);			//append num to the source vector, holding page index
+	currentNode=1;						//start at node 1	
+	source.append(currentNode);			//append currentNode to the source vector, holding page index
+	discoveredNodes = 1;
+	
 	http = new QHttp(this); 	
 	
 	//connect done() signal of http to load() of 2ond Reader class
@@ -76,46 +80,43 @@ void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){
 
 
 void WebCrawler::run(){
-	int index, second_index;
+	int pos, second_pos;
 	do{ 	//until we reach maxNodes.
-
-
 
 		if (frontier.size() ==0 ) {		
 			qDebug () <<"		WebCrawler #### Frontier is empty: " <<frontier.size() << " - we will stop now "  ;			
 			break;
 		}
 			
-
 		if ( maxRecursion  == 0 ) {
 			qDebug () <<"		WebCrawler #### Reached maxRecursion: " <<maxRecursion << " - we will stop now "  ;	
 			break;
 		}
 
 		baseUrl = frontier.head();	//take the first url from the frontier : this is our baseUrl
-		qDebug()<< "		WebCrawler: Creating node " << num << " with label " << baseUrl;
-		emit createNode(baseUrl, num);
+		qDebug()<< "		WebCrawler: Creating node " << currentNode << " with label " << baseUrl;
+		emit createNode(baseUrl, currentNode);
 		
-		if (num>1) {
+		if (currentNode>1) {
 			//if ain't the 1st node, then create an edge from the previous node.  
-			qDebug()<< "		WebCrawler: Creating edge from " << source[num-1] << " -> " <<  num;
+			qDebug()<< "		WebCrawler: Creating edge from " << sourceMap [ currentNode ] << " -> " <<  currentNode;
 			//source vector holds the index of the page where this url was found.
-			emit createEdge (source[num-1], num); 
+			emit createEdge (sourceMap [ currentNode ], currentNode); 
 		}
 
 		//If baseUrl includes http, erase it.
 		if (baseUrl.contains ("http://" ) ) {
 				qDebug() << "		WebCrawler: external baseUrl detected: "<<baseUrl << " Removing http:// and setting this as get token"; 
 				baseUrl=baseUrl.remove ("http://");
-				if ( (index=baseUrl.indexOf ("/")) !=-1 ) { //break baseUrl, if needed, to domain and page.
-					domain = baseUrl.left(index);
+				if ( (pos=baseUrl.indexOf ("/")) !=-1 ) { //break baseUrl, if needed, to domain and page.
+					domain = baseUrl.left(pos);
 					qDebug() << "		WebCrawler: Host domain: "<<  domain.toAscii();
-					path = baseUrl.remove(0, index);
+					path = baseUrl.remove(0, pos);
 					qDebug() << "		WebCrawler: Webpage to get: "<<  path.toAscii() ;
 					http->setHost( domain ); 		
 					http->get( path ); 
-					if ( (second_index=path.lastIndexOf ("/")) !=-1 ){
-						urlPrefix = path.left(second_index);
+					if ( (second_pos=path.lastIndexOf ("/")) !=-1 ){
+						urlPrefix = path.left(second_pos);
 						hasUrlPrefix=true;
 						qDebug() << "		WebCrawler: urlPrefix: "<<  urlPrefix.toAscii() ;
 					}
@@ -135,12 +136,12 @@ void WebCrawler::run(){
 				http->get(baseUrl); 
 		}
 		
-		if (num>1  && domain != previous_domain) {
+		if (currentNode>1  && domain != previous_domain) {
 			maxRecursion --; 
 			qDebug () << 		"**** NEW DOMAIN - DECREASING RECURSION DEPTH INDEX TO " << maxRecursion   ;
 
 		}
-		else if (num==1) {
+		else if (currentNode==1) {
 			seed_domain = domain;
 		}
 		else {
@@ -168,8 +169,8 @@ void WebCrawler::run(){
 		}
 
 
-		qDebug () <<"				Increase num, dequeuing frontier and setting previous domain to domain";
-		num++;
+		qDebug () <<"				Increase currentNode, dequeuing frontier and setting previous domain to domain";
+		currentNode++;
 		frontier.dequeue();			//Dequeue head
 
 		previous_domain = domain;		//set previous domain
@@ -210,7 +211,7 @@ void Reader::run(){
 	ba=http->readAll(); 
 	QString page(ba);
 	//qDebug()  << "		"<< page.toAscii();
-	int src=source.size();
+//	int src=source.size();
 
 	if (!page.contains ("a href"))  { //if a href doesnt exist, return   
 		 qDebug() << "			READER: ### Empty or not usefull data from " << baseUrl.toAscii() << " RETURN";
@@ -256,17 +257,20 @@ void Reader::run(){
 				}
 				else {
 					frontier.enqueue(newUrl);
-					source.append(src);
+					discoveredNodes++;
+					sourceMap[ discoveredNodes	 ] = currentNode;
 					qDebug()<< "			READER: absolute newUrl "  <<  newUrl.toAscii() 
-								<<  " first time visited. Frontier size: "<<  frontier.size() << " - source: " <<  src;				
+								<<  " first time visited. Frontier size: "<<  frontier.size() << " = discoveredNodes: " <<discoveredNodes<<  " - source: " <<  sourceMap[ discoveredNodes ];				
 				}
 	
 			}
 			else {
 				frontier.enqueue(newUrl);
-				source.append(src);
+				//source.append(src);
+				discoveredNodes++;
+				sourceMap[ discoveredNodes ] = currentNode;
 				qDebug()<< "			READER: non-absolute newUrl "  <<  newUrl.toAscii() 
-							<<  " first time visited. Frontier size: "<<  frontier.size() << " - source: " <<  src;
+							<<  " first time visited. Frontier size: "<<  frontier.size() << " = discoveredNodes: " <<discoveredNodes<<  " - source: " <<  sourceMap[ discoveredNodes ];
 			}
 		}
 		else //else dont do nothing!
