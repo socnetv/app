@@ -2311,14 +2311,15 @@ void MainWindow::slotViewNetworkFile(){
 	}
 	else if (fileName.isEmpty() && networkModified)     {  //New network + something
 		QMessageBox::information (this, "Viewing network file",
-		tr("Network not saved yet. I will open a dialog for you to save it now."), "OK",0);
+		tr("This network has not been saved yet. \nI will open a dialog for you to save it now."), "OK",0);
 		slotFileSaveAs();
 	}
 	else if (fileLoaded && networkModified )     {   //file network + modified
 		QMessageBox::information (this, "Viewing network file",
 		//FIXME maybe better to save automatigally than asking?
-		tr("Network has been modified. Please save it now."), "OK",0);
-		slotFileSave();
+		tr("The network has been modified. \nI will save it for you now."), "OK",0);
+		networkModified = false;
+		slotViewNetworkFile();
 	}
 
 	else	{
@@ -5407,7 +5408,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Wed Jun 17 01:13:34 EEST 2009";
+QString BUILD="Thu Jun 18 22:11:32 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"

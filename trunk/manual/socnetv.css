@@ -103,7 +103,8 @@ a:visited {
 
 
 .header {
-  background: #f6ffd5 none;
+/*  background: #f6ffd5 none; */
+  background: #e0f2fe none;
   border-top: 1px solid #CFD1D5;
   border-bottom: 1px solid #CFD1D5;
   margin: 0px;
@@ -134,7 +135,8 @@ a:visited {
 
 
 .footer{
-  background: #f6ffd5 none;
+/*  background: #f6ffd5 none;  */
+  background: #e0f2fe none;
   border-top: 1px solid #CFD1D5;
   border-bottom: 1px solid #CFD1D5;  
   font-size: 10px;
