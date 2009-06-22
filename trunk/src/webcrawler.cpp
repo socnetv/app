@@ -92,9 +92,29 @@ void WebCrawler::run(){
 			break;
 		}
 
+		if (maxNodes>0) {  //or until we have reached maxNodes!			
+			if (currentNode == maxNodes ) {
+				qDebug () <<"		WebCrawler: #### Seems we have reached maxnodes!" << " - we will stop now" ;
+				break;
+			}
+		}
+
+
 		baseUrl = frontier.head();	//take the first url from the frontier : this is our baseUrl
-		qDebug()<< "		WebCrawler: Creating node " << currentNode << " with label this baselUrl " << baseUrl;
-		emit createNode(baseUrl, currentNode);
+		
+		//TODO: 
+		if ( baseUrl.endsWith(".css", Qt::CaseInsensitive) ) { //  label contains css, paint that node with a different colour.
+			qDebug()<< "		WebCrawler: Creating node " << currentNode 
+					<< " with label this baselUrl " << baseUrl 
+					<< " - This shouldn't be a regular node...";			
+			emit createNode(baseUrl, currentNode);
+		} 
+		else {
+			qDebug()<< "		WebCrawler: Creating node " << currentNode 
+					<< " with label this baselUrl " << baseUrl;
+			emit createNode(baseUrl, currentNode);			
+		}
+
 
 		if (currentNode>1) {	//if ain't the 1st node, then create an edge from the previous node.
   			qDebug()<< "		WebCrawler: Creating edge from " << sourceMap [ currentNode ] 
@@ -155,7 +175,7 @@ void WebCrawler::run(){
 							baseUrl=baseUrl.remove(0, 1);
 						else if (!baseUrl.startsWith('/',  Qt::CaseInsensitive) ) {
 							baseUrl = "/"+baseUrl;
-							qDebug() << " adding / to baseUrl " << baseUrl;
+							qDebug() << "			adding / to baseUrl " << baseUrl;
 						}
 								
 						http->setHost(previous_domain); 		
@@ -172,14 +192,14 @@ void WebCrawler::run(){
 		
 		if (currentNode>1  && domain != previous_domain) {
 			maxRecursion --; 
-			qDebug () << 		"**** NEW DOMAIN - DECREASING RECURSION DEPTH INDEX TO " << maxRecursion   ;
+			qDebug () << "		WebCrawler: **** NEW DOMAIN - DECREASING RECURSION DEPTH INDEX TO " << maxRecursion   ;
 
 		}
 		else if (currentNode==1) {
 			seed_domain = domain;
 		}
 		else {
-			qDebug () << 		"**** SAME DOMAIN - RECURSION DEPTH INDEX IS THE SAME" << maxRecursion ;
+			qDebug () << "		WebCrawler: **** SAME DOMAIN - RECURSION DEPTH INDEX UNCHANGED: " << maxRecursion ;
 			
 		}
    
@@ -192,23 +212,15 @@ void WebCrawler::run(){
 		mutex.unlock();
 		qDebug () <<"		WebCrawler: OK. Waking up to continue: frontier size = " << frontier.size();
 
-		if (maxNodes>0) {
-			qDebug () <<"		WebCrawler: Decrease maxnodes";
-			--maxNodes;
-			if (maxNodes == 0) {
-				qDebug () <<"		WebCrawler: OOOops! Seems we have reached maxnodes! Returning";
-				break;
-			}
-				
-		}
 
 
-		qDebug () <<"				Increase currentNode, dequeuing frontier and setting previous domain to domain";
+
+		qDebug () <<"		WebCrawler: Increasing currentNode, dequeuing frontier and setting previous domain to domain";
 		currentNode++;
 		frontier.dequeue();			//Dequeue head
-
 		previous_domain = domain;		//set previous domain
-			
+		
+
 	} while ( 1 ); 
 
 	if (reader.isRunning() )		//tell the other thread that we must quit! 
@@ -248,6 +260,7 @@ void Reader::run(){
 //	int src=source.size();
 
 	if (!page.contains ("a href"))  { //if a href doesnt exist, return   
+		//FIXME: Frameset pages are not parsed! See docs/manual.html for example.
 		 qDebug() << "			READER: ### Empty or not usefull data from " << baseUrl.toAscii() << " RETURN";
 		 newDataRead.wakeAll();
 		 return;
@@ -287,7 +300,7 @@ void Reader::run(){
 				if ( !goOut &&  !newUrl.contains( seed_domain, Qt::CaseInsensitive)  && 
 						!newUrl.contains( urlPrefix , Qt::CaseInsensitive)   ) {
 					  	qDebug()<< "			READER: absolute newUrl "  <<  newUrl.toAscii() 
-					  		<< " is outside the original domain. Skipping...";
+					  		<< " is OUT OF the original domain. Skipping...";
 				}
 				else {
 					frontier.enqueue(newUrl);
