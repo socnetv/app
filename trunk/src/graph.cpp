@@ -3073,7 +3073,7 @@ The Spring Embedder model (Eades, 1984) assigns forces to all vertices and edges
 
 These forces are applied to the nodes iteratively, pulling them closer together or pushing them further apart,  until the system comes to an equilibrium state (node positions do not change anymore).
 
-Note that, following Eades, we dont need to have a faithful simulation; we can apply unrealistic forces in an unrealistic manner.
+Note that, following Eades, we do not need to have a faithful simulation; we can apply unrealistic forces in an unrealistic manner.
 */
 
 void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){

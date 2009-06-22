@@ -165,7 +165,7 @@ void GraphicsWidget::drawNode(
 
 
 /** Draws an edge from source to target Node. 
-	This is used when we dont have references to nodes - only nodeNumbers:
+	This is used when we do not have references to nodes - only nodeNumbers:
 	a) when we load a network file (check = FALSE)
 	b) when the user clicks on the AddLink button on the MW.
 */

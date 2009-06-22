@@ -45,7 +45,7 @@ Edge::Edge(  GraphicsWidget *gw, Node *from, Node *to, float weight, int nodeSiz
 
 	qDebug("Edge: Edge()");
 	Q_UNUSED(nodeSize);
-	graphicsWidget->scene()->addItem(this);  //Without this, edges dont appear on the screen...
+	graphicsWidget->scene()->addItem(this);  //Without this, edges don not appear on the screen...
 
  	from->addOutLink( this );	//adds this Edge to sourceNode
 	to->addInLink( this );		//adds this Edge to targetNode
@@ -331,7 +331,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 
 //			painter->drawPolygon(QPolygonF() << line.p1() << srcArrowP1 << srcArrowP2);
 		}
-		else qDebug("*** Edge::paint() This edge is not symmetric. Therefore, I dont have anything else to do...");
+		else qDebug("*** Edge::paint() This edge is not symmetric. Therefore, I do not have anything else to do...");
 	}
 	else {
 		qDebug()<< "*** Edge::paint(). This edge is self-link - CONTINUE!";

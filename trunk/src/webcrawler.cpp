@@ -164,7 +164,7 @@ void WebCrawler::run(){
 			}
 			
 		}
-		else { //else dont do nothing!
+		else { //else don't do nothing!
 			qDebug() << "		WebCrawler: baseUrl "  <<  baseUrl.toAscii() << " already scanned. Skipping.";
 			frontier.dequeue();			//Dequeue head
 			continue;
@@ -306,7 +306,7 @@ void Reader::run(){
 							<<  " first time visited. Frontier size: "<<  frontier.size() << " = discoveredNodes: " <<discoveredNodes<<  " - source: " <<  sourceMap[ discoveredNodes ];
 			}
 		//}
-		//else //else dont do nothing!
+		//else //else don't do nothing!
 		//	qDebug() << "			READER: newUrl "  <<  newUrl.toAscii() << " already scanned. Skipping.";
 
 	}

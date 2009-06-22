@@ -4542,7 +4542,7 @@ void MainWindow::slotCentralityStress(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 
-		statusMessage(  QString(tr(" Nothing to do! Why dont you try creating something first?"))  );
+		statusMessage(  QString(tr(" Nothing to do! Why don't you try creating something first?"))  );
 		return;
 	}
 	QString fn = "centrality_stress.dat";
