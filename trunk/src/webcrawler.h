@@ -36,9 +36,9 @@ class Reader : public QThread  {
 	Q_OBJECT
 public slots:
 	void load();
-public signals:
-	createNode(QString url, int no);
-	createEdge (int source, int target);
+signals:
+	void createNode(QString url, int no);
+	void createEdge (int source, int target);
 protected:
 	void run();
 };
@@ -48,6 +48,9 @@ class WebCrawler :  public QThread {
 	Q_OBJECT
 public:
 	void load(QString seed, int maxNodes, int maxRecursion, bool goOut);
+public slots:
+	void slotCreateNode(QString url, int no);
+	void slotCreateEdge (int source, int target);
 signals:
 	void createNode(QString url, int no);
 	void createEdge (int source, int target);
