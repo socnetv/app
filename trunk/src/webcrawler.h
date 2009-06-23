@@ -36,6 +36,9 @@ class Reader : public QThread  {
 	Q_OBJECT
 public slots:
 	void load();
+public signals:
+	createNode(QString url, int no);
+	createEdge (int source, int target);
 protected:
 	void run();
 };

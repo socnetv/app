@@ -80,19 +80,19 @@ void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){
 
 void WebCrawler::run(){
 	int pos, second_pos;
-	do{ 	//repeat until we reach maxNodes.
+	do { 	//repeat forever....
 
-		if (frontier.size() ==0 ) { 	//or until we reach frontier's end.		
+		if (frontier.size() ==0 ) { 	// .... or until we crawl all urls in frontier.		
 			qDebug () <<"		WebCrawler #### Frontier is empty: " <<frontier.size() << " - we will stop now "  ;			
 			break;
 		}
 			
-		if ( maxRecursion  == 0 ) { 	//or until we reach maxRecursion
+		if ( maxRecursion  == 0 ) { 	// .... or until we reach maxRecursion
 			qDebug () <<"		WebCrawler #### Reached maxRecursion: " <<maxRecursion << " - we will stop now "  ;	
 			break;
 		}
 
-		if (maxNodes>0) {  //or until we have reached maxNodes!			
+		if (maxNodes>0) {  				// .... or until we have reached maxNodes		
 			if (currentNode == maxNodes ) {
 				qDebug () <<"		WebCrawler: #### Seems we have reached maxnodes!" << " - we will stop now" ;
 				break;
@@ -100,37 +100,18 @@ void WebCrawler::run(){
 		}
 
 
-		baseUrl = frontier.head();	//take the first url from the frontier : this is our baseUrl
+		baseUrl = frontier.head();	//take the first url from the frontier - name it baseUrl
 		
-		//TODO: 
-		if ( baseUrl.endsWith(".css", Qt::CaseInsensitive) ) { //  label contains css, paint that node with a different colour.
-			qDebug()<< "		WebCrawler: Creating node " << currentNode 
-					<< " with label this baselUrl " << baseUrl 
-					<< " - This shouldn't be a regular node...";			
-			emit createNode(baseUrl, currentNode);
-		} 
-		else {
-			qDebug()<< "		WebCrawler: Creating node " << currentNode 
-					<< " with label this baselUrl " << baseUrl;
-			emit createNode(baseUrl, currentNode);			
-		}
-
-
-		if (currentNode>1) {	//if ain't the 1st node, then create an edge from the previous node.
-  			qDebug()<< "		WebCrawler: Creating edge from " << sourceMap [ currentNode ] 
-  					<< " -> " <<  currentNode;
-			//source vector holds the index of the page where this url was found.
-			emit createEdge (sourceMap [ currentNode ], currentNode); 
-		}
-
-		
+	
 		if ( ! checkedMap[baseUrl] ){
 			checkedMap[baseUrl]=true;
-			if (baseUrl.contains ("http://" ) ) {	// If baseUrl (except seed) contains http, it is external
-					if  (!goOut && (currentNode !=1) ) {	// if the user don't want to crawl external links, just continue.
-						qDebug() << "		WebCrawler: external baseUrl detected: "<<baseUrl  
-							<< " But we will not crawl it. Continuing...";
-						continue;
+			if (baseUrl.contains ("http://" ) || baseUrl.contains ("https://" )) {	// If baseUrl (except seed) contains http, it is external
+					if  ( currentNode != 1 && !goOut  ) {	// if the user don't want to crawl external links, just continue.
+						if (  !baseUrl.contains( seed_domain, Qt::CaseInsensitive)   ) {
+							qDebug() << "		WebCrawler: external baseUrl detected: "<<baseUrl  
+								<< " But we will not crawl it. Continuing...";
+							continue;
+						}
 					}
 					//else erase http and parse the rest.
 					qDebug() << "		WebCrawler: external baseUrl detected: "<<baseUrl 
@@ -201,9 +182,6 @@ void WebCrawler::run(){
 			qDebug () << "		WebCrawler: **** NEW DOMAIN - DECREASING RECURSION DEPTH INDEX TO " << maxRecursion   ;
 
 		}
-		else if (currentNode==1) {
-			seed_domain = domain;
-		}
 		else {
 			qDebug () << "		WebCrawler: **** SAME DOMAIN - RECURSION DEPTH INDEX UNCHANGED: " << maxRecursion ;
 			
@@ -259,7 +237,7 @@ void Reader::load(){
 void Reader::run(){
 	qDebug()  << "			READER: read something!";	
 	QString newUrl;
-	int start=-1, end=-1, equal=-1;
+	int start=-1, end=-1, equal=-1, index=-1;
 	ba=http->readAll(); 
 	QString page(ba);
 	//qDebug()  << "		"<< page.toAscii();
@@ -300,15 +278,47 @@ void Reader::run(){
 		newUrl=page.left(end);			//Save new url to newUrl :)
 		newUrl=newUrl.simplified();
 		
-		//if ( frontier.indexOf(newUrl) ==-1  ||  frontier.indexOf(newUrl)   ) {	//If this is the first time visiting this url, add it to frontier...
+		
+			//TODO: different treatment for css, favicon, rss, ping, 
+		//if ( baseUrl.endsWith(".css", Qt::CaseInsensitive) ||
+			 //baseUrl.endsWith("feed/", Qt::CaseInsensitive) ||
+			 //baseUrl.endsWith("rss/", Qt::CaseInsensitive) ||
+			 //baseUrl.endsWith("atom/", Qt::CaseInsensitive) ||
+			 //baseUrl.endsWith("xmlrpc.php", Qt::CaseInsensitive) ||
+			 //baseUrl.endsWith("favicon.ico", Qt::CaseInsensitive) )
+			//{ //  label contains css or is a Web 2.0 element, we paint that node with a different colour.
+			//qDebug()<< "		WebCrawler: * Creating node " << currentNode 
+					//<< " with label = baseUrl " << baseUrl 
+					//<< " - This should be colored with a diffrent color...";			
+			//emit createNode(baseUrl, currentNode);
+		//} 
+		//else {
+			//qDebug()<< "		WebCrawler: * Creating node " << currentNode 
+					//<< " with label = baseUrl " << baseUrl;
+			//emit createNode(baseUrl, currentNode);			
+		//}
+		
 
-			if ( newUrl.contains("http://", Qt::CaseInsensitive) ) {	//if this is an absolute url
-				if ( !goOut &&  !newUrl.contains( seed_domain, Qt::CaseInsensitive)  && 
+		// if not the 1st node, and it has been already checked ...
+		if (  currentNode>1 && ( (index =frontier.indexOf(newUrl) ) !=-1)  ) {
+			qDebug()<< "			READER: newUrl "  <<  newUrl.toAscii() << " already CHECKED - Creating edge from " << sourceMap [ index+1 ] << " and skipping";
+			emit createEdge (sourceMap [ index+1 ], index+1);	// ... then create an edge from the previous node ... 
+			continue;											// .... and continue!
+		}
+
+		// if this is the first node, or it is visited for the first time ...
+		if ( newUrl.contains("http://", Qt::CaseInsensitive) || newUrl.contains("https://", Qt::CaseInsensitive) ) {	//if this is an absolute url
+				
+				if ( !goOut ) {		//if we need to limit ourselves within the seed domain, then check if the newUrl is out of the seed domain 
+					if (  !newUrl.contains( seed_domain, Qt::CaseInsensitive)  &&  
 						!newUrl.contains( urlPrefix , Qt::CaseInsensitive)   ) {
 					  	qDebug()<< "			READER: absolute newUrl "  <<  newUrl.toAscii() 
 					  		<< " is OUT OF the original domain. Skipping...";
+					  		continue;
+					 }
 				}
-				else {
+				else {				// if we can go out the seed domain, then just add it.
+					  
 					frontier.enqueue(newUrl);
 					discoveredNodes++;
 					sourceMap[ discoveredNodes	 ] = currentNode;
@@ -316,17 +326,16 @@ void Reader::run(){
 								<<  " first time visited. Frontier size: "<<  frontier.size() << " = discoveredNodes: " <<discoveredNodes<<  " - source: " <<  sourceMap[ discoveredNodes ];				
 				}
 	
-			}
-			else {
+		}
+		else {					//this is an internal or relative url, just add it.
 				frontier.enqueue(newUrl);
 				discoveredNodes++;
 				sourceMap[ discoveredNodes ] = currentNode;
 				qDebug()<< "			READER: non-absolute newUrl "  <<  newUrl.toAscii() 
 							<<  " first time visited. Frontier size: "<<  frontier.size() << " = discoveredNodes: " <<discoveredNodes<<  " - source: " <<  sourceMap[ discoveredNodes ];
-			}
-		//}
-		//else //else don't do nothing!
-		//	qDebug() << "			READER: newUrl "  <<  newUrl.toAscii() << " already scanned. Skipping.";
+		}
+		emit createNode(newUrl, discoveredNodes);
+		emit createEdge (currentNode, discoveredNodes);
 
 	}
 	newDataRead.wakeAll();
