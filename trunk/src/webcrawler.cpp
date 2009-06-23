@@ -332,6 +332,10 @@ void Reader::run(){
 												<< " appears INSIDE the seed domain "  
 												<< seed_domain;
 					}
+						frontier.enqueue(newUrl);
+						discoveredNodes++;
+						sourceMap[ discoveredNodes ] = currentNode;
+
 				}
 				else {				// ... else if we can go out the seed domain, then just add it.
 					  
@@ -364,7 +368,7 @@ void Reader::run(){
 							//  perhaps we paint that node with a different colour or check a variable?
 							continue;
 					} 
-				//else increase discoveredNodes and add it to frontier.
+				// .. else increase discoveredNodes and add it to frontier.
 				frontier.enqueue(newUrl);
 				discoveredNodes++;
 				sourceMap[ discoveredNodes ] = currentNode;
