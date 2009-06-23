@@ -126,7 +126,13 @@ void WebCrawler::run(){
 		
 		if ( ! checkedMap[baseUrl] ){
 			checkedMap[baseUrl]=true;
-			if (baseUrl.contains ("http://" ) ) {	//If baseUrl contains http, it is external, erase http and parse the rest.
+			if (baseUrl.contains ("http://" ) ) {	// If baseUrl (except seed) contains http, it is external
+					if  (!goOut && (currentNode !=1) ) {	// if the user don't want to crawl external links, just continue.
+						qDebug() << "		WebCrawler: external baseUrl detected: "<<baseUrl  
+							<< " But we will not crawl it. Continuing...";
+						continue;
+					}
+					//else erase http and parse the rest.
 					qDebug() << "		WebCrawler: external baseUrl detected: "<<baseUrl 
 							<< " Removing http:// and setting this as get token"; 
 					baseUrl=baseUrl.remove ("http://");
