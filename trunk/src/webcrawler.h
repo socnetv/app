@@ -34,11 +34,16 @@ using namespace std;
 
 class Reader : public QThread  {
 	Q_OBJECT
+public:  
+	void createNode(QString url, bool enqueue_to_frontier);
+	void createEdge (int source, int target);
+
 public slots:
 	void load();
 signals:
-	void createNode(QString url, int no);
-	void createEdge (int source, int target);
+	void signalCreateNode(QString url, int no);
+	void signalCreateEdge (int source, int target);
+	
 protected:
 	void run();
 };
@@ -48,6 +53,7 @@ class WebCrawler :  public QThread {
 	Q_OBJECT
 public:
 	void load(QString seed, int maxNodes, int maxRecursion, bool goOut);
+	void terminateReaderQuit ();
 public slots:
 	void slotCreateNode(QString url, int no);
 	void slotCreateEdge (int source, int target);

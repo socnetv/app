@@ -791,6 +791,15 @@ void Graph::clear() {
 	adjacencyMatrixCreated=false;
 	graphModified=false;
 	symmetricAdjacencyMatrix=true;
+	
+	if (parser.isRunning() )		//tell the other thread that we must quit! 
+		parser.quit();
+	
+	if (crawler.isRunning() )		//tell the other thread that we must quit! 
+		crawler.terminateReaderQuit();
+
+	qDebug() << "			Finished!";
+
 	qDebug("Graph: m_graph cleared. Now reports size %i", m_graph.size());
 }
 

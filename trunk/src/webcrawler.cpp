@@ -37,6 +37,7 @@ QHttp *http;
 QQueue<QString> frontier;
 QMap <int, int> sourceMap;
 QMap <QString, bool> checkedMap;
+QMap <QString, int> discoveredMap;
 QByteArray ba;
 QWaitCondition newDataRead;
 QMutex mutex;
@@ -58,6 +59,7 @@ void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){
 	frontier.clear();
 	sourceMap.clear();
 	checkedMap.clear();
+	discoveredMap.clear();
 	baseUrl="", domain="", previous_domain="", path="", urlPrefix="";
 	
 	frontier.enqueue(seed);		//queue the seed to frontier
@@ -72,12 +74,12 @@ void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){
 	qDebug() << "WebCrawler:: I will start a new QThread!";
 	
 	connect (	
-			&reader, SIGNAL( createNode (QString, int) ), 
+			&reader, SIGNAL( signalCreateNode (QString, int) ), 
 			this, SLOT(slotCreateNode(QString, int ) ) 
 			) ;
 
 	connect (
-		&reader, SIGNAL(createEdge (int, int)), 
+		&reader, SIGNAL(signalCreateEdge (int, int)), 
 		this, SLOT(slotCreateEdge (int, int) ) 
 		);
 
@@ -97,6 +99,7 @@ void WebCrawler::slotCreateNode(QString url, int number) {
 void WebCrawler::slotCreateEdge (int source, int target){
 	emit createEdge (source, target);	
 }
+
 
 
 /*	 This thread sets host and url to http object. 
@@ -140,6 +143,7 @@ void WebCrawler::run(){
 					}
 					else if ( currentNode == 1){
 						qDebug() << "		WebCrawler: creating node 1 with label " << baseUrl.toAscii();
+						discoveredMap[baseUrl]=currentNode;
 						emit createNode(baseUrl, 1);
 					}
 					//else erase http and parse the rest.
@@ -171,7 +175,7 @@ void WebCrawler::run(){
 	
 			}
 			else {
-					if (currentNode==1) {
+					if (currentNode==1) {		//only if this is the seed node
 						if ( (pos=baseUrl.indexOf ("/")) !=-1 ) {
 							domain = baseUrl.left(pos);
 							qDebug() << "		WebCrawler: Initial Host domain: "<<  domain.toAscii();
@@ -222,7 +226,8 @@ void WebCrawler::run(){
    
 		//lock mutex
 		mutex.lock();
-		qDebug() << "		WebCrawler: ZZzz We should wait a bit...";
+		qDebug() << "		WebCrawler: ZZzz We should wait a bit..."
+					<<"frontier size " << frontier.size() << " currentNode " << currentNode ;
 		//Thread goes to sleep to protect all variables (locked by mutex). 
 		newDataRead.wait(&mutex);
 		//Unlock it
@@ -247,6 +252,13 @@ void WebCrawler::run(){
 
 
 
+//called from Graph, when closing network, to terminate all processes
+void WebCrawler::terminateReaderQuit (){
+	if (reader.isRunning() )		//tell the other thread that we must quit! 
+		reader.quit();
+	quit();
+}
+
 
  
 /* 
@@ -270,11 +282,10 @@ void Reader::load(){
 void Reader::run(){
 	qDebug()  << "			READER: read something!";	
 	QString newUrl;
-	int start=-1, end=-1, equal=-1, index=-1;
+	bool createNodeFlag = false, createEdgeFlag=false ;
+	int start=-1, end=-1, equal=-1 ;// index=-1;
 	ba=http->readAll(); 
 	QString page(ba);
-
-//	int src=source.size();
 
 	if (!page.contains ("a href"))  { //if a href doesnt exist, return   
 		//FIXME: Frameset pages are not parsed! See docs/manual.html for example.
@@ -285,7 +296,9 @@ void Reader::run(){
 	mutex.lock(); 
 
 	while (page.contains("href")) {	//as long there is a href in the page...
-		qDebug()<< "			READER: page still contains links - Let's continue parsing!";
+		createNodeFlag = false;
+		createEdgeFlag = false;
+
 		page=page.simplified();		// remove whitespace from the start and the end - all whitespace sequence becomes single space
 
 		start=page.indexOf ("href");		//Find its pos
@@ -295,7 +308,6 @@ void Reader::run(){
 		equal=page.indexOf ("=");			// Find next equal sign (=)
 
 		page = page.remove(0, equal+1);		//Erase everything up to = 
-		//qDebug() << "			READER: New Url??? : " << page.left(20);
 
 		if (page.startsWith("\"") ) {
 			page.remove(0,1);
@@ -312,10 +324,13 @@ void Reader::run(){
 		newUrl=page.left(end);			//Save new url to newUrl :)
 		newUrl=newUrl.simplified();
 		
+		qDebug()<< "			READER: page still contains links - Parsing " << newUrl.toAscii();
 		// if this is not the 1st node, and it has been already checked ...
-		if (  currentNode>1 && ( (index =frontier.indexOf(newUrl) ) !=-1)  ) {
-			qDebug()<< "			READER: #---> newUrl "  <<  newUrl.toAscii() << " already CHECKED - Creating edge from " << sourceMap [ index+1 ] << " to "<< currentNode << " and skipping";
-			emit createEdge (sourceMap [ index+1 ], index+1);	// ... then create an edge from the previous node ... 
+		QMap<QString, int>::const_iterator index = discoveredMap.find(newUrl);
+		if (   index!= discoveredMap.end() ) {
+			qDebug()<< "			READER: #---> newUrl "  <<  newUrl.toAscii() 
+					<< " already CHECKED - Just creating an edge from " << index.value();
+			this->createEdge (sourceMap [ index.value() ], index.value());	// ... then create an edge from the previous node ... 
 			continue;											// .... and continue skipping it!
 		}
 
@@ -335,33 +350,30 @@ void Reader::run(){
 									<< " must be a web 2.0 element (rss, favicon, etc) or file. Skipping...";
 								//	emit createNode(baseUrl, currentNode);
 								//  perhaps we paint that node with a different colour or check a variable?
-								continue;
+								//continue;
 						}
 				if ( !goOut ) {		// ... and we need to limit ourselves within the seed domain...  
-					if (  !newUrl.contains( seed_domain, Qt::CaseInsensitive)  ) {	//...then check if the newUrl is out of the seed domain
+					if (  !newUrl.startsWith(seed_domain, Qt::CaseInsensitive ) ||
+						 !newUrl.startsWith( "http://"+seed_domain, Qt::CaseInsensitive)  ) {	//...then check if the newUrl is out of the seed domain
 					  	qDebug()<< "			READER: # absolute newUrl "  <<  newUrl.toAscii() 
-					  		<< " is OUT OF the seed (original) domain. Skipping...";
-					  		continue;
+					  			<< " is OUT OF the seed (original) domain. I will create a node but NOT add it to frontier...";
+						this->createNode(newUrl, false);
 					 }
 					else {
 						qDebug()<< "			READER: absolute newUrl" << newUrl.toAscii()
-												<< " appears INSIDE the seed domain "  
-												<< seed_domain << " - I will create a node here..." ;
+								<< " appears INSIDE the seed domain "  
+								<< seed_domain << " - I will create a node here..." ;
+						this->createNode(newUrl, true);
 					}
-						frontier.enqueue(newUrl);
-						discoveredNodes++;
-						sourceMap[ discoveredNodes ] = currentNode;
+					
 
 				}
 				else {				// ... else if we can go out the seed domain, then just add it.
-					  
-					frontier.enqueue(newUrl);
-					discoveredNodes++;
-					sourceMap[ discoveredNodes	 ] = currentNode;
-					qDebug()<< "			READER: absolute newUrl "  <<  newUrl.toAscii() 
-								<<  " first time visited. Frontier size: "<<  frontier.size() 
-								<< " = discoveredNodes: " <<discoveredNodes
-								<<  " - source: " <<  sourceMap[ discoveredNodes ];				
+					qDebug()<< "			READER: absolute newUrl" << newUrl.toAscii()
+						<< " is outside the seed domain "  
+						<< seed_domain << " - and we are allowed to go there, so I will create a node here..." ;
+
+					this->createNode(newUrl, true);
 				}
 	
 		}
@@ -369,7 +381,8 @@ void Reader::run(){
 				//  ...and an index, then skip it.
 				if (newUrl == "index.html" || newUrl == "index.htm" || newUrl == "index.php"){
 					qDebug()<< "			READER: # non-absolute newUrl "  <<  newUrl.toAscii() 
-					  		<< " must be an index file. Skipping...";
+					  		<< " must be an index file. Creating edge from 1 to " << discoveredNodes;
+					  			this->createEdge ( 1 , discoveredNodes);	
 					  		continue;
 				}
 				
@@ -391,22 +404,50 @@ void Reader::run(){
 								continue;
 						}
 				}
-				// .. else increase discoveredNodes and add it to frontier.
-				frontier.enqueue(newUrl);
-				discoveredNodes++;
-				sourceMap[ discoveredNodes ] = currentNode;
+				// .. else create node and add it to frontier.
 				qDebug()<< "			READER: non-absolute newUrl "  <<  newUrl.toAscii() 
-							<<  " first time visited. Frontier size: "<<  frontier.size() << " = discoveredNodes: " <<discoveredNodes<<  " - source: " <<  sourceMap[ discoveredNodes ];
-		}
-		qDebug()<< "			READER: * Creating node " << discoveredNodes << " newUrl "<< newUrl;  
-		emit createNode(newUrl, discoveredNodes);
-		qDebug()<<endl;
-		qDebug()<< "			READER: --> Creating edge from " << currentNode << " to "<< discoveredNodes ;
-		emit createEdge (currentNode, discoveredNodes);
+						<<  " first time visited. I will create a node for it and add it to frontier"; 
+				this->createNode(newUrl, true);
 
+		}
 	}
 	newDataRead.wakeAll();
 	mutex.unlock();
 }
 
+
+
+
+//signals node creation  Called from Reader::load()
+
+void Reader::createNode(QString newUrl, bool enqueue_to_frontier) {
+	discoveredNodes++;
+	sourceMap[ discoveredNodes ] = currentNode;
+	discoveredMap[newUrl]=discoveredNodes;
+	if (enqueue_to_frontier) {
+		frontier.enqueue(newUrl);
+		qDebug()<< "\n\n		READER: * Creating node " << discoveredNodes 
+				<< " newUrl "<< newUrl << " Frontier size: "<<  frontier.size() 
+				<< " = discoveredNodes: " <<discoveredNodes<<  " - source: " <<  sourceMap[ discoveredNodes ] 
+				<< "\n\n";
+
+	}
+	else {
+		qDebug()<< "\n\n		READER: * Creating node " << discoveredNodes 
+				<< " newUrl "<< newUrl << " NOT enqueuing to frontier"
+				<< "  discoveredNodes: " <<discoveredNodes<<  " - source: " <<  sourceMap[ discoveredNodes ]
+				<< "\n\n";	
+	}
+
+	emit signalCreateNode(newUrl, discoveredNodes);
+}
+
+
+
+//signals edge creation  Called from Reader::load
+void Reader::createEdge (int source, int target){
+	qDebug()<< "\n\n		READER: --> Creating edge from " << source 
+							<< " to "<< target << "\n\n";
+	emit signalCreateEdge (source, target);	
+}
 
