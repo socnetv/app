@@ -285,6 +285,7 @@ void Reader::run(){
 	mutex.lock(); 
 
 	while (page.contains("href")) {	//as long there is a href in the page...
+		qDebug()<< "			READER: page still contains links - Let's continue parsing!";
 		page=page.simplified();		// remove whitespace from the start and the end - all whitespace sequence becomes single space
 
 		start=page.indexOf ("href");		//Find its pos
@@ -311,26 +312,41 @@ void Reader::run(){
 		newUrl=page.left(end);			//Save new url to newUrl :)
 		newUrl=newUrl.simplified();
 		
-		// if not the 1st node, and it has been already checked ...
+		// if this is not the 1st node, and it has been already checked ...
 		if (  currentNode>1 && ( (index =frontier.indexOf(newUrl) ) !=-1)  ) {
-			qDebug()<< "			READER: * newUrl "  <<  newUrl.toAscii() << " already CHECKED - Creating edge from " << sourceMap [ index+1 ] << " and skipping";
+			qDebug()<< "			READER: #---> newUrl "  <<  newUrl.toAscii() << " already CHECKED - Creating edge from " << sourceMap [ index+1 ] << " to "<< currentNode << " and skipping";
 			emit createEdge (sourceMap [ index+1 ], index+1);	// ... then create an edge from the previous node ... 
-			continue;											// .... and continue!
+			continue;											// .... and continue skipping it!
 		}
 
-		// if this is the first node, or it is visited for the first time ...
+		// if this is the first node or it is visited for the first time ...
 		if ( newUrl.contains("http://", Qt::CaseInsensitive) || newUrl.contains("https://", Qt::CaseInsensitive) ) {	//if this is an absolute url
-				
+				if (true) //flag to display css/rss icons
+					if ( newUrl.endsWith(".css", Qt::CaseInsensitive) ||
+				 		newUrl.endsWith("feed/", Qt::CaseInsensitive) ||
+						newUrl.endsWith("rss/", Qt::CaseInsensitive) ||
+				 		newUrl.endsWith("atom/", Qt::CaseInsensitive) ||
+				 		newUrl.endsWith("xmlrpc.php", Qt::CaseInsensitive) ||
+				 		newUrl.endsWith("?rsd", Qt::CaseInsensitive) ||
+				 		newUrl.endsWith(".xml", Qt::CaseInsensitive) ||
+						 newUrl.endsWith("favicon.ico", Qt::CaseInsensitive) )
+						{ 
+							qDebug()<< "			READER: # absolute newUrl " << newUrl 
+									<< " must be a web 2.0 element (rss, favicon, etc) or file. Skipping...";
+								//	emit createNode(baseUrl, currentNode);
+								//  perhaps we paint that node with a different colour or check a variable?
+								continue;
+						}
 				if ( !goOut ) {		// ... and we need to limit ourselves within the seed domain...  
 					if (  !newUrl.contains( seed_domain, Qt::CaseInsensitive)  ) {	//...then check if the newUrl is out of the seed domain
-					  	qDebug()<< "			READER: absolute newUrl "  <<  newUrl.toAscii() 
+					  	qDebug()<< "			READER: # absolute newUrl "  <<  newUrl.toAscii() 
 					  		<< " is OUT OF the seed (original) domain. Skipping...";
 					  		continue;
 					 }
 					else {
 						qDebug()<< "			READER: absolute newUrl" << newUrl.toAscii()
 												<< " appears INSIDE the seed domain "  
-												<< seed_domain;
+												<< seed_domain << " - I will create a node here..." ;
 					}
 						frontier.enqueue(newUrl);
 						discoveredNodes++;
@@ -343,31 +359,38 @@ void Reader::run(){
 					discoveredNodes++;
 					sourceMap[ discoveredNodes	 ] = currentNode;
 					qDebug()<< "			READER: absolute newUrl "  <<  newUrl.toAscii() 
-								<<  " first time visited. Frontier size: "<<  frontier.size() << " = discoveredNodes: " <<discoveredNodes<<  " - source: " <<  sourceMap[ discoveredNodes ];				
+								<<  " first time visited. Frontier size: "<<  frontier.size() 
+								<< " = discoveredNodes: " <<discoveredNodes
+								<<  " - source: " <<  sourceMap[ discoveredNodes ];				
 				}
 	
 		}
 		else {	//	if this is an internal or relative url ....
 				//  ...and an index, then skip it.
 				if (newUrl == "index.html" || newUrl == "index.htm" || newUrl == "index.php"){
-					qDebug()<< "			READER: non-absolute newUrl "  <<  newUrl.toAscii() 
+					qDebug()<< "			READER: # non-absolute newUrl "  <<  newUrl.toAscii() 
 					  		<< " must be an index file. Skipping...";
 					  		continue;
 				}
-				//	...different treatment for css, favicon, rss, ping, 
-				else if ( newUrl.endsWith(".css", Qt::CaseInsensitive) ||
-			 		newUrl.endsWith("feed/", Qt::CaseInsensitive) ||
-					newUrl.endsWith("rss/", Qt::CaseInsensitive) ||
-			 		newUrl.endsWith("atom/", Qt::CaseInsensitive) ||
-			 		newUrl.endsWith("xmlrpc.php", Qt::CaseInsensitive) ||
-					 newUrl.endsWith("favicon.ico", Qt::CaseInsensitive) )
-					{ 
-						qDebug()<< "			READER: * non-absolute newUrl " << newUrl 
-								<< " must be a web 2.0 element (rss, favicon, etc) or file. Skipping...";
-							//	emit createNode(baseUrl, currentNode);
-							//  perhaps we paint that node with a different colour or check a variable?
-							continue;
-					} 
+				
+				//	...different treatment for css, favicon, rss, ping,
+				else if (true) {//flag to display css/rss icons 
+					if ( newUrl.endsWith(".css", Qt::CaseInsensitive) ||
+				 		newUrl.endsWith("feed/", Qt::CaseInsensitive) ||
+						newUrl.endsWith("rss/", Qt::CaseInsensitive) ||
+				 		newUrl.endsWith("atom/", Qt::CaseInsensitive) ||
+				 		newUrl.endsWith("xmlrpc.php", Qt::CaseInsensitive) ||
+				 		newUrl.endsWith("?rsd", Qt::CaseInsensitive) ||
+				 		newUrl.endsWith(".xml", Qt::CaseInsensitive) ||
+						 newUrl.endsWith("favicon.ico", Qt::CaseInsensitive) )
+						{ 
+							qDebug()<< "			READER: # non-absolute newUrl " << newUrl 
+									<< " must be a web 2.0 element (rss, favicon, etc) or file. Skipping...";
+								//	emit createNode(baseUrl, currentNode);
+								//  perhaps we paint that node with a different colour or check a variable?
+								continue;
+						}
+				}
 				// .. else increase discoveredNodes and add it to frontier.
 				frontier.enqueue(newUrl);
 				discoveredNodes++;
@@ -377,7 +400,8 @@ void Reader::run(){
 		}
 		qDebug()<< "			READER: * Creating node " << discoveredNodes << " newUrl "<< newUrl;  
 		emit createNode(newUrl, discoveredNodes);
-		qDebug()<< "			READER: * Creating edge from " << currentNode << " to "<< discoveredNodes ;
+		qDebug()<<endl;
+		qDebug()<< "			READER: --> Creating edge from " << currentNode << " to "<< discoveredNodes ;
 		emit createEdge (currentNode, discoveredNodes);
 
 	}
