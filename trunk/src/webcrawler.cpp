@@ -110,6 +110,10 @@ void WebCrawler::run(){
 	int pos, second_pos;
 	do { 	//repeat forever....
 
+		if (currentNode>1 ) {
+			maxRecursion --; 
+		}
+
 		if (frontier.size() ==0 ) { 	// .... or until we crawl all urls in frontier.		
 			qDebug () <<"		WebCrawler #### Frontier is empty: " <<frontier.size() << " - we will stop now "  ;			
 			break;
@@ -214,15 +218,13 @@ void WebCrawler::run(){
 			continue;
 		}
 		
-		if (currentNode>1  && domain != previous_domain) {
-			maxRecursion --; 
-			qDebug () << "		WebCrawler: **** NEW DOMAIN - DECREASING RECURSION DEPTH INDEX TO " << maxRecursion   ;
-
+		if (	domain != previous_domain ) {
+			qDebug () << "		WebCrawler: **** NEW DOMAIN " ;
 		}
 		else {
-			qDebug () << "		WebCrawler: **** SAME DOMAIN - RECURSION DEPTH INDEX UNCHANGED: " << maxRecursion ;
-			
+			qDebug () << "		WebCrawler: **** SAME DOMAIN ";
 		}
+		
    
 		//lock mutex
 		mutex.lock();
@@ -256,7 +258,6 @@ void WebCrawler::run(){
 void WebCrawler::terminateReaderQuit (){
 	if (reader.isRunning() )		//tell the other thread that we must quit! 
 		reader.quit();
-	quit();
 }
 
 
@@ -329,8 +330,9 @@ void Reader::run(){
 		QMap<QString, int>::const_iterator index = discoveredMap.find(newUrl);
 		if (   index!= discoveredMap.end() ) {
 			qDebug()<< "			READER: #---> newUrl "  <<  newUrl.toAscii() 
-					<< " already CHECKED - Just creating an edge from " << index.value();
-			this->createEdge (sourceMap [ index.value() ], index.value());	// ... then create an edge from the previous node ... 
+					<< " already CHECKED - Just creating an edge from " << currentNode << " to " << index.value();
+			//this->createEdge (sourceMap [ index.value() ], index.value());	// ... then create an edge from the previous node ...
+			this->createEdge (currentNode, index.value() );
 			continue;											// .... and continue skipping it!
 		}
 
@@ -358,12 +360,14 @@ void Reader::run(){
 					  	qDebug()<< "			READER: # absolute newUrl "  <<  newUrl.toAscii() 
 					  			<< " is OUT OF the seed (original) domain. I will create a node but NOT add it to frontier...";
 						this->createNode(newUrl, false);
+						this->createEdge(currentNode, discoveredNodes); 
 					 }
 					else {
 						qDebug()<< "			READER: absolute newUrl" << newUrl.toAscii()
 								<< " appears INSIDE the seed domain "  
 								<< seed_domain << " - I will create a node here..." ;
 						this->createNode(newUrl, true);
+						this->createEdge(currentNode, discoveredNodes);
 					}
 					
 
@@ -372,8 +376,8 @@ void Reader::run(){
 					qDebug()<< "			READER: absolute newUrl" << newUrl.toAscii()
 						<< " is outside the seed domain "  
 						<< seed_domain << " - and we are allowed to go there, so I will create a node here..." ;
-
 					this->createNode(newUrl, true);
+					this->createEdge(currentNode, discoveredNodes);
 				}
 	
 		}
@@ -382,8 +386,8 @@ void Reader::run(){
 				if (newUrl == "index.html" || newUrl == "index.htm" || newUrl == "index.php"){
 					qDebug()<< "			READER: # non-absolute newUrl "  <<  newUrl.toAscii() 
 					  		<< " must be an index file. Creating edge from 1 to " << discoveredNodes;
-					  			this->createEdge ( 1 , discoveredNodes);	
-					  		continue;
+					 this->createEdge ( 1 , discoveredNodes);	
+					 continue;
 				}
 				
 				//	...different treatment for css, favicon, rss, ping,
@@ -408,6 +412,7 @@ void Reader::run(){
 				qDebug()<< "			READER: non-absolute newUrl "  <<  newUrl.toAscii() 
 						<<  " first time visited. I will create a node for it and add it to frontier"; 
 				this->createNode(newUrl, true);
+				this->createEdge(currentNode, discoveredNodes);
 
 		}
 	}

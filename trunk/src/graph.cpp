@@ -222,10 +222,16 @@ void Graph::createEdge(int v1, int v2, float weight, bool reciprocal=false, bool
 	Calls the above createEdge() method with initEdgeColor 
 */
 void Graph::createEdge (int source, int target){
+	if (this->hasEdge(source, target) ) {
+		qDebug()<< " Graph::createEdge - Edge from " << source << " to " << target << " already exists - returning...";
+		return; 
+	}		
+	qDebug()<< " Graph::createEdge - New edge from " << source << " to " << target ;
 	float weight = 1.0;
 	bool reciprocal=false;
 	bool drawArrows=true; 
 	bool bezier=false;
+	
 	createEdge(source, target, weight, initEdgeColor, reciprocal, drawArrows, bezier);	
 }
 
@@ -669,11 +675,11 @@ QString Graph::edgeColor (int s, int t){
 float Graph::hasEdge (int v1, int v2) {		
 	float weight=0;
 	if ( (weight=  m_graph[ index[v1] ]->isLinkedTo(v2) ) != 0 ) {
-		qDebug("Graph: hasEdge() between %i (%i) and %i (%i) = %f", v1, index[v1], v2, index[v2], weight);
+		//qDebug("Graph: hasEdge() between %i (%i) and %i (%i) = %f", v1, index[v1], v2, index[v2], weight);
 		return weight;
 	}
 	else {	
-		qDebug("Graph: hasEdge() between %i (%i) and %i (%i) = NO", v1, index[v1], v2, index[v2]);
+		//qDebug("Graph: hasEdge() between %i (%i) and %i (%i) = NO", v1, index[v1], v2, index[v2]);
 		return 0;
 	}
 }
@@ -795,8 +801,12 @@ void Graph::clear() {
 	if (parser.isRunning() )		//tell the other thread that we must quit! 
 		parser.quit();
 	
-	if (crawler.isRunning() )		//tell the other thread that we must quit! 
+	if (crawler.isRunning() ){
+		//tell the other thread that we must quit!
 		crawler.terminateReaderQuit();
+		crawler.quit();	
+	}	 
+
 
 	qDebug() << "			Finished!";
 
