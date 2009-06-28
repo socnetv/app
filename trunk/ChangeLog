@@ -8,6 +8,7 @@ ChangeLog:
 Version 0.70 - June 30  2009
 Codename: "Summertime"
 ----------------------------
+- First web Crawler implementation. Use Shift+C to test it. Doesn't support frames yet...
 - Fixed bug #379204 which was crashing SocNetV when creating small worlds above 201 nodes
 - Fixed bug #381096 crashing SocNetV in Edge Filtering when an edge was reciprocal.
 - Fixed bug #381094 weight changes not recorded correctly in symmetric edges.

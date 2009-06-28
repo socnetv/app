@@ -146,6 +146,8 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 
 
 %changelog
+* Mon Jun 29 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.70-1
+- Synced with upstream
 * Mon May 27 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.6.0-1
 - Synced with upstream
 * Thu Feb 26 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.52-1
