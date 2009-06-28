@@ -135,6 +135,7 @@ void WebCrawler::run(){
 		baseUrl = frontier.head();	//take the first url from the frontier - name it baseUrl
 	
 		if ( ! checkedMap[baseUrl] ){
+			
 			checkedMap[baseUrl]=true;
 			
 			if (baseUrl.contains ("http://" ) || baseUrl.contains ("https://" )) {	// If baseUrl (except seed) contains http, it is external
@@ -178,7 +179,7 @@ void WebCrawler::run(){
 					}
 	
 			}
-			else {
+			else { //no http:
 					if (currentNode==1) {		//only if this is the seed node
 						if ( (pos=baseUrl.indexOf ("/")) !=-1 ) {
 							domain = baseUrl.left(pos);
@@ -188,7 +189,6 @@ void WebCrawler::run(){
 							seed_domain = domain;
 							http->setHost( domain ); 		
 							http->get( path ); 
-							emit createNode(baseUrl, 1);
 						}
 						else {
 							qDebug() << "		WebCrawler: Initial url: " << baseUrl.toAscii() << " I' ll just get /...";
@@ -196,6 +196,7 @@ void WebCrawler::run(){
 							http->setHost(domain); 		
 							http->get("/"); 					
 						}
+						emit createNode(baseUrl, 1);
 					}
 					else {
 						qDebug() << "		WebCrawler: internal url detected " << baseUrl.toAscii() << " I will use previous domain "<< domain.toAscii();
@@ -218,7 +219,7 @@ void WebCrawler::run(){
 			continue;
 		}
 		
-		if (	domain != previous_domain ) {
+		if (	domain != previous_domain && (currentNode!=1) ) {
 			qDebug () << "		WebCrawler: **** NEW DOMAIN " ;
 		}
 		else {
@@ -346,7 +347,11 @@ void Reader::run(){
 				 		newUrl.endsWith("xmlrpc.php", Qt::CaseInsensitive) ||
 				 		newUrl.endsWith("?rsd", Qt::CaseInsensitive) ||
 				 		newUrl.endsWith(".xml", Qt::CaseInsensitive) ||
-						 newUrl.endsWith("favicon.ico", Qt::CaseInsensitive) )
+						 newUrl.endsWith("favicon.ico", Qt::CaseInsensitive) ||
+						 newUrl.endsWith("favicon.gif", Qt::CaseInsensitive) ||
+						 newUrl.endsWith("favicon.jpg", Qt::CaseInsensitive) || 
+						 newUrl.endsWith("css?H", Qt::CaseInsensitive)  )
+						 
 						{ 
 							qDebug()<< "			READER: # absolute newUrl " << newUrl 
 									<< " must be a web 2.0 element (rss, favicon, etc) or file. Skipping...";
@@ -399,7 +404,10 @@ void Reader::run(){
 				 		newUrl.endsWith("xmlrpc.php", Qt::CaseInsensitive) ||
 				 		newUrl.endsWith("?rsd", Qt::CaseInsensitive) ||
 				 		newUrl.endsWith(".xml", Qt::CaseInsensitive) ||
-						 newUrl.endsWith("favicon.ico", Qt::CaseInsensitive) )
+						 newUrl.endsWith("favicon.ico", Qt::CaseInsensitive) ||
+						 newUrl.endsWith("favicon.gif", Qt::CaseInsensitive) ||
+						 newUrl.endsWith("favicon.jpg", Qt::CaseInsensitive) || 
+						 newUrl.endsWith("css?H", Qt::CaseInsensitive)   )
 						{ 
 							qDebug()<< "			READER: # non-absolute newUrl " << newUrl 
 									<< " must be a web 2.0 element (rss, favicon, etc) or file. Skipping...";
