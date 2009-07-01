@@ -9,6 +9,7 @@ Version 0.70 - June 30  2009
 Codename: "Summertime"
 ----------------------------
 - First web Crawler implementation. Use Shift+C to test it. Doesn't support frames yet...
+- Multiple nodes can be selected with mouse. Press and hold left mouse button somewhere on the canvas, then move mouse to test it.
 - Fixed bug #379204 which was crashing SocNetV when creating small worlds above 201 nodes
 - Fixed bug #381096 crashing SocNetV in Edge Filtering when an edge was reciprocal.
 - Fixed bug #381094 weight changes not recorded correctly in symmetric edges.
@@ -20,6 +21,9 @@ calculation was removed from random network creation routines.
 happening, so that the user knows what is happening and how long it will take.
 - Tom Tryfonidis prepared Arch PKGBUILDs for SocNetV. You can install it from
 AUR.
+- Reverted to older version name scheme. All versions: 0.XX
+
+
 
 
 Version 0.6.0 - May 27 2009

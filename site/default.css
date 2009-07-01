@@ -165,6 +165,15 @@ margin-right: 0;
 }
 
 
+.dlicon a img {
+border: none;
+}
+
+
+.dlicon a:hover {
+border: none; 
+}
+
 
 .dlbutton a{
 display: block;

@@ -3,7 +3,7 @@
 
 
 #CHANGE THIS TO NEW VERSION NUMBERS
-VER=0.51;   
+VER=0.70;   
 echo $VER
 
 echo .

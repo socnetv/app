@@ -4,8 +4,16 @@
 echo  --------------------
 echo  . copying webfiles .
 echo  --------------------
+
 cd /media/oxy/Code/Qt/socnetv/site
+echo "Update ChangeLog also? (Y/N)"
+read ans
+if [ $ans = "y" -o $ans = "Y" ]; then
+        cp  /media/oxy/Code/Qt/socnetv/trunk/ChangeLog /media/oxy/Code/Qt/socnetv/site/
+fi
 rsync -rvPC -delete -e ssh  *  oxy86,socnetv@web.sourceforge.net:htdocs/
+
+
 
 
 
