@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer 
- version: 0.70
+ version: 0.80
  Written in Qt 4.4
 
                            mainwindow.cpp  -  description
@@ -76,7 +76,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
 	fileName=m_fileName;
 	qInstallMsgHandler( myMessageOutput );
 	setWindowIcon (QIcon(":/images/socnetv.png"));
-	VERSION="0.70";
+	VERSION="0.80";
 
 	/** inits that invoke all other construction parts **/
 	initActions();  //register and construct menu Actions 
@@ -5408,7 +5408,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Sun Jun 28 23:25:09 EEST 2009";
+QString BUILD="Mon Jul  6 23:25:46 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"

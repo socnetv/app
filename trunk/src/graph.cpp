@@ -1,6 +1,6 @@
 /******************************************************************************
  SocNetV: Social Networks Visualizer 
- version: 0.70
+ version: 0.80
  Written in Qt 4.4
  
                          graph.cpp  -  description
@@ -1100,14 +1100,14 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 			maxIndexSC=( aVertices-1.0) *  (aVertices-2.0) / 2.0;
 			maxIndexCC=1.0/(aVertices-1.0);
 			maxIndexEC=aVertices-1.0;
-			qDebug("############# maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
+			qDebug("############# symmetricAdjacencyMatrix - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
 		}
 		else {	
 			maxIndexBC= ( ( outEdgesVert-1.0) *  (inEdgesVert-2.0) - (reciprocalEdgesVert-1.0))/ 2.0;
 			maxIndexSC=1;
 			maxIndexEC=(aVertices-1.0);
 			maxIndexCC=1.0/(aVertices-1.0);  //FIXME This applies only on undirected graphs
-			qDebug("############# maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
+			qDebug("############# NOT SymmetricAdjacencyMatrix - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
 		}
 		//float maxIndexBC-directed= (n1-1) * (n2-1)-(ns-1) , n1  vert outgoing n2 ingoing vert ns self  // all this divided by two.
 		qDebug("Graph: createDistanceMatrix() - initialising variables for centrality index");
@@ -1244,7 +1244,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 				//Find min & max BC - not using stdBC:  Wasserman & Faust, pp. 191-192
 				sumBC+=BC;
 				minmax( BC, (*it), maxBC, minBC, maxNodeBC, minNodeBC) ;
-				//Find denominal of groupBC
+				//Calculate the numerator of groupBC according to Freeman's group Betweeness
 				nomBC +=(maxBC - BC );
 
 				//Resolve classes Stress centrality
@@ -1817,7 +1817,7 @@ void Graph::writeCentralityBetweeness(
 
 	outText << tr("\nThere are ")<< classesBC<< tr(" different Betweeness Centrality classes.\n");	
 	outText << tr("\nGROUP BETWEENESS CENTRALISATION (GBC)\n\n");
-	outText << tr("GBC = ") <<  groupBC<<"\n\n";
+	outText << tr("GBC = ") <<  groupBC <<"\n\n";
 	outText << tr("GBC range: 0 < GBC < 1\n");
 	outText << tr("GBC = 0, when all the nodes have exactly the same betweeness index.\n");
 	outText << tr("GBC = 1, when one node falls on all other geodesics between all the remaining (N-1) nodes. This is exactly the situation realised by a star graph.\n");
