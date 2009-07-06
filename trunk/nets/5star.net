@@ -1,19 +1,68 @@
-*Network netname
-*Vertices 5
-1 "1" ic red		0.154912 	0.238095
-2 "2" ic red		0.512594 	0.0541126
-3 "3" ic red		0.785894 	0.859307
-4 "4" ic red		0.183879 	0.757576
-5 "5" ic red		0.876574 	0.296537
-*Arcs 
-*Edges 
-1 2 1 c black
-1 3 1 c black
-1 4 1 c black
-1 5 1 c black
-2 3 1 c black
-2 4 1 c black
-2 5 1 c gray20
-3 4 1 c gray20
-3 5 1 c black
-4 5 1 c gray20
+<?xml version="1.0" encoding="UTF-8"?> 
+ <!-- Created by SocNetV--> 
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns"       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance "       xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns       http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+  <key id="d0" for="node" attr.name="label" attr.type="string"> 
+    <default></default> 
+  </key> 
+  <key id="d1" for="node" attr.name="x_coordinate" attr.type="double"> 
+    <default>0.0</default> 
+  </key> 
+  <key id="d2" for="node" attr.name="y_coordinate" attr.type="double"> 
+    <default>0.0</default> 
+  </key> 
+  <key id="d3" for="node" attr.name="size" attr.type="double"> 
+    <default>4</default> 
+  </key> 
+  <key id="d4" for="node" attr.name="color" attr.type="string"> 
+    <default>gold</default> 
+  </key> 
+  <key id="d5" for="node" attr.name="shape" attr.type="string"> 
+    <default>circle</default> 
+  </key> 
+  <key id="d6" for="edge" attr.name="weight" attr.type="double"> 
+    <default>1.0</default> 
+  </key> 
+  <key id="d7" for="edge" attr.name="color" attr.type="string"> 
+    <default>grey</default> 
+  </key> 
+  <graph id="G" edgedefault="directed"> 
+    <node id="1"> 
+      <data key="d0">1</data>
+      <data key="d1">0.604811</data>
+      <data key="d2">0.472175</data>
+      <data key="d5">circle</data>
+    </node>
+    <node id="2"> 
+      <data key="d0">2</data>
+      <data key="d1">0.0790378</data>
+      <data key="d2">-0.0809444</data>
+      <data key="d5">circle</data>
+    </node>
+    <node id="3"> 
+      <data key="d0">3</data>
+      <data key="d1">0.268041</data>
+      <data key="d2">0.575042</data>
+      <data key="d5">circle</data>
+    </node>
+    <node id="4"> 
+      <data key="d0">4</data>
+      <data key="d1">0.785223</data>
+      <data key="d2">0.236088</data>
+      <data key="d5">circle</data>
+    </node>
+    <node id="5"> 
+      <data key="d0">5</data>
+      <data key="d1">0.833333</data>
+      <data key="d2">0.745363</data>
+      <data key="d5">circle</data>
+    </node>
+    <edge id="e1" directed="true" source="1" target="2"/> 
+    <edge id="e2" directed="true" source="1" target="3"/> 
+    <edge id="e3" directed="true" source="1" target="4"/> 
+    <edge id="e4" directed="true" source="1" target="5"/> 
+    <edge id="e5" directed="true" source="2" target="1"/> 
+    <edge id="e6" directed="true" source="3" target="1"/> 
+    <edge id="e7" directed="true" source="4" target="1"/> 
+    <edge id="e8" directed="true" source="5" target="1"/> 
+  </graph>
+</graphml>

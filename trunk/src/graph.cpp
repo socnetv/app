@@ -1103,7 +1103,8 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 			qDebug("############# symmetricAdjacencyMatrix - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
 		}
 		else {	
-			maxIndexBC= ( ( outEdgesVert-1.0) *  (inEdgesVert-2.0) - (reciprocalEdgesVert-1.0))/ 2.0;
+			//maxIndexBC= ( ( outEdgesVert-1.0) *  (inEdgesVert-2.0) - (reciprocalEdgesVert-1.0))/ 2.0;
+			maxIndexBC=( aVertices-1.0) *  (aVertices-2.0) ;
 			maxIndexSC=1;
 			maxIndexEC=(aVertices-1.0);
 			maxIndexCC=1.0/(aVertices-1.0);  //FIXME This applies only on undirected graphs
@@ -1243,10 +1244,11 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 				(*it)->setSBC( BC/maxIndexBC );   
 				//Find min & max BC - not using stdBC:  Wasserman & Faust, pp. 191-192
 				sumBC+=BC;
-				minmax( BC, (*it), maxBC, minBC, maxNodeBC, minNodeBC) ;
+//				minmax( BC, (*it), maxBC, minBC, maxNodeBC, minNodeBC) ;
+				minmax( (*it)->SBC(), (*it), maxBC, minBC, maxNodeBC, minNodeBC) ;
 				//Calculate the numerator of groupBC according to Freeman's group Betweeness
-				nomBC +=(maxBC - BC );
-
+				//nomBC +=(maxBC - BC );
+				nomBC +=(maxBC - (*it)->SBC());	
 				//Resolve classes Stress centrality
 				SC=(*it)->SC();
 				qDebug("Resolving SC classes...");
@@ -1269,8 +1271,9 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 			denomCC =  (( aVertices-2.0) *  (aVertices-1.0))/ (2.0*aVertices-3.0);
 			groupCC = nomCC/denomCC;	//Calculate group Closeness centrality
 	
-			nomBC*=2.0;
-			denomBC =   (aVertices-1.0) *  (aVertices-1.0) * (aVertices-2.0);
+			//nomBC*=2.0;
+			//denomBC =   (aVertices-1.0) *  (aVertices-1.0) * (aVertices-2.0);
+			denomBC =  (aVertices-1.0);
 			groupBC=nomBC/denomBC;		//Calculate group Betweeness centrality
 	
 			denomGC =  ( ( aVertices-2.0) *  (aVertices-1.0) )/ (2.0*aVertices-3.0);
