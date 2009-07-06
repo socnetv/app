@@ -586,33 +586,33 @@ void MainWindow::initActions(){
 	connect(randCircleLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutRandomCircle()));
 
 	circleInDegreeLayoutAct = new QAction( tr("In-Degree"),	this);
-	circleInDegreeLayoutAct ->setShortcut(tr("Ctrl+1"));
+	circleInDegreeLayoutAct ->setShortcut(tr("Ctrl+Alt+1"));
 	circleInDegreeLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More In-Degree Central Nodes are positioned towards the centre."));
 	circleInDegreeLayoutAct->setWhatsThis(tr("Circle In-Degree Centrality Layout\n\n Repositions the nodes on circles of different radius. More In-Degree Central Nodes are positioned towards the centre."));
 	connect(circleInDegreeLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityInDegree()));
 
 	
 	circleOutDegreeLayoutAct = new QAction( tr("Out-Degree"),	this);
-	circleOutDegreeLayoutAct ->setShortcut(tr("Ctrl+2"));
+	circleOutDegreeLayoutAct ->setShortcut(tr("Ctrl+Alt+2"));
 	circleOutDegreeLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Out-Degree Central Nodes are positioned towards the centre."));
 	circleOutDegreeLayoutAct->setWhatsThis(tr("Circle Out-Degree Centrality Layout\n\n Repositions the nodes on circles of different radius. More Out-Degree Central Nodes are positioned towards the centre."));
 	connect(circleOutDegreeLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityOutDegree()));
 
 	circleClosenessLayoutAct = new QAction( tr("Closeness"),	this);
-	circleClosenessLayoutAct ->setShortcut(tr("Ctrl+3"));
+	circleClosenessLayoutAct ->setShortcut(tr("Ctrl+Alt+3"));
 	circleClosenessLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Closeness Central Nodes are positioned towards the centre."));
 	circleClosenessLayoutAct->setWhatsThis(tr("Circle Closeness Centrality Layout\n\n Repositions the nodes on circles of different radius. More Closeness Central Nodes are positioned towards the centre."));
 	connect(circleClosenessLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityCloseness()));
 
 	circleBetweenessLayoutAct = new QAction( tr("Betweeness"), this);
-	circleBetweenessLayoutAct ->setShortcut(tr("Ctrl+4"));
+	circleBetweenessLayoutAct ->setShortcut(tr("Ctrl+Alt+4"));
 	circleBetweenessLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Betweeness Central Nodes are positioned towards the centre."));
 	circleBetweenessLayoutAct->setWhatsThis(tr("Circle Betweeness Centrality Layout\n\n Repositions the nodes on circles of different radius. More Betweeness Central Nodes are positioned towards the centre."));
 	connect(circleBetweenessLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityBetweeness()));
 
 	circleInformationalLayoutAct = new QAction( tr("Informational"),	this);
 	circleInformationalLayoutAct ->setEnabled(false);
-	circleInformationalLayoutAct ->setShortcut(tr("Ctrl+5"));
+	circleInformationalLayoutAct ->setShortcut(tr("Ctrl+Alt+5"));
 	circleInformationalLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Informational Central Nodes are situated towards the centre."));
 	circleInformationalLayoutAct->setWhatsThis(tr("Circle Informational Centrality Layout\n\n Repositions the nodes on circles of different radius. More Informational Central Nodes are positioned towards the centre."));
 	connect(circleInformationalLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityInformational()));
@@ -624,15 +624,14 @@ void MainWindow::initActions(){
 	connect(circleStressLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityStress() ) );
 	
 	circleGraphLayoutAct = new QAction( tr("Graph"),	this);
-	circleGraphLayoutAct ->setShortcut(tr("Ctrl+7"));
-	circleGraphLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Graphed Central Nodes are positioned towards the centre."));
+	circleGraphLayoutAct ->setShortcut(tr("Ctrl+Alt+7"));
+	circleGraphLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Graph centralized nodes are positioned towards the centre."));
 	circleGraphLayoutAct->setWhatsThis(tr("Circle Graph Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes having greater Graph Centrality are situated towards the centre."));
 	connect(circleGraphLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityGraph() ) );
 
 	
 	circleEccentrLayoutAct = new QAction( tr("Eccentricity"),	this);
-	circleEccentrLayoutAct ->setShortcut(tr("Ctrl+8"));
-
+	circleEccentrLayoutAct ->setShortcut(tr("Ctrl+Alt+8"));
 	circleEccentrLayoutAct  ->setStatusTip(tr("Repositions the nodes on circles of different radius. Nodes of large eccentricity are positioned towards the centre."));
 	circleEccentrLayoutAct ->setWhatsThis(tr("Circle Eccentricity Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes having greater Eccentricity Centrality are situated towards the centre."));
 	connect(circleEccentrLayoutAct , SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityEccentr() ) );
@@ -761,44 +760,56 @@ void MainWindow::initActions(){
 	clusteringCoefAct->setWhatsThis(tr("Clustering Coefficient\n\n The Clustering Coefficient of a vertex quantifies how close the vertex and its neighbors are to being a clique. \n "));
 	connect(clusteringCoefAct, SIGNAL(activated()), this, SLOT(slotClusteringCoefficient() )  );
 
-	cOutDegreeAct = new QAction(tr("OutDegree"),	this);
+
+
+	cInDegreeAct = new QAction(tr("InDegree"),	 this);
+	cInDegreeAct->setStatusTip(tr("Calculates and displays InDegree Centralities"));
+	cInDegreeAct->setShortcut(tr("Ctrl+1"));
+	cInDegreeAct->setWhatsThis(tr("InDegree Centrality\n\n For each node k, this the number of arcs ending at k. Most in-degree central node might be considered more prominent among others. "));
+	connect(cInDegreeAct, SIGNAL(activated()), this, SLOT(slotCentralityInDegree()));
+
+
+	cOutDegreeAct = new QAction(tr("OutDegree"),this);
+	cOutDegreeAct->setShortcut(tr("Ctrl+2"));
 	cOutDegreeAct->setStatusTip(tr("Calculates and displays OutDegree Centralities"));
 	cOutDegreeAct->setWhatsThis(tr("OutDegree Centrality\n\n For each node k, this is the number of arcs starting from it. This is oftenly a measure of activity."));
 	connect(cOutDegreeAct, SIGNAL(activated()), this, SLOT(slotCentralityOutDegree()));
 
-	cInDegreeAct = new QAction(tr("InDegree"),	 this);
-	cInDegreeAct->setStatusTip(tr("Calculates and displays InDegree Centralities"));
-	cInDegreeAct->setWhatsThis(tr("InDegree Centrality\n\n For each node k, this the number of arcs ending at k. Most in-degree central node might be considered more prominent among others. "));
-	connect(cInDegreeAct, SIGNAL(activated()), this, SLOT(slotCentralityInDegree()));
 
-	cClosenessAct = new QAction(tr("Closeness"),	 this);
+	cClosenessAct = new QAction(tr("Closeness"), this);
+	cClosenessAct->setShortcut(tr("Ctrl+3"));
 	cClosenessAct->setStatusTip(tr("Calculates and displays Closeness Centralities"));
 	cClosenessAct->setWhatsThis(tr("Closeness Centrality\n\n For each node k, this the invert sum of the shortest distances between k and every other node. It is interpreted as the ability to access information through the \"grapevine\" of network members. "));
 	connect(cClosenessAct, SIGNAL(activated()), this, SLOT(slotCentralityCloseness()));
 
-	cBetweenessAct = new QAction(tr("Betweeness"),	 this);
+	cBetweenessAct = new QAction(tr("Betweeness"), this);
+	cBetweenessAct->setShortcut(tr("Ctrl+4"));
 	cBetweenessAct->setStatusTip(tr("Calculates and displays Betweeness Centralities"));
 	cBetweenessAct->setWhatsThis(tr("Betweeness Centrality\n\n For each node k, this is the ratio of all geodesics between pairs of nodes which run through k. It reflects how often an node lies on the geodesics between the other nodes of the network. It can be interpreted as a measure of control."));
 	connect(cBetweenessAct, SIGNAL(activated()), this, SLOT(slotCentralityBetweeness()));
 
-	cGraphAct = new QAction(tr("Graph"),	this);
+	cGraphAct = new QAction(tr("Graph"),this);
+	cGraphAct->setShortcut(tr("Ctrl+5"));
 	cGraphAct->setStatusTip(tr("Calculates and displays Graph Centralities"));
 	cGraphAct->setWhatsThis(tr("Graph Centrality\n\n For each node k, this is the invert of the maximum of all geodesic distances from k to all other nodes in the network. Nodes with high GC have short distances to all other nodes in the graph. "));
 	connect(cGraphAct, SIGNAL(activated()), this, SLOT(slotCentralityGraph()));
 
-	cStressAct = new QAction(tr("Stress"),	 this);
+	cStressAct = new QAction(tr("Stress"), this);
+	cStressAct->setShortcut(tr("Ctrl+6"));
 	cStressAct->setStatusTip(tr("Calculate and display Stress Centrality"));
 	cStressAct->setWhatsThis(tr("Stress Centrality\n\n For each node k, this is the total number of geodesics between all other nodes which run through k. When one node falls on all other geodesics between all the remaining (N-1) nodes, then we have a star graph with maximum Stress Centrality"));
 	connect(cStressAct, SIGNAL(activated()), this, SLOT(slotCentralityStress()));
 
 
 	cEccentAct = new QAction(tr("Eccentricity"), this);
-	cEccentAct ->setStatusTip(tr("Calculate and display Eccentricity Centrality"));
-	cEccentAct ->setWhatsThis(tr("Stress Centrality\n\n For each node k, this is the largest geodesic distance (k,t) from every other vertex t. Therefore, EC(u) reflects how far, at most, is each node from every other node."));
-	connect(cEccentAct , SIGNAL(activated()), this, SLOT(slotCentralityEccentricity()));
+	cEccentAct->setShortcut(tr("Ctrl+7"));
+	cEccentAct->setStatusTip(tr("Calculate and display Eccentricity Centrality"));
+	cEccentAct->setWhatsThis(tr("Stress Centrality\n\n For each node k, this is the largest geodesic distance (k,t) from every other vertex t. Therefore, EC(u) reflects how far, at most, is each node from every other node."));
+	connect(cEccentAct, SIGNAL(activated()), this, SLOT(slotCentralityEccentricity()));
 
 	cInformationalAct = new QAction(tr("Informational"),	this);
-	cInformationalAct ->setEnabled(false);
+	cInformationalAct->setShortcut(tr("Ctrl+8"));
+	cInformationalAct->setEnabled(false);
 	cInformationalAct->setStatusTip(tr("Calculate and display Informational Centrality"));
 	cInformationalAct->setWhatsThis(tr("Informational Centrality\n\n Calculate and display Informational Centrality"));
 	connect(cInformationalAct, SIGNAL(activated()), this, SLOT(slotCentralityInformational()));
@@ -1073,8 +1084,8 @@ void MainWindow::initMenuBar() {
 	circleLayoutMenu = new QMenu(tr("In circles by centrality..."));
 	circleLayoutMenu -> setIcon(QIcon(":/images/circular.png"));
 	layoutMenu -> addMenu (circleLayoutMenu);
-	circleLayoutMenu -> addAction (circleOutDegreeLayoutAct);
 	circleLayoutMenu -> addAction (circleInDegreeLayoutAct);
+	circleLayoutMenu -> addAction (circleOutDegreeLayoutAct);
 	circleLayoutMenu -> addAction (circleClosenessLayoutAct);
 	circleLayoutMenu -> addAction (circleBetweenessLayoutAct);
 	circleLayoutMenu -> addAction (circleInformationalLayoutAct);
