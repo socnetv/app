@@ -589,52 +589,52 @@ void MainWindow::initActions(){
 	circleInDegreeLayoutAct ->setShortcut(tr("Ctrl+Alt+1"));
 	circleInDegreeLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More In-Degree Central Nodes are positioned towards the centre."));
 	circleInDegreeLayoutAct->setWhatsThis(tr("Circle In-Degree Centrality Layout\n\n Repositions the nodes on circles of different radius. More In-Degree Central Nodes are positioned towards the centre."));
-	connect(circleInDegreeLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityInDegree()));
+	connect(circleInDegreeLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutRadialCentralityInDegree()));
 
 	
 	circleOutDegreeLayoutAct = new QAction( tr("Out-Degree"),	this);
 	circleOutDegreeLayoutAct ->setShortcut(tr("Ctrl+Alt+2"));
 	circleOutDegreeLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Out-Degree Central Nodes are positioned towards the centre."));
 	circleOutDegreeLayoutAct->setWhatsThis(tr("Circle Out-Degree Centrality Layout\n\n Repositions the nodes on circles of different radius. More Out-Degree Central Nodes are positioned towards the centre."));
-	connect(circleOutDegreeLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityOutDegree()));
+	connect(circleOutDegreeLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutRadialCentralityOutDegree()));
 
 	circleClosenessLayoutAct = new QAction( tr("Closeness"),	this);
 	circleClosenessLayoutAct ->setShortcut(tr("Ctrl+Alt+3"));
 	circleClosenessLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Closeness Central Nodes are positioned towards the centre."));
 	circleClosenessLayoutAct->setWhatsThis(tr("Circle Closeness Centrality Layout\n\n Repositions the nodes on circles of different radius. More Closeness Central Nodes are positioned towards the centre."));
-	connect(circleClosenessLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityCloseness()));
+	connect(circleClosenessLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutRadialCentralityCloseness()));
 
 	circleBetweenessLayoutAct = new QAction( tr("Betweeness"), this);
 	circleBetweenessLayoutAct ->setShortcut(tr("Ctrl+Alt+4"));
 	circleBetweenessLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Betweeness Central Nodes are positioned towards the centre."));
 	circleBetweenessLayoutAct->setWhatsThis(tr("Circle Betweeness Centrality Layout\n\n Repositions the nodes on circles of different radius. More Betweeness Central Nodes are positioned towards the centre."));
-	connect(circleBetweenessLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityBetweeness()));
+	connect(circleBetweenessLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutRadialCentralityBetweeness()));
 
 	circleInformationalLayoutAct = new QAction( tr("Informational"),	this);
 	circleInformationalLayoutAct ->setEnabled(false);
 	circleInformationalLayoutAct ->setShortcut(tr("Ctrl+Alt+5"));
 	circleInformationalLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Informational Central Nodes are situated towards the centre."));
 	circleInformationalLayoutAct->setWhatsThis(tr("Circle Informational Centrality Layout\n\n Repositions the nodes on circles of different radius. More Informational Central Nodes are positioned towards the centre."));
-	connect(circleInformationalLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityInformational()));
+	connect(circleInformationalLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutRadialCentralityInformational()));
 
 	circleStressLayoutAct = new QAction( tr("Stress"),	this);
 	circleStressLayoutAct ->setShortcut(tr("Ctrl+6"));
 	circleStressLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Stressed Central Nodes are positioned towards the centre."));
 	circleStressLayoutAct->setWhatsThis(tr("Circle Stress Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes having greater Stress Centrality are situated towards the centre."));
-	connect(circleStressLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityStress() ) );
+	connect(circleStressLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutRadialCentralityStress() ) );
 	
 	circleGraphLayoutAct = new QAction( tr("Graph"),	this);
 	circleGraphLayoutAct ->setShortcut(tr("Ctrl+Alt+7"));
 	circleGraphLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Graph centralized nodes are positioned towards the centre."));
 	circleGraphLayoutAct->setWhatsThis(tr("Circle Graph Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes having greater Graph Centrality are situated towards the centre."));
-	connect(circleGraphLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityGraph() ) );
+	connect(circleGraphLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutRadialCentralityGraph() ) );
 
 	
 	circleEccentrLayoutAct = new QAction( tr("Eccentricity"),	this);
 	circleEccentrLayoutAct ->setShortcut(tr("Ctrl+Alt+8"));
 	circleEccentrLayoutAct  ->setStatusTip(tr("Repositions the nodes on circles of different radius. Nodes of large eccentricity are positioned towards the centre."));
 	circleEccentrLayoutAct ->setWhatsThis(tr("Circle Eccentricity Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes having greater Eccentricity Centrality are situated towards the centre."));
-	connect(circleEccentrLayoutAct , SIGNAL(activated()), this, SLOT(slotLayoutCircleCentralityEccentr() ) );
+	connect(circleEccentrLayoutAct , SIGNAL(activated()), this, SLOT(slotLayoutRadialCentralityEccentr() ) );
 
 	circleClearBackgrCirclesAct = new QAction(QIcon(":/images/gridlines.png"), tr("Remove Layout GuideLines"), this);
 	circleClearBackgrCirclesAct ->setStatusTip(tr("Removes Red GuideLines from the canvas."));
@@ -643,34 +643,34 @@ void MainWindow::initActions(){
 	
 	levelInDegreeLayoutAct = new QAction( tr("In-Degree"),this);
 	levelInDegreeLayoutAct ->setShortcut(tr("Ctrl+Shift+1"));
-	levelInDegreeLayoutAct ->setStatusTip(tr("Repositions the nodes on levels of different height. More In-Degree Central Nodes are situated on higher levels."));
-	levelInDegreeLayoutAct->setWhatsThis(tr("Level In-Degree Centrality Layout\n\n Repositions the nodes on levels of different height. More In-Degree Central Nodes are situated on higher levels."));
-	connect(levelInDegreeLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutLevelCentralityInDegree()));
+	levelInDegreeLayoutAct ->setStatusTip(tr("Repositions the nodes on layers or levels of different height. More In-Degree Central Nodes are situated on higher layers."));
+	levelInDegreeLayoutAct->setWhatsThis(tr("Level In-Degree Centrality Layout\n\n Repositions the nodes on layers of different height. More In-Degree Central Nodes are situated on higher layers."));
+	connect(levelInDegreeLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutLayeredCentralityInDegree()));
 
 	levelOutDegreeLayoutAct  = new QAction( tr("Out-Degree"),this);
 	levelOutDegreeLayoutAct  ->setShortcut(tr("Ctrl+Shift+2"));
 	levelOutDegreeLayoutAct  ->setStatusTip(tr("Repositions the nodes on levels of different height. More Out-Degree Central Nodes are situated on higher levels."));
 	levelOutDegreeLayoutAct ->setWhatsThis(tr("Level Out-Degree Centrality Layout\n\n Repositions the nodes on levels of different height. More Out-Degree Central Nodes are situated on higher levels."));
-	connect(levelOutDegreeLayoutAct , SIGNAL(activated()), this, SLOT(slotLayoutLevelCentralityOutDegree()));
+	connect(levelOutDegreeLayoutAct , SIGNAL(activated()), this, SLOT(slotLayoutLayeredCentralityOutDegree()));
 
 	levelClosenessLayoutAct = new QAction( tr("Closeness"),	this);
 	levelClosenessLayoutAct ->setShortcut(tr("Ctrl+Shift+3"));
 	levelClosenessLayoutAct ->setStatusTip(tr("Repositions the nodes on levels of different height. More Closeness Central Nodes are situated on higher levels."));
 	levelClosenessLayoutAct->setWhatsThis(tr("level Closeness Centrality Layout\n\n Repositions the nodes on levels of different height. More Closeness Central Nodes are situated on higher levels."));
-	connect(levelClosenessLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutLevelCentralityCloseness()));
+	connect(levelClosenessLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutLayeredCentralityCloseness()));
 
 	levelBetweenessLayoutAct = new QAction( tr("Betweeness"),	this);
 	levelBetweenessLayoutAct ->setShortcut(tr("Ctrl+Shift+4"));
 	levelBetweenessLayoutAct ->setStatusTip(tr("Repositions the nodes on levels of different height. More Betweeness Central Nodes are situated on higher levels."));
 	levelBetweenessLayoutAct->setWhatsThis(tr("level Betweeness Centrality Layout\n\n Repositions the nodes on levels of different height. More Betweeness Central Nodes are situated on higher levels."));
-	connect(levelBetweenessLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutLevelCentralityBetweeness()));
+	connect(levelBetweenessLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutLayeredCentralityBetweeness()));
 
 	levelInformationalLayoutAct = new QAction( tr("Informational"),	this);
 	levelInformationalLayoutAct ->setShortcut(tr("Ctrl+Shift+5"));
 	levelInformationalLayoutAct -> setEnabled(false);
 	levelInformationalLayoutAct ->setStatusTip(tr("Repositions the nodes on levels of different height. More Informational Central Nodes are situated on higher levels."));
 	levelInformationalLayoutAct->setWhatsThis(tr("Level Informational Centrality Layout\n\n Repositions the nodes on levels of different height. More Informational Central Nodes are situated on higher levels."));
-	connect(levelInformationalLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutLevelCentralityInformational()));
+	connect(levelInformationalLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutLayeredCentralityInformational()));
 
 	springLayoutAct= new QAction(tr("Spring Embedder"), this);
 	springLayoutAct->setShortcut(tr("Alt+1"));
@@ -1081,7 +1081,7 @@ void MainWindow::initMenuBar() {
 	randomLayoutMenu ->  addAction(randLayoutAct);
 	randomLayoutMenu ->  addAction( randCircleLayoutAct );
 	 
-	circleLayoutMenu = new QMenu(tr("In circles by centrality..."));
+	circleLayoutMenu = new QMenu(tr("Radial by centrality..."));
 	circleLayoutMenu -> setIcon(QIcon(":/images/circular.png"));
 	layoutMenu -> addMenu (circleLayoutMenu);
 	circleLayoutMenu -> addAction (circleInDegreeLayoutAct);
@@ -1092,7 +1092,7 @@ void MainWindow::initMenuBar() {
 	circleLayoutMenu -> addAction (circleStressLayoutAct);
 	circleLayoutMenu -> addAction (circleGraphLayoutAct);
 	circleLayoutMenu -> addAction (circleEccentrLayoutAct);
-	levelLayoutMenu = new QMenu (tr("In levels by centrality..."));
+	levelLayoutMenu = new QMenu (tr("Layered by centrality..."));
 	levelLayoutMenu -> setIcon(QIcon(":/images/net3.png"));
 	layoutMenu -> addMenu (levelLayoutMenu);
 	levelLayoutMenu ->addAction ( levelInDegreeLayoutAct     );
@@ -1111,9 +1111,6 @@ void MainWindow::initMenuBar() {
 	layoutMenu->addAction(nodeSizeProportionalInDegreeAct);
 	layoutMenu->addSeparator();
 	layoutMenu -> addAction (circleClearBackgrCirclesAct);
-//	layoutMenu->addSeparator();
-//	layoutMenu->addAction(zoomInAct);
-//	layoutMenu->addAction(zoomOutAct);
 	
 
 
@@ -3582,7 +3579,7 @@ void MainWindow::slotColorationRegular() {
 
 
 	/**
-*	Calls Graph::layoutCircleCentrality()
+*	Calls Graph::LayoutRadialCentrality()
 *	to reposition all nodes on a circular layout based on their In-Degree Centralities. 
 *	More central nodes are closer to the centre
 */
@@ -3857,11 +3854,11 @@ void MainWindow::slotLayoutNodeSizeProportionalInEdges(bool checked){
 
 
 /**
-*	Calls Graph::layoutCircleCentrality()
+*	Calls Graph::LayoutRadialCentrality()
 *	to reposition all nodes on a circular layout based on their In-Degree Centralities. 
 *	More central nodes are closer to the centre
 */
-void MainWindow::slotLayoutCircleCentralityInDegree(){
+void MainWindow::slotLayoutRadialCentralityInDegree(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Sorry, I can't follow! \nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 		statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
@@ -3874,18 +3871,18 @@ void MainWindow::slotLayoutCircleCentralityInDegree(){
 	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
 	createProgressBar();
-	activeGraph.layoutCircleCentrality(x0, y0, maxRadius,1);
+	activeGraph.layoutRadialCentrality(x0, y0, maxRadius,1);
 	destroyProgressBar();
 	statusMessage( tr("Nodes in inner circles have greater In-Degree Centrality.") );	
 }
 
 
 /**
-*	Calls Graph::layoutCircleCentrality()
-*	to reposition all nodes on a circular layout based on their Out-Degree Centralities. 
+*	Calls Graph::layoutRadialCentrality()
+*	to reposition all nodes on a radial layout according to their out-degree Centralities. 
 *	More central nodes are closer to the centre
 */
-void MainWindow::slotLayoutCircleCentralityOutDegree(){
+void MainWindow::slotLayoutRadialCentralityOutDegree(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first!"), "OK",0);
 		statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
@@ -3898,7 +3895,7 @@ void MainWindow::slotLayoutCircleCentralityOutDegree(){
 	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
 	createProgressBar();
-	activeGraph.layoutCircleCentrality(x0, y0, maxRadius, 2);
+	activeGraph.layoutRadialCentrality(x0, y0, maxRadius, 2);
 	destroyProgressBar();
 	statusMessage( tr("Nodes in inner circles have greater Out-Degree Centrality. ") );	
 }
@@ -3907,11 +3904,11 @@ void MainWindow::slotLayoutCircleCentralityOutDegree(){
 
 
 /**
-*	Calls Graph::layoutCircleCentrality()
+*	Calls Graph::layoutRadialCentrality()
 *	to reposition all nodes on a circular layout based on their Closeness Centralities. 
 *	More central nodes are closer to the centre
 */
-void MainWindow::slotLayoutCircleCentralityCloseness(){
+void MainWindow::slotLayoutRadialCentralityCloseness(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Sorry, there are no nodes yet!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 
@@ -3924,7 +3921,7 @@ void MainWindow::slotLayoutCircleCentralityCloseness(){
 	createProgressBar();
 	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
-	activeGraph.layoutCircleCentrality(x0, y0, maxRadius,3);
+	activeGraph.layoutRadialCentrality(x0, y0, maxRadius,3);
 	destroyProgressBar();
 	statusMessage( tr("Nodes in inner circles have greater Closeness Centrality. ") );	
 }
@@ -3934,11 +3931,11 @@ void MainWindow::slotLayoutCircleCentralityCloseness(){
 
 
 /**
-*	Calls Graph::layoutCircleCentrality()
+*	Calls Graph::LayoutRadialCentrality()
 *	to reposition all nodes on a circular layout based on their Betweeness Centralities. 
 *	More central nodes are closer to the centre
 */
-void MainWindow::slotLayoutCircleCentralityBetweeness(){
+void MainWindow::slotLayoutRadialCentralityBetweeness(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("No nodes yet!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 
@@ -3952,7 +3949,7 @@ void MainWindow::slotLayoutCircleCentralityBetweeness(){
 	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
 	createProgressBar();
-	activeGraph.layoutCircleCentrality(x0, y0, maxRadius,4);
+	activeGraph.layoutRadialCentrality(x0, y0, maxRadius,4);
 	destroyProgressBar();
 	statusMessage( tr("Nodes in inner circles have greater Betweeness Centrality. ") );	
 }
@@ -3963,11 +3960,11 @@ void MainWindow::slotLayoutCircleCentralityBetweeness(){
 
 
 /**
-*	Calls Graph::layoutCircleCentrality()
+*	Calls Graph::LayoutRadialCentrality()
 *	to reposition all nodes on a circular layout based on their Stress Centralities. 
 *	More central nodes are closer to the centre
 */
-void MainWindow::slotLayoutCircleCentralityStress(){
+void MainWindow::slotLayoutRadialCentralityStress(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 		statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
@@ -3980,7 +3977,7 @@ void MainWindow::slotLayoutCircleCentralityStress(){
 	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
 	createProgressBar();
-	activeGraph.layoutCircleCentrality(x0, y0, maxRadius,5);
+	activeGraph.layoutRadialCentrality(x0, y0, maxRadius,5);
 	destroyProgressBar();
 	statusMessage( tr("Nodes in inner circles have greater Stress Centrality. ") );	
 }
@@ -3989,11 +3986,11 @@ void MainWindow::slotLayoutCircleCentralityStress(){
 
 
 /**
-*	Calls Graph::layoutCircleCentrality()
+*	Calls Graph::LayoutRadialCentrality()
 *	to reposition all nodes on a circular layout based on their Graph Centralities. 
 *	More central nodes are closer to the centre
 */
-void MainWindow::slotLayoutCircleCentralityGraph(){
+void MainWindow::slotLayoutRadialCentralityGraph(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Nothing to do here!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 		statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
@@ -4006,7 +4003,7 @@ void MainWindow::slotLayoutCircleCentralityGraph(){
 	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
 	createProgressBar();
-	activeGraph.layoutCircleCentrality(x0, y0, maxRadius,6);
+	activeGraph.layoutRadialCentrality(x0, y0, maxRadius,6);
 	destroyProgressBar();
 	statusMessage( tr("Nodes in inner circles have greater Graph Centrality. ") );	
 
@@ -4015,11 +4012,11 @@ void MainWindow::slotLayoutCircleCentralityGraph(){
 
 
 /**
-*	Calls Graph::layoutCircleCentrality()
+*	Calls Graph::layoutRadialCentrality()
 *	to reposition all nodes on a circular layout based on their Eccentricities 
 *	More central nodes are closer to the centre
 */
-void MainWindow::slotLayoutCircleCentralityEccentr(){
+void MainWindow::slotLayoutRadialCentralityEccentr(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 		statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
@@ -4032,28 +4029,28 @@ void MainWindow::slotLayoutCircleCentralityEccentr(){
 	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
 	createProgressBar();
-	activeGraph.layoutCircleCentrality(x0, y0, maxRadius,7);
+	activeGraph.layoutRadialCentrality(x0, y0, maxRadius,7);
 	destroyProgressBar();
 	statusMessage( tr("Nodes in inner circles have greater Eccentricity Centrality. ") );	
 }
 
 /**
-*	Calls Graph::layoutCircleCentrality()
+*	Calls Graph::LayoutRadialCentrality()
 *	to reposition all nodes on a circular layout based on their Informational Centralities. 
 *	More central nodes are closer to the centre
 */
-void MainWindow::slotLayoutCircleCentralityInformational(){
+void MainWindow::slotLayoutRadialCentralityInformational(){
 }
 
 
 
 /**
-*	Calls Graph::layoutLevelCentrality 
+*	Calls Graph::layoutLayeredCentrality 
 *	to reposition all nodes on different top-down levels according to their 
 *	In-Degree Centrality
 *	More central nodes are closer to the top of the canvas
 */
-void MainWindow::slotLayoutLevelCentralityInDegree(){
+void MainWindow::slotLayoutLayeredCentralityInDegree(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 		statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
@@ -4065,7 +4062,7 @@ void MainWindow::slotLayoutLevelCentralityInDegree(){
 	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
 	createProgressBar();
-	activeGraph.layoutLevelCentrality(maxWidth, maxHeight, 1);
+	activeGraph.layoutLayeredCentrality(maxWidth, maxHeight, 1);
 	destroyProgressBar();
 	statusMessage( tr("Nodes in upper levels have greater In-Degree Centrality. ") );	
 
@@ -4074,12 +4071,12 @@ void MainWindow::slotLayoutLevelCentralityInDegree(){
 
 
 /**
-*	Calls Graph::layoutLevelCentrality 
+*	Calls Graph::layoutLayeredCentrality 
 *	to reposition all nodes on different top-down levels according to their 
 *	Out-Degree Centrality
 *	More central nodes are closer to the top of the canvas
 */
-void MainWindow::slotLayoutLevelCentralityOutDegree(){
+void MainWindow::slotLayoutLayeredCentralityOutDegree(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 		statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
@@ -4091,7 +4088,7 @@ void MainWindow::slotLayoutLevelCentralityOutDegree(){
 	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
 	createProgressBar();
-	activeGraph.layoutLevelCentrality(maxWidth, maxHeight, 2);
+	activeGraph.layoutLayeredCentrality(maxWidth, maxHeight, 2);
 	destroyProgressBar();
 	statusMessage( tr("Nodes in upper levels have greater Out-Degree Centrality. ") );	
 
@@ -4099,13 +4096,13 @@ void MainWindow::slotLayoutLevelCentralityOutDegree(){
 
 
 /**
-*	Calls Graph::layoutLevelCentrality 
+*	Calls Graph::LayoutLayeredCentrality 
 *	to reposition all nodes on different top-down levels according to their 
 *	Closeness Centrality
 *	More central nodes are closer to the top of the canvas
 
 */
-void MainWindow::slotLayoutLevelCentralityCloseness(){
+void MainWindow::slotLayoutLayeredCentralityCloseness(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 		statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
@@ -4117,7 +4114,7 @@ void MainWindow::slotLayoutLevelCentralityCloseness(){
 	statusMessage(  QString(tr("Calculating new nodes positions. Please wait..."))  );
 	graphicsWidget->clearBackgrCircles();
 	createProgressBar();
-	activeGraph.layoutLevelCentrality(maxWidth, maxHeight, 3);
+	activeGraph.layoutLayeredCentrality(maxWidth, maxHeight, 3);
 	destroyProgressBar();
 	
 	statusMessage( tr("Nodes in upper levels have greater Closeness Centrality.") );	
@@ -4126,12 +4123,12 @@ void MainWindow::slotLayoutLevelCentralityCloseness(){
 
 
 /**
-*	Calls Graph::layoutLevelCentrality 
+*	Calls Graph::LayoutLayeredCentrality 
 *	to reposition all nodes on different top-down levels according to their 
 *	Betweeness Centrality
 *	More central nodes are closer to the top of the canvas
 */
-void MainWindow::slotLayoutLevelCentralityBetweeness(){
+void MainWindow::slotLayoutLayeredCentralityBetweeness(){
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 		statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
@@ -4143,16 +4140,16 @@ void MainWindow::slotLayoutLevelCentralityBetweeness(){
 	statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
 	createProgressBar();
-	activeGraph.layoutLevelCentrality(maxWidth, maxHeight, 4);
+	activeGraph.layoutLayeredCentrality(maxWidth, maxHeight, 4);
 	destroyProgressBar();	
 	statusMessage( tr("Nodes in upper levels have greater Betweeness Centrality. ") );	
 }
 
 
 /**
-	TODO slotLayoutLevelCentralityInformational
+	TODO slotLayoutLayeredCentralityInformational
 */
-void MainWindow::slotLayoutLevelCentralityInformational(){
+void MainWindow::slotLayoutLayeredCentralityInformational(){
 }
 
 
@@ -5419,7 +5416,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Mon Jul  6 23:25:46 EEST 2009";
+QString BUILD="Wed Jul  8 00:44:17 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"

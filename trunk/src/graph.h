@@ -232,8 +232,8 @@ public:
 
 	/**LAYOUTS*/	
 	void layoutRandom(double maxWidth, double maxHeight);
-	void layoutCircleCentrality(double x0, double y0, double maxRadius, int CentralityType);
-	void layoutLevelCentrality(double maxWidth, double maxHeight, int CentralityType);
+	void layoutRadialCentrality(double x0, double y0, double maxRadius, int CentralityType);
+	void layoutLayeredCentrality(double maxWidth, double maxHeight, int CentralityType);
 	void layoutForceDirectedSpringEmbedder(bool dynamicMovement);
 	void layoutForceDirectedFruchtermanReingold(bool dynamicMovement);
 

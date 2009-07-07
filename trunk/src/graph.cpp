@@ -2035,8 +2035,8 @@ void Graph::writeClusteringCoefficient(
 /** 
 * Repositions all nodes on the periphery of different circles with radius analogous to their centrality
 */
-void Graph::layoutCircleCentrality(double x0, double y0, double maxRadius, int CentralityType){
-	qDebug("Graph: layoutCircleCentrality...");
+void Graph::layoutRadialCentrality(double x0, double y0, double maxRadius, int CentralityType){
+	qDebug("Graph: layoutRadialCentrality...");
 	//first calculate centralities
 	if ((graphModified || !calculatedCentralities) && CentralityType > 2) {
 		qDebug("Graph: Calling createDistanceMatrix() to calc centralities");
@@ -2168,7 +2168,7 @@ void Graph::layoutRandom(double maxWidth, double maxHeight){
 *	 Repositions all nodes on different top-down levels according to their centrality
 * 	Emits moveNode(i, x,y) to tell GW that the node item should be moved. 
 */
-void Graph::layoutLevelCentrality(double maxWidth, double maxHeight, int CentralityType){
+void Graph::layoutLayeredCentrality(double maxWidth, double maxHeight, int CentralityType){
 	qDebug("Graph: layoutLevelCentrality...");
 	//first calculate centralities
 	if ((graphModified || !calculatedCentralities) && CentralityType > 2) {
