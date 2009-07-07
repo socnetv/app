@@ -637,7 +637,7 @@ void MainWindow::initActions(){
 	connect(circleEccentrLayoutAct , SIGNAL(activated()), this, SLOT(slotLayoutRadialCentralityEccentr() ) );
 
 	circleClearBackgrCirclesAct = new QAction(QIcon(":/images/gridlines.png"), tr("Remove Layout GuideLines"), this);
-	circleClearBackgrCirclesAct ->setStatusTip(tr("Removes Red GuideLines from the canvas."));
+	circleClearBackgrCirclesAct ->setStatusTip(tr("Removes all layout guideLines from the canvas."));
 	circleClearBackgrCirclesAct->setWhatsThis(tr("Remove GuideLines\n\n Removes any guidelines (circles or horizontal lines) created for the network layout."));
 
 	
@@ -5416,7 +5416,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Wed Jul  8 00:44:17 EEST 2009";
+QString BUILD="Wed Jul  8 01:37:04 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"

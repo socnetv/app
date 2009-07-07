@@ -1187,7 +1187,6 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 				qDebug("PHASE 2 (ACCUMULATION): Start back propagation of dependencies. Set dependency delta[u]=0 on each vertex");
 				for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
 					(*it1)->setDelta(0.0);
-//					qDebug("vertex %i with index %i has delta = %F", (*it1)->name(),index[(*it1)->name()], (*it1)->delta());
 				}
 
 				qDebug("Visit all vertices in reverse order of their discovery (from s = %i) to sum dependencies. Initial Stack size has %i", s, Stack.size());
@@ -1229,51 +1228,52 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 		
 		if (doCalculcateCentralities) {
 			for (it=m_graph.begin(); it!=m_graph.end(); it++) {
-
 				if (symmetricAdjacencyMatrix) {
 					qDebug("Betweeness centrality must be divided by two if the graph is undirected");
 					(*it)->setBC ( (*it)->BC()/2.0);
 				}
-
 				BC=(*it)->BC();
-				//Resolve classes Betweeness centrality
 				qDebug("Resolving BC classes...");
 				resolveClasses(BC, discreteBCs, classesBC);
-				//Store standard Betweeness 
 				qDebug("******************* BC %f maxIndex: %f", BC, maxIndexBC);
 				(*it)->setSBC( BC/maxIndexBC );   
 				//Find min & max BC - not using stdBC:  Wasserman & Faust, pp. 191-192
 				sumBC+=BC;
-//				minmax( BC, (*it), maxBC, minBC, maxNodeBC, minNodeBC) ;
-				minmax( (*it)->SBC(), (*it), maxBC, minBC, maxNodeBC, minNodeBC) ;
-				//Calculate the numerator of groupBC according to Freeman's group Betweeness
-				//nomBC +=(maxBC - BC );
-				nomBC +=(maxBC - (*it)->SBC());	
-				//Resolve classes Stress centrality
-				SC=(*it)->SC();
+				minmax( BC, (*it), maxBC, minBC, maxNodeBC, minNodeBC) ;
+				
 				qDebug("Resolving SC classes...");
+				SC=(*it)->SC();
 				resolveClasses(SC, discreteSCs, classesSC);
-				//Store standard Stress centrality
 				(*it)->setSSC ( SC/maxIndexSC );
-				//Find min & max SC - not using stdSC:  Wasserman & Faust, pp. 191-192
+				//Find min & max SC - not using stdSC
 				sumSC+=SC;
 				minmax( SC, (*it), maxSC, minSC, maxNodeSC, minNodeSC) ;
+			}
+			for (it=m_graph.begin(); it!=m_graph.end(); it++) {
 				//Find denominal of groupSC
+				BC=(*it)->BC();
+				SC=(*it)->SC();
+
 				nomSC +=(maxSC - SC );
+
+				//Calculate the numerator of groupBC according to Freeman's group Betweeness
+				nomBC +=(maxBC - BC );
+				//nomBC +=(maxBC - (*it)->SBC());	
 				
 				//Find denominal of groupGC
 				nomGC += maxGC-(*it)->SGC();
 				//Find denominal of groupCC
 				nomCC += maxCC- (*it)->SCC();
+
 			}
 			maxCC = (aVertices-1.0)*maxCC;	//standardize minimum and maximum Closeness centrality
 			minCC = (aVertices-1.0)*minCC; 
 			denomCC =  (( aVertices-2.0) *  (aVertices-1.0))/ (2.0*aVertices-3.0);
 			groupCC = nomCC/denomCC;	//Calculate group Closeness centrality
 	
-			//nomBC*=2.0;
-			//denomBC =   (aVertices-1.0) *  (aVertices-1.0) * (aVertices-2.0);
-			denomBC =  (aVertices-1.0);
+			nomBC*=2.0;
+			denomBC =   (aVertices-1.0) *  (aVertices-1.0) * (aVertices-2.0);
+			//denomBC =  (aVertices-1.0);
 			groupBC=nomBC/denomBC;		//Calculate group Betweeness centrality
 	
 			denomGC =  ( ( aVertices-2.0) *  (aVertices-1.0) )/ (2.0*aVertices-3.0);
