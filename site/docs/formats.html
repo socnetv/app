@@ -17,10 +17,11 @@ You can load   these kinds of files by clicking on menu File > Load or	by  speci
 SocNetV uses simple inspection routines to check the format of the given file. 
 In most cases, it  will  load the file, no matter what the file extension is.
 
-<p class="text">
-The default file format of SocNetV is GraphML. <br /> 
-If you create a new network and press Ctrl+S to save it, then by default SocNetV will save it in GraphML format.
-</p>
+</div>
+<div class="text">
+<br />
+<strong>WARNING: </strong>The default file format of SocNetV is GraphML. If you create a new network and press Ctrl+S to save it, then by default SocNetV will save it in GraphML format.
+
 
 </div>
 <h4><a name="GraphML" id="GraphML"></a>GraphML files</h4>
@@ -62,7 +63,15 @@ Each GraphML document is written in a special form of XML and defines a graph. F
 
 <p class="text"> 
 All GraphML files consist of a graphml element and a variety of subelements: graph, node, edge, keys. 
-SocNetV understands all of them.
+SocNetV understands all of them. 
+</p>
+
+<p class="text">
+Nodes are defined by the &lt;node id="n1" /&gt; where id is a unique node identification string. This id is used in edge declaration, below.
+<br /> 
+Edges are defined by the &lt;edge source="n1" target="n1" /&gt; where source and target are equal to existing node ids. 
+ 
+
 
 </p>
 
@@ -72,12 +81,12 @@ SocNetV understands all of them.
 This is the file format of the graphviz layout package. Unfortunately, I have not yet managed to implement the whole specifications of this nice format. The features that are recognized by SocNetV are displayed in the following example:
 </p>
 <p class="code">
-digraph mydot {
-node [color=red, shape=box];
-a -> b -> c ->d
-node [color=pink, shape=circle];
-d->e->a->f->j->k->l->o
-[weight=1, color=black];
+digraph mydot { <br />
+node [color=red, shape=box]; <br />
+a -> b -> c ->d <br />
+node [color=pink, shape=circle]; <br />
+d->e->a->f->j->k->l->o <br />
+[weight=1, color=black]; <br />
 }
 </p>
 <p class="text"> 
