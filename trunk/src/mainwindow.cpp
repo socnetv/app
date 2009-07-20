@@ -2399,7 +2399,7 @@ void MainWindow::slotCreateRandomNetErdos(){
 
 	qDebug("MW Erdos network:  Create random network of %i nodes and %f edge probability.",newNodes, probability);
 
-	if (showProgressBarAct->isChecked() || newNodes > 300){
+	if (showProgressBarAct->isChecked() && newNodes > 300){
 		progressDialog= new QProgressDialog("Creating random network. Please wait (or disable me from Options > View > ProgressBar, next time ;)).", "Cancel", 0, newNodes+newNodes, this);
 		progressDialog -> setWindowModality(Qt::WindowModal);
 		connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
@@ -2554,7 +2554,7 @@ void MainWindow::slotCreateSmallWorldRandomNetwork(){
 	double y0=scene->height()/2.0;
 	double radius=(graphicsWidget->height()/2.0)-50;          //pixels
 
-	if (showProgressBarAct->isChecked()){
+	if (showProgressBarAct->isChecked() && newNodes > 300){
 		progressDialog= new QProgressDialog(
 			tr("Creating random network. Please wait \n (or disable me from Options > View > ProgressBar, next time )."), 
 			"Cancel", 0, (int) (newNodes+newNodes), this);
@@ -2566,7 +2566,7 @@ void MainWindow::slotCreateSmallWorldRandomNetwork(){
 	activeGraph.createRandomNetSmallWorld(newNodes, degree, beta, x0, y0, radius);
 	QApplication::restoreOverrideCursor();
 
-	if (showProgressBarAct->isChecked())
+	if (showProgressBarAct->isChecked() && newNodes > 300 )
 		progressDialog->deleteLater();	
 
 	fileLoaded=false;
@@ -2616,7 +2616,7 @@ void MainWindow::slotCreateRandomNetRingLattice(){
 	double y0=scene->height()/2.0;
 	double radius=(graphicsWidget->height()/2.0)-50;          //pixels
 
-	if (showProgressBarAct->isChecked()){
+	if (showProgressBarAct->isChecked() && newNodes > 300){
 		progressDialog= new QProgressDialog("Creating random network. Please wait (or disable me from Options > View > ProgressBar, next time ;)).", "Cancel", 0, (int) (newNodes+newNodes), this);
 		progressDialog -> setWindowModality(Qt::WindowModal);
 		connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
@@ -2629,7 +2629,7 @@ void MainWindow::slotCreateRandomNetRingLattice(){
 
 	QApplication::restoreOverrideCursor();
 
-	if (showProgressBarAct->isChecked())
+	if (showProgressBarAct->isChecked() && newNodes > 300)
 		progressDialog->deleteLater();	
 
 	fileLoaded=false;
