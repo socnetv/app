@@ -211,7 +211,6 @@ MainWindow::MainWindow(const QString & m_fileName) {
 	/** EVERY TIME INITNET IS CALLED **/
 	bezier=false; 
 	firstTime=true;
-	showProgressBar=false;	
 
 	graphicsWidget->setInitNodeColor(initNodeColor);	
 	graphicsWidget->setInitNumberDistance(numberDistance);
@@ -897,7 +896,7 @@ void MainWindow::initActions(){
 	showProgressBarAct->setStatusTip(tr("Enables/disables Progress Bars"));
 	showProgressBarAct->setWhatsThis(tr("Enable or disable Progress Bars\n\nProgress Bars may appear during time-cost operations. Enabling progressBar has a significant cpu cost but lets you know about the progress of a given operation."));
 	showProgressBarAct->setCheckable(true);
-	showProgressBarAct->setChecked (false);
+	showProgressBarAct->setChecked (true);
 	connect(showProgressBarAct, SIGNAL(toggled(bool)), this, SLOT(slotShowProgressBar(bool)));
 
 	printDebugAct = new QAction(tr("Debug Messages"),	this);
@@ -2412,7 +2411,7 @@ void MainWindow::slotCreateRandomNetErdos(){
 	activeGraph.createRandomNetErdos (newNodes, probability);
 	QApplication::restoreOverrideCursor();
 
-	if (showProgressBarAct->isChecked() || newNodes > 300)
+	if (showProgressBarAct->isChecked() && newNodes > 300)
 		progressDialog->deleteLater();	
 
 	fileLoaded=false;
@@ -2489,7 +2488,7 @@ void MainWindow::slotCreateSameDegreeRandomNetwork(){
 	makeThingsLookRandom();  
 	statusMessage( "Creating a pseudo-random network where each node has the same degree... ");
 
-	if (showProgressBarAct->isChecked() || newNodes > 300){
+	if (showProgressBarAct->isChecked() && newNodes > 300){
 		progressDialog= new QProgressDialog("Creating random network. Please wait (or disable me from Options > View > ProgressBar, next time ;)).", "Cancel", 0, (int) (newNodes+newNodes), this);
 		progressDialog -> setWindowModality(Qt::WindowModal);
 		connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
@@ -2502,7 +2501,7 @@ void MainWindow::slotCreateSameDegreeRandomNetwork(){
 
 	QApplication::restoreOverrideCursor();
 
-	if (showProgressBarAct->isChecked() || newNodes > 300)
+	if (showProgressBarAct->isChecked() && newNodes > 300)
 		progressDialog->deleteLater();	
 
 	fileLoaded=false;
@@ -5204,11 +5203,9 @@ void MainWindow::slotAntialiasing(bool toggle) {
 void MainWindow::slotShowProgressBar(bool toggle) {
 	statusMessage( tr("Toggle progressbar..."));
 	if (!toggle)  {
-		showProgressBar=false;
 		statusMessage( tr("Progress bars off.") );	
 	}
 	else   {
-		showProgressBar=true;
 		statusMessage( tr("Progress bars on.") );	
 	}
 }
@@ -5416,7 +5413,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Wed Jul  8 01:37:04 EEST 2009";
+QString BUILD="Tue Jul 21 00:09:45 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"
