@@ -10,6 +10,7 @@ Codename: "sitakia"
 - added keyboard shortcuts for Centralities
 - Fixed bug #396124, GBC different in Pajek cp. to SocNetV
 - Changed ProgressBar behaviour: bars appear only if nodes are more than 300
+- New feature: the embedded text editor can be used to copy/paste directly network data
 
 
 Version 0.70 - June 30  2009

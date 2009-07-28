@@ -338,6 +338,14 @@ void MainWindow::initActions(){
 	fileQuit->setWhatsThis(tr("Exit\n\nQuits the application"));
 	connect(fileQuit, SIGNAL(activated()), this, SLOT(close()));
 
+
+	openTextEditorAct = new QAction(QIcon(""), tr("Open Text Editor"),this);
+	openTextEditorAct ->setShortcut(tr(""));
+	openTextEditorAct->setStatusTip(tr("Opens the SocNetV text editor"));
+	openTextEditorAct->setWhatsThis(tr("Open Text Editor\n\nOpens the SocNetV text editor where you can copy paste network data"));
+	connect(openTextEditorAct, SIGNAL(activated()), this, SLOT(slotOpenTextEditor()));
+	
+	
 	viewNetworkFileAct = new QAction(QIcon(":/images/net2.png"), tr("View Loaded File"),this);
 	viewNetworkFileAct ->setShortcut(tr("F5"));
 	viewNetworkFileAct->setStatusTip(tr("Displays the loaded network file"));
@@ -972,12 +980,13 @@ void MainWindow::initMenuBar() {
 	//networkMenu=new QMenu();
 	networkMenu = menuBar()->addMenu(tr("&Network"));
 	networkMenu -> addAction(fileNew);
-	networkMenu  -> addAction(fileOpen);
-	networkMenu ->addSeparator();
+	networkMenu -> addAction(fileOpen);
+	networkMenu -> addSeparator();
+	networkMenu -> addAction (openTextEditorAct);
 	networkMenu -> addAction (viewNetworkFileAct);
-	networkMenu ->addSeparator();
+	networkMenu -> addSeparator();
 	networkMenu -> addAction (viewSociomatrixAct);
-	networkMenu ->addSeparator();
+	networkMenu -> addSeparator();
 	randomNetworkMenu = new QMenu(tr("Create Random Network"));
 	networkMenu ->addMenu (randomNetworkMenu);
 	randomNetworkMenu -> addAction (createSmallWorldRandomNetworkAct);
@@ -1871,12 +1880,15 @@ void MainWindow::slotPrintView() {
 
 
 /**
-	inits everything to defaults.
-	Then calls loadGraph function of activeGraph to load the network...
-*/
+ * 	Main network file loader method 
+ * 	Inits everything to default values.
+ *  Then calls activeGraph::loadGraph to actually load the network...
+ */
 bool MainWindow::loadNetworkFile(QString m_fileName){
 	qDebug("MW: loadNetworkFile");
-	initNet(); 
+	
+	initNet();
+	 
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 	qDebug("MW: calling activeGraph loadgraph gw height %i", graphicsWidget->height() ) ;
 	bool loadGraphStatus=activeGraph.loadGraph ( 
@@ -1893,7 +1905,7 @@ bool MainWindow::loadNetworkFile(QString m_fileName){
 
 
 /**
-*	This method is called from Graph when a network file is loaded.
+*	Called from Graph when a network file is loaded.
 *	It informs the MW about the type of the network so that it can display the appropiate message.
 */
 void MainWindow::fileType (
@@ -2336,6 +2348,20 @@ void MainWindow::slotViewNetworkFile(){
 	}
 }
 
+
+
+
+/**
+	Opens the embedded text editor
+*/
+void MainWindow::slotOpenTextEditor(){
+	qDebug() << "slotOpenTextEditor() : ";
+
+	TextEditor *ed = new TextEditor(""); 
+	ed->setWindowTitle(tr("New Network File"));
+	ed->show();
+	statusMessage(  tr("Enter your network data here" ) );
+}
 
 
 
@@ -5413,7 +5439,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Tue Jul 21 00:09:45 EEST 2009";
+QString BUILD="Tue Jul 28 11:10:17 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"

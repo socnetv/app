@@ -1,5 +1,5 @@
 %define name    socnetv
-%define version 0.70
+%define version 0.80
 %define release 1
 %define prefix  /usr/local
 %define lastrev %(LANG=en_US.UTF-8 && date +"%a %b %e %Y")
@@ -111,6 +111,9 @@ Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 %setup 
 [ -f Makefile.cvs ] && %__make -f Makefile.cvs
 chmod -R a-x+X COPYING ChangeLog INSTALL NEWS README TODO manual man nets src
+chmod 644 nets/*
+find . -type f -name '*~' -delete
+rm -f config.log config.status Makefile socnetv.spec socnetv.mak
 
 %build
 %configure

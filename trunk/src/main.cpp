@@ -64,11 +64,11 @@ int main(int argc, char *argv[])
 				return -1;
 			}
 			else if (option=="-V" || option=="--version") {
-				cout<< "\nSocial Networks Visualizer, version 0.6; \nCopyright Dimitris V. Kalamaras, \nLicense: GPL3\n\n";
+				cout<< "\nSocial Networks Visualizer, version: 0.80; \nCopyright Dimitris V. Kalamaras, \nLicense: GPL3\n\n";
 				return -1;
 			}
 			else  {
-				cout<< "\n\nSocial Networks Visualizer\nVersion 0.6\n\n";
+				cout<< "\n\nSocial Networks Visualizer\nVersion: 0.80\n\n";
 				cout<<"\nFile loaded...\n\n";
 			}
 		

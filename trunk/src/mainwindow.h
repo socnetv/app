@@ -92,9 +92,9 @@ public:		/**PUBLIC FUNCTIONS NOT VISIBLE BY OTHER WIDGETS NOR BY SLOT/LINK MECHA
 	bool showLabels();
 	bool showNumbersInsideNodes();
 	bool showNumbers();
-
-	bool loadNetworkFile( QString);
-
+	
+	// Main network file loader method
+	bool loadNetworkFile ( QString);
 
 	int activeLinks();
 	int activeNodes();
@@ -104,7 +104,7 @@ public:		/**PUBLIC FUNCTIONS NOT VISIBLE BY OTHER WIDGETS NOR BY SLOT/LINK MECHA
 	void changeAllNodesSize(int size);
 
 	QString initNodeColor;
-	int clickedJimNumber; //its public because we need to be visible from activegraph.
+	int clickedJimNumber; //it is public because we need to be visible from activegraph.
 
 	void createProgressBar();
 	void destroyProgressBar();
@@ -126,6 +126,7 @@ public slots:
 	bool slotExportGW();
 	bool slotExportList();
 	//NETWORK MENU
+	void slotOpenTextEditor();
 	void slotViewNetworkFile();
 	void slotViewAdjacencyMatrix();
 	void slotCreateRandomNetErdos();
@@ -310,7 +311,7 @@ private:
 
 	QAction *fileNew, *fileOpen, *fileSave, *fileSaveAs,*fileClose, *printNetwork,*fileQuit;
 	QAction *exportBMP, *exportPNG, *exportPajek, *exportPDF, *exportDL, *exportGW, *exportSM, *exportList;
-	QAction *viewNetworkFileAct, *viewSociomatrixAct, *createUniformRandomNetworkAct;
+	QAction *viewNetworkFileAct, *openTextEditorAct, *viewSociomatrixAct, *createUniformRandomNetworkAct;
 	QAction *createGaussianRandomNetworkAct, *createLatticeNetworkAct, *createConnectedRandomNetworkAct;
 	QAction *createSmallWorldRandomNetworkAct, *createSameDegreeRandomNetworkAct;
 	QAction *displayNodeNumbersAct, *displayNodeLabelsAct, *displayNumbersInsideNodesAct;
