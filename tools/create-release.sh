@@ -10,7 +10,7 @@ if [ -d "../release" ]; then
 fi
 
 #CHANGE THIS TO NEW VERSION NUMBERS
-VER=0.70;   
+VER=0.80;   
 echo $VER
 
 echo .
@@ -33,6 +33,9 @@ echo ---------------------------------
 echo !  COPY FILES TO WORKING DIRS   ! 
 echo ---------------------------------
 
+chmod 644 nets/*
+find . -type f -name '*~' -delete
+rm -f config.log config.status Makefile socnetv.spec socnetv.mak
 find . -not -name "qdevelop-*" -not -name "socnetv" -not -name "*.o" -not -name ".qdevelop" -not -name "pajek*" -not -name "*.dat" -not -path "*./autom4te.cache*" -not -path "*.svn*" -not -path "*./test-nets*" -not -path "./debian*"  -print0  | cpio -pmd0 ../release/socnetv-$VER
 
 

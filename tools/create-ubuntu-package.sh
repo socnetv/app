@@ -57,6 +57,11 @@ for i in $oldfiles; do
 	rm $i;
 done;
 
+chmod 644 nets/*
+find . -type f -name '*~' -delete
+rm -f config.log config.status Makefile socnetv.spec socnetv.mak
+
+
 
 echo Asking for changelog entry....
 
@@ -66,7 +71,6 @@ echo .
 echo ---------------------------------
 echo   COPY FILES TO WORKING DIRS     
 echo ---------------------------------
-
 
 
 find . -not -name "qdevelop-*" -not -name "socnetv" -not -name ".qdevelop"  -not -name "pajek*" -not -path "*./autom4te.cache*" -not -path "*.svn*" -not -path "*./test-nets*"  -print0  | cpio -pmd0 ../ubuntu/socnetv-$VER

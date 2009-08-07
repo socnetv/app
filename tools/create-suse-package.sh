@@ -84,6 +84,11 @@ for i in $oldfiles; do
 done;
 
 
+chmod 644 nets/*
+find . -type f -name '*~' -delete
+rm -f config.log config.status Makefile socnetv.spec socnetv.mak
+
+
 
 echo .
 echo ---------------------------------
