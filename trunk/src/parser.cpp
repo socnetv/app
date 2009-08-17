@@ -914,6 +914,10 @@ void Parser::readGraphMLElementData (QXmlStreamReader &xml){
 			qDebug()<< "     Data found. Node color: "<< key_value << " for this node";
 			nodeColor= key_value; 
 	}
+	else if (keyName.value(key_id) == "label" && keyFor.value(key_id) == "node" ){
+		 	qDebug()<< "     Data found. Node label: "<< key_value << " for this node";
+		 	nodeLabel = key_value;
+	}
 	else if (keyName.value(key_id) == "x_coordinate" && keyFor.value(key_id) == "node" ) {
 			qDebug()<< "     Data found. Node x: "<< key_value << " for this node";
 			conv_OK=false;
