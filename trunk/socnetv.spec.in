@@ -121,7 +121,7 @@ rm -f config.log config.status Makefile socnetv.spec socnetv.mak
 
 %install
 %if %{is_fedora}
-desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
+desktop-file-validate %{name}.desktop
 #desktop-file-install --add-category="Math" --delete-original  --dir=%{buildroot}%{_datadir}/applications  %{buildroot}/%{_datadir}/applnk/Edutainment/%{name}.desktop
 %endif
 
