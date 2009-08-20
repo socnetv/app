@@ -28,10 +28,11 @@
 #include <QApplication>		//core Qt functionality
 #include <QTranslator>		//for text translations
 #include <QLocale>
-#include <iostream>		//used for cout
+#include <iostream>			//used for cout
 #include "mainwindow.h"		//main application window
 
 using namespace std;
+
 
 int main(int argc, char *argv[])
 {
@@ -50,26 +51,26 @@ int main(int argc, char *argv[])
 	QString option;
 	if ( app.argc() > 1 )     {
 		option = app.argv()[1];
-			if (option=="--help" || option=="-h" ) {
-				cout<<"\nSocial Networks Visualizer v.0.6\n";
-				cout<<"\nUsage: socnetv [flags] [file]\n";
-				cout<<"-h, --help 	Displayes this help message\n";
-				cout<<"-V, --version	Displays version number\n\n";
-				
-				cout<<"You can load a network from a file using \n";
-				cout<<"socnetv file.net \n";
-				cout<<"where file.net/csv/dot/graphml must be of valid format. See README\n\n";
+			if (option=="--help" || option=="-h" || option=="--h" ) {
+				cout<<"\nSocial Networks Visualizer v." << qPrintable(VERSION)<< "\n"
+					<<"\nUsage: socnetv [flags] [file]\n"
+					<<"-h, --help 	Displayes this help message\n"
+					<<"-V, --version	Displays version number\n\n"
+					<<"You can load a network from a file using \n"
+					<<"socnetv file.net \n"
+					<<"where file.net/csv/dot/graphml must be of valid format. See README\n\n"
 
-				cout<<"Please send any bug reports to dimitris.kalamaras@gmail.com.\n\n";
+					<<"Please send any bug reports to dimitris.kalamaras@gmail.com.\n\n";
 				return -1;
 			}
 			else if (option=="-V" || option=="--version") {
-				cout<< "\nSocial Networks Visualizer, version: 0.80; \nCopyright Dimitris V. Kalamaras, \nLicense: GPL3\n\n";
+				cout<<"\nSocial Networks Visualizer v." << qPrintable(VERSION)
+					<< "\nCopyright Dimitris V. Kalamaras, \nLicense: GPL3\n\n";
 				return -1;
 			}
 			else  {
-				cout<< "\n\nSocial Networks Visualizer\nVersion: 0.80\n\n";
-				cout<<"\nFile loaded...\n\n";
+				cout<<"\nSocial Networks Visualizer v." << qPrintable(VERSION);
+				cout<<"\nLoading file...\n" ;
 			}
 		
 	}

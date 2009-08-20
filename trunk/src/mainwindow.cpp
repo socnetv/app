@@ -76,7 +76,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
 	fileName=m_fileName;
 	qInstallMsgHandler( myMessageOutput );
 	setWindowIcon (QIcon(":/images/socnetv.png"));
-	VERSION="0.80";
+	//VERSION="0.80";
 
 	/** inits that invoke all other construction parts **/
 	initActions();  //register and construct menu Actions 
@@ -221,8 +221,10 @@ MainWindow::MainWindow(const QString & m_fileName) {
 	 /**Load file one exec time*/
 	if (!fileName.isEmpty())     
 	{
+		qWarning() << "\n" << qPrintable(fileName) << "\n\n";
 		fileNameNoPath=fileName.split ("/");
 		loadNetworkFile(fileName);
+		
 	}
 
 	if (firstTime) {

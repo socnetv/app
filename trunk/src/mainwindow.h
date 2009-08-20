@@ -40,7 +40,7 @@
 
 #include "webcrawlerdialog.h"
 
-
+static const QString VERSION = "0.80";
 
 /**
   * This Class is the base class. It sets up the main
@@ -345,7 +345,7 @@ private:
 	int maxNodes;
 	int initNodeSize, labelDistance, numberDistance,initNumberSize;
 	int totalLinks, fortuneCookiesCounter,  tipsCounter;
-	QString VERSION;
+	//QString VERSION;
 	bool pajekFileLoaded, adjacencyFileLoaded, dotFileLoaded, graphMLFileLoaded, fileLoaded;
 	bool networkModified;
 	bool bezier,  linkClicked, nodeClicked, markedNodeExists, showProgressBar, firstTime;
