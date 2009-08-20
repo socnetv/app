@@ -49,7 +49,7 @@
 
 
 
-bool printDebug=false;
+bool printDebug=true;
 
 
 void myMessageOutput( QtMsgType type, const char *msg )     {
@@ -855,7 +855,7 @@ void MainWindow::initActions(){
 	displayLinksAct->setWhatsThis(tr("Display Links\n\nClick to enable or disable displaying of links"));
 	displayLinksAct->setCheckable(true);
 	displayLinksAct->setChecked(true);
-	connect(displayLinksAct, SIGNAL(toggled(bool)), this, SLOT(slotToggleLinks(bool)) );
+	connect(displayLinksAct, SIGNAL(toggled(bool)), this, SLOT(slotDisplayLinks(bool)) );
 
 	displayLinksWeightNumbersAct = new QAction(tr("Display Weight Numbers"),	this);
 	displayLinksWeightNumbersAct->setStatusTip(tr("Toggles displaying of numbers of links weights"));
@@ -877,7 +877,7 @@ void MainWindow::initActions(){
 	drawLinksWeightsAct->setCheckable(true);
 	drawLinksWeightsAct->setChecked(false);
 	drawLinksWeightsAct->setEnabled(false);
-	connect(drawLinksWeightsAct, SIGNAL(toggled(bool)), this, SLOT(slotLinksThickWeights()) );
+	connect(drawLinksWeightsAct, SIGNAL(toggled(bool)), this, SLOT(slotDrawLinksThickAsWeights()) );
 
 	drawLinksBezier = new QAction( tr("Bezier Curves"),	this);
 	drawLinksBezier->setStatusTip(tr("Draws links as Bezier curves"));
@@ -885,7 +885,7 @@ void MainWindow::initActions(){
 	drawLinksBezier->setCheckable(true);
 	drawLinksBezier->setChecked (false);
 	drawLinksBezier->setEnabled(false);
-	connect(drawLinksBezier, SIGNAL(toggled(bool)), this, SLOT(slotLinksBezier(bool)) );
+	connect(drawLinksBezier, SIGNAL(toggled(bool)), this, SLOT(slotDrawLinksBezier(bool)) );
 
 	
 	/**
