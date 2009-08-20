@@ -338,7 +338,8 @@ private:
 	QAction *zoomInAct, *zoomOutAct ;
 
 	
-	QString fileName, networkName;
+	QString fileName, networkName, previous_fileName;
+	
 	QStringList fileNameNoPath, fortuneCookie, rgbValues;
 	QStringList tempFileNameNoPath, colorList, tips;
 	int statusBarDuration,  minDuration, progressCounter;

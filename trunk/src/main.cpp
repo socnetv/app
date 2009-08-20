@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 			}
 			else  {
 				cout<<"\nSocial Networks Visualizer v." << qPrintable(VERSION);
-				cout<<"\nLoading file...\n" ;
+				cout<<"\nLoading file: " << qPrintable(option) << "\n\n";
 			}
 		
 	}

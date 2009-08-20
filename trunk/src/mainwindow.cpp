@@ -49,7 +49,7 @@
 
 
 
-bool printDebug=true;
+bool printDebug=false;
 
 
 void myMessageOutput( QtMsgType type, const char *msg )     {
@@ -73,18 +73,16 @@ void myMessageOutput( QtMsgType type, const char *msg )     {
 
 /** MainWindow contruction method **/
 MainWindow::MainWindow(const QString & m_fileName) {
-	fileName=m_fileName;
+
 	qInstallMsgHandler( myMessageOutput );
+
 	setWindowIcon (QIcon(":/images/socnetv.png"));
-	//VERSION="0.80";
 
 	/** inits that invoke all other construction parts **/
 	initActions();  //register and construct menu Actions 
 	initMenuBar();  //construct menu
 	initToolBar();  //build the toolbar
-	
 	initStatusBar();  //and now add the status bar.
-
 	initToolBox(); //finally, build the toolbox
 
 	colorList = QColor::colorNames();  //and fill a stringList with all X-supported color names
@@ -193,18 +191,17 @@ MainWindow::MainWindow(const QString & m_fileName) {
  
 	//create an horizontal layout for the toolbox and the canvas. This will be our MW layout.
 	QHBoxLayout *layout = new QHBoxLayout;
-	//add them 
-	layout->addWidget(toolBox);
-	layout->addWidget(graphicsWidget);
-	//create a dummy widget, for the above layout
+	layout->addWidget(toolBox); 		//add them
+	layout->addWidget(graphicsWidget);	//create a dummy widget, for the above layout
 	QWidget *widget = new QWidget;
 	widget->setLayout(layout);
-	//now set this as central widget of MW
-	setCentralWidget(widget);
+	
+	setCentralWidget(widget);	//now set this as central widget of MW
 
-	//initialise default network parameters
+	/* 
+		initialise default network parameters 
+	*/
 	initNet();
-
 
 
 	/** DEFAULTING HERE DOES NOT CHANGE BOOL VALUE **/
@@ -218,13 +215,12 @@ MainWindow::MainWindow(const QString & m_fileName) {
 	graphicsWidget->setInitNodeSize(initNodeSize);
 	graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor)); //Qt::gray
 
-	 /**Load file one exec time*/
-	if (!fileName.isEmpty())     
+	 /**Try to load a network file on exec time*/
+	if (!m_fileName.isEmpty())  
 	{
-		qWarning() << "\n" << qPrintable(fileName) << "\n\n";
+		fileName=m_fileName;
 		fileNameNoPath=fileName.split ("/");
 		loadNetworkFile(fileName);
-		
 	}
 
 	if (firstTime) {
@@ -1555,7 +1551,10 @@ void MainWindow::initNet(){
 	numberDistance=5;
 	totalLinks=0;
 	networkName="";
+	
+	previous_fileName=fileName;
 	fileName="";
+	
 	pajekFileLoaded=false;
 	adjacencyFileLoaded=false;
 
@@ -1677,7 +1676,7 @@ void MainWindow::slotChooseFile() {
 	qDebug("slotChooseFile()");
 	
 	bool a_file_was_already_loaded=fileLoaded;
-	QString previous_filename=fileName;
+	previous_fileName=fileName;
 	QString m_fileName;
 	
 	statusMessage( tr("Choose a network file..."));
@@ -1706,7 +1705,7 @@ void MainWindow::slotChooseFile() {
 		if (a_file_was_already_loaded) 
 		{ 
 				fileLoaded=true;  
-				fileName=previous_filename; 
+				fileName=previous_fileName; 
 		}
   	}
 
@@ -5441,7 +5440,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Tue Jul 28 11:10:17 EEST 2009";
+QString BUILD="Thu Aug 20 17:47:06 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"
