@@ -4,13 +4,17 @@
 
 ChangeLog:
 
-Version 0.80 - July 30  2009  (PROJECTED)
-Codename: "sitakia"
+Version 0.80 - September 30  2009  (PROJECTED)
+Codename: "www.supersyntages.gr"
 ----------------------------
-- added keyboard shortcuts for Centralities
+- Added keyboard shortcuts for Centralities
 - Fixed bug #396124, GBC different in Pajek cp. to SocNetV
+- Fixed bug #415277 network files were not loaded on startup
+- Fixed a bug #379225 side note: GraphML format did not preserve node labels.
+- Edited .spec to enable proper Fedora package creation.
 - Changed ProgressBar behaviour: bars appear only if nodes are more than 300
 - New feature: the embedded text editor can be used to copy/paste directly network data
+- Updated user manual.
 
 
 Version 0.70 - June 30  2009
@@ -117,8 +121,7 @@ Version 0.47 - Sep 12 2008
 Codename: "En leukw"
 ------------------------------
 --Fixed bug in adjacency matrix loading/saving.
---Edges are drawed once, even the reciprocal ones. 
-  This makes network loading faster...
+--Edges are drawed once, even the reciprocal ones. This makes network loading faster...
 --Cosmetic changes in canvas (labels stay above edges, etc).
 --Fixed another bug in loadPajek().
 
@@ -402,7 +405,7 @@ version 0.1
 
 - Separate text editor to view and tickle with the text files.
 
-- SocNetV is unabled to directly save network files, although this can be done
+- SocNetV is unable to directly save network files, although this can be done
 using the esoteric text editor.
 
 

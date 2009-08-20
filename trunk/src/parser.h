@@ -79,7 +79,7 @@ private:
 	QHash<QString, int> nodeNumber;
 	QHash<QString, QString> keyFor, keyName, keyType, keyDefaultValue ;
 	QXmlStreamReader *xml;
-	QString fileName, networkName, initNodeColor, initEdgeColor, initNodeShape;
+	QString fileName, networkName, initNodeColor, initEdgeColor, initNodeShape, initNodeLabelColor;
 	QString nodeColor, edgeColor, edgeType, nodeShape, nodeLabel, edgeLabel;
 	  
 	int gwWidth, gwHeight;
