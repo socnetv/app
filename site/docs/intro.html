@@ -63,10 +63,11 @@ sudo make install<br />
 </p>	
 
 <p class="text">
-In Windows, to compile SocNetV, you need to have installed Qt4 development files, and a compiler, like MinGW. If you wish you can avoid compilation, by using the executables we offer (see below). Please note, that you still need to have Qt4 installed!
+In Windows, to compile SocNetV, you need to have installed Qt4 development files, and a compiler, like MinGW. If you wish you can avoid compilation, by using the Windows XP executables we offer (see below). 
 </p>
 <p class="text">
-To avoid compiling in Linux, we also offer binary packages for Ubuntu, Debian and openSUSE available from <a href="http://socnetv.sourceforge.net/downloads.html">the project's website</a>.
+To avoid compiling in Linux, we also offer binary packages for Ubuntu, Debian, Fedora, Mandriva and openSUSE available from <a href="http://socnetv.sourceforge.net/downloads.html">the project's website</a>. 
+Debian users may prefer the SocNetV version in the debian unstable repository. 
 
 
 
@@ -135,7 +136,7 @@ When you download the RPM, become root user and install it, like this:
 
   <p class="code">
     su
-    rpm -ivh socnetv-0.52-8.1.i586.rpm
+    rpm -ivh socnetv-0.80.1.i586.rpm
   </p>
 
 
@@ -147,7 +148,7 @@ Fedora and RedHat users may download binary RPM packages from our <a href="http:
 Afterwards, become root user and install the package, i.e.:
   <p class="code">
     su
-    rpm -ivh socnetv-0.52-8.1.i586.rpm
+    rpm -ivh socnetv-0.80-1.i586.rpm
   </p>
 
 
@@ -162,7 +163,7 @@ To install the package, use commands like these:
 </p>
   <p class="code">
     su
-    rpm -ivh socnetv-0.52-8.1.i586.rpm
+    rpm -ivh socnetv-0.80-2.1.i586.rpm
   </p>
 
 
@@ -182,14 +183,23 @@ layman -a qting-edge
 <h5><a name="Windows" id="Windows"></a>Windows executables</h5>
 <p class="text">
 
-To run SocNetV in Windows XP/Vista, you need to install <a href="ftp://ftp.trolltech.com/qt/source/qt-win-opensource-4.4.3-mingw.exe">Qt4 libraries for Windows</a>. Then, the latest SocNetV zipped archive for Windows, unzip it, and double-click on the "socnetv" executable. The program will run immediately. Warning: this version is not tested and therefore not supported.
+To run SocNetV version 0.70 and later in Windows XP/Vista, just download the latest SocNetV zip for Windows from the Downloads menu, unzip it, and double-click on the "socnetv" executable. 
+The program will run immediately.
+
+For older SocNetV versions, you need to install <a href="ftp://ftp.trolltech.com/qt/source/qt-win-opensource-4.4.3-mingw.exe">Qt4 libraries for Windows</a>. 
+
+Warning: the Windows version is not properly tested. But feel free to notify us for any bugs you encounter!
+
 </p>
 
 
 <h5><a name="Mac" id="Mac"></a>Mac OS installation</h5>
 <p class="text">
-If you are a Mac user, you can install and run SocNetV using the Fink project tools. Fink is like "bringing linux to Mac"! Unfortunately, we don't use Mac, so we don't really know what problems you may encounter. Nevertheless, it seems that SocNetV is in the unstable section of Fink. Therefore, you will need to configure Fink to use the unstable. There are usefull instructions for this here:
+If you are a Mac user, you can install and run SocNetV using the Fink project tools. Fink is like "bringing linux to Mac" - you install some base programs and files, and then you can install applications like SocNetV. Please note that, we do not own a Mac so everything that follows is just an outline of what you should do to run SocNetV in your Mac!
+
+Anyway, SocNetV is in the unstable section of Fink. Therefore, you will need to configure Fink to use the unstable. You'll find usefull instructions for this here:
 http://www.finkproject.org/faq/usage-fink.php#unstable
+
 After that, you only need commands like these (I think!):
 <p class="code">
 sudo apt-get update <br />
@@ -211,6 +221,7 @@ or download the latest tarball from the <a href="http://socnetv.svn.sourceforge.
 </p>
 <p class="code"> 
 cd trunk<br/>
+chmod +x configure <br />
 ./configure <br />
 make <br/>
 socnetv

@@ -5,11 +5,11 @@ echo  --------------------
 echo  . copying webfiles .
 echo  --------------------
 
-cd /media/oxy/Code/Qt/socnetv/site
+cd /home/dimitris/Desktop/socnetv/site
 echo "Update ChangeLog also? (Y/N)"
 read ans
 if [ $ans = "y" -o $ans = "Y" ]; then
-        cp  /media/oxy/Code/Qt/socnetv/trunk/ChangeLog /media/oxy/Code/Qt/socnetv/site/
+        cp  ./trunk/ChangeLog ./site/
 fi
 rsync -rvPC -delete -e ssh  *  oxy86,socnetv@web.sourceforge.net:htdocs/
 
@@ -29,8 +29,8 @@ fi
 echo  --------------------
 echo  . copying manual   .
 echo  -------------------- 
-cd /media/oxy/Code/Qt/socnetv/trunk/manual
-rm /media/oxy/Code/Qt/socnetv/site/docs/*
-cp /media/oxy/Code/Qt/socnetv/trunk/manual/* /media/oxy/Code/Qt/socnetv/site/docs/
+cd /home/dimitris/Desktop/socnetv/trunk/manual
+rm /home/dimitris/Desktop/socnetv/site/docs/*
+cp /home/dimitris/Desktop/socnetv/trunk/manual/* /home/dimitris/Desktop/socnetv/site/docs/
 
 rsync -rvP -delete -e ssh * oxy86,socnetv@web.sourceforge.net:htdocs/docs/

@@ -1,5 +1,5 @@
 #!/bin/bash
-workdir=/media/oxy/Code/Qt/socnetv/trunk
+workdir=/home/dimitris/Desktop/socnetv/trunk
 cd $workdir
 
 
@@ -9,7 +9,7 @@ update_version() {
 	dateold=2008;
 	datenew=2009;
 	echo "Current version seems to be ....";
-	grep "VERSION=" src/mainwindow.cpp
+	grep "VERSION=" src/mainwindow.h
 
 	echo "";
 	echo "Enter old version:";

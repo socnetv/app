@@ -1,5 +1,5 @@
 #!/bin/bash
-workdir=/media/oxy/Code/Qt/socnetv/trunk
+workdir=/home/dimitris/Desktop/socnetv/trunk
 cd $workdir
 
 echo ---------------------------------
