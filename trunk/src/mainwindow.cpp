@@ -128,9 +128,10 @@ MainWindow::MainWindow(const QString & m_fileName) {
 			
 	connect( &activeGraph, SIGNAL( moveNode(int, int, int) ), 
 			graphicsWidget, SLOT( moveNode(int, int, int) ) ) ;
-			
-	connect( &activeGraph, SIGNAL( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool, bool, bool) ), 
-			graphicsWidget, SLOT( drawNode( int ,int,  QString, QString, QString, QPointF, QString, bool, bool, bool)  ) ) ;
+
+				
+	connect( &activeGraph, SIGNAL( drawNode( int ,int,  QString, QString, int, QString, QString, int, QPointF, QString, bool, bool, bool) ), 
+			graphicsWidget, SLOT( drawNode( int ,int,  QString, QString, int, QString, QString, int, QPointF, QString, bool, bool, bool) ) ) ;
 			
 	connect( &activeGraph, SIGNAL( eraseEdge(int, int)), 
 			graphicsWidget, SLOT( eraseEdge(int, int) ) );
@@ -1539,7 +1540,8 @@ void MainWindow::initNet(){
 	initNodeSize=4;
 	initNodeColor="gold";
 	initLinkColor="grey"; //"black";
-	initLabelColor="black";
+	initLabelColor="darkblue";
+	initLabelSize=8;
 	initNumberColor="black";
  	initNumberSize=8; 
 	initNodeShape="circle";
@@ -1574,15 +1576,23 @@ void MainWindow::initNet(){
 	
 	/** Clear previous network data */
 	activeGraph.clear();
-	
-	activeGraph.setShowLabels(this->showLabels());
-	activeGraph.setShowNumbersInsideNodes( this->showNumbersInsideNodes());
-	activeGraph.setInitVertexColor(initNodeColor);
-	activeGraph.setInitEdgeColor(initLinkColor);
-	activeGraph.setInitVertexLabelColor(initLabelColor);
+	activeGraph.setSocNetV_Version(VERSION);
+
 	activeGraph.setInitVertexShape(initNodeShape);
 	activeGraph.setInitVertexSize(initNodeSize);
+	activeGraph.setInitVertexColor(initNodeColor);
 
+	activeGraph.setInitVertexNumberSize(initNumberSize);
+	activeGraph.setInitVertexNumberColor(initNumberColor);
+	
+	activeGraph.setInitVertexLabelColor(initLabelColor);
+	activeGraph.setInitVertexLabelSize(initLabelSize);
+
+	activeGraph.setInitEdgeColor(initLinkColor);
+
+	activeGraph.setShowLabels(this->showLabels());
+	activeGraph.setShowNumbersInsideNodes( this->showNumbersInsideNodes());
+	
 	
 	/** Clear scene **/
 	graphicsWidget->clear();
@@ -1892,14 +1902,13 @@ bool MainWindow::loadNetworkFile(QString m_fileName){
 	 
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 	qDebug("MW: calling activeGraph loadgraph gw height %i", graphicsWidget->height() ) ;
-	bool loadGraphStatus=activeGraph.loadGraph ( 
-										m_fileName, initNodeSize, initNodeColor, 
-										initLinkColor, initNodeShape,
+	bool loadGraphStatus = activeGraph.loadGraph ( 
+										m_fileName, 
 										 displayNodeLabelsAct->isChecked(), 
 										 graphicsWidget->width(), 
 										 graphicsWidget->height() 
 									 );
-	qDebug("MW: OK activeGraph.loadGraph()  has finished. You should be seeing nodes by now! ");
+	qDebug("MW: OK activeGraph.loadGraph() has finished. You should be seeing nodes by now! ");
 	QApplication::restoreOverrideCursor();
 	return loadGraphStatus;
 }
@@ -4823,7 +4832,6 @@ void MainWindow::changeAllNodesSize(int size) {
 		}
 	}
 	initNodeSize = size;
-	//graphicsWidget->setInitNodeSize(initNodeSize);
 	activeGraph.setInitVertexSize(initNodeSize);
 	qDebug ("MW: changeAllNodesSize: changing to %i", size);
 	QList<QGraphicsItem *> list=scene->items();
@@ -4841,8 +4849,8 @@ void MainWindow::changeAllNodesSize(int size) {
 void MainWindow::slotChangeAllNodesShape() {
 	bool ok=false;
 	QStringList lst;
-    	lst << "box"<< "circle"<< "diamond"<< "ellipse"<< "triangle";
-    	QString newShape = QInputDialog::getItem(this, "Node shapes", "Select a shape for all nodes: ", lst, 1, true, &ok);
+	lst << "box"<< "circle"<< "diamond"<< "ellipse"<< "triangle";
+	QString newShape = QInputDialog::getItem(this, "Node shapes", "Select a shape for all nodes: ", lst, 1, true, &ok);
 	if ( ok ) {
 	        //user selected an item and pressed OK
 		QList<QGraphicsItem *> list=scene->items();
@@ -4875,6 +4883,7 @@ void MainWindow::slotChangeNumbersSize() {
 		statusMessage( tr("Change font size: Aborted.") );
 	return;
 	}
+	
 	QList<QGraphicsItem *> list=scene->items();
 	for (QList<QGraphicsItem *>::iterator it2=list.begin();it2!=list.end(); it2++)
 		
@@ -4883,6 +4892,8 @@ void MainWindow::slotChangeNumbersSize() {
 		qDebug ("MW: slotChangeNumbersSize Found");
 		number->setFont( QFont (number->font().family(), newSize, QFont::Light, false) );
 	}
+	
+	activeGraph.setInitVertexNumberSize(newSize);
 	statusMessage( tr("Changed numbers size. Ready.") );
 }
 
@@ -4905,7 +4916,9 @@ void MainWindow::slotChangeLabelsSize() {
 		 	NodeLabel *label= (NodeLabel*) (*it2);
 			qDebug ("MW: slotChangeLabelsSize Found");
 			label->setFont( QFont (label->font().family(), newSize, QFont::Light, false) );
+			activeGraph.setVertexLabelSize ( (label->node())->nodeNumber(), newSize); 
 	}
+	activeGraph.setInitVertexLabelSize(newSize);
 	statusMessage( tr("Changed labels size. Ready.") );
 }
 
@@ -5118,7 +5131,6 @@ void MainWindow::slotAllNodesColor(){
 				activeGraph.setVertexColor (jim->nodeNumber(), initNodeColor);
 				graphChanged();
 			}
-//		graphicsWidget->setInitNodeColor(initNodeColor);
 		activeGraph.setInitVertexColor(initNodeColor);
 		QApplication::restoreOverrideCursor();
 		statusMessage( tr("Ready. ")  );
@@ -5151,15 +5163,14 @@ void MainWindow::slotAllLinksColor(){
 				graphChanged();
 			}
 		activeGraph.setInitEdgeColor(initLinkColor);
-		//graphicsWidget->setInitLinkColor(initLinkColor);
 		QApplication::restoreOverrideCursor();
 		statusMessage( tr("Ready. ")  );
 
-    	} 
+	} 
 	else {
-	        // user pressed Cancel
+		// user pressed Cancel
 		statusMessage( tr("Change link color aborted. ")  );
-    	}
+	}
 }
 
 
@@ -5174,12 +5185,14 @@ void MainWindow::slotAllNumbersColor(){
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 	qDebug ("MW: Will change color");
 	QList<QGraphicsItem *> list= scene->items();
-	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
+	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
 		if ( (*it)->type() == TypeNumber) 		{
 			NodeNumber *jimNumber = (NodeNumber *) (*it);
 			jimNumber->update();
 			jimNumber->setDefaultTextColor(textColor);
 		}
+	}
+	activeGraph.setInitVertexNumberColor( textColor.name() );
 	QApplication::restoreOverrideCursor();
 	statusMessage( tr("Numbers' colors changed. Ready. ")  );
 }
@@ -5440,7 +5453,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Thu Aug 20 17:47:06 EEST 2009";
+QString BUILD="Fri Aug 21 16:19:47 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"

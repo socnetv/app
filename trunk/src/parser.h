@@ -43,8 +43,8 @@ using namespace std;
 class Parser :  public QThread {
 	Q_OBJECT
 public:
-	void load(QString fileName, int, QString, QString, QString, bool, int w, int h);
 	
+	void load(QString fn, int iNS, QString iNC, QString iNSh, QString iNNC, int iNNS, QString iNLC, int iNLS , QString iEC, int w, int h);
 	int loadPajek();
 	int loadAdjacency();
 	int loadDot();
@@ -68,7 +68,13 @@ public:
 	void readGraphMLElementNodeGraphics (QXmlStreamReader &);
 	void readGraphMLElementEdgeGraphics (QXmlStreamReader &);
 signals:
-	void createNode(int,int,QString, QString, QString, QPointF, QString, bool);
+	void createNode( 
+					int num, int size, QString color, 
+					QString numColor, int numSize, 
+					QString label, QString lColor, int lSize, 
+					QPointF p, 
+					QString shape);
+
 	void createEdge (int, int, float, QString, bool, bool, bool);
 	void fileType(int, QString, int, int, bool);
 	void removeDummyNode (int);
@@ -79,16 +85,15 @@ private:
 	QHash<QString, int> nodeNumber;
 	QHash<QString, QString> keyFor, keyName, keyType, keyDefaultValue ;
 	QXmlStreamReader *xml;
-	QString fileName, networkName, initNodeColor, initEdgeColor, initNodeShape, initNodeLabelColor;
-	QString nodeColor, edgeColor, edgeType, nodeShape, nodeLabel, edgeLabel;
+	QString fileName, networkName, initNodeColor, initEdgeColor, initNodeShape, initNodeNumberColor, initNodeLabelColor;
+	QString nodeColor, edgeColor, edgeType, nodeShape, nodeLabel, edgeLabel, nodeNumberColor, nodeLabelColor;
 	  
 	int gwWidth, gwHeight;
 	int totalLinks, aNodes;
-	int initNodeSize, source, target, nodeSize;
+	int initNodeSize,  initNodeNumberSize, nodeNumberSize, initNodeLabelSize, nodeLabelSize, source, target, nodeSize;
 	float initEdgeWeight, edgeWeight, arrowSize;
 	float bez_p1_x,bez_p1_y, bez_p2_x, bez_p2_y;
 	  
-	bool initShowLabels;
 	bool undirected, arrows, bezier, conv_OK;
 	bool bool_key, bool_node, bool_edge;
 	

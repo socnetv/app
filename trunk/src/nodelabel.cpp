@@ -29,11 +29,11 @@
 #include <QFont>
 
 
-NodeLabel::NodeLabel( Node *jim ,  QString labelText,  QGraphicsScene *scene) :QGraphicsTextItem(0,scene) {
+NodeLabel::NodeLabel( Node *jim ,  int size,  QString labelText,  QGraphicsScene *scene) :QGraphicsTextItem(0,scene) {
 	source=jim;
 	jim -> addLabel(this);
 	setPlainText( labelText );
-	setFont( QFont ("Times", 6, QFont::Light, TRUE) );
+	setFont( QFont ("Times", size, QFont::Light, TRUE) );
 	setZValue (253);
 }
 

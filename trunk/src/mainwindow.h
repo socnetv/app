@@ -37,7 +37,6 @@
 #include "graphicswidget.h"
 #include "graph.h"
 #include "filteredgesbyweightdialog.h"
-
 #include "webcrawlerdialog.h"
 
 static const QString VERSION = "0.80";
@@ -344,14 +343,14 @@ private:
 	QStringList tempFileNameNoPath, colorList, tips;
 	int statusBarDuration,  minDuration, progressCounter;
 	int maxNodes;
-	int initNodeSize, labelDistance, numberDistance,initNumberSize;
+	int initNodeSize, labelDistance, numberDistance,initNumberSize, initLabelSize;
 	int totalLinks, fortuneCookiesCounter,  tipsCounter;
 	//QString VERSION;
 	bool pajekFileLoaded, adjacencyFileLoaded, dotFileLoaded, graphMLFileLoaded, fileLoaded;
 	bool networkModified;
 	bool bezier,  linkClicked, nodeClicked, markedNodeExists, showProgressBar, firstTime;
-	QString initLinkColor, initNodeShape, initLabelColor;
-	QColor initNumberColor,initBackgroundColor;
+	QString initLinkColor, initNumberColor,  initNodeShape, initLabelColor;
+	QColor initBackgroundColor;
 	QPointF cursorPosGW;	//Carries the position of the cursor in graphicsWidget coordinates
 	QLCDNumber  *inLinksLCD, *outLinksLCD , *selectedNodeLCD, *clucofLCD;
 	QLCDNumber *nodesLCD, *edgesLCD, *densityLCD, *outLinkedNodesLCD, *inLinkedNodesLCD, *reciprocalLinkedNodesLCD;

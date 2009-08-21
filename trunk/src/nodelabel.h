@@ -36,11 +36,13 @@ static const int TypeLabel = QGraphicsItem::UserType+4;
 
 class NodeLabel : public QGraphicsTextItem{
 public: 
-	NodeLabel(Node * , QString,  QGraphicsScene * );
+	NodeLabel(Node * , int size,  QString,  QGraphicsScene * );
+	
 	void removeRefs();
  	enum { Type = UserType + 4 };
 	int type() const { return Type; }
 	~NodeLabel();
+	Node* node() { return source; }
 private:
 	Node *source;	
 };

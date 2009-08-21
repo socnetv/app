@@ -61,8 +61,8 @@ Graph::Graph() {
 	parser.setParent(this);
 	
 	connect (	
-			&parser, SIGNAL( createNode (int,int,QString, QString, QString, QPointF, QString, bool) ), 
-			this, SLOT(createVertex(int,int,QString, QString, QString, QPointF, QString) ) 
+			&parser, SIGNAL( createNode (int,int,QString, QString, int, QString, QString, int, QPointF, QString) ), 
+			this, SLOT(createVertex(int,int,QString, QString, int, QString, QString, int, QPointF, QString) ) 
 			) ;
 
 	connect (
@@ -102,13 +102,13 @@ Graph::Graph() {
 	p holds the desired position of the new node.
 	The new Vertex is named i and stores its color, label, label color, shape and position p.
 */
-void Graph::createVertex(int i, int size, QString nodeColor, QString label, QString lColor, QPointF p, QString nodeShape){
+void Graph::createVertex(int i, int size, QString nodeColor, QString numColor, int numSize, QString label, QString lColor, int lSize, QPointF p, QString nodeShape){
 	qDebug()<<"*** Graph:: createVertex(): Calling AddVertex for node: "<<i<< " Attributes: "<<size<<" "<<nodeColor<<" "<<label<<" "<<lColor<<" "<<p.x()<<" " <<p.y()<<" "<<nodeShape;
 	//add the vertex to the Graph.
-	addVertex(i, 1, size,  nodeColor, label, lColor, p, nodeShape);
-	//emit a signal for MW to create the new node onto the canvas.
+	int value = 1;
+	addVertex(i, value, size,  nodeColor, numColor, numSize, label, lColor, lSize, p, nodeShape);
 	qDebug()<<"*** Graph:: createVertex(): emitting drawNode signal to GW";
-	emit drawNode( i, size,  nodeColor, label, lColor, p, nodeShape, initShowLabels, initNumbersInsideNodes, true);
+	emit drawNode( i, size,  nodeColor, numColor, numSize, label, lColor, lSize, p, nodeShape, initShowLabels, initNumbersInsideNodes, true);
 	emit graphChanged(); 
 	initVertexColor=nodeColor; //just to draw new nodes of the same color with that of the file loaded, when user clicks on the canvas
 	initVertexShape=nodeShape;
@@ -127,7 +127,11 @@ void Graph::createVertex(int i, int size, QString nodeColor, QString label, QStr
 void Graph::createVertex(int i, QPointF p){
 	if ( i < 0 )  i = lastVertexNumber() +1;
 	qDebug("Graph::createVertex(). Using vertex number %i with FIXED coords...", i);
-	createVertex(i, initVertexSize,  initVertexColor, QString::number(i), initVertexLabelColor, p, initVertexShape);
+	createVertex(	i, initVertexSize,  initVertexColor,
+					initVertexNumberColor, initVertexNumberSize,   
+					QString::number(i), initVertexLabelColor, initVertexLabelSize,
+					p, initVertexShape
+					);
 }
 
 
@@ -144,8 +148,12 @@ void Graph::createVertex(int i, int cWidth, int cHeight){
 	qDebug("Graph:: createVertex(). Using vertex number %i with RANDOM node coords...", i);
 	QPointF p;
 	p.setX(rand()%cWidth);
-       	p.setY(rand()%cHeight);
-	createVertex(i, initVertexSize,  initVertexColor, QString::number(i), initVertexLabelColor, p, initVertexShape);
+	p.setY(rand()%cHeight);
+	createVertex(	i, initVertexSize, initVertexColor,
+					initVertexNumberColor, initVertexNumberSize,   
+					QString::number(i), initVertexLabelColor, initVertexLabelSize,
+					p, initVertexShape
+					);
 }
 
 
@@ -163,7 +171,11 @@ void Graph::createVertex(QString label, int i) {
 	QPointF p;
 	p.setX(rand()%canvasWidth);
 	p.setY(rand()%canvasHeight);
-	createVertex(i, initVertexSize,  initVertexColor, label, initVertexLabelColor, p, initVertexShape);
+	createVertex(	i, initVertexSize,  initVertexColor,
+					initVertexNumberColor, initVertexNumberSize,   
+					label, initVertexLabelColor,  initVertexLabelSize,
+					p, initVertexShape
+					);
 	
 }
 
@@ -251,15 +263,19 @@ void Graph::removeDummyNode(int i){
 	named v1, valued val, sized nszm colored nc, labeled nl, labelColored lc, shaped nsp, at point p
 	This method is called by createVertex() method
 */
-void Graph::addVertex (int v1, int val, int nsz, QString nc, QString nl, QString lc, QPointF p,QString nsp){ 
-	qDebug() <<"Graph: addVertex(): Adding vertex "<< v1 << " to graph.";
+void Graph::addVertex (
+						int v1, int val, int size, QString color, 
+						QString numColor, int numSize, 
+						QString label, QString labelColor, int labelSize, 
+						QPointF p, QString shape
+						){ 
+
 	if (order)
 		index[v1]=m_totalVertices; 
 	else 
 		index[v1]=m_graph.size();
 
-
-	m_graph.append( new Vertex(this, v1, val, nsz, nc, nl, lc, p, nsp) );
+	m_graph.append( new Vertex(this, v1, val, size, color, numColor, numSize, label, labelColor, labelSize, p, shape) );
 	m_totalVertices++;		
 
 	qDebug("Graph: addVertex(): Vertex named %i appended with index=%i. Now, m_graph size %i. New vertex position: %f, %f",m_graph.back()->name(), index[v1], m_graph.size(), p.x(), p.y() );
@@ -602,6 +618,15 @@ QString Graph::shape(int v1){
 
 }
 
+//Changes the initial color of vertices numbers 
+void Graph::setInitVertexNumberColor (QString color) {
+	initVertexNumberColor = color;
+}
+
+//Changes the initial size of vertices numbers 
+void Graph::setInitVertexNumberSize (int size) {
+	initVertexNumberSize = size;
+}
 
 
 
@@ -613,6 +638,22 @@ void Graph::setVertexLabel(int v1, QString label){
 	emit graphChanged(); 
 }
 
+
+
+//Changes the init size of new vertices labels
+void Graph::setInitVertexLabelSize(int newSize) {
+	initVertexLabelSize = newSize;
+}
+
+
+//Changes the size of a vertex label
+void Graph::setVertexLabelSize(int v1, int newSize) {
+	qDebug()<< "Graph: setVertexLabelSize for "<< v1 << ", index " << index[v1]<< " with size "<< newSize;
+	m_graph[ index[v1] ] -> setLabelSize ( newSize );
+	graphModified=true;
+	emit graphChanged(); 
+
+}
 
 
 void Graph::setInitVertexLabelColor(QString color){
@@ -2273,7 +2314,8 @@ void Graph::createRandomNetErdos(int vert, double probability){
 		qDebug("Graph: createRandomNetErdos, new node i=%i, at x=%i, y=%i", i+1, x,y);
 		createVertex (
 						i+1, initVertexSize, initVertexColor, 
-						QString::number (i+1), initVertexLabelColor, 
+						initVertexNumberColor, initVertexNumberSize,  
+						QString::number (i+1), initVertexLabelColor, initVertexLabelSize,
 						QPoint(x, y), initVertexShape
 					);
 		progressCounter++;
@@ -2316,7 +2358,10 @@ void Graph::createRandomNetRingLattice(
 	for (register int i=0; i< vert ; i++) {
 		x=x0 + radius * cos(i * rad);
 		y=y0 + radius * sin(i * rad);
-		createVertex(i+1,initVertexSize,initVertexColor, QString::number (i+1), initVertexLabelColor, QPoint(x, y), initVertexShape);
+		createVertex(	i+1,initVertexSize,initVertexColor,
+						initVertexNumberColor, initVertexNumberSize,  
+						 QString::number (i+1), initVertexLabelColor,  initVertexLabelSize,
+						 QPoint(x, y), initVertexShape);
 		qDebug("Graph: createPhysicistLatticeNetwork, new node i=%i, at x=%i, y=%i", i+1, x,y);
 		progressCounter++;
 		emit updateProgressDialog( progressCounter );
@@ -2398,7 +2443,12 @@ void Graph::createSameDegreeRandomNetwork(int vert, int degree){
 		int x=10+rand() %640;
 		int y=10+rand() %480;
 		qDebug("Graph: createUniformRandomNetwork, new node i=%i, at x=%i, y=%i", i+1, x,y);
-		createVertex(i+1,initVertexSize,initVertexColor, QString::number (i+1), initVertexLabelColor, QPoint(x, y), initVertexShape);
+		createVertex(
+						i+1, initVertexSize,initVertexColor,
+						initVertexNumberColor, initVertexNumberSize,  
+						QString::number (i+1), initVertexLabelColor, initVertexLabelSize, 
+						QPoint(x, y), initVertexShape
+						);
 		progressCounter++;
 		emit updateProgressDialog( progressCounter );
 
@@ -2614,13 +2664,18 @@ int Graph:: factorial(int x) {
 	Our almost universal network loader. :)
 	Actually it calls the load() method of parser/qthread class.
 */
-bool Graph::loadGraph (
-						QString fileName, int iNS, QString iNC, 
-						QString iNL, QString iNSh, bool iSL, 
-						int maxWidth, int maxHeight
-					){
+bool Graph::loadGraph (	QString fileName,  bool iSL, int maxWidth, int maxHeight ){
 	qDebug() << "Graph:: loadGraph - Calling thread";
-	parser.load(fileName, iNS, iNC, iNL, iNSh, iSL, maxWidth, maxHeight);
+	initShowLabels = iSL;
+	parser.load( 
+				fileName, 
+				initVertexSize, initVertexColor,
+				initVertexShape,
+				initVertexNumberColor, initVertexNumberSize,  
+				initVertexLabelColor, initVertexLabelSize, 
+				initEdgeColor, 
+				maxWidth, maxHeight);
+
 	qDebug("See the thread? :)");
 	return true;
 }
@@ -2875,8 +2930,8 @@ bool Graph::saveGraphToGraphMLFormat (
 {
 		qDebug () << " Graph::saveGraphToGraphMLFormat to file: " << fileName.toAscii();
 
-	int weight=0, source=0, target=0, edgeCount=0, m_size=1;
-	QString m_color;
+	int weight=0, source=0, target=0, edgeCount=0, m_size=1, m_labelSize;
+	QString m_color, m_labelColor;
 	bool openToken;
 	QFile f( fileName );
 	if ( !f.open( QIODevice::WriteOnly ) )  {
@@ -2887,7 +2942,7 @@ bool Graph::saveGraphToGraphMLFormat (
 	QTextStream outText( &f );
 	qDebug()<< "		... writing xml version";
 	outText << "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n"; 
-	outText << " <!-- Created by SocNetV--> \n" ;
+	outText << " <!-- Created by SocNetV v."<<  VERSION << " --> \n" ;
 	outText << "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" " 
 		"      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance \" "  
 		"      xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns " 
@@ -2918,12 +2973,17 @@ bool Graph::saveGraphToGraphMLFormat (
 	outText <<	"  <key id=\"d5\" for=\"node\" attr.name=\"shape\" attr.type=\"string\"> \n" 
 				"    <default>" << initVertexShape << "</default> \n" 
 				"  </key> \n";
-
-	outText <<	"  <key id=\"d6\" for=\"edge\" attr.name=\"weight\" attr.type=\"double\"> \n"
+	outText <<	"  <key id=\"d6\" for=\"node\" attr.name=\"label.color\" attr.type=\"string\"> \n" 
+				"    <default>" << initVertexLabelColor << "</default> \n" 
+				"  </key> \n";
+	outText <<	"  <key id=\"d7\" for=\"node\" attr.name=\"label.size\" attr.type=\"string\"> \n" 
+				"    <default>" << initVertexLabelSize << "</default> \n" 
+				"  </key> \n";
+	outText <<	"  <key id=\"d8\" for=\"edge\" attr.name=\"weight\" attr.type=\"double\"> \n"
 				"    <default>1.0</default> \n"
 				"  </key> \n";
 				
-	outText <<	"  <key id=\"d7\" for=\"edge\" attr.name=\"color\" attr.type=\"string\"> \n"
+	outText <<	"  <key id=\"d9\" for=\"edge\" attr.name=\"color\" attr.type=\"string\"> \n"
 				"    <default>" << initEdgeColor << "</default> \n"
 				"  </key> \n";
 	
@@ -2944,7 +3004,9 @@ bool Graph::saveGraphToGraphMLFormat (
 		outText << "    <node id=\"" << (*it)->name() << "\"> \n";
 		m_color = (*it)->color();
 		m_size = (*it)->size() ;
-
+		m_labelSize=(*it)->labelSize() ;
+		m_labelColor=(*it)->labelColor() ;
+		
 		outText << "      <data key=\"d0\">" << (*it)->label() <<"</data>\n";
 
 		qDebug()<<" 		... Coordinates x " << (*it)->x()<< " "<<maxWidth
@@ -2962,7 +3024,18 @@ bool Graph::saveGraphToGraphMLFormat (
 		}
 		
 		outText << "      <data key=\"d5\">" << (*it)->shape() <<"</data>\n";
+
+		
+		if (  QString::compare ( initVertexLabelColor, m_labelColor,  Qt::CaseInsensitive) != 0) {
+			outText << "      <data key=\"d6\">" << m_labelColor <<"</data>\n";
+		}
+		
+		if (  initVertexLabelSize != m_labelSize ) {
+			outText << "      <data key=\"d7\">" << m_labelSize <<"</data>\n";
+		}
+
 		outText << "    </node>\n";
+
 	}
 
 	qDebug() << "		... writing edges data";
@@ -2989,13 +3062,13 @@ bool Graph::saveGraphToGraphMLFormat (
 				openToken = true;
 				if (weight > 1) {
 					outText << "> \n";
-					outText << "      <data key=\"d6\">" << weight<<"</data>" <<" \n";
+					outText << "      <data key=\"d8\">" << weight<<"</data>" <<" \n";
 					openToken=false;
 				}
 				if (  QString::compare ( initEdgeColor, m_color,  Qt::CaseInsensitive) != 0) {
 					if (openToken) 
 						outText << "> \n";
-					outText << "      <data key=\"d7\">" << m_color <<"</data>" <<" \n";	
+					outText << "      <data key=\"d9\">" << m_color <<"</data>" <<" \n";	
 					openToken=false;
 				}
 				if (openToken) 

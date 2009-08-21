@@ -37,15 +37,19 @@
 #include <list>
 #include "graph.h"	//needed for setParent
 
-void Parser::load(QString fn, int iNS, QString iNC, QString iLC, QString iNSh, bool iSL, int width, int height)
+void Parser::load(QString fn, int iNS, QString iNC, QString iNSh, QString iNNC, int iNNS, QString iNLC, int iNLS , QString iEC, int width, int height)
 {
 	qDebug("Parser: load()");
 	initNodeSize=iNS;
 	initNodeColor=iNC;
-	initEdgeColor=iLC;
 	initNodeShape=iNSh;
-	initShowLabels=iSL;;
-	initNodeLabelColor=Qt::darkBlue;
+	initNodeNumberColor=iNNC;
+	initNodeNumberSize=iNNS;
+	initNodeLabelColor=iNLC;
+	initNodeLabelSize=iNLS;
+	
+	initEdgeColor=iEC;
+	
 	undirected=FALSE; arrows=FALSE; bezier=FALSE;
 	networkName="";
 	fileName=fn;
@@ -119,7 +123,13 @@ int Parser::loadDL(){
 			randY=rand()%gwHeight;
 			nodeNum++;
 			qDebug()<<"Creating node at "<< randX<<","<< randY;
-			emit createNode(nodeNum, initNodeSize, initNodeColor, label, initNodeLabelColor, QPointF(randX, randY), initNodeShape, initShowLabels);
+			emit createNode(
+						nodeNum, initNodeSize,initNodeColor, 
+						initNodeNumberColor, initNodeNumberSize,
+						label, initNodeLabelColor, initNodeLabelSize, 
+						QPointF(randX, randY), 
+						initNodeShape
+						);
 		
 		}
 		if ( data_flag){		//read edges
@@ -344,7 +354,14 @@ int Parser::loadPajek(){
 				for (int num=j; num< nodeNum; num++) {
 					qDebug()<< "Parser-loadPajek(): Creating dummy node number num = "<< num;
 					qDebug()<<"Creating node at "<< randX<<","<< randY;
-					emit createNode(num,initNodeSize, nodeColor, label, lineElement[3], QPointF(randX, randY), nodeShape, initShowLabels);
+					
+					emit createNode(
+									num, initNodeSize, nodeColor,
+									initNodeNumberColor, initNodeNumberSize,
+									label, lineElement[3], initNodeLabelSize,
+									QPointF(randX, randY), 
+									nodeShape
+									);
 					listDummiesPajek.push_back(num);  
 					miss++;
 				}
@@ -354,7 +371,14 @@ int Parser::loadPajek(){
 				return -1;	
 			}
 			qDebug()<<"Creating node at "<< randX<<","<< randY;
-			emit createNode(nodeNum,initNodeSize, nodeColor, label, initNodeLabelColor, QPointF(randX, randY), nodeShape, initShowLabels);
+
+			emit createNode(
+							nodeNum,initNodeSize, nodeColor, 
+							initNodeNumberColor, initNodeNumberSize,
+							label, initNodeLabelColor, initNodeLabelSize, 
+							QPointF(randX, randY), 
+							nodeShape
+							);
 			initNodeColor=nodeColor; 
 		} 	
 		/**NODES CREATED. CREATE EDGES/ARCS NOW. */		
@@ -369,7 +393,13 @@ int Parser::loadPajek(){
 					qDebug() << "Parser-loadPajek(): Creating node number i = "<< num;
 					randX=rand()%gwWidth;
 					randY=rand()%gwHeight;
-					emit createNode(num,initNodeSize, initNodeColor, QString::number(i), initNodeLabelColor, QPointF(randX, randY), initNodeShape, initShowLabels);
+					emit createNode(
+									num,initNodeSize, initNodeColor,
+									initNodeNumberColor, initNodeNumberSize, 
+									QString::number(i), initNodeLabelColor,initNodeLabelSize, 
+									 QPointF(randX, randY), 
+									 initNodeShape
+									 );
 				}
 				j=aNodes;
 			}
@@ -550,11 +580,11 @@ int Parser::loadAdjacency(){
 				randY=rand()%gwHeight;
 				qDebug()<<"Parser-loadAdjacency(): no coords. Using random "<<randX << randY;
 
-	// 			nodeNum,initNodeSize,nodeColor, label, lColor, QPointF(X, Y), nodeShape
-				emit createNode( j+1,initNodeSize, 
-								initNodeColor, QString::number(j+1), 
-								initNodeLabelColor, QPointF(randX, randY), 
-								initNodeShape, false
+				emit createNode( j+1,initNodeSize,  initNodeColor, 
+								initNodeNumberColor, initNodeNumberSize, 				
+								QString::number(j+1), initNodeLabelColor, initNodeLabelSize, 
+								QPointF(randX, randY), 
+								initNodeShape
 								);
 			}
 		}
@@ -800,10 +830,30 @@ void Parser::readGraphMLElementDefaultValue(QXmlStreamReader &xml) {
 	key_value=xml.readElementText();
 	keyDefaultValue [key_id] = key_value;	//key_id is already stored 
 	qDebug()<< "    key default value is "<< key_value;
+	if (keyName.value(key_id) == "size" && keyFor.value(key_id) == "node" ) {
+			qDebug()<< "    this key default value "<< key_value << " is for node size";
+			conv_OK=false;
+			initNodeSize= key_value.toInt(&conv_OK);
+			if (!conv_OK) initNodeSize = 8;  
+	}	
+	if (keyName.value(key_id) == "shape" && keyFor.value(key_id) == "node" ) {
+			qDebug()<< "    this key default value "<< key_value << " is for nodes shape";
+			initNodeShape= key_value; 
+	}
 	if (keyName.value(key_id) == "color" && keyFor.value(key_id) == "node" ) {
 			qDebug()<< "    this key default value "<< key_value << " is for nodes color";
 			initNodeColor= key_value; 
 	}
+	if (keyName.value(key_id) == "label.color" && keyFor.value(key_id) == "node" ) {
+			qDebug()<< "    this key default value "<< key_value << " is for node labels color";
+			initNodeLabelColor= key_value; 
+	}
+	if (keyName.value(key_id) == "label.size" && keyFor.value(key_id) == "node" ) {
+			qDebug()<< "    this key default value "<< key_value << " is for node labels size";
+			conv_OK=false;
+			initNodeLabelSize= key_value.toInt(&conv_OK);
+			if (!conv_OK) initNodeLabelSize = 8;  
+	}	
 	if (keyName.value(key_id) == "weight" && keyFor.value(key_id) == "edge" ) {
 			qDebug()<< "    this key default value "<< key_value << " is for edges weight";
 			conv_OK=false;
@@ -814,6 +864,7 @@ void Parser::readGraphMLElementDefaultValue(QXmlStreamReader &xml) {
 			qDebug()<< "    this key default value "<< key_value << " is for edges color";
 			initEdgeColor= key_value; 
 	}
+
 }
 
 
@@ -833,7 +884,11 @@ void Parser::readGraphMLElementNode(QXmlStreamReader &xml){
 	nodeColor = initNodeColor;
 	nodeShape = initNodeShape;
 	nodeSize = initNodeSize;
+	nodeNumberSize=initNodeNumberSize;
+	nodeNumberColor=initNodeNumberColor;
 	nodeLabel = node_id;
+	nodeLabelSize=initNodeLabelSize;
+	nodeLabelColor=initNodeLabelColor;
 	bool_node = true;
 	randX=rand()%gwWidth;
 	randY=rand()%gwHeight;
@@ -848,7 +903,13 @@ void Parser::endGraphMLElementNode(QXmlStreamReader &xml){
 	
 	qDebug()<<"   Parser: endGraphMLElementNode() *** signal to create node with id "
 		<< node_id << " nodenumber "<< aNodes << " coords " << randX << ", " << randY;
-	emit createNode(aNodes, nodeSize, nodeColor, nodeLabel, initNodeLabelColor, QPointF(randX,randY), nodeShape, initShowLabels);
+	emit createNode(
+					aNodes, nodeSize, nodeColor,
+					nodeNumberColor, nodeNumberSize,  
+					nodeLabel, nodeLabelColor, nodeLabelSize, 
+					QPointF(randX,randY), 
+					nodeShape
+					);
 	bool_node = false;
 	
 }
@@ -946,6 +1007,18 @@ void Parser::readGraphMLElementData (QXmlStreamReader &xml){
 			if (!conv_OK)
 				nodeSize = initNodeSize;  
 			qDebug()<< "     Using: "<< nodeSize;
+	}
+	else if (keyName.value(key_id) == "label.size" && keyFor.value(key_id) == "node" ) {
+			qDebug()<< "     Data found. Node label size: "<< key_value << " for this node"; 
+			conv_OK=false;
+			nodeLabelSize= key_value.toInt ( &conv_OK );
+			if (!conv_OK)
+				nodeLabelSize = initNodeLabelSize;  
+			qDebug()<< "     Using: "<< nodeSize;
+	}
+	else if (keyName.value(key_id) == "label.color" && keyFor.value(key_id) == "node" ){
+		 	qDebug()<< "     Data found. Node label Color: "<< key_value << " for this node";
+		 	nodeLabelColor = key_value;
 	}
 	else if (keyName.value(key_id) == "shape" && keyFor.value(key_id) == "node" ) {
 			qDebug()<< "     Data found. Node shape: "<< key_value << " for this node";
@@ -1207,7 +1280,7 @@ int Parser::loadDot(){
 	QStringList labels;
 	QList<QString> nodeSequence;   //holds edges
 	QList<QString> nodesDiscovered; //holds nodes;
-	initShowLabels=TRUE;	
+		
 	undirected=false; arrows=TRUE; bezier=FALSE;
 	source=0, target=0;
 	QFile file ( fileName );
@@ -1281,7 +1354,13 @@ int Parser::loadDot(){
 				randX=rand()%gwWidth;
 				randY=rand()%gwHeight;
 				qDebug()<<"Creating node at "<< randX<<","<< randY<<" label " << labels[j].toAscii(); 
-				emit createNode(aNodes, initNodeSize, nodeColor, labels[j], initNodeLabelColor, QPointF(randX,randY), nodeShape, initShowLabels);
+				emit createNode(
+								aNodes, initNodeSize, nodeColor,
+								initNodeNumberColor, initNodeNumberSize,  
+								labels[j], initNodeLabelColor, initNodeLabelSize, 
+								QPointF(randX,randY), 
+								nodeShape
+								);
 				aNum=aNodes;
 				nodesDiscovered.push_back( labels[j]);
 				qDebug()<<" Total aNodes: "<<  aNodes<< " nodesDiscovered = "<< nodesDiscovered.size();
@@ -1329,7 +1408,13 @@ int Parser::loadDot(){
 					randX=rand()%gwWidth;
 					randY=rand()%gwHeight;
 					qDebug()<<"Creating node at "<< randX <<","<< randY<<" label "<<node.toAscii(); 
-					emit createNode(aNodes, initNodeSize, nodeColor, node , initNodeLabelColor, QPointF(randX,randY), nodeShape, initShowLabels);
+					emit createNode(
+									aNodes, initNodeSize, nodeColor,
+									initNodeNumberColor, initNodeNumberSize,  
+									node , initNodeLabelColor, initNodeLabelSize,
+									QPointF(randX,randY), 
+									nodeShape
+									);
 					nodesDiscovered.push_back( node  );
 					qDebug()<<" Total aNodes " << aNodes<< " nodesDiscovered  "<< nodesDiscovered.size() ;
 					target=aNodes;
@@ -1371,7 +1456,13 @@ int Parser::loadDot(){
 					randX=rand()%gwWidth;
 					randY=rand()%gwHeight;
 					qDebug()<<"Creating node at "<<  randX << " "<< randY<< " label "<<node.toAscii(); 
-					emit createNode(aNodes, initNodeSize, nodeColor, label, initNodeLabelColor, QPointF(randX,randY), nodeShape, initShowLabels);
+					emit createNode(
+									aNodes, initNodeSize, nodeColor,
+									initNodeNumberColor, initNodeNumberSize,  
+									label, initNodeLabelColor, initNodeLabelSize, 
+									QPointF(randX,randY),
+									nodeShape
+									);
 					aNum=aNodes;
 					nodesDiscovered.push_back( node);
 					qDebug()<<" Total aNodes: "<<  aNodes<< " nodesDiscovered = "<< nodesDiscovered.size();

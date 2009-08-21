@@ -31,16 +31,23 @@
 #include <QPointF>
 #include "graph.h"
 
-Vertex::Vertex(Graph *parent, int v1, int val, int nsz, QString nc, QString nl, QString lc, QPointF p,QString nsp)
-: parentGraph (parent)  
+Vertex::Vertex(	Graph* parent, 
+				int v1,  int val, int size, QString color, 
+				QString numColor, int numSize, 
+				QString label, QString labelColor, int labelSize,
+				QPointF p, 
+				QString shape): parentGraph (parent)  
 { 
 	m_name=v1; 
 	m_value=val;
-	m_size=nsz;
-	m_color=nc;
-	m_label=nl;
-	m_labelColor=lc;
-	m_shape=nsp;
+	m_size=size;
+	m_color=color;
+	m_numberColor=numColor;
+	m_numberSize=numSize;
+	m_label=label;
+	m_labelColor=labelColor;
+	m_labelSize=labelSize;
+	m_shape=shape;
 	m_x=p.x();
 	m_y=p.y();
 	//FIXME outLinkColors list need update when we remove vertices/edges
@@ -273,15 +280,6 @@ int  Vertex::size(){
 }
 
 
-void Vertex::setLabel(QString label){
-	m_label=label;
-}
-
-QString Vertex::label(){
-	return m_label;	
-}
-
-
 void Vertex::setShape(QString shape){
 	m_shape=shape;
 }
@@ -297,6 +295,55 @@ void Vertex::setColor(QString color){
 
 QString Vertex::color(){
 	return m_color;	
+}
+
+
+
+
+void Vertex::setNumberColor (QString color) {
+	m_numberColor = color;
+}
+
+
+QString Vertex::numberColor(){
+	return m_numberColor;
+}
+
+
+void Vertex::setNumberSize (int size){
+	m_numberSize=size;
+}
+
+
+int Vertex::numberSize(){
+	return m_numberSize;
+}
+
+
+
+void Vertex::setLabel(QString label){
+	m_label=label;
+}
+
+QString Vertex::label(){
+	return m_label;	
+}
+
+void Vertex::setLabelColor(QString labelColor){
+	m_labelColor=labelColor;
+}
+
+QString Vertex::labelColor(){
+	return m_labelColor;	
+}
+
+
+void Vertex::setLabelSize(int newSize){
+	m_labelSize=newSize;
+}
+
+int Vertex::labelSize(){
+	return m_labelSize;
 }
 
 

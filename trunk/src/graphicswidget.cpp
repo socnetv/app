@@ -50,7 +50,7 @@ GraphicsWidget::GraphicsWidget( QGraphicsScene *sc, MainWindow* par)  : QGraphic
 	moving=0;
 	timerId=0;
 	layoutType=0;
-	m_numberColor="black";
+
 	m_nodeLabel="";
 	
 	zoomIndex=3;
@@ -106,7 +106,8 @@ void GraphicsWidget::clear() {
 */
 void GraphicsWidget::drawNode(
 								int num, int size, QString nodeColor, 
-								QString nodeLabel, QString labelColor, 
+								QString numberColor, int numberSize,
+								QString nodeLabel, QString labelColor, int labelSize, 
 								QPointF p, 
 								QString shape, 
 								bool showLabels, bool numberInsideNode, bool showNumbers
@@ -126,7 +127,7 @@ void GraphicsWidget::drawNode(
 						);
 
 	//Drawing node label - label will be moved by the node movement (see last code line in this method)
-	NodeLabel *labelJim = new  NodeLabel (jim, nodeLabel, scene() );
+	NodeLabel *labelJim = new  NodeLabel (jim, labelSize, nodeLabel, scene() );
 	labelJim -> setDefaultTextColor (labelColor);
 	labelJim -> setTextInteractionFlags(Qt::TextEditorInteraction);
 	
@@ -138,14 +139,12 @@ void GraphicsWidget::drawNode(
 	}
 
 	// drawing node number - label will be moved by the node movement (see last code line in this method)
-	int numSize;
-	if (!numberInsideNode)
-		numSize = size + 2;
-	else 
-		numSize = size;
+
+	if (numberInsideNode)
+		numberSize = size-2;
 		
-	NodeNumber *numberJim = new  NodeNumber ( jim, numSize, QString::number(num), scene() );
-	numberJim -> setDefaultTextColor (m_numberColor);
+	NodeNumber *numberJim = new  NodeNumber ( jim, numberSize, QString::number(num), scene() );
+	numberJim -> setDefaultTextColor (numberColor);
 	
 	if (!showNumbers){
 		numberJim->hide();

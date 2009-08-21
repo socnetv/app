@@ -69,7 +69,13 @@ class Graph:  public QObject{
 
 public slots:
 	/** Slots to signals from Parser */
-	void createVertex(int,int,QString, QString, QString, QPointF, QString); 	//Main vertex creation call
+	 	
+	void createVertex(	int i, int size, QString nodeColor, 
+						QString numColor, int numSize, 
+						QString label, QString lColor, int lSize, 
+						QPointF p, QString nodeShape
+						);//Main vertex creation call
+						
 	void setFileType(int, QString, int,int, bool);	
 	void removeDummyNode(int);
 
@@ -81,6 +87,7 @@ public slots:
 
 	void slotSetEdgeVisibility( int, int, bool);
 	
+	//auxiliary createVertex functions
 	void createVertex(int i, QPointF p); 							//Called by GW
 	void createVertex(int i, int canvasWidth, int canvasHeight); 	//Called by MW
 	void createVertex(QString label, int i) ; 						//Called by WebCrawler
@@ -89,9 +96,7 @@ public slots:
 	void setCanvasDimensions(int w, int h);				
 	void filterEdgesByWeight (float, bool);				//Called by MW to filter edges over/under a weight
 	
-	
 	void webCrawl( QString, int, int, bool);	//Called by MW to start a web crawler...
-
 	
 signals:
 	/** Signals to MainWindow */
@@ -102,7 +107,8 @@ signals:
 	void statusMessage (QString message);				//updates statusbar message
 	
 	/** Signals to GraphicsWidget */
-	void drawNode( int ,int,  QString, QString,QString, QPointF, QString, bool, bool, bool);	//call GW to draw a node
+	void drawNode( int ,int,  QString, QString, int, QString, QString, int, QPointF, QString, bool, bool, bool);	//call GW to draw a node
+	
 	void eraseNode (int);		//erase node from GW  
 	void drawEdge(int, int, float, bool, bool, QString, bool, bool);	//call GW to draw an edge
 	void eraseEdge(int, int);		//emited from removeEdge() to GW to clear the edge item.
@@ -119,16 +125,14 @@ public:
 	Graph(); 				//Creates a new graph.
 	void clear();			//Clears m_graph 
 	~Graph();				//destroy
-	
+
+	void setSocNetV_Version (QString ver) { VERSION = ver; }
+		
 	void setShowLabels(bool toggle);
 	void setShowNumbersInsideNodes(bool toggle);
 
 	/**FILES (READ AND WRITE)*/
-	bool loadGraph (	
-					QString, int, QString, 
-					QString, QString, bool, 
-					int maxWidth, int maxHeight
-				);	//Our almost universal network loader. :)
+	bool loadGraph ( QString, bool,	int maxWidth, int maxHeight	);	//Our almost universal network loader. :)
 	
 	bool saveGraph( QString fileName, int fileType, 
 						QString networkName, int maxWidth, int maxHeight 
@@ -146,19 +150,28 @@ public:
 	int hasVertex(QString);						//Checks if a vertex with a label exists
 	void removeVertex (int );					//removes given vertex from m_graph
 
-	void setInitVertexSize (int); 				//Changes the init size used by all new vertices.
+	void setInitVertexSize (int); 				//Changes the init size used in new vertices.
 	void setVertexSize(int v, int );			//Changes the size.of vertex v 
 
-	void setInitVertexShape (QString); 			//Changes the init shape used by all new vertices.
+	
+	void setInitVertexShape (QString); 			//Changes the init shape used in new vertices.
 	void setVertexShape(int v, QString shape); 	//Changes the shape.of vertex v 
 	QString shape(int v);						//returns the shape of this vertex
 
-	void setInitVertexColor (QString color);  	//Changes the init color used by all new vertices
+	void setInitVertexColor (QString color);  	//Changes the init color used in new vertices
 	void setVertexColor(int v, QString color); 	//Changes the color.of vertex v 
 
+
+	void setInitVertexNumberColor ( QString color);	//Changes the init number color in new vertices  
+	void setInitVertexNumberSize (int size);		//Changes the init number size in new vertices 
+	
+	void setInitVertexLabelSize(int newSize);	//Changes the init size of new vertices labels
+	void setVertexLabelSize(int v, int newSize);//Changes the size of a vertex label
+	
 	void setInitVertexLabelColor(QString color);//Changes the init color used by all new vertices' labels
 	void setVertexLabel(int v, QString label); 	//Changes the label.of vertex v 
 	QString label(int);			
+
 
 	void updateVertCoords(int v, int x, int y);	 //Updates vertex v with coords x,y
 
@@ -279,7 +292,14 @@ private:
 	WebCrawler crawler; 
 	
 	/** private member functions */
-	void addVertex (int v1, int val, int nsz, QString nc, QString nl, QString lc, QPointF p,QString nsp);	
+
+	void addVertex (
+						int v1, int val, int size, QString color, 
+						QString numColor, int numSize, 
+						QString label, QString labelColor, int labelSize, 
+						QPointF p, QString shape
+					);			// adds a vertex to m_graph
+						
 	void addEdge (int v1, int v2, float w, QString color, bool undirected); 		//adds an edge between v1 and v2, weight w, colored
 
 	/** methods used by createDistanceMatrix()  */
@@ -316,7 +336,7 @@ private:
 
 	/** General & initialisation variables */
 
-	int m_totalEdges, m_totalVertices, graphDiameter, initVertexSize;
+	int m_totalEdges, m_totalVertices, graphDiameter, initVertexSize, initVertexLabelSize, initVertexNumberSize;
 	float averGraphDistance, nonZeroDistancesCounter;
 	int outEdgesVert, inEdgesVert, reciprocalEdgesVert;
 	int timerId,  layoutType, canvasWidth, canvasHeight;
@@ -325,7 +345,7 @@ private:
 	bool adjacencyMatrixCreated, symmetricAdjacencyMatrix, graphModified, distanceMatrixCreated;
 	bool m_undirected;
 
-	QString networkName, initEdgeColor, initVertexColor, initVertexLabelColor, initVertexShape;
+	QString VERSION, networkName, initEdgeColor, initVertexColor, initVertexNumberColor, initVertexLabelColor, initVertexShape;
 	
 	QDateTime actualDateTime;
 };

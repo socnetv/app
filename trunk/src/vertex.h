@@ -28,16 +28,12 @@
 #define VERTEX_H
 
 #include <QObject>
-
 #include <QString>
 #include <QHash>
 #include <QList>
-
 #include <map>
 
-
 using namespace std;
-
 
 class QPointF;
 class Graph;
@@ -47,18 +43,32 @@ typedef QHash<int,QString> ihash_s;
 typedef QHash<int,int> ihash_i;  
 typedef QList<int> ilist;
 
+
+
 class Vertex : public QObject{
 	Q_OBJECT
+
 public:
-	Vertex ( Graph* parent, int v1, int val, int nsz, QString nc, QString nl, QString lc, QPointF p,QString nsp );
+
+	Vertex(	Graph* parent, 
+				int v1,  int val, int size, QString color, 
+				QString numColor, int numSize, 
+				QString label, QString labelColor, int labelSize,
+				QPointF p, 
+				QString shape);
+
 	Vertex(int v1);
+
 	~Vertex();
+
 	int name();
 	void setName (int ); 
 
 	void addLinkTo (int target, float weight);	/** Adds an outLink to target with weight w */
 	void addLinkFrom(int source, float weight);
+
 	void changeLinkWeightTo (int target, float weight);
+
 	void removeLinkTo (int target);		/** Removes edge to vertex t */
 	void removeLinkFrom(int source);	/** Removes edge from vertex s	*/
 	
@@ -87,14 +97,29 @@ public:
 	void setSize(int );
 	int  size();
 	
-	void setLabel (QString);
-	QString label();
 	
 	void setShape(QString);
 	QString shape();
 
 	void setColor(QString);
 	QString color();
+
+	void setNumberColor (QString);
+	QString numberColor();
+
+	void setNumberSize (int);
+	int numberSize();
+	
+
+	void setLabel (QString);
+	QString label();
+
+	void setLabelColor (QString);
+	QString labelColor();
+	
+	void setLabelSize(int);
+	int labelSize();
+
 
 	void setX(float );
 	float x();
@@ -167,9 +192,9 @@ protected:
 private:
 	Graph *parentGraph;
 	ilist myPs;
-	int m_name, m_value, m_size, m_outLinks, m_inLinks;
+	int m_name, m_value, m_size, m_outLinks, m_inLinks, m_labelSize, m_numberSize;
 	bool m_inLinked, m_outLinked, m_reciprocalLinked, m_hasCLC;
-	QString m_color, m_label, m_labelColor, m_shape;
+	QString m_color, m_numberColor, m_label, m_labelColor, m_shape;
 	//QString *outLinkColors;
 	ihash_s outLinkColors;
 	//FIXME vertice coords

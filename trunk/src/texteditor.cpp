@@ -297,11 +297,9 @@ QString TextEditor::strippedName(const QString &fullFileName)
 void TextEditor::about()
 {
    QMessageBox::about( this, "SocNetV Editor",
-"<b>S</b>ocial <b>N</b>etwork <b>V</b>isualiser version 0.6"
-      "<p>Written by <br>Dimitris V. Kalamaras<br>"
+" Part of <b>S</b>ocial <b>N</b>etwork <b>V</b>isualizer"
+      "<p>Developer: <br>Dimitris V. Kalamaras<br>"
       "<br>email: dimitris.kalamaras@gmail.com"
-      "<p>Last revision: Sep 2009</p>"
-      "<p>Fortune cookie:  <br>sic itur ad astra/sic transit gloria mundi?"
 
     "<p>Note: This text editor was adapted from Trolltech's application example."
 

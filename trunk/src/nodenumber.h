@@ -41,6 +41,7 @@ public:
 	void removeRefs();
 	enum { Type = UserType + 3 };
 	int type() const { return Type; }
+	Node* node() { return source; }
 	~NodeNumber();
 private:
 	Node *source;

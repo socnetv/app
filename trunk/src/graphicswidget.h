@@ -91,7 +91,13 @@ protected:
 	void paintEvent ( QPaintEvent * event );
 
 public slots:
-	void drawNode(int i, int size, QString aColor, QString label, QString lColor, QPointF p, QString nodeShape, bool showLabels, bool labelIn, bool showNumbers);
+	void drawNode(	int i, int size, QString aColor, 
+					QString nColor, int nSize, 
+					QString label, QString lColor, int lSize, 
+					QPointF p, 
+					QString nodeShape, 
+					bool showLabels, bool labelIn, bool showNumbers
+					);
 	void eraseNode(int doomedJim);
 	void drawEdge(int, int, float, bool, bool, QString, bool, bool);
 	void eraseEdge(int, int);
