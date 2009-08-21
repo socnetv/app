@@ -656,6 +656,15 @@ void Graph::setVertexLabelSize(int v1, int newSize) {
 }
 
 
+
+//Changes the shape.of vertex v 
+void Graph::setVertexLabelColor(int v1, QString color){
+	m_graph[ index[v1] ]->setLabelColor(color);
+	graphModified=true;
+	emit graphChanged(); 
+}
+
+
 void Graph::setInitVertexLabelColor(QString color){
 	initVertexLabelColor=color;
 }

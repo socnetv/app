@@ -169,7 +169,8 @@ public:
 	void setVertexLabelSize(int v, int newSize);//Changes the size of a vertex label
 	
 	void setInitVertexLabelColor(QString color);//Changes the init color used by all new vertices' labels
-	void setVertexLabel(int v, QString label); 	//Changes the label.of vertex v 
+	void setVertexLabel(int v, QString label); 	//Changes the label.of vertex v
+	void setVertexLabelColor(int v1, QString color);  
 	QString label(int);			
 
 

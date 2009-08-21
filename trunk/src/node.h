@@ -84,8 +84,12 @@ public:
 	void setColor(QColor color);
 	QString color ();
 	
-	void setLabel ( QString label) ;		//Only used by MW to update graphic labels
-	QString label ( ) ;
+	void setLabelText ( QString label) ;		// Used by MW:: slotChangeNodeLabel()
+	QString labelText () ;						// Used by GW:: hasNode()
+	NodeLabel* label();
+	void addLabel (NodeLabel* gfxLabel  ) ;
+	void deleteLabel();
+	void clearLabel();
 
 	void addInLink( Edge *edge ) ;
 	void deleteInLink(Edge*);
@@ -93,17 +97,14 @@ public:
 	void addOutLink( Edge *edge ) ;
 	void deleteOutLink(Edge*);
 
-	void addLabel (NodeLabel* gfxLabel  ) ;
-	void deleteLabel();
-	void clearLabel();
 	
 	void setNumberInside(bool);
 
 	void addNumber (NodeNumber *gfxNum ) ;
 	void deleteNumber();
 	
-	
 	void toggleAntialiasing(bool);
+	
 protected:
  	QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 	void mousePressEvent(QGraphicsSceneMouseEvent *event);

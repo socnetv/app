@@ -617,7 +617,7 @@ Node* GraphicsWidget::hasNode( QString text ){
 	bool ok = false;
 	for ( it=nodeVector.begin() ; it < nodeVector.end(); it++ ) {
 		if ( 	(*it)->nodeNumber()==text.toInt(&ok, 10)  || 
-				(*it)->label().contains (text, Qt::CaseInsensitive)
+				(*it)->labelText().contains (text, Qt::CaseInsensitive)
 			 ) {
 			qDebug() << "GW: hasNode(): Node " << text << " found!";
 			markedNodeExists=true;

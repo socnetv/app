@@ -390,14 +390,14 @@ void Node::die() {
 }
 
 
-void Node::setLabel ( QString label) {
+void Node::setLabelText ( QString label) {
 	prepareGeometryChange();
 	m_label->setPlainText(label);
 	m_hasLabel=true;
 }
 
 
-QString Node::label ( ) { 
+QString Node::labelText ( ) { 
 	if (m_hasLabel) {
 		return m_label->toPlainText();				
 	}	
@@ -555,6 +555,17 @@ void Node::deleteOutLink(Edge *link){
 
 
 
+void Node::addLabel (NodeLabel* gfxLabel  )  { 
+	qDebug("NODE: add label");
+	m_label=gfxLabel ;
+	m_hasLabel=true;
+}
+
+
+NodeLabel* Node::label(){
+	return m_label;
+}
+
 void Node::deleteLabel(){
 	qDebug ("Node: deleteLabel ");
 	m_hasLabel=false;
@@ -568,24 +579,20 @@ void Node::clearLabel(){
 }
 
 
-void Node::deleteNumber( ){
-	qDebug ("Node: deleteNumber ");
-	m_number->hide();
-	graphicsWidget->removeItem(m_number);	
-}
 
 
 
-
-void Node::addLabel (NodeLabel* gfxLabel  )  { 
-	qDebug("NODE: add label");
-	m_label=gfxLabel ;
-	m_hasLabel=true;
-}
 
 void Node::addNumber (NodeNumber *gfxNum ) {
 	 m_number=gfxNum ;
 	 m_hasNumber=true;
+}
+
+
+void Node::deleteNumber( ){
+	qDebug ("Node: deleteNumber ");
+	m_number->hide();
+	graphicsWidget->removeItem(m_number);	
 }
 
 // Node::~Node(){

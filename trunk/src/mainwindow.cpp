@@ -339,7 +339,7 @@ void MainWindow::initActions(){
 
 
 	openTextEditorAct = new QAction(QIcon(""), tr("Open Text Editor"),this);
-	openTextEditorAct ->setShortcut(tr(""));
+	openTextEditorAct ->setShortcut(tr("Shift+F5"));
 	openTextEditorAct->setStatusTip(tr("Opens the SocNetV text editor"));
 	openTextEditorAct->setWhatsThis(tr("Open Text Editor\n\nOpens the SocNetV text editor where you can copy paste network data"));
 	connect(openTextEditorAct, SIGNAL(activated()), this, SLOT(slotOpenTextEditor()));
@@ -2889,7 +2889,7 @@ void MainWindow::nodeInfoStatusBar ( Node *jim) {
 	
 	statusMessage(  QString(tr("(%1, %2);  Node %3, with label %4, "
 		"has %5 in-Links and %6 out-Links.")).arg( ceil( clickedJim->x() ) )
-		.arg( ceil( clickedJim->y() )).arg( clickedJimNumber ).arg( clickedJim->label() )
+		.arg( ceil( clickedJim->y() )).arg( clickedJimNumber ).arg( clickedJim->labelText() )
 		.arg(inLinks).arg(outLinks) );
 	clickedJimNumber=-1;
 }
@@ -3152,7 +3152,7 @@ void MainWindow::slotChangeNodeLabel(){
 	QString::null, &ok );
 	if ( ok && !text.isEmpty() ) {
 		qDebug()<<"MW: change label to "<< text.toAscii();
-		clickedJim->setLabel(text);
+		clickedJim->setLabelText(text);
 		activeGraph.setVertexLabel( clickedJimNumber, text);
 		if (!showLabels()) 
 			displayNodeLabelsAct->setChecked(true);
@@ -5200,7 +5200,7 @@ void MainWindow::slotAllNumbersColor(){
 
 
 /**
-*  Changes the color of nodes' labels
+*  Changes the color of nodes labels
 */
 void MainWindow::slotAllLabelsColor(){
 	QColor textColor = QColorDialog::getColor( Qt::black, this );
@@ -5208,11 +5208,14 @@ void MainWindow::slotAllLabelsColor(){
 	qDebug ("MW: Will change label color");
 	QList<QGraphicsItem *> list= scene->items();
 	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
-		if ( (*it)->type() == TypeLabel) 		{
-			NodeLabel *jimLabel = (NodeLabel *) (*it);
-			jimLabel->update();
-			jimLabel->setDefaultTextColor(textColor);
-		}
+		if ( (*it)->type() == TypeNode ) 	{
+				Node *jim = (Node *) (*it);
+				jim->label()->update();
+				jim->label()->setDefaultTextColor(textColor);
+				qDebug ("MW: Changed color");
+				activeGraph.setVertexLabelColor (jim->nodeNumber(), textColor.name());
+			}
+	activeGraph.setInitVertexLabelColor(textColor.name());
 	QApplication::restoreOverrideCursor();
 	statusMessage( tr("Label colors changed. Ready. ")  );
 }
@@ -5453,7 +5456,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Fri Aug 21 16:19:47 EEST 2009";
+QString BUILD="Fri Aug 21 17:40:01 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"
