@@ -219,8 +219,10 @@ public:
 	void writeCentralityGraph(const QString, const bool);		//Writes the Graph centralities to a file
 	void writeCentralityStress(const QString, const bool);		//Writes the Stress centralities to a file	
 	void writeCentralityEccentricity(const QString, const bool);		//Writes the Eccentr centralities to a file
+
 	void writeClusteringCoefficient(const QString, const bool);		//Writes the clustering coefficients to a file
-	
+
+	void writeTriadCensus(const QString, const bool);		//Writes the triad census to a file	
 	
 
 
@@ -240,6 +242,8 @@ public:
 	float numberOfCliques();			//Calculates the number of cliques (triangles) of the whole graph
 	float clusteringCoefficient(int v1);	
 	float clusteringCoefficient ();
+	
+	float triadCensus();
 	
 //	void eccentr_JordanCenter(); 				// TODO
 

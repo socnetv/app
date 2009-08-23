@@ -767,6 +767,11 @@ void MainWindow::initActions(){
 	connect(clusteringCoefAct, SIGNAL(activated()), this, SLOT(slotClusteringCoefficient() )  );
 
 
+	triadCensusAct = new QAction(QIcon(":/images/clique.png"), tr("Triad Census"),this);
+	triadCensusAct->setShortcut(tr("Ctrl+T"));
+	triadCensusAct->setStatusTip(tr("Conducts a triad census for the active network."));
+	triadCensusAct->setWhatsThis(tr("Triad Census\n\n A triad census counts all the possible types of observed triads within a network and codes the different triads according to their number of mutual, asymmetric and non-existent dyads. \n "));
+	connect(triadCensusAct, SIGNAL(activated()), this, SLOT(slotTriadCensus() )  );
 
 	cInDegreeAct = new QAction(tr("InDegree"),	 this);
 	cInDegreeAct->setStatusTip(tr("Calculates and displays InDegree Centralities"));
@@ -1134,7 +1139,10 @@ void MainWindow::initMenuBar() {
 	statMenu -> addAction (diameterAct);
 	statMenu -> addSeparator();
 	statMenu -> addAction (clusteringCoefAct);
-
+	
+	statMenu -> addSeparator();
+	statMenu -> addAction (triadCensusAct);
+	
 	statMenu->addSeparator();
 	centrlMenu = new QMenu(tr("Centralities"));
 	statMenu->addMenu(centrlMenu); 
@@ -4415,6 +4423,33 @@ void MainWindow::slotClusteringCoefficient (){
 
 
 
+
+/**
+*	Calls Graph to conduct and write a triad census into a file, then displays it.
+*/
+void MainWindow::slotTriadCensus() {
+	
+	if (!fileLoaded && !networkModified  )  {
+		QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+		statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
+		return;
+	}
+	QString fn = "triad-census.dat";
+	bool considerWeights=true;
+	
+	createProgressBar();
+	
+	activeGraph.writeTriadCensus(fn, considerWeights);
+	
+	destroyProgressBar();
+
+	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+	tempFileNameNoPath=fn.split( "/");
+	ed->setWindowTitle("Triad Census saved as: " + tempFileNameNoPath.last());
+	ed->show();
+}
+
+
 /**
 *	Writes Out-Degree Centralities into a file, then displays it.
 */
@@ -5456,7 +5491,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Fri Aug 21 17:40:01 EEST 2009";
+QString BUILD="Sun Aug 23 03:00:43 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"

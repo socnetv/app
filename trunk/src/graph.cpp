@@ -2082,6 +2082,44 @@ void Graph::writeClusteringCoefficient(
 }
 
 
+
+
+
+void Graph::writeTriadCensus(
+		const QString fileName, const bool considerWeights)
+{
+	Q_UNUSED(considerWeights);
+	QFile file ( fileName );
+	if ( !file.open( QIODevice::WriteOnly ) )  {
+		qDebug()<< "Error opening file!";
+		emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+		return;
+	}
+	
+	QTextStream outText ( &file );
+
+	emit statusMessage ( (tr("Conducting triad census. Please wait....")) );
+
+	float triadCensusScore = triadCensus();
+	
+	emit statusMessage ( QString(tr("Writing clustering coefficients to file:")).arg(fileName) );
+	
+	outText <<"-SocNetV- "<<"\n\n";
+	outText << tr("TRIAD CENSUS REPORT \n");
+	outText << tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+	outText << tr("\n");
+	outText << "\n";
+	outText << "\n";
+	
+	outText << "\nTOTAL SCORE (WS)\n\n";
+	outText << "SCORE = " <<  triadCensusScore <<"\n\n";
+	
+	outText << tr(".\n");
+
+}
+
+
+
 /** 
 * Repositions all nodes on the periphery of different circles with radius analogous to their centrality
 */
@@ -2654,6 +2692,84 @@ float Graph::clusteringCoefficient (){
 	qDebug("=== Graph::graphClusteringCoefficient()  is equal to %f", averageCLC);
 	
 	return averageCLC; 
+}
+
+
+
+/*
+ *  Conducts a triad census and returns a triad score
+ */
+float Graph::triadCensus(){
+	int mut=0, dir=0, nul =0;
+	int temp_mut=0, temp_dir=0, temp_nul =0;
+	int ver1, ver2, ver3; 
+	
+	foreach (Vertex *v1, m_graph)  {
+
+		foreach (Vertex *v2, m_graph)  {
+
+			ver1=v1->name();
+			ver2=v2->name();
+			
+			if ( ver1 == ver2 ) 
+				continue; 
+
+			temp_mut=0, temp_dir=0, temp_nul =0;
+			
+			if ( v1->isLinkedTo( ver2 ) ) {
+				if ( v2->isLinkedTo( ver1 ) )
+					temp_mut++;
+				else 
+					temp_dir++;
+			}
+			else if ( v2->isLinkedTo( ver1 )  )
+				temp_dir++;
+			else
+				temp_nul++; 
+			
+			
+			foreach (Vertex *v3, m_graph)  {
+
+				mut=0, dir=0, nul =0;
+				ver3=v3->name();
+				
+				if ( ver3 == ver2 ) 
+					continue; 
+				if ( ver3 == ver1 ) 
+					continue; 
+				
+				if ( v1->isLinkedTo( ver3 ) ) {
+					if ( v3->isLinkedTo( ver1 ) )
+						mut++;
+					else 
+						dir++;
+				}
+				else if ( v3->isLinkedTo( ver1 )  )
+					dir++;
+				else
+					nul++; 
+				
+				if ( v2->isLinkedTo( ver3 ) ) {
+					if ( v3->isLinkedTo( ver2 ) )
+						mut++;
+					else 
+						dir++;
+				}
+				else if ( v3->isLinkedTo( ver2 )  )
+					temp_dir++;
+				else
+					temp_nul++; 
+			
+				temp_mut += mut;
+				temp_dir += dir;
+				temp_nul += nul;
+				
+				qDebug()<< "triad of ("<< ver1 << ","<< ver2 << ","<< ver3 << ") = ("
+								<<temp_mut<<","<< temp_dir<<","<<temp_nul<<")"; 
+			} // end 3rd foreach
+		}// end 2rd foreach
+	}// end 1rd foreach
+		
 }
 
 
