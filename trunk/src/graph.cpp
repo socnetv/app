@@ -3309,86 +3309,69 @@ void Graph::timerEvent(QTimerEvent *event) {
 
 void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
 	qreal xvel = 0, yvel = 0, dx=0, dy=0;
+	qreal c1=200, dux=0, duy=0;
 	double dist =0;
-	qreal l=440, c1=canvasHeight/2.0;
-	qreal dux=0, duy=0;
+	
 	QPointF curPos, newPos, pos ;
 	int targetVertex=0;
-	qreal weight_coefficient=1;		//affects speed and line length. Try 10...
+	qreal weight_coefficient=100;		//affects speed and line length. Try 10...
 	imap_f::iterator it1; //delete me.
+	
 	if (dynamicMovement){
+		qDebug () << "max dx "<< canvasWidth << "max dy "<< canvasHeight;
 		foreach (Vertex *v1, m_graph)  {
-			// Sum up all repelling forces, namely all forces pushing this vertex away (i.e. imagine nodes are electrons)
+
 			xvel=0; yvel=0;
-			qDebug("<----------->  Calculate total repelling Force for vertex %i with index %i and pos %f, %f ", v1->name(), index[v1->name()], v1->x(), v1->y());
+						
+			qDebug("****************  Sum up all forces pushing away vertex %i with index %i and pos %f, %f ", v1->name(), index[v1->name()], v1->x(), v1->y());
 			foreach (Vertex *v2, m_graph)  {
-				if ( ! hasEdge(v1->name(), v2->name()) )   //Spring embedder counts repelling forces only between non-adjacent vertices. Compare with F-R.
-				{
-					if ( v2 == v1 ) continue;
-					QLineF line(v1->x(), v1->y(),  v2->x(), v2->y() );	//imaginary line v1 --> v2
-					dx = line.dx();
-					dy = line.dy();
-					dist = 2.0 * (dx * dx + dy * dy);
 
-					qDebug()<< v1->name() <<  " is pushed away from " <<  v2->name() 
-								<< " with pos (" <<  v2->pos().x() << "," << v2->pos().y() << ")"
-								<<"  Parameters: c1="<< c1 
-								<< " dx="<< dx
-								<< " dy="<<dy 
-								<< "dist="<<dist;
-
-					if (dist > 0) { //only if the euclideian distance of the two vertices is positive.
-						dux = (dx * c1) / dist; 	
-						duy = (dy * c1) / dist;
-						xvel +=  dux ;
-						yvel +=  duy;
-
-					}
-					qDebug(" ========== After push, new Total Velocity for %i xvel, yvel  %f, %f", v1->name(), xvel, yvel);
-
+				//Spring embedder counts repelling forces only between non-adjacent vertices.
+				if ( hasEdge (v1->name(), v2->name()) || (v2 == v1)  ) {
+					qDebug() << "Skipping vertex "<<v2->name(); 
+					continue;
 				}
-				else {
+				
+				QLineF line(v1->x(), v1->y(),  v2->x(), v2->y() );	//imaginary line v1 --> v2
+				dx = line.dx();
+				dy = line.dy();
+				dist = (dx * dx + dy * dy);
+				dist *=dist;
+
+				qDebug()<< v1->name() <<  " is pushed away from " <<  v2->name() 
+							<< " with pos (" <<  v2->pos().x() << "," << v2->pos().y() << ")"
+							<<"  Parameters: c1=" << c1 
+							<< " dx=" << dx
+							<< " dy=" << dy 
+							<< "dist ^2 =" << dist;
+
+				if (dist > 0) { //only if the euclideian distance of the two vertices is positive.
+					dux = (dx * c1) / dist; 	
+					duy = (dy * c1) / dist;
+					xvel +=  dux ;
+					yvel +=  duy;
 				}
+				qDebug(" ========== After push, new Total Velocity for %i xvel, yvel  %f, %f", v1->name(), xvel, yvel);
 			}
-			// Now subtract all pulling forces (i.e. springs)
-			qDebug(">-------------<  Calculate pulling force for %i", v1->name());
+
+			qDebug("\n\n****************  Now subtract all pulling forces for vertex %i", v1->name());
 			double weight = (v1->m_outEdges.size() + 1) * weight_coefficient;
 			qDebug("weight %f", weight);
 			for( it1 = (*v1).m_outEdges.begin(); it1 != (*v1).m_outEdges.end(); it1++ ) {
 				targetVertex=index[it1->first];	 					//get other node's coordinates
 				pos = m_graph[targetVertex]->pos();
-				
-				QLineF line( v1->x(), v1->y(),  pos.x(), pos.y() );
-				dx = line.dx();
-				dy = line.dy();
-				dist = sqrt(dx * dx + dy * dy);
+			
+				dux = pos.x() / weight ;
+				duy = pos.y() / weight ;
+				xvel +=  dux;
+				yvel +=  duy;
 
-				dux = log ( abs(dx)*  dist/l ); 
-				duy = log ( abs(dy)*  dist/l );
 				qDebug()<< v1->name() <<  " is linked with " <<  it1->first
 									<< " with pos (" <<  pos.x() << "," << pos.y() << ")"
-								<<"  Parameters: c1="<< c1 
-								<< " dx="<< dx
-								<< " dy="<<dy 
-								<< "dist="<<dist;
-
-				qDebug("dx, dy, dist: %f, %f, %f, log x is %f and log y is %f", dx, dy, dist, dux, duy) ;
-				if ( dx > 0 ) {
-					xvel +=  dux ;	
-					qDebug("add to xvel  += %f", dux);
-				}
-				else {
-					xvel -=  dux ;	
-					qDebug("sub from xvel -= %f", -dux);
-				}
-				if ( dy > 0 ) {
-					yvel +=  duy;
-						qDebug("add to  yvel += %f", duy);
-				}
-				else { 
-					yvel -=  duy;
-					qDebug("sub from yvel -= %f", -duy);
-				}
+								<<"  Parameters: w="<< weight 
+								<< " dux="<< dux
+								<< " duy="<< duy; 
+								
 
 			}
 			qDebug(" ========== After PULL, Total Velocity for %i xvel, yvel  %f, %f", v1->name(), xvel, yvel);
