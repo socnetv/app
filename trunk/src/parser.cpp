@@ -68,7 +68,7 @@ void Parser::load(QString fn, int iNS, QString iNC, QString iNSh, QString iNNC, 
 	Tries to load a file as DL-formatted network. If not it returns -1
 */
 int Parser::loadDL(){
-	qDebug ("Parser: loadDL");
+	qDebug ("\n\nParser: loadDL");
 	QFile file ( fileName );
 	if ( ! file.open(QIODevice::ReadOnly )) return -1;
 	QTextStream ts( &file );
@@ -87,7 +87,7 @@ int Parser::loadDL(){
 		lineCounter++;
 
 
-		if ( str.isEmpty() || isComment(str) ) 
+		if ( isComment(str) ) 
 			continue;
 				
 		if ( (lineCounter == 1) &&  (!str.startsWith("DL",Qt::CaseInsensitive)  ) ) {  
@@ -175,7 +175,7 @@ int Parser::loadDL(){
 	Tries to load the file as Pajek-formatted network. If not it returns -1
 */
 int Parser::loadPajek(){
-	qDebug ("Parser: loadPajek");
+	qDebug ("\n\nParser: loadPajek");
 	QFile file ( fileName );
 	if ( ! file.open(QIODevice::ReadOnly )) return -1;
 	QTextStream ts( &file );
@@ -202,10 +202,11 @@ int Parser::loadPajek(){
 	
 	while ( !ts.atEnd() )   {
 		str= ts.readLine();
-		lineCounter++;
 		
-		if ( isComment(str) || str.isEmpty() ) 
+		if ( isComment(str)  ) 
 			continue;
+
+		lineCounter++;
 
 		if (lineCounter==1) {
 			if ( str.contains("graph",Qt::CaseInsensitive)  
@@ -569,7 +570,7 @@ int Parser::loadPajek(){
 	Tries to load the file as adjacency sociomatrix-formatted. If not it returns -1
 */
 int Parser::loadAdjacency(){
-	qDebug("Parser: loadAdjacency()");
+	qDebug("\n\nParser: loadAdjacency()");
 	QFile file ( fileName );
 	if ( ! file.open(QIODevice::ReadOnly )) return -1;
 	QTextStream ts( &file );
@@ -584,7 +585,7 @@ int Parser::loadAdjacency(){
 		str= ts.readLine() ;
 		str=str.simplified();  // transforms "/t", "  ", etc to plain " ".
 			
-		if ( isComment(str) || str.isEmpty()  ) 
+		if ( isComment(str) ) 
 			continue; 
 			
 		if ( str.contains("vertices",Qt::CaseInsensitive) 
@@ -660,7 +661,7 @@ int Parser::loadAdjacency(){
 	If not it returns -1
 */
 int Parser::loadGraphML(){
-	qDebug("Parser: loadGraphML()");
+	qDebug("\n\nParser: loadGraphML()");
 	aNodes=0;
 	totalLinks=0;
 	nodeNumber.clear();
@@ -1255,7 +1256,7 @@ void Parser::readGraphMLElementUnknown(QXmlStreamReader &xml) {
 	Tries to load a file as GML formatted network. If not it returns -1
 */
 int Parser::loadGML(){
-	qDebug("Parser: loadGML()");
+	qDebug("\n\nParser: loadGML()");
 	QFile file ( fileName );
 	QString str, temp;
 	int fileLine=0, start=0, end=0;
@@ -1298,7 +1299,7 @@ int Parser::loadGML(){
 	Tries to load the file as Dot (Graphviz) formatted network. If not it returns -1
 */
 int Parser::loadDot(){
-	qDebug("Parser: loadDotNetwork");
+	qDebug("\n\nParser: loadDotNetwork");
 	int fileLine=0, j=0, aNum=-1;
 	int start=0, end=0;
 	QString str, temp, label, node, nodeLabel, fontName, fontColor, edgeShape, edgeColor, edgeLabel;
@@ -1320,16 +1321,16 @@ int Parser::loadDot(){
 	aNodes=0;
 	while (!ts.atEnd() )   {
 		str= ts.readLine() ;
-		fileLine++;
-		qDebug ()<<"Reading fileLine "<< fileLine;
 		str=str.simplified();
 		str=str.trimmed();
 
-		if (str.isEmpty() || isComment (str) ) 
+		if ( isComment (str) ) 
 			continue;
 
+		fileLine++;
+		qDebug ()<<"Reading fileLine "<< fileLine;
+
 		if ( fileLine == 1 ) {
-			qDebug ()<<"Reading fileLine = " <<fileLine;
 			if ( str.contains("vertices",Qt::CaseInsensitive) 	//Pajek
 				|| str.contains("network",Qt::CaseInsensitive)	//Pajek?
 				|| str.contains("[",Qt::CaseInsensitive)    	// GML
@@ -1342,6 +1343,7 @@ int Parser::loadDot(){
 				file.close();				
 				return -1;
 			}
+
 			if ( str.contains("digraph", Qt::CaseInsensitive) ) {
 				lineElement=str.split(" ");
 				if (lineElement[1]=="{" ) networkName="Noname";
@@ -1392,7 +1394,7 @@ int Parser::loadDot(){
 				aNodes++;
 				randX=rand()%gwWidth;
 				randY=rand()%gwHeight;
-				qDebug()<<"Creating node at "<< randX<<","<< randY<<" label " << labels[j].toAscii(); 
+				qDebug()<<"*** Creating node at "<< randX<<","<< randY<<" label " << labels[j].toAscii() << " colored "<< nodeColor; 
 				emit createNode(
 								aNodes, initNodeSize, nodeColor,
 								initNodeNumberColor, initNodeNumberSize,  
@@ -1446,7 +1448,7 @@ int Parser::loadDot(){
 					aNodes++;
 					randX=rand()%gwWidth;
 					randY=rand()%gwHeight;
-					qDebug()<<"Creating node at "<< randX <<","<< randY<<" label "<<node.toAscii(); 
+					qDebug()<<" *** Creating node at "<< randX <<","<< randY<<" label "<<node.toAscii() << " colored "<< nodeColor; 
 					emit createNode(
 									aNodes, initNodeSize, nodeColor,
 									initNodeNumberColor, initNodeNumberSize,  
@@ -1494,7 +1496,7 @@ int Parser::loadDot(){
 					aNodes++;
 					randX=rand()%gwWidth;
 					randY=rand()%gwHeight;
-					qDebug()<<"Creating node at "<<  randX << " "<< randY<< " label "<<node.toAscii(); 
+					qDebug()<<"***  Creating node at "<<  randX << " "<< randY<< " label "<<node.toAscii() << " colored "<< nodeColor; 
 					emit createNode(
 									aNodes, initNodeSize, nodeColor,
 									initNodeNumberColor, initNodeNumberSize,  
@@ -1511,6 +1513,9 @@ int Parser::loadDot(){
 				}
 			}
 		}
+		else {
+			qDebug() <<  "  Redudant data: "<< str.toAscii();
+		}
 	}
   	file.close();
 	/** 
@@ -1526,7 +1531,9 @@ int Parser::loadDot(){
 
 void Parser::dotProperties(QString str, float &nValue, QString &label, QString &shape, QString &color, QString &fontName, QString &fontColor ){
 	int next=0;
-	QString prop, value;	
+	QString prop, value;
+	
+	//FIXME Implement a qstringlist here splitted from str in ,	
 	bool ok=FALSE;
 			do  {		//stops when it passes the index of ']'
 				next=str.indexOf('=', 1);
@@ -1534,7 +1541,12 @@ void Parser::dotProperties(QString str, float &nValue, QString &label, QString &
 				prop=str.mid(0, next).simplified();	
 				qDebug()<<"Prop: "<<prop.toAscii() ;
 				str=str.right(str.count()-next-1).simplified();
+				if (str.startsWith(",")) 
+					str=str.right(str.count()-1).simplified();
+
 				qDebug()<<"whatsleft: "<<str.toAscii() ;
+
+					
 				if ( str.indexOf('\"') == 0) {
 					qDebug("found text, parsing...");
 					next=str.indexOf('\"', 1);
@@ -1574,6 +1586,12 @@ void Parser::dotProperties(QString str, float &nValue, QString &label, QString &
 						color=value.trimmed();
 						qDebug()<<"Assigned node color "<<color.toAscii()<<".";
 					}
+					else if (prop=="fillcolor") {
+						qDebug()<<"Found color "<<value.toAscii();
+						color=value.trimmed();
+						qDebug()<<"Assigned node color "<<color.toAscii()<<".";
+					}
+
 					else if (prop=="fontcolor") {
 						qDebug()<<"Found fontcolor "<<value.toAscii();
 						fontColor=value.trimmed();
@@ -1630,8 +1648,9 @@ bool Parser::isComment(QString str){
 			|| str.startsWith("%", Qt::CaseInsensitive)
 			|| str.startsWith("/*", Qt::CaseInsensitive)
 			|| str.startsWith("//", Qt::CaseInsensitive)
+			|| str.isEmpty()
 			) {
-			qDebug () << " Parser: a comment was found. Skipping..."; 
+			qDebug () << " Parser: a comment or an empty line was found. Skipping..."; 
 			return true;
 		}
 		return false;
