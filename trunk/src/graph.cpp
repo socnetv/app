@@ -3309,7 +3309,7 @@ void Graph::timerEvent(QTimerEvent *event) {
 
 void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
 	qreal xvel = 0, yvel = 0, dx=0, dy=0;
-	qreal c1=200, dux=0, duy=0;
+	qreal c1=20000000, dux=0, duy=0;
 	double dist =0;
 	
 	QPointF curPos, newPos, pos ;
@@ -3336,21 +3336,21 @@ void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
 				dx = line.dx();
 				dy = line.dy();
 				dist = (dx * dx + dy * dy);
-				dist *=dist;
+				dist *= dist;	//the euclideian distance of the two vertices 
 
 				qDebug()<< v1->name() <<  " is pushed away from " <<  v2->name() 
 							<< " with pos (" <<  v2->pos().x() << "," << v2->pos().y() << ")"
 							<<"  Parameters: c1=" << c1 
 							<< " dx=" << dx
 							<< " dy=" << dy 
-							<< "dist ^2 =" << dist;
+							<< "euclideian dist = " << dist;
+			
+				dux = (dx * c1) / dist; 	
+				duy = (dy * c1) / dist;
 
-				if (dist > 0) { //only if the euclideian distance of the two vertices is positive.
-					dux = (dx * c1) / dist; 	
-					duy = (dy * c1) / dist;
-					xvel +=  dux ;
-					yvel +=  duy;
-				}
+				xvel +=  dux ;
+				yvel +=  duy;
+				
 				qDebug(" ========== After push, new Total Velocity for %i xvel, yvel  %f, %f", v1->name(), xvel, yvel);
 			}
 
