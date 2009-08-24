@@ -1,5 +1,5 @@
 #!/bin/bash
-workdir=/home/dimitris/Desktop/socnetv/trunk
+workdir="/home/dimitris/socnetv/trunk"
 cd $workdir
 
 echo ---------------------------------

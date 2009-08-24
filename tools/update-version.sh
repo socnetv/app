@@ -1,5 +1,5 @@
 #!/bin/bash
-workdir=/home/dimitris/Desktop/socnetv/trunk
+workdir=/home/dimitris/socnetv/trunk
 cd $workdir
 
 
@@ -84,7 +84,7 @@ echo "Trying to update build date..."
 oldbuild=`grep -h "BUILD=" src/mainwindow.cpp`
 
 echo $oldbuild
-newdate=`date`;
+newdate=`LC_TIME=en_US.UTF-8 date`;
 newbuild="QString BUILD=\"$newdate\";"
 echo "to this..."
 echo $newbuild
