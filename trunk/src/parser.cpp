@@ -85,8 +85,11 @@ int Parser::loadDL(){
 	while ( !ts.atEnd() )   {
 		str= ts.readLine();
 		lineCounter++;
-		if ( str.startsWith("%") || str.startsWith("#")  || str.isEmpty() ) continue;  //neglect comments
-	
+
+
+		if ( str.isEmpty() || isComment(str) ) 
+			continue;
+				
 		if ( (lineCounter == 1) &&  (!str.startsWith("DL",Qt::CaseInsensitive)  ) ) {  
 			qDebug("*** Parser-loadDL(): not a DL file. Aborting!");
 			file.close();
@@ -196,10 +199,13 @@ int Parser::loadPajek(){
 	miss=0; //counts missing nodeNumbers. 
 	//if j + miss < nodeNum, it creates (nodeNum-miss) dummy nodes which are deleted in the end.
 	QList <int> toBeDeleted;
+	
 	while ( !ts.atEnd() )   {
 		str= ts.readLine();
 		lineCounter++;
-		if ( str.startsWith("%") || str.isEmpty() ) continue;
+		
+		if ( isComment(str) || str.isEmpty() ) 
+			continue;
 
 		if (!edges_flag && !arcs_flag && !nodes_flag && !arcslist_flag && !matrix_flag) {
 			qDebug("Parser-loadPajek(): reading headlines");
@@ -563,8 +569,19 @@ int Parser::loadAdjacency(){
 	while ( !ts.atEnd() )   {
 		str= ts.readLine() ;
 		str=str.simplified();  // transforms "/t", "  ", etc to plain " ".
-		if (str.isEmpty() ) continue;	
-		if ( str.contains("vertices",Qt::CaseInsensitive) || (str.contains("network",Qt::CaseInsensitive) || str.contains("graph",Qt::CaseInsensitive)  || str.contains("digraph",Qt::CaseInsensitive) ||  str.contains("DL",Qt::CaseInsensitive) || str.contains("list",Qt::CaseInsensitive)) || str.contains("graphml",Qt::CaseInsensitive) || str.contains("xml",Qt::CaseInsensitive)  ) {
+			
+		if ( isComment(str) || str.isEmpty()  ) 
+			continue; 
+			
+		if ( str.contains("vertices",Qt::CaseInsensitive) 
+			|| str.contains("network",Qt::CaseInsensitive) 
+			|| str.contains("graph",Qt::CaseInsensitive)  
+			|| str.contains("digraph",Qt::CaseInsensitive) 
+			|| str.contains("DL",Qt::CaseInsensitive) 
+			|| str.contains("list",Qt::CaseInsensitive)
+			|| str.contains("graphml",Qt::CaseInsensitive) 
+			|| str.contains("xml",Qt::CaseInsensitive)  
+			) {
 			qDebug()<< "*** Parser:loadAdjacency(): Not an Adjacency-formatted file. Aborting!!";
 			file.close();		
  		 	return -1;    
@@ -1291,40 +1308,48 @@ int Parser::loadDot(){
 		str= ts.readLine() ;
 		fileLine++;
 		qDebug ()<<"Reading fileLine "<< fileLine;
-		if (str.isEmpty() ) continue;
 		str=str.simplified();
 		str=str.trimmed();
+
+		if (str.isEmpty() || isComment (str) ) 
+			continue;
+
 		if ( fileLine == 1 ) {
 			qDebug ()<<"Reading fileLine = " <<fileLine;
-			if ( str.contains("vertices",Qt::CaseInsensitive) || (str.contains("network",Qt::CaseInsensitive) || str.contains("DL",Qt::CaseInsensitive) || str.contains("list",Qt::CaseInsensitive)) || str.startsWith("<graphml",Qt::CaseInsensitive) || str.startsWith("<?xml",Qt::CaseInsensitive)) {
+			if ( str.contains("vertices",Qt::CaseInsensitive) 	//Pajek
+				|| str.contains("network",Qt::CaseInsensitive)	//Pajek?
+				|| str.contains("[",Qt::CaseInsensitive)    	// GML
+				|| str.contains("DL",Qt::CaseInsensitive) 		//DL format
+				|| str.contains("list",Qt::CaseInsensitive)		//list 
+				|| str.startsWith("<graphml",Qt::CaseInsensitive)  // GraphML
+				|| str.startsWith("<?xml",Qt::CaseInsensitive)
+				) {
 				qDebug() << "*** Parser:loadDot(): Not an GraphViz -formatted file. Aborting";
 				file.close();				
 				return -1;
 			}
 			if ( str.contains("digraph", Qt::CaseInsensitive) ) {
-				qDebug("This is a digraph");
-				//symmetricAdjacency=FALSE; 
 				lineElement=str.split(" ");
 				if (lineElement[1]=="{" ) networkName="Noname";
 				else networkName=lineElement[1];
+				qDebug() << "This is a DOT DIGRAPH named " << networkName;
 				continue; 
 			}
 			else if ( str.contains("graph", Qt::CaseInsensitive) ) {
-				qDebug("This is a graph");
-				//symmetricAdjacency=TRUE; 
 				lineElement=str.split(" ");
 				if (lineElement[1]=="{" ) networkName="Noname";
 				else networkName=lineElement[1];
+				qDebug() << "This is a DOT GRAPH named " << networkName;
 				continue;
 			}
 			else {
 				qDebug()<<" *** Parser:loadDot(): Not a GraphViz file. Abort: dot format can only start with \" (di)graph netname {\"";
 				return -1;  				
 			}
-			
 		}
+
 		if ( str.startsWith("node",Qt::CaseInsensitive) ) { 	 //Default node properties
-			qDebug("Node properties found!");
+			qDebug() << "Node properties found!";
 			start=str.indexOf('[');
 			end=str.indexOf(']');
 			temp=str.right(str.size()-end-1);
@@ -1580,4 +1605,21 @@ void Parser::run()  {
 	else{
 	qDebug("**** QThread/Parser: end of routine!");
 	}
+}
+
+
+
+//Returns TRUE if QString str is a comment inside the network file. 
+bool Parser::isComment(QString str){
+	if ( str.startsWith("#", Qt::CaseInsensitive) 
+			|| str.startsWith("/*", Qt::CaseInsensitive)
+			|| str.startsWith("%", Qt::CaseInsensitive)
+			|| str.startsWith("/*", Qt::CaseInsensitive)
+			|| str.startsWith("//", Qt::CaseInsensitive)
+			) {
+			qDebug () << " Parser: a comment was found. Skipping..."; 
+			return true;
+		}
+		return false;
+
 }

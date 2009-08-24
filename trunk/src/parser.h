@@ -67,6 +67,8 @@ public:
 	void readGraphMLElementDefaultValue(QXmlStreamReader &);
 	void readGraphMLElementNodeGraphics (QXmlStreamReader &);
 	void readGraphMLElementEdgeGraphics (QXmlStreamReader &);
+	
+	bool isComment(QString str);  
 signals:
 	void createNode( 
 					int num, int size, QString color, 
