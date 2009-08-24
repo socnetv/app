@@ -2655,7 +2655,7 @@ float Graph:: clusteringCoefficient(int v1){
 	}
 	else {
 		qDebug(" Graph::Calculating number of triples");
-		totalDegree=edgesFrom(v1) + edgesTo(v1);  //FIXEM
+		totalDegree=edgesFrom(v1) + edgesTo(v1);  //FIXME
 		denom = totalDegree * (totalDegree -1.0);
 		qDebug("Graph:: Symmetric. Number of triples is %f.  Dividing number of cliques with it", denom);
 	}
@@ -3237,9 +3237,13 @@ void Graph::setShowNumbersInsideNodes(bool toggle){
 
 
 /** 
-	This slot is activated when the user clicks on the relevant MainWindow checkbox (SpringEmbedder, Fruchterman) to start or stop the movement of nodes, according to the requested model. 
-	state: toggle 
-	type:  controls the type of layout model requested.
+	This slot is activated when the user clicks on the relevant MainWindow checkbox (SpringEmbedder, Fruchterman) 
+	to start or stop the movement of nodes, according to the requested model.
+	PARAMETERS: 
+	state: movement on/off toggle 
+	type:  controls the type of layout model requested. Available options 
+			1: Spring Embedder
+			2: FruchtermanReingold
 	cW, cH: control the current canvasWidth and canvasHeight
 */
 void Graph::nodeMovement(int state, int type, int cW, int cH){
@@ -3292,18 +3296,21 @@ void Graph::timerEvent(QTimerEvent *event) {
 
 
 /** 
+	The Spring Embedder model (Eades, 1984), part of the Force Directed Placement (FDP) family, 
+	assigns forces to all vertices and edges, as if nodes were electrically charged particles (Coulomb's law) 
+	and all edges were springs (i.e. Hooke's law).
 
-The Spring Embedder model (Eades, 1984) assigns forces to all vertices and edges, as if nodes were electrically charged particles (Coulomb's law) and all edges were springs (i.e. Hooke's law).
+	These forces are applied to the nodes iteratively, pulling them closer together or pushing them further apart,
+	until the system comes to an equilibrium state (node positions do not change anymore).
 
-These forces are applied to the nodes iteratively, pulling them closer together or pushing them further apart,  until the system comes to an equilibrium state (node positions do not change anymore).
-
-Note that, following Eades, we do not need to have a faithful simulation; we can apply unrealistic forces in an unrealistic manner.
+	Note that, following Eades, we do not need to have a faithful simulation; 
+	we can -and we do- apply unrealistic forces in an unrealistic manner.
 */
 
 void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
 	qreal xvel = 0, yvel = 0, dx=0, dy=0;
 	double dist =0;
-	qreal l=440, c1=canvasHeight/10.0;
+	qreal l=440, c1=canvasHeight/2.0;
 	qreal dux=0, duy=0;
 	QPointF curPos, newPos, pos ;
 	int targetVertex=0;
@@ -3311,7 +3318,7 @@ void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
 	imap_f::iterator it1; //delete me.
 	if (dynamicMovement){
 		foreach (Vertex *v1, m_graph)  {
-			// Sum up all repelling forces (i.e. imagine nodes are electrons)
+			// Sum up all repelling forces, namely all forces pushing this vertex away (i.e. imagine nodes are electrons)
 			xvel=0; yvel=0;
 			qDebug("<----------->  Calculate total repelling Force for vertex %i with index %i and pos %f, %f ", v1->name(), index[v1->name()], v1->x(), v1->y());
 			foreach (Vertex *v2, m_graph)  {
@@ -3321,32 +3328,23 @@ void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
 					QLineF line(v1->x(), v1->y(),  v2->x(), v2->y() );	//imaginary line v1 --> v2
 					dx = line.dx();
 					dy = line.dy();
-					dist = (dx * dx + dy * dy);
-					qDebug("c1, dx, dy, dist: %f, %f, %f, %f", c1, dx, dy, dist);
-					
-					if (dist > 0) { //only if dist is positive.
+					dist = 2.0 * (dx * dx + dy * dy);
+
+					qDebug()<< v1->name() <<  " is pushed away from " <<  v2->name() 
+								<< " with pos (" <<  v2->pos().x() << "," << v2->pos().y() << ")"
+								<<"  Parameters: c1="<< c1 
+								<< " dx="<< dx
+								<< " dy="<<dy 
+								<< "dist="<<dist;
+
+					if (dist > 0) { //only if the euclideian distance of the two vertices is positive.
 						dux = (dx * c1) / dist; 	
 						duy = (dy * c1) / dist;
-						qDebug("%i is pushed away from %i of index %i  and  pos (%f, %f) with.... ", v1->name(), v2->name(), index[v2->name()], v2->pos().x(), v2->pos().y());
-						if ( dx < 0 ) {
-							xvel +=  -dux ;	
-							qDebug("add to xvel  += %f", dux);
-						}
-						else {
-							xvel -=  dux ;	
-							qDebug("sub from xvel -= %f", -dux);
-						}
-						if ( dy < 0 ) {
-							yvel +=  -duy;
-							qDebug("add to  yvel += %f", duy);
-						}
-						else { 
-							yvel -=  duy;
-							qDebug("sub from yvel -= %f", -duy);
-						}
+						xvel +=  dux ;
+						yvel +=  duy;
 
 					}
-					qDebug(" ========== After push, Total Velocity for %i xvel, yvel  %f, %f", v1->name(), xvel, yvel);
+					qDebug(" ========== After push, new Total Velocity for %i xvel, yvel  %f, %f", v1->name(), xvel, yvel);
 
 				}
 				else {
@@ -3357,18 +3355,23 @@ void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
 			double weight = (v1->m_outEdges.size() + 1) * weight_coefficient;
 			qDebug("weight %f", weight);
 			for( it1 = (*v1).m_outEdges.begin(); it1 != (*v1).m_outEdges.end(); it1++ ) {
-//				foreach (int targetVertex, (*v1).m_outEdges	 ) {
-					//get other node's coordinates
-				targetVertex=index[it1->first];	
+				targetVertex=index[it1->first];	 					//get other node's coordinates
 				pos = m_graph[targetVertex]->pos();
-				QLineF line( v1->x(), v1->y(),  m_graph[targetVertex]->x(), m_graph[targetVertex]->y());
+				
+				QLineF line( v1->x(), v1->y(),  pos.x(), pos.y() );
 				dx = line.dx();
 				dy = line.dy();
 				dist = sqrt(dx * dx + dy * dy);
 
 				dux = log ( abs(dx)*  dist/l ); 
 				duy = log ( abs(dy)*  dist/l );
-				qDebug("%i with index %i is linked with %i of index %i  and  pos (%f, %f) ", v1->name(), index[v1->name()], it1->first, targetVertex,pos.x(), pos.y());
+				qDebug()<< v1->name() <<  " is linked with " <<  it1->first
+									<< " with pos (" <<  pos.x() << "," << pos.y() << ")"
+								<<"  Parameters: c1="<< c1 
+								<< " dx="<< dx
+								<< " dy="<<dy 
+								<< "dist="<<dist;
+
 				qDebug("dx, dy, dist: %f, %f, %f, log x is %f and log y is %f", dx, dy, dist, dux, duy) ;
 				if ( dx > 0 ) {
 					xvel +=  dux ;	

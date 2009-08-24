@@ -3681,13 +3681,12 @@ void MainWindow::slotLayoutSpringEmbedder(){
 
 /** 
 	Called from moveSpringEmbedderBx button. 
-	Calls GraphicsWidget::startNodeMovement to embed a spring Embedder layout...
+	Calls Graph::startNodeMovement to embed a spring Embedder layout...
 */
 void MainWindow::layoutSpringEmbedder (int state){
 	qDebug("MW: layoutSpringEmbedder ()");
 	scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
 	moveFruchtermanBx->setChecked(false);
-	//graphicsWidget->nodeMovement(state, 1);
 	activeGraph.nodeMovement(state, 1, graphicsWidget->width(), graphicsWidget->height());
 	scene->setItemIndexMethod (QGraphicsScene::BspTreeIndex); //best when not moving items
 }
@@ -3719,15 +3718,13 @@ void MainWindow::slotLayoutFruchterman(){
 
 /** 
 	Called from moveSpringEmbedderBx button. 
-	Calls GraphicsWidget::startNodeMovement to embed a repelling-attracting forces layout...
+	Calls Graph::startNodeMovement to embed a repelling-attracting forces layout...
 */
 void MainWindow::layoutFruchterman (int state){
 	qDebug("MW: layoutFruchterman ()");
 	moveSpringEmbedderBx->setChecked(false);
 	scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
-
 	activeGraph.nodeMovement(state, 2, graphicsWidget->width(), graphicsWidget->height());
-// graphicsWidget->nodeMovement(state, 2);
 	scene->setItemIndexMethod (QGraphicsScene::BspTreeIndex); //best when not moving items
 }
 
