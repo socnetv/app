@@ -207,6 +207,20 @@ int Parser::loadPajek(){
 		if ( isComment(str) || str.isEmpty() ) 
 			continue;
 
+		if (lineCounter==1) {
+			if ( str.contains("graph",Qt::CaseInsensitive)  
+				|| str.contains("digraph",Qt::CaseInsensitive) 
+				|| str.contains("DL",Qt::CaseInsensitive) 
+				|| str.contains("list",Qt::CaseInsensitive)
+				|| str.contains("graphml",Qt::CaseInsensitive) 
+				|| str.contains("xml",Qt::CaseInsensitive)  
+				) {
+				qDebug()<< "*** Parser:loadPajeck(): Not an Pajek-formatted file. Aborting!!";
+				file.close();		
+	 		 	return -1;    
+			}
+		}
+
 		if (!edges_flag && !arcs_flag && !nodes_flag && !arcslist_flag && !matrix_flag) {
 			qDebug("Parser-loadPajek(): reading headlines");
 			if ( (lineCounter == 1) &&  (!str.contains("network",Qt::CaseInsensitive) && !str.contains("vertices",Qt::CaseInsensitive) ) ) {  
