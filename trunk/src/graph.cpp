@@ -2698,6 +2698,7 @@ float Graph::clusteringCoefficient (){
 
 /*
  *  Conducts a triad census and returns a triad score
+ *  Complexity:O(n!)
  */
 float Graph::triadCensus(){
 	int mut=0, dir=0, nul =0;
@@ -2711,8 +2712,9 @@ float Graph::triadCensus(){
 			ver1=v1->name();
 			ver2=v2->name();
 			
-			if ( ver1 == ver2 ) 
-				continue; 
+			if ( ver1 == ver2 ) {
+				continue;
+			}
 
 			temp_mut=0, temp_dir=0, temp_nul =0;
 			
@@ -2730,7 +2732,12 @@ float Graph::triadCensus(){
 			
 			foreach (Vertex *v3, m_graph)  {
 
-				mut=0, dir=0, nul =0;
+				mut = temp_mut ;
+				dir = temp_dir ;
+				nul = temp_nul ;
+
+				//mut=0, dir=0, nul=0;
+				
 				ver3=v3->name();
 				
 				if ( ver3 == ver2 ) 
@@ -2756,16 +2763,13 @@ float Graph::triadCensus(){
 						dir++;
 				}
 				else if ( v3->isLinkedTo( ver2 )  )
-					temp_dir++;
+					dir++;
 				else
-					temp_nul++; 
+					nul++; 
 			
-				temp_mut += mut;
-				temp_dir += dir;
-				temp_nul += nul;
 				
 				qDebug()<< "triad of ("<< ver1 << ","<< ver2 << ","<< ver3 << ") = ("
-								<<temp_mut<<","<< temp_dir<<","<<temp_nul<<")"; 
+								<<mut<<","<< dir<<","<<nul<<")"; 
 			} // end 3rd foreach
 		}// end 2rd foreach
 	}// end 1rd foreach
