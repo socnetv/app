@@ -733,6 +733,11 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
 			QGraphicsView::mousePressEvent(e);
 			return;
 		}
+		if (Edge *edge= qgraphicsitem_cast<Edge *>(item)) {
+			Q_UNUSED(edge);
+			QGraphicsView::mousePressEvent(e);
+			return;
+		}
 	}
 	else{
 		qDebug() << "GW: mousePressEvent(). No item here. Starting a new selection rectangle.";
