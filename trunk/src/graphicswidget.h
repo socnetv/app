@@ -108,7 +108,7 @@ public slots:
 	void edgeClicked(Edge *);
 	void openNodeContextMenu();
 	void openEdgeContextMenu();
-	void nodeMovement(int state, int type); 	//used by dynamic layouts: Spring Embedder, Fruchterman, etc...
+	
 	void moveNode(int, int, int);			//Called from Graph when creating random nets.
 	void changeZoom(const int value); 
 	void startEdge(Node *node);	

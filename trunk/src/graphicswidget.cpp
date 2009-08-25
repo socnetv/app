@@ -792,25 +792,6 @@ void GraphicsWidget::openEdgeContextMenu(){
 
 
 
-/** 
-	This slot is activated when the user clicks on the relevant MainWindow checkbox (SpringEmbedder, Fruchterman) to start or stop 
-	the movement of nodes, according to the requested model. 
-	state: toggle 
-	type:  controls the type of model requested.
-*/
-void GraphicsWidget::nodeMovement(int state, int type){
-	qDebug("GW: startNodeMovement()");	
-	if (state == Qt::Checked){
-		dynamicMovement = TRUE;
-		layoutType=type;
-		if (!timerId) {
-			timerId = startTimer(100);	
-			qDebug("GW: startTimer()");
-		}
-	}
-	else
-		dynamicMovement = FALSE;
-}
 
 
 
