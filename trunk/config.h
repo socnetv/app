@@ -14,10 +14,10 @@
 #define HAVE_LIBM 1
 
 /* Define to 1 if you have the `X11' library (-lX11). */
-#define HAVE_LIBX11 1
+/* #undef HAVE_LIBX11 */
 
 /* Define to 1 if you have the `Xext' library (-lXext). */
-#define HAVE_LIBXEXT 1
+/* #undef HAVE_LIBXEXT */
 
 /* Define to 1 if you have the `system' function. */
 #define HAVE_SYSTEM 1

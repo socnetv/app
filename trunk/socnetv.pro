@@ -54,7 +54,7 @@ SOURCES += src/backgrcircle.cpp \
 QMAKE_CXXFLAGS += -msse -mfpmath=sse -ffast-math 
 
 #LIBS    += @ac_libs@
-INCPATH += /usr/local/include /usr/include 
+INCPATH += /usr/share/qt4/include /usr/local/include /usr/include /usr/include/qt4 
 
 
 RESOURCES = src/src.qrc
