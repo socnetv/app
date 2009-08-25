@@ -1302,9 +1302,10 @@ int Parser::loadGML(){
 */
 int Parser::loadDot(){
 	qDebug("\n\nParser: loadDotNetwork");
-	int fileLine=0, j=0, aNum=-1;
-	int start=0, end=0;
-	QString str, temp, label, node, nodeLabel, fontName, fontColor, edgeShape, edgeColor, edgeLabel;
+	int fileLine=0, aNum=-1;
+	int start=0, end=0, next=0;
+	QString label, node, nodeLabel, fontName, fontColor, edgeShape, edgeColor, edgeLabel, networkLabel;
+	QString str, temp, prop, value ;
 	QStringList lineElement;
 	nodeColor="red"; 
 	edgeColor="black";
@@ -1366,8 +1367,29 @@ int Parser::loadDot(){
 			}
 		}
 
-		if ( str.startsWith("node",Qt::CaseInsensitive) ) { 	 //Default node properties
-			qDebug() << "Node properties found!";
+		if ( str.startsWith("label",Qt::CaseInsensitive)
+			|| str.startsWith("mincross",Qt::CaseInsensitive)
+			|| str.startsWith("ratio",Qt::CaseInsensitive) 
+			) { 	 //Default network properties
+			next=str.indexOf('=', 1);
+			qDebug("Found next = at %i. Start is at %i", next, 1);
+			prop=str.mid(0, next).simplified();	
+			qDebug()<<"Prop: "<<prop.toAscii() ;
+			value=str.right(str.count()-next-1).simplified();
+			qDebug() << "Value "<< value;
+			if ( prop == "label" ){
+				networkLabel= value;
+			}
+			else if ( prop == "ratio" ){
+				
+			}
+			else if ( prop == "mincross" ){
+				
+			}
+
+		}
+		else if ( str.startsWith("node",Qt::CaseInsensitive) ) { 	 //Default node properties
+			qDebug() << "* Node properties found...";
 			start=str.indexOf('[');
 			end=str.indexOf(']');
 			temp=str.right(str.size()-end-1);
@@ -1378,39 +1400,11 @@ int Parser::loadDot(){
 			qDebug()<<str.toAscii();
 			start=0;
 			end=str.count();
-
-			dotProperties(str, nodeValue, nodeLabel, nodeShape, nodeColor, fontName, fontColor );
-
-			qDebug ("Ooola! Finished node properties - let's see if there are any nodes after that!");
-			temp.remove(';');
-			qDebug()<<temp.toAscii();
-			temp=temp.simplified();
-			qDebug()<<temp.toAscii();
-			if ( temp.contains(',') )
-				labels=temp.split(' ');	
-			else if (temp.contains(' ') )
-				labels=temp.split(' ');
-			for (j=0; j<(int)labels.count(); j++) {
-				qDebug()<<"node label: "<<labels[j].toAscii()<<"." ;
-				if (nodesDiscovered.contains(labels[j])) {qDebug("discovered"); continue;}
-				aNodes++;
-				randX=rand()%gwWidth;
-				randY=rand()%gwHeight;
-				qDebug()<<"*** Creating node at "<< randX<<","<< randY<<" label " << labels[j].toAscii() << " colored "<< nodeColor; 
-				emit createNode(
-								aNodes, initNodeSize, nodeColor,
-								initNodeNumberColor, initNodeNumberSize,  
-								labels[j], initNodeLabelColor, initNodeLabelSize, 
-								QPointF(randX,randY), 
-								nodeShape
-								);
-				aNum=aNodes;
-				nodesDiscovered.push_back( labels[j]);
-				qDebug()<<" Total aNodes: "<<  aNodes<< " nodesDiscovered = "<< nodesDiscovered.size();
-			}
+			dotProperties(str, nodeValue, nodeLabel, initNodeShape, initNodeColor, fontName, fontColor );
+			qDebug ("* Finished NODE PROPERTIES");
 		}
 		else if ( str.startsWith("edge",Qt::CaseInsensitive) ) { //Default edge properties
-			qDebug("Edge properties found...");
+			qDebug("* Edge properties found...");
 			start=str.indexOf('[');
 			end=str.indexOf(']');
 			str=str.mid(start+1, end-start-1);  //keep whatever is inside [ and ]
@@ -1420,35 +1414,85 @@ int Parser::loadDot(){
 			qDebug()<<str.toAscii();
 			start=0;
 			end=str.count();
-			qDebug ("Finished the properties!");
+			qDebug ("* Finished EDGE PROPERTIES!");
 		}
-		//ti ginetai an grafei p.x. "node-1" -> "node-2"
 		//ti ginetai an exeis mesa sxolia ? p.x. sto telos tis grammis //
+		else if ( !str.startsWith('[', Qt::CaseInsensitive) 
+					&& !str.contains("--",Qt::CaseInsensitive)
+					&& !str.contains("->",Qt::CaseInsensitive) 
+					) {
+				qDebug()<< "* A node definition must be here ..." << str;
+				end=str.indexOf('['); 
+				if (end!=-1) {
+					temp=str.right(str.size()-end-1); //keep the properties
+					temp=temp.remove(']');
+					temp=temp.remove(';');
+					node=str.left(end-1);
+					node=node.remove('\"');
+					qDebug()<<"node named "<<node.toAscii();
+					qDebug()<<"node properties "<<temp.toAscii();
+					nodeLabel=node;  //Will change only if label exists in dotProperties
+					dotProperties(temp, nodeValue, nodeLabel, initNodeShape, initNodeColor, fontName, fontColor );
+					if (nodeLabel=="") nodeLabel=node;
+					aNodes++;
+					randX=rand()%gwWidth;
+					randY=rand()%gwHeight;
+					qDebug()<<" *** Creating node "<< aNodes 
+							<< " at "<< randX <<","<< randY
+							<<" label "<<node.toAscii() 
+							<< " colored "<< initNodeColor
+							<< "initNodeSize " << initNodeSize
+							<< "initNodeNumberColor " <<initNodeNumberColor
+							<< "initNodeNumberSize " << initNodeNumberSize
+							<< "initNodeLabelColor " << initNodeLabelColor
+							<< "nodeShape" <<  initNodeShape; 
+					emit createNode(
+									aNodes, initNodeSize, initNodeColor,
+									initNodeNumberColor, initNodeNumberSize,  
+									nodeLabel , initNodeLabelColor, initNodeLabelSize,
+									QPointF(randX,randY), 
+									initNodeShape
+									);
+					nodesDiscovered.push_back( node  );			// Note that we push the numbered nodelabel whereas we create the node with its file specified node label.  
+					qDebug()<<" * Total aNodes " << aNodes<< " nodesDiscovered  "<< nodesDiscovered.size() ;
+					target=aNodes;
+					
+				}
+				else 
+					end=str.indexOf(';');
+				qDebug ("* Finished node!");
+		}
 		else if (str.contains('-',Qt::CaseInsensitive)) {  
-			qDebug("Edge found with edge keyword...");
+			qDebug("* Edge definition found ...");
 			end=str.indexOf('[');
 			if (end!=-1) {
 				temp=str.right(str.size()-end-1); //keep the properties
 				temp=temp.remove(']');
+				temp=temp.remove(';');
 				qDebug()<<"edge properties "<<temp.toAscii();
 				dotProperties(temp, edgeWeight, edgeLabel, edgeShape, edgeColor, fontName, fontColor );
 			}
 			else 
 				end=str.indexOf(';');
 				
-			//FIXME It cannot parse nodes with names containing the '-' character!!!!
+			//FIXME Cannot parse nodes named with '-' character
 			str=str.mid(0, end).remove('\"');  //keep only edges
 
 			qDebug()<<"edges "<<str.toAscii();
 			
-			if (!str.contains("->",Qt::CaseInsensitive)){  //non directed = symmetric links
-				nodeSequence=str.split("-");
+			if (!str.contains("->",Qt::CaseInsensitive) ){  //non directed = symmetric links
+				if ( str.contains("--",Qt::CaseInsensitive) ) 
+						nodeSequence=str.split("--");
+				else 
+						nodeSequence=str.split("-");
 			}
-			else { 		//directed
+			else { 											//is directed
 				nodeSequence=str.split("->");
 			}
+			//Create all nodes defined in nodeSequence
 			for ( QList<QString>::iterator it=nodeSequence.begin(); it!=nodeSequence.end(); it++ )  {
 				node=(*it).simplified();
+				qDebug () << " nodeSequence node "<< node;
 				if ( (aNum=nodesDiscovered.indexOf( node ) ) == -1) {
 					aNodes++;
 					randX=rand()%gwWidth;
@@ -1461,7 +1505,7 @@ int Parser::loadDot(){
 							<< "initNodeNumberColor " <<initNodeNumberColor
 							<< "initNodeNumberSize " << initNodeNumberSize
 							<< "initNodeLabelColor " << initNodeLabelColor
-							<< "nodeShape" <<  nodeShape; 
+							<< "nodeShape" <<  initNodeShape; 
 					emit createNode(
 									aNodes, initNodeSize, nodeColor,
 									initNodeNumberColor, initNodeNumberSize,  
@@ -1470,18 +1514,18 @@ int Parser::loadDot(){
 									initNodeShape
 									);
 					nodesDiscovered.push_back( node  );
-					qDebug()<<" Total aNodes " << aNodes<< " nodesDiscovered  "<< nodesDiscovered.size() ;
+					qDebug()<<" * Total aNodes " << aNodes<< " nodesDiscovered  "<< nodesDiscovered.size() ;
 					target=aNodes;
 					if (it!=nodeSequence.begin()) {
-						qDebug()<<"Drawing Link between node "<< source<< " and node " <<target;
+						qDebug()<<"-- Drawing Link between node "<< source<< " and node " <<target;
 						emit createEdge(source,target, edgeWeight, edgeColor, undirected, arrows, bezier);
 					}
 				}
 				else {
 					target=aNum+1;
-					qDebug("Node already exists. Vector num: %i ",target);
+					qDebug("# Node already exists. Vector num: %i ",target);
 					if (it!=nodeSequence.begin()) {
-						qDebug()<<"Drawing Link between node "<<source<<" and node " << target;
+						qDebug()<<"-- Drawing Link between node "<<source<<" and node " << target;
 						emit createEdge(source,target, edgeWeight , edgeColor, undirected, arrows, bezier);
 					}
 				}
@@ -1491,7 +1535,7 @@ int Parser::loadDot(){
 			qDebug("Finished reading fileLine %i ",fileLine);
 		}
 		else if ( str.contains ("[",Qt::CaseInsensitive) ) { 	 //Default node properties - no node keyword
-			qDebug("Node properties found but with no Node keyword in the beginning!");
+			qDebug("* Node properties found but with no Node keyword in the beginning!");
 			start=str.indexOf('[');
 			end=str.indexOf(']');
 			temp=str.mid(start+1, end-start-1);  //keep whatever is inside [ and ]
@@ -1566,9 +1610,8 @@ void Parser::dotProperties(QString str, float &nValue, QString &label, QString &
 					value=str.left(next).simplified().remove('\"');
 					
 					if (prop=="label") {
-						qDebug()<<"Found label "<<value.toAscii();
 						label=value.trimmed();
-						qDebug()<<"Assigned label "<<label.toAscii();
+						qDebug()<<"Found label "<<value.toAscii() <<". Assigned label "<<label.toAscii();
 					}
 					else if (prop=="fontname"){
 						qDebug()<<"Found fontname"<<value.toAscii();
@@ -1579,11 +1622,18 @@ void Parser::dotProperties(QString str, float &nValue, QString &label, QString &
 				}
 				else {
 					if (str.isEmpty()) break;
-					if ( str.contains(',') )
+					if ( str.contains(',') ){
 						next=str.indexOf(',');
-					else if ( str.contains(' ') )
+						value=str.mid(0, next).simplified();
+					}
+
+					else if ( str.contains(' ') ){
 						next=str.indexOf(' ');
-					value=str.mid(0, next).simplified();
+						value=str.mid(0, next).simplified();
+					}
+					else		{
+						value=str;
+					}
 					
 					qDebug()<<"Prop Value: "<<value.toAscii() ;
 					if (prop=="value") {
@@ -1595,9 +1645,8 @@ void Parser::dotProperties(QString str, float &nValue, QString &label, QString &
 							 qDebug()<<"Error in value conversion ";
 					}
 					else if (prop=="color") {
-						qDebug()<<"Found color "<<value.toAscii();
 						color=value.trimmed();
-						qDebug()<<"Assigned node color "<<color.toAscii()<<".";
+						qDebug()<<"Found color "<<value.toAscii()  <<". Assigned color "<<color.toAscii()<<".";
 					}
 					else if (prop=="fillcolor") {
 						qDebug()<<"Found color "<<value.toAscii();
@@ -1614,7 +1663,7 @@ void Parser::dotProperties(QString str, float &nValue, QString &label, QString &
 						qDebug()<<"Found node shape "<<shape.toAscii();
 					}
 					qDebug()<<"count"<< str.count()<<  " next "<< next;
-					str=str.right(str.count()-next).simplified();
+					str=str.right(str.count()-next-1).simplified();
 					qDebug()<<"whatsleft: "<<str.toAscii()<<".";
 					if ( (next=str.indexOf('=', 1))==-1) break;
 				}

@@ -1,5 +1,4 @@
 digraph mydot {
 node [color=purple];
-a -> b -> c  ->d->e->a->f->j->k->l->o
-[weight=2, color=yellow];
+a -> b -> c  ->d->e->a->f->j->k->l->o [weight=2, color=yellow];
 }
