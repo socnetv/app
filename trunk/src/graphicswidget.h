@@ -82,10 +82,9 @@ public:
 	
 	
 protected:
-	void timerEvent(QTimerEvent *event);
 	void wheelEvent(QWheelEvent *event);
 	void mouseDoubleClickEvent ( QMouseEvent * e );
-	//void mousePressEvent ( QMouseEvent * e );
+	void mousePressEvent ( QMouseEvent * e );
 	//void mouseReleaseEvent(QMouseEvent * e );
 	void resizeEvent( QResizeEvent *e );
 	void paintEvent ( QPaintEvent * event );

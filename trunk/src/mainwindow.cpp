@@ -1508,9 +1508,9 @@ void MainWindow::initView() {
 
  	graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorUnderMouse); 	
  	graphicsWidget->setResizeAnchor(QGraphicsView::AnchorViewCenter);
+
  	// sets dragging the mouse over the scene while the left mouse button is pressed.
- 	
- 	graphicsWidget->setDragMode(QGraphicsView::RubberBandDrag);
+  	graphicsWidget->setDragMode(QGraphicsView::RubberBandDrag);
 	graphicsWidget->setFocusPolicy(Qt::StrongFocus);	
 	graphicsWidget->setFocus();
 
@@ -5488,7 +5488,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Tue Aug 25 14:06:46 EEST 2009";
+QString BUILD="Tue Aug 25 15:03:50 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"

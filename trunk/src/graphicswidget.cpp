@@ -723,25 +723,24 @@ void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
 
 
 
+void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
+	QPointF p = mapToScene(e->pos());
+	qDebug() << "GW: mousePressEvent() single click detected at " 
+		<< e->pos().x() << ","<< e->pos().y() << " or "<<  p.x() << ","<<p.y();
+	if ( QGraphicsItem *item= itemAt(e->pos() ) ) {
+		if (Node *node = qgraphicsitem_cast<Node *>(item)) {
+			Q_UNUSED(node);
+			QGraphicsView::mousePressEvent(e);
+			return;
+		}
+	}
+	else{
+		qDebug() << "GW: mousePressEvent(). No item here. Starting a new selection rectangle.";
+		this->scene()->clearSelection();
+		QGraphicsView::mousePressEvent(e);
+	} 
 
-//void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
-	//QPointF p = mapToScene(e->pos());
-	//qDebug() << "GW: mousePressEvent() single click detected at " 
-		//<< e->pos().x() << ","<< e->pos().y() << " or "<<  p.x() << ","<<p.y();
-	//if ( QGraphicsItem *item= itemAt(e->pos() ) ) {
-		//if (Node *node = qgraphicsitem_cast<Node *>(item)) {
-			//Q_UNUSED(node);
-			//QGraphicsView::mousePressEvent(e);
-			//return;
-		//}
-	//}
-	//else{
-		//qDebug() << "GW: mousePressEvent(). No item here. Maybe start a selection rectangle? " 
-				//<< "I will save this pos";
-		//startPoint =  
-	//} 
-
-//}
+}
 
 
 
@@ -796,39 +795,6 @@ void GraphicsWidget::openEdgeContextMenu(){
 
 
 
-/**	This method is called automatically when a QTimerEvent occurs
-	It makes all nodes calculate the forces applied to them 
-*/
-void GraphicsWidget::timerEvent(QTimerEvent *event) {	
-	qDebug("GW: timerEvent()");
-	Q_UNUSED(event);
-	QList<Node *> nodes;
-
- 	foreach (Node *node, nodeVector) {
-		switch (layoutType){
-			case 1: 
-				node->calculateForcesSpringEmbedder(dynamicMovement);
-				break;
-			case 2: 
-				node->calculateForcesFruchterman(dynamicMovement);
-				break;
-		
-		}
-	}
-
-	bool itemsMoved = false;
-// 	foreach (Node *node, nodeVector) { 
-// 		if (node->advance()){
-// 			qDebug("GW: timerEvent() a node is moving!");
-// 			itemsMoved = true;
-// 		}
-// 	}
-
-	if (!itemsMoved) {
-		killTimer(timerId);
-		timerId = 0;
-	}
-}
 
 
 
