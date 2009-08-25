@@ -821,6 +821,8 @@ bool Parser::xmlStreamHasAttribute( QXmlStreamAttributes &xmlStreamAttr, QString
 	return false;	
 }
 
+
+
 // this method reads a key definition 
 // called at key element
 void Parser::readGraphMLElementKey ( QXmlStreamAttributes &xmlStreamAttr )
@@ -1423,7 +1425,7 @@ int Parser::loadDot(){
 		//ti ginetai an grafei p.x. "node-1" -> "node-2"
 		//ti ginetai an exeis mesa sxolia ? p.x. sto telos tis grammis //
 		else if (str.contains('-',Qt::CaseInsensitive)) {  
-			qDebug("Edge found...");
+			qDebug("Edge found with edge keyword...");
 			end=str.indexOf('[');
 			if (end!=-1) {
 				temp=str.right(str.size()-end-1); //keep the properties
@@ -1431,9 +1433,12 @@ int Parser::loadDot(){
 				qDebug()<<"edge properties "<<temp.toAscii();
 				dotProperties(temp, edgeWeight, edgeLabel, edgeShape, edgeColor, fontName, fontColor );
 			}
-			else end=str.indexOf(';');
+			else 
+				end=str.indexOf(';');
+				
 			//FIXME It cannot parse nodes with names containing the '-' character!!!!
 			str=str.mid(0, end).remove('\"');  //keep only edges
+
 			qDebug()<<"edges "<<str.toAscii();
 			
 			if (!str.contains("->",Qt::CaseInsensitive)){  //non directed = symmetric links
@@ -1448,13 +1453,21 @@ int Parser::loadDot(){
 					aNodes++;
 					randX=rand()%gwWidth;
 					randY=rand()%gwHeight;
-					qDebug()<<" *** Creating node at "<< randX <<","<< randY<<" label "<<node.toAscii() << " colored "<< nodeColor; 
+					qDebug()<<" *** Creating node "<< aNodes 
+							<< " at "<< randX <<","<< randY
+							<<" label "<<node.toAscii() 
+							<< " colored "<< nodeColor
+							<< "initNodeSize " << initNodeSize
+							<< "initNodeNumberColor " <<initNodeNumberColor
+							<< "initNodeNumberSize " << initNodeNumberSize
+							<< "initNodeLabelColor " << initNodeLabelColor
+							<< "nodeShape" <<  nodeShape; 
 					emit createNode(
 									aNodes, initNodeSize, nodeColor,
 									initNodeNumberColor, initNodeNumberSize,  
 									node , initNodeLabelColor, initNodeLabelSize,
 									QPointF(randX,randY), 
-									nodeShape
+									initNodeShape
 									);
 					nodesDiscovered.push_back( node  );
 					qDebug()<<" Total aNodes " << aNodes<< " nodesDiscovered  "<< nodesDiscovered.size() ;
@@ -1477,8 +1490,8 @@ int Parser::loadDot(){
 			nodeSequence.clear();
 			qDebug("Finished reading fileLine %i ",fileLine);
 		}
-		else if ( str.contains ("[",Qt::CaseInsensitive) ) { 	 //Default node properties
-			qDebug("Node properties found but with no Node keyword in the beggining!");
+		else if ( str.contains ("[",Qt::CaseInsensitive) ) { 	 //Default node properties - no node keyword
+			qDebug("Node properties found but with no Node keyword in the beginning!");
 			start=str.indexOf('[');
 			end=str.indexOf(']');
 			temp=str.mid(start+1, end-start-1);  //keep whatever is inside [ and ]
