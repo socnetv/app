@@ -1,28 +1,28 @@
 *Network netname
 *Vertices 23
-1 "1" ic red		0.5 	0.5
-2 "2" ic red		0.594458 	0.568376
-3 "3" ic red		0.444584 	0.566239
-4 "4" ic red		0.395466 	0.769231
-5 "5" ic red		0.654912 	0.382479
-6 "6" ic red		0.566751 	0.711538
-7 "7" ic red		0.486146 	0.534188
-8 "8" ic red		0.680101 	0.83547
-9 "9" ic red		0.287154 	0.303419
-10 "qwerty" ic red		0.25063 	0.666667
-11 "11" ic red		0.268262 	0.388889
-12 "12" ic red		0.401763 	0.0277778
-13 "13" ic red		0.239295 	0.739316
-14 "14" ic red		0.258186 	0.211538
-15 "15" ic red		0.651133 	0.92735
-16 "16" ic red		0.706549 	0.143162
-17 "17" ic red		0.768262 	0.698718
-18 "18" ic red		0.418136 	0.788462
-19 "19" ic red		0.722922 	0.175214
-20 "20" ic red		0.793451 	0.5
-21 "21" ic red		0.604534 	0.0320513
-22 "22" ic red		0.778338 	0.65812
-23 "23" ic red		0.206549 	0.440171
+1 "1" ic red		0.123264 	0.509275	diamond
+2 "2" ic red		0.642361 	0.568297	diamond
+3 "3" ic red		0.458333 	0.576729	diamond
+4 "4" ic red		0.133681 	0.148398	diamond
+5 "5" ic red		0.461806 	0.418212	diamond
+6 "6" ic red		0.546875 	0.725127	diamond
+7 "7" ic red		0.494792 	0.543002	diamond
+8 "8" ic red		0.427083 	0.468803	diamond
+9 "9" ic red		0.565972 	0.494098	diamond
+10 "qwerty" ic red		0.388889 	0.450253	diamond
+11 "11" ic red		0.621528 	0.278246	diamond
+12 "12" ic red		0.560764 	0.900506	diamond
+13 "13" ic red		0.342014 	0.298482	diamond
+14 "14" ic red		0.852431 	0.374368	diamond
+15 "15" ic red		0.670139 	0.946037	diamond
+16 "16" ic red		0.760417 	0.349073	diamond
+17 "17" ic red		0.791667 	0.711636	diamond
+18 "18" ic red		0.6875 	0.578415	diamond
+19 "19" ic red		0.744792 	0.178752	diamond
+20 "20" ic red		0.310764 	0.851602	diamond
+21 "21" ic red		0.774306 	0.512648	diamond
+22 "22" ic red		0.802083 	0.671164	diamond
+23 "23" ic red		0.723958 	0.190556	diamond
 *Arcs 
 *Edges 
 1 3 1 c black
