@@ -7,11 +7,14 @@ ChangeLog:
 Version 0.80 - September 30  2009  (PROJECTED)
 Codename: "www.supersyntages.gr"
 ----------------------------
+- Much improved Dot format support. 
 - Added keyboard shortcuts for Centralities
-- Fixed bug #396124, GBC different in Pajek cp. to SocNetV
-- Fixed bug #415277 network files were not loaded on startup
-- Fixed a bug #379225 side note: GraphML format did not preserve node labels.
+- Fixed bug #416965: Not displaying nodes when loading GraphViz files
+- Fixed bug #396124: GBC different in Pajek cp. to SocNetV
+- Fixed bug #415277: network files were not loaded on startup
+- Fixed bug #379225 side note: GraphML format did not preserve node labels.
 - Fixed bug #418023: rewiring parameter typo in Graph::createRandomNetSmallWorld.
+- Fixed bug #418550: Clear selection when clicking on empty canvas.
 - Edited .spec to enable proper Fedora package creation.
 - Changed ProgressBar behaviour: bars appear only if nodes are more than 300
 - New feature: the embedded text editor can be used to copy/paste directly network data
