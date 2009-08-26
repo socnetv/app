@@ -2107,14 +2107,26 @@ void Graph::writeTriadCensus(
 	outText <<"-SocNetV- "<<"\n\n";
 	outText << tr("TRIAD CENSUS REPORT \n");
 	outText << tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
-	outText << tr("\n");
-	outText << "\n";
-	outText << "\n";
-	
-	outText << "\nTOTAL SCORE (WS)\n\n";
-	outText << "SCORE = " <<  triadCensusScore <<"\n\n";
-	
-	outText << tr(".\n");
+	outText << "Type\t\tCensus\t\tExpected Value" << "\n";
+	outText << "003" << "\n";
+	outText << "012"<< "\n";
+	outText << "102	"<< "\n";	
+	outText << "021D"<< "\n";	
+	outText << "021U"<< "\n";	
+	outText << "021C"<< "\n";
+	outText << "111D"<< "\n";	
+	outText << "111U"<< "\n";	
+	outText << "030T"<< "\n";	
+	outText << "030C"<< "\n";
+	outText << "201	"<< "\n";	
+	outText << "120D"<< "\n";	
+	outText << "120U"<< "\n";	
+	outText << "120C"<< "\n";
+	outText << "210"<< "\n";
+	outText << "300"<< "\n";
+
+	outText << "\n\n";
+
 
 }
 

@@ -5,8 +5,9 @@
 ChangeLog:
 
 Version 0.80 - September 30  2009  (PROJECTED)
-Codename: "www.supersyntages.gr"
+Codename: "supersyntages.gr"
 ----------------------------
+- New statistic: Triad Census.
 - Much improved Dot format support. 
 - Added keyboard shortcuts for Centralities
 - Fixed bug #416965: Not displaying nodes when loading GraphViz files
