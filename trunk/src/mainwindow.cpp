@@ -770,7 +770,7 @@ void MainWindow::initActions(){
 	triadCensusAct = new QAction(QIcon(":/images/clique.png"), tr("Triad Census"),this);
 	triadCensusAct->setShortcut(tr("Ctrl+T"));
 	triadCensusAct->setStatusTip(tr("Conducts a triad census for the active network."));
-	triadCensusAct->setWhatsThis(tr("Triad Census\n\n A triad census counts all the possible types of observed triads within a network and codes the different triads according to their number of mutual, asymmetric and non-existent dyads. \n "));
+	triadCensusAct->setWhatsThis(tr("Triad Census\n\n A triad census counts all the different kinds of observed triads within a network and codes them according to their number of mutual, asymmetric and non-existent dyads. \n "));
 	connect(triadCensusAct, SIGNAL(activated()), this, SLOT(slotTriadCensus() )  );
 
 	cInDegreeAct = new QAction(tr("InDegree"),	 this);

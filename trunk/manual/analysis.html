@@ -41,6 +41,51 @@ This option calculates and displays the clustering coefficients of all nodes.
 <em>Tip</em>: All the basic network statistics, such as nodes, edges and density are constantly displayed in the Statistics tab of the left dock.
  </p>
 
+<em><a name="triadcensus" id="TriadCensus"></a>Triad Census</em><br/>
+<p class="text">
+
+When you click on the "Triad  Census" menu option, SocNetV examines each of the triads present in your network, and counts how many of these belong to a certain triad type.
+
+Some background:
+
+In any network of N actors, there are C(N,3) triads. 
+For instance, in a network of 6 actors there are C(4,3)=20 triads, whereas in a network of 10 actors there are C(10,3)=60 triads.
+
+In a any case, though, there can be only sixteen different triad types (isomophism classes). 
+Every one of the C(N,3) triads of a network must belong (be isomorphic) to one of these sixteen types.   
+
+A Triad Census is a method which counts all the different types (classes) of observed triads within a network.
+The triad types are coded and labeled according to their number of mutual, asymmetric and non-existent (null) dyads.
+
+We follow the M-A-N labeling scheme, as described by Holland, Leinhardt and Davis in their studies. 
+In the M-A-N scheme, each triad type has a label with four characters:
+
+- The first character is the number of mutual (M) duads in the triad. Possible values: 0, 1, 2, 3. 
+- The second character is the number of asymmetric (A) duads in the triad. Possible values: 0, 1, 2, 3.
+- The third character is the number of null (N) duads in the triad. Possible values: 0, 1, 2, 3.
+- The fourth character is infered from features or the nature of the triad, i.e. presence of cycle or transitivity. Possible values: none, D ("Down"), U ("Up"), C ("Cyclic"), T ("Transitive")
+
+In the seven rows below, you can see all the sixteen triad types (classes). 
+Within each row, all the triad types have the same number of arcs present:
+
+003
+012
+102		021D	021U	021C
+111D	111U	030T	030C
+201		120D	120U	120C
+210
+300
+
+ 
+So, when you click on Triad Census menu option, SocNetV calculates and displays a vector T of length 16. 
+Each vector element (Tu) is the frequency of each one triad type inside the active network, i.e. T003 = 3.  
+Furthermore, the order of the elements of vector T is the same as the aforementioned ordering of the triad types:
+
+T = [ T003, T012, T102, T021D, T021U, T021C, T111D, T111U, T030T, T030C, T201, T120D, T120U, T120C, T210, T300 ]
+
+Apparently, the sum of all these frequencies Tu is C(N,3).
+
+</p>
 <h4><a name="Centralities" id="Centralities"></a>Centralities</h4>
 <p class="text"> 
 The last option in the Statistics menu opens the Centralities sub-menu.
