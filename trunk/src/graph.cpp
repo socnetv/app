@@ -2102,6 +2102,8 @@ void Graph::writeTriadCensus(
 	emit statusMessage ( (tr("Conducting triad census. Please wait....")) );
 
 	if (!triadCensus()){
+		qDebug() << "Error in triadCensus(). Exiting...";
+		file.close();
 		return;
 	}
 		
@@ -2721,12 +2723,12 @@ bool Graph::triadCensus(){
 	int mut=0, dir=0, nul =0;
 	int temp_mut=0, temp_dir=0, temp_nul =0;
 	int ver1, ver2, ver3;
-	
+	QString MAN_Label, ch;
+	bool ok=false;
 	 
 	/*
 	 * QList::triadTypeFreqs stores triad type frequencies with the following order:
-	 * T003, T012, T102, T021D, T021U, T021C, T111D, T111U, T030T, T030C, T201, 
-	 * 											T120D, T120U, T120C, T210, T300
+	 * 003 012 102	021D 021U 021C 111D	111U 030T 030C 201 	120D 120U 120C 210 300
  	*/ 
 	
 	for (int i = 0; i < 15; ++i) {
@@ -2795,21 +2797,115 @@ bool Graph::triadCensus(){
 				else
 					nul++; 
 			
-				QString test = QString::number(mut)+QString::number(dir)+QString::number(nul);
+				
 				qDebug()<< "triad of ("<< ver1 << ","<< ver2 << ","<< ver3 << ") = ("
 								<<mut<<","<< dir<<","<<nul<<")";
-				bool ok=false;
-				qDebug()<< test.toInt(&ok) ;
+				MAN_Label = QString::number(mut)+QString::number(dir)+QString::number(nul);
+				ok=false;
+				qDebug()<< MAN_Label.toInt(&ok) ;
+				int digits = MAN_Label.toInt(&ok) ;
 				if (ok){
-					
+					examine_MAN_label(digits, ch);
 				}
 				else {
 				 
-					}
+				}
 			} // end 3rd foreach
 		}// end 2rd foreach
 	}// end 1rd foreach
-		
+	return true;
+}
+
+
+
+
+
+
+/** 
+	Examines a M-A-N label and increases by one the proper frequency element 
+	inside QList::triadTypeFreqs
+*/
+void Graph:: examine_MAN_label(int digits, QString ch) {
+/*
+	switch (mut){
+		case 0:
+				switch (dir){
+					case 0:
+							//	"003";
+							triadTypeFreqs[0] ++;
+							break;
+					case 1:
+							// "012";
+							triadTypeFreqs[1] ++;
+							break;
+					case 2:
+							// "021?"
+							if (fourth =="D") {
+							}
+							else if (fourth =="U") {
+							}
+							else if (fourth =="C") {
+							}
+							break;
+					case 3:
+							// "030?"
+							if (fourth =="T") {
+							}
+							else if (fourth =="C") {
+							}
+							break;
+				}
+				break;
+		case 1:
+				break;
+		case 2:
+				break;
+		case 3:
+				break;
+				
+		*/
+
+	
+	
+	switch (digits){
+			case 003 :
+							triadTypeFreqs[0] ++;
+							break;
+			case "012":
+							triadTypeFreqs[1] ++;
+							break;
+			case "102":
+							triadTypeFreqs[2] ++;
+							break;
+			case "021D":
+							triadTypeFreqs[3] ++;
+							break;
+			case "021U":
+							break;
+			case "021C":
+							break;
+			case "111D":
+							break;	
+			case "111U":
+							break;
+			case "030T":
+							break;
+			case "030C":
+							break;
+			case "201":
+							break;
+			case "120D":	
+							break;
+			case "120U":
+							break;
+			case "120C":
+							break;
+			case "210":
+							break;
+			case "300":
+							break;
+	}
+
 }
 
 
