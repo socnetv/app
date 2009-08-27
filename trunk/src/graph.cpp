@@ -2116,7 +2116,7 @@ void Graph::writeTriadCensus(
 	outText << "Type\t\tCensus\t\tExpected Value" << "\n";
 	outText << "003" << "\t\t" << triadTypeFreqs[0] << "\n";
 	outText << "012" << "\t\t" <<triadTypeFreqs[1] <<"\n";
-	outText << "102	"<< "\t\t" <<triadTypeFreqs[2] <<"\n";	
+	outText << "102" << "\t\t" <<triadTypeFreqs[2] <<"\n";	
 	outText << "021D"<< "\t\t" <<triadTypeFreqs[3] <<"\n";	
 	outText << "021U"<< "\t\t" <<triadTypeFreqs[4] <<"\n";	
 	outText << "021C"<< "\t\t" <<triadTypeFreqs[5] <<"\n";
@@ -2124,7 +2124,7 @@ void Graph::writeTriadCensus(
 	outText << "111U"<< "\t\t" <<triadTypeFreqs[7] <<"\n";	
 	outText << "030T"<< "\t\t" <<triadTypeFreqs[8] <<"\n";	
 	outText << "030C"<< "\t\t" <<triadTypeFreqs[9] <<"\n";
-	outText << "201	"<< "\t\t" <<triadTypeFreqs[10] <<"\n";	
+	outText << "201" << "\t\t" <<triadTypeFreqs[10] <<"\n";	
 	outText << "120D"<< "\t\t" <<triadTypeFreqs[11] <<"\n";	
 	outText << "120U"<< "\t\t" <<triadTypeFreqs[12] <<"\n";	
 	outText << "120C"<< "\t\t" <<triadTypeFreqs[13] <<"\n";
@@ -2728,74 +2728,67 @@ bool Graph::triadCensus(){
 	 
 	/*
 	 * QList::triadTypeFreqs stores triad type frequencies with the following order:
+	 * 0	1	2	3		4	5	6	7	8		9	10	11	12		13	14	15
 	 * 003 012 102	021D 021U 021C 111D	111U 030T 030C 201 	120D 120U 120C 210 300
  	*/ 
 	
 	for (int i = 0; i < 15; ++i) {
 		triadTypeFreqs.append(0);
 	}
-	 
-	foreach (Vertex *v1, m_graph)  {
+	QList<Vertex*>::iterator v1;
+	QList<Vertex*>::iterator v2;
+	QList<Vertex*>::iterator v3;
 
-		foreach (Vertex *v2, m_graph)  {
+	for (v1=m_graph.begin(); v1!=m_graph.end(); v1++) {	 
 
-			ver1=v1->name();
-			ver2=v2->name();
-			
-			if ( ver2 <= ver1 ) {
-				continue;
-			}
+		for (v2=(v1+1); v2!=m_graph.end(); v2++) {
 
+			ver1=(*v1)->name();
+			ver2=(*v2)->name();
+		
 			temp_mut=0, temp_asy=0, temp_nul =0;
 			
-			if ( v1->isLinkedTo( ver2 ) ) {
-				if ( v2->isLinkedTo( ver1 ) )
+			if ( (*v1)->isLinkedTo( ver2 ) ) {
+				if ( (*v2)->isLinkedTo( ver1 ) )
 					temp_mut++;
 				else 
 					temp_asy++;
 			}
-			else if ( v2->isLinkedTo( ver1 )  )
+			else if ( (*v2)->isLinkedTo( ver1 )  )
 				temp_asy++;
 			else
 				temp_nul++; 
 			
-			
-			foreach (Vertex *v3, m_graph)  {
+			for (v3=(v2+1); v3!=m_graph.end(); v3++){
 
 				mut = temp_mut ;
 				asy = temp_asy ;
 				nul = temp_nul ;
 
-				ver3=v3->name();
+				ver3=(*v3)->name();
 				
-				if ( ver3 <= ver2 ) 
-					continue; 
-				if ( ver3 <= ver1 ) 
-					continue; 
-				
-				if ( v1->isLinkedTo( ver3 ) ) {
-					if ( v3->isLinkedTo( ver1 ) )
+				if ( (*v1)->isLinkedTo( ver3 ) ) {
+					if ( (*v3)->isLinkedTo( ver1 ) )
 						mut++;
 					else 
 						asy++;
 				}
-				else if ( v3->isLinkedTo( ver1 )  )
+				else if ( (*v3)->isLinkedTo( ver1 )  )
 					asy++;
 				else
 					nul++; 
 				
-				if ( v2->isLinkedTo( ver3 ) ) {
-					if ( v3->isLinkedTo( ver2 ) )
+				if ( (*v2)->isLinkedTo( ver3 ) ) {
+					if ( (*v3)->isLinkedTo( ver2 ) )
 						mut++;
 					else 
 						asy++;
 				}
-				else if ( v3->isLinkedTo( ver2 )  )
+				else if ( (*v3)->isLinkedTo( ver2 )  )
 					asy++;
 				else
 					nul++; 
 			
-				
 				qDebug()<< "triad of ("<< ver1 << ","<< ver2 << ","<< ver3 << ") = ("
 								<<mut<<","<< asy<<","<<nul<<")";
 				examine_MAN_label(mut, asy, nul, last_char);
