@@ -2742,7 +2742,7 @@ bool Graph::triadCensus(){
 			ver1=v1->name();
 			ver2=v2->name();
 			
-			if ( ver1 == ver2 ) {
+			if ( ver2 <= ver1 ) {
 				continue;
 			}
 
@@ -2768,9 +2768,9 @@ bool Graph::triadCensus(){
 
 				ver3=v3->name();
 				
-				if ( ver3 == ver2 ) 
+				if ( ver3 <= ver2 ) 
 					continue; 
-				if ( ver3 == ver1 ) 
+				if ( ver3 <= ver1 ) 
 					continue; 
 				
 				if ( v1->isLinkedTo( ver3 ) ) {
