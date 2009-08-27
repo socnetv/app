@@ -2114,22 +2114,22 @@ void Graph::writeTriadCensus(
 	outText << tr("TRIAD CENSUS REPORT \n");
 	outText << tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
 	outText << "Type\t\tCensus\t\tExpected Value" << "\n";
-	outText << "003" << "\n";
-	outText << "012"<< "\n";
-	outText << "102	"<< "\n";	
-	outText << "021D"<< "\n";	
-	outText << "021U"<< "\n";	
-	outText << "021C"<< "\n";
-	outText << "111D"<< "\n";	
-	outText << "111U"<< "\n";	
-	outText << "030T"<< "\n";	
-	outText << "030C"<< "\n";
-	outText << "201	"<< "\n";	
-	outText << "120D"<< "\n";	
-	outText << "120U"<< "\n";	
-	outText << "120C"<< "\n";
-	outText << "210"<< "\n";
-	outText << "300"<< "\n";
+	outText << "003" << "\t\t" << triadTypeFreqs[0] << "\n";
+	outText << "012" << "\t\t" <<triadTypeFreqs[1] <<"\n";
+	outText << "102	"<< "\t\t" <<triadTypeFreqs[2] <<"\n";	
+	outText << "021D"<< "\t\t" <<triadTypeFreqs[3] <<"\n";	
+	outText << "021U"<< "\t\t" <<triadTypeFreqs[4] <<"\n";	
+	outText << "021C"<< "\t\t" <<triadTypeFreqs[5] <<"\n";
+	outText << "111D"<< "\t\t" <<triadTypeFreqs[6] <<"\n";	
+	outText << "111U"<< "\t\t" <<triadTypeFreqs[7] <<"\n";	
+	outText << "030T"<< "\t\t" <<triadTypeFreqs[8] <<"\n";	
+	outText << "030C"<< "\t\t" <<triadTypeFreqs[9] <<"\n";
+	outText << "201	"<< "\t\t" <<triadTypeFreqs[10] <<"\n";	
+	outText << "120D"<< "\t\t" <<triadTypeFreqs[11] <<"\n";	
+	outText << "120U"<< "\t\t" <<triadTypeFreqs[12] <<"\n";	
+	outText << "120C"<< "\t\t" <<triadTypeFreqs[13] <<"\n";
+	outText << "210" << "\t\t" <<triadTypeFreqs[14] <<"\n";
+	outText << "300" << "\t\t" <<triadTypeFreqs[15] <<"\n";
 
 	outText << "\n\n";
 
@@ -2716,15 +2716,15 @@ float Graph::clusteringCoefficient (){
 
 
 /*
- *  Conducts a triad census and returns a triad score
+ *  Conducts a triad census and updates QList::triadTypeFreqs, 
+ * 		which is the list carrying all triad type frequencies
  *  Complexity:O(n!)
  */
 bool Graph::triadCensus(){
-	int mut=0, dir=0, nul =0;
-	int temp_mut=0, temp_dir=0, temp_nul =0;
+	int mut=0, asy=0, nul =0;
+	int temp_mut=0, temp_asy=0, temp_nul =0;
 	int ver1, ver2, ver3;
-	QString MAN_Label, ch;
-	bool ok=false;
+	QString last_char;
 	 
 	/*
 	 * QList::triadTypeFreqs stores triad type frequencies with the following order:
@@ -2746,16 +2746,16 @@ bool Graph::triadCensus(){
 				continue;
 			}
 
-			temp_mut=0, temp_dir=0, temp_nul =0;
+			temp_mut=0, temp_asy=0, temp_nul =0;
 			
 			if ( v1->isLinkedTo( ver2 ) ) {
 				if ( v2->isLinkedTo( ver1 ) )
 					temp_mut++;
 				else 
-					temp_dir++;
+					temp_asy++;
 			}
 			else if ( v2->isLinkedTo( ver1 )  )
-				temp_dir++;
+				temp_asy++;
 			else
 				temp_nul++; 
 			
@@ -2763,11 +2763,9 @@ bool Graph::triadCensus(){
 			foreach (Vertex *v3, m_graph)  {
 
 				mut = temp_mut ;
-				dir = temp_dir ;
+				asy = temp_asy ;
 				nul = temp_nul ;
 
-				//mut=0, dir=0, nul=0;
-				
 				ver3=v3->name();
 				
 				if ( ver3 == ver2 ) 
@@ -2779,10 +2777,10 @@ bool Graph::triadCensus(){
 					if ( v3->isLinkedTo( ver1 ) )
 						mut++;
 					else 
-						dir++;
+						asy++;
 				}
 				else if ( v3->isLinkedTo( ver1 )  )
-					dir++;
+					asy++;
 				else
 					nul++; 
 				
@@ -2790,26 +2788,17 @@ bool Graph::triadCensus(){
 					if ( v3->isLinkedTo( ver2 ) )
 						mut++;
 					else 
-						dir++;
+						asy++;
 				}
 				else if ( v3->isLinkedTo( ver2 )  )
-					dir++;
+					asy++;
 				else
 					nul++; 
 			
 				
 				qDebug()<< "triad of ("<< ver1 << ","<< ver2 << ","<< ver3 << ") = ("
-								<<mut<<","<< dir<<","<<nul<<")";
-				MAN_Label = QString::number(mut)+QString::number(dir)+QString::number(nul);
-				ok=false;
-				qDebug()<< MAN_Label.toInt(&ok) ;
-				int digits = MAN_Label.toInt(&ok) ;
-				if (ok){
-					examine_MAN_label(digits, ch);
-				}
-				else {
-				 
-				}
+								<<mut<<","<< asy<<","<<nul<<")";
+				examine_MAN_label(mut, asy, nul, last_char);
 			} // end 3rd foreach
 		}// end 2rd foreach
 	}// end 1rd foreach
@@ -2819,94 +2808,93 @@ bool Graph::triadCensus(){
 
 
 
-
-
 /** 
-	Examines a M-A-N label and increases by one the proper frequency element 
+	Examines the triad type (in Mutual-Asymmetric-Null label format) 
+	and increases by one the proper frequency element 
 	inside QList::triadTypeFreqs
 */
-void Graph:: examine_MAN_label(int digits, QString ch) {
-/*
+void Graph:: examine_MAN_label(int mut, int asy, int nul, QString last_char) {
+
 	switch (mut){
 		case 0:
-				switch (dir){
-					case 0:
-							//	"003";
+				switch (asy){
+					case 0:	//"003";
 							triadTypeFreqs[0] ++;
 							break;
-					case 1:
-							// "012";
+					case 1:	 //"012";
 							triadTypeFreqs[1] ++;
 							break;
 					case 2:
-							// "021?"
-							if (fourth =="D") {
+							if (last_char =="D") {	//"021D"
+								triadTypeFreqs[3] ++;
 							}
-							else if (fourth =="U") {
+							else if (last_char =="U") {	//"021U"
+								triadTypeFreqs[3] ++;
 							}
-							else if (fourth =="C") {
+							else if (last_char =="C") {	//"021C"
+								triadTypeFreqs[5] ++;
 							}
 							break;
 					case 3:
-							// "030?"
-							if (fourth =="T") {
+							if (last_char =="T") {	//"030T"		
+								triadTypeFreqs[8] ++;
 							}
-							else if (fourth =="C") {
+							else if (last_char =="C") {//"030C"
+								triadTypeFreqs[9] ++;
 							}
 							break;
 				}
 				break;
-		case 1:
-				break;
-		case 2:
-				break;
-		case 3:
-				break;
-				
-		*/
 
-	
-	
-	switch (digits){
-			case 003 :
-							triadTypeFreqs[0] ++;
-							break;
-			case "012":
-							triadTypeFreqs[1] ++;
-							break;
-			case "102":
+		case 1:
+				switch (asy){
+					case 0:	//"102";
 							triadTypeFreqs[2] ++;
 							break;
-			case "021D":
-							triadTypeFreqs[3] ++;
+					case 1:
+							if (last_char =="D") {	//"111D"
+								triadTypeFreqs[6] ++;
+							}
+							else if (last_char =="U") {	//"111U"
+								triadTypeFreqs[7] ++;
+							}
 							break;
-			case "021U":
+					case 2:
+							if (last_char =="D") {	//"120D"
+								triadTypeFreqs[11] ++;
+							}
+							else if (last_char =="U") {	//"120U"
+								triadTypeFreqs[12] ++;
+							}
+							else if (last_char =="C") {	//"120C"
+								triadTypeFreqs[13] ++;
+							}
 							break;
-			case "021C":
+					case 3:
+							 // nothing here!
 							break;
-			case "111D":
-							break;	
-			case "111U":
-							break;
-			case "030T":
-							break;
-			case "030C":
-							break;
-			case "201":
-							break;
-			case "120D":	
-							break;
-			case "120U":
-							break;
-			case "120C":
-							break;
-			case "210":
-							break;
-			case "300":
-							break;
-	}
+				}
+
+				break;
+		case 2:
+				switch (asy){
+					case 0:	// "201" 
+						triadTypeFreqs[10] ++;
+						break;
+					case 1:	// "210" 
+						triadTypeFreqs[14] ++;
+						break;
+				}
+				break;
+		case 3:	// "300" 
+				triadTypeFreqs[15] ++;
+				break;
+		}
 
 }
+
+
+
 
 
 /** 

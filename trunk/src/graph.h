@@ -244,7 +244,7 @@ public:
 	float clusteringCoefficient ();
 	
 	bool triadCensus();
-	void examine_MAN_label(int digits, QString fourth);
+	void examine_MAN_label(int, int, int, QString fourth);
 //	void eccentr_JordanCenter(); 				// TODO
 
 
