@@ -2079,6 +2079,7 @@ void Graph::writeClusteringCoefficient(
 	outText << tr("GCLC = 0, when there are no cliques (i.e. acyclic tree).\n");
 	outText << tr("GCLC = 1, when every node and its neighborhood are complete cliques.\n");
 
+	file.close();
 }
 
 
@@ -2100,7 +2101,10 @@ void Graph::writeTriadCensus(
 
 	emit statusMessage ( (tr("Conducting triad census. Please wait....")) );
 
-	float triadCensusScore = triadCensus();
+	if (!triadCensus()){
+		return;
+	}
+		
 	
 	emit statusMessage ( QString(tr("Writing clustering coefficients to file:")).arg(fileName) );
 	
@@ -2127,6 +2131,7 @@ void Graph::writeTriadCensus(
 
 	outText << "\n\n";
 
+	file.close();
 
 }
 
@@ -2712,11 +2717,22 @@ float Graph::clusteringCoefficient (){
  *  Conducts a triad census and returns a triad score
  *  Complexity:O(n!)
  */
-float Graph::triadCensus(){
+bool Graph::triadCensus(){
 	int mut=0, dir=0, nul =0;
 	int temp_mut=0, temp_dir=0, temp_nul =0;
-	int ver1, ver2, ver3; 
+	int ver1, ver2, ver3;
 	
+	 
+	/*
+	 * QList::triadTypeFreqs stores triad type frequencies with the following order:
+	 * T003, T012, T102, T021D, T021U, T021C, T111D, T111U, T030T, T030C, T201, 
+	 * 											T120D, T120U, T120C, T210, T300
+ 	*/ 
+	
+	for (int i = 0; i < 15; ++i) {
+		triadTypeFreqs.append(0);
+	}
+	 
 	foreach (Vertex *v1, m_graph)  {
 
 		foreach (Vertex *v2, m_graph)  {
@@ -2779,9 +2795,17 @@ float Graph::triadCensus(){
 				else
 					nul++; 
 			
-				
+				QString test = QString::number(mut)+QString::number(dir)+QString::number(nul);
 				qDebug()<< "triad of ("<< ver1 << ","<< ver2 << ","<< ver3 << ") = ("
-								<<mut<<","<< dir<<","<<nul<<")"; 
+								<<mut<<","<< dir<<","<<nul<<")";
+				bool ok=false;
+				qDebug()<< test.toInt(&ok) ;
+				if (ok){
+					
+				}
+				else {
+				 
+					}
 			} // end 3rd foreach
 		}// end 2rd foreach
 	}// end 1rd foreach

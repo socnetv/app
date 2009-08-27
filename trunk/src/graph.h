@@ -243,7 +243,7 @@ public:
 	float clusteringCoefficient(int v1);	
 	float clusteringCoefficient ();
 	
-	float triadCensus();
+	bool triadCensus();
 	
 //	void eccentr_JordanCenter(); 				// TODO
 
@@ -317,6 +317,8 @@ private:
 	fmap_i	discreteIDCs, discreteODCs, discreteCCs, discreteBCs, discreteSCs, discreteGCs, discreteECs;
 	int *eccentricities;
 	bool calculatedIDC, calculatedODC, calculatedCentralities, dynamicMovement;
+	
+	QList<int>  triadTypeFreqs; 	//stores triad type frequencies
 	Matrix  TM, DM;
 	stack<int> Stack;
 
