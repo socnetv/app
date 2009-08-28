@@ -2715,7 +2715,7 @@ float Graph::clusteringCoefficient (){
 
 
 
-/*
+/*tri
  *  Conducts a triad census and updates QList::triadTypeFreqs, 
  * 		which is the list carrying all triad type frequencies
  *  Complexity:O(n!)
@@ -2725,7 +2725,8 @@ bool Graph::triadCensus(){
 	int temp_mut=0, temp_asy=0, temp_nul =0, counter_021=0;
 	int ver1, ver2, ver3;
 	QString last_char;
-	 
+
+	int progressCounter = 0;
 	/*
 	 * QList::triadTypeFreqs stores triad type frequencies with the following order:
 	 * 0	1	2	3		4	5	6	7	8		9	10	11	12		13	14	15
@@ -2791,13 +2792,15 @@ bool Graph::triadCensus(){
 			
 				//qDebug()<< "triad of ("<< ver1 << ","<< ver2 << ","<< ver3 << ") = ("	<<mut<<","<< asy<<","<<nul<<")";
 				examine_MAN_label(mut, asy, nul, (*v1), (*v2),  (*v3) ) ;
-				if ( mut==0 && asy==2 && nul==1 ){
+				progressCounter++ ;
+				emit updateProgressDialog( progressCounter );
+				if ( mut==3 && asy==0 && nul==0 ){
 					counter_021++;
 				}
 			} // end 3rd foreach
 		}// end 2rd foreach
 	}// end 1rd foreach
-	qDebug() << " ****** 021 COUNTER: "<< counter_021;
+	qDebug() << " ****** 003 COUNTER: "<< counter_021;
 	return true;
 }
 
@@ -3006,7 +3009,8 @@ void Graph:: examine_MAN_label(int mut, int asy, int nul,
 				}
 				break;
 		case 3:	// "300" 
-				triadTypeFreqs[15] ++;
+				if (asy==0 && nul==0)
+					triadTypeFreqs[15] ++;
 				break;
 		}
 
