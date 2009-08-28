@@ -2949,7 +2949,12 @@ void Graph:: examine_MAN_label(int mut, int asy, int nul,
 												continue;
 												
 										if ( source->isLinkedTo(target->name()) ){
-											if ( isOutLinked && !isInLinked ){
+											if (target->isLinkedTo(source->name() ) ){
+												isInLinked=true;
+												isOutLinked=true;
+												continue;
+											}
+											else if ( isOutLinked && !isInLinked ){
 												triadTypeFreqs[11] ++;//"120D"
 												isDown=true;
 												isCycle=false;
@@ -2960,8 +2965,13 @@ void Graph:: examine_MAN_label(int mut, int asy, int nul,
 											}
 										}
 										else if( target->isLinkedTo(source->name()) ){
-										//	qDebug() << "    Vertex " << source->name()  << " is IN linked from " <<target->name(); 
-											if ( isInLinked && !isOutLinked ){
+										//	qDebug() << "    Vertex " << source->name()  << " is IN linked from " <<target->name();
+											if (source->isLinkedTo(target->name())){
+												isOutLinked=true;
+												isInLinked=true;
+												continue;
+											}
+											else if ( isInLinked && !isOutLinked ){
 												triadTypeFreqs[12] ++;//"120U"
 												isUp=true;
 												isCycle=false;
