@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+ <!-- Created by SocNetV v.0.80 --> 
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns"       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance "       xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns       http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+  <key id="d0" for="node" attr.name="label" attr.type="string"> 
+    <default></default> 
+  </key> 
+  <key id="d1" for="node" attr.name="x_coordinate" attr.type="double"> 
+    <default>0.0</default> 
+  </key> 
+  <key id="d2" for="node" attr.name="y_coordinate" attr.type="double"> 
+    <default>0.0</default> 
+  </key> 
+  <key id="d3" for="node" attr.name="size" attr.type="double"> 
+    <default>4</default> 
+  </key> 
+  <key id="d4" for="node" attr.name="color" attr.type="string"> 
+    <default>gold</default> 
+  </key> 
+  <key id="d5" for="node" attr.name="shape" attr.type="string"> 
+    <default>diamond</default> 
+  </key> 
+  <key id="d6" for="node" attr.name="label.color" attr.type="string"> 
+    <default>darkblue</default> 
+  </key> 
+  <key id="d7" for="node" attr.name="label.size" attr.type="string"> 
+    <default>8</default> 
+  </key> 
+  <key id="d8" for="edge" attr.name="weight" attr.type="double"> 
+    <default>1.0</default> 
+  </key> 
+  <key id="d9" for="edge" attr.name="color" attr.type="string"> 
+    <default>grey</default> 
+  </key> 
+  <graph id="Krackhardt's high-tech managers - Advice relationship" edgedefault="directed"> 
+    <node id="1"> 
+      <data key="d0">v1</data>
+      <data key="d1">0.640625</data>
+      <data key="d2">0.735245</data>
+      <data key="d5">diamond</data>
+    </node>
+    <node id="2"> 
+      <data key="d0">v2</data>
+      <data key="d1">0.618056</data>
+      <data key="d2">0.563238</data>
+      <data key="d5">diamond</data>
+    </node>
+    <node id="3"> 
+      <data key="d0">v3</data>
+      <data key="d1">0.692708</data>
+      <data key="d2">0.399663</data>
+      <data key="d5">diamond</data>
+    </node>
+    <node id="4"> 
+      <data key="d0">v4</data>
+      <data key="d1">0.788194</data>
+      <data key="d2">0.612142</data>
+      <data key="d5">diamond</data>
+    </node>
+    <node id="5"> 
+      <data key="d0">v5</data>
+      <data key="d1">0.361111</data>
+      <data key="d2">0.485666</data>
+      <data key="d5">diamond</data>
+    </node>
+    <node id="6"> 
+      <data key="d0">v6</data>
+      <data key="d1">0.78125</data>
+      <data key="d2">0.079258</data>
+      <data key="d5">diamond</data>
+    </node>
+    <node id="7"> 
+      <data key="d0">v7</data>
+      <data key="d1">0.689236</data>
+      <data key="d2">0.251265</data>
+      <data key="d5">diamond</data>
+    </node>
+    <node id="8"> 
+      <data key="d0">v8</data>
+      <data key="d1">0.756944</data>
+      <data key="d2">0.512648</data>
+      <data key="d5">diamond</data>
+    </node>
+    <node id="9"> 
+      <data key="d0">v9</data>
+      <data key="d1">0.548611</data>
+      <data key="d2">0.39629</data>
+      <data key="d5">diamond</data>
+    </node>
+    <node id="10"> 
+      <data key="d0">v10</data>
+      <data key="d1">0.602431</data>
+      <data key="d2">0.642496</data>
+      <data key="d5">diamond</data>
+    </node>
+    <node id="11"> 
+      <data key="d0">v11</data>
+      <data key="d1">0.473958</data>
+      <data key="d2">0.482293</data>
+      <data key="d5">diamond</data>
+    </node>
+    <node id="12"> 
+      <data key="d0">v12</data>
+      <data key="d1">0.911458</data>
+      <data key="d2">0.261383</data>
+      <data key="d5">diamond</data>
+    </node>
+    <node id="13"> 
+      <data key="d0">v13</data>
+      <data key="d1">0.118056</data>
+      <data key="d2">0.487352</data>
+      <data key="d5">diamond</data>
+    </node>
+    <node id="14"> 
+      <data key="d0">v14</data>
+      <data key="d1">0.394097</data>
+      <data key="d2">0.332209</data>
+      <data key="d5">diamond</data>
+    </node>
+    <node id="15"> 
+      <data key="d0">v15</data>
+      <data key="d1">0.550347</data>
+      <data key="d2">0.453626</data>
+      <data key="d5">diamond</data>
+    </node>
+    <node id="16"> 
+      <data key="d0">v16</data>
+      <data key="d1">0.630208</data>
+      <data key="d2">0.939292</data>
+      <data key="d5">diamond</data>
+    </node>
+    <node id="17"> 
+      <data key="d0">v17</data>
+      <data key="d1">0.725694</data>
+      <data key="d2">0.421585</data>
+      <data key="d5">diamond</data>
+    </node>
+    <node id="18"> 
+      <data key="d0">v18</data>
+      <data key="d1">0.5</data>
+      <data key="d2">0.591906</data>
+      <data key="d5">diamond</data>
+    </node>
+    <node id="19"> 
+      <data key="d0">v19</data>
+      <data key="d1">0.590278</data>
+      <data key="d2">0.489039</data>
+      <data key="d5">diamond</data>
+    </node>
+    <node id="20"> 
+      <data key="d0">v20</data>
+      <data key="d1">0.684028</data>
+      <data key="d2">0.512648</data>
+      <data key="d5">diamond</data>
+    </node>
+    <node id="21"> 
+      <data key="d0">v21</data>
+      <data key="d1">0.809028</data>
+      <data key="d2">0.338954</data>
+      <data key="d5">diamond</data>
+    </node>
+    <edge id="e1" directed="true" source="1" target="2"/> 
+    <edge id="e2" directed="true" source="1" target="4"/> 
+    <edge id="e3" directed="true" source="1" target="8"/> 
+    <edge id="e4" directed="true" source="1" target="16"/> 
+    <edge id="e5" directed="true" source="1" target="18"/> 
+    <edge id="e6" directed="true" source="1" target="21"/> 
+    <edge id="e7" directed="true" source="2" target="6"/> 
+    <edge id="e8" directed="true" source="2" target="7"/> 
+    <edge id="e9" directed="true" source="2" target="21"/> 
+    <edge id="e10" directed="true" source="3" target="1"/> 
+    <edge id="e11" directed="true" source="3" target="2"/> 
+    <edge id="e12" directed="true" source="3" target="4"/> 
+    <edge id="e13" directed="true" source="3" target="6"/> 
+    <edge id="e14" directed="true" source="3" target="7"/> 
+    <edge id="e15" directed="true" source="3" target="8"/> 
+    <edge id="e16" directed="true" source="3" target="9"/> 
+    <edge id="e17" directed="true" source="3" target="10"/> 
+    <edge id="e18" directed="true" source="3" target="11"/> 
+    <edge id="e19" directed="true" source="3" target="12"/> 
+    <edge id="e20" directed="true" source="3" target="14"/> 
+    <edge id="e21" directed="true" source="3" target="17"/> 
+    <edge id="e22" directed="true" source="3" target="18"/> 
+    <edge id="e23" directed="true" source="3" target="20"/> 
+    <edge id="e24" directed="true" source="3" target="21"/> 
+    <edge id="e25" directed="true" source="4" target="1"/> 
+    <edge id="e26" directed="true" source="4" target="2"/> 
+    <edge id="e27" directed="true" source="4" target="6"/> 
+    <edge id="e28" directed="true" source="4" target="8"/> 
+    <edge id="e29" directed="true" source="4" target="10"/> 
+    <edge id="e30" directed="true" source="4" target="11"/> 
+    <edge id="e31" directed="true" source="4" target="12"/> 
+    <edge id="e32" directed="true" source="4" target="16"/> 
+    <edge id="e33" directed="true" source="4" target="17"/> 
+    <edge id="e34" directed="true" source="4" target="18"/> 
+    <edge id="e35" directed="true" source="4" target="20"/> 
+    <edge id="e36" directed="true" source="4" target="21"/> 
+    <edge id="e37" directed="true" source="5" target="1"/> 
+    <edge id="e38" directed="true" source="5" target="2"/> 
+    <edge id="e39" directed="true" source="5" target="6"/> 
+    <edge id="e40" directed="true" source="5" target="7"/> 
+    <edge id="e41" directed="true" source="5" target="8"/> 
+    <edge id="e42" directed="true" source="5" target="10"/> 
+    <edge id="e43" directed="true" source="5" target="11"/> 
+    <edge id="e44" directed="true" source="5" target="13"/> 
+    <edge id="e45" directed="true" source="5" target="14"/> 
+    <edge id="e46" directed="true" source="5" target="16"/> 
+    <edge id="e47" directed="true" source="5" target="17"/> 
+    <edge id="e48" directed="true" source="5" target="18"/> 
+    <edge id="e49" directed="true" source="5" target="19"/> 
+    <edge id="e50" directed="true" source="5" target="20"/> 
+    <edge id="e51" directed="true" source="5" target="21"/> 
+    <edge id="e52" directed="true" source="6" target="21"/> 
+    <edge id="e53" directed="true" source="7" target="2"/> 
+    <edge id="e54" directed="true" source="7" target="6"/> 
+    <edge id="e55" directed="true" source="7" target="11"/> 
+    <edge id="e56" directed="true" source="7" target="12"/> 
+    <edge id="e57" directed="true" source="7" target="14"/> 
+    <edge id="e58" directed="true" source="7" target="17"/> 
+    <edge id="e59" directed="true" source="7" target="18"/> 
+    <edge id="e60" directed="true" source="7" target="21"/> 
+    <edge id="e61" directed="true" source="8" target="2"/> 
+    <edge id="e62" directed="true" source="8" target="4"/> 
+    <edge id="e63" directed="true" source="8" target="6"/> 
+    <edge id="e64" directed="true" source="8" target="7"/> 
+    <edge id="e65" directed="true" source="8" target="10"/> 
+    <edge id="e66" directed="true" source="8" target="11"/> 
+    <edge id="e67" directed="true" source="8" target="18"/> 
+    <edge id="e68" directed="true" source="8" target="21"/> 
+    <edge id="e69" directed="true" source="9" target="1"/> 
+    <edge id="e70" directed="true" source="9" target="2"/> 
+    <edge id="e71" directed="true" source="9" target="6"/> 
+    <edge id="e72" directed="true" source="9" target="7"/> 
+    <edge id="e73" directed="true" source="9" target="8"/> 
+    <edge id="e74" directed="true" source="9" target="10"/> 
+    <edge id="e75" directed="true" source="9" target="11"/> 
+    <edge id="e76" directed="true" source="9" target="12"/> 
+    <edge id="e77" directed="true" source="9" target="14"/> 
+    <edge id="e78" directed="true" source="9" target="16"/> 
+    <edge id="e79" directed="true" source="9" target="17"/> 
+    <edge id="e80" directed="true" source="9" target="18"/> 
+    <edge id="e81" directed="true" source="9" target="21"/> 
+    <edge id="e82" directed="true" source="10" target="1"/> 
+    <edge id="e83" directed="true" source="10" target="2"/> 
+    <edge id="e84" directed="true" source="10" target="3"/> 
+    <edge id="e85" directed="true" source="10" target="4"/> 
+    <edge id="e86" directed="true" source="10" target="5"/> 
+    <edge id="e87" directed="true" source="10" target="8"/> 
+    <edge id="e88" directed="true" source="10" target="11"/> 
+    <edge id="e89" directed="true" source="10" target="13"/> 
+    <edge id="e90" directed="true" source="10" target="15"/> 
+    <edge id="e91" directed="true" source="10" target="16"/> 
+    <edge id="e92" directed="true" source="10" target="17"/> 
+    <edge id="e93" directed="true" source="10" target="18"/> 
+    <edge id="e94" directed="true" source="10" target="19"/> 
+    <edge id="e95" directed="true" source="10" target="20"/> 
+    <edge id="e96" directed="true" source="11" target="1"/> 
+    <edge id="e97" directed="true" source="11" target="2"/> 
+    <edge id="e98" directed="true" source="11" target="7"/> 
+    <edge id="e99" directed="true" source="12" target="7"/> 
+    <edge id="e100" directed="true" source="12" target="21"/> 
+    <edge id="e101" directed="true" source="13" target="1"/> 
+    <edge id="e102" directed="true" source="13" target="2"/> 
+    <edge id="e103" directed="true" source="13" target="5"/> 
+    <edge id="e104" directed="true" source="13" target="9"/> 
+    <edge id="e105" directed="true" source="13" target="14"/> 
+    <edge id="e106" directed="true" source="13" target="18"/> 
+    <edge id="e107" directed="true" source="14" target="2"/> 
+    <edge id="e108" directed="true" source="14" target="7"/> 
+    <edge id="e109" directed="true" source="14" target="18"/> 
+    <edge id="e110" directed="true" source="14" target="21"/> 
+    <edge id="e111" directed="true" source="15" target="1"/> 
+    <edge id="e112" directed="true" source="15" target="2"/> 
+    <edge id="e113" directed="true" source="15" target="3"/> 
+    <edge id="e114" directed="true" source="15" target="4"/> 
+    <edge id="e115" directed="true" source="15" target="5"/> 
+    <edge id="e116" directed="true" source="15" target="6"/> 
+    <edge id="e117" directed="true" source="15" target="7"/> 
+    <edge id="e118" directed="true" source="15" target="8"/> 
+    <edge id="e119" directed="true" source="15" target="9"/> 
+    <edge id="e120" directed="true" source="15" target="10"/> 
+    <edge id="e121" directed="true" source="15" target="11"/> 
+    <edge id="e122" directed="true" source="15" target="12"/> 
+    <edge id="e123" directed="true" source="15" target="13"/> 
+    <edge id="e124" directed="true" source="15" target="14"/> 
+    <edge id="e125" directed="true" source="15" target="16"/> 
+    <edge id="e126" directed="true" source="15" target="17"/> 
+    <edge id="e127" directed="true" source="15" target="18"/> 
+    <edge id="e128" directed="true" source="15" target="19"/> 
+    <edge id="e129" directed="true" source="15" target="20"/> 
+    <edge id="e130" directed="true" source="15" target="21"/> 
+    <edge id="e131" directed="true" source="16" target="1"/> 
+    <edge id="e132" directed="true" source="16" target="2"/> 
+    <edge id="e133" directed="true" source="16" target="10"/> 
+    <edge id="e134" directed="true" source="16" target="18"/> 
+    <edge id="e135" directed="true" source="17" target="1"/> 
+    <edge id="e136" directed="true" source="17" target="2"/> 
+    <edge id="e137" directed="true" source="17" target="4"/> 
+    <edge id="e138" directed="true" source="17" target="7"/> 
+    <edge id="e139" directed="true" source="17" target="21"/> 
+    <edge id="e140" directed="true" source="18" target="1"/> 
+    <edge id="e141" directed="true" source="18" target="2"/> 
+    <edge id="e142" directed="true" source="18" target="3"/> 
+    <edge id="e143" directed="true" source="18" target="4"/> 
+    <edge id="e144" directed="true" source="18" target="5"/> 
+    <edge id="e145" directed="true" source="18" target="7"/> 
+    <edge id="e146" directed="true" source="18" target="8"/> 
+    <edge id="e147" directed="true" source="18" target="9"/> 
+    <edge id="e148" directed="true" source="18" target="10"/> 
+    <edge id="e149" directed="true" source="18" target="11"/> 
+    <edge id="e150" directed="true" source="18" target="13"/> 
+    <edge id="e151" directed="true" source="18" target="14"/> 
+    <edge id="e152" directed="true" source="18" target="15"/> 
+    <edge id="e153" directed="true" source="18" target="16"/> 
+    <edge id="e154" directed="true" source="18" target="19"/> 
+    <edge id="e155" directed="true" source="18" target="20"/> 
+    <edge id="e156" directed="true" source="18" target="21"/> 
+    <edge id="e157" directed="true" source="19" target="1"/> 
+    <edge id="e158" directed="true" source="19" target="2"/> 
+    <edge id="e159" directed="true" source="19" target="3"/> 
+    <edge id="e160" directed="true" source="19" target="5"/> 
+    <edge id="e161" directed="true" source="19" target="7"/> 
+    <edge id="e162" directed="true" source="19" target="10"/> 
+    <edge id="e163" directed="true" source="19" target="11"/> 
+    <edge id="e164" directed="true" source="19" target="14"/> 
+    <edge id="e165" directed="true" source="19" target="15"/> 
+    <edge id="e166" directed="true" source="19" target="18"/> 
+    <edge id="e167" directed="true" source="19" target="20"/> 
+    <edge id="e168" directed="true" source="20" target="1"/> 
+    <edge id="e169" directed="true" source="20" target="2"/> 
+    <edge id="e170" directed="true" source="20" target="6"/> 
+    <edge id="e171" directed="true" source="20" target="8"/> 
+    <edge id="e172" directed="true" source="20" target="11"/> 
+    <edge id="e173" directed="true" source="20" target="12"/> 
+    <edge id="e174" directed="true" source="20" target="14"/> 
+    <edge id="e175" directed="true" source="20" target="15"/> 
+    <edge id="e176" directed="true" source="20" target="16"/> 
+    <edge id="e177" directed="true" source="20" target="17"/> 
+    <edge id="e178" directed="true" source="20" target="18"/> 
+    <edge id="e179" directed="true" source="20" target="21"/> 
+    <edge id="e180" directed="true" source="21" target="2"/> 
+    <edge id="e181" directed="true" source="21" target="3"/> 
+    <edge id="e182" directed="true" source="21" target="4"/> 
+    <edge id="e183" directed="true" source="21" target="6"/> 
+    <edge id="e184" directed="true" source="21" target="7"/> 
+    <edge id="e185" directed="true" source="21" target="8"/> 
+    <edge id="e186" directed="true" source="21" target="12"/> 
+    <edge id="e187" directed="true" source="21" target="14"/> 
+    <edge id="e188" directed="true" source="21" target="17"/> 
+    <edge id="e189" directed="true" source="21" target="18"/> 
+    <edge id="e190" directed="true" source="21" target="20"/> 
+  </graph>
+</graphml>
