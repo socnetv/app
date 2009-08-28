@@ -2722,7 +2722,7 @@ float Graph::clusteringCoefficient (){
  */
 bool Graph::triadCensus(){
 	int mut=0, asy=0, nul =0;
-	int temp_mut=0, temp_asy=0, temp_nul =0;
+	int temp_mut=0, temp_asy=0, temp_nul =0, counter_021=0;
 	int ver1, ver2, ver3;
 	QString last_char;
 	 
@@ -2789,12 +2789,15 @@ bool Graph::triadCensus(){
 				else
 					nul++; 
 			
-				qDebug()<< "triad of ("<< ver1 << ","<< ver2 << ","<< ver3 << ") = ("
-								<<mut<<","<< asy<<","<<nul<<")";
-				examine_MAN_label(mut, asy, nul, last_char);
+				//qDebug()<< "triad of ("<< ver1 << ","<< ver2 << ","<< ver3 << ") = ("	<<mut<<","<< asy<<","<<nul<<")";
+				examine_MAN_label(mut, asy, nul, (*v1), (*v2),  (*v3) ) ;
+				if ( mut==0 && asy==2 && nul==1 ){
+					counter_021++;
+				}
 			} // end 3rd foreach
 		}// end 2rd foreach
 	}// end 1rd foreach
+	qDebug() << " ****** 021 COUNTER: "<< counter_021;
 	return true;
 }
 
@@ -2806,8 +2809,17 @@ bool Graph::triadCensus(){
 	and increases by one the proper frequency element 
 	inside QList::triadTypeFreqs
 */
-void Graph:: examine_MAN_label(int mut, int asy, int nul, QString last_char) {
-
+void Graph:: examine_MAN_label(int mut, int asy, int nul, 
+						Vertex* vert1, 
+						Vertex* vert2,
+						Vertex* vert3
+						) 	{
+	QString last_char;
+	QList<Vertex*> m_triad;
+	bool isDown=false, isUp=false, isCycle=false, isTrans=false;
+	bool isOutLinked=false, isInLinked=false;
+	m_triad<<vert1<<vert2<<vert3;
+	 
 	switch (mut){
 		case 0:
 				switch (asy){
@@ -2818,21 +2830,72 @@ void Graph:: examine_MAN_label(int mut, int asy, int nul, QString last_char) {
 							triadTypeFreqs[1] ++;
 							break;
 					case 2:
-							if (last_char =="D") {	//"021D"
-								triadTypeFreqs[3] ++;
-							}
-							else if (last_char =="U") {	//"021U"
-								triadTypeFreqs[3] ++;
-							}
-							else if (last_char =="C") {	//"021C"
-								triadTypeFreqs[5] ++;
+							// "021?" - find out!
+						//	qDebug() << "triad vertices: ( "<< vert1->name() << ", "<< vert2->name()<< ", "<< vert3->name()<< " ) = ("	<<mut<<","<< asy<<","<<nul<<")";
+							foreach (Vertex *source, m_triad)  {
+									//qDebug() << "  Vertex " << source->name() ;
+									isOutLinked=false; isInLinked=false;
+									
+									foreach (Vertex *target, m_triad)  	{
+										if ( source->name() == target->name() )
+												continue;
+												
+										if ( source->isLinkedTo(target->name()) ){
+											if ( isOutLinked ){
+												triadTypeFreqs[3] ++;//"021D"
+												break;
+											}
+											else if (isInLinked){
+												triadTypeFreqs[5] ++;//"021C"
+												break;
+											}
+											else{
+												isOutLinked=true;
+											}
+										}
+										else if( target->isLinkedTo(source->name()) ){
+										//	qDebug() << "    Vertex " << source->name()  << " is IN linked from " <<target->name(); 
+											if ( isInLinked ){
+												triadTypeFreqs[4] ++;//"021U"
+												break;
+											}
+											else if (isOutLinked){
+												triadTypeFreqs[5] ++;//"021C"
+												break;
+											}
+											else{
+												isInLinked=true;
+											}
+										}
+									}
 							}
 							break;
 					case 3:
-							if (last_char =="T") {	//"030T"		
-								triadTypeFreqs[8] ++;
+							qDebug() << "triad vertices: ( "<< vert1->name() << ", "<< vert2->name()<< ", "<< vert3->name()<< " ) = ("	<<mut<<","<< asy<<","<<nul<<")";
+							isTrans=false;
+							foreach (Vertex *source, m_triad)  {
+									qDebug() << "  Vertex " << source->name() ;
+											
+									isOutLinked=false; 
+									
+									foreach (Vertex *target, m_triad)  	{
+										if ( source->name() == target->name() )
+												continue;
+												
+										if ( source->isLinkedTo(target->name()) ){
+											
+											if ( isOutLinked ){
+												triadTypeFreqs[8] ++;//"030T"
+												isTrans=true;
+												break;
+											}
+											else{
+												isOutLinked=true;
+											}
+										}
+									}
 							}
-							else if (last_char =="C") {//"030C"
+							if ( ! isTrans ) {//"030C"
 								triadTypeFreqs[9] ++;
 							}
 							break;
@@ -2845,21 +2908,74 @@ void Graph:: examine_MAN_label(int mut, int asy, int nul, QString last_char) {
 							triadTypeFreqs[2] ++;
 							break;
 					case 1:
-							if (last_char =="D") {	//"111D"
-								triadTypeFreqs[6] ++;
+							isDown=false; isUp=false;
+							//qDebug() << "triad vertices: ( "<< vert1->name() << ", "<< vert2->name()<< ", "<< vert3->name()<< " ) = ("	<<mut<<","<< asy<<","<<nul<<")";
+							foreach (Vertex *source, m_triad)  {
+								//	qDebug() << "  Vertex " << source->name() ;
+											
+									isInLinked=false; 
+									
+									foreach (Vertex *target, m_triad)  	{
+										if ( source->name() == target->name() )
+												continue;
+												
+										if ( target->isLinkedTo(source->name()) ){
+											
+											if ( isInLinked ){
+												triadTypeFreqs[6] ++;//"030T"
+												isUp=true;
+												break;
+											}
+											else{
+												isInLinked=true;
+											}
+										}
+									}
 							}
-							else if (last_char =="U") {	//"111U"
+							if ( ! isUp ) {//"111U"
 								triadTypeFreqs[7] ++;
 							}
 							break;
 					case 2:
-							if (last_char =="D") {	//"120D"
-								triadTypeFreqs[11] ++;
+							isDown=false; isUp=false; isCycle=true;
+							qDebug() << "triad vertices: ( "<< vert1->name() << ", "<< vert2->name()<< ", "<< vert3->name()<< " ) = ("	<<mut<<","<< asy<<","<<nul<<")";
+
+							foreach (Vertex *source, m_triad)  {
+									//qDebug() << "  Vertex " << source->name() ;
+									isOutLinked=false; isInLinked=false;
+									
+									foreach (Vertex *target, m_triad)  	{
+										if ( source->name() == target->name() )
+												continue;
+												
+										if ( source->isLinkedTo(target->name()) ){
+											if ( isOutLinked && !isInLinked ){
+												triadTypeFreqs[11] ++;//"120D"
+												isDown=true;
+												isCycle=false;
+												break;
+											}
+											else{
+												isOutLinked=true;
+											}
+										}
+										else if( target->isLinkedTo(source->name()) ){
+										//	qDebug() << "    Vertex " << source->name()  << " is IN linked from " <<target->name(); 
+											if ( isInLinked && !isOutLinked ){
+												triadTypeFreqs[12] ++;//"120U"
+												isUp=true;
+												isCycle=false;
+												break;
+											}
+											else{
+												isInLinked=true;
+											}
+										}
+									}
+									if (isUp || isDown)
+										break;
 							}
-							else if (last_char =="U") {	//"120U"
-								triadTypeFreqs[12] ++;
-							}
-							else if (last_char =="C") {	//"120C"
+							if ( isCycle ) {	//"120C"
 								triadTypeFreqs[13] ++;
 							}
 							break;
@@ -2884,6 +3000,7 @@ void Graph:: examine_MAN_label(int mut, int asy, int nul, QString last_char) {
 				break;
 		}
 
+	
 }
 
 
