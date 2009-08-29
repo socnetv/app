@@ -3304,7 +3304,7 @@ bool Graph::saveGraphToGraphMLFormat (
 		qDebug () << " Graph::saveGraphToGraphMLFormat to file: " << fileName.toAscii();
 
 	int weight=0, source=0, target=0, edgeCount=0, m_size=1, m_labelSize;
-	QString m_color, m_labelColor;
+	QString m_color, m_labelColor, m_label;
 	bool openToken;
 	QFile f( fileName );
 	if ( !f.open( QIODevice::WriteOnly ) )  {
@@ -3379,8 +3379,26 @@ bool Graph::saveGraphToGraphMLFormat (
 		m_size = (*it)->size() ;
 		m_labelSize=(*it)->labelSize() ;
 		m_labelColor=(*it)->labelColor() ;
-		
-		outText << "      <data key=\"d0\">" << (*it)->label() <<"</data>\n";
+		m_label=(*it)->label(); 
+
+		if (m_label.contains('&') ){
+			m_label=m_label.replace('&',"&amp;");
+		}
+		if (m_label.contains('<') ){
+			m_label=m_label.replace('<',"&lt;");
+		}
+		if (m_label.contains('>') ){
+			m_label=m_label.replace('>',"&gt;");
+		}
+		if (m_label.contains('\"') ){
+			m_label=m_label.replace('\"',"&quot;");
+		}
+		if (m_label.contains('\'') ){
+			m_label=m_label.replace('\'',"&apos;");
+		}
+
+
+		outText << "      <data key=\"d0\">" << m_label <<"</data>\n";
 
 		qDebug()<<" 		... Coordinates x " << (*it)->x()<< " "<<maxWidth
 										<<" y " << (*it)->y()<< " "<<maxHeight;

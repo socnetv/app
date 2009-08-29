@@ -810,11 +810,12 @@ void Parser::readGraphMLElementGraph(QXmlStreamReader &xml){
 // this method is needed because the QXmlStreamReader::hasAttribute
 // has been implemented in Qt 4.5. Therefore we need this ugly hack to 
 // be able to compile SocNetV in all previous Qt4 version. :(
+//FIXME: This will be obsolete soon
 bool Parser::xmlStreamHasAttribute( QXmlStreamAttributes &xmlStreamAttr, QString str) const
 {
 	int size = xmlStreamAttr.size();
 	for (register int  i = 0 ; i < size ; i++) {
-		qDebug() << xmlStreamAttr.at(i).name().toString() << endl;
+		qDebug() << "		xmlStreamHasAttribute(): " << xmlStreamAttr.at(i).name().toString() << endl;
 		if ( xmlStreamAttr.at(i).name() == str) 
 			return true;
 	}
@@ -988,6 +989,7 @@ void Parser::readGraphMLElementData (QXmlStreamReader &xml){
 	QXmlStreamAttributes xmlStreamAttr = xml.attributes();
 	key_id = xmlStreamAttr.value("key").toString();
 	key_value=xml.text().toString();
+	qDebug()<< "   Parser: readGraphMLElementData(): key_id: " <<  key_id <<  " key_value "<< key_value;
 	if (key_value.trimmed() == "") 
 	{
 		qDebug()<< "   Parser: readGraphMLElementData(): text: " << key_value;
