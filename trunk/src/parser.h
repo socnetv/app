@@ -52,6 +52,7 @@ public:
 	int loadGML();
 	int loadGW();
 	int loadDL();
+	int loadList();
 
 	void dotProperties(QString str, float &, QString &label, QString &shape, QString &color, QString &fontName, QString &fontColor );
 	void readGraphML (QXmlStreamReader &);
