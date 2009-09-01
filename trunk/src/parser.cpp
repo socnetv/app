@@ -581,8 +581,8 @@ int Parser::loadAdjacency(){
 	edgeWeight=1.0;
 	bool intOK=FALSE;
 
-
-	while ( i < 10 &&  !ts.atEnd() )   {
+	i=1;
+	while ( i < 11 &&  !ts.atEnd() )   {
 		str= ts.readLine() ;
 		str=str.simplified();  			
 
@@ -605,7 +605,7 @@ int Parser::loadAdjacency(){
 
 		newCount = (str.split(" ")).count();
 		qDebug() << str;
-		qDebug() << "newCount "<<newCount;		
+		qDebug() << "newCount "<<newCount << " i " << i;		
 		if  ( (newCount != lastCount && i>0 ) || (newCount < i) ) {
 			// line element count differ, therefore this can't be an adjacency matrix
 			qDebug()<< "*** Parser:loadAdjacency(): Not an Adjacency-formatted file. Aborting!!";
@@ -1904,7 +1904,7 @@ int Parser::loadList(){
 		0 means no file, 1 means Pajek, 2 means Adjacency etc	
 	**/
 	emit fileType(7, networkName, aNodes, totalLinks, undirected);
-	qDebug() << "Parser-loadList()";
+	qDebug() << "Parser-loadList() ending and returning...";
 	return 1;
 	
 }
