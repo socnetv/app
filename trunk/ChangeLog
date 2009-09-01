@@ -8,6 +8,7 @@ Version 0.80 - September 30  2009  (PROJECTED)
 Codename: "supersyntages.gr"
 ----------------------------
 - New statistic: Triad Census.
+- Read support for list file.
 - Much improved Dot format support. 
 - Added keyboard shortcuts for Centralities
 - Fixed bug #416965: Not displaying nodes when loading GraphViz files
@@ -18,7 +19,7 @@ Codename: "supersyntages.gr"
 - Fixed bug #420708 on GraphML output files, not transforming special XML characters, like &, to ampersand codes, like &amp;  
 - Fixed bug #418550: Clear selection when clicking on empty canvas.
 - Edited .spec to enable proper Fedora package creation.
-- Changed ProgressBar behaviour: bars appear only if nodes are more than 300
+- Changed ProgressBar behaviour: bars appear only if nodes are more than 300 or edges more than 1000.
 - New feature: the embedded text editor can be used to copy/paste directly network data
 - Updated user manual.
 
