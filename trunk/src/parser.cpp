@@ -604,7 +604,8 @@ int Parser::loadAdjacency(){
 		}
 
 		newCount = (str.split(" ")).count();
-		
+		qDebug() << str;
+		qDebug() << "newCount "<<newCount;		
 		if  ( (newCount != lastCount && i>0 ) || (newCount < i) ) {
 			// line element count differ, therefore this can't be an adjacency matrix
 			qDebug()<< "*** Parser:loadAdjacency(): Not an Adjacency-formatted file. Aborting!!";
@@ -1726,11 +1727,10 @@ int Parser::loadList(){
 	QStringList lineElement;
 	int i=0, j=0, num=0, source=0, target=0, newCount=0, lastCount=0, maxNodeCreated=0;
 	
-	bool hasVariableLineLength=false, intOK=false;
+	bool lineHasEqualAmountElements=true, intOK=false;
 	
 	edgeWeight=1.0;
-	
-	
+
 	while ( i < 10 &&  !ts.atEnd() )   {
 		str= ts.readLine() ;
 		str=str.simplified();  			
@@ -1741,7 +1741,7 @@ int Parser::loadList(){
 		newCount = (str.split(" ")).count();
 		
 		if (newCount != lastCount && i>0 ) {
-			hasVariableLineLength=true;	
+			lineHasEqualAmountElements=false;	
 			//element count differ, i.e each line has a different number edges
 			// 1 2 6
 			// 2 3 4 5
@@ -1753,19 +1753,20 @@ int Parser::loadList(){
 		i++;
 	}
 		
-	if (hasVariableLineLength) {
-		qDebug() << "Parser: loadList()" << " variable line length";		
+	if (lineHasEqualAmountElements) {
+		qDebug() << "Parser: loadList()" << " line Has Equal Amount of Elements";		
 	}
 	else
-		qDebug() << "Parser: loadList()" << " same line length"; 
+		qDebug() << "Parser: loadList()" << " line With Different Amount of Elements"; 
 		
 	ts.reset();
 	i=0;
+	maxNodeCreated = 0;
 	
 	while ( !ts.atEnd() )   {
 		str= ts.readLine() ;
 		qDebug()<< " str " << str;
-		str=str.simplified();  // transforms "/t", "  ", etc to plain " ".
+		str=str.simplified();  
 			
 		if ( isComment(str) ) 
 			continue; 
@@ -1785,26 +1786,30 @@ int Parser::loadList(){
 		}
 
 		lineElement=str.split(" ");
-		if ( hasVariableLineLength ) {
+
+		if ( !lineHasEqualAmountElements ) {
+			qDebug () << " Parser::loadList() - file lines have different amount of elements...";
 			i=0;
 			for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
 				num = (*it1).toInt(&intOK); 
 				if (!intOK ||  num != 0 ) {
-					qDebug()<< "loadList ERROR! Stumbled upon a zero or an error occured during a string conversion to integer...";
+					qDebug()<< "Error! Stumbled upon a zero or an error occured during a string conversion to integer...";
+					file.close();
+					return -1;
 				}
 
 				if (i==0){
 					source = num;
-					qDebug() << "Parser-loadList(): source node " << source;
+					qDebug() << "	source node: " << source;
 				}
 				else {
 					target = num;
-					qDebug() << "Parser-loadList(): target node " << target;
+					qDebug() << "	target node: " << target;
 				}
 
 				randX=rand()%gwWidth;
 				randY=rand()%gwHeight;
-				qDebug()<<"Parser-loadList(): random coords "<<randX << " "<< randY;
+				qDebug()<<"		random coords "<<randX << " "<< randY;
 
 				if (maxNodeCreated < num ) {
 					for ( j = maxNodeCreated ; j != num ; j++ ) {
@@ -1819,21 +1824,77 @@ int Parser::loadList(){
 				}
 
 				if ( i != 0) {
-					qDebug("Parser-loadList(): there is a link here");
+					qDebug("	there is a link here");
 					undirected=false;
 					arrows=true;
 					bezier=false;
 					emit createEdge(source, target, initEdgeWeight, initEdgeColor, undirected, arrows, bezier);
 					totalLinks++;
 		
-					qDebug("Link from Node i=%i to j=%i . TotalLinks= %i ", source, target, totalLinks);
+					qDebug("	Link from Node i=%i to j=%i . TotalLinks= %i ", source, target, totalLinks);
 				}
 				i++;
 			}
 		}
-		else if ( !hasVariableLineLength && lastCount == 3 ) {
-			qDebug () << " Parser::loadList() - a list file with weighted edges is here...";   
-			
+		else if ( lineHasEqualAmountElements ) {
+			qDebug () << "Parser::loadList() - file lines have equal amount of elements...";			
+			source =  (lineElement[0]).toInt(&intOK);
+			target =  (lineElement[1]).toInt(&intOK);
+			qDebug() << "	source node " << source;
+			qDebug() << "	target node " << target;
+
+			if  ( lastCount == 3 ){
+				edgeWeight=(lineElement[2]).toDouble(&intOK);
+				if (!intOK)	
+					edgeWeight=1.0;
+				qDebug () << "	list file declares edge weight: " << edgeWeight;
+			}
+			else if ( lastCount == 2 ) {
+				edgeWeight=1.0;
+				qDebug () << "	list file NOT declaring edge weight. Setting default: " << edgeWeight;
+			}
+			else {
+				qDebug () << "Error. This is not a source-target-weight file. Aborting. ";
+				file.close();
+				return -1;
+			}
+
+			randX=rand()%gwWidth;
+			randY=rand()%gwHeight;
+			qDebug()<<"		random coords "<<randX << " "<< randY;
+
+			if (maxNodeCreated < source ) {
+					for ( j = maxNodeCreated ; j != source ; j++ ) {
+						emit createNode( j+1, initNodeSize,  initNodeColor, 
+								initNodeNumberColor, initNodeNumberSize, 				
+								QString::number(j+1), initNodeLabelColor, initNodeLabelSize, 
+								QPointF(randX, randY), 
+								initNodeShape
+								);
+					}
+					maxNodeCreated = source ;
+			}
+
+			if (maxNodeCreated < target ) {
+					for ( j = maxNodeCreated ; j != target; j++ ) {
+						emit createNode( j+1, initNodeSize,  initNodeColor, 
+								initNodeNumberColor, initNodeNumberSize, 				
+								QString::number(j+1), initNodeLabelColor, initNodeLabelSize, 
+								QPointF(randX, randY), 
+								initNodeShape
+								);
+					}
+					maxNodeCreated = target ;
+			}
+
+
+			qDebug("Parser-loadList(): Creating link now... ");
+			undirected=false;
+			arrows=true;
+			bezier=false;
+			emit createEdge(source, target, edgeWeight, initEdgeColor, undirected, arrows, bezier);
+			totalLinks++;
+			qDebug("	...Link from node i=%i to j=%i . TotalLinks= %i ", source, target, totalLinks);
 		}
 
 	} //end ts.stream while here
