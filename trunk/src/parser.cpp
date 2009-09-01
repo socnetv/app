@@ -577,17 +577,18 @@ int Parser::loadAdjacency(){
 	networkName="";
 	QString str;
 	QStringList lineElement;
-	int i=0, j=0,  aNodes=0;
+	int i=0, j=0,  aNodes=0, newCount=0, lastCount=0;
 	edgeWeight=1.0;
 	bool intOK=FALSE;
 
-	while ( !ts.atEnd() )   {
+
+	while ( i < 10 &&  !ts.atEnd() )   {
 		str= ts.readLine() ;
-		str=str.simplified();  // transforms "/t", "  ", etc to plain " ".
-			
+		str=str.simplified();  			
+
 		if ( isComment(str) ) 
-			continue; 
-			
+			continue;
+
 		if ( str.contains("vertices",Qt::CaseInsensitive) 
 			|| str.contains("network",Qt::CaseInsensitive) 
 			|| str.contains("graph",Qt::CaseInsensitive)  
@@ -601,6 +602,31 @@ int Parser::loadAdjacency(){
 			file.close();		
  		 	return -1;    
 		}
+
+		newCount = (str.split(" ")).count();
+		
+		if  ( (newCount != lastCount && i>0 ) || (newCount < i) ) {
+			// line element count differ, therefore this can't be an adjacency matrix
+			qDebug()<< "*** Parser:loadAdjacency(): Not an Adjacency-formatted file. Aborting!!";
+			file.close();		
+ 		 	return -1;    
+		}
+
+		lastCount=newCount;
+			
+		i++;
+	}
+		
+	ts.reset();
+	i=0;
+
+
+	while ( !ts.atEnd() )   {
+		str= ts.readLine() ;
+		str=str.simplified();  // transforms "/t", "  ", etc to plain " ".
+			
+		if ( isComment(str) ) 
+			continue; 
 
 		lineElement=str.split(" ");
 		if (i == 0 ) {
@@ -689,11 +715,20 @@ int Parser::loadGraphML(){
 			}
 			else {	//not a GraphML doc, return -1.
 				xml->raiseError(QObject::tr(" loadGraphML(): The file is not an GraphML version 1.0 file."));
-				qDebug()<< "*** loadGraphML(): Error in startElement  ";
+				qDebug()<< "*** loadGraphML(): Error in startElement - The file is not an GraphML version 1.0 file ";
+				file.close();
  				return -1;
 			}
 		}
+		else if  ( xml->tokenString() == "Invalid" ){
+			xml->raiseError(QObject::tr(" loadGraphML(): The file is not an GraphML version 1.0 file."));
+			qDebug()<< "*** loadGraphML(): Error in startElement - The file is not an GraphML version 1.0 file ";
+			file.close();
+			return -1;
+		}
 	}
+
+
 	emit fileType(4, networkName, aNodes, totalLinks, undirected);
 	//clear our mess - remove every hash element...
 	keyFor.clear();
@@ -1295,7 +1330,8 @@ int Parser::loadGML(){
 
 
 	}
-	emit fileType(5, networkName, aNodes, totalLinks, undirected);
+	emit fileType(6, networkName, aNodes, totalLinks, undirected);
+	qDebug() << "Parser-loadGML()";
 	return 1;
 }
 
@@ -1680,7 +1716,7 @@ void Parser::dotProperties(QString str, float &nValue, QString &label, QString &
 
 
 int Parser::loadList(){
-	qDebug("\n\nParser: loadList()");
+	qDebug() << "Parser: loadList()";
 	QFile file ( fileName );
 	if ( ! file.open(QIODevice::ReadOnly )) 
 		return -1;
@@ -1688,11 +1724,13 @@ int Parser::loadList(){
 	networkName="";
 	QString str;
 	QStringList lineElement;
-	int i=0, j=0,  aNodes=0, newCount=0, lastCount=0;
+	int i=0, j=0, num=0, source=0, target=0, newCount=0, lastCount=0, maxNodeCreated=0;
+	
+	bool hasVariableLineLength=false, intOK=false;
+	
 	edgeWeight=1.0;
-	bool intOK=FALSE;
-
-
+	
+	
 	while ( i < 10 &&  !ts.atEnd() )   {
 		str= ts.readLine() ;
 		str=str.simplified();  			
@@ -1702,30 +1740,31 @@ int Parser::loadList(){
 
 		newCount = (str.split(" ")).count();
 		
-		if (newCount != lastCount ) {
-			isListOfArcs=false;		//element count differ, i.e each line has a different number edges
+		if (newCount != lastCount && i>0 ) {
+			hasVariableLineLength=true;	
+			//element count differ, i.e each line has a different number edges
+			// 1 2 6
+			// 2 3 4 5
+			// 3 1 2 4 6
 		}
-		else 
-			isListOfArcs=true;		//element count is same: 1 2 
-			
-		lastCount=(str.split(" ")).count();
-			
-		if (i==0){
-			firstCount=(str.split(" ")).count();	
-		}
-		else if (i==1){
-			secondCount=(str.split(" ")).count();
-			
-			break;
-		}
+		
+		lastCount=newCount;
 			
 		i++;
 	}
-	
+		
+	if (hasVariableLineLength) {
+		qDebug() << "Parser: loadList()" << " variable line length";		
+	}
+	else
+		qDebug() << "Parser: loadList()" << " same line length"; 
+		
 	ts.reset();
+	i=0;
 	
 	while ( !ts.atEnd() )   {
 		str= ts.readLine() ;
+		qDebug()<< " str " << str;
 		str=str.simplified();  // transforms "/t", "  ", etc to plain " ".
 			
 		if ( isComment(str) ) 
@@ -1740,57 +1779,71 @@ int Parser::loadList(){
 			|| str.contains("graphml",Qt::CaseInsensitive) 
 			|| str.contains("xml",Qt::CaseInsensitive)  
 			) {
-			qDebug()<< "*** Parser:loadAdjacency(): Not an Adjacency-formatted file. Aborting!!";
+			qDebug()<< "*** Parser:loadList(): Not an Adjacency-formatted file. Aborting!!";
 			file.close();		
  		 	return -1;    
 		}
 
 		lineElement=str.split(" ");
-		if (i == 0 ) {
-			aNodes=lineElement.count();
-			qDebug("Parser-loadList(): There are %i nodes in this file", aNodes);		
-			for (j=0; j<aNodes; j++) {
-				qDebug("Parser-loadList(): Calling createNode() for node %i", j+1);
+		if ( hasVariableLineLength ) {
+			i=0;
+			for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
+				num = (*it1).toInt(&intOK); 
+				if (!intOK ||  num != 0 ) {
+					qDebug()<< "loadList ERROR! Stumbled upon a zero or an error occured during a string conversion to integer...";
+				}
+
+				if (i==0){
+					source = num;
+					qDebug() << "Parser-loadList(): source node " << source;
+				}
+				else {
+					target = num;
+					qDebug() << "Parser-loadList(): target node " << target;
+				}
+
 				randX=rand()%gwWidth;
 				randY=rand()%gwHeight;
-				qDebug()<<"Parser-loadAdjacency(): no coords. Using random "<<randX << randY;
+				qDebug()<<"Parser-loadList(): random coords "<<randX << " "<< randY;
 
-				emit createNode( j+1,initNodeSize,  initNodeColor, 
+				if (maxNodeCreated < num ) {
+					for ( j = maxNodeCreated ; j != num ; j++ ) {
+						emit createNode( j+1, initNodeSize,  initNodeColor, 
 								initNodeNumberColor, initNodeNumberSize, 				
 								QString::number(j+1), initNodeLabelColor, initNodeLabelSize, 
 								QPointF(randX, randY), 
 								initNodeShape
 								);
+					}
+					maxNodeCreated = num ;
+				}
+
+				if ( i != 0) {
+					qDebug("Parser-loadList(): there is a link here");
+					undirected=false;
+					arrows=true;
+					bezier=false;
+					emit createEdge(source, target, initEdgeWeight, initEdgeColor, undirected, arrows, bezier);
+					totalLinks++;
+		
+					qDebug("Link from Node i=%i to j=%i . TotalLinks= %i ", source, target, totalLinks);
+				}
+				i++;
 			}
 		}
-		qDebug("Parser-loadAdjacency(): Finished creating new nodes");
-		if ( aNodes != (int) lineElement.count() ) return -1;	
-		j=0;
-		qDebug("Parser-loadAdjacency(): Starting creating links");		
-		for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
-			if ( (*it1)!="0"){
-				qDebug("Parser-loadAdjacency(): there is a link here");
-				edgeWeight =(*it1).toFloat(&intOK);
-				undirected=false;
-				arrows=true;
-				bezier=false;
-				emit createEdge(i+1, j+1, edgeWeight, initEdgeColor, undirected, arrows, bezier);
-				totalLinks++;
-
-				qDebug("Link from Node i=%i to j=%i", i+1, j+1);
-				qDebug("TotalLinks= %i", totalLinks);
-			}
-
-			j++;
+		else if ( !hasVariableLineLength && lastCount == 3 ) {
+			qDebug () << " Parser::loadList() - a list file with weighted edges is here...";   
+			
 		}
-		i++;
-	}
+
+	} //end ts.stream while here
 	file.close();
 
 	/** 
 		0 means no file, 1 means Pajek, 2 means Adjacency etc	
 	**/
-	emit fileType(2, networkName, aNodes, totalLinks, undirected);
+	emit fileType(7, networkName, aNodes, totalLinks, undirected);
+	qDebug() << "Parser-loadList()";
 	return 1;
 	
 }
@@ -1809,16 +1862,16 @@ void Parser::run()  {
 		qDebug("Parser: this is an adjacency-matrix network");
 	}
 	else if (loadDot()==1 ) {
-		qDebug("Parser: this is an GraphViz (dot) network");
+		qDebug("Parser: this is a GraphViz (dot) network");
 	}    
 	else if (loadGraphML()==1){
-		qDebug("Parser: this is an GraphML network");
+		qDebug("Parser: this is a GraphML network");
 	}
 	else if (loadGML()==1){
-		qDebug("Parser: this is an GML (gml) network");
+		qDebug("Parser: this is a GML (gml) network");
 	}
 	else if (loadDL()==1){
-		qDebug("Parser: this is an DL formatted (.dl) network");
+		qDebug("Parser: this is a DL formatted (.dl) network");
 	}
 	else if (loadList()==1){
 		qDebug("Parser: this is an list formatted (.list) network");

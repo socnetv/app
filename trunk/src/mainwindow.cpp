@@ -1983,6 +1983,25 @@ void MainWindow::fileType (
 			networkModified=false;
 			statusMessage( QString(tr("DL-formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
 			break;
+		case 6:
+			pajekFileLoaded=false;
+			adjacencyFileLoaded=false;
+			dotFileLoaded=false;
+			graphMLFileLoaded=false;
+			fileLoaded=true;
+			networkModified=false;
+			statusMessage( QString(tr("GML-formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
+			break;
+		case 7:
+			pajekFileLoaded=false;
+			adjacencyFileLoaded=false;
+			dotFileLoaded=false;
+			graphMLFileLoaded=false;
+			fileLoaded=true;
+			networkModified=false;
+			statusMessage( QString(tr("List-formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
+			break;
+
 		default: // just for sanity
 			pajekFileLoaded=false;
 			adjacencyFileLoaded=false;
@@ -5488,7 +5507,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Sat Aug 29 20:04:40 EEST 2009";
+QString BUILD="Tue Sep  1 18:27:31 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"
