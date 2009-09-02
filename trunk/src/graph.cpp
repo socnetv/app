@@ -80,6 +80,11 @@ Graph::Graph() {
 		this, SLOT (removeDummyNode(int)) 
 		);
 		
+	connect (
+		&parser, SIGNAL(), 
+		this, SLOT( ) 
+		);
+
 	connect (	
 			&crawler, SIGNAL( createNode (QString, int) ), 
 			this, SLOT(createVertex(QString, int ) ) 

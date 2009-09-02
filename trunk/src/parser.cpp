@@ -1795,7 +1795,7 @@ int Parser::loadList(){
 			i=0;
 			for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
 				num = (*it1).toInt(&intOK); 
-				if (!intOK ||  num != 0 ) {
+				if ( !intOK ||  num == 0 ) {
 					qDebug()<< "Error! Stumbled upon a zero or an error occured during a string conversion to integer...";
 					file.close();
 					return -1;
@@ -1810,12 +1810,12 @@ int Parser::loadList(){
 					qDebug() << "	target node: " << target;
 				}
 
-				randX=rand()%gwWidth;
-				randY=rand()%gwHeight;
-				qDebug()<<"		random coords "<<randX << " "<< randY;
 
 				if (maxNodeCreated < num ) {
 					for ( j = maxNodeCreated ; j != num ; j++ ) {
+						randX=rand()%gwWidth;
+						randY=rand()%gwHeight;
+						qDebug()<<"		random coords "<<randX << " "<< randY;
 						emit createNode( j+1, initNodeSize,  initNodeColor, 
 								initNodeNumberColor, initNodeNumberSize, 				
 								QString::number(j+1), initNodeLabelColor, initNodeLabelSize, 
@@ -1834,7 +1834,7 @@ int Parser::loadList(){
 					emit createEdge(source, target, initEdgeWeight, initEdgeColor, undirected, arrows, bezier);
 					totalLinks++;
 		
-					qDebug("	Link from Node i=%i to j=%i . TotalLinks= %i ", source, target, totalLinks);
+					qDebug("	link from Node i=%i to j=%i . TotalLinks= %i ", source, target, totalLinks);
 				}
 				i++;
 			}
