@@ -606,7 +606,7 @@ int Parser::loadAdjacency(){
 		newCount = (str.split(" ")).count();
 		qDebug() << str;
 		qDebug() << "newCount "<<newCount << " i " << i;		
-		if  ( (newCount != lastCount && i>0 ) || (newCount < i) ) {
+		if  ( (newCount != lastCount && i>1 ) || (newCount < i) ) {
 			// line element count differ, therefore this can't be an adjacency matrix
 			qDebug()<< "*** Parser:loadAdjacency(): Not an Adjacency-formatted file. Aborting!!";
 			file.close();		
@@ -619,6 +619,7 @@ int Parser::loadAdjacency(){
 	}
 		
 	ts.reset();
+	ts.seek(0);
 	i=0;
 
 
@@ -1753,13 +1754,15 @@ int Parser::loadList(){
 		i++;
 	}
 		
-	if (lineHasEqualAmountElements) {
+	if ( lineHasEqualAmountElements ) {
 		qDebug() << "Parser: loadList()" << " line Has Equal Amount of Elements";		
 	}
-	else
-		qDebug() << "Parser: loadList()" << " line With Different Amount of Elements"; 
+	else {
+		qDebug() << "Parser: loadList()" << " line With Different Amount of Elements";
+	}
 		
 	ts.reset();
+	ts.seek(0);
 	i=0;
 	maxNodeCreated = 0;
 	
@@ -1859,12 +1862,12 @@ int Parser::loadList(){
 				return -1;
 			}
 
-			randX=rand()%gwWidth;
-			randY=rand()%gwHeight;
-			qDebug()<<"		random coords "<<randX << " "<< randY;
-
 			if (maxNodeCreated < source ) {
 					for ( j = maxNodeCreated ; j != source ; j++ ) {
+						qDebug()<< "	source node " << source << "is smaller than maxNodeCreated - we need to create node "<< j+1;
+						randX=rand()%gwWidth;
+						randY=rand()%gwHeight;
+						qDebug()<<"	using random coords "<<randX << " "<< randY;
 						emit createNode( j+1, initNodeSize,  initNodeColor, 
 								initNodeNumberColor, initNodeNumberSize, 				
 								QString::number(j+1), initNodeLabelColor, initNodeLabelSize, 
@@ -1877,6 +1880,10 @@ int Parser::loadList(){
 
 			if (maxNodeCreated < target ) {
 					for ( j = maxNodeCreated ; j != target; j++ ) {
+						qDebug()<< "	target node " << target << "	is smaller than maxNodeCreated - creating node "<< j+1;
+						randX=rand()%gwWidth;
+						randY=rand()%gwHeight;
+						qDebug()<<"	using random coords "<<randX << " "<< randY;
 						emit createNode( j+1, initNodeSize,  initNodeColor, 
 								initNodeNumberColor, initNodeNumberSize, 				
 								QString::number(j+1), initNodeLabelColor, initNodeLabelSize, 
@@ -1887,14 +1894,13 @@ int Parser::loadList(){
 					maxNodeCreated = target ;
 			}
 
-
 			qDebug("Parser-loadList(): Creating link now... ");
 			undirected=false;
 			arrows=true;
 			bezier=false;
 			emit createEdge(source, target, edgeWeight, initEdgeColor, undirected, arrows, bezier);
 			totalLinks++;
-			qDebug("	...Link from node i=%i to j=%i . TotalLinks= %i ", source, target, totalLinks);
+			qDebug("	link from node i=%i to j=%i . TotalLinks= %i ", source, target, totalLinks);
 		}
 
 	} //end ts.stream while here
