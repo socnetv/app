@@ -1753,7 +1753,11 @@ int Parser::loadList(){
 			
 		i++;
 	}
-		
+	
+	if (lastCount == 3 && lineHasEqualAmountElements ){
+		emit askWhatIsTheThirdElement();
+	}
+
 	if ( lineHasEqualAmountElements ) {
 		qDebug() << "Parser: loadList()" << " line Has Equal Amount of Elements";		
 	}
