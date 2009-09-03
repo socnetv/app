@@ -44,7 +44,7 @@ class Parser :  public QThread {
 	Q_OBJECT
 public:
 	
-	void load(QString fn, int iNS, QString iNC, QString iNSh, QString iNNC, int iNNS, QString iNLC, int iNLS , QString iEC, int w, int h);
+	void load(QString fn, int iNS, QString iNC, QString iNSh, QString iNNC, int iNNS, QString iNLC, int iNLS , QString iEC, int w, int h, int isListWithWeights);
 	int loadPajek();
 	int loadAdjacency();
 	int loadDot();
@@ -94,7 +94,7 @@ private:
 	QString nodeColor, edgeColor, edgeType, nodeShape, nodeLabel, edgeLabel, nodeNumberColor, nodeLabelColor;
 	  
 	int gwWidth, gwHeight;
-	int totalLinks, aNodes;
+	int totalLinks, aNodes, isListWithWeights;
 	int initNodeSize,  initNodeNumberSize, nodeNumberSize, initNodeLabelSize, nodeLabelSize, source, target, nodeSize;
 	float initEdgeWeight, edgeWeight, arrowSize;
 	float bez_p1_x,bez_p1_y, bez_p2_x, bez_p2_y;

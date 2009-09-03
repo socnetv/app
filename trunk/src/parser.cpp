@@ -37,7 +37,13 @@
 #include <list>
 #include "graph.h"	//needed for setParent
 
-void Parser::load(QString fn, int iNS, QString iNC, QString iNSh, QString iNNC, int iNNS, QString iNLC, int iNLS , QString iEC, int width, int height)
+void Parser::load(QString fn, int iNS, QString iNC, QString iNSh, 
+					QString iNNC, int iNNS, 
+					QString iNLC, int iNLS , 
+					QString iEC, 
+					int width, int height,
+					int listWithWeights
+					)
 {
 	qDebug("Parser: load()");
 	initNodeSize=iNS;
@@ -57,6 +63,7 @@ void Parser::load(QString fn, int iNS, QString iNC, QString iNSh, QString iNNC, 
 	gwHeight=height;
 	randX=0;
 	randY=0;
+	isListWithWeights = listWithWeights;
 	qDebug("Parser: calling start() to start a new QThread!");
 	if (!isRunning()) 
 		start(QThread::NormalPriority);
@@ -68,6 +75,9 @@ void Parser::load(QString fn, int iNS, QString iNC, QString iNSh, QString iNNC, 
 	Tries to load a file as DL-formatted network. If not it returns -1
 */
 int Parser::loadDL(){
+	if ( isListWithWeights != -1 ) 
+		return -1;
+
 	qDebug ("\n\nParser: loadDL");
 	QFile file ( fileName );
 	if ( ! file.open(QIODevice::ReadOnly )) return -1;
@@ -175,6 +185,9 @@ int Parser::loadDL(){
 	Tries to load the file as Pajek-formatted network. If not it returns -1
 */
 int Parser::loadPajek(){
+	if ( isListWithWeights != -1 ) 
+		return -1;
+
 	qDebug ("\n\nParser: loadPajek");
 	QFile file ( fileName );
 	if ( ! file.open(QIODevice::ReadOnly )) return -1;
@@ -214,7 +227,7 @@ int Parser::loadPajek(){
 				|| str.contains("DL",Qt::CaseInsensitive) 
 				|| str.contains("list",Qt::CaseInsensitive)
 				|| str.contains("graphml",Qt::CaseInsensitive) 
-				|| str.contains("xml",Qt::CaseInsensitive)  
+				|| str.contains("xml",Qt::CaseInsensitive)
 				) {
 				qDebug()<< "*** Parser:loadPajeck(): Not an Pajek-formatted file. Aborting!!";
 				file.close();		
@@ -570,6 +583,9 @@ int Parser::loadPajek(){
 	Tries to load the file as adjacency sociomatrix-formatted. If not it returns -1
 */
 int Parser::loadAdjacency(){
+	if ( isListWithWeights != -1 ) 
+		return -1;
+
 	qDebug("\n\nParser: loadAdjacency()");
 	QFile file ( fileName );
 	if ( ! file.open(QIODevice::ReadOnly )) return -1;
@@ -689,6 +705,9 @@ int Parser::loadAdjacency(){
 	If not it returns -1
 */
 int Parser::loadGraphML(){
+	if ( isListWithWeights != -1 ) 
+		return -1;
+
 	qDebug("\n\nParser: loadGraphML()");
 	aNodes=0;
 	totalLinks=0;
@@ -1297,6 +1316,9 @@ void Parser::readGraphMLElementUnknown(QXmlStreamReader &xml) {
 	Tries to load a file as GML formatted network. If not it returns -1
 */
 int Parser::loadGML(){
+	if ( isListWithWeights != -1 ) 
+		return -1;
+
 	qDebug("\n\nParser: loadGML()");
 	QFile file ( fileName );
 	QString str, temp;
@@ -1342,6 +1364,9 @@ int Parser::loadGML(){
 	Tries to load the file as Dot (Graphviz) formatted network. If not it returns -1
 */
 int Parser::loadDot(){
+	if ( isListWithWeights != -1 ) 
+		return -1;
+
 	qDebug("\n\nParser: loadDotNetwork");
 	int fileLine=0, aNum=-1;
 	int start=0, end=0, next=0;
@@ -1726,7 +1751,7 @@ int Parser::loadList(){
 	networkName="";
 	QString str;
 	QStringList lineElement;
-	int i=0, j=0, num=0, source=0, target=0, newCount=0, lastCount=0, maxNodeCreated=0;
+	int i=0, j=0, num=0, source=0, target=0, target2=0, newCount=0, lastCount=0, maxNodeCreated=0;
 	
 	bool lineHasEqualAmountElements=true, intOK=false;
 	
@@ -1753,9 +1778,12 @@ int Parser::loadList(){
 			
 		i++;
 	}
-	
-	if (lastCount == 3 && lineHasEqualAmountElements ){
+
+	if ( isListWithWeights == -1 && lastCount == 3 && lineHasEqualAmountElements ){
 		emit askWhatIsTheThirdElement();
+		qDebug() << "Parser: loadList()" << " eac line Has 3 Elements. Terminating to ask what the third element is...";	
+		file.close();		
+	 	return -1;    
 	}
 
 	if ( lineHasEqualAmountElements ) {
@@ -1770,6 +1798,10 @@ int Parser::loadList(){
 	i=0;
 	maxNodeCreated = 0;
 	
+	undirected=false;
+	arrows=true;
+	bezier=false;
+
 	while ( !ts.atEnd() )   {
 		str= ts.readLine() ;
 		qDebug()<< " str " << str;
@@ -1832,9 +1864,6 @@ int Parser::loadList(){
 
 				if ( i != 0) {
 					qDebug("	there is a link here");
-					undirected=false;
-					arrows=true;
-					bezier=false;
 					emit createEdge(source, target, initEdgeWeight, initEdgeColor, undirected, arrows, bezier);
 					totalLinks++;
 		
@@ -1847,23 +1876,27 @@ int Parser::loadList(){
 			qDebug () << "Parser::loadList() - file lines have equal amount of elements...";			
 			source =  (lineElement[0]).toInt(&intOK);
 			target =  (lineElement[1]).toInt(&intOK);
+			
 			qDebug() << "	source node " << source;
 			qDebug() << "	target node " << target;
 
 			if  ( lastCount == 3 ){
-				edgeWeight=(lineElement[2]).toDouble(&intOK);
-				if (!intOK)	
+				if ( isListWithWeights == 1 ) {
+					edgeWeight=(lineElement[2]).toDouble(&intOK);
+					if (!intOK)	
+						edgeWeight=1.0;
+					qDebug () << "	list file declares edge weight: " << edgeWeight;
+				}
+				else if (isListWithWeights==0){
+					target2 =  (lineElement[2]).toInt(&intOK);
+					qDebug () << "	list file declares second target node: " << target2;
 					edgeWeight=1.0;
-				qDebug () << "	list file declares edge weight: " << edgeWeight;
-			}
-			else if ( lastCount == 2 ) {
-				edgeWeight=1.0;
-				qDebug () << "	list file NOT declaring edge weight. Setting default: " << edgeWeight;
+					qDebug () << "	using default edge weight: " << edgeWeight;
+				}
 			}
 			else {
-				qDebug () << "Error. This is not a source-target-weight file. Aborting. ";
-				file.close();
-				return -1;
+				edgeWeight=1.0;
+				qDebug () << "	list file NOT declaring edge weight. Setting default: " << edgeWeight;
 			}
 
 			if (maxNodeCreated < source ) {
@@ -1894,17 +1927,35 @@ int Parser::loadList(){
 								QPointF(randX, randY), 
 								initNodeShape
 								);
+						qDebug("Parser-loadList(): Creating link now... ");
+						emit createEdge(source, target, edgeWeight, initEdgeColor, undirected, arrows, bezier);
+						totalLinks++;
+						qDebug("	link from node i=%i to j=%i . TotalLinks= %i ", source, target, totalLinks);
 					}
 					maxNodeCreated = target ;
 			}
-
-			qDebug("Parser-loadList(): Creating link now... ");
-			undirected=false;
-			arrows=true;
-			bezier=false;
-			emit createEdge(source, target, edgeWeight, initEdgeColor, undirected, arrows, bezier);
-			totalLinks++;
-			qDebug("	link from node i=%i to j=%i . TotalLinks= %i ", source, target, totalLinks);
+			if ( isListWithWeights == 1 ){
+				if (maxNodeCreated < target2 ) {
+						for ( j = maxNodeCreated ; j != target2; j++ ) {
+							qDebug()<< "	target2 node " << target2 << "	is smaller than maxNodeCreated - creating node "<< j+1;
+							randX=rand()%gwWidth;
+							randY=rand()%gwHeight;
+							qDebug()<<"	using random coords "<<randX << " "<< randY;
+							emit createNode( j+1, initNodeSize,  initNodeColor, 
+									initNodeNumberColor, initNodeNumberSize, 				
+									QString::number(j+1), initNodeLabelColor, initNodeLabelSize, 
+									QPointF(randX, randY), 
+									initNodeShape
+									);
+						qDebug("Parser-loadList(): Creating link now... ");
+						emit createEdge(source, target2, edgeWeight, initEdgeColor, undirected, arrows, bezier);
+						totalLinks++;
+						qDebug("	link from node i=%i to j2=%i . TotalLinks= %i ", source, target2, totalLinks);
+						}
+						maxNodeCreated = target2 ;
+				}
+			}
+			
 		}
 
 	} //end ts.stream while here

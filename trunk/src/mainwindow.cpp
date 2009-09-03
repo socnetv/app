@@ -156,7 +156,11 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
 	connect( &activeGraph, SIGNAL( eraseNode(int) ), 
 			 graphicsWidget, SLOT(  eraseNode(int) ) );
-	
+
+	connect (
+		&activeGraph, SIGNAL(askWhatIsTheThirdElement()), 
+		this, SLOT( slotAskWhatIsTheThirdElement() ) 
+		);	
 	
 	//connect some signals/slots with MW widgets
 	connect( addNodeBt,SIGNAL(clicked()), this, SLOT( addNode() ) );
@@ -1567,7 +1571,7 @@ void MainWindow::initNet(){
 	
 	pajekFileLoaded=false;
 	adjacencyFileLoaded=false;
-
+	listWithWeightsLoaded = -1;
 	dotFileLoaded=false;
 	fileLoaded=false;
 
@@ -1728,6 +1732,37 @@ void MainWindow::slotChooseFile() {
   	}
 
 	qDebug()<<"MW: FILENAME IS NOW:" << fileName.toAscii();
+}
+
+
+void MainWindow::slotAskWhatIsTheThirdElement() {
+	listWithWeightsLoaded = -1 ;  
+	statusMessage( tr("Hmmm, this file is strange. I need some help from you! "));
+	switch( QMessageBox::information( this, "List file format",
+				tr("This file contains text formatted in a list format. \n")+
+				tr("Each line has 3 elements, i.e.\n")+
+				tr(" 1 2 3 \n \n")+
+				tr("If the first element indicates the source node 1, \n")+
+				tr("and the second element indicates the target node 2, \n")+
+				tr("then what the third element is supposed to be?\n")+
+				tr("Is it another target node 3 or the weight of the edge between the first two nodes (1-2)?\n"),
+				"Node", "Weight",0,1 ) 
+	)
+	{
+		case 0:
+			QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+			qDebug() << "MW: slotAskWhatTheThirdElementIs - a node it is!" ;
+			listWithWeightsLoaded  = 0;
+			QApplication::restoreOverrideCursor();
+ 			break;
+		case 1:
+			qDebug() << "MW: slotAskWhatIsTheThirdElement - a weight it is!" ;
+			listWithWeightsLoaded = 1;
+			break;
+	}
+
+	loadNetworkFile(fileName);
+	
 }
 
 
@@ -1914,9 +1949,10 @@ bool MainWindow::loadNetworkFile(QString m_fileName){
 										m_fileName, 
 										 displayNodeLabelsAct->isChecked(), 
 										 graphicsWidget->width(), 
-										 graphicsWidget->height() 
+										 graphicsWidget->height(),
+										 listWithWeightsLoaded
 									 );
-	qDebug("MW: OK activeGraph.loadGraph() has finished. You should be seeing nodes by now! ");
+	qDebug("MW: OK activeGraph.loadGraph() has finished. ! ");
 	QApplication::restoreOverrideCursor();
 	return loadGraphStatus;
 }
@@ -5507,7 +5543,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Wed Sep  2 21:43:18 EEST 2009";
+QString BUILD="Thu Sep  3 18:10:20 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"

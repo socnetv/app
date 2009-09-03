@@ -81,8 +81,8 @@ Graph::Graph() {
 		);
 		
 	connect (
-		&parser, SIGNAL(), 
-		this, SLOT( ) 
+		&parser, SIGNAL(askWhatIsTheThirdElement()), 
+		this, SLOT( slotAskWhatIsTheThirdElement() ) 
 		);
 
 	connect (	
@@ -3042,7 +3042,7 @@ int Graph:: factorial(int x) {
 	Our almost universal network loader. :)
 	Actually it calls the load() method of parser/qthread class.
 */
-bool Graph::loadGraph (	QString fileName,  bool iSL, int maxWidth, int maxHeight ){
+bool Graph::loadGraph (	QString fileName,  bool iSL, int maxWidth, int maxHeight, int isListWithWeights){
 	qDebug() << "Graph:: loadGraph - Calling thread";
 	initShowLabels = iSL;
 	parser.load( 
@@ -3052,7 +3052,9 @@ bool Graph::loadGraph (	QString fileName,  bool iSL, int maxWidth, int maxHeight
 				initVertexNumberColor, initVertexNumberSize,  
 				initVertexLabelColor, initVertexLabelSize, 
 				initEdgeColor, 
-				maxWidth, maxHeight);
+				maxWidth, maxHeight,
+				isListWithWeights
+				);
 
 	qDebug("See the thread? :)");
 	return true;
@@ -3731,6 +3733,12 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 	
 	}
 
+}
+
+
+
+void Graph:: slotAskWhatIsTheThirdElement(){
+	emit askWhatIsTheThirdElement();
 }
 
 Graph::~Graph() {

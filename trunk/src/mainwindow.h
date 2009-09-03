@@ -112,6 +112,7 @@ public slots:
 	//FILE MENU
 	void slotCreateNew();
 	void slotChooseFile();
+	void slotAskWhatIsTheThirdElement();
 	void slotFileSave();
 	void slotFileSaveAs();
 	void slotFileClose();
@@ -348,6 +349,7 @@ private:
 	int totalLinks, fortuneCookiesCounter,  tipsCounter;
 	//QString VERSION;
 	bool pajekFileLoaded, adjacencyFileLoaded, dotFileLoaded, graphMLFileLoaded, fileLoaded;
+	int listWithWeightsLoaded;		// -1 no list, 0 list no weights, 1 list with weights
 	bool networkModified;
 	bool bezier,  linkClicked, nodeClicked, markedNodeExists, showProgressBar, firstTime;
 	QString initLinkColor, initNumberColor,  initNodeShape, initLabelColor;
