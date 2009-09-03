@@ -1712,6 +1712,7 @@ void MainWindow::slotChooseFile() {
 		if ( loadNetworkFile ( m_fileName ) ) 
 		{
 			fileName=m_fileName;
+			previous_fileName=fileName;
 			setWindowTitle("SocNetV "+ VERSION +" - "+fileNameNoPath.last());
 			QString message=tr("Loaded network: ")+fileNameNoPath.last();
 			statusMessage( message);
@@ -1735,6 +1736,11 @@ void MainWindow::slotChooseFile() {
 }
 
 
+
+// Called from Parser via Graph when the list network contains only 3 elements...
+// 1 2 3
+// 2 3 4
+// Asks the user what the third list element is: a node or an edge weight
 void MainWindow::slotAskWhatIsTheThirdElement() {
 	listWithWeightsLoaded = -1 ;  
 	statusMessage( tr("Hmmm, this file is strange. I need some help from you! "));
@@ -1751,17 +1757,28 @@ void MainWindow::slotAskWhatIsTheThirdElement() {
 	{
 		case 0:
 			QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-			qDebug() << "MW: slotAskWhatTheThirdElementIs - a node it is!" ;
+			qDebug() << "***  MW: slotAskWhatTheThirdElementIs - a node it is! " << listWithWeightsLoaded  ;
 			listWithWeightsLoaded  = 0;
 			QApplication::restoreOverrideCursor();
  			break;
 		case 1:
-			qDebug() << "MW: slotAskWhatIsTheThirdElement - a weight it is!" ;
+			qDebug() << "*** MW: slotAskWhatIsTheThirdElement - a weight it is! "<< listWithWeightsLoaded ;
 			listWithWeightsLoaded = 1;
 			break;
 	}
 
-	loadNetworkFile(fileName);
+	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+	qDebug() << "MW: calling activeGraph::loadGraph " 
+	<< " - listWithWeights " << listWithWeightsLoaded ;
+	bool loadGraphStatus = activeGraph.loadGraph ( 
+										previous_fileName, 
+										 displayNodeLabelsAct->isChecked(), 
+										 graphicsWidget->width(), 
+										 graphicsWidget->height(),
+										 listWithWeightsLoaded
+									 );
+	qDebug("MW: OK activeGraph.loadGraph() has finished. ! ");
+	QApplication::restoreOverrideCursor();
 	
 }
 
@@ -1944,7 +1961,9 @@ bool MainWindow::loadNetworkFile(QString m_fileName){
 	initNet();
 	 
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-	qDebug("MW: calling activeGraph loadgraph gw height %i", graphicsWidget->height() ) ;
+	qDebug() << "MW: calling activeGraph::loadGraph "
+	<< " gw-height "	<< graphicsWidget->height() 
+	<< " - listWithWeights " << listWithWeightsLoaded ;
 	bool loadGraphStatus = activeGraph.loadGraph ( 
 										m_fileName, 
 										 displayNodeLabelsAct->isChecked(), 

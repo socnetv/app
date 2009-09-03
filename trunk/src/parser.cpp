@@ -1779,11 +1779,13 @@ int Parser::loadList(){
 		i++;
 	}
 
-	if ( isListWithWeights == -1 && lastCount == 3 && lineHasEqualAmountElements ){
-		emit askWhatIsTheThirdElement();
-		qDebug() << "Parser: loadList()" << " eac line Has 3 Elements. Terminating to ask what the third element is...";	
-		file.close();		
-	 	return -1;    
+	if ( isListWithWeights == -1 ) {
+		if ( lastCount == 3 && lineHasEqualAmountElements ){
+			emit askWhatIsTheThirdElement();
+			qDebug() << "Parser: loadList()" << " each line Has 3 Elements. Terminating to ask what the third element is...";	
+			file.close();		
+		 	return -1;    
+		}
 	}
 
 	if ( lineHasEqualAmountElements ) {
