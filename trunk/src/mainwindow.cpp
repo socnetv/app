@@ -225,7 +225,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
 	{
 		fileName=m_fileName;
 		fileNameNoPath=fileName.split ("/");
-		loadNetworkFile(fileName );
+		loadNetworkFile(fileName, 0 );
 	}
 
 	if (firstTime) {
@@ -1743,6 +1743,7 @@ void MainWindow::slotChooseFile() {
 	bool a_file_was_already_loaded=fileLoaded;
 	previous_fileName=fileName;
 	QString m_fileName;
+	int m_fileFormat=fileFormat;
 	
 	statusMessage( tr("Choose a network file..."));
 	m_fileName = QFileDialog::getOpenFileName( this, tr("Select one file to open"), "", 
@@ -1752,7 +1753,7 @@ void MainWindow::slotChooseFile() {
 	if (!m_fileName.isEmpty()) {
 		qDebug()<<"MW: file selected: " << m_fileName;		
 		fileNameNoPath=m_fileName.split ("/" );
-		if ( loadNetworkFile ( m_fileName ) ) 
+		if ( loadNetworkFile ( m_fileName, m_fileFormat ) ) 
 		{
 			fileName=m_fileName;
 			previous_fileName=fileName;
@@ -2056,7 +2057,7 @@ void MainWindow::slotImportList(){
  * 	Inits everything to default values.
  *  Then calls activeGraph::loadGraph to actually load the network...
  */
-bool MainWindow::loadNetworkFile(QString m_fileName ){
+bool MainWindow::loadNetworkFile(QString m_fileName, int m_fileFormat ){
 	qDebug("MW: loadNetworkFile");
 	
 	initNet();
@@ -2069,7 +2070,7 @@ bool MainWindow::loadNetworkFile(QString m_fileName ){
 										 displayNodeLabelsAct->isChecked(), 
 										 graphicsWidget->width(), 
 										 graphicsWidget->height(),
-										 fileFormat
+										 m_fileFormat
 									 );
 	qDebug("MW: OK activeGraph.loadGraph() has finished. ! ");
 	QApplication::restoreOverrideCursor();
