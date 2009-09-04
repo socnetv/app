@@ -1740,6 +1740,15 @@ void MainWindow::slotCreateNew() {
 void MainWindow::slotChooseFile() {
 	qDebug("slotChooseFile()");
 	
+	if (firstTime && fileFormat == -1 ) {
+		QMessageBox::information( this, "SocNetV",
+				tr("Attention: \n")+
+				tr("This menu option is only for loading a GraphML formatted file. \n")+
+				
+				tr("If you want to import other supported network formats (i.e. Pajek, UCINET, etc), \n")+
+				tr("please use the options in the Import sub menu. \n"),
+				"OK", 0 ); 
+	}
 	bool a_file_was_already_loaded=fileLoaded;
 	previous_fileName=fileName;
 	QString m_fileName;

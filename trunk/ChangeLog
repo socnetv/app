@@ -11,6 +11,7 @@ Codename: "supersyntages.gr"
 - Read support for list file.
 - Much improved Dot format support. 
 - Added keyboard shortcuts for Centralities
+- Refactored Import network menu. The user must define what network format is the file at hand.
 - Fixed bug #416965: Not displaying nodes when loading GraphViz files
 - Fixed bug #396124: GBC different in Pajek cp. to SocNetV
 - Fixed bug #415277: network files were not loaded on startup
