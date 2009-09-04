@@ -93,7 +93,8 @@ public:		/**PUBLIC FUNCTIONS NOT VISIBLE BY OTHER WIDGETS NOR BY SLOT/LINK MECHA
 	bool showNumbers();
 	
 	// Main network file loader method
-	bool loadNetworkFile ( QString);
+	bool loadNetworkFile ( QString );
+	
 
 	int activeLinks();
 	int activeNodes();
@@ -112,6 +113,13 @@ public slots:
 	//FILE MENU
 	void slotCreateNew();
 	void slotChooseFile();
+	void slotImportPajek();
+	void slotImportSM();
+	void slotImportDot();
+	void slotImportGML();
+	void slotImportDL();
+	void slotImportList();
+
 	void slotAskWhatIsTheThirdElement();
 	void slotFileSave();
 	void slotFileSaveAs();
@@ -312,6 +320,7 @@ private:
 
 	QAction *fileNew, *fileOpen, *fileSave, *fileSaveAs,*fileClose, *printNetwork,*fileQuit;
 	QAction *exportBMP, *exportPNG, *exportPajek, *exportPDF, *exportDL, *exportGW, *exportSM, *exportList;
+	QAction *importPajek,*importSM, *importList, *importDot , *importDL; 
 	QAction *viewNetworkFileAct, *openTextEditorAct, *viewSociomatrixAct, *createUniformRandomNetworkAct;
 	QAction *createGaussianRandomNetworkAct, *createLatticeNetworkAct, *createConnectedRandomNetworkAct;
 	QAction *createSmallWorldRandomNetworkAct, *createSameDegreeRandomNetworkAct;
@@ -349,7 +358,7 @@ private:
 	int totalLinks, fortuneCookiesCounter,  tipsCounter;
 	//QString VERSION;
 	bool pajekFileLoaded, adjacencyFileLoaded, dotFileLoaded, graphMLFileLoaded, fileLoaded;
-	int listWithWeightsLoaded;		// -1 no list, 0 list no weights, 1 list with weights
+	int fileFormat;		
 	bool networkModified;
 	bool bezier,  linkClicked, nodeClicked, markedNodeExists, showProgressBar, firstTime;
 	QString initLinkColor, initNumberColor,  initNodeShape, initLabelColor;

@@ -225,7 +225,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
 	{
 		fileName=m_fileName;
 		fileNameNoPath=fileName.split ("/");
-		loadNetworkFile(fileName);
+		loadNetworkFile(fileName );
 	}
 
 	if (firstTime) {
@@ -266,9 +266,43 @@ void MainWindow::initActions(){
 	fileOpen = new QAction(QIcon(":/images/open.png"), tr("&Open"), this);
 	fileOpen->setShortcut(tr("Ctrl+O"));
 	fileOpen->setToolTip(tr("Open network (Ctrl+O)"));
-	fileOpen->setStatusTip(tr("Opens a file of an existing network"));
-	fileOpen->setWhatsThis(tr("Open\n\nOpens a file of an existing network"));
+	fileOpen->setStatusTip(tr("Opens a GraphML-formatted file of an existing network"));
+	fileOpen->setWhatsThis(tr("Open\n\nOpens a file of an existing network in GraphML format"));
 	connect(fileOpen, SIGNAL(activated()), this, SLOT(slotChooseFile()));
+
+
+	importPajek = new QAction( QIcon(":/images/open.png"), tr("&Pajek"), this);
+	importPajek->setStatusTip(tr("Import a Pajek-formatted file"));
+	importPajek->setWhatsThis(tr("Import  Pajek \n\n Imports a network from a Pajek-formatted file"));
+	connect(importPajek, SIGNAL(activated()), this, SLOT(slotImportPajek()));
+	
+
+	importSM = new QAction( QIcon(":/images/open.png"), tr("&Adjacency Matrix"), this);
+	importSM->setStatusTip(tr("Import an Adjacency matrix file"));
+	importSM->setWhatsThis(tr("Import Sociomatrix \n\n  Imports a network from an Adjacency matrix-formatted file"));
+	connect(importSM, SIGNAL(activated()), this, SLOT(slotImportSM()));
+
+	importDot = new QAction( QIcon(":/images/open.png"), tr("&Dot"), this);
+	importDot->setStatusTip(tr("Import an dot file"));
+	importDot->setWhatsThis(tr("Import Sociomatrix \n\n  Imports a network from an dot matrix-formatted file"));
+	connect(importSM, SIGNAL(activated()), this, SLOT(slotImportDot()));
+
+
+	importDL = new QAction( QIcon(":/images/open.png"), tr("&DL..."), this);
+	importDL->setStatusTip(tr("Import network to a DL-formatted file"));
+	importDL->setWhatsThis(tr("Import DL\n\nImport network to a DL-formatted"));
+	connect(importDL, SIGNAL(activated()), this, SLOT(slotImportDL()));
+
+
+	importList = new QAction( QIcon(":/images/open.png"), tr("&List"), this);
+	importList->setStatusTip(tr("Import network from a List-formatted file. "));
+	importList->setWhatsThis(tr("Import List\n\nImport a network from a List-formatted file"));
+	connect(importList, SIGNAL(activated()), this, SLOT(slotImportList()));
+
+
+
+
+
 
   	fileSave = new QAction(QIcon(":/images/save.png"), tr("&Save"),  this);
 	fileSave->setShortcut(tr("Ctrl+S"));
@@ -989,6 +1023,15 @@ void MainWindow::initMenuBar() {
 	networkMenu = menuBar()->addMenu(tr("&Network"));
 	networkMenu -> addAction(fileNew);
 	networkMenu -> addAction(fileOpen);
+	importSubMenu = new QMenu(tr("Import ..."));
+
+	importSubMenu -> addAction(importPajek);
+	importSubMenu -> addAction(importSM);
+	importSubMenu -> addAction(importList);
+	importSubMenu -> addAction(importDL);
+	networkMenu ->addMenu (importSubMenu);
+
+	networkMenu -> addAction(fileOpen);
 	networkMenu -> addSeparator();
 	networkMenu -> addAction (openTextEditorAct);
 	networkMenu -> addAction (viewNetworkFileAct);
@@ -1571,7 +1614,7 @@ void MainWindow::initNet(){
 	
 	pajekFileLoaded=false;
 	adjacencyFileLoaded=false;
-	listWithWeightsLoaded = -1;
+	fileFormat = -1;
 	dotFileLoaded=false;
 	fileLoaded=false;
 
@@ -1742,7 +1785,7 @@ void MainWindow::slotChooseFile() {
 // 2 3 4
 // Asks the user what the third list element is: a node or an edge weight
 void MainWindow::slotAskWhatIsTheThirdElement() {
-	listWithWeightsLoaded = -1 ;  
+	int listWithWeightsLoaded = -1 ;  
 	statusMessage( tr("Hmmm, this file is strange. I need some help from you! "));
 	switch( QMessageBox::information( this, "List file format",
 				tr("This file contains text formatted in a list format. \n")+
@@ -1950,26 +1993,83 @@ void MainWindow::slotPrintView() {
 
 
 
+/**	
+	Imports a network from a formatted file
+*/
+void MainWindow::slotImportPajek(){
+	fileFormat=2;
+	this->slotChooseFile();
+}
+
+
+
+/**	
+	Imports a network from a Adjacency matrix formatted file
+*/
+void MainWindow::slotImportSM(){
+	fileFormat=3;
+	slotChooseFile();	
+}
+
+
+/**	
+	Imports a network from a Dot formatted file
+*/
+void MainWindow::slotImportDot(){
+	fileFormat=4;
+	slotChooseFile();
+}
+
+
+
+/**	
+	Imports a network from a GML formatted file
+*/
+void MainWindow::slotImportGML(){
+	fileFormat=5;
+	slotChooseFile();
+}
+
+
+/**	
+	Imports a network from a UCINET formatted file
+*/
+void MainWindow::slotImportDL(){
+	fileFormat=6;
+	slotChooseFile();
+}
+
+
+/**	
+	Imports a network from a List formatted file
+*/
+void MainWindow::slotImportList(){
+	fileFormat=7;
+	slotChooseFile();
+}
+
+
+
+
 /**
  * 	Main network file loader method 
  * 	Inits everything to default values.
  *  Then calls activeGraph::loadGraph to actually load the network...
  */
-bool MainWindow::loadNetworkFile(QString m_fileName){
+bool MainWindow::loadNetworkFile(QString m_fileName ){
 	qDebug("MW: loadNetworkFile");
 	
 	initNet();
 	 
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 	qDebug() << "MW: calling activeGraph::loadGraph "
-	<< " gw-height "	<< graphicsWidget->height() 
-	<< " - listWithWeights " << listWithWeightsLoaded ;
+	<< " gw-height "	<< graphicsWidget->height() ;
 	bool loadGraphStatus = activeGraph.loadGraph ( 
 										m_fileName, 
 										 displayNodeLabelsAct->isChecked(), 
 										 graphicsWidget->width(), 
 										 graphicsWidget->height(),
-										 listWithWeightsLoaded
+										 fileFormat
 									 );
 	qDebug("MW: OK activeGraph.loadGraph() has finished. ! ");
 	QApplication::restoreOverrideCursor();
@@ -1987,6 +2087,7 @@ void MainWindow::fileType (
 	qDebug()<< "MW: fileType() networkName is: " << netName;
 	Q_UNUSED (undirected);
 	networkName=netName ;
+	fileFormat=type;
 	switch( type ) 	{
 		case 0:
 			pajekFileLoaded=false;
@@ -1995,31 +2096,6 @@ void MainWindow::fileType (
 			fileLoaded=false;
 			break;
 		case 1:
-			pajekFileLoaded=true;
-			adjacencyFileLoaded=false;
-			graphMLFileLoaded=false;
-			fileLoaded=true;
-			networkModified=false;
-			statusMessage( QString(tr("Pajek formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ));
-			break;
-		case 2:
-			pajekFileLoaded=false;
-			adjacencyFileLoaded=true;
-			graphMLFileLoaded=false;
-			fileLoaded=true;
-			networkModified=false;
-			statusMessage( QString(tr("Adjacency formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
-			break;
-		case 3:
-			pajekFileLoaded=false;
-			adjacencyFileLoaded=false;
-			dotFileLoaded=true;
-			graphMLFileLoaded=false;
-			fileLoaded=true;
-			networkModified=false;
-			statusMessage( QString(tr("Dot formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
-			break;
-		case 4:
 			pajekFileLoaded=false;
 			adjacencyFileLoaded=false;
 			dotFileLoaded=false;
@@ -2027,6 +2103,34 @@ void MainWindow::fileType (
 			fileLoaded=true;
 			networkModified=false;
 			statusMessage( QString(tr("GraphML formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
+			break;
+
+		case 2:
+			pajekFileLoaded=true;
+			adjacencyFileLoaded=false;
+			graphMLFileLoaded=false;
+			fileLoaded=true;
+			networkModified=false;
+			statusMessage( QString(tr("Pajek formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ));
+			break;
+
+		case 3:
+			pajekFileLoaded=false;
+			adjacencyFileLoaded=true;
+			graphMLFileLoaded=false;
+			fileLoaded=true;
+			networkModified=false;
+			statusMessage( QString(tr("Adjacency formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
+			break;
+
+		case 4:
+			pajekFileLoaded=false;
+			adjacencyFileLoaded=false;
+			dotFileLoaded=true;
+			graphMLFileLoaded=false;
+			fileLoaded=true;
+			networkModified=false;
+			statusMessage( QString(tr("Dot formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
 			break;
 
 		case 5:
@@ -5562,7 +5666,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Thu Sep  3 18:10:20 EEST 2009";
+QString BUILD="Fri Sep  4 18:04:53 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"

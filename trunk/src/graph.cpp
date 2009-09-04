@@ -3042,7 +3042,7 @@ int Graph:: factorial(int x) {
 	Our almost universal network loader. :)
 	Actually it calls the load() method of parser/qthread class.
 */
-bool Graph::loadGraph (	QString fileName,  bool iSL, int maxWidth, int maxHeight, int isListWithWeights){
+bool Graph::loadGraph (	QString fileName,  bool iSL, int maxWidth, int maxHeight, int fileFormat){
 	qDebug() << "Graph:: loadGraph - Calling thread";
 	initShowLabels = iSL;
 	parser.load( 
@@ -3053,7 +3053,7 @@ bool Graph::loadGraph (	QString fileName,  bool iSL, int maxWidth, int maxHeight
 				initVertexLabelColor, initVertexLabelSize, 
 				initEdgeColor, 
 				maxWidth, maxHeight,
-				isListWithWeights
+				fileFormat
 				);
 
 	qDebug("See the thread? :)");

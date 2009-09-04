@@ -42,7 +42,7 @@ void Parser::load(QString fn, int iNS, QString iNC, QString iNSh,
 					QString iNLC, int iNLS , 
 					QString iEC, 
 					int width, int height,
-					int listWithWeights
+					int fFormat
 					)
 {
 	qDebug("Parser: load()");
@@ -63,7 +63,8 @@ void Parser::load(QString fn, int iNS, QString iNC, QString iNSh,
 	gwHeight=height;
 	randX=0;
 	randY=0;
-	isListWithWeights = listWithWeights;
+	fileFormat= fFormat;
+	
 	qDebug("Parser: calling start() to start a new QThread!");
 	if (!isRunning()) 
 		start(QThread::NormalPriority);
@@ -75,8 +76,6 @@ void Parser::load(QString fn, int iNS, QString iNC, QString iNSh,
 	Tries to load a file as DL-formatted network. If not it returns -1
 */
 int Parser::loadDL(){
-	if ( isListWithWeights != -1 ) 
-		return -1;
 
 	qDebug ("\n\nParser: loadDL");
 	QFile file ( fileName );
@@ -185,8 +184,6 @@ int Parser::loadDL(){
 	Tries to load the file as Pajek-formatted network. If not it returns -1
 */
 int Parser::loadPajek(){
-	if ( isListWithWeights != -1 ) 
-		return -1;
 
 	qDebug ("\n\nParser: loadPajek");
 	QFile file ( fileName );
@@ -558,7 +555,7 @@ int Parser::loadPajek(){
 	/** 
 		0 means no file, 1 means Pajek, 2 means Adjacency etc	
 	**/
-	emit fileType(1, networkName, aNodes, totalLinks, undirected);
+	emit fileType(2, networkName, aNodes, totalLinks, undirected);
 	
 	qDebug("Parser-loadPajek(): Removing all dummy aNodes, if any");
 	if (listDummiesPajek.size() > 0 ) {
@@ -583,8 +580,6 @@ int Parser::loadPajek(){
 	Tries to load the file as adjacency sociomatrix-formatted. If not it returns -1
 */
 int Parser::loadAdjacency(){
-	if ( isListWithWeights != -1 ) 
-		return -1;
 
 	qDebug("\n\nParser: loadAdjacency()");
 	QFile file ( fileName );
@@ -705,8 +700,6 @@ int Parser::loadAdjacency(){
 	If not it returns -1
 */
 int Parser::loadGraphML(){
-	if ( isListWithWeights != -1 ) 
-		return -1;
 
 	qDebug("\n\nParser: loadGraphML()");
 	aNodes=0;
@@ -750,7 +743,7 @@ int Parser::loadGraphML(){
 	}
 
 
-	emit fileType(4, networkName, aNodes, totalLinks, undirected);
+	emit fileType(1, networkName, aNodes, totalLinks, undirected);
 	//clear our mess - remove every hash element...
 	keyFor.clear();
 	keyName.clear();
@@ -1316,8 +1309,6 @@ void Parser::readGraphMLElementUnknown(QXmlStreamReader &xml) {
 	Tries to load a file as GML formatted network. If not it returns -1
 */
 int Parser::loadGML(){
-	if ( isListWithWeights != -1 ) 
-		return -1;
 
 	qDebug("\n\nParser: loadGML()");
 	QFile file ( fileName );
@@ -1364,8 +1355,6 @@ int Parser::loadGML(){
 	Tries to load the file as Dot (Graphviz) formatted network. If not it returns -1
 */
 int Parser::loadDot(){
-	if ( isListWithWeights != -1 ) 
-		return -1;
 
 	qDebug("\n\nParser: loadDotNetwork");
 	int fileLine=0, aNum=-1;
@@ -1644,7 +1633,7 @@ int Parser::loadDot(){
 	/** 
 		0 means no file, 1 means Pajek, 2 means Adjacency etc	
 	**/
-	emit fileType(3, networkName, aNodes, totalLinks, undirected);
+	emit fileType(4, networkName, aNodes, totalLinks, undirected);
 	return 1;
 }
 
@@ -1779,7 +1768,7 @@ int Parser::loadList(){
 		i++;
 	}
 
-	if ( isListWithWeights == -1 ) {
+	if ( fileFormat == -1 ) {
 		if ( lastCount == 3 && lineHasEqualAmountElements ){
 			emit askWhatIsTheThirdElement();
 			qDebug() << "Parser: loadList()" << " each line Has 3 Elements. Terminating to ask what the third element is...";	
@@ -1883,13 +1872,13 @@ int Parser::loadList(){
 			qDebug() << "	target node " << target;
 
 			if  ( lastCount == 3 ){
-				if ( isListWithWeights == 1 ) {
+				if ( fileFormat == 1 ) {
 					edgeWeight=(lineElement[2]).toDouble(&intOK);
 					if (!intOK)	
 						edgeWeight=1.0;
 					qDebug () << "	list file declares edge weight: " << edgeWeight;
 				}
-				else if (isListWithWeights==0){
+				else if (fileFormat==0){
 					target2 =  (lineElement[2]).toInt(&intOK);
 					qDebug () << "	list file declares second target node: " << target2;
 					edgeWeight=1.0;
@@ -1936,7 +1925,7 @@ int Parser::loadList(){
 					}
 					maxNodeCreated = target ;
 			}
-			if ( isListWithWeights == 1 ){
+			if ( fileFormat == 1 ){
 				if (maxNodeCreated < target2 ) {
 						for ( j = maxNodeCreated ; j != target2; j++ ) {
 							qDebug()<< "	target2 node " << target2 << "	is smaller than maxNodeCreated - creating node "<< j+1;
@@ -1979,30 +1968,54 @@ int Parser::loadList(){
 void Parser::run()  {
 	qDebug("**** QThread/Parser: This is a thread, running!");
 	if (networkName=="") networkName="Unnamed!";
-	if ( loadPajek() ==1 ) {
-		qDebug("Parser: this is a Pajek network");
+
+	switch (fileFormat){
+		case 1:	//GraphML
+				if (loadGraphML()==1){
+					qDebug("Parser: this is a GraphML network");
+				}
+				break;
+		case 2: //Pajek
+				if ( loadPajek() ==1 ) {
+					qDebug("Parser: this is a Pajek network");
+				}
+			break;
+		case 3: //Adjacency
+				if (loadAdjacency()==1 ) {
+					qDebug("Parser: this is an adjacency-matrix network");
+				}
+				break;
+		case 4: //Dot
+				if (loadDot()==1 ) {
+					qDebug("Parser: this is a GraphViz (dot) network");
+				}    
+				break;
+		case 5:	//GML
+				if (loadGML()==1){
+					qDebug("Parser: this is a GML (gml) network");
+				}
+				break;
+		case 6: //DL
+				if (loadDL()==1){
+					qDebug("Parser: this is a DL formatted (.dl) network");
+				}
+				break;
+		case 7:	// List
+				if (loadList()==1){
+				qDebug("Parser: this is an list formatted (.list) network");
+				}
+				break;
+
+		default:	//GraphML
+				if (loadGraphML()==1){
+					qDebug("Parser: this is a GraphML network");
+				}
+				break;
+		
+		
 	}
-	else if (loadAdjacency()==1 ) {
-		qDebug("Parser: this is an adjacency-matrix network");
-	}
-	else if (loadDot()==1 ) {
-		qDebug("Parser: this is a GraphViz (dot) network");
-	}    
-	else if (loadGraphML()==1){
-		qDebug("Parser: this is a GraphML network");
-	}
-	else if (loadGML()==1){
-		qDebug("Parser: this is a GML (gml) network");
-	}
-	else if (loadDL()==1){
-		qDebug("Parser: this is a DL formatted (.dl) network");
-	}
-	else if (loadList()==1){
-		qDebug("Parser: this is an list formatted (.list) network");
-	}
-	else{
 	qDebug("**** QThread/Parser: end of routine!");
-	}
+
 }
 
 
