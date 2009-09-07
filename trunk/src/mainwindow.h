@@ -139,7 +139,6 @@ public slots:
 	void slotViewAdjacencyMatrix();
 	void slotCreateRandomNetErdos();
 	void slotCreateSameDegreeRandomNetwork();
-	void slotCreateConnectedRandomNetwork();
 	void slotCreateGaussianRandomNetwork();
 	void slotCreateRandomNetRingLattice();
 	void slotCreateSmallWorldRandomNetwork();
