@@ -401,11 +401,6 @@ void MainWindow::initActions(){
 	createUniformRandomNetworkAct->setWhatsThis(tr("Uniform \n\nCreates a random network of G(n, p) model by connecting nodes randomly. Each edge is included in the graph with equal probability p, independently of the other edges"));
 	connect(createUniformRandomNetworkAct, SIGNAL(activated()), this, SLOT(slotCreateRandomNetErdos()));
 
-	createConnectedRandomNetworkAct = new QAction( tr("Connected"),  this);
-	createConnectedRandomNetworkAct->setStatusTip(tr("Creates a connected random network"));
-	createConnectedRandomNetworkAct->setWhatsThis(tr("Uniform Connected\n\nCreates a connected random network "));
-	connect(createConnectedRandomNetworkAct, SIGNAL(activated()), this, SLOT(slotCreateConnectedRandomNetwork()));
-
 	createLatticeNetworkAct = new QAction( QIcon(":/images/net1.png"), tr("Ring Lattice"), this);
 	createLatticeNetworkAct ->setShortcut(tr("Shift+L"));
 	createLatticeNetworkAct->setStatusTip(tr("Creates a ring lattice random network"));
@@ -1019,7 +1014,6 @@ void MainWindow::initMenuBar() {
 
 
 /** menuBar entry networkMenu */
-	//networkMenu=new QMenu();
 	networkMenu = menuBar()->addMenu(tr("&Network"));
 	networkMenu -> addAction(fileNew);
 	networkMenu -> addAction(fileOpen);
@@ -1041,7 +1035,6 @@ void MainWindow::initMenuBar() {
 	networkMenu ->addMenu (randomNetworkMenu);
 	randomNetworkMenu -> addAction (createSmallWorldRandomNetworkAct);
 	randomNetworkMenu -> addAction (createUniformRandomNetworkAct );
-//  createConnectedRandomNetworkAct -> addTo(randomNetworkMenu);
 // createGaussianRandomNetworkAct -> addTo(randomNetworkMenu);
 	randomNetworkMenu -> addAction (createLatticeNetworkAct);
 	randomNetworkMenu -> addAction (createSameDegreeRandomNetworkAct);
@@ -1756,7 +1749,7 @@ void MainWindow::slotChooseFile() {
 	
 	statusMessage( tr("Choose a network file..."));
 	m_fileName = QFileDialog::getOpenFileName( this, tr("Select one file to open"), "", 
-		tr("All (*);;GraphML (*.graphml *.gml);;GraphViz (*.dot);;Adjacency (*.txt *.csv *.net);;Pajek (*.net *.pajek);;DL (*.dl *.net)")
+		tr("All (*);;GraphML (*.graphml);;GraphViz (*.dot);;Adjacency (*.txt *.csv *.net);;Pajek (*.net *.pajek);;DL (*.dl *.net)")
 	);
 	
 	if (!m_fileName.isEmpty()) {
@@ -2407,7 +2400,7 @@ void MainWindow::slotExportSM(){
 		}
 	}
 
-	QMessageBox::information(this, "Warning",tr("Note that exporting to an adjacency matrix does not save floating-point weight values; adjacency matrices consist of integers, only. \n If your network had any floating point weights in some edges, these are being truncated to the nearest integer or 1.)"), "OK",0);
+	QMessageBox::information(this, "Warning",tr("Note that exporting to an adjacency matrix does not save floating-point weight values; adjacency matrices consist of integers, only. \n If your network had any floating point weights in some edges, these are being truncated to the nearest integer or 1."), "OK",0);
 	int maxWidth=scene->width();
 	int maxHeight=scene->height();	
 
@@ -2691,13 +2684,6 @@ void MainWindow::slotCreateRandomNetErdos(){
 
 
 
-/** TODO 
-*/
-
-void MainWindow::slotCreateConnectedRandomNetwork() {
-	statusMessage( "Erasing any existing network. ");
-	statusMessage( tr("Creating uniform random network. Please wait... ")  );
-}
 
 
 

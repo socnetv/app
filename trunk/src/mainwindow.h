@@ -322,7 +322,7 @@ private:
 	QAction *exportBMP, *exportPNG, *exportPajek, *exportPDF, *exportDL, *exportGW, *exportSM, *exportList;
 	QAction *importPajek,*importSM, *importList, *importDot , *importDL; 
 	QAction *viewNetworkFileAct, *openTextEditorAct, *viewSociomatrixAct, *createUniformRandomNetworkAct;
-	QAction *createGaussianRandomNetworkAct, *createLatticeNetworkAct, *createConnectedRandomNetworkAct;
+	QAction *createGaussianRandomNetworkAct, *createLatticeNetworkAct;
 	QAction *createSmallWorldRandomNetworkAct, *createSameDegreeRandomNetworkAct;
 	QAction *displayNodeNumbersAct, *displayNodeLabelsAct, *displayNumbersInsideNodesAct;
 	QAction *findNodeAct,*addNodeAct, *addLinkAct, *removeNodeAct, *removeLinkAct;
