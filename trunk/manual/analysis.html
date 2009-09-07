@@ -3,34 +3,38 @@
 <h4><a name="Analysis" id="Analysis"></a>Analysis</h4>
 
 <p class="text">
-Once you have loaded or created a network you can analyse it using the commands in the Statistics menu. <br /> <br />
+Once a network is loaded or created, you may use the various options in the Statistics menu to analyse it. <br /> <br />
 
 For instance, the first option of Statistics menu (<em>Network Symmetry</em>) tells you whether the network is symmetric or not. 
 A network is symmetric when for every edge (i,j) in the set E, the 'opposite' (j,i) edge also exists in E.    
 </p>
+
+<h4><em><a name="Distances" id="Distances"></a>Distances & Diameter</em></h4>
+
 <p class="text">
-The next menu options (<em>Graph Distance</em>, <em>Average Graph Distance</em>, <em>Distance Matrix</em> and <em>Diameter</em>) let you calculate the geodesic distance between any two nodes and the mean distance between all nodes, print the network distance matrix and calculate the network diameter, respectively. 
+The next few options in the Statistics menu (<em>Graph Distance</em>, <em>Average Graph Distance</em>, <em>Distance Matrix</em> and <em>Diameter</em>) let you calculate the geodesic distance between any two nodes and the mean distance between all nodes, print the network distance matrix and calculate the network diameter, respectively. Each option is explained below. 
 </p>
+
+<h5><a name="Distance" id="Distance"></a>Distance</h5>
 <p class="text">
-<em><a name="Distance" id="Distance"></a>Distance</em><br/>
 The geodesic distance is the length of the shortest path between two connected nodes. By clicking on the "Geodesic Distance" option (or Ctrl+G) you will be asked for source and target nodes, and then their geodesic will be calculated and displayed. 
 </p>
 
 
+<h5><a name="DistanceMatrix" id="DistanceMatrix"></a>Distance Matrix</h5>
 <p class="text">
-<em><a name="DistanceMatrix" id="DistanceMatrix"></a>Distance Matrix</em><br/>
 The 'Distance Matrix' option calculates and displays two matrices; the first is the matrix of distances and the second (sigma) the matrix of the number of shortest paths between any two nodes. 
 The latter is used in Centralities calculation (see below).
 </p>
 
+<h5><a name="Diameter" id="Diameter"></a>Graph Diameter</h5>
 <p class="text">
-<em><a name="Diameter" id="Diameter"></a>Graph Diameter</em><br/>
 The diameter of a network is the maximum length of all shortest paths between any two connected nodes. 
 </p>
 
 
+<h4><a name="Coefficient" id="Coefficient"></a>Clustering Coefficient</h4>
 <p class="text">
-<em><a name="Coefficient" id="Coefficient"></a>Clustering Coefficient</em><br/>
 The Clustering Coefficient of a node quantifies how close the node and its neighbors are to being a clique. 
 This is used to determine whether a network is a small-world or not. <br />
 This option calculates and displays the clustering coefficients of all nodes. 
@@ -41,49 +45,49 @@ This option calculates and displays the clustering coefficients of all nodes.
 <em>Tip</em>: All the basic network statistics, such as nodes, edges and density are constantly displayed in the Statistics tab of the left dock.
  </p>
 
-<em><a name="triadcensus" id="TriadCensus"></a>Triad Census</em><br/>
+<h4><em><a name="TriadCensus" id="TriadCensus"></a>Triad Census</em></h4>
 <p class="text">
 
 When you click on the "Triad  Census" menu option, SocNetV examines each of the triads present in your network, and counts how many of these belong to a certain triad type.
-
+<br />
 Some background:
+<br /><br />
+In any network of N actors, there are C(N,3) triads.<br /> 
+For instance, in a network of 6 actors there are C(4,3)=20 triads, whereas in a network of 10 actors there are C(10,3)=60 triads.<br />
+<br />
+In a any case, though, there can be only sixteen different triad types (isomophism classes).<br /> 
+Every one of the C(N,3) triads of a network must belong (be isomorphic) to one of these sixteen types.<br />   
+<br />
+A Triad Census is a method which counts all the different types (classes) of observed triads within a network.<br />
+The triad types are coded and labeled according to their number of mutual, asymmetric and non-existent (null) dyads.<br />
+<br />
+We follow the M-A-N labeling scheme, as described by Holland, Leinhardt and Davis in their studies.<br /> 
+In the M-A-N scheme, each triad type has a label with four characters:<br />
+<br />
+- The first character is the number of mutual (M) duads in the triad. Possible values: 0, 1, 2, 3.<br /> 
+- The second character is the number of asymmetric (A) duads in the triad. Possible values: 0, 1, 2, 3.<br />
+- The third character is the number of null (N) duads in the triad. Possible values: 0, 1, 2, 3.<br />
+- The fourth character is infered from features or the nature of the triad, i.e. presence of cycle or transitivity. Possible values: none, D ("Down"), U ("Up"), C ("Cyclic"), T ("Transitive")<br />
+<br />
+In the seven rows below, you can see all the sixteen triad types (classes).<br /> 
+Within each row, all the triad types have the same number of arcs present:<br />
 
-In any network of N actors, there are C(N,3) triads. 
-For instance, in a network of 6 actors there are C(4,3)=20 triads, whereas in a network of 10 actors there are C(10,3)=60 triads.
-
-In a any case, though, there can be only sixteen different triad types (isomophism classes). 
-Every one of the C(N,3) triads of a network must belong (be isomorphic) to one of these sixteen types.   
-
-A Triad Census is a method which counts all the different types (classes) of observed triads within a network.
-The triad types are coded and labeled according to their number of mutual, asymmetric and non-existent (null) dyads.
-
-We follow the M-A-N labeling scheme, as described by Holland, Leinhardt and Davis in their studies. 
-In the M-A-N scheme, each triad type has a label with four characters:
-
-- The first character is the number of mutual (M) duads in the triad. Possible values: 0, 1, 2, 3. 
-- The second character is the number of asymmetric (A) duads in the triad. Possible values: 0, 1, 2, 3.
-- The third character is the number of null (N) duads in the triad. Possible values: 0, 1, 2, 3.
-- The fourth character is infered from features or the nature of the triad, i.e. presence of cycle or transitivity. Possible values: none, D ("Down"), U ("Up"), C ("Cyclic"), T ("Transitive")
-
-In the seven rows below, you can see all the sixteen triad types (classes). 
-Within each row, all the triad types have the same number of arcs present:
-
-003
-012
-102		021D	021U	021C
-111D	111U	030T	030C
-201		120D	120U	120C
-210
-300
-
- 
-So, when you click on Triad Census menu option, SocNetV calculates and displays a vector T of length 16. 
-Each vector element (Tu) is the frequency of each one triad type inside the active network, i.e. T003 = 3.  
-Furthermore, the order of the elements of vector T is the same as the aforementioned ordering of the triad types:
-
-T = [ T003, T012, T102, T021D, T021U, T021C, T111D, T111U, T030T, T030C, T201, T120D, T120U, T120C, T210, T300 ]
-
-Apparently, the sum of all these frequencies Tu is C(N,3).
+003<br />
+012<br />
+102		021D	021U	021C<br />
+111D	111U	030T	030C<br />
+201		120D	120U	120C<br />
+210<br />
+300<br />
+<br />
+ <br />
+So, when you click on Triad Census menu option, SocNetV calculates and displays a vector T of length 16.<br /> 
+Each vector element (Tu) is the frequency of each one triad type inside the active network, i.e. T003 = 3.<br />  
+Furthermore, the order of the elements of vector T is the same as the aforementioned ordering of the triad types:<br />
+<br />
+T = [ T003, T012, T102, T021D, T021U, T021C, T111D, T111U, T030T, T030C, T201, T120D, T120U, T120C, T210, T300 ]<br />
+<br />
+Apparently, the sum of all these frequencies Tu is C(N,3).<br />
 
 </p>
 <h4><a name="Centralities" id="Centralities"></a>Centralities</h4>
@@ -100,44 +104,44 @@ For instance, SocNetV can calculate betweeness, closeness, degree, stress, graph
 Centralities are calculated for each node and for the whole network. Thus, when you click on a centrality option, SocNetV will calculate the corresponding index of every node and the whole network and it will display them in a new window (a small text editor). From there you can save the analysis into a text file of your choice. By default, analysis files are saved on bin/ subfolder.
 </p>
 
-<h4><a name="In" id="In"></a>In-Degree Centrality</h4>
+<h5><a name="In" id="In"></a>In-Degree Centrality</h5>
 <p class="text"> 
 In-Degree Centrality (IDC) is the number of arcs ending at each node. 
 The degree is a measure of the 'activity' of the node. Most in-degree central node might be considered more prominent among others. 
 </p>
 
-<h4><a name="Out" id="Out"></a>Out-Degree Centrality</h4>
+<h5><a name="Out" id="Out"></a>Out-Degree Centrality</h5>
 <p class="text">
 Out-Degree Centrality (ODC) is the number of arcs starting from each node. This is oftenly  a measure of activity.
 </p>
 
 
-<h4><a name="Closeness" id="Closeness"></a>Closeness Centrality</h4>
+<h5><a name="Closeness" id="Closeness"></a>Closeness Centrality</h5>
 <p class="text"> 
 Closeness Centrality (CC) is the invert sum of the shortest distances between each node and every other node.
 It is interpreted as the ability to access information through the "grapevine" of network members. 
 
 </p>
 
-<h4><a name="Betweeness" id="Betweeness"></a>Betweeness Centrality</h4>
+<h5><a name="Betweeness" id="Betweeness"></a>Betweeness Centrality</h5>
 <p class="text"> 
 The Betweeness Centrality (BC) is the ratio of all geodesics between pairs of nodes which run through each node. 
 It reflects how often an node lies on the geodesics between the other nodes of the network. 
 </p>
 
-<h4><a name="Stress" id="Stress"></a>Stress Centrality</h4>
+<h5><a name="Stress" id="Stress"></a>Stress Centrality</h5>
 <p class="text"> 
 The Stress Centrality (SC) of a node k is the total number of geodesics between all other nodes which run through k. 
 When one node falls on all other geodesics between all the remaining (N-1) nodes, then we have a star graph with maximum Graph Centrality. 
 </p>
-<h4><a name="Graph" id="Graph"></a>Graph Centrality</h4>
+<h5><a name="Graph" id="Graph"></a>Graph Centrality</h5>
 <p class="text"> 
 Graph Centrality (GC) is the invert of the maximum of all geodesic distances from a node to all other nodes in the network. 
 Nodes with high GC have short distances to all other nodes in the graph. 
 In not-connected networks, the centrality values of all nodes will be zero, since the distance to some nodes is infinite. 
 </p>
 
-<h4><a name="Eccentricity" id="Eccentricity"></a>Eccentricity Centrality</h4>
+<h5><a name="Eccentricity" id="Eccentricity"></a>Eccentricity Centrality</h5>
 <p class="text"> 
 The Eccentricity Centrality (EC) of a node k is the largest geodesic distance (k,t) from every other vertex. 
 Therefore, EC(u) reflects how far, at most, is each node from every other node.

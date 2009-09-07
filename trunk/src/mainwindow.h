@@ -142,7 +142,6 @@ public slots:
 	void slotCreateGaussianRandomNetwork();
 	void slotCreateRandomNetRingLattice();
 	void slotCreateSmallWorldRandomNetwork();
-	
 	void slotShowWebCrawlerDialog();
 	void slotWebCrawl(QString, int, int, bool);
 	
