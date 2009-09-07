@@ -37,7 +37,7 @@
 #include <list>
 #include "graph.h"	//needed for setParent
 
-void Parser::load(QString fn, int iNS, QString iNC, QString iNSh, 
+bool Parser::load(QString fn, int iNS, QString iNC, QString iNSh, 
 					QString iNNC, int iNNS, 
 					QString iNLC, int iNLS , 
 					QString iEC, 
@@ -65,9 +65,18 @@ void Parser::load(QString fn, int iNS, QString iNC, QString iNSh,
 	randY=0;
 	fileFormat= fFormat;
 	
-	qDebug("Parser: calling start() to start a new QThread!");
+	qDebug("Parser: start() a new parsing thread!");
 	if (!isRunning()) 
 		start(QThread::NormalPriority);
+		
+	if (isFinished()) {
+		qDebug()<< "**** Parser:: thread has finished! " 
+				<< " fileFormat now "<< fileFormat ;
+		if ( fileFormat!=-1 ) {
+			return true;
+		}
+	}
+	return false;	
 }
 
 
@@ -1966,33 +1975,35 @@ int Parser::loadList(){
 */
 
 void Parser::run()  {
-	qDebug("**** QThread/Parser: This is a thread, running!");
+	qDebug()<< "**** Parser:: run(). This is a new thread! " 
+			<< " networkName "<< networkName
+			<< " fileFormat "<< fileFormat ;
 	if (networkName=="") networkName="Unnamed!";
 
 	switch (fileFormat){
 		case 1:	//GraphML
 				if (loadGraphML()==1){
-					qDebug("Parser: this is a GraphML network");
+					qDebug("* Parser: that was  a GraphML network");
 				}
 				break;
 		case 2: //Pajek
 				if ( loadPajek() ==1 ) {
-					qDebug("Parser: this is a Pajek network");
+					qDebug("* Parser: that was a Pajek network");
 				}
 			break;
 		case 3: //Adjacency
 				if (loadAdjacency()==1 ) {
-					qDebug("Parser: this is an adjacency-matrix network");
+					qDebug("* Parser: that was an adjacency-matrix network");
 				}
 				break;
 		case 4: //Dot
 				if (loadDot()==1 ) {
-					qDebug("Parser: this is a GraphViz (dot) network");
+					qDebug("* Parser: that was a GraphViz (dot) network");
 				}    
 				break;
 		case 5:	//GML
 				if (loadGML()==1){
-					qDebug("Parser: this is a GML (gml) network");
+					qDebug("* Parser: that was a GML (gml) network");
 				}
 				break;
 		case 6: //DL
@@ -2014,7 +2025,7 @@ void Parser::run()  {
 		
 		
 	}
-	qDebug("**** QThread/Parser: end of routine!");
+
 
 }
 

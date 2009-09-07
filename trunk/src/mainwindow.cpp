@@ -1031,7 +1031,6 @@ void MainWindow::initMenuBar() {
 	importSubMenu -> addAction(importDL);
 	networkMenu ->addMenu (importSubMenu);
 
-	networkMenu -> addAction(fileOpen);
 	networkMenu -> addSeparator();
 	networkMenu -> addAction (openTextEditorAct);
 	networkMenu -> addAction (viewNetworkFileAct);
@@ -1743,10 +1742,11 @@ void MainWindow::slotChooseFile() {
 	if (firstTime && fileFormat == -1 ) {
 		QMessageBox::information( this, "SocNetV",
 				tr("Attention: \n")+
-				tr("This menu option is only for loading a GraphML formatted file. \n")+
+				tr("This menu option is suitable only for loading a network file with data in GraphML format, which is the default file format of SocNetV. \n")+
 				
-				tr("If you want to import other supported network formats (i.e. Pajek, UCINET, etc), \n")+
-				tr("please use the options in the Import sub menu. \n"),
+				tr("If you want to import other supported network formats (i.e. Pajek, UCINET, dot, etc), ")+
+				tr("please use the options in the Import sub menu. \n")+
+				tr("\n This warning message will not appear again."),
 				"OK", 0 ); 
 	}
 	bool a_file_was_already_loaded=fileLoaded;
@@ -1768,7 +1768,7 @@ void MainWindow::slotChooseFile() {
 			previous_fileName=fileName;
 			setWindowTitle("SocNetV "+ VERSION +" - "+fileNameNoPath.last());
 			QString message=tr("Loaded network: ")+fileNameNoPath.last();
-			statusMessage( message);
+			statusMessage( message );
 		}
 		else
 			statusMessage( tr("Error loading requested file. Aborted."));
@@ -1785,7 +1785,7 @@ void MainWindow::slotChooseFile() {
 		}
   	}
 
-	qDebug()<<"MW: FILENAME IS NOW:" << fileName.toAscii();
+	qDebug()<<"MW: Active network fileName is now: " << fileName.toAscii();
 }
 
 
@@ -1830,6 +1830,7 @@ void MainWindow::slotAskWhatIsTheThirdElement() {
 										 graphicsWidget->height(),
 										 listWithWeightsLoaded
 									 );
+	Q_UNUSED(loadGraphStatus);
 	qDebug("MW: OK activeGraph.loadGraph() has finished. ! ");
 	QApplication::restoreOverrideCursor();
 	
@@ -2072,8 +2073,9 @@ bool MainWindow::loadNetworkFile(QString m_fileName, int m_fileFormat ){
 	initNet();
 	 
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-	qDebug() << "MW: calling activeGraph::loadGraph "
-	<< " gw-height "	<< graphicsWidget->height() ;
+	qDebug() << "MW: calling activeGraph::loadGraph() "
+				<< " view height: "	<< graphicsWidget->height()
+				<< " format:  "<< m_fileFormat;
 	bool loadGraphStatus = activeGraph.loadGraph ( 
 										m_fileName, 
 										 displayNodeLabelsAct->isChecked(), 
@@ -5676,7 +5678,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Fri Sep  4 18:04:53 EEST 2009";
+QString BUILD="Mon Sep  7 17:53:27 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"

@@ -44,7 +44,7 @@ class Parser :  public QThread {
 	Q_OBJECT
 public:
 	
-	void load(QString fn, int iNS, QString iNC, QString iNSh, QString iNNC, int iNNS, QString iNLC, int iNLS , QString iEC, int w, int h, int isListWithWeights);
+	bool load(QString fn, int iNS, QString iNC, QString iNSh, QString iNNC, int iNNS, QString iNLC, int iNLS , QString iEC, int w, int h, int isListWithWeights);
 	int loadPajek();
 	int loadAdjacency();
 	int loadDot();
