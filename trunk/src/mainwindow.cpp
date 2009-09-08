@@ -1744,13 +1744,39 @@ void MainWindow::slotChooseFile() {
 	}
 	bool a_file_was_already_loaded=fileLoaded;
 	previous_fileName=fileName;
-	QString m_fileName;
+	QString m_fileName, fileType_string;
 	int m_fileFormat=fileFormat;
 	
 	statusMessage( tr("Choose a network file..."));
-	m_fileName = QFileDialog::getOpenFileName( this, tr("Select one file to open"), "", 
-		tr("All (*);;GraphML (*.graphml);;GraphViz (*.dot);;Adjacency (*.txt *.csv *.net);;Pajek (*.net *.pajek);;DL (*.dl *.net)")
-	);
+	switch (m_fileFormat){
+		case 1:	//GraphML
+				fileType_string = tr("GraphML (*.graphml);;All (*)");
+				break;
+		case 2: //Pajek
+				fileType_string = tr("Pajek (*.net *.pajek);;All (*)");
+				break;
+		case 3: //Adjacency
+				fileType_string = tr("Adjacency (*.txt *.csv *.net);;All (*)");
+				break;
+		case 4: //Dot
+				fileType_string = tr("GraphViz (*.dot);;All (*)");
+				break;
+		case 5:	//GML
+				fileType_string = tr("GML (*.gml);;All (*)");
+				break;
+		case 6: //DL
+				fileType_string = tr("DL (*.dl *.net);;All (*)");
+				break;
+		case 7:	// List
+				fileType_string = tr("List (*.lst);;All (*)");
+				break;
+
+		default:	//GraphML
+				fileType_string = tr("All (*);;GraphML (*.graphml);;GraphViz (*.dot);;Adjacency (*.txt *.csv *.net);;Pajek (*.net *.pajek);;DL (*.dl *.net)");
+				break;
+
+	}
+	m_fileName = QFileDialog::getOpenFileName( this, tr("Select one file to open"), "", fileType_string	);
 	
 	if (!m_fileName.isEmpty()) {
 		qDebug()<<"MW: file selected: " << m_fileName;		
