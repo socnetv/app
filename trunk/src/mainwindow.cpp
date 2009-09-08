@@ -1756,7 +1756,7 @@ void MainWindow::slotChooseFile() {
 				fileType_string = tr("Pajek (*.net *.pajek);;All (*)");
 				break;
 		case 3: //Adjacency
-				fileType_string = tr("Adjacency (*.txt *.csv *.net);;All (*)");
+				fileType_string = tr("Adjacency (*.txt *.csv);;All (*)");
 				break;
 		case 4: //Dot
 				fileType_string = tr("GraphViz (*.dot);;All (*)");
@@ -1765,7 +1765,7 @@ void MainWindow::slotChooseFile() {
 				fileType_string = tr("GML (*.gml);;All (*)");
 				break;
 		case 6: //DL
-				fileType_string = tr("DL (*.dl *.net);;All (*)");
+				fileType_string = tr("DL (*.dl);;All (*)");
 				break;
 		case 7:	// List
 				fileType_string = tr("List (*.lst);;All (*)");
