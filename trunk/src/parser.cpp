@@ -72,9 +72,14 @@ bool Parser::load(QString fn, int iNS, QString iNC, QString iNSh,
 	if (isFinished()) {
 		qDebug()<< "**** Parser:: thread has finished! " 
 				<< " fileFormat now "<< fileFormat ;
-		if ( fileFormat!=-1 ) {
+		if ( fileFormat != -1 ) {
 			return true;
 		}
+		else 
+			return false;
+	}
+	else {
+		qDebug()<< "**** Parser:: thread has  not finished yet but we return back to Graph and MW! ";
 	}
 	return false;	
 }

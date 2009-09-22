@@ -1789,8 +1789,18 @@ void MainWindow::slotChooseFile() {
 			QString message=tr("Loaded network: ")+fileNameNoPath.last();
 			statusMessage( message );
 		}
-		else
+		else {
 			statusMessage( tr("Error loading requested file. Aborted."));
+			QMessageBox::critical( this, "SocNetV",
+				tr("Error! \n")+
+				tr("Sorry, the selected file is not in GraphML format, which is the default file format of SocNetV. \n")+
+				
+				tr("If you want to import other network formats (i.e. Pajek, UCINET, dot, etc), ")+
+				tr("please use the options in the Import sub menu. \n"),
+				"OK", 0 );
+				 
+		}
+			
 	}
 	else  {
 		qDebug() << "MW: opening file aborted..." ;
@@ -5690,7 +5700,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Tue Sep  8 00:24:52 EEST 2009";
+QString BUILD="Tue Sep 22 17:20:08 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"
