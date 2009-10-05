@@ -45,14 +45,14 @@ class Parser :  public QThread {
 public:
 	
 	bool load(QString fn, int iNS, QString iNC, QString iNSh, QString iNNC, int iNNS, QString iNLC, int iNLS , QString iEC, int w, int h, int isListWithWeights);
-	int loadPajek();
-	int loadAdjacency();
-	int loadDot();
-	int loadGraphML();
-	int loadGML();
-	int loadGW();
-	int loadDL();
-	int loadList();
+	bool loadPajek();
+	bool loadAdjacency();
+	bool loadDot();
+	bool loadGraphML();
+	bool loadGML();
+	bool loadGW();
+	bool loadDL();
+	bool loadList();
 
 	void dotProperties(QString str, float &, QString &label, QString &shape, QString &color, QString &fontName, QString &fontColor );
 	void readGraphML (QXmlStreamReader &);

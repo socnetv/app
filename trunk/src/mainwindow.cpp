@@ -1745,6 +1745,9 @@ void MainWindow::slotChooseFile() {
 	bool a_file_was_already_loaded=fileLoaded;
 	previous_fileName=fileName;
 	QString m_fileName, fileType_string;
+	
+	if ( fileFormat == -1 ) fileFormat = 1;
+	
 	int m_fileFormat=fileFormat;
 	
 	statusMessage( tr("Choose a network file..."));
@@ -1770,7 +1773,6 @@ void MainWindow::slotChooseFile() {
 		case 7:	// List
 				fileType_string = tr("List (*.lst);;All (*)");
 				break;
-
 		default:	//GraphML
 				fileType_string = tr("All (*);;GraphML (*.graphml);;GraphViz (*.dot);;Adjacency (*.txt *.csv *.net);;Pajek (*.net *.pajek);;DL (*.dl *.net)");
 				break;
@@ -2112,7 +2114,7 @@ bool MainWindow::loadNetworkFile(QString m_fileName, int m_fileFormat ){
 										 graphicsWidget->height(),
 										 m_fileFormat
 									 );
-	qDebug("MW: OK activeGraph.loadGraph() has finished. ! ");
+	qDebug("MW: OK activeGraph.loadGraph() has finished! ");
 	QApplication::restoreOverrideCursor();
 	return loadGraphStatus;
 }
@@ -5700,7 +5702,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Tue Sep 22 17:20:08 EEST 2009";
+QString BUILD="Mon Oct  5 17:45:06 EEST 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"
