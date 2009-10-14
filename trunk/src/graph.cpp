@@ -3577,7 +3577,7 @@ void Graph::timerEvent(QTimerEvent *event) {
 
 void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
 	qreal xvel = 0, yvel = 0, dx=0, dy=0, ulv_x=0, ulv_y=0;
-	qreal c_rep=20, c_spring=13, dux=0, duy=0, len=50;
+	qreal c_rep=10, c_spring=13, dux=0, duy=0, len=100;
 	double dist = 0;
 	QPointF curPos, newPos, pos ;
 		
