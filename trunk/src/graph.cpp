@@ -3573,6 +3573,8 @@ void Graph::timerEvent(QTimerEvent *event) {
 
 	Note that, following Eades, we do not need to have a faithful simulation; 
 	we can -and we do- apply unrealistic forces in an unrealistic manner.
+	For instance, instead of the forces described by Hooke's law, 
+	we will assume weaker logarithmic forces between far apart vertices...   
 */
 
 void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
@@ -3646,13 +3648,13 @@ void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
 
 
 /**
-Fruchterman and Reingold (1991) refined the Spring Embedder model by replacing the forces. 
-
-In FR model, the vertices behave as atomic particles or celestial bodies, exerting attractive and repulsive forces on one another. Again, only vertices that are neighbours attract each other but, unlike Spring Embedder, all vertices repel each other. 
-
-These forces induce movement. The algorithm might resemble molecular or planetary simulations, some-
-times called n -body problems. 
-
+	Fruchterman and Reingold (1991) refined the Spring Embedder model by replacing the forces. 
+	In theis model, the vertices behave as atomic particles or celestial bodies, 
+	exerting attractive and repulsive forces on one another. 
+	Again, only vertices that are neighbours attract each other but, unlike Spring Embedder, 
+	all vertices repel each other. 
+	These forces induce movement. The algorithm might resemble molecular or planetary simulations, 
+	sometimes called n-body problems. 
 */
 void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 	qreal xvel = 0, yvel = 0, dx=0, dy=0;
