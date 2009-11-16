@@ -3579,7 +3579,7 @@ void Graph::timerEvent(QTimerEvent *event) {
 
 void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
 	qreal xvel = 0, yvel = 0, dx=0, dy=0, ulv_x=0, ulv_y=0;
-	qreal c_rep=10, c_spring=13, dux=0, duy=0, len=100;
+	qreal c_rep=10, c_spring=3, dux=0, duy=0, natural_length=70;
 	double dist = 0;
 	QPointF curPos, newPos, pos ;
 		
@@ -3599,22 +3599,22 @@ void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
 				dist = sqrt (dx * dx + dy * dy); //the euclideian distance of the two vertices
 				qDebug()<< "v1= " << v1->name() <<  " v2= " <<  v2->name() << " - euclideian distance = " << dist;
 
-				if ( hasEdge (v1->name(), v2->name())  ) {  //calculate spring (pulling) force
+				if ( hasEdge (v1->name(), v2->name())  ) {  //calculate spring forces (pulling) force
 					ulv_x =  + dx / dist;
 					ulv_y =  + dy / dist;
-					dux = (ulv_x * c_spring) * log ( dist / len ); 	
-					duy = (ulv_y * c_spring) * log ( dist / len );
+					dux = (ulv_x * c_spring) * log ( dist / natural_length ); 	
+					duy = (ulv_y * c_spring) * log ( dist / natural_length );
 					xvel +=  dux;
 					yvel +=  duy;
 					qDebug() << " v1= "<<v1->name() <<  " connected to and pulled by v2= "<< v2->name()
-									<<"  c_spring=" << c_spring <<"  nat_length =" << len
+									<<"  c_spring=" << c_spring <<"  nat_length =" << natural_length
 									<<" ulv_x="<<ulv_x 	<<" ulv_y="<<ulv_y 	<<" dist= "<<dist 
 									<< " dux="<< dux << " duy="<< duy; 
 					qDebug(" ========== New Total Velocity for %i xvel, yvel  %f, %f", v1->name(), xvel, yvel); 
 					continue;
 				}
 				else {
-					//calculate electric (repulsive) force
+					//calculate electric (repulsive) forces between non-adjacent vertices.
 					ulv_x = - dx / dist;
 					ulv_y = - dy / dist;
 					dux = (ulv_x * c_rep) / (dist * dist); 	
@@ -3656,7 +3656,7 @@ void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
 */
 void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 	qreal xvel = 0, yvel = 0, dx=0, dy=0, ulv_x=0, ulv_y=0;
-	qreal c_rep=10, dux=0, duy=0, len=100;
+	qreal c_rep=10, dux=0, duy=0, natural_length=100;
 	double dist = 0;
 	QPointF curPos, newPos, pos ;
 		
@@ -3681,12 +3681,12 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 				if ( hasEdge (v1->name(), v2->name())  ) {  //calculate spring (pulling) force
 					ulv_x =  dx / dist;
 					ulv_y =  dy / dist;
-					dux = ( ulv_x ) * ( dist * dist ) / len;
-					duy = ( ulv_y ) * ( dist * dist ) / len;
+					dux = ( ulv_x ) * ( dist * dist ) / natural_length;
+					duy = ( ulv_y ) * ( dist * dist ) / natural_length;
 					xvel +=  dux;
 					yvel +=  duy;
 					qDebug() << " v1= "<<v1->name() <<  " connected to and pulled by v2= "<< v2->name()
-									<<"  nat_length =" << len
+									<<"  nat_length =" << natural_length
 									<<" ulv_x="<<ulv_x 	<<" ulv_y="<<ulv_y 	<<" dist= "<<dist 
 									<< " dux="<< dux << " duy="<< duy; 
 					qDebug(" ========== New Total Velocity for %i xvel, yvel  %f, %f", v1->name(), xvel, yvel); 
@@ -3695,8 +3695,8 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 				//calculate electric (repulsive) force between all vertices
 				ulv_x = -dx / dist;
 				ulv_y = -dy / dist;
-				dux = (ulv_x * len * len ) / (dist ); 	
-				duy = (ulv_y * len * len ) / ( dist) ;
+				dux = (ulv_x * natural_length * natural_length ) / (dist ); 	
+				duy = (ulv_y * natural_length * natural_length ) / ( dist) ;
 				qDebug() << " v1 = "<<v1->name() <<  " NOT connected to and pushed away from  v2 = "<< v2->name() 
 						<<"  c_rep=" << c_rep
 						<<" ulv_x="<<ulv_x 	<<" ulv_y="<<ulv_y 	<<" dist^2="<<dist * dist
