@@ -1553,7 +1553,7 @@ void MainWindow::initView() {
 	graphicsWidget->setFocusPolicy(Qt::StrongFocus);	
 	graphicsWidget->setFocus();
 
-	this->resize(900,700);
+	this->resize(900,600);
 
 	//set minimum size of canvas
  	graphicsWidget->setMinimumSize( (qreal)  ( this->width()-toolBox->sizeHint().width() -30) , (qreal) ( this->height()-statusBar()->sizeHint().height() -toolBar->sizeHint().height() -menuBar()->sizeHint().height() -20 ) );
