@@ -1018,7 +1018,6 @@ void MainWindow::initMenuBar() {
 	networkMenu -> addAction(fileNew);
 	networkMenu -> addAction(fileOpen);
 	importSubMenu = new QMenu(tr("Import ..."));
-
 	importSubMenu -> addAction(importPajek);
 	importSubMenu -> addAction(importSM);
 	importSubMenu -> addAction(importList);
@@ -1741,6 +1740,7 @@ void MainWindow::slotChooseFile() {
 				tr("please use the options in the Import sub menu. \n")+
 				tr("\n This warning message will not appear again."),
 				"OK", 0 ); 
+		firstTime=false;
 	}
 	bool a_file_was_already_loaded=fileLoaded;
 	previous_fileName=fileName;
@@ -1759,7 +1759,7 @@ void MainWindow::slotChooseFile() {
 				fileType_string = tr("Pajek (*.net *.pajek);;All (*)");
 				break;
 		case 3: //Adjacency
-				fileType_string = tr("Adjacency (*.txt *.csv);;All (*)");
+				fileType_string = tr("Adjacency (*.txt *.csv, *.net);;All (*)");
 				break;
 		case 4: //Dot
 				fileType_string = tr("GraphViz (*.dot);;All (*)");
@@ -5702,7 +5702,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Mon Oct  5 17:45:06 EEST 2009";
+QString BUILD="Tue Dec 29 02:16:48 EET 2009";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"

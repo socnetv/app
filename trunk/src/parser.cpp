@@ -79,9 +79,9 @@ bool Parser::load(QString fn, int iNS, QString iNC, QString iNSh,
 			return false;
 	}
 	else {
-		qDebug()<< "**** Parser:: thread has  not finished yet but we return back to Graph and MW! ";
+		qDebug()<< "**** Parser:: thread has not finished yet but we return back to Graph and MW! ";
 	}
-	return false;	
+	return true;	
 }
 
 
@@ -188,6 +188,8 @@ bool Parser::loadDL(){
 		qDebug()<< "Error: aborting";
 		return false;
 	}
+	//The network has been loaded. Tell MW the statistics and network type
+	// 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List 
 	emit fileType(5, networkName, aNodes, totalLinks, undirected);
 	qDebug() << "Parser-loadDL()";
 	return true;
@@ -566,9 +568,8 @@ bool Parser::loadPajek(){
 	} //end WHILE
 	file.close();
 	if (j==0) return false;
-	/** 
-		0 means no file, 1 means Pajek, 2 means Adjacency etc	
-	**/
+	//The network has been loaded. Tell MW the statistics and network type
+	// 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List	
 	emit fileType(2, networkName, aNodes, totalLinks, undirected);
 	
 	qDebug("Parser-loadPajek(): Removing all dummy aNodes, if any");
@@ -697,10 +698,9 @@ bool Parser::loadAdjacency(){
 	}
 	file.close();
 
-	/** 
-		0 means no file, 1 means Pajek, 2 means Adjacency etc	
-	**/
-	emit fileType(2, networkName, aNodes, totalLinks, undirected);
+	//The network has been loaded. Tell MW the statistics and network type
+	// 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List
+	emit fileType(3, networkName, aNodes, totalLinks, undirected);
 	return true;
 }
 
@@ -756,7 +756,8 @@ bool Parser::loadGraphML(){
 		}
 	}
 
-
+	//The network has been loaded. Tell MW the statistics and network type
+	// 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List
 	emit fileType(1, networkName, aNodes, totalLinks, undirected);
 	//clear our mess - remove every hash element...
 	keyFor.clear();
@@ -1356,9 +1357,9 @@ bool Parser::loadGML(){
 		}
 		else if ( str.startsWith("edge",Qt::CaseInsensitive) ) { 	 //edge declarations
 		}
-
-
 	}
+	//The network has been loaded. Tell MW the statistics and network type
+	// 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List
 	emit fileType(6, networkName, aNodes, totalLinks, undirected);
 	qDebug() << "Parser-loadGML()";
 	return true;
@@ -1644,9 +1645,8 @@ bool Parser::loadDot(){
 		}
 	}
   	file.close();
-	/** 
-		0 means no file, 1 means Pajek, 2 means Adjacency etc	
-	**/
+	//The network has been loaded. Tell MW the statistics and network type
+	// 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List
 	emit fileType(4, networkName, aNodes, totalLinks, undirected);
 	return true;
 }
@@ -1966,9 +1966,8 @@ bool Parser::loadList(){
 	} //end ts.stream while here
 	file.close();
 
-	/** 
-		0 means no file, 1 means Pajek, 2 means Adjacency etc	
-	**/
+	//The network has been loaded. Tell MW the statistics and network type
+	// 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List
 	emit fileType(7, networkName, aNodes, totalLinks, undirected);
 	qDebug() << "Parser-loadList() ending and returning...";
 	return true;
