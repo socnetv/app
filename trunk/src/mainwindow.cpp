@@ -3,7 +3,7 @@
  version: 0.80
  Written in Qt 4.4
 
-                           mainwindow.cpp  -  description
+-                           mainwindow.cpp  -  description
                              -------------------
     copyright            : (C) 2005-2009 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com

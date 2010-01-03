@@ -2051,9 +2051,6 @@ void Graph::writeClusteringCoefficient(
 	Q_UNUSED(clucof);
 	emit statusMessage ( QString(tr("Writing clustering coefficients to file:")).arg(fileName) );
 	
-	outText <<"-SocNetV- "<<"\n\n";
-	outText << tr("CLUSTERING COEFFICIENT REPORT \n");
-	outText << tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
 	outText << tr("CLUSTERING COEFFICIENT (CLC) OF EACH NODE\n");
 	outText << tr("CLC  range: 0 < C < 1") <<"\n";
 	outText << "Node"<<"\tCLC\n";
@@ -2083,6 +2080,10 @@ void Graph::writeClusteringCoefficient(
 	outText << tr("Range: 0 < GCLC < 1\n");
 	outText << tr("GCLC = 0, when there are no cliques (i.e. acyclic tree).\n");
 	outText << tr("GCLC = 1, when every node and its neighborhood are complete cliques.\n");
+
+	outText <<"\n\n" ;
+	outText << tr("Clustering Coefficient Report,\n");
+	outText << tr("created by SocNetV: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
 
 	file.close();
 }
