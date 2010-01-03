@@ -1184,8 +1184,8 @@ void MainWindow::initMenuBar() {
 	statMenu->addSeparator();
 	centrlMenu = new QMenu(tr("Centralities"));
 	statMenu->addMenu(centrlMenu); 
-	centrlMenu -> addAction (cOutDegreeAct);
 	centrlMenu -> addAction (cInDegreeAct);
+	centrlMenu -> addAction (cOutDegreeAct);
 	centrlMenu -> addAction (cClosenessAct);
 	centrlMenu -> addAction (cBetweenessAct);
 //   cInformationalAct -> addTo(centrlMenu);
