@@ -1601,33 +1601,30 @@ void Graph::writeCentralityInDegree
 	centralityInDegree(considerWeights);
 	float maximumIndexValue=vertices()-1.0;
 	
-	outText << "-SocNetV- \n\n";
-	outText << tr("IN-DEGREE CENTRALITY REPORT \n");
-	outText << tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
-	outText << tr("IN-DEGREE CENTRALITIES (IDC) OF EACH NODE\n");
+	outText << tr("IN-DEGREE CENTRALITIES (IDC) OF EACH NODE\n\n");
 	outText << tr("IDC  range: 0 < C < ")<<maximumIndexValue<<"\n";
 	outText << "IDC' range: 0 < C'< 1"<<"\n\n";
 
 	outText << "Node"<<"\tIDC\tIDC'\t%IDC\n";
-
 
 	QList<Vertex*>::iterator it;
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
 		outText <<(*it)->name()<<"\t"<<(*it)->IDC() << "\t"<< (*it)->SIDC() << "\t" <<  (100* ((*it)->IDC()) / sumIDC)<<endl;
 	}
 	if (symmetricAdjacencyMatrix) {
-		outText << "Mean Nodal Degree = "<< meanDegree<<"\n" ;
-		outText << "Degree Variance = "<< varianceDegree<<"\n\n";
+		outText << "\n" << tr("Mean Nodal Degree = ") << meanDegree<<"\n" ;
+		outText << "\n" << tr("Degree Variance = ") << varianceDegree<<"\n";
 	}
 	else{
-		outText << "Mean Nodal InDegree = "<< meanDegree<<"\n" ;
-		outText << "InDegree Variance = "<< varianceDegree<<"\n\n";
+		outText << "\n" << tr("Mean Nodal InDegree = ") << meanDegree<<"\n" ;
+		outText << "\n" << tr("InDegree Variance = ") << varianceDegree<<"\n";
 	}
+
 	if ( minIDC == maxIDC )
-		outText << "\nAll nodes have the same IDC value.\n";
+		outText << "\n" << tr("All nodes have the same IDC value.") << "\n";
 	else  {
-		outText << "\nNode "<< maxNodeIDC << " has the maximum IDC value (std): " << maxIDC <<"  \n";
-		outText << "\nNode "<< minNodeIDC << " has the minimum IDC value (std): " << minIDC <<"  \n";
+		outText << "\n" << tr("Node ")<< maxNodeIDC << tr(" has the maximum IDC value (std): ") << maxIDC <<"  \n";
+		outText << "\n" << tr("Node ")<< minNodeIDC << tr(" has the minimum IDC value (std): ") << minIDC <<"  \n";
 	}
 	if (classesIDC!=1)
 		outText << "\nThere are "<<classesIDC<<" different IDC classes.\n";	
@@ -1640,6 +1637,11 @@ void Graph::writeCentralityInDegree
 	outText << "GIDC = 1, when one node is linked from every other node.\n";
 	outText << "The in-degree of the node is a measure of the \'activity\' of the node it represents\n";
 	outText << "(Wasserman & Faust, p. 101)\n";
+	
+	outText << tr("In-Degree Centrality Report, \n");
+	outText << tr("created by SocNetV: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+	file.close();
+
 }
 
 
@@ -1736,12 +1738,7 @@ void Graph::writeCentralityOutDegree (
 
 	float maximumIndexValue=vertices()-1.0;
 	
-	outText << "-SocNetV- \n\n";
-	outText << tr("OUT-DEGREE CENTRALITY REPORT \n");
-	outText << tr("Created: ")<<
-			 actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) 
-			 << "\n\n";
-	outText << tr("OUT-DEGREE CENTRALITIES (ODC) FOR EACH NODE\n");
+	outText << tr("OUT-DEGREE CENTRALITIES (ODC) FOR EACH NODE\n\n");
 
 	outText << tr("ODC  range: 0 < C < ")<<QString::number(maximumIndexValue)<<"\n";
 	outText << "ODC' range: 0 < C'< 1"<<"\n\n";
@@ -1752,15 +1749,15 @@ void Graph::writeCentralityOutDegree (
 		outText << (*it)->name()<<"\t"<<(*it)->ODC() << "\t"<< (*it)->SODC() << "\t" <<  (100* ((*it)->ODC()) / sumODC)<<endl;
 	}
 	if (symmetricAdjacencyMatrix) {
-		outText << "Mean Node Degree = "<< meanDegree<<"\n" ;
-		outText << "Degree Variance = "<< varianceDegree<<"\n\n";
+		outText << "\n" << tr("Mean Node Degree = ") << meanDegree<<"\n" ;
+		outText << "\n" << tr("Degree Variance = ") << varianceDegree<<"\n\n";
 	}
 	else{
-		outText << "Mean Vertex OutDegree = "<< meanDegree<<"\n" ;
-		outText << "OutDegree Variance = "<< varianceDegree<<"\n\n";
+		outText << "\n" << tr("Mean Node OutDegree = ") << meanDegree<<"\n" ;
+		outText << "\n" << tr("OutDegree Variance = ") << varianceDegree<<"\n\n";
 	}
 	if ( minODC == maxODC )
-		outText << "\nAll nodes have the same ODC value.\n";
+		outText << "\n"<< tr("All nodes have the same ODC value.") << "\n";
 	else  {
 		outText << "\nNode "<< maxNodeODC << " has the maximum ODC value (std): " << maxODC <<"  \n";
 		outText << "\nNode "<< minNodeODC << " has the minimum ODC value (std): " << minODC <<"  \n";
@@ -1778,6 +1775,12 @@ void Graph::writeCentralityOutDegree (
 	outText << "(Wasserman & Faust, formula 5.5, p. 177)\n\n";
 	outText << "The degree of the node is a measure of the \'activity\' of the node it represents\n";
 	outText << "(Wasserman & Faust, p. 101)\n";
+	
+	outText << "\n\n";	
+	outText << tr("Out-Degree Centrality Report, \n");
+	outText << tr("created by SocNetV: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+	file.close();
+
 }
 
 
@@ -1798,9 +1801,6 @@ void Graph::writeCentralityCloseness(
 	createDistanceMatrix(true);
 	emit statusMessage ( QString(tr("Writing closeness centralities to file:")).arg(fileName) );
 
-	outText << "-SocNetV- "<<"\n\n";
-	outText << tr("CLOSENESS - CENTRALITY REPORT \n");
-	outText << tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
 	outText << tr("CLOSENESS CENTRALITY (CC) OF EACH NODE")<<"\n";
 	outText << tr("CC(u) is the invert sum of the distances of node u from all other nodes.")<<"\n";
 	outText << tr("CC' is the standardized CC")<<"\n";
@@ -1831,6 +1831,12 @@ void Graph::writeCentralityCloseness(
 	outText << tr("the other nodes in the set of nodes. The idea is that a node\n");
 	outText << tr("is central if it can quickly interact with all others\n");
 	outText << "(Wasserman & Faust, p. 181)\n";
+
+	outText << "\n\n";
+	outText << tr("Closeness Centrality report, \n");
+	outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+	file.close();
+
 }
 
 
@@ -1851,9 +1857,6 @@ void Graph::writeCentralityBetweeness(
 	createDistanceMatrix(true);
 	emit statusMessage ( QString(tr("Writing betweeness centralities to file:")).arg(fileName) );
 	
-	outText << "-SocNetV- "<<"\n\n";
-	outText << tr("BETWEENESS - CENTRALITY REPORT \n");
-	outText << tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
 	outText << tr("BETWEENESS CENTRALITY (BC) OF EACH NODE")<<"\n";
 	outText << tr("BC of a node u is the sum of delta (s,t,u) for all s,t in V")<<"\n"; 
 	outText << tr("Delta(s,t,u) is the ratio of all geodesics between s and t which run through u.")<<"\n";
@@ -1880,6 +1883,11 @@ void Graph::writeCentralityBetweeness(
 	outText << tr("GBC = 0, when all the nodes have exactly the same betweeness index.\n");
 	outText << tr("GBC = 1, when one node falls on all other geodesics between all the remaining (N-1) nodes. This is exactly the situation realised by a star graph.\n");
 	outText << "(Wasserman & Faust, formula 5.13, p. 192)\n\n";
+	
+	outText << "\n\n";
+	outText << tr("Betweeness Centrality report, \n");
+	outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+	file.close();
 
 }
 
@@ -1902,9 +1910,6 @@ void Graph::writeCentralityGraph(
 	createDistanceMatrix(true);
 	emit statusMessage ( QString(tr("Writing graph centralities to file:")).arg(fileName) );
 
-	outText <<"-SocNetV- "<< "\n\n";
-	outText << tr("GRAPH - CENTRALITY REPORT \n" );
-	outText << tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss"))<<"\n\n"  ;
 	outText << tr("GRAPH CENTRALITY (GC) OF EACH NODE")<<"\n";
 	outText << tr("GC  range: 0 < GC < ")<<maxIndexGC<< " (GC=1 => distance from other nodes is max 1)\n";
 	outText << tr("GC' range: 0 < GC'< 1  (GC'=1 => directly linked with all nodes)")<<"\n\n";
@@ -1932,6 +1937,12 @@ void Graph::writeCentralityGraph(
 	outText << tr("GGC = 0, when all the nodes have exactly the same graph index.\n");
 	outText << tr("GGC = 1, when one node falls on all other geodesics between all the remaining (N-1) nodes. This is exactly the situation realised by a star graph.\n");
 	outText << "(Wasserman & Faust, formula 5.13, p. 192)\n\n";	
+
+	outText << "\n\n";
+	outText << tr("Graph Centrality report, \n");
+	outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+	file.close();
+
 }
 
 
@@ -1951,10 +1962,6 @@ void Graph::writeCentralityStress(
 	emit statusMessage ( (tr("Calculating shortest paths")) );
 	createDistanceMatrix(true);
 	emit statusMessage ( QString(tr("Writing stress centralities to file:")).arg(fileName) );
-
-	outText <<"-SocNetV- "<<"\n\n";
-	outText << tr("STRESS CENTRALITY REPORT \n");
-	outText << tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
 
 	outText << tr("STRESS CENTRALITY (SC) OF EACH NODE")<<"\n";
 	outText << tr("SC(u) is the sum of sigma(s,t,u): the number of geodesics from s to t through u.")<<"\n"; 
@@ -1982,6 +1989,12 @@ void Graph::writeCentralityStress(
 	outText << tr("GSC range: 0 < GSC < 1\n");
 	outText << tr("GSC = 0, when all the nodes have exactly the same stress index.\n");
 	outText << tr("GSC = 1, when one node falls on all other geodesics between all the remaining (N-1) nodes. This is exactly the situation realised by a star graph.\n");
+	
+	outText << "\n\n";
+	outText << tr("Stress Centrality report, \n");
+	outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+	file.close();
+
 }
 
 
@@ -2002,9 +2015,6 @@ void Graph::writeCentralityEccentricity(
 	createDistanceMatrix(true);
 	emit statusMessage ( QString(tr("Writing eccentricity centralities to file:")).arg(fileName) );
 	
-	outText <<"-SocNetV- "<<"\n\n";
-	outText << tr("ECCENTRICITY- CENTRALITY REPORT \n");
-	outText << tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
 	outText << tr("ECCENTRICITY CENTRALITY (EC) OF EACH NODE") << "\n";
 	outText << tr("EC of a node u is the largest geodesic distance (u,t) for t in V") << "\n"; 
 	outText << tr("Therefore, EC(u) reflects how far, at most, is each node from every other node.") << "\n";
@@ -2030,6 +2040,12 @@ void Graph::writeCentralityEccentricity(
 	outText << tr("GEC = 0, when all the nodes have exactly the same betweeness index.\n");
 	outText << tr("GEC = 1, when one node falls on all other geodesics between all the remaining (N-1) nodes. This is exactly the situation realised by a star graph.\n");
 	outText << "(Wasserman & Faust, formula 5.13, p. 192)\n\n";
+
+	outText << "\n\n";
+	outText << tr("Eccentricity Centrality report, \n");
+	outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+	file.close();
+
 }
 
 
@@ -2116,9 +2132,6 @@ void Graph::writeTriadCensus(
 	
 	emit statusMessage ( QString(tr("Writing clustering coefficients to file:")).arg(fileName) );
 	
-	outText <<"-SocNetV- "<<"\n\n";
-	outText << tr("TRIAD CENSUS REPORT \n");
-	outText << tr("Created: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
 	outText << "Type\t\tCensus\t\tExpected Value" << "\n";
 	outText << "003" << "\t\t" << triadTypeFreqs[0] << "\n";
 	outText << "012" << "\t\t" <<triadTypeFreqs[1] <<"\n";
@@ -2138,7 +2151,8 @@ void Graph::writeTriadCensus(
 	outText << "300" << "\t\t" <<triadTypeFreqs[15] <<"\n";
 
 	outText << "\n\n";
-
+	outText << tr("Triad Census report, \n");
+	outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
 	file.close();
 
 }
