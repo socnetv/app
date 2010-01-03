@@ -4,11 +4,12 @@
 
 ChangeLog:
 
-Version 0.80 - September 30  2009  (PROJECTED)
+Version 0.80 - January 30  2010  (PROJECTED)
 Codename: "supersyntages.gr"
 ----------------------------
 - New statistic: Triad Census.
-- Read support for list file.
+- Read support for list formatted files.
+- Read support for comma separated values (csv) formmated sociomatrix files
 - Much improved Dot format support. 
 - Added keyboard shortcuts for Centralities
 - Refactored Import network menu. The user must define what network format is the file at hand.

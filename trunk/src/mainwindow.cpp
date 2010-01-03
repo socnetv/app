@@ -1759,7 +1759,7 @@ void MainWindow::slotChooseFile() {
 				fileType_string = tr("Pajek (*.net *.pajek);;All (*)");
 				break;
 		case 3: //Adjacency
-				fileType_string = tr("Adjacency (*.txt *.csv, *.net);;All (*)");
+				fileType_string = tr("Adjacency (*.txt *.csv *.net);;All (*)");
 				break;
 		case 4: //Dot
 				fileType_string = tr("GraphViz (*.dot);;All (*)");
@@ -5702,7 +5702,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Mon Jan  4 01:09:49 EET 2010";
+QString BUILD="Mon Jan  4 01:49:55 EET 2010";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"

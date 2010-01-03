@@ -628,8 +628,10 @@ bool Parser::loadAdjacency(){
 			file.close();		
  		 	return false;    
 		}
-
-		newCount = (str.split(" ")).count();
+		if ( str.contains (","))
+			newCount = (str.split(",")).count();
+			else  
+			newCount = (str.split(" ")).count();
 		qDebug() << str;
 		qDebug() << "newCount "<<newCount << " i " << i;		
 		if  ( (newCount != lastCount && i>1 ) || (newCount < i) ) {
@@ -656,7 +658,10 @@ bool Parser::loadAdjacency(){
 		if ( isComment(str) ) 
 			continue; 
 
-		lineElement=str.split(" ");
+		if ( str.contains (","))
+			lineElement=str.split(",");
+		else
+			lineElement=str.split(" ");
 		if (i == 0 ) {
 			aNodes=lineElement.count();
 			qDebug("Parser-loadAdjacency(): There are %i nodes in this file", aNodes);		
