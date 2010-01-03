@@ -61,7 +61,7 @@ typedef map<float,int> fmap_i;
 typedef map<int,int> imap_i;
 typedef map<int,float> imap_f;
 
-typedef QHash <QString, int> shash_i;
+typedef QHash <QString, int> hash_si;
 
 typedef QList<Vertex*> Vertices;
 
@@ -313,11 +313,11 @@ private:
 	/** methods used by createDistanceMatrix()  */
 	void BFS(int, bool);									//Breadth-first search 
 	void minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int &minNode) ;	//helper
-	void resolveClasses(float C, shash_i &discreteClasses, int &classes);			//helper
-	void resolveClasses(float C, shash_i &discreteClasses, int &classes, int name);  	//helper
+	void resolveClasses(float C, hash_si &discreteClasses, int &classes);			//helper
+	void resolveClasses(float C, hash_si &discreteClasses, int &classes, int name);  	//helper
 
 	/** used in resolveClasses and createDistanceMatrix() */
-	shash_i	discreteIDCs, discreteODCs, discreteCCs, discreteBCs, discreteSCs, discreteGCs, discreteECs;
+	hash_si discreteIDCs, discreteODCs, discreteCCs, discreteBCs, discreteSCs, discreteGCs, discreteECs;
 	
 	int *eccentricities;
 	bool calculatedIDC, calculatedODC, calculatedCentralities, dynamicMovement;

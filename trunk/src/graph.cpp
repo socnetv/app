@@ -1140,7 +1140,6 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 
 		QList<Vertex*>::iterator it, it1;	
 		QList<int>::iterator it2;
-		fmap_i::iterator it3;
 		int w=0, u=0,s=0;
 		float d_sw=0, d_su=0;
 		float CC=0, BC=0, SC=0, GC=0, EC=0, stdGC=0, stdEC=0;	
@@ -1478,35 +1477,30 @@ void Graph::minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int
 
 
 /** 	This method calculates the number of discrete centrality classes of all vertices
-	It stores that number in a map<float,int> where the centrality value is the key.
+	It stores that number in a QHash<QString,int> type where the centrality value is the key.
 	Called from createDistanceMatrix()
 */
-void Graph::resolveClasses(float C, shash_i &discreteClasses, int &classes){
-Q_UNUSED(C);
-Q_UNUSED(discreteClasses);
-Q_UNUSED(classes);
-// 	shash_i::iterator it2;
-// 	it2 = discreteClasses.find(C);    //O(logN) complexity
-// 	if (it2 == discreteClasses.end() )	{
-// 		classes++; 
-// 		qDebug("######This is a new centrality class. Amount of classes = %i", classes);
-// 		discreteClasses[C]=classes;
-// 	}
+void Graph::resolveClasses(float C, hash_si &discreteClasses, int &classes){
+ 	hash_si::iterator it2;
+ 	it2 = discreteClasses.find(QString::number(C));    //Amort. O(1) complexity
+ 	if (it2 == discreteClasses.end() )	{
+ 		classes++; 
+ 		qDebug("######This is a new centrality class. Amount of classes = %i", classes);
+ 		discreteClasses.insert(QString::number(C), classes);
+ 	}
 }
 
-
-void Graph::resolveClasses(float C, shash_i &discreteClasses, int &classes, int vertex){
-Q_UNUSED(C);
-Q_UNUSED(discreteClasses);
-Q_UNUSED(classes);
-Q_UNUSED(vertex);
-// 	fmap_i::iterator it2;
-// 	it2 = discreteClasses.find(C);    //O(logN) complexity
-// 	if (it2 == discreteClasses.end() )	{
-// 		classes++; 
-// 		qDebug("######Vertex %i  belongs to a new centrality class. Amount of classes = %i", vertex, classes);
-// 		discreteClasses[C]=classes;
-// 	}
+/*
+ * Overloaded method. It only adds displaying current vertex for debugging purposes. 
+ */
+void Graph::resolveClasses(float C, hash_si &discreteClasses, int &classes, int vertex){
+ 	hash_si::iterator it2;
+ 	it2 = discreteClasses.find(QString::number(C));    //Amort. O(1) complexity
+ 	if (it2 == discreteClasses.end() )	{
+ 		classes++; 
+ 		qDebug("######Vertex %i  belongs to a new centrality class. Amount of classes = %i", vertex, classes);
+ 		discreteClasses.insert(QString::number(C), classes);
+ 	}
 }
 
 
@@ -1528,7 +1522,7 @@ void Graph::centralityInDegree(bool weights){
 	varianceDegree=0;
 	meanDegree=0;
 	QList<Vertex*>::iterator it, it1;
-	shash_i::iterator it2;
+	hash_si::iterator it2;
 	int vert=vertices();
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
 		IDC=0;
@@ -1663,7 +1657,7 @@ void Graph::centralityOutDegree(bool weights){
 	meanDegree=0;
 	int vert=vertices();
 	QList<Vertex*>::iterator it, it1;
-	shash_i::iterator it2;
+	hash_si::iterator it2;
 	
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
 		ODC=0;
