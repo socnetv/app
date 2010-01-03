@@ -1612,32 +1612,34 @@ void Graph::writeCentralityInDegree
 		outText <<(*it)->name()<<"\t"<<(*it)->IDC() << "\t"<< (*it)->SIDC() << "\t" <<  (100* ((*it)->IDC()) / sumIDC)<<endl;
 	}
 	if (symmetricAdjacencyMatrix) {
-		outText << "\n" << tr("Mean Nodal Degree = ") << meanDegree<<"\n" ;
-		outText << "\n" << tr("Degree Variance = ") << varianceDegree<<"\n";
+		outText << "\n";
+		outText << tr("Mean Nodal Degree = ") << meanDegree<<"\n" ;
+		outText << tr("Degree Variance = ") << varianceDegree<<"\n";
 	}
 	else{
-		outText << "\n" << tr("Mean Nodal InDegree = ") << meanDegree<<"\n" ;
-		outText << "\n" << tr("InDegree Variance = ") << varianceDegree<<"\n";
+		outText << "\n";
+		outText << tr("Mean Nodal InDegree = ") << meanDegree<<"\n" ;
+		outText << tr("InDegree Variance = ") << varianceDegree<<"\n";
 	}
 
 	if ( minIDC == maxIDC )
-		outText << "\n" << tr("All nodes have the same IDC value.") << "\n";
+		outText << tr("All nodes have the same IDC value.") << "\n";
 	else  {
-		outText << "\n" << tr("Node ")<< maxNodeIDC << tr(" has the maximum IDC value (std): ") << maxIDC <<"  \n";
-		outText << "\n" << tr("Node ")<< minNodeIDC << tr(" has the minimum IDC value (std): ") << minIDC <<"  \n";
+		outText << tr("Max IDC' = ") << maxIDC <<" (node "<< maxNodeIDC <<  ")  \n";
+		outText << tr("Min IDC' = ") << minIDC <<" (node "<< minNodeIDC <<  ")  \n";
+		outText << tr("IDC classes = ") << classesIDC<<" \n"; 	
 	}
-	if (classesIDC!=1)
-		outText << "\nThere are "<<classesIDC<<" different IDC classes.\n";	
-	else 
-		outText << "\nThere is only "<<classesIDC<<" IDC class.\n";	
+
 	outText << "\nGROUP IN-DEGREE CENTRALISATION (GIDC)\n\n";
 	outText << "GIDC = " << groupIDC<<"\n\n";
+
 	outText << "GIDC range: 0 < GIDC < 1\n";
 	outText << "GIDC = 0, when all in-degrees are equal (i.e. regular lattice).\n";
 	outText << "GIDC = 1, when one node is linked from every other node.\n";
 	outText << "The in-degree of the node is a measure of the \'activity\' of the node it represents\n";
 	outText << "(Wasserman & Faust, p. 101)\n";
 	
+	outText << "\n\n";
 	outText << tr("In-Degree Centrality Report, \n");
 	outText << tr("created by SocNetV: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
 	file.close();
@@ -1746,29 +1748,29 @@ void Graph::writeCentralityOutDegree (
 	outText << "Node"<<"\tODC\tODC'\t%ODC\n";
 	QList<Vertex*>::iterator it;
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
-		outText << (*it)->name()<<"\t"<<(*it)->ODC() << "\t"<< (*it)->SODC() << "\t" <<  (100* ((*it)->ODC()) / sumODC)<<endl;
+		outText << (*it)->name()<<"\t"<<(*it)->ODC() << "\t"<< (*it)->SODC() << "\t" <<  (100* ((*it)->ODC()) / sumODC)<< "\n";
 	}
 	if (symmetricAdjacencyMatrix) {
-		outText << "\n" << tr("Mean Node Degree = ") << meanDegree<<"\n" ;
-		outText << "\n" << tr("Degree Variance = ") << varianceDegree<<"\n\n";
+		outText << "\n";
+		outText << tr("Mean Node Degree = ") << meanDegree<<"\n" ;
+		outText << tr("Degree Variance = ") << varianceDegree<<"\n";
 	}
 	else{
-		outText << "\n" << tr("Mean Node OutDegree = ") << meanDegree<<"\n" ;
-		outText << "\n" << tr("OutDegree Variance = ") << varianceDegree<<"\n\n";
+		outText << "\n" ; 
+		outText << tr("Mean Node OutDegree = ") << meanDegree<<"\n" ;
+		outText << tr("OutDegree Variance = ") << varianceDegree<<"\n";
 	}
 	if ( minODC == maxODC )
-		outText << "\n"<< tr("All nodes have the same ODC value.") << "\n";
+		outText << tr("All nodes have the same ODC value.") << "\n";
 	else  {
-		outText << "\nNode "<< maxNodeODC << " has the maximum ODC value (std): " << maxODC <<"  \n";
-		outText << "\nNode "<< minNodeODC << " has the minimum ODC value (std): " << minODC <<"  \n";
+		outText << tr("Max ODC' = ") << maxODC <<" (node "<< maxNodeODC <<  ")  \n";
+		outText << tr("Min ODC' = ") << minODC <<" (node "<< minNodeODC <<  ")  \n";
+		outText << tr("ODC classes = ") << classesODC<<" \n"; 	
 	}
-	if (classesODC!=1)
-		outText << "\nThere are "<<classesODC<<" different out-degree centrality classes.\n";		
-	else 
-		outText << "\nThere is only "<<classesODC<<" out-degree centrality class.\n";	
 	
 	outText << "\nGROUP OUT-DEGREE CENTRALISATION (GODC)\n\n";
 	outText << "GODC = " << groupODC<<"\n\n";
+
 	outText << "GODC range: 0 < GODC < 1\n";
 	outText << "GODC = 0, when all out-degrees are equal (i.e. regular lattice).\n";
 	outText << "GODC = 1, when one node completely dominates or overshadows the other nodes.\n";
@@ -1802,7 +1804,7 @@ void Graph::writeCentralityCloseness(
 	emit statusMessage ( QString(tr("Writing closeness centralities to file:")).arg(fileName) );
 
 	outText << tr("CLOSENESS CENTRALITY (CC) OF EACH NODE")<<"\n";
-	outText << tr("CC(u) is the invert sum of the distances of node u from all other nodes.")<<"\n";
+	outText << tr("CC is the invert sum of the distances of node u from all other nodes.")<<"\n";
 	outText << tr("CC' is the standardized CC")<<"\n";
 	
 	outText << tr("CC  range:  0 < C < ")<<QString::number(maxIndexCC)<<"\n";
@@ -1816,13 +1818,15 @@ void Graph::writeCentralityCloseness(
 	if ( minCC == maxCC )
 		outText << tr("\nAll nodes have the same CC value.\n");
 	else  {
-		outText << tr("\nNode ")<< maxNodeCC << tr(" has the maximum ACC value (std): ") <<maxCC  <<"  \n";
-		outText << tr("\nNode ")<< minNodeCC << tr(" has the minimum ACC value (std): ") <<minCC <<"  \n";
+		outText << "\n";
+		outText << tr("Max CC' = ") << maxCC <<" (node "<< maxNodeCC  <<  ")  \n";
+		outText << tr("Min CC' = ") << minCC <<" (node "<< minNodeCC <<  ")  \n";
+		outText << tr("CC classes = ") << classesCC<<" \n"; 	
 	}
-	
-	outText << tr("\nThere are ")<<classesCC<< tr(" different Closeness Centrality classes.\n");	
+		
 	outText << tr("\nGROUP CLOSENESS CENTRALISATION (GCC)\n\n");
 	outText << tr("GCC = ") << groupCC<<"\n\n";
+	
 	outText << tr("GCC range: 0 < GCC < 1\n");
 	outText << tr("GCC = 0, when the lengths of the geodesics are all equal (i.e. a complete or a circle graph).\n");
 	outText << tr("GCC = 1, when one node has geodesics of length 1 to all the other nodes, and the other nodes have geodesics of length 2 to the remaining (N-2) nodes. This is exactly the situation realised by a star graph.\n");
@@ -1859,7 +1863,7 @@ void Graph::writeCentralityBetweeness(
 	
 	outText << tr("BETWEENESS CENTRALITY (BC) OF EACH NODE")<<"\n";
 	outText << tr("BC of a node u is the sum of delta (s,t,u) for all s,t in V")<<"\n"; 
-	outText << tr("Delta(s,t,u) is the ratio of all geodesics between s and t which run through u.")<<"\n";
+	outText << tr("where delta (s,t,u) is the ratio of all geodesics between s and t which run through u.")<<"\n";
 	outText << tr("Therefore, BC(u) reflects how often the node u lies on the geodesics between the other nodes of the network")<<"\n";
 	outText << tr("BC' is the standardized BC")<<"\n";
 	outText << tr("BC  range: 0 < BC < ")<<QString::number( maxIndexBC)<< tr(" (Number of pairs of nodes excluding i)")<<"\n";
@@ -1870,15 +1874,17 @@ void Graph::writeCentralityBetweeness(
 		outText <<(*it)->name()<<"\t"<<(*it)->BC() << "\t\t"<< (*it)->SBC() << "\t\t" <<  (100* ((*it)->BC()) /  sumBC)<<endl;
 	}
 	if ( minBC ==  maxBC)
-		outText << tr("\nAll nodes have the same BC value.\n");
+		outText << "\n"<< tr("All nodes have the same BC value.\n");
 	else {
-		outText << tr("\n Node ")<< maxNodeBC<< tr(" has the maximum BC value: ") << maxBC <<"  \n";
-		outText << tr("\n Node ")<< minNodeBC<< tr(" has the minimum BC value: ") << minBC <<"  \n";
+		outText << "\n";
+		outText << tr("Max BC' = ") << maxBC <<" (node "<< maxNodeBC  <<  ")  \n";
+		outText << tr("Min BC' = ") << minBC <<" (node "<< minNodeBC <<  ")  \n";
+		outText << tr("BC classes = ") << classesBC<<" \n"; 	
 	}
-
-	outText << tr("\nThere are ")<< classesBC<< tr(" different Betweeness Centrality classes.\n");	
+		
 	outText << tr("\nGROUP BETWEENESS CENTRALISATION (GBC)\n\n");
 	outText << tr("GBC = ") <<  groupBC <<"\n\n";
+
 	outText << tr("GBC range: 0 < GBC < 1\n");
 	outText << tr("GBC = 0, when all the nodes have exactly the same betweeness index.\n");
 	outText << tr("GBC = 1, when one node falls on all other geodesics between all the remaining (N-1) nodes. This is exactly the situation realised by a star graph.\n");
@@ -1923,12 +1929,12 @@ void Graph::writeCentralityGraph(
 	if ( minGC ==  maxGC)
 		outText << tr("\nAll nodes have the same GC value.\n");
 	else {
-		outText << tr("\n Node ")<< maxNodeGC<< tr(" has the maximum GC value: ") << maxGC <<"  \n";
-		outText << tr("\n Node ")<< minNodeGC<< tr(" has the minimum GC value: ") << minGC <<"  \n";
+		outText << "\n";
+		outText << tr("Max GC' = ") << maxGC <<" (node "<< maxNodeGC  <<  ")  \n";
+		outText << tr("Min GC' = ") << minGC <<" (node "<< minNodeGC <<  ")  \n";
+		outText << tr("GC classes = ") << classesGC<<" \n";
 	}
-
-	outText << tr("\nThere are ")<< classesGC<< tr(" different Graph Centrality classes.\n");	
-
+	
 	outText << tr("\nGROUP GRAPH CENTRALISATION (GGC)\n\n");
 
 	outText << tr("GGC = ") <<  groupGC<<"\n\n";
@@ -1978,11 +1984,12 @@ void Graph::writeCentralityStress(
 	if ( minSC ==  maxSC)
 		outText  << tr("\nAll nodes have the same SC value.\n");
 	else {
-		outText << tr("\n Node ")<< maxNodeSC<< tr(" has the maximum SC value: ") << maxSC <<"  \n";
-		outText << tr("\n Node ")<< minNodeSC<< tr(" has the minimum SC value: ") << minSC <<"  \n";
+		outText << "\n";
+		outText << tr("Max SC' = ") << maxSC <<" (node "<< maxNodeSC  <<  ")  \n";
+		outText << tr("Min SC' = ") << minSC <<" (node "<< minNodeSC <<  ")  \n";
+		outText << tr("SC classes = ") << classesSC<<" \n"; 	
 	}
 
-	outText  << tr("\nThere are ")<< classesSC<< tr(" different Stress Centrality classes.\n");	
 	outText << tr("GROUP STRESS CENTRALISATION (GSC)")<<"\n";
 	outText << tr("GSC = ") <<  groupSC<<"\n\n";
 	
@@ -2029,11 +2036,12 @@ void Graph::writeCentralityEccentricity(
 	if ( minEC ==  maxEC)
 		outText << tr("\nAll nodes have the same EC value.\n");
 	else {
-		outText << tr("\n Node ")<< maxNodeEC<< tr(" has the maximum EC value: ") << maxEC <<"  \n";
-		outText << tr("\n Node ")<< minNodeEC<< tr(" has the minimum EC value: ") << minEC <<"  \n";
+		outText << "\n";
+		outText << tr("Max EC' = ") << maxEC <<" (node "<< maxNodeEC  <<  ")  \n";
+		outText << tr("Min EC' = ") << minEC <<" (node "<< minNodeEC <<  ")  \n";
+		outText << tr("EC classes = ") << classesEC<<" \n"; 	
 	}
 
-	outText << tr("\nThere are ")<< classesEC<< tr(" different eccentricity Centrality classes.\n");	
 	outText << tr("\nGROUP ECCENTRICITY CENTRALISATION (GEC)\n\n");
 	outText << tr("GEC = ") <<  groupEC<<"\n\n";
 	outText << tr("GEC range: 0 < GEC < 1\n");
