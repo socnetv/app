@@ -657,7 +657,7 @@ void MainWindow::initActions(){
 	connect(circleInformationalLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutRadialCentralityInformational()));
 
 	circleStressLayoutAct = new QAction( tr("Stress"),	this);
-	circleStressLayoutAct ->setShortcut(tr("Ctrl+6"));
+	circleStressLayoutAct ->setShortcut(tr("Ctrl+Alt+6"));
 	circleStressLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Stressed Central Nodes are positioned towards the centre."));
 	circleStressLayoutAct->setWhatsThis(tr("Circle Stress Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes having greater Stress Centrality are situated towards the centre."));
 	connect(circleStressLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutRadialCentralityStress() ) );
@@ -5708,7 +5708,7 @@ QString BUILD="Mon Jan  4 01:09:49 EET 2010";
 	"<p><b>Version</b>: " + VERSION + "</p>"
 	"<p><b>Build</b>: "  + BUILD + " </p>"
 	
-	"<p>(C) 2005-2009 by Dimitris V. Kalamaras"
+	"<p>(C) 2005-2010 by Dimitris V. Kalamaras"
 	"<br> dimitris.kalamaras@gmail.com"
 
 	"<p><b>Fortune cookie: </b><br> \""  + fortuneCookie[randomCookie]  +"\""
