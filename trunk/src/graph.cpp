@@ -28,9 +28,10 @@
 #include <fstream>		//for writing the adjacency matrix to a file
 #include <cmath>		//for pow(float/double, float/double) function
 #include <QPointF>
-#include <QtDebug>		//used for qDebug messages
 
-#include <QDateTime> 	// used in exporting centrality files 
+#include <QDebug>		//used for qDebug messages
+#include <QDateTime> 	// used in exporting centrality files
+#include <QHash> 
 #include <list>			//for list iterators
 #include <queue>		//for BFS queue Q
 
@@ -1480,11 +1481,11 @@ void Graph::minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int
 	It stores that number in a map<float,int> where the centrality value is the key.
 	Called from createDistanceMatrix()
 */
-void Graph::resolveClasses(float C, fmap_i &discreteClasses, int &classes){
+void Graph::resolveClasses(float C, shash_i &discreteClasses, int &classes){
 Q_UNUSED(C);
 Q_UNUSED(discreteClasses);
 Q_UNUSED(classes);
-// 	fmap_i::iterator it2;
+// 	shash_i::iterator it2;
 // 	it2 = discreteClasses.find(C);    //O(logN) complexity
 // 	if (it2 == discreteClasses.end() )	{
 // 		classes++; 
@@ -1494,7 +1495,7 @@ Q_UNUSED(classes);
 }
 
 
-void Graph::resolveClasses(float C, fmap_i &discreteClasses, int &classes, int vertex){
+void Graph::resolveClasses(float C, shash_i &discreteClasses, int &classes, int vertex){
 Q_UNUSED(C);
 Q_UNUSED(discreteClasses);
 Q_UNUSED(classes);
@@ -1527,7 +1528,7 @@ void Graph::centralityInDegree(bool weights){
 	varianceDegree=0;
 	meanDegree=0;
 	QList<Vertex*>::iterator it, it1;
-	map<float, int>::iterator it2;
+	shash_i::iterator it2;
 	int vert=vertices();
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
 		IDC=0;
@@ -1543,11 +1544,11 @@ void Graph::centralityInDegree(bool weights){
 		(*it) -> setSIDC( IDC / (vert-1.0) );		//Set Standard InDegree
 		qDebug("Graph: vertex %i has IDC = %f and SIDC %f", (*it)->name(), IDC, (*it)->SIDC ());
 		sumIDC += IDC;
-		it2 = discreteIDCs.find(IDC);
+		it2 = discreteIDCs.find(QString::number(IDC));
 		if (it2 == discreteIDCs.end() )	{
 			classesIDC++; 
 			qDebug("This is a new IDC class");
-			discreteIDCs[IDC]=classesIDC;
+			discreteIDCs.insert ( QString::number(IDC), classesIDC );
 		}
 		qDebug("IDC classes = %i ", classesIDC);
 		if (maxIDC < IDC ) {
@@ -1662,7 +1663,7 @@ void Graph::centralityOutDegree(bool weights){
 	meanDegree=0;
 	int vert=vertices();
 	QList<Vertex*>::iterator it, it1;
-	fmap_i::iterator it2;
+	shash_i::iterator it2;
 	
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
 		ODC=0;
@@ -1679,11 +1680,11 @@ void Graph::centralityOutDegree(bool weights){
 		(*it) -> setSODC( ODC / (vert-1.0) );		//Set Standard OutDegree
 		qDebug("Graph: vertex %i has ODC = %f and SODC %f", (*it)->name(), ODC, (*it)->SODC ());
 		sumODC += ODC;
-		it2 = discreteODCs.find(ODC);
+		it2 = discreteODCs.find(QString::number(ODC));
 		if (it2 == discreteODCs.end() )	{
 			classesODC++; 
 			qDebug("This is a new ODC class");
-			discreteODCs[ODC]=classesODC;
+			discreteODCs.insert ( QString::number(ODC), classesODC );
 		}
 		qDebug("ODC classes = %i ", classesODC);
 		if (maxODC < ODC ) {

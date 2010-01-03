@@ -30,14 +30,12 @@
 
 #include <QObject>
 #include <QList>
+#include <QHash>
 #include <QTextStream>
-
 
 #include <stack>  //FYI: stack is a wrapper around <deque> in C++, see: www.cplusplus.com/reference/stl/stack
 #include <map>
-
-
-
+	
 #include "vertex.h"
 #include "matrix.h"
 #include "parser.h"
@@ -62,6 +60,9 @@ class QDateTime;
 typedef map<float,int> fmap_i;
 typedef map<int,int> imap_i;
 typedef map<int,float> imap_f;
+
+typedef QHash <QString, int> shash_i;
+
 typedef QList<Vertex*> Vertices;
 
 class Graph:  public QObject{
@@ -312,11 +313,12 @@ private:
 	/** methods used by createDistanceMatrix()  */
 	void BFS(int, bool);									//Breadth-first search 
 	void minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int &minNode) ;	//helper
-	void resolveClasses(float C, fmap_i &discreteClasses, int &classes);			//helper
-	void resolveClasses(float C, fmap_i &discreteClasses, int &classes, int name);  	//helper
+	void resolveClasses(float C, shash_i &discreteClasses, int &classes);			//helper
+	void resolveClasses(float C, shash_i &discreteClasses, int &classes, int name);  	//helper
 
-	/** used in createDistanceMatrix() */
-	fmap_i	discreteIDCs, discreteODCs, discreteCCs, discreteBCs, discreteSCs, discreteGCs, discreteECs;
+	/** used in resolveClasses and createDistanceMatrix() */
+	shash_i	discreteIDCs, discreteODCs, discreteCCs, discreteBCs, discreteSCs, discreteGCs, discreteECs;
+	
 	int *eccentricities;
 	bool calculatedIDC, calculatedODC, calculatedCentralities, dynamicMovement;
 	
