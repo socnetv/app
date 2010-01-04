@@ -1790,6 +1790,7 @@ void MainWindow::slotChooseFile() {
 			setWindowTitle("SocNetV "+ VERSION +" - "+fileNameNoPath.last());
 			QString message=tr("Loaded network: ")+fileNameNoPath.last();
 			statusMessage( message );
+			qDebug()<<"MW: file has been loaded: " << fileName.toAscii() << "m_fileFormat "<<m_fileFormat;			
 		}
 		else {
 			statusMessage( tr("Error loading requested file. Aborted."));
@@ -1800,12 +1801,10 @@ void MainWindow::slotChooseFile() {
 				tr("If you want to import other network formats (i.e. Pajek, UCINET, dot, etc), ")+
 				tr("please use the options in the Import sub menu. \n"),
 				"OK", 0 );
-				 
 		}
-			
 	}
 	else  {
-		qDebug() << "MW: opening file aborted..." ;
+		qDebug() << "MW: filename is empty. Opening file aborted..." ;
 		statusMessage( tr("Opening aborted"));	
 
 		//if a file was previously opened, get back to it.
@@ -1815,7 +1814,6 @@ void MainWindow::slotChooseFile() {
 				fileName=previous_fileName; 
 		}
   	}
-
 	qDebug()<<"MW: Active network fileName is now: " << fileName.toAscii();
 }
 
@@ -2050,7 +2048,7 @@ void MainWindow::slotImportPajek(){
 */
 void MainWindow::slotImportSM(){
 	fileFormat=3;
-	slotChooseFile();	
+	this->slotChooseFile();	
 }
 
 
@@ -2059,7 +2057,7 @@ void MainWindow::slotImportSM(){
 */
 void MainWindow::slotImportDot(){
 	fileFormat=4;
-	slotChooseFile();
+	this->slotChooseFile();
 }
 
 
@@ -2069,7 +2067,7 @@ void MainWindow::slotImportDot(){
 */
 void MainWindow::slotImportGML(){
 	fileFormat=5;
-	slotChooseFile();
+	this->slotChooseFile();
 }
 
 
@@ -2078,7 +2076,7 @@ void MainWindow::slotImportGML(){
 */
 void MainWindow::slotImportDL(){
 	fileFormat=6;
-	slotChooseFile();
+	this->slotChooseFile();
 }
 
 
@@ -2087,7 +2085,7 @@ void MainWindow::slotImportDL(){
 */
 void MainWindow::slotImportList(){
 	fileFormat=7;
-	slotChooseFile();
+	this->slotChooseFile();
 }
 
 

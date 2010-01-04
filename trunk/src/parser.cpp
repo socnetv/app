@@ -630,7 +630,7 @@ bool Parser::loadAdjacency(){
 		}
 		if ( str.contains (","))
 			newCount = (str.split(",")).count();
-			else  
+		else  
 			newCount = (str.split(" ")).count();
 		qDebug() << str;
 		qDebug() << "newCount "<<newCount << " i " << i;		
