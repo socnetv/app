@@ -1729,7 +1729,7 @@ void MainWindow::slotCreateNew() {
 	Loads the specified file, calling loadNetworkFile()
 */
 void MainWindow::slotChooseFile() {
-	qDebug("slotChooseFile()");
+	qDebug("MW: slotChooseFile()");
 	
 	if (firstTime && fileFormat == -1 ) {
 		QMessageBox::information( this, "SocNetV",
@@ -2125,7 +2125,7 @@ bool MainWindow::loadNetworkFile(QString m_fileName, int m_fileFormat ){
 void MainWindow::fileType (
 		int type, QString netName, int aNodes, int totalLinks, bool undirected)
 {
-	qDebug()<< "MW: fileType() networkName is: " << netName;
+	qDebug()<< "MW: fileType() networkName is: " << netName << " type " << type;
 	Q_UNUSED (undirected);
 	networkName=netName ;
 	fileFormat=type;

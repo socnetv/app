@@ -703,10 +703,12 @@ bool Parser::loadAdjacency(){
 	}
 	file.close();
 
-	//The network has been loaded. Tell MW the statistics and network type
 	// 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List
+	qDebug() << "Parser: SM network has been loaded. Tell MW the statistics and network type";
 	emit fileType(3, networkName, aNodes, totalLinks, undirected);
+	
 	return true;
+	
 }
 
 
