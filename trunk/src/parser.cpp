@@ -65,7 +65,7 @@ bool Parser::load(QString fn, int iNS, QString iNC, QString iNSh,
 	randY=0;
 	fileFormat= fFormat;
 	
-	qDebug("Parser: start() a new parsing thread!");
+	qDebug()<< "Parser: start() a new parsing thread for file format: " << fileFormat ;
 	if (!isRunning()) 
 		start(QThread::NormalPriority);
 		
@@ -79,7 +79,8 @@ bool Parser::load(QString fn, int iNS, QString iNC, QString iNSh,
 			return false;
 	}
 	else {
-		qDebug()<< "**** Parser:: thread has not finished yet but we return back to Graph and MW! ";
+		qDebug()<< "**** Parser:: thread has not finished yet but we return back to Graph and MW! " 
+				<< " fileFormat now "<< fileFormat ;
 	}
 	return true;	
 }

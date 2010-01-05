@@ -285,7 +285,7 @@ void MainWindow::initActions(){
 	importDot = new QAction( QIcon(":/images/open.png"), tr("&Dot"), this);
 	importDot->setStatusTip(tr("Import an dot file"));
 	importDot->setWhatsThis(tr("Import Sociomatrix \n\n  Imports a network from an dot matrix-formatted file"));
-	connect(importSM, SIGNAL(activated()), this, SLOT(slotImportDot()));
+	connect(importDot, SIGNAL(activated()), this, SLOT(slotImportDot()));
 
 
 	importDL = new QAction( QIcon(":/images/open.png"), tr("&DL..."), this);
@@ -1527,7 +1527,8 @@ void MainWindow::initView() {
 
 	//create a view widget for this scene
 	graphicsWidget=new GraphicsWidget(scene, this);
-	graphicsWidget->setViewportUpdateMode(QGraphicsView::FullViewportUpdate); //SmartViewportUpdate
+	graphicsWidget->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);  
+	//  FullViewportUpdate  // MinimalViewportUpdate //SmartViewportUpdate
 	//QGraphicsView can cache pre-rendered content in a QPixmap, which is then drawn onto the viewport. 
 	graphicsWidget->setCacheMode(QGraphicsView::CacheNone);  //CacheBackground | CacheNone
 
@@ -1742,12 +1743,12 @@ void MainWindow::slotChooseFile() {
 				"OK", 0 ); 
 		firstTime=false;
 	}
+	if ( fileFormat == -1 ) 
+		fileFormat = 1;
+	
 	bool a_file_was_already_loaded=fileLoaded;
 	previous_fileName=fileName;
 	QString m_fileName, fileType_string;
-	
-	if ( fileFormat == -1 ) fileFormat = 1;
-	
 	int m_fileFormat=fileFormat;
 	
 	statusMessage( tr("Choose a network file..."));
@@ -1790,23 +1791,19 @@ void MainWindow::slotChooseFile() {
 			setWindowTitle("SocNetV "+ VERSION +" - "+fileNameNoPath.last());
 			QString message=tr("Loaded network: ")+fileNameNoPath.last();
 			statusMessage( message );
-			qDebug()<<"MW: file has been loaded: " << fileName.toAscii() << "m_fileFormat "<<m_fileFormat;			
 		}
 		else {
 			statusMessage( tr("Error loading requested file. Aborted."));
 			QMessageBox::critical( this, "SocNetV",
 				tr("Error! \n")+
 				tr("Sorry, the selected file is not in GraphML format, which is the default file format of SocNetV. \n")+
-				
 				tr("If you want to import other network formats (i.e. Pajek, UCINET, dot, etc), ")+
 				tr("please use the options in the Import sub menu. \n"),
 				"OK", 0 );
 		}
 	}
 	else  {
-		qDebug() << "MW: filename is empty. Opening file aborted..." ;
 		statusMessage( tr("Opening aborted"));	
-
 		//if a file was previously opened, get back to it.
 		if (a_file_was_already_loaded) 
 		{ 
@@ -1814,7 +1811,7 @@ void MainWindow::slotChooseFile() {
 				fileName=previous_fileName; 
 		}
   	}
-	qDebug()<<"MW: Active network fileName is now: " << fileName.toAscii();
+	qDebug()<<"MW: slotChooseFile() ends here. Active network fileName is now: " << fileName.toAscii();
 }
 
 
@@ -2112,7 +2109,6 @@ bool MainWindow::loadNetworkFile(QString m_fileName, int m_fileFormat ){
 										 graphicsWidget->height(),
 										 m_fileFormat
 									 );
-	qDebug("MW: OK activeGraph.loadGraph() has finished! ");
 	QApplication::restoreOverrideCursor();
 	return loadGraphStatus;
 }
