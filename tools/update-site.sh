@@ -5,7 +5,7 @@ echo  --------------------
 echo  . copying webfiles .
 echo  --------------------
 
-cd /home/dimitris/Desktop/socnetv/site
+cd ~/socnetv/site
 echo "Update ChangeLog also? (Y/N)"
 read ans
 if [ $ans = "y" -o $ans = "Y" ]; then
