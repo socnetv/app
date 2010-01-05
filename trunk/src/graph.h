@@ -222,7 +222,6 @@ public:
 	void writeTriadCensus(const QString, const bool);		//Writes the triad census to a file	
 	
 
-
 	/**DISTANCES & CENTRALITIES*/
 	int distance( int, int);					//Returns the geodesic distance between two vertices
 	int diameter();								//Returns the diameter of the graph (maximum shortest path).
@@ -232,7 +231,6 @@ public:
 
 	void centralityInDegree(bool);				//Calculates the inDegree centrality of each vertex
 	void centralityOutDegree(bool);				//Calculates the outDegree centrality of each vertex
-
 
 	float numberOfTriples(int v1); 		//Returns the number of triples at vertex v1
 	float numberOfCliques(int v1);		//Calculates the number of cliques (triangles) of vertex v1
@@ -276,8 +274,6 @@ public:
 	/** maps have O(logN) lookup complexity
 		Consider using tr1::hashmap which has O(1) lookup, but this is not ISO C++ yet :(  
 	*/
-
-
 
 
 

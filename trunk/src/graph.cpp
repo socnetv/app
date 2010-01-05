@@ -109,11 +109,11 @@ Graph::Graph() {
 	The new Vertex is named i and stores its color, label, label color, shape and position p.
 */
 void Graph::createVertex(int i, int size, QString nodeColor, QString numColor, int numSize, QString label, QString lColor, int lSize, QPointF p, QString nodeShape){
-	qDebug()<<"*** Graph:: createVertex(): Calling AddVertex for node: "<<i<< " Attributes: "<<size<<" "<<nodeColor<<" "<<label<<" "<<lColor<<" "<<p.x()<<" " <<p.y()<<" "<<nodeShape;
+	//qDebug()<<"*** Graph:: createVertex(): Calling AddVertex for node: "<<i<< " Attributes: "<<size<<" "<<nodeColor<<" "<<label<<" "<<lColor<<" "<<p.x()<<" " <<p.y()<<" "<<nodeShape;
 	//add the vertex to the Graph.
 	int value = 1;
 	addVertex(i, value, size,  nodeColor, numColor, numSize, label, lColor, lSize, p, nodeShape);
-	qDebug()<<"*** Graph:: createVertex(): emitting drawNode signal to GW";
+//	qDebug()<<"*** Graph:: createVertex(): emitting drawNode signal to GW";
 	emit drawNode( i, size,  nodeColor, numColor, numSize, label, lColor, lSize, p, nodeShape, initShowLabels, initNumbersInsideNodes, true);
 	emit graphChanged(); 
 	initVertexColor=nodeColor; //just to draw new nodes of the same color with that of the file loaded, when user clicks on the canvas
@@ -745,7 +745,7 @@ float Graph::hasEdge (int v1, int v2) {
 	Called from MainWindow
 */
 void Graph::updateVertCoords(int v1, int  x, int y){
-	qDebug("Graph: updateVertCoords() for %i with index %i with %i, %i", v1, index[v1], x,y);
+	//qDebug("Graph: updateVertCoords() for %i with index %i with %i, %i", v1, index[v1], x,y);
 	m_graph[ index[v1] ]->setX( x );
 	m_graph[ index[v1] ]->setY( y );
 	graphModified=true;
@@ -834,7 +834,7 @@ int Graph:: verticesWithReciprocalEdges(){
 	Clears all vertices 
 */
 void Graph::clear() {
-	qDebug("Graph: m_graph reports size %i", m_graph.size());
+	//qDebug("Graph: m_graph reports size %i", m_graph.size());
 	m_graph.clear();
 	index.clear();
 	discreteIDCs.clear();
@@ -862,11 +862,7 @@ void Graph::clear() {
 		crawler.terminateReaderQuit();
 		crawler.quit();	
 	}	 
-
-
-	qDebug() << "			Finished!";
-
-	qDebug("Graph: m_graph cleared. Now reports size %i", m_graph.size());
+	//qDebug("Graph: m_graph cleared. Now reports size %i", m_graph.size());
 }
 
 
@@ -3061,7 +3057,7 @@ int Graph:: factorial(int x) {
 	Actually it calls the load() method of parser/qthread class.
 */
 bool Graph::loadGraph (	QString fileName,  bool iSL, int maxWidth, int maxHeight, int fileFormat){
-	qDebug() << "Graph:: loadGraph - Calling Parser::load() to start a new thread";
+	//qDebug() << "Graph:: loadGraph - Calling Parser::load() to start a new thread";
 	initShowLabels = iSL;
 	bool loadGraphStatus = parser.load( 
 				fileName, 
@@ -3073,7 +3069,7 @@ bool Graph::loadGraph (	QString fileName,  bool iSL, int maxWidth, int maxHeight
 				maxWidth, maxHeight,
 				fileFormat
 				);
-	qDebug("Graph:: returned from Parser::load()");
+	//qDebug("Graph:: returned from Parser::load()");
 	return loadGraphStatus;
 }
 

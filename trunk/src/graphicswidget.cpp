@@ -78,7 +78,7 @@ void GraphicsWidget::paintEvent ( QPaintEvent * event ){
 	Clears the scene 
 */
 void GraphicsWidget::clear() {
-	qDebug("GW: clear()");
+	//qDebug("GW: clear()");
 	int i=0;
 	nodeVector.clear();
 	QList<QGraphicsItem *> allItems=scene()->items();
@@ -87,8 +87,8 @@ void GraphicsWidget::clear() {
 		scene()->removeItem (item);
 		i++;
 	}
-	qDebug("GW: Removed %i items from scene. Scene items now: %i ",i, scene()->items().size());
-	qDebug("GW: items now: %i ", this->items().size());
+	//qDebug("GW: Removed %i items from scene. Scene items now: %i ",i, scene()->items().size());
+	//qDebug("GW: items now: %i ", this->items().size());
 }
 
 
@@ -131,10 +131,11 @@ void GraphicsWidget::drawNode(
 	labelJim -> setDefaultTextColor (labelColor);
 	labelJim -> setTextInteractionFlags(Qt::TextEditorInteraction);
 	
-	if (showLabels) 
-		qDebug()<< "GW: drawNode: display label " <<  nodeLabel.toAscii() << " for node " << num;
+	if (showLabels) {
+		//qDebug()<< "GW: drawNode: display label " <<  nodeLabel.toAscii() << " for node " << num;
+	}
 	else {
-		qDebug()<<"GW: drawNode: hiding label for node " << num;
+		//qDebug()<<"GW: drawNode: hiding label for node " << num;
 		labelJim->hide();
 	}
 
@@ -301,7 +302,7 @@ void GraphicsWidget::edgeClicked(Edge *edge){
 
 */
 void GraphicsWidget::nodeMoved(int number, int x, int y){
-	qDebug ("GW: nodeMoved() for %i with %i, %i. Emitting updateNodeCoords() signal", number, x,y);
+	//qDebug ("GW: nodeMoved() for %i with %i, %i. Emitting updateNodeCoords() signal", number, x,y);
 	emit updateNodeCoords(number, x, y);
 }
 

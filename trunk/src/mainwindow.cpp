@@ -1730,7 +1730,7 @@ void MainWindow::slotCreateNew() {
 	Loads the specified file, calling loadNetworkFile()
 */
 void MainWindow::slotChooseFile() {
-	qDebug("MW: slotChooseFile()");
+	//qDebug("MW: slotChooseFile()");
 	
 	if (firstTime && fileFormat == -1 ) {
 		QMessageBox::information( this, "SocNetV",
@@ -1782,7 +1782,7 @@ void MainWindow::slotChooseFile() {
 	m_fileName = QFileDialog::getOpenFileName( this, tr("Select one file to open"), "", fileType_string	);
 	
 	if (!m_fileName.isEmpty()) {
-		qDebug()<<"MW: file selected: " << m_fileName;		
+		//qDebug()<<"MW: file selected: " << m_fileName;		
 		fileNameNoPath=m_fileName.split ("/" );
 		if ( loadNetworkFile ( m_fileName, m_fileFormat ) ) 
 		{
@@ -1811,7 +1811,7 @@ void MainWindow::slotChooseFile() {
 				fileName=previous_fileName; 
 		}
   	}
-	qDebug()<<"MW: slotChooseFile() ends here. Active network fileName is now: " << fileName.toAscii();
+	//qDebug()<<"MW: slotChooseFile() ends here. Active network fileName is now: " << fileName.toAscii();
 }
 
 
@@ -2099,9 +2099,9 @@ bool MainWindow::loadNetworkFile(QString m_fileName, int m_fileFormat ){
 	initNet();
 	 
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-	qDebug() << "MW: calling activeGraph::loadGraph() "
-				<< " view height: "	<< graphicsWidget->height()
-				<< " format:  "<< m_fileFormat;
+	//qDebug() << "MW: calling activeGraph::loadGraph() "
+				//<< " view height: "	<< graphicsWidget->height()
+				//<< " format:  "<< m_fileFormat;
 	bool loadGraphStatus = activeGraph.loadGraph ( 
 										m_fileName, 
 										 displayNodeLabelsAct->isChecked(), 

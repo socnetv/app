@@ -59,7 +59,7 @@ Node::Node( GraphicsWidget* gw, int num, int size,
 	m_ld=ldist;
 	m_poly_t=new QPolygon(3);
 	m_poly_d=new QPolygon(4);
-	qDebug()<< "Node: constructor: initial position at: "<< this->x()<<", "<<this->y()<< " Moving now at: "<< p.x()<<", "<<p.y();;
+	//qDebug()<< "Node: constructor: initial position at: "<< this->x()<<", "<<this->y()<< " Moving now at: "<< p.x()<<", "<<p.y();;
 
 
 
@@ -556,7 +556,7 @@ void Node::deleteOutLink(Edge *link){
 
 
 void Node::addLabel (NodeLabel* gfxLabel  )  { 
-	qDebug("NODE: add label");
+	//qDebug("NODE: add label");
 	m_label=gfxLabel ;
 	m_hasLabel=true;
 }
