@@ -41,9 +41,7 @@
 #include "parser.h"
 #include "webcrawler.h"
 
-
 using namespace std;
-
 
 class QPointF;
 class QDateTime;
@@ -53,24 +51,20 @@ class QDateTime;
 	Graph class has the interface and the various network algorithms 
 	Vertex class holds each vertex data (colors, strings, statistics, etc)
 	Matrix class holds the adjacency matrix of the network.
-	Parser class loads files of networks.
-	
+	Parser class loads files of networks.	
 */
 
-typedef map<float,int> fmap_i;
+typedef QList<Vertex*> Vertices;
 typedef map<int,int> imap_i;
 typedef map<int,float> imap_f;
-
 typedef QHash <QString, int> hash_si;
 
-typedef QList<Vertex*> Vertices;
 
 class Graph:  public QObject{
 	Q_OBJECT
 
 public slots:
 	/** Slots to signals from Parser */
-	 	
 	void createVertex(	int i, int size, QString nodeColor, 
 						QString numColor, int numSize, 
 						QString label, QString lColor, int lSize, 
