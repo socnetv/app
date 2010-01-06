@@ -1210,7 +1210,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 				qDebug("=========Resolving CC classes...");
 				resolveClasses(CC, discreteCCs, classesCC,(*it)->name() );
 				sumCC+=CC;
-				minmax( CC, (*it), maxCC, minCC, maxNodeCC, minNodeCC) ;
+				minmax( (*it)->SCC(), (*it), maxCC, minCC, maxNodeCC, minNodeCC) ;
 				//And graph centrality must be inverted...
 				if ( (*it)->GC() != 0 ) {
 					EC=(*it)->GC();		//Eccentricity Centrality is max geodesic
