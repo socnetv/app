@@ -1754,7 +1754,7 @@ void MainWindow::slotChooseFile() {
 	statusMessage( tr("Choose a network file..."));
 	switch (m_fileFormat){
 		case 1:	//GraphML
-				fileType_string = tr("GraphML (*.graphml);;All (*)");
+				fileType_string = tr("GraphML (*.graphml *.xml);;All (*)");
 				break;
 		case 2: //Pajek
 				fileType_string = tr("Pajek (*.net *.pajek);;All (*)");
