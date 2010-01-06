@@ -216,7 +216,8 @@ bool Parser::loadPajek(){
 	bool fileContainsNodeColors=FALSE, fileContainsNodesCoords=FALSE;
 	bool fileContainsLinksColors=FALSE;
 	bool zero_flag=FALSE;
-	int  lineCounter=0, i=0, j=0, miss=0, source= -1, target=-1, nodeNum, colorIndex=-1, coordIndex=-1;
+	int   i=0, j=0, miss=0, source= -1, target=-1, nodeNum, colorIndex=-1, coordIndex=-1;
+	unsigned long int lineCounter=0;
 	float weight=1;
 	list<int> listDummiesPajek;
 	networkName="noname";

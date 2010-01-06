@@ -448,7 +448,7 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
 			//Move its graphic number
 			if ( m_hasNumber ) 
 			{
-				qDebug()<< "Node: itemChange() moving number to " << newPos.x() << " " << newPos.y();
+				//qDebug()<< "Node: itemChange() moving number to " << newPos.x() << " " << newPos.y();
 				if (!m_isNumberInside) 	{ //move it outside
 						m_number -> setZValue(254);
 						m_number -> setPos( newPos.x()+m_size+m_nd, newPos.y());
@@ -464,10 +464,10 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
 			}
 				
 			if ( newPos.x() !=0 && newPos.y() != 0 ){
-				qDebug()<<  "Node: ItemChange(): Emitting nodeMoved() for "<< nodeNumber()<< " at: "<<  newPos.x()<< ", "<<  newPos.y();
+				qDebug()<<  "Node: ItemChange(): moved node "<< nodeNumber()<< " to  " << newPos.x() << " " << newPos.y() << " Emitting nodeMoved() ";
 				graphicsWidget->nodeMoved(nodeNumber(), (int) newPos.x(), (int) newPos.y());	
 			}
-			else qDebug()<<  "Node: ItemChange(): Not emitting nodeMoved. Node "<< nodeNumber()<<" is at 0,0";
+			else qDebug()<<  "Node: ItemChange():  Not emitting nodeMoved. Node "<< nodeNumber()<<" is at 0,0";
 
 			break;
 		} 
