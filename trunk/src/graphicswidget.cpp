@@ -140,7 +140,6 @@ void GraphicsWidget::drawNode(
 	}
 
 	// drawing node number - label will be moved by the node movement (see last code line in this method)
-
 	if (numberInsideNode)
 		numberSize = size-2;
 		

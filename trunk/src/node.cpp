@@ -430,7 +430,8 @@ void Node::setNumberInside (bool numIn){
 
 
 
-/** Propagates the changes to connected elements, i.e. edges, numbers, etc. 
+/** 
+ *	Propagates the changes to connected elements, i.e. edges, numbers, etc. 
  *  Checks if the node is inside the scene.
  */
 QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {

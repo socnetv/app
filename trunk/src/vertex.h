@@ -61,20 +61,20 @@ public:
 
 	~Vertex();
 
-	int name();
-	void setName (int ); 
+	unsigned long int name();
+	void setName (unsigned long int ); 
 
-	void addLinkTo (int target, float weight);	/** Adds an outLink to target with weight w */
-	void addLinkFrom(int source, float weight);
+	void addLinkTo (unsigned long int target, float weight);	/** Adds an outLink to target with weight w */
+	void addLinkFrom(unsigned long int source, float weight);
 
-	void changeLinkWeightTo (int target, float weight);
+	void changeLinkWeightTo (unsigned long int target, float weight);
 
-	void removeLinkTo (int target);		/** Removes edge to vertex t */
-	void removeLinkFrom(int source);	/** Removes edge from vertex s	*/
+	void removeLinkTo (unsigned long int target);		/** Removes edge to vertex t */
+	void removeLinkFrom(unsigned long int source);	/** Removes edge from vertex s	*/
 	
-	int outDegree();	/**Returns the number of outward directed graph edges from this vertex   */
-	int inDegree();		/**Returns the number of inward directed graph edges from this vertex   */
-	int localDegree();
+	unsigned long int outDegree();	/**Returns the number of outward directed graph edges from this vertex   */
+	unsigned long int inDegree();		/**Returns the number of inward directed graph edges from this vertex   */
+	unsigned long int localDegree();
 	
 	/** Returns true if there is a reciprocal link from this vertex */
 	bool isReciprocalLinked() { return m_reciprocalLinked;}
@@ -82,7 +82,7 @@ public:
 
 	/** Returns true if there is an outLink from this vertex */
 	bool isOutLinked() { return m_outLinked;}
-	float isLinkedTo(int V);		/**Returns the weight of the link from to vertexc V, otherwise zero*/
+	float isLinkedTo(unsigned long int V);		/**Returns the weight of the link from to vertexc V, otherwise zero*/
 
 	void filterEdgesByWeight(float m_threshold, bool overThreshold);
 //	void filterEdgesByColor(float m_threshold, bool overThreshold);
@@ -91,7 +91,7 @@ public:
 	/** Returns true if there is an outLink from this vertex */
 	bool isInLinked() { return m_inLinked;}
 	void setInLinked(bool inLinked) { m_inLinked=inLinked;}
-	float isLinkedFrom (int v);
+	float isLinkedFrom (unsigned long int v);
 	
 
 	void setSize(int );
@@ -130,7 +130,7 @@ public:
 	QPointF pos ();
 
 
-	void setOutLinkColor(int, QString);
+	void setOutLinkColor(unsigned long int, QString);
 	QString outLinkColor(int);
 
 	void setDelta (float c){ m_delta=c;} 		/** Sets vertex pair dependancy */
@@ -138,7 +138,7 @@ public:
 	
 	void clearPs()	;
 	
-	void appendToPs( int vertex ) ;
+	void appendToPs(unsigned long  int vertex ) ;
 	ilist Ps(void);
 	
 	void setODC (float c){ m_ODC=c;} 	/** Sets vertex Out-Degree Centrality*/
@@ -192,14 +192,14 @@ protected:
 private:
 	Graph *parentGraph;
 	ilist myPs;
-	int m_name, m_value, m_size, m_outLinks, m_inLinks, m_labelSize, m_numberSize;
+	unsigned long int m_name,  m_outLinks, m_inLinks; 
+	int m_value, m_size, m_labelSize, m_numberSize;
 	bool m_inLinked, m_outLinked, m_reciprocalLinked, m_hasCLC;
 	QString m_color, m_numberColor, m_label, m_labelColor, m_shape;
 	//QString *outLinkColors;
 	ihash_s outLinkColors;
 	//FIXME vertice coords
 	
-
 	double m_x, m_y;
 	float m_CLC;
 	float m_delta, m_EC, m_SEC;

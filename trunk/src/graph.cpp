@@ -283,7 +283,6 @@ void Graph::addVertex (
 	m_totalVertices++;		
 
 	qDebug("Graph: addVertex(): Vertex named %i appended with index=%i. Now, m_graph size %i. New vertex position: %f, %f",m_graph.back()->name(), index[v1], m_graph.size(), p.x(), p.y() );
-
 	graphModified=true;
 }
 
@@ -429,7 +428,7 @@ void Graph::addEdge (int v1, int v2, float weight, QString color, bool reciproca
 	qDebug()<< "Graph: addEdge() from vertex "<< v1 << "["<< source<< "] to vertex "<< v2 << "["<< target << "] of weight "<<weight;
 
 	if ( !m_graph [ source ]->isOutLinked() ) {
-		qDebug("Graph: addEdge() SOURCE VERTEX %i reports no outlinks -- setting outLinked TRUE for it.", v1);
+		//qDebug("Graph: addEdge() SOURCE VERTEX %i reports no outlinks -- setting outLinked TRUE for it.", v1);
 		m_graph [ source ]->setOutLinked(TRUE) ;
 		outEdgesVert++;
 	}
@@ -440,11 +439,11 @@ void Graph::addEdge (int v1, int v2, float weight, QString color, bool reciproca
 			m_graph [ target ]->setReciprocalLinked(TRUE);
 			reciprocalEdgesVert++;
 		}
-		qDebug("Graph: addEdge() SOURCE IS INLINKED BY TARGET. INCREASING RECIPROCAL %i", reciprocalEdgesVert);
+		//qDebug("Graph: addEdge() SOURCE IS INLINKED BY TARGET. INCREASING RECIPROCAL %i", reciprocalEdgesVert);
 	}
 	
 	if ( !m_graph [ target ]->isInLinked() ) {
-		qDebug("Graph: addEdge() TARGET VERTEX %i reports no inLinks -- setting inLinked TRUE for it", v2);
+		//qDebug("Graph: addEdge() TARGET VERTEX %i reports no inLinks -- setting inLinked TRUE for it", v2);
 		inEdgesVert++;
 		m_graph [ target ]->setInLinked(TRUE) ;
 	}
@@ -1558,7 +1557,7 @@ void Graph::centralityInDegree(bool weights){
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
 		IDC= (*it)->IDC();
 		//qDebug("Graph: IDC = %f, meanDegree = %f", IDC, meanDegree);
-		varianceDegree+=pow ( (IDC-meanDegree), 2 );	//BUG OCCURED IN SLACKWARE...
+		varianceDegree += (IDC-meanDegree) * (IDC-meanDegree) ; 
 		nom+= maxIDC-IDC;
 	}
 	if (symmetricAdjacencyMatrix)
@@ -1693,8 +1692,8 @@ void Graph::centralityOutDegree(bool weights){
 	// Calculate Variance and the Degree Centralisation of the whole graph.
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
 		ODC= (*it)->ODC();
-		//qDebug("Graph: ODC = %f, meanDegree = %f", ODC, meanDegree);
-		varianceDegree+=pow ( (ODC-meanDegree), 2 );	//BUG OCCURED IN SLACKWARE...
+		qDebug() << "Graph: ODC = " << ODC << " meanDegree = " << meanDegree << " vertices " << vert;
+		varianceDegree += (ODC-meanDegree) * (ODC-meanDegree) ; 
 		nom+= maxODC-ODC;
 	}
 	if (symmetricAdjacencyMatrix)
@@ -2671,7 +2670,7 @@ float Graph:: clusteringCoefficient(int v1){
 	float clucof=0;
 	if ( !graphModified && (m_graph[ index [v1] ] -> hasCLC() ) )  {
 		float clucof=m_graph[ index [v1] ] ->CLC(); 
-		qDebug("Graph: clusteringCoefficient(%i) not mofified. Returning previous clucof = %f", v1, clucof);
+		qDebug("Graph: clusteringCoefficient(%i) not modified. Returning previous clucof = %f", v1, clucof);
 		return clucof;
 	}
 
