@@ -1782,7 +1782,7 @@ void MainWindow::slotChooseFile() {
 	m_fileName = QFileDialog::getOpenFileName( this, tr("Select one file to open"), "", fileType_string	);
 	
 	if (!m_fileName.isEmpty()) {
-		//qDebug()<<"MW: file selected: " << m_fileName;		
+		qDebug()<<"MW: file selected: " << m_fileName;		
 		fileNameNoPath=m_fileName.split ("/" );
 		if ( loadNetworkFile ( m_fileName, m_fileFormat ) ) 
 		{
@@ -2115,7 +2115,7 @@ bool MainWindow::loadNetworkFile(QString m_fileName, int m_fileFormat ){
 
 
 /**
-*	Called from Graph when a network file is loaded.
+*	Called from Parser/Graph when a network file is loaded.
 *	It informs the MW about the type of the network so that it can display the appropiate message.
 */
 void MainWindow::fileType (
@@ -2207,6 +2207,7 @@ void MainWindow::fileType (
 			" which is the file-format using Import Menu.","OK",0);
 			break;
 	}
+	graphChanged();
 	fileSave->setIcon(QIcon(":/images/saved.png"));
 	fileSave->setEnabled(false);
 }

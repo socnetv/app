@@ -76,7 +76,7 @@ signals:
 					QString numColor, int numSize, 
 					QString label, QString lColor, int lSize, 
 					QPointF p, 
-					QString shape);
+					QString shape, bool signalMW);
 
 	void createEdge (int, int, float, QString, bool, bool, bool);
 	void fileType(int, QString, int, int, bool);

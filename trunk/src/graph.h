@@ -68,7 +68,7 @@ public slots:
 	void createVertex(	int i, int size, QString nodeColor, 
 						QString numColor, int numSize, 
 						QString label, QString lColor, int lSize, 
-						QPointF p, QString nodeShape
+						QPointF p, QString nodeShape, bool signalMW
 						);//Main vertex creation call
 						
 	void setFileType(int, QString, int,int, bool);	

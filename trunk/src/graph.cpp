@@ -62,8 +62,8 @@ Graph::Graph() {
 	parser.setParent(this);
 	
 	connect (	
-			&parser, SIGNAL( createNode (int,int,QString, QString, int, QString, QString, int, QPointF, QString) ), 
-			this, SLOT(createVertex(int,int,QString, QString, int, QString, QString, int, QPointF, QString) ) 
+			&parser, SIGNAL( createNode (int,int,QString, QString, int, QString, QString, int, QPointF, QString, bool) ), 
+			this, SLOT(createVertex(int,int,QString, QString, int, QString, QString, int, QPointF, QString, bool) ) 
 			) ;
 
 	connect (
@@ -108,15 +108,13 @@ Graph::Graph() {
 	p holds the desired position of the new node.
 	The new Vertex is named i and stores its color, label, label color, shape and position p.
 */
-void Graph::createVertex(int i, int size, QString nodeColor, QString numColor, int numSize, QString label, QString lColor, int lSize, QPointF p, QString nodeShape){
-	//qDebug()<<"*** Graph:: createVertex(): Calling AddVertex for node: "<<i<< " Attributes: "<<size<<" "<<nodeColor<<" "<<label<<" "<<lColor<<" "<<p.x()<<" " <<p.y()<<" "<<nodeShape;
-	//add the vertex to the Graph.
+void Graph::createVertex(int i, int size, QString nodeColor, QString numColor, int numSize, QString label, QString lColor, int lSize, QPointF p, QString nodeShape, bool signalMW){
 	int value = 1;
 	addVertex(i, value, size,  nodeColor, numColor, numSize, label, lColor, lSize, p, nodeShape);
-//	qDebug()<<"*** Graph:: createVertex(): emitting drawNode signal to GW";
 	emit drawNode( i, size,  nodeColor, numColor, numSize, label, lColor, lSize, p, nodeShape, initShowLabels, initNumbersInsideNodes, true);
-	emit graphChanged(); 
-	initVertexColor=nodeColor; //just to draw new nodes of the same color with that of the file loaded, when user clicks on the canvas
+	if (signalMW)
+		emit graphChanged(); 
+	initVertexColor=nodeColor; //draw new user-clicked nodes with the same color with that of the file loaded
 	initVertexShape=nodeShape;
 	initVertexSize=size;
 
@@ -136,7 +134,7 @@ void Graph::createVertex(int i, QPointF p){
 	createVertex(	i, initVertexSize,  initVertexColor,
 					initVertexNumberColor, initVertexNumberSize,   
 					QString::number(i), initVertexLabelColor, initVertexLabelSize,
-					p, initVertexShape
+					p, initVertexShape, true
 					);
 }
 
@@ -158,7 +156,7 @@ void Graph::createVertex(int i, int cWidth, int cHeight){
 	createVertex(	i, initVertexSize, initVertexColor,
 					initVertexNumberColor, initVertexNumberSize,   
 					QString::number(i), initVertexLabelColor, initVertexLabelSize,
-					p, initVertexShape
+					p, initVertexShape, true
 					);
 }
 
@@ -180,7 +178,7 @@ void Graph::createVertex(QString label, int i) {
 	createVertex(	i, initVertexSize,  initVertexColor,
 					initVertexNumberColor, initVertexNumberSize,   
 					label, initVertexLabelColor,  initVertexLabelSize,
-					p, initVertexShape
+					p, initVertexShape, true
 					);
 	
 }
@@ -2401,7 +2399,7 @@ void Graph::createRandomNetErdos(int vert, double probability){
 						i+1, initVertexSize, initVertexColor, 
 						initVertexNumberColor, initVertexNumberSize,  
 						QString::number (i+1), initVertexLabelColor, initVertexLabelSize,
-						QPoint(x, y), initVertexShape
+						QPoint(x, y), initVertexShape, false
 					);
 		progressCounter++;
 		emit updateProgressDialog( progressCounter );
@@ -2420,6 +2418,7 @@ void Graph::createRandomNetErdos(int vert, double probability){
 		emit updateProgressDialog(progressCounter );
 		qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
 	}
+	emit graphChanged();
 }
 
 
@@ -2446,7 +2445,7 @@ void Graph::createRandomNetRingLattice(
 		createVertex(	i+1,initVertexSize,initVertexColor,
 						initVertexNumberColor, initVertexNumberSize,  
 						 QString::number (i+1), initVertexLabelColor,  initVertexLabelSize,
-						 QPoint(x, y), initVertexShape);
+						 QPoint(x, y), initVertexShape, false);
 		qDebug("Graph: createPhysicistLatticeNetwork, new node i=%i, at x=%i, y=%i", i+1, x,y);
 		progressCounter++;
 		emit updateProgressDialog( progressCounter );
@@ -2465,6 +2464,7 @@ void Graph::createRandomNetRingLattice(
 		emit updateProgressDialog(progressCounter );
 		qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
 	}
+	graphChanged();
 }
 
 
@@ -2532,7 +2532,7 @@ void Graph::createSameDegreeRandomNetwork(int vert, int degree){
 						i+1, initVertexSize,initVertexColor,
 						initVertexNumberColor, initVertexNumberSize,  
 						QString::number (i+1), initVertexLabelColor, initVertexLabelSize, 
-						QPoint(x, y), initVertexShape
+						QPoint(x, y), initVertexShape,false
 						);
 		progressCounter++;
 		emit updateProgressDialog( progressCounter );
@@ -2553,7 +2553,7 @@ void Graph::createSameDegreeRandomNetwork(int vert, int degree){
 		qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
 
 	}
-
+	graphChanged();
 }
 
 /**
