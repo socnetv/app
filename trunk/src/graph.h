@@ -217,6 +217,8 @@ public:
 	void writeCentralityStress(const QString, const bool);		//Writes the Stress centralities to a file	
 	void writeCentralityEccentricity(const QString, const bool);		//Writes the Eccentr centralities to a file
 
+	void writeNumberOfCliques(const QString fileName, const bool considerWeights);
+	
 	void writeClusteringCoefficient(const QString, const bool);		//Writes the clustering coefficients to a file
 
 	void writeTriadCensus(const QString, const bool);		//Writes the triad census to a file	

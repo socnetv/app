@@ -2039,6 +2039,53 @@ void Graph::writeCentralityEccentricity(
 
 
 
+/**
+*	Writes the number of cliques (triangles) of each vertex into a given file.
+*/
+void Graph::writeNumberOfCliques(
+		const QString fileName, const bool considerWeights)
+{
+	Q_UNUSED(considerWeights);
+	QFile file ( fileName );
+	if ( !file.open( QIODevice::WriteOnly ) )  {
+		qDebug()<< "Error opening file!";
+		emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+		return;
+	}
+	unsigned long int delta=0, delta_sum=0, N = vertices();
+		
+	QTextStream outText ( &file );
+
+	emit statusMessage ( QString(tr("Writing number of triangles to file:")).arg(fileName) );
+	
+	outText << tr("NUMBER OF CLIQUES (delta) OF EACH NODE") << "\n";
+	outText << tr("delta range: 0 < C < 1") <<"\n\n";
+	outText << "Node"<<"\tdelta\n";
+	
+	QList<Vertex*>::iterator it;
+	
+	for (it= m_graph.begin(); it!= m_graph.end(); it++){ 
+		delta=this->numberOfCliques((*it)->name()); 
+		outText << (*it)->name()<<"\t"<< delta <<endl;
+		delta_sum += delta;
+	}
+	
+	outText << endl << tr("NUMBER OF CLIQUES (delta_sum) OF GRAPH")<< endl;
+	outText << "delta_sum = " <<  delta_sum / 3 <<"\n\n";
+	if ( N > 3) 
+		outText << tr("Range: 0 < delta_sum < ") << N * (N-1) * (N-2)/ 3 << endl;
+	outText << tr("GCLC = 0, when there are no cliques (i.e. acyclic tree).\n");
+	outText << tr("GCLC = 1, when every node and its neighborhood are complete cliques.\n");
+
+	outText <<"\n\n" ;
+	outText << tr("Number of Cliques Report,\n");
+	outText << tr("created by SocNetV: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+
+	file.close();
+}
+
+
+
 void Graph::writeClusteringCoefficient(
 		const QString fileName, const bool considerWeights)
 {
@@ -2559,7 +2606,7 @@ float Graph:: numberOfCliques(int v1){
 	qDebug("*** Graph::numberOfCliques() Source vertex %i [%i] has %i inDegree and %i outDegree ", v1 , index[ v1 ], edgesTo(v1), edgesFrom(v1) );
 	imap_f::iterator it1, it2;
 	bool symmetric=FALSE;
-	if (! (symmetric = isSymmetric()) ) {
+	if ( ! (symmetric = isSymmetric()) ) {  //graph is not symmetric
 		for( it1 =  m_graph[ index[v1] ] -> m_inEdges.begin(); it1 !=  m_graph[ index[v1] ] ->m_inEdges.end(); it1++ ) {
 			connectedVertex1=it1->first;	
 			qDebug("Graph::numberOfCliques() In-connectedVertex1:  %i [%i]...Checking inLinks.... ",connectedVertex1, index[connectedVertex1]);
@@ -2620,7 +2667,6 @@ float Graph:: numberOfCliques(int v1){
 
 /**
 	Calculates and returns the total number of cliques in the graph.
-	A clique (or triangle) is a complete subgraph of three nodes.
 	Calls numberOfCliques(v1) to calculate the number of cliques of each vertex v1,
 	sums the total number, then divides it by 3 because each vertex has been counted three times.
 */	

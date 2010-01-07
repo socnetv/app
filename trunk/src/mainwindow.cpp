@@ -791,6 +791,13 @@ void MainWindow::initActions(){
 	connect(averGraphDistanceAct, SIGNAL(activated()), this, SLOT(slotAverageGraphDistance()));
 
 
+	cliquesAct = new QAction(QIcon(":/images/triangle.png"), tr("Number of Cliques"),this);
+	cliquesAct->setShortcut(tr("Ctrl+T"));
+	cliquesAct->setStatusTip(tr("Calculates and displays the number of cliques (triangles) of each node v."));
+	cliquesAct->setWhatsThis(tr("Triangles\n\n A triangle is a complete subgraph of three nodes of G. This method calculates the number of triangles of each node v is defined as delta(v) = |{{u, w} in E : {v, u} in E and {v, w} in E}|.  \n "));
+	connect(cliquesAct, SIGNAL(activated()), this, SLOT(slotNumberOfCliques() )  );
+
+
 	clusteringCoefAct = new QAction(QIcon(":/images/clique.png"), tr("Clustering Coefficient"),this);
 	clusteringCoefAct ->setShortcut(tr("Ctrl+C"));
 	clusteringCoefAct->setStatusTip(tr("Calculates and displays the average Clustering Coefficient of the network."));
@@ -799,7 +806,7 @@ void MainWindow::initActions(){
 
 
 	triadCensusAct = new QAction(QIcon(":/images/clique.png"), tr("Triad Census"),this);
-	triadCensusAct->setShortcut(tr("Ctrl+T"));
+	triadCensusAct->setShortcut(tr("Ctrl+Shift+T"));
 	triadCensusAct->setStatusTip(tr("Conducts a triad census for the active network."));
 	triadCensusAct->setWhatsThis(tr("Triad Census\n\n A triad census counts all the different kinds of observed triads within a network and codes them according to their number of mutual, asymmetric and non-existent dyads. \n "));
 	connect(triadCensusAct, SIGNAL(activated()), this, SLOT(slotTriadCensus() )  );
@@ -1174,6 +1181,7 @@ void MainWindow::initMenuBar() {
 	statMenu -> addAction (distanceMatrixAct);
 	statMenu -> addAction (diameterAct);
 	statMenu -> addSeparator();
+	statMenu -> addAction (cliquesAct);
 	statMenu -> addAction (clusteringCoefAct);
 	
 	statMenu -> addSeparator();
@@ -4601,6 +4609,39 @@ void MainWindow::windowInfoStatusBar(int w, int h){
 
 
 
+
+
+
+/**
+*	Calls Graph:: writeNumberOfCliques() to write the number of cliques (triangles)
+*  of each vertex into a file, then displays it.
+*/
+void MainWindow::slotNumberOfCliques(){
+	if (!fileLoaded && !networkModified  )  {
+		QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+		statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
+		return;
+	}
+	QString fn = "number-of-cliques.dat";
+	bool considerWeights=true;
+	
+	createProgressBar();
+	
+	activeGraph.writeNumberOfCliques(fn, considerWeights);
+	
+	destroyProgressBar();
+
+	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+	tempFileNameNoPath=fn.split( "/");
+	ed->setWindowTitle("Number of cliques saved as: " + tempFileNameNoPath.last());
+	ed->show();
+}
+
+
+
+
+
+
 /**
 *	Writes Clustering Coefficients into a file, then displays it.
 */
@@ -4905,7 +4946,7 @@ void MainWindow::slotCentralityEccentricity(){
 
 void MainWindow::createProgressBar(){
 		
-	if (showProgressBarAct->isChecked() || activeGraph.totalEdges() > 1000){
+	if (showProgressBarAct->isChecked() || activeGraph.totalEdges() > 2000){
 		progressDialog= new QProgressDialog("Please wait, for distance matrix creation....", "Cancel", 0, activeGraph.vertices(), this);
 		progressDialog -> setWindowModality(Qt::WindowModal);
 		connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
