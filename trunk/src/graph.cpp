@@ -2030,13 +2030,6 @@ void Graph::writeCentralityEccentricity(
 		outText << tr("EC classes = ") << classesEC<<" \n"; 	
 	}
 
-	outText << tr("\nGROUP ECCENTRICITY CENTRALISATION (GEC)\n\n");
-	outText << tr("GEC = ") <<  groupEC<<"\n\n";
-	outText << tr("GEC range: 0 < GEC < 1\n");
-	outText << tr("GEC = 0, when all the nodes have exactly the same betweeness index.\n");
-	outText << tr("GEC = 1, when one node falls on all other geodesics between all the remaining (N-1) nodes. This is exactly the situation realised by a star graph.\n");
-	outText << "(Wasserman & Faust, formula 5.13, p. 192)\n\n";
-
 	outText << "\n\n";
 	outText << tr("Eccentricity Centrality report, \n");
 	outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
