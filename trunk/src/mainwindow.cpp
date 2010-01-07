@@ -302,8 +302,6 @@ void MainWindow::initActions(){
 
 
 
-
-
   	fileSave = new QAction(QIcon(":/images/save.png"), tr("&Save"),  this);
 	fileSave->setShortcut(tr("Ctrl+S"));
 	fileSave->setToolTip(tr("Save network (Ctrl+S)"));
@@ -1772,7 +1770,7 @@ void MainWindow::slotChooseFile() {
 				fileType_string = tr("DL (*.dl);;All (*)");
 				break;
 		case 7:	// List
-				fileType_string = tr("List (*.lst);;All (*)");
+				fileType_string = tr("List (*.lst *.list);;All (*)");
 				break;
 		default:	//GraphML
 				fileType_string = tr("All (*);;GraphML (*.graphml);;GraphViz (*.dot);;Adjacency (*.txt *.csv *.net);;Pajek (*.net *.pajek);;DL (*.dl *.net)");
