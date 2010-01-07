@@ -9,7 +9,7 @@ Codename: "supersyntages.gr"
 ----------------------------
 - New statistic: Triad Census.
 - Read support for list formatted files.
-- Read support for comma separated values (csv) formmated sociomatrix files
+- Read support for comma separated values (csv) formatted sociomatrix files
 - Much improved Dot format support. 
 - Faster network load times, thanks to control variables.
 - Added keyboard shortcuts for Centralities
