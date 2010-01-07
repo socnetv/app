@@ -5,7 +5,7 @@ echo  --------------------
 echo  . copying webfiles .
 echo  --------------------
 
-cd ~/socnetv/site
+cd /home/dimitris/socnetv/site
 echo "Update ChangeLog also? (Y/N)"
 read ans
 if [ $ans = "y" -o $ans = "Y" ]; then
@@ -29,8 +29,8 @@ fi
 echo  --------------------
 echo  . copying manual   .
 echo  -------------------- 
-cd /home/dimitris/Desktop/socnetv/trunk/manual
-rm /home/dimitris/Desktop/socnetv/site/docs/*
-cp /home/dimitris/Desktop/socnetv/trunk/manual/* /home/dimitris/Desktop/socnetv/site/docs/
+cd /home/dimitris/socnetv/trunk/manual
+rm /home/dimitris/socnetv/site/docs/*
+cp /home/dimitris/socnetv/trunk/manual/* /home/dimitris/socnetv/site/docs/
 
 rsync -rvP -delete -e ssh * oxy86,socnetv@web.sourceforge.net:htdocs/docs/
