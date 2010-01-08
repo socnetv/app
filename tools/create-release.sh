@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ~/Documents/Code/Qt/socnetv/trunk
+cd ~/socnetv/trunk
 if [ -d "../release" ]; then
 	echo .
 	echo ---------------------------------

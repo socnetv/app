@@ -5,11 +5,11 @@ echo  --------------------
 echo  . copying webfiles .
 echo  --------------------
 
-cd /home/dimitris/socnetv/site
+cd ~/socnetv/site
 echo "Update ChangeLog also? (Y/N)"
 read ans
 if [ $ans = "y" -o $ans = "Y" ]; then
-        cp  ./trunk/ChangeLog ./site/
+        cp  ../trunk/ChangeLog ../site/
 fi
 rsync -rvPC -delete -e ssh  *  oxy86,socnetv@web.sourceforge.net:htdocs/
 
