@@ -204,7 +204,7 @@ echo   	UPLOAD FINAL PACKAGE
 echo ---------------------------------
 echo .
 
-VER=`grep urgency socnetv-0.51/debian/changelog | awk '{ print $2 } ' | head -n 1 | sed s/"("// |  sed s/")"//`
+VER=`grep urgency socnetv-$VER/debian/changelog | awk '{ print $2 } ' | head -n 1 | sed s/"("// |  sed s/")"//`
 echo New package version: $VER   
 echo "Proceed? (Y/N)"
 read ans
