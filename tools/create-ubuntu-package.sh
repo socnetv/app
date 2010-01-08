@@ -3,7 +3,7 @@
 
 
 #CHANGE THIS TO NEW VERSION NUMBERS
-VER=0.70;   
+VER=0.80;   
 echo $VER
 
 echo .
@@ -29,7 +29,7 @@ fi
 
 
 
-cd ~/Documents/socnetv/trunk
+cd ~/socnetv/trunk
 
 echo Removing old ubuntu directory
 if [ -d ../ubuntu ];    then
