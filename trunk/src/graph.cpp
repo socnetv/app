@@ -2052,30 +2052,28 @@ void Graph::writeNumberOfCliques(
 		emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
 		return;
 	}
-	unsigned long int delta=0, delta_sum=0, N = vertices();
+	unsigned long int cliques=0, cliques_sum=0, N = vertices();
 		
 	QTextStream outText ( &file );
 
 	emit statusMessage ( QString(tr("Writing number of triangles to file:")).arg(fileName) );
 	
-	outText << tr("NUMBER OF CLIQUES (delta) OF EACH NODE") << "\n";
-	outText << tr("delta range: 0 < C < 1") <<"\n\n";
-	outText << "Node"<<"\tdelta\n";
-	
+	outText << tr("NUMBER OF CLIQUES (CLQs) OF EACH NODE") << "\n";
+	outText << tr("CLQs range: 0 < CLQs < ") <<"\n\n";
+	outText << "Node"<<"\tCLQs\n";
+
 	QList<Vertex*>::iterator it;
 	
 	for (it= m_graph.begin(); it!= m_graph.end(); it++){ 
-		delta=this->numberOfCliques((*it)->name()); 
-		outText << (*it)->name()<<"\t"<< delta <<endl;
-		delta_sum += delta;
+		cliques=this->numberOfCliques((*it)->name()); 
+		outText << (*it)->name()<<"\t"<< cliques <<endl;
+		cliques_sum += cliques;
 	}
 	
-	outText << endl << tr("NUMBER OF CLIQUES (delta_sum) OF GRAPH")<< endl;
-	outText << "delta_sum = " <<  delta_sum / 3 <<"\n\n";
+	outText << endl << tr("NUMBER OF CLIQUES (CLQSUM) OF GRAPH")<< endl;
+	outText << "CLQSUM = " <<  cliques_sum / 3.0 <<"\n\n";
 	if ( N > 3) 
-		outText << tr("Range: 0 < delta_sum < ") << N * (N-1) * (N-2)/ 3 << endl;
-	outText << tr("GCLC = 0, when there are no cliques (i.e. acyclic tree).\n");
-	outText << tr("GCLC = 1, when every node and its neighborhood are complete cliques.\n");
+		outText << tr("CLQSUM Range: 0 < CLQSUM < ") << N * (N-1) * (N-2)/ 3 << endl;
 
 	outText <<"\n\n" ;
 	outText << tr("Number of Cliques Report,\n");
@@ -2645,6 +2643,7 @@ float Graph:: numberOfCliques(int v1){
 		for( it2 =  m_graph[ index[v1] ] -> m_outEdges.begin(); it2 !=  m_graph[ index[v1] ] ->m_outEdges.end(); it2++ ) {
 			connectedVertex2=it2->first;
 			if (connectedVertex1 == connectedVertex2) continue;
+			else if ( connectedVertex1 >= connectedVertex2 && symmetric) continue;
 			else {
 				qDebug("Graph::numberOfCliques() Out-connectedVertex2 %i [%i] ",connectedVertex2, index[connectedVertex2]);
 				if ( hasEdge( connectedVertex1, connectedVertex2 ) ) {

@@ -8,7 +8,8 @@ Version 0.80 - January 30  2010  (PROJECTED)
 Codename: "supersyntages.gr"
 ----------------------------
 - New statistic: Triad Census.
-- Read support for list formatted files.
+- New statistic: clique numbers for each node.
+- Initial read support for list formatted files.
 - Read support for comma separated values (csv) formatted sociomatrix files
 - Much improved Dot format support. 
 - Faster network load times, thanks to control variables.
@@ -18,7 +19,7 @@ Codename: "supersyntages.gr"
 - Fixed bug #396124: GBC different in Pajek cp. to SocNetV
 - Fixed bug #415277: network files were not loaded on startup
 - Fixed bug #379225 side note: GraphML format did not preserve node labels.
-- Fixed bug #418023: rewiring parameter typo in Graph::createRandomNetSmallWorld.
+- Fixed bug #418023: rewiring parameter typo in Graph:createRandomNetSmallWorld.
 - Fixed bug #420708 on GraphML output files, not transforming special XML characters, like &, to ampersand codes, like &amp;  
 - Fixed bug #418550: Clear selection when clicking on empty canvas.
 - Fixed bug #504037: Negative Group Closeness Centrality
