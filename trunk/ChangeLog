@@ -23,6 +23,7 @@ Codename: "supersyntages.gr"
 - Fixed bug #420708 on GraphML output files, not transforming special XML characters, like &, to ampersand codes, like &amp;  
 - Fixed bug #418550: Clear selection when clicking on empty canvas.
 - Fixed bug #504037: Negative Group Closeness Centrality
+- Fixed bug #504517: double cliques counting in nondirected networks.
 - Edited .spec to enable proper Fedora package creation.
 - Changed ProgressBar behaviour: bars appear only if nodes are more than 300 or edges more than 1000.
 - New feature: the embedded text editor can be used to copy/paste directly network data
