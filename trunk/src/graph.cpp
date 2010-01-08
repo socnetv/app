@@ -282,7 +282,8 @@ void Graph::addVertex (
 	m_graph.append( new Vertex(this, v1, val, size, color, numColor, numSize, label, labelColor, labelSize, p, shape) );
 	m_totalVertices++;		
 
-	qDebug("Graph: addVertex(): Vertex named %i appended with index=%i. Now, m_graph size %i. New vertex position: %f, %f",m_graph.back()->name(), index[v1], m_graph.size(), p.x(), p.y() );
+	qDebug() << "Graph: addVertex(): Vertex named " << m_graph.back()->name() << " appended with index= "<<index[v1]
+			<< " Now, m_graph size " << m_graph.size() << ". New vertex position: " << p.x() << "," << p.y(); 
 	graphModified=true;
 }
 
@@ -333,8 +334,9 @@ void Graph::removeVertex(int Doomed){
 	int indexOfDoomed=index[Doomed];
 	int outEdgesOfDoomed= m_graph[indexOfDoomed]->outDegree(); 
 	int inEdgesOfDoomed = m_graph[indexOfDoomed]->inDegree(); 
-	qDebug("Graph: Vertex %i with index=%i has %i OutEdges and %i InEdges.",m_graph[ index[Doomed] ]->name(), index[Doomed], outEdgesOfDoomed, inEdgesOfDoomed);
-	
+	qDebug() << "Graph: Vertex " << m_graph[ index[Doomed] ]->name() << "  with index= " << index[Doomed] 
+			<< "  has " <<outEdgesOfDoomed << "  OutEdges and " << inEdgesOfDoomed<< "  InEdges.";
+
 	//Decrease the variable which count vertices with in- and out-edges
 	if (!isSymmetric()) {
 		if (outEdgesOfDoomed>0) {
@@ -356,7 +358,7 @@ void Graph::removeVertex(int Doomed){
 	//Remove links to Doomed from each other vertex	
 	for (QList<Vertex*>::iterator it=m_graph.begin(); it!=m_graph.end(); it++){
 		if  ( (*it)->isLinkedTo(Doomed) != 0) {
-			qDebug("Graph: Vertex %i  is linked to selected and has %i outDegree.",(*it)->name(), (*it)->outDegree());
+			qDebug()<< "Graph: Vertex " << (*it)->name() << " is linked to selected and has outDegree " << (*it)->outDegree() ;
 			//Decrease the variables which count vertices with out and reciprocal edges 
 			if ( (*it)->outDegree()==1 ) {
 				qDebug("Graph: decreasing outEdgesVert");
@@ -494,10 +496,11 @@ void Graph::setEdgeWeight (int v1, int v2, float weight) {
 */
 void Graph::removeEdge (int v1, int v2) {	
 	qDebug ("Graph: removeEdge edge %i -> %i to be removed from graph", v1, v2);
-	qDebug("Graph: Vertex named %i has index=%i",m_graph[ index[v1] ]->name(), index[v1]);
+	qDebug() << "Graph: Vertex named " << m_graph[ index[v1] ]->name() << " has index = " << index[v1];
 	m_graph [ index[v1] ]->removeLinkTo(v2);
 	m_graph [ index[v2] ]->removeLinkFrom(v1);
-	qDebug("Graph: removeEdge between %i (%i) and %i (%i), NOW vertex v1 reports edge weight %f", v1, index[v1],v2,index[v2], m_graph [ index[v1] ]->isLinkedTo(v2) );
+	qDebug()<< "Graph: removeEdge between " << v1 << " i " << index[v1] << " and " << v2 << " i "<< index[v2] 
+			<< "  NOW vertex v1 reports edge weight " << m_graph [ index[v1] ]->isLinkedTo(v2) ;
 	if ( hasEdge(v2,v1) !=0) symmetricAdjacencyMatrix=false;
 	m_totalEdges--;
 	if (m_totalEdges<0) m_totalEdges=0;
@@ -557,8 +560,8 @@ void Graph::slotSetEdgeVisibility ( int source, int target, bool visible) {
 	Returns the index or -1
 	Complexity:  O(logN) for index retrieval 
 */
-int Graph::hasVertex(int num){			
-	qDebug ("Graph: hasVertex() v: %i with index %i named %i", num, index[num], m_graph[ index[num]] ->name());
+int Graph::hasVertex(unsigned long int num){			
+	qDebug () << "Graph: hasVertex() v: " << num <<  " with index " << index[num]  << " named " << m_graph[ index[num]] ->name();
 	if (  m_graph[ index[num]] ->name() == num)  
 		return index[num];
 	else 
@@ -911,11 +914,11 @@ void Graph::symmetrize(){
 		for( it1 = (*it)->m_outEdges.begin(); it1 != (*it)->m_outEdges.end(); it1++ ) {
 			y=index[it1->first];	
 			if ( ! m_graph[y]->isLinkedTo( (*it)->name() )) {
-				qDebug("Graph: symmetrize: u = %i IS NOT inLinked from y = %i", (*it)->name(), it1->first  );
+				qDebug() << "Graph: symmetrize: u = " << (*it)->name() << " IS NOT inLinked from y = " <<  it1->first  ;
 				createEdge(it1->first, (*it)->name(), it1->second, initEdgeColor, false, true, false);
 			}
-			else 
-				qDebug("Graph: symmetrize:  u = %i IS inLinked from y = %i",it1->first, (*it)->name()  );
+			else
+				qDebug() << "Graph: symmetrize: u = " << it1->first  << " IS inLinked from y = " <<   (*it)->name() ; 
 		}
 	}
 	graphModified=TRUE;
@@ -1184,7 +1187,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 			progressCounter++;
 			emit updateProgressDialog( progressCounter );
 			s=index[(*it)->name()];
-			qDebug("Source vertex s=%i of BFS algorithm has index %i. Clearing Stack ...", (*it)->name(), s);
+			qDebug() << "Source vertex s = " << (*it)->name() << " of BFS algorithm has index " << s << ". Clearing Stack ...";
 			if (doCalculcateCentralities){
 				qDebug("Empty stack Stack which will return vertices in order of their (non increasing) distance from S ...");
 				//- Complexity linear O(n) 
@@ -1195,12 +1198,12 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
  				for (it1=m_graph.begin(); it1!=m_graph.end(); it1++) 
  					(*it1)->clearPs();
 			}
-
-			qDebug("PHASE 1 (SSSP): Call BFS for source vertex %i to determine distances and shortest path counts from s to every vertex t", (*it)->name());
+			qDebug() << "PHASE 1 (SSSP): Call BFS for source vertex " << (*it)->name() 
+				<< " to determine distances and shortest path counts from s to every vertex t" ;
 			BFS(s,doCalculcateCentralities );
 			qDebug("***** FINISHED PHASE 1 (SSSP) BFS ALGORITHM. Continuing to calculate centralities");
 			if (doCalculcateCentralities){
-				qDebug("Set centrality for current source vertex %i  with index s=%i", (*it)->name(), s);
+				qDebug() << "Set centrality for current source vertex " << (*it)->name() << "  with index s = " << s ;
 				if ( (*it)->CC() != 0 ) //Closeness centrality must be inverted 	
 					CC=1.0/(*it)->CC();
 				else CC=0;
@@ -1455,7 +1458,7 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
 	minmax() facilitates the calculations of minimum and maximum centralities during createDistanceMatrix()
 */
 void Graph::minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int &minNode) {
-	qDebug("MINMAX C=%f, max=%f, min=%f, name= %i", C, max, min, v->name()); 
+	qDebug() << "MINMAX C = " <<  C << "  max = " << max << "  min = " << min << " name = " <<  v->name(); 
 	if (C > max ) {
 		max=C;
 		maxNode=v->name();
@@ -1529,7 +1532,7 @@ void Graph::centralityInDegree(bool weights){
 		}
 		(*it) -> setIDC ( IDC ) ;				//Set InDegree
 		(*it) -> setSIDC( IDC / (vert-1.0) );		//Set Standard InDegree
-		qDebug("Graph: vertex %i has IDC = %f and SIDC %f", (*it)->name(), IDC, (*it)->SIDC ());
+		qDebug() << "Graph: vertex = " <<  (*it)->name() << " has IDC = " << IDC << " and SIDC " << (*it)->SIDC ();
 		sumIDC += IDC;
 		it2 = discreteIDCs.find(QString::number(IDC));
 		if (it2 == discreteIDCs.end() )	{
@@ -1656,7 +1659,7 @@ void Graph::centralityOutDegree(bool weights){
 		ODC=0;
 		for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){	
 			if ( (weight=this->hasEdge ( (*it)->name(), (*it1)->name() ) ) !=0  )   {	
-				qDebug("Graph: vertex %i isLinkedTo= %i", (*it)->name(), (*it1)->name());
+				qDebug() << "Graph: vertex " <<  (*it)->name() << " isLinkedTo = " <<  (*it1)->name();
 				if (weights)
 					ODC+=weight;
 				else 
@@ -1665,7 +1668,7 @@ void Graph::centralityOutDegree(bool weights){
 		}
 		(*it) -> setODC ( ODC ) ;				//Set OutDegree
 		(*it) -> setSODC( ODC / (vert-1.0) );		//Set Standard OutDegree
-		qDebug("Graph: vertex %i has ODC = %f and SODC %f", (*it)->name(), ODC, (*it)->SODC ());
+		qDebug() << "Graph: vertex " <<  (*it)->name() << " has ODC = " << ODC << " and SODC "<< (*it)->SODC ();
 		sumODC += ODC;
 		it2 = discreteODCs.find(QString::number(ODC));
 		if (it2 == discreteODCs.end() )	{
@@ -2267,9 +2270,9 @@ void Graph::layoutRadialCentrality(double x0, double y0, double maxRadius, int C
 					break;
 			}
 		};
-		qDebug ("Vertice %i at x=%f, y=%f: C=%f, stdC=%f, maxradius %f",(*it)->name(), (*it)->x(), (*it)->y(), C, std, maxRadius);
-		
-		qDebug ("C %f, maxC %f, C/maxC %f, *maxRadius %f",C , maxC, (C/maxC), (C/maxC - 0.06)*maxRadius);
+		qDebug () << "Vertice " << (*it)->name() << " at x=" << (*it)->x() << ", y= "<< (*it)->y()
+				<< ": C=" << C << ", stdC=" << std << ", maxradius " <<  maxRadius
+				<< ", maxC " << maxC << ", C/maxC " << (C/maxC) << ", *maxRadius " << (C/maxC - 0.06)*maxRadius;
 		switch (static_cast<int> (ceil(maxC)) ){
 			case 0: {	
 				qDebug("maxC=0.   Using maxHeight");
@@ -2392,7 +2395,8 @@ void Graph::layoutLayeredCentrality(double maxWidth, double maxHeight, int Centr
 					break;
 			}
 		};
-		qDebug ("Vertice %i at x=%f, y=%f: C=%f, stdC=%f, maxC %f, maxWidth %f, maxHeight %f",(*it)->name(), (*it)->x(), (*it)->y(), C, std, maxC, maxWidth, maxHeight);
+		qDebug()<< "Vertice " << (*it)->name() << " at x="<< (*it)->x() << ", y="<<  (*it)->y() << ": C=" << C << ", stdC=" << std 
+				<< ", maxC "<<	maxC << ", maxWidth " << maxWidth <<" , maxHeight "<<maxHeight;
 		//Calculate new position
 		qDebug ("C/maxC %f, *maxHeight %f, +maxHeight %f ",C/maxC, (C/maxC)*maxHeight, maxHeight-(C/maxC)*maxHeight );
 		switch ( static_cast<int> (ceil(maxC)) ){
@@ -3188,10 +3192,10 @@ bool Graph::saveGraphToPajekFormat (
 	}
 
 	t<<"*Arcs \n";
-	qDebug("Graph::saveGraphToPajekFormat: Arcs");
+	qDebug()<< "Graph::saveGraphToPajekFormat: Arcs";
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
 		for (jt=m_graph.begin(); jt!=m_graph.end(); jt++){ 
-			qDebug("Graph::saveGraphToPajekFormat:  it=%i, jt=%i", (*it)->name(), (*jt)->name() );
+			qDebug() << "Graph::saveGraphToPajekFormat:  it=" << (*it)->name() << ", jt=" << (*jt)->name() ;
 			if  ( (weight=this->hasEdge( (*it)->name(), (*jt)->name())) !=0  
 				 &&   ( this->hasEdge((*jt)->name(), (*it)->name())) == 0  
 				 ) 
@@ -3207,10 +3211,10 @@ bool Graph::saveGraphToPajekFormat (
 	}
 	
 	t<<"*Edges \n";
-	qDebug("Graph::saveGraphToPajekFormat: Edges");
+	qDebug() << "Graph::saveGraphToPajekFormat: Edges";
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
 		for (jt=m_graph.begin(); jt!=m_graph.end(); jt++){ 
-			qDebug("Graph::saveGraphToPajekFormat:  it=%i, jt=%i", (*it)->name(), (*jt)->name() );
+			qDebug() << "Graph::saveGraphToPajekFormat:  it=" <<  (*it)->name() << ", jt=" <<(*jt)->name() ;
 			if  ( (weight=this->hasEdge((*it)->name(), (*jt)->name()))!=0   &&   
 					(this->hasEdge((*jt)->name(), (*it)->name()))!=0  
 				)  {
@@ -3638,7 +3642,8 @@ void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
 		qDebug () << "max dx "<< canvasWidth << "max dy "<< canvasHeight;
 		foreach (Vertex *v1, m_graph)  {
 			xvel=0; yvel=0;
-			qDebug("****************  Calculate forces for vertex %i with index %i and pos %f, %f ", v1->name(), index[v1->name()], v1->x(), v1->y());
+			qDebug() << "****************  Calculate forces for vertex " << v1->name()
+			<< " with index " <<  index[v1->name()] << " and pos "<< v1->x() << ", "<< v1->y();
 			foreach (Vertex *v2, m_graph)  {
 				qDebug () << " v2 = "<< v2->name() << " with pos (" <<  v2->x() << "," << v2->y() << ")";
 				if (v2 == v1) {
@@ -3661,7 +3666,7 @@ void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
 									<<"  c_spring=" << c_spring <<"  nat_length =" << natural_length
 									<<" ulv_x="<<ulv_x 	<<" ulv_y="<<ulv_y 	<<" dist= "<<dist 
 									<< " dux="<< dux << " duy="<< duy; 
-					qDebug(" ========== New Total Velocity for %i xvel, yvel  %f, %f", v1->name(), xvel, yvel); 
+					qDebug() << " ========== New Total Velocity for "<<  v1->name() << "xvel, yvel  "<< xvel << ", "<< yvel; 
 					continue;
 				}
 				else {
@@ -3676,8 +3681,7 @@ void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
 							<< " dux=" << dux 	<< " duy=" << duy;
 					xvel +=  dux ;
 					yvel +=  duy;
-					
-					qDebug(" ========== New Total Velocity for %i xvel, yvel  %f, %f", v1->name(), xvel, yvel);
+					qDebug() << " ========== New Total Velocity for "<<  v1->name() << "xvel, yvel  "<< xvel << ", "<< yvel; 
 				}
 			}
 			//Move node to new position
@@ -3720,7 +3724,8 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 		foreach (Vertex *v1, m_graph)  {
 			xvel=0; yvel=0;
 			dux=0; duy=0;
-			qDebug("****************  Calculate forces for vertex %i with index %i and pos %f, %f ", v1->name(), index[v1->name()], v1->x(), v1->y());
+			qDebug() << "****************  Calculate forces for vertex " << v1->name()
+			<< " with index " <<  index[v1->name()] << " and pos "<< v1->x() << ", "<< v1->y();
 			foreach (Vertex *v2, m_graph)  {
 				qDebug () << " v2 = "<< v2->name() << " with pos (" <<  v2->x() << "," << v2->y() << ")";
 				if (v2 == v1) {

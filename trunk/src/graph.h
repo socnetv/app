@@ -143,7 +143,7 @@ public:
 	int lastVertexNumber();						//Returns the number of the last vertex
 	int firstVertexNumber();					//Returns the number of the first vertex
 
-	int hasVertex(int );						//Checks if a vertex exists
+	int hasVertex(unsigned long  int );			//Checks if a vertex exists
 	int hasVertex(QString);						//Checks if a vertex with a label exists
 	void removeVertex (int );					//removes given vertex from m_graph
 
