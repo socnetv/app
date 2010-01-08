@@ -4,12 +4,30 @@
 
 ChangeLog:
 
-Version 0.80 - July 30  2009  (PROJECTED)
-Codename: "sitakia"
+Version 0.80 - January 8  2010 
+Codename: "supersyntages.gr"
 ----------------------------
-- added keyboard shortcuts for Centralities
-- Fixed bug #396124, GBC different in Pajek cp. to SocNetV
-- Changed ProgressBar behaviour: bars appear only if nodes are more than 300
+- New statistic: Triad Census.
+- New statistic: clique numbers for each node.
+- Initial read support for list formatted files.
+- Read support for comma separated values (csv) formatted sociomatrix files
+- Much improved Dot format support. 
+- Faster network load times, thanks to control variables.
+- Added keyboard shortcuts for Centralities
+- Refactored Import network menu. The user must define what network format is the file at hand.
+- Fixed bug #416965: Not displaying nodes when loading GraphViz files
+- Fixed bug #396124: GBC different in Pajek cp. to SocNetV
+- Fixed bug #415277: network files were not loaded on startup
+- Fixed bug #379225 side note: GraphML format did not preserve node labels.
+- Fixed bug #418023: rewiring parameter typo in Graph:createRandomNetSmallWorld.
+- Fixed bug #420708 on GraphML output files, not transforming special XML characters, like &, to ampersand codes, like &amp;  
+- Fixed bug #418550: Clear selection when clicking on empty canvas.
+- Fixed bug #504037: Negative Group Closeness Centrality
+- Fixed bug #504517: double cliques counting in nondirected networks.
+- Edited .spec to enable proper Fedora package creation.
+- Changed ProgressBar behaviour: bars appear only if nodes are more than 300 or edges more than 1000.
+- New feature: the embedded text editor can be used to copy/paste directly network data
+- Updated user manual.
 
 
 Version 0.70 - June 30  2009
@@ -116,8 +134,7 @@ Version 0.47 - Sep 12 2008
 Codename: "En leukw"
 ------------------------------
 --Fixed bug in adjacency matrix loading/saving.
---Edges are drawed once, even the reciprocal ones. 
-  This makes network loading faster...
+--Edges are drawed once, even the reciprocal ones. This makes network loading faster...
 --Cosmetic changes in canvas (labels stay above edges, etc).
 --Fixed another bug in loadPajek().
 
@@ -401,7 +418,7 @@ version 0.1
 
 - Separate text editor to view and tickle with the text files.
 
-- SocNetV is unabled to directly save network files, although this can be done
+- SocNetV is unable to directly save network files, although this can be done
 using the esoteric text editor.
 
 

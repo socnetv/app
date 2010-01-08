@@ -14,9 +14,37 @@ p, h1, h2, h3, h4, h5, h6, td, th {
 
 }
 
+h1, h2, h3, h4, h5, h6 { 
+color: #377aeb;
+background-color: transparent;
+vertical-align: bottom;
+}
+
+h1 {
+	  font-size: 18px;
+}
+
+
+h2 {
+	  font-size: 16px;
+}
+
+
+h3 {
+	  font-size: 14px;
+}
+
+
 h4 {
   padding:  0px 0px 0px 0px;
   margin: 20px 0px 5px 0px;
+  font-size: 14px;
+}
+
+h5 {
+  padding:  0px 0px 0px 0px;
+  margin: 20px 0px 5px 5px;
+  font-size: 11px;
 }
 
 p { 
@@ -25,11 +53,6 @@ p {
 
 
 
-h1, h2, h3, h4, h5, h6 { 
-color: #377aeb;
-background-color: transparent;
-vertical-align: bottom;
-}
 
 
 
