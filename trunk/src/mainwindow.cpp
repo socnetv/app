@@ -32,6 +32,7 @@
 #include <QtDebug>
 #include <QSpinBox>
 
+#include <ctime> 
 
 #include "mainwindow.h"
 #include "graphicswidget.h"
