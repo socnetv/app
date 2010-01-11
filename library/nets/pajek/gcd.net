@@ -1,0 +1,24 @@
+*Network 
+*Vertices 10
+1 "start" ic gold		0.577068 	0.340136	ellipse
+2 "read(x)" ic LightGreen		0.466165 	0.460317	box
+3 "r<y" ic LightGreen		0.332707 	0.356009	diamond
+4 "write(q,r)" ic LightMagenta		0.275376 	0.535147	box
+5 "r:=r-y" ic LightMagenta		0.12688 	0.515873	box
+6 "stop" ic LightMagenta		0.0798872 	0.340136	ellipse
+7 "read(y)" ic LightGreen		0.237782 	0.259637	box
+8 "q:=0" ic LightGreen		0.306391 	0.256236	box
+9 "r:=x" ic LightGreen		0.344925 	0.278912	box
+10 "q:=q+1" ic LightGreen		0.530075 	0.163265	box
+*Arcs 
+*Edges 
+1 2 1 c black
+2 7 1 c black
+3 4 1 c black
+3 5 1 c black
+3 9 1 c 
+3 10 1 c 
+4 6 1 c black
+5 10 1 c black
+7 8 1 c black
+8 9 1 c black

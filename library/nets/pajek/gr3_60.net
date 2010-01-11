@@ -1,0 +1,304 @@
+*Network Unnamed!
+*Vertices 120
+1 "1" ic gold		0 	0	diamond
+2 "2" ic gold		0 	0	diamond
+3 "3" ic gold		0 	0	diamond
+4 "4" ic gold		0 	0	diamond
+5 "5" ic gold		0 	0	diamond
+6 "6" ic gold		0 	0	diamond
+7 "7" ic gold		0 	0	diamond
+8 "8" ic gold		0 	0	diamond
+9 "9" ic gold		0 	0	diamond
+10 "10" ic gold		0 	0	diamond
+11 "11" ic gold		0.422662 	0.574109	diamond
+12 "12" ic gold		0 	0	diamond
+13 "13" ic gold		0 	0	diamond
+14 "14" ic gold		0 	0	diamond
+15 "15" ic gold		0 	0	diamond
+16 "16" ic gold		0 	0	diamond
+17 "17" ic gold		0 	0	diamond
+18 "18" ic gold		0 	0	diamond
+19 "19" ic gold		0 	0	diamond
+20 "20" ic gold		0 	0	diamond
+21 "21" ic gold		0 	0	diamond
+22 "22" ic gold		0 	0	diamond
+23 "23" ic gold		0 	0	diamond
+24 "24" ic gold		0 	0	diamond
+25 "25" ic gold		0 	0	diamond
+26 "26" ic gold		0 	0	diamond
+27 "27" ic gold		0 	0	diamond
+28 "28" ic gold		0 	0	diamond
+29 "29" ic gold		0 	0	diamond
+30 "30" ic gold		0 	0	diamond
+31 "31" ic gold		0 	0	diamond
+32 "32" ic gold		0 	0	diamond
+33 "33" ic gold		0 	0	diamond
+34 "34" ic gold		0 	0	diamond
+35 "35" ic gold		0 	0	diamond
+36 "36" ic gold		0 	0	diamond
+37 "37" ic gold		0 	0	diamond
+38 "38" ic gold		0 	0	diamond
+39 "39" ic gold		0 	0	diamond
+40 "40" ic gold		0 	0	diamond
+41 "41" ic gold		0 	0	diamond
+42 "42" ic gold		0 	0	diamond
+43 "43" ic gold		0 	0	diamond
+44 "44" ic gold		0 	0	diamond
+45 "45" ic gold		0 	0	diamond
+46 "46" ic gold		0 	0	diamond
+47 "47" ic gold		0 	0	diamond
+48 "48" ic gold		0 	0	diamond
+49 "49" ic gold		0 	0	diamond
+50 "50" ic gold		0 	0	diamond
+51 "51" ic gold		0 	0	diamond
+52 "52" ic gold		0 	0	diamond
+53 "53" ic gold		0 	0	diamond
+54 "54" ic gold		0 	0	diamond
+55 "55" ic gold		0 	0	diamond
+56 "56" ic gold		0 	0	diamond
+57 "57" ic gold		0 	0	diamond
+58 "58" ic gold		0 	0	diamond
+59 "59" ic gold		0 	0	diamond
+60 "60" ic gold		0 	0	diamond
+61 "61" ic gold		0 	0	diamond
+62 "62" ic gold		0 	0	diamond
+63 "63" ic gold		0 	0	diamond
+64 "64" ic gold		0 	0	diamond
+65 "65" ic gold		0 	0	diamond
+66 "66" ic gold		0 	0	diamond
+67 "67" ic gold		0 	0	diamond
+68 "68" ic gold		0 	0	diamond
+69 "69" ic gold		0 	0	diamond
+70 "70" ic gold		0 	0	diamond
+71 "71" ic gold		0 	0	diamond
+72 "72" ic gold		0 	0	diamond
+73 "73" ic gold		0 	0	diamond
+74 "74" ic gold		0 	0	diamond
+75 "75" ic gold		0 	0	diamond
+76 "76" ic gold		0 	0	diamond
+77 "77" ic gold		0 	0	diamond
+78 "78" ic gold		0 	0	diamond
+79 "79" ic gold		0 	0	diamond
+80 "80" ic gold		0 	0	diamond
+81 "81" ic gold		0 	0	diamond
+82 "82" ic gold		0 	0	diamond
+83 "83" ic gold		0 	0	diamond
+84 "84" ic gold		0 	0	diamond
+85 "85" ic gold		0 	0	diamond
+86 "86" ic gold		0 	0	diamond
+87 "87" ic gold		0 	0	diamond
+88 "88" ic gold		0 	0	diamond
+89 "89" ic gold		0 	0	diamond
+90 "90" ic gold		0 	0	diamond
+91 "91" ic gold		0 	0	diamond
+92 "92" ic gold		0 	0	diamond
+93 "93" ic gold		0 	0	diamond
+94 "94" ic gold		0 	0	diamond
+95 "95" ic gold		0 	0	diamond
+96 "96" ic gold		0 	0	diamond
+97 "97" ic gold		0 	0	diamond
+98 "98" ic gold		0 	0	diamond
+99 "99" ic gold		0 	0	diamond
+100 "100" ic gold		0 	0	diamond
+101 "101" ic gold		0 	0	diamond
+102 "102" ic gold		0 	0	diamond
+103 "103" ic gold		0 	0	diamond
+104 "104" ic gold		0 	0	diamond
+105 "105" ic gold		0 	0	diamond
+106 "106" ic gold		0 	0	diamond
+107 "107" ic gold		0 	0	diamond
+108 "108" ic gold		0 	0	diamond
+109 "109" ic gold		0 	0	diamond
+110 "110" ic gold		0 	0	diamond
+111 "111" ic gold		0 	0	diamond
+112 "112" ic gold		0 	0	diamond
+113 "113" ic gold		0 	0	diamond
+114 "114" ic gold		0 	0	diamond
+115 "115" ic gold		0 	0	diamond
+116 "116" ic gold		0 	0	diamond
+117 "117" ic gold		0 	0	diamond
+118 "118" ic gold		0 	0	diamond
+119 "119" ic gold		0 	0	diamond
+120 "120" ic gold		0 	0	diamond
+*Arcs 
+*Edges 
+1 2 2 c black
+1 4 2 c black
+1 12 2 c black
+2 6 2 c black
+2 10 2 c black
+3 4 2 c black
+3 8 2 c black
+3 16 2 c black
+4 12 2 c black
+5 6 2 c black
+5 7 2 c black
+5 22 2 c black
+6 26 2 c black
+7 8 2 c black
+7 22 2 c black
+8 20 2 c black
+9 10 2 c black
+9 14 2 c black
+9 102 2 c black
+10 94 2 c black
+11 12 2 c black
+11 13 2 c black
+11 18 2 c black
+13 14 2 c black
+13 52 2 c black
+14 102 2 c black
+15 16 2 c black
+15 17 2 c black
+15 44 2 c black
+16 30 2 c black
+17 18 2 c black
+17 44 2 c black
+18 40 2 c black
+19 20 2 c black
+19 24 2 c black
+19 32 2 c black
+20 30 2 c black
+21 22 2 c black
+21 23 2 c black
+21 28 2 c black
+23 24 2 c black
+23 36 2 c black
+24 32 2 c black
+25 26 2 c black
+25 27 2 c black
+25 88 2 c black
+26 94 2 c black
+27 28 2 c black
+27 88 2 c black
+28 82 2 c black
+29 30 2 c black
+29 34 2 c black
+29 42 2 c black
+31 32 2 c black
+31 33 2 c black
+31 38 2 c black
+33 34 2 c black
+33 48 2 c black
+34 42 2 c black
+35 36 2 c black
+35 37 2 c black
+35 76 2 c black
+36 82 2 c black
+37 38 2 c black
+37 76 2 c black
+38 70 2 c black
+39 40 2 c black
+39 46 2 c black
+39 54 2 c black
+40 52 2 c black
+41 42 2 c black
+41 43 2 c black
+41 50 2 c black
+43 44 2 c black
+43 45 2 c black
+45 46 2 c black
+45 58 2 c black
+46 54 2 c black
+47 48 2 c black
+47 49 2 c black
+47 64 2 c black
+48 70 2 c black
+49 50 2 c black
+49 64 2 c black
+50 58 2 c black
+51 52 2 c black
+51 56 2 c black
+51 100 2 c black
+53 54 2 c black
+53 55 2 c black
+53 60 2 c black
+55 56 2 c black
+55 108 2 c black
+56 100 2 c black
+57 58 2 c black
+57 59 2 c black
+57 66 2 c black
+59 60 2 c black
+59 66 2 c black
+60 62 2 c black
+61 62 2 c black
+61 68 2 c black
+61 118 2 c black
+62 108 2 c black
+63 64 2 c black
+63 65 2 c black
+63 72 2 c black
+65 66 2 c black
+65 67 2 c black
+67 68 2 c black
+67 74 2 c black
+68 118 2 c black
+69 70 2 c black
+69 71 2 c black
+69 78 2 c black
+71 72 2 c black
+71 78 2 c black
+72 74 2 c black
+73 74 2 c black
+73 80 2 c black
+73 116 2 c black
+75 76 2 c black
+75 77 2 c black
+75 84 2 c black
+77 78 2 c black
+77 79 2 c black
+79 80 2 c black
+79 86 2 c black
+80 116 2 c black
+81 82 2 c black
+81 83 2 c black
+81 90 2 c black
+83 84 2 c black
+83 90 2 c black
+84 86 2 c black
+85 86 2 c black
+85 92 2 c black
+85 114 2 c black
+87 88 2 c black
+87 89 2 c black
+87 96 2 c black
+89 90 2 c black
+89 91 2 c black
+91 92 2 c black
+91 98 2 c black
+92 114 2 c black
+93 94 2 c black
+93 95 2 c black
+93 104 2 c black
+95 96 2 c black
+95 104 2 c black
+96 98 2 c black
+97 98 2 c black
+97 106 2 c black
+97 112 2 c black
+99 100 2 c black
+99 101 2 c black
+99 110 2 c black
+101 102 2 c black
+101 103 2 c black
+103 104 2 c black
+103 105 2 c black
+105 106 2 c black
+105 110 2 c black
+106 112 2 c black
+107 108 2 c black
+107 109 2 c black
+107 120 2 c black
+109 110 2 c black
+109 120 2 c black
+111 112 2 c black
+111 113 2 c black
+111 119 2 c black
+113 114 2 c black
+113 115 2 c black
+115 116 2 c black
+115 117 2 c black
+117 118 2 c black
+117 119 2 c black
+119 120 2 c black

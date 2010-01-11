@@ -1,0 +1,210 @@
+*Network Unnamed!
+*Vertices 62
+1 "t1" ic LightYellow		0.870504 	0.500938	ellipse
+2 "t2" ic LightYellow		0.857914 	0.538462	ellipse
+3 "t3" ic LightYellow		0.843525 	0.574109	ellipse
+4 "t4" ic LightYellow		0.82554 	0.60788	ellipse
+5 "t5" ic LightYellow		0.805755 	0.637899	ellipse
+6 "t6" ic LightYellow		0.782374 	0.664165	ellipse
+7 "t7" ic LightYellow		0.757194 	0.686679	ellipse
+8 "t8" ic LightYellow		0.730216 	0.707317	ellipse
+9 "t9" ic LightYellow		0.703237 	0.722326	ellipse
+10 "o" ic LightGreen		0.67446 	0.73546	box
+11 "o" ic LightGreen		0.645683 	0.742964	box
+12 "o" ic LightGreen		0.616906 	0.748593	box
+13 "o" ic LightGreen		0.589928 	0.750469	box
+14 "o" ic LightGreen		0.56295 	0.748593	box
+15 "o" ic LightGreen		0.535971 	0.744841	box
+16 "o" ic LightGreen		0.51259 	0.746717	box
+17 "o" ic LightGreen		0.489209 	0.746717	box
+18 "o" ic LightGreen		0.465827 	0.744841	box
+19 "o" ic LightGreen		0.42446 	0.806754	box
+20 "o" ic LightGreen		0.395683 	0.797373	box
+21 "o" ic LightGreen		0.392086 	0.731707	box
+22 "o" ic LightGreen		0.370504 	0.718574	box
+23 "o" ic LightGreen		0.350719 	0.703565	box
+24 "o" ic LightGreen		0.330935 	0.686679	box
+25 "o" ic LightGreen		0.314748 	0.667917	box
+26 "o" ic LightGreen		0.298561 	0.64728	box
+27 "o" ic LightGreen		0.228417 	0.658537	box
+28 "t10" ic LightYellow		0.293165 	0.594747	ellipse
+29 "t11" ic LightYellow		0.293165 	0.56848	ellipse
+30 "t12" ic LightYellow		0.296763 	0.54409	ellipse
+31 "o" ic LightGreen		0.303957 	0.521576	box
+32 "o" ic LightGreen		0.311151 	0.500938	box
+33 "o" ic LightGreen		0.31295 	0.4803	box
+34 "o" ic LightGreen		0.32554 	0.463415	box
+35 "o" ic LightGreen		0.266187 	0.424015	box
+36 "o" ic LightGreen		0.327338 	0.424015	box
+37 "o" ic LightGreen		0.352518 	0.414634	box
+38 "o" ic LightGreen		0.361511 	0.399625	box
+39 "o" ic LightGreen		0.379496 	0.39212	box
+40 "o" ic LightGreen		0.397482 	0.386492	box
+41 "t13" ic LightYellow		0.366906 	0.320826	ellipse
+42 "t14" ic LightYellow		0.320144 	0.198874	ellipse
+43 "t15" ic LightYellow		0.384892 	0.253283	ellipse
+44 "o" ic LightGreen		0.451439 	0.362101	box
+45 "o" ic LightGreen		0.467626 	0.36773	box
+46 "o" ic LightGreen		0.482014 	0.373358	box
+47 "o" ic LightGreen		0.494604 	0.382739	box
+48 "o" ic LightGreen		0.505396 	0.39212	box
+49 "o" ic LightGreen		0.516187 	0.393996	box
+50 "o" ic LightGreen		0.52518 	0.405253	box
+51 "o" ic LightGreen		0.530576 	0.418386	box
+52 "o" ic LightGreen		0.534173 	0.429644	box
+53 "o" ic LightGreen		0.535971 	0.442777	box
+54 "o" ic LightGreen		0.535971 	0.454034	box
+55 "o" ic LightGreen		0.534173 	0.465291	box
+56 "o" ic LightGreen		0.528777 	0.474672	box
+57 "o" ic LightGreen		0.609712 	0.422139	box
+58 "o" ic LightGreen		0.52518 	0.485929	box
+59 "o" ic LightGreen		0.622302 	0.446529	box
+60 "o" ic LightGreen		0.564748 	0.4803	box
+61 "o" ic LightGreen		0.519784 	0.497186	box
+62 "o" ic LightGreen		0.510791 	0.499062	box
+*Arcs 
+*Edges 
+1 2 1 c black
+1 3 1 c black
+1 4 1 c black
+1 5 1 c black
+1 6 1 c black
+1 11 1 c black
+1 14 1 c black
+1 15 1 c black
+1 16 1 c black
+1 17 1 c black
+1 18 1 c black
+1 19 1 c black
+1 28 1 c black
+1 41 1 c black
+2 3 1 c black
+2 5 1 c black
+2 6 1 c black
+2 12 1 c black
+2 13 1 c black
+2 19 1 c black
+2 20 1 c black
+2 30 1 c black
+3 6 1 c black
+3 11 1 c black
+3 20 1 c black
+3 21 1 c black
+3 22 1 c black
+3 23 1 c black
+3 24 1 c black
+3 25 1 c black
+3 26 1 c black
+3 27 1 c black
+3 29 1 c black
+3 41 1 c black
+3 42 1 c black
+4 5 1 c black
+4 6 1 c black
+4 7 1 c black
+4 8 1 c black
+4 9 1 c black
+5 6 1 c black
+5 8 1 c black
+5 9 1 c black
+5 12 1 c black
+5 13 1 c black
+6 9 1 c black
+6 11 1 c black
+6 13 1 c black
+7 8 1 c black
+7 9 1 c black
+7 10 1 c black
+8 9 1 c black
+8 10 1 c black
+9 10 1 c black
+10 52 1 c black
+12 13 1 c black
+14 15 1 c black
+15 16 1 c black
+16 17 1 c black
+17 18 1 c black
+18 19 1 c black
+20 21 1 c black
+21 22 1 c black
+22 23 1 c black
+23 24 1 c black
+24 25 1 c black
+25 26 1 c black
+26 27 1 c black
+28 29 1 c black
+28 30 1 c black
+28 31 1 c black
+28 32 1 c black
+28 33 1 c black
+28 34 1 c black
+28 35 1 c black
+28 42 1 c black
+28 43 1 c black
+29 30 1 c black
+29 35 1 c black
+29 36 1 c black
+29 42 1 c black
+30 36 1 c black
+30 37 1 c black
+30 38 1 c black
+30 39 1 c black
+31 32 1 c black
+31 40 1 c black
+32 33 1 c black
+32 40 1 c black
+33 34 1 c black
+33 40 1 c black
+34 35 1 c black
+34 40 1 c black
+35 36 1 c black
+35 37 1 c black
+35 38 1 c black
+35 39 1 c black
+35 40 1 c black
+36 37 1 c black
+37 38 1 c black
+38 39 1 c black
+39 40 1 c black
+41 42 1 c black
+41 43 1 c black
+41 48 1 c black
+41 49 1 c black
+42 43 1 c black
+42 47 1 c black
+42 51 1 c black
+43 44 1 c black
+43 50 1 c black
+44 45 1 c black
+44 48 1 c black
+44 50 1 c black
+45 46 1 c black
+46 47 1 c black
+47 49 1 c black
+47 51 1 c black
+48 49 1 c black
+50 51 1 c black
+52 53 1 c black
+52 57 1 c black
+52 58 1 c black
+52 59 1 c black
+52 60 1 c black
+53 54 1 c black
+53 59 1 c black
+54 55 1 c black
+54 59 1 c black
+54 61 1 c black
+55 56 1 c black
+55 58 1 c black
+55 59 1 c black
+55 61 1 c black
+56 57 1 c black
+56 58 1 c black
+56 61 1 c black
+56 62 1 c black
+57 58 1 c black
+57 60 1 c black
+57 62 1 c black
+58 59 1 c black
+58 60 1 c black
+61 62 1 c black
