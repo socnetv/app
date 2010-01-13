@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer 
- version: 0.80
+ version: 0.90
  Written in Qt 4.4
 
 -                           mainwindow.cpp  -  description
                              -------------------
-    copyright            : (C) 2005-2009 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2010 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -393,6 +393,15 @@ void MainWindow::initActions(){
 	viewSociomatrixAct->setStatusTip(tr("Displays the adjacency matrix of the active network"));
 	viewSociomatrixAct->setWhatsThis(tr("View Network file\n\nDisplays the adjacency matrix of the active network"));
 	connect(viewSociomatrixAct, SIGNAL(activated()), this, SLOT(slotViewAdjacencyMatrix()));
+
+
+	recreateDataSetAct = new QAction(QIcon(":/images/sm.png"), tr("Known data sets"),  this);
+	recreateDataSetAct ->setShortcut(tr("F7"));
+	recreateDataSetAct->setStatusTip(tr("Recreates a variety of known data sets."));
+	recreateDataSetAct->setWhatsThis(tr("Known Data Sets\n\nRecreates some of the most widely used data sets in network analysis studies"));
+	connect(recreateDataSetAct, SIGNAL(activated()), this, SLOT(slotRecreateDataSet()));
+
+
 
 	createUniformRandomNetworkAct = new QAction(QIcon(":/images/erdos.png"), tr("Erdos-Renyi G(n,p)"),  this);
 	createUniformRandomNetworkAct ->setShortcut(tr("Shift+U"));
@@ -1036,6 +1045,10 @@ void MainWindow::initMenuBar() {
 	networkMenu -> addSeparator();
 	networkMenu -> addAction (viewSociomatrixAct);
 	networkMenu -> addSeparator();
+	
+	networkMenu -> addAction (recreateDataSetAct);
+	networkMenu -> addSeparator();
+	
 	randomNetworkMenu = new QMenu(tr("Create Random Network"));
 	networkMenu ->addMenu (randomNetworkMenu);
 	randomNetworkMenu -> addAction (createSmallWorldRandomNetworkAct);
@@ -2638,6 +2651,15 @@ void MainWindow::slotViewAdjacencyMatrix(){
 
 }
 
+
+
+/*
+ * Recreates some of the most famous and widely used data sets 
+ * in network analysis studies
+ */
+void MainWindow::slotRecreateDataSet(){
+	m_datasetDialog.exec();
+}
 
 
 
@@ -5737,7 +5759,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Mon Jan  4 01:49:55 EET 2010";
+QString BUILD="Wed Jan 13 01:30:06 EET 2010";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"

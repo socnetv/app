@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer
- version: 0.80
+ version: 0.90
  Written in Qt 4.4
  
                          webcrawler.h  -  description
                              -------------------
-    copyright            : (C) 2005-2009 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2010 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 

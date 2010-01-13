@@ -3,7 +3,7 @@
  version: 0.90
  Written in Qt 4.4
  
-                         filteredgesbyweightdialog.h  -  description
+                         datasetrecreatordialog.cpp  -  description
                              -------------------
     copyright            : (C) 2005-2010 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
@@ -24,28 +24,37 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef FILTEREDGESBYWEIGHTDIALOG_H
-#define FILTEREDGESBYWEIGHTDIALOG_H
-
-
-#include <QDialog>
-
-#include "ui_filteredgesbyweightdialog.h"
  
 
-class FilterEdgesByWeightDialog : public QDialog
+#include "datasetrecreatordialog.h"
+
+#include <QDebug>
+#include <QPushButton>
+
+DataSetRecreatorDialog::DataSetRecreatorDialog (QWidget *parent) : QDialog (parent)
 {
-	Q_OBJECT
-public:
-	FilterEdgesByWeightDialog (QWidget *parent = 0);
-public slots:
-	void gatherData ();
-signals:
-	void userChoices( float, bool);	
-private:
-	Ui::FilterEdgesByWeightDialog ui;
+	ui.setupUi(this);	
+	connect ( ui.buttonBox,SIGNAL(accepted()), this, SLOT(gatherData()) );
+	(ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
 
-};
+	QStringList datasets_list;
+	datasets_list   << "Krackhardt\'s High-tech managers - Advice relation " 
+			<< "Krackhardt\'s High-tech managers - Friendship relation"
+			<< "Krackhardt\'s High-tech managers - Who reports to"
+			<< "Padgett\'s Florentine Families - Business relation"
+			<< "Padgett\'s Florentine Families - Marital relation<F11>"
+			<< "Freeman\'s EIES network - Acquaintanceship at time 1"
+			<< "Freeman\'s EIES network - Acquaintanceship at time 2"
+			<< "Freeman\'s EIES network - Messages";
+
+	(ui.comboBox) -> insertItems( 1, datasets_list );
+}
 
 
-#endif 
+
+void DataSetRecreatorDialog::gatherData(){
+	qDebug()<< "Dialog: gathering Data!...";
+	QString dataset_name = (ui.comboBox) -> currentText(); 
+	qDebug()<< "Dialog: emitting userChoises signal ";
+	emit userChoices( dataset_name );		
+}

@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer
- version: 0.80
+ version: 0.90
  Written in Qt 4.4
  
                          mainwindow.h  -  description
                              -------------------
-    copyright            : (C) 2005-2009 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2010 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -38,8 +38,10 @@
 #include "graph.h"
 #include "filteredgesbyweightdialog.h"
 #include "webcrawlerdialog.h"
+#include "datasetrecreatordialog.h"
 
-static const QString VERSION = "0.80";
+
+static const QString VERSION="0.90";
 
 /**
   * This Class is the base class. It sets up the main
@@ -137,6 +139,7 @@ public slots:
 	void slotOpenTextEditor();
 	void slotViewNetworkFile();
 	void slotViewAdjacencyMatrix();
+	void slotRecreateDataSet();
 	void slotCreateRandomNetErdos();
 	void slotCreateSameDegreeRandomNetwork();
 	void slotCreateGaussianRandomNetwork();
@@ -291,6 +294,7 @@ private:
 
 	FilterEdgesByWeightDialog m_filterEdgesByWeightDialog;
 	WebCrawlerDialog m_WebCrawlerDialog;
+	DataSetRecreatorDialog m_datasetDialog;
 	Graph activeGraph;
 	QPrinter *printer;	
 	QToolBar *toolBar;
@@ -320,8 +324,10 @@ private:
 	QAction *fileNew, *fileOpen, *fileSave, *fileSaveAs,*fileClose, *printNetwork,*fileQuit;
 	QAction *exportBMP, *exportPNG, *exportPajek, *exportPDF, *exportDL, *exportGW, *exportSM, *exportList;
 	QAction *importPajek,*importSM, *importList, *importDot , *importDL; 
-	QAction *viewNetworkFileAct, *openTextEditorAct, *viewSociomatrixAct, *createUniformRandomNetworkAct;
-	QAction *createGaussianRandomNetworkAct, *createLatticeNetworkAct;
+	
+	QAction *viewNetworkFileAct, *openTextEditorAct, *viewSociomatrixAct, *recreateDataSetAct; 
+	
+	QAction *createUniformRandomNetworkAct, *createGaussianRandomNetworkAct, *createLatticeNetworkAct;
 	QAction *createSmallWorldRandomNetworkAct, *createSameDegreeRandomNetworkAct;
 	QAction *displayNodeNumbersAct, *displayNodeLabelsAct, *displayNumbersInsideNodesAct;
 	QAction *findNodeAct,*addNodeAct, *addLinkAct, *removeNodeAct, *removeLinkAct;

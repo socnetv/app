@@ -1,11 +1,11 @@
 /******************************************************************************
  SocNetV: Social Networks Visualizer 
- version: 0.80
+ version: 0.90
  Written in Qt 4.4
  
                          graph.cpp  -  description
                              -------------------
-    copyright            : (C) 2005-2009 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2010 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
 *******************************************************************************/
 
@@ -1240,7 +1240,8 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 					(*it1)->setDelta(0.0);
 				}
 
-				qDebug("Visit all vertices in reverse order of their discovery (from s = %i) to sum dependencies. Initial Stack size has %i", s, Stack.size());
+				qDebug() << "Visit all vertices in reverse order of their discovery (from s = " << s 
+						<< " ) to sum dependencies. Initial Stack size has " << Stack.size();
 
 				while ( !Stack.empty() ) {
 					w=Stack.top(); 

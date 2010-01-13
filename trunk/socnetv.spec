@@ -1,5 +1,5 @@
 %define name    socnetv
-%define version 0.80
+%define version 0.90
 %define release 1
 %define prefix  /usr/local
 %define lastrev %(LANG=en_US.UTF-8 && date +"%a %b %e %Y")

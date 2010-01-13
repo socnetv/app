@@ -3,7 +3,7 @@
  version: 0.90
  Written in Qt 4.4
  
-                         filteredgesbyweightdialog.h  -  description
+                         datasetrecreatordialog.h  -  description
                              -------------------
     copyright            : (C) 2005-2010 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
@@ -24,28 +24,28 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef FILTEREDGESBYWEIGHTDIALOG_H
-#define FILTEREDGESBYWEIGHTDIALOG_H
-
+#ifndef DATASETRECREATORDIALOG_H
+#define DATASETRECREATORDIALOG_H
 
 #include <QDialog>
 
-#include "ui_filteredgesbyweightdialog.h"
+#include "ui_datasetrecreatordialog.h"
  
 
-class FilterEdgesByWeightDialog : public QDialog
+class DataSetRecreatorDialog: public QDialog
 {
 	Q_OBJECT
 public:
-	FilterEdgesByWeightDialog (QWidget *parent = 0);
+	DataSetRecreatorDialog (QWidget *parent = 0);
 public slots:
-	void gatherData ();
+	void gatherData();
 signals:
-	void userChoices( float, bool);	
+	void userChoices(QString);	
 private:
-	Ui::FilterEdgesByWeightDialog ui;
+	Ui::DataSetRecreatorDialog ui;
 
 };
 
 
-#endif 
+
+#endif

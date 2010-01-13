@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer 
- version: 0.80
+ version: 0.90
  Written in Qt 4.4
 
                         node.cpp  -  description
                         -------------------
-    copyright            : (C) 2005-2009 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2010 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -44,6 +44,7 @@ Node::Node( GraphicsWidget* gw, int num, int size,
 			int ldist, int ndist, QPointF p 
 			) : graphicsWidget (gw) 
 {
+	Q_UNUSED(p);
 	graphicsWidget->scene()->addItem(this); //Without this nodes don't appear on the screen...
 	setFlags(ItemIsSelectable | ItemIsMovable); //Without this, the node cannot move nor be selected ...
 	setAcceptsHoverEvents(true);
