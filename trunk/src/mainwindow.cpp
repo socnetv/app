@@ -186,6 +186,9 @@ MainWindow::MainWindow(const QString & m_fileName) {
 	connect( &m_WebCrawlerDialog, SIGNAL( userChoices( QString, int, int, bool)  ), 
 			this, SLOT(  slotWebCrawl( QString, int, int, bool) ) );
 
+	connect( &m_datasetSelectDialog, SIGNAL( userChoices( QString) ), 
+			this, SLOT( slotRecreateDataSet(QString) ) );
+
 
 	connect( &activeGraph, SIGNAL( setEdgeVisibility ( int, int, bool) ), 
 			 graphicsWidget, SLOT(  setEdgeVisibility ( int, int, bool) ) );
@@ -399,7 +402,7 @@ void MainWindow::initActions(){
 	recreateDataSetAct ->setShortcut(tr("F7"));
 	recreateDataSetAct->setStatusTip(tr("Recreates a variety of known data sets."));
 	recreateDataSetAct->setWhatsThis(tr("Known Data Sets\n\nRecreates some of the most widely used data sets in network analysis studies"));
-	connect(recreateDataSetAct, SIGNAL(activated()), this, SLOT(slotRecreateDataSet()));
+	connect(recreateDataSetAct, SIGNAL(activated()), this, SLOT(slotShowDataSetSelectDialog()));
 
 
 
@@ -2654,14 +2657,24 @@ void MainWindow::slotViewAdjacencyMatrix(){
 
 
 /*
- * Recreates some of the most famous and widely used data sets 
- * in network analysis studies
+ * Calls the m_datasetSelectionDialog to display the datasetselection dialog  
  */
-void MainWindow::slotRecreateDataSet(){
-	m_datasetDialog.exec();
+void MainWindow::slotShowDataSetSelectDialog(){
+	qDebug()<< "slotShowDataSetSelectDialog()";
+	m_datasetSelectDialog.exec();
 }
 
 
+/*
+ * Recreates some of the most famous and widely used data sets 
+ * in network analysis studies
+ */
+void MainWindow::slotRecreateDataSet (QString fileName) {
+	qDebug()<< "slotRecreateDataSet() fileName: " << fileName; 
+	activeGraph.writeDataSetToFile(fileName);
+	loadNetworkFile(fileName,3);
+	
+}
 
 /**
 	Calls activeGraph.createRandomNetErdos () to create a symmetric network

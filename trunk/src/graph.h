@@ -204,6 +204,8 @@ public:
 
 
 	/**PRINT OUT*/
+	
+	void writeDataSetToFile(QString );			// Writes a known dataset to a file.
 	void writeAdjacencyMatrixTo(QTextStream& os);	 			//Exports the adjacency matrix to a given textstream
 	void writeAdjacencyMatrix(const char*, const char*);		//Writes the adjacency matrix to a given file.
 	void writeDistanceMatrix(const char*, const char*, const char*);//Writes the distance matrix to a file

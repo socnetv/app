@@ -38,7 +38,7 @@
 #include "graph.h"
 #include "filteredgesbyweightdialog.h"
 #include "webcrawlerdialog.h"
-#include "datasetrecreatordialog.h"
+#include "datasetselectdialog.h"
 
 
 static const QString VERSION="0.90";
@@ -139,7 +139,8 @@ public slots:
 	void slotOpenTextEditor();
 	void slotViewNetworkFile();
 	void slotViewAdjacencyMatrix();
-	void slotRecreateDataSet();
+	void slotShowDataSetSelectDialog();
+		void slotRecreateDataSet(QString);
 	void slotCreateRandomNetErdos();
 	void slotCreateSameDegreeRandomNetwork();
 	void slotCreateGaussianRandomNetwork();
@@ -294,7 +295,7 @@ private:
 
 	FilterEdgesByWeightDialog m_filterEdgesByWeightDialog;
 	WebCrawlerDialog m_WebCrawlerDialog;
-	DataSetRecreatorDialog m_datasetDialog;
+	DataSetSelectDialog m_datasetSelectDialog;
 	Graph activeGraph;
 	QPrinter *printer;	
 	QToolBar *toolBar;
