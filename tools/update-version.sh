@@ -4,10 +4,10 @@ cd $workdir
 
 
 update_version() {
-	old=0.70;
-	new=0.80;
-	dateold=2008;
-	datenew=2009;
+	old=0.80;
+	new=0.90;
+	dateold=2009;
+	datenew=2010;
 	echo "Current version seems to be ....";
 	grep "VERSION=" src/mainwindow.h
 
