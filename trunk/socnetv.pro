@@ -10,7 +10,7 @@ QT += network
 INCPATH += ./src
 FORMS += src/forms/filteredgesbyweightdialog.ui \
 	src/forms/webcrawlerdialog.ui \
-	src/forms/datasetrecreatordialog.ui 
+	src/forms/datasetselectdialog.ui 
 
 HEADERS += src/backgrcircle.h \
            src/graphicswidget.h \
@@ -29,7 +29,7 @@ HEADERS += src/backgrcircle.h \
 	   src/filteredgesbyweightdialog.h \
 	   src/webcrawlerdialog.h \
 	   src/webcrawler.h \
-	   src/datasetrecreatordialog.h
+	   src/datasetselectdialog.h
 
 SOURCES += src/backgrcircle.cpp \
            src/graphicswidget.cpp \
@@ -49,7 +49,7 @@ SOURCES += src/backgrcircle.cpp \
 	   src/filteredgesbyweightdialog.cpp \
 	   src/webcrawlerdialog.cpp \
 	   src/webcrawler.cpp \
-	   src/datasetrecreatordialog.cpp
+	   src/datasetselectdialog.cpp
 
 
 

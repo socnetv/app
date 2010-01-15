@@ -2410,16 +2410,16 @@ void MainWindow::slotExportPajek()
 		statusMessage( tr("Cannot export to Pajek.")  );
 		return;
 	}
-		if (fileName.isEmpty()) {
-			statusMessage( tr("Saving network under new filename..."));
-		QString fn =  QFileDialog::getSaveFileName(this, 0, 0);
-	 	if (!fn.isEmpty())  {
-			fileName=fn;
-		}
-		else  {
-	 		statusMessage( tr("Saving aborted"));
-			return;
-		}
+
+	statusMessage( tr("Exporting active network under new filename..."));
+	QString fn =  QFileDialog::getSaveFileName(this, 0, 0);
+ 	if (!fn.isEmpty())  {
+		fileName=fn;
+		fileNameNoPath=fileName.split ("/");
+	}
+	else  {
+ 		statusMessage( tr("Saving aborted"));
+		return;
 	}
 
 	int maxWidth=scene->width();
@@ -2429,7 +2429,6 @@ void MainWindow::slotExportPajek()
 		networkSaved(1);
 	else 
 		networkSaved(0); 
-	
 }
 
 
@@ -2444,16 +2443,15 @@ void MainWindow::slotExportSM(){
 		statusMessage( tr("Cannot export to Adjacency Matrix.")  );
 		return;
 	}
-	if (fileName.isEmpty()) {
-		statusMessage( tr("Saving network under new filename..."));
-		QString fn =  QFileDialog::getSaveFileName(this, 0, 0);
-	 	if (!fn.isEmpty())  {
-			fileName=fn;
-		}
-		else  {
-	 		statusMessage( tr("Saving aborted"));
-			return;
-		}
+	statusMessage( tr("Saving network under new filename..."));
+	QString fn =  QFileDialog::getSaveFileName(this, 0, 0);
+ 	if (!fn.isEmpty())  {
+		fileName=fn;
+		fileNameNoPath=fileName.split ("/");
+	}
+	else  {
+ 		statusMessage( tr("Saving aborted"));
+		return;
 	}
 
 	QMessageBox::information(this, "Warning",tr("Note that exporting to an adjacency matrix does not save floating-point weight values; adjacency matrices consist of integers, only. \n If your network had any floating point weights in some edges, these are being truncated to the nearest integer or 1."), "OK",0);
