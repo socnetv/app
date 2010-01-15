@@ -380,8 +380,8 @@ void MainWindow::initActions(){
 
 	openTextEditorAct = new QAction(QIcon(""), tr("Open Text Editor"),this);
 	openTextEditorAct ->setShortcut(tr("Shift+F5"));
-	openTextEditorAct->setStatusTip(tr("Opens the SocNetV text editor"));
-	openTextEditorAct->setWhatsThis(tr("Open Text Editor\n\nOpens the SocNetV text editor where you can copy paste network data"));
+	openTextEditorAct->setStatusTip(tr("Opens the SocNetV text editor. You can copy/paste network data, save and then import them..."));
+	openTextEditorAct->setWhatsThis(tr("Open Text Editor\n\nOpens the SocNetV text editor where you can copy paste network data, of any supported format, and save to a file. Then you can import that file to SocNetV..."));
 	connect(openTextEditorAct, SIGNAL(activated()), this, SLOT(slotOpenTextEditor()));
 	
 	
@@ -398,7 +398,7 @@ void MainWindow::initActions(){
 	connect(viewSociomatrixAct, SIGNAL(activated()), this, SLOT(slotViewAdjacencyMatrix()));
 
 
-	recreateDataSetAct = new QAction(QIcon(":/images/sm.png"), tr("Known data sets"),  this);
+	recreateDataSetAct = new QAction(QIcon(":/images/sm.png"), tr("Create Known Data Sets"),  this);
 	recreateDataSetAct ->setShortcut(tr("F7"));
 	recreateDataSetAct->setStatusTip(tr("Recreates a variety of known data sets."));
 	recreateDataSetAct->setWhatsThis(tr("Known Data Sets\n\nRecreates some of the most widely used data sets in network analysis studies"));
@@ -1783,7 +1783,7 @@ void MainWindow::slotChooseFile() {
 				fileType_string = tr("Pajek (*.net *.paj *.pajek);;All (*)");
 				break;
 		case 3: //Adjacency
-				fileType_string = tr("Adjacency (*.txt *.csv *.net *.sm);;All (*)");
+				fileType_string = tr("Adjacency (*.txt *.csv *.net *.sm *.adj);;All (*)");
 				break;
 		case 4: //Dot
 				fileType_string = tr("GraphViz (*.dot);;All (*)");
@@ -1798,7 +1798,7 @@ void MainWindow::slotChooseFile() {
 				fileType_string = tr("List (*.lst *.list);;All (*)");
 				break;
 		default:	//GraphML
-				fileType_string = tr("All (*);;GraphML (*.graphml);;GraphViz (*.dot);;Adjacency (*.txt *.csv *.net *.sm);;Pajek (*.net *.pajek *.paj);;DL (*.dl *.net)");
+				fileType_string = tr("All (*);;GraphML (*.graphml);;GraphViz (*.dot);;Adjacency (*.txt *.csv *.net *.adj *.sm);;Pajek (*.net *.pajek *.paj);;DL (*.dl *.net)");
 				break;
 
 	}
@@ -1956,16 +1956,26 @@ void MainWindow::slotFileSave() {
 */
 void MainWindow::slotFileSaveAs() {
 	statusMessage( tr("Saving network under new filename..."));
-	QString fn = QFileDialog::getSaveFileName(this, 0, 0);
-	if (!fn.isEmpty())  {
+
+	QString fn =  QFileDialog::getSaveFileName(this, 
+							tr("Save GraphML Network to File Named..."),
+							0, tr("GraphML (*.graphml *.xml);;All (*)") );
+ 	if (!fn.isEmpty())  {
+ 		if  ( QFileInfo(fn).suffix().isEmpty() ){
+ 				QMessageBox::information(this, "Missing Extension ",tr("File extension was missing! \nI am appending a standard .graphml to the given filename."), "OK",0);
+ 				fn.append(".graphml");
+			}
 		fileName=fn;
+		fileNameNoPath=fileName.split ("/");
 		adjacencyFileLoaded=false;
 		pajekFileLoaded=false;
 		graphMLFileLoaded=false;
 		slotFileSave();
 	}
-	else  
-		statusMessage( tr("Saving aborted"));
+	else  {
+ 		statusMessage( tr("Saving aborted"));
+		return;
+	}
 	statusMessage( tr("Ready."));
 }
 
@@ -2370,7 +2380,7 @@ bool MainWindow::slotExportPDF(){
 		statusMessage( tr("Cannot export PDF.")  );
 		return false;
 	}
-	
+
 	QString m_fileName = QFileDialog::getSaveFileName(this, tr("Export to PDF"), 0, tr("Portable Document Format files (*.pdf)"));
 	if (m_fileName.isEmpty())  {
 		statusMessage( tr("Saving aborted"));
@@ -2411,8 +2421,14 @@ void MainWindow::slotExportPajek()
 	}
 
 	statusMessage( tr("Exporting active network under new filename..."));
-	QString fn =  QFileDialog::getSaveFileName(this, 0, 0);
+	QString fn =  QFileDialog::getSaveFileName(this, 
+							tr("Export Network to File Named..."),
+							0, tr("Pajek (*.paj *.net *.pajek);;All (*)") );
  	if (!fn.isEmpty())  {
+ 		if  ( QFileInfo(fn).suffix().isEmpty() ){
+ 				QMessageBox::information(this, "Missing Extension ",tr("File extension was missing! \nI am appending a standard .paj to the given filename."), "OK",0);
+ 				fn.append(".paj");
+			}
 		fileName=fn;
 		fileNameNoPath=fileName.split ("/");
 	}
@@ -2442,9 +2458,15 @@ void MainWindow::slotExportSM(){
 		statusMessage( tr("Cannot export to Adjacency Matrix.")  );
 		return;
 	}
-	statusMessage( tr("Saving network under new filename..."));
-	QString fn =  QFileDialog::getSaveFileName(this, 0, 0);
+	statusMessage( tr("Exporting active network under new filename..."));
+	QString fn =  QFileDialog::getSaveFileName(this, 
+							tr("Export Network to File Named..."),
+							0, tr("Adjacency (*.adj *.sm *.txt *.csv *.net);;All (*)") );
  	if (!fn.isEmpty())  {
+ 		if  ( QFileInfo(fn).suffix().isEmpty() ){
+ 				QMessageBox::information(this, "Missing Extension ",tr("File extension was missing! \nI am appending a standard .adj to the given filename."), "OK",0);
+ 				fn.append(".adj");
+			}
 		fileName=fn;
 		fileNameNoPath=fileName.split ("/");
 	}
