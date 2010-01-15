@@ -8,7 +8,7 @@ Version 0.90 - March 1 2010
 Codename: "wasted land"
 ---------------------------
 - New feature: automatic recreation of known data sets.
-
+- Fixed bug #507818: "Export as pajek, overwrites the graphml file"
 
 
 

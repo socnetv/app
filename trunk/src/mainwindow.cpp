@@ -1780,10 +1780,10 @@ void MainWindow::slotChooseFile() {
 				fileType_string = tr("GraphML (*.graphml *.xml);;All (*)");
 				break;
 		case 2: //Pajek
-				fileType_string = tr("Pajek (*.net *.pajek);;All (*)");
+				fileType_string = tr("Pajek (*.net *.paj *.pajek);;All (*)");
 				break;
 		case 3: //Adjacency
-				fileType_string = tr("Adjacency (*.txt *.csv *.net);;All (*)");
+				fileType_string = tr("Adjacency (*.txt *.csv *.net *.sm);;All (*)");
 				break;
 		case 4: //Dot
 				fileType_string = tr("GraphViz (*.dot);;All (*)");
@@ -1798,7 +1798,7 @@ void MainWindow::slotChooseFile() {
 				fileType_string = tr("List (*.lst *.list);;All (*)");
 				break;
 		default:	//GraphML
-				fileType_string = tr("All (*);;GraphML (*.graphml);;GraphViz (*.dot);;Adjacency (*.txt *.csv *.net);;Pajek (*.net *.pajek);;DL (*.dl *.net)");
+				fileType_string = tr("All (*);;GraphML (*.graphml);;GraphViz (*.dot);;Adjacency (*.txt *.csv *.net *.sm);;Pajek (*.net *.pajek *.paj);;DL (*.dl *.net)");
 				break;
 
 	}
@@ -1897,8 +1897,7 @@ void MainWindow::slotFileSave() {
 		statusMessage(  QString(tr("No network loaded.")) );
 		return;
 	}
-	if ( fileName.isEmpty() )
-	{
+	if ( fileName.isEmpty() ) {
 		slotFileSaveAs();
 		return;
 	}
@@ -2571,8 +2570,7 @@ void MainWindow::makeThingsLookRandom()   {
 */
 void MainWindow::slotViewNetworkFile(){
 	qDebug() << "slotViewNetworkFile() : " << fileName.toAscii();
-	if ( fileLoaded && !networkModified )    { //file network unmodified
-
+	if ( fileLoaded && !networkModified ) { //file network unmodified
 		QFile f( fileName );
 		if ( !f.open( QIODevice::ReadOnly ) ) {
 			qDebug ("Error in open!");
@@ -2585,17 +2583,17 @@ void MainWindow::slotViewNetworkFile(){
 	}
 	else if (fileName.isEmpty() && networkModified)     {  //New network + something
 		QMessageBox::information (this, "Viewing network file",
-		tr("This network has not been saved yet. \nI will open a dialog for you to save it now."), "OK",0);
+		tr("This network has not been saved yet. \nI will open a dialog for you to save it now. \nPlease choose a filename..."), "OK",0);
 		slotFileSaveAs();
 	}
-	else if (fileLoaded && networkModified )     {   //file network + modified
+	else if (fileLoaded && networkModified ) {   //file network + modified
 		QMessageBox::information (this, "Viewing network file",
-		//FIXME maybe better to save automatigally than asking?
-		tr("The network has been modified. \nI will save it for you now."), "OK",0);
+		//FIXME maybe better to save automagically rather than asking?
+		tr("The network has been modified. \nI will save it to the original file for you now."), "OK",0);
 		networkModified = false;
+		slotFileSave();
 		slotViewNetworkFile();
 	}
-
 	else	{
 		QMessageBox::critical(this, "Error",
 		tr("Empty network! \nLoad a network file first or create and save a new one..."), "OK",0);
