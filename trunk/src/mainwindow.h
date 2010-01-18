@@ -115,6 +115,7 @@ public slots:
 	//FILE MENU
 	void slotCreateNew();
 	void slotChooseFile();
+	void slotImportGraphML();
 	void slotImportPajek();
 	void slotImportSM();
 	void slotImportDot();

@@ -38,11 +38,13 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
 	(ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
 
 	QStringList datasets_list;
-	datasets_list   << "Krackhardt_High-tech_managers_Advice_relation" 
-			<< "Krackhardt_High-tech_managers_Friendship_relation"
-			<< "Krackhardt\'s High-tech managers - Who reports to"
-			<< "Padgett_Florentine_Families_Business_relation"
-			<< "Padgett_Florentine_Families_Marital_relation"
+	datasets_list   << "Krackhardt_High-tech_managers_Advice_relation.sm" 
+			<< "Krackhardt_High-tech_managers_Friendship_relation.sm"
+			<< "Krackhardt_High-tech_managers_ReportsTo_relation.sm"
+			<< "Padgett_Florentine_Families_Marital_relation.sm"
+			<< "Padgett_Florentine_Families_Business_relation.sm"
+			<< "Zachary_Karate_Club_Simple_Ties.sm"
+			<< "Zachary_Karate_Club_Weighted_Ties.sm"
 			<< "Freeman_EIES_network_Acquaintanceship_at_time-1"
 			<< "Freeman_EIES_network_Acquaintanceship_at_time-2"
 			<< "Freeman_EIES_network_Messages";

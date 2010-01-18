@@ -270,9 +270,9 @@ void MainWindow::initActions(){
 	fileOpen = new QAction(QIcon(":/images/open.png"), tr("&Open"), this);
 	fileOpen->setShortcut(tr("Ctrl+O"));
 	fileOpen->setToolTip(tr("Open network (Ctrl+O)"));
-	fileOpen->setStatusTip(tr("Opens a GraphML-formatted file of an existing network"));
+	fileOpen->setStatusTip(tr("Open a GraphML-formatted file of an existing network"));
 	fileOpen->setWhatsThis(tr("Open\n\nOpens a file of an existing network in GraphML format"));
-	connect(fileOpen, SIGNAL(activated()), this, SLOT(slotChooseFile()));
+	connect(fileOpen, SIGNAL(activated()), this, SLOT(slotImportGraphML()));
 
 
 	importPajek = new QAction( QIcon(":/images/open.png"), tr("&Pajek"), this);
@@ -1828,13 +1828,11 @@ void MainWindow::slotChooseFile() {
 	else  {
 		statusMessage( tr("Opening aborted"));	
 		//if a file was previously opened, get back to it.
-		if (a_file_was_already_loaded) 
-		{ 
+		if (a_file_was_already_loaded)	{ 
 				fileLoaded=true;  
 				fileName=previous_fileName; 
 		}
   	}
-	//qDebug()<<"MW: slotChooseFile() ends here. Active network fileName is now: " << fileName.toAscii();
 }
 
 
@@ -2059,6 +2057,16 @@ void MainWindow::slotPrintView() {
 	statusMessage( tr("Ready."));
 }
 
+
+
+
+/**	
+	Imports a network from a formatted file
+*/
+void MainWindow::slotImportGraphML(){
+	fileFormat=1;
+	this->slotChooseFile();
+}
 
 
 
@@ -2687,11 +2695,18 @@ void MainWindow::slotShowDataSetSelectDialog(){
  * Recreates some of the most famous and widely used data sets 
  * in network analysis studies
  */
-void MainWindow::slotRecreateDataSet (QString fileName) {
+void MainWindow::slotRecreateDataSet (QString m_fileName) {
 	qDebug()<< "slotRecreateDataSet() fileName: " << fileName; 
-	activeGraph.writeDataSetToFile(fileName);
-	loadNetworkFile(fileName,3);
-	
+	activeGraph.writeDataSetToFile(m_fileName);
+
+	if ( loadNetworkFile(m_fileName, 3) ) {
+		fileNameNoPath=m_fileName.split ("/" );
+		fileName=m_fileName;
+		previous_fileName=fileName;
+		setWindowTitle("SocNetV "+ VERSION +" - "+fileNameNoPath.last());
+		QString message=tr("Network saved as ")+fileNameNoPath.last();
+		statusMessage( message );
+	}
 }
 
 /**
