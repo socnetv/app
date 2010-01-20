@@ -2696,7 +2696,9 @@ void MainWindow::slotShowDataSetSelectDialog(){
  * in network analysis studies
  */
 void MainWindow::slotRecreateDataSet (QString m_fileName) {
-	qDebug()<< "slotRecreateDataSet() fileName: " << fileName; 
+
+        qDebug()<< "slotRecreateDataSet() fileName: " << m_fileName;
+        initNet();
 	activeGraph.writeDataSetToFile(m_fileName);
 
 	if ( loadNetworkFile(m_fileName, 3) ) {
@@ -5805,7 +5807,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
      int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Wed Jan 13 01:30:06 EET 2010";
+QString BUILD="Wed Jan 20 01:50:00 EET 2010";
      QMessageBox::about( this, "About SocNetV",
 	"<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
 	"<p><b>Version</b>: " + VERSION + "</p>"

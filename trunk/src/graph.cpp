@@ -3359,8 +3359,7 @@ void Graph::writeDataSetToFile (QString fileName) {
 		"0 0 0 0 0 0 1 0 1 0 0 0 1 0 0 0" ; 
  	}
 	else if (fileName == "Padgett_Florentine_Families_Business_relation.sm"){
-		outText<< "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-		"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
+                outText<< "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
 		"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl << 
 		"0 0 0 0 1 1 0 0 1 0 1 0 0 0 0 0" << endl << 
 		"0 0 0 0 0 0 1 1 0 0 1 0 0 0 0 0" << endl << 
