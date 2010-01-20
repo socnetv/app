@@ -63,7 +63,7 @@ void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){
 	baseUrl="", domain="", previous_domain="", path="", urlPrefix="";
 	
 	frontier.enqueue(seed);		//queue the seed to frontier
-	currentNode=1;						//start at node 1	
+        currentNode=1;			//start at node 1
 	discoveredNodes = 1;
 	
 	http = new QHttp(this); 	
@@ -74,9 +74,9 @@ void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){
 	qDebug() << "WebCrawler:: I will start a new QThread!";
 	
 	connect (	
-			&reader, SIGNAL( signalCreateNode (QString, int) ), 
-			this, SLOT(slotCreateNode(QString, int ) ) 
-			) ;
+                &reader, SIGNAL( signalCreateNode (QString, int) ),
+                this, SLOT(slotCreateNode(QString, int ) )
+                ) ;
 
 	connect (
 		&reader, SIGNAL(signalCreateEdge (int, int)), 
