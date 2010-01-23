@@ -158,10 +158,6 @@ MainWindow::MainWindow(const QString & m_fileName) {
 	connect( &activeGraph, SIGNAL( eraseNode(int) ), 
 			 graphicsWidget, SLOT(  eraseNode(int) ) );
 
-	connect (
-		&activeGraph, SIGNAL(askWhatIsTheThirdElement()), 
-		this, SLOT( slotAskWhatIsTheThirdElement() ) 
-		);	
 	
 	//connect some signals/slots with MW widgets
 	connect( addNodeBt,SIGNAL(clicked()), this, SLOT( addNode() ) );
@@ -301,7 +297,7 @@ void MainWindow::initActions(){
 	importList = new QAction( QIcon(":/images/open.png"), tr("&List"), this);
 	importList->setStatusTip(tr("Import network from a List-formatted file. "));
 	importList->setWhatsThis(tr("Import List\n\nImport a network from a List-formatted file"));
-	connect(importList, SIGNAL(activated()), this, SLOT(slotImportList()));
+	connect(importList, SIGNAL(activated()), this, SLOT(slotImportEdgeList()));
 
 
 
@@ -1794,7 +1790,10 @@ void MainWindow::slotChooseFile() {
 		case 6: //DL
 				fileType_string = tr("DL (*.dl);;All (*)");
 				break;
-		case 7:	// List
+		case 7:	// Weighted List
+				fileType_string = tr("List (*.lst *.list);;All (*)");
+				break;
+		case 8:	// Simple List
 				fileType_string = tr("List (*.lst *.list);;All (*)");
 				break;
 		default:	//GraphML
@@ -1836,52 +1835,6 @@ void MainWindow::slotChooseFile() {
 }
 
 
-
-// Called from Parser via Graph when the list network contains only 3 elements...
-// 1 2 3
-// 2 3 4
-// Asks the user what the third list element is: a node or an edge weight
-void MainWindow::slotAskWhatIsTheThirdElement() {
-	int listWithWeightsLoaded = -1 ;  
-	statusMessage( tr("Hmmm, this file is strange. I need some help from you! "));
-	switch( QMessageBox::information( this, "List file format",
-				tr("This file contains text formatted in a list format. \n")+
-				tr("Each line has 3 elements, i.e.\n")+
-				tr(" 1 2 3 \n \n")+
-				tr("If the first element indicates the source node 1, \n")+
-				tr("and the second element indicates the target node 2, \n")+
-				tr("then what the third element is supposed to be?\n")+
-				tr("Is it another target node 3 or the weight of the edge between the first two nodes (1-2)?\n"),
-				"Node", "Weight",0,1 ) 
-	)
-	{
-		case 0:
-			QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-			qDebug() << "***  MW: slotAskWhatTheThirdElementIs - a node it is! " << listWithWeightsLoaded  ;
-			listWithWeightsLoaded  = 0;
-			QApplication::restoreOverrideCursor();
- 			break;
-		case 1:
-			qDebug() << "*** MW: slotAskWhatIsTheThirdElement - a weight it is! "<< listWithWeightsLoaded ;
-			listWithWeightsLoaded = 1;
-			break;
-	}
-
-	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-	qDebug() << "MW: calling activeGraph::loadGraph " 
-	<< " - listWithWeights " << listWithWeightsLoaded ;
-	bool loadGraphStatus = activeGraph.loadGraph ( 
-										previous_fileName, 
-										 displayNodeLabelsAct->isChecked(), 
-										 graphicsWidget->width(), 
-										 graphicsWidget->height(),
-										 listWithWeightsLoaded
-									 );
-	Q_UNUSED(loadGraphStatus);
-	qDebug("MW: OK activeGraph.loadGraph() has finished. ! ");
-	QApplication::restoreOverrideCursor();
-	
-}
 
 
 
@@ -2120,8 +2073,24 @@ void MainWindow::slotImportDL(){
 /**	
 	Imports a network from a List formatted file
 */
-void MainWindow::slotImportList(){
-	fileFormat=7;
+void MainWindow::slotImportEdgeList(){
+	switch( QMessageBox::question( this, "Type of list format",
+					  tr("I can parse two kinds of lists: \n\n")+
+					  tr("A. Weighted lists, with each line having exactly 3 columns (source, target, weight), i.e.\n  1 2 5 \n \n")+
+					  tr("B. Simple edge lists, with each line having 2 or more columns (source, target1, target2, ... etc)\n\n")+
+					  tr("Please select the appropriate type of list format for the file you want to load:"),
+					  "Weighted", "Simple",0,1 )
+		)
+	{
+	case 0:
+		qDebug() << "***  MW: slotImportEdgeList - Weighted list selected! " ;
+		fileFormat  = 7;
+		break;
+	case 1:
+		qDebug() << "***  MW: slotImportEdgeList - Simple list selected! " ;
+		fileFormat = 8;
+		break;
+	}
 	this->slotChooseFile();
 }
 
@@ -2143,12 +2112,12 @@ bool MainWindow::loadNetworkFile(QString m_fileName, int m_fileFormat ){
 				//<< " view height: "	<< graphicsWidget->height()
 				//<< " format:  "<< m_fileFormat;
 	bool loadGraphStatus = activeGraph.loadGraph ( 
-										m_fileName, 
-										 displayNodeLabelsAct->isChecked(), 
-										 graphicsWidget->width(), 
-										 graphicsWidget->height(),
-										 m_fileFormat
-									 );
+			m_fileName,
+			displayNodeLabelsAct->isChecked(),
+			graphicsWidget->width(),
+			graphicsWidget->height(),
+			m_fileFormat
+			);
 	QApplication::restoreOverrideCursor();
 	return loadGraphStatus;
 }
@@ -2235,7 +2204,16 @@ void MainWindow::fileType (
 			graphMLFileLoaded=false;
 			fileLoaded=true;
 			networkModified=false;
-			statusMessage( QString(tr("List-formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
+			statusMessage( QString(tr("Weighted list-formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
+			break;
+		case 8:
+			pajekFileLoaded=false;
+			adjacencyFileLoaded=false;
+			dotFileLoaded=false;
+			graphMLFileLoaded=false;
+			fileLoaded=true;
+			networkModified=false;
+			statusMessage( QString(tr("Simple list-formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
 			break;
 
 		default: // just for sanity

@@ -52,7 +52,8 @@ public:
 	bool loadGML();
 	bool loadGW();
 	bool loadDL();
-	bool loadList();
+	bool loadSimpeList();
+	bool loadWeighedList();
 
 	void dotProperties(QString str, float &, QString &label, QString &shape, QString &color, QString &fontName, QString &fontColor );
 	void readGraphML (QXmlStreamReader &);
@@ -81,7 +82,6 @@ signals:
 	void createEdge (int, int, float, QString, bool, bool, bool);
 	void fileType(int, QString, int, int, bool);
 	void removeDummyNode (int);
-	void askWhatIsTheThirdElement();
 	
 protected:
 	void run();

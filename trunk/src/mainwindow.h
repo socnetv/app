@@ -121,9 +121,8 @@ public slots:
 	void slotImportDot();
 	void slotImportGML();
 	void slotImportDL();
-	void slotImportList();
+	void slotImportEdgeList();
 
-	void slotAskWhatIsTheThirdElement();
 	void slotFileSave();
 	void slotFileSaveAs();
 	void slotFileClose();

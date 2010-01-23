@@ -73,7 +73,6 @@ public slots:
 						
 	void setFileType(int, QString, int,int, bool);	
 	void removeDummyNode(int);
-	void slotAskWhatIsTheThirdElement();
 	
 	/** Slots to signals from GraphicsWidget and Parser*/
 	void createEdge (int, int, float, QString, bool, bool, bool);		//GW and Parser.
@@ -101,7 +100,6 @@ signals:
 	void selectedVertex(int);							//notifies MW who is the selected node
 	void signalFileType (int, QString, int,int, bool); //notifies MW what we have loaded.
 	void statusMessage (QString message);				//updates statusbar message
-	void askWhatIsTheThirdElement();
 		
 	/** Signals to GraphicsWidget */
 	void drawNode( int ,int,  QString, QString, int, QString, QString, int, QPointF, QString, bool, bool, bool);	//call GW to draw a node

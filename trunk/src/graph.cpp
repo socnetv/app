@@ -81,10 +81,7 @@ Graph::Graph() {
 		this, SLOT (removeDummyNode(int)) 
 		);
 		
-	connect (
-		&parser, SIGNAL(askWhatIsTheThirdElement()), 
-		this, SLOT( slotAskWhatIsTheThirdElement() ) 
-		);
+
 
 	connect (	
 			&crawler, SIGNAL( createNode (QString, int) ), 
@@ -3978,10 +3975,6 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 }
 
 
-
-void Graph:: slotAskWhatIsTheThirdElement(){
-	emit askWhatIsTheThirdElement();
-}
 
 Graph::~Graph() {
  	clear();
