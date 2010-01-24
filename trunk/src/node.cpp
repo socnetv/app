@@ -25,6 +25,8 @@
 ********************************************************************************/
 
 
+#include "node.h"
+
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
 #include <QStyleOption>
@@ -32,11 +34,9 @@
 #include <QDebug>
  
 #include "graphicswidget.h"
-#include "node.h"
 #include "edge.h"
 #include "nodelabel.h"
 #include "nodenumber.h"
-
 #include <math.h> //sqrt
 
 Node::Node( GraphicsWidget* gw, int num, int size, 

@@ -1,5 +1,5 @@
 TEMPLATE = app
-CONFIG  += qt thread warn_on release
+CONFIG  += qt thread warn_on debug
 LANGUAGE = C++
 
 # support
