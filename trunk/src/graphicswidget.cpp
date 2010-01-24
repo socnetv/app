@@ -105,13 +105,13 @@ void GraphicsWidget::clear() {
 
 */
 void GraphicsWidget::drawNode(
-								int num, int size, QString nodeColor, 
-								QString numberColor, int numberSize,
-								QString nodeLabel, QString labelColor, int labelSize, 
-								QPointF p, 
-								QString shape, 
-								bool showLabels, bool numberInsideNode, bool showNumbers
-								) {
+		int num, int size, QString nodeColor,
+		QString numberColor, int numberSize,
+		QString nodeLabel, QString labelColor, int labelSize,
+		QPointF p,
+		QString shape,
+		bool showLabels, bool numberInsideNode, bool showNumbers
+		) {
 	qDebug()<< "GW: drawNode(): drawing new node at: " 
 			<< p.x() << ", "<< p.y() 
 			<< " First we create node, then label/number, finally move node" ;
@@ -120,11 +120,11 @@ void GraphicsWidget::drawNode(
 		size = size +3;
 	
 	Node *jim= new Node (
-						this, 
-						num, size, nodeColor, shape, 
-						numberInsideNode, m_labelDistance, m_numberDistance, 
-						p
-						);
+			this,
+			num, size, nodeColor, shape,
+			numberInsideNode, m_labelDistance, m_numberDistance,
+			p
+			);
 
 	//Drawing node label - label will be moved by the node movement (see last code line in this method)
 	NodeLabel *labelJim = new  NodeLabel (jim, labelSize, nodeLabel, scene() );

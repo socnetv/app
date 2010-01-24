@@ -4,8 +4,8 @@ cd $workdir
 
 
 update_version() {
-	old=0.80;
-	new=0.90;
+	old=0.90;
+	new=0.81;
 	dateold=2009;
 	datenew=2010;
 	echo "Current version seems to be ....";
