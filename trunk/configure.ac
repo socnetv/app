@@ -1,9 +1,9 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT(SocNetV, 0.90, dimitris.kalamaras@gmail.com, socnetv)
+AC_INIT(SocNetV, 0.81, dimitris.kalamaras@gmail.com, socnetv)
 
 AC_CONFIG_SRCDIR(src/mainwindow.cpp)
 AC_CONFIG_HEADERS(config.h)
-AC_CONFIG_FILES(Makefile socnetv.pro socnetv.spec socnetv.desktop)
+AC_CONFIG_FILES(Makefile socnetv.pro socnetv.spec)
 
 # Set default installation prefix.
 AC_PREFIX_DEFAULT(/usr/local)

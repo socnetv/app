@@ -1,6 +1,6 @@
 /******************************************************************************
  SocNetV: Social Networks Visualizer 
- version: 0.90
+ version: 0.81
  Written in Qt 4.4
  
                          graph.cpp  -  description
