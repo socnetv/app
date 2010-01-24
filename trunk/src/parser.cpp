@@ -1760,7 +1760,7 @@ bool Parser::loadWeighedList(){
 	networkName="";
 	QString str;
 	QStringList lineElement;
-	int i=0, j=0,  source=0, target=0, newCount=0,  maxNodeCreated=0;
+	int  j=0,  source=0, target=0, newCount=0,  maxNodeCreated=0;
 	bool intOK=false;
 
 	edgeWeight=1.0;
@@ -1793,7 +1793,7 @@ bool Parser::loadWeighedList(){
 		lineElement=str.split(" ");
 		newCount = lineElement.count();
 
-		if ( newCount =! 3 ) {
+		if ( newCount != 3 ) {
 			qDebug()<< "*** Parser:loadWeighedList(): Not an Weighted list-formatted file. Aborting!!";
 			file.close();
 			return false;
