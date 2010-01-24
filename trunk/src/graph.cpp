@@ -26,9 +26,10 @@
 
 
 #include <fstream>		//for writing the adjacency matrix to a file
-#include <cmath>		//for pow(float/double, float/double) function
-#include <QPointF>
+#include <cmath>		//allows the use of pow(float/double, float/double) function
+#include <cstdlib>		//allows the use of RAND_MAX macro 
 
+#include <QPointF>
 #include <QDebug>		//used for qDebug messages
 #include <QDateTime> 	// used in exporting centrality files
 #include <QHash> 
