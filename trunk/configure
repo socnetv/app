@@ -2007,7 +2007,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 ac_config_headers="$ac_config_headers config.h"
 
-ac_config_files="$ac_config_files Makefile socnetv.pro socnetv.spec"
+ac_config_files="$ac_config_files Makefile socnetv.pro socnetv.spec socnetv.desktop"
 
 
 # Set default installation prefix.
@@ -4693,6 +4693,7 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "socnetv.pro") CONFIG_FILES="$CONFIG_FILES socnetv.pro" ;;
     "socnetv.spec") CONFIG_FILES="$CONFIG_FILES socnetv.spec" ;;
+    "socnetv.desktop") CONFIG_FILES="$CONFIG_FILES socnetv.desktop" ;;
 
   *) as_fn_error "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
