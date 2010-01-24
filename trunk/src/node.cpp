@@ -450,18 +450,20 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
 			//Move its graphic number
 			if ( m_hasNumber ) 
 			{
-				//qDebug()<< "Node: itemChange() moving number to " << newPos.x() << " " << newPos.y();
+				qDebug()<< "Node: itemChange() moving number to " << newPos.x() << " " << newPos.y();
 				if (!m_isNumberInside) 	{ //move it outside
-						m_number -> setZValue(254);
-						m_number -> setPos( newPos.x()+m_size+m_nd, newPos.y());
-					}	 
-					else { 				//move it inside node
-						m_number -> setZValue(255);
-						m_number->setPos( newPos.x() - m_size-2, newPos.y() - m_size-2 );
-					}	 
+					qDebug()<< "Node: itemChange() moving number outside " << newPos.x() << " " << newPos.y();
+					m_number -> setZValue(254);
+					m_number -> setPos( newPos.x()+m_size+m_nd, newPos.y());
+				}
+				else { 	//move it inside node
+					m_number -> setZValue(255);
+					m_number->setPos( newPos.x() - m_size-2, newPos.y() - m_size-2 );
+				}
 			}
 			
 			if (m_hasLabel) {
+				qDebug()<< "Node: itemChange() moving label to " << newPos.x() << " " << newPos.y();
 				m_label->setPos( newPos.x()-2, newPos.y()+m_ld+m_size);
 			}
 				

@@ -95,7 +95,6 @@ public:
 
 	void addOutLink( Edge *edge ) ;
 	void deleteOutLink(Edge*);
-
 	
 	void setNumberInside(bool);
 
