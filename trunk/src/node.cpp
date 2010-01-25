@@ -439,46 +439,50 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
 // 	qDebug("Node: itemChange()");
 	QPointF newPos = value.toPointF();
 	switch (change) {
-		case ItemPositionHasChanged:{  //ItemPositionChange
-// 			emit adjustOutEdge();
-// 			emit adjustInEdge();
-			foreach (Edge *edge, inEdgeList) 		//Move each inEdge of this node
+	case ItemPositionHasChanged:
+		{  //ItemPositionChange
+			// 	emit adjustOutEdge();
+			// 	emit adjustInEdge();
+			foreach (Edge *edge, inEdgeList)  //Move each inEdge of this node
 				edge->adjust();
-			foreach (Edge *edge, outEdgeList)		//Move each outEdge of this node
+			foreach (Edge *edge, outEdgeList) //Move each outEdge of this node
 				edge->adjust();
 			
 			//Move its graphic number
 			if ( m_hasNumber ) 
 			{
-				qDebug()<< "Node: itemChange() moving number to " << newPos.x() << " " << newPos.y();
 				if (!m_isNumberInside) 	{ //move it outside
-					qDebug()<< "Node: itemChange() moving number outside " << newPos.x() << " " << newPos.y();
+					qDebug()<< "Node: itemChange() moving m_number  outside " << (newPos.x()+m_size+m_nd) << " " << newPos.y();
 					m_number -> setZValue(254);
 					m_number -> setPos( newPos.x()+m_size+m_nd, newPos.y());
+					qDebug() << "Node: itemChange() - m_number reports pos: "<< m_number ->pos().x() << "," << m_number ->pos().y() ;
 				}
 				else { 	//move it inside node
+					qDebug()<< "Node: itemChange() moving m_number  inside  " << newPos.x() << " " << newPos.y();
 					m_number -> setZValue(255);
-					m_number->setPos( newPos.x() - m_size-2, newPos.y() - m_size-2 );
+					m_number -> setPos( newPos.x() - m_size-2, newPos.y() - m_size-2 );
 				}
 			}
 			
 			if (m_hasLabel) {
-				qDebug()<< "Node: itemChange() moving label to " << newPos.x() << " " << newPos.y();
+				qDebug()<< "Node: itemChange() moving m_label to " << newPos.x() << " " << newPos.y();
 				m_label->setPos( newPos.x()-2, newPos.y()+m_ld+m_size);
 			}
 				
 			if ( newPos.x() !=0 && newPos.y() != 0 ){
-				qDebug()<<  "Node: ItemChange(): moved node "<< nodeNumber()<< " to  " << newPos.x() << " " << newPos.y() << " Emitting nodeMoved() ";
+				qDebug()<<  "Node: ItemChange(): " << " Emitting nodeMoved() for node "<< nodeNumber()<< " pos: " << newPos.x() << "," << newPos.y() ;
 				graphicsWidget->nodeMoved(nodeNumber(), (int) newPos.x(), (int) newPos.y());	
 			}
 			else qDebug()<<  "Node: ItemChange():  Not emitting nodeMoved. Node "<< nodeNumber()<<" is at 0,0";
 
 			break;
 		} 
-		case ItemVisibleChange: {	
+	case ItemVisibleChange:
+		{
 			return 0;
 		}
-		default: {
+	default:
+		{
 			break;
 		}
 	};

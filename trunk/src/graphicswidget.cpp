@@ -113,8 +113,8 @@ void GraphicsWidget::drawNode(
 		bool showLabels, bool numberInsideNode, bool showNumbers
 		) {
 	qDebug()<< "GW: drawNode(): drawing new node at: " 
-			<< p.x() << ", "<< p.y() 
-			<< " First we create node, then label/number, finally move node" ;
+			<< p.x() << ", "<< p.y() ;
+
 
 	if (numberInsideNode)
 		size = size +3;
@@ -155,7 +155,7 @@ void GraphicsWidget::drawNode(
 	nodeVector.push_back(jim);
 	
 	//finally, move the node where it belongs!
-	jim -> setPos(p.x(), p.y());
+	jim -> setPos( p.x(), p.y());
 }
 
 
@@ -706,17 +706,20 @@ void GraphicsWidget::clearBackgrCircles(){
 		Yes, we make a full circle! :) 
 */
 void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
-	qDebug("GW: mouseDoubleClickEvent() double click detected!");
+
 	if ( QGraphicsItem *item= itemAt(e->pos() ) ) {
 		if (Node *node = qgraphicsitem_cast<Node *>(item)) {
 			Q_UNUSED(node);
-			qDebug("double click on a node... Cant create new one!");
+			qDebug() << "GW: mouseDoubleClickEvent() double click on a node detected!"
+					<< " Cant create new one!";
 			return;
 		}
 	}
 
 	QPointF p = mapToScene(e->pos());
-	qDebug("GW: mouseDoubleClickEvent(): Emit a signal to MW to create a new node in graph. e->pos() (%i, %i) at %f, %f", e->pos().x(),e->pos().y(), p.x(),p.y());
+	qDebug()<< " GW: mouseDoubleClickEvent():double click detected on empty space. "
+	       << " Emitting signal to MW to create a new vertex in graph. e->pos() "
+	       << e->pos().x() << ", "<< e->pos().y() << ", "<< p.x() << ", " <<p.y();
 	emit userDoubleClicked(-1, p);
 	qDebug("GW: mouseDoubleClickEvent(): Scene and GW items now: %i and %i. Emitting Changed() signal... ", scene()->items().size(), items().size());
 }
@@ -725,22 +728,26 @@ void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
 
 void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
 	QPointF p = mapToScene(e->pos());
-	qDebug() << "GW: mousePressEvent() single click detected at " 
-		<< e->pos().x() << ","<< e->pos().y() << " or "<<  p.x() << ","<<p.y();
 	if ( QGraphicsItem *item= itemAt(e->pos() ) ) {
 		if (Node *node = qgraphicsitem_cast<Node *>(item)) {
 			Q_UNUSED(node);
+			qDebug() << "GW: mousePressEvent() single click detected on a node at pos  "
+					<< e->pos().x() << ","<< e->pos().y() << " or "<<  p.x() << ","<<p.y();
 			QGraphicsView::mousePressEvent(e);
 			return;
 		}
 		if (Edge *edge= qgraphicsitem_cast<Edge *>(item)) {
 			Q_UNUSED(edge);
+			qDebug() << "GW: mousePressEvent() single click detected on an edge at pos  "
+					<< e->pos().x() << ","<< e->pos().y() << " or "<<  p.x() << ","<<p.y();
+
 			QGraphicsView::mousePressEvent(e);
 			return;
 		}
 	}
 	else{
-		qDebug() << "GW: mousePressEvent(). No item here. Starting a new selection rectangle.";
+		qDebug() << "GW: mousePressEvent(). No item here. "
+				<< "Starting a new selection rectangle or a new node";
 		this->scene()->clearSelection();
 		QGraphicsView::mousePressEvent(e);
 	} 

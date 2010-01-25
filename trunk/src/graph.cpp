@@ -147,7 +147,7 @@ void Graph::createVertex(int i, QPointF p){
 */
 void Graph::createVertex(int i, int cWidth, int cHeight){
 	if ( i < 0 )  i = lastVertexNumber() +1;
-	qDebug("Graph:: createVertex(). Using vertex number %i with RANDOM node coords...", i);
+	qDebug("Graph::createVertex(). Using vertex number %i with RANDOM node coords...", i);
 	QPointF p;
 	p.setX(rand()%cWidth);
 	p.setY(rand()%cHeight);
@@ -169,7 +169,7 @@ void Graph::createVertex(int i, int cWidth, int cHeight){
 
 void Graph::createVertex(QString label, int i) {
 	if ( i < 0 )  i = lastVertexNumber() +1;
-	qDebug("Graph:: createVertex(). Using vertex number %i with RANDOM node coords but with LABEL...", i);
+	qDebug("Graph::createVertex(). Using vertex number %i with RANDOM node coords but with LABEL...", i);
 	QPointF p;
 	p.setX(rand()%canvasWidth);
 	p.setY(rand()%canvasHeight);
@@ -266,11 +266,11 @@ void Graph::removeDummyNode(int i){
 	This method is called by createVertex() method
 */
 void Graph::addVertex (
-						int v1, int val, int size, QString color, 
-						QString numColor, int numSize, 
-						QString label, QString labelColor, int labelSize, 
-						QPointF p, QString shape
-						){ 
+		int v1, int val, int size, QString color,
+		QString numColor, int numSize,
+		QString label, QString labelColor, int labelSize,
+		QPointF p, QString shape
+		){
 
 	if (order)
 		index[v1]=m_totalVertices; 

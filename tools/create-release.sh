@@ -11,6 +11,8 @@ fi
 
 #CHANGE THIS TO NEW VERSION NUMBERS
 VER=0.80;   
+echo "enter ver";
+read VER
 echo $VER
 
 echo .
@@ -35,6 +37,8 @@ echo ---------------------------------
 
 chmod 644 nets/*
 find . -type f -name '*~' -delete
+find . -type f -name '*.dat' -delete
+rm -f *.log; ls *.in | sed 's/\.in/ /g' | xargs rm -f
 rm -f config.log config.status Makefile socnetv.spec socnetv.mak 
 find . -not -name "qdevelop-*"  -not -name "*.log" -not -name "socnetv" -not -name "*.o" -not -name "*.sm" -not -name "*.net" -not -name "*.graphml" -not -name "*.user"  -not -name ".qdevelop" -not -name "pajek*"  -not -name "*.dat" -not -path "*./autom4te.cache*" -not -path "*.svn*" -not -path "*./test-nets*" -not -path "./debian*"  -print0  | cpio -pmd0 ../release/socnetv-$VER
 
