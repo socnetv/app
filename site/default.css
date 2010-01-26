@@ -264,3 +264,9 @@ padding-bottom:1px;
 margin-top:2px;
 padding-top:1px;
 }
+
+
+.gpl img { 
+border: 0px;
+text-decoration: none;
+}
