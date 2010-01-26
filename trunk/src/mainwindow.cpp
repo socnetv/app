@@ -75,7 +75,7 @@ void myMessageOutput( QtMsgType type, const char *msg )     {
 /** MainWindow contruction method **/
 MainWindow::MainWindow(const QString & m_fileName) {
 
-	//qInstallMsgHandler( myMessageOutput );
+	qInstallMsgHandler( myMessageOutput );
 
 	setWindowIcon (QIcon(":/images/socnetv.png"));
 
