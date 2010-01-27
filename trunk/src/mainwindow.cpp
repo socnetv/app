@@ -1779,7 +1779,7 @@ void MainWindow::slotChooseFile() {
 				fileType_string = tr("Pajek (*.net *.paj *.pajek);;All (*)");
 				break;
 		case 3: //Adjacency
-				fileType_string = tr("Adjacency (*.txt *.csv *.net *.sm *.adj);;All (*)");
+				fileType_string = tr("Adjacency (*.txt *.csv *.sm *.adj);;All (*)");
 				break;
 		case 4: //Dot
 				fileType_string = tr("GraphViz (*.dot);;All (*)");
@@ -2132,7 +2132,10 @@ void MainWindow::fileType (
 {
 	qDebug()<< "MW: fileType() networkName is: " << netName << " type " << type;
 	Q_UNUSED (undirected);
-	networkName=netName ;
+	if (netName != "")
+		networkName=netName ;
+	else
+		networkName=(fileName.split ("/")).last();
 	fileFormat=type;
 	switch( type ) 	{
 		case 0:

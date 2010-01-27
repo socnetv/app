@@ -3097,7 +3097,6 @@ int Graph:: factorial(int x) {
 	Actually it calls the load() method of parser/qthread class.
 */
 bool Graph::loadGraph (	QString fileName,  bool iSL, int maxWidth, int maxHeight, int fileFormat){
-	//qDebug() << "Graph:: loadGraph - Calling Parser::load() to start a new thread";
 	initShowLabels = iSL;
 	bool loadGraphStatus = parser.load( 
 				fileName, 
@@ -3109,7 +3108,6 @@ bool Graph::loadGraph (	QString fileName,  bool iSL, int maxWidth, int maxHeight
 				maxWidth, maxHeight,
 				fileFormat
 				);
-	//qDebug("Graph:: returned from Parser::load()");
 	return loadGraphStatus;
 }
 

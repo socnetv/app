@@ -57,8 +57,8 @@ bool Parser::load(QString fn, int iNS, QString iNC, QString iNSh,
 	initEdgeColor=iEC;
 	
 	undirected=FALSE; arrows=FALSE; bezier=FALSE;
-	networkName="";
 	fileName=fn;
+	networkName=(fileName.split ("/")).last();
 	gwWidth=width;
 	gwHeight=height;
 	randX=0;
@@ -103,7 +103,6 @@ bool Parser::loadDL(){
 	edgeWeight=0;
 	bool labels_flag=false, data_flag=false, intOK=false, floatOK=false;
 	QStringList lineElement;
-	networkName="";
 	totalLinks=0;
 
 	while ( !ts.atEnd() )   {
@@ -220,7 +219,6 @@ bool Parser::loadPajek(){
 	unsigned long int lineCounter=0;
 	float weight=1;
 	list<int> listDummiesPajek;
-	networkName="noname";
 	totalLinks=0;
 	aNodes=0;
 	j=0;  //counts how many real nodes exist in the file 
@@ -265,8 +263,6 @@ bool Parser::loadPajek(){
 					if (lineElement[1]!="") 
 						networkName=lineElement[1];
 				}
-				else 
-					networkName = "Unknown";
 				qDebug()<<"Parser-loadPajek(): network name: "<<networkName;
 				continue;
 			}
@@ -601,7 +597,6 @@ bool Parser::loadAdjacency(){
 	QFile file ( fileName );
 	if ( ! file.open(QIODevice::ReadOnly )) return false;
 	QTextStream ts( &file );
-	networkName="";
 	QString str;
 	QStringList lineElement;
 	int i=0, j=0,  aNodes=0, newCount=0, lastCount=0;
@@ -1427,15 +1422,13 @@ bool Parser::loadDot(){
 
 			if ( str.contains("digraph", Qt::CaseInsensitive) ) {
 				lineElement=str.split(" ");
-				if (lineElement[1]=="{" ) networkName="Noname";
-				else networkName=lineElement[1];
+				if (lineElement[1]!="{" ) networkName=lineElement[1];
 				qDebug() << "This is a DOT DIGRAPH named " << networkName;
 				continue; 
 			}
 			else if ( str.contains("graph", Qt::CaseInsensitive) ) {
 				lineElement=str.split(" ");
-				if (lineElement[1]=="{" ) networkName="Noname";
-				else networkName=lineElement[1];
+				if (lineElement[1] !="{" ) networkName=lineElement[1];
 				qDebug() << "This is a DOT GRAPH named " << networkName;
 				continue;
 			}
@@ -1757,7 +1750,6 @@ bool Parser::loadWeighedList(){
 	if ( ! file.open(QIODevice::ReadOnly ))
 		return false;
 	QTextStream ts( &file );
-	networkName="";
 	QString str;
 	QStringList lineElement;
 	int  j=0,  source=0, target=0, newCount=0,  maxNodeCreated=0;
@@ -1785,7 +1777,7 @@ bool Parser::loadWeighedList(){
 			|| str.contains("graphml",Qt::CaseInsensitive)
 			|| str.contains("xml",Qt::CaseInsensitive)
 			) {
-			qDebug()<< "*** Parser:loadWeighedList(): Not an  Weighted list-formatted file. Aborting!!";
+			qDebug()<< "*** Parser:loadWeighedList(): Not a Weighted list-formatted file. Aborting!!";
 			file.close();
 			return false;
 		}
@@ -1794,7 +1786,7 @@ bool Parser::loadWeighedList(){
 		newCount = lineElement.count();
 
 		if ( newCount != 3 ) {
-			qDebug()<< "*** Parser:loadWeighedList(): Not an Weighted list-formatted file. Aborting!!";
+			qDebug()<< "*** Parser:loadWeighedList(): Not a Weighted list-formatted file. Aborting!!";
 			file.close();
 			return false;
 		}
@@ -1862,22 +1854,18 @@ bool Parser::loadWeighedList(){
 
 
 
-bool Parser::loadSimpeList(){
+bool Parser::loadSimpleList(){
 	qDebug() << "Parser: loadSimpleList()";
 	QFile file ( fileName );
 	if ( ! file.open(QIODevice::ReadOnly )) 
 		return false;
 	QTextStream ts( &file );
-	networkName="";
 	QString str;
 	QStringList lineElement;
 	int i=0, j=0, num=0, source=0, target=0, maxNodeCreated=0;
-	
 	bool intOK=false;
 	
 	edgeWeight=1.0;
-
-	
 	undirected=false;
 	arrows=true;
 	bezier=false;
@@ -1967,7 +1955,6 @@ void Parser::run()  {
 	qDebug()<< "**** Parser:: run(). This is a new thread! " 
 			<< " networkName "<< networkName
 			<< " fileFormat "<< fileFormat ;
-	if (networkName=="") networkName="Unnamed!";
 
 	switch (fileFormat){
 	case 1:	//GraphML
@@ -2015,8 +2002,8 @@ void Parser::run()  {
 		break;
 
 	case 8:	// List
-		if (loadSimpeList() ){
-			qDebug("Parser: this is an simple list formatted (.list) network");
+		if (loadSimpleList() ){
+			qDebug("Parser: this is a simple list formatted (.list) network");
 		}
 		else fileFormat=-1;
 		break;

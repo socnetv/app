@@ -52,7 +52,7 @@ public:
 	bool loadGML();
 	bool loadGW();
 	bool loadDL();
-	bool loadSimpeList();
+	bool loadSimpleList();
 	bool loadWeighedList();
 
 	void dotProperties(QString str, float &, QString &label, QString &shape, QString &color, QString &fontName, QString &fontColor );
