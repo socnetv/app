@@ -781,8 +781,8 @@ void Parser::readGraphML(QXmlStreamReader &xml){
 	bool_node=false;
 	bool_edge=false;
 	bool_key=false;
-	Q_ASSERT(xml.isStartElement() && xml.name() == "graph");
-	
+	//Q_ASSERT(xml.isStartElement() && xml.name() == "graph");
+
 	while (!xml.atEnd()) { //start reading until QXmlStreamReader end().
 		xml.readNext();	//read next token
 	
@@ -807,15 +807,13 @@ void Parser::readGraphML(QXmlStreamReader &xml){
 			else if ( xml.name() == "ShapeNode") {
 				bool_node =  true;
 			}			
-			else if (	 ( 
-							xml.name() == "Geometry" 
-							|| xml.name() == "Fill"
-							|| xml.name() == "BorderStyle"
-							|| xml.name() == "NodeLabel"
-							|| xml.name() == "Shape" 
-						)
-						&& 	bool_node 
-					) {
+			else if ( ( xml.name() == "Geometry"
+					|| xml.name() == "Fill"
+					|| xml.name() == "BorderStyle"
+					|| xml.name() == "NodeLabel"
+					|| xml.name() == "Shape"
+				) && 	bool_node
+				  ) {
 				readGraphMLElementNodeGraphics(xml);
 			}
 			
