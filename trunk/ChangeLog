@@ -4,13 +4,24 @@
 
 ChangeLog:
 
-Version 0.90 - March 1 2010
-Codename: "wasted land"
+Version 0.81 - Jan 28 2010
+Codename: "bugfixes"
 ---------------------------
 - New feature: automatic recreation of known data sets.
+- Now, SocNetV can read two kind of lists:
+  a) weighted lists in the format
+     source1 target1 weight1
+     source2 target2 weight2
+     source3 target3 weight3
+     ...
+  b) simple (unweighted) lists
+     source1 target1 target2 target3 target4...
+     source2 target1 target2 target3 target4...
+    source3 target1 target2 target3 target4...
 - Fixed bug #507818: "Export as pajek, overwrites the graphml file"
 - Fixed bug #511418: "List loading crashed SocNetV".
-
+- Fixed bug #511420: "Edges do not follow nodes in SocNetV development version for Windows"
+- Fixed bug #470283: "file saving doesn't automatically give the file an extension"
 
 
 Version 0.80 - January 8  2010 
