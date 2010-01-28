@@ -31,6 +31,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QStyleOption>
 #include <QPainter>
+#include <QtGlobal>  //for QT_VERSION
 #include <QDebug>
 #include "graphicswidget.h"
 #include "edge.h"
@@ -46,9 +47,9 @@ Node::Node( GraphicsWidget* gw, int num, int size,
 	Q_UNUSED(p);
 	graphicsWidget->scene()->addItem(this); //Without this nodes don't appear on the screen...
 
-
+//ItemSendsGeometryChanges  introduced in Qt 4.6...
 #if QT_VERSION >= 0x040600
-	setFlags(ItemSendsGeometryChanges | ItemIsSelectable | ItemIsMovable); //ItemSendsGeometryChanges  introduced in Qt 4.6...
+	setFlags(ItemSendsGeometryChanges | ItemIsSelectable | ItemIsMovable);
 #else
 	setFlags(ItemIsSelectable | ItemIsMovable); //Without this, the node cannot move nor be selected ...
 #endif
