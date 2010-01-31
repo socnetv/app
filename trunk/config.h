@@ -2,7 +2,7 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Define if debugging is enabled. */
-#define CONFIG_DEBUG 1
+/* #undef CONFIG_DEBUG */
 
 /* Define if IEEE 32bit float optimizations are enabled. */
 #define CONFIG_FLOAT32 1
