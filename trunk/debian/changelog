@@ -1,10 +1,17 @@
+socnetv (0.81-1ubuntu2) karmic; urgency=low
+
+  * update to version 0.81
+  * Support to auto create known data sets
+
+ -- dimitris kalamaras <dimitris.kalamaras@yahoo.gr>  Thu, 28 Jan 2010 02:49:48 +0200
+
 socnetv (0.80-1ubuntu1) karmic; urgency=low
 
   * update to version 0.80
   * support for csv and list files
   * new statistics: triad census, clique counts
 
- -- Dimitris Kalamaras <dimitri.kalamaras@yahoo.gr>  Fri, 08 Jan 2010 19:32:01 +0200
+ -- Dimitris Kalamaras <dimitris.kalamaras@yahoo.gr>  Fri, 08 Jan 2010 19:32:01 +0200
 
 socnetv (0.70-1) jaunty; urgency=low
 
