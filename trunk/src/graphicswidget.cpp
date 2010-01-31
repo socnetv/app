@@ -574,22 +574,6 @@ void GraphicsWidget::setEdgeVisibility(int source, int target, bool visible){
 }
 
 
-/*
- *  OBSOLETE?
- */
-bool GraphicsWidget::hasEdge (int source, int target){
-	QString edgeName = QString::number( source ) + QString(">")+ QString::number( target );
-	if  ( edgesMap.contains (edgeName) ){
-		qDebug() << "GW: DOES hasEdge() from " << source << " to " << target ;
-		return true;
-	}
-	else {
-		qDebug() << "GW: DOES NOT hasEdge() from " << source << " to " << target ;
-		return false;
-	}
-		
-}
-
 
 
 // unused

@@ -77,8 +77,6 @@ public:
 	bool setEdgeWeight(int, int, float);
 	
 	void setAllItemsVisibility(int, bool);
-
-	bool hasEdge (int source, int target);
 	
 	
 protected:
