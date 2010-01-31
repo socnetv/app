@@ -149,10 +149,11 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 
 
 %changelog
-* Mon Jun 29 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.70-1
-- Synced with upstream
-* Mon May 27 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.6.0-1
-- Synced with upstream
+* Thu Jan 28 2010 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.81-1
+- Synced with upstream.
+- Bugfixes for Windows version
+* Sat Jan 09 2010 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.80-1
+- Synced with upstream,
 * Mon Jun 29 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.70-1
 - Synced with upstream
 * Mon May 27 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.6.0-1

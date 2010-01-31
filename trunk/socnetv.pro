@@ -1,6 +1,5 @@
 TEMPLATE = app
-# remove debug for releases in Windows
-CONFIG  += qt thread warn_on
+CONFIG  += qt thread warn_on release
 LANGUAGE = C++
 
 # support
