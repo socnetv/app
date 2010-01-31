@@ -499,7 +499,7 @@ void Graph::removeEdge (int v1, int v2) {
 	m_graph [ index[v2] ]->removeLinkFrom(v1);
 	qDebug()<< "Graph: removeEdge between " << v1 << " i " << index[v1] << " and " << v2 << " i "<< index[v2] 
 			<< "  NOW vertex v1 reports edge weight " << m_graph [ index[v1] ]->isLinkedTo(v2) ;
-	if ( hasEdge(v2,v1) !=0) symmetricAdjacencyMatrix=false;
+	if ( this->hasEdge(v2,v1) !=0) symmetricAdjacencyMatrix=false;
 	m_totalEdges--;
 	if (m_totalEdges<0) m_totalEdges=0;
 	outEdgesVert--;
@@ -2526,7 +2526,7 @@ void Graph::createRandomNetSmallWorld (
 	for (register int i=1;i<vert; i++) {
 		for (register int j=i+1;j<vert; j++) {
 			qDebug()<<">>>>> REWIRING: Check if  "<< i << " is linked to " << j;
-			if ( hasEdge(i, j) ) {
+			if ( this-> hasEdge(i, j) ) {
 				qDebug()<<">>>>> REWIRING: They're linked. Do a random REWIRING Experiment between "<< i<< " and " << j << " Beta parameter is " << beta;
 				if (rand() % 100 < (beta * 100))  {
 					qDebug(">>>>> REWIRING: We'l break this edge!");
@@ -2537,7 +2537,7 @@ void Graph::createRandomNetSmallWorld (
 						candidate=rand() % (vert+1) ;		//pick another vertex.
 						if (candidate == 0 || candidate == i) continue;
 						qDebug()<<">>>>> REWIRING: Candidate: "<< candidate;
-						if (!hasEdge(i, candidate) )	//Only if differs from i and hasnot edge with it
+						if (! this->hasEdge(i, candidate) )	//Only if differs from i and hasnot edge with it
 								qDebug("<----> Random New Edge Experiment between %i and %i:", i, candidate);
 								if (rand() % 100 > 0.5) {
 									qDebug("Creating new link!");
@@ -2616,7 +2616,7 @@ float Graph:: numberOfCliques(int v1){
 				if (connectedVertex1 == connectedVertex2) continue;
 				else {
 					qDebug("Graph::numberOfCliques() In-connectedVertex2: %i [%i] ",connectedVertex2, index[connectedVertex2]);
-					if ( hasEdge( connectedVertex1, connectedVertex2 ) ) {
+					if ( this->hasEdge( connectedVertex1, connectedVertex2 ) ) {
 						qDebug("Graph::numberOfCliques()  %i  is connected to %i. Therefore we found a clique!", connectedVertex1, connectedVertex2);
 						cliques++;
 						qDebug("Graph::numberOfCliques() cliques = %f" ,  cliques);
@@ -2629,7 +2629,7 @@ float Graph:: numberOfCliques(int v1){
 				if (connectedVertex1 == connectedVertex2) continue;
 				else {
 					qDebug("Graph::numberOfCliques() Out-connectedVertex2:  %i [%i] ",connectedVertex2, index[connectedVertex2]);
-					if ( hasEdge( connectedVertex1, connectedVertex2 ) ||  hasEdge( connectedVertex2, connectedVertex1 ) ) {
+					if ( this->hasEdge( connectedVertex1, connectedVertex2 ) || this-> hasEdge( connectedVertex2, connectedVertex1 ) ) {
 						qDebug("Graph::numberOfCliques()  %i  is connected to %i. Therefore we found a clique!", connectedVertex1, connectedVertex2);
 						cliques++;
 						qDebug("Graph::numberOfCliques() cliques = %f" ,  cliques);
@@ -2649,13 +2649,13 @@ float Graph:: numberOfCliques(int v1){
 			else if ( connectedVertex1 >= connectedVertex2 && symmetric) continue;
 			else {
 				qDebug("Graph::numberOfCliques() Out-connectedVertex2 %i [%i] ",connectedVertex2, index[connectedVertex2]);
-				if ( hasEdge( connectedVertex1, connectedVertex2 ) ) {
+				if ( this->hasEdge( connectedVertex1, connectedVertex2 ) ) {
 					qDebug("Graph::numberOfCliques()  %i  is out-connected to %i. Therefore we found a clique!", connectedVertex1, connectedVertex2);
 					cliques++;
 					qDebug("Graph::numberOfCliques() cliques = %f" ,  cliques);
 				}
 				if (!symmetric)
-					if ( hasEdge( connectedVertex2, connectedVertex1 ) ) {
+					if ( this->hasEdge( connectedVertex2, connectedVertex1 ) ) {
 						qDebug("Graph::numberOfCliques()  %i  is also in-connected to %i. Therefore we found a clique!", connectedVertex2, connectedVertex1);
 						cliques++;
 						qDebug("Graph::numberOfCliques() cliques = %f" ,  cliques);
@@ -3461,7 +3461,7 @@ void Graph::writeAdjacencyMatrixTo(QTextStream& os){
 	float weight=-1;
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
 		for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){	
-			if ( (weight = hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
+			if ( (weight = this->hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
 				
 				os << static_cast<int> (weight) << " ";
 			}
@@ -3844,7 +3844,7 @@ void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
 				dist = sqrt (dx * dx + dy * dy); //the euclideian distance of the two vertices
 				qDebug()<< "v1= " << v1->name() <<  " v2= " <<  v2->name() << " - euclideian distance = " << dist;
 
-				if ( hasEdge (v1->name(), v2->name())  ) {  //calculate spring forces (pulling) force
+				if ( this->hasEdge (v1->name(), v2->name())  ) {  //calculate spring forces (pulling) force
 					ulv_x =  + dx / dist;
 					ulv_y =  + dy / dist;
 					dux = (ulv_x * c_spring) * log ( dist / natural_length ); 	
@@ -3927,7 +3927,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 				dist = sqrt ( dist );	//the euclideian distance of the two vertices
 				qDebug()<< "v1= " << v1->name() <<  " v2= " <<  v2->name() << " - euclideian distance = " << dist;
 
-				if ( hasEdge (v1->name(), v2->name())  ) {  //calculate spring (pulling) force
+				if ( this->hasEdge (v1->name(), v2->name())  ) {  //calculate spring (pulling) force
 					ulv_x =  dx / dist;
 					ulv_y =  dy / dist;
 					dux = ( ulv_x ) * ( dist * dist ) / natural_length;
