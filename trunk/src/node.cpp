@@ -50,12 +50,15 @@ Node::Node( GraphicsWidget* gw, int num, int size,
 //ItemSendsGeometryChanges  introduced in Qt 4.6...
 #if QT_VERSION >= 0x040600
 	setFlags(ItemSendsGeometryChanges | ItemIsSelectable | ItemIsMovable);
+	setCacheMode(QGraphicsItem::DeviceCoordinateCache); //QT < 4.6 if a cache mode is set, nodes do not respond to hover events
+
 #else
 	setFlags(ItemIsSelectable | ItemIsMovable ); //Without this, the node cannot move nor be selected ...
+	setCacheMode(QGraphicsItem::NoCache); //QT < 4.6 if a cache mode is set, nodes do not respond to hover events
+
 #endif
 	setAcceptsHoverEvents(true);
 
-	setCacheMode(QGraphicsItem::NoCache); //QT < 4.6 if a cache mode is set, nodes do not respond to hover events
 	m_num=num;
 	m_size=size;
 	m_hasLabel=false;
