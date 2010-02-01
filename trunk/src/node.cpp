@@ -51,12 +51,11 @@ Node::Node( GraphicsWidget* gw, int num, int size,
 #if QT_VERSION >= 0x040600
 	setFlags(ItemSendsGeometryChanges | ItemIsSelectable | ItemIsMovable);
 #else
-	setFlags(ItemIsSelectable | ItemIsMovable); //Without this, the node cannot move nor be selected ...
+	setFlags(ItemIsSelectable | ItemIsMovable ); //Without this, the node cannot move nor be selected ...
 #endif
-
-
-	setCacheMode(DeviceCoordinateCache);
 	setAcceptsHoverEvents(true);
+
+	setCacheMode(QGraphicsItem::NoCache); //QT < 4.6 if a cache mode is set, nodes do not respond to hover events
 	m_num=num;
 	m_size=size;
 	m_hasLabel=false;
@@ -73,13 +72,6 @@ Node::Node( GraphicsWidget* gw, int num, int size,
 			<< this->x()<<", "<<this->y()
 			<< " Will move at: "<< p.x()<<", "<<p.y();;
 
-
-
-/*	connect (this, SIGNAL(nodeClicked(Node*)),graphicsWidget , SLOT(nodeClicked(Node*)));
-	connect (this, SIGNAL(startNodeMovement(int)), graphicsWidget, SLOT(startNodeMovement(int)));
-	connect (this, SIGNAL(openNodeContextMenu()), graphicsWidget, SLOT(openNodeContextMenu()));
-	connect (this, SIGNAL(startEdge(Node*)),graphicsWidget, SLOT(startEdge(Node*)));*/
-	//qDebug("Node() - End of constructor");
 } 
 
 /** 
@@ -380,8 +372,7 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 
 void Node::die() {
 	qDebug ("Node: Remove() node= %i", nodeNumber());
-/*	emit removeOutEdge();
-	emit removeInEdge();*/
+
 	foreach (Edge *edge, inEdgeList) {
 		qDebug("Node: removing edges in inEdgeList");
 		edge->remove();
@@ -430,7 +421,7 @@ void Node::setNumberInside (bool numIn){
 						m_number -> setZValue(254);
 						m_number -> setPos( myPos.x()+m_nd, myPos.y() );
 					}	 
-					else { 				//move it inside node
+					else { 		//move it inside node
 						this->setSize(m_size+2); //increase size to display nicely the number  
 						m_number -> setZValue(255);
 						m_number->setPos( myPos.x() - m_size-2, myPos.y() - m_size-2 );
@@ -449,21 +440,19 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
 	QPointF newPos = value.toPointF();
 
 	switch (change) {
-	case ItemPositionHasChanged :
-		{  //ItemPositionChange
-			// 	emit adjustOutEdge();
-			// 	emit adjustInEdge();
+		case ItemPositionHasChanged :
+		{
 			foreach (Edge *edge, inEdgeList)  //Move each inEdge of this node
 				edge->adjust();
 			foreach (Edge *edge, outEdgeList) //Move each outEdge of this node
 				edge->adjust();
 			//Move its graphic number
-			if ( m_hasNumber ) 
+			if ( m_hasNumber )
 			{
 				if (!m_isNumberInside) 	{ //move it outside
 					m_number -> setZValue(254);
 					m_number -> setPos( newPos.x()+m_size+m_nd, newPos.y());
-									}
+				}
 				else { 	//move it inside node
 					m_number -> setZValue(255);
 					m_number -> setPos( newPos.x() - m_size-2, newPos.y() - m_size-2 );
@@ -473,11 +462,14 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
 				m_label->setPos( newPos.x()-2, newPos.y()+m_ld+m_size);
 			}
 			if ( newPos.x() !=0 && newPos.y() != 0 ){
-				graphicsWidget->nodeMoved(nodeNumber(), (int) newPos.x(), (int) newPos.y());	
+				graphicsWidget->nodeMoved(nodeNumber(), (int) newPos.x(), (int) newPos.y());
 			}
 			else qDebug()<<  "Node: ItemChange():  Not emitting nodeMoved. Node "<< nodeNumber()<<" is at 0,0";
 			break;
-		} 
+		}
+		case ItemEnabledHasChanged:{
+			return 0;
+		}
 	case ItemVisibleChange:
 		{
 			return 0;
@@ -519,19 +511,16 @@ void Node::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 
 
 void Node::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
-    update();
-    QGraphicsItem::mouseReleaseEvent(event);
+	update();
+	QGraphicsItem::mouseReleaseEvent(event);
 }
 
 
 
 void Node::addInLink( Edge *edge ) {
 	qDebug("Node:  %i addInLink()", m_num);
-/*	connect (this, SIGNAL(adjustInEdge()),edge, SLOT(adjust()));
-	connect (this, SIGNAL(removeInEdge()),edge, SLOT(remove()));*/
 	inEdgeList.push_back( edge); 
 	//qDebug ("Node:  %i inEdgeList has now %i edges", m_num, inEdgeList.size());
-
 }
 
 
@@ -546,9 +535,6 @@ void Node::deleteInLink( Edge *link ){
 
 void Node::addOutLink( Edge *edge ) {
 	qDebug("Node: addOutLink()");
-
-/*	connect (this, SIGNAL(adjustOutEdge()),edge, SLOT(adjust()));
-	connect (this, SIGNAL(removeOutEdge()),edge, SLOT(remove()));*/
 	outEdgeList.push_back( edge); 
 //	qDebug ("Node: outEdgeList has now %i edges", outEdgeList.size());
 }

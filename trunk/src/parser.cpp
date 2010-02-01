@@ -1806,7 +1806,7 @@ bool Parser::loadWeighedList(){
 				randX=rand()%gwWidth;
 				randY=rand()%gwHeight;
 				qDebug()<< "	source node " << source
-						<< "is less than maxNodeCreated - we need to create node "<< j+1
+						<< "is less than maxNodeCreated - creating node "<< j+1
 						<< "using random coords "<<randX << " "<< randY;
 				emit createNode( j+1, initNodeSize,  initNodeColor,
 						 initNodeNumberColor, initNodeNumberSize,
