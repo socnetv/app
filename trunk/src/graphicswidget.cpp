@@ -702,8 +702,8 @@ void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
 
 	QPointF p = mapToScene(e->pos());
 	qDebug()<< " GW: mouseDoubleClickEvent():double click detected on empty space. "
-	       << " Emitting signal to MW to create a new vertex in graph. e->pos() "
-	       << e->pos().x() << ", "<< e->pos().y() << ", "<< p.x() << ", " <<p.y();
+		  << " Emitting signal to MW to create a new vertex in graph. e->pos() "
+		  << e->pos().x() << ", "<< e->pos().y() << ", "<< p.x() << ", " <<p.y();
 	emit userDoubleClicked(-1, p);
 	qDebug("GW: mouseDoubleClickEvent(): Scene and GW items now: %i and %i. Emitting Changed() signal... ", scene()->items().size(), items().size());
 }

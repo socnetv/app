@@ -1791,8 +1791,7 @@ bool Parser::loadWeighedList(){
 
 		source =  (lineElement[0]).toInt(&intOK);
 		target =  (lineElement[1]).toInt(&intOK);
-		qDebug() << "	source node " << source;
-		qDebug() << "	target node " << target;
+		qDebug() << "	source node " << source  << " target node " << target;
 
 		edgeWeight=(lineElement[2]).toDouble(&intOK);
 		if (intOK) {
@@ -1804,11 +1803,11 @@ bool Parser::loadWeighedList(){
 		}
 		if (maxNodeCreated < source ) {
 			for ( j = maxNodeCreated ; j != source ; j++ ) {
-				qDebug()<< "	source node " << source
-						<< "is less than maxNodeCreated - we need to create node "<< j+1;
 				randX=rand()%gwWidth;
 				randY=rand()%gwHeight;
-				qDebug()<<"	using random coords "<<randX << " "<< randY;
+				qDebug()<< "	source node " << source
+						<< "is less than maxNodeCreated - we need to create node "<< j+1
+						<< "using random coords "<<randX << " "<< randY;
 				emit createNode( j+1, initNodeSize,  initNodeColor,
 						 initNodeNumberColor, initNodeNumberSize,
 						 QString::number(j+1), initNodeLabelColor, initNodeLabelSize,
@@ -1820,11 +1819,11 @@ bool Parser::loadWeighedList(){
 		}
 		if (maxNodeCreated < target ) {
 			for ( j = maxNodeCreated ; j != target; j++ ) {
-				qDebug()<< "	target node " << target
-						<< "	is less than maxNodeCreated - creating node "<< j+1;
 				randX=rand()%gwWidth;
 				randY=rand()%gwHeight;
-				qDebug()<<"	using random coords "<<randX << " "<< randY;
+				qDebug()<< "	target node " << target
+						<< "is less than maxNodeCreated - creating node "<< j+1
+						<<" using random coords "<<randX << " "<< randY;
 				emit createNode( j+1, initNodeSize,  initNodeColor,
 						 initNodeNumberColor, initNodeNumberSize,
 						 QString::number(j+1), initNodeLabelColor, initNodeLabelSize,
@@ -1834,10 +1833,10 @@ bool Parser::loadWeighedList(){
 			}
 			maxNodeCreated = target ;
 		}
-		qDebug("Parser-loadWeighedList(): Creating link now... ");
+		qDebug()<< "	Parser-loadWeighedList(): Creating link now... "
+			<< " link from i= " << source << " to j= "<< target << " weight= "<< edgeWeight <<  " TotalLinks=  " << totalLinks+1;
 		emit createEdge(source, target, edgeWeight, initEdgeColor, undirected, arrows, bezier);
 		totalLinks++;
-		qDebug("link from node i=%i to j=%i . TotalLinks= %i ", source, target, totalLinks);
 	} //end ts.stream while here
 	file.close();
 
