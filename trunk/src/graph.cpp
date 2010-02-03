@@ -493,7 +493,7 @@ void Graph::setEdgeWeight (int v1, int v2, float weight) {
 /** 	Removes the edge (arc) between v1 and v2
 */
 void Graph::removeEdge (int v1, int v2) {	
-	qDebug ("Graph: removeEdge edge %i -> %i to be removed from graph", v1, v2);
+	qDebug ()<< "Graph: removeEdge edge " << v1 << " to " << v2 << " to be removed from graph";
 	qDebug() << "Graph: Vertex named " << m_graph[ index[v1] ]->name() << " has index = " << index[v1];
 	m_graph [ index[v1] ]->removeLinkTo(v2);
 	m_graph [ index[v2] ]->removeLinkFrom(v1);
@@ -545,7 +545,7 @@ void Graph::filterOrphanVertices(bool filterFlag){
 		}
 		else {
 			qDebug() << "Graph:filterOrphanNodes() Vertex " << (*it)->name()
-				<< " not linked. Disabling it and emitting setVertexVisibility signal to GW...";
+				<< " not linked. Toggling it and emitting setVertexVisibility signal to GW...";
 			(*it)->setEnabled (filterFlag) ;
 			emit setVertexVisibility( (*it)-> name(), filterFlag );
 		}
@@ -758,6 +758,7 @@ QString Graph::edgeColor (int s, int t){
 */
 float Graph::hasEdge (int v1, int v2) {		
 	float weight=0;
+	if ( ! m_graph[ index[v1] ] -> enabled() || ! m_graph[ index[v2] ] -> enabled()) return 0;
 	if ( (weight=  m_graph[ index[v1] ]->isLinkedTo(v2) ) != 0 ) {
 		//qDebug("Graph: hasEdge() between %i (%i) and %i (%i) = %f", v1, index[v1], v2, index[v2], weight);
 		return weight;

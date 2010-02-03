@@ -453,15 +453,15 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
 			{
 				if (!m_isNumberInside) 	{ //move it outside
 					m_number -> setZValue(254);
-					//m_number -> setPos( newPos.x()+m_size+m_nd, newPos.y());
+					m_number -> setPos( m_size+m_nd, 0);
 				}
 				else { 	//move it inside node
 					m_number -> setZValue(255);
-					//m_number -> setPos( newPos.x() - m_size-2, newPos.y() - m_size-2 );
+					m_number -> setPos(  - m_size, - m_size-3);
 				}
 			}
 			if (m_hasLabel) {
-				m_label->setPos( newPos.x()-2, newPos.y()+m_ld+m_size);
+				m_label->setPos( -2, m_ld+m_size);
 			}
 			if ( newPos.x() !=0 && newPos.y() != 0 ){
 				graphicsWidget->nodeMoved(nodeNumber(), (int) newPos.x(), (int) newPos.y());

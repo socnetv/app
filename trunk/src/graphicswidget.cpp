@@ -102,7 +102,6 @@ void GraphicsWidget::clear() {
 			 we load files or
 			 the user presses "Add Node" button or
 			 the user double clicks (mouseDoubleClickEvent() calls Graph::createVertex
-
 */
 void GraphicsWidget::drawNode(
 		int num, int size, QString nodeColor,
@@ -149,7 +148,7 @@ void GraphicsWidget::drawNode(
 		numberJim->hide();
 	}
 
-	//add the new node to a nodeVector to ease finding which node has a specific nodeNumber 
+	//add the new node to a nodeVector to ease finding a node by its nodeNumber
 	//The nodeVector is used in drawEdge() method
 	nodeVector.push_back(jim);
 	
@@ -582,7 +581,10 @@ void GraphicsWidget::setNodeVisibility(unsigned long int number, bool visible){
 	vector<Node*>::iterator it;
 	for ( it=nodeVector.begin() ; it < nodeVector.end(); it++ ) {
 		if ((*it)->nodeNumber() == number ) {
-			qDebug() << "GW: hasNode(): Node numbered " << number << " found! Changing visibility now...";
+			if (visible)
+				qDebug() << "GW: hasNode(): Node numbered " << number << " found! Will be visible now...";
+			else
+				qDebug() << "GW: hasNode(): Node numbered " << number << " found! Invisible now...";
 			(*it)->setVisible( visible );
 			break;
 		}
