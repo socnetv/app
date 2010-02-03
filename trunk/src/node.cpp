@@ -55,7 +55,6 @@ Node::Node( GraphicsWidget* gw, int num, int size,
 #else
 	setFlags(ItemIsSelectable | ItemIsMovable ); //Without this, the node cannot move nor be selected ...
 	setCacheMode(QGraphicsItem::NoCache); //QT < 4.6 if a cache mode is set, nodes do not respond to hover events
-
 #endif
 	setAcceptsHoverEvents(true);
 
@@ -454,11 +453,11 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
 			{
 				if (!m_isNumberInside) 	{ //move it outside
 					m_number -> setZValue(254);
-					m_number -> setPos( newPos.x()+m_size+m_nd, newPos.y());
+					//m_number -> setPos( newPos.x()+m_size+m_nd, newPos.y());
 				}
 				else { 	//move it inside node
 					m_number -> setZValue(255);
-					m_number -> setPos( newPos.x() - m_size-2, newPos.y() - m_size-2 );
+					//m_number -> setPos( newPos.x() - m_size-2, newPos.y() - m_size-2 );
 				}
 			}
 			if (m_hasLabel) {

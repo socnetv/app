@@ -31,7 +31,7 @@
 NodeNumber::NodeNumber( Node *jim , int size, QString labelText, QGraphicsScene *scene ) :QGraphicsTextItem(0,scene) {
 	source=jim;
 	jim -> addNumber(this);
-	//setParentItem(jim); //auto disables child items like this, when node is disabled.
+	setParentItem(jim); //auto disables child items like this, when node is disabled.
 	setPlainText( labelText ); 
 	setFont( QFont ("Times", size, QFont::Black, FALSE) );
 	setZValue(254);

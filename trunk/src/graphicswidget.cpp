@@ -120,8 +120,7 @@ void GraphicsWidget::drawNode(
 		size = size +3;
 	
 	Node *jim= new Node (
-			this,
-			num, size, nodeColor, shape,
+			this, num, size, nodeColor, shape,
 			numberInsideNode, m_labelDistance, m_numberDistance,
 			p
 			);
