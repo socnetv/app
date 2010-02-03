@@ -189,7 +189,10 @@ MainWindow::MainWindow(const QString & m_fileName) {
 	connect( &activeGraph, SIGNAL( setEdgeVisibility ( int, int, bool) ), 
 			 graphicsWidget, SLOT(  setEdgeVisibility ( int, int, bool) ) );
 	
-	
+	connect( &activeGraph, SIGNAL( setVertexVisibility(unsigned long int, bool)  ),
+			 graphicsWidget, SLOT(  setNodeVisibility (unsigned long int ,  bool) ) );
+
+
 	connect( circleClearBackgrCirclesAct, SIGNAL(activated()), 
 			graphicsWidget, SLOT(clearBackgrCircles()));
 
@@ -559,6 +562,14 @@ void MainWindow::initActions(){
 	filterNodesAct->setStatusTip(tr("Filters Nodes of some value out of the network"));
 	filterNodesAct->setWhatsThis(tr("Filter Nodes\n\nFilters Nodes of some value out of the network."));
 	connect(filterNodesAct, SIGNAL(activated()), this, SLOT(slotFilterNodes()));
+
+	filterOrphanNodesAct = new QAction(tr("Filter Orphan Nodes"), this);
+	filterOrphanNodesAct -> setEnabled(true);
+	filterOrphanNodesAct -> setCheckable(true);
+	filterOrphanNodesAct -> setChecked(false);
+	filterOrphanNodesAct -> setStatusTip(tr("Filters Nodes with no edges"));
+	filterOrphanNodesAct -> setWhatsThis(tr("Filter Orphan Nodes\n\n Enables or disables displaying of orphan nodes. Orphan nodes are those with no edges..."));
+	connect(filterOrphanNodesAct, SIGNAL(activated()), this, SLOT(slotFilterOrphanNodes()));
 
 	filterEdgesAct = new QAction(tr("Filter Links"), this);
 	filterEdgesAct -> setEnabled(true);
@@ -1095,6 +1106,8 @@ void MainWindow::initMenuBar() {
 	editNodeMenu -> addAction (findNodeAct);
 	editNodeMenu -> addAction (addNodeAct);
 	editNodeMenu -> addAction (removeNodeAct);
+
+	editNodeMenu -> addSeparator();
 	editNodeMenu -> addAction (changeNodeLabelAct);
 	editNodeMenu -> addAction (changeNodeColorAct);
 	editNodeMenu -> addAction (changeNodeSizeAct);
@@ -1120,12 +1133,14 @@ void MainWindow::initMenuBar() {
 	editMenu ->addMenu(filterMenu);
 	
 	filterMenu -> addAction(filterNodesAct );
+	filterMenu -> addAction(filterOrphanNodesAct );
 	filterMenu -> addAction(filterEdgesAct );
 	
 	editMenu ->addSeparator();
 //   transformNodes2LinksAct -> addTo (editMenu);
 	editMenu -> addAction (symmetrizeAct);
-	
+
+	editNodeMenu -> addSeparator();
 	colorOptionsMenu=new QMenu(tr("Colors"));
 	colorOptionsMenu -> setIcon(QIcon(":/images/colorize.png"));
 	editMenu -> addMenu (colorOptionsMenu);
@@ -3821,6 +3836,18 @@ void MainWindow::slotFilterNodes(){
 	}
 }
 
+/**
+*	Calls Graph::filterOrphanVertices to filter vertices with no links
+*/
+void MainWindow::slotFilterOrphanNodes(){
+	if (!fileLoaded && !networkModified  )  {
+		QMessageBox::critical(this, "Error",tr("Nothing to filter! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+		statusMessage(  QString(tr("Nothing to filter!"))  );
+		return;
+	}
+	qDebug()<< "MW: slotFilterOrphanNodes";
+	activeGraph.filterOrphanVertices( ! filterOrphanNodesAct->isChecked() );
+}
 
 
 /**

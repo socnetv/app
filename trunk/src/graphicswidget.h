@@ -99,7 +99,7 @@ public slots:
 	void drawEdge(int, int, float, bool, bool, QString, bool, bool);
 	void eraseEdge(int, int);
 	void setEdgeVisibility ( int, int, bool);
-
+	void setNodeVisibility(unsigned long int, bool );	//Called from Graph via MW
 	
 	void nodeClicked(Node *);
 	void edgeClicked(Edge *);

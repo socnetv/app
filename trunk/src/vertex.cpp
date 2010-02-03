@@ -62,6 +62,7 @@ Vertex::Vertex(	Graph* parent,
 	m_inLinked=FALSE;
 	m_outLinked=FALSE;
 	m_reciprocalLinked=FALSE;
+	m_enabled = TRUE;
 	connect (this, SIGNAL (setEdgeVisibility ( int, int, bool) ), parent, SLOT (slotSetEdgeVisibility ( int, int, bool)) );
 }
 
@@ -81,6 +82,8 @@ Vertex::Vertex(int v1) {
 	m_outLinked=FALSE;
 	m_reciprocalLinked=FALSE;
 }
+
+
 
 
 void Vertex::addLinkTo (unsigned long int v2, float weight) {
@@ -269,6 +272,18 @@ unsigned long int Vertex::name() {
 void Vertex::setName (unsigned long int v1) {
 	m_name=v1; 
 }
+
+
+
+
+void Vertex::setEnabled (bool flag ){
+	m_enabled=flag;
+}
+
+bool Vertex::enabled (){
+	return m_enabled;
+}
+
 
 
 void Vertex::setSize(int size) {

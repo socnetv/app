@@ -167,6 +167,7 @@ public slots:
 	void slotChangeLinkColor();
 	void slotChangeLinkWeight();
 	void slotFilterNodes();
+	void slotFilterOrphanNodes();
 	void slotShowFilterEdgesDialog();
 	void slotTransformNodes2Links();
 	void slotSymmetrize();
@@ -336,7 +337,7 @@ private:
 	QAction *changeLabelsSizeAct, *changeAllNodesSizeAct, *changeAllNodesShapeAct;
 	QAction *changeNodeBoxAct, *changeNodeCircleAct, *changeNodeTriangleAct, *changeNodeDiamondAct, *changeNodeEllipseAct;
 	QAction *changeLinkLabelAct, *changeLinkColorAct, *changeLinkWeightAct;
-	QAction *filterNodesAct, *filterEdgesAct, *transformNodes2LinksAct, *symmetrizeAct;
+	QAction *filterNodesAct, *filterOrphanNodesAct, *filterEdgesAct, *transformNodes2LinksAct, *symmetrizeAct;
 	QAction *changeBackColorAct, *changeAllNodesColorAct, *changeAllLinksColorAct, *changeAllNumbersColorAct, *changeAllLabelsColorAct;
 	QAction *drawLinksWeightsAct, *displayLinksWeightNumbersAct, *displayLinksAct, *displayLinksArrowsAct, *drawLinksBezier;
 	QAction *backgroundImageAct, *viewToolBar, *viewStatusBar, *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;

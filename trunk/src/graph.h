@@ -88,7 +88,8 @@ public slots:
 	void createVertex(QString label, int i) ; 						//Called by WebCrawler
 	
 	/** Slots to signals from MainWindow */
-	void setCanvasDimensions(int w, int h);				
+	void setCanvasDimensions(int w, int h);
+	void filterOrphanVertices ( bool );				//Called by MW to filter orphan vertices
 	void filterEdgesByWeight (float, bool);				//Called by MW to filter edges over/under a weight
 	
 	void webCrawl( QString, int, int, bool);	//Called by MW to start a web crawler...
@@ -96,10 +97,11 @@ public slots:
 signals:
 	/** Signals to MainWindow */
 	void updateProgressDialog(int );
-	void graphChanged();								//call to update MW widgets
-	void selectedVertex(int);							//notifies MW who is the selected node
-	void signalFileType (int, QString, int,int, bool); //notifies MW what we have loaded.
-	void statusMessage (QString message);				//updates statusbar message
+	void graphChanged();					//call to update MW widgets
+	void selectedVertex(int);				//notifies MW who is the selected node
+
+	void signalFileType (int, QString, int,int, bool);	//notifies MW what we have loaded.
+	void statusMessage (QString message);			//updates statusbar message
 		
 	/** Signals to GraphicsWidget */
 	void drawNode( int ,int,  QString, QString, int, QString, QString, int, QPointF, QString, bool, bool, bool);	//call GW to draw a node
@@ -108,7 +110,7 @@ signals:
 	void drawEdge(int, int, float, bool, bool, QString, bool, bool);	//call GW to draw an edge
 	void eraseEdge(int, int);		//emited from removeEdge() to GW to clear the edge item.
 	void setEdgeVisibility ( int, int, bool); // emitted from each Vertex 
-	
+	void setVertexVisibility(unsigned long int, bool);			//notifies GW to disable a node
 	void drawEdgeReciprocal(int, int);		//call GW to draw the edge as symmetric one
 	void addBackgrCircle(int, int, int);	//call GW to draw a circular layout line somewhere.
 	void addBackgrHLine (int);				//call GW to draw a horizontal layout line somewhere.

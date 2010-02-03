@@ -575,6 +575,22 @@ void GraphicsWidget::setEdgeVisibility(int source, int target, bool visible){
 
 
 
+		/**
+*	Changes the visibility of an GraphicsView edge (number, label, edge, etc)
+*/
+void GraphicsWidget::setNodeVisibility(unsigned long int number, bool visible){
+	qDebug() << "GW: setNodeVisibility";
+	vector<Node*>::iterator it;
+	for ( it=nodeVector.begin() ; it < nodeVector.end(); it++ ) {
+		if ((*it)->nodeNumber() == number ) {
+			qDebug() << "GW: hasNode(): Node numbered " << number << " found! Changing visibility now...";
+			(*it)->setVisible( visible );
+			break;
+		}
+	}
+}
+
+
 
 // unused
 Node* GraphicsWidget::hasNode( int number ){

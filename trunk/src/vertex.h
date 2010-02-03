@@ -64,6 +64,9 @@ public:
 	unsigned long int name();
 	void setName (unsigned long int ); 
 
+	void setEnabled (bool flag );
+	bool enabled ();
+
 	void addLinkTo (unsigned long int target, float weight);	/** Adds an outLink to target with weight w */
 	void addLinkFrom(unsigned long int source, float weight);
 
@@ -93,10 +96,8 @@ public:
 	void setInLinked(bool inLinked) { m_inLinked=inLinked;}
 	float isLinkedFrom (unsigned long int v);
 	
-
 	void setSize(int );
 	int  size();
-	
 	
 	void setShape(QString);
 	QString shape();
@@ -110,7 +111,6 @@ public:
 	void setNumberSize (int);
 	int numberSize();
 	
-
 	void setLabel (QString);
 	QString label();
 
@@ -120,7 +120,6 @@ public:
 	void setLabelSize(int);
 	int labelSize();
 
-
 	void setX(float );
 	float x();
 
@@ -128,7 +127,6 @@ public:
 	float y();
 	
 	QPointF pos ();
-
 
 	void setOutLinkColor(unsigned long int, QString);
 	QString outLinkColor(int);
@@ -194,7 +192,7 @@ private:
 	ilist myPs;
 	unsigned long int m_name,  m_outLinks, m_inLinks; 
 	int m_value, m_size, m_labelSize, m_numberSize;
-	bool m_inLinked, m_outLinked, m_reciprocalLinked, m_hasCLC;
+	bool m_inLinked, m_outLinked, m_reciprocalLinked, m_enabled, m_hasCLC;
 	QString m_color, m_numberColor, m_label, m_labelColor, m_shape;
 	//QString *outLinkColors;
 	ihash_s outLinkColors;

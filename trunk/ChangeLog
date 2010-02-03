@@ -4,6 +4,13 @@
 
 ChangeLog:
 
+Version 0.90 - Feb XX 2010
+Codename: "yellow"
+--------------------------
+- New feature: filter (enable/disable) orphan nodes
+- 
+- Bugfixes
+
 Version 0.81 - Jan 28 2010
 Codename: "bugfixes"
 ---------------------------
