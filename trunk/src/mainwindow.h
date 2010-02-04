@@ -122,7 +122,7 @@ public slots:
 	void slotImportGML();
 	void slotImportDL();
 	void slotImportEdgeList();
-
+	void slotImportTwoModeSM();
 	void slotFileSave();
 	void slotFileSaveAs();
 	void slotFileClose();
@@ -325,7 +325,7 @@ private:
 
 	QAction *fileNew, *fileOpen, *fileSave, *fileSaveAs,*fileClose, *printNetwork,*fileQuit;
 	QAction *exportBMP, *exportPNG, *exportPajek, *exportPDF, *exportDL, *exportGW, *exportSM, *exportList;
-	QAction *importPajek,*importSM, *importList, *importDot , *importDL; 
+	QAction *importPajek,*importSM, *importList,  *importDot , *importDL, *importTwoModeSM;
 	
 	QAction *viewNetworkFileAct, *openTextEditorAct, *viewSociomatrixAct, *recreateDataSetAct; 
 	

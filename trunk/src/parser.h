@@ -34,7 +34,7 @@ using namespace std;
 #include <QMutex>
 #include <QObject>
 #include <QtXml>	
-
+#include <QMultiMap>
 
 /** 	
 	Main class for network file parsing and loading
@@ -54,6 +54,7 @@ public:
 	bool loadDL();
 	bool loadSimpleList();
 	bool loadWeighedList();
+	bool loadTwoModeSociomatrix();
 
 	void dotProperties(QString str, float &, QString &label, QString &shape, QString &color, QString &fontName, QString &fontColor );
 	void readGraphML (QXmlStreamReader &);
@@ -89,6 +90,7 @@ private:
 	QMutex mutex;
 	QHash<QString, int> nodeNumber;
 	QHash<QString, QString> keyFor, keyName, keyType, keyDefaultValue ;
+	QMultiMap<int, int> firstModeMultiMap, secondModeMultiMap;
 	QXmlStreamReader *xml;
 	QString fileName, networkName, initNodeColor, initEdgeColor, initNodeShape, initNodeNumberColor, initNodeLabelColor;
 	QString nodeColor, edgeColor, edgeType, nodeShape, nodeLabel, edgeLabel, nodeNumberColor, nodeLabelColor;

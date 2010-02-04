@@ -96,7 +96,7 @@ d->e->a->f->j->k->l->o <br />
 <h4><a name="Adjacency" id="Adjacency"></a>Adjacency Matrix files</h4>
 <p class="text">
 The adjacency sociomatrix format is a very easy one. <br />
-It contains only a matrix NxN, where N is the amount of nodes. Each (i,j) element is a number. <br />
+It describes one-mode networks and contains a simple matrix NxN, where N is the amount of nodes. Each (i,j) element is a number. <br />
 If (i,j)=0 then nodes i and j are not connected. <br />
 If (i,j)=x where x a non-zero number then there will be an arc from node i to node j. <br />
 Again, negative weights are allowed. Those are depicted as dashed lines when the network is visualised on the canvas. 
@@ -119,6 +119,40 @@ Again, negative weights are allowed. Those are depicted as dashed lines when the
 </pre>
 </div>
 </p>
+
+
+<h4><a name="Two-mode Sociomatrix" id="TwoModeSM"></a>Two-mode Sociomatrix files</h4>
+<p class="text">
+Unlike one-mode networks describing direct links between actors, networks can be two-mode as well, describing subsets of actors (first mode). <br />
+These subsets are defined by the actors' affiliations to a particular event or organization (second mode). <br />
+Two-mode networks are described by affiliation network matrices, where A(i,j) codes the events/organizations each actor is affiliated.
+
+A two-mode sociomatrix is a matrix NxM, where N is the amount of nodes and M is the amount of events. Each (i,j) element can be 0 or 1. <br />
+If A(i,j)=1 then actor i is affiliated with event j. <br />
+</p>
+<p class="text">
+ This is an example of an two-mode sociomatrix formatted network.
+
+<div class="code">
+<pre>
+0 0 1 1 0 0 0 0 1 
+0 0 1 0 1 0 1 0 0 
+0 0 1 0 0 0 0 0 0 
+0 1 1 0 0 0 0 0 0 
+0 0 1 0 0 0 0 0 0
+0 1 1 0 0 0 0 0 0
+0 0 1 1 0 0 0 0 0
+0 0 0 1 0 0 1 0 0
+1 0 0 1 0 0 0 1 0
+0 0 1 0 0 0 0 0 1
+0 1 1 0 0 0 0 0 1
+0 0 0 1 0 0 1 0 0
+0 0 1 1 1 0 0 0 1
+</pre>
+</div>
+</p>
+
+
 <h4><a name="Pajek" id="Pajek"></a>Pajek-like formatted files</h4>
 <p class="text">
 Note the 'Pajek-like' part. This is because real Pajek files can be much more complicate than the ones recognised by SocNetV. To be more precise, here is an example of the Pajek-like form that SocNetV understands. The numbers to the left are just indicating line numbers.

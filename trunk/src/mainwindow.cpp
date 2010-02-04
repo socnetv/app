@@ -303,6 +303,10 @@ void MainWindow::initActions(){
 	connect(importList, SIGNAL(activated()), this, SLOT(slotImportEdgeList()));
 
 
+	importTwoModeSM = new QAction( QIcon(":/images/open.png"), tr("&Two Mode Sociomatrix"), this);
+	importTwoModeSM->setStatusTip(tr("Imports an two mode sociomatrix (affiliation network) file"));
+	importTwoModeSM->setWhatsThis(tr("Import Sociomatrix \n\n  Imports a two mode network from a sociomatrix file. Two-mode networks are described by affiliation network matrices, where A(i,j) codes the events/organizations each actor is affiliated."));
+	connect(importTwoModeSM, SIGNAL(activated()), this, SLOT(slotImportTwoModeSM()));
 
 
   	fileSave = new QAction(QIcon(":/images/save.png"), tr("&Save"),  this);
@@ -1045,6 +1049,7 @@ void MainWindow::initMenuBar() {
 	importSubMenu = new QMenu(tr("Import ..."));
 	importSubMenu -> addAction(importPajek);
 	importSubMenu -> addAction(importSM);
+	importSubMenu -> addAction(importTwoModeSM);
 	importSubMenu -> addAction(importList);
 	importSubMenu -> addAction(importDL);
 	networkMenu ->addMenu (importSubMenu);
@@ -2054,6 +2059,16 @@ void MainWindow::slotImportPajek(){
 void MainWindow::slotImportSM(){
 	fileFormat=3;
 	this->slotChooseFile();	
+}
+
+
+
+/**
+	Imports a network from a two mode sociomatrix formatted file
+*/
+void MainWindow::slotImportTwoModeSM(){
+	fileFormat=9;
+	this->slotChooseFile();
 }
 
 
