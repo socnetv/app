@@ -758,7 +758,8 @@ QString Graph::edgeColor (int s, int t){
 */
 float Graph::hasEdge (int v1, int v2) {		
 	float weight=0;
-	if ( ! m_graph[ index[v1] ] -> enabled() || ! m_graph[ index[v2] ] -> enabled()) return 0;
+	if ( ! m_graph[ index[v1] ] -> isEnabled() || ! m_graph[ index[v2] ] -> isEnabled())
+		return 0;
 	if ( (weight=  m_graph[ index[v1] ]->isLinkedTo(v2) ) != 0 ) {
 		//qDebug("Graph: hasEdge() between %i (%i) and %i (%i) = %f", v1, index[v1], v2, index[v2], weight);
 		return weight;
@@ -1215,6 +1216,8 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 		for (it=m_graph.begin(); it!=m_graph.end(); it++){
 			progressCounter++;
 			emit updateProgressDialog( progressCounter );
+			if ( ! (*it)->isEnabled() )
+				continue;
 			s=index[(*it)->name()];
 			qDebug() << "Source vertex s = " << (*it)->name() << " of BFS algorithm has index " << s << ". Clearing Stack ...";
 			if (doCalculcateCentralities){
@@ -1414,6 +1417,9 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
 	while ( !Q.empty() ) {
 		qDebug("BFS: Dequeue: first element of Q is u=%i", Q.front());
 		u=Q.front(); Q.pop();
+
+		if ( ! m_graph [ u ]->isEnabled() ) continue ;
+
 		if (doCalculcateCentralities){
 			qDebug("BFS: If we are to calculate centralities, we must push u=%i to global stack Stack ", u);
 			Stack.push(u);
@@ -1606,6 +1612,8 @@ void Graph::centralityInDegree(bool weights){
 	calculatedIDC=TRUE;
 	graphModified=false;
 }
+
+
 
 
 void Graph::writeCentralityInDegree

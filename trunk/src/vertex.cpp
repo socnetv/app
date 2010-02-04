@@ -280,7 +280,7 @@ void Vertex::setEnabled (bool flag ){
 	m_enabled=flag;
 }
 
-bool Vertex::enabled (){
+bool Vertex::isEnabled (){
 	return m_enabled;
 }
 

@@ -65,7 +65,7 @@ public:
 	void setName (unsigned long int ); 
 
 	void setEnabled (bool flag );
-	bool enabled ();
+	bool isEnabled ();
 
 	void addLinkTo (unsigned long int target, float weight);	/** Adds an outLink to target with weight w */
 	void addLinkFrom(unsigned long int source, float weight);
