@@ -782,7 +782,7 @@ bool Parser::loadTwoModeSociomatrix(){
 	}
 	qDebug("Parser-loadTwoModeSociomatrix(): Starting creating links");
 	QList<int> values;
-	for (int k = 1; k < secondModeMultiMap.count(); ++k){
+	for (int k = 1; k < j ; ++k){
 		qDebug() << "At event " << k << " were the following actors : ";
 		values = secondModeMultiMap.values(k);
 		for (int m = 0; m < values.size(); ++m)
