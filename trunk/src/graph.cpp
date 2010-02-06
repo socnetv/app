@@ -3961,11 +3961,12 @@ void Graph::setShowNumbersInsideNodes(bool toggle){
 	cW, cH: control the current canvasWidth and canvasHeight
 */
 void Graph::nodeMovement(int state, int type, int cW, int cH){
-	qDebug("Graph: startNodeMovement()");
+	qDebug()<< "Graph: startNodeMovement() - state " << state;
 	canvasWidth = cW;
 	canvasHeight = cH;
 	int factor=100;		//factor controls speed. Decrease it to increase speed...
 	if (state == Qt::Checked){
+		qDebug()<< "Graph: startNodeMovement() - STARTING dynamicMovement" ;
 		dynamicMovement = TRUE;
 		layoutType=type;
 		if (!timerId) {
@@ -3974,9 +3975,11 @@ void Graph::nodeMovement(int state, int type, int cW, int cH){
 		}
 	}
 	else {
+		qDebug()<< "Graph: startNodeMovement() - STOPPING dynamicMovement" ;
 		dynamicMovement = FALSE;
+		killTimer(timerId);
+		timerId = 0;
 	}
-		
 }
 
 
