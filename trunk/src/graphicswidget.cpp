@@ -50,14 +50,10 @@ GraphicsWidget::GraphicsWidget( QGraphicsScene *sc, MainWindow* par)  : QGraphic
 	moving=0;
 	timerId=0;
 	layoutType=0;
-
 	m_nodeLabel="";
-	
 	zoomIndex=3;
-	
 	m_currentScaleFactor = 1;
 	m_currentRotationAngle = 0;
-	
 	markedNodeExists=false; //used in findNode()
 }
 
@@ -81,6 +77,7 @@ void GraphicsWidget::clear() {
 	//qDebug("GW: clear()");
 	int i=0;
 	nodeVector.clear();
+	nodeHash.clear();
 	QList<QGraphicsItem *> allItems=scene()->items();
 	foreach (QGraphicsItem *item, allItems ) {
 		(item)->hide();
@@ -88,7 +85,6 @@ void GraphicsWidget::clear() {
 		i++;
 	}
 	//qDebug("GW: Removed %i items from scene. Scene items now: %i ",i, scene()->items().size());
-	//qDebug("GW: items now: %i ", this->items().size());
 }
 
 
@@ -151,7 +147,7 @@ void GraphicsWidget::drawNode(
 	//add the new node to a nodeVector to ease finding a node by its nodeNumber
 	//The nodeVector is used in drawEdge() method
 	nodeVector.push_back(jim);
-	
+	nodeHash.insert(num, jim);
 	//finally, move the node where it belongs!
 	jim -> setPos( p.x(), p.y());
 }
@@ -167,33 +163,36 @@ void GraphicsWidget::drawNode(
 	b) when the user clicks on the AddLink button on the MW.
 */
 void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool drawArrows, QString color, bool bezier, bool check){
-	qDebug()<<"GW: drawEdge ("<< i<< ","<< j<< ") with weight "<<weight << " - nodeVector reports "<< nodeVector.size()<<" nodes.";
-	if (check) {
-		vector<Node*>::iterator it;
-		int index=1;
-		for ( it=nodeVector.begin() ; it < nodeVector.end(); it++ ) {
-			if ((*it)->nodeNumber() == i ) {		
-				break;
-			}
-			index++;
-		}
-		i=index;
-		index=1;
-		for ( it=nodeVector.begin() ; it < nodeVector.end(); it++ ) {
-			if ((*it)->nodeNumber() == j ) {		
-				break;
-			}
-			index++;
-		}
-		j=index;
-
-	}
+//	qDebug()<<"GW: drawEdge ("<< i<< ","<< j<< ") with weight "<<weight << " - nodeVector reports "<< nodeVector.size()<<" nodes.";
+	qDebug()<<"GW: drawEdge ("<< i<< ","<< j<< ") with weight "<<weight << " - nodeHash reports "<< nodeHash.size()<<" nodes.";
+//	if (check) {
+//		vector<Node*>::iterator it;
+//		int index=1;
+//		for ( it=nodeVector.begin() ; it < nodeVector.end(); it++ ) {
+//			if ((*it)->nodeNumber() == i ) {
+//				break;
+//			}
+//			index++;
+//		}
+//		i=index;
+//		index=1;
+//		for ( it=nodeVector.begin() ; it < nodeVector.end(); it++ ) {
+//			if ((*it)->nodeNumber() == j ) {
+//				break;
+//			}
+//			index++;
+//		}
+//		j=index;
+//
+//	}
 	if (i == j ) {
 		bezier = true;		
 	}
 
-	qDebug()<< "GW: drawEdge() drawing edge now!"<< " From node "<<  nodeVector.at(i-1)->nodeNumber()<< " to "<<  nodeVector.at(j-1)->nodeNumber() << " weight "<< weight << " nodesize "<<  m_nodeSize << " edgecolor "<< color ;
-	Edge *edge=new Edge (this, nodeVector.at(i-1), nodeVector.at(j-1), weight, m_nodeSize, color, reciprocal, drawArrows, bezier);
+	//qDebug()<< "GW: drawEdge() drawing edge now!"<< " From node "<<  nodeVector.at(i-1)->nodeNumber()<< " to "<<  nodeVector.at(j-1)->nodeNumber() << " weight "<< weight << " nodesize "<<  m_nodeSize << " edgecolor "<< color ;
+	qDebug()<< "GW: drawEdge() drawing edge now!"<< " From node "<<  nodeHash.value(i)->nodeNumber()<< " to "<<  nodeHash.value(j)->nodeNumber() << " weight "<< weight << " nodesize "<<  m_nodeSize << " edgecolor "<< color ;
+	//Edge *edge=new Edge (this, nodeVector.at(i-1), nodeVector.at(j-1), weight, m_nodeSize, color, reciprocal, drawArrows, bezier);
+	Edge *edge=new Edge (this, nodeHash.value(i),nodeHash.value(j), weight, m_nodeSize, color, reciprocal, drawArrows, bezier);
 	edge -> setZValue(253);		//Edges have lower z than nodes. Nodes always appear above edges.
 	//ssetBoundingRegionGranularity() is a real headache. Keep it here so that it doesnt interfere with dashed lines.
 	edge->setBoundingRegionGranularity(0.05);	// Slows down the universe...Keep it 0.05...
@@ -204,8 +203,11 @@ void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool 
 	edgesMap [edgeName] =  edge;
 
 	qDebug()<< "GW: drawNode(): drawing edge weight number...";
-	double x = ( (nodeVector.at(i-1))->x() + (nodeVector.at(j-1))->x() ) / 2.0;
-	double y = ( (nodeVector.at(i-1))->y() + (nodeVector.at(j-1))->y() ) / 2.0;
+//	double x = ( (nodeVector.at(i-1))->x() + (nodeVector.at(j-1))->x() ) / 2.0;
+//	double y = ( (nodeVector.at(i-1))->y() + (nodeVector.at(j-1))->y() ) / 2.0;
+	double x = ( (nodeHash.value(i))->x() + (nodeHash.value(j))->x() ) / 2.0;
+	double y = ( (nodeHash.value(i))->y() + (nodeHash.value(j))->y() ) / 2.0;
+
 	EdgeWeight *edgeWeight = new  EdgeWeight (edge, 7, QString::number(weight), scene() );
 	edgeWeight-> setPos(x,y);
 	edgeWeight-> setDefaultTextColor (color);
@@ -311,8 +313,7 @@ void GraphicsWidget::nodeMoved(int number, int x, int y){
 */
 void GraphicsWidget::moveNode(int number, int x, int y){
 	qDebug ("GW: updateNode() %i with %i, %i", number, x,y);
-	nodeVector.at(number-1)->setPos(x,y);
-	if (nodeVector.at(number-1)->nodeNumber()!=number) qDebug("ERRRRRRRRRRRRRRRRRRROOOOR");
+	nodeHash.value(number)->setPos(x,y);
 }
 
 
@@ -335,7 +336,6 @@ void GraphicsWidget::eraseNode(int doomedJim){
 		}
 	}
 	qDebug("GW: Scene items now= %i - View items now= %i ", scene()->items().size(), items().size() );
-
 }
 
 
@@ -370,14 +370,19 @@ void GraphicsWidget::eraseEdge(int sourceNode, int targetNode){
 */
 void GraphicsWidget::removeItem( Node *node){
 	vector<Node*>::iterator it;
-	int i=0;
-	for ( it=nodeVector.begin() ; it < nodeVector.end(); it++ ) {
-		if ((*it)->nodeNumber() == node->nodeNumber()) {		
-			break;
-		}
-		i++;
+	int i=node->nodeNumber();
+	foreach ( Node *candidate, nodeHash) {
+		if ( candidate->nodeNumber() == i )
+			nodeHash.remove( i );
 	}
-	nodeVector.erase(nodeVector.begin()+i);
+
+//	for ( it=nodeVector.begin() ; it < nodeVector.end(); it++ ) {
+//		if ((*it)->nodeNumber() == node->nodeNumber()) {
+//			break;
+//		}
+//		i++;
+//	}
+//	nodeVector.erase(nodeVector.begin()+i);
 	node->deleteLater ();
 	qDebug("GW items now: %i ", items().size());
 }
@@ -573,7 +578,7 @@ void GraphicsWidget::setEdgeVisibility(int source, int target, bool visible){
 
 
 
-		/**
+/**
 *	Changes the visibility of an GraphicsView edge (number, label, edge, etc)
 */
 void GraphicsWidget::setNodeVisibility(unsigned long int number, bool visible){

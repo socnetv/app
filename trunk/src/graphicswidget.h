@@ -43,7 +43,7 @@ class BackgrCircle;
 class EdgeWeight;
 
 typedef QMap<QString, Edge*> StringToEdgeMap;
-
+typedef QHash <unsigned long int, Node*> hash_in;
 
 class GraphicsWidget : public QGraphicsView {
 	Q_OBJECT
@@ -139,6 +139,7 @@ private:
 	bool secondDoubleClick, dynamicMovement, markedNodeExists;
 	QGraphicsItem *moving;
 	QPointF startPoint, endPoint;
+	hash_in nodeHash;
 	Node *firstNode, *secondNode, *markedNode, *tempNode ;
 	vector<Node*> nodeVector;					//used by addEdge() method
 	StringToEdgeMap edgesMap;

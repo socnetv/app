@@ -323,7 +323,7 @@ int Graph::firstVertexNumber() {
 
 
 /**	Removes the vertex named Doomed from the graph 
-	It removes edges to Doomed from other vertices
+	First, it removes all edges to Doomed from other vertices
 	Then it changes the index of all subsequent vertices inside m_graph
 	Finally, it removes the vertex.
 */
@@ -2357,10 +2357,11 @@ void Graph::layoutRandom(double maxWidth, double maxHeight){
 	for (Vertices::iterator it=m_graph.begin(); it!=m_graph.end(); it++){
 		new_x= rand() % ( static_cast<int> (maxWidth) );
 		new_y= rand() % ( static_cast<int> (maxHeight) );
-		qDebug ("new_x %f, new_y %f", new_x, new_y);
 		(*it)->setX( new_x );
 		(*it)->setY( new_y );
-		qDebug("Emitting moveNode to move Vertice to new position x=%f and y=%f ",new_x, new_y);
+		qDebug()<< "Graph: Emitting moveNode to move Vertice " << (*it)->name()
+				//<< "indexed " << index((*it)->name())
+				<< " to new position " << new_x << " , "<< new_y;
 		emit moveNode((*it)->name(),  new_x,  new_y);
 	}
 }

@@ -635,7 +635,7 @@ void MainWindow::initActions(){
 	regularColorationAct -> setWhatsThis( tr("Click this to colorize nodes; Nodes are assigned the same color if they have neighborhoods of the same set of colors"));
 	connect(regularColorationAct, SIGNAL(activated() ), this, SLOT(slotColorationRegular()) );
 	
-	randLayoutAct = new QAction( tr("Random"),	this);
+	randLayoutAct = new QAction( tr("Random"),this);
 	randLayoutAct -> setShortcut(tr("Ctrl+0"));
 	randLayoutAct -> setStatusTip(tr("Repositions all nodes in random places"));
 	randLayoutAct -> setWhatsThis(tr("Random Layout\n\n Repositions all nodes in random places"));
@@ -3236,23 +3236,23 @@ void MainWindow::slotRemoveNode() {
 	min = activeGraph.firstVertexNumber();
 	max = activeGraph.lastVertexNumber();
 	qDebug("MW: min is %i and max is %i", min, max);
-
-	if (min==-1 || max==-1 ) { qDebug("ERROR in finding min max nodeNumbers. Abort"); return;}	
+	if (min==-1 || max==-1 ) {
+		qDebug("ERROR in finding min max nodeNumbers. Abort");
+		return;
+	}
 	else if (clickedJimNumber >= 0 && clickedJimNumber<= max ) { 
 		doomedJim=clickedJimNumber ;
 	}
 	else if (clickedJimNumber == -1 ) {
 		doomedJim =  QInputDialog::getInteger(this,"Remove node",tr("Choose a node to remove between ("
-			+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"),min, 1, max, 1, &ok);
+			+ QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"),min, 1, max, 1, &ok);
 		if (!ok) {
 			statusMessage( "Remove node operation cancelled." );
 			return;
 		}
-	}
-	
+	}	
 	qDebug ("MW: removing vertice with number %i from Graph", doomedJim);
 	activeGraph.removeVertex(doomedJim);
-	
 	clickedJimNumber=-1;
 	graphChanged();
 	qDebug("MW: removeNode() completed. Node %i removed completely.",doomedJim);
@@ -3930,7 +3930,7 @@ void MainWindow::slotColorationRegular() {
 
 
 
-	/**
+/**
 *	Calls Graph::LayoutRadialCentrality()
 *	to reposition all nodes on a circular layout based on their In-Degree Centralities. 
 *	More central nodes are closer to the centre
@@ -3941,17 +3941,14 @@ void MainWindow::slotLayoutRandom(){
 		statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
 		return;
 	}
-
 	double maxWidth=graphicsWidget->width();
 	double maxHeight=graphicsWidget->height();
-	
 	statusMessage(  QString(tr("Randomizing nodes positions. Please wait...")) );
 	graphicsWidget->clearBackgrCircles();
 	createProgressBar();
 	activeGraph.layoutRandom(maxWidth, maxHeight);
 	destroyProgressBar();
 	statusMessage( tr("Node positions are now randomized.") );	
-
 }
 
 
