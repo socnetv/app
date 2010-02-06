@@ -53,7 +53,7 @@ public:
 	void clear();
 
 	Node* hasNode(QString text);
-	Node* hasNode(int number);
+//	Node* hasNode(int number);
 	bool setMarkedNode(QString text);
 	
 	void removeItem(Edge*);
@@ -131,6 +131,8 @@ signals:
 	void zoomChanged(int);
 	
 private:
+	hash_in nodeHash;			//This is used in drawEdge() method
+	StringToEdgeMap edgesMap;
 	int timerId,  layoutType, m_nodeSize, m_numberDistance, m_labelDistance;
 	double m_currentScaleFactor;
 	int m_currentRotationAngle;
@@ -139,10 +141,8 @@ private:
 	bool secondDoubleClick, dynamicMovement, markedNodeExists;
 	QGraphicsItem *moving;
 	QPointF startPoint, endPoint;
-	hash_in nodeHash;
 	Node *firstNode, *secondNode, *markedNode, *tempNode ;
-	vector<Node*> nodeVector;					//used by addEdge() method
-	StringToEdgeMap edgesMap;
+
 };
 
 #endif

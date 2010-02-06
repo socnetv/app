@@ -74,9 +74,7 @@ void GraphicsWidget::paintEvent ( QPaintEvent * event ){
 	Clears the scene 
 */
 void GraphicsWidget::clear() {
-	//qDebug("GW: clear()");
 	int i=0;
-	nodeVector.clear();
 	nodeHash.clear();
 	QList<QGraphicsItem *> allItems=scene()->items();
 	foreach (QGraphicsItem *item, allItems ) {
@@ -84,7 +82,6 @@ void GraphicsWidget::clear() {
 		scene()->removeItem (item);
 		i++;
 	}
-	//qDebug("GW: Removed %i items from scene. Scene items now: %i ",i, scene()->items().size());
 }
 
 
@@ -93,11 +90,10 @@ void GraphicsWidget::clear() {
 
 /**	
 	Adds a new node onto the scene 
-
 	Called from Graph::createVertex method when:
-			 we load files or
-			 the user presses "Add Node" button or
-			 the user double clicks (mouseDoubleClickEvent() calls Graph::createVertex
+		we load files or
+		the user presses "Add Node" button or
+		the user double clicks (mouseDoubleClickEvent() calls Graph::createVertex
 */
 void GraphicsWidget::drawNode(
 		int num, int size, QString nodeColor,
@@ -109,7 +105,6 @@ void GraphicsWidget::drawNode(
 		) {
 	qDebug()<< "GW: drawNode(): drawing new node at: " 
 			<< p.x() << ", "<< p.y() ;
-
 
 	if (numberInsideNode)
 		size = size +3;
@@ -136,20 +131,15 @@ void GraphicsWidget::drawNode(
 	// drawing node number - label will be moved by the node movement (see last code line in this method)
 	if (numberInsideNode)
 		numberSize = size-2;
-		
+
 	NodeNumber *numberJim = new  NodeNumber ( jim, numberSize, QString::number(num), scene() );
 	numberJim -> setDefaultTextColor (numberColor);
 	
 	if (!showNumbers){
 		numberJim->hide();
 	}
-
-	//add the new node to a nodeVector to ease finding a node by its nodeNumber
-	//The nodeVector is used in drawEdge() method
-	nodeVector.push_back(jim);
-	nodeHash.insert(num, jim);
-	//finally, move the node where it belongs!
-	jim -> setPos( p.x(), p.y());
+	nodeHash.insert(num, jim);//add new node to a container to ease finding, edge creation etc
+	jim -> setPos( p.x(), p.y());	//finally, move the node where it belongs!
 }
 
 
@@ -163,38 +153,19 @@ void GraphicsWidget::drawNode(
 	b) when the user clicks on the AddLink button on the MW.
 */
 void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool drawArrows, QString color, bool bezier, bool check){
-//	qDebug()<<"GW: drawEdge ("<< i<< ","<< j<< ") with weight "<<weight << " - nodeVector reports "<< nodeVector.size()<<" nodes.";
 	qDebug()<<"GW: drawEdge ("<< i<< ","<< j<< ") with weight "<<weight << " - nodeHash reports "<< nodeHash.size()<<" nodes.";
-//	if (check) {
-//		vector<Node*>::iterator it;
-//		int index=1;
-//		for ( it=nodeVector.begin() ; it < nodeVector.end(); it++ ) {
-//			if ((*it)->nodeNumber() == i ) {
-//				break;
-//			}
-//			index++;
-//		}
-//		i=index;
-//		index=1;
-//		for ( it=nodeVector.begin() ; it < nodeVector.end(); it++ ) {
-//			if ((*it)->nodeNumber() == j ) {
-//				break;
-//			}
-//			index++;
-//		}
-//		j=index;
-//
-//	}
 	if (i == j ) {
 		bezier = true;		
 	}
-
-	//qDebug()<< "GW: drawEdge() drawing edge now!"<< " From node "<<  nodeVector.at(i-1)->nodeNumber()<< " to "<<  nodeVector.at(j-1)->nodeNumber() << " weight "<< weight << " nodesize "<<  m_nodeSize << " edgecolor "<< color ;
-	qDebug()<< "GW: drawEdge() drawing edge now!"<< " From node "<<  nodeHash.value(i)->nodeNumber()<< " to "<<  nodeHash.value(j)->nodeNumber() << " weight "<< weight << " nodesize "<<  m_nodeSize << " edgecolor "<< color ;
-	//Edge *edge=new Edge (this, nodeVector.at(i-1), nodeVector.at(j-1), weight, m_nodeSize, color, reciprocal, drawArrows, bezier);
+	qDebug()<< "GW: drawEdge() drawing edge now!"<< " From node "
+			<<  nodeHash.value(i)->nodeNumber()<< " to node "
+			<<  nodeHash.value(j)->nodeNumber() << " weight "
+			<< weight << " nodesize "
+			<<  m_nodeSize << " edgecolor "<< color ;
 	Edge *edge=new Edge (this, nodeHash.value(i),nodeHash.value(j), weight, m_nodeSize, color, reciprocal, drawArrows, bezier);
 	edge -> setZValue(253);		//Edges have lower z than nodes. Nodes always appear above edges.
-	//ssetBoundingRegionGranularity() is a real headache. Keep it here so that it doesnt interfere with dashed lines.
+	// setBoundingRegionGranularity() is a real headache.
+	// Keep it here so that it doesnt interfere with dashed lines.
 	edge->setBoundingRegionGranularity(0.05);	// Slows down the universe...Keep it 0.05...
 	//edge->setCacheMode (QGraphicsItem::DeviceCoordinateCache);  //Also slows down the universe...
 
@@ -203,8 +174,6 @@ void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool 
 	edgesMap [edgeName] =  edge;
 
 	qDebug()<< "GW: drawNode(): drawing edge weight number...";
-//	double x = ( (nodeVector.at(i-1))->x() + (nodeVector.at(j-1))->x() ) / 2.0;
-//	double y = ( (nodeVector.at(i-1))->y() + (nodeVector.at(j-1))->y() ) / 2.0;
 	double x = ( (nodeHash.value(i))->x() + (nodeHash.value(j))->x() ) / 2.0;
 	double y = ( (nodeHash.value(i))->y() + (nodeHash.value(j))->y() ) / 2.0;
 
@@ -366,7 +335,7 @@ void GraphicsWidget::eraseEdge(int sourceNode, int targetNode){
 
 
 /** 
-	Called from Node::die() to removeItem from nodeVector...
+	Called from Node::die() to removeItem from nodeHash...
 */
 void GraphicsWidget::removeItem( Node *node){
 	vector<Node*>::iterator it;
@@ -375,14 +344,6 @@ void GraphicsWidget::removeItem( Node *node){
 		if ( candidate->nodeNumber() == i )
 			nodeHash.remove( i );
 	}
-
-//	for ( it=nodeVector.begin() ; it < nodeVector.end(); it++ ) {
-//		if ((*it)->nodeNumber() == node->nodeNumber()) {
-//			break;
-//		}
-//		i++;
-//	}
-//	nodeVector.erase(nodeVector.begin()+i);
 	node->deleteLater ();
 	qDebug("GW items now: %i ", items().size());
 }
@@ -390,7 +351,7 @@ void GraphicsWidget::removeItem( Node *node){
 
 
 
-/** Called from Node::die() to removeItem from nodeVector... */
+/** Called from Node::die() to remove Edge edge ... */
 void GraphicsWidget::removeItem( Edge * edge){
 	edge->remove();
 	delete (edge);
@@ -461,13 +422,13 @@ bool GraphicsWidget::setNodeColor(int nodeNumber, QString color){
 */
 void   GraphicsWidget::setNumbersInsideNodes(bool numIn){
 	qDebug("GW setting initNumberDistance");
-	foreach (Node *node, nodeVector) {
-		qDebug("GW: Number foundMovin it now...");
-		node->setNumberInside(numIn);
+	foreach ( Node *m_node, nodeHash) {
+		m_node->setNumberInside(numIn);
 		if (numIn)
 			this->setInitNodeSize(m_nodeSize+2);
-		else 
+		else
 			this->setInitNodeSize(m_nodeSize-2);
+
 	}
 }
 
@@ -579,38 +540,23 @@ void GraphicsWidget::setEdgeVisibility(int source, int target, bool visible){
 
 
 /**
-*	Changes the visibility of an GraphicsView edge (number, label, edge, etc)
+*	Changes the visibility of a  Node
 */
 void GraphicsWidget::setNodeVisibility(unsigned long int number, bool visible){
 	qDebug() << "GW: setNodeVisibility";
-	vector<Node*>::iterator it;
-	for ( it=nodeVector.begin() ; it < nodeVector.end(); it++ ) {
-		if ((*it)->nodeNumber() == number ) {
+	foreach ( Node *candidate, nodeHash) {
+		if (candidate->nodeNumber() == number ) {
 			if (visible)
 				qDebug() << "GW: hasNode(): Node numbered " << number << " found! Will be visible now...";
 			else
 				qDebug() << "GW: hasNode(): Node numbered " << number << " found! Invisible now...";
-			(*it)->setVisible( visible );
+			candidate->setVisible( visible );
 			break;
 		}
+
 	}
 }
 
-
-
-// unused
-Node* GraphicsWidget::hasNode( int number ){
-	vector<Node*>::iterator it;
-	for ( it=nodeVector.begin() ; it < nodeVector.end(); it++ ) {
-		if ((*it)->nodeNumber() == number ) {
-			qDebug() << "GW: hasNode(): Node numbered " << number << " found!";
-			markedNodeExists=true;
-			return (*it);	
-			break;
-		}
-	}
-	return markedNode;	//dummy return. We check markedNodeExists flag first...
-}
 
 
 
@@ -621,15 +567,16 @@ Node* GraphicsWidget::hasNode( int number ){
 Node* GraphicsWidget::hasNode( QString text ){
 	vector<Node*>::iterator it;
 	bool ok = false;
-	for ( it=nodeVector.begin() ; it < nodeVector.end(); it++ ) {
-		if ( 	(*it)->nodeNumber()==text.toInt(&ok, 10)  || 
-				(*it)->labelText().contains (text, Qt::CaseInsensitive)
-			 ) {
+	foreach ( Node *candidate, nodeHash) {
+		if ( 	candidate->nodeNumber()==text.toInt(&ok, 10)  ||
+			candidate->labelText().contains (text, Qt::CaseInsensitive)
+			) {
 			qDebug() << "GW: hasNode(): Node " << text << " found!";
 			markedNodeExists=true;
-			return (*it);	
+			return candidate;
 			break;
 		}
+
 	}
 	return markedNode;	//dummy return. We check markedNodeExists flag first...
 }

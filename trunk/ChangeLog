@@ -9,7 +9,7 @@ Codename: "yellow"
 --------------------------
 - New feature: filter (enable/disable) orphan nodes
 - New feature: import two-mode sociomatrices with affiliation networks 
-- Bugfixes
+- Bugfixes #515758, #515756
 
 Version 0.81 - Jan 28 2010
 Codename: "bugfixes"
