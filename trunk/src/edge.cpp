@@ -289,21 +289,22 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 			painter->setPen(QPen(QColor(m_color), width(), Qt::DashLine, Qt::RoundCap, Qt::RoundJoin));
 			
 
-	
 	//Draw the arrows only if we have different nodes.
 	if (m_drawArrows && source!=target) {
-// 		double angle = ::acos(line.dx() / line.length());
-		double angle = 0;
+		angle = 0;
+		line_length = line.length();
+		line_dx = targetPoint.x()-sourcePoint.x();
+		line_dy = targetPoint.y()-sourcePoint.y();
 		if ( line.length() >0 )
-			angle = ::acos((targetPoint.x()-sourcePoint.x()) / line.length());
-				
-//		if (line.dy() >= 0)
-		if ((targetPoint.y()-sourcePoint.y())  >= 0)
+			angle = ::acos( line_dx / line_length );
+		qDebug() << " acos() " << ::acos( line_dx  / line_length ) ;
+
+		if ( line_dy  >= 0)
 			angle = TwoPi - angle;
 
 		qDebug() << "*** Edge::paint(). Constructing arrows. First Arrow at target node" 
-					<< "target-source: " << (targetPoint.x()-sourcePoint.x()) 
-					<< " length: " << line.length() 
+					<< "target-source: " << line_dx
+					<< " length: " << line_length
 					<< " angle: "<< angle;
 
 		QPointF destArrowP1 = targetPoint + QPointF(sin(angle - Pi / 3) * m_arrowSize,

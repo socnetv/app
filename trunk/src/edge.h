@@ -98,6 +98,7 @@ private:
 	float m_weight;
 	int tox1, tox2, toy1, toy2, size;
 	double rad, theta, theta1, theta2;
+	qreal angle, line_length, line_dx, line_dy;
 	bool m_Bezier, m_drawArrows, m_reciprocal;
 };
 

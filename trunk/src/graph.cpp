@@ -4110,27 +4110,32 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 	QPointF curPos, newPos, pos ;
 		
 	if (dynamicMovement){
-		qDebug() << "layoutForceDirectedFruchtermanReingold";
-		qDebug () << "max dx "<< canvasWidth << "max dy "<< canvasHeight;
+		qDebug() << "Graph: layoutForceDirectedFruchtermanReingold() "
+				<< "max dx "<< canvasWidth << "max dy "<< canvasHeight;
 		natural_length= sqrt ( (canvasWidth - 10)* (canvasHeight-10) / vertices() );
-		qDebug () << "Setting natural_length = "<<  natural_length;
-		qDebug () << "...following Fruchterman-Reingold (1991) formula "; 		
+		qDebug () << "Graph: Setting natural_length = "<<  natural_length
+				<< "...following Fruchterman-Reingold (1991) formula ";
 		foreach (Vertex *v1, m_graph)  {
+			qDebug() << "*****  Calculate forces for vertex " << v1->name()
+				<< " with index " <<  index[v1->name()] << " and pos "<< v1->x() << ", "<< v1->y();
+			if ( ! v1->isEnabled() ) {
+				qDebug() << "  vertex " << v1->name() << " not enabled. Continuing...";
+				continue;
+			}
 			xvel=0; yvel=0;
 			dux=0; duy=0;
-			qDebug() << "****************  Calculate forces for vertex " << v1->name()
-			<< " with index " <<  index[v1->name()] << " and pos "<< v1->x() << ", "<< v1->y();
 			foreach (Vertex *v2, m_graph)  {
-				qDebug () << " v2 = "<< v2->name() << " with pos (" <<  v2->x() << "," << v2->y() << ")";
+				if ( ! v2->isEnabled() ) continue;
+				qDebug () << "  v2 = "<< v2->name() << " with pos (" <<  v2->x() << "," << v2->y() << ")";
 				if (v2 == v1) {
-					qDebug() << " v1==v2, continuing";
+					qDebug() << "  v1==v2, continuing";
 					continue;
 				}   
 				dx = v2->x() - v1->x();
 				dy = v2->y() - v1->y();
 				dist = (dx * dx + dy * dy);
 				dist = sqrt ( dist );	//the euclideian distance of the two vertices
-				qDebug()<< "v1= " << v1->name() <<  " v2= " <<  v2->name() << " - euclideian distance = " << dist;
+				qDebug()<< "  v1= " << v1->name() <<  " v2= " <<  v2->name() << " - euclideian distance = " << dist;
 
 				if ( this->hasEdge (v1->name(), v2->name())  ) {  //calculate spring (pulling) force
 					ulv_x =  dx / dist;
@@ -4141,7 +4146,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 					xvel = ( dux / abs (dux) ) *  qMin( abs(dux), temperature) ;
 					yvel = ( duy / abs (duy) ) *  qMin( abs(duy), temperature) ;
 
-					qDebug() << " v1= "<<v1->name() <<  " connected to and pulled by v2= "<< v2->name()
+					qDebug() << "  v1= "<<v1->name() <<  " connected to and pulled by v2= "<< v2->name()
 									<<"  nat_length =" << natural_length
 									<<" ulv_x="<<ulv_x 	<<" ulv_y="<<ulv_y 	<<" dist= "<<dist 
 									<< " dux="<< dux << " duy="<< duy  
@@ -4159,7 +4164,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 				xvel += ( dux / abs (dux) ) *  qMin( abs(dux), temperature) ;
 				yvel += ( duy / abs (duy) ) *  qMin( abs(duy), temperature) ;
 
-				qDebug() << " v1 = "<<v1->name() <<  " NOT connected to and pushed away from  v2 = "<< v2->name() 
+				qDebug() << "  v1 = "<<v1->name() <<  " NOT connected to and pushed away from  v2 = "<< v2->name()
 						<<"  c_rep=" << c_rep
 						<<" ulv_x="<<ulv_x 	<<" ulv_y="<<ulv_y 	<<" dist^2="<<dist * dist
 						<< " dux=" << dux 	<< " duy=" << duy
@@ -4168,9 +4173,9 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 			}
 			//Move node to new position
 			newPos = QPointF(v1->x()+ xvel, v1->y()+yvel);
-			qDebug("current x and y: %f, %f. Possible new pos is to new x new y = %f, %f", v1->x(), v1->y(),  newPos.x(), newPos.y());
+			qDebug(">>>  current x and y: %f, %f. Possible new pos is to new x new y = %f, %f", v1->x(), v1->y(),  newPos.x(), newPos.y());
 			if (newPos.x() < 5.0  ||newPos.y() < 5.0   || newPos.x() >= (canvasWidth -5)||   newPos.y() >= (canvasHeight-5)|| (v1->x() == newPos.x() && v1->y() == newPos.y() )) continue;  
-			qDebug("current x and y: %f, %f. This node will move to new x new y = %f, %f", v1->x(), v1->y(),  newPos.x(), newPos.y());
+			qDebug(">>> current x and y: %f, %f. This node will move to new x new y = %f, %f", v1->x(), v1->y(),  newPos.x(), newPos.y());
 			emit moveNode((*v1).name(),  newPos.x(),  newPos.y());
 		}
 	
