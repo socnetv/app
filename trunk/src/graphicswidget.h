@@ -96,7 +96,7 @@ public slots:
 					bool showLabels, bool labelIn, bool showNumbers
 					);
 	void eraseNode(int doomedJim);
-	void drawEdge(int, int, float, bool, bool, QString, bool, bool);
+	void drawEdge(int, int, float, bool, bool, QString, bool);
 	void eraseEdge(int, int);
 	void setEdgeVisibility ( int, int, bool);
 	void setNodeVisibility(unsigned long int, bool );	//Called from Graph via MW

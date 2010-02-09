@@ -107,7 +107,7 @@ signals:
 	void drawNode( int ,int,  QString, QString, int, QString, QString, int, QPointF, QString, bool, bool, bool);	//call GW to draw a node
 	
 	void eraseNode (int);		//erase node from GW  
-	void drawEdge(int, int, float, bool, bool, QString, bool, bool);	//call GW to draw an edge
+	void drawEdge(int, int, float, bool, bool, QString, bool);	//call GW to draw an edge
 	void eraseEdge(int, int);		//emited from removeEdge() to GW to clear the edge item.
 	void setEdgeVisibility ( int, int, bool); // emitted from each Vertex 
 	void setVertexVisibility(unsigned long int, bool);			//notifies GW to disable a node
@@ -129,7 +129,7 @@ public:
 	void setShowNumbersInsideNodes(bool toggle);
 
 	/**FILES (READ AND WRITE)*/
-	bool loadGraph ( QString, bool,	int maxWidth, int maxHeight, int isListWithWeights	);	//Our almost universal network loader. :)
+	bool loadGraph ( QString, bool,	int maxWidth, int maxHeight, int format, int two_sm_mode);	//Our almost universal network loader. :)
 	
 	bool saveGraph( QString fileName, int fileType, 
 						QString networkName, int maxWidth, int maxHeight 

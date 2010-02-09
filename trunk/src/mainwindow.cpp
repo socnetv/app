@@ -143,8 +143,8 @@ MainWindow::MainWindow(const QString & m_fileName) {
 	connect( &activeGraph, SIGNAL( signalFileType(int , QString , int , int, bool) ), 
 			this, SLOT( fileType(int , QString , int , int, bool) ) 	) ;
 	
-	connect( &activeGraph, SIGNAL( drawEdge( int, int, float, bool, bool, QString, bool, bool)), 
-			graphicsWidget, SLOT( drawEdge( int, int,float, bool, bool, QString, bool, bool  ) )  ) ;
+	connect( &activeGraph, SIGNAL( drawEdge( int, int, float, bool, bool, QString, bool)),
+			graphicsWidget, SLOT( drawEdge( int, int,float, bool, bool, QString, bool) )  ) ;
 
 	connect( &activeGraph, SIGNAL( drawEdgeReciprocal(int, int) ), 
 			graphicsWidget, SLOT( drawEdgeReciprocal(int, int) ) );
@@ -223,7 +223,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
 	graphicsWidget->setInitNodeSize(initNodeSize);
 	graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor)); //Qt::gray
 
-	 /**Try to load a network file on exec time*/
+	 /**Try to load a GraphML network file on exec time*/
 	if (!m_fileName.isEmpty())  
 	{
 		fileName=m_fileName;
@@ -1769,7 +1769,6 @@ void MainWindow::slotCreateNew() {
 	Loads the specified file, calling loadNetworkFile()
 */
 void MainWindow::slotChooseFile() {
-	//qDebug("MW: slotChooseFile()");
 	
 	if (firstTime && fileFormat == -1 ) {
 		QMessageBox::information( this, "SocNetV",
@@ -1816,17 +1815,20 @@ void MainWindow::slotChooseFile() {
 		case 8:	// Simple List
 				fileType_string = tr("List (*.lst *.list);;All (*)");
 				break;
+		case 9:	// Two mode sm
+				fileType_string = tr("List (*.txt *.csv *.2sm *.sm);;All (*)");
+				break;
 		default:	//GraphML
 				fileType_string = tr("All (*);;GraphML (*.graphml);;GraphViz (*.dot);;Adjacency (*.txt *.csv *.net *.adj *.sm);;Pajek (*.net *.pajek *.paj);;DL (*.dl *.net)");
 				break;
 
 	}
 	m_fileName = QFileDialog::getOpenFileName( this, tr("Select one file to open"), "", fileType_string	);
-	
+
 	if (!m_fileName.isEmpty()) {
 		qDebug()<<"MW: file selected: " << m_fileName;		
 		fileNameNoPath=m_fileName.split ("/" );
-		if ( loadNetworkFile ( m_fileName, m_fileFormat ) ) 
+		if ( loadNetworkFile ( m_fileName, m_fileFormat  ) )
 		{
 			fileName=m_fileName;
 			previous_fileName=fileName;
@@ -2134,19 +2136,31 @@ void MainWindow::slotImportEdgeList(){
  */
 bool MainWindow::loadNetworkFile(QString m_fileName, int m_fileFormat ){
 	qDebug("MW: loadNetworkFile");
-	
 	initNet();
-	 
+	int two_sm_mode = 0;
+
+	if ( m_fileFormat == 9 ) {
+		switch( QMessageBox::information( this, "Two-mode sociomatrix",
+						tr("If this file is in two-mode sociomatrix format, \n")+
+						tr("please specify which mode to open \n\n") +
+						tr("1st mode: rows are nodes \n") +
+						tr("2nd mode: columns are nodes"),
+						tr("1st Mode"), tr("2nd mode"), 0,1 ) ) {
+			case 0:
+			two_sm_mode = 1;
+			break;
+			case 1:
+			two_sm_mode = 2;
+			break;
+		}
+	}
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-	//qDebug() << "MW: calling activeGraph::loadGraph() "
-				//<< " view height: "	<< graphicsWidget->height()
-				//<< " format:  "<< m_fileFormat;
 	bool loadGraphStatus = activeGraph.loadGraph ( 
 			m_fileName,
 			displayNodeLabelsAct->isChecked(),
 			graphicsWidget->width(),
 			graphicsWidget->height(),
-			m_fileFormat
+			m_fileFormat, two_sm_mode
 			);
 	QApplication::restoreOverrideCursor();
 	return loadGraphStatus;
@@ -3406,14 +3420,14 @@ void MainWindow::slotRemoveLink(){
 						//make new link
 // 						graphicsWidget->unmakeEdgeReciprocal(clickedLink->targetNodeNumber(), clickedLink->sourceNodeNumber());
 						//FIXME weight should be the same 
-						graphicsWidget->drawEdge(targetNode, sourceNode, 1, false, displayLinksArrowsAct->isChecked(), initLinkColor, false, false);
+						graphicsWidget->drawEdge(targetNode, sourceNode, 1, false, displayLinksArrowsAct->isChecked(), initLinkColor, false);
 
 						break;
 					case 1:
 						clickedLink->unmakeReciprocal();  
 						//graphicsWidget->removeItem(clickedLink);
 						activeGraph.removeEdge(targetNode, sourceNode);
-//						graphicsWidget->drawEdge(i, j, false, drawArrowsAct->isChecked(), initLinkColor, false, false);
+//						graphicsWidget->drawEdge(i, j, false, drawArrowsAct->isChecked(), initLinkColor, false);
 						break;
 					case 2:
 						graphicsWidget->removeItem(clickedLink);

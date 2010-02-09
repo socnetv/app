@@ -152,7 +152,7 @@ void GraphicsWidget::drawNode(
 	a) when we load a network file (check = FALSE)
 	b) when the user clicks on the AddLink button on the MW.
 */
-void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool drawArrows, QString color, bool bezier, bool check){
+void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool drawArrows, QString color, bool bezier){
 	qDebug()<<"GW: drawEdge ("<< i<< ","<< j<< ") with weight "<<weight << " - nodeHash reports "<< nodeHash.size()<<" nodes.";
 	if (i == j ) {
 		bezier = true;		
@@ -162,9 +162,9 @@ void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool 
 			<<  nodeHash.value(j)->nodeNumber() << " weight "
 			<< weight << " nodesize "
 			<<  m_nodeSize << " edgecolor "<< color ;
-	Edge *edge=new Edge (this, nodeHash.value(i),nodeHash.value(j), weight, m_nodeSize, color, reciprocal, drawArrows, bezier);
+	Edge *edge=new Edge (this, nodeHash.value(i), nodeHash.value(j), weight,
+			     m_nodeSize, color, reciprocal, drawArrows, bezier);
 	edge -> setZValue(253);		//Edges have lower z than nodes. Nodes always appear above edges.
-	// setBoundingRegionGranularity() is a real headache.
 	// Keep it here so that it doesnt interfere with dashed lines.
 	edge->setBoundingRegionGranularity(0.05);	// Slows down the universe...Keep it 0.05...
 	//edge->setCacheMode (QGraphicsItem::DeviceCoordinateCache);  //Also slows down the universe...

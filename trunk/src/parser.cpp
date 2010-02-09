@@ -42,7 +42,8 @@ bool Parser::load(QString fn, int iNS, QString iNC, QString iNSh,
 					QString iNLC, int iNLS , 
 					QString iEC, 
 					int width, int height,
-					int fFormat
+					int fFormat,
+					int sm_mode
 					)
 {
 	qDebug("Parser: load()");
@@ -64,7 +65,8 @@ bool Parser::load(QString fn, int iNS, QString iNC, QString iNSh,
 	randX=0;
 	randY=0;
 	fileFormat= fFormat;
-	
+	two_sm_mode = sm_mode;
+
 	//qDebug()<< "Parser: start() a new parsing thread for file format: " << fileFormat ;
 	if (!isRunning()) 
 		start(QThread::NormalPriority);

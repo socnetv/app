@@ -201,7 +201,7 @@ void Graph::createEdge(int v1, int v2, float weight, QString color, bool recipro
 		qDebug (" Graph:: createEdge() RECIPROCAL new link -- Adding new edge to Graph...");
 		addEdge ( v1, v2, weight, color, reciprocal);
 		qDebug()<< "Graph:: createEdge() ...And emitting drawEdge signal to GW::drawEdge().";
-		emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier, false);
+		emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier);
 	}
 	else if (this->hasEdge( v2, v1) )  {  
 		qDebug (" Graph:: createEdge() opposite link EXISTS - Adding new edge to Graph.. ");
@@ -215,7 +215,7 @@ void Graph::createEdge(int v1, int v2, float weight, QString color, bool recipro
 		reciprocal = false;
 		addEdge ( v1, v2, weight, color, reciprocal);
 		qDebug()<< "Graph:: createEdge() ...And emitting drawEdge signal to GW::drawEdge().";
-		emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier, false);
+		emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier);
 	}
 	initEdgeColor=color; //just to draw new edges of the same color with those of the file loaded, when user clicks on the canvas
 	emit graphChanged(); 
@@ -3136,7 +3136,7 @@ int Graph:: factorial(int x) {
 	Our almost universal network loader. :)
 	Actually it calls the load() method of parser/qthread class.
 */
-bool Graph::loadGraph (	QString fileName,  bool iSL, int maxWidth, int maxHeight, int fileFormat){
+bool Graph::loadGraph (	QString fileName,  bool iSL, int maxWidth, int maxHeight, int fileFormat, int two_sm_mode){
 	initShowLabels = iSL;
 	bool loadGraphStatus = parser.load( 
 				fileName, 
@@ -3146,7 +3146,8 @@ bool Graph::loadGraph (	QString fileName,  bool iSL, int maxWidth, int maxHeight
 				initVertexLabelColor, initVertexLabelSize, 
 				initEdgeColor, 
 				maxWidth, maxHeight,
-				fileFormat
+				fileFormat,
+				two_sm_mode
 				);
 	return loadGraphStatus;
 }
