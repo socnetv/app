@@ -95,7 +95,6 @@ private:
 	QXmlStreamReader *xml;
 	QString fileName, networkName, initNodeColor, initEdgeColor, initNodeShape, initNodeNumberColor, initNodeLabelColor;
 	QString nodeColor, edgeColor, edgeType, nodeShape, nodeLabel, edgeLabel, nodeNumberColor, nodeLabelColor;
-	  
 	int gwWidth, gwHeight;
 	int totalLinks, aNodes, fileFormat, two_sm_mode;
 	int initNodeSize,  initNodeNumberSize, nodeNumberSize, initNodeLabelSize, nodeLabelSize, source, target, nodeSize;

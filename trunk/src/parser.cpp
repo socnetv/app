@@ -756,7 +756,7 @@ bool Parser::loadTwoModeSociomatrix(){
 		qDebug() << "newCount "<<newCount << " i " << i;
 		if  ( (newCount != lastCount && i>1 )  ) {
 			// line element count differ
-			qDebug()<< "*** Parser:loadTwoModeSociomatrix(): Not an Adjacency-formatted file. Aborting!!";
+			qDebug()<< "*** Parser:loadTwoModeSociomatrix(): Not an Sociomatrix-formatted file. Aborting!!";
 			file.close();
 			return false;
 		}
@@ -782,13 +782,27 @@ bool Parser::loadTwoModeSociomatrix(){
 			j++;
 		}
 	}
+
 	qDebug("Parser-loadTwoModeSociomatrix(): Starting creating links");
 	QList<int> values;
 	for (int k = 1; k < j ; ++k){
 		qDebug() << "At event " << k << " were the following actors : ";
 		values = secondModeMultiMap.values(k);
-		for (int m = 0; m < values.size(); ++m)
+		for (int m = 0; m < values.size(); ++m) {
 			qDebug() << values.at(m) << "  ";
+			for (int n  = 0; n < values.size(); ++n) {
+				if (m==n)
+					continue;
+				undirected=false;
+				arrows=true;
+				bezier=false;
+				edgeWeight = 1;
+				qDebug() << "Creating edge " << values.at(m) << " -> " << values.at(n);
+				//CRASHES NEEDS REDESIGN
+				emit createEdge(values.at(m), values.at(n), edgeWeight, initEdgeColor, undirected, arrows, bezier);
+				totalLinks++;
+			}
+		}
 	}
 
 	file.close();

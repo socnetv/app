@@ -1816,9 +1816,9 @@ void MainWindow::slotChooseFile() {
 				fileType_string = tr("List (*.lst *.list);;All (*)");
 				break;
 		case 9:	// Two mode sm
-				fileType_string = tr("List (*.txt *.csv *.2sm *.sm);;All (*)");
+				fileType_string = tr("Two-Mode Sociomatrix (*.txt *.csv *.2sm *.sm);;All (*)");
 				break;
-		default:	//GraphML
+		default:	//All
 				fileType_string = tr("All (*);;GraphML (*.graphml);;GraphViz (*.dot);;Adjacency (*.txt *.csv *.net *.adj *.sm);;Pajek (*.net *.pajek *.paj);;DL (*.dl *.net)");
 				break;
 
