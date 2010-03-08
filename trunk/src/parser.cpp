@@ -778,32 +778,27 @@ bool Parser::loadTwoModeSociomatrix(){
 				qDebug() << "Parser-loadTwoModeSociomatrix(): there is an 1 from "<< i << " to "<<  j;
 				firstModeMultiMap.insert(i, j);
 				secondModeMultiMap.insert(j, i);
+                                QList<int> values;
+                                qDebug() << "checking earlier discovered actors... ";
+                                for (int k = 1; k < i ; ++k) {
+                                    qDebug() << "Actor " << k ;
+                                    if ( firstModeMultiMap.contains(k, j) ) {
+                                        undirected=false;
+                                        arrows=true;
+                                        bezier=false;
+                                        edgeWeight = 1;
+                                        qDebug() << " Actor " << i << " on the same event as " << k << ". Creating edge ";
+                                        //CRASHES NEEDS REDESIGN
+                                        emit createEdge(i, k, edgeWeight, initEdgeColor, undirected, arrows, bezier);
+                                        totalLinks++;
+                                    }
+                                }
+
 			}
 			j++;
 		}
 	}
 
-	qDebug("Parser-loadTwoModeSociomatrix(): Starting creating links");
-	QList<int> values;
-	for (int k = 1; k < j ; ++k){
-		qDebug() << "At event " << k << " were the following actors : ";
-		values = secondModeMultiMap.values(k);
-		for (int m = 0; m < values.size(); ++m) {
-			qDebug() << values.at(m) << "  ";
-			for (int n  = 0; n < values.size(); ++n) {
-				if (m==n)
-					continue;
-				undirected=false;
-				arrows=true;
-				bezier=false;
-				edgeWeight = 1;
-				qDebug() << "Creating edge " << values.at(m) << " -> " << values.at(n);
-				//CRASHES NEEDS REDESIGN
-				emit createEdge(values.at(m), values.at(n), edgeWeight, initEdgeColor, undirected, arrows, bezier);
-				totalLinks++;
-			}
-		}
-	}
 
 	file.close();
 	// 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List, 8 List, 9, TwoModeSociomatrix
