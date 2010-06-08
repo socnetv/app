@@ -1702,6 +1702,7 @@ void MainWindow::initNet(){
 	displayLinksWeightNumbersAct->setChecked(false);
 	//displayLinksArrowsAct->setChecked(false);		//FIXME: USER PREFS EMITTED TO GRAPH?
 
+        filterOrphanNodesAct->setChecked(false); // re-init orphan nodes menu item
 	
 	//set window title
 	setWindowTitle(tr("Social Network Visualizer ")+VERSION);
