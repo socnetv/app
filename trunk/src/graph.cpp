@@ -3713,7 +3713,9 @@ void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
 	file << "Adjacency matrix of "<< netName<<": \n\n";
 	QList<Vertex*>::iterator it, it1;	
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
+                if ( ! (*it)->isEnabled() ) continue;
 		for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){	
+                        if ( ! (*it1)->isEnabled() ) continue;
 			if ( (weight =  this->hasEdge ( (*it)->name(), (*it1)->name() )  )!=0 ) {
 				sum++;
 				if (weight >= 1)
