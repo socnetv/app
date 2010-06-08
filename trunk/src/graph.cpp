@@ -3663,9 +3663,10 @@ void Graph::writeAdjacencyMatrixTo(QTextStream& os){
 	QList<Vertex*>::iterator it, it1;	
 	float weight=-1;
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
+                if ( ! (*it)->isEnabled() ) continue;
 		for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){	
+                        if ( ! (*it1)->isEnabled() ) continue;
 			if ( (weight = this->hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
-				
 				os << static_cast<int> (weight) << " ";
 			}
 			else
