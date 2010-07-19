@@ -3827,8 +3827,10 @@ bool Graph::saveGraphToGraphMLFormat (
 	QList<Vertex*>::iterator it;
 	QList<Vertex*>::iterator jt;
 	
-	qDebug()<< "		... writing nodes data";
+	qDebug()<< "		    writing nodes data";
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){ 
+		if ( ! (*it)->isEnabled () )
+			continue;
 		qDebug() << " 	Node id: "<<  (*it)->name()  ;
 		outText << "    <node id=\"" << (*it)->name() << "\"> \n";
 		m_color = (*it)->color();
