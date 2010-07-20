@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer
- version: 0.81
+ version: 0.90
  Written in Qt 4.4
 
                         graphicswidget.cpp description
@@ -543,13 +543,13 @@ void GraphicsWidget::setEdgeVisibility(int source, int target, bool visible){
 *	Changes the visibility of a  Node
 */
 void GraphicsWidget::setNodeVisibility(unsigned long int number, bool visible){
-	qDebug() << "GW: setNodeVisibility";
+	qDebug() << "GW: setNodsetNodeVisibility() for "<< number;
 	foreach ( Node *candidate, nodeHash) {
 		if (candidate->nodeNumber() == number ) {
 			if (visible)
-				qDebug() << "GW: hasNode(): Node numbered " << number << " found! Will be visible now...";
+				qDebug() << "GW: setNodeVisibility(): Node numbered " << number << " found! Will be visible now...";
 			else
-				qDebug() << "GW: hasNode(): Node numbered " << number << " found! Invisible now...";
+				qDebug() << "GW: setNodeVisibility(): Node numbered " << number << " found! Invisible now...";
 			candidate->setVisible( visible );
 			break;
 		}
