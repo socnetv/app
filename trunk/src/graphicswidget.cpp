@@ -543,7 +543,7 @@ void GraphicsWidget::setEdgeVisibility(int source, int target, bool visible){
 *	Changes the visibility of a  Node
 */
 void GraphicsWidget::setNodeVisibility(unsigned long int number, bool visible){
-	qDebug() << "GW: setNodsetNodeVisibility() for "<< number;
+	qDebug() << "GW: setNodeVisibility() for "<< number;
 	foreach ( Node *candidate, nodeHash) {
 		if (candidate->nodeNumber() == number ) {
 			if (visible)
