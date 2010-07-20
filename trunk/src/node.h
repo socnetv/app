@@ -71,7 +71,7 @@ public:
 	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
 	void die(); 
-	int nodeNumber() {return m_num;}
+	unsigned long int nodeNumber() {return m_num;}
 
 	void setSize(int);
 	int size();
@@ -121,7 +121,8 @@ private:
 	QPainterPath *m_path;
 	QPointF newPos;
 	QPolygon *m_poly_t, *m_poly_d;
-	int m_num, m_size, m_nd, m_ld;
+	int  m_size, m_nd, m_ld;
+	unsigned long int m_num;
 	QString  m_shape,  m_col_str, m_labelIn;
 	QColor m_col;
 	bool m_hasNumber, m_hasLabel, m_isNumberInside;

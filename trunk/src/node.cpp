@@ -373,7 +373,7 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 /** Removes the node */
 
 void Node::die() {
-	qDebug ("Node: Remove() node= %i", nodeNumber());
+	qDebug () << "Node: die() node= "<< nodeNumber();
 
 	foreach (Edge *edge, inEdgeList) {
 		qDebug("Node: removing edges in inEdgeList");
@@ -520,14 +520,14 @@ void Node::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 
 
 void Node::addInLink( Edge *edge ) {
-	qDebug("Node:  %i addInLink()", m_num);
+	qDebug() << "Node:  addInLink() for "<<  m_num;
 	inEdgeList.push_back( edge); 
 	//qDebug ("Node:  %i inEdgeList has now %i edges", m_num, inEdgeList.size());
 }
 
 
 void Node::deleteInLink( Edge *link ){
-	qDebug ("Node:  %i inEdgeList deleting link", m_num);
+	qDebug () << "Node:  deleteInLink for "<< m_num;
 	//qDebug ("Node: %i inEdgeList has %i edges", m_num, inEdgeList.size());
 	inEdgeList.remove( link);
 	//qDebug ("Node:  %i inEdgeList has now %i edges", m_num, inEdgeList.size());
@@ -544,7 +544,7 @@ void Node::addOutLink( Edge *edge ) {
 
 
 void Node::deleteOutLink(Edge *link){
-	qDebug ("Node: %i outEdgeList deleting link", m_num);
+	qDebug () << "Node: deleteOutLink() from " <<  m_num;
 //	qDebug ("Node: %i outEdgeList has %i edges", m_num, outEdgeList.size());
 	outEdgeList.remove( link);
 //	qDebug ("Node: %i outEdgeList has now %i edges", m_num, outEdgeList.size());

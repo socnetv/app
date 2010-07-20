@@ -297,7 +297,7 @@ void GraphicsWidget::eraseNode(int doomedJim){
 		if ( (*it)->type()==TypeNode) {
 			Node *jim=(Node*) (*it);
 			if ( jim->nodeNumber()==doomedJim)	{
-				qDebug("GW: found doomedJim %i. Demanding node->die() :)", jim->nodeNumber());
+				qDebug() << "GW: found doomedJim " <<  jim->nodeNumber() << " Demanding node->die() :)" ;
 				jim->die();
 				delete *it;
 				break;
@@ -546,11 +546,16 @@ void GraphicsWidget::setNodeVisibility(unsigned long int number, bool visible){
 	qDebug() << "GW: setNodeVisibility() for "<< number;
 	foreach ( Node *candidate, nodeHash) {
 		if (candidate->nodeNumber() == number ) {
-			if (visible)
-				qDebug() << "GW: setNodeVisibility(): Node numbered " << number << " found! Will be visible now...";
-			else
-				qDebug() << "GW: setNodeVisibility(): Node numbered " << number << " found! Invisible now...";
-			candidate->setVisible( visible );
+		    if (visible) {
+			qDebug() << "GW: setNodeVisibility(): Node numbered " << number << " found! Will be visible now...";
+			candidate->show();
+			candidate->update();
+		    }
+		    else{
+			qDebug() << "GW: setNodeVisibility(): Node numbered " << number << " found! Invisible now...";
+			candidate->hide();
+		    }
+
 			break;
 		}
 
