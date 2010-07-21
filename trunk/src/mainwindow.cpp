@@ -185,13 +185,11 @@ MainWindow::MainWindow(const QString & m_fileName) {
 	connect( &m_datasetSelectDialog, SIGNAL( userChoices( QString) ), 
 			this, SLOT( slotRecreateDataSet(QString) ) );
 
-
 	connect( &activeGraph, SIGNAL( setEdgeVisibility ( int, int, bool) ), 
-			 graphicsWidget, SLOT(  setEdgeVisibility ( int, int, bool) ) );
-	
-	connect( &activeGraph, SIGNAL( setVertexVisibility(unsigned long int, bool)  ),
-			 graphicsWidget, SLOT(  setNodeVisibility (unsigned long int ,  bool) ) );
+			graphicsWidget, SLOT(  setEdgeVisibility ( int, int, bool) ) );
 
+	connect( &activeGraph, SIGNAL( setVertexVisibility(unsigned long int, bool)  ),
+			graphicsWidget, SLOT(  setNodeVisibility (unsigned long int ,  bool) ) );
 
 	connect( circleClearBackgrCirclesAct, SIGNAL(activated()), 
 			graphicsWidget, SLOT(clearBackgrCircles()));
@@ -4086,7 +4084,7 @@ void MainWindow::slotLayoutNodeSizeProportionalOutEdges(bool checked){
 		if ( (*it) -> type() == TypeNode ){
 			Node *jim = (Node*) (*it);
 			edges = activeGraph.edgesFrom(  (*jim).nodeNumber() ) ;
-			qDebug("Node %i outDegree: %i ", (*jim).nodeNumber(), edges);
+			qDebug() << "Node " << (*jim).nodeNumber() <<  " outDegree:  "<<  edges;
 			
 			if (edges == 0 ) {
 				size = initNodeSize; 
@@ -4121,7 +4119,7 @@ void MainWindow::slotLayoutNodeSizeProportionalOutEdges(bool checked){
 			else  if (edges > 25 ) {
 				size = initNodeSize+9; 
 			}
-			qDebug("Changing size of %i to %i", (*jim).nodeNumber(), size);
+			qDebug() << "Changing size of " << (*jim).nodeNumber()  << "  to " <<  size;
 			(*jim).setSize(size);
 		}
 
@@ -4168,7 +4166,7 @@ void MainWindow::slotLayoutNodeSizeProportionalInEdges(bool checked){
 		if ( (*it) -> type() == TypeNode ){
 			Node *jim = (Node*) (*it);
 			edges = activeGraph.edgesTo(  (*jim).nodeNumber() ) ;
-			qDebug("Node %i inDegree: %i ", (*jim).nodeNumber(), edges);
+			qDebug() << "Node " << (*jim).nodeNumber() << " inDegree:  " <<  edges;
 			
 			if (edges == 0 ) {
 				size = initNodeSize; 
@@ -4203,7 +4201,7 @@ void MainWindow::slotLayoutNodeSizeProportionalInEdges(bool checked){
 			else  if (edges > 25 ) {
 				size = initNodeSize+9; 
 			}
-			qDebug("Changing size of %i to %i", (*jim).nodeNumber(), size);
+			qDebug() << "Changing size of " <<  (*jim).nodeNumber() << " to " <<  size;
 			(*jim).setSize(size);
 		}
 
@@ -4603,7 +4601,7 @@ void MainWindow::slotGraphDistance(){
 		return;
 	}
 
-	qDebug("source %i target %i",i, j);
+	qDebug() << "source " << i  << " target" <<  j;
 		
 	if (activeGraph.isSymmetric() && i>j) {
 		qSwap(i,j);
@@ -5219,7 +5217,7 @@ void MainWindow::changeAllNodesSize(int size) {
 	}
 	initNodeSize = size;
 	activeGraph.setInitVertexSize(initNodeSize);
-	qDebug ("MW: changeAllNodesSize: changing to %i", size);
+	qDebug () << "MW: changeAllNodesSize: changing to " <<  size;
 	QList<QGraphicsItem *> list=scene->items();
 	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) 
 		if ( (*it) -> type() == TypeNode ){

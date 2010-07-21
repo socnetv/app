@@ -345,7 +345,7 @@ void GraphicsWidget::removeItem( Node *node){
 			nodeHash.remove( i );
 	}
 	node->deleteLater ();
-	qDebug("GW items now: %i ", items().size());
+	qDebug() << "GW items now:  " << items().size();
 }
 
 
@@ -359,9 +359,9 @@ void GraphicsWidget::removeItem( Edge * edge){
 
 
 void GraphicsWidget::removeItem( NodeLabel *nodeLabel){
-	qDebug("GW items now: %i ", items().size());
+	qDebug() << "GW items now:  " << items().size();
 	delete (nodeLabel);
-	qDebug("GW items now: %i ", items().size());
+	qDebug() << "GW items now:  " << items().size();
 }
 
 
@@ -543,23 +543,41 @@ void GraphicsWidget::setEdgeVisibility(int source, int target, bool visible){
 *	Changes the visibility of a  Node
 */
 void GraphicsWidget::setNodeVisibility(unsigned long int number, bool visible){
-	qDebug() << "GW: setNodeVisibility() for "<< number;
-	foreach ( Node *candidate, nodeHash) {
-		if (candidate->nodeNumber() == number ) {
-		    if (visible) {
+    qDebug() << "GW: setNodeVisibility() for "<< number;
+    QList<QGraphicsItem *> list = scene()->items();
+    for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
+	if ( (*item)->type() == TypeNode){
+	    if ( Node *node = qgraphicsitem_cast<Node *>(*item) )
+		if ( node->nodeNumber() == number ) {
+		    if (visible){
 			qDebug() << "GW: setNodeVisibility(): Node numbered " << number << " found! Will be visible now...";
-			candidate->show();
-			candidate->update();
+			(*item)->show();
 		    }
-		    else{
+		    else {
 			qDebug() << "GW: setNodeVisibility(): Node numbered " << number << " found! Invisible now...";
-			candidate->hide();
+			(*item)->hide();
 		    }
-
-			break;
 		}
+	    }
+    }
 
-	}
+//	qDebug() << "GW: setNodeVisibility() for "<< number;
+//	foreach ( Node *candidate, nodeHash) {
+//		if (candidate->nodeNumber() == number ) {
+//		    if (visible) {
+//			qDebug() << "GW: setNodeVisibility(): Node numbered " << number << " found! Will be visible now...";
+//			candidate->show();
+//			candidate->update();
+//		    }
+//		    else{
+//			qDebug() << "GW: setNodeVisibility(): Node numbered " << number << " found! Invisible now...";
+//			candidate->hide();
+//		    }
+//
+//			break;
+//		}
+//
+//	}
 }
 
 
@@ -775,7 +793,7 @@ void GraphicsWidget::openEdgeContextMenu(){
 */
 void GraphicsWidget::wheelEvent(QWheelEvent *e) {
 	qDebug("GW: Mouse wheel event");
-	qDebug("GW: delta = %i", e->delta());	
+	qDebug() << "GW: delta = " << e->delta();
   	float m_scale = e->delta() / qreal(600);
 	qDebug("GW: m_scale = %f", m_scale);	
 	if ( m_scale > 0)
