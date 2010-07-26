@@ -67,31 +67,31 @@ public:
 	void setEnabled (bool flag );
 	bool isEnabled ();
 
-	void addLinkTo (unsigned long int target, float weight);	/** Adds an outLink to target with weight w */
+	void addLinkTo (unsigned long int target, float weight);	/* Adds an outLink to target with weight w */
 	void addLinkFrom(unsigned long int source, float weight);
 
 	void changeLinkWeightTo (unsigned long int target, float weight);
 
-	void removeLinkTo (unsigned long int target);		/** Removes edge to vertex t */
-	void removeLinkFrom(unsigned long int source);	/** Removes edge from vertex s	*/
+	void removeLinkTo (unsigned long int target);		/* Removes edge to vertex t */
+	void removeLinkFrom(unsigned long int source);	/* Removes edge from vertex s	*/
 	
-	unsigned long int outDegree();	/**Returns the number of outward directed graph edges from this vertex   */
-	unsigned long int inDegree();		/**Returns the number of inward directed graph edges from this vertex   */
+	unsigned long int outDegree();	/* Returns the number of outward directed graph edges from this vertex   */
+	unsigned long int inDegree();		/* Returns the number of inward directed graph edges from this vertex   */
 	unsigned long int localDegree();
 	
-	/** Returns true if there is a reciprocal link from this vertex */
+	/* Returns true if there is a reciprocal link from this vertex */
 	bool isReciprocalLinked() { return m_reciprocalLinked;}
 	void setReciprocalLinked(bool reciprocal) { m_reciprocalLinked=reciprocal;}
 
-	/** Returns true if there is an outLink from this vertex */
+	/* Returns true if there is an outLink from this vertex */
 	bool isOutLinked() { return m_outLinked;}
-	float isLinkedTo(unsigned long int V);		/**Returns the weight of the link from to vertexc V, otherwise zero*/
+	float isLinkedTo(unsigned long int V);		/* Returns the weight of the link from to vertexc V, otherwise zero*/
 
 	void filterEdgesByWeight(float m_threshold, bool overThreshold);
 //	void filterEdgesByColor(float m_threshold, bool overThreshold);
 	
 	void setOutLinked(bool outLinked) { m_outLinked=outLinked;}
-	/** Returns true if there is an outLink from this vertex */
+	/* Returns true if there is an outLink from this vertex */
 	bool isInLinked() { return m_inLinked;}
 	void setInLinked(bool inLinked) { m_inLinked=inLinked;}
 	float isLinkedFrom (unsigned long int v);
@@ -131,49 +131,54 @@ public:
 	void setOutLinkColor(unsigned long int, QString);
 	QString outLinkColor(int);
 
-	void setDelta (float c){ m_delta=c;} 		/** Sets vertex pair dependancy */
-	float delta() { return m_delta;}		/** Returns vertex pair dependancy */
+	void setDelta (float c){ m_delta=c;} 		/* Sets vertex pair dependancy */
+	float delta() { return m_delta;}		/* Returns vertex pair dependancy */
 	
 	void clearPs()	;
 	
 	void appendToPs(unsigned long  int vertex ) ;
 	ilist Ps(void);
 	
-	void setODC (float c){ m_ODC=c;} 	/** Sets vertex Out-Degree Centrality*/
-	void setSODC (float c ) { m_SODC=c;}	/** Sets standard vertex Out-Degree Centrality*/
-	float ODC() { return m_ODC;}		/** Returns vertex Out-Degree Centrality*/
-	float SODC() { return m_SODC; }	/** Returns standard vertex Out-Degree Centrality*/
+	void setODC (float c){ m_ODC=c;} 	/* Sets vertex Out-Degree Centrality*/
+	void setSODC (float c ) { m_SODC=c;}	/* Sets standard vertex Out-Degree Centrality*/
+	float ODC() { return m_ODC;}		/* Returns vertex Out-Degree Centrality*/
+	float SODC() { return m_SODC;}		/* Returns standard vertex Out-Degree Centrality*/
 
-	void setIDC (float c){ m_IDC=c;} 	/** Sets vertex In-Degree Centrality*/
-	void setSIDC (float c ) { m_SIDC=c;}	/** Sets standard vertex In-Degree Centrality*/
-	float IDC() { return m_IDC;}		/**Returns vertex In-Degree Centrality*/
-	float SIDC() { return m_SIDC; }	/**Returns standard vertex In-Degree Centrality*/
+	void setIDC (float c){ m_IDC=c;} 	/* Sets vertex In-Degree Centrality*/
+	void setSIDC (float c ) { m_SIDC=c;}	/* Sets standard vertex In-Degree Centrality*/
+	float IDC() { return m_IDC;}		/* Returns vertex In-Degree Centrality*/
+	float SIDC() { return m_SIDC;}		/* Returns standard vertex In-Degree Centrality*/
 
 
-	void setCC (float c){ m_CC=c;}		/**sets vertex Closeness Centrality*/
-	void setSCC (float c ) { m_SCC=c;}	/**sets standard vertex Closeness Centrality*/
-	float CC() { return m_CC;}		/**Returns vertex Closeness Centrality*/
-	float SCC() { return m_SCC; }	/**Returns standard vertex Closeness Centrality*/
+	void setCC (float c){ m_CC=c;}		/* sets vertex Closeness Centrality*/
+	void setSCC (float c ) { m_SCC=c;}	/* sets standard vertex Closeness Centrality*/
+	float CC() { return m_CC;}		/* Returns vertex Closeness Centrality*/
+	float SCC() { return m_SCC; }		/* Returns standard vertex Closeness Centrality*/
 
-	void setBC(float c){ m_BC=c;}		/**sets s vertex Betweeness Centrality*/
-	void setSBC (float c ) { m_SBC=c;}	/**sets standard vertex Betweeness Centrality*/
-	float BC() { return m_BC;}		/**Returns vertex Betweeness Centrality*/
-	float SBC() { return m_SBC; }	/**Returns standard vertex Betweeness Centrality*/
+	void setBC(float c){ m_BC=c;}		/* sets s vertex Betweeness Centrality*/
+	void setSBC (float c ) { m_SBC=c;}	/* sets standard vertex Betweeness Centrality*/
+	float BC() { return m_BC;}		/* Returns vertex Betweeness Centrality*/
+	float SBC() { return m_SBC; }		/* Returns standard vertex Betweeness Centrality*/
 
-	void setGC (float c){ m_GC=c;}		/**sets vertex Graph Centrality*/
-	void setSGC (float c ) { m_SGC=c;}	/**sets standard vertex Graph Centrality*/
-	float GC() { return m_GC;}		/**Returns vertex Graph Centrality*/
-	float SGC() { return m_SGC; }	/**Returns standard vertex Graph Centrality*/
+	void setGC (float c){ m_GC=c;}		/* sets vertex Graph Centrality*/
+	void setSGC (float c ) { m_SGC=c;}	/* sets standard vertex Graph Centrality*/
+	float GC() { return m_GC;}		/* Returns vertex Graph Centrality*/
+	float SGC() { return m_SGC; }		/* Returns standard vertex Graph Centrality*/
 
-	void setSC (float c){ m_SC=c;}  	/**sets vertex Stress Centrality*/
-	void setSSC (float c ) { m_SSC=c;}	/**sets standard vertex Stress Centrality*/
-	float SC() { return m_SC;}		/**Returns vertex Stress Centrality*/
-	float SSC() { return m_SSC; }	/**Returns standard vertex Stress Centrality*/
+	void setSC (float c){ m_SC=c;}  	/* sets vertex Stress Centrality*/
+	void setSSC (float c ) { m_SSC=c;}	/* sets standard vertex Stress Centrality*/
+	float SC() { return m_SC;}		/* Returns vertex Stress Centrality*/
+	float SSC() { return m_SSC; }		/* Returns standard vertex Stress Centrality*/
 
-	void setEC(float dist) { m_EC=dist;}/** Sets max Geodesic Distance to all other vertices*/
+	void setEC(float dist) { m_EC=dist;}	/* Sets max Geodesic Distance to all other vertices*/
 	void setSEC(float c) {m_SEC=c;}
-	float EC() { return m_EC;}		/** Returns max Geodesic Distance to all other vertices*/
+	float EC() { return m_EC;}		/* Returns max Geodesic Distance to all other vertices*/
 	float SEC() { return m_SEC;}
+
+	void setPC (float c){ m_PC=c;}		/* sets vertex Power Centrality*/
+	void setSPC (float c ) { m_SPC=c;}	/* sets standard vertex Power Centrality*/
+	float PC() { return m_PC;}		/* Returns vertex Power Centrality*/
+	float SPC() { return m_SPC; }		/* Returns standard vertex Power Centrality*/
 
 	float CLC() { return m_CLC;	}
 	void setCLC(float clucof)  { m_CLC=clucof; m_hasCLC=TRUE; }
@@ -202,6 +207,7 @@ private:
 	float m_CLC;
 	float m_delta, m_EC, m_SEC;
 	float m_ODC, m_SODC, m_IDC, m_SIDC, m_CC, m_SCC, m_BC, m_SBC, m_GC, m_SGC, m_SC, m_SSC;
+	float m_PC, m_SPC;
 
 };
 

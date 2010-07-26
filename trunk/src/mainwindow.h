@@ -216,6 +216,7 @@ public slots:
 	void slotCentralityInformational();
 	void slotCentralityGraph();
 	void slotCentralityStress();
+	void slotCentralityPower();
 	void slotCentralityEccentricity();
 	//OPTIONS MENU
 	void slotDisplayNodeNumbers(bool toggle);
@@ -343,7 +344,7 @@ private:
 	QAction *backgroundImageAct, *viewToolBar, *viewStatusBar, *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
 	QAction *netDensity, *symmetryAct,   *graphDistanceAct, *averGraphDistanceAct, *distanceMatrixAct, *diameterAct;
 	QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct;
-	QAction *cOutDegreeAct, *cInDegreeAct, *cClosenessAct, *cBetweenessAct, *cInformationalAct, *cGraphAct, *cStressAct, *cEccentAct;
+	QAction *cOutDegreeAct, *cInDegreeAct, *cClosenessAct, *cBetweenessAct, *cInformationalAct, *cGraphAct, *cStressAct, *cPowerAct, *cEccentAct;
 	QAction *randLayoutAct, *randCircleLayoutAct, *circleOutDegreeLayoutAct, *circleInDegreeLayoutAct, *circleClosenessLayoutAct;
 	QAction *antialiasingAct;
 	QAction *webCrawlerAct;

@@ -216,6 +216,7 @@ public:
 	void writeCentralityCloseness(const QString, const bool);	//Writes the closeness centralities to a file
 	void writeCentralityBetweeness(const QString, const bool);	//Writes the betweeness centralities to a file
 	void writeCentralityGraph(const QString, const bool);		//Writes the Graph centralities to a file
+	void writeCentralityPower(const QString, const bool);		//Writes the Power centralities to a file
 	void writeCentralityStress(const QString, const bool);		//Writes the Stress centralities to a file	
 	void writeCentralityEccentricity(const QString, const bool);	//Writes the Eccentr centralities to a file
 
@@ -270,11 +271,13 @@ public:
 	int factorial (int);				// for  (n 2)p edges calculation
 
 
-	/*
-	*   index stores the index of each vertex inside m_graph. It starts at zero (0).
-	*   This is crucial when we want to find the place of a vertex inside m_graph after adding or removing many vertices 
-	*/
-	imap_i index;			
+	/*  index stores the real position of each vertex inside m_graph. It starts at zero (0).
+	    We need to know the place of a vertex inside m_graph after adding or removing many vertices */
+	imap_i index;
+
+	// Stores the number of vertices at distance n from a given vertex
+	imap_i sizeOfNthOrderNeighborhood;
+
 	/* maps have O(logN) lookup complexity */
 	/* Consider using tr1::hashmap which has O(1) lookup, but this is not ISO C++ yet :(   */
 
@@ -311,7 +314,7 @@ private:
 	void resolveClasses(float C, hash_si &discreteClasses, int &classes, int name);  	//helper
 
 	/** used in resolveClasses and createDistanceMatrix() */
-	hash_si discreteIDCs, discreteODCs, discreteCCs, discreteBCs, discreteSCs, discreteGCs, discreteECs;
+	hash_si discreteIDCs, discreteODCs, discreteCCs, discreteBCs, discreteSCs, discreteGCs, discreteECs, discretePCs;
 	
 	int *eccentricities;
 	bool calculatedIDC, calculatedODC, calculatedCentralities, dynamicMovement;
@@ -326,6 +329,7 @@ private:
 	float minCC, maxCC, nomCC, denomCC, sumCC, groupCC, maxIndexCC;
 	float minBC, maxBC, nomBC, denomBC, sumBC, groupBC, maxIndexBC;
 	float minGC, maxGC, nomGC, denomGC, sumGC, groupGC, maxIndexGC;
+	float minPC, maxPC, sumPC, groupPC, maxIndexPC;
 	float minSC, maxSC, nomSC, denomSC, sumSC, groupSC, maxIndexSC;
 	float minEC, maxEC, nomEC, denomEC, sumEC, groupEC, maxIndexEC;
 	float minCLC, maxCLC, averageCLC;
@@ -335,6 +339,7 @@ private:
 	int classesCC, maxNodeCC, minNodeCC;
 	int classesBC, maxNodeBC, minNodeBC;
 	int classesGC, maxNodeGC, minNodeGC;
+	int classesPC, maxNodePC, minNodePC;
 	int classesSC, maxNodeSC, minNodeSC;
 	int classesEC, maxNodeEC, minNodeEC;
 

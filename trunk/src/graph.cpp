@@ -1144,13 +1144,21 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 
 	int aVertices=vertices();
 	int aEdges = totalEdges();    //maybe we will use m_totalEdges here to save some time?...
+
 	if ( aEdges == 0 )
 		DM.fillMatrix(0);	
-	else{
+	else {
 		qDebug() << "	for all vertices set their distances to -1 (infinum)";
 		DM.fillMatrix(-1);
 		qDebug () << "	for all vertices set their sigmas as 0";
 		TM.fillMatrix(0);
+
+		QList<Vertex*>::iterator it, it1;
+		QList<int>::iterator it2;
+		int w=0, u=0,s=0, i=0;
+		float d_sw=0, d_su=0;
+		float CC=0, BC=0, SC= 0, GC=0, EC=0, PC=0, stdGC=0, stdEC=0;
+		int progressCounter=0;
 
 		graphDiameter=0;
 
@@ -1163,13 +1171,6 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 				<< " outEdgesVert "<<  outEdgesVert;
 		qDebug() << "	aEdges " << aEdges <<  " aVertices " << aVertices;
 		
-
-		QList<Vertex*>::iterator it, it1;	
-		QList<int>::iterator it2;
-		int w=0, u=0,s=0;
-		float d_sw=0, d_su=0;
-		float CC=0, BC=0, SC=0, GC=0, EC=0, stdGC=0, stdEC=0;	
-		int progressCounter=0;
 
 		maxIndexBC=0;
 		maxIndexSC=0;
@@ -1201,6 +1202,8 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 		discreteSCs.clear(); classesSC=0;
 		maxGC=0; minGC=RAND_MAX; nomGC=0; denomGC=0; groupGC=0; maxNodeGC=0; minNodeGC=0; sumGC=0;
 		discreteGCs.clear(); classesGC=0;
+		maxPC=0; minPC=RAND_MAX; maxNodePC=0; minNodePC=0; sumPC=0;
+		discretePCs.clear(); classesPC=0;
 		maxEC=0; minEC=RAND_MAX; nomEC=0; denomEC=0; groupEC=0; maxNodeEC=0; minNodeEC=0; sumEC=0;
 		discreteECs.clear(); classesEC=0;
 		
@@ -1227,9 +1230,13 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 					Stack.pop();
 				qDebug("...and for each vertex: empty list Ps of predecessors");
 				//Complexity linear O(n)
- 				for (it1=m_graph.begin(); it1!=m_graph.end(); it1++) 
+				for (it1=m_graph.begin(); it1!=m_graph.end(); it1++) {
  					(*it1)->clearPs();
+					//initialize all sizeOfNthOrderNeighborhood to zero
+					 sizeOfNthOrderNeighborhood[ i++ ]=0;
+				}
 			}
+
 			qDebug() << "PHASE 1 (SSSP): Call BFS for source vertex " << (*it)->name() 
 				<< " to determine distances and shortest path counts from s to every vertex t" ;
 			BFS(s,doCalculcateCentralities );
@@ -1311,6 +1318,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 			averGraphDistance = averGraphDistance / (nonZeroDistancesCounter);
 		
 		if (doCalculcateCentralities) {
+			i=1; //used in calculating power centrality
 			for (it=m_graph.begin(); it!=m_graph.end(); it++) {
 				if (symmetricAdjacencyMatrix) {
 					qDebug("Betweeness centrality must be divided by two if the graph is undirected");
@@ -1332,6 +1340,16 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 				//Find min & max SC - not using stdSC
 				sumSC+=SC;
 				minmax( SC, (*it), maxSC, minSC, maxNodeSC, minNodeSC) ;
+				//Calculate Std Power Centrality: In = [ 1/(n-1) ] * ( Nd1 + Nd2 * 1/2 + ... + Ndm * 1/m )
+				PC= ( 1.0 / (float) i ) * sizeOfNthOrderNeighborhood[i];
+				i++;
+				(*it)->setPC( PC );		//Set Power Centrality
+				sumPC += PC;
+				minmax( PC, (*it), maxPC, minPC, maxNodePC, minNodePC) ; //Find min & max PC - not using stdSC
+				PC = ( 1.0/(aVertices-1.0) ) * PC;
+				(*it)->setSPC( PC );		//Set Power Centrality
+
+
 			}
 			for (it=m_graph.begin(); it!=m_graph.end(); it++) {
 				//Find denominal of groupSC
@@ -1389,24 +1407,29 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 	OUTPUT: 
 		For every vertex t: DM(s, t) is set to the distance of each t from s
 		For every vertex t: TM(s, t) is set to the number of shortest paths between s and t
-		For every vertex u: it increases SC(u) by one, when it finds a new shor. path from s to t through u.
-		For source vertex s: it calculates CC(s) as the sum of its distances from every other vertex. 
-		For every source s: it calculates GC(u) as the maximum distance from all other vertices.
 
 		Also, if doCalculcateCentralities is TRUE then BFS does extra operations:
-			a) each vertex u popped from Q is pushed to a stack Stack 
-			b) Append each neighbor y of u to the list Ps, thus Ps stores all predecessors of y on all all shortest paths from s 
+			a) For source vertex s:
+			    it calculates CC(s) as the sum of its distances from every other vertex.
+			    it calculates GC(s) as the maximum distance from all other vertices.
+			    it increases sizeOfNthOrderNeighborhood [ N ] by one, to store the number of nodes at distance n from source s
+			b) For every vertex u:
+			    it increases SC(u) by one, when it finds a new shor. path from s to t through u.
+			    appends each neighbor y of u to the list Ps, thus Ps stores all predecessors of y on all all shortest paths from s
+			c) Each vertex u popped from Q is pushed to a stack Stack
+
+
+
 	
 */ 
 void Graph::BFS(int s, bool doCalculcateCentralities){
-	int u,w, dist_u, temp=0;
+	int u,w, dist_u=0, temp=0, dist_w=0;
 
 	//set distance of s from s equal to 0	
 	DM.setItem(s,s,0);
 	//set sigma of s from s equal to 1
 	TM.setItem(s,s,1);
 
-	//
 	qDebug("BFS: Construct a queue Q of integers and push source vertex s=%i to Q as initial vertex", s);
 	queue<int> Q;
 //	qDebug("BFS: Q size %i", Q.size());
@@ -1436,21 +1459,27 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
 				Q.push(w);
 				qDebug()<<"First check if distance(s,u) = -1 (aka infinite :)) and set it to zero";
 				dist_u=DM.item(s,u);
- 				if (dist_u <0) dist_u=0;
-				qDebug("BFS: Setting distance of w=%i from s=%i equal to distance(s,u) plus 1. New distance = %i",w,s, dist_u+1);
-				DM.setItem(s, w, dist_u+1);
-				averGraphDistance += dist_u+1;
+				if (dist_u < 0 )
+					dist_w = 0;
+				else
+					dist_w = dist_u + 1;
+				qDebug("BFS: Setting distance of w=%i from s=%i equal to distance(s,u) plus 1. New distance = %i",w,s, dist_w );
+				DM.setItem(s, w, dist_w);
+				averGraphDistance += dist_w;
 				nonZeroDistancesCounter++;
 				if (doCalculcateCentralities){
+					qDebug()<<"Calculate PC: store the number of nodes at distance " << dist_w << "from s";
+					sizeOfNthOrderNeighborhood[dist_w]=sizeOfNthOrderNeighborhood[dist_w]+1;
 					qDebug()<<"Calculate CC: the sum of distances (will invert it l8r)";
-					m_graph [s]->setCC (m_graph [s]->CC() + dist_u+1);
+					m_graph [s]->setCC (m_graph [s]->CC() + dist_w);
 					qDebug()<<"Calculate GC: the maximum distance (will invert it l8r) - also for Eccentricity";
-					if (m_graph [s]->GC() < dist_u+1 ) m_graph [s]->setGC(dist_u+1);
+					if (m_graph [s]->GC() < dist_w )
+					    m_graph [s]->setGC(dist_w);
 
 				}
 				qDebug("BFS: Checking graphDiameter");
-				if ( dist_u+1 > graphDiameter){
-					graphDiameter=dist_u+1;
+				if ( dist_w > graphDiameter){
+					graphDiameter=dist_w;
 					qDebug("BFS: new graphDiameter = %i", graphDiameter );
 				}
 			}		
@@ -2070,6 +2099,54 @@ void Graph::writeCentralityEccentricity(
 	file.close();
 
 }
+
+
+
+
+void Graph::writeCentralityPower(
+		const QString fileName, const bool considerWeights)
+{
+	Q_UNUSED(considerWeights);
+	QFile file ( fileName );
+	if ( !file.open( QIODevice::WriteOnly ) )  {
+		qDebug()<< "Error opening file!";
+		emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+		return;
+	}
+	QTextStream outText ( &file );
+
+	emit statusMessage ( (tr("Calculating shortest paths")) );
+	createDistanceMatrix(true);
+	emit statusMessage ( QString(tr("Writing Power centralities to file:")).arg(fileName) );
+
+	outText << tr("POWER CENTRALITY (PC) OF EACH NODE") << "\n";
+	outText << tr("PC of each node k, is the sum of the orders of all Nth-order neighbourhoods with weight 1/n.") << "\n";
+	outText << tr("Therefore, PC(u) reflects the cohesivity of the network (i.e a high frequency of distances one and two)") << "\n";
+	outText << tr("PC' is the standardized PC") << "\n";
+	outText << tr("PC  range: 0 < PC < ") << QString::number(maxIndexEC)<< tr(" (max geodesic distance)")<<"\n";
+	outText << tr("PC' range: 0 < PC'< 1 \n\n");
+	outText << "Node"<<"\tPC\t\tPC'\t\t%PC\n";
+	QList<Vertex*>::iterator it;
+	for (it= m_graph.begin(); it!= m_graph.end(); it++){
+		outText << (*it)->name()<<"\t"<<(*it)->PC() << "\t\t"<< (*it)->SPC() << "\t\t" <<  (100* ((*it)->PC()) /  sumPC)<<endl;
+	}
+	if ( minPC ==  maxPC)
+		outText << tr("\nAll nodes have the same PC value.\n");
+	else {
+		outText << "\n";
+		outText << tr("Max PC' = ") << maxPC <<" (node "<< maxNodePC  <<  ")  \n";
+		outText << tr("Min PC' = ") << minPC <<" (node "<< minNodePC <<  ")  \n";
+		outText << tr("PC classes = ") << classesPC<<" \n";
+	}
+
+	outText << "\n\n";
+	outText << tr("Power Centrality report, \n");
+	outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+	file.close();
+
+}
+
+
 
 
 

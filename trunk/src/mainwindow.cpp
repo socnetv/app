@@ -878,8 +878,16 @@ void MainWindow::initActions(){
 	cEccentAct->setWhatsThis(tr("Stress Centrality\n\n For each node k, this is the largest geodesic distance (k,t) from every other vertex t. Therefore, EC(u) reflects how far, at most, is each node from every other node."));
 	connect(cEccentAct, SIGNAL(activated()), this, SLOT(slotCentralityEccentricity()));
 
+
+	cPowerAct = new QAction(tr("Power"), this);
+	cPowerAct->setShortcut(tr("Ctrl+8"));
+	cPowerAct->setStatusTip(tr("Calculate and display Power Centrality"));
+	cPowerAct->setWhatsThis(tr("Power Centrality\n\n For each node k, this index counts the degree of the vertex with weight 1, the order of the 2nd-order neighbourhood with weight 2, and in general, the order of the kth order neighbourhood with weight k . Thus, for each node in the network the most important other nodes are its immediate neighbours and then in decreasing importance the nodes of the 2nd-order neighbourhood, 3rd -order neighbourhood etc. The sum obtained is then normalised by the  total numbers of nodes minus 1."));
+	connect(cPowerAct, SIGNAL(activated()), this, SLOT(slotCentralityPower()));
+
+
 	cInformationalAct = new QAction(tr("Informational"),	this);
-	cInformationalAct->setShortcut(tr("Ctrl+8"));
+	cInformationalAct->setShortcut(tr("Ctrl+9"));
 	cInformationalAct->setEnabled(false);
 	cInformationalAct->setStatusTip(tr("Calculate and display Informational Centrality"));
 	cInformationalAct->setWhatsThis(tr("Informational Centrality\n\n Calculate and display Informational Centrality"));
@@ -1229,6 +1237,7 @@ void MainWindow::initMenuBar() {
 	centrlMenu -> addAction (cGraphAct);
 	centrlMenu -> addAction (cStressAct);
 	centrlMenu -> addAction (cEccentAct);
+	centrlMenu -> addAction (cPowerAct);
 
 
 /** menuBar entry optionsMenu  */
@@ -5018,6 +5027,33 @@ void MainWindow::slotCentralityGraph(){
 }
 
 
+
+/**
+*	Writes Power Centralities into a file, then displays it.
+*/
+void MainWindow::slotCentralityPower(){
+	if (!fileLoaded && !networkModified  )  {
+		QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+
+		statusMessage(  QString(tr(" Nothing to do! Why don't you try creating something first?"))  );
+		return;
+	}
+	QString fn = "centrality_power.dat";
+
+	bool considerWeights=true;
+	statusMessage(  QString(tr(" Please wait...")));
+
+	createProgressBar();
+
+	activeGraph.writeCentralityPower(fn, considerWeights);
+
+	destroyProgressBar();
+
+	TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+	tempFileNameNoPath=fn.split( "/");
+	ed->setWindowTitle("Stress Centralities saved as: " + tempFileNameNoPath.last());
+	ed->show();
+}
 
 
 /**
