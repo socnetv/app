@@ -1482,14 +1482,6 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
 
 
 
-
-
-
-
-
-
-
-
 /**
 	minmax() facilitates the calculations of minimum and maximum centralities during createDistanceMatrix()
 */
@@ -1521,6 +1513,7 @@ void Graph::resolveClasses(float C, hash_si &discreteClasses, int &classes){
  		discreteClasses.insert(QString::number(C), classes);
  	}
 }
+
 
 /*
  * Overloaded method. It only adds displaying current vertex for debugging purposes. 
