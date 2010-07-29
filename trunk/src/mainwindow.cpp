@@ -2742,6 +2742,9 @@ void MainWindow::slotRecreateDataSet (QString m_fileName) {
 		QString message=tr("Network saved as ")+fileNameNoPath.last();
 		statusMessage( message );
 	}
+        else {
+            statusMessage( "Could not read new network data file. Aborting.");
+        }
 }
 
 /**
