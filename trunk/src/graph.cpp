@@ -1214,6 +1214,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 				(*it)->setSC( 0.0 );
 				(*it)->setGC( 0.0 );
 				(*it)->setCC( 0.0 );
+				(*it)->setPC( 0.0 );
 		}
 		qDebug("MAIN LOOP: for every s in V do (solve the single source shortest path problem...");
 		for (it=m_graph.begin(); it!=m_graph.end(); it++){
@@ -1242,6 +1243,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 				<< " to determine distances and shortest path counts from s to every vertex t" ;
 			BFS(s,doCalculcateCentralities );
 			qDebug("***** FINISHED PHASE 1 (SSSP) BFS ALGORITHM. Continuing to calculate centralities");
+
 			if (doCalculcateCentralities){
 				qDebug() << "Set centrality for current source vertex " << (*it)->name() << "  with index s = " << s ;
 				if ( (*it)->CC() != 0 ) //Closeness centrality must be inverted 	
@@ -1274,11 +1276,20 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 				sumEC+=EC;
 				minmax( EC, (*it), maxEC, minEC, maxNodeEC, minNodeEC) ;
 				
-				
+				i=1; //used in calculating power centrality
+				PC=0;
 				qDebug("PHASE 2 (ACCUMULATION): Start back propagation of dependencies. Set dependency delta[u]=0 on each vertex");
 				for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
 					(*it1)->setDelta(0.0);
+					//Calculate Std Power Centrality: In = [ 1/(n-1) ] * ( Nd1 + Nd2 * 1/2 + ... + Ndm * 1/m )
+					PC += ( 1.0 / (float) i ) * sizeOfNthOrderNeighborhood[i];
+					i++;
 				}
+				(*it)->setPC( PC );		//Set Power Centrality
+				sumPC += PC;
+				minmax( PC, (*it), maxPC, minPC, maxNodePC, minNodePC) ; //Find min & max PC - not using stdSC
+				PC = ( 1.0/(aVertices-1.0) ) * PC;
+				(*it)->setSPC( PC );		//Set Standardized Power Centrality
 
 				qDebug() << "Visit all vertices in reverse order of their discovery (from s = " << s 
 						<< " ) to sum dependencies. Initial Stack size has " << Stack.size();
@@ -1319,7 +1330,6 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 			averGraphDistance = averGraphDistance / (nonZeroDistancesCounter);
 		
 		if (doCalculcateCentralities) {
-			i=1; //used in calculating power centrality
 			for (it=m_graph.begin(); it!=m_graph.end(); it++) {
 				if (symmetricAdjacencyMatrix) {
 					qDebug("Betweeness centrality must be divided by two if the graph is undirected");
@@ -1341,15 +1351,6 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 				//Find min & max SC - not using stdSC
 				sumSC+=SC;
 				minmax( SC, (*it), maxSC, minSC, maxNodeSC, minNodeSC) ;
-				//Calculate Std Power Centrality: In = [ 1/(n-1) ] * ( Nd1 + Nd2 * 1/2 + ... + Ndm * 1/m )
-				PC= ( 1.0 / (float) i ) * sizeOfNthOrderNeighborhood[i];
-				i++;
-				(*it)->setPC( PC );		//Set Power Centrality
-				sumPC += PC;
-				minmax( PC, (*it), maxPC, minPC, maxNodePC, minNodePC) ; //Find min & max PC - not using stdSC
-				PC = ( 1.0/(aVertices-1.0) ) * PC;
-				(*it)->setSPC( PC );		//Set Power Centrality
-
 
 			}
 			for (it=m_graph.begin(); it!=m_graph.end(); it++) {
