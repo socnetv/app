@@ -1961,8 +1961,8 @@ bool Parser::loadSimpleList(){
 	QStringList lineElement;
 	int i=0, j=0, num=0, source=0, target=0, maxNodeCreated=0;
 	bool intOK=false;
-	
-	edgeWeight=1.0;
+        initEdgeWeight=1.0;
+
 	undirected=false;
 	arrows=true;
 	bezier=false;
@@ -2027,7 +2027,7 @@ bool Parser::loadSimpleList(){
 				qDebug("	there is a link here");
 				emit createEdge(source, target, initEdgeWeight, initEdgeColor, undirected, arrows, bezier);
 				totalLinks++;
-				qDebug("	link from Node i=%i to j=%i . TotalLinks= %i ", source, target, totalLinks);
+                                qDebug() << "link from Node i= "<< source  << "  to j = " <<  target << " weight = "<< initEdgeWeight<< ". TotalLinks =  " << totalLinks;
 			}
 			i++;
 		}
