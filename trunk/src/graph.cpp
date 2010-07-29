@@ -1228,12 +1228,13 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 				//- Complexity linear O(n) 
 				while ( !Stack.empty() )  
 					Stack.pop();
+				i=0;
 				qDebug("...and for each vertex: empty list Ps of predecessors");
-				//Complexity linear O(n)
 				for (it1=m_graph.begin(); it1!=m_graph.end(); it1++) {
- 					(*it1)->clearPs();
+					(*it1)->clearPs();
 					//initialize all sizeOfNthOrderNeighborhood to zero
-					 sizeOfNthOrderNeighborhood[ i++ ]=0;
+					 sizeOfNthOrderNeighborhood[ i ]=0;
+					 i++;
 				}
 			}
 
@@ -1417,9 +1418,6 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 			    it increases SC(u) by one, when it finds a new shor. path from s to t through u.
 			    appends each neighbor y of u to the list Ps, thus Ps stores all predecessors of y on all all shortest paths from s
 			c) Each vertex u popped from Q is pushed to a stack Stack
-
-
-
 	
 */ 
 void Graph::BFS(int s, bool doCalculcateCentralities){
@@ -3715,6 +3713,27 @@ void Graph::writeDataSetToFile (QString fileName) {
 		"2 1 5 5 5 3 4 1 4 1 5 2 2 3 3 4 3 1 2 5 3 2 2 1 1 1 4 1 5 5 1 1 3 2 5 5 1 2 3 2 1 3 2 3 4 2 5 1 3 2 1 2 3 3 1 5 0 3" << endl <<
 		"3 2 2 5 2 4 2 3 3 3 3 4 1 3 3 3 2 3 3 2 2 2 4 4 2 2 3 1 2 3 3 2 2 5 3 2 2 2 2 2 4 2 2 2 2 2 2 2 5 4 1 3 3 3 3 3 3 0";
 
+	}
+	else if (fileName == "Mexican_Power_Network_1940s.lst"){
+	outText<< "18 8 10 23 21" << endl <<
+		"19 11 21" << endl <<
+		"29 5 9 10" << endl <<
+		"23 8 9 18 11" << endl <<
+		"4 7 6 8 20 5 21" << endl <<
+		"5 4 29 20 7 6 8 9 26 21" << endl <<
+		"6 5 7 4 20 21 8" << endl <<
+		"7 4 6 5 8 20 21" << endl <<
+		"9 5 8 23 29 20 21 11 10" << endl <<
+		"8 18 23 4 5 6 7 21 24 26 25 9 10 37 20" << endl <<
+		"10 18 29 8 11 9 20 25 26" << endl <<
+		"11 19 23 9 10 25 21 36" << endl <<
+		"20 4 5 6 7 8 9 10" << endl <<
+		"24 8 26" << endl <<
+		"26 5 8 24 10" << endl <<
+		"21 19 4 5 6 7 8 9 11 18" << endl <<
+		"36 37 11" << endl <<
+		"37 8 36" << endl <<
+		"25 10 11 8";
 	}
 
         f.close();

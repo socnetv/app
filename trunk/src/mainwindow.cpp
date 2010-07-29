@@ -2729,12 +2729,42 @@ void MainWindow::slotShowDataSetSelectDialog(){
  * in network analysis studies
  */
 void MainWindow::slotRecreateDataSet (QString m_fileName) {
+	int m_fileFormat=0;
+	qDebug()<< "slotRecreateDataSet() fileName: " << m_fileName;
 
-        qDebug()<< "slotRecreateDataSet() fileName: " << m_fileName;
-        initNet();
+	initNet();
 	activeGraph.writeDataSetToFile(m_fileName);
 
-	if ( loadNetworkFile(m_fileName, 3) ) {
+	if (m_fileName.endsWith(".graphml")) {
+	    m_fileFormat=1;
+	}
+	else if (m_fileName.endsWith(".pajek")) {
+	   m_fileFormat=2;
+	}
+	else if (m_fileName.endsWith(".sm")) {
+	   m_fileFormat=3;
+	}
+	else if (m_fileName.endsWith(".dot")) {
+	    m_fileFormat=4;
+	}
+	else if (m_fileName.endsWith(".gml")) {
+	    m_fileFormat=5;
+	}
+	else if (m_fileName.endsWith(".dl")) {
+	    m_fileFormat=6;
+	}
+	else if (m_fileName.endsWith(".list")) {
+	    m_fileFormat=7;
+	}
+	else if (m_fileName.endsWith(".lst")) {
+	    m_fileFormat=8;
+	}
+	else if (m_fileName.endsWith(".2sm")) {
+	    m_fileFormat=9;
+	}
+
+
+	if ( loadNetworkFile(m_fileName, m_fileFormat) ) {
 		fileNameNoPath=m_fileName.split ("/" );
 		fileName=m_fileName;
 		previous_fileName=fileName;

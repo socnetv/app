@@ -50,7 +50,8 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
 			<< "Galaskiewicz_CEOs_and_clubs_two_mode_data.sm"
 			<< "Freeman_EIES_network_Acquaintanceship_at_time-1"
 			<< "Freeman_EIES_network_Acquaintanceship_at_time-2"
-			<< "Freeman_EIES_network_Messages";
+			<< "Freeman_EIES_network_Messages"
+			<< "Mexican_Power_Network_1940s.lst";
 
 	(ui.comboBox) -> insertItems( 1, datasets_list );
 }
