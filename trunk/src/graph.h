@@ -342,7 +342,7 @@ private:
 	int classesPC, maxNodePC, minNodePC;
 	int classesSC, maxNodeSC, minNodeSC;
 	int classesEC, maxNodeEC, minNodeEC;
-
+	int sizeOfComponent;
 
 	/** General & initialisation variables */
 

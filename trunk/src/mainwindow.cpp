@@ -881,8 +881,8 @@ void MainWindow::initActions(){
 
 	cPowerAct = new QAction(tr("Power"), this);
 	cPowerAct->setShortcut(tr("Ctrl+8"));
-	cPowerAct->setStatusTip(tr("Calculate and display Power Centrality"));
-	cPowerAct->setWhatsThis(tr("Power Centrality\n\n For each node k, this index counts the degree of the vertex with weight 1, the order of the 2nd-order neighbourhood with weight 2, and in general, the order of the kth order neighbourhood with weight k . Thus, for each node in the network the most important other nodes are its immediate neighbours and then in decreasing importance the nodes of the 2nd-order neighbourhood, 3rd -order neighbourhood etc. The sum obtained is then normalised by the  total numbers of nodes minus 1."));
+	cPowerAct->setStatusTip(tr("Calculate and display Power Centrality (aka Gil-Schmidt Power Centrality index)"));
+	cPowerAct->setWhatsThis(tr("Power Centrality (Gil-Schmidt)\n\n For each node k, this index sums its degree (with weight 1), with the size of the 2nd-order neighbourhood (with weight 2), and in general, with the size of the kth order neighbourhood (with weight k). Thus, for each node in the network the most important other nodes are its immediate neighbours and then in decreasing importance the nodes of the 2nd-order neighbourhood, 3rd-order neighbourhood etc. For each node, the sum obtained is normalised by the total numbers of nodes in the same component minus 1."));
 	connect(cPowerAct, SIGNAL(activated()), this, SLOT(slotCentralityPower()));
 
 
@@ -1511,8 +1511,8 @@ void MainWindow::initToolBox(){
 	nodeSizeProportional2InDegreeBx->setToolTip(tr("If you enable this, all nodes will be resized so that their size reflect their in-degree (the amount of links to them from other nodes). To put it simply, more in-linked nodes will be bigger..."));
 
 	QGridLayout *layoutGroupLayout = new QGridLayout();
-    layoutGroupLayout -> addWidget(moveSpringEmbedderBx, 0,0);
-    layoutGroupLayout -> addWidget(moveKamandaBx, 1,0);
+	layoutGroupLayout -> addWidget(moveSpringEmbedderBx, 0,0);
+	layoutGroupLayout -> addWidget(moveKamandaBx, 1,0);
 	layoutGroupLayout -> addWidget(nodeSizeProportional2OutDegreeBx, 2,0);
 	layoutGroupLayout -> addWidget(nodeSizeProportional2InDegreeBx, 3,0);
 

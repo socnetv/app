@@ -1182,6 +1182,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 			maxIndexSC=( aVertices-1.0) *  (aVertices-2.0) / 2.0;
 			maxIndexCC=1.0/(aVertices-1.0);
 			maxIndexEC=aVertices-1.0;
+			maxIndexPC=aVertices-1.0;
 			qDebug("############# symmetricAdjacencyMatrix - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
 		}
 		else {	
@@ -1189,6 +1190,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 			maxIndexBC=( aVertices-1.0) *  (aVertices-2.0) ;
 			maxIndexSC=1;
 			maxIndexEC=(aVertices-1.0);
+			maxIndexPC=aVertices-1.0;
 			maxIndexCC=1.0/(aVertices-1.0);  //FIXME This applies only on undirected graphs
 			qDebug("############# NOT SymmetricAdjacencyMatrix - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
 		}
@@ -1277,18 +1279,25 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 				minmax( EC, (*it), maxEC, minEC, maxNodeEC, minNodeEC) ;
 				
 				i=1; //used in calculating power centrality
+				sizeOfComponent = 1;
 				PC=0;
 				qDebug("PHASE 2 (ACCUMULATION): Start back propagation of dependencies. Set dependency delta[u]=0 on each vertex");
 				for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
 					(*it1)->setDelta(0.0);
-					//Calculate Std Power Centrality: In = [ 1/(n-1) ] * ( Nd1 + Nd2 * 1/2 + ... + Ndm * 1/m )
+					//Calculate Power Centrality: In = [ 1/(N-1) ] * ( Nd1 + Nd2 * 1/2 + ... + Ndi * 1/i )
+					// where Ndi (sizeOfNthOrderNeighborhood) is the number of nodes at distance i from this node.
 					PC += ( 1.0 / (float) i ) * sizeOfNthOrderNeighborhood[i];
+					// where N is the sum Nd0 + Nd1 + Nd2 + ... + Ndi, that is the amount of nodes in the same component as the current node
+					sizeOfComponent += sizeOfNthOrderNeighborhood[i];
 					i++;
 				}
 				(*it)->setPC( PC );		//Set Power Centrality
 				sumPC += PC;
 				minmax( PC, (*it), maxPC, minPC, maxNodePC, minNodePC) ; //Find min & max PC - not using stdSC
-				PC = ( 1.0/(aVertices-1.0) ) * PC;
+				if ( sizeOfComponent != 1 )
+				    PC = ( 1.0/(sizeOfComponent-1.0) ) * PC;
+				else
+				    PC = 0;
 				(*it)->setSPC( PC );		//Set Standardized Power Centrality
 
 				qDebug() << "Visit all vertices in reverse order of their discovery (from s = " << s 
@@ -2119,10 +2128,10 @@ void Graph::writeCentralityPower(
 	emit statusMessage ( QString(tr("Writing Power centralities to file:")).arg(fileName) );
 
 	outText << tr("POWER CENTRALITY (PC) OF EACH NODE") << "\n";
-	outText << tr("PC of each node k, is the sum of the orders of all Nth-order neighbourhoods with weight 1/n.") << "\n";
-	outText << tr("Therefore, PC(u) reflects the cohesivity of the network (i.e a high frequency of distances one and two)") << "\n";
-	outText << tr("PC' is the standardized PC") << "\n";
-	outText << tr("PC  range: 0 < PC < ") << QString::number(maxIndexEC)<< tr(" (max geodesic distance)")<<"\n";
+	outText << tr("PC of each node k, is the sum of the sizes of all Nth-order neighbourhoods with weight 1/n.") << "\n";
+	outText << tr("Therefore, PC(u) is a generalised degree centrality index.") << "\n";
+	outText << tr("PC' is the standardized index; divided by the total numbers of nodes in the same component minus 1") << "\n";
+	outText << tr("PC  range: 0 < PC < ") << QString::number(maxIndexEC)<< tr(" (star node)")<<"\n";
 	outText << tr("PC' range: 0 < PC'< 1 \n\n");
 	outText << "Node"<<"\tPC\t\tPC'\t\t%PC\n";
 	QList<Vertex*>::iterator it;
