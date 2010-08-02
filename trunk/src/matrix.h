@@ -150,13 +150,15 @@ class Matrix {
 
 		bool printMatrixConsole();
 
+		void identityMatrix (int);
 		/** Fulls a matrix with a value */
 		void fillMatrix (int value );
 	
-		
+
 		/** Equals two matrices. */
 		Matrix& operator =(Matrix & a);
-		
+
+
 		int  operator ()  (const int r, const int c) ;
 		
 		friend QTextStream& operator <<  (QTextStream& os, Matrix& m);
@@ -168,9 +170,11 @@ class Matrix {
 		/** Takes two symm. matrices and outputs an upper triangular matrix */
 		Matrix & productSym( Matrix &a, Matrix & b)  ;
 		
-		Matrix & pow (Matrix &a, int power, bool symmetry)  ;
+		Matrix & pow (int power, bool symmetry)  ;
 
+		Matrix& subtractFromI () ;
 
+		Matrix& sum (Matrix &a, Matrix &b) ;
 
 	private:
 		Row *row;

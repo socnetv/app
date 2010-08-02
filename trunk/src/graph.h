@@ -237,6 +237,8 @@ public:
 	void centralityInDegree(bool);		//Calculates the inDegree centrality of each vertex
 	void centralityOutDegree(bool);		//Calculates the outDegree centrality of each vertex
 
+	void centralityInformation(bool);
+
 	float numberOfTriples(int v1); 		//Returns the number of triples at vertex v1
 	float numberOfCliques(int v1);		//Calculates the number of cliques (triangles) of vertex v1
 	float numberOfCliques();		//Calculates the number of cliques (triangles) of the whole graph
@@ -314,13 +316,13 @@ private:
 	void resolveClasses(float C, hash_si &discreteClasses, int &classes, int name);  	//helper
 
 	/** used in resolveClasses and createDistanceMatrix() */
-	hash_si discreteIDCs, discreteODCs, discreteCCs, discreteBCs, discreteSCs, discreteGCs, discreteECs, discretePCs;
+	hash_si discreteIDCs, discreteODCs, discreteCCs, discreteBCs, discreteSCs, discreteGCs, discreteECs, discretePCs, discreteICs;
 	
 	int *eccentricities;
 	bool calculatedIDC, calculatedODC, calculatedCentralities, dynamicMovement;
 	
 	QList<int>  triadTypeFreqs; 	//stores triad type frequencies
-	Matrix  TM, DM;
+	Matrix  TM, DM, sumM;
 	stack<int> Stack;
 
 	float meanDegree, varianceDegree;
@@ -332,6 +334,7 @@ private:
 	float minPC, maxPC, sumPC, groupPC, maxIndexPC;
 	float minSC, maxSC, nomSC, denomSC, sumSC, groupSC, maxIndexSC;
 	float minEC, maxEC, nomEC, denomEC, sumEC, groupEC, maxIndexEC;
+	float minIC, maxIC, nomIC, denomIC, sumIC, groupIC, maxIndexIC;
 	float minCLC, maxCLC, averageCLC;
 	int maxNodeCLC, minNodeCLC;
 	int classesIDC, maxNodeIDC, minNodeIDC;
@@ -342,6 +345,7 @@ private:
 	int classesPC, maxNodePC, minNodePC;
 	int classesSC, maxNodeSC, minNodeSC;
 	int classesEC, maxNodeEC, minNodeEC;
+	int classesIC, maxNodeIC, minNodeIC;
 	int sizeOfComponent;
 
 	/** General & initialisation variables */

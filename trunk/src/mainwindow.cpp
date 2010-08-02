@@ -850,13 +850,13 @@ void MainWindow::initActions(){
 	cClosenessAct = new QAction(tr("Closeness"), this);
 	cClosenessAct->setShortcut(tr("Ctrl+3"));
 	cClosenessAct->setStatusTip(tr("Calculates and displays Closeness Centralities"));
-	cClosenessAct->setWhatsThis(tr("Closeness Centrality\n\n For each node k, this the invert sum of the shortest distances between k and every other node. It is interpreted as the ability to access information through the \"grapevine\" of network members. "));
+	cClosenessAct->setWhatsThis(tr("Closeness Centrality\n\n For each node k, this the invert sum of the shortest distances between k and every other node. It is interpreted as the ability to access information through the \"grapevine\" of network members. Nodes with high closeness are those who can reach many other nodes in few steps.  "));
 	connect(cClosenessAct, SIGNAL(activated()), this, SLOT(slotCentralityCloseness()));
 
 	cBetweenessAct = new QAction(tr("Betweeness"), this);
 	cBetweenessAct->setShortcut(tr("Ctrl+4"));
 	cBetweenessAct->setStatusTip(tr("Calculates and displays Betweeness Centralities"));
-	cBetweenessAct->setWhatsThis(tr("Betweeness Centrality\n\n For each node k, this is the ratio of all geodesics between pairs of nodes which run through k. It reflects how often an node lies on the geodesics between the other nodes of the network. It can be interpreted as a measure of control."));
+	cBetweenessAct->setWhatsThis(tr("Betweeness Centrality\n\n For each node k, this is the ratio of all geodesics between pairs of nodes which run through k. It reflects how often an node lies on the geodesics between the other nodes of the network. It can be interpreted as a measure of control. A node which is lies between many others is assumed to have a higher likelihood of being able to control information flow in the network. \n\n Note that betweeness centrality assumes that all geodesics have equal weight or are equally likely to be chosen for the flow of information between any two nodes. This is reasonable only on \"regular\" networks where all nodes have similar degrees. On networks with significant degree variance you might want to try informational centrality instead."));
 	connect(cBetweenessAct, SIGNAL(activated()), this, SLOT(slotCentralityBetweeness()));
 
 	cGraphAct = new QAction(tr("Graph"),this);
@@ -882,15 +882,15 @@ void MainWindow::initActions(){
 	cPowerAct = new QAction(tr("Power"), this);
 	cPowerAct->setShortcut(tr("Ctrl+8"));
 	cPowerAct->setStatusTip(tr("Calculate and display Power Centrality (aka Gil-Schmidt Power Centrality index)"));
-	cPowerAct->setWhatsThis(tr("Power Centrality (Gil-Schmidt)\n\n For each node k, this index sums its degree (with weight 1), with the size of the 2nd-order neighbourhood (with weight 2), and in general, with the size of the kth order neighbourhood (with weight k). Thus, for each node in the network the most important other nodes are its immediate neighbours and then in decreasing importance the nodes of the 2nd-order neighbourhood, 3rd-order neighbourhood etc. For each node, the sum obtained is normalised by the total numbers of nodes in the same component minus 1."));
+	cPowerAct->setWhatsThis(tr("Power Centrality\n\n For each node k, this index sums its degree (with weight 1), with the size of the 2nd-order neighbourhood (with weight 2), and in general, with the size of the kth order neighbourhood (with weight k). Thus, for each node in the network the most important other nodes are its immediate neighbours and then in decreasing importance the nodes of the 2nd-order neighbourhood, 3rd-order neighbourhood etc. For each node, the sum obtained is normalised by the total numbers of nodes in the same component minus 1. Power centrality has been by Gil-Schmidt. "));
 	connect(cPowerAct, SIGNAL(activated()), this, SLOT(slotCentralityPower()));
 
 
-	cInformationalAct = new QAction(tr("Informational"),	this);
+	cInformationalAct = new QAction(tr("Information"),	this);
 	cInformationalAct->setShortcut(tr("Ctrl+9"));
 	cInformationalAct->setEnabled(false);
-	cInformationalAct->setStatusTip(tr("Calculate and display Informational Centrality"));
-	cInformationalAct->setWhatsThis(tr("Informational Centrality\n\n Calculate and display Informational Centrality"));
+	cInformationalAct->setStatusTip(tr("Calculate and display Information Centrality"));
+	cInformationalAct->setWhatsThis(tr("Information Centrality\n\n Information centrality counts all paths between nodes weighted by strength of tie and distance. This centrality  measure developed by Stephenson and Zelen (1989) focuses on how information might flow through many different paths."));
 	connect(cInformationalAct, SIGNAL(activated()), this, SLOT(slotCentralityInformational()));
 
 	

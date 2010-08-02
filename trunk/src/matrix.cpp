@@ -49,26 +49,27 @@ void Matrix::setSize (int Actors){
 }
 //assigment allows sane copying b=a where b,a matrices
  Matrix& Matrix::operator =(Matrix & a) {
-			if (this != &a){
-				if (a.m_Actors!=m_Actors) {
-					delete [] row;
-					row=new Row[m_Actors=a.m_Actors];
-					Q_CHECK_PTR( row );
-					for (int i=0;i<m_Actors; i++) { 
-						row[i].resize(m_Actors); //every Row object holds max_int=32762 actors
-					}
-				}
-
-				for (int i=0;i<m_Actors; i++) row[i]=a.row[i];
+	if (this != &a){
+		if (a.m_Actors!=m_Actors) {
+			delete [] row;
+			row=new Row[m_Actors=a.m_Actors];
+			Q_CHECK_PTR( row );
+			for (int i=0;i<m_Actors; i++) {
+				row[i].resize(m_Actors); //every Row object holds max_int=32762 actors
 			}
-			return *this;
+		}
+			for (int i=0;i<m_Actors; i++) row[i]=a.row[i];
+	}
+	return *this;
 }
-		
+
+
 //slowing  down the process
 int  Matrix::operator ()  (const int r, const int c){
-			return  row[r].column(c);
+	return  row[r].column(c);
 }
-		
+
+
 /**  	Outputs matrix m to a text stream
 *	Used when exporting SM to a file in slotExportSM of MainWindow class.
 */
@@ -95,6 +96,22 @@ void Matrix::resize (int Actors) {
 		}
 			
 }
+
+
+
+void Matrix::identityMatrix(int Actors) {
+	qDebug ("Matrix: identityMatrix() -- deleting old rows");
+	delete [] row;
+	row = new Row [m_Actors=Actors];
+	Q_CHECK_PTR( row );
+	qDebug ("Matrix: resize() -- resizing each row");
+	for (int i=0;i<m_Actors; i++) {
+		row[i].resize(m_Actors); //every Row object holds max_int=32762
+		setItem(i,i, 1);
+	}
+
+}
+
 
 int Matrix::item( int r, int c ){
 	return row[r].column(c);	
@@ -136,6 +153,7 @@ int Matrix::totalEdges(){
 	qDebug("Matrix: totalEdges %i",m_totalEdges);
 	return m_totalEdges;
 }
+
 
 bool Matrix::printMatrixConsole(){
 	qDebug("Matrix: printMatrixConsole");
@@ -210,57 +228,72 @@ void Matrix::fillMatrix (int value )   {
 
 //takes two (ActorsXActors) matrices and returns their product as a reference to this
 Matrix& Matrix::product( Matrix &a, Matrix & b, bool symmetry)  {
-		   	for (register int i=0;i< rows();i++)
-        			for (register int j=0;j<cols();j++) {
-					
-					setItem(i,j,0);
-            					for (register int k=0;k<m_Actors;k++)
-			 				if  ( k > j && symmetry) {
-								if (a.item(i,k)!=0 && b.item(j,k)!=0)
-									setItem(i,j, item(i,j)+a.item(i,k)*b.item(j,k));
-									
-							}
-							else{
-								setItem(i,j, item(i,j)+a.item(i,k)*b.item(k,j));
-							}
+	for (register int i=0;i< rows();i++)
+		for (register int j=0;j<cols();j++) {
+			setItem(i,j,0);
+			for (register int k=0;k<m_Actors;k++)
+				if  ( k > j && symmetry) {
+					if (a.item(i,k)!=0 && b.item(j,k)!=0)
+						setItem(i,j, item(i,j)+a.item(i,k)*b.item(j,k));
 				}
-			return *this;
-}
-		
-//takes two (AXA) matrices (symmetric) and outputs an upper triangular matrix
-Matrix& Matrix::productSym( Matrix &a, Matrix & b)  {
-		
-		   	for (register int i=0;i<m_Actors;i++)
-        			for (register int j=0;j<m_Actors;j++) {
-					setItem(i,j,0);
-					if (i>=j) continue;
-            				for (register int k=0;k<m_Actors;k++)
-			 			if  ( k > j ) {
-							if (a.item(i,k)!=0 && b.item(j,k)!=0)
-								setItem(i,j, item(i,j)+a.item(i,k)*b.item(j,k));
-						}
-						else  //k <= j  && i<j
-							if ( i>k ) {
-								if (a.item(k,i)!=0 && b.item(k,j)!=0)
-									setItem(i,j, item(i,j)+a.item(k,i)*b.item(k,j));
-							}
-							else {
-								if (a.item(i,k)!=0 && b.item(k,j)!=0)
-									setItem(i,j, item(i,j)+a.item(i,k)*b.item(k,j));
-							}
+				else{
+				    setItem(i,j, item(i,j)+a.item(i,k)*b.item(k,j));
 				}
-			return *this;
-}
-	
-Matrix& Matrix::pow (Matrix &a, int power, bool symmetry)  {
-		Matrix t=a;
-		for (register int k=1; k<power; k++){
-			product(a,t, symmetry);
-			t=*this;  	  //SET TempMatrix EQUAL TO ProductMatrix		  
-
 		}
 		return *this;
 }
 		
-		
+//takes two (AXA) matrices (symmetric) and outputs an upper triangular matrix
+Matrix& Matrix::productSym( Matrix &a, Matrix & b)  {
+	for (register int i=0;i<m_Actors;i++)
+	    for (register int j=0;j<m_Actors;j++) {
+			setItem(i,j,0);
+			if (i>=j) continue;
+			for (register int k=0;k<m_Actors;k++)
+				if  ( k > j ) {
+					if (a.item(i,k)!=0 && b.item(j,k)!=0)
+						setItem(i,j, item(i,j)+a.item(i,k)*b.item(j,k));
+				}
+				else  //k <= j  && i<j
+					if ( i>k ) {
+						if (a.item(k,i)!=0 && b.item(k,j)!=0)
+							setItem(i,j, item(i,j)+a.item(k,i)*b.item(k,j));
+						}
+						else {
+							if (a.item(i,k)!=0 && b.item(k,j)!=0)
+								setItem(i,j, item(i,j)+a.item(i,k)*b.item(k,j));
+						}
+	    }
+	    return *this;
+}
+	
+Matrix& Matrix::pow (int power, bool symmetry)  {
+	Matrix t=*this;
+	for (register int k=1; k<power; k++){
+		product(*this, t, symmetry);
+	}
+	return *this;
+}
+
+
+//takes two (ActorsXActors) matrices and returns their product as a reference to this
+Matrix& Matrix::sum( Matrix &a, Matrix & b)  {
+	for (register int i=0;i< rows();i++)
+		for (register int j=0;j<cols();j++)
+		    setItem(i,j, a.item(i,j)*b.item(i,j));
+	return *this;
+}
+
+
+
+Matrix& Matrix::subtractFromI ()  {
+    for (register int i=0;i< rows();i++)
+	for (register int j=0;j<cols();j++) {
+		if (i==j)
+		    setItem(i,j, 1.0 - item(i,j));
+		else
+		    setItem(i,j, item(i,j));
+	    }
+    return *this;
+}
 

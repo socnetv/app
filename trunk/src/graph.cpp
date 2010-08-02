@@ -1568,6 +1568,60 @@ void Graph::resolveClasses(float C, hash_si &discreteClasses, int &classes, int 
 
 
 
+
+//Calculates the Information centrality of each vertex - diagonal included
+void Graph::centralityInformation(bool weights){
+	qDebug("Graph:: centralityInformation()");
+	classesIDC=0;
+	discreteIDCs.clear();
+	sumIDC=0;
+	maxIDC=0;
+	minIDC=vertices()-1;
+	varianceDegree=0;
+	meanDegree=0;
+
+	DM.resize(m_totalVertices);
+	TM.resize(m_totalVertices);
+
+	int aVertices=vertices();
+	int aEdges = totalEdges();    //maybe we will use m_totalEdges here to save some time?...
+	int i=0, j=0, m_infinite=100;
+	float IDC=0, nom=0, denom=0;
+	float weight, tempValueA;
+
+
+	qDebug("Graph: centralityInformation() writing matrix with %i vertices", vertices());
+	QList<Vertex*>::iterator it, it1;
+	float m_weight=-1;
+	for (it=m_graph.begin(); it!=m_graph.end(); it++){
+		if ( ! (*it)->isEnabled() ) continue;
+		i++;
+		for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
+			if ( ! (*it1)->isEnabled() ) continue;
+			j++;
+			if ( (m_weight = this->hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
+				DM.setItem(i,j, m_weight );
+			}
+			else
+				DM.setItem(i,j, 0);
+		}
+	}
+	DM.subtractFromI();  // calculate I-A
+	sumM.identityMatrix(m_totalVertices);
+
+	for (register int k=0 ; k< m_infinite ; k++){
+	    TM=DM;
+	    TM.product(TM, DM, true);
+	    sumM.sum ( sumM, TM);
+	}
+
+
+	graphModified=false;
+}
+
+
+
+
 /**
 *	Calculates In-Degree Centralities of each vertex - diagonal included
 *	Also the mean value and the variance of the in-degrees.
