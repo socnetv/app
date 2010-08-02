@@ -297,3 +297,24 @@ Matrix& Matrix::subtractFromI ()  {
     return *this;
 }
 
+Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
+	Matrix AM;  //will become A^-1 in the end
+	n=A.cols();
+	AM.identityMatrix( n );
+	int l=0;
+	for ( register int j=1; j<n; j++) { // for n, it is the last diagonal element of A
+	    l=j+1;
+	    for ( register int i=l; i<=n; i++) {
+		AM.setItem(i,j, -A.item(i,j)/A.item(j,j) ) ;
+		A.setItem(i,j, -A.item(i,j)/A.item(j,j) ) ;
+	}
+	// Now A is an upper triangular matrix...
+	// start the back propagation routine
+	 for ( register int j=n; j>1; j--) { // for n, it is the last diagonal element of A
+		l=j-1;
+		for ( register int i=l; i<=1; i--) {
+		    AM.setItem(i,j, -A.item(i,j)/A.item(j,j) ) ;
+		    A.setItem(i,j, -A.item(i,j)/A.item(j,j) ) ;
+	    }
+
+}
