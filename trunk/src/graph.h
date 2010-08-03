@@ -208,6 +208,8 @@ public:
 	void writeDataSetToFile(QString );			// Writes a known dataset to a file.
 	void writeAdjacencyMatrixTo(QTextStream& os);	 		//Exports the adjacency matrix to a given textstream
 	void writeAdjacencyMatrix(const char*, const char*);		//Writes the adjacency matrix to a given file.
+	void invertAdjacencyMatrix();
+	void writeInvertAdjacencyMatrix(const char*,  const char*);
 	void writeDistanceMatrix(const char*, const char*, const char*);//Writes the distance matrix to a file
 	friend QTextStream& operator <<  (QTextStream& os, Graph& m);  	//
 
@@ -322,7 +324,7 @@ private:
 	bool calculatedIDC, calculatedODC, calculatedCentralities, dynamicMovement;
 	
 	QList<int>  triadTypeFreqs; 	//stores triad type frequencies
-	Matrix  TM, DM, sumM;
+	Matrix  TM, DM, sumM, invAM, AM;
 	stack<int> Stack;
 
 	float meanDegree, varianceDegree;

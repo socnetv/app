@@ -32,6 +32,8 @@ using namespace std;
 
 
 #include <QtGlobal>		//used for qDebug function
+#include <QDebug>
+
 #include <QTextStream>
 
 
@@ -176,6 +178,7 @@ class Matrix {
 
 		Matrix& sum (Matrix &a, Matrix &b) ;
 
+		Matrix& inverseByGaussJordanElimination(Matrix &a);
 	private:
 		Row *row;
     		int m_Actors;

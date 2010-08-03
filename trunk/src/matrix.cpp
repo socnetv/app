@@ -86,15 +86,14 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
 
 
 void Matrix::resize (int Actors) {
-		qDebug ("Matrix: resize() -- deleting old rows");
-		delete [] row;
- 		row = new Row [m_Actors=Actors];  
-		Q_CHECK_PTR( row );
-		qDebug ("Matrix: resize() -- resizing each row");
-		for (int i=0;i<m_Actors; i++) { 
-				row[i].resize(m_Actors); //every Row object holds max_int=32762
-		}
-			
+	qDebug ("Matrix: resize() -- deleting old rows");
+	delete [] row;
+	row = new Row [m_Actors=Actors];
+	Q_CHECK_PTR( row );
+	qDebug ("Matrix: resize() -- resizing each row");
+	for (int i=0;i<m_Actors; i++) {
+	    row[i].resize(m_Actors); //every Row object holds max_int=32762
+	}
 }
 
 
@@ -129,7 +128,7 @@ void Matrix::clearItem( int r, int c ) 	{
 
 
 int Matrix::edgesFrom(int r){
-	qDebug("Matrix: edgesFrom() %i = %i",r, row[r].outEdges());
+	qDebug() << "Matrix: edgesFrom() " << r << " = "<< row[r].outEdges();
 	return row[r].outEdges();
 }
 
@@ -140,7 +139,7 @@ int Matrix::edgesTo(int t){
 		if (item(i, t) )
 			m_inEdges++;
 	}
-	qDebug("Matrix: edgesTo() %i = %i",t, m_inEdges);
+	qDebug()<< "Matrix: edgesTo() " << t << " = " << m_inEdges;
 	return m_inEdges;
 }
 
@@ -287,34 +286,40 @@ Matrix& Matrix::sum( Matrix &a, Matrix & b)  {
 
 
 Matrix& Matrix::subtractFromI ()  {
-    for (register int i=0;i< rows();i++)
-	for (register int j=0;j<cols();j++) {
+	for (register int i=0;i< rows();i++)
+	    for (register int j=0;j<cols();j++) {
 		if (i==j)
 		    setItem(i,j, 1.0 - item(i,j));
 		else
 		    setItem(i,j, item(i,j));
 	    }
-    return *this;
+	return *this;
 }
 
 Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
-	Matrix AM;  //will become A^-1 in the end
-	n=A.cols();
-	AM.identityMatrix( n );
+	qDebug()<< "Matrix::inverseByGaussJordanElimination()";
+	int n=A.cols();
+	qDebug()<<"Matrix::inverseByGaussJordanElimination() - starting with the identity Matrix; this will become A^-1 in the end";
+	identityMatrix( n );
 	int l=0;
-	for ( register int j=1; j<n; j++) { // for n, it is the last diagonal element of A
+	for ( register int j=0; j< n-1; j++) { // for n, it is the last diagonal element of A
 	    l=j+1;
-	    for ( register int i=l; i<=n; i++) {
-		AM.setItem(i,j, -A.item(i,j)/A.item(j,j) ) ;
+	    for ( register int i=l; i<n; i++) {
+		qDebug()<<" initial A("<< i+1 << ","<< j+1 << ") = " <<  A.item(i,j);
 		A.setItem(i,j, -A.item(i,j)/A.item(j,j) ) ;
-	}
-	// Now A is an upper triangular matrix...
-	// start the back propagation routine
-	 for ( register int j=n; j>1; j--) { // for n, it is the last diagonal element of A
-		l=j-1;
-		for ( register int i=l; i<=1; i--) {
-		    AM.setItem(i,j, -A.item(i,j)/A.item(j,j) ) ;
-		    A.setItem(i,j, -A.item(i,j)/A.item(j,j) ) ;
+		qDebug()<<"   final A("<< i+1 << ","<< j+1 << ") = " <<  A.item(i,j);
+		setItem(i,j, -A.item(i,j)/A.item(j,j) ) ;
 	    }
-
+	}
+	qDebug()<<" inverseByGaussJordanElimination() - Now A is an upper triangular matrix...start the back propagation routine";
+	for ( register int j=n-1;  j > 0; j--) {
+		l=j-1;
+		for ( register int i=l; i<=0; i--) {
+		    qDebug()<<" initial A("<< i+1 << ","<< j+1 << ") = " <<  A.item(i,j);
+		    setItem(i,j, -A.item(i,j)/A.item(j,j) ) ;
+		    A.setItem(i,j, -A.item(i,j)/A.item(j,j) );
+		    qDebug()<<" final A("<< i+1 << ","<< j+1 << ") = " <<  A.item(i,j);;
+		}
+	 }
+	 return *this;
 }

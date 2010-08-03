@@ -787,7 +787,13 @@ void MainWindow::initActions(){
 	symmetryAct->setWhatsThis(tr("Network Symmetry\n\n A network is symmetric when all edges are reciprocal, or, in mathematical language, when the adjacency matrix is symmetric."));
 	connect(symmetryAct, SIGNAL(activated()), this, SLOT(slotCheckSymmetry()));
 
- 
+	invertAdjMatrixAct = new QAction(QIcon(":/images/symmetry.png"), tr("Invert Adjacency Matrix"), this);
+	invertAdjMatrixAct ->setShortcut(tr("Shift+I"));
+	invertAdjMatrixAct->setStatusTip(tr("Inverts the adjacency matrix"));
+	invertAdjMatrixAct->setWhatsThis(tr("Invert  Adjacency Matrix \n\n Inverts the adjacency matrix using linear algebra methods."));
+	connect(invertAdjMatrixAct, SIGNAL(activated()), this, SLOT(slotInvertAdjMatrix()));
+
+
 	graphDistanceAct = new QAction(QIcon(":/images/distance.png"),  tr("Graph Distance"), this);
 	graphDistanceAct ->setShortcut(tr("Ctrl+G"));
 	graphDistanceAct->setStatusTip(tr("Calculates the length of the shortest path between two nodes..."));
@@ -882,7 +888,7 @@ void MainWindow::initActions(){
 	cPowerAct = new QAction(tr("Power"), this);
 	cPowerAct->setShortcut(tr("Ctrl+8"));
 	cPowerAct->setStatusTip(tr("Calculate and display Power Centrality (aka Gil-Schmidt Power Centrality index)"));
-	cPowerAct->setWhatsThis(tr("Power Centrality\n\n For each node k, this index sums its degree (with weight 1), with the size of the 2nd-order neighbourhood (with weight 2), and in general, with the size of the kth order neighbourhood (with weight k). Thus, for each node in the network the most important other nodes are its immediate neighbours and then in decreasing importance the nodes of the 2nd-order neighbourhood, 3rd-order neighbourhood etc. For each node, the sum obtained is normalised by the total numbers of nodes in the same component minus 1. Power centrality has been by Gil-Schmidt. "));
+	cPowerAct->setWhatsThis(tr("Power Centrality\n\n For each node k, this index sums its degree (with weight 1), with the size of the 2nd-order neighbourhood (with weight 2), and in general, with the size of the kth order neighbourhood (with weight k). Thus, for each node in the network the most important other nodes are its immediate neighbours and then in decreasing importance the nodes of the 2nd-order neighbourhood, 3rd-order neighbourhood etc. For each node, the sum obtained is normalised by the total numbers of nodes in the same component minus 1. Power centrality has been devised by Gil-Schmidt. "));
 	connect(cPowerAct, SIGNAL(activated()), this, SLOT(slotCentralityPower()));
 
 
@@ -1211,6 +1217,7 @@ void MainWindow::initMenuBar() {
 /** menuBar entry: statistics menu */
 	statMenu = menuBar()->addMenu(tr("&Statistics"));
 	statMenu -> addAction (symmetryAct);
+	statMenu -> addAction (invertAdjMatrixAct);
 //	statMenu -> addAction (netDensity);
 
 	statMenu -> addSeparator();
@@ -2689,7 +2696,6 @@ void MainWindow::slotOpenTextEditor(){
 	While slotExportSM uses << operator of Matrix class (via adjacencyMatrix of Graph class), this is using directly the writeAdjacencyMatrix method of Graph class
 */
 void MainWindow::slotViewAdjacencyMatrix(){
-
 	if ( !fileLoaded && !networkModified) {
 		QMessageBox::critical (this, "Error",
 		tr("Empty network! \nLoad a network file or create something by double-clicking on the canvas!"), "OK",0);
@@ -2699,7 +2705,7 @@ void MainWindow::slotViewAdjacencyMatrix(){
 	}	
 	int aNodes=activeNodes();
 	statusBar() ->  showMessage ( QString (tr ("creating adjacency adjacency matrix of %1 nodes")).arg(aNodes) );
-	qDebug ("MW: calling writeAdjacencyMatrix with %i nodes", aNodes);
+	qDebug ("MW: calling Graph::writeAdjacencyMatrix with %i nodes", aNodes);
 	char fn[]= "adjacency-matrix.dat";
 
 	activeGraph.writeAdjacencyMatrix(fn, networkName.toLocal8Bit()) ;
@@ -4593,7 +4599,7 @@ int MainWindow::activeNodes(){
 */
 
 void MainWindow::slotCheckSymmetry(){
-		if (!fileLoaded && !networkModified  )   {
+	if (!fileLoaded && !networkModified  )   {
 		QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 		statusMessage(  QString(tr("There is no network!"))  );
 		return;
@@ -4608,7 +4614,29 @@ void MainWindow::slotCheckSymmetry(){
 }
 
 
+void MainWindow::slotInvertAdjMatrix(){
+    if ( !fileLoaded && !networkModified) {
+	    QMessageBox::critical (this, "Error",
+	    tr("Empty network! \nLoad a network file or create something by double-clicking on the canvas!"), "OK",0);
 
+	    statusMessage(  tr("Nothing to show!") );
+	    return;
+    }
+    int aNodes=activeNodes();
+    statusBar() ->  showMessage ( QString (tr ("inverting adjacency adjacency matrix of %1 nodes")).arg(aNodes) );
+    qDebug ("MW: calling Graph::writeInvertAdjacencyMatrix with %i nodes", aNodes);
+    char fn[]= "invert-adjacency-matrix.dat";
+
+    activeGraph.writeInvertAdjacencyMatrix(fn, networkName.toLocal8Bit()) ;
+
+    //Open a text editor window for the new file created by graph class
+    QString qfn=QString::fromLocal8Bit("invert-adjacency-matrix.dat");
+    TextEditor *ed = new TextEditor(fn);
+    tempFileNameNoPath=qfn.split( "/");
+    ed->setWindowTitle(tr("View Adjacency Matrix - ") + tempFileNameNoPath.last());
+    ed->show();
+
+}
 
 
 

@@ -140,7 +140,7 @@ public slots:
 	void slotViewNetworkFile();
 	void slotViewAdjacencyMatrix();
 	void slotShowDataSetSelectDialog();
-		void slotRecreateDataSet(QString);
+	void slotRecreateDataSet(QString);
 	void slotCreateRandomNetErdos();
 	void slotCreateSameDegreeRandomNetwork();
 	void slotCreateGaussianRandomNetwork();
@@ -208,6 +208,7 @@ public slots:
 	void slotClusteringCoefficient();
 	void slotTriadCensus();
 	void slotCheckSymmetry();
+	void slotInvertAdjMatrix();
 
 	void slotCentralityOutDegree();
 	void slotCentralityInDegree();
@@ -343,7 +344,7 @@ private:
 	QAction *drawLinksWeightsAct, *displayLinksWeightNumbersAct, *displayLinksAct, *displayLinksArrowsAct, *drawLinksBezier;
 	QAction *backgroundImageAct, *viewToolBar, *viewStatusBar, *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
 	QAction *netDensity, *symmetryAct,   *graphDistanceAct, *averGraphDistanceAct, *distanceMatrixAct, *diameterAct;
-	QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct;
+	QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct, *invertAdjMatrixAct;
 	QAction *cOutDegreeAct, *cInDegreeAct, *cClosenessAct, *cBetweenessAct, *cInformationalAct, *cGraphAct, *cStressAct, *cPowerAct, *cEccentAct;
 	QAction *randLayoutAct, *randCircleLayoutAct, *circleOutDegreeLayoutAct, *circleInDegreeLayoutAct, *circleClosenessLayoutAct;
 	QAction *antialiasingAct;

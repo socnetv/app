@@ -3859,7 +3859,7 @@ QTextStream& operator <<  (QTextStream& os, Graph& m){
 	The resulting matrix HAS NO spaces between elements.
 */
 void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
-	qDebug("writeAdjacencyMatrix() ");
+	qDebug()<<"Graph::writeAdjacencyMatrix() ";
 	ofstream file (fn);
 	int sum=0;
 	float weight=0;
@@ -3892,7 +3892,64 @@ void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
 
 
 
+void Graph::invertAdjacencyMatrix(){
+    qDebug() << "Graph::invertAdjacencyMatrix()";
+    float m_weight=-1;
+    int i=0, j=0;
 
+    invAM.resize(m_totalVertices);
+    AM.resize(m_totalVertices);
+
+    QList<Vertex*>::iterator it, it1;
+    qDebug()<<"Graph::invertAdjacencyMatrix() - first create the Adjacency Matrix AM";
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+	    if ( ! (*it)->isEnabled() )
+		continue;
+	    j=0;
+	    for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
+		    if ( ! (*it1)->isEnabled() )
+			continue;
+		    if ( (m_weight = this->hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
+			    AM.setItem(i,j, m_weight );
+		    }
+		    else{
+			    AM.setItem(i,j, 0);
+		    }
+		    qDebug()<<" AM("<< i+1 << ","<< j+1 << ") = " <<  AM.item(i,j);
+		    j++;
+	    }
+	    i++;
+    }
+    qDebug()<<"Graph::invertAdjacencyMatrix() - invert the Adjacency Matrix AM and store it to invAM";
+    invAM.inverseByGaussJordanElimination(AM);
+
+}
+
+
+
+void Graph::writeInvertAdjacencyMatrix(const char* fn, const char* netName){
+    qDebug("Graph::writeInvertAdjacencyMatrix() ");
+    int i=0, j=0;
+    QList<Vertex*>::iterator it, it1;
+    ofstream file (fn);
+    file << "-Social Network Visualizer- \n";
+    file << "Invert Adjacency Matrix of "<< netName<<": \n\n";
+    invertAdjacencyMatrix();
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+	    if ( ! (*it)->isEnabled() )
+		continue;
+	    j=0;
+	    for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
+		    if ( ! (*it1)->isEnabled() )
+			continue;
+		    file << invAM.item(i,j)<< " ";
+		    j++;
+	    }
+	    i++;
+	    file << endl;
+    }
+    file.close();
+}
 
 
 bool Graph::saveGraphToDotFormat (
