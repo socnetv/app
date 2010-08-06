@@ -28,21 +28,19 @@
 
 #ifndef MATRIX_H
 #define MATRIX_H
+
 using namespace std;
 
 
 #include <QtGlobal>		//used for qDebug function
 #include <QDebug>
-
 #include <QTextStream>
-
-
 
 
 class Row {
 public:
 	Row (int Actors=3000) {
-		cell=new  int [m_Actors=Actors];
+		cell=new  float [m_Actors=Actors];
 		Q_CHECK_PTR( cell );
 		m_outEdges=0;
 	}
@@ -52,30 +50,29 @@ public:
 			if (this != &a){
 				if (a.m_Actors!=m_Actors) {
 					delete [] cell;
-					cell=new  int[m_Actors=a.m_Actors];
+					cell=new  float[m_Actors=a.m_Actors];
 					Q_CHECK_PTR( cell);
 				}
-				for (int i=0;i<m_Actors; i++) cell[i]=a.cell[i];
+				for (int i=0;i<m_Actors; i++)
+				    cell[i]=a.cell[i];
 			}
 			return *this;
 	}
 	
-	int column ( int c ) const {
+	float column ( int c ) const {
 		return cell[c];
 	}
 	
-	void setColumn (int index, int elem) {
+	void setColumn (int index, float elem) {
 		cell[index]=elem;
 		if (elem!=0)
 			m_outEdges++;
-//		qDebug ("Row(): index %i m_outEdges= %i",index, m_outEdges);		
 	}
 
 	void clearColumn(int index){
 		if (cell[index]!=0)
 			m_outEdges--;
 		cell[index]=0;
-//		qDebug ("Row(): index %i m_outEdges= %i",index, m_outEdges);		
 	}	
 
 
@@ -83,13 +80,14 @@ public:
 	void updateOutEdges(){
 		m_outEdges=0;
 		for (int i=0;i<m_Actors; i++) { 
-			if (cell[i]) m_outEdges++;
+			if (cell[i])
+			    m_outEdges++;
 		}
 	}
 
 	void resize(int Actors) {
 		delete [] cell;
-		cell=new  int[m_Actors=Actors];
+		cell=new  float[m_Actors=Actors];
 		Q_CHECK_PTR( cell);
 		
 		for (int i=0;i<m_Actors; i++) { 
@@ -105,7 +103,7 @@ public:
 	int outEdges () { return m_outEdges;}
 
 private:
-	int *cell;
+	float *cell;
 	int m_Actors, m_outEdges;
 };
 
@@ -120,18 +118,15 @@ class Matrix {
 		        Q_CHECK_PTR( row );
 		}
 
-		/** Copy constructor allows Matrix a=b  declaration */
-		Matrix(const Matrix &b) ;
+		Matrix(const Matrix &b) ;	/* Copy constructor allows Matrix a=b  declaration */
 
-		/** Destructor */
-		~Matrix() { delete [] row; }				
+		~Matrix() { delete [] row; }	/* Destructor */
 
-		/** Used to set m_Actors */
-		void setSize (int Actors);
+		void setSize (int Actors);	/* Used to set m_Actors */
 			
-		int item( int r, int c ) ;
+		float item( int r, int c ) ;
 		
-		void setItem( int r, int c, int elem );
+		void setItem( int r, int c, float elem );
 		
 		void clearItem( int r, int c ) ;
 		
@@ -139,13 +134,12 @@ class Matrix {
 		
 		int rows() {return m_Actors;}
 	
-		/**deletes row i and column i */
-		void deleteRowColumn(int i);
+		void deleteRowColumn(int i);	/* deletes row i and column i */
 	
-		/** This is called before every operation on new matrixes. */
-		void resize (int Actors) ;
+		void resize (int Actors) ;	/* This is called before every operation on new matrixes. */
 	
 		int edgesFrom(int Actor);
+
 		int edgesTo(int Actor);
 		
 		int totalEdges();
@@ -153,19 +147,15 @@ class Matrix {
 		bool printMatrixConsole();
 
 		void identityMatrix (int);
-		/** Fulls a matrix with a value */
-		void fillMatrix (int value );
+
+		void fillMatrix (float value );	   /* Fulls a matrix with a value */
 	
+		Matrix& operator =(Matrix & a);	    /* Equals two matrices. */
 
-		/** Equals two matrices. */
-		Matrix& operator =(Matrix & a);
-
-
-		int  operator ()  (const int r, const int c) ;
+		float  operator ()  (const int r, const int c) ;
 		
 		friend QTextStream& operator <<  (QTextStream& os, Matrix& m);
 
-		
 		/** Takes two matrices and returns their product as a reference */
 		Matrix & product( Matrix &a, Matrix & b, bool symmetry) ;		
 		
@@ -179,9 +169,15 @@ class Matrix {
 		Matrix& sum (Matrix &a, Matrix &b) ;
 
 		Matrix& inverseByGaussJordanElimination(Matrix &a);
+
+		void switchRows(int rowA,int rowB);		/* elementary matrix algebra */
+		void multiplyRow(int row, float value);		/* Multiply every elememt of row A by value */
+		void subtractRowFromRowsBelow(int );
+		void subtractRowFromRowsAbove(int);
+
 	private:
 		Row *row;
-    		int m_Actors;
+		int m_Actors;
 		int *vec;
 
 };

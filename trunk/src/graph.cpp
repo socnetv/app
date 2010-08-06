@@ -1313,7 +1313,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 					if (lst.size() > 0) // just in case...do a sanity check
 						for ( it2=lst.begin(); it2 != lst.end(); it2++ ){
 							u=(*it2);
-							qDebug("Selecting Ps[w] element u=%i with delta_u=%f. sigma(u)=TM(s,u)=%i, sigma(w)=TM(s,w)=%i, delta_w=%f ", u, m_graph[u]->delta(),TM.item(s,u), TM.item(s,w), m_graph[w]->delta());
+							qDebug("Selecting Ps[w] element u=%i with delta_u=%f. sigma(u)=TM(s,u)=%f, sigma(w)=TM(s,w)=%f, delta_w=%f ", u, m_graph[u]->delta(),TM.item(s,u), TM.item(s,w), m_graph[w]->delta());
 							if ( TM.item(s,w) > 0) {
 								//delta[u]=delta[u]+(1+delta[w])*(sigma[u]/sigma[w]) ;
 								d_su=m_graph[u]->delta()+(1.0+m_graph[w]->delta() ) * ( (float)TM.item(s,u)/(float)TM.item(s,w) );
