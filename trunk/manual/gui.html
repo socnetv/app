@@ -36,8 +36,10 @@ Below the menu, the toolbar provides the usual icons: new network creation, load
 
 <p class="text">
 The middle part of the window is occupied by the dock (left-side) and a virtual "canvas" (right-side) where network nodes and edges appear. 
-
+</p>
+<p class="text">
 The dock, on the left of the window, has 4 buttons (add/remove node, add/remove link), some LCDs and some checkboxes. The LCDs display statistics for the active network (i.e. node and edges counters, density, counters of inLinked/outLinked nodes, etc) as well as the selected node (its number, in-Links and out-Links). Below the LCDs, there are some checkboxes to activate dynamic layout methods (i.e. Force directed) and/or change the way node sizes are calculated.
+</p>
 
 <p class="text">
 The canvas is the main area of interaction. The initial background color is set to "gainboro", but you can changed it from the Edit menu. Below, we describe how to work with SocNetV.
@@ -60,7 +62,8 @@ To start working with SocNetV you need network data, i.e. a graph of nodes (vert
 
 <p class="text">
 To  create  a new node, you can double-click on the canvas or click on the "Add node" button. The keyboard shortcut is Ctrl+A.
-<br />
+</p>
+<p class="text">
 You can move a node by left-clicking on it and moving the mouse.
 </p>
 
@@ -79,52 +82,22 @@ Remember, each link you create this way has the default weight 1 and black colou
 
 <h5><a name="Interaction" id="Interaction"></a>Interaction and Group Selection</h5>
 <p class="text">
-As we mentioned in the beginning, you move any node by left-clicking and dragging it. 
-<br />
+As mentioned earlier, you move any node by left-clicking and dragging it. </p>
+<p class="text">
 If you want to select more than one node, press and hold down the left mouse button on the canvas. By moving your mouse, a rectangle will be drawed. All nodes inside this rectangle will be selected the moment you release the mouse button. 
-<br />
+</p>
+<p class="text">
 Warning: in networks with thousands of edges, the group selection process is dramatically slow...
 </p>
 
 <h5><a name="Interaction" id="Interaction"></a>Node Menu and Node Shapes</h5>
 <p class="text">
 When you right-click on  a node, a context menu appears. From there you can remove the node, change its color, label, size as well as its  shape.  A similar menu  appears when you right click on a link.
-
-<br />
-
-	SocNetV  supports many  kinds  of node shapes, i.e rectangles, diamond, ellipse, circle, etc. To change the shape of a node, right-click on it and in the context menu select Options > Change shape to...
-</p>
-
-<h4><a name="Random" id="Random"></a>Random network creation</h4>
-<p class="text">
-SocNetV can create a random network for you. At the moment, it can create the following types of random networks:
-<div class="text">
-<ul>
-<li><b>Small Worlds</b>: According to the Watts and Strogatz model, a 'small world' is a random network with short average path lengths and high clustering. 
-From the menu Network select Create Random Network > Small World (or press Shift+W). You will be asked for the number of nodes, their initial degree and a rewiring probability. </li>
-
-<li><b>Erdos-Renyi networks</b>: According to G(n, p) model (Erdos-Renyi), a random network is created by connecting nodes randomly. Each edge is included in the graph with equal probability p, independently of the other edges 
- From the menu Network select Create Random Network > Erdos-Reny (or press Shift+R). You will be asked for the number of nodes and a link probability. </li>
-
-<li><b>Ring lattices</b>: Ring lattices (or physicist's lattices) are 'random' networks where all nodes are positioned in a ring and each one has the same even degree (number of links) L with her "neighbourhood", 
-namely she is linked with the L/2 nodes before and L/2 nodes after her. For instance in a lattice of 4-lattice of 10 nodes, node 6 will be linked with 4,5,7,8. To create such a network do Network > Create Random Network > Lattice (or press Shift+L). You will be asked for the number of nodes and the number of links each node will have.</li>
-
-<li><b>Same degree networks</b>: these are random networks where each node has the same degree but is arbitrarily linked with other nodes (not just the neighbours). </li>
-</ul>
-</div>
-
-
-<h4><a name="WebCrawler" id="WebCrawler"></a>Web Crawler</h4>
-<p class="text">
-SocNetV offers a built-in web crawler, allowing you to automatically create networks from all links found in a given website. 
-A Web Crawler is a software bot (an algorithm), which starts with a given URL (website or webpage) to visit. 
-As the algorithm crawls that webpage, it identifies all the links in the page and adds them to a list of URLs (called frontier).
-Then, all the URLs from the frontier are recursively visited.
 </p>
 <p class="text">
-To start the web crawler, go to menu Network > Web Crawler or press Shift+C.  
-A dialog will appear, where you must enter initial web address (seed), the maximum recursion level (how many URLs from the frontier will be visited) and the maximum running time...
+SocNetV  supports many  kinds  of node shapes, i.e rectangles, diamond, ellipse, circle, etc. To change the shape of a node, right-click on it and in the context menu select Options > Change shape to...
 </p>
+
 
 <h4><a name="Load" id="Load"></a>Loading a network</h4>
 <p class="text">
@@ -134,15 +107,73 @@ The easiest way to start working with SocNetV is when you have already a network
 For instance, you might have another program (for example a simulation) creating adjacency networks which you want to visualise. In that case, from the SocNetV's menu go File > Load. In the dialogue that will appear, navigate to the desired folder and select the appropriate network file. SocNetV will automatically recognise the format and, if it is supported, it will visualise the network.
 </p>
 
+
 <h4><a name="Save" id="Save"></a>Saving the active network</h4>
 <p class="text">
-To save the active network, just press Ctrl+S or click on the menu entry File > Save. By default, it will be saved in GraphML format. If you like, you can export it to another supported format (menu Network > Export To). Note that some <a href="formats.html" target="2">formats</a> are supported only for loading - not for saving. 
+To save the active network, just press Ctrl+S or click on the menu entry File > Save. By default, it will be saved in GraphML format. 
+</p>
+<p class="text">
+If you like, you can export it to another supported format (menu Network > Export To). Note that some <a href="formats.html" target="2">formats</a> are supported only for loading - not for saving. 
+</p>
+
+
+
+<h4><a name="Adjacency" id="Adjacency"></a>View the adjacency matrix</h4>
+<p class="text">
+The adjacency matrix of a network is a matrix where each element a(i,j) is equal to the weight of the link from node i to node j. 
+If the nodes are not connected, then a(i,j)=0. 
+</p>
+<p class="text">
+To view the adjacency matrix of a network, press F6.
+</p>
+<p class="text">
+By default, SocNetV displays the adjacency matrix as integer-valued only (although we do allow float weights).
+</p>
+
+
+
+<h4><a name="Random" id="Random"></a>Random network creation</h4>
+<p class="text">
+SocNetV can create a random network for you. At the moment, it can create the following types of random networks:
+<div class="text">
+<ul>
+<li><b>Small Worlds</b>: According to the Watts and Strogatz model, a 'small world' is a random network with short average path lengths and high clustering.
+From the menu Network select Create Random Network > Small World (or press Shift+W). You will be asked for the number of nodes, their initial degree and a rewiring probability. </li>
+
+<li><b>Erdos-Renyi networks</b>: According to G(n, p) model (Erdos-Renyi), a random network is created by connecting nodes randomly. Each edge is included in the graph with equal probability p, independently of the other edges
+ From the menu Network select Create Random Network > Erdos-Reny (or press Shift+R). You will be asked for the number of nodes and a link probability. </li>
+
+<li><b>Ring lattices</b>: Ring lattices (or physicist's lattices) are 'random' networks where all nodes are positioned in a ring and each one has the same even degree (number of links) L with her "neighbourhood", namely she is linked with the L/2 nodes before and L/2 nodes after her. For instance in a lattice of 4-lattice of 10 nodes, node 6 will be linked with 4,5,7,8. To create such a network do Network > Create Random Network > Lattice (or press Shift+L). You will be asked for the number of nodes and the number of links each node will have.</li>
+
+<li><b>Same degree networks</b>: these are random networks where each node has the same degree but is arbitrarily linked with other nodes (not just the neighbours). </li>
+</ul>
+</div>
+
+
+
+<h4><a name="WebCrawler" id="WebCrawler"></a>Web Crawler</h4>
+<p class="text">
+SocNetV offers a built-in web crawler, allowing you to automatically create networks from all links found in a given website.
+<p>
+<p class="text">
+A Web Crawler is a software bot (an algorithm), which starts with a given URL (website or webpage) to visit.
+</p>
+<p class="text">
+As the algorithm crawls that webpage, it identifies all the links in the page and adds them to a list of URLs (called frontier).
+Then, all the URLs from the frontier are recursively visited.
+</p>
+<p class="text">
+To start the web crawler, go to menu Network > Web Crawler or press Shift+C.
+A dialog will appear, where you must enter initial web address (seed), the maximum recursion level (how many URLs from the frontier will be visited) and the maximum running time...
 </p>
 
 
 <h4><a name="Export" id="Export"></a>Printing and Exporting</h4>
 <p class="text">
-SocNetV allows you to print the network or a small portion of it directly to your printer (press Ctrl+P). Keep in mind, that SocNetV follows the "what you see is what you print" principle:  we print what is viewable in the canvas, i.e. if you zoom-in to a network, the application will only print that specific network portion. So, you might need to zoom-out enough so that the whole network is viewable and therefore printable.  
+To print the network directly to your printer, press Ctrl+P. 
+</p>
+<p class="text">Keep in mind, that SocNetV follows the "what you see is what you print" principle:  <br />
+we print what is viewable in the canvas, i.e. if you zoom-in to a network, the application will only print that specific network portion. So, you might need to zoom-out enough so that the whole network is viewable and therefore printable.  
 </p>
 
 <p class="text">
