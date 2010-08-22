@@ -394,8 +394,8 @@ void MainWindow::initActions(){
 
 	viewSociomatrixAct = new QAction(QIcon(":/images/sm.png"), tr("View Adjacency Matrix"),  this);
 	viewSociomatrixAct ->setShortcut(tr("F6"));
-	viewSociomatrixAct->setStatusTip(tr("Displays the adjacency matrix of the active network"));
-	viewSociomatrixAct->setWhatsThis(tr("View Network file\n\nDisplays the adjacency matrix of the active network"));
+	viewSociomatrixAct->setStatusTip(tr("Displays the adjacency matrix of the active network. See manual or online help for more..."));
+	viewSociomatrixAct->setWhatsThis(tr("View Adjacency Matrix\n\nDisplays the adjacency matrix of the active network. \n\n The adjacency matrix of a network is a matrix where each element a(i,j) is equal to the weight of the link from node i to node j. If the nodes are not connected, then a(i,j)=0. "));
 	connect(viewSociomatrixAct, SIGNAL(activated()), this, SLOT(slotViewAdjacencyMatrix()));
 
 
@@ -1076,7 +1076,7 @@ void MainWindow::initMenuBar() {
 	networkMenu -> addAction (recreateDataSetAct);
 	networkMenu -> addSeparator();
 	
-	randomNetworkMenu = new QMenu(tr("Create Random Network"));
+	randomNetworkMenu = new QMenu(tr("Create Random Network..."));
 	networkMenu ->addMenu (randomNetworkMenu);
 	randomNetworkMenu -> addAction (createSmallWorldRandomNetworkAct);
 	randomNetworkMenu -> addAction (createUniformRandomNetworkAct );
@@ -1234,7 +1234,7 @@ void MainWindow::initMenuBar() {
 	statMenu -> addAction (triadCensusAct);
 	
 	statMenu->addSeparator();
-	centrlMenu = new QMenu(tr("Centralities"));
+	centrlMenu = new QMenu(tr("Centralities..."));
 	statMenu->addMenu(centrlMenu); 
 	centrlMenu -> addAction (cInDegreeAct);
 	centrlMenu -> addAction (cOutDegreeAct);
@@ -1249,7 +1249,7 @@ void MainWindow::initMenuBar() {
 
 /** menuBar entry optionsMenu  */
 	optionsMenu = menuBar()->addMenu(tr("&Options"));
-	nodeOptionsMenu=new QMenu(tr("Nodes"));
+	nodeOptionsMenu=new QMenu(tr("Nodes..."));
 	nodeOptionsMenu -> setIcon(QIcon(":/images/nodes.png")); 
 
 	optionsMenu -> addMenu (nodeOptionsMenu);
@@ -1257,7 +1257,7 @@ void MainWindow::initMenuBar() {
 	nodeOptionsMenu -> addAction (displayNodeLabelsAct);
 	nodeOptionsMenu -> addAction (displayNumbersInsideNodesAct);
 
-	linkOptionsMenu=new QMenu(tr("Links"));
+	linkOptionsMenu=new QMenu(tr("Links..."));
 	linkOptionsMenu -> setIcon(QIcon(":/images/line.png"));
 
 	optionsMenu -> addMenu (linkOptionsMenu);
@@ -1268,7 +1268,7 @@ void MainWindow::initMenuBar() {
 	linkOptionsMenu -> addAction (drawLinksWeightsAct);
 	linkOptionsMenu -> addAction (drawLinksBezier);
   
-	viewOptionsMenu = new QMenu (tr("&View"));
+	viewOptionsMenu = new QMenu (tr("&View..."));
 	viewOptionsMenu -> setIcon(QIcon(":/images/view.png"));
 	optionsMenu -> addMenu (viewOptionsMenu);
 	viewOptionsMenu-> addAction (backgroundImageAct);

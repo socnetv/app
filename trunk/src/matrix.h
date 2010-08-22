@@ -170,10 +170,8 @@ class Matrix {
 
 		Matrix& inverseByGaussJordanElimination(Matrix &a);
 
-		void switchRows(int rowA,int rowB);		/* elementary matrix algebra */
+		void swapRows(int rowA,int rowB);		/* elementary matrix algebra */
 		void multiplyRow(int row, float value);		/* Multiply every elememt of row A by value */
-		void subtractRowFromRowsBelow(int );
-		void subtractRowFromRowsAbove(int);
 
 	private:
 		Row *row;

@@ -28,6 +28,8 @@
 
 #include <iostream>		//used for cout
 
+#include <math.h>		//need for fabs function
+
 //constructor - every Row object holds max_int=32762
 Matrix::Matrix(const Matrix &b) {
 	row = new Row[m_Actors=b.m_Actors];
@@ -294,9 +296,9 @@ Matrix& Matrix::subtractFromI ()  {
 }
 
 
-/* Switch row A with row B of this matrix */
-void Matrix::switchRows(int rowA,int rowB){
-     qDebug()<<"   switchRows "<< rowA+1 << " with " << rowB+1;
+/* Swaps row A with row B of this matrix */
+void Matrix::swapRows(int rowA,int rowB){
+    qDebug()<<"   swapRow() "<< rowA+1 << " with " << rowB+1;
     float *tempRow = new  float [ rows() ];
     for ( register int j=0; j<  rows(); j++) {
 	  tempRow[j] = item (rowB, j);
@@ -307,81 +309,98 @@ void Matrix::switchRows(int rowA,int rowB){
 }
 
 
-/* Multiply every elememt of row A by value */
+
+
+/* Multiply every element of row A by value */
 void Matrix::multiplyRow(int row, float value) {
-    qDebug()<<"   multiplyRow "<< row+1 << " by value " << value;
+    qDebug()<<"   multiplyRow() "<< row+1 << " by value " << value;
     for ( register int j=0; j<  rows(); j++) {
 	  setItem ( row, j,  value * item (row, j) );
+	  qDebug()<<"   item("<< row+1 << ","<< j+1 << ") = " <<  item(row,j);
     }
 }
 
 
 
 
-/* Subtract given row from every row below of this one in this Matrix */
-void Matrix::subtractRowFromRowsBelow(int row) {
-    qDebug() << "subtractRowFromRowsBelow(): " << row+1;
-    for ( register int i=row+1; i<  rows(); i++) {
-	for ( register int j=0; j<  rows(); j++) {
-	    qDebug()<<"   item("<< i+1 << ","<< j+1 << ") = " <<  item(i,j) << " will be subtracted by " << item (i, j) * item(row, row) ;
-	    setItem ( i, j,   item (i, j) -  item (i, j) * item(row, row)  );
-	    qDebug()<<"   item("<< i+1 << ","<< j+1 << ") = " <<  item(i,j);
-	}
-    }
-}
 
-
-/* Subtract given row from every row above of this one in this Matrix */
-void Matrix::subtractRowFromRowsAbove(int row) {
-    for ( register int i=row-1; i >  0; i-- ) {
-	for ( register int j=rows(); j > 0; j--) {
-	    qDebug()<<"   item("<< i+1 << ","<< j+1 << ") = " <<  item(i,j) << " will be subtracted by " << item (i, j) * item(row, row) ;
-	    setItem ( i, j,   item (i, j) -  item (i, j) * item(row, row)  );
-	    qDebug()<<"   item("<< i+1 << ","<< j+1 << ") = " <<  item(i,j);
-	}
-    }
-}
-
-
+/* Inverts given matrix A by Gauss Jordan elimination
+   Input:  matrix A
+   Output: matrix A becomes unit matrix
+   This becomes the invert of A and is returned back.
+*/
 Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
 	qDebug()<< "Matrix::inverseByGaussJordanElimination()";
 	int n=A.cols();
 	qDebug()<<"Matrix::inverseByGaussJordanElimination() - starting with the identity Matrix; this will become A^-1 in the end";
 	identityMatrix( n );
 	int l=0, m_pivotLine=0;
-	float m_pivot=0;
+	float m_pivot=0, temp_pivot=0, elim_coef=0;
 
-	for ( register int j=0; j< n-1; j++) { // for n, it is the last diagonal element of A
+	for ( register int j=0; j< n; j++) { // for n, it is the last diagonal element of A
 	    l=j+1;
-	    m_pivotLine=0;
+	    m_pivotLine=-1;
 	    m_pivot = A.item(j,j);
-	    qDebug() << "inverseByGaussJordanElimination(). initial pivot " << m_pivot ;
+	    qDebug() << "inverseByGaussJordanElimination() at column " << j+1
+		    << " Initial pivot " << m_pivot ;
 	    for ( register int i=l; i<n; i++) {
-		if ( A.item(i,j) > m_pivot ) { // find the pivot
-		    qDebug() << " initial A("<< i+1 << ","<< j+1  << ") = " <<  A.item(i,j) << " is larger than last pivot "<< m_pivot << " new pivot line...";
+		temp_pivot = A.item(i,j);
+		if ( fabs( temp_pivot ) > fabs ( m_pivot ) ) {
+		    qDebug() << " A("<< i+1 << ","<< j+1  << ") = " <<  temp_pivot
+			    << " absolutely larger than current pivot "<< m_pivot
+			    << ". Marking new pivot line: " << i+1;
 		    m_pivotLine=i;
-		    m_pivot = A.item(i,j) ;
+		    m_pivot = temp_pivot ;
 		}
 	    }
-	    A.switchRows(m_pivotLine,j);
-	    switchRows(m_pivotLine,j);
-	    A.multiplyRow(m_pivotLine,1/m_pivot);
-	    multiplyRow(m_pivotLine,1/m_pivot);
-	    A.subtractRowFromRowsBelow(m_pivotLine);
-	    subtractRowFromRowsBelow(m_pivotLine);
-	    A.subtractRowFromRowsAbove(m_pivotLine);
-	    subtractRowFromRowsAbove(m_pivotLine);
+	    if ( m_pivotLine != -1 ) {
+		A.swapRows(m_pivotLine,j);
+		swapRows(m_pivotLine,j);
+	    }
+
+
+	    qDebug()<<"   multiplyRow() "<< j+1 << " by value " << 1/m_pivot ;
+	    for ( register int k=0; k<  rows(); k++) {
+		A.setItem ( j, k,  (1/m_pivot) * A.item (j, k) );
+		setItem ( j, k,  (1/m_pivot) * item (j, k) );
+		qDebug()<<"   A.item("<< j+1 << ","<< k+1 << ") = " <<  A.item(j,k);
+		qDebug()<<"   item("<< j+1 << ","<< k+1 << ") = " <<  item(j,k);
+	    }
+
+	    qDebug() << "eliminate variables FromRowsBelow()" << j+1 ;
+	    for ( register int i=0; i<  rows(); i++) {
+		 qDebug()<<"   Eliminating item("<< i+1 << ","<< j+1 << ") = "
+			 <<  A.item(i,j) << " while at column j="<<j+1;
+		 if ( A.item(i,j)==0 ){
+		    qDebug()<< " ...already eliminated - continue";
+		    continue;
+		}
+		 if ( i == j){
+		     qDebug()<< " ...skip pivotline - continue";
+		    continue;
+		}
+		elim_coef=A.item (i, j);
+		for ( register int k=0; k<  cols(); k++) {
+		    qDebug()<<"   A.item("<< i+1 << ","<< k+1 << ") = " <<  A.item(i,k)
+			    << " will be subtracted by " << " A.item ("<< i+1
+			    << ", "<< j+1 << ") x A.item(" << j+1 << ","<<k+1
+			    <<") =" << elim_coef * A.item(j,k) ;
+		    A.setItem ( i, k,   A.item (i, k) -  elim_coef * A.item(j, k)  );
+		    qDebug()<<"   A.item("<< i+1 << ","<< k+1 << ") = " <<  A.item(i,k);
+
+		    qDebug()<<"   item("<< i+1 << ","<< k+1 << ") = " <<  item(i,k)
+			    << " will be subtracted by " << " A.item ("<< i+1
+			    << ", "<< j+1 << ") x item(" << j+1 << ","<<k+1
+			    <<") =" << elim_coef * item(j,k)  <<  " = "
+			    << elim_coef << " x " << item(j,k) ;
+
+		    setItem ( i, k,   item (i, k) -  elim_coef * item(j, k)  );
+		    qDebug()<<"   item("<< i+1 << ","<< k+1 << ") = " <<  item(i,k);
+
+		}
+	    }
+
 	}
 
-//	qDebug() << "inverseByGaussJordanElimination(). Now A is an upper triangular matrix...start the back propagation routine" ;
-//	for ( register int j=n-1;  j > 0; j--) {
-//		l=j-1;
-//		for ( register int i=l; i<=0; i--) {
-//		    qDebug()<<" initial A(" << i+1 << ","<< j+1 << ") = " <<  A.item(i,j);
-//		    setItem(i,j, -A.item(i,j)/A.item(j,j) ) ;
-//		    A.setItem(i,j, -A.item(i,j)/A.item(j,j) );
-//		    qDebug()<<" final A("<< i+1 << ","<< j+1 << ") = " <<  A.item(i,j);;
-//		}
-//	 }
 	 return *this;
 }

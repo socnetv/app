@@ -760,12 +760,11 @@ float Graph::hasEdge (int v1, int v2) {
 	float weight=0;
 	if ( ! m_graph[ index[v1] ] -> isEnabled() || ! m_graph[ index[v2] ] -> isEnabled())
 		return 0;
-	if ( (weight=  m_graph[ index[v1] ]->isLinkedTo(v2) ) != 0 ) {
-		//qDebug("Graph: hasEdge() between %i (%i) and %i (%i) = %f", v1, index[v1], v2, index[v2], weight);
+	if ( (weight=  m_graph[ index[v1] ] -> isLinkedTo(v2) ) != 0 ) {
+	    //qDebug() << "Graph: hasEdge() between " <<  v1 << " " << index[v1] <<  " and " <<  v2 << " " << index[v2] << " = " << weight;
 		return weight;
 	}
 	else {	
-		//qDebug("Graph: hasEdge() between %i (%i) and %i (%i) = NO", v1, index[v1], v2, index[v2]);
 		return 0;
 	}
 }
@@ -3933,7 +3932,7 @@ void Graph::writeInvertAdjacencyMatrix(const char* fn, const char* netName){
     QList<Vertex*>::iterator it, it1;
     ofstream file (fn);
     file << "-Social Network Visualizer- \n";
-    file << "Invert Adjacency Matrix of "<< netName<<": \n\n";
+    file << "Invert Matrix of "<< netName<<": \n\n";
     invertAdjacencyMatrix();
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
 	    if ( ! (*it)->isEnabled() )
@@ -3943,10 +3942,12 @@ void Graph::writeInvertAdjacencyMatrix(const char* fn, const char* netName){
 		    if ( ! (*it1)->isEnabled() )
 			continue;
 		    file << invAM.item(i,j)<< " ";
+		    qDebug() << invAM.item(i,j)<< " ";
 		    j++;
 	    }
 	    i++;
 	    file << endl;
+	    qDebug() << endl;
     }
     file.close();
 }
