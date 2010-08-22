@@ -4,9 +4,11 @@
 
 ChangeLog:
 
-Version 0.90 - Feb XX 2010
-Codename: "Fellow"
+Version 0.90 -  Sep XX 2010
+Codename: "Worka Worka"
 --------------------------
+- New feature: Power Centrality calculation
+- New feature: Information Centrality
 - New feature: filter (enable/disable) orphan nodes
 - New feature: import two-mode sociomatrices with affiliation networks
 - New, faster container for GraphicsWidget Nodes based on QHash

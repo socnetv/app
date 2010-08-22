@@ -238,18 +238,19 @@ unsigned long int Vertex::localDegree(){
 
 //Checks if this vertex is outlinked to v2 and returns the weight of the link
 float Vertex::isLinkedTo(unsigned long int v2){
-	qDebug()<< "Vertex::isLinkedTo() ";
 	imap_f::iterator weight=m_outEdges.find(v2);
 	if (weight  != m_outEdges.end()) {
 		if  ( m_enabled_outEdges[ (*weight).first ] == 1) {
-			qDebug()<< "  link to " << v2 << " weight "<<(*weight).second;
+			qDebug()<< "Vertex::isLinkedTo() - a ("  <<  this->name()  << ", " << v2 << ") = "<<(*weight).second;
 			return (*weight).second;			
 		}
-		else 
+		else {
+			qDebug()<< "Vertex::isLinkedTo() - a ("  <<  this->name()  << ", " << v2 << ") = "<<(*weight).second << " but not in enabled_outEdges";
 			return 0;
+		}
 	}
-	else 
-		return 0;
+	qDebug()<< "Vertex::isLinkedTo() - a ("  <<  this->name()  << ", " << v2 << ") = 0 ";
+	return 0;
 }
 
 

@@ -68,8 +68,8 @@ Graph::Graph() {
 			) ;
 
 	connect (
-		&parser, SIGNAL(createEdge (int, int, float, QString, bool, bool, bool)), 
-		this, SLOT(createEdge (int, int, float, QString, bool, bool, bool) ) 
+		&parser, SIGNAL(createEdge (int, int, float, QString, int, bool, bool)),
+		this, SLOT(createEdge (int, int, float, QString, int, bool, bool) )
 		);
 
 	connect (
@@ -84,10 +84,10 @@ Graph::Graph() {
 		
 
 
-	connect (	
-			&crawler, SIGNAL( createNode (QString, int) ), 
-			this, SLOT(createVertex(QString, int ) ) 
-			) ;
+	connect (
+		&crawler, SIGNAL( createNode (QString, int) ),
+		this, SLOT(createVertex(QString, int ) )
+		) ;
 
 	connect (
 		&crawler, SIGNAL(createEdge (int, int)), 
@@ -194,30 +194,25 @@ void Graph::setCanvasDimensions(int w, int h){
 	Also called from MW when user clicks on the "add link" button 
 	Alse called from GW (via createEdge() below) when user middle-clicks.
 */
-void Graph::createEdge(int v1, int v2, float weight, QString color, bool reciprocal=false, bool drawArrows=true, bool bezier=false){
-	qDebug()<<"*** Graph: createEdge() from "<<v1<<" to "<<v2<<" of weight "<<weight;
-
-	if ( reciprocal ) {
-		qDebug (" Graph:: createEdge() RECIPROCAL new link -- Adding new edge to Graph...");
+void Graph::createEdge(int v1, int v2, float weight, QString color, int reciprocal=0, bool drawArrows=true, bool bezier=false){
+	if ( reciprocal == 2) {
+		qDebug()<<"*** Graph: createEdge() from "<<v1<<" to "<<v2<<" of weight "<<weight << " as RECIPROCAL and emitting drawEdge signal to GW";
 		addEdge ( v1, v2, weight, color, reciprocal);
-		qDebug()<< "Graph:: createEdge() ...And emitting drawEdge signal to GW::drawEdge().";
 		emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier);
 	}
 	else if (this->hasEdge( v2, v1) )  {  
-		qDebug (" Graph:: createEdge() opposite link EXISTS - Adding new edge to Graph.. ");
-		reciprocal = true;
+		qDebug()<<"*** Graph: createEdge() from "<<v1<<" to "<<v2<<" of weight "<<weight << ". Opposite link exists. Emitting drawEdgeReciprocal to GW to make the original reciprocal";
+		reciprocal = 1;
 		addEdge ( v1, v2, weight, color, reciprocal);
-		qDebug()<< "Graph:: createEdge() ...and emitting drawEdgeReciprocal() to make the original RECIPROCAL.";
 		emit drawEdgeReciprocal(v2, v1);
 	}
 	else {
-		qDebug (" Graph:: createEdge() NOT RECIPROCAL new link - Adding new edge to Graph... ");
-		reciprocal = false;
+		qDebug()<<"*** Graph: createEdge() from "<<v1<<" to "<<v2<<" of weight "<<weight << ". Opposite link does not exist. Emitting drawEdge to GW...";
+		reciprocal = 0;
 		addEdge ( v1, v2, weight, color, reciprocal);
-		qDebug()<< "Graph:: createEdge() ...And emitting drawEdge signal to GW::drawEdge().";
 		emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier);
 	}
-	initEdgeColor=color; //just to draw new edges of the same color with those of the file loaded, when user clicks on the canvas
+	initEdgeColor=color; //draw new edges the same color with those of the file loaded, on user clicks on the canvas
 	emit graphChanged(); 
 }
 
@@ -226,7 +221,7 @@ void Graph::createEdge(int v1, int v2, float weight, QString color, bool recipro
 	Called (via MW::addLink()) from GW when user middle-clicks on two nodes.
 	Calls the above createEdge() method with initEdgeColor to set the default edge color.
 */
-void Graph::createEdge(int v1, int v2, float weight, bool reciprocal=false, bool drawArrows=true, bool bezier=false){
+void Graph::createEdge(int v1, int v2, float weight, int reciprocal=0, bool drawArrows=true, bool bezier=false){
 	createEdge(v1, v2, (float) weight, initEdgeColor, reciprocal, drawArrows, bezier);
 }
 
@@ -328,57 +323,22 @@ int Graph::firstVertexNumber() {
 	Finally, it removes the vertex.
 */
 void Graph::removeVertex(int Doomed){
-	qDebug("Graph: removeVertex %i. Graph has %i=%i total Vertices and %i total Edges", Doomed, vertices(), m_graph.size(), totalEdges());
+	qDebug() << "Graph: removeVertex " << m_graph[ index[Doomed] ]->name() << "  with index= " << index[Doomed] ;
 	int indexOfDoomed=index[Doomed];
-	int outEdgesOfDoomed= m_graph[indexOfDoomed]->outDegree(); 
-	int inEdgesOfDoomed = m_graph[indexOfDoomed]->inDegree(); 
-	qDebug() << "Graph: Vertex " << m_graph[ index[Doomed] ]->name() << "  with index= " << index[Doomed] 
-			<< "  has " <<outEdgesOfDoomed << "  OutEdges and " << inEdgesOfDoomed<< "  InEdges.";
-
-	//Decrease the variable which count vertices with in- and out-edges
-	if (!isSymmetric()) {
-		if (outEdgesOfDoomed>0) {
-			outEdgesVert--;
-			if (outEdgesVert < 0) outEdgesVert=0;
-		}
-		if (inEdgesOfDoomed>0) {
-			inEdgesVert--;
-			if (inEdgesVert < 0) inEdgesVert=0;
-		}
-
-	}
-	else {
-		if (m_graph[indexOfDoomed]->isReciprocalLinked())
-			reciprocalEdgesVert--;
-			if (reciprocalEdgesVert < 0) reciprocalEdgesVert=0;
-	}
 
 	//Remove links to Doomed from each other vertex	
 	for (QList<Vertex*>::iterator it=m_graph.begin(); it!=m_graph.end(); it++){
 		if  ( (*it)->isLinkedTo(Doomed) != 0) {
 			qDebug()<< "Graph: Vertex " << (*it)->name() << " is linked to selected and has outDegree " << (*it)->outDegree() ;
-			//Decrease the variables which count vertices with out and reciprocal edges 
-			if ( (*it)->outDegree()==1 ) {
-				qDebug("Graph: decreasing outEdgesVert");
-				outEdgesVert--;
-				if (outEdgesVert < 0) outEdgesVert=0;
-			}
 			if ( (*it)->outDegree()==1 && (*it)->isLinkedFrom(Doomed) != 0 )	{
 				qDebug("Graph: decreasing reciprocalEdgesVert");
-				reciprocalEdgesVert--;
-				if (reciprocalEdgesVert < 0) reciprocalEdgesVert=0;
 				(*it)->setReciprocalLinked(FALSE);
 			}
 			(*it)->removeLinkTo(Doomed) ;
 		}
 		if (  (*it)->isLinkedFrom(Doomed) != 0 ) { 
-			if ( (*it)->inDegree()==1 ) {
-				inEdgesVert--;
-				if (inEdgesVert < 0) inEdgesVert=0;
-				(*it)->removeLinkFrom(Doomed);
-			}
+		    (*it)->removeLinkFrom(Doomed);
 		}
-		qDebug("Graph: Now inEdgesVert = %i, outEdgesVert = %i  and reciprocal = %i.",inEdgesVert, outEdgesVert, reciprocalEdgesVert);
 	}
 	
 	//Update the index mapping vertices inside m_graph
@@ -421,56 +381,35 @@ void Graph::removeVertex(int Doomed){
 
 /**	Creates an edge between v1 and v2
 */
-void Graph::addEdge (int v1, int v2, float weight, QString color, bool reciprocal) {
+void Graph::addEdge (int v1, int v2, float weight, QString color, int reciprocal) {
+
 	int source=index[v1];
 	int target=index[v2];
 
 	qDebug()<< "Graph: addEdge() from vertex "<< v1 << "["<< source<< "] to vertex "<< v2 << "["<< target << "] of weight "<<weight;
 
-	if ( !m_graph [ source ]->isOutLinked() ) {
-		//qDebug("Graph: addEdge() SOURCE VERTEX %i reports no outlinks -- setting outLinked TRUE for it.", v1);
-		m_graph [ source ]->setOutLinked(TRUE) ;
-		outEdgesVert++;
-	}
-	if ( ! m_graph [ source ]->isReciprocalLinked() &&  m_graph [ target ]->isLinkedTo (v1) ) {
-		reciprocalEdgesVert++;
-		m_graph [ source ]->setReciprocalLinked(TRUE);
-		if ( ! m_graph [ target ]->isReciprocalLinked() ) {
-			m_graph [ target ]->setReciprocalLinked(TRUE);
-			reciprocalEdgesVert++;
-		}
-		//qDebug("Graph: addEdge() SOURCE IS INLINKED BY TARGET. INCREASING RECIPROCAL %i", reciprocalEdgesVert);
-	}
-	
-	if ( !m_graph [ target ]->isInLinked() ) {
-		//qDebug("Graph: addEdge() TARGET VERTEX %i reports no inLinks -- setting inLinked TRUE for it", v2);
-		inEdgesVert++;
-		m_graph [ target ]->setInLinked(TRUE) ;
-	}
-
-
+	m_graph [ source ]->setOutLinked(TRUE) ;
 	m_graph [ source ]->addLinkTo(v2, weight );
+	m_graph [ target ]->setInLinked(TRUE) ;
 	m_graph [ target ]->addLinkFrom(v1, weight);
 	m_totalEdges++;
 
-	if (reciprocal) { //this is a double edge not just an arc.
-		if (! m_graph [ target ]->isOutLinked() ) {
-			outEdgesVert++;
-			m_graph [ target ]->setOutLinked(TRUE);
-		}
-		if ( !m_graph [ source ]->isInLinked() ) {
-			inEdgesVert++;
-			m_graph [ source]->setInLinked(TRUE);
-		}
-
-		m_graph [ target ]->addLinkTo(v1, weight );
-		m_graph [ source ]->addLinkFrom(target, weight);
-		m_totalEdges++;
+	if (reciprocal == 1){
+	    m_graph [ source ]->setReciprocalLinked(TRUE);
+	    m_graph [ target ]->setReciprocalLinked(TRUE);
 	}
-	qDebug()<<"Graph: addEdge() vertex "<< v1 << " reports that it has an edge to vertex "<< v2<< " with weight " << m_graph [ source ]->isLinkedTo(v2) << " and color "<<  color<<" -- Storing edge color...";
+	else if (reciprocal == 2){
+	    m_graph [ source ]->setReciprocalLinked(TRUE);
+	    m_graph [ target ]->setReciprocalLinked(TRUE);
+	    m_graph [ target ]->addLinkTo(v1, weight );
+	    m_graph [ source ]->addLinkFrom(target, weight);
+	    m_totalEdges++;
+	}
+
+
+	qDebug()<<"Graph: addEdge() now a("<< v1 << ","<< v2<< ") = " << m_graph [ source ]->isLinkedTo(v2) << " with color "<<  color<<" . Storing edge color..." << ". Total Links " <<m_totalEdges;
 	m_graph[ source]->setOutLinkColor(v2, color);
 
-	qDebug( "Graph: addEdge():: Now vertex %i has %i edges. Total Edges %i....", v1,  edgesFrom(v1), m_totalEdges);
 	graphModified=true;
 }
 
@@ -502,10 +441,6 @@ void Graph::removeEdge (int v1, int v2) {
 	if ( this->hasEdge(v2,v1) !=0) symmetricAdjacencyMatrix=false;
 	m_totalEdges--;
 	if (m_totalEdges<0) m_totalEdges=0;
-	outEdgesVert--;
-	if (outEdgesVert<0) outEdgesVert=0;
-	inEdgesVert--;
-	if (inEdgesVert<0) inEdgesVert=0;
 	graphModified=true;
 	qDebug("Graph: removeEdge(): emitting eraseEdge to GW"); 
 	emit eraseEdge(v1,v2);
@@ -3921,6 +3856,7 @@ void Graph::invertAdjacencyMatrix(){
     }
     qDebug()<<"Graph::invertAdjacencyMatrix() - invert the Adjacency Matrix AM and store it to invAM";
     invAM.inverseByGaussJordanElimination(AM);
+
 
 }
 

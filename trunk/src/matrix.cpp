@@ -33,7 +33,7 @@
 //constructor - every Row object holds max_int=32762
 Matrix::Matrix(const Matrix &b) {
 	row = new Row[m_Actors=b.m_Actors];
-		for (register int i=0;i<m_Actors; i++) {
+	for (register int i=0;i<m_Actors; i++) {
 			row[i].resize(m_Actors);
 		}
 	for (register int i=0; i<m_Actors; i++)
@@ -116,7 +116,6 @@ void Matrix::identityMatrix(int Actors) {
 	}
 
 }
-
 
 
 // returns the (r,c) matrix element
@@ -218,7 +217,7 @@ void Matrix::deleteRowColumn(int erased){
 
 
 // fills a matrix with a given valut
-void Matrix::fillMatrix (float value )   {
+void Matrix::fillMatrix(float value )   {
 	for (int i=0;i<m_Actors; i++) 
 		for (int j=0;j<m_Actors; j++) 
 			setItem(i,j, value);
@@ -324,10 +323,12 @@ void Matrix::multiplyRow(int row, float value) {
 
 
 
+
+
 /* Inverts given matrix A by Gauss Jordan elimination
    Input:  matrix A
    Output: matrix A becomes unit matrix
-   This becomes the invert of A and is returned back.
+   *this becomes the invert of A and is returned back.
 */
 Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
 	qDebug()<< "Matrix::inverseByGaussJordanElimination()";

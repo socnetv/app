@@ -57,7 +57,7 @@ bool Parser::load(QString fn, int iNS, QString iNC, QString iNSh,
 	
 	initEdgeColor=iEC;
 	
-	undirected=FALSE; arrows=FALSE; bezier=FALSE;
+	undirected=0; arrows=FALSE; bezier=FALSE;
 	fileName=fn;
 	networkName=(fileName.split ("/")).last();
 	gwWidth=width;
@@ -169,7 +169,7 @@ bool Parser::loadDL(){
 				if ( (*it1)!="0"){ //here is an non-zero edge weight...
 					qDebug()<<  "Parser-loadDL(): there is an edge here";
 					edgeWeight=(*it1).toFloat(&floatOK); 
-					undirected=false;
+					undirected=0;
 					arrows=true;
 					bezier=false;
 					emit createEdge(i+1, j+1, edgeWeight, initEdgeColor, undirected, arrows, bezier);
@@ -485,7 +485,7 @@ bool Parser::loadPajek(){
 					//qDebug("Parser-loadPajek(): file with no link colours");
 					edgeColor=initEdgeColor;
 				}
-				undirected=true;
+				undirected=2;
 				arrows=true;
 				bezier=false;
 				qDebug()<< "Parser-loadPajek(): EDGES: Create edge between " << source << " - "<< target;
@@ -522,7 +522,7 @@ bool Parser::loadPajek(){
 					//qDebug("Parser-loadPajek(): file with no link colours");
 					edgeColor=initEdgeColor;
 				}
-				undirected=false;
+				undirected=0;
 				arrows=true;
 				bezier=false;
 				qDebug()<<"Parser-loadPajek(): ARCS: Creating arc from node "<< source << " to node "<< target << " with weight "<< weight;
@@ -535,7 +535,7 @@ bool Parser::loadPajek(){
 				source= lineElement[0].toInt(&ok, 10);
 				fileContainsLinksColors=FALSE;
 				edgeColor=initEdgeColor;
-				undirected=false;
+				undirected=0;
 				arrows=true;
 				bezier=false;
 				for (register int index = 1; index < lineElement.size(); index++) {
@@ -551,7 +551,7 @@ bool Parser::loadPajek(){
 				source= i;
 				fileContainsLinksColors=FALSE;
 				edgeColor=initEdgeColor;
-				undirected=false;
+				undirected=0;
 				arrows=true;
 				bezier=false;
 				for (target = 0; target < lineElement.size(); target ++) {
@@ -663,10 +663,11 @@ bool Parser::loadAdjacency(){
 			aNodes=lineElement.count();
 			qDebug("Parser-loadAdjacency(): There are %i nodes in this file", aNodes);		
 			for (j=0; j<aNodes; j++) {
-				qDebug("Parser-loadAdjacency(): Calling createNode() for node %i", j+1);
+
 				randX=rand()%gwWidth;
 				randY=rand()%gwHeight;
-				qDebug()<<"Parser-loadAdjacency(): no coords. Using random "<<randX << randY;
+				qDebug()<<"Parser-loadAdjacency(): Calling createNode() for node "<< j+1
+					<<" No coords found. Using random "<<randX <<", " << randY;
 
 				emit createNode( j+1,initNodeSize,  initNodeColor, 
 								initNodeNumberColor, initNodeNumberSize, 				
@@ -676,22 +677,19 @@ bool Parser::loadAdjacency(){
 								);
 			}
 		}
-		qDebug("Parser-loadAdjacency(): Finished creating new nodes");
+		qDebug("Parser-loadAdjacency(): Finished creation of nodes");
 		if ( aNodes != (int) lineElement.count() ) return false;	
 		j=0;
-		qDebug("Parser-loadAdjacency(): Starting creating links");		
 		for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
 			if ( (*it1)!="0"){
-				qDebug("Parser-loadAdjacency(): there is a link here");
 				edgeWeight =(*it1).toFloat(&intOK);
-				undirected=false;
+				undirected=0;
 				arrows=true;
 				bezier=false;
 				emit createEdge(i+1, j+1, edgeWeight, initEdgeColor, undirected, arrows, bezier);
 				totalLinks++;
-
-				qDebug("Link from Node i=%i to j=%i", i+1, j+1);
-				qDebug("TotalLinks= %i", totalLinks);
+				qDebug() << "Parser-loadAdjacency(): Link from i=" << i+1 << " to j=" <<  j+1
+					<< "weight=" << edgeWeight << ". TotalLinks= " << totalLinks;
 			}
 
 			j++;
@@ -782,7 +780,7 @@ bool Parser::loadTwoModeSociomatrix(){
                                 for (int k = 1; k < i ; ++k) {
                                     qDebug() << "Actor " << k ;
                                     if ( firstModeMultiMap.contains(k, j) ) {
-                                        undirected=false;
+					undirected=0;
                                         arrows=true;
                                         bezier=false;
                                         edgeWeight = 1;
@@ -960,10 +958,10 @@ void Parser::readGraphMLElementGraph(QXmlStreamReader &xml){
 	QString defaultDirection = xmlStreamAttr.value("edgedefault").toString();
 	qDebug()<< "    edgedefault "<< defaultDirection;
 	if (defaultDirection=="undirected"){
-		undirected = true;
+		undirected = 2;
 	}
 	else {
-		undirected = false;
+		undirected = 0;
 	}
 	networkName = xmlStreamAttr.value("id").toString();
 	qDebug()<< "    graph id  "  << networkName; //store graph id to return it afterwards 
@@ -1121,7 +1119,7 @@ void Parser::readGraphMLElementEdge(QXmlStreamAttributes &xmlStreamAttr){
 	QString s = xmlStreamAttr.value("source").toString();
 	QString t = xmlStreamAttr.value("target").toString();
 	if ( (xmlStreamAttr.value("directed")).toString() == "false") 
-		undirected = "true";
+		undirected = 2;
 	source = nodeNumber [s];
 	target = nodeNumber [t];
 	edgeWeight=initEdgeWeight;
@@ -1486,7 +1484,7 @@ bool Parser::loadDot(){
 	QList<QString> nodeSequence;   //holds edges
 	QList<QString> nodesDiscovered; //holds nodes;
 		
-	undirected=false; arrows=TRUE; bezier=FALSE;
+	undirected=0; arrows=TRUE; bezier=FALSE;
 	source=0, target=0;
 	QFile file ( fileName );
 	if ( ! file.open(QIODevice::ReadOnly )) return false;
@@ -1853,7 +1851,7 @@ bool Parser::loadWeighedList(){
 	bool intOK=false;
 
 	edgeWeight=1.0;
-	undirected=false;
+	undirected=0;
 	arrows=true;
 	bezier=false;
 

@@ -375,7 +375,7 @@ private:
 	QColor initBackgroundColor;
 	QPointF cursorPosGW;	//Carries the position of the cursor in graphicsWidget coordinates
 	QLCDNumber  *inLinksLCD, *outLinksLCD , *selectedNodeLCD, *clucofLCD;
-	QLCDNumber *nodesLCD, *edgesLCD, *densityLCD, *outLinkedNodesLCD, *inLinkedNodesLCD, *reciprocalLinkedNodesLCD;
+	QLCDNumber *nodesLCD, *edgesLCD, *densityLCD;
 
 
 	

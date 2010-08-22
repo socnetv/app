@@ -75,13 +75,13 @@ public:
 	bool isComment(QString str);  
 signals:
 	void createNode( 
-					int num, int size, QString color, 
-					QString numColor, int numSize, 
-					QString label, QString lColor, int lSize, 
-					QPointF p, 
-					QString shape, bool signalMW);
+			int num, int size, QString color,
+			QString numColor, int numSize,
+			QString label, QString lColor, int lSize,
+			QPointF p,
+			QString shape, bool signalMW);
 
-	void createEdge (int, int, float, QString, bool, bool, bool);
+	void createEdge (int, int, float, QString, int, bool, bool);
 	void fileType(int, QString, int, int, bool);
 	void removeDummyNode (int);
 	
@@ -96,12 +96,12 @@ private:
 	QString fileName, networkName, initNodeColor, initEdgeColor, initNodeShape, initNodeNumberColor, initNodeLabelColor;
 	QString nodeColor, edgeColor, edgeType, nodeShape, nodeLabel, edgeLabel, nodeNumberColor, nodeLabelColor;
 	int gwWidth, gwHeight;
-	int totalLinks, aNodes, fileFormat, two_sm_mode;
+	int totalLinks, aNodes, fileFormat, two_sm_mode, undirected;
 	int initNodeSize,  initNodeNumberSize, nodeNumberSize, initNodeLabelSize, nodeLabelSize, source, target, nodeSize;
 	float initEdgeWeight, edgeWeight, arrowSize;
 	float bez_p1_x,bez_p1_y, bez_p2_x, bez_p2_y;
 	  
-	bool undirected, arrows, bezier, conv_OK;
+	bool arrows, bezier, conv_OK;
 	bool bool_key, bool_node, bool_edge;
 	
 	QString key_id, key_value, key_name, key_what, key_type;

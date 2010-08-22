@@ -75,8 +75,8 @@ public slots:
 	void removeDummyNode(int);
 	
 	/** Slots to signals from GraphicsWidget and Parser*/
-	void createEdge (int, int, float, QString, bool, bool, bool);	//GW and Parser.
-	void createEdge (int, int, float, bool, bool, bool);		//GW
+	void createEdge (int, int, float, QString, int, bool, bool);	//GW and Parser.
+	void createEdge (int, int, float, int, bool, bool);		//GW
 	void createEdge (int, int);					//WebCrawler
 	void nodeMovement(int state, int type, int cW, int cH);		//Called by MW to start movement
 
@@ -309,7 +309,7 @@ private:
 						QPointF p, QString shape
 					);			// adds a vertex to m_graph
 						
-	void addEdge (int v1, int v2, float w, QString color, bool undirected); 		//adds an edge between v1 and v2, weight w, colored
+	void addEdge (int v1, int v2, float w, QString color, int reciprocal); 		//adds an edge between v1 and v2, weight w, colored
 
 	/** methods used by createDistanceMatrix()  */
 	void BFS(int, bool);									//Breadth-first search 

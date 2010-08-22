@@ -138,6 +138,7 @@ class Matrix {
 	
 		void resize (int Actors) ;	/* This is called before every operation on new matrixes. */
 	
+
 		int edgesFrom(int Actor);
 
 		int edgesTo(int Actor);

@@ -1402,22 +1402,6 @@ void MainWindow::initToolBox(){
 	densityLCD->setSegmentStyle(QLCDNumber::Flat);
 	densityLCD->setToolTip(tr("The density of a network is the ratio of existing links to all possible links (n(n-1)) between nodes."));
 
-	QLabel * labelOutLinkedNodesLCD= new QLabel;
-	labelOutLinkedNodesLCD -> setText (tr("OutLinked Nodes:"));
-	outLinkedNodesLCD=new QLCDNumber(7);
-	outLinkedNodesLCD->setSegmentStyle(QLCDNumber::Flat);
-	outLinkedNodesLCD->setToolTip(tr("This the number of nodes with outLinks\n to another node. They may also have \ninLinks or reciprocal links. \nMeaningful on directed graphs."));
-	QLabel * labelInLinkedNodesLCD = new QLabel;
-	labelInLinkedNodesLCD -> setText (tr("InLinked Nodes:"));
-	inLinkedNodesLCD=new QLCDNumber(7);
-	inLinkedNodesLCD->setSegmentStyle(QLCDNumber::Flat);
-	inLinkedNodesLCD->setToolTip(tr("This the number of nodes with inLinks \nfrom another node. These may also have \noutLinks or reciprocal links.\nMeaningful on directed graphs."));
-	QLabel * labelReciprocalLinkedNodesLCD = new QLabel;
-	labelReciprocalLinkedNodesLCD-> setText (tr("Reciprocal-Linked:"));
-	reciprocalLinkedNodesLCD=new QLCDNumber(7);
-	reciprocalLinkedNodesLCD->setSegmentStyle(QLCDNumber::Flat);
-	reciprocalLinkedNodesLCD->setToolTip(tr("This the number of nodes with reciprocal links, \nnamely, both inLinks and outLinks to another node."));
-
 	//create a grid layout
 	QGridLayout *propertiesGrid = new QGridLayout();
 
@@ -1431,15 +1415,6 @@ void MainWindow::initToolBox(){
 
 	propertiesGrid -> addWidget(labelDensityLCD, 2,0);
 	propertiesGrid -> addWidget(densityLCD,2,1);
-
-	propertiesGrid -> addWidget(labelOutLinkedNodesLCD,3,0);
-	propertiesGrid -> addWidget(outLinkedNodesLCD,3,1);
-	propertiesGrid -> addWidget(labelInLinkedNodesLCD,4,0);
-	propertiesGrid -> addWidget(inLinkedNodesLCD,4,1);
-	propertiesGrid -> addWidget(labelReciprocalLinkedNodesLCD, 5,0);
-	propertiesGrid -> addWidget(reciprocalLinkedNodesLCD,5,1);
-
-
 
 	QLabel *dummyLabel = new QLabel;
 	dummyLabel-> setText (" ");
@@ -1706,9 +1681,6 @@ void MainWindow::initNet(){
 	outLinksLCD->display(0);
 	clucofLCD->display(0);
 	selectedNodeLCD->display(0);
-	inLinkedNodesLCD -> display(activeGraph.verticesWithInEdges());
-	outLinkedNodesLCD-> display(activeGraph.verticesWithOutEdges());
-	reciprocalLinkedNodesLCD->display(activeGraph.verticesWithReciprocalEdges());
 
 	nodeSizeProportional2OutDegreeBx->setChecked(false);
 	nodeSizeProportional2InDegreeBx->setChecked(false);
@@ -3229,10 +3201,6 @@ void MainWindow::graphChanged(){
 	nodesLCD->display(activeGraph.vertices());
 	edgesLCD->display(activeGraph.totalEdges());
 	densityLCD->display( activeGraph.density() );
-
-	inLinkedNodesLCD -> display(activeGraph.verticesWithInEdges());
-	outLinkedNodesLCD-> display(activeGraph.verticesWithOutEdges());
-	reciprocalLinkedNodesLCD -> display(activeGraph.verticesWithReciprocalEdges());
 }
 
 
@@ -3400,7 +3368,7 @@ void MainWindow::slotAddLink(){
 void MainWindow::addLink (int v1, int v2, float weight) {
 	qDebug("MW: addLink() - setting user preferences and calling Graph::createEdge(...)");
 	bool drawArrows=displayLinksArrowsAct->isChecked();
-	bool reciprocal=false;
+	int reciprocal=0;
 	bool bezier = false;
 	activeGraph.createEdge(v1, v2, weight, reciprocal, drawArrows, bezier);
 }
