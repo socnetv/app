@@ -594,7 +594,6 @@ bool Parser::loadPajek(){
 	Tries to load the file as adjacency sociomatrix-formatted. If not it returns -1
 */
 bool Parser::loadAdjacency(){
-
 	qDebug("\n\nParser: loadAdjacency()");
 	QFile file ( fileName );
 	if ( ! file.open(QIODevice::ReadOnly )) return false;
@@ -604,7 +603,7 @@ bool Parser::loadAdjacency(){
 	int i=0, j=0,  aNodes=0, newCount=0, lastCount=0;
 	edgeWeight=1.0;
 	bool intOK=FALSE;
-
+	totalLinks=0;
 	i=1;
 	while ( i < 11 &&  !ts.atEnd() )   {
 		str= ts.readLine() ;
