@@ -1443,10 +1443,10 @@ void MainWindow::initToolBox(){
 
 	QLabel *labelClucofLCD  = new QLabel;
 	labelClucofLCD -> setText (tr("Clustering Coef."));
-	labelClucofLCD -> setToolTip (tr("The Clustering Coefficient quantifies how close the vertex and its neighbors are to being a clique."));
+	labelClucofLCD -> setToolTip (tr("The Clustering Coefficient quantifies how close the clicked vertex and its neighbors are to being a clique. \nThe value is the proportion of links between the vertices within the neighbourhood of the clicked vertex,\n divided by the number of links that could possibly exist between them. \n\n WARNING: This value is displayed for each node when you click on it,\n but only if you have computed CluCof from the menu Statistics > Clustering Coefficient "));
 	clucofLCD = new QLCDNumber(7);
 	clucofLCD -> setSegmentStyle(QLCDNumber::Flat);
-	clucofLCD -> setToolTip (tr("The proportion of links between the vertices within the neighbourhood of the clicked vertex, divided by the number of links that could possibly exist between them."));
+	clucofLCD  -> setToolTip (tr("The Clustering Coefficient quantifies how close the clicked vertex and its neighbors are to being a clique. \nThe value is the proportion of links between the vertices within the neighbourhood of the clicked vertex,\n divided by the number of links that could possibly exist between them. \n\n WARNING: This value is displayed for each node when you click on it,\n but only if you have computed CluCof from the menu Statistics > Clustering Coefficient "));
 	
 	
 	propertiesGrid -> addWidget(dummyLabel, 6,0);
