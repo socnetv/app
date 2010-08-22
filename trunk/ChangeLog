@@ -18,6 +18,7 @@ Codename: "Worka Worka"
 - Fided bug #515756: Ctrl+F after a node removal may crash SocNetV
 - Fixed bug #515758: Random layout crashes SocNetV, if a node is removed
 - Updated user manual to new version features.
+- Removed counts of outLinkedNodes, inLinkedNodes and reciprocalLinkedNodes because they were causing too much overhead when loading large networks. The relevant LCDs were also dropped from the UI.
 
 Version 0.81 - Jan 28 2010
 Codename: "bugfixes"
