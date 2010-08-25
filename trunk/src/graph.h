@@ -202,7 +202,7 @@ public:
 	bool isSymmetric();				//Returns TRUE if symmetricAdjacencyMatrix=TRUE
 	void symmetrize();				//Symmetrize all edges so that the network is undirected.
 
-	void createAdjacencyMatrix();
+	void createAdjacencyMatrix(bool);
 	void invertAdjacencyMatrix();
 
 
@@ -224,6 +224,7 @@ public:
 	void writeCentralityPower(const QString, const bool);		//Writes the Power centralities to a file
 	void writeCentralityStress(const QString, const bool);		//Writes the Stress centralities to a file	
 	void writeCentralityEccentricity(const QString, const bool);	//Writes the Eccentr centralities to a file
+	void writeCentralityInformation(const QString);			//Writes the Information centralities to a file
 
 	void writeNumberOfCliques(const QString fileName, const bool considerWeights);
 	
@@ -242,7 +243,7 @@ public:
 	void centralityInDegree(bool);		//Calculates the inDegree centrality of each vertex
 	void centralityOutDegree(bool);		//Calculates the outDegree centrality of each vertex
 
-	void centralityInformation(bool);
+	void centralityInformation();
 
 	float numberOfTriples(int v1); 		//Returns the number of triples at vertex v1
 	float numberOfCliques(int v1);		//Calculates the number of cliques (triangles) of vertex v1
@@ -327,7 +328,7 @@ private:
 	bool calculatedIDC, calculatedODC, calculatedCentralities, dynamicMovement;
 	
 	QList<int>  triadTypeFreqs; 	//stores triad type frequencies
-	Matrix  TM, DM, sumM, invAM, AM;
+	Matrix  TM, DM, sumM, invAM, AM, invM;
 	stack<int> Stack;
 
 	float meanDegree, varianceDegree;

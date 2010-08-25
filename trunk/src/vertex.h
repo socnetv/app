@@ -85,17 +85,20 @@ public:
 
 	/* Returns true if there is an outLink from this vertex */
 	bool isOutLinked() { return m_outLinked;}
-	float isLinkedTo(unsigned long int V);		/* Returns the weight of the link from to vertexc V, otherwise zero*/
-
-	void filterEdgesByWeight(float m_threshold, bool overThreshold);
-//	void filterEdgesByColor(float m_threshold, bool overThreshold);
-	
 	void setOutLinked(bool outLinked) { m_outLinked=outLinked;}
+	float isLinkedTo(unsigned long int V);	/* Returns the weight of the link to vertex V, otherwise zero*/
+
 	/* Returns true if there is an outLink from this vertex */
 	bool isInLinked() { return m_inLinked;}
 	void setInLinked(bool inLinked) { m_inLinked=inLinked;}
 	float isLinkedFrom (unsigned long int v);
 	
+	bool isIsolated() { return !(m_outLinked | m_inLinked) ; }
+	void setIsolated(bool isolated) {m_isolated = isolated; }
+
+	void filterEdgesByWeight(float m_threshold, bool overThreshold);
+//	void filterEdgesByColor(float m_threshold, bool overThreshold);
+
 	void setSize(int );
 	int  size();
 	
@@ -180,6 +183,11 @@ public:
 	float PC() { return m_PC;}		/* Returns vertex Power Centrality*/
 	float SPC() { return m_SPC; }		/* Returns standard vertex Power Centrality*/
 
+	void setIC (float c){ m_IC=c;}		/* sets vertex Information Centrality*/
+	void setSIC (float c ) { m_SIC=c;}	/* sets standard vertex Information Centrality*/
+	float IC() { return m_IC;}		/* Returns vertex Information  Centrality*/
+	float SIC() { return m_SIC; }		/* Returns standard vertex Information Centrality*/
+
 	float CLC() { return m_CLC;	}
 	void setCLC(float clucof)  { m_CLC=clucof; m_hasCLC=TRUE; }
 	bool hasCLC() { 	return m_hasCLC; }
@@ -197,7 +205,7 @@ private:
 	ilist myPs;
 	unsigned long int m_name,  m_outLinks, m_inLinks; 
 	int m_value, m_size, m_labelSize, m_numberSize;
-	bool m_inLinked, m_outLinked, m_reciprocalLinked, m_enabled, m_hasCLC;
+	bool m_inLinked, m_outLinked, m_reciprocalLinked, m_enabled, m_hasCLC, m_isolated;
 	QString m_color, m_numberColor, m_label, m_labelColor, m_shape;
 	//QString *outLinkColors;
 	ihash_s outLinkColors;
@@ -207,7 +215,7 @@ private:
 	float m_CLC;
 	float m_delta, m_EC, m_SEC;
 	float m_ODC, m_SODC, m_IDC, m_SIDC, m_CC, m_SCC, m_BC, m_SBC, m_GC, m_SGC, m_SC, m_SSC;
-	float m_PC, m_SPC;
+	float m_PC, m_SPC, m_SIC, m_IC;
 
 };
 

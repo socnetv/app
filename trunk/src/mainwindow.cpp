@@ -892,12 +892,12 @@ void MainWindow::initActions(){
 	connect(cPowerAct, SIGNAL(activated()), this, SLOT(slotCentralityPower()));
 
 
-	cInformationalAct = new QAction(tr("Information"),	this);
-	cInformationalAct->setShortcut(tr("Ctrl+9"));
-	cInformationalAct->setEnabled(false);
-	cInformationalAct->setStatusTip(tr("Calculate and display Information Centrality"));
-	cInformationalAct->setWhatsThis(tr("Information Centrality\n\n Information centrality counts all paths between nodes weighted by strength of tie and distance. This centrality  measure developed by Stephenson and Zelen (1989) focuses on how information might flow through many different paths."));
-	connect(cInformationalAct, SIGNAL(activated()), this, SLOT(slotCentralityInformational()));
+	cInformationAct = new QAction(tr("Information"),	this);
+	cInformationAct->setShortcut(tr("Ctrl+9"));
+	cInformationAct->setEnabled(true);
+	cInformationAct->setStatusTip(tr("Calculate and display Information Centrality"));
+	cInformationAct->setWhatsThis(tr("Information Centrality\n\n Information centrality counts all paths between nodes weighted by strength of tie and distance. This centrality  measure developed by Stephenson and Zelen (1989) focuses on how information might flow through many different paths."));
+	connect(cInformationAct, SIGNAL(activated()), this, SLOT(slotCentralityInformation()));
 
 	
 	/**
@@ -1240,11 +1240,11 @@ void MainWindow::initMenuBar() {
 	centrlMenu -> addAction (cOutDegreeAct);
 	centrlMenu -> addAction (cClosenessAct);
 	centrlMenu -> addAction (cBetweenessAct);
-//   cInformationalAct -> addTo(centrlMenu);
 	centrlMenu -> addAction (cGraphAct);
 	centrlMenu -> addAction (cStressAct);
 	centrlMenu -> addAction (cEccentAct);
 	centrlMenu -> addAction (cPowerAct);
+	centrlMenu -> addAction (cInformationAct);
 
 
 /** menuBar entry optionsMenu  */
@@ -4992,9 +4992,30 @@ void MainWindow::slotCentralityBetweeness(){
 
 /**
 *	Writes Informational Centralities into a file, then displays it.	
-	TODO slotCentralityInformational
+	TODO slotCentralityInformation
 */
-void MainWindow::slotCentralityInformational(){
+void MainWindow::slotCentralityInformation(){
+    if (!fileLoaded && !networkModified  )  {
+	    QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+
+	    statusMessage(  QString(tr(" Nothing to do..."))  );
+	    return;
+    }
+    QString fn = "centrality_information.dat";
+    statusMessage(  QString(tr(" Please wait...")));
+
+    createProgressBar();
+    activeGraph.writeCentralityInformation(fn);
+    destroyProgressBar();
+
+    statusMessage( QString(tr(" displaying file...")));
+
+    TextEditor *ed = new TextEditor(fn);
+    tempFileNameNoPath=fn.split( "/");
+    ed->setWindowTitle("Information Centralities saved as: " + tempFileNameNoPath.last());
+    ed->show();
+    QApplication::restoreOverrideCursor();
+
 }
 
 
