@@ -202,13 +202,16 @@ public:
 	bool isSymmetric();				//Returns TRUE if symmetricAdjacencyMatrix=TRUE
 	void symmetrize();				//Symmetrize all edges so that the network is undirected.
 
+	void createAdjacencyMatrix();
+	void invertAdjacencyMatrix();
 
-	/* PRINT OUT*/
+
+	/* PRINT OUT TO FILES*/
 	
 	void writeDataSetToFile(QString );			// Writes a known dataset to a file.
 	void writeAdjacencyMatrixTo(QTextStream& os);	 		//Exports the adjacency matrix to a given textstream
 	void writeAdjacencyMatrix(const char*, const char*);		//Writes the adjacency matrix to a given file.
-	void invertAdjacencyMatrix();
+
 	void writeInvertAdjacencyMatrix(const char*,  const char*);
 	void writeDistanceMatrix(const char*, const char*, const char*);//Writes the distance matrix to a file
 	friend QTextStream& operator <<  (QTextStream& os, Graph& m);  	//

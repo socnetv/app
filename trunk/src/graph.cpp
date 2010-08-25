@@ -1506,49 +1506,31 @@ void Graph::resolveClasses(float C, hash_si &discreteClasses, int &classes, int 
 //Calculates the Information centrality of each vertex - diagonal included
 void Graph::centralityInformation(bool weights){
 	qDebug("Graph:: centralityInformation()");
-	classesIDC=0;
-	discreteIDCs.clear();
-	sumIDC=0;
-	maxIDC=0;
-	minIDC=vertices()-1;
-	varianceDegree=0;
-	meanDegree=0;
+	discreteICs.clear();
+	sumIC=0;
+	maxIC=0;
+	minIC=vertices()-1;
+	classesIC=0;
 
-	DM.resize(m_totalVertices);
 	TM.resize(m_totalVertices);
 
-	int aVertices=vertices();
+	int n=vertices();
 	int aEdges = totalEdges();    //maybe we will use m_totalEdges here to save some time?...
-	int i=0, j=0, m_infinite=100;
-	float IDC=0, nom=0, denom=0;
-	float weight, tempValueA;
+	float m_weight;
+a
+	createAdjacencyMatrix();
 
-
-	qDebug("Graph: centralityInformation() writing matrix with %i vertices", vertices());
-	QList<Vertex*>::iterator it, it1;
-	float m_weight=-1;
-	for (it=m_graph.begin(); it!=m_graph.end(); it++){
-		if ( ! (*it)->isEnabled() ) continue;
-		i++;
-		for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
-			if ( ! (*it1)->isEnabled() ) continue;
-			j++;
-			if ( (m_weight = this->hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
-				DM.setItem(i,j, m_weight );
-			}
-			else
-				DM.setItem(i,j, 0);
-		}
-	}
-	DM.subtractFromI();  // calculate I-A
-	sumM.identityMatrix(m_totalVertices);
-
-	for (register int k=0 ; k< m_infinite ; k++){
-	    TM=DM;
-	    TM.product(TM, DM, true);
-	    sumM.sum ( sumM, TM);
+	for (register int i=0; i<n; i++){
+	    sum=1;
+	    for (register int j=0; j<n; j++){
+		m_weight = AM.item(i,j);
+		sum += m_weight;
+		TM.setItem(i,j, 1-m_weight);
+	    }
+	    TM.setItem(i,i,sum);
 	}
 
+	invAM.inverseByGaussJordanElimination(ΤM);
 
 	graphModified=false;
 }
@@ -3825,17 +3807,14 @@ void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
 
 
 
-
-void Graph::invertAdjacencyMatrix(){
-    qDebug() << "Graph::invertAdjacencyMatrix()";
+void Graph::createAdjacencyMatrix(){
+    qDebug() << "Graph::createAdjacencyMatrix()";
     float m_weight=-1;
     int i=0, j=0;
 
-    invAM.resize(m_totalVertices);
     AM.resize(m_totalVertices);
 
     QList<Vertex*>::iterator it, it1;
-    qDebug()<<"Graph::invertAdjacencyMatrix() - first create the Adjacency Matrix AM";
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
 	    if ( ! (*it)->isEnabled() )
 		continue;
@@ -3854,6 +3833,20 @@ void Graph::invertAdjacencyMatrix(){
 	    }
 	    i++;
     }
+	qDebug() << "Graph::createAdjacencyMatrix() - Done.";
+}
+
+
+void Graph::invertAdjacencyMatrix(){
+    qDebug() << "Graph::invertAdjacencyMatrix()";
+    float m_weight=-1;
+    int i=0, j=0;
+
+    invAM.resize(m_totalVertices);
+
+    qDebug()<<"Graph::invertAdjacencyMatrix() - first create the Adjacency Matrix AM";
+    createAdjacencyMatrix();
+
     qDebug()<<"Graph::invertAdjacencyMatrix() - invert the Adjacency Matrix AM and store it to invAM";
     invAM.inverseByGaussJordanElimination(AM);
 
