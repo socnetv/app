@@ -1515,14 +1515,15 @@ void Graph::centralityInformation(){
 
 	TM.resize(m_totalVertices);
 
-	int i, j, n=vertices();
+	int i=0, j=0, n=vertices(), isolates=0;
 	float m_weight=0, weightSum=1, diagonalEntriesSum=0, rowSum=0, IC=0;
 
 	/* Note: isolated nodes must be dropped from the AM
 	    Otherwise, the TM might be singular, therefore non-invertible. */
-
 	bool dropIsolates=true;
-	createAdjacencyMatrix(dropIsolates);
+	createAdjacencyMatrix(dropIsolates, isolates);
+	n-=isolates;
+	qDebug() << "Graph:: centralityInformation() - computing node ICs for total n = " << n;
 
 	for (i=0; i<n; i++){
 	    weightSum=1;
@@ -1531,16 +1532,25 @@ void Graph::centralityInformation(){
 		weightSum += m_weight; //sum of weights for all edges incident to i
 		if (i==j)
 		    continue;
+		qDebug() << "Graph:: centralityInformation() -A("<< i <<  ","<< j <<") = 1-Xij = " << 1-m_weight;
 		TM.setItem(i,j, 1-m_weight);
-		rowSum += 1-m_weight;
 	    }
 	    TM.setItem(i,i,weightSum);
-	    diagonalEntriesSum  += weightSum;
-	    rowSum += weightSum;
-
+	    qDebug() << "Graph:: centralityInformation() - A("<< i << ","<< i <<") = 1+sum of all tie values = " << weightSum;
 	}
 
 	invM.inverseByGaussJordanElimination(TM);
+	diagonalEntriesSum = 0;
+	rowSum = 0;
+	for (j=0; i<n; i++){
+		rowSum += invM.item(0,j);
+	}
+	for (i=0; i<n; i++){
+	    diagonalEntriesSum  += invM.item(i,i);;  // calculate the matrix trace
+	}
+	qDebug() << "Graph:: centralityInformation() - R= " << rowSum << " D= "<<diagonalEntriesSum;
+
+
 	QList<Vertex*>::iterator it;
 	i=0;
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
@@ -1552,9 +1562,11 @@ void Graph::centralityInformation(){
 		IC=1/ ( invM.item(i,i) + (diagonalEntriesSum - 2*rowSum)/n );
 		if ( IC > maxIC ) {
 		    maxIC = IC;
+		    maxNodeIC=(*it)->name();
 		}
 		if ( IC < minIC ) {
 		    minIC = IC;
+		    minNodeIC=(*it)->name();
 		}
 
 		(*it) -> setIC ( IC );
@@ -1585,7 +1597,7 @@ void Graph::writeCentralityInformation(const QString fileName){
 	outText << tr("IC measures how much information is contained in the paths that originate or end at each node.")<<"\n";
 	outText << tr("IC' is the standardized IC")<<"\n";
 
-	outText << tr("IC  range:  0 < C < ")<<QString::number(maxIndexIC)<<"\n";
+	outText << tr("IC  range:  0 < C < inf (this index has no max value)\n";
 	outText << tr("IC' range:  0 < C'< 1")<<"\n\n";
 	outText << "Node"<<"\tIC\t\tIC'\t\t%IC\n";
 	QList<Vertex*>::iterator it;
@@ -3892,7 +3904,7 @@ void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
 
 
 
-void Graph::createAdjacencyMatrix(bool dropIsolates){
+void Graph::createAdjacencyMatrix(bool dropIsolates, int isolatesSum=0){
     qDebug() << "Graph::createAdjacencyMatrix()";
     float m_weight=-1;
     int i=0, j=0;
@@ -3932,6 +3944,8 @@ void Graph::createAdjacencyMatrix(bool dropIsolates){
 	for (int k = 0; k < isolatesList.size(); ++k) {
 	    AM.deleteRowColumn( isolatesList.at(k) );
 	}
+	isolatesSum=isolatesList.size();
+	qDebug() << "Graph::createAdjacencyMatrix() - Total isolates found: " << isolatesSum;
     }
     qDebug() << "Graph::createAdjacencyMatrix() - Done.";
 }
@@ -3944,7 +3958,7 @@ void Graph::invertAdjacencyMatrix(){
 
     qDebug()<<"Graph::invertAdjacencyMatrix() - first create the Adjacency Matrix AM";
     bool dropIsolates=false;
-    createAdjacencyMatrix(dropIsolates);
+    createAdjacencyMatrix(dropIsolates, 0);
 
     qDebug()<<"Graph::invertAdjacencyMatrix() - invert the Adjacency Matrix AM and store it to invAM";
     invAM.inverseByGaussJordanElimination(AM);

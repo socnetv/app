@@ -202,7 +202,7 @@ public:
 	bool isSymmetric();				//Returns TRUE if symmetricAdjacencyMatrix=TRUE
 	void symmetrize();				//Symmetrize all edges so that the network is undirected.
 
-	void createAdjacencyMatrix(bool);
+	void createAdjacencyMatrix(bool, int);
 	void invertAdjacencyMatrix();
 
 

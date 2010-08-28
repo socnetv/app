@@ -896,7 +896,7 @@ void MainWindow::initActions(){
 	cInformationAct->setShortcut(tr("Ctrl+9"));
 	cInformationAct->setEnabled(true);
 	cInformationAct->setStatusTip(tr("Calculate and display Information Centrality"));
-	cInformationAct->setWhatsThis(tr("Information Centrality\n\n Information centrality counts all paths between nodes weighted by strength of tie and distance. This centrality  measure developed by Stephenson and Zelen (1989) focuses on how information might flow through many different paths."));
+	cInformationAct->setWhatsThis(tr("Information Centrality\n\n Information centrality counts all paths between nodes weighted by strength of tie and distance. This centrality  measure developed by Stephenson and Zelen (1989) focuses on how information might flow through many different paths. \n\n Note: To compute this index, SocNetV drops all isolated nodes."));
 	connect(cInformationAct, SIGNAL(activated()), this, SLOT(slotCentralityInformation()));
 
 	
