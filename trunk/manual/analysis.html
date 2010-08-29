@@ -151,9 +151,34 @@ Therefore, EC(u) reflects how far, at most, is each node from every other node.
 
 <h5><a name="Information" id="Information"></a>Information Centrality</h5>
 <p class="text">
-The Information Centrality (IC) is an index with complex computation.
-First, we create a n x n matrix A with diagonal elements 1
-Therefore, IC(u) ....
+The Information Centrality (IC) is an index suggested by Stephenson and Zelen (1989).
+It tries to measure the information which is contained in all paths starting with each actor.
 
+</p>
+<p class="text">
+In order to calculate the IC of each actor, we create a N x N matrix A with:
+</p>
+<p class="code">
+Aii=1+weighted_degree_ni <br />
+Aij=1 if (i,j)=0  <br />
+Aij=1-wij if (i,j)=wij
+</p>
+<p class="text">
+Next, we compute the inverse matrix of A, for instance C. Note that we can always compute C since the matrix A is always a diagonally strong matrix, hence it is always invertible.
+</p>
+<p class="text">
+Finally, IC is computed by the formula:
+</p>
+<p class="code">
+IC(i) - 1 /  [ Cii + (T-2R)/ N]
+</p>
+
+<p class="text">
+where: <br />
+T is the trace of matrix C (the sum of diagonal elements) and
+R is the sum of the elements of any row (since all rows of C have the same sum)
+</p>
+<p class="text">
+IC has a minimum value but not a maximum.
 </p>
 
