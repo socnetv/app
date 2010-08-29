@@ -1597,7 +1597,7 @@ void Graph::writeCentralityInformation(const QString fileName){
 	outText << tr("IC measures how much information is contained in the paths that originate or end at each node.")<<"\n";
 	outText << tr("IC' is the standardized IC")<<"\n";
 
-	outText << tr("IC  range:  0 < C < inf (this index has no max value)\n";
+	outText << tr("IC  range:  0 < C < inf (this index has no max value)") << "\n";
 	outText << tr("IC' range:  0 < C'< 1")<<"\n\n";
 	outText << "Node"<<"\tIC\t\tIC'\t\t%IC\n";
 	QList<Vertex*>::iterator it;
