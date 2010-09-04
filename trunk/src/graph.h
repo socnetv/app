@@ -202,7 +202,7 @@ public:
 	bool isSymmetric();				//Returns TRUE if symmetricAdjacencyMatrix=TRUE
 	void symmetrize();				//Symmetrize all edges so that the network is undirected.
 
-	void createAdjacencyMatrix(bool, int);
+	void createAdjacencyMatrix(bool);
 	void invertAdjacencyMatrix();
 
 
@@ -341,7 +341,7 @@ private:
 	float minSC, maxSC, nomSC, denomSC, sumSC, groupSC, maxIndexSC;
 	float minEC, maxEC, nomEC, denomEC, sumEC, groupEC, maxIndexEC;
 	float minIC, maxIC, nomIC, denomIC, sumIC, groupIC, maxIndexIC;
-	float minCLC, maxCLC, averageCLC;
+	float minCLC, maxCLC, averageCLC, averageIC;
 	int maxNodeCLC, minNodeCLC;
 	int classesIDC, maxNodeIDC, minNodeIDC;
 	int classesODC, maxNodeODC, minNodeODC;
@@ -357,6 +357,7 @@ private:
 	/** General & initialisation variables */
 
 	int m_totalEdges, m_totalVertices, graphDiameter, initVertexSize, initVertexLabelSize, initVertexNumberSize;
+	int isolatedVertices;
 	float averGraphDistance, nonZeroDistancesCounter;
 	int outEdgesVert, inEdgesVert, reciprocalEdgesVert;
 	int timerId,  layoutType, canvasWidth, canvasHeight;

@@ -1514,15 +1514,15 @@ void Graph::centralityInformation(){
 	groupIC=0;
 
 	TM.resize(m_totalVertices);
-
-	int i=0, j=0, n=vertices(), isolates=0;
+	isolatedVertices=0;
+	int i=0, j=0, n=vertices();
 	float m_weight=0, weightSum=1, diagonalEntriesSum=0, rowSum=0, IC=0;
 
 	/* Note: isolated nodes must be dropped from the AM
 	    Otherwise, the TM might be singular, therefore non-invertible. */
 	bool dropIsolates=true;
-	createAdjacencyMatrix(dropIsolates, isolates);
-	n-=isolates;
+	createAdjacencyMatrix(dropIsolates);
+	n-=isolatedVertices;
 	qDebug() << "Graph:: centralityInformation() - computing node ICs for total n = " << n;
 
 	for (i=0; i<n; i++){
@@ -1571,7 +1571,7 @@ void Graph::centralityInformation(){
 
 		(*it) -> setIC ( IC );
 		sumIC += IC;
-		qDebug()<< "Graph:: centralityInformation() vertex: " <<  (*it)->name() << " IC  " << IC << " SIC " << (*it)->SIC ();
+		qDebug()<< "Graph:: centralityInformation() vertex: " <<  (*it)->name() << " IC  " << IC ;
 		i++;
 	}
 	graphModified=false;
@@ -1601,11 +1601,14 @@ void Graph::writeCentralityInformation(const QString fileName){
 	outText << tr("IC' range:  0 < C'< 1")<<"\n\n";
 	outText << "Node"<<"\tIC\t\tIC'\t\t%IC\n";
 	QList<Vertex*>::iterator it;
-	float IC;
+	float IC=0, SIC=0, sumSIC=0;
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
 		IC = (*it)->IC();
-		(*it)->setSIC( IC / sumIC);
-		outText << (*it)->name()<<"\t"<< IC << "\t\t"<< IC/sumIC << "\t\t" <<  (100* (IC) / sumIC)<<endl;
+		SIC = IC / sumIC ;
+		(*it)->setSIC( SIC );
+		sumSIC += SIC;
+		outText << (*it)->name()<<"\t"<< IC << "\t\t"<< SIC  << "\t\t" <<  ( 100* SIC )<<endl;
+		qDebug()<< "Graph::writeCentralityInformation() vertex: " <<  (*it)->name() << " SIC  " << SIC;
 	}
 	qDebug ("min %f, max %f", minIC, maxIC);
 	if ( minIC == maxIC )
@@ -1616,16 +1619,32 @@ void Graph::writeCentralityInformation(const QString fileName){
 		outText << tr("Min IC' = ") << minIC <<" (node "<< minNodeIC <<  ")  \n";
 		outText << tr("IC classes = ") << classesIC<<" \n";
 	}
+
+	float x=0;
+	float n = ( this->vertices() - isolatedVertices );
+
+	averageIC = sumSIC / n ;
+	qDebug() << "sumSIC " << sumSIC << "  n " << n << "  averageIC " << averageIC;
+	groupIC=0;
+	for (it=m_graph.begin(); it!=m_graph.end(); it++){
+	       x = (  (*it)->SIC()  -  averageIC  ) ;
+	       x *=x;
+	       qDebug() << "SIC " <<  (*it)->SIC() << "  x " <<   (*it)->SIC() - averageIC  << " x*x" << x ;
+	       groupIC  += x;
+	}
+	qDebug() << "groupIC   " << groupIC   << " n " << n ;
+	groupIC  = groupIC  /  n;
+	qDebug() << "groupIC   " << groupIC   ;
 	outText << tr("\nGROUP INFORMATION CENTRALISATION (GIC)\n\n");
 	outText << tr("GIC = ") << groupIC<<"\n\n";
 	outText << tr("GIC range: 0 < GIC < 1\n");
 	outText << tr("GIC = 0, when the lengths of the geodesics are all equal (i.e. a complete or a circle graph).\n");
 	outText << tr("GIC = 1, when one node has geodesics of length 1 to all the other nodes, and the other nodes have geodesics of length 2 to the remaining (N-2) nodes. This is exactly the situation realised by a star graph.\n");
 	outText <<"(Wasserman & Faust, formula 5.9, p. 187)\n\n";
-	outText << tr("This measure focuses on how close a node is to all\n");
-	outText << tr("the other nodes in the set of nodes. The idea is that a node\n");
-	outText << tr("is central if it can quickly interact with all others\n");
-	outText << "(Wasserman & Faust, p. X)\n";
+
+	outText << tr("This measure measures the information that is contained in the paths thorugh each actor.\n");
+	outText << tr("The standardized values IC' can be seen as the proportion of total information flow that is controlled by each actor. Note that standard IC' values sum to unity, unlike any other centrality index.\n");
+	outText << "(Wasserman & Faust, p. 196)\n";
 
 	outText << "\n\n";
 	outText << tr("Information Centrality report, \n");
@@ -3904,12 +3923,12 @@ void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
 
 
 
-void Graph::createAdjacencyMatrix(bool dropIsolates, int isolatesSum=0){
+void Graph::createAdjacencyMatrix(bool dropIsolates){
     qDebug() << "Graph::createAdjacencyMatrix()";
     float m_weight=-1;
     int i=0, j=0;
     bool isolatedNode=true;
-
+    isolatedVertices = 0;
     AM.resize(m_totalVertices);
 
     QList<Vertex*>::iterator it, it1;
@@ -3944,8 +3963,8 @@ void Graph::createAdjacencyMatrix(bool dropIsolates, int isolatesSum=0){
 	for (int k = 0; k < isolatesList.size(); ++k) {
 	    AM.deleteRowColumn( isolatesList.at(k) );
 	}
-	isolatesSum=isolatesList.size();
-	qDebug() << "Graph::createAdjacencyMatrix() - Total isolates found: " << isolatesSum;
+	isolatedVertices=isolatesList.size();
+	qDebug() << "Graph::createAdjacencyMatrix() - Total isolates found: " << isolatedVertices;
     }
     qDebug() << "Graph::createAdjacencyMatrix() - Done.";
 }
@@ -3958,7 +3977,7 @@ void Graph::invertAdjacencyMatrix(){
 
     qDebug()<<"Graph::invertAdjacencyMatrix() - first create the Adjacency Matrix AM";
     bool dropIsolates=false;
-    createAdjacencyMatrix(dropIsolates, 0);
+    createAdjacencyMatrix(dropIsolates);
 
     qDebug()<<"Graph::invertAdjacencyMatrix() - invert the Adjacency Matrix AM and store it to invAM";
     invAM.inverseByGaussJordanElimination(AM);
