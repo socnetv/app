@@ -1526,27 +1526,28 @@ void Graph::centralityInformation(){
 	qDebug() << "Graph:: centralityInformation() - computing node ICs for total n = " << n;
 
 	for (i=0; i<n; i++){
-	    weightSum=1;
+	    weightSum = 1;
 	    for (j=0; j<n; j++){
+		if ( i == j )
+		    continue;
 		m_weight = AM.item(i,j);
 		weightSum += m_weight; //sum of weights for all edges incident to i
-		if (i==j)
-		    continue;
 		qDebug() << "Graph:: centralityInformation() -A("<< i <<  ","<< j <<") = 1-Xij = " << 1-m_weight;
-		TM.setItem(i,j, 1-m_weight);
+		TM.setItem(i,j,1-m_weight);
 	    }
 	    TM.setItem(i,i,weightSum);
 	    qDebug() << "Graph:: centralityInformation() - A("<< i << ","<< i <<") = 1+sum of all tie values = " << weightSum;
 	}
 
 	invM.inverseByGaussJordanElimination(TM);
+
 	diagonalEntriesSum = 0;
 	rowSum = 0;
-	for (j=0; i<n; i++){
+	for (j=0; j<n; j++){
 		rowSum += invM.item(0,j);
 	}
 	for (i=0; i<n; i++){
-	    diagonalEntriesSum  += invM.item(i,i);;  // calculate the matrix trace
+	    diagonalEntriesSum  += invM.item(i,i);  // calculate the matrix trace
 	}
 	qDebug() << "Graph:: centralityInformation() - R= " << rowSum << " D= "<<diagonalEntriesSum;
 
@@ -1559,7 +1560,7 @@ void Graph::centralityInformation(){
 		    qDebug()<< "Graph:: centralityInformation() vertex: " <<  (*it)->name() << " isolated";
 		    continue;
 		}
-		IC=1/ ( invM.item(i,i) + (diagonalEntriesSum - 2*rowSum)/n );
+		IC= 1.0 / ( invM.item(i,i) + (diagonalEntriesSum - 2.0 * rowSum) / n );
 		if ( IC > maxIC ) {
 		    maxIC = IC;
 		    maxNodeIC=(*it)->name();
@@ -1619,12 +1620,17 @@ void Graph::writeCentralityInformation(const QString fileName){
 		outText << tr("Min IC' = ") << minIC <<" (node "<< minNodeIC <<  ")  \n";
 		outText << tr("IC classes = ") << classesIC<<" \n";
 	}
+	outText << "\n";
+	outText << tr("The IC index measures the information that is contained in the paths passing through each actor.\n");
+	outText << tr("The standardized values IC' can be seen as the proportion of total information flow that is controlled by each actor. Note that standard IC' values sum to unity, unlike any other centrality index.\n");
+	outText << "(Wasserman & Faust, p. 196)\n";
+	outText << "\n";
 
 	float x=0;
 	float n = ( this->vertices() - isolatedVertices );
 
 	averageIC = sumSIC / n ;
-	qDebug() << "sumSIC " << sumSIC << "  n " << n << "  averageIC " << averageIC;
+	qDebug() << "sumSIC = " << sumSIC << "  n = " << n << "  averageIC = " << averageIC;
 	groupIC=0;
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
 	       x = (  (*it)->SIC()  -  averageIC  ) ;
@@ -1633,20 +1639,19 @@ void Graph::writeCentralityInformation(const QString fileName){
 	       groupIC  += x;
 	}
 	qDebug() << "groupIC   " << groupIC   << " n " << n ;
-	groupIC  = groupIC  /  n;
+	groupIC  = groupIC  /  (n-1);
 	qDebug() << "groupIC   " << groupIC   ;
 	outText << tr("\nGROUP INFORMATION CENTRALISATION (GIC)\n\n");
 	outText << tr("GIC = ") << groupIC<<"\n\n";
-	outText << tr("GIC range: 0 < GIC < 1\n");
-	outText << tr("GIC = 0, when the lengths of the geodesics are all equal (i.e. a complete or a circle graph).\n");
-	outText << tr("GIC = 1, when one node has geodesics of length 1 to all the other nodes, and the other nodes have geodesics of length 2 to the remaining (N-2) nodes. This is exactly the situation realised by a star graph.\n");
-	outText <<"(Wasserman & Faust, formula 5.9, p. 187)\n\n";
+	outText << tr("GIC range: 0 < GIC < inf \n");
+	outText << tr("GIC is computed using a simple variance formula. \n");
+	outText << tr("In fact, following the results of Wasserman & Faust, we are using a bias-corrected sample variance.\n ");
 
-	outText << tr("This measure measures the information that is contained in the paths thorugh each actor.\n");
-	outText << tr("The standardized values IC' can be seen as the proportion of total information flow that is controlled by each actor. Note that standard IC' values sum to unity, unlike any other centrality index.\n");
-	outText << "(Wasserman & Faust, p. 196)\n";
+	outText << tr("GIC = 0, when all nodes have the same IC value, i.e. a complete or a circle graph).\n");
+	outText << tr("Larger values of GIC mean larger variability between the nodes' IC values.\n");
+	outText <<"(Wasserman & Faust, formula 5.20, p. 197)\n\n";
 
-	outText << "\n\n";
+
 	outText << tr("Information Centrality report, \n");
 	outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
 	file.close();

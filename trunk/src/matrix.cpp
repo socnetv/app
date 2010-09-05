@@ -403,5 +403,5 @@ Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
 
 	}
 
-	 return *this;
+	return *this;
 }
