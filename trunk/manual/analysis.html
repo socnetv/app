@@ -149,6 +149,21 @@ Therefore, EC(u) reflects how far, at most, is each node from every other node.
 </p>
 
 
+
+<h5><a name="Power" id="Power"></a>Power Centrality</h5>
+<p class="text">
+The Power Centrality (PC) is a centrality measure suggested by Gil and Schmidt.
+
+For each node k, the index sums its degree (with weight 1), with the size of the 2nd-order neighbourhood (with weight 2), and in general, with the size of the kth order neighbourhood (with weight k).
+<br /><br />
+Thus, for each node in the network the most important other nodes are its immediate neighbours and then in decreasing importance the nodes of the 2nd-order neighbourhood, 3rd-order neighbourhood etc.
+
+<br /><br />
+For each node, the sum obtained is normalised by the total numbers of nodes in the same component minus 1.
+
+</p>
+
+
 <h5><a name="Information" id="Information"></a>Information Centrality</h5>
 <p class="text">
 The Information Centrality (IC) is an index suggested by Stephenson and Zelen (1989).
