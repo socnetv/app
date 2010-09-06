@@ -33,20 +33,20 @@
 #include <QObject>
 
 
-
 class GraphicsWidget;
 
 static const int TypeBackgrCircle = QGraphicsItem::UserType+6;
 
 class BackgrCircle : public QObject, public  QGraphicsItem {
 	Q_OBJECT
+	Q_INTERFACES (QGraphicsItem)
 
 public:
 	BackgrCircle(GraphicsWidget *, int, int, int );
 	BackgrCircle(GraphicsWidget *, int, int );
 	enum { Type = UserType + 6 };
 	int type() const { return Type; }
-	
+	void die();
 	
 
 protected:

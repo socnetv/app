@@ -659,15 +659,30 @@ void GraphicsWidget::addBackgrHLine( int y0){
 	circ->show();
 }
 
-void GraphicsWidget::clearBackgrCircles(){
-	QList<QGraphicsItem *> allItems=scene()->items();
-	foreach (QGraphicsItem *item, allItems ) {
-		if ( (item)->type()==TypeBackgrCircle) {
-			qDebug("GW: Deleting a background Circle now...");
-			(item)->hide();
-			delete (item);
+
+/**
+*	Removes all items of certain type (i.e. number, label, edge, etc)
+*/
+void GraphicsWidget::removeAllItems(int type){
+	qDebug()<< "GW: removeAllItems";
+	QList<QGraphicsItem *> list = scene()->items();
+	for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
+		if ( (*item)->type() == type){
+			BackgrCircle *bgcircle = qgraphicsitem_cast<BackgrCircle *>  (*item);
+			qDebug()<< "GW: removeAllItems - located element";
+			bgcircle->die();
+			bgcircle->deleteLater ();
+
+			delete *item;
 		}
 	}
+}
+
+
+
+void GraphicsWidget::clearBackgrCircles(){
+	qDebug()<< "GW: clearBackgrCircles";
+	this->removeAllItems(TypeBackgrCircle);
 }
 
 

@@ -78,7 +78,7 @@ public:
 	
 	void setAllItemsVisibility(int, bool);
 	
-	
+	void removeAllItems(int);
 protected:
 	void wheelEvent(QWheelEvent *event);
 	void mouseDoubleClickEvent ( QMouseEvent * e );

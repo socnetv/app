@@ -73,7 +73,11 @@ void BackgrCircle::paint ( QPainter *painter, const QStyleOptionGraphicsItem *op
 
 
 
-
+void BackgrCircle::die (){
+	this->prepareGeometryChange();
+	this->hide();
+	graphicsWidget->scene()->removeItem(this);
+}
 
 
 
