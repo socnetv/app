@@ -715,7 +715,8 @@ bool Parser::loadAdjacency(){
 bool Parser::loadTwoModeSociomatrix(){
 	qDebug("\n\nParser: loadTwoModeSociomatrix()");
 	QFile file ( fileName );
-	if ( ! file.open(QIODevice::ReadOnly )) return false;
+	if ( ! file.open(QIODevice::ReadOnly ))
+	    return false;
 	QTextStream ts( &file );
 	QString str;
 	QStringList lineElement;
@@ -737,7 +738,7 @@ bool Parser::loadTwoModeSociomatrix(){
 			|| str.contains("graphml",Qt::CaseInsensitive)
 			|| str.contains("xml",Qt::CaseInsensitive)
 			) {
-			qDebug()<< "*** Parser:loadTwoModeSociomatrix(): Not an two mode sociomatrix-formatted file. Aborting!!";
+			qDebug()<< "*** Parser:loadTwoModeSociomatrix(): Not a two mode sociomatrix-formatted file. Aborting!!";
 			file.close();
 			return false;
 		}
@@ -750,10 +751,9 @@ bool Parser::loadTwoModeSociomatrix(){
 			newCount = lineElement.count();
 		}
 		qDebug() << str;
-		qDebug() << "newCount "<<newCount << " i " << i;
-		if  ( (newCount != lastCount && i>1 )  ) {
-			// line element count differ
-			qDebug()<< "*** Parser:loadTwoModeSociomatrix(): Not an Sociomatrix-formatted file. Aborting!!";
+		qDebug() << "newCount "<<newCount << " nodes. We are at i = " << i;
+		if  ( (newCount != lastCount && i>1 )  ) { // line element count differ
+			qDebug()<< "*** Parser:loadTwoModeSociomatrix(): Not a Sociomatrix-formatted file. Aborting!!";
 			file.close();
 			return false;
 		}
@@ -762,7 +762,7 @@ bool Parser::loadTwoModeSociomatrix(){
 		randY=rand()%gwHeight;
 		qDebug()<< "Parser-loadTwoModeSociomatrix(): Calling createNode() for node "
 				<< i << " at random x,y: "<<randX << randY;
-		emit createNode( i,initNodeSize,  initNodeColor,
+		emit createNode( i,initNodeSize, initNodeColor,
 				 initNodeNumberColor, initNodeNumberSize,
 				 QString::number(i), initNodeLabelColor, initNodeLabelSize,
 				 QPointF(randX, randY),
@@ -776,16 +776,14 @@ bool Parser::loadTwoModeSociomatrix(){
 				firstModeMultiMap.insert(i, j);
 				secondModeMultiMap.insert(j, i);
                                 QList<int> values;
-                                qDebug() << "checking earlier discovered actors... ";
                                 for (int k = 1; k < i ; ++k) {
-                                    qDebug() << "Actor " << k ;
+				    qDebug() << "Checking earlier discovered actor k = " << k;
                                     if ( firstModeMultiMap.contains(k, j) ) {
-					undirected=0;
+					undirected=2;
                                         arrows=true;
                                         bezier=false;
                                         edgeWeight = 1;
-                                        qDebug() << " Actor " << i << " on the same event as " << k << ". Creating edge ";
-                                        //CRASHES NEEDS REDESIGN
+					qDebug() << " Actor " << i << " on the same event as actor " << k << ". Creating edge ";
                                         emit createEdge(i, k, edgeWeight, initEdgeColor, undirected, arrows, bezier);
                                         totalLinks++;
                                     }
@@ -795,11 +793,9 @@ bool Parser::loadTwoModeSociomatrix(){
 			j++;
 		}
 	}
-
-
 	file.close();
 	// 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List, 8 List, 9, TwoModeSociomatrix
-	qDebug() << "Parser: SM network has been loaded. Tell MW the statistics and network type";
+	qDebug() << "Parser: Two-mode SM network has been loaded. Tell MW the statistics and network type";
 	emit fileType(9, networkName, aNodes, totalLinks, undirected);
 
 	return true;
@@ -2104,7 +2100,7 @@ void Parser::run()  {
 
 	case 9:	// twomode sociomatrix, affiliation network matrix
 		if (loadTwoModeSociomatrix() ){
-			qDebug("Parser: this is a two-mode sociomatrix (.tsm) network");
+			qDebug("Parser: OK, this is a two-mode sociomatrix (.tsm) network");
 		}
 		else fileFormat=-1;
 		break;

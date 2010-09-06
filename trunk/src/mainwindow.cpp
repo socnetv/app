@@ -302,8 +302,8 @@ void MainWindow::initActions(){
 
 
 	importTwoModeSM = new QAction( QIcon(":/images/open.png"), tr("&Two Mode Sociomatrix"), this);
-	importTwoModeSM->setStatusTip(tr("Imports an two mode sociomatrix (affiliation network) file"));
-	importTwoModeSM->setWhatsThis(tr("Import Sociomatrix \n\n  Imports a two mode network from a sociomatrix file. Two-mode networks are described by affiliation network matrices, where A(i,j) codes the events/organizations each actor is affiliated."));
+	importTwoModeSM->setStatusTip(tr("Imports a two mode sociomatrix (affiliation network) file"));
+	importTwoModeSM->setWhatsThis(tr("Import Sociomatrix \n\n  Imports a two mode network from a sociomatrix file. Two-mode networks are described by affiliation network matrices, where A(i,j) codes the events/organizations each actor is affiliated with."));
 	connect(importTwoModeSM, SIGNAL(activated()), this, SLOT(slotImportTwoModeSM()));
 
 
@@ -2248,6 +2248,15 @@ void MainWindow::fileType (
 			fileLoaded=true;
 			networkModified=false;
 			statusMessage( QString(tr("Simple list-formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
+			break;
+		case 9:
+			pajekFileLoaded=false;
+			adjacencyFileLoaded=false;
+			dotFileLoaded=false;
+			graphMLFileLoaded=false;
+			fileLoaded=true;
+			networkModified=false;
+			statusMessage( QString(tr("Two-mode affiliation network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
 			break;
 
 		default: // just for sanity

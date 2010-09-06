@@ -8,17 +8,18 @@ Version 0.90 -  Sep XX 2010
 Codename: "Worka Worka"
 --------------------------
 - New feature: Power Centrality calculation
-- New feature: Information Centrality
+- New feature: Information Centrality of Stephenson and Zelen
 - New feature: filter (enable/disable) orphan nodes
-- New feature: import two-mode sociomatrices with affiliation networks
+- New feature: import two-mode affiliation networks (in sociomatrix format)
 - New, faster container for GraphicsWidget Nodes based on QHash
 - More automagically recreated known data sets 
-- Nodes are selectable and editable in groups
+- Nodes are selectable (but not yet editable) in groups
 - Fixed bug #518219: Certain Pajek files might crash SocNetV
 - Fided bug #515756: Ctrl+F after a node removal may crash SocNetV
 - Fixed bug #515758: Random layout crashes SocNetV, if a node is removed
 - Updated user manual to new version features.
 - Removed counts of outLinkedNodes, inLinkedNodes and reciprocalLinkedNodes because they were causing too much overhead when loading large networks. The relevant LCDs were also dropped from the UI.
+
 
 Version 0.81 - Jan 28 2010
 Codename: "bugfixes"

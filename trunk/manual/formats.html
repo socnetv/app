@@ -123,11 +123,15 @@ Again, negative weights are allowed. Those are depicted as dashed lines when the
 
 <h4><a name="Two-mode Sociomatrix" id="TwoModeSM"></a>Two-mode Sociomatrix files</h4>
 <p class="text">
-Unlike one-mode networks describing direct links between actors, networks can be two-mode as well, describing subsets of actors (first mode). <br />
-These subsets are defined by the actors' affiliations to a particular event or organization (second mode). <br />
-Two-mode networks are described by affiliation network matrices, where A(i,j) codes the events/organizations each actor is affiliated.
+Unlike one-mode networks which describe direct links between actors of the same type, networks can be two-mode as well. Two-mode networks describe either two sets of actors or a set of actors and a set of associated events. <br /> <br />
 
-A two-mode sociomatrix is a matrix NxM, where N is the amount of nodes and M is the amount of events. Each (i,j) element can be 0 or 1. <br />
+In the first case, which usually is called dyadic two-mode network, there are two sets of actors. The sociomatrix codifies the relations between actors in the first set and actors in the second set. <br /> <br />
+
+In the second case, which usually is called affiliation network, there is a set of actors and a set of events or organizations. The sociomatrix measures the attendance or affiliations of the actors (first mode) with a particular event or organization (second mode). <br /> <br />
+
+Two-mode networks are described by affiliation network matrices, where A(i,j) codes the events/organizations each actor is affiliated. <br />
+
+A two-mode sociomatrix is a matrix NxM, where N is the amount of nodes and M is the amount of events. Each (i,j) element can be 0 or 1. <br /> <br />
 If A(i,j)=1 then actor i is affiliated with event j. <br />
 </p>
 <p class="text">

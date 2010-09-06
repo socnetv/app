@@ -3654,7 +3654,7 @@ void Graph::writeDataSetToFile (QString fileName) {
 		"0 0 2 0 0 0 0 0 3 0 0 0 0 0 3 3 0 0 1 0 3 0 2 5 0 0 0 0 0 4 3 4 0 5" << endl <<
 		"0 0 0 0 0 0 0 0 4 2 0 0 0 3 2 4 0 0 2 1 1 0 3 4 0 0 2 4 2 2 3 4 5 0";
 	}
-		else if (fileName == "Galaskiewicz_CEOs_and_clubs_two_mode_data.sm"){
+		else if (fileName == "Galaskiewicz_CEOs_and_clubs_affiliation_network_data.sm"){
 		outText<< "0 0 1 1 0 0 0 0 1 0 0 0 0 0 0" << endl <<
 		"0 0 1 0 1 0 1 0 0 0 0 0 0 0 0" << endl <<
 		"0 0 1 0 0 0 0 0 0 0 0 1 0 0 0" << endl <<
