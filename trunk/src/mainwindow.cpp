@@ -2728,7 +2728,7 @@ void MainWindow::slotRecreateDataSet (QString m_fileName) {
 	else if (m_fileName.endsWith(".pajek")) {
 	   m_fileFormat=2;
 	}
-	else if (m_fileName.endsWith(".sm")) {
+	else if (m_fileName.endsWith(".sm") || m_fileName.endsWith(".adj")) {
 	   m_fileFormat=3;
 	}
 	else if (m_fileName.endsWith(".dot")) {
