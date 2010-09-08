@@ -1555,8 +1555,8 @@ void MainWindow::initView() {
 
 	//create a view widget for this scene
 	graphicsWidget=new GraphicsWidget(scene, this);
-	graphicsWidget->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);  
-	//  FullViewportUpdate  // MinimalViewportUpdate //SmartViewportUpdate
+	graphicsWidget->setViewportUpdateMode( QGraphicsView::MinimalViewportUpdate );
+	//  FullViewportUpdate  // MinimalViewportUpdate //SmartViewportUpdate  //BoundingRectViewportUpdate
 	//QGraphicsView can cache pre-rendered content in a QPixmap, which is then drawn onto the viewport. 
 	graphicsWidget->setCacheMode(QGraphicsView::CacheNone);  //CacheBackground | CacheNone
 

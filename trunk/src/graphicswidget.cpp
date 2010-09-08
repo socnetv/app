@@ -672,7 +672,6 @@ void GraphicsWidget::removeAllItems(int type){
 			qDebug()<< "GW: removeAllItems - located element";
 			bgcircle->die();
 			bgcircle->deleteLater ();
-
 			delete *item;
 		}
 	}

@@ -49,18 +49,16 @@ BackgrCircle::BackgrCircle ( GraphicsWidget *gw,  int y0, int w) : graphicsWidge
 
 /** Returns the bounding rectangle of the background circle*/
 QRectF BackgrCircle::boundingRect() const {
-	qreal adjust = 4;
 	if (circle) {
-	 return QRectF ( -m_x0 - m_radius-adjust, -m_y0 - m_radius-adjust,10+m_x0 + m_radius+adjust, 10+m_y0 + m_radius+adjust );
+	 return QRectF ( -m_x0 - m_radius-5, -m_y0 - m_radius-5, m_x0 + m_radius + 5, m_y0 + m_radius +5 );
 	}
 	else  {
-	 return QRectF ( 1, m_y0 -adjust,  width, m_y0 + adjust );
+	 return QRectF ( 1, m_y0 -5,  width, m_y0 + 5 );
 	}
 }
 
 
 void BackgrCircle::paint ( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget * ){
-//	painter->setClipRect( option->exposedRect );
 	Q_UNUSED(option);
 	painter->setPen ( QPen ( QColor ( "red" ), 1, Qt::DotLine ) );
 	if (circle) {
@@ -76,7 +74,9 @@ void BackgrCircle::paint ( QPainter *painter, const QStyleOptionGraphicsItem *op
 void BackgrCircle::die (){
 	this->prepareGeometryChange();
 	this->hide();
+	this->update();
 	graphicsWidget->scene()->removeItem(this);
+	this->update();
 }
 
 
