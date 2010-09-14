@@ -45,6 +45,7 @@ static const int TypeEdge= QGraphicsItem::UserType+2;
 
 class Edge : public QObject, public QGraphicsItem {
 	Q_OBJECT
+	Q_INTERFACES (QGraphicsItem)
 
 public:
 	Edge(GraphicsWidget *, Node*, Node*, float, int, QString, bool, bool, bool);

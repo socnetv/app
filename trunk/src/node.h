@@ -53,7 +53,8 @@ static const int TypeNode = QGraphicsItem::UserType+1;
 //
 
 class Node :  public QObject,  public QGraphicsItem {
-  Q_OBJECT
+	Q_OBJECT
+	Q_INTERFACES (QGraphicsItem)
 
 public:
 	Node(GraphicsWidget*, int num, int size, QString col, QString shape, bool, int, int, QPointF p) ;
