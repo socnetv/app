@@ -86,7 +86,7 @@ Vertex::Vertex(int v1) {
 
 
 
-void Vertex::addLinkTo (unsigned long int v2, float weight) {
+void Vertex::addLinkTo (long int v2, float weight) {
 	//qDebug() <<"Vertex: "<< name() << " addLinkTo() "<< v2 << " of weight "<< weight;
 	m_outEdges[v2]=weight;
 	m_enabled_outEdges [v2]=1;
@@ -95,14 +95,14 @@ void Vertex::addLinkTo (unsigned long int v2, float weight) {
 
 
 
-void Vertex::addLinkFrom (unsigned long int source, float weight) {
+void Vertex::addLinkFrom (long int source, float weight) {
 	//qDebug() <<"Vertex: "<< name() << " addLinkFrom() "<< source;
 	m_inEdges[source]=weight;
 	m_inLinks++;
 
 }
 
-void Vertex::changeLinkWeightTo(unsigned long int target, float weight){
+void Vertex::changeLinkWeightTo(long int target, float weight){
 	qDebug() << "Vertex: changeEdgeWeightTo " << target;
 	m_outEdges[target]=weight;
 	m_enabled_outEdges[target] = 1;
@@ -110,7 +110,7 @@ void Vertex::changeLinkWeightTo(unsigned long int target, float weight){
 
 
 //finds and removes a link to vertice v2
-void Vertex::removeLinkTo (unsigned long int v2) {
+void Vertex::removeLinkTo (long int v2) {
 	qDebug() << "Vertex: removeLinkTo() vertex " << m_name << " has " <<outDegree() << " edges. RemovingEdgeTo "<< v2 ;
 	if (outDegree()>0) {
 		m_outLinks--;
@@ -132,7 +132,7 @@ void Vertex::removeLinkTo (unsigned long int v2) {
 }
 
 
-void Vertex::removeLinkFrom(unsigned long int v2){
+void Vertex::removeLinkFrom(long int v2){
 	qDebug() << "Vertex: removeLinkFrom() vertex " << m_name << " has " <<  outDegree() << "  edges. RemovingEdgeFrom " << v2 ;
 	if (outDegree()>0) {
 		m_inLinks--;
@@ -206,7 +206,7 @@ void Vertex::filterEdgesByWeight(float m_threshold, bool overThreshold){
 
 
 //Returns the numbers of links from this vertice
-unsigned long int Vertex::outDegree() { 
+long int Vertex::outDegree() {
 	//return m_outLinks;
 	return m_outEdges.size();		//FIXME: What if the user has filtered out links? 
 }
@@ -214,7 +214,7 @@ unsigned long int Vertex::outDegree() {
 
 
 //Returns the numbers of links to this vertice
-unsigned long int Vertex::inDegree() { 
+long int Vertex::inDegree() {
 	return m_inLinks; 			//FIXME: What if the user has filtered out links?
 }
 
@@ -223,10 +223,10 @@ unsigned long int Vertex::inDegree() {
 /**
  	localDegree is the outDegree + inDegree minus the edges counted twice.
 */
-unsigned long int Vertex::localDegree(){
+long int Vertex::localDegree(){
 	imap_f::iterator it1;
-	unsigned long int v2=0; 
-	unsigned long int m_localDegree = (outDegree() + inDegree() );
+	long int v2=0;
+	long int m_localDegree = (outDegree() + inDegree() );
 	for( it1 =  m_outEdges.begin(); it1 !=  m_outEdges.end(); it1++ ) {
 		v2=it1->first;		
 		if (this->isLinkedFrom (v2) ) m_localDegree--; 
@@ -237,7 +237,7 @@ unsigned long int Vertex::localDegree(){
 
 
 //Checks if this vertex is outlinked to v2 and returns the weight of the link
-float Vertex::isLinkedTo(unsigned long int v2){
+float Vertex::isLinkedTo(long int v2){
 	imap_f::iterator weight=m_outEdges.find(v2);
 	if (weight  != m_outEdges.end()) {
 		if  ( m_enabled_outEdges[ (*weight).first ] == 1) {
@@ -255,7 +255,7 @@ float Vertex::isLinkedTo(unsigned long int v2){
 
 
 
-float Vertex::isLinkedFrom(unsigned long int v2){
+float Vertex::isLinkedFrom(long int v2){
 	imap_f::iterator weight=m_inEdges.find(v2);
 	if (weight  != m_inEdges.end()) {
 		//	qDebug()<< "link to " << v2 << " weight "<<(*weight).second;
@@ -266,12 +266,12 @@ float Vertex::isLinkedFrom(unsigned long int v2){
 }
 
 
-unsigned long int Vertex::name() {
+long int Vertex::name() {
 	return m_name;
 }
 
 
-void Vertex::setName (unsigned long int v1) {
+void Vertex::setName (long int v1) {
 	m_name=v1; 
 }
 
@@ -390,7 +390,7 @@ QPointF Vertex::pos () {
 
 
 
-void Vertex::setOutLinkColor(unsigned long int target, QString color){
+void Vertex::setOutLinkColor(long int target, QString color){
 	qDebug()<<"Vertex: update linkColor to vertex "<< target<< " color: "<< color;
 	outLinkColors[target]=color;
 }
@@ -407,7 +407,7 @@ void Vertex::clearPs()	{
 	myPs.clear();
 }
 	
-void Vertex::appendToPs(unsigned long  int vertex ) {
+void Vertex::appendToPs(long  int vertex ) {
 	qDebug() << "adding " <<  vertex << " to myPs"; 
 	myPs.append(vertex); 
 }

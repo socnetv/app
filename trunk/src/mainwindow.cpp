@@ -155,8 +155,8 @@ MainWindow::MainWindow(const QString & m_fileName) {
 	connect( &activeGraph, SIGNAL( selectedVertex(int) ), 
 					this, SLOT( selectedNode(int) ) ) ;
 
-	connect( &activeGraph, SIGNAL( eraseNode(int) ), 
-			 graphicsWidget, SLOT(  eraseNode(int) ) );
+	connect( &activeGraph, SIGNAL( eraseNode(long int) ),
+			 graphicsWidget, SLOT(  eraseNode(long int) ) );
 
 	
 	//connect some signals/slots with MW widgets
@@ -188,8 +188,8 @@ MainWindow::MainWindow(const QString & m_fileName) {
 	connect( &activeGraph, SIGNAL( setEdgeVisibility ( int, int, bool) ), 
 			graphicsWidget, SLOT(  setEdgeVisibility ( int, int, bool) ) );
 
-	connect( &activeGraph, SIGNAL( setVertexVisibility(unsigned long int, bool)  ),
-			graphicsWidget, SLOT(  setNodeVisibility (unsigned long int ,  bool) ) );
+	connect( &activeGraph, SIGNAL( setVertexVisibility(long int, bool)  ),
+			graphicsWidget, SLOT(  setNodeVisibility (long int ,  bool) ) );
 
 	connect( circleClearBackgrCirclesAct, SIGNAL(activated()), 
 			graphicsWidget, SLOT(clearBackgrCircles()));
@@ -3524,7 +3524,7 @@ void MainWindow::slotChangeNodeColor(){
 	if (clickedJimNumber==-1) {
 		int min=activeGraph.firstVertexNumber();
 		int max=activeGraph.lastVertexNumber();
-		int node=QInputDialog::getInteger(this, "Change node color",tr("Select node:  	("+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"), min, 1, max , 1, &ok)   ;
+		long int node=QInputDialog::getInt(this, "Change node color",tr("Select node:  	("+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"), min, 1, max , 1, &ok)   ;
 		statusMessage( tr("Error. ")  );
 		if (!ok) {
 			statusMessage( "Change clicked node color operation cancelled." );
@@ -4628,14 +4628,15 @@ void MainWindow::slotGraphDistance(){
 		return;
 	}
 	bool ok=false;
-	int  min=1, max=1, i=-1, j=-1;
+	long int  min=1, max=1, i=-1, j=-1;
 	QList<QGraphicsItem *> list=scene->items();
-	for (QList<QGraphicsItem *> ::iterator it=list.begin(); it!=list.end(); it++)
+	for (QList<QGraphicsItem *> ::iterator it=list.begin(); it!=list.end(); it++) {
 		if ( (*it) -> type() == TypeNode ){
 			Node *jim = (Node*) (*it);
-			if (min>jim->nodeNumber() ) min=jim->nodeNumber();
-			if (max<jim->nodeNumber() ) max=jim->nodeNumber();
+			if ( min>jim->nodeNumber() ) min=jim->nodeNumber();
+			if ( max<jim->nodeNumber() ) max=jim->nodeNumber();
 		}
+	}
 	i=QInputDialog::getInteger(this, tr("Distance between two nodes"),tr("Select source node:  ("+QString::number(min).toAscii()+"..."+QString::number(max).toAscii()+"):"), min, 1, max , 1, &ok )   ;
 	if (!ok) {
 		statusMessage( "Distance calculation operation cancelled." );

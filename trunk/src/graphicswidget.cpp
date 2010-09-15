@@ -289,8 +289,8 @@ void GraphicsWidget::moveNode(int number, int x, int y){
 /**
 	Called from Graph signal eraseNode(int) 
 */
-void GraphicsWidget::eraseNode(int doomedJim){
-	qDebug("GW: Deleting node %i ", doomedJim);
+void GraphicsWidget::eraseNode(long int doomedJim){
+	qDebug() << "GW: Deleting node "<< doomedJim;
 	QList<QGraphicsItem *> list=scene()->items();
 	qDebug("GW: Scene items= %i - View items : %i",scene()->items().size(), items().size());
 	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
@@ -339,7 +339,7 @@ void GraphicsWidget::eraseEdge(int sourceNode, int targetNode){
 */
 void GraphicsWidget::removeItem( Node *node){
 	vector<Node*>::iterator it;
-	int i=node->nodeNumber();
+	long int i=node->nodeNumber();
 	foreach ( Node *candidate, nodeHash) {
 		if ( candidate->nodeNumber() == i )
 			nodeHash.remove( i );
@@ -401,7 +401,7 @@ void GraphicsWidget::setInitLinkColor(QString color){
 	Sets the color of an node.
 	Called from MW when the user changes the color of a node (right-clicking).
 */
-bool GraphicsWidget::setNodeColor(int nodeNumber, QString color){
+bool GraphicsWidget::setNodeColor(long int nodeNumber, QString color){
 	QList<QGraphicsItem *> list=scene()->items();
 	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!= list.end() ; it++){
 		if ( (*it)->type()==TypeNode) {
@@ -542,7 +542,7 @@ void GraphicsWidget::setEdgeVisibility(int source, int target, bool visible){
 /**
 *	Changes the visibility of a  Node
 */
-void GraphicsWidget::setNodeVisibility(unsigned long int number, bool visible){
+void GraphicsWidget::setNodeVisibility(long int number, bool visible){
     qDebug() << "GW: setNodeVisibility() for "<< number;
     QList<QGraphicsItem *> list = scene()->items();
     for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
@@ -585,7 +585,7 @@ void GraphicsWidget::setNodeVisibility(unsigned long int number, bool visible){
 
 /*
  * Used by findNode. 
- * Returns, if any, Node with label or number 'text'
+ * Returns, if found, the node with label or number 'text'
  */
 Node* GraphicsWidget::hasNode( QString text ){
 	vector<Node*>::iterator it;

@@ -13,6 +13,7 @@ Codename: "Worka Worka"
 - New feature: import two-mode affiliation networks (in sociomatrix format)
 - New, faster container for GraphicsWidget Nodes based on QHash
 - More automagically recreated known data sets 
+- Allow really large networks to be loaded without crashing. Still too slowly though.
 - Nodes are selectable (but not yet editable) in groups
 - Fixed bug #518219: Certain Pajek files might crash SocNetV
 - Fided bug #515756: Ctrl+F after a node removal may crash SocNetV

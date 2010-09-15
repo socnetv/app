@@ -43,7 +43,7 @@ class BackgrCircle;
 class EdgeWeight;
 
 typedef QMap<QString, Edge*> StringToEdgeMap;
-typedef QHash <unsigned long int, Node*> hash_in;
+typedef QHash <long int, Node*> hash_in;
 
 class GraphicsWidget : public QGraphicsView {
 	Q_OBJECT
@@ -70,7 +70,7 @@ public:
 
 	void setNumbersInsideNodes(bool);
 	
-	bool setNodeColor(int, QString);
+	bool setNodeColor(long int, QString);
 	
 	bool setEdgeColor(int, int, QString);
 	
@@ -95,11 +95,11 @@ public slots:
 					QString nodeShape, 
 					bool showLabels, bool labelIn, bool showNumbers
 					);
-	void eraseNode(int doomedJim);
+	void eraseNode(long int doomedJim);
 	void drawEdge(int, int, float, bool, bool, QString, bool);
 	void eraseEdge(int, int);
 	void setEdgeVisibility ( int, int, bool);
-	void setNodeVisibility(unsigned long int, bool );	//Called from Graph via MW
+	void setNodeVisibility(long int, bool );	//Called from Graph via MW
 	
 	void nodeClicked(Node *);
 	void edgeClicked(Edge *);

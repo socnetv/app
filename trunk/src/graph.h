@@ -55,7 +55,7 @@ class QDateTime;
 */
 
 typedef QList<Vertex*> Vertices;
-typedef map<int,int> imap_i;
+typedef map<long int,long int> imap_i;
 typedef map<int,float> imap_f;
 typedef QHash <QString, int> hash_si;
 
@@ -106,11 +106,11 @@ signals:
 	/** Signals to GraphicsWidget */
 	void drawNode( int ,int,  QString, QString, int, QString, QString, int, QPointF, QString, bool, bool, bool);	//call GW to draw a node
 	
-	void eraseNode (int);						//erase node from GW
+	void eraseNode (long int);						//erase node from GW
 	void drawEdge(int, int, float, bool, bool, QString, bool);	//call GW to draw an edge
 	void eraseEdge(int, int);					//emited from removeEdge() to GW to clear the edge item.
 	void setEdgeVisibility ( int, int, bool);			// emitted from each Vertex
-	void setVertexVisibility(unsigned long int, bool);		//notifies GW to disable a node
+	void setVertexVisibility(long int, bool);		//notifies GW to disable a node
 	void drawEdgeReciprocal(int, int);				//call GW to draw the edge as symmetric one
 	void addBackgrCircle(int, int, int);				//call GW to draw a circular layout line somewhere.
 	void addBackgrHLine (int);					//call GW to draw a horizontal layout line somewhere.
@@ -143,12 +143,12 @@ public:
 	int lastVertexNumber();				//Returns the number of the last vertex
 	int firstVertexNumber();			//Returns the number of the first vertex
 
-	int hasVertex(unsigned long  int );		//Checks if a vertex exists
+	int hasVertex(long int );		//Checks if a vertex exists
 	int hasVertex(QString);				//Checks if a vertex with a label exists
-	void removeVertex (int );			//removes given vertex from m_graph
+	void removeVertex (long int );			//removes given vertex from m_graph
 
-	void setInitVertexSize (int); 			//Changes the init size used in new vertices.
-	void setVertexSize(int v, int );		//Changes the size.of vertex v
+	void setInitVertexSize (long int); 			//Changes the init size used in new vertices.
+	void setVertexSize(long int v, int );		//Changes the size.of vertex v
 
 	
 	void setInitVertexShape (QString); 		//Changes the init shape used in new vertices.
@@ -156,7 +156,7 @@ public:
 	QString shape(int v);				//returns the shape of this vertex
 
 	void setInitVertexColor (QString color);  	//Changes the init color used in new vertices
-	void setVertexColor(int v, QString color); 	//Changes the color.of vertex v 
+	void setVertexColor(long int v, QString color); 	//Changes the color.of vertex v
 
 
 	void setInitVertexNumberColor ( QString color);	//Changes the init number color in new vertices  
@@ -191,8 +191,8 @@ public:
 	void setEdgeWeight (int v1, int v2, float w); 	//Sets the edge weight between v1 and v2
 	void setInitEdgeColor(QString);
 
-	void setEdgeColor(int s, int t, QString color);	//Changes the color of edge (s,t).
-	QString edgeColor (int s, int t); 		//Returns the edgeColor
+	void setEdgeColor(long int s, long int t, QString color);	//Changes the color of edge (s,t).
+	QString edgeColor (long int s, long int t); 		//Returns the edgeColor
 	 
 	int totalEdges ();				//Returns the sum of edges inside m_graph
 
@@ -356,7 +356,9 @@ private:
 
 	/** General & initialisation variables */
 
-	int m_totalEdges, m_totalVertices, graphDiameter, initVertexSize, initVertexLabelSize, initVertexNumberSize;
+	long int m_totalEdges, m_totalVertices, graphDiameter, initVertexSize;
+	int initVertexLabelSize, initVertexNumberSize;
+
 	int isolatedVertices;
 	float averGraphDistance, nonZeroDistancesCounter;
 	int outEdgesVert, inEdgesVert, reciprocalEdgesVert;

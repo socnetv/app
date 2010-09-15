@@ -322,16 +322,16 @@ int Graph::firstVertexNumber() {
 	Then it changes the index of all subsequent vertices inside m_graph
 	Finally, it removes the vertex.
 */
-void Graph::removeVertex(int Doomed){
+void Graph::removeVertex(long int Doomed){
 	qDebug() << "Graph: removeVertex " << m_graph[ index[Doomed] ]->name() << "  with index= " << index[Doomed] ;
-	int indexOfDoomed=index[Doomed];
+	long int indexOfDoomed=index[Doomed];
 
 	//Remove links to Doomed from each other vertex	
 	for (QList<Vertex*>::iterator it=m_graph.begin(); it!=m_graph.end(); it++){
 		if  ( (*it)->isLinkedTo(Doomed) != 0) {
 			qDebug()<< "Graph: Vertex " << (*it)->name() << " is linked to selected and has outDegree " << (*it)->outDegree() ;
-			if ( (*it)->outDegree()==1 && (*it)->isLinkedFrom(Doomed) != 0 )	{
-				qDebug("Graph: decreasing reciprocalEdgesVert");
+			if ( (*it)->outDegree() == 1 && (*it)->isLinkedFrom(Doomed) != 0 )	{
+				qDebug() << "Graph: decreasing reciprocalEdgesVert";
 				(*it)->setReciprocalLinked(FALSE);
 			}
 			(*it)->removeLinkTo(Doomed) ;
@@ -341,34 +341,35 @@ void Graph::removeVertex(int Doomed){
 		}
 	}
 	
-	//Update the index mapping vertices inside m_graph
-	qDebug("Graph: Finished with vertices. Updating index");
-	int prevIndex=indexOfDoomed;
-	int tempIndex=-1;
+	qDebug()<< "Graph: Finished with vertices. Update the index which maps vertices inside m_graph " ;
+	long int prevIndex=indexOfDoomed;
+	long int tempIndex=0;
 	//Find the position of the Vertex inside m_graph
-	map<int,int>::iterator pos=index.find(Doomed);
-	qDebug("Graph: vertex %i to be erased with index %i", (pos)->first, (pos)->second );
+	map<long int,long int>::iterator pos=index.find(Doomed);
+	qDebug() << "Graph: vertex " << (pos)->first << " index "<< (pos)->second << " to be erased. ";
 
-	//Disable the value/position of Doomed inside index. Then find next vertex inside index
+	//find next active vertex inside index
 	(pos)->second = -1;
-	while ((pos)->second ==-1) ++pos;
-	qDebug("Graph: posNext %i index %i", (pos)->first, (pos)->second );
+	while ( (pos)->second == -1 )
+	    ++pos;
+	qDebug() << "Graph: posNext " << (pos)->first << " index "<< (pos)->second ;
+
 
 	//Update the index of all subsequent vertices
-	for (map<int,int>::iterator it1=pos; it1!=index.end(); it1++)	{
-		qDebug("Graph: Vertex %i with index %i will take prevIndex %i. TempIndex is %i", (it1)->first, (it1)->second,prevIndex, tempIndex);
+	map<long int,long int>::iterator it1;
+	for (it1=pos; it1!=index.end(); it1++)	{
+		qDebug() << "Graph: vertex " << (it1)->first << " with index "<< (it1)->second << " will take index" << prevIndex;
 		tempIndex=(it1)->second;
 		(it1)->second=prevIndex;
 		prevIndex=tempIndex;
-		qDebug("Graph: now vertex %i has index %i", (it1)->first, (it1)->second);
+		qDebug() << "Graph: now vertex " << (it1)->first << " has index "<< (it1)->second ;
 	}
 	
 	//Now remove vertex Doomed from m_graph
-	qDebug("Graph: graph vertices=size=%i=%i removing at %i",  vertices(), m_graph.size(), indexOfDoomed );
+	qDebug() << "Graph: graph vertices=size="<< vertices() << "=" << m_graph.size() <<  " removing vertex at index " << indexOfDoomed ;
 	m_graph.removeAt( indexOfDoomed ) ;
 	m_totalVertices--;
-
-	qDebug("Graph: Now graph vertices=size=%i=%i. TotalEdges now %i ", vertices(), m_graph.size(), totalEdges());
+	qDebug() << "Graph: Now graph vertices=size="<< vertices() << "=" << m_graph.size() <<  " total edges now  " << totalEdges();
 
 	order=false;
 	graphModified=true;
@@ -420,10 +421,8 @@ void Graph::addEdge (int v1, int v2, float weight, QString color, int reciprocal
 	Change edge (arc) weight between v1 and v2
 */
 void Graph::setEdgeWeight (int v1, int v2, float weight) {
-	qDebug("Graph: setEdgeWeight between %i (%i) and %i (%i), weight %f", v1, index[v1],v2,index[v2], weight);
+	qDebug() << "Graph: setEdgeWeight between " << v1 << "[" << index[v1] << "] and " << v2 << "[" << index[v2] << "]" << " = " << weight;
 	m_graph [ index[v1] ]->changeLinkWeightTo(v2, weight);
-	qDebug("Graph: setEdgeWeight between %i (%i) and %i (%i), NOW weight %f", v1, index[v1],v2,index[v2], this->hasEdge(v1, v2) );
-	qDebug("Graph: setEdgeWeight between %i (%i) and %i (%i), NOW vertex weight %f", v1, index[v1],v2,index[v2], m_graph [ index[v1] ]->isLinkedTo(v2) );
 	graphModified=true;
 	emit graphChanged(); 
 }
@@ -523,7 +522,7 @@ void Graph::slotSetEdgeVisibility ( int source, int target, bool visible) {
 	Returns the index or -1
 	Complexity:  O(logN) for index retrieval 
 */
-int Graph::hasVertex(unsigned long int num){			
+int Graph::hasVertex(long int num){
 	qDebug () << "Graph: hasVertex() v: " << num <<  " with index " << index[num]  << " named " << m_graph[ index[num]] ->name();
 	if (  m_graph[ index[num]] ->name() == num)  
 		return index[num];
@@ -556,13 +555,13 @@ int Graph::hasVertex(QString label){
 
 
 
-void Graph::setInitVertexSize (int size) {
+void Graph::setInitVertexSize (long int size) {
 	initVertexSize=size;
 }
 
 
 //Changes the size.of vertex v 
-void Graph::setVertexSize(int v, int size) { 
+void Graph::setVertexSize(long int v, int size) {
 	m_graph[ index[v] ]->setSize(size);
 	graphModified=true;
 	emit graphChanged(); 
@@ -647,7 +646,7 @@ QString Graph::label(int v1){
 /**
 	Changes the color of vertice v1
 */
-void Graph::setVertexColor(int v1, QString color){
+void Graph::setVertexColor(long int v1, QString color){
 	qDebug()<< "Graph: setVertexColor for "<< v1 << ", index " << index[v1]<< " with color "<< color;
 	m_graph[ index[v1] ]->setColor ( color );
 	graphModified=true;
@@ -670,7 +669,7 @@ void Graph::setInitEdgeColor(QString color){
 /**
  	Changes the color of edge (s,t).
 */
-void Graph::setEdgeColor(int s, int t, QString color){
+void Graph::setEdgeColor(long int s, long int t, QString color){
 	qDebug()<< "Graph: setEdgeColor for edge ("<< s << ","<< t<<")"<<" with index ("<< index[s]<< ","<<index[t]<<")"<<" with color "<< color;
 	m_graph[ index[s] ]->setOutLinkColor(t, color);
 	if (isSymmetric()) {
@@ -682,7 +681,7 @@ void Graph::setEdgeColor(int s, int t, QString color){
 
 
 //Returns the edgeColor
-QString Graph::edgeColor (int s, int t){
+QString Graph::edgeColor (long int s, long int t){
 	return m_graph[ index[s] ]->outLinkColor(t);
 }
 
@@ -749,7 +748,7 @@ int Graph::totalEdges () {
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
 		tEdges+=(*it)->outDegree();
 	}
-	qDebug("Graph: m_totalEdges = %i, tEdges=%i", m_totalEdges, tEdges);
+	qDebug() << "Graph: m_totalEdges = " << m_totalEdges << ", tEdges=" <<  tEdges;
  	return tEdges;
 }
 
@@ -1422,7 +1421,7 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
 				qDebug("BFS: Checking graphDiameter");
 				if ( dist_w > graphDiameter){
 					graphDiameter=dist_w;
-					qDebug("BFS: new graphDiameter = %i", graphDiameter );
+					qDebug() << "BFS: new graphDiameter = " <<  graphDiameter ;
 				}
 			}		
 
@@ -2262,7 +2261,7 @@ void Graph::writeNumberOfCliques(
 		emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
 		return;
 	}
-	unsigned long int cliques=0, cliques_sum=0, N = vertices();
+	long int cliques=0, cliques_sum=0, N = vertices();
 		
 	QTextStream outText ( &file );
 
@@ -2813,18 +2812,18 @@ float Graph:: numberOfCliques(int v1){
 	qDebug("*** Graph::numberOfCliques(%i) ", v1);
 	float cliques=0;
 	int  connectedVertex1=0, connectedVertex2=0;
-	qDebug("*** Graph::numberOfCliques() Source vertex %i [%i] has %i inDegree and %i outDegree ", v1 , index[ v1 ], edgesTo(v1), edgesFrom(v1) );
+	qDebug() << "Graph::numberOfCliques() Source vertex " << v1 << "[" << index[v1] << "] has inDegree " << edgesTo(v1) << " and outDegree "<< edgesFrom(v1);
 	imap_f::iterator it1, it2;
 	bool symmetric=FALSE;
 	if ( ! (symmetric = isSymmetric()) ) {  //graph is not symmetric
 		for( it1 =  m_graph[ index[v1] ] -> m_inEdges.begin(); it1 !=  m_graph[ index[v1] ] ->m_inEdges.end(); it1++ ) {
 			connectedVertex1=it1->first;	
-			qDebug("Graph::numberOfCliques() In-connectedVertex1:  %i [%i]...Checking inLinks.... ",connectedVertex1, index[connectedVertex1]);
+		    qDebug() << "Graph::numberOfCliques() In-connectedVertex1  " << connectedVertex1 << "[" << index[connectedVertex1] << "] ...Checking inLinks....";
 			for( it2 =  m_graph[ index[v1] ] -> m_inEdges.begin(); it2 !=  m_graph[ index[v1] ] ->m_inEdges.end(); it2++ ) {
 				connectedVertex2=it2->first;
 				if (connectedVertex1 == connectedVertex2) continue;
 				else {
-					qDebug("Graph::numberOfCliques() In-connectedVertex2: %i [%i] ",connectedVertex2, index[connectedVertex2]);
+					qDebug() << "Graph::numberOfCliques() Out-connectedVertex2  " << connectedVertex2 << "[" << index[connectedVertex2] << "]";
 					if ( this->hasEdge( connectedVertex1, connectedVertex2 ) ) {
 						qDebug("Graph::numberOfCliques()  %i  is connected to %i. Therefore we found a clique!", connectedVertex1, connectedVertex2);
 						cliques++;
@@ -2837,7 +2836,7 @@ float Graph:: numberOfCliques(int v1){
 				connectedVertex2=it2->first;
 				if (connectedVertex1 == connectedVertex2) continue;
 				else {
-					qDebug("Graph::numberOfCliques() Out-connectedVertex2:  %i [%i] ",connectedVertex2, index[connectedVertex2]);
+				    qDebug() << "Graph::numberOfCliques() Out-connectedVertex2  " << connectedVertex2 << "[" << index[connectedVertex2] << "]";
 					if ( this->hasEdge( connectedVertex1, connectedVertex2 ) || this-> hasEdge( connectedVertex2, connectedVertex1 ) ) {
 						qDebug("Graph::numberOfCliques()  %i  is connected to %i. Therefore we found a clique!", connectedVertex1, connectedVertex2);
 						cliques++;
@@ -2851,13 +2850,13 @@ float Graph:: numberOfCliques(int v1){
 
 	for( it1 =  m_graph[ index[v1] ] -> m_outEdges.begin(); it1 !=  m_graph[ index[v1] ] ->m_outEdges.end(); it1++ ) {
 		connectedVertex1=it1->first;	
-		qDebug("Graph::numberOfCliques() Out-connectedVertex1 %i [%i] ",connectedVertex1, index[connectedVertex1]);
+		qDebug() << "Graph::numberOfCliques() Out-connectedVertex1  " << connectedVertex1 << "[" << index[connectedVertex1] << "]";
 		for( it2 =  m_graph[ index[v1] ] -> m_outEdges.begin(); it2 !=  m_graph[ index[v1] ] ->m_outEdges.end(); it2++ ) {
 			connectedVertex2=it2->first;
 			if (connectedVertex1 == connectedVertex2) continue;
 			else if ( connectedVertex1 >= connectedVertex2 && symmetric) continue;
 			else {
-				qDebug("Graph::numberOfCliques() Out-connectedVertex2 %i [%i] ",connectedVertex2, index[connectedVertex2]);
+				qDebug() << "Graph::numberOfCliques() Out-connectedVertex2  " << connectedVertex2 << "[" << index[connectedVertex2] << "]";
 				if ( this->hasEdge( connectedVertex1, connectedVertex2 ) ) {
 					qDebug("Graph::numberOfCliques()  %i  is out-connected to %i. Therefore we found a clique!", connectedVertex1, connectedVertex2);
 					cliques++;
@@ -2948,7 +2947,7 @@ float Graph:: clusteringCoefficient(int v1){
 	}
 
 	clucof = totalCliques / denom;
-	qDebug("=== Graph::clusteringCoefficient() - vertex %i [%i] has CLUCOF = %f ", v1, index[v1], clucof);
+	qDebug() << "=== Graph::clusteringCoefficient() - vertex " <<  v1 << " ["<< index[v1] << "]" << " has CLUCOF = "<< clucof;
 	m_graph[ index [v1] ] ->setCLC(clucof);
 	return clucof;
 }
