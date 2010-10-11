@@ -181,7 +181,8 @@ public slots:
 	void slotLayoutRadialCentralityInDegree();
 	void slotLayoutRadialCentralityCloseness();
 	void slotLayoutRadialCentralityBetweeness();
-	void slotLayoutRadialCentralityInformational();
+        void slotLayoutRadialCentralityPower();
+        void slotLayoutRadialCentralityInformation();
 	void slotLayoutRadialCentralityStress();
 	void slotLayoutRadialCentralityGraph();
 	void slotLayoutRadialCentralityEccentr();
@@ -189,7 +190,7 @@ public slots:
 	void slotLayoutLayeredCentralityOutDegree();
 	void slotLayoutLayeredCentralityCloseness();
 	void slotLayoutLayeredCentralityBetweeness();
-	void slotLayoutLayeredCentralityInformational();
+        void slotLayoutLayeredCentralityInformation();
 	
 	void slotLayoutSpringEmbedder();
 	void layoutSpringEmbedder (int);
@@ -352,9 +353,9 @@ private:
 	QAction *antialiasingAct;
 	QAction *webCrawlerAct;
 
-	QAction *circleStressLayoutAct, *circleGraphLayoutAct,*circleClearBackgrCirclesAct, *circleEccentrLayoutAct;
-	QAction *circleBetweenessLayoutAct, *circleInformationalLayoutAct, *levelClosenessLayoutAct;
-	QAction *levelInDegreeLayoutAct, *levelOutDegreeLayoutAct, *levelBetweenessLayoutAct, *levelInformationalLayoutAct;
+        QAction *circleStressLayoutAct, *circleGraphLayoutAct,*circleClearBackgrCirclesAct, *circleEccentrLayoutAct, *circlePowerLayoutAct;
+        QAction *circleBetweenessLayoutAct, *circleInformationLayoutAct, *levelClosenessLayoutAct;
+        QAction *levelInDegreeLayoutAct, *levelOutDegreeLayoutAct, *levelBetweenessLayoutAct, *levelInformationLayoutAct;
 	QAction *strongColorationAct, *regularColorationAct, *showProgressBarAct, *printDebugAct;
 	QAction *springLayoutAct, *FRLayoutAct, *nodeSizeProportionalOutDegreeAct,  *nodeSizeProportionalInDegreeAct;
 	QAction *zoomInAct, *zoomOutAct ;
@@ -379,8 +380,6 @@ private:
 	QLCDNumber  *inLinksLCD, *outLinksLCD , *selectedNodeLCD, *clucofLCD;
 	QLCDNumber *nodesLCD, *edgesLCD, *densityLCD;
 
-
-	
 	QDateTime actualDateTime, actualDate, actualTime;
 	QTime eTime;     //used  to time algorithms.	
 };

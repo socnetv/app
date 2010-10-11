@@ -1515,8 +1515,8 @@ void Graph::centralityInformation(){
 	TM.resize(m_totalVertices);
 	isolatedVertices=0;
 	int i=0, j=0, n=vertices();
-	float m_weight=0, weightSum=1, diagonalEntriesSum=0, rowSum=0, IC=0;
-
+        float m_weight=0, weightSum=1, diagonalEntriesSum=0, rowSum=0;
+        float IC=0, SIC=0;
 	/* Note: isolated nodes must be dropped from the AM
 	    Otherwise, the TM might be singular, therefore non-invertible. */
 	bool dropIsolates=true;
@@ -1574,6 +1574,11 @@ void Graph::centralityInformation(){
 		qDebug()<< "Graph:: centralityInformation() vertex: " <<  (*it)->name() << " IC  " << IC ;
 		i++;
 	}
+        for (it=m_graph.begin(); it!=m_graph.end(); it++){
+                IC = (*it)->IC();
+                SIC = IC / sumIC ;
+                (*it)->setSIC( SIC );
+         }
 	graphModified=false;
 }
 
@@ -1603,10 +1608,9 @@ void Graph::writeCentralityInformation(const QString fileName){
 	QList<Vertex*>::iterator it;
 	float IC=0, SIC=0, sumSIC=0;
 	for (it=m_graph.begin(); it!=m_graph.end(); it++){
-		IC = (*it)->IC();
-		SIC = IC / sumIC ;
-		(*it)->setSIC( SIC );
-		sumSIC += SIC;
+                IC = (*it)->SIC();
+                SIC = (*it)->SIC();
+                sumSIC +=  SIC;
 		outText << (*it)->name()<<"\t"<< IC << "\t\t"<< SIC  << "\t\t" <<  ( 100* SIC )<<endl;
 		qDebug()<< "Graph::writeCentralityInformation() vertex: " <<  (*it)->name() << " SIC  " << SIC;
 	}
@@ -2408,7 +2412,7 @@ void Graph::writeTriadCensus(
 void Graph::layoutRadialCentrality(double x0, double y0, double maxRadius, int CentralityType){
 	qDebug("Graph: layoutRadialCentrality...");
 	//first calculate centralities
-	if ((graphModified || !calculatedCentralities) && CentralityType > 2) {
+        if ((graphModified || !calculatedCentralities) && CentralityType > 2 && CentralityType != 9 ) {
 		qDebug("Graph: Calling createDistanceMatrix() to calc centralities");
 		createDistanceMatrix(true);
 	}
@@ -2416,6 +2420,9 @@ void Graph::layoutRadialCentrality(double x0, double y0, double maxRadius, int C
 		centralityInDegree(true);
 	else if ((graphModified || !calculatedODC) && CentralityType == 2)
 		centralityOutDegree(true);
+        else if ( (graphModified)  && (CentralityType == 9) ){
+                centralityInformation();
+        }
 
 	double rad=0;
 	double i=0, std=0;
@@ -2475,6 +2482,21 @@ void Graph::layoutRadialCentrality(double x0, double y0, double maxRadius, int C
 					maxC=maxEC;
 					break;
 			}
+                        case 8 : {
+                                qDebug("Layout according to Power Centralities");
+                                C=(*it)->PC();
+                                std= (*it)->SPC();
+                                maxC=maxPC;
+                                break;
+                        }
+                        case 9 : {
+                                qDebug("Layout according to Information Centralities");
+                                C=(*it)->IC();
+                                std= (*it)->SIC();
+                                maxC=maxIC;
+                                break;
+                        }
+
 		};
 		qDebug () << "Vertice " << (*it)->name() << " at x=" << (*it)->x() << ", y= "<< (*it)->y()
 				<< ": C=" << C << ", stdC=" << std << ", maxradius " <<  maxRadius
