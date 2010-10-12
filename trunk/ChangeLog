@@ -8,7 +8,8 @@ Version 0.90 -  Sep XX 2010
 Codename: "Worka Worka"
 --------------------------
 - New feature: Power Centrality calculation
-- New feature: Information Centrality of Stephenson and Zelen
+- New feature: Information Centrality (Stephenson & Zelen) calculation
+- New feature: radial layout according to Power and Information centralities
 - New feature: filter (enable/disable) orphan nodes
 - New feature: import two-mode affiliation networks (in sociomatrix format)
 - New, faster container for GraphicsWidget Nodes based on QHash
