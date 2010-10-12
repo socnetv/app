@@ -2420,7 +2420,7 @@ void Graph::layoutRadialCentrality(double x0, double y0, double maxRadius, int C
 		centralityInDegree(true);
 	else if ((graphModified || !calculatedODC) && CentralityType == 2)
 		centralityOutDegree(true);
-        else if ( (graphModified)  && (CentralityType == 9) ){
+        else if ( CentralityType == 9 ){
                 centralityInformation();
         }
 

@@ -7,7 +7,7 @@ QT += webkit
 QT += xml 
 QT += network
 
-INCPATH += ./src
+INCLUDEPATH  += ./src
 FORMS += src/forms/filteredgesbyweightdialog.ui \
 	src/forms/webcrawlerdialog.ui \
 	src/forms/datasetselectdialog.ui 
