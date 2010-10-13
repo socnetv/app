@@ -1,8 +1,27 @@
 ******************************************
-*  Social Networks Visualiser (SocNetV)  *
+*  Social Networks Visualizer (SocNetV)  *
 ******************************************
 
 ChangeLog:
+
+Version 0.90 -  Sep XX 2010
+Codename: "Worka Worka"
+--------------------------
+- New feature: Power Centrality calculation
+- New feature: Information Centrality (Stephenson & Zelen) calculation
+- New feature: radial layout according to Power and Information centralities
+- New feature: filter (enable/disable) orphan nodes
+- New feature: import two-mode affiliation networks (in sociomatrix format)
+- New, faster container for GraphicsWidget Nodes based on QHash
+- More automagically recreated known data sets 
+- Allow really large networks to be loaded without crashing. Still too slowly though.
+- Nodes are selectable (but not yet editable) in groups
+- Fixed bug #518219: Certain Pajek files might crash SocNetV
+- Fided bug #515756: Ctrl+F after a node removal may crash SocNetV
+- Fixed bug #515758: Random layout crashes SocNetV, if a node is removed
+- Updated user manual to new version features.
+- Removed counts of outLinkedNodes, inLinkedNodes and reciprocalLinkedNodes because they were causing too much overhead when loading large networks. The relevant LCDs were also dropped from the UI.
+
 
 Version 0.81 - Jan 28 2010
 Codename: "bugfixes"
@@ -38,9 +57,9 @@ Codename: "supersyntages.gr"
 - Fixed bug #416965: Not displaying nodes when loading GraphViz files
 - Fixed bug #396124: GBC different in Pajek cp. to SocNetV
 - Fixed bug #415277: network files were not loaded on startup
-- Fixed bug #379225 side note: GraphML format did not preserve node labels.
+- Fixed bug #379225: side note: GraphML format did not preserve node labels.
 - Fixed bug #418023: rewiring parameter typo in Graph:createRandomNetSmallWorld.
-- Fixed bug #420708 on GraphML output files, not transforming special XML characters, like &, to ampersand codes, like &amp;  
+- Fixed bug #420708: on GraphML output files, not transforming special XML characters, like &, to ampersand codes, like &amp;  
 - Fixed bug #418550: Clear selection when clicking on empty canvas.
 - Fixed bug #504037: Negative Group Closeness Centrality
 - Fixed bug #504517: double cliques counting in nondirected networks.
