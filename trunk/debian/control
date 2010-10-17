@@ -10,7 +10,7 @@ Vcs-Svn: http://socnetv.svn.sourceforge.net/svnroot/socnetv/trunk
 Package: socnetv
 Architecture: any
 Depends: ${shlibs:Depends}
-Description: A Social Networks Analyser and Visualiser
+Description: Social Networks Visualization and Analysis Software
  SocNetV (Social Networks Visualiser) is a flexible and
  user-friendly tool for Social Networks Analysis and Visualisation.
  It lets you create new networks (graphs) with a few clicks on a

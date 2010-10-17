@@ -1,3 +1,9 @@
+socnetv (0.90-1ubuntu1) maverick; urgency=low
+
+  * update to version 0.90
+
+ -- Dimitris Kalamaras <dimitris.kalamaras@yahoo.gr>  Thu, 14 Oct 2010 00:46:19 +0300
+
 socnetv (0.81-1ubuntu2) karmic; urgency=low
 
   * update to version 0.81
