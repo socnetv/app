@@ -164,6 +164,9 @@ void Edge::addWeight (EdgeWeight* canvasWeight  )  {
 
 
 void Edge::clearWeightList(){
+        foreach (EdgeWeight *wgt, weightList) 		//Delete this weight
+            wgt->deleteLater();
+
 	weightList.clear();
 }
 
