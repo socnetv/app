@@ -4264,12 +4264,12 @@ void Graph::setShowNumbersInsideNodes(bool toggle){
 			2: FruchtermanReingold
 	cW, cH: control the current canvasWidth and canvasHeight
 */
-void Graph::nodeMovement(int state, int type, int cW, int cH){
+void Graph::nodeMovement(bool state, int type, int cW, int cH){
 	qDebug()<< "Graph: startNodeMovement() - state " << state;
 	canvasWidth = cW;
 	canvasHeight = cH;
 	int factor=100;		//factor controls speed. Decrease it to increase speed...
-	if (state == Qt::Checked){
+        if (state == true){
 		qDebug()<< "Graph: startNodeMovement() - STARTING dynamicMovement" ;
 		dynamicMovement = TRUE;
 		layoutType=type;

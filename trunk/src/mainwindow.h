@@ -192,8 +192,7 @@ public slots:
 	void slotLayoutLayeredCentralityBetweeness();
         void slotLayoutLayeredCentralityInformation();
 	
-	void slotLayoutSpringEmbedder();
-	void layoutSpringEmbedder (int);
+        void slotLayoutSpringEmbedder(bool);
 	void slotLayoutFruchterman();
 	void layoutFruchterman(int);
 

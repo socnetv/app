@@ -78,7 +78,7 @@ public slots:
 	void createEdge (int, int, float, QString, int, bool, bool);	//GW and Parser.
 	void createEdge (int, int, float, int, bool, bool);		//GW
 	void createEdge (int, int);					//WebCrawler
-	void nodeMovement(int state, int type, int cW, int cH);		//Called by MW to start movement
+        void nodeMovement(bool state, int type, int cW, int cH);		//Called by MW to start movement
 
 	void slotSetEdgeVisibility( int, int, bool);
 	

@@ -285,7 +285,7 @@ void MainWindow::initActions(){
 
 	importDot = new QAction( QIcon(":/images/open.png"), tr("&Dot"), this);
 	importDot->setStatusTip(tr("Import an dot file"));
-	importDot->setWhatsThis(tr("Import Sociomatrix \n\n  Imports a network from an dot matrix-formatted file"));
+        importDot->setWhatsThis(tr("Import GraphViz \n\n  Imports a network from an GraphViz formatted file"));
 	connect(importDot, SIGNAL(activated()), this, SLOT(slotImportDot()));
 
 
@@ -741,13 +741,16 @@ void MainWindow::initActions(){
 
 	springLayoutAct= new QAction(tr("Spring Embedder"), this);
 	springLayoutAct->setShortcut(tr("Alt+1"));
+        springLayoutAct->setCheckable(true);
+        springLayoutAct->setChecked(false);
 	springLayoutAct->setStatusTip(tr("All nodes repel each other while the connected ones are attracted as if connected by springs."));
 	springLayoutAct->setWhatsThis(tr("Spring Embedder Layout\n\n In this model, nodes are regarded as physical bodies (i.e. electrons) which exert repelling forces to each other, while edges are springs connecting adjacents nodes. Non-adjacent nodes repel each other while connected nodes are The algorithm continues until the system retains an equilibrium state in which all forces cancel each other. "));
-	connect(springLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutSpringEmbedder()));
+        connect(springLayoutAct, SIGNAL(triggered(bool)), this, SLOT(slotLayoutSpringEmbedder(bool)));
 
 	FRLayoutAct= new QAction( tr("Fruchterman-Reingold"),	this);
 	FRLayoutAct->setShortcut(tr("Alt+2"));
-	FRLayoutAct->setEnabled(true);
+        FRLayoutAct->setCheckable(true);
+        FRLayoutAct->setChecked(false);
 	FRLayoutAct->setStatusTip(tr("Repelling forces between all nodes, and attracting forces between adjacent nodes."));
 	FRLayoutAct->setWhatsThis(tr("Fruchterman-Reingold Layout\n\n Embeds a layout all nodes according to a model in which	repelling forces are used between every pair of nodes, while attracting forces are used only between adjacent nodes. The algorithm continues until the system retains its equilibrium state where all forces cancel each other."));
 	connect(FRLayoutAct, SIGNAL(activated()), this, SLOT(slotLayoutFruchterman()));
@@ -1072,6 +1075,7 @@ void MainWindow::initMenuBar() {
 	importSubMenu -> addAction(importTwoModeSM);
 	importSubMenu -> addAction(importList);
 	importSubMenu -> addAction(importDL);
+        importSubMenu -> addAction(importDot);
 	networkMenu ->addMenu (importSubMenu);
 
 	networkMenu -> addSeparator();
@@ -1483,10 +1487,12 @@ void MainWindow::initToolBox(){
 
 	// create some more widgets for the final tab: "Layout"
 	moveSpringEmbedderBx = new QCheckBox(tr("Spring Embedder") );
+        moveSpringEmbedderBx->setEnabled(true);
+        moveSpringEmbedderBx->setChecked(false);
 	moveSpringEmbedderBx->setToolTip(tr("Embeds a spring-gravitational model on the network, where \neach node is regarded as physical object reppeling all \nother nodes, while springs between connected nodes attact them. \nThe result is \nconstant movement. This is a very SLOW process on networks with N > 100!"));
 
 	moveFruchtermanBx = new QCheckBox(tr("Fruchterman-Reingold") );
-	moveFruchtermanBx ->setEnabled(false);
+        moveFruchtermanBx->setEnabled(false);
 	moveFruchtermanBx->setToolTip(tr("In Fruchterman-Reingold model, the vertices behave as atomic particles or celestial bodies, exerting attractive and repulsive forces to each other. Again, only vertices that are neighbours attract each other but, unlike Spring Embedder, all vertices repel each other. "));
 
 	moveKamandaBx= new QCheckBox(tr("Kamanda-Kwei") );
@@ -1516,7 +1522,7 @@ void MainWindow::initToolBox(){
  	toolBox->addTab(layoutGroup, tr("Layout"));
 
 
-	connect(moveSpringEmbedderBx, SIGNAL(stateChanged(int)),this, SLOT(layoutSpringEmbedder(int)));
+        connect(moveSpringEmbedderBx, SIGNAL(clicked(bool)),this, SLOT(slotLayoutSpringEmbedder(bool)));
 	connect(moveFruchtermanBx, SIGNAL(stateChanged(int)),this, SLOT(layoutFruchterman(int)));
 
 	connect(nodeSizeProportional2OutDegreeBx , SIGNAL(clicked(bool)),this, SLOT(slotLayoutNodeSizeProportionalOutEdges(bool)));
@@ -1619,9 +1625,11 @@ void MainWindow::resizeEvent( QResizeEvent * ){
 	Also used when erasing a network to start a new one
 */
 void MainWindow::initNet(){
-	qDebug("MW: initNet() START INITIALISATION");
+        qDebug()<<"MW: initNet() START INITIALISATION";
 	QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 	
+        // Init basic variables
+
 	initNodeSize=4;
 	initNodeColor="gold";
 	initLinkColor="grey"; //"black";
@@ -1683,7 +1691,7 @@ void MainWindow::initNet(){
 	graphicsWidget->clear();
 	
 
-	//Clear LCDs
+        /** Clear LCDs **/
 	nodesLCD->display(activeGraph.vertices());
 	edgesLCD->display(activeGraph.totalEdges());
 	densityLCD->display(activeGraph.density());
@@ -1692,16 +1700,20 @@ void MainWindow::initNet(){
 	clucofLCD->display(0);
 	selectedNodeLCD->display(0);
 
+        /** Clear toolbox and menu checkboxes **/
 	nodeSizeProportional2OutDegreeBx->setChecked(false);
 	nodeSizeProportional2InDegreeBx->setChecked(false);
-  
+        moveSpringEmbedderBx->setChecked(false);
+        springLayoutAct->setChecked(false);
+        FRLayoutAct->setChecked(false);
 	displayLinksWeightNumbersAct->setChecked(false);
 	//displayLinksArrowsAct->setChecked(false);		//FIXME: USER PREFS EMITTED TO GRAPH?
 
         filterOrphanNodesAct->setChecked(false); // re-init orphan nodes menu item
 	
-	//set window title
+        /** set window title **/
 	setWindowTitle(tr("Social Network Visualizer ")+VERSION);
+
 	QApplication::restoreOverrideCursor();
 	statusMessage( tr("Ready"));
 	qDebug("MW: initNet() INITIALISATION END");
@@ -1999,6 +2011,7 @@ void MainWindow::networkSaved(int saved_ok)
 */
 void MainWindow::slotFileClose() {
 	statusMessage( tr("Closing file..."));
+        qDebug()<<"slotFileClose()";
 	if (networkModified) {
 		switch ( QMessageBox::information (this, 
 					"Closing Network...",
@@ -2128,8 +2141,8 @@ void MainWindow::slotImportEdgeList(){
 
 /**
  * 	Main network file loader method 
- * 	Inits everything to default values.
- *  Then calls activeGraph::loadGraph to actually load the network...
+ * 	First, inits everything to default values.
+ *      Then calls activeGraph::loadGraph to actually load the network...
  */
 bool MainWindow::loadNetworkFile(QString m_fileName, int m_fileFormat ){
 	qDebug("MW: loadNetworkFile");
@@ -4011,39 +4024,37 @@ void MainWindow::slotLayoutRandomCircle(){
 
 
 /**
-	slotLayoutSpringEmbedder called from menu
+        slotLayoutSpringEmbedder called from menu or toolbox checkbox
 */
-void MainWindow::slotLayoutSpringEmbedder(){
+void MainWindow::slotLayoutSpringEmbedder(bool state ){
+        qDebug()<< "MW:slotLayoutSpringEmbedder";
 	if (!fileLoaded && !networkModified  )  {
 		QMessageBox::critical(this, "Error",tr("There are node nodes yet!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
 		statusMessage( tr("I am really sorry. You must really load a file first... ")  );
+                moveSpringEmbedderBx->setCheckState(Qt::Unchecked);
 		return;
 	}
-	if (moveSpringEmbedderBx->checkState() == Qt::Unchecked){
+
+        //Stop any other layout running
+        moveFruchtermanBx->setCheckState(Qt::Unchecked);
+        activeGraph.nodeMovement(!state, 2, graphicsWidget->width(), graphicsWidget->height());
+
+        scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
+
+        if (state){
 		statusMessage( tr("Embedding a spring-gravitational model on the network.... ")  );
 		moveSpringEmbedderBx->setCheckState(Qt::Checked);
+                activeGraph.nodeMovement(state, 1, graphicsWidget->width(), graphicsWidget->height());
 		statusMessage( tr("Click on the checkbox \"Spring-Embedder\" to stop movement!") );
 	}
 	else { 
 		moveSpringEmbedderBx->setCheckState(Qt::Unchecked);
-		statusMessage( tr("Movement stopped!") );
+                activeGraph.nodeMovement(state, 1, graphicsWidget->width(), graphicsWidget->height());
+                statusMessage( tr("Movement stopped!") );
 	}
-	
+                scene->setItemIndexMethod (QGraphicsScene::BspTreeIndex); //best when not moving items
 }
 
-
-
-/** 
-	Called from moveSpringEmbedderBx button. 
-	Calls Graph::startNodeMovement to embed a spring Embedder layout...
-*/
-void MainWindow::layoutSpringEmbedder (int state){
-	qDebug("MW: layoutSpringEmbedder ()");
-	scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
-	moveFruchtermanBx->setChecked(false);
-	activeGraph.nodeMovement(state, 1, graphicsWidget->width(), graphicsWidget->height());
-	scene->setItemIndexMethod (QGraphicsScene::BspTreeIndex); //best when not moving items
-}
 
 
 
@@ -4071,7 +4082,7 @@ void MainWindow::slotLayoutFruchterman(){
 
 
 /** 
-	Called from moveSpringEmbedderBx button. 
+        Called from button.
 	Calls Graph::startNodeMovement to embed a repelling-attracting forces layout...
 */
 void MainWindow::layoutFruchterman (int state){
