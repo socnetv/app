@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer
  version: 0.91
- Written in Qt 4.4
+ Written in Qt
  
                          filteredgesbyweightdialog.cpp  -  description
                              -------------------
-    copyright            : (C) 2005-2010 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2013 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 

@@ -1,12 +1,12 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer 
  version: 0.91
- Written in Qt 4.4
+ Written in Qt
 
                         main.cpp  -  description
                              -------------------
-    begin                :  9 21:10:04 EET 2005
-    copyright            : (C) 2005-2010 by Dimitris B. Kalamaras
+    begin                : 9 21:10:04 EET 2005
+    copyright            : (C) 2005-2013 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
