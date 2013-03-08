@@ -1,5 +1,5 @@
 %define name    socnetv
-%define version 0.90
+%define version 0.91
 %define release 1
 %define prefix  /usr/local
 %define lastrev %(LANG=en_US.UTF-8 && date +"%a %b %e %Y")
@@ -149,6 +149,8 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 
 
 %changelog
+* Thu Oct 14 2010 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.90-1
+- Synced with upstream.
 * Thu Jan 28 2010 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.81-1
 - Synced with upstream.
 - Bugfixes for Windows version
