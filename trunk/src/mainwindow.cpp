@@ -5065,13 +5065,42 @@ void MainWindow::slotCentralityBetweeness(){
 
 
 /**
+*	Writes PageRank Centralities into a file, then displays it.
+*/
+void MainWindow::slotCentralityPageRank(){
+    if (!fileLoaded && !networkModified  )  {
+        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+
+        statusMessage(  QString(tr(" Nothing to do..."))  );
+        return;
+    }
+    QString fn = "centrality_pagerank.dat";
+ //   bool considerWeights=false;  //TODO Do we need to compute weigths in PageRank?
+    statusMessage(  QString(tr(" Please wait...")));
+
+    createProgressBar();
+    activeGraph.writeCentralityPageRank(fn);
+    destroyProgressBar();
+
+    statusMessage( QString(tr(" displaying file...")));
+
+    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    tempFileNameNoPath=fn.split( "/");
+    ed->setWindowTitle("PageRank Centralities saved as: " + tempFileNameNoPath.last());
+    ed->show();
+    QApplication::restoreOverrideCursor();
+}
+
+
+
+
+/**
 *	Writes Informational Centralities into a file, then displays it.	
 	TODO slotCentralityInformation
 */
 void MainWindow::slotCentralityInformation(){
     if (!fileLoaded && !networkModified  )  {
 	    QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-
 	    statusMessage(  QString(tr(" Nothing to do..."))  );
 	    return;
     }

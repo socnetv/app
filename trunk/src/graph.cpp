@@ -944,6 +944,8 @@ float Graph::averageGraphDistance(){
   	return averGraphDistance;
 }
 
+
+
 /**
 *  Writes the matrix of distances to a file
 */
@@ -1119,8 +1121,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 			qDebug("############# symmetricAdjacencyMatrix - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
 		}
 		else {	
-			//maxIndexBC= ( ( outEdgesVert-1.0) *  (inEdgesVert-2.0) - (reciprocalEdgesVert-1.0))/ 2.0;
-			maxIndexBC=( aVertices-1.0) *  (aVertices-2.0) ;
+            maxIndexBC=( aVertices-1.0) *  (aVertices-2.0) ;
 			maxIndexSC=1;
 			maxIndexEC=(aVertices-1.0);
 			maxIndexPC=aVertices-1.0;
@@ -1662,6 +1663,19 @@ void Graph::writeCentralityInformation(const QString fileName){
 }
 
 
+
+
+//Calculates the PageRank centrality of each vertex
+void Graph::centralityPageRank(){
+
+}
+
+
+//Writes the PageRank centralities to a file
+void Graph::writeCentralityPageRank(const QString fileName){
+}
+
+
 /**
 *	Calculates In-Degree Centralities of each vertex - diagonal included
 *	Also the mean value and the variance of the in-degrees.
@@ -2019,7 +2033,7 @@ void Graph::writeCentralityBetweeness(
 	outText << tr("where delta (s,t,u) is the ratio of all geodesics between s and t which run through u.")<<"\n";
 	outText << tr("Therefore, BC(u) reflects how often the node u lies on the geodesics between the other nodes of the network")<<"\n";
 	outText << tr("BC' is the standardized BC")<<"\n";
-	outText << tr("BC  range: 0 < BC < ")<<QString::number( maxIndexBC)<< tr(" (Number of pairs of nodes excluding i)")<<"\n";
+    outText << tr("BC  range: 0 < BC < ")<<QString::number( maxIndexBC)<< tr(" (Number of pairs of nodes excluding i")<<"\n";
 	outText << tr("BC' range: 0 < BC'< 1  (C' is 1 when the node falls on all geodesics)\n\n");
 	outText << "Node"<<"\tBC\t\tBC'\t\t%BC\n";
 	QList<Vertex*>::iterator it;
@@ -3948,7 +3962,11 @@ void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
 }
 
 
-
+/*
+ *  Creates an adjacency matrix AM
+ *  where AM(i,j)=1 if i is connected to j
+ *  and AM(i,j)=0 if i not connected to j
+ */
 void Graph::createAdjacencyMatrix(bool dropIsolates){
     qDebug() << "Graph::createAdjacencyMatrix()";
     float m_weight=-1;

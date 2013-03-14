@@ -219,6 +219,7 @@ public slots:
 	void slotCentralityStress();
 	void slotCentralityPower();
 	void slotCentralityEccentricity();
+    void slotCentralityPageRank();
 
 	//OPTIONS MENU
 	void slotDisplayNodeNumbers(bool toggle);

@@ -202,7 +202,7 @@ public:
 	bool isSymmetric();				//Returns TRUE if symmetricAdjacencyMatrix=TRUE
 	void symmetrize();				//Symmetrize all edges so that the network is undirected.
 
-	void createAdjacencyMatrix(bool);
+    void createAdjacencyMatrix(bool);  // Creates the adjacency matrix AM
 	void invertAdjacencyMatrix();
 
 
@@ -225,6 +225,7 @@ public:
 	void writeCentralityStress(const QString, const bool);		//Writes the Stress centralities to a file	
 	void writeCentralityEccentricity(const QString, const bool);	//Writes the Eccentr centralities to a file
 	void writeCentralityInformation(const QString);			//Writes the Information centralities to a file
+    void writeCentralityPageRank(const QString);			//Writes the PageRank centralities to a file
 
 	void writeNumberOfCliques(const QString fileName, const bool considerWeights);
 	
@@ -243,7 +244,9 @@ public:
 	void centralityInDegree(bool);		//Calculates the inDegree centrality of each vertex
 	void centralityOutDegree(bool);		//Calculates the outDegree centrality of each vertex
 
-	void centralityInformation();
+    void centralityInformation();       //Calculates the informational centrality of each vertex
+
+    void centralityPageRank();       //Calculates the PageRank centrality of each vertex
 
 	float numberOfTriples(int v1); 		//Returns the number of triples at vertex v1
 	float numberOfCliques(int v1);		//Calculates the number of cliques (triangles) of vertex v1
