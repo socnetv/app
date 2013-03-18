@@ -63,9 +63,6 @@ public:
 	enum { Type = UserType + 1 };
 	int type() const { return Type; }
 
-	void calculateForcesSpringEmbedder(bool dynamicMovement);
-	void calculateForcesFruchterman(bool dynamicMovement);
-
 
 	QRectF boundingRect() const;
 	QPainterPath shape() const;

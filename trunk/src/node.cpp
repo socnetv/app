@@ -50,13 +50,13 @@ Node::Node( GraphicsWidget* gw, int num, int size,
 //ItemSendsGeometryChanges  introduced in Qt 4.6...
 #if QT_VERSION >= 0x040600
 	setFlags(ItemSendsGeometryChanges | ItemIsSelectable | ItemIsMovable);
-	setCacheMode(QGraphicsItem::DeviceCoordinateCache); //QT < 4.6 if a cache mode is set, nodes do not respond to hover events
-
+    setCacheMode(QGraphicsItem::ItemCoordinateCache); //QT < 4.6 if a cache mode is set, nodes do not respond to hover events
+//DeviceCoordinateCache
 #else
 	setFlags(ItemIsSelectable | ItemIsMovable ); //Without this, the node cannot move nor be selected ...
 	setCacheMode(QGraphicsItem::NoCache); //QT < 4.6 if a cache mode is set, nodes do not respond to hover events
 #endif
-	setAcceptsHoverEvents(true);
+    setAcceptsHoverEvents(true);
 
 	m_num=num;
 	m_size=size;
@@ -75,161 +75,6 @@ Node::Node( GraphicsWidget* gw, int num, int size,
 			<< " Will move at: "<< p.x()<<", "<<p.y();;
 
 } 
-
-/** 
-	Assigns forces to the edges and nodes, as if the edges were springs (i.e. Hooke's law) 
-	and the nodes were electrically charged particles (Coulomb's law).
-	These forces are applied to the nodes iteratively, pulling them closer together or pushing them further apart, 
-	until the system comes to an equilibrium state (node positions do not change anymore).
-*/
-void Node::calculateForcesSpringEmbedder(bool dynamicMovement){
-	if (!scene() || scene()->mouseGrabberItem() == this) {
-		newPos = pos();
-		return;
-	}
-	qreal xvel = 0;
-	qreal yvel = 0;
-	double dist =0;
-	qreal c=15.0;
-	qreal weight_coefficient=10;		//affects speed and line length. Try 10...
-	if (dynamicMovement){
-		// Sum up all pushing forces (i.e. imagine nodes are electrons)
-		foreach (QGraphicsItem *item, scene()->items()) {
-			Node *node = qgraphicsitem_cast<Node *>(item);
-			if (!node)
-				continue;
-			QLineF line(mapFromItem(node, 0, 0) , QPointF(0, 0) );
-			qreal dx = line.dx();
-			qreal dy = line.dy();
-			dist = (dx * dx + dy * dy);
-			if (dist > 0) {
-				xvel += (dx * c) / dist;
-				yvel += (dy * c) / dist;
-			}
-		}
-
-	    // Now subtract all pulling forces (i.e. springs)
-		double weight = (inEdgeList.size() + 1) * weight_coefficient;
-//		double weight1 = (outEdgeList.size() + 1) * 20;
-		qDebug("Node: edge weight %f", weight);
-		foreach (Edge *edge, inEdgeList) {
-			QPointF pos;
-			if (edge->sourceNode() == this)	//get other node's coordinates
-				pos = mapFromItem(edge->targetNode(), 0, 0);
-			else
-				pos = mapFromItem(edge->sourceNode(), 0, 0);
-			xvel += pos.x() / weight;
-			yvel += pos.y() / weight;
-		}
-	
-
-	 	foreach (Edge *edge, outEdgeList) {
-			QPointF pos;
-			if (edge->sourceNode() == this)
-				pos = mapFromItem(edge->targetNode(), 0, 0);
-			else
-				pos = mapFromItem(edge->sourceNode(), 0, 0);
-			xvel += pos.x() / weight;
-			yvel += pos.y() / weight;
-		}
-		if (qAbs(xvel) < 0.1 && qAbs(yvel) < 0.1)
-			xvel = yvel = 0;
-	}
-	QRectF sceneRect = scene()->sceneRect();
-	newPos = pos() + QPointF(xvel, yvel);
-	newPos.setX(qMin(qMax(newPos.x(), sceneRect.left() + 10), sceneRect.right() - 10));
-	newPos.setY(qMin(qMax(newPos.y(), sceneRect.top() + 10), sceneRect.bottom() - 10));
-}
-
-
-/**
-The vertices behave as atomic particles or celestial bodies, exerting attractive and repulsive forces on one another; 
-the forces induce movement. Our algorithm will resemble molecular or planetary simulations, some-
-times called n -body problems. 
-
-Following Eades, however, we know that we need
-not have a faithful simulation; we can apply unrealistic forces in an unrealistic
-manner. So, like Eades, we make only vertices that are neighbours attract each
-other, but all vertices repel each other. This is consistent with the asymmetry of our
-two guidelines above.
-*/
-void Node::calculateForcesFruchterman(bool dynamicMovement){
-	if (!scene() || scene()->mouseGrabberItem() == this) {
-		newPos = pos();
-		return;
-	}
-	qreal xvel = 0;
-	qreal yvel = 0;
-	qreal c=1, ca=600;
-	qreal dx = 0, dy=0;
-	double l=0, dist=0;
-	QLineF line;
-	if (dynamicMovement){
-		l=c*sqrt(ca/10);
-		// Sum up all forces pushing this item away (i.e. electron)
-		foreach (QGraphicsItem *item, scene()->items()) {
-			Node *node = qgraphicsitem_cast<Node *>(item);
-			if (!node)
-				continue;
-			QLineF line(mapFromItem(node, 0, 0) , QPointF(0, 0));
-// 			line.setP1(mapFromItem(node, 0, 0));
-// 			line.setP2(QPointF(0, 0));
-			dx = line.dx();
-			dy = line.dy();
-			dist = sqrt(dx * dx + dy * dy); //Euclidean distance
-			qDebug("NODE: FR().... Repelling forces xvel = %f,   yvel = %f", l*l / dist, l*l / dist);
-			if (dist > 0) {
-				xvel += ( dx * l ) / dist;
-				yvel += ( dy * l ) / dist;
-			}
-		}
-		qDebug("NODE: FR().... Repelling forces SUM xvel = %f,   yvel = %f", xvel, yvel);
-	    // Now subtract all forces pulling items together 
-		foreach (Edge *edge, inEdgeList) {
-			line.setP1(mapFromItem(edge->sourceNode(), 0, 0));
-			line.setP2(QPointF(0, 0));
-			dx = line.dx();
-			dy = line.dy();
-			dist = (dx * dx + dy * dy); //Euclidean distance ^2
-			qDebug("NODE: FR().... Attracting forces xvel = %f,   yvel = %f", dist /l, dist /l);
-			if (dist > 0) {
-				xvel += dist /l;
-				yvel += dist / l;
-			}
-
-		}
-		qDebug("NODE: FR().... Attracting forces SUM xvel = %f,   yvel = %f", xvel, yvel);
-
-	    // Now subtract all forces pulling items together 
-		foreach (Edge *edge, outEdgeList) {
-			line.setP1(QPointF(0, 0));
-			line.setP2(mapFromItem(edge->sourceNode(), 0, 0));
-			dx = line.dx();
-			dy = line.dy();
-			dist = (dx * dx + dy * dy); //Euclidean distance ^2
-			qDebug("NODE: FR().... Attracting forces xvel = %f,   yvel = %f", dist /l, dist /l);
-			if (dist > 0) {
-				xvel += dist /l;
-				yvel += dist / l;
-/*				xvel += dx+log (dist /10);
-				yvel += dy+log (dist / 10);*/
-			}
-		}
-
-		qDebug("NODE: FR().... Attracting forces SUM xvel = %f,   yvel = %f", xvel, yvel);
-		if (qAbs(xvel) < 0.1 && qAbs(yvel) < 0.1)
-	        	xvel = yvel = 0;
-		qDebug("NODE: FR().... TOTAL SUM xvel = %f,   yvel = %f", xvel, yvel);
-	}
-	QRectF sceneRect = scene()->sceneRect();
-	
-	newPos = this->pos() + QPointF(xvel, yvel);
-
-	newPos.setX(qMin(qMax(newPos.x(), sceneRect.left() + 10), sceneRect.right() - 10));
-	newPos.setY(qMin(qMax(newPos.y(), sceneRect.top() + 10), sceneRect.bottom() - 10));
-
-	qDebug("NODE: FR().... NEW NODE POSITION x = %f,   y = %f", newPos.x(), newPos.y());
-}
 
 
 
