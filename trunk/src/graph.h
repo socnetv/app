@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer 
- version: 0.91
+ version: 1.0
  Written in Qt
  
                          graph.h  -  description
@@ -325,7 +325,7 @@ private:
 	void resolveClasses(float C, hash_si &discreteClasses, int &classes, int name);  	//helper
 
 	/** used in resolveClasses and createDistanceMatrix() */
-	hash_si discreteIDCs, discreteODCs, discreteCCs, discreteBCs, discreteSCs, discreteGCs, discreteECs, discretePCs, discreteICs;
+    hash_si discreteIDCs, discreteODCs, discreteCCs, discreteBCs, discreteSCs, discreteGCs, discreteECs, discretePCs, discreteICs,  discretePRCs;
 	
 	int *eccentricities;
 	bool calculatedIDC, calculatedODC, calculatedCentralities, dynamicMovement;
@@ -344,7 +344,8 @@ private:
 	float minSC, maxSC, nomSC, denomSC, sumSC, groupSC, maxIndexSC;
 	float minEC, maxEC, nomEC, denomEC, sumEC, groupEC, maxIndexEC;
 	float minIC, maxIC, nomIC, denomIC, sumIC, groupIC, maxIndexIC;
-	float minCLC, maxCLC, averageCLC, averageIC;
+    float minPRC, maxPRC, nomPRC, denomPRC, sumPRC, groupPRC, maxIndexPRC;
+    float minCLC, maxCLC, averageCLC, averageIC;
 	int maxNodeCLC, minNodeCLC;
 	int classesIDC, maxNodeIDC, minNodeIDC;
 	int classesODC, maxNodeODC, minNodeODC;
@@ -355,6 +356,7 @@ private:
 	int classesSC, maxNodeSC, minNodeSC;
 	int classesEC, maxNodeEC, minNodeEC;
 	int classesIC, maxNodeIC, minNodeIC;
+    int classesPRC, maxNodePRC, minNodePRC;
 	int sizeOfComponent;
 
 	/** General & initialisation variables */

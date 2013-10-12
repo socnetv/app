@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer 
- version: 0.91
+ version: 1.0
  Written in Qt
 
                         nodenumber.cpp  -  description
@@ -28,12 +28,12 @@
 #include "node.h"
 #include <QFont>
 
-NodeNumber::NodeNumber( Node *jim , int size, QString labelText, QGraphicsScene *scene ) :QGraphicsTextItem(0,scene) {
+NodeNumber::NodeNumber( Node *jim , int size, QString labelText, QGraphicsScene *scene ) :QGraphicsTextItem(0) {
 	source=jim;
 	jim -> addNumber(this);
 	setParentItem(jim); //auto disables child items like this, when node is disabled.
 	setPlainText( labelText ); 
-	setFont( QFont ("Times", size, QFont::Black, FALSE) );
+    setFont( QFont ("Times", size, QFont::Black, false) );
 	setZValue(254);
 }
 

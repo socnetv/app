@@ -3,9 +3,12 @@ CONFIG  += qt thread warn_on release
 LANGUAGE = C++
 
 # support
-QT += webkit
+QT += webkitwidgets
+ QT += webkit
 QT += xml 
 QT += network
+QT += widgets
+QT += printsupport 
 
 INCLUDEPATH  += ./src
 FORMS += src/forms/filteredgesbyweightdialog.ui \

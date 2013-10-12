@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer
- version: 0.91
+ version: 1.0
  Written in Qt
  
                          graphicswidget.h  -  description
@@ -28,7 +28,7 @@
 #define GRAPHICSWIDGET_H
 
 
-#include <QtGui/QGraphicsView>
+#include <QGraphicsView>
 #include "graph.h"
 #include <QGraphicsScene>
 #include <QMap>

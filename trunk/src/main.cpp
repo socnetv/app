@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer 
- version: 0.91
+ version: 1.0
  Written in Qt
 
                         main.cpp  -  description
@@ -49,8 +49,8 @@ int main(int argc, char *argv[])
   
 	//Check if a filename is passed when this program is called.
 	QString option;
-	if ( app.argc() > 1 )     {
-		option = app.argv()[1];
+    if ( argc > 1 )     {
+        option = argv[1];
 			if (option=="--help" || option=="-h" || option=="--h" ) {
 				cout<<"\nSocial Networks Visualizer v." << qPrintable(VERSION)<< "\n"
 					<<"\nUsage: socnetv [flags] [file]\n"

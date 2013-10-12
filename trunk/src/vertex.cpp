@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer 
- version: 0.91
+ version: 1.0
  Written in Qt
  
                          vertex.cpp  -  description
@@ -57,12 +57,12 @@ Vertex::Vertex(	Graph* parent,
 	m_outLinks=0;
 	m_inLinks=0;
 	m_ODC=0; m_SODC=0; m_IDC=0; m_SIDC=0; m_CC=0; m_SCC=0; m_BC=0; m_SBC=0; m_GC=0; m_SGC=0; m_SC=0; m_SSC=0;
-	m_CLC=0; m_hasCLC=FALSE;
+    m_CLC=0; m_hasCLC=false;
 	
-	m_inLinked=FALSE;
-	m_outLinked=FALSE;
-	m_reciprocalLinked=FALSE;
-	m_enabled = TRUE;
+    m_inLinked=false;
+    m_outLinked=false;
+    m_reciprocalLinked=false;
+    m_enabled = true;
 	connect (this, SIGNAL (setEdgeVisibility ( int, int, bool) ), parent, SLOT (slotSetEdgeVisibility ( int, int, bool)) );
 }
 
@@ -78,9 +78,9 @@ Vertex::Vertex(int v1) {
 	m_inLinks=0;
 
 	m_ODC=0; m_SODC=0; m_IDC=0; m_SIDC=0; m_CC=0; m_SCC=0; m_BC=0; m_SBC=0; m_GC=0; m_SGC=0; m_SC=0; m_SSC=0;
-	m_inLinked=FALSE;
-	m_outLinked=FALSE;
-	m_reciprocalLinked=FALSE;
+    m_inLinked=false;
+    m_outLinked=false;
+    m_reciprocalLinked=false;
 }
 
 
@@ -119,7 +119,7 @@ void Vertex::removeLinkTo (long int v2) {
 			qDebug("Vertex: edge exists. Removing it");
 			m_outEdges.erase(it);
 			m_enabled_outEdges[ it->first ] = 0;
-			if ( m_outLinks == 0 ) setOutLinked(FALSE);
+            if ( m_outLinks == 0 ) setOutLinked(false);
 		}
 		else {
 			qDebug("Vertex: edge doesnt exist.");
@@ -140,7 +140,7 @@ void Vertex::removeLinkFrom(long int v2){
 		if ( i != m_inEdges.end() ) {
 			qDebug("Vertex: edge exists. Removing it");
 			m_inEdges.erase(i);
-			if ( m_inLinks == 0 ) setInLinked(FALSE);
+            if ( m_inLinks == 0 ) setInLinked(false);
 		}
 		else {
 			qDebug() << "Vertex: edge doesnt exist.";
@@ -171,13 +171,13 @@ void Vertex::filterEdgesByWeight(float m_threshold, bool overThreshold){
 				qDebug() << "Vertex::filterEdgesByWeight(). Edge  to " << target 
 				<< " has weight " << m_weight << ". It will be disabled. Emitting signal to Graph....";
 				m_enabled_outEdges[target] = 0;
-				emit setEdgeVisibility ( m_name, target, false ); 
+                emit setEdgeVisibility ( m_name, target, false );
 			}
 			else {
 				qDebug() << "Vertex::filterEdgesByWeight(). Edge to " << target 
 				<< " has weight " << m_weight << ". It will be enabled. Emitting signal to Graph....";
 				m_enabled_outEdges[target] = 1;
-				emit setEdgeVisibility ( m_name, target, true );
+                emit setEdgeVisibility ( m_name, target, true );
 			}
 		}
 		else {
@@ -185,13 +185,13 @@ void Vertex::filterEdgesByWeight(float m_threshold, bool overThreshold){
 				qDebug() << "Vertex::filterEdgesByWeight(). Edge  to " << target 
 				<< " has weight " << m_weight << ". It will be disabled. Emitting signal to Graph....";
 				m_enabled_outEdges[target] = 0;
-				emit setEdgeVisibility ( m_name, target, false );
+                emit setEdgeVisibility ( m_name, target, false );
 			}
 			else {
 				qDebug() << "Vertex::filterEdgesByWeight(). Edge  to " << target 
 				<< " has weight " << m_weight << ". It will be enabled. Emitting signal to Graph....";
 				m_enabled_outEdges[target] = 1;
-				emit setEdgeVisibility ( m_name, target, true );
+                emit setEdgeVisibility ( m_name, target, true );
 			}	
 		} 
 	}

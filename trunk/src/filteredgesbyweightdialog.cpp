@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer
- version: 0.91
+ version: 1.0
  Written in Qt
  
                          filteredgesbyweightdialog.cpp  -  description

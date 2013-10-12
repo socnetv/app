@@ -1,6 +1,6 @@
 /****************************************************************************
 SocNetV: Social Networks Visualizer 
-version: 0.91
+version: 1.0
 Written in Qt
 
                           htmlviewer.cpp  -  description
@@ -27,7 +27,13 @@ Written in Qt
 
 #include "htmlviewer.h"
 #include <QtGui>
-#include <QtWebKit>
+#include <QMenu>
+#include <QMenuBar>
+#include <QToolBar>
+#include <QComboBox>
+#include <QFileDialog>
+/* #include <QtWebKit> */
+#include <QWebView>
 
 HTMLViewer::HTMLViewer( const QString& manPath,  QWidget* parent)
     :QMainWindow( parent ),

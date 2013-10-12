@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer 
- version: 0.91
+ version: 1.0
  Written in Qt
 
                         node.cpp  -  description
@@ -56,7 +56,7 @@ Node::Node( GraphicsWidget* gw, int num, int size,
 	setFlags(ItemIsSelectable | ItemIsMovable ); //Without this, the node cannot move nor be selected ...
 	setCacheMode(QGraphicsItem::NoCache); //QT < 4.6 if a cache mode is set, nodes do not respond to hover events
 #endif
-    setAcceptsHoverEvents(true);
+    setAcceptHoverEvents(true);
 
 	m_num=num;
 	m_size=size;

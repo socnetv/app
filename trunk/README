@@ -24,7 +24,7 @@ Official Website: http://socnetv.sourceforge.net
 Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 My Blog:   http://dimitris.apeiro.gr
 
-SocNetV is a cross-platform application, developed in Qt4/C++. 
+SocNetV is a cross-platform application, developed in Qt/C++.
 
 This means you can compile and run in on Linux, Mac and Windows. 
 
@@ -46,7 +46,7 @@ You can install SocNetV by:
 a) compiling it from source or 
 b) using binary packages.
 
-In either case, you need Qt toolkit version 4.4+ . See: http://qt.nokia.com/products
+In either case, you need Qt 5 for versions 1.x . See qt-project.org.
 Most Linux Distros have Qt installed by default. 
 Windows users need to download and install Qt from here: 
 http://qt.nokia.com/products/platform/qt-for-windows

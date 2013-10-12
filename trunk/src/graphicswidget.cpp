@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer
- version: 0.91
+ version: 1.0
  Written in Qt
 
                         graphicswidget.cpp description
@@ -45,8 +45,8 @@
 */
 GraphicsWidget::GraphicsWidget( QGraphicsScene *sc, MainWindow* par)  : QGraphicsView ( sc,par) {
 	setScene(sc);
-	secondDoubleClick=FALSE;
-	dynamicMovement=FALSE;
+    secondDoubleClick=false;
+    dynamicMovement=false;
 	moving=0;
 	timerId=0;
 	layoutType=0;
@@ -121,7 +121,7 @@ void GraphicsWidget::drawNode(
 	labelJim -> setTextInteractionFlags(Qt::TextEditorInteraction);
 	
 	if (showLabels) {
-		//qDebug()<< "GW: drawNode: display label " <<  nodeLabel.toAscii() << " for node " << num;
+        //qDebug()<< "GW: drawNode: display label " <<  nodeLabel.toUtf8() << " for node " << num;
 	}
 	else {
 		//qDebug()<<"GW: drawNode: hiding label for node " << num;
@@ -170,7 +170,7 @@ void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool 
 	//edge->setCacheMode (QGraphicsItem::DeviceCoordinateCache);  //Also slows down the universe...
 
 	QString edgeName = QString::number(i) + QString(">")+ QString::number(j);
-	qDebug()<<"GW: drawEdge() - adding new edge between "<<i << " and "<< j<< " to edgesMap. Name: "<<edgeName.toAscii();
+    qDebug()<<"GW: drawEdge() - adding new edge between "<<i << " and "<< j<< " to edgesMap. Name: "<<edgeName.toUtf8();
 	edgesMap [edgeName] =  edge;
 
 	qDebug()<< "GW: drawNode(): drawing edge weight number...";
@@ -194,7 +194,7 @@ void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool 
 void GraphicsWidget::drawEdgeReciprocal(int source, int target){
 	qDebug("GW: drawEdgeReciprocal ()");
 	QString edgeName = QString::number(source) + QString(">")+ QString::number(target);
-	qDebug("GW: making existing edge between %i and %i reciprocal. Name: "+edgeName.toAscii(), source, target );
+    qDebug("GW: making existing edge between %i and %i reciprocal. Name: "+edgeName.toUtf8(), source, target );
 	edgesMap [edgeName]->makeReciprocal();
 }
 
@@ -206,7 +206,7 @@ void GraphicsWidget::drawEdgeReciprocal(int source, int target){
 void GraphicsWidget::unmakeEdgeReciprocal(int source, int target){
 	qDebug("GW: unmakeEdgeReciprocal ()");
 	QString edgeName = QString::number(source) + QString(">")+ QString::number(target);
-	qDebug("GW: removing edge between %i and %i. Name: "+edgeName.toAscii(), source, target );
+    qDebug("GW: removing edge between %i and %i. Name: "+edgeName.toUtf8(), source, target );
 	edgesMap [edgeName]->unmakeReciprocal();
 }
 
@@ -224,12 +224,12 @@ void GraphicsWidget::startEdge(Node *node){
 		secondNode=node;
 		emit userMiddleClicked(firstNode->nodeNumber(), secondNode->nodeNumber(), 1.0);
 		( (MainWindow*)parent() )->setCursor(Qt::ArrowCursor);
-		secondDoubleClick=FALSE;
+        secondDoubleClick=false;
 	}
 	else{
 		qDebug("GW: startEdge(): this is the first double click.");
 		firstNode=node;
-		secondDoubleClick=TRUE;
+        secondDoubleClick=true;
 		( (MainWindow*)parent() )->setCursor( Qt::PointingHandCursor); 
 	}
 }

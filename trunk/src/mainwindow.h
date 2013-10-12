@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer
- version: 0.91
+ version: 1.0
  Written in Qt
  
                          mainwindow.h  -  description
@@ -30,6 +30,7 @@
 
 #include <QMainWindow>
 #include <QGraphicsScene>
+#include <QPrinter>
 
 /** SocNetV specific includes*/
 
@@ -41,7 +42,7 @@
 #include "datasetselectdialog.h"
 
 
-static const QString VERSION="0.91";
+static const QString VERSION="1.0";
 
 /**
   * This Class is the base class. It sets up the main
@@ -348,7 +349,7 @@ private:
 	QAction *backgroundImageAct, *viewToolBar, *viewStatusBar, *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
 	QAction *netDensity, *symmetryAct,   *graphDistanceAct, *averGraphDistanceAct, *distanceMatrixAct, *diameterAct;
 	QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct, *invertAdjMatrixAct;
-	QAction *cOutDegreeAct, *cInDegreeAct, *cClosenessAct, *cBetweenessAct, *cInformationAct, *cGraphAct, *cStressAct, *cPowerAct, *cEccentAct;
+    QAction *cOutDegreeAct, *cInDegreeAct, *cClosenessAct, *cBetweenessAct, *cInformationAct, *cPageRankAct, *cGraphAct, *cStressAct, *cPowerAct, *cEccentAct;
 	QAction *randLayoutAct, *randCircleLayoutAct, *circleOutDegreeLayoutAct, *circleInDegreeLayoutAct, *circleClosenessLayoutAct;
 	QAction *antialiasingAct;
 	QAction *webCrawlerAct;
