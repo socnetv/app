@@ -4,7 +4,14 @@
 
 ChangeLog:
 
-Version 0.90 -  Sep XX 2010
+
+Version 1.0  -  August 2013
+Codename: "Qt5"
+---------------------------
+- First version in Qt5
+
+
+Version 0.90 -  Oct 12 2010
 Codename: "Worka Worka"
 --------------------------
 - New feature: Power Centrality calculation

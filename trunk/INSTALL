@@ -3,11 +3,6 @@ Installation
 
 To install SocNetV 1.x you need Qt5 development libraries. Qt is a C++ toolkit published under GPL. Most modern Linux distros, especially those providing KDE as their default desktop environment, include Qt. So if you have one of openSUSE, Mandriva, Fedora, Kubuntu, Slackware, etc, you dont need to download Qt. It should be already installed.
 
-To compile in Linux, you also need
-libsqlite3-dev
-libgstreamer0.10-dev
-libgstreamer-plugins-base0.10-dev
-
 If you have Qt5 installed, all you have to do is to type in the following commands in order to decompress the SocNetV tarball and build it:
 
 1) untar zxfv SocNetV-0.XX.tar.gz

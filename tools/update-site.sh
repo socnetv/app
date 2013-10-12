@@ -29,8 +29,8 @@ fi
 echo  --------------------
 echo  . copying manual   .
 echo  -------------------- 
-cd /home/dimitris/socnetv/trunk/manual
-rm /home/dimitris/socnetv/site/docs/*
-cp /home/dimitris/socnetv/trunk/manual/* /home/dimitris/socnetv/site/docs/
+cd ~/socnetv/trunk/manual
+rm ~/socnetv/site/docs/*
+cp ~/socnetv/trunk/manual/* ~/socnetv/site/docs/
 
 rsync -rvP -delete -e ssh * oxy86,socnetv@web.sourceforge.net:htdocs/docs/
