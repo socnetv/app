@@ -32,7 +32,7 @@ Written in Qt
 #include <QToolBar>
 #include <QComboBox>
 #include <QFileDialog>
-/* #include <QtWebKit> */
+#include <QMessageBox>
 #include <QWebView>
 
 HTMLViewer::HTMLViewer( const QString& manPath,  QWidget* parent)
@@ -40,8 +40,7 @@ HTMLViewer::HTMLViewer( const QString& manPath,  QWidget* parent)
       pathCombo( 0 )
 {
     view = new QWebView(this);
-    view->load(QUrl(manPath));
-  
+    view->load( QUrl::fromLocalFile(manPath) );
     this->setCentralWidget( view);
 
     QMenu* file = new QMenu( this );
@@ -50,18 +49,18 @@ HTMLViewer::HTMLViewer( const QString& manPath,  QWidget* parent)
     fileOpen = new QAction(QIcon(":/images/open.png"), tr("&Open"), this);
     fileOpen->setShortcut(tr("Ctrl+O"));
     fileOpen->setStatusTip(tr("Opens another helpfile"));
-    connect(fileOpen, SIGNAL(activated()), this, SLOT(openFile()));
+    connect(fileOpen, SIGNAL(triggered()), this, SLOT(openFile()));
 
 
     filePrint = new QAction(QIcon(":/images/print.png"), tr("&Print"), this);
     filePrint->setShortcut(tr("Ctrl+P"));
     filePrint->setStatusTip(tr("Prints out the actual network"));
-    connect(filePrint, SIGNAL(activated()), this, SLOT(print()));
+    connect(filePrint, SIGNAL(triggered()), this, SLOT(print()));
 
     fileQuit = new QAction(QIcon(":/images/exit.png"), tr("E&xit"), this);
     fileQuit->setShortcut(tr("Ctrl+X"));
     fileQuit->setStatusTip(tr("Close Manual"));
-    connect(fileQuit, SIGNAL(activated()), this, SLOT(close()));
+    connect(fileQuit, SIGNAL(triggered()), this, SLOT(close()));
 
     QIcon icon_back( ":/images/back.png" );
     QIcon icon_forward( ":/images/forward.png" );
@@ -70,17 +69,17 @@ HTMLViewer::HTMLViewer( const QString& manPath,  QWidget* parent)
     fileBack= new QAction(icon_back, tr("&Back"), this);
     fileBack->setShortcut(tr("Ctrl+B"));
     fileBack->setStatusTip(tr("&Backward") );
-    connect(fileBack, SIGNAL(activated()), view, SLOT(back()));
+    connect(fileBack, SIGNAL(triggered()), view, SLOT(back()));
 
     fileForward= new QAction(icon_forward, tr("&Forward"), this);
     fileForward->setShortcut(tr("Ctrl+F"));
     fileForward->setStatusTip(tr("&Forward") );
-    connect(fileForward, SIGNAL(activated()), view, SLOT(forward()));
+    connect(fileForward, SIGNAL(triggered()), view, SLOT(forward()));
 
     fileHome= new QAction(icon_home, tr("&Home"), this);
     fileHome->setShortcut(tr("Ctrl+H"));
     fileHome->setStatusTip(tr("&Home") );
-    connect(fileHome, SIGNAL(activated()), view, SLOT(reload()));
+    connect(fileHome, SIGNAL(triggered()), view, SLOT(reload()));
 
 
     file->addAction( fileOpen);
@@ -133,9 +132,23 @@ HTMLViewer::~HTMLViewer()
 void HTMLViewer::openFile()
 {
 #ifndef QT_NO_FILEDIALOG
+
     QString fn = QFileDialog::getOpenFileName( this, QString::null, QString::null );
-    if ( !fn.isEmpty() )
-	view->load(QUrl(fn));
+    if ( !fn.isEmpty() ) {
+        QFile file(fn);
+
+        if (!file.open(QIODevice::ReadOnly)) {
+            QMessageBox::information(this, tr("Unable to open file"),
+                                     file.errorString());
+            return;
+        }
+
+//        QTextStream out(&file);
+//        QString output = out.readAll();
+
+
+        view->load( QUrl::fromLocalFile(fn) );
+    }
 #endif
 }
 
