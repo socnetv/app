@@ -5976,6 +5976,16 @@ void MainWindow::slotHelp(){
                 manualFound = false;
             }
         }
+        if (!manualFound && d.cd("../trunk/manual") ) {
+            if ( d.exists("manual.html") ) {
+                helpPath=d.filePath("manual.html");
+                manualFound = true;
+            }
+            else 	{
+                qDebug()<< "help file does not exist here.";
+                manualFound = false;
+            }
+        }
         if ( !manualFound && d.cd("/usr/local/share/doc/socnetv/") ) {			//for compile installation
             if (d.exists("manual/")) d.cd("manual/");
             if ( d.exists("manual.html") ) {

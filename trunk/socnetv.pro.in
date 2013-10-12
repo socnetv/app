@@ -2,10 +2,16 @@ TEMPLATE = app
 CONFIG  += qt thread warn_on @ac_debug@
 LANGUAGE = C++
 
+
 # support
-QT += webkit
-QT += xml 
+QT += webkitwidgets
+ QT += webkit
+QT += xml
 QT += network
+QT += widgets
+QT += printsupport
+
+
 
 INCLUDEPATH  += ./src
 FORMS += src/forms/filteredgesbyweightdialog.ui \

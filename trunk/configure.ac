@@ -40,8 +40,8 @@ AC_ARG_ENABLE(sse,
 ac_with_paths="/usr /usr/local"
 
 # Some a-la-debian alternatives...
-for X in /usr/lib /usr/share; do
-  for Y in qt qt4; do
+for X in /usr/lib /usr/share /usr/lib/x86_64-linux-gnu; do
+  for Y in qt qt5; do
     if test -d $X/$Y/bin; then
       ac_with_paths="$ac_with_paths $X/$Y"
     fi
@@ -100,14 +100,14 @@ done
 
 
 # Check for proper Qt version.
-AC_CACHE_CHECK([for Qt library version >= 4.4],
+AC_CACHE_CHECK([for Qt library version >= 5.0],
    ac_qtlib_version, [
    AC_TRY_LINK([#include "Qt/qglobal.h"], [
       #if QT_VERSION < 0x040400
       #error Qt library 4.4 or greater required.
       #endif
    ], ac_qtlib_version="yes", [
-      echo "no; Qt 4.4 or greater is required"
+      echo "no; Qt 5 or greater is required"
       exit 1
    ])
 ])
