@@ -6048,7 +6048,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
     int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-    QString BUILD="Sat Aug  3 03:44:59 EEST 2013";
+    QString BUILD="Sat Oct  13 03:44:59 EEST 2013";
     QMessageBox::about( this, "About SocNetV",
                         "<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
                         "<p><b>Version</b>: " + VERSION + "</p>"
