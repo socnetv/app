@@ -368,11 +368,11 @@ private:
 	QStringList tempFileNameNoPath, colorList, tips;
 	int statusBarDuration,  minDuration, progressCounter;
 	int maxNodes;
-    int initNodssh-askpasseSize, labelDistance, numberDistance,initNumberSize, initLabelSize;
+    int initNodeSize, labelDistance, numberDistance,initNumberSize, initLabelSize;
 	int totalLinks, fortuneCookiesCounter,  tipsCounter;
 	//QString VERSION;
 	bool pajekFileLoaded, adjacencyFileLoaded, dotFileLoaded, graphMLFileLoaded, fileLoaded;
-	int fileFormat;		
+    int fileFormat;
 	bool networkModified;
 	bool bezier,  linkClicked, nodeClicked, markedNodeExists, showProgressBar, firstTime;
 	QString initLinkColor, initNumberColor,  initNodeShape, initLabelColor;
