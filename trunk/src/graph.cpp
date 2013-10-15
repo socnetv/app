@@ -1761,7 +1761,79 @@ void Graph::centralityPageRank(){
 
 //Writes the PageRank centralities to a file
 void Graph::writeCentralityPageRank(const QString fileName){
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        return;
+    }
+    QTextStream outText ( &file );
+
+    emit statusMessage ( (tr("Calculating PageRank centralities. Please wait...")) );
     centralityPageRank();
+    emit statusMessage ( QString(tr("Writing PageRank centralities to file: ")).arg(fileName) );
+
+    outText << tr("PAGERANK CENTRALITY (PRC) OF EACH NODE")<<"\n";
+    outText << tr("")<<"\n";
+    outText << tr("IC' is the standardized IC")<<"\n";
+
+    outText << tr("IC  range:  0 < C < inf (this index has no max value)") << "\n";
+    outText << tr("IC' range:  0 < C'< 1")<<"\n\n";
+    outText << "Node"<<"\tIC\t\tIC'\t\t%IC\n";
+    QList<Vertex*>::iterator it;
+    float IC=0, SIC=0, sumSIC=0;
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        IC = (*it)->SIC();
+        SIC = (*it)->SIC();
+        sumSIC +=  SIC;
+        outText << (*it)->name()<<"\t"<< IC << "\t\t"<< SIC  << "\t\t" <<  ( 100* SIC )<<endl;
+        qDebug()<< "Graph::writeCentralityPageRank() vertex: " <<  (*it)->name() << " SIC  " << SIC;
+    }
+    qDebug ("min %f, max %f", minIC, maxIC);
+    if ( minIC == maxIC )
+        outText << tr("\nAll nodes have the same IC value.\n");
+    else  {
+        outText << "\n";
+        outText << tr("Max PRC' = ") << maxPRC <<" (node "<< maxNodePRC  <<  ")  \n";
+        outText << tr("Min PRC' = ") << minPRC <<" (node "<< minNodePRC <<  ")  \n";
+        outText << tr("PRC classes = ") << classesPRC<<" \n";
+    }
+    outText << "\n";
+    outText << tr("The PRC index measures the information that is contained in the paths passing through each actor.\n");
+    outText << tr("The standardized values IC' can be seen as the proportion of total information flow that is controlled by each actor. Note that standard IC' values sum to unity, unlike any other centrality index.\n");
+    outText << "(Wasserman & Faust, p. 196)\n";
+    outText << "\n";
+
+    float x=0;
+    float n = ( this->vertices() - isolatedVertices );
+
+    averagePRC = sumPRC / n ;
+    qDebug() << "sumPRC = " << sumPRC << "  n = " << n << "  average>PRC = " << averagePRC;
+    groupIC=0;
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        x = (  (*it)->SPRC()  -  averagePRC  ) ;
+        x *=x;
+        qDebug() << "SPRC " <<  (*it)->SPRC() << "  x " <<   (*it)->SPRC() - averagePRC  << " x*x" << x ;
+        groupIC  += x;
+    }
+    qDebug() << "groupPRC   " << groupPRC   << " n " << n ;
+    groupPRC  = groupPRC  /  (n-1);
+    qDebug() << "groupPRC   " << groupPRC   ;
+    outText << tr("\nGROUP INFORMATION CENTRALISATION (GIC)\n\n");
+    outText << tr("GIC = ") << groupPRC<<"\n\n";
+    outText << tr("GIC range: 0 < GIC < inf \n");
+    outText << tr("GIC is computed using a simple variance formula. \n");
+    outText << tr("In fact, following the results of Wasserman & Faust, we are using a bias-corrected sample variance.\n ");
+
+    outText << tr("GIC = 0, when all nodes have the same IC value, i.e. a complete or a circle graph).\n");
+    outText << tr("Larger values of GIC mean larger variability between the nodes' IC values.\n");
+    outText <<"(Wasserman & Faust, formula 5.20, p. 197)\n\n";
+
+
+    outText << tr("PageRank Centrality report, \n");
+    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    file.close();
+
 }
 
 
