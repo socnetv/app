@@ -1,5 +1,5 @@
-KNOWN BUGS
-==========
+KNOWN BUGS in 0.x series
+========================
 
 1: Negative weights break centralities
 2: UCINET (DL) files in nodelist1 format (one-mode) are not supported.  
