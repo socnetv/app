@@ -5976,6 +5976,17 @@ void MainWindow::slotHelp(){
                 manualFound = false;
             }
         }
+        if (d.cd("../../../manual") ) {         // for Mac
+            if ( d.exists("manual.html") ) {
+                helpPath=d.filePath("manual.html");
+                manualFound = true;
+            }
+            else 	{
+                qDebug()<< "help file does not exist here.";
+                manualFound = false;
+            }
+        }
+
         if (!manualFound && d.cd("../trunk/manual") ) {
             if ( d.exists("manual.html") ) {
                 helpPath=d.filePath("manual.html");
