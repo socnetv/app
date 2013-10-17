@@ -2803,12 +2803,12 @@ void MainWindow::slotRecreateDataSet (QString m_fileName) {
 void MainWindow::slotCreateRandomNetErdos(){
     bool ok;
     statusMessage( "You have selected to create a random symmetric network. ");
-    int newNodes=( QInputDialog::getInt(this, "Create random network", tr("This will create a new random symmetric network of G(n,p) model, \nwhere n is the nodes and p is the edge probability. \nPlease enter the number n of nodes you want:"),1, 1, maxNodes, 1, &ok ) ) ;
+    int newNodes=( QInputDialog::getInt(this, "Create random network", tr("This will create a new random symmetric network of G(n,p) model, \nwhere n is the nodes and p is the edge probability. \nPlease enter the number n of nodes you want:"),20, 1, maxNodes, 1, &ok ) ) ;
     if (!ok) {
         statusMessage( "You did not enter an integer. Aborting.");
         return;
     }
-    double probability= QInputDialog::getDouble(this,"Create random network", "Enter an edge probability % (0-100):", 0, 0, 100, 1, &ok );
+    double probability= QInputDialog::getDouble(this,"Create random network", "Enter an edge probability % (0-100):", 4, 0, 100, 1, &ok );
     if (!ok) {
         statusMessage( "You did not enter an integer. Aborting.");
         return;
@@ -2888,7 +2888,7 @@ void MainWindow::slotCreateRandomNetErdos(){
 void MainWindow::slotCreateSameDegreeRandomNetwork(){
     bool ok;
     statusMessage( "You have selected to create a pseudo-random network where each node has the same degree. ");
-    int newNodes=( QInputDialog::getInt(this, "Create same degree network", tr("This will create a same degree network. \nPlease enter the number of nodes you want:"),1, 1, maxNodes, 1, &ok ) ) ;
+    int newNodes=( QInputDialog::getInt(this, "Create same degree network", tr("This will create a same degree network. \nPlease enter the number of nodes you want:"),20, 1, maxNodes, 1, &ok ) ) ;
     if (!ok) {
         statusMessage( "You did not enter an integer. Aborting.");
         return;
@@ -2943,7 +2943,7 @@ void MainWindow::slotCreateSmallWorldRandomNetwork(){
                                         tr("that is an undirected graph with N nodes and N*d/2 edges,\n")+
                                         tr("where d is the mean edge degree.\n")+
                                         tr("Please enter the number N of nodes you want:"),
-                                        1, 1, maxNodes, 1, &ok ) ) ;
+                                        20, 1, maxNodes, 1, &ok ) ) ;
     if (!ok) {
         statusMessage( "You did not enter an integer. Aborting.");
         return;
@@ -3012,7 +3012,7 @@ void MainWindow::slotCreateSmallWorldRandomNetwork(){
 void MainWindow::slotCreateRandomNetRingLattice(){
     bool ok;
     statusMessage( "You have selected to create a ring lattice network. ");
-    int newNodes=( QInputDialog::getInt(this, "Create ring lattice", tr("This will create a ring lattice network, where each node has degree d:\n d/2 edges to the right and d/2 to the left.\n Please enter the number of nodes you want:"),1, 1, maxNodes, 1, &ok ) ) ;
+    int newNodes=( QInputDialog::getInt(this, "Create ring lattice", tr("This will create a ring lattice network, where each node has degree d:\n d/2 edges to the right and d/2 to the left.\n Please enter the number of nodes you want:"),20, 1, maxNodes, 1, &ok ) ) ;
     if (!ok) {
         statusMessage( "You did not enter an integer. Aborting.");
         return;
