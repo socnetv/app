@@ -51,6 +51,7 @@ Most Linux Distros have Qt installed by default.
 Windows users need to download and install Qt from here: 
 http://qt.nokia.com/products/platform/qt-for-windows
 
+If you cannot install Qt5 you can try the 0.x series of SocNetV which work with Qt4. 
 Please note that SocNetV uses QtWebKit to display online help. 
 QtWebKit has been added to Qt from version 4.4, which means you can't compile 
 SocNetV in distros with older releases of Qt.
@@ -61,11 +62,11 @@ To compile from source code, download the tarball archive with the source code
 of SocNetV (you probably already have this :P). 
 Then, untar (decompress) the archive using a command like this:
 
-tar zxfv SocNetV-v0.XX.tar.gz
+tar zxfv SocNetV-v1.XX.tar.gz
 
 Then enter the new directory and compile with these commands:
 
-cd socnetv-0.XX
+cd socnetv-1.XX
 ./configure
 make
 
