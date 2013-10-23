@@ -1350,12 +1350,12 @@ void MainWindow::initToolBar(){
     rotateSpinBox->setSingleStep(1);
     rotateSpinBox->setValue(0);
 
-    QGroupBox *rotateGroup = new QGroupBox();
-    QHBoxLayout *rotateGroupLayout = new QHBoxLayout(rotateGroup);
-    rotateGroupLayout->addWidget(labelRotateSpinBox);
-    rotateGroupLayout->addWidget(rotateSpinBox);
-
-    toolBar -> addWidget(rotateGroup);
+ //   QGroupBox *rotateGroup = new QGroupBox();
+ //   QVBoxLayout  *rotateGroupLayout = new QVBoxLayout (rotateGroup);
+ //   rotateGroupLayout->addWidget(labelRotateSpinBox);
+ //   rotateGroupLayout->addWidget(rotateSpinBox);
+    toolBar -> addWidget(labelRotateSpinBox);
+    toolBar -> addWidget(rotateSpinBox);
 
     toolBar -> addSeparator();
     toolBar -> addAction ( QWhatsThis::createAction (this));
