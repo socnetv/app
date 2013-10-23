@@ -4145,6 +4145,7 @@ void Graph::createAdjacencyMatrix(bool dropIsolates){
     QList<Vertex*>::iterator it, it1;
     QList<int> isolatesList;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        isolatedNode = true;
         if ( ! (*it)->isEnabled() )
             continue;
         j=0;
@@ -4164,7 +4165,8 @@ void Graph::createAdjacencyMatrix(bool dropIsolates){
         }
         if (isolatedNode){
             qDebug()<< "Graph::createAdjacencyMatrix() - node " << i+1 << " is isolated. Marking it." ;
-            (*it1)->setIsolated(true);
+            (*it)->setIsolated(true);
+            qDebug()<< "Graph::createAdjacencyMatrix() isolated has been set" ;
             isolatesList << i;
         }
         i++;
