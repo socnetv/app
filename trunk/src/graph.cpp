@@ -4138,36 +4138,45 @@ void Graph::createAdjacencyMatrix(bool dropIsolates){
     qDebug() << "Graph::createAdjacencyMatrix()";
     float m_weight=-1;
     int i=0, j=0;
-    bool isolatedNode=true;
     isolatedVertices = 0;
     AM.resize(m_totalVertices);
 
     QList<Vertex*>::iterator it, it1;
     QList<int> isolatesList;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        isolatedNode = true;
+        (*it)->setIsolated(true);
         if ( ! (*it)->isEnabled() )
             continue;
-        j=0;
-        for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
+        j=i;
+        for (it1=it; it1!=m_graph.end(); it1++){
+            (*it1)->setIsolated(true);
             if ( ! (*it1)->isEnabled() )
                 continue;
             if ( (m_weight = this->hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
                 AM.setItem(i,j, m_weight );
-                isolatedNode=false;
+                (*it)->setIsolated(false);
+                (*it1)->setIsolated(false);
             }
             else{
                 AM.setItem(i,j, 0);
-
             }
             qDebug()<<" AM("<< i+1 << ","<< j+1 << ") = " <<  AM.item(i,j);
+            if (i != j ) {
+                if ( (m_weight = this->hasEdge ( (*it1)->name(), (*it)->name() )  ) !=0 ) {
+                    AM.setItem(j,i, m_weight );
+                    (*it)->setIsolated(false);
+                    (*it1)->setIsolated(false);
+                }
+                else {
+                    AM.setItem(j,i, 0);
+                }
+                qDebug()<<" AM("<< j+1 << ","<< i+1 << ") = " <<  AM.item(i,j);
+            }
             j++;
         }
-        if (isolatedNode){
-            qDebug()<< "Graph::createAdjacencyMatrix() - node " << i+1 << " is isolated. Marking it." ;
-            (*it)->setIsolated(true);
-            qDebug()<< "Graph::createAdjacencyMatrix() isolated has been set" ;
+        if ((*it)->isIsolated()) {
             isolatesList << i;
+            qDebug()<< "Graph::createAdjacencyMatrix() - node " << i+1 << " is isolated. Marking it." ;
         }
         i++;
     }
