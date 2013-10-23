@@ -68,6 +68,9 @@ win32 {
      RC_FILE = src/icon.rc
 }
 
+macx:ICON = src/images/socnetv.icns
+
+
 TRANSLATIONS    = translations/socnetv_es.ts 
 
 
