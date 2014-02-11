@@ -345,7 +345,7 @@ private:
     float minEC, maxEC, nomEC, denomEC, sumEC, groupEC, maxIndexEC;
     float minIC, maxIC, nomIC, denomIC, sumIC, groupIC, maxIndexIC;
     float minPRC, maxPRC, nomPRC, denomPRC, sumPRC, groupPRC, maxIndexPRC;
-    float minCLC, maxCLC, averageCLC, averageIC, averagePRC;
+    float minCLC, maxCLC, averageCLC, averageIC, averagePRC, dampingFactor;
     int maxNodeCLC, minNodeCLC;
     int classesIDC, maxNodeIDC, minNodeIDC;
     int classesODC, maxNodeODC, minNodeODC;

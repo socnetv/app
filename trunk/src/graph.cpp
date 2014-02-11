@@ -1674,12 +1674,13 @@ void Graph::centralityPageRank(){
     minPRC=RAND_MAX;
     classesPRC=0;
     groupPRC=0;
+    dampingFactor = 0.85; // The parameter d is a damping factor which can be set between 0 and 1. Google creators set d to 0.85.
 
     float PRC=0, oldPRC = 0;
     float SPRC=0;
     int i = 1; // a counter
     int referrer;
-    float d = 0.85; // The parameter d is a damping factor which can be set between 0 and 1. Google creators set d to 0.85.
+
     float delta = 0.01; // The delta where we will stop the iterative calculation
     float maxDelta = RAND_MAX;
     float sumPageRanksOfLinkedNodes = 0;  // temporary variable to calculate PR
@@ -1694,7 +1695,7 @@ void Graph::centralityPageRank(){
             // In the first iteration, we have no PageRanks
             // So we set them to (1-d)
             if ( i == 1 ) {
-                (*it)->setPRC( 1 - d );
+                (*it)->setPRC( 1 - dampingFactor );
                 qDebug() << "Graph:: centralityPageRank() - first iteration - node: " << (*it)->name() << " PR = " << (*it)->PRC() ;
             }
             // In every other iteration we calculate PageRanks.
@@ -1722,7 +1723,7 @@ void Graph::centralityPageRank(){
 
                 }
                 // OK. Now calculate PageRank of current node
-                PRC = (1-d) + d * sumPageRanksOfLinkedNodes;
+                PRC = (1-dampingFactor) + dampingFactor * sumPageRanksOfLinkedNodes;
                 // store new PageRank
                 (*it) -> setPRC ( PRC );
                 // calculate diff from last PageRank value for this vertex and set it to minDelta if the latter is bigger.
@@ -1782,8 +1783,8 @@ void Graph::writeCentralityPageRank(const QString fileName){
     outText << tr("")<<"\n";
     outText << tr("PRC' is the standardized PRC")<<"\n";
 
-    outText << tr("PRC  range:  0 < C < 1") << "\n";
-    outText << tr("PRC' range:  0 < C'< 1")<<"\n\n";
+    outText << tr("PRC  range:  1-d < C  where d=") << dampingFactor   << "\n";
+    outText << tr("PRC' range:  ") << dampingFactor / sumPRC  << " < C'< 1" <<"\n\n";
     outText << "Node"<<"\tPRC\t\tPRC'\t\t%PRC\n";
     QList<Vertex*>::iterator it;
     float PRC=0, SPRC=0, sumSPRC=0;
