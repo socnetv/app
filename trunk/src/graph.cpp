@@ -1680,7 +1680,7 @@ void Graph::centralityPageRank(){
     int i = 1; // a counter
     int referrer;
     float d = 0.85; // The parameter d is a damping factor which can be set between 0 and 1. Google creators set d to 0.85.
-    float delta = 0.1; // The delta where we will stop the iterative calculation
+    float delta = 0.01; // The delta where we will stop the iterative calculation
     float maxDelta = RAND_MAX;
     float sumPageRanksOfLinkedNodes = 0;  // temporary variable to calculate PR
     float outDegree = 0;
@@ -1737,6 +1737,11 @@ void Graph::centralityPageRank(){
         }
         i++;
     }
+    // calculate sumPRC
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        sumPRC +=  (*it)->PRC();
+    }
+    // calculate std and min/max PRCs
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         PRC = (*it)->PRC();
         resolveClasses(PRC,discretePRCs,classesPRC);
@@ -1748,8 +1753,6 @@ void Graph::centralityPageRank(){
             minPRC = PRC;
             minNodePRC=(*it)->name();
         }
-
-        sumPRC += PRC;
 
         SPRC = PRC / sumPRC ;
         (*it)->setSPRC( SPRC );
