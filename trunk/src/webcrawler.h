@@ -30,7 +30,7 @@
 using namespace std;
 
 #include <QThread>
-
+#include <QNetworkReply>
 
 class Reader : public QThread  {
 	Q_OBJECT
@@ -39,7 +39,7 @@ public:
 	void createEdge (int source, int target);
 
 public slots:
-	void load();
+    void load(QNetworkReply*);
 signals:
 	void signalCreateNode(QString url, int no);
 	void signalCreateEdge (int source, int target);
