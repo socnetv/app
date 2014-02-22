@@ -1809,11 +1809,11 @@ void Graph::writeCentralityPageRank(const QString fileName){
     float x=0;
     float n = ( this->vertices() - isolatedVertices );
 
-    averagePRC = sumPRC / n ;
-    qDebug() << "sumPRC = " << sumPRC << "  n = " << n << "  average>PRC = " << averagePRC;
-    groupIC=0;
+    averagePRC = sumSPRC / n ;
+    qDebug() << "sumPRC = " << sumSPRC << "  n = " << n << "  average>PRC = " << averagePRC;
+    groupPRC=0;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        x = (  (*it)->SPRC()  -  averagePRC  ) ;
+        x = ( 100 * (*it)->SPRC()  - 100 * averagePRC  ) ;
         x *=x;
         qDebug() << "SPRC " <<  (*it)->SPRC() << "  x " <<   (*it)->SPRC() - averagePRC  << " x*x" << x ;
         groupPRC  += x;
@@ -1821,9 +1821,9 @@ void Graph::writeCentralityPageRank(const QString fileName){
     qDebug() << "groupPRC   " << groupPRC   << " n " << n ;
     groupPRC  = groupPRC  /  (n-1);
     qDebug() << "groupPRC   " << groupPRC   ;
-    outText << tr("\nGROUP INFORMATION CENTRALISATION (GIC)\n\n");
+    outText << tr("\nGROUP PAGERANK CENTRALISATION (GPC)\n\n");
     outText << tr("GIC = ") << groupPRC<<"\n\n";
-    outText << tr("GIC range: 0 < GIC < inf \n");
+    outText << tr("GIC range: 0 < GPRC < inf \n");
     outText << tr("GIC is computed using a simple variance formula. \n");
     outText << tr("In fact, following the results of Wasserman & Faust, we are using a bias-corrected sample variance.\n ");
 
@@ -2589,16 +2589,19 @@ void Graph::writeTriadCensus(
 void Graph::layoutRadialCentrality(double x0, double y0, double maxRadius, int CentralityType){
     qDebug("Graph: layoutRadialCentrality...");
     //first calculate centralities
-    if ((graphModified || !calculatedCentralities) && CentralityType > 2 && CentralityType != 9 ) {
+    if ((graphModified || !calculatedCentralities) && CentralityType > 2 && CentralityType < 9 ) {
         qDebug("Graph: Calling createDistanceMatrix() to calc centralities");
-        createDistanceMatrix(true);
+        this->createDistanceMatrix(true);
     }
     else if ((graphModified || !calculatedIDC) && CentralityType == 1)
-        centralityInDegree(true);
+        this->centralityInDegree(true);
     else if ((graphModified || !calculatedODC) && CentralityType == 2)
-        centralityOutDegree(true);
+        this->centralityOutDegree(true);
     else if ( CentralityType == 9 ){
-        centralityInformation();
+        this->centralityInformation();
+    }
+    else if ( CentralityType == 10 ) {
+        this->centralityPageRank();
     }
 
     double rad=0;
@@ -2674,7 +2677,7 @@ void Graph::layoutRadialCentrality(double x0, double y0, double maxRadius, int C
             break;
         }
         case 10 : {
-            qDebug("Layout according to Information Centralities");
+            qDebug("Layout according to PageRank Centralities");
             C=(*it)->PRC();
             std= (*it)->SPRC();
             maxC=maxPRC;

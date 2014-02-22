@@ -187,6 +187,7 @@ public slots:
     void slotLayoutRadialCentralityStress();
     void slotLayoutRadialCentralityGraph();
     void slotLayoutRadialCentralityEccentr();
+    void slotLayoutRadialCentralityPageRank();
     void slotLayoutLayeredCentralityInDegree();
     void slotLayoutLayeredCentralityOutDegree();
     void slotLayoutLayeredCentralityCloseness();
