@@ -1,5 +1,5 @@
 %define name    socnetv
-%define version 0.91
+%define version 1.0
 %define release 1
 %define prefix  /usr/local
 %define lastrev %(LANG=en_US.UTF-8 && date +"%a %b %e %Y")
@@ -16,8 +16,8 @@
 %define is_suse 0
 %define is_mandrake 0
 %define is_fedora 1
-%define breqr qt4-devel, qt-x11, desktop-file-utils
-%define qmake /usr/bin/qmake-qt4
+%define breqr  qt5-qtbase-devel, desktop-file-utils
+%define qmake /usr/bin/qmake-qt5
 %define lrelease /usr/bin/lrelease-qt4
 %endif
 
@@ -26,8 +26,8 @@
 %define is_suse 1
 %define is_mandrake 0
 %define is_fedora 0
-%define breqr libqt4-devel, libQtWebKit-devel, update-desktop-files
-%define qmake /usr/bin/qmake
+%define breqr libqt5-qtbase-devel, libQtWebKit-devel, update-desktop-files
+%define qmake /usr/bin/qmake-qt5
 %define lrelease /usr/bin/lrelease
 %endif  
 
@@ -36,9 +36,9 @@
 %define is_suse 0
 %define is_mandrake 1
 %define is_fedora 0
-%define breqr libqt4-devel, desktop-file-utils
-%define qmake /usr/lib/qt4/bin/qmake
-%define lrelease /usr/lib/qt4/bin/lrelease
+%define breqr qt5-qtbase-devel, desktop-file-utils
+%define qmake /usr/lib/qt5/bin/qmake
+%define lrelease /usr/lib/qt5/bin/lrelease
 %endif
 
 #END BUILDSERVICE COMMANDS
