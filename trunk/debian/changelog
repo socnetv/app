@@ -1,3 +1,13 @@
+socnetv (1.0-1) UNRELEASED; urgency=low
+
+  *  First version in Qt5
+  *  New Feature: PageRank calculation and layout
+  *  New reference item: SRS Documentation by Vagelis Motesnitsalis
+  *  Re-introduce GraphViz import menu option
+  *  Init "Spring Embedder" tab checkbox to none when user creates new network.
+
+ -- Dimitris Kalamaras  <dimitris.kalamaras@gmail.com>  Wed, 26 Feb 2014 19:20:26 +0200
+
 socnetv (0.90-1ubuntu1) maverick; urgency=low
 
   * update to version 0.90
