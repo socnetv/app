@@ -688,7 +688,7 @@ QString Graph::edgeColor (long int s, long int t){
 
 
 /**	Checks if there is an edge from v1 to v2
-    Complexity:  O(logN) for index retrieval + O(1) for QList index rerieval + O(logN) for checking edge(v2)
+    Complexity:  O(logN) for index retrieval + O(1) for QList index retrieval + O(logN) for checking edge(v2)
 */
 float Graph::hasEdge (int v1, int v2) {		
     float weight=0;
@@ -1674,26 +1674,29 @@ void Graph::centralityPageRank(){
     minPRC=RAND_MAX;
     classesPRC=0;
     groupPRC=0;
+    dampingFactor = 0.85; // The parameter d is a damping factor which can be set between 0 and 1. Google creators set d to 0.85.
 
     float PRC=0, oldPRC = 0;
     float SPRC=0;
     int i = 1; // a counter
-    float d = 0.85; // The parameter d is a damping factor which can be set between 0 and 1. Google creators set d to 0.85.
-    float delta = 0.1; // The delta where we will stop the iterative calculation
+    int referrer;
+
+    float delta = 0.01; // The delta where we will stop the iterative calculation
     float maxDelta = RAND_MAX;
     float sumPageRanksOfLinkedNodes = 0;  // temporary variable to calculate PR
     float outDegree = 0;
 
-    QList<Vertex*>::iterator it, jt;
+    QList<Vertex*>::iterator it;
+    imap_f::iterator jt;
     // begin iteration - continue until we reach our desired delta
     while (maxDelta > delta) {
-
         for (it=m_graph.begin(); it!=m_graph.end(); it++){
-            // (*it) is our current node.
+            qDebug() << "Graph:: centralityPageRank() - calculating PR for node: " << (*it)->name() ;
             // In the first iteration, we have no PageRanks
             // So we set them to (1-d)
             if ( i == 1 ) {
-                (*it)->setPRC( 1 - d );
+                (*it)->setPRC( 1 - dampingFactor );
+                qDebug() << "Graph:: centralityPageRank() - first iteration - node: " << (*it)->name() << " PR = " << (*it)->PRC() ;
             }
             // In every other iteration we calculate PageRanks.
             else {
@@ -1705,23 +1708,22 @@ void Graph::centralityPageRank(){
                 sumPageRanksOfLinkedNodes = 0;
                 maxDelta = 0;
                 oldPRC = (*it)->PRC();
-                // iterate over the whole graph
-                for (jt=m_graph.begin(); jt!=m_graph.end(); jt++){
-                    // take every other node which links to the current node.
-                    if ( (*jt)->name() == (*it)->name() )
-                        continue;
-                    else if ( (*jt)->isLinkedTo( (*it)->name()) != 0)
+                // take every other node which links to the current node.
+                for( jt = (*it)->m_inEdges.begin(); jt != (*it)->m_inEdges.end(); jt++ ) {
+                    qDebug() << "Graph:: centralityPageRank " << (*it)->name() << " is inLinked from " << jt->first  ;
+                    referrer=jt->first;
+                    if ( this->hasEdge( referrer , (*it)->name() ) )
                     {
-                        outDegree = (*jt)->outDegree();
-                        PRC = (*jt)->PRC();
-                        qDebug()<< "Graph:: centralityPageRank() calculating PR for vertex: " << (*it)->name() << " It is linked from "
-                                << (*jt)->name() << " which has PRC = " << PRC  << " and outDegree = " << outDegree << " PRC / outDegree = " << PRC / outDegree ;
+
+                        outDegree = m_graph[ index[referrer] ] ->outDegree();
+                        PRC =  m_graph[ index[referrer] ]->PRC();
+                        qDebug()<< "Graph:: centralityPageRank() " <<  jt->first  << " has PRC = " << PRC  << " and outDegree = " << outDegree << " PRC / outDegree = " << PRC / outDegree ;
                         sumPageRanksOfLinkedNodes += PRC / outDegree;
                     }
 
                 }
                 // OK. Now calculate PageRank of current node
-                PRC = (1-d) + d * sumPageRanksOfLinkedNodes;
+                PRC = (1-dampingFactor) + dampingFactor * sumPageRanksOfLinkedNodes;
                 // store new PageRank
                 (*it) -> setPRC ( PRC );
                 // calculate diff from last PageRank value for this vertex and set it to minDelta if the latter is bigger.
@@ -1733,11 +1735,17 @@ void Graph::centralityPageRank(){
                 }
 
             }
-            i++;
         }
+        i++;
     }
+    // calculate sumPRC
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        sumPRC +=  (*it)->PRC();
+    }
+    // calculate std and min/max PRCs
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         PRC = (*it)->PRC();
+        resolveClasses(PRC,discretePRCs,classesPRC);
         if ( PRC > maxPRC ) {
             maxPRC = PRC;
             maxNodePRC=(*it)->name();
@@ -1746,8 +1754,6 @@ void Graph::centralityPageRank(){
             minPRC = PRC;
             minNodePRC=(*it)->name();
         }
-
-        sumPRC += PRC;
 
         SPRC = PRC / sumPRC ;
         (*it)->setSPRC( SPRC );
@@ -1775,23 +1781,23 @@ void Graph::writeCentralityPageRank(const QString fileName){
 
     outText << tr("PAGERANK CENTRALITY (PRC) OF EACH NODE")<<"\n";
     outText << tr("")<<"\n";
-    outText << tr("IC' is the standardized IC")<<"\n";
+    outText << tr("PRC' is the standardized PRC")<<"\n";
 
-    outText << tr("IC  range:  0 < C < inf (this index has no max value)") << "\n";
-    outText << tr("IC' range:  0 < C'< 1")<<"\n\n";
-    outText << "Node"<<"\tIC\t\tIC'\t\t%IC\n";
+    outText << tr("PRC  range:  1-d < C  where d=") << dampingFactor   << "\n";
+    outText << tr("PRC' range:  ") << dampingFactor / sumPRC  << " < C'< 1" <<"\n\n";
+    outText << "Node"<<"\tPRC\t\tPRC'\t\t%PRC\n";
     QList<Vertex*>::iterator it;
-    float IC=0, SIC=0, sumSIC=0;
+    float PRC=0, SPRC=0, sumSPRC=0;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        IC = (*it)->SIC();
-        SIC = (*it)->SIC();
-        sumSIC +=  SIC;
-        outText << (*it)->name()<<"\t"<< IC << "\t\t"<< SIC  << "\t\t" <<  ( 100* SIC )<<endl;
-        qDebug()<< "Graph::writeCentralityPageRank() vertex: " <<  (*it)->name() << " SIC  " << SIC;
+        PRC = (*it)->PRC();
+        SPRC = (*it)->SPRC();
+        sumSPRC +=  SPRC;
+        outText << (*it)->name()<<"\t"<< PRC << "\t\t"<< SPRC  << "\t\t" <<  ( 100* SPRC )<<endl;
+        qDebug()<< "Graph::writeCentralityPageRank() vertex: " <<  (*it)->name() << " SPRC  " << SPRC;
     }
-    qDebug ("min %f, max %f", minIC, maxIC);
-    if ( minIC == maxIC )
-        outText << tr("\nAll nodes have the same IC value.\n");
+    qDebug ("min %f, max %f", minPRC, maxPRC);
+    if ( minPRC == maxPRC )
+        outText << tr("\nAll nodes have the same PRC value.\n");
     else  {
         outText << "\n";
         outText << tr("Max PRC' = ") << maxPRC <<" (node "<< maxNodePRC  <<  ")  \n";
@@ -1799,29 +1805,25 @@ void Graph::writeCentralityPageRank(const QString fileName){
         outText << tr("PRC classes = ") << classesPRC<<" \n";
     }
     outText << "\n";
-    outText << tr("The PRC index measures the information that is contained in the paths passing through each actor.\n");
-    outText << tr("The standardized values IC' can be seen as the proportion of total information flow that is controlled by each actor. Note that standard IC' values sum to unity, unlike any other centrality index.\n");
-    outText << "(Wasserman & Faust, p. 196)\n";
-    outText << "\n";
 
     float x=0;
     float n = ( this->vertices() - isolatedVertices );
 
-    averagePRC = sumPRC / n ;
-    qDebug() << "sumPRC = " << sumPRC << "  n = " << n << "  average>PRC = " << averagePRC;
-    groupIC=0;
+    averagePRC = sumSPRC / n ;
+    qDebug() << "sumPRC = " << sumSPRC << "  n = " << n << "  average>PRC = " << averagePRC;
+    groupPRC=0;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        x = (  (*it)->SPRC()  -  averagePRC  ) ;
+        x = ( 100 * (*it)->SPRC()  - 100 * averagePRC  ) ;
         x *=x;
         qDebug() << "SPRC " <<  (*it)->SPRC() << "  x " <<   (*it)->SPRC() - averagePRC  << " x*x" << x ;
-        groupIC  += x;
+        groupPRC  += x;
     }
     qDebug() << "groupPRC   " << groupPRC   << " n " << n ;
     groupPRC  = groupPRC  /  (n-1);
     qDebug() << "groupPRC   " << groupPRC   ;
-    outText << tr("\nGROUP INFORMATION CENTRALISATION (GIC)\n\n");
+    outText << tr("\nGROUP PAGERANK CENTRALISATION (GPC)\n\n");
     outText << tr("GIC = ") << groupPRC<<"\n\n";
-    outText << tr("GIC range: 0 < GIC < inf \n");
+    outText << tr("GIC range: 0 < GPRC < inf \n");
     outText << tr("GIC is computed using a simple variance formula. \n");
     outText << tr("In fact, following the results of Wasserman & Faust, we are using a bias-corrected sample variance.\n ");
 
@@ -2587,16 +2589,19 @@ void Graph::writeTriadCensus(
 void Graph::layoutRadialCentrality(double x0, double y0, double maxRadius, int CentralityType){
     qDebug("Graph: layoutRadialCentrality...");
     //first calculate centralities
-    if ((graphModified || !calculatedCentralities) && CentralityType > 2 && CentralityType != 9 ) {
+    if ((graphModified || !calculatedCentralities) && CentralityType > 2 && CentralityType < 9 ) {
         qDebug("Graph: Calling createDistanceMatrix() to calc centralities");
-        createDistanceMatrix(true);
+        this->createDistanceMatrix(true);
     }
     else if ((graphModified || !calculatedIDC) && CentralityType == 1)
-        centralityInDegree(true);
+        this->centralityInDegree(true);
     else if ((graphModified || !calculatedODC) && CentralityType == 2)
-        centralityOutDegree(true);
+        this->centralityOutDegree(true);
     else if ( CentralityType == 9 ){
-        centralityInformation();
+        this->centralityInformation();
+    }
+    else if ( CentralityType == 10 ) {
+        this->centralityPageRank();
     }
 
     double rad=0;
@@ -2672,7 +2677,7 @@ void Graph::layoutRadialCentrality(double x0, double y0, double maxRadius, int C
             break;
         }
         case 10 : {
-            qDebug("Layout according to Information Centralities");
+            qDebug("Layout according to PageRank Centralities");
             C=(*it)->PRC();
             std= (*it)->SPRC();
             maxC=maxPRC;

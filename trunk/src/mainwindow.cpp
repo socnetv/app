@@ -706,6 +706,14 @@ void MainWindow::initActions(){
     connect(circleInformationLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityInformation()));
 
 
+    circleInformationLayoutAct = new QAction( tr("PageRank"),	this);
+    circleInformationLayoutAct ->setEnabled(true);
+    circleInformationLayoutAct ->setShortcut(tr("Ctrl+Alt+"));
+    circleInformationLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More PageRank Central Nodes are situated towards the centre."));
+    circleInformationLayoutAct->setWhatsThis(tr("Circle PageRank Centrality Layout\n\n Repositions the nodes on circles of different radius. More PageRank Central Nodes are positioned towards the centre."));
+    connect(circleInformationLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityPageRank()));
+
+
     circleClearBackgrCirclesAct = new QAction(QIcon(":/images/gridlines.png"), tr("Remove Layout GuideLines"), this);
     circleClearBackgrCirclesAct ->setStatusTip(tr("Removes all layout guideLines from the canvas."));
     circleClearBackgrCirclesAct->setWhatsThis(tr("Remove GuideLines\n\n Removes any guidelines (circles or horizontal lines) created for the network layout."));
@@ -4499,6 +4507,31 @@ void MainWindow::slotLayoutRadialCentralityInformation(){
 }
 
 
+
+
+
+/**
+*	Calls Graph::LayoutRadialCentrality()
+*	to reposition all nodes on a circular layout based on their PageRank Centralities.
+*	More central nodes are closer to the centre
+*/
+void MainWindow::slotLayoutRadialCentralityPageRank(){
+    if (!fileLoaded && !networkModified  )  {
+        QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
+        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
+        return;
+    }
+    double x0=scene->width()/2.0;
+    double y0=scene->height()/2.0;
+    double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
+
+    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
+    graphicsWidget->clearBackgrCircles();
+    createProgressBar();
+    activeGraph.layoutRadialCentrality(x0, y0, maxRadius,10);
+    destroyProgressBar();
+    statusMessage( tr("Nodes in inner circles have greater PageRank. ") );
+}
 
 
 /**

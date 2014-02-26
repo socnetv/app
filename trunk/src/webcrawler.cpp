@@ -29,7 +29,6 @@
 
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
-#include <QNetworkReply>
 #include <QDebug>
 #include <QQueue>
 #include <QVector>
@@ -85,8 +84,10 @@ void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){
                 );
 
 
-    if (!isRunning())
+    if (!isRunning()) {
         start(QThread::TimeCriticalPriority);
+            qDebug() << "WebCrawler:: started!";
+    }
 }
 
 
@@ -194,11 +195,11 @@ void WebCrawler::run(){
             request->setUrl(QUrl(baseUrl));
 
 
+            //TODO connect finished() signal to load() of 2ond Reader class
+            connect (http,SIGNAL( finished(QNetworkReply*) ), &reader, SLOT( load(QNetworkReply*) ) );
+
             QNetworkReply *reply = http->get(*request) ;
 
-            //connect finished() signal of reply to load() of 2ond Reader class
-            //TODO check reply
-            connect (reply,SIGNAL( finished() ), &reader, SLOT( load() ) );
         }
         else { // baseUrl is on checkedMap already - don't do nothing!
             qDebug() << "		WebCrawler: baseUrl "  <<  baseUrl.toLatin1() << " already scanned. Skipping.";
@@ -255,7 +256,10 @@ void WebCrawler::terminateReaderQuit (){
 * 	It is called when the http object has emitted the done() signal
 * 	(that is, when last pending request has finished).
 */ 
-void Reader::load(){
+void Reader::load(QNetworkReply* reply){
+    qDebug()  << "			READER::load()  to read something!";
+    ba=reply->readAll();
+
     if (!isRunning())
         start(QThread::NormalPriority);
 }
@@ -273,9 +277,8 @@ void Reader::run(){
     QString newUrl;
     bool createNodeFlag = false, createEdgeFlag=false ;
     int start=-1, end=-1, equal=-1 ;// index=-1;
-    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
-    ba=reply->readAll();
     QString page(ba);
+
 
     if (!page.contains ("a href"))  { //if a href doesnt exist, return
         //FIXME: Frameset pages are not parsed! See docs/manual.html for example.
