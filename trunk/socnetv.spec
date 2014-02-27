@@ -33,7 +33,7 @@
 %define is_suse 0
 %define is_mandrake 0
 %define is_fedora 1
-%define breqr  qt5-qtbase-devel, desktop-file-utils
+%define breqr  qt5-qtbase, desktop-file-utils
 %define qmake /usr/bin/qmake-qt5
 %define lrelease /usr/bin/lrelease-qt4
 %endif
@@ -43,7 +43,7 @@
 %define is_suse 1
 %define is_mandrake 0
 %define is_fedora 0
-%define breqr libqt5-qtbase-devel, libQtWebKit-devel, update-desktop-files
+%define breqr libqt5-qtbase, libQtWebKit, update-desktop-files
 %define qmake /usr/bin/qmake-qt5
 %define lrelease /usr/bin/lrelease
 %endif  
@@ -64,7 +64,7 @@
 
 %if %{is_fedora}
 %define distr Fedora 	# %(cat /etc/fedora-release)
-%define breqr qt5-qtbase-devel, qt5-qttools, desktop-file-utils
+%define breqr qt5-qtbase, qt5-qttools, desktop-file-utils
 %define qmake /usr/bin/qmake-qt5
 %define lrelease /usr/bin/lrelease
 %endif
@@ -73,7 +73,7 @@
 
 %if %{is_suse}
 %define distr SUSE	# %(head -1 /etc/SuSE-release)
-%define breqr libqt5-qtbase-devel, libQtWebKit-devel, update-desktop-files
+%define breqr libqt5-qtbase, libQtWebKit, update-desktop-files
 %define qmake /usr/bin/qmake-qt5
 %define lrelease /usr/bin/lrelease
 %endif
@@ -136,6 +136,7 @@ rm -f config.log config.status Makefile socnetv.spec socnetv.mak
 
 %build
 %configure
+qmake
 %__make
 
 %install
