@@ -1,10 +1,27 @@
+# spec file for package socnetv
+#
+# Copyright (c) 2014 Dimitris Kalamaras dimitris.kalamaras@gmail.com
+#
+# All modifications and additions to the file contributed by third parties
+# remain the property of their copyright owners, unless otherwise agreed
+# upon. The license for this file, and modifications and additions to the
+# file, is the same license as for the pristine package itself (unless the
+# license for the pristine package is not an Open Source License, in which
+# case the license is the MIT License). An "Open Source License" is a
+# license that conforms to the Open Source Definition (Version 1.9)
+# published by the Open Source Initiative.
+
+# Please submit bugfixes or comments via http://bugs.opensuse.org/
+
+
+
 %define name    socnetv
 %define version 1.0
 %define release 1
 %define prefix  /usr/local
 %define lastrev %(LANG=en_US.UTF-8 && date +"%a %b %e %Y")
 
-%define is_mandrake %(test -e /etc/mandrake-release && echo 1 || echo 0)
+%define is_mageia %(test -e /etc/mageia-release && echo 1 || echo 0)
 %define is_suse %(test -e /etc/SuSE-release && echo 1 || echo 0)
 %define is_fedora %(test -e /etc/fedora-release && echo 1 || echo 0)
 %define qmake qmake
@@ -32,13 +49,14 @@
 %endif  
 
 
-%if 0%{?mandriva_version} != 0
+%if 0%{?mageia_version} != 0
 %define is_suse 0
 %define is_mandrake 1
 %define is_fedora 0
-%define breqr qt5-qtbase-devel, desktop-file-utils
+%define breqr libqt5base5-devel, libqt5webkit-devel, desktop-file-utils
 %define qmake /usr/lib/qt5/bin/qmake
 %define lrelease /usr/lib/qt5/bin/lrelease
+%define distr Mageia    # %(cat /etc/mageia-release)
 %endif
 
 #END BUILDSERVICE COMMANDS
@@ -46,9 +64,9 @@
 
 %if %{is_fedora}
 %define distr Fedora 	# %(cat /etc/fedora-release)
-%define breqr qt5-qtbase-devel, qt-x11, desktop-file-utils
-%define qmake /usr/bin/qmake-qt4
-%define lrelease /usr/bin/lrelease-qt4
+%define breqr qt5-qtbase-devel, qt5-qttools, desktop-file-utils
+%define qmake /usr/bin/qmake-qt5
+%define lrelease /usr/bin/lrelease
 %endif
 
 
@@ -61,11 +79,11 @@
 %endif
 
 
-%if %{is_mandrake}
-%define distr Mandriva	# %(cat /etc/mandrake-release)
-%define breqr libqt4-devel, desktop-file-utils
-%define qmake /usr/lib/qt4/bin/qmake
-%define lrelease /usr/lib/qt4/bin/lrelease
+%if %{is_mageia}
+%define distr Mageia	# %(cat /etc/mageia-release)
+%define breqr libqt5base5-devel, libqt5webkit-devel, desktop-file-utils
+%define qmake /usr/lib64/qt5/bin/qmake
+%define lrelease /usr/lib/qt5/bin/lrelease
 %endif
 
 
@@ -163,7 +181,7 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 - Synced with upstream,
 * Mon Jun 29 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.70-1
 - Synced with upstream
-* Mon May 27 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.6.0-1
+* Wed May 27 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.6.0-1
 - Synced with upstream
 * Thu Feb 26 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.52-1
 - Synced with upstream.
