@@ -62,7 +62,7 @@ To compile from source code, download the tarball archive with the source code
 of SocNetV (you probably already have this :P). 
 Then, untar (decompress) the archive using a command like this:
 
-tar zxfv SocNetV-v1.XX.tar.gz
+tar zxfv SocNetV-1.X.tar.gz
 
 Then enter the new directory and compile with these commands:
 
