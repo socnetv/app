@@ -4,9 +4,11 @@ Social Networks Visualiser (SocNetV)
 SocNetV News
 -==========-
 
-Oct 2013
+Feb 2014
 ========
-- Version 1.0 released
+- Version 1.0 released, starting a new 1.x series based on Qt5. The 0.x series is no longer maintained. Please upgrade :)
+- PageRank calculation and layout 
+- SRS Documentation by Vagelis Motesnitsalis
 
 July 2013
 ========
