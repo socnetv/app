@@ -21,7 +21,7 @@
 %define prefix  /usr/local
 %define lastrev %(LANG=en_US.UTF-8 && date +"%a %b %e %Y")
 
-%define is_mageia %(test -e /etc/mageia-release && echo 1 || echo 0)
+#%define is_mageia %(test -e /etc/mageia-release && echo 1 || echo 0)
 %define is_suse %(test -e /etc/SuSE-release && echo 1 || echo 0)
 %define is_fedora %(test -e /etc/fedora-release && echo 1 || echo 0)
 %define qmake qmake
@@ -33,9 +33,9 @@
 %define is_suse 0
 %define is_mandrake 0
 %define is_fedora 1
-%define breqr  qt5-qtbase, desktop-file-utils
+%define breqr qt5-qtbase, qt5-qttools, qt5-qtwebkit, fedora-release, desktop-file-utils
 %define qmake /usr/bin/qmake-qt5
-%define lrelease /usr/bin/lrelease-qt4
+%define lrelease /usr/bin/lrelease
 %endif
 
 
@@ -43,28 +43,28 @@
 %define is_suse 1
 %define is_mandrake 0
 %define is_fedora 0
-%define breqr libqt5-qtbase, libQtWebKit, update-desktop-files
+%define breqr libqt5-qtbase, libQt5WebKit5 ,update-desktop-files
 %define qmake /usr/bin/qmake-qt5
 %define lrelease /usr/bin/lrelease
 %endif  
 
 
-%if 0%{?mageia_version} != 0
-%define is_suse 0
-%define is_mandrake 1
-%define is_fedora 0
-%define breqr libqt5base5-devel, libqt5webkit-devel, desktop-file-utils
-%define qmake /usr/lib/qt5/bin/qmake
-%define lrelease /usr/lib/qt5/bin/lrelease
-%define distr Mageia    # %(cat /etc/mageia-release)
-%endif
+#%if 0%{?mageia_version} != 0
+#%define is_suse 0
+#%define is_mandrake 1
+#%define is_fedora 0
+#%define breqr libqt5base5-devel, libqt5webkit-devel, desktop-file-utils
+#%define qmake /usr/lib/qt5/bin/qmake
+#%define lrelease /usr/lib/qt5/bin/lrelease
+#%define distr Mageia    # %(cat /etc/mageia-release)
+#%endif
 
 #END BUILDSERVICE COMMANDS
 
 
 %if %{is_fedora}
 %define distr Fedora 	# %(cat /etc/fedora-release)
-%define breqr qt5-qtbase, qt5-qttools, desktop-file-utils
+%define breqr qt5-qtbase, qt5-qttools, qt5-qtwebkit, fedora-release, desktop-file-utils
 %define qmake /usr/bin/qmake-qt5
 %define lrelease /usr/bin/lrelease
 %endif
@@ -73,18 +73,18 @@
 
 %if %{is_suse}
 %define distr SUSE	# %(head -1 /etc/SuSE-release)
-%define breqr libqt5-qtbase, libQtWebKit, update-desktop-files
+%define breqr libqt5-qtbase, libQt5WebKit5, update-desktop-files
 %define qmake /usr/bin/qmake-qt5
 %define lrelease /usr/bin/lrelease
 %endif
 
 
-%if %{is_mageia}
-%define distr Mageia	# %(cat /etc/mageia-release)
-%define breqr libqt5base5-devel, libqt5webkit-devel, desktop-file-utils
-%define qmake /usr/lib64/qt5/bin/qmake
-%define lrelease /usr/lib/qt5/bin/lrelease
-%endif
+#%if %{is_mageia}
+#%define distr Mageia	# %(cat /etc/mageia-release)
+#%define breqr libqt5base5-devel, libqt5webkit-devel, desktop-file-utils
+#%define qmake /usr/lib64/qt5/bin/qmake
+#%define lrelease /usr/lib/qt5/bin/lrelease
+#%endif
 
 
 Name:		%{name}
@@ -127,7 +127,6 @@ Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 
 %prep
 %setup 
-[ -f Makefile.cvs ] && %__make -f Makefile.cvs
 chmod -R a-x+X COPYING ChangeLog INSTALL NEWS README TODO manual man nets src
 chmod 644 nets/*
 find . -type f -name '*~' -delete
