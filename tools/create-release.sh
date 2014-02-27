@@ -10,7 +10,7 @@ if [ -d "../release" ]; then
 fi
 
 #CHANGE THIS TO NEW VERSION NUMBERS
-VER=0.80;   
+VER=1.0;   
 echo "enter ver";
 read VER
 echo $VER
@@ -78,8 +78,8 @@ echo ! UPLOAD TO SOURCEFORGE         !
 echo ---------------------------------
 echo .
 
-rsync -avP -e ssh SocNetV-$VER.tar.gz  oxy86@frs.sourceforge.net:uploads/
-rsync -avP -e ssh SocNetV-$VER.tar.bz2  oxy86@frs.sourceforge.net:uploads/
+rsync  -e ssh SocNetV-$VER.tar.gz  oxy86@frs.sourceforge.net:/home/frs/project/socnetv/$VER
+rsync  -e ssh SocNetV-$VER.tar.bz2  oxy86@frs.sourceforge.net:/home/frs/project/socnetv/$VER
 cd socnetv-$VER/
 
 
