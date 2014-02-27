@@ -46,7 +46,7 @@
 
 %if %{is_fedora}
 %define distr Fedora 	# %(cat /etc/fedora-release)
-%define breqr qt4-devel, qt-x11, desktop-file-utils
+%define breqr qt5-qtbase-devel, qt-x11, desktop-file-utils
 %define qmake /usr/bin/qmake-qt4
 %define lrelease /usr/bin/lrelease-qt4
 %endif
@@ -73,7 +73,7 @@ Name:		%{name}
 Version:	%{version}
 Release:	%{release}
 Summary:	A Social Networks Analyser and Visualiser
-License:	GPLv3
+License:	GPL-3.0	
 Group:		Productivity/Scientific/Math 
 URL:		http://socnetv.sourceforge.net/
 Vendor: 	Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
@@ -113,6 +113,7 @@ Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 chmod -R a-x+X COPYING ChangeLog INSTALL NEWS README TODO manual man nets src
 chmod 644 nets/*
 find . -type f -name '*~' -delete
+find . -type f -name '*.bak' -delete
 rm -f config.log config.status Makefile socnetv.spec socnetv.mak
 
 %build
@@ -149,6 +150,10 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 
 
 %changelog
+* Thu Feb 27 2014 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 1.0-2
+- Fixed spec for openSUSE
+* Thu Feb 27 2014 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 1.0-1
+- Synced with new version from upstream.
 * Thu Oct 14 2010 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.90-1
 - Synced with upstream.
 * Thu Jan 28 2010 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 0.81-1
