@@ -26,12 +26,6 @@ rm socnetv
 
 echo .
 echo ---------------------------------
-echo 	     RUNNING AUTOCONF
-echo --------------------------------
-autoconf
-
-echo .
-echo ---------------------------------
 echo !  COPY FILES TO WORKING DIRS   ! 
 echo ---------------------------------
 
