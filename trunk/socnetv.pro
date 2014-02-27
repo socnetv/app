@@ -1,10 +1,14 @@
+lessThan(QT_VERSION, 4.8) {
+    error("QupZilla requires at least Qt 4.8!")
+}
+
 TEMPLATE = app
 CONFIG  += qt thread warn_on release
 LANGUAGE = C++
 
 # support
 QT += webkitwidgets
- QT += webkit
+QT += webkit
 QT += xml 
 QT += network
 QT += widgets
