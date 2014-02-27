@@ -9,13 +9,13 @@ If you have Qt5 installed, all you have to do is to type in the following comman
 
 2) cd socnetv-0.XX
 
-3) ./configure
+3) qmake
 
 4) make
 
 5) sudo make install
 
-Probably you have already done the first 2 steps, so just type in ./configure (yes, it needs a ./ in front of it!).
+Probably you have already done the first 2 steps, so just type in 'qmake' or 'qmake-qt5'.
 If Qt5 is not installed, the script will let you know...
 
 When you finish compiling and installing, run the application typing: 
