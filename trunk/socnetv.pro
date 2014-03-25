@@ -8,7 +8,6 @@ LANGUAGE = C++
 
 # support
 QT += webkitwidgets
-QT += webkit
 QT += xml 
 QT += network
 QT += widgets
@@ -64,7 +63,7 @@ SOURCES += src/backgrcircle.cpp \
 QMAKE_CXXFLAGS += -msse -mfpmath=sse -ffast-math 
 
 #LIBS    += @ac_libs@
-INCLUDEPATH += /usr/share/qt4/include /usr/local/include /usr/include /usr/include/qt4 /usr/include/qt5 /usr/share/qt5/include 
+INCLUDEPATH +=  /usr/local/include /usr/include /usr/include/qt5 /usr/share/qt5/include 
 
 
 RESOURCES = src/src.qrc

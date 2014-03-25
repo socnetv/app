@@ -21,7 +21,7 @@
 %define prefix  /usr/local
 %define lastrev %(LANG=en_US.UTF-8 && date +"%a %b %e %Y")
 
-#%define is_mageia %(test -e /etc/mageia-release && echo 1 || echo 0)
+
 %define is_suse %(test -e /etc/SuSE-release && echo 1 || echo 0)
 %define is_fedora %(test -e /etc/fedora-release && echo 1 || echo 0)
 %define qmake qmake
@@ -29,42 +29,24 @@
 
 
 #BEGIN BUILDSERVICE COMMANDS
-%if 0%{?fedora_version} != 0
+%if 0%{?fedora_version}
 %define is_suse 0
-%define is_mandrake 0
 %define is_fedora 1
-%define breqr qt5-qtbase, qt5-qttools, qt5-qtwebkit, fedora-release, desktop-file-utils
-%define qmake /usr/bin/qmake-qt5
-%define lrelease /usr/bin/lrelease
 %endif
 
 
-%if 0%{?suse_version} != 0
+%if 0%{?suse_version}
 %define is_suse 1
-%define is_mandrake 0
 %define is_fedora 0
-%define breqr libqt5-qtbase, libQt5WebKit5 ,update-desktop-files
-%define qmake /usr/bin/qmake-qt5
-%define lrelease /usr/bin/lrelease
-%endif  
+%endif
 
-
-#%if 0%{?mageia_version} != 0
-#%define is_suse 0
-#%define is_mandrake 1
-#%define is_fedora 0
-#%define breqr libqt5base5-devel, libqt5webkit-devel, desktop-file-utils
-#%define qmake /usr/lib/qt5/bin/qmake
-#%define lrelease /usr/lib/qt5/bin/lrelease
-#%define distr Mageia    # %(cat /etc/mageia-release)
-#%endif
 
 #END BUILDSERVICE COMMANDS
 
 
 %if %{is_fedora}
-%define distr Fedora 	# %(cat /etc/fedora-release)
-%define breqr qt5-qtbase, qt5-qttools, qt5-qtwebkit, fedora-release, desktop-file-utils
+%define distr Fedora
+%define breqr qt5-qtbase,qt5-qtbase-devel, qt5-qttools, qt5-qtwebkit, qt5-qtwebkit-devel, fedora-release, desktop-file-utils
 %define qmake /usr/bin/qmake-qt5
 %define lrelease /usr/bin/lrelease
 %endif
@@ -73,18 +55,12 @@
 
 %if %{is_suse}
 %define distr SUSE	# %(head -1 /etc/SuSE-release)
-%define breqr libqt5-qtbase, libQt5WebKit5, update-desktop-files
+%define breqr libqt5-qtbase, libqt5-qtbase-devel, libqt5-qttools, libQt5WebKit5, libQt5WebKit5-devel, update-desktop-files
 %define qmake /usr/bin/qmake-qt5
 %define lrelease /usr/bin/lrelease
 %endif
 
 
-#%if %{is_mageia}
-#%define distr Mageia	# %(cat /etc/mageia-release)
-#%define breqr libqt5base5-devel, libqt5webkit-devel, desktop-file-utils
-#%define qmake /usr/lib64/qt5/bin/qmake
-#%define lrelease /usr/lib/qt5/bin/lrelease
-#%endif
 
 
 Name:		%{name}
@@ -100,11 +76,21 @@ Source0:	SocNetV-%{version}.tar.bz2
 Distribution:   %{distr}
 Prefix:		%{prefix}
 BuildRequires:	gcc-c++, %{breqr}
+BuildRequires:  pkgconfig(Qt5Core)
+BuildRequires:  pkgconfig(Qt5Gui)
+BuildRequires:  pkgconfig(Qt5PrintSupport)
+BuildRequires:  pkgconfig(Qt5Widgets)
+BuildRequires:  pkgconfig(Qt5Network)
+BuildRequires:  pkgconfig(Qt5WebKitWidgets)
+
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 
 
 
+#
+#DESCRIPTION SECTION
+#
 
 
 %description
@@ -124,6 +110,9 @@ networks (lattice, same degree, etc) can be created.
 Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 
 
+#
+#PREPARATION SECTION
+#
 
 %prep
 %setup 
@@ -133,10 +122,18 @@ find . -type f -name '*~' -delete
 find . -type f -name '*.bak' -delete
 rm -f config.log config.status Makefile socnetv.spec socnetv.mak
 
+
+#
+#MAKE SECTION
+#
+
 %build
-%configure
-qmake
+%{qmake}
 %__make
+
+#
+#INSTALL SECTION
+#
 
 %install
 %if %{is_fedora}
@@ -147,6 +144,8 @@ desktop-file-validate %{name}.desktop
 
 
 %makeinstall
+make install
+make INSTALL_ROOT=%{buildroot} install
 rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 
 %clean
@@ -154,6 +153,9 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 
 
 
+#
+#FILES SECTION
+#
 
 %files
 %defattr(-,root,root)
@@ -165,8 +167,9 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 
 
 
-
-
+#
+#CHANGELOG SECTION
+#
 %changelog
 * Thu Feb 27 2014 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 1.0-2
 - Fixed spec for openSUSE
