@@ -121,7 +121,7 @@ chmod 644 nets/*
 find . -type f -name '*~' -delete
 find . -type f -name '*.bak' -delete
 rm -f config.log config.status Makefile socnetv.spec socnetv.mak
-
+sed -i -e 's/INSTALLPATH = \//INSTALLPATH = ./g' socnetv.pro
 
 #
 #MAKE SECTION
@@ -144,8 +144,17 @@ desktop-file-validate %{name}.desktop
 
 
 %makeinstall
-make install
-make INSTALL_ROOT=%{buildroot} install
+
+
+mkdir -p %{buildroot}%{_bindir}
+mkdir -p %{buildroot}%{_datadir}/pixmaps/
+mkdir -p %{buildroot}%{_datadir}/applications/
+mkdir -p %{buildroot}%{_mandir}/man1/
+cp -r socnetv %{buildroot}%{_bindir}/%{name}
+cp -r src/images/socnetv.png %{buildroot}%{_datadir}/pixmaps/%{name}.png
+cp -r socnetv.desktop %{buildroot}%{_datadir}/applications/
+cp -r man/socnetv.1.gz %{buildroot}%{_mandir}/man1
+
 rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 
 %clean
