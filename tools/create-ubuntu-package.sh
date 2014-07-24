@@ -47,6 +47,7 @@ echo    CLEANING UP COMPILED FILES
 echo ---------------------------------
 
 ./configure > /dev/null 2>&1
+qmake
 make clean
 rm socnetv 
 

@@ -1872,6 +1872,7 @@ void Graph::centralityInDegree(bool weights){
     int vert=vertices();
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         IDC=0;
+        qDebug() << "Graph: centralityInDegree() vertex " <<  (*it)->name()  ;
         for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
             if ( (weight=this->hasEdge ( (*it1)->name(), (*it)->name() ) ) !=0  )   {
                 if (weights)
@@ -1881,8 +1882,7 @@ void Graph::centralityInDegree(bool weights){
             }
         }
         (*it) -> setIDC ( IDC ) ;				//Set InDegree
-        (*it) -> setSIDC( IDC / (vert-1.0) );		//Set Standard InDegree
-        qDebug() << "Graph: vertex = " <<  (*it)->name() << " has IDC = " << IDC << " and SIDC " << (*it)->SIDC ();
+        qDebug() << "Graph: vertex = " <<  (*it)->name() << " has IDC = " << IDC ;
         sumIDC += IDC;
         it2 = discreteIDCs.find(QString::number(IDC));
         if (it2 == discreteIDCs.end() )	{
@@ -1904,11 +1904,21 @@ void Graph::centralityInDegree(bool weights){
     if (minIDC == maxIDC)
         maxNodeIDC=-1;
 
+
     meanDegree = sumIDC / (float) vert;  /** BUG? WEIGHTS???? */
     qDebug("Graph: sumIDC = %f, meanDegree = %f", sumIDC, meanDegree);
     // Calculate Variance and the Degree Centralisation of the whole graph.
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         IDC= (*it)->IDC();
+        if (!weights) {
+               (*it) -> setSIDC( IDC / (vert-1.0) );		//Set Standard InDegree
+        }
+        else {
+             (*it) -> setSIDC( IDC / (sumIDC) );
+        }
+        qDebug() << "Graph: vertex = " <<  (*it)->name() << " has IDC = " << IDC << " and SIDC " << (*it)->SIDC ();
+
+
         //qDebug("Graph: IDC = %f, meanDegree = %f", IDC, meanDegree);
         varianceDegree += (IDC-meanDegree) * (IDC-meanDegree) ;
         nom+= maxIDC-IDC;
@@ -1921,8 +1931,14 @@ void Graph::centralityInDegree(bool weights){
     groupIDC=nom/denom;
     qDebug("Graph: varianceDegree = %f, groupIDC = %f", varianceDegree, groupIDC);
 
-    minIDC/=(float)(vert-1); // standardize
-    maxIDC/=(float)(vert-1);
+    if (!weights) {
+        minIDC/=(float)(vert-1); // standardize
+        maxIDC/=(float)(vert-1);
+    }
+    else {
+        minIDC/=(float)(sumIDC); // standardize
+        maxIDC/=(float)(sumIDC);
+    }
     calculatedIDC=true;
     graphModified=false;
 }
