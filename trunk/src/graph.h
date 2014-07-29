@@ -213,7 +213,9 @@ public:
     void writeAdjacencyMatrix(const char*, const char*);		//Writes the adjacency matrix to a given file.
 
     void writeInvertAdjacencyMatrix(const char*,  const char*);
-    void writeDistanceMatrix(const char*, const char*, const char*);//Writes the distance matrix to a file
+    void writeDistanceMatrix(const char*, const char*);//Writes the distance matrix to a file
+    void writeNumberOfGeodesicsMatrix(const char*, const char*);//Writes the number of geodesics matrix to a file
+
     friend QTextStream& operator <<  (QTextStream& os, Graph& m);  	//
 
     void writeCentralityInDegree(const QString, bool);		//Writes the in-degree centralities to a file

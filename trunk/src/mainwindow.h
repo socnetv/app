@@ -203,6 +203,7 @@ public slots:
 
     //STATISTICS MENU
     void slotViewDistanceMatrix();
+    void slotViewNumberOfGeodesicsMatrix();
     void slotGraphDistance();
     void slotAverageGraphDistance();
     void slotDiameter();
@@ -348,7 +349,7 @@ private:
     QAction *changeBackColorAct, *changeAllNodesColorAct, *changeAllLinksColorAct, *changeAllNumbersColorAct, *changeAllLabelsColorAct;
     QAction *drawLinksWeightsAct, *displayLinksWeightNumbersAct, *displayLinksAct, *displayLinksArrowsAct, *drawLinksBezier;
     QAction *backgroundImageAct, *viewToolBar, *viewStatusBar, *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
-    QAction *netDensity, *symmetryAct,   *graphDistanceAct, *averGraphDistanceAct, *distanceMatrixAct, *diameterAct;
+    QAction *netDensity, *symmetryAct,   *graphDistanceAct, *averGraphDistanceAct, *distanceMatrixAct,*geodesicsMatrixAct, *diameterAct;
     QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct, *invertAdjMatrixAct;
     QAction *cOutDegreeAct, *cInDegreeAct, *cClosenessAct, *cBetweenessAct, *cInformationAct, *cPageRankAct, *cGraphAct, *cStressAct, *cPowerAct, *cEccentAct;
     QAction *randLayoutAct, *randCircleLayoutAct, *circleOutDegreeLayoutAct, *circleInDegreeLayoutAct, *circleClosenessLayoutAct;

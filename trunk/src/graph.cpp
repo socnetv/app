@@ -949,14 +949,13 @@ float Graph::averageGraphDistance(){
 /**
 *  Writes the matrix of distances to a file
 */
-void Graph::writeDistanceMatrix (const char* fn, const char* fn1, const char* netName) {
+void Graph::writeDistanceMatrix (const char* fn, const char* netName) {
     qDebug ("Graph::writeDistanceMatrix()");
     createDistanceMatrix(false);
     qDebug ("Graph::writeDistanceMatrix() writing to file");
     ofstream file (fn);
-    ofstream file1 (fn1);
-    int dist=-1, sigma=-1;
-
+    int dist=-1;
+    int line_length=0;
     char one_space[]     = " ";	Q_UNUSED (one_space);
     char two_spaces[]    = "  ";
     char three_spaces[]  = "   ";	Q_UNUSED (three_spaces);
@@ -970,8 +969,121 @@ void Graph::writeDistanceMatrix (const char* fn, const char* fn1, const char* ne
 
     file << "-Social Network Visualizer- \n";
     if (!netName) netName="Unnamed network";
-    file << "Distance matrix of "<< netName<<": \n\n";
+    file << "Distance matrix of "<< netName<<": \n";
+    file << "The first row and the first column denote each node number "<<": \n\n";
     //write out matrix of geodesic distances
+    QList<Vertex*>::iterator it, it1;
+    int i=0, j=0;
+
+    file << ten_spaces << two_spaces;
+    // print a line of node numbers
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        file << ++i ;
+        if (i>9999)
+            file << six_spaces;
+        else if (i>999)
+            file << seven_spaces;
+        else if (i==99)
+            file << eight_spaces;
+        else if (i>99)
+            file << seven_spaces;
+        else if(i==9)
+            file << nine_spaces;
+        else if(i>9)
+            file << eight_spaces;
+        else
+            file << ten_spaces ;
+
+    }
+    file<<endl;
+    file << ten_spaces << two_spaces;
+    i=0;
+    if ( m_graph.size()  < 9 )
+        line_length = m_graph.size() * 10;
+    else {
+        line_length = (m_graph.size() % 10) * 10 + ( m_graph.size() - 10 ) * 7;
+    }
+
+    // add a line of dashes below each node number
+    for (i=0; i!= line_length ; i++){
+        file << "-" ;
+    }
+
+    file<<endl;
+
+    i=0;
+    // print rows of distances.
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        // print node number first
+        file << ++i ;
+        if (i>9999)
+            file << two_spaces;
+        if (i>999)
+            file << four_spaces;
+        else if (i>99)
+            file << six_spaces ;
+        else if(i>9)
+            file << seven_spaces;
+        else
+            file << ten_spaces;
+
+        j=0;
+
+        for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
+            ++j;
+            if ( (dist= DM.item( index[(*it)->name()],  index[(*it1)->name()] ) )!=-1 ) {
+                file << dist;
+                if (dist>9999)
+                    file << six_spaces;
+                else if (dist>999)
+                    file << seven_spaces;
+                else if (dist==99)
+                    file << eight_spaces;
+                else if (dist>99)
+                    file << seven_spaces;
+                else if(dist==9)
+                    file << nine_spaces;
+                else if(dist>9)
+                    file << eight_spaces;
+                else
+                    file << ten_spaces ;
+            }
+            else
+                file << "0"<< ten_spaces;
+        }
+        file << endl;
+    }
+    file.close();
+}
+
+
+/**
+*  Saves the number of geodesic distances matrix to a file
+*/
+void Graph::writeNumberOfGeodesicsMatrix(const char* fn, const char* netName) {
+    qDebug ("Graph::writeDistanceMatrix()");
+    if (!distanceMatrixCreated )
+        createDistanceMatrix(false);
+    qDebug ("Graph::writeDistanceMatrix() writing to file");
+    ofstream file (fn);
+    int sigma=-1;
+
+    char one_space[]     = " "; Q_UNUSED (one_space);
+    char two_spaces[]    = "  ";
+    char three_spaces[]  = "   ";	Q_UNUSED (three_spaces);
+    char four_spaces[]   = "    ";
+    char five_spaces[]   = "     ";	Q_UNUSED (five_spaces);
+    char six_spaces[]    = "      ";
+    char seven_spaces[]  = "       ";
+    char eight_spaces[]  = "        ";
+    char nine_spaces[]   = "         ";
+    char ten_spaces[]    = "          ";
+
+    file << "-Social Network Visualizer- \n";
+    if (!netName) netName="Unnamed network";
+    file << "Number of geodesics of "<< netName<<": \n";
+    file << "The first row and the first column denote each node"<<": \n\n";
+    //write out a matrix of number of Geodesics
     QList<Vertex*>::iterator it, it1;
     int i=0, j=0;
 
@@ -1015,14 +1127,13 @@ void Graph::writeDistanceMatrix (const char* fn, const char* fn1, const char* ne
 
         for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
             ++j;
-
-            if ( (dist= DM.item( index[(*it)->name()],  index[(*it1)->name()] ) )!=-1 ) {
-                file << dist;
-                if (dist>999)
+            if ( (sigma= TM.item( index[(*it)->name()],  index[(*it1)->name()] ) )!=-1 ) {
+                file << sigma;
+                if (sigma>999)
                     file <<  seven_spaces;
-                else if (dist>99)
+                else if (sigma>99)
                     file <<  eight_spaces;
-                else if(dist>9)
+                else if(sigma>9)
                     file << nine_spaces;
                 else
                     file << ten_spaces;
@@ -1033,21 +1144,8 @@ void Graph::writeDistanceMatrix (const char* fn, const char* fn1, const char* ne
         file << endl;
     }
     file.close();
-    //write out matrix of sigmas
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
-            if ( (sigma= TM.item( index[(*it)->name()],  index[(*it1)->name()] ) )!=-1 ) {
-                file1 << sigma<<" ";
-            }
-            else
-                file1 << "0 ";
-        }
-        file1 << endl;
-    }
-    file1.close();
 
 }
-
 
 
 
@@ -1789,7 +1887,7 @@ void Graph::writeCentralityPageRank(const QString fileName){
     QTextStream outText ( &file );
 
     emit statusMessage ( (tr("Calculating PageRank centralities. Please wait...")) );
-    int status = centralityPageRank();
+    this->centralityPageRank();
 
     emit statusMessage ( QString(tr("Writing PageRank centralities to file: %1")).arg(fileName) );
 

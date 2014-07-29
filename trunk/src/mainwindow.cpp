@@ -822,11 +822,17 @@ void MainWindow::initActions(){
     graphDistanceAct->setWhatsThis(tr("Graph Distance\n\n The graph distance (or geodesic distance) of two nodes is the length (number of edges) of the shortest path between them."));
     connect(graphDistanceAct, SIGNAL(triggered()), this, SLOT(slotGraphDistance()));
 
-    distanceMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Distance &Matrix"),this);
-    distanceMatrixAct ->setShortcut(tr("Ctrl+M"));
-    distanceMatrixAct->setStatusTip(tr("Displays the matrix of graph distances between all nodes"));
-    distanceMatrixAct->setWhatsThis(tr("Distance Matrix\n\n A distance matrix is a NxN matrix, where the (i,j) element is the graph distance from node i to node j."));
+    distanceMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesic Distance &Matrix"),this);
+    distanceMatrixAct ->setShortcut(tr("Ctrl+G,Ctrl+M"));
+    distanceMatrixAct->setStatusTip(tr("Calculates and displays the matrix of graph geodesic distances between all nodes"));
+    distanceMatrixAct->setWhatsThis(tr("Distance Matrix\n\n A distance matrix is a NxN matrix, where the (i,j) element is the geodesic distance from node i to node j. The geodesic distance of two nodes is the length of the shortest path between them."));
     connect(distanceMatrixAct, SIGNAL(triggered()), this, SLOT( slotViewDistanceMatrix() ) );
+
+    geodesicsMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Number of Geodesic &Paths Matrix"),this);
+    geodesicsMatrixAct ->setShortcut(tr("Ctrl+G,Ctrl+P"));
+    geodesicsMatrixAct->setStatusTip(tr("Calculates and displays the number of geodesic paths between each pair of nodes "));
+    geodesicsMatrixAct->setWhatsThis(tr("Number of Geodesics\n\n Displays a NxN matrix, where the (i,j) element is the number of geodesic paths between node i and node j. A geodesic path of two nodes is the shortest path between them."));
+    connect(geodesicsMatrixAct, SIGNAL(triggered()), this, SLOT( slotViewNumberOfGeodesicsMatrix()) );
 
     diameterAct = new QAction(QIcon(":/images/diameter.png"), tr("Diameter"),this);
     diameterAct ->setShortcut(tr("Ctrl+D"));
@@ -1257,6 +1263,7 @@ void MainWindow::initMenuBar() {
     statMenu -> addAction (averGraphDistanceAct);
 
     statMenu -> addAction (distanceMatrixAct);
+    statMenu -> addAction (geodesicsMatrixAct);
     statMenu -> addAction (diameterAct);
     statMenu -> addSeparator();
     statMenu -> addAction (cliquesAct);
@@ -4770,7 +4777,7 @@ void MainWindow::slotGraphDistance(){
 
 
 /**
-*  Invokes creation of the matrix of nodes' distances, then displays it.
+*  Invokes calculation of the matrix of geodesic distances for the loaded network, then displays it.
 */
 void MainWindow::slotViewDistanceMatrix(){
     qDebug("MW: slotViewDistanceMatrix()");
@@ -4781,28 +4788,48 @@ void MainWindow::slotViewDistanceMatrix(){
     }
     statusMessage( tr("Creating distance matrix. Please wait...") );
     char fn[]= "distance-matrix.dat";
-    char fn1[]="sigmas-matrix.dat";
 
     createProgressBar();
 
-    activeGraph.writeDistanceMatrix(fn, fn1, networkName.toLocal8Bit());
+    activeGraph.writeDistanceMatrix(fn, networkName.toLocal8Bit());
 
     destroyProgressBar();
 
     //Open a text editor window for the new file created by graph class
-    QString qfn1=QString::fromLocal8Bit(fn1);
     TextEditor *ed = new TextEditor(fn);
-    TextEditor *ed1 = new TextEditor(fn1);
 
-    ed1->setWindowTitle(tr("Matrix of sigmas "));
-    ed->setWindowTitle(tr("Matrix of distances "));
-    ed1->show();
+    ed->setWindowTitle(tr("Matrix of geodesic distances "));
     ed->show();
-
-
-
 }
 
+
+
+
+/**
+*  Invokes calculation of the sigmas matrix (the number of geodesic paths between each pair of nodes in the loaded network), then displays it.
+*/
+void MainWindow::slotViewNumberOfGeodesicsMatrix(){
+    qDebug("MW: slotViewNumberOfGeodesics()");
+    if (!fileLoaded && !networkModified  )  {
+        QMessageBox::critical(this, "Error",tr("There are no nodes nor links!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        statusMessage(  QString(tr("Nothing to do!"))  );
+        return;
+    }
+    statusMessage( tr("Creating number of geodesics matrix. Please wait...") );
+    char fn[]="sigmas-matrix.dat";
+
+    createProgressBar();
+
+    activeGraph.writeNumberOfGeodesicsMatrix(fn, networkName.toLocal8Bit());
+
+    destroyProgressBar();
+
+    //Open a text editor window for the new file created by graph class
+    TextEditor *ed = new TextEditor(fn);
+
+    ed->setWindowTitle(tr("Matrix of sigmas (number of geodesic paths)"));
+    ed->show();
+}
 
 
 
