@@ -1,9 +1,9 @@
 Source: socnetv
 Section: math
 Priority: optional
-Maintainer: Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>
-Build-Depends: debhelper (>= 7), libqtcore4 (>= 4.4.0), libqt4-dev (>=4.4.0), libqtgui4 (>= 4.4.0), libqt4-webkit (>=4.4.0)
-Standards-Version: 3.8.0
+Maintainer: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
+Build-Depends: debhelper (>= 7), qt5-default, libqt5webkit5-dev
+Standards-Version: 3.9.2
 Homepage: http://socnetv.sourceforge.net
 Vcs-Svn: http://socnetv.svn.sourceforge.net/svnroot/socnetv/trunk  
 

@@ -47,23 +47,24 @@ Mac OS X users may install SocNetV using the Fink project. See instructions belo
 
 <h5><a name="Compile" id="Compile"></a>Source Code Compilation</h5>
 <p class="text">
-In any Linux distribution, to compile SocNetV from source code, you need the Qt4 development libraries installed - most Linux distros offer Qt4 via their package manager (i.e. Synaptic in Ubuntu). 
-You also need QtWebKit development files. For instance, in openSUSE 11+ and Debian-based distros, install libQtWebKit-devel and libqt4-webkit, respectively. 
+In any Linux distribution, to compile SocNetV from source code, you need the Qt5 and QtWebKit development libraries installed - most Linux distros offer Qt5 via their package manager. At the least, you will need the following packages: 
+- openSUSE: libqt5-qtbase, libqt5-qtbase-devel, libqt5-qttools, libQt5WebKit5, libQt5WebKit5-devel <br />
+- Fedora: qt5-qtbase,qt5-qtbase-devel, qt5-qttools, qt5-qtwebkit, qt5-qtwebkit-devel <br />
 
-If you have Qt4 and QtWebKit installed, download the archive with the source code from the <a href="http://socnetv.sourceforge.net/downloads.html">Downloads menu</a>, untar it, enter the new directory, and compile with the following commands:
+If you have Qt5 and QtWebKit installed, download the archive with the source code from the <a href="http://socnetv.sourceforge.net/downloads.html">Downloads menu</a>, untar it, enter the new directory, and compile with the following commands:
 </p>
 
 <p class="code">
 tar zxfv SocNetV-0.XX.tar.gz <br />
 cd socnetv  <br />
-./configure<br />
+qmake<br />
 make<br />
 sudo make install<br />
 
 </p>	
 
 <p class="text">
-In Windows, to compile SocNetV, you need to have installed Qt4 development files, and a compiler, like MinGW. If you wish you can avoid compilation, by using the Windows XP executables we offer (see below). 
+In Windows, to compile SocNetV, you need to have installed Qt5 development files, and a compiler, like MinGW. If you wish you can avoid compilation, by using the Windows XP executables we offer (see below). 
 </p>
 <p class="text">
 To avoid compiling in Linux, we also offer binary packages for Ubuntu, Debian, Fedora, Mandriva and openSUSE available from <a href="http://socnetv.sourceforge.net/downloads.html">the project's website</a>. 
@@ -74,11 +75,11 @@ Debian users may prefer the SocNetV version in the debian unstable repository.
 <h5><a name="Debian" id="Debian"></a>Debian packages</h5>
 
 <p class="text">
-For Debian &amp; Debian-derived distros, a (not always updated) version of SocNetV is in the 'unstable' repository (thanks to Serafeim Zanikolas). 
+For Debian &amp; Debian-derived distros, a (not always updated) version of SocNetV is in the 'stable' repository (thanks to Serafeim Zanikolas). 
 Add  the line:
 </p>
 <p class="code">
-deb http://ftp.debian.org/debian/ unstable main
+deb http://ftp.debian.org/debian/ stable main
 </p>
 <p class="text">
 to your sources.list; save it, then type in:

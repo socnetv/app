@@ -5,11 +5,14 @@
 ChangeLog:
 
 
-Version 1.0  -  August 2013
-Codename: "Qt5"
+Version 1.0  -  Feb 2014
+Codename: "4 years later"
 ---------------------------
 - First version in Qt5
-
+- New Feature: PageRank calculation and layout
+- New reference item: SRS Documentation by Vagelis Motesnitsalis
+- Re-introduce GraphViz import menu option
+- Init "Spring Embedder" tab checkbox to none when user creates new network.
 
 Version 0.90 -  Oct 12 2010
 Codename: "Worka Worka"

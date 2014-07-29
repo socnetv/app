@@ -246,7 +246,7 @@ public:
 
     void centralityInformation();       //Calculates the informational centrality of each vertex
 
-    void centralityPageRank();       //Calculates the PageRank centrality of each vertex
+    int centralityPageRank();       //Calculates the PageRank centrality of each vertex
 
     float numberOfTriples(int v1); 		//Returns the number of triples at vertex v1
     float numberOfCliques(int v1);		//Calculates the number of cliques (triangles) of vertex v1

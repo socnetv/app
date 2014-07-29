@@ -1,10 +1,38 @@
+lessThan(QT_VERSION, 4.8) {
+    error("SocNetV requires at least Qt 4.8!")
+}
+
+# START added for ArchLinux / openSUSE compatibility
+INSTALLPATH = /
+target.path = $$[INSTALLPATH]usr/bin
+TARGET = socnetv
+
+pixmap.path = $$[INSTALLPATH]usr/share/pixmaps
+pixmap.files = src/images/socnetv.png
+
+documentation.path = $$[INSTALLPATH]usr/share/doc/socnetv
+documentation.files = manual
+
+manpage.path = $$[INSTALLPATH]usr/share/man/man1
+manpage.files = man/socnetv.1.gz
+
+translations.path = $$[INSTALLPATH]usr/share/socnetv
+translations.files = translations
+
+doc.path = $$[INSTALLPATH]usr/share/doc/socnetv
+doc.files = license ChangeLog NEWS README TODO COPYING AUTHORS INSTALL
+
+INSTALLS += target pixmap documentation manpage translations doc
+
+# END
+
+
 TEMPLATE = app
 CONFIG  += qt thread warn_on release
 LANGUAGE = C++
 
 # support
 QT += webkitwidgets
- QT += webkit
 QT += xml 
 QT += network
 QT += widgets
@@ -60,8 +88,8 @@ SOURCES += src/backgrcircle.cpp \
 QMAKE_CXXFLAGS += -msse -mfpmath=sse -ffast-math 
 
 #LIBS    += @ac_libs@
-INCLUDEPATH += /usr/share/qt4/include /usr/local/include /usr/include /usr/include/qt4
-
+INCLUDEPATH +=  /usr/local/include /usr/include /usr/include/qt5 /usr/share/qt5/include 
+INCLUDEPATH +=  /usr/local/include /usr/include /usr/include/qt  /usr/include/qt5 /usr/share/qt5/include
 
 RESOURCES = src/src.qrc
 win32 {
