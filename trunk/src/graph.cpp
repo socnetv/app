@@ -4072,6 +4072,72 @@ void Graph::writeDataSetToFile (QString fileName) {
                   "37 8 36" << endl <<
                   "25 10 11 8";
     }
+    else if (fileName == "Knocke_Bureacracies_Information_Exchange_Network.pajek"){
+        qDebug()<< "		Knocke_Bureacracies_Information_Exchange_Network.pajek written... ";
+        outText<< "*Network KNOKI " << endl <<
+                  "*Vertices 10" << endl <<
+                   "1 \"COUN\" 0.1000    0.5000    0.5000" << endl <<
+                   "2 \"COMM\" 0.1764    0.2649    0.5000" << endl <<
+                   "3 \"EDUC\" 0.3764    0.1196    0.5000" << endl <<
+                   "4 \"INDU\" 0.6236    0.1196    0.5000" << endl <<
+                   "5 \"MAYR\" 0.8236    0.2649    0.5000" << endl <<
+                   "6 \"WRO \" 0.9000    0.5000    0.5000" << endl <<
+                   "7 \"NEWS\" 0.8236    0.7351    0.5000" << endl <<
+                   "8 \"UWAY\" 0.6236    0.8804    0.5000" << endl <<
+                   "9 \"WELF\" 0.3764    0.8804    0.5000" << endl <<
+                   "10 \"WEST\" 0.1764    0.7351    0.5000" << endl <<
+                  "*Arcs" << endl <<
+                  " 1 2  1" << endl <<
+                  " 1 5  1" << endl <<
+                  " 1 7  1" << endl <<
+                  " 1 9  1" << endl <<
+                  " 2 1  1" << endl <<
+                  " 2 3  1" << endl <<
+                  " 2 4  1" << endl <<
+                  " 2 5  1" << endl <<
+                  " 2 7  1" << endl <<
+                  " 2 8  1" << endl <<
+                  " 2 9  1" << endl <<
+                  " 3 2  1" << endl <<
+                  " 3 4  1" << endl <<
+                  " 3 5  1" << endl <<
+                  " 3 6  1" << endl <<
+                  " 3 7  1" << endl <<
+                  " 3 10  1" << endl <<
+                  " 4 1  1" << endl <<
+                  " 4 2  1" << endl <<
+                  " 4 5  1" << endl <<
+                  " 4 7  1" << endl <<
+                  " 5 1  1" << endl <<
+                  " 5 2  1" << endl <<
+                  " 5 3  1" << endl <<
+                  " 5 4  1" << endl <<
+                  " 5 7  1" << endl <<
+                  " 5 8  1" << endl <<
+                  " 5 9  1" << endl <<
+                  " 5 10  1" << endl <<
+                  " 6 3  1" << endl <<
+                  " 6 7  1" << endl <<
+                  " 6 9  1" << endl <<
+                  " 7 2  1" << endl <<
+                  " 7 4  1" << endl <<
+                  " 7 5  1" << endl <<
+                  " 8 1  1" << endl <<
+                  " 8 2  1" << endl <<
+                  " 8 4  1" << endl <<
+                  " 8 5  1" << endl <<
+                  " 8 7  1" << endl <<
+                  " 8 9  1" << endl <<
+                  " 9 2  1" << endl <<
+                  " 9 5  1" << endl <<
+                  " 9 7  1" << endl <<
+                  " 10 1  1" << endl <<
+                  " 10 2  1" << endl <<
+                  " 10 3  1" << endl <<
+                  " 10 5  1" << endl <<
+                  " 10 7  1";
+                    qDebug()<< "		Knocke_Bureacracies_Information_Exchange_Network.pajek written... ";
+    }
 
     f.close();
 }
@@ -4165,6 +4231,7 @@ void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
  *  Creates an adjacency matrix AM
  *  where AM(i,j)=1 if i is connected to j
  *  and AM(i,j)=0 if i not connected to j
+ *  Used in Graph::centralityInformation()
  */
 void Graph::createAdjacencyMatrix(bool dropIsolates){
     qDebug() << "Graph::createAdjacencyMatrix()";
