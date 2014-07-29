@@ -4146,12 +4146,10 @@ void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
             if ( (weight =  this->hasEdge ( (*it)->name(), (*it1)->name() )  )!=0 ) {
                 sum++;
                 if (weight >= 1)
-                    file << static_cast<int> (weight);
-                else
-                    file << "1";
+                    file << static_cast<int> (weight) << " ";
             }
             else
-                file << "0";
+                file << "0 ";
         }
         file << endl;
     }
