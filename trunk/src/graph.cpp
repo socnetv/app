@@ -4146,7 +4146,7 @@ void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
             if ( (weight =  this->hasEdge ( (*it)->name(), (*it1)->name() )  )!=0 ) {
                 sum++;
                 if (weight >= 1)
-                    file << static_cast<int> (weight) << " ";
+                    file << static_cast<int> (weight) << " "; // TODO make the matric look symmetrical
             }
             else
                 file << "0 ";
