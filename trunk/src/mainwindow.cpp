@@ -634,7 +634,7 @@ void MainWindow::initActions(){
     regularColorationAct = new QAction ( tr("Regular"), this);
     regularColorationAct -> setStatusTip( tr("Nodes are assigned the same color if they have neighborhoods of the same set of colors") );
     regularColorationAct -> setWhatsThis( tr("Click this to colorize nodes; Nodes are assigned the same color if they have neighborhoods of the same set of colors"));
-    connect(regularColorationAct, SIGNAL(activated() ), this, SLOT(slotColorationRegular()) );
+    connect(regularColorationAct, SIGNAL(activated() ), this, SLOT(slotColorationRegular()) );//TODO
 
     randLayoutAct = new QAction( tr("Random"),this);
     randLayoutAct -> setShortcut(tr("Ctrl+0"));
@@ -823,13 +823,13 @@ void MainWindow::initActions(){
     connect(graphDistanceAct, SIGNAL(triggered()), this, SLOT(slotGraphDistance()));
 
     distanceMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesic Distance &Matrix"),this);
-    distanceMatrixAct ->setShortcut(tr("Ctrl+G,Ctrl+M"));
+    distanceMatrixAct ->setShortcut(tr("Shift+G"));
     distanceMatrixAct->setStatusTip(tr("Calculates and displays the matrix of graph geodesic distances between all nodes"));
     distanceMatrixAct->setWhatsThis(tr("Distance Matrix\n\n A distance matrix is a NxN matrix, where the (i,j) element is the geodesic distance from node i to node j. The geodesic distance of two nodes is the length of the shortest path between them."));
     connect(distanceMatrixAct, SIGNAL(triggered()), this, SLOT( slotViewDistanceMatrix() ) );
 
     geodesicsMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Number of Geodesic &Paths Matrix"),this);
-    geodesicsMatrixAct ->setShortcut(tr("Ctrl+G,Ctrl+P"));
+    geodesicsMatrixAct ->setShortcut(tr("Ctrl+Shift+G"));
     geodesicsMatrixAct->setStatusTip(tr("Calculates and displays the number of geodesic paths between each pair of nodes "));
     geodesicsMatrixAct->setWhatsThis(tr("Number of Geodesics\n\n Displays a NxN matrix, where the (i,j) element is the number of geodesic paths between node i and node j. A geodesic path of two nodes is the shortest path between them."));
     connect(geodesicsMatrixAct, SIGNAL(triggered()), this, SLOT( slotViewNumberOfGeodesicsMatrix()) );
