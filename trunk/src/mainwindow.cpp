@@ -1602,15 +1602,15 @@ void MainWindow::initView() {
 
     graphicsWidget->setRenderHint(QPainter::Antialiasing, true);
     graphicsWidget->setRenderHint(QPainter::TextAntialiasing, true);
-    graphicsWidget->setRenderHint(QPainter::SmoothPixmapTransform, false);
+    graphicsWidget->setRenderHint(QPainter::SmoothPixmapTransform, true);
     //Optimization flags:
-    // By enabling the flag below, QGraphicsView will completely disable its implicit clipping
-    graphicsWidget->setOptimizationFlag(QGraphicsView::DontClipPainter, false);
     //if items do restore their state, it's not needed for graphicsWidget to do the same...
     graphicsWidget->setOptimizationFlag(QGraphicsView::DontSavePainterState, false);
     //Disables QGraphicsView's antialiasing auto-adjustment of exposed areas.
     graphicsWidget->setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, false);
-    //"QGraphicsScene applies an indexing algorithm to the scene, to speed up item discovery functions like items() and itemAt(). Indexing is most efficient for static scenes (i.e., where items don't move around). For dynamic scenes, or scenes with many animated items, the index bookkeeping can outweight the fast lookup speeds." So...
+    //"QGraphicsScene applies an indexing algorithm to the scene, to speed up item discovery functions like items() and itemAt().
+    // Indexing is most efficient for static scenes (i.e., where items don't move around).
+    // For dynamic scenes, or scenes with many animated items, the index bookkeeping can outweight the fast lookup speeds." So...
     scene->setItemIndexMethod(QGraphicsScene::BspTreeIndex); //NoIndex (for anime) | BspTreeIndex
 
     graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
@@ -1624,7 +1624,7 @@ void MainWindow::initView() {
     this->resize(900,600);
 
     //set minimum size of canvas
-    graphicsWidget->adjustSize();
+    graphicsWidget->setMinimumSize( (qreal)  ( this->width()-50 ) , (qreal) ( this->height()-statusBar()->sizeHint().height() -toolBar->sizeHint().height() -menuBar()->sizeHint().height() -20 ) );
     //graphicsWidget->setMinimumSize( (qreal)  ( this->width()-toolBox->sizeHint().width() -50 ) , (qreal) ( this->height()-statusBar()->sizeHint().height() -toolBar->sizeHint().height() -menuBar()->sizeHint().height() -20 ) );
     qDebug ("MW initView(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
 
