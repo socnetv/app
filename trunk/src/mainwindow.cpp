@@ -1595,7 +1595,7 @@ void MainWindow::initView() {
 
     //create a view widget for this scene
     graphicsWidget=new GraphicsWidget(scene, this);
-    graphicsWidget->setViewportUpdateMode( QGraphicsView::MinimalViewportUpdate );
+    graphicsWidget->setViewportUpdateMode( QGraphicsView::BoundingRectViewportUpdate );
     //  FullViewportUpdate  // MinimalViewportUpdate //SmartViewportUpdate  //BoundingRectViewportUpdate
     //QGraphicsView can cache pre-rendered content in a QPixmap, which is then drawn onto the viewport.
     graphicsWidget->setCacheMode(QGraphicsView::CacheNone);  //CacheBackground | CacheNone
@@ -1613,7 +1613,7 @@ void MainWindow::initView() {
     // For dynamic scenes, or scenes with many animated items, the index bookkeeping can outweight the fast lookup speeds." So...
     scene->setItemIndexMethod(QGraphicsScene::BspTreeIndex); //NoIndex (for anime) | BspTreeIndex
 
-    graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+    graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
     graphicsWidget->setResizeAnchor(QGraphicsView::AnchorViewCenter);
 
     // sets dragging the mouse over the scene while the left mouse button is pressed.
@@ -1624,8 +1624,8 @@ void MainWindow::initView() {
     this->resize(900,600);
 
     //set minimum size of canvas
-    graphicsWidget->setMinimumSize( (qreal)  ( this->width()-50 ) , (qreal) ( this->height()-statusBar()->sizeHint().height() -toolBar->sizeHint().height() -menuBar()->sizeHint().height() -20 ) );
-    //graphicsWidget->setMinimumSize( (qreal)  ( this->width()-toolBox->sizeHint().width() -50 ) , (qreal) ( this->height()-statusBar()->sizeHint().height() -toolBar->sizeHint().height() -menuBar()->sizeHint().height() -20 ) );
+
+    graphicsWidget->setMinimumSize( (qreal)  ( this->width()-toolBox->sizeHint().width() -40 ) , (qreal) ( this->height()-statusBar()->sizeHint().height() -toolBar->sizeHint().height() -menuBar()->sizeHint().height() -20 ) );
     qDebug ("MW initView(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
 
 }
@@ -1640,7 +1640,7 @@ void MainWindow::resizeEvent( QResizeEvent * ){
     qDebug ("MW resizeEvent():INITIAL window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
 
     //the area of the scene displayed by the CanvasView
-    scene->setSceneRect(0, 0, (qreal) ( graphicsWidget->width() ), (qreal) (graphicsWidget->height() ) );
+    scene->setSceneRect(0, 0, (qreal) ( graphicsWidget->width() -10 ), (qreal) (graphicsWidget->height() -10 ) );
     qDebug ("MW resizeEvent(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
 }
 
