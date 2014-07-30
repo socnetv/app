@@ -1061,14 +1061,15 @@ void Graph::writeNumberOfGeodesicsMatrix(const char* fn, const char* netName) {
         if (i>9999)
             file << two_spaces;
         if (i>999)
-            file << four_spaces;
+            file << three_spaces;
         else if (i>99)
-            file << five_spaces ;
+            file << four_spaces ;
         else if(i>9)
-            file << six_spaces;
+            file << five_spaces;
         else
             file << seven_spaces;
 
+        file << "|  ";
 
         j=0;
 
