@@ -92,7 +92,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
     colorList = QColor::colorNames();  //and fill a stringList with all X-supported color names
 
     //set MW minimum size, before creating scene and canvas, so that we may have a clue about their sizes..
-    this->setMinimumSize(800,600);
+    this->setMinimumSize(900,600);
 
     initView(); //create the canvas
 
@@ -1624,7 +1624,8 @@ void MainWindow::initView() {
     this->resize(900,600);
 
     //set minimum size of canvas
-    graphicsWidget->setMinimumSize( (qreal)  ( this->width()-toolBox->sizeHint().width() -30) , (qreal) ( this->height()-statusBar()->sizeHint().height() -toolBar->sizeHint().height() -menuBar()->sizeHint().height() -20 ) );
+    graphicsWidget->adjustSize();
+    //graphicsWidget->setMinimumSize( (qreal)  ( this->width()-toolBox->sizeHint().width() -50 ) , (qreal) ( this->height()-statusBar()->sizeHint().height() -toolBar->sizeHint().height() -menuBar()->sizeHint().height() -20 ) );
     qDebug ("MW initView(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
 
 }
