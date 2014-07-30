@@ -955,16 +955,16 @@ void Graph::writeDistanceMatrix (const char* fn, const char* netName) {
     qDebug ("Graph::writeDistanceMatrix() writing to file");
     ofstream file (fn);
     int dist=-1;
-    int line_length=0;
+
     char one_space[]     = " ";
     char two_spaces[]    = "  ";
-    char three_spaces[]  = "   ";	//Q_UNUSED (three_spaces);
+    char three_spaces[]  = "   ";
     char four_spaces[]   = "    ";
     char five_spaces[]   = "     ";
-    char six_spaces[]    = "      ";
+    char six_spaces[]    = "      "; Q_UNUSED (six_spaces);
     char seven_spaces[]  = "       ";
-    char eight_spaces[]  = "        ";
-    char nine_spaces[]   = "         ";
+    char eight_spaces[]  = "        "; Q_UNUSED (eight_spaces);
+    char nine_spaces[]   = "         "; Q_UNUSED (nine_spaces);
     char ten_spaces[]    = "          ";
 
     file << "-Social Network Visualizer- \n";
@@ -1032,15 +1032,15 @@ void Graph::writeNumberOfGeodesicsMatrix(const char* fn, const char* netName) {
     ofstream file (fn);
     int sigma=-1;
 
-    char one_space[]     = " "; Q_UNUSED (one_space);
+    char one_space[]     = " ";
     char two_spaces[]    = "  ";
-    char three_spaces[]  = "   ";	Q_UNUSED (three_spaces);
+    char three_spaces[]  = "   ";
     char four_spaces[]   = "    ";
-    char five_spaces[]   = "     ";	Q_UNUSED (five_spaces);
-    char six_spaces[]    = "      ";
+    char five_spaces[]   = "     ";
+    char six_spaces[]    = "      "; Q_UNUSED (six_spaces);
     char seven_spaces[]  = "       ";
-    char eight_spaces[]  = "        ";
-    char nine_spaces[]   = "         ";
+    char eight_spaces[]  = "        "; Q_UNUSED (eight_spaces);
+    char nine_spaces[]   = "         "; Q_UNUSED (nine_spaces);
     char ten_spaces[]    = "          ";
 
     file << "-Social Network Visualizer- \n";
