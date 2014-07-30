@@ -1656,12 +1656,12 @@ void MainWindow::initNet(){
     // Init basic variables
 
     initNodeSize=4;
-    initNodeColor="gold";
+    initNodeColor="red";
     initLinkColor="grey"; //"black";
     initLabelColor="darkblue";
-    initLabelSize=8;
+    initLabelSize=7;
+    initNumberSize=7;
     initNumberColor="black";
-    initNumberSize=8;
     initNodeShape="circle";
     initBackgroundColor="white"; //"gainsboro";
 
