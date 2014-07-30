@@ -1657,7 +1657,7 @@ void MainWindow::initNet(){
 
     initNodeSize=4;
     initNodeColor="red";
-    initLinkColor="grey"; //"black";
+    initLinkColor="black";
     initLabelColor="darkblue";
     initLabelSize=7;
     initNumberSize=7;

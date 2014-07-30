@@ -60,7 +60,7 @@ Edge::Edge(  GraphicsWidget *gw, Node *from, Node *to, float weight, int nodeSiz
 	qDebug("Edge() m_startOffset %i",(int) m_startOffset);
 	qDebug("Edge() m_endOffset %i",(int) m_endOffset);
 
-	m_arrowSize=5;		//controls the width of the edge arrow
+    m_arrowSize=4;		//controls the width of the edge arrow
 
 	eFrom = source->nodeNumber() ;
 	eTo = target->nodeNumber() ;
