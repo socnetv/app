@@ -781,10 +781,12 @@ bool Graph::isWeighted(){
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
        for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
             if ( ( this->hasEdge ( (*it1)->name(), (*it)->name() ) )  > 1  )   {
+                qDebug("Graph: isWeighted: TRUE");
                 return true;
             }
         }
     }
+    qDebug("Graph: isWeighted: FALSE");
     return false;
 }
 
@@ -1931,6 +1933,7 @@ void Graph::centralityInDegree(bool weights){
     discreteIDCs.clear();
     varianceDegree=0;
     meanDegree=0;
+    symmetricAdjacencyMatrix = true;
     QList<Vertex*>::iterator it, it1;
     hash_si::iterator it2;
     int vert=vertices();
@@ -1944,6 +1947,9 @@ void Graph::centralityInDegree(bool weights){
                 else
                     IDC++;
             }
+            //check here if the matrix is symmetric - we need this below
+            if ( ( this->hasEdge ( (*it1)->name(), (*it)->name() ) ) != ( this->hasEdge ( (*it)->name(), (*it1)->name() ) )   )
+                symmetricAdjacencyMatrix = false;
         }
         (*it) -> setIDC ( IDC ) ;				//Set InDegree
         qDebug() << "Graph: vertex = " <<  (*it)->name() << " has IDC = " << IDC ;
@@ -1971,7 +1977,8 @@ void Graph::centralityInDegree(bool weights){
 
     meanDegree = sumIDC / (float) vert;
     qDebug("Graph: sumIDC = %f, meanDegree = %f", sumIDC, meanDegree);
-    // Calculate Variance and the Degree Centralisation of the whole graph.
+
+    // Calculate std In-Degree, Variance and the Degree Centralisation of the whole graph.
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         IDC= (*it)->IDC();
         if (!weights) {
@@ -2021,6 +2028,7 @@ void Graph::writeCentralityInDegree (const QString fileName, const bool consider
     QTextStream outText ( &file );
 
     centralityInDegree(considerWeights);
+
     float maximumIndexValue=vertices()-1.0;
 
     outText << tr("IN-DEGREE CENTRALITIES (IDC) OF EACH NODE\n\n");
@@ -2095,11 +2103,13 @@ void Graph::centralityOutDegree(bool weights){
                     ODC+=weight;
                 else
                     ODC++;
+                //check here if the matrix is symmetric - we need this below
+                if ( ( this->hasEdge ( (*it1)->name(), (*it)->name() ) ) != ( this->hasEdge ( (*it)->name(), (*it1)->name() ) )   )
+                    symmetricAdjacencyMatrix = false;
             }
         }
         (*it) -> setODC ( ODC ) ;				//Set OutDegree
-        (*it) -> setSODC( ODC / (vert-1.0) );		//Set Standard OutDegree
-        qDebug() << "Graph: vertex " <<  (*it)->name() << " has ODC = " << ODC << " and SODC "<< (*it)->SODC ();
+        qDebug() << "Graph: vertex " <<  (*it)->name() << " has ODC = " << ODC ;
         sumODC += ODC;
         it2 = discreteODCs.find(QString::number(ODC));
         if (it2 == discreteODCs.end() )	{
@@ -2123,10 +2133,18 @@ void Graph::centralityOutDegree(bool weights){
 
     meanDegree = sumODC / (float) vert;
     qDebug("Graph: sumODC = %f, meanDegree = %f", sumODC, meanDegree);
-    // Calculate Variance and the Degree Centralisation of the whole graph.
+
+    // Calculate std Out-Degree, Variance and the Degree Centralisation of the whole graph.
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         ODC= (*it)->ODC();
-        qDebug() << "Graph: ODC = " << ODC << " meanDegree = " << meanDegree << " vertices " << vert;
+        if (!weights) {
+               (*it) -> setSODC( ODC / (vert-1.0) );		//Set Standard InDegree
+        }
+        else {
+             (*it) -> setSODC( ODC / (sumODC) );
+        }
+        qDebug() << "Graph: vertex " <<  (*it)->name() << " SODC " << (*it)->SODC ();
+
         varianceDegree += (ODC-meanDegree) * (ODC-meanDegree) ;
         nom+= maxODC-ODC;
     }
@@ -2138,8 +2156,16 @@ void Graph::centralityOutDegree(bool weights){
     groupODC=nom/denom;
     qDebug("Graph: varianceDegree = %f, groupODC = %f", varianceDegree, groupODC);
 
-    minODC/=(float)(vert-1); // standardize
-    maxODC/=(float)(vert-1);
+    if (!weights) {
+        minODC/=(float)(vert-1); // standardize
+        maxODC/=(float)(vert-1);
+    }
+    else {
+        minODC/=(float)(sumODC); // standardize
+        maxODC/=(float)(sumODC);
+    }
+
+
     calculatedODC=true;
     graphModified=false;
 }

@@ -4991,24 +4991,25 @@ void MainWindow::slotCentralityOutDegree(){
         return;
     }
     bool considerWeights=false;
+    if ( activeGraph.isWeighted()) {
+        switch( QMessageBox::information( this, "Centrality Out-Degree",
+                                          tr("Graph edges have weights. \nTake weights into account (Default: No)?"),
+                                          tr("Yes"), tr("No"),
+                                          0, 1 ) )
+        {
+        case 0:
+            considerWeights=true;
+            break;
+        case 1:
+            considerWeights=false;
+            break;
+        default: // just for sanity
+            considerWeights=false;
+            return;
+            break;
+        }
 
-    switch( QMessageBox::information( this, "Centrality Out-Degree",
-                                      tr("Take weights into account (Default: No)?"),
-                                      tr("Yes"), tr("No"),
-                                      0, 1 ) )
-    {
-    case 0:
-        considerWeights=true;
-        break;
-    case 1:
-        considerWeights=false;
-        break;
-    default: // just for sanity
-        considerWeights=true;
-        return;
-        break;
     }
-
     QString fn = "centrality-out-degree.dat";
 
     createProgressBar();
@@ -5040,7 +5041,7 @@ void MainWindow::slotCentralityInDegree(){
     bool considerWeights=false;
     if ( activeGraph.isWeighted()) {
         switch( QMessageBox::information( this, "Centrality In-Degree",
-                                          tr("Graph edges have weights. Take weights into account (Default: No)?"),
+                                          tr("Graph edges have weights. \nTake weights into account (Default: No)?"),
                                           tr("Yes"), tr("No"),
                                           0, 1 ) )
         {
