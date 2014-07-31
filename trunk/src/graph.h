@@ -188,6 +188,8 @@ public:
     void removeEdge (int v1, int v2);		//removes the edge between v1 and v2
 
 
+    bool isWeighted();                          // Returns true if the graph is weighted.
+
     void setEdgeWeight (int v1, int v2, float w); 	//Sets the edge weight between v1 and v2
     void setInitEdgeColor(QString);
 

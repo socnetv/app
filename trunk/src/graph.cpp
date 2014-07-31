@@ -772,6 +772,24 @@ float Graph::density() {
 
 
 /**
+ *  Checks if the graph is weighted, i.e. if any e in |E| has value > 1
+ *  O(n^2)
+ */
+bool Graph::isWeighted(){
+    qDebug("Graph: isWeighted()");
+    QList<Vertex*>::iterator it, it1;
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+       for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
+            if ( ( this->hasEdge ( (*it1)->name(), (*it)->name() ) )  > 1  )   {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
+/**
     Returns the sum of vertices having outEdges
 */
 int Graph::verticesWithOutEdges(){
@@ -1951,7 +1969,7 @@ void Graph::centralityInDegree(bool weights){
         maxNodeIDC=-1;
 
 
-    meanDegree = sumIDC / (float) vert;  /** BUG? WEIGHTS???? */
+    meanDegree = sumIDC / (float) vert;
     qDebug("Graph: sumIDC = %f, meanDegree = %f", sumIDC, meanDegree);
     // Calculate Variance and the Degree Centralisation of the whole graph.
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
@@ -1992,8 +2010,7 @@ void Graph::centralityInDegree(bool weights){
 
 
 
-void Graph::writeCentralityInDegree
-(const QString fileName, const bool considerWeights)
+void Graph::writeCentralityInDegree (const QString fileName, const bool considerWeights)
 {
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
@@ -2104,7 +2121,7 @@ void Graph::centralityOutDegree(bool weights){
     if (minODC == maxODC)
         maxNodeODC=-1;
 
-    meanDegree = sumODC / (float) vert;  /** BUG? WEIGHTS???? */
+    meanDegree = sumODC / (float) vert;
     qDebug("Graph: sumODC = %f, meanDegree = %f", sumODC, meanDegree);
     // Calculate Variance and the Degree Centralisation of the whole graph.
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
