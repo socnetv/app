@@ -3847,7 +3847,7 @@ void MainWindow::slotChangeLinkWeight(){
             case 0:
                 qDebug("MW: slotChangeLinkWeight()  real edge %i -> %i", sourceNode, targetNode);
                 newWeight=QInputDialog::getDouble(this,
-                                                  "Change link weight...",tr("New link weight: "), 1.0, -20.0, 20.00 ,1, &ok) ;
+                                                  "Change link weight...",tr("New link weight: "), 1.0, -100.0, 100.00 ,1, &ok) ;
                 if (ok) {
                     clickedLink->setWeight(newWeight);
                     clickedLink->update();
@@ -3899,7 +3899,7 @@ void MainWindow::slotChangeLinkWeight(){
         else {
             qDebug("MW: slotChangeLinkWeight()  real edge %i -> %i", sourceNode, targetNode);
             newWeight=QInputDialog::getDouble(this,
-                                              "Change link weight...",tr("New link weight: "), 1.0, -20.0, 20.00 ,1, &ok) ;
+                                              "Change link weight...",tr("New link weight: "), 1.0, -100.0, 100.00 ,1, &ok) ;
             if (ok) {
                 clickedLink->setWeight(newWeight);
                 clickedLink->update();

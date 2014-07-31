@@ -2141,21 +2141,23 @@ void Graph::centralityOutDegree(bool weights){
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         ODC= (*it)->ODC();
         if (!weights) {
-               (*it) -> setSODC( ODC / (vert-1.0) );		//Set Standard InDegree
+            (*it) -> setSODC( ODC / (vert-1.0) );		//Set Standard InDegree
+            nom+= (maxODC-ODC);
         }
         else {
-             (*it) -> setSODC( ODC / (sumODC) );
+            (*it) -> setSODC( ODC / (sumODC) );
+            nom+= (maxODC-ODC)/(sumODC / (vert - 1) );
         }
         qDebug() << "Graph: vertex " <<  (*it)->name() << " SODC " << (*it)->SODC ();
 
         varianceDegree += (ODC-meanDegree) * (ODC-meanDegree) ;
-        nom+= maxODC-ODC;
     }
     if (symmetricAdjacencyMatrix)
         denom=(vert-1.0)*(vert-2.0);
     else
         denom=(vert-1.0)*(vert-1.0);
     varianceDegree=varianceDegree/(float) vert;
+
     groupODC=nom/denom;
     qDebug("Graph: varianceDegree = %f, groupODC = %f", varianceDegree, groupODC);
 
@@ -2258,7 +2260,7 @@ void Graph::writeCentralityCloseness(
     emit statusMessage ( QString(tr("Writing closeness centralities to file:")).arg(fileName) );
 
     outText << tr("CLOSENESS CENTRALITY (CC) OF EACH NODE")<<"\n";
-    outText << tr("CC is the invert sum of the distances of node u from all other nodes.")<<"\n";
+    outText << tr("CC is the invert sum of the geodesic distances of node u from all other nodes.")<<"\n";
     outText << tr("CC' is the standardized CC")<<"\n";
 
     outText << tr("CC  range:  0 < C < ")<<QString::number(maxIndexCC)<<"\n";
