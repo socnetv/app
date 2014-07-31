@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer 
- version: 1.0
+ version: 1.1
  Written in Qt
 
                         edge.cpp  -  description
@@ -60,7 +60,7 @@ Edge::Edge(  GraphicsWidget *gw, Node *from, Node *to, float weight, int nodeSiz
 	qDebug("Edge() m_startOffset %i",(int) m_startOffset);
 	qDebug("Edge() m_endOffset %i",(int) m_endOffset);
 
-	m_arrowSize=5;		//controls the width of the edge arrow
+    m_arrowSize=4;		//controls the width of the edge arrow
 
 	eFrom = source->nodeNumber() ;
 	eTo = target->nodeNumber() ;
@@ -349,21 +349,9 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 	Controls the width of the edge; is a function of edge weight
 */
 float Edge::width(){
-	if ( fabs(m_weight) > 0 && fabs(m_weight) <=5) {
-		qDebug()<< "Edge::width() will return "<< fabs(m_weight);
-		return  fabs(m_weight);
-	}
-	else if (fabs(m_weight)  > 5 && fabs(m_weight) <=10) {
-		 return 6;
-	}
-	else if (fabs(m_weight) >10 && fabs(m_weight) <=20) {
-		return 7;
-	}
-	else if (fabs(m_weight) >20 && fabs(m_weight)<=30) {
-		return 8;
-	}
-	else if ( fabs(m_weight) > 30 ) return 9;
-	
+    qDebug()<< "Edge::width() will return "<< fabs(m_weight);
+    if ( fabs(m_weight) > 1  )
+        return  1  + fabs(m_weight)/10;
 	return 1;	//	Default, if  m_weight in (-1, 1) space  
 }
 

@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer
- version: 1.0
+ version: 1.1
  Written in Qt
 
 -                           mainwindow.cpp  -  description
@@ -92,7 +92,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
     colorList = QColor::colorNames();  //and fill a stringList with all X-supported color names
 
     //set MW minimum size, before creating scene and canvas, so that we may have a clue about their sizes..
-    this->setMinimumSize(800,600);
+    this->setMinimumSize(900,600);
 
     initView(); //create the canvas
 
@@ -634,7 +634,7 @@ void MainWindow::initActions(){
     regularColorationAct = new QAction ( tr("Regular"), this);
     regularColorationAct -> setStatusTip( tr("Nodes are assigned the same color if they have neighborhoods of the same set of colors") );
     regularColorationAct -> setWhatsThis( tr("Click this to colorize nodes; Nodes are assigned the same color if they have neighborhoods of the same set of colors"));
-    connect(regularColorationAct, SIGNAL(activated() ), this, SLOT(slotColorationRegular()) );
+    connect(regularColorationAct, SIGNAL(activated() ), this, SLOT(slotColorationRegular()) );//TODO
 
     randLayoutAct = new QAction( tr("Random"),this);
     randLayoutAct -> setShortcut(tr("Ctrl+0"));
@@ -822,11 +822,17 @@ void MainWindow::initActions(){
     graphDistanceAct->setWhatsThis(tr("Graph Distance\n\n The graph distance (or geodesic distance) of two nodes is the length (number of edges) of the shortest path between them."));
     connect(graphDistanceAct, SIGNAL(triggered()), this, SLOT(slotGraphDistance()));
 
-    distanceMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Distance &Matrix"),this);
-    distanceMatrixAct ->setShortcut(tr("Ctrl+M"));
-    distanceMatrixAct->setStatusTip(tr("Displays the matrix of graph distances between all nodes"));
-    distanceMatrixAct->setWhatsThis(tr("Distance Matrix\n\n A distance matrix is a NxN matrix, where the (i,j) element is the graph distance from node i to node j."));
+    distanceMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesic Distance &Matrix"),this);
+    distanceMatrixAct ->setShortcut(tr("Shift+G"));
+    distanceMatrixAct->setStatusTip(tr("Calculates and displays the matrix of graph geodesic distances between all nodes"));
+    distanceMatrixAct->setWhatsThis(tr("Distance Matrix\n\n A distance matrix is a NxN matrix, where the (i,j) element is the geodesic distance from node i to node j. The geodesic distance of two nodes is the length of the shortest path between them."));
     connect(distanceMatrixAct, SIGNAL(triggered()), this, SLOT( slotViewDistanceMatrix() ) );
+
+    geodesicsMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Number of Geodesic &Paths Matrix"),this);
+    geodesicsMatrixAct ->setShortcut(tr("Ctrl+Shift+G"));
+    geodesicsMatrixAct->setStatusTip(tr("Calculates and displays the number of geodesic paths between each pair of nodes "));
+    geodesicsMatrixAct->setWhatsThis(tr("Number of Geodesics\n\n Displays a NxN matrix, where the (i,j) element is the number of geodesic paths between node i and node j. A geodesic path of two nodes is the shortest path between them."));
+    connect(geodesicsMatrixAct, SIGNAL(triggered()), this, SLOT( slotViewNumberOfGeodesicsMatrix()) );
 
     diameterAct = new QAction(QIcon(":/images/diameter.png"), tr("Diameter"),this);
     diameterAct ->setShortcut(tr("Ctrl+D"));
@@ -1257,6 +1263,7 @@ void MainWindow::initMenuBar() {
     statMenu -> addAction (averGraphDistanceAct);
 
     statMenu -> addAction (distanceMatrixAct);
+    statMenu -> addAction (geodesicsMatrixAct);
     statMenu -> addAction (diameterAct);
     statMenu -> addSeparator();
     statMenu -> addAction (cliquesAct);
@@ -1588,25 +1595,25 @@ void MainWindow::initView() {
 
     //create a view widget for this scene
     graphicsWidget=new GraphicsWidget(scene, this);
-    graphicsWidget->setViewportUpdateMode( QGraphicsView::MinimalViewportUpdate );
+    graphicsWidget->setViewportUpdateMode( QGraphicsView::BoundingRectViewportUpdate );
     //  FullViewportUpdate  // MinimalViewportUpdate //SmartViewportUpdate  //BoundingRectViewportUpdate
     //QGraphicsView can cache pre-rendered content in a QPixmap, which is then drawn onto the viewport.
     graphicsWidget->setCacheMode(QGraphicsView::CacheNone);  //CacheBackground | CacheNone
 
     graphicsWidget->setRenderHint(QPainter::Antialiasing, true);
     graphicsWidget->setRenderHint(QPainter::TextAntialiasing, true);
-    graphicsWidget->setRenderHint(QPainter::SmoothPixmapTransform, false);
+    graphicsWidget->setRenderHint(QPainter::SmoothPixmapTransform, true);
     //Optimization flags:
-    // By enabling the flag below, QGraphicsView will completely disable its implicit clipping
-    graphicsWidget->setOptimizationFlag(QGraphicsView::DontClipPainter, false);
     //if items do restore their state, it's not needed for graphicsWidget to do the same...
     graphicsWidget->setOptimizationFlag(QGraphicsView::DontSavePainterState, false);
     //Disables QGraphicsView's antialiasing auto-adjustment of exposed areas.
     graphicsWidget->setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, false);
-    //"QGraphicsScene applies an indexing algorithm to the scene, to speed up item discovery functions like items() and itemAt(). Indexing is most efficient for static scenes (i.e., where items don't move around). For dynamic scenes, or scenes with many animated items, the index bookkeeping can outweight the fast lookup speeds." So...
+    //"QGraphicsScene applies an indexing algorithm to the scene, to speed up item discovery functions like items() and itemAt().
+    // Indexing is most efficient for static scenes (i.e., where items don't move around).
+    // For dynamic scenes, or scenes with many animated items, the index bookkeeping can outweight the fast lookup speeds." So...
     scene->setItemIndexMethod(QGraphicsScene::BspTreeIndex); //NoIndex (for anime) | BspTreeIndex
 
-    graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+    graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
     graphicsWidget->setResizeAnchor(QGraphicsView::AnchorViewCenter);
 
     // sets dragging the mouse over the scene while the left mouse button is pressed.
@@ -1617,7 +1624,8 @@ void MainWindow::initView() {
     this->resize(900,600);
 
     //set minimum size of canvas
-    graphicsWidget->setMinimumSize( (qreal)  ( this->width()-toolBox->sizeHint().width() -30) , (qreal) ( this->height()-statusBar()->sizeHint().height() -toolBar->sizeHint().height() -menuBar()->sizeHint().height() -20 ) );
+
+    graphicsWidget->setMinimumSize( (qreal)  ( this->width()-toolBox->sizeHint().width() -40 ) , (qreal) ( this->height()-statusBar()->sizeHint().height() -toolBar->sizeHint().height() -menuBar()->sizeHint().height() -20 ) );
     qDebug ("MW initView(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
 
 }
@@ -1632,7 +1640,7 @@ void MainWindow::resizeEvent( QResizeEvent * ){
     qDebug ("MW resizeEvent():INITIAL window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
 
     //the area of the scene displayed by the CanvasView
-    scene->setSceneRect(0, 0, (qreal) ( graphicsWidget->width() ), (qreal) (graphicsWidget->height() ) );
+    scene->setSceneRect(0, 0, (qreal) ( graphicsWidget->width() -10 ), (qreal) (graphicsWidget->height() -10 ) );
     qDebug ("MW resizeEvent(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
 }
 
@@ -1648,12 +1656,12 @@ void MainWindow::initNet(){
     // Init basic variables
 
     initNodeSize=4;
-    initNodeColor="gold";
-    initLinkColor="grey"; //"black";
+    initNodeColor="red";
+    initLinkColor="black";
     initLabelColor="darkblue";
-    initLabelSize=8;
+    initLabelSize=7;
+    initNumberSize=7;
     initNumberColor="black";
-    initNumberSize=8;
     initNodeShape="circle";
     initBackgroundColor="white"; //"gainsboro";
 
@@ -3839,7 +3847,7 @@ void MainWindow::slotChangeLinkWeight(){
             case 0:
                 qDebug("MW: slotChangeLinkWeight()  real edge %i -> %i", sourceNode, targetNode);
                 newWeight=QInputDialog::getDouble(this,
-                                                  "Change link weight...",tr("New link weight: "), 1.0, -20.0, 20.00 ,1, &ok) ;
+                                                  "Change link weight...",tr("New link weight: "), 1.0, -100.0, 100.00 ,1, &ok) ;
                 if (ok) {
                     clickedLink->setWeight(newWeight);
                     clickedLink->update();
@@ -3891,7 +3899,7 @@ void MainWindow::slotChangeLinkWeight(){
         else {
             qDebug("MW: slotChangeLinkWeight()  real edge %i -> %i", sourceNode, targetNode);
             newWeight=QInputDialog::getDouble(this,
-                                              "Change link weight...",tr("New link weight: "), 1.0, -20.0, 20.00 ,1, &ok) ;
+                                              "Change link weight...",tr("New link weight: "), 1.0, -100.0, 100.00 ,1, &ok) ;
             if (ok) {
                 clickedLink->setWeight(newWeight);
                 clickedLink->update();
@@ -4770,7 +4778,7 @@ void MainWindow::slotGraphDistance(){
 
 
 /**
-*  Invokes creation of the matrix of nodes' distances, then displays it.
+*  Invokes calculation of the matrix of geodesic distances for the loaded network, then displays it.
 */
 void MainWindow::slotViewDistanceMatrix(){
     qDebug("MW: slotViewDistanceMatrix()");
@@ -4781,28 +4789,48 @@ void MainWindow::slotViewDistanceMatrix(){
     }
     statusMessage( tr("Creating distance matrix. Please wait...") );
     char fn[]= "distance-matrix.dat";
-    char fn1[]="sigmas-matrix.dat";
 
     createProgressBar();
 
-    activeGraph.writeDistanceMatrix(fn, fn1, networkName.toLocal8Bit());
+    activeGraph.writeDistanceMatrix(fn, networkName.toLocal8Bit());
 
     destroyProgressBar();
 
     //Open a text editor window for the new file created by graph class
-    QString qfn1=QString::fromLocal8Bit(fn1);
     TextEditor *ed = new TextEditor(fn);
-    TextEditor *ed1 = new TextEditor(fn1);
 
-    ed1->setWindowTitle(tr("Matrix of sigmas "));
-    ed->setWindowTitle(tr("Matrix of distances "));
-    ed1->show();
+    ed->setWindowTitle(tr("Matrix of geodesic distances "));
     ed->show();
-
-
-
 }
 
+
+
+
+/**
+*  Invokes calculation of the sigmas matrix (the number of geodesic paths between each pair of nodes in the loaded network), then displays it.
+*/
+void MainWindow::slotViewNumberOfGeodesicsMatrix(){
+    qDebug("MW: slotViewNumberOfGeodesics()");
+    if (!fileLoaded && !networkModified  )  {
+        QMessageBox::critical(this, "Error",tr("There are no nodes nor links!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        statusMessage(  QString(tr("Nothing to do!"))  );
+        return;
+    }
+    statusMessage( tr("Creating number of geodesics matrix. Please wait...") );
+    char fn[]="sigmas-matrix.dat";
+
+    createProgressBar();
+
+    activeGraph.writeNumberOfGeodesicsMatrix(fn, networkName.toLocal8Bit());
+
+    destroyProgressBar();
+
+    //Open a text editor window for the new file created by graph class
+    TextEditor *ed = new TextEditor(fn);
+
+    ed->setWindowTitle(tr("Matrix of sigmas (number of geodesic paths)"));
+    ed->show();
+}
 
 
 
@@ -4963,24 +4991,25 @@ void MainWindow::slotCentralityOutDegree(){
         return;
     }
     bool considerWeights=false;
+    if ( activeGraph.isWeighted()) {
+        switch( QMessageBox::information( this, "Centrality Out-Degree",
+                                          tr("Graph edges have weights. \nTake weights into account (Default: No)?"),
+                                          tr("Yes"), tr("No"),
+                                          0, 1 ) )
+        {
+        case 0:
+            considerWeights=true;
+            break;
+        case 1:
+            considerWeights=false;
+            break;
+        default: // just for sanity
+            considerWeights=false;
+            return;
+            break;
+        }
 
-    switch( QMessageBox::information( this, "Centrality Out-Degree",
-                                      tr("Take weights into account (Default: No)?"),
-                                      tr("Yes"), tr("No"),
-                                      0, 1 ) )
-    {
-    case 0:
-        considerWeights=true;
-        break;
-    case 1:
-        considerWeights=false;
-        break;
-    default: // just for sanity
-        considerWeights=true;
-        return;
-        break;
     }
-
     QString fn = "centrality-out-degree.dat";
 
     createProgressBar();
@@ -5010,22 +5039,24 @@ void MainWindow::slotCentralityInDegree(){
         return;
     }
     bool considerWeights=false;
+    if ( activeGraph.isWeighted()) {
+        switch( QMessageBox::information( this, "Centrality In-Degree",
+                                          tr("Graph edges have weights. \nTake weights into account (Default: No)?"),
+                                          tr("Yes"), tr("No"),
+                                          0, 1 ) )
+        {
+        case 0:
+            considerWeights=true;
+            break;
+        case 1:
+            considerWeights=false;
+            break;
+        default: // just for sanity
+            considerWeights=false;
+            return;
+            break;
+        }
 
-    switch( QMessageBox::information( this, "Centrality In-Degree",
-                                      tr("Take weights into account (Default: No)?"),
-                                      tr("Yes"), tr("No"),
-                                      0, 1 ) )
-    {
-    case 0:
-        considerWeights=true;
-        break;
-    case 1:
-        considerWeights=false;
-        break;
-    default: // just for sanity
-        considerWeights=true;
-        return;
-        break;
     }
     QString fn = "centrality-in-degree.dat";
 
@@ -6092,7 +6123,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
     int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-    QString BUILD="Sat Oct  13 03:44:59 EEST 2013";
+QString BUILD="Tue Jul 29 13:28:59 EEST 2014";
     QMessageBox::about( this, "About SocNetV",
                         "<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
                         "<p><b>Version</b>: " + VERSION + "</p>"

@@ -1,6 +1,6 @@
 /******************************************************************************
  SocNetV: Social Networks Visualizer
- version: 1.0
+ version: 1.1
  Written in Qt
  
                          graph.cpp  -  description
@@ -772,6 +772,26 @@ float Graph::density() {
 
 
 /**
+ *  Checks if the graph is weighted, i.e. if any e in |E| has value > 1
+ *  O(n^2)
+ */
+bool Graph::isWeighted(){
+    qDebug("Graph: isWeighted()");
+    QList<Vertex*>::iterator it, it1;
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+       for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
+            if ( ( this->hasEdge ( (*it1)->name(), (*it)->name() ) )  > 1  )   {
+                qDebug("Graph: isWeighted: TRUE");
+                return true;
+            }
+        }
+    }
+    qDebug("Graph: isWeighted: FALSE");
+    return false;
+}
+
+
+/**
     Returns the sum of vertices having outEdges
 */
 int Graph::verticesWithOutEdges(){
@@ -949,105 +969,151 @@ float Graph::averageGraphDistance(){
 /**
 *  Writes the matrix of distances to a file
 */
-void Graph::writeDistanceMatrix (const char* fn, const char* fn1, const char* netName) {
+void Graph::writeDistanceMatrix (const char* fn, const char* netName) {
     qDebug ("Graph::writeDistanceMatrix()");
     createDistanceMatrix(false);
     qDebug ("Graph::writeDistanceMatrix() writing to file");
     ofstream file (fn);
-    ofstream file1 (fn1);
-    int dist=-1, sigma=-1;
+    int dist=-1;
 
-    char one_space[]     = " ";	Q_UNUSED (one_space);
+    char one_space[]     = " ";
     char two_spaces[]    = "  ";
-    char three_spaces[]  = "   ";	Q_UNUSED (three_spaces);
+    char three_spaces[]  = "   ";
     char four_spaces[]   = "    ";
-    char five_spaces[]   = "     ";	Q_UNUSED (five_spaces);
-    char six_spaces[]    = "      ";
+    char five_spaces[]   = "     ";
+    char six_spaces[]    = "      "; Q_UNUSED (six_spaces);
     char seven_spaces[]  = "       ";
-    char eight_spaces[]  = "        ";
-    char nine_spaces[]   = "         ";
+    char eight_spaces[]  = "        "; Q_UNUSED (eight_spaces);
+    char nine_spaces[]   = "         "; Q_UNUSED (nine_spaces);
     char ten_spaces[]    = "          ";
 
     file << "-Social Network Visualizer- \n";
     if (!netName) netName="Unnamed network";
-    file << "Distance matrix of "<< netName<<": \n\n";
+    file << "Distance matrix of "<< netName<<": \n";
+    file << "The first column is the node number "<<": \n\n";
     //write out matrix of geodesic distances
     QList<Vertex*>::iterator it, it1;
     int i=0, j=0;
 
-    file << ten_spaces << two_spaces;
-
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
-
-        file << ++i ;
-        if (i>9999)
-            file << six_spaces;
-        else if (i>999)
-            file << seven_spaces;
-        else if (i>99)
-            file << eight_spaces;
-        else if(i>9)
-            file << nine_spaces;
-        else
-            file << ten_spaces ;
-
-    }
-
-    file<<endl;
+    file << ten_spaces <<endl;
 
     i=0;
-
+    // print rows of distances.
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        // print node number first
         file << ++i ;
-
         if (i>9999)
             file << two_spaces;
         if (i>999)
-            file << four_spaces;
+            file << three_spaces;
         else if (i>99)
-            file << six_spaces ;
+            file << four_spaces ;
         else if(i>9)
-            file << eight_spaces;
+            file << five_spaces;
         else
-            file << ten_spaces;
+            file << seven_spaces;
+
+        file << "|  ";
 
         j=0;
 
         for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
             ++j;
-
             if ( (dist= DM.item( index[(*it)->name()],  index[(*it1)->name()] ) )!=-1 ) {
                 file << dist;
-                if (dist>999)
-                    file <<  seven_spaces;
+                if (dist>9999)
+                    file << one_space;
+                else if (dist>999)
+                    file << one_space;
                 else if (dist>99)
-                    file <<  eight_spaces;
+                    file << two_spaces;
                 else if(dist>9)
-                    file << nine_spaces;
+                    file << three_spaces;
                 else
-                    file << ten_spaces;
+                    file << five_spaces ;
             }
             else
-                file << "0"<< ten_spaces;
+                file << "0"<< five_spaces;
         }
         file << endl;
     }
     file.close();
-    //write out matrix of sigmas
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
-            if ( (sigma= TM.item( index[(*it)->name()],  index[(*it1)->name()] ) )!=-1 ) {
-                file1 << sigma<<" ";
-            }
-            else
-                file1 << "0 ";
-        }
-        file1 << endl;
-    }
-    file1.close();
-
 }
 
+
+/**
+*  Saves the number of geodesic distances matrix to a file
+*/
+void Graph::writeNumberOfGeodesicsMatrix(const char* fn, const char* netName) {
+    qDebug ("Graph::writeDistanceMatrix()");
+    if (!distanceMatrixCreated )
+        createDistanceMatrix(false);
+    qDebug ("Graph::writeDistanceMatrix() writing to file");
+    ofstream file (fn);
+    int sigma=-1;
+
+    char one_space[]     = " ";
+    char two_spaces[]    = "  ";
+    char three_spaces[]  = "   ";
+    char four_spaces[]   = "    ";
+    char five_spaces[]   = "     ";
+    char six_spaces[]    = "      "; Q_UNUSED (six_spaces);
+    char seven_spaces[]  = "       ";
+    char eight_spaces[]  = "        "; Q_UNUSED (eight_spaces);
+    char nine_spaces[]   = "         "; Q_UNUSED (nine_spaces);
+    char ten_spaces[]    = "          ";
+
+    file << "-Social Network Visualizer- \n";
+    if (!netName) netName="Unnamed network";
+    file << "Number of geodesics of "<< netName<<": \n";
+    file << "The first column is the node number"<<": \n\n";
+    //write out a matrix of number of Geodesics
+    QList<Vertex*>::iterator it, it1;
+    int i=0, j=0;
+
+    file << ten_spaces <<endl;
+
+    i=0;
+
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        // print node number first
+        file << ++i ;
+        if (i>9999)
+            file << two_spaces;
+        if (i>999)
+            file << three_spaces;
+        else if (i>99)
+            file << four_spaces ;
+        else if(i>9)
+            file << five_spaces;
+        else
+            file << seven_spaces;
+
+        file << "|  ";
+
+        j=0;
+
+        for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
+            ++j;
+            if ( (sigma= TM.item( index[(*it)->name()],  index[(*it1)->name()] ) )!=-1 ) {
+                file << sigma;
+                if (sigma>999)
+                    file <<  one_space;
+                else if (sigma>99)
+                    file <<  one_space;
+                else if(sigma>9)
+                    file << two_spaces;
+                else
+                    file << five_spaces;
+            }
+            else
+                file << "0"<< five_spaces;
+        }
+        file << endl;
+    }
+    file.close();
+
+}
 
 
 
@@ -1789,7 +1855,7 @@ void Graph::writeCentralityPageRank(const QString fileName){
     QTextStream outText ( &file );
 
     emit statusMessage ( (tr("Calculating PageRank centralities. Please wait...")) );
-    int status = centralityPageRank();
+    this->centralityPageRank();
 
     emit statusMessage ( QString(tr("Writing PageRank centralities to file: %1")).arg(fileName) );
 
@@ -1867,6 +1933,7 @@ void Graph::centralityInDegree(bool weights){
     discreteIDCs.clear();
     varianceDegree=0;
     meanDegree=0;
+    symmetricAdjacencyMatrix = true;
     QList<Vertex*>::iterator it, it1;
     hash_si::iterator it2;
     int vert=vertices();
@@ -1880,6 +1947,9 @@ void Graph::centralityInDegree(bool weights){
                 else
                     IDC++;
             }
+            //check here if the matrix is symmetric - we need this below
+            if ( ( this->hasEdge ( (*it1)->name(), (*it)->name() ) ) != ( this->hasEdge ( (*it)->name(), (*it1)->name() ) )   )
+                symmetricAdjacencyMatrix = false;
         }
         (*it) -> setIDC ( IDC ) ;				//Set InDegree
         qDebug() << "Graph: vertex = " <<  (*it)->name() << " has IDC = " << IDC ;
@@ -1905,9 +1975,10 @@ void Graph::centralityInDegree(bool weights){
         maxNodeIDC=-1;
 
 
-    meanDegree = sumIDC / (float) vert;  /** BUG? WEIGHTS???? */
+    meanDegree = sumIDC / (float) vert;
     qDebug("Graph: sumIDC = %f, meanDegree = %f", sumIDC, meanDegree);
-    // Calculate Variance and the Degree Centralisation of the whole graph.
+
+    // Calculate std In-Degree, Variance and the Degree Centralisation of the whole graph.
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         IDC= (*it)->IDC();
         if (!weights) {
@@ -1946,8 +2017,7 @@ void Graph::centralityInDegree(bool weights){
 
 
 
-void Graph::writeCentralityInDegree
-(const QString fileName, const bool considerWeights)
+void Graph::writeCentralityInDegree (const QString fileName, const bool considerWeights)
 {
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
@@ -1958,9 +2028,13 @@ void Graph::writeCentralityInDegree
     QTextStream outText ( &file );
 
     centralityInDegree(considerWeights);
+
     float maximumIndexValue=vertices()-1.0;
 
-    outText << tr("IN-DEGREE CENTRALITIES (IDC) OF EACH NODE\n\n");
+    outText << tr("IN-DEGREE CENTRALITIES (IDC) OF EACH NODE\n");
+    outText << tr("IDC is the sum of incoming links to node u from all adjacent nodes.\n");
+    outText << tr("If the network is weighted, IDC is the sum of incoming link weights to node u from all adjacent nodes.\n");
+    outText << tr("IDC' is the standardized IDC\n\n");
     outText << tr("IDC  range: 0 < C < ")<<maximumIndexValue<<"\n";
     outText << "IDC' range: 0 < C'< 1"<<"\n\n";
 
@@ -2032,11 +2106,13 @@ void Graph::centralityOutDegree(bool weights){
                     ODC+=weight;
                 else
                     ODC++;
+                //check here if the matrix is symmetric - we need this below
+                if ( ( this->hasEdge ( (*it1)->name(), (*it)->name() ) ) != ( this->hasEdge ( (*it)->name(), (*it1)->name() ) )   )
+                    symmetricAdjacencyMatrix = false;
             }
         }
         (*it) -> setODC ( ODC ) ;				//Set OutDegree
-        (*it) -> setSODC( ODC / (vert-1.0) );		//Set Standard OutDegree
-        qDebug() << "Graph: vertex " <<  (*it)->name() << " has ODC = " << ODC << " and SODC "<< (*it)->SODC ();
+        qDebug() << "Graph: vertex " <<  (*it)->name() << " has ODC = " << ODC ;
         sumODC += ODC;
         it2 = discreteODCs.find(QString::number(ODC));
         if (it2 == discreteODCs.end() )	{
@@ -2058,25 +2134,42 @@ void Graph::centralityOutDegree(bool weights){
     if (minODC == maxODC)
         maxNodeODC=-1;
 
-    meanDegree = sumODC / (float) vert;  /** BUG? WEIGHTS???? */
+    meanDegree = sumODC / (float) vert;
     qDebug("Graph: sumODC = %f, meanDegree = %f", sumODC, meanDegree);
-    // Calculate Variance and the Degree Centralisation of the whole graph.
+
+    // Calculate std Out-Degree, Variance and the Degree Centralisation of the whole graph.
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         ODC= (*it)->ODC();
-        qDebug() << "Graph: ODC = " << ODC << " meanDegree = " << meanDegree << " vertices " << vert;
+        if (!weights) {
+            (*it) -> setSODC( ODC / (vert-1.0) );		//Set Standard InDegree
+            nom+= (maxODC-ODC);
+        }
+        else {
+            (*it) -> setSODC( ODC / (sumODC) );
+            nom+= (maxODC-ODC)/(sumODC / (vert - 1) );
+        }
+        qDebug() << "Graph: vertex " <<  (*it)->name() << " SODC " << (*it)->SODC ();
+
         varianceDegree += (ODC-meanDegree) * (ODC-meanDegree) ;
-        nom+= maxODC-ODC;
     }
     if (symmetricAdjacencyMatrix)
         denom=(vert-1.0)*(vert-2.0);
     else
         denom=(vert-1.0)*(vert-1.0);
     varianceDegree=varianceDegree/(float) vert;
+
     groupODC=nom/denom;
     qDebug("Graph: varianceDegree = %f, groupODC = %f", varianceDegree, groupODC);
 
-    minODC/=(float)(vert-1); // standardize
-    maxODC/=(float)(vert-1);
+    if (!weights) {
+        minODC/=(float)(vert-1); // standardize
+        maxODC/=(float)(vert-1);
+    }
+    else {
+        minODC/=(float)(sumODC); // standardize
+        maxODC/=(float)(sumODC);
+    }
+
     calculatedODC=true;
     graphModified=false;
 }
@@ -2099,7 +2192,11 @@ void Graph::writeCentralityOutDegree (
 
     float maximumIndexValue=vertices()-1.0;
 
-    outText << tr("OUT-DEGREE CENTRALITIES (ODC) FOR EACH NODE\n\n");
+    outText << tr("OUT-DEGREE CENTRALITIES (ODC) FOR EACH NODE\n");
+    outText << tr("ODC is the sum of outgoing links of node u to all adjacent nodes.\n");
+    outText << tr("If the network is weighted, ODC is the sum of outgoing link weights of node u to all adjacent nodes.\n");
+    outText << tr("ODC' is the standardized ODC\n\n");
+
 
     outText << tr("ODC  range: 0 < C < ")<<QString::number(maximumIndexValue)<<"\n";
     outText << "ODC' range: 0 < C'< 1"<<"\n\n";
@@ -2163,7 +2260,7 @@ void Graph::writeCentralityCloseness(
     emit statusMessage ( QString(tr("Writing closeness centralities to file:")).arg(fileName) );
 
     outText << tr("CLOSENESS CENTRALITY (CC) OF EACH NODE")<<"\n";
-    outText << tr("CC is the invert sum of the distances of node u from all other nodes.")<<"\n";
+    outText << tr("CC is the invert sum of the geodesic distances of node u from all other nodes.")<<"\n";
     outText << tr("CC' is the standardized CC")<<"\n";
 
     outText << tr("CC  range:  0 < C < ")<<QString::number(maxIndexCC)<<"\n";
@@ -4072,6 +4169,72 @@ void Graph::writeDataSetToFile (QString fileName) {
                   "37 8 36" << endl <<
                   "25 10 11 8";
     }
+    else if (fileName == "Knocke_Bureacracies_Information_Exchange_Network.pajek"){
+        qDebug()<< "		Knocke_Bureacracies_Information_Exchange_Network.pajek written... ";
+        outText<< "*Network KNOKI " << endl <<
+                  "*Vertices 10" << endl <<
+                   "1 \"COUN\" 0.1000    0.5000    0.5000" << endl <<
+                   "2 \"COMM\" 0.1764    0.2649    0.5000" << endl <<
+                   "3 \"EDUC\" 0.3764    0.1196    0.5000" << endl <<
+                   "4 \"INDU\" 0.6236    0.1196    0.5000" << endl <<
+                   "5 \"MAYR\" 0.8236    0.2649    0.5000" << endl <<
+                   "6 \"WRO \" 0.9000    0.5000    0.5000" << endl <<
+                   "7 \"NEWS\" 0.8236    0.7351    0.5000" << endl <<
+                   "8 \"UWAY\" 0.6236    0.8804    0.5000" << endl <<
+                   "9 \"WELF\" 0.3764    0.8804    0.5000" << endl <<
+                   "10 \"WEST\" 0.1764    0.7351    0.5000" << endl <<
+                  "*Arcs" << endl <<
+                  " 1 2  1" << endl <<
+                  " 1 5  1" << endl <<
+                  " 1 7  1" << endl <<
+                  " 1 9  1" << endl <<
+                  " 2 1  1" << endl <<
+                  " 2 3  1" << endl <<
+                  " 2 4  1" << endl <<
+                  " 2 5  1" << endl <<
+                  " 2 7  1" << endl <<
+                  " 2 8  1" << endl <<
+                  " 2 9  1" << endl <<
+                  " 3 2  1" << endl <<
+                  " 3 4  1" << endl <<
+                  " 3 5  1" << endl <<
+                  " 3 6  1" << endl <<
+                  " 3 7  1" << endl <<
+                  " 3 10  1" << endl <<
+                  " 4 1  1" << endl <<
+                  " 4 2  1" << endl <<
+                  " 4 5  1" << endl <<
+                  " 4 7  1" << endl <<
+                  " 5 1  1" << endl <<
+                  " 5 2  1" << endl <<
+                  " 5 3  1" << endl <<
+                  " 5 4  1" << endl <<
+                  " 5 7  1" << endl <<
+                  " 5 8  1" << endl <<
+                  " 5 9  1" << endl <<
+                  " 5 10  1" << endl <<
+                  " 6 3  1" << endl <<
+                  " 6 7  1" << endl <<
+                  " 6 9  1" << endl <<
+                  " 7 2  1" << endl <<
+                  " 7 4  1" << endl <<
+                  " 7 5  1" << endl <<
+                  " 8 1  1" << endl <<
+                  " 8 2  1" << endl <<
+                  " 8 4  1" << endl <<
+                  " 8 5  1" << endl <<
+                  " 8 7  1" << endl <<
+                  " 8 9  1" << endl <<
+                  " 9 2  1" << endl <<
+                  " 9 5  1" << endl <<
+                  " 9 7  1" << endl <<
+                  " 10 1  1" << endl <<
+                  " 10 2  1" << endl <<
+                  " 10 3  1" << endl <<
+                  " 10 5  1" << endl <<
+                  " 10 7  1";
+                    qDebug()<< "		Knocke_Bureacracies_Information_Exchange_Network.pajek written... ";
+    }
 
     f.close();
 }
@@ -4146,12 +4309,10 @@ void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
             if ( (weight =  this->hasEdge ( (*it)->name(), (*it1)->name() )  )!=0 ) {
                 sum++;
                 if (weight >= 1)
-                    file << static_cast<int> (weight);
-                else
-                    file << "1";
+                    file << static_cast<int> (weight) << " "; // TODO make the matric look symmetrical
             }
             else
-                file << "0";
+                file << "0 ";
         }
         file << endl;
     }
@@ -4167,6 +4328,7 @@ void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
  *  Creates an adjacency matrix AM
  *  where AM(i,j)=1 if i is connected to j
  *  and AM(i,j)=0 if i not connected to j
+ *  Used in Graph::centralityInformation()
  */
 void Graph::createAdjacencyMatrix(bool dropIsolates){
     qDebug() << "Graph::createAdjacencyMatrix()";

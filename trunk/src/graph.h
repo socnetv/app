@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer
- version: 1.0
+ version: 1.1
  Written in Qt
  
                          graph.h  -  description
@@ -188,6 +188,8 @@ public:
     void removeEdge (int v1, int v2);		//removes the edge between v1 and v2
 
 
+    bool isWeighted();                          // Returns true if the graph is weighted.
+
     void setEdgeWeight (int v1, int v2, float w); 	//Sets the edge weight between v1 and v2
     void setInitEdgeColor(QString);
 
@@ -213,7 +215,9 @@ public:
     void writeAdjacencyMatrix(const char*, const char*);		//Writes the adjacency matrix to a given file.
 
     void writeInvertAdjacencyMatrix(const char*,  const char*);
-    void writeDistanceMatrix(const char*, const char*, const char*);//Writes the distance matrix to a file
+    void writeDistanceMatrix(const char*, const char*);//Writes the distance matrix to a file
+    void writeNumberOfGeodesicsMatrix(const char*, const char*);//Writes the number of geodesics matrix to a file
+
     friend QTextStream& operator <<  (QTextStream& os, Graph& m);  	//
 
     void writeCentralityInDegree(const QString, bool);		//Writes the in-degree centralities to a file
