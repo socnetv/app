@@ -2031,7 +2031,10 @@ void Graph::writeCentralityInDegree (const QString fileName, const bool consider
 
     float maximumIndexValue=vertices()-1.0;
 
-    outText << tr("IN-DEGREE CENTRALITIES (IDC) OF EACH NODE\n\n");
+    outText << tr("IN-DEGREE CENTRALITIES (IDC) OF EACH NODE\n");
+    outText << tr("IDC is the sum of incoming links to node u from all adjacent nodes.\n");
+    outText << tr("If the network is weighted, IDC is the sum of incoming link weights to node u from all adjacent nodes.\n");
+    outText << tr("IDC' is the standardized IDC\n\n");
     outText << tr("IDC  range: 0 < C < ")<<maximumIndexValue<<"\n";
     outText << "IDC' range: 0 < C'< 1"<<"\n\n";
 
@@ -2165,7 +2168,6 @@ void Graph::centralityOutDegree(bool weights){
         maxODC/=(float)(sumODC);
     }
 
-
     calculatedODC=true;
     graphModified=false;
 }
@@ -2188,7 +2190,11 @@ void Graph::writeCentralityOutDegree (
 
     float maximumIndexValue=vertices()-1.0;
 
-    outText << tr("OUT-DEGREE CENTRALITIES (ODC) FOR EACH NODE\n\n");
+    outText << tr("OUT-DEGREE CENTRALITIES (ODC) FOR EACH NODE\n");
+    outText << tr("ODC is the sum of outgoing links of node u to all adjacent nodes.\n");
+    outText << tr("If the network is weighted, ODC is the sum of outgoing link weights of node u to all adjacent nodes.\n");
+    outText << tr("ODC' is the standardized ODC\n\n");
+
 
     outText << tr("ODC  range: 0 < C < ")<<QString::number(maximumIndexValue)<<"\n";
     outText << "ODC' range: 0 < C'< 1"<<"\n\n";
