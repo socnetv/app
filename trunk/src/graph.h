@@ -112,8 +112,8 @@ signals:
     void setEdgeVisibility ( int, int, bool);			// emitted from each Vertex
     void setVertexVisibility(long int, bool);		//notifies GW to disable a node
     void drawEdgeReciprocal(int, int);				//call GW to draw the edge as symmetric one
-    void addBackgrCircle(int, int, int);				//call GW to draw a circular layout line somewhere.
-    void addBackgrHLine (int);					//call GW to draw a horizontal layout line somewhere.
+    void addGuideCircle(int, int, int);				//call GW to draw a circular layout line somewhere.
+    void addGuideHLine (int);					//call GW to draw a horizontal layout line somewhere.
     void moveNode(int, int, int);
 
 

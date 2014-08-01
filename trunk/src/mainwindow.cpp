@@ -46,7 +46,7 @@
 #include "htmlviewer.h"
 #include "texteditor.h"
 #include "filteredgesbyweightdialog.h"
-#include "backgrcircle.h"
+#include "guide.h"
 #include "vertex.h"
 
 
@@ -124,11 +124,11 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect( graphicsWidget, SIGNAL(zoomChanged(int)),
              zoomCombo, SLOT( setCurrentIndex(int)) );
 
-    connect( &activeGraph, SIGNAL( addBackgrCircle(int, int, int) ),
-             graphicsWidget, SLOT(  addBackgrCircle(int, int, int) ) ) ;
+    connect( &activeGraph, SIGNAL( addGuideCircle(int, int, int) ),
+             graphicsWidget, SLOT(  addGuideCircle(int, int, int) ) ) ;
 
-    connect( &activeGraph, SIGNAL( addBackgrHLine(int) ),
-             graphicsWidget, SLOT(  addBackgrHLine(int) ) ) ;
+    connect( &activeGraph, SIGNAL( addGuideHLine(int) ),
+             graphicsWidget, SLOT(  addGuideHLine(int) ) ) ;
 
     connect( &activeGraph, SIGNAL( moveNode(int, int, int) ),
              graphicsWidget, SLOT( moveNode(int, int, int) ) ) ;
@@ -194,8 +194,8 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect( &activeGraph, SIGNAL( setVertexVisibility(long int, bool)  ),
              graphicsWidget, SLOT(  setNodeVisibility (long int ,  bool) ) );
 
-    connect( circleClearBackgrCirclesAct, SIGNAL(triggered()),
-             graphicsWidget, SLOT(clearBackgrCircles()));
+    connect( clearGuidesAct, SIGNAL(triggered()),
+             graphicsWidget, SLOT(clearGuides()));
 
 
     //create an horizontal layout for the toolbox and the canvas. This will be our MW layout.
@@ -714,9 +714,9 @@ void MainWindow::initActions(){
     connect(circleInformationLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityPageRank()));
 
 
-    circleClearBackgrCirclesAct = new QAction(QIcon(":/images/gridlines.png"), tr("Remove Layout GuideLines"), this);
-    circleClearBackgrCirclesAct ->setStatusTip(tr("Removes all layout guideLines from the canvas."));
-    circleClearBackgrCirclesAct->setWhatsThis(tr("Remove GuideLines\n\n Removes any guidelines (circles or horizontal lines) created for the network layout."));
+    clearGuidesAct = new QAction(QIcon(":/images/gridlines.png"), tr("Remove Layout GuideLines"), this);
+    clearGuidesAct ->setStatusTip(tr("Removes all layout guideLines from the canvas."));
+    clearGuidesAct->setWhatsThis(tr("Remove GuideLines\n\n Removes any guidelines (circles or horizontal lines) created for the network layout."));
 
 
     levelInDegreeLayoutAct = new QAction( tr("In-Degree"),this);
@@ -1248,7 +1248,7 @@ void MainWindow::initMenuBar() {
     layoutMenu->addAction(nodeSizeProportionalOutDegreeAct);
     layoutMenu->addAction(nodeSizeProportionalInDegreeAct);
     layoutMenu->addSeparator();
-    layoutMenu -> addAction (circleClearBackgrCirclesAct);
+    layoutMenu -> addAction (clearGuidesAct);
 
 
 
@@ -4030,7 +4030,7 @@ void MainWindow::slotLayoutRandom(){
     double maxWidth=graphicsWidget->width();
     double maxHeight=graphicsWidget->height();
     statusMessage(  QString(tr("Randomizing nodes positions. Please wait...")) );
-    graphicsWidget->clearBackgrCircles();
+    graphicsWidget->clearGuides();
     createProgressBar();
     activeGraph.layoutRandom(maxWidth, maxHeight);
     destroyProgressBar();
@@ -4299,7 +4299,7 @@ void MainWindow::slotLayoutRadialCentralityInDegree(){
     double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
 
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearBackgrCircles();
+    graphicsWidget->clearGuides();
     createProgressBar();
     activeGraph.layoutRadialCentrality(x0, y0, maxRadius,1);
     destroyProgressBar();
@@ -4323,7 +4323,7 @@ void MainWindow::slotLayoutRadialCentralityOutDegree(){
     double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
 
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearBackgrCircles();
+    graphicsWidget->clearGuides();
     createProgressBar();
     activeGraph.layoutRadialCentrality(x0, y0, maxRadius,2);
     destroyProgressBar();
@@ -4350,7 +4350,7 @@ void MainWindow::slotLayoutRadialCentralityCloseness(){
     double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
     createProgressBar();
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearBackgrCircles();
+    graphicsWidget->clearGuides();
     activeGraph.layoutRadialCentrality(x0, y0, maxRadius,3);
     destroyProgressBar();
     statusMessage( tr("Nodes in inner circles have greater Closeness Centrality. ") );
@@ -4377,7 +4377,7 @@ void MainWindow::slotLayoutRadialCentralityBetweeness(){
     double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
 
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearBackgrCircles();
+    graphicsWidget->clearGuides();
     createProgressBar();
     activeGraph.layoutRadialCentrality(x0, y0, maxRadius,4);
     destroyProgressBar();
@@ -4405,7 +4405,7 @@ void MainWindow::slotLayoutRadialCentralityStress(){
     double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
 
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearBackgrCircles();
+    graphicsWidget->clearGuides();
     createProgressBar();
     activeGraph.layoutRadialCentrality(x0, y0, maxRadius,5);
     destroyProgressBar();
@@ -4431,7 +4431,7 @@ void MainWindow::slotLayoutRadialCentralityGraph(){
     double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
 
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearBackgrCircles();
+    graphicsWidget->clearGuides();
     createProgressBar();
     activeGraph.layoutRadialCentrality(x0, y0, maxRadius,6);
     destroyProgressBar();
@@ -4457,7 +4457,7 @@ void MainWindow::slotLayoutRadialCentralityEccentr(){
     double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
 
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearBackgrCircles();
+    graphicsWidget->clearGuides();
     createProgressBar();
     activeGraph.layoutRadialCentrality(x0, y0, maxRadius,7);
     destroyProgressBar();
@@ -4480,7 +4480,7 @@ void MainWindow::slotLayoutRadialCentralityPower(){
     double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
 
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearBackgrCircles();
+    graphicsWidget->clearGuides();
     createProgressBar();
     activeGraph.layoutRadialCentrality(x0, y0, maxRadius,8);
     destroyProgressBar();
@@ -4507,7 +4507,7 @@ void MainWindow::slotLayoutRadialCentralityInformation(){
     double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
 
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearBackgrCircles();
+    graphicsWidget->clearGuides();
     createProgressBar();
     activeGraph.layoutRadialCentrality(x0, y0, maxRadius,9);
     destroyProgressBar();
@@ -4534,7 +4534,7 @@ void MainWindow::slotLayoutRadialCentralityPageRank(){
     double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
 
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearBackgrCircles();
+    graphicsWidget->clearGuides();
     createProgressBar();
     activeGraph.layoutRadialCentrality(x0, y0, maxRadius,10);
     destroyProgressBar();
@@ -4558,7 +4558,7 @@ void MainWindow::slotLayoutLayeredCentralityInDegree(){
     double maxHeight=scene->height(); //pixels
 
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearBackgrCircles();
+    graphicsWidget->clearGuides();
     createProgressBar();
     activeGraph.layoutLayeredCentrality(maxWidth, maxHeight, 1);
     destroyProgressBar();
@@ -4584,7 +4584,7 @@ void MainWindow::slotLayoutLayeredCentralityOutDegree(){
     double maxHeight=scene->height(); //pixels
 
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearBackgrCircles();
+    graphicsWidget->clearGuides();
     createProgressBar();
     activeGraph.layoutLayeredCentrality(maxWidth, maxHeight, 2);
     destroyProgressBar();
@@ -4610,7 +4610,7 @@ void MainWindow::slotLayoutLayeredCentralityCloseness(){
     double maxHeight=scene->height(); //pixels
 
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait..."))  );
-    graphicsWidget->clearBackgrCircles();
+    graphicsWidget->clearGuides();
     createProgressBar();
     activeGraph.layoutLayeredCentrality(maxWidth, maxHeight, 3);
     destroyProgressBar();
@@ -4636,7 +4636,7 @@ void MainWindow::slotLayoutLayeredCentralityBetweeness(){
     double maxHeight=scene->height(); //pixels
 
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearBackgrCircles();
+    graphicsWidget->clearGuides();
     createProgressBar();
     activeGraph.layoutLayeredCentrality(maxWidth, maxHeight, 4);
     destroyProgressBar();

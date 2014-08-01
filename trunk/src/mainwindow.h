@@ -356,7 +356,7 @@ private:
     QAction *antialiasingAct;
     QAction *webCrawlerAct;
 
-    QAction *circleStressLayoutAct, *circleGraphLayoutAct,*circleClearBackgrCirclesAct, *circleEccentrLayoutAct, *circlePowerLayoutAct;
+    QAction *circleStressLayoutAct, *circleGraphLayoutAct,*clearGuidesAct, *circleEccentrLayoutAct, *circlePowerLayoutAct;
     QAction *circleBetweenessLayoutAct, *circleInformationLayoutAct, *levelClosenessLayoutAct;
     QAction *levelInDegreeLayoutAct, *levelOutDegreeLayoutAct, *levelBetweenessLayoutAct, *levelInformationLayoutAct;
     QAction *strongColorationAct, *regularColorationAct, *showProgressBarAct, *printDebugAct;

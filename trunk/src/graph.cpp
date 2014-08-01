@@ -2837,7 +2837,7 @@ void Graph::layoutRadialCentrality(double x0, double y0, double maxRadius, int C
         //Move node to new position
         emit moveNode((*it)->name(),  new_x,  new_y);
         i++;
-        emit addBackgrCircle (
+        emit addGuideCircle (
                     static_cast<int> (x0),
                     static_cast<int> (y0),
                     static_cast<int> (new_radius)
@@ -2959,7 +2959,7 @@ void Graph::layoutLayeredCentrality(double maxWidth, double maxHeight, int Centr
         //Move node to new position
         emit moveNode((*it)->name(),  new_x,  new_y);
         i++;
-        emit addBackgrHLine(static_cast<int> ( new_y ) );
+        emit addGuideHLine(static_cast<int> ( new_y ) );
     }
     graphModified=false;
 }

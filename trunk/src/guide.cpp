@@ -2,10 +2,10 @@
  SocNetV: Social Networks Visualizer
  version: 1.1
  Written in Qt
- 
-                         backgrcircle.h  -  description
+
+                         Guide.cpp  -  description
                              -------------------
-    copyright            : (C) 2005-2013 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2014 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -24,43 +24,60 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef BACKGRCIRCLE_H
-#define BACKGRCIRCLE_H
+#include "guide.h"
+#include "graphicswidget.h"
+
+Guide::Guide ( GraphicsWidget *gw, int x0, int y0, int radius ) : graphicsWidget ( gw ){
+	graphicsWidget->scene()->addItem ( this );
+	m_x0=x0;
+	m_y0=y0;
+	m_radius=radius;
+	setZValue ( 250 );
+	circle=true;
+}
 
 
 
-#include <QGraphicsItem>
-#include <QObject>
+Guide::Guide ( GraphicsWidget *gw,  int y0, int w) : graphicsWidget ( gw ){
+	graphicsWidget->scene()->addItem ( this );
+	m_y0=y0;
+	width= w;
+	setZValue ( 250 );
+	circle=false;
+}
 
 
-class GraphicsWidget;
+/** Returns the bounding rectangle of the background circle*/
+QRectF Guide::boundingRect() const {
+	if (circle) {
+	 return QRectF ( -m_x0 - m_radius-5, -m_y0 - m_radius-5, m_x0 + m_radius + 5, m_y0 + m_radius +5 );
+	}
+	else  {
+     return QRectF ( 1, m_y0 -1,  width, m_y0 + 1 );
+	}
+}
 
-static const int TypeBackgrCircle = QGraphicsItem::UserType+6;
 
-class BackgrCircle : public QObject, public  QGraphicsItem {
-	Q_OBJECT
-	Q_INTERFACES (QGraphicsItem)
+void Guide::paint ( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget * ){
+	Q_UNUSED(option);
+	painter->setPen ( QPen ( QColor ( "red" ), 1, Qt::DotLine ) );
+	if (circle) {
+		painter->drawArc ( m_x0-m_radius, m_y0-m_radius, 2*m_radius, 2*m_radius, 0, 5760 );
+	}
+	else {
+		painter->drawLine ( 10 , m_y0, width-10 , m_y0);	
+	}
+}
 
-public:
-	BackgrCircle(GraphicsWidget *, int, int, int );
-	BackgrCircle(GraphicsWidget *, int, int );
-	enum { Type = UserType + 6 };
-	int type() const { return Type; }
-	void die();
-	
 
-protected:
-	QRectF boundingRect() const;
-	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
-private: 
-	GraphicsWidget *graphicsWidget;
-	int m_x0, m_y0, m_radius, width;
-	bool circle;
-
-};
-
-#endif
+void Guide::die (){
+	this->prepareGeometryChange();
+	this->hide();
+	this->update();
+	graphicsWidget->scene()->removeItem(this);
+	this->update();
+}
 
 
 
