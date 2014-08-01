@@ -50,7 +50,7 @@ Guide::Guide ( GraphicsWidget *gw,  int y0, int w) : graphicsWidget ( gw ){
 /** Returns the bounding rectangle of the background circle*/
 QRectF Guide::boundingRect() const {
 	if (circle) {
-	 return QRectF ( -m_x0 - m_radius-5, -m_y0 - m_radius-5, m_x0 + m_radius + 5, m_y0 + m_radius +5 );
+     return QRectF ( m_x0 - m_radius-1, m_y0 - m_radius-1, m_x0 + 2 * m_radius + 1, m_y0 + 2* m_radius +1 );
 	}
 	else  {
      return QRectF ( 1, m_y0 -1,  width, m_y0 + 1 );
@@ -62,7 +62,8 @@ void Guide::paint ( QPainter *painter, const QStyleOptionGraphicsItem *option, Q
 	Q_UNUSED(option);
 	painter->setPen ( QPen ( QColor ( "red" ), 1, Qt::DotLine ) );
 	if (circle) {
-		painter->drawArc ( m_x0-m_radius, m_y0-m_radius, 2*m_radius, 2*m_radius, 0, 5760 );
+        painter->drawEllipse ( QPoint(m_x0, m_y0), m_radius, m_radius );
+        //painter->drawArc ( m_x0-m_radius, m_y0-m_radius, 2*m_radius, 2*m_radius, 0, 5760 );
 	}
 	else {
 		painter->drawLine ( 10 , m_y0, width-10 , m_y0);	

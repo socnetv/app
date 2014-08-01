@@ -1640,7 +1640,7 @@ void MainWindow::resizeEvent( QResizeEvent * ){
     qDebug ("MW resizeEvent():INITIAL window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
 
     //the area of the scene displayed by the CanvasView
-    scene->setSceneRect(0, 0, (qreal) ( graphicsWidget->width() -10 ), (qreal) (graphicsWidget->height() -10 ) );
+    scene->setSceneRect(0, 0, (qreal) ( graphicsWidget->width() -5 ), (qreal) (graphicsWidget->height() -5 ) );
     qDebug ("MW resizeEvent(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
 }
 
