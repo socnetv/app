@@ -1437,7 +1437,6 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                 nomSC +=( maxSC - (*it)->SSC() );
 
             }
-
             denomCC = aVertices-1.0;
             groupCC = nomCC/denomCC;	//Calculate group Closeness centrality
 
@@ -1449,7 +1448,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
             denomGC =  aVertices-1.0;
             groupGC= nomGC/denomGC;		//Calculate group Graph centrality
 
-            denomSC =   (aVertices-1.0);
+            denomSC =   (aVertices-1.0); //TOFIX
             groupSC = nomSC/denomSC;	//Calculate group Stress centrality
             calculatedCentralities=true;
         }
