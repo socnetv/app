@@ -1193,6 +1193,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 
     int aVertices=vertices();
     int aEdges = totalEdges();    //maybe we will use m_totalEdges here to save some time?...
+    isolatedVertices = verticesIsolated().count();
 
     if ( aEdges == 0 )
         DM.fillMatrix(0);
@@ -1431,6 +1432,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
             minCC = (aVertices-1.0)*minCC;
             denomCC =  (( aVertices-2.0) *  (aVertices-1.0))/ (2.0*aVertices-3.0);
             groupCC = nomCC/denomCC;	//Calculate group Closeness centrality
+           // groupODC=( ( nom * (vert-1.0))/( denom * maxODC) ) - ((float) verticesIsolated().count()/ (float) vert);
 
             nomBC*=2.0;
             denomBC =   (aVertices-1.0) *  (aVertices-1.0) * (aVertices-2.0);
@@ -2031,23 +2033,32 @@ void Graph::centralityInDegree(bool weights){
         IDC= (*it)->IDC();
         if (!weights) {
             (*it) -> setSIDC( IDC / (vert-1.0) );		//Set Standard InDegree
-            nom+= maxIDC-IDC;
         }
         else {
             (*it) -> setSIDC( IDC / (sumIDC) );
-            nom+= (maxIDC-IDC) / (  sumIDC / (vert -1) );
         }
+        nom+= maxIDC-IDC;
         qDebug() << "Graph: vertex = " <<  (*it)->name() << " has IDC = " << IDC << " and SIDC " << (*it)->SIDC ();
 
         //qDebug("Graph: IDC = %f, meanDegree = %f", IDC, meanDegree);
         varianceDegree += (IDC-meanDegree) * (IDC-meanDegree) ;
     }
+
+    varianceDegree=varianceDegree/(float) vert;
+
     if (symmetricAdjacencyMatrix)
         denom=(vert-1.0)*(vert-2.0);
     else
         denom=(vert-1.0)*(vert-1.0);
-    varianceDegree=varianceDegree/(float) vert;
-    groupIDC=nom/denom;
+
+    if (!weights) {
+        groupIDC=nom/denom;
+    }
+    else {
+        qDebug()<< "Graph::centralityInDegree vertices isolated: " << verticesIsolated().count() << ". I will subtract groupIDC by " << ((float)verticesIsolated().count()/(float)vert);
+        groupIDC=( ( nom * (vert-1.0))/( denom * maxIDC) ) - ((float) verticesIsolated().count()/ (float) vert);
+    }
+
     qDebug("Graph: varianceDegree = %f, groupIDC = %f", varianceDegree, groupIDC);
 
     if (!weights) {
@@ -2081,6 +2092,7 @@ void Graph::writeCentralityInDegree (const QString fileName, const bool consider
     outText << tr("IN-DEGREE CENTRALITIES (IDC) OF EACH NODE\n");
     outText << tr("IDC is the sum of incoming links to node u from all adjacent nodes.\n");
     outText << tr("If the network is weighted, IDC is the sum of incoming link weights to node u from all adjacent nodes.\n");
+    outText << tr("The in-degree of the node is a measure of the \'activity\' of the node it represents\n");
     outText << tr("IDC' is the standardized IDC\n\n");
     if (considerWeights){
         maximumIndexValue=(vertices()-1.0)*maxIDC;
@@ -2121,8 +2133,12 @@ void Graph::writeCentralityInDegree (const QString fileName, const bool consider
     outText << "GIDC range: 0 < GIDC < 1\n";
     outText << "GIDC = 0, when all in-degrees are equal (i.e. regular lattice).\n";
     outText << "GIDC = 1, when one node is linked from every other node.\n";
-    outText << "The in-degree of the node is a measure of the \'activity\' of the node it represents\n";
+
     outText << "(Wasserman & Faust, p. 101)\n";
+
+    if (considerWeights) {
+        outText << "\nNOTE: Because the network is weighted, we normalize Group Centrality multiplying by (N-1)/maxDC, where N is the total vertices, and subtracting the percentage of isolated vertices\n";
+    }
 
     outText << "\n\n";
     outText << tr("In-Degree Centrality Report, \n");
@@ -2194,12 +2210,11 @@ void Graph::centralityOutDegree(bool weights){
         ODC= (*it)->ODC();
         if (!weights) {
             (*it) -> setSODC( ODC / (vert-1.0) );		//Set Standard InDegree
-            nom+= (maxODC-ODC);
         }
         else {
             (*it) -> setSODC( ODC / (sumODC) );
-            nom+= (maxODC-ODC);
         }
+        nom+= (maxODC-ODC);
         qDebug() << "Graph: vertex " <<  (*it)->name() << " SODC " << (*it)->SODC ();
 
         varianceDegree += (ODC-meanDegree) * (ODC-meanDegree) ;
@@ -2257,8 +2272,14 @@ void Graph::writeCentralityOutDegree (
     outText << tr("If the network is weighted, ODC is the sum of outgoing link weights of node u to all adjacent nodes.\n");
     outText << tr("ODC' is the standardized ODC\n\n");
 
+    if (considerWeights){
+        maximumIndexValue=(vertices()-1.0)*maxIDC;
+        outText << tr("ODC  range: 0 < C < undefined (since this is a weighted network")<<"\n";
+    }
+    else
+        outText << tr("ODC  range: 0 < C < ")<<QString::number(maximumIndexValue)<<"\n";
 
-    outText << tr("ODC  range: 0 < C < ")<<QString::number(maximumIndexValue)<<"\n";
+
     outText << "ODC' range: 0 < C'< 1"<<"\n\n";
 
     outText << "Node"<<"\tODC\tODC'\t%ODC\n";
@@ -2291,8 +2312,11 @@ void Graph::writeCentralityOutDegree (
     outText << "GODC = 0, when all out-degrees are equal (i.e. regular lattice).\n";
     outText << "GODC = 1, when one node completely dominates or overshadows the other nodes.\n";
     outText << "(Wasserman & Faust, formula 5.5, p. 177)\n\n";
-    outText << "The degree of the node is a measure of the \'activity\' of the node it represents\n";
     outText << "(Wasserman & Faust, p. 101)\n";
+
+    if (considerWeights) {
+        outText << "\nNOTE: Because the network is weighted, we normalize Group Centrality multiplying by (N-1)/maxDC, where N is the total vertices, and subtracting the percentage of isolated vertices\n";
+    }
 
     outText << "\n\n";
     outText << tr("Out-Degree Centrality Report, \n");
