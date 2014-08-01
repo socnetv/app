@@ -1300,13 +1300,12 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                 if ( (*it)->CC() != 0 ) //Closeness centrality must be inverted
                     CC=1.0/(*it)->CC();
                 else CC=0;
-                (*it)->setSCC ( CC * ( aVertices-1.0)  );
-                (*it)->setCC( CC );
                 //Resolve classes Closeness centrality
                 qDebug("=========Resolving CC classes...");
                 resolveClasses(CC, discreteCCs, classesCC,(*it)->name() );
                 sumCC+=CC;
-                minmax( (*it)->SCC(), (*it), maxCC, minCC, maxNodeCC, minNodeCC) ;
+                (*it)->setCC( CC );
+
                 //And graph centrality must be inverted...
                 if ( (*it)->GC() != 0 ) {
                     EC=(*it)->GC();		//Eccentricity Centrality is max geodesic
@@ -1315,12 +1314,10 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                 else { GC=0; EC=0;}
                 (*it)->setGC( GC );		//Set Graph Centrality
                 (*it)->setEC( EC ); 		//Set Eccentricity Centrality
+
                 //Resolve classes Graph centrality
                 resolveClasses(GC, discreteGCs, classesGC);
-                stdGC =(aVertices-1.0)*GC ;
-                (*it)->setSGC(stdGC);
                 sumGC+=GC;
-                minmax( GC, (*it), maxGC, minGC, maxNodeGC, minNodeGC) ;
 
                 stdEC =EC/(aVertices-1.0);
                 (*it)->setSEC(stdEC);
@@ -1402,6 +1399,17 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                 sumBC+=BC;
                 minmax( BC, (*it), maxBC, minBC, maxNodeBC, minNodeBC) ;
 
+                qDebug()<< "Calculating Std Closeness centrality";
+                CC = (*it)->CC();
+                (*it)->setSCC ( CC / sumCC  );
+                minmax( (*it)->SCC(), (*it), maxCC, minCC, maxNodeCC, minNodeCC) ;
+
+                qDebug()<< "Calculating Std Graph centrality";
+                GC = (*it)->GC();
+                (*it)->setSGC( GC / sumGC );
+                minmax( (*it)->SGC(), (*it), maxGC, minGC, maxNodeGC, minNodeGC) ;
+
+
                 qDebug("Resolving SC classes...");
                 SC=(*it)->SC();
                 resolveClasses(SC, discreteSCs, classesSC);
@@ -1424,18 +1432,15 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                 nomCC += maxCC- (*it)->SCC();
 
             }
-//            maxCC = (aVertices-1.0)*maxCC;	//standardize minimum and maximum Closeness centrality
-//            minCC = (aVertices-1.0)*minCC;
-            denomCC =  (( aVertices-2.0) *  (aVertices-1.0))/ (2.0*aVertices-3.0);
+            denomCC = aVertices-1.0;
             groupCC = nomCC/denomCC;	//Calculate group Closeness centrality
-           // groupODC=( ( nom * (vert-1.0))/( denom * maxODC) ) - ((float) verticesIsolated().count()/ (float) vert);
 
             nomBC*=2.0;
             denomBC =   (aVertices-1.0) *  (aVertices-1.0) * (aVertices-2.0);
             //denomBC =  (aVertices-1.0);
             groupBC=nomBC/denomBC;		//Calculate group Betweeness centrality
 
-            denomGC =  ( ( aVertices-2.0) *  (aVertices-1.0) )/ (2.0*aVertices-3.0);
+            denomGC =  aVertices-1.0;
             groupGC= nomGC/denomGC;		//Calculate group Graph centrality
 
             nomSC*=2.0;
@@ -2510,7 +2515,7 @@ void Graph::writeCentralityStress(
 
     outText << tr("STRESS CENTRALITY (SC) OF EACH NODE")<<"\n";
     outText << tr("SC(u) is the sum of sigma(s,t,u): the number of geodesics from s to t through u.")<<"\n";
-    outText << tr("SC(u) reflecoutText the total number of geodesics between all other nodes which run through u")<<"\n";
+    outText << tr("SC(u) reflect the total number of geodesics between all other nodes which run through u")<<"\n";
 
     outText << tr("SC  range: 0 < SC < ")<<QString::number(maxIndexSC)<<"\n";
     outText << tr("SC' range: 0 < SC'< 1  (SC'=1 when the node falls on all geodesics)\n\n");
