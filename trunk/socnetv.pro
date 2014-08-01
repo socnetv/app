@@ -43,7 +43,7 @@ FORMS += src/forms/filteredgesbyweightdialog.ui \
 	src/forms/webcrawlerdialog.ui \
 	src/forms/datasetselectdialog.ui 
 
-HEADERS += src/backgrcircle.h \
+HEADERS += src/guide.h \
            src/graphicswidget.h \
            src/edge.h \
            src/edgeweight.h \
@@ -62,7 +62,7 @@ HEADERS += src/backgrcircle.h \
 	   src/webcrawler.h \
 	   src/datasetselectdialog.h
 
-SOURCES += src/backgrcircle.cpp \
+SOURCES += src/guide.cpp \
            src/graphicswidget.cpp \
            src/edge.cpp \
            src/edgeweight.cpp \

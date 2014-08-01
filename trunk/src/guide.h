@@ -3,9 +3,9 @@
  version: 1.1
  Written in Qt
  
-                         backgrcircle.h  -  description
+                         Guide.h  -  description
                              -------------------
-    copyright            : (C) 2005-2013 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2014 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -24,8 +24,8 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef BACKGRCIRCLE_H
-#define BACKGRCIRCLE_H
+#ifndef Guide_H
+#define Guide_H
 
 
 
@@ -35,15 +35,15 @@
 
 class GraphicsWidget;
 
-static const int TypeBackgrCircle = QGraphicsItem::UserType+6;
+static const int TypeGuide = QGraphicsItem::UserType+6;
 
-class BackgrCircle : public QObject, public  QGraphicsItem {
+class Guide : public QObject, public  QGraphicsItem {
 	Q_OBJECT
 	Q_INTERFACES (QGraphicsItem)
 
 public:
-	BackgrCircle(GraphicsWidget *, int, int, int );
-	BackgrCircle(GraphicsWidget *, int, int );
+    Guide(GraphicsWidget *, int, int, int );
+    Guide(GraphicsWidget *, int, int );
 	enum { Type = UserType + 6 };
 	int type() const { return Type; }
 	void die();

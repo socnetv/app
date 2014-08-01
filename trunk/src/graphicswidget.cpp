@@ -37,7 +37,7 @@
 #include "edge.h"
 #include "nodenumber.h"
 #include "nodelabel.h"
-#include "backgrcircle.h"
+#include "guide.h"
 #include "edgeweight.h"
 
 /** 
@@ -647,16 +647,16 @@ void GraphicsWidget::setAllItemsVisibility(int type, bool visible){
 
 
 
-void GraphicsWidget::addBackgrCircle( int x0, int y0, int radius){
-	BackgrCircle *circ=new BackgrCircle (this, x0, y0, radius);
+void GraphicsWidget::addGuideCircle( int x0, int y0, int radius){
+    Guide *circ=new Guide (this, x0, y0, radius);
 	circ->show();
 
 }
 
 
-void GraphicsWidget::addBackgrHLine( int y0){
-	BackgrCircle *circ=new BackgrCircle (this, y0, 	this->width());
-	circ->show();
+void GraphicsWidget::addGuideHLine( int y0){
+    Guide *line=new Guide (this, y0, 	this->width());
+    line->show();
 }
 
 
@@ -668,10 +668,10 @@ void GraphicsWidget::removeAllItems(int type){
 	QList<QGraphicsItem *> list = scene()->items();
 	for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
 		if ( (*item)->type() == type){
-			BackgrCircle *bgcircle = qgraphicsitem_cast<BackgrCircle *>  (*item);
+            Guide *guide = qgraphicsitem_cast<Guide *>  (*item);
 			qDebug()<< "GW: removeAllItems - located element";
-			bgcircle->die();
-			bgcircle->deleteLater ();
+            guide->die();
+            guide->deleteLater ();
 			delete *item;
 		}
 	}
@@ -679,9 +679,9 @@ void GraphicsWidget::removeAllItems(int type){
 
 
 
-void GraphicsWidget::clearBackgrCircles(){
-	qDebug()<< "GW: clearBackgrCircles";
-	this->removeAllItems(TypeBackgrCircle);
+void GraphicsWidget::clearGuides(){
+    qDebug()<< "GW: clearGuides";
+    this->removeAllItems(TypeGuide);
 }
 
 

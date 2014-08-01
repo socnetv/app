@@ -171,6 +171,8 @@ For each node, the sum obtained is normalised by the total numbers of nodes in t
 </p>
 
 
+
+
 <h5><a name="Information" id="Information"></a>Information Centrality</h5>
 <p class="text">
 The Information Centrality (IC) is an index suggested by Stephenson and Zelen (1989).
@@ -203,4 +205,18 @@ R is the sum of the elements of any row (since all rows of C have the same sum)
 <p class="text">
 IC has a minimum value but not a maximum.
 </p>
+
+
+
+<h5><a name="PageRank" id="PageRank"></a>PageRank Centrality</h5>
+<p class="text">
+The PageRank Centrality (PRC) is an importance ranking measure for each node based on the link structure of the network.
+PageRank, developed by Page and Brin (1997), focuses on how nodes are connected to each other, treating each link from a node as a citation/backlink to another.
+<br />
+
+In essence, for each node PageRank counts all backlinks to it, but it does so by not counting all links equally while it normalizes each link from a node by the total number of links from it.
+PageRank is calculated iteratively and it corresponds to the principal eigenvector of the normalized link matrix....
+</p>
+
+
 
