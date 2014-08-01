@@ -1409,21 +1409,21 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                 (*it)->setSGC( GC / sumGC );
                 minmax( (*it)->SGC(), (*it), maxGC, minGC, maxNodeGC, minNodeGC) ;
 
-
                 qDebug("Resolving SC classes...");
                 SC=(*it)->SC();
                 resolveClasses(SC, discreteSCs, classesSC);
-                (*it)->setSSC ( SC/maxIndexSC );
-                //Find min & max SC - not using stdSC
                 sumSC+=SC;
-                minmax( SC, (*it), maxSC, minSC, maxNodeSC, minNodeSC) ;
 
             }
             for (it=m_graph.begin(); it!=m_graph.end(); it++) {
                 BC=(*it)->BC();
                 SC=(*it)->SC();
-                //Calculate numerator of groupSC
-                nomSC +=(maxSC - SC );
+
+                qDebug()<< "Calculating Std Stress centrality";
+                (*it)->setSSC ( SC/sumSC );
+                //Find min & max SC
+                minmax( (*it)->SSC(), (*it), maxSC, minSC, maxNodeSC, minNodeSC) ;
+
                 //Calculate the numerator of groupBC according to Freeman's group Betweeness
                 nomBC +=(maxBC - BC );
                 //Find numerator of groupGC
@@ -1432,6 +1432,12 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                 nomCC += maxCC- (*it)->SCC();
 
             }
+            for (it=m_graph.begin(); it!=m_graph.end(); it++) {
+                //Calculate numerator of groupSC
+                nomSC +=( maxSC - (*it)->SSC() );
+
+            }
+
             denomCC = aVertices-1.0;
             groupCC = nomCC/denomCC;	//Calculate group Closeness centrality
 
@@ -1443,8 +1449,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
             denomGC =  aVertices-1.0;
             groupGC= nomGC/denomGC;		//Calculate group Graph centrality
 
-            nomSC*=2.0;
-            denomSC =   (aVertices-1.0) *  (aVertices - 1.0) * (aVertices-2.0);
+            denomSC =   (aVertices-1.0);
             groupSC = nomSC/denomSC;	//Calculate group Stress centrality
             calculatedCentralities=true;
         }
