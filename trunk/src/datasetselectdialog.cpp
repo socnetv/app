@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer
- version: 1.0
+ version: 1.1
  Written in Qt
  
                          datasetselectdialog.cpp  -  description
@@ -51,7 +51,8 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
 			<< "Freeman_EIES_network_Acquaintanceship_at_time-1"
 			<< "Freeman_EIES_network_Acquaintanceship_at_time-2"
 			<< "Freeman_EIES_network_Messages"
-			<< "Mexican_Power_Network_1940s.lst";
+            << "Mexican_Power_Network_1940s.lst"
+            << "Knocke_Bureacracies_Information_Exchange_Network.pajek";
 
 	(ui.comboBox) -> insertItems( 1, datasets_list );
 }

@@ -4,9 +4,26 @@
 
 ChangeLog:
 
+Version 1.1 - Aug 2014
+Codename: "bugfix hunt"
+-----------------------
+- fixed circular guides boundingRect
+- fixed weighted graphs inDegree and outDegree centralization calculation
+- fixed bug in createDistanceMatrix for Closeness centrality min and max index
+- fixed bug in createDistanceMatrix for standard and group Graph and Closeness Centrality calculation
+- Changed default arrowSize and colors
+- Added dataset: Knocke_Bureacracies_Information_Exchange_Network in pajek format
+- nicer createAdjacencyMatrix in Graph to let spaces between weights.
+- nicer printout of distance and sigmas matrix
+- Changed minimum size of scene and graphicswidget to remove scrollbars
+- Enabled SmoothPixmapTransform qpainter render hint by default
+- Removed obsolete optimization flag from graphicsview
+- Splited createDistanceMatrix in createDistanceMatrix and createNumberOfGeodesics
+- Updated manual for NumberOfGeodesicsMatrix option
+- Removed unused variable warnings in createDistanceMatrix
 
-Version 1.0  -  Oct 2013
-Codename: "3 years later"
+Version 1.0  -  Feb 2014
+Codename: "4 years later"
 ---------------------------
 - First version in Qt5
 - New Feature: PageRank calculation and layout

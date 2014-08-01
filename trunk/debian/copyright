@@ -1,5 +1,5 @@
 This package was debianized by Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com> on
-Tue, 13 Jan 2009 15:52:01 +0200.
+Tue, 27 Feb 2014 15:52:01 +0200.
 
 It was downloaded from http://socnetv.sourceforge.net
 
@@ -9,7 +9,7 @@ Upstream Author:
 
 Copyright:
 
-    Copyright (C) 2009 Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
+    Copyright (C) 2014 Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
    
 License:
 
@@ -27,7 +27,7 @@ License:
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Packaging:
-     The Debian packaging is (C) 2009, Dimitris Kalamaras <dimitris.kalamaras@gmail.com> and
+     The Debian packaging is (C) 2014, Dimitris Kalamaras <dimitris.kalamaras@gmail.com> and
      is licensed under the GPL, see `/usr/share/common-licenses/GPL'.
 
 

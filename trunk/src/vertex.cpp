@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer 
- version: 1.0
+ version: 1.1
  Written in Qt
  
                          vertex.cpp  -  description
@@ -56,6 +56,9 @@ Vertex::Vertex(	Graph* parent,
 	outLinkColors.reserve(1600);	
 	m_outLinks=0;
 	m_inLinks=0;
+    m_outDegree=0;
+    m_inDegree=0;
+    m_localDegree=0;
 	m_ODC=0; m_SODC=0; m_IDC=0; m_SIDC=0; m_CC=0; m_SCC=0; m_BC=0; m_SBC=0; m_GC=0; m_SGC=0; m_SC=0; m_SSC=0;
     m_CLC=0; m_hasCLC=false;
 	
@@ -111,8 +114,8 @@ void Vertex::changeLinkWeightTo(long int target, float weight){
 
 //finds and removes a link to vertice v2
 void Vertex::removeLinkTo (long int v2) {
-	qDebug() << "Vertex: removeLinkTo() vertex " << m_name << " has " <<outDegree() << " edges. RemovingEdgeTo "<< v2 ;
-	if (outDegree()>0) {
+    qDebug() << "Vertex: removeLinkTo() vertex " << m_name << " has " <<outEdges() << " out-edges. RemovingEdgeTo "<< v2 ;
+    if (outEdges()>0) {
 		m_outLinks--;
 		imap_f::iterator it=m_outEdges.find(v2);
 		if ( it != m_outEdges.end() ) {
@@ -124,7 +127,7 @@ void Vertex::removeLinkTo (long int v2) {
 		else {
 			qDebug("Vertex: edge doesnt exist.");
 		}
-		qDebug() << "Vertex: vertex " <<  m_name << " now has " <<  outDegree() << " edges";
+        qDebug() << "Vertex: vertex " <<  m_name << " now has " <<  outEdges() << " out-edges";
 	}
 	else {
 		qDebug() << "Vertex: vertex " <<  m_name << " has no edges" ;
@@ -133,8 +136,8 @@ void Vertex::removeLinkTo (long int v2) {
 
 
 void Vertex::removeLinkFrom(long int v2){
-	qDebug() << "Vertex: removeLinkFrom() vertex " << m_name << " has " <<  outDegree() << "  edges. RemovingEdgeFrom " << v2 ;
-	if (outDegree()>0) {
+    qDebug() << "Vertex: removeLinkFrom() vertex " << m_name << " has " <<  inEdges() << "  in-edges. RemovingEdgeFrom " << v2 ;
+    if (inEdges()>0) {
 		m_inLinks--;
 		imap_f::iterator i=m_inEdges.find(v2);
 		if ( i != m_inEdges.end() ) {
@@ -145,7 +148,7 @@ void Vertex::removeLinkFrom(long int v2){
 		else {
 			qDebug() << "Vertex: edge doesnt exist.";
 		}
-		qDebug() << "Vertex: vertex " << m_name << " now has " << inDegree() << "  edges"  ;
+        qDebug() << "Vertex: vertex " << m_name << " now has " << inEdges() << " in-edges"  ;
 	}
 	else {
 		qDebug() << "Vertex: vertex " << m_name << " has no edges";
@@ -202,20 +205,42 @@ void Vertex::filterEdgesByWeight(float m_threshold, bool overThreshold){
 
 
 
-
-
-
-//Returns the numbers of links from this vertice
-long int Vertex::outDegree() {
-	//return m_outLinks;
-	return m_outEdges.size();		//FIXME: What if the user has filtered out links? 
+/* Returns the number of outward directed graph edges (arcs), aka the number of links, from this vertex   */
+long int Vertex::outEdges() {
+    return m_enabled_outEdges.size();
 }
 
 
 
-//Returns the numbers of links to this vertice
+/* Returns the number of inward directed graph edges (arcs), aka the number of links, pointing to this vertex   */
+long int Vertex::inEdges() {
+    return m_inEdges.size(); 			//FIXME: What if the user has filtered out links?
+}
+
+
+
+//Returns the outDegree (the sum of all out-Edges weights) of this vertice
+long int Vertex::outDegree() {
+    imap_f::iterator it1;
+    m_outDegree=0;
+    for( it1 =  m_outEdges.begin(); it1 !=  m_outEdges.end(); it1++ ) {
+        if  ( m_enabled_outEdges[ it1->first ] == 1) {
+            m_outDegree +=it1->second;
+        }
+    }
+    return m_outDegree;
+}
+
+
+
+//Returns the inDegree (the sum of all in-Edges weights) of this vertice
 long int Vertex::inDegree() {
-	return m_inLinks; 			//FIXME: What if the user has filtered out links?
+    imap_f::iterator it1;
+    m_inDegree=0;
+    for( it1 =  m_inEdges.begin(); it1 !=  m_inEdges.end(); it1++ ) {
+            m_inDegree +=it1->second;
+    }
+    return m_inDegree;
 }
 
 
@@ -226,7 +251,7 @@ long int Vertex::inDegree() {
 long int Vertex::localDegree(){
 	imap_f::iterator it1;
 	long int v2=0;
-	long int m_localDegree = (outDegree() + inDegree() );
+    m_localDegree = (outDegree() + inDegree() );
 	for( it1 =  m_outEdges.begin(); it1 !=  m_outEdges.end(); it1++ ) {
 		v2=it1->first;		
 		if (this->isLinkedFrom (v2) ) m_localDegree--; 

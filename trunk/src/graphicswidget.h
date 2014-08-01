@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer
- version: 1.0
+ version: 1.1
  Written in Qt
  
                          graphicswidget.h  -  description
@@ -39,7 +39,7 @@ class Node;
 class Edge;
 class NodeNumber;
 class NodeLabel;
-class BackgrCircle;
+class Guide;
 class EdgeWeight;
 
 typedef QMap<QString, Edge*> StringToEdgeMap;
@@ -112,9 +112,9 @@ public slots:
 	void drawEdgeReciprocal(int, int);
 	void unmakeEdgeReciprocal(int, int);
 
-	void clearBackgrCircles();
-	void addBackgrCircle( int x0, int y0, int radius);
-	void addBackgrHLine(int y0);
+    void clearGuides();
+    void addGuideCircle( int x0, int y0, int radius);
+    void addGuideHLine(int y0);
 	void zoomIn();
 	void zoomOut();
 	void rot(int angle);

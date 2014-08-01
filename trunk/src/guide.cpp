@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer
- version: 1.0
+ version: 1.1
  Written in Qt
 
-                         backgrcircle.cpp  -  description
+                         Guide.cpp  -  description
                              -------------------
-    copyright            : (C) 2005-2013 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2014 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -24,10 +24,10 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#include "backgrcircle.h"
+#include "guide.h"
 #include "graphicswidget.h"
 
-BackgrCircle::BackgrCircle ( GraphicsWidget *gw, int x0, int y0, int radius ) : graphicsWidget ( gw ){
+Guide::Guide ( GraphicsWidget *gw, int x0, int y0, int radius ) : graphicsWidget ( gw ){
 	graphicsWidget->scene()->addItem ( this );
 	m_x0=x0;
 	m_y0=y0;
@@ -38,7 +38,7 @@ BackgrCircle::BackgrCircle ( GraphicsWidget *gw, int x0, int y0, int radius ) : 
 
 
 
-BackgrCircle::BackgrCircle ( GraphicsWidget *gw,  int y0, int w) : graphicsWidget ( gw ){
+Guide::Guide ( GraphicsWidget *gw,  int y0, int w) : graphicsWidget ( gw ){
 	graphicsWidget->scene()->addItem ( this );
 	m_y0=y0;
 	width= w;
@@ -48,21 +48,21 @@ BackgrCircle::BackgrCircle ( GraphicsWidget *gw,  int y0, int w) : graphicsWidge
 
 
 /** Returns the bounding rectangle of the background circle*/
-QRectF BackgrCircle::boundingRect() const {
-	if (circle) {
-	 return QRectF ( -m_x0 - m_radius-5, -m_y0 - m_radius-5, m_x0 + m_radius + 5, m_y0 + m_radius +5 );
+QRectF Guide::boundingRect() const {
+    if (circle) {
+     return QRectF ( m_x0 - m_radius-1, m_y0 - m_radius-1, m_x0 + 2 * m_radius + 1, m_y0 + 2* m_radius +1 );
 	}
 	else  {
-	 return QRectF ( 1, m_y0 -5,  width, m_y0 + 5 );
+     return QRectF ( 1, m_y0 -1,  width, m_y0 + 1 );
 	}
 }
 
 
-void BackgrCircle::paint ( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget * ){
+void Guide::paint ( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget * ){
 	Q_UNUSED(option);
 	painter->setPen ( QPen ( QColor ( "red" ), 1, Qt::DotLine ) );
 	if (circle) {
-		painter->drawArc ( m_x0-m_radius, m_y0-m_radius, 2*m_radius, 2*m_radius, 0, 5760 );
+        painter->drawEllipse ( QPoint(m_x0, m_y0), m_radius, m_radius );
 	}
 	else {
 		painter->drawLine ( 10 , m_y0, width-10 , m_y0);	
@@ -71,7 +71,7 @@ void BackgrCircle::paint ( QPainter *painter, const QStyleOptionGraphicsItem *op
 
 
 
-void BackgrCircle::die (){
+void Guide::die (){
 	this->prepareGeometryChange();
 	this->hide();
 	this->update();

@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer
- version: 1.0
+ version: 1.1
  Written in Qt
  
                          graph.h  -  description
@@ -112,8 +112,8 @@ signals:
     void setEdgeVisibility ( int, int, bool);			// emitted from each Vertex
     void setVertexVisibility(long int, bool);		//notifies GW to disable a node
     void drawEdgeReciprocal(int, int);				//call GW to draw the edge as symmetric one
-    void addBackgrCircle(int, int, int);				//call GW to draw a circular layout line somewhere.
-    void addBackgrHLine (int);					//call GW to draw a horizontal layout line somewhere.
+    void addGuideCircle(int, int, int);				//call GW to draw a circular layout line somewhere.
+    void addGuideHLine (int);					//call GW to draw a horizontal layout line somewhere.
     void moveNode(int, int, int);
 
 
@@ -150,7 +150,6 @@ public:
     void setInitVertexSize (long int); 			//Changes the init size used in new vertices.
     void setVertexSize(long int v, int );		//Changes the size.of vertex v
 
-
     void setInitVertexShape (QString); 		//Changes the init shape used in new vertices.
     void setVertexShape(int v, QString shape); 	//Changes the shape.of vertex v
     QString shape(int v);				//returns the shape of this vertex
@@ -170,23 +169,29 @@ public:
     void setVertexLabelColor(int v1, QString color);
     QString label(int);
 
-
     void updateVertCoords(int v, int x, int y);	 //Updates vertex v with coords x,y
 
     int vertices() ;				//Returns the sum of vertices inside m_graph
 
-    int edgesFrom (int i) ;				//Returns the number of edges starting from v1 (outDegree)
-    int edgesTo (int i) ;				//Returns the number of edges ending to v1 (inDegree)
+    int outEdges (int i) ;				//Returns the number of edges starting from v1 (outDegree)
+    int inEdges (int i) ;				//Returns the number of edges ending to v1 (inDegree)
 
-    int verticesWithOutEdges();			//Returns the sum of vertices having outEdges
-    int verticesWithInEdges();			//Returns the sum of vertices having inEdges
+    int outDegree(int);             //Returns the sum of weights of all out-Edges of v1 (outDegree)
+    int inDegree(int);              //Returns the sum of weights of all in-Edges of v1 (inDegree)
+
+    int verticesWithOutEdges();			//Returns the sum of vertices having no outEdges
+    int verticesWithInEdges();			//Returns the sum of vertices having no inEdges
     int verticesWithReciprocalEdges();		//Returns the sum of vertices having reciprocal edges
+
+    QList<int> verticesIsolated();         //Returns a list of all isolated vertices
 
 
     /* EDGES */
     float hasEdge (int v1, int v2);			//Checks if edge between v1 and v2 exists. Returns weight or -1
     void removeEdge (int v1, int v2);		//removes the edge between v1 and v2
 
+
+    bool isWeighted();                          // Returns true if the graph is weighted.
 
     void setEdgeWeight (int v1, int v2, float w); 	//Sets the edge weight between v1 and v2
     void setInitEdgeColor(QString);
@@ -213,7 +218,9 @@ public:
     void writeAdjacencyMatrix(const char*, const char*);		//Writes the adjacency matrix to a given file.
 
     void writeInvertAdjacencyMatrix(const char*,  const char*);
-    void writeDistanceMatrix(const char*, const char*, const char*);//Writes the distance matrix to a file
+    void writeDistanceMatrix(const char*, const char*);//Writes the distance matrix to a file
+    void writeNumberOfGeodesicsMatrix(const char*, const char*);//Writes the number of geodesics matrix to a file
+
     friend QTextStream& operator <<  (QTextStream& os, Graph& m);  	//
 
     void writeCentralityInDegree(const QString, bool);		//Writes the in-degree centralities to a file
@@ -246,7 +253,7 @@ public:
 
     void centralityInformation();       //Calculates the informational centrality of each vertex
 
-    void centralityPageRank();       //Calculates the PageRank centrality of each vertex
+    int centralityPageRank();       //Calculates the PageRank centrality of each vertex
 
     float numberOfTriples(int v1); 		//Returns the number of triples at vertex v1
     float numberOfCliques(int v1);		//Calculates the number of cliques (triangles) of vertex v1
@@ -331,6 +338,7 @@ private:
     bool calculatedIDC, calculatedODC, calculatedCentralities, dynamicMovement;
 
     QList<int>  triadTypeFreqs; 	//stores triad type frequencies
+    QList<int>  m_isolatedVerticesList;
     Matrix  TM, DM, sumM, invAM, AM, invM;
     stack<int> Stack;
 

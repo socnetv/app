@@ -1,3 +1,23 @@
+socnetv (1.1-1ubuntu1) trusty; urgency=low
+
+  *  Update package to upstream version 1.1
+  *  1.0 was the first version in Qt5
+  *  New Feature: PageRank calculation and layout
+  *  New reference item: SRS Documentation by Vagelis Motesnitsalis
+  *  Re-introduce GraphViz import menu option
+  *  Init "Spring Embedder" tab checkbox to none when user creates new network.
+  *  fixed weighted graphs inDegree and outDegree centralization calculation
+  *  fixed bug in createDistanceMatrix for Closeness centrality min and max index
+  *  fixed bugs in standard and group Graph and Closeness Centrality calculation
+  *  Changed default arrowSize and colors
+  *  Added dataset: Knocke_Bureacracies_Information_Exchange_Network in pajek format
+  *  nicer createAdjacencyMatrix in Graph to let spaces between weights.
+  *  nicer printout of distance and sigmas matrix
+  *  Changed minimum size of scene and graphicswidget to remove scrollbars
+  *  Updated manual for NumberOfGeodesicsMatrix option
+
+ -- Dimitris Kalamaras <dimitris.kalamaras@gmail.com>  Fri, 01 Aug 2014 20:15:59 +0300
+
 socnetv (0.90-1ubuntu1) maverick; urgency=low
 
   * update to version 0.90
