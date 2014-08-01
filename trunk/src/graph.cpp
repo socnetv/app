@@ -1412,24 +1412,20 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 
             }
             for (it=m_graph.begin(); it!=m_graph.end(); it++) {
-                //Find denominal of groupSC
                 BC=(*it)->BC();
                 SC=(*it)->SC();
-
+                //Calculate numerator of groupSC
                 nomSC +=(maxSC - SC );
-
                 //Calculate the numerator of groupBC according to Freeman's group Betweeness
                 nomBC +=(maxBC - BC );
-                //nomBC +=(maxBC - (*it)->SBC());
-
-                //Find denominal of groupGC
+                //Find numerator of groupGC
                 nomGC += maxGC-(*it)->SGC();
-                //Find denominal of groupCC
+                //Find numerator of groupCC
                 nomCC += maxCC- (*it)->SCC();
 
             }
-            maxCC = (aVertices-1.0)*maxCC;	//standardize minimum and maximum Closeness centrality
-            minCC = (aVertices-1.0)*minCC;
+//            maxCC = (aVertices-1.0)*maxCC;	//standardize minimum and maximum Closeness centrality
+//            minCC = (aVertices-1.0)*minCC;
             denomCC =  (( aVertices-2.0) *  (aVertices-1.0))/ (2.0*aVertices-3.0);
             groupCC = nomCC/denomCC;	//Calculate group Closeness centrality
            // groupODC=( ( nom * (vert-1.0))/( denom * maxODC) ) - ((float) verticesIsolated().count()/ (float) vert);
@@ -2457,6 +2453,9 @@ void Graph::writeCentralityGraph(
     emit statusMessage ( QString(tr("Writing graph centralities to file:")).arg(fileName) );
 
     outText << tr("GRAPH CENTRALITY (GC) OF EACH NODE")<<"\n";
+    outText << tr("The GC of a node is the invert of the maximum of all geodesic distances from that node to all other nodes in the network.") << "\n";
+    outText << tr("Nodes with high GC have short distances to all other nodes in the graph.")<< "\n";
+
     outText << tr("GC  range: 0 < GC < ")<<maxIndexGC<< " (GC=1 => distance from other nodes is max 1)\n";
     outText << tr("GC' range: 0 < GC'< 1  (GC'=1 => directly linked with all nodes)")<<"\n\n";
 
@@ -2482,7 +2481,7 @@ void Graph::writeCentralityGraph(
     outText << tr("GGC range: 0 < GGC < 1\n");
     outText << tr("GGC = 0, when all the nodes have exactly the same graph index.\n");
     outText << tr("GGC = 1, when one node falls on all other geodesics between all the remaining (N-1) nodes. This is exactly the situation realised by a star graph.\n");
-    outText << "(Wasserman & Faust, formula 5.13, p. 192)\n\n";
+
 
     outText << "\n\n";
     outText << tr("Graph Centrality report, \n");
