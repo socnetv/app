@@ -150,7 +150,6 @@ public:
     void setInitVertexSize (long int); 			//Changes the init size used in new vertices.
     void setVertexSize(long int v, int );		//Changes the size.of vertex v
 
-
     void setInitVertexShape (QString); 		//Changes the init shape used in new vertices.
     void setVertexShape(int v, QString shape); 	//Changes the shape.of vertex v
     QString shape(int v);				//returns the shape of this vertex
@@ -170,17 +169,21 @@ public:
     void setVertexLabelColor(int v1, QString color);
     QString label(int);
 
-
     void updateVertCoords(int v, int x, int y);	 //Updates vertex v with coords x,y
 
     int vertices() ;				//Returns the sum of vertices inside m_graph
 
-    int edgesFrom (int i) ;				//Returns the number of edges starting from v1 (outDegree)
-    int edgesTo (int i) ;				//Returns the number of edges ending to v1 (inDegree)
+    int outEdges (int i) ;				//Returns the number of edges starting from v1 (outDegree)
+    int inEdges (int i) ;				//Returns the number of edges ending to v1 (inDegree)
 
-    int verticesWithOutEdges();			//Returns the sum of vertices having outEdges
-    int verticesWithInEdges();			//Returns the sum of vertices having inEdges
+    int outDegree(int);             //Returns the sum of weights of all out-Edges of v1 (outDegree)
+    int inDegree(int);              //Returns the sum of weights of all in-Edges of v1 (inDegree)
+
+    int verticesWithOutEdges();			//Returns the sum of vertices having no outEdges
+    int verticesWithInEdges();			//Returns the sum of vertices having no inEdges
     int verticesWithReciprocalEdges();		//Returns the sum of vertices having reciprocal edges
+
+    QList<int> verticesIsolated();         //Returns a list of all isolated vertices
 
 
     /* EDGES */
@@ -335,6 +338,7 @@ private:
     bool calculatedIDC, calculatedODC, calculatedCentralities, dynamicMovement;
 
     QList<int>  triadTypeFreqs; 	//stores triad type frequencies
+    QList<int>  m_isolatedVerticesList;
     Matrix  TM, DM, sumM, invAM, AM, invM;
     stack<int> Stack;
 

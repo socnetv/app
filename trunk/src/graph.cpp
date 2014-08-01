@@ -329,8 +329,8 @@ void Graph::removeVertex(long int Doomed){
     //Remove links to Doomed from each other vertex
     for (QList<Vertex*>::iterator it=m_graph.begin(); it!=m_graph.end(); it++){
         if  ( (*it)->isLinkedTo(Doomed) != 0) {
-            qDebug()<< "Graph: Vertex " << (*it)->name() << " is linked to selected and has outDegree " << (*it)->outDegree() ;
-            if ( (*it)->outDegree() == 1 && (*it)->isLinkedFrom(Doomed) != 0 )	{
+            qDebug()<< "Graph: Vertex " << (*it)->name() << " is linked to selected and has " << (*it)->outEdges() << " and " <<  (*it)->outDegree() ;
+            if ( (*it)->outEdges() == 1 && (*it)->isLinkedFrom(Doomed) != 0 )	{
                 qDebug() << "Graph: decreasing reciprocalEdgesVert";
                 (*it)->setReciprocalLinked(false);
             }
@@ -718,24 +718,39 @@ void Graph::updateVertCoords(int v1, int  x, int y){
 
 /**	Returns the number of edges (arcs) from vertex v1
 */
-int Graph::edgesFrom (int v1) {  
-    qDebug("Graph: edgesFrom()");
-    return m_graph[ index[v1] ]->outDegree();
+int Graph::outEdges(int v1) {
+    qDebug("Graph: outEdges()");
+    return m_graph[ index[v1] ]->outEdges();
 }
 
 
 /**	
     Returns the number of edges (arcs) to vertex v1
 */
-int Graph::edgesTo (int v1) {  
-    qDebug("Graph: edgesTo()");
-    QList<Vertex*>::iterator it;
-    int m_outEdgesTo=0;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        if  ( (*it)->isLinkedTo(v1) != 0) m_outEdgesTo++;
-    }
-    return m_outEdgesTo;
+int Graph::inEdges (int v1) {
+    qDebug("Graph: inEdges()");
+    return m_graph[ index[v1] ]->inEdges();
 }
+
+
+
+
+/**	Returns the outDegree (sum of outLinks weights) of vertex v1
+*/
+int Graph::outDegree (int v1) {
+    qDebug("Graph: outDegree()");
+    return m_graph[ index[v1] ]->outDegree();
+}
+
+
+/**
+    Returns the inDegree (sum of inLinks weights) of vertex v1
+*/
+int Graph::inDegree (int v1) {
+    qDebug("Graph: inDegree()");
+    return m_graph[ index[v1] ]-> inDegree();
+}
+
 
 
 /** 
@@ -746,7 +761,7 @@ int Graph::totalEdges () {
     int tEdges=0;
     QList<Vertex*>::iterator it;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        tEdges+=(*it)->outDegree();
+        tEdges+=(*it)->outEdges();
     }
     qDebug() << "Graph: m_totalEdges = " << m_totalEdges << ", tEdges=" <<  tEdges;
     return tEdges;
@@ -761,6 +776,38 @@ int Graph::vertices () {
     return m_totalVertices;
 }
 
+/**
+    Returns a list of all isolated vertices inside the graph
+*/
+QList<int> Graph::verticesIsolated(){
+    int i=0, j=0;
+    QList<Vertex*>::iterator it, it1;
+    m_isolatedVerticesList.clear();
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        (*it)->setIsolated(true);
+        if ( ! (*it)->isEnabled() )
+            continue;
+        j=i;
+        for (it1=it; it1!=m_graph.end(); it1++){
+            (*it1)->setIsolated(true);
+            if ( ! (*it1)->isEnabled() )
+                continue;
+            if (i != j ) {
+                if ( (this->hasEdge ( (*it1)->name(), (*it)->name() )  ) !=0 ) {
+                    (*it)->setIsolated(false);
+                    (*it1)->setIsolated(false);
+                }
+            }
+            j++;
+        }
+        if ((*it)->isIsolated()) {
+            m_isolatedVerticesList << i;
+            qDebug()<< "Graph::createAdjacencyMatrix() - node " << i+1 << " is isolated. Marking it." ;
+        }
+        i++;
+    }
+    return m_isolatedVerticesList ;
+}
 
 float Graph::density() {
     qDebug("Graph: density()");
@@ -822,6 +869,7 @@ void Graph::clear() {
     index.clear();
     discreteIDCs.clear();
     discreteODCs.clear();
+    m_isolatedVerticesList.clear();
     m_totalVertices=0;
     m_totalEdges=0;
     outEdgesVert=0;
@@ -1982,17 +2030,17 @@ void Graph::centralityInDegree(bool weights){
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         IDC= (*it)->IDC();
         if (!weights) {
-               (*it) -> setSIDC( IDC / (vert-1.0) );		//Set Standard InDegree
+            (*it) -> setSIDC( IDC / (vert-1.0) );		//Set Standard InDegree
+            nom+= maxIDC-IDC;
         }
         else {
-             (*it) -> setSIDC( IDC / (sumIDC) );
+            (*it) -> setSIDC( IDC / (sumIDC) );
+            nom+= (maxIDC-IDC) / (  sumIDC / (vert -1) );
         }
         qDebug() << "Graph: vertex = " <<  (*it)->name() << " has IDC = " << IDC << " and SIDC " << (*it)->SIDC ();
 
-
         //qDebug("Graph: IDC = %f, meanDegree = %f", IDC, meanDegree);
         varianceDegree += (IDC-meanDegree) * (IDC-meanDegree) ;
-        nom+= maxIDC-IDC;
     }
     if (symmetricAdjacencyMatrix)
         denom=(vert-1.0)*(vert-2.0);
@@ -2028,14 +2076,18 @@ void Graph::writeCentralityInDegree (const QString fileName, const bool consider
     QTextStream outText ( &file );
 
     centralityInDegree(considerWeights);
-
     float maximumIndexValue=vertices()-1.0;
 
     outText << tr("IN-DEGREE CENTRALITIES (IDC) OF EACH NODE\n");
     outText << tr("IDC is the sum of incoming links to node u from all adjacent nodes.\n");
     outText << tr("If the network is weighted, IDC is the sum of incoming link weights to node u from all adjacent nodes.\n");
     outText << tr("IDC' is the standardized IDC\n\n");
-    outText << tr("IDC  range: 0 < C < ")<<maximumIndexValue<<"\n";
+    if (considerWeights){
+        maximumIndexValue=(vertices()-1.0)*maxIDC;
+        outText << tr("IDC  range: 0 < C < undefined (since this is a weighted network")<<"\n";
+    }
+    else
+        outText << tr("IDC  range: 0 < C < ")<<maximumIndexValue<<"\n";
     outText << "IDC' range: 0 < C'< 1"<<"\n\n";
 
     outText << "Node"<<"\tIDC\tIDC'\t%IDC\n";
@@ -2146,19 +2198,27 @@ void Graph::centralityOutDegree(bool weights){
         }
         else {
             (*it) -> setSODC( ODC / (sumODC) );
-            nom+= (maxODC-ODC)/(sumODC / (vert - 1) );
+            nom+= (maxODC-ODC);
         }
         qDebug() << "Graph: vertex " <<  (*it)->name() << " SODC " << (*it)->SODC ();
 
         varianceDegree += (ODC-meanDegree) * (ODC-meanDegree) ;
     }
+    varianceDegree=varianceDegree/(float) vert;
+
     if (symmetricAdjacencyMatrix)
         denom=(vert-1.0)*(vert-2.0);
     else
         denom=(vert-1.0)*(vert-1.0);
-    varianceDegree=varianceDegree/(float) vert;
 
-    groupODC=nom/denom;
+    if (!weights) {
+        groupODC=nom/denom;
+    }
+    else {
+        qDebug()<< "Graph::centralityOutDegree vertices isolated: " << verticesIsolated().count() << ". I will subtract groupODC by " << ((float)verticesIsolated().count()/(float)vert);
+        groupODC=( ( nom * (vert-1.0))/( denom * maxODC) ) - ((float) verticesIsolated().count()/ (float) vert);
+    }
+
     qDebug("Graph: varianceDegree = %f, groupODC = %f", varianceDegree, groupODC);
 
     if (!weights) {
@@ -3146,7 +3206,7 @@ float Graph:: numberOfCliques(int v1){
     qDebug("*** Graph::numberOfCliques(%i) ", v1);
     float cliques=0;
     int  connectedVertex1=0, connectedVertex2=0;
-    qDebug() << "Graph::numberOfCliques() Source vertex " << v1 << "[" << index[v1] << "] has inDegree " << edgesTo(v1) << " and outDegree "<< edgesFrom(v1);
+    qDebug() << "Graph::numberOfCliques() Source vertex " << v1 << "[" << index[v1] << "] has inDegree " << inEdges(v1) << " and outDegree "<< outEdges(v1);
     imap_f::iterator it1, it2;
     bool symmetric=false;
     if ( ! (symmetric = isSymmetric()) ) {  //graph is not symmetric
@@ -3235,10 +3295,10 @@ float Graph::numberOfCliques(){
 float Graph::numberOfTriples(int v1){
     float totalDegree=0;
     if (isSymmetric()){
-        totalDegree=edgesFrom(v1);
+        totalDegree=outEdges(v1);
         return totalDegree * (totalDegree -1.0) / 2.0;
     }
-    totalDegree=edgesFrom(v1) + edgesTo(v1);  //FIXEM
+    totalDegree=outEdges(v1) + inEdges(v1);  //FIXEM
     return	totalDegree * (totalDegree -1.0);
 }
 
@@ -3268,14 +3328,14 @@ float Graph:: clusteringCoefficient(int v1){
     if (isSymmetric()){
         totalCliques = totalCliques / 2.0;
         qDebug(" Graph::Calculating number of triples");
-        totalDegree=edgesFrom(v1);
+        totalDegree=outEdges(v1);
         denom =	totalDegree * (totalDegree -1.0) / 2.0;
         qDebug("Graph:: Symmetric. Number of triples is %f.  Dividing number of cliques with it", denom);
 
     }
     else {
         qDebug(" Graph::Calculating number of triples");
-        totalDegree=edgesFrom(v1) + edgesTo(v1);  //FIXME
+        totalDegree=outEdges(v1) + inEdges(v1);  //FIXME
         denom = totalDegree * (totalDegree -1.0);
         qDebug("Graph:: Symmetric. Number of triples is %f.  Dividing number of cliques with it", denom);
     }

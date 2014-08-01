@@ -1468,16 +1468,16 @@ void MainWindow::initToolBox(){
 
     QLabel *labelInLinksLCD = new QLabel;
     labelInLinksLCD -> setText (tr("Node In-Degree:"));
-    labelInLinksLCD -> setToolTip (tr("This is the number of edges ending at the node you clicked on."));
+    labelInLinksLCD -> setToolTip (tr("The sum of all in-edge weights of the node you clicked.."));
     inLinksLCD=new QLCDNumber(7);
     inLinksLCD -> setSegmentStyle(QLCDNumber::Flat);
-    inLinksLCD -> setToolTip (tr("This is the number of edges ending at the node you clicked on."));
+    inLinksLCD -> setToolTip (tr("The sum of all in-edge weights of the node you clicked."));
     QLabel *labelOutLinksLCD = new QLabel;
     labelOutLinksLCD -> setText (tr("Node Out-Degree:"));
-    labelOutLinksLCD -> setToolTip (tr("This is the number of edges starting from the node you clicked on."));
+    labelOutLinksLCD -> setToolTip (tr("The sum of all out-edge weights of the node you clicked."));
     outLinksLCD=new QLCDNumber(7);
     outLinksLCD -> setSegmentStyle(QLCDNumber::Flat);
-    outLinksLCD -> setToolTip (tr("This is the number of edges starting from the node you clicked on."));
+    outLinksLCD -> setToolTip (tr("The sum of all out-edge weights of the node you clicked."));
 
     QLabel *labelClucofLCD  = new QLabel;
     labelClucofLCD -> setText (tr("Clustering Coef."));
@@ -1613,7 +1613,7 @@ void MainWindow::initView() {
     // For dynamic scenes, or scenes with many animated items, the index bookkeeping can outweight the fast lookup speeds." So...
     scene->setItemIndexMethod(QGraphicsScene::BspTreeIndex); //NoIndex (for anime) | BspTreeIndex
 
-    graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+    graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
     graphicsWidget->setResizeAnchor(QGraphicsView::AnchorViewCenter);
 
     // sets dragging the mouse over the scene while the left mouse button is pressed.
@@ -3271,8 +3271,8 @@ void MainWindow::nodeInfoStatusBar ( Node *jim) {
     nodeClicked=true;
     clickedJim=jim;
     clickedJimNumber=clickedJim->nodeNumber();
-    int inLinks=activeGraph.edgesTo(clickedJimNumber);
-    int outLinks=activeGraph.edgesFrom(clickedJimNumber);
+    int inLinks=activeGraph.inDegree(clickedJimNumber);
+    int outLinks=activeGraph.outDegree(clickedJimNumber);
     selectedNodeLCD->display (clickedJimNumber);
     inLinksLCD->display (inLinks);
     outLinksLCD->display (outLinks);
@@ -4154,7 +4154,7 @@ void MainWindow::slotLayoutNodeSizeProportionalOutEdges(bool checked){
     for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
         if ( (*it) -> type() == TypeNode ){
             Node *jim = (Node*) (*it);
-            edges = activeGraph.edgesFrom(  (*jim).nodeNumber() ) ;
+            edges = activeGraph.outEdges(  (*jim).nodeNumber() ) ;
             qDebug() << "Node " << (*jim).nodeNumber() <<  " outDegree:  "<<  edges;
 
             if (edges == 0 ) {
@@ -4236,7 +4236,7 @@ void MainWindow::slotLayoutNodeSizeProportionalInEdges(bool checked){
     for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
         if ( (*it) -> type() == TypeNode ){
             Node *jim = (Node*) (*it);
-            edges = activeGraph.edgesTo(  (*jim).nodeNumber() ) ;
+            edges = activeGraph.inEdges(  (*jim).nodeNumber() ) ;
             qDebug() << "Node " << (*jim).nodeNumber() << " inDegree:  " <<  edges;
 
             if (edges == 0 ) {

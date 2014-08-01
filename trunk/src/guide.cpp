@@ -49,7 +49,7 @@ Guide::Guide ( GraphicsWidget *gw,  int y0, int w) : graphicsWidget ( gw ){
 
 /** Returns the bounding rectangle of the background circle*/
 QRectF Guide::boundingRect() const {
-	if (circle) {
+    if (circle) {
      return QRectF ( m_x0 - m_radius-1, m_y0 - m_radius-1, m_x0 + 2 * m_radius + 1, m_y0 + 2* m_radius +1 );
 	}
 	else  {
@@ -63,7 +63,6 @@ void Guide::paint ( QPainter *painter, const QStyleOptionGraphicsItem *option, Q
 	painter->setPen ( QPen ( QColor ( "red" ), 1, Qt::DotLine ) );
 	if (circle) {
         painter->drawEllipse ( QPoint(m_x0, m_y0), m_radius, m_radius );
-        //painter->drawArc ( m_x0-m_radius, m_y0-m_radius, 2*m_radius, 2*m_radius, 0, 5760 );
 	}
 	else {
 		painter->drawLine ( 10 , m_y0, width-10 , m_y0);	

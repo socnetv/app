@@ -75,8 +75,11 @@ public:
     void removeLinkTo (long int target);		/* Removes edge to vertex t */
     void removeLinkFrom(long int source);	/* Removes edge from vertex s	*/
 
-    long int outDegree();	/* Returns the number of outward directed graph edges from this vertex   */
-    long int inDegree();		/* Returns the number of inward directed graph edges from this vertex   */
+    long int outEdges();
+    long int inEdges();
+
+    long int outDegree();
+    long int inDegree();
     long int localDegree();
 
     /* Returns true if there is a reciprocal link from this vertex */
@@ -208,7 +211,7 @@ protected:
 private:
     Graph *parentGraph;
     ilist myPs;
-    long int m_name,  m_outLinks, m_inLinks;
+    long int m_name,  m_outLinks, m_inLinks, m_outDegree, m_inDegree, m_localDegree;
     int m_value, m_size, m_labelSize, m_numberSize;
     bool m_inLinked, m_outLinked, m_reciprocalLinked, m_enabled, m_hasCLC, m_isolated;
     QString m_color, m_numberColor, m_label, m_labelColor, m_shape;
