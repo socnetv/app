@@ -1,4 +1,4 @@
-socnetv (1.1-1ubuntu1) trusty; urgency=low
+socnetv (1.1-1) trusty; urgency=low
 
   *  Update package to upstream version 1.1
   *  1.0 was the first version in Qt5
@@ -11,25 +11,24 @@ socnetv (1.1-1ubuntu1) trusty; urgency=low
   *  fixed bugs in standard and group Graph and Closeness Centrality calculation
   *  Changed default arrowSize and colors
   *  Added dataset: Knocke_Bureacracies_Information_Exchange_Network in pajek format
-  *  nicer createAdjacencyMatrix in Graph to let spaces between weights.
-  *  nicer printout of distance and sigmas matrix
+  *  nicer printout of adjacency matrix, distance and sigmas matrix
   *  Changed minimum size of scene and graphicswidget to remove scrollbars
   *  Updated manual for NumberOfGeodesicsMatrix option
 
- -- Dimitris Kalamaras <dimitris.kalamaras@gmail.com>  Fri, 01 Aug 2014 20:15:59 +0300
+ -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Mon, 04 Aug 2014 00:29:24 +0300
 
 socnetv (0.90-1ubuntu1) maverick; urgency=low
 
   * update to version 0.90
 
- -- Dimitris Kalamaras <dimitris.kalamaras@yahoo.gr>  Thu, 14 Oct 2010 00:46:19 +0300
+ -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Thu, 14 Oct 2010 00:46:19 +0300
 
 socnetv (0.81-1ubuntu2) karmic; urgency=low
 
   * update to version 0.81
   * Support to auto create known data sets
 
- -- dimitris kalamaras <dimitris.kalamaras@yahoo.gr>  Thu, 28 Jan 2010 02:49:48 +0200
+ -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Thu, 28 Jan 2010 02:49:48 +0200
 
 socnetv (0.80-1ubuntu1) karmic; urgency=low
 
@@ -37,14 +36,14 @@ socnetv (0.80-1ubuntu1) karmic; urgency=low
   * support for csv and list files
   * new statistics: triad census, clique counts
 
- -- Dimitris Kalamaras <dimitris.kalamaras@yahoo.gr>  Fri, 08 Jan 2010 19:32:01 +0200
+ -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Fri, 08 Jan 2010 19:32:01 +0200
 
 socnetv (0.70-1) jaunty; urgency=low
 
   * update to version 0.70
   * first webcrawler implementation
 
- -- dimitris <dimitris@quest>  Mon, 29 Jun 2009 01:04:04 +0300
+ -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Mon, 29 Jun 2009 01:04:04 +0300
 
 socnetv (0.51-2) intrepid; urgency=low
 

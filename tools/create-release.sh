@@ -72,8 +72,8 @@ echo ! UPLOAD TO SOURCEFORGE         !
 echo ---------------------------------
 echo .
 
-rsync  -e ssh SocNetV-$VER.tar.gz  oxy86@frs.sourceforge.net:/home/frs/project/socnetv/$VER
-rsync  -e ssh SocNetV-$VER.tar.bz2  oxy86@frs.sourceforge.net:/home/frs/project/socnetv/$VER
+scp SocNetV-$VER.tar.gz  oxy86@frs.sourceforge.net:/home/frs/project/socnetv/$VER
+scp SocNetV-$VER.tar.bz2  oxy86@frs.sourceforge.net:/home/frs/project/socnetv/$VER
 cd socnetv-$VER/
 
 

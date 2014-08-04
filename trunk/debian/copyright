@@ -1,33 +1,16 @@
-This package was debianized by Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com> on
-Tue, 27 Feb 2014 15:52:01 +0200.
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: socnetv
+Upstream-Contact: Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
+Source: http://socnetv.sf.net
 
-It was downloaded from http://socnetv.sourceforge.net
+Files: *
+Copyright: 2004-2014 Dimitris Kalamaras
+License: GPL-3
 
-Upstream Author:
+Files: debian/*
+Copyright: 2014-2014 Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
+License: GPL-3
 
-    Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
-
-Copyright:
-
-    Copyright (C) 2014 Dimitris Kalamaras <dimitris.kalamaras@gmail.com>
-   
-License:
-
-     This program is free software: you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published by
-     the Free Software Foundation, either version 3 of the License, or
-     (at your option) any later version.
-
-     This program is distributed in the hope that it will be useful,
-     but WITHOUT ANY WARRANTY; without even the implied warranty of
-     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-     GNU General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-Packaging:
-     The Debian packaging is (C) 2014, Dimitris Kalamaras <dimitris.kalamaras@gmail.com> and
-     is licensed under the GPL, see `/usr/share/common-licenses/GPL'.
-
-
+License: GPL-3
+ On Debian systems, the complete text of the GNU General Public
+ License can be found in the file /usr/share/common-licenses/GPL-3.
