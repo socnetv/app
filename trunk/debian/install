@@ -1,0 +1,2 @@
+socnetv usr/bin/
+nets/* usr/share/socnetv/nets/
