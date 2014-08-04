@@ -3,7 +3,9 @@
 
 
 #CHANGE THIS TO NEW VERSION NUMBERS
-VER=0.80;   
+
+echo "Enter SocNetV version"
+read VER   
 echo $VER
 
 echo .
@@ -46,7 +48,7 @@ echo ---------------------------------
 echo    CLEANING UP COMPILED FILES   
 echo ---------------------------------
 
-./configure > /dev/null 2>&1
+
 qmake
 make clean
 rm socnetv 
@@ -74,9 +76,9 @@ echo   COPY FILES TO WORKING DIRS
 echo ---------------------------------
 
 
-find . -not -name "qdevelop-*" -not -name "socnetv" -not -name ".qdevelop"  -not -name "pajek*" -not -path "*./autom4te.cache*" -not -path "*.svn*" -not -path "*./test-nets*"  -print0  | cpio -pmd0 ../ubuntu/socnetv-$VER
+find . -not -name "qdevelop-*" -not -name "socnetv" -not -name ".qdevelop"  -not -name "pajek*" -not -path "*./autom4te.cache*" -not -path "*.svn*" -not -path "*./test-nets*" -not -path ".git" -not -name ".user"  -print0  | cpio -pmd0 ../ubuntu/socnetv-$VER
 
-find . -not -name "qdevelop-*" -not -name "socnetv" -not -name ".qdevelop"  -not -name "pajek*" -not -path "*./autom4te.cache*" -not -path "*.svn*" -not -path "*./test-nets*"  -print0  | cpio -pmd0 ../ubuntu/socnetv-$VER.orig
+find . -not -name "qdevelop-*" -not -name "socnetv" -not -name ".qdevelop"  -not -name "pajek*" -not -path "*./autom4te.cache*" -not -path "*.svn*" -not -path "*./test-nets*" -not -path ".git" -not -name ".user"  -print0  | cpio -pmd0 ../ubuntu/socnetv-$VER.orig
 
 
 
@@ -94,8 +96,8 @@ elif [ $ans = "n" ]; then
         exit;
 fi
 
-tar zcfv SocNetV-$VER.tar.gz socnetv-$VER/
-tar jcfv SocNetV-$VER.tar.bz2 socnetv-$VER/
+tar zcfv socnetv_$VER.tar.gz socnetv-$VER/
+tar jcfv socnetv_$VER.orig.tar.bz2 socnetv-$VER/
 
 
 
@@ -125,7 +127,7 @@ echo     SOURCE TEST PACKAGE CREATION
 echo ---------------------------------
 echo .
 
-debuild -S
+#debuild -S
 
 echo .
 echo ---------------------------------
@@ -168,8 +170,11 @@ echo .
 cd socnetv-$VER/
 debuild -S -sa 
 
+echo ----------------------------------------
 echo Check if final DEB has been created...
-echo
+echo CDing to upper directory
+echo ----------------------------------------
+
 cd ..
 ls -lh *.deb 
 echo
@@ -218,7 +223,7 @@ fi
 
 echo Last exit!
 read ans
-dput ppa socnetv_"$VER"_source.changes
+dput ppa:dimitris-kalamaras/ppa  socnetv_"$VER"_source.changes
 
 
 
@@ -238,7 +243,7 @@ echo   UPLOADING FINAL DEB PACKAGE
 echo ---------------------------------
 echo .
 
-rsync -avP -e ssh ../ubuntu/*.deb  oxy86@frs.sourceforge.net:uploads/
+scp ../ubuntu/*.deb oxy86@frs.sourceforge.net:/home/frs/project/socnetv/$VER
 
 
 echo --------------------------------

@@ -2,14 +2,15 @@ Source: socnetv
 Section: math
 Priority: optional
 Maintainer: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
-Build-Depends: debhelper (>= 7), qt5-default, libqt5webkit5-dev
-Standards-Version: 3.9.2
+XSBC-Original-Maintainer: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
+Build-Depends: debhelper (>= 9), qt5-default, libqt5webkit5-dev
+Standards-Version: 3.9.5
 Homepage: http://socnetv.sourceforge.net
-Vcs-Svn: http://socnetv.svn.sourceforge.net/svnroot/socnetv/trunk  
+Vcs-Git: https://sourceforge.net/p/socnetv/git/ci/master/tree/trunk/ 
 
 Package: socnetv
 Architecture: any
-Depends: ${shlibs:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Social Networks Visualization and Analysis Software
  SocNetV (Social Networks Visualiser) is a flexible and
  user-friendly tool for Social Networks Analysis and Visualisation.
@@ -24,4 +25,3 @@ Description: Social Networks Visualization and Analysis Software
  visualisations of your networks. Furthermore, simple random
  networks (lattice, same degree, etc) can be created.
  .
- Homepage: http://socnetv.sourceforge.net

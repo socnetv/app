@@ -1,5 +1,5 @@
-lessThan(QT_VERSION, 4.8) {
-    error("SocNetV requires at least Qt 4.8!")
+lessThan(QT_VERSION, 5.0) {
+    error("SocNetV requires at least Qt 5.0!")
 }
 
 # START added for ArchLinux / openSUSE compatibility
