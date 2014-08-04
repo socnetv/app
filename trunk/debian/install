@@ -1,3 +1,5 @@
 socnetv usr/bin/
 nets/* usr/share/socnetv/nets/
-socnetv.xpm usr/share/pixmaps/
+src/images/socnetv.xpm usr/share/pixmaps/
+src/images/socnetv.png usr/share/pixmaps/
+socnetv.desktop usr/share/applications/

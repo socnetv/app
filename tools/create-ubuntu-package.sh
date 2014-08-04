@@ -194,15 +194,6 @@ fi
 
 
 
-echo . 
-echo "Upload .changes file to Launchpad PPA? (Y/N)";
-read ans
-if [ $ans = "N" ]; then
-        exit;
-
-elif [ $ans = "n" ]; then    
-        exit;
-fi
 
 echo .
 echo ---------------------------------
@@ -210,20 +201,14 @@ echo   	UPLOAD FINAL PACKAGE
 echo ---------------------------------
 echo .
 
-VER=`grep urgency socnetv-$VER/debian/changelog | awk '{ print $2 } ' | head -n 1 | sed s/"("// |  sed s/")"//`
-echo New package version: $VER   
-echo "Proceed? (Y/N)"
+DEB_VER=`grep urgency socnetv-$VER/debian/changelog | awk '{ print $2 } ' | head -n 1 | sed s/"("// |  sed s/")"//`
+echo New debian package version: $DEB_VER   
+echo "Upload .changes file to Launchpad PPA? (Y/N)";
 read ans
-if [ $ans = "N" ]; then
-        exit;
-
-elif [ $ans = "n" ]; then    
-        exit;
+if [ $ans = "Y" ]; then
+	dput ppa:dimitris-kalamaras/ppa  socnetv_"$DEB_VER"_source.changes
 fi
 
-echo Last exit!
-read ans
-dput ppa:dimitris-kalamaras/ppa  socnetv_"$VER"_source.changes
 
 
 
@@ -243,7 +228,9 @@ echo   UPLOADING FINAL DEB PACKAGE
 echo ---------------------------------
 echo .
 
-scp ../ubuntu/*.deb oxy86@frs.sourceforge.net:/home/frs/project/socnetv/$VER
+
+echo 
+scp *.deb oxy86@frs.sourceforge.net:/home/frs/project/socnetv/$VER/
 
 
 echo --------------------------------
