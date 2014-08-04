@@ -99,7 +99,8 @@ win32 {
 macx:ICON = src/images/socnetv.icns
 
 
-TRANSLATIONS    = translations/socnetv_es.ts 
+TRANSLATIONS    = translations/socnetv_es.ts \ 
+		  translations/socnetv_el.ts 
 
 
 
