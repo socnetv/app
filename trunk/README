@@ -59,7 +59,7 @@ SocNetV in distros with older releases of Qt.
 a) Compile from Source Code
 	
 To compile from source code, download the tarball archive with the source code 
-of SocNetV (you probably already have this :P). 
+of the latest SocNetV version (you probably already have this :P). 
 Then, untar (decompress) the archive using a command like this:
 
 tar zxfv SocNetV-1.X.tar.gz
@@ -80,16 +80,29 @@ sudo make install
 
 If everything is ok, then you can run SocNetV by entering:
 
-./socnetv
+socnetv
 
 
-b) Install a binary package (Linux/Mac/Windows)
+b) Install a binary package or executable (Linux/Mac/Windows)
 
-To install SocNetV from a binary package or an executable for Windows, 
-check http://socnetv.sourceforge.net and see if there 
-is a package for your operating system. 
+To install SocNetV from a binary package for Linux or an executable for Windows, 
+check http://socnetv.sourceforge.net/downloads.html and see if there 
+is a package of the latest version for your operating system. 
+Please note that SocNetV is also available in most Linux distributions,
+although not always the latest version.
+In Debian and Ubuntu, install SocNetV from repos with:
+sudo apt-get install socnetv
+In Fedora, use the command:
+sudo yum install socnetv
+In openSUSE:
+sudo zypper in socnetv
 
-You can find versions for Mac on the Internet, although these are 
+Mac OS users may download the disk image of the latest version from 
+http://socnetv.sourceforge.net/downloads.html.
+Double click on the .img file, then on the new window click socnetv icon 
+while pressing down the meta key.
+
+You can also find versions for Mac on the Internet, although these are 
 not supported. See: http://pdb.finkproject.org/pdb/package.php/socnetv-mac
 
 
