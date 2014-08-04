@@ -1,5 +1,5 @@
 ?package(socnetv): \
 		needs="X11" \
-		section="Applications/Science/Data Analysis"\
+		section="Applications/Science/Mathematics"\
 		title="socnetv" command="/usr/bin/socnetv" \
 		icon="/usr/share/pixmaps/socnetv.xpm"

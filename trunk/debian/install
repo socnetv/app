@@ -1,2 +1,3 @@
 socnetv usr/bin/
 nets/* usr/share/socnetv/nets/
+socnetv.xpm usr/share/pixmaps/
