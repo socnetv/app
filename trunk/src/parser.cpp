@@ -214,8 +214,9 @@ bool Parser::loadPajek(){
 	QStringList lineElement;
     bool ok=false, intOk=false, check1=false, check2=false;
     bool nodes_flag=false, edges_flag=false, arcs_flag=false, arcslist_flag=false, matrix_flag=false;
-    bool fileContainsNodeColors=false, fileContainsNodesCoords=false;
-    bool fileContainsLinksColors=false;
+    fileContainsNodeColors=false;
+    fileContainsNodeCoords=false;
+    fileContainsLinkColors=false;
     bool zero_flag=false;
 	int   i=0, j=0, miss=0, source= -1, target=-1, nodeNum, colorIndex=-1, coordIndex=-1;
 	unsigned long int lineCounter=0;
@@ -373,7 +374,7 @@ bool Parser::loadPajek(){
 							if (check1 && check2)    {
 								randX=randX * gwWidth;
 								randY=randY * gwHeight;
-                                fileContainsNodesCoords=true;
+                                fileContainsNodeCoords=true;
 							}
 							if (randX <= 0.0 || randY <= 0.0 ) {
 								randX=rand()%gwWidth;
@@ -385,7 +386,7 @@ bool Parser::loadPajek(){
 					//qDebug()<<"Coords: "<<randX << randY<< gwHeight;
 				}
 				else { 
-                    fileContainsNodesCoords=false;
+                    fileContainsNodeCoords=false;
 					randX=rand()%gwWidth;
 					randY=rand()%gwHeight;
 					//qDebug()<<"No coords. Using random "<<randX << randY;
@@ -474,7 +475,7 @@ bool Parser::loadPajek(){
 
 				if (lineElement.contains("c", Qt::CaseSensitive ) ) {
 					//qDebug("Parser-loadPajek(): file with link colours");
-                    fileContainsLinksColors=true;
+                    fileContainsLinkColors=true;
 					colorIndex=lineElement.indexOf( QRegExp("[c]"), 0 )  +1;
 					if (colorIndex >= lineElement.count()) edgeColor=initEdgeColor;
 					else 	edgeColor=lineElement [ colorIndex ];
@@ -516,7 +517,7 @@ bool Parser::loadPajek(){
 				if (lineElement.contains("c", Qt::CaseSensitive ) ) {
 					//qDebug("Parser-loadPajek(): file with link colours");
 					edgeColor=lineElement.at ( lineElement.indexOf( QRegExp("[c]"), 0 ) + 1 );
-                    fileContainsLinksColors=true;
+                    fileContainsLinkColors=true;
 				}
 				else  {
 					//qDebug("Parser-loadPajek(): file with no link colours");
@@ -533,7 +534,7 @@ bool Parser::loadPajek(){
 				//qDebug("Parser-loadPajek(): === Reading arcs list===");
 				if (lineElement[0].startsWith("-") ) lineElement[0].remove(0,1);
 				source= lineElement[0].toInt(&ok, 10);
-                fileContainsLinksColors=false;
+                fileContainsLinkColors=false;
 				edgeColor=initEdgeColor;
 				undirected=0;
                 arrows=true;
@@ -549,7 +550,7 @@ bool Parser::loadPajek(){
 				//qDebug("Parser-loadPajek(): === Reading matrix of edges===");
 				i++;
 				source= i;
-                fileContainsLinksColors=false;
+                fileContainsLinkColors=false;
 				edgeColor=initEdgeColor;
 				undirected=0;
                 arrows=true;

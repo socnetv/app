@@ -102,7 +102,7 @@ private:
 	float bez_p1_x,bez_p1_y, bez_p2_x, bez_p2_y;
 	  
 	bool arrows, bezier, conv_OK;
-	bool bool_key, bool_node, bool_edge;
+    bool bool_key, bool_node, bool_edge, fileContainsNodeColors, fileContainsNodeCoords, fileContainsLinkColors;
 	
 	QString key_id, key_value, key_name, key_what, key_type;
 	QString node_id, edge_id, edge_source, edge_target; 
