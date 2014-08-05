@@ -57,6 +57,7 @@ bool printDebug=false;
 
 void myMessageOutput( QtMsgType type, const QMessageLogContext &context, const QString &msg )     {
     QByteArray localMsg = msg.toLocal8Bit();
+    Q_UNUSED(context);
     if (printDebug)
         switch ( type ) {
         case QtDebugMsg:

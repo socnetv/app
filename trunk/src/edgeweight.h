@@ -37,7 +37,7 @@ static const int TypeEdgeWeight = QGraphicsItem::UserType+5;
 class EdgeWeight: public QGraphicsTextItem
 {
 public:
-    	EdgeWeight(Edge * , int, QString, QGraphicsScene * );
+    EdgeWeight(Edge * , int, QString);
 	void removeRefs();
 	void move(double x, double y);
 

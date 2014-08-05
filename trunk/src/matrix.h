@@ -29,8 +29,6 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
-using namespace std;
-
 
 #include <QtGlobal>		//used for qDebug function
 #include <QDebug>

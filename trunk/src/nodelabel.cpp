@@ -29,7 +29,7 @@
 #include <QFont>
 
 
-NodeLabel::NodeLabel( Node *jim ,  int size,  QString labelText,  QGraphicsScene *scene) :QGraphicsTextItem(0) {
+NodeLabel::NodeLabel( Node *jim ,  int size,  QString labelText) :QGraphicsTextItem(0) {
 	source=jim;
 	jim -> addLabel(this);
 	setParentItem(jim); //auto disables child items like this, when node is disabled.

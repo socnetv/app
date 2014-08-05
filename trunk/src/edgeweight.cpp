@@ -28,7 +28,7 @@
 #include <QFont>
 
 
-EdgeWeight::EdgeWeight( Edge *link , int size, QString labelText, QGraphicsScene *scene )
+EdgeWeight::EdgeWeight( Edge *link , int size, QString labelText)
 : QGraphicsTextItem( 0)
 {
 	link -> addWeight(this);

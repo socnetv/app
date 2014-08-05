@@ -26,6 +26,8 @@
 
 #include "matrix.h"
 
+using namespace std;
+
 #include <iostream>		//used for cout
 
 #include <math.h>		//need for fabs function

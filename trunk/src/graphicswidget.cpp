@@ -116,7 +116,7 @@ void GraphicsWidget::drawNode(
 			);
 
 	//Drawing node label - label will be moved by the node movement (see last code line in this method)
-	NodeLabel *labelJim = new  NodeLabel (jim, labelSize, nodeLabel, scene() );
+    NodeLabel *labelJim = new  NodeLabel (jim, labelSize, nodeLabel );
 	labelJim -> setDefaultTextColor (labelColor);
 	labelJim -> setTextInteractionFlags(Qt::TextEditorInteraction);
 	
@@ -132,7 +132,7 @@ void GraphicsWidget::drawNode(
 	if (numberInsideNode)
 		numberSize = size-2;
 
-	NodeNumber *numberJim = new  NodeNumber ( jim, numberSize, QString::number(num), scene() );
+    NodeNumber *numberJim = new  NodeNumber ( jim, numberSize, QString::number(num));
 	numberJim -> setDefaultTextColor (numberColor);
 	
 	if (!showNumbers){
@@ -177,7 +177,7 @@ void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool 
 	double x = ( (nodeHash.value(i))->x() + (nodeHash.value(j))->x() ) / 2.0;
 	double y = ( (nodeHash.value(i))->y() + (nodeHash.value(j))->y() ) / 2.0;
 
-	EdgeWeight *edgeWeight = new  EdgeWeight (edge, 7, QString::number(weight), scene() );
+    EdgeWeight *edgeWeight = new  EdgeWeight (edge, 7, QString::number(weight) );
 	edgeWeight-> setPos(x,y);
 	edgeWeight-> setDefaultTextColor (color);
 	edgeWeight-> hide();
