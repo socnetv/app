@@ -1,13 +1,46 @@
 #!/bin/bash
-workdir=/home/dimitris/socnetv/trunk
+echo "*******************";
+echo "* Version updater *";
+echo "*******************";
+
+if [ -d /etc/mach_init.d ]; then
+ workdir=/Users/dimitris/socnetv/trunk
+else
+ workdir=/home/dimitris/socnetv/trunk
+fi
+echo "using $workdir";
+echo "Is this correct ? (Y/N)";
+read ans;
+
+if [ $ans = "N" ]
+then
+        echo "enter workdir: ";
+	read workdir;
+elif [ $ans = "n" ]
+then
+        echo "enter workdir: ";
+        read workdir;
+fi
 cd $workdir
+
+year=`date "+%Y"`;
+echo "The year is now $year";
+let lastyear=$year-1;
+echo "Last year was $lastyear";
+echo "Correct? (Y/N)"
+if [ $ans = "N" ]
+then
+        echo "enter lastyear: ";
+        read lastyear;
+elif [ $ans = "n" ]
+then
+        echo "enter lastyear: ";
+        read lastyear;
+fi
+
 
 
 update_version() {
-	old=0.81;
-	new=0.90;
-	dateold=2009;
-	datenew=2010;
 	echo "Current version seems to be ....";
 	grep "VERSION=" src/mainwindow.h
 
@@ -45,6 +78,26 @@ update_version() {
 	perl -p -i.bak -e s/"$old"/"$new"/g src/*.cpp
 	perl -p -i.bak -e s/"$old"/"$new"/g src/*.h
 	
+        old="2005-$lastyear";
+        new="2005-$year";
+
+        echo "";
+        echo "Changing copyright year in headers and sources from "
+        echo $old
+        echo " to ....";
+        echo $new
+        perl -w -p -i.bak -e s/"$old"/"$new"/g src/*.cpp
+        perl -p -i.bak -e s/"$old"/"$new"/g src/*.h
+
+
+	echo "";
+	old="SocNetV-$oldver";
+	new="SocNetV-$newver";
+	echo "Updating man page";
+	echo $new
+	gunzip man/socnetv.1.gz
+	perl -p -i.bak -e s/"$old"/"$new"/g man/socnetv.*
+	gzip man/socnetv.1
 
 	echo "";
 	old="v. $oldver"
@@ -53,12 +106,11 @@ update_version() {
 	perl -p -i.bak -e s/"$old"/"$new"/g manual/footer.html
 
 	echo "";
-	echo "Updating configure";
-	perl -p -i.bak -e s/"$oldver"/"$newver"/g configure.ac
-
-	echo "";
-	echo "Running autoconf..."
-	autoconf &> /dev/null
+        old="version $oldver"
+        new="version $newver"
+        echo "Updating spec";
+        perl -p -i.bak -e s/"$old"/"$new"/g socnetv.spec
+	echo "Please update socnetv.spec changelog manually"
 	
 }
 
@@ -99,6 +151,6 @@ else
 	mkdir ../temp
 fi
 
-mv src/*.bak ../temp	
-
+# mv src/*.bak ../temp	
+find . -type f -name "*.bak" -exec mv {} ../temp \;
 
