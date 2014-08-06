@@ -30,7 +30,7 @@
 
 
 #include <QGraphicsTextItem>
-#include "edge.h"
+class Edge;
 
 static const int TypeEdgeWeight = QGraphicsItem::UserType+5;
 

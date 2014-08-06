@@ -969,7 +969,7 @@ void MainWindow::initActions(){
     displayLinksAct->setChecked(true);
     connect(displayLinksAct, SIGNAL(toggled(bool)), this, SLOT(slotDisplayLinks(bool)) );
 
-    displayLinksWeightNumbersAct = new QAction(tr("Display Weight Numbers"),	this);
+    displayLinksWeightNumbersAct = new QAction(tr("Display Link Weights"),	this);
     displayLinksWeightNumbersAct->setStatusTip(tr("Toggles displaying of numbers of links weights"));
     displayLinksWeightNumbersAct->setWhatsThis(tr("Display Weight Numbers\n\nClick to enable or disable displaying numbers of links weight"));
     displayLinksWeightNumbersAct->setCheckable(true);
@@ -5592,6 +5592,8 @@ void MainWindow::slotDisplayLinksWeightNumbers(bool toggle) {
         statusMessage( tr("No nodes or edges found. Sorry...") );
         return;
     }
+    qDebug() << "MW: slotDisplayLinksWeightNumbers - Toggling Edges Weights. Please wait...";
+
     statusMessage( tr("Toggle Edges Weights. Please wait...") );
 
     if (!toggle) 	{
@@ -5604,43 +5606,6 @@ void MainWindow::slotDisplayLinksWeightNumbers(bool toggle) {
         statusMessage( tr("Edge weights are visible again...") );
     }
     activeGraph.setShowLabels(toggle);
-
-
-    // 	pair<int,int> pair1;
-    // 	QList<QGraphicsItem *> list=scene->items();
-    // 	if ( toggle )   {  //draw Edge Weight Numbers
-    // 		qDebug ("toogle is true. Will show weight numbers");
-    // 		for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
-    // 			if ( (*it)->type() ==   Link_Rtti ){
-    // 				Edge* link= (Edge*) (*it);
-    // 				qDebug ("found link");
-    //  				EdgeWeight *linkWeight =new  EdgeWeight (link, QString::number(link->weight()), scene );
-    // 				qDebug ("will draw weight number %i",link->weight() );
-    //
-    //                			linkWeight ->setZ (255);
-    // 				pair1=link->center();
-    //                 		linkWeight ->move(pair1.first,pair1.second);
-    //                 		linkWeight-> setColor (link->color());
-    //                 		linkWeight ->show();
-    // 				qDebug ("show");
-    // 			}
-    // 	}
-    // 	else { //delete them
-    // 		qDebug ("toogle is false. Deleting all numbers");
-    // 		for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++){
-    // 			if ( (*item)->type() ==   Weight_Rtti ) {
-    // 				delete *item;
-    // 			}
-    // 			else if ( (*item)->type() ==   Link_Rtti ) {
-    // 				Edge* link= (Edge*) (*item);
-    // 				link->clearWeightList();
-    // 				qDebug ("weight List cleared");
-    // 			}
-    //
-    // 		}
-    // 		return;
-    // 	}
-
 }
 
 

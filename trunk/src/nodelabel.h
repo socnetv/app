@@ -31,7 +31,6 @@
 #include <QGraphicsTextItem>
 class Node;
 
-
 static const int TypeLabel = QGraphicsItem::UserType+4;
 
 class NodeLabel : public QGraphicsTextItem{

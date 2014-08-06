@@ -173,10 +173,10 @@ void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool 
     qDebug()<<"GW: drawEdge() - adding new edge between "<<i << " and "<< j<< " to edgesMap. Name: "<<edgeName.toUtf8();
 	edgesMap [edgeName] =  edge;
 
-	qDebug()<< "GW: drawNode(): drawing edge weight number...";
+    qDebug()<< "GW: drawEdge(): drawing edge weight number...";
 	double x = ( (nodeHash.value(i))->x() + (nodeHash.value(j))->x() ) / 2.0;
 	double y = ( (nodeHash.value(i))->y() + (nodeHash.value(j))->y() ) / 2.0;
-
+    qDebug()<< "GW: drawEdge(): edge weight will be at " << x << ", " << y;
     EdgeWeight *edgeWeight = new  EdgeWeight (edge, 7, QString::number(weight) );
 	edgeWeight-> setPos(x,y);
 	edgeWeight-> setDefaultTextColor (color);
@@ -638,6 +638,7 @@ bool GraphicsWidget::setMarkedNode(QString nodeText){
 void GraphicsWidget::setAllItemsVisibility(int type, bool visible){
 	QList<QGraphicsItem *> list = scene()->items();
 	for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
+        qDebug()<< "GW::setAllItemsVisibility. item type is " << (*item)->type();
 		if ( (*item)->type() == type){
 			if (visible)	(*item)->show();
 			else	(*item)->hide();
