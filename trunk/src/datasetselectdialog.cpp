@@ -34,7 +34,7 @@
 DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
 {
 	ui.setupUi(this);	
-	connect ( ui.buttonBox,SIGNAL(accepted()), this, SLOT(gatherData()) );
+
 	(ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
 
 	QStringList datasets_list;
@@ -54,16 +54,27 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
             << "Mexican_Power_Network_1940s.lst"
             << "Knocke_Bureacracies_Information_Exchange_Network.pajek";
 
-	(ui.comboBox) -> insertItems( 1, datasets_list );
+    (ui.selectBox) -> insertItems( 1, datasets_list );
 }
 
 
 
 void DataSetSelectDialog::gatherData(){
 	qDebug()<< "Dialog: gathering Data!...";
-	QString dataset_name = (ui.comboBox) -> currentText(); 
+    QString dataset_name = (ui.selectBox) -> currentText();
 	qDebug()<< "Dialog: emitting userChoises signal ";
 	emit userChoices( dataset_name );
 			
 }
 
+
+void DataSetSelectDialog::on_buttonBox_accepted()
+{
+    this->gatherData();
+    this->accept();
+}
+
+void DataSetSelectDialog::on_buttonBox_rejected()
+{
+    this->reject();
+}
