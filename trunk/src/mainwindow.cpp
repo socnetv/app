@@ -848,6 +848,12 @@ void MainWindow::initActions(){
     connect(averGraphDistanceAct, SIGNAL(triggered()), this, SLOT(slotAverageGraphDistance()));
 
 
+    walksAct = new QAction(QIcon(":/images/walk.png"), tr("Number of Walks"),this);
+    walksAct->setShortcut(tr("Ctrl+W"));
+    walksAct->setStatusTip(tr("Calculates and displays the number of walks of every possible length"));
+    walksAct->setWhatsThis(tr("Walks\n\n A walk is a sequence of alternating vertices and edges such as v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>, where each edge, e<sub>i</sub> is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. This function counts the number of walks of any length between each pair of nodes, by studying the powers of the sociomatrix\n "));
+    connect(walksAct, SIGNAL(triggered()), this, SLOT(slotNumberOfWalks() )  );
+
     cliquesAct = new QAction(QIcon(":/images/triangle.png"), tr("Number of Cliques"),this);
     cliquesAct->setShortcut(tr("Ctrl+T"));
     cliquesAct->setStatusTip(tr("Calculates and displays the number of cliques (triangles) of each node v."));
@@ -1266,6 +1272,10 @@ void MainWindow::initMenuBar() {
     statMenu -> addAction (distanceMatrixAct);
     statMenu -> addAction (geodesicsMatrixAct);
     statMenu -> addAction (diameterAct);
+
+    statMenu -> addSeparator();
+    statMenu -> addAction (walksAct);
+
     statMenu -> addSeparator();
     statMenu -> addAction (cliquesAct);
     statMenu -> addAction (clusteringCoefAct);
@@ -4896,6 +4906,19 @@ void MainWindow::windowInfoStatusBar(int w, int h){
 
 
 
+
+
+/**
+*	Calls Graph:: writeNumberOfWalks() to print the number of walks, between
+*  each pair of nodes, to a file and then displays it.
+*/
+void MainWindow::slotNumberOfWalks(){
+    if (!fileLoaded && !networkModified  )  {
+        QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
+        return;
+    }
+}
 
 
 

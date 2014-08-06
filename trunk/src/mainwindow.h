@@ -207,6 +207,9 @@ public slots:
     void slotGraphDistance();
     void slotAverageGraphDistance();
     void slotDiameter();
+
+    void slotNumberOfWalks();
+
     void slotNumberOfCliques();
     void slotClusteringCoefficient();
     void slotTriadCensus();
@@ -350,6 +353,7 @@ private:
     QAction *drawLinksWeightsAct, *displayLinksWeightNumbersAct, *displayLinksAct, *displayLinksArrowsAct, *drawLinksBezier;
     QAction *backgroundImageAct, *viewToolBar, *viewStatusBar, *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
     QAction *netDensity, *symmetryAct,   *graphDistanceAct, *averGraphDistanceAct, *distanceMatrixAct,*geodesicsMatrixAct, *diameterAct;
+    QAction *walksAct;
     QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct, *invertAdjMatrixAct;
     QAction *cOutDegreeAct, *cInDegreeAct, *cClosenessAct, *cBetweenessAct, *cInformationAct, *cPageRankAct, *cGraphAct, *cStressAct, *cPowerAct, *cEccentAct;
     QAction *randLayoutAct, *randCircleLayoutAct, *circleOutDegreeLayoutAct, *circleInDegreeLayoutAct, *circleClosenessLayoutAct;

@@ -3408,7 +3408,7 @@ float Graph::clusteringCoefficient (){
 
 
 
-/*tri
+/*
  *  Conducts a triad census and updates QList::triadTypeFreqs,
  * 		which is the list carrying all triad type frequencies
  *  Complexity:O(n!)
