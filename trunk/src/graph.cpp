@@ -3230,6 +3230,97 @@ void Graph::createSameDegreeRandomNetwork(int vert, int degree){
     graphChanged();
 }
 
+
+/**
+    Calculates and returns the number of walks of a given length between v1 and v2
+*/
+int Graph::numberOfWalks(int v1, int v2, int length) {
+    return 1;
+}
+
+
+/**
+    Calculates and returns the numbers of walks of length l between all pairs of vertices
+*/
+void Graph::numberOfWalks(int length) {
+    qDebug()<<"Graph::numberOfWalks() - first create the Adjacency Matrix AM";
+    bool dropIsolates=false;
+    createAdjacencyMatrix(dropIsolates);
+
+    XSM = AM;
+    XSM.pow(length, false);
+}
+
+
+
+
+void Graph::writeNumberOfWalksMatrix(QString fn, QString netName, int length){
+    qDebug("Graph::writeNumberOfWalksMatrix() ");
+
+    QFile file (fn);
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+            return;
+
+    bool dropIsolates=false;
+    createAdjacencyMatrix(dropIsolates);
+
+    QTextStream out(&file);
+
+    out << "-Social Network Visualizer- \n";
+    out << "Network name "<< netName<<": \n";
+    out << "Total number of walks of any length (sums all walks from length 2 to "<< length <<") \n\n";
+
+    int size = vertices();
+    int maxPower = size - 1;
+
+    XM = AM;
+    Matrix PM; // the product matrix
+    PM.zeroMatrix(size);
+    XSM.zeroMatrix(size); // the sum of product matrices
+    qDebug()<< "Graph::writeNumberOfWalksMatrix() XM is  " ;
+    for (register int i=0; i < size ; i++) {
+        for (register int j=0; j < size ; j++) {
+            qDebug() << XM.item(i,j) <<  " ";
+        }
+        qDebug()<< endl;
+    }
+    qDebug()<< "Graph::writeNumberOfWalksMatrix() calculating sociomatrix powers up to " << maxPower;
+    for (register int i=2; i <= maxPower ; i++) {
+        PM.product(XM,AM, false);
+        XM=PM;
+        XSM = XSM+XM;
+    }
+
+    out << endl;
+
+    out << XSM ;
+
+}
+
+
+
+/**
+    Calculates and returns the minimum length of a path between a pair of vertices
+    This method is actually a reachability test (if it returns non-zero)
+*/
+int Graph::minimumPathLength(int v1, int v2) {
+
+}
+
+/**
+    Calculates and writes the reachability matrix X^R of the graph
+    where the {i,j} element is 1 if the vertices i and j are reachable
+    Actually, this just checks the corresponding element of X^S matrix,
+    which is the sum of all product matrices of A.
+
+*/
+void Graph::writeReachabilityMatrix() {
+
+}
+
+
+
 /**
     Calculates and returns the number of cliques which include vertex v1
     A clique (or triangle) is a complete subgraph of three nodes.
@@ -4458,7 +4549,7 @@ void Graph::createAdjacencyMatrix(bool dropIsolates){
                 else {
                     AM.setItem(j,i, 0);
                 }
-                qDebug()<<" AM("<< j+1 << ","<< i+1 << ") = " <<  AM.item(i,j);
+                qDebug()<<" AM("<< j+1 << ","<< i+1 << ") = " <<  AM.item(j,i);
             }
             j++;
         }

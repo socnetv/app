@@ -37,9 +37,12 @@
 
 class Row {
 public:
-	Row (int Actors=3000) {
+    Row (int Actors=3000) {
 		cell=new  float [m_Actors=Actors];
 		Q_CHECK_PTR( cell );
+        for (register int i=0;i<m_Actors; i++) {
+            cell[i]=0;
+        }
 		m_outEdges=0;
 	}
 	~Row() {delete [] cell;}
@@ -110,11 +113,12 @@ private:
 
 class Matrix {
 	public:
-		/**default constructor, not actually used. Use resize(int) */
- 		Matrix (int Actors=3000 )   {
-			row=new  Row[m_Actors=Actors];
-		        Q_CHECK_PTR( row );
-		}
+        /**default constructor - creates a Matrix of size 3000
+         *  Use resize(int) to resize it*/
+        Matrix (int Actors=3000)   {
+            row=new Row[m_Actors=Actors];
+            Q_CHECK_PTR( row );
+        }
 
 		Matrix(const Matrix &b) ;	/* Copy constructor allows Matrix a=b  declaration */
 
@@ -131,6 +135,8 @@ class Matrix {
 		int cols() {return m_Actors;}
 		
 		int rows() {return m_Actors;}
+
+        int size() { return m_Actors;}
 	
 		void deleteRowColumn(int i);	/* deletes row i and column i */
 	
@@ -147,19 +153,25 @@ class Matrix {
 
 		void identityMatrix (int);
 
+        void zeroMatrix (int);
+
 		void fillMatrix (float value );	   /* Fulls a matrix with a value */
 	
 		Matrix& operator =(Matrix & a);	    /* Equals two matrices. */
+
+        Matrix& operator +(Matrix & b);	    /* adds two matrices and returns their sum. */
+
+        Matrix operator *(Matrix & b);	    /* multiplies two matrices and returns their sum. */
 
 		float  operator ()  (const int r, const int c) ;
 		
 		friend QTextStream& operator <<  (QTextStream& os, Matrix& m);
 
 		/** Takes two matrices and returns their product as a reference */
-		Matrix & product( Matrix &a, Matrix & b, bool symmetry) ;		
+        Matrix & product( Matrix &a, Matrix & b, bool symmetry) ;
 		
 		/** Takes two symm. matrices and outputs an upper triangular matrix */
-		Matrix & productSym( Matrix &a, Matrix & b)  ;
+        Matrix & productSym( Matrix &a, Matrix & b)  ;
 		
 		Matrix & pow (int power, bool symmetry)  ;
 

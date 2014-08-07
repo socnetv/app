@@ -34,9 +34,10 @@ using namespace std;
 
 //constructor - every Row object holds max_int=32762
 Matrix::Matrix(const Matrix &b) {
+    qDebug()<< "Matrix:: constructor";
 	row = new Row[m_Actors=b.m_Actors];
 	for (register int i=0;i<m_Actors; i++) {
-			row[i].resize(m_Actors);
+            row[i].resize(m_Actors);
 		}
 	for (register int i=0; i<m_Actors; i++)
 		row[i]=b.row[i];
@@ -55,6 +56,7 @@ void Matrix::setSize (int Actors){
 
 //assigment allows copying a matrix onto another using b=a where b,a matrices
  Matrix& Matrix::operator =(Matrix & a) {
+      qDebug()<< "Matrix::operator asignment =";
 	if (this != &a){
 		if (a.m_Actors!=m_Actors) {
 			delete [] row;
@@ -69,6 +71,19 @@ void Matrix::setSize (int Actors){
 	return *this;
 }
 
+ /*
+  * Matrix addition: +
+  *  adds two matrices of the same size and returns the sum.
+  *  allows to sum two matrices using c=a+b
+  */
+  Matrix& Matrix::operator +(Matrix & a) {
+      qDebug()<< "Matrix::operator addition";
+      for (register int i=0;i< rows();i++)
+          for (register int j=0;j<cols();j++)
+              setItem(i,j, item(i,j)+a.item(i,j));
+      return *this;
+ }
+
 
  //WARNING: this operator is slow! Avoid using it.
 float  Matrix::operator ()  (const int r, const int c){
@@ -77,13 +92,12 @@ float  Matrix::operator ()  (const int r, const int c){
 
 
 /**  	Outputs matrix m to a text stream
-*	Used when exporting SM to a file in slotExportSM of MainWindow class.
 */
 QTextStream& operator <<  (QTextStream& os, Matrix& m){
 	qDebug() << "Matrix: << Matrix";
 	for (register int r = 0; r < m.rows(); ++r) {
 		for (register int c = 0; c < m.cols(); ++c)
-			os << m(r,c) << ' ';
+            os << qSetFieldWidth(10)  << m(r,c) ;
 		os << '\n';
 	}
 	return os;
@@ -119,6 +133,20 @@ void Matrix::identityMatrix(int Actors) {
 
 }
 
+
+// makes this matrix the zero matrix of size Actors
+void Matrix::zeroMatrix(int Actors) {
+    qDebug() << "Matrix:: zeroMatrix() of size " << Actors;
+    delete [] row;
+    row = new Row [m_Actors=Actors];
+    Q_CHECK_PTR( row );
+    qDebug() << "Matrix::zeroMatrix - resizing each row";
+    for (int i=0;i<m_Actors; i++) {
+        row[i].resize(m_Actors);
+        setItem(i,i, 0);
+    }
+
+}
 
 // returns the (r,c) matrix element
 float Matrix::item( int r, int c ){
@@ -225,21 +253,26 @@ void Matrix::fillMatrix(float value )   {
 			setItem(i,j, value);
 }
 
-//takes two (ActorsXActors) matrices and returns their product as a reference to this
+// takes two matrices of the same size and returns their product as a reference to the calling object
+// Beware: do not use it as B.product(A,B) because it will destroy B on the way.
 Matrix& Matrix::product( Matrix &a, Matrix & b, bool symmetry)  {
+    qDebug()<< "Matrix::product()";
 	for (register int i=0;i< rows();i++)
 		for (register int j=0;j<cols();j++) {
-			setItem(i,j,0);
-			for (register int k=0;k<m_Actors;k++)
+            setItem(i,j,0);
+            for (register int k=0;k<m_Actors;k++) {
+                qDebug() << "Matrix::product() - a("<< i+1 << ","<< k+1 << ")=" << a.item(i,k) << "* b("<< k+1 << ","<< j+1 << ")=" << b.item(k,j)  << " gives "  << a.item(i,k)*b.item(k,j);
 				if  ( k > j && symmetry) {
 					if (a.item(i,k)!=0 && b.item(j,k)!=0)
-						setItem(i,j, item(i,j)+a.item(i,k)*b.item(j,k));
+                        setItem(i,j, item(i,j)+a.item(i,k)*b.item(j,k));
 				}
 				else{
-				    setItem(i,j, item(i,j)+a.item(i,k)*b.item(k,j));
+                    setItem(i,j, item(i,j)+a.item(i,k)*b.item(k,j));
 				}
+            }
+            qDebug() << "Matrix::product() - ("<< i+1 << ","<< j+1 << ") = " << item(i,j);
 		}
-		return *this;
+        return *this;
 }
 		
 //takes two (AXA) matrices (symmetric) and outputs an upper triangular matrix

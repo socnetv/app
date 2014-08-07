@@ -4918,6 +4918,22 @@ void MainWindow::slotNumberOfWalks(){
         statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
         return;
     }
+
+    QString fn = "number-of-walks.dat";
+    bool considerWeights=true;
+
+    createProgressBar();
+    int length = 2; // TODO
+    length = activeNodes()-1;
+    activeGraph.writeNumberOfWalksMatrix(fn, networkName, length);
+
+    destroyProgressBar();
+
+    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    tempFileNameNoPath=fn.split( "/");
+    ed->setWindowTitle("Number of walks saved as: " + tempFileNameNoPath.last());
+    ed->show();
+
 }
 
 

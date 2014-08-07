@@ -255,6 +255,13 @@ public:
 
     int centralityPageRank();       //Calculates the PageRank centrality of each vertex
 
+    int numberOfWalks(int v1, int v2,int length);
+    void numberOfWalks(int length);
+    void writeNumberOfWalksMatrix(QString fn, QString netName, int length);
+    int minimumPathLength(int v1, int v2) ;
+    void writeReachabilityMatrix();
+
+
     float numberOfTriples(int v1); 		//Returns the number of triples at vertex v1
     float numberOfCliques(int v1);		//Calculates the number of cliques (triangles) of vertex v1
     float numberOfCliques();		//Calculates the number of cliques (triangles) of the whole graph
@@ -340,6 +347,7 @@ private:
     QList<int>  triadTypeFreqs; 	//stores triad type frequencies
     QList<int>  m_isolatedVerticesList;
     Matrix  TM, DM, sumM, invAM, AM, invM;
+    Matrix XM, XSM, XRM;
     stack<int> Stack;
 
     float meanDegree, varianceDegree;
