@@ -3272,7 +3272,7 @@ void Graph::writeNumberOfWalksMatrix(QString fn, QString netName, int length){
     out << "Total number of walks of any length (sums all walks from length 2 to "<< length <<") \n\n";
 
     int size = vertices();
-    int maxPower = size - 1;
+    int maxPower = 2 ;// size - 1;
 
     XM = AM;
     Matrix PM; // the product matrix
@@ -4513,7 +4513,7 @@ void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
  *  and AM(i,j)=0 if i not connected to j
  *  Used in Graph::centralityInformation()
  */
-void Graph::createAdjacencyMatrix(bool dropIsolates){
+void Graph::createAdjacencyMatrix(bool dropIsolates=false, bool omitWeights=false){
     qDebug() << "Graph::createAdjacencyMatrix()";
     float m_weight=-1;
     int i=0, j=0;
@@ -4532,7 +4532,10 @@ void Graph::createAdjacencyMatrix(bool dropIsolates){
             if ( ! (*it1)->isEnabled() )
                 continue;
             if ( (m_weight = this->hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
-                AM.setItem(i,j, m_weight );
+                if (omitWeights)
+                    AM.setItem(i,j, 1 );
+                else
+                    AM.setItem(i,j, m_weight );
                 (*it)->setIsolated(false);
                 (*it1)->setIsolated(false);
             }
@@ -4542,7 +4545,10 @@ void Graph::createAdjacencyMatrix(bool dropIsolates){
             qDebug()<<" AM("<< i+1 << ","<< j+1 << ") = " <<  AM.item(i,j);
             if (i != j ) {
                 if ( (m_weight = this->hasEdge ( (*it1)->name(), (*it)->name() )  ) !=0 ) {
-                    AM.setItem(j,i, m_weight );
+                    if (omitWeights)
+                        AM.setItem(j,i, 1 );
+                    else
+                        AM.setItem(j,i, m_weight );
                     (*it)->setIsolated(false);
                     (*it1)->setIsolated(false);
                 }

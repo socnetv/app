@@ -4920,11 +4920,15 @@ void MainWindow::slotNumberOfWalks(){
     }
 
     QString fn = "number-of-walks.dat";
-    bool considerWeights=true;
-
+     bool ok=false;
     createProgressBar();
-    int length = 2; // TODO
-    length = activeNodes()-1;
+
+    int length = QInputDialog::getInt(this, "Number of walks", tr("Select desired length of walk: (2 to g-1)"),2, 2, activeNodes()-1, 1, &ok );
+    if (!ok) {
+        statusMessage( "Change node size operation cancelled." );
+        return;
+    }
+
     activeGraph.writeNumberOfWalksMatrix(fn, networkName, length);
 
     destroyProgressBar();
