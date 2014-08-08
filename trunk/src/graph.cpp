@@ -1624,7 +1624,12 @@ void Graph::resolveClasses(float C, hash_si &discreteClasses, int &classes, int 
 
 
 
-//Calculates the Information centrality of each vertex - diagonal included
+/*  Calculates the Information centrality of each vertex - diagonal included
+ *
+ *  Note that there is no known generalization of Stephenson&Zelen's theory
+ *  for information centrality to directional data
+*/
+
 void Graph::centralityInformation(){
     qDebug()<< "Graph:: centralityInformation()";
     discreteICs.clear();
@@ -1642,7 +1647,10 @@ void Graph::centralityInformation(){
     /* Note: isolated nodes must be dropped from the AM
         Otherwise, the TM might be singular, therefore non-invertible. */
     bool dropIsolates=true;
-    createAdjacencyMatrix(dropIsolates);
+    bool omitWeights=false;
+
+    //TODO ASK THE USER TO SYMMETRIZE GRAPH?
+    createAdjacencyMatrix(dropIsolates, omitWeights);
     n-=isolatedVertices;
     qDebug() << "Graph:: centralityInformation() - computing node ICs for total n = " << n;
 
@@ -3235,49 +3243,31 @@ void Graph::createSameDegreeRandomNetwork(int vert, int degree){
     Calculates and returns the number of walks of a given length between v1 and v2
 */
 int Graph::numberOfWalks(int v1, int v2, int length) {
-    return 1;
+    createNumberOfWalksMatrix(length);
+    return XM.item(v1-1,v2-1);
 }
 
 
 /**
-    Calculates and returns the numbers of walks of length l between all pairs of vertices
+    Calculates two matrices:
+    Matrix XM=AM^l where the elements denote the number of walks of length l between all pairs of vertices
+    Matrix XSM=Sum{AM^n} where the elements denote the total number of walks of any length between pairs of vertices
 */
-void Graph::numberOfWalks(int length) {
+void Graph::createNumberOfWalksMatrix(int length) {
     qDebug()<<"Graph::numberOfWalks() - first create the Adjacency Matrix AM";
-    bool dropIsolates=false;
-    createAdjacencyMatrix(dropIsolates);
-
-    XSM = AM;
-    XSM.pow(length, false);
-}
-
-
-
-
-void Graph::writeNumberOfWalksMatrix(QString fn, QString netName, int length){
-    qDebug("Graph::writeNumberOfWalksMatrix() ");
-
-    QFile file (fn);
-
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-            return;
 
     bool dropIsolates=false;
-    createAdjacencyMatrix(dropIsolates);
-
-    QTextStream out(&file);
-
-    out << "-Social Network Visualizer- \n";
-    out << "Network name "<< netName<<": \n";
-    out << "Total number of walks of any length (sums all walks from length 2 to "<< length <<") \n\n";
+    bool omitWeights=false;
+    createAdjacencyMatrix(dropIsolates, omitWeights);
 
     int size = vertices();
-    int maxPower = 2 ;// size - 1;
+    int maxPower = length;
 
-    XM = AM;
-    Matrix PM; // the product matrix
+    XM = AM;   // XM will be the product matrix
+    XSM = AM;  // XSM is the sum of product matrices
+    Matrix PM; // temp matrix
     PM.zeroMatrix(size);
-    XSM.zeroMatrix(size); // the sum of product matrices
+
     qDebug()<< "Graph::writeNumberOfWalksMatrix() XM is  " ;
     for (register int i=0; i < size ; i++) {
         for (register int j=0; j < size ; j++) {
@@ -3291,10 +3281,47 @@ void Graph::writeNumberOfWalksMatrix(QString fn, QString netName, int length){
         XM=PM;
         XSM = XSM+XM;
     }
+    //XSM.pow(length, false);
+}
 
-    out << endl;
+
+void Graph::writeTotalNumberOfWalksMatrix(QString fn, QString netName, int length){
+    qDebug("Graph::writeTotalNumberOfWalksMatrix() ");
+
+    QFile file (fn);
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+            return;
+
+    QTextStream out(&file);
+
+    out << "-Social Network Visualizer- \n";
+    out << "Network name "<< netName<<": \n";
+    out << "Total number of walks of any length less than or equal to "<< length <<" between each pair of nodes \n\n";
+
+    createNumberOfWalksMatrix(length);
 
     out << XSM ;
+
+}
+
+void Graph::writeNumberOfWalksMatrix(QString fn, QString netName, int length){
+    qDebug("Graph::writeNumberOfWalksMatrix() ");
+
+    QFile file (fn);
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+            return;
+
+    QTextStream out(&file);
+
+    out << "-Social Network Visualizer- \n";
+    out << "Network name "<< netName<<": \n";
+    out << "Number of walks of length "<< length <<" between each pair of nodes \n\n";
+
+    createNumberOfWalksMatrix(length);
+
+    out << XM ;
 
 }
 
@@ -4584,7 +4611,8 @@ void Graph::invertAdjacencyMatrix(){
 
     qDebug()<<"Graph::invertAdjacencyMatrix() - first create the Adjacency Matrix AM";
     bool dropIsolates=false;
-    createAdjacencyMatrix(dropIsolates);
+    bool omitWeights=true;
+    createAdjacencyMatrix(dropIsolates, omitWeights);
 
     qDebug()<<"Graph::invertAdjacencyMatrix() - invert the Adjacency Matrix AM and store it to invAM";
     invAM.inverseByGaussJordanElimination(AM);
