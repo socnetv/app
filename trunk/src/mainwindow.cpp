@@ -850,9 +850,15 @@ void MainWindow::initActions(){
 
     walksAct = new QAction(QIcon(":/images/walk.png"), tr("Number of Walks"),this);
     walksAct->setShortcut(tr("Ctrl+W"));
-    walksAct->setStatusTip(tr("Calculates and displays the number of walks of every possible length"));
-    walksAct->setWhatsThis(tr("Walks\n\n A walk is a sequence of alternating vertices and edges such as v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>, where each edge, e<sub>i</sub> is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. This function counts the number of walks of any length between each pair of nodes, by studying the powers of the sociomatrix\n "));
+    walksAct->setStatusTip(tr("Calculates and displays the number of walks of a given length"));
+    walksAct->setWhatsThis(tr("Walks\n\n A walk is a sequence of alternating vertices and edges such as v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>, where each edge, e<sub>i</sub> is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. This function counts the number of walks of a given length between each pair of nodes, by studying the powers of the sociomatrix.\n "));
     connect(walksAct, SIGNAL(triggered()), this, SLOT(slotNumberOfWalks() )  );
+
+    totalWalksAct = new QAction(QIcon(":/images/walk.png"), tr("Total Number of Walks"),this);
+    totalWalksAct->setShortcut(tr("Ctrl+Shift+W"));
+    totalWalksAct->setStatusTip(tr("Calculates the total number of walks of every possible length between all nodes"));
+    totalWalksAct->setWhatsThis(tr("Walks\n\n A walk is a sequence of alternating vertices and edges such as v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>, where each edge, e<sub>i</sub> is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. This function counts the number of walks of any length between each pair of nodes, by studying the powers of the sociomatrix\n "));
+    connect(totalWalksAct, SIGNAL(triggered()), this, SLOT(slotTotalNumberOfWalks() )  );
 
     cliquesAct = new QAction(QIcon(":/images/triangle.png"), tr("Number of Cliques"),this);
     cliquesAct->setShortcut(tr("Ctrl+T"));
@@ -1275,6 +1281,7 @@ void MainWindow::initMenuBar() {
 
     statMenu -> addSeparator();
     statMenu -> addAction (walksAct);
+    statMenu -> addAction (totalWalksAct);
 
     statMenu -> addSeparator();
     statMenu -> addAction (cliquesAct);
@@ -4909,8 +4916,8 @@ void MainWindow::windowInfoStatusBar(int w, int h){
 
 
 /**
-*	Calls Graph:: writeNumberOfWalks() to print the number of walks, between
-*  each pair of nodes, to a file and then displays it.
+*	Calls Graph:: writeNumberOfWalks() to calculate and print
+*   the number of walks of a given length , between each pair of nodes.
 */
 void MainWindow::slotNumberOfWalks(){
     if (!fileLoaded && !networkModified  )  {
@@ -4923,9 +4930,9 @@ void MainWindow::slotNumberOfWalks(){
      bool ok=false;
     createProgressBar();
 
-    int length = QInputDialog::getInt(this, "Number of walks", tr("Select desired length of walk: (2 to g-1)"),2, 2, activeNodes()-1, 1, &ok );
+    int length = QInputDialog::getInt(this, "Number of walks", tr("Select desired length of walk: (2 to %1)").arg(activeNodes()-1),2, 2, activeNodes()-1, 1, &ok );
     if (!ok) {
-        statusMessage( "Change node size operation cancelled." );
+        statusMessage( "Cancelled." );
         return;
     }
 
@@ -4940,6 +4947,34 @@ void MainWindow::slotNumberOfWalks(){
 
 }
 
+
+
+/**
+*	Calls Graph:: writeTotalNumberOfWalksMatrix() to calculate and print
+*   the total number of walks of any length , between each pair of nodes.
+*/
+void MainWindow::slotTotalNumberOfWalks(){
+    if (!fileLoaded && !networkModified  )  {
+        QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
+        return;
+    }
+
+    QString fn = "total-number-of-walks.dat";
+     bool ok=false;
+    createProgressBar();
+
+    int maxLength=activeNodes()-1;
+    activeGraph.writeTotalNumberOfWalksMatrix(fn, networkName, maxLength);
+
+    destroyProgressBar();
+
+    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    tempFileNameNoPath=fn.split( "/");
+    ed->setWindowTitle("Total number of walks saved as: " + tempFileNameNoPath.last());
+    ed->show();
+
+}
 
 
 /**
