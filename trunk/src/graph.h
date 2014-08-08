@@ -207,7 +207,7 @@ public:
     bool isSymmetric();				//Returns TRUE if symmetricAdjacencyMatrix=TRUE
     void symmetrize();				//Symmetrize all edges so that the network is undirected.
 
-    void createAdjacencyMatrix(bool);  // Creates the adjacency matrix AM
+    void createAdjacencyMatrix(bool,bool);  // Creates the adjacency matrix AM
     void invertAdjacencyMatrix();
 
 
@@ -256,7 +256,8 @@ public:
     int centralityPageRank();       //Calculates the PageRank centrality of each vertex
 
     int numberOfWalks(int v1, int v2,int length);
-    void numberOfWalks(int length);
+    void createNumberOfWalksMatrix(int length);
+    void writeTotalNumberOfWalksMatrix(QString fn, QString netName, int length);
     void writeNumberOfWalksMatrix(QString fn, QString netName, int length);
     int minimumPathLength(int v1, int v2) ;
     void writeReachabilityMatrix();
