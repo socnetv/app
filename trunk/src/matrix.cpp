@@ -94,16 +94,108 @@ float  Matrix::operator ()  (const int r, const int c){
 /**  	Outputs matrix m to a text stream
 */
 QTextStream& operator <<  (QTextStream& os, Matrix& m){
-	qDebug() << "Matrix: << Matrix";
-	for (register int r = 0; r < m.rows(); ++r) {
-		for (register int c = 0; c < m.cols(); ++c)
-            os << qSetFieldWidth(10)  << m(r,c) ;
-		os << '\n';
-	}
-	return os;
+    qDebug() << "Matrix: << Matrix";
+    int fieldWidth = 6, newFieldWidth = 6, actorNumber=1;
+    float maxVal= m.maxValue();
+    float element;
+
+    //
+    os << " max Value = " << maxVal<< endl<<endl;
+    if (maxVal > 999999 )
+        fieldWidth = 14;
+    else if (maxVal > 99999 )
+        fieldWidth = 13;
+    else if (maxVal > 9999 )
+        fieldWidth = 12;
+    else if  (maxVal > 999 )
+        fieldWidth = 8;
+    else if  (maxVal > 99 )
+        fieldWidth = 7;
+
+    os << qSetFieldWidth(fieldWidth) << right <<  QString("v |");
+    for (register int r = 0; r < m.cols(); ++r) {
+        newFieldWidth = fieldWidth;
+        actorNumber = r+1;
+        if ( actorNumber > 99999)
+            newFieldWidth = fieldWidth -5;
+        else if ( actorNumber > 9999)
+            newFieldWidth = fieldWidth -4;
+        else if ( actorNumber > 999)
+            newFieldWidth = fieldWidth -3;
+        else if ( actorNumber > 99)
+            newFieldWidth = fieldWidth -2;
+        else if ( actorNumber > 9)
+            newFieldWidth = fieldWidth -1;
+        os << qSetFieldWidth(newFieldWidth) << right  << QString("%1").arg(actorNumber) ;
+    }
+    os<<endl;
+    os.setFieldAlignment(QTextStream::AlignCenter);
+    os.setPadChar('-');
+    for (register int r = 0; r < m.cols()+1; ++r) {
+        if ( r > 99999)
+            newFieldWidth = fieldWidth -5;
+        else if ( r > 9999)
+            newFieldWidth = fieldWidth -4;
+        else if ( r > 999)
+            newFieldWidth = fieldWidth -3;
+        else if ( r > 99)
+            newFieldWidth = fieldWidth -2;
+        else if ( r > 9)
+            newFieldWidth = fieldWidth -1;
+        os << qSetFieldWidth(newFieldWidth) <<  QString("-") ;
+    }
+    os << qSetFieldWidth(1) << QString("-");
+    os.setPadChar(' ');
+    os<<endl;
+    for (register int r = 0; r < m.rows(); ++r) {
+        actorNumber = r+1;
+        if ( actorNumber > 99999)
+            newFieldWidth = fieldWidth -5;
+        else if ( actorNumber > 9999)
+            newFieldWidth = fieldWidth -4;
+        else if ( actorNumber > 999)
+            newFieldWidth = fieldWidth -3;
+        else if ( actorNumber > 99)
+            newFieldWidth = fieldWidth -2;
+        else if ( actorNumber > 9)
+            newFieldWidth = fieldWidth -1;
+        else
+            newFieldWidth = fieldWidth;
+        os << qSetFieldWidth(newFieldWidth) << right << QString("%1 |").arg(actorNumber) ;
+        for (register int c = 0; c < m.cols(); ++c) {
+            element = m(r,c) ;
+            newFieldWidth = fieldWidth;
+            if ( element > 9999)
+                newFieldWidth = fieldWidth -5;
+            else if ( element > 9999)
+                newFieldWidth = fieldWidth -4;
+            else if ( element > 999)
+                newFieldWidth = fieldWidth -3;
+            else if ( element > 99)
+                newFieldWidth = fieldWidth -2;
+            else if ( element > 9)
+                newFieldWidth = fieldWidth -1;
+            else
+                newFieldWidth = fieldWidth;
+
+            os << qSetFieldWidth(newFieldWidth) << right << element;
+        }
+        os << '\n';
+    }
+    return os;
 }
 
 
+float Matrix::maxValue (){
+    float maxVal=0;
+    for (register int r = 0; r < rows(); ++r) {
+        for (register int c = 0; c < cols(); ++c) {
+            if ( item(r,c) > maxVal)
+                maxVal = item(r,c) ;
+        }
+    }
+    return maxVal;
+}
 
 //Resize this matrix. Every Row object holds max_int=32762
 void Matrix::resize (int Actors) {

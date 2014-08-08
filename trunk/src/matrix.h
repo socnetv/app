@@ -137,6 +137,8 @@ class Matrix {
 		int rows() {return m_Actors;}
 
         int size() { return m_Actors;}
+
+        float maxValue();
 	
 		void deleteRowColumn(int i);	/* deletes row i and column i */
 	
