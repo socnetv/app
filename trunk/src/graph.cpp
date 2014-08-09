@@ -1402,7 +1402,11 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 
                 qDebug()<< "Calculating Std Closeness centrality";
                 CC = (*it)->CC();
-                (*it)->setSCC ( (aVertices-1) * CC  );
+                if (symmetricAdjacencyMatrix) {
+                    (*it)->setSCC ( (aVertices-1) * CC  );
+                }
+                else
+                    (*it)->setSCC (  CC / sumCC  );
                 minmax( (*it)->SCC(), (*it), maxCC, minCC, maxNodeCC, minNodeCC) ;
 
                 qDebug()<< "Calculating Std Graph centrality";
@@ -1438,7 +1442,12 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                 nomSC +=( maxSC - (*it)->SSC() );
 
             }
-            denomCC = aVertices-1.0;
+            if (symmetricAdjacencyMatrix) {
+                denomCC = ( aVertices-1.0) *  (aVertices-2.0) / (2.0 * aVertices -1.0);
+            }
+            else {
+                denomCC = aVertices-1.0;
+            }
             groupCC = nomCC/denomCC;	//Calculate group Closeness centrality
 
             nomBC*=2.0;
