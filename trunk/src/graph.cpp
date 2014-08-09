@@ -780,6 +780,7 @@ int Graph::vertices () {
     Returns a list of all isolated vertices inside the graph
 */
 QList<int> Graph::verticesIsolated(){
+    qDebug()<< "Graph::verticesIsolated()";
     int i=0, j=0;
     QList<Vertex*>::iterator it, it1;
     m_isolatedVerticesList.clear();
@@ -1230,7 +1231,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
         if (symmetricAdjacencyMatrix) {
             maxIndexBC=( aVertices-1.0) *  (aVertices-2.0)  / 2.0;
             maxIndexSC=( aVertices-1.0) *  (aVertices-2.0) / 2.0;
-            maxIndexCC=1.0/(aVertices-1.0);
+            maxIndexCC=aVertices-1.0;
             maxIndexEC=aVertices-1.0;
             maxIndexPC=aVertices-1.0;
             qDebug("############# symmetricAdjacencyMatrix - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
@@ -1401,7 +1402,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 
                 qDebug()<< "Calculating Std Closeness centrality";
                 CC = (*it)->CC();
-                (*it)->setSCC ( CC / sumCC  );
+                (*it)->setSCC ( (aVertices-1) * CC  );
                 minmax( (*it)->SCC(), (*it), maxCC, minCC, maxNodeCC, minNodeCC) ;
 
                 qDebug()<< "Calculating Std Graph centrality";
@@ -1651,7 +1652,7 @@ void Graph::centralityInformation(){
 
     //TODO ASK THE USER TO SYMMETRIZE GRAPH?
     createAdjacencyMatrix(dropIsolates, omitWeights);
-    n-=isolatedVertices;
+    n-=isolatedVertices;  //isolatedVertices updated in createAdjacencyMatrix
     qDebug() << "Graph:: centralityInformation() - computing node ICs for total n = " << n;
 
     for (i=0; i<n; i++){
@@ -2357,7 +2358,7 @@ void Graph::writeCentralityCloseness(
     emit statusMessage ( QString(tr("Writing closeness centralities to file:")).arg(fileName) );
 
     outText << tr("CLOSENESS CENTRALITY (CC) OF EACH NODE")<<"\n";
-    outText << tr("CC is the invert sum of the geodesic distances of node u from all other nodes.")<<"\n";
+    outText << tr("CC is the inverted sum of geodesic distances from node u to all the other nodes.")<<"\n";
     outText << tr("CC' is the standardized CC")<<"\n";
 
     outText << tr("CC  range:  0 < C < ")<<QString::number(maxIndexCC)<<"\n";
