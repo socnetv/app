@@ -880,13 +880,6 @@ void MainWindow::initActions(){
     triadCensusAct->setWhatsThis(tr("Triad Census\n\n A triad census counts all the different kinds of observed triads within a network and codes them according to their number of mutual, asymmetric and non-existent dyads. \n "));
     connect(triadCensusAct, SIGNAL(triggered()), this, SLOT(slotTriadCensus() )  );
 
-    cInDegreeAct = new QAction(tr("InDegree"),	 this);
-    cInDegreeAct->setStatusTip(tr("Calculates and displays InDegree Centralities"));
-    cInDegreeAct->setShortcut(tr("Ctrl+1"));
-    cInDegreeAct->setWhatsThis(tr("InDegree Centrality\n\n For each node k, this the number of arcs ending at k. Most in-degree central node might be considered more prominent among others. "));
-    connect(cInDegreeAct, SIGNAL(triggered()), this, SLOT(slotCentralityInDegree()));
-
-
     cOutDegreeAct = new QAction(tr("OutDegree"),this);
     cOutDegreeAct->setShortcut(tr("Ctrl+2"));
     cOutDegreeAct->setStatusTip(tr("Calculates and displays OutDegree Centralities"));
@@ -940,13 +933,25 @@ void MainWindow::initActions(){
     cInformationAct->setWhatsThis(tr("Information Centrality\n\n Information centrality counts all paths between nodes weighted by strength of tie and distance. This centrality  measure developed by Stephenson and Zelen (1989) focuses on how information might flow through many different paths. \n\n Note: To compute this index, SocNetV drops all isolated nodes."));
     connect(cInformationAct, SIGNAL(triggered()), this, SLOT(slotCentralityInformation()));
 
+    cInDegreeAct = new QAction(tr("Degree Prestige (InDegree)"),	 this);
+    cInDegreeAct->setStatusTip(tr("Calculates and displays Degree Prestige (InDegree) indices "));
+    cInDegreeAct->setShortcut(tr("Ctrl+1"));
+    cInDegreeAct->setWhatsThis(tr("InDegree (Degree Prestige)\n\n For each node k, this the number of arcs ending at k. Nodes with higher in-degree are considered more prominent among others. In directed graphs, this index measures the prestige of each node/actor. Thus it is called Degree Prestige. Nodes who are prestigious tend to receive many nominations or choices (in-links). The largest the index is, the more prestigious is the node."));
+    connect(cInDegreeAct, SIGNAL(triggered()), this, SLOT(slotPrestigeDegree()));
 
     cPageRankAct = new QAction(tr("PageRank"),	this);
     cPageRankAct->setShortcut(tr("Ctrl+R"));
     cPageRankAct->setEnabled(true);
-    cPageRankAct->setStatusTip(tr("Calculate and display PageRank Centralities"));
-    cPageRankAct->setWhatsThis(tr("PageRank Centrality\n\n An importance ranking for each node based on the link structure of the network. PageRank, developed by Page and Brin (1997), focuses on how nodes are connected to each other, treating each link from a node as a citation/backlink to another. In essence, for each node PageRank counts all backlinks to it, but it does so by not counting all links equally while it normalizes each link from a node by the total number of links from it. PageRank is calculated iteratively and it corresponds to the principal eigenvector of the normalized link matrix...."));
-    connect(cPageRankAct, SIGNAL(triggered()), this, SLOT(slotCentralityPageRank()));
+    cPageRankAct->setStatusTip(tr("Calculate and display PageRank Prestige"));
+    cPageRankAct->setWhatsThis(tr("PageRank Prestige\n\n An importance ranking for each node based on the link structure of the network. PageRank, developed by Page and Brin (1997), focuses on how nodes are connected to each other, treating each link from a node as a citation/backlink/vote to another. In essence, for each node PageRank counts all backlinks to it, but it does so by not counting all links equally while it normalizes each link from a node by the total number of links from it. PageRank is calculated iteratively and it corresponds to the principal eigenvector of the normalized link matrix...."));
+    connect(cPageRankAct, SIGNAL(triggered()), this, SLOT(slotPrestigePageRank()));
+
+    cProximityPrestigeAct = new QAction(tr("Proximity Prestige (digraphs only)"),	this);
+    cProximityPrestigeAct->setShortcut(tr("Shift+Ctrl+R"));
+    cProximityPrestigeAct->setEnabled(true);
+    cProximityPrestigeAct->setStatusTip(tr("Calculate and display Proximity Prestige"));
+    cProximityPrestigeAct->setWhatsThis(tr("Proximity Prestige Centrality\n\n An importance ranking for each node based on the link structure of the network. PageRank, developed by Page and Brin (1997), focuses on how nodes are connected to each other, treating each link from a node as a citation/backlink to another. In essence, for each node PageRank counts all backlinks to it, but it does so by not counting all links equally while it normalizes each link from a node by the total number of links from it. PageRank is calculated iteratively and it corresponds to the principal eigenvector of the normalized link matrix...."));
+    connect(cProximityPrestigeAct, SIGNAL(triggered()), this, SLOT(slotroximityPrestige()));
 
     /**
     Options menu actions
@@ -1291,9 +1296,10 @@ void MainWindow::initMenuBar() {
     statMenu -> addAction (triadCensusAct);
 
     statMenu->addSeparator();
-    centrlMenu = new QMenu(tr("Centralities..."));
+    centrlMenu = new QMenu(tr("Centrality and Prestige indices..."));
     statMenu->addMenu(centrlMenu);
-    centrlMenu -> addAction (cInDegreeAct);
+    centrlMenu -> addSection(QIcon(":/images/centrality.png"), tr("Centrality"));
+
     centrlMenu -> addAction (cOutDegreeAct);
     centrlMenu -> addAction (cClosenessAct);
     centrlMenu -> addAction (cBetweenessAct);
@@ -1302,7 +1308,10 @@ void MainWindow::initMenuBar() {
     centrlMenu -> addAction (cEccentAct);
     centrlMenu -> addAction (cPowerAct);
     centrlMenu -> addAction (cInformationAct);
+    centrlMenu -> addSection(QIcon(":/images/prestige.png"), tr("Prestige"));
+    centrlMenu -> addAction (cInDegreeAct);
     centrlMenu -> addAction (cPageRankAct);
+    centrlMenu -> addAction (cProximityPrestigeAct);
 
     /** menuBar entry optionsMenu  */
     optionsMenu = menuBar()->addMenu(tr("&Options"));
@@ -5109,54 +5118,6 @@ void MainWindow::slotCentralityOutDegree(){
 
 
 /**
-*	Writes In-Degree Centralities into a file, then displays it.
-*/
-void MainWindow::slotCentralityInDegree(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to do..."))  );
-        return;
-    }
-    bool considerWeights=false;
-    if ( activeGraph.isWeighted()) {
-        switch( QMessageBox::information( this, "Centrality In-Degree",
-                                          tr("Graph edges have weights. \nTake weights into account (Default: No)?"),
-                                          tr("Yes"), tr("No"),
-                                          0, 1 ) )
-        {
-        case 0:
-            considerWeights=true;
-            break;
-        case 1:
-            considerWeights=false;
-            break;
-        default: // just for sanity
-            considerWeights=false;
-            return;
-            break;
-        }
-
-    }
-    QString fn = "centrality-in-degree.dat";
-
-    createProgressBar();
-
-    activeGraph.writeCentralityInDegree(fn, considerWeights);
-
-    destroyProgressBar();
-
-    statusMessage( QString(tr(" displaying file...")));
-
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("In-Degree Centralities saved as: " + tempFileNameNoPath.last());
-    ed->show();
-}
-
-
-
-
-/**
 *	Writes Closeness Centralities into a file, then displays it.
 */
 void MainWindow::slotCentralityCloseness(){
@@ -5216,29 +5177,110 @@ void MainWindow::slotCentralityBetweeness(){
 
 
 
-/**
-*	Writes PageRank Centralities into a file, then displays it.
-*/
-void MainWindow::slotCentralityPageRank(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 
-        statusMessage(  QString(tr(" Nothing to do..."))  );
+/**
+*	Writes Degree Prestige indices (In-Degree Centralities) into a file, then displays it.
+*/
+void MainWindow::slotPrestigeDegree(){
+    if (!fileLoaded && !networkModified  )  {
+        QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        statusMessage(  QString(tr("Nothing to do..."))  );
         return;
     }
-    QString fn = "centrality_pagerank.dat";
-    //   bool considerWeights=false;  //TODO Do we need to compute weigths in PageRank?
-    statusMessage(  QString(tr(" Please wait...")));
+    if (activeGraph.isSymmetric()) {
+        QMessageBox::critical(this, "Error",tr("Non-directed graph!\nDegree Prestige applies on directed graphs only. Load a digraph, directed network file or create a new network. \nThen ask me to compute it again!"), "OK",0);
+        statusMessage(  QString(tr("Nothing to do..."))  );
+        return;
+    }
+
+    bool considerWeights=false;
+    if ( activeGraph.isWeighted()) {
+        switch( QMessageBox::information( this, "Degree Prestige (In-Degree)",
+                                          tr("Graph edges have weights. \nTake weights into account (Default: No)?"),
+                                          tr("Yes"), tr("No"),
+                                          0, 1 ) )
+        {
+        case 0:
+            considerWeights=true;
+            break;
+        case 1:
+            considerWeights=false;
+            break;
+        default: // just for sanity
+            considerWeights=false;
+            return;
+            break;
+        }
+
+    }
+    QString fn = "degree-prestige.dat";
 
     createProgressBar();
-    activeGraph.writeCentralityPageRank(fn);
+
+    activeGraph.writePrestigeDegree(fn, considerWeights);
+
     destroyProgressBar();
 
     statusMessage( QString(tr(" displaying file...")));
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("PageRank Centralities saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle("Degree Prestige (in-degree) saved as: " + tempFileNameNoPath.last());
+    ed->show();
+}
+
+
+
+/**
+*	Writes PageRank Prestige indices into a file, then displays it.
+*/
+void MainWindow::slotPrestigePageRank(){
+    if (!fileLoaded && !networkModified  )  {
+        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+
+        statusMessage(  QString(tr(" Nothing to do..."))  );
+        return;
+    }
+    QString fn = "prestige_pagerank.dat";
+    //   bool considerWeights=false;  //TODO Do we need to compute weigths in PageRank?
+    statusMessage(  QString(tr(" Please wait...")));
+
+    createProgressBar();
+    activeGraph.writePrestigePageRank(fn);
+    destroyProgressBar();
+
+    statusMessage( QString(tr(" displaying file...")));
+
+    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    tempFileNameNoPath=fn.split( "/");
+    ed->setWindowTitle("PageRank Prestige indices saved as: " + tempFileNameNoPath.last());
+    ed->show();
+    QApplication::restoreOverrideCursor();
+}
+
+
+/**
+*	Writes Proximity Prestige indeces into a file, then displays them.
+*/
+void MainWindow::slotPrestigeProximity(){
+    if (!fileLoaded && !networkModified  )  {
+        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+
+        statusMessage(  QString(tr(" Nothing to do..."))  );
+        return;
+    }
+    QString fn = "centrality_proximity_prestige.dat";
+    statusMessage(  QString(tr(" Please wait...")));
+
+    createProgressBar();
+    activeGraph.writePrestigeProximity(fn, true);
+    destroyProgressBar();
+
+    statusMessage( QString(tr(" displaying file...")));
+
+    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    tempFileNameNoPath=fn.split( "/");
+    ed->setWindowTitle("Proximity Prestige Centralities saved as: " + tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
 }

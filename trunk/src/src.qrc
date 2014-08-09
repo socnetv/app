@@ -52,6 +52,7 @@
         <file>images/nodein.png</file>
 	<file>images/gridlines.png</file>
 	<file>images/webcrawler.png</file>
-
+	<file>images/prestige.png</file>
+	<file>images/centrality.png</file>
 </qresource>
 </RCC>

@@ -52,7 +52,8 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
 			<< "Freeman_EIES_network_Acquaintanceship_at_time-2"
 			<< "Freeman_EIES_network_Messages"
             << "Mexican_Power_Network_1940s.lst"
-            << "Knocke_Bureacracies_Information_Exchange_Network.pajek";
+            << "Knocke_Bureacracies_Information_Exchange_Network.pajek"
+            << "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek";
 
     (ui.selectBox) -> insertItems( 1, datasets_list );
 }

@@ -223,7 +223,7 @@ public:
 
     friend QTextStream& operator <<  (QTextStream& os, Graph& m);  	//
 
-    void writeCentralityInDegree(const QString, bool);		//Writes the in-degree centralities to a file
+
     void writeCentralityOutDegree(const QString, const bool);	//Writes the out-degree centralities to a file
     void writeCentralityCloseness(const QString, const bool);	//Writes the closeness centralities to a file
     void writeCentralityBetweeness(const QString, const bool);	//Writes the betweeness centralities to a file
@@ -232,7 +232,11 @@ public:
     void writeCentralityStress(const QString, const bool);		//Writes the Stress centralities to a file
     void writeCentralityEccentricity(const QString, const bool);	//Writes the Eccentr centralities to a file
     void writeCentralityInformation(const QString);			//Writes the Information centralities to a file
-    void writeCentralityPageRank(const QString);			//Writes the PageRank centralities to a file
+
+    void writePrestigeDegree(const QString, bool);		//Writes the in-degree prestige indices to a file
+    void writePrestigeProximity(const QString, const bool);  //Writes the Proximity prestige indices to a file
+    void writePrestigePageRank(const QString);			//Writes the PageRank indices to a file
+
 
     void writeNumberOfCliques(const QString fileName, const bool considerWeights);
 
@@ -241,20 +245,20 @@ public:
     void writeTriadCensus(const QString, const bool);		//Writes the triad census to a file
 
 
-    /* DISTANCES & CENTRALITIES */
+    /* DISTANCES, CENTRALITIES & PROMINENCE MEASURES */
     int distance( int, int);		//Returns the geodesic distance between two vertices
     int diameter();				//Returns the diameter of the graph (maximum shortest path).
     float averageGraphDistance();		//Returns the average shortest path length (average geodesic).
 
     void createDistanceMatrix(bool);	//Creates the distance matrix and calculates the centralities, if bool is true.
-
-    void centralityInDegree(bool);		//Calculates the inDegree centrality of each vertex
     void centralityOutDegree(bool);		//Calculates the outDegree centrality of each vertex
-
     void centralityInformation();       //Calculates the informational centrality of each vertex
 
-    int centralityPageRank();       //Calculates the PageRank centrality of each vertex
+    void prestigeDegree(bool);		//Calculates the inDegree Prestige of each vertex
+    int prestigePageRank();       //Calculates the PageRank Prestige of each vertex
+    int prestigeProximity();       //Calculates the Proximity Prestige of each vertex
 
+    /* REACHABILTY AND WALKS */
     int numberOfWalks(int v1, int v2,int length);
     void createNumberOfWalksMatrix(int length);
     void writeTotalNumberOfWalksMatrix(QString fn, QString netName, int length);
@@ -362,6 +366,7 @@ private:
     float minEC, maxEC, nomEC, denomEC, sumEC, groupEC, maxIndexEC;
     float minIC, maxIC, nomIC, denomIC, sumIC, groupIC, maxIndexIC;
     float minPRC, maxPRC, nomPRC, denomPRC, sumPRC, groupPRC, maxIndexPRC;
+    float minPP, maxPP, nomPP, denomPP, sumPP, groupPP, maxIndexPP;
     float minCLC, maxCLC, averageCLC, averageIC, averagePRC, dampingFactor;
     int maxNodeCLC, minNodeCLC;
     int classesIDC, maxNodeIDC, minNodeIDC;
@@ -374,6 +379,7 @@ private:
     int classesEC, maxNodeEC, minNodeEC;
     int classesIC, maxNodeIC, minNodeIC;
     int classesPRC, maxNodePRC, minNodePRC;
+    int classesPP, maxNodePP, minNodePP;
     int sizeOfComponent;
 
     /** General & initialisation variables */

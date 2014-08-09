@@ -191,10 +191,15 @@ public:
     float IC() { return m_IC;}		/* Returns vertex Information  Centrality*/
     float SIC() { return m_SIC; }		/* Returns standard vertex Information Centrality*/
 
-    void setPRC (float c){ m_PRC=c;}		/* sets vertex PageRank Centrality*/
-    void setSPRC (float c ) { m_SPRC=c;}	/* sets standard vertex PageRank Centrality*/
-    float PRC() { return m_PRC;}		/* Returns vertex PageRank  Centrality*/
-    float SPRC() { return m_SPRC; }		/* Returns standard vertex PageRank Centrality*/
+    void setPRC (float c){ m_PRC=c;}		/* sets vertex PageRank*/
+    void setSPRC (float c ) { m_SPRC=c;}	/* sets standard vertex PageRank*/
+    float PRC() { return m_PRC;}		/* Returns vertex PageRank */
+    float SPRC() { return m_SPRC; }		/* Returns standard vertex PageRank*/
+
+    void setPP (float c){ m_PP=c;}		/* sets vertex Proximity Prestige */
+    void setSPP (float c ) { m_SPP=c;}	/* sets standard vertex Proximity Prestige */
+    float PP() { return m_PP;}		/* Returns vertex Proximity Prestige */
+    float SPP() { return m_SPP; }		/* Returns standard vertex Proximity Prestige */
 
     float CLC() { return m_CLC;	}
     void setCLC(float clucof)  { m_CLC=clucof; m_hasCLC=true; }
@@ -224,6 +229,7 @@ private:
     float m_delta, m_EC, m_SEC;
     float m_ODC, m_SODC, m_IDC, m_SIDC, m_CC, m_SCC, m_BC, m_SBC, m_GC, m_SGC, m_SC, m_SSC;
     float m_PC, m_SPC, m_SIC, m_IC, m_SPRC, m_PRC;
+    float m_PP, m_SPP;
 
 };
 
