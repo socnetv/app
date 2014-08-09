@@ -125,8 +125,11 @@ Out-Degree Centrality (ODC) is the number of arcs starting from each node. This 
 
 <h5><a name="Closeness" id="Closeness"></a>Closeness Centrality</h5>
 <p class="text"> 
-Closeness Centrality (CC) is the invert sum of the shortest distances between each node and every other node.
-It is interpreted as the ability to access information through the "grapevine" of network members. 
+The Closeness Centrality (CC) of a node u is the inverted sum of the shortest paths (geodesic distances) from that node to all the other nodes in the graph.
+The maximum value of CC is 1/(N-1), when the node is adjacent to all others.
+Thus the standard CC index (CC') is calculated by (N-1) * CC.
+
+The CC is interpreted as the ability to access information through the "grapevine" of network members. 
 
 </p>
 
