@@ -648,69 +648,69 @@ void MainWindow::initActions(){
     randCircleLayoutAct->setWhatsThis(tr("Random Circle Layout\n\n Repositions the nodes randomly on a circle"));
     connect(randCircleLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRandomCircle()));
 
-    circleInDegreeLayoutAct = new QAction( tr("In-Degree"),	this);
-    circleInDegreeLayoutAct ->setShortcut(tr("Ctrl+Alt+1"));
-    circleInDegreeLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More In-Degree Central Nodes are positioned towards the centre."));
-    circleInDegreeLayoutAct->setWhatsThis(tr("Circle In-Degree Centrality Layout\n\n Repositions the nodes on circles of different radius. More In-Degree Central Nodes are positioned towards the centre."));
-    connect(circleInDegreeLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityInDegree()));
 
-
-    circleOutDegreeLayoutAct = new QAction( tr("Out-Degree"),	this);
+    circleOutDegreeLayoutAct = new QAction( tr("Degree Centrality"),	this);
     circleOutDegreeLayoutAct ->setShortcut(tr("Ctrl+Alt+2"));
-    circleOutDegreeLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Out-Degree Central Nodes are positioned towards the centre."));
-    circleOutDegreeLayoutAct->setWhatsThis(tr("Circle Out-Degree Centrality Layout\n\n Repositions the nodes on circles of different radius. More Out-Degree Central Nodes are positioned towards the centre."));
+    circleOutDegreeLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Degree Centrality."));
+    circleOutDegreeLayoutAct->setWhatsThis(tr("Circle Degree Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Degree Centrality are situated towards the centre."));
     connect(circleOutDegreeLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityOutDegree()));
 
-    circleClosenessLayoutAct = new QAction( tr("Closeness"),	this);
+    circleClosenessLayoutAct = new QAction( tr("Closeness Centrality"),	this);
     circleClosenessLayoutAct ->setShortcut(tr("Ctrl+Alt+3"));
-    circleClosenessLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Closeness Central Nodes are positioned towards the centre."));
+    circleClosenessLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Closeness Centrality."));
     circleClosenessLayoutAct->setWhatsThis(tr("Circle Closeness Centrality Layout\n\n Repositions the nodes on circles of different radius. More Closeness Central Nodes are positioned towards the centre."));
     connect(circleClosenessLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityCloseness()));
 
-    circleBetweenessLayoutAct = new QAction( tr("Betweeness"), this);
+    circleBetweenessLayoutAct = new QAction( tr("Betweeness Centrality"), this);
     circleBetweenessLayoutAct ->setShortcut(tr("Ctrl+Alt+4"));
-    circleBetweenessLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Betweeness Central Nodes are positioned towards the centre."));
-    circleBetweenessLayoutAct->setWhatsThis(tr("Circle Betweeness Centrality Layout\n\n Repositions the nodes on circles of different radius. More Betweeness Central Nodes are positioned towards the centre."));
+    circleBetweenessLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Betweeness Centrality."));
+    circleBetweenessLayoutAct->setWhatsThis(tr("Circle Betweeness Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Betweeness Centrality are situated towards the centre."));
     connect(circleBetweenessLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityBetweeness()));
 
-    circleStressLayoutAct = new QAction( tr("Stress"),	this);
+    circleStressLayoutAct = new QAction( tr("Stress Centrality"),	this);
     circleStressLayoutAct ->setShortcut(tr("Ctrl+Alt+5"));
-    circleStressLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Stressed Central Nodes are positioned towards the centre."));
-    circleStressLayoutAct->setWhatsThis(tr("Circle Stress Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes having greater Stress Centrality are situated towards the centre."));
+    circleStressLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Stress Centrality."));
+    circleStressLayoutAct->setWhatsThis(tr("Circle Stress Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes having higher Stress Centrality are situated towards the centre."));
     connect(circleStressLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityStress() ) );
 
-    circleGraphLayoutAct = new QAction( tr("Graph"),	this);
+    circleGraphLayoutAct = new QAction( tr("Graph Centrality"),	this);
     circleGraphLayoutAct ->setShortcut(tr("Ctrl+Alt+6"));
-    circleGraphLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Graph centralized nodes are positioned towards the centre."));
-    circleGraphLayoutAct->setWhatsThis(tr("Circle Graph Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes having greater Graph Centrality are situated towards the centre."));
+    circleGraphLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Graph Centrality."));
+    circleGraphLayoutAct->setWhatsThis(tr("Circle Graph Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Graph Centrality are situated towards the centre."));
     connect(circleGraphLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityGraph() ) );
 
 
-    circleEccentrLayoutAct = new QAction( tr("Eccentricity"),	this);
+    circleEccentrLayoutAct = new QAction( tr("Eccentricity Centrality"),	this);
     circleEccentrLayoutAct ->setShortcut(tr("Ctrl+Alt+7"));
-    circleEccentrLayoutAct  ->setStatusTip(tr("Repositions the nodes on circles of different radius. Nodes of large eccentricity are positioned towards the centre."));
-    circleEccentrLayoutAct ->setWhatsThis(tr("Circle Eccentricity Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes having greater Eccentricity Centrality are situated towards the centre."));
+    circleEccentrLayoutAct  ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Eccentricity Centrality."));
+    circleEccentrLayoutAct ->setWhatsThis(tr("Circle Eccentricity Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Eccentricity Centrality are situated towards the centre."));
     connect(circleEccentrLayoutAct , SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityEccentr() ) );
 
-    circlePowerLayoutAct = new QAction( tr("Power"),	this);
+    circlePowerLayoutAct = new QAction( tr("Power Centrality"),	this);
     circlePowerLayoutAct ->setShortcut(tr("Ctrl+Alt+8"));
-    circlePowerLayoutAct  ->setStatusTip(tr("Repositions the nodes on circles of different radius. More power central nodes are positioned towards the centre."));
-    circlePowerLayoutAct ->setWhatsThis(tr("Circle Power Centrality Layout\n\n Repositions the nodes on circles of different radius.  More power central nodes are positioned towards the centre."));
+    circlePowerLayoutAct  ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Power Centrality."));
+    circlePowerLayoutAct ->setWhatsThis(tr("Circle Power Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Power Centrality are situated towards the centre."));
     connect(circlePowerLayoutAct , SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityPower() ) );
 
 
-    circleInformationLayoutAct = new QAction( tr("Information"),	this);
+    circleInformationLayoutAct = new QAction( tr("Information Centrality"),	this);
     circleInformationLayoutAct ->setEnabled(true);
     circleInformationLayoutAct ->setShortcut(tr("Ctrl+Alt+9"));
-    circleInformationLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Information Central Nodes are situated towards the centre."));
-    circleInformationLayoutAct->setWhatsThis(tr("Circle Information Centrality Layout\n\n Repositions the nodes on circles of different radius. More Information Central Nodes are positioned towards the centre."));
+    circleInformationLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Information Centrality."));
+    circleInformationLayoutAct->setWhatsThis(tr("Circle Information Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Information Centrality are situated towards the centre."));
     connect(circleInformationLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityInformation()));
 
 
-    circleInformationLayoutAct = new QAction( tr("PageRank"),	this);
+    circleInDegreeLayoutAct = new QAction( tr("Degree Prestige"),	this);
+    circleInDegreeLayoutAct ->setShortcut(tr("Ctrl+Alt+1"));
+    circleInDegreeLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Degree Prestige."));
+    circleInDegreeLayoutAct->setWhatsThis(tr("Circle In-Degree Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Degree Prestige (inDegree) are situated towards the centre."));
+    connect(circleInDegreeLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityInDegree()));
+
+    circleInformationLayoutAct = new QAction( tr("PageRank Prestige"),	this);
     circleInformationLayoutAct ->setEnabled(true);
-    circleInformationLayoutAct ->setShortcut(tr("Ctrl+Alt+"));
-    circleInformationLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More PageRank Central Nodes are situated towards the centre."));
+    circleInformationLayoutAct ->setShortcut(tr("Ctrl+Alt+P"));
+    circleInformationLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their PageRank Prestige"));
     circleInformationLayoutAct->setWhatsThis(tr("Circle PageRank Centrality Layout\n\n Repositions the nodes on circles of different radius. More PageRank Central Nodes are positioned towards the centre."));
     connect(circleInformationLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityPageRank()));
 
@@ -720,36 +720,38 @@ void MainWindow::initActions(){
     clearGuidesAct->setWhatsThis(tr("Remove GuideLines\n\n Removes any guidelines (circles or horizontal lines) created for the network layout."));
 
 
-    levelInDegreeLayoutAct = new QAction( tr("In-Degree"),this);
-    levelInDegreeLayoutAct ->setShortcut(tr("Ctrl+Shift+1"));
-    levelInDegreeLayoutAct ->setStatusTip(tr("Repositions the nodes on layers or levels of different height. More In-Degree Central Nodes are situated on higher layers."));
-    levelInDegreeLayoutAct->setWhatsThis(tr("Level In-Degree Centrality Layout\n\n Repositions the nodes on layers of different height. More In-Degree Central Nodes are situated on higher layers."));
-    connect(levelInDegreeLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutLayeredCentralityInDegree()));
-
-    levelOutDegreeLayoutAct  = new QAction( tr("Out-Degree"),this);
+    levelOutDegreeLayoutAct  = new QAction( tr("Degree Centrality"),this);
     levelOutDegreeLayoutAct  ->setShortcut(tr("Ctrl+Shift+2"));
     levelOutDegreeLayoutAct  ->setStatusTip(tr("Repositions the nodes on levels of different height. More Out-Degree Central Nodes are situated on higher levels."));
     levelOutDegreeLayoutAct ->setWhatsThis(tr("Level Out-Degree Centrality Layout\n\n Repositions the nodes on levels of different height. More Out-Degree Central Nodes are situated on higher levels."));
     connect(levelOutDegreeLayoutAct , SIGNAL(triggered()), this, SLOT(slotLayoutLayeredCentralityOutDegree()));
 
-    levelClosenessLayoutAct = new QAction( tr("Closeness"),	this);
+    levelClosenessLayoutAct = new QAction( tr("Closeness Centrality"),	this);
     levelClosenessLayoutAct ->setShortcut(tr("Ctrl+Shift+3"));
     levelClosenessLayoutAct ->setStatusTip(tr("Repositions the nodes on levels of different height. More Closeness Central Nodes are situated on higher levels."));
     levelClosenessLayoutAct->setWhatsThis(tr("level Closeness Centrality Layout\n\n Repositions the nodes on levels of different height. More Closeness Central Nodes are situated on higher levels."));
     connect(levelClosenessLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutLayeredCentralityCloseness()));
 
-    levelBetweenessLayoutAct = new QAction( tr("Betweeness"),	this);
+    levelBetweenessLayoutAct = new QAction( tr("Betweeness Centrality"),	this);
     levelBetweenessLayoutAct ->setShortcut(tr("Ctrl+Shift+4"));
     levelBetweenessLayoutAct ->setStatusTip(tr("Repositions the nodes on levels of different height. More Betweeness Central Nodes are situated on higher levels."));
     levelBetweenessLayoutAct->setWhatsThis(tr("level Betweeness Centrality Layout\n\n Repositions the nodes on levels of different height. More Betweeness Central Nodes are situated on higher levels."));
     connect(levelBetweenessLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutLayeredCentralityBetweeness()));
 
-    levelInformationLayoutAct = new QAction( tr("Informational"),	this);
+    levelInformationLayoutAct = new QAction( tr("Information Centrality"),	this);
     levelInformationLayoutAct ->setShortcut(tr("Ctrl+Shift+9"));
     levelInformationLayoutAct -> setEnabled(false);
     levelInformationLayoutAct ->setStatusTip(tr("Repositions the nodes on levels of different height. More Informational Central Nodes are situated on higher levels."));
     levelInformationLayoutAct->setWhatsThis(tr("Level Informational Centrality Layout\n\n Repositions the nodes on levels of different height. More Informational Central Nodes are situated on higher levels."));
     connect(levelInformationLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutLayeredCentralityInformation()));
+
+
+    levelInDegreeLayoutAct = new QAction( tr("Degree Prestige"),this);
+    levelInDegreeLayoutAct ->setShortcut(tr("Ctrl+Shift+1"));
+    levelInDegreeLayoutAct ->setStatusTip(tr("Repositions the nodes on layers or levels of different height. More In-Degree Prestigious Nodes are situated on higher layers."));
+    levelInDegreeLayoutAct->setWhatsThis(tr("Level Degree Prestige Layout\n\n Repositions the nodes on layers of different height. More In-Degree Prestigious Nodes are situated on higher layers."));
+    connect(levelInDegreeLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutLayeredCentralityInDegree()));
+
 
     springLayoutAct= new QAction(tr("Spring Embedder"), this);
     springLayoutAct->setShortcut(tr("Alt+1"));
@@ -781,7 +783,7 @@ void MainWindow::initActions(){
     zoomOutAct->setStatusTip(tr("Zooms out of the actual network."));
     zoomOutAct->setWhatsThis(tr("Zoom out.\n\nZooms out. What else did you expect?"));
 
-    nodeSizeProportionalOutDegreeAct= new QAction(QIcon(":/images/nodeout.png"),tr("NodeSize = F (OutDegree)"), this);
+    nodeSizeProportionalOutDegreeAct= new QAction(QIcon(":/images/nodeout.png"),tr("Node size according to outDegree"), this);
     nodeSizeProportionalOutDegreeAct->setShortcut(tr("Alt+3"));
     nodeSizeProportionalOutDegreeAct->setStatusTip(tr("Resizes all nodes according to their out edges."));
     nodeSizeProportionalOutDegreeAct->setWhatsThis(tr("NodeSize = F (OutDegree) \n\n Adjusts the size of each node according to their out-edges (OutDegree). The more out-likned a node is, the bigger will appear..."));
@@ -790,7 +792,7 @@ void MainWindow::initActions(){
     connect(nodeSizeProportionalOutDegreeAct, SIGNAL(triggered(bool)), this, SLOT(slotLayoutNodeSizeProportionalOutEdges(bool)));
 
 
-    nodeSizeProportionalInDegreeAct= new QAction(QIcon(":/images/nodein.png"),tr("NodeSize = F (InDegree)"), this);
+    nodeSizeProportionalInDegreeAct= new QAction(QIcon(":/images/nodein.png"),tr("Node size according to InDegree"), this);
     nodeSizeProportionalInDegreeAct->setShortcut(tr("Alt+4"));
     nodeSizeProportionalInDegreeAct->setStatusTip(tr("Resizes all nodes according to their in edges."));
     nodeSizeProportionalInDegreeAct->setWhatsThis(tr("NodeSize = F (InDegree) \n\n This method adjusts the size of each node according to their in-edges (InDegree). The more in-linked a node is, the bigger will appear..."));
@@ -880,78 +882,78 @@ void MainWindow::initActions(){
     triadCensusAct->setWhatsThis(tr("Triad Census\n\n A triad census counts all the different kinds of observed triads within a network and codes them according to their number of mutual, asymmetric and non-existent dyads. \n "));
     connect(triadCensusAct, SIGNAL(triggered()), this, SLOT(slotTriadCensus() )  );
 
-    cOutDegreeAct = new QAction(tr("OutDegree"),this);
+    cOutDegreeAct = new QAction(tr("Degree Centrality (ODC)"),this);
     cOutDegreeAct->setShortcut(tr("Ctrl+2"));
-    cOutDegreeAct->setStatusTip(tr("Calculates and displays OutDegree Centralities"));
-    cOutDegreeAct->setWhatsThis(tr("OutDegree Centrality\n\n For each node k, this is the number of arcs starting from it. This is oftenly a measure of activity."));
+    cOutDegreeAct->setStatusTip(tr("Calculates and displays Degree Centrality indices and group Degree Centralization."));
+    cOutDegreeAct->setWhatsThis(tr("Degree Centrality (ODC)\n\n For each node v, ODC is the number of edges attached to it (in undirected graphs) or the total numnber of arcs (outLinks) starting from it (in digraphs). This is oftenly considered a measure of actor activity. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs. In weighted relations, ODC is the sum of weights of all edges/outLinks attached to v."));
     connect(cOutDegreeAct, SIGNAL(triggered()), this, SLOT(slotCentralityOutDegree()));
 
 
-    cClosenessAct = new QAction(tr("Closeness"), this);
+    cClosenessAct = new QAction(tr("Closeness Centrality (CC)"), this);
     cClosenessAct->setShortcut(tr("Ctrl+3"));
-    cClosenessAct->setStatusTip(tr("Calculates and displays Closeness Centralities"));
-    cClosenessAct->setWhatsThis(tr("Closeness Centrality\n\n For each node k, this the invert sum of the shortest distances between k and every other node. It is interpreted as the ability to access information through the \"grapevine\" of network members. Nodes with high closeness are those who can reach many other nodes in few steps.  "));
+    cClosenessAct->setStatusTip(tr("Calculates and displays Closeness Centrality indices and group Closeness Centralization."));
+    cClosenessAct->setWhatsThis(tr("Closeness Centrality (CC)\n\n For each node v, CC the invert sum of the shortest distances between v and every other node. CC is interpreted as the ability to access information through the \"grapevine\" of network members. Nodes with high closeness centrality are those who can reach many other nodes in few steps. \n\nThis index can be calculated in both graphs and digraphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1. "));
     connect(cClosenessAct, SIGNAL(triggered()), this, SLOT(slotCentralityCloseness()));
 
-    cBetweenessAct = new QAction(tr("Betweeness"), this);
+    cBetweenessAct = new QAction(tr("Betweeness Centrality (BC)"), this);
     cBetweenessAct->setShortcut(tr("Ctrl+4"));
-    cBetweenessAct->setStatusTip(tr("Calculates and displays Betweeness Centralities"));
-    cBetweenessAct->setWhatsThis(tr("Betweeness Centrality\n\n For each node k, this is the ratio of all geodesics between pairs of nodes which run through k. It reflects how often an node lies on the geodesics between the other nodes of the network. It can be interpreted as a measure of control. A node which is lies between many others is assumed to have a higher likelihood of being able to control information flow in the network. \n\n Note that betweeness centrality assumes that all geodesics have equal weight or are equally likely to be chosen for the flow of information between any two nodes. This is reasonable only on \"regular\" networks where all nodes have similar degrees. On networks with significant degree variance you might want to try informational centrality instead."));
+    cBetweenessAct->setWhatsThis(tr("Betweeness Centrality (BC)\n\n For each node v, BC is the ratio of all geodesics between pairs of nodes which run through v. It reflects how often an node lies on the geodesics between the other nodes of the network. It can be interpreted as a measure of control. A node which lies between many others is assumed to have a higher likelihood of being able to control information flow in the network. \n\n Note that betweeness centrality assumes that all geodesics have equal weight or are equally likely to be chosen for the flow of information between any two nodes. This is reasonable only on \"regular\" networks where all nodes have similar degrees. On networks with significant degree variance you might want to try informational centrality instead. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
+    cBetweenessAct->setStatusTip(tr("Calculates and displays Betweeness Centrality indices and group Betweeness Centralization."));
     connect(cBetweenessAct, SIGNAL(triggered()), this, SLOT(slotCentralityBetweeness()));
 
-    cGraphAct = new QAction(tr("Graph"),this);
+    cGraphAct = new QAction(tr("Graph Centrality (GC)"),this);
     cGraphAct->setShortcut(tr("Ctrl+5"));
-    cGraphAct->setStatusTip(tr("Calculates and displays Graph Centralities"));
-    cGraphAct->setWhatsThis(tr("Graph Centrality\n\n For each node k, this is the invert of the maximum of all geodesic distances from k to all other nodes in the network. Nodes with high GC have short distances to all other nodes in the graph. "));
+    cGraphAct->setStatusTip(tr("Calculates and displays Graph Centrality indices and group Graph Centralization."));
+    cGraphAct->setWhatsThis(tr("Graph Centrality (GC)\n\n For each node v, GC is the invert of the maximum of all geodesic distances from v to all other nodes in the network. Nodes with high GC have short distances to all other nodes in the network. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
     connect(cGraphAct, SIGNAL(triggered()), this, SLOT(slotCentralityGraph()));
 
-    cStressAct = new QAction(tr("Stress"), this);
+    cStressAct = new QAction(tr("Stress Centrality (SC)"), this);
     cStressAct->setShortcut(tr("Ctrl+6"));
-    cStressAct->setStatusTip(tr("Calculate and display Stress Centrality"));
-    cStressAct->setWhatsThis(tr("Stress Centrality\n\n For each node k, this is the total number of geodesics between all other nodes which run through k. When one node falls on all other geodesics between all the remaining (N-1) nodes, then we have a star graph with maximum Stress Centrality"));
+    cStressAct->setStatusTip(tr("Calculates and displays Stress Centrality indices and group Stress Centralization."));
+    cStressAct->setWhatsThis(tr("Stress Centrality (SC)\n\n For each node v, SC is the total number of geodesics between all other nodes which run through v. When one node falls on all other geodesics between all the remaining (N-1) nodes, then we have a star graph with maximum Stress Centrality. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
     connect(cStressAct, SIGNAL(triggered()), this, SLOT(slotCentralityStress()));
 
 
-    cEccentAct = new QAction(tr("Eccentricity"), this);
+    cEccentAct = new QAction(tr("Eccentricity (EC)"), this);
     cEccentAct->setShortcut(tr("Ctrl+7"));
-    cEccentAct->setStatusTip(tr("Calculate and display Eccentricity Centrality"));
-    cEccentAct->setWhatsThis(tr("Stress Centrality\n\n For each node k, this is the largest geodesic distance (k,t) from every other vertex t. Therefore, EC(u) reflects how far, at most, is each node from every other node."));
+    cEccentAct->setStatusTip(tr("Calculates and displays Eccentricity indices for each node and group Eccentricity"));
+    cEccentAct->setWhatsThis(tr("Eccentricity Centrality\n\n For each node k, this is the largest geodesic distance (k,t) from every other vertex t. Therefore, EC(u) reflects how far, at most, is each node from every other node. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
     connect(cEccentAct, SIGNAL(triggered()), this, SLOT(slotCentralityEccentricity()));
 
 
-    cPowerAct = new QAction(tr("Power"), this);
+    cPowerAct = new QAction(tr("Power Centrality (PC)"), this);
     cPowerAct->setShortcut(tr("Ctrl+8"));
-    cPowerAct->setStatusTip(tr("Calculate and display Power Centrality (aka Gil-Schmidt Power Centrality index)"));
-    cPowerAct->setWhatsThis(tr("Power Centrality\n\n For each node k, this index sums its degree (with weight 1), with the size of the 2nd-order neighbourhood (with weight 2), and in general, with the size of the kth order neighbourhood (with weight k). Thus, for each node in the network the most important other nodes are its immediate neighbours and then in decreasing importance the nodes of the 2nd-order neighbourhood, 3rd-order neighbourhood etc. For each node, the sum obtained is normalised by the total numbers of nodes in the same component minus 1. Power centrality has been devised by Gil-Schmidt. "));
+    cPowerAct->setStatusTip(tr("Calculate and display Power Centrality indices (aka Gil-Schmidt Power Centrality) and group Power Centralization"));
+    cPowerAct->setWhatsThis(tr("Power Centrality (PC)\n\n For each node v, this index sums its degree (with weight 1), with the size of the 2nd-order neighbourhood (with weight 2), and in general, with the size of the kth order neighbourhood (with weight k). Thus, for each node in the network the most important other nodes are its immediate neighbours and then in decreasing importance the nodes of the 2nd-order neighbourhood, 3rd-order neighbourhood etc. For each node, the sum obtained is normalised by the total numbers of nodes in the same component minus 1. Power centrality has been devised by Gil-Schmidt. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1 (therefore not considered)."));
     connect(cPowerAct, SIGNAL(triggered()), this, SLOT(slotCentralityPower()));
 
 
-    cInformationAct = new QAction(tr("Information"),	this);
+    cInformationAct = new QAction(tr("Information Centrality (IC)"),	this);
     cInformationAct->setShortcut(tr("Ctrl+9"));
     cInformationAct->setEnabled(true);
-    cInformationAct->setStatusTip(tr("Calculate and display Information Centrality"));
-    cInformationAct->setWhatsThis(tr("Information Centrality\n\n Information centrality counts all paths between nodes weighted by strength of tie and distance. This centrality  measure developed by Stephenson and Zelen (1989) focuses on how information might flow through many different paths. \n\n Note: To compute this index, SocNetV drops all isolated nodes."));
+    cInformationAct->setStatusTip(tr("Calculate and display Information Centrality indices and group Information Centralization"));
+    cInformationAct->setWhatsThis(tr("Information Centrality (IC)\n\n Information centrality counts all paths between nodes weighted by strength of tie and distance. This centrality  measure developed by Stephenson and Zelen (1989) focuses on how information might flow through many different paths. \n\nThis index should be calculated only for  graphs. \n\n Note: To compute this index, SocNetV drops all isolated nodes."));
     connect(cInformationAct, SIGNAL(triggered()), this, SLOT(slotCentralityInformation()));
 
-    cInDegreeAct = new QAction(tr("Degree Prestige (InDegree)"),	 this);
+    cInDegreeAct = new QAction(tr("Degree Prestige (DP)"),	 this);
     cInDegreeAct->setStatusTip(tr("Calculates and displays Degree Prestige (InDegree) indices "));
     cInDegreeAct->setShortcut(tr("Ctrl+1"));
-    cInDegreeAct->setWhatsThis(tr("InDegree (Degree Prestige)\n\n For each node k, this the number of arcs ending at k. Nodes with higher in-degree are considered more prominent among others. In directed graphs, this index measures the prestige of each node/actor. Thus it is called Degree Prestige. Nodes who are prestigious tend to receive many nominations or choices (in-links). The largest the index is, the more prestigious is the node."));
+    cInDegreeAct->setWhatsThis(tr("InDegree (Degree Prestige)\n\n For each node k, this the number of arcs ending at k. Nodes with higher in-degree are considered more prominent among others. In directed graphs, this index measures the prestige of each node/actor. Thus it is called Degree Prestige. Nodes who are prestigious tend to receive many nominations or choices (in-links). The largest the index is, the more prestigious is the node. \n\nThis index can be calculated only for digraphs. In weighted relations, DP is the sum of weights of all arcs/inLinks ending at node v."));
     connect(cInDegreeAct, SIGNAL(triggered()), this, SLOT(slotPrestigeDegree()));
 
-    cPageRankAct = new QAction(tr("PageRank"),	this);
+    cPageRankAct = new QAction(tr("PageRank Prestige (PRP)"),	this);
     cPageRankAct->setShortcut(tr("Ctrl+R"));
     cPageRankAct->setEnabled(true);
     cPageRankAct->setStatusTip(tr("Calculate and display PageRank Prestige"));
-    cPageRankAct->setWhatsThis(tr("PageRank Prestige\n\n An importance ranking for each node based on the link structure of the network. PageRank, developed by Page and Brin (1997), focuses on how nodes are connected to each other, treating each link from a node as a citation/backlink/vote to another. In essence, for each node PageRank counts all backlinks to it, but it does so by not counting all links equally while it normalizes each link from a node by the total number of links from it. PageRank is calculated iteratively and it corresponds to the principal eigenvector of the normalized link matrix...."));
+    cPageRankAct->setWhatsThis(tr("PageRank Prestige\n\n An importance ranking for each node based on the link structure of the network. PageRank, developed by Page and Brin (1997), focuses on how nodes are connected to each other, treating each link from a node as a citation/backlink/vote to another. In essence, for each node PageRank counts all backlinks to it, but it does so by not counting all links equally while it normalizes each link from a node by the total number of links from it. PageRank is calculated iteratively and it corresponds to the principal eigenvector of the normalized link matrix. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for directed graphs since it is a prestige measure. It can also be calculated in weighted graphs. In weighted relations, each backlink to a node v from another node u is considered to have weight=1 but it is normalized by the sum of outLinks weights (outDegree) of u. Therefore, nodes with high outLink weights give smaller percentage of their PR to node v."));
     connect(cPageRankAct, SIGNAL(triggered()), this, SLOT(slotPrestigePageRank()));
 
-    cProximityPrestigeAct = new QAction(tr("Proximity Prestige (digraphs only)"),	this);
+    cProximityPrestigeAct = new QAction(tr("Proximity Prestige (PP)"),	this);
     cProximityPrestigeAct->setShortcut(tr("Shift+Ctrl+R"));
     cProximityPrestigeAct->setEnabled(true);
-    cProximityPrestigeAct->setStatusTip(tr("Calculate and display Proximity Prestige"));
-    cProximityPrestigeAct->setWhatsThis(tr("Proximity Prestige Centrality\n\n An importance ranking for each node based on the link structure of the network. PageRank, developed by Page and Brin (1997), focuses on how nodes are connected to each other, treating each link from a node as a citation/backlink to another. In essence, for each node PageRank counts all backlinks to it, but it does so by not counting all links equally while it normalizes each link from a node by the total number of links from it. PageRank is calculated iteratively and it corresponds to the principal eigenvector of the normalized link matrix...."));
-    connect(cProximityPrestigeAct, SIGNAL(triggered()), this, SLOT(slotroximityPrestige()));
+    cProximityPrestigeAct->setStatusTip(tr("Calculate and display Proximity Prestige (digraphs only)"));
+    cProximityPrestigeAct->setWhatsThis(tr("Proximity Prestige (PP) \n\n This index measures how proximate a node v is to the nodes in its influence domain I (the influence domain I of a node is the number of other nodes that can reach it). In PP calculation, proximity is based on distances to rather than distances from node v. To put it simply, in PP what matters is how close are all the other nodes to node v. \n\nThe algorithm takes the average distance to node v of all nodes in its influence domain, standardizes it by multiplying with (N-1)/I and takes its reciprocal. In essence, the formula SocNetV uses to calculate PP for every node v is the ratio of the fraction of nodes that can reach node v, to the average distance of that noeds to v: PP = (I/(N-1))/(sum{d(u,v)}/I) where the sum is over all nodes in I."));
+    connect(cProximityPrestigeAct, SIGNAL(triggered()), this, SLOT(slotProximityPrestige()));
 
     /**
     Options menu actions
@@ -1234,11 +1236,11 @@ void MainWindow::initMenuBar() {
     layoutMenu -> addMenu (randomLayoutMenu );
     randomLayoutMenu ->  addAction(randLayoutAct);
     randomLayoutMenu ->  addAction( randCircleLayoutAct );
+    layoutMenu->addSeparator();
 
-    circleLayoutMenu = new QMenu(tr("Radial by centrality..."));
+    circleLayoutMenu = new QMenu(tr("Radial by prominence index..."));
     circleLayoutMenu -> setIcon(QIcon(":/images/circular.png"));
     layoutMenu -> addMenu (circleLayoutMenu);
-    circleLayoutMenu -> addAction (circleInDegreeLayoutAct);
     circleLayoutMenu -> addAction (circleOutDegreeLayoutAct);
     circleLayoutMenu -> addAction (circleClosenessLayoutAct);
     circleLayoutMenu -> addAction (circleBetweenessLayoutAct);
@@ -1247,15 +1249,16 @@ void MainWindow::initMenuBar() {
     circleLayoutMenu -> addAction (circleEccentrLayoutAct);
     circleLayoutMenu -> addAction (circlePowerLayoutAct);
     circleLayoutMenu -> addAction (circleInformationLayoutAct);
+    circleLayoutMenu -> addAction (circleInDegreeLayoutAct);
 
-    levelLayoutMenu = new QMenu (tr("Layered by centrality..."));
+    levelLayoutMenu = new QMenu (tr("Vertically Layered by prominence index..."));
     levelLayoutMenu -> setIcon(QIcon(":/images/net3.png"));
     layoutMenu -> addMenu (levelLayoutMenu);
-    levelLayoutMenu ->addAction ( levelInDegreeLayoutAct     );
     levelLayoutMenu ->addAction ( levelOutDegreeLayoutAct    );
     levelLayoutMenu ->addAction ( levelClosenessLayoutAct    );
     levelLayoutMenu ->addAction ( levelBetweenessLayoutAct   );
     levelLayoutMenu ->addAction ( levelInformationLayoutAct  );
+    levelLayoutMenu ->addAction ( levelInDegreeLayoutAct     );
 
     layoutMenu->addSeparator();
     physicalLayoutMenu = new QMenu (tr("Physical..."));
@@ -1297,6 +1300,7 @@ void MainWindow::initMenuBar() {
 
     statMenu->addSeparator();
     centrlMenu = new QMenu(tr("Centrality and Prestige indices..."));
+    centrlMenu -> setIcon(QIcon(":/images/centrality.png"));
     statMenu->addMenu(centrlMenu);
     centrlMenu -> addSection(QIcon(":/images/centrality.png"), tr("Centrality"));
 
@@ -1551,11 +1555,11 @@ void MainWindow::initToolBox(){
     moveKamandaBx->setToolTip(tr("!"));
 
 
-    nodeSizeProportional2OutDegreeBx = new QCheckBox(tr("NodeSize = F (OutDegree)") );
+    nodeSizeProportional2OutDegreeBx = new QCheckBox(tr("Node sizes follow OutDegree)") );
     nodeSizeProportional2OutDegreeBx ->setEnabled(true);
     nodeSizeProportional2OutDegreeBx->setToolTip(tr("If you enable this, all nodes will be resized so that their size reflect their out-degree (the amount of links from them). To put it simply, more out-linked nodes will be bigger..."));
 
-    nodeSizeProportional2InDegreeBx = new QCheckBox(tr("NodeSize = F (InDegree)") );
+    nodeSizeProportional2InDegreeBx = new QCheckBox(tr("Node sizes follow InDegree") );
     nodeSizeProportional2InDegreeBx ->setEnabled(true);
     nodeSizeProportional2InDegreeBx->setToolTip(tr("If you enable this, all nodes will be resized so that their size reflect their in-degree (the amount of links to them from other nodes). To put it simply, more in-linked nodes will be bigger..."));
 

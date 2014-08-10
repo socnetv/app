@@ -2547,7 +2547,7 @@ void Graph::writePrestigeProximity(
 
 //Calculates the PageRank Prestige of each vertex
 int Graph::prestigePageRank(){
-    qDebug()<< "Graph:: centralityPageRank()";
+    qDebug()<< "Graph:: prestigePageRank()";
     discretePRCs.clear();
     sumPRC=0;
     maxPRC=0;
@@ -2572,15 +2572,15 @@ int Graph::prestigePageRank(){
     // begin iteration - continue until we reach our desired delta
     while (maxDelta > delta) {
         for (it=m_graph.begin(); it!=m_graph.end(); it++){
-            qDebug() << "Graph:: centralityPageRank() - calculating PR for node: " << (*it)->name() ;
+            qDebug() << "Graph:: prestigePageRank() - calculating PR for node: " << (*it)->name() ;
             // In the first iteration, we have no PageRanks
             // So we set them to (1-d)
             if ( i == 1 ) {
                 (*it)->setPRC( 1 - dampingFactor );
-                qDebug() << "Graph:: centralityPageRank() - first iteration - node: " << (*it)->name() << " PR = " << (*it)->PRC() ;
+                qDebug() << "Graph:: prestigePageRank() - first iteration - node: " << (*it)->name() << " PR = " << (*it)->PRC() ;
                 if ( (*it)->isIsolated() ) {
                     isolatedVertices++;
-                    qDebug()<< "Graph:: centralityPageRank() vertex: " << (*it)->name() << " is isolated. PR will be just 1-d. Continue... ";
+                    qDebug()<< "Graph:: prestigePageRank() vertex: " << (*it)->name() << " is isolated. PR will be just 1-d. Continue... ";
                 }
                 else
                     allNodesAreIsolated = false;
@@ -2592,14 +2592,14 @@ int Graph::prestigePageRank(){
                 oldPRC = (*it)->PRC();
                 // take every other node which links to the current node.
                 for( jt = (*it)->m_inEdges.begin(); jt != (*it)->m_inEdges.end(); jt++ ) {
-                    qDebug() << "Graph:: centralityPageRank " << (*it)->name() << " is inLinked from " << jt->first  ;
+                    qDebug() << "Graph:: prestigePageRank " << (*it)->name() << " is inLinked from " << jt->first  ;
                     referrer=jt->first;
                     if ( this->hasEdge( referrer , (*it)->name() ) )
                     {
 
                         outDegree = m_graph[ index[referrer] ] ->outDegree();
                         PRC =  m_graph[ index[referrer] ]->PRC();
-                        qDebug()<< "Graph:: centralityPageRank() " <<  jt->first  << " has PRC = " << PRC  << " and outDegree = " << outDegree << " PRC / outDegree = " << PRC / outDegree ;
+                        qDebug()<< "Graph:: prestigePageRank() " <<  jt->first  << " has PRC = " << PRC  << " and outDegree = " << outDegree << " PRC / outDegree = " << PRC / outDegree ;
                         sumPageRanksOfLinkedNodes += PRC / outDegree;
                     }
 
@@ -2609,17 +2609,17 @@ int Graph::prestigePageRank(){
                 // store new PageRank
                 (*it) -> setPRC ( PRC );
                 // calculate diff from last PageRank value for this vertex and set it to minDelta if the latter is bigger.
-                qDebug()<< "Graph:: centralityPageRank() vertex: " <<  (*it)->name() << " new PageRank = " << PRC
+                qDebug()<< "Graph:: prestigePageRank() vertex: " <<  (*it)->name() << " new PageRank = " << PRC
                         << " old PR was = " << oldPRC << " diff = " << fabs(PRC - oldPRC);
                 if ( maxDelta < fabs(PRC - oldPRC) ) {
                     maxDelta = fabs(PRC - oldPRC);
-                    qDebug()<< "Graph:: centralityPageRank() setting new maxDelta = " <<  maxDelta;
+                    qDebug()<< "Graph:: prestigePageRank() setting new maxDelta = " <<  maxDelta;
                 }
 
             }
         }
         if (allNodesAreIsolated) {
-            qDebug()<< "Graph:: centralityPageRank() all vertices are isolated. Break...";
+            qDebug()<< "Graph:: prestigePageRank() all vertices are isolated. Break...";
             qDebug() << "isolatedVertices: " << isolatedVertices << " total vertices " << this->vertices();
 
             break;
@@ -2645,14 +2645,14 @@ int Graph::prestigePageRank(){
 
         SPRC = PRC / sumPRC ;
         (*it)->setSPRC( SPRC );
-        qDebug()<< "Graph:: centralityPageRank() vertex: " <<  (*it)->name() << " PageRank = " << PRC << " standard PR = " << SPRC;
+        qDebug()<< "Graph:: prestigePageRank() vertex: " <<  (*it)->name() << " PageRank = " << PRC << " standard PR = " << SPRC;
     }
     graphModified=false;
     if (allNodesAreIsolated) {
-        qDebug()<< "Graph:: centralityPageRank() all vertices are isolated. Equal PageRank for all....";
+        qDebug()<< "Graph:: prestigePageRank() all vertices are isolated. Equal PageRank for all....";
         return 1;
     }
-    qDebug()<< "Graph:: centralityPageRank() vertex: " <<  maxNodePRC << " has max PageRank = " << maxPRC;
+    qDebug()<< "Graph:: prestigePageRank() vertex: " <<  maxNodePRC << " has max PageRank = " << maxPRC;
     return 0;
 
 }
@@ -2675,9 +2675,8 @@ void Graph::writePrestigePageRank(const QString fileName){
 
     outText << tr("PAGERANK PRESTIGE (PR) OF EACH NODE")<<"\n";
     outText << tr("")<<"\n";
-    outText << tr("PR' is the standardized PR")<<"\n";
-
     outText << tr("PR  range:  1-d < C  where d=") << dampingFactor   << "\n";
+    outText << tr("PR' is the standardized PR")<<"\n";
     outText << tr("PR' range:  ") << dampingFactor / sumPRC  << " < C'< 1" <<"\n\n";
     outText << "Node"<<"\tPRC\t\tPRC'\t\t%PRC\n";
     QList<Vertex*>::iterator it;
@@ -2687,7 +2686,7 @@ void Graph::writePrestigePageRank(const QString fileName){
         SPRC = (*it)->SPRC();
         sumSPRC +=  SPRC;
         outText << (*it)->name()<<"\t"<< PRC << "\t\t"<< SPRC  << "\t\t" <<  ( 100* SPRC )<<endl;
-        qDebug()<< "Graph::writeCentralityPageRank() vertex: " <<  (*it)->name() << " SPRC  " << SPRC;
+        qDebug()<< "Graph::writeprestigePageRank() vertex: " <<  (*it)->name() << " SPRC  " << SPRC;
     }
     qDebug ("min %f, max %f", minPRC, maxPRC);
     if ( minPRC == maxPRC )
@@ -2718,14 +2717,14 @@ void Graph::writePrestigePageRank(const QString fileName){
     qDebug() << "groupPRC   " << groupPRC   << " n " << n ;
     groupPRC  = groupPRC  /  (n-1);
     qDebug() << "groupPRC   " << groupPRC   ;
-    outText << tr("\nGROUP PAGERANK CENTRALISATION (GPC)\n\n");
-    outText << tr("GPC = ") << groupPRC<<"\n\n";
-    outText << tr("GPC range: 0 < GPRC < inf \n");
-    outText << tr("GPC is computed using a simple variance formula. \n");
+    outText << tr("\nGROUP PAGERANK PRESTIGE (GPRP)\n\n");
+    outText << tr("GPRP = ") << groupPRC<<"\n\n";
+    outText << tr("GPRP range: 0 < GPRP < inf \n");
+    outText << tr("GPRP is computed using a simple variance formula. \n");
 
 
 
-    outText << tr("PageRank report, \n");
+    outText << tr("PageRank Prestige report, \n");
     outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
