@@ -29,6 +29,7 @@
 using namespace std;
 
 #include <iostream>		//used for cout
+#include <cstdlib>		//allows the use of RAND_MAX macro
 
 #include <math.h>		//need for fabs function
 
@@ -96,11 +97,13 @@ float  Matrix::operator ()  (const int r, const int c){
 QTextStream& operator <<  (QTextStream& os, Matrix& m){
     qDebug() << "Matrix: << Matrix";
     int fieldWidth = 6, newFieldWidth = 6, actorNumber=1;
-    float maxVal= m.maxValue();
+    float maxVal, minVal;
+    m.findMinMaxValues(maxVal,minVal);
     float element;
 
     //
-    os << " max Value = " << maxVal<< endl<<endl;
+    os << " max Value = " << maxVal<< endl;
+    os << " min Value = " << minVal<< endl<<endl;
     if (maxVal > 999999 )
         fieldWidth = 14;
     else if (maxVal > 99999 )
@@ -188,15 +191,18 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
 }
 
 
-float Matrix::maxValue (){
-    float maxVal=0;
+void Matrix::findMinMaxValues (float & maxVal, float &minVal){
+    maxVal=0;
+    minVal=RAND_MAX;
     for (register int r = 0; r < rows(); ++r) {
         for (register int c = 0; c < cols(); ++c) {
             if ( item(r,c) > maxVal)
                 maxVal = item(r,c) ;
+            if ( item(r,c) < minVal){
+                 minVal= item(r,c) ;
+            }
         }
     }
-    return maxVal;
 }
 
 //Resize this matrix. Every Row object holds max_int=32762
