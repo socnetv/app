@@ -150,12 +150,6 @@ public:
     float ODC() { return m_ODC;}		/* Returns vertex Out-Degree Centrality*/
     float SODC() { return m_SODC;}		/* Returns standard vertex Out-Degree Centrality*/
 
-    void setIDC (float c){ m_IDC=c;} 	/* Sets vertex In-Degree Centrality*/
-    void setSIDC (float c ) { m_SIDC=c;}	/* Sets standard vertex In-Degree Centrality*/
-    float IDC() { return m_IDC;}		/* Returns vertex In-Degree Centrality*/
-    float SIDC() { return m_SIDC;}		/* Returns standard vertex In-Degree Centrality*/
-
-
     void setCC (float c){ m_CC=c;}		/* sets vertex Closeness Centrality*/
     void setSCC (float c ) { m_SCC=c;}	/* sets standard vertex Closeness Centrality*/
     float CC() { return m_CC;}		/* Returns vertex Closeness Centrality*/
@@ -190,6 +184,11 @@ public:
     void setSIC (float c ) { m_SIC=c;}	/* sets standard vertex Information Centrality*/
     float IC() { return m_IC;}		/* Returns vertex Information  Centrality*/
     float SIC() { return m_SIC; }		/* Returns standard vertex Information Centrality*/
+
+    void setDP (float c){ m_DP=c;} 	/* Sets vertex Degree Prestige */
+    void setSDP (float c ) { m_SDP=c;}	/* Sets standard vertex Degree Prestige */
+    float DP() { return m_DP;}		/* Returns vertex Degree Prestige */
+    float SDP() { return m_SDP;}		/* Returns standard vertex Degree Prestige */
 
     void setPRC (float c){ m_PRC=c;}		/* sets vertex PageRank*/
     void setSPRC (float c ) { m_SPRC=c;}	/* sets standard vertex PageRank*/
@@ -227,7 +226,7 @@ private:
     double m_x, m_y;
     float m_CLC;
     float m_delta, m_EC, m_SEC;
-    float m_ODC, m_SODC, m_IDC, m_SIDC, m_CC, m_SCC, m_BC, m_SBC, m_GC, m_SGC, m_SC, m_SSC;
+    float m_ODC, m_SODC, m_DP, m_SDP, m_CC, m_SCC, m_BC, m_SBC, m_GC, m_SGC, m_SC, m_SSC;
     float m_PC, m_SPC, m_SIC, m_IC, m_SPRC, m_PRC;
     float m_PP, m_SPP;
 

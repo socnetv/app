@@ -59,7 +59,7 @@ Vertex::Vertex(	Graph* parent,
     m_outDegree=0;
     m_inDegree=0;
     m_localDegree=0;
-	m_ODC=0; m_SODC=0; m_IDC=0; m_SIDC=0; m_CC=0; m_SCC=0; m_BC=0; m_SBC=0; m_GC=0; m_SGC=0; m_SC=0; m_SSC=0;
+    m_ODC=0; m_SODC=0; m_DP=0; m_SDP=0; m_CC=0; m_SCC=0; m_BC=0; m_SBC=0; m_GC=0; m_SGC=0; m_SC=0; m_SSC=0;
     m_CLC=0; m_hasCLC=false;
 	
     m_inLinked=false;
@@ -80,7 +80,7 @@ Vertex::Vertex(int v1) {
 	m_outLinks=0;
 	m_inLinks=0;
 
-	m_ODC=0; m_SODC=0; m_IDC=0; m_SIDC=0; m_CC=0; m_SCC=0; m_BC=0; m_SBC=0; m_GC=0; m_SGC=0; m_SC=0; m_SSC=0;
+    m_ODC=0; m_SODC=0; m_DP=0; m_SDP=0; m_CC=0; m_SCC=0; m_BC=0; m_SBC=0; m_GC=0; m_SGC=0; m_SC=0; m_SSC=0;
     m_inLinked=false;
     m_outLinked=false;
     m_reciprocalLinked=false;

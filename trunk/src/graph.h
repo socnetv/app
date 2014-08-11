@@ -263,7 +263,7 @@ public:
     void createNumberOfWalksMatrix(int length);
     void writeTotalNumberOfWalksMatrix(QString fn, QString netName, int length);
     void writeNumberOfWalksMatrix(QString fn, QString netName, int length);
-    int minimumPathLength(int v1, int v2) ;
+    int reachable(int v1, int v2) ;
     void reachabilityMatrix();  // Calculates the Reachability Matrix XRM
     void writeReachabilityMatrix(QString fn, QString netName); //Writes the Reachability Matrix
 
@@ -345,11 +345,11 @@ private:
     void resolveClasses(float C, hash_si &discreteClasses, int &classes, int name);  	//helper
 
     /** used in resolveClasses and createDistanceMatrix() */
-    hash_si discreteIDCs, discreteODCs, discreteCCs, discreteBCs, discreteSCs, discreteGCs, discreteECs;
+    hash_si discreteDPs, discreteODCs, discreteCCs, discreteBCs, discreteSCs, discreteGCs, discreteECs;
     hash_si discretePCs, discreteICs,  discretePRCs, discretePPs;
 
     int *eccentricities;
-    bool calculatedIDC, calculatedODC, calculatedCentralities, dynamicMovement;
+    bool calculatedDP, calculatedODC, calculatedCentralities, dynamicMovement;
     bool calculatedPP;
 
     QList<int>  triadTypeFreqs; 	//stores triad type frequencies
@@ -359,7 +359,7 @@ private:
     stack<int> Stack;
 
     float meanDegree, varianceDegree;
-    float minIDC, maxIDC, sumIDC, groupIDC;
+    float minDP, maxDP, sumDP, groupDP;
     float minODC, maxODC, sumODC, groupODC;
     float minCC, maxCC, nomCC, denomCC, sumCC, groupCC, maxIndexCC;
     float minBC, maxBC, nomBC, denomBC, sumBC, groupBC, maxIndexBC;
@@ -372,7 +372,7 @@ private:
     float minPP, maxPP, nomPP, denomPP, sumPP, groupPP, maxIndexPP;
     float minCLC, maxCLC, averageCLC, averageIC, averagePRC, dampingFactor;
     int maxNodeCLC, minNodeCLC;
-    int classesIDC, maxNodeIDC, minNodeIDC;
+    int classesDP, maxNodeDP, minNodeDP;
     int classesODC, maxNodeODC, minNodeODC;
     int classesCC, maxNodeCC, minNodeCC;
     int classesBC, maxNodeBC, minNodeBC;

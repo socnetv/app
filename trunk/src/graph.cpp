@@ -52,7 +52,7 @@ Graph::Graph() {
     symmetricAdjacencyMatrix=true;
     adjacencyMatrixCreated=false;
     distanceMatrixCreated=false;
-    calculatedIDC=false;
+    calculatedDP=false;
     calculatedODC=false;
     calculatedCentralities=false;
 
@@ -868,7 +868,7 @@ void Graph::clear() {
     //qDebug("Graph: m_graph reports size %i", m_graph.size());
     m_graph.clear();
     index.clear();
-    discreteIDCs.clear();
+    discreteDPs.clear();
     discreteODCs.clear();
     m_isolatedVerticesList.clear();
     m_totalVertices=0;
@@ -879,7 +879,7 @@ void Graph::clear() {
 
     order=true;		//returns true if the indexes of the list is ordered.
     m_undirected=false;
-    calculatedIDC=false;
+    calculatedDP=false;
     calculatedODC=false;
     calculatedCentralities=false;
     adjacencyMatrixCreated=false;
@@ -1936,7 +1936,7 @@ void Graph::writeCentralityOutDegree (
     outText << tr("ODC' is the standardized ODC\n\n");
 
     if (considerWeights){
-        maximumIndexValue=(vertices()-1.0)*maxIDC;
+        maximumIndexValue=(vertices()-1.0)*maxODC;
         outText << tr("ODC  range: 0 < C < undefined (since this is a weighted network")<<"\n";
     }
     else
@@ -2312,14 +2312,14 @@ void Graph::writeCentralityPower(
 *	Also the mean value and the variance of the in-degrees.
 */
 void Graph::prestigeDegree(bool weights){
-    qDebug()<< "Graph:: centralityInDegree()";
-    float IDC=0, nom=0, denom=0;
+    qDebug()<< "Graph:: prestigeDegree()";
+    float DP=0, nom=0, denom=0;
     float weight;
-    classesIDC=0;
-    sumIDC=0;
-    maxIDC=0;
-    minIDC=vertices()-1;
-    discreteIDCs.clear();
+    classesDP=0;
+    sumDP=0;
+    maxDP=0;
+    minDP=vertices()-1;
+    discreteDPs.clear();
     varianceDegree=0;
     meanDegree=0;
     symmetricAdjacencyMatrix = true;
@@ -2327,60 +2327,60 @@ void Graph::prestigeDegree(bool weights){
     hash_si::iterator it2;
     int vert=vertices();
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        IDC=0;
-        qDebug() << "Graph: centralityInDegree() vertex " <<  (*it)->name()  ;
+        DP=0;
+        qDebug() << "Graph: prestigeDegree() vertex " <<  (*it)->name()  ;
         for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
             if ( (weight=this->hasEdge ( (*it1)->name(), (*it)->name() ) ) !=0  )   {
                 if (weights)
-                    IDC+=weight;
+                    DP+=weight;
                 else
-                    IDC++;
+                    DP++;
             }
             //check here if the matrix is symmetric - we need this below
             if ( ( this->hasEdge ( (*it1)->name(), (*it)->name() ) ) != ( this->hasEdge ( (*it)->name(), (*it1)->name() ) )   )
                 symmetricAdjacencyMatrix = false;
         }
-        (*it) -> setIDC ( IDC ) ;				//Set InDegree
-        qDebug() << "Graph: vertex = " <<  (*it)->name() << " has IDC = " << IDC ;
-        sumIDC += IDC;
-        it2 = discreteIDCs.find(QString::number(IDC));
-        if (it2 == discreteIDCs.end() )	{
-            classesIDC++;
-            qDebug("This is a new IDC class");
-            discreteIDCs.insert ( QString::number(IDC), classesIDC );
+        (*it) -> setDP ( DP ) ;				//Set InDegree
+        qDebug() << "Graph: vertex = " <<  (*it)->name() << " has DP = " << DP ;
+        sumDP += DP;
+        it2 = discreteDPs.find(QString::number(DP));
+        if (it2 == discreteDPs.end() )	{
+            classesDP++;
+            qDebug("This is a new DP class");
+            discreteDPs.insert ( QString::number(DP), classesDP );
         }
-        qDebug("IDC classes = %i ", classesIDC);
-        if (maxIDC < IDC ) {
-            maxIDC = IDC ;
-            maxNodeIDC=(*it)->name();
+        qDebug("DP classes = %i ", classesDP);
+        if (maxDP < DP ) {
+            maxDP = DP ;
+            maxNodeDP=(*it)->name();
         }
-        if (minIDC > IDC ) {
-            minIDC = IDC ;
-            minNodeIDC=(*it)->name();
+        if (minDP > DP ) {
+            minDP = DP ;
+            minNodeDP=(*it)->name();
         }
     }
 
-    if (minIDC == maxIDC)
-        maxNodeIDC=-1;
+    if (minDP == maxDP)
+        maxNodeDP=-1;
 
 
-    meanDegree = sumIDC / (float) vert;
-    qDebug("Graph: sumIDC = %f, meanDegree = %f", sumIDC, meanDegree);
+    meanDegree = sumDP / (float) vert;
+    qDebug("Graph: sumDP = %f, meanDegree = %f", sumDP, meanDegree);
 
     // Calculate std In-Degree, Variance and the Degree Centralisation of the whole graph.
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        IDC= (*it)->IDC();
+        DP= (*it)->DP();
         if (!weights) {
-            (*it) -> setSIDC( IDC / (vert-1.0) );		//Set Standard InDegree
+            (*it) -> setSDP( DP / (vert-1.0) );		//Set Standard InDegree
         }
         else {
-            (*it) -> setSIDC( IDC / (sumIDC) );
+            (*it) -> setSDP( DP / (sumDP) );
         }
-        nom+= maxIDC-IDC;
-        qDebug() << "Graph: vertex = " <<  (*it)->name() << " has IDC = " << IDC << " and SIDC " << (*it)->SIDC ();
+        nom+= maxDP-DP;
+        qDebug() << "Graph: vertex = " <<  (*it)->name() << " has DP = " << DP << " and SDP " << (*it)->SDP ();
 
-        //qDebug("Graph: IDC = %f, meanDegree = %f", IDC, meanDegree);
-        varianceDegree += (IDC-meanDegree) * (IDC-meanDegree) ;
+        //qDebug("Graph: DP = %f, meanDegree = %f", DP, meanDegree);
+        varianceDegree += (DP-meanDegree) * (DP-meanDegree) ;
     }
 
     varianceDegree=varianceDegree/(float) vert;
@@ -2391,24 +2391,24 @@ void Graph::prestigeDegree(bool weights){
         denom=(vert-1.0)*(vert-1.0);
 
     if (!weights) {
-        groupIDC=nom/denom;
+        groupDP=nom/denom;
     }
     else {
-        qDebug()<< "Graph::centralityInDegree vertices isolated: " << verticesIsolated().count() << ". I will subtract groupIDC by " << ((float)verticesIsolated().count()/(float)vert);
-        groupIDC=( ( nom * (vert-1.0))/( denom * maxIDC) ) - ((float) verticesIsolated().count()/ (float) vert);
+        qDebug()<< "Graph::prestigeDegree vertices isolated: " << verticesIsolated().count() << ". I will subtract groupDP by " << ((float)verticesIsolated().count()/(float)vert);
+        groupDP=( ( nom * (vert-1.0))/( denom * maxDP) ) - ((float) verticesIsolated().count()/ (float) vert);
     }
 
-    qDebug("Graph: varianceDegree = %f, groupIDC = %f", varianceDegree, groupIDC);
+    qDebug("Graph: varianceDegree = %f, groupDP = %f", varianceDegree, groupDP);
 
     if (!weights) {
-        minIDC/=(float)(vert-1); // standardize
-        maxIDC/=(float)(vert-1);
+        minDP/=(float)(vert-1); // standardize
+        maxDP/=(float)(vert-1);
     }
     else {
-        minIDC/=(float)(sumIDC); // standardize
-        maxIDC/=(float)(sumIDC);
+        minDP/=(float)(sumDP); // standardize
+        maxDP/=(float)(sumDP);
     }
-    calculatedIDC=true;
+    calculatedDP=true;
     graphModified=false;
 }
 
@@ -2428,24 +2428,24 @@ void Graph::writePrestigeDegree (const QString fileName, const bool considerWeig
     prestigeDegree(considerWeights);
     float maximumIndexValue=vertices()-1.0;
 
-    outText << tr("IN-DEGREE CENTRALITIES / DEGREE PRESTIGE (IDC) OF EACH NODE\n");
-    outText << tr("IDC is the sum of incoming links to node u from all adjacent nodes.\n");
-    outText << tr("If the network is weighted, IDC is the sum of incoming link weights to node u from all adjacent nodes.\n");
-    outText << tr("The in-degree of the node is a measure of the \'activity\' or prestige of that node.\n");
-    outText << tr("IDC' is the standardized IDC\n\n");
+    outText << tr("DEGREE PRESTIGE (DP) OF EACH NODE\n");
+    outText << tr("DP is the sum of incoming links to node u from all adjacent nodes.\n");
+    outText << tr("If the network is weighted, DP is the sum of incoming link weights (inDegree) to node u from all adjacent nodes.\n");
+    outText << tr("The DP of a node is a measure of the \'activity\' or prestige of that node.\n");
+    outText << tr("DP' is the standardized DP\n\n");
     if (considerWeights){
-        maximumIndexValue=(vertices()-1.0)*maxIDC;
-        outText << tr("IDC  range: 0 < C < undefined (since this is a weighted network")<<"\n";
+        maximumIndexValue=(vertices()-1.0)*maxDP;
+        outText << tr("DP  range: 0 < C < undefined (since this is a weighted network")<<"\n";
     }
     else
-        outText << tr("IDC  range: 0 < C < ")<<maximumIndexValue<<"\n";
-    outText << "IDC' range: 0 < C'< 1"<<"\n\n";
+        outText << tr("DP  range: 0 < C < ")<<maximumIndexValue<<"\n";
+    outText << "DP' range: 0 < C'< 1"<<"\n\n";
 
-    outText << "Node"<<"\tIDC\tIDC'\t%IDC\n";
+    outText << "Node"<<"\tDP\tDP'\t%DP\n";
 
     QList<Vertex*>::iterator it;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        outText <<(*it)->name()<<"\t"<<(*it)->IDC() << "\t"<< (*it)->SIDC() << "\t" <<  (100* ((*it)->IDC()) / sumIDC)<<endl;
+        outText <<(*it)->name()<<"\t"<<(*it)->DP() << "\t"<< (*it)->SDP() << "\t" <<  (100* ((*it)->DP()) / sumDP)<<endl;
     }
     if (symmetricAdjacencyMatrix) {
         outText << "\n";
@@ -2458,29 +2458,29 @@ void Graph::writePrestigeDegree (const QString fileName, const bool considerWeig
         outText << tr("InDegree Variance = ") << varianceDegree<<"\n";
     }
 
-    if ( minIDC == maxIDC )
-        outText << tr("All nodes have the same IDC value.") << "\n";
+    if ( minDP == maxDP )
+        outText << tr("All nodes have the same DP value.") << "\n";
     else  {
-        outText << tr("Max IDC' = ") << maxIDC <<" (node "<< maxNodeIDC <<  ")  \n";
-        outText << tr("Min IDC' = ") << minIDC <<" (node "<< minNodeIDC <<  ")  \n";
-        outText << tr("IDC classes = ") << classesIDC<<" \n";
+        outText << tr("Max DP' = ") << maxDP <<" (node "<< maxNodeDP <<  ")  \n";
+        outText << tr("Min DP' = ") << minDP <<" (node "<< minNodeDP <<  ")  \n";
+        outText << tr("DP classes = ") << classesDP<<" \n";
     }
 
-    outText << "\nGROUP IN-DEGREE CENTRALISATION (GIDC)\n\n";
-    outText << "GIDC = " << groupIDC<<"\n\n";
+    outText << "\nGROUP DEGREE PRESTIGE (GDP)\n\n";
+    outText << "GDP = " << groupDP<<"\n\n";
 
-    outText << "GIDC range: 0 < GIDC < 1\n";
-    outText << "GIDC = 0, when all in-degrees are equal (i.e. regular lattice).\n";
-    outText << "GIDC = 1, when one node is linked from every other node.\n";
+    outText << "GDP range: 0 < GDP < 1\n";
+    outText << "GDP = 0, when all in-degrees are equal (i.e. regular lattice).\n";
+    outText << "GDP = 1, when one node is linked from every other node.\n";
 
     outText << "(Wasserman & Faust, p. 101)\n";
 
     if (considerWeights) {
-        outText << "\nNOTE: Because the network is weighted, we normalize Group Centrality multiplying by (N-1)/maxDC, where N is the total vertices, and subtracting the percentage of isolated vertices\n";
+        outText << "\nNOTE: Because the network is weighted, we normalize Group Prestige multiplying by (N-1)/maxDC, where N is the total vertices, and subtracting the percentage of isolated vertices\n";
     }
 
     outText << "\n\n";
-    outText << tr("In-Degree Centrality Report, \n");
+    outText << tr("Degree Prestige Report, \n");
     outText << tr("created by SocNetV: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
@@ -2995,7 +2995,7 @@ void Graph::layoutRadialCentrality(double x0, double y0, double maxRadius, int C
         qDebug("Graph: Calling createDistanceMatrix() to calc centralities");
         this->createDistanceMatrix(true);
     }
-    else if ((graphModified || !calculatedIDC) && CentralityType == 1)
+    else if ((graphModified || !calculatedDP) && CentralityType == 1)
         this->prestigeDegree(true);
     else if ((graphModified || !calculatedODC) && CentralityType == 2)
         this->centralityOutDegree(true);
@@ -3017,9 +3017,9 @@ void Graph::layoutRadialCentrality(double x0, double y0, double maxRadius, int C
         switch (CentralityType) {
         case 1 : {
             qDebug("Layout according to Degree Prestige (in-degree)");
-            C=(*it)->SIDC();
-            std= (*it)->SIDC();
-            maxC=maxIDC;
+            C=(*it)->SDP();
+            std= (*it)->SDP();
+            maxC=maxDP;
             break;
         }
         case 2 : {
@@ -3156,7 +3156,7 @@ void Graph::layoutLayeredCentrality(double maxWidth, double maxHeight, int Centr
         qDebug("Graph: Calling createDistanceMatrix() to calc centralities");
         createDistanceMatrix(true);
     }
-    else if ((graphModified || !calculatedIDC) && CentralityType == 1)
+    else if ((graphModified || !calculatedDP) && CentralityType == 1)
         prestigeDegree(true);
     else if ((graphModified || !calculatedODC) && CentralityType == 2)
         centralityOutDegree(true);
@@ -3171,9 +3171,9 @@ void Graph::layoutLayeredCentrality(double maxWidth, double maxHeight, int Centr
         switch (CentralityType) {
         case 1 : {
             qDebug("Layout according to InDegree Centralities");
-            C=(*it)->SIDC();
-            std= (*it)->SIDC();
-            maxC=maxIDC;
+            C=(*it)->SDP();
+            std= (*it)->SDP();
+            maxC=maxDP;
             break;
         }
         case 2 : {
