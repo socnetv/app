@@ -4980,7 +4980,20 @@ void MainWindow::slotTotalNumberOfWalks(){
         statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
         return;
     }
+    if (activeNodes() > 50) {
+        switch( QMessageBox::critical(this, "Slow function warning",tr("Please note that this function is VERY SLOW on large networks (n>50), since it will calculate all powers of the sociomatrix up to n-1 in order to find out all possible walks. \n\nIf you need to make a simple reachability test, we advise to use the Reachability Matrix function instead. \n\n Are you sure you want to continue?"), QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
+        case QMessageBox::Ok:
+            break;
 
+        case QMessageBox::Cancel:
+            // Cancel was clicked
+            return;
+            break;
+        default:
+            // should never be reached
+            break;
+        }
+    }
     QString fn = "total-number-of-walks.dat";
     createProgressBar();
 
@@ -5166,7 +5179,7 @@ void MainWindow::slotCentralityCloseness(){
     }
 
     if (!activeGraph.isSymmetric()) {
-        QMessageBox::critical(this, "Warning",tr("Directed graph!\Since this network is directed, the ordinary Closeness Centrality index is not defined (because d(i,j) can be infinite if nodes i,j are not reachable. Therefore, we will be using a slightly different but improved Closeness index which considers how proximate is each node v to the nodes in its influence range. !"), "OK",0);
+        QMessageBox::critical(this, "Warning",tr("Directed graph!\nSince this network is directed, the ordinary Closeness Centrality index is not defined, because d(i,j) can be infinite if nodes i,j are not reachable. Therefore, we will be using a slightly different but improved Closeness index which considers how proximate is each node v to the nodes in its influence range. Read more in the SocNetV manual."), "OK",0);
     }
     QString fn = "centrality_closeness.dat";
     bool considerWeights=true;
