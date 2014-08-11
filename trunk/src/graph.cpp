@@ -2487,6 +2487,104 @@ void Graph::writePrestigeDegree (const QString fileName, const bool considerWeig
 }
 
 
+/**
+ *  Returns the influence domain of vertex v
+ */
+//void Graph::influenceDomain(int v) {
+//}
+
+
+
+
+/**
+*	Calculates Proximity Prestige of each vertex
+*	Also the mean value and the variance of it..
+*/
+int Graph::prestigeProximity(){
+    qDebug()<< "Graph:: prestigeProximity()";
+    float PP=0, nom=0, denom=0;
+    classesPP=0;
+    sumPP=0;
+    maxPP=0;
+    minPP=vertices()-1;
+    discretePPs.clear();
+    varianceDegree=0;
+    meanDegree=0;
+    symmetricAdjacencyMatrix = true;
+    QList<Vertex*>::iterator it, it1;
+    hash_si::iterator it2;
+    int vert=vertices();
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        PP=0;
+        qDebug() << "Graph: prestigeProximity() vertex " <<  (*it)->name()  ;
+        for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
+            if ( (this->hasEdge ( (*it1)->name(), (*it)->name() ) ) !=0  )   {
+                    PP+=1;//weight;
+            }
+            //check here if the matrix is symmetric - we need this below
+            if ( ( this->hasEdge ( (*it1)->name(), (*it)->name() ) ) != ( this->hasEdge ( (*it)->name(), (*it1)->name() ) )   )
+                symmetricAdjacencyMatrix = false;
+        }
+        (*it) -> setPP ( PP ) ;				//Set InDegree
+        qDebug() << "Graph: prestigeProximity() vertex = " <<  (*it)->name() << " has PP = " << PP ;
+        sumPP += PP;
+        it2 = discretePPs.find(QString::number(PP));
+        if (it2 == discretePPs.end() )	{
+            classesPP++;
+            qDebug("Graph::prestigeProximity() - This is a new PP class");
+            discretePPs.insert ( QString::number(PP), classesPP );
+        }
+        qDebug("Graph::prestigeProximity - PP classes = %i ", classesPP);
+        if (maxPP < PP ) {
+            maxPP = PP ;
+            maxNodePP=(*it)->name();
+        }
+        if (minPP > PP ) {
+            minPP = PP ;
+            minNodePP=(*it)->name();
+        }
+    }
+
+    if (minPP == maxPP)
+        maxNodePP=-1;
+
+
+    meanDegree = sumPP / (float) vert;
+    qDebug("Graph::prestigeProximity() - sumPP = %f, meanDegree = %f", sumPP, meanDegree);
+
+    // Calculate std In-Degree, Variance and the Degree Centralisation of the whole graph.
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        PP= (*it)->PP();
+
+            (*it) -> setSPP( PP / (vert-1.0) );		//Set Standard InDegree
+
+        nom+= maxPP-PP;
+        qDebug() << "Graph::prestigeProximity() vertex = " <<  (*it)->name() << " has PP = " << PP << " and SPP " << (*it)->SPP ();
+
+        //qDebug("Graph:prestigeProximity -  PP = %f, meanDegree = %f", PP, meanDegree);
+        varianceDegree += (PP-meanDegree) * (PP-meanDegree) ;
+    }
+
+    varianceDegree=varianceDegree/(float) vert;
+
+    if (symmetricAdjacencyMatrix)
+        denom=(vert-1.0)*(vert-2.0);
+    else
+        denom=(vert-1.0)*(vert-1.0);
+
+        qDebug()<< "Graph::prestigeProximity() - vertices isolated: " << verticesIsolated().count() << ". I will subtract groupPP by " << ((float)verticesIsolated().count()/(float)vert);
+        groupPP=( ( nom * (vert-1.0))/( denom * maxPP) ) - ((float) verticesIsolated().count()/ (float) vert);
+
+    qDebug("Graph::prestigeProximity() - varianceDegree = %f, groupPP = %f", varianceDegree, groupPP);
+
+
+        minPP/=(float)(vert-1); // standardize
+        maxPP/=(float)(vert-1);
+    calculatedPP=true;
+    graphModified=false;
+}
+
+
 //Writes the proximity prestige indeces to a file
 void Graph::writePrestigeProximity(
         const QString fileName, const bool considerWeights)
@@ -2500,8 +2598,8 @@ void Graph::writePrestigeProximity(
     }
     QTextStream outText ( &file );
 
-    emit statusMessage ( (tr("Calculating shortest paths")) );
-    createDistanceMatrix(true);
+    emit statusMessage ( (tr("Calculating prestige proximity indices")) );
+    prestigeProximity();
     emit statusMessage ( QString(tr("Writing proximity prestige indeces to file:")).arg(fileName) );
 
     outText << tr("PROXIMITY PRESTIGE (PP) OF EACH NODE")<<"\n";
@@ -3413,15 +3511,61 @@ int Graph::minimumPathLength(int v1, int v2) {
 
 }
 
+
 /**
-    Calculates and writes the reachability matrix X^R of the graph
+    Calculates the reachability matrix X^R of the graph
     where the {i,j} element is 1 if the vertices i and j are reachable
     Actually, this just checks the corresponding element of X^S matrix,
     which is the sum of all product matrices of A.
 
 */
-void Graph::writeReachabilityMatrix() {
+void Graph::reachabilityMatrix() {
+    qDebug()<< "Graph::reachabilityMatrix()";
+    int length=this->vertices() - 1;
+    int size = vertices();
 
+    createNumberOfWalksMatrix(length);
+
+    XRM.zeroMatrix(size);
+
+    qDebug()<< "Graph::reachabilityMatrix() XRM is  " ;
+    for (register int i=0; i < size ; i++) {
+        for (register int j=0; j < size ; j++) {
+            qDebug()<< "Graph::reachabilityMatrix()  total walks between ("<< i+1 <<"," << j+1<< ")=" << XSM.item(i,j) <<  " ";
+            if ( XSM.item(i,j) > 0 ) {
+                XRM.setItem(i,j,1);
+            }
+            else {
+                   XRM.setItem(i,j,0);
+            }
+        }
+        qDebug()<< endl;
+    }
+}
+
+
+/**
+    Writes the reachability matrix X^R of the graph to a file
+*/
+void Graph::writeReachabilityMatrix(QString fn, QString netName) {
+    qDebug("Graph::writeReachabilityMatrix() ");
+
+    QFile file (fn);
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+            return;
+
+    QTextStream out(&file);
+
+    out << "-Social Network Visualizer- \n";
+    out << "Network name: "<< netName<<" \n";
+    out << "Reachability Matrix (XR) \n";
+    out << "Two nodes are reachable if there is a walk between them. \n";
+    out << "If nodes i and j are reachable then XR(i,j)=1 otherwise XR(i,j)=0.\n\n";
+
+    reachabilityMatrix();
+
+    out << XRM ;
 }
 
 

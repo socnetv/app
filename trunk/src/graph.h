@@ -264,7 +264,8 @@ public:
     void writeTotalNumberOfWalksMatrix(QString fn, QString netName, int length);
     void writeNumberOfWalksMatrix(QString fn, QString netName, int length);
     int minimumPathLength(int v1, int v2) ;
-    void writeReachabilityMatrix();
+    void reachabilityMatrix();  // Calculates the Reachability Matrix XRM
+    void writeReachabilityMatrix(QString fn, QString netName); //Writes the Reachability Matrix
 
 
     float numberOfTriples(int v1); 		//Returns the number of triples at vertex v1
@@ -344,10 +345,12 @@ private:
     void resolveClasses(float C, hash_si &discreteClasses, int &classes, int name);  	//helper
 
     /** used in resolveClasses and createDistanceMatrix() */
-    hash_si discreteIDCs, discreteODCs, discreteCCs, discreteBCs, discreteSCs, discreteGCs, discreteECs, discretePCs, discreteICs,  discretePRCs;
+    hash_si discreteIDCs, discreteODCs, discreteCCs, discreteBCs, discreteSCs, discreteGCs, discreteECs;
+    hash_si discretePCs, discreteICs,  discretePRCs, discretePPs;
 
     int *eccentricities;
     bool calculatedIDC, calculatedODC, calculatedCentralities, dynamicMovement;
+    bool calculatedPP;
 
     QList<int>  triadTypeFreqs; 	//stores triad type frequencies
     QList<int>  m_isolatedVerticesList;

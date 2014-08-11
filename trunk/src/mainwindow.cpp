@@ -819,10 +819,10 @@ void MainWindow::initActions(){
     connect(invertAdjMatrixAct, SIGNAL(triggered()), this, SLOT(slotInvertAdjMatrix()));
 
 
-    graphDistanceAct = new QAction(QIcon(":/images/distance.png"),  tr("Graph Distance"), this);
+    graphDistanceAct = new QAction(QIcon(":/images/distance.png"),  tr("Geodesic Distance"), this);
     graphDistanceAct ->setShortcut(tr("Ctrl+G"));
     graphDistanceAct->setStatusTip(tr("Calculates the length of the shortest path between two nodes..."));
-    graphDistanceAct->setWhatsThis(tr("Graph Distance\n\n The graph distance (or geodesic distance) of two nodes is the length (number of edges) of the shortest path between them."));
+    graphDistanceAct->setWhatsThis(tr("Geodesic Distance\n\n In graph theory, the distance (or geodesic distance) of two nodes is the length (number of edges) of the shortest path between them."));
     connect(graphDistanceAct, SIGNAL(triggered()), this, SLOT(slotGraphDistance()));
 
     distanceMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesic Distance &Matrix"),this);
@@ -843,10 +843,10 @@ void MainWindow::initActions(){
     diameterAct->setWhatsThis(tr("Diameter\n\n The Diameter of a network is the maximum graph distance (maximum shortest path length) between any two nodes of the network."));
     connect(diameterAct, SIGNAL(triggered()), this, SLOT(slotDiameter()));
 
-    averGraphDistanceAct = new QAction(QIcon(":/images/avdistance.png"), tr("Average Graph Distance"),this);
+    averGraphDistanceAct = new QAction(QIcon(":/images/avdistance.png"), tr("Average Geodesic Distance"),this);
     averGraphDistanceAct ->setShortcut(tr("Ctrl+B"));
     averGraphDistanceAct->setStatusTip(tr("Calculates and displays the average shortest path length."));
-    averGraphDistanceAct->setWhatsThis(tr("Average Graph Distance\n\n This the average length of all shortest paths between the connected pair of nodes of the network."));
+    averGraphDistanceAct->setWhatsThis(tr("Average Geodesic Distance\n\n This the average length of all shortest paths between the connected pair of nodes of the network."));
     connect(averGraphDistanceAct, SIGNAL(triggered()), this, SLOT(slotAverageGraphDistance()));
 
 
@@ -861,6 +861,13 @@ void MainWindow::initActions(){
     totalWalksAct->setStatusTip(tr("Calculates the total number of walks of every possible length between all nodes"));
     totalWalksAct->setWhatsThis(tr("Walks\n\n A walk is a sequence of alternating vertices and edges such as v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>, where each edge, e<sub>i</sub> is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. This function counts the number of walks of any length between each pair of nodes, by studying the powers of the sociomatrix\n "));
     connect(totalWalksAct, SIGNAL(triggered()), this, SLOT(slotTotalNumberOfWalks() )  );
+
+
+    reachabilityMatrixAct = new QAction(QIcon(":/images/walk.png"), tr("Reachability Matrix"),this);
+    reachabilityMatrixAct->setShortcut(tr("Ctrl+Shift+R"));
+    reachabilityMatrixAct->setStatusTip(tr("Calculates the Reachability Matrix for the loaded network."));
+    reachabilityMatrixAct->setWhatsThis(tr("Reachability Matrix\n\n     Calculates the reachability matrix X<sup>R</sup> of the graph where the {i,j} element is 1 if the vertices i and j are reachable. \n\n Actually, this just checks the corresponding element of X<sup>S</sup> matrix, which is the sum of all product matrices of Ax\n "));
+    connect(reachabilityMatrixAct, SIGNAL(triggered()), this, SLOT(slotReachabilityMatrix() )  );
 
     cliquesAct = new QAction(QIcon(":/images/triangle.png"), tr("Number of Cliques"),this);
     cliquesAct->setShortcut(tr("Ctrl+T"));
@@ -953,7 +960,7 @@ void MainWindow::initActions(){
     cProximityPrestigeAct->setEnabled(true);
     cProximityPrestigeAct->setStatusTip(tr("Calculate and display Proximity Prestige (digraphs only)"));
     cProximityPrestigeAct->setWhatsThis(tr("Proximity Prestige (PP) \n\n This index measures how proximate a node v is to the nodes in its influence domain I (the influence domain I of a node is the number of other nodes that can reach it). In PP calculation, proximity is based on distances to rather than distances from node v. To put it simply, in PP what matters is how close are all the other nodes to node v. \n\nThe algorithm takes the average distance to node v of all nodes in its influence domain, standardizes it by multiplying with (N-1)/I and takes its reciprocal. In essence, the formula SocNetV uses to calculate PP for every node v is the ratio of the fraction of nodes that can reach node v, to the average distance of that noeds to v: PP = (I/(N-1))/(sum{d(u,v)}/I) where the sum is over all nodes in I."));
-    connect(cProximityPrestigeAct, SIGNAL(triggered()), this, SLOT(slotProximityPrestige()));
+    connect(cProximityPrestigeAct, SIGNAL(triggered()), this, SLOT(slotPrestigeProximity()));
 
     /**
     Options menu actions
@@ -1290,6 +1297,7 @@ void MainWindow::initMenuBar() {
     statMenu -> addSeparator();
     statMenu -> addAction (walksAct);
     statMenu -> addAction (totalWalksAct);
+    statMenu -> addAction (reachabilityMatrixAct);
 
     statMenu -> addSeparator();
     statMenu -> addAction (cliquesAct);
@@ -4974,7 +4982,6 @@ void MainWindow::slotTotalNumberOfWalks(){
     }
 
     QString fn = "total-number-of-walks.dat";
-     bool ok=false;
     createProgressBar();
 
     int maxLength=activeNodes()-1;
@@ -4989,6 +4996,33 @@ void MainWindow::slotTotalNumberOfWalks(){
 
 }
 
+
+
+/**
+*	Calls Graph:: writeReachabilityMatrix() to calculate and print
+*   the Reachability Matrix of the network.
+*/
+void MainWindow::slotReachabilityMatrix(){
+    if (!fileLoaded && !networkModified  )  {
+        QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
+        return;
+    }
+
+    QString fn = "reachability-matrix.dat";
+
+    createProgressBar();
+
+    activeGraph.writeReachabilityMatrix(fn, networkName);
+
+    destroyProgressBar();
+
+    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    tempFileNameNoPath=fn.split( "/");
+    ed->setWindowTitle("Reachability Matrix saved as: " + tempFileNameNoPath.last());
+    ed->show();
+
+}
 
 /**
 *	Calls Graph:: writeNumberOfCliques() to write the number of cliques (triangles)
@@ -5264,7 +5298,7 @@ void MainWindow::slotPrestigePageRank(){
 
 
 /**
-*	Writes Proximity Prestige indeces into a file, then displays them.
+*	Writes Proximity Prestige indices into a file, then displays them.
 */
 void MainWindow::slotPrestigeProximity(){
     if (!fileLoaded && !networkModified  )  {
