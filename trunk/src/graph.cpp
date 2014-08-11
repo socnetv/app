@@ -3415,6 +3415,7 @@ void Graph::createSameDegreeRandomNetwork(int vert, int degree){
 }
 
 
+
 /**
     Calculates and returns the number of walks of a given length between v1 and v2
 */
@@ -3503,13 +3504,20 @@ void Graph::writeNumberOfWalksMatrix(QString fn, QString netName, int length){
 
 
 
-/**
-    Calculates and returns the minimum length of a path between a pair of vertices
-    This method is actually a reachability test (if it returns non-zero)
-*/
-int Graph::minimumPathLength(int v1, int v2) {
 
+/**
+    Calculates and returns non-zero if vertices v1 and v2 are reachable.
+    If v1, v2 are reachable it returns the total number of walks between them.
+    This method is actually a reachability test (if it returns non-zero)
+
+*/
+int Graph::reachable(int v1, int v2) {
+    qDebug()<< "Graph::reachable()";
+    int length=this->vertices() - 1;
+    createNumberOfWalksMatrix(length);
+    return XSM.item(v1-1,v2-1);
 }
+
 
 
 /**
