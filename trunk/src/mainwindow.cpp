@@ -4807,7 +4807,7 @@ void MainWindow::slotGraphDistance(){
     if (activeGraph.isSymmetric() && i>j) {
         qSwap(i,j);
     }
-    if ( activeGraph.distance(i,j) != 0 )
+    if ( activeGraph.distance(i,j) > 0 )
         QMessageBox::information(this, tr("Distance"), tr("Network distance (")+QString::number(i)+", "+QString::number(j)+") = "+QString::number(activeGraph.distance(i,j))+tr("\nThe nodes are connected."),"OK",0);
     else
         QMessageBox::information(this, tr("Distance"), tr("Network distance (")+QString::number(i)+", "+QString::number(j)+") = "+QString::number(activeGraph.distance(i,j))+tr("\nThe nodes are not connected."),"OK",0);
@@ -5165,6 +5165,9 @@ void MainWindow::slotCentralityCloseness(){
         return;
     }
 
+    if (!activeGraph.isSymmetric()) {
+        QMessageBox::critical(this, "Warning",tr("Directed graph!\Since this network is directed, the ordinary Closeness Centrality index is not defined (because d(i,j) can be infinite if nodes i,j are not reachable. Therefore, we will be using a slightly different but improved Closeness index which considers how proximate is each node v to the nodes in its influence range. !"), "OK",0);
+    }
     QString fn = "centrality_closeness.dat";
     bool considerWeights=true;
 
