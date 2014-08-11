@@ -177,8 +177,10 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
                 newFieldWidth = fieldWidth -1;
             else
                 newFieldWidth = fieldWidth;
-
-            os << qSetFieldWidth(newFieldWidth) << right << element;
+            if ( element == -1 )  // we print infinity symbol instead of -1 (distances matrix).
+                os << qSetFieldWidth(newFieldWidth) << right << QString("\xE2\x88\x9E");
+            else
+                os << qSetFieldWidth(newFieldWidth) << right << element;
         }
         os << '\n';
     }
