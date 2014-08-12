@@ -1092,9 +1092,10 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
     DM.resize(m_totalVertices);
     TM.resize(m_totalVertices);
 
-    int aVertices=vertices();
     int aEdges = totalEdges();    //maybe we will use m_totalEdges here to save some time?...
     isolatedVertices = verticesIsolated().count();
+    //drop isolated vertices from calculations (i.e. std Centrality and group Centrality).
+    int aVertices=vertices() - isolatedVertices;
 
     if ( aEdges == 0 )
         DM.fillMatrix(0);
@@ -1986,9 +1987,13 @@ void Graph::writeCentralityCloseness(
     emit statusMessage ( QString(tr("Writing closeness centralities to file:")).arg(fileName) );
 
     outText << tr("CLOSENESS CENTRALITY (CC)")<<"\n";
-    outText << tr("In undirected graphs, the CC index is the inverted sum of geodesic distances from node u to all the other nodes.")<<"\n";
-    outText << tr("In directed graphs which are not strongly connected, the ordinary CC is undefined. Thus, we use an improved closeness index, which measures distances from node u to all nodes in its influence range (nodes that can be reached from u). ");
-    outText << tr("CC' is the standardized CC")<<"\n";
+    outText << tr("In undirected graphs, the CC index is the inverted sum of geodesic distances"
+                  " from node u to all the other nodes.")<<"\n";
+    outText << tr("CC' is the standardized CC multiplied by N-1 (minus isolates).")<<"\n";
+    outText << tr("In directed graphs which are not strongly connected, the ordinary CC is undefined. "
+                 " Thus, we use an improved closeness index, which measures distances from node u to "
+                  " all nodes in its influence range (nodes that can be reached from u). ");
+
 
     outText << tr("CC  range:  0 < C < ")<<QString::number(maxIndexCC)<<"\n";
     outText << tr("CC' range:  0 < C'< 1")<<"\n\n";
@@ -2100,16 +2105,18 @@ void Graph::writeCentralityGraph(
     emit statusMessage ( QString(tr("Writing graph centralities to file:")).arg(fileName) );
 
     outText << tr("GRAPH CENTRALITY (GC)")<<"\n";
-    outText << tr("The GC of a node is the invert of the maximum of all geodesic distances from that node to all other nodes in the network.") << "\n";
+    outText << tr("The GC of a node is the invert of the maximum of all geodesic distances from that node "
+                  "to all other nodes in the network.") << "\n";
     outText << tr("Nodes with high GC have short distances to all other nodes in the graph.")<< "\n";
 
-    outText << tr("GC  range: 0 < GC < ")<<maxIndexGC<< " (GC=1 => distance from other nodes is max 1)\n";
+    outText << tr("GC  range: 0 < GC < 1 (GC=1 => distance from all other nodes is always 1)\n");
     outText << tr("GC' range: 0 < GC'< 1  (GC'=1 => directly linked with all nodes)")<<"\n\n";
 
     outText << "Node"<<"\tGC\t\tGC'\t\t%GC\n";
     QList<Vertex*>::iterator it;
     for (it= m_graph.begin(); it!= m_graph.end(); it++){
-        outText <<(*it)->name()<<"\t"<<(*it)->GC() << "\t\t"<< (*it)->SGC() << "\t\t" <<  (100* ((*it)->GC()) /  sumGC)<<endl;
+        outText <<(*it)->name()<<"\t"<<(*it)->GC() << "\t\t"<< (*it)->SGC() << "\t\t"
+               <<  (100* ((*it)->GC()) /  sumGC)<<endl;
     }
 
     if ( minGC ==  maxGC)
@@ -2127,12 +2134,14 @@ void Graph::writeCentralityGraph(
 
     outText << tr("GGC range: 0 < GGC < 1\n");
     outText << tr("GGC = 0, when all the nodes have exactly the same graph index.\n");
-    outText << tr("GGC = 1, when one node falls on all other geodesics between all the remaining (N-1) nodes. This is exactly the situation realised by a star graph.\n");
+    outText << tr("GGC = 1, when one node falls on all other geodesics between all the remaining (N-1) nodes. "
+                  "This is exactly the situation realised by a star graph.\n");
 
 
     outText << "\n\n";
     outText << tr("Graph Centrality report, \n");
-    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime()
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
 }
@@ -2164,7 +2173,8 @@ void Graph::writeCentralityStress(
     outText  << "Node"<<"\tSC\t\tSC'\t\t%SC\n";
     QList<Vertex*>::iterator it;
     for (it= m_graph.begin(); it!= m_graph.end(); it++){
-        outText <<(*it)->name()<<"\t"<<(*it)->SC() << "\t\t"<< (*it)->SSC() << "\t\t" <<  (100* ((*it)->SC()) /  sumSC)<<endl;
+        outText <<(*it)->name()<<"\t"<<(*it)->SC() << "\t\t"<< (*it)->SSC() << "\t\t"
+               <<  (100* ((*it)->SC()) /  sumSC)<<endl;
     }
 
     if ( minSC ==  maxSC)
@@ -2181,11 +2191,13 @@ void Graph::writeCentralityStress(
 
     outText << tr("GSC range: 0 < GSC < 1\n");
     outText << tr("GSC = 0, when all the nodes have exactly the same stress index.\n");
-    outText << tr("GSC = 1, when one node falls on all other geodesics between all the remaining (N-1) nodes. This is exactly the situation realised by a star graph.\n");
+    outText << tr("GSC = 1, when one node falls on all other geodesics between all the remaining (N-1) nodes. "
+                  "This is exactly the situation realised by a star graph.\n");
 
     outText << "\n\n";
     outText << tr("Stress Centrality report, \n");
-    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime()
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
 }
