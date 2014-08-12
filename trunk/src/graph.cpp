@@ -1303,14 +1303,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 
                 qDebug()<< "Calculating Std Closeness centrality";
                 CC = (*it)->CC();
-                if (symmetricAdjacencyMatrix) {
-                    (*it)->setSCC ( (aVertices-1) * CC  );
-                }
-                else{
-                    // if the graph is directional, we opt for a more 'general'
-                    // SCC, so that we can calculate a sane group Cloneness Centrality
-                    (*it)->setSCC (  CC / sumCC  );
-                }
+                (*it)->setSCC ( (aVertices-1.0) * CC  );
                 minmax( (*it)->SCC(), (*it), maxCC, minCC, maxNodeCC, minNodeCC) ;
 
                 qDebug()<< "Calculating Std Graph centrality";
@@ -1325,6 +1318,8 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 
             }
             for (it=m_graph.begin(); it!=m_graph.end(); it++) {
+                if ((*it)->isIsolated())
+                    continue;
                 BC=(*it)->BC();
                 SC=(*it)->SC();
 
@@ -1342,25 +1337,18 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 
             }
             for (it=m_graph.begin(); it!=m_graph.end(); it++) {
+                if ((*it)->isIsolated())
+                    continue;
                 //Calculate numerator of groupSC
                 nomSC +=( maxSC - (*it)->SSC() );
 
             }
-            if (symmetricAdjacencyMatrix) {
-                denomCC = ( aVertices-1.0) *  (aVertices-2.0) / (2.0 * aVertices -1.0);
-            }
-            else {
-                // in directional graph, there is no known calculation of
-                // Freeman's general formula denominator
-                // In this case, we
-                denomCC = aVertices-1.0;
 
-            }
+            denomCC = ( ( aVertices-1.0) * (aVertices-2.0) ) / (2.0 * aVertices -3.0);
             groupCC = nomCC/denomCC;	//Calculate group Closeness centrality
 
             nomBC*=2.0;
             denomBC =   (aVertices-1.0) *  (aVertices-1.0) * (aVertices-2.0);
-            //denomBC =  (aVertices-1.0);
             groupBC=nomBC/denomBC;		//Calculate group Betweeness centrality
 
             denomGC =  aVertices-1.0;
