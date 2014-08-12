@@ -254,6 +254,8 @@ public:
     void createDistanceMatrix(bool);	//Creates the distance matrix and calculates the centralities, if bool is true.
     void centralityDegree(bool);		//Calculates the outDegree centrality of each vertex
     void centralityInformation();       //Calculates the informational centrality of each vertex
+    void centralityClosenessImproved(); // Improved Closeness Centrality (considers only nodes in influence range)
+
 
     void prestigeDegree(bool);		//Calculates the inDegree Prestige of each vertex
     int prestigePageRank();       //Calculates the PageRank Prestige of each vertex
@@ -363,6 +365,7 @@ private:
     stack<int> Stack;
 
     float meanDegree, varianceDegree;
+    float averageCC, varianceCC;
     float minDP, maxDP, sumDP, groupDP;
     float minDC, maxDC, sumDC, groupDC;
     float minCC, maxCC, nomCC, denomCC, sumCC, groupCC, maxIndexCC;

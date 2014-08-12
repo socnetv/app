@@ -1885,6 +1885,77 @@ void Graph::writeCentralityDegree (
 
 }
 
+/**
+ * @brief Graph::centralityClosenessImproved
+ * Improved node-level centrality closeness index which focuses on the
+ * influence range of each node (the set of nodes that are reachable from it)
+ * For each node v, this index calculates the fraction of nodes in its influence
+ * range and divides it by the average distance of those nodes from v,
+ * ignoring nodes that are not reachable from it.
+ */
+void Graph::centralityClosenessImproved(){
+    qDebug()<< "Graph::centralityClosenessImproved()";
+    reachabilityMatrix();
+    // calculate centralities
+    QList<Vertex*>::iterator it;
+    float CC=0;
+    classesCC=0;
+    discreteCCs.clear();
+    sumCC=0;
+    maxCC=0;
+    minCC=vertices()-1;
+    varianceCC=0;
+    averageCC=0;
+    hash_si::iterator it2;
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        CC=0;
+        // find connected nodes
+        QList<int> values = influenceDomains.values((*it)->name());
+        for (int i = 0; i < values.size(); ++i) {
+            qDebug() << "Graph:: centralityClosenessImproved - vertex " <<  (*it)->name() << " is connected to  = " << values.at(i);
+            CC += DM.item ((*it)->name(), values.at(i)) ;
+        }
+        CC /=values.size();
+        sumCC += CC;
+        (*it) -> setCC ( CC ) ;
+        (*it) -> setSCC ( (values.size() / (vertices()-1) ) / CC ) ;
+        qDebug() << "Graph::centralityClosenessImproved - vertex " <<  (*it)->name() << " has CC = " << CC  << " and SCC = " << (*it)->SCC();
+
+        it2 = discreteCCs.find(QString::number(CC));
+        if (it2 == discreteCCs.end() )	{
+            classesCC++;
+            qDebug("This is a new CC class");
+            discreteCCs.insert ( QString::number(CC), classesCC );
+        }
+        qDebug("CC classes = %i ", classesCC);
+        if (maxCC < CC ) {
+            maxCC = CC ;
+            maxNodeCC=(*it)->name();
+        }
+        if (minCC > CC ) {
+            minCC = CC ;
+            minNodeCC=(*it)->name();
+        }
+
+    }
+
+    if (minCC == maxCC)
+        maxNodeCC=-1;
+
+    averageCC = sumCC / (float) vertices();
+    qDebug("Graph: sumCC = %f, averageCC = %f", sumCC, averageCC);
+
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        CC= (*it) -> CC (  );
+        varianceCC += (CC-averageCC) * (CC-averageCC) ;
+    }
+
+    varianceCC=varianceCC/(float) vertices();
+
+
+
+}
+
 //Writes the closeness centralities to a file
 void Graph::writeCentralityCloseness(
         const QString fileName, const bool considerWeights)
@@ -1899,12 +1970,16 @@ void Graph::writeCentralityCloseness(
     QTextStream outText ( &file );
 
     emit statusMessage ( (tr("Calculating shortest paths")) );
-    createDistanceMatrix(true);
+    if (this->isSymmetric() )
+        createDistanceMatrix(true);
+    else {
+        centralityClosenessImproved();
+    }
     emit statusMessage ( QString(tr("Writing closeness centralities to file:")).arg(fileName) );
 
     outText << tr("CLOSENESS CENTRALITY (CC)")<<"\n";
     outText << tr("In undirected graphs, the CC index is the inverted sum of geodesic distances from node u to all the other nodes.")<<"\n";
-    outText << tr("In directed graphs which are not strongly connected, the ordinary CC is undefined. Thus, we use an improved closeness index, which measures distances from node u to all nodes in its influence range. ");
+    outText << tr("In directed graphs which are not strongly connected, the ordinary CC is undefined. Thus, we use an improved closeness index, which measures distances from node u to all nodes in its influence range (nodes that can be reached from u). ");
     outText << tr("CC' is the standardized CC")<<"\n";
 
     outText << tr("CC  range:  0 < C < ")<<QString::number(maxIndexCC)<<"\n";
@@ -2372,7 +2447,7 @@ void Graph::writePrestigeDegree (const QString fileName, const bool considerWeig
     outText << "(Wasserman & Faust, p. 101)\n";
 
     if (considerWeights) {
-        outText << "\nNOTE: Because the network is weighted, we normalize Group Prestige multiplying by (N-1)/maxDC, where N is the total vertices, and subtracting the percentage of isolated vertices\n";
+        outText << "\nNOTE: Because the network is weighted, we normalize Group Prestige multiplying by (N-1)/maxDP, where N is the total vertices, and subtracting the percentage of isolated vertices\n";
     }
 
     outText << "\n\n";
@@ -2381,14 +2456,6 @@ void Graph::writePrestigeDegree (const QString fileName, const bool considerWeig
     file.close();
 
 }
-
-
-/**
- *  Returns the influence domain of vertex v
- */
-//void Graph::influenceDomain(int v) {
-//}
-
 
 
 
@@ -3425,6 +3492,11 @@ int Graph::reachable(int v1, int v2) {
 
 
 
+/**
+ *  Returns the influence range of vertex v1, namely the set of nodes who are
+ *  reachable by v1 (See Wasserman and Faust, pp.200-201, based on Lin, 1976).
+ *  This function is for digraphs only
+ */
 QList<int> Graph::influenceRange(int v1){
     qDebug() << "Graph::influenceRange() ";
     createDistanceMatrix(false);
@@ -3434,6 +3506,12 @@ QList<int> Graph::influenceRange(int v1){
 }
 
 
+
+/**
+ *  Returns the influence domain of vertex v1, namely the set of nodes who can
+ *  reach v1
+ *  This function is for digraphs only
+ */
 QList<int> Graph::influenceDomain(int v1){
     qDebug() << "Graph::influenceDomain() ";
     createDistanceMatrix(false);
