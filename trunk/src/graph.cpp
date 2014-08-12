@@ -795,7 +795,7 @@ QList<int> Graph::verticesIsolated(){
             if ( ! (*it1)->isEnabled() )
                 continue;
             if (i != j ) {
-                if ( (this->hasEdge ( (*it1)->name(), (*it)->name() )  ) !=0 ) {
+                if ( (this->hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
                     (*it)->setIsolated(false);
                     (*it1)->setIsolated(false);
                 }
@@ -804,7 +804,7 @@ QList<int> Graph::verticesIsolated(){
         }
         if ((*it)->isIsolated()) {
             m_isolatedVerticesList << i;
-            qDebug()<< "Graph::createAdjacencyMatrix() - node " << i+1 << " is isolated. Marking it." ;
+            qDebug()<< "Graph::verticesIsolated() - node " << i+1 << " is isolated. Marking it." ;
         }
         i++;
     }
@@ -4865,27 +4865,35 @@ void Graph::createAdjacencyMatrix(bool dropIsolates=false, bool omitWeights=fals
     qDebug() << "Graph::createAdjacencyMatrix()";
     float m_weight=-1;
     int i=0, j=0;
-    isolatedVertices = 0;
-    AM.resize(m_totalVertices);
-
+    if (dropIsolates){
+        qDebug() << "Graph::createAdjacencyMatrix() - Find and dropp possible isolates";
+        isolatedVertices = verticesIsolated().count();
+        qDebug() << "Graph::createAdjacencyMatrix() - found " << isolatedVertices << " isolates to drop. "
+                 << " Will resize AM to " << m_totalVertices-isolatedVertices;
+        AM.resize(m_totalVertices-isolatedVertices);
+    }
+    else
+        AM.resize(m_totalVertices);
     QList<Vertex*>::iterator it, it1;
-    QList<int> isolatesList;
+    qDebug() << "Graph::createAdjacencyMatrix() - creating new adjacency matrix ";
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        (*it)->setIsolated(true);
-        if ( ! (*it)->isEnabled() )
+        if ( ! (*it)->isEnabled() || ( (*it)->isIsolated() && dropIsolates) ) {
+            qDebug()<<"Graph::createAdjacencyMatrix() - vertex " << (*it)->name()
+                   << " is isolated. Continue";
             continue;
+        }
         j=i;
         for (it1=it; it1!=m_graph.end(); it1++){
-            (*it1)->setIsolated(true);
-            if ( ! (*it1)->isEnabled() )
+            if ( ! (*it1)->isEnabled() || ( (*it1)->isIsolated() && dropIsolates) ) {
+                qDebug()<<"Graph::createAdjacencyMatrix() - vertex " << (*it)->name()
+                       << " is isolated. Continue";
                 continue;
+            }
             if ( (m_weight = this->hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
                 if (omitWeights)
                     AM.setItem(i,j, 1 );
                 else
                     AM.setItem(i,j, m_weight );
-                (*it)->setIsolated(false);
-                (*it1)->setIsolated(false);
             }
             else{
                 AM.setItem(i,j, 0);
@@ -4897,8 +4905,6 @@ void Graph::createAdjacencyMatrix(bool dropIsolates=false, bool omitWeights=fals
                         AM.setItem(j,i, 1 );
                     else
                         AM.setItem(j,i, m_weight );
-                    (*it)->setIsolated(false);
-                    (*it1)->setIsolated(false);
                 }
                 else {
                     AM.setItem(j,i, 0);
@@ -4907,19 +4913,7 @@ void Graph::createAdjacencyMatrix(bool dropIsolates=false, bool omitWeights=fals
             }
             j++;
         }
-        if ((*it)->isIsolated()) {
-            isolatesList << i;
-            qDebug()<< "Graph::createAdjacencyMatrix() - node " << i+1 << " is isolated. Marking it." ;
-        }
         i++;
-    }
-    if (dropIsolates){
-        qDebug()<< "Graph::createAdjacencyMatrix() - Dropping all isolated nodes.";
-        for (int k = 0; k < isolatesList.size(); ++k) {
-            AM.deleteRowColumn( isolatesList.at(k) );
-        }
-        isolatedVertices=isolatesList.size();
-        qDebug() << "Graph::createAdjacencyMatrix() - Total isolates found: " << isolatedVertices;
     }
     qDebug() << "Graph::createAdjacencyMatrix() - Done.";
     adjacencyMatrixCreated=true;
@@ -4932,7 +4926,7 @@ void Graph::invertAdjacencyMatrix(){
     invAM.resize(m_totalVertices);
 
     qDebug()<<"Graph::invertAdjacencyMatrix() - first create the Adjacency Matrix AM";
-    bool dropIsolates=false;
+    bool dropIsolates=true;
     bool omitWeights=true;
     createAdjacencyMatrix(dropIsolates, omitWeights);
 
