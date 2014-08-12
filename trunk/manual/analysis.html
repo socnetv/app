@@ -141,8 +141,9 @@ This index can be calculated in both graphs and digraphs but is usually best sui
 
 <h5><a name="CC" id="CC"></a>Closeness Centrality (CC)</h5>
 <p class="text"> 
-For each node v, CC the inverse sum of the geosesic distances from that node to every other node. CC is interpreted as the ability to access information through the \"grapevine\" of network members. Nodes with high closeness centrality are those who can reach many other nodes in few steps. <br /><br />This index can be calculated in both graphs and digraphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1.
+For each node v, CC the inverse sum of the geosesic distances from that node to every other node. CC is interpreted as the ability to access information through the \"grapevine\" of network members. Nodes with high closeness centrality are those who can reach many other nodes in few steps. <br /><br />This index can be calculated in graphs and strongly connected digraphs (that is, if there is a directed path from v to u for all nodes v and u in the graph). It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1.
 <br /><br />
+<em>Undirected graphs</em>
 The maximum value of CC is 1/(N-1), when the node is adjacent to all others.
 Thus the standard CC index (CC') is calculated by (N-1) * CC in undirected graphs.
 If the graph is directed, a standard CC' is calculated by (CC/sumCC)
@@ -151,6 +152,9 @@ Group CC is calculated using Freeman's general formula, in undirected graphs: <b
 </p>
 <p class="code">
 GCC =  ( Sum ( maxCC' - CC'  ) )  / ( ( N-1) *  (N-2) / (2 * N - 1) );
+</p>
+<p class="text">
+<em>Directed graphs (digraphs)</em>
 </p>
 
 <h5><a name="BC" id="BC"></a>Betweeness Centrality (BC) </h5>

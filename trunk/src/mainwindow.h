@@ -218,7 +218,7 @@ public slots:
     void slotCheckSymmetry();
     void slotInvertAdjMatrix();
 
-    void slotCentralityOutDegree();
+    void slotCentralityDegree();
     void slotCentralityCloseness();
     void slotCentralityBetweeness();
     void slotCentralityInformation();
@@ -359,7 +359,7 @@ private:
     QAction *netDensity, *symmetryAct,   *graphDistanceAct, *averGraphDistanceAct, *distanceMatrixAct,*geodesicsMatrixAct, *diameterAct;
     QAction *walksAct,*totalWalksAct, *reachabilityMatrixAct;
     QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct, *invertAdjMatrixAct;
-    QAction *cOutDegreeAct, *cInDegreeAct, *cClosenessAct, *cBetweenessAct, *cInformationAct, *cPageRankAct, *cGraphAct, *cStressAct, *cPowerAct, *cEccentAct, *cProximityPrestigeAct;
+    QAction *cDegreeAct, *cInDegreeAct, *cClosenessAct, *cBetweenessAct, *cInformationAct, *cPageRankAct, *cGraphAct, *cStressAct, *cPowerAct, *cEccentAct, *cProximityPrestigeAct;
     QAction *randLayoutAct, *randCircleLayoutAct, *circleOutDegreeLayoutAct, *circleInDegreeLayoutAct, *circleClosenessLayoutAct;
     QAction *antialiasingAct;
     QAction *webCrawlerAct;

@@ -145,10 +145,10 @@ public:
     void appendToPs(long  int vertex ) ;
     ilist Ps(void);
 
-    void setODC (float c){ m_ODC=c;} 	/* Sets vertex Out-Degree Centrality*/
-    void setSODC (float c ) { m_SODC=c;}	/* Sets standard vertex Out-Degree Centrality*/
-    float ODC() { return m_ODC;}		/* Returns vertex Out-Degree Centrality*/
-    float SODC() { return m_SODC;}		/* Returns standard vertex Out-Degree Centrality*/
+    void setDC (float c){ m_DC=c;} 	/* Sets vertex Degree Centrality*/
+    void setSDC (float c ) { m_SDC=c;}	/* Sets standard vertex Degree Centrality*/
+    float DC() { return m_DC;}		/* Returns vertex Degree Centrality*/
+    float SDC() { return m_SDC;}		/* Returns standard vertex Degree Centrality*/
 
     void setCC (float c){ m_CC=c;}		/* sets vertex Closeness Centrality*/
     void setSCC (float c ) { m_SCC=c;}	/* sets standard vertex Closeness Centrality*/
@@ -226,7 +226,7 @@ private:
     double m_x, m_y;
     float m_CLC;
     float m_delta, m_EC, m_SEC;
-    float m_ODC, m_SODC, m_DP, m_SDP, m_CC, m_SCC, m_BC, m_SBC, m_GC, m_SGC, m_SC, m_SSC;
+    float m_DC, m_SDC, m_DP, m_SDP, m_CC, m_SCC, m_BC, m_SBC, m_GC, m_SGC, m_SC, m_SSC;
     float m_PC, m_SPC, m_SIC, m_IC, m_SPRC, m_PRC;
     float m_PP, m_SPP;
 

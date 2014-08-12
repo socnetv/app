@@ -889,54 +889,54 @@ void MainWindow::initActions(){
     triadCensusAct->setWhatsThis(tr("Triad Census\n\n A triad census counts all the different kinds of observed triads within a network and codes them according to their number of mutual, asymmetric and non-existent dyads. \n "));
     connect(triadCensusAct, SIGNAL(triggered()), this, SLOT(slotTriadCensus() )  );
 
-    cOutDegreeAct = new QAction(tr("Degree Centrality (ODC)"),this);
-    cOutDegreeAct->setShortcut(tr("Ctrl+2"));
-    cOutDegreeAct->setStatusTip(tr("Calculates and displays Degree Centrality indices and group Degree Centralization."));
-    cOutDegreeAct->setWhatsThis(tr("Degree Centrality (ODC)\n\n For each node v, ODC is the number of edges attached to it (in undirected graphs) or the total numnber of arcs (outLinks) starting from it (in digraphs). This is oftenly considered a measure of actor activity. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs. In weighted relations, ODC is the sum of weights of all edges/outLinks attached to v."));
-    connect(cOutDegreeAct, SIGNAL(triggered()), this, SLOT(slotCentralityOutDegree()));
+    cDegreeAct = new QAction(tr("Degree Centrality (DC)"),this);
+    cDegreeAct->setShortcut(tr("Ctrl+1"));
+    cDegreeAct->setStatusTip(tr("Calculates and displays Degree Centrality indices and group Degree Centralization."));
+    cDegreeAct->setWhatsThis(tr("Degree Centrality (DC)\n\n For each node v, the DC index is the number of edges attached to it (in undirected graphs) or the total numnber of arcs (outLinks) starting from it (in digraphs). This is oftenly considered a measure of actor activity. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs. In weighted relations, ODC is the sum of weights of all edges/outLinks attached to v."));
+    connect(cDegreeAct, SIGNAL(triggered()), this, SLOT(slotCentralityDegree()));
 
 
     cClosenessAct = new QAction(tr("Closeness Centrality (CC)"), this);
-    cClosenessAct->setShortcut(tr("Ctrl+3"));
+    cClosenessAct->setShortcut(tr("Ctrl+2"));
     cClosenessAct->setStatusTip(tr("Calculates and displays Closeness Centrality indices and group Closeness Centralization."));
     cClosenessAct->setWhatsThis(tr("Closeness Centrality (CC)\n\n For each node v, CC the invert sum of the shortest distances between v and every other node. CC is interpreted as the ability to access information through the \"grapevine\" of network members. Nodes with high closeness centrality are those who can reach many other nodes in few steps. \n\nThis index can be calculated in both graphs and digraphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1. "));
     connect(cClosenessAct, SIGNAL(triggered()), this, SLOT(slotCentralityCloseness()));
 
     cBetweenessAct = new QAction(tr("Betweeness Centrality (BC)"), this);
-    cBetweenessAct->setShortcut(tr("Ctrl+4"));
+    cBetweenessAct->setShortcut(tr("Ctrl+3"));
     cBetweenessAct->setWhatsThis(tr("Betweeness Centrality (BC)\n\n For each node v, BC is the ratio of all geodesics between pairs of nodes which run through v. It reflects how often an node lies on the geodesics between the other nodes of the network. It can be interpreted as a measure of control. A node which lies between many others is assumed to have a higher likelihood of being able to control information flow in the network. \n\n Note that betweeness centrality assumes that all geodesics have equal weight or are equally likely to be chosen for the flow of information between any two nodes. This is reasonable only on \"regular\" networks where all nodes have similar degrees. On networks with significant degree variance you might want to try informational centrality instead. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
     cBetweenessAct->setStatusTip(tr("Calculates and displays Betweeness Centrality indices and group Betweeness Centralization."));
     connect(cBetweenessAct, SIGNAL(triggered()), this, SLOT(slotCentralityBetweeness()));
 
     cGraphAct = new QAction(tr("Graph Centrality (GC)"),this);
-    cGraphAct->setShortcut(tr("Ctrl+5"));
+    cGraphAct->setShortcut(tr("Ctrl+4"));
     cGraphAct->setStatusTip(tr("Calculates and displays Graph Centrality indices and group Graph Centralization."));
     cGraphAct->setWhatsThis(tr("Graph Centrality (GC)\n\n For each node v, GC is the invert of the maximum of all geodesic distances from v to all other nodes in the network. Nodes with high GC have short distances to all other nodes in the network. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
     connect(cGraphAct, SIGNAL(triggered()), this, SLOT(slotCentralityGraph()));
 
     cStressAct = new QAction(tr("Stress Centrality (SC)"), this);
-    cStressAct->setShortcut(tr("Ctrl+6"));
+    cStressAct->setShortcut(tr("Ctrl+5"));
     cStressAct->setStatusTip(tr("Calculates and displays Stress Centrality indices and group Stress Centralization."));
     cStressAct->setWhatsThis(tr("Stress Centrality (SC)\n\n For each node v, SC is the total number of geodesics between all other nodes which run through v. When one node falls on all other geodesics between all the remaining (N-1) nodes, then we have a star graph with maximum Stress Centrality. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
     connect(cStressAct, SIGNAL(triggered()), this, SLOT(slotCentralityStress()));
 
 
     cEccentAct = new QAction(tr("Eccentricity (EC)"), this);
-    cEccentAct->setShortcut(tr("Ctrl+7"));
+    cEccentAct->setShortcut(tr("Ctrl+6"));
     cEccentAct->setStatusTip(tr("Calculates and displays Eccentricity indices for each node and group Eccentricity"));
     cEccentAct->setWhatsThis(tr("Eccentricity Centrality\n\n For each node k, this is the largest geodesic distance (k,t) from every other vertex t. Therefore, EC(u) reflects how far, at most, is each node from every other node. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
     connect(cEccentAct, SIGNAL(triggered()), this, SLOT(slotCentralityEccentricity()));
 
 
     cPowerAct = new QAction(tr("Power Centrality (PC)"), this);
-    cPowerAct->setShortcut(tr("Ctrl+8"));
+    cPowerAct->setShortcut(tr("Ctrl+7"));
     cPowerAct->setStatusTip(tr("Calculate and display Power Centrality indices (aka Gil-Schmidt Power Centrality) and group Power Centralization"));
     cPowerAct->setWhatsThis(tr("Power Centrality (PC)\n\n For each node v, this index sums its degree (with weight 1), with the size of the 2nd-order neighbourhood (with weight 2), and in general, with the size of the kth order neighbourhood (with weight k). Thus, for each node in the network the most important other nodes are its immediate neighbours and then in decreasing importance the nodes of the 2nd-order neighbourhood, 3rd-order neighbourhood etc. For each node, the sum obtained is normalised by the total numbers of nodes in the same component minus 1. Power centrality has been devised by Gil-Schmidt. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1 (therefore not considered)."));
     connect(cPowerAct, SIGNAL(triggered()), this, SLOT(slotCentralityPower()));
 
 
     cInformationAct = new QAction(tr("Information Centrality (IC)"),	this);
-    cInformationAct->setShortcut(tr("Ctrl+9"));
+    cInformationAct->setShortcut(tr("Ctrl+8"));
     cInformationAct->setEnabled(true);
     cInformationAct->setStatusTip(tr("Calculate and display Information Centrality indices and group Information Centralization"));
     cInformationAct->setWhatsThis(tr("Information Centrality (IC)\n\n Information centrality counts all paths between nodes weighted by strength of tie and distance. This centrality  measure developed by Stephenson and Zelen (1989) focuses on how information might flow through many different paths. \n\nThis index should be calculated only for  graphs. \n\n Note: To compute this index, SocNetV drops all isolated nodes."));
@@ -944,19 +944,19 @@ void MainWindow::initActions(){
 
     cInDegreeAct = new QAction(tr("Degree Prestige (DP)"),	 this);
     cInDegreeAct->setStatusTip(tr("Calculates and displays Degree Prestige (InDegree) indices "));
-    cInDegreeAct->setShortcut(tr("Ctrl+1"));
+    cInDegreeAct->setShortcut(tr("Ctrl+Shift+D"));
     cInDegreeAct->setWhatsThis(tr("InDegree (Degree Prestige)\n\n For each node k, this the number of arcs ending at k. Nodes with higher in-degree are considered more prominent among others. In directed graphs, this index measures the prestige of each node/actor. Thus it is called Degree Prestige. Nodes who are prestigious tend to receive many nominations or choices (in-links). The largest the index is, the more prestigious is the node. \n\nThis index can be calculated only for digraphs. In weighted relations, DP is the sum of weights of all arcs/inLinks ending at node v."));
     connect(cInDegreeAct, SIGNAL(triggered()), this, SLOT(slotPrestigeDegree()));
 
     cPageRankAct = new QAction(tr("PageRank Prestige (PRP)"),	this);
-    cPageRankAct->setShortcut(tr("Ctrl+R"));
+    cPageRankAct->setShortcut(tr("Ctrl+Shift+R"));
     cPageRankAct->setEnabled(true);
     cPageRankAct->setStatusTip(tr("Calculate and display PageRank Prestige"));
     cPageRankAct->setWhatsThis(tr("PageRank Prestige\n\n An importance ranking for each node based on the link structure of the network. PageRank, developed by Page and Brin (1997), focuses on how nodes are connected to each other, treating each link from a node as a citation/backlink/vote to another. In essence, for each node PageRank counts all backlinks to it, but it does so by not counting all links equally while it normalizes each link from a node by the total number of links from it. PageRank is calculated iteratively and it corresponds to the principal eigenvector of the normalized link matrix. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for directed graphs since it is a prestige measure. It can also be calculated in weighted graphs. In weighted relations, each backlink to a node v from another node u is considered to have weight=1 but it is normalized by the sum of outLinks weights (outDegree) of u. Therefore, nodes with high outLink weights give smaller percentage of their PR to node v."));
     connect(cPageRankAct, SIGNAL(triggered()), this, SLOT(slotPrestigePageRank()));
 
     cProximityPrestigeAct = new QAction(tr("Proximity Prestige (PP)"),	this);
-    cProximityPrestigeAct->setShortcut(tr("Shift+Ctrl+R"));
+    cProximityPrestigeAct->setShortcut(tr("Ctrl+Shift+P"));
     cProximityPrestigeAct->setEnabled(true);
     cProximityPrestigeAct->setStatusTip(tr("Calculate and display Proximity Prestige (digraphs only)"));
     cProximityPrestigeAct->setWhatsThis(tr("Proximity Prestige (PP) \n\n This index measures how proximate a node v is to the nodes in its influence domain I (the influence domain I of a node is the number of other nodes that can reach it). In PP calculation, proximity is based on distances to rather than distances from node v. To put it simply, in PP what matters is how close are all the other nodes to node v. \n\nThe algorithm takes the average distance to node v of all nodes in its influence domain, standardizes it by multiplying with (N-1)/I and takes its reciprocal. In essence, the formula SocNetV uses to calculate PP for every node v is the ratio of the fraction of nodes that can reach node v, to the average distance of that noeds to v: PP = (I/(N-1))/(sum{d(u,v)}/I) where the sum is over all nodes in I."));
@@ -1312,7 +1312,7 @@ void MainWindow::initMenuBar() {
     statMenu->addMenu(centrlMenu);
     centrlMenu -> addSection(QIcon(":/images/centrality.png"), tr("Centrality"));
 
-    centrlMenu -> addAction (cOutDegreeAct);
+    centrlMenu -> addAction (cDegreeAct);
     centrlMenu -> addAction (cClosenessAct);
     centrlMenu -> addAction (cBetweenessAct);
     centrlMenu -> addAction (cGraphAct);
@@ -5123,7 +5123,7 @@ void MainWindow::slotTriadCensus() {
 /**
 *	Writes Out-Degree Centralities into a file, then displays it.
 */
-void MainWindow::slotCentralityOutDegree(){
+void MainWindow::slotCentralityDegree(){
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
         statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
@@ -5153,7 +5153,7 @@ void MainWindow::slotCentralityOutDegree(){
 
     createProgressBar();
 
-    activeGraph.writeCentralityOutDegree(fn, considerWeights);
+    activeGraph.writeCentralityDegree(fn, considerWeights);
 
     destroyProgressBar();
 

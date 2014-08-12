@@ -60,6 +60,7 @@ typedef map<int,float> imap_f;
 typedef QHash <QString, int> hash_si;
 
 
+
 class Graph:  public QObject{
     Q_OBJECT
 
@@ -224,7 +225,7 @@ public:
     friend QTextStream& operator <<  (QTextStream& os, Graph& m);  	//
 
 
-    void writeCentralityOutDegree(const QString, const bool);	//Writes the out-degree centralities to a file
+    void writeCentralityDegree(const QString, const bool);	//Writes the out-degree centralities to a file
     void writeCentralityCloseness(const QString, const bool);	//Writes the closeness centralities to a file
     void writeCentralityBetweeness(const QString, const bool);	//Writes the betweeness centralities to a file
     void writeCentralityGraph(const QString, const bool);		//Writes the Graph centralities to a file
@@ -251,7 +252,7 @@ public:
     float averageGraphDistance();		//Returns the average shortest path length (average geodesic).
 
     void createDistanceMatrix(bool);	//Creates the distance matrix and calculates the centralities, if bool is true.
-    void centralityOutDegree(bool);		//Calculates the outDegree centrality of each vertex
+    void centralityDegree(bool);		//Calculates the outDegree centrality of each vertex
     void centralityInformation();       //Calculates the informational centrality of each vertex
 
     void prestigeDegree(bool);		//Calculates the inDegree Prestige of each vertex
@@ -264,6 +265,8 @@ public:
     void writeTotalNumberOfWalksMatrix(QString fn, QString netName, int length);
     void writeNumberOfWalksMatrix(QString fn, QString netName, int length);
     int reachable(int v1, int v2) ;
+    QList<int> influenceRange(int v1); // returns list of nodes reachable from v1
+    QList<int> influenceDomain(int v2); // returns list of nodes that can reach v1
     void reachabilityMatrix();  // Calculates the Reachability Matrix XRM
     void writeReachabilityMatrix(QString fn, QString netName); //Writes the Reachability Matrix
 
@@ -316,8 +319,8 @@ public:
 
 
 protected: 
-
     void timerEvent(QTimerEvent *event);			// Called from nodeMovement when a timerEvent occurs
+
 private:
 
     /** List of pointers to the vertices. A vertex stores all the info: links, colours, etc */
@@ -335,8 +338,8 @@ private:
             QString label, QString labelColor, int labelSize,
             QPointF p, QString shape
             );			// adds a vertex to m_graph
-
-    void addEdge (int v1, int v2, float w, QString color, int reciprocal); 		//adds an edge between v1 and v2, weight w, colored
+    //adds an edge between v1 and v2, weight w, colored
+    void addEdge (int v1, int v2, float w, QString color, int reciprocal);
 
     /** methods used by createDistanceMatrix()  */
     void BFS(int, bool);									//Breadth-first search
@@ -345,22 +348,23 @@ private:
     void resolveClasses(float C, hash_si &discreteClasses, int &classes, int name);  	//helper
 
     /** used in resolveClasses and createDistanceMatrix() */
-    hash_si discreteDPs, discreteODCs, discreteCCs, discreteBCs, discreteSCs, discreteGCs, discreteECs;
+    hash_si discreteDPs, discreteDCs, discreteCCs, discreteBCs, discreteSCs, discreteGCs, discreteECs;
     hash_si discretePCs, discreteICs,  discretePRCs, discretePPs;
 
     int *eccentricities;
-    bool calculatedDP, calculatedODC, calculatedCentralities, dynamicMovement;
+    bool calculatedDP, calculatedDC, calculatedCentralities, dynamicMovement;
     bool calculatedPP;
 
     QList<int>  triadTypeFreqs; 	//stores triad type frequencies
     QList<int>  m_isolatedVerticesList;
+    QHash <int, int> influenceRanges, influenceDomains;
     Matrix  TM, DM, sumM, invAM, AM, invM;
     Matrix XM, XSM, XRM;
     stack<int> Stack;
 
     float meanDegree, varianceDegree;
     float minDP, maxDP, sumDP, groupDP;
-    float minODC, maxODC, sumODC, groupODC;
+    float minDC, maxDC, sumDC, groupDC;
     float minCC, maxCC, nomCC, denomCC, sumCC, groupCC, maxIndexCC;
     float minBC, maxBC, nomBC, denomBC, sumBC, groupBC, maxIndexBC;
     float minGC, maxGC, nomGC, denomGC, sumGC, groupGC, maxIndexGC;
@@ -373,7 +377,7 @@ private:
     float minCLC, maxCLC, averageCLC, averageIC, averagePRC, dampingFactor;
     int maxNodeCLC, minNodeCLC;
     int classesDP, maxNodeDP, minNodeDP;
-    int classesODC, maxNodeODC, minNodeODC;
+    int classesDC, maxNodeDC, minNodeDC;
     int classesCC, maxNodeCC, minNodeCC;
     int classesBC, maxNodeBC, minNodeBC;
     int classesGC, maxNodeGC, minNodeGC;
@@ -397,6 +401,7 @@ private:
 
     bool order, initShowLabels, initNumbersInsideNodes;
     bool adjacencyMatrixCreated, symmetricAdjacencyMatrix, graphModified, distanceMatrixCreated;
+    bool reachabilityMatrixCreated;
     bool m_undirected;
 
     QString VERSION, networkName, initEdgeColor, initVertexColor, initVertexNumberColor, initVertexLabelColor, initVertexShape;
