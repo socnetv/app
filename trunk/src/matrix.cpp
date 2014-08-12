@@ -479,29 +479,29 @@ Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
 	    m_pivot = A.item(j,j);
 	    qDebug() << "inverseByGaussJordanElimination() at column " << j+1
 		    << " Initial pivot " << m_pivot ;
-	    for ( register int i=l; i<n; i++) {
-		temp_pivot = A.item(i,j);
-		if ( fabs( temp_pivot ) > fabs ( m_pivot ) ) {
-		    qDebug() << " A("<< i+1 << ","<< j+1  << ") = " <<  temp_pivot
-			    << " absolutely larger than current pivot "<< m_pivot
-			    << ". Marking new pivot line: " << i+1;
-		    m_pivotLine=i;
-		    m_pivot = temp_pivot ;
-		}
-	    }
-	    if ( m_pivotLine != -1 ) {
-		A.swapRows(m_pivotLine,j);
-		swapRows(m_pivotLine,j);
-	    }
+        for ( register int i=l; i<n; i++) {
+            temp_pivot = A.item(i,j);
+            if ( fabs( temp_pivot ) > fabs ( m_pivot ) ) {
+                qDebug() << " A("<< i+1 << ","<< j+1  << ") = " <<  temp_pivot
+                         << " absolutely larger than current pivot "<< m_pivot
+                         << ". Marking new pivot line: " << i+1;
+                m_pivotLine=i;
+                m_pivot = temp_pivot ;
+            }
+        }
+        if ( m_pivotLine != -1 ) {
+            A.swapRows(m_pivotLine,j);
+            swapRows(m_pivotLine,j);
+        }
 
 
 	    qDebug()<<"   multiplyRow() "<< j+1 << " by value " << 1/m_pivot ;
-	    for ( register int k=0; k<  rows(); k++) {
-		A.setItem ( j, k,  (1/m_pivot) * A.item (j, k) );
-		setItem ( j, k,  (1/m_pivot) * item (j, k) );
-		qDebug()<<"   A.item("<< j+1 << ","<< k+1 << ") = " <<  A.item(j,k);
-		qDebug()<<"   item("<< j+1 << ","<< k+1 << ") = " <<  item(j,k);
-	    }
+        for ( register int k=0; k<  rows(); k++) {
+            A.setItem ( j, k,  (1/m_pivot) * A.item (j, k) );
+            setItem ( j, k,  (1/m_pivot) * item (j, k) );
+            qDebug()<<"   A.item("<< j+1 << ","<< k+1 << ") = " <<  A.item(j,k);
+            qDebug()<<"   item("<< j+1 << ","<< k+1 << ") = " <<  item(j,k);
+        }
 
 	    qDebug() << "eliminate variables FromRowsBelow()" << j+1 ;
 	    for ( register int i=0; i<  rows(); i++) {

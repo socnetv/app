@@ -1547,7 +1547,7 @@ void Graph::centralityInformation(){
     isolatedVertices=0;
     int i=0, j=0, n=vertices();
     float m_weight=0, weightSum=1, diagonalEntriesSum=0, rowSum=0;
-    float IC=0, SIC=0;
+    float IC=0, SIC=0, sumSIC=0;;
     /* Note: isolated nodes must be dropped from the AM
         Otherwise, the TM might be singular, therefore non-invertible. */
     bool dropIsolates=true;
@@ -1613,6 +1613,22 @@ void Graph::centralityInformation(){
         SIC = IC / sumIC ;
         (*it)->setSIC( SIC );
     }
+
+    float x=0;
+    averageIC = sumSIC / n ;
+    qDebug() << "sumSIC = " << sumSIC << "  n = " << n << "  averageIC = " << averageIC;
+    groupIC=0;
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        x = (  (*it)->SIC()  -  averageIC  ) ;
+        x *=x;
+        qDebug() << "SIC " <<  (*it)->SIC() << "  x " <<   (*it)->SIC() - averageIC  << " x*x" << x ;
+        groupIC  += x;
+    }
+    qDebug() << "groupIC   " << groupIC   << " n " << n ;
+    groupIC  = groupIC  /  (n);
+    qDebug() << "groupIC   " << groupIC   ;
+
+
 }
 
 
@@ -1639,11 +1655,10 @@ void Graph::writeCentralityInformation(const QString fileName){
     outText << tr("IC' range:  0 < C'< 1")<<"\n\n";
     outText << "Node"<<"\tIC\t\tIC'\t\t%IC\n";
     QList<Vertex*>::iterator it;
-    float IC=0, SIC=0, sumSIC=0;
+    float IC=0, SIC=0;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         IC = (*it)->SIC();
         SIC = (*it)->SIC();
-        sumSIC +=  SIC;
         outText << (*it)->name()<<"\t"<< IC << "\t\t"<< SIC  << "\t\t" <<  ( 100* SIC )<<endl;
         qDebug()<< "Graph::writeCentralityInformation() vertex: " <<  (*it)->name() << " SIC  " << SIC;
     }
@@ -1662,21 +1677,6 @@ void Graph::writeCentralityInformation(const QString fileName){
     outText << "(Wasserman & Faust, p. 196)\n";
     outText << "\n";
 
-    float x=0;
-    float n = ( this->vertices() - isolatedVertices );
-
-    averageIC = sumSIC / n ;
-    qDebug() << "sumSIC = " << sumSIC << "  n = " << n << "  averageIC = " << averageIC;
-    groupIC=0;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        x = (  (*it)->SIC()  -  averageIC  ) ;
-        x *=x;
-        qDebug() << "SIC " <<  (*it)->SIC() << "  x " <<   (*it)->SIC() - averageIC  << " x*x" << x ;
-        groupIC  += x;
-    }
-    qDebug() << "groupIC   " << groupIC   << " n " << n ;
-    groupIC  = groupIC  /  (n-1);
-    qDebug() << "groupIC   " << groupIC   ;
     outText << tr("\nGROUP INFORMATION CENTRALISATION (GIC)\n\n");
     outText << tr("GIC = ") << groupIC<<"\n\n";
     outText << tr("GIC range: 0 < GIC < inf \n");
@@ -4859,7 +4859,7 @@ void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
  *  Creates an adjacency matrix AM
  *  where AM(i,j)=1 if i is connected to j
  *  and AM(i,j)=0 if i not connected to j
- *  Used in Graph::centralityInformation()
+ *  Used in Graph::centralityInformation() and Graph::invertAdjacencyMatrix()
  */
 void Graph::createAdjacencyMatrix(bool dropIsolates=false, bool omitWeights=false){
     qDebug() << "Graph::createAdjacencyMatrix()";
@@ -4885,7 +4885,7 @@ void Graph::createAdjacencyMatrix(bool dropIsolates=false, bool omitWeights=fals
         j=i;
         for (it1=it; it1!=m_graph.end(); it1++){
             if ( ! (*it1)->isEnabled() || ( (*it1)->isIsolated() && dropIsolates) ) {
-                qDebug()<<"Graph::createAdjacencyMatrix() - vertex " << (*it)->name()
+                qDebug()<<"Graph::createAdjacencyMatrix() - vertex " << (*it1)->name()
                        << " is isolated. Continue";
                 continue;
             }
@@ -4922,14 +4922,11 @@ void Graph::createAdjacencyMatrix(bool dropIsolates=false, bool omitWeights=fals
 
 void Graph::invertAdjacencyMatrix(){
     qDebug() << "Graph::invertAdjacencyMatrix()";
-
-    invAM.resize(m_totalVertices);
-
     qDebug()<<"Graph::invertAdjacencyMatrix() - first create the Adjacency Matrix AM";
     bool dropIsolates=true;
     bool omitWeights=true;
     createAdjacencyMatrix(dropIsolates, omitWeights);
-
+    invAM.resize(m_totalVertices-isolatedVertices);
     qDebug()<<"Graph::invertAdjacencyMatrix() - invert the Adjacency Matrix AM and store it to invAM";
     invAM.inverseByGaussJordanElimination(AM);
 
