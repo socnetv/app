@@ -1899,27 +1899,35 @@ void Graph::centralityClosenessImproved(){
     // calculate centralities
     QList<Vertex*>::iterator it;
     float CC=0;
+    float Ji=0;
     classesCC=0;
     discreteCCs.clear();
     sumCC=0;
     maxCC=0;
     minCC=vertices()-1;
+    float V=vertices();
     varianceCC=0;
     averageCC=0;
     hash_si::iterator it2;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         CC=0;
         // find connected nodes
-        QList<int> values = influenceDomains.values((*it)->name());
-        for (int i = 0; i < values.size(); ++i) {
-            qDebug() << "Graph:: centralityClosenessImproved - vertex " <<  (*it)->name() << " is connected to  = " << values.at(i);
-            CC += DM.item ((*it)->name(), values.at(i)) ;
+        QList<int> influencedVertices = influenceRanges.values((*it)->name()-1);
+        Ji=influencedVertices.size();
+        for (int i = 0; i < Ji; ++i) {
+            qDebug() << "Graph:: centralityClosenessImproved - vertex " <<  (*it)->name()
+                     << " is outbound connected to  = " << influencedVertices.at(i) + 1
+                     << " at distance " << DM.item ((*it)->name()-1, influencedVertices.at(i) );
+            CC += DM.item ((*it)->name()-1, influencedVertices.at(i) ) ;
         }
-        CC /=values.size();
+        qDebug()<< "Graph:: centralityClosenessImproved -  size of influenceRange Ji = " << Ji
+                << " CC=" << CC << " divided by Ji=" << Ji << " yields final CC =" << CC / Ji;
+        CC /=Ji;
         sumCC += CC;
         (*it) -> setCC ( CC ) ;
-        (*it) -> setSCC ( (values.size() / (vertices()-1) ) / CC ) ;
-        qDebug() << "Graph::centralityClosenessImproved - vertex " <<  (*it)->name() << " has CC = " << CC  << " and SCC = " << (*it)->SCC();
+        (*it) -> setSCC ( ( Ji / (V-1) ) / CC ) ;
+        qDebug() << "Graph::centralityClosenessImproved - vertex " <<  (*it)->name() << " has CC = " << CC
+                 << " and SCC = " << Ji / (V-1) << " / " << CC << " = " << (*it)->SCC();
 
         it2 = discreteCCs.find(QString::number(CC));
         if (it2 == discreteCCs.end() )	{
@@ -1942,7 +1950,7 @@ void Graph::centralityClosenessImproved(){
     if (minCC == maxCC)
         maxNodeCC=-1;
 
-    averageCC = sumCC / (float) vertices();
+    averageCC = sumCC / (float) V;
     qDebug("Graph: sumCC = %f, averageCC = %f", sumCC, averageCC);
 
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
@@ -1950,7 +1958,7 @@ void Graph::centralityClosenessImproved(){
         varianceCC += (CC-averageCC) * (CC-averageCC) ;
     }
 
-    varianceCC=varianceCC/(float) vertices();
+    varianceCC=varianceCC/(float) V;
 
 
 
@@ -3499,7 +3507,6 @@ int Graph::reachable(int v1, int v2) {
  */
 QList<int> Graph::influenceRange(int v1){
     qDebug() << "Graph::influenceRange() ";
-    createDistanceMatrix(false);
     // call reachabilityMatrix to construct a list of influence ranges for each node
     reachabilityMatrix();
     return influenceRanges.values(v1);
@@ -3514,7 +3521,6 @@ QList<int> Graph::influenceRange(int v1){
  */
 QList<int> Graph::influenceDomain(int v1){
     qDebug() << "Graph::influenceDomain() ";
-    createDistanceMatrix(false);
     // call reachabilityMatrix to construct a list of influence domains for each node
     reachabilityMatrix();
     return influenceDomains.values(v1);
@@ -3548,15 +3554,24 @@ void Graph::reachabilityMatrix() {
                 qDebug()<< "Graph::reachabilityMatrix()  total shortest paths between ("<<
                            i+1 <<"," << j+1<< ")=" << TM.item(i,j) <<  " ";
                 if ( DM.item(i,j) > 0 ) {
+                    qDebug()<< "Graph::reachabilityMatrix()  - d("<<i+1<<","<<j+1<<")=" << DM.item(i,j)
+                            << " - inserting " << j+1 << " to influenceRange J of " << i+1
+                            << " - and " << i+1 << " to influenceDomain I of " << j+1 ;
                     XRM.setItem(i,j,1);
                     influenceRanges.insertMulti(i,j);
+                    influenceDomains.insertMulti(j,i);
                 }
                 else {
                        XRM.setItem(i,j,0);
                 }
                 if ( DM.item(j,i) > 0 ) {
+                    qDebug()<< "Graph::reachabilityMatrix()  - inverse path d("<<j+1<<","<<i+1<<")="
+                            << DM.item(j,i)
+                            << " - inserting " << j+1 << " to influenceDomain I of " << i+1
+                            << " - and " << i+1 << " to influenceRange J of " << j+1 ;
                     XRM.setItem(j,i,1);
                     influenceDomains.insertMulti(i,j);
+                    influenceRanges.insertMulti(j,i);
                 }
                 else {
                        XRM.setItem(j,i,0);

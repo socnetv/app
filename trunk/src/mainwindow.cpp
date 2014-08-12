@@ -2761,7 +2761,8 @@ void MainWindow::slotOpenTextEditor(){
 /**
     Displays the adjacency matrix of the network.
     It uses a different method for writing the matrix to a file.
-    While slotExportSM uses << operator of Matrix class (via adjacencyMatrix of Graph class), this is using directly the writeAdjacencyMatrix method of Graph class
+    While slotExportSM uses << operator of Matrix class (via adjacencyMatrix of Graph class),
+    this is using directly the writeAdjacencyMatrix method of Graph class
 */
 void MainWindow::slotViewAdjacencyMatrix(){
     if ( !fileLoaded && !networkModified) {
