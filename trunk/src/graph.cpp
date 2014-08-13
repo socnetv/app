@@ -536,7 +536,6 @@ int Graph::hasVertex(long int num){
 /**	Checks if there is a vertex with a specific label in the graph
     Returns the index or -1
     Complexity:  O(N)
-
 */
 int Graph::hasVertex(QString label){			
     qDebug ()<<"Graph: hasVertex( "<< label.toUtf8() <<" ) ?" ;
@@ -811,6 +810,10 @@ QList<int> Graph::verticesIsolated(){
     return m_isolatedVerticesList ;
 }
 
+
+/**
+ *  Returns ratio of present edges to total possible edges.
+ */
 float Graph::density() {
     qDebug("Graph: density()");
     int vert=vertices();
@@ -936,7 +939,7 @@ bool Graph::isSymmetric(){
 
 
 /**
-*	Transform the directed network to symmetric (all edges reciprocal) 
+*	Transform the digraph to undirected graph (all edges reciprocal)
 */
 void Graph::symmetrize(){
     qDebug("Graph: symmetrize");
@@ -962,7 +965,7 @@ void Graph::symmetrize(){
 }
 
 
-
+//Returns TRUE if (v1, v2) is symmetric.
 bool Graph::symmetricEdge(int v1, int v2){
     qDebug("***Graph: symmetricEdge()");
     if ( (this->hasEdge ( v1, v2 ) ) > 0  &&  (this->hasEdge ( v2, v1 ) ) > 0   ) {
@@ -1882,7 +1885,7 @@ void Graph::writeCentralityDegree (
  * range and divides it by the average distance of those nodes from v,
  * ignoring nodes that are not reachable from it.
  */
-void Graph::centralityClosenessImproved(){
+void Graph::centralityClosenessInfluenceRange(){
     qDebug()<< "Graph::centralityClosenessImproved()";
     reachabilityMatrix();
     // calculate centralities
@@ -1896,7 +1899,7 @@ void Graph::centralityClosenessImproved(){
     minCC=vertices()-1;
     float V=vertices();
     varianceCC=0;
-    averageCC=0;
+    meanCC=0;
     hash_si::iterator it2;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         CC=0;
@@ -1939,17 +1942,15 @@ void Graph::centralityClosenessImproved(){
     if (minCC == maxCC)
         maxNodeCC=-1;
 
-    averageCC = sumCC / (float) V;
-    qDebug("Graph: sumCC = %f, averageCC = %f", sumCC, averageCC);
+    meanCC = sumCC / (float) V;
+    qDebug("Graph: sumCC = %f, meanCC = %f", sumCC, meanCC);
 
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         CC= (*it) -> CC (  );
-        varianceCC += (CC-averageCC) * (CC-averageCC) ;
+        varianceCC += (CC-meanCC) * (CC-meanCC) ;
     }
 
     varianceCC=varianceCC/(float) V;
-
-
 
 }
 
@@ -1967,21 +1968,18 @@ void Graph::writeCentralityCloseness(
     QTextStream outText ( &file );
 
     emit statusMessage ( (tr("Calculating shortest paths")) );
-    if (this->isSymmetric() )
-        createDistanceMatrix(true);
-    else {
-        centralityClosenessImproved();
-    }
+
+    createDistanceMatrix(true);
+
     emit statusMessage ( QString(tr("Writing closeness centralities to file:")).arg(fileName) );
 
     outText << tr("CLOSENESS CENTRALITY (CC)")<<"\n";
-    outText << tr("In undirected graphs, the CC index is the inverted sum of geodesic distances"
+    outText << tr("The CC index is the inverted sum of geodesic distances"
                   " from node u to all the other nodes.")<<"\n";
     outText << tr("CC' is the standardized CC multiplied by N-1 (minus isolates).")<<"\n";
-    outText << tr("In directed graphs which are not strongly connected, the ordinary CC is undefined. "
-                 " Thus, we use an improved closeness index, which measures distances from node u to "
-                  " all nodes in its influence range (nodes that can be reached from u). ");
-
+    outText << tr("Note: In not strongly connected graphs or digraphs, "
+                  "the ordinary CC is undefined. In that case, use the "
+                  "Influence Range Closeness Centrality index rather than CC. \n");
 
     outText << tr("CC  range:  0 < C < ")<<QString::number(maxIndexCC)<<"\n";
     outText << tr("CC' range:  0 < C'< 1")<<"\n\n";
@@ -2014,6 +2012,65 @@ void Graph::writeCentralityCloseness(
 
     outText << "\n\n";
     outText << tr("Closeness Centrality report, \n");
+    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    file.close();
+
+}
+
+
+
+
+//Writes the "improved" closeness centrality indices to a file
+void Graph::writeCentralityClosenessInfluenceRange(
+        const QString fileName, const bool considerWeights)
+{
+    Q_UNUSED(considerWeights);
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        return;
+    }
+    QTextStream outText ( &file );
+
+    emit statusMessage ( (tr("Calculating shortest paths")) );
+    centralityClosenessInfluenceRange();
+
+    emit statusMessage ( QString(tr("Writing improved closeness centralities to file:")).arg(fileName) );
+
+    outText << tr("CLOSENESS CENTRALITY (CC)")<<"\n";
+    outText << tr("This improved CC index is optimized for graphs and directed graphs which "
+                  "are not strongly connected. Unlike the ordinary CC, which is the inverted "
+                  "sum of distances from node v to all others (thus undefined if a node is isolated "
+                  "or the digraph is not strongly connected), this improved CC considers only "
+                  "distances from node v to nodes in its influence range J (nodes reachable from v). "
+                  "The improved CC formula used is the ratio of the fraction of nodes reachable by v "
+                  "(|J|/(n-1)) to the average distance of these nodes from v (sum(d(v,j))/|J|");
+
+
+    outText << tr("CC  range:  0 < C < ")<<QString::number(maxIndexCC)<<"\n";
+    outText << tr("CC' range:  0 < C'< 1")<<"\n\n";
+    outText << "Node"<<"\tCC\t\tCC'\t\t%CC\n";
+    QList<Vertex*>::iterator it;
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        outText << (*it)->name()<<"\t"<<(*it)->CC() << "\t\t"<< (*it)->SCC() << "\t\t" <<  (100* ((*it)->CC()) / sumCC)<<endl;
+    }
+    qDebug ("min %f, max %f", minCC, maxCC);
+    if ( minCC == maxCC )
+        outText << tr("\nAll nodes have the same CC value.\n");
+    else  {
+        outText << "\n";
+        outText << tr("Max CC' = ") << maxCC <<" (node "<< maxNodeCC  <<  ")  \n";
+        outText << tr("Min CC' = ") << minCC <<" (node "<< minNodeCC <<  ")  \n";
+        outText << tr("CC classes = ") << classesCC<<" \n";
+    }
+    outText << tr("Mean = ") << meanCC<<"\n\n";
+    outText << tr("Sum = ") << sumCC<<"\n\n";
+    outText << tr("Variance  = ") << meanCC<<"\n\n";
+
+
+    outText << "\n\n";
+    outText << tr("Improved Closeness Centrality report, \n");
     outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
@@ -2845,7 +2902,7 @@ void Graph::writeNumberOfCliques(
 }
 
 
-
+//Writes the clustering coefficients to a file
 void Graph::writeClusteringCoefficient(
         const QString fileName, const bool considerWeights)
 {
@@ -2903,7 +2960,7 @@ void Graph::writeClusteringCoefficient(
 
 
 
-
+        //Writes the triad census to a file
 void Graph::writeTriadCensus(
         const QString fileName, const bool considerWeights)
 {
@@ -4102,6 +4159,7 @@ void Graph:: examine_MAN_label(int mut, int asy, int nul,
 
 /** 
     Calculates and returns x! factorial...
+    used in (n 2)p edges calculation
 */
 int Graph:: factorial(int x) {
     int tmp;
@@ -4775,9 +4833,7 @@ void Graph::writeDataSetToFile (QString fileName) {
 
 
 /** 
-    Returns the adjacency matrix of G
-    This is called from saveGraphToAdjacency() using << operator of Matrix class
-    The resulting matrix HAS spaces between elements.
+    Exports the adjacency matrix to a given textstream
 */
 void Graph::writeAdjacencyMatrixTo(QTextStream& os){
     qDebug("Graph: adjacencyMatrix(), writing matrix with %i vertices", vertices());
@@ -4821,7 +4877,7 @@ QTextStream& operator <<  (QTextStream& os, Graph& m){
 
 
 /** 
-    Writes the adjacency matrix of G to a specified file
+    Writes the adjacency matrix of G to a specified file fn
     This is called by MainWindow::slotViewAdjacencyMatrix()
     The resulting matrix HAS NO spaces between elements.
 */

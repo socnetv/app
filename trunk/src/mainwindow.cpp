@@ -55,7 +55,9 @@
 bool printDebug=false;
 
 
-void myMessageOutput( QtMsgType type, const QMessageLogContext &context, const QString &msg )     {
+void myMessageOutput (
+        QtMsgType type, const QMessageLogContext &context, const QString &msg )
+{
     QByteArray localMsg = msg.toLocal8Bit();
     Q_UNUSED(context);
     if (printDebug)
@@ -89,10 +91,10 @@ MainWindow::MainWindow(const QString & m_fileName) {
     initToolBar();  //build the toolbar
     initStatusBar();  //and now add the status bar.
     initToolBox(); //finally, build the toolbox
+    //and fill a stringList with all X-supported color names
+    colorList = QColor::colorNames();
 
-    colorList = QColor::colorNames();  //and fill a stringList with all X-supported color names
-
-    //set MW minimum size, before creating scene and canvas, so that we may have a clue about their sizes..
+    //set MW minimum size, before creating scene and canvas
     this->setMinimumSize(900,600);
 
     initView(); //create the canvas
@@ -135,8 +137,17 @@ MainWindow::MainWindow(const QString & m_fileName) {
              graphicsWidget, SLOT( moveNode(int, int, int) ) ) ;
 
 
-    connect( &activeGraph, SIGNAL( drawNode( int ,int,  QString, QString, int, QString, QString, int, QPointF, QString, bool, bool, bool) ),
-             graphicsWidget, SLOT( drawNode( int ,int,  QString, QString, int, QString, QString, int, QPointF, QString, bool, bool, bool) ) ) ;
+    connect( &activeGraph,
+             SIGNAL(
+                 drawNode( int ,int,  QString, QString, int, QString, QString,
+                           int, QPointF, QString, bool, bool, bool)
+                 ),
+             graphicsWidget,
+             SLOT(
+                 drawNode( int ,int,  QString, QString, int, QString, QString,
+                           int, QPointF, QString, bool, bool, bool)
+                 )
+             ) ;
 
     connect( &activeGraph, SIGNAL( eraseEdge(int, int)),
              graphicsWidget, SLOT( eraseEdge(int, int) ) );
@@ -144,11 +155,21 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect( &activeGraph, SIGNAL( graphChanged() ),
              this, SLOT( graphChanged() ) ) ;
 
-    connect( &activeGraph, SIGNAL( signalFileType(int , QString , int , int, bool) ),
-             this, SLOT( fileType(int , QString , int , int, bool) ) 	) ;
+    connect( &activeGraph,
+             SIGNAL(
+                 signalFileType(int , QString , int , int, bool) ),
+             this,
+             SLOT( fileType(int , QString , int , int, bool) )
+             ) ;
 
-    connect( &activeGraph, SIGNAL( drawEdge( int, int, float, bool, bool, QString, bool)),
-             graphicsWidget, SLOT( drawEdge( int, int,float, bool, bool, QString, bool) )  ) ;
+    connect( &activeGraph,
+             SIGNAL(
+                 drawEdge( int, int, float, bool, bool, QString, bool)
+                 ),
+             graphicsWidget,
+             SLOT(
+                 drawEdge( int, int,float, bool, bool, QString, bool)
+                 )  ) ;
 
     connect( &activeGraph, SIGNAL( drawEdgeReciprocal(int, int) ),
              graphicsWidget, SLOT( drawEdgeReciprocal(int, int) ) );
@@ -199,14 +220,16 @@ MainWindow::MainWindow(const QString & m_fileName) {
              graphicsWidget, SLOT(clearGuides()));
 
 
-    //create an horizontal layout for the toolbox and the canvas. This will be our MW layout.
+    //create an horizontal layout for the toolbox and the canvas.
+    // This will be our MW layout.
     QHBoxLayout *layout = new QHBoxLayout;
     layout->addWidget(toolBox); 		//add them
-    layout->addWidget(graphicsWidget);	//create a dummy widget, for the above layout
+    layout->addWidget(graphicsWidget);
+    //create a dummy widget, for the above layout
     QWidget *widget = new QWidget;
     widget->setLayout(layout);
-
-    setCentralWidget(widget);	//now set this as central widget of MW
+    //now set this as central widget of MW
+    setCentralWidget(widget);
 
     /*
         initialise default network parameters
@@ -214,8 +237,10 @@ MainWindow::MainWindow(const QString & m_fileName) {
     initNet();
 
 
-    /** DEFAULTING HERE DOES NOT CHANGE BOOL VALUE **/
-    /** EVERY TIME INITNET IS CALLED **/
+    /*
+     *  DEFAULTING HERE DOES NOT CHANGE BOOL VALUE
+        EVERY TIME INITNET IS CALLED
+    */
     bezier=false;
     firstTime=true;
 
@@ -225,7 +250,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
     graphicsWidget->setInitNodeSize(initNodeSize);
     graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor)); //Qt::gray
 
-    /**Try to load a GraphML network file on exec time*/
+    /** Try to load a GraphML network file on exec time*/
     if (!m_fileName.isEmpty())
     {
         fileName=m_fileName;
@@ -827,36 +852,36 @@ void MainWindow::initActions(){
 
     distanceMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesic Distance &Matrix"),this);
     distanceMatrixAct ->setShortcut(tr("Shift+G"));
-    distanceMatrixAct->setStatusTip(tr("Calculates and displays the matrix of graph geodesic distances between all nodes"));
+    distanceMatrixAct->setStatusTip(tr("The matrix of graph geodesic distances between all nodes"));
     distanceMatrixAct->setWhatsThis(tr("Distance Matrix\n\n A distance matrix is a NxN matrix, where the (i,j) element is the geodesic distance from node i to node j. The geodesic distance of two nodes is the length of the shortest path between them."));
     connect(distanceMatrixAct, SIGNAL(triggered()), this, SLOT( slotViewDistanceMatrix() ) );
 
     geodesicsMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Number of Geodesic &Paths Matrix"),this);
     geodesicsMatrixAct ->setShortcut(tr("Ctrl+Shift+G"));
-    geodesicsMatrixAct->setStatusTip(tr("Calculates and displays the number of geodesic paths between each pair of nodes "));
+    geodesicsMatrixAct->setStatusTip(tr("The number of geodesic paths between each pair of nodes "));
     geodesicsMatrixAct->setWhatsThis(tr("Number of Geodesics\n\n Displays a NxN matrix, where the (i,j) element is the number of geodesic paths between node i and node j. A geodesic path of two nodes is the shortest path between them."));
     connect(geodesicsMatrixAct, SIGNAL(triggered()), this, SLOT( slotViewNumberOfGeodesicsMatrix()) );
 
     diameterAct = new QAction(QIcon(":/images/diameter.png"), tr("Diameter"),this);
     diameterAct ->setShortcut(tr("Ctrl+D"));
-    diameterAct->setStatusTip(tr("Calculates and displays the diameter of the network."));
+    diameterAct->setStatusTip(tr("The diameter of the network."));
     diameterAct->setWhatsThis(tr("Diameter\n\n The Diameter of a network is the maximum graph distance (maximum shortest path length) between any two nodes of the network."));
     connect(diameterAct, SIGNAL(triggered()), this, SLOT(slotDiameter()));
 
     averGraphDistanceAct = new QAction(QIcon(":/images/avdistance.png"), tr("Average Geodesic Distance"),this);
     averGraphDistanceAct ->setShortcut(tr("Ctrl+B"));
-    averGraphDistanceAct->setStatusTip(tr("Calculates and displays the average shortest path length."));
+    averGraphDistanceAct->setStatusTip(tr("The average shortest path length."));
     averGraphDistanceAct->setWhatsThis(tr("Average Geodesic Distance\n\n This the average length of all shortest paths between the connected pair of nodes of the network."));
     connect(averGraphDistanceAct, SIGNAL(triggered()), this, SLOT(slotAverageGraphDistance()));
 
 
-    walksAct = new QAction(QIcon(":/images/walk.png"), tr("Number of Walks"),this);
+    walksAct = new QAction(QIcon(":/images/walk.png"), tr("Number of Walks Matrix"),this);
     walksAct->setShortcut(tr("Ctrl+W"));
-    walksAct->setStatusTip(tr("Calculates and displays the number of walks of a given length"));
+    walksAct->setStatusTip(tr("The number of walks of a given length between any nodes."));
     walksAct->setWhatsThis(tr("Walks\n\n A walk is a sequence of alternating vertices and edges such as v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>, where each edge, e<sub>i</sub> is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. This function counts the number of walks of a given length between each pair of nodes, by studying the powers of the sociomatrix.\n "));
     connect(walksAct, SIGNAL(triggered()), this, SLOT(slotNumberOfWalks() )  );
 
-    totalWalksAct = new QAction(QIcon(":/images/walk.png"), tr("Total Number of Walks"),this);
+    totalWalksAct = new QAction(QIcon(":/images/walk.png"), tr("Total Number of Walks Matrix"),this);
     totalWalksAct->setShortcut(tr("Ctrl+Shift+W"));
     totalWalksAct->setStatusTip(tr("Calculates the total number of walks of every possible length between all nodes"));
     totalWalksAct->setWhatsThis(tr("Walks\n\n A walk is a sequence of alternating vertices and edges such as v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>, where each edge, e<sub>i</sub> is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. This function counts the number of walks of any length between each pair of nodes, by studying the powers of the sociomatrix\n "));
@@ -871,14 +896,14 @@ void MainWindow::initActions(){
 
     cliquesAct = new QAction(QIcon(":/images/triangle.png"), tr("Number of Cliques"),this);
     cliquesAct->setShortcut(tr("Ctrl+T"));
-    cliquesAct->setStatusTip(tr("Calculates and displays the number of cliques (triangles) of each node v."));
-    cliquesAct->setWhatsThis(tr("Triangles\n\n A triangle is a complete subgraph of three nodes of G. This method calculates the number of triangles of each node v is defined as delta(v) = |{{u, w} in E : {v, u} in E and {v, w} in E}|.  \n "));
+    cliquesAct->setStatusTip(tr("The number of cliques (triangles) of each node v."));
+    cliquesAct->setWhatsThis(tr("Number of Cliques\n\n A triangle is a complete subgraph of three nodes of G. This method calculates the number of triangles of each node v is defined as delta(v) = |{{u, w} in E : {v, u} in E and {v, w} in E}|.  \n "));
     connect(cliquesAct, SIGNAL(triggered()), this, SLOT(slotNumberOfCliques() )  );
 
 
     clusteringCoefAct = new QAction(QIcon(":/images/clique.png"), tr("Clustering Coefficient"),this);
     clusteringCoefAct ->setShortcut(tr("Ctrl+C"));
-    clusteringCoefAct->setStatusTip(tr("Calculates and displays the average Clustering Coefficient of the network."));
+    clusteringCoefAct->setStatusTip(tr("The average Clustering Coefficient of the network."));
     clusteringCoefAct->setWhatsThis(tr("Clustering Coefficient\n\n The Clustering Coefficient of a vertex quantifies how close the vertex and its neighbors are to being a clique. \n "));
     connect(clusteringCoefAct, SIGNAL(triggered()), this, SLOT(slotClusteringCoefficient() )  );
 
@@ -891,59 +916,83 @@ void MainWindow::initActions(){
 
     cDegreeAct = new QAction(tr("Degree Centrality (DC)"),this);
     cDegreeAct->setShortcut(tr("Ctrl+1"));
-    cDegreeAct->setStatusTip(tr("Calculates and displays Degree Centrality indices and group Degree Centralization."));
+    cDegreeAct->setStatusTip(tr("Degree Centrality indices and group Degree Centralization."));
     cDegreeAct->setWhatsThis(tr("Degree Centrality (DC)\n\n For each node v, the DC index is the number of edges attached to it (in undirected graphs) or the total numnber of arcs (outLinks) starting from it (in digraphs). This is oftenly considered a measure of actor activity. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs. In weighted relations, ODC is the sum of weights of all edges/outLinks attached to v."));
     connect(cDegreeAct, SIGNAL(triggered()), this, SLOT(slotCentralityDegree()));
 
 
     cClosenessAct = new QAction(tr("Closeness Centrality (CC)"), this);
     cClosenessAct->setShortcut(tr("Ctrl+2"));
-    cClosenessAct->setStatusTip(tr("Calculates and displays Closeness Centrality indices and group Closeness Centralization."));
-    cClosenessAct->setWhatsThis(tr("Closeness Centrality (CC)\n\n For each node v, CC the invert sum of the shortest distances between v and every other node. CC is interpreted as the ability to access information through the \"grapevine\" of network members. Nodes with high closeness centrality are those who can reach many other nodes in few steps. \n\nThis index can be calculated in both graphs and digraphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1. "));
+    cClosenessAct->setStatusTip(tr("Closeness Centrality indices and group Closeness Centralization."));
+    cClosenessAct->setWhatsThis(tr("Closeness Centrality (CC)\n\n "
+                                   "For each node v, CC the inverse sum of "
+                                   "the shortest distances between v and every other node. CC is "
+                                   "interpreted as the ability to access information through the "
+                                   "\"grapevine\" of network members. Nodes with high closeness "
+                                   "centrality are those who can reach many other nodes in few steps. "
+                                   "\n\nThis index can be calculated in both graphs and digraphs. "
+                                   "It can also be calculated in weighted graphs although the weight of "
+                                   "each edge (v,u) in E is always considered to be 1. "));
     connect(cClosenessAct, SIGNAL(triggered()), this, SLOT(slotCentralityCloseness()));
 
+    cInfluenceRangeClosenessAct = new QAction(tr("Influence Range Closeness Centrality (IRCC)"), this);
+    cInfluenceRangeClosenessAct->setShortcut(tr("Ctrl+3"));
+    cInfluenceRangeClosenessAct->setStatusTip(tr("Closeness Centrality indices focusing on how proximate each node is"
+                                                 "to the nodes in its influence range"));
+    cInfluenceRangeClosenessAct->setWhatsThis(tr("Influence Range Closeness Centrality (IRCC)\n\n "
+                                                 "For each node v, IRCC is the standardized inverse average distance "
+                                                 "between v and every reachable node.\n"
+                                                 "This improved CC index is optimized for graphs and directed graphs which "
+                                                 "are not strongly connected. Unlike the ordinary CC, which is the inverted "
+                                                 "sum of distances from node v to all others (thus undefined if a node is isolated "
+                                                 "or the digraph is not strongly connected), IRCC considers only "
+                                                 "distances from node v to nodes in its influence range J (nodes reachable from v). "
+                                                 "The IRCC formula used is the ratio of the fraction of nodes reachable by v "
+                                                 "(|J|/(n-1)) to the average distance of these nodes from v (sum(d(v,j))/|J|"));
+    connect(cInfluenceRangeClosenessAct, SIGNAL(triggered()), this, SLOT(slotCentralityClosenessInfluenceRange()));
+
     cBetweenessAct = new QAction(tr("Betweeness Centrality (BC)"), this);
-    cBetweenessAct->setShortcut(tr("Ctrl+3"));
+    cBetweenessAct->setShortcut(tr("Ctrl+4"));
     cBetweenessAct->setWhatsThis(tr("Betweeness Centrality (BC)\n\n For each node v, BC is the ratio of all geodesics between pairs of nodes which run through v. It reflects how often an node lies on the geodesics between the other nodes of the network. It can be interpreted as a measure of control. A node which lies between many others is assumed to have a higher likelihood of being able to control information flow in the network. \n\n Note that betweeness centrality assumes that all geodesics have equal weight or are equally likely to be chosen for the flow of information between any two nodes. This is reasonable only on \"regular\" networks where all nodes have similar degrees. On networks with significant degree variance you might want to try informational centrality instead. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
-    cBetweenessAct->setStatusTip(tr("Calculates and displays Betweeness Centrality indices and group Betweeness Centralization."));
+    cBetweenessAct->setStatusTip(tr("Betweeness Centrality indices and group Betweeness Centralization."));
     connect(cBetweenessAct, SIGNAL(triggered()), this, SLOT(slotCentralityBetweeness()));
 
     cGraphAct = new QAction(tr("Graph Centrality (GC)"),this);
-    cGraphAct->setShortcut(tr("Ctrl+4"));
-    cGraphAct->setStatusTip(tr("Calculates and displays Graph Centrality indices and group Graph Centralization."));
+    cGraphAct->setShortcut(tr("Ctrl+5"));
+    cGraphAct->setStatusTip(tr("Graph Centrality indices and group Graph Centralization."));
     cGraphAct->setWhatsThis(tr("Graph Centrality (GC)\n\n For each node v, GC is the invert of the maximum of all geodesic distances from v to all other nodes in the network. Nodes with high GC have short distances to all other nodes in the network. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
     connect(cGraphAct, SIGNAL(triggered()), this, SLOT(slotCentralityGraph()));
 
     cStressAct = new QAction(tr("Stress Centrality (SC)"), this);
-    cStressAct->setShortcut(tr("Ctrl+5"));
-    cStressAct->setStatusTip(tr("Calculates and displays Stress Centrality indices and group Stress Centralization."));
+    cStressAct->setShortcut(tr("Ctrl+6"));
+    cStressAct->setStatusTip(tr("Stress Centrality indices and group Stress Centralization."));
     cStressAct->setWhatsThis(tr("Stress Centrality (SC)\n\n For each node v, SC is the total number of geodesics between all other nodes which run through v. When one node falls on all other geodesics between all the remaining (N-1) nodes, then we have a star graph with maximum Stress Centrality. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
     connect(cStressAct, SIGNAL(triggered()), this, SLOT(slotCentralityStress()));
 
 
     cEccentAct = new QAction(tr("Eccentricity (EC)"), this);
-    cEccentAct->setShortcut(tr("Ctrl+6"));
-    cEccentAct->setStatusTip(tr("Calculates and displays Eccentricity indices for each node and group Eccentricity"));
+    cEccentAct->setShortcut(tr("Ctrl+7"));
+    cEccentAct->setStatusTip(tr("Eccentricity indices for each node and group Eccentricity"));
     cEccentAct->setWhatsThis(tr("Eccentricity Centrality\n\n For each node k, this is the largest geodesic distance (k,t) from every other vertex t. Therefore, EC(u) reflects how far, at most, is each node from every other node. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
     connect(cEccentAct, SIGNAL(triggered()), this, SLOT(slotCentralityEccentricity()));
 
 
     cPowerAct = new QAction(tr("Power Centrality (PC)"), this);
-    cPowerAct->setShortcut(tr("Ctrl+7"));
+    cPowerAct->setShortcut(tr("Ctrl+8"));
     cPowerAct->setStatusTip(tr("Calculate and display Power Centrality indices (aka Gil-Schmidt Power Centrality) and group Power Centralization"));
     cPowerAct->setWhatsThis(tr("Power Centrality (PC)\n\n For each node v, this index sums its degree (with weight 1), with the size of the 2nd-order neighbourhood (with weight 2), and in general, with the size of the kth order neighbourhood (with weight k). Thus, for each node in the network the most important other nodes are its immediate neighbours and then in decreasing importance the nodes of the 2nd-order neighbourhood, 3rd-order neighbourhood etc. For each node, the sum obtained is normalised by the total numbers of nodes in the same component minus 1. Power centrality has been devised by Gil-Schmidt. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1 (therefore not considered)."));
     connect(cPowerAct, SIGNAL(triggered()), this, SLOT(slotCentralityPower()));
 
 
     cInformationAct = new QAction(tr("Information Centrality (IC)"),	this);
-    cInformationAct->setShortcut(tr("Ctrl+8"));
+    cInformationAct->setShortcut(tr("Ctrl+9"));
     cInformationAct->setEnabled(true);
     cInformationAct->setStatusTip(tr("Calculate and display Information Centrality indices and group Information Centralization"));
     cInformationAct->setWhatsThis(tr("Information Centrality (IC)\n\n Information centrality counts all paths between nodes weighted by strength of tie and distance. This centrality  measure developed by Stephenson and Zelen (1989) focuses on how information might flow through many different paths. \n\nThis index should be calculated only for  graphs. \n\n Note: To compute this index, SocNetV drops all isolated nodes."));
     connect(cInformationAct, SIGNAL(triggered()), this, SLOT(slotCentralityInformation()));
 
     cInDegreeAct = new QAction(tr("Degree Prestige (DP)"),	 this);
-    cInDegreeAct->setStatusTip(tr("Calculates and displays Degree Prestige (InDegree) indices "));
+    cInDegreeAct->setStatusTip(tr("Degree Prestige (InDegree) indices "));
     cInDegreeAct->setShortcut(tr("Ctrl+Shift+D"));
     cInDegreeAct->setWhatsThis(tr("InDegree (Degree Prestige)\n\n For each node k, this the number of arcs ending at k. Nodes with higher in-degree are considered more prominent among others. In directed graphs, this index measures the prestige of each node/actor. Thus it is called Degree Prestige. Nodes who are prestigious tend to receive many nominations or choices (in-links). The largest the index is, the more prestigious is the node. \n\nThis index can be calculated only for digraphs. In weighted relations, DP is the sum of weights of all arcs/inLinks ending at node v."));
     connect(cInDegreeAct, SIGNAL(triggered()), this, SLOT(slotPrestigeDegree()));
@@ -1314,6 +1363,7 @@ void MainWindow::initMenuBar() {
 
     centrlMenu -> addAction (cDegreeAct);
     centrlMenu -> addAction (cClosenessAct);
+    centrlMenu -> addAction (cInfluenceRangeClosenessAct);
     centrlMenu -> addAction (cBetweenessAct);
     centrlMenu -> addAction (cGraphAct);
     centrlMenu -> addAction (cStressAct);
@@ -5174,13 +5224,24 @@ void MainWindow::slotCentralityDegree(){
 */
 void MainWindow::slotCentralityCloseness(){
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network"
+                                               " file or create a new network manually. "
+                                               "\nThen ask me to compute something!"), "OK",0);
         statusMessage(  QString(tr("Nothing to do..."))  );
         return;
     }
 
     if (!activeGraph.isSymmetric()) {
-        QMessageBox::critical(this, "Warning",tr("Directed graph!\nSince this network is directed, the ordinary Closeness Centrality index is not defined, because d(i,j) can be infinite if nodes i,j are not reachable. Therefore, we will be using a slightly different but improved Closeness index which considers how proximate is each node v to the nodes in its influence range. Read more in the SocNetV manual."), "OK",0);
+        QMessageBox::critical(this,
+                              "Warning",
+                              tr(
+                                 "Directed graph!\nSince this network is directed, "
+                                 "the ordinary Closeness Centrality index is not defined, "
+                                 "because d(i,j) can be infinite if nodes i,j are not reachable."
+                                 " Therefore, we will be using a slightly different but improved "
+                                 "Closeness index which considers how proximate is each node v "
+                                 "to the nodes in its influence range. Read more in the SocNetV manual."
+                                 ), "OK",0);
     }
     QString fn = "centrality_closeness.dat";
     bool considerWeights=true;
@@ -5196,6 +5257,40 @@ void MainWindow::slotCentralityCloseness(){
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
     ed->setWindowTitle("Closeness Centralities  saved as: " + tempFileNameNoPath.last());
+    ed->show();
+}
+
+
+
+
+/**
+ * @brief MainWindow::slotCentralityClosenessInfluenceRange
+*	Writes Centrality Closeness (based on Influence Range) indices into a file,
+*   then displays it.
+ */
+void MainWindow::slotCentralityClosenessInfluenceRange(){
+    if (!fileLoaded && !networkModified  )  {
+        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network"
+                                               " file or create a new network manually. "
+                                               "\nThen ask me to compute something!"), "OK",0);
+        statusMessage(  QString(tr("Nothing to do..."))  );
+        return;
+    }
+
+    QString fn = "centrality_closeness_influence_range.dat";
+    bool considerWeights=true;
+
+    createProgressBar();
+
+    activeGraph.writeCentralityClosenessInfluenceRange(fn, considerWeights);
+
+    destroyProgressBar();
+
+    statusMessage( QString(tr(" displaying file...")));
+
+    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    tempFileNameNoPath=fn.split( "/");
+    ed->setWindowTitle("Closeness Centrality (influence range) report: " + tempFileNameNoPath.last());
     ed->show();
 }
 

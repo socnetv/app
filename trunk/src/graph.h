@@ -120,8 +120,8 @@ signals:
 
 public: 	
     /* INIT AND CLEAR*/
-    Graph(); 			//Creates a new graph.
-    void clear();			//Clears m_graph
+    Graph();
+    void clear();
     ~Graph();			//destroy object
 
     void setSocNetV_Version (QString ver) { VERSION = ver; }
@@ -130,7 +130,7 @@ public:
     void setShowNumbersInsideNodes(bool toggle);
 
     /*FILES (READ AND WRITE)*/
-    bool loadGraph ( QString, bool,	int maxWidth, int maxHeight, int format, int two_sm_mode);	//Our almost universal network loader. :)
+    bool loadGraph ( QString, bool,	int maxWidth, int maxHeight, int format, int two_sm_mode);
 
     bool saveGraph( QString fileName, int fileType,
                     QString networkName, int maxWidth, int maxHeight
@@ -141,92 +141,89 @@ public:
     bool saveGraphToGraphMLFormat (QString fileName,QString networkName,  int maxWidth, int maxHeight);
 
     /* VERTICES */
-    int lastVertexNumber();				//Returns the number of the last vertex
-    int firstVertexNumber();			//Returns the number of the first vertex
+    int lastVertexNumber();
+    int firstVertexNumber();
 
-    int hasVertex(long int );		//Checks if a vertex exists
-    int hasVertex(QString);				//Checks if a vertex with a label exists
-    void removeVertex (long int );			//removes given vertex from m_graph
+    int hasVertex(long int );
+    int hasVertex(QString);
+    void removeVertex (long int );
 
-    void setInitVertexSize (long int); 			//Changes the init size used in new vertices.
-    void setVertexSize(long int v, int );		//Changes the size.of vertex v
+    void setInitVertexSize (long int);
+    void setVertexSize(long int v, int );
 
-    void setInitVertexShape (QString); 		//Changes the init shape used in new vertices.
-    void setVertexShape(int v, QString shape); 	//Changes the shape.of vertex v
-    QString shape(int v);				//returns the shape of this vertex
+    void setInitVertexShape (QString);
+    void setVertexShape(int v, QString shape);
+    QString shape(int v);
 
-    void setInitVertexColor (QString color);  	//Changes the init color used in new vertices
-    void setVertexColor(long int v, QString color); 	//Changes the color.of vertex v
+    void setInitVertexColor (QString color);
+    void setVertexColor(long int v, QString color);
 
+    void setInitVertexNumberColor ( QString color);
+    void setInitVertexNumberSize (int size);
 
-    void setInitVertexNumberColor ( QString color);	//Changes the init number color in new vertices
-    void setInitVertexNumberSize (int size);	//Changes the init number size in new vertices
+    void setInitVertexLabelSize(int newSize);
+    void setVertexLabelSize(int v, int newSize);
 
-    void setInitVertexLabelSize(int newSize);	//Changes the init size of new vertices labels
-    void setVertexLabelSize(int v, int newSize);	//Changes the size of a vertex label
-
-    void setInitVertexLabelColor(QString color);	//Changes the init color used by all new vertices' labels
-    void setVertexLabel(int v, QString label); 	//Changes the label.of vertex v
+    void setInitVertexLabelColor(QString color);
+    void setVertexLabel(int v, QString label);
     void setVertexLabelColor(int v1, QString color);
     QString label(int);
 
-    void updateVertCoords(int v, int x, int y);	 //Updates vertex v with coords x,y
+    void updateVertCoords(int v, int x, int y);
 
-    int vertices() ;				//Returns the sum of vertices inside m_graph
+    int vertices() ;
 
-    int outEdges (int i) ;				//Returns the number of edges starting from v1 (outDegree)
-    int inEdges (int i) ;				//Returns the number of edges ending to v1 (inDegree)
+    int outEdges (int i) ;
+    int inEdges (int i) ;
 
-    int outDegree(int);             //Returns the sum of weights of all out-Edges of v1 (outDegree)
-    int inDegree(int);              //Returns the sum of weights of all in-Edges of v1 (inDegree)
+    int outDegree(int);
+    int inDegree(int);
 
-    int verticesWithOutEdges();			//Returns the sum of vertices having no outEdges
-    int verticesWithInEdges();			//Returns the sum of vertices having no inEdges
-    int verticesWithReciprocalEdges();		//Returns the sum of vertices having reciprocal edges
+    int verticesWithOutEdges();
+    int verticesWithInEdges();
+    int verticesWithReciprocalEdges();
 
-    QList<int> verticesIsolated();         //Returns a list of all isolated vertices
-
+    QList<int> verticesIsolated();
 
     /* EDGES */
-    float hasEdge (int v1, int v2);			//Checks if edge between v1 and v2 exists. Returns weight or -1
-    void removeEdge (int v1, int v2);		//removes the edge between v1 and v2
+    float hasEdge (int v1, int v2);
+    void removeEdge (int v1, int v2);
 
+    bool isWeighted();
 
-    bool isWeighted();                          // Returns true if the graph is weighted.
-
-    void setEdgeWeight (int v1, int v2, float w); 	//Sets the edge weight between v1 and v2
+    void setEdgeWeight (int v1, int v2, float w);
     void setInitEdgeColor(QString);
 
-    void setEdgeColor(long int s, long int t, QString color);	//Changes the color of edge (s,t).
-    QString edgeColor (long int s, long int t); 		//Returns the edgeColor
+    void setEdgeColor(long int s, long int t, QString color);
+    QString edgeColor (long int s, long int t);
 
-    int totalEdges ();				//Returns the sum of edges inside m_graph
+    int totalEdges ();
 
-    float density();				//Returns ratio of present edges to total possible edges.
+    float density();
 
-    bool symmetricEdge(int v1, int v2);		//Returns TRUE if (v1, v2) is symmetric.
-    bool isSymmetric();				//Returns TRUE if symmetricAdjacencyMatrix=TRUE
-    void symmetrize();				//Symmetrize all edges so that the network is undirected.
+    bool symmetricEdge(int v1, int v2);
+    bool isSymmetric();
+    void symmetrize();
 
-    void createAdjacencyMatrix(bool,bool);  // Creates the adjacency matrix AM
+    void createAdjacencyMatrix(bool,bool);
     void invertAdjacencyMatrix();
 
 
     /* PRINT OUT TO FILES*/
 
-    void writeDataSetToFile(QString );			// Writes a known dataset to a file.
-    void writeAdjacencyMatrixTo(QTextStream& os);	 		//Exports the adjacency matrix to a given textstream
-    void writeAdjacencyMatrix(const char*, const char*);		//Writes the adjacency matrix to a given file.
+    void writeDataSetToFile(QString );
+    void writeAdjacencyMatrixTo(QTextStream& os);
+    void writeAdjacencyMatrix(const char*, const char*);
 
     void writeInvertAdjacencyMatrix(const char*,  const char*);
-    void writeDistanceMatrix(const char*, const char*);//Writes the distance matrix to a file
-    void writeNumberOfGeodesicsMatrix(const char*, const char*);//Writes the number of geodesics matrix to a file
+    void writeDistanceMatrix(const char*, const char*);
+    void writeNumberOfGeodesicsMatrix(const char*, const char*);
 
-    friend QTextStream& operator <<  (QTextStream& os, Graph& m);  	//
-
+    friend QTextStream& operator <<  (QTextStream& os, Graph& m);
 
     void writeCentralityDegree(const QString, const bool);	//Writes the out-degree centralities to a file
     void writeCentralityCloseness(const QString, const bool);	//Writes the closeness centralities to a file
+    void writeCentralityClosenessInfluenceRange(const QString, const bool);
     void writeCentralityBetweeness(const QString, const bool);	//Writes the betweeness centralities to a file
     void writeCentralityGraph(const QString, const bool);		//Writes the Graph centralities to a file
     void writeCentralityPower(const QString, const bool);		//Writes the Power centralities to a file
@@ -234,32 +231,31 @@ public:
     void writeCentralityEccentricity(const QString, const bool);	//Writes the Eccentr centralities to a file
     void writeCentralityInformation(const QString);			//Writes the Information centralities to a file
 
-    void writePrestigeDegree(const QString, bool);		//Writes the in-degree prestige indices to a file
-    void writePrestigeProximity(const QString, const bool);  //Writes the Proximity prestige indices to a file
-    void writePrestigePageRank(const QString);			//Writes the PageRank indices to a file
+    void writePrestigeDegree(const QString, bool);
+    void writePrestigeProximity(const QString, const bool);
+    void writePrestigePageRank(const QString);
 
 
     void writeNumberOfCliques(const QString fileName, const bool considerWeights);
 
-    void writeClusteringCoefficient(const QString, const bool);	//Writes the clustering coefficients to a file
+    void writeClusteringCoefficient(const QString, const bool);
 
-    void writeTriadCensus(const QString, const bool);		//Writes the triad census to a file
+    void writeTriadCensus(const QString, const bool);
 
 
     /* DISTANCES, CENTRALITIES & PROMINENCE MEASURES */
-    int distance( int, int);		//Returns the geodesic distance between two vertices
-    int diameter();				//Returns the diameter of the graph (maximum shortest path).
-    float averageGraphDistance();		//Returns the average shortest path length (average geodesic).
+    int distance( int, int);
+    int diameter();
+    float averageGraphDistance();
 
-    void createDistanceMatrix(bool);	//Creates the distance matrix and calculates the centralities, if bool is true.
-    void centralityDegree(bool);		//Calculates the outDegree centrality of each vertex
-    void centralityInformation();       //Calculates the informational centrality of each vertex
-    void centralityClosenessImproved(); // Improved Closeness Centrality (considers only nodes in influence range)
+    void createDistanceMatrix(bool);
+    void centralityDegree(bool);
+    void centralityInformation();
+    void centralityClosenessInfluenceRange();
 
-
-    void prestigeDegree(bool);		//Calculates the inDegree Prestige of each vertex
-    int prestigePageRank();       //Calculates the PageRank Prestige of each vertex
-    int prestigeProximity();       //Calculates the Proximity Prestige of each vertex
+    void prestigeDegree(bool);
+    int prestigePageRank();
+    int prestigeProximity();
 
     /* REACHABILTY AND WALKS */
     int numberOfWalks(int v1, int v2,int length);
@@ -267,15 +263,15 @@ public:
     void writeTotalNumberOfWalksMatrix(QString fn, QString netName, int length);
     void writeNumberOfWalksMatrix(QString fn, QString netName, int length);
     int reachable(int v1, int v2) ;
-    QList<int> influenceRange(int v1); // returns list of nodes reachable from v1
-    QList<int> influenceDomain(int v2); // returns list of nodes that can reach v1
-    void reachabilityMatrix();  // Calculates the Reachability Matrix XRM
-    void writeReachabilityMatrix(QString fn, QString netName); //Writes the Reachability Matrix
+    QList<int> influenceRange(int v1);
+    QList<int> influenceDomain(int v2);
+    void reachabilityMatrix();
+    void writeReachabilityMatrix(QString fn, QString netName);
 
 
-    float numberOfTriples(int v1); 		//Returns the number of triples at vertex v1
-    float numberOfCliques(int v1);		//Calculates the number of cliques (triangles) of vertex v1
-    float numberOfCliques();		//Calculates the number of cliques (triangles) of the whole graph
+    float numberOfTriples(int v1);
+    float numberOfCliques(int v1);
+    float numberOfCliques();
     float clusteringCoefficient(int v1);
     float clusteringCoefficient ();
 
@@ -293,18 +289,18 @@ public:
 
     /**RANDOM NETWORKS*/
     void createRandomNetErdos
-    (int, double);				//Creates a uniform random network
+    (int, double);
 
     void createRandomNetRingLattice
-    (int, int, double, double, double); 	//Creates a ring lattice network
+    (int, int, double, double, double);
 
     void createSameDegreeRandomNetwork
-    (int, int); 				//Creates a random network with the same degree in all nodes
+    (int, int);
 
     void createRandomNetSmallWorld
-    (int, int, double, double, double, double); 	//Creates a small world network
+    (int, int, double, double, double, double);
 
-    int factorial (int);				// for  (n 2)p edges calculation
+    int factorial (int);
 
 
     /*  index stores the real position of each vertex inside m_graph. It starts at zero (0).
@@ -318,17 +314,16 @@ public:
     /* Consider using tr1::hashmap which has O(1) lookup, but this is not ISO C++ yet :(   */
 
 
-
-
 protected: 
     void timerEvent(QTimerEvent *event);			// Called from nodeMovement when a timerEvent occurs
+
 
 private:
 
     /** List of pointers to the vertices. A vertex stores all the info: links, colours, etc */
     Vertices m_graph;
 
-    Parser parser;			//file loader threaded class.
+    Parser parser;	//file loader threaded class.
 
     WebCrawler crawler;
 
@@ -339,12 +334,12 @@ private:
             QString numColor, int numSize,
             QString label, QString labelColor, int labelSize,
             QPointF p, QString shape
-            );			// adds a vertex to m_graph
-    //adds an edge between v1 and v2, weight w, colored
+            );
+
     void addEdge (int v1, int v2, float w, QString color, int reciprocal);
 
     /** methods used by createDistanceMatrix()  */
-    void BFS(int, bool);									//Breadth-first search
+    void BFS(int, bool);	//Breadth-First Search function
     void minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int &minNode) ;	//helper
     void resolveClasses(float C, hash_si &discreteClasses, int &classes);			//helper
     void resolveClasses(float C, hash_si &discreteClasses, int &classes, int name);  	//helper
@@ -365,7 +360,7 @@ private:
     stack<int> Stack;
 
     float meanDegree, varianceDegree;
-    float averageCC, varianceCC;
+    float meanCC, varianceCC;
     float minDP, maxDP, sumDP, groupDP;
     float minDC, maxDC, sumDC, groupDC;
     float minCC, maxCC, nomCC, denomCC, sumCC, groupCC, maxIndexCC;

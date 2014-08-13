@@ -220,6 +220,7 @@ public slots:
 
     void slotCentralityDegree();
     void slotCentralityCloseness();
+    void slotCentralityClosenessInfluenceRange();
     void slotCentralityBetweeness();
     void slotCentralityInformation();
     void slotCentralityGraph();
@@ -333,7 +334,8 @@ private:
     QMenu *networkMenu, *randomNetworkMenu, *filterMenu;
     QMenu *randomLayoutMenu, *circleLayoutMenu, *levelLayoutMenu, *physicalLayoutMenu;
     QMenu *colorationMenu;
-    QCheckBox *moveSpringEmbedderBx, *moveFruchtermanBx, *moveKamandaBx, *nodeSizeProportional2OutDegreeBx, *nodeSizeProportional2InDegreeBx ;
+    QCheckBox *moveSpringEmbedderBx, *moveFruchtermanBx, *moveKamandaBx, *nodeSizeProportional2OutDegreeBx,
+            *nodeSizeProportional2InDegreeBx ;
 
     QSpinBox *rotateSpinBox ;
     QPushButton *addNodeBt, *addLinkBt, *removeNodeBt, *removeLinkBt;
@@ -350,21 +352,28 @@ private:
     QAction *findNodeAct,*addNodeAct, *addLinkAct, *removeNodeAct, *removeLinkAct;
     QAction *changeNumbersSizeAct, *changeNodeLabelAct, *changeNodeColorAct, *changeNodeValueAct, *changeNodeSizeAct;
     QAction *changeLabelsSizeAct, *changeAllNodesSizeAct, *changeAllNodesShapeAct;
-    QAction *changeNodeBoxAct, *changeNodeCircleAct, *changeNodeTriangleAct, *changeNodeDiamondAct, *changeNodeEllipseAct;
+    QAction *changeNodeBoxAct, *changeNodeCircleAct, *changeNodeTriangleAct, *changeNodeDiamondAct,
+            *changeNodeEllipseAct;
     QAction *changeLinkLabelAct, *changeLinkColorAct, *changeLinkWeightAct;
     QAction *filterNodesAct, *filterOrphanNodesAct, *filterEdgesAct, *transformNodes2LinksAct, *symmetrizeAct;
-    QAction *changeBackColorAct, *changeAllNodesColorAct, *changeAllLinksColorAct, *changeAllNumbersColorAct, *changeAllLabelsColorAct;
-    QAction *drawLinksWeightsAct, *displayLinksWeightNumbersAct, *displayLinksAct, *displayLinksArrowsAct, *drawLinksBezier;
+    QAction *changeBackColorAct, *changeAllNodesColorAct, *changeAllLinksColorAct, *changeAllNumbersColorAct,
+            *changeAllLabelsColorAct;
+    QAction *drawLinksWeightsAct, *displayLinksWeightNumbersAct, *displayLinksAct, *displayLinksArrowsAct,
+            *drawLinksBezier;
     QAction *backgroundImageAct, *viewToolBar, *viewStatusBar, *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
-    QAction *netDensity, *symmetryAct,   *graphDistanceAct, *averGraphDistanceAct, *distanceMatrixAct,*geodesicsMatrixAct, *diameterAct;
+    QAction *netDensity, *symmetryAct,   *graphDistanceAct, *averGraphDistanceAct, *distanceMatrixAct,
+            *geodesicsMatrixAct, *diameterAct;
     QAction *walksAct,*totalWalksAct, *reachabilityMatrixAct;
     QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct, *invertAdjMatrixAct;
-    QAction *cDegreeAct, *cInDegreeAct, *cClosenessAct, *cBetweenessAct, *cInformationAct, *cPageRankAct, *cGraphAct, *cStressAct, *cPowerAct, *cEccentAct, *cProximityPrestigeAct;
-    QAction *randLayoutAct, *randCircleLayoutAct, *circleOutDegreeLayoutAct, *circleInDegreeLayoutAct, *circleClosenessLayoutAct;
+    QAction *cDegreeAct, *cInDegreeAct, *cClosenessAct, *cInfluenceRangeClosenessAct, *cBetweenessAct,
+            *cInformationAct, *cPageRankAct, *cGraphAct, *cStressAct, *cPowerAct, *cEccentAct, *cProximityPrestigeAct;
+    QAction *randLayoutAct, *randCircleLayoutAct, *circleOutDegreeLayoutAct, *circleInDegreeLayoutAct,
+            *circleClosenessLayoutAct;
     QAction *antialiasingAct;
     QAction *webCrawlerAct;
 
-    QAction *circleStressLayoutAct, *circleGraphLayoutAct,*clearGuidesAct, *circleEccentrLayoutAct, *circlePowerLayoutAct;
+    QAction *circleStressLayoutAct, *circleGraphLayoutAct,*clearGuidesAct, *circleEccentrLayoutAct,
+            *circlePowerLayoutAct;
     QAction *circleBetweenessLayoutAct, *circleInformationLayoutAct, *levelClosenessLayoutAct;
     QAction *levelInDegreeLayoutAct, *levelOutDegreeLayoutAct, *levelBetweenessLayoutAct, *levelInformationLayoutAct;
     QAction *strongColorationAct, *regularColorationAct, *showProgressBarAct, *printDebugAct;
