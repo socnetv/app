@@ -986,7 +986,10 @@ bool Graph::symmetricEdge(int v1, int v2){
 *  Returns the distance between nodes numbered (i-1) and (j-1)
 */
 int Graph::distance(int i, int j){
-    createDistanceMatrix(false);
+    if ( !distanceMatrixCreated || graphModified ) {
+        emit statusMessage ( (tr("Calculating shortest paths")) );
+        createDistanceMatrix(false);
+    }
     return DM.item(index[i],index[j]);
 }
 
@@ -996,7 +999,10 @@ int Graph::distance(int i, int j){
 *  Returns the diameter of the graph, aka the largest geodesic distance between any two vertices
 */
 int Graph::diameter(){
-    createDistanceMatrix(false);
+    if ( !distanceMatrixCreated || graphModified ) {
+        emit statusMessage ( (tr("Calculating shortest paths")) );
+        createDistanceMatrix(false);
+    }
     return graphDiameter;
 }
 
@@ -1006,7 +1012,10 @@ int Graph::diameter(){
 *  Returns the average distance of the graph
 */
 float Graph::averageGraphDistance(){
-    createDistanceMatrix(false);
+    if ( !distanceMatrixCreated || graphModified ) {
+        emit statusMessage ( (tr("Calculating shortest paths")) );
+        createDistanceMatrix(false);
+    }
     return averGraphDistance;
 }
 
@@ -1017,7 +1026,12 @@ float Graph::averageGraphDistance(){
 */
 void Graph::writeDistanceMatrix (const char* fn, const char* netName) {
     qDebug ("Graph::writeDistanceMatrix()");
-    createDistanceMatrix(false);
+
+    if ( !distanceMatrixCreated || graphModified ) {
+        emit statusMessage ( (tr("Calculating shortest paths")) );
+        createDistanceMatrix(false);
+    }
+
     qDebug ("Graph::writeDistanceMatrix() writing to file");
 
     QFile file (fn);
@@ -1044,8 +1058,11 @@ void Graph::writeDistanceMatrix (const char* fn, const char* netName) {
 */
 void Graph::writeNumberOfGeodesicsMatrix(const char* fn, const char* netName) {
     qDebug ("Graph::writeDistanceMatrix()");
+    if ( !distanceMatrixCreated || graphModified ) {
+        emit statusMessage ( (tr("Calculating shortest paths")) );
+        createDistanceMatrix(false);
+    }
 
-    createDistanceMatrix(false);
     qDebug ("Graph::writeDistanceMatrix() writing to file");
 
     QFile file (fn);
@@ -1080,9 +1097,10 @@ void Graph::writeEccentricity(
         return;
     }
     QTextStream outText ( &file );
-
-    emit statusMessage ( (tr("Calculating shortest paths")) );
-    createDistanceMatrix(true);
+    if ( !distanceMatrixCreated || graphModified ) {
+        emit statusMessage ( (tr("Calculating shortest paths")) );
+        createDistanceMatrix(true);
+    }
     emit statusMessage ( QString(tr("Writing eccentricity to file:")).arg(fileName) );
 
     outText << tr("ECCENTRICITY (e)") <<"\n";
@@ -1205,18 +1223,22 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
         }
 
         qDebug("Graph: createDistanceMatrix() - initialising variables for centrality index");
-        maxCC=0; minCC=RAND_MAX; nomCC=0; denomCC=0; groupCC=0; maxNodeCC=0; minNodeCC=0; sumCC=0;
+        maxCC=0; minCC=RAND_MAX; nomCC=0; denomCC=0; groupCC=0; maxNodeCC=0;
+        minNodeCC=0; sumCC=0;
         discreteCCs.clear(); classesCC=0;
-        maxBC=0; minBC=RAND_MAX; nomBC=0; denomBC=0; groupBC=0; maxNodeBC=0; minNodeBC=0; sumBC=0;
+        maxBC=0; minBC=RAND_MAX; nomBC=0; denomBC=0; groupBC=0; maxNodeBC=0;
+        minNodeBC=0; sumBC=0;
         discreteBCs.clear(); classesBC=0;
-        maxSC=0; minSC=RAND_MAX; nomSC=0; denomSC=0; groupSC=0; maxNodeSC=0; minNodeSC=0; sumSC=0;
+        maxSC=0; minSC=RAND_MAX; nomSC=0; denomSC=0; groupSC=0; maxNodeSC=0;
+        minNodeSC=0; sumSC=0;
         discreteSCs.clear(); classesSC=0;
         maxEccentricity=0; minEccentricity=RAND_MAX; maxNodeEccentricity=0;
         minNodeEccentricity=0; sumEccentricity=0; discreteEccentricities.clear();
         classesEccentricity=0;
         maxPC=0; minPC=RAND_MAX; maxNodePC=0; minNodePC=0; sumPC=0;
         discretePCs.clear(); classesPC=0;
-        maxEC=0; minEC=RAND_MAX; nomEC=0; denomEC=0; groupEC=0; maxNodeEC=0; minNodeEC=0; sumEC=0;
+        maxEC=0; minEC=RAND_MAX; nomEC=0; denomEC=0; groupEC=0; maxNodeEC=0;
+        minNodeEC=0; sumEC=0;
         discreteECs.clear(); classesEC=0;
 
         //Zero closeness indeces of each vertex
@@ -1939,7 +1961,11 @@ void Graph::writeCentralityDegree (
  */
 void Graph::centralityClosenessInfluenceRange(){
     qDebug()<< "Graph::centralityClosenessImproved()";
-    reachabilityMatrix();
+     if (!reachabilityMatrixCreated || graphModified) {
+         qDebug()<< "Graph::centralityClosenessImproved() - "
+                    "call reachabilityMatrix()";
+        reachabilityMatrix();
+     }
     // calculate centralities
     QList<Vertex*>::iterator it;
     float IRCC=0;
@@ -3063,77 +3089,76 @@ void Graph::layoutRadialByProminenceIndex(double x0, double y0, double maxRadius
 
     for (QList<Vertex*>::iterator it=m_graph.begin(); it!=m_graph.end(); it++){
         switch (prominenceIndex) {
-
-        case 1 : {
-            qDebug("Layout according to DC");
-            C=(*it)->SDC();
-            std= (*it)->SDC();
-            maxC=maxDC;
-            break;
-        }
-        case 2 : {
-            qDebug("Layout according to CC");
-            C=(*it)->CC();
-            std= (*it)->SCC();
-            maxC=maxCC;
-            break;
-        }
-        case 3 : {
-            qDebug("Layout according to IRCC");
-            C=(*it)->CC();
-            std= (*it)->SCC();
-            maxC=maxCC;
-            break;
-        }
-        case 4 : {
-            qDebug("Layout according to BC");
-            C=(*it)->BC();
-            std= (*it)->SBC();
-            maxC=maxBC;
-            break;
-        }
-        case 5 : {
-            qDebug("Layout according to SC");
-            C=(*it)->SC();
-            std= (*it)->SSC();
-            maxC=maxSC;
-            break;
-        }
-        case 6 : {
-            qDebug("Layout according to EC");
-            C=(*it)->EC();
-            std= (*it)->SEC();
-            maxC=maxEC;
-            break;
-        }
-        case 7 : {
-            qDebug("Layout according to PC");
-            C=(*it)->PC();
-            std= (*it)->SPC();
-            maxC=maxPC;
-            break;
-        }
-        case 8 : {
-            qDebug("Layout according to IC");
-            C=(*it)->IC();
-            std= (*it)->SIC();
-            maxC=maxIC;
-            break;
-        }
-        case 9 : {
-            qDebug("Layout according to DP");
-            C=(*it)->SDP();
-            std= (*it)->SDP();
-            maxC=maxDP;
-            break;
-        }
-        case 10 : {
-            qDebug("Layout according to PRP");
-            C=(*it)->PRC();
-            std= (*it)->SPRC();
-            maxC=maxPRC;
-            break;
-        }
+            case 1 : {
+                qDebug("Layout according to DC");
+                C=(*it)->SDC();
+                std= (*it)->SDC();
+                maxC=maxDC;
+                break;
+            }
+            case 2 : {
+                qDebug("Layout according to CC");
+                C=(*it)->CC();
+                std= (*it)->SCC();
+                maxC=maxCC;
+                break;
+            }
+            case 3 : {
+                qDebug("Layout according to IRCC");
+                C=(*it)->CC();
+                std= (*it)->SCC();
+                maxC=maxCC;
+                break;
+            }
+            case 4 : {
+                qDebug("Layout according to BC");
+                C=(*it)->BC();
+                std= (*it)->SBC();
+                maxC=maxBC;
+                break;
+            }
+            case 5 : {
+                qDebug("Layout according to SC");
+                C=(*it)->SC();
+                std= (*it)->SSC();
+                maxC=maxSC;
+                break;
+            }
+            case 6 : {
+                qDebug("Layout according to EC");
+                C=(*it)->EC();
+                std= (*it)->SEC();
+                maxC=maxEC;
+                break;
+            }
+            case 7 : {
+                qDebug("Layout according to PC");
+                C=(*it)->PC();
+                std= (*it)->SPC();
+                maxC=maxPC;
+                break;
+            }
+            case 8 : {
+                qDebug("Layout according to IC");
+                C=(*it)->IC();
+                std= (*it)->SIC();
+                maxC=maxIC;
+                break;
+            }
+            case 9 : {
+                qDebug("Layout according to DP");
+                C=(*it)->SDP();
+                std= (*it)->SDP();
+                maxC=maxDP;
+                break;
+            }
+            case 10 : {
+                qDebug("Layout according to PRP");
+                C=(*it)->PRC();
+                std= (*it)->SPRC();
+                maxC=maxPRC;
+                break;
+            }
         };
         qDebug () << "Vertice " << (*it)->name() << " at x=" << (*it)->x()
                   << ", y= "<< (*it)->y() << ": C=" << C << ", stdC=" << std
@@ -3215,7 +3240,7 @@ void Graph::layoutLayeredCentrality(double maxWidth, double maxHeight, int Centr
 
     double i=0, std=0;
     //offset controls how far from the top the central nodes will be
-    float C=0, maxC=0, offset=50;   positioned
+    float C=0, maxC=0, offset=50;
     double new_x=0, new_y=0;
     //	int vert=vertices();
     maxHeight-=offset;
@@ -3391,7 +3416,9 @@ void Graph::createRandomNetSmallWorld (
         for (register int j=i+1;j<vert; j++) {
             qDebug()<<">>>>> REWIRING: Check if  "<< i << " is linked to " << j;
             if ( this-> hasEdge(i, j) ) {
-                qDebug()<<">>>>> REWIRING: They're linked. Do a random REWIRING Experiment between "<< i<< " and " << j << " Beta parameter is " << beta;
+                qDebug()<<">>>>> REWIRING: They're linked. Do a random REWIRING "
+                          "Experiment between "<< i<< " and " << j
+                       << " Beta parameter is " << beta;
                 if (rand() % 100 < (beta * 100))  {
                     qDebug(">>>>> REWIRING: We'l break this edge!");
                     removeEdge(i, j);
@@ -3401,7 +3428,8 @@ void Graph::createRandomNetSmallWorld (
                         candidate=rand() % (vert+1) ;		//pick another vertex.
                         if (candidate == 0 || candidate == i) continue;
                         qDebug()<<">>>>> REWIRING: Candidate: "<< candidate;
-                        if (! this->hasEdge(i, candidate) )	//Only if differs from i and hasnot edge with it
+                        //Only if differs from i and hasnot edge with it
+                        if (! this->hasEdge(i, candidate) )
                             qDebug("<----> Random New Edge Experiment between %i and %i:", i, candidate);
                         if (rand() % 100 > 0.5) {
                             qDebug("Creating new link!");
@@ -3473,10 +3501,15 @@ int Graph::numberOfWalks(int v1, int v2, int length) {
 
 /**
     Calculates two matrices:
-    Matrix XM=AM^l where the elements denote the number of walks of length l between all pairs of vertices
-    Matrix XSM=Sum{AM^n} where the elements denote the total number of walks of any length between pairs of vertices
+    Matrix XM=AM^l where the elements denote the number of walks of length l
+    between all pairs of vertices
+    Matrix XSM=Sum{AM^n} where the elements denote the total number of walks of
+    any length between pairs of vertices
 
-    NOTE: This function is VERY SLOW on large networks (n>50), since it will calculate all powers of the sociomatrix up to n-1 in order to find out all possible walks. If you need to make a simple reachability test, we advise to use the Reachability Matrix function instead.
+    NOTE: This function is VERY SLOW on large networks (n>50), since it will
+    calculate all powers of the sociomatrix up to n-1 in order to find out all
+    possible walks. If you need to make a simple reachability test, we advise to
+    use the reachabilityMatrix() function instead.
 */
 void Graph::createNumberOfWalksMatrix(int length) {
     qDebug()<<"Graph::numberOfWalks() - first create the Adjacency Matrix AM";
@@ -3569,7 +3602,8 @@ void Graph::writeNumberOfWalksMatrix(QString fn, QString netName, int length){
 */
 int Graph::reachable(int v1, int v2) {
     qDebug()<< "Graph::reachable()";
-    createDistanceMatrix(false);
+    if (!distanceMatrixCreated || graphModified )
+        createDistanceMatrix(false);
     return DM.item(v1-1,v2-1);
 }
 
@@ -3583,8 +3617,11 @@ int Graph::reachable(int v1, int v2) {
  */
 QList<int> Graph::influenceRange(int v1){
     qDebug() << "Graph::influenceRange() ";
-    // call reachabilityMatrix to construct a list of influence ranges for each node
-    reachabilityMatrix();
+    if (!reachabilityMatrixCreated || graphModified) {
+        // call reachabilityMatrix to construct a list of influence ranges
+        // for each node
+        reachabilityMatrix();
+    }
     return influenceRanges.values(v1);
 }
 
@@ -3597,8 +3634,11 @@ QList<int> Graph::influenceRange(int v1){
  */
 QList<int> Graph::influenceDomain(int v1){
     qDebug() << "Graph::influenceDomain() ";
-    // call reachabilityMatrix to construct a list of influence domains for each node
-    reachabilityMatrix();
+    if (!reachabilityMatrixCreated || graphModified) {
+        // call reachabilityMatrix to construct a list of influence domains
+        // for each node
+        reachabilityMatrix();
+    }
     return influenceDomains.values(v1);
 }
 
@@ -3608,8 +3648,9 @@ QList<int> Graph::influenceDomain(int v1){
     Calculates the reachability matrix X^R of the graph
     where the {i,j} element is 1 if the vertices i and j are reachable
     Actually, this just checks the corresponding element of Distance Matrix,
-    If the geodesic distance (i,j) is non-zero, then the two nodes are reachable
-
+    If d(i,j) is non-zero, then the two nodes are reachable
+    In the process, this function creates the InfluenceRange and InfluenceDomain
+    of each node.
 */
 void Graph::reachabilityMatrix() {
     qDebug()<< "Graph::reachabilityMatrix()";
@@ -3627,12 +3668,13 @@ void Graph::reachabilityMatrix() {
         influenceDomains.clear();
         for (register int i=0; i < size ; i++) {
             for (register int j=i; j < size ; j++) {
-                qDebug()<< "Graph::reachabilityMatrix()  total shortest paths between ("<<
-                           i+1 <<"," << j+1<< ")=" << TM.item(i,j) <<  " ";
+                qDebug()<< "Graph::reachabilityMatrix()  total shortest paths between ("
+                        << i+1 <<"," << j+1<< ")=" << TM.item(i,j) <<  " ";
                 if ( DM.item(i,j) > 0 ) {
-                    qDebug()<< "Graph::reachabilityMatrix()  - d("<<i+1<<","<<j+1<<")=" << DM.item(i,j)
-                            << " - inserting " << j+1 << " to influenceRange J of " << i+1
-                            << " - and " << i+1 << " to influenceDomain I of " << j+1 ;
+                    qDebug()<< "Graph::reachabilityMatrix()  - d("<<i+1<<","
+                            <<j+1<<")=" << DM.item(i,j)
+                            << " - inserting " << j+1 << " to inflRange J of " << i+1
+                            << " - and " << i+1 << " to inflDomain I of "<< j+1 ;
                     XRM.setItem(i,j,1);
                     influenceRanges.insertMulti(i,j);
                     influenceDomains.insertMulti(j,i);
@@ -3641,7 +3683,8 @@ void Graph::reachabilityMatrix() {
                        XRM.setItem(i,j,0);
                 }
                 if ( DM.item(j,i) > 0 ) {
-                    qDebug()<< "Graph::reachabilityMatrix()  - inverse path d("<<j+1<<","<<i+1<<")="
+                    qDebug()<< "Graph::reachabilityMatrix()  - inverse path d("
+                            <<j+1<<","<<i+1<<")="
                             << DM.item(j,i)
                             << " - inserting " << j+1 << " to influenceDomain I of " << i+1
                             << " - and " << i+1 << " to influenceRange J of " << j+1 ;
@@ -3683,7 +3726,9 @@ void Graph::writeReachabilityMatrix(QString fn, QString netName) {
     out << "Two nodes are reachable if there is a walk between them (their geodesic distance is non-zero). \n";
     out << "If nodes i and j are reachable then XR(i,j)=1 otherwise XR(i,j)=0.\n\n";
 
-    reachabilityMatrix();
+    if (!reachabilityMatrixCreated || graphModified) {
+        reachabilityMatrix();
+    }
 
     out << XRM ;
 

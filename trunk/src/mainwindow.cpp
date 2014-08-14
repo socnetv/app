@@ -4392,8 +4392,8 @@ void MainWindow::slotLayoutNodeSizeProportionalInEdges(bool checked){
  * @brief MainWindow::slotLayoutRadialByProminenceIndex
  * Checks sender text() to find out who QMenu item was pressed
  * and what index was chosen
- * then repositions all nodes  on a circular layout based on that index
-*  More prominent nodes are closer to the centre
+ * then repositions all nodes  on a radial layout based on that index
+*  More prominent nodes are closer to the centre of the screen.
  */
 void MainWindow::slotLayoutRadialByProminenceIndex(){
     if (!fileLoaded && !networkModified  )  {
