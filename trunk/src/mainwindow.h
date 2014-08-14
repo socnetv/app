@@ -178,16 +178,7 @@ public slots:
     void slotColorationRegular();
     void slotLayoutRandom();
     void slotLayoutRandomCircle();
-    void slotLayoutRadialCentralityOutDegree();
-    void slotLayoutRadialCentralityInDegree();
-    void slotLayoutRadialCentralityCloseness();
-    void slotLayoutRadialCentralityBetweeness();
-    void slotLayoutRadialCentralityPower();
-    void slotLayoutRadialCentralityInformation();
-    void slotLayoutRadialCentralityStress();
-    void slotLayoutRadialCentralityGraph();
-    void slotLayoutRadialCentralityEccentr();
-    void slotLayoutRadialCentralityPageRank();
+    void slotLayoutRadialByProminenceIndex();
     void slotLayoutLayeredCentralityInDegree();
     void slotLayoutLayeredCentralityOutDegree();
     void slotLayoutLayeredCentralityCloseness();
@@ -321,12 +312,9 @@ private:
 
     QProgressDialog *progressDialog;
 
-
-
     Node *clickedJim;
     Node *markedNode;
     Edge *clickedLink;
-
 
     QMenu *importSubMenu, *exportSubMenu, *editMenu, *statMenu,  *helpMenu;
     QMenu *optionsMenu, *colorOptionsMenu, *linkOptionsMenu, *nodeOptionsMenu, *viewOptionsMenu;
@@ -361,21 +349,24 @@ private:
     QAction *drawLinksWeightsAct, *displayLinksWeightNumbersAct, *displayLinksAct, *displayLinksArrowsAct,
             *drawLinksBezier;
     QAction *backgroundImageAct, *viewToolBar, *viewStatusBar, *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
+    QAction *antialiasingAct;
+    QAction *webCrawlerAct;
+
     QAction *netDensity, *symmetryAct, *graphDistanceAct, *averGraphDistanceAct,
             *distanceMatrixAct, *geodesicsMatrixAct, *diameterAct, *eccentricityAct;
     QAction *walksAct,*totalWalksAct, *reachabilityMatrixAct;
     QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct, *invertAdjMatrixAct;
-    QAction *cDegreeAct, *cInDegreeAct, *cClosenessAct, *cInfluenceRangeClosenessAct, *cBetweenessAct,
-            *cInformationAct, *cPageRankAct, *cStressAct, *cPowerAct, *cEccentAct, *cProximityPrestigeAct;
-    QAction *randLayoutAct, *randCircleLayoutAct, *circleOutDegreeLayoutAct, *circleInDegreeLayoutAct,
-            *circleClosenessLayoutAct;
-    QAction *antialiasingAct;
-    QAction *webCrawlerAct;
-
-    QAction *circleStressLayoutAct, *circleGraphLayoutAct,*clearGuidesAct, *circleEccentrLayoutAct,
-            *circlePowerLayoutAct;
-    QAction *circleBetweenessLayoutAct, *circleInformationLayoutAct, *levelClosenessLayoutAct;
-    QAction *levelInDegreeLayoutAct, *levelOutDegreeLayoutAct, *levelBetweenessLayoutAct, *levelInformationLayoutAct;
+    QAction *cDegreeAct, *cInDegreeAct, *cClosenessAct, *cInfluenceRangeClosenessAct,
+            *cBetweenessAct, *cInformationAct, *cPageRankAct, *cStressAct,
+            *cPowerAct, *cEccentAct, *cProximityPrestigeAct;
+    QAction *randLayoutAct, *randCircleLayoutAct, *clearGuidesAct;
+    QAction *layoutRadial_DC_Act, *layoutRadial_DP_Act,
+            *layoutRadial_CC_Act, *layoutRadial_SC_Act, *layoutRadial_EC_Act,
+            *layoutRadial_PC_Act, *layoutRadial_BC_Act, *layoutRadial_IC_Act,
+            *layoutRadial_IRCC_Act,*layoutRadial_PRP_Act;
+    QAction *levelClosenessLayoutAct, *levelInDegreeLayoutAct,
+            *levelOutDegreeLayoutAct, *levelBetweenessLayoutAct,
+            *levelInformationLayoutAct;
     QAction *strongColorationAct, *regularColorationAct, *showProgressBarAct, *printDebugAct;
     QAction *springLayoutAct, *FRLayoutAct, *nodeSizeProportionalOutDegreeAct,  *nodeSizeProportionalInDegreeAct;
     QAction *zoomInAct, *zoomOutAct ;

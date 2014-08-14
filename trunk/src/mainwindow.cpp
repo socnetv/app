@@ -674,70 +674,79 @@ void MainWindow::initActions(){
     connect(randCircleLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRandomCircle()));
 
 
-    circleOutDegreeLayoutAct = new QAction( tr("Degree Centrality"),	this);
-    circleOutDegreeLayoutAct ->setShortcut(tr("Ctrl+Alt+2"));
-    circleOutDegreeLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Degree Centrality."));
-    circleOutDegreeLayoutAct->setWhatsThis(tr("Circle Degree Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Degree Centrality are situated towards the centre."));
-    connect(circleOutDegreeLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityOutDegree()));
+    layoutRadial_DC_Act = new QAction( tr("Degree Centrality"),	this);
+    layoutRadial_DC_Act ->setShortcut(tr("Ctrl+Alt+1"));
+    layoutRadial_DC_Act ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Degree Centrality."));
+    layoutRadial_DC_Act->setWhatsThis(tr("Circle Degree Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Degree Centrality are situated towards the centre."));
+    connect(layoutRadial_DC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutRadialByProminenceIndex()) );
 
-    circleClosenessLayoutAct = new QAction( tr("Closeness Centrality"),	this);
-    circleClosenessLayoutAct ->setShortcut(tr("Ctrl+Alt+3"));
-    circleClosenessLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Closeness Centrality."));
-    circleClosenessLayoutAct->setWhatsThis(tr("Circle Closeness Centrality Layout\n\n Repositions the nodes on circles of different radius. More Closeness Central Nodes are positioned towards the centre."));
-    connect(circleClosenessLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityCloseness()));
+    layoutRadial_CC_Act = new QAction( tr("Closeness Centrality"),	this);
+    layoutRadial_CC_Act ->setShortcut(tr("Ctrl+Alt+2"));
+    layoutRadial_CC_Act ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Closeness Centrality."));
+    layoutRadial_CC_Act->setWhatsThis(tr("Circle Closeness Centrality Layout\n\n Repositions the nodes on circles of different radius. More Closeness Central Nodes are positioned towards the centre."));
+    connect(layoutRadial_CC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutRadialByProminenceIndex()));
 
-    circleBetweenessLayoutAct = new QAction( tr("Betweeness Centrality"), this);
-    circleBetweenessLayoutAct ->setShortcut(tr("Ctrl+Alt+4"));
-    circleBetweenessLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Betweeness Centrality."));
-    circleBetweenessLayoutAct->setWhatsThis(tr("Circle Betweeness Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Betweeness Centrality are situated towards the centre."));
-    connect(circleBetweenessLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityBetweeness()));
+    layoutRadial_IRCC_Act = new QAction( tr("Influence Range Closeness Centrality"),	this);
+    layoutRadial_IRCC_Act ->setShortcut(tr("Ctrl+Alt+3"));
+    layoutRadial_IRCC_Act ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Ifluence Range Closeness Centrality."));
+    layoutRadial_IRCC_Act->setWhatsThis(tr("Influence Range Closeness Centrality Circle Layout\n\n Repositions the nodes on circles of different radius. More IRCC prominent Nodes are positioned towards the centre."));
+    connect(layoutRadial_IRCC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutRadialByProminenceIndex()));
 
-    circleStressLayoutAct = new QAction( tr("Stress Centrality"),	this);
-    circleStressLayoutAct ->setShortcut(tr("Ctrl+Alt+5"));
-    circleStressLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Stress Centrality."));
-    circleStressLayoutAct->setWhatsThis(tr("Circle Stress Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes having higher Stress Centrality are situated towards the centre."));
-    connect(circleStressLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityStress() ) );
+    layoutRadial_BC_Act = new QAction( tr("Betweeness Centrality"), this);
+    layoutRadial_BC_Act ->setShortcut(tr("Ctrl+Alt+4"));
+    layoutRadial_BC_Act ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Betweeness Centrality."));
+    layoutRadial_BC_Act->setWhatsThis(tr("Circle Betweeness Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Betweeness Centrality are situated towards the centre."));
+    connect(layoutRadial_BC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutRadialByProminenceIndex()));
 
-    circleGraphLayoutAct = new QAction( tr("Graph Centrality"),	this);
-    circleGraphLayoutAct ->setShortcut(tr("Ctrl+Alt+6"));
-    circleGraphLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Graph Centrality."));
-    circleGraphLayoutAct->setWhatsThis(tr("Circle Graph Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Graph Centrality are situated towards the centre."));
-    connect(circleGraphLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityGraph() ) );
+    layoutRadial_SC_Act = new QAction( tr("Stress Centrality"),	this);
+    layoutRadial_SC_Act ->setShortcut(tr("Ctrl+Alt+5"));
+    layoutRadial_SC_Act ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Stress Centrality."));
+    layoutRadial_SC_Act->setWhatsThis(tr("Circle Stress Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes having higher Stress Centrality are situated towards the centre."));
+    connect(layoutRadial_SC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutRadialByProminenceIndex()));
 
+    layoutRadial_EC_Act = new QAction( tr("Eccentricity Centrality"),	this);
+    layoutRadial_EC_Act ->setShortcut(tr("Ctrl+Alt+6"));
+    layoutRadial_EC_Act  ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Eccentricity Centrality."));
+    layoutRadial_EC_Act ->setWhatsThis(tr("Circle Eccentricity Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Eccentricity Centrality are situated towards the centre."));
+    connect(layoutRadial_EC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutRadialByProminenceIndex()));
 
-    circleEccentrLayoutAct = new QAction( tr("Eccentricity Centrality"),	this);
-    circleEccentrLayoutAct ->setShortcut(tr("Ctrl+Alt+7"));
-    circleEccentrLayoutAct  ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Eccentricity Centrality."));
-    circleEccentrLayoutAct ->setWhatsThis(tr("Circle Eccentricity Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Eccentricity Centrality are situated towards the centre."));
-    connect(circleEccentrLayoutAct , SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityEccentr() ) );
-
-    circlePowerLayoutAct = new QAction( tr("Power Centrality"),	this);
-    circlePowerLayoutAct ->setShortcut(tr("Ctrl+Alt+8"));
-    circlePowerLayoutAct  ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Power Centrality."));
-    circlePowerLayoutAct ->setWhatsThis(tr("Circle Power Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Power Centrality are situated towards the centre."));
-    connect(circlePowerLayoutAct , SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityPower() ) );
-
-
-    circleInformationLayoutAct = new QAction( tr("Information Centrality"),	this);
-    circleInformationLayoutAct ->setEnabled(true);
-    circleInformationLayoutAct ->setShortcut(tr("Ctrl+Alt+9"));
-    circleInformationLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Information Centrality."));
-    circleInformationLayoutAct->setWhatsThis(tr("Circle Information Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Information Centrality are situated towards the centre."));
-    connect(circleInformationLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityInformation()));
+    layoutRadial_PC_Act = new QAction( tr("Power Centrality"),	this);
+    layoutRadial_PC_Act ->setShortcut(tr("Ctrl+Alt+7"));
+    layoutRadial_PC_Act  ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Power Centrality."));
+    layoutRadial_PC_Act ->setWhatsThis(tr("Circle Power Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Power Centrality are situated towards the centre."));
+    connect(layoutRadial_PC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutRadialByProminenceIndex()));
 
 
-    circleInDegreeLayoutAct = new QAction( tr("Degree Prestige"),	this);
-    circleInDegreeLayoutAct ->setShortcut(tr("Ctrl+Alt+1"));
-    circleInDegreeLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Degree Prestige."));
-    circleInDegreeLayoutAct->setWhatsThis(tr("Circle In-Degree Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Degree Prestige (inDegree) are situated towards the centre."));
-    connect(circleInDegreeLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityInDegree()));
+    layoutRadial_IC_Act = new QAction( tr("Information Centrality"),	this);
+    layoutRadial_IC_Act ->setEnabled(true);
+    layoutRadial_IC_Act ->setShortcut(tr("Ctrl+Alt+8"));
+    layoutRadial_IC_Act ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Information Centrality."));
+    layoutRadial_IC_Act->setWhatsThis(tr("Circle Information Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Information Centrality are situated towards the centre."));
+    connect(layoutRadial_IC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutRadialByProminenceIndex()));
 
-    circleInformationLayoutAct = new QAction( tr("PageRank Prestige"),	this);
-    circleInformationLayoutAct ->setEnabled(true);
-    circleInformationLayoutAct ->setShortcut(tr("Ctrl+Alt+P"));
-    circleInformationLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their PageRank Prestige"));
-    circleInformationLayoutAct->setWhatsThis(tr("Circle PageRank Centrality Layout\n\n Repositions the nodes on circles of different radius. More PageRank Central Nodes are positioned towards the centre."));
-    connect(circleInformationLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityPageRank()));
+
+    layoutRadial_DP_Act = new QAction( tr("Degree Prestige"),	this);
+    layoutRadial_DP_Act ->setShortcut(tr("Ctrl+Alt+D"));
+    layoutRadial_DP_Act ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Degree Prestige."));
+    layoutRadial_DP_Act->setWhatsThis(tr("Circle In-Degree Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Degree Prestige (inDegree) are situated towards the centre."));
+    connect(layoutRadial_DP_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutRadialByProminenceIndex()));
+
+    layoutRadial_PRP_Act = new QAction( tr("PageRank Prestige"),	this);
+    layoutRadial_PRP_Act ->setEnabled(true);
+    layoutRadial_PRP_Act ->setShortcut(tr("Ctrl+Alt+P"));
+    layoutRadial_PRP_Act ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their PageRank Prestige"));
+    layoutRadial_PRP_Act->setWhatsThis(tr("Circle PageRank Centrality Layout\n\n Repositions the nodes on circles of different radius. More PageRank Central Nodes are positioned towards the centre."));
+    connect(layoutRadial_PRP_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutRadialByProminenceIndex()));
 
 
     clearGuidesAct = new QAction(QIcon(":/images/gridlines.png"), tr("Remove Layout GuideLines"), this);
@@ -1303,15 +1312,16 @@ void MainWindow::initMenuBar() {
     circleLayoutMenu = new QMenu(tr("Radial by prominence index..."));
     circleLayoutMenu -> setIcon(QIcon(":/images/circular.png"));
     layoutMenu -> addMenu (circleLayoutMenu);
-    circleLayoutMenu -> addAction (circleOutDegreeLayoutAct);
-    circleLayoutMenu -> addAction (circleClosenessLayoutAct);
-    circleLayoutMenu -> addAction (circleBetweenessLayoutAct);
-    circleLayoutMenu -> addAction (circleStressLayoutAct);
-    circleLayoutMenu -> addAction (circleGraphLayoutAct);
-    circleLayoutMenu -> addAction (circleEccentrLayoutAct);
-    circleLayoutMenu -> addAction (circlePowerLayoutAct);
-    circleLayoutMenu -> addAction (circleInformationLayoutAct);
-    circleLayoutMenu -> addAction (circleInDegreeLayoutAct);
+    circleLayoutMenu -> addAction (layoutRadial_DC_Act);
+    circleLayoutMenu -> addAction (layoutRadial_CC_Act);
+    circleLayoutMenu -> addAction (layoutRadial_IRCC_Act);
+    circleLayoutMenu -> addAction (layoutRadial_BC_Act);
+    circleLayoutMenu -> addAction (layoutRadial_SC_Act);
+    circleLayoutMenu -> addAction (layoutRadial_EC_Act);
+    circleLayoutMenu -> addAction (layoutRadial_PC_Act);
+    circleLayoutMenu -> addAction (layoutRadial_IC_Act);
+    circleLayoutMenu -> addAction (layoutRadial_DP_Act);
+    circleLayoutMenu -> addAction (layoutRadial_PRP_Act);
 
     levelLayoutMenu = new QMenu (tr("Vertically Layered by prominence index..."));
     levelLayoutMenu -> setIcon(QIcon(":/images/net3.png"));
@@ -4378,264 +4388,55 @@ void MainWindow::slotLayoutNodeSizeProportionalInEdges(bool checked){
 }
 
 
-
-
 /**
-*	Calls Graph::LayoutRadialCentrality()
-*	to reposition all nodes on a circular layout based on their In-Degree Centralities. 
-*	More central nodes are closer to the centre
-*/
-void MainWindow::slotLayoutRadialCentralityInDegree(){
+ * @brief MainWindow::slotLayoutRadialByProminenceIndex
+ * Checks sender text() to find out who QMenu item was pressed
+ * and what index was chosen
+ * then repositions all nodes  on a circular layout based on that index
+*  More prominent nodes are closer to the centre
+ */
+void MainWindow::slotLayoutRadialByProminenceIndex(){
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical(this, "Error",tr("Sorry, I can't follow! \nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
         statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
         return;
     }
+    QAction *menuitem=(QAction *) sender();
+    qDebug() << "MainWindow::slotLayoutRadialByProminenceIndex() - " <<
+                "SENDER MENU IS " << menuitem->text();
     double x0=scene->width()/2.0;
     double y0=scene->height()/2.0;
     double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-
+    int userChoice = 0;
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
     graphicsWidget->clearGuides();
     createProgressBar();
-    activeGraph.layoutRadialCentrality(x0, y0, maxRadius,1);
+    if (menuitem->text() == "Degree Centrality")
+        userChoice=1;
+    else if (menuitem->text() == "Closeness Centrality")
+        userChoice=2;
+    else if (menuitem->text() == "Influence Range Closeness Centrality")
+        userChoice=3;
+    else if (menuitem->text() == "Betweeness Centrality")
+        userChoice=4;
+    else if (menuitem->text() == "Stress Centrality")
+        userChoice=5;
+    else if (menuitem->text() == "Eccentricity Centrality")
+        userChoice=6;
+    else if (menuitem->text() == "Power Centrality")
+        userChoice=7;
+    else if (menuitem->text() ==  "Information Centrality")
+        userChoice=8;
+    else if (menuitem->text() == "Degree Prestige")
+        userChoice=9;
+    else if (menuitem->text() ==  "PageRank Prestige")
+        userChoice=10;
+    else if (menuitem->text() ==  "Proximity Prestige")
+        userChoice=11;
+
+    activeGraph.layoutRadialByProminenceIndex(x0, y0, maxRadius,userChoice);
     destroyProgressBar();
-    statusMessage( tr("Nodes in inner circles have greater In-Degree Centrality.") );
-}
-
-
-/**
-*	Calls Graph::layoutRadialCentrality()
-*	to reposition all nodes on a radial layout according to their out-degree Centralities. 
-*	More central nodes are closer to the centre
-*/
-void MainWindow::slotLayoutRadialCentralityOutDegree(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
-        return;
-    }
-    double x0=scene->width()/2.0;
-    double y0=scene->height()/2.0;
-    double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-
-    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearGuides();
-    createProgressBar();
-    activeGraph.layoutRadialCentrality(x0, y0, maxRadius,2);
-    destroyProgressBar();
-    statusMessage( tr("Nodes in inner circles have greater Out-Degree Centrality. ") );
-}
-
-
-
-
-/**
-*	Calls Graph::layoutRadialCentrality()
-*	to reposition all nodes on a circular layout based on their Closeness Centralities. 
-*	More central nodes are closer to the centre
-*/
-void MainWindow::slotLayoutRadialCentralityCloseness(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Sorry, there are no nodes yet!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
-        return;
-    }
-    double x0=scene->width()/2.0;
-    double y0=scene->height()/2.0;
-    double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-    createProgressBar();
-    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearGuides();
-    activeGraph.layoutRadialCentrality(x0, y0, maxRadius,3);
-    destroyProgressBar();
-    statusMessage( tr("Nodes in inner circles have greater Closeness Centrality. ") );
-}
-
-
-
-
-
-/**
-*	Calls Graph::LayoutRadialCentrality()
-*	to reposition all nodes on a circular layout based on their Betweeness Centralities. 
-*	More central nodes are closer to the centre
-*/
-void MainWindow::slotLayoutRadialCentralityBetweeness(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("No nodes yet!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
-        return;
-    }
-    double x0=scene->width()/2.0;
-    double y0=scene->height()/2.0;
-    double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-
-    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearGuides();
-    createProgressBar();
-    activeGraph.layoutRadialCentrality(x0, y0, maxRadius,4);
-    destroyProgressBar();
-    statusMessage( tr("Nodes in inner circles have greater Betweeness Centrality. ") );
-}
-
-
-
-
-
-
-/**
-*	Calls Graph::LayoutRadialCentrality()
-*	to reposition all nodes on a circular layout based on their Stress Centralities. 
-*	More central nodes are closer to the centre
-*/
-void MainWindow::slotLayoutRadialCentralityStress(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
-        return;
-    }
-    double x0=scene->width()/2.0;
-    double y0=scene->height()/2.0;
-    double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-
-    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearGuides();
-    createProgressBar();
-    activeGraph.layoutRadialCentrality(x0, y0, maxRadius,5);
-    destroyProgressBar();
-    statusMessage( tr("Nodes in inner circles have greater Stress Centrality. ") );
-}
-
-
-
-
-/**
-*	Calls Graph::LayoutRadialCentrality()
-*	to reposition all nodes on a circular layout based on their Graph Centralities. 
-*	More central nodes are closer to the centre
-*/
-void MainWindow::slotLayoutRadialCentralityGraph(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to do here!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
-        return;
-    }
-    double x0=scene->width()/2.0;
-    double y0=scene->height()/2.0;
-    double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-
-    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearGuides();
-    createProgressBar();
-    activeGraph.layoutRadialCentrality(x0, y0, maxRadius,6);
-    destroyProgressBar();
-    statusMessage( tr("Nodes in inner circles have greater Graph Centrality. ") );
-
-}
-
-
-
-/**
-*	Calls Graph::layoutRadialCentrality()
-*	to reposition all nodes on a circular layout based on their Eccentricities 
-*	More central nodes are closer to the centre
-*/
-void MainWindow::slotLayoutRadialCentralityEccentr(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
-        return;
-    }
-    double x0=scene->width()/2.0;
-    double y0=scene->height()/2.0;
-    double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-
-    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearGuides();
-    createProgressBar();
-    activeGraph.layoutRadialCentrality(x0, y0, maxRadius,7);
-    destroyProgressBar();
-    statusMessage( tr("Nodes in inner circles have greater Eccentricity Centrality. ") );
-}
-
-/**
-*	Calls Graph::LayoutRadialCentrality()
-*	to reposition all nodes on a circular layout based on their Power Centralities.
-*	More central nodes are closer to the centre
-*/
-void MainWindow::slotLayoutRadialCentralityPower(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
-        return;
-    }
-    double x0=scene->width()/2.0;
-    double y0=scene->height()/2.0;
-    double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-
-    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearGuides();
-    createProgressBar();
-    activeGraph.layoutRadialCentrality(x0, y0, maxRadius,8);
-    destroyProgressBar();
-    statusMessage( tr("Nodes in inner circles have greater Power Centrality. ") );
-}
-
-
-
-
-
-/**
-*	Calls Graph::LayoutRadialCentrality()
-*	to reposition all nodes on a circular layout based on their Informational Centralities. 
-*	More central nodes are closer to the centre
-*/
-void MainWindow::slotLayoutRadialCentralityInformation(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
-        return;
-    }
-    double x0=scene->width()/2.0;
-    double y0=scene->height()/2.0;
-    double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-
-    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearGuides();
-    createProgressBar();
-    activeGraph.layoutRadialCentrality(x0, y0, maxRadius,9);
-    destroyProgressBar();
-    statusMessage( tr("Nodes in inner circles have greater Information Centrality. ") );
-}
-
-
-
-
-
-/**
-*	Calls Graph::LayoutRadialCentrality()
-*	to reposition all nodes on a circular layout based on their PageRank Centralities.
-*	More central nodes are closer to the centre
-*/
-void MainWindow::slotLayoutRadialCentralityPageRank(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
-        return;
-    }
-    double x0=scene->width()/2.0;
-    double y0=scene->height()/2.0;
-    double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-
-    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearGuides();
-    createProgressBar();
-    activeGraph.layoutRadialCentrality(x0, y0, maxRadius,10);
-    destroyProgressBar();
-    statusMessage( tr("Nodes in inner circles have greater PageRank. ") );
+    statusMessage( tr("Nodes in inner circles have greater prominence index.") );
 }
 
 

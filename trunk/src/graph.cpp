@@ -2951,19 +2951,23 @@ void Graph::writeClusteringCoefficient(
     if (  minCLC ==  maxCLC )
         outText << "\nAll nodes have the same clustering coefficient value.\n";
     else  {
-        outText << "\nNode "<<  maxNodeCLC << " has the maximum Clustering Coefficient: " <<  maxCLC <<"  \n";
-        outText << "\nNode "<<  minNodeCLC << " has the minimum Clustering Coefficient: " <<  minCLC <<"  \n";
+        outText << "\nNode "<<  maxNodeCLC
+                << " has the maximum Clustering Coefficient: " <<  maxCLC <<"\n";
+        outText << "\nNode "<<  minNodeCLC
+                << " has the minimum Clustering Coefficient: " <<  minCLC <<"\n";
     }
 
     outText << "\nGRAPH CLUSTERING COEFFICIENT (GCLC)\n\n";
     outText << "GCLC = " <<  averageCLC<<"\n\n";
     outText << tr("Range: 0 < GCLC < 1\n");
     outText << tr("GCLC = 0, when there are no cliques (i.e. acyclic tree).\n");
-    outText << tr("GCLC = 1, when every node and its neighborhood are complete cliques.\n");
+    outText << tr(
+      "GCLC = 1, when every node and its neighborhood are complete cliques.\n");
 
     outText <<"\n\n" ;
     outText << tr("Clustering Coefficient Report,\n");
-    outText << tr("created by SocNetV: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    outText << tr("created by SocNetV: ")<< actualDateTime.currentDateTime()
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
 
     file.close();
 }
@@ -2994,7 +2998,8 @@ void Graph::writeTriadCensus(
     }
 
 
-    emit statusMessage ( QString(tr("Writing clustering coefficients to file:")).arg(fileName) );
+    emit statusMessage ( QString(tr("Writing clustering coefficients to file:"))
+                         .arg(fileName) );
 
     outText << "Type\t\tCensus\t\tExpected Value" << "\n";
     outText << "003" << "\t\t" << triadTypeFreqs[0] << "\n";
@@ -3016,7 +3021,8 @@ void Graph::writeTriadCensus(
 
     outText << "\n\n";
     outText << tr("Triad Census report, \n");
-    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime()
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
 }
@@ -3029,29 +3035,28 @@ void Graph::writeTriadCensus(
 */
 void Graph::layoutRadialByProminenceIndex(double x0, double y0, double maxRadius,
                                    int prominenceIndex){
-    qDebug("Graph: layoutRadialByProminenceIndex...");
+    qDebug("Graph::layoutRadialByProminenceIndex...");
     //first calculate centrality indices if needed
-    if ( prominenceIndex > 1 && prominenceIndex < 9 && prominenceIndex!=4) {
-        qDebug("Graph: Calling createDistanceMatrix() to calc centralities");
+    if ( prominenceIndex > 1 && prominenceIndex < 8 && prominenceIndex!=3) {
+        qDebug("Graph::layoutRadialByProminenceIndex - Calling "
+               "createDistanceMatrix() to calc centralities");
         this->createDistanceMatrix(true);
     }
-    else if ((graphModified || !calculatedDP) && prominenceIndex == 9)
-        this->prestigeDegree(true);
     else if ((graphModified || !calculatedDC) && prominenceIndex == 1)
         this->centralityDegree(true);
-    else if ( prominenceIndex == 9 ){
-        this->centralityInformation();
-    }
-    else if ( prominenceIndex == 4 ){
+    else if ( prominenceIndex == 3 )
         this->centralityClosenessInfluenceRange();
-    }
-    else if ( prominenceIndex == 10 ) {
+    else if ( prominenceIndex == 8 )
+        this->centralityInformation();
+    else if ((graphModified || !calculatedDP) && prominenceIndex == 9)
+        this->prestigeDegree(true);
+    else if ( prominenceIndex == 10 )
         this->prestigePageRank();
-    }
 
     double rad=0;
     double i=0, std=0;
-    float C=0, maxC=0, offset=0.06;  //offset controls how far from the centre the central nodes be positioned
+    //offset controls how far from the centre the central nodes be positioned
+    float C=0, maxC=0, offset=0.06;
     double new_radius=0, new_x=0, new_y=0;
     double Pi = 3.14159265;
     int vert=vertices();
@@ -3130,9 +3135,11 @@ void Graph::layoutRadialByProminenceIndex(double x0, double y0, double maxRadius
             break;
         }
         };
-        qDebug () << "Vertice " << (*it)->name() << " at x=" << (*it)->x() << ", y= "<< (*it)->y()
-                  << ": C=" << C << ", stdC=" << std << ", maxradius " <<  maxRadius
-                  << ", maxC " << maxC << ", C/maxC " << (C/maxC) << ", *maxRadius " << (C/maxC - 0.06)*maxRadius;
+        qDebug () << "Vertice " << (*it)->name() << " at x=" << (*it)->x()
+                  << ", y= "<< (*it)->y() << ": C=" << C << ", stdC=" << std
+                  << ", maxradius " <<  maxRadius
+                  << ", maxC " << maxC << ", C/maxC " << (C/maxC)
+                  << ", *maxRadius " << (C/maxC - 0.06)*maxRadius;
         switch (static_cast<int> (ceil(maxC)) ){
         case 0: {
             qDebug("maxC=0.   Using maxHeight");
@@ -3153,7 +3160,8 @@ void Graph::layoutRadialByProminenceIndex(double x0, double y0, double maxRadius
         new_y=y0 + new_radius * sin(i * rad);
         (*it)->setX( new_x );
         (*it)->setY( new_y );
-        qDebug("Finished Calculation. Vertice will move to x=%f and y=%f ",new_x, new_y);
+        qDebug("Finished Calculation. Vertice will move to x=%f and y=%f ",
+               new_x, new_y);
         //Move node to new position
         emit moveNode((*it)->name(),  new_x,  new_y);
         i++;
@@ -3206,7 +3214,8 @@ void Graph::layoutLayeredCentrality(double maxWidth, double maxHeight, int Centr
         centralityDegree(true);
 
     double i=0, std=0;
-    float C=0, maxC=0, offset=50;  //offset controls how far from the top the central nodes will be positioned
+    //offset controls how far from the top the central nodes will be
+    float C=0, maxC=0, offset=50;   positioned
     double new_x=0, new_y=0;
     //	int vert=vertices();
     maxHeight-=offset;
