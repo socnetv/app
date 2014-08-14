@@ -248,6 +248,7 @@ public:
     int distance( int, int);
     int diameter();
     float averageGraphDistance();
+    int connectedness();
 
     void createDistanceMatrix(bool);
     void centralityDegree(bool);
@@ -357,6 +358,7 @@ private:
     QList<int>  triadTypeFreqs; 	//stores triad type frequencies
     QList<int>  m_isolatedVerticesList;
     QHash <int, int> influenceRanges, influenceDomains;
+    QHash <int, int> notStronglyConnectedVertices;
     Matrix  TM, DM, sumM, invAM, AM, invM;
     Matrix XM, XSM, XRM;
     stack<int> Stack;

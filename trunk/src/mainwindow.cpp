@@ -840,10 +840,10 @@ void MainWindow::initActions(){
     Statistics menu actions
     */
 
-    symmetryAct = new QAction(QIcon(":/images/symmetry.png"), tr("Network Symmetry"), this);
+    symmetryAct = new QAction(QIcon(":/images/symmetry.png"), tr("Symmetry"), this);
     symmetryAct ->setShortcut(tr("Shift+S"));
-    symmetryAct->setStatusTip(tr("Tests if the network is symmetric or not"));
-    symmetryAct->setWhatsThis(tr("Network Symmetry\n\n A network is symmetric when all edges are reciprocal, or, in mathematical language, when the adjacency matrix is symmetric."));
+    symmetryAct->setStatusTip(tr("Checks whether the network is symmetric or not"));
+    symmetryAct->setWhatsThis(tr("Symmetry\n\n A network is symmetric when all edges are reciprocal, or, in mathematical language, when the adjacency matrix is symmetric."));
     connect(symmetryAct, SIGNAL(triggered()), this, SLOT(slotCheckSymmetry()));
 
     invertAdjMatrixAct = new QAction(QIcon(":/images/symmetry.png"), tr("Invert Adjacency Matrix"), this);
@@ -851,7 +851,6 @@ void MainWindow::initActions(){
     invertAdjMatrixAct->setStatusTip(tr("Inverts the adjacency matrix"));
     invertAdjMatrixAct->setWhatsThis(tr("Invert  Adjacency Matrix \n\n Inverts the adjacency matrix using linear algebra methods."));
     connect(invertAdjMatrixAct, SIGNAL(triggered()), this, SLOT(slotInvertAdjMatrix()));
-
 
     graphDistanceAct = new QAction(QIcon(":/images/distance.png"),  tr("Geodesic Distance"), this);
     graphDistanceAct ->setShortcut(tr("Ctrl+G"));
@@ -889,6 +888,27 @@ void MainWindow::initActions(){
     eccentricityAct->setWhatsThis(tr("Eccentricity\n\n The eccentricity or association number of each node i is the largest geodesic distance (i,j) between node i and every other node j. Therefore, it reflects how far, at most, is each node from every other node. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
     connect(eccentricityAct, SIGNAL(triggered()), this, SLOT(slotEccentricity()));
 
+
+    connectednessAct = new QAction(QIcon(":/images/distance.png"),  tr("Connectedness"), this);
+    connectednessAct ->setShortcut(tr("Ctrl+Shift+C"));
+    connectednessAct->setStatusTip(tr("Checks whether the network is a connected "
+                                      "graph, a weakly connected digraph or "
+                                      "a disconnected graph/digraph..."));
+    connectednessAct->setWhatsThis(tr("Connectedness\n\n In graph theory, a "
+                                      "graph is <b>connected</b> if there is a "
+                                      "path between every pair of nodes. \n"
+                                      "A digraph is <b>strongly connected</b> "
+                                      "if there the a path from i to j and "
+                                      "from j to i for all nodes (i,j).\n"
+                                      "(i,j).\n"
+                                      "A digraph is weakly connected if at least "
+                                      "a pair of nodes are joined by a semipath.\n"
+                                      "A digraph or a graph is disconnected if "
+                                      "at least one node is isolate."
+                                      ));
+    connect(connectednessAct, SIGNAL(triggered()), this, SLOT(slotConnectedness()));
+
+
     walksAct = new QAction(QIcon(":/images/walk.png"), tr("Number of Walks Matrix"),this);
     walksAct->setShortcut(tr("Ctrl+W"));
     walksAct->setStatusTip(tr("The number of walks of a given length between any nodes."));
@@ -905,7 +925,7 @@ void MainWindow::initActions(){
     reachabilityMatrixAct = new QAction(QIcon(":/images/walk.png"), tr("Reachability Matrix"),this);
     reachabilityMatrixAct->setShortcut(tr("Ctrl+Shift+R"));
     reachabilityMatrixAct->setStatusTip(tr("Calculates the Reachability Matrix for the loaded network."));
-    reachabilityMatrixAct->setWhatsThis(tr("Reachability Matrix\n\n     Calculates the reachability matrix X<sup>R</sup> of the graph where the {i,j} element is 1 if the vertices i and j are reachable. \n\n Actually, this just checks the corresponding element of X<sup>S</sup> matrix, which is the sum of all product matrices of Ax\n "));
+    reachabilityMatrixAct->setWhatsThis(tr("Reachability Matrix\n\n     Calculates the reachability matrix X<sup>R</sup> of the graph where the {i,j} element is 1 if the vertices i and j are reachable. \n\n Actually, this just checks whether the corresponding element of Distances matrix is not zero.\n "));
     connect(reachabilityMatrixAct, SIGNAL(triggered()), this, SLOT(slotReachabilityMatrix() )  );
 
     cliquesAct = new QAction(QIcon(":/images/triangle.png"), tr("Number of Cliques"),this);
@@ -978,9 +998,9 @@ void MainWindow::initActions(){
     connect(cStressAct, SIGNAL(triggered()), this, SLOT(slotCentralityStress()));
 
 
-    cEccentAct = new QAction(tr("Eccentricity (EC)"), this);
+    cEccentAct = new QAction(tr("Eccentricity Centrality (EC)"), this);
     cEccentAct->setShortcut(tr("Ctrl+6"));
-    cEccentAct->setStatusTip(tr("Eccentricity indices for each node and group Eccentricity"));
+    cEccentAct->setStatusTip(tr("Eccentricity Centrality indices for each node."));
     cEccentAct->setWhatsThis(
                 tr("Eccentricity Centrality (EC)\n\n For each node i, "
                    "the EC is the inverse of the maximum geodesic distance "
@@ -1362,6 +1382,7 @@ void MainWindow::initMenuBar() {
 
 
     statMenu -> addSeparator();
+    statMenu -> addAction(connectednessAct);
     statMenu -> addAction (walksAct);
     statMenu -> addAction (totalWalksAct);
     statMenu -> addAction (reachabilityMatrixAct);
@@ -1681,7 +1702,7 @@ void MainWindow::updateNodeCoords(int nodeNumber, int x, int y){
     Initializes the status bar
 */
 void MainWindow::initStatusBar() {
-    statusBarDuration=2000;
+    statusBarDuration=3000;
     statusMessage( tr("Ready."));
 }
 
@@ -1858,6 +1879,14 @@ void MainWindow::initNet(){
  */
 void MainWindow::statusMessage(const QString message){
     statusBar()->showMessage( message, statusBarDuration );
+}
+
+
+/**
+*	Displays a message	on the status bar when you resize the window.
+*/
+void MainWindow::windowInfoStatusBar(int w, int h){
+    statusMessage(  QString(tr("Window resized to (%1, %2) pixels.")).arg(w).arg(h) );
 }
 
 
@@ -4594,9 +4623,15 @@ void MainWindow::slotCheckSymmetry(){
         return;
     }
     if (activeGraph.isSymmetric())
-        QMessageBox::information(this, "Network Symmetry", tr("Adjacency matrix symmetry = YES "),"OK",0);
+        QMessageBox::information(this,
+                                 "Symmetry",
+                                 tr("The adjacency matrix is symmetric."
+                                    ),"OK",0);
     else
-        QMessageBox::information(this, "Network Symmetry", tr("Adjacency matrix symmetry = NO "),"OK",0);
+        QMessageBox::information(this,
+                                 "Symmetry",
+                                 tr("The adjacency matrix is not symmetric."
+                                    ),"OK",0);
 
     statusMessage (QString(tr("Ready")) );
 
@@ -4809,15 +4844,45 @@ void MainWindow::slotEccentricity(){
 
 
 
+
 /**
-*	Displays a message	on the status bar when you resize the window.
-*/
-void MainWindow::windowInfoStatusBar(int w, int h){
-    statusMessage(  QString(tr("Window resized to (%1, %2) pixels.")).arg(w).arg(h) );
+ * @brief MainWindow::slotConnectedness
+ */
+void MainWindow::slotConnectedness(){
+    if (!fileLoaded && !networkModified  )  {
+        QMessageBox::critical(this, "Error",tr("There are no nodes nor links!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+
+        statusMessage(  QString(tr("Nothing to do..."))  );
+        return;
+    }
+
+    createProgressBar();
+
+    int connectedness=activeGraph.connectedness();
+
+    destroyProgressBar();
+
+    switch ( connectedness ) {
+    case 1:
+        QMessageBox::information(this, "Connectedness", "The graph representing "
+                                 "the loaded network is connected.", "OK",0);
+        break;
+    case 0:
+    QMessageBox::information(this, "Connectedness", "The digraph representing "
+                            "the loaded network is weakly connected.", "OK",0);
+    break;
+
+    case -1:
+    QMessageBox::information(this, "Connectedness", "The graph representing "
+                             "the loaded network is disconnected.", "OK",0);
+    break;
+    default:
+        QMessageBox::critical(this, "Connectedness", "Something went wrong!.", "OK",0);
+        break;
+    };
+    statusMessage( tr("Connectedness calculated. Ready.") );
+
 }
-
-
-
 
 
 /**
@@ -5063,19 +5128,51 @@ void MainWindow::slotCentralityCloseness(){
         statusMessage(  QString(tr("Nothing to do..."))  );
         return;
     }
+    int connectedness=activeGraph.connectedness();
 
-    if (!activeGraph.isSymmetric()) {
+    switch ( connectedness ) {
+    case 1:
+        break;
+    case 0:
         QMessageBox::critical(this,
-                              "Warning",
+                              "Centrality Closeness",
                               tr(
-                                 "Directed graph!\nSince this network is directed, "
-                                 "the ordinary Closeness Centrality index is not defined, "
-                                 "because d(i,j) can be infinite if nodes i,j are not reachable."
-                                 " Therefore, we will be using a slightly different but improved "
-                                 "Closeness index which considers how proximate is each node v "
-                                 "to the nodes in its influence range. Read more in the SocNetV manual."
+                                 "Weakly connected digraph!\n"
+                                 "Since this network is directed and weakly "
+                                 "connected, the ordinary Closeness Centrality "
+                                 "index is not defined, because d(u,v) will be "
+                                  "infinite for not reachable nodes u,v.\n"
+                                 "Please use the slightly different but improved "
+                                 "Influence Range Closeness index "
+                                 "which considers how proximate is each node "
+                                 "to the nodes in its influence range. \n"
+                                 "Read more in the SocNetV manual."
                                  ), "OK",0);
-    }
+        return;
+    break;
+
+    case -1:
+        QMessageBox::critical(this,
+                              "Centrality Closeness",
+                              tr(
+                                 "Disconnected graph/digraph!\n"
+                                 "Since this network is disconnected, "
+                                 "the ordinary Closeness Centrality "
+                                 "index is not defined, because d(u,v) will be "
+                                 "infinite for any isolate nodes u or v.\n"
+                                 "Please use the slightly different but improved "
+                                 "Influence Range Closeness index "
+                                 "which considers how proximate is each node "
+                                 "to the nodes in its influence range.\n"
+                                  "Read more in the SocNetV manual."
+                                 ), "OK",0);
+        return;
+    break;
+    default:
+        QMessageBox::critical(this, "Connectedness", "Something went wrong!.", "OK",0);
+        break;
+    };
+
     QString fn = "centrality_closeness.dat";
     bool considerWeights=true;
 

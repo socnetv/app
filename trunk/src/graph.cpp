@@ -875,6 +875,7 @@ void Graph::clear() {
     discreteDPs.clear();
     discreteDCs.clear();
     m_isolatedVerticesList.clear();
+    notStronglyConnectedVertices.clear();
     influenceDomains.clear();
     influenceRanges.clear();
     m_totalVertices=0;
@@ -1019,6 +1020,25 @@ float Graph::averageGraphDistance(){
     return averGraphDistance;
 }
 
+
+/**
+ * @brief Graph::connectedness()
+ * @return int:
+ * 1: connected graph or strongly connected digraph
+*  0 => weakly connected digraph
+*  -1 -> disconnected graph/digraph
+ */
+int Graph::connectedness(){
+    qDebug() << "Graph::connectedness() ";
+    if (!reachabilityMatrixCreated || graphModified) {
+        reachabilityMatrix();
+    }
+    if ( (notStronglyConnectedVertices.size() != 0 ) && isolatedVertices == 0 )
+     return 0;
+    else if ( (notStronglyConnectedVertices.size() != 0 ) && isolatedVertices !=0 )
+        return -1;
+    return 1;
+}
 
 
 /**
@@ -2855,8 +2875,8 @@ void Graph::writePrestigePageRank(const QString fileName){
         outText << tr("\nAll nodes have the same PRC value.\n");
     else  {
         outText << "\n";
-        outText << tr("Max PRC' = ") << maxPRC <<" (node "<< maxNodePRC  <<  ")  \n";
-        outText << tr("Min PRC' = ") << minPRC <<" (node "<< minNodePRC <<  ")  \n";
+        outText << tr("Max PRC = ") << maxPRC <<" (node "<< maxNodePRC  <<  ")  \n";
+        outText << tr("Min PRC = ") << minPRC <<" (node "<< minNodePRC <<  ")  \n";
         outText << tr("PRC classes = ") << classesPRC<<" \n";
     }
     outText << "\n";
@@ -3666,6 +3686,7 @@ void Graph::reachabilityMatrix() {
         qDebug()<< "Graph::reachabilityMatrix() - calculating XRM..." ;
         influenceRanges.clear();
         influenceDomains.clear();
+        notStronglyConnectedVertices.clear();
         for (register int i=0; i < size ; i++) {
             for (register int j=i; j < size ; j++) {
                 qDebug()<< "Graph::reachabilityMatrix()  total shortest paths between ("
@@ -3679,8 +3700,12 @@ void Graph::reachabilityMatrix() {
                     influenceRanges.insertMulti(i,j);
                     influenceDomains.insertMulti(j,i);
                 }
+                else if (i==j) {
+                       XRM.setItem(i,j,1);
+                }
                 else {
                        XRM.setItem(i,j,0);
+                       notStronglyConnectedVertices.insertMulti(i,j);
                 }
                 if ( DM.item(j,i) > 0 ) {
                     qDebug()<< "Graph::reachabilityMatrix()  - inverse path d("
@@ -3692,8 +3717,12 @@ void Graph::reachabilityMatrix() {
                     influenceDomains.insertMulti(i,j);
                     influenceRanges.insertMulti(j,i);
                 }
+                else if (i==j) {
+                       XRM.setItem(i,j,1);
+                }
                 else {
                        XRM.setItem(j,i,0);
+                       notStronglyConnectedVertices.insertMulti(j,i);
                 }
             }
             qDebug()<< endl;
