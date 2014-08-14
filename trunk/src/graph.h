@@ -283,7 +283,8 @@ public:
 
     /* LAYOUTS */
     void layoutRandom(double maxWidth, double maxHeight);
-    void layoutRadialCentrality(double x0, double y0, double maxRadius, int CentralityType);
+    void layoutRadialByProminenceIndex(double x0, double y0, double maxRadius,
+                                       int type);
     void layoutLayeredCentrality(double maxWidth, double maxHeight, int CentralityType);
     void layoutForceDirectedSpringEmbedder(bool dynamicMovement);
     void layoutForceDirectedFruchtermanReingold(bool dynamicMovement);
@@ -347,7 +348,7 @@ private:
 
     /** used in resolveClasses and createDistanceMatrix() */
     hash_si discreteDPs, discreteDCs, discreteCCs, discreteBCs, discreteSCs;
-    hash_si discreteECs, discreteEccentricities;
+    hash_si discreteIRCCs, discreteECs, discreteEccentricities;
     hash_si discretePCs, discreteICs,  discretePRCs, discretePPs;
 
     bool calculatedDP, calculatedDC, calculatedCentralities, dynamicMovement;
@@ -362,10 +363,12 @@ private:
 
     float meanDegree, varianceDegree;
     float meanCC, varianceCC;
+    float meanIRCC, varianceIRCC;
     float minEccentricity, maxEccentricity, sumEccentricity;
     float minDP, maxDP, sumDP, groupDP;
     float minDC, maxDC, sumDC, groupDC;
     float minCC, maxCC, nomCC, denomCC, sumCC, groupCC, maxIndexCC;
+    float minIRCC, maxIRCC, nomIRCC, denomIRCC, sumIRCC, groupIRCC;
     float minBC, maxBC, nomBC, denomBC, sumBC, groupBC, maxIndexBC;
     float minPC, maxPC, sumPC, groupPC, maxIndexPC;
     float minSC, maxSC, nomSC, denomSC, sumSC, groupSC, maxIndexSC;
@@ -378,6 +381,7 @@ private:
     int classesDP, maxNodeDP, minNodeDP;
     int classesDC, maxNodeDC, minNodeDC;
     int classesCC, maxNodeCC, minNodeCC;
+    int classesIRCC, maxNodeIRCC, minNodeIRCC;
     int classesBC, maxNodeBC, minNodeBC;
     int classesPC, maxNodePC, minNodePC;
     int classesSC, maxNodeSC, minNodeSC;

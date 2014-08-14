@@ -1942,19 +1942,19 @@ void Graph::centralityClosenessInfluenceRange(){
     reachabilityMatrix();
     // calculate centralities
     QList<Vertex*>::iterator it;
-    float CC=0;
+    float IRCC=0;
     float Ji=0;
-    classesCC=0;
-    discreteCCs.clear();
-    sumCC=0;
-    maxCC=0;
-    minCC=vertices()-1;
+    classesIRCC=0;
+    discreteIRCCs.clear();
+    sumIRCC=0;
+    maxIRCC=0;
+    minIRCC=vertices()-1;
     float V=vertices();
-    varianceCC=0;
-    meanCC=0;
+    varianceIRCC=0;
+    meanIRCC=0;
     hash_si::iterator it2;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        CC=0;
+        IRCC=0;
         // find connected nodes
         QList<int> influencedVertices = influenceRanges.values((*it)->name()-1);
         Ji=influencedVertices.size();
@@ -1962,47 +1962,57 @@ void Graph::centralityClosenessInfluenceRange(){
             qDebug() << "Graph:: centralityClosenessImproved - vertex " <<  (*it)->name()
                      << " is outbound connected to  = " << influencedVertices.at(i) + 1
                      << " at distance " << DM.item ((*it)->name()-1, influencedVertices.at(i) );
-            CC += DM.item ((*it)->name()-1, influencedVertices.at(i) ) ;
+            IRCC += DM.item ((*it)->name()-1, influencedVertices.at(i) ) ;
         }
         qDebug()<< "Graph:: centralityClosenessImproved -  size of influenceRange Ji = " << Ji
-                << " CC=" << CC << " divided by Ji=" << Ji << " yields final CC =" << CC / Ji;
-        CC /=Ji;
-        sumCC += CC;
-        (*it) -> setCC ( CC ) ;
-        (*it) -> setSCC ( ( Ji / (V-1) ) / CC ) ;
-        qDebug() << "Graph::centralityClosenessImproved - vertex " <<  (*it)->name() << " has CC = " << CC
-                 << " and SCC = " << Ji / (V-1) << " / " << CC << " = " << (*it)->SCC();
+                << " IRCC=" << IRCC << " divided by Ji=" << Ji << " yields final IRCC =" << IRCC / Ji;
+        // sanity check for IRCC=0 (=> node is disconnected)
+        if (IRCC != 0)  {
+            IRCC /= Ji;
+            IRCC =  ( Ji / (V-1) ) / IRCC;
+        }
+        sumIRCC += IRCC;
+        (*it) -> setIRCC ( IRCC ) ;
+        qDebug() << "Graph::centralityClosenessImproved - vertex " <<  (*it)->name()
+                 << " has IRCC = "
+                 << Ji / (V-1) << " / " << IRCC << " = " << (*it)->IRCC();
 
-        it2 = discreteCCs.find(QString::number(CC));
-        if (it2 == discreteCCs.end() )	{
-            classesCC++;
-            qDebug("This is a new CC class");
-            discreteCCs.insert ( QString::number(CC), classesCC );
+        it2 = discreteIRCCs.find(QString::number(IRCC));
+        if (it2 == discreteIRCCs.end() )	{
+            classesIRCC++;
+            qDebug("This is a new IRCC class");
+            discreteIRCCs.insert ( QString::number(IRCC), classesIRCC );
         }
-        qDebug("CC classes = %i ", classesCC);
-        if (maxCC < CC ) {
-            maxCC = CC ;
-            maxNodeCC=(*it)->name();
+        qDebug("IRCC classes = %i ", classesIRCC);
+        if (maxIRCC < IRCC ) {
+            maxIRCC = IRCC ;
+            maxNodeIRCC=(*it)->name();
         }
-        if (minCC > CC ) {
-            minCC = CC ;
-            minNodeCC=(*it)->name();
+        if (minIRCC > IRCC ) {
+            minIRCC = IRCC ;
+            minNodeIRCC=(*it)->name();
         }
 
     }
 
-    if (minCC == maxCC)
-        maxNodeCC=-1;
+    if (minIRCC == maxIRCC)
+        maxNodeIRCC=-1;
 
-    meanCC = sumCC / (float) V;
-    qDebug("Graph: sumCC = %f, meanCC = %f", sumCC, meanCC);
+    meanIRCC = sumIRCC / (float) V;
+    qDebug("Graph::centralityClosenessImproved - sumIRCC = %f, meanIRCC = %f",
+           sumIRCC, meanIRCC);
 
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        CC= (*it) -> CC (  );
-        varianceCC += (CC-meanCC) * (CC-meanCC) ;
+        IRCC= (*it) -> IRCC();
+        varianceIRCC += (IRCC-meanIRCC) * (IRCC-meanIRCC) ;
+        (*it) -> setSIRCC ( IRCC / sumIRCC) ;
+        qDebug() << "Graph::centralityClosenessImproved - vertex " <<  (*it)->name()
+                 << " has Std IRCC = "
+                 << IRCC << " / " << sumIRCC << " = " << (*it)->SIRCC();
+
     }
 
-    varianceCC=varianceCC/(float) V;
+    varianceIRCC=varianceIRCC/(float) V;
 
 }
 
@@ -2086,44 +2096,47 @@ void Graph::writeCentralityClosenessInfluenceRange(
     }
     QTextStream outText ( &file );
 
-    emit statusMessage ( (tr("Calculating shortest paths")) );
+    emit statusMessage ( (tr("calculating IRCC indices")) );
+
     centralityClosenessInfluenceRange();
 
-    emit statusMessage ( QString(tr("Writing improved closeness centralities to file:")).arg(fileName) );
+    emit statusMessage ( QString(tr("Writing improved closeness centralities to file:")
+                         .arg(fileName) ));
 
     outText << tr("INFLUENCE RANGE CLOSENESS CENTRALITY (IRCC)")<<"\n";
-    outText << tr("This improved CC index is optimized for graphs and directed graphs which "
-                  "are not strongly connected. Unlike the ordinary CC, which is the inverted "
-                  "sum of distances from node v to all others (thus undefined if a node is isolated "
-                  "or the digraph is not strongly connected), this improved CC considers only "
-                  "distances from node v to nodes in its influence range J (nodes reachable from v). "
-                  "The improved CC formula used is the ratio of the fraction of nodes reachable by v "
-                  "(|J|/(n-1)) to the average distance of these nodes from v (sum(d(v,j))/|J|");
+    outText << tr(
+               "This improved CC index is optimized for graphs and directed graphs which "
+               "are not strongly connected. Unlike the ordinary CC, which is the inverted "
+               "sum of distances from node v to all others (thus undefined if a node is isolated "
+               "or the digraph is not strongly connected), this improved CC considers only "
+               "distances from node v to nodes in its influence range J (nodes reachable from v).\n "
+               "The IRCC formula used is the ratio of the fraction of nodes reachable by v "
+               "( J/(n-1) ) to the average distance of these nodes from v ( sum( d(v,j) ) / J ) \n\n");
 
-
-    outText << tr("CC  range:  0 < C < ")<<QString::number(maxIndexCC)<<"\n";
-    outText << tr("CC' range:  0 < C'< 1")<<"\n\n";
-    outText << "Node"<<"\tCC\t\tCC'\t\t%CC\n";
+    outText << tr("IRCC  range:  0 < IRCC < 1 ")
+            <<" (IRCC is a ratio)\n";
+    outText << tr("IRCC' is the standardized IRCC (divided by sumIRCC). \n\n");
+    outText << "Node"<<"\tIRCC\t\tIRCC'\t\t%IRCC\n";
     QList<Vertex*>::iterator it;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        outText << (*it)->name()<<"\t"<<(*it)->CC() << "\t\t"<< (*it)->SCC() << "\t\t" <<  (100* ((*it)->CC()) / sumCC)<<endl;
+        outText << (*it)->name()<<"\t"<<(*it)->IRCC() << "\t\t"<< (*it)->SIRCC() << "\t\t" <<  (100* ((*it)->SIRCC()) )<<endl;
     }
-    qDebug ("min %f, max %f", minCC, maxCC);
-    if ( minCC == maxCC )
-        outText << tr("\nAll nodes have the same CC value.\n");
+    qDebug ("min %f, max %f", minIRCC, maxIRCC);
+    if ( minIRCC == maxIRCC )
+        outText << tr("\nAll nodes have the same IRCC value.\n");
     else  {
         outText << "\n";
-        outText << tr("Max CC' = ") << maxCC <<" (node "<< maxNodeCC  <<  ")  \n";
-        outText << tr("Min CC' = ") << minCC <<" (node "<< minNodeCC <<  ")  \n";
-        outText << tr("CC classes = ") << classesCC<<" \n";
+        outText << tr("Max IRCC = ") << maxIRCC <<" (node "<< maxNodeIRCC  <<  ")  \n";
+        outText << tr("Min IRCC = ") << minIRCC <<" (node "<< minNodeIRCC <<  ")  \n";
+        outText << tr("IRCC classes = ") << classesIRCC<<" \n";
     }
-    outText << tr("Mean = ") << meanCC<<"\n\n";
-    outText << tr("Sum = ") << sumCC<<"\n\n";
-    outText << tr("Variance  = ") << meanCC<<"\n\n";
+    outText << tr("Mean IRCC = ") << meanIRCC<<"\n";
+    outText << tr("Sum IRCC= ") << sumIRCC<<"\n";
+    outText << tr("Variance IRCC = ") << varianceIRCC<<"\n\n";
 
 
     outText << "\n\n";
-    outText << tr("Improved Closeness Centrality report, \n");
+    outText << tr("InfluenceRange Closeness Centrality report, \n");
     outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
@@ -3011,23 +3024,28 @@ void Graph::writeTriadCensus(
 
 
 /** 
-* Repositions all nodes on the periphery of different circles with radius analogous to their centrality
+* Repositions all nodes on the periphery of different circles with radius
+* analogous to their prominence index
 */
-void Graph::layoutRadialCentrality(double x0, double y0, double maxRadius, int CentralityType){
-    qDebug("Graph: layoutRadialCentrality...");
-    //first calculate centralities
-    if ( CentralityType > 2 && CentralityType < 9 ) {
+void Graph::layoutRadialByProminenceIndex(double x0, double y0, double maxRadius,
+                                   int prominenceIndex){
+    qDebug("Graph: layoutRadialByProminenceIndex...");
+    //first calculate centrality indices if needed
+    if ( prominenceIndex > 1 && prominenceIndex < 9 && prominenceIndex!=4) {
         qDebug("Graph: Calling createDistanceMatrix() to calc centralities");
         this->createDistanceMatrix(true);
     }
-    else if ((graphModified || !calculatedDP) && CentralityType == 1)
+    else if ((graphModified || !calculatedDP) && prominenceIndex == 9)
         this->prestigeDegree(true);
-    else if ((graphModified || !calculatedDC) && CentralityType == 2)
+    else if ((graphModified || !calculatedDC) && prominenceIndex == 1)
         this->centralityDegree(true);
-    else if ( CentralityType == 9 ){
+    else if ( prominenceIndex == 9 ){
         this->centralityInformation();
     }
-    else if ( CentralityType == 10 ) {
+    else if ( prominenceIndex == 4 ){
+        this->centralityClosenessInfluenceRange();
+    }
+    else if ( prominenceIndex == 10 ) {
         this->prestigePageRank();
     }
 
@@ -3039,65 +3057,73 @@ void Graph::layoutRadialCentrality(double x0, double y0, double maxRadius, int C
     int vert=vertices();
 
     for (QList<Vertex*>::iterator it=m_graph.begin(); it!=m_graph.end(); it++){
-        switch (CentralityType) {
+        switch (prominenceIndex) {
+
         case 1 : {
-            qDebug("Layout according to Degree Prestige (in-degree)");
-            C=(*it)->SDP();
-            std= (*it)->SDP();
-            maxC=maxDP;
-            break;
-        }
-        case 2 : {
-            qDebug("Layout according to OutDegree Centralities");
+            qDebug("Layout according to DC");
             C=(*it)->SDC();
             std= (*it)->SDC();
             maxC=maxDC;
             break;
         }
+        case 2 : {
+            qDebug("Layout according to CC");
+            C=(*it)->CC();
+            std= (*it)->SCC();
+            maxC=maxCC;
+            break;
+        }
         case 3 : {
-            qDebug("Layout according to Closeness Centralities");
+            qDebug("Layout according to IRCC");
             C=(*it)->CC();
             std= (*it)->SCC();
             maxC=maxCC;
             break;
         }
         case 4 : {
-            qDebug("Layout according to Betweeness Centralities");
+            qDebug("Layout according to BC");
             C=(*it)->BC();
             std= (*it)->SBC();
             maxC=maxBC;
             break;
         }
         case 5 : {
-            qDebug("Layout according to Stress Centralities");
+            qDebug("Layout according to SC");
             C=(*it)->SC();
             std= (*it)->SSC();
             maxC=maxSC;
             break;
         }
         case 6 : {
-            qDebug("Layout according to Eccentricity Centralities");
+            qDebug("Layout according to EC");
             C=(*it)->EC();
             std= (*it)->SEC();
             maxC=maxEC;
             break;
         }
         case 7 : {
-            qDebug("Layout according to Power Centralities");
+            qDebug("Layout according to PC");
             C=(*it)->PC();
             std= (*it)->SPC();
             maxC=maxPC;
             break;
         }
         case 8 : {
-            qDebug("Layout according to Information Centralities");
+            qDebug("Layout according to IC");
             C=(*it)->IC();
             std= (*it)->SIC();
             maxC=maxIC;
             break;
         }
         case 9 : {
-            qDebug("Layout according to PageRank Centralities");
+            qDebug("Layout according to DP");
+            C=(*it)->SDP();
+            std= (*it)->SDP();
+            maxC=maxDP;
+            break;
+        }
+        case 10 : {
+            qDebug("Layout according to PRP");
             C=(*it)->PRC();
             std= (*it)->SPRC();
             maxC=maxPRC;

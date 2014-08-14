@@ -158,6 +158,11 @@ public:
     float CC() { return m_CC;}		/* Returns vertex Closeness Centrality*/
     float SCC() { return m_SCC; }		/* Returns standard vertex Closeness Centrality*/
 
+    void setIRCC (float c){ m_IRCC=c;}		/* sets vertex IRCC */
+    void setSIRCC (float c ) { m_SIRCC=c;}	/* sets standard vertex IRCC */
+    float IRCC() { return m_IRCC;}		/* Returns vertex IRCC */
+    float SIRCC() { return m_SIRCC; }		/* Returns standard vertex IRCC*/
+
     void setBC(float c){ m_BC=c;}		/* sets s vertex Betweeness Centrality*/
     void setSBC (float c ) { m_SBC=c;}	/* sets standard vertex Betweeness Centrality*/
     float BC() { return m_BC;}		/* Returns vertex Betweeness Centrality*/
@@ -225,7 +230,7 @@ private:
     double m_x, m_y;
     float m_CLC;
     float m_delta, m_EC, m_SEC;
-    float m_DC, m_SDC, m_DP, m_SDP, m_CC, m_SCC, m_BC, m_SBC, m_GC, m_SGC, m_SC, m_SSC;
+    float m_DC, m_SDC, m_DP, m_SDP, m_CC, m_SCC, m_BC, m_SBC, m_IRCC, m_SIRCC, m_SC, m_SSC;
     float m_PC, m_SPC, m_SIC, m_IC, m_SPRC, m_PRC;
     float m_PP, m_SPP;
 
