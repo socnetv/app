@@ -44,6 +44,7 @@
 	<file>images/erdos.png</file>
 	<file>images/circular.png</file>
 	<file>images/clique.png</file>
+	<file>images/walk.png</file>
  	<file>images/triangle.png</file>
 	<file>images/avdistance.png</file>
 	<file>images/symmetrize.png</file>
@@ -51,6 +52,8 @@
         <file>images/nodein.png</file>
 	<file>images/gridlines.png</file>
 	<file>images/webcrawler.png</file>
-
+	<file>images/prestige.png</file>
+	<file>images/centrality.png</file>
+	<file>images/eccentricity.png</file>
 </qresource>
 </RCC>

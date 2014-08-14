@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer 
- version: 1.1
+ version: 1.2
  Written in Qt
 
                         matrix  -  description
                              -------------------
-    copyright            : (C) 2005-2013 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2014 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -26,15 +26,19 @@
 
 #include "matrix.h"
 
+using namespace std;
+
 #include <iostream>		//used for cout
+#include <cstdlib>		//allows the use of RAND_MAX macro
 
 #include <math.h>		//need for fabs function
 
 //constructor - every Row object holds max_int=32762
 Matrix::Matrix(const Matrix &b) {
+    qDebug()<< "Matrix:: constructor";
 	row = new Row[m_Actors=b.m_Actors];
 	for (register int i=0;i<m_Actors; i++) {
-			row[i].resize(m_Actors);
+            row[i].resize(m_Actors);
 		}
 	for (register int i=0; i<m_Actors; i++)
 		row[i]=b.row[i];
@@ -53,6 +57,7 @@ void Matrix::setSize (int Actors){
 
 //assigment allows copying a matrix onto another using b=a where b,a matrices
  Matrix& Matrix::operator =(Matrix & a) {
+      qDebug()<< "Matrix::operator asignment =";
 	if (this != &a){
 		if (a.m_Actors!=m_Actors) {
 			delete [] row;
@@ -67,6 +72,19 @@ void Matrix::setSize (int Actors){
 	return *this;
 }
 
+ /*
+  * Matrix addition: +
+  *  adds two matrices of the same size and returns the sum.
+  *  allows to sum two matrices using c=a+b
+  */
+  Matrix& Matrix::operator +(Matrix & a) {
+      qDebug()<< "Matrix::operator addition";
+      for (register int i=0;i< rows();i++)
+          for (register int j=0;j<cols();j++)
+              setItem(i,j, item(i,j)+a.item(i,j));
+      return *this;
+ }
+
 
  //WARNING: this operator is slow! Avoid using it.
 float  Matrix::operator ()  (const int r, const int c){
@@ -75,19 +93,117 @@ float  Matrix::operator ()  (const int r, const int c){
 
 
 /**  	Outputs matrix m to a text stream
-*	Used when exporting SM to a file in slotExportSM of MainWindow class.
 */
 QTextStream& operator <<  (QTextStream& os, Matrix& m){
-	qDebug() << "Matrix: << Matrix";
-	for (register int r = 0; r < m.rows(); ++r) {
-		for (register int c = 0; c < m.cols(); ++c)
-			os << m(r,c) << ' ';
-		os << '\n';
-	}
-	return os;
+    qDebug() << "Matrix: << Matrix";
+    int fieldWidth = 6, newFieldWidth = 6, actorNumber=1;
+    float maxVal, minVal;
+    m.findMinMaxValues(maxVal,minVal);
+    float element;
+
+    //
+    os << " max Value = " << maxVal<< endl;
+    os << " min Value = " << minVal<< endl<<endl;
+    if (maxVal > 999999 )
+        fieldWidth = 14;
+    else if (maxVal > 99999 )
+        fieldWidth = 13;
+    else if (maxVal > 9999 )
+        fieldWidth = 12;
+    else if  (maxVal > 999 )
+        fieldWidth = 8;
+    else if  (maxVal > 99 )
+        fieldWidth = 7;
+
+    os << qSetFieldWidth(fieldWidth) << right <<  QString("v |");
+    for (register int r = 0; r < m.cols(); ++r) {
+        newFieldWidth = fieldWidth;
+        actorNumber = r+1;
+        if ( actorNumber > 99999)
+            newFieldWidth = fieldWidth -5;
+        else if ( actorNumber > 9999)
+            newFieldWidth = fieldWidth -4;
+        else if ( actorNumber > 999)
+            newFieldWidth = fieldWidth -3;
+        else if ( actorNumber > 99)
+            newFieldWidth = fieldWidth -2;
+        else if ( actorNumber > 9)
+            newFieldWidth = fieldWidth -1;
+        os << qSetFieldWidth(newFieldWidth) << right  << QString("%1").arg(actorNumber) ;
+    }
+    os<<endl;
+    os.setFieldAlignment(QTextStream::AlignCenter);
+    os.setPadChar('-');
+    for (register int r = 0; r < m.cols()+1; ++r) {
+        if ( r > 99999)
+            newFieldWidth = fieldWidth -5;
+        else if ( r > 9999)
+            newFieldWidth = fieldWidth -4;
+        else if ( r > 999)
+            newFieldWidth = fieldWidth -3;
+        else if ( r > 99)
+            newFieldWidth = fieldWidth -2;
+        else if ( r > 9)
+            newFieldWidth = fieldWidth -1;
+        os << qSetFieldWidth(newFieldWidth) <<  QString("-") ;
+    }
+    os << qSetFieldWidth(1) << QString("-");
+    os.setPadChar(' ');
+    os<<endl;
+    for (register int r = 0; r < m.rows(); ++r) {
+        actorNumber = r+1;
+        if ( actorNumber > 99999)
+            newFieldWidth = fieldWidth -5;
+        else if ( actorNumber > 9999)
+            newFieldWidth = fieldWidth -4;
+        else if ( actorNumber > 999)
+            newFieldWidth = fieldWidth -3;
+        else if ( actorNumber > 99)
+            newFieldWidth = fieldWidth -2;
+        else if ( actorNumber > 9)
+            newFieldWidth = fieldWidth -1;
+        else
+            newFieldWidth = fieldWidth;
+        os << qSetFieldWidth(newFieldWidth) << right << QString("%1 |").arg(actorNumber) ;
+        for (register int c = 0; c < m.cols(); ++c) {
+            element = m(r,c) ;
+            newFieldWidth = fieldWidth;
+            if ( element > 9999)
+                newFieldWidth = fieldWidth -5;
+            else if ( element > 9999)
+                newFieldWidth = fieldWidth -4;
+            else if ( element > 999)
+                newFieldWidth = fieldWidth -3;
+            else if ( element > 99)
+                newFieldWidth = fieldWidth -2;
+            else if ( element > 9)
+                newFieldWidth = fieldWidth -1;
+            else
+                newFieldWidth = fieldWidth;
+            if ( element == -1 )  // we print infinity symbol instead of -1 (distances matrix).
+                os << qSetFieldWidth(newFieldWidth) << right << QString("\xE2\x88\x9E");
+            else
+                os << qSetFieldWidth(newFieldWidth) << right << element;
+        }
+        os << '\n';
+    }
+    return os;
 }
 
 
+void Matrix::findMinMaxValues (float & maxVal, float &minVal){
+    maxVal=0;
+    minVal=RAND_MAX;
+    for (register int r = 0; r < rows(); ++r) {
+        for (register int c = 0; c < cols(); ++c) {
+            if ( item(r,c) > maxVal)
+                maxVal = item(r,c) ;
+            if ( item(r,c) < minVal){
+                 minVal= item(r,c) ;
+            }
+        }
+    }
+}
 
 //Resize this matrix. Every Row object holds max_int=32762
 void Matrix::resize (int Actors) {
@@ -117,6 +233,20 @@ void Matrix::identityMatrix(int Actors) {
 
 }
 
+
+// makes this matrix the zero matrix of size Actors
+void Matrix::zeroMatrix(int Actors) {
+    qDebug() << "Matrix:: zeroMatrix() of size " << Actors;
+    delete [] row;
+    row = new Row [m_Actors=Actors];
+    Q_CHECK_PTR( row );
+    qDebug() << "Matrix::zeroMatrix - resizing each row";
+    for (int i=0;i<m_Actors; i++) {
+        row[i].resize(m_Actors);
+        setItem(i,i, 0);
+    }
+
+}
 
 // returns the (r,c) matrix element
 float Matrix::item( int r, int c ){
@@ -223,21 +353,26 @@ void Matrix::fillMatrix(float value )   {
 			setItem(i,j, value);
 }
 
-//takes two (ActorsXActors) matrices and returns their product as a reference to this
+// takes two matrices of the same size and returns their product as a reference to the calling object
+// Beware: do not use it as B.product(A,B) because it will destroy B on the way.
 Matrix& Matrix::product( Matrix &a, Matrix & b, bool symmetry)  {
+    qDebug()<< "Matrix::product()";
 	for (register int i=0;i< rows();i++)
 		for (register int j=0;j<cols();j++) {
-			setItem(i,j,0);
-			for (register int k=0;k<m_Actors;k++)
+            setItem(i,j,0);
+            for (register int k=0;k<m_Actors;k++) {
+                qDebug() << "Matrix::product() - a("<< i+1 << ","<< k+1 << ")=" << a.item(i,k) << "* b("<< k+1 << ","<< j+1 << ")=" << b.item(k,j)  << " gives "  << a.item(i,k)*b.item(k,j);
 				if  ( k > j && symmetry) {
 					if (a.item(i,k)!=0 && b.item(j,k)!=0)
-						setItem(i,j, item(i,j)+a.item(i,k)*b.item(j,k));
+                        setItem(i,j, item(i,j)+a.item(i,k)*b.item(j,k));
 				}
 				else{
-				    setItem(i,j, item(i,j)+a.item(i,k)*b.item(k,j));
+                    setItem(i,j, item(i,j)+a.item(i,k)*b.item(k,j));
 				}
+            }
+            qDebug() << "Matrix::product() - ("<< i+1 << ","<< j+1 << ") = " << item(i,j);
 		}
-		return *this;
+        return *this;
 }
 		
 //takes two (AXA) matrices (symmetric) and outputs an upper triangular matrix
@@ -344,29 +479,29 @@ Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
 	    m_pivot = A.item(j,j);
 	    qDebug() << "inverseByGaussJordanElimination() at column " << j+1
 		    << " Initial pivot " << m_pivot ;
-	    for ( register int i=l; i<n; i++) {
-		temp_pivot = A.item(i,j);
-		if ( fabs( temp_pivot ) > fabs ( m_pivot ) ) {
-		    qDebug() << " A("<< i+1 << ","<< j+1  << ") = " <<  temp_pivot
-			    << " absolutely larger than current pivot "<< m_pivot
-			    << ". Marking new pivot line: " << i+1;
-		    m_pivotLine=i;
-		    m_pivot = temp_pivot ;
-		}
-	    }
-	    if ( m_pivotLine != -1 ) {
-		A.swapRows(m_pivotLine,j);
-		swapRows(m_pivotLine,j);
-	    }
+        for ( register int i=l; i<n; i++) {
+            temp_pivot = A.item(i,j);
+            if ( fabs( temp_pivot ) > fabs ( m_pivot ) ) {
+                qDebug() << " A("<< i+1 << ","<< j+1  << ") = " <<  temp_pivot
+                         << " absolutely larger than current pivot "<< m_pivot
+                         << ". Marking new pivot line: " << i+1;
+                m_pivotLine=i;
+                m_pivot = temp_pivot ;
+            }
+        }
+        if ( m_pivotLine != -1 ) {
+            A.swapRows(m_pivotLine,j);
+            swapRows(m_pivotLine,j);
+        }
 
 
 	    qDebug()<<"   multiplyRow() "<< j+1 << " by value " << 1/m_pivot ;
-	    for ( register int k=0; k<  rows(); k++) {
-		A.setItem ( j, k,  (1/m_pivot) * A.item (j, k) );
-		setItem ( j, k,  (1/m_pivot) * item (j, k) );
-		qDebug()<<"   A.item("<< j+1 << ","<< k+1 << ") = " <<  A.item(j,k);
-		qDebug()<<"   item("<< j+1 << ","<< k+1 << ") = " <<  item(j,k);
-	    }
+        for ( register int k=0; k<  rows(); k++) {
+            A.setItem ( j, k,  (1/m_pivot) * A.item (j, k) );
+            setItem ( j, k,  (1/m_pivot) * item (j, k) );
+            qDebug()<<"   A.item("<< j+1 << ","<< k+1 << ") = " <<  A.item(j,k);
+            qDebug()<<"   item("<< j+1 << ","<< k+1 << ") = " <<  item(j,k);
+        }
 
 	    qDebug() << "eliminate variables FromRowsBelow()" << j+1 ;
 	    for ( register int i=0; i<  rows(); i++) {

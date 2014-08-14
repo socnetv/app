@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer 
- version: 1.1
+ version: 1.2
  Written in Qt
  
                          vertex.cpp  -  description
                              -------------------
-    copyright            : (C) 2005-2013 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2014 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -59,7 +59,9 @@ Vertex::Vertex(	Graph* parent,
     m_outDegree=0;
     m_inDegree=0;
     m_localDegree=0;
-	m_ODC=0; m_SODC=0; m_IDC=0; m_SIDC=0; m_CC=0; m_SCC=0; m_BC=0; m_SBC=0; m_GC=0; m_SGC=0; m_SC=0; m_SSC=0;
+    m_Eccentricity=0;
+    m_DC=0; m_SDC=0; m_DP=0; m_SDP=0; m_CC=0; m_SCC=0; m_BC=0; m_SBC=0;
+    m_SC=0; m_SSC=0; m_IRCC=0; m_SIRCC=0;
     m_CLC=0; m_hasCLC=false;
 	
     m_inLinked=false;
@@ -79,8 +81,9 @@ Vertex::Vertex(int v1) {
 	m_shape="circle";
 	m_outLinks=0;
 	m_inLinks=0;
-
-	m_ODC=0; m_SODC=0; m_IDC=0; m_SIDC=0; m_CC=0; m_SCC=0; m_BC=0; m_SBC=0; m_GC=0; m_SGC=0; m_SC=0; m_SSC=0;
+    m_Eccentricity=0;
+    m_DC=0; m_SDC=0; m_DP=0; m_SDP=0; m_CC=0; m_SCC=0; m_BC=0; m_SBC=0;
+    m_IRCC=0; m_SIRCC=0; m_SC=0; m_SSC=0;
     m_inLinked=false;
     m_outLinked=false;
     m_reciprocalLinked=false;

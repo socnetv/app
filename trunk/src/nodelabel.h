@@ -1,12 +1,12 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer 
- version: 1.1
+ version: 1.2
  Written in Qt
  
                          nodelabel.h  -  description
                              -------------------
 
-    copyright            : (C) 2005-2013 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2014 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -31,12 +31,11 @@
 #include <QGraphicsTextItem>
 class Node;
 
-
 static const int TypeLabel = QGraphicsItem::UserType+4;
 
 class NodeLabel : public QGraphicsTextItem{
 public: 
-	NodeLabel(Node * , int size,  QString,  QGraphicsScene * );
+    NodeLabel(Node * , int size,  QString);
 	
 	void removeRefs();
  	enum { Type = UserType + 4 };

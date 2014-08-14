@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer
- version: 1.1
+ version: 1.2
  Written in Qt
 
 -                           mainwindow.cpp  -  description
                              -------------------
-    copyright            : (C) 2005-2013 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2014 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -55,8 +55,11 @@
 bool printDebug=false;
 
 
-void myMessageOutput( QtMsgType type, const QMessageLogContext &context, const QString &msg )     {
+void myMessageOutput (
+        QtMsgType type, const QMessageLogContext &context, const QString &msg )
+{
     QByteArray localMsg = msg.toLocal8Bit();
+    Q_UNUSED(context);
     if (printDebug)
         switch ( type ) {
         case QtDebugMsg:
@@ -88,10 +91,10 @@ MainWindow::MainWindow(const QString & m_fileName) {
     initToolBar();  //build the toolbar
     initStatusBar();  //and now add the status bar.
     initToolBox(); //finally, build the toolbox
+    //and fill a stringList with all X-supported color names
+    colorList = QColor::colorNames();
 
-    colorList = QColor::colorNames();  //and fill a stringList with all X-supported color names
-
-    //set MW minimum size, before creating scene and canvas, so that we may have a clue about their sizes..
+    //set MW minimum size, before creating scene and canvas
     this->setMinimumSize(900,600);
 
     initView(); //create the canvas
@@ -134,8 +137,17 @@ MainWindow::MainWindow(const QString & m_fileName) {
              graphicsWidget, SLOT( moveNode(int, int, int) ) ) ;
 
 
-    connect( &activeGraph, SIGNAL( drawNode( int ,int,  QString, QString, int, QString, QString, int, QPointF, QString, bool, bool, bool) ),
-             graphicsWidget, SLOT( drawNode( int ,int,  QString, QString, int, QString, QString, int, QPointF, QString, bool, bool, bool) ) ) ;
+    connect( &activeGraph,
+             SIGNAL(
+                 drawNode( int ,int,  QString, QString, int, QString, QString,
+                           int, QPointF, QString, bool, bool, bool)
+                 ),
+             graphicsWidget,
+             SLOT(
+                 drawNode( int ,int,  QString, QString, int, QString, QString,
+                           int, QPointF, QString, bool, bool, bool)
+                 )
+             ) ;
 
     connect( &activeGraph, SIGNAL( eraseEdge(int, int)),
              graphicsWidget, SLOT( eraseEdge(int, int) ) );
@@ -143,11 +155,21 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect( &activeGraph, SIGNAL( graphChanged() ),
              this, SLOT( graphChanged() ) ) ;
 
-    connect( &activeGraph, SIGNAL( signalFileType(int , QString , int , int, bool) ),
-             this, SLOT( fileType(int , QString , int , int, bool) ) 	) ;
+    connect( &activeGraph,
+             SIGNAL(
+                 signalFileType(int , QString , int , int, bool) ),
+             this,
+             SLOT( fileType(int , QString , int , int, bool) )
+             ) ;
 
-    connect( &activeGraph, SIGNAL( drawEdge( int, int, float, bool, bool, QString, bool)),
-             graphicsWidget, SLOT( drawEdge( int, int,float, bool, bool, QString, bool) )  ) ;
+    connect( &activeGraph,
+             SIGNAL(
+                 drawEdge( int, int, float, bool, bool, QString, bool)
+                 ),
+             graphicsWidget,
+             SLOT(
+                 drawEdge( int, int,float, bool, bool, QString, bool)
+                 )  ) ;
 
     connect( &activeGraph, SIGNAL( drawEdgeReciprocal(int, int) ),
              graphicsWidget, SLOT( drawEdgeReciprocal(int, int) ) );
@@ -198,14 +220,16 @@ MainWindow::MainWindow(const QString & m_fileName) {
              graphicsWidget, SLOT(clearGuides()));
 
 
-    //create an horizontal layout for the toolbox and the canvas. This will be our MW layout.
+    //create an horizontal layout for the toolbox and the canvas.
+    // This will be our MW layout.
     QHBoxLayout *layout = new QHBoxLayout;
     layout->addWidget(toolBox); 		//add them
-    layout->addWidget(graphicsWidget);	//create a dummy widget, for the above layout
+    layout->addWidget(graphicsWidget);
+    //create a dummy widget, for the above layout
     QWidget *widget = new QWidget;
     widget->setLayout(layout);
-
-    setCentralWidget(widget);	//now set this as central widget of MW
+    //now set this as central widget of MW
+    setCentralWidget(widget);
 
     /*
         initialise default network parameters
@@ -213,8 +237,10 @@ MainWindow::MainWindow(const QString & m_fileName) {
     initNet();
 
 
-    /** DEFAULTING HERE DOES NOT CHANGE BOOL VALUE **/
-    /** EVERY TIME INITNET IS CALLED **/
+    /*
+     *  DEFAULTING HERE DOES NOT CHANGE BOOL VALUE
+        EVERY TIME INITNET IS CALLED
+    */
     bezier=false;
     firstTime=true;
 
@@ -224,7 +250,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
     graphicsWidget->setInitNodeSize(initNodeSize);
     graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor)); //Qt::gray
 
-    /**Try to load a GraphML network file on exec time*/
+    /** Try to load a GraphML network file on exec time*/
     if (!m_fileName.isEmpty())
     {
         fileName=m_fileName;
@@ -647,71 +673,80 @@ void MainWindow::initActions(){
     randCircleLayoutAct->setWhatsThis(tr("Random Circle Layout\n\n Repositions the nodes randomly on a circle"));
     connect(randCircleLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRandomCircle()));
 
-    circleInDegreeLayoutAct = new QAction( tr("In-Degree"),	this);
-    circleInDegreeLayoutAct ->setShortcut(tr("Ctrl+Alt+1"));
-    circleInDegreeLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More In-Degree Central Nodes are positioned towards the centre."));
-    circleInDegreeLayoutAct->setWhatsThis(tr("Circle In-Degree Centrality Layout\n\n Repositions the nodes on circles of different radius. More In-Degree Central Nodes are positioned towards the centre."));
-    connect(circleInDegreeLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityInDegree()));
+
+    layoutRadial_DC_Act = new QAction( tr("Degree Centrality"),	this);
+    layoutRadial_DC_Act ->setShortcut(tr("Ctrl+Alt+1"));
+    layoutRadial_DC_Act ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Degree Centrality."));
+    layoutRadial_DC_Act->setWhatsThis(tr("Circle Degree Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Degree Centrality are situated towards the centre."));
+    connect(layoutRadial_DC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutRadialByProminenceIndex()) );
+
+    layoutRadial_CC_Act = new QAction( tr("Closeness Centrality"),	this);
+    layoutRadial_CC_Act ->setShortcut(tr("Ctrl+Alt+2"));
+    layoutRadial_CC_Act ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Closeness Centrality."));
+    layoutRadial_CC_Act->setWhatsThis(tr("Circle Closeness Centrality Layout\n\n Repositions the nodes on circles of different radius. More Closeness Central Nodes are positioned towards the centre."));
+    connect(layoutRadial_CC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutRadialByProminenceIndex()));
+
+    layoutRadial_IRCC_Act = new QAction( tr("Influence Range Closeness Centrality"),	this);
+    layoutRadial_IRCC_Act ->setShortcut(tr("Ctrl+Alt+3"));
+    layoutRadial_IRCC_Act ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Ifluence Range Closeness Centrality."));
+    layoutRadial_IRCC_Act->setWhatsThis(tr("Influence Range Closeness Centrality Circle Layout\n\n Repositions the nodes on circles of different radius. More IRCC prominent Nodes are positioned towards the centre."));
+    connect(layoutRadial_IRCC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutRadialByProminenceIndex()));
+
+    layoutRadial_BC_Act = new QAction( tr("Betweeness Centrality"), this);
+    layoutRadial_BC_Act ->setShortcut(tr("Ctrl+Alt+4"));
+    layoutRadial_BC_Act ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Betweeness Centrality."));
+    layoutRadial_BC_Act->setWhatsThis(tr("Circle Betweeness Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Betweeness Centrality are situated towards the centre."));
+    connect(layoutRadial_BC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutRadialByProminenceIndex()));
+
+    layoutRadial_SC_Act = new QAction( tr("Stress Centrality"),	this);
+    layoutRadial_SC_Act ->setShortcut(tr("Ctrl+Alt+5"));
+    layoutRadial_SC_Act ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Stress Centrality."));
+    layoutRadial_SC_Act->setWhatsThis(tr("Circle Stress Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes having higher Stress Centrality are situated towards the centre."));
+    connect(layoutRadial_SC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutRadialByProminenceIndex()));
+
+    layoutRadial_EC_Act = new QAction( tr("Eccentricity Centrality"),	this);
+    layoutRadial_EC_Act ->setShortcut(tr("Ctrl+Alt+6"));
+    layoutRadial_EC_Act  ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Eccentricity Centrality."));
+    layoutRadial_EC_Act ->setWhatsThis(tr("Circle Eccentricity Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Eccentricity Centrality are situated towards the centre."));
+    connect(layoutRadial_EC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutRadialByProminenceIndex()));
+
+    layoutRadial_PC_Act = new QAction( tr("Power Centrality"),	this);
+    layoutRadial_PC_Act ->setShortcut(tr("Ctrl+Alt+7"));
+    layoutRadial_PC_Act  ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Power Centrality."));
+    layoutRadial_PC_Act ->setWhatsThis(tr("Circle Power Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Power Centrality are situated towards the centre."));
+    connect(layoutRadial_PC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutRadialByProminenceIndex()));
 
 
-    circleOutDegreeLayoutAct = new QAction( tr("Out-Degree"),	this);
-    circleOutDegreeLayoutAct ->setShortcut(tr("Ctrl+Alt+2"));
-    circleOutDegreeLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Out-Degree Central Nodes are positioned towards the centre."));
-    circleOutDegreeLayoutAct->setWhatsThis(tr("Circle Out-Degree Centrality Layout\n\n Repositions the nodes on circles of different radius. More Out-Degree Central Nodes are positioned towards the centre."));
-    connect(circleOutDegreeLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityOutDegree()));
-
-    circleClosenessLayoutAct = new QAction( tr("Closeness"),	this);
-    circleClosenessLayoutAct ->setShortcut(tr("Ctrl+Alt+3"));
-    circleClosenessLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Closeness Central Nodes are positioned towards the centre."));
-    circleClosenessLayoutAct->setWhatsThis(tr("Circle Closeness Centrality Layout\n\n Repositions the nodes on circles of different radius. More Closeness Central Nodes are positioned towards the centre."));
-    connect(circleClosenessLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityCloseness()));
-
-    circleBetweenessLayoutAct = new QAction( tr("Betweeness"), this);
-    circleBetweenessLayoutAct ->setShortcut(tr("Ctrl+Alt+4"));
-    circleBetweenessLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Betweeness Central Nodes are positioned towards the centre."));
-    circleBetweenessLayoutAct->setWhatsThis(tr("Circle Betweeness Centrality Layout\n\n Repositions the nodes on circles of different radius. More Betweeness Central Nodes are positioned towards the centre."));
-    connect(circleBetweenessLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityBetweeness()));
-
-    circleStressLayoutAct = new QAction( tr("Stress"),	this);
-    circleStressLayoutAct ->setShortcut(tr("Ctrl+Alt+5"));
-    circleStressLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Stressed Central Nodes are positioned towards the centre."));
-    circleStressLayoutAct->setWhatsThis(tr("Circle Stress Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes having greater Stress Centrality are situated towards the centre."));
-    connect(circleStressLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityStress() ) );
-
-    circleGraphLayoutAct = new QAction( tr("Graph"),	this);
-    circleGraphLayoutAct ->setShortcut(tr("Ctrl+Alt+6"));
-    circleGraphLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Graph centralized nodes are positioned towards the centre."));
-    circleGraphLayoutAct->setWhatsThis(tr("Circle Graph Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes having greater Graph Centrality are situated towards the centre."));
-    connect(circleGraphLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityGraph() ) );
+    layoutRadial_IC_Act = new QAction( tr("Information Centrality"),	this);
+    layoutRadial_IC_Act ->setEnabled(true);
+    layoutRadial_IC_Act ->setShortcut(tr("Ctrl+Alt+8"));
+    layoutRadial_IC_Act ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Information Centrality."));
+    layoutRadial_IC_Act->setWhatsThis(tr("Circle Information Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Information Centrality are situated towards the centre."));
+    connect(layoutRadial_IC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutRadialByProminenceIndex()));
 
 
-    circleEccentrLayoutAct = new QAction( tr("Eccentricity"),	this);
-    circleEccentrLayoutAct ->setShortcut(tr("Ctrl+Alt+7"));
-    circleEccentrLayoutAct  ->setStatusTip(tr("Repositions the nodes on circles of different radius. Nodes of large eccentricity are positioned towards the centre."));
-    circleEccentrLayoutAct ->setWhatsThis(tr("Circle Eccentricity Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes having greater Eccentricity Centrality are situated towards the centre."));
-    connect(circleEccentrLayoutAct , SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityEccentr() ) );
+    layoutRadial_DP_Act = new QAction( tr("Degree Prestige"),	this);
+    layoutRadial_DP_Act ->setShortcut(tr("Ctrl+Alt+D"));
+    layoutRadial_DP_Act ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their Degree Prestige."));
+    layoutRadial_DP_Act->setWhatsThis(tr("Circle In-Degree Centrality Layout\n\n Repositions the nodes on circles of different radius. Nodes with higher Degree Prestige (inDegree) are situated towards the centre."));
+    connect(layoutRadial_DP_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutRadialByProminenceIndex()));
 
-    circlePowerLayoutAct = new QAction( tr("Power"),	this);
-    circlePowerLayoutAct ->setShortcut(tr("Ctrl+Alt+8"));
-    circlePowerLayoutAct  ->setStatusTip(tr("Repositions the nodes on circles of different radius. More power central nodes are positioned towards the centre."));
-    circlePowerLayoutAct ->setWhatsThis(tr("Circle Power Centrality Layout\n\n Repositions the nodes on circles of different radius.  More power central nodes are positioned towards the centre."));
-    connect(circlePowerLayoutAct , SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityPower() ) );
-
-
-    circleInformationLayoutAct = new QAction( tr("Information"),	this);
-    circleInformationLayoutAct ->setEnabled(true);
-    circleInformationLayoutAct ->setShortcut(tr("Ctrl+Alt+9"));
-    circleInformationLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More Information Central Nodes are situated towards the centre."));
-    circleInformationLayoutAct->setWhatsThis(tr("Circle Information Centrality Layout\n\n Repositions the nodes on circles of different radius. More Information Central Nodes are positioned towards the centre."));
-    connect(circleInformationLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityInformation()));
-
-
-    circleInformationLayoutAct = new QAction( tr("PageRank"),	this);
-    circleInformationLayoutAct ->setEnabled(true);
-    circleInformationLayoutAct ->setShortcut(tr("Ctrl+Alt+"));
-    circleInformationLayoutAct ->setStatusTip(tr("Repositions the nodes on circles of different radius. More PageRank Central Nodes are situated towards the centre."));
-    circleInformationLayoutAct->setWhatsThis(tr("Circle PageRank Centrality Layout\n\n Repositions the nodes on circles of different radius. More PageRank Central Nodes are positioned towards the centre."));
-    connect(circleInformationLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialCentralityPageRank()));
+    layoutRadial_PRP_Act = new QAction( tr("PageRank Prestige"),	this);
+    layoutRadial_PRP_Act ->setEnabled(true);
+    layoutRadial_PRP_Act ->setShortcut(tr("Ctrl+Alt+P"));
+    layoutRadial_PRP_Act ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their PageRank Prestige"));
+    layoutRadial_PRP_Act->setWhatsThis(tr("Circle PageRank Centrality Layout\n\n Repositions the nodes on circles of different radius. More PageRank Central Nodes are positioned towards the centre."));
+    connect(layoutRadial_PRP_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutRadialByProminenceIndex()));
 
 
     clearGuidesAct = new QAction(QIcon(":/images/gridlines.png"), tr("Remove Layout GuideLines"), this);
@@ -719,36 +754,38 @@ void MainWindow::initActions(){
     clearGuidesAct->setWhatsThis(tr("Remove GuideLines\n\n Removes any guidelines (circles or horizontal lines) created for the network layout."));
 
 
-    levelInDegreeLayoutAct = new QAction( tr("In-Degree"),this);
-    levelInDegreeLayoutAct ->setShortcut(tr("Ctrl+Shift+1"));
-    levelInDegreeLayoutAct ->setStatusTip(tr("Repositions the nodes on layers or levels of different height. More In-Degree Central Nodes are situated on higher layers."));
-    levelInDegreeLayoutAct->setWhatsThis(tr("Level In-Degree Centrality Layout\n\n Repositions the nodes on layers of different height. More In-Degree Central Nodes are situated on higher layers."));
-    connect(levelInDegreeLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutLayeredCentralityInDegree()));
-
-    levelOutDegreeLayoutAct  = new QAction( tr("Out-Degree"),this);
+    levelOutDegreeLayoutAct  = new QAction( tr("Degree Centrality"),this);
     levelOutDegreeLayoutAct  ->setShortcut(tr("Ctrl+Shift+2"));
     levelOutDegreeLayoutAct  ->setStatusTip(tr("Repositions the nodes on levels of different height. More Out-Degree Central Nodes are situated on higher levels."));
     levelOutDegreeLayoutAct ->setWhatsThis(tr("Level Out-Degree Centrality Layout\n\n Repositions the nodes on levels of different height. More Out-Degree Central Nodes are situated on higher levels."));
     connect(levelOutDegreeLayoutAct , SIGNAL(triggered()), this, SLOT(slotLayoutLayeredCentralityOutDegree()));
 
-    levelClosenessLayoutAct = new QAction( tr("Closeness"),	this);
+    levelClosenessLayoutAct = new QAction( tr("Closeness Centrality"),	this);
     levelClosenessLayoutAct ->setShortcut(tr("Ctrl+Shift+3"));
     levelClosenessLayoutAct ->setStatusTip(tr("Repositions the nodes on levels of different height. More Closeness Central Nodes are situated on higher levels."));
     levelClosenessLayoutAct->setWhatsThis(tr("level Closeness Centrality Layout\n\n Repositions the nodes on levels of different height. More Closeness Central Nodes are situated on higher levels."));
     connect(levelClosenessLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutLayeredCentralityCloseness()));
 
-    levelBetweenessLayoutAct = new QAction( tr("Betweeness"),	this);
+    levelBetweenessLayoutAct = new QAction( tr("Betweeness Centrality"),	this);
     levelBetweenessLayoutAct ->setShortcut(tr("Ctrl+Shift+4"));
     levelBetweenessLayoutAct ->setStatusTip(tr("Repositions the nodes on levels of different height. More Betweeness Central Nodes are situated on higher levels."));
     levelBetweenessLayoutAct->setWhatsThis(tr("level Betweeness Centrality Layout\n\n Repositions the nodes on levels of different height. More Betweeness Central Nodes are situated on higher levels."));
     connect(levelBetweenessLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutLayeredCentralityBetweeness()));
 
-    levelInformationLayoutAct = new QAction( tr("Informational"),	this);
+    levelInformationLayoutAct = new QAction( tr("Information Centrality"),	this);
     levelInformationLayoutAct ->setShortcut(tr("Ctrl+Shift+9"));
     levelInformationLayoutAct -> setEnabled(false);
     levelInformationLayoutAct ->setStatusTip(tr("Repositions the nodes on levels of different height. More Informational Central Nodes are situated on higher levels."));
     levelInformationLayoutAct->setWhatsThis(tr("Level Informational Centrality Layout\n\n Repositions the nodes on levels of different height. More Informational Central Nodes are situated on higher levels."));
     connect(levelInformationLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutLayeredCentralityInformation()));
+
+
+    levelInDegreeLayoutAct = new QAction( tr("Degree Prestige"),this);
+    levelInDegreeLayoutAct ->setShortcut(tr("Ctrl+Shift+1"));
+    levelInDegreeLayoutAct ->setStatusTip(tr("Repositions the nodes on layers or levels of different height. More In-Degree Prestigious Nodes are situated on higher layers."));
+    levelInDegreeLayoutAct->setWhatsThis(tr("Level Degree Prestige Layout\n\n Repositions the nodes on layers of different height. More In-Degree Prestigious Nodes are situated on higher layers."));
+    connect(levelInDegreeLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutLayeredCentralityInDegree()));
+
 
     springLayoutAct= new QAction(tr("Spring Embedder"), this);
     springLayoutAct->setShortcut(tr("Alt+1"));
@@ -780,7 +817,7 @@ void MainWindow::initActions(){
     zoomOutAct->setStatusTip(tr("Zooms out of the actual network."));
     zoomOutAct->setWhatsThis(tr("Zoom out.\n\nZooms out. What else did you expect?"));
 
-    nodeSizeProportionalOutDegreeAct= new QAction(QIcon(":/images/nodeout.png"),tr("NodeSize = F (OutDegree)"), this);
+    nodeSizeProportionalOutDegreeAct= new QAction(QIcon(":/images/nodeout.png"),tr("Node size according to outDegree"), this);
     nodeSizeProportionalOutDegreeAct->setShortcut(tr("Alt+3"));
     nodeSizeProportionalOutDegreeAct->setStatusTip(tr("Resizes all nodes according to their out edges."));
     nodeSizeProportionalOutDegreeAct->setWhatsThis(tr("NodeSize = F (OutDegree) \n\n Adjusts the size of each node according to their out-edges (OutDegree). The more out-likned a node is, the bigger will appear..."));
@@ -789,7 +826,7 @@ void MainWindow::initActions(){
     connect(nodeSizeProportionalOutDegreeAct, SIGNAL(triggered(bool)), this, SLOT(slotLayoutNodeSizeProportionalOutEdges(bool)));
 
 
-    nodeSizeProportionalInDegreeAct= new QAction(QIcon(":/images/nodein.png"),tr("NodeSize = F (InDegree)"), this);
+    nodeSizeProportionalInDegreeAct= new QAction(QIcon(":/images/nodein.png"),tr("Node size according to InDegree"), this);
     nodeSizeProportionalInDegreeAct->setShortcut(tr("Alt+4"));
     nodeSizeProportionalInDegreeAct->setStatusTip(tr("Resizes all nodes according to their in edges."));
     nodeSizeProportionalInDegreeAct->setWhatsThis(tr("NodeSize = F (InDegree) \n\n This method adjusts the size of each node according to their in-edges (InDegree). The more in-linked a node is, the bigger will appear..."));
@@ -803,10 +840,10 @@ void MainWindow::initActions(){
     Statistics menu actions
     */
 
-    symmetryAct = new QAction(QIcon(":/images/symmetry.png"), tr("Network Symmetry"), this);
+    symmetryAct = new QAction(QIcon(":/images/symmetry.png"), tr("Symmetry"), this);
     symmetryAct ->setShortcut(tr("Shift+S"));
-    symmetryAct->setStatusTip(tr("Tests if the network is symmetric or not"));
-    symmetryAct->setWhatsThis(tr("Network Symmetry\n\n A network is symmetric when all edges are reciprocal, or, in mathematical language, when the adjacency matrix is symmetric."));
+    symmetryAct->setStatusTip(tr("Checks whether the network is symmetric or not"));
+    symmetryAct->setWhatsThis(tr("Symmetry\n\n A network is symmetric when all edges are reciprocal, or, in mathematical language, when the adjacency matrix is symmetric."));
     connect(symmetryAct, SIGNAL(triggered()), this, SLOT(slotCheckSymmetry()));
 
     invertAdjMatrixAct = new QAction(QIcon(":/images/symmetry.png"), tr("Invert Adjacency Matrix"), this);
@@ -815,48 +852,92 @@ void MainWindow::initActions(){
     invertAdjMatrixAct->setWhatsThis(tr("Invert  Adjacency Matrix \n\n Inverts the adjacency matrix using linear algebra methods."));
     connect(invertAdjMatrixAct, SIGNAL(triggered()), this, SLOT(slotInvertAdjMatrix()));
 
-
-    graphDistanceAct = new QAction(QIcon(":/images/distance.png"),  tr("Graph Distance"), this);
+    graphDistanceAct = new QAction(QIcon(":/images/distance.png"),  tr("Geodesic Distance"), this);
     graphDistanceAct ->setShortcut(tr("Ctrl+G"));
     graphDistanceAct->setStatusTip(tr("Calculates the length of the shortest path between two nodes..."));
-    graphDistanceAct->setWhatsThis(tr("Graph Distance\n\n The graph distance (or geodesic distance) of two nodes is the length (number of edges) of the shortest path between them."));
+    graphDistanceAct->setWhatsThis(tr("Geodesic Distance\n\n In graph theory, the distance (or geodesic distance) of two nodes is the length (number of edges) of the shortest path between them."));
     connect(graphDistanceAct, SIGNAL(triggered()), this, SLOT(slotGraphDistance()));
 
     distanceMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesic Distance &Matrix"),this);
     distanceMatrixAct ->setShortcut(tr("Shift+G"));
-    distanceMatrixAct->setStatusTip(tr("Calculates and displays the matrix of graph geodesic distances between all nodes"));
+    distanceMatrixAct->setStatusTip(tr("The matrix of graph geodesic distances between all nodes"));
     distanceMatrixAct->setWhatsThis(tr("Distance Matrix\n\n A distance matrix is a NxN matrix, where the (i,j) element is the geodesic distance from node i to node j. The geodesic distance of two nodes is the length of the shortest path between them."));
     connect(distanceMatrixAct, SIGNAL(triggered()), this, SLOT( slotViewDistanceMatrix() ) );
 
     geodesicsMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Number of Geodesic &Paths Matrix"),this);
     geodesicsMatrixAct ->setShortcut(tr("Ctrl+Shift+G"));
-    geodesicsMatrixAct->setStatusTip(tr("Calculates and displays the number of geodesic paths between each pair of nodes "));
+    geodesicsMatrixAct->setStatusTip(tr("The number of geodesic paths between each pair of nodes "));
     geodesicsMatrixAct->setWhatsThis(tr("Number of Geodesics\n\n Displays a NxN matrix, where the (i,j) element is the number of geodesic paths between node i and node j. A geodesic path of two nodes is the shortest path between them."));
     connect(geodesicsMatrixAct, SIGNAL(triggered()), this, SLOT( slotViewNumberOfGeodesicsMatrix()) );
 
     diameterAct = new QAction(QIcon(":/images/diameter.png"), tr("Diameter"),this);
     diameterAct ->setShortcut(tr("Ctrl+D"));
-    diameterAct->setStatusTip(tr("Calculates and displays the diameter of the network."));
+    diameterAct->setStatusTip(tr("The diameter of the network."));
     diameterAct->setWhatsThis(tr("Diameter\n\n The Diameter of a network is the maximum graph distance (maximum shortest path length) between any two nodes of the network."));
     connect(diameterAct, SIGNAL(triggered()), this, SLOT(slotDiameter()));
 
-    averGraphDistanceAct = new QAction(QIcon(":/images/avdistance.png"), tr("Average Graph Distance"),this);
+    averGraphDistanceAct = new QAction(QIcon(":/images/avdistance.png"), tr("Average Geodesic Distance"),this);
     averGraphDistanceAct ->setShortcut(tr("Ctrl+B"));
-    averGraphDistanceAct->setStatusTip(tr("Calculates and displays the average shortest path length."));
-    averGraphDistanceAct->setWhatsThis(tr("Average Graph Distance\n\n This the average length of all shortest paths between the connected pair of nodes of the network."));
+    averGraphDistanceAct->setStatusTip(tr("The average shortest path length."));
+    averGraphDistanceAct->setWhatsThis(tr("Average Geodesic Distance\n\n This the average length of all shortest paths between the connected pair of nodes of the network."));
     connect(averGraphDistanceAct, SIGNAL(triggered()), this, SLOT(slotAverageGraphDistance()));
 
+    eccentricityAct = new QAction(QIcon(":/images/eccentricity.png"), tr("Eccentricity"),this);
+    eccentricityAct->setShortcut(tr("Ctrl+E"));
+    eccentricityAct->setStatusTip(tr("Eccentricity indices for each node and group Eccentricity"));
+    eccentricityAct->setWhatsThis(tr("Eccentricity\n\n The eccentricity or association number of each node i is the largest geodesic distance (i,j) between node i and every other node j. Therefore, it reflects how far, at most, is each node from every other node. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
+    connect(eccentricityAct, SIGNAL(triggered()), this, SLOT(slotEccentricity()));
+
+
+    connectednessAct = new QAction(QIcon(":/images/distance.png"),  tr("Connectedness"), this);
+    connectednessAct ->setShortcut(tr("Ctrl+Shift+C"));
+    connectednessAct->setStatusTip(tr("Checks whether the network is a connected "
+                                      "graph, a weakly connected digraph or "
+                                      "a disconnected graph/digraph..."));
+    connectednessAct->setWhatsThis(tr("Connectedness\n\n In graph theory, a "
+                                      "graph is <b>connected</b> if there is a "
+                                      "path between every pair of nodes. \n"
+                                      "A digraph is <b>strongly connected</b> "
+                                      "if there the a path from i to j and "
+                                      "from j to i for all nodes (i,j).\n"
+                                      "(i,j).\n"
+                                      "A digraph is weakly connected if at least "
+                                      "a pair of nodes are joined by a semipath.\n"
+                                      "A digraph or a graph is disconnected if "
+                                      "at least one node is isolate."
+                                      ));
+    connect(connectednessAct, SIGNAL(triggered()), this, SLOT(slotConnectedness()));
+
+
+    walksAct = new QAction(QIcon(":/images/walk.png"), tr("Number of Walks Matrix"),this);
+    walksAct->setShortcut(tr("Ctrl+W"));
+    walksAct->setStatusTip(tr("The number of walks of a given length between any nodes."));
+    walksAct->setWhatsThis(tr("Walks\n\n A walk is a sequence of alternating vertices and edges such as v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>, where each edge, e<sub>i</sub> is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. This function counts the number of walks of a given length between each pair of nodes, by studying the powers of the sociomatrix.\n "));
+    connect(walksAct, SIGNAL(triggered()), this, SLOT(slotNumberOfWalks() )  );
+
+    totalWalksAct = new QAction(QIcon(":/images/walk.png"), tr("Total Number of Walks Matrix"),this);
+    totalWalksAct->setShortcut(tr("Ctrl+Shift+W"));
+    totalWalksAct->setStatusTip(tr("Calculates the total number of walks of every possible length between all nodes"));
+    totalWalksAct->setWhatsThis(tr("Walks\n\n A walk is a sequence of alternating vertices and edges such as v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>, where each edge, e<sub>i</sub> is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. This function counts the number of walks of any length between each pair of nodes, by studying the powers of the sociomatrix\n "));
+    connect(totalWalksAct, SIGNAL(triggered()), this, SLOT(slotTotalNumberOfWalks() )  );
+
+
+    reachabilityMatrixAct = new QAction(QIcon(":/images/walk.png"), tr("Reachability Matrix"),this);
+    reachabilityMatrixAct->setShortcut(tr("Ctrl+Shift+R"));
+    reachabilityMatrixAct->setStatusTip(tr("Calculates the Reachability Matrix for the loaded network."));
+    reachabilityMatrixAct->setWhatsThis(tr("Reachability Matrix\n\n     Calculates the reachability matrix X<sup>R</sup> of the graph where the {i,j} element is 1 if the vertices i and j are reachable. \n\n Actually, this just checks whether the corresponding element of Distances matrix is not zero.\n "));
+    connect(reachabilityMatrixAct, SIGNAL(triggered()), this, SLOT(slotReachabilityMatrix() )  );
 
     cliquesAct = new QAction(QIcon(":/images/triangle.png"), tr("Number of Cliques"),this);
     cliquesAct->setShortcut(tr("Ctrl+T"));
-    cliquesAct->setStatusTip(tr("Calculates and displays the number of cliques (triangles) of each node v."));
-    cliquesAct->setWhatsThis(tr("Triangles\n\n A triangle is a complete subgraph of three nodes of G. This method calculates the number of triangles of each node v is defined as delta(v) = |{{u, w} in E : {v, u} in E and {v, w} in E}|.  \n "));
+    cliquesAct->setStatusTip(tr("The number of cliques (triangles) of each node v."));
+    cliquesAct->setWhatsThis(tr("Number of Cliques\n\n A triangle is a complete subgraph of three nodes of G. This method calculates the number of triangles of each node v is defined as delta(v) = |{{u, w} in E : {v, u} in E and {v, w} in E}|.  \n "));
     connect(cliquesAct, SIGNAL(triggered()), this, SLOT(slotNumberOfCliques() )  );
 
 
     clusteringCoefAct = new QAction(QIcon(":/images/clique.png"), tr("Clustering Coefficient"),this);
     clusteringCoefAct ->setShortcut(tr("Ctrl+C"));
-    clusteringCoefAct->setStatusTip(tr("Calculates and displays the average Clustering Coefficient of the network."));
+    clusteringCoefAct->setStatusTip(tr("The average Clustering Coefficient of the network."));
     clusteringCoefAct->setWhatsThis(tr("Clustering Coefficient\n\n The Clustering Coefficient of a vertex quantifies how close the vertex and its neighbors are to being a clique. \n "));
     connect(clusteringCoefAct, SIGNAL(triggered()), this, SLOT(slotClusteringCoefficient() )  );
 
@@ -867,73 +948,103 @@ void MainWindow::initActions(){
     triadCensusAct->setWhatsThis(tr("Triad Census\n\n A triad census counts all the different kinds of observed triads within a network and codes them according to their number of mutual, asymmetric and non-existent dyads. \n "));
     connect(triadCensusAct, SIGNAL(triggered()), this, SLOT(slotTriadCensus() )  );
 
-    cInDegreeAct = new QAction(tr("InDegree"),	 this);
-    cInDegreeAct->setStatusTip(tr("Calculates and displays InDegree Centralities"));
-    cInDegreeAct->setShortcut(tr("Ctrl+1"));
-    cInDegreeAct->setWhatsThis(tr("InDegree Centrality\n\n For each node k, this the number of arcs ending at k. Most in-degree central node might be considered more prominent among others. "));
-    connect(cInDegreeAct, SIGNAL(triggered()), this, SLOT(slotCentralityInDegree()));
+    cDegreeAct = new QAction(tr("Degree Centrality (DC)"),this);
+    cDegreeAct->setShortcut(tr("Ctrl+1"));
+    cDegreeAct->setStatusTip(tr("Degree Centrality indices and group Degree Centralization."));
+    cDegreeAct->setWhatsThis(tr("Degree Centrality (DC)\n\n For each node v, the DC index is the number of edges attached to it (in undirected graphs) or the total numnber of arcs (outLinks) starting from it (in digraphs). This is oftenly considered a measure of actor activity. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs. In weighted relations, ODC is the sum of weights of all edges/outLinks attached to v."));
+    connect(cDegreeAct, SIGNAL(triggered()), this, SLOT(slotCentralityDegree()));
 
 
-    cOutDegreeAct = new QAction(tr("OutDegree"),this);
-    cOutDegreeAct->setShortcut(tr("Ctrl+2"));
-    cOutDegreeAct->setStatusTip(tr("Calculates and displays OutDegree Centralities"));
-    cOutDegreeAct->setWhatsThis(tr("OutDegree Centrality\n\n For each node k, this is the number of arcs starting from it. This is oftenly a measure of activity."));
-    connect(cOutDegreeAct, SIGNAL(triggered()), this, SLOT(slotCentralityOutDegree()));
-
-
-    cClosenessAct = new QAction(tr("Closeness"), this);
-    cClosenessAct->setShortcut(tr("Ctrl+3"));
-    cClosenessAct->setStatusTip(tr("Calculates and displays Closeness Centralities"));
-    cClosenessAct->setWhatsThis(tr("Closeness Centrality\n\n For each node k, this the invert sum of the shortest distances between k and every other node. It is interpreted as the ability to access information through the \"grapevine\" of network members. Nodes with high closeness are those who can reach many other nodes in few steps.  "));
+    cClosenessAct = new QAction(tr("Closeness Centrality (CC)"), this);
+    cClosenessAct->setShortcut(tr("Ctrl+2"));
+    cClosenessAct->setStatusTip(tr("Closeness Centrality indices and group Closeness Centralization."));
+    cClosenessAct->setWhatsThis(tr("Closeness Centrality (CC)\n\n "
+                                   "For each node v, CC the inverse sum of "
+                                   "the shortest distances between v and every other node. CC is "
+                                   "interpreted as the ability to access information through the "
+                                   "\"grapevine\" of network members. Nodes with high closeness "
+                                   "centrality are those who can reach many other nodes in few steps. "
+                                   "\n\nThis index can be calculated in both graphs and digraphs. "
+                                   "It can also be calculated in weighted graphs although the weight of "
+                                   "each edge (v,u) in E is always considered to be 1. "));
     connect(cClosenessAct, SIGNAL(triggered()), this, SLOT(slotCentralityCloseness()));
 
-    cBetweenessAct = new QAction(tr("Betweeness"), this);
+    cInfluenceRangeClosenessAct = new QAction(tr("Influence Range Closeness Centrality (IRCC)"), this);
+    cInfluenceRangeClosenessAct->setShortcut(tr("Ctrl+3"));
+    cInfluenceRangeClosenessAct->setStatusTip(tr("Closeness Centrality indices focusing on how proximate each node is"
+                                                 "to the nodes in its influence range"));
+    cInfluenceRangeClosenessAct->setWhatsThis(tr("Influence Range Closeness Centrality (IRCC)\n\n "
+                                                 "For each node v, IRCC is the standardized inverse average distance "
+                                                 "between v and every reachable node.\n"
+                                                 "This improved CC index is optimized for graphs and directed graphs which "
+                                                 "are not strongly connected. Unlike the ordinary CC, which is the inverted "
+                                                 "sum of distances from node v to all others (thus undefined if a node is isolated "
+                                                 "or the digraph is not strongly connected), IRCC considers only "
+                                                 "distances from node v to nodes in its influence range J (nodes reachable from v). "
+                                                 "The IRCC formula used is the ratio of the fraction of nodes reachable by v "
+                                                 "(|J|/(n-1)) to the average distance of these nodes from v (sum(d(v,j))/|J|"));
+    connect(cInfluenceRangeClosenessAct, SIGNAL(triggered()), this, SLOT(slotCentralityClosenessInfluenceRange()));
+
+    cBetweenessAct = new QAction(tr("Betweeness Centrality (BC)"), this);
     cBetweenessAct->setShortcut(tr("Ctrl+4"));
-    cBetweenessAct->setStatusTip(tr("Calculates and displays Betweeness Centralities"));
-    cBetweenessAct->setWhatsThis(tr("Betweeness Centrality\n\n For each node k, this is the ratio of all geodesics between pairs of nodes which run through k. It reflects how often an node lies on the geodesics between the other nodes of the network. It can be interpreted as a measure of control. A node which is lies between many others is assumed to have a higher likelihood of being able to control information flow in the network. \n\n Note that betweeness centrality assumes that all geodesics have equal weight or are equally likely to be chosen for the flow of information between any two nodes. This is reasonable only on \"regular\" networks where all nodes have similar degrees. On networks with significant degree variance you might want to try informational centrality instead."));
+    cBetweenessAct->setWhatsThis(tr("Betweeness Centrality (BC)\n\n For each node v, BC is the ratio of all geodesics between pairs of nodes which run through v. It reflects how often an node lies on the geodesics between the other nodes of the network. It can be interpreted as a measure of control. A node which lies between many others is assumed to have a higher likelihood of being able to control information flow in the network. \n\n Note that betweeness centrality assumes that all geodesics have equal weight or are equally likely to be chosen for the flow of information between any two nodes. This is reasonable only on \"regular\" networks where all nodes have similar degrees. On networks with significant degree variance you might want to try informational centrality instead. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
+    cBetweenessAct->setStatusTip(tr("Betweeness Centrality indices and group Betweeness Centralization."));
     connect(cBetweenessAct, SIGNAL(triggered()), this, SLOT(slotCentralityBetweeness()));
 
-    cGraphAct = new QAction(tr("Graph"),this);
-    cGraphAct->setShortcut(tr("Ctrl+5"));
-    cGraphAct->setStatusTip(tr("Calculates and displays Graph Centralities"));
-    cGraphAct->setWhatsThis(tr("Graph Centrality\n\n For each node k, this is the invert of the maximum of all geodesic distances from k to all other nodes in the network. Nodes with high GC have short distances to all other nodes in the graph. "));
-    connect(cGraphAct, SIGNAL(triggered()), this, SLOT(slotCentralityGraph()));
-
-    cStressAct = new QAction(tr("Stress"), this);
-    cStressAct->setShortcut(tr("Ctrl+6"));
-    cStressAct->setStatusTip(tr("Calculate and display Stress Centrality"));
-    cStressAct->setWhatsThis(tr("Stress Centrality\n\n For each node k, this is the total number of geodesics between all other nodes which run through k. When one node falls on all other geodesics between all the remaining (N-1) nodes, then we have a star graph with maximum Stress Centrality"));
+    cStressAct = new QAction(tr("Stress Centrality (SC)"), this);
+    cStressAct->setShortcut(tr("Ctrl+5"));
+    cStressAct->setStatusTip(tr("Stress Centrality indices and group Stress Centralization."));
+    cStressAct->setWhatsThis(tr("Stress Centrality (SC)\n\n For each node v, SC is the total number of geodesics between all other nodes which run through v. A node with high SC is considered 'stressed', since it is traversed by a high number of geodesics. When one node falls on all other geodesics between all the remaining (N-1) nodes, then we have a star graph with maximum Stress Centrality. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
     connect(cStressAct, SIGNAL(triggered()), this, SLOT(slotCentralityStress()));
 
 
-    cEccentAct = new QAction(tr("Eccentricity"), this);
-    cEccentAct->setShortcut(tr("Ctrl+7"));
-    cEccentAct->setStatusTip(tr("Calculate and display Eccentricity Centrality"));
-    cEccentAct->setWhatsThis(tr("Stress Centrality\n\n For each node k, this is the largest geodesic distance (k,t) from every other vertex t. Therefore, EC(u) reflects how far, at most, is each node from every other node."));
+    cEccentAct = new QAction(tr("Eccentricity Centrality (EC)"), this);
+    cEccentAct->setShortcut(tr("Ctrl+6"));
+    cEccentAct->setStatusTip(tr("Eccentricity Centrality indices for each node."));
+    cEccentAct->setWhatsThis(
+                tr("Eccentricity Centrality (EC)\n\n For each node i, "
+                   "the EC is the inverse of the maximum geodesic distance "
+                   "of that v to all other nodes in the network. \n"
+                   "Nodes with high EC have short distances to all other nodes "
+                   "This index can be calculated in both graphs and digraphs "
+                   "but is usually best suited for undirected graphs. "
+                   "It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
     connect(cEccentAct, SIGNAL(triggered()), this, SLOT(slotCentralityEccentricity()));
 
 
-    cPowerAct = new QAction(tr("Power"), this);
-    cPowerAct->setShortcut(tr("Ctrl+8"));
-    cPowerAct->setStatusTip(tr("Calculate and display Power Centrality (aka Gil-Schmidt Power Centrality index)"));
-    cPowerAct->setWhatsThis(tr("Power Centrality\n\n For each node k, this index sums its degree (with weight 1), with the size of the 2nd-order neighbourhood (with weight 2), and in general, with the size of the kth order neighbourhood (with weight k). Thus, for each node in the network the most important other nodes are its immediate neighbours and then in decreasing importance the nodes of the 2nd-order neighbourhood, 3rd-order neighbourhood etc. For each node, the sum obtained is normalised by the total numbers of nodes in the same component minus 1. Power centrality has been devised by Gil-Schmidt. "));
+    cPowerAct = new QAction(tr("Power Centrality (PC)"), this);
+    cPowerAct->setShortcut(tr("Ctrl+7"));
+    cPowerAct->setStatusTip(tr("Calculate and display Power Centrality indices (aka Gil-Schmidt Power Centrality) and group Power Centralization"));
+    cPowerAct->setWhatsThis(tr("Power Centrality (PC)\n\n For each node v, this index sums its degree (with weight 1), with the size of the 2nd-order neighbourhood (with weight 2), and in general, with the size of the kth order neighbourhood (with weight k). Thus, for each node in the network the most important other nodes are its immediate neighbours and then in decreasing importance the nodes of the 2nd-order neighbourhood, 3rd-order neighbourhood etc. For each node, the sum obtained is normalised by the total numbers of nodes in the same component minus 1. Power centrality has been devised by Gil-Schmidt. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1 (therefore not considered)."));
     connect(cPowerAct, SIGNAL(triggered()), this, SLOT(slotCentralityPower()));
 
 
-    cInformationAct = new QAction(tr("Information"),	this);
-    cInformationAct->setShortcut(tr("Ctrl+9"));
+    cInformationAct = new QAction(tr("Information Centrality (IC)"),	this);
+    cInformationAct->setShortcut(tr("Ctrl+8"));
     cInformationAct->setEnabled(true);
-    cInformationAct->setStatusTip(tr("Calculate and display Information Centrality"));
-    cInformationAct->setWhatsThis(tr("Information Centrality\n\n Information centrality counts all paths between nodes weighted by strength of tie and distance. This centrality  measure developed by Stephenson and Zelen (1989) focuses on how information might flow through many different paths. \n\n Note: To compute this index, SocNetV drops all isolated nodes."));
+    cInformationAct->setStatusTip(tr("Calculate and display Information Centrality indices and group Information Centralization"));
+    cInformationAct->setWhatsThis(tr("Information Centrality (IC)\n\n Information centrality counts all paths between nodes weighted by strength of tie and distance. This centrality  measure developed by Stephenson and Zelen (1989) focuses on how information might flow through many different paths. \n\nThis index should be calculated only for  graphs. \n\n Note: To compute this index, SocNetV drops all isolated nodes."));
     connect(cInformationAct, SIGNAL(triggered()), this, SLOT(slotCentralityInformation()));
 
+    cInDegreeAct = new QAction(tr("Degree Prestige (DP)"),	 this);
+    cInDegreeAct->setStatusTip(tr("Degree Prestige (InDegree) indices "));
+    cInDegreeAct->setShortcut(tr("Ctrl+Shift+D"));
+    cInDegreeAct->setWhatsThis(tr("InDegree (Degree Prestige)\n\n For each node k, this the number of arcs ending at k. Nodes with higher in-degree are considered more prominent among others. In directed graphs, this index measures the prestige of each node/actor. Thus it is called Degree Prestige. Nodes who are prestigious tend to receive many nominations or choices (in-links). The largest the index is, the more prestigious is the node. \n\nThis index can be calculated only for digraphs. In weighted relations, DP is the sum of weights of all arcs/inLinks ending at node v."));
+    connect(cInDegreeAct, SIGNAL(triggered()), this, SLOT(slotPrestigeDegree()));
 
-    cPageRankAct = new QAction(tr("PageRank"),	this);
-    cPageRankAct->setShortcut(tr("Ctrl+R"));
+    cPageRankAct = new QAction(tr("PageRank Prestige (PRP)"),	this);
+    cPageRankAct->setShortcut(tr("Ctrl+Shift+R"));
     cPageRankAct->setEnabled(true);
-    cPageRankAct->setStatusTip(tr("Calculate and display PageRank Centralities"));
-    cPageRankAct->setWhatsThis(tr("PageRank Centrality\n\n An importance ranking for each node based on the link structure of the network. PageRank, developed by Page and Brin (1997), focuses on how nodes are connected to each other, treating each link from a node as a citation/backlink to another. In essence, for each node PageRank counts all backlinks to it, but it does so by not counting all links equally while it normalizes each link from a node by the total number of links from it. PageRank is calculated iteratively and it corresponds to the principal eigenvector of the normalized link matrix...."));
-    connect(cPageRankAct, SIGNAL(triggered()), this, SLOT(slotCentralityPageRank()));
+    cPageRankAct->setStatusTip(tr("Calculate and display PageRank Prestige"));
+    cPageRankAct->setWhatsThis(tr("PageRank Prestige\n\n An importance ranking for each node based on the link structure of the network. PageRank, developed by Page and Brin (1997), focuses on how nodes are connected to each other, treating each link from a node as a citation/backlink/vote to another. In essence, for each node PageRank counts all backlinks to it, but it does so by not counting all links equally while it normalizes each link from a node by the total number of links from it. PageRank is calculated iteratively and it corresponds to the principal eigenvector of the normalized link matrix. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for directed graphs since it is a prestige measure. It can also be calculated in weighted graphs. In weighted relations, each backlink to a node v from another node u is considered to have weight=1 but it is normalized by the sum of outLinks weights (outDegree) of u. Therefore, nodes with high outLink weights give smaller percentage of their PR to node v."));
+    connect(cPageRankAct, SIGNAL(triggered()), this, SLOT(slotPrestigePageRank()));
+
+    cProximityPrestigeAct = new QAction(tr("Proximity Prestige (PP)"),	this);
+    cProximityPrestigeAct->setShortcut(tr("Ctrl+Shift+P"));
+    cProximityPrestigeAct->setEnabled(true);
+    cProximityPrestigeAct->setStatusTip(tr("Calculate and display Proximity Prestige (digraphs only)"));
+    cProximityPrestigeAct->setWhatsThis(tr("Proximity Prestige (PP) \n\n This index measures how proximate a node v is to the nodes in its influence domain I (the influence domain I of a node is the number of other nodes that can reach it). In PP calculation, proximity is based on distances to rather than distances from node v. To put it simply, in PP what matters is how close are all the other nodes to node v. \n\nThe algorithm takes the average distance to node v of all nodes in its influence domain, standardizes it by multiplying with (N-1)/I and takes its reciprocal. In essence, the formula SocNetV uses to calculate PP for every node v is the ratio of the fraction of nodes that can reach node v, to the average distance of that noeds to v: PP = (I/(N-1))/(sum{d(u,v)}/I) where the sum is over all nodes in I."));
+    connect(cProximityPrestigeAct, SIGNAL(triggered()), this, SLOT(slotPrestigeProximity()));
 
     /**
     Options menu actions
@@ -968,7 +1079,7 @@ void MainWindow::initActions(){
     displayLinksAct->setChecked(true);
     connect(displayLinksAct, SIGNAL(toggled(bool)), this, SLOT(slotDisplayLinks(bool)) );
 
-    displayLinksWeightNumbersAct = new QAction(tr("Display Weight Numbers"),	this);
+    displayLinksWeightNumbersAct = new QAction(tr("Display Link Weights"),	this);
     displayLinksWeightNumbersAct->setStatusTip(tr("Toggles displaying of numbers of links weights"));
     displayLinksWeightNumbersAct->setWhatsThis(tr("Display Weight Numbers\n\nClick to enable or disable displaying numbers of links weight"));
     displayLinksWeightNumbersAct->setCheckable(true);
@@ -1216,28 +1327,30 @@ void MainWindow::initMenuBar() {
     layoutMenu -> addMenu (randomLayoutMenu );
     randomLayoutMenu ->  addAction(randLayoutAct);
     randomLayoutMenu ->  addAction( randCircleLayoutAct );
+    layoutMenu->addSeparator();
 
-    circleLayoutMenu = new QMenu(tr("Radial by centrality..."));
+    circleLayoutMenu = new QMenu(tr("Radial by prominence index..."));
     circleLayoutMenu -> setIcon(QIcon(":/images/circular.png"));
     layoutMenu -> addMenu (circleLayoutMenu);
-    circleLayoutMenu -> addAction (circleInDegreeLayoutAct);
-    circleLayoutMenu -> addAction (circleOutDegreeLayoutAct);
-    circleLayoutMenu -> addAction (circleClosenessLayoutAct);
-    circleLayoutMenu -> addAction (circleBetweenessLayoutAct);
-    circleLayoutMenu -> addAction (circleStressLayoutAct);
-    circleLayoutMenu -> addAction (circleGraphLayoutAct);
-    circleLayoutMenu -> addAction (circleEccentrLayoutAct);
-    circleLayoutMenu -> addAction (circlePowerLayoutAct);
-    circleLayoutMenu -> addAction (circleInformationLayoutAct);
+    circleLayoutMenu -> addAction (layoutRadial_DC_Act);
+    circleLayoutMenu -> addAction (layoutRadial_CC_Act);
+    circleLayoutMenu -> addAction (layoutRadial_IRCC_Act);
+    circleLayoutMenu -> addAction (layoutRadial_BC_Act);
+    circleLayoutMenu -> addAction (layoutRadial_SC_Act);
+    circleLayoutMenu -> addAction (layoutRadial_EC_Act);
+    circleLayoutMenu -> addAction (layoutRadial_PC_Act);
+    circleLayoutMenu -> addAction (layoutRadial_IC_Act);
+    circleLayoutMenu -> addAction (layoutRadial_DP_Act);
+    circleLayoutMenu -> addAction (layoutRadial_PRP_Act);
 
-    levelLayoutMenu = new QMenu (tr("Layered by centrality..."));
+    levelLayoutMenu = new QMenu (tr("Vertically Layered by prominence index..."));
     levelLayoutMenu -> setIcon(QIcon(":/images/net3.png"));
     layoutMenu -> addMenu (levelLayoutMenu);
-    levelLayoutMenu ->addAction ( levelInDegreeLayoutAct     );
     levelLayoutMenu ->addAction ( levelOutDegreeLayoutAct    );
     levelLayoutMenu ->addAction ( levelClosenessLayoutAct    );
     levelLayoutMenu ->addAction ( levelBetweenessLayoutAct   );
     levelLayoutMenu ->addAction ( levelInformationLayoutAct  );
+    levelLayoutMenu ->addAction ( levelInDegreeLayoutAct     );
 
     layoutMenu->addSeparator();
     physicalLayoutMenu = new QMenu (tr("Physical..."));
@@ -1264,7 +1377,16 @@ void MainWindow::initMenuBar() {
 
     statMenu -> addAction (distanceMatrixAct);
     statMenu -> addAction (geodesicsMatrixAct);
+    statMenu -> addAction (eccentricityAct);
     statMenu -> addAction (diameterAct);
+
+
+    statMenu -> addSeparator();
+    statMenu -> addAction(connectednessAct);
+    statMenu -> addAction (walksAct);
+    statMenu -> addAction (totalWalksAct);
+    statMenu -> addAction (reachabilityMatrixAct);
+
     statMenu -> addSeparator();
     statMenu -> addAction (cliquesAct);
     statMenu -> addAction (clusteringCoefAct);
@@ -1273,18 +1395,23 @@ void MainWindow::initMenuBar() {
     statMenu -> addAction (triadCensusAct);
 
     statMenu->addSeparator();
-    centrlMenu = new QMenu(tr("Centralities..."));
+    centrlMenu = new QMenu(tr("Centrality and Prestige indices..."));
+    centrlMenu -> setIcon(QIcon(":/images/centrality.png"));
     statMenu->addMenu(centrlMenu);
-    centrlMenu -> addAction (cInDegreeAct);
-    centrlMenu -> addAction (cOutDegreeAct);
+    centrlMenu -> addSection(QIcon(":/images/centrality.png"), tr("Centrality"));
+
+    centrlMenu -> addAction (cDegreeAct);
     centrlMenu -> addAction (cClosenessAct);
+    centrlMenu -> addAction (cInfluenceRangeClosenessAct);
     centrlMenu -> addAction (cBetweenessAct);
-    centrlMenu -> addAction (cGraphAct);
     centrlMenu -> addAction (cStressAct);
     centrlMenu -> addAction (cEccentAct);
     centrlMenu -> addAction (cPowerAct);
     centrlMenu -> addAction (cInformationAct);
+    centrlMenu -> addSection(QIcon(":/images/prestige.png"), tr("Prestige"));
+    centrlMenu -> addAction (cInDegreeAct);
     centrlMenu -> addAction (cPageRankAct);
+    centrlMenu -> addAction (cProximityPrestigeAct);
 
     /** menuBar entry optionsMenu  */
     optionsMenu = menuBar()->addMenu(tr("&Options"));
@@ -1524,11 +1651,11 @@ void MainWindow::initToolBox(){
     moveKamandaBx->setToolTip(tr("!"));
 
 
-    nodeSizeProportional2OutDegreeBx = new QCheckBox(tr("NodeSize = F (OutDegree)") );
+    nodeSizeProportional2OutDegreeBx = new QCheckBox(tr("Node sizes follow OutDegree)") );
     nodeSizeProportional2OutDegreeBx ->setEnabled(true);
     nodeSizeProportional2OutDegreeBx->setToolTip(tr("If you enable this, all nodes will be resized so that their size reflect their out-degree (the amount of links from them). To put it simply, more out-linked nodes will be bigger..."));
 
-    nodeSizeProportional2InDegreeBx = new QCheckBox(tr("NodeSize = F (InDegree)") );
+    nodeSizeProportional2InDegreeBx = new QCheckBox(tr("Node sizes follow InDegree") );
     nodeSizeProportional2InDegreeBx ->setEnabled(true);
     nodeSizeProportional2InDegreeBx->setToolTip(tr("If you enable this, all nodes will be resized so that their size reflect their in-degree (the amount of links to them from other nodes). To put it simply, more in-linked nodes will be bigger..."));
 
@@ -1575,7 +1702,7 @@ void MainWindow::updateNodeCoords(int nodeNumber, int x, int y){
     Initializes the status bar
 */
 void MainWindow::initStatusBar() {
-    statusBarDuration=2000;
+    statusBarDuration=3000;
     statusMessage( tr("Ready."));
 }
 
@@ -1752,6 +1879,14 @@ void MainWindow::initNet(){
  */
 void MainWindow::statusMessage(const QString message){
     statusBar()->showMessage( message, statusBarDuration );
+}
+
+
+/**
+*	Displays a message	on the status bar when you resize the window.
+*/
+void MainWindow::windowInfoStatusBar(int w, int h){
+    statusMessage(  QString(tr("Window resized to (%1, %2) pixels.")).arg(w).arg(h) );
 }
 
 
@@ -2722,7 +2857,8 @@ void MainWindow::slotOpenTextEditor(){
 /**
     Displays the adjacency matrix of the network.
     It uses a different method for writing the matrix to a file.
-    While slotExportSM uses << operator of Matrix class (via adjacencyMatrix of Graph class), this is using directly the writeAdjacencyMatrix method of Graph class
+    While slotExportSM uses << operator of Matrix class (via adjacencyMatrix of Graph class),
+    this is using directly the writeAdjacencyMatrix method of Graph class
 */
 void MainWindow::slotViewAdjacencyMatrix(){
     if ( !fileLoaded && !networkModified) {
@@ -4281,264 +4417,55 @@ void MainWindow::slotLayoutNodeSizeProportionalInEdges(bool checked){
 }
 
 
-
-
 /**
-*	Calls Graph::LayoutRadialCentrality()
-*	to reposition all nodes on a circular layout based on their In-Degree Centralities. 
-*	More central nodes are closer to the centre
-*/
-void MainWindow::slotLayoutRadialCentralityInDegree(){
+ * @brief MainWindow::slotLayoutRadialByProminenceIndex
+ * Checks sender text() to find out who QMenu item was pressed
+ * and what index was chosen
+ * then repositions all nodes  on a radial layout based on that index
+*  More prominent nodes are closer to the centre of the screen.
+ */
+void MainWindow::slotLayoutRadialByProminenceIndex(){
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical(this, "Error",tr("Sorry, I can't follow! \nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
         statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
         return;
     }
+    QAction *menuitem=(QAction *) sender();
+    qDebug() << "MainWindow::slotLayoutRadialByProminenceIndex() - " <<
+                "SENDER MENU IS " << menuitem->text();
     double x0=scene->width()/2.0;
     double y0=scene->height()/2.0;
     double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-
+    int userChoice = 0;
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
     graphicsWidget->clearGuides();
     createProgressBar();
-    activeGraph.layoutRadialCentrality(x0, y0, maxRadius,1);
+    if (menuitem->text() == "Degree Centrality")
+        userChoice=1;
+    else if (menuitem->text() == "Closeness Centrality")
+        userChoice=2;
+    else if (menuitem->text() == "Influence Range Closeness Centrality")
+        userChoice=3;
+    else if (menuitem->text() == "Betweeness Centrality")
+        userChoice=4;
+    else if (menuitem->text() == "Stress Centrality")
+        userChoice=5;
+    else if (menuitem->text() == "Eccentricity Centrality")
+        userChoice=6;
+    else if (menuitem->text() == "Power Centrality")
+        userChoice=7;
+    else if (menuitem->text() ==  "Information Centrality")
+        userChoice=8;
+    else if (menuitem->text() == "Degree Prestige")
+        userChoice=9;
+    else if (menuitem->text() ==  "PageRank Prestige")
+        userChoice=10;
+    else if (menuitem->text() ==  "Proximity Prestige")
+        userChoice=11;
+
+    activeGraph.layoutRadialByProminenceIndex(x0, y0, maxRadius,userChoice);
     destroyProgressBar();
-    statusMessage( tr("Nodes in inner circles have greater In-Degree Centrality.") );
-}
-
-
-/**
-*	Calls Graph::layoutRadialCentrality()
-*	to reposition all nodes on a radial layout according to their out-degree Centralities. 
-*	More central nodes are closer to the centre
-*/
-void MainWindow::slotLayoutRadialCentralityOutDegree(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Load a network file or create a new network first!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
-        return;
-    }
-    double x0=scene->width()/2.0;
-    double y0=scene->height()/2.0;
-    double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-
-    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearGuides();
-    createProgressBar();
-    activeGraph.layoutRadialCentrality(x0, y0, maxRadius,2);
-    destroyProgressBar();
-    statusMessage( tr("Nodes in inner circles have greater Out-Degree Centrality. ") );
-}
-
-
-
-
-/**
-*	Calls Graph::layoutRadialCentrality()
-*	to reposition all nodes on a circular layout based on their Closeness Centralities. 
-*	More central nodes are closer to the centre
-*/
-void MainWindow::slotLayoutRadialCentralityCloseness(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Sorry, there are no nodes yet!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
-        return;
-    }
-    double x0=scene->width()/2.0;
-    double y0=scene->height()/2.0;
-    double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-    createProgressBar();
-    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearGuides();
-    activeGraph.layoutRadialCentrality(x0, y0, maxRadius,3);
-    destroyProgressBar();
-    statusMessage( tr("Nodes in inner circles have greater Closeness Centrality. ") );
-}
-
-
-
-
-
-/**
-*	Calls Graph::LayoutRadialCentrality()
-*	to reposition all nodes on a circular layout based on their Betweeness Centralities. 
-*	More central nodes are closer to the centre
-*/
-void MainWindow::slotLayoutRadialCentralityBetweeness(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("No nodes yet!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
-        return;
-    }
-    double x0=scene->width()/2.0;
-    double y0=scene->height()/2.0;
-    double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-
-    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearGuides();
-    createProgressBar();
-    activeGraph.layoutRadialCentrality(x0, y0, maxRadius,4);
-    destroyProgressBar();
-    statusMessage( tr("Nodes in inner circles have greater Betweeness Centrality. ") );
-}
-
-
-
-
-
-
-/**
-*	Calls Graph::LayoutRadialCentrality()
-*	to reposition all nodes on a circular layout based on their Stress Centralities. 
-*	More central nodes are closer to the centre
-*/
-void MainWindow::slotLayoutRadialCentralityStress(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
-        return;
-    }
-    double x0=scene->width()/2.0;
-    double y0=scene->height()/2.0;
-    double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-
-    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearGuides();
-    createProgressBar();
-    activeGraph.layoutRadialCentrality(x0, y0, maxRadius,5);
-    destroyProgressBar();
-    statusMessage( tr("Nodes in inner circles have greater Stress Centrality. ") );
-}
-
-
-
-
-/**
-*	Calls Graph::LayoutRadialCentrality()
-*	to reposition all nodes on a circular layout based on their Graph Centralities. 
-*	More central nodes are closer to the centre
-*/
-void MainWindow::slotLayoutRadialCentralityGraph(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to do here!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
-        return;
-    }
-    double x0=scene->width()/2.0;
-    double y0=scene->height()/2.0;
-    double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-
-    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearGuides();
-    createProgressBar();
-    activeGraph.layoutRadialCentrality(x0, y0, maxRadius,6);
-    destroyProgressBar();
-    statusMessage( tr("Nodes in inner circles have greater Graph Centrality. ") );
-
-}
-
-
-
-/**
-*	Calls Graph::layoutRadialCentrality()
-*	to reposition all nodes on a circular layout based on their Eccentricities 
-*	More central nodes are closer to the centre
-*/
-void MainWindow::slotLayoutRadialCentralityEccentr(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
-        return;
-    }
-    double x0=scene->width()/2.0;
-    double y0=scene->height()/2.0;
-    double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-
-    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearGuides();
-    createProgressBar();
-    activeGraph.layoutRadialCentrality(x0, y0, maxRadius,7);
-    destroyProgressBar();
-    statusMessage( tr("Nodes in inner circles have greater Eccentricity Centrality. ") );
-}
-
-/**
-*	Calls Graph::LayoutRadialCentrality()
-*	to reposition all nodes on a circular layout based on their Power Centralities.
-*	More central nodes are closer to the centre
-*/
-void MainWindow::slotLayoutRadialCentralityPower(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
-        return;
-    }
-    double x0=scene->width()/2.0;
-    double y0=scene->height()/2.0;
-    double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-
-    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearGuides();
-    createProgressBar();
-    activeGraph.layoutRadialCentrality(x0, y0, maxRadius,8);
-    destroyProgressBar();
-    statusMessage( tr("Nodes in inner circles have greater Power Centrality. ") );
-}
-
-
-
-
-
-/**
-*	Calls Graph::LayoutRadialCentrality()
-*	to reposition all nodes on a circular layout based on their Informational Centralities. 
-*	More central nodes are closer to the centre
-*/
-void MainWindow::slotLayoutRadialCentralityInformation(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
-        return;
-    }
-    double x0=scene->width()/2.0;
-    double y0=scene->height()/2.0;
-    double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-
-    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearGuides();
-    createProgressBar();
-    activeGraph.layoutRadialCentrality(x0, y0, maxRadius,9);
-    destroyProgressBar();
-    statusMessage( tr("Nodes in inner circles have greater Information Centrality. ") );
-}
-
-
-
-
-
-/**
-*	Calls Graph::LayoutRadialCentrality()
-*	to reposition all nodes on a circular layout based on their PageRank Centralities.
-*	More central nodes are closer to the centre
-*/
-void MainWindow::slotLayoutRadialCentralityPageRank(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
-        return;
-    }
-    double x0=scene->width()/2.0;
-    double y0=scene->height()/2.0;
-    double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-
-    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearGuides();
-    createProgressBar();
-    activeGraph.layoutRadialCentrality(x0, y0, maxRadius,10);
-    destroyProgressBar();
-    statusMessage( tr("Nodes in inner circles have greater PageRank. ") );
+    statusMessage( tr("Nodes in inner circles have greater prominence index.") );
 }
 
 
@@ -4696,9 +4623,15 @@ void MainWindow::slotCheckSymmetry(){
         return;
     }
     if (activeGraph.isSymmetric())
-        QMessageBox::information(this, "Network Symmetry", tr("Adjacency matrix symmetry = YES "),"OK",0);
+        QMessageBox::information(this,
+                                 "Symmetry",
+                                 tr("The adjacency matrix is symmetric."
+                                    ),"OK",0);
     else
-        QMessageBox::information(this, "Network Symmetry", tr("Adjacency matrix symmetry = NO "),"OK",0);
+        QMessageBox::information(this,
+                                 "Symmetry",
+                                 tr("The adjacency matrix is not symmetric."
+                                    ),"OK",0);
 
     statusMessage (QString(tr("Ready")) );
 
@@ -4768,7 +4701,7 @@ void MainWindow::slotGraphDistance(){
     if (activeGraph.isSymmetric() && i>j) {
         qSwap(i,j);
     }
-    if ( activeGraph.distance(i,j) != 0 )
+    if ( activeGraph.distance(i,j) > 0 )
         QMessageBox::information(this, tr("Distance"), tr("Network distance (")+QString::number(i)+", "+QString::number(j)+") = "+QString::number(activeGraph.distance(i,j))+tr("\nThe nodes are connected."),"OK",0);
     else
         QMessageBox::information(this, tr("Distance"), tr("Network distance (")+QString::number(i)+", "+QString::number(j)+") = "+QString::number(activeGraph.distance(i,j))+tr("\nThe nodes are not connected."),"OK",0);
@@ -4882,21 +4815,176 @@ void MainWindow::slotAverageGraphDistance() {
 }
 
 
-
-
-
-
 /**
-*	Displays a message	on the status bar when you resize the window.
+*	Writes Eccentricity indices into a file, then displays it.
 */
-void MainWindow::windowInfoStatusBar(int w, int h){
-    statusMessage(  QString(tr("Window resized to (%1, %2) pixels.")).arg(w).arg(h) );
+void MainWindow::slotEccentricity(){
+    if (!fileLoaded && !networkModified  )  {
+        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+
+        statusMessage(  QString(tr(" Nothing to do..."))  );
+        return;
+    }
+    QString fn = "eccentricity.dat";
+    bool considerWeights=true;
+    statusMessage(  QString(tr(" Please wait...")));
+
+    createProgressBar();
+    activeGraph.writeEccentricity(fn, considerWeights);
+    destroyProgressBar();
+
+    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    tempFileNameNoPath=fn.split( "/");
+    ed->setWindowTitle(tr("Eccentricity report saved as: ") + tempFileNameNoPath.last());
+    ed->show();
+    QApplication::restoreOverrideCursor();
+
 }
 
 
 
 
 
+/**
+ * @brief MainWindow::slotConnectedness
+ */
+void MainWindow::slotConnectedness(){
+    if (!fileLoaded && !networkModified  )  {
+        QMessageBox::critical(this, "Error",tr("There are no nodes nor links!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+
+        statusMessage(  QString(tr("Nothing to do..."))  );
+        return;
+    }
+
+    createProgressBar();
+
+    int connectedness=activeGraph.connectedness();
+
+    destroyProgressBar();
+
+    switch ( connectedness ) {
+    case 1:
+        QMessageBox::information(this, "Connectedness", "The graph representing "
+                                 "the loaded network is connected.", "OK",0);
+        break;
+    case 0:
+    QMessageBox::information(this, "Connectedness", "The digraph representing "
+                            "the loaded network is weakly connected.", "OK",0);
+    break;
+
+    case -1:
+    QMessageBox::information(this, "Connectedness", "The graph representing "
+                             "the loaded network is disconnected.", "OK",0);
+    break;
+    default:
+        QMessageBox::critical(this, "Connectedness", "Something went wrong!.", "OK",0);
+        break;
+    };
+    statusMessage( tr("Connectedness calculated. Ready.") );
+
+}
+
+
+/**
+*	Calls Graph:: writeNumberOfWalks() to calculate and print
+*   the number of walks of a given length , between each pair of nodes.
+*/
+void MainWindow::slotNumberOfWalks(){
+    if (!fileLoaded && !networkModified  )  {
+        QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
+        return;
+    }
+
+    QString fn = "number-of-walks.dat";
+     bool ok=false;
+    createProgressBar();
+
+    int length = QInputDialog::getInt(this, "Number of walks", tr("Select desired length of walk: (2 to %1)").arg(activeNodes()-1),2, 2, activeNodes()-1, 1, &ok );
+    if (!ok) {
+        statusMessage( "Cancelled." );
+        return;
+    }
+
+    activeGraph.writeNumberOfWalksMatrix(fn, networkName, length);
+
+    destroyProgressBar();
+
+    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    tempFileNameNoPath=fn.split( "/");
+    ed->setWindowTitle("Number of walks saved as: " + tempFileNameNoPath.last());
+    ed->show();
+
+}
+
+
+
+/**
+*	Calls Graph:: writeTotalNumberOfWalksMatrix() to calculate and print
+*   the total number of walks of any length , between each pair of nodes.
+*/
+void MainWindow::slotTotalNumberOfWalks(){
+    if (!fileLoaded && !networkModified  )  {
+        QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
+        return;
+    }
+    if (activeNodes() > 50) {
+        switch( QMessageBox::critical(this, "Slow function warning",tr("Please note that this function is VERY SLOW on large networks (n>50), since it will calculate all powers of the sociomatrix up to n-1 in order to find out all possible walks. \n\nIf you need to make a simple reachability test, we advise to use the Reachability Matrix function instead. \n\n Are you sure you want to continue?"), QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
+        case QMessageBox::Ok:
+            break;
+
+        case QMessageBox::Cancel:
+            // Cancel was clicked
+            return;
+            break;
+        default:
+            // should never be reached
+            break;
+        }
+    }
+    QString fn = "total-number-of-walks.dat";
+    createProgressBar();
+
+    int maxLength=activeNodes()-1;
+    activeGraph.writeTotalNumberOfWalksMatrix(fn, networkName, maxLength);
+
+    destroyProgressBar();
+
+    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    tempFileNameNoPath=fn.split( "/");
+    ed->setWindowTitle("Total number of walks saved as: " + tempFileNameNoPath.last());
+    ed->show();
+
+}
+
+
+
+/**
+*	Calls Graph:: writeReachabilityMatrix() to calculate and print
+*   the Reachability Matrix of the network.
+*/
+void MainWindow::slotReachabilityMatrix(){
+    if (!fileLoaded && !networkModified  )  {
+        QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
+        return;
+    }
+
+    QString fn = "reachability-matrix.dat";
+
+    createProgressBar();
+
+    activeGraph.writeReachabilityMatrix(fn, networkName);
+
+    destroyProgressBar();
+
+    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    tempFileNameNoPath=fn.split( "/");
+    ed->setWindowTitle("Reachability Matrix saved as: " + tempFileNameNoPath.last());
+    ed->show();
+
+}
 
 /**
 *	Calls Graph:: writeNumberOfCliques() to write the number of cliques (triangles)
@@ -4984,7 +5072,7 @@ void MainWindow::slotTriadCensus() {
 /**
 *	Writes Out-Degree Centralities into a file, then displays it.
 */
-void MainWindow::slotCentralityOutDegree(){
+void MainWindow::slotCentralityDegree(){
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
         statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
@@ -5014,7 +5102,7 @@ void MainWindow::slotCentralityOutDegree(){
 
     createProgressBar();
 
-    activeGraph.writeCentralityOutDegree(fn, considerWeights);
+    activeGraph.writeCentralityDegree(fn, considerWeights);
 
     destroyProgressBar();
 
@@ -5030,62 +5118,60 @@ void MainWindow::slotCentralityOutDegree(){
 
 
 /**
-*	Writes In-Degree Centralities into a file, then displays it.
-*/
-void MainWindow::slotCentralityInDegree(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to do..."))  );
-        return;
-    }
-    bool considerWeights=false;
-    if ( activeGraph.isWeighted()) {
-        switch( QMessageBox::information( this, "Centrality In-Degree",
-                                          tr("Graph edges have weights. \nTake weights into account (Default: No)?"),
-                                          tr("Yes"), tr("No"),
-                                          0, 1 ) )
-        {
-        case 0:
-            considerWeights=true;
-            break;
-        case 1:
-            considerWeights=false;
-            break;
-        default: // just for sanity
-            considerWeights=false;
-            return;
-            break;
-        }
-
-    }
-    QString fn = "centrality-in-degree.dat";
-
-    createProgressBar();
-
-    activeGraph.writeCentralityInDegree(fn, considerWeights);
-
-    destroyProgressBar();
-
-    statusMessage( QString(tr(" displaying file...")));
-
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("In-Degree Centralities saved as: " + tempFileNameNoPath.last());
-    ed->show();
-}
-
-
-
-
-/**
 *	Writes Closeness Centralities into a file, then displays it.
 */
 void MainWindow::slotCentralityCloseness(){
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network"
+                                               " file or create a new network manually. "
+                                               "\nThen ask me to compute something!"), "OK",0);
         statusMessage(  QString(tr("Nothing to do..."))  );
         return;
     }
+    int connectedness=activeGraph.connectedness();
+
+    switch ( connectedness ) {
+    case 1:
+        break;
+    case 0:
+        QMessageBox::critical(this,
+                              "Centrality Closeness",
+                              tr(
+                                 "Weakly connected digraph!\n"
+                                 "Since this network is directed and weakly "
+                                 "connected, the ordinary Closeness Centrality "
+                                 "index is not defined, because d(u,v) will be "
+                                  "infinite for not reachable nodes u,v.\n"
+                                 "Please use the slightly different but improved "
+                                 "Influence Range Closeness index "
+                                 "which considers how proximate is each node "
+                                 "to the nodes in its influence range. \n"
+                                 "Read more in the SocNetV manual."
+                                 ), "OK",0);
+        return;
+    break;
+
+    case -1:
+        QMessageBox::critical(this,
+                              "Centrality Closeness",
+                              tr(
+                                 "Disconnected graph/digraph!\n"
+                                 "Since this network is disconnected, "
+                                 "the ordinary Closeness Centrality "
+                                 "index is not defined, because d(u,v) will be "
+                                 "infinite for any isolate nodes u or v.\n"
+                                 "Please use the slightly different but improved "
+                                 "Influence Range Closeness index "
+                                 "which considers how proximate is each node "
+                                 "to the nodes in its influence range.\n"
+                                  "Read more in the SocNetV manual."
+                                 ), "OK",0);
+        return;
+    break;
+    default:
+        QMessageBox::critical(this, "Connectedness", "Something went wrong!.", "OK",0);
+        break;
+    };
 
     QString fn = "centrality_closeness.dat";
     bool considerWeights=true;
@@ -5101,6 +5187,40 @@ void MainWindow::slotCentralityCloseness(){
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
     ed->setWindowTitle("Closeness Centralities  saved as: " + tempFileNameNoPath.last());
+    ed->show();
+}
+
+
+
+
+/**
+ * @brief MainWindow::slotCentralityClosenessInfluenceRange
+*	Writes Centrality Closeness (based on Influence Range) indices into a file,
+*   then displays it.
+ */
+void MainWindow::slotCentralityClosenessInfluenceRange(){
+    if (!fileLoaded && !networkModified  )  {
+        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network"
+                                               " file or create a new network manually. "
+                                               "\nThen ask me to compute something!"), "OK",0);
+        statusMessage(  QString(tr("Nothing to do..."))  );
+        return;
+    }
+
+    QString fn = "centrality_closeness_influence_range.dat";
+    bool considerWeights=true;
+
+    createProgressBar();
+
+    activeGraph.writeCentralityClosenessInfluenceRange(fn, considerWeights);
+
+    destroyProgressBar();
+
+    statusMessage( QString(tr(" displaying file...")));
+
+    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    tempFileNameNoPath=fn.split( "/");
+    ed->setWindowTitle("Closeness Centrality (influence range) report: " + tempFileNameNoPath.last());
     ed->show();
 }
 
@@ -5137,29 +5257,110 @@ void MainWindow::slotCentralityBetweeness(){
 
 
 
-/**
-*	Writes PageRank Centralities into a file, then displays it.
-*/
-void MainWindow::slotCentralityPageRank(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 
-        statusMessage(  QString(tr(" Nothing to do..."))  );
+/**
+*	Writes Degree Prestige indices (In-Degree Centralities) into a file, then displays it.
+*/
+void MainWindow::slotPrestigeDegree(){
+    if (!fileLoaded && !networkModified  )  {
+        QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        statusMessage(  QString(tr("Nothing to do..."))  );
         return;
     }
-    QString fn = "centrality_pagerank.dat";
-    //   bool considerWeights=false;  //TODO Do we need to compute weigths in PageRank?
-    statusMessage(  QString(tr(" Please wait...")));
+    if (activeGraph.isSymmetric()) {
+        QMessageBox::critical(this, "Error",tr("Non-directed graph!\nDegree Prestige applies on directed graphs only. Load a digraph, directed network file or create a new network. \nThen ask me to compute it again!"), "OK",0);
+        statusMessage(  QString(tr("Nothing to do..."))  );
+        return;
+    }
+
+    bool considerWeights=false;
+    if ( activeGraph.isWeighted()) {
+        switch( QMessageBox::information( this, "Degree Prestige (In-Degree)",
+                                          tr("Graph edges have weights. \nTake weights into account (Default: No)?"),
+                                          tr("Yes"), tr("No"),
+                                          0, 1 ) )
+        {
+        case 0:
+            considerWeights=true;
+            break;
+        case 1:
+            considerWeights=false;
+            break;
+        default: // just for sanity
+            considerWeights=false;
+            return;
+            break;
+        }
+
+    }
+    QString fn = "degree-prestige.dat";
 
     createProgressBar();
-    activeGraph.writeCentralityPageRank(fn);
+
+    activeGraph.writePrestigeDegree(fn, considerWeights);
+
     destroyProgressBar();
 
     statusMessage( QString(tr(" displaying file...")));
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("PageRank Centralities saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle("Degree Prestige (in-degree) saved as: " + tempFileNameNoPath.last());
+    ed->show();
+}
+
+
+
+/**
+*	Writes PageRank Prestige indices into a file, then displays it.
+*/
+void MainWindow::slotPrestigePageRank(){
+    if (!fileLoaded && !networkModified  )  {
+        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+
+        statusMessage(  QString(tr(" Nothing to do..."))  );
+        return;
+    }
+    QString fn = "prestige_pagerank.dat";
+    //   bool considerWeights=false;  //TODO Do we need to compute weigths in PageRank?
+    statusMessage(  QString(tr(" Please wait...")));
+
+    createProgressBar();
+    activeGraph.writePrestigePageRank(fn);
+    destroyProgressBar();
+
+    statusMessage( QString(tr(" displaying file...")));
+
+    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    tempFileNameNoPath=fn.split( "/");
+    ed->setWindowTitle("PageRank Prestige indices saved as: " + tempFileNameNoPath.last());
+    ed->show();
+    QApplication::restoreOverrideCursor();
+}
+
+
+/**
+*	Writes Proximity Prestige indices into a file, then displays them.
+*/
+void MainWindow::slotPrestigeProximity(){
+    if (!fileLoaded && !networkModified  )  {
+        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+
+        statusMessage(  QString(tr(" Nothing to do..."))  );
+        return;
+    }
+    QString fn = "centrality_proximity_prestige.dat";
+    statusMessage(  QString(tr(" Please wait...")));
+
+    createProgressBar();
+    activeGraph.writePrestigeProximity(fn, true);
+    destroyProgressBar();
+
+    statusMessage( QString(tr(" displaying file...")));
+
+    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    tempFileNameNoPath=fn.split( "/");
+    ed->setWindowTitle("Proximity Prestige Centralities saved as: " + tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
 }
@@ -5224,33 +5425,6 @@ void MainWindow::slotCentralityStress(){
     ed->show();
 }
 
-
-
-/**
-*	Writes Graph Centralities into a file, then displays it.
-*/
-void MainWindow::slotCentralityGraph(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-
-        statusMessage(  QString(tr(" Try creating a network first. \nThen I compute whatever you want..."))  );
-        return;
-    }
-    QString fn = "centrality_graph.dat";
-    bool considerWeights=true;
-    statusMessage(  QString(tr(" Please wait...")));
-
-    createProgressBar();
-
-    activeGraph.writeCentralityGraph(fn, considerWeights);
-
-    destroyProgressBar();
-
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    tempFileNameNoPath=fn.split( "/" );
-    ed->setWindowTitle("Graph Centralities saved as: " + tempFileNameNoPath.last());
-    ed->show();
-}
 
 
 
@@ -5591,6 +5765,8 @@ void MainWindow::slotDisplayLinksWeightNumbers(bool toggle) {
         statusMessage( tr("No nodes or edges found. Sorry...") );
         return;
     }
+    qDebug() << "MW: slotDisplayLinksWeightNumbers - Toggling Edges Weights. Please wait...";
+
     statusMessage( tr("Toggle Edges Weights. Please wait...") );
 
     if (!toggle) 	{
@@ -5603,43 +5779,6 @@ void MainWindow::slotDisplayLinksWeightNumbers(bool toggle) {
         statusMessage( tr("Edge weights are visible again...") );
     }
     activeGraph.setShowLabels(toggle);
-
-
-    // 	pair<int,int> pair1;
-    // 	QList<QGraphicsItem *> list=scene->items();
-    // 	if ( toggle )   {  //draw Edge Weight Numbers
-    // 		qDebug ("toogle is true. Will show weight numbers");
-    // 		for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
-    // 			if ( (*it)->type() ==   Link_Rtti ){
-    // 				Edge* link= (Edge*) (*it);
-    // 				qDebug ("found link");
-    //  				EdgeWeight *linkWeight =new  EdgeWeight (link, QString::number(link->weight()), scene );
-    // 				qDebug ("will draw weight number %i",link->weight() );
-    //
-    //                			linkWeight ->setZ (255);
-    // 				pair1=link->center();
-    //                 		linkWeight ->move(pair1.first,pair1.second);
-    //                 		linkWeight-> setColor (link->color());
-    //                 		linkWeight ->show();
-    // 				qDebug ("show");
-    // 			}
-    // 	}
-    // 	else { //delete them
-    // 		qDebug ("toogle is false. Deleting all numbers");
-    // 		for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++){
-    // 			if ( (*item)->type() ==   Weight_Rtti ) {
-    // 				delete *item;
-    // 			}
-    // 			else if ( (*item)->type() ==   Link_Rtti ) {
-    // 				Edge* link= (Edge*) (*item);
-    // 				link->clearWeightList();
-    // 				qDebug ("weight List cleared");
-    // 			}
-    //
-    // 		}
-    // 		return;
-    // 	}
-
 }
 
 
@@ -6123,13 +6262,13 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
     int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Tue Jul 29 13:28:59 EEST 2014";
+QString BUILD="Tue Aug  5 21:58:23 EEST 2014";
     QMessageBox::about( this, "About SocNetV",
                         "<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
                         "<p><b>Version</b>: " + VERSION + "</p>"
                         "<p><b>Build</b>: "  + BUILD + " </p>"
 
-                        "<p>(C) 2005-2013 by Dimitris V. Kalamaras"
+                        "<p>(C) 2005-2014 by Dimitris V. Kalamaras"
                         "<br> dimitris.kalamaras@gmail.com"
 
                         "<p><b>Fortune cookie: </b><br> \""  + fortuneCookie[randomCookie]  +"\""

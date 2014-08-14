@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer 
- version: 1.1
+ version: 1.2
  Written in Qt
  
                          nodenumber.h  -  description
                              -------------------
-    copyright            : (C) 2005-2013 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2014 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -37,7 +37,7 @@ static const int TypeNumber=QGraphicsItem::UserType+3;
 
 class NodeNumber : public QGraphicsTextItem {
 public:
-	NodeNumber(Node * , int, QString,  QGraphicsScene *);
+    NodeNumber(Node * , int, QString);
 	void removeRefs();
 	enum { Type = UserType + 3 };
 	int type() const { return Type; }

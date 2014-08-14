@@ -1,10 +1,10 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer 
- version: 1.1
+ version: 1.2
  Written in Qt
                          edgeweight.h  -  description
                              -------------------
-    copyright            : (C) 2005-2013 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2014 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -30,14 +30,14 @@
 
 
 #include <QGraphicsTextItem>
-#include "edge.h"
+class Edge;
 
 static const int TypeEdgeWeight = QGraphicsItem::UserType+5;
 
 class EdgeWeight: public QGraphicsTextItem
 {
 public:
-    	EdgeWeight(Edge * , int, QString, QGraphicsScene * );
+    EdgeWeight(Edge * , int, QString);
 	void removeRefs();
 	void move(double x, double y);
 

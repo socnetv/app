@@ -1,11 +1,11 @@
 /******************************************************************************
  SocNetV: Social Networks Visualizer
- version: 1.1
+ version: 1.2
  Written in Qt
  
                          graph.cpp  -  description
                              -------------------
-    copyright            : (C) 2005-2013 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2014 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
 *******************************************************************************/
 
@@ -51,9 +51,10 @@ Graph::Graph() {
     m_undirected=false;
     symmetricAdjacencyMatrix=true;
     adjacencyMatrixCreated=false;
+    reachabilityMatrixCreated=false;
     distanceMatrixCreated=false;
-    calculatedIDC=false;
-    calculatedODC=false;
+    calculatedDP=false;
+    calculatedDC=false;
     calculatedCentralities=false;
 
     dynamicMovement=false;
@@ -535,7 +536,6 @@ int Graph::hasVertex(long int num){
 /**	Checks if there is a vertex with a specific label in the graph
     Returns the index or -1
     Complexity:  O(N)
-
 */
 int Graph::hasVertex(QString label){			
     qDebug ()<<"Graph: hasVertex( "<< label.toUtf8() <<" ) ?" ;
@@ -780,6 +780,7 @@ int Graph::vertices () {
     Returns a list of all isolated vertices inside the graph
 */
 QList<int> Graph::verticesIsolated(){
+    qDebug()<< "Graph::verticesIsolated()";
     int i=0, j=0;
     QList<Vertex*>::iterator it, it1;
     m_isolatedVerticesList.clear();
@@ -793,7 +794,7 @@ QList<int> Graph::verticesIsolated(){
             if ( ! (*it1)->isEnabled() )
                 continue;
             if (i != j ) {
-                if ( (this->hasEdge ( (*it1)->name(), (*it)->name() )  ) !=0 ) {
+                if ( (this->hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
                     (*it)->setIsolated(false);
                     (*it1)->setIsolated(false);
                 }
@@ -802,13 +803,17 @@ QList<int> Graph::verticesIsolated(){
         }
         if ((*it)->isIsolated()) {
             m_isolatedVerticesList << i;
-            qDebug()<< "Graph::createAdjacencyMatrix() - node " << i+1 << " is isolated. Marking it." ;
+            qDebug()<< "Graph::verticesIsolated() - node " << i+1 << " is isolated. Marking it." ;
         }
         i++;
     }
     return m_isolatedVerticesList ;
 }
 
+
+/**
+ *  Returns ratio of present edges to total possible edges.
+ */
 float Graph::density() {
     qDebug("Graph: density()");
     int vert=vertices();
@@ -867,9 +872,12 @@ void Graph::clear() {
     //qDebug("Graph: m_graph reports size %i", m_graph.size());
     m_graph.clear();
     index.clear();
-    discreteIDCs.clear();
-    discreteODCs.clear();
+    discreteDPs.clear();
+    discreteDCs.clear();
     m_isolatedVerticesList.clear();
+    notStronglyConnectedVertices.clear();
+    influenceDomains.clear();
+    influenceRanges.clear();
     m_totalVertices=0;
     m_totalEdges=0;
     outEdgesVert=0;
@@ -878,10 +886,11 @@ void Graph::clear() {
 
     order=true;		//returns true if the indexes of the list is ordered.
     m_undirected=false;
-    calculatedIDC=false;
-    calculatedODC=false;
+    calculatedDP=false;
+    calculatedDC=false;
     calculatedCentralities=false;
     adjacencyMatrixCreated=false;
+    reachabilityMatrixCreated=false;
     graphModified=false;
     symmetricAdjacencyMatrix=true;
 
@@ -923,7 +932,6 @@ bool Graph::isSymmetric(){
                 }
             }
         }
-        graphModified=false;
     }
     qDebug("Graph: isSymmetric() YES");
     return symmetricAdjacencyMatrix;
@@ -932,7 +940,7 @@ bool Graph::isSymmetric(){
 
 
 /**
-*	Transform the directed network to symmetric (all edges reciprocal) 
+*	Transform the digraph to undirected graph (all edges reciprocal)
 */
 void Graph::symmetrize(){
     qDebug("Graph: symmetrize");
@@ -958,7 +966,7 @@ void Graph::symmetrize(){
 }
 
 
-
+//Returns TRUE if (v1, v2) is symmetric.
 bool Graph::symmetricEdge(int v1, int v2){
     qDebug("***Graph: symmetricEdge()");
     if ( (this->hasEdge ( v1, v2 ) ) > 0  &&  (this->hasEdge ( v2, v1 ) ) > 0   ) {
@@ -979,9 +987,9 @@ bool Graph::symmetricEdge(int v1, int v2){
 *  Returns the distance between nodes numbered (i-1) and (j-1)
 */
 int Graph::distance(int i, int j){
-    if (graphModified ||  !distanceMatrixCreated ){
+    if ( !distanceMatrixCreated || graphModified ) {
+        emit statusMessage ( (tr("Calculating shortest paths")) );
         createDistanceMatrix(false);
-        graphModified=false;
     }
     return DM.item(index[i],index[j]);
 }
@@ -992,9 +1000,9 @@ int Graph::distance(int i, int j){
 *  Returns the diameter of the graph, aka the largest geodesic distance between any two vertices
 */
 int Graph::diameter(){
-    if (graphModified){
+    if ( !distanceMatrixCreated || graphModified ) {
+        emit statusMessage ( (tr("Calculating shortest paths")) );
         createDistanceMatrix(false);
-        graphModified=false;
     }
     return graphDiameter;
 }
@@ -1005,13 +1013,32 @@ int Graph::diameter(){
 *  Returns the average distance of the graph
 */
 float Graph::averageGraphDistance(){
-    if (graphModified){
+    if ( !distanceMatrixCreated || graphModified ) {
+        emit statusMessage ( (tr("Calculating shortest paths")) );
         createDistanceMatrix(false);
-        graphModified=false;
     }
     return averGraphDistance;
 }
 
+
+/**
+ * @brief Graph::connectedness()
+ * @return int:
+ * 1: connected graph or strongly connected digraph
+*  0 => weakly connected digraph
+*  -1 -> disconnected graph/digraph
+ */
+int Graph::connectedness(){
+    qDebug() << "Graph::connectedness() ";
+    if (!reachabilityMatrixCreated || graphModified) {
+        reachabilityMatrix();
+    }
+    if ( (notStronglyConnectedVertices.size() != 0 ) && isolatedVertices == 0 )
+     return 0;
+    else if ( (notStronglyConnectedVertices.size() != 0 ) && isolatedVertices !=0 )
+        return -1;
+    return 1;
+}
 
 
 /**
@@ -1019,146 +1046,115 @@ float Graph::averageGraphDistance(){
 */
 void Graph::writeDistanceMatrix (const char* fn, const char* netName) {
     qDebug ("Graph::writeDistanceMatrix()");
-    createDistanceMatrix(false);
-    qDebug ("Graph::writeDistanceMatrix() writing to file");
-    ofstream file (fn);
-    int dist=-1;
 
-    char one_space[]     = " ";
-    char two_spaces[]    = "  ";
-    char three_spaces[]  = "   ";
-    char four_spaces[]   = "    ";
-    char five_spaces[]   = "     ";
-    char six_spaces[]    = "      "; Q_UNUSED (six_spaces);
-    char seven_spaces[]  = "       ";
-    char eight_spaces[]  = "        "; Q_UNUSED (eight_spaces);
-    char nine_spaces[]   = "         "; Q_UNUSED (nine_spaces);
-    char ten_spaces[]    = "          ";
-
-    file << "-Social Network Visualizer- \n";
-    if (!netName) netName="Unnamed network";
-    file << "Distance matrix of "<< netName<<": \n";
-    file << "The first column is the node number "<<": \n\n";
-    //write out matrix of geodesic distances
-    QList<Vertex*>::iterator it, it1;
-    int i=0, j=0;
-
-    file << ten_spaces <<endl;
-
-    i=0;
-    // print rows of distances.
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        // print node number first
-        file << ++i ;
-        if (i>9999)
-            file << two_spaces;
-        if (i>999)
-            file << three_spaces;
-        else if (i>99)
-            file << four_spaces ;
-        else if(i>9)
-            file << five_spaces;
-        else
-            file << seven_spaces;
-
-        file << "|  ";
-
-        j=0;
-
-        for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
-            ++j;
-            if ( (dist= DM.item( index[(*it)->name()],  index[(*it1)->name()] ) )!=-1 ) {
-                file << dist;
-                if (dist>9999)
-                    file << one_space;
-                else if (dist>999)
-                    file << one_space;
-                else if (dist>99)
-                    file << two_spaces;
-                else if(dist>9)
-                    file << three_spaces;
-                else
-                    file << five_spaces ;
-            }
-            else
-                file << "0"<< five_spaces;
-        }
-        file << endl;
+    if ( !distanceMatrixCreated || graphModified ) {
+        emit statusMessage ( (tr("Calculating shortest paths")) );
+        createDistanceMatrix(false);
     }
+
+    qDebug ("Graph::writeDistanceMatrix() writing to file");
+
+    QFile file (fn);
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage (QString(tr("Could not write to %1")).arg(fn) );
+        return;
+    }
+    QTextStream out(&file);
+
+    out << "-Social Network Visualizer- \n";
+    if (!netName) netName="Unnamed network";
+    out << "Distance matrix of "<< netName<<": \n";
+
+    out << DM ;
+
     file.close();
 }
 
 
 /**
-*  Saves the number of geodesic distances matrix to a file
+*  Saves the number of geodesic distances matrix TM to a file
+*
 */
 void Graph::writeNumberOfGeodesicsMatrix(const char* fn, const char* netName) {
     qDebug ("Graph::writeDistanceMatrix()");
-    if (!distanceMatrixCreated )
+    if ( !distanceMatrixCreated || graphModified ) {
+        emit statusMessage ( (tr("Calculating shortest paths")) );
         createDistanceMatrix(false);
-    qDebug ("Graph::writeDistanceMatrix() writing to file");
-    ofstream file (fn);
-    int sigma=-1;
-
-    char one_space[]     = " ";
-    char two_spaces[]    = "  ";
-    char three_spaces[]  = "   ";
-    char four_spaces[]   = "    ";
-    char five_spaces[]   = "     ";
-    char six_spaces[]    = "      "; Q_UNUSED (six_spaces);
-    char seven_spaces[]  = "       ";
-    char eight_spaces[]  = "        "; Q_UNUSED (eight_spaces);
-    char nine_spaces[]   = "         "; Q_UNUSED (nine_spaces);
-    char ten_spaces[]    = "          ";
-
-    file << "-Social Network Visualizer- \n";
-    if (!netName) netName="Unnamed network";
-    file << "Number of geodesics of "<< netName<<": \n";
-    file << "The first column is the node number"<<": \n\n";
-    //write out a matrix of number of Geodesics
-    QList<Vertex*>::iterator it, it1;
-    int i=0, j=0;
-
-    file << ten_spaces <<endl;
-
-    i=0;
-
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        // print node number first
-        file << ++i ;
-        if (i>9999)
-            file << two_spaces;
-        if (i>999)
-            file << three_spaces;
-        else if (i>99)
-            file << four_spaces ;
-        else if(i>9)
-            file << five_spaces;
-        else
-            file << seven_spaces;
-
-        file << "|  ";
-
-        j=0;
-
-        for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
-            ++j;
-            if ( (sigma= TM.item( index[(*it)->name()],  index[(*it1)->name()] ) )!=-1 ) {
-                file << sigma;
-                if (sigma>999)
-                    file <<  one_space;
-                else if (sigma>99)
-                    file <<  one_space;
-                else if(sigma>9)
-                    file << two_spaces;
-                else
-                    file << five_spaces;
-            }
-            else
-                file << "0"<< five_spaces;
-        }
-        file << endl;
     }
+
+    qDebug ("Graph::writeDistanceMatrix() writing to file");
+
+    QFile file (fn);
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage (QString(tr("Could not write to %1")).arg(fn) );
+        return;
+    }
+
+    QTextStream out(&file);
+
+    out << "-Social Network Visualizer- \n";
+    if (!netName) netName="Unnamed network";
+    out << "Number of geodesics matrix of  "<< netName<<": \n";
+
+    out << TM ;
+
+    file.close();
+
+}
+
+
+
+void Graph::writeEccentricity(
+        const QString fileName, const bool considerWeights)
+{
+    Q_UNUSED(considerWeights);
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        return;
+    }
+    QTextStream outText ( &file );
+    if ( !distanceMatrixCreated || graphModified ) {
+        emit statusMessage ( (tr("Calculating shortest paths")) );
+        createDistanceMatrix(true);
+    }
+    emit statusMessage ( QString(tr("Writing eccentricity to file:")).arg(fileName) );
+
+    outText << tr("ECCENTRICITY (e)") <<"\n";
+    outText << tr("The eccentricity e of a node is the maximum geodesic distance "
+                  " from that node to all other nodes in the network.") << "\n";
+    outText << tr("Therefore, e reflects farness: how far, at most, is each "
+                  " node from every other node.") << "\n";
+
+    outText << tr("Range: 0 < e < ") << vertices()-1 <<" (g-1, "
+             << tr("where g is the number of nodes |V|)\n")
+             << tr("A node has maximum e when it has distance 1 "
+                   "to all other nodes (star node))\n");
+
+    outText << "Node"<<"\te\t\t%e\n";
+    QList<Vertex*>::iterator it;
+    for (it= m_graph.begin(); it!= m_graph.end(); it++){
+        outText << (*it)->name()<<"\t"<<(*it)->eccentricity() << "\t\t" <<
+                   (100* ((*it)->eccentricity()) / sumEccentricity)<<endl;
+    }
+    if ( minEccentricity ==  maxEccentricity)
+        outText << tr("\nAll nodes have the same e value.\n");
+    else {
+        outText << "\n";
+        outText << tr("Max e = ") << maxEccentricity
+                <<" (node "<< maxNodeEccentricity  <<  ")  \n";
+        outText << tr("Min e = ") << minEccentricity
+                <<" (node "<< minNodeEccentricity <<  ")  \n";
+        outText << tr("e classes = ") << classesEccentricity<<" \n";
+    }
+
+    outText << "\n\n";
+    outText << tr("Eccentricity report, \n");
+    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime()
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
 }
@@ -1173,10 +1169,11 @@ void Graph::writeNumberOfGeodesicsMatrix(const char* fn, const char* netName) {
         DM(i,j)=geodesic distance between vertex i and vertex j
         TM(i,j)=number of shortest paths from vertex i to vertex j, called sigma(i,j).
         graphDiameter is set to the length of the longest shortest path between every (i,j)
+        Eccentricity(i) is set to the length of the longest shortest path from i to every j
         Also, if doCalculcateCentralities==true, it calculates the centralities for every u in V:
         - Betweeness: BC(u) = Sum ( sigma(i,j,u)/sigma(i,j) ) for every s,t in V
         - Stress: SC(u) = Sum ( sigma(i,j) ) for every s,t in V
-        - Graph: CC(u) =  1/maxDistance(u,t)  for some t in V
+        - Eccentricity: EC(u) =  1/maxDistance(u,t)  for some t in V
         - Closeness: CC(u) =  1 / Sum( DM(u,t) )  for every  t in V
 */
 
@@ -1187,13 +1184,15 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
         return;
     }
     //Create a NxN DistanceMatrix. Initialise values to zero.
-    qDebug() << "Graph::createDistanceMatrix() Resizing Matrices to hold " << m_totalVertices << " vertices";
+    qDebug() << "Graph::createDistanceMatrix() Resizing Matrices to hold "
+             << m_totalVertices << " vertices";
     DM.resize(m_totalVertices);
     TM.resize(m_totalVertices);
 
-    int aVertices=vertices();
-    int aEdges = totalEdges();    //maybe we will use m_totalEdges here to save some time?...
+    int aEdges = totalEdges();
     isolatedVertices = verticesIsolated().count();
+    //drop isolated vertices from calculations (i.e. std Centrality and group Centrality).
+    int aVertices=vertices() - isolatedVertices;
 
     if ( aEdges == 0 )
         DM.fillMatrix(0);
@@ -1207,55 +1206,59 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
         QList<int>::iterator it2;
         int w=0, u=0,s=0, i=0;
         float d_sw=0, d_su=0;
-        float CC=0, BC=0, SC= 0, GC=0, EC=0, PC=0, stdGC=0, stdEC=0;
+        float CC=0, BC=0, SC= 0, eccentricity=0, EC=0, PC=0;
         int progressCounter=0;
 
         graphDiameter=0;
-
         distanceMatrixCreated = false;
         averGraphDistance=0;
         nonZeroDistancesCounter=0;
 
-        qDebug() << "	graphDiameter "<< graphDiameter << " averGraphDistance " <<averGraphDistance;
-        qDebug() << "	reciprocalEdgesVert "<< reciprocalEdgesVert << " inEdgesVert " << inEdgesVert
+        qDebug() << "	graphDiameter "<< graphDiameter << " averGraphDistance "
+                 <<averGraphDistance;
+        qDebug() << "	reciprocalEdgesVert "<< reciprocalEdgesVert
+                 << " inEdgesVert " << inEdgesVert
                  << " outEdgesVert "<<  outEdgesVert;
         qDebug() << "	aEdges " << aEdges <<  " aVertices " << aVertices;
 
 
         maxIndexBC=0;
         maxIndexSC=0;
-        maxIndexEC=0;
 
-        qDebug("Graph: createDistanceMatrix() - initialising variables for maximum centrality indeces");
+        qDebug() << "Graph: createDistanceMatrix() - "
+                    " initialising variables for maximum centrality indeces";
         if (symmetricAdjacencyMatrix) {
             maxIndexBC=( aVertices-1.0) *  (aVertices-2.0)  / 2.0;
             maxIndexSC=( aVertices-1.0) *  (aVertices-2.0) / 2.0;
-            maxIndexCC=1.0/(aVertices-1.0);
-            maxIndexEC=aVertices-1.0;
+            maxIndexCC=aVertices-1.0;
             maxIndexPC=aVertices-1.0;
             qDebug("############# symmetricAdjacencyMatrix - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
         }
         else {
             maxIndexBC=( aVertices-1.0) *  (aVertices-2.0) ;
             maxIndexSC=1;
-            maxIndexEC=(aVertices-1.0);
             maxIndexPC=aVertices-1.0;
             maxIndexCC=1.0/(aVertices-1.0);  //FIXME This applies only on undirected graphs
             qDebug("############# NOT SymmetricAdjacencyMatrix - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
         }
-        //float maxIndexBC-directed= (n1-1) * (n2-1)-(ns-1) , n1  vert outgoing n2 ingoing vert ns self  // all this divided by two.
+
         qDebug("Graph: createDistanceMatrix() - initialising variables for centrality index");
-        maxCC=0; minCC=RAND_MAX; nomCC=0; denomCC=0; groupCC=0; maxNodeCC=0; minNodeCC=0; sumCC=0;
+        maxCC=0; minCC=RAND_MAX; nomCC=0; denomCC=0; groupCC=0; maxNodeCC=0;
+        minNodeCC=0; sumCC=0;
         discreteCCs.clear(); classesCC=0;
-        maxBC=0; minBC=RAND_MAX; nomBC=0; denomBC=0; groupBC=0; maxNodeBC=0; minNodeBC=0; sumBC=0;
+        maxBC=0; minBC=RAND_MAX; nomBC=0; denomBC=0; groupBC=0; maxNodeBC=0;
+        minNodeBC=0; sumBC=0;
         discreteBCs.clear(); classesBC=0;
-        maxSC=0; minSC=RAND_MAX; nomSC=0; denomSC=0; groupSC=0; maxNodeSC=0; minNodeSC=0; sumSC=0;
+        maxSC=0; minSC=RAND_MAX; nomSC=0; denomSC=0; groupSC=0; maxNodeSC=0;
+        minNodeSC=0; sumSC=0;
         discreteSCs.clear(); classesSC=0;
-        maxGC=0; minGC=RAND_MAX; nomGC=0; denomGC=0; groupGC=0; maxNodeGC=0; minNodeGC=0; sumGC=0;
-        discreteGCs.clear(); classesGC=0;
+        maxEccentricity=0; minEccentricity=RAND_MAX; maxNodeEccentricity=0;
+        minNodeEccentricity=0; sumEccentricity=0; discreteEccentricities.clear();
+        classesEccentricity=0;
         maxPC=0; minPC=RAND_MAX; maxNodePC=0; minNodePC=0; sumPC=0;
         discretePCs.clear(); classesPC=0;
-        maxEC=0; minEC=RAND_MAX; nomEC=0; denomEC=0; groupEC=0; maxNodeEC=0; minNodeEC=0; sumEC=0;
+        maxEC=0; minEC=RAND_MAX; nomEC=0; denomEC=0; groupEC=0; maxNodeEC=0;
+        minNodeEC=0; sumEC=0;
         discreteECs.clear(); classesEC=0;
 
         //Zero closeness indeces of each vertex
@@ -1263,7 +1266,8 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
             for (it=m_graph.begin(); it!=m_graph.end(); it++) {
                 (*it)->setBC( 0.0 );
                 (*it)->setSC( 0.0 );
-                (*it)->setGC( 0.0 );
+                (*it)->setEccentricity( 0.0 );
+                (*it)->setEC( 0.0 );
                 (*it)->setCC( 0.0 );
                 (*it)->setPC( 0.0 );
             }
@@ -1306,23 +1310,26 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                 sumCC+=CC;
                 (*it)->setCC( CC );
 
-                //And graph centrality must be inverted...
-                if ( (*it)->GC() != 0 ) {
-                    EC=(*it)->GC();		//Eccentricity Centrality is max geodesic
-                    GC=1.0/EC;		//Graph Centrality is inverted Eccentricity
+                //Check eccentricity (max geodesic distance)
+                eccentricity = (*it)->eccentricity();
+                if ( eccentricity != 0 ) {
+                    //Eccentricity Centrality is the inverted Eccentricity
+                    EC=1.0 / eccentricity;
                 }
-                else { GC=0; EC=0;}
-                (*it)->setGC( GC );		//Set Graph Centrality
-                (*it)->setEC( EC ); 		//Set Eccentricity Centrality
+                else { EC=0;eccentricity=0;}
+                (*it)->setEC( EC ); //Set Eccentricity Centrality = 0
 
-                //Resolve classes Graph centrality
-                resolveClasses(GC, discreteGCs, classesGC);
-                sumGC+=GC;
+                //Find min/max Eccentricity
+                minmax( eccentricity, (*it), maxEccentricity, minEccentricity,
+                        maxNodeEccentricity, minNodeEccentricity) ;
+                resolveClasses(eccentricity, discreteEccentricities,
+                               classesEccentricity ,(*it)->name() );
+                sumEccentricity+=eccentricity;
 
-                stdEC =EC/(aVertices-1.0);
-                (*it)->setSEC(stdEC);
-                sumEC+=EC;
+                //Find min/max Eccentricity centrality
                 minmax( EC, (*it), maxEC, minEC, maxNodeEC, minNodeEC) ;
+                sumEC+=EC;
+                resolveClasses(EC, discreteECs, classesEC,(*it)->name() );
 
                 i=1; //used in calculating power centrality
                 sizeOfComponent = 1;
@@ -1401,13 +1408,8 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 
                 qDebug()<< "Calculating Std Closeness centrality";
                 CC = (*it)->CC();
-                (*it)->setSCC ( CC / sumCC  );
+                (*it)->setSCC ( (aVertices-1.0) * CC  );
                 minmax( (*it)->SCC(), (*it), maxCC, minCC, maxNodeCC, minNodeCC) ;
-
-                qDebug()<< "Calculating Std Graph centrality";
-                GC = (*it)->GC();
-                (*it)->setSGC( GC / sumGC );
-                minmax( (*it)->SGC(), (*it), maxGC, minGC, maxNodeGC, minNodeGC) ;
 
                 qDebug("Resolving SC classes...");
                 SC=(*it)->SC();
@@ -1416,6 +1418,8 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 
             }
             for (it=m_graph.begin(); it!=m_graph.end(); it++) {
+                if ((*it)->isIsolated())
+                    continue;
                 BC=(*it)->BC();
                 SC=(*it)->SC();
 
@@ -1426,27 +1430,25 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 
                 //Calculate the numerator of groupBC according to Freeman's group Betweeness
                 nomBC +=(maxBC - BC );
-                //Find numerator of groupGC
-                nomGC += maxGC-(*it)->SGC();
+
                 //Find numerator of groupCC
                 nomCC += maxCC- (*it)->SCC();
 
             }
             for (it=m_graph.begin(); it!=m_graph.end(); it++) {
+                if ((*it)->isIsolated())
+                    continue;
                 //Calculate numerator of groupSC
                 nomSC +=( maxSC - (*it)->SSC() );
 
             }
-            denomCC = aVertices-1.0;
+
+            denomCC = ( ( aVertices-1.0) * (aVertices-2.0) ) / (2.0 * aVertices -3.0);
             groupCC = nomCC/denomCC;	//Calculate group Closeness centrality
 
             nomBC*=2.0;
             denomBC =   (aVertices-1.0) *  (aVertices-1.0) * (aVertices-2.0);
-            //denomBC =  (aVertices-1.0);
             groupBC=nomBC/denomBC;		//Calculate group Betweeness centrality
-
-            denomGC =  aVertices-1.0;
-            groupGC= nomGC/denomGC;		//Calculate group Graph centrality
 
             denomSC =   (aVertices-1.0); //TOFIX
             groupSC = nomSC/denomSC;	//Calculate group Stress centrality
@@ -1455,8 +1457,6 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
     }
 
     distanceMatrixCreated=true;
-    graphModified=false;
-
 }
 
 
@@ -1477,7 +1477,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
         Also, if doCalculcateCentralities is true then BFS does extra operations:
             a) For source vertex s:
                 it calculates CC(s) as the sum of its distances from every other vertex.
-                it calculates GC(s) as the maximum distance from all other vertices.
+                it calculates eccentricity(s) as the maximum distance from all other vertices.
                 it increases sizeOfNthOrderNeighborhood [ N ] by one, to store the number of nodes at distance n from source s
             b) For every vertex u:
                 it increases SC(u) by one, when it finds a new shor. path from s to t through u.
@@ -1530,14 +1530,15 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
                 DM.setItem(s, w, dist_w);
                 averGraphDistance += dist_w;
                 nonZeroDistancesCounter++;
+
                 if (doCalculcateCentralities){
                     qDebug()<<"Calculate PC: store the number of nodes at distance " << dist_w << "from s";
                     sizeOfNthOrderNeighborhood[dist_w]=sizeOfNthOrderNeighborhood[dist_w]+1;
                     qDebug()<<"Calculate CC: the sum of distances (will invert it l8r)";
                     m_graph [s]->setCC (m_graph [s]->CC() + dist_w);
-                    qDebug()<<"Calculate GC: the maximum distance (will invert it l8r) - also for Eccentricity";
-                    if (m_graph [s]->GC() < dist_w )
-                        m_graph [s]->setGC(dist_w);
+                    qDebug()<<"Calculate Eccentricity: the maximum distance ";
+                    if (m_graph [s]->eccentricity() < dist_w )
+                        m_graph [s]->setEccentricity(dist_w);
 
                 }
                 qDebug("BFS: Checking graphDiameter");
@@ -1624,7 +1625,12 @@ void Graph::resolveClasses(float C, hash_si &discreteClasses, int &classes, int 
 
 
 
-//Calculates the Information centrality of each vertex - diagonal included
+/*  Calculates the Information centrality of each vertex - diagonal included
+ *
+ *  Note that there is no known generalization of Stephenson&Zelen's theory
+ *  for information centrality to directional data
+*/
+
 void Graph::centralityInformation(){
     qDebug()<< "Graph:: centralityInformation()";
     discreteICs.clear();
@@ -1638,12 +1644,15 @@ void Graph::centralityInformation(){
     isolatedVertices=0;
     int i=0, j=0, n=vertices();
     float m_weight=0, weightSum=1, diagonalEntriesSum=0, rowSum=0;
-    float IC=0, SIC=0;
+    float IC=0, SIC=0, sumSIC=0;;
     /* Note: isolated nodes must be dropped from the AM
         Otherwise, the TM might be singular, therefore non-invertible. */
     bool dropIsolates=true;
-    createAdjacencyMatrix(dropIsolates);
-    n-=isolatedVertices;
+    bool omitWeights=false;
+
+    //TODO ASK THE USER TO SYMMETRIZE GRAPH?
+    createAdjacencyMatrix(dropIsolates, omitWeights);
+    n-=isolatedVertices;  //isolatedVertices updated in createAdjacencyMatrix
     qDebug() << "Graph:: centralityInformation() - computing node ICs for total n = " << n;
 
     for (i=0; i<n; i++){
@@ -1701,7 +1710,22 @@ void Graph::centralityInformation(){
         SIC = IC / sumIC ;
         (*it)->setSIC( SIC );
     }
-    graphModified=false;
+
+    float x=0;
+    averageIC = sumSIC / n ;
+    qDebug() << "sumSIC = " << sumSIC << "  n = " << n << "  averageIC = " << averageIC;
+    groupIC=0;
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        x = (  (*it)->SIC()  -  averageIC  ) ;
+        x *=x;
+        qDebug() << "SIC " <<  (*it)->SIC() << "  x " <<   (*it)->SIC() - averageIC  << " x*x" << x ;
+        groupIC  += x;
+    }
+    qDebug() << "groupIC   " << groupIC   << " n " << n ;
+    groupIC  = groupIC  /  (n);
+    qDebug() << "groupIC   " << groupIC   ;
+
+
 }
 
 
@@ -1720,7 +1744,7 @@ void Graph::writeCentralityInformation(const QString fileName){
     centralityInformation();
     emit statusMessage ( QString(tr("Writing information centralities to file: ")).arg(fileName) );
 
-    outText << tr("INFORMATION CENTRALITY (IC) OF EACH NODE")<<"\n";
+    outText << tr("INFORMATION CENTRALITY (IC)")<<"\n";
     outText << tr("IC measures how much information is contained in the paths that originate or end at each node.")<<"\n";
     outText << tr("IC' is the standardized IC")<<"\n";
 
@@ -1728,11 +1752,10 @@ void Graph::writeCentralityInformation(const QString fileName){
     outText << tr("IC' range:  0 < C'< 1")<<"\n\n";
     outText << "Node"<<"\tIC\t\tIC'\t\t%IC\n";
     QList<Vertex*>::iterator it;
-    float IC=0, SIC=0, sumSIC=0;
+    float IC=0, SIC=0;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         IC = (*it)->SIC();
         SIC = (*it)->SIC();
-        sumSIC +=  SIC;
         outText << (*it)->name()<<"\t"<< IC << "\t\t"<< SIC  << "\t\t" <<  ( 100* SIC )<<endl;
         qDebug()<< "Graph::writeCentralityInformation() vertex: " <<  (*it)->name() << " SIC  " << SIC;
     }
@@ -1751,21 +1774,6 @@ void Graph::writeCentralityInformation(const QString fileName){
     outText << "(Wasserman & Faust, p. 196)\n";
     outText << "\n";
 
-    float x=0;
-    float n = ( this->vertices() - isolatedVertices );
-
-    averageIC = sumSIC / n ;
-    qDebug() << "sumSIC = " << sumSIC << "  n = " << n << "  averageIC = " << averageIC;
-    groupIC=0;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        x = (  (*it)->SIC()  -  averageIC  ) ;
-        x *=x;
-        qDebug() << "SIC " <<  (*it)->SIC() << "  x " <<   (*it)->SIC() - averageIC  << " x*x" << x ;
-        groupIC  += x;
-    }
-    qDebug() << "groupIC   " << groupIC   << " n " << n ;
-    groupIC  = groupIC  /  (n-1);
-    qDebug() << "groupIC   " << groupIC   ;
     outText << tr("\nGROUP INFORMATION CENTRALISATION (GIC)\n\n");
     outText << tr("GIC = ") << groupIC<<"\n\n";
     outText << tr("GIC range: 0 < GIC < inf \n");
@@ -1786,384 +1794,17 @@ void Graph::writeCentralityInformation(const QString fileName){
 
 
 
-//Calculates the PageRank centrality of each vertex
-int Graph::centralityPageRank(){
-    qDebug()<< "Graph:: centralityPageRank()";
-    discretePRCs.clear();
-    sumPRC=0;
-    maxPRC=0;
-    minPRC=RAND_MAX;
-    classesPRC=0;
-    groupPRC=0;
-    isolatedVertices = 0 ;
-    dampingFactor = 0.85; // The parameter d is a damping factor which can be set between 0 and 1. Google creators set d to 0.85.
-
-    float PRC=0, oldPRC = 0;
-    float SPRC=0;
-    int i = 1; // a counter
-    int referrer;
-
-    float delta = 0.01; // The delta where we will stop the iterative calculation
-    float maxDelta = RAND_MAX;
-    float sumPageRanksOfLinkedNodes = 0;  // temporary variable to calculate PR
-    float outDegree = 0;
-    bool allNodesAreIsolated = true;
-    QList<Vertex*>::iterator it;
-    imap_f::iterator jt;
-    // begin iteration - continue until we reach our desired delta
-    while (maxDelta > delta) {
-        for (it=m_graph.begin(); it!=m_graph.end(); it++){
-            qDebug() << "Graph:: centralityPageRank() - calculating PR for node: " << (*it)->name() ;
-            // In the first iteration, we have no PageRanks
-            // So we set them to (1-d)
-            if ( i == 1 ) {
-                (*it)->setPRC( 1 - dampingFactor );
-                qDebug() << "Graph:: centralityPageRank() - first iteration - node: " << (*it)->name() << " PR = " << (*it)->PRC() ;
-                if ( (*it)->isIsolated() ) {
-                    isolatedVertices++;
-                    qDebug()<< "Graph:: centralityPageRank() vertex: " << (*it)->name() << " is isolated. PR will be just 1-d. Continue... ";
-                }
-                else
-                    allNodesAreIsolated = false;
-            }
-            // In every other iteration we calculate PageRanks.
-            else {
-                sumPageRanksOfLinkedNodes = 0;
-                maxDelta = 0;
-                oldPRC = (*it)->PRC();
-                // take every other node which links to the current node.
-                for( jt = (*it)->m_inEdges.begin(); jt != (*it)->m_inEdges.end(); jt++ ) {
-                    qDebug() << "Graph:: centralityPageRank " << (*it)->name() << " is inLinked from " << jt->first  ;
-                    referrer=jt->first;
-                    if ( this->hasEdge( referrer , (*it)->name() ) )
-                    {
-
-                        outDegree = m_graph[ index[referrer] ] ->outDegree();
-                        PRC =  m_graph[ index[referrer] ]->PRC();
-                        qDebug()<< "Graph:: centralityPageRank() " <<  jt->first  << " has PRC = " << PRC  << " and outDegree = " << outDegree << " PRC / outDegree = " << PRC / outDegree ;
-                        sumPageRanksOfLinkedNodes += PRC / outDegree;
-                    }
-
-                }
-                // OK. Now calculate PageRank of current node
-                PRC = (1-dampingFactor) + dampingFactor * sumPageRanksOfLinkedNodes;
-                // store new PageRank
-                (*it) -> setPRC ( PRC );
-                // calculate diff from last PageRank value for this vertex and set it to minDelta if the latter is bigger.
-                qDebug()<< "Graph:: centralityPageRank() vertex: " <<  (*it)->name() << " new PageRank = " << PRC
-                        << " old PR was = " << oldPRC << " diff = " << fabs(PRC - oldPRC);
-                if ( maxDelta < fabs(PRC - oldPRC) ) {
-                    maxDelta = fabs(PRC - oldPRC);
-                    qDebug()<< "Graph:: centralityPageRank() setting new maxDelta = " <<  maxDelta;
-                }
-
-            }
-        }
-        if (allNodesAreIsolated) {
-            qDebug()<< "Graph:: centralityPageRank() all vertices are isolated. Break...";
-            qDebug() << "isolatedVertices: " << isolatedVertices << " total vertices " << this->vertices();
-
-            break;
-        }
-        i++;
-    }
-    // calculate sumPRC
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        sumPRC +=  (*it)->PRC();
-    }
-    // calculate std and min/max PRCs
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        PRC = (*it)->PRC();
-        resolveClasses(PRC,discretePRCs,classesPRC);
-        if ( PRC > maxPRC ) {
-            maxPRC = PRC;
-            maxNodePRC=(*it)->name();
-        }
-        if ( PRC < minPRC ) {
-            minPRC = PRC;
-            minNodePRC=(*it)->name();
-        }
-
-        SPRC = PRC / sumPRC ;
-        (*it)->setSPRC( SPRC );
-        qDebug()<< "Graph:: centralityPageRank() vertex: " <<  (*it)->name() << " PageRank = " << PRC << " standard PR = " << SPRC;
-    }
-    graphModified=false;
-    if (allNodesAreIsolated) {
-        qDebug()<< "Graph:: centralityPageRank() all vertices are isolated. Equal PageRank for all....";
-        return 1;
-    }
-    qDebug()<< "Graph:: centralityPageRank() vertex: " <<  maxNodePRC << " has max PageRank = " << maxPRC;
-    return 0;
-
-}
-
-
-//Writes the PageRank centralities to a file
-void Graph::writeCentralityPageRank(const QString fileName){
-    QFile file ( fileName );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
-        qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
-        return;
-    }
-    QTextStream outText ( &file );
-
-    emit statusMessage ( (tr("Calculating PageRank centralities. Please wait...")) );
-    this->centralityPageRank();
-
-    emit statusMessage ( QString(tr("Writing PageRank centralities to file: %1")).arg(fileName) );
-
-    outText << tr("PAGERANK CENTRALITY (PRC) OF EACH NODE")<<"\n";
-    outText << tr("")<<"\n";
-    outText << tr("PRC' is the standardized PRC")<<"\n";
-
-    outText << tr("PRC  range:  1-d < C  where d=") << dampingFactor   << "\n";
-    outText << tr("PRC' range:  ") << dampingFactor / sumPRC  << " < C'< 1" <<"\n\n";
-    outText << "Node"<<"\tPRC\t\tPRC'\t\t%PRC\n";
-    QList<Vertex*>::iterator it;
-    float PRC=0, SPRC=0, sumSPRC=0;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        PRC = (*it)->PRC();
-        SPRC = (*it)->SPRC();
-        sumSPRC +=  SPRC;
-        outText << (*it)->name()<<"\t"<< PRC << "\t\t"<< SPRC  << "\t\t" <<  ( 100* SPRC )<<endl;
-        qDebug()<< "Graph::writeCentralityPageRank() vertex: " <<  (*it)->name() << " SPRC  " << SPRC;
-    }
-    qDebug ("min %f, max %f", minPRC, maxPRC);
-    if ( minPRC == maxPRC )
-        outText << tr("\nAll nodes have the same PRC value.\n");
-    else  {
-        outText << "\n";
-        outText << tr("Max PRC' = ") << maxPRC <<" (node "<< maxNodePRC  <<  ")  \n";
-        outText << tr("Min PRC' = ") << minPRC <<" (node "<< minNodePRC <<  ")  \n";
-        outText << tr("PRC classes = ") << classesPRC<<" \n";
-    }
-    outText << "\n";
-
-    float x=0;
-    float n = ( this->vertices() - isolatedVertices );
-    if (n != 0 )
-        averagePRC = sumSPRC / n ;
-    else
-        averagePRC = SPRC;
-
-    qDebug() << "sumPRC = " << sumSPRC << "  n = " << n << "  averagePRC = " << averagePRC;
-    groupPRC=0;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        x = ( 100 * (*it)->SPRC()  - 100 * averagePRC  ) ;
-        x *=x;
-        qDebug() << "SPRC " <<  (*it)->SPRC() << "  x " <<   (*it)->SPRC() - averagePRC  << " x*x" << x ;
-        groupPRC  += x;
-    }
-    qDebug() << "groupPRC   " << groupPRC   << " n " << n ;
-    groupPRC  = groupPRC  /  (n-1);
-    qDebug() << "groupPRC   " << groupPRC   ;
-    outText << tr("\nGROUP PAGERANK CENTRALISATION (GPC)\n\n");
-    outText << tr("GPC = ") << groupPRC<<"\n\n";
-    outText << tr("GPC range: 0 < GPRC < inf \n");
-    outText << tr("GPC is computed using a simple variance formula. \n");
-
-
-
-    outText << tr("PageRank Centrality report, \n");
-    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
-    file.close();
-
-}
-
-
-/**
-*	Calculates In-Degree Centralities of each vertex - diagonal included
-*	Also the mean value and the variance of the in-degrees.
-*/
-void Graph::centralityInDegree(bool weights){
-    qDebug()<< "Graph:: centralityInDegree()";
-    float IDC=0, nom=0, denom=0;
-    float weight;
-    classesIDC=0;
-    sumIDC=0;
-    maxIDC=0;
-    minIDC=vertices()-1;
-    discreteIDCs.clear();
-    varianceDegree=0;
-    meanDegree=0;
-    symmetricAdjacencyMatrix = true;
-    QList<Vertex*>::iterator it, it1;
-    hash_si::iterator it2;
-    int vert=vertices();
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        IDC=0;
-        qDebug() << "Graph: centralityInDegree() vertex " <<  (*it)->name()  ;
-        for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
-            if ( (weight=this->hasEdge ( (*it1)->name(), (*it)->name() ) ) !=0  )   {
-                if (weights)
-                    IDC+=weight;
-                else
-                    IDC++;
-            }
-            //check here if the matrix is symmetric - we need this below
-            if ( ( this->hasEdge ( (*it1)->name(), (*it)->name() ) ) != ( this->hasEdge ( (*it)->name(), (*it1)->name() ) )   )
-                symmetricAdjacencyMatrix = false;
-        }
-        (*it) -> setIDC ( IDC ) ;				//Set InDegree
-        qDebug() << "Graph: vertex = " <<  (*it)->name() << " has IDC = " << IDC ;
-        sumIDC += IDC;
-        it2 = discreteIDCs.find(QString::number(IDC));
-        if (it2 == discreteIDCs.end() )	{
-            classesIDC++;
-            qDebug("This is a new IDC class");
-            discreteIDCs.insert ( QString::number(IDC), classesIDC );
-        }
-        qDebug("IDC classes = %i ", classesIDC);
-        if (maxIDC < IDC ) {
-            maxIDC = IDC ;
-            maxNodeIDC=(*it)->name();
-        }
-        if (minIDC > IDC ) {
-            minIDC = IDC ;
-            minNodeIDC=(*it)->name();
-        }
-    }
-
-    if (minIDC == maxIDC)
-        maxNodeIDC=-1;
-
-
-    meanDegree = sumIDC / (float) vert;
-    qDebug("Graph: sumIDC = %f, meanDegree = %f", sumIDC, meanDegree);
-
-    // Calculate std In-Degree, Variance and the Degree Centralisation of the whole graph.
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        IDC= (*it)->IDC();
-        if (!weights) {
-            (*it) -> setSIDC( IDC / (vert-1.0) );		//Set Standard InDegree
-        }
-        else {
-            (*it) -> setSIDC( IDC / (sumIDC) );
-        }
-        nom+= maxIDC-IDC;
-        qDebug() << "Graph: vertex = " <<  (*it)->name() << " has IDC = " << IDC << " and SIDC " << (*it)->SIDC ();
-
-        //qDebug("Graph: IDC = %f, meanDegree = %f", IDC, meanDegree);
-        varianceDegree += (IDC-meanDegree) * (IDC-meanDegree) ;
-    }
-
-    varianceDegree=varianceDegree/(float) vert;
-
-    if (symmetricAdjacencyMatrix)
-        denom=(vert-1.0)*(vert-2.0);
-    else
-        denom=(vert-1.0)*(vert-1.0);
-
-    if (!weights) {
-        groupIDC=nom/denom;
-    }
-    else {
-        qDebug()<< "Graph::centralityInDegree vertices isolated: " << verticesIsolated().count() << ". I will subtract groupIDC by " << ((float)verticesIsolated().count()/(float)vert);
-        groupIDC=( ( nom * (vert-1.0))/( denom * maxIDC) ) - ((float) verticesIsolated().count()/ (float) vert);
-    }
-
-    qDebug("Graph: varianceDegree = %f, groupIDC = %f", varianceDegree, groupIDC);
-
-    if (!weights) {
-        minIDC/=(float)(vert-1); // standardize
-        maxIDC/=(float)(vert-1);
-    }
-    else {
-        minIDC/=(float)(sumIDC); // standardize
-        maxIDC/=(float)(sumIDC);
-    }
-    calculatedIDC=true;
-    graphModified=false;
-}
-
-
-
-
-void Graph::writeCentralityInDegree (const QString fileName, const bool considerWeights)
-{
-    QFile file ( fileName );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
-        qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
-        return;
-    }
-    QTextStream outText ( &file );
-
-    centralityInDegree(considerWeights);
-    float maximumIndexValue=vertices()-1.0;
-
-    outText << tr("IN-DEGREE CENTRALITIES (IDC) OF EACH NODE\n");
-    outText << tr("IDC is the sum of incoming links to node u from all adjacent nodes.\n");
-    outText << tr("If the network is weighted, IDC is the sum of incoming link weights to node u from all adjacent nodes.\n");
-    outText << tr("The in-degree of the node is a measure of the \'activity\' of the node it represents\n");
-    outText << tr("IDC' is the standardized IDC\n\n");
-    if (considerWeights){
-        maximumIndexValue=(vertices()-1.0)*maxIDC;
-        outText << tr("IDC  range: 0 < C < undefined (since this is a weighted network")<<"\n";
-    }
-    else
-        outText << tr("IDC  range: 0 < C < ")<<maximumIndexValue<<"\n";
-    outText << "IDC' range: 0 < C'< 1"<<"\n\n";
-
-    outText << "Node"<<"\tIDC\tIDC'\t%IDC\n";
-
-    QList<Vertex*>::iterator it;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        outText <<(*it)->name()<<"\t"<<(*it)->IDC() << "\t"<< (*it)->SIDC() << "\t" <<  (100* ((*it)->IDC()) / sumIDC)<<endl;
-    }
-    if (symmetricAdjacencyMatrix) {
-        outText << "\n";
-        outText << tr("Mean Nodal Degree = ") << meanDegree<<"\n" ;
-        outText << tr("Degree Variance = ") << varianceDegree<<"\n";
-    }
-    else{
-        outText << "\n";
-        outText << tr("Mean Nodal InDegree = ") << meanDegree<<"\n" ;
-        outText << tr("InDegree Variance = ") << varianceDegree<<"\n";
-    }
-
-    if ( minIDC == maxIDC )
-        outText << tr("All nodes have the same IDC value.") << "\n";
-    else  {
-        outText << tr("Max IDC' = ") << maxIDC <<" (node "<< maxNodeIDC <<  ")  \n";
-        outText << tr("Min IDC' = ") << minIDC <<" (node "<< minNodeIDC <<  ")  \n";
-        outText << tr("IDC classes = ") << classesIDC<<" \n";
-    }
-
-    outText << "\nGROUP IN-DEGREE CENTRALISATION (GIDC)\n\n";
-    outText << "GIDC = " << groupIDC<<"\n\n";
-
-    outText << "GIDC range: 0 < GIDC < 1\n";
-    outText << "GIDC = 0, when all in-degrees are equal (i.e. regular lattice).\n";
-    outText << "GIDC = 1, when one node is linked from every other node.\n";
-
-    outText << "(Wasserman & Faust, p. 101)\n";
-
-    if (considerWeights) {
-        outText << "\nNOTE: Because the network is weighted, we normalize Group Centrality multiplying by (N-1)/maxDC, where N is the total vertices, and subtracting the percentage of isolated vertices\n";
-    }
-
-    outText << "\n\n";
-    outText << tr("In-Degree Centrality Report, \n");
-    outText << tr("created by SocNetV: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
-    file.close();
-
-}
-
-
 
 //Calculates the outDegree centrality of each vertex - diagonal included
-void Graph::centralityOutDegree(bool weights){
-    qDebug("Graph:: centralityOutDegree()");
-    float ODC=0, nom=0, denom=0;
+void Graph::centralityDegree(bool weights){
+    qDebug("Graph:: centralityDegree()");
+    float DC=0, nom=0, denom=0;
     float weight;
-    classesODC=0;
-    discreteODCs.clear();
-    sumODC=0;
-    maxODC=0;
-    minODC=vertices()-1;
+    classesDC=0;
+    discreteDCs.clear();
+    sumDC=0;
+    maxDC=0;
+    minDC=vertices()-1;
     varianceDegree=0;
     meanDegree=0;
     int vert=vertices();
@@ -2171,58 +1812,58 @@ void Graph::centralityOutDegree(bool weights){
     hash_si::iterator it2;
 
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        ODC=0;
+        DC=0;
         for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
             if ( (weight=this->hasEdge ( (*it)->name(), (*it1)->name() ) ) !=0  )   {
                 qDebug() << "Graph: vertex " <<  (*it)->name() << " isLinkedTo = " <<  (*it1)->name();
                 if (weights)
-                    ODC+=weight;
+                    DC+=weight;
                 else
-                    ODC++;
+                    DC++;
                 //check here if the matrix is symmetric - we need this below
                 if ( ( this->hasEdge ( (*it1)->name(), (*it)->name() ) ) != ( this->hasEdge ( (*it)->name(), (*it1)->name() ) )   )
                     symmetricAdjacencyMatrix = false;
             }
         }
-        (*it) -> setODC ( ODC ) ;				//Set OutDegree
-        qDebug() << "Graph: vertex " <<  (*it)->name() << " has ODC = " << ODC ;
-        sumODC += ODC;
-        it2 = discreteODCs.find(QString::number(ODC));
-        if (it2 == discreteODCs.end() )	{
-            classesODC++;
-            qDebug("This is a new ODC class");
-            discreteODCs.insert ( QString::number(ODC), classesODC );
+        (*it) -> setDC ( DC ) ;				//Set OutDegree
+        qDebug() << "Graph: vertex " <<  (*it)->name() << " has DC = " << DC ;
+        sumDC += DC;
+        it2 = discreteDCs.find(QString::number(DC));
+        if (it2 == discreteDCs.end() )	{
+            classesDC++;
+            qDebug("This is a new DC class");
+            discreteDCs.insert ( QString::number(DC), classesDC );
         }
-        qDebug("ODC classes = %i ", classesODC);
-        if (maxODC < ODC ) {
-            maxODC = ODC ;
-            maxNodeODC=(*it)->name();
+        qDebug("DC classes = %i ", classesDC);
+        if (maxDC < DC ) {
+            maxDC = DC ;
+            maxNodeDC=(*it)->name();
         }
-        if (minODC > ODC ) {
-            minODC = ODC ;
-            minNodeODC=(*it)->name();
+        if (minDC > DC ) {
+            minDC = DC ;
+            minNodeDC=(*it)->name();
         }
     }
 
-    if (minODC == maxODC)
-        maxNodeODC=-1;
+    if (minDC == maxDC)
+        maxNodeDC=-1;
 
-    meanDegree = sumODC / (float) vert;
-    qDebug("Graph: sumODC = %f, meanDegree = %f", sumODC, meanDegree);
+    meanDegree = sumDC / (float) vert;
+    qDebug("Graph: sumDC = %f, meanDegree = %f", sumDC, meanDegree);
 
     // Calculate std Out-Degree, Variance and the Degree Centralisation of the whole graph.
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        ODC= (*it)->ODC();
+        DC= (*it)->DC();
         if (!weights) {
-            (*it) -> setSODC( ODC / (vert-1.0) );		//Set Standard InDegree
+            (*it) -> setSDC( DC / (vert-1.0) );		//Set Standard InDegree
         }
         else {
-            (*it) -> setSODC( ODC / (sumODC) );
+            (*it) -> setSDC( DC / (sumDC) );
         }
-        nom+= (maxODC-ODC);
-        qDebug() << "Graph: vertex " <<  (*it)->name() << " SODC " << (*it)->SODC ();
+        nom+= (maxDC-DC);
+        qDebug() << "Graph: vertex " <<  (*it)->name() << " SDC " << (*it)->SDC ();
 
-        varianceDegree += (ODC-meanDegree) * (ODC-meanDegree) ;
+        varianceDegree += (DC-meanDegree) * (DC-meanDegree) ;
     }
     varianceDegree=varianceDegree/(float) vert;
 
@@ -2232,32 +1873,31 @@ void Graph::centralityOutDegree(bool weights){
         denom=(vert-1.0)*(vert-1.0);
 
     if (!weights) {
-        groupODC=nom/denom;
+        groupDC=nom/denom;
     }
     else {
-        qDebug()<< "Graph::centralityOutDegree vertices isolated: " << verticesIsolated().count() << ". I will subtract groupODC by " << ((float)verticesIsolated().count()/(float)vert);
-        groupODC=( ( nom * (vert-1.0))/( denom * maxODC) ) - ((float) verticesIsolated().count()/ (float) vert);
+        qDebug()<< "Graph::centralityDegree vertices isolated: " << verticesIsolated().count() << ". I will subtract groupDC by " << ((float)verticesIsolated().count()/(float)vert);
+        groupDC=( ( nom * (vert-1.0))/( denom * maxDC) ) - ((float) verticesIsolated().count()/ (float) vert);
     }
 
-    qDebug("Graph: varianceDegree = %f, groupODC = %f", varianceDegree, groupODC);
+    qDebug("Graph: varianceDegree = %f, groupDC = %f", varianceDegree, groupDC);
 
     if (!weights) {
-        minODC/=(float)(vert-1); // standardize
-        maxODC/=(float)(vert-1);
+        minDC/=(float)(vert-1); // standardize
+        maxDC/=(float)(vert-1);
     }
     else {
-        minODC/=(float)(sumODC); // standardize
-        maxODC/=(float)(sumODC);
+        minDC/=(float)(sumDC); // standardize
+        maxDC/=(float)(sumDC);
     }
 
-    calculatedODC=true;
-    graphModified=false;
+    calculatedDC=true;
 }
 
 
 
 
-void Graph::writeCentralityOutDegree (
+void Graph::writeCentralityDegree (
         const QString fileName, const bool considerWeights)
 {
     QFile file ( fileName );
@@ -2268,29 +1908,30 @@ void Graph::writeCentralityOutDegree (
     }
     QTextStream outText ( &file );
 
-    centralityOutDegree(considerWeights);
+    centralityDegree(considerWeights);
 
     float maximumIndexValue=vertices()-1.0;
 
-    outText << tr("OUT-DEGREE CENTRALITIES (ODC) FOR EACH NODE\n");
-    outText << tr("ODC is the sum of outgoing links of node u to all adjacent nodes.\n");
-    outText << tr("If the network is weighted, ODC is the sum of outgoing link weights of node u to all adjacent nodes.\n");
-    outText << tr("ODC' is the standardized ODC\n\n");
+    outText << tr("DEGREE CENTRALITY (DC)\n");
+    outText << tr("In undirected graphs, the DC index is the sum of edges attached to a node u.\n");
+    outText << tr("In digraphs, the index is the sum of outbound links of node u to all adjacent nodes.\n");
+    outText << tr("If the network is weighted, the DC is the sum of outbound link weights of node u to all adjacent nodes.\n");
+    outText << tr("DC' is the standardized DC\n\n");
 
     if (considerWeights){
-        maximumIndexValue=(vertices()-1.0)*maxIDC;
-        outText << tr("ODC  range: 0 < C < undefined (since this is a weighted network")<<"\n";
+        maximumIndexValue=(vertices()-1.0)*maxDC;
+        outText << tr("DC  range: 0 < C < undefined (since this is a weighted network")<<"\n";
     }
     else
-        outText << tr("ODC  range: 0 < C < ")<<QString::number(maximumIndexValue)<<"\n";
+        outText << tr("DC  range: 0 < C < ")<<QString::number(maximumIndexValue)<<"\n";
 
 
-    outText << "ODC' range: 0 < C'< 1"<<"\n\n";
+    outText << "DC' range: 0 < C'< 1"<<"\n\n";
 
-    outText << "Node"<<"\tODC\tODC'\t%ODC\n";
+    outText << "Node"<<"\tDC\tDC'\t%DC\n";
     QList<Vertex*>::iterator it;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        outText << (*it)->name()<<"\t"<<(*it)->ODC() << "\t"<< (*it)->SODC() << "\t" <<  (100* ((*it)->ODC()) / sumODC)<< "\n";
+        outText << (*it)->name()<<"\t"<<(*it)->DC() << "\t"<< (*it)->SDC() << "\t" <<  (100* ((*it)->DC()) / sumDC)<< "\n";
     }
     if (symmetricAdjacencyMatrix) {
         outText << "\n";
@@ -2302,20 +1943,20 @@ void Graph::writeCentralityOutDegree (
         outText << tr("Mean Node OutDegree = ") << meanDegree<<"\n" ;
         outText << tr("OutDegree Variance = ") << varianceDegree<<"\n";
     }
-    if ( minODC == maxODC )
-        outText << tr("All nodes have the same ODC value.") << "\n";
+    if ( minDC == maxDC )
+        outText << tr("All nodes have the same DC value.") << "\n";
     else  {
-        outText << tr("Max ODC' = ") << maxODC <<" (node "<< maxNodeODC <<  ")  \n";
-        outText << tr("Min ODC' = ") << minODC <<" (node "<< minNodeODC <<  ")  \n";
-        outText << tr("ODC classes = ") << classesODC<<" \n";
+        outText << tr("Max DC' = ") << maxDC <<" (node "<< maxNodeDC <<  ")  \n";
+        outText << tr("Min DC' = ") << minDC <<" (node "<< minNodeDC <<  ")  \n";
+        outText << tr("DC classes = ") << classesDC<<" \n";
     }
 
-    outText << "\nGROUP OUT-DEGREE CENTRALISATION (GODC)\n\n";
-    outText << "GODC = " << groupODC<<"\n\n";
+    outText << "\nGROUP OUT-DEGREE CENTRALISATION (GDC)\n\n";
+    outText << "GDC = " << groupDC<<"\n\n";
 
-    outText << "GODC range: 0 < GODC < 1\n";
-    outText << "GODC = 0, when all out-degrees are equal (i.e. regular lattice).\n";
-    outText << "GODC = 1, when one node completely dominates or overshadows the other nodes.\n";
+    outText << "GDC range: 0 < GDC < 1\n";
+    outText << "GDC = 0, when all out-degrees are equal (i.e. regular lattice).\n";
+    outText << "GDC = 1, when one node completely dominates or overshadows the other nodes.\n";
     outText << "(Wasserman & Faust, formula 5.5, p. 177)\n\n";
     outText << "(Wasserman & Faust, p. 101)\n";
 
@@ -2324,12 +1965,102 @@ void Graph::writeCentralityOutDegree (
     }
 
     outText << "\n\n";
-    outText << tr("Out-Degree Centrality Report, \n");
+    outText << tr("Degree Centrality (Out-Degree) Report, \n");
     outText << tr("created by SocNetV: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
 }
 
+/**
+ * @brief Graph::centralityClosenessImproved
+ * Improved node-level centrality closeness index which focuses on the
+ * influence range of each node (the set of nodes that are reachable from it)
+ * For each node v, this index calculates the fraction of nodes in its influence
+ * range and divides it by the average distance of those nodes from v,
+ * ignoring nodes that are not reachable from it.
+ */
+void Graph::centralityClosenessInfluenceRange(){
+    qDebug()<< "Graph::centralityClosenessImproved()";
+     if (!reachabilityMatrixCreated || graphModified) {
+         qDebug()<< "Graph::centralityClosenessImproved() - "
+                    "call reachabilityMatrix()";
+        reachabilityMatrix();
+     }
+    // calculate centralities
+    QList<Vertex*>::iterator it;
+    float IRCC=0;
+    float Ji=0;
+    classesIRCC=0;
+    discreteIRCCs.clear();
+    sumIRCC=0;
+    maxIRCC=0;
+    minIRCC=vertices()-1;
+    float V=vertices();
+    varianceIRCC=0;
+    meanIRCC=0;
+    hash_si::iterator it2;
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        IRCC=0;
+        // find connected nodes
+        QList<int> influencedVertices = influenceRanges.values((*it)->name()-1);
+        Ji=influencedVertices.size();
+        for (int i = 0; i < Ji; ++i) {
+            qDebug() << "Graph:: centralityClosenessImproved - vertex " <<  (*it)->name()
+                     << " is outbound connected to  = " << influencedVertices.at(i) + 1
+                     << " at distance " << DM.item ((*it)->name()-1, influencedVertices.at(i) );
+            IRCC += DM.item ((*it)->name()-1, influencedVertices.at(i) ) ;
+        }
+        qDebug()<< "Graph:: centralityClosenessImproved -  size of influenceRange Ji = " << Ji
+                << " IRCC=" << IRCC << " divided by Ji=" << Ji << " yields final IRCC =" << IRCC / Ji;
+        // sanity check for IRCC=0 (=> node is disconnected)
+        if (IRCC != 0)  {
+            IRCC /= Ji;
+            IRCC =  ( Ji / (V-1) ) / IRCC;
+        }
+        sumIRCC += IRCC;
+        (*it) -> setIRCC ( IRCC ) ;
+        qDebug() << "Graph::centralityClosenessImproved - vertex " <<  (*it)->name()
+                 << " has IRCC = "
+                 << Ji / (V-1) << " / " << IRCC << " = " << (*it)->IRCC();
+
+        it2 = discreteIRCCs.find(QString::number(IRCC));
+        if (it2 == discreteIRCCs.end() )	{
+            classesIRCC++;
+            qDebug("This is a new IRCC class");
+            discreteIRCCs.insert ( QString::number(IRCC), classesIRCC );
+        }
+        qDebug("IRCC classes = %i ", classesIRCC);
+        if (maxIRCC < IRCC ) {
+            maxIRCC = IRCC ;
+            maxNodeIRCC=(*it)->name();
+        }
+        if (minIRCC > IRCC ) {
+            minIRCC = IRCC ;
+            minNodeIRCC=(*it)->name();
+        }
+
+    }
+
+    if (minIRCC == maxIRCC)
+        maxNodeIRCC=-1;
+
+    meanIRCC = sumIRCC / (float) V;
+    qDebug("Graph::centralityClosenessImproved - sumIRCC = %f, meanIRCC = %f",
+           sumIRCC, meanIRCC);
+
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        IRCC= (*it) -> IRCC();
+        varianceIRCC += (IRCC-meanIRCC) * (IRCC-meanIRCC) ;
+        (*it) -> setSIRCC ( IRCC / sumIRCC) ;
+        qDebug() << "Graph::centralityClosenessImproved - vertex " <<  (*it)->name()
+                 << " has Std IRCC = "
+                 << IRCC << " / " << sumIRCC << " = " << (*it)->SIRCC();
+
+    }
+
+    varianceIRCC=varianceIRCC/(float) V;
+
+}
 
 //Writes the closeness centralities to a file
 void Graph::writeCentralityCloseness(
@@ -2345,12 +2076,19 @@ void Graph::writeCentralityCloseness(
     QTextStream outText ( &file );
 
     emit statusMessage ( (tr("Calculating shortest paths")) );
+
     createDistanceMatrix(true);
+
     emit statusMessage ( QString(tr("Writing closeness centralities to file:")).arg(fileName) );
 
-    outText << tr("CLOSENESS CENTRALITY (CC) OF EACH NODE")<<"\n";
-    outText << tr("CC is the invert sum of the geodesic distances of node u from all other nodes.")<<"\n";
-    outText << tr("CC' is the standardized CC")<<"\n";
+    outText << tr("CLOSENESS CENTRALITY (CC)")<<"\n";
+    outText << tr("The CC index is the inverted sum of geodesic distances"
+                  " from node u to all the other nodes.")<<"\n";
+    outText << tr("CC' is the standardized CC (multiplied by N-1 minus isolates).")<<"\n";
+    outText << tr("Note: In not strongly connected graphs or digraphs, "
+                  "the ordinary CC is undefined. In that case, we drop all "
+                  "isolated nodes during calculation. \n"
+                  "You can use the Influence Range Closeness Centrality index.\n");
 
     outText << tr("CC  range:  0 < C < ")<<QString::number(maxIndexCC)<<"\n";
     outText << tr("CC' range:  0 < C'< 1")<<"\n\n";
@@ -2389,6 +2127,68 @@ void Graph::writeCentralityCloseness(
 }
 
 
+
+
+//Writes the "improved" closeness centrality indices to a file
+void Graph::writeCentralityClosenessInfluenceRange(
+        const QString fileName, const bool considerWeights)
+{
+    Q_UNUSED(considerWeights);
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        return;
+    }
+    QTextStream outText ( &file );
+
+    emit statusMessage ( (tr("calculating IRCC indices")) );
+
+    centralityClosenessInfluenceRange();
+
+    emit statusMessage ( QString(tr("Writing improved closeness centralities to file:")
+                         .arg(fileName) ));
+
+    outText << tr("INFLUENCE RANGE CLOSENESS CENTRALITY (IRCC)")<<"\n";
+    outText << tr(
+               "This improved CC index is optimized for graphs and directed graphs which "
+               "are not strongly connected. Unlike the ordinary CC, which is the inverted "
+               "sum of distances from node v to all others (thus undefined if a node is isolated "
+               "or the digraph is not strongly connected), this improved CC considers only "
+               "distances from node v to nodes in its influence range J (nodes reachable from v).\n "
+               "The IRCC formula used is the ratio of the fraction of nodes reachable by v "
+               "( J/(n-1) ) to the average distance of these nodes from v ( sum( d(v,j) ) / J ) \n\n");
+
+    outText << tr("IRCC  range:  0 < IRCC < 1 ")
+            <<" (IRCC is a ratio)\n";
+    outText << tr("IRCC' is the standardized IRCC (divided by sumIRCC). \n\n");
+    outText << "Node"<<"\tIRCC\t\tIRCC'\t\t%IRCC\n";
+    QList<Vertex*>::iterator it;
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        outText << (*it)->name()<<"\t"<<(*it)->IRCC() << "\t\t"<< (*it)->SIRCC() << "\t\t" <<  (100* ((*it)->SIRCC()) )<<endl;
+    }
+    qDebug ("min %f, max %f", minIRCC, maxIRCC);
+    if ( minIRCC == maxIRCC )
+        outText << tr("\nAll nodes have the same IRCC value.\n");
+    else  {
+        outText << "\n";
+        outText << tr("Max IRCC = ") << maxIRCC <<" (node "<< maxNodeIRCC  <<  ")  \n";
+        outText << tr("Min IRCC = ") << minIRCC <<" (node "<< minNodeIRCC <<  ")  \n";
+        outText << tr("IRCC classes = ") << classesIRCC<<" \n";
+    }
+    outText << tr("Mean IRCC = ") << meanIRCC<<"\n";
+    outText << tr("Sum IRCC= ") << sumIRCC<<"\n";
+    outText << tr("Variance IRCC = ") << varianceIRCC<<"\n\n";
+
+
+    outText << "\n\n";
+    outText << tr("InfluenceRange Closeness Centrality report, \n");
+    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    file.close();
+
+}
+
+
 //Writes the betweeness centralities to a file
 void Graph::writeCentralityBetweeness(
         const QString fileName, const bool considerWeights)
@@ -2406,12 +2206,12 @@ void Graph::writeCentralityBetweeness(
     createDistanceMatrix(true);
     emit statusMessage ( QString(tr("Writing betweeness centralities to file:")).arg(fileName) );
 
-    outText << tr("BETWEENESS CENTRALITY (BC) OF EACH NODE")<<"\n";
-    outText << tr("BC of a node u is the sum of delta (s,t,u) for all s,t in V")<<"\n";
+    outText << tr("BETWEENESS CENTRALITY (BC)")<<"\n";
+    outText << tr("The BC of a node u is the sum of delta (s,t,u) for all s,t in V")<<"\n";
     outText << tr("where delta (s,t,u) is the ratio of all geodesics between s and t which run through u.")<<"\n";
     outText << tr("Therefore, BC(u) reflects how often the node u lies on the geodesics between the other nodes of the network")<<"\n";
     outText << tr("BC' is the standardized BC")<<"\n";
-    outText << tr("BC  range: 0 < BC < ")<<QString::number( maxIndexBC)<< tr(" (Number of pairs of nodes excluding i")<<"\n";
+    outText << tr("BC  range: 0 < BC < ")<<QString::number( maxIndexBC)<< tr(" (Number of pairs of nodes excluding u)")<<"\n";
     outText << tr("BC' range: 0 < BC'< 1  (C' is 1 when the node falls on all geodesics)\n\n");
     outText << "Node"<<"\tBC\t\tBC'\t\t%BC\n";
     QList<Vertex*>::iterator it;
@@ -2443,62 +2243,6 @@ void Graph::writeCentralityBetweeness(
 }
 
 
-//Writes the Graph centralities to a file
-void Graph::writeCentralityGraph(
-        const QString fileName, const bool considerWeights)
-{
-    Q_UNUSED(considerWeights);
-
-    QFile file ( fileName );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
-        qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
-        return;
-    }
-    QTextStream outText ( &file );
-
-    emit statusMessage ( (tr("Calculating shortest paths")) );
-    createDistanceMatrix(true);
-    emit statusMessage ( QString(tr("Writing graph centralities to file:")).arg(fileName) );
-
-    outText << tr("GRAPH CENTRALITY (GC) OF EACH NODE")<<"\n";
-    outText << tr("The GC of a node is the invert of the maximum of all geodesic distances from that node to all other nodes in the network.") << "\n";
-    outText << tr("Nodes with high GC have short distances to all other nodes in the graph.")<< "\n";
-
-    outText << tr("GC  range: 0 < GC < ")<<maxIndexGC<< " (GC=1 => distance from other nodes is max 1)\n";
-    outText << tr("GC' range: 0 < GC'< 1  (GC'=1 => directly linked with all nodes)")<<"\n\n";
-
-    outText << "Node"<<"\tGC\t\tGC'\t\t%GC\n";
-    QList<Vertex*>::iterator it;
-    for (it= m_graph.begin(); it!= m_graph.end(); it++){
-        outText <<(*it)->name()<<"\t"<<(*it)->GC() << "\t\t"<< (*it)->SGC() << "\t\t" <<  (100* ((*it)->GC()) /  sumGC)<<endl;
-    }
-
-    if ( minGC ==  maxGC)
-        outText << tr("\nAll nodes have the same GC value.\n");
-    else {
-        outText << "\n";
-        outText << tr("Max GC' = ") << maxGC <<" (node "<< maxNodeGC  <<  ")  \n";
-        outText << tr("Min GC' = ") << minGC <<" (node "<< minNodeGC <<  ")  \n";
-        outText << tr("GC classes = ") << classesGC<<" \n";
-    }
-
-    outText << tr("\nGROUP GRAPH CENTRALISATION (GGC)\n\n");
-
-    outText << tr("GGC = ") <<  groupGC<<"\n\n";
-
-    outText << tr("GGC range: 0 < GGC < 1\n");
-    outText << tr("GGC = 0, when all the nodes have exactly the same graph index.\n");
-    outText << tr("GGC = 1, when one node falls on all other geodesics between all the remaining (N-1) nodes. This is exactly the situation realised by a star graph.\n");
-
-
-    outText << "\n\n";
-    outText << tr("Graph Centrality report, \n");
-    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
-    file.close();
-
-}
-
 
 //Writes the Stress centralities to a file
 void Graph::writeCentralityStress(
@@ -2517,7 +2261,7 @@ void Graph::writeCentralityStress(
     createDistanceMatrix(true);
     emit statusMessage ( QString(tr("Writing stress centralities to file:")).arg(fileName) );
 
-    outText << tr("STRESS CENTRALITY (SC) OF EACH NODE")<<"\n";
+    outText << tr("STRESS CENTRALITY (SC)")<<"\n";
     outText << tr("SC(u) is the sum of sigma(s,t,u): the number of geodesics from s to t through u.")<<"\n";
     outText << tr("SC(u) reflect the total number of geodesics between all other nodes which run through u")<<"\n";
 
@@ -2526,7 +2270,8 @@ void Graph::writeCentralityStress(
     outText  << "Node"<<"\tSC\t\tSC'\t\t%SC\n";
     QList<Vertex*>::iterator it;
     for (it= m_graph.begin(); it!= m_graph.end(); it++){
-        outText <<(*it)->name()<<"\t"<<(*it)->SC() << "\t\t"<< (*it)->SSC() << "\t\t" <<  (100* ((*it)->SC()) /  sumSC)<<endl;
+        outText <<(*it)->name()<<"\t"<<(*it)->SC() << "\t\t"<< (*it)->SSC() << "\t\t"
+               <<  (100* ((*it)->SC()) /  sumSC)<<endl;
     }
 
     if ( minSC ==  maxSC)
@@ -2543,11 +2288,13 @@ void Graph::writeCentralityStress(
 
     outText << tr("GSC range: 0 < GSC < 1\n");
     outText << tr("GSC = 0, when all the nodes have exactly the same stress index.\n");
-    outText << tr("GSC = 1, when one node falls on all other geodesics between all the remaining (N-1) nodes. This is exactly the situation realised by a star graph.\n");
+    outText << tr("GSC = 1, when one node falls on all other geodesics between all the remaining (N-1) nodes. "
+                  "This is exactly the situation realised by a star graph.\n");
 
     outText << "\n\n";
     outText << tr("Stress Centrality report, \n");
-    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime()
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
 }
@@ -2570,23 +2317,28 @@ void Graph::writeCentralityEccentricity(
     createDistanceMatrix(true);
     emit statusMessage ( QString(tr("Writing eccentricity centralities to file:")).arg(fileName) );
 
-    outText << tr("ECCENTRICITY CENTRALITY (EC) OF EACH NODE") << "\n";
-    outText << tr("EC of a node u is the largest geodesic distance (u,t) for t in V") << "\n";
-    outText << tr("Therefore, EC(u) reflects how far, at most, is each node from every other node.") << "\n";
-    outText << tr("EC' is the standardized EC") << "\n";
-    outText << tr("EC  range: 0 < EC < ") << QString::number(maxIndexEC)<< tr(" (max geodesic distance)")<<"\n";
-    outText << tr("EC' range: 0 < EC'< 1 \n\n");
-    outText << "Node"<<"\tEC\t\tEC'\t\t%EC\n";
+    outText << tr("ECCENTRICITY CENTRALITY (EC)") << "\n";
+    outText << tr("The EC of a node is the inverse maximum geodesic distance "
+                  " from that node to all other nodes in the network.") << "\n";
+    outText << tr("Therefore, EC reflects farness: how far, at most, is each "
+                  " node from every other node.") << "\n";
+    outText << tr("Nodes with very high EC have short distances to all other "
+                  "nodes in the graph.")<< "\n";
+    outText << tr("Nodes with very low EC have longer distances to some other "
+                   "nodes in the graph.")<< "\n";
+    outText << tr("GC  range: 0 < EC < 1 (GC=1 => max distance to all other nodes is 1)\n");
+
+    outText << "Node"<<"\tEC\t\t%EC\n";
     QList<Vertex*>::iterator it;
     for (it= m_graph.begin(); it!= m_graph.end(); it++){
-        outText << (*it)->name()<<"\t"<<(*it)->EC() << "\t\t"<< (*it)->SEC() << "\t\t" <<  (100* ((*it)->EC()) /  sumEC)<<endl;
+        outText << (*it)->name()<<"\t"<<(*it)->EC() << "\t\t" <<  (100* ((*it)->EC()) /  sumEC)<<endl;
     }
     if ( minEC ==  maxEC)
         outText << tr("\nAll nodes have the same EC value.\n");
     else {
         outText << "\n";
-        outText << tr("Max EC' = ") << maxEC <<" (node "<< maxNodeEC  <<  ")  \n";
-        outText << tr("Min EC' = ") << minEC <<" (node "<< minNodeEC <<  ")  \n";
+        outText << tr("Max EC = ") << maxEC <<" (node "<< maxNodeEC  <<  ")  \n";
+        outText << tr("Min EC = ") << minEC <<" (node "<< minNodeEC <<  ")  \n";
         outText << tr("EC classes = ") << classesEC<<" \n";
     }
 
@@ -2616,11 +2368,11 @@ void Graph::writeCentralityPower(
     createDistanceMatrix(true);
     emit statusMessage ( QString(tr("Writing Power centralities to file:")).arg(fileName) );
 
-    outText << tr("POWER CENTRALITY (PC) OF EACH NODE") << "\n";
-    outText << tr("PC of each node k, is the sum of the sizes of all Nth-order neighbourhoods with weight 1/n.") << "\n";
+    outText << tr("POWER CENTRALITY (PC)") << "\n";
+    outText << tr("The PC of a node k is the sum of the sizes of all Nth-order neighbourhoods with weight 1/n.") << "\n";
     outText << tr("Therefore, PC(u) is a generalised degree centrality index.") << "\n";
     outText << tr("PC' is the standardized index; divided by the total numbers of nodes in the same component minus 1") << "\n";
-    outText << tr("PC  range: 0 < PC < ") << QString::number(maxIndexEC)<< tr(" (star node)")<<"\n";
+    outText << tr("PC  range: 0 < PC < ") << QString::number(maxIndexPC)<< tr(" (star node)")<<"\n";
     outText << tr("PC' range: 0 < PC'< 1 \n\n");
     outText << "Node"<<"\tPC\t\tPC'\t\t%PC\n";
     QList<Vertex*>::iterator it;
@@ -2647,6 +2399,522 @@ void Graph::writeCentralityPower(
 
 
 
+
+
+/**
+*	Calculates Degree Prestige (in-degree) of each vertex - diagonal included
+*	Also the mean value and the variance of the in-degrees.
+*/
+void Graph::prestigeDegree(bool weights){
+    qDebug()<< "Graph:: prestigeDegree()";
+    float DP=0, nom=0, denom=0;
+    float weight;
+    classesDP=0;
+    sumDP=0;
+    maxDP=0;
+    minDP=vertices()-1;
+    discreteDPs.clear();
+    varianceDegree=0;
+    meanDegree=0;
+    symmetricAdjacencyMatrix = true;
+    QList<Vertex*>::iterator it, it1;
+    hash_si::iterator it2;
+    int vert=vertices();
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        DP=0;
+        qDebug() << "Graph: prestigeDegree() vertex " <<  (*it)->name()  ;
+        for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
+            if ( (weight=this->hasEdge ( (*it1)->name(), (*it)->name() ) ) !=0  )   {
+                if (weights)
+                    DP+=weight;
+                else
+                    DP++;
+            }
+            //check here if the matrix is symmetric - we need this below
+            if ( ( this->hasEdge ( (*it1)->name(), (*it)->name() ) ) != ( this->hasEdge ( (*it)->name(), (*it1)->name() ) )   )
+                symmetricAdjacencyMatrix = false;
+        }
+        (*it) -> setDP ( DP ) ;				//Set InDegree
+        qDebug() << "Graph: vertex = " <<  (*it)->name() << " has DP = " << DP ;
+        sumDP += DP;
+        it2 = discreteDPs.find(QString::number(DP));
+        if (it2 == discreteDPs.end() )	{
+            classesDP++;
+            qDebug("This is a new DP class");
+            discreteDPs.insert ( QString::number(DP), classesDP );
+        }
+        qDebug("DP classes = %i ", classesDP);
+        if (maxDP < DP ) {
+            maxDP = DP ;
+            maxNodeDP=(*it)->name();
+        }
+        if (minDP > DP ) {
+            minDP = DP ;
+            minNodeDP=(*it)->name();
+        }
+    }
+
+    if (minDP == maxDP)
+        maxNodeDP=-1;
+
+
+    meanDegree = sumDP / (float) vert;
+    qDebug("Graph: sumDP = %f, meanDegree = %f", sumDP, meanDegree);
+
+    // Calculate std In-Degree, Variance and the Degree Centralisation of the whole graph.
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        DP= (*it)->DP();
+        if (!weights) {
+            (*it) -> setSDP( DP / (vert-1.0) );		//Set Standard InDegree
+        }
+        else {
+            (*it) -> setSDP( DP / (sumDP) );
+        }
+        nom+= maxDP-DP;
+        qDebug() << "Graph: vertex = " <<  (*it)->name() << " has DP = " << DP << " and SDP " << (*it)->SDP ();
+
+        //qDebug("Graph: DP = %f, meanDegree = %f", DP, meanDegree);
+        varianceDegree += (DP-meanDegree) * (DP-meanDegree) ;
+    }
+
+    varianceDegree=varianceDegree/(float) vert;
+
+    if (symmetricAdjacencyMatrix)
+        denom=(vert-1.0)*(vert-2.0);
+    else
+        denom=(vert-1.0)*(vert-1.0);
+
+    if (!weights) {
+        groupDP=nom/denom;
+    }
+    else {
+        qDebug()<< "Graph::prestigeDegree vertices isolated: " << verticesIsolated().count() << ". I will subtract groupDP by " << ((float)verticesIsolated().count()/(float)vert);
+        groupDP=( ( nom * (vert-1.0))/( denom * maxDP) ) - ((float) verticesIsolated().count()/ (float) vert);
+    }
+
+    qDebug("Graph: varianceDegree = %f, groupDP = %f", varianceDegree, groupDP);
+
+    if (!weights) {
+        minDP/=(float)(vert-1); // standardize
+        maxDP/=(float)(vert-1);
+    }
+    else {
+        minDP/=(float)(sumDP); // standardize
+        maxDP/=(float)(sumDP);
+    }
+    calculatedDP=true;
+}
+
+
+
+
+void Graph::writePrestigeDegree (const QString fileName, const bool considerWeights)
+{
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        return;
+    }
+    QTextStream outText ( &file );
+
+    prestigeDegree(considerWeights);
+    float maximumIndexValue=vertices()-1.0;
+
+    outText << tr("DEGREE PRESTIGE (DP)\n");
+    outText << tr("DP is the sum of incoming links to node u from all adjacent nodes.\n");
+    outText << tr("If the network is weighted, DP is the sum of incoming link weights (inDegree) to node u from all adjacent nodes.\n");
+    outText << tr("The DP of a node is a measure of the \'activity\' or prestige of that node.\n");
+    outText << tr("DP' is the standardized DP\n\n");
+    if (considerWeights){
+        maximumIndexValue=(vertices()-1.0)*maxDP;
+        outText << tr("DP  range: 0 < C < undefined (since this is a weighted network")<<"\n";
+    }
+    else
+        outText << tr("DP  range: 0 < C < ")<<maximumIndexValue<<"\n";
+    outText << "DP' range: 0 < C'< 1"<<"\n\n";
+
+    outText << "Node"<<"\tDP\tDP'\t%DP\n";
+
+    QList<Vertex*>::iterator it;
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        outText <<(*it)->name()<<"\t"<<(*it)->DP() << "\t"<< (*it)->SDP() << "\t" <<  (100* ((*it)->DP()) / sumDP)<<endl;
+    }
+    if (symmetricAdjacencyMatrix) {
+        outText << "\n";
+        outText << tr("Mean Nodal Degree = ") << meanDegree<<"\n" ;
+        outText << tr("Degree Variance = ") << varianceDegree<<"\n";
+    }
+    else{
+        outText << "\n";
+        outText << tr("Mean Nodal InDegree = ") << meanDegree<<"\n" ;
+        outText << tr("InDegree Variance = ") << varianceDegree<<"\n";
+    }
+
+    if ( minDP == maxDP )
+        outText << tr("All nodes have the same DP value.") << "\n";
+    else  {
+        outText << tr("Max DP' = ") << maxDP <<" (node "<< maxNodeDP <<  ")  \n";
+        outText << tr("Min DP' = ") << minDP <<" (node "<< minNodeDP <<  ")  \n";
+        outText << tr("DP classes = ") << classesDP<<" \n";
+    }
+
+    outText << "\nGROUP DEGREE PRESTIGE (GDP)\n\n";
+    outText << "GDP = " << groupDP<<"\n\n";
+
+    outText << "GDP range: 0 < GDP < 1\n";
+    outText << "GDP = 0, when all in-degrees are equal (i.e. regular lattice).\n";
+    outText << "GDP = 1, when one node is linked from every other node.\n";
+
+    outText << "(Wasserman & Faust, p. 101)\n";
+
+    if (considerWeights) {
+        outText << "\nNOTE: Because the network is weighted, we normalize Group Prestige multiplying by (N-1)/maxDP, where N is the total vertices, and subtracting the percentage of isolated vertices\n";
+    }
+
+    outText << "\n\n";
+    outText << tr("Degree Prestige Report, \n");
+    outText << tr("created by SocNetV: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    file.close();
+
+}
+
+
+
+/**
+*	Calculates Proximity Prestige of each vertex
+*	Also the mean value and the variance of it..
+*/
+int Graph::prestigeProximity(){
+    qDebug()<< "Graph:: prestigeProximity()";
+    float PP=0, nom=0, denom=0;
+    classesPP=0;
+    sumPP=0;
+    maxPP=0;
+    minPP=vertices()-1;
+    discretePPs.clear();
+    varianceDegree=0;
+    meanDegree=0;
+    symmetricAdjacencyMatrix = true;
+    QList<Vertex*>::iterator it, it1;
+    hash_si::iterator it2;
+    int vert=vertices();
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        PP=0;
+        qDebug() << "Graph: prestigeProximity() vertex " <<  (*it)->name()  ;
+        for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
+            if ( (this->hasEdge ( (*it1)->name(), (*it)->name() ) ) !=0  )   {
+                    PP+=1;//weight;
+            }
+            //check here if the matrix is symmetric - we need this below
+            if ( ( this->hasEdge ( (*it1)->name(), (*it)->name() ) ) != ( this->hasEdge ( (*it)->name(), (*it1)->name() ) )   )
+                symmetricAdjacencyMatrix = false;
+        }
+        (*it) -> setPP ( PP ) ;				//Set InDegree
+        qDebug() << "Graph: prestigeProximity() vertex = " <<  (*it)->name() << " has PP = " << PP ;
+        sumPP += PP;
+        it2 = discretePPs.find(QString::number(PP));
+        if (it2 == discretePPs.end() )	{
+            classesPP++;
+            qDebug("Graph::prestigeProximity() - This is a new PP class");
+            discretePPs.insert ( QString::number(PP), classesPP );
+        }
+        qDebug("Graph::prestigeProximity - PP classes = %i ", classesPP);
+        if (maxPP < PP ) {
+            maxPP = PP ;
+            maxNodePP=(*it)->name();
+        }
+        if (minPP > PP ) {
+            minPP = PP ;
+            minNodePP=(*it)->name();
+        }
+    }
+
+    if (minPP == maxPP)
+        maxNodePP=-1;
+
+
+    meanDegree = sumPP / (float) vert;
+    qDebug("Graph::prestigeProximity() - sumPP = %f, meanDegree = %f", sumPP, meanDegree);
+
+    // Calculate std In-Degree, Variance and the Degree Centralisation of the whole graph.
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        PP= (*it)->PP();
+
+            (*it) -> setSPP( PP / (vert-1.0) );		//Set Standard InDegree
+
+        nom+= maxPP-PP;
+        qDebug() << "Graph::prestigeProximity() vertex = " <<  (*it)->name() << " has PP = " << PP << " and SPP " << (*it)->SPP ();
+
+        //qDebug("Graph:prestigeProximity -  PP = %f, meanDegree = %f", PP, meanDegree);
+        varianceDegree += (PP-meanDegree) * (PP-meanDegree) ;
+    }
+
+    varianceDegree=varianceDegree/(float) vert;
+
+    if (symmetricAdjacencyMatrix)
+        denom=(vert-1.0)*(vert-2.0);
+    else
+        denom=(vert-1.0)*(vert-1.0);
+
+        qDebug()<< "Graph::prestigeProximity() - vertices isolated: " << verticesIsolated().count() << ". I will subtract groupPP by " << ((float)verticesIsolated().count()/(float)vert);
+        groupPP=( ( nom * (vert-1.0))/( denom * maxPP) ) - ((float) verticesIsolated().count()/ (float) vert);
+
+    qDebug("Graph::prestigeProximity() - varianceDegree = %f, groupPP = %f", varianceDegree, groupPP);
+
+
+        minPP/=(float)(vert-1); // standardize
+        maxPP/=(float)(vert-1);
+    calculatedPP=true;
+
+}
+
+
+//Writes the proximity prestige indeces to a file
+void Graph::writePrestigeProximity(
+        const QString fileName, const bool considerWeights)
+{
+    Q_UNUSED(considerWeights);
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        return;
+    }
+    QTextStream outText ( &file );
+
+    emit statusMessage ( (tr("Calculating prestige proximity indices")) );
+    prestigeProximity();
+    emit statusMessage ( QString(tr("Writing proximity prestige indeces to file:")).arg(fileName) );
+
+    outText << tr("PROXIMITY PRESTIGE (PP)")<<"\n";
+    outText << tr("PP of a node k is the ratio of the proportion of nodes who can reach k to the average distance these nodes are from k.")<<"\n";
+    outText << tr("PP' is the standardized PP")<<"\n";
+
+    outText << tr("PP  range:  0 < P < ")<<QString::number(maxIndexPP)<<"\n";
+    outText << tr("PP' range:  0 < P'< 1")<<"\n\n";
+    outText << "Node"<<"\tPP\t\tPP'\t\t%PP'\n";
+    QList<Vertex*>::iterator it;
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        outText << (*it)->name()<<"\t"<<(*it)->PP() << "\t\t"<< (*it)->SPP() << "\t\t" <<  (100* ((*it)->SPP()) / sumCC)<<endl;
+    }
+    qDebug ("min %f, max %f", minPP, maxPP);
+    if ( minPP == maxPP )
+        outText << tr("\nAll nodes have the same PP value.\n");
+    else  {
+        outText << "\n";
+        outText << tr("Max PP' = ") << maxPP <<" (node "<< maxNodePP  <<  ")  \n";
+        outText << tr("Min PP' = ") << minPP <<" (node "<< minNodePP <<  ")  \n";
+        outText << tr("PP classes = ") << classesPP<<" \n";
+    }
+
+    outText << tr("\nGROUP PROXIMITY PRESTIGE (GPP)\n\n");
+    outText << tr("GPP = ") << groupPP<<"\n\n";
+
+    outText << tr("GPP range: 0 < GPP < 1\n");
+    outText << tr("GPP = 0, when the lengths of the geodesics are all equal (i.e. a complete or a circle graph).\n");
+    outText << tr("GPP = 1, when one node has geodesics of length 1 to all the other nodes, and the other nodes have geodesics of length 2 to the remaining (N-2) nodes. This is exactly the situation realised by a star graph.\n");
+    outText <<"(Wasserman & Faust, formula 5.9, p. 187)\n\n";
+
+    outText << "(Wasserman & Faust, p. 181)\n";
+
+    outText << "\n\n";
+    outText << tr("Proximity Prestige report, \n");
+    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    file.close();
+
+}
+
+
+
+
+//Calculates the PageRank Prestige of each vertex
+int Graph::prestigePageRank(){
+    qDebug()<< "Graph:: prestigePageRank()";
+    discretePRCs.clear();
+    sumPRC=0;
+    maxPRC=0;
+    minPRC=RAND_MAX;
+    classesPRC=0;
+    groupPRC=0;
+    isolatedVertices = 0 ;
+    dampingFactor = 0.85; // The parameter d is a damping factor which can be set between 0 and 1. Google creators set d to 0.85.
+
+    float PRC=0, oldPRC = 0;
+    float SPRC=0;
+    int i = 1; // a counter
+    int referrer;
+
+    float delta = 0.01; // The delta where we will stop the iterative calculation
+    float maxDelta = RAND_MAX;
+    float sumPageRanksOfLinkedNodes = 0;  // temporary variable to calculate PR
+    float outDegree = 0;
+    bool allNodesAreIsolated = true;
+    QList<Vertex*>::iterator it;
+    imap_f::iterator jt;
+    // begin iteration - continue until we reach our desired delta
+    while (maxDelta > delta) {
+        for (it=m_graph.begin(); it!=m_graph.end(); it++){
+            qDebug() << "Graph:: prestigePageRank() - calculating PR for node: " << (*it)->name() ;
+            // In the first iteration, we have no PageRanks
+            // So we set them to (1-d)
+            if ( i == 1 ) {
+                (*it)->setPRC( 1 - dampingFactor );
+                qDebug() << "Graph:: prestigePageRank() - first iteration - node: " << (*it)->name() << " PR = " << (*it)->PRC() ;
+                if ( (*it)->isIsolated() ) {
+                    isolatedVertices++;
+                    qDebug()<< "Graph:: prestigePageRank() vertex: " << (*it)->name() << " is isolated. PR will be just 1-d. Continue... ";
+                }
+                else
+                    allNodesAreIsolated = false;
+            }
+            // In every other iteration we calculate PageRanks.
+            else {
+                sumPageRanksOfLinkedNodes = 0;
+                maxDelta = 0;
+                oldPRC = (*it)->PRC();
+                // take every other node which links to the current node.
+                for( jt = (*it)->m_inEdges.begin(); jt != (*it)->m_inEdges.end(); jt++ ) {
+                    qDebug() << "Graph:: prestigePageRank " << (*it)->name() << " is inLinked from " << jt->first  ;
+                    referrer=jt->first;
+                    if ( this->hasEdge( referrer , (*it)->name() ) )
+                    {
+
+                        outDegree = m_graph[ index[referrer] ] ->outDegree();
+                        PRC =  m_graph[ index[referrer] ]->PRC();
+                        qDebug()<< "Graph:: prestigePageRank() " <<  jt->first  << " has PRC = " << PRC  << " and outDegree = " << outDegree << " PRC / outDegree = " << PRC / outDegree ;
+                        sumPageRanksOfLinkedNodes += PRC / outDegree;
+                    }
+
+                }
+                // OK. Now calculate PageRank of current node
+                PRC = (1-dampingFactor) + dampingFactor * sumPageRanksOfLinkedNodes;
+                // store new PageRank
+                (*it) -> setPRC ( PRC );
+                // calculate diff from last PageRank value for this vertex and set it to minDelta if the latter is bigger.
+                qDebug()<< "Graph:: prestigePageRank() vertex: " <<  (*it)->name() << " new PageRank = " << PRC
+                        << " old PR was = " << oldPRC << " diff = " << fabs(PRC - oldPRC);
+                if ( maxDelta < fabs(PRC - oldPRC) ) {
+                    maxDelta = fabs(PRC - oldPRC);
+                    qDebug()<< "Graph:: prestigePageRank() setting new maxDelta = " <<  maxDelta;
+                }
+
+            }
+        }
+        if (allNodesAreIsolated) {
+            qDebug()<< "Graph:: prestigePageRank() all vertices are isolated. Break...";
+            qDebug() << "isolatedVertices: " << isolatedVertices << " total vertices " << this->vertices();
+
+            break;
+        }
+        i++;
+    }
+    // calculate sumPRC
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        sumPRC +=  (*it)->PRC();
+    }
+    // calculate std and min/max PRCs
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        PRC = (*it)->PRC();
+        resolveClasses(PRC,discretePRCs,classesPRC);
+        if ( PRC > maxPRC ) {
+            maxPRC = PRC;
+            maxNodePRC=(*it)->name();
+        }
+        if ( PRC < minPRC ) {
+            minPRC = PRC;
+            minNodePRC=(*it)->name();
+        }
+
+        SPRC = PRC / sumPRC ;
+        (*it)->setSPRC( SPRC );
+        qDebug()<< "Graph:: prestigePageRank() vertex: " <<  (*it)->name() << " PageRank = " << PRC << " standard PR = " << SPRC;
+    }
+    if (allNodesAreIsolated) {
+        qDebug()<< "Graph:: prestigePageRank() all vertices are isolated. Equal PageRank for all....";
+        return 1;
+    }
+    qDebug()<< "Graph:: prestigePageRank() vertex: " <<  maxNodePRC << " has max PageRank = " << maxPRC;
+    return 0;
+
+}
+
+
+//Writes the PageRank indices to a file
+void Graph::writePrestigePageRank(const QString fileName){
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        return;
+    }
+    QTextStream outText ( &file );
+
+    emit statusMessage ( (tr("Calculating PageRank indices. Please wait...")) );
+    this->prestigePageRank();
+
+    emit statusMessage ( QString(tr("Writing PageRank indices to file: %1")).arg(fileName) );
+
+    outText << tr("PAGERANK PRESTIGE (PR)")<<"\n";
+    outText << tr("")<<"\n";
+    outText << tr("PR  range:  1-d < C  where d=") << dampingFactor   << "\n";
+    outText << tr("PR' is the standardized PR")<<"\n";
+    outText << tr("PR' range:  ") << dampingFactor / sumPRC  << " < C'< 1" <<"\n\n";
+    outText << "Node"<<"\tPRC\t\tPRC'\t\t%PRC\n";
+    QList<Vertex*>::iterator it;
+    float PRC=0, SPRC=0, sumSPRC=0;
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        PRC = (*it)->PRC();
+        SPRC = (*it)->SPRC();
+        sumSPRC +=  SPRC;
+        outText << (*it)->name()<<"\t"<< PRC << "\t\t"<< SPRC  << "\t\t" <<  ( 100* SPRC )<<endl;
+        qDebug()<< "Graph::writeprestigePageRank() vertex: " <<  (*it)->name() << " SPRC  " << SPRC;
+    }
+    qDebug ("min %f, max %f", minPRC, maxPRC);
+    if ( minPRC == maxPRC )
+        outText << tr("\nAll nodes have the same PRC value.\n");
+    else  {
+        outText << "\n";
+        outText << tr("Max PRC = ") << maxPRC <<" (node "<< maxNodePRC  <<  ")  \n";
+        outText << tr("Min PRC = ") << minPRC <<" (node "<< minNodePRC <<  ")  \n";
+        outText << tr("PRC classes = ") << classesPRC<<" \n";
+    }
+    outText << "\n";
+
+    float x=0;
+    float n = ( this->vertices() - isolatedVertices );
+    if (n != 0 )
+        averagePRC = sumSPRC / n ;
+    else
+        averagePRC = SPRC;
+
+    qDebug() << "sumPRC = " << sumSPRC << "  n = " << n << "  averagePRC = " << averagePRC;
+    groupPRC=0;
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        x = ( 100 * (*it)->SPRC()  - 100 * averagePRC  ) ;
+        x *=x;
+        qDebug() << "SPRC " <<  (*it)->SPRC() << "  x " <<   (*it)->SPRC() - averagePRC  << " x*x" << x ;
+        groupPRC  += x;
+    }
+    qDebug() << "groupPRC   " << groupPRC   << " n " << n ;
+    groupPRC  = groupPRC  /  (n-1);
+    qDebug() << "groupPRC   " << groupPRC   ;
+    outText << tr("\nGROUP PAGERANK PRESTIGE (GPRP)\n\n");
+    outText << tr("GPRP = ") << groupPRC<<"\n\n";
+    outText << tr("GPRP range: 0 < GPRP < inf \n");
+    outText << tr("GPRP is computed using a simple variance formula. \n");
+
+
+
+    outText << tr("PageRank Prestige report, \n");
+    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    file.close();
+
+}
+
+
+
+
 /**
 *	Writes the number of cliques (triangles) of each vertex into a given file.
 */
@@ -2666,7 +2934,7 @@ void Graph::writeNumberOfCliques(
 
     emit statusMessage ( QString(tr("Writing number of triangles to file:")).arg(fileName) );
 
-    outText << tr("NUMBER OF CLIQUES (CLQs) OF EACH NODE") << "\n";
+    outText << tr("NUMBER OF CLIQUES (CLQs)") << "\n";
     outText << tr("CLQs range: 0 < CLQs < ") <<"\n\n";
     outText << "Node"<<"\tCLQs\n";
 
@@ -2691,7 +2959,7 @@ void Graph::writeNumberOfCliques(
 }
 
 
-
+//Writes the clustering coefficients to a file
 void Graph::writeClusteringCoefficient(
         const QString fileName, const bool considerWeights)
 {
@@ -2709,7 +2977,7 @@ void Graph::writeClusteringCoefficient(
     Q_UNUSED(clucof);
     emit statusMessage ( QString(tr("Writing clustering coefficients to file:")).arg(fileName) );
 
-    outText << tr("CLUSTERING COEFFICIENT (CLC) OF EACH NODE\n");
+    outText << tr("CLUSTERING COEFFICIENT (CLC)\n");
     outText << tr("CLC  range: 0 < C < 1") <<"\n";
     outText << "Node"<<"\tCLC\n";
 
@@ -2724,24 +2992,28 @@ void Graph::writeClusteringCoefficient(
     }
     else{
         outText << "\nAverage Clustering Coefficient= "<<  averageCLC<<"\n" ;
-        //		outText << "ODC Variance = "<<  varianceDegree<<"\n\n";
+        //		outText << "DC Variance = "<<  varianceDegree<<"\n\n";
     }
     if (  minCLC ==  maxCLC )
         outText << "\nAll nodes have the same clustering coefficient value.\n";
     else  {
-        outText << "\nNode "<<  maxNodeCLC << " has the maximum Clustering Coefficient: " <<  maxCLC <<"  \n";
-        outText << "\nNode "<<  minNodeCLC << " has the minimum Clustering Coefficient: " <<  minCLC <<"  \n";
+        outText << "\nNode "<<  maxNodeCLC
+                << " has the maximum Clustering Coefficient: " <<  maxCLC <<"\n";
+        outText << "\nNode "<<  minNodeCLC
+                << " has the minimum Clustering Coefficient: " <<  minCLC <<"\n";
     }
 
     outText << "\nGRAPH CLUSTERING COEFFICIENT (GCLC)\n\n";
     outText << "GCLC = " <<  averageCLC<<"\n\n";
     outText << tr("Range: 0 < GCLC < 1\n");
     outText << tr("GCLC = 0, when there are no cliques (i.e. acyclic tree).\n");
-    outText << tr("GCLC = 1, when every node and its neighborhood are complete cliques.\n");
+    outText << tr(
+      "GCLC = 1, when every node and its neighborhood are complete cliques.\n");
 
     outText <<"\n\n" ;
     outText << tr("Clustering Coefficient Report,\n");
-    outText << tr("created by SocNetV: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    outText << tr("created by SocNetV: ")<< actualDateTime.currentDateTime()
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
 
     file.close();
 }
@@ -2749,7 +3021,7 @@ void Graph::writeClusteringCoefficient(
 
 
 
-
+        //Writes the triad census to a file
 void Graph::writeTriadCensus(
         const QString fileName, const bool considerWeights)
 {
@@ -2772,7 +3044,8 @@ void Graph::writeTriadCensus(
     }
 
 
-    emit statusMessage ( QString(tr("Writing clustering coefficients to file:")).arg(fileName) );
+    emit statusMessage ( QString(tr("Writing clustering coefficients to file:"))
+                         .arg(fileName) );
 
     outText << "Type\t\tCensus\t\tExpected Value" << "\n";
     outText << "003" << "\t\t" << triadTypeFreqs[0] << "\n";
@@ -2794,7 +3067,8 @@ void Graph::writeTriadCensus(
 
     outText << "\n\n";
     outText << tr("Triad Census report, \n");
-    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime()
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
 }
@@ -2802,109 +3076,115 @@ void Graph::writeTriadCensus(
 
 
 /** 
-* Repositions all nodes on the periphery of different circles with radius analogous to their centrality
+* Repositions all nodes on the periphery of different circles with radius
+* analogous to their prominence index
 */
-void Graph::layoutRadialCentrality(double x0, double y0, double maxRadius, int CentralityType){
-    qDebug("Graph: layoutRadialCentrality...");
-    //first calculate centralities
-    if ((graphModified || !calculatedCentralities) && CentralityType > 2 && CentralityType < 9 ) {
-        qDebug("Graph: Calling createDistanceMatrix() to calc centralities");
+void Graph::layoutRadialByProminenceIndex(double x0, double y0, double maxRadius,
+                                   int prominenceIndex){
+    qDebug("Graph::layoutRadialByProminenceIndex...");
+    //first calculate centrality indices if needed
+    if ( prominenceIndex > 1 && prominenceIndex < 8 && prominenceIndex!=3) {
+        qDebug("Graph::layoutRadialByProminenceIndex - Calling "
+               "createDistanceMatrix() to calc centralities");
         this->createDistanceMatrix(true);
     }
-    else if ((graphModified || !calculatedIDC) && CentralityType == 1)
-        this->centralityInDegree(true);
-    else if ((graphModified || !calculatedODC) && CentralityType == 2)
-        this->centralityOutDegree(true);
-    else if ( CentralityType == 9 ){
+    else if ((graphModified || !calculatedDC) && prominenceIndex == 1)
+        this->centralityDegree(true);
+    else if ( prominenceIndex == 3 )
+        this->centralityClosenessInfluenceRange();
+    else if ( prominenceIndex == 8 )
         this->centralityInformation();
-    }
-    else if ( CentralityType == 10 ) {
-        this->centralityPageRank();
-    }
+    else if ((graphModified || !calculatedDP) && prominenceIndex == 9)
+        this->prestigeDegree(true);
+    else if ( prominenceIndex == 10 )
+        this->prestigePageRank();
 
     double rad=0;
     double i=0, std=0;
-    float C=0, maxC=0, offset=0.06;  //offset controls how far from the centre the central nodes be positioned
+    //offset controls how far from the centre the central nodes be positioned
+    float C=0, maxC=0, offset=0.06;
     double new_radius=0, new_x=0, new_y=0;
     double Pi = 3.14159265;
     int vert=vertices();
 
     for (QList<Vertex*>::iterator it=m_graph.begin(); it!=m_graph.end(); it++){
-        switch (CentralityType) {
-        case 1 : {
-            qDebug("Layout according to InDegree Centralities");
-            C=(*it)->SIDC();
-            std= (*it)->SIDC();
-            maxC=maxIDC;
-            break;
-        }
-        case 2 : {
-            qDebug("Layout according to OutDegree Centralities");
-            C=(*it)->SODC();
-            std= (*it)->SODC();
-            maxC=maxODC;
-            break;
-        }
-        case 3 : {
-            qDebug("Layout according to Closeness Centralities");
-            C=(*it)->CC();
-            std= (*it)->SCC();
-            maxC=maxCC;
-            break;
-        }
-        case 4 : {
-            qDebug("Layout according to Betweeness Centralities");
-            C=(*it)->BC();
-            std= (*it)->SBC();
-            maxC=maxBC;
-            break;
-        }
-        case 5 : {
-            qDebug("Layout according to Graph Centralities");
-            C=(*it)->GC();
-            std= (*it)->SGC();
-            maxC=maxGC;
-            break;
-        }
-        case 6 : {
-            qDebug("Layout according to Stress Centralities");
-            C=(*it)->SC();
-            std= (*it)->SSC();
-            maxC=maxSC;
-            break;
-        }
-        case 7 : {
-            qDebug("Layout according to Eccentricity Centralities");
-            C=(*it)->EC();
-            std= (*it)->SEC();
-            maxC=maxEC;
-            break;
-        }
-        case 8 : {
-            qDebug("Layout according to Power Centralities");
-            C=(*it)->PC();
-            std= (*it)->SPC();
-            maxC=maxPC;
-            break;
-        }
-        case 9 : {
-            qDebug("Layout according to Information Centralities");
-            C=(*it)->IC();
-            std= (*it)->SIC();
-            maxC=maxIC;
-            break;
-        }
-        case 10 : {
-            qDebug("Layout according to PageRank Centralities");
-            C=(*it)->PRC();
-            std= (*it)->SPRC();
-            maxC=maxPRC;
-            break;
-        }
+        switch (prominenceIndex) {
+            case 1 : {
+                qDebug("Layout according to DC");
+                C=(*it)->SDC();
+                std= (*it)->SDC();
+                maxC=maxDC;
+                break;
+            }
+            case 2 : {
+                qDebug("Layout according to CC");
+                C=(*it)->CC();
+                std= (*it)->SCC();
+                maxC=maxCC;
+                break;
+            }
+            case 3 : {
+                qDebug("Layout according to IRCC");
+                C=(*it)->CC();
+                std= (*it)->SCC();
+                maxC=maxCC;
+                break;
+            }
+            case 4 : {
+                qDebug("Layout according to BC");
+                C=(*it)->BC();
+                std= (*it)->SBC();
+                maxC=maxBC;
+                break;
+            }
+            case 5 : {
+                qDebug("Layout according to SC");
+                C=(*it)->SC();
+                std= (*it)->SSC();
+                maxC=maxSC;
+                break;
+            }
+            case 6 : {
+                qDebug("Layout according to EC");
+                C=(*it)->EC();
+                std= (*it)->SEC();
+                maxC=maxEC;
+                break;
+            }
+            case 7 : {
+                qDebug("Layout according to PC");
+                C=(*it)->PC();
+                std= (*it)->SPC();
+                maxC=maxPC;
+                break;
+            }
+            case 8 : {
+                qDebug("Layout according to IC");
+                C=(*it)->IC();
+                std= (*it)->SIC();
+                maxC=maxIC;
+                break;
+            }
+            case 9 : {
+                qDebug("Layout according to DP");
+                C=(*it)->SDP();
+                std= (*it)->SDP();
+                maxC=maxDP;
+                break;
+            }
+            case 10 : {
+                qDebug("Layout according to PRP");
+                C=(*it)->PRC();
+                std= (*it)->SPRC();
+                maxC=maxPRC;
+                break;
+            }
         };
-        qDebug () << "Vertice " << (*it)->name() << " at x=" << (*it)->x() << ", y= "<< (*it)->y()
-                  << ": C=" << C << ", stdC=" << std << ", maxradius " <<  maxRadius
-                  << ", maxC " << maxC << ", C/maxC " << (C/maxC) << ", *maxRadius " << (C/maxC - 0.06)*maxRadius;
+        qDebug () << "Vertice " << (*it)->name() << " at x=" << (*it)->x()
+                  << ", y= "<< (*it)->y() << ": C=" << C << ", stdC=" << std
+                  << ", maxradius " <<  maxRadius
+                  << ", maxC " << maxC << ", C/maxC " << (C/maxC)
+                  << ", *maxRadius " << (C/maxC - 0.06)*maxRadius;
         switch (static_cast<int> (ceil(maxC)) ){
         case 0: {
             qDebug("maxC=0.   Using maxHeight");
@@ -2925,7 +3205,8 @@ void Graph::layoutRadialCentrality(double x0, double y0, double maxRadius, int C
         new_y=y0 + new_radius * sin(i * rad);
         (*it)->setX( new_x );
         (*it)->setY( new_y );
-        qDebug("Finished Calculation. Vertice will move to x=%f and y=%f ",new_x, new_y);
+        qDebug("Finished Calculation. Vertice will move to x=%f and y=%f ",
+               new_x, new_y);
         //Move node to new position
         emit moveNode((*it)->name(),  new_x,  new_y);
         i++;
@@ -2935,7 +3216,7 @@ void Graph::layoutRadialCentrality(double x0, double y0, double maxRadius, int C
                     static_cast<int> (new_radius)
                     );
     }
-    graphModified=false;
+    graphModified=true;
 }
 
 
@@ -2968,17 +3249,18 @@ void Graph::layoutRandom(double maxWidth, double maxHeight){
 void Graph::layoutLayeredCentrality(double maxWidth, double maxHeight, int CentralityType){
     qDebug("Graph: layoutLevelCentrality...");
     //first calculate centralities
-    if ((graphModified || !calculatedCentralities) && CentralityType > 2) {
+    if ( CentralityType > 2) {
         qDebug("Graph: Calling createDistanceMatrix() to calc centralities");
         createDistanceMatrix(true);
     }
-    else if ((graphModified || !calculatedIDC) && CentralityType == 1)
-        centralityInDegree(true);
-    else if ((graphModified || !calculatedODC) && CentralityType == 2)
-        centralityOutDegree(true);
+    else if ((graphModified || !calculatedDP) && CentralityType == 1)
+        prestigeDegree(true);
+    else if ((graphModified || !calculatedDC) && CentralityType == 2)
+        centralityDegree(true);
 
     double i=0, std=0;
-    float C=0, maxC=0, offset=50;  //offset controls how far from the top the central nodes will be positioned
+    //offset controls how far from the top the central nodes will be
+    float C=0, maxC=0, offset=50;
     double new_x=0, new_y=0;
     //	int vert=vertices();
     maxHeight-=offset;
@@ -2987,16 +3269,16 @@ void Graph::layoutLayeredCentrality(double maxWidth, double maxHeight, int Centr
         switch (CentralityType) {
         case 1 : {
             qDebug("Layout according to InDegree Centralities");
-            C=(*it)->SIDC();
-            std= (*it)->SIDC();
-            maxC=maxIDC;
+            C=(*it)->SDP();
+            std= (*it)->SDP();
+            maxC=maxDP;
             break;
         }
         case 2 : {
             qDebug("Layout according to OutDegree Centralities");
-            C=(*it)->SODC();
-            std= (*it)->SODC();
-            maxC=maxODC;
+            C=(*it)->SDC();
+            std= (*it)->SDC();
+            maxC=maxDC;
             break;
         }
         case 3 : {
@@ -3014,13 +3296,6 @@ void Graph::layoutLayeredCentrality(double maxWidth, double maxHeight, int Centr
             break;
         }
         case 5 : {
-            qDebug("Layout according to Graph Centralities");
-            C=(*it)->GC();
-            std= (*it)->SGC();
-            maxC=maxGC;
-            break;
-        }
-        case 6 : {
             qDebug("Layout according to Stress Centralities");
             C=(*it)->SC();
             std= (*it)->SSC();
@@ -3053,7 +3328,7 @@ void Graph::layoutLayeredCentrality(double maxWidth, double maxHeight, int Centr
         i++;
         emit addGuideHLine(static_cast<int> ( new_y ) );
     }
-    graphModified=false;
+    graphModified=true;
 }
 
 
@@ -3161,7 +3436,9 @@ void Graph::createRandomNetSmallWorld (
         for (register int j=i+1;j<vert; j++) {
             qDebug()<<">>>>> REWIRING: Check if  "<< i << " is linked to " << j;
             if ( this-> hasEdge(i, j) ) {
-                qDebug()<<">>>>> REWIRING: They're linked. Do a random REWIRING Experiment between "<< i<< " and " << j << " Beta parameter is " << beta;
+                qDebug()<<">>>>> REWIRING: They're linked. Do a random REWIRING "
+                          "Experiment between "<< i<< " and " << j
+                       << " Beta parameter is " << beta;
                 if (rand() % 100 < (beta * 100))  {
                     qDebug(">>>>> REWIRING: We'l break this edge!");
                     removeEdge(i, j);
@@ -3171,7 +3448,8 @@ void Graph::createRandomNetSmallWorld (
                         candidate=rand() % (vert+1) ;		//pick another vertex.
                         if (candidate == 0 || candidate == i) continue;
                         qDebug()<<">>>>> REWIRING: Candidate: "<< candidate;
-                        if (! this->hasEdge(i, candidate) )	//Only if differs from i and hasnot edge with it
+                        //Only if differs from i and hasnot edge with it
+                        if (! this->hasEdge(i, candidate) )
                             qDebug("<----> Random New Edge Experiment between %i and %i:", i, candidate);
                         if (rand() % 100 > 0.5) {
                             qDebug("Creating new link!");
@@ -3229,6 +3507,264 @@ void Graph::createSameDegreeRandomNetwork(int vert, int degree){
     }
     graphChanged();
 }
+
+
+
+/**
+    Calculates and returns the number of walks of a given length between v1 and v2
+*/
+int Graph::numberOfWalks(int v1, int v2, int length) {
+    createNumberOfWalksMatrix(length);
+    return XM.item(v1-1,v2-1);
+}
+
+
+/**
+    Calculates two matrices:
+    Matrix XM=AM^l where the elements denote the number of walks of length l
+    between all pairs of vertices
+    Matrix XSM=Sum{AM^n} where the elements denote the total number of walks of
+    any length between pairs of vertices
+
+    NOTE: This function is VERY SLOW on large networks (n>50), since it will
+    calculate all powers of the sociomatrix up to n-1 in order to find out all
+    possible walks. If you need to make a simple reachability test, we advise to
+    use the reachabilityMatrix() function instead.
+*/
+void Graph::createNumberOfWalksMatrix(int length) {
+    qDebug()<<"Graph::numberOfWalks() - first create the Adjacency Matrix AM";
+
+    bool dropIsolates=false;
+    bool omitWeights=false;
+    createAdjacencyMatrix(dropIsolates, omitWeights);
+
+    int size = vertices();
+    int maxPower = length;
+
+    XM = AM;   // XM will be the product matrix
+    XSM = AM;  // XSM is the sum of product matrices
+    Matrix PM; // temp matrix
+    PM.zeroMatrix(size);
+
+    qDebug()<< "Graph::writeNumberOfWalksMatrix() XM is  " ;
+    for (register int i=0; i < size ; i++) {
+        for (register int j=0; j < size ; j++) {
+            qDebug() << XM.item(i,j) <<  " ";
+        }
+        qDebug()<< endl;
+    }
+    qDebug()<< "Graph::writeNumberOfWalksMatrix() calculating sociomatrix powers up to " << maxPower;
+    for (register int i=2; i <= maxPower ; i++) {
+        PM.product(XM,AM, false);
+        XM=PM;
+        XSM = XSM+XM;
+    }
+    //XSM.pow(length, false);
+}
+
+
+void Graph::writeTotalNumberOfWalksMatrix(QString fn, QString netName, int length){
+    qDebug("Graph::writeTotalNumberOfWalksMatrix() ");
+
+    QFile file (fn);
+
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage (QString(tr("Could not write to %1")).arg(fn) );
+        return;
+    }
+
+    QTextStream out(&file);
+
+    out << "-Social Network Visualizer- \n";
+    out << "Network name "<< netName<<": \n";
+    out << "Total number of walks of any length less than or equal to "<< length <<" between each pair of nodes \n\n";
+
+    createNumberOfWalksMatrix(length);
+
+    out << XSM ;
+
+    file.close();
+
+}
+
+void Graph::writeNumberOfWalksMatrix(QString fn, QString netName, int length){
+    qDebug("Graph::writeNumberOfWalksMatrix() ");
+
+    QFile file (fn);
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage (QString(tr("Could not write to %1")).arg(fn) );
+        return;
+    }
+
+    QTextStream out(&file);
+
+    out << "-Social Network Visualizer- \n";
+    out << "Network name "<< netName<<": \n";
+    out << "Number of walks of length "<< length <<" between each pair of nodes \n\n";
+
+    createNumberOfWalksMatrix(length);
+
+    out << XM ;
+
+    file.close();
+}
+
+
+
+
+/**
+    Calculates and returns non-zero if vertices v1 and v2 are reachable.
+    If v1, v2 are reachable it returns the geodesic distance.
+    This method is actually a reachability test (if it returns non-zero)
+
+*/
+int Graph::reachable(int v1, int v2) {
+    qDebug()<< "Graph::reachable()";
+    if (!distanceMatrixCreated || graphModified )
+        createDistanceMatrix(false);
+    return DM.item(v1-1,v2-1);
+}
+
+
+
+
+/**
+ *  Returns the influence range of vertex v1, namely the set of nodes who are
+ *  reachable by v1 (See Wasserman and Faust, pp.200-201, based on Lin, 1976).
+ *  This function is for digraphs only
+ */
+QList<int> Graph::influenceRange(int v1){
+    qDebug() << "Graph::influenceRange() ";
+    if (!reachabilityMatrixCreated || graphModified) {
+        // call reachabilityMatrix to construct a list of influence ranges
+        // for each node
+        reachabilityMatrix();
+    }
+    return influenceRanges.values(v1);
+}
+
+
+
+/**
+ *  Returns the influence domain of vertex v1, namely the set of nodes who can
+ *  reach v1
+ *  This function is for digraphs only
+ */
+QList<int> Graph::influenceDomain(int v1){
+    qDebug() << "Graph::influenceDomain() ";
+    if (!reachabilityMatrixCreated || graphModified) {
+        // call reachabilityMatrix to construct a list of influence domains
+        // for each node
+        reachabilityMatrix();
+    }
+    return influenceDomains.values(v1);
+}
+
+
+
+/**
+    Calculates the reachability matrix X^R of the graph
+    where the {i,j} element is 1 if the vertices i and j are reachable
+    Actually, this just checks the corresponding element of Distance Matrix,
+    If d(i,j) is non-zero, then the two nodes are reachable
+    In the process, this function creates the InfluenceRange and InfluenceDomain
+    of each node.
+*/
+void Graph::reachabilityMatrix() {
+    qDebug()<< "Graph::reachabilityMatrix()";
+
+    if (reachabilityMatrixCreated && !graphModified) {
+        qDebug()<< "Graph::reachabilityMatrix() - XRM calculated and graph unmodified. Returning..." ;
+        return;
+    }
+    else {
+        int size = vertices();
+        createDistanceMatrix(false);
+        XRM.zeroMatrix(size);
+        qDebug()<< "Graph::reachabilityMatrix() - calculating XRM..." ;
+        influenceRanges.clear();
+        influenceDomains.clear();
+        notStronglyConnectedVertices.clear();
+        for (register int i=0; i < size ; i++) {
+            for (register int j=i; j < size ; j++) {
+                qDebug()<< "Graph::reachabilityMatrix()  total shortest paths between ("
+                        << i+1 <<"," << j+1<< ")=" << TM.item(i,j) <<  " ";
+                if ( DM.item(i,j) > 0 ) {
+                    qDebug()<< "Graph::reachabilityMatrix()  - d("<<i+1<<","
+                            <<j+1<<")=" << DM.item(i,j)
+                            << " - inserting " << j+1 << " to inflRange J of " << i+1
+                            << " - and " << i+1 << " to inflDomain I of "<< j+1 ;
+                    XRM.setItem(i,j,1);
+                    influenceRanges.insertMulti(i,j);
+                    influenceDomains.insertMulti(j,i);
+                }
+                else if (i==j) {
+                       XRM.setItem(i,j,1);
+                }
+                else {
+                       XRM.setItem(i,j,0);
+                       notStronglyConnectedVertices.insertMulti(i,j);
+                }
+                if ( DM.item(j,i) > 0 ) {
+                    qDebug()<< "Graph::reachabilityMatrix()  - inverse path d("
+                            <<j+1<<","<<i+1<<")="
+                            << DM.item(j,i)
+                            << " - inserting " << j+1 << " to influenceDomain I of " << i+1
+                            << " - and " << i+1 << " to influenceRange J of " << j+1 ;
+                    XRM.setItem(j,i,1);
+                    influenceDomains.insertMulti(i,j);
+                    influenceRanges.insertMulti(j,i);
+                }
+                else if (i==j) {
+                       XRM.setItem(i,j,1);
+                }
+                else {
+                       XRM.setItem(j,i,0);
+                       notStronglyConnectedVertices.insertMulti(j,i);
+                }
+            }
+            qDebug()<< endl;
+        }
+        reachabilityMatrixCreated=true;
+    }
+
+}
+
+
+/**
+    Writes the reachability matrix X^R of the graph to a file
+*/
+void Graph::writeReachabilityMatrix(QString fn, QString netName) {
+    qDebug("Graph::writeReachabilityMatrix() ");
+
+    QFile file (fn);
+
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage (QString(tr("Could not write to %1")).arg(fn) );
+        return;
+    }
+
+    QTextStream out(&file);
+
+    out << "-Social Network Visualizer- \n";
+    out << "Network name: "<< netName<<" \n";
+    out << "Reachability Matrix (XR) \n";
+    out << "Two nodes are reachable if there is a walk between them (their geodesic distance is non-zero). \n";
+    out << "If nodes i and j are reachable then XR(i,j)=1 otherwise XR(i,j)=0.\n\n";
+
+    if (!reachabilityMatrixCreated || graphModified) {
+        reachabilityMatrix();
+    }
+
+    out << XRM ;
+
+    file.close();
+}
+
+
 
 /**
     Calculates and returns the number of cliques which include vertex v1
@@ -3408,7 +3944,7 @@ float Graph::clusteringCoefficient (){
 
 
 
-/*tri
+/*
  *  Conducts a triad census and updates QList::triadTypeFreqs,
  * 		which is the list carrying all triad type frequencies
  *  Complexity:O(n!)
@@ -3716,6 +4252,7 @@ void Graph:: examine_MAN_label(int mut, int asy, int nul,
 
 /** 
     Calculates and returns x! factorial...
+    used in (n 2)p edges calculation
 */
 int Graph:: factorial(int x) {
     int tmp;
@@ -4327,7 +4864,61 @@ void Graph::writeDataSetToFile (QString fileName) {
                   " 10 7  1";
                     qDebug()<< "		Knocke_Bureacracies_Information_Exchange_Network.pajek written... ";
     }
-
+    else if (fileName == "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek"){
+        qDebug()<< "		Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek written... ";
+        outText<< "*Network Countries_Trade_Basic_Manufactred_Goods" << endl <<
+                  "*Vertices      24" << endl <<
+                    "1 \"ALG\"     0.5408 0.0347" << endl <<
+                    "2 \"ARG\"     0.9195 0.1080" << endl <<
+                    "3 \"BRA\"     0.7626 0.4348" << endl <<
+                    "4 \"CHI\"     0.5190 0.2900" << endl <<
+                    "5 \"CZE\"     0.4734 0.5176" << endl <<
+                    "6 \"ECU\"     0.9669 0.3401" << endl <<
+                    "7 \"EGY\"     0.1749 0.9478" << endl <<
+                    "8 \"ETH\"     0.4757 0.9701" << endl <<
+                    "9 \"FIN\"     0.6789 0.5941" << endl <<
+                   "10 \"HON\"     0.9499 0.6624" << endl <<
+                   "11 \"IND\"     0.0638 0.2404" << endl <<
+                   "12 \"ISR\"     0.6606 0.1142" << endl <<
+                   "13 \"JAP\"     0.4718 0.4038" << endl <<
+                   "14 \"LIB\"     0.9210 0.9313" << endl <<
+                   "15 \"MAD\"     0.7077 0.9150" << endl <<
+                   "16 \"NZ\"      0.0501 0.6893" << endl <<
+                   "17 \"PAK\"     0.3653 0.3211" << endl <<
+                   "18 \"SPA\"     0.6454 0.3687" << endl <<
+                   "19 \"SWI\"     0.5480 0.7162" << endl <<
+                   "20 \"SYR\"     0.2465 0.0501" << endl <<
+                   "21 \"TAI\"     0.3805 0.6520" << endl <<
+                   "22 \"UK\"      0.5921 0.4555" << endl <<
+                   "23 \"US\"      0.5464 0.5983" << endl <<
+                  "24 \"YUG\"     0.3576 0.4845" << endl <<
+                  "*Matrix :3 \"ws6 - Basic manufactured goods\"" << endl <<
+                   "0 0 0 1 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1" << endl <<
+                   "1 0 1 1 0 1 0 0 1 0 1 1 1 0 0 0 1 1 1 0 1 0 1 0" << endl <<
+                   "1 1 0 1 1 1 1 0 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1" << endl <<
+                   "1 1 1 0 1 0 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1" << endl <<
+                   "1 1 1 1 0 1 1 1 1 1 1 0 1 1 0 1 1 1 1 1 1 1 1 1" << endl <<
+                   "0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0" << endl <<
+                   "0 0 0 0 1 0 0 1 1 0 0 0 1 0 0 0 0 1 1 0 0 1 1 1" << endl <<
+                   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0" << endl <<
+                   "1 1 1 1 1 1 1 1 0 1 1 1 1 0 0 1 1 1 1 1 1 1 1 1" << endl <<
+                   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0" << endl <<
+                   "1 0 0 1 1 0 1 0 1 0 0 0 1 0 0 1 1 1 1 0 1 1 1 1" << endl <<
+                   "0 1 0 0 0 0 0 1 1 0 0 0 1 0 0 1 0 1 1 0 1 1 1 1" << endl <<
+                   "1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1" << endl <<
+                   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
+                   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0" << endl <<
+                   "1 0 0 1 0 0 1 0 0 0 1 0 1 0 0 0 1 1 0 0 1 1 1 1" << endl <<
+                   "0 0 0 1 1 0 0 0 1 0 1 0 1 1 0 1 0 1 1 1 1 1 1 0" << endl <<
+                   "1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1" << endl <<
+                   "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1" << endl <<
+                   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
+                   "0 0 1 1 0 0 0 0 1 0 1 1 1 0 0 1 1 1 1 1 0 1 1 1" << endl <<
+                   "1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1" << endl <<
+                   "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1" << endl <<
+                   "1 1 0 1 1 0 1 1 1 0 1 1 1 0 0 1 1 1 1 1 1 1 1 0";
+                    qDebug()<< "		Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek written... ";
+    }
     f.close();
 }
 
@@ -4335,9 +4926,7 @@ void Graph::writeDataSetToFile (QString fileName) {
 
 
 /** 
-    Returns the adjacency matrix of G
-    This is called from saveGraphToAdjacency() using << operator of Matrix class
-    The resulting matrix HAS spaces between elements.
+    Exports the adjacency matrix to a given textstream
 */
 void Graph::writeAdjacencyMatrixTo(QTextStream& os){
     qDebug("Graph: adjacencyMatrix(), writing matrix with %i vertices", vertices());
@@ -4355,7 +4944,6 @@ void Graph::writeAdjacencyMatrixTo(QTextStream& os){
         }
         os << endl;
     }
-    graphModified=false;
 }
 
 
@@ -4382,7 +4970,7 @@ QTextStream& operator <<  (QTextStream& os, Graph& m){
 
 
 /** 
-    Writes the adjacency matrix of G to a specified file
+    Writes the adjacency matrix of G to a specified file fn
     This is called by MainWindow::slotViewAdjacencyMatrix()
     The resulting matrix HAS NO spaces between elements.
 */
@@ -4420,30 +5008,41 @@ void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
  *  Creates an adjacency matrix AM
  *  where AM(i,j)=1 if i is connected to j
  *  and AM(i,j)=0 if i not connected to j
- *  Used in Graph::centralityInformation()
+ *  Used in Graph::centralityInformation() and Graph::invertAdjacencyMatrix()
  */
-void Graph::createAdjacencyMatrix(bool dropIsolates){
+void Graph::createAdjacencyMatrix(bool dropIsolates=false, bool omitWeights=false){
     qDebug() << "Graph::createAdjacencyMatrix()";
     float m_weight=-1;
     int i=0, j=0;
-    isolatedVertices = 0;
-    AM.resize(m_totalVertices);
-
+    if (dropIsolates){
+        qDebug() << "Graph::createAdjacencyMatrix() - Find and dropp possible isolates";
+        isolatedVertices = verticesIsolated().count();
+        qDebug() << "Graph::createAdjacencyMatrix() - found " << isolatedVertices << " isolates to drop. "
+                 << " Will resize AM to " << m_totalVertices-isolatedVertices;
+        AM.resize(m_totalVertices-isolatedVertices);
+    }
+    else
+        AM.resize(m_totalVertices);
     QList<Vertex*>::iterator it, it1;
-    QList<int> isolatesList;
+    qDebug() << "Graph::createAdjacencyMatrix() - creating new adjacency matrix ";
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        (*it)->setIsolated(true);
-        if ( ! (*it)->isEnabled() )
+        if ( ! (*it)->isEnabled() || ( (*it)->isIsolated() && dropIsolates) ) {
+            qDebug()<<"Graph::createAdjacencyMatrix() - vertex " << (*it)->name()
+                   << " is isolated. Continue";
             continue;
+        }
         j=i;
         for (it1=it; it1!=m_graph.end(); it1++){
-            (*it1)->setIsolated(true);
-            if ( ! (*it1)->isEnabled() )
+            if ( ! (*it1)->isEnabled() || ( (*it1)->isIsolated() && dropIsolates) ) {
+                qDebug()<<"Graph::createAdjacencyMatrix() - vertex " << (*it1)->name()
+                       << " is isolated. Continue";
                 continue;
+            }
             if ( (m_weight = this->hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
-                AM.setItem(i,j, m_weight );
-                (*it)->setIsolated(false);
-                (*it1)->setIsolated(false);
+                if (omitWeights)
+                    AM.setItem(i,j, 1 );
+                else
+                    AM.setItem(i,j, m_weight );
             }
             else{
                 AM.setItem(i,j, 0);
@@ -4451,44 +5050,32 @@ void Graph::createAdjacencyMatrix(bool dropIsolates){
             qDebug()<<" AM("<< i+1 << ","<< j+1 << ") = " <<  AM.item(i,j);
             if (i != j ) {
                 if ( (m_weight = this->hasEdge ( (*it1)->name(), (*it)->name() )  ) !=0 ) {
-                    AM.setItem(j,i, m_weight );
-                    (*it)->setIsolated(false);
-                    (*it1)->setIsolated(false);
+                    if (omitWeights)
+                        AM.setItem(j,i, 1 );
+                    else
+                        AM.setItem(j,i, m_weight );
                 }
                 else {
                     AM.setItem(j,i, 0);
                 }
-                qDebug()<<" AM("<< j+1 << ","<< i+1 << ") = " <<  AM.item(i,j);
+                qDebug()<<" AM("<< j+1 << ","<< i+1 << ") = " <<  AM.item(j,i);
             }
             j++;
         }
-        if ((*it)->isIsolated()) {
-            isolatesList << i;
-            qDebug()<< "Graph::createAdjacencyMatrix() - node " << i+1 << " is isolated. Marking it." ;
-        }
         i++;
     }
-    if (dropIsolates){
-        qDebug()<< "Graph::createAdjacencyMatrix() - Dropping all isolated nodes.";
-        for (int k = 0; k < isolatesList.size(); ++k) {
-            AM.deleteRowColumn( isolatesList.at(k) );
-        }
-        isolatedVertices=isolatesList.size();
-        qDebug() << "Graph::createAdjacencyMatrix() - Total isolates found: " << isolatedVertices;
-    }
     qDebug() << "Graph::createAdjacencyMatrix() - Done.";
+    adjacencyMatrixCreated=true;
 }
 
 
 void Graph::invertAdjacencyMatrix(){
     qDebug() << "Graph::invertAdjacencyMatrix()";
-
-    invAM.resize(m_totalVertices);
-
     qDebug()<<"Graph::invertAdjacencyMatrix() - first create the Adjacency Matrix AM";
-    bool dropIsolates=false;
-    createAdjacencyMatrix(dropIsolates);
-
+    bool dropIsolates=true;
+    bool omitWeights=true;
+    createAdjacencyMatrix(dropIsolates, omitWeights);
+    invAM.resize(m_totalVertices-isolatedVertices);
     qDebug()<<"Graph::invertAdjacencyMatrix() - invert the Adjacency Matrix AM and store it to invAM";
     invAM.inverseByGaussJordanElimination(AM);
 

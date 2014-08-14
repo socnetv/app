@@ -62,7 +62,7 @@ done;
 
 chmod 644 nets/*
 find . -type f -name '*~' -delete
-rm -f config.log config.status Makefile socnetv.spec socnetv.mak
+rm -f config.log config.status Makefile socnetv.mak
 
 
 
@@ -76,9 +76,9 @@ echo   COPY FILES TO WORKING DIRS
 echo ---------------------------------
 
 
-find . -not -name "qdevelop-*" -not -name "socnetv" -not -name ".qdevelop"  -not -name "pajek*" -not -path "*./autom4te.cache*" -not -path "*.svn*" -not -path "*./test-nets*" -not -path ".git" -not -name ".user"  -print0  | cpio -pmd0 ../ubuntu/socnetv-$VER
+find . -not -name "qdevelop-*" -not -name "socnetv" -not -name ".qdevelop"  -not -name "pajek*" -not -path "*./autom4te.cache*" -not -path "*.svn*" -not -path "*./test-nets*" -not -path ".git" -not -name ".spec" -not -name ".user"  -print0  | cpio -pmd0 ../ubuntu/socnetv-$VER
 
-find . -not -name "qdevelop-*" -not -name "socnetv" -not -name ".qdevelop"  -not -name "pajek*" -not -path "*./autom4te.cache*" -not -path "*.svn*" -not -path "*./test-nets*" -not -path ".git" -not -name ".user"  -print0  | cpio -pmd0 ../ubuntu/socnetv-$VER.orig
+find . -not -name "qdevelop-*" -not -name "socnetv" -not -name ".qdevelop"  -not -name "pajek*" -not -path "*./autom4te.cache*" -not -path "*.svn*" -not -path "*./test-nets*" -not -path ".git" -not -name ".spec" -not -name ".user"  -print0  | cpio -pmd0 ../ubuntu/socnetv-$VER.orig
 
 
 

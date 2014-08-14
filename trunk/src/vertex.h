@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer
- version: 1.1
+ version: 1.2
  Written in Qt
  
                          vertex.h  -  description
                              -------------------
-    copyright            : (C) 2005-2013 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2014 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -82,6 +82,9 @@ public:
     long int inDegree();
     long int localDegree();
 
+    void setEccentricity (float c){ m_Eccentricity=c;}		/* sets eccentricity */
+    float eccentricity() { return m_Eccentricity;}		/* Returns eccentricity */
+
     /* Returns true if there is a reciprocal link from this vertex */
     bool isReciprocalLinked() { return m_reciprocalLinked;}
     void setReciprocalLinked(bool reciprocal) { m_reciprocalLinked=reciprocal;}
@@ -145,31 +148,25 @@ public:
     void appendToPs(long  int vertex ) ;
     ilist Ps(void);
 
-    void setODC (float c){ m_ODC=c;} 	/* Sets vertex Out-Degree Centrality*/
-    void setSODC (float c ) { m_SODC=c;}	/* Sets standard vertex Out-Degree Centrality*/
-    float ODC() { return m_ODC;}		/* Returns vertex Out-Degree Centrality*/
-    float SODC() { return m_SODC;}		/* Returns standard vertex Out-Degree Centrality*/
-
-    void setIDC (float c){ m_IDC=c;} 	/* Sets vertex In-Degree Centrality*/
-    void setSIDC (float c ) { m_SIDC=c;}	/* Sets standard vertex In-Degree Centrality*/
-    float IDC() { return m_IDC;}		/* Returns vertex In-Degree Centrality*/
-    float SIDC() { return m_SIDC;}		/* Returns standard vertex In-Degree Centrality*/
-
+    void setDC (float c){ m_DC=c;} 	/* Sets vertex Degree Centrality*/
+    void setSDC (float c ) { m_SDC=c;}	/* Sets standard vertex Degree Centrality*/
+    float DC() { return m_DC;}		/* Returns vertex Degree Centrality*/
+    float SDC() { return m_SDC;}		/* Returns standard vertex Degree Centrality*/
 
     void setCC (float c){ m_CC=c;}		/* sets vertex Closeness Centrality*/
     void setSCC (float c ) { m_SCC=c;}	/* sets standard vertex Closeness Centrality*/
     float CC() { return m_CC;}		/* Returns vertex Closeness Centrality*/
     float SCC() { return m_SCC; }		/* Returns standard vertex Closeness Centrality*/
 
+    void setIRCC (float c){ m_IRCC=c;}		/* sets vertex IRCC */
+    void setSIRCC (float c ) { m_SIRCC=c;}	/* sets standard vertex IRCC */
+    float IRCC() { return m_IRCC;}		/* Returns vertex IRCC */
+    float SIRCC() { return m_SIRCC; }		/* Returns standard vertex IRCC*/
+
     void setBC(float c){ m_BC=c;}		/* sets s vertex Betweeness Centrality*/
     void setSBC (float c ) { m_SBC=c;}	/* sets standard vertex Betweeness Centrality*/
     float BC() { return m_BC;}		/* Returns vertex Betweeness Centrality*/
     float SBC() { return m_SBC; }		/* Returns standard vertex Betweeness Centrality*/
-
-    void setGC (float c){ m_GC=c;}		/* sets vertex Graph Centrality*/
-    void setSGC (float c ) { m_SGC=c;}	/* sets standard vertex Graph Centrality*/
-    float GC() { return m_GC;}		/* Returns vertex Graph Centrality*/
-    float SGC() { return m_SGC; }		/* Returns standard vertex Graph Centrality*/
 
     void setSC (float c){ m_SC=c;}  	/* sets vertex Stress Centrality*/
     void setSSC (float c ) { m_SSC=c;}	/* sets standard vertex Stress Centrality*/
@@ -191,10 +188,20 @@ public:
     float IC() { return m_IC;}		/* Returns vertex Information  Centrality*/
     float SIC() { return m_SIC; }		/* Returns standard vertex Information Centrality*/
 
-    void setPRC (float c){ m_PRC=c;}		/* sets vertex PageRank Centrality*/
-    void setSPRC (float c ) { m_SPRC=c;}	/* sets standard vertex PageRank Centrality*/
-    float PRC() { return m_PRC;}		/* Returns vertex PageRank  Centrality*/
-    float SPRC() { return m_SPRC; }		/* Returns standard vertex PageRank Centrality*/
+    void setDP (float c){ m_DP=c;} 	/* Sets vertex Degree Prestige */
+    void setSDP (float c ) { m_SDP=c;}	/* Sets standard vertex Degree Prestige */
+    float DP() { return m_DP;}		/* Returns vertex Degree Prestige */
+    float SDP() { return m_SDP;}		/* Returns standard vertex Degree Prestige */
+
+    void setPRC (float c){ m_PRC=c;}		/* sets vertex PageRank*/
+    void setSPRC (float c ) { m_SPRC=c;}	/* sets standard vertex PageRank*/
+    float PRC() { return m_PRC;}		/* Returns vertex PageRank */
+    float SPRC() { return m_SPRC; }		/* Returns standard vertex PageRank*/
+
+    void setPP (float c){ m_PP=c;}		/* sets vertex Proximity Prestige */
+    void setSPP (float c ) { m_SPP=c;}	/* sets standard vertex Proximity Prestige */
+    float PP() { return m_PP;}		/* Returns vertex Proximity Prestige */
+    float SPP() { return m_SPP; }		/* Returns standard vertex Proximity Prestige */
 
     float CLC() { return m_CLC;	}
     void setCLC(float clucof)  { m_CLC=clucof; m_hasCLC=true; }
@@ -212,6 +219,7 @@ private:
     Graph *parentGraph;
     ilist myPs;
     long int m_name,  m_outLinks, m_inLinks, m_outDegree, m_inDegree, m_localDegree;
+    float m_Eccentricity;
     int m_value, m_size, m_labelSize, m_numberSize;
     bool m_inLinked, m_outLinked, m_reciprocalLinked, m_enabled, m_hasCLC, m_isolated;
     QString m_color, m_numberColor, m_label, m_labelColor, m_shape;
@@ -222,8 +230,9 @@ private:
     double m_x, m_y;
     float m_CLC;
     float m_delta, m_EC, m_SEC;
-    float m_ODC, m_SODC, m_IDC, m_SIDC, m_CC, m_SCC, m_BC, m_SBC, m_GC, m_SGC, m_SC, m_SSC;
+    float m_DC, m_SDC, m_DP, m_SDP, m_CC, m_SCC, m_BC, m_SBC, m_IRCC, m_SIRCC, m_SC, m_SSC;
     float m_PC, m_SPC, m_SIC, m_IC, m_SPRC, m_PRC;
+    float m_PP, m_SPP;
 
 };
 

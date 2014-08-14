@@ -85,9 +85,16 @@ SOURCES += src/guide.cpp \
 
 
 # Extra optimization flags
-QMAKE_CXXFLAGS += -msse -mfpmath=sse -ffast-math 
+win32 {
+  QMAKE_CXXFLAGS += -msse -mfpmath=sse -ffast-math  
+}
+unix:!macx{
+  QMAKE_CXXFLAGS += -msse -mfpmath=sse -ffast-math  
+}
+macx {
+  QMAKE_CXXFLAGS += -msse  -ffast-math 
+}
 
-#LIBS    += @ac_libs@
 INCLUDEPATH +=  /usr/local/include /usr/include /usr/include/qt5 /usr/share/qt5/include 
 INCLUDEPATH +=  /usr/local/include /usr/include /usr/include/qt  /usr/include/qt5 /usr/share/qt5/include
 
@@ -99,7 +106,8 @@ win32 {
 macx:ICON = src/images/socnetv.icns
 
 
-TRANSLATIONS    = translations/socnetv_es.ts 
+TRANSLATIONS    = translations/socnetv_es.ts \ 
+		  translations/socnetv_el.ts 
 
 
 

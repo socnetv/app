@@ -9,6 +9,8 @@ KNOWN BUGS
 6: Standard Stress Centrality index missing.
 7: SocNetV cannot load GraphML files with node labels which contain the & character. 
 8: 2014-02-28: In Reciprocal links with diferrent weight, only the first weight is taken into account
+9: closeness reports wrong indices in digraphs, where one actor has only one outLink
+10: fix other related indices for digraphs when d(i,j) = inf
 
 OLD, NOT EASILY FIXED BUT NOT CRITICAL BUGS
 ===========================================

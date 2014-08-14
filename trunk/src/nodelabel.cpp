@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer 
- version: 1.1
+ version: 1.2
  Written in Qt
 
                         nodelabel.cpp  -  description
                              -------------------
-    copyright            : (C) 2005-2013 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2014 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -29,7 +29,7 @@
 #include <QFont>
 
 
-NodeLabel::NodeLabel( Node *jim ,  int size,  QString labelText,  QGraphicsScene *scene) :QGraphicsTextItem(0) {
+NodeLabel::NodeLabel( Node *jim ,  int size,  QString labelText) :QGraphicsTextItem(0) {
 	source=jim;
 	jim -> addLabel(this);
 	setParentItem(jim); //auto disables child items like this, when node is disabled.
