@@ -1069,6 +1069,60 @@ void Graph::writeNumberOfGeodesicsMatrix(const char* fn, const char* netName) {
 
 
 
+void Graph::writeEccentricity(
+        const QString fileName, const bool considerWeights)
+{
+    Q_UNUSED(considerWeights);
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        return;
+    }
+    QTextStream outText ( &file );
+
+    emit statusMessage ( (tr("Calculating shortest paths")) );
+    createDistanceMatrix(true);
+    emit statusMessage ( QString(tr("Writing eccentricity to file:")).arg(fileName) );
+
+    outText << tr("ECCENTRICITY (e)") <<"\n";
+    outText << tr("The eccentricity e of a node is the maximum geodesic distance "
+                  " from that node to all other nodes in the network.") << "\n";
+    outText << tr("Therefore, e reflects farness: how far, at most, is each "
+                  " node from every other node.") << "\n";
+
+    outText << tr("Range: 0 < e < ") << vertices()-1 <<" (g-1, "
+             << tr("where g is the number of nodes |V|)\n")
+             << tr("A node has maximum e when it has distance 1 "
+                   "to all other nodes (star node))\n");
+
+    outText << "Node"<<"\te\t\t%e\n";
+    QList<Vertex*>::iterator it;
+    for (it= m_graph.begin(); it!= m_graph.end(); it++){
+        outText << (*it)->name()<<"\t"<<(*it)->eccentricity() << "\t\t" <<
+                   (100* ((*it)->eccentricity()) / sumEccentricity)<<endl;
+    }
+    if ( minEccentricity ==  maxEccentricity)
+        outText << tr("\nAll nodes have the same e value.\n");
+    else {
+        outText << "\n";
+        outText << tr("Max e = ") << maxEccentricity
+                <<" (node "<< maxNodeEccentricity  <<  ")  \n";
+        outText << tr("Min e = ") << minEccentricity
+                <<" (node "<< minNodeEccentricity <<  ")  \n";
+        outText << tr("e classes = ") << classesEccentricity<<" \n";
+    }
+
+    outText << "\n\n";
+    outText << tr("Eccentricity report, \n");
+    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime()
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    file.close();
+
+}
+
+
+
 /**
     Creates a matrix DM which stores geodesic distances between all vertices
     INPUT:
@@ -1077,10 +1131,11 @@ void Graph::writeNumberOfGeodesicsMatrix(const char* fn, const char* netName) {
         DM(i,j)=geodesic distance between vertex i and vertex j
         TM(i,j)=number of shortest paths from vertex i to vertex j, called sigma(i,j).
         graphDiameter is set to the length of the longest shortest path between every (i,j)
+        Eccentricity(i) is set to the length of the longest shortest path from i to every j
         Also, if doCalculcateCentralities==true, it calculates the centralities for every u in V:
         - Betweeness: BC(u) = Sum ( sigma(i,j,u)/sigma(i,j) ) for every s,t in V
         - Stress: SC(u) = Sum ( sigma(i,j) ) for every s,t in V
-        - Graph: CC(u) =  1/maxDistance(u,t)  for some t in V
+        - Eccentricity: EC(u) =  1/maxDistance(u,t)  for some t in V
         - Closeness: CC(u) =  1 / Sum( DM(u,t) )  for every  t in V
 */
 
@@ -1091,11 +1146,12 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
         return;
     }
     //Create a NxN DistanceMatrix. Initialise values to zero.
-    qDebug() << "Graph::createDistanceMatrix() Resizing Matrices to hold " << m_totalVertices << " vertices";
+    qDebug() << "Graph::createDistanceMatrix() Resizing Matrices to hold "
+             << m_totalVertices << " vertices";
     DM.resize(m_totalVertices);
     TM.resize(m_totalVertices);
 
-    int aEdges = totalEdges();    //maybe we will use m_totalEdges here to save some time?...
+    int aEdges = totalEdges();
     isolatedVertices = verticesIsolated().count();
     //drop isolated vertices from calculations (i.e. std Centrality and group Centrality).
     int aVertices=vertices() - isolatedVertices;
@@ -1112,43 +1168,42 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
         QList<int>::iterator it2;
         int w=0, u=0,s=0, i=0;
         float d_sw=0, d_su=0;
-        float CC=0, BC=0, SC= 0, GC=0, EC=0, PC=0, stdGC=0, stdEC=0;
+        float CC=0, BC=0, SC= 0, eccentricity=0, EC=0, PC=0;
         int progressCounter=0;
 
         graphDiameter=0;
-
         distanceMatrixCreated = false;
         averGraphDistance=0;
         nonZeroDistancesCounter=0;
 
-        qDebug() << "	graphDiameter "<< graphDiameter << " averGraphDistance " <<averGraphDistance;
-        qDebug() << "	reciprocalEdgesVert "<< reciprocalEdgesVert << " inEdgesVert " << inEdgesVert
+        qDebug() << "	graphDiameter "<< graphDiameter << " averGraphDistance "
+                 <<averGraphDistance;
+        qDebug() << "	reciprocalEdgesVert "<< reciprocalEdgesVert
+                 << " inEdgesVert " << inEdgesVert
                  << " outEdgesVert "<<  outEdgesVert;
         qDebug() << "	aEdges " << aEdges <<  " aVertices " << aVertices;
 
 
         maxIndexBC=0;
         maxIndexSC=0;
-        maxIndexEC=0;
 
-        qDebug("Graph: createDistanceMatrix() - initialising variables for maximum centrality indeces");
+        qDebug() << "Graph: createDistanceMatrix() - "
+                    " initialising variables for maximum centrality indeces";
         if (symmetricAdjacencyMatrix) {
             maxIndexBC=( aVertices-1.0) *  (aVertices-2.0)  / 2.0;
             maxIndexSC=( aVertices-1.0) *  (aVertices-2.0) / 2.0;
             maxIndexCC=aVertices-1.0;
-            maxIndexEC=aVertices-1.0;
             maxIndexPC=aVertices-1.0;
             qDebug("############# symmetricAdjacencyMatrix - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
         }
         else {
             maxIndexBC=( aVertices-1.0) *  (aVertices-2.0) ;
             maxIndexSC=1;
-            maxIndexEC=(aVertices-1.0);
             maxIndexPC=aVertices-1.0;
             maxIndexCC=1.0/(aVertices-1.0);  //FIXME This applies only on undirected graphs
             qDebug("############# NOT SymmetricAdjacencyMatrix - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
         }
-        //float maxIndexBC-directed= (n1-1) * (n2-1)-(ns-1) , n1  vert outgoing n2 ingoing vert ns self  // all this divided by two.
+
         qDebug("Graph: createDistanceMatrix() - initialising variables for centrality index");
         maxCC=0; minCC=RAND_MAX; nomCC=0; denomCC=0; groupCC=0; maxNodeCC=0; minNodeCC=0; sumCC=0;
         discreteCCs.clear(); classesCC=0;
@@ -1156,8 +1211,9 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
         discreteBCs.clear(); classesBC=0;
         maxSC=0; minSC=RAND_MAX; nomSC=0; denomSC=0; groupSC=0; maxNodeSC=0; minNodeSC=0; sumSC=0;
         discreteSCs.clear(); classesSC=0;
-        maxGC=0; minGC=RAND_MAX; nomGC=0; denomGC=0; groupGC=0; maxNodeGC=0; minNodeGC=0; sumGC=0;
-        discreteGCs.clear(); classesGC=0;
+        maxEccentricity=0; minEccentricity=RAND_MAX; maxNodeEccentricity=0;
+        minNodeEccentricity=0; sumEccentricity=0; discreteEccentricities.clear();
+        classesEccentricity=0;
         maxPC=0; minPC=RAND_MAX; maxNodePC=0; minNodePC=0; sumPC=0;
         discretePCs.clear(); classesPC=0;
         maxEC=0; minEC=RAND_MAX; nomEC=0; denomEC=0; groupEC=0; maxNodeEC=0; minNodeEC=0; sumEC=0;
@@ -1168,7 +1224,8 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
             for (it=m_graph.begin(); it!=m_graph.end(); it++) {
                 (*it)->setBC( 0.0 );
                 (*it)->setSC( 0.0 );
-                (*it)->setGC( 0.0 );
+                (*it)->setEccentricity( 0.0 );
+                (*it)->setEC( 0.0 );
                 (*it)->setCC( 0.0 );
                 (*it)->setPC( 0.0 );
             }
@@ -1211,23 +1268,26 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                 sumCC+=CC;
                 (*it)->setCC( CC );
 
-                //And graph centrality must be inverted...
-                if ( (*it)->GC() != 0 ) {
-                    EC=(*it)->GC();		//Eccentricity Centrality is max geodesic
-                    GC=1.0/EC;		//Graph Centrality is inverted Eccentricity
+                //Check eccentricity (max geodesic distance)
+                eccentricity = (*it)->eccentricity();
+                if ( eccentricity != 0 ) {
+                    //Eccentricity Centrality is the inverted Eccentricity
+                    EC=1.0 / eccentricity;
                 }
-                else { GC=0; EC=0;}
-                (*it)->setGC( GC );		//Set Graph Centrality
-                (*it)->setEC( EC ); 		//Set Eccentricity Centrality
+                else { EC=0;eccentricity=0;}
+                (*it)->setEC( EC ); //Set Eccentricity Centrality = 0
 
-                //Resolve classes Graph centrality
-                resolveClasses(GC, discreteGCs, classesGC);
-                sumGC+=GC;
+                //Find min/max Eccentricity
+                minmax( eccentricity, (*it), maxEccentricity, minEccentricity,
+                        maxNodeEccentricity, minNodeEccentricity) ;
+                resolveClasses(eccentricity, discreteEccentricities,
+                               classesEccentricity ,(*it)->name() );
+                sumEccentricity+=eccentricity;
 
-                stdEC =EC/(aVertices-1.0);
-                (*it)->setSEC(stdEC);
-                sumEC+=EC;
+                //Find min/max Eccentricity centrality
                 minmax( EC, (*it), maxEC, minEC, maxNodeEC, minNodeEC) ;
+                sumEC+=EC;
+                resolveClasses(EC, discreteECs, classesEC,(*it)->name() );
 
                 i=1; //used in calculating power centrality
                 sizeOfComponent = 1;
@@ -1309,11 +1369,6 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                 (*it)->setSCC ( (aVertices-1.0) * CC  );
                 minmax( (*it)->SCC(), (*it), maxCC, minCC, maxNodeCC, minNodeCC) ;
 
-                qDebug()<< "Calculating Std Graph centrality";
-                GC = (*it)->GC();
-                (*it)->setSGC( GC / sumGC );
-                minmax( (*it)->SGC(), (*it), maxGC, minGC, maxNodeGC, minNodeGC) ;
-
                 qDebug("Resolving SC classes...");
                 SC=(*it)->SC();
                 resolveClasses(SC, discreteSCs, classesSC);
@@ -1333,8 +1388,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 
                 //Calculate the numerator of groupBC according to Freeman's group Betweeness
                 nomBC +=(maxBC - BC );
-                //Find numerator of groupGC
-                nomGC += maxGC-(*it)->SGC();
+
                 //Find numerator of groupCC
                 nomCC += maxCC- (*it)->SCC();
 
@@ -1353,9 +1407,6 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
             nomBC*=2.0;
             denomBC =   (aVertices-1.0) *  (aVertices-1.0) * (aVertices-2.0);
             groupBC=nomBC/denomBC;		//Calculate group Betweeness centrality
-
-            denomGC =  aVertices-1.0;
-            groupGC= nomGC/denomGC;		//Calculate group Graph centrality
 
             denomSC =   (aVertices-1.0); //TOFIX
             groupSC = nomSC/denomSC;	//Calculate group Stress centrality
@@ -1384,7 +1435,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
         Also, if doCalculcateCentralities is true then BFS does extra operations:
             a) For source vertex s:
                 it calculates CC(s) as the sum of its distances from every other vertex.
-                it calculates GC(s) as the maximum distance from all other vertices.
+                it calculates eccentricity(s) as the maximum distance from all other vertices.
                 it increases sizeOfNthOrderNeighborhood [ N ] by one, to store the number of nodes at distance n from source s
             b) For every vertex u:
                 it increases SC(u) by one, when it finds a new shor. path from s to t through u.
@@ -1437,14 +1488,15 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
                 DM.setItem(s, w, dist_w);
                 averGraphDistance += dist_w;
                 nonZeroDistancesCounter++;
+
                 if (doCalculcateCentralities){
                     qDebug()<<"Calculate PC: store the number of nodes at distance " << dist_w << "from s";
                     sizeOfNthOrderNeighborhood[dist_w]=sizeOfNthOrderNeighborhood[dist_w]+1;
                     qDebug()<<"Calculate CC: the sum of distances (will invert it l8r)";
                     m_graph [s]->setCC (m_graph [s]->CC() + dist_w);
-                    qDebug()<<"Calculate GC: the maximum distance (will invert it l8r) - also for Eccentricity";
-                    if (m_graph [s]->GC() < dist_w )
-                        m_graph [s]->setGC(dist_w);
+                    qDebug()<<"Calculate Eccentricity: the maximum distance ";
+                    if (m_graph [s]->eccentricity() < dist_w )
+                        m_graph [s]->setEccentricity(dist_w);
 
                 }
                 qDebug("BFS: Checking graphDiameter");
@@ -1976,10 +2028,11 @@ void Graph::writeCentralityCloseness(
     outText << tr("CLOSENESS CENTRALITY (CC)")<<"\n";
     outText << tr("The CC index is the inverted sum of geodesic distances"
                   " from node u to all the other nodes.")<<"\n";
-    outText << tr("CC' is the standardized CC multiplied by N-1 (minus isolates).")<<"\n";
+    outText << tr("CC' is the standardized CC (multiplied by N-1 minus isolates).")<<"\n";
     outText << tr("Note: In not strongly connected graphs or digraphs, "
-                  "the ordinary CC is undefined. In that case, use the "
-                  "Influence Range Closeness Centrality index rather than CC. \n");
+                  "the ordinary CC is undefined. In that case, we drop all "
+                  "isolated nodes during calculation. \n"
+                  "You can use the Influence Range Closeness Centrality index.\n");
 
     outText << tr("CC  range:  0 < C < ")<<QString::number(maxIndexCC)<<"\n";
     outText << tr("CC' range:  0 < C'< 1")<<"\n\n";
@@ -2038,7 +2091,7 @@ void Graph::writeCentralityClosenessInfluenceRange(
 
     emit statusMessage ( QString(tr("Writing improved closeness centralities to file:")).arg(fileName) );
 
-    outText << tr("CLOSENESS CENTRALITY (CC)")<<"\n";
+    outText << tr("INFLUENCE RANGE CLOSENESS CENTRALITY (IRCC)")<<"\n";
     outText << tr("This improved CC index is optimized for graphs and directed graphs which "
                   "are not strongly connected. Unlike the ordinary CC, which is the inverted "
                   "sum of distances from node v to all others (thus undefined if a node is isolated "
@@ -2131,66 +2184,6 @@ void Graph::writeCentralityBetweeness(
 }
 
 
-//Writes the Graph centralities to a file
-void Graph::writeCentralityGraph(
-        const QString fileName, const bool considerWeights)
-{
-    Q_UNUSED(considerWeights);
-
-    QFile file ( fileName );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
-        qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
-        return;
-    }
-    QTextStream outText ( &file );
-
-    emit statusMessage ( (tr("Calculating shortest paths")) );
-    createDistanceMatrix(true);
-    emit statusMessage ( QString(tr("Writing graph centralities to file:")).arg(fileName) );
-
-    outText << tr("GRAPH CENTRALITY (GC)")<<"\n";
-    outText << tr("The GC of a node is the invert of the maximum of all geodesic distances from that node "
-                  "to all other nodes in the network.") << "\n";
-    outText << tr("Nodes with high GC have short distances to all other nodes in the graph.")<< "\n";
-
-    outText << tr("GC  range: 0 < GC < 1 (GC=1 => distance from all other nodes is always 1)\n");
-    outText << tr("GC' range: 0 < GC'< 1  (GC'=1 => directly linked with all nodes)")<<"\n\n";
-
-    outText << "Node"<<"\tGC\t\tGC'\t\t%GC\n";
-    QList<Vertex*>::iterator it;
-    for (it= m_graph.begin(); it!= m_graph.end(); it++){
-        outText <<(*it)->name()<<"\t"<<(*it)->GC() << "\t\t"<< (*it)->SGC() << "\t\t"
-               <<  (100* ((*it)->GC()) /  sumGC)<<endl;
-    }
-
-    if ( minGC ==  maxGC)
-        outText << tr("\nAll nodes have the same GC value.\n");
-    else {
-        outText << "\n";
-        outText << tr("Max GC' = ") << maxGC <<" (node "<< maxNodeGC  <<  ")  \n";
-        outText << tr("Min GC' = ") << minGC <<" (node "<< minNodeGC <<  ")  \n";
-        outText << tr("GC classes = ") << classesGC<<" \n";
-    }
-
-    outText << tr("\nGROUP GRAPH CENTRALISATION (GGC)\n\n");
-
-    outText << tr("GGC = ") <<  groupGC<<"\n\n";
-
-    outText << tr("GGC range: 0 < GGC < 1\n");
-    outText << tr("GGC = 0, when all the nodes have exactly the same graph index.\n");
-    outText << tr("GGC = 1, when one node falls on all other geodesics between all the remaining (N-1) nodes. "
-                  "This is exactly the situation realised by a star graph.\n");
-
-
-    outText << "\n\n";
-    outText << tr("Graph Centrality report, \n");
-    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
-    file.close();
-
-}
-
 
 //Writes the Stress centralities to a file
 void Graph::writeCentralityStress(
@@ -2266,22 +2259,27 @@ void Graph::writeCentralityEccentricity(
     emit statusMessage ( QString(tr("Writing eccentricity centralities to file:")).arg(fileName) );
 
     outText << tr("ECCENTRICITY CENTRALITY (EC)") << "\n";
-    outText << tr("The EC of a node u is the largest geodesic distance (u,t) for t in V") << "\n";
-    outText << tr("Therefore, EC(u) reflects how far, at most, is each node from every other node.") << "\n";
-    outText << tr("EC' is the standardized EC") << "\n";
-    outText << tr("EC  range: 0 < EC < ") << QString::number(maxIndexEC)<< tr(" (max geodesic distance)")<<"\n";
-    outText << tr("EC' range: 0 < EC'< 1 \n\n");
-    outText << "Node"<<"\tEC\t\tEC'\t\t%EC\n";
+    outText << tr("The EC of a node is the inverse maximum geodesic distance "
+                  " from that node to all other nodes in the network.") << "\n";
+    outText << tr("Therefore, EC reflects farness: how far, at most, is each "
+                  " node from every other node.") << "\n";
+    outText << tr("Nodes with very high EC have short distances to all other "
+                  "nodes in the graph.")<< "\n";
+    outText << tr("Nodes with very low EC have longer distances to some other "
+                   "nodes in the graph.")<< "\n";
+    outText << tr("GC  range: 0 < EC < 1 (GC=1 => max distance to all other nodes is 1)\n");
+
+    outText << "Node"<<"\tEC\t\t%EC\n";
     QList<Vertex*>::iterator it;
     for (it= m_graph.begin(); it!= m_graph.end(); it++){
-        outText << (*it)->name()<<"\t"<<(*it)->EC() << "\t\t"<< (*it)->SEC() << "\t\t" <<  (100* ((*it)->EC()) /  sumEC)<<endl;
+        outText << (*it)->name()<<"\t"<<(*it)->EC() << "\t\t" <<  (100* ((*it)->EC()) /  sumEC)<<endl;
     }
     if ( minEC ==  maxEC)
         outText << tr("\nAll nodes have the same EC value.\n");
     else {
         outText << "\n";
-        outText << tr("Max EC' = ") << maxEC <<" (node "<< maxNodeEC  <<  ")  \n";
-        outText << tr("Min EC' = ") << minEC <<" (node "<< minNodeEC <<  ")  \n";
+        outText << tr("Max EC = ") << maxEC <<" (node "<< maxNodeEC  <<  ")  \n";
+        outText << tr("Min EC = ") << minEC <<" (node "<< minNodeEC <<  ")  \n";
         outText << tr("EC classes = ") << classesEC<<" \n";
     }
 
@@ -2315,7 +2313,7 @@ void Graph::writeCentralityPower(
     outText << tr("The PC of a node k is the sum of the sizes of all Nth-order neighbourhoods with weight 1/n.") << "\n";
     outText << tr("Therefore, PC(u) is a generalised degree centrality index.") << "\n";
     outText << tr("PC' is the standardized index; divided by the total numbers of nodes in the same component minus 1") << "\n";
-    outText << tr("PC  range: 0 < PC < ") << QString::number(maxIndexEC)<< tr(" (star node)")<<"\n";
+    outText << tr("PC  range: 0 < PC < ") << QString::number(maxIndexPC)<< tr(" (star node)")<<"\n";
     outText << tr("PC' range: 0 < PC'< 1 \n\n");
     outText << "Node"<<"\tPC\t\tPC'\t\t%PC\n";
     QList<Vertex*>::iterator it;
@@ -3071,41 +3069,34 @@ void Graph::layoutRadialCentrality(double x0, double y0, double maxRadius, int C
             break;
         }
         case 5 : {
-            qDebug("Layout according to Graph Centralities");
-            C=(*it)->GC();
-            std= (*it)->SGC();
-            maxC=maxGC;
-            break;
-        }
-        case 6 : {
             qDebug("Layout according to Stress Centralities");
             C=(*it)->SC();
             std= (*it)->SSC();
             maxC=maxSC;
             break;
         }
-        case 7 : {
+        case 6 : {
             qDebug("Layout according to Eccentricity Centralities");
             C=(*it)->EC();
             std= (*it)->SEC();
             maxC=maxEC;
             break;
         }
-        case 8 : {
+        case 7 : {
             qDebug("Layout according to Power Centralities");
             C=(*it)->PC();
             std= (*it)->SPC();
             maxC=maxPC;
             break;
         }
-        case 9 : {
+        case 8 : {
             qDebug("Layout according to Information Centralities");
             C=(*it)->IC();
             std= (*it)->SIC();
             maxC=maxIC;
             break;
         }
-        case 10 : {
+        case 9 : {
             qDebug("Layout according to PageRank Centralities");
             C=(*it)->PRC();
             std= (*it)->SPRC();
@@ -3225,13 +3216,6 @@ void Graph::layoutLayeredCentrality(double maxWidth, double maxHeight, int Centr
             break;
         }
         case 5 : {
-            qDebug("Layout according to Graph Centralities");
-            C=(*it)->GC();
-            std= (*it)->SGC();
-            maxC=maxGC;
-            break;
-        }
-        case 6 : {
             qDebug("Layout according to Stress Centralities");
             C=(*it)->SC();
             std= (*it)->SSC();

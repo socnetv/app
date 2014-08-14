@@ -874,6 +874,11 @@ void MainWindow::initActions(){
     averGraphDistanceAct->setWhatsThis(tr("Average Geodesic Distance\n\n This the average length of all shortest paths between the connected pair of nodes of the network."));
     connect(averGraphDistanceAct, SIGNAL(triggered()), this, SLOT(slotAverageGraphDistance()));
 
+    eccentricityAct = new QAction(QIcon(":/images/eccentricity.png"), tr("Eccentricity"),this);
+    eccentricityAct->setShortcut(tr("Ctrl+E"));
+    eccentricityAct->setStatusTip(tr("Eccentricity indices for each node and group Eccentricity"));
+    eccentricityAct->setWhatsThis(tr("Eccentricity\n\n The eccentricity or association number of each node i is the largest geodesic distance (i,j) between node i and every other node j. Therefore, it reflects how far, at most, is each node from every other node. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
+    connect(eccentricityAct, SIGNAL(triggered()), this, SLOT(slotEccentricity()));
 
     walksAct = new QAction(QIcon(":/images/walk.png"), tr("Number of Walks Matrix"),this);
     walksAct->setShortcut(tr("Ctrl+W"));
@@ -957,35 +962,36 @@ void MainWindow::initActions(){
     cBetweenessAct->setStatusTip(tr("Betweeness Centrality indices and group Betweeness Centralization."));
     connect(cBetweenessAct, SIGNAL(triggered()), this, SLOT(slotCentralityBetweeness()));
 
-    cGraphAct = new QAction(tr("Graph Centrality (GC)"),this);
-    cGraphAct->setShortcut(tr("Ctrl+5"));
-    cGraphAct->setStatusTip(tr("Graph Centrality indices and group Graph Centralization."));
-    cGraphAct->setWhatsThis(tr("Graph Centrality (GC)\n\n For each node v, GC is the invert of the maximum of all geodesic distances from v to all other nodes in the network. Nodes with high GC have short distances to all other nodes in the network. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
-    connect(cGraphAct, SIGNAL(triggered()), this, SLOT(slotCentralityGraph()));
-
     cStressAct = new QAction(tr("Stress Centrality (SC)"), this);
-    cStressAct->setShortcut(tr("Ctrl+6"));
+    cStressAct->setShortcut(tr("Ctrl+5"));
     cStressAct->setStatusTip(tr("Stress Centrality indices and group Stress Centralization."));
-    cStressAct->setWhatsThis(tr("Stress Centrality (SC)\n\n For each node v, SC is the total number of geodesics between all other nodes which run through v. When one node falls on all other geodesics between all the remaining (N-1) nodes, then we have a star graph with maximum Stress Centrality. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
+    cStressAct->setWhatsThis(tr("Stress Centrality (SC)\n\n For each node v, SC is the total number of geodesics between all other nodes which run through v. A node with high SC is considered 'stressed', since it is traversed by a high number of geodesics. When one node falls on all other geodesics between all the remaining (N-1) nodes, then we have a star graph with maximum Stress Centrality. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
     connect(cStressAct, SIGNAL(triggered()), this, SLOT(slotCentralityStress()));
 
 
     cEccentAct = new QAction(tr("Eccentricity (EC)"), this);
-    cEccentAct->setShortcut(tr("Ctrl+7"));
+    cEccentAct->setShortcut(tr("Ctrl+6"));
     cEccentAct->setStatusTip(tr("Eccentricity indices for each node and group Eccentricity"));
-    cEccentAct->setWhatsThis(tr("Eccentricity Centrality\n\n For each node k, this is the largest geodesic distance (k,t) from every other vertex t. Therefore, EC(u) reflects how far, at most, is each node from every other node. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
+    cEccentAct->setWhatsThis(
+                tr("Eccentricity Centrality (EC)\n\n For each node i, "
+                   "the EC is the inverse of the maximum geodesic distance "
+                   "of that v to all other nodes in the network. \n"
+                   "Nodes with high EC have short distances to all other nodes "
+                   "This index can be calculated in both graphs and digraphs "
+                   "but is usually best suited for undirected graphs. "
+                   "It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
     connect(cEccentAct, SIGNAL(triggered()), this, SLOT(slotCentralityEccentricity()));
 
 
     cPowerAct = new QAction(tr("Power Centrality (PC)"), this);
-    cPowerAct->setShortcut(tr("Ctrl+8"));
+    cPowerAct->setShortcut(tr("Ctrl+7"));
     cPowerAct->setStatusTip(tr("Calculate and display Power Centrality indices (aka Gil-Schmidt Power Centrality) and group Power Centralization"));
     cPowerAct->setWhatsThis(tr("Power Centrality (PC)\n\n For each node v, this index sums its degree (with weight 1), with the size of the 2nd-order neighbourhood (with weight 2), and in general, with the size of the kth order neighbourhood (with weight k). Thus, for each node in the network the most important other nodes are its immediate neighbours and then in decreasing importance the nodes of the 2nd-order neighbourhood, 3rd-order neighbourhood etc. For each node, the sum obtained is normalised by the total numbers of nodes in the same component minus 1. Power centrality has been devised by Gil-Schmidt. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1 (therefore not considered)."));
     connect(cPowerAct, SIGNAL(triggered()), this, SLOT(slotCentralityPower()));
 
 
     cInformationAct = new QAction(tr("Information Centrality (IC)"),	this);
-    cInformationAct->setShortcut(tr("Ctrl+9"));
+    cInformationAct->setShortcut(tr("Ctrl+8"));
     cInformationAct->setEnabled(true);
     cInformationAct->setStatusTip(tr("Calculate and display Information Centrality indices and group Information Centralization"));
     cInformationAct->setWhatsThis(tr("Information Centrality (IC)\n\n Information centrality counts all paths between nodes weighted by strength of tie and distance. This centrality  measure developed by Stephenson and Zelen (1989) focuses on how information might flow through many different paths. \n\nThis index should be calculated only for  graphs. \n\n Note: To compute this index, SocNetV drops all isolated nodes."));
@@ -1341,7 +1347,9 @@ void MainWindow::initMenuBar() {
 
     statMenu -> addAction (distanceMatrixAct);
     statMenu -> addAction (geodesicsMatrixAct);
+    statMenu -> addAction (eccentricityAct);
     statMenu -> addAction (diameterAct);
+
 
     statMenu -> addSeparator();
     statMenu -> addAction (walksAct);
@@ -1365,7 +1373,6 @@ void MainWindow::initMenuBar() {
     centrlMenu -> addAction (cClosenessAct);
     centrlMenu -> addAction (cInfluenceRangeClosenessAct);
     centrlMenu -> addAction (cBetweenessAct);
-    centrlMenu -> addAction (cGraphAct);
     centrlMenu -> addAction (cStressAct);
     centrlMenu -> addAction (cEccentAct);
     centrlMenu -> addAction (cPowerAct);
@@ -4972,6 +4979,31 @@ void MainWindow::slotAverageGraphDistance() {
 }
 
 
+/**
+*	Writes Eccentricity indices into a file, then displays it.
+*/
+void MainWindow::slotEccentricity(){
+    if (!fileLoaded && !networkModified  )  {
+        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+
+        statusMessage(  QString(tr(" Nothing to do..."))  );
+        return;
+    }
+    QString fn = "eccentricity.dat";
+    bool considerWeights=true;
+    statusMessage(  QString(tr(" Please wait...")));
+
+    createProgressBar();
+    activeGraph.writeEccentricity(fn, considerWeights);
+    destroyProgressBar();
+
+    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    tempFileNameNoPath=fn.split( "/");
+    ed->setWindowTitle(tr("Eccentricity report saved as: ") + tempFileNameNoPath.last());
+    ed->show();
+    QApplication::restoreOverrideCursor();
+
+}
 
 
 
@@ -5495,33 +5527,6 @@ void MainWindow::slotCentralityStress(){
     ed->show();
 }
 
-
-
-/**
-*	Writes Graph Centralities into a file, then displays it.
-*/
-void MainWindow::slotCentralityGraph(){
-    if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-
-        statusMessage(  QString(tr(" Try creating a network first. \nThen I compute whatever you want..."))  );
-        return;
-    }
-    QString fn = "centrality_graph.dat";
-    bool considerWeights=true;
-    statusMessage(  QString(tr(" Please wait...")));
-
-    createProgressBar();
-
-    activeGraph.writeCentralityGraph(fn, considerWeights);
-
-    destroyProgressBar();
-
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    tempFileNameNoPath=fn.split( "/" );
-    ed->setWindowTitle("Graph Centralities saved as: " + tempFileNameNoPath.last());
-    ed->show();
-}
 
 
 

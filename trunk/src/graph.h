@@ -218,6 +218,7 @@ public:
     void writeInvertAdjacencyMatrix(const char*,  const char*);
     void writeDistanceMatrix(const char*, const char*);
     void writeNumberOfGeodesicsMatrix(const char*, const char*);
+    void writeEccentricity(const QString, const bool);
 
     friend QTextStream& operator <<  (QTextStream& os, Graph& m);
 
@@ -345,10 +346,10 @@ private:
     void resolveClasses(float C, hash_si &discreteClasses, int &classes, int name);  	//helper
 
     /** used in resolveClasses and createDistanceMatrix() */
-    hash_si discreteDPs, discreteDCs, discreteCCs, discreteBCs, discreteSCs, discreteGCs, discreteECs;
+    hash_si discreteDPs, discreteDCs, discreteCCs, discreteBCs, discreteSCs;
+    hash_si discreteECs, discreteEccentricities;
     hash_si discretePCs, discreteICs,  discretePRCs, discretePPs;
 
-    int *eccentricities;
     bool calculatedDP, calculatedDC, calculatedCentralities, dynamicMovement;
     bool calculatedPP;
 
@@ -361,11 +362,11 @@ private:
 
     float meanDegree, varianceDegree;
     float meanCC, varianceCC;
+    float minEccentricity, maxEccentricity, sumEccentricity;
     float minDP, maxDP, sumDP, groupDP;
     float minDC, maxDC, sumDC, groupDC;
     float minCC, maxCC, nomCC, denomCC, sumCC, groupCC, maxIndexCC;
     float minBC, maxBC, nomBC, denomBC, sumBC, groupBC, maxIndexBC;
-    float minGC, maxGC, nomGC, denomGC, sumGC, groupGC, maxIndexGC;
     float minPC, maxPC, sumPC, groupPC, maxIndexPC;
     float minSC, maxSC, nomSC, denomSC, sumSC, groupSC, maxIndexSC;
     float minEC, maxEC, nomEC, denomEC, sumEC, groupEC, maxIndexEC;
@@ -378,10 +379,10 @@ private:
     int classesDC, maxNodeDC, minNodeDC;
     int classesCC, maxNodeCC, minNodeCC;
     int classesBC, maxNodeBC, minNodeBC;
-    int classesGC, maxNodeGC, minNodeGC;
     int classesPC, maxNodePC, minNodePC;
     int classesSC, maxNodeSC, minNodeSC;
     int classesEC, maxNodeEC, minNodeEC;
+    int classesEccentricity, maxNodeEccentricity, minNodeEccentricity;
     int classesIC, maxNodeIC, minNodeIC;
     int classesPRC, maxNodePRC, minNodePRC;
     int classesPP, maxNodePP, minNodePP;

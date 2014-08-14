@@ -82,6 +82,9 @@ public:
     long int inDegree();
     long int localDegree();
 
+    void setEccentricity (float c){ m_Eccentricity=c;}		/* sets eccentricity */
+    float eccentricity() { return m_Eccentricity;}		/* Returns eccentricity */
+
     /* Returns true if there is a reciprocal link from this vertex */
     bool isReciprocalLinked() { return m_reciprocalLinked;}
     void setReciprocalLinked(bool reciprocal) { m_reciprocalLinked=reciprocal;}
@@ -160,11 +163,6 @@ public:
     float BC() { return m_BC;}		/* Returns vertex Betweeness Centrality*/
     float SBC() { return m_SBC; }		/* Returns standard vertex Betweeness Centrality*/
 
-    void setGC (float c){ m_GC=c;}		/* sets vertex Graph Centrality*/
-    void setSGC (float c ) { m_SGC=c;}	/* sets standard vertex Graph Centrality*/
-    float GC() { return m_GC;}		/* Returns vertex Graph Centrality*/
-    float SGC() { return m_SGC; }		/* Returns standard vertex Graph Centrality*/
-
     void setSC (float c){ m_SC=c;}  	/* sets vertex Stress Centrality*/
     void setSSC (float c ) { m_SSC=c;}	/* sets standard vertex Stress Centrality*/
     float SC() { return m_SC;}		/* Returns vertex Stress Centrality*/
@@ -216,6 +214,7 @@ private:
     Graph *parentGraph;
     ilist myPs;
     long int m_name,  m_outLinks, m_inLinks, m_outDegree, m_inDegree, m_localDegree;
+    float m_Eccentricity;
     int m_value, m_size, m_labelSize, m_numberSize;
     bool m_inLinked, m_outLinked, m_reciprocalLinked, m_enabled, m_hasCLC, m_isolated;
     QString m_color, m_numberColor, m_label, m_labelColor, m_shape;

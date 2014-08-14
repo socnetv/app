@@ -54,5 +54,6 @@
 	<file>images/webcrawler.png</file>
 	<file>images/prestige.png</file>
 	<file>images/centrality.png</file>
+	<file>images/eccentricity.png</file>
 </qresource>
 </RCC>

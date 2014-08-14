@@ -207,6 +207,7 @@ public slots:
     void slotGraphDistance();
     void slotAverageGraphDistance();
     void slotDiameter();
+    void slotEccentricity();
 
     void slotNumberOfWalks();
     void slotTotalNumberOfWalks();
@@ -223,7 +224,6 @@ public slots:
     void slotCentralityClosenessInfluenceRange();
     void slotCentralityBetweeness();
     void slotCentralityInformation();
-    void slotCentralityGraph();
     void slotCentralityStress();
     void slotCentralityPower();
     void slotCentralityEccentricity();
@@ -361,12 +361,12 @@ private:
     QAction *drawLinksWeightsAct, *displayLinksWeightNumbersAct, *displayLinksAct, *displayLinksArrowsAct,
             *drawLinksBezier;
     QAction *backgroundImageAct, *viewToolBar, *viewStatusBar, *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
-    QAction *netDensity, *symmetryAct,   *graphDistanceAct, *averGraphDistanceAct, *distanceMatrixAct,
-            *geodesicsMatrixAct, *diameterAct;
+    QAction *netDensity, *symmetryAct, *graphDistanceAct, *averGraphDistanceAct,
+            *distanceMatrixAct, *geodesicsMatrixAct, *diameterAct, *eccentricityAct;
     QAction *walksAct,*totalWalksAct, *reachabilityMatrixAct;
     QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct, *invertAdjMatrixAct;
     QAction *cDegreeAct, *cInDegreeAct, *cClosenessAct, *cInfluenceRangeClosenessAct, *cBetweenessAct,
-            *cInformationAct, *cPageRankAct, *cGraphAct, *cStressAct, *cPowerAct, *cEccentAct, *cProximityPrestigeAct;
+            *cInformationAct, *cPageRankAct, *cStressAct, *cPowerAct, *cEccentAct, *cProximityPrestigeAct;
     QAction *randLayoutAct, *randCircleLayoutAct, *circleOutDegreeLayoutAct, *circleInDegreeLayoutAct,
             *circleClosenessLayoutAct;
     QAction *antialiasingAct;
