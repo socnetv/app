@@ -912,27 +912,29 @@ void Graph::clear() {
 */
 bool Graph::isSymmetric(){
     qDebug("Graph: isSymmetric ");
-    if (graphModified){
-        symmetricAdjacencyMatrix=true;
-        imap_f::iterator it1;
-        int y=0;
-        QList<Vertex*>::iterator it;
-        for (it=m_graph.begin(); it!=m_graph.end(); it++){ 	//for all edges of u, (u,y)
-            //qDebug("Graph: isSymmetric(): GRAPH CHANGED! Iterate over all edges of u...");
-            for( it1 = (*it)->m_outEdges.begin(); it1 != (*it)->m_outEdges.end(); it1++ ) {
-                y=index[it1->first];
-                if ( ! m_graph[y]->isLinkedTo( (*it)->name() )) {
-                    //qDebug("Graph: isSymmetric():  u = %i IS NOT inLinked from y = %i", (*it)->name(), it1->first  );
-                    symmetricAdjacencyMatrix=false;
-                    qDebug("Graph: isSymmetric()  NO");
-                    return symmetricAdjacencyMatrix;
-                }
-                else {
-                    //	qDebug("Graph: isSymmetric():  u = %i IS inLinked from y = %i",it1->first, (*it)->name()  );
-                }
+    if (!graphModified){
+        return symmetricAdjacencyMatrix;
+    }
+    symmetricAdjacencyMatrix=true;
+    imap_f::iterator it1;
+    int y=0;
+    QList<Vertex*>::iterator it;
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){ 	//for all edges of u, (u,y)
+        //qDebug("Graph::isSymmetric(): GRAPH CHANGED! Iterate over all edges of u...");
+        for( it1 = (*it)->m_outEdges.begin(); it1 != (*it)->m_outEdges.end(); it1++ ) {
+            y=index[it1->first];
+            if ( ! m_graph[y]->isLinkedTo( (*it)->name() )) {
+                //qDebug("Graph: isSymmetric():  u = %i IS NOT inLinked from y = %i", (*it)->name(), it1->first  );
+                symmetricAdjacencyMatrix=false;
+                qDebug("Graph: isSymmetric()  NO");
+                return symmetricAdjacencyMatrix;
+            }
+            else {
+                //	qDebug("Graph: isSymmetric():  u = %i IS inLinked from y = %i",it1->first, (*it)->name()  );
             }
         }
     }
+
     qDebug("Graph: isSymmetric() YES");
     return symmetricAdjacencyMatrix;
 }
@@ -1426,7 +1428,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                 SC=(*it)->SC();
 
                 qDebug()<< "Calculating Std Stress centrality";
-                (*it)->setSSC ( SC/sumSC );
+                (*it)->setSSC( SC/sumSC );
                 //Find min & max SC
                 minmax( (*it)->SC(), (*it), maxSC, minSC, maxNodeSC, minNodeSC) ;
 
@@ -5074,14 +5076,16 @@ void Graph::createAdjacencyMatrix(bool dropIsolates=false, bool omitWeights=fals
     qDebug() << "Graph::createAdjacencyMatrix() - creating new adjacency matrix ";
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         if ( ! (*it)->isEnabled() || ( (*it)->isIsolated() && dropIsolates) ) {
-            qDebug()<<"Graph::createAdjacencyMatrix() - vertex " << (*it)->name()
+            qDebug()<<"Graph::createAdjacencyMatrix() - vertex "
+                   << (*it)->name()
                    << " is isolated. Continue";
             continue;
         }
         j=i;
         for (it1=it; it1!=m_graph.end(); it1++){
             if ( ! (*it1)->isEnabled() || ( (*it1)->isIsolated() && dropIsolates) ) {
-                qDebug()<<"Graph::createAdjacencyMatrix() - vertex " << (*it1)->name()
+                qDebug()<<"Graph::createAdjacencyMatrix() - vertex "
+                       << (*it1)->name()
                        << " is isolated. Continue";
                 continue;
             }

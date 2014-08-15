@@ -826,7 +826,8 @@ void MainWindow::initActions(){
     connect(nodeSizeProportionalOutDegreeAct, SIGNAL(triggered(bool)), this, SLOT(slotLayoutNodeSizeProportionalOutEdges(bool)));
 
 
-    nodeSizeProportionalInDegreeAct= new QAction(QIcon(":/images/nodein.png"),tr("Node size according to InDegree"), this);
+    nodeSizeProportionalInDegreeAct= new QAction(
+                QIcon(":/images/nodein.png"),tr("Node size according to InDegree"), this);
     nodeSizeProportionalInDegreeAct->setShortcut(tr("Alt+4"));
     nodeSizeProportionalInDegreeAct->setStatusTip(tr("Resizes all nodes according to their in edges."));
     nodeSizeProportionalInDegreeAct->setWhatsThis(tr("NodeSize = F (InDegree) \n\n This method adjusts the size of each node according to their in-edges (InDegree). The more in-linked a node is, the bigger will appear..."));
@@ -840,35 +841,69 @@ void MainWindow::initActions(){
     Statistics menu actions
     */
 
-    symmetryAct = new QAction(QIcon(":/images/symmetry.png"), tr("Symmetry Test"), this);
+    symmetryAct = new QAction(
+                QIcon(":/images/symmetry.png"), tr("Symmetry Test"), this);
     symmetryAct ->setShortcut(tr("Shift+S"));
     symmetryAct->setStatusTip(tr("Checks whether the network is symmetric or not"));
-    symmetryAct->setWhatsThis(tr("Symmetry\n\n A network is symmetric when all edges are reciprocal, or, in mathematical language, when the adjacency matrix is symmetric."));
+    symmetryAct->setWhatsThis(
+                tr("Symmetry\n\n "
+                   "Checks whether the network is symmetric or not. \n"
+                   "A network is symmetric when all edges are reciprocal, or, "
+                   "in mathematical language, when the adjacency matrix is "
+                   "symmetric.")
+                );
     connect(symmetryAct, SIGNAL(triggered()), this, SLOT(slotCheckSymmetry()));
 
-    invertAdjMatrixAct = new QAction(QIcon(":/images/symmetry.png"), tr("Invert Adjacency Matrix"), this);
+    invertAdjMatrixAct = new QAction(
+                QIcon(":/images/symmetry.png"), tr("Invert Adjacency Matrix"), this);
     invertAdjMatrixAct ->setShortcut(tr("Shift+I"));
     invertAdjMatrixAct->setStatusTip(tr("Inverts the adjacency matrix"));
     invertAdjMatrixAct->setWhatsThis(tr("Invert  Adjacency Matrix \n\n Inverts the adjacency matrix using linear algebra methods."));
     connect(invertAdjMatrixAct, SIGNAL(triggered()), this, SLOT(slotInvertAdjMatrix()));
 
-    graphDistanceAct = new QAction(QIcon(":/images/distance.png"),  tr("Distance"), this);
+    graphDistanceAct = new QAction(
+                QIcon(":/images/distance.png"), tr("Distance"), this
+                );
     graphDistanceAct ->setShortcut(tr("Ctrl+G"));
-    graphDistanceAct->setStatusTip(tr("Calculates the length of the shortest path between two nodes..."));
-    graphDistanceAct->setWhatsThis(tr("Distance\n\n In graph theory, the distance (or geodesic distance) of two nodes is the length (number of edges) of the shortest path between them."));
+    graphDistanceAct->setStatusTip(
+                tr("Calculates the length of the shortest path between two nodes..."));
+    graphDistanceAct->setWhatsThis(
+                tr("Distance\n\n "
+                   "In graph theory, the distance (geodesic distance) of two "
+                   "nodes is the length (number of edges) of the shortest path "
+                   "between them."));
     connect(graphDistanceAct, SIGNAL(triggered()), this, SLOT(slotGraphDistance()));
+
 
     distanceMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Distances Matrix"),this);
     distanceMatrixAct ->setShortcut(tr("Ctrl+Shift+G"));
-    distanceMatrixAct->setStatusTip(tr("The matrix of graph geodesic distances between all nodes"));
-    distanceMatrixAct->setWhatsThis(tr("Distances Matrix\n\n A distances matrix is a NxN matrix, where the (i,j) element is the geodesic distance from node i to node j. The geodesic distance of two nodes is the length of the shortest path between them."));
+    distanceMatrixAct->
+            setStatusTip(
+                tr("The matrix of geodesic distances between all pair of nodes.")
+                );
+    distanceMatrixAct->
+            setWhatsThis(
+                tr("Distances Matrix\n\n"
+                   "Calculates and displays the matrix of distances between all "
+                   "possible pair of nodes in the social network."
+                   "A distances matrix is a n x n square matrix, in which the "
+                   "(i,j) element is the distance from node i to node j"
+                   "The distance of two nodes is the length of the shortest path between them.")
+                );
     connect(distanceMatrixAct, SIGNAL(triggered()), this, SLOT( slotViewDistanceMatrix() ) );
 
     geodesicsMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesics Matrix"),this);
     geodesicsMatrixAct ->setShortcut(tr("Ctrl+Alt+G"));
     geodesicsMatrixAct->setStatusTip(tr("The number of geodesic paths between each pair of nodes "));
-    geodesicsMatrixAct->setWhatsThis(tr("Geodesics Matrix\n\n Displays a NxN matrix, where the (i,j) element is the number of geodesics between node i and node j. A geodesic path of two nodes is the shortest path between them."));
-    connect(geodesicsMatrixAct, SIGNAL(triggered()), this, SLOT( slotViewNumberOfGeodesicsMatrix()) );
+    geodesicsMatrixAct->setWhatsThis(
+                tr(
+                    "Geodesics Matrix\n\n"
+                    "Displays a n x n square matrix, where the (i,j) element "
+                    "is the number of geodesics between node i and node j. "
+                    "A geodesic of two nodes is the shortest path between them.")
+                );
+    connect(geodesicsMatrixAct, SIGNAL(triggered()),
+            this, SLOT( slotViewNumberOfGeodesicsMatrix()) );
 
     diameterAct = new QAction(QIcon(":/images/diameter.png"), tr("Diameter"),this);
     diameterAct ->setShortcut(tr("Ctrl+D"));
@@ -880,7 +915,8 @@ void MainWindow::initActions(){
     averGraphDistanceAct ->setShortcut(tr("Ctrl+B"));
     averGraphDistanceAct->setStatusTip(tr("The average shortest path length."));
     averGraphDistanceAct->setWhatsThis(tr("Average Distance\n\n This the average length of all shortest paths (geodesics) between the connected pair of nodes of the network."));
-    connect(averGraphDistanceAct, SIGNAL(triggered()), this, SLOT(slotAverageGraphDistance()));
+    connect(averGraphDistanceAct, SIGNAL(triggered()),
+            this, SLOT(slotAverageGraphDistance()));
 
     eccentricityAct = new QAction(QIcon(":/images/eccentricity.png"), tr("Eccentricity"),this);
     eccentricityAct->setShortcut(tr("Ctrl+E"));
@@ -4429,16 +4465,10 @@ void MainWindow::slotLayoutRadialByProminenceIndex(){
         statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
         return;
     }
+    int userChoice = 0;
     QAction *menuitem=(QAction *) sender();
     qDebug() << "MainWindow::slotLayoutRadialByProminenceIndex() - " <<
                 "SENDER MENU IS " << menuitem->text();
-    double x0=scene->width()/2.0;
-    double y0=scene->height()/2.0;
-    double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-    int userChoice = 0;
-    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearGuides();
-    createProgressBar();
     if (menuitem->text() == "Degree Centrality")
         userChoice=1;
     else if (menuitem->text() == "Closeness Centrality")
@@ -4462,6 +4492,84 @@ void MainWindow::slotLayoutRadialByProminenceIndex(){
     else if (menuitem->text() ==  "Proximity Prestige")
         userChoice=11;
 
+    //check if CC was selected and the graph is disconnected.
+    if (userChoice == 2 ) {
+        int connectedness=activeGraph.connectedness();
+        switch ( connectedness ) {
+        case 1:
+            break;
+        case 0:
+            QMessageBox::critical(this,
+                                  "Centrality Closeness",
+                                  tr(
+                                      "Weakly connected digraph!\n"
+                                      "Since this network is directed and weakly "
+                                      "connected, the ordinary Closeness Centrality "
+                                      "index is not defined, because d(u,v) will be "
+                                      "infinite for not reachable nodes u,v.\n"
+                                      "Please use the slightly different but improved "
+                                      "Influence Range Closeness (IRCC) index "
+                                      "which considers how proximate is each node "
+                                      "to the nodes in its influence range. \n"
+                                      "Read more in the SocNetV manual."
+                                      ), "OK",0);
+            return;
+            break;
+
+        case -1:
+            QMessageBox::critical(this,
+                                  "Centrality Closeness",
+                                  tr(
+                                      "Disconnected graph/digraph!\n"
+                                      "Since this network is disconnected, "
+                                      "the ordinary Closeness Centrality "
+                                      "index is not defined, because d(u,v) will be "
+                                      "infinite for any isolate nodes u or v.\n"
+                                      "Please use the slightly different but improved "
+                                      "Influence Range Closeness (IRCC) index "
+                                      "which considers how proximate is each node "
+                                      "to the nodes in its influence range.\n"
+                                      "Read more in the SocNetV manual."
+                                      ), "OK",0);
+            return;
+            break;
+        default:
+            QMessageBox::critical(this, "Connectedness", "Something went wrong!.", "OK",0);
+            break;
+        };
+
+    }
+    if (userChoice==8 && activeNodes() > 200) {
+        switch(
+               QMessageBox::critical(
+                   this, "Slow function warning",
+                   tr("Please note that this function is <b>VERY SLOW</b> on large "
+                      "networks (n>200), since it will calculate  a (n x n) matrix A with:"
+                      "Aii=1+weighted_degree_ni"
+                      "Aij=1 if (i,j)=0"
+                      "Aij=1-wij if (i,j)=wij"
+                      "Next, it will compute the inverse matrix C of A."
+                      "The computation of the inverse matrix is VERY CPU intensive function."
+                      "because it uses the Gauss-Jordan elimination algorithm.\n\n "
+                      "Are you sure you want to continue?"), QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
+        case QMessageBox::Ok:
+            break;
+
+        case QMessageBox::Cancel:
+            // Cancel was clicked
+            return;
+            break;
+        default:
+            // should never be reached
+            break;
+        }
+    }
+    double x0=scene->width()/2.0;
+    double y0=scene->height()/2.0;
+    double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
+    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
+    graphicsWidget->clearGuides();
+    createProgressBar();
     activeGraph.layoutRadialByProminenceIndex(x0, y0, maxRadius,userChoice);
     destroyProgressBar();
     statusMessage( tr("Nodes in inner circles have greater prominence index.") );
@@ -5369,13 +5477,37 @@ void MainWindow::slotPrestigeProximity(){
 
 /**
 *	Writes Informational Centralities into a file, then displays it.	
-    TODO slotCentralityInformation
 */
 void MainWindow::slotCentralityInformation(){
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
+    }
+    if (activeNodes() > 200) {
+        switch(
+               QMessageBox::critical(
+                   this, "Slow function warning",
+                   tr("Please note that this function is <b>VERY SLOW</b> on large "
+                      "networks (n>200), since it will calculate  a (n x n) matrix A with:"
+                      "Aii=1+weighted_degree_ni"
+                      "Aij=1 if (i,j)=0"
+                      "Aij=1-wij if (i,j)=wij"
+                      "Next, it will compute the inverse matrix C of A."
+                      "The computation of the inverse matrix is VERY CPU intensive function."
+                      "because it uses the Gauss-Jordan elimination algorithm.\n\n "
+                      "Are you sure you want to continue?"), QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
+        case QMessageBox::Ok:
+            break;
+
+        case QMessageBox::Cancel:
+            // Cancel was clicked
+            return;
+            break;
+        default:
+            // should never be reached
+            break;
+        }
     }
     QString fn = "centrality_information.dat";
     statusMessage(  QString(tr(" Please wait...")));
