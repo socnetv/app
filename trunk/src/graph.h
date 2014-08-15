@@ -32,8 +32,8 @@
 #include <QList>
 #include <QHash>
 #include <QTextStream>
-
-#include <stack>  //FYI: stack is a wrapper around <deque> in C++, see: www.cplusplus.com/reference/stl/stack
+//FYI: stack is a wrapper around <deque> in C++, see: www.cplusplus.com/reference/stl/stack
+#include <stack>
 #include <map>
 
 #include "vertex.h"
@@ -237,7 +237,9 @@ public:
     void writePrestigePageRank(const QString);
 
 
-    void writeNumberOfCliques(const QString fileName, const bool considerWeights);
+    void writeNumberOfCliques(
+            const QString fileName, const bool considerWeights
+            );
 
     void writeClusteringCoefficient(const QString, const bool);
 
@@ -283,10 +285,15 @@ public:
 
 
     /* LAYOUTS */
-    void layoutRandom(double maxWidth, double maxHeight);
-    void layoutRadialByProminenceIndex(double x0, double y0, double maxRadius,
-                                       int type);
-    void layoutLayeredCentrality(double maxWidth, double maxHeight, int CentralityType);
+    void layoutRandom(
+            double maxWidth, double maxHeight
+            );
+    void layoutRadialByProminenceIndex(
+            double x0, double y0, double maxRadius,int type
+            );
+    void layoutLayeredCentrality(
+            double maxWidth, double maxHeight, int CentralityType
+            );
     void layoutForceDirectedSpringEmbedder(bool dynamicMovement);
     void layoutForceDirectedFruchtermanReingold(bool dynamicMovement);
 
@@ -305,9 +312,11 @@ public:
 
     int factorial (int);
 
-
-    /*  index stores the real position of each vertex inside m_graph. It starts at zero (0).
-        We need to know the place of a vertex inside m_graph after adding or removing many vertices */
+    /**  index stores the real position of each vertex inside m_graph.
+     *  It starts at zero (0).
+     *   We need to know the place of a vertex inside m_graph after adding
+     *   or removing many vertices
+     */
     imap_i index;
 
     // Stores the number of vertices at distance n from a given vertex
@@ -318,12 +327,16 @@ public:
 
 
 protected: 
-    void timerEvent(QTimerEvent *event);			// Called from nodeMovement when a timerEvent occurs
+    // Called from nodeMovement when a timerEvent occurs
+    void timerEvent(QTimerEvent *event);
 
 
 private:
 
-    /** List of pointers to the vertices. A vertex stores all the info: links, colours, etc */
+    /**
+     * List of pointers to the vertices.
+     * A vertex stores all the info: links, colours, etc
+    */
     Vertices m_graph;
 
     Parser parser;	//file loader threaded class.
@@ -343,9 +356,15 @@ private:
 
     /** methods used by createDistanceMatrix()  */
     void BFS(int, bool);	//Breadth-First Search function
-    void minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int &minNode) ;	//helper
-    void resolveClasses(float C, hash_si &discreteClasses, int &classes);			//helper
-    void resolveClasses(float C, hash_si &discreteClasses, int &classes, int name);  	//helper
+    void minmax(
+                float C, Vertex *v, float &max, float &min,
+                int &maxNode, int &minNode
+              ) ;
+    void resolveClasses (float C, hash_si &discreteClasses, int &classes);
+    void resolveClasses (
+                        float C, hash_si &discreteClasses,
+                        int &classes, int name
+                        );
 
     /** used in resolveClasses and createDistanceMatrix() */
     hash_si discreteDPs, discreteDCs, discreteCCs, discreteBCs, discreteSCs;
@@ -363,6 +382,7 @@ private:
     Matrix XM, XSM, XRM;
     stack<int> Stack;
 
+    int m_precision;
     float meanDegree, varianceDegree;
     float meanCC, varianceCC;
     float meanIRCC, varianceIRCC;
@@ -405,11 +425,13 @@ private:
     int timerId,  layoutType, canvasWidth, canvasHeight;
 
     bool order, initShowLabels, initNumbersInsideNodes;
-    bool adjacencyMatrixCreated, symmetricAdjacencyMatrix, graphModified, distanceMatrixCreated;
+    bool adjacencyMatrixCreated, symmetricAdjacencyMatrix, graphModified,
+        distanceMatrixCreated;
     bool reachabilityMatrixCreated;
     bool m_undirected;
 
-    QString VERSION, networkName, initEdgeColor, initVertexColor, initVertexNumberColor, initVertexLabelColor, initVertexShape;
+    QString VERSION, networkName, initEdgeColor, initVertexColor,
+        initVertexNumberColor, initVertexLabelColor, initVertexShape;
 
     QDateTime actualDateTime;
 };
