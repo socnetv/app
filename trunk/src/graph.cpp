@@ -3170,9 +3170,9 @@ void Graph::layoutRadialByProminenceIndex(double x0, double y0, double maxRadius
             }
             case 3 : {
                 qDebug("Layout according to IRCC");
-                C=(*it)->CC();
-                std= (*it)->SCC();
-                maxC=maxCC;
+                C=(*it)->IRCC();
+                std= (*it)->SIRCC();
+                maxC=maxIRCC;
                 break;
             }
             case 4 : {

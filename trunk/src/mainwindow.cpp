@@ -742,7 +742,7 @@ void MainWindow::initActions(){
 
     layoutRadial_PRP_Act = new QAction( tr("PageRank Prestige"),	this);
     layoutRadial_PRP_Act ->setEnabled(true);
-    layoutRadial_PRP_Act ->setShortcut(tr("Ctrl+Alt+P"));
+    layoutRadial_PRP_Act ->setShortcut(tr("Ctrl+Alt+K"));
     layoutRadial_PRP_Act ->setStatusTip(tr("Repositions the nodes on circles of different radius according to their PageRank Prestige"));
     layoutRadial_PRP_Act->setWhatsThis(tr("Circle PageRank Centrality Layout\n\n Repositions the nodes on circles of different radius. More PageRank Central Nodes are positioned towards the centre."));
     connect(layoutRadial_PRP_Act, SIGNAL(triggered()),
@@ -1033,7 +1033,7 @@ void MainWindow::initActions(){
     connect(cInDegreeAct, SIGNAL(triggered()), this, SLOT(slotPrestigeDegree()));
 
     cPageRankAct = new QAction(tr("PageRank Prestige (PRP)"),	this);
-    cPageRankAct->setShortcut(tr("Ctrl+Shift+R"));
+    cPageRankAct->setShortcut(tr("Ctrl+Shift+K"));
     cPageRankAct->setEnabled(true);
     cPageRankAct->setStatusTip(tr("Calculate and display PageRank Prestige"));
     cPageRankAct->setWhatsThis(tr("PageRank Prestige\n\n An importance ranking for each node based on the link structure of the network. PageRank, developed by Page and Brin (1997), focuses on how nodes are connected to each other, treating each link from a node as a citation/backlink/vote to another. In essence, for each node PageRank counts all backlinks to it, but it does so by not counting all links equally while it normalizes each link from a node by the total number of links from it. PageRank is calculated iteratively and it corresponds to the principal eigenvector of the normalized link matrix. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for directed graphs since it is a prestige measure. It can also be calculated in weighted graphs. In weighted relations, each backlink to a node v from another node u is considered to have weight=1 but it is normalized by the sum of outLinks weights (outDegree) of u. Therefore, nodes with high outLink weights give smaller percentage of their PR to node v."));
