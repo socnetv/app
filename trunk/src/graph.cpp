@@ -1346,7 +1346,9 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                 }
                 (*it)->setPC( PC );		//Set Power Centrality
                 sumPC += PC;
-                minmax( PC, (*it), maxPC, minPC, maxNodePC, minNodePC) ; //Find min & max PC - not using stdSC
+                //Find min & max PC - not using stdSC
+                minmax( PC, (*it), maxPC, minPC, maxNodePC, minNodePC) ;
+                resolveClasses(PC, discretePCs, classesPC,(*it)->name() );
                 if ( sizeOfComponent != 1 )
                     PC = ( 1.0/(sizeOfComponent-1.0) ) * PC;
                 else
@@ -1934,7 +1936,7 @@ void Graph::writeCentralityDegree (
 
     if (considerWeights){
         maximumIndexValue=(vertices()-1.0)*maxDC;
-        outText << tr("DC  range: 0 < C < undefined (since this is a weighted network")<<"\n";
+        outText << tr("DC  range: 0 < C < undefined (since this is a weighted network)")<<"\n";
     }
     else
         outText << tr("DC  range: 0 < C < ")<<QString::number(maximumIndexValue)<<"\n";
