@@ -5,47 +5,100 @@
 <p class="text">
 Once a network is loaded or created, you may use the various options in the Statistics menu to analyse it. <br /> <br />
 
-For instance, the first option of Statistics menu (<em>Network Symmetry</em>) tells you whether the network is symmetric or not. 
-A network is symmetric when for every edge (i,j) in the set E, the 'opposite' (j,i) edge also exists in E.    
+For instance, the first option of Statistics menu (<em>Symmetry Test</em>) tells you whether the network is symmetric or not.
+A network is called "symmetric" if for every edge (i,j) in the set E of the corresponding graph G(V,E) , the 'opposite' (j,i) edge also exists in E. In other words, when the adjacency matrix is symmetric.
 </p>
 
 <h4><em><a name="Distances" id="Distances"></a>Distances & Diameter</em></h4>
 
 <p class="text">
-The next few options in the Statistics menu (<em>Graph Distance</em>, <em>Average Graph Distance</em>, <em>Distance Matrix</em> and <em>Diameter</em>) let you calculate the geodesic distance between any two nodes and the mean distance between all nodes, print the network distance matrix and calculate the network diameter, respectively. Each option is explained below. 
+The next options in the Statistics menu (<em>Distance</em>, <em>Average Distance</em>, <em>Distances Matrix</em>, <em>Diameter</em>) etc focus on basic network measures, such as
+the geodesic distance between two nodes, the mean distance between all nodes,
+the graph diameter, the number of geodesics between nodes and the eccentricity
+of each node. Each option is explained below.
 </p>
 
-<h5><a name="Distance" id="Distance"></a>Geodesic Distance</h5>
+<h5><a name="Distance" id="Distance"></a>Distance</h5>
 <p class="text">
-The geodesic distance of two nodes is the length of the shortest path between them. By clicking on the "Geodesic Distance" option (or Ctrl+G) you will be asked for source and target nodes. Then their geodesic distance will be calculated and displayed.
+The distance (or geodesic distance) of two nodes is the length of the shortest path (geodesic) between them.
+By clicking on the "Distance" option (or Ctrl+G) you will be asked for source and target nodes.
+Then their distance will be calculated and displayed.
 </p>
 
-
-<h5><a name="DistanceMatrix" id="DistanceMatrix"></a>Distance Matrix</h5>
+<h5><a name="AvgDistance" id="AvgDistance"></a>Average Distance</h5>
 <p class="text">
-The 'Geodesic Distance Matrix' option calculates and displays the matrix of geodesic distances, the shortest path between any two nodes.
-
-</p>
-
-<h5><a name="NumberOfGeodesicsMatrix" id="NumberOfGeodesicsMatrix"></a>Number of Geodesics Matrix</h5>
-<p class="text">
-This option calculates and displays the number of shortest paths between any two nodes in a matrix.
-This matrix, also called sigma matrix, is used in Centralities calculation (see below).
+The average distance in a graph is the average length of all shortest paths (geodesics) between the connected pairs of nodes.
 </p>
 
 
-<h5><a name="Diameter" id="Diameter"></a>Graph Diameter</h5>
+<h5><a name="DistanceMatrix" id="DistanceMatrix"></a>Distances Matrix</h5>
 <p class="text">
-The diameter of a network is the maximum distance between any two connected nodes. In graph theory, the diameter d of a graph is is the maximum eccentricity of any vertex in the graph. 
+The 'Distance Matrix' option calculates and displays the matrix of geodesic distances, the shortest path between any two nodes.
+
 </p>
 
-<h5><a name="Walks" id="Walks"></a>Number of Walks</h5>
+<h5><a name="NumberOfGeodesicsMatrix" id="NumberOfGeodesicsMatrix"></a>Geodesics Matrix</h5>
 <p class="text">
-A walk is a sequence of alternating vertices and edges such as v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>, where each edge, e<sub>i</sub> is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. This function calculates and displays the number of walks of a given length between each pair of nodes, by studying the powers of the sociomatrix</p>
+This option calculates and displays the number of geodesics (shortest paths) between any pair of nodes in the graph.
+The produced matrix, called sigma matrix, is used in Centralities calculation (see below).
+</p>
 
-<h5><a name="TotalWalks" id="TotalWalks"></a>Total Number of Walks</h5>
+<h5><a name="Eccentricity" id="Eccentricity"></a>Eccentricity</h5>
 <p class="text">
-Calculates and displays a (NxN) matrix where the elements denote the number of walks of any length between each pair of nodes. The algorithm s based on the powers of the sociomatrix.
+The eccentricity or association number of each node i is the largest geodesic distance (i,j) between node i and every other node j. Therefore, it reflects how far, at most, is each node from every other node.
+<br />
+This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1
+</p>
+
+<h5><a name="Diameter" id="Diameter"></a>Diameter</h5>
+<p class="text">
+The diameter of a network is the maximum distance between any two connected nodes.
+In graph theory, the diameter d of a graph is is the maximum eccentricity of any vertex in the graph.
+</p>
+
+<h4><em><a name="WalksReach" id="WalksReach"></a>Walks & Reachability</em></h4>
+
+<h5><a name="Connectedness" id="Connectedness"></a>Connectedness</h5>
+<p class="text">
+Checks whether the network is a connected graph, a weakly connected digraph or
+a disconnected graph/digraph.
+<br />
+In graph theory, a graph is <b>connected</b> if there is a path between every pair of nodes.
+<br />
+A digraph is <b>strongly connected</b> if there the a path from i to j and
+from j to i for all pair of nodes (i,j).
+<br />
+A digraph is weakly connected if at least a pair of nodes are joined by a semipath.
+<br />
+A digraph or a graph is disconnected if at least one node is isolate.
+</p>
+
+
+<h5><a name="Walks" id="Walks"></a>Walks of a given length</h5>
+<p class="text">
+Asks for a walk length, and displays a (NxN) matrix where each element is the number
+of walks of the given length between all nodes. <br />
+A walk is a sequence of alternating vertices and edges such as v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>, where each edge, e<sub>i</sub> is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}.
+<br />
+This function calculates the number of walks of a given length between
+each pair of nodes, by studying the powers of the sociomatrix. </p>
+
+<h5><a name="TotalWalks" id="TotalWalks"></a>Total Walks</h5>
+<p class="text">
+Calculates and displays a (NxN) matrix where the elements denote the number of walks of any length between each pair of nodes. The algorithm is based on the powers of the sociomatrix.
+<br />
+Please note that this function is <b>VERY SLOW</b> on large networks (n>50), since it will calculate all powers of the sociomatrix up to n-1 in order to find out all possible walks.
+<br />
+If you need to make a simple reachability test, we advise to use the Reachability Matrix function instead.
+</p>
+
+
+<h5><a name="ReachabilityMatrix" id="ReachabilityMatrix"></a>Reachability Matrix</h5>
+<p class="text">
+Calculates the reachability matrix X<sup>R</sup> of the graph where the (i,j) element is 1 if nodes i and j are reachable.
+<br />
+This function is based on the Distances Matrix; it checks whether the corresponding element of Distances matrix is not zero. If it is not zero, then the nodes (i,j) are reachable and the X<sup>R</sup> element is 1.
+</p>
 
 
 <h4><a name="Coefficient" id="Coefficient"></a>Clustering Coefficient</h4>

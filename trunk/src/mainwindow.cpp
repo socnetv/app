@@ -840,7 +840,7 @@ void MainWindow::initActions(){
     Statistics menu actions
     */
 
-    symmetryAct = new QAction(QIcon(":/images/symmetry.png"), tr("Symmetry"), this);
+    symmetryAct = new QAction(QIcon(":/images/symmetry.png"), tr("Symmetry Test"), this);
     symmetryAct ->setShortcut(tr("Shift+S"));
     symmetryAct->setStatusTip(tr("Checks whether the network is symmetric or not"));
     symmetryAct->setWhatsThis(tr("Symmetry\n\n A network is symmetric when all edges are reciprocal, or, in mathematical language, when the adjacency matrix is symmetric."));
@@ -852,22 +852,22 @@ void MainWindow::initActions(){
     invertAdjMatrixAct->setWhatsThis(tr("Invert  Adjacency Matrix \n\n Inverts the adjacency matrix using linear algebra methods."));
     connect(invertAdjMatrixAct, SIGNAL(triggered()), this, SLOT(slotInvertAdjMatrix()));
 
-    graphDistanceAct = new QAction(QIcon(":/images/distance.png"),  tr("Geodesic Distance"), this);
+    graphDistanceAct = new QAction(QIcon(":/images/distance.png"),  tr("Distance"), this);
     graphDistanceAct ->setShortcut(tr("Ctrl+G"));
     graphDistanceAct->setStatusTip(tr("Calculates the length of the shortest path between two nodes..."));
-    graphDistanceAct->setWhatsThis(tr("Geodesic Distance\n\n In graph theory, the distance (or geodesic distance) of two nodes is the length (number of edges) of the shortest path between them."));
+    graphDistanceAct->setWhatsThis(tr("Distance\n\n In graph theory, the distance (or geodesic distance) of two nodes is the length (number of edges) of the shortest path between them."));
     connect(graphDistanceAct, SIGNAL(triggered()), this, SLOT(slotGraphDistance()));
 
-    distanceMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesic Distance &Matrix"),this);
-    distanceMatrixAct ->setShortcut(tr("Shift+G"));
+    distanceMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Distances Matrix"),this);
+    distanceMatrixAct ->setShortcut(tr("Ctrl+Shift+G"));
     distanceMatrixAct->setStatusTip(tr("The matrix of graph geodesic distances between all nodes"));
-    distanceMatrixAct->setWhatsThis(tr("Distance Matrix\n\n A distance matrix is a NxN matrix, where the (i,j) element is the geodesic distance from node i to node j. The geodesic distance of two nodes is the length of the shortest path between them."));
+    distanceMatrixAct->setWhatsThis(tr("Distances Matrix\n\n A distances matrix is a NxN matrix, where the (i,j) element is the geodesic distance from node i to node j. The geodesic distance of two nodes is the length of the shortest path between them."));
     connect(distanceMatrixAct, SIGNAL(triggered()), this, SLOT( slotViewDistanceMatrix() ) );
 
-    geodesicsMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Number of Geodesic &Paths Matrix"),this);
-    geodesicsMatrixAct ->setShortcut(tr("Ctrl+Shift+G"));
+    geodesicsMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesics Matrix"),this);
+    geodesicsMatrixAct ->setShortcut(tr("Ctrl+Alt+G"));
     geodesicsMatrixAct->setStatusTip(tr("The number of geodesic paths between each pair of nodes "));
-    geodesicsMatrixAct->setWhatsThis(tr("Number of Geodesics\n\n Displays a NxN matrix, where the (i,j) element is the number of geodesic paths between node i and node j. A geodesic path of two nodes is the shortest path between them."));
+    geodesicsMatrixAct->setWhatsThis(tr("Geodesics Matrix\n\n Displays a NxN matrix, where the (i,j) element is the number of geodesics between node i and node j. A geodesic path of two nodes is the shortest path between them."));
     connect(geodesicsMatrixAct, SIGNAL(triggered()), this, SLOT( slotViewNumberOfGeodesicsMatrix()) );
 
     diameterAct = new QAction(QIcon(":/images/diameter.png"), tr("Diameter"),this);
@@ -876,10 +876,10 @@ void MainWindow::initActions(){
     diameterAct->setWhatsThis(tr("Diameter\n\n The Diameter of a network is the maximum graph distance (maximum shortest path length) between any two nodes of the network."));
     connect(diameterAct, SIGNAL(triggered()), this, SLOT(slotDiameter()));
 
-    averGraphDistanceAct = new QAction(QIcon(":/images/avdistance.png"), tr("Average Geodesic Distance"),this);
+    averGraphDistanceAct = new QAction(QIcon(":/images/avdistance.png"), tr("Average Distance"),this);
     averGraphDistanceAct ->setShortcut(tr("Ctrl+B"));
     averGraphDistanceAct->setStatusTip(tr("The average shortest path length."));
-    averGraphDistanceAct->setWhatsThis(tr("Average Geodesic Distance\n\n This the average length of all shortest paths between the connected pair of nodes of the network."));
+    averGraphDistanceAct->setWhatsThis(tr("Average Distance\n\n This the average length of all shortest paths (geodesics) between the connected pair of nodes of the network."));
     connect(averGraphDistanceAct, SIGNAL(triggered()), this, SLOT(slotAverageGraphDistance()));
 
     eccentricityAct = new QAction(QIcon(":/images/eccentricity.png"), tr("Eccentricity"),this);
@@ -899,8 +899,7 @@ void MainWindow::initActions(){
                                       "path between every pair of nodes. \n"
                                       "A digraph is <b>strongly connected</b> "
                                       "if there the a path from i to j and "
-                                      "from j to i for all nodes (i,j).\n"
-                                      "(i,j).\n"
+                                      "from j to i for all pairs (i,j).\n"
                                       "A digraph is weakly connected if at least "
                                       "a pair of nodes are joined by a semipath.\n"
                                       "A digraph or a graph is disconnected if "
@@ -909,16 +908,16 @@ void MainWindow::initActions(){
     connect(connectednessAct, SIGNAL(triggered()), this, SLOT(slotConnectedness()));
 
 
-    walksAct = new QAction(QIcon(":/images/walk.png"), tr("Number of Walks Matrix"),this);
+    walksAct = new QAction(QIcon(":/images/walk.png"), tr("Walks of a given length"),this);
     walksAct->setShortcut(tr("Ctrl+W"));
     walksAct->setStatusTip(tr("The number of walks of a given length between any nodes."));
-    walksAct->setWhatsThis(tr("Walks\n\n A walk is a sequence of alternating vertices and edges such as v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>, where each edge, e<sub>i</sub> is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. This function counts the number of walks of a given length between each pair of nodes, by studying the powers of the sociomatrix.\n "));
+    walksAct->setWhatsThis(tr("Walks of a given length\n\n A walk is a sequence of alternating vertices and edges such as v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>, where each edge, e<sub>i</sub> is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. This function counts the number of walks of a given length between each pair of nodes, by studying the powers of the sociomatrix.\n "));
     connect(walksAct, SIGNAL(triggered()), this, SLOT(slotNumberOfWalks() )  );
 
-    totalWalksAct = new QAction(QIcon(":/images/walk.png"), tr("Total Number of Walks Matrix"),this);
+    totalWalksAct = new QAction(QIcon(":/images/walk.png"), tr("Total Walks"),this);
     totalWalksAct->setShortcut(tr("Ctrl+Shift+W"));
     totalWalksAct->setStatusTip(tr("Calculates the total number of walks of every possible length between all nodes"));
-    totalWalksAct->setWhatsThis(tr("Walks\n\n A walk is a sequence of alternating vertices and edges such as v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>, where each edge, e<sub>i</sub> is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. This function counts the number of walks of any length between each pair of nodes, by studying the powers of the sociomatrix\n "));
+    totalWalksAct->setWhatsThis(tr("Total Walks\n\n A walk is a sequence of alternating vertices and edges such as v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>, where each edge, e<sub>i</sub> is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. This function counts the number of walks of any length between each pair of nodes, by studying the powers of the sociomatrix\n "));
     connect(totalWalksAct, SIGNAL(triggered()), this, SLOT(slotTotalNumberOfWalks() )  );
 
 
