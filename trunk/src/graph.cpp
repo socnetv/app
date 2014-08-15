@@ -1236,7 +1236,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
         }
         else {
             maxIndexBC=( aVertices-1.0) *  (aVertices-2.0) ;
-            maxIndexSC=1;
+            maxIndexSC=( aVertices-1.0) *  (aVertices-2.0);
             maxIndexPC=aVertices-1.0;
             maxIndexCC=1.0/(aVertices-1.0);  //FIXME This applies only on undirected graphs
             qDebug("############# NOT SymmetricAdjacencyMatrix - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
@@ -1426,7 +1426,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                 qDebug()<< "Calculating Std Stress centrality";
                 (*it)->setSSC ( SC/sumSC );
                 //Find min & max SC
-                minmax( (*it)->SSC(), (*it), maxSC, minSC, maxNodeSC, minNodeSC) ;
+                minmax( (*it)->SC(), (*it), maxSC, minSC, maxNodeSC, minNodeSC) ;
 
                 //Calculate the numerator of groupBC according to Freeman's group Betweeness
                 nomBC +=(maxBC - BC );
@@ -1439,7 +1439,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                 if ((*it)->isIsolated())
                     continue;
                 //Calculate numerator of groupSC
-                nomSC +=( maxSC - (*it)->SSC() );
+                nomSC +=( maxSC - (*it)->SC() );
 
             }
 
@@ -2245,8 +2245,8 @@ void Graph::writeCentralityBetweeness(
         outText << "\n"<< tr("All nodes have the same BC value.\n");
     else {
         outText << "\n";
-        outText << tr("Max BC' = ") << maxBC <<" (node "<< maxNodeBC  <<  ")  \n";
-        outText << tr("Min BC' = ") << minBC <<" (node "<< minNodeBC <<  ")  \n";
+        outText << tr("Max BC = ") << maxBC <<" (node "<< maxNodeBC  <<  ")  \n";
+        outText << tr("Min BC = ") << minBC <<" (node "<< minNodeBC <<  ")  \n";
         outText << tr("BC classes = ") << classesBC<<" \n";
     }
 
@@ -2307,8 +2307,8 @@ void Graph::writeCentralityStress(
         outText  << tr("\nAll nodes have the same SC value.\n");
     else {
         outText << "\n";
-        outText << tr("Max SC' = ") << maxSC <<" (node "<< maxNodeSC  <<  ")  \n";
-        outText << tr("Min SC' = ") << minSC <<" (node "<< minNodeSC <<  ")  \n";
+        outText << tr("Max SC = ") << maxSC <<" (node "<< maxNodeSC  <<  ")  \n";
+        outText << tr("Min SC = ") << minSC <<" (node "<< minNodeSC <<  ")  \n";
         outText << tr("SC classes = ") << classesSC<<" \n";
     }
 
