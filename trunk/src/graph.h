@@ -90,7 +90,7 @@ public slots:
 
     /** Slots to signals from MainWindow */
     void setCanvasDimensions(int w, int h);
-    void filterOrphanVertices ( bool );		//Called by MW to filter orphan vertices
+    void filterIsolateVertices ( bool );		//Called by MW to filter orphan vertices
     void filterEdgesByWeight (float, bool);		//Called by MW to filter edges over/under a weight
 
     void webCrawl( QString, int, int, bool);	//Called by MW to start a web crawler...
@@ -288,10 +288,10 @@ public:
     void layoutRandom(
             double maxWidth, double maxHeight
             );
-    void layoutRadialByProminenceIndex(
+    void layoutCircularByProminenceIndex(
             double x0, double y0, double maxRadius,int type
             );
-    void layoutLayeredCentrality(
+    void layoutLevelByProminenceIndex(
             double maxWidth, double maxHeight, int CentralityType
             );
     void layoutForceDirectedSpringEmbedder(bool dynamicMovement);

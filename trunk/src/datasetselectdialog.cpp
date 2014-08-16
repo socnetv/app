@@ -42,7 +42,7 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
 			<< "Krackhardt_High-tech_managers_Friendship_relation.sm"
 			<< "Krackhardt_High-tech_managers_ReportsTo_relation.sm"
             << "Padgett_Florentine_Families_Marital_relation.net"
-			<< "Padgett_Florentine_Families_Business_relation.sm"
+            << "Padgett_Florentine_Families_Business_relation.paj"
 			<< "Zachary_Karate_Club_Simple_Ties.sm"
 			<< "Zachary_Karate_Club_Weighted_Ties.sm"
 			<< "Bernard_Killworth_Fraternity_Symmetric_Observer_Data.sm"

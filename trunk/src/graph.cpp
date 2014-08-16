@@ -467,11 +467,11 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,  bool goOut)
     Called from filterOrphanNodes via MainWindow  to filter nodes with no links
     For each orphan Vertex in the Graph, emits the filterVertex()
 */
-void Graph::filterOrphanVertices(bool filterFlag){
+void Graph::filterIsolateVertices(bool filterFlag){
     if (filterFlag)
-        qDebug() << "Graph: filterOrphanVertices() enabling all orphan nodes";
+        qDebug() << "Graph: filterIsolateVertices() enabling all orphan nodes";
     else
-        qDebug() << "Graph: filterOrphanVertices() disabling all orphan nodes";
+        qDebug() << "Graph: filterIsolateVertices() disabling all orphan nodes";
 
     QList<Vertex*>::iterator it;
     for (QList<Vertex*>::iterator it=m_graph.begin(); it!=m_graph.end(); it++){
@@ -3154,12 +3154,12 @@ void Graph::writeTriadCensus(
 * Repositions all nodes on the periphery of different circles with radius
 * analogous to their prominence index
 */
-void Graph::layoutRadialByProminenceIndex(double x0, double y0, double maxRadius,
+void Graph::layoutCircularByProminenceIndex(double x0, double y0, double maxRadius,
                                    int prominenceIndex){
-    qDebug("Graph::layoutRadialByProminenceIndex...");
+    qDebug("Graph::layoutCircularByProminenceIndex...");
     //first calculate centrality indices if needed
     if ( prominenceIndex > 1 && prominenceIndex < 8 && prominenceIndex!=3) {
-        qDebug("Graph::layoutRadialByProminenceIndex - Calling "
+        qDebug("Graph::layoutCircularByProminenceIndex - Calling "
                "createDistanceMatrix() to calc centralities");
         this->createDistanceMatrix(true);
     }
@@ -3321,17 +3321,25 @@ void Graph::layoutRandom(double maxWidth, double maxHeight){
 *	 Repositions all nodes on different top-down levels according to their centrality
 * 	Emits moveNode(i, x,y) to tell GW that the node item should be moved. 
 */
-void Graph::layoutLayeredCentrality(double maxWidth, double maxHeight, int CentralityType){
+void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
+                                         int prominenceIndex){
     qDebug("Graph: layoutLevelCentrality...");
-    //first calculate centralities
-    if ( CentralityType > 2) {
-        qDebug("Graph: Calling createDistanceMatrix() to calc centralities");
-        createDistanceMatrix(true);
+    if ( prominenceIndex > 1 && prominenceIndex < 8 && prominenceIndex!=3) {
+        qDebug("Graph::layoutCircularByProminenceIndex - Calling "
+               "createDistanceMatrix() to calc centralities");
+        this->createDistanceMatrix(true);
     }
-    else if ((graphModified || !calculatedDP) && CentralityType == 1)
-        prestigeDegree(true);
-    else if ((graphModified || !calculatedDC) && CentralityType == 2)
-        centralityDegree(true);
+    else if ((graphModified || !calculatedDC) && prominenceIndex == 1)
+        this->centralityDegree(true);
+    else if ( prominenceIndex == 3 )
+        this->centralityClosenessInfluenceRange();
+    else if ( prominenceIndex == 8 )
+        this->centralityInformation();
+    else if ((graphModified || !calculatedDP) && prominenceIndex == 9)
+        this->prestigeDegree(true);
+    else if ( prominenceIndex == 10 )
+        this->prestigePageRank();
+
 
     double i=0, std=0;
     //offset controls how far from the top the central nodes will be
@@ -3341,47 +3349,86 @@ void Graph::layoutLayeredCentrality(double maxWidth, double maxHeight, int Centr
     maxHeight-=offset;
     maxWidth-=offset;
     for (QList<Vertex*>::iterator it=m_graph.begin(); it!=m_graph.end(); it++){
-        switch (CentralityType) {
-        case 1 : {
-            qDebug("Layout according to InDegree Centralities");
-            C=(*it)->SDP();
-            std= (*it)->SDP();
-            maxC=maxDP;
-            break;
-        }
-        case 2 : {
-            qDebug("Layout according to OutDegree Centralities");
-            C=(*it)->SDC();
-            std= (*it)->SDC();
-            maxC=maxDC;
-            break;
-        }
-        case 3 : {
-            qDebug("Layout according to Closeness Centralities");
-            C=(*it)->CC();
-            std= (*it)->SCC();
-            maxC=maxCC;
-            break;
-        }
-        case 4 : {
-            qDebug("Layout according to Betweeness Centralities");
-            C=(*it)->BC();
-            std= (*it)->SBC();
-            maxC=maxBC;
-            break;
-        }
-        case 5 : {
-            qDebug("Layout according to Stress Centralities");
-            C=(*it)->SC();
-            std= (*it)->SSC();
-            maxC=maxSC;
-            break;
-        }
+        switch (prominenceIndex) {
+            case 1 : {
+                qDebug("Layout according to DC");
+                C=(*it)->SDC();
+                std= (*it)->SDC();
+                maxC=maxDC;
+                break;
+            }
+            case 2 : {
+                qDebug("Layout according to CC");
+                C=(*it)->CC();
+                std= (*it)->SCC();
+                maxC=maxCC;
+                break;
+            }
+            case 3 : {
+                qDebug("Layout according to IRCC");
+                C=(*it)->IRCC();
+                std= (*it)->SIRCC();
+                maxC=maxIRCC;
+                break;
+            }
+            case 4 : {
+                qDebug("Layout according to BC");
+                C=(*it)->BC();
+                std= (*it)->SBC();
+                maxC=maxBC;
+                break;
+            }
+            case 5 : {
+                qDebug("Layout according to SC");
+                C=(*it)->SC();
+                std= (*it)->SSC();
+                maxC=maxSC;
+                break;
+            }
+            case 6 : {
+                qDebug("Layout according to EC");
+                C=(*it)->EC();
+                std= (*it)->SEC();
+                maxC=maxEC;
+                break;
+            }
+            case 7 : {
+                qDebug("Layout according to PC");
+                C=(*it)->PC();
+                std= (*it)->SPC();
+                maxC=maxPC;
+                break;
+            }
+            case 8 : {
+                qDebug("Layout according to IC");
+                C=(*it)->IC();
+                std= (*it)->SIC();
+                maxC=maxIC;
+                break;
+            }
+            case 9 : {
+                qDebug("Layout according to DP");
+                C=(*it)->SDP();
+                std= (*it)->SDP();
+                maxC=maxDP;
+                break;
+            }
+            case 10 : {
+                qDebug("Layout according to PRP");
+                C=(*it)->PRC();
+                std= (*it)->SPRC();
+                maxC=maxPRC;
+                break;
+            }
         };
-        qDebug()<< "Vertice " << (*it)->name() << " at x="<< (*it)->x() << ", y="<<  (*it)->y() << ": C=" << C << ", stdC=" << std
-                << ", maxC "<<	maxC << ", maxWidth " << maxWidth <<" , maxHeight "<<maxHeight;
+        qDebug()<< "Vertice " << (*it)->name()
+                << " at x="<< (*it)->x() << ", y="<<  (*it)->y()
+                << ": C=" << C << ", stdC=" << std
+                << ", maxC "<<	maxC << ", maxWidth " << maxWidth
+                <<" , maxHeight "<<maxHeight;
         //Calculate new position
-        qDebug ("C/maxC %f, *maxHeight %f, +maxHeight %f ",C/maxC, (C/maxC)*maxHeight, maxHeight-(C/maxC)*maxHeight );
+        qDebug ("C/maxC %f, *maxHeight %f, +maxHeight %f "
+                , C/maxC, (C/maxC)*maxHeight, maxHeight-(C/maxC)*maxHeight );
         switch ( static_cast<int> (ceil(maxC)) ){
         case 0: {
             qDebug("maxC=0.   Using maxHeight");
@@ -4644,23 +4691,56 @@ void Graph::writeDataSetToFile (QString fileName) {
                    "16  9 1" << endl <<
                   "16 13 1" ;
     }
-    else if (fileName == "Padgett_Florentine_Families_Business_relation.sm"){
-        outText<< "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "0 0 0 0 1 1 0 0 1 0 1 0 0 0 0 0" << endl <<
-                  "0 0 0 0 0 0 1 1 0 0 1 0 0 0 0 0" << endl <<
-                  "0 0 1 0 0 0 0 1 0 0 1 0 0 0 0 0" << endl <<
-                  "0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0" << endl <<
-                  "0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0" << endl <<
-                  "0 0 0 1 1 0 1 0 0 0 1 0 0 0 0 0" << endl <<
-                  "0 0 1 0 0 1 0 0 0 1 0 0 0 1 0 1" << endl <<
-                  "0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << endl <<
-                  "0 0 1 1 1 0 0 1 0 0 0 0 0 0 0 0" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0";
+    else if (fileName == "Padgett_Florentine_Families_Business_relation.paj"){
+        outText<< "*Network Padgett's Florentine Families Business Relation" << endl <<
+                  "*Vertices      16" << endl <<
+                    "1 \"Acciaiuoli\"         0.2024    0.1006" << endl <<
+                    "2 \"Albizzi\"            0.3882    0.4754" << endl <<
+                    "3 \"Barbadori\"          0.1633    0.7413" << endl <<
+                    "4 \"Bischeri\"           0.6521    0.5605" << endl <<
+                    "5 \"Castellani\"         0.6178    0.9114" << endl <<
+                    "6 \"Ginori\"             0.3018    0.5976" << endl <<
+                    "7 \"Guadagni\"           0.5219    0.5006" << endl <<
+                    "8 \"Lamberteschi\"       0.4533    0.6299" << endl <<
+                    "9 \"Medici\"             0.2876    0.3521" << endl <<
+                   "10 \"Pazzi\"              0.0793    0.2587" << endl <<
+                   "11 \"Peruzzi\"            0.6509    0.7365" << endl <<
+                   "12 \"Pucci\"              0.4083    0.1186" << endl <<
+                   "13 \"Ridolfi\"            0.6308    0.2060" << endl <<
+                   "14 \"Salviati\"           0.0734    0.4455" << endl <<
+                   "15 \"Strozzi\"            0.8639    0.5832" << endl <<
+                   "16 \"Tornabuoni\"         0.5633    0.3713" << endl <<
+                  "*Arcs \"Business\""<< endl <<
+                    "3  5 1" << endl <<
+                    "3  6 1" << endl <<
+                    "3  9 1" << endl <<
+                    "3 11 1" << endl <<
+                    "4  7 1" << endl <<
+                    "4  8 1" << endl <<
+                    "4 11 1" << endl <<
+                    "5  3 1" << endl <<
+                    "5  8 1" << endl <<
+                    "5 11 1" << endl <<
+                    "6  3 1" << endl <<
+                    "6  9 1" << endl <<
+                    "7  4 1" << endl <<
+                    "7  8 1" << endl <<
+                    "8  4 1" << endl <<
+                    "8  5 1" << endl <<
+                    "8  7 1" << endl <<
+                    "8 11 1" << endl <<
+                    "9  3 1" << endl <<
+                    "9  6 1" << endl <<
+                    "9 10 1" << endl <<
+                    "9 14 1" << endl <<
+                    "9 16 1" << endl <<
+                   "10  9 1" << endl <<
+                   "11  3 1" << endl <<
+                   "11  4 1" << endl <<
+                   "11  5 1" << endl <<
+                   "11  8 1" << endl <<
+                   "14  9 1" << endl <<
+                   "16  9 1";
     }
     else if (fileName == "Zachary_Karate_Club_Simple_Ties.sm"){
         outText<< "0 1 1 1 1 1 1 1 1 0 1 1 1 1 0 0 0 1 0 1 0 1 0 0 0 0 0 0 0 0 0 1 0 0" << endl <<
@@ -4984,7 +5064,7 @@ void Graph::writeDataSetToFile (QString fileName) {
     }
     else if (fileName == "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek"){
         qDebug()<< "		Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek written... ";
-        outText<< "*Network Countries_Trade_Basic_Manufactred_Goods" << endl <<
+        outText<< "*Network Countries_Trade_Basic_Manufactured_Goods" << endl <<
                   "*Vertices      24" << endl <<
                     "1 \"ALG\"     0.5408 0.0347" << endl <<
                     "2 \"ARG\"     0.9195 0.1080" << endl <<
@@ -5035,7 +5115,7 @@ void Graph::writeDataSetToFile (QString fileName) {
                    "1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1" << endl <<
                    "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1" << endl <<
                    "1 1 0 1 1 0 1 1 1 0 1 1 1 0 0 1 1 1 1 1 1 1 1 0";
-                    qDebug()<< "		Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek written... ";
+                    qDebug()<< "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek written... ";
     }
     f.close();
 }
