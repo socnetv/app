@@ -2944,7 +2944,8 @@ void MainWindow::slotRecreateDataSet (QString m_fileName) {
     if (m_fileName.endsWith(".graphml")) {
         m_fileFormat=1;
     }
-    else if (m_fileName.endsWith(".pajek")) {
+    else if (m_fileName.endsWith(".pajek") || m_fileName.endsWith(".paj") ||
+             m_fileName.endsWith(".net")) {
         m_fileFormat=2;
     }
     else if (m_fileName.endsWith(".sm") || m_fileName.endsWith(".adj")) {

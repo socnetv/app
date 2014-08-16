@@ -675,6 +675,7 @@ void Graph::setEdgeColor(long int s, long int t, QString color){
     if (isSymmetric()) {
         m_graph[ index[t] ]->setOutLinkColor(s, color);
     }
+    graphModified=true;
     emit graphChanged();
 }	
 
@@ -781,6 +782,9 @@ int Graph::vertices () {
 */
 QList<int> Graph::verticesIsolated(){
     qDebug()<< "Graph::verticesIsolated()";
+    if (!graphModified){
+        return m_isolatedVerticesList;
+    }
     int i=0, j=0;
     QList<Vertex*>::iterator it, it1;
     m_isolatedVerticesList.clear();
@@ -797,6 +801,12 @@ QList<int> Graph::verticesIsolated(){
                 if ( (this->hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
                     (*it)->setIsolated(false);
                     (*it1)->setIsolated(false);
+                    // this check is needed for Graph::createDistanceMatrix()
+                    // because we only run verticesIsolated() in the begining
+                    // and we do not know if the matrix is symmetric.
+                    // Symmetry test is needed for maxIndex*
+                    if ( this->hasEdge ( (*it1)->name(), (*it)->name() ) == 0 )
+                        symmetricAdjacencyMatrix=false;
                 }
             }
             j++;
@@ -1240,7 +1250,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
             maxIndexBC=( aVertices-1.0) *  (aVertices-2.0) ;
             maxIndexSC=( aVertices-1.0) *  (aVertices-2.0);
             maxIndexPC=aVertices-1.0;
-            maxIndexCC=1.0/(aVertices-1.0);  //FIXME This applies only on undirected graphs
+            maxIndexCC=aVertices-1.0;
             qDebug("############# NOT SymmetricAdjacencyMatrix - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
         }
 
@@ -1266,6 +1276,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
         //Zero closeness indeces of each vertex
         if (doCalculcateCentralities)
             for (it=m_graph.begin(); it!=m_graph.end(); it++) {
+                qDebug() << " Graph:createDistanceMatrix() - ZEROing all indices";
                 (*it)->setBC( 0.0 );
                 (*it)->setSC( 0.0 );
                 (*it)->setEccentricity( 0.0 );
@@ -1336,7 +1347,8 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                 i=1; //used in calculating power centrality
                 sizeOfComponent = 1;
                 PC=0;
-                qDebug("PHASE 2 (ACCUMULATION): Start back propagation of dependencies. Set dependency delta[u]=0 on each vertex");
+                qDebug("PHASE 2 (ACCUMULATION): Start back propagation of dependencies."
+                       "Set dependency delta[u]=0 on each vertex");
                 for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
                     (*it1)->setDelta(0.0);
                     //Calculate Power Centrality: In = [ 1/(N-1) ] * ( Nd1 + Nd2 * 1/2 + ... + Ndi * 1/i )
@@ -1412,11 +1424,19 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 
                 qDebug()<< "Calculating Std Closeness centrality";
                 CC = (*it)->CC();
-                (*it)->setSCC ( (aVertices-1.0) * CC  );
+                (*it)->setSCC ( maxIndexCC * CC  );
                 minmax( (*it)->SCC(), (*it), maxCC, minCC, maxNodeCC, minNodeCC) ;
 
                 qDebug("Resolving SC classes...");
+                qDebug() << "SC OF " <<(*it)->name() << " is "<< (*it)->SC();
                 SC=(*it)->SC();
+                if (symmetricAdjacencyMatrix){
+                    qDebug() << "SC OF " <<(*it)->name()
+                             << " must be divided by 2 because the graph is symmetric";
+                    (*it)->setSC(SC/2.0);
+                    SC=(*it)->SC();
+                    qDebug() << "SC OF " <<(*it)->name() << " now is "<< (*it)->SC();
+                }
                 resolveClasses(SC, discreteSCs, classesSC);
                 sumSC+=SC;
 
@@ -1499,7 +1519,7 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
 
     qDebug("BFS: Construct a queue Q of integers and push source vertex s=%i to Q as initial vertex", s);
     queue<int> Q;
-    //	qDebug("BFS: Q size %i", Q.size());
+    qDebug()<<"BFS: Q size "<< Q.size();
 
     Q.push(s);
 
@@ -1519,12 +1539,12 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
         for( it = m_graph [ u ]->m_outEdges.begin(); it != m_graph [ u ]->m_outEdges.end(); it++ ) {
 
             w=index[it->first];
-            qDebug("BFS: u=%i is connected with w=%i of index %i. ", u, it->first, w);
+            qDebug("BFS: u=%i is connected with node %i of index w=%i. ", u, it->first, w);
             qDebug("BFS: Start path discovery");
             if (	DM.item(s, w) == -1 ) { //if distance (s,w) is infinite, w found for the first time.
                 qDebug("BFS: first time visiting w=%i. Enqueuing w to the end of Q", w);
                 Q.push(w);
-                qDebug()<<"First check if distance(s,u) = -1 (aka infinite :)) and set it to zero";
+                qDebug()<<"BFS: First check if distance(s,u) = -1 (aka infinite :)) and set it to zero";
                 dist_u=DM.item(s,u);
                 if (dist_u < 0 )
                     dist_w = 0;
@@ -1536,11 +1556,11 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
                 nonZeroDistancesCounter++;
 
                 if (doCalculcateCentralities){
-                    qDebug()<<"Calculate PC: store the number of nodes at distance " << dist_w << "from s";
+                    qDebug()<<"BFS: Calculate PC: store the number of nodes at distance " << dist_w << "from s";
                     sizeOfNthOrderNeighborhood[dist_w]=sizeOfNthOrderNeighborhood[dist_w]+1;
-                    qDebug()<<"Calculate CC: the sum of distances (will invert it l8r)";
+                    qDebug()<<"BFS: Calculate CC: the sum of distances (will invert it l8r)";
                     m_graph [s]->setCC (m_graph [s]->CC() + dist_w);
-                    qDebug()<<"Calculate Eccentricity: the maximum distance ";
+                    qDebug()<<"BFS: Calculate Eccentricity: the maximum distance ";
                     if (m_graph [s]->eccentricity() < dist_w )
                         m_graph [s]->setEccentricity(dist_w);
 
@@ -1559,9 +1579,15 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
                 if (s!=w)
                     TM.setItem(s,w, temp);
                 if (doCalculcateCentralities){
-                    qDebug("If we are to calculate centralities, we must calculate SC as well");
-                    m_graph[u]->setSC(m_graph[u]->SC()+1);
-
+                    qDebug("BFS/SC: If we are to calculate centralities, we must calculate SC as well");
+                    if ( s!=w && s != u && u!=w ) {
+                        qDebug() << "BFS: setSC of u="<<u<<" to "<<m_graph[u]->SC()+1;
+                        m_graph[u]->setSC(m_graph[u]->SC()+1);
+                    }
+                    else {
+                        qDebug() << "BFS/SC: skipping setSC of u, because s="<<s<<" w="<<w<<" u="<<u;
+                    }
+                    qDebug() << "BFS/SC: SC is " << m_graph[u]->SC();
                     qDebug("BFS: appending u=%i to list Ps[w=%i] with the predecessors of w on all shortest paths from s ", u, w);
                     m_graph[w]->appendToPs(u);
                 }
@@ -4557,23 +4583,66 @@ void Graph::writeDataSetToFile (QString fileName) {
                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << endl <<
                   "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0";
     }
-    else if (fileName == "Padgett_Florentine_Families_Marital_relation.sm"){
-        outText<< "0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << endl <<
-                  "0 0 0 0 0 1 1 0 1 0 0 0 0 0 0 0" << endl <<
-                  "0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0" << endl <<
-                  "0 0 0 0 0 0 1 0 0 0 1 0 0 0 1 0" << endl <<
-                  "0 0 1 0 0 0 0 0 0 0 1 0 0 0 1 0" << endl <<
-                  "0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "0 1 0 1 0 0 0 1 0 0 0 0 0 0 0 1" << endl <<
-                  "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0" << endl <<
-                  "1 1 1 0 0 0 0 0 0 0 0 0 1 1 0 1" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0" << endl <<
-                  "0 0 0 1 1 0 0 0 0 0 0 0 0 0 1 0" << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
-                  "0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 1" << endl <<
-                  "0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0" << endl <<
-                  "0 0 0 1 1 0 0 0 0 0 1 0 1 0 0 0" << endl <<
-                  "0 0 0 0 0 0 1 0 1 0 0 0 1 0 0 0" ;
+    else if (fileName == "Padgett_Florentine_Families_Marital_relation.net"){
+        outText<< "*Network Padgett's Florentine Families Marital Relation" << endl <<
+                  "*Vertices      16" << endl <<
+                    "1 \"Acciaiuoli\"         0.2024    0.1006" << endl <<
+                    "2 \"Albizzi\"            0.3882    0.4754" << endl <<
+                    "3 \"Barbadori\"          0.1633    0.7413" << endl <<
+                    "4 \"Bischeri\"           0.6521    0.5605" << endl <<
+                    "5 \"Castellani\"         0.6178    0.9114" << endl <<
+                    "6 \"Ginori\"             0.3018    0.5976" << endl <<
+                    "7 \"Guadagni\"           0.5219    0.5006" << endl <<
+                    "8 \"Lamberteschi\"       0.4533    0.6299" << endl <<
+                    "9 \"Medici\"             0.2876    0.3521" << endl <<
+                   "10 \"Pazzi\"              0.0793    0.2587" << endl <<
+                   "11 \"Peruzzi\"            0.6509    0.7365" << endl <<
+                   "12 \"Pucci\"              0.4083    0.1186" << endl <<
+                   "13 \"Ridolfi\"            0.6308    0.2060" << endl <<
+                   "14 \"Salviati\"           0.0734    0.4455" << endl <<
+                   "15 \"Strozzi\"            0.8639    0.5832" << endl <<
+                   "16 \"Tornabuoni\"         0.5633    0.3713" << endl <<
+                  "*Arcs \"Marital\""<< endl <<
+                    "1  9 1" << endl <<
+                    "2  6 1" << endl <<
+                    "2  7 1" << endl <<
+                    "2  9 1" << endl <<
+                    "3  5 1" << endl <<
+                    "3  9 1" << endl <<
+                    "4  7 1" << endl <<
+                    "4 11 1" << endl <<
+                    "4 15 1" << endl <<
+                    "5  3 1" << endl <<
+                    "5 11 1" << endl <<
+                    "5 15 1" << endl <<
+                    "6  2 1" << endl <<
+                    "7  2 1" << endl <<
+                    "7  4 1" << endl <<
+                    "7  8 1" << endl <<
+                    "7 16 1" << endl <<
+                    "8  7 1" << endl <<
+                    "9  1 1" << endl <<
+                    "9  2 1" << endl <<
+                    "9  3 1" << endl <<
+                    "9 13 1" << endl <<
+                    "9 14 1" << endl <<
+                    "9 16 1" << endl <<
+                   "10 14 1" << endl <<
+                   "11  4 1" << endl <<
+                   "11  5 1" << endl <<
+                   "11 15 1" << endl <<
+                   "13  9 1" << endl <<
+                   "13 15 1" << endl <<
+                   "13 16 1" << endl <<
+                   "14  9 1" << endl <<
+                   "14 10 1" << endl <<
+                   "15  4 1" << endl <<
+                   "15  5 1" << endl <<
+                   "15 11 1" << endl <<
+                   "15 13 1" << endl <<
+                   "16  7 1" << endl <<
+                   "16  9 1" << endl <<
+                  "16 13 1" ;
     }
     else if (fileName == "Padgett_Florentine_Families_Business_relation.sm"){
         outText<< "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
