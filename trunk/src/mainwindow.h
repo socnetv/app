@@ -179,7 +179,10 @@ public slots:
     void slotLayoutRandom();
     void slotLayoutRandomCircle();
     void slotLayoutCircularByProminenceIndex();
+    void slotLayoutCircularByProminenceIndex(QString);
     void slotLayoutLevelByProminenceIndex();
+    void slotLayoutLevelByProminenceIndex(QString);
+    void slotLayoutGuides(int);
 
 
     void slotLayoutSpringEmbedder(bool);
@@ -197,8 +200,8 @@ public slots:
     void slotDiameter();
     void slotEccentricity();
 
-    void slotNumberOfWalks();
-    void slotTotalNumberOfWalks();
+    void slotWalksOfGivenLength();
+    void slotTotalWalks();
     void slotReachabilityMatrix();
     void slotConnectedness();
 
@@ -285,6 +288,12 @@ public slots:
     //Called from Graph when a network file is loaded.
     void fileType(int, QString , int, int, bool);
 
+    //Called from MW, when user highlights something in the toolbox Comboboxes
+    void toolBoxAnalysisGeodesicsSelectChanged(int);
+    void toolBoxAnalysisConnectivitySelectChanged(int);
+    void toolBoxAnalysisProminenceSelectChanged(int);
+    void toolBoxLayoutByIndexButtonPressed();
+
 protected:
     void resizeEvent( QResizeEvent * );
     void closeEvent( QCloseEvent* ce );
@@ -320,11 +329,17 @@ private:
     QMenu *networkMenu, *randomNetworkMenu, *filterMenu;
     QMenu *randomLayoutMenu, *circleLayoutMenu, *levelLayoutMenu, *physicalLayoutMenu;
     QMenu *colorationMenu;
-    QCheckBox *moveSpringEmbedderBx, *moveFruchtermanBx, *moveKamandaBx, *nodeSizeProportional2OutDegreeBx,
-            *nodeSizeProportional2InDegreeBx ;
+    QCheckBox *moveSpringEmbedderBx, *moveFruchtermanBx, *moveKamandaBx,
+    *nodeSizeProportional2OutDegreeBx,*nodeSizeProportional2InDegreeBx,
+    *layoutGuidesBx;
+    QComboBox *toolBoxAnalysisGeodesicsSelect,*toolBoxAnalysisConnectivitySelect,
+            *toolBoxAnalysisProminenceSelect;
+    QComboBox *toolBoxLayoutByIndexSelect, *toolBoxLayoutByIndexTypeSelect;
+
+    QPushButton *addNodeBt, *addLinkBt, *removeNodeBt, *removeLinkBt,
+    *toolBoxLayoutByIndexButton;
 
     QSpinBox *rotateSpinBox ;
-    QPushButton *addNodeBt, *addLinkBt, *removeNodeBt, *removeLinkBt;
 
     QAction *fileNew, *fileOpen, *fileSave, *fileSaveAs,*fileClose, *printNetwork,*fileQuit;
     QAction *exportBMP, *exportPNG, *exportPajek, *exportPDF, *exportDL, *exportGW, *exportSM, *exportList;

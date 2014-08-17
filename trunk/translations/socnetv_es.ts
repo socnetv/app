@@ -2141,7 +2141,7 @@ About Qt</source>
     </message>
     <message>
         <location filename="src/mainwindow.cpp" line="1017"/>
-        <source>&amp;Statistics</source>
+        <source>&amp;Analysis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2403,7 +2403,7 @@ namely, both inLinks and outLinks to another node.</source>
     </message>
     <message>
         <location filename="src/mainwindow.cpp" line="1286"/>
-        <source>Statistics</source>
+        <source>Analysis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
