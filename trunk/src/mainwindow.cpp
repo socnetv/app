@@ -1913,6 +1913,7 @@ void MainWindow::initToolBox(){
     QGroupBox *editGroupBox= new QGroupBox(tr("Edit"));
     editGroupBox->setLayout(buttonsGrid);
     editGroupBox->setMaximumSize(300,100);
+    editGroupBox->setFlat(true);
 
     //create widgets for the "Analysis" box
     QLabel *toolBoxAnalysisGeodesicsSelectLabel = new QLabel;
@@ -1979,6 +1980,7 @@ void MainWindow::initToolBox(){
     QGroupBox *analysisBox= new QGroupBox(tr("Analyze"));
     analysisBox->setMaximumWidth(300);
     analysisBox->setLayout (analysisGrid );
+    analysisBox->setFlat(true);
 
 
     //create widgets for the "Visualization By Index" box
@@ -2025,6 +2027,7 @@ void MainWindow::initToolBox(){
     QGroupBox *layoutByIndexBox= new QGroupBox(tr("By Prominence Index"));
     layoutByIndexBox->setMaximumWidth(300);
     layoutByIndexBox->setLayout (layoutByIndexGrid );
+    layoutByIndexBox->setFlat(true);
 
 
     // create widgets for the "Dynamic" groupBox
@@ -2066,6 +2069,7 @@ void MainWindow::initToolBox(){
     QGroupBox *layoutDynamicBox= new QGroupBox(tr("By Dynamic Model"));
     layoutDynamicBox->setMaximumWidth(300);
     layoutDynamicBox->setLayout (layoutDynamicGrid );
+    layoutDynamicBox->setFlat(true);
 
 
     //create widgets for additional visualization options box
@@ -2105,6 +2109,7 @@ void MainWindow::initToolBox(){
     QGroupBox *layoutOptionsBox= new QGroupBox(tr("Options"));
     layoutOptionsBox->setMaximumWidth(300);
     layoutOptionsBox->setLayout (layoutOptionsGrid );
+    layoutOptionsBox->setFlat(true);
 
 
     //Parent box with vertical layout for all layout/visualization boxes
@@ -2115,7 +2120,7 @@ void MainWindow::initToolBox(){
     QGroupBox *visualizationBox= new QGroupBox(tr("Visualize"));
     visualizationBox->setMaximumWidth(300);
     visualizationBox->setLayout (visualizationBoxLayout );
-
+    visualizationBox->setFlat(true);
 
     //Parent box with vertical layout for all boxes of Controls
     QVBoxLayout *controlTabVerticalLayout = new QVBoxLayout;
