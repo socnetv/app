@@ -1,3 +1,32 @@
+socnetv (1.2-1) trusty; urgency=medium
+
+  * Update package to upstream version 1.2 which bring a lot of changes
+  * A new "prominence indices" conceptualization based on Wasserman & Faust
+  * SocNetV distinguishes between Centrality and Prestige indices.
+  * Added 3 Prestige indices (Degree, Proximity and PageRank)
+  * New reachability measures (Walks, Connectedness, and Reachability Matrix) 
+  * New Connectedness statistic: Checks whether the graph is connected.
+  * New "distance" index: Eccentricity e
+  * Revamped GUI. Toolbox now has two tabs: Controls and Statistics. 
+  * New level visualization layouts: By IR Closeness Centrality, Stress Centrality,
+    Eccentricity Centrality, Power Centrality, Information Centrality,
+    Degree Prestige, Proximity Prestige and Pagerank Prestige
+  * New circular visualization layout: By Proximity Prestige
+  * New automagically recreated dataset:
+    Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods
+  * SocNetV Manual: Updated documentation (added new indices and corrected wording)
+    and added the Manual in Mac OS X .dmg package.
+  * Fixed Bugs: Closeness Centrality in disconnected graphs/digraphs (it did not
+    drop isolates), wrong classes for PC indices, Stress Centrality (wrong maxindex
+    and circular layout in digraphs), not displaying of edge weights,
+    Matrix::product errors, Eccentricity Centrality (wasn't reported as the inverse e),
+    Geodesic Distance (it reported two nodes as connected even if their distance was 0)
+  * Dropped Graph Eccentricity as it is known as Eccentricity Centrality
+  * fixed layout and signal/slots in datasetselectdialog.ui
+  * fixed warnings during compile (i.e. unused fileContainsNodeColors etc in loadPajek()
+
+ -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Mon, 18 Aug 2014 19:34:41 +0300
+
 socnetv (1.1-1) trusty; urgency=low
 
   *  Update package to upstream version 1.1

@@ -5339,7 +5339,7 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
 
     if ( prominenceIndexName.contains("Degree Centrality") )
         userChoice=1;
-    else if ( prominenceIndexName.contains("Closeness Centrality"))
+    else if ( prominenceIndexName == "Closeness Centrality")
         userChoice=2;
     else if ( prominenceIndexName.contains("Influence Range Closeness Centrality"))
         userChoice=3;
