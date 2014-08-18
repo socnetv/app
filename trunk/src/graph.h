@@ -366,13 +366,6 @@ private:
                         int &classes, int name
                         );
 
-    /** used in resolveClasses and createDistanceMatrix() */
-    hash_si discreteDPs, discreteDCs, discreteCCs, discreteBCs, discreteSCs;
-    hash_si discreteIRCCs, discreteECs, discreteEccentricities;
-    hash_si discretePCs, discreteICs,  discretePRCs, discretePPs;
-
-    bool calculatedDP, calculatedDC, calculatedCentralities, dynamicMovement;
-    bool calculatedPP;
 
     QList<int>  triadTypeFreqs; 	//stores triad type frequencies
     QList<int>  m_isolatedVerticesList;
@@ -382,10 +375,20 @@ private:
     Matrix XM, XSM, XRM;
     stack<int> Stack;
 
+    /** used in resolveClasses and createDistanceMatrix() */
+    hash_si discreteDPs, discreteDCs, discreteCCs, discreteBCs, discreteSCs;
+    hash_si discreteIRCCs, discreteECs, discreteEccentricities;
+    hash_si discretePCs, discreteICs,  discretePRCs, discretePPs;
+
+    bool calculatedDP, calculatedDC, calculatedCentralities, dynamicMovement;
+    bool calculatedPP, calculatedIRCC;
+
+
     int m_precision;
     float meanDegree, varianceDegree;
     float meanCC, varianceCC;
     float meanIRCC, varianceIRCC;
+    float meanPP, variancePP;
     float minEccentricity, maxEccentricity, sumEccentricity;
     float minDP, maxDP, sumDP, groupDP;
     float minDC, maxDC, sumDC, groupDC;
@@ -397,7 +400,7 @@ private:
     float minEC, maxEC, nomEC, denomEC, sumEC, groupEC, maxIndexEC;
     float minIC, maxIC, nomIC, denomIC, sumIC, groupIC, maxIndexIC;
     float minPRC, maxPRC, nomPRC, denomPRC, sumPRC, groupPRC, maxIndexPRC;
-    float minPP, maxPP, nomPP, denomPP, sumPP, groupPP, maxIndexPP;
+    float minPP, maxPP, nomPP, denomPP, sumPP, groupPP;
     float minCLC, maxCLC, averageCLC, averageIC, averagePRC, dampingFactor;
     int maxNodeCLC, minNodeCLC;
     int classesDP, maxNodeDP, minNodeDP;

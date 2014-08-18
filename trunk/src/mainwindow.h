@@ -375,13 +375,13 @@ private:
             *cPowerAct, *cEccentAct, *cProximityPrestigeAct;
     QAction *randLayoutAct, *randCircleLayoutAct, *clearGuidesAct;
     QAction *layoutCircular_DC_Act, *layoutCircular_DP_Act,
-            *layoutCircular_CC_Act, *layoutCircular_SC_Act, *layoutCircular_EC_Act,
-            *layoutCircular_PC_Act, *layoutCircular_BC_Act, *layoutCircular_IC_Act,
-            *layoutCircular_IRCC_Act,*layoutCircular_PRP_Act;
+    *layoutCircular_CC_Act, *layoutCircular_SC_Act, *layoutCircular_EC_Act,
+    *layoutCircular_PC_Act, *layoutCircular_BC_Act, *layoutCircular_IC_Act,
+    *layoutCircular_IRCC_Act,*layoutCircular_PRP_Act, *layoutCircular_PP_Act;
     QAction *layoutLevel_DC_Act, *layoutLevel_DP_Act,
-            *layoutLevel_CC_Act, *layoutLevel_SC_Act, *layoutLevel_EC_Act,
-            *layoutLevel_PC_Act, *layoutLevel_BC_Act, *layoutLevel_IC_Act,
-            *layoutLevel_IRCC_Act,*layoutLevel_PRP_Act;
+    *layoutLevel_CC_Act, *layoutLevel_SC_Act, *layoutLevel_EC_Act,
+    *layoutLevel_PC_Act, *layoutLevel_BC_Act, *layoutLevel_IC_Act,
+    *layoutLevel_IRCC_Act,*layoutLevel_PRP_Act, *layoutLevel_PP_Act;
     QAction *strongColorationAct, *regularColorationAct, *showProgressBarAct, *printDebugAct;
     QAction *springLayoutAct, *FRLayoutAct, *nodeSizeProportionalOutDegreeAct,  *nodeSizeProportionalInDegreeAct;
     QAction *zoomInAct, *zoomOutAct ;

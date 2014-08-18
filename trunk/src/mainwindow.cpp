@@ -699,14 +699,14 @@ void MainWindow::initActions(){
     layoutCircular_DC_Act
             ->setStatusTip(
                 tr(
-                   "Layout all nodes on concentric circles of radius ιnversely "
+                   "Layout all nodes on concentric circles of radius inversely "
                     "proportional to their Degree Centrality."));
     layoutCircular_DC_Act->
             setWhatsThis(
                 tr(
                     "Degree Centrality Circular Layout\n\n "
                     "Repositions all nodes on concentric circles of radius "
-                    "ιnversely proportional to their Degree Centrality"
+                    "inversely proportional to their Degree Centrality"
                     "Nodes with higher DC score are closer to the centre."
                     )
                 );
@@ -718,14 +718,14 @@ void MainWindow::initActions(){
     layoutCircular_CC_Act
             -> setStatusTip(
                 tr(
-                   "Layout all nodes on concentric circles of radius ιnversely "
+                   "Layout all nodes on concentric circles of radius inversely "
                     "proportional to their CC index."));
     layoutCircular_CC_Act->
             setWhatsThis(
                 tr(
                     "Closeness Centrality Circular Layout\n\n "
                     "Repositions all nodes on concentric circles of radius "
-                    "ιnversely proportional to their CC index."
+                    "inversely proportional to their CC index."
                     "Nodes having higher CC score are closer to the centre."
                     ));
     connect(layoutCircular_CC_Act, SIGNAL(triggered()),
@@ -738,14 +738,14 @@ void MainWindow::initActions(){
     layoutCircular_IRCC_Act
             ->setStatusTip(
                 tr(
-                   "Layout all nodes on concentric circles of radius ιnversely "
+                   "Layout all nodes on concentric circles of radius inversely "
                     "proportional to their IRCC index."));
     layoutCircular_IRCC_Act->
             setWhatsThis(
                 tr(
                     "Influence Range Closeness Centrality Circular Layout\n\n "
                     "Repositions all nodes on concentric circles of radius "
-                    "ιnversely proportional to their IRCC index."
+                    "inversely proportional to their IRCC index."
                     "Nodes having higher IRCC score are closer to the centre."
                     ));
     connect(layoutCircular_IRCC_Act, SIGNAL(triggered()),
@@ -755,14 +755,14 @@ void MainWindow::initActions(){
     layoutCircular_BC_Act ->setShortcut(tr("Ctrl+Alt+4"));
     layoutCircular_BC_Act ->setStatusTip(
                 tr(
-                   "Layout all nodes on concentric circles of radius ιnversely "
+                   "Layout all nodes on concentric circles of radius inversely "
                     "proportional to their BC index."));
     layoutCircular_BC_Act->
             setWhatsThis(
                 tr(
                     "Betweeness Centrality Circular Layout\n\n "
                     "Repositions all nodes on concentric circles of radius "
-                    "ιnversely proportional to their BC index."
+                    "inversely proportional to their BC index."
                     "Nodes having higher BC score are closer to the centre."
                     ));
     connect(layoutCircular_BC_Act, SIGNAL(triggered()),
@@ -772,14 +772,14 @@ void MainWindow::initActions(){
     layoutCircular_SC_Act ->setShortcut(tr("Ctrl+Alt+5"));
     layoutCircular_SC_Act ->setStatusTip(
                 tr(
-                   "Layout all nodes on concentric circles of radius ιnversely "
+                   "Layout all nodes on concentric circles of radius inversely "
                     "proportional to their SC index."));
     layoutCircular_SC_Act->
             setWhatsThis(
                 tr(
                     "Stress Centrality Circular Layout\n\n "
                     "Repositions all nodes on concentric circles of radius "
-                    "ιnversely proportional to their SC index."
+                    "inversely proportional to their SC index."
                     "Nodes having higher SC score are closer to the centre."
                     ));
     connect(layoutCircular_SC_Act, SIGNAL(triggered()),
@@ -789,14 +789,14 @@ void MainWindow::initActions(){
     layoutCircular_EC_Act ->setShortcut(tr("Ctrl+Alt+6"));
     layoutCircular_EC_Act ->setStatusTip(
                 tr(
-                   "Layout all nodes on concentric circles of radius ιnversely "
+                   "Layout all nodes on concentric circles of radius inversely "
                     "proportional to their EC index."));
     layoutCircular_EC_Act->
             setWhatsThis(
                 tr(
                     "Eccentricity Centrality Circular Layout\n\n "
                     "Repositions all nodes on concentric circles of radius "
-                    "ιnversely proportional to their EC index."
+                    "inversely proportional to their EC index."
                     "Nodes having higher EC score are closer to the centre."
                     ));
     connect(layoutCircular_EC_Act, SIGNAL(triggered()),
@@ -807,14 +807,14 @@ void MainWindow::initActions(){
     layoutCircular_PC_Act ->setShortcut(tr("Ctrl+Alt+7"));
     layoutCircular_PC_Act ->setStatusTip(
                 tr(
-                   "Layout all nodes on concentric circles of radius ιnversely "
+                   "Layout all nodes on concentric circles of radius inversely "
                     "proportional to their PC index."));
     layoutCircular_PC_Act->
             setWhatsThis(
                 tr(
                     "Power Centrality Circular Layout\n\n "
                     "Repositions all nodes on concentric circles of radius "
-                    "ιnversely proportional to their PC index."
+                    "inversely proportional to their PC index."
                     "Nodes having higher PC score are closer to the centre."
                     ));
     connect(layoutCircular_PC_Act, SIGNAL(triggered()),
@@ -826,14 +826,14 @@ void MainWindow::initActions(){
     layoutCircular_IC_Act ->setShortcut(tr("Ctrl+Alt+8"));
     layoutCircular_IC_Act ->setStatusTip(
                 tr(
-                   "Layout all nodes on concentric circles of radius ιnversely "
+                   "Layout all nodes on concentric circles of radius inversely "
                     "proportional to their IC index."));
     layoutCircular_IC_Act->
             setWhatsThis(
                 tr(
                     "Information Centrality Circular Layout\n\n "
                     "Repositions all nodes on concentric circles of radius "
-                    "ιnversely proportional to their IC index."
+                    "inversely proportional to their IC index."
                     "Nodes having higher IC score are closer to the centre."
                     ));
     connect(layoutCircular_IC_Act, SIGNAL(triggered()),
@@ -841,17 +841,17 @@ void MainWindow::initActions(){
 
 
     layoutCircular_DP_Act = new QAction( tr("Degree Prestige"),	this);
-    layoutCircular_DP_Act ->setShortcut(tr("Ctrl+Alt+I™"));
+    layoutCircular_DP_Act ->setShortcut(tr("Ctrl+Alt+I"));
     layoutCircular_DP_Act ->setStatusTip(
                 tr(
-                   "Layout all nodes on concentric circles of radius ιnversely "
+                   "Layout all nodes on concentric circles of radius inversely "
                     "proportional to their DP index."));
     layoutCircular_DP_Act->
             setWhatsThis(
                 tr(
                     "Degree Prestige Circular Layout\n\n "
                     "Repositions all nodes on concentric circles of radius "
-                    "ιnversely proportional to their DP index."
+                    "inversely proportional to their DP index."
                     "Nodes having higher DP score are closer to the centre."
                     ));
     connect(layoutCircular_DP_Act, SIGNAL(triggered()),
@@ -862,17 +862,35 @@ void MainWindow::initActions(){
     layoutCircular_PRP_Act ->setShortcut(tr("Ctrl+Alt+K"));
     layoutCircular_PRP_Act ->setStatusTip(
                 tr(
-                   "Layout all nodes on concentric circles of radius ιnversely "
+                   "Layout all nodes on concentric circles of radius inversely "
                     "proportional to their PRP index."));
     layoutCircular_PRP_Act->
             setWhatsThis(
                 tr(
                     "PageRank Prestige Circular Layout\n\n "
                     "Repositions all nodes on concentric circles of radius "
-                    "ιnversely proportional to their PRP index."
+                    "inversely proportional to their PRP index."
                     "Nodes having higher PRP score are closer to the centre."
                     ));
     connect(layoutCircular_PRP_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutCircularByProminenceIndex()));
+
+
+    layoutCircular_PP_Act = new QAction( tr("Proximity Prestige"),	this);
+    layoutCircular_PP_Act ->setShortcut(tr("Ctrl+Alt+Y"));
+    layoutCircular_PP_Act ->setStatusTip(
+                tr(
+                   "Layout all nodes on concentric circles of radius inversely "
+                    "proportional to their PP index."));
+    layoutCircular_PP_Act->
+            setWhatsThis(
+                tr(
+                    "Proximity Prestige Circular Layout\n\n "
+                    "Repositions all nodes on concentric circles of radius "
+                    "inversely proportional to their PP index."
+                    "Nodes having higher PP score are closer to the centre."
+                    ));
+    connect(layoutCircular_PP_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutCircularByProminenceIndex()));
 
 
@@ -1067,6 +1085,24 @@ void MainWindow::initActions(){
     connect(layoutLevel_PRP_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutLevelByProminenceIndex()));
 
+
+    layoutLevel_PP_Act = new QAction( tr("Proximity Prestige"),	this);
+    layoutLevel_PP_Act ->setEnabled(true);
+    layoutLevel_PP_Act ->setShortcut(tr("Ctrl+Shift+Y"));
+    layoutLevel_PP_Act ->setStatusTip(
+                tr(
+                   "Layout nodes on horizontal levels of height "
+                    "proportional to their PP index."));
+    layoutLevel_PP_Act->
+            setWhatsThis(
+                tr(
+                    "Proximity Prestige Levels Layout\n\n "
+                    "Repositions all nodes on horizontal levels of height"
+                    "proportional to their PP index."
+                    "Nodes having higher PP score are closer to the top."
+                    ));
+    connect(layoutLevel_PP_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutLevelByProminenceIndex()));
 
 
     springLayoutAct= new QAction(tr("Spring Embedder"), this);
@@ -1271,8 +1307,7 @@ void MainWindow::initActions(){
             ->setStatusTip(tr("Degree Centrality indices and group Degree Centralization."));
     cDegreeAct
             ->setWhatsThis(
-                tr(
-                    "Degree Centrality (DC)\n\n "
+                tr( "Degree Centrality (DC)\n\n "
                     "For each node v, the DC index is the number of edges "
                     "attached to it (in undirected graphs) or the total numnber "
                     "of arcs (outLinks) starting from it (in digraphs).\n"
@@ -1382,7 +1417,24 @@ void MainWindow::initActions(){
     cProximityPrestigeAct->setShortcut(tr("Ctrl+Y"));
     cProximityPrestigeAct->setEnabled(true);
     cProximityPrestigeAct->setStatusTip(tr("Calculate and display Proximity Prestige (digraphs only)"));
-    cProximityPrestigeAct->setWhatsThis(tr("Proximity Prestige (PP) \n\n This index measures how proximate a node v is to the nodes in its influence domain I (the influence domain I of a node is the number of other nodes that can reach it). In PP calculation, proximity is based on distances to rather than distances from node v. To put it simply, in PP what matters is how close are all the other nodes to node v. \n\nThe algorithm takes the average distance to node v of all nodes in its influence domain, standardizes it by multiplying with (N-1)/I and takes its reciprocal. In essence, the formula SocNetV uses to calculate PP for every node v is the ratio of the fraction of nodes that can reach node v, to the average distance of that noeds to v: PP = (I/(N-1))/(sum{d(u,v)}/I) where the sum is over all nodes in I."));
+    cProximityPrestigeAct
+            ->setWhatsThis(
+                tr("Proximity Prestige (PP) \n\n "
+                   "This index measures how proximate a node v is to the nodes "
+                   "in its influence domain I (the influence domain I of a node "
+                   "is the number of other nodes that can reach it).\n "
+                   "In PP calculation, proximity is based on distances to rather "
+                   "than distances from node v. \n"
+                   "To put it simply, in PP what matters is how close are all "
+                   "the other nodes to node v. \n\n"
+                   "The algorithm takes the average distance to node v of all "
+                   "nodes in its influence domain, standardizes it by "
+                   "multiplying with (N-1)/I and takes its reciprocal. "
+                   "In essence, the formula SocNetV uses to calculate PP "
+                   "is the ratio of the fraction of nodes that can reach node v, "
+                   "to the average distance of that nodes to v: \n"
+                   "PP = (I/(N-1))/(sum{d(u,v)}/I) \n"
+                   "where the sum is over all nodes in I."));
     connect(cProximityPrestigeAct, SIGNAL(triggered()), this, SLOT(slotPrestigeProximity()));
 
     /**
@@ -1681,6 +1733,7 @@ void MainWindow::initMenuBar() {
     circleLayoutMenu -> addAction (layoutCircular_IC_Act);
     circleLayoutMenu -> addAction (layoutCircular_DP_Act);
     circleLayoutMenu -> addAction (layoutCircular_PRP_Act);
+    circleLayoutMenu -> addAction (layoutCircular_PP_Act);
 
     levelLayoutMenu = new QMenu (tr("On levels by prominence index..."));
     levelLayoutMenu -> setIcon(QIcon(":/images/net3.png"));
@@ -1695,6 +1748,7 @@ void MainWindow::initMenuBar() {
     levelLayoutMenu -> addAction (layoutLevel_IC_Act);
     levelLayoutMenu -> addAction (layoutLevel_DP_Act);
     levelLayoutMenu -> addAction (layoutLevel_PRP_Act);
+    levelLayoutMenu -> addAction (layoutLevel_PP_Act);
 
     layoutMenu->addSeparator();
     physicalLayoutMenu = new QMenu (tr("Physical..."));
@@ -5283,28 +5337,32 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
     int userChoice = 0;
     QString prominenceIndexName = choice;
 
-    if (prominenceIndexName == "Degree Centrality")
+    if ( prominenceIndexName.contains("Degree Centrality") )
         userChoice=1;
-    else if (prominenceIndexName == "Closeness Centrality")
+    else if ( prominenceIndexName.contains("Closeness Centrality"))
         userChoice=2;
-    else if (prominenceIndexName == "Influence Range Closeness Centrality")
+    else if ( prominenceIndexName.contains("Influence Range Closeness Centrality"))
         userChoice=3;
-    else if (prominenceIndexName == "Betweeness Centrality")
+    else if ( prominenceIndexName.contains("Betweeness Centrality"))
         userChoice=4;
-    else if (prominenceIndexName == "Stress Centrality")
+    else if (prominenceIndexName.contains("Stress Centrality"))
         userChoice=5;
-    else if (prominenceIndexName == "Eccentricity Centrality")
+    else if (prominenceIndexName.contains("Eccentricity Centrality"))
         userChoice=6;
-    else if (prominenceIndexName == "Power Centrality")
+    else if (prominenceIndexName.contains("Power Centrality"))
         userChoice=7;
-    else if (prominenceIndexName ==  "Information Centrality")
+    else if (prominenceIndexName.contains("Information Centrality"))
         userChoice=8;
-    else if (prominenceIndexName == "Degree Prestige")
+    else if (prominenceIndexName.contains("Degree Prestige"))
         userChoice=9;
-    else if (prominenceIndexName ==  "PageRank Prestige")
+    else if (prominenceIndexName.contains("PageRank Prestige"))
         userChoice=10;
-    else if (prominenceIndexName ==  "Proximity Prestige")
+    else if (prominenceIndexName.contains("Proximity Prestige"))
         userChoice=11;
+
+    qDebug() << "MainWindow::slotLayoutCircularByProminenceIndex() "
+             << "prominenceIndexName " << prominenceIndexName
+                << " userChoice " << userChoice;
 
     //check if CC was selected and the graph is disconnected.
     if (userChoice == 2 ) {
@@ -5571,6 +5629,11 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
         userChoice=10;
     else if (prominenceIndexName ==  "Proximity Prestige")
         userChoice=11;
+
+    qDebug() << "MainWindow::slotLayoutLevelByProminenceIndex() "
+             << "prominenceIndexName " << prominenceIndexName
+              << " userChoice " << userChoice;
+
 
     //check if CC was selected and the graph is disconnected.
     if (userChoice == 2 ) {
