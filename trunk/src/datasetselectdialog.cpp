@@ -31,26 +31,28 @@
 #include <QDebug>
 #include <QPushButton>
 
+
 DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
 {
-	ui.setupUi(this);	
+    ui.setupUi(this);
 
-	(ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
+    (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
 
-	QStringList datasets_list;
-	datasets_list   << "Krackhardt_High-tech_managers_Advice_relation.sm" 
-			<< "Krackhardt_High-tech_managers_Friendship_relation.sm"
-			<< "Krackhardt_High-tech_managers_ReportsTo_relation.sm"
+    QStringList datasets_list;
+    datasets_list
+            << "Krackhardt_High-tech_managers_Advice_relation.sm"
+            << "Krackhardt_High-tech_managers_Friendship_relation.sm"
+            << "Krackhardt_High-tech_managers_ReportsTo_relation.sm"
             << "Padgett_Florentine_Families_Marital_relation.net"
             << "Padgett_Florentine_Families_Business_relation.paj"
-			<< "Zachary_Karate_Club_Simple_Ties.sm"
-			<< "Zachary_Karate_Club_Weighted_Ties.sm"
-			<< "Bernard_Killworth_Fraternity_Symmetric_Observer_Data.sm"
-			<< "Bernard_Killworth_Fraternity_Non_Symmetric_Cognitive_Data.sm"
-			<< "Galaskiewicz_CEOs_and_clubs_affiliation_network_data.2sm"
-			<< "Freeman_EIES_network_Acquaintanceship_at_time-1"
-			<< "Freeman_EIES_network_Acquaintanceship_at_time-2"
-			<< "Freeman_EIES_network_Messages"
+            << "Zachary_Karate_Club_Simple_Ties.sm"
+            << "Zachary_Karate_Club_Weighted_Ties.sm"
+            << "Bernard_Killworth_Fraternity_Symmetric_Observer_Data.sm"
+            << "Bernard_Killworth_Fraternity_Non_Symmetric_Cognitive_Data.sm"
+            << "Galaskiewicz_CEOs_and_clubs_affiliation_network_data.2sm"
+            << "Freeman_EIES_network_Acquaintanceship_at_time-1"
+            << "Freeman_EIES_network_Acquaintanceship_at_time-2"
+            << "Freeman_EIES_network_Messages"
             << "Mexican_Power_Network_1940s.lst"
             << "Knocke_Bureacracies_Information_Exchange_Network.pajek"
             << "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek";
@@ -79,3 +81,4 @@ void DataSetSelectDialog::on_buttonBox_rejected()
 {
     this->reject();
 }
+

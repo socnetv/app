@@ -2657,7 +2657,7 @@ void Graph::writePrestigeDegree (const QString fileName, const bool considerWeig
 *	Calculates Proximity Prestige of each vertex
 *	Also the mean value and the variance of it..
 */
-int Graph::prestigeProximity(){
+void Graph::prestigeProximity(){
     qDebug()<< "Graph:: prestigeProximity()";
     float PP=0, nom=0, denom=0;
     classesPP=0;
@@ -3798,26 +3798,29 @@ void Graph::reachabilityMatrix() {
     qDebug()<< "Graph::reachabilityMatrix()";
 
     if (reachabilityMatrixCreated && !graphModified) {
-        qDebug()<< "Graph::reachabilityMatrix() - XRM calculated and graph unmodified. Returning..." ;
+        qDebug()<< "Graph::reachabilityMatrix() - "
+                   "XRM calculated and graph unmodified. Returning..." ;
         return;
     }
     else {
-        int size = vertices();
+        int size = vertices(), i=0, j=0;
         createDistanceMatrix(false);
         XRM.zeroMatrix(size);
         qDebug()<< "Graph::reachabilityMatrix() - calculating XRM..." ;
         influenceRanges.clear();
         influenceDomains.clear();
         notStronglyConnectedVertices.clear();
-        for (register int i=0; i < size ; i++) {
-            for (register int j=i; j < size ; j++) {
+        for (i=0; i < size ; i++) {
+            for (j=i; j < size ; j++) {
                 qDebug()<< "Graph::reachabilityMatrix()  total shortest paths between ("
                         << i+1 <<"," << j+1<< ")=" << TM.item(i,j) <<  " ";
                 if ( DM.item(i,j) > 0 ) {
                     qDebug()<< "Graph::reachabilityMatrix()  - d("<<i+1<<","
                             <<j+1<<")=" << DM.item(i,j)
-                            << " - inserting " << j+1 << " to inflRange J of " << i+1
-                            << " - and " << i+1 << " to inflDomain I of "<< j+1 ;
+                            << " - inserting " << j+1
+                            << " to inflRange J of " << i+1
+                            << " - and " << i+1
+                            << " to inflDomain I of "<< j+1 ;
                     XRM.setItem(i,j,1);
                     influenceRanges.insertMulti(i,j);
                     influenceDomains.insertMulti(j,i);

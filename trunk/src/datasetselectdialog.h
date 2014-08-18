@@ -28,8 +28,6 @@
 #define DATASETSELECTDIALOG_H
 
 #include <QDialog>
-
-
 #include "ui_datasetselectdialog.h"
  
 
@@ -48,7 +46,7 @@ private slots:
     void on_buttonBox_rejected();
 
 private:
-	Ui::DataSetSelectDialog ui;
+    Ui::DataSetSelectDialog ui;
 
 };
 

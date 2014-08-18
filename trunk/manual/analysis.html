@@ -248,15 +248,26 @@ Centrality indices are calculated for each node (node Centrality) and for the wh
 <h5><a name="DC" id="DC"></a>Degree Centrality (DC)</h5>
 <p class="text">
 In undirected graphs, the DC index of each node v is the number of edges attached to it.
-In digraphs, the DC is the total numnber of arcs (outLinks) starting from v (outDegree). This is often considered a measure of actor activity.
+In digraphs, the DC is the total number of arcs (outLinks) starting from v (outDegree).
+<br />
+This is often considered a measure of actor activity.
 <br /><br />
-This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs. In weighted relations, ODC is the sum of weights of all edges/outLinks attached to v.
+This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs.
+It can also be calculated in weighted graphs. In weighted relations, ODC is the sum of weights of all edges/outLinks attached to v.
 </p>
 
 
 <h5><a name="CC" id="CC"></a>Closeness Centrality (CC)</h5>
 <p class="text"> 
-For each node v, CC the inverse sum of the geosesic distances from that node to every other node. CC is interpreted as the ability to access information through the \"grapevine\" of network members. Nodes with high closeness centrality are those who can reach many other nodes in few steps. <br /><br />This index can be calculated in graphs and strongly connected digraphs (that is, if there is a directed path from v to u for all nodes v and u in the graph). It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1.
+For each node v, CC the inverse sum of the geosesic distances from that node to
+every other node.
+CC is interpreted as the ability to access information through the \"grapevine\" of network members.
+Nodes with high closeness centrality are those who can reach many other nodes in few steps.
+<br /><br />
+This index can be calculated in graphs and strongly connected digraphs
+(that is, if there is a directed path from v to u for all nodes v and u in the graph).
+It can also be calculated in weighted graphs although the weight of each
+edge (v,u) in E is always considered to be 1.
 <br /><br />
 <em>Undirected graphs</em>
 The maximum value of CC is 1/(N-1), when the node is adjacent to all others.
@@ -266,11 +277,33 @@ If the graph is directed, a standard CC' is calculated by (CC/sumCC)
 Group CC is calculated using Freeman's general formula, in undirected graphs: <br />
 </p>
 <p class="code">
-GCC =  ( Sum ( maxCC' - CC'  ) )  / ( ( N-1) *  (N-2) / (2 * N - 1) );
+GCC =  ( Sum ( maxCC' - CC'  ) )  / ( (N-1) *  (N-2) / (2 * N - 1) );
 </p>
 <p class="text">
 <em>Directed graphs (digraphs)</em>
 </p>
+
+
+
+<h5><a name="IRCC" id="IRCC"></a>Influence Range Closeness Centrality (CC)</h5>
+<p class="text">
+For each node v, IRCC is the standardized inverse average distance
+between v and every other node reachable from v.
+<br />
+This improved CC index is optimized for graphs and directed graphs which
+are not strongly connected. Unlike the ordinary CC, which is the inverted
+sum of distances from node v to all others (thus undefined if a node is isolated
+or the digraph is not strongly connected), IRCC considers only distances from
+node v to nodes in its influence range J (nodes reachable from v).
+<br />
+The IRCC formula used is the ratio of the fraction of nodes reachable by v
+(|J|/(n-1)) to the average distance of these nodes from v sum(d(v,j))/|J|
+</p>
+<p class="code">
+( |J| / (n-1) ) / ( sum( d(v,j) ) / |J| )
+</p>
+
+
 
 <h5><a name="BC" id="BC"></a>Betweeness Centrality (BC) </h5>
 <p class="text"> 
@@ -289,14 +322,6 @@ For each node v, SC is the total number of geodesics between all other nodes whi
 This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1
 </p>
 
-<h5><a name="GC" id="GC"></a>Graph Centrality (GC)</h5>
-<p class="text"> 
-For each node v, GC is the inverse of the maximum of all geodesic distances from v to all other nodes in the network. Nodes with high GC have short distances to all other nodes in the network.
-<br /><br />
-This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1.
-<br /><br />
-In not-connected networks, the centrality values of all nodes will be zero, since the distance to some nodes is infinite. 
-</p>
 
 <h5><a name="EC" id="EC"></a>Eccentricity Centrality (EC)</h5>
 <p class="text"> 

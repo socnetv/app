@@ -259,7 +259,7 @@ public:
 
     void prestigeDegree(bool);
     int prestigePageRank();
-    int prestigeProximity();
+    void prestigeProximity();
 
     /* REACHABILTY AND WALKS */
     int numberOfWalks(int v1, int v2,int length);

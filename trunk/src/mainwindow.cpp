@@ -1268,7 +1268,16 @@ void MainWindow::initActions(){
     cDegreeAct
             ->setWhatsThis(
                 tr(
-                    "Degree Centrality (DC)\n\n For each node v, the DC index is the number of edges attached to it (in undirected graphs) or the total numnber of arcs (outLinks) starting from it (in digraphs). This is oftenly considered a measure of actor activity. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs. In weighted relations, ODC is the sum of weights of all edges/outLinks attached to v."));
+                    "Degree Centrality (DC)\n\n "
+                    "For each node v, the DC index is the number of edges "
+                    "attached to it (in undirected graphs) or the total numnber "
+                    "of arcs (outLinks) starting from it (in digraphs).\n"
+                    "This is oftenly considered a measure of actor activity. \n\n"
+                    "This index can be calculated in both graphs and digraphs "
+                    "but is usually best suited for undirected graphs. "
+                    "It can also be calculated in weighted graphs. "
+                    "In weighted relations, DC is the sum of weights of all "
+                    "edges/outLinks attached to v."));
     connect(cDegreeAct, SIGNAL(triggered()), this, SLOT(slotCentralityDegree()));
 
 
@@ -1910,6 +1919,7 @@ void MainWindow::initToolBox(){
                           << "Distances Matrix" << "Geodesics Matrix"
                           << "Eccentricity" << "Diameter";
     toolBoxAnalysisGeodesicsSelect->addItems(geodesicsCommandsList);
+//    toolBoxAnalysisGeodesicsSelect->setMaximumHeight(20);
 
     QLabel *toolBoxAnalysisConnectivitySelectLabel  = new QLabel;
     toolBoxAnalysisConnectivitySelectLabel->setText(tr("Connectitivity:"));
@@ -1919,6 +1929,7 @@ void MainWindow::initToolBox(){
                          << "Connectedness" << "Walks of given length"
                          << "Total Walks" << "Reachability Matrix";
     toolBoxAnalysisConnectivitySelect->addItems(connectivityCommands);
+//    toolBoxAnalysisConnectivitySelect->setMaximumHeight(20);
 
     QLabel *toolBoxAnalysisProminenceSelectLabel  = new QLabel;
     toolBoxAnalysisProminenceSelectLabel->setText(tr("Prominence:"));
@@ -1933,6 +1944,7 @@ void MainWindow::initToolBox(){
                        << "Degree Prestige (inDegree)"  << "PageRank Prestige"
                        << "Proximity Prestige";
     toolBoxAnalysisProminenceSelect->addItems(prominenceCommands);
+//    toolBoxAnalysisProminenceSelect->setMaximumHeight(20);
 
     //create layout for analysis options
     QGridLayout *analysisGrid = new QGridLayout();
@@ -1964,6 +1976,8 @@ void MainWindow::initToolBox(){
                 << "Degree Prestige (inDegree)"  << "PageRank Prestige"
                 << "Proximity Prestige";
     toolBoxLayoutByIndexSelect->addItems(indicesList);
+    toolBoxLayoutByIndexSelect->setMinimumHeight(20);
+
 
     QLabel *toolBoxLayoutByIndexTypeLabel = new QLabel;
     toolBoxLayoutByIndexTypeLabel->setText(tr("Layout Type:"));
@@ -1971,9 +1985,13 @@ void MainWindow::initToolBox(){
     QStringList layoutTypes;
     layoutTypes << "Circular" << "On Levels";
     toolBoxLayoutByIndexTypeSelect->addItems(layoutTypes);
+    toolBoxLayoutByIndexTypeSelect->setMinimumHeight(20);
 
     toolBoxLayoutByIndexButton = new QPushButton(tr("Apply"));
     toolBoxLayoutByIndexButton->setFocusPolicy(Qt::NoFocus);
+    toolBoxLayoutByIndexButton->setMinimumHeight(20);
+    toolBoxLayoutByIndexButton->setMaximumWidth(60);
+
 
     //create layout for visualisation by index options
     QGridLayout *layoutByIndexGrid = new QGridLayout();
@@ -2389,7 +2407,7 @@ void MainWindow::initView() {
     graphicsWidget->setFocusPolicy(Qt::StrongFocus);
     graphicsWidget->setFocus();
 
-    this->resize(1024,700);
+    this->resize(1024,768);
 
     //set minimum size of canvas
 
