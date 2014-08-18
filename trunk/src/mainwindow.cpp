@@ -1807,6 +1807,7 @@ void MainWindow::initMenuBar() {
 */
 void MainWindow::initToolBar(){
     toolBar = addToolBar("operations");
+
     toolBar -> addAction (fileNew);
     toolBar -> addAction (fileOpen);
     toolBar -> addAction (fileSave);
@@ -1836,13 +1837,13 @@ void MainWindow::initToolBar(){
     rotateSpinBox->setSingleStep(1);
     rotateSpinBox->setValue(0);
 
-    QGroupBox *rotateGroup = new QGroupBox();
-    QHBoxLayout *rotateGroupLayout = new QHBoxLayout(rotateGroup);
-    rotateGroupLayout->addWidget(labelRotateSpinBox);
-    rotateGroupLayout->addWidget(rotateSpinBox);
+//    QGroupBox *rotateGroup = new QGroupBox();
+//    QHBoxLayout *rotateGroupLayout = new QHBoxLayout(rotateGroup);
+//    rotateGroupLayout->addWidget(labelRotateSpinBox);
+//    rotateGroupLayout->addWidget(rotateSpinBox);
 
-    toolBar -> addWidget(rotateGroup);
-
+    toolBar -> addWidget(labelRotateSpinBox);
+    toolBar -> addWidget(rotateSpinBox);
     toolBar -> addSeparator();
     toolBar -> addAction ( QWhatsThis::createAction (this));
 
