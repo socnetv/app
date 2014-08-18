@@ -2224,8 +2224,7 @@ void MainWindow::initToolBox(){
     toolBox->addTab( networkPropertiesGroup, tr("Statistics"));
     toolBox->setMinimumWidth(controlGroupBox->sizeHint().width());
     toolBox->setFixedWidth(300);
-
-
+    //toolBox->setStyleSheet("* { background-color:#ededed}}");
 
 }
 
@@ -2486,7 +2485,7 @@ void MainWindow::initNet(){
 
     // Init basic variables
 
-    initNodeSize=4;
+    initNodeSize=8;
     initNodeColor="red";
     initLinkColor="black";
     initLabelColor="darkblue";
