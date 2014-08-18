@@ -225,8 +225,12 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect(toolBoxAnalysisConnectivitySelect, SIGNAL (currentIndexChanged(int) ),
             this, SLOT(toolBoxAnalysisConnectivitySelectChanged(int) ) );
 
+    connect(toolBoxAnalysisClusterabilitySelect, SIGNAL (currentIndexChanged(int) ),
+            this, SLOT(toolBoxAnalysisClusterabilitySelectChanged(int) ) );
+
     connect(toolBoxAnalysisProminenceSelect, SIGNAL (currentIndexChanged(int) ),
             this, SLOT(toolBoxAnalysisProminenceSelectChanged(int) ) );
+
 
     connect(toolBoxLayoutByIndexButton, SIGNAL (clicked() ),
             this, SLOT(toolBoxLayoutByIndexButtonPressed() ) );
@@ -1922,7 +1926,7 @@ void MainWindow::initToolBox(){
 //    toolBoxAnalysisGeodesicsSelect->setMaximumHeight(20);
 
     QLabel *toolBoxAnalysisConnectivitySelectLabel  = new QLabel;
-    toolBoxAnalysisConnectivitySelectLabel->setText(tr("Connectitivity:"));
+    toolBoxAnalysisConnectivitySelectLabel->setText(tr("Connectivity:"));
     toolBoxAnalysisConnectivitySelect = new QComboBox;
     QStringList connectivityCommands;
     connectivityCommands << "None selected"
@@ -1930,6 +1934,18 @@ void MainWindow::initToolBox(){
                          << "Total Walks" << "Reachability Matrix";
     toolBoxAnalysisConnectivitySelect->addItems(connectivityCommands);
 //    toolBoxAnalysisConnectivitySelect->setMaximumHeight(20);
+
+    QLabel *toolBoxAnalysisClusterabilitySelectLabel  = new QLabel;
+    toolBoxAnalysisClusterabilitySelectLabel->setText(tr("Clusterability:"));
+    toolBoxAnalysisClusterabilitySelect = new QComboBox;
+    QStringList clusterabilityCommands;
+    clusterabilityCommands << "None selected"
+                         << "Cliques"
+                         << "Clustering Coefficient"
+                         << "Triad Census";
+    toolBoxAnalysisClusterabilitySelect->addItems(clusterabilityCommands);
+//    toolBoxAnalysisConnectivitySelect->setMaximumHeight(20);
+
 
     QLabel *toolBoxAnalysisProminenceSelectLabel  = new QLabel;
     toolBoxAnalysisProminenceSelectLabel->setText(tr("Prominence:"));
@@ -1952,8 +1968,10 @@ void MainWindow::initToolBox(){
     analysisGrid -> addWidget(toolBoxAnalysisGeodesicsSelect, 0,1);
     analysisGrid -> addWidget(toolBoxAnalysisConnectivitySelectLabel, 1,0);
     analysisGrid -> addWidget(toolBoxAnalysisConnectivitySelect, 1,1);
-    analysisGrid -> addWidget(toolBoxAnalysisProminenceSelectLabel, 2,0);
-    analysisGrid -> addWidget(toolBoxAnalysisProminenceSelect, 2,1);
+    analysisGrid -> addWidget(toolBoxAnalysisClusterabilitySelectLabel, 3,0);
+    analysisGrid -> addWidget(toolBoxAnalysisClusterabilitySelect, 3,1);
+    analysisGrid -> addWidget(toolBoxAnalysisProminenceSelectLabel, 4,0);
+    analysisGrid -> addWidget(toolBoxAnalysisProminenceSelect, 4,1);
     //layoutByIndexGrid -> setRowStretch(0,1);   //fix stretch
 
     //create a box and set the above layout inside
@@ -2270,6 +2288,33 @@ void MainWindow::toolBoxAnalysisConnectivitySelectChanged(int selectedIndex) {
         qDebug() << "Reachability Matrix";
         slotReachabilityMatrix();
         break;
+    };
+
+}
+
+
+
+//Called from MW, when user selects something in the Clusterability selectbox
+// of toolbox
+void MainWindow::toolBoxAnalysisClusterabilitySelectChanged(int selectedIndex) {
+    qDebug()<< "MW::toolBoxAnalysisClusterabilitySelectChanged "
+               "selected text index: " << selectedIndex;
+    switch(selectedIndex){
+    case 0:
+        break;
+    case 1:
+        qDebug()<< "Cliques";
+        slotNumberOfCliques();
+        break;
+    case 2:
+        qDebug()<< "Clustering Coefficient";
+        slotClusteringCoefficient();
+        break;
+    case 3:
+        qDebug() << "Triad Census";
+        slotTriadCensus();
+        break;
+
     };
 
 }

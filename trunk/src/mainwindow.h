@@ -292,6 +292,7 @@ public slots:
     void toolBoxAnalysisGeodesicsSelectChanged(int);
     void toolBoxAnalysisConnectivitySelectChanged(int);
     void toolBoxAnalysisProminenceSelectChanged(int);
+    void toolBoxAnalysisClusterabilitySelectChanged(int);
     void toolBoxLayoutByIndexButtonPressed();
 
 protected:
@@ -333,7 +334,7 @@ private:
     *nodeSizeProportional2OutDegreeBx,*nodeSizeProportional2InDegreeBx,
     *layoutGuidesBx;
     QComboBox *toolBoxAnalysisGeodesicsSelect,*toolBoxAnalysisConnectivitySelect,
-            *toolBoxAnalysisProminenceSelect;
+            *toolBoxAnalysisProminenceSelect, *toolBoxAnalysisClusterabilitySelect;
     QComboBox *toolBoxLayoutByIndexSelect, *toolBoxLayoutByIndexTypeSelect;
 
     QPushButton *addNodeBt, *addLinkBt, *removeNodeBt, *removeLinkBt,
