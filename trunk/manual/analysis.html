@@ -3,111 +3,226 @@
 <h4><a name="Analysis" id="Analysis"></a>Analysis</h4>
 
 <p class="text">
-Once a network is loaded or created, you may use the various options in the Statistics menu to analyse it. <br /> <br />
+Once you load or create a network in SocNetV, you may use the options in the
+Analysis menu to analyse it. <br /> <br />
 
-For instance, the first option of Statistics menu (<em>Network Symmetry</em>) tells you whether the network is symmetric or not. 
-A network is symmetric when for every edge (i,j) in the set E, the 'opposite' (j,i) edge also exists in E.    
+The first option in the Analysis menu is (<em>Symmetry Test</em>).
+It reports  whether the network is symmetric or not.
+A network is called "symmetric" if for every edge (i,j) in the set E of the
+corresponding graph G(V,E) , the 'opposite' (j,i) edge also exists in E.
+In other words, when the adjacency matrix is symmetric.
 </p>
+
 
 <h4><em><a name="Distances" id="Distances"></a>Distances & Diameter</em></h4>
-
 <p class="text">
-The next few options in the Statistics menu (<em>Graph Distance</em>, <em>Average Graph Distance</em>, <em>Distance Matrix</em> and <em>Diameter</em>) let you calculate the geodesic distance between any two nodes and the mean distance between all nodes, print the network distance matrix and calculate the network diameter, respectively. Each option is explained below. 
+The next options in the Analysis menu (<em>Distance</em>, <em>Average Distance</em>,
+<em>Distances Matrix</em>, <em>Diameter</em>) etc focus on basic network/graph measures,
+such as the geodesic distance between nodes, the mean distance between all nodes,
+the diameter of the graph, the number of geodesics between nodes and the eccentricity
+of each node. Each option is explained below.
 </p>
 
-<h5><a name="Distance" id="Distance"></a>Geodesic Distance</h5>
+<h5><a name="Distance" id="Distance"></a>Distance</h5>
 <p class="text">
-The geodesic distance of two nodes is the length of the shortest path between them. By clicking on the "Geodesic Distance" option (or Ctrl+G) you will be asked for source and target nodes. Then their geodesic distance will be calculated and displayed.
+In graph theory, the shortest path between two vertices of the graph
+is called "geodesic".<br />
+
+The distance (or geodesic distance) of two nodes in a social network is the
+length of the shortest path between the corresponding vertices in the graph G(V,E).
+<br />
+By clicking on the "Distance" option (or pressing Ctrl+G) you will be asked for
+source and target nodes.
+Then their distance will be calculated and displayed.
+</p>
+
+<h5><a name="AvgDistance" id="AvgDistance"></a>Average Distance</h5>
+<p class="text">
+The average distance in a social network is the average length of all shortest
+paths (geodesics) between the connected pairs of vertices in the corresponding
+graph.
 </p>
 
 
-<h5><a name="DistanceMatrix" id="DistanceMatrix"></a>Distance Matrix</h5>
+<h5><a name="DistanceMatrix" id="DistanceMatrix"></a>Distances Matrix</h5>
 <p class="text">
-The 'Geodesic Distance Matrix' option calculates and displays the matrix of geodesic distances, the shortest path between any two nodes.
+The 'Distances Matrix' option calculates and displays a matrix of geodesic
+distances between all possible pair of nodes in the social network.
+A distances matrix is a n x n square matrix, in which the (i,j) element
+is the distance from node i to node j.
 
 </p>
 
-<h5><a name="NumberOfGeodesicsMatrix" id="NumberOfGeodesicsMatrix"></a>Number of Geodesics Matrix</h5>
+<h5><a name="NumberOfGeodesicsMatrix" id="NumberOfGeodesicsMatrix"></a>Geodesics Matrix</h5>
 <p class="text">
-This option calculates and displays the number of shortest paths between any two nodes in a matrix.
-This matrix, also called sigma matrix, is used in Centralities calculation (see below).
+This option calculates and displays a n x n square matrix, where the (i,j) element
+is the number of geodesics between node i and node j.
+The produced matrix, called sigma matrix, is used in Centralities calculation (see below).
+</p>
+
+<h5><a name="Eccentricity" id="Eccentricity"></a>Eccentricity</h5>
+<p class="text">
+The eccentricity or association number of each node i is the largest geodesic
+distance between node i and every other node in the graph.
+Therefore, in social network analysis, the eccentricity reflects how far, at
+most, is each node from every other node.
+<br />
+This index can be calculated in both graphs and digraphs but is usually best
+suited for undirected graphs.
+It can also be calculated in weighted graphs although the weight of each
+edge (v,u) in E is always considered to be 1.
+</p>
+
+<h5><a name="Diameter" id="Diameter"></a>Diameter</h5>
+<p class="text">
+The diameter of a social network is the maximum eccentricity of any vertex in
+the corresponding graph G(V,E), that is the maximum distance between any two
+connected nodes.
+</p>
+
+<h4><em><a name="WalksReach" id="WalksReach"></a>Walks & Reachability</em></h4>
+
+<h5><a name="Connectedness" id="Connectedness"></a>Connectedness</h5>
+<p class="text">
+Checks whether the network is a connected graph, a weakly connected digraph or
+a disconnected graph/digraph.
+<br />
+In graph theory, a graph is <b>connected</b> if there is a path between every pair of nodes.
+<br />
+A digraph is <b>strongly connected</b> if there the a path from i to j and
+from j to i for all pair of nodes (i,j).
+<br />
+A digraph is <b>weakly connected</b> if at least a pair of nodes are joined by a semipath.
+<br />
+A digraph or a graph is <b>disconnected</b> if at least one node is isolate.
 </p>
 
 
-<h5><a name="Diameter" id="Diameter"></a>Graph Diameter</h5>
+<h5><a name="Walks" id="Walks"></a>Walks of a given length</h5>
 <p class="text">
-The diameter of a network is the maximum distance between any two connected nodes. In graph theory, the diameter d of a graph is is the maximum eccentricity of any vertex in the graph. 
+Clicking this option asks for a desired walk length (max: n-1).
+Then SocNetV calculates and displays a square matrix where each element (i,j)
+is the number of walks of the given length between the corresponding pair of
+nodes i and j.
+<br />
+A walk is a sequence of alternating vertices and edges such as
+v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>,
+where each edge, e<sub>i</sub> is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}.
+<br />
+This function calculates the number of walks of the given length between
+each pair of nodes, by studying the powers of the sociomatrix. </p>
+
+<h5><a name="TotalWalks" id="TotalWalks"></a>Total Walks</h5>
+<p class="text">
+Calculates and displays a (n x n) square matrix whose elements denote the
+number of walks of any length between each pair of nodes.
+The algorithm is based on the powers of the sociomatrix.
+<br />
+Please note that this function is <b>VERY SLOW</b> on large networks (n > 50),
+since it will calculate all powers of the sociomatrix up to (n-1) in order to
+find out all possible walks.
+<br />
+If you need to make a simple reachability test, we advise to use the
+Reachability Matrix function instead.
 </p>
 
-<h5><a name="Walks" id="Walks"></a>Number of Walks</h5>
-<p class="text">
-A walk is a sequence of alternating vertices and edges such as v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>, where each edge, e<sub>i</sub> is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. This function calculates and displays the number of walks of a given length between each pair of nodes, by studying the powers of the sociomatrix</p>
 
-<h5><a name="TotalWalks" id="TotalWalks"></a>Total Number of Walks</h5>
+<h5><a name="ReachabilityMatrix" id="ReachabilityMatrix"></a>Reachability Matrix</h5>
 <p class="text">
-Calculates and displays a (NxN) matrix where the elements denote the number of walks of any length between each pair of nodes. The algorithm s based on the powers of the sociomatrix.
+Calculates the reachability matrix X<sup>R</sup> of the graph where each (i,j)
+element is 1 if nodes i and j are reachable, otherwise is 0.
+<br />
+This function is based on the Distances Matrix; it checks whether the
+corresponding element of the Distances matrix is not zero.
+If it is not zero, then the nodes (i,j) are reachable and the X<sup>R</sup>
+element is 1.
+</p>
 
 
 <h4><a name="Coefficient" id="Coefficient"></a>Clustering Coefficient</h4>
 <p class="text">
-The Clustering Coefficient of a node quantifies how close the node and its neighbors are to being a clique. 
-This is used to determine whether a network is a small-world or not. <br />
+The Clustering Coefficient of a node quantifies how close the node and its
+neighbors are to being a clique.
+This is used to determine whether a network is a small-world or not.
+<br />
 This option calculates and displays the clustering coefficients of all nodes. 
 </p>
 
 
 <p class="text">
-<em>Tip</em>: All the basic network statistics, such as nodes, edges and density are constantly displayed in the Statistics tab of the left dock.
+<em>Tip</em>: All the basic network statistics, such as nodes, edges and density
+are displayed and automatically updated in the Analysis tab of the left dock in
+SocNetV main window.
  </p>
 
 <h4><em><a name="TriadCensus" id="TriadCensus"></a>Triad Census</em></h4>
 <p class="text">
-
-When you click on the "Triad  Census" menu option, SocNetV examines each of the triads present in your network, and counts how many of these belong to a certain triad type.
+By clicking the "Triad Census" menu option, SocNetV will examine each of the
+triads present in the current network, and count how many of these belong to a
+certain triad type.
 <br />
 Some background:
 <br /><br />
 In any network of N actors, there are C(N,3) triads.<br /> 
-For instance, in a network of 6 actors there are C(4,3)=20 triads, whereas in a network of 10 actors there are C(10,3)=60 triads.<br />
+For instance, in a network of 6 actors there are C(4,3)=20 triads,
+whereas in a network of 10 actors there are C(10,3)=60 triads.<br />
 <br />
-In a any case, though, there can be only sixteen different triad types (isomophism classes).<br /> 
-Every one of the C(N,3) triads of a network must belong (be isomorphic) to one of these sixteen types.<br />   
+In any case, though, there can be only sixteen different triad types
+(isomophism classes).
 <br />
-A Triad Census is a method which counts all the different types (classes) of observed triads within a network.<br />
-The triad types are coded and labeled according to their number of mutual, asymmetric and non-existent (null) dyads.<br />
+Every one of the C(N,3) triads of a network must belong (be isomorphic) to one
+of these sixteen types.
 <br />
-We follow the M-A-N labeling scheme, as described by Holland, Leinhardt and Davis in their studies.<br /> 
-In the M-A-N scheme, each triad type has a label with four characters:<br />
+A Triad Census is a method which counts all the different types (classes) of
+observed triads within a network.
 <br />
-- The first character is the number of mutual (M) duads in the triad. Possible values: 0, 1, 2, 3.<br /> 
-- The second character is the number of asymmetric (A) duads in the triad. Possible values: 0, 1, 2, 3.<br />
-- The third character is the number of null (N) duads in the triad. Possible values: 0, 1, 2, 3.<br />
-- The fourth character is infered from features or the nature of the triad, i.e. presence of cycle or transitivity. Possible values: none, D ("Down"), U ("Up"), C ("Cyclic"), T ("Transitive")<br />
+The triad types are coded and labeled according to their number of mutual,
+asymmetric and non-existent (null) dyads.
 <br />
+SocNetV follows the M-A-N labeling scheme, as described by Holland, Leinhardt
+and Davis in their studies.<br />
+In the M-A-N scheme, each triad type has a label with four characters:
+</p>
+<ul>
+<li class="text">The first character is the number of mutual (M) duads in the triad.
+  Possible values: 0, 1, 2, 3.</li>
+<li class="text">The second character is the number of asymmetric (A) duads in the triad.
+  Possible values: 0, 1, 2, 3.</li>
+<li class="text">The third character is the number of null (N) duads in the triad.
+  Possible values: 0, 1, 2, 3.</li>
+<li class="text">The fourth character is infered from features or the nature of the triad,
+  i.e. presence of cycle or transitivity.
+  Possible values: none, D ("Down"), U ("Up"), C ("Cyclic"), T ("Transitive")</li>
+  </ul>
+<p class="text">
 In the seven rows below, you can see all the sixteen triad types (classes).<br /> 
 Within each row, all the triad types have the same number of arcs present:<br />
+</p>
+<pre>
+003
+012
+102     021D    021U    021C
+111D    111U	030T	030C
+201     120D	120U	120C
+210
+300
+</pre>
 
-003<br />
-012<br />
-102		021D	021U	021C<br />
-111D	111U	030T	030C<br />
-201		120D	120U	120C<br />
-210<br />
-300<br />
-<br />
- <br />
-So, when you click on Triad Census menu option, SocNetV calculates and displays a vector T of length 16.<br /> 
-Each vector element (Tu) is the frequency of each one triad type inside the active network, i.e. T003 = 3.<br />  
-Furthermore, the order of the elements of vector T is the same as the aforementioned ordering of the triad types:<br />
+<p class="text">
+So, when you click on Triad Census menu option, SocNetV calculates and displays
+a vector T of length 16.<br />
+Each vector element (Tu) is the frequency of each one triad type inside the
+active network, i.e. T003 = 3.<br />
+Furthermore, the order of the elements of vector T is the same as the
+aforementioned ordering of the triad types:<br />
 <br />
 T = [ T003, T012, T102, T021D, T021U, T021C, T111D, T111U, T030T, T030C, T201, T120D, T120U, T120C, T210, T300 ]<br />
 <br />
-Apparently, the sum of all these frequencies Tu is C(N,3).<br />
+Apparently, the sum of all these frequencies Tu is C(N,3).</p>
 
-</p>
 <h4><a name="Centralities" id="Centralities"></a>Centralities and Prestige</h4>
 <p class="text"> 
-The last option in the Statistics menu opens the "Centrality and Prestige" sub-menu.
+The last option in the Analysis menu opens the "Centrality and Prestige" sub-menu.
 
 <p class="text">
 Social network analysts use various metrics (measures or indices) to calculate how 'prominent' or important each actor (node) is inside a network (graph). For instance, we might want to know how important is a person inside her friendship network or how critical is a power station inside the power company grid...
@@ -133,15 +248,26 @@ Centrality indices are calculated for each node (node Centrality) and for the wh
 <h5><a name="DC" id="DC"></a>Degree Centrality (DC)</h5>
 <p class="text">
 In undirected graphs, the DC index of each node v is the number of edges attached to it.
-In digraphs, the DC is the total numnber of arcs (outLinks) starting from v (outDegree). This is often considered a measure of actor activity.
+In digraphs, the DC is the total number of arcs (outLinks) starting from v (outDegree).
+<br />
+This is often considered a measure of actor activity.
 <br /><br />
-This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs. In weighted relations, ODC is the sum of weights of all edges/outLinks attached to v.
+This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs.
+It can also be calculated in weighted graphs. In weighted relations, ODC is the sum of weights of all edges/outLinks attached to v.
 </p>
 
 
 <h5><a name="CC" id="CC"></a>Closeness Centrality (CC)</h5>
 <p class="text"> 
-For each node v, CC the inverse sum of the geosesic distances from that node to every other node. CC is interpreted as the ability to access information through the \"grapevine\" of network members. Nodes with high closeness centrality are those who can reach many other nodes in few steps. <br /><br />This index can be calculated in graphs and strongly connected digraphs (that is, if there is a directed path from v to u for all nodes v and u in the graph). It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1.
+For each node v, CC the inverse sum of the geosesic distances from that node to
+every other node.
+CC is interpreted as the ability to access information through the \"grapevine\" of network members.
+Nodes with high closeness centrality are those who can reach many other nodes in few steps.
+<br /><br />
+This index can be calculated in graphs and strongly connected digraphs
+(that is, if there is a directed path from v to u for all nodes v and u in the graph).
+It can also be calculated in weighted graphs although the weight of each
+edge (v,u) in E is always considered to be 1.
 <br /><br />
 <em>Undirected graphs</em>
 The maximum value of CC is 1/(N-1), when the node is adjacent to all others.
@@ -151,11 +277,33 @@ If the graph is directed, a standard CC' is calculated by (CC/sumCC)
 Group CC is calculated using Freeman's general formula, in undirected graphs: <br />
 </p>
 <p class="code">
-GCC =  ( Sum ( maxCC' - CC'  ) )  / ( ( N-1) *  (N-2) / (2 * N - 1) );
+GCC =  ( Sum ( maxCC' - CC'  ) )  / ( (N-1) *  (N-2) / (2 * N - 1) );
 </p>
 <p class="text">
 <em>Directed graphs (digraphs)</em>
 </p>
+
+
+
+<h5><a name="IRCC" id="IRCC"></a>Influence Range Closeness Centrality (CC)</h5>
+<p class="text">
+For each node v, IRCC is the standardized inverse average distance
+between v and every other node reachable from v.
+<br />
+This improved CC index is optimized for graphs and directed graphs which
+are not strongly connected. Unlike the ordinary CC, which is the inverted
+sum of distances from node v to all others (thus undefined if a node is isolated
+or the digraph is not strongly connected), IRCC considers only distances from
+node v to nodes in its influence range J (nodes reachable from v).
+<br />
+The IRCC formula used is the ratio of the fraction of nodes reachable by v
+(|J|/(n-1)) to the average distance of these nodes from v sum(d(v,j))/|J|
+</p>
+<p class="code">
+( |J| / (n-1) ) / ( sum( d(v,j) ) / |J| )
+</p>
+
+
 
 <h5><a name="BC" id="BC"></a>Betweeness Centrality (BC) </h5>
 <p class="text"> 
@@ -174,14 +322,6 @@ For each node v, SC is the total number of geodesics between all other nodes whi
 This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1
 </p>
 
-<h5><a name="GC" id="GC"></a>Graph Centrality (GC)</h5>
-<p class="text"> 
-For each node v, GC is the inverse of the maximum of all geodesic distances from v to all other nodes in the network. Nodes with high GC have short distances to all other nodes in the network.
-<br /><br />
-This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1.
-<br /><br />
-In not-connected networks, the centrality values of all nodes will be zero, since the distance to some nodes is infinite. 
-</p>
 
 <h5><a name="EC" id="EC"></a>Eccentricity Centrality (EC)</h5>
 <p class="text"> 

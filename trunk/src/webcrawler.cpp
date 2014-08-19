@@ -110,6 +110,7 @@ void WebCrawler::slotCreateEdge (int source, int target){
 */
 void WebCrawler::run(){
     int pos, second_pos;
+    Q_UNUSED(second_pos);
     do { 	//repeat forever....
 
         if (currentNode>1 ) {
@@ -199,6 +200,7 @@ void WebCrawler::run(){
             connect (http,SIGNAL( finished(QNetworkReply*) ), &reader, SLOT( load(QNetworkReply*) ) );
 
             QNetworkReply *reply = http->get(*request) ;
+            Q_UNUSED(reply);
 
         }
         else { // baseUrl is on checkedMap already - don't do nothing!
@@ -276,6 +278,8 @@ void Reader::run(){
     qDebug()  << "			READER: read something!";
     QString newUrl;
     bool createNodeFlag = false, createEdgeFlag=false ;
+    Q_UNUSED(createNodeFlag);
+    Q_UNUSED(createEdgeFlag);
     int start=-1, end=-1, equal=-1 ;// index=-1;
     QString page(ba);
 

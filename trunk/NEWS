@@ -6,7 +6,11 @@ SocNetV News
 
 Aug 2014
 =======
-- Versions 1.1 released with major bug fixes. See ChangeLog.
+- Version 1.2 released. It features a major GUI overhaul and brings in a new "prominence indices" conceptualization based on Wasserman & Faust. 
+  In general, Centrality indices focus on outLinks (choices given) while Prestige indices consider inLinks (choices received).
+  Added 3 Prestige indices (Degree, Proximity and PageRank), new reachability measures (Walks, Connectedness, and Reachability Matrix) and fixed a slew of bugs in indices calculation. 
+  All algorithms are now tested to report 100% correct results.
+- Version 1.1 released with major bug fixes. See ChangeLog.
 - First time distribution of a disk image for installation in Mac OS X
 
 Feb 2014

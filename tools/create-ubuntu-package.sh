@@ -88,6 +88,13 @@ echo    GOTO TO WORKING DIRECTORY
 echo ---------------------------------
 
 cd ../ubuntu/
+
+echo "Gzipping ChangeLog"
+cd socnetv-$VER/
+gzip ChangeLog
+
+cd ..
+
 echo "Make tarballs? (Y/N)"
 read ans
 if [ $ans = "N" ]; then

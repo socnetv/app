@@ -168,7 +168,7 @@ public slots:
     void slotChangeLinkColor();
     void slotChangeLinkWeight();
     void slotFilterNodes();
-    void slotFilterOrphanNodes();
+    void slotFilterIsolateNodes();
     void slotShowFilterEdgesDialog();
     void slotTransformNodes2Links();
     void slotSymmetrize();
@@ -178,12 +178,12 @@ public slots:
     void slotColorationRegular();
     void slotLayoutRandom();
     void slotLayoutRandomCircle();
-    void slotLayoutRadialByProminenceIndex();
-    void slotLayoutLayeredCentralityInDegree();
-    void slotLayoutLayeredCentralityOutDegree();
-    void slotLayoutLayeredCentralityCloseness();
-    void slotLayoutLayeredCentralityBetweeness();
-    void slotLayoutLayeredCentralityInformation();
+    void slotLayoutCircularByProminenceIndex();
+    void slotLayoutCircularByProminenceIndex(QString);
+    void slotLayoutLevelByProminenceIndex();
+    void slotLayoutLevelByProminenceIndex(QString);
+    void slotLayoutGuides(int);
+
 
     void slotLayoutSpringEmbedder(bool);
     void slotLayoutFruchterman();
@@ -200,8 +200,8 @@ public slots:
     void slotDiameter();
     void slotEccentricity();
 
-    void slotNumberOfWalks();
-    void slotTotalNumberOfWalks();
+    void slotWalksOfGivenLength();
+    void slotTotalWalks();
     void slotReachabilityMatrix();
     void slotConnectedness();
 
@@ -288,6 +288,13 @@ public slots:
     //Called from Graph when a network file is loaded.
     void fileType(int, QString , int, int, bool);
 
+    //Called from MW, when user highlights something in the toolbox Comboboxes
+    void toolBoxAnalysisGeodesicsSelectChanged(int);
+    void toolBoxAnalysisConnectivitySelectChanged(int);
+    void toolBoxAnalysisProminenceSelectChanged(int);
+    void toolBoxAnalysisClusterabilitySelectChanged(int);
+    void toolBoxLayoutByIndexButtonPressed();
+
 protected:
     void resizeEvent( QResizeEvent * );
     void closeEvent( QCloseEvent* ce );
@@ -323,11 +330,17 @@ private:
     QMenu *networkMenu, *randomNetworkMenu, *filterMenu;
     QMenu *randomLayoutMenu, *circleLayoutMenu, *levelLayoutMenu, *physicalLayoutMenu;
     QMenu *colorationMenu;
-    QCheckBox *moveSpringEmbedderBx, *moveFruchtermanBx, *moveKamandaBx, *nodeSizeProportional2OutDegreeBx,
-            *nodeSizeProportional2InDegreeBx ;
+    QCheckBox *moveSpringEmbedderBx, *moveFruchtermanBx, *moveKamandaBx,
+    *nodeSizeProportional2OutDegreeBx,*nodeSizeProportional2InDegreeBx,
+    *layoutGuidesBx;
+    QComboBox *toolBoxAnalysisGeodesicsSelect,*toolBoxAnalysisConnectivitySelect,
+            *toolBoxAnalysisProminenceSelect, *toolBoxAnalysisClusterabilitySelect;
+    QComboBox *toolBoxLayoutByIndexSelect, *toolBoxLayoutByIndexTypeSelect;
+
+    QPushButton *addNodeBt, *addLinkBt, *removeNodeBt, *removeLinkBt,
+    *toolBoxLayoutByIndexButton;
 
     QSpinBox *rotateSpinBox ;
-    QPushButton *addNodeBt, *addLinkBt, *removeNodeBt, *removeLinkBt;
 
     QAction *fileNew, *fileOpen, *fileSave, *fileSaveAs,*fileClose, *printNetwork,*fileQuit;
     QAction *exportBMP, *exportPNG, *exportPajek, *exportPDF, *exportDL, *exportGW, *exportSM, *exportList;
@@ -344,7 +357,7 @@ private:
     QAction *changeNodeBoxAct, *changeNodeCircleAct, *changeNodeTriangleAct, *changeNodeDiamondAct,
             *changeNodeEllipseAct;
     QAction *changeLinkLabelAct, *changeLinkColorAct, *changeLinkWeightAct;
-    QAction *filterNodesAct, *filterOrphanNodesAct, *filterEdgesAct, *transformNodes2LinksAct, *symmetrizeAct;
+    QAction *filterNodesAct, *filterIsolateNodesAct, *filterEdgesAct, *transformNodes2LinksAct, *symmetrizeAct;
     QAction *changeBackColorAct, *changeAllNodesColorAct, *changeAllLinksColorAct, *changeAllNumbersColorAct,
             *changeAllLabelsColorAct;
     QAction *drawLinksWeightsAct, *displayLinksWeightNumbersAct, *displayLinksAct, *displayLinksArrowsAct,
@@ -361,13 +374,14 @@ private:
             *cBetweenessAct, *cInformationAct, *cPageRankAct, *cStressAct,
             *cPowerAct, *cEccentAct, *cProximityPrestigeAct;
     QAction *randLayoutAct, *randCircleLayoutAct, *clearGuidesAct;
-    QAction *layoutRadial_DC_Act, *layoutRadial_DP_Act,
-            *layoutRadial_CC_Act, *layoutRadial_SC_Act, *layoutRadial_EC_Act,
-            *layoutRadial_PC_Act, *layoutRadial_BC_Act, *layoutRadial_IC_Act,
-            *layoutRadial_IRCC_Act,*layoutRadial_PRP_Act;
-    QAction *levelClosenessLayoutAct, *levelInDegreeLayoutAct,
-            *levelOutDegreeLayoutAct, *levelBetweenessLayoutAct,
-            *levelInformationLayoutAct;
+    QAction *layoutCircular_DC_Act, *layoutCircular_DP_Act,
+    *layoutCircular_CC_Act, *layoutCircular_SC_Act, *layoutCircular_EC_Act,
+    *layoutCircular_PC_Act, *layoutCircular_BC_Act, *layoutCircular_IC_Act,
+    *layoutCircular_IRCC_Act,*layoutCircular_PRP_Act, *layoutCircular_PP_Act;
+    QAction *layoutLevel_DC_Act, *layoutLevel_DP_Act,
+    *layoutLevel_CC_Act, *layoutLevel_SC_Act, *layoutLevel_EC_Act,
+    *layoutLevel_PC_Act, *layoutLevel_BC_Act, *layoutLevel_IC_Act,
+    *layoutLevel_IRCC_Act,*layoutLevel_PRP_Act, *layoutLevel_PP_Act;
     QAction *strongColorationAct, *regularColorationAct, *showProgressBarAct, *printDebugAct;
     QAction *springLayoutAct, *FRLayoutAct, *nodeSizeProportionalOutDegreeAct,  *nodeSizeProportionalInDegreeAct;
     QAction *zoomInAct, *zoomOutAct ;

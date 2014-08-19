@@ -32,8 +32,8 @@
 #include <QList>
 #include <QHash>
 #include <QTextStream>
-
-#include <stack>  //FYI: stack is a wrapper around <deque> in C++, see: www.cplusplus.com/reference/stl/stack
+//FYI: stack is a wrapper around <deque> in C++, see: www.cplusplus.com/reference/stl/stack
+#include <stack>
 #include <map>
 
 #include "vertex.h"
@@ -90,7 +90,7 @@ public slots:
 
     /** Slots to signals from MainWindow */
     void setCanvasDimensions(int w, int h);
-    void filterOrphanVertices ( bool );		//Called by MW to filter orphan vertices
+    void filterIsolateVertices ( bool );		//Called by MW to filter orphan vertices
     void filterEdgesByWeight (float, bool);		//Called by MW to filter edges over/under a weight
 
     void webCrawl( QString, int, int, bool);	//Called by MW to start a web crawler...
@@ -237,7 +237,9 @@ public:
     void writePrestigePageRank(const QString);
 
 
-    void writeNumberOfCliques(const QString fileName, const bool considerWeights);
+    void writeNumberOfCliques(
+            const QString fileName, const bool considerWeights
+            );
 
     void writeClusteringCoefficient(const QString, const bool);
 
@@ -257,7 +259,7 @@ public:
 
     void prestigeDegree(bool);
     int prestigePageRank();
-    int prestigeProximity();
+    void prestigeProximity();
 
     /* REACHABILTY AND WALKS */
     int numberOfWalks(int v1, int v2,int length);
@@ -283,10 +285,15 @@ public:
 
 
     /* LAYOUTS */
-    void layoutRandom(double maxWidth, double maxHeight);
-    void layoutRadialByProminenceIndex(double x0, double y0, double maxRadius,
-                                       int type);
-    void layoutLayeredCentrality(double maxWidth, double maxHeight, int CentralityType);
+    void layoutRandom(
+            double maxWidth, double maxHeight
+            );
+    void layoutCircularByProminenceIndex(
+            double x0, double y0, double maxRadius,int type
+            );
+    void layoutLevelByProminenceIndex(
+            double maxWidth, double maxHeight, int CentralityType
+            );
     void layoutForceDirectedSpringEmbedder(bool dynamicMovement);
     void layoutForceDirectedFruchtermanReingold(bool dynamicMovement);
 
@@ -305,9 +312,11 @@ public:
 
     int factorial (int);
 
-
-    /*  index stores the real position of each vertex inside m_graph. It starts at zero (0).
-        We need to know the place of a vertex inside m_graph after adding or removing many vertices */
+    /**  index stores the real position of each vertex inside m_graph.
+     *  It starts at zero (0).
+     *   We need to know the place of a vertex inside m_graph after adding
+     *   or removing many vertices
+     */
     imap_i index;
 
     // Stores the number of vertices at distance n from a given vertex
@@ -318,12 +327,16 @@ public:
 
 
 protected: 
-    void timerEvent(QTimerEvent *event);			// Called from nodeMovement when a timerEvent occurs
+    // Called from nodeMovement when a timerEvent occurs
+    void timerEvent(QTimerEvent *event);
 
 
 private:
 
-    /** List of pointers to the vertices. A vertex stores all the info: links, colours, etc */
+    /**
+     * List of pointers to the vertices.
+     * A vertex stores all the info: links, colours, etc
+    */
     Vertices m_graph;
 
     Parser parser;	//file loader threaded class.
@@ -343,17 +356,16 @@ private:
 
     /** methods used by createDistanceMatrix()  */
     void BFS(int, bool);	//Breadth-First Search function
-    void minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int &minNode) ;	//helper
-    void resolveClasses(float C, hash_si &discreteClasses, int &classes);			//helper
-    void resolveClasses(float C, hash_si &discreteClasses, int &classes, int name);  	//helper
+    void minmax(
+                float C, Vertex *v, float &max, float &min,
+                int &maxNode, int &minNode
+              ) ;
+    void resolveClasses (float C, hash_si &discreteClasses, int &classes);
+    void resolveClasses (
+                        float C, hash_si &discreteClasses,
+                        int &classes, int name
+                        );
 
-    /** used in resolveClasses and createDistanceMatrix() */
-    hash_si discreteDPs, discreteDCs, discreteCCs, discreteBCs, discreteSCs;
-    hash_si discreteIRCCs, discreteECs, discreteEccentricities;
-    hash_si discretePCs, discreteICs,  discretePRCs, discretePPs;
-
-    bool calculatedDP, calculatedDC, calculatedCentralities, dynamicMovement;
-    bool calculatedPP;
 
     QList<int>  triadTypeFreqs; 	//stores triad type frequencies
     QList<int>  m_isolatedVerticesList;
@@ -363,9 +375,20 @@ private:
     Matrix XM, XSM, XRM;
     stack<int> Stack;
 
+    /** used in resolveClasses and createDistanceMatrix() */
+    hash_si discreteDPs, discreteDCs, discreteCCs, discreteBCs, discreteSCs;
+    hash_si discreteIRCCs, discreteECs, discreteEccentricities;
+    hash_si discretePCs, discreteICs,  discretePRCs, discretePPs;
+
+    bool calculatedDP, calculatedDC, calculatedCentralities, dynamicMovement;
+    bool calculatedPP, calculatedIRCC;
+
+
+    int m_precision;
     float meanDegree, varianceDegree;
     float meanCC, varianceCC;
     float meanIRCC, varianceIRCC;
+    float meanPP, variancePP;
     float minEccentricity, maxEccentricity, sumEccentricity;
     float minDP, maxDP, sumDP, groupDP;
     float minDC, maxDC, sumDC, groupDC;
@@ -377,7 +400,7 @@ private:
     float minEC, maxEC, nomEC, denomEC, sumEC, groupEC, maxIndexEC;
     float minIC, maxIC, nomIC, denomIC, sumIC, groupIC, maxIndexIC;
     float minPRC, maxPRC, nomPRC, denomPRC, sumPRC, groupPRC, maxIndexPRC;
-    float minPP, maxPP, nomPP, denomPP, sumPP, groupPP, maxIndexPP;
+    float minPP, maxPP, nomPP, denomPP, sumPP, groupPP;
     float minCLC, maxCLC, averageCLC, averageIC, averagePRC, dampingFactor;
     int maxNodeCLC, minNodeCLC;
     int classesDP, maxNodeDP, minNodeDP;
@@ -405,11 +428,13 @@ private:
     int timerId,  layoutType, canvasWidth, canvasHeight;
 
     bool order, initShowLabels, initNumbersInsideNodes;
-    bool adjacencyMatrixCreated, symmetricAdjacencyMatrix, graphModified, distanceMatrixCreated;
+    bool adjacencyMatrixCreated, symmetricAdjacencyMatrix, graphModified,
+        distanceMatrixCreated;
     bool reachabilityMatrixCreated;
     bool m_undirected;
 
-    QString VERSION, networkName, initEdgeColor, initVertexColor, initVertexNumberColor, initVertexLabelColor, initVertexShape;
+    QString VERSION, networkName, initEdgeColor, initVertexColor,
+        initVertexNumberColor, initVertexLabelColor, initVertexShape;
 
     QDateTime actualDateTime;
 };
