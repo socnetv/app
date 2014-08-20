@@ -28,7 +28,7 @@
 
 using namespace std;
 
-#include <iostream>		//used for cout
+
 #include <cstdlib>		//allows the use of RAND_MAX macro
 
 #include <math.h>		//need for fabs function
@@ -297,8 +297,8 @@ bool Matrix::printMatrixConsole(){
 	qDebug() << "Matrix: printMatrixConsole";
 	for (register int r = 0; r < rows(); ++r) {
 		for (register int c = 0; c < cols(); ++c)
-			cout<< item(r,c) <<' ';
-			cout<<'\n';
+            QTextStream(stdout) << item(r,c) <<' ';
+            QTextStream(stdout) <<'\n';
 	}
 	return true;
 }
