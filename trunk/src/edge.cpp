@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer 
- version: 1.2
+ version: 1.3
  Written in Qt
 
                         edge.cpp  -  description
