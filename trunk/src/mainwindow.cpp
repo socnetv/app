@@ -332,15 +332,15 @@ void MainWindow::initActions(){
     importSM->setWhatsThis(tr("Import Sociomatrix \n\n  Imports a network from an Adjacency matrix-formatted file"));
     connect(importSM, SIGNAL(triggered()), this, SLOT(slotImportSM()));
 
-    importDot = new QAction( QIcon(":/images/open.png"), tr("&Dot"), this);
+    importDot = new QAction( QIcon(":/images/open.png"), tr("GraphViz (.dot)"), this);
     importDot->setStatusTip(tr("Import an dot file"));
     importDot->setWhatsThis(tr("Import GraphViz \n\n  Imports a network from an GraphViz formatted file"));
     connect(importDot, SIGNAL(triggered()), this, SLOT(slotImportDot()));
 
 
-    importDL = new QAction( QIcon(":/images/open.png"), tr("&DL..."), this);
-    importDL->setStatusTip(tr("Import network to a DL-formatted file"));
-    importDL->setWhatsThis(tr("Import DL\n\nImport network to a DL-formatted"));
+    importDL = new QAction( QIcon(":/images/open.png"), tr("UCINET (.dl)..."), this);
+    importDL->setStatusTip(tr("Import network to a DL-formatted file (UCINET)"));
+    importDL->setWhatsThis(tr("Import UCINET\n\nImports a network from a DL-formatted file"));
     connect(importDL, SIGNAL(triggered()), this, SLOT(slotImportDL()));
 
 

@@ -90,110 +90,203 @@ bool Parser::load(QString fn, int iNS, QString iNC, QString iNSh,
 
 
 /**
-	Tries to load a file as DL-formatted network. If not it returns -1
+    Tries to load a file as DL-formatted network (UCINET)
+    If not it returns -1
 */
 bool Parser::loadDL(){
 
-	qDebug ("\n\nParser: loadDL");
+    qDebug () << "\n\nParser: loadDL (UCINET)";
 	QFile file ( fileName );
     if ( ! file.open(QIODevice::ReadOnly )) return false;
 	QTextStream ts( &file );
 
-	QString str, label;
+    QString str, label, nm_str, level;
 	
-	int i=0, j=0, lineCounter=0, mark=0, nodeNum=0;
+    int source=1, target=1, nm=0,lineCounter=0, mark=0, mark2=0, nodeNum=0;
 	edgeWeight=0;
     bool labels_flag=false, data_flag=false, intOK=false, floatOK=false;
-	QStringList lineElement;
+    bool level_flag=false;
+    QStringList lineElement, labelsList, levelsList;
 	totalLinks=0;
 
 	while ( !ts.atEnd() )   {
 		str= ts.readLine();
-		lineCounter++;
+        str=str.simplified();
+        lineCounter++;
+        qDebug() << "Parser: loadDL - lineCounter: " << lineCounter
+                 << "\n  str: " << str
+                 << "\n  removing whitespaces from str "<< str;
 
+        if ( isComment(str) )
+            continue;
 
-		if ( isComment(str) ) 
-			continue;
-				
-		if ( (lineCounter == 1) &&  (!str.startsWith("DL",Qt::CaseInsensitive)  ) ) {  
-			qDebug("*** Parser-loadDL(): not a DL file. Aborting!");
-			file.close();
+        if ( (lineCounter == 1) &&
+             (!str.startsWith("DL",Qt::CaseInsensitive)  ) ) {
+            qDebug("*** Parser-loadDL(): not a DL file. Aborting!");
+            file.close();
             return false;
-		}
+        }
 
-		if (str.startsWith( "N=", Qt::CaseInsensitive) ||  str.startsWith( "N =", Qt::CaseInsensitive) )  {   
-			mark=str.indexOf("=");
-			str=str.right(str.size()-mark-1);
-            qDebug()<< "N = : " << str.toLatin1() ;
-			aNodes=str.toInt(&intOK,10);   
-            if (!intOK) { qDebug()<< "Parser: loadDL(): conversion error..." ; return false;}
-		}
+        if (str.startsWith( "N=", Qt::CaseInsensitive)
+                ||  str.startsWith( "N =", Qt::CaseInsensitive) )  {
+            mark=str.indexOf("=");
+            qDebug() << "Network size is declared here - check if NM exists";
+            if ( (mark2=str.indexOf("NM", Qt::CaseInsensitive)) != -1 ) {
+                nm_str = str.right(str.size() - mark2 );
+                qDebug() << " NM exists at " << mark2
+                         << " contains " << nm_str;
+                nm_str = nm_str.simplified();
+                nm_str.remove(0,2);
+                nm_str = nm_str.simplified();
+                if (nm_str.startsWith("="))
+                    nm_str.remove(0,1);
+                nm = nm_str.toInt(&intOK,10);
+                qDebug() << " NM str: " << nm_str
+                         << " and toInt:"<<nm ;
+                if (!intOK) {
+                    qDebug() <<
+                                "Parser: loadDL(): NM conversion error..." ;
+                    return false;}
+            }
+            str.truncate(mark2);
+            str=str.trimmed();
+            qDebug() << " rest str becomes: " << str;
+            str=str.right(str.size()-mark-1);
+            qDebug()<< "N is declared to be : " << str.toLatin1() ;
+            aNodes=str.toInt(&intOK,10);
+            if (!intOK) {
+                qDebug() <<
+                            "Parser: loadDL(): N conversion error..." ;
+                return false;
+            }
+            qDebug() << " FINALLY N="<<aNodes << "NM="<<nm;
+            continue;
+        }
 
-		if (str.startsWith( "FORMAT =", Qt::CaseInsensitive) || str.startsWith( "FORMAT=", Qt::CaseInsensitive))  {   
-			mark=str.indexOf("=");
-			str=str.right(str.size()-mark-1);
+        if (str.startsWith( "FORMAT =", Qt::CaseInsensitive)
+                || str.startsWith( "FORMAT=", Qt::CaseInsensitive))  {
+            mark=str.indexOf("=");
+            str=str.right(str.size()-mark-1);
+            str=str.trimmed();
             qDebug()<<  "FORMAT = : " <<  str.toLatin1() ;
-		}
+            continue;
+        }
+        else if (str.startsWith( "labels", Qt::CaseInsensitive)
+                || str.startsWith( "row labels", Qt::CaseInsensitive)) {
+            labels_flag=true; data_flag=false;level_flag=false;
+            qDebug() << " START LABELS RECOGNITION AND NODE CREATION";
+            continue;
+        }
+        else if (str.startsWith( "COLUMN LABELS", Qt::CaseInsensitive)) {
+            labels_flag=true; data_flag=false;level_flag=false;
+            qDebug() << " START COLUMN LABELS RECOGNITION AND NODE CREATION";
+            continue;
+        }
+        else if ( str.startsWith( "data:", Qt::CaseInsensitive)
+                  || str.startsWith( "data :", Qt::CaseInsensitive) ) {
+            data_flag=true; labels_flag=false;level_flag=false;
+            qDebug() << " START DATA RECOGNITION AND EDGE CREATION";
+            continue;
+        }
+        else if (str.startsWith( "LEVEL LABELS", Qt::CaseInsensitive) ) {
+            level_flag=true; data_flag=false; labels_flag=false;
+            qDebug() << " START LEVELS RECOGNITION";
+            continue;
+        }
+        else if (str.isEmpty()){
+            qDebug() << " EMPTY STRING - CONTINUE";
+            continue;
+        }
 
-		if (str.startsWith( "labels", Qt::CaseInsensitive) ) {
-            labels_flag=true; data_flag=false;
-			continue;
-		}
-		else if ( str.startsWith( "data:", Qt::CaseInsensitive) || str.startsWith( "data :", Qt::CaseInsensitive) ) {
-            data_flag=true; labels_flag=false;
-			continue;
-		}
 
-		if (labels_flag) {  //read a label and create a node in a random position
-
-			label=str;
-			randX=rand()%gwWidth;
-			randY=rand()%gwHeight;
-			nodeNum++;
-			qDebug()<<"Creating node at "<< randX<<","<< randY;
-			emit createNode(
-						nodeNum, initNodeSize,initNodeColor, 
-						initNodeNumberColor, initNodeNumberSize,
-						label, initNodeLabelColor, initNodeLabelSize, 
-						QPointF(randX, randY), 
+        if (labels_flag) {  //read a label and create a node in a random position
+            label=str;
+            if ( labelsList.contains(label) ) {
+                qDebug() << " label exists. CONTINUE";
+                continue;
+            }
+            else{
+                qDebug() << "adding label " << label << " to labelList";
+                labelsList << label;
+            }
+            randX=rand()%gwWidth;
+            randY=rand()%gwHeight;
+            nodeNum++;
+            qDebug()<<"Creating node: "<< nodeNum
+                   << " with label: " << label
+                   << " at "<< randX<<","<< randY;
+            emit createNode(
+                        nodeNum, initNodeSize,initNodeColor,
+                        initNodeNumberColor, initNodeNumberSize,
+                        label, initNodeLabelColor, initNodeLabelSize,
+                        QPointF(randX, randY),
                         initNodeShape, false
-						);
-		
-		}
-		if ( data_flag){		//read edges
-			//SPLIT EACH LINE (ON EMPTY SPACE CHARACTERS) 
-			lineElement=str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
-			j=0;
-			for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
+                        );
+
+        }
+        if ( level_flag){		//read edges
+            level=str;
+            if ( levelsList.contains(level) ) {
+                qDebug() << " level exists. CONTINUE";
+                continue;
+            }
+            else{
+                qDebug() << "adding level " << label << " to levelsList";
+                levelsList << level;
+            }
+        }
+        if ( data_flag){		//read edges
+            //SPLIT EACH LINE (ON EMPTY SPACE CHARACTERS)
+            lineElement=str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+            target=1;
+            if (source==1){
+                level = levelsList.takeFirst();
+                qDebug() << " WE ARE THE FIRST DATASET/MATRIX"
+                         << " source node counter is " << source
+                         << " and level to " << level;
+            }
+            else if (source>aNodes) {
+                source=0;
+                level = levelsList.takeFirst();
+                qDebug() << " LOOKS LIKE WE ENTERED A NEW DATASET/MATRIX "
+                         << " init source node counter to " << source
+                         << " and level to " << level;
+            }
+            else {
+                qDebug() << "source node counter is " << source;
+            }
+
+            for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
                 qDebug()<< (*it1).toLatin1() ;
-				if ( (*it1)!="0"){ //here is an non-zero edge weight...
-					qDebug()<<  "Parser-loadDL(): there is an edge here";
-					edgeWeight=(*it1).toFloat(&floatOK); 
-					undirected=0;
+                if ( (*it1)!="0"){ //here is an non-zero edge weight...
+                    qDebug()<<  "Parser-loadDL(): here is an edge from "
+                             << source << " to " << target;
+                    edgeWeight=(*it1).toFloat(&floatOK);
+                    undirected=0;
                     arrows=true;
                     bezier=false;
-					emit createEdge(i+1, j+1, edgeWeight, initEdgeColor, undirected, arrows, bezier);
-					totalLinks++;
-					qDebug()<<  "Link from Node i= " <<  i+1 << " to j= "<< j+1;
-					qDebug() << "TotalLinks= " << totalLinks;
+                    emit createEdge(source, target, edgeWeight, initEdgeColor, undirected, arrows, bezier);
+                    totalLinks++;
+                    qDebug()<<  "Created Link from source node " << source << " to target "<< target;
+                    qDebug() << "TotalLinks= " << totalLinks;
 
-				}
-				j++;
-			}
-			i++;
-		
+                }
+                target++;
+            }
+            source++;
 
-		}
-	}
-	//sanity check
-	if (nodeNum != aNodes) { 
-		qDebug()<< "Error: aborting";
+
+        }
+    }
+    //sanity check
+    if (nodeNum != aNodes) {
+        qDebug()<< "Error: aborting";
         return false;
-	}
-	//The network has been loaded. Tell MW the statistics and network type
-	// 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List 
-	emit fileType(5, networkName, aNodes, totalLinks, undirected);
-	qDebug() << "Parser-loadDL()";
+    }
+    //The network has been loaded. Tell MW the statistics and network type
+    // 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List
+    emit fileType(5, networkName, aNodes, totalLinks, undirected);
+    qDebug() << "Parser-loadDL()";
     return true;
 
 }
