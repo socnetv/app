@@ -43,7 +43,7 @@ typedef QHash<int,QString> ihash_s;
 typedef QHash<int,int> ihash_i;  
 typedef QList<int> ilist;
 
-
+typedef QHash < QPair<int,float> * , int  > hashTargetLevelWeightPair;
 
 class Vertex : public QObject{
     Q_OBJECT
@@ -216,6 +216,8 @@ signals:
 protected:
 
 private:
+    hashTargetLevelWeightPair m_all_outEdges;
+
     Graph *parentGraph;
     ilist myPs;
     long int m_name,  m_outLinks, m_inLinks, m_outDegree, m_inDegree, m_localDegree;

@@ -95,6 +95,9 @@ Vertex::Vertex(int v1) {
 void Vertex::addLinkTo (long int v2, float weight) {
 	//qDebug() <<"Vertex: "<< name() << " addLinkTo() "<< v2 << " of weight "<< weight;
 	m_outEdges[v2]=weight;
+
+    m_all_outEdges.insertMulti( new QPair <int,float> (1, v2) , weight );
+    // do not use [] operator. It silently creates an item if key do not exist
 	m_enabled_outEdges [v2]=1;
 	m_outLinks++;
 }
@@ -118,6 +121,8 @@ void Vertex::changeLinkWeightTo(long int target, float weight){
 //finds and removes a link to vertice v2
 void Vertex::removeLinkTo (long int v2) {
     qDebug() << "Vertex: removeLinkTo() vertex " << m_name << " has " <<outEdges() << " out-edges. RemovingEdgeTo "<< v2 ;
+    qDebug () << "";
+    m_all_outEdges.remove(new QPair<int,float> (1,v2) );
     if (outEdges()>0) {
 		m_outLinks--;
 		imap_f::iterator it=m_outEdges.find(v2);
