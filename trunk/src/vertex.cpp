@@ -100,10 +100,6 @@ void Vertex::addLinkTo (long int target, float weight) {
     m_outLinks.insertMulti(
                 target, rel_w_bool(m_curRelation, pair_f_b(weight, true) ) );
     qDebug() << " *** m_outLinks.count " <<  m_outLinks.count();
-    // // old code
-    m_outEdges[target]=weight;
-    m_enabled_outEdges [target]=1;
-    // /////
     m_outLinksCounter++;
 }
 
@@ -139,9 +135,6 @@ void Vertex::addLinkFrom (long int source, float weight) {
     m_inLinks.insertMulti(
                 source, rel_w_bool (m_curRelation, pair_f_b(weight, true) ) );
     m_inLinksCounter++;
-    // // old code
-    m_inEdges[source]=weight;
-    // /////
 }
 
 void Vertex::changeLinkWeightTo(long int target, float weight){
@@ -164,20 +157,16 @@ void Vertex::changeLinkWeightTo(long int target, float weight){
     m_outLinks.insertMulti(
                 target, rel_w_bool(m_curRelation, pair_f_b(weight, true) ) );
     qDebug() << " *** m_outLinks.count " << m_outLinks.count();
-    // old code
-	m_outEdges[target]=weight;
-	m_enabled_outEdges[target] = 1;
-    // ///
 }
 
 
 //finds and removes a link to vertice v2
 void Vertex::removeLinkTo (long int v2) {
     qDebug() << "Vertex: removeLinkTo() - vertex " << m_name
-             << " has " <<outEdges() << " out-edges. Removing link to "<< v2 ;
+             << " has " <<outLinks() << " out-links. Removing link to "<< v2 ;
 
-    if (outEdges()>0) {
-        qDebug () << "checking all_outEdges";
+    if (outLinks()>0) {
+        qDebug () << "checking all_outLinks";
         QHash_edges::iterator it1=m_outLinks.find(v2);
         while (it1 != m_outLinks.end() ) {
             if ( it1.key() == v2 && it1.value().first == m_curRelation ) {
@@ -195,19 +184,7 @@ void Vertex::removeLinkTo (long int v2) {
 
         m_outLinksCounter--;
 
-        // //// old code
-		imap_f::iterator it=m_outEdges.find(v2);
-		if ( it != m_outEdges.end() ) {
-			qDebug("Vertex: edge exists. Removing it");
-			m_outEdges.erase(it);
-			m_enabled_outEdges[ it->first ] = 0;
-            if ( m_outLinksCounter == 0 ) setOutLinked(false);
-		}
-		else {
-			qDebug("Vertex: edge doesnt exist.");
-		}
-        // //////
-        qDebug() << "Vertex: vertex " <<  m_name << " now has " <<  outEdges() << " out-edges";
+        qDebug() << "Vertex: vertex " <<  m_name << " now has " <<  outLinks() << " out-edges";
 	}
 	else {
 		qDebug() << "Vertex: vertex " <<  m_name << " has no edges" ;
@@ -217,10 +194,10 @@ void Vertex::removeLinkTo (long int v2) {
 
 void Vertex::removeLinkFrom(long int v2){
     qDebug() << "Vertex: removeLinkFrom() vertex " << m_name
-             << " has " <<  inEdges() << "  in-edges. RemovingEdgeFrom " << v2 ;
+             << " has " <<  inLinks() << "  in-edges. RemovingEdgeFrom " << v2 ;
 
-    if (inEdges()>0) {
-        qDebug () << "checking all_inEdges";
+    if (inLinks()>0) {
+        qDebug () << "checking all_inLinks";
         QHash_edges::iterator it=m_inLinks.find(v2);
         while (it != m_inLinks.end() ) {
             if ( it.key() == v2 && it.value().first == m_curRelation ) {
@@ -237,7 +214,8 @@ void Vertex::removeLinkFrom(long int v2){
         }
         m_inLinksCounter--;
 
-        qDebug() << "Vertex: vertex " << m_name << " now has " << inEdges() << " in-edges"  ;
+        qDebug() << "Vertex: vertex " << m_name << " now has "
+                 << inLinks() << " in-links"  ;
 	}
 	else {
 		qDebug() << "Vertex: vertex " << m_name << " has no edges";
@@ -300,8 +278,7 @@ void Vertex::filterEdgesByWeight(float m_threshold, bool overThreshold){
 
 
 /* Returns the number of outward directed graph edges (arcs), aka the number of links, from this vertex   */
-long int Vertex::outEdges() {
-    //return m_enabled_outEdges.size();
+long int Vertex::outLinks() {
     return m_outLinksCounter;
 }
 
@@ -332,9 +309,8 @@ QHash<int,float>* Vertex::returnEnabledOutLinks(){
 }
 
 /* Returns the number of inward directed graph edges (arcs), aka the number of links, pointing to this vertex   */
-long int Vertex::inEdges() {
-    // return m_inEdges.size(); 			//FIXME: What if the user has filtered out links?
-    return m_inLinksCounter;
+long int Vertex::inLinks() {
+    return m_inLinksCounter;  //FIXME: What if the user has filtered out links?
 }
 
 
@@ -392,9 +368,7 @@ long int Vertex::inDegree() {
  	localDegree is the outDegree + inDegree minus the edges counted twice.
 */
 long int Vertex::localDegree(){
-
 	long int v2=0;
-    float m_weight=0;
     int relation = 0;
     bool edgeStatus=false;
     m_localDegree = (outDegree() + inDegree() );
@@ -628,5 +602,6 @@ ilist Vertex::Ps(void) {
 }
 
 Vertex::~Vertex() {
-	m_outEdges.clear();
+    m_outLinks.clear();
+    m_inLinks.clear();
 }

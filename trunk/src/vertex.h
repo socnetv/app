@@ -40,10 +40,9 @@ class Graph;
 
 typedef map<int,float> imap_f;
 typedef QHash<int,QString> ihash_s;
-typedef QHash<int,int> ihash_i;  
+
 typedef QList<int> ilist;
 
-typedef QHash < int, QPair<int,float> > i_hash_pair;
 
 typedef QPair <float, bool> pair_f_b;
 typedef QPair <int, pair_f_b > rel_w_bool;
@@ -75,15 +74,16 @@ public:
     void addLinkFrom(long int source, float weight);
 
     void changeLinkWeightTo (long int target, float weight);
+
     void setOutLinkEnabled (long int, bool);
 
     void removeLinkTo (long int target);		/* Removes edge to vertex t */
     void removeLinkFrom(long int source);	/* Removes edge from vertex s	*/
 
-    long int outEdges();
+    long int outLinks();
     QHash<int,float>* returnEnabledOutLinks();
 
-    long int inEdges();
+    long int inLinks();
 
     long int outDegree();
     long int inDegree();
@@ -214,16 +214,15 @@ public:
     void setCLC(float clucof)  { m_CLC=clucof; m_hasCLC=true; }
     bool hasCLC() { 	return m_hasCLC; }
 
-    imap_f m_outEdges;			//holds all edges starting from this vertex.
-    imap_f m_inEdges;			//holds all edges starting from this vertex.
-    ihash_i m_enabled_outEdges;
+    //hold all outbound and inboud edges of this vertex.
+    QHash_edges m_outLinks, m_inLinks;
 signals:
     void setEdgeVisibility ( int, int, bool);
 
 protected:
 
 private:
-    QHash_edges m_outLinks, m_inLinks;
+
     Graph *parentGraph;
     ilist myPs;
     long int m_name,  m_outLinksCounter, m_inLinksCounter, m_outDegree, m_inDegree, m_localDegree;

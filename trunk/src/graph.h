@@ -56,9 +56,14 @@ class QDateTime;
 
 typedef QList<Vertex*> Vertices;
 typedef map<long int,long int> imap_i;
-typedef map<int,float> imap_f;
+
 typedef QHash <QString, int> hash_si;
 
+typedef QHash <long int, long int> ihash_i;
+
+typedef QPair <float, bool> pair_f_b;
+typedef QPair <int, pair_f_b > rel_w_bool;
+typedef QHash < int, rel_w_bool > QHash_edges;
 
 
 class Graph:  public QObject{
@@ -173,14 +178,14 @@ public:
 
     int vertices() ;
 
-    int outEdges (int i) ;
-    int inEdges (int i) ;
+    int outboundEdges (int i) ;
+    int inboundEdges (int i) ;
 
     int outDegree(int);
     int inDegree(int);
 
-    int verticesWithOutEdges();
-    int verticesWithInEdges();
+    int verticesWithOutboundEdges();
+    int verticesWithInboundEdges();
     int verticesWithReciprocalEdges();
 
     QList<int> verticesIsolated();
@@ -317,7 +322,7 @@ public:
      *   We need to know the place of a vertex inside m_graph after adding
      *   or removing many vertices
      */
-    imap_i index;
+    ihash_i index;
 
     // Stores the number of vertices at distance n from a given vertex
     imap_i sizeOfNthOrderNeighborhood;
@@ -384,7 +389,7 @@ private:
     bool calculatedPP, calculatedIRCC;
 
 
-    int m_precision;
+    int m_precision, m_curRelation;
     float meanDegree, varianceDegree;
     float meanCC, varianceCC;
     float meanIRCC, varianceIRCC;
@@ -424,7 +429,7 @@ private:
 
     int isolatedVertices;
     float averGraphDistance, nonZeroDistancesCounter;
-    int outEdgesVert, inEdgesVert, reciprocalEdgesVert;
+    int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;
     int timerId,  layoutType, canvasWidth, canvasHeight;
 
     bool order, initShowLabels, initNumbersInsideNodes;

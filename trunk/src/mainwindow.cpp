@@ -5047,7 +5047,7 @@ void MainWindow::slotLayoutNodeSizeProportionalOutEdges(bool checked){
     for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
         if ( (*it) -> type() == TypeNode ){
             Node *jim = (Node*) (*it);
-            edges = activeGraph.outEdges(  (*jim).nodeNumber() ) ;
+            edges = activeGraph.outboundEdges(  (*jim).nodeNumber() ) ;
             qDebug() << "Node " << (*jim).nodeNumber() <<  " outDegree:  "<<  edges;
 
             if (edges == 0 ) {
@@ -5129,7 +5129,7 @@ void MainWindow::slotLayoutNodeSizeProportionalInEdges(bool checked){
     for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
         if ( (*it) -> type() == TypeNode ){
             Node *jim = (Node*) (*it);
-            edges = activeGraph.inEdges(  (*jim).nodeNumber() ) ;
+            edges = activeGraph.inboundEdges(  (*jim).nodeNumber() ) ;
             qDebug() << "Node " << (*jim).nodeNumber() << " inDegree:  " <<  edges;
 
             if (edges == 0 ) {
