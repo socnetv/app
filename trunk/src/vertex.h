@@ -43,7 +43,11 @@ typedef QHash<int,QString> ihash_s;
 typedef QHash<int,int> ihash_i;  
 typedef QList<int> ilist;
 
-typedef QHash < QPair<int,float> * , int  > hashTargetLevelWeightPair;
+typedef QHash < int, QPair<int,float> > i_hash_pair;
+
+typedef QPair <float, bool> pair_f_b;
+typedef QPair <int, pair_f_b > rel_w_bool;
+typedef QHash < int, rel_w_bool > QHash_edges;
 
 class Vertex : public QObject{
     Q_OBJECT
@@ -71,11 +75,14 @@ public:
     void addLinkFrom(long int source, float weight);
 
     void changeLinkWeightTo (long int target, float weight);
+    void setOutLinkEnabled (long int, bool);
 
     void removeLinkTo (long int target);		/* Removes edge to vertex t */
     void removeLinkFrom(long int source);	/* Removes edge from vertex s	*/
 
     long int outEdges();
+    QHash<int,float>* returnEnabledOutLinks();
+
     long int inEdges();
 
     long int outDegree();
@@ -216,13 +223,12 @@ signals:
 protected:
 
 private:
-    hashTargetLevelWeightPair m_all_outEdges;
-
+    QHash_edges m_outLinks, m_inLinks;
     Graph *parentGraph;
     ilist myPs;
-    long int m_name,  m_outLinks, m_inLinks, m_outDegree, m_inDegree, m_localDegree;
+    long int m_name,  m_outLinksCounter, m_inLinksCounter, m_outDegree, m_inDegree, m_localDegree;
     float m_Eccentricity;
-    int m_value, m_size, m_labelSize, m_numberSize;
+    int m_value, m_size, m_labelSize, m_numberSize, m_curRelation;
     bool m_inLinked, m_outLinked, m_reciprocalLinked, m_enabled, m_hasCLC, m_isolated;
     QString m_color, m_numberColor, m_label, m_labelColor, m_shape;
     //QString *outLinkColors;

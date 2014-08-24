@@ -198,13 +198,15 @@ void Graph::setCanvasDimensions(int w, int h){
     Alse called from GW (via createEdge() below) when user middle-clicks.
 */
 void Graph::createEdge(int v1, int v2, float weight, QString color, int reciprocal=0, bool drawArrows=true, bool bezier=false){
+    qDebug()<<" Graph: createEdge() " << v1 << " -> " << v2 << " weight " << weight;
     if ( reciprocal == 2) {
         qDebug()<<"*** Graph: createEdge() from "<<v1<<" to "<<v2<<" of weight "<<weight << " as RECIPROCAL and emitting drawEdge signal to GW";
         addEdge ( v1, v2, weight, color, reciprocal);
         emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier);
     }
     else if (this->hasEdge( v2, v1) )  {
-        qDebug()<<"*** Graph: createEdge() from "<<v1<<" to "<<v2<<" of weight "<<weight << ". Opposite link exists. Emitting drawEdgeReciprocal to GW to make the original reciprocal";
+        qDebug()<<"*** Graph: createEdge(): "<<v1<<" -> "<<v2<<" weight "<< weight
+               << ". Opposite link exists. Emitting drawEdgeReciprocal to GW to make the original reciprocal";
         reciprocal = 1;
         addEdge ( v1, v2, weight, color, reciprocal);
         emit drawEdgeReciprocal(v2, v1);
@@ -390,7 +392,8 @@ void Graph::addEdge (int v1, int v2, float weight, QString color, int reciprocal
     int source=index[v1];
     int target=index[v2];
 
-    qDebug()<< "Graph: addEdge() from vertex "<< v1 << "["<< source<< "] to vertex "<< v2 << "["<< target << "] of weight "<<weight;
+    qDebug()<< "Graph: addEdge() from vertex "<< v1 << "["<< source
+            << "] to vertex "<< v2 << "["<< target << "] of weight "<<weight;
 
     m_graph [ source ]->setOutLinked(true) ;
     m_graph [ source ]->addLinkTo(v2, weight );
@@ -411,7 +414,9 @@ void Graph::addEdge (int v1, int v2, float weight, QString color, int reciprocal
     }
 
 
-    qDebug()<<"Graph: addEdge() now a("<< v1 << ","<< v2<< ") = " << m_graph [ source ]->isLinkedTo(v2) << " with color "<<  color<<" . Storing edge color..." << ". Total Links " <<m_totalEdges;
+    qDebug()<<"Graph: addEdge() now a("<< v1 << ","<< v2<< ") = " << weight
+           << " with color "<<  color
+           <<" . Storing edge color..." << ". Total Links " <<m_totalEdges;
     m_graph[ source]->setOutLinkColor(v2, color);
 
     graphModified=true;
@@ -694,6 +699,7 @@ QString Graph::edgeColor (long int s, long int t){
     Complexity:  O(logN) for index retrieval + O(1) for QList index retrieval + O(logN) for checking edge(v2)
 */
 float Graph::hasEdge (int v1, int v2) {		
+    qDebug() << "Graph: hasEdge() " << v1 << " -> " << v2 << " ? " ;
     float weight=0;
     if ( ! m_graph[ index[v1] ] -> isEnabled() || ! m_graph[ index[v2] ] -> isEnabled())
         return 0;
@@ -930,26 +936,34 @@ bool Graph::isSymmetric(){
         return symmetricAdjacencyMatrix;
     }
     symmetricAdjacencyMatrix=true;
-    imap_f::iterator it1;
-    int y=0;
+    int y=0, target=0, source=0;
+    QHash<int,float> *enabledOutLinks = new QHash<int,float>;
+    QHash<int,float>::const_iterator it1;
     QList<Vertex*>::iterator it;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){ 	//for all edges of u, (u,y)
-        //qDebug("Graph::isSymmetric(): GRAPH CHANGED! Iterate over all edges of u...");
-        for( it1 = (*it)->m_outEdges.begin(); it1 != (*it)->m_outEdges.end(); it1++ ) {
-            y=index[it1->first];
-            if ( ! m_graph[y]->isLinkedTo( (*it)->name() )) {
-                //qDebug("Graph: isSymmetric():  u = %i IS NOT inLinked from y = %i", (*it)->name(), it1->first  );
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        source = (*it)->name();
+        qDebug() << "Graph::isSymmetric(): GRAPH Modified! " <<
+                    " Iterate over all edges of " << source ;
+        enabledOutLinks=(*it)->returnEnabledOutLinks();
+        it1=enabledOutLinks->cbegin();
+        while ( it1!=enabledOutLinks->cend() ){
+            target = it1.key();
+            y=index[ target ];
+            if ( ! m_graph[y]->isLinkedTo( source)) {
+                qDebug() << "Graph: isSymmetric: u = " << source
+                         << " IS NOT inLinked from y = " <<  target  ;
                 symmetricAdjacencyMatrix=false;
                 qDebug("Graph: isSymmetric()  NO");
-                return symmetricAdjacencyMatrix;
+                break;
             }
             else {
                 //	qDebug("Graph: isSymmetric():  u = %i IS inLinked from y = %i",it1->first, (*it)->name()  );
             }
+            ++it1;
         }
     }
-
-    qDebug("Graph: isSymmetric() YES");
+    delete enabledOutLinks;
+    qDebug() << "Graph: isSymmetric()" << symmetricAdjacencyMatrix;
     return symmetricAdjacencyMatrix;
 }
 
@@ -961,21 +975,33 @@ bool Graph::isSymmetric(){
 void Graph::symmetrize(){
     qDebug("Graph: symmetrize");
     QList<Vertex*>::iterator it;
-    imap_f::iterator it1;
-    int y;
+    int y=0, target=0, source=0, weight;
+    QHash<int,float> *enabledOutLinks = new QHash<int,float>;
+    QHash<int,float>::const_iterator it1;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        //for all edges (u,y) of u, do
-        qDebug("Graph: making all edges reciprocal. First iterate over all edges of u...");
-        for( it1 = (*it)->m_outEdges.begin(); it1 != (*it)->m_outEdges.end(); it1++ ) {
-            y=index[it1->first];
-            if ( ! m_graph[y]->isLinkedTo( (*it)->name() )) {
-                qDebug() << "Graph: symmetrize: u = " << (*it)->name() << " IS NOT inLinked from y = " <<  it1->first  ;
-                createEdge(it1->first, (*it)->name(), it1->second, initEdgeColor, false, true, false);
+        source = (*it)->name();
+        qDebug() << "Graph:symmetrize() - iterate over edges of source " << source;
+        enabledOutLinks=(*it)->returnEnabledOutLinks();
+        it1=enabledOutLinks->cbegin();
+        while ( it1!=enabledOutLinks->cend() ){
+            target = it1.key();
+            weight = it1.value();
+            y=index[ target ];
+            qDebug() << "Graph:symmetrize() - "
+                     << " source " << source
+                     << " outLinked to " << target << " weight " << weight;
+            if ( ! m_graph[y]->isLinkedTo( source )) {
+                qDebug() << "Graph:symmetrize(): s = " << source
+                         << " is NOT inLinked from y = " <<  target  ;
+                createEdge( target, source, weight, initEdgeColor, false, true, false);
             }
             else
-                qDebug() << "Graph: symmetrize: u = " << it1->first  << " IS inLinked from y = " <<   (*it)->name() ;
+                qDebug() << "Graph: symmetrize(): source = " << source
+                         << " is already inLinked from target = " << target ;
+            ++it1;
         }
     }
+    delete enabledOutLinks;
     graphModified=true;
     symmetricAdjacencyMatrix=true;
     emit graphChanged();
@@ -1514,8 +1540,9 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 
 */ 
 void Graph::BFS(int s, bool doCalculcateCentralities){
-    int u,w, dist_u=0, temp=0, dist_w=0;
-
+    int u,w, dist_u=0, temp=0, dist_w=0, target=0;
+    QHash<int,float> *enabledOutLinks = new QHash<int,float>;
+    QHash<int,float>::const_iterator it1;
     //set distance of s from s equal to 0
     DM.setItem(s,s,0);
     //set sigma of s from s equal to 1
@@ -1538,12 +1565,13 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
             qDebug("BFS: If we are to calculate centralities, we must push u=%i to global stack Stack ", u);
             Stack.push(u);
         }
-        imap_f::iterator it;
         qDebug("BFS: LOOP over every edge (u,w) e E, that is all neighbors w of vertex u");
-        for( it = m_graph [ u ]->m_outEdges.begin(); it != m_graph [ u ]->m_outEdges.end(); it++ ) {
-
-            w=index[it->first];
-            qDebug("BFS: u=%i is connected with node %i of index w=%i. ", u, it->first, w);
+        enabledOutLinks=m_graph [ u ]->returnEnabledOutLinks();
+        it1=enabledOutLinks->cbegin();
+        while ( it1!=enabledOutLinks->cend() ){
+            target = it1.key();
+            w=index[ target ];
+            qDebug("BFS: u=%i is connected with node %i of index w=%i. ", u, target, w);
             qDebug("BFS: Start path discovery");
             if (	DM.item(s, w) == -1 ) { //if distance (s,w) is infinite, w found for the first time.
                 qDebug("BFS: first time visiting w=%i. Enqueuing w to the end of Q", w);
@@ -1596,8 +1624,11 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
                     m_graph[w]->appendToPs(u);
                 }
             }
+            ++it1;
         }
+
     }
+    delete enabledOutLinks;
 }
 
 
