@@ -68,6 +68,7 @@ Vertex::Vertex(	Graph* parent,
     m_outLinked=false;
     m_reciprocalLinked=false;
     m_enabled = true;
+    //m_outLinks.reserve(1000);
 	connect (this, SIGNAL (setEdgeVisibility ( int, int, bool) ), parent, SLOT (slotSetEdgeVisibility ( int, int, bool)) );
 }
 

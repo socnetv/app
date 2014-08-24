@@ -3768,7 +3768,7 @@ void Graph::createRandomNetSmallWorld (
         double x0, double y0, double radius)
 {
     qDebug("Graph: createRandomNetSmallWorld. First creating a ring lattice");
-
+    index.reserve(vert);
     createRandomNetRingLattice(vert, degree, x0, y0, radius);
 
     qDebug("******** Graph: REWIRING starts...");
