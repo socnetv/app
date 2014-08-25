@@ -74,6 +74,8 @@ public:
 	
 	bool isComment(QString str);  
 signals:
+    void addRelation( QString );
+    void changeRelation( QString );
 	void createNode( 
 			int num, int size, QString color,
 			QString numColor, int numSize,

@@ -150,6 +150,12 @@ public slots:
     void slotShowWebCrawlerDialog();
     void slotWebCrawl(QString, int, int, bool);
 
+    void prevRelation();
+    void nextRelation();
+    void addRelation();
+    void addRelation(QString relationName);
+    void changeRelation(int relation);
+
     //EDIT MENU
     void slotFindNode();
     void slotAddLink();
@@ -302,7 +308,7 @@ protected:
 
     //	void myMessageOutput(QtMsgType type, const char *msg);
 signals:
-
+    void relationChanged(int );
 
 private:
 
@@ -315,7 +321,7 @@ private:
     Graph activeGraph;
     QPrinter *printer;
     QToolBar *toolBar;
-    QComboBox *zoomCombo;
+    QComboBox *zoomCombo, *changeRelationCombo;
     QTabWidget *toolBox;
 
     QProgressDialog *progressDialog;
@@ -383,9 +389,10 @@ private:
     *layoutLevel_PC_Act, *layoutLevel_BC_Act, *layoutLevel_IC_Act,
     *layoutLevel_IRCC_Act,*layoutLevel_PRP_Act, *layoutLevel_PP_Act;
     QAction *strongColorationAct, *regularColorationAct, *showProgressBarAct, *printDebugAct;
-    QAction *springLayoutAct, *FRLayoutAct, *nodeSizeProportionalOutDegreeAct,  *nodeSizeProportionalInDegreeAct;
+    QAction *springLayoutAct, *FRLayoutAct;
+    QAction *nodeSizeProportionalOutDegreeAct,  *nodeSizeProportionalInDegreeAct;
     QAction *zoomInAct, *zoomOutAct ;
-
+    QAction *nextRelationAct, *prevRelationAct, *addRelationAct;
 
     QString fileName, networkName, previous_fileName;
 

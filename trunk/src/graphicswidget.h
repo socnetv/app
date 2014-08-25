@@ -88,6 +88,7 @@ protected:
 	void paintEvent ( QPaintEvent * event );
 
 public slots:
+    void changeRelation(int relation);
 	void drawNode(	int i, int size, QString aColor, 
 					QString nColor, int nSize, 
 					QString label, QString lColor, int lSize, 
@@ -133,6 +134,7 @@ signals:
 private:
 	hash_in nodeHash;			//This is used in drawEdge() method
 	StringToEdgeMap edgesMap;
+    int m_curRelation;
 	int timerId,  layoutType, m_nodeSize, m_numberDistance, m_labelDistance;
 	double m_currentScaleFactor;
 	int m_currentRotationAngle;

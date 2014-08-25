@@ -100,13 +100,13 @@ bool Parser::loadDL(){
     if ( ! file.open(QIODevice::ReadOnly )) return false;
 	QTextStream ts( &file );
 
-    QString str, label, nm_str, level;
+    QString str, label, nm_str, relation;
 	
     int source=1, target=1, nm=0,lineCounter=0, mark=0, mark2=0, nodeNum=0;
 	edgeWeight=0;
     bool labels_flag=false, data_flag=false, intOK=false, floatOK=false;
-    bool level_flag=false;
-    QStringList lineElement, labelsList, levelsList;
+    bool relation_flag=false;
+    QStringList lineElement, labelsList, relationsList;
 	totalLinks=0;
 
 	while ( !ts.atEnd() )   {
@@ -173,24 +173,24 @@ bool Parser::loadDL(){
         }
         else if (str.startsWith( "labels", Qt::CaseInsensitive)
                 || str.startsWith( "row labels", Qt::CaseInsensitive)) {
-            labels_flag=true; data_flag=false;level_flag=false;
+            labels_flag=true; data_flag=false;relation_flag=false;
             qDebug() << " START LABELS RECOGNITION AND NODE CREATION";
             continue;
         }
         else if (str.startsWith( "COLUMN LABELS", Qt::CaseInsensitive)) {
-            labels_flag=true; data_flag=false;level_flag=false;
+            labels_flag=true; data_flag=false;relation_flag=false;
             qDebug() << " START COLUMN LABELS RECOGNITION AND NODE CREATION";
             continue;
         }
         else if ( str.startsWith( "data:", Qt::CaseInsensitive)
                   || str.startsWith( "data :", Qt::CaseInsensitive) ) {
-            data_flag=true; labels_flag=false;level_flag=false;
+            data_flag=true; labels_flag=false;relation_flag=false;
             qDebug() << " START DATA RECOGNITION AND EDGE CREATION";
             continue;
         }
         else if (str.startsWith( "LEVEL LABELS", Qt::CaseInsensitive) ) {
-            level_flag=true; data_flag=false; labels_flag=false;
-            qDebug() << " START LEVELS RECOGNITION";
+            relation_flag=true; data_flag=false; labels_flag=false;
+            qDebug() << " START RELATIONS RECOGNITION";
             continue;
         }
         else if (str.isEmpty()){
@@ -224,15 +224,16 @@ bool Parser::loadDL(){
                         );
 
         }
-        if ( level_flag){		//read edges
-            level=str;
-            if ( levelsList.contains(level) ) {
-                qDebug() << " level exists. CONTINUE";
+        if ( relation_flag){
+            relation=str;
+            if ( relationsList.contains(relation) ) {
+                qDebug() << " relation exists. CONTINUE";
                 continue;
             }
             else{
-                qDebug() << "adding level " << label << " to levelsList";
-                levelsList << level;
+                qDebug() << "adding relation " << relation << " to relationsList";
+                relationsList << relation;
+                emit addRelation( relation );
             }
         }
         if ( data_flag){		//read edges
@@ -240,17 +241,19 @@ bool Parser::loadDL(){
             lineElement=str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
             target=1;
             if (source==1){
-                level = levelsList.takeFirst();
+                relation = relationsList.takeFirst();
                 qDebug() << " WE ARE THE FIRST DATASET/MATRIX"
                          << " source node counter is " << source
-                         << " and level to " << level;
+                         << " and relation to " << relation;
+                emit changeRelation (relation);
             }
             else if (source>aNodes) {
                 source=0;
-                level = levelsList.takeFirst();
+                relation = relationsList.takeFirst();
                 qDebug() << " LOOKS LIKE WE ENTERED A NEW DATASET/MATRIX "
                          << " init source node counter to " << source
-                         << " and level to " << level;
+                         << " and relation to " << relation;
+                emit changeRelation (relation);
             }
             else {
                 qDebug() << "source node counter is " << source;

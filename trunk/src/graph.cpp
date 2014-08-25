@@ -59,12 +59,23 @@ Graph::Graph() {
     calculatedIRCC=false;
     calculatedPP=false;
     m_precision = 3;
-    m_curRelation=1;
+    m_curRelation=m_relationsList.count();
     dynamicMovement=false;
     timerId=0;
     layoutType=0;
 
     parser.setParent(this);
+
+    connect (
+                &parser, SIGNAL( addRelation (QString) ),
+                this, SLOT(addRelationFromParser(QString) )
+                ) ;
+
+    connect (
+                &parser, SIGNAL( changeRelation (QString) ),
+                this, SLOT( changeRelation (QString) )
+                ) ;
+
 
     connect (
                 &parser, SIGNAL( createNode (int,int,QString, QString, int, QString, QString, int, QPointF, QString, bool) ),
@@ -102,6 +113,77 @@ Graph::Graph() {
 }
 
 
+/**
+ * @brief Graph::changeRelation
+ * Called from MW
+ * @param relation
+ */
+void Graph::changeRelation(int relation){
+    qDebug() << "Graph::changeRelation(int) " << relation;
+    m_curRelation = relation;
+    QList<Vertex*>::iterator it;
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        if ( ! (*it)->isEnabled() )
+            continue;
+       (*it)->changeRelation(m_curRelation);
+    }
+    emit graphChanged();
+}
+
+/**
+ * @brief Graph::changeRelation
+ * Called from Parser and addRelationFromUser to change current relation
+ * @param relation
+ */
+void Graph::changeRelation(QString relation){
+    qDebug() << "Graph::changeRelation(string) " << relation;
+    m_curRelation  = m_relationsList.indexOf (relation) ;
+    emit relationChanged(m_curRelation);
+}
+
+/**
+ * @brief Graph::addRelationFromUser
+ * Called from MW to add a relation and change to that new relation
+ * @param newRelation
+ */
+void Graph::addRelationFromUser(QString newRelation){
+    qDebug() << "Graph::addRelationFromUser(string) " << newRelation;
+    m_relationsList << newRelation;
+    changeRelation(newRelation);
+}
+
+/**
+ * @brief Graph::addRelationFromGraph
+ * Called when creating random networks
+ * emits addRelationToMW
+ * @param newRelation
+ */
+void Graph::addRelationFromGraph(QString newRelation) {
+    qDebug() << "Graph::addRelationFromGraph(string) " << newRelation;
+    m_relationsList << newRelation;
+    emit addRelationToMW(newRelation);
+}
+
+/**
+ * @brief Graph::addRelationFromParser
+ * Called by file parser to add a new relation
+ * emits addRelationToMW
+ * @param newRelation
+ */
+void Graph::addRelationFromParser(QString newRelation) {
+    qDebug() << "Graph::addRelationFromParser(string) " << newRelation;
+    m_relationsList << newRelation;
+    emit addRelationToMW(newRelation);
+}
+
+/**
+ * @brief Graph::currentRelation
+ * @return int current relation index
+ */
+int Graph::currentRelation(){
+    return m_curRelation;
+}
+
 
 
 /**
@@ -110,13 +192,17 @@ Graph::Graph() {
     p holds the desired position of the new node.
     The new Vertex is named i and stores its color, label, label color, shape and position p.
 */
-void Graph::createVertex(int i, int size, QString nodeColor, QString numColor, int numSize, QString label, QString lColor, int lSize, QPointF p, QString nodeShape, bool signalMW){
+void Graph::createVertex(int i, int size, QString nodeColor, QString numColor,
+                         int numSize, QString label, QString lColor, int lSize,
+                         QPointF p, QString nodeShape, bool signalMW){
     int value = 1;
     addVertex(i, value, size,  nodeColor, numColor, numSize, label, lColor, lSize, p, nodeShape);
-    emit drawNode( i, size,  nodeColor, numColor, numSize, label, lColor, lSize, p, nodeShape, initShowLabels, initNumbersInsideNodes, true);
+    emit drawNode( i, size,  nodeColor, numColor, numSize, label, lColor, lSize,
+                   p, nodeShape, initShowLabels, initNumbersInsideNodes, true);
     if (signalMW)
         emit graphChanged();
-    initVertexColor=nodeColor; //draw new user-clicked nodes with the same color with that of the file loaded
+    //draw new user-clicked nodes with the same color with that of the file loaded
+    initVertexColor=nodeColor;
     initVertexShape=nodeShape;
     initVertexSize=size;
 
@@ -132,7 +218,7 @@ void Graph::createVertex(int i, int size, QString nodeColor, QString numColor, i
 */
 void Graph::createVertex(int i, QPointF p){
     if ( i < 0 )  i = lastVertexNumber() +1;
-    qDebug("Graph::createVertex(). Using vertex number %i with FIXED coords...", i);
+    qDebug() << "Graph::createVertex() " << i << " fixed coords.";
     createVertex(	i, initVertexSize,  initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
                     QString::number(i), initVertexLabelColor, initVertexLabelSize,
@@ -151,7 +237,7 @@ void Graph::createVertex(int i, QPointF p){
 */
 void Graph::createVertex(int i, int cWidth, int cHeight){
     if ( i < 0 )  i = lastVertexNumber() +1;
-    qDebug("Graph::createVertex(). Using vertex number %i with RANDOM node coords...", i);
+    qDebug() << "Graph::createVertex() " << i << " random coords.";
     QPointF p;
     p.setX(rand()%cWidth);
     p.setY(rand()%cHeight);
@@ -173,7 +259,7 @@ void Graph::createVertex(int i, int cWidth, int cHeight){
 
 void Graph::createVertex(QString label, int i) {
     if ( i < 0 )  i = lastVertexNumber() +1;
-    qDebug("Graph::createVertex(). Using vertex number %i with RANDOM node coords but with LABEL...", i);
+    qDebug() << "Graph::createVertex() " << i << " rand coords with label";
     QPointF p;
     p.setX(rand()%canvasWidth);
     p.setY(rand()%canvasHeight);
@@ -198,27 +284,30 @@ void Graph::setCanvasDimensions(int w, int h){
     Also called from MW when user clicks on the "add link" button
     Alse called from GW (via createEdge() below) when user middle-clicks.
 */
-void Graph::createEdge(int v1, int v2, float weight, QString color, int reciprocal=0, bool drawArrows=true, bool bezier=false){
-    qDebug()<<" Graph: createEdge() " << v1 << " -> " << v2 << " weight " << weight;
+void Graph::createEdge(int v1, int v2, float weight, QString color,
+                       int reciprocal=0, bool drawArrows=true, bool bezier=false){
+    qDebug()<<" Graph::createEdge() " << v1 << " -> " << v2 << " weight " << weight;
     if ( reciprocal == 2) {
-        qDebug()<<"*** Graph: createEdge() from "<<v1<<" to "<<v2<<" of weight "<<weight << " as RECIPROCAL and emitting drawEdge signal to GW";
+        qDebug()<<"  Creating edge as RECIPROCAL - emitting drawEdge signal to GW";
         addEdge ( v1, v2, weight, color, reciprocal);
         emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier);
     }
     else if (this->hasEdge( v2, v1) )  {
-        qDebug()<<"*** Graph: createEdge(): "<<v1<<" -> "<<v2<<" weight "<< weight
-               << ". Opposite link exists. Emitting drawEdgeReciprocal to GW to make the original reciprocal";
+        qDebug()<<". Opposite arc exists. "
+               << "  Emitting drawEdgeReciprocal to GW ";
         reciprocal = 1;
         addEdge ( v1, v2, weight, color, reciprocal);
         emit drawEdgeReciprocal(v2, v1);
     }
     else {
-        qDebug()<<"*** Graph: createEdge() from "<<v1<<" to "<<v2<<" of weight "<<weight << ". Opposite link does not exist. Emitting drawEdge to GW...";
+        qDebug()<<"  Opposite arc does not exist. Emitting drawEdge to GW...";
         reciprocal = 0;
         addEdge ( v1, v2, weight, color, reciprocal);
         emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier);
     }
-    initEdgeColor=color; //draw new edges the same color with those of the file loaded, on user clicks on the canvas
+    //draw new edges the same color with those of the file loaded,
+    // on user clicks on the canvas
+    initEdgeColor=color;
     emit graphChanged();
 }
 
@@ -227,8 +316,11 @@ void Graph::createEdge(int v1, int v2, float weight, QString color, int reciproc
     Called (via MW::addLink()) from GW when user middle-clicks on two nodes.
     Calls the above createEdge() method with initEdgeColor to set the default edge color.
 */
-void Graph::createEdge(int v1, int v2, float weight, int reciprocal=0, bool drawArrows=true, bool bezier=false){
-    createEdge(v1, v2, (float) weight, initEdgeColor, reciprocal, drawArrows, bezier);
+void Graph::createEdge(int v1, int v2, float weight, int reciprocal=0,
+                       bool drawArrows=true, bool bezier=false){
+    qDebug()<< " Graph::createEdge() - " << v1<< " -> " << v2 ;
+    createEdge(v1, v2, (float) weight, initEdgeColor, reciprocal,
+               drawArrows, bezier);
 }
 
 
@@ -237,11 +329,11 @@ void Graph::createEdge(int v1, int v2, float weight, int reciprocal=0, bool draw
     Calls the above createEdge() method with initEdgeColor
 */
 void Graph::createEdge (int source, int target){
+    qDebug()<< " Graph::createEdge() - from " << source << " to " << target ;
     if (this->hasEdge(source, target) ) {
-        qDebug()<< " Graph::createEdge - Edge from " << source << " to " << target << " already exists - returning...";
+        qDebug()<< "  Already exists - returning...";
         return;
     }
-    qDebug()<< " Graph::createEdge - New edge from " << source << " to " << target ;
     float weight = 1.0;
     bool reciprocal=false;
     bool drawArrows=true;
@@ -250,9 +342,13 @@ void Graph::createEdge (int source, int target){
     createEdge(source, target, weight, initEdgeColor, reciprocal, drawArrows, bezier);
 }
 
+
 /**
-*	This is called from loadPajek method of Parser in order to delete any redundant (dummy) nodes.
-*/
+ * @brief Graph::removeDummyNode
+ * This is called from loadPajek method of Parser in order to delete any
+ * redundant (dummy) nodes.
+ * @param i
+ */
 void Graph::removeDummyNode(int i){
     qDebug("**Graph: RemoveDummyNode %i", i);
     removeVertex(i);
@@ -262,10 +358,23 @@ void Graph::removeDummyNode(int i){
 
 
 
-/**	Adds a Vertex 
-    named v1, valued val, sized nszm colored nc, labeled nl, labelColored lc, shaped nsp, at point p
-    This method is called by createVertex() method
-*/
+/**
+ * @brief Graph::addVertex
+ * Adds a Vertex named v1, valued val, sized nszm colored nc, labeled nl,
+ * labelColored lc, shaped nsp, at point p.
+ * This method is called by createVertex() method
+ * @param v1
+ * @param val
+ * @param size
+ * @param color
+ * @param numColor
+ * @param numSize
+ * @param label
+ * @param labelColor
+ * @param labelSize
+ * @param p
+ * @param shape
+ */
 void Graph::addVertex (
         int v1, int val, int size, QString color,
         QString numColor, int numSize,
@@ -273,16 +382,24 @@ void Graph::addVertex (
         QPointF p, QString shape
         ){
 
+    qDebug() << "Graph::addVertex() ";
     if (order)
         index[v1]=m_totalVertices;
     else
         index[v1]=m_graph.size();
 
-    m_graph.append( new Vertex(this, v1, val, size, color, numColor, numSize, label, labelColor, labelSize, p, shape) );
+    m_graph.append(
+                new Vertex
+                (this, v1, val, size, color, numColor, numSize, label,
+                 labelColor, labelSize, p, shape
+                 )
+                );
     m_totalVertices++;
 
-    qDebug() << "Graph: addVertex(): Vertex named " << m_graph.back()->name() << " appended with index= "<<index[v1]
-                << " Now, m_graph size " << m_graph.size() << ". New vertex position: " << p.x() << "," << p.y();
+//    qDebug() << "Graph: addVertex(): Vertex named " << m_graph.back()->name()
+//             << " appended with index= "<<index[v1]
+//             << " Now, m_graph size " << m_graph.size()
+//             << ". New vertex position: " << p.x() << "," << p.y();
     graphModified=true;
 }
 
@@ -540,7 +657,7 @@ void Graph::filterEdgesByWeight(float m_threshold, bool overThreshold){
         qDebug() << "Graph: filterEdgesByWeight()  below "<< m_threshold ;
 
     QList<Vertex*>::iterator it;
-    for (QList<Vertex*>::iterator it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
         if ( (*it)->isOutLinked() ){
             (*it)->filterEdgesByWeight ( m_threshold, overThreshold );
         }
@@ -549,6 +666,25 @@ void Graph::filterEdgesByWeight(float m_threshold, bool overThreshold){
                      << " not linked. Proceeding...";
     }
 }
+
+
+
+/**
+ * @brief Graph::filterEdgesByRelation
+ * Not called by Called from MW to filter out all edges of a given relation
+ * calls the homonymous method of Vertex class.
+ * @param relation
+  */
+void Graph::filterEdgesByRelation(int relation, bool status){
+    qDebug() << "Graph::filterEdgesByRelation() " ;
+    QList<Vertex*>::iterator it;
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        if ( ! (*it)->isEnabled() )
+            continue;
+       (*it)->filterEdgesByRelation ( relation, status );
+    }
+}
+
 
 
 void Graph::slotSetEdgeVisibility ( int source, int target, bool visible) {
@@ -857,6 +993,7 @@ QList<int> Graph::verticesIsolated(){
                     // Symmetry test is needed for maxIndex*
                     if ( this->hasEdge ( (*it1)->name(), (*it)->name() ) == 0 )
                         symmetricAdjacencyMatrix=false;
+                    // FIXME DO WE REALLY NEED TO CHECK TWICE!!! ???
                 }
             }
             j++;
@@ -932,6 +1069,9 @@ void Graph::clear() {
     //qDebug("Graph: m_graph reports size %i", m_graph.size());
     m_graph.clear();
     index.clear();
+    //clear relations
+    m_relationsList.clear();
+
     discreteDPs.clear();
     discreteDCs.clear();
     m_isolatedVerticesList.clear();
@@ -970,8 +1110,10 @@ void Graph::clear() {
 
 
 /**
-    Returns true if the adjacency matrix is symmetric
-*/
+ * @brief Graph::isSymmetric
+ * Returns TRUE if the adjacency matrix of the current relation is symmetric
+ * @return bool
+ */
 bool Graph::isSymmetric(){
     qDebug("Graph: isSymmetric ");
     if (!graphModified){
@@ -984,6 +1126,8 @@ bool Graph::isSymmetric(){
     QList<Vertex*>::iterator it;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         source = (*it)->name();
+        if ( ! (*it)->isEnabled() )
+            continue;
         qDebug() << "Graph::isSymmetric(): GRAPH Modified! " <<
                     " Iterate over all edges of " << source ;
         enabledOutLinks=(*it)->returnEnabledOutLinks();
@@ -1612,7 +1756,7 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
         it1=m_graph [ u ] ->m_outLinks.cbegin();
         while ( it1!=m_graph [ u ] -> m_outLinks.cend() ){
             relation = it1.value().first;
-            if ( relation != m_curRelation )  {
+            if ( relation != currentRelation() )  {
                 ++it1;
                 continue;
             }
@@ -3037,7 +3181,7 @@ int Graph::prestigePageRank(){
                     qDebug() << "Graph::numberOfCliques() "
                              << " iterate over all inLinks ";
                     relation = jt.value().first;
-                    if ( relation != m_curRelation ){
+                    if ( relation != currentRelation() ){
                         ++jt;
                         continue;
                     }
@@ -3681,6 +3825,8 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
 void Graph::createRandomNetErdos(int vert, double probability){
     qDebug("Graph: createRandomNetErdos");
 
+    index.reserve(vert);
+
     int progressCounter=0;
 
     for (register int i=0; i< vert ; i++) {
@@ -3710,6 +3856,7 @@ void Graph::createRandomNetErdos(int vert, double probability){
         emit updateProgressDialog(progressCounter );
         qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
     }
+    addRelationFromGraph(tr("random"));
     emit graphChanged();
 }
 
@@ -3728,9 +3875,11 @@ void Graph::createRandomNetRingLattice(
     int y=0;
     int progressCounter=0;
 
-
     double Pi = 3.14159265;
     double rad= (2.0* Pi/ vert );
+
+    index.reserve(vert);
+
     for (register int i=0; i< vert ; i++) {
         x=x0 + radius * cos(i * rad);
         y=y0 + radius * sin(i * rad);
@@ -3756,7 +3905,8 @@ void Graph::createRandomNetRingLattice(
         emit updateProgressDialog(progressCounter );
         qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
     }
-    graphChanged();
+    addRelationFromGraph(tr("random"));
+    emit graphChanged();
 }
 
 
@@ -3768,7 +3918,7 @@ void Graph::createRandomNetSmallWorld (
         double x0, double y0, double radius)
 {
     qDebug("Graph: createRandomNetSmallWorld. First creating a ring lattice");
-    index.reserve(vert);
+
     createRandomNetRingLattice(vert, degree, x0, y0, radius);
 
     qDebug("******** Graph: REWIRING starts...");
@@ -3819,6 +3969,8 @@ void Graph::createSameDegreeRandomNetwork(int vert, int degree){
 
     int progressCounter=0;
 
+    index.reserve(vert);
+
     for (register int i=0; i< vert ; i++) {
         int x=10+rand() %640;
         int y=10+rand() %480;
@@ -3848,7 +4000,8 @@ void Graph::createSameDegreeRandomNetwork(int vert, int degree){
         qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
 
     }
-    graphChanged();
+    addRelationFromGraph(tr("random"));
+    emit graphChanged();
 }
 
 
@@ -4135,7 +4288,7 @@ float Graph:: numberOfCliques(int v1){
         it1=m_graph [ index[v1] ] ->m_inLinks.cbegin();
         while ( it1!=m_graph [ index[v1] ] -> m_inLinks.cend() ){
             relation = it1.value().first;
-            if ( relation != m_curRelation ) {
+            if ( relation != currentRelation() ) {
                 ++it1;
                 continue;
             }
@@ -4155,7 +4308,7 @@ float Graph:: numberOfCliques(int v1){
                 qDebug() << "Graph::numberOfCliques() "
                          << " iterate over all inLinks ";
                 relation = it2.value().first;
-                if ( relation != m_curRelation ){
+                if ( relation != currentRelation() ){
                     ++it2;
                     continue;
                 }
@@ -4194,7 +4347,7 @@ float Graph:: numberOfCliques(int v1){
             it2=m_graph [ index[v1] ] ->m_outLinks.cbegin();
             while ( it2!=m_graph [ index[v1]  ] -> m_outLinks.cend() ){
                 relation = it2.value().first;
-                if ( relation != m_curRelation ) {
+                if ( relation != currentRelation() ) {
                     ++it2;
                     continue;
                 }
@@ -4235,7 +4388,7 @@ float Graph:: numberOfCliques(int v1){
     it1=m_graph [ index[v1] ] ->m_outLinks.cbegin();
     while ( it1!=m_graph [ index[v1]  ] -> m_outLinks.cend() ){
         relation = it1.value().first;
-        if ( relation != m_curRelation ){
+        if ( relation != currentRelation() ){
             ++it1;
             continue;
         }
@@ -4253,7 +4406,7 @@ float Graph:: numberOfCliques(int v1){
         it2=m_graph [ index[v1] ] ->m_outLinks.cbegin();
         while ( it2!=m_graph [ index[v1]  ] -> m_outLinks.cend() ){
             relation = it2.value().first;
-            if ( relation != m_curRelation ){
+            if ( relation != currentRelation() ){
                 ++it2;
                 continue;
             }
@@ -4734,7 +4887,9 @@ int Graph:: factorial(int x) {
     Our almost universal network loader. :)
     Actually it calls the load() method of parser/qthread class.
 */
-bool Graph::loadGraph (	QString fileName,  bool iSL, int maxWidth, int maxHeight, int fileFormat, int two_sm_mode){
+bool Graph::loadGraph (	QString fileName,  bool iSL,
+                        int maxWidth, int maxHeight,
+                        int fileFormat, int two_sm_mode){
     initShowLabels = iSL;
     bool loadGraphStatus = parser.load(
                 fileName,

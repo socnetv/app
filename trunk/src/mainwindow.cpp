@@ -201,6 +201,22 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     connect( rotateSpinBox, SIGNAL(valueChanged(int)), graphicsWidget, SLOT( rot(int) ) );
 
+    connect( nextRelationAct, SIGNAL(triggered()), this, SLOT( nextRelation() ) );
+    connect( prevRelationAct, SIGNAL(triggered()), this, SLOT( prevRelation() ) );
+    connect( addRelationAct, SIGNAL(triggered()), this, SLOT( addRelation() ) );
+    connect( changeRelationCombo , SIGNAL( currentIndexChanged(int) ) ,
+             this, SLOT( changeRelation(int) ) );
+
+    connect( this , SIGNAL(relationChanged(int)),
+             &activeGraph, SLOT( changeRelation(int) ) );
+
+    connect ( &activeGraph, SIGNAL(addRelationToMW(QString)),
+              this, SLOT(addRelation(QString)));
+
+    connect( &activeGraph, SIGNAL(relationChanged(int)),
+             graphicsWidget, SLOT( changeRelation(int))  ) ;
+
+
     connect( &m_filterEdgesByWeightDialog, SIGNAL( userChoices( float, bool) ),
              &activeGraph, SLOT( filterEdgesByWeight (float, bool) ) );
 
@@ -1128,12 +1144,43 @@ void MainWindow::initActions(){
     zoomInAct->setStatusTip(tr("Zooms inside the actual network."));
     zoomInAct->setWhatsThis(tr("Zoom In.\n\nZooms in. What else did you expect?"));
 
-
     zoomOutAct = new QAction(QIcon(":/images/zoomout.png"), tr("Zoom &out"),  this);
     zoomOutAct->setShortcut(tr("Ctrl+-"));
     zoomOutAct->setToolTip(tr("Zoom out (Ctrl+-)"));
     zoomOutAct->setStatusTip(tr("Zooms out of the actual network."));
     zoomOutAct->setWhatsThis(tr("Zoom out.\n\nZooms out. What else did you expect?"));
+
+
+    nextRelationAct = new QAction(QIcon(":/images/nextrelation.png"),
+                                  tr("Next Relation"),  this);
+    nextRelationAct->setShortcut(tr("Ctrl+Shift++"));
+    nextRelationAct->setToolTip(tr("Goto next graph relation (Ctrl Shift  +)"));
+    nextRelationAct->setStatusTip(tr("Loads the next relation of the network (if any)."));
+    nextRelationAct->setWhatsThis(tr("Next Relation\n\nLoads the next relation of the network (if any)"));
+
+    prevRelationAct = new QAction(QIcon(":/images/prevrelation.png"),
+                                      tr("Previous Relation"),  this);
+    prevRelationAct->setShortcut(tr("Ctrl+Shift+-"));
+    prevRelationAct->setToolTip(
+                tr("Goto previous graph relation (Ctrl Shift -)"));
+    prevRelationAct->setStatusTip(
+                tr("Loads the previous relation of the network (if any)."));
+    prevRelationAct->setWhatsThis(
+                tr("Previous Relation\n\n"
+                   "Loads the previous relation of the network (if any)"));
+
+    addRelationAct = new QAction(QIcon(":/images/addrelation.png"),
+                                      tr("Add New Relation"),  this);
+    addRelationAct->setShortcut(tr("Ctrl+Shift+N"));
+    addRelationAct->setToolTip(
+                tr("Add a new relation to the active graph (Ctrl+Shift+N)"));
+    addRelationAct->setStatusTip(
+                tr("Adds a new relation to the network. "
+                   "Nodes will be preserved, edges will be removed. "));
+    addRelationAct->setWhatsThis(
+                tr("Add New Relation\n\n"
+                   "Adds a new relation to the active network. "
+                   "Nodes will be preserved, edges will be removed. "));
 
     nodeSizeProportionalOutDegreeAct= new QAction(QIcon(":/images/nodeout.png"),tr("Node size according to outDegree"), this);
     nodeSizeProportionalOutDegreeAct->setShortcut(tr("Alt+3"));
@@ -1885,22 +1932,29 @@ void MainWindow::initToolBar(){
     QLabel *labelRotateSpinBox= new QLabel;
     labelRotateSpinBox ->setText(tr("Rotation:"));
 
-
     rotateSpinBox = new QSpinBox;
     rotateSpinBox ->setRange(-360, 360);
     rotateSpinBox->setSingleStep(1);
     rotateSpinBox->setValue(0);
 
-//    QGroupBox *rotateGroup = new QGroupBox();
-//    QHBoxLayout *rotateGroupLayout = new QHBoxLayout(rotateGroup);
-//    rotateGroupLayout->addWidget(labelRotateSpinBox);
-//    rotateGroupLayout->addWidget(rotateSpinBox);
-
     toolBar -> addWidget(labelRotateSpinBox);
     toolBar -> addWidget(rotateSpinBox);
+
+    toolBar -> addSeparator();
+
+    //Create relation select widget
+    QLabel *labelRelationSelect= new QLabel;
+    labelRelationSelect ->setText(tr("Relation:"));
+    toolBar -> addWidget (labelRelationSelect);
+    toolBar -> addAction (prevRelationAct);
+    changeRelationCombo = new QComboBox;
+    changeRelationCombo->setCurrentIndex(0);
+    toolBar -> addWidget(changeRelationCombo);
+    toolBar -> addAction (nextRelationAct);
+    toolBar -> addAction (addRelationAct);
+
     toolBar -> addSeparator();
     toolBar -> addAction ( QWhatsThis::createAction (this));
-
 
 }
 
@@ -2576,6 +2630,8 @@ void MainWindow::initNet(){
     linkClicked=false;
     nodeClicked=false;
 
+    changeRelationCombo->clear();
+
     /** Clear previous network data */
     activeGraph.clear();
     activeGraph.setSocNetV_Version(VERSION);
@@ -2749,6 +2805,7 @@ void MainWindow::slotChooseFile() {
         break;
 
     }
+
     m_fileName = QFileDialog::getOpenFileName( this, tr("Select one file to open"), "", fileType_string	);
 
     if (!m_fileName.isEmpty()) {
@@ -3095,9 +3152,15 @@ bool MainWindow::loadNetworkFile(QString m_fileName, int m_fileFormat ){
 
 
 /**
-*	Called from Parser/Graph when a network file is loaded.
-*	It informs the MW about the type of the network so that it can display the appropiate message.
-*/
+ * @brief MainWindow::fileType
+ * Called from Parser/Graph when a network file is loaded.
+ * It informs the MW about the type of the network so that it can display the appropiate message.
+ * @param type
+ * @param netName
+ * @param aNodes
+ * @param totalLinks
+ * @param undirected
+ */
 void MainWindow::fileType (
         int type, QString netName, int aNodes, int totalLinks, bool undirected)
 {
@@ -3213,9 +3276,112 @@ void MainWindow::fileType (
     fileSave->setEnabled(false);
 }
 
+/**
+ * @brief MainWindow::prevRelation
+ */
+void MainWindow::prevRelation(){
+    qDebug() << "MW::prevRelation()";
+    int index=changeRelationCombo->currentIndex();
+    if (index>0){
+        changeRelation(--index);
+    }
+}
+
+/**
+ * @brief MainWindow::nextRelation
+ */
+void MainWindow::nextRelation(){
+    qDebug() << "MW::nextRelation()";
+    int index=changeRelationCombo->currentIndex();
+    int relationsCounter=changeRelationCombo->count();
+    if (index< (relationsCounter -1 )){
+        changeRelation(++index);
+    }
+
+}
 
 
 
+/**
+ * @brief MainWindow::addRelation
+ * called from activeGraph when the parser or a network creation method
+ * demands a new relation to be added in the Combobox.
+ * @param relationName (NULL)
+ */
+void MainWindow::addRelation(QString relationName){
+    qDebug() << "MW::addRelation(string)" << relationName;
+    if ( !relationName.isNull() ){
+        changeRelationCombo->addItem(relationName);
+    }
+}
+
+/**
+ * @brief MainWindow::addRelation
+ * Called from MW when user clicks New Relation btn
+ * or when the user creates the first edge visually.
+ */
+void MainWindow::addRelation(){
+    qDebug() << "MW::addRelation()";
+    bool ok;
+    QString newRelationName;
+    int relationsCounter=changeRelationCombo->count();
+    if (relationsCounter==0) {
+        newRelationName = QInputDialog::getText(this, tr("Add new relation"),
+                              tr("Since you have just created the first edge "
+                                 "of this social network, please enter a name \n"
+                                 "for this new relation between the actors.\n "
+                                 "A relation is a collection of ties of a "
+                                 "specific kind between the network actors.\n"
+                                 "For instance, enter \"friendship\" if the "
+                                 "edges of this relation refer to the set of \n"
+                                 "friendships between pairs of actors."),
+                              QLineEdit::Normal, QString::null, &ok );
+    }
+    else {
+        //FIXME: Check newRelationName...
+        newRelationName = QInputDialog::getText(
+                    this, tr("Add new relation"),
+                    tr("Please enter a name for the new relation:"),
+                    QLineEdit::Normal,QString::null, &ok);
+    }
+    if (ok && !newRelationName.isEmpty()){
+        changeRelationCombo->addItem(newRelationName);
+        if (relationsCounter != 0){
+            qDebug() << "MW::addRelation() - calling MW::changeRelation";
+            changeRelation(relationsCounter);
+        }
+    }
+    statusMessage( QString(tr("New relation named %1, added."))
+                   .arg( newRelationName ) );
+}
+
+/**
+ * @brief MainWindow::changeRelation
+ * Called when the user presses the Prev/Next or New Relation btn
+  * @param relation
+ */
+void MainWindow::changeRelation(int relation){
+    qDebug() << "MW::changeRelation(int) "<< relation;
+    int curIndex = changeRelationCombo->currentIndex();
+    QString curRelationName=changeRelationCombo->itemText(relation);
+    if ( relation != curIndex ) {
+        // new relation created or relation changed from Prev / Next buttons
+        changeRelationCombo->setCurrentIndex(relation);
+        curRelationName=changeRelationCombo->itemText(relation);
+        // if the user already changed the index from toolbar
+        // do not setCurrentIndex.
+
+        emit relationChanged(relation);
+        QMessageBox::information(this,"Relation changed",
+                                 tr("You are now editing relation %1 (%2)")
+                                 .arg(curRelationName)
+                                 .arg(changeRelationCombo->currentIndex()),
+                                 QMessageBox::Ok, 0);
+        statusMessage( QString(tr("Relation named %1."))
+                       .arg( curRelationName ) );
+
+    }
+}
 
 
 
@@ -3225,9 +3391,12 @@ void MainWindow::fileType (
     Called when "Create Node" button is clicked on the Main Window.
 */
 void MainWindow::addNode() {
-    qDebug("MW: addNode(). Calling activeGraph::createVertex() for -1 - max width and height %i, %i", graphicsWidget->width()-10,  graphicsWidget->height()-10);
-    activeGraph.createVertex(-1, graphicsWidget->width()-10,  graphicsWidget->height()-10);  // minus a  screen edge offset...
-    statusMessage( tr("New node (numbered %1) added.").arg(activeGraph.lastVertexNumber())  );
+    qDebug() << "MW::addNode() ";
+    // minus a  screen edge offset...
+    activeGraph.createVertex (
+                -1, graphicsWidget->width()-10,  graphicsWidget->height()-10);
+    statusMessage( tr("New node (numbered %1) added.")
+                   .arg(activeGraph.lastVertexNumber())  );
 }
 
 
@@ -4322,8 +4491,11 @@ void MainWindow::addLink (int v1, int v2, float weight) {
     int reciprocal=0;
     bool bezier = false;
     activeGraph.createEdge(v1, v2, weight, reciprocal, drawArrows, bezier);
-}
 
+    if ( activeGraph.totalEdges() == 1 && changeRelationCombo->count() == 0 ) {
+        addRelation();
+    }
+}
 
 
 /**

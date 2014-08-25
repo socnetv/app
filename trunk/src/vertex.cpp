@@ -63,13 +63,15 @@ Vertex::Vertex(	Graph* parent,
     m_DC=0; m_SDC=0; m_DP=0; m_SDP=0; m_CC=0; m_SCC=0; m_BC=0; m_SBC=0;
     m_SC=0; m_SSC=0; m_IRCC=0; m_SIRCC=0;
     m_CLC=0; m_hasCLC=false;
-    m_curRelation=1;
+    m_curRelation=0;
     m_inLinked=false;
     m_outLinked=false;
     m_reciprocalLinked=false;
     m_enabled = true;
     //m_outLinks.reserve(1000);
-	connect (this, SIGNAL (setEdgeVisibility ( int, int, bool) ), parent, SLOT (slotSetEdgeVisibility ( int, int, bool)) );
+    connect (this, SIGNAL (setEdgeVisibility ( int, int, bool) ),
+             parent, SLOT (slotSetEdgeVisibility ( int, int, bool)) );
+
 }
 
 Vertex::Vertex(int v1) { 
@@ -85,13 +87,20 @@ Vertex::Vertex(int v1) {
     m_Eccentricity=0;
     m_DC=0; m_SDC=0; m_DP=0; m_SDP=0; m_CC=0; m_SCC=0; m_BC=0; m_SBC=0;
     m_IRCC=0; m_SIRCC=0; m_SC=0; m_SSC=0;
-    m_curRelation=1;
+    m_curRelation=0;
     m_inLinked=false;
     m_outLinked=false;
     m_reciprocalLinked=false;
 }
 
 
+void Vertex::changeRelation(int relation) {
+    qDebug() << "Vertice::changeRelation() to " << relation
+                << " from " << m_curRelation;
+    filterEdgesByRelation(m_curRelation, false);
+    m_curRelation=relation;
+    filterEdgesByRelation(m_curRelation, true);
+}
 
 
 void Vertex::addLinkTo (long int target, float weight) {
@@ -276,10 +285,59 @@ void Vertex::filterEdgesByWeight(float m_threshold, bool overThreshold){
 
 
 
+/**
+ * @brief Vertex::filterEdgesByRelation
+ * Called from Graph to filter out all edges of a given relation
+ * @param relation
+ */
+void Vertex::filterEdgesByRelation(int relation, bool status ){
+    qDebug() << "Vertex::filterEdgesByRelation of vertex " << this->m_name
+                << " relation " << relation << " to " << status;
+    int target=0;
+    float weight =0;
+    //QHash_edges::const_iterator it1=m_outLinks.constBegin();
+    QMutableHashIterator < int, rel_w_bool > it1 (m_outLinks);
+    while ( it1.hasNext()) {
+        it1.next();
+        relation = it1.value().first;
+        if ( relation == m_curRelation ) {
+            target=it1.key();
+            weight = it1.value().second.first;
+            qDebug() << " edge to " << target ;
+            //setOutLinkEnabled(target,status);
+            it1.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, status) ));
+            emit setEdgeVisibility ( m_name, target, status );
+        }
+        else {
+
+        }
+
+    }
+}
 
 
-/* Returns the number of outward directed graph edges (arcs), aka the number of links, from this vertex   */
+
+/**
+ * @brief Vertex::outLinks
+ * Returns the number of active outbound arcs, aka the number of
+ * outLinks, from this vertex for the current relation
+ * @return long int
+ */
 long int Vertex::outLinks() {
+    m_outLinksCounter = 0;
+    int relation=0;
+    bool edgeStatus = false;
+    QHash_edges::const_iterator it1=m_outLinks.constBegin();
+    while (it1 != m_outLinks.constEnd() ) {
+        relation = it1.value().first;
+        if ( relation == m_curRelation ) {
+            edgeStatus=it1.value().second.second;
+            if ( edgeStatus == true) {
+                m_outLinksCounter++;
+            }
+        }
+        ++it1;
+    }
     return m_outLinksCounter;
 }
 
@@ -309,9 +367,29 @@ QHash<int,float>* Vertex::returnEnabledOutLinks(){
     return enabledOutLinks;
 }
 
-/* Returns the number of inward directed graph edges (arcs), aka the number of links, pointing to this vertex   */
+
+/**
+ * @brief Vertex::inLinks
+ * Returns the number of active inbound arcs, aka the number of
+ * inLinks, to this vertex for the current relation
+ * @return long int
+ */
 long int Vertex::inLinks() {
-    return m_inLinksCounter;  //FIXME: What if the user has filtered out links?
+    m_inLinksCounter = 0;
+    int relation=0;
+    bool edgeStatus = false;
+    QHash_edges::const_iterator it1=m_inLinks.constBegin();
+    while (it1 != m_inLinks.constEnd() ) {
+        relation = it1.value().first;
+        if ( relation == m_curRelation ) {
+            edgeStatus=it1.value().second.second;
+            if ( edgeStatus == true) {
+                m_inLinksCounter++;
+            }
+        }
+        ++it1;
+    }
+    return m_inLinksCounter;
 }
 
 
@@ -392,7 +470,13 @@ long int Vertex::localDegree(){
 }
 
 
-//Checks if this vertex is outlinked to v2 and returns the weight of the link
+/**
+ * @brief Vertex::isLinkedTo
+ * Checks if this vertex is outlinked to v2 and returns the weight of the link
+ * only if the outLink is enabled.
+ * @param v2
+ * @return
+ */
 float Vertex::isLinkedTo(long int v2){
     qDebug()<< "Vertex::isLinkedTo()" ;
     float m_weight=0;
@@ -421,7 +505,13 @@ float Vertex::isLinkedTo(long int v2){
 }
 
 
-
+/**
+ * @brief Vertex::isLinkedFrom
+ * Checks if this vertex is inLinked from v2 and returns the weight of the link
+ * only if the inLink is enabled.
+ * @param v2
+ * @return
+ */
 float Vertex::isLinkedFrom(long int v2){
     qDebug()<< "Vertex::isLinkedFrom()" ;
     float m_weight=0;

@@ -70,6 +70,8 @@ public:
     void setEnabled (bool flag );
     bool isEnabled ();
 
+    void changeRelation(int) ;
+
     void addLinkTo (long int target, float weight);	/* Adds an outLink to target with weight w */
     void addLinkFrom(long int source, float weight);
 
@@ -111,6 +113,7 @@ public:
 
     void filterEdgesByWeight(float m_threshold, bool overThreshold);
     //	void filterEdgesByColor(float m_threshold, bool overThreshold);
+    void filterEdgesByRelation(int relation, bool status);
 
     void setSize(int );
     int  size();

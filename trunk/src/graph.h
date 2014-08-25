@@ -70,7 +70,11 @@ class Graph:  public QObject{
     Q_OBJECT
 
 public slots:
+    int currentRelation();
+
     /** Slots to signals from Parser */
+    void changeRelation(QString);
+    void addRelationFromParser(QString);
     void createVertex(	int i, int size, QString nodeColor,
                         QString numColor, int numSize,
                         QString label, QString lColor, int lSize,
@@ -94,9 +98,12 @@ public slots:
     void createVertex(QString label, int i) ; 			//Called by WebCrawler
 
     /** Slots to signals from MainWindow */
+    void changeRelation(int);
+    void addRelationFromUser(QString relation);
     void setCanvasDimensions(int w, int h);
     void filterIsolateVertices ( bool );		//Called by MW to filter orphan vertices
     void filterEdgesByWeight (float, bool);		//Called by MW to filter edges over/under a weight
+    void filterEdgesByRelation(int relation, bool status);
 
     void webCrawl( QString, int, int, bool);	//Called by MW to start a web crawler...
 
@@ -108,6 +115,7 @@ signals:
 
     void signalFileType (int, QString, int,int, bool);	//notifies MW what we have loaded.
     void statusMessage (QString message);			//updates statusbar message
+    void addRelationToMW(QString newRelation);
 
     /** Signals to GraphicsWidget */
     void drawNode( int ,int,  QString, QString, int, QString, QString, int, QPointF, QString, bool, bool, bool);	//call GW to draw a node
@@ -121,6 +129,9 @@ signals:
     void addGuideCircle(int, int, int);				//call GW to draw a circular layout line somewhere.
     void addGuideHLine (int);					//call GW to draw a horizontal layout line somewhere.
     void moveNode(int, int, int);
+
+    /** Signals to Vertice */
+    void relationChanged(int);
 
 
 public: 	
@@ -317,6 +328,8 @@ public:
 
     int factorial (int);
 
+    void addRelationFromGraph(QString relationName);
+
     /**  index stores the real position of each vertex inside m_graph.
      *  It starts at zero (0).
      *   We need to know the place of a vertex inside m_graph after adding
@@ -371,7 +384,7 @@ private:
                         int &classes, int name
                         );
 
-
+    QList<QString> m_relationsList;
     QList<int>  triadTypeFreqs; 	//stores triad type frequencies
     QList<int>  m_isolatedVerticesList;
     QHash <int, int> influenceRanges, influenceDomains;

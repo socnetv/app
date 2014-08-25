@@ -85,6 +85,10 @@ void GraphicsWidget::clear() {
 }
 
 
+void GraphicsWidget::changeRelation(int relation) {
+    qDebug() << "GraphicsWidget::changeRelation() to " << relation;
+    m_curRelation = relation;
+}
 
 
 
@@ -153,36 +157,39 @@ void GraphicsWidget::drawNode(
 	b) when the user clicks on the AddLink button on the MW.
 */
 void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool drawArrows, QString color, bool bezier){
-	qDebug()<<"GW: drawEdge ("<< i<< ","<< j<< ") with weight "<<weight << " - nodeHash reports "<< nodeHash.size()<<" nodes.";
+    qDebug()<<"GW: drawEdge ("<< i<< ","<< j<< ") with weight "<<weight
+           << " - nodeHash reports "<< nodeHash.size()<<" nodes.";
 	if (i == j ) {
 		bezier = true;		
 	}
-	qDebug()<< "GW: drawEdge() drawing edge now!"<< " From node "
-			<<  nodeHash.value(i)->nodeNumber()<< " to node "
-			<<  nodeHash.value(j)->nodeNumber() << " weight "
-			<< weight << " nodesize "
-			<<  m_nodeSize << " edgecolor "<< color ;
+//	qDebug()<< "GW: drawEdge() drawing edge now!"<< " From node "
+//			<<  nodeHash.value(i)->nodeNumber()<< " to node "
+//			<<  nodeHash.value(j)->nodeNumber() << " weight "
+//			<< weight << " nodesize "
+//			<<  m_nodeSize << " edgecolor "<< color ;
 	Edge *edge=new Edge (this, nodeHash.value(i), nodeHash.value(j), weight,
-			     m_nodeSize, color, reciprocal, drawArrows, bezier);
+                 m_nodeSize, color, reciprocal, drawArrows, bezier);
 	edge -> setZValue(253);		//Edges have lower z than nodes. Nodes always appear above edges.
 	// Keep it here so that it doesnt interfere with dashed lines.
 	edge->setBoundingRegionGranularity(0.05);	// Slows down the universe...Keep it 0.05...
 	//edge->setCacheMode (QGraphicsItem::DeviceCoordinateCache);  //Also slows down the universe...
 
-	QString edgeName = QString::number(i) + QString(">")+ QString::number(j);
-    qDebug()<<"GW: drawEdge() - adding new edge between "<<i << " and "<< j<< " to edgesMap. Name: "<<edgeName.toUtf8();
+    QString edgeName = QString::number(m_curRelation) + QString(":")
+            + QString::number(i) + QString(">")+ QString::number(j);
+//    qDebug()<<"GW: drawEdge() - adding new edge between "<<i << " and "<< j
+//           << " to edgesMap. Name: "<<edgeName.toUtf8();
 	edgesMap [edgeName] =  edge;
 
-    qDebug()<< "GW: drawEdge(): drawing edge weight number...";
+//    qDebug()<< "GW: drawEdge(): drawing edge weight number...";
 	double x = ( (nodeHash.value(i))->x() + (nodeHash.value(j))->x() ) / 2.0;
 	double y = ( (nodeHash.value(i))->y() + (nodeHash.value(j))->y() ) / 2.0;
-    qDebug()<< "GW: drawEdge(): edge weight will be at " << x << ", " << y;
+//    qDebug()<< "GW: drawEdge(): edge weight will be at " << x << ", " << y;
     EdgeWeight *edgeWeight = new  EdgeWeight (edge, 7, QString::number(weight) );
 	edgeWeight-> setPos(x,y);
 	edgeWeight-> setDefaultTextColor (color);
 	edgeWeight-> hide();
 
-	qDebug()<< "Scene items now: "<< scene()->items().size() << " - GW items now: "<< items().size();
+//	qDebug()<< "Scene items now: "<< scene()->items().size() << " - GW items now: "<< items().size();
 }
 
 
@@ -193,8 +200,9 @@ void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool 
 */
 void GraphicsWidget::drawEdgeReciprocal(int source, int target){
 	qDebug("GW: drawEdgeReciprocal ()");
-	QString edgeName = QString::number(source) + QString(">")+ QString::number(target);
-    qDebug("GW: making existing edge between %i and %i reciprocal. Name: "+edgeName.toUtf8(), source, target );
+    QString edgeName = QString::number(m_curRelation) + QString(":") +
+            QString::number(source) + QString(">")+ QString::number(target);
+//    qDebug("GW: making existing edge between %i and %i reciprocal. Name: "+edgeName.toUtf8(), source, target );
 	edgesMap [edgeName]->makeReciprocal();
 }
 
@@ -205,8 +213,9 @@ void GraphicsWidget::drawEdgeReciprocal(int source, int target){
 */
 void GraphicsWidget::unmakeEdgeReciprocal(int source, int target){
 	qDebug("GW: unmakeEdgeReciprocal ()");
-	QString edgeName = QString::number(source) + QString(">")+ QString::number(target);
-    qDebug("GW: removing edge between %i and %i. Name: "+edgeName.toUtf8(), source, target );
+    QString edgeName =  QString::number(m_curRelation) + QString(":") +
+            QString::number(source) + QString(">")+ QString::number(target);
+//    qDebug("GW: removing edge between %i and %i. Name: "+edgeName.toUtf8(), source, target );
 	edgesMap [edgeName]->unmakeReciprocal();
 }
 
@@ -281,7 +290,7 @@ void GraphicsWidget::nodeMoved(int number, int x, int y){
 	on the canvas  
 */
 void GraphicsWidget::moveNode(int number, int x, int y){
-	qDebug ("GW: updateNode() %i with %i, %i", number, x,y);
+//	qDebug ("GW: updateNode() %i with %i, %i", number, x,y);
 	nodeHash.value(number)->setPos(x,y);
 }
 
@@ -516,12 +525,13 @@ void GraphicsWidget::setInitLabelDistance(int labelDistance){
 *	Changes the visibility of an GraphicsView edge (number, label, edge, etc)
 */
 void GraphicsWidget::setEdgeVisibility(int source, int target, bool visible){
-	QString edgeName = QString::number( source ) + QString(">")+ QString::number( target );
+    QString edgeName =  QString::number(m_curRelation) + QString(":") +
+            QString::number( source ) + QString(">")+ QString::number( target );
 	
 	if (visible) {
 		if  ( edgesMap.contains (edgeName) ) {
-			qDebug()<<"GW: setEdgeVisibility(). Making edge between "<< source  << " and "<< target 
-				<< " VISIBLE.";
+            qDebug()<<"GW: setEdgeVisibility(). Making edge between "
+                   << source  << " and "<< target << " VISIBLE.";
 			edgesMap [edgeName] -> show();			
 		}
 		else {
