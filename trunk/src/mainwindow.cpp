@@ -285,6 +285,24 @@ MainWindow::MainWindow(const QString & m_fileName) {
     graphicsWidget->setInitLabelDistance(labelDistance);
     graphicsWidget->setInitNodeSize(initNodeSize);
     graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor)); //Qt::gray
+    dataDir= QDir::homePath() +QDir::separator() + "socnetv-data" + QDir::separator() ;
+
+    if (firstTime) {
+        createFortuneCookies();
+        createTips();
+        QDir ourDir(dataDir);
+        if ( !ourDir.exists() ) {
+            ourDir.mkdir(dataDir);
+            QMessageBox::information(this, "SocNetV Data Directory",
+                                 tr("SocNetV saves reports and files in the "
+                                    "directory %1")
+                                 .arg (ourDir.absolutePath())
+                                 , QMessageBox::Ok, 0);
+
+        }
+
+    }
+
 
     /** Try to load a GraphML network file on exec time*/
     if (!m_fileName.isEmpty())
@@ -294,10 +312,6 @@ MainWindow::MainWindow(const QString & m_fileName) {
         loadNetworkFile(fileName, 0 );
     }
 
-    if (firstTime) {
-        createFortuneCookies();
-        createTips();
-    }
 
     graphicsWidget->setFocus();
 
@@ -2806,7 +2820,10 @@ void MainWindow::slotChooseFile() {
 
     }
 
-    m_fileName = QFileDialog::getOpenFileName( this, tr("Select one file to open"), "", fileType_string	);
+    m_fileName = QFileDialog::getOpenFileName(
+                this,
+                tr("Select one file to open"),
+                QDir::homePath(), fileType_string	);
 
     if (!m_fileName.isEmpty()) {
         qDebug()<<"MW: file selected: " << m_fileName;
@@ -2913,9 +2930,10 @@ void MainWindow::slotFileSave() {
 void MainWindow::slotFileSaveAs() {
     statusMessage( tr("Saving network under new filename..."));
 
-    QString fn =  QFileDialog::getSaveFileName(this,
-                                               tr("Save GraphML Network to File Named..."),
-                                               0, tr("GraphML (*.graphml *.xml);;All (*)") );
+    QString fn =  QFileDialog::getSaveFileName(
+                this,
+                tr("Save GraphML Network to File Named..."),
+                QDir::homePath(), tr("GraphML (*.graphml *.xml);;All (*)") );
     if (!fn.isEmpty())  {
         if  ( QFileInfo(fn).suffix().isEmpty() ){
             QMessageBox::information(this, "Missing Extension ",tr("File extension was missing! \nI am appending a standard .graphml to the given filename."), "OK",0);
@@ -3377,6 +3395,7 @@ void MainWindow::changeRelation(int relation){
                                  .arg(curRelationName)
                                  .arg(changeRelationCombo->currentIndex()),
                                  QMessageBox::Ok, 0);
+
         statusMessage( QString(tr("Relation named %1."))
                        .arg( curRelationName ) );
 
@@ -3426,7 +3445,9 @@ bool MainWindow::slotExportPNG(){
         statusMessage( tr("Cannot export PNG.") );
         return false;
     }
-    QString fn = QFileDialog::getSaveFileName(this,tr("Save"), 0, tr("Image Files (*.png)"));
+    QString fn = QFileDialog::getSaveFileName(
+                this,tr("Save"),
+                QDir::homePath(), tr("Image Files (*.png)"));
     if (fn.isEmpty())  {
         statusMessage( tr("Saving aborted") );
         return false;
@@ -3470,7 +3491,8 @@ bool MainWindow::slotExportBMP(){
         return false;
     }
     QString format="bmp";
-    QString fn = QFileDialog::getSaveFileName(this,tr("Save Image as"), 0,tr("Image Files (*.bmp)"));
+    QString fn = QFileDialog::getSaveFileName(
+                this,tr("Save Image as"), QDir::homePath(),tr("Image Files (*.bmp)"));
     if (fn.isEmpty())  {
         statusMessage( tr("Saving aborted") );
         return false;
@@ -3519,7 +3541,9 @@ bool MainWindow::slotExportPDF(){
         return false;
     }
 
-    QString m_fileName = QFileDialog::getSaveFileName(this, tr("Export to PDF"), 0, tr("Portable Document Format files (*.pdf)"));
+    QString m_fileName = QFileDialog::getSaveFileName(
+                this, tr("Export to PDF"), QDir::homePath(),
+                tr("Portable Document Format files (*.pdf)"));
     if (m_fileName.isEmpty())  {
         statusMessage( tr("Saving aborted"));
         return false;
@@ -3559,9 +3583,10 @@ void MainWindow::slotExportPajek()
     }
 
     statusMessage( tr("Exporting active network under new filename..."));
-    QString fn =  QFileDialog::getSaveFileName(this,
-                                               tr("Export Network to File Named..."),
-                                               0, tr("Pajek (*.paj *.net *.pajek);;All (*)") );
+    QString fn =  QFileDialog::getSaveFileName(
+                this,
+                tr("Export Network to File Named..."),
+                QDir::homePath(), tr("Pajek (*.paj *.net *.pajek);;All (*)") );
     if (!fn.isEmpty())  {
         if  ( QFileInfo(fn).suffix().isEmpty() ){
             QMessageBox::information(this, "Missing Extension ",tr("File extension was missing! \nI am appending a standard .paj to the given filename."), "OK",0);
@@ -3597,9 +3622,10 @@ void MainWindow::slotExportSM(){
         return;
     }
     statusMessage( tr("Exporting active network under new filename..."));
-    QString fn =  QFileDialog::getSaveFileName(this,
-                                               tr("Export Network to File Named..."),
-                                               0, tr("Adjacency (*.adj *.sm *.txt *.csv *.net);;All (*)") );
+    QString fn =  QFileDialog::getSaveFileName(
+                this,
+                tr("Export Network to File Named..."),
+                QDir::homePath(), tr("Adjacency (*.adj *.sm *.txt *.csv *.net);;All (*)") );
     if (!fn.isEmpty())  {
         if  ( QFileInfo(fn).suffix().isEmpty() ){
             QMessageBox::information(this, "Missing Extension ",tr("File extension was missing! \nI am appending a standard .adj to the given filename."), "OK",0);
@@ -3641,7 +3667,8 @@ bool MainWindow::slotExportDL(){
 
     if (fileName.isEmpty()) {
         statusMessage( tr("Saving network under new filename..."));
-        QString fn = QFileDialog::getSaveFileName(this, 0, 0);
+        QString fn = QFileDialog::getSaveFileName(
+                    this, "Export UCINET", QDir::homePath(), 0);
         if (!fn.isEmpty())  {
             fileName=fn;
         }
@@ -3669,7 +3696,8 @@ bool MainWindow::slotExportGW(){
 
     if (fileName.isEmpty()) {
         statusMessage( tr("Saving network under new filename..."));
-        QString fn = QFileDialog::getSaveFileName(this, 0, 0);
+        QString fn = QFileDialog::getSaveFileName(
+                    this, "Export GW", QDir::homePath(), 0);
         if (!fn.isEmpty())  {
             fileName=fn;
         }
@@ -3692,7 +3720,8 @@ bool MainWindow::slotExportGW(){
 bool MainWindow::slotExportList(){
     if (fileName.isEmpty()) {
         statusMessage( tr("Saving network under new filename..."));
-        QString fn = QFileDialog::getSaveFileName(this, 0, 0);
+        QString fn = QFileDialog::getSaveFileName(
+                    this, "Export List", QDir::homePath(), 0);
         if (!fn.isEmpty())  {
             fileName=fn;
         }
@@ -6129,7 +6158,7 @@ void MainWindow::slotEccentricity(){
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
     }
-    QString fn = "eccentricity.dat";
+    QString fn = dataDir + "eccentricity.dat";
     bool considerWeights=true;
     statusMessage(  QString(tr(" Please wait...")));
 
@@ -6200,7 +6229,7 @@ void MainWindow::slotWalksOfGivenLength(){
         return;
     }
 
-    QString fn = "number-of-walks.dat";
+    QString fn = dataDir + "number-of-walks.dat";
      bool ok=false;
     createProgressBar();
 
@@ -6247,7 +6276,7 @@ void MainWindow::slotTotalWalks(){
             break;
         }
     }
-    QString fn = "total-number-of-walks.dat";
+    QString fn = dataDir + "total-number-of-walks.dat";
     createProgressBar();
 
     int maxLength=activeNodes()-1;
@@ -6275,7 +6304,7 @@ void MainWindow::slotReachabilityMatrix(){
         return;
     }
 
-    QString fn = "reachability-matrix.dat";
+    QString fn = dataDir + "reachability-matrix.dat";
 
     createProgressBar();
 
@@ -6300,7 +6329,7 @@ void MainWindow::slotNumberOfCliques(){
         statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
         return;
     }
-    QString fn = "number-of-cliques.dat";
+    QString fn = dataDir + "number-of-cliques.dat";
     bool considerWeights=true;
 
     createProgressBar();
@@ -6329,7 +6358,7 @@ void MainWindow::slotClusteringCoefficient (){
         statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
         return;
     }
-    QString fn = "clustering-coefficients.dat";
+    QString fn = dataDir + "clustering-coefficients.dat";
     bool considerWeights=true;
 
     createProgressBar();
@@ -6357,7 +6386,7 @@ void MainWindow::slotTriadCensus() {
         statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
         return;
     }
-    QString fn = "triad-census.dat";
+    QString fn = dataDir + "triad-census.dat";
     bool considerWeights=true;
 
     createProgressBar();
@@ -6402,7 +6431,7 @@ void MainWindow::slotCentralityDegree(){
         }
 
     }
-    QString fn = "centrality-out-degree.dat";
+    QString fn = dataDir + "centrality-out-degree.dat";
 
     createProgressBar();
 
@@ -6477,7 +6506,7 @@ void MainWindow::slotCentralityCloseness(){
         break;
     };
 
-    QString fn = "centrality_closeness.dat";
+    QString fn = dataDir + "centrality_closeness.dat";
     bool considerWeights=true;
 
     createProgressBar();
@@ -6511,7 +6540,7 @@ void MainWindow::slotCentralityClosenessInfluenceRange(){
         return;
     }
 
-    QString fn = "centrality_closeness_influence_range.dat";
+    QString fn = dataDir + "centrality_closeness_influence_range.dat";
     bool considerWeights=true;
 
     createProgressBar();
@@ -6541,7 +6570,7 @@ void MainWindow::slotCentralityBetweeness(){
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
     }
-    QString fn = "centrality_betweeness.dat";
+    QString fn = dataDir + "centrality_betweeness.dat";
     bool considerWeights=true;
     statusMessage(  QString(tr(" Please wait...")));
 
@@ -6597,7 +6626,7 @@ void MainWindow::slotPrestigeDegree(){
         }
 
     }
-    QString fn = "degree-prestige.dat";
+    QString fn = dataDir + "degree-prestige.dat";
 
     createProgressBar();
 
@@ -6625,7 +6654,7 @@ void MainWindow::slotPrestigePageRank(){
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
     }
-    QString fn = "prestige_pagerank.dat";
+    QString fn = dataDir + "prestige_pagerank.dat";
     //   bool considerWeights=false;  //TODO Do we need to compute weigths in PageRank?
     statusMessage(  QString(tr(" Please wait...")));
 
@@ -6653,7 +6682,7 @@ void MainWindow::slotPrestigeProximity(){
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
     }
-    QString fn = "centrality_proximity_prestige.dat";
+    QString fn = dataDir + "centrality_proximity_prestige.dat";
     statusMessage(  QString(tr(" Please wait...")));
 
     createProgressBar();
@@ -6706,7 +6735,7 @@ void MainWindow::slotCentralityInformation(){
             break;
         }
     }
-    QString fn = "centrality_information.dat";
+    QString fn = dataDir + "centrality_information.dat";
     statusMessage(  QString(tr(" Please wait...")));
 
     createProgressBar();
@@ -6736,7 +6765,7 @@ void MainWindow::slotCentralityStress(){
         statusMessage(  QString(tr(" Nothing to do! Why don't you try creating something first?"))  );
         return;
     }
-    QString fn = "centrality_stress.dat";
+    QString fn = dataDir + "centrality_stress.dat";
 
     bool considerWeights=true;
     statusMessage(  QString(tr(" Please wait...")));
@@ -6766,7 +6795,7 @@ void MainWindow::slotCentralityPower(){
         statusMessage(  QString(tr(" Nothing to do! Why don't you try creating something first?"))  );
         return;
     }
-    QString fn = "centrality_power.dat";
+    QString fn = dataDir + "centrality_power.dat";
 
     bool considerWeights=true;
     statusMessage(  QString(tr(" Please wait...")));
@@ -6794,7 +6823,7 @@ void MainWindow::slotCentralityEccentricity(){
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
     }
-    QString fn = "centrality_eccentricity.dat";
+    QString fn = dataDir + "centrality_eccentricity.dat";
     bool considerWeights=true;
     statusMessage(  QString(tr(" Please wait...")));
 
@@ -7431,9 +7460,10 @@ void MainWindow::slotBackgroundImage(bool toggle) {
         graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor));
     }
     else   {
-        m_fileName = QFileDialog::getOpenFileName( this, tr("Select one image"), "",
-                                                   tr("All (*);;PNG (*.png);;JPG (*.jpg)")
-                                                   );
+        m_fileName = QFileDialog::getOpenFileName(
+                    this, tr("Select one image"), QDir::homePath(),
+                    tr("All (*);;PNG (*.png);;JPG (*.jpg)")
+                    );
         graphicsWidget->setBackgroundBrush(QImage(m_fileName));
         graphicsWidget->setCacheMode(QGraphicsView::CacheBackground);
 

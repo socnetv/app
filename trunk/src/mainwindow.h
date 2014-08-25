@@ -395,7 +395,7 @@ private:
     QAction *nextRelationAct, *prevRelationAct, *addRelationAct;
 
     QString fileName, networkName, previous_fileName;
-
+    QString dataDir;
     QStringList fileNameNoPath, fortuneCookie, rgbValues;
     QStringList tempFileNameNoPath, colorList, tips;
     int statusBarDuration,  minDuration, progressCounter;
