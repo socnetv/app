@@ -1272,7 +1272,7 @@ int Graph::connectedness(){
 /**
 *  Writes the matrix of distances to a file
 */
-void Graph::writeDistanceMatrix (const char* fn, const char* netName) {
+void Graph::writeDistanceMatrix (QString fn, const char* netName) {
     qDebug ("Graph::writeDistanceMatrix()");
 
     if ( !distanceMatrixCreated || graphModified ) {
@@ -1304,7 +1304,7 @@ void Graph::writeDistanceMatrix (const char* fn, const char* netName) {
 *  Saves the number of geodesic distances matrix TM to a file
 *
 */
-void Graph::writeNumberOfGeodesicsMatrix(const char* fn, const char* netName) {
+void Graph::writeNumberOfGeodesicsMatrix(const QString fn, const char* netName) {
     qDebug ("Graph::writeDistanceMatrix()");
     if ( !distanceMatrixCreated || graphModified ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
@@ -4074,7 +4074,9 @@ void Graph::writeTotalNumberOfWalksMatrix(QString fn, QString netName, int lengt
 
     out << "-Social Network Visualizer- \n";
     out << "Network name "<< netName<<": \n";
-    out << "Total number of walks of any length less than or equal to "<< length <<" between each pair of nodes \n\n";
+    out << "Total number of walks of any length less than or equal to "<< length
+        <<" between each pair of nodes \n\n";
+    out << "Warning: Walk counts consider unordered pairs of nodes\n\n";
 
     createNumberOfWalksMatrix(length);
 
@@ -5059,7 +5061,9 @@ void Graph::writeDataSetToFile (QString fileName) {
     }
     QTextStream outText( &f );
     qDebug()<< "		... writing";
-    if ( fileName == "Krackhardt_High-tech_managers_Advice_relation.sm" ) {
+    QStringList fileNameNoPath=fileName.split ("/" );
+    QString name=fileNameNoPath.last();
+    if ( name == "Krackhardt_High-tech_managers_Advice_relation.sm" ) {
         outText <<
                    "0 1 0 1 0 0 0 1 0 0 0 0 0 0 0 1 0 1 0 0 1" << endl <<
                    "0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << endl <<
@@ -5084,7 +5088,7 @@ void Graph::writeDataSetToFile (QString fileName) {
                    "0 1 1 1 0 1 1 1 0 0 0 1 0 1 0 0 1 1 0 1 0";
 
     }
-    else if (fileName == "Krackhardt_High-tech_managers_Friendship_relation.sm"){
+    else if (name == "Krackhardt_High-tech_managers_Friendship_relation.sm"){
         outText<< "0 1 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 0 0" << endl <<
                   "1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1" << endl <<
                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0" << endl <<
@@ -5107,7 +5111,7 @@ void Graph::writeDataSetToFile (QString fileName) {
                   "0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0" << endl <<
                   "0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0" ;
     }
-    else if (fileName == "Krackhardt_High-tech_managers_ReportsTo_relation.sm"){
+    else if (name == "Krackhardt_High-tech_managers_ReportsTo_relation.sm"){
         outText<< "0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
                   "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << endl <<
@@ -5130,7 +5134,7 @@ void Graph::writeDataSetToFile (QString fileName) {
                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << endl <<
                   "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0";
     }
-    else if (fileName == "Padgett_Florentine_Families_Marital_relation.net"){
+    else if (name == "Padgett_Florentine_Families_Marital_relation.net"){
         outText<< "*Network Padgett's Florentine Families Marital Relation" << endl <<
                   "*Vertices      16" << endl <<
                     "1 \"Acciaiuoli\"         0.2024    0.1006" << endl <<
@@ -5191,7 +5195,7 @@ void Graph::writeDataSetToFile (QString fileName) {
                    "16  9 1" << endl <<
                   "16 13 1" ;
     }
-    else if (fileName == "Padgett_Florentine_Families_Business_relation.paj"){
+    else if (name == "Padgett_Florentine_Families_Business_relation.paj"){
         outText<< "*Network Padgett's Florentine Families Business Relation" << endl <<
                   "*Vertices      16" << endl <<
                     "1 \"Acciaiuoli\"         0.2024    0.1006" << endl <<
@@ -5242,7 +5246,7 @@ void Graph::writeDataSetToFile (QString fileName) {
                    "14  9 1" << endl <<
                    "16  9 1";
     }
-    else if (fileName == "Zachary_Karate_Club_Simple_Ties.sm"){
+    else if (name == "Zachary_Karate_Club_Simple_Ties.sm"){
         outText<< "0 1 1 1 1 1 1 1 1 0 1 1 1 1 0 0 0 1 0 1 0 1 0 0 0 0 0 0 0 0 0 1 0 0" << endl <<
                   "1 0 1 1 0 0 0 1 0 0 0 0 0 1 0 0 0 1 0 1 0 1 0 0 0 0 0 0 0 0 1 0 0 0" << endl <<
                   "1 1 0 1 0 0 0 1 1 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 1 0" << endl <<
@@ -5278,7 +5282,7 @@ void Graph::writeDataSetToFile (QString fileName) {
                   "0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 1 0 0 1 0 1 0 1 1 0 0 0 0 0 1 1 1 0 1" << endl <<
                   "0 0 0 0 0 0 0 0 1 1 0 0 0 1 1 1 0 0 1 1 1 0 1 1 0 0 1 1 1 1 1 1 1 0" ;
     }
-    else if (fileName == "Zachary_Karate_Club_Weighted_Ties.sm"){
+    else if (name == "Zachary_Karate_Club_Weighted_Ties.sm"){
         outText<< "0 4 5 3 3 3 3 2 2 0 2 3 1 3 0 0 0 2 0 2 0 2 0 0 0 0 0 0 0 0 0 2 0 0" << endl <<
                   "4 0 6 3 0 0 0 4 0 0 0 0 0 5 0 0 0 1 0 2 0 2 0 0 0 0 0 0 0 0 2 0 0 0" << endl <<
                   "5 6 0 3 0 0 0 4 5 1 0 0 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 2 2 0 0 0 2 0" << endl <<
@@ -5314,7 +5318,7 @@ void Graph::writeDataSetToFile (QString fileName) {
                   "0 0 2 0 0 0 0 0 3 0 0 0 0 0 3 3 0 0 1 0 3 0 2 5 0 0 0 0 0 4 3 4 0 5" << endl <<
                   "0 0 0 0 0 0 0 0 4 2 0 0 0 3 2 4 0 0 2 1 1 0 3 4 0 0 2 4 2 2 3 4 5 0";
     }
-    else if (fileName == "Galaskiewicz_CEOs_and_clubs_affiliation_network_data.2sm"){
+    else if (name == "Galaskiewicz_CEOs_and_clubs_affiliation_network_data.2sm"){
         outText<< "0 0 1 1 0 0 0 0 1 0 0 0 0 0 0" << endl <<
                   "0 0 1 0 1 0 1 0 0 0 0 0 0 0 0" << endl <<
                   "0 0 1 0 0 0 0 0 0 0 0 1 0 0 0" << endl <<
@@ -5342,7 +5346,7 @@ void Graph::writeDataSetToFile (QString fileName) {
                   "0 1 1 0 0 0 0 0 0 0 0 0 1 0 0" << endl <<
                   "0 1 1 0 0 0 0 0 0 0 0 1 0 0 0";
     }
-    else if (fileName == "Bernard_Killworth_Fraternity_Symmetric_Observer_Data.sm"){
+    else if (name == "Bernard_Killworth_Fraternity_Symmetric_Observer_Data.sm"){
         /*
           Bernard & Killworth  recorded the interactions among students living in a fraternity at a West Virginia college.
                   Subjects had been residents in the fraternity from 3 months to 3 years.
@@ -5409,7 +5413,7 @@ void Graph::writeDataSetToFile (QString fileName) {
                   "1 0 1 5 0 2 4 2 1 0 0 3 0 1 0 3 0 1 2 5 1 0 1 1 0 0 2 0 1 2 2 1 0 6 2 1 0 2 0 0 2 1 0 0 0 1 1 0 1 3 0 0 3 0 1 0 1 0 ";
 
     }
-    else if (fileName == "Bernard_Killworth_Fraternity_Non_Symmetric_Cognitive_Data.sm"){
+    else if (name == "Bernard_Killworth_Fraternity_Non_Symmetric_Cognitive_Data.sm"){
         /*
           Bernard & Killworth  recorded the interactions among students living in a fraternity at a West Virginia college.
           Subjects had been residents in the fraternity from 3 months to 3 years.
@@ -5475,7 +5479,7 @@ void Graph::writeDataSetToFile (QString fileName) {
                   "3 2 2 5 2 4 2 3 3 3 3 4 1 3 3 3 2 3 3 2 2 2 4 4 2 2 3 1 2 3 3 2 2 5 3 2 2 2 2 2 4 2 2 2 2 2 2 2 5 4 1 3 3 3 3 3 3 0";
 
     }
-    else if (fileName == "Mexican_Power_Network_1940s.lst"){
+    else if (name == "Mexican_Power_Network_1940s.lst"){
         outText<< "18 8 10 23 21" << endl <<
                   "19 11 21" << endl <<
                   "29 5 9 10" << endl <<
@@ -5496,7 +5500,7 @@ void Graph::writeDataSetToFile (QString fileName) {
                   "37 8 36" << endl <<
                   "25 10 11 8";
     }
-    else if (fileName == "Knocke_Bureacracies_Information_Exchange_Network.pajek"){
+    else if (name == "Knocke_Bureacracies_Information_Exchange_Network.pajek"){
         qDebug()<< "		Knocke_Bureacracies_Information_Exchange_Network.pajek written... ";
         outText<< "*Network KNOKI " << endl <<
                   "*Vertices 10" << endl <<
@@ -5562,7 +5566,7 @@ void Graph::writeDataSetToFile (QString fileName) {
                   " 10 7  1";
                     qDebug()<< "		Knocke_Bureacracies_Information_Exchange_Network.pajek written... ";
     }
-    else if (fileName == "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek"){
+    else if (name == "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek"){
         qDebug()<< "		Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek written... ";
         outText<< "*Network Countries_Trade_Basic_Manufactured_Goods" << endl <<
                   "*Vertices      24" << endl <<
@@ -5672,13 +5676,18 @@ QTextStream& operator <<  (QTextStream& os, Graph& m){
     This is called by MainWindow::slotViewAdjacencyMatrix()
     The resulting matrix HAS NO spaces between elements.
 */
-void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
+void Graph::writeAdjacencyMatrix (const QString fn, const char* netName) {
     qDebug()<<"Graph::writeAdjacencyMatrix() ";
-    ofstream file (fn);
+    QFile file( fn );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        emit statusMessage( QString(tr("Could not write to %1")).arg(fn) );
+        return;
+    }
+    QTextStream outText( &file );
     int sum=0;
     float weight=0;
-    file << "-Social Network Visualizer- \n";
-    file << "Adjacency matrix of "<< netName<<": \n\n";
+    outText << "-Social Network Visualizer- \n";
+    outText << "Adjacency matrix of "<< netName<<": \n\n";
     QList<Vertex*>::iterator it, it1;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         if ( ! (*it)->isEnabled() ) continue;
@@ -5687,12 +5696,12 @@ void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
             if ( (weight =  this->hasEdge ( (*it)->name(), (*it1)->name() )  )!=0 ) {
                 sum++;
                 if (weight >= 1)
-                    file << static_cast<int> (weight) << " "; // TODO make the matric look symmetrical
+                    outText << static_cast<int> (weight) << " "; // TODO make the matric look symmetrical
             }
             else
-                file << "0 ";
+                outText << "0 ";
         }
-        file << endl;
+        outText << endl;
     }
 
     qDebug("Graph: Found a total of %i edge",sum);
@@ -5784,13 +5793,19 @@ void Graph::invertAdjacencyMatrix(){
 
 
 
-void Graph::writeInvertAdjacencyMatrix(const char* fn, const char* netName){
+void Graph::writeInvertAdjacencyMatrix(QString fn, const char* netName){
     qDebug("Graph::writeInvertAdjacencyMatrix() ");
     int i=0, j=0;
     QList<Vertex*>::iterator it, it1;
-    ofstream file (fn);
-    file << "-Social Network Visualizer- \n";
-    file << "Invert Matrix of "<< netName<<": \n\n";
+    QFile file( fn );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        emit statusMessage( QString(tr("Could not write to %1")).arg(fn) );
+        return;
+    }
+    QTextStream outText( &file );
+
+    outText << "-Social Network Visualizer- \n";
+    outText << "Invert Matrix of "<< netName<<": \n\n";
     invertAdjacencyMatrix();
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         if ( ! (*it)->isEnabled() )
@@ -5799,12 +5814,12 @@ void Graph::writeInvertAdjacencyMatrix(const char* fn, const char* netName){
         for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
             if ( ! (*it1)->isEnabled() )
                 continue;
-            file << invAM.item(i,j)<< " ";
+            outText << invAM.item(i,j)<< " ";
             qDebug() << invAM.item(i,j)<< " ";
             j++;
         }
         i++;
-        file << endl;
+        outText << endl;
         qDebug() << endl;
     }
     file.close();

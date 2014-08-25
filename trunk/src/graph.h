@@ -229,11 +229,11 @@ public:
 
     void writeDataSetToFile(QString );
     void writeAdjacencyMatrixTo(QTextStream& os);
-    void writeAdjacencyMatrix(const char*, const char*);
+    void writeAdjacencyMatrix(const QString, const char*);
 
-    void writeInvertAdjacencyMatrix(const char*,  const char*);
-    void writeDistanceMatrix(const char*, const char*);
-    void writeNumberOfGeodesicsMatrix(const char*, const char*);
+    void writeInvertAdjacencyMatrix(const QString filename,  const char*);
+    void writeDistanceMatrix(const QString fn, const char*);
+    void writeNumberOfGeodesicsMatrix(const QString fn, const char*);
     void writeEccentricity(const QString, const bool);
 
     friend QTextStream& operator <<  (QTextStream& os, Graph& m);

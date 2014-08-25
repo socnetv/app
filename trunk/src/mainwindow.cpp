@@ -3132,9 +3132,13 @@ void MainWindow::slotImportEdgeList(){
 
 
 /**
- * 	Main network file loader method
- * 	First, inits everything to default values.
- *      Then calls activeGraph::loadGraph to actually load the network...
+ * @brief MainWindow::loadNetworkFile
+ * Main network file loader method
+ * First, inits everything to default values.
+ * Then calls activeGraph::loadGraph to actually load the network...
+ * @param m_fileName
+ * @param m_fileFormat
+ * @return
  */
 bool MainWindow::loadNetworkFile(QString m_fileName, int m_fileFormat ){
     qDebug("MW: loadNetworkFile");
@@ -3826,17 +3830,16 @@ void MainWindow::slotViewAdjacencyMatrix(){
     int aNodes=activeNodes();
     statusBar() ->  showMessage ( QString (tr ("creating adjacency adjacency matrix of %1 nodes")).arg(aNodes) );
     qDebug ("MW: calling Graph::writeAdjacencyMatrix with %i nodes", aNodes);
-    char fn[]= "adjacency-matrix.dat";
+    QString fn = dataDir + "socnetv-report-adjacency-matrix.dat";
 
     activeGraph.writeAdjacencyMatrix(fn, networkName.toLocal8Bit()) ;
 
     //Open a text editor window for the new file created by graph class
-    QString qfn=QString::fromLocal8Bit("adjacency-matrix.dat");
     TextEditor *ed = new TextEditor(fn);
-    tempFileNameNoPath=qfn.split( "/");
-    ed->setWindowTitle(tr("View Adjacency Matrix - ") + tempFileNameNoPath.last());
+    tempFileNameNoPath=fn.split( "/");
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
-
+    statusMessage(tr("Adjacency Matrix saved at ") + tempFileNameNoPath.last());
 }
 
 
@@ -3859,6 +3862,7 @@ void MainWindow::slotRecreateDataSet (QString m_fileName) {
     qDebug()<< "slotRecreateDataSet() fileName: " << m_fileName;
 
     initNet();
+    m_fileName = dataDir + m_fileName;
     activeGraph.writeDataSetToFile(m_fileName);
 
     if (m_fileName.endsWith(".graphml")) {
@@ -5982,14 +5986,13 @@ void MainWindow::slotInvertAdjMatrix(){
     int aNodes=activeNodes();
     statusBar() ->  showMessage ( QString (tr ("inverting adjacency adjacency matrix of %1 nodes")).arg(aNodes) );
     qDebug ("MW: calling Graph::writeInvertAdjacencyMatrix with %i nodes", aNodes);
-    char fn[]= "invert-adjacency-matrix.dat";
+    QString fn = dataDir + "socnetv-report-invert-adjacency-matrix.dat";
 
     activeGraph.writeInvertAdjacencyMatrix(fn, networkName.toLocal8Bit()) ;
 
     //Open a text editor window for the new file created by graph class
-    QString qfn=QString::fromLocal8Bit("invert-adjacency-matrix.dat");
     TextEditor *ed = new TextEditor(fn);
-    tempFileNameNoPath=qfn.split( "/");
+    tempFileNameNoPath=fn.split( "/");
     ed->setWindowTitle(tr("View Adjacency Matrix - ") + tempFileNameNoPath.last());
     ed->show();
 
@@ -6054,7 +6057,7 @@ void MainWindow::slotViewDistanceMatrix(){
         return;
     }
     statusMessage( tr("Creating distance matrix. Please wait...") );
-    char fn[]= "distance-matrix.dat";
+    QString fn = dataDir + "socnetv-report-distance-matrix.dat";
 
     createProgressBar();
 
@@ -6064,9 +6067,12 @@ void MainWindow::slotViewDistanceMatrix(){
 
     //Open a text editor window for the new file created by graph class
     TextEditor *ed = new TextEditor(fn);
+    tempFileNameNoPath=fn.split( "/");
 
-    ed->setWindowTitle(tr("Matrix of geodesic distances "));
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
+    QApplication::restoreOverrideCursor();
+    statusMessage(tr("Distance matrix saved as: ")+tempFileNameNoPath.last());
 }
 
 
@@ -6083,7 +6089,7 @@ void MainWindow::slotViewNumberOfGeodesicsMatrix(){
         return;
     }
     statusMessage( tr("Creating number of geodesics matrix. Please wait...") );
-    char fn[]="sigmas-matrix.dat";
+    QString fn = dataDir + "socnetv-report-sigmas-matrix.dat";
 
     createProgressBar();
 
@@ -6092,10 +6098,14 @@ void MainWindow::slotViewNumberOfGeodesicsMatrix(){
     destroyProgressBar();
 
     //Open a text editor window for the new file created by graph class
-    TextEditor *ed = new TextEditor(fn);
 
-    ed->setWindowTitle(tr("Matrix of sigmas (number of geodesic paths)"));
+    TextEditor *ed = new TextEditor(fn);
+    tempFileNameNoPath=fn.split( "/");
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
+    QApplication::restoreOverrideCursor();
+    statusMessage(tr("Matrix of geodesic path counts saved as: ")
+                  + tempFileNameNoPath.last());
 }
 
 
@@ -6158,7 +6168,7 @@ void MainWindow::slotEccentricity(){
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
     }
-    QString fn = dataDir + "eccentricity.dat";
+    QString fn = dataDir + "socnetv-report-eccentricity.dat";
     bool considerWeights=true;
     statusMessage(  QString(tr(" Please wait...")));
 
@@ -6168,10 +6178,10 @@ void MainWindow::slotEccentricity(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle(tr("Eccentricity report saved as: ") + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-
+    statusMessage(tr("Eccentricity report saved as: ") + tempFileNameNoPath.last());
 }
 
 
@@ -6229,7 +6239,7 @@ void MainWindow::slotWalksOfGivenLength(){
         return;
     }
 
-    QString fn = dataDir + "number-of-walks.dat";
+    QString fn = dataDir + "socnetv-report-number-of-walks.dat";
      bool ok=false;
     createProgressBar();
 
@@ -6245,9 +6255,10 @@ void MainWindow::slotWalksOfGivenLength(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Number of walks saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
-
+    QApplication::restoreOverrideCursor();
+    statusMessage(tr("Number of walks saved as: ") + tempFileNameNoPath.last());
 }
 
 
@@ -6276,7 +6287,7 @@ void MainWindow::slotTotalWalks(){
             break;
         }
     }
-    QString fn = dataDir + "total-number-of-walks.dat";
+    QString fn = dataDir + "socnetv-report-total-number-of-walks.dat";
     createProgressBar();
 
     int maxLength=activeNodes()-1;
@@ -6286,8 +6297,10 @@ void MainWindow::slotTotalWalks(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Total number of walks saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle( tempFileNameNoPath.last());
     ed->show();
+    QApplication::restoreOverrideCursor();
+    statusMessage("Total number of walks saved as: " + tempFileNameNoPath.last());
 
 }
 
@@ -6304,7 +6317,7 @@ void MainWindow::slotReachabilityMatrix(){
         return;
     }
 
-    QString fn = dataDir + "reachability-matrix.dat";
+    QString fn = dataDir + "socnetv-report-reachability-matrix.dat";
 
     createProgressBar();
 
@@ -6314,9 +6327,10 @@ void MainWindow::slotReachabilityMatrix(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Reachability Matrix saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
-
+    QApplication::restoreOverrideCursor();
+    statusMessage("Reachability Matrix saved as: " + tempFileNameNoPath.last());
 }
 
 /**
@@ -6329,7 +6343,7 @@ void MainWindow::slotNumberOfCliques(){
         statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
         return;
     }
-    QString fn = dataDir + "number-of-cliques.dat";
+    QString fn = dataDir + "socnetv-report-number-of-cliques.dat";
     bool considerWeights=true;
 
     createProgressBar();
@@ -6340,8 +6354,10 @@ void MainWindow::slotNumberOfCliques(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Number of cliques saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
+    QApplication::restoreOverrideCursor();
+    statusMessage("Number of cliques saved as: " + tempFileNameNoPath.last());
 }
 
 
@@ -6358,7 +6374,7 @@ void MainWindow::slotClusteringCoefficient (){
         statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
         return;
     }
-    QString fn = dataDir + "clustering-coefficients.dat";
+    QString fn = dataDir + "socnetv-report-clustering-coefficients.dat";
     bool considerWeights=true;
 
     createProgressBar();
@@ -6369,8 +6385,10 @@ void MainWindow::slotClusteringCoefficient (){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Clustering Coefficients saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
+    QApplication::restoreOverrideCursor();
+    statusMessage("Clustering Coefficients saved as: " + tempFileNameNoPath.last());
 }
 
 
@@ -6386,7 +6404,7 @@ void MainWindow::slotTriadCensus() {
         statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
         return;
     }
-    QString fn = dataDir + "triad-census.dat";
+    QString fn = dataDir + "socnetv-report-triad-census.dat";
     bool considerWeights=true;
 
     createProgressBar();
@@ -6397,8 +6415,10 @@ void MainWindow::slotTriadCensus() {
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Triad Census saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
+    QApplication::restoreOverrideCursor();
+    statusMessage("Triad Census saved as: " + tempFileNameNoPath.last());
 }
 
 
@@ -6431,7 +6451,7 @@ void MainWindow::slotCentralityDegree(){
         }
 
     }
-    QString fn = dataDir + "centrality-out-degree.dat";
+    QString fn = dataDir + "socnetv-report-centrality-out-degree.dat";
 
     createProgressBar();
 
@@ -6439,12 +6459,12 @@ void MainWindow::slotCentralityDegree(){
 
     destroyProgressBar();
 
-    statusMessage( QString(tr(" displaying file...")));
-
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Out-Degree Centralities saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
+    QApplication::restoreOverrideCursor();
+    statusMessage(tr("Out-Degree Centralities saved as: ") + tempFileNameNoPath.last());
 }
 
 
@@ -6506,7 +6526,7 @@ void MainWindow::slotCentralityCloseness(){
         break;
     };
 
-    QString fn = dataDir + "centrality_closeness.dat";
+    QString fn = dataDir + "socnetv-report-centrality_closeness.dat";
     bool considerWeights=true;
 
     createProgressBar();
@@ -6515,12 +6535,12 @@ void MainWindow::slotCentralityCloseness(){
 
     destroyProgressBar();
 
-    statusMessage( QString(tr(" displaying file...")));
-
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Closeness Centralities  saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle( tempFileNameNoPath.last());
     ed->show();
+    QApplication::restoreOverrideCursor();
+    statusMessage(tr("Closeness Centralities  saved as: ") + tempFileNameNoPath.last());
 }
 
 
@@ -6540,7 +6560,7 @@ void MainWindow::slotCentralityClosenessInfluenceRange(){
         return;
     }
 
-    QString fn = dataDir + "centrality_closeness_influence_range.dat";
+    QString fn = dataDir + "socnetv-report-centrality_closeness_influence_range.dat";
     bool considerWeights=true;
 
     createProgressBar();
@@ -6553,8 +6573,10 @@ void MainWindow::slotCentralityClosenessInfluenceRange(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Closeness Centrality (influence range) report: " + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
+    QApplication::restoreOverrideCursor();
+    statusMessage(tr("Influence Range Closeness Centrality saved as: ")+tempFileNameNoPath.last());
 }
 
 
@@ -6570,7 +6592,7 @@ void MainWindow::slotCentralityBetweeness(){
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
     }
-    QString fn = dataDir + "centrality_betweeness.dat";
+    QString fn = dataDir + "socnetv-report-centrality_betweeness.dat";
     bool considerWeights=true;
     statusMessage(  QString(tr(" Please wait...")));
 
@@ -6582,9 +6604,10 @@ void MainWindow::slotCentralityBetweeness(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Betweeness Centralities saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last() );
     ed->show();
     QApplication::restoreOverrideCursor();
+    statusMessage(tr("Betweeness Centralities saved as: ")+tempFileNameNoPath.last());
 }
 
 
@@ -6626,7 +6649,7 @@ void MainWindow::slotPrestigeDegree(){
         }
 
     }
-    QString fn = dataDir + "degree-prestige.dat";
+    QString fn = dataDir + "socnetv-report-degree-prestige.dat";
 
     createProgressBar();
 
@@ -6634,12 +6657,12 @@ void MainWindow::slotPrestigeDegree(){
 
     destroyProgressBar();
 
-    statusMessage( QString(tr(" displaying file...")));
-
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Degree Prestige (in-degree) saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle( tempFileNameNoPath.last());
     ed->show();
+    QApplication::restoreOverrideCursor();
+    statusMessage(tr("Degree Prestige (in-degree) saved as: ") + tempFileNameNoPath.last());
 }
 
 
@@ -6654,7 +6677,7 @@ void MainWindow::slotPrestigePageRank(){
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
     }
-    QString fn = dataDir + "prestige_pagerank.dat";
+    QString fn = dataDir + "socnetv-report-prestige_pagerank.dat";
     //   bool considerWeights=false;  //TODO Do we need to compute weigths in PageRank?
     statusMessage(  QString(tr(" Please wait...")));
 
@@ -6662,13 +6685,12 @@ void MainWindow::slotPrestigePageRank(){
     activeGraph.writePrestigePageRank(fn);
     destroyProgressBar();
 
-    statusMessage( QString(tr(" displaying file...")));
-
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("PageRank Prestige indices saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
+    statusMessage(tr("PageRank Prestige indices saved as: ")+ tempFileNameNoPath.last());
 }
 
 
@@ -6682,7 +6704,7 @@ void MainWindow::slotPrestigeProximity(){
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
     }
-    QString fn = dataDir + "centrality_proximity_prestige.dat";
+    QString fn = dataDir + "socnetv-report-centrality_proximity_prestige.dat";
     statusMessage(  QString(tr(" Please wait...")));
 
     createProgressBar();
@@ -6693,9 +6715,10 @@ void MainWindow::slotPrestigeProximity(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Proximity Prestige Centralities saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle( tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
+    statusMessage(tr("Proximity Prestige Centralities saved as: ")+ tempFileNameNoPath.last());
 }
 
 
@@ -6735,21 +6758,19 @@ void MainWindow::slotCentralityInformation(){
             break;
         }
     }
-    QString fn = dataDir + "centrality_information.dat";
+    QString fn = dataDir + "socnetv-report-centrality_information.dat";
     statusMessage(  QString(tr(" Please wait...")));
 
     createProgressBar();
     activeGraph.writeCentralityInformation(fn);
     destroyProgressBar();
 
-    statusMessage( QString(tr(" displaying file...")));
-
     TextEditor *ed = new TextEditor(fn);
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Information Centralities saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-
+    statusMessage(tr("Information Centralities saved as: ")+ tempFileNameNoPath.last());
 }
 
 
@@ -6765,7 +6786,7 @@ void MainWindow::slotCentralityStress(){
         statusMessage(  QString(tr(" Nothing to do! Why don't you try creating something first?"))  );
         return;
     }
-    QString fn = dataDir + "centrality_stress.dat";
+    QString fn = dataDir + "socnetv-report-centrality_stress.dat";
 
     bool considerWeights=true;
     statusMessage(  QString(tr(" Please wait...")));
@@ -6778,8 +6799,10 @@ void MainWindow::slotCentralityStress(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Stress Centralities saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
+    QApplication::restoreOverrideCursor();
+    statusMessage(tr("Stress Centralities saved as: ")+ tempFileNameNoPath.last());
 }
 
 
@@ -6795,7 +6818,7 @@ void MainWindow::slotCentralityPower(){
         statusMessage(  QString(tr(" Nothing to do! Why don't you try creating something first?"))  );
         return;
     }
-    QString fn = dataDir + "centrality_power.dat";
+    QString fn = dataDir + "socnetv-report-centrality_power.dat";
 
     bool considerWeights=true;
     statusMessage(  QString(tr(" Please wait...")));
@@ -6808,8 +6831,10 @@ void MainWindow::slotCentralityPower(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Stress Centralities saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
+    QApplication::restoreOverrideCursor();
+    statusMessage(tr("Stress Centralities saved as: ")+ tempFileNameNoPath.last());
 }
 
 
@@ -6823,7 +6848,7 @@ void MainWindow::slotCentralityEccentricity(){
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
     }
-    QString fn = dataDir + "centrality_eccentricity.dat";
+    QString fn = dataDir + "socnetv-report-centrality_eccentricity.dat";
     bool considerWeights=true;
     statusMessage(  QString(tr(" Please wait...")));
 
@@ -6833,10 +6858,10 @@ void MainWindow::slotCentralityEccentricity(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle(tr("Eccentricity Centralities saved as: ") + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-
+    statusMessage(tr("Eccentricity Centralities saved as: ")+ tempFileNameNoPath.last());
 }
 
 
