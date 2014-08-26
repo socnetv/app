@@ -3305,14 +3305,9 @@ void MainWindow::fileType (
 void MainWindow::prevRelation(){
     qDebug() << "MW::prevRelation()";
     int index=changeRelationCombo->currentIndex();
-    int relationsCounter=changeRelationCombo->count();
     if (index>0){
-//        changeRelation(--index);
         --index;
-        qDebug() << "MW::prevRelation()" << "set new index " << index << " rel count " << relationsCounter;
         changeRelationCombo->setCurrentIndex(index);
-        //emit relationChanged(index);
-
     }
 }
 
@@ -3323,13 +3318,9 @@ void MainWindow::nextRelation(){
     qDebug() << "MW::nextRelation()";
     int index=changeRelationCombo->currentIndex();
     int relationsCounter=changeRelationCombo->count();
-
     if (index< (relationsCounter -1 )){
-        //changeRelation(++index);
         ++index;
-        qDebug() << "MW::nextRelation()" << "set new index " << index << " rel count " << relationsCounter;
         changeRelationCombo->setCurrentIndex(index);
-        //emit relationChanged(index);
     }
 
 }
