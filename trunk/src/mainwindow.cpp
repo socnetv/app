@@ -206,7 +206,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect( addRelationAct, SIGNAL(triggered()), this, SLOT( addRelation() ) );
 
     connect( changeRelationCombo , SIGNAL( currentIndexChanged(int) ) ,
-             this, SLOT( changeRelation(int) ) );
+             &activeGraph, SLOT( changeRelation(int) ) );
 
     connect( this , SIGNAL(addRelationToGraph(QString)),
              &activeGraph, SLOT( addRelationFromUser(QString) ) );
@@ -230,8 +230,8 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect( &m_datasetSelectDialog, SIGNAL( userChoices( QString) ),
              this, SLOT( slotRecreateDataSet(QString) ) );
 
-    connect( &activeGraph, SIGNAL( setEdgeVisibility ( int, int, bool) ),
-             graphicsWidget, SLOT(  setEdgeVisibility ( int, int, bool) ) );
+    connect( &activeGraph, SIGNAL( setEdgeVisibility (int, int, int, bool) ),
+             graphicsWidget, SLOT(  setEdgeVisibility (int, int, int, bool) ) );
 
     connect( &activeGraph, SIGNAL( setVertexVisibility(long int, bool)  ),
              graphicsWidget, SLOT(  setNodeVisibility (long int ,  bool) ) );
@@ -3308,8 +3308,14 @@ void MainWindow::fileType (
 void MainWindow::prevRelation(){
     qDebug() << "MW::prevRelation()";
     int index=changeRelationCombo->currentIndex();
+    int relationsCounter=changeRelationCombo->count();
     if (index>0){
-        changeRelation(--index);
+//        changeRelation(--index);
+        --index;
+        qDebug() << "MW::prevRelation()" << "set new index " << index << " rel count " << relationsCounter;
+        changeRelationCombo->setCurrentIndex(index);
+        //emit relationChanged(index);
+
     }
 }
 
@@ -3320,8 +3326,13 @@ void MainWindow::nextRelation(){
     qDebug() << "MW::nextRelation()";
     int index=changeRelationCombo->currentIndex();
     int relationsCounter=changeRelationCombo->count();
+
     if (index< (relationsCounter -1 )){
-        changeRelation(++index);
+        //changeRelation(++index);
+        ++index;
+        qDebug() << "MW::nextRelation()" << "set new index " << index << " rel count " << relationsCounter;
+        changeRelationCombo->setCurrentIndex(index);
+        //emit relationChanged(index);
     }
 
 }
@@ -3373,44 +3384,14 @@ void MainWindow::addRelation(){
     if (ok && !newRelationName.isEmpty()){
         changeRelationCombo->addItem(newRelationName);
         emit addRelationToGraph(newRelationName);
-        if (relationsCounter != 0){
+        if (relationsCounter != 0){ //dont do it if its the first relation added
             qDebug() << "MW::addRelation() - calling MW::changeRelation";
-            changeRelation(relationsCounter);
+            changeRelationCombo->setCurrentIndex(relationsCounter);
         }
     }
     statusMessage( QString(tr("New relation named %1, added."))
                    .arg( newRelationName ) );
 }
-
-/**
- * @brief MainWindow::changeRelation
- * Called when the user presses the Prev/Next or New Relation btn
-  * @param relation
- */
-void MainWindow::changeRelation(int relation){
-    qDebug() << "MW::changeRelation(int) "<< relation;
-    int curIndex = changeRelationCombo->currentIndex();
-    QString curRelationName=changeRelationCombo->itemText(relation);
-    if ( relation != curIndex ) {
-        // new relation created or relation changed from Prev / Next buttons
-        changeRelationCombo->setCurrentIndex(relation);
-        curRelationName=changeRelationCombo->itemText(relation);
-        // if the user already changed the index from toolbar
-        // do not setCurrentIndex.
-
-        emit relationChanged(relation);
-//        QMessageBox::information(this,"Relation changed",
-//                                 tr("You are now editing relation %1 (%2)")
-//                                 .arg(curRelationName)
-//                                 .arg(changeRelationCombo->currentIndex()),
-//                                 QMessageBox::Ok, 0);
-
-        statusMessage( QString(tr("You are now editing Relation named %1."))
-                       .arg( curRelationName ) );
-
-    }
-}
-
 
 
 

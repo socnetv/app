@@ -154,7 +154,6 @@ public slots:
     void nextRelation();
     void addRelation();
     void addRelation(QString relationName);
-    void changeRelation(int relation);
 
     //EDIT MENU
     void slotFindNode();

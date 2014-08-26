@@ -220,7 +220,7 @@ public:
     //hold all outbound and inboud edges of this vertex.
     QHash_edges m_outLinks, m_inLinks;
 signals:
-    void setEdgeVisibility ( int, int, bool);
+    void setEdgeVisibility (int, int, int, bool);
 
 protected:
 

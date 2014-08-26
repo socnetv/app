@@ -73,7 +73,7 @@ public slots:
     int currentRelation();
 
     /** Slots to signals from Parser */
-    void changeRelation(QString);
+
     void addRelationFromParser(QString);
     void createVertex(	int i, int size, QString nodeColor,
                         QString numColor, int numSize,
@@ -90,7 +90,7 @@ public slots:
     void createEdge (int, int);					//WebCrawler
     void nodeMovement(bool state, int type, int cW, int cH);		//Called by MW to start movement
 
-    void slotSetEdgeVisibility( int, int, bool);
+    void slotSetEdgeVisibility(int relation, int, int, bool);
 
     //auxiliary createVertex functions
     void createVertex(int i, QPointF p); 				//Called by GW
@@ -123,7 +123,7 @@ signals:
     void eraseNode (long int);						//erase node from GW
     void drawEdge(int, int, float, bool, bool, QString, bool);	//call GW to draw an edge
     void eraseEdge(int, int);					//emited from removeEdge() to GW to clear the edge item.
-    void setEdgeVisibility ( int, int, bool);			// emitted from each Vertex
+    void setEdgeVisibility (int, int, int, bool);			// emitted from each Vertex
     void setVertexVisibility(long int, bool);		//notifies GW to disable a node
     void drawEdgeReciprocal(int, int);				//call GW to draw the edge as symmetric one
     void addGuideCircle(int, int, int);				//call GW to draw a circular layout line somewhere.

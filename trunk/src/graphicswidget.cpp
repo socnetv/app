@@ -525,14 +525,14 @@ void GraphicsWidget::setInitLabelDistance(int labelDistance){
 /**
 *	Changes the visibility of an GraphicsView edge (number, label, edge, etc)
 */
-void GraphicsWidget::setEdgeVisibility(int source, int target, bool visible){
-    QString edgeName =  QString::number(m_curRelation) + QString(":") +
+void GraphicsWidget::setEdgeVisibility(int relation, int source, int target, bool visible){
+    QString edgeName =  QString::number(relation) + QString(":") +
             QString::number( source ) + QString(">")+ QString::number( target );
 	
 	if (visible) {
 		if  ( edgesMap.contains (edgeName) ) {
-            qDebug()<<"GW: setEdgeVisibility(). Making edge between "
-                   << source  << " and "<< target << " VISIBLE.";
+            qDebug()<<"GW: setEdgeVisibility(). relation " << relation
+                   << " : " << source  << " ->  "<< target << " VISIBLE.";
 			edgesMap [edgeName] -> show();			
 		}
 		else {
@@ -541,9 +541,9 @@ void GraphicsWidget::setEdgeVisibility(int source, int target, bool visible){
 	}
 	else {
 		if  ( edgesMap.contains (edgeName) ) {
-			qDebug()<<"GW: setEdgeVisibility(). Making edge between "<< source  << " and "<< target 
-				<< " NOT VISIBLE.";
-			edgesMap [edgeName] -> hide();
+            qDebug()<<"GW: setEdgeVisibility(). relation " << relation
+                   << " : " << source  << " ->  "<< target << " NOT VISIBLE.";
+            edgesMap [edgeName] -> hide();
 		}
 	}
 }

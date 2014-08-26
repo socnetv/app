@@ -129,18 +129,7 @@ void Graph::changeRelation(int relation){
     emit graphChanged();
 }
 
-/**
- * @brief Graph::changeRelation
- * Called from Parser to change current relation
- *  - Emits relationChanged to GW to update nodes relation.
- *   -Calls changeRelation(int) to update vertices.
- * @param relation
- */
-void Graph::changeRelation(QString relation){
-    qDebug() << "Graph::changeRelation(string) " << relation;
-    changeRelation(relation);
-    m_curRelation  = m_relationsList.indexOf (relation) ;
-}
+
 
 /**
  * @brief Graph::addRelationFromUser
@@ -150,7 +139,8 @@ void Graph::changeRelation(QString relation){
 void Graph::addRelationFromUser(QString newRelation){
     qDebug() << "Graph::addRelationFromUser(string) " << newRelation;
     m_relationsList << newRelation;
-    qDebug() << "\n \n active relations() " << relations() << "\n\n";
+    qDebug() << "\n \n Graph::addRelationFromUser(string) - active relations() "
+             << relations() << "\n\n";
 }
 
 /**
@@ -187,7 +177,7 @@ int Graph::currentRelation(){
 
 
 int Graph::relations(){
-    qDebug () << " relations count " << m_relationsList.count();
+    //qDebug () << " relations count " << m_relationsList.count();
     return m_relationsList.count();
 }
 
@@ -704,9 +694,9 @@ void Graph::filterEdgesByRelation(int relation, bool status){
 
 
 
-void Graph::slotSetEdgeVisibility ( int source, int target, bool visible) {
+void Graph::slotSetEdgeVisibility ( int relation,  int source, int target, bool visible) {
     //qDebug() << "Graph: slotSetEdgeVisibility  - emitting signal to GW";
-    emit setEdgeVisibility ( source, target, visible);
+    emit setEdgeVisibility ( relation, source, target, visible);
 }
 
 

@@ -99,7 +99,7 @@ public slots:
 	void eraseNode(long int doomedJim);
 	void drawEdge(int, int, float, bool, bool, QString, bool);
 	void eraseEdge(int, int);
-	void setEdgeVisibility ( int, int, bool);
+	void setEdgeVisibility (int relation, int, int, bool);
 	void setNodeVisibility(long int, bool );	//Called from Graph via MW
 	
 	void nodeClicked(Node *);

@@ -69,8 +69,8 @@ Vertex::Vertex(	Graph* parent,
     m_reciprocalLinked=false;
     m_enabled = true;
 //    m_outLinks.reserve(1000);
-    connect (this, SIGNAL (setEdgeVisibility ( int, int, bool) ),
-             parent, SLOT (slotSetEdgeVisibility ( int, int, bool)) );
+    connect (this, SIGNAL (setEdgeVisibility ( int, int, int, bool) ),
+             parent, SLOT (slotSetEdgeVisibility (int, int, int, bool)) );
 
 }
 
@@ -99,8 +99,8 @@ Vertex::Vertex(int v1) {
 * @param relation
 */
 void Vertex::changeRelation(int relation) {
-    qDebug() << "Vertice::changeRelation() to " << relation
-                << " from " << m_curRelation;
+    qDebug() << "Vertice::changeRelation() to relation " << relation
+                << " from current relation " << m_curRelation;
     filterEdgesByRelation(m_curRelation, false);
     m_curRelation=relation;
     filterEdgesByRelation(m_curRelation, true);
@@ -148,7 +148,7 @@ void Vertex::setOutLinkEnabled (long int target, bool status){
                          << " weight " << weight
                          << " status " << it1.value().second.second;
                 it1.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, status) ));
-                emit setEdgeVisibility ( m_name, target, status );
+                emit setEdgeVisibility (m_curRelation, m_name, target, status );
             }
         }
         else {
@@ -289,13 +289,13 @@ void Vertex::filterEdgesByWeight(float m_threshold, bool overThreshold){
                     << " has weight " << weight
                     << ". It will be disabled. Emitting signal to Graph....";
                     it.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, false) ));
-                    emit setEdgeVisibility ( m_name, target, false );
+                    emit setEdgeVisibility (m_curRelation, m_name, target, false );
                 }
                 else {
                     qDebug() << "Vertex::filterEdgesByWeight(). Edge to " << target
                     << " has weight " << weight << ". It will be enabled. Emitting signal to Graph....";
                     it.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, true) ));
-                    emit setEdgeVisibility ( m_name, target, true );
+                    emit setEdgeVisibility (m_curRelation, m_name, target, true );
                 }
             }
             else {
@@ -303,13 +303,13 @@ void Vertex::filterEdgesByWeight(float m_threshold, bool overThreshold){
                     qDebug() << "Vertex::filterEdgesByWeight(). Edge  to " << target
                     << " has weight " << weight << ". It will be disabled. Emitting signal to Graph....";
                     it.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, false) ));
-                    emit setEdgeVisibility ( m_name, target, false );
+                    emit setEdgeVisibility (m_curRelation, m_name, target, false );
                 }
                 else {
                     qDebug() << "Vertex::filterEdgesByWeight(). Edge  to " << target
                     << " has weight " << weight << ". It will be enabled. Emitting signal to Graph....";
                     it.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, true) ));
-                    emit setEdgeVisibility ( m_name, target, true );
+                    emit setEdgeVisibility (m_curRelation, m_name, target, true );
                 }
             }
 
@@ -339,9 +339,9 @@ void Vertex::filterEdgesByRelation(int relation, bool status ){
             target=it1.key();
             weight = it1.value().second.first;
             qDebug() << "*** outLink " << m_name << " -> " << target
-                        << "  - emitting to GW";
+                        << "  - emitting to GW to be " << status ;
             it1.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, status) ));
-            emit setEdgeVisibility ( m_name, target, status );
+            emit setEdgeVisibility ( m_curRelation, m_name, target, status );
         }
         else {
 
