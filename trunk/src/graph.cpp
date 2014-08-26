@@ -3872,7 +3872,7 @@ void Graph::createRandomNetErdos(int vert, double probability){
         emit updateProgressDialog(progressCounter );
         qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
     }
-    addRelationFromGraph(tr("random"));
+    addRelationFromGraph(tr("random")); //FIXME
     emit graphChanged();
 }
 
