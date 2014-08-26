@@ -211,9 +211,6 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect( this , SIGNAL(addRelationToGraph(QString)),
              &activeGraph, SLOT( addRelationFromUser(QString) ) );
 
-    connect( this , SIGNAL(relationChanged(int)),
-             &activeGraph, SLOT( changeRelation(int) ) );
-
     connect ( &activeGraph, SIGNAL(addRelationToMW(QString)),
               this, SLOT(addRelation(QString)));
 
