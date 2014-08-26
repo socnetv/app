@@ -1073,18 +1073,53 @@ int Graph:: verticesWithReciprocalEdges(){
     Clears all vertices
 */
 void Graph::clear() {
-    //qDebug("Graph: m_graph reports size %i", m_graph.size());
+   qDebug("Graph::clear() m_graph reports size %i", m_graph.size());
+    qDeleteAll(m_graph.begin(), m_graph.end());
     m_graph.clear();
     index.clear();
     //clear relations
     m_relationsList.clear();
 
-    discreteDPs.clear();
-    discreteDCs.clear();
+    discreteDPs.clear(); discreteDCs.clear(); discreteCCs.clear();
+    discreteBCs.clear(); discreteSCs.clear(); discreteIRCCs.clear();
+    discreteECs.clear(); discreteEccentricities.clear();
+    discretePCs.clear(); discreteICs.clear();  discretePRCs.clear();
+    discretePPs.clear();
+    if ( DM.size() > 0) {
+        DM.clear();
+    }
+    if ( TM.size() > 0) {
+        TM.clear();
+    }
+    if ( sumM.size() > 0) {
+        sumM.clear();
+    }
+    if ( invAM.size() > 0) {
+        invAM.clear();
+    }
+    if ( AM.size() > 0) {
+        AM.clear();
+    }
+    if ( invM.size() > 0) {
+        invM.clear();
+    }
+    if ( XM.size() > 0) {
+        XM.clear();
+    }
+    if ( XSM.size() > 0) {
+        XSM.clear();
+    }
+    if ( XRM.size() > 0) {
+        XRM.clear();
+    }
+
+
     m_isolatedVerticesList.clear();
     notStronglyConnectedVertices.clear();
     influenceDomains.clear();
     influenceRanges.clear();
+    triadTypeFreqs.clear();
+
     m_totalVertices=0;
     m_totalEdges=0;
     outboundEdgesVert=0;

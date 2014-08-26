@@ -115,7 +115,7 @@ class Matrix {
 	public:
         /**default constructor - creates a Matrix of size 3000
          *  Use resize(int) to resize it*/
-        Matrix (int Actors=3000)   {
+        Matrix (int Actors=0)   {
             row=new Row[m_Actors=Actors];
             Q_CHECK_PTR( row );
         }
@@ -123,6 +123,8 @@ class Matrix {
 		Matrix(const Matrix &b) ;	/* Copy constructor allows Matrix a=b  declaration */
 
 		~Matrix() { delete [] row; }	/* Destructor */
+
+        void clear() { delete [] row;}
 
 		void setSize (int Actors);	/* Used to set m_Actors */
 			

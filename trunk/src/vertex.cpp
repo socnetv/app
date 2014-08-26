@@ -740,6 +740,12 @@ ilist Vertex::Ps(void) {
 }
 
 Vertex::~Vertex() {
+    qDebug() << " Vertex:: destroying my data";
+    m_outLinks.clear();
+    outLinkColors.clear();
+    clearPs();
     m_outLinks.clear();
     m_inLinks.clear();
 }
+
+
