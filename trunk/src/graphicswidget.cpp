@@ -75,13 +75,12 @@ void GraphicsWidget::paintEvent ( QPaintEvent * event ){
 */
 void GraphicsWidget::clear() {
 	int i=0;
+    qDebug() << " clear GW";
 	nodeHash.clear();
-	QList<QGraphicsItem *> allItems=scene()->items();
-	foreach (QGraphicsItem *item, allItems ) {
-		(item)->hide();
-		scene()->removeItem (item);
-		i++;
-	}
+    edgesMap.clear();
+
+    scene()->clear();
+
 }
 
 

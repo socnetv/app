@@ -118,6 +118,10 @@ void Graph::changeRelation(int relation){
         qDebug() << "Graph::changeRelation(int) - same relation - END";
         return;
     }
+    if ( relation < 0) {
+        qDebug() << "Graph::changeRelation(int) - negative relation - END";
+        return;
+    }
     QList<Vertex*>::iterator it;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         if ( ! (*it)->isEnabled() )
@@ -1079,6 +1083,7 @@ void Graph::clear() {
     index.clear();
     //clear relations
     m_relationsList.clear();
+    m_curRelation=0;
 
     discreteDPs.clear(); discreteDCs.clear(); discreteCCs.clear();
     discreteBCs.clear(); discreteSCs.clear(); discreteIRCCs.clear();

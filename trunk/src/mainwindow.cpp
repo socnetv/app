@@ -271,6 +271,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
     /*
         initialise default network parameters
     */
+    qDebug()<<"   initialise default network parameters";
     initNet();
 
 
@@ -706,12 +707,12 @@ void MainWindow::initActions(){
     strongColorationAct = new QAction ( tr("Strong Structural"), this);
     strongColorationAct -> setStatusTip( tr("Nodes are assigned the same color if they have identical in and out neighborhoods") );
     strongColorationAct -> setWhatsThis( tr("Click this to colorize nodes; Nodes are assigned the same color if they have identical in and out neighborhoods"));
-    connect(strongColorationAct, SIGNAL(activated() ), this, SLOT(slotColorationStrongStructural()) );
+    connect(strongColorationAct, SIGNAL(triggered() ), this, SLOT(slotColorationStrongStructural()) );
 
     regularColorationAct = new QAction ( tr("Regular"), this);
     regularColorationAct -> setStatusTip( tr("Nodes are assigned the same color if they have neighborhoods of the same set of colors") );
     regularColorationAct -> setWhatsThis( tr("Click this to colorize nodes; Nodes are assigned the same color if they have neighborhoods of the same set of colors"));
-    connect(regularColorationAct, SIGNAL(activated() ), this, SLOT(slotColorationRegular()) );//TODO
+    connect(regularColorationAct, SIGNAL(triggered() ), this, SLOT(slotColorationRegular()) );//TODO
 
     randLayoutAct = new QAction( tr("Random"),this);
     randLayoutAct -> setShortcut(tr("Ctrl+0"));
@@ -2666,10 +2667,8 @@ void MainWindow::initNet(){
     activeGraph.setShowLabels(this->showLabels());
     activeGraph.setShowNumbersInsideNodes( this->showNumbersInsideNodes());
 
-
     /** Clear scene **/
     graphicsWidget->clear();
-
 
     /** Clear LCDs **/
     nodesLCD->display(activeGraph.vertices());
