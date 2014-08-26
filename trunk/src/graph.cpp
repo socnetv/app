@@ -25,13 +25,12 @@
 ********************************************************************************/
 
 
-//#include <fstream>		//for writing the adjacency matrix to a file
 #include <cstdlib>		//allows the use of RAND_MAX macro 
 #include <QPointF>
 #include <QDebug>		//used for qDebug messages
 #include <QDateTime> 	// used in exporting centrality files
 #include <QHash> 
-#include <list>			//for list iterators
+//#include <list>			//for list iterators
 #include <queue>		//for BFS queue Q
 
 #include "graph.h"
