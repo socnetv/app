@@ -26,7 +26,7 @@
 
 
 #include <fstream>		//for writing the adjacency matrix to a file
-#include <cmath>		//allows the use of pow(float/double, float/double) function
+//#include <cmath>		//allows the use of pow(float/double, float/double) function
 #include <cstdlib>		//allows the use of RAND_MAX macro 
 
 #include <QPointF>
@@ -1390,7 +1390,8 @@ void Graph::writeEccentricity(
 
 
 /**
-    Creates a matrix DM which stores geodesic distances between all vertices
+ * @brief Graph::createDistanceMatrix
+  Creates a matrix DM which stores geodesic distances between all vertices
     INPUT:
         boolean doCalculcateCentralities
     OUTPUT:
@@ -1403,8 +1404,8 @@ void Graph::writeEccentricity(
         - Stress: SC(u) = Sum ( sigma(i,j) ) for every s,t in V
         - Eccentricity: EC(u) =  1/maxDistance(u,t)  for some t in V
         - Closeness: CC(u) =  1 / Sum( DM(u,t) )  for every  t in V
-*/
-
+ * @param doCalculcateCentralities
+ */
 void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
     qDebug ("Graph::createDistanceMatrix()");
     if ( !graphModified && distanceMatrixCreated && !doCalculcateCentralities)  {
@@ -1598,7 +1599,8 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                     if (lst.size() > 0) // just in case...do a sanity check
                         for ( it2=lst.begin(); it2 != lst.end(); it2++ ){
                             u=(*it2);
-                            qDebug("Selecting Ps[w] element u=%i with delta_u=%f. sigma(u)=TM(s,u)=%f, sigma(w)=TM(s,w)=%f, delta_w=%f ", u, m_graph[u]->delta(),TM.item(s,u), TM.item(s,w), m_graph[w]->delta());
+                            qDebug("Selecting Ps[w] element u=%i with delta_u=%f. sigma(u)=TM(s,u)=%f, sigma(w)=TM(s,w)=%f, delta_w=%f ",
+                                   u, m_graph[u]->delta(),TM.item(s,u), TM.item(s,w), m_graph[w]->delta());
                             if ( TM.item(s,w) > 0) {
                                 //delta[u]=delta[u]+(1+delta[w])*(sigma[u]/sigma[w]) ;
                                 d_su=m_graph[u]->delta()+(1.0+m_graph[w]->delta() ) * ( (float)TM.item(s,u)/(float)TM.item(s,w) );
@@ -1612,7 +1614,8 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                         }
                     qDebug()<<" Adding delta_w to BC of w";
                     if  (w!=s) {
-                        qDebug("w!=s. For this furthest vertex we need to add its new delta %f to old BC index: %f",m_graph[w]->delta(), m_graph[w]->BC());
+                        qDebug("w!=s. For this furthest vertex we need to add its new delta %f to old BC index: %f",
+                               m_graph[w]->delta(), m_graph[w]->BC());
                         d_sw = m_graph[w]->BC() + m_graph[w]->delta();
                         qDebug("New BC = d_sw = %f", d_sw);
                         m_graph[w]->setBC (d_sw);
@@ -1727,7 +1730,8 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 */ 
 void Graph::BFS(int s, bool doCalculcateCentralities){
     int u,w, dist_u=0, temp=0, dist_w=0;
-    int relation=0, target=0, weight=0;
+    int relation=0, target=0, weight;
+    weight=0;
     bool edgeStatus=false;
     QHash_edges::const_iterator it1;
     //set distance of s from s equal to 0
@@ -1735,24 +1739,24 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
     //set sigma of s from s equal to 1
     TM.setItem(s,s,1);
 
-    qDebug("BFS: Construct a queue Q of integers and push source vertex s=%i to Q as initial vertex", s);
+//    qDebug("BFS: Construct a queue Q of integers and push source vertex s=%i to Q as initial vertex", s);
     queue<int> Q;
-    qDebug()<<"BFS: Q size "<< Q.size();
+//    qDebug()<<"BFS: Q size "<< Q.size();
 
     Q.push(s);
 
-    qDebug("BFS: LOOP: While Q not empty ");
+//    qDebug("BFS: LOOP: While Q not empty ");
     while ( !Q.empty() ) {
-        qDebug("BFS: Dequeue: first element of Q is u=%i", Q.front());
+//        qDebug("BFS: Dequeue: first element of Q is u=%i", Q.front());
         u=Q.front(); Q.pop();
 
         if ( ! m_graph [ u ]->isEnabled() ) continue ;
 
         if (doCalculcateCentralities){
-            qDebug("BFS: If we are to calculate centralities, we must push u=%i to global stack Stack ", u);
+//            qDebug("BFS: If we are to calculate centralities, we must push u=%i to global stack Stack ", u);
             Stack.push(u);
         }
-        qDebug() << "BFS: LOOP over every edge (u,w) e E, that is all neighbors w of vertex u";
+//        qDebug() << "BFS: LOOP over every edge (u,w) e E, that is all neighbors w of vertex u";
         it1=m_graph [ u ] ->m_outLinks.cbegin();
         while ( it1!=m_graph [ u ] -> m_outLinks.cend() ){
             relation = it1.value().first;
@@ -1768,58 +1772,58 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
             target = it1.key();
             weight = it1.value().second.first;
             w=index[ target ];
-            qDebug("BFS: u=%i is connected with node %i of index w=%i. ", u, target, w);
-            qDebug("BFS: Start path discovery");
+//            qDebug("BFS: u=%i is connected with node %i of index w=%i. ", u, target, w);
+//            qDebug("BFS: Start path discovery");
             if (	DM.item(s, w) == -1 ) { //if distance (s,w) is infinite, w found for the first time.
-                qDebug("BFS: first time visiting w=%i. Enqueuing w to the end of Q", w);
+//                qDebug("BFS: first time visiting w=%i. Enqueuing w to the end of Q", w);
                 Q.push(w);
-                qDebug()<<"BFS: First check if distance(s,u) = -1 (aka infinite :)) and set it to zero";
+//                qDebug()<<"BFS: First check if distance(s,u) = -1 (aka infinite :)) and set it to zero";
                 dist_u=DM.item(s,u);
                 if (dist_u < 0 )
                     dist_w = 0;
                 else
                     dist_w = dist_u + 1;
-                qDebug("BFS: Setting distance of w=%i from s=%i equal to distance(s,u) plus 1. New distance = %i",w,s, dist_w );
+//                qDebug("BFS: Setting distance of w=%i from s=%i equal to distance(s,u) plus 1. New distance = %i",w,s, dist_w );
                 DM.setItem(s, w, dist_w);
                 averGraphDistance += dist_w;
                 nonZeroDistancesCounter++;
 
                 if (doCalculcateCentralities){
-                    qDebug()<<"BFS: Calculate PC: store the number of nodes at distance " << dist_w << "from s";
+//                    qDebug()<<"BFS: Calculate PC: store the number of nodes at distance " << dist_w << "from s";
                     sizeOfNthOrderNeighborhood[dist_w]=sizeOfNthOrderNeighborhood[dist_w]+1;
-                    qDebug()<<"BFS: Calculate CC: the sum of distances (will invert it l8r)";
+//                    qDebug()<<"BFS: Calculate CC: the sum of distances (will invert it l8r)";
                     m_graph [s]->setCC (m_graph [s]->CC() + dist_w);
-                    qDebug()<<"BFS: Calculate Eccentricity: the maximum distance ";
+//                    qDebug()<<"BFS: Calculate Eccentricity: the maximum distance ";
                     if (m_graph [s]->eccentricity() < dist_w )
                         m_graph [s]->setEccentricity(dist_w);
 
                 }
-                qDebug("BFS: Checking graphDiameter");
+//                qDebug("BFS: Checking graphDiameter");
                 if ( dist_w > graphDiameter){
                     graphDiameter=dist_w;
-                    qDebug() << "BFS: new graphDiameter = " <<  graphDiameter ;
+//                    qDebug() << "BFS: new graphDiameter = " <<  graphDiameter ;
                 }
             }
 
-            qDebug("BFS: Start path counting"); 	//Is edge (u,w) on a shortest path from s to w via u?
+//            qDebug("BFS: Start path counting"); 	//Is edge (u,w) on a shortest path from s to w via u?
             if ( DM.item(s,w)==DM.item(s,u)+1) {
                 temp= TM.item(s,w)+TM.item(s,u);
-                qDebug("BFS: Found a NEW SHORTEST PATH from s=%i to w=%i via u=%i. Setting Sigma(%i, %i) = %i",s, w, u, s, w,temp);
+//                qDebug("BFS: Found a NEW SHORTEST PATH from s=%i to w=%i via u=%i. Setting Sigma(%i, %i) = %i",s, w, u, s, w,temp);
                 if (s!=w)
                     TM.setItem(s,w, temp);
                 if (doCalculcateCentralities){
-                    qDebug("BFS/SC: If we are to calculate centralities, we must calculate SC as well");
+//                    qDebug("BFS/SC: If we are to calculate centralities, we must calculate SC as well");
                     if ( s!=w && s != u && u!=w ) {
-                        qDebug() << "BFS: setSC of u="<<u<<" to "<<m_graph[u]->SC()+1;
+//                        qDebug() << "BFS: setSC of u="<<u<<" to "<<m_graph[u]->SC()+1;
                         m_graph[u]->setSC(m_graph[u]->SC()+1);
                     }
                     else {
-                        qDebug() << "BFS/SC: skipping setSC of u, because s="
-                                 <<s<<" w="<< w << " u="<< u;
+//                        qDebug() << "BFS/SC: skipping setSC of u, because s="
+//                                 <<s<<" w="<< w << " u="<< u;
                     }
-                    qDebug() << "BFS/SC: SC is " << m_graph[u]->SC();
-                    qDebug() << "BFS: appending u="<< u << " to list Ps[w=" << w
-                             << "] with the predecessors of w on all shortest paths from s ";
+//                    qDebug() << "BFS/SC: SC is " << m_graph[u]->SC();
+//                    qDebug() << "BFS: appending u="<< u << " to list Ps[w=" << w
+//                             << "] with the predecessors of w on all shortest paths from s ";
                     m_graph[w]->appendToPs(u);
                 }
             }
@@ -3157,15 +3161,19 @@ int Graph::prestigePageRank(){
     // begin iteration - continue until we reach our desired delta
     while (maxDelta > delta) {
         for (it=m_graph.begin(); it!=m_graph.end(); it++){
-            qDebug() << "Graph:: prestigePageRank() - calculating PR for node: " << (*it)->name() ;
+            qDebug() << "Graph:: prestigePageRank() - calculating PR for node: "
+                     << (*it)->name() ;
             // In the first iteration, we have no PageRanks
             // So we set them to (1-d)
             if ( i == 1 ) {
                 (*it)->setPRC( 1 - dampingFactor );
-                qDebug() << "Graph:: prestigePageRank() - first iteration - node: " << (*it)->name() << " PR = " << (*it)->PRC() ;
+                qDebug() << "Graph:: prestigePageRank() - 1st iteration - node: "
+                         << (*it)->name() << " PR = " << (*it)->PRC() ;
                 if ( (*it)->isIsolated() ) {
                     isolatedVertices++;
-                    qDebug()<< "Graph:: prestigePageRank() vertex: " << (*it)->name() << " is isolated. PR will be just 1-d. Continue... ";
+                    qDebug()<< "Graph:: prestigePageRank() vertex: "
+                            << (*it)->name()
+                            << " is isolated. PR will be just 1-d. Continue... ";
                 }
                 else
                     allNodesAreIsolated = false;
@@ -3217,7 +3225,8 @@ int Graph::prestigePageRank(){
                         << " diff = " << fabs(PRC - oldPRC);
                 if ( maxDelta < fabs(PRC - oldPRC) ) {
                     maxDelta = fabs(PRC - oldPRC);
-                    qDebug()<< "Graph:: prestigePageRank() setting new maxDelta = " <<  maxDelta;
+                    qDebug()<< "Graph:: prestigePageRank() setting new maxDelta = "
+                            <<  maxDelta;
                 }
 
             }
@@ -4055,7 +4064,6 @@ void Graph::createNumberOfWalksMatrix(int length) {
         XM=PM;
         XSM = XSM+XM;
     }
-    //XSM.pow(length, false);
 }
 
 
@@ -6233,8 +6241,8 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
                     dux = ( ulv_x ) * ( dist * dist ) / natural_length;
                     duy = ( ulv_y ) * ( dist * dist ) / natural_length;
                     //limit the maximum displacement to a maximum temperature
-                    xvel = ( dux / abs (dux) ) *  qMin( abs(dux), temperature) ;
-                    yvel = ( duy / abs (duy) ) *  qMin( abs(duy), temperature) ;
+                    xvel = ( dux / qAbs (dux) ) *  qMin( qAbs(dux), temperature) ;
+                    yvel = ( duy / qAbs (duy) ) *  qMin( qAbs(duy), temperature) ;
 
                     qDebug() << "  v1= "<<v1->name() <<  " connected to and pulled by v2= "<< v2->name()
                              <<"  nat_length =" << natural_length
@@ -6251,8 +6259,8 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
                 duy = (ulv_y * natural_length * natural_length ) / ( dist ) ;
 
                 //limit the maximum displacement to a maximum temperature
-                xvel += ( dux / abs (dux) ) *  qMin( abs(dux), temperature) ;
-                yvel += ( duy / abs (duy) ) *  qMin( abs(duy), temperature) ;
+                xvel += ( dux / qAbs (dux) ) *  qMin( qAbs(dux), temperature) ;
+                yvel += ( duy / qAbs (duy) ) *  qMin( qAbs(duy), temperature) ;
 
                 qDebug() << "  v1 = "<<v1->name() <<  " NOT connected to and pushed away from  v2 = "<< v2->name()
                          <<"  c_rep=" << c_rep
