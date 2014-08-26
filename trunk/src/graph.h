@@ -328,6 +328,7 @@ public:
 
     int factorial (int);
 
+    int relations();
     void addRelationFromGraph(QString relationName);
 
     /**  index stores the real position of each vertex inside m_graph.

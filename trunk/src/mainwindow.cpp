@@ -204,8 +204,12 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect( nextRelationAct, SIGNAL(triggered()), this, SLOT( nextRelation() ) );
     connect( prevRelationAct, SIGNAL(triggered()), this, SLOT( prevRelation() ) );
     connect( addRelationAct, SIGNAL(triggered()), this, SLOT( addRelation() ) );
+
     connect( changeRelationCombo , SIGNAL( currentIndexChanged(int) ) ,
              this, SLOT( changeRelation(int) ) );
+
+    connect( this , SIGNAL(addRelationToGraph(QString)),
+             &activeGraph, SLOT( addRelationFromUser(QString) ) );
 
     connect( this , SIGNAL(relationChanged(int)),
              &activeGraph, SLOT( changeRelation(int) ) );
@@ -3368,6 +3372,7 @@ void MainWindow::addRelation(){
     }
     if (ok && !newRelationName.isEmpty()){
         changeRelationCombo->addItem(newRelationName);
+        emit addRelationToGraph(newRelationName);
         if (relationsCounter != 0){
             qDebug() << "MW::addRelation() - calling MW::changeRelation";
             changeRelation(relationsCounter);
@@ -3394,13 +3399,13 @@ void MainWindow::changeRelation(int relation){
         // do not setCurrentIndex.
 
         emit relationChanged(relation);
-        QMessageBox::information(this,"Relation changed",
-                                 tr("You are now editing relation %1 (%2)")
-                                 .arg(curRelationName)
-                                 .arg(changeRelationCombo->currentIndex()),
-                                 QMessageBox::Ok, 0);
+//        QMessageBox::information(this,"Relation changed",
+//                                 tr("You are now editing relation %1 (%2)")
+//                                 .arg(curRelationName)
+//                                 .arg(changeRelationCombo->currentIndex()),
+//                                 QMessageBox::Ok, 0);
 
-        statusMessage( QString(tr("Relation named %1."))
+        statusMessage( QString(tr("You are now editing Relation named %1."))
                        .arg( curRelationName ) );
 
     }
@@ -4408,7 +4413,24 @@ void MainWindow::linkInfoStatusBar (Edge* link) {
 void MainWindow::slotRemoveNode() {
     qDebug("MW: slotRemoveNode()");
     if (!activeGraph.vertices())  {
-        QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or add some nodes first."), "OK",0);
+        QMessageBox::critical(
+                    this,
+                    "Error",
+                    tr("Nothing to do! \n"
+                       "Load a network file or add some nodes first."), "OK",0);
+        statusMessage( tr("Nothing to remove.")  );
+        return;
+    }
+    if (activeGraph.relations() > 1){
+        QMessageBox::critical(
+                    this, "Error",
+                    tr("Cannot remove node! \n"
+                       "This a network with more than 1 relations. If you remove "
+                       "a node from the active relation, and then ask me to go "
+                       "to the previous or the next relation, then I would crash "
+                       "because I would try to display edges from a delete node."
+                       "You can only add nodes in multirelational networks."),
+                    "OK",0);
         statusMessage( tr("Nothing to remove.")  );
         return;
     }

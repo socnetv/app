@@ -53,7 +53,7 @@ Graph::Graph() {
     calculatedIRCC=false;
     calculatedPP=false;
     m_precision = 3;
-    m_curRelation=m_relationsList.count();
+    m_curRelation=0;
     dynamicMovement=false;
     timerId=0;
     layoutType=0;
@@ -66,8 +66,8 @@ Graph::Graph() {
                 ) ;
 
     connect (
-                &parser, SIGNAL( changeRelation (QString) ),
-                this, SLOT( changeRelation (QString) )
+                &parser, SIGNAL( changeRelation (int) ),
+                this, SLOT( changeRelation (int) )
                 ) ;
 
 
@@ -109,30 +109,37 @@ Graph::Graph() {
 
 /**
  * @brief Graph::changeRelation
- * Called from MW
+ * Called from MW and Parser
  * @param relation
  */
 void Graph::changeRelation(int relation){
     qDebug() << "Graph::changeRelation(int) " << relation;
-    m_curRelation = relation;
+    if (m_curRelation == relation ) {
+        qDebug() << "Graph::changeRelation(int) - same relation - END";
+        return;
+    }
     QList<Vertex*>::iterator it;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         if ( ! (*it)->isEnabled() )
             continue;
-       (*it)->changeRelation(m_curRelation);
+       (*it)->changeRelation(relation);
     }
+    m_curRelation = relation;
+    emit relationChanged(m_curRelation);
     emit graphChanged();
 }
 
 /**
  * @brief Graph::changeRelation
- * Called from Parser and addRelationFromUser to change current relation
+ * Called from Parser to change current relation
+ *  - Emits relationChanged to GW to update nodes relation.
+ *   -Calls changeRelation(int) to update vertices.
  * @param relation
  */
 void Graph::changeRelation(QString relation){
     qDebug() << "Graph::changeRelation(string) " << relation;
+    changeRelation(relation);
     m_curRelation  = m_relationsList.indexOf (relation) ;
-    emit relationChanged(m_curRelation);
 }
 
 /**
@@ -143,7 +150,7 @@ void Graph::changeRelation(QString relation){
 void Graph::addRelationFromUser(QString newRelation){
     qDebug() << "Graph::addRelationFromUser(string) " << newRelation;
     m_relationsList << newRelation;
-    changeRelation(newRelation);
+    qDebug() << "\n \n active relations() " << relations() << "\n\n";
 }
 
 /**
@@ -178,6 +185,11 @@ int Graph::currentRelation(){
     return m_curRelation;
 }
 
+
+int Graph::relations(){
+    qDebug () << " relations count " << m_relationsList.count();
+    return m_relationsList.count();
+}
 
 
 /**
@@ -290,7 +302,8 @@ void Graph::setCanvasDimensions(int w, int h){
  */
 void Graph::createEdge(int v1, int v2, float weight, QString color,
                        int reciprocal=0, bool drawArrows=true, bool bezier=false){
-    qDebug()<<" Graph::createEdge() " << v1 << " -> " << v2 << " weight " << weight;
+    qDebug()<<" Graph::createEdge() " << v1 << " -> " << v2
+           << " weight " << weight << " relation " << m_curRelation;
     if ( reciprocal == 2) {
         qDebug()<<"  Creating edge as RECIPROCAL - emitting drawEdge signal to GW";
         addEdge ( v1, v2, weight, color, reciprocal);
@@ -692,7 +705,7 @@ void Graph::filterEdgesByRelation(int relation, bool status){
 
 
 void Graph::slotSetEdgeVisibility ( int source, int target, bool visible) {
-    qDebug() << "Graph: slotSetEdgeVisibility  - emitting signal to GW";
+    //qDebug() << "Graph: slotSetEdgeVisibility  - emitting signal to GW";
     emit setEdgeVisibility ( source, target, visible);
 }
 

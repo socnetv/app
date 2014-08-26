@@ -57,8 +57,8 @@ Edge::Edge(  GraphicsWidget *gw, Node *from, Node *to, float weight, int nodeSiz
 	m_reciprocal=reciprocal;
 	m_startOffset=source->size();  //used to offset edge from the centre of node
 	m_endOffset=target->size();  //used to offset edge from the centre of node	
-	qDebug("Edge() m_startOffset %i",(int) m_startOffset);
-	qDebug("Edge() m_endOffset %i",(int) m_endOffset);
+//	qDebug("Edge() m_startOffset %i",(int) m_startOffset);
+//	qDebug("Edge() m_endOffset %i",(int) m_endOffset);
 
     m_arrowSize=4;		//controls the width of the edge arrow
 
@@ -191,7 +191,7 @@ void Edge::adjust(){
  	
 	sourcePoint = line.p1() + edgeOffset;
 	targetPoint = line.p2() - edgeOffset;
-	qDebug()<<"----Edge: adjust() "<< sourcePoint.x()<< " "<<sourcePoint.y();
+//	qDebug()<<"----Edge: adjust() "<< sourcePoint.x()<< " "<<sourcePoint.y();
 	foreach (EdgeWeight *wgt, weightList) 		//Move the weight of this edge
 		wgt->setPos( (source->x()+target->x())/2.0, (source->y()+target->y())/2.0 );
 }

@@ -309,6 +309,7 @@ protected:
     //	void myMessageOutput(QtMsgType type, const char *msg);
 signals:
     void relationChanged(int );
+    void addRelationToGraph(QString);
 
 private:
 

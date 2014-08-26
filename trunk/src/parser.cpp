@@ -103,7 +103,8 @@ bool Parser::loadDL(){
     QString str, label, nm_str, relation;
 	
     int source=1, target=1, nm=0,lineCounter=0, mark=0, mark2=0, nodeNum=0;
-	edgeWeight=0;
+    int relationCounter=0;
+    edgeWeight=0;
     bool labels_flag=false, data_flag=false, intOK=false, floatOK=false;
     bool relation_flag=false;
     QStringList lineElement, labelsList, relationsList;
@@ -231,7 +232,8 @@ bool Parser::loadDL(){
                 continue;
             }
             else{
-                qDebug() << "adding relation " << relation << " to relationsList";
+                qDebug() << "adding relation "<< relation
+                         << " to relationsList and emitting addRelation ";
                 relationsList << relation;
                 emit addRelation( relation );
             }
@@ -241,36 +243,41 @@ bool Parser::loadDL(){
             lineElement=str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
             target=1;
             if (source==1){
-                relation = relationsList.takeFirst();
+                relation = relationsList[ relationCounter ];
                 qDebug() << " WE ARE THE FIRST DATASET/MATRIX"
                          << " source node counter is " << source
-                         << " and relation to " << relation;
-                emit changeRelation (relation);
+                         << " and relation to " << relation<< ": "<<relationCounter;
+                emit changeRelation (relationCounter);
             }
             else if (source>aNodes) {
-                source=0;
-                relation = relationsList.takeFirst();
+                source=1;
+                relationCounter++;
+                relation = relationsList[ relationCounter ];
                 qDebug() << " LOOKS LIKE WE ENTERED A NEW DATASET/MATRIX "
                          << " init source node counter to " << source
-                         << " and relation to " << relation;
-                emit changeRelation (relation);
+                         << " and relation to " << relation << ": "<<relationCounter;
+                emit changeRelation (relationCounter);
             }
             else {
                 qDebug() << "source node counter is " << source;
             }
 
             for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
-                qDebug()<< (*it1).toLatin1() ;
-                if ( (*it1)!="0"){ //here is an non-zero edge weight...
-                    qDebug()<<  "Parser-loadDL(): here is an edge from "
-                             << source << " to " << target;
+                //qDebug()<< (*it1).toLatin1() ;
+                if ( (*it1)!="0"){
                     edgeWeight=(*it1).toFloat(&floatOK);
+                    qDebug()<<  "Parser-loadDL(): relation "
+                               << relationCounter
+                               << " found edge from "
+                               << source << " to " << target
+                               << " weight " << edgeWeight
+                               << " emitting createEdge() to parent" ;
+
                     undirected=0;
                     arrows=true;
                     bezier=false;
                     emit createEdge(source, target, edgeWeight, initEdgeColor, undirected, arrows, bezier);
                     totalLinks++;
-                    qDebug()<<  "Created Link from source node " << source << " to target "<< target;
                     qDebug() << "TotalLinks= " << totalLinks;
 
                 }
@@ -288,6 +295,7 @@ bool Parser::loadDL(){
     }
     //The network has been loaded. Tell MW the statistics and network type
     // 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List
+    emit changeRelation (0);
     emit fileType(5, networkName, aNodes, totalLinks, undirected);
     qDebug() << "Parser-loadDL()";
     return true;

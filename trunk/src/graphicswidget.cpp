@@ -157,8 +157,11 @@ void GraphicsWidget::drawNode(
 	b) when the user clicks on the AddLink button on the MW.
 */
 void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool drawArrows, QString color, bool bezier){
-    qDebug()<<"GW: drawEdge ("<< i<< ","<< j<< ") with weight "<<weight
-           << " - nodeHash reports "<< nodeHash.size()<<" nodes.";
+
+     QString edgeName = QString::number(m_curRelation) + QString(":")
+            + QString::number(i) + QString(">")+ QString::number(j);
+     qDebug()<<"GW: drawEdge "<< edgeName << "weight "<<weight
+            << " - nodeHash reports "<< nodeHash.size()<<" nodes.";
 	if (i == j ) {
 		bezier = true;		
 	}
@@ -174,8 +177,6 @@ void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool 
 	edge->setBoundingRegionGranularity(0.05);	// Slows down the universe...Keep it 0.05...
 	//edge->setCacheMode (QGraphicsItem::DeviceCoordinateCache);  //Also slows down the universe...
 
-    QString edgeName = QString::number(m_curRelation) + QString(":")
-            + QString::number(i) + QString(">")+ QString::number(j);
 //    qDebug()<<"GW: drawEdge() - adding new edge between "<<i << " and "<< j
 //           << " to edgesMap. Name: "<<edgeName.toUtf8();
 	edgesMap [edgeName] =  edge;

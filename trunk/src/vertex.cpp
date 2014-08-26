@@ -94,6 +94,10 @@ Vertex::Vertex(int v1) {
 }
 
 
+/**
+* @brief Vertex::changeRelation
+* @param relation
+*/
 void Vertex::changeRelation(int relation) {
     qDebug() << "Vertice::changeRelation() to " << relation
                 << " from " << m_curRelation;
@@ -103,17 +107,27 @@ void Vertex::changeRelation(int relation) {
 }
 
 
+/**
+ * @brief Vertex::addLinkTo
+ * @param target
+ * @param weight
+ */
 void Vertex::addLinkTo (long int target, float weight) {
-    qDebug() <<"Vertex::addLinkTo() - "
-            << name() << " new link to "<< target << " of weight "<< weight;
+    qDebug() <<"Vertex::addLinkTo() - new link "
+            << name() << " -> "<< target << " weight "<< weight
+               << " relation " << m_curRelation;
     // do not use [] operator. It silently creates an item if key do not exist
     m_outLinks.insertMulti(
                 target, rel_w_bool(m_curRelation, pair_f_b(weight, true) ) );
-    qDebug() << " *** m_outLinks.count " <<  m_outLinks.count();
     m_outLinksCounter++;
 }
 
 
+/**
+ * @brief Vertex::setOutLinkEnabled
+ * @param target
+ * @param status
+ */
 void Vertex::setOutLinkEnabled (long int target, bool status){
     qDebug () << "Vertex::setOutLinkEnabled - set outLink to " << target
               << " as " << status
@@ -144,8 +158,13 @@ void Vertex::setOutLinkEnabled (long int target, bool status){
 }
 
 
+/**
+ * @brief Vertex::addLinkFrom
+ * @param source
+ * @param weight
+ */
 void Vertex::addLinkFrom (long int source, float weight) {
-    qDebug() <<"Vertex: "<< name() << " addLinkFrom() "<< source;
+//    qDebug() <<"Vertex: "<< name() << " addLinkFrom() "<< source;
     m_inLinks.insertMulti(
                 source, rel_w_bool (m_curRelation, pair_f_b(weight, true) ) );
     m_inLinksCounter++;
@@ -174,7 +193,12 @@ void Vertex::changeLinkWeightTo(long int target, float weight){
 }
 
 
-//finds and removes a link to vertice v2
+
+/**
+ * @brief Vertex::removeLinkTo
+ * finds and removes a link to vertice v2
+ * @param v2
+ */
 void Vertex::removeLinkTo (long int v2) {
     qDebug() << "Vertex: removeLinkTo() - vertex " << m_name
              << " has " <<outLinks() << " out-links. Removing link to "<< v2 ;
@@ -182,8 +206,8 @@ void Vertex::removeLinkTo (long int v2) {
     if (outLinks()>0) {
         qDebug () << "checking all_outLinks";
         QHash_edges::iterator it1=m_outLinks.find(v2);
-        while (it1 != m_outLinks.end() ) {
-            if ( it1.key() == v2 && it1.value().first == m_curRelation ) {
+        while (it1 != m_outLinks.end() && it1.key() == v2 ) {
+            if ( it1.value().first == m_curRelation ) {
                 qDebug() << " *** vertex " << m_name << " connected to "
                          << it1.key() << " relation " << it1.value().first
                          << " weight " << it1.value().second.first
@@ -206,6 +230,10 @@ void Vertex::removeLinkTo (long int v2) {
 }
 
 
+/**
+ * @brief Vertex::removeLinkFrom
+ * @param v2
+ */
 void Vertex::removeLinkFrom(long int v2){
     qDebug() << "Vertex: removeLinkFrom() vertex " << m_name
              << " has " <<  inLinks() << "  in-edges. RemovingEdgeFrom " << v2 ;
@@ -239,9 +267,12 @@ void Vertex::removeLinkFrom(long int v2){
 
 
 /**
-	Called from Graph parent 
-	to filter edges over or under a specified weight (m_threshold)
-*/
+ * @brief Vertex::filterEdgesByWeight
+   Called from Graph parent
+    to filter edges over or under a specified weight (m_threshold)
+ * @param m_threshold
+ * @param overThreshold
+ */
 void Vertex::filterEdgesByWeight(float m_threshold, bool overThreshold){
 	qDebug() << "Vertex::filterEdgesByWeight of vertex " << this->m_name;
 	int target=0;
@@ -307,7 +338,8 @@ void Vertex::filterEdgesByRelation(int relation, bool status ){
         if ( relation == m_curRelation ) {
             target=it1.key();
             weight = it1.value().second.first;
-            qDebug() << " edge to " << target ;
+            qDebug() << "*** outLink " << m_name << " -> " << target
+                        << "  - emitting to GW";
             it1.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, status) ));
             emit setEdgeVisibility ( m_name, target, status );
         }
@@ -397,7 +429,12 @@ long int Vertex::inLinks() {
 
 
 
-//Returns the outDegree (the sum of all enabled outLinks weights) of this vertice
+
+/**
+ * @brief Vertex::outDegree
+ * Returns the outDegree (the sum of all enabled outLinks weights) of this vertice
+ * @return long int
+ */
 long int Vertex::outDegree() {
     qDebug() << " Vertex:: outDegree()";
     m_outDegree=0;
@@ -421,7 +458,11 @@ long int Vertex::outDegree() {
 
 
 
-//Returns the inDegree (the sum of all enabled inLinks weights) of this vertice
+/**
+ * @brief Vertex::inDegree
+ * Returns the inDegree (the sum of all enabled inLinks weights) of this vertice
+ * @return long int
+ */
 long int Vertex::inDegree() {
     qDebug() << " Vertex::inDegree()";
     m_inDegree=0;
@@ -485,25 +526,28 @@ float Vertex::isLinkedTo(long int v2){
     float m_weight=0;
     bool edgeStatus=false;
     QHash_edges::iterator it1=m_outLinks.find(v2);
-    while (it1 != m_outLinks.end() ) {
+    while (it1 != m_outLinks.end() && it1.key() == v2 ) {
         if ( it1.value().first == m_curRelation ) {
             edgeStatus=it1.value().second.second;
             if ( edgeStatus == true) {
                 m_weight=it1.value().second.first;
-                qDebug()<< "Vertex::isLinkedTo() - a ("  <<  this->name()
-                        << ", " << v2 << ") = "<< m_weight;
+                qDebug()<< "***** Vertex::isLinkedTo() - relation "
+                           << it1.value().first
+                        <<" link "  <<  this->name()
+                        << " -> " << v2 << "exists, weight "<< m_weight;
                 return m_weight;
             }
             else
-                qDebug()<< "Vertex::isLinkedTo() - a ("  <<  this->name()
-                        << ", " << v2 << ") = "<< m_weight
+                qDebug()<< "Vertex::isLinkedTo() - relation "
+                           << it1.value().first
+                        <<" link "  <<  this->name()
+                        << " -> " << v2 << "exists, weight "<< m_weight
                         << " but edgeStatus " << edgeStatus;
                 return 0;
-
         }
         ++it1;
     }
-    qDebug()<< "Vertex::isLinkedTo() - a ("  <<  this->name()  << ", " << v2 << ") = 0 ";
+    qDebug()<< "Vertex::isLinkedTo() - INEXISTENT LINK IN RELATION " << m_curRelation;
 	return 0;
 }
 
@@ -520,7 +564,7 @@ float Vertex::isLinkedFrom(long int v2){
     float m_weight=0;
     bool edgeStatus=false;
     QHash_edges::iterator it1=m_inLinks.find(v2);
-    while (it1 != m_inLinks.end() ) {
+    while (it1 != m_inLinks.end() && it1.key() == v2) {
         if ( it1.value().first == m_curRelation ) {
             edgeStatus=it1.value().second.second;
             if ( edgeStatus == true) {
