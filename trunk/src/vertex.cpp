@@ -68,7 +68,7 @@ Vertex::Vertex(	Graph* parent,
     m_outLinked=false;
     m_reciprocalLinked=false;
     m_enabled = true;
-    //m_outLinks.reserve(1000);
+//    m_outLinks.reserve(1000);
     connect (this, SIGNAL (setEdgeVisibility ( int, int, bool) ),
              parent, SLOT (slotSetEdgeVisibility ( int, int, bool)) );
 
@@ -118,25 +118,29 @@ void Vertex::setOutLinkEnabled (long int target, bool status){
     qDebug () << "Vertex::setOutLinkEnabled - set outLink to " << target
               << " as " << status
                  << ". Finding outLink...";
-    QHash_edges::iterator it1=m_outLinks.find(target);
-    float weight=0;
-    while (it1 != m_outLinks.end() ) {
-        if ( it1.key() == target && it1.value().first == m_curRelation ) {
-            weight=it1.value().second.first;
-            qDebug() << " *** vertex " << m_name << " connected to "
-                     << it1.key() << " relation " << it1.value().first
-                     << " weight " << weight
-                     << " status " << it1.value().second.second;
-            qDebug() << " *** erasing link from m_outLinks ";
-
-            it1=m_outLinks.erase(it1);
+    QMutableHashIterator < int, rel_w_bool > it1 (m_outLinks);
+    int linkTarget=0;
+    float weight =0;
+    int relation = 0;
+    while ( it1.hasNext()) {
+        it1.next();
+        relation = it1.value().first;
+        if ( relation == m_curRelation ) {
+            linkTarget=it1.key();
+            if ( linkTarget == target ) {
+                weight = it1.value().second.first;
+                qDebug() << " *** vertex " << m_name << " connected to "
+                         << linkTarget << " relation " << relation
+                         << " weight " << weight
+                         << " status " << it1.value().second.second;
+                it1.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, status) ));
+                emit setEdgeVisibility ( m_name, target, status );
+            }
         }
         else {
-            ++it1;
+
         }
     }
-    m_outLinks.insert(
-                target, rel_w_bool(m_curRelation, pair_f_b(weight, status) ) );
 }
 
 
@@ -241,44 +245,44 @@ void Vertex::removeLinkFrom(long int v2){
 void Vertex::filterEdgesByWeight(float m_threshold, bool overThreshold){
 	qDebug() << "Vertex::filterEdgesByWeight of vertex " << this->m_name;
 	int target=0;
-	float m_weight=0; 
-    QHash_edges::iterator it;
-    while ( it !=  m_outLinks.end() ) {
+    float weight=0;
+    QMutableHashIterator < int, rel_w_bool > it (m_outLinks);
+    while ( it.hasNext()) {
+        it.next();
         if ( it.value().first == m_curRelation ) {
             target=it.key();
-            m_weight = it.value().second.first;
+            weight = it.value().second.first;
             if (overThreshold) {
-                if ( m_weight >= m_threshold ) {
+                if ( weight >= m_threshold ) {
                     qDebug() << "Vertex::filterEdgesByWeight(). Edge  to " << target
-                    << " has weight " << m_weight
+                    << " has weight " << weight
                     << ". It will be disabled. Emitting signal to Graph....";
-                    setOutLinkEnabled(target,false);
+                    it.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, false) ));
                     emit setEdgeVisibility ( m_name, target, false );
                 }
                 else {
                     qDebug() << "Vertex::filterEdgesByWeight(). Edge to " << target
-                    << " has weight " << m_weight << ". It will be enabled. Emitting signal to Graph....";
-                    setOutLinkEnabled(target,true);
+                    << " has weight " << weight << ". It will be enabled. Emitting signal to Graph....";
+                    it.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, true) ));
                     emit setEdgeVisibility ( m_name, target, true );
                 }
             }
             else {
-                 if ( m_weight <= m_threshold ) {
+                 if ( weight <= m_threshold ) {
                     qDebug() << "Vertex::filterEdgesByWeight(). Edge  to " << target
-                    << " has weight " << m_weight << ". It will be disabled. Emitting signal to Graph....";
-                    setOutLinkEnabled(target,false);
+                    << " has weight " << weight << ". It will be disabled. Emitting signal to Graph....";
+                    it.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, false) ));
                     emit setEdgeVisibility ( m_name, target, false );
                 }
                 else {
                     qDebug() << "Vertex::filterEdgesByWeight(). Edge  to " << target
-                    << " has weight " << m_weight << ". It will be enabled. Emitting signal to Graph....";
-                    setOutLinkEnabled(target,true);
+                    << " has weight " << weight << ". It will be enabled. Emitting signal to Graph....";
+                    it.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, true) ));
                     emit setEdgeVisibility ( m_name, target, true );
                 }
             }
 
         }
-        ++it;
     }
 }
 
@@ -295,7 +299,7 @@ void Vertex::filterEdgesByRelation(int relation, bool status ){
                 << " relation " << relation << " to " << status;
     int target=0;
     float weight =0;
-    //QHash_edges::const_iterator it1=m_outLinks.constBegin();
+
     QMutableHashIterator < int, rel_w_bool > it1 (m_outLinks);
     while ( it1.hasNext()) {
         it1.next();
@@ -304,7 +308,6 @@ void Vertex::filterEdgesByRelation(int relation, bool status ){
             target=it1.key();
             weight = it1.value().second.first;
             qDebug() << " edge to " << target ;
-            //setOutLinkEnabled(target,status);
             it1.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, status) ));
             emit setEdgeVisibility ( m_name, target, status );
         }

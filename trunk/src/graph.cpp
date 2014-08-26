@@ -30,12 +30,9 @@
 #include <QDebug>		//used for qDebug messages
 #include <QDateTime> 	// used in exporting centrality files
 #include <QHash> 
-//#include <list>			//for list iterators
 #include <queue>		//for BFS queue Q
 
 #include "graph.h"
-
-
 
 
 Graph::Graph() {
@@ -275,12 +272,22 @@ void Graph::setCanvasDimensions(int w, int h){
     canvasHeight= h;
 }
 
+
 /**
+ * @brief Graph::createEdge
     Called from homonymous signal of Parser class.
-    Adds an Edge to the Graph, then emits drawEdge() which calls GraphicsWidget::addEdge() to draw the new edge.
+    Adds an Edge to the Graph, then emits drawEdge() which calls
+    GraphicsWidget::addEdge() to draw the new edge.
     Also called from MW when user clicks on the "add link" button
     Alse called from GW (via createEdge() below) when user middle-clicks.
-*/
+ * @param v1
+ * @param v2
+ * @param weight
+ * @param color
+ * @param reciprocal
+ * @param drawArrows
+ * @param bezier
+ */
 void Graph::createEdge(int v1, int v2, float weight, QString color,
                        int reciprocal=0, bool drawArrows=true, bool bezier=false){
     qDebug()<<" Graph::createEdge() " << v1 << " -> " << v2 << " weight " << weight;
