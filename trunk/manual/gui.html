@@ -31,7 +31,7 @@ At the top, you' ll find the menu bar, filled with commands and options, organiz
 </div>
 
 <p class="text">
-Below the menu, the toolbar provides the usual icons: new network creation, load a network, save, zoom in-out and display help messages for the menu options. 
+Below the menu, the toolbar provides the usual icons: new network creation, load a network, save, zoom in-out, rotate, switch between relations (or add a new one) and display help messages for the menu options.
 </p>
 
 <p class="text">
@@ -48,7 +48,8 @@ The canvas is the main area of interaction. The initial background color is set 
 
 <h4><a name="Create" id="Create"></a>Network creation</h4>
 <p class="text">
-To start working with SocNetV you need network data, i.e. a graph of nodes (vertices) and links (edges). SocNetV enables you to create such networks or load them from files. There are multiple ways to create or edit nodes and links in SocNetV:
+To start working with SocNetV you need network data, i.e. a graph of nodes (vertices) and links (edges).
+SocNetV enables you to create such networks or load them from files. There are multiple ways to create or edit nodes and links in SocNetV:
 <div class="text">
 <ul>
 <li>from the menus </li>
@@ -70,7 +71,15 @@ You can move a node by left-clicking on it and moving the mouse.
 
 <h5><a name="LinkCreate" id="LinkCreate"></a>Creating a new link</h5>
 <p  class="text">
-To create a new link, middle-click on the source node and then middle-click again on the target	node. By default, all links created this way are weighted 1. If your mouse doesn't have middle button (did you try pressing the mouse wheel?), or you find it difficult, you can right-click on the source node, then select "Create Link". In the dialog, just enter the target node number and the desired link weight. Alternatively, you can click on the "Add link" button from the dock. In that case, you will be asked for both the source and the target node numbers (and the link weight). The keyboard shortcut for this action is Ctrl+L.
+To create a new link, middle-click on the source node and then middle-click again on the target	node.
+By default, all links created this way are weighted 1. If your mouse doesn't have middle button (did you try pressing the mouse wheel?), or you find it difficult, you can right-click on the source node, then select "Create Link".
+In the dialog, just enter the target node number and the desired link weight. Alternatively, you can click on the "Add link" button from the dock. In that case, you will be asked for both the source and the target node numbers (and the link weight). The keyboard shortcut for this action is Ctrl+L.
+
+If this is the first link in the network, the application will ask you to enter a name for the active network relation, i.e. "friendship".
+You can add more relations to your network by pressing the + button in the toolbar.
+You can switch between relations by clicking the previous and next arrow buttons in the toolbar.
+Note that while modifying a multirelational network, you can add more nodes but you may not remove a node from the network.
+Each time you save the network, SocNetV saves the active relation.
 </p>
 <p class="text">
 Link Creation Example: Say you created two nodes, numbered 1 and 2, on the canvas. To create a new link from node 1 to node 2, middle click on node 1 (the mouse pointer will become a hand) and afterwards middle-click on node 2. A new link will be drawn instantly. If you want an edge (double link) repeat the process from node 2 to node 1. 
