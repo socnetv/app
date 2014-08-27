@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer
- version: 1.2
+ version: 1.3
  Written in Qt
 
 -                           mainwindow.cpp  -  description
@@ -177,6 +177,9 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect( &activeGraph, SIGNAL( statusMessage (QString) ),
              this, SLOT( statusMessage (QString) ) ) ;
 
+    connect( &activeGraph, SIGNAL( describeDataset (QString) ),
+             this, SLOT( showMessageToUser (QString) ) ) ;
+
     connect( &activeGraph, SIGNAL( selectedVertex(int) ),
              this, SLOT( selectedNode(int) ) ) ;
 
@@ -201,6 +204,23 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     connect( rotateSpinBox, SIGNAL(valueChanged(int)), graphicsWidget, SLOT( rot(int) ) );
 
+    connect( nextRelationAct, SIGNAL(triggered()), this, SLOT( nextRelation() ) );
+    connect( prevRelationAct, SIGNAL(triggered()), this, SLOT( prevRelation() ) );
+    connect( addRelationAct, SIGNAL(triggered()), this, SLOT( addRelation() ) );
+
+    connect( changeRelationCombo , SIGNAL( currentIndexChanged(int) ) ,
+             &activeGraph, SLOT( changeRelation(int) ) );
+
+    connect( this , SIGNAL(addRelationToGraph(QString)),
+             &activeGraph, SLOT( addRelationFromUser(QString) ) );
+
+    connect ( &activeGraph, SIGNAL(addRelationToMW(QString)),
+              this, SLOT(addRelation(QString)));
+
+    connect( &activeGraph, SIGNAL(relationChanged(int)),
+             graphicsWidget, SLOT( changeRelation(int))  ) ;
+
+
     connect( &m_filterEdgesByWeightDialog, SIGNAL( userChoices( float, bool) ),
              &activeGraph, SLOT( filterEdgesByWeight (float, bool) ) );
 
@@ -210,8 +230,8 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect( &m_datasetSelectDialog, SIGNAL( userChoices( QString) ),
              this, SLOT( slotRecreateDataSet(QString) ) );
 
-    connect( &activeGraph, SIGNAL( setEdgeVisibility ( int, int, bool) ),
-             graphicsWidget, SLOT(  setEdgeVisibility ( int, int, bool) ) );
+    connect( &activeGraph, SIGNAL( setEdgeVisibility (int, int, int, bool) ),
+             graphicsWidget, SLOT(  setEdgeVisibility (int, int, int, bool) ) );
 
     connect( &activeGraph, SIGNAL( setVertexVisibility(long int, bool)  ),
              graphicsWidget, SLOT(  setNodeVisibility (long int ,  bool) ) );
@@ -254,6 +274,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
     /*
         initialise default network parameters
     */
+    qDebug()<<"   initialise default network parameters";
     initNet();
 
 
@@ -269,6 +290,24 @@ MainWindow::MainWindow(const QString & m_fileName) {
     graphicsWidget->setInitLabelDistance(labelDistance);
     graphicsWidget->setInitNodeSize(initNodeSize);
     graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor)); //Qt::gray
+    dataDir= QDir::homePath() +QDir::separator() + "socnetv-data" + QDir::separator() ;
+
+    if (firstTime) {
+        createFortuneCookies();
+        createTips();
+        QDir ourDir(dataDir);
+        if ( !ourDir.exists() ) {
+            ourDir.mkdir(dataDir);
+            QMessageBox::information(this, "SocNetV Data Directory",
+                                 tr("SocNetV saves reports and files in the "
+                                    "directory %1")
+                                 .arg (ourDir.absolutePath())
+                                 , QMessageBox::Ok, 0);
+
+        }
+
+    }
+
 
     /** Try to load a GraphML network file on exec time*/
     if (!m_fileName.isEmpty())
@@ -278,10 +317,6 @@ MainWindow::MainWindow(const QString & m_fileName) {
         loadNetworkFile(fileName, 0 );
     }
 
-    if (firstTime) {
-        createFortuneCookies();
-        createTips();
-    }
 
     graphicsWidget->setFocus();
 
@@ -332,15 +367,15 @@ void MainWindow::initActions(){
     importSM->setWhatsThis(tr("Import Sociomatrix \n\n  Imports a network from an Adjacency matrix-formatted file"));
     connect(importSM, SIGNAL(triggered()), this, SLOT(slotImportSM()));
 
-    importDot = new QAction( QIcon(":/images/open.png"), tr("&Dot"), this);
+    importDot = new QAction( QIcon(":/images/open.png"), tr("GraphViz (.dot)"), this);
     importDot->setStatusTip(tr("Import an dot file"));
     importDot->setWhatsThis(tr("Import GraphViz \n\n  Imports a network from an GraphViz formatted file"));
     connect(importDot, SIGNAL(triggered()), this, SLOT(slotImportDot()));
 
 
-    importDL = new QAction( QIcon(":/images/open.png"), tr("&DL..."), this);
-    importDL->setStatusTip(tr("Import network to a DL-formatted file"));
-    importDL->setWhatsThis(tr("Import DL\n\nImport network to a DL-formatted"));
+    importDL = new QAction( QIcon(":/images/open.png"), tr("UCINET (.dl)..."), this);
+    importDL->setStatusTip(tr("Import network to a DL-formatted file (UCINET)"));
+    importDL->setWhatsThis(tr("Import UCINET\n\nImports a network from a DL-formatted file"));
     connect(importDL, SIGNAL(triggered()), this, SLOT(slotImportDL()));
 
 
@@ -675,12 +710,12 @@ void MainWindow::initActions(){
     strongColorationAct = new QAction ( tr("Strong Structural"), this);
     strongColorationAct -> setStatusTip( tr("Nodes are assigned the same color if they have identical in and out neighborhoods") );
     strongColorationAct -> setWhatsThis( tr("Click this to colorize nodes; Nodes are assigned the same color if they have identical in and out neighborhoods"));
-    connect(strongColorationAct, SIGNAL(activated() ), this, SLOT(slotColorationStrongStructural()) );
+    connect(strongColorationAct, SIGNAL(triggered() ), this, SLOT(slotColorationStrongStructural()) );
 
     regularColorationAct = new QAction ( tr("Regular"), this);
     regularColorationAct -> setStatusTip( tr("Nodes are assigned the same color if they have neighborhoods of the same set of colors") );
     regularColorationAct -> setWhatsThis( tr("Click this to colorize nodes; Nodes are assigned the same color if they have neighborhoods of the same set of colors"));
-    connect(regularColorationAct, SIGNAL(activated() ), this, SLOT(slotColorationRegular()) );//TODO
+    connect(regularColorationAct, SIGNAL(triggered() ), this, SLOT(slotColorationRegular()) );//TODO
 
     randLayoutAct = new QAction( tr("Random"),this);
     randLayoutAct -> setShortcut(tr("Ctrl+0"));
@@ -1128,12 +1163,43 @@ void MainWindow::initActions(){
     zoomInAct->setStatusTip(tr("Zooms inside the actual network."));
     zoomInAct->setWhatsThis(tr("Zoom In.\n\nZooms in. What else did you expect?"));
 
-
     zoomOutAct = new QAction(QIcon(":/images/zoomout.png"), tr("Zoom &out"),  this);
     zoomOutAct->setShortcut(tr("Ctrl+-"));
     zoomOutAct->setToolTip(tr("Zoom out (Ctrl+-)"));
     zoomOutAct->setStatusTip(tr("Zooms out of the actual network."));
     zoomOutAct->setWhatsThis(tr("Zoom out.\n\nZooms out. What else did you expect?"));
+
+
+    nextRelationAct = new QAction(QIcon(":/images/nextrelation.png"),
+                                  tr("Next Relation"),  this);
+    nextRelationAct->setShortcut(tr("Ctrl+Shift++"));
+    nextRelationAct->setToolTip(tr("Goto next graph relation (Ctrl Shift  +)"));
+    nextRelationAct->setStatusTip(tr("Loads the next relation of the network (if any)."));
+    nextRelationAct->setWhatsThis(tr("Next Relation\n\nLoads the next relation of the network (if any)"));
+
+    prevRelationAct = new QAction(QIcon(":/images/prevrelation.png"),
+                                      tr("Previous Relation"),  this);
+    prevRelationAct->setShortcut(tr("Ctrl+Shift+-"));
+    prevRelationAct->setToolTip(
+                tr("Goto previous graph relation (Ctrl Shift -)"));
+    prevRelationAct->setStatusTip(
+                tr("Loads the previous relation of the network (if any)."));
+    prevRelationAct->setWhatsThis(
+                tr("Previous Relation\n\n"
+                   "Loads the previous relation of the network (if any)"));
+
+    addRelationAct = new QAction(QIcon(":/images/addrelation.png"),
+                                      tr("Add New Relation"),  this);
+    addRelationAct->setShortcut(tr("Ctrl+Shift+N"));
+    addRelationAct->setToolTip(
+                tr("Add a new relation to the active graph (Ctrl+Shift+N)"));
+    addRelationAct->setStatusTip(
+                tr("Adds a new relation to the network. "
+                   "Nodes will be preserved, edges will be removed. "));
+    addRelationAct->setWhatsThis(
+                tr("Add New Relation\n\n"
+                   "Adds a new relation to the active network. "
+                   "Nodes will be preserved, edges will be removed. "));
 
     nodeSizeProportionalOutDegreeAct= new QAction(QIcon(":/images/nodeout.png"),tr("Node size according to outDegree"), this);
     nodeSizeProportionalOutDegreeAct->setShortcut(tr("Alt+3"));
@@ -1885,22 +1951,29 @@ void MainWindow::initToolBar(){
     QLabel *labelRotateSpinBox= new QLabel;
     labelRotateSpinBox ->setText(tr("Rotation:"));
 
-
     rotateSpinBox = new QSpinBox;
     rotateSpinBox ->setRange(-360, 360);
     rotateSpinBox->setSingleStep(1);
     rotateSpinBox->setValue(0);
 
-//    QGroupBox *rotateGroup = new QGroupBox();
-//    QHBoxLayout *rotateGroupLayout = new QHBoxLayout(rotateGroup);
-//    rotateGroupLayout->addWidget(labelRotateSpinBox);
-//    rotateGroupLayout->addWidget(rotateSpinBox);
-
     toolBar -> addWidget(labelRotateSpinBox);
     toolBar -> addWidget(rotateSpinBox);
+
+    toolBar -> addSeparator();
+
+    //Create relation select widget
+    QLabel *labelRelationSelect= new QLabel;
+    labelRelationSelect ->setText(tr("Relation:"));
+    toolBar -> addWidget (labelRelationSelect);
+    toolBar -> addAction (prevRelationAct);
+    changeRelationCombo = new QComboBox;
+    changeRelationCombo->setCurrentIndex(0);
+    toolBar -> addWidget(changeRelationCombo);
+    toolBar -> addAction (nextRelationAct);
+    toolBar -> addAction (addRelationAct);
+
     toolBar -> addSeparator();
     toolBar -> addAction ( QWhatsThis::createAction (this));
-
 
 }
 
@@ -2576,6 +2649,8 @@ void MainWindow::initNet(){
     linkClicked=false;
     nodeClicked=false;
 
+    changeRelationCombo->clear();
+
     /** Clear previous network data */
     activeGraph.clear();
     activeGraph.setSocNetV_Version(VERSION);
@@ -2595,10 +2670,8 @@ void MainWindow::initNet(){
     activeGraph.setShowLabels(this->showLabels());
     activeGraph.setShowNumbersInsideNodes( this->showNumbersInsideNodes());
 
-
     /** Clear scene **/
     graphicsWidget->clear();
-
 
     /** Clear LCDs **/
     nodesLCD->display(activeGraph.vertices());
@@ -2636,6 +2709,12 @@ void MainWindow::initNet(){
  */
 void MainWindow::statusMessage(const QString message){
     statusBar()->showMessage( message, statusBarDuration );
+}
+
+void MainWindow::showMessageToUser(const QString message) {
+    QMessageBox::information(this, tr("Info"),
+                          message,
+                          QMessageBox::Ok, 0);
 }
 
 
@@ -2749,7 +2828,11 @@ void MainWindow::slotChooseFile() {
         break;
 
     }
-    m_fileName = QFileDialog::getOpenFileName( this, tr("Select one file to open"), "", fileType_string	);
+
+    m_fileName = QFileDialog::getOpenFileName(
+                this,
+                tr("Select one file to open"),
+                QDir::homePath(), fileType_string	);
 
     if (!m_fileName.isEmpty()) {
         qDebug()<<"MW: file selected: " << m_fileName;
@@ -2856,9 +2939,10 @@ void MainWindow::slotFileSave() {
 void MainWindow::slotFileSaveAs() {
     statusMessage( tr("Saving network under new filename..."));
 
-    QString fn =  QFileDialog::getSaveFileName(this,
-                                               tr("Save GraphML Network to File Named..."),
-                                               0, tr("GraphML (*.graphml *.xml);;All (*)") );
+    QString fn =  QFileDialog::getSaveFileName(
+                this,
+                tr("Save GraphML Network to File Named..."),
+                QDir::homePath(), tr("GraphML (*.graphml *.xml);;All (*)") );
     if (!fn.isEmpty())  {
         if  ( QFileInfo(fn).suffix().isEmpty() ){
             QMessageBox::information(this, "Missing Extension ",tr("File extension was missing! \nI am appending a standard .graphml to the given filename."), "OK",0);
@@ -3057,9 +3141,13 @@ void MainWindow::slotImportEdgeList(){
 
 
 /**
- * 	Main network file loader method
- * 	First, inits everything to default values.
- *      Then calls activeGraph::loadGraph to actually load the network...
+ * @brief MainWindow::loadNetworkFile
+ * Main network file loader method
+ * First, inits everything to default values.
+ * Then calls activeGraph::loadGraph to actually load the network...
+ * @param m_fileName
+ * @param m_fileFormat
+ * @return
  */
 bool MainWindow::loadNetworkFile(QString m_fileName, int m_fileFormat ){
     qDebug("MW: loadNetworkFile");
@@ -3095,9 +3183,15 @@ bool MainWindow::loadNetworkFile(QString m_fileName, int m_fileFormat ){
 
 
 /**
-*	Called from Parser/Graph when a network file is loaded.
-*	It informs the MW about the type of the network so that it can display the appropiate message.
-*/
+ * @brief MainWindow::fileType
+ * Called from Parser/Graph when a network file is loaded.
+ * It informs the MW about the type of the network so that it can display the appropiate message.
+ * @param type
+ * @param netName
+ * @param aNodes
+ * @param totalLinks
+ * @param undirected
+ */
 void MainWindow::fileType (
         int type, QString netName, int aNodes, int totalLinks, bool undirected)
 {
@@ -3213,10 +3307,92 @@ void MainWindow::fileType (
     fileSave->setEnabled(false);
 }
 
+/**
+ * @brief MainWindow::prevRelation
+ */
+void MainWindow::prevRelation(){
+    qDebug() << "MW::prevRelation()";
+    int index=changeRelationCombo->currentIndex();
+    if (index>0){
+        --index;
+        changeRelationCombo->setCurrentIndex(index);
+    }
+}
+
+/**
+ * @brief MainWindow::nextRelation
+ */
+void MainWindow::nextRelation(){
+    qDebug() << "MW::nextRelation()";
+    int index=changeRelationCombo->currentIndex();
+    int relationsCounter=changeRelationCombo->count();
+    if (index< (relationsCounter -1 )){
+        ++index;
+        changeRelationCombo->setCurrentIndex(index);
+    }
+
+}
 
 
 
+/**
+ * @brief MainWindow::addRelation
+ * called from activeGraph when the parser or a network creation method
+ * demands a new relation to be added in the Combobox.
+ * @param relationName (NULL)
+ */
+void MainWindow::addRelation(QString relationName){
+    qDebug() << "MW::addRelation(string)" << relationName;
+    if ( !relationName.isNull() ){
+        changeRelationCombo->addItem(relationName);
+    }
+}
 
+/**
+ * @brief MainWindow::addRelation
+ * Called from MW when user clicks New Relation btn
+ * or when the user creates the first edge visually.
+ */
+void MainWindow::addRelation(){
+    qDebug() << "MW::addRelation()";
+    bool ok;
+    QString newRelationName;
+    int relationsCounter=changeRelationCombo->count();
+    if (relationsCounter==0) {
+        newRelationName = QInputDialog::getText(this, tr("Add new relation"),
+                              tr("Since you have just created the first edge "
+                                 "of this social network, please enter a name \n"
+                                 "for this new relation between the actors.\n "
+                                 "A relation is a collection of ties of a "
+                                 "specific kind between the network actors.\n"
+                                 "For instance, enter \"friendship\" if the "
+                                 "edges of this relation refer to the set of \n"
+                                 "friendships between pairs of actors."),
+                              QLineEdit::Normal, QString::null, &ok );
+    }
+    else {
+        newRelationName = QInputDialog::getText(
+                    this, tr("Add new relation"),
+                    tr("Please enter a name for the new relation:"),
+                    QLineEdit::Normal,QString::null, &ok);
+    }
+    if (ok && !newRelationName.isEmpty()){
+        changeRelationCombo->addItem(newRelationName);
+        emit addRelationToGraph(newRelationName);
+        if (relationsCounter != 0){ //dont do it if its the first relation added
+            qDebug() << "MW::addRelation() - calling MW::changeRelation";
+            changeRelationCombo->setCurrentIndex(relationsCounter);
+        }
+    }
+    else {
+        QMessageBox::critical(this, tr("Error"),
+                              tr("You did not type a name for this new relation"),
+                              QMessageBox::Ok, 0);
+        addRelation();
+    }
+    statusMessage( QString(tr("New relation named %1, added."))
+                   .arg( newRelationName ) );
+}
 
 
 
@@ -3225,9 +3401,12 @@ void MainWindow::fileType (
     Called when "Create Node" button is clicked on the Main Window.
 */
 void MainWindow::addNode() {
-    qDebug("MW: addNode(). Calling activeGraph::createVertex() for -1 - max width and height %i, %i", graphicsWidget->width()-10,  graphicsWidget->height()-10);
-    activeGraph.createVertex(-1, graphicsWidget->width()-10,  graphicsWidget->height()-10);  // minus a  screen edge offset...
-    statusMessage( tr("New node (numbered %1) added.").arg(activeGraph.lastVertexNumber())  );
+    qDebug() << "MW::addNode() ";
+    // minus a  screen edge offset...
+    activeGraph.createVertex (
+                -1, graphicsWidget->width()-10,  graphicsWidget->height()-10);
+    statusMessage( tr("New node (numbered %1) added.")
+                   .arg(activeGraph.lastVertexNumber())  );
 }
 
 
@@ -3257,7 +3436,9 @@ bool MainWindow::slotExportPNG(){
         statusMessage( tr("Cannot export PNG.") );
         return false;
     }
-    QString fn = QFileDialog::getSaveFileName(this,tr("Save"), 0, tr("Image Files (*.png)"));
+    QString fn = QFileDialog::getSaveFileName(
+                this,tr("Save"),
+                QDir::homePath(), tr("Image Files (*.png)"));
     if (fn.isEmpty())  {
         statusMessage( tr("Saving aborted") );
         return false;
@@ -3301,7 +3482,8 @@ bool MainWindow::slotExportBMP(){
         return false;
     }
     QString format="bmp";
-    QString fn = QFileDialog::getSaveFileName(this,tr("Save Image as"), 0,tr("Image Files (*.bmp)"));
+    QString fn = QFileDialog::getSaveFileName(
+                this,tr("Save Image as"), QDir::homePath(),tr("Image Files (*.bmp)"));
     if (fn.isEmpty())  {
         statusMessage( tr("Saving aborted") );
         return false;
@@ -3350,7 +3532,9 @@ bool MainWindow::slotExportPDF(){
         return false;
     }
 
-    QString m_fileName = QFileDialog::getSaveFileName(this, tr("Export to PDF"), 0, tr("Portable Document Format files (*.pdf)"));
+    QString m_fileName = QFileDialog::getSaveFileName(
+                this, tr("Export to PDF"), QDir::homePath(),
+                tr("Portable Document Format files (*.pdf)"));
     if (m_fileName.isEmpty())  {
         statusMessage( tr("Saving aborted"));
         return false;
@@ -3390,9 +3574,10 @@ void MainWindow::slotExportPajek()
     }
 
     statusMessage( tr("Exporting active network under new filename..."));
-    QString fn =  QFileDialog::getSaveFileName(this,
-                                               tr("Export Network to File Named..."),
-                                               0, tr("Pajek (*.paj *.net *.pajek);;All (*)") );
+    QString fn =  QFileDialog::getSaveFileName(
+                this,
+                tr("Export Network to File Named..."),
+                QDir::homePath(), tr("Pajek (*.paj *.net *.pajek);;All (*)") );
     if (!fn.isEmpty())  {
         if  ( QFileInfo(fn).suffix().isEmpty() ){
             QMessageBox::information(this, "Missing Extension ",tr("File extension was missing! \nI am appending a standard .paj to the given filename."), "OK",0);
@@ -3428,9 +3613,10 @@ void MainWindow::slotExportSM(){
         return;
     }
     statusMessage( tr("Exporting active network under new filename..."));
-    QString fn =  QFileDialog::getSaveFileName(this,
-                                               tr("Export Network to File Named..."),
-                                               0, tr("Adjacency (*.adj *.sm *.txt *.csv *.net);;All (*)") );
+    QString fn =  QFileDialog::getSaveFileName(
+                this,
+                tr("Export Network to File Named..."),
+                QDir::homePath(), tr("Adjacency (*.adj *.sm *.txt *.csv *.net);;All (*)") );
     if (!fn.isEmpty())  {
         if  ( QFileInfo(fn).suffix().isEmpty() ){
             QMessageBox::information(this, "Missing Extension ",tr("File extension was missing! \nI am appending a standard .adj to the given filename."), "OK",0);
@@ -3472,7 +3658,8 @@ bool MainWindow::slotExportDL(){
 
     if (fileName.isEmpty()) {
         statusMessage( tr("Saving network under new filename..."));
-        QString fn = QFileDialog::getSaveFileName(this, 0, 0);
+        QString fn = QFileDialog::getSaveFileName(
+                    this, "Export UCINET", QDir::homePath(), 0);
         if (!fn.isEmpty())  {
             fileName=fn;
         }
@@ -3500,7 +3687,8 @@ bool MainWindow::slotExportGW(){
 
     if (fileName.isEmpty()) {
         statusMessage( tr("Saving network under new filename..."));
-        QString fn = QFileDialog::getSaveFileName(this, 0, 0);
+        QString fn = QFileDialog::getSaveFileName(
+                    this, "Export GW", QDir::homePath(), 0);
         if (!fn.isEmpty())  {
             fileName=fn;
         }
@@ -3523,7 +3711,8 @@ bool MainWindow::slotExportGW(){
 bool MainWindow::slotExportList(){
     if (fileName.isEmpty()) {
         statusMessage( tr("Saving network under new filename..."));
-        QString fn = QFileDialog::getSaveFileName(this, 0, 0);
+        QString fn = QFileDialog::getSaveFileName(
+                    this, "Export List", QDir::homePath(), 0);
         if (!fn.isEmpty())  {
             fileName=fn;
         }
@@ -3628,17 +3817,16 @@ void MainWindow::slotViewAdjacencyMatrix(){
     int aNodes=activeNodes();
     statusBar() ->  showMessage ( QString (tr ("creating adjacency adjacency matrix of %1 nodes")).arg(aNodes) );
     qDebug ("MW: calling Graph::writeAdjacencyMatrix with %i nodes", aNodes);
-    char fn[]= "adjacency-matrix.dat";
+    QString fn = dataDir + "socnetv-report-adjacency-matrix.dat";
 
     activeGraph.writeAdjacencyMatrix(fn, networkName.toLocal8Bit()) ;
 
     //Open a text editor window for the new file created by graph class
-    QString qfn=QString::fromLocal8Bit("adjacency-matrix.dat");
     TextEditor *ed = new TextEditor(fn);
-    tempFileNameNoPath=qfn.split( "/");
-    ed->setWindowTitle(tr("View Adjacency Matrix - ") + tempFileNameNoPath.last());
+    tempFileNameNoPath=fn.split( "/");
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
-
+    statusMessage(tr("Adjacency Matrix saved at ") + tempFileNameNoPath.last());
 }
 
 
@@ -3661,6 +3849,7 @@ void MainWindow::slotRecreateDataSet (QString m_fileName) {
     qDebug()<< "slotRecreateDataSet() fileName: " << m_fileName;
 
     initNet();
+    m_fileName = dataDir + m_fileName;
     activeGraph.writeDataSetToFile(m_fileName);
 
     if (m_fileName.endsWith(".graphml")) {
@@ -3731,8 +3920,11 @@ void MainWindow::slotCreateRandomNetErdos(){
 
     qDebug("MW Erdos network:  Create random network of %i nodes and %f edge probability.",newNodes, probability);
 
-    if (showProgressBarAct->isChecked() && newNodes > 300){
-        progressDialog= new QProgressDialog("Creating random network. Please wait (or disable me from Options > View > ProgressBar, next time ;)).", "Cancel", 0, newNodes+newNodes, this);
+    if (showProgressBarAct->isChecked() && newNodes > 500 && probability > 1){
+        progressDialog= new QProgressDialog(
+                    "Creating random network. \n "
+                    " Please wait (or disable me from Options > View > ProgressBar, next time ;)).",
+                    "Cancel", 0, newNodes+newNodes, this);
         progressDialog -> setWindowModality(Qt::WindowModal);
         connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
         progressDialog->setMinimumDuration(0);
@@ -3743,7 +3935,7 @@ void MainWindow::slotCreateRandomNetErdos(){
     activeGraph.createRandomNetErdos (newNodes, probability);
     QApplication::restoreOverrideCursor();
 
-    if (showProgressBarAct->isChecked() && newNodes > 300)
+    if (showProgressBarAct->isChecked() && newNodes > 500 && probability > 1)
         progressDialog->deleteLater();
 
     fileLoaded=false;
@@ -4206,7 +4398,24 @@ void MainWindow::linkInfoStatusBar (Edge* link) {
 void MainWindow::slotRemoveNode() {
     qDebug("MW: slotRemoveNode()");
     if (!activeGraph.vertices())  {
-        QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or add some nodes first."), "OK",0);
+        QMessageBox::critical(
+                    this,
+                    "Error",
+                    tr("Nothing to do! \n"
+                       "Load a network file or add some nodes first."), "OK",0);
+        statusMessage( tr("Nothing to remove.")  );
+        return;
+    }
+    if (activeGraph.relations() > 1){
+        QMessageBox::critical(
+                    this, "Error",
+                    tr("Cannot remove node! \n"
+                       "This a network with more than 1 relations. If you remove "
+                       "a node from the active relation, and then ask me to go "
+                       "to the previous or the next relation, then I would crash "
+                       "because I would try to display edges from a delete node."
+                       "You can only add nodes in multirelational networks."),
+                    "OK",0);
         statusMessage( tr("Nothing to remove.")  );
         return;
     }
@@ -4322,8 +4531,11 @@ void MainWindow::addLink (int v1, int v2, float weight) {
     int reciprocal=0;
     bool bezier = false;
     activeGraph.createEdge(v1, v2, weight, reciprocal, drawArrows, bezier);
-}
 
+    if ( activeGraph.totalEdges() == 1 && changeRelationCombo->count() == 0 ) {
+        addRelation();
+    }
+}
 
 
 /**
@@ -5047,7 +5259,7 @@ void MainWindow::slotLayoutNodeSizeProportionalOutEdges(bool checked){
     for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
         if ( (*it) -> type() == TypeNode ){
             Node *jim = (Node*) (*it);
-            edges = activeGraph.outEdges(  (*jim).nodeNumber() ) ;
+            edges = activeGraph.outboundEdges(  (*jim).nodeNumber() ) ;
             qDebug() << "Node " << (*jim).nodeNumber() <<  " outDegree:  "<<  edges;
 
             if (edges == 0 ) {
@@ -5129,7 +5341,7 @@ void MainWindow::slotLayoutNodeSizeProportionalInEdges(bool checked){
     for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
         if ( (*it) -> type() == TypeNode ){
             Node *jim = (Node*) (*it);
-            edges = activeGraph.inEdges(  (*jim).nodeNumber() ) ;
+            edges = activeGraph.inboundEdges(  (*jim).nodeNumber() ) ;
             qDebug() << "Node " << (*jim).nodeNumber() << " inDegree:  " <<  edges;
 
             if (edges == 0 ) {
@@ -5781,14 +5993,13 @@ void MainWindow::slotInvertAdjMatrix(){
     int aNodes=activeNodes();
     statusBar() ->  showMessage ( QString (tr ("inverting adjacency adjacency matrix of %1 nodes")).arg(aNodes) );
     qDebug ("MW: calling Graph::writeInvertAdjacencyMatrix with %i nodes", aNodes);
-    char fn[]= "invert-adjacency-matrix.dat";
+    QString fn = dataDir + "socnetv-report-invert-adjacency-matrix.dat";
 
     activeGraph.writeInvertAdjacencyMatrix(fn, networkName.toLocal8Bit()) ;
 
     //Open a text editor window for the new file created by graph class
-    QString qfn=QString::fromLocal8Bit("invert-adjacency-matrix.dat");
     TextEditor *ed = new TextEditor(fn);
-    tempFileNameNoPath=qfn.split( "/");
+    tempFileNameNoPath=fn.split( "/");
     ed->setWindowTitle(tr("View Adjacency Matrix - ") + tempFileNameNoPath.last());
     ed->show();
 
@@ -5853,7 +6064,7 @@ void MainWindow::slotViewDistanceMatrix(){
         return;
     }
     statusMessage( tr("Creating distance matrix. Please wait...") );
-    char fn[]= "distance-matrix.dat";
+    QString fn = dataDir + "socnetv-report-distance-matrix.dat";
 
     createProgressBar();
 
@@ -5863,9 +6074,12 @@ void MainWindow::slotViewDistanceMatrix(){
 
     //Open a text editor window for the new file created by graph class
     TextEditor *ed = new TextEditor(fn);
+    tempFileNameNoPath=fn.split( "/");
 
-    ed->setWindowTitle(tr("Matrix of geodesic distances "));
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
+    QApplication::restoreOverrideCursor();
+    statusMessage(tr("Distance matrix saved as: ")+tempFileNameNoPath.last());
 }
 
 
@@ -5882,7 +6096,7 @@ void MainWindow::slotViewNumberOfGeodesicsMatrix(){
         return;
     }
     statusMessage( tr("Creating number of geodesics matrix. Please wait...") );
-    char fn[]="sigmas-matrix.dat";
+    QString fn = dataDir + "socnetv-report-sigmas-matrix.dat";
 
     createProgressBar();
 
@@ -5891,10 +6105,14 @@ void MainWindow::slotViewNumberOfGeodesicsMatrix(){
     destroyProgressBar();
 
     //Open a text editor window for the new file created by graph class
-    TextEditor *ed = new TextEditor(fn);
 
-    ed->setWindowTitle(tr("Matrix of sigmas (number of geodesic paths)"));
+    TextEditor *ed = new TextEditor(fn);
+    tempFileNameNoPath=fn.split( "/");
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
+    QApplication::restoreOverrideCursor();
+    statusMessage(tr("Matrix of geodesic path counts saved as: ")
+                  + tempFileNameNoPath.last());
 }
 
 
@@ -5957,7 +6175,7 @@ void MainWindow::slotEccentricity(){
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
     }
-    QString fn = "eccentricity.dat";
+    QString fn = dataDir + "socnetv-report-eccentricity.dat";
     bool considerWeights=true;
     statusMessage(  QString(tr(" Please wait...")));
 
@@ -5967,10 +6185,10 @@ void MainWindow::slotEccentricity(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle(tr("Eccentricity report saved as: ") + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-
+    statusMessage(tr("Eccentricity report saved as: ") + tempFileNameNoPath.last());
 }
 
 
@@ -6028,7 +6246,7 @@ void MainWindow::slotWalksOfGivenLength(){
         return;
     }
 
-    QString fn = "number-of-walks.dat";
+    QString fn = dataDir + "socnetv-report-number-of-walks.dat";
      bool ok=false;
     createProgressBar();
 
@@ -6044,9 +6262,10 @@ void MainWindow::slotWalksOfGivenLength(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Number of walks saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
-
+    QApplication::restoreOverrideCursor();
+    statusMessage(tr("Number of walks saved as: ") + tempFileNameNoPath.last());
 }
 
 
@@ -6075,7 +6294,7 @@ void MainWindow::slotTotalWalks(){
             break;
         }
     }
-    QString fn = "total-number-of-walks.dat";
+    QString fn = dataDir + "socnetv-report-total-number-of-walks.dat";
     createProgressBar();
 
     int maxLength=activeNodes()-1;
@@ -6085,8 +6304,10 @@ void MainWindow::slotTotalWalks(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Total number of walks saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle( tempFileNameNoPath.last());
     ed->show();
+    QApplication::restoreOverrideCursor();
+    statusMessage("Total number of walks saved as: " + tempFileNameNoPath.last());
 
 }
 
@@ -6103,7 +6324,7 @@ void MainWindow::slotReachabilityMatrix(){
         return;
     }
 
-    QString fn = "reachability-matrix.dat";
+    QString fn = dataDir + "socnetv-report-reachability-matrix.dat";
 
     createProgressBar();
 
@@ -6113,9 +6334,10 @@ void MainWindow::slotReachabilityMatrix(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Reachability Matrix saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
-
+    QApplication::restoreOverrideCursor();
+    statusMessage("Reachability Matrix saved as: " + tempFileNameNoPath.last());
 }
 
 /**
@@ -6128,7 +6350,7 @@ void MainWindow::slotNumberOfCliques(){
         statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
         return;
     }
-    QString fn = "number-of-cliques.dat";
+    QString fn = dataDir + "socnetv-report-number-of-cliques.dat";
     bool considerWeights=true;
 
     createProgressBar();
@@ -6139,8 +6361,10 @@ void MainWindow::slotNumberOfCliques(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Number of cliques saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
+    QApplication::restoreOverrideCursor();
+    statusMessage("Number of cliques saved as: " + tempFileNameNoPath.last());
 }
 
 
@@ -6157,7 +6381,7 @@ void MainWindow::slotClusteringCoefficient (){
         statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
         return;
     }
-    QString fn = "clustering-coefficients.dat";
+    QString fn = dataDir + "socnetv-report-clustering-coefficients.dat";
     bool considerWeights=true;
 
     createProgressBar();
@@ -6168,8 +6392,10 @@ void MainWindow::slotClusteringCoefficient (){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Clustering Coefficients saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
+    QApplication::restoreOverrideCursor();
+    statusMessage("Clustering Coefficients saved as: " + tempFileNameNoPath.last());
 }
 
 
@@ -6185,7 +6411,7 @@ void MainWindow::slotTriadCensus() {
         statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
         return;
     }
-    QString fn = "triad-census.dat";
+    QString fn = dataDir + "socnetv-report-triad-census.dat";
     bool considerWeights=true;
 
     createProgressBar();
@@ -6196,8 +6422,10 @@ void MainWindow::slotTriadCensus() {
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Triad Census saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
+    QApplication::restoreOverrideCursor();
+    statusMessage("Triad Census saved as: " + tempFileNameNoPath.last());
 }
 
 
@@ -6230,7 +6458,7 @@ void MainWindow::slotCentralityDegree(){
         }
 
     }
-    QString fn = "centrality-out-degree.dat";
+    QString fn = dataDir + "socnetv-report-centrality-out-degree.dat";
 
     createProgressBar();
 
@@ -6238,12 +6466,12 @@ void MainWindow::slotCentralityDegree(){
 
     destroyProgressBar();
 
-    statusMessage( QString(tr(" displaying file...")));
-
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Out-Degree Centralities saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
+    QApplication::restoreOverrideCursor();
+    statusMessage(tr("Out-Degree Centralities saved as: ") + tempFileNameNoPath.last());
 }
 
 
@@ -6305,7 +6533,7 @@ void MainWindow::slotCentralityCloseness(){
         break;
     };
 
-    QString fn = "centrality_closeness.dat";
+    QString fn = dataDir + "socnetv-report-centrality_closeness.dat";
     bool considerWeights=true;
 
     createProgressBar();
@@ -6314,12 +6542,12 @@ void MainWindow::slotCentralityCloseness(){
 
     destroyProgressBar();
 
-    statusMessage( QString(tr(" displaying file...")));
-
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Closeness Centralities  saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle( tempFileNameNoPath.last());
     ed->show();
+    QApplication::restoreOverrideCursor();
+    statusMessage(tr("Closeness Centralities  saved as: ") + tempFileNameNoPath.last());
 }
 
 
@@ -6339,7 +6567,7 @@ void MainWindow::slotCentralityClosenessInfluenceRange(){
         return;
     }
 
-    QString fn = "centrality_closeness_influence_range.dat";
+    QString fn = dataDir + "socnetv-report-centrality_closeness_influence_range.dat";
     bool considerWeights=true;
 
     createProgressBar();
@@ -6352,8 +6580,10 @@ void MainWindow::slotCentralityClosenessInfluenceRange(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Closeness Centrality (influence range) report: " + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
+    QApplication::restoreOverrideCursor();
+    statusMessage(tr("Influence Range Closeness Centrality saved as: ")+tempFileNameNoPath.last());
 }
 
 
@@ -6369,7 +6599,7 @@ void MainWindow::slotCentralityBetweeness(){
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
     }
-    QString fn = "centrality_betweeness.dat";
+    QString fn = dataDir + "socnetv-report-centrality_betweeness.dat";
     bool considerWeights=true;
     statusMessage(  QString(tr(" Please wait...")));
 
@@ -6381,9 +6611,10 @@ void MainWindow::slotCentralityBetweeness(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Betweeness Centralities saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last() );
     ed->show();
     QApplication::restoreOverrideCursor();
+    statusMessage(tr("Betweeness Centralities saved as: ")+tempFileNameNoPath.last());
 }
 
 
@@ -6425,7 +6656,7 @@ void MainWindow::slotPrestigeDegree(){
         }
 
     }
-    QString fn = "degree-prestige.dat";
+    QString fn = dataDir + "socnetv-report-degree-prestige.dat";
 
     createProgressBar();
 
@@ -6433,12 +6664,12 @@ void MainWindow::slotPrestigeDegree(){
 
     destroyProgressBar();
 
-    statusMessage( QString(tr(" displaying file...")));
-
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Degree Prestige (in-degree) saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle( tempFileNameNoPath.last());
     ed->show();
+    QApplication::restoreOverrideCursor();
+    statusMessage(tr("Degree Prestige (in-degree) saved as: ") + tempFileNameNoPath.last());
 }
 
 
@@ -6453,7 +6684,7 @@ void MainWindow::slotPrestigePageRank(){
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
     }
-    QString fn = "prestige_pagerank.dat";
+    QString fn = dataDir + "socnetv-report-prestige_pagerank.dat";
     //   bool considerWeights=false;  //TODO Do we need to compute weigths in PageRank?
     statusMessage(  QString(tr(" Please wait...")));
 
@@ -6461,13 +6692,12 @@ void MainWindow::slotPrestigePageRank(){
     activeGraph.writePrestigePageRank(fn);
     destroyProgressBar();
 
-    statusMessage( QString(tr(" displaying file...")));
-
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("PageRank Prestige indices saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
+    statusMessage(tr("PageRank Prestige indices saved as: ")+ tempFileNameNoPath.last());
 }
 
 
@@ -6481,7 +6711,7 @@ void MainWindow::slotPrestigeProximity(){
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
     }
-    QString fn = "centrality_proximity_prestige.dat";
+    QString fn = dataDir + "socnetv-report-centrality_proximity_prestige.dat";
     statusMessage(  QString(tr(" Please wait...")));
 
     createProgressBar();
@@ -6492,9 +6722,10 @@ void MainWindow::slotPrestigeProximity(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Proximity Prestige Centralities saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle( tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
+    statusMessage(tr("Proximity Prestige Centralities saved as: ")+ tempFileNameNoPath.last());
 }
 
 
@@ -6534,21 +6765,19 @@ void MainWindow::slotCentralityInformation(){
             break;
         }
     }
-    QString fn = "centrality_information.dat";
+    QString fn = dataDir + "socnetv-report-centrality_information.dat";
     statusMessage(  QString(tr(" Please wait...")));
 
     createProgressBar();
     activeGraph.writeCentralityInformation(fn);
     destroyProgressBar();
 
-    statusMessage( QString(tr(" displaying file...")));
-
     TextEditor *ed = new TextEditor(fn);
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Information Centralities saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-
+    statusMessage(tr("Information Centralities saved as: ")+ tempFileNameNoPath.last());
 }
 
 
@@ -6564,7 +6793,7 @@ void MainWindow::slotCentralityStress(){
         statusMessage(  QString(tr(" Nothing to do! Why don't you try creating something first?"))  );
         return;
     }
-    QString fn = "centrality_stress.dat";
+    QString fn = dataDir + "socnetv-report-centrality_stress.dat";
 
     bool considerWeights=true;
     statusMessage(  QString(tr(" Please wait...")));
@@ -6577,8 +6806,10 @@ void MainWindow::slotCentralityStress(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Stress Centralities saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
+    QApplication::restoreOverrideCursor();
+    statusMessage(tr("Stress Centralities saved as: ")+ tempFileNameNoPath.last());
 }
 
 
@@ -6594,7 +6825,7 @@ void MainWindow::slotCentralityPower(){
         statusMessage(  QString(tr(" Nothing to do! Why don't you try creating something first?"))  );
         return;
     }
-    QString fn = "centrality_power.dat";
+    QString fn = dataDir + "socnetv-report-centrality_power.dat";
 
     bool considerWeights=true;
     statusMessage(  QString(tr(" Please wait...")));
@@ -6607,8 +6838,10 @@ void MainWindow::slotCentralityPower(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle("Stress Centralities saved as: " + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
+    QApplication::restoreOverrideCursor();
+    statusMessage(tr("Stress Centralities saved as: ")+ tempFileNameNoPath.last());
 }
 
 
@@ -6622,7 +6855,7 @@ void MainWindow::slotCentralityEccentricity(){
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
     }
-    QString fn = "centrality_eccentricity.dat";
+    QString fn = dataDir + "socnetv-report-centrality_eccentricity.dat";
     bool considerWeights=true;
     statusMessage(  QString(tr(" Please wait...")));
 
@@ -6632,10 +6865,10 @@ void MainWindow::slotCentralityEccentricity(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle(tr("Eccentricity Centralities saved as: ") + tempFileNameNoPath.last());
+    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-
+    statusMessage(tr("Eccentricity Centralities saved as: ")+ tempFileNameNoPath.last());
 }
 
 
@@ -7259,9 +7492,10 @@ void MainWindow::slotBackgroundImage(bool toggle) {
         graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor));
     }
     else   {
-        m_fileName = QFileDialog::getOpenFileName( this, tr("Select one image"), "",
-                                                   tr("All (*);;PNG (*.png);;JPG (*.jpg)")
-                                                   );
+        m_fileName = QFileDialog::getOpenFileName(
+                    this, tr("Select one image"), QDir::homePath(),
+                    tr("All (*);;PNG (*.png);;JPG (*.jpg)")
+                    );
         graphicsWidget->setBackgroundBrush(QImage(m_fileName));
         graphicsWidget->setCacheMode(QGraphicsView::CacheBackground);
 
@@ -7418,7 +7652,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
     int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Tue Aug  5 21:58:23 EEST 2014";
+QString BUILD="Wed Aug 27 19:51:14 EEST 2014";
     QMessageBox::about( this, "About SocNetV",
                         "<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
                         "<p><b>Version</b>: " + VERSION + "</p>"

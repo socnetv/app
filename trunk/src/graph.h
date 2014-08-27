@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer
- version: 1.2
+ version: 1.3
  Written in Qt
  
                          graph.h  -  description
@@ -55,17 +55,24 @@ class QDateTime;
 */
 
 typedef QList<Vertex*> Vertices;
-typedef map<long int,long int> imap_i;
-typedef map<int,float> imap_f;
-typedef QHash <QString, int> hash_si;
 
+typedef QHash <QString, int> H_StrToInt;
+typedef QHash <long int, long int> H_Int;
+
+typedef QPair <float, bool> pair_f_b;
+typedef QPair <int, pair_f_b > rel_w_bool;
+typedef QHash < int, rel_w_bool > H_edges;
 
 
 class Graph:  public QObject{
     Q_OBJECT
 
 public slots:
+    int currentRelation();
+
     /** Slots to signals from Parser */
+
+    void addRelationFromParser(QString);
     void createVertex(	int i, int size, QString nodeColor,
                         QString numColor, int numSize,
                         QString label, QString lColor, int lSize,
@@ -81,7 +88,7 @@ public slots:
     void createEdge (int, int);					//WebCrawler
     void nodeMovement(bool state, int type, int cW, int cH);		//Called by MW to start movement
 
-    void slotSetEdgeVisibility( int, int, bool);
+    void slotSetEdgeVisibility(int relation, int, int, bool);
 
     //auxiliary createVertex functions
     void createVertex(int i, QPointF p); 				//Called by GW
@@ -89,9 +96,12 @@ public slots:
     void createVertex(QString label, int i) ; 			//Called by WebCrawler
 
     /** Slots to signals from MainWindow */
+    void changeRelation(int);
+    void addRelationFromUser(QString relation);
     void setCanvasDimensions(int w, int h);
     void filterIsolateVertices ( bool );		//Called by MW to filter orphan vertices
     void filterEdgesByWeight (float, bool);		//Called by MW to filter edges over/under a weight
+    void filterEdgesByRelation(int relation, bool status);
 
     void webCrawl( QString, int, int, bool);	//Called by MW to start a web crawler...
 
@@ -103,6 +113,8 @@ signals:
 
     void signalFileType (int, QString, int,int, bool);	//notifies MW what we have loaded.
     void statusMessage (QString message);			//updates statusbar message
+    void addRelationToMW(QString newRelation);
+    void describeDataset(QString);
 
     /** Signals to GraphicsWidget */
     void drawNode( int ,int,  QString, QString, int, QString, QString, int, QPointF, QString, bool, bool, bool);	//call GW to draw a node
@@ -110,12 +122,15 @@ signals:
     void eraseNode (long int);						//erase node from GW
     void drawEdge(int, int, float, bool, bool, QString, bool);	//call GW to draw an edge
     void eraseEdge(int, int);					//emited from removeEdge() to GW to clear the edge item.
-    void setEdgeVisibility ( int, int, bool);			// emitted from each Vertex
+    void setEdgeVisibility (int, int, int, bool);			// emitted from each Vertex
     void setVertexVisibility(long int, bool);		//notifies GW to disable a node
     void drawEdgeReciprocal(int, int);				//call GW to draw the edge as symmetric one
     void addGuideCircle(int, int, int);				//call GW to draw a circular layout line somewhere.
     void addGuideHLine (int);					//call GW to draw a horizontal layout line somewhere.
     void moveNode(int, int, int);
+
+    /** Signals to Vertice */
+    void relationChanged(int);
 
 
 public: 	
@@ -173,14 +188,14 @@ public:
 
     int vertices() ;
 
-    int outEdges (int i) ;
-    int inEdges (int i) ;
+    int outboundEdges (int i) ;
+    int inboundEdges (int i) ;
 
     int outDegree(int);
     int inDegree(int);
 
-    int verticesWithOutEdges();
-    int verticesWithInEdges();
+    int verticesWithOutboundEdges();
+    int verticesWithInboundEdges();
     int verticesWithReciprocalEdges();
 
     QList<int> verticesIsolated();
@@ -213,11 +228,11 @@ public:
 
     void writeDataSetToFile(QString );
     void writeAdjacencyMatrixTo(QTextStream& os);
-    void writeAdjacencyMatrix(const char*, const char*);
+    void writeAdjacencyMatrix(const QString, const char*);
 
-    void writeInvertAdjacencyMatrix(const char*,  const char*);
-    void writeDistanceMatrix(const char*, const char*);
-    void writeNumberOfGeodesicsMatrix(const char*, const char*);
+    void writeInvertAdjacencyMatrix(const QString filename,  const char*);
+    void writeDistanceMatrix(const QString fn, const char*);
+    void writeNumberOfGeodesicsMatrix(const QString fn, const char*);
     void writeEccentricity(const QString, const bool);
 
     friend QTextStream& operator <<  (QTextStream& os, Graph& m);
@@ -312,15 +327,18 @@ public:
 
     int factorial (int);
 
+    int relations();
+    void addRelationFromGraph(QString relationName);
+
     /**  index stores the real position of each vertex inside m_graph.
      *  It starts at zero (0).
      *   We need to know the place of a vertex inside m_graph after adding
      *   or removing many vertices
      */
-    imap_i index;
+    H_Int index;
 
     // Stores the number of vertices at distance n from a given vertex
-    imap_i sizeOfNthOrderNeighborhood;
+    H_Int sizeOfNthOrderNeighborhood;
 
     /* maps have O(logN) lookup complexity */
     /* Consider using tr1::hashmap which has O(1) lookup, but this is not ISO C++ yet :(   */
@@ -360,13 +378,13 @@ private:
                 float C, Vertex *v, float &max, float &min,
                 int &maxNode, int &minNode
               ) ;
-    void resolveClasses (float C, hash_si &discreteClasses, int &classes);
+    void resolveClasses (float C, H_StrToInt &discreteClasses, int &classes);
     void resolveClasses (
-                        float C, hash_si &discreteClasses,
+                        float C, H_StrToInt &discreteClasses,
                         int &classes, int name
                         );
 
-
+    QList<QString> m_relationsList;
     QList<int>  triadTypeFreqs; 	//stores triad type frequencies
     QList<int>  m_isolatedVerticesList;
     QHash <int, int> influenceRanges, influenceDomains;
@@ -376,15 +394,15 @@ private:
     stack<int> Stack;
 
     /** used in resolveClasses and createDistanceMatrix() */
-    hash_si discreteDPs, discreteDCs, discreteCCs, discreteBCs, discreteSCs;
-    hash_si discreteIRCCs, discreteECs, discreteEccentricities;
-    hash_si discretePCs, discreteICs,  discretePRCs, discretePPs;
+    H_StrToInt discreteDPs, discreteDCs, discreteCCs, discreteBCs, discreteSCs;
+    H_StrToInt discreteIRCCs, discreteECs, discreteEccentricities;
+    H_StrToInt discretePCs, discreteICs,  discretePRCs, discretePPs;
 
     bool calculatedDP, calculatedDC, calculatedCentralities, dynamicMovement;
     bool calculatedPP, calculatedIRCC;
 
 
-    int m_precision;
+    int m_precision, m_curRelation;
     float meanDegree, varianceDegree;
     float meanCC, varianceCC;
     float meanIRCC, varianceIRCC;
@@ -424,7 +442,7 @@ private:
 
     int isolatedVertices;
     float averGraphDistance, nonZeroDistancesCounter;
-    int outEdgesVert, inEdgesVert, reciprocalEdgesVert;
+    int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;
     int timerId,  layoutType, canvasWidth, canvasHeight;
 
     bool order, initShowLabels, initNumbersInsideNodes;

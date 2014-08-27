@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer
- version: 1.2
+ version: 1.3
  Written in Qt
 
                           matrix.h  -  description
@@ -34,31 +34,34 @@
 #include <QDebug>
 #include <QTextStream>
 
+using namespace std; //or else compiler groans for nothrow
 
 class Row {
 public:
-    Row (int Actors=3000) {
-		cell=new  float [m_Actors=Actors];
+    Row (int Actors=0) {
+        cell=new (nothrow) float [m_Actors=Actors];
 		Q_CHECK_PTR( cell );
         for (register int i=0;i<m_Actors; i++) {
             cell[i]=0;
         }
 		m_outEdges=0;
 	}
-	~Row() {delete [] cell;}
+
+    ~Row() { m_Actors=0, m_outEdges=0 ; delete [] cell;}
 	
-	Row& operator =(Row & a) {
-			if (this != &a){
-				if (a.m_Actors!=m_Actors) {
-					delete [] cell;
-					cell=new  float[m_Actors=a.m_Actors];
-					Q_CHECK_PTR( cell);
-				}
-				for (int i=0;i<m_Actors; i++)
-				    cell[i]=a.cell[i];
-			}
-			return *this;
-	}
+    Row& operator =(Row & a) {
+        if (this != &a){
+            if (a.m_Actors!=m_Actors) {
+                delete [] cell;
+                cell=new (nothrow) float[m_Actors=a.m_Actors];
+                Q_CHECK_PTR( cell);
+            }
+            for (int i=0;i<m_Actors; i++) {
+                    cell[i]=a.cell[i];
+            }
+        }
+        return *this;
+    }
 	
 	float column ( int c ) const {
 		return cell[c];
@@ -88,9 +91,8 @@ public:
 
 	void resize(int Actors) {
 		delete [] cell;
-		cell=new  float[m_Actors=Actors];
+        cell=new (nothrow) float[m_Actors=Actors];
 		Q_CHECK_PTR( cell);
-		
 		for (int i=0;i<m_Actors; i++) { 
 			cell[i]=0;
 		}
@@ -112,85 +114,75 @@ private:
 
 
 class Matrix {
-	public:
-        /**default constructor - creates a Matrix of size 3000
-         *  Use resize(int) to resize it*/
-        Matrix (int Actors=3000)   {
-            row=new Row[m_Actors=Actors];
-            Q_CHECK_PTR( row );
-        }
+public:
+    Matrix (int Actors=0) ; /**default constructor - default size 0 */
 
-		Matrix(const Matrix &b) ;	/* Copy constructor allows Matrix a=b  declaration */
+    Matrix(const Matrix &b) ;	/* Copy constructor allows Matrix a=b  */
 
-		~Matrix() { delete [] row; }	/* Destructor */
+    ~Matrix();
 
-		void setSize (int Actors);	/* Used to set m_Actors */
-			
-		float item( int r, int c ) ;
-		
-		void setItem( int r, int c, float elem );
-		
-		void clearItem( int r, int c ) ;
-		
-		int cols() {return m_Actors;}
-		
-		int rows() {return m_Actors;}
+    void clear();
 
-        int size() { return m_Actors;}
+    void resize (int Actors) ;
 
-        void findMinMaxValues(float&,float&);
-	
-		void deleteRowColumn(int i);	/* deletes row i and column i */
-	
-		void resize (int Actors) ;	/* This is called before every operation on new matrixes. */
-	
+    float item( int r, int c ) ;
 
-		int edgesFrom(int Actor);
+    void setItem( int r, int c, float elem );
 
-		int edgesTo(int Actor);
-		
-		int totalEdges();
+    void clearItem( int r, int c ) ;
 
-		bool printMatrixConsole();
+    int cols() {return m_Actors;}
 
-		void identityMatrix (int);
+    int rows() {return m_Actors;}
 
-        void zeroMatrix (int);
+    int size() { return m_Actors;}
 
-		void fillMatrix (float value );	   /* Fulls a matrix with a value */
-	
-		Matrix& operator =(Matrix & a);	    /* Equals two matrices. */
+    void findMinMaxValues(float&,float&);
 
-        Matrix& operator +(Matrix & b);	    /* adds two matrices and returns their sum. */
+    void deleteRowColumn(int i);	/* deletes row i and column i */
 
-        Matrix operator *(Matrix & b);	    /* multiplies two matrices and returns their sum. */
+    int edgesFrom(int Actor);
 
-		float  operator ()  (const int r, const int c) ;
-		
-		friend QTextStream& operator <<  (QTextStream& os, Matrix& m);
+    int edgesTo(int Actor);
 
-		/** Takes two matrices and returns their product as a reference */
-        Matrix & product( Matrix &a, Matrix & b, bool symmetry) ;
-		
-		/** Takes two symm. matrices and outputs an upper triangular matrix */
-        Matrix & productSym( Matrix &a, Matrix & b)  ;
-		
-		Matrix & pow (int power, bool symmetry)  ;
+    int totalEdges();
 
-		Matrix& subtractFromI () ;
+    bool printMatrixConsole();
 
-		Matrix& sum (Matrix &a, Matrix &b) ;
+    void identityMatrix (int);
 
-		Matrix& inverseByGaussJordanElimination(Matrix &a);
+    void zeroMatrix (int);
 
-		void swapRows(int rowA,int rowB);		/* elementary matrix algebra */
-		void multiplyRow(int row, float value);		/* Multiply every elememt of row A by value */
+    void fillMatrix (float value );
 
-	private:
-		Row *row;
-		int m_Actors;
-		int *vec;
+    Matrix& operator =(Matrix & a);
 
+    Matrix& operator +(Matrix & b);
+
+    Matrix operator *(Matrix & b);	    // undefined
+
+    float  operator ()  (const int r, const int c) ;
+
+    friend QTextStream& operator <<  (QTextStream& os, Matrix& m);
+
+    Matrix & product( Matrix &a, Matrix & b, bool symmetry) ;
+
+    Matrix & productSym( Matrix &a, Matrix & b)  ;
+
+    Matrix & pow (int power, bool symmetry)  ;
+
+    Matrix& subtractFromI () ;
+
+    Matrix& sum (Matrix &a, Matrix &b) ;
+
+    Matrix& inverseByGaussJordanElimination(Matrix &a);
+
+    void swapRows(int rowA,int rowB);		/* elementary matrix algebra */
+    void multiplyRow(int row, float value);		/* Multiply every elememt of row A by value */
+
+private:
+    Row *row;
+    int m_Actors;
 };
 
 

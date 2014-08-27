@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer
- version: 1.2
+ version: 1.3
  Written in Qt
  
                          vertex.h  -  description
@@ -38,12 +38,12 @@ using namespace std;
 class QPointF;
 class Graph;
 
-typedef map<int,float> imap_f;
-typedef QHash<int,QString> ihash_s;
-typedef QHash<int,int> ihash_i;  
+
+typedef QHash<int,QString> H_IntToStr;
 typedef QList<int> ilist;
-
-
+typedef QPair <float, bool> pair_f_b;
+typedef QPair <int, pair_f_b > rel_w_bool;
+typedef QHash < int, rel_w_bool > H_edges;
 
 class Vertex : public QObject{
     Q_OBJECT
@@ -67,16 +67,22 @@ public:
     void setEnabled (bool flag );
     bool isEnabled ();
 
+    void changeRelation(int) ;
+
     void addLinkTo (long int target, float weight);	/* Adds an outLink to target with weight w */
     void addLinkFrom(long int source, float weight);
 
     void changeLinkWeightTo (long int target, float weight);
 
+    void setOutLinkEnabled (long int, bool);
+
     void removeLinkTo (long int target);		/* Removes edge to vertex t */
     void removeLinkFrom(long int source);	/* Removes edge from vertex s	*/
 
-    long int outEdges();
-    long int inEdges();
+    long int outLinks();
+    QHash<int,float>* returnEnabledOutLinks();
+
+    long int inLinks();
 
     long int outDegree();
     long int inDegree();
@@ -104,6 +110,7 @@ public:
 
     void filterEdgesByWeight(float m_threshold, bool overThreshold);
     //	void filterEdgesByColor(float m_threshold, bool overThreshold);
+    void filterEdgesByRelation(int relation, bool status);
 
     void setSize(int );
     int  size();
@@ -207,24 +214,24 @@ public:
     void setCLC(float clucof)  { m_CLC=clucof; m_hasCLC=true; }
     bool hasCLC() { 	return m_hasCLC; }
 
-    imap_f m_outEdges;			//holds all edges starting from this vertex.
-    imap_f m_inEdges;			//holds all edges starting from this vertex.
-    ihash_i m_enabled_outEdges;
+    //hold all outbound and inboud edges of this vertex.
+    H_edges m_outLinks, m_inLinks;
 signals:
-    void setEdgeVisibility ( int, int, bool);
+    void setEdgeVisibility (int, int, int, bool);
 
 protected:
 
 private:
+
     Graph *parentGraph;
     ilist myPs;
-    long int m_name,  m_outLinks, m_inLinks, m_outDegree, m_inDegree, m_localDegree;
+    long int m_name,  m_outLinksCounter, m_inLinksCounter, m_outDegree, m_inDegree, m_localDegree;
     float m_Eccentricity;
-    int m_value, m_size, m_labelSize, m_numberSize;
+    int m_value, m_size, m_labelSize, m_numberSize, m_curRelation;
     bool m_inLinked, m_outLinked, m_reciprocalLinked, m_enabled, m_hasCLC, m_isolated;
     QString m_color, m_numberColor, m_label, m_labelColor, m_shape;
     //QString *outLinkColors;
-    ihash_s outLinkColors;
+    H_IntToStr outLinkColors;
     //FIXME vertice coords
 
     double m_x, m_y;

@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer
- version: 1.2
+ version: 1.3
  Written in Qt
  
                          mainwindow.h  -  description
@@ -42,7 +42,7 @@
 #include "datasetselectdialog.h"
 
 
-static const QString VERSION="1.2";
+static const QString VERSION="1.3";
 
 /**
   * This Class is the base class. It sets up the main
@@ -149,6 +149,11 @@ public slots:
     void slotCreateSmallWorldRandomNetwork();
     void slotShowWebCrawlerDialog();
     void slotWebCrawl(QString, int, int, bool);
+
+    void prevRelation();
+    void nextRelation();
+    void addRelation();
+    void addRelation(QString relationName);
 
     //EDIT MENU
     void slotFindNode();
@@ -281,6 +286,7 @@ public slots:
 
     //Called by Graph to display some message to the user
     void statusMessage(const QString);
+    void showMessageToUser(const QString);
 
     //Called by Graph to update what the selected node is.
     void selectedNode (const int);
@@ -302,7 +308,7 @@ protected:
 
     //	void myMessageOutput(QtMsgType type, const char *msg);
 signals:
-
+    void addRelationToGraph(QString);
 
 private:
 
@@ -315,7 +321,7 @@ private:
     Graph activeGraph;
     QPrinter *printer;
     QToolBar *toolBar;
-    QComboBox *zoomCombo;
+    QComboBox *zoomCombo, *changeRelationCombo;
     QTabWidget *toolBox;
 
     QProgressDialog *progressDialog;
@@ -383,12 +389,13 @@ private:
     *layoutLevel_PC_Act, *layoutLevel_BC_Act, *layoutLevel_IC_Act,
     *layoutLevel_IRCC_Act,*layoutLevel_PRP_Act, *layoutLevel_PP_Act;
     QAction *strongColorationAct, *regularColorationAct, *showProgressBarAct, *printDebugAct;
-    QAction *springLayoutAct, *FRLayoutAct, *nodeSizeProportionalOutDegreeAct,  *nodeSizeProportionalInDegreeAct;
+    QAction *springLayoutAct, *FRLayoutAct;
+    QAction *nodeSizeProportionalOutDegreeAct,  *nodeSizeProportionalInDegreeAct;
     QAction *zoomInAct, *zoomOutAct ;
-
+    QAction *nextRelationAct, *prevRelationAct, *addRelationAct;
 
     QString fileName, networkName, previous_fileName;
-
+    QString dataDir;
     QStringList fileNameNoPath, fortuneCookie, rgbValues;
     QStringList tempFileNameNoPath, colorList, tips;
     int statusBarDuration,  minDuration, progressCounter;

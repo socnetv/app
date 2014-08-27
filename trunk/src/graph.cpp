@@ -1,6 +1,6 @@
 /******************************************************************************
  SocNetV: Social Networks Visualizer
- version: 1.2
+ version: 1.3
  Written in Qt
  
                          graph.cpp  -  description
@@ -25,26 +25,20 @@
 ********************************************************************************/
 
 
-#include <fstream>		//for writing the adjacency matrix to a file
-#include <cmath>		//allows the use of pow(float/double, float/double) function
 #include <cstdlib>		//allows the use of RAND_MAX macro 
-
 #include <QPointF>
 #include <QDebug>		//used for qDebug messages
 #include <QDateTime> 	// used in exporting centrality files
 #include <QHash> 
-#include <list>			//for list iterators
 #include <queue>		//for BFS queue Q
 
 #include "graph.h"
 
 
-
-
 Graph::Graph() {
     m_totalVertices=0;
-    outEdgesVert=0;
-    inEdgesVert=0;
+    outboundEdgesVert=0;
+    inboundEdgesVert=0;
     reciprocalEdgesVert=0;
     order=true;		//returns true if the indexes of the list is ordered.
     graphModified=false;
@@ -59,11 +53,23 @@ Graph::Graph() {
     calculatedIRCC=false;
     calculatedPP=false;
     m_precision = 3;
+    m_curRelation=0;
     dynamicMovement=false;
     timerId=0;
     layoutType=0;
 
     parser.setParent(this);
+
+    connect (
+                &parser, SIGNAL( addRelation (QString) ),
+                this, SLOT(addRelationFromParser(QString) )
+                ) ;
+
+    connect (
+                &parser, SIGNAL( changeRelation (int) ),
+                this, SLOT( changeRelation (int) )
+                ) ;
+
 
     connect (
                 &parser, SIGNAL( createNode (int,int,QString, QString, int, QString, QString, int, QPointF, QString, bool) ),
@@ -101,6 +107,83 @@ Graph::Graph() {
 }
 
 
+/**
+ * @brief Graph::changeRelation
+ * Called from MW and Parser
+ * @param relation
+ */
+void Graph::changeRelation(int relation){
+    qDebug() << "Graph::changeRelation(int) " << relation;
+    if (m_curRelation == relation ) {
+        qDebug() << "Graph::changeRelation(int) - same relation - END";
+        return;
+    }
+    if ( relation < 0) {
+        qDebug() << "Graph::changeRelation(int) - negative relation - END";
+        return;
+    }
+    QList<Vertex*>::iterator it;
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        if ( ! (*it)->isEnabled() )
+            continue;
+       (*it)->changeRelation(relation);
+    }
+    m_curRelation = relation;
+    emit relationChanged(m_curRelation);
+    emit graphChanged();
+}
+
+
+
+/**
+ * @brief Graph::addRelationFromUser
+ * Called from MW to add a relation and change to that new relation
+ * @param newRelation
+ */
+void Graph::addRelationFromUser(QString newRelation){
+    qDebug() << "Graph::addRelationFromUser(string) " << newRelation;
+    m_relationsList << newRelation;
+    qDebug() << "\n \n Graph::addRelationFromUser(string) - active relations() "
+             << relations() << "\n\n";
+}
+
+/**
+ * @brief Graph::addRelationFromGraph
+ * Called when creating random networks
+ * emits addRelationToMW
+ * @param newRelation
+ */
+void Graph::addRelationFromGraph(QString newRelation) {
+    qDebug() << "Graph::addRelationFromGraph(string) " << newRelation;
+    m_relationsList << newRelation;
+    emit addRelationToMW(newRelation);
+}
+
+/**
+ * @brief Graph::addRelationFromParser
+ * Called by file parser to add a new relation
+ * emits addRelationToMW
+ * @param newRelation
+ */
+void Graph::addRelationFromParser(QString newRelation) {
+    qDebug() << "Graph::addRelationFromParser(string) " << newRelation;
+    m_relationsList << newRelation;
+    emit addRelationToMW(newRelation);
+}
+
+/**
+ * @brief Graph::currentRelation
+ * @return int current relation index
+ */
+int Graph::currentRelation(){
+    return m_curRelation;
+}
+
+
+int Graph::relations(){
+    //qDebug () << " relations count " << m_relationsList.count();
+    return m_relationsList.count();
+}
 
 
 /**
@@ -109,13 +192,17 @@ Graph::Graph() {
     p holds the desired position of the new node.
     The new Vertex is named i and stores its color, label, label color, shape and position p.
 */
-void Graph::createVertex(int i, int size, QString nodeColor, QString numColor, int numSize, QString label, QString lColor, int lSize, QPointF p, QString nodeShape, bool signalMW){
+void Graph::createVertex(int i, int size, QString nodeColor, QString numColor,
+                         int numSize, QString label, QString lColor, int lSize,
+                         QPointF p, QString nodeShape, bool signalMW){
     int value = 1;
     addVertex(i, value, size,  nodeColor, numColor, numSize, label, lColor, lSize, p, nodeShape);
-    emit drawNode( i, size,  nodeColor, numColor, numSize, label, lColor, lSize, p, nodeShape, initShowLabels, initNumbersInsideNodes, true);
+    emit drawNode( i, size,  nodeColor, numColor, numSize, label, lColor, lSize,
+                   p, nodeShape, initShowLabels, initNumbersInsideNodes, true);
     if (signalMW)
         emit graphChanged();
-    initVertexColor=nodeColor; //draw new user-clicked nodes with the same color with that of the file loaded
+    //draw new user-clicked nodes with the same color with that of the file loaded
+    initVertexColor=nodeColor;
     initVertexShape=nodeShape;
     initVertexSize=size;
 
@@ -131,7 +218,7 @@ void Graph::createVertex(int i, int size, QString nodeColor, QString numColor, i
 */
 void Graph::createVertex(int i, QPointF p){
     if ( i < 0 )  i = lastVertexNumber() +1;
-    qDebug("Graph::createVertex(). Using vertex number %i with FIXED coords...", i);
+    qDebug() << "Graph::createVertex() " << i << " fixed coords.";
     createVertex(	i, initVertexSize,  initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
                     QString::number(i), initVertexLabelColor, initVertexLabelSize,
@@ -150,7 +237,7 @@ void Graph::createVertex(int i, QPointF p){
 */
 void Graph::createVertex(int i, int cWidth, int cHeight){
     if ( i < 0 )  i = lastVertexNumber() +1;
-    qDebug("Graph::createVertex(). Using vertex number %i with RANDOM node coords...", i);
+    qDebug() << "Graph::createVertex() " << i << " random coords.";
     QPointF p;
     p.setX(rand()%cWidth);
     p.setY(rand()%cHeight);
@@ -172,7 +259,7 @@ void Graph::createVertex(int i, int cWidth, int cHeight){
 
 void Graph::createVertex(QString label, int i) {
     if ( i < 0 )  i = lastVertexNumber() +1;
-    qDebug("Graph::createVertex(). Using vertex number %i with RANDOM node coords but with LABEL...", i);
+    qDebug() << "Graph::createVertex() " << i << " rand coords with label";
     QPointF p;
     p.setX(rand()%canvasWidth);
     p.setY(rand()%canvasHeight);
@@ -191,31 +278,47 @@ void Graph::setCanvasDimensions(int w, int h){
     canvasHeight= h;
 }
 
+
 /**
+ * @brief Graph::createEdge
     Called from homonymous signal of Parser class.
-    Adds an Edge to the Graph, then emits drawEdge() which calls GraphicsWidget::addEdge() to draw the new edge.
+    Adds an Edge to the Graph, then emits drawEdge() which calls
+    GraphicsWidget::addEdge() to draw the new edge.
     Also called from MW when user clicks on the "add link" button
     Alse called from GW (via createEdge() below) when user middle-clicks.
-*/
-void Graph::createEdge(int v1, int v2, float weight, QString color, int reciprocal=0, bool drawArrows=true, bool bezier=false){
+ * @param v1
+ * @param v2
+ * @param weight
+ * @param color
+ * @param reciprocal
+ * @param drawArrows
+ * @param bezier
+ */
+void Graph::createEdge(int v1, int v2, float weight, QString color,
+                       int reciprocal=0, bool drawArrows=true, bool bezier=false){
+    qDebug()<<" Graph::createEdge() " << v1 << " -> " << v2
+           << " weight " << weight << " relation " << m_curRelation;
     if ( reciprocal == 2) {
-        qDebug()<<"*** Graph: createEdge() from "<<v1<<" to "<<v2<<" of weight "<<weight << " as RECIPROCAL and emitting drawEdge signal to GW";
+        qDebug()<<"  Creating edge as RECIPROCAL - emitting drawEdge signal to GW";
         addEdge ( v1, v2, weight, color, reciprocal);
         emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier);
     }
     else if (this->hasEdge( v2, v1) )  {
-        qDebug()<<"*** Graph: createEdge() from "<<v1<<" to "<<v2<<" of weight "<<weight << ". Opposite link exists. Emitting drawEdgeReciprocal to GW to make the original reciprocal";
+        qDebug()<<". Opposite arc exists. "
+               << "  Emitting drawEdgeReciprocal to GW ";
         reciprocal = 1;
         addEdge ( v1, v2, weight, color, reciprocal);
         emit drawEdgeReciprocal(v2, v1);
     }
     else {
-        qDebug()<<"*** Graph: createEdge() from "<<v1<<" to "<<v2<<" of weight "<<weight << ". Opposite link does not exist. Emitting drawEdge to GW...";
+        qDebug()<<"  Opposite arc does not exist. Emitting drawEdge to GW...";
         reciprocal = 0;
         addEdge ( v1, v2, weight, color, reciprocal);
         emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier);
     }
-    initEdgeColor=color; //draw new edges the same color with those of the file loaded, on user clicks on the canvas
+    //draw new edges the same color with those of the file loaded,
+    // on user clicks on the canvas
+    initEdgeColor=color;
     emit graphChanged();
 }
 
@@ -224,8 +327,11 @@ void Graph::createEdge(int v1, int v2, float weight, QString color, int reciproc
     Called (via MW::addLink()) from GW when user middle-clicks on two nodes.
     Calls the above createEdge() method with initEdgeColor to set the default edge color.
 */
-void Graph::createEdge(int v1, int v2, float weight, int reciprocal=0, bool drawArrows=true, bool bezier=false){
-    createEdge(v1, v2, (float) weight, initEdgeColor, reciprocal, drawArrows, bezier);
+void Graph::createEdge(int v1, int v2, float weight, int reciprocal=0,
+                       bool drawArrows=true, bool bezier=false){
+    qDebug()<< " Graph::createEdge() - " << v1<< " -> " << v2 ;
+    createEdge(v1, v2, (float) weight, initEdgeColor, reciprocal,
+               drawArrows, bezier);
 }
 
 
@@ -234,11 +340,11 @@ void Graph::createEdge(int v1, int v2, float weight, int reciprocal=0, bool draw
     Calls the above createEdge() method with initEdgeColor
 */
 void Graph::createEdge (int source, int target){
+    qDebug()<< " Graph::createEdge() - from " << source << " to " << target ;
     if (this->hasEdge(source, target) ) {
-        qDebug()<< " Graph::createEdge - Edge from " << source << " to " << target << " already exists - returning...";
+        qDebug()<< "  Already exists - returning...";
         return;
     }
-    qDebug()<< " Graph::createEdge - New edge from " << source << " to " << target ;
     float weight = 1.0;
     bool reciprocal=false;
     bool drawArrows=true;
@@ -247,9 +353,13 @@ void Graph::createEdge (int source, int target){
     createEdge(source, target, weight, initEdgeColor, reciprocal, drawArrows, bezier);
 }
 
+
 /**
-*	This is called from loadPajek method of Parser in order to delete any redundant (dummy) nodes.
-*/
+ * @brief Graph::removeDummyNode
+ * This is called from loadPajek method of Parser in order to delete any
+ * redundant (dummy) nodes.
+ * @param i
+ */
 void Graph::removeDummyNode(int i){
     qDebug("**Graph: RemoveDummyNode %i", i);
     removeVertex(i);
@@ -259,10 +369,23 @@ void Graph::removeDummyNode(int i){
 
 
 
-/**	Adds a Vertex 
-    named v1, valued val, sized nszm colored nc, labeled nl, labelColored lc, shaped nsp, at point p
-    This method is called by createVertex() method
-*/
+/**
+ * @brief Graph::addVertex
+ * Adds a Vertex named v1, valued val, sized nszm colored nc, labeled nl,
+ * labelColored lc, shaped nsp, at point p.
+ * This method is called by createVertex() method
+ * @param v1
+ * @param val
+ * @param size
+ * @param color
+ * @param numColor
+ * @param numSize
+ * @param label
+ * @param labelColor
+ * @param labelSize
+ * @param p
+ * @param shape
+ */
 void Graph::addVertex (
         int v1, int val, int size, QString color,
         QString numColor, int numSize,
@@ -270,16 +393,24 @@ void Graph::addVertex (
         QPointF p, QString shape
         ){
 
+    qDebug() << "Graph::addVertex() ";
     if (order)
         index[v1]=m_totalVertices;
     else
         index[v1]=m_graph.size();
 
-    m_graph.append( new Vertex(this, v1, val, size, color, numColor, numSize, label, labelColor, labelSize, p, shape) );
+    m_graph.append(
+                new Vertex
+                (this, v1, val, size, color, numColor, numSize, label,
+                 labelColor, labelSize, p, shape
+                 )
+                );
     m_totalVertices++;
 
-    qDebug() << "Graph: addVertex(): Vertex named " << m_graph.back()->name() << " appended with index= "<<index[v1]
-                << " Now, m_graph size " << m_graph.size() << ". New vertex position: " << p.x() << "," << p.y();
+//    qDebug() << "Graph: addVertex(): Vertex named " << m_graph.back()->name()
+//             << " appended with index= "<<index[v1]
+//             << " Now, m_graph size " << m_graph.size()
+//             << ". New vertex position: " << p.x() << "," << p.y();
     graphModified=true;
 }
 
@@ -326,14 +457,18 @@ int Graph::firstVertexNumber() {
     Finally, it removes the vertex.
 */
 void Graph::removeVertex(long int Doomed){
-    qDebug() << "Graph: removeVertex " << m_graph[ index[Doomed] ]->name() << "  with index= " << index[Doomed] ;
+    qDebug() << "Graph: removeVertex - Doomed: "
+             << m_graph[ index[Doomed] ]->name()
+             << "  indexOfDoomed= " << index[Doomed] ;
     long int indexOfDoomed=index[Doomed];
 
     //Remove links to Doomed from each other vertex
     for (QList<Vertex*>::iterator it=m_graph.begin(); it!=m_graph.end(); it++){
         if  ( (*it)->isLinkedTo(Doomed) != 0) {
-            qDebug()<< "Graph: Vertex " << (*it)->name() << " is linked to selected and has " << (*it)->outEdges() << " and " <<  (*it)->outDegree() ;
-            if ( (*it)->outEdges() == 1 && (*it)->isLinkedFrom(Doomed) != 0 )	{
+            qDebug()<< "Graph: Vertex " << (*it)->name()
+                    << " is linked to doomed "<< Doomed << " and has "
+                    << (*it)->outLinks() << " and " <<  (*it)->outDegree() ;
+            if ( (*it)->outLinks() == 1 && (*it)->isLinkedFrom(Doomed) != 0 )	{
                 qDebug() << "Graph: decreasing reciprocalEdgesVert";
                 (*it)->setReciprocalLinked(false);
             }
@@ -346,33 +481,37 @@ void Graph::removeVertex(long int Doomed){
 
     qDebug()<< "Graph: Finished with vertices. Update the index which maps vertices inside m_graph " ;
     long int prevIndex=indexOfDoomed;
-    long int tempIndex=0;
-    //Find the position of the Vertex inside m_graph
-    map<long int,long int>::iterator pos=index.find(Doomed);
-    qDebug() << "Graph: vertex " << (pos)->first << " index "<< (pos)->second << " to be erased. ";
 
-    //find next active vertex inside index
-    (pos)->second = -1;
-    while ( (pos)->second == -1 )
-        ++pos;
-    qDebug() << "Graph: posNext " << (pos)->first << " index "<< (pos)->second ;
+    qDebug () << " Updating index of all subsequent vertices ";
+    H_Int::const_iterator it1=index.cbegin();
+    while (it1 != index.cend()){
+        if ( it1.value() > indexOfDoomed ) {
+            prevIndex = it1.value();
+            qDebug() << "Graph::removeVertex - vertex " << it1.key()
+                     << " had prevIndex: " << prevIndex
+                     << " > indexOfDoomed " << indexOfDoomed
+                     << " Setting new index. Index size was: "<< index.size();
+            index.insert( it1.key(), --prevIndex)  ;
+            qDebug() << "Graph::removeVertex - vertex " << it1.key()
+                     << " new index: " << index.value( it1.key(), -666)
+                     << " Index size now: "<< index.size();
 
+        }
+        else {
+            qDebug() << "Graph::removeVertex " << it1.key() << " with index "
+                     << it1.value() << " < indexOfDoomed. CONTINUE";
 
-    //Update the index of all subsequent vertices
-    map<long int,long int>::iterator it1;
-    for (it1=pos; it1!=index.end(); it1++)	{
-        qDebug() << "Graph: vertex " << (it1)->first << " with index "<< (it1)->second << " will take index" << prevIndex;
-        tempIndex=(it1)->second;
-        (it1)->second=prevIndex;
-        prevIndex=tempIndex;
-        qDebug() << "Graph: now vertex " << (it1)->first << " has index "<< (it1)->second ;
+        }
+        ++it1;
     }
 
     //Now remove vertex Doomed from m_graph
-    qDebug() << "Graph: graph vertices=size="<< vertices() << "=" << m_graph.size() <<  " removing vertex at index " << indexOfDoomed ;
+    qDebug() << "Graph: graph vertices=size="<< vertices() << "="
+             << m_graph.size() <<  " removing vertex at index " << indexOfDoomed ;
     m_graph.removeAt( indexOfDoomed ) ;
     m_totalVertices--;
-    qDebug() << "Graph: Now graph vertices=size="<< vertices() << "=" << m_graph.size() <<  " total edges now  " << totalEdges();
+    qDebug() << "Graph: Now graph vertices=size="<< vertices() << "="
+             << m_graph.size() <<  " total edges now  " << totalEdges();
 
     order=false;
     graphModified=true;
@@ -390,7 +529,8 @@ void Graph::addEdge (int v1, int v2, float weight, QString color, int reciprocal
     int source=index[v1];
     int target=index[v2];
 
-    qDebug()<< "Graph: addEdge() from vertex "<< v1 << "["<< source<< "] to vertex "<< v2 << "["<< target << "] of weight "<<weight;
+    qDebug()<< "Graph: addEdge() from vertex "<< v1 << "["<< source
+            << "] to vertex "<< v2 << "["<< target << "] of weight "<<weight;
 
     m_graph [ source ]->setOutLinked(true) ;
     m_graph [ source ]->addLinkTo(v2, weight );
@@ -411,7 +551,9 @@ void Graph::addEdge (int v1, int v2, float weight, QString color, int reciprocal
     }
 
 
-    qDebug()<<"Graph: addEdge() now a("<< v1 << ","<< v2<< ") = " << m_graph [ source ]->isLinkedTo(v2) << " with color "<<  color<<" . Storing edge color..." << ". Total Links " <<m_totalEdges;
+    qDebug()<<"Graph: addEdge() now a("<< v1 << ","<< v2<< ") = " << weight
+           << " with color "<<  color
+           <<" . Storing edge color..." << ". Total Links " <<m_totalEdges;
     m_graph[ source]->setOutLinkColor(v2, color);
 
     graphModified=true;
@@ -504,7 +646,7 @@ void Graph::filterEdgesByWeight(float m_threshold, bool overThreshold){
         qDebug() << "Graph: filterEdgesByWeight()  below "<< m_threshold ;
 
     QList<Vertex*>::iterator it;
-    for (QList<Vertex*>::iterator it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
         if ( (*it)->isOutLinked() ){
             (*it)->filterEdgesByWeight ( m_threshold, overThreshold );
         }
@@ -515,9 +657,28 @@ void Graph::filterEdgesByWeight(float m_threshold, bool overThreshold){
 }
 
 
-void Graph::slotSetEdgeVisibility ( int source, int target, bool visible) {
-    qDebug() << "Graph: slotSetEdgeVisibility  - emitting signal to GW";
-    emit setEdgeVisibility ( source, target, visible);
+
+/**
+ * @brief Graph::filterEdgesByRelation
+ * Not called by Called from MW to filter out all edges of a given relation
+ * calls the homonymous method of Vertex class.
+ * @param relation
+  */
+void Graph::filterEdgesByRelation(int relation, bool status){
+    qDebug() << "Graph::filterEdgesByRelation() " ;
+    QList<Vertex*>::iterator it;
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        if ( ! (*it)->isEnabled() )
+            continue;
+       (*it)->filterEdgesByRelation ( relation, status );
+    }
+}
+
+
+
+void Graph::slotSetEdgeVisibility ( int relation,  int source, int target, bool visible) {
+    //qDebug() << "Graph: slotSetEdgeVisibility  - emitting signal to GW";
+    emit setEdgeVisibility ( relation, source, target, visible);
 }
 
 
@@ -694,6 +855,7 @@ QString Graph::edgeColor (long int s, long int t){
     Complexity:  O(logN) for index retrieval + O(1) for QList index retrieval + O(logN) for checking edge(v2)
 */
 float Graph::hasEdge (int v1, int v2) {		
+    qDebug() << "Graph: hasEdge() " << v1 << " -> " << v2 << " ? " ;
     float weight=0;
     if ( ! m_graph[ index[v1] ] -> isEnabled() || ! m_graph[ index[v2] ] -> isEnabled())
         return 0;
@@ -719,27 +881,38 @@ void Graph::updateVertCoords(int v1, int  x, int y){
 
 
 
-/**	Returns the number of edges (arcs) from vertex v1
-*/
-int Graph::outEdges(int v1) {
-    qDebug("Graph: outEdges()");
-    return m_graph[ index[v1] ]->outEdges();
+/**
+ * @brief Graph::outboundEdges
+ * *Returns the number of outbound edges (arcs) from vertex v1
+ * @param v1
+ * @return
+ */
+int Graph::outboundEdges(int v1) {
+    qDebug("Graph: outboundEdges()");
+    return m_graph[ index[v1] ]->outLinks();
 }
 
 
-/**	
-    Returns the number of edges (arcs) to vertex v1
-*/
-int Graph::inEdges (int v1) {
-    qDebug("Graph: inEdges()");
-    return m_graph[ index[v1] ]->inEdges();
+/**
+ * @brief Graph::inboundEdges
+ * Returns the number of inbound edges (arcs) to vertex v1
+ * @param v1
+ * @return int
+ */
+int Graph::inboundEdges (int v1) {
+    qDebug("Graph: inboundEdges()");
+    return m_graph[ index[v1] ]->inLinks();
 }
 
 
 
 
-/**	Returns the outDegree (sum of outLinks weights) of vertex v1
-*/
+/**
+ * @brief Graph::outDegree
+ * Returns the outDegree (sum of outLinks weights) of vertex v1
+ * @param v1
+ * @return
+ */
 int Graph::outDegree (int v1) {
     qDebug("Graph: outDegree()");
     return m_graph[ index[v1] ]->outDegree();
@@ -764,7 +937,7 @@ int Graph::totalEdges () {
     int tEdges=0;
     QList<Vertex*>::iterator it;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        tEdges+=(*it)->outEdges();
+        tEdges+=(*it)->outLinks();
     }
     qDebug() << "Graph: m_totalEdges = " << m_totalEdges << ", tEdges=" <<  tEdges;
     return tEdges;
@@ -809,6 +982,7 @@ QList<int> Graph::verticesIsolated(){
                     // Symmetry test is needed for maxIndex*
                     if ( this->hasEdge ( (*it1)->name(), (*it)->name() ) == 0 )
                         symmetricAdjacencyMatrix=false;
+                    // FIXME DO WE REALLY NEED TO CHECK TWICE!!! ???
                 }
             }
             j++;
@@ -856,17 +1030,17 @@ bool Graph::isWeighted(){
 
 
 /**
-    Returns the sum of vertices having outEdges
+    Returns the sum of vertices having outboundEdges
 */
-int Graph::verticesWithOutEdges(){
-    return outEdgesVert;
+int Graph::verticesWithOutboundEdges(){
+    return outboundEdgesVert;
 }
 
 /**
-    Returns the sum of vertices having inEdges
+    Returns the sum of vertices having inboundEdges
 */
-int Graph::verticesWithInEdges(){
-    return inEdgesVert;
+int Graph::verticesWithInboundEdges(){
+    return inboundEdgesVert;
 }
 
 
@@ -881,19 +1055,67 @@ int Graph:: verticesWithReciprocalEdges(){
     Clears all vertices
 */
 void Graph::clear() {
-    //qDebug("Graph: m_graph reports size %i", m_graph.size());
+   qDebug("Graph::clear() m_graph reports size %i", m_graph.size());
+    qDeleteAll(m_graph.begin(), m_graph.end());
     m_graph.clear();
     index.clear();
-    discreteDPs.clear();
-    discreteDCs.clear();
+    //clear relations
+    m_relationsList.clear();
+    m_curRelation=0;
+
+    discreteDPs.clear(); discreteDCs.clear(); discreteCCs.clear();
+    discreteBCs.clear(); discreteSCs.clear(); discreteIRCCs.clear();
+    discreteECs.clear(); discreteEccentricities.clear();
+    discretePCs.clear(); discreteICs.clear();  discretePRCs.clear();
+    discretePPs.clear();
+    if ( DM.size() > 0) {
+        qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+        DM.clear();
+    }
+    if ( TM.size() > 0) {
+                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+        TM.clear();
+    }
+    if ( sumM.size() > 0) {
+                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+        sumM.clear();
+    }
+    if ( invAM.size() > 0) {
+                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+        invAM.clear();
+    }
+    if ( AM.size() > 0) {
+                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+        AM.clear();
+    }
+    if ( invM.size() > 0) {
+                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+        invM.clear();
+    }
+    if ( XM.size() > 0) {
+                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+        XM.clear();
+    }
+    if ( XSM.size() > 0) {
+                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+        XSM.clear();
+    }
+    if ( XRM.size() > 0) {
+                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+        XRM.clear();
+    }
+
+
     m_isolatedVerticesList.clear();
     notStronglyConnectedVertices.clear();
     influenceDomains.clear();
     influenceRanges.clear();
+    triadTypeFreqs.clear();
+
     m_totalVertices=0;
     m_totalEdges=0;
-    outEdgesVert=0;
-    inEdgesVert=0;
+    outboundEdgesVert=0;
+    inboundEdgesVert=0;
     reciprocalEdgesVert=0;
 
     order=true;		//returns true if the indexes of the list is ordered.
@@ -922,34 +1144,46 @@ void Graph::clear() {
 
 
 /**
-    Returns true if the adjacency matrix is symmetric
-*/
+ * @brief Graph::isSymmetric
+ * Returns TRUE if the adjacency matrix of the current relation is symmetric
+ * @return bool
+ */
 bool Graph::isSymmetric(){
     qDebug("Graph: isSymmetric ");
     if (!graphModified){
         return symmetricAdjacencyMatrix;
     }
     symmetricAdjacencyMatrix=true;
-    imap_f::iterator it1;
-    int y=0;
+    int y=0, target=0, source=0;
+    QHash<int,float> *enabledOutLinks = new QHash<int,float>;
+    QHash<int,float>::const_iterator it1;
     QList<Vertex*>::iterator it;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){ 	//for all edges of u, (u,y)
-        //qDebug("Graph::isSymmetric(): GRAPH CHANGED! Iterate over all edges of u...");
-        for( it1 = (*it)->m_outEdges.begin(); it1 != (*it)->m_outEdges.end(); it1++ ) {
-            y=index[it1->first];
-            if ( ! m_graph[y]->isLinkedTo( (*it)->name() )) {
-                //qDebug("Graph: isSymmetric():  u = %i IS NOT inLinked from y = %i", (*it)->name(), it1->first  );
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        source = (*it)->name();
+        if ( ! (*it)->isEnabled() )
+            continue;
+        qDebug() << "Graph::isSymmetric(): GRAPH Modified! " <<
+                    " Iterate over all edges of " << source ;
+        enabledOutLinks=(*it)->returnEnabledOutLinks();
+        it1=enabledOutLinks->cbegin();
+        while ( it1!=enabledOutLinks->cend() ){
+            target = it1.key();
+            y=index[ target ];
+            if ( ! m_graph[y]->isLinkedTo( source)) {
+                qDebug() << "Graph: isSymmetric: u = " << source
+                         << " IS NOT inLinked from y = " <<  target  ;
                 symmetricAdjacencyMatrix=false;
                 qDebug("Graph: isSymmetric()  NO");
-                return symmetricAdjacencyMatrix;
+                break;
             }
             else {
                 //	qDebug("Graph: isSymmetric():  u = %i IS inLinked from y = %i",it1->first, (*it)->name()  );
             }
+            ++it1;
         }
     }
-
-    qDebug("Graph: isSymmetric() YES");
+    delete enabledOutLinks;
+    qDebug() << "Graph: isSymmetric()" << symmetricAdjacencyMatrix;
     return symmetricAdjacencyMatrix;
 }
 
@@ -961,21 +1195,33 @@ bool Graph::isSymmetric(){
 void Graph::symmetrize(){
     qDebug("Graph: symmetrize");
     QList<Vertex*>::iterator it;
-    imap_f::iterator it1;
-    int y;
+    int y=0, target=0, source=0, weight;
+    QHash<int,float> *enabledOutLinks = new QHash<int,float>;
+    QHash<int,float>::const_iterator it1;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
-        //for all edges (u,y) of u, do
-        qDebug("Graph: making all edges reciprocal. First iterate over all edges of u...");
-        for( it1 = (*it)->m_outEdges.begin(); it1 != (*it)->m_outEdges.end(); it1++ ) {
-            y=index[it1->first];
-            if ( ! m_graph[y]->isLinkedTo( (*it)->name() )) {
-                qDebug() << "Graph: symmetrize: u = " << (*it)->name() << " IS NOT inLinked from y = " <<  it1->first  ;
-                createEdge(it1->first, (*it)->name(), it1->second, initEdgeColor, false, true, false);
+        source = (*it)->name();
+        qDebug() << "Graph:symmetrize() - iterate over edges of source " << source;
+        enabledOutLinks=(*it)->returnEnabledOutLinks();
+        it1=enabledOutLinks->cbegin();
+        while ( it1!=enabledOutLinks->cend() ){
+            target = it1.key();
+            weight = it1.value();
+            y=index[ target ];
+            qDebug() << "Graph:symmetrize() - "
+                     << " source " << source
+                     << " outLinked to " << target << " weight " << weight;
+            if ( ! m_graph[y]->isLinkedTo( source )) {
+                qDebug() << "Graph:symmetrize(): s = " << source
+                         << " is NOT inLinked from y = " <<  target  ;
+                createEdge( target, source, weight, initEdgeColor, false, true, false);
             }
             else
-                qDebug() << "Graph: symmetrize: u = " << it1->first  << " IS inLinked from y = " <<   (*it)->name() ;
+                qDebug() << "Graph: symmetrize(): source = " << source
+                         << " is already inLinked from target = " << target ;
+            ++it1;
         }
     }
+    delete enabledOutLinks;
     graphModified=true;
     symmetricAdjacencyMatrix=true;
     emit graphChanged();
@@ -1060,7 +1306,7 @@ int Graph::connectedness(){
 /**
 *  Writes the matrix of distances to a file
 */
-void Graph::writeDistanceMatrix (const char* fn, const char* netName) {
+void Graph::writeDistanceMatrix (QString fn, const char* netName) {
     qDebug ("Graph::writeDistanceMatrix()");
 
     if ( !distanceMatrixCreated || graphModified ) {
@@ -1092,7 +1338,7 @@ void Graph::writeDistanceMatrix (const char* fn, const char* netName) {
 *  Saves the number of geodesic distances matrix TM to a file
 *
 */
-void Graph::writeNumberOfGeodesicsMatrix(const char* fn, const char* netName) {
+void Graph::writeNumberOfGeodesicsMatrix(const QString fn, const char* netName) {
     qDebug ("Graph::writeDistanceMatrix()");
     if ( !distanceMatrixCreated || graphModified ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
@@ -1178,7 +1424,8 @@ void Graph::writeEccentricity(
 
 
 /**
-    Creates a matrix DM which stores geodesic distances between all vertices
+ * @brief Graph::createDistanceMatrix
+  Creates a matrix DM which stores geodesic distances between all vertices
     INPUT:
         boolean doCalculcateCentralities
     OUTPUT:
@@ -1191,8 +1438,8 @@ void Graph::writeEccentricity(
         - Stress: SC(u) = Sum ( sigma(i,j) ) for every s,t in V
         - Eccentricity: EC(u) =  1/maxDistance(u,t)  for some t in V
         - Closeness: CC(u) =  1 / Sum( DM(u,t) )  for every  t in V
-*/
-
+ * @param doCalculcateCentralities
+ */
 void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
     qDebug ("Graph::createDistanceMatrix()");
     if ( !graphModified && distanceMatrixCreated && !doCalculcateCentralities)  {
@@ -1233,8 +1480,8 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
         qDebug() << "	graphDiameter "<< graphDiameter << " averGraphDistance "
                  <<averGraphDistance;
         qDebug() << "	reciprocalEdgesVert "<< reciprocalEdgesVert
-                 << " inEdgesVert " << inEdgesVert
-                 << " outEdgesVert "<<  outEdgesVert;
+                 << " inboundEdgesVert " << inboundEdgesVert
+                 << " outboundEdgesVert "<<  outboundEdgesVert;
         qDebug() << "	aEdges " << aEdges <<  " aVertices " << aVertices;
 
 
@@ -1306,7 +1553,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                 for (it1=m_graph.begin(); it1!=m_graph.end(); it1++) {
                     (*it1)->clearPs();
                     //initialize all sizeOfNthOrderNeighborhood to zero
-                    sizeOfNthOrderNeighborhood[ i ]=0;
+                    sizeOfNthOrderNeighborhood.insert(i, 0);
                     i++;
                 }
             }
@@ -1357,9 +1604,9 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                     (*it1)->setDelta(0.0);
                     //Calculate Power Centrality: In = [ 1/(N-1) ] * ( Nd1 + Nd2 * 1/2 + ... + Ndi * 1/i )
                     // where Ndi (sizeOfNthOrderNeighborhood) is the number of nodes at distance i from this node.
-                    PC += ( 1.0 / (float) i ) * sizeOfNthOrderNeighborhood[i];
+                    PC += ( 1.0 / (float) i ) * sizeOfNthOrderNeighborhood.value(i);
                     // where N is the sum Nd0 + Nd1 + Nd2 + ... + Ndi, that is the amount of nodes in the same component as the current node
-                    sizeOfComponent += sizeOfNthOrderNeighborhood[i];
+                    sizeOfComponent += sizeOfNthOrderNeighborhood.value(i);
                     i++;
                 }
                 (*it)->setPC( PC );		//Set Power Centrality
@@ -1386,7 +1633,8 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                     if (lst.size() > 0) // just in case...do a sanity check
                         for ( it2=lst.begin(); it2 != lst.end(); it2++ ){
                             u=(*it2);
-                            qDebug("Selecting Ps[w] element u=%i with delta_u=%f. sigma(u)=TM(s,u)=%f, sigma(w)=TM(s,w)=%f, delta_w=%f ", u, m_graph[u]->delta(),TM.item(s,u), TM.item(s,w), m_graph[w]->delta());
+                            qDebug("Selecting Ps[w] element u=%i with delta_u=%f. sigma(u)=TM(s,u)=%f, sigma(w)=TM(s,w)=%f, delta_w=%f ",
+                                   u, m_graph[u]->delta(),TM.item(s,u), TM.item(s,w), m_graph[w]->delta());
                             if ( TM.item(s,w) > 0) {
                                 //delta[u]=delta[u]+(1+delta[w])*(sigma[u]/sigma[w]) ;
                                 d_su=m_graph[u]->delta()+(1.0+m_graph[w]->delta() ) * ( (float)TM.item(s,u)/(float)TM.item(s,w) );
@@ -1400,7 +1648,8 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                         }
                     qDebug()<<" Adding delta_w to BC of w";
                     if  (w!=s) {
-                        qDebug("w!=s. For this furthest vertex we need to add its new delta %f to old BC index: %f",m_graph[w]->delta(), m_graph[w]->BC());
+                        qDebug("w!=s. For this furthest vertex we need to add its new delta %f to old BC index: %f",
+                               m_graph[w]->delta(), m_graph[w]->BC());
                         d_sw = m_graph[w]->BC() + m_graph[w]->delta();
                         qDebug("New BC = d_sw = %f", d_sw);
                         m_graph[w]->setBC (d_sw);
@@ -1515,88 +1764,109 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 */ 
 void Graph::BFS(int s, bool doCalculcateCentralities){
     int u,w, dist_u=0, temp=0, dist_w=0;
-
+    int relation=0, target=0;
+    //int  weight=0;
+    bool edgeStatus=false;
+    H_edges::const_iterator it1;
     //set distance of s from s equal to 0
     DM.setItem(s,s,0);
     //set sigma of s from s equal to 1
     TM.setItem(s,s,1);
 
-    qDebug("BFS: Construct a queue Q of integers and push source vertex s=%i to Q as initial vertex", s);
+//    qDebug("BFS: Construct a queue Q of integers and push source vertex s=%i to Q as initial vertex", s);
     queue<int> Q;
-    qDebug()<<"BFS: Q size "<< Q.size();
+//    qDebug()<<"BFS: Q size "<< Q.size();
 
     Q.push(s);
 
-    qDebug("BFS: LOOP: While Q not empty ");
+//    qDebug("BFS: LOOP: While Q not empty ");
     while ( !Q.empty() ) {
-        qDebug("BFS: Dequeue: first element of Q is u=%i", Q.front());
+//        qDebug("BFS: Dequeue: first element of Q is u=%i", Q.front());
         u=Q.front(); Q.pop();
 
         if ( ! m_graph [ u ]->isEnabled() ) continue ;
 
         if (doCalculcateCentralities){
-            qDebug("BFS: If we are to calculate centralities, we must push u=%i to global stack Stack ", u);
+//            qDebug("BFS: If we are to calculate centralities, we must push u=%i to global stack Stack ", u);
             Stack.push(u);
         }
-        imap_f::iterator it;
-        qDebug("BFS: LOOP over every edge (u,w) e E, that is all neighbors w of vertex u");
-        for( it = m_graph [ u ]->m_outEdges.begin(); it != m_graph [ u ]->m_outEdges.end(); it++ ) {
-
-            w=index[it->first];
-            qDebug("BFS: u=%i is connected with node %i of index w=%i. ", u, it->first, w);
-            qDebug("BFS: Start path discovery");
+//        qDebug() << "BFS: LOOP over every edge (u,w) e E, that is all neighbors w of vertex u";
+        it1=m_graph [ u ] ->m_outLinks.cbegin();
+        while ( it1!=m_graph [ u ] -> m_outLinks.cend() ){
+            relation = it1.value().first;
+            if ( relation != currentRelation() )  {
+                ++it1;
+                continue;
+            }
+            edgeStatus=it1.value().second.second;
+            if ( edgeStatus != true)   {
+                ++it1;
+                continue;
+            }
+            target = it1.key();
+          //  weight = it1.value().second.first;
+            w=index[ target ];
+//            qDebug("BFS: u=%i is connected with node %i of index w=%i. ", u, target, w);
+//            qDebug("BFS: Start path discovery");
             if (	DM.item(s, w) == -1 ) { //if distance (s,w) is infinite, w found for the first time.
-                qDebug("BFS: first time visiting w=%i. Enqueuing w to the end of Q", w);
+//                qDebug("BFS: first time visiting w=%i. Enqueuing w to the end of Q", w);
                 Q.push(w);
-                qDebug()<<"BFS: First check if distance(s,u) = -1 (aka infinite :)) and set it to zero";
+//                qDebug()<<"BFS: First check if distance(s,u) = -1 (aka infinite :)) and set it to zero";
                 dist_u=DM.item(s,u);
                 if (dist_u < 0 )
                     dist_w = 0;
                 else
                     dist_w = dist_u + 1;
-                qDebug("BFS: Setting distance of w=%i from s=%i equal to distance(s,u) plus 1. New distance = %i",w,s, dist_w );
+//                qDebug("BFS: Setting distance of w=%i from s=%i equal to distance(s,u) plus 1. New distance = %i",w,s, dist_w );
                 DM.setItem(s, w, dist_w);
                 averGraphDistance += dist_w;
                 nonZeroDistancesCounter++;
 
                 if (doCalculcateCentralities){
-                    qDebug()<<"BFS: Calculate PC: store the number of nodes at distance " << dist_w << "from s";
-                    sizeOfNthOrderNeighborhood[dist_w]=sizeOfNthOrderNeighborhood[dist_w]+1;
-                    qDebug()<<"BFS: Calculate CC: the sum of distances (will invert it l8r)";
+//                    qDebug()<<"BFS: Calculate PC: store the number of nodes at distance " << dist_w << "from s";
+                    sizeOfNthOrderNeighborhood.insert(
+                                dist_w,
+                                sizeOfNthOrderNeighborhood.value(dist_w)+1
+                                );
+//                    qDebug()<<"BFS: Calculate CC: the sum of distances (will invert it l8r)";
                     m_graph [s]->setCC (m_graph [s]->CC() + dist_w);
-                    qDebug()<<"BFS: Calculate Eccentricity: the maximum distance ";
+//                    qDebug()<<"BFS: Calculate Eccentricity: the maximum distance ";
                     if (m_graph [s]->eccentricity() < dist_w )
                         m_graph [s]->setEccentricity(dist_w);
 
                 }
-                qDebug("BFS: Checking graphDiameter");
+//                qDebug("BFS: Checking graphDiameter");
                 if ( dist_w > graphDiameter){
                     graphDiameter=dist_w;
-                    qDebug() << "BFS: new graphDiameter = " <<  graphDiameter ;
+//                    qDebug() << "BFS: new graphDiameter = " <<  graphDiameter ;
                 }
             }
 
-            qDebug("BFS: Start path counting"); 	//Is edge (u,w) on a shortest path from s to w via u?
+//            qDebug("BFS: Start path counting"); 	//Is edge (u,w) on a shortest path from s to w via u?
             if ( DM.item(s,w)==DM.item(s,u)+1) {
                 temp= TM.item(s,w)+TM.item(s,u);
-                qDebug("BFS: Found a NEW SHORTEST PATH from s=%i to w=%i via u=%i. Setting Sigma(%i, %i) = %i",s, w, u, s, w,temp);
+//                qDebug("BFS: Found a NEW SHORTEST PATH from s=%i to w=%i via u=%i. Setting Sigma(%i, %i) = %i",s, w, u, s, w,temp);
                 if (s!=w)
                     TM.setItem(s,w, temp);
                 if (doCalculcateCentralities){
-                    qDebug("BFS/SC: If we are to calculate centralities, we must calculate SC as well");
+//                    qDebug("BFS/SC: If we are to calculate centralities, we must calculate SC as well");
                     if ( s!=w && s != u && u!=w ) {
-                        qDebug() << "BFS: setSC of u="<<u<<" to "<<m_graph[u]->SC()+1;
+//                        qDebug() << "BFS: setSC of u="<<u<<" to "<<m_graph[u]->SC()+1;
                         m_graph[u]->setSC(m_graph[u]->SC()+1);
                     }
                     else {
-                        qDebug() << "BFS/SC: skipping setSC of u, because s="<<s<<" w="<<w<<" u="<<u;
+//                        qDebug() << "BFS/SC: skipping setSC of u, because s="
+//                                 <<s<<" w="<< w << " u="<< u;
                     }
-                    qDebug() << "BFS/SC: SC is " << m_graph[u]->SC();
-                    qDebug("BFS: appending u=%i to list Ps[w=%i] with the predecessors of w on all shortest paths from s ", u, w);
+//                    qDebug() << "BFS/SC: SC is " << m_graph[u]->SC();
+//                    qDebug() << "BFS: appending u="<< u << " to list Ps[w=" << w
+//                             << "] with the predecessors of w on all shortest paths from s ";
                     m_graph[w]->appendToPs(u);
                 }
             }
+            ++it1;
         }
+
     }
 }
 
@@ -1631,8 +1901,8 @@ void Graph::minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int
     It stores that number in a QHash<QString,int> type where the centrality value is the key.
     Called from createDistanceMatrix()
 */
-void Graph::resolveClasses(float C, hash_si &discreteClasses, int &classes){
-    hash_si::iterator it2;
+void Graph::resolveClasses(float C, H_StrToInt &discreteClasses, int &classes){
+    H_StrToInt::iterator it2;
     it2 = discreteClasses.find(QString::number(C));    //Amort. O(1) complexity
     if (it2 == discreteClasses.end() )	{
         classes++;
@@ -1645,8 +1915,8 @@ void Graph::resolveClasses(float C, hash_si &discreteClasses, int &classes){
 /*
  * Overloaded method. It only adds displaying current vertex for debugging purposes.
  */
-void Graph::resolveClasses(float C, hash_si &discreteClasses, int &classes, int vertex){
-    hash_si::iterator it2;
+void Graph::resolveClasses(float C, H_StrToInt &discreteClasses, int &classes, int vertex){
+    H_StrToInt::iterator it2;
     it2 = discreteClasses.find(QString::number(C));    //Amort. O(1) complexity
     if (it2 == discreteClasses.end() )	{
         classes++;
@@ -1859,7 +2129,7 @@ void Graph::centralityDegree(bool weights){
     meanDegree=0;
     int vert=vertices();
     QList<Vertex*>::iterator it, it1;
-    hash_si::iterator it2;
+    H_StrToInt::iterator it2;
 
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         DC=0;
@@ -2062,7 +2332,7 @@ void Graph::centralityClosenessInfluenceRange(){
     float V=vertices();
     varianceIRCC=0;
     meanIRCC=0;
-    hash_si::iterator it2;
+    H_StrToInt::iterator it2;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         IRCC=0;
         // find connected nodes
@@ -2554,7 +2824,7 @@ void Graph::prestigeDegree(bool weights){
     meanDegree=0;
     symmetricAdjacencyMatrix = true;
     QList<Vertex*>::iterator it, it1;
-    hash_si::iterator it2;
+    H_StrToInt::iterator it2;
     int vert=vertices();
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         DP=0;
@@ -2754,7 +3024,7 @@ void Graph::prestigeProximity(){
     float V=vertices();
     variancePP=0;
     meanPP=0;
-    hash_si::iterator it2;
+    H_StrToInt::iterator it2;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         PP=0; i=0;
         // find connected nodes
@@ -2921,19 +3191,26 @@ int Graph::prestigePageRank(){
     float outDegree = 0;
     bool allNodesAreIsolated = true;
     QList<Vertex*>::iterator it;
-    imap_f::iterator jt;
+    int relation=0;
+    bool edgeStatus=false;
+    H_edges::const_iterator jt;
+
     // begin iteration - continue until we reach our desired delta
     while (maxDelta > delta) {
         for (it=m_graph.begin(); it!=m_graph.end(); it++){
-            qDebug() << "Graph:: prestigePageRank() - calculating PR for node: " << (*it)->name() ;
+            qDebug() << "Graph:: prestigePageRank() - calculating PR for node: "
+                     << (*it)->name() ;
             // In the first iteration, we have no PageRanks
             // So we set them to (1-d)
             if ( i == 1 ) {
                 (*it)->setPRC( 1 - dampingFactor );
-                qDebug() << "Graph:: prestigePageRank() - first iteration - node: " << (*it)->name() << " PR = " << (*it)->PRC() ;
+                qDebug() << "Graph:: prestigePageRank() - 1st iteration - node: "
+                         << (*it)->name() << " PR = " << (*it)->PRC() ;
                 if ( (*it)->isIsolated() ) {
                     isolatedVertices++;
-                    qDebug()<< "Graph:: prestigePageRank() vertex: " << (*it)->name() << " is isolated. PR will be just 1-d. Continue... ";
+                    qDebug()<< "Graph:: prestigePageRank() vertex: "
+                            << (*it)->name()
+                            << " is isolated. PR will be just 1-d. Continue... ";
                 }
                 else
                     allNodesAreIsolated = false;
@@ -2944,36 +3221,57 @@ int Graph::prestigePageRank(){
                 maxDelta = 0;
                 oldPRC = (*it)->PRC();
                 // take every other node which links to the current node.
-                for( jt = (*it)->m_inEdges.begin(); jt != (*it)->m_inEdges.end(); jt++ ) {
-                    qDebug() << "Graph:: prestigePageRank " << (*it)->name() << " is inLinked from " << jt->first  ;
-                    referrer=jt->first;
-                    if ( this->hasEdge( referrer , (*it)->name() ) )
-                    {
+                jt=(*it)->m_inLinks.cbegin();
+                while ( jt != (*it) -> m_inLinks.cend() ){
+                    qDebug() << "Graph::numberOfCliques() "
+                             << " iterate over all inLinks ";
+                    relation = jt.value().first;
+                    if ( relation != currentRelation() ){
+                        ++jt;
+                        continue;
+                    }
+                    edgeStatus=jt.value().second.second;
+                    if ( edgeStatus != true){
+                        ++jt;
+                        continue;
+                    }
+                    referrer = jt.key();
+                    qDebug() << "Graph:: prestigePageRank " << (*it)->name()
+                             << " is inLinked from " << referrer  ;
 
+                    if ( this->hasEdge( referrer , (*it)->name() ) ) {
                         outDegree = m_graph[ index[referrer] ] ->outDegree();
                         PRC =  m_graph[ index[referrer] ]->PRC();
-                        qDebug()<< "Graph:: prestigePageRank() " <<  jt->first  << " has PRC = " << PRC  << " and outDegree = " << outDegree << " PRC / outDegree = " << PRC / outDegree ;
+                        qDebug()<< "Graph:: prestigePageRank() " <<  referrer
+                                << " has PRC = " << PRC
+                                << " and outDegree = " << outDegree
+                                << " PRC / outDegree = " << PRC / outDegree ;
                         sumPageRanksOfLinkedNodes += PRC / outDegree;
                     }
-
+                    ++jt;
                 }
                 // OK. Now calculate PageRank of current node
                 PRC = (1-dampingFactor) + dampingFactor * sumPageRanksOfLinkedNodes;
                 // store new PageRank
                 (*it) -> setPRC ( PRC );
-                // calculate diff from last PageRank value for this vertex and set it to minDelta if the latter is bigger.
-                qDebug()<< "Graph:: prestigePageRank() vertex: " <<  (*it)->name() << " new PageRank = " << PRC
-                        << " old PR was = " << oldPRC << " diff = " << fabs(PRC - oldPRC);
+                // calculate diff from last PageRank value for this vertex
+                // and set it to minDelta if the latter is bigger.
+                qDebug()<< "Graph:: prestigePageRank() vertex: " <<  (*it)->name()
+                        << " new PageRank = " << PRC
+                        << " old PR was = " << oldPRC
+                        << " diff = " << fabs(PRC - oldPRC);
                 if ( maxDelta < fabs(PRC - oldPRC) ) {
                     maxDelta = fabs(PRC - oldPRC);
-                    qDebug()<< "Graph:: prestigePageRank() setting new maxDelta = " <<  maxDelta;
+                    qDebug()<< "Graph:: prestigePageRank() setting new maxDelta = "
+                            <<  maxDelta;
                 }
 
             }
         }
         if (allNodesAreIsolated) {
             qDebug()<< "Graph:: prestigePageRank() all vertices are isolated. Break...";
-            qDebug() << "isolatedVertices: " << isolatedVertices << " total vertices " << this->vertices();
+            qDebug() << "isolatedVertices: " << isolatedVertices
+                     << " total vertices " << this->vertices();
 
             break;
         }
@@ -2998,13 +3296,15 @@ int Graph::prestigePageRank(){
 
         SPRC = PRC / sumPRC ;
         (*it)->setSPRC( SPRC );
-        qDebug()<< "Graph:: prestigePageRank() vertex: " <<  (*it)->name() << " PageRank = " << PRC << " standard PR = " << SPRC;
+        qDebug()<< "Graph:: prestigePageRank() vertex: " <<  (*it)->name()
+                << " PageRank = " << PRC << " standard PR = " << SPRC;
     }
     if (allNodesAreIsolated) {
         qDebug()<< "Graph:: prestigePageRank() all vertices are isolated. Equal PageRank for all....";
         return 1;
     }
-    qDebug()<< "Graph:: prestigePageRank() vertex: " <<  maxNodePRC << " has max PageRank = " << maxPRC;
+    qDebug()<< "Graph:: prestigePageRank() vertex: " <<  maxNodePRC
+            << " has max PageRank = " << maxPRC;
     return 0;
 
 }
@@ -3571,6 +3871,8 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
 void Graph::createRandomNetErdos(int vert, double probability){
     qDebug("Graph: createRandomNetErdos");
 
+    index.reserve(vert);
+
     int progressCounter=0;
 
     for (register int i=0; i< vert ; i++) {
@@ -3600,6 +3902,7 @@ void Graph::createRandomNetErdos(int vert, double probability){
         emit updateProgressDialog(progressCounter );
         qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
     }
+    addRelationFromGraph(tr("random")); //FIXME
     emit graphChanged();
 }
 
@@ -3618,9 +3921,11 @@ void Graph::createRandomNetRingLattice(
     int y=0;
     int progressCounter=0;
 
-
     double Pi = 3.14159265;
     double rad= (2.0* Pi/ vert );
+
+    index.reserve(vert);
+
     for (register int i=0; i< vert ; i++) {
         x=x0 + radius * cos(i * rad);
         y=y0 + radius * sin(i * rad);
@@ -3646,7 +3951,8 @@ void Graph::createRandomNetRingLattice(
         emit updateProgressDialog(progressCounter );
         qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
     }
-    graphChanged();
+    addRelationFromGraph(tr("random"));
+    emit graphChanged();
 }
 
 
@@ -3709,6 +4015,8 @@ void Graph::createSameDegreeRandomNetwork(int vert, int degree){
 
     int progressCounter=0;
 
+    index.reserve(vert);
+
     for (register int i=0; i< vert ; i++) {
         int x=10+rand() %640;
         int y=10+rand() %480;
@@ -3738,7 +4046,8 @@ void Graph::createSameDegreeRandomNetwork(int vert, int degree){
         qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
 
     }
-    graphChanged();
+    addRelationFromGraph(tr("random"));
+    emit graphChanged();
 }
 
 
@@ -3792,7 +4101,6 @@ void Graph::createNumberOfWalksMatrix(int length) {
         XM=PM;
         XSM = XSM+XM;
     }
-    //XSM.pow(length, false);
 }
 
 
@@ -3811,7 +4119,9 @@ void Graph::writeTotalNumberOfWalksMatrix(QString fn, QString netName, int lengt
 
     out << "-Social Network Visualizer- \n";
     out << "Network name "<< netName<<": \n";
-    out << "Total number of walks of any length less than or equal to "<< length <<" between each pair of nodes \n\n";
+    out << "Total number of walks of any length less than or equal to "<< length
+        <<" between each pair of nodes \n\n";
+    out << "Warning: Walk counts consider unordered pairs of nodes\n\n";
 
     createNumberOfWalksMatrix(length);
 
@@ -4010,65 +4320,187 @@ float Graph:: numberOfCliques(int v1){
     qDebug("*** Graph::numberOfCliques(%i) ", v1);
     float cliques=0;
     int  connectedVertex1=0, connectedVertex2=0;
-    qDebug() << "Graph::numberOfCliques() Source vertex " << v1 << "[" << index[v1] << "] has inDegree " << inEdges(v1) << " and outDegree "<< outEdges(v1);
-    imap_f::iterator it1, it2;
+    int relation=0;
+//    int weight=0;
+    bool edgeStatus=false;
     bool symmetric=false;
-    if ( ! (symmetric = isSymmetric()) ) {  //graph is not symmetric
-        for( it1 =  m_graph[ index[v1] ] -> m_inEdges.begin(); it1 !=  m_graph[ index[v1] ] ->m_inEdges.end(); it1++ ) {
-            connectedVertex1=it1->first;
-            qDebug() << "Graph::numberOfCliques() In-connectedVertex1  " << connectedVertex1 << "[" << index[connectedVertex1] << "] ...Checking inLinks....";
-            for( it2 =  m_graph[ index[v1] ] -> m_inEdges.begin(); it2 !=  m_graph[ index[v1] ] ->m_inEdges.end(); it2++ ) {
-                connectedVertex2=it2->first;
-                if (connectedVertex1 == connectedVertex2) continue;
+    H_edges::const_iterator it1, it2;
+
+    qDebug() << "Graph::numberOfCliques() Source vertex " << v1
+             << "[" << index[v1] << "] has inDegree " << inboundEdges(v1)
+             << " and outDegree "<< outboundEdges(v1);
+
+    if ( ! (symmetric = isSymmetric()) ) {
+        qDebug () << "Graph::numberOfCliques() - graph is not symmetric"
+                  << " checking inLinks to " << v1;
+        it1=m_graph [ index[v1] ] ->m_inLinks.cbegin();
+        while ( it1!=m_graph [ index[v1] ] -> m_inLinks.cend() ){
+            relation = it1.value().first;
+            if ( relation != currentRelation() ) {
+                ++it1;
+                continue;
+            }
+            edgeStatus=it1.value().second.second;
+            if ( edgeStatus != true) {
+                ++it1;
+                continue;
+            }
+            connectedVertex1 = it1.key();
+//            weight = it1.value().second.first;
+            qDebug() << "Graph::numberOfCliques() "
+                        << " inLink from 1st neighbor " << connectedVertex1
+                     << "[" << index[connectedVertex1] << "] "
+                        << "...Cross-checking with it inLinks from other neighbors";
+            it2=m_graph [ index[v1] ] ->m_inLinks.cbegin();
+            while ( it2!=m_graph [ index[v1] ] -> m_inLinks.cend() ){
+                qDebug() << "Graph::numberOfCliques() "
+                         << " iterate over all inLinks ";
+                relation = it2.value().first;
+                if ( relation != currentRelation() ){
+                    ++it2;
+                    continue;
+                }
+                edgeStatus=it2.value().second.second;
+                if ( edgeStatus != true){
+                    ++it2;
+                    continue;
+                }
+                connectedVertex2 = it2.key();
+                qDebug() << "Graph::numberOfCliques() "
+                         << " possible other neighbor" << connectedVertex2;
+                if (connectedVertex1 == connectedVertex2) {
+                    qDebug() << "Graph::numberOfCliques() "
+                             << " it is the same 1st neighbor - CONTINUE";
+                    ++it2;
+                    continue;
+                }
                 else {
-                    qDebug() << "Graph::numberOfCliques() Out-connectedVertex2  " << connectedVertex2 << "[" << index[connectedVertex2] << "]";
+                    qDebug() << "Graph::numberOfCliques() "
+                             << " inLink from other neighbor "
+                             << connectedVertex2
+                             << "[" << index[connectedVertex2] << "]";
                     if ( this->hasEdge( connectedVertex1, connectedVertex2 ) ) {
-                        qDebug("Graph::numberOfCliques()  %i  is connected to %i. Therefore we found a clique!", connectedVertex1, connectedVertex2);
+                        qDebug() << "Graph::numberOfCliques() "
+                                 << " 1st neighbor " << connectedVertex1
+                                 << " has OutLink to other neighbor "
+                                  << connectedVertex2
+                                  << " Therefore we found a clique!";
                         cliques++;
                         qDebug("Graph::numberOfCliques() cliques = %f" ,  cliques);
                     }
                 }
+                ++it2;
             }
-            qDebug("Graph::numberOfCliques()  .....Checking outLinks.... ");
-            for( it2 =  m_graph[ index[v1] ] -> m_outEdges.begin(); it2 !=  m_graph[ index[v1] ] ->m_outEdges.end(); it2++ ) {
-                connectedVertex2=it2->first;
-                if (connectedVertex1 == connectedVertex2) continue;
+            qDebug()<< "Graph::numberOfCliques()  .....Checking outLinks.... ";
+            it2=m_graph [ index[v1] ] ->m_outLinks.cbegin();
+            while ( it2!=m_graph [ index[v1]  ] -> m_outLinks.cend() ){
+                relation = it2.value().first;
+                if ( relation != currentRelation() ) {
+                    ++it2;
+                    continue;
+                }
+                edgeStatus=it2.value().second.second;
+                if ( edgeStatus != true) {
+                    ++it2;
+                    continue;
+                }
+                connectedVertex2=it2.key();
+                if (connectedVertex1 == connectedVertex2) {
+                    ++it2;
+                    continue;
+                }
                 else {
-                    qDebug() << "Graph::numberOfCliques() Out-connectedVertex2  " << connectedVertex2 << "[" << index[connectedVertex2] << "]";
-                    if ( this->hasEdge( connectedVertex1, connectedVertex2 ) || this-> hasEdge( connectedVertex2, connectedVertex1 ) ) {
-                        qDebug("Graph::numberOfCliques()  %i  is connected to %i. Therefore we found a clique!", connectedVertex1, connectedVertex2);
+                    qDebug() << "Graph::numberOfCliques() "
+                             << " outLink to other neighbor "
+                             << connectedVertex2
+                             << "["  << index[connectedVertex2] << "]";
+                    if ( this->hasEdge( connectedVertex1, connectedVertex2 )
+                         || this-> hasEdge( connectedVertex2, connectedVertex1 ) ) {
+                        qDebug() << "Graph::numberOfCliques() "
+                               << " other neighbor " << connectedVertex2
+                                  << " is connected to neighbor "
+                                  << connectedVertex1
+                                  <<  "Therefore we found a clique!";
                         cliques++;
                         qDebug("Graph::numberOfCliques() cliques = %f" ,  cliques);
                     }
                 }
-            }
+                ++it2;
+            } // end 2nd while loop
+            ++it1;
+        } // end 1st while
+
+    } // end if not symmetric
+
+
+    it1=m_graph [ index[v1] ] ->m_outLinks.cbegin();
+    while ( it1!=m_graph [ index[v1]  ] -> m_outLinks.cend() ){
+        relation = it1.value().first;
+        if ( relation != currentRelation() ){
+            ++it1;
+            continue;
         }
+        edgeStatus=it1.value().second.second;
+        if ( edgeStatus != true) {
+            ++it1;
+            continue;
+        }
+        connectedVertex1=it1.key();
+        qDebug() << "Graph::numberOfCliques() "
+                    << " outLink to 1st neighbor " << connectedVertex1
+                 << "[" << index[connectedVertex1] << "] "
+                    << "...Cross-checking with it outLinks to other neighbors";
 
-    }
-
-    for( it1 =  m_graph[ index[v1] ] -> m_outEdges.begin(); it1 !=  m_graph[ index[v1] ] ->m_outEdges.end(); it1++ ) {
-        connectedVertex1=it1->first;
-        qDebug() << "Graph::numberOfCliques() Out-connectedVertex1  " << connectedVertex1 << "[" << index[connectedVertex1] << "]";
-        for( it2 =  m_graph[ index[v1] ] -> m_outEdges.begin(); it2 !=  m_graph[ index[v1] ] ->m_outEdges.end(); it2++ ) {
-            connectedVertex2=it2->first;
-            if (connectedVertex1 == connectedVertex2) continue;
-            else if ( connectedVertex1 >= connectedVertex2 && symmetric) continue;
+        it2=m_graph [ index[v1] ] ->m_outLinks.cbegin();
+        while ( it2!=m_graph [ index[v1]  ] -> m_outLinks.cend() ){
+            relation = it2.value().first;
+            if ( relation != currentRelation() ){
+                ++it2;
+                continue;
+            }
+            edgeStatus=it2.value().second.second;
+            if ( edgeStatus != true){
+                ++it2;
+                continue;
+            }
+            connectedVertex2=it2.key();
+            if (connectedVertex1 == connectedVertex2){
+                ++it2;
+                continue;
+            }
+            else if ( (connectedVertex1 >= connectedVertex2) && symmetric){
+                ++it2;
+                continue;
+            }
             else {
-                qDebug() << "Graph::numberOfCliques() Out-connectedVertex2  " << connectedVertex2 << "[" << index[connectedVertex2] << "]";
+                qDebug() << "Graph::numberOfCliques() "
+                         << " outLink to other neighbor "
+                         << connectedVertex2
+                         << "["  << index[connectedVertex2] << "]";
                 if ( this->hasEdge( connectedVertex1, connectedVertex2 ) ) {
-                    qDebug("Graph::numberOfCliques()  %i  is out-connected to %i. Therefore we found a clique!", connectedVertex1, connectedVertex2);
+                    qDebug() << "Graph::numberOfCliques() "
+                           << " 1st neighbor " << connectedVertex1
+                              << " is connected to other neighbor "
+                              << connectedVertex2
+                              <<  "Therefore we found a clique!";
                     cliques++;
                     qDebug("Graph::numberOfCliques() cliques = %f" ,  cliques);
                 }
                 if (!symmetric)
                     if ( this->hasEdge( connectedVertex2, connectedVertex1 ) ) {
-                        qDebug("Graph::numberOfCliques()  %i  is also in-connected to %i. Therefore we found a clique!", connectedVertex2, connectedVertex1);
+                        qDebug() << "Graph::numberOfCliques() "
+                               << " other neighbor " << connectedVertex2
+                                  << " has also inLink connected to 1st neighbor "
+                                  << connectedVertex1
+                                  <<  "Therefore we found a clique!";
                         cliques++;
                         qDebug("Graph::numberOfCliques() cliques = %f" ,  cliques);
                     }
             }
-        }
-    }
+            ++it2;
+        } // end 2nd while
+        ++it1;
+    } // end 1st while
     return cliques;
 }
 
@@ -4099,10 +4531,10 @@ float Graph::numberOfCliques(){
 float Graph::numberOfTriples(int v1){
     float totalDegree=0;
     if (isSymmetric()){
-        totalDegree=outEdges(v1);
+        totalDegree=outboundEdges(v1);
         return totalDegree * (totalDegree -1.0) / 2.0;
     }
-    totalDegree=outEdges(v1) + inEdges(v1);  //FIXEM
+    totalDegree=outboundEdges(v1) + inboundEdges(v1);  //FIXEM
     return	totalDegree * (totalDegree -1.0);
 }
 
@@ -4132,14 +4564,14 @@ float Graph:: clusteringCoefficient(int v1){
     if (isSymmetric()){
         totalCliques = totalCliques / 2.0;
         qDebug(" Graph::Calculating number of triples");
-        totalDegree=outEdges(v1);
+        totalDegree=outboundEdges(v1);
         denom =	totalDegree * (totalDegree -1.0) / 2.0;
         qDebug("Graph:: Symmetric. Number of triples is %f.  Dividing number of cliques with it", denom);
 
     }
     else {
         qDebug(" Graph::Calculating number of triples");
-        totalDegree=outEdges(v1) + inEdges(v1);  //FIXME
+        totalDegree=outboundEdges(v1) + inboundEdges(v1);  //FIXME
         denom = totalDegree * (totalDegree -1.0);
         qDebug("Graph:: Symmetric. Number of triples is %f.  Dividing number of cliques with it", denom);
     }
@@ -4503,7 +4935,9 @@ int Graph:: factorial(int x) {
     Our almost universal network loader. :)
     Actually it calls the load() method of parser/qthread class.
 */
-bool Graph::loadGraph (	QString fileName,  bool iSL, int maxWidth, int maxHeight, int fileFormat, int two_sm_mode){
+bool Graph::loadGraph (	QString fileName,  bool iSL,
+                        int maxWidth, int maxHeight,
+                        int fileFormat, int two_sm_mode){
     initShowLabels = iSL;
     bool loadGraphStatus = parser.load(
                 fileName,
@@ -4673,7 +5107,10 @@ void Graph::writeDataSetToFile (QString fileName) {
     }
     QTextStream outText( &f );
     qDebug()<< "		... writing";
-    if ( fileName == "Krackhardt_High-tech_managers_Advice_relation.sm" ) {
+    QStringList fileNameNoPath=fileName.split ("/" );
+    QString name=fileNameNoPath.last();
+    QString datasetDescription=QString::null;
+    if ( name == "Krackhardt_High-tech_managers_Advice_relation.sm" ) {
         outText <<
                    "0 1 0 1 0 0 0 1 0 0 0 0 0 0 0 1 0 1 0 0 1" << endl <<
                    "0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << endl <<
@@ -4698,7 +5135,7 @@ void Graph::writeDataSetToFile (QString fileName) {
                    "0 1 1 1 0 1 1 1 0 0 0 1 0 1 0 0 1 1 0 1 0";
 
     }
-    else if (fileName == "Krackhardt_High-tech_managers_Friendship_relation.sm"){
+    else if (name == "Krackhardt_High-tech_managers_Friendship_relation.sm"){
         outText<< "0 1 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 0 0" << endl <<
                   "1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1" << endl <<
                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0" << endl <<
@@ -4721,7 +5158,7 @@ void Graph::writeDataSetToFile (QString fileName) {
                   "0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0" << endl <<
                   "0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0" ;
     }
-    else if (fileName == "Krackhardt_High-tech_managers_ReportsTo_relation.sm"){
+    else if (name == "Krackhardt_High-tech_managers_ReportsTo_relation.sm"){
         outText<< "0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
                   "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << endl <<
@@ -4744,7 +5181,7 @@ void Graph::writeDataSetToFile (QString fileName) {
                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << endl <<
                   "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0";
     }
-    else if (fileName == "Padgett_Florentine_Families_Marital_relation.net"){
+    else if (name == "Padgett_Florentine_Families_Marital_relation.net"){
         outText<< "*Network Padgett's Florentine Families Marital Relation" << endl <<
                   "*Vertices      16" << endl <<
                     "1 \"Acciaiuoli\"         0.2024    0.1006" << endl <<
@@ -4805,7 +5242,7 @@ void Graph::writeDataSetToFile (QString fileName) {
                    "16  9 1" << endl <<
                   "16 13 1" ;
     }
-    else if (fileName == "Padgett_Florentine_Families_Business_relation.paj"){
+    else if (name == "Padgett_Florentine_Families_Business_relation.paj"){
         outText<< "*Network Padgett's Florentine Families Business Relation" << endl <<
                   "*Vertices      16" << endl <<
                     "1 \"Acciaiuoli\"         0.2024    0.1006" << endl <<
@@ -4856,7 +5293,7 @@ void Graph::writeDataSetToFile (QString fileName) {
                    "14  9 1" << endl <<
                    "16  9 1";
     }
-    else if (fileName == "Zachary_Karate_Club_Simple_Ties.sm"){
+    else if (name == "Zachary_Karate_Club_Simple_Ties.sm"){
         outText<< "0 1 1 1 1 1 1 1 1 0 1 1 1 1 0 0 0 1 0 1 0 1 0 0 0 0 0 0 0 0 0 1 0 0" << endl <<
                   "1 0 1 1 0 0 0 1 0 0 0 0 0 1 0 0 0 1 0 1 0 1 0 0 0 0 0 0 0 0 1 0 0 0" << endl <<
                   "1 1 0 1 0 0 0 1 1 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 1 0" << endl <<
@@ -4892,7 +5329,7 @@ void Graph::writeDataSetToFile (QString fileName) {
                   "0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 1 0 0 1 0 1 0 1 1 0 0 0 0 0 1 1 1 0 1" << endl <<
                   "0 0 0 0 0 0 0 0 1 1 0 0 0 1 1 1 0 0 1 1 1 0 1 1 0 0 1 1 1 1 1 1 1 0" ;
     }
-    else if (fileName == "Zachary_Karate_Club_Weighted_Ties.sm"){
+    else if (name == "Zachary_Karate_Club_Weighted_Ties.sm"){
         outText<< "0 4 5 3 3 3 3 2 2 0 2 3 1 3 0 0 0 2 0 2 0 2 0 0 0 0 0 0 0 0 0 2 0 0" << endl <<
                   "4 0 6 3 0 0 0 4 0 0 0 0 0 5 0 0 0 1 0 2 0 2 0 0 0 0 0 0 0 0 2 0 0 0" << endl <<
                   "5 6 0 3 0 0 0 4 5 1 0 0 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 2 2 0 0 0 2 0" << endl <<
@@ -4928,7 +5365,7 @@ void Graph::writeDataSetToFile (QString fileName) {
                   "0 0 2 0 0 0 0 0 3 0 0 0 0 0 3 3 0 0 1 0 3 0 2 5 0 0 0 0 0 4 3 4 0 5" << endl <<
                   "0 0 0 0 0 0 0 0 4 2 0 0 0 3 2 4 0 0 2 1 1 0 3 4 0 0 2 4 2 2 3 4 5 0";
     }
-    else if (fileName == "Galaskiewicz_CEOs_and_clubs_affiliation_network_data.2sm"){
+    else if (name == "Galaskiewicz_CEOs_and_clubs_affiliation_network_data.2sm"){
         outText<< "0 0 1 1 0 0 0 0 1 0 0 0 0 0 0" << endl <<
                   "0 0 1 0 1 0 1 0 0 0 0 0 0 0 0" << endl <<
                   "0 0 1 0 0 0 0 0 0 0 0 1 0 0 0" << endl <<
@@ -4956,140 +5393,315 @@ void Graph::writeDataSetToFile (QString fileName) {
                   "0 1 1 0 0 0 0 0 0 0 0 0 1 0 0" << endl <<
                   "0 1 1 0 0 0 0 0 0 0 0 1 0 0 0";
     }
-    else if (fileName == "Bernard_Killworth_Fraternity_Symmetric_Observer_Data.sm"){
-        /*
-          Bernard & Killworth  recorded the interactions among students living in a fraternity at a West Virginia college.
-                  Subjects had been residents in the fraternity from 3 months to 3 years.
-          This matrix counts the number of times a pair of subjects were seen in conversation
-                  by an "unobtrusive" observer (observation time: 21 hours a day, for five days).
-                  */
-        outText<< "0 0 2 1 0 0 2 0 0 0 1 1 2 0 0 0 1 0 1 0 0 1 0 0 0 0 0 0 2 1 1 1 0 2 1 2 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 1 1 4 1 1 " << endl <<
-                  "0 0 10 0 0 2 1 0 2 0 0 0 6 2 0 1 0 0 0 1 0 10 2 0 4 0 3 0 1 1 0 0 0 0 5 1 0 4 0 0 0 0 0 1 1 0 0 5 3 0 0 0 0 1 0 1 4 0" << endl <<
-                  "2 10 0 6 11 14 15 4 12 0 5 4 3 8 10 8 11 0 2 19 2 15 1 2 6 1 5 0 12 5 4 0 1 4 15 3 1 3 6 0 2 3 0 9 8 2 1 3 6 2 0 2 2 16 4 5 19 1" << endl <<
-                  "1 0 6 0 2 3 9 1 8 0 0 5 0 0 2 4 3 2 2 6 0 1 1 3 1 0 5 1 1 3 0 1 1 4 1 0 1 3 2 0 1 0 0 1 1 1 1 2 1 3 0 0 2 1 2 2 3 5 " << endl <<
-                  "0 0 11 2 0 2 8 1 1 1 0 0 2 0 1 1 0 0 0 3 0 0 0 0 0 0 8 0 1 5 0 0 1 0 0 0 0 0 9 2 1 0 1 8 25 0 0 0 0 0 0 0 1 2 0 0 4 0 " << endl <<
-                  "0 2 14 3 2 0 30 2 8 0 4 4 1 6 2 14 9 0 1 51 0 3 2 1 0 1 6 0 3 11 2 0 15 5 3 1 0 2 2 1 3 1 0 3 2 2 6 1 3 4 0 2 8 9 3 2 18 2" << endl <<
-                  "2 1 15 9 8 30 0 10 4 2 7 3 0 12 9 10 9 2 3 40 2 2 5 2 0 1 19 1 10 14 5 3 14 7 7 5 3 4 5 7 8 5 0 2 4 7 3 7 7 2 0 0 6 5 14 16 20 4" << endl <<
-                  "0 0 4 1 1 2 10 0 3 0 2 0 1 3 3 3 5 0 0 6 1 0 2 3 0 1 6 0 2 0 9 1 0 1 2 4 2 5 1 0 3 5 0 0 5 0 1 3 1 1 0 1 2 5 0 2 4 2 " << endl <<
-                  "0 2 12 8 1 8 4 3 0 0 5 5 2 2 4 5 6 1 0 5 0 5 0 3 3 3 3 1 2 3 1 0 2 4 4 3 5 1 2 0 1 1 1 2 0 0 4 0 1 4 0 6 1 4 3 2 7 1 " << endl <<
-                  "0 0 0 0 1 0 2 0 0 0 0 0 0 0 1 2 0 0 0 0 0 0 0 0 0 0 6 0 1 0 1 0 0 0 0 0 0 1 2 2 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 " << endl <<
-                  "1 0 5 0 0 4 7 2 5 0 0 0 0 1 3 3 5 3 0 7 4 1 0 3 0 0 4 0 5 1 3 0 0 2 2 3 5 3 2 0 0 1 0 2 1 4 5 2 1 0 0 0 0 4 6 6 12 0 " << endl <<
-                  "1 0 4 5 0 4 3 0 5 0 0 0 0 0 0 0 0 0 0 3 0 1 0 1 1 0 0 0 2 0 2 0 1 2 3 2 2 1 0 0 0 1 0 1 1 1 0 0 1 2 0 0 1 2 0 7 3 3 " << endl <<
-                  "2 6 3 0 2 1 0 1 2 0 0 0 0 2 1 3 3 0 1 0 0 6 2 0 0 0 3 0 1 0 0 0 1 1 1 0 0 1 1 1 1 1 1 0 2 1 0 0 2 0 0 0 2 4 1 0 0 0 " << endl <<
-                  "0 2 8 0 0 6 12 3 2 0 1 0 2 0 3 8 11 1 4 8 0 1 0 0 1 1 4 0 8 4 6 0 3 1 5 1 1 0 0 0 1 3 0 2 2 1 1 1 0 0 0 0 1 0 2 1 5 1 " << endl <<
-                  "0 0 10 2 1 2 9 3 4 1 3 0 1 3 0 9 14 0 6 9 0 2 1 2 1 0 4 0 3 0 2 1 1 4 2 3 0 6 1 0 7 1 0 7 1 1 0 0 1 1 0 0 7 6 4 9 4 0 " << endl <<
-                  "0 1 8 4 1 14 10 3 5 2 3 0 3 8 9 0 26 3 1 12 0 2 0 0 1 0 7 0 5 6 5 4 2 2 2 2 0 4 4 0 2 5 1 3 2 1 1 4 0 2 0 0 8 4 2 0 11 3 " << endl <<
-                  "1 0 11 3 0 9 9 5 6 0 5 0 3 11 14 26 0 3 0 9 0 1 0 0 1 0 5 0 5 2 2 4 2 1 4 2 0 1 1 1 2 3 0 3 1 0 0 3 1 2 0 0 7 7 4 0 11 0 " << endl <<
-                  "0 0 0 2 0 0 2 0 1 0 3 0 0 1 0 3 3 0 0 0 3 0 0 0 0 0 0 0 1 0 0 3 0 1 1 1 1 0 1 0 0 0 0 1 0 2 0 2 0 0 0 0 0 0 2 1 0 1 " << endl <<
-                  "1 0 2 2 0 1 3 0 0 0 0 0 1 4 6 1 0 0 0 5 0 0 2 1 3 0 0 0 0 1 1 0 0 1 1 1 1 2 0 1 14 1 0 1 0 0 1 0 3 0 0 0 1 0 0 3 1 2 " << endl <<
-                  "0 1 19 6 3 51 40 6 5 0 7 3 0 8 9 12 9 0 5 0 3 2 3 2 1 1 7 1 10 6 6 1 13 12 9 2 1 6 2 1 10 4 0 2 2 1 2 1 6 1 0 0 12 17 11 9 23 5 " << endl <<
-                  "0 0 2 0 0 0 2 1 0 0 4 0 0 0 0 0 0 3 0 3 0 0 1 0 0 0 0 0 2 0 2 0 0 1 1 1 0 1 0 0 1 1 0 0 0 5 0 1 1 0 0 0 0 1 2 4 2 1 " << endl <<
-                  "1 10 15 1 0 3 2 0 5 0 1 1 6 1 2 2 1 0 0 2 0 0 1 1 7 2 1 0 3 1 0 0 0 0 1 1 1 0 2 0 0 0 0 1 0 3 0 0 2 1 0 0 0 2 1 1 3 0 " << endl <<
-                  "0 2 1 1 0 2 5 2 0 0 0 0 2 0 1 0 0 0 2 3 1 1 0 0 1 0 1 0 2 0 2 0 3 1 2 1 2 2 2 1 7 1 0 1 2 0 2 0 11 1 1 0 1 4 1 2 3 1 " << endl <<
-                  "0 0 2 3 0 1 2 3 3 0 3 1 0 0 2 0 0 0 1 2 0 1 0 0 0 1 0 0 1 1 1 0 0 2 1 1 0 2 0 0 0 0 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 1 " << endl <<
-                  "0 4 6 1 0 0 0 0 3 0 0 1 0 1 1 1 1 0 3 1 0 7 1 0 0 0 0 0 3 1 0 0 0 0 3 0 1 1 0 0 4 0 0 1 0 0 0 0 0 0 0 0 2 1 1 1 5 0 " << endl <<
-                  "0 0 1 0 0 1 1 1 3 0 0 0 0 1 0 0 0 0 0 1 0 2 0 1 0 0 1 0 0 1 0 0 0 0 1 0 0 1 3 0 0 0 0 0 1 0 0 1 2 0 0 2 0 1 1 1 2 0 " << endl <<
-                  "0 3 5 5 8 6 19 6 3 6 4 0 3 4 4 7 5 0 0 7 0 1 1 0 0 1 0 0 6 6 2 1 1 4 0 1 0 2 4 0 3 2 1 1 4 1 0 5 2 0 0 0 1 2 2 4 6 2 " << endl <<
-                  "0 0 0 1 0 0 1 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 " << endl <<
-                  "2 1 12 1 1 3 10 2 2 1 5 2 1 8 3 5 5 1 0 10 2 3 2 1 3 0 6 0 0 3 1 0 0 0 20 2 2 3 3 2 1 2 0 3 3 0 1 1 1 1 0 0 0 7 1 2 10 1 " << endl <<
-                  "1 1 5 3 5 11 14 0 3 0 1 0 0 4 0 6 2 0 1 6 0 1 0 1 1 1 6 0 3 0 3 0 1 0 6 1 1 1 3 1 4 1 2 0 1 0 5 1 3 1 0 0 3 2 1 6 10 2 " << endl <<
-                  "1 0 4 0 0 2 5 9 1 1 3 2 0 6 2 5 2 0 1 6 2 0 2 1 0 0 2 0 1 3 0 4 0 3 1 3 0 1 0 1 3 3 0 0 1 3 0 2 1 0 0 0 1 4 1 1 3 2 " << endl <<
-                  "1 0 0 1 0 0 3 1 0 0 0 0 0 0 1 4 4 3 0 1 0 0 0 0 0 0 1 0 0 0 4 0 0 2 0 0 0 0 0 0 1 0 0 0 0 3 0 6 0 0 0 0 0 0 0 0 0 1 " << endl <<
-                  "0 0 1 1 1 15 14 0 2 0 0 1 1 3 1 2 2 0 0 13 0 0 3 0 0 0 1 0 0 1 0 0 0 1 1 1 0 0 0 3 1 0 0 0 0 0 0 0 1 0 0 2 8 1 0 1 3 0 " << endl <<
-                  "2 0 4 4 0 5 7 1 4 0 2 2 1 1 4 2 1 1 1 12 1 0 1 2 0 0 4 1 0 0 3 2 1 0 3 1 0 0 1 1 2 1 0 0 0 3 2 2 1 3 0 0 2 4 3 4 3 6 " << endl <<
-                  "1 5 15 1 0 3 7 2 4 0 2 3 1 5 2 2 4 1 1 9 1 1 2 1 3 1 0 0 20 6 1 0 1 3 0 2 1 3 2 2 3 4 2 2 0 0 1 0 6 1 0 0 1 12 2 3 6 2 " << endl <<
-                  "2 1 3 0 0 1 5 4 3 0 3 2 0 1 3 2 2 1 1 2 1 1 1 1 0 0 1 0 2 1 3 0 1 1 2 0 0 0 1 0 1 2 0 1 0 3 0 0 3 0 0 0 1 0 2 10 1 1 " << endl <<
-                  "0 0 1 1 0 0 3 2 5 0 5 2 0 1 0 0 0 1 1 1 0 1 2 0 1 0 0 0 2 1 0 0 0 0 1 0 0 0 3 0 1 0 0 0 1 0 4 0 2 0 1 0 2 1 0 1 3 0 " << endl <<
-                  "0 4 3 3 0 2 4 5 1 1 3 1 1 0 6 4 1 0 2 6 1 0 2 2 1 1 2 0 3 1 1 0 0 0 3 0 0 0 0 1 2 1 0 0 1 0 2 0 0 1 0 0 1 6 1 1 4 2 " << endl <<
-                  "0 0 6 2 9 2 5 1 2 2 2 0 1 0 1 4 1 1 0 2 0 2 2 0 0 3 4 0 3 3 0 0 0 1 2 1 3 0 0 1 0 0 0 4 9 2 1 2 5 4 3 0 0 2 2 1 2 0 " << endl <<
-                  "0 0 0 0 2 1 7 0 0 2 0 0 1 0 0 0 1 0 1 1 0 0 1 0 0 0 0 0 2 1 1 0 3 1 2 0 0 1 1 0 0 0 0 0 0 0 1 0 0 0 0 0 1 2 0 0 2 0 " << endl <<
-                  "1 0 2 1 1 3 8 3 1 0 0 0 1 1 7 2 2 0 14 10 1 0 7 0 4 0 3 0 1 4 3 1 1 2 3 1 1 2 0 0 0 1 1 1 1 0 0 0 9 0 0 0 4 1 1 5 1 2 " << endl <<
-                  "0 0 3 0 0 1 5 5 1 0 1 1 1 3 1 5 3 0 1 4 1 0 1 0 0 0 2 0 2 1 3 0 0 1 4 2 0 1 0 0 1 0 1 1 1 1 1 1 1 0 0 0 2 1 1 0 3 1 " << endl <<
-                  "0 0 0 0 1 0 0 0 1 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 2 0 0 0 0 2 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 " << endl <<
-                  "0 1 9 1 8 3 2 0 2 0 2 1 0 2 7 3 3 1 1 2 0 1 1 1 1 0 1 0 3 0 0 0 0 0 2 1 0 0 4 0 1 1 0 0 2 0 1 0 2 1 0 0 0 2 1 2 3 0 " << endl <<
-                  "0 1 8 1 25 2 4 5 0 0 1 1 2 2 1 2 1 0 0 2 0 0 2 0 0 1 4 0 3 1 1 0 0 0 0 0 1 1 9 0 1 1 0 2 0 0 1 2 4 1 1 0 0 4 0 0 1 0 " << endl <<
-                  "0 0 2 1 0 2 7 0 0 1 4 1 1 1 1 1 0 2 0 1 5 3 0 1 0 0 1 0 0 0 3 3 0 3 0 3 0 0 2 0 0 1 0 0 0 0 0 5 1 0 0 0 0 0 1 2 4 1 " << endl <<
-                  "0 0 1 1 0 6 3 1 4 0 5 0 0 1 0 1 0 0 1 2 0 0 2 0 0 0 0 0 1 5 0 0 0 2 1 0 4 2 1 1 0 1 0 1 1 0 0 1 2 0 2 0 3 0 0 2 6 1 " << endl <<
-                  "0 5 3 2 0 1 7 3 0 0 2 0 0 1 0 4 3 2 0 1 1 0 0 1 0 1 5 0 1 1 2 6 0 2 0 0 0 0 2 0 0 1 0 0 2 5 1 0 3 2 0 0 0 2 1 0 2 0 " << endl <<
-                  "1 3 6 1 0 3 7 1 1 0 1 1 2 0 1 0 1 0 3 6 1 2 11 0 0 2 2 0 1 3 1 0 1 1 6 3 2 0 5 0 9 1 0 2 4 1 2 3 0 4 0 1 4 4 2 2 3 1 " << endl <<
-                  "0 0 2 3 0 4 2 1 4 0 0 2 0 0 1 2 2 0 0 1 0 1 1 0 0 0 0 0 1 1 0 0 0 3 1 0 0 1 4 0 0 0 0 1 1 0 0 2 4 0 1 0 0 1 1 1 0 3 " << endl <<
-                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 3 0 0 0 0 0 1 0 2 0 0 1 0 0 0 0 0 0 0 0 " << endl <<
-                  "0 0 2 0 0 2 0 1 6 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 " << endl <<
-                  "0 0 2 2 1 8 6 2 1 0 0 1 2 1 7 8 7 0 1 12 0 0 1 0 2 0 1 1 0 3 1 0 8 2 1 1 2 1 0 1 4 2 0 0 0 0 3 0 4 0 0 0 0 5 1 2 4 3 " << endl <<
-                  "1 1 16 1 2 9 5 5 4 1 4 2 4 0 6 4 7 0 0 17 1 2 4 0 1 1 2 0 7 2 4 0 1 4 12 0 1 6 2 2 1 1 0 2 4 0 0 2 4 1 0 0 5 0 5 3 10 0 " << endl <<
-                  "1 0 4 2 0 3 14 0 3 0 6 0 1 2 4 2 4 2 0 11 2 1 1 0 1 1 2 0 1 1 1 0 0 3 2 2 0 1 2 0 1 1 1 1 0 1 0 1 2 1 0 0 1 5 0 12 7 1 " << endl <<
-                  "4 1 5 2 0 2 16 2 2 0 6 7 0 1 9 0 0 1 3 9 4 1 2 2 1 1 4 0 2 6 1 0 1 4 3 10 1 1 1 0 5 0 0 2 0 2 2 0 2 1 0 0 2 3 12 0 12 0 " << endl <<
-                  "1 4 19 3 4 18 20 4 7 0 12 3 0 5 4 11 11 0 1 23 2 3 3 1 5 2 6 0 10 10 3 0 3 3 6 1 3 4 2 2 1 3 0 3 1 4 6 2 3 0 0 0 4 10 7 12 0 1 " << endl <<
-                  "1 0 1 5 0 2 4 2 1 0 0 3 0 1 0 3 0 1 2 5 1 0 1 1 0 0 2 0 1 2 2 1 0 6 2 1 0 2 0 0 2 1 0 0 0 1 1 0 1 3 0 0 3 0 1 0 1 0 ";
+    else if (name == "Bernard_Killworth_Fraternity.dl"){
+        datasetDescription =
+                tr("Bernard & Killworth recorded the interactions among students living in a fraternity at "
+                   "a West Virginia college. Subjects had been residents in the fraternity from 3 months to 3 years. "
+                   "This network dataset contains two relations: \n"
+                   "The BKFRAB relation is symmetric and valued. It counts the number of times a pair of subjects were "
+                   "seen in conversation by an unobtrusive observer (observation time: 21 hours a day, for five days). \n"
+                   "The BKFRAC relation is non-symmetric and valued. Contains rankings made by the subjects themselves of "
+                   "how frequently they interacted with other subjects in the observation week.");
+        outText << "DL"<<endl<<
+                   "N=58 NM=2"<<endl<<
+                   "FORMAT = FULLMATRIX DIAGONAL PRESENT"<<endl<<
+                   "LEVEL LABELS:"<<endl<<
+                   "BKFRAB"<<endl<<
+                   "BKFRAC"<<endl<<
+                   "DATA:"<<endl<<
+                     "0  0  2  1  0  0  2  0  0  0  1  1  2  0  0  0  1  0  1  0  0  1  0  0  0  0"<<endl<<
+                     "0  0  2  1  1  1  0  2  1  2  0  0  0  0  1  0  0  0  0  0  0  0  1  0  0  0"<<endl<<
+                     "0  1  1  4  1  1"<<endl<<
+                     "0  0 10  0  0  2  1  0  2  0  0  0  6  2  0  1  0  0  0  1  0 10  2  0  4  0"<<endl<<
+                     "3  0  1  1  0  0  0  0  5  1  0  4  0  0  0  0  0  1  1  0  0  5  3  0  0  0"<<endl<<
+                     "0  1  0  1  4  0"<<endl<<
+                     "2 10  0  6 11 14 15  4 12  0  5  4  3  8 10  8 11  0  2 19  2 15  1  2  6  1"<<endl<<
+                     "5  0 12  5  4  0  1  4 15  3  1  3  6  0  2  3  0  9  8  2  1  3  6  2  0  2"<<endl<<
+                     "2 16  4  5 19  1"<<endl<<
+                     "1  0  6  0  2  3  9  1  8  0  0  5  0  0  2  4  3  2  2  6  0  1  1  3  1  0"<<endl<<
+                     "5  1  1  3  0  1  1  4  1  0  1  3  2  0  1  0  0  1  1  1  1  2  1  3  0  0"<<endl<<
+                     "2  1  2  2  3  5"<<endl<<
+                     "0  0 11  2  0  2  8  1  1  1  0  0  2  0  1  1  0  0  0  3  0  0  0  0  0  0"<<endl<<
+                     "8  0  1  5  0  0  1  0  0  0  0  0  9  2  1  0  1  8 25  0  0  0  0  0  0  0"<<endl<<
+                     "1  2  0  0  4  0"<<endl<<
+                     "0  2 14  3  2  0 30  2  8  0  4  4  1  6  2 14  9  0  1 51  0  3  2  1  0  1"<<endl<<
+                     "6  0  3 11  2  0 15  5  3  1  0  2  2  1  3  1  0  3  2  2  6  1  3  4  0  2"<<endl<<
+                     "8  9  3  2 18  2"<<endl<<
+                     "2  1 15  9  8 30  0 10  4  2  7  3  0 12  9 10  9  2  3 40  2  2  5  2  0  1"<<endl<<
+                    "19  1 10 14  5  3 14  7  7  5  3  4  5  7  8  5  0  2  4  7  3  7  7  2  0  0"<<endl<<
+                     "6  5 14 16 20  4"<<endl<<
+                     "0  0  4  1  1  2 10  0  3  0  2  0  1  3  3  3  5  0  0  6  1  0  2  3  0  1"<<endl<<
+                     "6  0  2  0  9  1  0  1  2  4  2  5  1  0  3  5  0  0  5  0  1  3  1  1  0  1"<<endl<<
+                     "2  5  0  2  4  2"<<endl<<
+                     "0  2 12  8  1  8  4  3  0  0  5  5  2  2  4  5  6  1  0  5  0  5  0  3  3  3"<<endl<<
+                     "3  1  2  3  1  0  2  4  4  3  5  1  2  0  1  1  1  2  0  0  4  0  1  4  0  6"<<endl<<
+                     "1  4  3  2  7  1"<<endl<<
+                     "0  0  0  0  1  0  2  0  0  0  0  0  0  0  1  2  0  0  0  0  0  0  0  0  0  0"<<endl<<
+                     "6  0  1  0  1  0  0  0  0  0  0  1  2  2  0  0  0  0  0  1  0  0  0  0  0  0"<<endl<<
+                     "0  1  0  0  0  0"<<endl<<
+                     "1  0  5  0  0  4  7  2  5  0  0  0  0  1  3  3  5  3  0  7  4  1  0  3  0  0"<<endl<<
+                     "4  0  5  1  3  0  0  2  2  3  5  3  2  0  0  1  0  2  1  4  5  2  1  0  0  0"<<endl<<
+                     "0  4  6  6 12  0"<<endl<<
+                     "1  0  4  5  0  4  3  0  5  0  0  0  0  0  0  0  0  0  0  3  0  1  0  1  1  0"<<endl<<
+                     "0  0  2  0  2  0  1  2  3  2  2  1  0  0  0  1  0  1  1  1  0  0  1  2  0  0"<<endl<<
+                     "1  2  0  7  3  3"<<endl<<
+                     "2  6  3  0  2  1  0  1  2  0  0  0  0  2  1  3  3  0  1  0  0  6  2  0  0  0"<<endl<<
+                     "3  0  1  0  0  0  1  1  1  0  0  1  1  1  1  1  1  0  2  1  0  0  2  0  0  0"<<endl<<
+                     "2  4  1  0  0  0"<<endl<<
+                     "0  2  8  0  0  6 12  3  2  0  1  0  2  0  3  8 11  1  4  8  0  1  0  0  1  1"<<endl<<
+                     "4  0  8  4  6  0  3  1  5  1  1  0  0  0  1  3  0  2  2  1  1  1  0  0  0  0"<<endl<<
+                     "1  0  2  1  5  1"<<endl<<
+                     "0  0 10  2  1  2  9  3  4  1  3  0  1  3  0  9 14  0  6  9  0  2  1  2  1  0"<<endl<<
+                     "4  0  3  0  2  1  1  4  2  3  0  6  1  0  7  1  0  7  1  1  0  0  1  1  0  0"<<endl<<
+                     "7  6  4  9  4  0"<<endl<<
+                     "0  1  8  4  1 14 10  3  5  2  3  0  3  8  9  0 26  3  1 12  0  2  0  0  1  0"<<endl<<
+                     "7  0  5  6  5  4  2  2  2  2  0  4  4  0  2  5  1  3  2  1  1  4  0  2  0  0"<<endl<<
+                     "8  4  2  0 11  3"<<endl<<
+                     "1  0 11  3  0  9  9  5  6  0  5  0  3 11 14 26  0  3  0  9  0  1  0  0  1  0"<<endl<<
+                     "5  0  5  2  2  4  2  1  4  2  0  1  1  1  2  3  0  3  1  0  0  3  1  2  0  0"<<endl<<
+                     "7  7  4  0 11  0"<<endl<<
+                     "0  0  0  2  0  0  2  0  1  0  3  0  0  1  0  3  3  0  0  0  3  0  0  0  0  0"<<endl<<
+                     "0  0  1  0  0  3  0  1  1  1  1  0  1  0  0  0  0  1  0  2  0  2  0  0  0  0"<<endl<<
+                     "0  0  2  1  0  1"<<endl<<
+                     "1  0  2  2  0  1  3  0  0  0  0  0  1  4  6  1  0  0  0  5  0  0  2  1  3  0"<<endl<<
+                     "0  0  0  1  1  0  0  1  1  1  1  2  0  1 14  1  0  1  0  0  1  0  3  0  0  0"<<endl<<
+                     "1  0  0  3  1  2"<<endl<<
+                     "0  1 19  6  3 51 40  6  5  0  7  3  0  8  9 12  9  0  5  0  3  2  3  2  1  1"<<endl<<
+                     "7  1 10  6  6  1 13 12  9  2  1  6  2  1 10  4  0  2  2  1  2  1  6  1  0  0"<<endl<<
+                    "12 17 11  9 23  5"<<endl<<
+                     "0  0  2  0  0  0  2  1  0  0  4  0  0  0  0  0  0  3  0  3  0  0  1  0  0  0"<<endl<<
+                     "0  0  2  0  2  0  0  1  1  1  0  1  0  0  1  1  0  0  0  5  0  1  1  0  0  0"<<endl<<
+                     "0  1  2  4  2  1"<<endl<<
+                     "1 10 15  1  0  3  2  0  5  0  1  1  6  1  2  2  1  0  0  2  0  0  1  1  7  2"<<endl<<
+                     "1  0  3  1  0  0  0  0  1  1  1  0  2  0  0  0  0  1  0  3  0  0  2  1  0  0"<<endl<<
+                     "0  2  1  1  3  0"<<endl<<
+                     "0  2  1  1  0  2  5  2  0  0  0  0  2  0  1  0  0  0  2  3  1  1  0  0  1  0"<<endl<<
+                     "1  0  2  0  2  0  3  1  2  1  2  2  2  1  7  1  0  1  2  0  2  0 11  1  1  0"<<endl<<
+                     "1  4  1  2  3  1"<<endl<<
+                     "0  0  2  3  0  1  2  3  3  0  3  1  0  0  2  0  0  0  1  2  0  1  0  0  0  1"<<endl<<
+                     "0  0  1  1  1  0  0  2  1  1  0  2  0  0  0  0  0  1  0  1  0  1  0  0  0  0"<<endl<<
+                     "0  0  0  2  1  1"<<endl<<
+                     "0  4  6  1  0  0  0  0  3  0  0  1  0  1  1  1  1  0  3  1  0  7  1  0  0  0"<<endl<<
+                     "0  0  3  1  0  0  0  0  3  0  1  1  0  0  4  0  0  1  0  0  0  0  0  0  0  0"<<endl<<
+                     "2  1  1  1  5  0"<<endl<<
+                     "0  0  1  0  0  1  1  1  3  0  0  0  0  1  0  0  0  0  0  1  0  2  0  1  0  0"<<endl<<
+                     "1  0  0  1  0  0  0  0  1  0  0  1  3  0  0  0  0  0  1  0  0  1  2  0  0  2"<<endl<<
+                     "0  1  1  1  2  0"<<endl<<
+                     "0  3  5  5  8  6 19  6  3  6  4  0  3  4  4  7  5  0  0  7  0  1  1  0  0  1"<<endl<<
+                     "0  0  6  6  2  1  1  4  0  1  0  2  4  0  3  2  1  1  4  1  0  5  2  0  0  0"<<endl<<
+                     "1  2  2  4  6  2"<<endl<<
+                     "0  0  0  1  0  0  1  0  1  0  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0  0"<<endl<<
+                     "0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0"<<endl<<
+                     "1  0  0  0  0  0"<<endl<<
+                     "2  1 12  1  1  3 10  2  2  1  5  2  1  8  3  5  5  1  0 10  2  3  2  1  3  0"<<endl<<
+                     "6  0  0  3  1  0  0  0 20  2  2  3  3  2  1  2  0  3  3  0  1  1  1  1  0  0"<<endl<<
+                     "0  7  1  2 10  1"<<endl<<
+                     "1  1  5  3  5 11 14  0  3  0  1  0  0  4  0  6  2  0  1  6  0  1  0  1  1  1"<<endl<<
+                     "6  0  3  0  3  0  1  0  6  1  1  1  3  1  4  1  2  0  1  0  5  1  3  1  0  0"<<endl<<
+                     "3  2  1  6 10  2"<<endl<<
+                     "1  0  4  0  0  2  5  9  1  1  3  2  0  6  2  5  2  0  1  6  2  0  2  1  0  0"<<endl<<
+                     "2  0  1  3  0  4  0  3  1  3  0  1  0  1  3  3  0  0  1  3  0  2  1  0  0  0"<<endl<<
+                     "1  4  1  1  3  2"<<endl<<
+                     "1  0  0  1  0  0  3  1  0  0  0  0  0  0  1  4  4  3  0  1  0  0  0  0  0  0"<<endl<<
+                     "1  0  0  0  4  0  0  2  0  0  0  0  0  0  1  0  0  0  0  3  0  6  0  0  0  0"<<endl<<
+                     "0  0  0  0  0  1"<<endl<<
+                     "0  0  1  1  1 15 14  0  2  0  0  1  1  3  1  2  2  0  0 13  0  0  3  0  0  0"<<endl<<
+                     "1  0  0  1  0  0  0  1  1  1  0  0  0  3  1  0  0  0  0  0  0  0  1  0  0  2"<<endl<<
+                     "8  1  0  1  3  0"<<endl<<
+                     "2  0  4  4  0  5  7  1  4  0  2  2  1  1  4  2  1  1  1 12  1  0  1  2  0  0"<<endl<<
+                     "4  1  0  0  3  2  1  0  3  1  0  0  1  1  2  1  0  0  0  3  2  2  1  3  0  0"<<endl<<
+                     "2  4  3  4  3  6"<<endl<<
+                     "1  5 15  1  0  3  7  2  4  0  2  3  1  5  2  2  4  1  1  9  1  1  2  1  3  1"<<endl<<
+                     "0  0 20  6  1  0  1  3  0  2  1  3  2  2  3  4  2  2  0  0  1  0  6  1  0  0"<<endl<<
+                     "1 12  2  3  6  2"<<endl<<
+                     "2  1  3  0  0  1  5  4  3  0  3  2  0  1  3  2  2  1  1  2  1  1  1  1  0  0"<<endl<<
+                     "1  0  2  1  3  0  1  1  2  0  0  0  1  0  1  2  0  1  0  3  0  0  3  0  0  0"<<endl<<
+                     "1  0  2 10  1  1"<<endl<<
+                     "0  0  1  1  0  0  3  2  5  0  5  2  0  1  0  0  0  1  1  1  0  1  2  0  1  0"<<endl<<
+                     "0  0  2  1  0  0  0  0  1  0  0  0  3  0  1  0  0  0  1  0  4  0  2  0  1  0"<<endl<<
+                     "2  1  0  1  3  0"<<endl<<
+                     "0  4  3  3  0  2  4  5  1  1  3  1  1  0  6  4  1  0  2  6  1  0  2  2  1  1"<<endl<<
+                     "2  0  3  1  1  0  0  0  3  0  0  0  0  1  2  1  0  0  1  0  2  0  0  1  0  0"<<endl<<
+                     "1  6  1  1  4  2"<<endl<<
+                     "0  0  6  2  9  2  5  1  2  2  2  0  1  0  1  4  1  1  0  2  0  2  2  0  0  3"<<endl<<
+                     "4  0  3  3  0  0  0  1  2  1  3  0  0  1  0  0  0  4  9  2  1  2  5  4  3  0"<<endl<<
+                     "0  2  2  1  2  0"<<endl<<
+                     "0  0  0  0  2  1  7  0  0  2  0  0  1  0  0  0  1  0  1  1  0  0  1  0  0  0"<<endl<<
+                     "0  0  2  1  1  0  3  1  2  0  0  1  1  0  0  0  0  0  0  0  1  0  0  0  0  0"<<endl<<
+                     "1  2  0  0  2  0"<<endl<<
+                     "1  0  2  1  1  3  8  3  1  0  0  0  1  1  7  2  2  0 14 10  1  0  7  0  4  0"<<endl<<
+                     "3  0  1  4  3  1  1  2  3  1  1  2  0  0  0  1  1  1  1  0  0  0  9  0  0  0"<<endl<<
+                     "4  1  1  5  1  2"<<endl<<
+                     "0  0  3  0  0  1  5  5  1  0  1  1  1  3  1  5  3  0  1  4  1  0  1  0  0  0"<<endl<<
+                     "2  0  2  1  3  0  0  1  4  2  0  1  0  0  1  0  1  1  1  1  1  1  1  0  0  0"<<endl<<
+                     "2  1  1  0  3  1"<<endl<<
+                     "0  0  0  0  1  0  0  0  1  0  0  0  1  0  0  1  0  0  0  0  0  0  0  0  0  0"<<endl<<
+                     "1  0  0  2  0  0  0  0  2  0  0  0  0  0  1  1  0  0  0  0  0  0  0  0  0  0"<<endl<<
+                     "0  0  1  0  0  0"<<endl<<
+                     "0  1  9  1  8  3  2  0  2  0  2  1  0  2  7  3  3  1  1  2  0  1  1  1  1  0"<<endl<<
+                     "1  0  3  0  0  0  0  0  2  1  0  0  4  0  1  1  0  0  2  0  1  0  2  1  0  0"<<endl<<
+                     "0  2  1  2  3  0"<<endl<<
+                     "0  1  8  1 25  2  4  5  0  0  1  1  2  2  1  2  1  0  0  2  0  0  2  0  0  1"<<endl<<
+                     "4  0  3  1  1  0  0  0  0  0  1  1  9  0  1  1  0  2  0  0  1  2  4  1  1  0"<<endl<<
+                     "0  4  0  0  1  0"<<endl<<
+                     "0  0  2  1  0  2  7  0  0  1  4  1  1  1  1  1  0  2  0  1  5  3  0  1  0  0"<<endl<<
+                     "1  0  0  0  3  3  0  3  0  3  0  0  2  0  0  1  0  0  0  0  0  5  1  0  0  0"<<endl<<
+                     "0  0  1  2  4  1"<<endl<<
+                     "0  0  1  1  0  6  3  1  4  0  5  0  0  1  0  1  0  0  1  2  0  0  2  0  0  0"<<endl<<
+                     "0  0  1  5  0  0  0  2  1  0  4  2  1  1  0  1  0  1  1  0  0  1  2  0  2  0"<<endl<<
+                     "3  0  0  2  6  1"<<endl<<
+                     "0  5  3  2  0  1  7  3  0  0  2  0  0  1  0  4  3  2  0  1  1  0  0  1  0  1"<<endl<<
+                     "5  0  1  1  2  6  0  2  0  0  0  0  2  0  0  1  0  0  2  5  1  0  3  2  0  0"<<endl<<
+                     "0  2  1  0  2  0"<<endl<<
+                     "1  3  6  1  0  3  7  1  1  0  1  1  2  0  1  0  1  0  3  6  1  2 11  0  0  2"<<endl<<
+                     "2  0  1  3  1  0  1  1  6  3  2  0  5  0  9  1  0  2  4  1  2  3  0  4  0  1"<<endl<<
+                     "4  4  2  2  3  1"<<endl<<
+                     "0  0  2  3  0  4  2  1  4  0  0  2  0  0  1  2  2  0  0  1  0  1  1  0  0  0"<<endl<<
+                     "0  0  1  1  0  0  0  3  1  0  0  1  4  0  0  0  0  1  1  0  0  2  4  0  1  0"<<endl<<
+                     "0  1  1  1  0  3"<<endl<<
+                     "0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0"<<endl<<
+                     "0  0  0  0  0  0  0  0  0  0  1  0  3  0  0  0  0  0  1  0  2  0  0  1  0  0"<<endl<<
+                     "0  0  0  0  0  0"<<endl<<
+                     "0  0  2  0  0  2  0  1  6  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  2"<<endl<<
+                     "0  0  0  0  0  0  2  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0"<<endl<<
+                     "0  0  0  0  0  0"<<endl<<
+                     "0  0  2  2  1  8  6  2  1  0  0  1  2  1  7  8  7  0  1 12  0  0  1  0  2  0"<<endl<<
+                     "1  1  0  3  1  0  8  2  1  1  2  1  0  1  4  2  0  0  0  0  3  0  4  0  0  0"<<endl<<
+                     "0  5  1  2  4  3"<<endl<<
+                     "1  1 16  1  2  9  5  5  4  1  4  2  4  0  6  4  7  0  0 17  1  2  4  0  1  1"<<endl<<
+                     "2  0  7  2  4  0  1  4 12  0  1  6  2  2  1  1  0  2  4  0  0  2  4  1  0  0"<<endl<<
+                     "5  0  5  3 10  0"<<endl<<
+                     "1  0  4  2  0  3 14  0  3  0  6  0  1  2  4  2  4  2  0 11  2  1  1  0  1  1"<<endl<<
+                     "2  0  1  1  1  0  0  3  2  2  0  1  2  0  1  1  1  1  0  1  0  1  2  1  0  0"<<endl<<
+                     "1  5  0 12  7  1"<<endl<<
+                     "4  1  5  2  0  2 16  2  2  0  6  7  0  1  9  0  0  1  3  9  4  1  2  2  1  1"<<endl<<
+                     "4  0  2  6  1  0  1  4  3 10  1  1  1  0  5  0  0  2  0  2  2  0  2  1  0  0"<<endl<<
+                     "2  3 12  0 12  0"<<endl<<
+                     "1  4 19  3  4 18 20  4  7  0 12  3  0  5  4 11 11  0  1 23  2  3  3  1  5  2"<<endl<<
+                     "6  0 10 10  3  0  3  3  6  1  3  4  2  2  1  3  0  3  1  4  6  2  3  0  0  0"<<endl<<
+                     "4 10  7 12  0  1"<<endl<<
+                     "1  0  1  5  0  2  4  2  1  0  0  3  0  1  0  3  0  1  2  5  1  0  1  1  0  0"<<endl<<
+                     "2  0  1  2  2  1  0  6  2  1  0  2  0  0  2  1  0  0  0  1  1  0  1  3  0  0"<<endl<<
+                     "3  0  1  0  1  0"<<endl<<
+                    "0 4 4 5 4 4 5 5 4 5 5 4 4 5 5 4 4 5 5 5 5 4 5 4 4 5 5 4 4 5 5 5 4 4 4 5 4 5 4 4"<<endl<<
+                    "5 4 5 5 4 5 5 5 4 5 4 5 4 4 5 5 5 5"<<endl<<
+                    "3 0 2 3 4 2 2 2 3 2 3 3 5 4 3 3 3 2 3 3 2 5 4 2 5 3 2 2 3 4 4 2 4 2 5 3 3 5 3 2"<<endl<<
+                    "3 3 3 2 4 2 4 3 3 3 2 3 4 4 2 3 2 2"<<endl<<
+                    "2 2 0 4 5 4 4 1 4 3 3 3 3 3 4 4 4 2 2 5 2 5 3 1 4 3 3 2 4 5 4 2 3 3 5 1 2 3 3 1"<<endl<<
+                    "2 4 4 3 4 2 2 2 2 2 1 3 2 5 3 2 5 2"<<endl<<
+                    "4 4 5 0 5 5 4 3 5 4 4 5 3 4 4 4 4 3 5 5 3 4 5 5 4 4 5 4 4 4 5 4 5 5 4 3 3 4 4 3"<<endl<<
+                    "5 4 4 4 4 3 4 4 5 4 2 4 5 5 4 4 5 5"<<endl<<
+                    "2 3 5 5 0 3 2 3 3 4 4 1 4 2 4 2 2 1 2 2 1 3 4 1 2 5 4 1 3 1 3 1 1 1 1 1 2 2 5 4"<<endl<<
+                    "2 2 2 5 5 1 3 2 5 2 3 2 1 2 2 2 4 1"<<endl<<
+                    "3 2 5 5 2 0 5 3 4 3 4 3 3 5 4 5 5 2 2 5 3 2 3 1 1 1 3 1 4 4 4 1 4 3 3 2 1 2 2 2"<<endl<<
+                    "2 3 1 2 2 3 5 3 3 3 1 2 4 4 3 3 5 4"<<endl<<
+                    "2 1 3 4 2 5 0 2 2 2 2 2 1 5 5 5 4 3 3 5 3 2 2 2 2 2 3 1 4 3 3 2 5 4 3 4 2 2 2 2"<<endl<<
+                    "3 2 2 3 2 2 2 2 3 3 1 2 3 3 3 4 5 3"<<endl<<
+                    "5 3 3 3 2 2 3 0 3 3 4 3 3 3 3 3 2 3 3 3 2 2 3 5 2 2 3 2 2 3 5 4 3 5 3 4 3 3 3 2"<<endl<<
+                    "3 2 2 3 2 3 2 3 4 3 2 2 3 2 2 3 3 4"<<endl<<
+                    "2 2 5 4 2 3 3 2 0 1 3 5 2 3 3 3 3 1 3 4 2 4 3 3 4 5 2 1 3 3 2 2 3 3 4 3 3 2 2 2"<<endl<<
+                    "2 2 2 2 2 2 4 2 3 2 1 5 2 4 2 3 4 4"<<endl<<
+                    "3 3 5 4 4 4 3 3 2 0 3 4 2 4 5 4 4 1 2 4 2 4 2 2 3 2 5 1 5 2 3 1 2 3 4 1 1 2 4 5"<<endl<<
+                    "3 3 2 1 3 4 1 3 2 4 1 2 2 5 4 1 3 3"<<endl<<
+                    "3 3 3 3 3 3 3 3 3 3 0 3 3 3 3 3 3 3 3 3 5 3 3 3 3 3 3 3 3 3 5 5 3 3 3 3 3 3 3 3"<<endl<<
+                    "3 3 3 3 3 5 3 5 3 3 2 3 3 3 3 3 3 3"<<endl<<
+                    "2 3 4 4 2 3 2 2 5 3 3 0 2 3 2 3 3 2 3 4 2 4 2 2 3 3 3 1 2 2 3 1 2 4 3 4 2 2 4 2"<<endl<<
+                    "2 2 3 2 1 3 1 2 3 2 2 2 2 4 2 4 3 4"<<endl<<
+                    "2 5 4 2 4 3 2 2 2 2 2 2 0 3 2 3 2 2 2 3 1 5 3 2 5 2 3 2 4 3 3 2 3 3 3 3 2 4 4 5"<<endl<<
+                    "2 4 3 4 4 2 3 2 3 3 3 2 3 4 3 3 3 2"<<endl<<
+                    "3 2 5 4 3 5 5 2 4 3 3 3 3 0 4 5 4 3 4 4 3 3 2 2 3 3 4 2 5 3 4 3 4 3 4 3 2 3 4 3"<<endl<<
+                    "4 4 3 4 4 3 3 3 3 3 2 2 4 4 4 4 5 3"<<endl<<
+                    "2 1 3 3 4 4 5 2 3 2 2 1 1 3 0 4 5 1 5 2 2 2 3 2 1 1 4 1 3 2 3 3 3 4 4 3 1 4 2 1"<<endl<<
+                    "5 3 1 5 3 2 2 1 4 1 1 1 3 3 3 5 5 5"<<endl<<
+                    "3 3 4 4 3 5 5 2 3 2 3 3 4 4 5 0 5 3 5 5 2 3 2 2 2 1 2 2 4 4 3 2 3 3 3 3 2 3 4 3"<<endl<<
+                    "4 5 3 3 4 4 3 4 3 3 2 1 5 4 2 4 3 3"<<endl<<
+                    "2 2 5 3 3 4 4 2 3 3 3 3 2 4 5 5 0 2 4 5 2 3 2 2 3 1 2 3 4 3 2 2 4 2 5 2 1 4 3 2"<<endl<<
+                    "3 5 3 5 3 2 2 3 3 3 1 1 4 5 3 4 5 3"<<endl<<
+                    "5 3 2 5 3 3 5 5 3 2 5 5 4 4 3 5 4 0 2 1 5 3 3 3 3 2 2 1 2 5 5 5 3 5 4 4 2 2 3 3"<<endl<<
+                    "3 3 3 5 5 5 2 5 3 5 2 1 2 3 4 5 5 5"<<endl<<
+                    "3 3 4 4 2 2 3 2 4 3 3 3 3 4 5 5 5 2 0 4 2 4 5 4 5 2 3 3 4 4 3 3 4 4 2 4 4 3 1 2"<<endl<<
+                    "5 4 3 3 3 2 4 2 5 3 3 2 3 3 3 4 4 3"<<endl<<
+                    "3 2 4 4 2 5 5 2 3 3 3 3 2 4 3 4 3 2 3 0 2 3 3 1 1 1 2 2 3 3 3 2 5 3 3 3 2 2 2 2"<<endl<<
+                    "3 2 2 3 2 2 1 2 3 3 1 1 5 5 3 2 5 3"<<endl<<
+                    "3 1 2 2 1 2 3 1 2 2 5 2 1 2 2 1 1 4 1 3 0 1 2 2 2 1 1 1 1 2 5 4 1 2 2 2 1 1 1 1"<<endl<<
+                    "2 1 1 3 1 5 2 5 3 4 1 1 1 2 2 2 3 2"<<endl<<
+                    "2 5 5 3 3 3 2 2 4 2 2 3 4 3 3 2 3 2 3 4 3 0 3 3 5 3 3 1 4 3 3 3 3 3 4 3 2 3 3 3"<<endl<<
+                    "4 3 3 3 3 4 3 3 4 3 1 3 2 4 3 3 4 3"<<endl<<
+                    "2 3 4 4 5 3 4 3 4 2 2 3 2 4 4 2 2 2 5 3 1 2 0 2 4 3 2 1 3 1 2 1 4 5 2 1 4 4 5 2"<<endl<<
+                    "5 2 1 5 5 1 5 1 5 1 4 2 5 2 3 2 4 5"<<endl<<
+                    "4 1 2 5 2 2 3 5 4 3 4 3 2 2 3 4 2 2 4 2 1 3 2 0 2 4 4 1 1 2 5 2 2 5 2 4 1 1 1 1"<<endl<<
+                    "4 1 2 3 1 4 4 2 2 5 1 3 1 1 3 4 2 5"<<endl<<
+                    "2 4 5 3 3 2 2 2 3 1 3 4 4 2 2 1 3 1 4 2 2 5 4 2 0 3 2 1 3 4 2 1 2 3 3 2 2 2 3 3"<<endl<<
+                    "2 3 4 2 2 1 1 2 3 2 1 2 2 2 1 3 4 2"<<endl<<
+                    "3 3 4 4 4 2 2 2 5 2 3 3 2 2 2 2 2 2 3 1 2 4 3 3 4 0 2 2 2 2 2 2 2 3 4 2 4 2 2 2"<<endl<<
+                    "2 4 4 3 4 2 3 4 3 3 3 5 2 3 2 2 3 2"<<endl<<
+                    "4 2 5 5 5 3 5 3 1 5 5 3 1 4 4 2 1 2 1 5 2 4 3 4 1 1 0 1 5 4 5 3 4 5 4 3 1 2 1 2"<<endl<<
+                    "1 4 1 2 3 1 1 4 2 4 1 1 4 1 2 5 5 3"<<endl<<
+                    "3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 0 3 3 3 3 3 3 3 3 3 3 3 3"<<endl<<
+                    "3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3"<<endl<<
+                    "2 3 5 3 3 3 4 2 3 4 3 2 3 5 4 4 4 1 3 3 1 4 3 1 4 1 5 2 0 2 3 2 3 2 5 3 2 4 4 3"<<endl<<
+                    "2 4 4 3 2 1 2 1 2 1 1 2 3 5 3 3 5 2"<<endl<<
+                    "5 2 5 5 1 3 2 3 3 1 5 1 2 2 3 3 1 1 2 5 2 2 1 3 3 1 3 1 3 0 2 2 2 3 4 2 4 3 1 1"<<endl<<
+                    "3 4 3 3 1 1 5 2 1 2 1 2 3 3 3 3 5 3"<<endl<<
+                    "4 2 4 4 2 4 5 5 3 3 5 3 2 3 4 3 3 3 3 4 4 3 4 5 3 2 4 2 4 2 0 5 3 4 4 4 3 3 2 2"<<endl<<
+                    "4 4 2 3 2 4 3 4 3 4 2 4 3 4 3 4 4 3"<<endl<<
+                    "5 3 4 4 3 4 4 4 3 3 5 3 2 4 5 4 4 5 4 5 5 4 3 4 3 2 4 2 2 5 5 0 5 5 4 3 3 3 2 2"<<endl<<
+                    "3 3 2 4 2 5 3 5 5 5 2 2 4 4 3 4 5 5"<<endl<<
+                    "3 3 3 5 2 5 5 2 3 2 3 4 3 4 4 4 3 3 4 5 2 2 4 2 3 3 3 4 3 3 2 3 0 4 4 3 2 3 2 3"<<endl<<
+                    "3 3 4 2 2 2 3 2 4 3 2 3 5 4 4 4 4 4"<<endl<<
+                    "4 3 4 5 3 4 4 4 4 3 3 3 2 2 3 3 3 4 5 5 3 2 5 5 3 4 4 2 3 4 4 4 5 0 3 4 4 3 4 3"<<endl<<
+                    "5 3 3 3 2 4 3 3 5 5 2 4 5 3 4 5 4 5"<<endl<<
+                    "2 4 5 3 3 4 4 2 3 4 3 4 3 3 4 2 5 2 4 4 2 4 3 2 5 3 3 2 5 4 3 2 4 2 0 2 2 4 4 3"<<endl<<
+                    "4 4 5 3 2 1 4 1 3 3 2 2 2 5 2 3 4 2"<<endl<<
+                    "5 1 2 5 1 4 5 1 3 3 5 5 2 5 3 4 2 3 5 5 5 2 1 1 1 1 3 3 3 2 2 2 5 4 4 0 1 1 1 1"<<endl<<
+                    "5 3 4 4 4 5 4 5 1 2 1 2 1 3 1 5 5 4"<<endl<<
+                    "2 3 3 4 2 4 3 3 4 3 3 4 3 3 3 3 2 2 5 3 2 3 5 2 4 4 3 2 2 3 3 2 3 4 4 2 0 4 5 2"<<endl<<
+                    "4 3 3 4 2 2 5 2 5 3 5 3 3 3 3 2 3 3"<<endl<<
+                    "2 5 3 3 2 3 2 2 3 3 3 3 3 3 4 4 4 2 4 4 2 2 3 2 3 2 2 3 4 3 3 3 4 2 5 3 3 0 3 2"<<endl<<
+                    "3 4 4 3 2 3 4 3 3 3 2 2 4 4 2 3 4 3"<<endl<<
+                    "2 2 3 4 5 3 3 2 3 4 4 5 4 4 3 5 3 2 2 4 2 5 5 2 5 4 4 2 5 2 2 2 2 3 5 2 5 2 0 3"<<endl<<
+                    "2 5 5 3 5 2 5 2 5 3 5 2 3 4 3 3 4 3"<<endl<<
+                    "2 3 3 1 4 3 4 2 1 2 1 2 5 3 3 3 2 2 4 4 1 2 1 2 3 2 2 1 4 1 1 1 2 3 3 3 2 2 3 0"<<endl<<
+                    "2 3 2 3 3 1 1 1 1 2 1 5 2 4 2 2 4 2"<<endl<<
+                    "3 2 2 5 3 4 4 2 2 4 2 2 2 4 4 3 3 2 5 5 2 4 5 2 3 2 2 2 3 4 3 2 4 3 4 4 3 3 3 2"<<endl<<
+                    "0 2 4 3 4 2 3 2 5 3 4 3 5 2 2 4 4 5"<<endl<<
+                    "2 1 4 1 2 3 3 2 1 1 3 1 4 4 3 5 5 1 3 3 1 2 1 1 2 2 2 1 4 3 3 1 2 2 5 1 1 4 2 1"<<endl<<
+                    "2 0 5 2 1 1 2 1 2 1 1 1 4 4 2 3 3 1"<<endl<<
+                    "2 3 4 3 2 2 2 1 3 2 2 2 2 3 2 3 2 1 4 2 1 2 2 2 5 4 2 2 3 3 2 1 2 1 5 3 2 3 3 2"<<endl<<
+                    "3 4 0 1 2 1 3 1 2 1 1 2 3 4 3 3 2 1"<<endl<<
+                    "3 2 4 4 4 3 3 2 2 1 4 2 3 4 5 3 5 5 3 3 5 4 4 2 2 2 2 4 3 2 3 2 3 2 2 3 4 3 3 2"<<endl<<
+                    "1 3 3 0 3 3 5 3 4 2 1 1 3 2 2 3 4 2"<<endl<<
+                    "2 3 4 4 5 2 1 1 1 3 4 3 2 4 4 4 2 1 1 1 1 2 4 1 2 3 3 1 1 1 3 1 1 1 1 1 1 1 5 3"<<endl<<
+                    "2 1 1 3 0 1 1 1 4 1 1 1 1 1 1 1 4 1"<<endl<<
+                    "4 2 3 1 1 2 3 3 3 4 4 3 2 3 3 3 2 4 3 4 4 3 3 2 1 1 3 1 4 3 4 5 1 2 3 4 1 2 3 2"<<endl<<
+                    "1 1 1 4 1 0 1 5 3 3 1 2 1 3 3 4 4 1"<<endl<<
+                    "3 3 3 3 4 4 2 2 5 1 5 3 2 2 3 3 3 1 5 3 1 3 5 2 3 3 1 2 3 5 3 2 2 2 4 3 4 3 5 2"<<endl<<
+                    "3 2 3 5 2 1 0 1 4 2 5 2 3 1 4 3 5 1"<<endl<<
+                    "4 4 3 3 3 3 3 3 3 4 5 3 3 2 3 4 3 4 1 4 5 3 3 1 3 4 4 2 3 3 4 5 2 2 2 3 2 2 3 2"<<endl<<
+                    "2 3 2 3 2 5 2 0 3 4 1 2 2 3 3 3 3 2"<<endl<<
+                    "4 4 2 5 4 4 3 2 4 3 3 4 1 4 4 4 4 1 5 4 1 3 5 3 3 3 3 2 3 2 4 3 4 5 4 3 4 3 4 3"<<endl<<
+                    "5 2 2 5 5 2 4 2 0 5 2 3 4 2 2 3 4 5"<<endl<<
+                    "5 4 2 5 3 4 4 4 4 5 5 3 3 3 4 3 2 2 2 5 4 3 3 4 3 3 4 3 2 3 3 2 3 5 3 2 3 3 3 3"<<endl<<
+                    "2 3 3 4 3 5 3 5 4 0 1 3 3 1 3 5 5 5"<<endl<<
+                    "2 2 2 3 4 2 2 2 2 5 2 2 3 3 2 2 2 2 3 1 1 1 5 1 1 4 2 1 2 2 2 2 2 1 3 1 5 2 5 2"<<endl<<
+                    "3 1 2 2 2 1 5 1 3 2 0 1 2 2 2 1 2 1"<<endl<<
+                    "2 2 3 3 2 2 4 2 4 2 3 4 2 3 3 2 2 3 3 2 4 4 3 3 3 4 3 2 2 2 2 2 3 3 3 2 3 2 2 4"<<endl<<
+                    "2 2 3 3 3 3 3 3 3 3 2 0 3 3 2 3 4 3"<<endl<<
+                    "2 2 3 5 2 5 5 1 2 1 3 2 2 4 3 4 4 1 4 5 1 1 4 1 3 1 1 5 3 5 2 2 5 4 3 1 1 3 2 1"<<endl<<
+                    "4 4 3 1 1 1 1 1 4 2 1 1 0 3 1 2 3 4"<<endl<<
+                    "2 3 5 3 3 5 3 2 4 3 2 4 4 2 2 3 3 1 2 5 2 5 2 1 5 2 4 3 5 3 2 1 4 2 5 3 2 4 3 4"<<endl<<
+                    "2 4 4 3 3 2 2 2 3 4 2 2 4 0 3 4 5 3"<<endl<<
+                    "2 2 3 2 2 3 4 2 2 3 4 2 3 3 3 2 2 4 1 5 4 3 2 2 5 1 3 1 4 2 4 1 3 3 3 2 1 2 1 1"<<endl<<
+                    "1 2 2 2 2 3 4 2 2 4 1 1 2 5 0 2 2 2"<<endl<<
+                    "3 1 3 4 2 5 5 3 5 3 4 5 2 4 5 5 5 1 5 3 3 3 3 3 4 2 4 1 4 4 3 3 4 4 5 5 3 1 2 4"<<endl<<
+                    "4 3 4 4 2 5 3 5 3 5 1 4 3 5 4 0 5 5"<<endl<<
+                    "2 1 5 5 5 3 4 1 4 1 5 2 2 3 3 4 3 1 2 5 3 2 2 1 1 1 4 1 5 5 1 1 3 2 5 5 1 2 3 2"<<endl<<
+                    "1 3 2 3 4 2 5 1 3 2 1 2 3 3 1 5 0 5"<<endl<<
+                    "3 2 2 5 2 4 2 3 3 3 3 4 1 3 3 3 2 3 3 2 2 2 4 4 2 2 3 1 2 3 3 2 2 5 3 2 2 2 2 2"<<endl<<
+                    "4 2 2 2 2 2 2 2 5 4 1 3 3 3 3 3 3 0";
 
     }
-    else if (fileName == "Bernard_Killworth_Fraternity_Non_Symmetric_Cognitive_Data.sm"){
-        /*
-          Bernard & Killworth  recorded the interactions among students living in a fraternity at a West Virginia college.
-          Subjects had been residents in the fraternity from 3 months to 3 years.
-          This matrix depicts rankings made by the subjects themselves of how frequently they interacted with other subjects in the observation week.
-        */
-        outText<< "0 3 2 4 2 3 2 5 2 3 3 2 2 3 2 3 2 5 3 3 3 2 2 4 2 3 4 3 2 5 4 5 3 4 2 5 2 2 2 2 3 2 2 3 2 4 3 4 4 5 2 2 2 2 2 3 2 3" << endl <<
-                  "3 0 2 4 3 2 1 3 2 3 3 3 5 2 1 3 2 3 3 2 1 5 3 1 4 3 2 3 3 2 2 3 3 3 4 1 3 5 2 3 2 1 3 2 3 2 3 4 4 4 2 2 2 3 2 1 1 2" << endl <<
-                  "2 2 0 5 5 5 3 3 5 5 3 4 4 5 3 4 5 2 4 4 2 5 4 2 5 4 5 3 5 5 4 4 3 4 5 2 3 3 3 3 2 4 4 4 4 3 3 3 2 2 2 3 3 5 3 3 5 2" << endl <<
-                  "4 4 5 0 5 5 4 3 4 4 3 4 2 4 3 4 3 5 4 4 2 3 4 5 3 4 5 3 3 5 4 4 5 5 3 5 4 3 4 1 5 1 3 4 4 1 3 3 5 5 3 3 5 3 2 4 5 5" << endl <<
-                  "2 3 5 5 0 2 2 2 2 4 3 2 4 3 4 3 3 3 2 2 1 3 5 2 3 4 5 3 3 1 2 3 2 3 3 1 2 2 5 4 3 2 2 4 5 1 4 3 4 3 4 2 2 3 2 2 5 2" << endl <<
-                  "3 2 5 5 2 0 5 2 3 4 3 3 3 5 4 5 4 3 2 5 2 3 3 2 2 2 3 3 3 3 4 4 5 4 4 4 4 3 3 3 4 3 2 3 2 2 4 3 4 4 2 2 5 5 3 5 3 4" << endl <<
-                  "2 1 3 4 2 5 0 3 3 3 3 2 2 5 5 5 4 5 3 5 3 2 4 3 2 2 5 3 4 2 5 4 5 4 4 5 3 2 3 4 4 3 2 3 1 3 2 3 3 4 2 4 5 3 4 5 4 2" << endl <<
-                  "5 3 3 3 2 2 3 0 2 3 3 2 2 2 2 2 2 5 2 2 1 2 3 5 2 2 3 3 2 3 5 4 2 4 2 1 3 2 2 2 2 2 1 2 1 3 2 3 2 4 2 2 1 2 2 3 1 3" << endl <<
-                  "2 2 5 4 2 3 3 2 0 2 3 5 2 4 3 3 3 3 4 3 2 4 4 4 3 5 1 3 3 3 3 3 3 4 3 3 4 3 3 1 2 1 3 2 1 3 5 3 4 4 2 4 2 4 2 5 4 3" << endl <<
-                  "3 3 5 4 4 4 3 3 2 0 3 3 2 3 2 2 3 2 3 3 2 2 2 3 1 2 5 3 4 1 3 3 2 3 4 3 3 3 4 2 4 1 2 1 3 4 1 4 3 5 5 2 1 3 3 3 1 3" << endl <<
-                  "3 3 3 3 3 3 3 3 3 3 0 3 2 3 2 3 3 5 3 3 5 2 2 4 3 3 5 3 3 5 5 5 3 3 3 5 3 3 4 1 2 3 2 4 4 4 5 5 3 5 2 3 3 2 4 4 5 3" << endl <<
-                  "2 3 4 4 2 3 2 2 5 3 3 0 2 3 1 3 3 5 3 3 2 3 3 3 4 3 3 3 2 1 3 3 4 3 4 5 4 3 5 2 2 1 2 2 3 3 3 3 4 3 2 4 2 4 2 5 2 4" << endl <<
-                  "2 5 4 2 4 3 2 2 2 2 2 2 0 3 1 4 2 4 3 2 1 4 2 2 4 2 1 3 3 2 2 2 3 2 3 2 3 3 4 5 2 4 2 3 2 2 2 3 1 3 3 2 2 4 3 2 2 1" << endl <<
-                  "3 2 5 4 3 5 5 2 4 3 3 3 3 0 3 4 4 4 4 4 2 3 4 2 2 2 4 3 5 2 3 4 4 2 3 5 3 3 4 3 4 4 3 4 4 3 2 2 4 3 3 3 4 2 3 4 3 3" << endl <<
-                  "2 1 3 3 4 4 5 2 3 2 2 1 1 3 0 5 5 3 5 3 2 3 4 3 2 2 4 3 4 3 4 5 4 3 4 3 3 4 3 3 4 3 2 5 4 3 3 3 4 4 2 3 3 2 3 5 3 3" << endl <<
-                  "3 3 4 4 3 5 5 2 3 2 3 3 4 4 5 0 5 5 5 4 1 2 2 4 1 2 2 3 4 3 3 4 4 3 2 4 3 4 5 3 3 5 3 3 4 3 3 4 4 3 2 2 4 3 2 5 4 3" << endl <<
-                  "2 2 5 3 3 4 4 2 3 3 3 3 2 4 5 5 0 4 5 3 1 3 2 2 3 2 1 3 4 1 3 4 3 3 5 2 2 4 3 2 3 5 2 5 2 2 3 3 4 2 2 2 4 3 2 5 3 2" << endl <<
-                  "5 3 2 5 3 3 5 5 3 2 5 5 4 4 3 5 4 0 2 2 4 2 2 2 1 2 2 3 1 1 3 5 3 4 2 3 2 2 2 2 2 1 1 5 1 4 1 4 1 2 2 3 1 1 4 1 1 3" << endl <<
-                  "3 3 4 4 2 2 3 2 4 3 3 3 3 4 5 5 5 2 0 3 1 3 5 4 4 3 1 3 3 2 3 4 4 5 4 5 5 4 2 4 5 3 4 3 1 3 5 1 5 2 3 3 4 2 1 5 2 3" << endl <<
-                  "3 2 4 4 2 5 5 2 3 3 3 3 2 4 3 4 3 2 3 0 3 4 3 2 2 1 5 3 3 5 4 5 5 5 4 5 3 4 4 4 5 3 2 3 1 4 3 4 4 5 1 2 5 5 5 3 5 2" << endl <<
-                  "3 1 2 2 1 2 3 1 2 2 5 2 1 2 2 1 1 4 1 3 0 3 1 1 2 2 2 3 1 2 4 5 2 3 2 5 2 2 2 1 2 1 1 5 1 4 1 5 1 4 1 4 1 2 4 3 3 2" << endl <<
-                  "2 5 5 3 3 3 2 2 4 2 2 3 4 3 3 2 3 2 3 4 3 0 2 3 5 4 4 3 4 2 3 4 2 2 4 2 3 2 5 2 4 2 2 4 2 3 3 3 3 3 1 4 1 5 3 3 2 2" << endl <<
-                  "2 3 4 4 5 3 4 3 4 2 2 3 2 4 4 2 2 2 5 3 1 2 0 2 4 3 3 3 3 1 4 3 4 5 3 1 5 3 5 1 5 1 2 4 4 3 5 3 5 3 5 3 4 2 2 3 2 4" << endl <<
-                  "4 1 2 5 2 2 3 5 4 3 4 3 2 2 3 4 2 2 4 2 1 3 2 0 2 3 4 3 1 3 5 4 2 5 2 1 2 2 2 2 2 1 2 2 1 2 2 1 3 4 1 3 1 1 2 3 1 4" << endl <<
-                  "2 4 5 3 3 2 2 2 3 1 3 4 4 2 2 1 3 1 4 2 2 5 4 2 0 4 1 3 4 3 3 3 3 3 5 1 4 3 5 3 3 2 5 2 2 1 3 3 3 3 1 3 3 5 5 4 1 2" << endl <<
-                  "3 3 4 4 4 2 2 2 5 2 3 3 2 2 2 2 2 2 3 1 2 4 3 3 4 0 1 3 1 1 2 2 3 4 3 1 4 2 4 2 2 2 4 2 3 1 3 4 3 3 4 4 1 2 1 2 1 2" << endl <<
-                  "4 2 5 5 5 3 5 3 1 5 5 3 1 4 4 2 1 2 1 5 2 4 3 4 1 1 0 3 5 3 4 4 3 4 3 3 3 2 4 2 2 2 2 2 3 3 1 4 3 4 2 3 1 4 3 4 4 3" << endl <<
-                  "3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 0 2 1 2 2 4 2 2 3 2 3 2 1 2 1 2 4 1 1 2 2 2 3 1 2 5 3 1 1 1 1" << endl <<
-                  "2 3 5 3 3 3 4 2 3 4 3 2 3 5 4 4 4 1 3 3 1 4 3 1 4 1 5 2 0 3 4 2 3 3 5 3 2 4 5 4 3 4 3 3 1 4 3 3 3 2 2 2 3 5 4 4 5 2" << endl <<
-                  "5 2 5 5 1 3 2 3 3 1 5 1 2 2 3 3 1 1 2 5 2 2 1 3 3 1 3 1 3 0 2 5 3 4 4 2 3 3 2 1 4 3 3 2 1 3 5 3 2 3 2 2 5 3 2 4 5 3" << endl <<
-                  "4 2 4 4 2 4 5 5 3 3 5 3 2 3 4 3 3 3 3 4 4 3 4 5 3 2 4 2 4 2 0 5 2 4 3 2 3 3 2 1 3 3 2 3 3 4 3 4 4 3 2 2 2 2 4 3 1 3" << endl <<
-                  "5 3 4 4 3 4 4 4 3 3 5 3 2 4 5 4 4 5 4 5 5 4 3 4 3 2 4 2 2 5 5 0 3 4 2 2 2 3 2 1 2 1 1 2 1 5 2 5 3 2 2 2 2 1 1 3 1 2" << endl <<
-                  "3 3 3 5 2 5 5 2 3 2 3 4 3 4 4 4 3 3 4 5 2 2 4 2 3 3 3 4 3 3 2 3 0 5 4 5 3 4 2 2 4 2 2 3 1 1 2 2 4 3 2 3 5 4 3 4 3 2" << endl <<
-                  "4 3 4 5 3 4 4 4 4 3 3 3 2 2 3 3 3 4 5 5 3 2 5 5 3 4 4 2 3 4 4 4 5 0 2 4 4 2 3 3 3 2 1 2 1 2 2 2 5 5 1 3 4 2 3 4 2 5" << endl <<
-                  "2 4 5 3 3 4 4 2 3 4 3 4 3 3 4 2 5 2 4 4 2 4 3 2 5 3 3 2 5 4 3 2 4 2 0 4 4 5 5 3 4 5 5 2 1 3 4 2 4 3 3 3 3 5 3 5 5 3" << endl <<
-                  "5 1 2 5 1 4 5 1 3 3 5 5 2 5 3 4 2 3 5 5 5 2 1 1 1 1 3 3 3 2 2 2 5 4 4 0 2 3 2 3 4 1 3 3 1 4 3 3 3 2 1 2 1 3 2 5 5 2" << endl <<
-                  "2 3 3 4 2 4 3 3 4 3 3 4 3 3 3 3 2 2 5 3 2 3 5 2 4 4 3 2 2 3 3 2 3 4 4 2 0 3 5 2 3 1 2 4 1 1 4 2 4 3 5 3 1 2 1 3 1 2" << endl <<
-                  "2 5 3 3 2 3 2 2 3 3 3 3 3 3 4 4 4 2 4 4 2 2 3 2 3 2 2 3 4 3 3 3 4 2 5 3 3 0 2 2 3 4 3 3 1 2 3 2 3 3 2 2 3 4 2 1 2 2" << endl <<
-                  "2 2 3 4 5 3 3 2 3 4 4 5 4 4 3 5 3 2 2 4 2 5 5 2 5 4 4 2 5 2 2 2 2 3 5 2 5 2 0 3 3 2 3 3 5 3 5 3 4 3 5 2 2 3 1 2 3 2" << endl <<
-                  "2 3 3 1 4 3 4 2 1 2 1 2 5 3 3 3 2 2 4 4 1 2 1 2 3 2 2 1 4 1 1 1 2 3 3 3 2 2 3 0 2 1 2 2 3 2 2 2 3 3 2 4 1 4 1 4 2 2" << endl <<
-                  "3 2 2 5 3 4 4 2 2 4 2 2 2 4 4 3 3 2 5 5 2 4 5 2 3 2 2 2 3 4 3 2 4 3 4 4 3 3 3 2 0 2 3 1 2 1 3 2 5 2 3 2 4 2 1 4 1 4" << endl <<
-                  "2 1 4 1 2 3 3 2 1 1 3 1 4 4 3 5 5 1 3 3 1 2 1 1 2 2 2 1 4 3 3 1 2 2 5 1 1 4 2 1 2 0 4 3 1 1 2 3 2 3 1 2 4 4 2 3 3 2" << endl <<
-                  "2 3 4 3 2 2 2 1 3 2 2 2 2 3 2 3 2 1 4 2 1 2 2 2 5 4 2 2 3 3 2 1 2 1 5 3 2 3 3 2 3 4 0 3 1 1 3 2 2 3 2 3 3 4 2 4 2 2" << endl <<
-                  "3 2 4 4 4 3 3 2 2 1 4 2 3 4 5 3 5 5 3 3 5 4 4 2 2 2 2 4 3 2 3 2 3 2 2 3 4 3 3 2 1 3 3 0 3 4 5 3 5 4 2 3 1 3 2 4 3 2" << endl <<
-                  "2 3 4 4 5 2 1 1 1 3 4 3 2 4 4 4 2 1 1 1 1 2 4 1 2 3 3 1 1 1 3 1 1 1 1 1 1 1 5 3 2 1 1 3 0 1 2 2 5 3 2 3 1 3 2 2 4 2" << endl <<
-                  "4 2 3 1 1 2 3 3 3 4 4 3 2 3 3 3 2 4 3 4 4 3 3 2 1 1 3 1 4 3 4 5 1 2 3 4 1 2 3 2 1 1 1 4 1 0 1 5 2 5 1 3 1 2 3 5 2 2" << endl <<
-                  "3 3 3 3 4 4 2 2 5 1 5 3 2 2 3 3 3 1 5 3 1 3 5 2 3 3 1 2 3 5 3 2 2 2 4 3 4 3 5 2 3 2 3 5 2 1 0 2 4 3 5 3 1 2 4 3 5 2" << endl <<
-                  "4 4 3 3 3 3 3 3 3 4 5 3 3 2 3 4 3 4 1 4 5 3 3 1 3 4 4 2 3 3 4 5 2 2 2 3 2 2 3 2 2 3 2 3 2 5 2 0 2 5 1 3 1 2 2 5 1 2" << endl <<
-                  "4 4 2 5 4 4 3 2 4 3 3 4 1 4 4 4 4 1 5 4 1 3 5 3 3 3 3 2 3 2 4 3 4 5 4 3 4 3 4 3 5 2 2 5 5 2 4 2 0 4 3 3 4 3 2 3 3 5" << endl <<
-                  "5 4 2 5 3 4 4 4 4 5 5 3 3 3 4 3 2 2 2 5 4 3 3 4 3 3 4 3 2 3 3 2 3 5 3 2 3 3 3 3 2 3 3 4 3 5 3 5 4 0 2 3 2 4 4 5 2 4" << endl <<
-                  "2 2 2 3 4 2 2 2 2 5 2 2 3 3 2 2 2 2 3 1 1 1 5 1 1 4 2 1 2 2 2 2 2 1 3 1 5 2 5 2 3 1 2 2 2 1 5 1 3 2 0 2 1 2 1 1 1 1" << endl <<
-                  "2 2 3 3 2 2 4 2 4 2 3 4 2 3 3 2 2 3 3 2 4 4 3 3 3 4 3 2 2 2 2 2 3 3 3 2 3 2 2 4 2 2 3 3 3 3 3 3 3 3 2 0 1 2 1 4 2 3" << endl <<
-                  "2 2 3 5 2 5 5 1 2 1 3 2 2 4 3 4 4 1 4 5 1 1 4 1 3 1 1 5 3 5 2 2 5 4 3 1 1 3 2 1 4 4 3 1 1 1 1 1 4 2 1 1 0 4 2 3 3 3" << endl <<
-                  "2 3 5 3 3 5 3 2 4 3 2 4 4 2 2 3 3 1 2 5 2 5 2 1 5 2 4 3 5 3 2 1 4 2 5 3 2 4 3 4 2 4 4 3 3 2 2 2 3 4 2 2 4 0 5 5 3 3" << endl <<
-                  "2 2 3 2 2 3 4 2 2 3 4 2 3 3 3 2 2 4 1 5 4 3 2 2 5 1 3 1 4 2 4 1 3 3 3 2 1 2 1 1 1 2 2 2 2 3 4 2 2 4 1 1 2 5 0 4 1 3" << endl <<
-                  "3 1 3 4 2 5 5 3 5 3 4 5 2 4 5 5 5 1 5 3 3 3 3 3 4 2 4 1 4 4 3 3 4 4 5 5 3 1 2 4 4 3 4 4 2 5 3 5 3 5 1 4 3 5 4 0 5 3" << endl <<
-                  "2 1 5 5 5 3 4 1 4 1 5 2 2 3 3 4 3 1 2 5 3 2 2 1 1 1 4 1 5 5 1 1 3 2 5 5 1 2 3 2 1 3 2 3 4 2 5 1 3 2 1 2 3 3 1 5 0 3" << endl <<
-                  "3 2 2 5 2 4 2 3 3 3 3 4 1 3 3 3 2 3 3 2 2 2 4 4 2 2 3 1 2 3 3 2 2 5 3 2 2 2 2 2 4 2 2 2 2 2 2 2 5 4 1 3 3 3 3 3 3 0";
-
-    }
-    else if (fileName == "Mexican_Power_Network_1940s.lst"){
+    else if (name == "Mexican_Power_Network_1940s.lst"){
         outText<< "18 8 10 23 21" << endl <<
                   "19 11 21" << endl <<
                   "29 5 9 10" << endl <<
@@ -5110,7 +5722,7 @@ void Graph::writeDataSetToFile (QString fileName) {
                   "37 8 36" << endl <<
                   "25 10 11 8";
     }
-    else if (fileName == "Knocke_Bureacracies_Information_Exchange_Network.pajek"){
+    else if (name == "Knocke_Bureacracies_Information_Exchange_Network.pajek"){
         qDebug()<< "		Knocke_Bureacracies_Information_Exchange_Network.pajek written... ";
         outText<< "*Network KNOKI " << endl <<
                   "*Vertices 10" << endl <<
@@ -5176,7 +5788,7 @@ void Graph::writeDataSetToFile (QString fileName) {
                   " 10 7  1";
                     qDebug()<< "		Knocke_Bureacracies_Information_Exchange_Network.pajek written... ";
     }
-    else if (fileName == "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek"){
+    else if (name == "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek"){
         qDebug()<< "		Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek written... ";
         outText<< "*Network Countries_Trade_Basic_Manufactured_Goods" << endl <<
                   "*Vertices      24" << endl <<
@@ -5232,6 +5844,10 @@ void Graph::writeDataSetToFile (QString fileName) {
                     qDebug()<< "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek written... ";
     }
     f.close();
+    if ( !datasetDescription.isEmpty() ) {
+        emit describeDataset(datasetDescription);
+    }
+
 }
 
 
@@ -5286,13 +5902,18 @@ QTextStream& operator <<  (QTextStream& os, Graph& m){
     This is called by MainWindow::slotViewAdjacencyMatrix()
     The resulting matrix HAS NO spaces between elements.
 */
-void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
+void Graph::writeAdjacencyMatrix (const QString fn, const char* netName) {
     qDebug()<<"Graph::writeAdjacencyMatrix() ";
-    ofstream file (fn);
+    QFile file( fn );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        emit statusMessage( QString(tr("Could not write to %1")).arg(fn) );
+        return;
+    }
+    QTextStream outText( &file );
     int sum=0;
     float weight=0;
-    file << "-Social Network Visualizer- \n";
-    file << "Adjacency matrix of "<< netName<<": \n\n";
+    outText << "-Social Network Visualizer- \n";
+    outText << "Adjacency matrix of "<< netName<<": \n\n";
     QList<Vertex*>::iterator it, it1;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         if ( ! (*it)->isEnabled() ) continue;
@@ -5301,12 +5922,12 @@ void Graph::writeAdjacencyMatrix (const char* fn, const char* netName) {
             if ( (weight =  this->hasEdge ( (*it)->name(), (*it1)->name() )  )!=0 ) {
                 sum++;
                 if (weight >= 1)
-                    file << static_cast<int> (weight) << " "; // TODO make the matric look symmetrical
+                    outText << static_cast<int> (weight) << " "; // TODO make the matric look symmetrical
             }
             else
-                file << "0 ";
+                outText << "0 ";
         }
-        file << endl;
+        outText << endl;
     }
 
     qDebug("Graph: Found a total of %i edge",sum);
@@ -5398,13 +6019,19 @@ void Graph::invertAdjacencyMatrix(){
 
 
 
-void Graph::writeInvertAdjacencyMatrix(const char* fn, const char* netName){
+void Graph::writeInvertAdjacencyMatrix(QString fn, const char* netName){
     qDebug("Graph::writeInvertAdjacencyMatrix() ");
     int i=0, j=0;
     QList<Vertex*>::iterator it, it1;
-    ofstream file (fn);
-    file << "-Social Network Visualizer- \n";
-    file << "Invert Matrix of "<< netName<<": \n\n";
+    QFile file( fn );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        emit statusMessage( QString(tr("Could not write to %1")).arg(fn) );
+        return;
+    }
+    QTextStream outText( &file );
+
+    outText << "-Social Network Visualizer- \n";
+    outText << "Invert Matrix of "<< netName<<": \n\n";
     invertAdjacencyMatrix();
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         if ( ! (*it)->isEnabled() )
@@ -5413,12 +6040,12 @@ void Graph::writeInvertAdjacencyMatrix(const char* fn, const char* netName){
         for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
             if ( ! (*it1)->isEnabled() )
                 continue;
-            file << invAM.item(i,j)<< " ";
+            outText << invAM.item(i,j)<< " ";
             qDebug() << invAM.item(i,j)<< " ";
             j++;
         }
         i++;
-        file << endl;
+        outText << endl;
         qDebug() << endl;
     }
     file.close();
@@ -5832,8 +6459,8 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
                     dux = ( ulv_x ) * ( dist * dist ) / natural_length;
                     duy = ( ulv_y ) * ( dist * dist ) / natural_length;
                     //limit the maximum displacement to a maximum temperature
-                    xvel = ( dux / abs (dux) ) *  qMin( abs(dux), temperature) ;
-                    yvel = ( duy / abs (duy) ) *  qMin( abs(duy), temperature) ;
+                    xvel = ( dux / qAbs (dux) ) *  qMin( qAbs(dux), temperature) ;
+                    yvel = ( duy / qAbs (duy) ) *  qMin( qAbs(duy), temperature) ;
 
                     qDebug() << "  v1= "<<v1->name() <<  " connected to and pulled by v2= "<< v2->name()
                              <<"  nat_length =" << natural_length
@@ -5850,8 +6477,8 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
                 duy = (ulv_y * natural_length * natural_length ) / ( dist ) ;
 
                 //limit the maximum displacement to a maximum temperature
-                xvel += ( dux / abs (dux) ) *  qMin( abs(dux), temperature) ;
-                yvel += ( duy / abs (duy) ) *  qMin( abs(duy), temperature) ;
+                xvel += ( dux / qAbs (dux) ) *  qMin( qAbs(dux), temperature) ;
+                yvel += ( duy / qAbs (duy) ) *  qMin( qAbs(duy), temperature) ;
 
                 qDebug() << "  v1 = "<<v1->name() <<  " NOT connected to and pushed away from  v2 = "<< v2->name()
                          <<"  c_rep=" << c_rep

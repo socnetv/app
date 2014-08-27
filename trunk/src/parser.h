@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer 
- version: 1.2
+ version: 1.3
  Written in Qt
  
                          parser.h  -  description
@@ -73,7 +73,11 @@ public:
 	void readGraphMLElementEdgeGraphics (QXmlStreamReader &);
 	
 	bool isComment(QString str);  
+    void createRandomNodes(int, QString, int);
+
 signals:
+    void addRelation( QString );
+    void changeRelation( int );
 	void createNode( 
 			int num, int size, QString color,
 			QString numColor, int numSize,
