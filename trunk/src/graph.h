@@ -55,7 +55,6 @@ class QDateTime;
 */
 
 typedef QList<Vertex*> Vertices;
-typedef map<long int,long int> imap_i;
 
 typedef QHash <QString, int> Hash_StringToInt;
 typedef QHash <long int, long int> ihash_i;
@@ -338,7 +337,7 @@ public:
     ihash_i index;
 
     // Stores the number of vertices at distance n from a given vertex
-    imap_i sizeOfNthOrderNeighborhood;
+    ihash_i sizeOfNthOrderNeighborhood;
 
     /* maps have O(logN) lookup complexity */
     /* Consider using tr1::hashmap which has O(1) lookup, but this is not ISO C++ yet :(   */

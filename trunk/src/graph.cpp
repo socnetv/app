@@ -1091,30 +1091,39 @@ void Graph::clear() {
     discretePCs.clear(); discreteICs.clear();  discretePRCs.clear();
     discretePPs.clear();
     if ( DM.size() > 0) {
+        qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
         DM.clear();
     }
     if ( TM.size() > 0) {
+                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
         TM.clear();
     }
     if ( sumM.size() > 0) {
+                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
         sumM.clear();
     }
     if ( invAM.size() > 0) {
+                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
         invAM.clear();
     }
     if ( AM.size() > 0) {
+                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
         AM.clear();
     }
     if ( invM.size() > 0) {
+                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
         invM.clear();
     }
     if ( XM.size() > 0) {
+                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
         XM.clear();
     }
     if ( XSM.size() > 0) {
+                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
         XSM.clear();
     }
     if ( XRM.size() > 0) {
+                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
         XRM.clear();
     }
 
@@ -1566,7 +1575,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                 for (it1=m_graph.begin(); it1!=m_graph.end(); it1++) {
                     (*it1)->clearPs();
                     //initialize all sizeOfNthOrderNeighborhood to zero
-                    sizeOfNthOrderNeighborhood[ i ]=0;
+                    sizeOfNthOrderNeighborhood.insert(i, 0);
                     i++;
                 }
             }
@@ -1617,9 +1626,9 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                     (*it1)->setDelta(0.0);
                     //Calculate Power Centrality: In = [ 1/(N-1) ] * ( Nd1 + Nd2 * 1/2 + ... + Ndi * 1/i )
                     // where Ndi (sizeOfNthOrderNeighborhood) is the number of nodes at distance i from this node.
-                    PC += ( 1.0 / (float) i ) * sizeOfNthOrderNeighborhood[i];
+                    PC += ( 1.0 / (float) i ) * sizeOfNthOrderNeighborhood.value(i);
                     // where N is the sum Nd0 + Nd1 + Nd2 + ... + Ndi, that is the amount of nodes in the same component as the current node
-                    sizeOfComponent += sizeOfNthOrderNeighborhood[i];
+                    sizeOfComponent += sizeOfNthOrderNeighborhood.value(i);
                     i++;
                 }
                 (*it)->setPC( PC );		//Set Power Centrality
@@ -1837,7 +1846,10 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
 
                 if (doCalculcateCentralities){
 //                    qDebug()<<"BFS: Calculate PC: store the number of nodes at distance " << dist_w << "from s";
-                    sizeOfNthOrderNeighborhood[dist_w]=sizeOfNthOrderNeighborhood[dist_w]+1;
+                    sizeOfNthOrderNeighborhood.insert(
+                                dist_w,
+                                sizeOfNthOrderNeighborhood.value(dist_w)+1
+                                );
 //                    qDebug()<<"BFS: Calculate CC: the sum of distances (will invert it l8r)";
                     m_graph [s]->setCC (m_graph [s]->CC() + dist_w);
 //                    qDebug()<<"BFS: Calculate Eccentricity: the maximum distance ";
