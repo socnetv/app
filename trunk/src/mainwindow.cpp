@@ -3362,7 +3362,6 @@ void MainWindow::addRelation(){
                               QLineEdit::Normal, QString::null, &ok );
     }
     else {
-        //FIXME: Check newRelationName...
         newRelationName = QInputDialog::getText(
                     this, tr("Add new relation"),
                     tr("Please enter a name for the new relation:"),
@@ -3375,6 +3374,12 @@ void MainWindow::addRelation(){
             qDebug() << "MW::addRelation() - calling MW::changeRelation";
             changeRelationCombo->setCurrentIndex(relationsCounter);
         }
+    }
+    else {
+        QMessageBox::critical(this, tr("Error"),
+                              tr("You did not type a name for this new relation"),
+                              QMessageBox::Ok, 0);
+        addRelation();
     }
     statusMessage( QString(tr("New relation named %1, added."))
                    .arg( newRelationName ) );
