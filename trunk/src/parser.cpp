@@ -307,7 +307,8 @@ bool Parser::loadDL(){
                 relation = relationsList[ relationCounter ];
                 qDebug() << " WE ARE THE FIRST DATASET/MATRIX"
                          << " source node counter is " << source
-                         << " and relation to " << relation<< ": "<<relationCounter;
+                         << " and relation to " << relation<< ": "
+                         << relationCounter;
                 emit changeRelation (relationCounter);
             }
             else if (source>aNodes) {
@@ -316,7 +317,8 @@ bool Parser::loadDL(){
                 relation = relationsList[ relationCounter ];
                 qDebug() << " LOOKS LIKE WE ENTERED A NEW DATASET/MATRIX "
                          << " init source node counter to " << source
-                         << " and relation to " << relation << ": "<<relationCounter;
+                         << " and relation to " << relation << ": "
+                         << relationCounter;
                 emit changeRelation (relationCounter);
             }
             else {
@@ -337,7 +339,7 @@ bool Parser::loadDL(){
                     undirected=0;
                     arrows=true;
                     bezier=false;
-                    emit createEdge(source, target, edgeWeight, initEdgeColor, undirected, arrows, bezier);
+                    emit createEdge( source, target, edgeWeight, initEdgeColor, undirected, arrows, bezier);
                     totalLinks++;
                     qDebug() << "TotalLinks= " << totalLinks;
 
