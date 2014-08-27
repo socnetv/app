@@ -250,20 +250,8 @@ bool Parser::loadDL(){
                 qDebug() << "adding label " << label << " to labelList";
                 labelsList << label;
             }
-//            randX=rand()%gwWidth;
-//            randY=rand()%gwHeight;
             nodeSum++;
             createRandomNodes(nodeSum, label,1);
-//            qDebug()<<"Creating node: "<< nodeSum
-//                   << " with label: " << label
-//                   << " at "<< randX<<","<< randY;
-//            emit createNode(
-//                        nodeSum, initNodeSize,initNodeColor,
-//                        initNodeNumberColor, initNodeNumberSize,
-//                        label, initNodeLabelColor, initNodeLabelSize,
-//                        QPointF(randX, randY),
-//                        initNodeShape, false
-//                        );
 
         }
         if ( relation_flag){
@@ -360,7 +348,8 @@ bool Parser::loadDL(){
     // 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List
     emit changeRelation (0);
     emit fileType(5, networkName, aNodes, totalLinks, undirected);
-    qDebug() << "Parser-loadDL()";
+    qDebug() << "Parser-loadDL() clearing";
+    lineElement.clear(); labelsList.clear(); relationsList.clear();
     return true;
 
 }
@@ -1141,7 +1130,8 @@ bool Parser::xmlStreamHasAttribute( QXmlStreamAttributes &xmlStreamAttr, QString
 {
 	int size = xmlStreamAttr.size();
 	for (register int  i = 0 ; i < size ; i++) {
-		qDebug() << "		xmlStreamHasAttribute(): " << xmlStreamAttr.at(i).name().toString() << endl;
+        qDebug() << "		xmlStreamHasAttribute(): "
+                 << xmlStreamAttr.at(i).name().toString() << endl;
 		if ( xmlStreamAttr.at(i).name() == str) 
             return true;
 	}
