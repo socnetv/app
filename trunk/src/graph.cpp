@@ -1911,8 +1911,8 @@ void Graph::minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int
     It stores that number in a QHash<QString,int> type where the centrality value is the key.
     Called from createDistanceMatrix()
 */
-void Graph::resolveClasses(float C, hash_si &discreteClasses, int &classes){
-    hash_si::iterator it2;
+void Graph::resolveClasses(float C, Hash_StringToInt &discreteClasses, int &classes){
+    Hash_StringToInt::iterator it2;
     it2 = discreteClasses.find(QString::number(C));    //Amort. O(1) complexity
     if (it2 == discreteClasses.end() )	{
         classes++;
@@ -1925,8 +1925,8 @@ void Graph::resolveClasses(float C, hash_si &discreteClasses, int &classes){
 /*
  * Overloaded method. It only adds displaying current vertex for debugging purposes.
  */
-void Graph::resolveClasses(float C, hash_si &discreteClasses, int &classes, int vertex){
-    hash_si::iterator it2;
+void Graph::resolveClasses(float C, Hash_StringToInt &discreteClasses, int &classes, int vertex){
+    Hash_StringToInt::iterator it2;
     it2 = discreteClasses.find(QString::number(C));    //Amort. O(1) complexity
     if (it2 == discreteClasses.end() )	{
         classes++;
@@ -2139,7 +2139,7 @@ void Graph::centralityDegree(bool weights){
     meanDegree=0;
     int vert=vertices();
     QList<Vertex*>::iterator it, it1;
-    hash_si::iterator it2;
+    Hash_StringToInt::iterator it2;
 
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         DC=0;
@@ -2342,7 +2342,7 @@ void Graph::centralityClosenessInfluenceRange(){
     float V=vertices();
     varianceIRCC=0;
     meanIRCC=0;
-    hash_si::iterator it2;
+    Hash_StringToInt::iterator it2;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         IRCC=0;
         // find connected nodes
@@ -2834,7 +2834,7 @@ void Graph::prestigeDegree(bool weights){
     meanDegree=0;
     symmetricAdjacencyMatrix = true;
     QList<Vertex*>::iterator it, it1;
-    hash_si::iterator it2;
+    Hash_StringToInt::iterator it2;
     int vert=vertices();
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         DP=0;
@@ -3034,7 +3034,7 @@ void Graph::prestigeProximity(){
     float V=vertices();
     variancePP=0;
     meanPP=0;
-    hash_si::iterator it2;
+    Hash_StringToInt::iterator it2;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         PP=0; i=0;
         // find connected nodes

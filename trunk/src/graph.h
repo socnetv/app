@@ -57,8 +57,7 @@ class QDateTime;
 typedef QList<Vertex*> Vertices;
 typedef map<long int,long int> imap_i;
 
-typedef QHash <QString, int> hash_si;
-
+typedef QHash <QString, int> Hash_StringToInt;
 typedef QHash <long int, long int> ihash_i;
 
 typedef QPair <float, bool> pair_f_b;
@@ -379,9 +378,9 @@ private:
                 float C, Vertex *v, float &max, float &min,
                 int &maxNode, int &minNode
               ) ;
-    void resolveClasses (float C, hash_si &discreteClasses, int &classes);
+    void resolveClasses (float C, Hash_StringToInt &discreteClasses, int &classes);
     void resolveClasses (
-                        float C, hash_si &discreteClasses,
+                        float C, Hash_StringToInt &discreteClasses,
                         int &classes, int name
                         );
 
@@ -395,9 +394,9 @@ private:
     stack<int> Stack;
 
     /** used in resolveClasses and createDistanceMatrix() */
-    hash_si discreteDPs, discreteDCs, discreteCCs, discreteBCs, discreteSCs;
-    hash_si discreteIRCCs, discreteECs, discreteEccentricities;
-    hash_si discretePCs, discreteICs,  discretePRCs, discretePPs;
+    Hash_StringToInt discreteDPs, discreteDCs, discreteCCs, discreteBCs, discreteSCs;
+    Hash_StringToInt discreteIRCCs, discreteECs, discreteEccentricities;
+    Hash_StringToInt discretePCs, discreteICs,  discretePRCs, discretePPs;
 
     bool calculatedDP, calculatedDC, calculatedCentralities, dynamicMovement;
     bool calculatedPP, calculatedIRCC;

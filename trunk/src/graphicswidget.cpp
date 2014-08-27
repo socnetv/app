@@ -55,6 +55,8 @@ GraphicsWidget::GraphicsWidget( QGraphicsScene *sc, MainWindow* par)  : QGraphic
 	m_currentScaleFactor = 1;
 	m_currentRotationAngle = 0;
 	markedNodeExists=false; //used in findNode()
+    edgesHash.reserve(10000);
+    nodeHash.reserve(500);
 }
 
 
@@ -74,11 +76,9 @@ void GraphicsWidget::paintEvent ( QPaintEvent * event ){
 	Clears the scene 
 */
 void GraphicsWidget::clear() {
-	int i=0;
     qDebug() << " clear GW";
 	nodeHash.clear();
-    edgesMap.clear();
-
+    edgesHash.clear();
     scene()->clear();
 
 }
@@ -177,8 +177,8 @@ void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool 
 	//edge->setCacheMode (QGraphicsItem::DeviceCoordinateCache);  //Also slows down the universe...
 
 //    qDebug()<<"GW: drawEdge() - adding new edge between "<<i << " and "<< j
-//           << " to edgesMap. Name: "<<edgeName.toUtf8();
-	edgesMap [edgeName] =  edge;
+//           << " to edgesHash. Name: "<<edgeName.toUtf8();
+    edgesHash.insert(edgeName, edge);
 
 //    qDebug()<< "GW: drawEdge(): drawing edge weight number...";
 	double x = ( (nodeHash.value(i))->x() + (nodeHash.value(j))->x() ) / 2.0;
@@ -203,7 +203,7 @@ void GraphicsWidget::drawEdgeReciprocal(int source, int target){
     QString edgeName = QString::number(m_curRelation) + QString(":") +
             QString::number(source) + QString(">")+ QString::number(target);
 //    qDebug("GW: making existing edge between %i and %i reciprocal. Name: "+edgeName.toUtf8(), source, target );
-	edgesMap [edgeName]->makeReciprocal();
+    edgesHash.value(edgeName)->makeReciprocal();
 }
 
 
@@ -216,7 +216,7 @@ void GraphicsWidget::unmakeEdgeReciprocal(int source, int target){
     QString edgeName =  QString::number(m_curRelation) + QString(":") +
             QString::number(source) + QString(">")+ QString::number(target);
 //    qDebug("GW: removing edge between %i and %i. Name: "+edgeName.toUtf8(), source, target );
-	edgesMap [edgeName]->unmakeReciprocal();
+    edgesHash.value(edgeName)->unmakeReciprocal();
 }
 
 
@@ -529,20 +529,20 @@ void GraphicsWidget::setEdgeVisibility(int relation, int source, int target, boo
             QString::number( source ) + QString(">")+ QString::number( target );
 	
 	if (visible) {
-		if  ( edgesMap.contains (edgeName) ) {
+        if  ( edgesHash.contains (edgeName) ) {
             qDebug()<<"GW: setEdgeVisibility(). relation " << relation
                    << " : " << source  << " ->  "<< target << " VISIBLE.";
-			edgesMap [edgeName] -> show();			
+            edgesHash.value(edgeName) -> show();
 		}
 		else {
 			
 		}
 	}
 	else {
-		if  ( edgesMap.contains (edgeName) ) {
+        if  ( edgesHash.contains (edgeName) ) {
             qDebug()<<"GW: setEdgeVisibility(). relation " << relation
                    << " : " << source  << " ->  "<< target << " NOT VISIBLE.";
-            edgesMap [edgeName] -> hide();
+            edgesHash.value(edgeName) -> hide();
 		}
 	}
 }
