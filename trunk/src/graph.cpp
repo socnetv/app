@@ -484,7 +484,7 @@ void Graph::removeVertex(long int Doomed){
 
 
     //Update the index of all subsequent vertices
-    ihash_i::const_iterator it1=index.cbegin();
+    H_Int::const_iterator it1=index.cbegin();
     while (it1 != index.cend()){
         if ( it1.value() > indexOfDoomed ) {
             prevIndex = it1.value();
@@ -1789,7 +1789,7 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
     int relation=0, target=0, weight;
     weight=0;
     bool edgeStatus=false;
-    QHash_edges::const_iterator it1;
+    H_edges::const_iterator it1;
     //set distance of s from s equal to 0
     DM.setItem(s,s,0);
     //set sigma of s from s equal to 1
@@ -1923,8 +1923,8 @@ void Graph::minmax(float C, Vertex *v, float &max, float &min, int &maxNode, int
     It stores that number in a QHash<QString,int> type where the centrality value is the key.
     Called from createDistanceMatrix()
 */
-void Graph::resolveClasses(float C, Hash_StringToInt &discreteClasses, int &classes){
-    Hash_StringToInt::iterator it2;
+void Graph::resolveClasses(float C, H_StrToInt &discreteClasses, int &classes){
+    H_StrToInt::iterator it2;
     it2 = discreteClasses.find(QString::number(C));    //Amort. O(1) complexity
     if (it2 == discreteClasses.end() )	{
         classes++;
@@ -1937,8 +1937,8 @@ void Graph::resolveClasses(float C, Hash_StringToInt &discreteClasses, int &clas
 /*
  * Overloaded method. It only adds displaying current vertex for debugging purposes.
  */
-void Graph::resolveClasses(float C, Hash_StringToInt &discreteClasses, int &classes, int vertex){
-    Hash_StringToInt::iterator it2;
+void Graph::resolveClasses(float C, H_StrToInt &discreteClasses, int &classes, int vertex){
+    H_StrToInt::iterator it2;
     it2 = discreteClasses.find(QString::number(C));    //Amort. O(1) complexity
     if (it2 == discreteClasses.end() )	{
         classes++;
@@ -2151,7 +2151,7 @@ void Graph::centralityDegree(bool weights){
     meanDegree=0;
     int vert=vertices();
     QList<Vertex*>::iterator it, it1;
-    Hash_StringToInt::iterator it2;
+    H_StrToInt::iterator it2;
 
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         DC=0;
@@ -2354,7 +2354,7 @@ void Graph::centralityClosenessInfluenceRange(){
     float V=vertices();
     varianceIRCC=0;
     meanIRCC=0;
-    Hash_StringToInt::iterator it2;
+    H_StrToInt::iterator it2;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         IRCC=0;
         // find connected nodes
@@ -2846,7 +2846,7 @@ void Graph::prestigeDegree(bool weights){
     meanDegree=0;
     symmetricAdjacencyMatrix = true;
     QList<Vertex*>::iterator it, it1;
-    Hash_StringToInt::iterator it2;
+    H_StrToInt::iterator it2;
     int vert=vertices();
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         DP=0;
@@ -3046,7 +3046,7 @@ void Graph::prestigeProximity(){
     float V=vertices();
     variancePP=0;
     meanPP=0;
-    Hash_StringToInt::iterator it2;
+    H_StrToInt::iterator it2;
     for (it=m_graph.begin(); it!=m_graph.end(); it++){
         PP=0; i=0;
         // find connected nodes
@@ -3215,7 +3215,7 @@ int Graph::prestigePageRank(){
     QList<Vertex*>::iterator it;
     int relation=0;
     bool edgeStatus=false;
-    QHash_edges::const_iterator jt;
+    H_edges::const_iterator jt;
 
     // begin iteration - continue until we reach our desired delta
     while (maxDelta > delta) {
@@ -4345,7 +4345,7 @@ float Graph:: numberOfCliques(int v1){
     int relation=0, weight=0;
     bool edgeStatus=false;
     bool symmetric=false;
-    QHash_edges::const_iterator it1, it2;
+    H_edges::const_iterator it1, it2;
 
     qDebug() << "Graph::numberOfCliques() Source vertex " << v1
              << "[" << index[v1] << "] has inDegree " << inboundEdges(v1)

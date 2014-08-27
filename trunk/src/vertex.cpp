@@ -175,7 +175,7 @@ void Vertex::changeLinkWeightTo(long int target, float weight){
     qDebug() << " *** m_outLinks.count " <<
                 m_outLinks.count();
     qDebug() << "first find and remove old relation-weight pair" ;
-    QHash_edges::iterator it1=m_outLinks.find(target);
+    H_edges::iterator it1=m_outLinks.find(target);
     while (it1 != m_outLinks.end() ) {
         if ( it1.key() == target && it1.value().first == m_curRelation ) {
             it1=m_outLinks.erase(it1);
@@ -205,7 +205,7 @@ void Vertex::removeLinkTo (long int v2) {
 
     if (outLinks()>0) {
         qDebug () << "checking all_outLinks";
-        QHash_edges::iterator it1=m_outLinks.find(v2);
+        H_edges::iterator it1=m_outLinks.find(v2);
         while (it1 != m_outLinks.end() && it1.key() == v2 ) {
             if ( it1.value().first == m_curRelation ) {
                 qDebug() << " *** vertex " << m_name << " connected to "
@@ -240,7 +240,7 @@ void Vertex::removeLinkFrom(long int v2){
 
     if (inLinks()>0) {
         qDebug () << "checking all_inLinks";
-        QHash_edges::iterator it=m_inLinks.find(v2);
+        H_edges::iterator it=m_inLinks.find(v2);
         while (it != m_inLinks.end() ) {
             if ( it.key() == v2 && it.value().first == m_curRelation ) {
                 qDebug() << " *** vertex " << m_name << " connected from  "
@@ -362,7 +362,7 @@ long int Vertex::outLinks() {
     m_outLinksCounter = 0;
     int relation=0;
     bool edgeStatus = false;
-    QHash_edges::const_iterator it1=m_outLinks.constBegin();
+    H_edges::const_iterator it1=m_outLinks.constBegin();
     while (it1 != m_outLinks.constEnd() ) {
         relation = it1.value().first;
         if ( relation == m_curRelation ) {
@@ -387,7 +387,7 @@ QHash<int,float>* Vertex::returnEnabledOutLinks(){
     float m_weight=0;
     int relation = 0;
     bool edgeStatus=false;
-    QHash_edges::const_iterator it1=m_outLinks.constBegin();
+    H_edges::const_iterator it1=m_outLinks.constBegin();
     while (it1 != m_outLinks.constEnd() ) {
         relation = it1.value().first;
         if ( relation == m_curRelation ) {
@@ -413,7 +413,7 @@ long int Vertex::inLinks() {
     m_inLinksCounter = 0;
     int relation=0;
     bool edgeStatus = false;
-    QHash_edges::const_iterator it1=m_inLinks.constBegin();
+    H_edges::const_iterator it1=m_inLinks.constBegin();
     while (it1 != m_inLinks.constEnd() ) {
         relation = it1.value().first;
         if ( relation == m_curRelation ) {
@@ -441,7 +441,7 @@ long int Vertex::outDegree() {
     float m_weight=0;
     int relation = 0;
     bool edgeStatus=false;
-    QHash_edges::const_iterator it1=m_outLinks.constBegin();
+    H_edges::const_iterator it1=m_outLinks.constBegin();
     while (it1 != m_outLinks.constEnd() ) {
         relation = it1.value().first;
         if ( relation == m_curRelation ) {
@@ -469,7 +469,7 @@ long int Vertex::inDegree() {
     float m_weight=0;
     int relation = 0;
     bool edgeStatus=false;
-    QHash_edges::const_iterator it1=m_inLinks.constBegin();
+    H_edges::const_iterator it1=m_inLinks.constBegin();
     while (it1 != m_inLinks.constEnd() ) {
         relation = it1.value().first;
         if ( relation == m_curRelation ) {
@@ -496,7 +496,7 @@ long int Vertex::localDegree(){
     bool edgeStatus=false;
     m_localDegree = (outDegree() + inDegree() );
 
-    QHash_edges::const_iterator it1=m_outLinks.constBegin();
+    H_edges::const_iterator it1=m_outLinks.constBegin();
     while (it1 != m_outLinks.constEnd() ) {
         relation = it1.value().first;
         if ( relation == m_curRelation ) {
@@ -525,7 +525,7 @@ float Vertex::isLinkedTo(long int v2){
     qDebug()<< "Vertex::isLinkedTo()" ;
     float m_weight=0;
     bool edgeStatus=false;
-    QHash_edges::iterator it1=m_outLinks.find(v2);
+    H_edges::iterator it1=m_outLinks.find(v2);
     while (it1 != m_outLinks.end() && it1.key() == v2 ) {
         if ( it1.value().first == m_curRelation ) {
             edgeStatus=it1.value().second.second;
@@ -563,7 +563,7 @@ float Vertex::isLinkedFrom(long int v2){
     qDebug()<< "Vertex::isLinkedFrom()" ;
     float m_weight=0;
     bool edgeStatus=false;
-    QHash_edges::iterator it1=m_inLinks.find(v2);
+    H_edges::iterator it1=m_inLinks.find(v2);
     while (it1 != m_inLinks.end() && it1.key() == v2) {
         if ( it1.value().first == m_curRelation ) {
             edgeStatus=it1.value().second.second;

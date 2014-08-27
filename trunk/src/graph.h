@@ -56,12 +56,12 @@ class QDateTime;
 
 typedef QList<Vertex*> Vertices;
 
-typedef QHash <QString, int> Hash_StringToInt;
-typedef QHash <long int, long int> ihash_i;
+typedef QHash <QString, int> H_StrToInt;
+typedef QHash <long int, long int> H_Int;
 
 typedef QPair <float, bool> pair_f_b;
 typedef QPair <int, pair_f_b > rel_w_bool;
-typedef QHash < int, rel_w_bool > QHash_edges;
+typedef QHash < int, rel_w_bool > H_edges;
 
 
 class Graph:  public QObject{
@@ -334,10 +334,10 @@ public:
      *   We need to know the place of a vertex inside m_graph after adding
      *   or removing many vertices
      */
-    ihash_i index;
+    H_Int index;
 
     // Stores the number of vertices at distance n from a given vertex
-    ihash_i sizeOfNthOrderNeighborhood;
+    H_Int sizeOfNthOrderNeighborhood;
 
     /* maps have O(logN) lookup complexity */
     /* Consider using tr1::hashmap which has O(1) lookup, but this is not ISO C++ yet :(   */
@@ -377,9 +377,9 @@ private:
                 float C, Vertex *v, float &max, float &min,
                 int &maxNode, int &minNode
               ) ;
-    void resolveClasses (float C, Hash_StringToInt &discreteClasses, int &classes);
+    void resolveClasses (float C, H_StrToInt &discreteClasses, int &classes);
     void resolveClasses (
-                        float C, Hash_StringToInt &discreteClasses,
+                        float C, H_StrToInt &discreteClasses,
                         int &classes, int name
                         );
 
@@ -393,9 +393,9 @@ private:
     stack<int> Stack;
 
     /** used in resolveClasses and createDistanceMatrix() */
-    Hash_StringToInt discreteDPs, discreteDCs, discreteCCs, discreteBCs, discreteSCs;
-    Hash_StringToInt discreteIRCCs, discreteECs, discreteEccentricities;
-    Hash_StringToInt discretePCs, discreteICs,  discretePRCs, discretePPs;
+    H_StrToInt discreteDPs, discreteDCs, discreteCCs, discreteBCs, discreteSCs;
+    H_StrToInt discreteIRCCs, discreteECs, discreteEccentricities;
+    H_StrToInt discretePCs, discreteICs,  discretePRCs, discretePPs;
 
     bool calculatedDP, calculatedDC, calculatedCentralities, dynamicMovement;
     bool calculatedPP, calculatedIRCC;

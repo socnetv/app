@@ -38,15 +38,12 @@ using namespace std;
 class QPointF;
 class Graph;
 
-typedef map<int,float> imap_f;
-typedef QHash<int,QString> ihash_s;
 
+typedef QHash<int,QString> H_IntToStr;
 typedef QList<int> ilist;
-
-
 typedef QPair <float, bool> pair_f_b;
 typedef QPair <int, pair_f_b > rel_w_bool;
-typedef QHash < int, rel_w_bool > QHash_edges;
+typedef QHash < int, rel_w_bool > H_edges;
 
 class Vertex : public QObject{
     Q_OBJECT
@@ -218,7 +215,7 @@ public:
     bool hasCLC() { 	return m_hasCLC; }
 
     //hold all outbound and inboud edges of this vertex.
-    QHash_edges m_outLinks, m_inLinks;
+    H_edges m_outLinks, m_inLinks;
 signals:
     void setEdgeVisibility (int, int, int, bool);
 
@@ -234,7 +231,7 @@ private:
     bool m_inLinked, m_outLinked, m_reciprocalLinked, m_enabled, m_hasCLC, m_isolated;
     QString m_color, m_numberColor, m_label, m_labelColor, m_shape;
     //QString *outLinkColors;
-    ihash_s outLinkColors;
+    H_IntToStr outLinkColors;
     //FIXME vertice coords
 
     double m_x, m_y;

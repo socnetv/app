@@ -41,8 +41,8 @@ class NodeLabel;
 class Guide;
 class EdgeWeight;
 
-typedef QHash<QString, Edge*> Hash_StringToEdge;
-typedef QHash <long int, Node*> Hash_NumToNode;
+typedef QHash<QString, Edge*> H_StrToEdge;
+typedef QHash <long int, Node*> H_NumToNode;
 
 class GraphicsWidget : public QGraphicsView {
     Q_OBJECT
@@ -131,8 +131,8 @@ signals:
     void zoomChanged(int);
 
 private:
-    Hash_NumToNode nodeHash;	//This is used in drawEdge() method
-    Hash_StringToEdge edgesHash; // helper hash to easily find edges
+    H_NumToNode nodeHash;	//This is used in drawEdge() method
+    H_StrToEdge edgesHash; // helper hash to easily find edges
     int m_curRelation;
     int timerId,  layoutType, m_nodeSize, m_numberDistance, m_labelDistance;
     double m_currentScaleFactor;
