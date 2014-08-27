@@ -113,13 +113,14 @@ Graph::Graph() {
  * @param relation
  */
 void Graph::changeRelation(int relation){
-    qDebug() << "Graph::changeRelation(int) " << relation;
+    qDebug() << "\n \n \n Graph::changeRelation(int) to relation " << relation
+             << " current relation is " << m_curRelation << "\n\n\n";
     if (m_curRelation == relation ) {
         qDebug() << "Graph::changeRelation(int) - same relation - END";
         return;
     }
     if ( relation < 0) {
-        qDebug() << "Graph::changeRelation(int) - negative relation - END";
+        qDebug() << "Graph::changeRelation(int) - negative relation - END ";
         return;
     }
     QList<Vertex*>::iterator it;
@@ -1138,7 +1139,7 @@ void Graph::clear() {
         crawler.terminateReaderQuit();
         crawler.quit();
     }
-    //qDebug("Graph: m_graph cleared. Now reports size %i", m_graph.size());
+    qDebug("Graph: m_graph cleared. Now reports size %i", m_graph.size());
 }
 
 

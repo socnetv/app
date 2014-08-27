@@ -2649,8 +2649,6 @@ void MainWindow::initNet(){
     linkClicked=false;
     nodeClicked=false;
 
-    changeRelationCombo->clear();
-
     /** Clear previous network data */
     activeGraph.clear();
     activeGraph.setSocNetV_Version(VERSION);
@@ -2692,6 +2690,8 @@ void MainWindow::initNet(){
     //displayLinksArrowsAct->setChecked(false);		//FIXME: USER PREFS EMITTED TO GRAPH?
 
     filterIsolateNodesAct->setChecked(false); // re-init orphan nodes menu item
+
+    changeRelationCombo->clear();
 
     /** set window title **/
     setWindowTitle(tr("Social Network Visualizer ")+VERSION);
@@ -3309,6 +3309,8 @@ void MainWindow::fileType (
 
 /**
  * @brief MainWindow::prevRelation
+ * Decreases the index of changeRelationCombo
+ * which signals to Graph::changeRelation()
  */
 void MainWindow::prevRelation(){
     qDebug() << "MW::prevRelation()";
@@ -3321,6 +3323,8 @@ void MainWindow::prevRelation(){
 
 /**
  * @brief MainWindow::nextRelation
+ * Increases the index of changeRelationCombo
+ * which signals to Graph::changeRelation()
  */
 void MainWindow::nextRelation(){
     qDebug() << "MW::nextRelation()";
@@ -3337,8 +3341,8 @@ void MainWindow::nextRelation(){
 
 /**
  * @brief MainWindow::addRelation
- * called from activeGraph when the parser or a network creation method
- * demands a new relation to be added in the Combobox.
+ * called from activeGraph::addRelationFromGraph(QString) when the parser or a
+ * Graph method demands a new relation to be added in the Combobox.
  * @param relationName (NULL)
  */
 void MainWindow::addRelation(QString relationName){
@@ -3380,7 +3384,7 @@ void MainWindow::addRelation(){
         changeRelationCombo->addItem(newRelationName);
         emit addRelationToGraph(newRelationName);
         if (relationsCounter != 0){ //dont do it if its the first relation added
-            qDebug() << "MW::addRelation() - calling MW::changeRelation";
+            qDebug() << "MW::addRelation() - updating combo index";
             changeRelationCombo->setCurrentIndex(relationsCounter);
         }
     }
