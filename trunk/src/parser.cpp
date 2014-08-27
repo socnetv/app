@@ -280,7 +280,7 @@ bool Parser::loadDL(){
                 str=(prevLineStr.append(" ")).append(str) ;
                 qDebug() << " prevLineStr not empty - prepending it to str - "
                          << " new str: \n" << str;
-                str.simplified();
+                str=str.simplified();
             }
             lineElement=str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
 

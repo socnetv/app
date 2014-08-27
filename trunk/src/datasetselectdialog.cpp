@@ -48,7 +48,6 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
             << "Zachary_Karate_Club_Simple_Ties.sm"
             << "Zachary_Karate_Club_Weighted_Ties.sm"
             << "Bernard_Killworth_Fraternity.dl"
-            << "Bernard_Killworth_Fraternity_Non_Symmetric_Cognitive_Data.sm"
             << "Galaskiewicz_CEOs_and_clubs_affiliation_network_data.2sm"
             << "Freeman_EIES_network_Acquaintanceship_at_time-1"
             << "Freeman_EIES_network_Acquaintanceship_at_time-2"

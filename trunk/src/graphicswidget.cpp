@@ -527,24 +527,24 @@ void GraphicsWidget::setInitLabelDistance(int labelDistance){
 void GraphicsWidget::setEdgeVisibility(int relation, int source, int target, bool visible){
     QString edgeName =  QString::number(relation) + QString(":") +
             QString::number( source ) + QString(">")+ QString::number( target );
-	
-	if (visible) {
+
+    if (visible) {
         if  ( edgesHash.contains (edgeName) ) {
             qDebug()<<"GW: setEdgeVisibility(). relation " << relation
                    << " : " << source  << " ->  "<< target << " VISIBLE.";
             edgesHash.value(edgeName) -> show();
-		}
-		else {
-			
-		}
-	}
-	else {
+        }
+        else {
+
+        }
+    }
+    else {
         if  ( edgesHash.contains (edgeName) ) {
             qDebug()<<"GW: setEdgeVisibility(). relation " << relation
                    << " : " << source  << " ->  "<< target << " NOT VISIBLE.";
             edgesHash.value(edgeName) -> hide();
-		}
-	}
+        }
+    }
 }
 
 
