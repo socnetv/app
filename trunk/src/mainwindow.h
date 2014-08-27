@@ -286,6 +286,7 @@ public slots:
 
     //Called by Graph to display some message to the user
     void statusMessage(const QString);
+    void showMessageToUser(const QString);
 
     //Called by Graph to update what the selected node is.
     void selectedNode (const int);

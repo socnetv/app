@@ -5108,6 +5108,7 @@ void Graph::writeDataSetToFile (QString fileName) {
     qDebug()<< "		... writing";
     QStringList fileNameNoPath=fileName.split ("/" );
     QString name=fileNameNoPath.last();
+    QString datasetDescription=QString::null;
     if ( name == "Krackhardt_High-tech_managers_Advice_relation.sm" ) {
         outText <<
                    "0 1 0 1 0 0 0 1 0 0 0 0 0 0 0 1 0 1 0 0 1" << endl <<
@@ -5392,13 +5393,14 @@ void Graph::writeDataSetToFile (QString fileName) {
                   "0 1 1 0 0 0 0 0 0 0 0 1 0 0 0";
     }
     else if (name == "Bernard_Killworth_Fraternity.dl"){
-        /*
-          Bernard & Killworth  recorded the interactions among students living in a fraternity at a West Virginia college.
-                  Subjects had been residents in the fraternity from 3 months to 3 years.
-          The BKFRAB relation is symmetric and valued. It counts the number of times a pair of subjects were seen in conversation
-                  by an "unobtrusive" observer (observation time: 21 hours a day, for five days).
-          The BKFRAC relation is non-symmetric and valued. It contains rankings made by the subjects themselves of how frequently they interacted with other subjects in the observation week.
-        */
+        datasetDescription =
+                tr("Bernard & Killworth recorded the interactions among students living in a fraternity at "
+                   "a West Virginia college. Subjects had been residents in the fraternity from 3 months to 3 years. "
+                   "This network dataset contains two relations: \n"
+                   "The BKFRAB relation is symmetric and valued. It counts the number of times a pair of subjects were "
+                   "seen in conversation by an unobtrusive observer (observation time: 21 hours a day, for five days). \n"
+                   "The BKFRAC relation is non-symmetric and valued. Contains rankings made by the subjects themselves of "
+                   "how frequently they interacted with other subjects in the observation week.");
         outText << "DL"<<endl<<
                    "N=58 NM=2"<<endl<<
                    "FORMAT = FULLMATRIX DIAGONAL PRESENT"<<endl<<
@@ -5841,6 +5843,10 @@ void Graph::writeDataSetToFile (QString fileName) {
                     qDebug()<< "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek written... ";
     }
     f.close();
+    if ( !datasetDescription.isEmpty() ) {
+        emit describeDataset(datasetDescription);
+    }
+
 }
 
 

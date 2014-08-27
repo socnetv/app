@@ -177,6 +177,9 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect( &activeGraph, SIGNAL( statusMessage (QString) ),
              this, SLOT( statusMessage (QString) ) ) ;
 
+    connect( &activeGraph, SIGNAL( describeDataset (QString) ),
+             this, SLOT( showMessageToUser (QString) ) ) ;
+
     connect( &activeGraph, SIGNAL( selectedVertex(int) ),
              this, SLOT( selectedNode(int) ) ) ;
 
@@ -2706,6 +2709,12 @@ void MainWindow::initNet(){
  */
 void MainWindow::statusMessage(const QString message){
     statusBar()->showMessage( message, statusBarDuration );
+}
+
+void MainWindow::showMessageToUser(const QString message) {
+    QMessageBox::information(this, tr("Info"),
+                          message,
+                          QMessageBox::Ok, 0);
 }
 
 

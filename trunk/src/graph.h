@@ -114,6 +114,7 @@ signals:
     void signalFileType (int, QString, int,int, bool);	//notifies MW what we have loaded.
     void statusMessage (QString message);			//updates statusbar message
     void addRelationToMW(QString newRelation);
+    void describeDataset(QString);
 
     /** Signals to GraphicsWidget */
     void drawNode( int ,int,  QString, QString, int, QString, QString, int, QPointF, QString, bool, bool, bool);	//call GW to draw a node
