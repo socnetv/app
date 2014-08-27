@@ -88,6 +88,46 @@ bool Parser::load(QString fn, int iNS, QString iNC, QString iNSh,
 }
 
 
+void Parser::createRandomNodes(int nodeNum=1,QString label=NULL, int totalNodes=1){
+    if (totalNodes != 1 ) {
+        int i=0;
+        for (i=0; i<totalNodes; i++) {
+            randX=rand()%gwWidth;
+            randY=rand()%gwHeight;
+            nodeLabel = QString::number(i+1);
+            qDebug()<<"Creating node: "<< i+1
+                   << " with label: " << nodeLabel
+                   << " at "<< randX<<","<< randY;
+            emit createNode(
+                        i+1, initNodeSize,initNodeColor,
+                        initNodeNumberColor, initNodeNumberSize,
+                        nodeLabel, initNodeLabelColor, initNodeLabelSize,
+                        QPointF(randX, randY),
+                        initNodeShape, false
+                        );
+        }
+    }
+    else {
+        randX=rand()%gwWidth;
+        randY=rand()%gwHeight;
+        if (label.isEmpty()) {
+            nodeLabel= QString::number(nodeNum+1);
+        }
+        else
+            nodeLabel=label;
+        qDebug()<<"Creating node: "<< nodeNum
+               << " with label: " << nodeLabel
+               << " at "<< randX<<","<< randY;
+        emit createNode(
+                    nodeNum, initNodeSize,initNodeColor,
+                    initNodeNumberColor, initNodeNumberSize,
+                    nodeLabel, initNodeLabelColor, initNodeLabelSize,
+                    QPointF(randX, randY),
+                    initNodeShape, false
+                    );
+
+    }
+}
 
 /**
     Tries to load a file as DL-formatted network (UCINET)
@@ -100,9 +140,9 @@ bool Parser::loadDL(){
     if ( ! file.open(QIODevice::ReadOnly )) return false;
 	QTextStream ts( &file );
 
-    QString str, label, nm_str, relation;
+    QString str, label, nm_str, relation, prevLineStr;
 	
-    int source=1, target=1, nm=0,lineCounter=0, mark=0, mark2=0, nodeNum=0;
+    int source=1, target=1, nm=0,lineCounter=0, mark=0, mark2=0, nodeSum=0;
     int relationCounter=0;
     edgeWeight=0;
     bool labels_flag=false, data_flag=false, intOK=false, floatOK=false;
@@ -210,19 +250,20 @@ bool Parser::loadDL(){
                 qDebug() << "adding label " << label << " to labelList";
                 labelsList << label;
             }
-            randX=rand()%gwWidth;
-            randY=rand()%gwHeight;
-            nodeNum++;
-            qDebug()<<"Creating node: "<< nodeNum
-                   << " with label: " << label
-                   << " at "<< randX<<","<< randY;
-            emit createNode(
-                        nodeNum, initNodeSize,initNodeColor,
-                        initNodeNumberColor, initNodeNumberSize,
-                        label, initNodeLabelColor, initNodeLabelSize,
-                        QPointF(randX, randY),
-                        initNodeShape, false
-                        );
+//            randX=rand()%gwWidth;
+//            randY=rand()%gwHeight;
+            nodeSum++;
+            createRandomNodes(nodeSum, label,1);
+//            qDebug()<<"Creating node: "<< nodeSum
+//                   << " with label: " << label
+//                   << " at "<< randX<<","<< randY;
+//            emit createNode(
+//                        nodeSum, initNodeSize,initNodeColor,
+//                        initNodeNumberColor, initNodeNumberSize,
+//                        label, initNodeLabelColor, initNodeLabelSize,
+//                        QPointF(randX, randY),
+//                        initNodeShape, false
+//                        );
 
         }
         if ( relation_flag){
@@ -239,8 +280,28 @@ bool Parser::loadDL(){
             }
         }
         if ( data_flag){		//read edges
+            // check if we haven't created any nodes...
+            if ( nodeSum < aNodes ){
+                qDebug() << " nodes have not been created yet. "
+                            << " calling createRandomNodes()" ;
+                createRandomNodes(1, QString::null, aNodes);
+                nodeSum = aNodes;
+            }
             //SPLIT EACH LINE (ON EMPTY SPACE CHARACTERS)
+            if (!prevLineStr.isEmpty()) {
+                str=(prevLineStr.append(" ")).append(str) ;
+                qDebug() << " prevLineStr not empty - prepending it to str - "
+                         << " new str: \n" << str;
+                str.simplified();
+            }
             lineElement=str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+
+            if (lineElement.count() < aNodes ) {
+                qDebug() << "This line has fewer than " << aNodes << " edges";
+                prevLineStr=str;
+                continue;
+            }
+            prevLineStr.clear();
             target=1;
             if (source==1){
                 relation = relationsList[ relationCounter ];
@@ -289,7 +350,7 @@ bool Parser::loadDL(){
         }
     }
     //sanity check
-    if (nodeNum != aNodes) {
+    if (nodeSum != aNodes) {
         qDebug()<< "Error: aborting";
         return false;
     }

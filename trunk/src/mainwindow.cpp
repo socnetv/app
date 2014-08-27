@@ -3911,8 +3911,11 @@ void MainWindow::slotCreateRandomNetErdos(){
 
     qDebug("MW Erdos network:  Create random network of %i nodes and %f edge probability.",newNodes, probability);
 
-    if (showProgressBarAct->isChecked() && newNodes > 300){
-        progressDialog= new QProgressDialog("Creating random network. Please wait (or disable me from Options > View > ProgressBar, next time ;)).", "Cancel", 0, newNodes+newNodes, this);
+    if (showProgressBarAct->isChecked() && newNodes > 500 && probability > 1){
+        progressDialog= new QProgressDialog(
+                    "Creating random network. \n "
+                    " Please wait (or disable me from Options > View > ProgressBar, next time ;)).",
+                    "Cancel", 0, newNodes+newNodes, this);
         progressDialog -> setWindowModality(Qt::WindowModal);
         connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
         progressDialog->setMinimumDuration(0);
@@ -3923,7 +3926,7 @@ void MainWindow::slotCreateRandomNetErdos(){
     activeGraph.createRandomNetErdos (newNodes, probability);
     QApplication::restoreOverrideCursor();
 
-    if (showProgressBarAct->isChecked() && newNodes > 300)
+    if (showProgressBarAct->isChecked() && newNodes > 500 && probability > 1)
         progressDialog->deleteLater();
 
     fileLoaded=false;

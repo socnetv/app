@@ -73,6 +73,8 @@ public:
 	void readGraphMLElementEdgeGraphics (QXmlStreamReader &);
 	
 	bool isComment(QString str);  
+    void createRandomNodes(int, QString, int);
+
 signals:
     void addRelation( QString );
     void changeRelation( int );
