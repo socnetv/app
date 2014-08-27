@@ -80,8 +80,11 @@ Matrix::~Matrix() {
  * clears data
  */
 void Matrix::clear() {
-    m_Actors=0;
-    delete [] row;
+    if (m_Actors > 0){
+        qDebug() << "Matrix::clear() deleting old rows";
+        m_Actors=0;
+        delete [] row;
+    }
 }
 
 /**
@@ -93,10 +96,7 @@ void Matrix::clear() {
  */
 void Matrix::resize (int Actors) {
     qDebug() << "Matrix: resize() ";
-    if (m_Actors > 0) {
-        qDebug() << "Matrix: resize() deleting old rows";
-        delete [] row;
-    }
+    clear();
     row = new (nothrow) Row [m_Actors=Actors];
     Q_CHECK_PTR( row );
     qDebug() << "Matrix: resize() -- resizing each row";
@@ -119,7 +119,7 @@ Matrix& Matrix::operator = (Matrix & a) {
     qDebug()<< "Matrix::operator asignment =";
     if (this != &a){
 		if (a.m_Actors!=m_Actors) {
-			delete [] row;
+            clear();
             row=new (nothrow) Row[m_Actors=a.m_Actors];
 			Q_CHECK_PTR( row );
 			for (int i=0;i<m_Actors; i++) {
@@ -274,7 +274,7 @@ void Matrix::findMinMaxValues (float & maxVal, float &minVal){
 // makes this matrix the identity matrix I
 void Matrix::identityMatrix(int Actors) {
 	qDebug() << "Matrix: identityMatrix() -- deleting old rows";
-	delete [] row;
+    clear();
     row = new (nothrow) Row [m_Actors=Actors];
 	Q_CHECK_PTR( row );
 	qDebug() << "Matrix: resize() -- resizing each row";
@@ -289,7 +289,7 @@ void Matrix::identityMatrix(int Actors) {
 // makes this matrix the zero matrix of size Actors
 void Matrix::zeroMatrix(int Actors) {
     qDebug() << "Matrix:: zeroMatrix() of size " << Actors;
-    delete [] row;
+    clear();
     row = new (nothrow) Row [m_Actors=Actors];
     Q_CHECK_PTR( row );
     qDebug() << "Matrix::zeroMatrix - resizing each row";
