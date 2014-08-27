@@ -570,24 +570,6 @@ void GraphicsWidget::setNodeVisibility(long int number, bool visible){
 		}
 	    }
     }
-
-//	qDebug() << "GW: setNodeVisibility() for "<< number;
-//	foreach ( Node *candidate, nodeHash) {
-//		if (candidate->nodeNumber() == number ) {
-//		    if (visible) {
-//			qDebug() << "GW: setNodeVisibility(): Node numbered " << number << " found! Will be visible now...";
-//			candidate->show();
-//			candidate->update();
-//		    }
-//		    else{
-//			qDebug() << "GW: setNodeVisibility(): Node numbered " << number << " found! Invisible now...";
-//			candidate->hide();
-//		    }
-//
-//			break;
-//		}
-//
-//	}
 }
 
 
