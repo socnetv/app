@@ -457,15 +457,16 @@ int Graph::firstVertexNumber() {
     Finally, it removes the vertex.
 */
 void Graph::removeVertex(long int Doomed){
-    qDebug() << "Graph: removeVertex " << m_graph[ index[Doomed] ]->name()
-             << "  with index= " << index[Doomed] ;
+    qDebug() << "Graph: removeVertex - Doomed: "
+             << m_graph[ index[Doomed] ]->name()
+             << "  indexOfDoomed= " << index[Doomed] ;
     long int indexOfDoomed=index[Doomed];
 
     //Remove links to Doomed from each other vertex
     for (QList<Vertex*>::iterator it=m_graph.begin(); it!=m_graph.end(); it++){
         if  ( (*it)->isLinkedTo(Doomed) != 0) {
             qDebug()<< "Graph: Vertex " << (*it)->name()
-                    << " is linked to selected and has "
+                    << " is linked to doomed "<< Doomed << " and has "
                     << (*it)->outLinks() << " and " <<  (*it)->outDegree() ;
             if ( (*it)->outLinks() == 1 && (*it)->isLinkedFrom(Doomed) != 0 )	{
                 qDebug() << "Graph: decreasing reciprocalEdgesVert";
@@ -480,53 +481,30 @@ void Graph::removeVertex(long int Doomed){
 
     qDebug()<< "Graph: Finished with vertices. Update the index which maps vertices inside m_graph " ;
     long int prevIndex=indexOfDoomed;
-    long int tempIndex=0;
 
-
-    //Update the index of all subsequent vertices
+    qDebug () << " Updating index of all subsequent vertices ";
     H_Int::const_iterator it1=index.cbegin();
     while (it1 != index.cend()){
         if ( it1.value() > indexOfDoomed ) {
             prevIndex = it1.value();
-            qDebug() << "Graph::removeVertex " << it1.key() << " had prevIndex: "
-                     << prevIndex << " > indexOfDoomed " << indexOfDoomed
-                     << " setting new index "  ;
-            qDebug() << "Graph::removeVertex - index size was " << index.size();
+            qDebug() << "Graph::removeVertex - vertex " << it1.key()
+                     << " had prevIndex: " << prevIndex
+                     << " > indexOfDoomed " << indexOfDoomed
+                     << " Setting new index. Index size was: "<< index.size();
             index.insert( it1.key(), --prevIndex)  ;
-            qDebug() << "Graph::removeVertex - index size now " << index.size();
+            qDebug() << "Graph::removeVertex - vertex " << it1.key()
+                     << " new index: " << index.value( it1.key(), -666)
+                     << " Index size now: "<< index.size();
+
         }
         else {
             qDebug() << "Graph::removeVertex " << it1.key() << " with index "
-                     << it1.value() << " < indexOfDoomed. Continue ";
+                     << it1.value() << " < indexOfDoomed. CONTINUE";
 
         }
         ++it1;
     }
 
-
-    /**
-
-    //Find the position of the Vertex inside m_graph
-    map<long int,long int>::iterator pos=index.find(Doomed);
-    qDebug() << "Graph: vertex " << (pos)->first << " index "<< (pos)->second << " to be erased. ";
-
-    //find next active vertex inside index
-    (pos)->second = -1;
-    while ( (pos)->second == -1 )
-        ++pos;
-    qDebug() << "Graph: posNext " << (pos)->first << " index "<< (pos)->second ;
-
-
-    //Update the index of all subsequent vertices
-    map<long int,long int>::iterator it1;
-    for (it1=pos; it1!=index.end(); it1++)	{
-        qDebug() << "Graph: vertex " << (it1)->first << " with index "<< (it1)->second << " will take index" << prevIndex;
-        tempIndex=(it1)->second;
-        (it1)->second=prevIndex;
-        prevIndex=tempIndex;
-        qDebug() << "Graph: now vertex " << (it1)->first << " has index "<< (it1)->second ;
-    }
-    **/
     //Now remove vertex Doomed from m_graph
     qDebug() << "Graph: graph vertices=size="<< vertices() << "="
              << m_graph.size() <<  " removing vertex at index " << indexOfDoomed ;
