@@ -1764,8 +1764,8 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 */ 
 void Graph::BFS(int s, bool doCalculcateCentralities){
     int u,w, dist_u=0, temp=0, dist_w=0;
-    int relation=0, target=0, weight;
-    weight=0;
+    int relation=0, target=0;
+    //int  weight=0;
     bool edgeStatus=false;
     H_edges::const_iterator it1;
     //set distance of s from s equal to 0
@@ -1804,7 +1804,7 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
                 continue;
             }
             target = it1.key();
-            weight = it1.value().second.first;
+          //  weight = it1.value().second.first;
             w=index[ target ];
 //            qDebug("BFS: u=%i is connected with node %i of index w=%i. ", u, target, w);
 //            qDebug("BFS: Start path discovery");
@@ -4320,7 +4320,8 @@ float Graph:: numberOfCliques(int v1){
     qDebug("*** Graph::numberOfCliques(%i) ", v1);
     float cliques=0;
     int  connectedVertex1=0, connectedVertex2=0;
-    int relation=0, weight=0;
+    int relation=0;
+//    int weight=0;
     bool edgeStatus=false;
     bool symmetric=false;
     H_edges::const_iterator it1, it2;
@@ -4345,7 +4346,7 @@ float Graph:: numberOfCliques(int v1){
                 continue;
             }
             connectedVertex1 = it1.key();
-            weight = it1.value().second.first;
+//            weight = it1.value().second.first;
             qDebug() << "Graph::numberOfCliques() "
                         << " inLink from 1st neighbor " << connectedVertex1
                      << "[" << index[connectedVertex1] << "] "
