@@ -350,9 +350,9 @@ void GraphicsWidget::eraseEdge(int sourceNode, int targetNode){
 
 /** 
 	Called from Node::die() to removeItem from nodeHash...
+    FIXME : Do we use it ????
 */
 void GraphicsWidget::removeItem( Node *node){
-	vector<Node*>::iterator it;
 	long int i=node->nodeNumber();
 	foreach ( Node *candidate, nodeHash) {
 		if ( candidate->nodeNumber() == i )
@@ -529,27 +529,19 @@ void GraphicsWidget::setInitLabelDistance(int labelDistance){
 /**
 *	Changes the visibility of an GraphicsView edge (number, label, edge, etc)
 */
-void GraphicsWidget::setEdgeVisibility(int relation, int source, int target, bool visible){
+void GraphicsWidget::setEdgeVisibility(int relation, int source, int target, bool toggle){
     QString edgeName =  QString::number(relation) + QString(":") +
             QString::number( source ) + QString(">")+ QString::number( target );
 
-    if (visible) {
-        if  ( edgesHash.contains (edgeName) ) {
-            qDebug()<<"GW: setEdgeVisibility(). relation " << relation
-                   << " : " << source  << " ->  "<< target << " VISIBLE.";
-            edgesHash.value(edgeName) -> show();
-        }
-        else {
+    if  ( edgesHash.contains (edgeName) ) {
+        qDebug()<<"GW: setEdgeVisibility(). relation " << relation
+               << " : " << source  << " ->  "<< target << " to " << toggle;
+        edgesHash.value(edgeName) -> setVisible(toggle);
+        return;
+    }
+    qDebug()<<"GW: setEdgeVisibility(). Cannot find edge " << relation
+                   << " : " << source  << " ->  "<< target ;
 
-        }
-    }
-    else {
-        if  ( edgesHash.contains (edgeName) ) {
-            qDebug()<<"GW: setEdgeVisibility(). relation " << relation
-                   << " : " << source  << " ->  "<< target << " NOT VISIBLE.";
-            edgesHash.value(edgeName) -> hide();
-        }
-    }
 }
 
 
@@ -557,24 +549,14 @@ void GraphicsWidget::setEdgeVisibility(int relation, int source, int target, boo
 /**
 *	Changes the visibility of a  Node
 */
-void GraphicsWidget::setNodeVisibility(long int number, bool visible){
-    qDebug() << "GW: setNodeVisibility() for "<< number;
-    QList<QGraphicsItem *> list = scene()->items();
-    for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
-	if ( (*item)->type() == TypeNode){
-	    if ( Node *node = qgraphicsitem_cast<Node *>(*item) )
-		if ( node->nodeNumber() == number ) {
-		    if (visible){
-			qDebug() << "GW: setNodeVisibility(): Node numbered " << number << " found! Will be visible now...";
-			(*item)->show();
-		    }
-		    else {
-			qDebug() << "GW: setNodeVisibility(): Node numbered " << number << " found! Invisible now...";
-			(*item)->hide();
-		    }
-		}
-	    }
+void GraphicsWidget::setNodeVisibility(long int number, bool toggle){
+    if  ( nodeHash.contains (number) ) {
+        qDebug() << "GW: setNodeVisibility(): for  "
+                 << number << " to " << toggle;
+        nodeHash.value(number) -> setVisible(toggle);
+        return;
     }
+        qDebug() << "GW: setNodeVisibility(): cannot find node " << number;
 }
 
 
@@ -585,7 +567,7 @@ void GraphicsWidget::setNodeVisibility(long int number, bool visible){
  * Returns, if found, the node with label or number 'text'
  */
 Node* GraphicsWidget::hasNode( QString text ){
-	vector<Node*>::iterator it;
+
 	bool ok = false;
 	foreach ( Node *candidate, nodeHash) {
 		if ( 	candidate->nodeNumber()==text.toInt(&ok, 10)  ||

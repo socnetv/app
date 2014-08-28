@@ -613,19 +613,17 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,  bool goOut)
     For each orphan Vertex in the Graph, emits the filterVertex()
 */
 void Graph::filterIsolateVertices(bool filterFlag){
-    if (filterFlag)
-        qDebug() << "Graph: filterIsolateVertices() enabling all orphan nodes";
-    else
-        qDebug() << "Graph: filterIsolateVertices() disabling all orphan nodes";
+    qDebug() << "*** Graph::filterIsolateVertices() "
+                << " setting all isolate nodes to " << filterFlag;
 
     QList<Vertex*>::iterator it;
-    for (QList<Vertex*>::iterator it=m_graph.begin(); it!=m_graph.end(); it++){
+    for ( it=m_graph.begin(); it!=m_graph.end(); it++){
         if ( (*it)->isOutLinked() ||  (*it)->isInLinked() ){
             continue;
         }
         else {
-            qDebug() << "Graph:filterOrphanNodes() Vertex " << (*it)->name()
-                     << " not linked. Toggling it and emitting setVertexVisibility signal to GW...";
+            qDebug() << "Graph::filterOrphanNodes() Vertex " << (*it)->name()
+                     << " isolate. Toggling it and emitting setVertexVisibility signal to GW...";
             (*it)->setEnabled (filterFlag) ;
             emit setVertexVisibility( (*it)-> name(), filterFlag );
         }
