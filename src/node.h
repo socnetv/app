@@ -58,7 +58,7 @@ class Node :  public QObject,  public QGraphicsItem {
 
 public:
 	Node(GraphicsWidget*, int num, int size, QString col, QString shape, bool, int, int, QPointF p) ;
-//	~Node();
+    ~Node();
 
 	enum { Type = UserType + 1 };
 	int type() const { return Type; }
@@ -68,7 +68,6 @@ public:
 	QPainterPath shape() const;
 	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
-	void die(); 
 	long int nodeNumber() {return m_num;}
 
 	void setSize(int);
@@ -125,8 +124,7 @@ private:
 	QColor m_col;
 	bool m_hasNumber, m_hasLabel, m_isNumberInside;
 	/**Lists of elements attached to this node */
-	list<Edge*> inEdgeList, outEdgeList;
-	list<NodeNumber*> gfxNumberList;
+    list<Edge*> inEdgeList, outEdgeList;
 	NodeLabel *m_label;
 	NodeNumber *m_number;
 };

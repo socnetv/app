@@ -312,7 +312,6 @@ void GraphicsWidget::eraseNode(long int doomedJim){
 			Node *jim=(Node*) (*it);
 			if ( jim->nodeNumber()==doomedJim)	{
 				qDebug() << "GW: found doomedJim " <<  jim->nodeNumber() << " Demanding node->die() :)" ;
-				jim->die();
 				delete *it;
 				break;
 			}

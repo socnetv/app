@@ -215,31 +215,6 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 
 
 
-/** Removes the node */
-
-void Node::die() {
-	qDebug () << "Node: die() node= "<< nodeNumber();
-
-	foreach (Edge *edge, inEdgeList) {
-		qDebug("Node: removing edges in inEdgeList");
-		edge->remove();
-		graphicsWidget->removeItem(edge);
-	}
-	foreach (Edge *edge, outEdgeList) {
-		qDebug("Node: removing edges in outEdgeList");
-		edge->remove();
-		graphicsWidget->removeItem(edge);
-	}
-	this->deleteNumber();
-	this->deleteLabel();
-	inEdgeList.clear();
-	outEdgeList.clear();
-	this->hide();
-	graphicsWidget->removeItem(this);
-
-}
-
-
 void Node::setLabelText ( QString label) {
 	prepareGeometryChange();
 	m_label->setPlainText(label);
@@ -374,7 +349,7 @@ void Node::addInLink( Edge *edge ) {
 void Node::deleteInLink( Edge *link ){
 	qDebug () << "Node:  deleteInLink for "<< m_num;
 	//qDebug ("Node: %i inEdgeList has %i edges", m_num, inEdgeList.size());
-	inEdgeList.remove( link);
+    inEdgeList.remove( link);
 	//qDebug ("Node:  %i inEdgeList has now %i edges", m_num, inEdgeList.size());
 }
 
@@ -391,7 +366,7 @@ void Node::addOutLink( Edge *edge ) {
 void Node::deleteOutLink(Edge *link){
 	qDebug () << "Node: deleteOutLink() from " <<  m_num;
 //	qDebug ("Node: %i outEdgeList has %i edges", m_num, outEdgeList.size());
-	outEdgeList.remove( link);
+    outEdgeList.remove( link);
 //	qDebug ("Node: %i outEdgeList has now %i edges", m_num, outEdgeList.size());
 }
 
@@ -437,10 +412,26 @@ void Node::deleteNumber( ){
 	graphicsWidget->removeItem(m_number);	
 }
 
-// Node::~Node(){
-// /*	qDebug("~Node() calling hide()");
-// 	this->hide();
-// 	qDebug("hide() ok!");*/
-// 	
-// }
-// 
+ Node::~Node(){
+    qDebug() << "\n\n\n *** ~Node() "<< nodeNumber();
+
+    foreach (Edge *edge, inEdgeList) {
+        qDebug("~Node: removing edges in inEdgeList");
+        edge->remove();
+        graphicsWidget->removeItem(edge);
+    }
+    foreach (Edge *edge, outEdgeList) {
+        qDebug("~Node: removing edges in outEdgeList");
+        edge->remove();
+        graphicsWidget->removeItem(edge);
+    }
+
+    this->deleteNumber();
+    this->deleteLabel();
+    inEdgeList.clear();
+    outEdgeList.clear();
+    this->hide();
+    graphicsWidget->removeItem(this);
+
+ }
+
