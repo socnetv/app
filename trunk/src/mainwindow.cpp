@@ -1158,13 +1158,13 @@ void MainWindow::initActions(){
 
 
     zoomInAct = new QAction(QIcon(":/images/zoomin.png"), tr("Zoom &in"),  this);
-    zoomInAct->setShortcut(tr("Ctrl++"));
+    zoomInAct->setShortcut(Qt::CTRL + Qt::Key_Plus);
     zoomInAct->setToolTip(tr("Zoom in (Ctrl++)"));
     zoomInAct->setStatusTip(tr("Zooms inside the actual network."));
     zoomInAct->setWhatsThis(tr("Zoom In.\n\nZooms in. What else did you expect?"));
 
     zoomOutAct = new QAction(QIcon(":/images/zoomout.png"), tr("Zoom &out"),  this);
-    zoomOutAct->setShortcut(tr("Ctrl+-"));
+    zoomOutAct->setShortcut(Qt::CTRL + Qt::Key_Minus);
     zoomOutAct->setToolTip(tr("Zoom out (Ctrl+-)"));
     zoomOutAct->setStatusTip(tr("Zooms out of the actual network."));
     zoomOutAct->setWhatsThis(tr("Zoom out.\n\nZooms out. What else did you expect?"));
@@ -1172,16 +1172,16 @@ void MainWindow::initActions(){
 
     nextRelationAct = new QAction(QIcon(":/images/nextrelation.png"),
                                   tr("Next Relation"),  this);
-    nextRelationAct->setShortcut(tr("Ctrl+Shift++"));
-    nextRelationAct->setToolTip(tr("Goto next graph relation (Ctrl Shift  +)"));
+    nextRelationAct->setShortcut(Qt::CTRL + Qt::Key_Right);
+    nextRelationAct->setToolTip(tr("Goto next graph relation (Ctrl+Right)"));
     nextRelationAct->setStatusTip(tr("Loads the next relation of the network (if any)."));
     nextRelationAct->setWhatsThis(tr("Next Relation\n\nLoads the next relation of the network (if any)"));
 
     prevRelationAct = new QAction(QIcon(":/images/prevrelation.png"),
                                       tr("Previous Relation"),  this);
-    prevRelationAct->setShortcut(tr("Ctrl+Shift+-"));
+    prevRelationAct->setShortcut(Qt::CTRL + Qt::Key_Left);
     prevRelationAct->setToolTip(
-                tr("Goto previous graph relation (Ctrl Shift -)"));
+                tr("Goto previous graph relation (Ctrl+Left)"));
     prevRelationAct->setStatusTip(
                 tr("Loads the previous relation of the network (if any)."));
     prevRelationAct->setWhatsThis(
@@ -1190,7 +1190,7 @@ void MainWindow::initActions(){
 
     addRelationAct = new QAction(QIcon(":/images/addrelation.png"),
                                       tr("Add New Relation"),  this);
-    addRelationAct->setShortcut(tr("Ctrl+Shift+N"));
+    addRelationAct->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_N);
     addRelationAct->setToolTip(
                 tr("Add a new relation to the active graph (Ctrl+Shift+N)"));
     addRelationAct->setStatusTip(
@@ -3378,7 +3378,7 @@ void MainWindow::addRelation(){
         newRelationName = QInputDialog::getText(
                     this, tr("Add new relation"),
                     tr("Please enter a name for the new relation:"),
-                    QLineEdit::Normal,QString::null, &ok);
+                    QLineEdit::Normal,QString::null, &ok );
     }
     if (ok && !newRelationName.isEmpty()){
         changeRelationCombo->addItem(newRelationName);
@@ -3388,11 +3388,15 @@ void MainWindow::addRelation(){
             changeRelationCombo->setCurrentIndex(relationsCounter);
         }
     }
-    else {
+    else if ( newRelationName.isEmpty() && ok ){
         QMessageBox::critical(this, tr("Error"),
                               tr("You did not type a name for this new relation"),
                               QMessageBox::Ok, 0);
         addRelation();
+    }
+    else {
+        statusMessage( QString(tr("New relation cancelled.")) );
+        return;
     }
     statusMessage( QString(tr("New relation named %1, added."))
                    .arg( newRelationName ) );
