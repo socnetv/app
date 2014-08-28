@@ -414,15 +414,14 @@ void Node::deleteNumber( ){
 
  Node::~Node(){
     qDebug() << "\n\n\n *** ~Node() "<< nodeNumber();
-
     foreach (Edge *edge, inEdgeList) {
         qDebug("~Node: removing edges in inEdgeList");
-        edge->remove();
+        //edge->remove();
         graphicsWidget->removeItem(edge);
     }
     foreach (Edge *edge, outEdgeList) {
         qDebug("~Node: removing edges in outEdgeList");
-        edge->remove();
+        //edge->remove();
         graphicsWidget->removeItem(edge);
     }
 

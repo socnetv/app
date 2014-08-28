@@ -49,7 +49,7 @@ class Edge : public QObject, public QGraphicsItem {
 
 public:
 	Edge(GraphicsWidget *, Node*, Node*, float, int, QString, bool, bool, bool);
-
+    ~Edge();
 	enum { Type = UserType + 2 };
 	int type() const { return Type; }
 	Node *sourceNode() const;
@@ -81,7 +81,7 @@ public:
 
 public slots:
 	void adjust ();
-	void remove();
+
 protected:
 	QRectF boundingRect() const;
 	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);

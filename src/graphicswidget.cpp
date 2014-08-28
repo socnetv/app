@@ -366,7 +366,7 @@ void GraphicsWidget::removeItem( Node *node){
 
 /** Called from Node::die() to remove Edge edge ... */
 void GraphicsWidget::removeItem( Edge * edge){
-	edge->remove();
+    //edge->remove();
 	delete (edge);
 }
 

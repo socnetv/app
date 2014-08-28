@@ -85,12 +85,6 @@ void Edge::removeRefs(){
 	target->deleteInLink(this);
 }
 
-void Edge::remove(){
-	qDebug("Edge: remove(), calling removeRefs()");
-	removeRefs();
-	this->hide();
-	
-}
 
 void Edge::setColor( QString str) {
 	m_color=str;
@@ -383,4 +377,11 @@ void Edge::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 
 
 
+Edge::~Edge(){
+    qDebug() << "\n\n\n *** ~EDGE() " << sourceNodeNumber()<< "->" << targetNodeNumber();
+    removeRefs();
+    weightList.clear();
+    this->hide();
+
+}
 
