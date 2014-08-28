@@ -300,9 +300,10 @@ public:
 
 
     /* LAYOUTS */
-    void layoutRandom(
-            double maxWidth, double maxHeight
-            );
+    void layoutRandom( double maxWidth, double maxHeight );
+
+    void layoutCircularRandom(double x0, double y0, double maxRadius);
+
     void layoutCircularByProminenceIndex(
             double x0, double y0, double maxRadius,int type
             );

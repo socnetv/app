@@ -5136,7 +5136,11 @@ void MainWindow::slotColorationRegular() {
  */
 void MainWindow::slotLayoutRandom(){
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Sorry, I can't follow! \nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
+                QMessageBox::critical(
+                    this, "Error",
+                    tr("Sorry, I can't follow! "
+                       "\nLoad a network file or create a new network first. \n"
+                       "Then we can talk about layouts!"), "OK",0);
         statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
         return;
     }
@@ -5155,6 +5159,26 @@ void MainWindow::slotLayoutRandom(){
     TODO slotLayoutRandomCircle
 */
 void MainWindow::slotLayoutRandomCircle(){
+    qDebug() << "MainWindow::slotLayoutRandomCircle()";
+    if (!fileLoaded && !networkModified  )  {
+        QMessageBox::critical(
+                    this, "Error",
+                    tr("Sorry, I can't follow! "
+                       "\nLoad a network file or create a new network first. \n"
+                       "Then we can talk about layouts!"), "OK",0);
+        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
+        return;
+    }
+
+    double x0=scene->width()/2.0;
+    double y0=scene->height()/2.0;
+    double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
+    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
+    graphicsWidget->clearGuides();
+    createProgressBar();
+    activeGraph.layoutCircularRandom(x0, y0, maxRadius);
+    destroyProgressBar();
+    statusMessage( tr("Nodes in random circles.") );
 }
 
 
@@ -5424,7 +5448,11 @@ void MainWindow::slotLayoutGuides(int state){
 void MainWindow::slotLayoutCircularByProminenceIndex(){
     qDebug() << "MainWindow::slotLayoutCircularByProminenceIndex()";
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Sorry, I can't follow! \nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
+                QMessageBox::critical(
+                    this, "Error",
+                    tr("Sorry, I can't follow! "
+                       "\nLoad a network file or create a new network first. \n"
+                       "Then we can talk about layouts!"), "OK",0);
         statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
         return;
     }
@@ -5550,7 +5578,11 @@ void MainWindow::slotLayoutCircularByProminenceIndex(){
 void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
         qDebug() << "MainWindow::slotLayoutCircularByProminenceIndex() ";
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Sorry, I can't follow! \nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
+                QMessageBox::critical(
+                    this, "Error",
+                    tr("Sorry, I can't follow! "
+                       "\nLoad a network file or create a new network first. \n"
+                       "Then we can talk about layouts!"), "OK",0);
         statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
         return;
     }

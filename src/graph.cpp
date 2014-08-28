@@ -3723,6 +3723,55 @@ void Graph::layoutRandom(double maxWidth, double maxHeight){
 }
 
 
+
+/**
+ * @brief Graph::layoutCircularRandom
+ * Repositions all nodes on the periphery of different circles with random radius
+ * @param x0
+ * @param y0
+ * @param maxRadius
+ */
+void Graph::layoutCircularRandom(double x0, double y0, double maxRadius){
+    qDebug() << "Graph::layoutCircularRandom - ";
+    double rad=0, new_radius=0, new_x=0, new_y=0;
+    double i=0;
+    //offset controls how far from the centre the central nodes be positioned
+    float offset=0.06, randomDecimal=0;;
+    double Pi = 3.14159265;
+    int vert=vertices();
+
+    for (QList<Vertex*>::iterator it=m_graph.begin(); it!=m_graph.end(); it++){
+        randomDecimal = (float ) ( rand()%100 ) / 100.0;
+        new_radius=(maxRadius- (randomDecimal - offset)*maxRadius);
+        qDebug () << "Vertice " << (*it)->name()
+                  << " at x=" << (*it)->x()
+                  << ", y= "<< (*it)->y()
+                  << ", maxradius " <<  maxRadius
+                  << " randomDecimal " << randomDecimal
+                  << " new radius " << new_radius;
+
+        //Calculate new position
+        rad= (2.0* Pi/ vert );
+        new_x=x0 + new_radius * cos(i * rad);
+        new_y=y0 + new_radius * sin(i * rad);
+        (*it)->setX( new_x );
+        (*it)->setY( new_y );
+        qDebug("Vertice will move to x=%f and y=%f ", new_x, new_y);
+        //Move node to new position
+        emit moveNode((*it)->name(),  new_x,  new_y);
+        i++;
+        emit addGuideCircle (
+                    static_cast<int> (x0),
+                    static_cast<int> (y0),
+                    static_cast<int> (new_radius)
+                    );
+    }
+    graphModified=true;
+}
+
+
+
+
 /** 
 *	 Repositions all nodes on different top-down levels according to their centrality
 * 	Emits moveNode(i, x,y) to tell GW that the node item should be moved. 
