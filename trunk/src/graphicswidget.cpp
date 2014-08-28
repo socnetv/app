@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer
- version: 1.3
+ version: 1.31
  Written in Qt
 
                         graphicswidget.cpp description
@@ -80,10 +80,15 @@ void GraphicsWidget::clear() {
 	nodeHash.clear();
     edgesHash.clear();
     scene()->clear();
+    m_curRelation=0;
 
 }
 
-
+/**
+ * @brief GraphicsWidget::changeRelation
+ * Called from Graph::relationChanged(int) signal
+ * @param relation
+ */
 void GraphicsWidget::changeRelation(int relation) {
     qDebug() << "GraphicsWidget::changeRelation() to " << relation;
     m_curRelation = relation;
@@ -527,24 +532,24 @@ void GraphicsWidget::setInitLabelDistance(int labelDistance){
 void GraphicsWidget::setEdgeVisibility(int relation, int source, int target, bool visible){
     QString edgeName =  QString::number(relation) + QString(":") +
             QString::number( source ) + QString(">")+ QString::number( target );
-	
-	if (visible) {
+
+    if (visible) {
         if  ( edgesHash.contains (edgeName) ) {
             qDebug()<<"GW: setEdgeVisibility(). relation " << relation
                    << " : " << source  << " ->  "<< target << " VISIBLE.";
             edgesHash.value(edgeName) -> show();
-		}
-		else {
-			
-		}
-	}
-	else {
+        }
+        else {
+
+        }
+    }
+    else {
         if  ( edgesHash.contains (edgeName) ) {
             qDebug()<<"GW: setEdgeVisibility(). relation " << relation
                    << " : " << source  << " ->  "<< target << " NOT VISIBLE.";
             edgesHash.value(edgeName) -> hide();
-		}
-	}
+        }
+    }
 }
 
 

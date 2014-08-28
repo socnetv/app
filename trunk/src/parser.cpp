@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer 
- version: 1.3
+ version: 1.31
  Written in Qt
  
                          parser.cpp  -  description
@@ -280,7 +280,7 @@ bool Parser::loadDL(){
                 str=(prevLineStr.append(" ")).append(str) ;
                 qDebug() << " prevLineStr not empty - prepending it to str - "
                          << " new str: \n" << str;
-                str.simplified();
+                str=str.simplified();
             }
             lineElement=str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
 

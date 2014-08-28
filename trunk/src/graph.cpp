@@ -1,6 +1,6 @@
 /******************************************************************************
  SocNetV: Social Networks Visualizer
- version: 1.3
+ version: 1.31
  Written in Qt
  
                          graph.cpp  -  description
@@ -113,13 +113,14 @@ Graph::Graph() {
  * @param relation
  */
 void Graph::changeRelation(int relation){
-    qDebug() << "Graph::changeRelation(int) " << relation;
+    qDebug() << "\n \n \n Graph::changeRelation(int) to relation " << relation
+             << " current relation is " << m_curRelation << "\n\n\n";
     if (m_curRelation == relation ) {
         qDebug() << "Graph::changeRelation(int) - same relation - END";
         return;
     }
     if ( relation < 0) {
-        qDebug() << "Graph::changeRelation(int) - negative relation - END";
+        qDebug() << "Graph::changeRelation(int) - negative relation - END ";
         return;
     }
     QList<Vertex*>::iterator it;
@@ -141,10 +142,10 @@ void Graph::changeRelation(int relation){
  * @param newRelation
  */
 void Graph::addRelationFromUser(QString newRelation){
-    qDebug() << "Graph::addRelationFromUser(string) " << newRelation;
     m_relationsList << newRelation;
-    qDebug() << "\n \n Graph::addRelationFromUser(string) - active relations() "
-             << relations() << "\n\n";
+    qDebug() << "\n\nGraph::addRelationFromUser(string) " << newRelation
+                << " total relations now " << relations() << "\n\n";
+
 }
 
 /**
@@ -1138,7 +1139,7 @@ void Graph::clear() {
         crawler.terminateReaderQuit();
         crawler.quit();
     }
-    //qDebug("Graph: m_graph cleared. Now reports size %i", m_graph.size());
+    qDebug("Graph: m_graph cleared. Now reports size %i", m_graph.size());
 }
 
 

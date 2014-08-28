@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer 
- version: 1.3
+ version: 1.31
  Written in Qt
  
                          vertex.cpp  -  description
@@ -101,9 +101,12 @@ Vertex::Vertex(int v1) {
 void Vertex::changeRelation(int relation) {
     qDebug() << "Vertice::changeRelation() to relation " << relation
                 << " from current relation " << m_curRelation;
+    // first make false all edges of current relation
     filterEdgesByRelation(m_curRelation, false);
+    // then make true all edges of new relation
+    filterEdgesByRelation(relation, true);
+    // update current relation
     m_curRelation=relation;
-    filterEdgesByRelation(m_curRelation, true);
 }
 
 
@@ -330,18 +333,18 @@ void Vertex::filterEdgesByRelation(int relation, bool status ){
                 << " relation " << relation << " to " << status;
     int target=0;
     float weight =0;
-
+    int edgeRelation=0;
     QMutableHashIterator < int, rel_w_bool > it1 (m_outLinks);
     while ( it1.hasNext()) {
         it1.next();
-        relation = it1.value().first;
-        if ( relation == m_curRelation ) {
+        edgeRelation = it1.value().first;
+        if ( edgeRelation == relation ) {
             target=it1.key();
             weight = it1.value().second.first;
             qDebug() << "*** outLink " << m_name << " -> " << target
                         << "  - emitting to GW to be " << status ;
-            it1.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, status) ));
-            emit setEdgeVisibility ( m_curRelation, m_name, target, status );
+            it1.setValue(rel_w_bool(relation, pair_f_b(weight, status) ));
+            emit setEdgeVisibility ( relation, m_name, target, status );
         }
         else {
 
