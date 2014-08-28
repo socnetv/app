@@ -142,10 +142,10 @@ void Graph::changeRelation(int relation){
  * @param newRelation
  */
 void Graph::addRelationFromUser(QString newRelation){
-    qDebug() << "Graph::addRelationFromUser(string) " << newRelation;
     m_relationsList << newRelation;
-    qDebug() << "\n \n Graph::addRelationFromUser(string) - active relations() "
-             << relations() << "\n\n";
+    qDebug() << "\n\nGraph::addRelationFromUser(string) " << newRelation
+                << " total relations now " << relations() << "\n\n";
+
 }
 
 /**

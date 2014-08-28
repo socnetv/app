@@ -80,10 +80,15 @@ void GraphicsWidget::clear() {
 	nodeHash.clear();
     edgesHash.clear();
     scene()->clear();
+    m_curRelation=0;
 
 }
 
-
+/**
+ * @brief GraphicsWidget::changeRelation
+ * Called from Graph::relationChanged(int) signal
+ * @param relation
+ */
 void GraphicsWidget::changeRelation(int relation) {
     qDebug() << "GraphicsWidget::changeRelation() to " << relation;
     m_curRelation = relation;
