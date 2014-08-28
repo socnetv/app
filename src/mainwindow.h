@@ -182,7 +182,7 @@ public slots:
     void slotColorationStrongStructural();
     void slotColorationRegular();
     void slotLayoutRandom();
-    void slotLayoutRandomCircle();
+    void slotLayoutCircularRandom();
     void slotLayoutCircularByProminenceIndex();
     void slotLayoutCircularByProminenceIndex(QString);
     void slotLayoutLevelByProminenceIndex();

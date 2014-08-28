@@ -713,33 +713,42 @@ void MainWindow::initActions(){
     connect(strongColorationAct, SIGNAL(triggered() ), this, SLOT(slotColorationStrongStructural()) );
 
     regularColorationAct = new QAction ( tr("Regular"), this);
-    regularColorationAct -> setStatusTip( tr("Nodes are assigned the same color if they have neighborhoods of the same set of colors") );
-    regularColorationAct -> setWhatsThis( tr("Click this to colorize nodes; Nodes are assigned the same color if they have neighborhoods of the same set of colors"));
+    regularColorationAct ->
+            setStatusTip(
+                tr("Nodes are assigned the same color if they have "
+                   "neighborhoods of the same set of colors") );
+    regularColorationAct
+            -> setWhatsThis(
+                tr("Click this to colorize nodes; "
+                   "Nodes are assigned the same color if they have neighborhoods "
+                   "of the same set of colors"));
     connect(regularColorationAct, SIGNAL(triggered() ), this, SLOT(slotColorationRegular()) );//TODO
 
     randLayoutAct = new QAction( tr("Random"),this);
-    randLayoutAct -> setShortcut(tr("Ctrl+0"));
+    randLayoutAct -> setShortcut(Qt::CTRL+Qt::Key_0);
     randLayoutAct -> setStatusTip(tr("Repositions all nodes in random places"));
     randLayoutAct -> setWhatsThis(tr("Random Layout\n\n Repositions all nodes in random places"));
     connect(randLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRandom()));
 
-    randCircleLayoutAct = new QAction(tr("Random Circle"),	this);
-    randCircleLayoutAct ->setStatusTip(tr("Repositions the nodes randomly on a circle"));
-    randCircleLayoutAct->setWhatsThis(tr("Random Circle Layout\n\n Repositions the nodes randomly on a circle"));
-    connect(randCircleLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRandomCircle()));
+
+    randCircleLayoutAct = new QAction(tr("Random Circles"),	this);
+    randCircleLayoutAct -> setShortcut(Qt::CTRL+Qt::ALT+Qt::Key_0);
+    randCircleLayoutAct ->setStatusTip(tr("Repositions the nodes randomly on circles"));
+    randCircleLayoutAct->
+            setWhatsThis(
+                tr("Random Circles Layout\n\n Repositions the nodes randomly on circles"));
+    connect(randCircleLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutCircularRandom()));
 
 
     layoutCircular_DC_Act = new QAction( tr("Degree Centrality"),	this);
     layoutCircular_DC_Act ->setShortcut(tr("Ctrl+Alt+1"));
     layoutCircular_DC_Act
             ->setStatusTip(
-                tr(
-                   "Layout all nodes on concentric circles of radius inversely "
+                tr("Layout all nodes on concentric circles of radius inversely "
                     "proportional to their Degree Centrality."));
     layoutCircular_DC_Act->
             setWhatsThis(
-                tr(
-                    "Degree Centrality Circular Layout\n\n "
+                tr( "Degree Centrality Circular Layout\n\n "
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their Degree Centrality"
                     "Nodes with higher DC score are closer to the centre."
@@ -752,13 +761,11 @@ void MainWindow::initActions(){
     layoutCircular_CC_Act ->setShortcut(tr("Ctrl+Alt+2"));
     layoutCircular_CC_Act
             -> setStatusTip(
-                tr(
-                   "Layout all nodes on concentric circles of radius inversely "
+                tr("Layout all nodes on concentric circles of radius inversely "
                     "proportional to their CC index."));
     layoutCircular_CC_Act->
             setWhatsThis(
-                tr(
-                    "Closeness Centrality Circular Layout\n\n "
+                tr( "Closeness Centrality Circular Layout\n\n "
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their CC index."
                     "Nodes having higher CC score are closer to the centre."
@@ -2506,7 +2513,7 @@ void MainWindow::toolBoxLayoutByIndexButtonPressed(){
         break;
     case 1:
         if (selectedLayoutType==0)
-            slotLayoutRandom();
+            slotLayoutCircularRandom();
         else if (selectedLayoutType==1)
             slotLayoutRandom();
         break;
@@ -2681,6 +2688,12 @@ void MainWindow::initNet(){
     selectedNodeLCD->display(0);
 
     /** Clear toolbox and menu checkboxes **/
+    toolBoxAnalysisClusterabilitySelect->setCurrentIndex(0);
+    toolBoxAnalysisConnectivitySelect->setCurrentIndex(0);
+    toolBoxAnalysisGeodesicsSelect->setCurrentIndex(0);
+    toolBoxAnalysisProminenceSelect->setCurrentIndex(0);
+    toolBoxLayoutByIndexSelect->setCurrentIndex(0);
+    toolBoxLayoutByIndexTypeSelect ->setCurrentIndex(0);
     nodeSizeProportional2OutDegreeBx->setChecked(false);
     nodeSizeProportional2InDegreeBx->setChecked(false);
     moveSpringEmbedderBx->setChecked(false);
@@ -5155,11 +5168,12 @@ void MainWindow::slotLayoutRandom(){
 }
 
 
-/** 
-    TODO slotLayoutRandomCircle
-*/
-void MainWindow::slotLayoutRandomCircle(){
-    qDebug() << "MainWindow::slotLayoutRandomCircle()";
+
+/**
+ * @brief MainWindow::slotLayoutCircularRandom
+ */
+void MainWindow::slotLayoutCircularRandom(){
+    qDebug() << "MainWindow::slotLayoutCircularRandom()";
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical(
                     this, "Error",
