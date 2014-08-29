@@ -185,6 +185,7 @@ public slots:
     void slotLayoutCircularRandom();
     void slotLayoutCircularByProminenceIndex();
     void slotLayoutCircularByProminenceIndex(QString);
+    void slotLayoutNodeSizesByProminenceIndex(QString);
     void slotLayoutLevelByProminenceIndex();
     void slotLayoutLevelByProminenceIndex(QString);
     void slotLayoutGuides(int);
@@ -194,8 +195,8 @@ public slots:
     void slotLayoutFruchterman();
     void layoutFruchterman(int);
 
-    void  slotLayoutNodeSizeProportionalOutEdges(bool);
-    void  slotLayoutNodeSizeProportionalInEdges(bool);
+    void  slotLayoutNodeSizesByOutDegree(bool);
+    void  slotLayoutNodeSizesByInDegree(bool);
 
     //STATISTICS MENU
     void slotViewDistanceMatrix();
@@ -337,7 +338,7 @@ private:
     QMenu *randomLayoutMenu, *circleLayoutMenu, *levelLayoutMenu, *physicalLayoutMenu;
     QMenu *colorationMenu;
     QCheckBox *moveSpringEmbedderBx, *moveFruchtermanBx, *moveKamandaBx,
-    *nodeSizeProportional2OutDegreeBx,*nodeSizeProportional2InDegreeBx,
+    *nodeSizesByOutDegreeBx,*nodeSizesByInDegreeBx,
     *layoutGuidesBx;
     QComboBox *toolBoxAnalysisGeodesicsSelect,*toolBoxAnalysisConnectivitySelect,
             *toolBoxAnalysisProminenceSelect, *toolBoxAnalysisClusterabilitySelect;
@@ -390,7 +391,7 @@ private:
     *layoutLevel_IRCC_Act,*layoutLevel_PRP_Act, *layoutLevel_PP_Act;
     QAction *strongColorationAct, *regularColorationAct, *showProgressBarAct, *printDebugAct;
     QAction *springLayoutAct, *FRLayoutAct;
-    QAction *nodeSizeProportionalOutDegreeAct,  *nodeSizeProportionalInDegreeAct;
+    QAction *nodeSizesByOutDegreeAct,  *nodeSizesByInDegreeAct;
     QAction *zoomInAct, *zoomOutAct ;
     QAction *nextRelationAct, *prevRelationAct, *addRelationAct;
 

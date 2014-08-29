@@ -117,13 +117,15 @@ signals:
     void describeDataset(QString);
 
     /** Signals to GraphicsWidget */
-    void drawNode( int ,int,  QString, QString, int, QString, QString, int, QPointF, QString, bool, bool, bool);	//call GW to draw a node
+    void drawNode( int ,int,  QString, QString, int, QString, QString, int,
+                   QPointF, QString, bool, bool, bool);	//call GW to draw a node
 
     void eraseNode (long int);						//erase node from GW
     void drawEdge(int, int, float, bool, bool, QString, bool);	//call GW to draw an edge
     void eraseEdge(int, int);					//emited from removeEdge() to GW to clear the edge item.
     void setEdgeVisibility (int, int, int, bool);			// emitted from each Vertex
     void setVertexVisibility(long int, bool);		//notifies GW to disable a node
+    void setNodeSize(long int, int);
     void drawEdgeReciprocal(int, int);				//call GW to draw the edge as symmetric one
     void addGuideCircle(int, int, int);				//call GW to draw a circular layout line somewhere.
     void addGuideHLine (int);					//call GW to draw a horizontal layout line somewhere.
@@ -300,17 +302,21 @@ public:
 
 
     /* LAYOUTS */
+
     void layoutRandom( double maxWidth, double maxHeight );
 
     void layoutCircularRandom(double x0, double y0, double maxRadius);
 
     void layoutCircularByProminenceIndex(
-            double x0, double y0, double maxRadius,int type
-            );
+            double x0, double y0, double maxRadius, int type);
+
     void layoutLevelByProminenceIndex(
-            double maxWidth, double maxHeight, int CentralityType
-            );
+            double maxWidth, double maxHeight, int type);
+
+    void layoutVerticesSizeByProminenceIndex(int index);
+
     void layoutForceDirectedSpringEmbedder(bool dynamicMovement);
+
     void layoutForceDirectedFruchtermanReingold(bool dynamicMovement);
 
     /**RANDOM NETWORKS*/
@@ -401,7 +407,6 @@ private:
 
     bool calculatedDP, calculatedDC, calculatedCentralities, dynamicMovement;
     bool calculatedPP, calculatedIRCC;
-
 
     int m_precision, m_curRelation;
     float meanDegree, varianceDegree;

@@ -613,6 +613,7 @@ bool Vertex::isEnabled (){
 
 
 void Vertex::setSize(int size) {
+    qDebug() << " Vertex::setSize() : " << size;
 	m_size=size;
 }
 

@@ -236,6 +236,9 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect( &activeGraph, SIGNAL( setVertexVisibility(long int, bool)  ),
              graphicsWidget, SLOT(  setNodeVisibility (long int ,  bool) ) );
 
+    connect( &activeGraph, SIGNAL( setNodeSize(long int, int)  ),
+             graphicsWidget, SLOT(  setNodeSize (long int , int) ) );
+
     connect( clearGuidesAct, SIGNAL(triggered()),
              graphicsWidget, SLOT(clearGuides()));
 
@@ -1208,24 +1211,24 @@ void MainWindow::initActions(){
                    "Adds a new relation to the active network. "
                    "Nodes will be preserved, edges will be removed. "));
 
-    nodeSizeProportionalOutDegreeAct= new QAction(QIcon(":/images/nodeout.png"),tr("Node size according to outDegree"), this);
-    nodeSizeProportionalOutDegreeAct->setShortcut(tr("Alt+3"));
-    nodeSizeProportionalOutDegreeAct->setStatusTip(tr("Resizes all nodes according to their out edges."));
-    nodeSizeProportionalOutDegreeAct->setWhatsThis(tr("NodeSize = F (OutDegree) \n\n Adjusts the size of each node according to their out-edges (OutDegree). The more out-likned a node is, the bigger will appear..."));
-    nodeSizeProportionalOutDegreeAct->setCheckable(true);
-    nodeSizeProportionalOutDegreeAct->setChecked(false);
-    connect(nodeSizeProportionalOutDegreeAct, SIGNAL(triggered(bool)), this, SLOT(slotLayoutNodeSizeProportionalOutEdges(bool)));
+    nodeSizesByOutDegreeAct= new QAction(QIcon(":/images/nodeout.png"),tr("Node size according to outDegree"), this);
+    nodeSizesByOutDegreeAct->setShortcut(tr("Alt+3"));
+    nodeSizesByOutDegreeAct->setStatusTip(tr("Resizes all nodes according to their out edges."));
+    nodeSizesByOutDegreeAct->setWhatsThis(tr("NodeSize = F (OutDegree) \n\n Adjusts the size of each node according to their out-edges (OutDegree). The more out-likned a node is, the bigger will appear..."));
+    nodeSizesByOutDegreeAct->setCheckable(true);
+    nodeSizesByOutDegreeAct->setChecked(false);
+    connect(nodeSizesByOutDegreeAct, SIGNAL(triggered(bool)),
+            this, SLOT(slotLayoutNodeSizesByOutDegree(bool)));
 
-
-    nodeSizeProportionalInDegreeAct= new QAction(
+    nodeSizesByInDegreeAct= new QAction(
                 QIcon(":/images/nodein.png"),tr("Node size according to InDegree"), this);
-    nodeSizeProportionalInDegreeAct->setShortcut(tr("Alt+4"));
-    nodeSizeProportionalInDegreeAct->setStatusTip(tr("Resizes all nodes according to their in edges."));
-    nodeSizeProportionalInDegreeAct->setWhatsThis(tr("NodeSize = F (InDegree) \n\n This method adjusts the size of each node according to their in-edges (InDegree). The more in-linked a node is, the bigger will appear..."));
-    nodeSizeProportionalInDegreeAct->setCheckable(true);
-    nodeSizeProportionalInDegreeAct->setChecked(false);
-    connect(nodeSizeProportionalInDegreeAct, SIGNAL(triggered(bool)), this, SLOT(slotLayoutNodeSizeProportionalInEdges(bool)));
-
+    nodeSizesByInDegreeAct->setShortcut(tr("Alt+4"));
+    nodeSizesByInDegreeAct->setStatusTip(tr("Resizes all nodes according to their in edges."));
+    nodeSizesByInDegreeAct->setWhatsThis(tr("NodeSize = F (InDegree) \n\n This method adjusts the size of each node according to their in-edges (InDegree). The more in-linked a node is, the bigger will appear..."));
+    nodeSizesByInDegreeAct->setCheckable(true);
+    nodeSizesByInDegreeAct->setChecked(false);
+    connect(nodeSizesByInDegreeAct, SIGNAL(triggered(bool)),
+            this, SLOT(slotLayoutNodeSizesByInDegree(bool)));
 
 
     /**
@@ -1829,8 +1832,8 @@ void MainWindow::initMenuBar() {
     physicalLayoutMenu -> addAction (springLayoutAct);
     physicalLayoutMenu -> addAction (FRLayoutAct);
     layoutMenu->addSeparator();
-    layoutMenu->addAction(nodeSizeProportionalOutDegreeAct);
-    layoutMenu->addAction(nodeSizeProportionalInDegreeAct);
+    layoutMenu->addAction(nodeSizesByOutDegreeAct);
+    layoutMenu->addAction(nodeSizesByInDegreeAct);
     layoutMenu->addSeparator();
     layoutMenu -> addAction (clearGuidesAct);
 
@@ -2136,7 +2139,7 @@ void MainWindow::initToolBox(){
     toolBoxLayoutByIndexTypeLabel->setText(tr("Layout Type:"));
     toolBoxLayoutByIndexTypeSelect = new QComboBox;
     QStringList layoutTypes;
-    layoutTypes << "Circular" << "On Levels";
+    layoutTypes << "Circular" << "On Levels" << "Nodal";
     toolBoxLayoutByIndexTypeSelect->addItems(layoutTypes);
     toolBoxLayoutByIndexTypeSelect->setMinimumHeight(20);
 
@@ -2203,19 +2206,19 @@ void MainWindow::initToolBox(){
 
 
     //create widgets for additional visualization options box
-    nodeSizeProportional2OutDegreeBx = new QCheckBox(
-                tr("Node sizes according to OutDegree") );
-    nodeSizeProportional2OutDegreeBx ->setEnabled(true);
-    nodeSizeProportional2OutDegreeBx
+    nodeSizesByOutDegreeBx = new QCheckBox(
+                tr("Node sizes by OutDegree") );
+    nodeSizesByOutDegreeBx ->setEnabled(true);
+    nodeSizesByOutDegreeBx
             ->setToolTip(
                 tr("If you enable this, all nodes will be resized so that their "
                    "size reflect their out-degree. "
                    "To put it simply, more out-linked nodes will be bigger..."));
 
-    nodeSizeProportional2InDegreeBx = new QCheckBox(
-                tr("Node sizes according to InDegree") );
-    nodeSizeProportional2InDegreeBx ->setEnabled(true);
-    nodeSizeProportional2InDegreeBx
+    nodeSizesByInDegreeBx = new QCheckBox(
+                tr("Node sizes by InDegree") );
+    nodeSizesByInDegreeBx ->setEnabled(true);
+    nodeSizesByInDegreeBx
             ->setToolTip(
                 tr("If you enable this, all nodes will be resized so that their "
                    "size reflect their in-degree. "
@@ -2229,8 +2232,8 @@ void MainWindow::initToolBox(){
                 tr("Disable to not display layout guidelines"));
 
     QGridLayout *layoutOptionsGrid = new QGridLayout();
-    layoutOptionsGrid -> addWidget(nodeSizeProportional2OutDegreeBx, 0,0);
-    layoutOptionsGrid -> addWidget(nodeSizeProportional2InDegreeBx, 1,0);
+    layoutOptionsGrid -> addWidget(nodeSizesByOutDegreeBx, 0,0);
+    layoutOptionsGrid -> addWidget(nodeSizesByInDegreeBx, 1,0);
     layoutOptionsGrid -> addWidget(layoutGuidesBx, 2,0);
     layoutOptionsGrid->setSpacing(10);
     layoutOptionsGrid->setMargin(0);
@@ -2265,12 +2268,15 @@ void MainWindow::initToolBox(){
     toolBox->addTab(controlGroupBox, tr("Controls"));
 
 
-    connect(moveSpringEmbedderBx, SIGNAL(clicked(bool)),this, SLOT(slotLayoutSpringEmbedder(bool)));
-    connect(moveFruchtermanBx, SIGNAL(stateChanged(int)),this, SLOT(layoutFruchterman(int)));
+    connect(moveSpringEmbedderBx, SIGNAL(clicked(bool)),
+            this, SLOT(slotLayoutSpringEmbedder(bool)));
+    connect(moveFruchtermanBx, SIGNAL(stateChanged(int)),
+            this, SLOT(layoutFruchterman(int)));
 
-    connect(nodeSizeProportional2OutDegreeBx , SIGNAL(clicked(bool)),this, SLOT(slotLayoutNodeSizeProportionalOutEdges(bool)));
-    connect(nodeSizeProportional2InDegreeBx , SIGNAL(clicked(bool)),this, SLOT(slotLayoutNodeSizeProportionalInEdges(bool)));
-
+    connect(nodeSizesByOutDegreeBx , SIGNAL(clicked(bool)),
+            this, SLOT(slotLayoutNodeSizesByOutDegree(bool)));
+    connect(nodeSizesByInDegreeBx , SIGNAL(clicked(bool)),
+            this, SLOT(slotLayoutNodeSizesByInDegree(bool)));
 
 
     //create widgets for Properties/Statistics group/tab
@@ -2522,6 +2528,9 @@ void MainWindow::toolBoxLayoutByIndexButtonPressed(){
             slotLayoutCircularByProminenceIndex(selectedIndexText);
         else if (selectedLayoutType==1)
             slotLayoutLevelByProminenceIndex(selectedIndexText);
+        else if (selectedLayoutType==2){
+            slotLayoutNodeSizesByProminenceIndex(selectedIndexText);
+        }
         break;
     };
 }
@@ -2694,8 +2703,8 @@ void MainWindow::initNet(){
     toolBoxAnalysisProminenceSelect->setCurrentIndex(0);
     toolBoxLayoutByIndexSelect->setCurrentIndex(0);
     toolBoxLayoutByIndexTypeSelect ->setCurrentIndex(0);
-    nodeSizeProportional2OutDegreeBx->setChecked(false);
-    nodeSizeProportional2InDegreeBx->setChecked(false);
+    nodeSizesByOutDegreeBx->setChecked(false);
+    nodeSizesByInDegreeBx->setChecked(false);
     moveSpringEmbedderBx->setChecked(false);
     springLayoutAct->setChecked(false);
     FRLayoutAct->setChecked(false);
@@ -5065,8 +5074,9 @@ void MainWindow::slotFilterNodes(){
 }
 
 /**
-*	Calls Graph::filterIsolateVertices to filter vertices with no links
-*/
+ * @brief MainWindow::slotFilterIsolateNodes
+ *Calls Graph::filterIsolateVertices to filter vertices with no links
+ */
 void MainWindow::slotFilterIsolateNodes(){
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical(this, "Error",tr("Nothing to filter! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
@@ -5258,7 +5268,7 @@ void MainWindow::slotLayoutFruchterman(){
 
 
 /** 
-        Called from button.
+    Called when user presses button.
     Calls Graph::startNodeMovement to embed a repelling-attracting forces layout...
 */
 void MainWindow::layoutFruchterman (int state){
@@ -5270,10 +5280,14 @@ void MainWindow::layoutFruchterman (int state){
 }
 
 
-/** 
-    Resizes all nodes according to the amount of their out-Links from other nodes.
-*/
-void MainWindow::slotLayoutNodeSizeProportionalOutEdges(bool checked){
+
+/**
+ * @brief MainWindow::slotLayoutNodeSizesByOutDegree
+ * Resizes all nodes according to their outDegree
+ * Called when user selects the relevant menu entry or the option in the toolbox
+ * @param checked
+ */
+void MainWindow::slotLayoutNodeSizesByOutDegree(bool checked){
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical(
                     this, "Error",
@@ -5284,157 +5298,83 @@ void MainWindow::slotLayoutNodeSizeProportionalOutEdges(bool checked){
         return;
     }
 
-    qDebug("MW: slotLayoutNodeSizeProportionalOutEdges()");
-    QList<QGraphicsItem *> list=scene->items();
-    int edges = 0, size = initNodeSize ;
+    qDebug("MW: slotLayoutNodeSizesByOutDegree()");
 
     if (checked != true) {
-        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)  {
-            if ( (*it) -> type() == TypeNode ){
-                Node *jim = (Node*) (*it);
-                (*jim).setSize(size);
-            }
-        }
+        qDebug("MW: slotLayoutNodeSizesByOutDegree() resetting size");
+        nodeSizesByOutDegreeAct->setChecked(false);
+        nodeSizesByOutDegreeBx->setChecked(false);
 
-        nodeSizeProportionalOutDegreeAct->setChecked(false);
-        nodeSizeProportional2OutDegreeBx->setChecked(false);
+        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+
+        activeGraph.layoutVerticesSizeByProminenceIndex(0);
+
         QApplication::restoreOverrideCursor();
         return;
     }
-    nodeSizeProportionalOutDegreeAct->setChecked(true);
-    nodeSizeProportional2OutDegreeBx->setChecked(true);
+    qDebug("MW: slotLayoutNodeSizesByOutDegree() setting size");
+    nodeSizesByOutDegreeAct->setChecked(true);
+    nodeSizesByOutDegreeBx->setChecked(true);
+    nodeSizesByInDegreeAct->setChecked(false);
+    nodeSizesByInDegreeBx->setChecked(false);
+
     statusMessage( tr("Embedding node size model on the network.... ")  );
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-    for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
-        if ( (*it) -> type() == TypeNode ){
-            Node *jim = (Node*) (*it);
-            edges = activeGraph.outboundEdges(  (*jim).nodeNumber() ) ;
-            qDebug() << "Node " << (*jim).nodeNumber() <<  " outDegree:  "<<  edges;
 
-            if (edges == 0 ) {
-                size = initNodeSize;
-            }
-            else if (edges == 1 ) {
-                size = initNodeSize + 1;
-            }
-            else if (edges > 1 && edges <= 2  ) {
-                size = initNodeSize + 2;
-            }
-            else if (edges > 2 && edges <= 3  ) {
-                size = initNodeSize + 3;
-            }
-            else if (edges > 3 && edges <= 4  ) {
-                size = initNodeSize + 4;
-            }
-            else if (edges > 4 && edges <= 6  ) {
-                size = initNodeSize + 4;
-            }
-            else if (edges > 5 && edges <= 7  ) {
-                size = initNodeSize+5 ;
-            }
-            else if (edges > 7 && edges <= 10  ) {
-                size = initNodeSize+6 ;
-            }
-            else if (edges > 10 && edges <= 15  ) {
-                size = initNodeSize+7 ;
-            }
-            else if (edges > 15 && edges <= 25  ) {
-                size = initNodeSize+8 ;
-            }
-            else  if (edges > 25 ) {
-                size = initNodeSize+9;
-            }
-            qDebug() << "Changing size of " << (*jim).nodeNumber()  << "  to " <<  size;
-            (*jim).setSize(size);
-        }
+    activeGraph.layoutVerticesSizeByProminenceIndex(1);
 
-    }
     QApplication::restoreOverrideCursor( );
-
 }
 
 
 
-
-
-
-
-/** 
-    Resizes all nodes according to the amount of their in-Links from other nodes.
-*/
-void MainWindow::slotLayoutNodeSizeProportionalInEdges(bool checked){
+/**
+ * @brief MainWindow::slotLayoutNodeSizesByInDegree
+ * Resizes all nodes according to their inDegree
+ * Called when user selects the relevant menu entry or the option in the toolbox
+ * @param checked
+ */
+void MainWindow::slotLayoutNodeSizesByInDegree(bool checked){
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical(this, "Error",tr("You must be dreaming! \nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
         statusMessage( tr("I am really sorry. You must really load a file first... ")  );
         return;
     }
 
-    qDebug("MW: slotLayoutNodeSizeProportionalInEdges()");
-    QList<QGraphicsItem *> list=scene->items();
-    int edges = 0, size = initNodeSize ;
+    qDebug("MW: slotLayoutNodeSizesByInDegree()");
 
     if (checked != true) {
-        for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)  {
-            if ( (*it) -> type() == TypeNode ){
-                Node *jim = (Node*) (*it);
-                (*jim).setSize(size);
-            }
-        }
-        nodeSizeProportionalInDegreeAct->setChecked(false);
-        nodeSizeProportional2InDegreeBx->setChecked(false);
+        qDebug("MW: slotLayoutNodeSizesByInDegree() resetting size");
+        nodeSizesByInDegreeAct->setChecked(false);
+        nodeSizesByInDegreeBx->setChecked(false);
+
+        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+
+        activeGraph.layoutVerticesSizeByProminenceIndex(0);
+
+        QApplication::restoreOverrideCursor();
         return;
     }
-    nodeSizeProportionalInDegreeAct->setChecked(true);
-    nodeSizeProportional2InDegreeBx->setChecked(true);
+    qDebug("MW: slotLayoutNodeSizesByInDegree() setting size");
+    nodeSizesByOutDegreeAct->setChecked(false);
+    nodeSizesByOutDegreeBx->setChecked(false);
+    nodeSizesByInDegreeAct->setChecked(true);
+    nodeSizesByInDegreeBx->setChecked(true);
+
     statusMessage( tr("Embedding node size model on the network.... ")  );
-    for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
-        if ( (*it) -> type() == TypeNode ){
-            Node *jim = (Node*) (*it);
-            edges = activeGraph.inboundEdges(  (*jim).nodeNumber() ) ;
-            qDebug() << "Node " << (*jim).nodeNumber() << " inDegree:  " <<  edges;
+    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
-            if (edges == 0 ) {
-                size = initNodeSize;
-            }
-            else if (edges == 1 ) {
-                size = initNodeSize + 1;
-            }
-            else if (edges > 1 && edges <= 2  ) {
-                size = initNodeSize + 2;
-            }
-            else if (edges > 2 && edges <= 3  ) {
-                size = initNodeSize + 3;
-            }
-            else if (edges > 3 && edges <= 4  ) {
-                size = initNodeSize + 4;
-            }
-            else if (edges > 4 && edges <= 6  ) {
-                size = initNodeSize + 4;
-            }
-            else if (edges > 5 && edges <= 7  ) {
-                size = initNodeSize+5 ;
-            }
-            else if (edges > 7 && edges <= 10  ) {
-                size = initNodeSize+6 ;
-            }
-            else if (edges > 10 && edges <= 15  ) {
-                size = initNodeSize+7 ;
-            }
-            else if (edges > 15 && edges <= 25  ) {
-                size = initNodeSize+8 ;
-            }
-            else  if (edges > 25 ) {
-                size = initNodeSize+9;
-            }
-            qDebug() << "Changing size of " <<  (*jim).nodeNumber() << " to " <<  size;
-            (*jim).setSize(size);
-        }
+    activeGraph.layoutVerticesSizeByProminenceIndex(9);
 
-    }
+    QApplication::restoreOverrideCursor( );
 
 }
 
+
+/**
+ * @brief MainWindow::slotLayoutGuides
+ * @param state
+ */
 void MainWindow::slotLayoutGuides(int state){
     qDebug()<< "MW:slotLayoutGuides()";
     if (!fileLoaded && !networkModified  )  {
@@ -5712,11 +5652,139 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
     graphicsWidget->clearGuides();
     createProgressBar();
-    activeGraph.layoutCircularByProminenceIndex(x0, y0, maxRadius,userChoice);
+    activeGraph.layoutCircularByProminenceIndex(x0, y0, maxRadius, userChoice );
     destroyProgressBar();
     statusMessage( tr("Nodes in inner circles have greater prominence index.") );
 }
 
+
+
+
+
+/**
+ * @brief MainWindow::slotLayoutNodeSizesByProminenceIndex
+ * Called when selectbox changes in the toolbox
+ */
+void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
+        qDebug() << "MainWindow::slotLayoutNodeSizesByProminenceIndex() ";
+    if (!fileLoaded && !networkModified  )  {
+                QMessageBox::critical(
+                    this, "Error",
+                    tr("Sorry, I can't follow! "
+                       "\nLoad a network file or create a new network first. \n"
+                       "Then we can talk about layouts!"), "OK",0);
+        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
+        return;
+    }
+    int userChoice = 0;
+    QString prominenceIndexName = choice;
+
+    if ( prominenceIndexName.contains("Degree Centrality") )
+        userChoice=1;
+    else if ( prominenceIndexName == "Closeness Centrality")
+        userChoice=2;
+    else if ( prominenceIndexName.contains("Influence Range Closeness Centrality"))
+        userChoice=3;
+    else if ( prominenceIndexName.contains("Betweeness Centrality"))
+        userChoice=4;
+    else if (prominenceIndexName.contains("Stress Centrality"))
+        userChoice=5;
+    else if (prominenceIndexName.contains("Eccentricity Centrality"))
+        userChoice=6;
+    else if (prominenceIndexName.contains("Power Centrality"))
+        userChoice=7;
+    else if (prominenceIndexName.contains("Information Centrality"))
+        userChoice=8;
+    else if (prominenceIndexName.contains("Degree Prestige"))
+        userChoice=9;
+    else if (prominenceIndexName.contains("PageRank Prestige"))
+        userChoice=10;
+    else if (prominenceIndexName.contains("Proximity Prestige"))
+        userChoice=11;
+
+    qDebug() << "MainWindow::slotLayoutNodeSizesByProminenceIndex() "
+             << "prominenceIndexName " << prominenceIndexName
+                << " userChoice " << userChoice;
+
+    //check if CC was selected and the graph is disconnected.
+    if (userChoice == 2 ) {
+        int connectedness=activeGraph.connectedness();
+        switch ( connectedness ) {
+        case 1:
+            break;
+        case 0:
+            QMessageBox::critical(this,
+                                  "Centrality Closeness",
+                                  tr(
+                                      "Weakly connected digraph!\n"
+                                      "Since this network is directed and weakly "
+                                      "connected, the ordinary Closeness Centrality "
+                                      "index is not defined, because d(u,v) will be "
+                                      "infinite for not reachable nodes u,v.\n"
+                                      "Please use the slightly different but improved "
+                                      "Influence Range Closeness (IRCC) index "
+                                      "which considers how proximate is each node "
+                                      "to the nodes in its influence range. \n"
+                                      "Read more in the SocNetV manual."
+                                      ), "OK",0);
+            return;
+            break;
+
+        case -1:
+            QMessageBox::critical(this,
+                                  "Centrality Closeness",
+                                  tr(
+                                      "Disconnected graph/digraph!\n"
+                                      "Since this network is disconnected, "
+                                      "the ordinary Closeness Centrality "
+                                      "index is not defined, because d(u,v) will be "
+                                      "infinite for any isolate nodes u or v.\n"
+                                      "Please use the slightly different but improved "
+                                      "Influence Range Closeness (IRCC) index "
+                                      "which considers how proximate is each node "
+                                      "to the nodes in its influence range.\n"
+                                      "Read more in the SocNetV manual."
+                                      ), "OK",0);
+            return;
+            break;
+        default:
+            QMessageBox::critical(this, "Connectedness", "Something went wrong!.", "OK",0);
+            break;
+        };
+
+    }
+    if (userChoice==8 && activeNodes() > 200) {
+        switch(
+               QMessageBox::critical(
+                   this, "Slow function warning",
+                   tr("Please note that this function is <b>VERY SLOW</b> on large "
+                      "networks (n>200), since it will calculate  a (n x n) matrix A with:"
+                      "Aii=1+weighted_degree_ni"
+                      "Aij=1 if (i,j)=0"
+                      "Aij=1-wij if (i,j)=wij"
+                      "Next, it will compute the inverse matrix C of A."
+                      "The computation of the inverse matrix is VERY CPU intensive function."
+                      "because it uses the Gauss-Jordan elimination algorithm.\n\n "
+                      "Are you sure you want to continue?"), QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
+        case QMessageBox::Ok:
+            break;
+
+        case QMessageBox::Cancel:
+            // Cancel was clicked
+            return;
+            break;
+        default:
+            // should never be reached
+            break;
+        }
+    }
+    statusMessage(  QString(tr("Calculating new node sizes. Please wait...")) );
+    graphicsWidget->clearGuides();
+    createProgressBar();
+    activeGraph.layoutVerticesSizeByProminenceIndex(userChoice);
+    destroyProgressBar();
+    statusMessage( tr("Bigger nodes have greater prominence index.") );
+}
 
 
 

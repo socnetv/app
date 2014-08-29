@@ -729,6 +729,147 @@ void Graph::setVertexSize(long int v, int size) {
     emit graphChanged();
 }
 
+/**
+ * @brief Graph::layoutVerticesSizeByProminenceIndex
+ * changes the node size to be proportinal to given prominence index
+ * @param prominenceIndex
+ */
+void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex){
+    qDebug() << "Graph::layoutVerticesSizeByProminenceIndex - "
+                << "prominenceIndex index = " << prominenceIndex;
+    double std=0;
+    float C=0, maxC=0;
+    int new_size=0;
+
+    //first calculate centrality indices if needed
+    if ( prominenceIndex == 0) {
+        // do nothing
+    }
+    else if ( prominenceIndex == 1)
+        this->centralityDegree(true);
+    else if ( prominenceIndex == 3 )
+        this->centralityClosenessInfluenceRange();
+    else if ( prominenceIndex == 8 )
+        this->centralityInformation();
+    else if ( prominenceIndex == 9)
+        this->prestigeDegree(true);
+    else if ( prominenceIndex == 10 )
+        this->prestigePageRank();
+    else if ( prominenceIndex == 11 )
+        this->prestigeProximity();
+    else
+        this->createDistanceMatrix(true);
+
+    for (QList<Vertex*>::iterator it=m_graph.begin(); it!=m_graph.end(); it++){
+        switch (prominenceIndex) {
+        case 0: {
+            C=0;maxC=0;
+            break;
+        }
+            case 1 : {
+                qDebug("VerticesSize according to DC");
+                C=(*it)->SDC();
+                std= (*it)->SDC();
+                maxC=maxDC;
+                break;
+            }
+            case 2 : {
+                qDebug("VerticesSize according to CC");
+                C=(*it)->CC();
+                std= (*it)->SCC();
+                maxC=maxCC;
+                break;
+            }
+            case 3 : {
+                qDebug("VerticesSize according to IRCC");
+                C=(*it)->IRCC();
+                std= (*it)->SIRCC();
+                maxC=maxIRCC;
+                break;
+            }
+            case 4 : {
+                qDebug("VerticesSize according to BC");
+                C=(*it)->BC();
+                std= (*it)->SBC();
+                maxC=maxBC;
+                break;
+            }
+            case 5 : {
+                qDebug("VerticesSize according to SC");
+                C=(*it)->SC();
+                std= (*it)->SSC();
+                maxC=maxSC;
+                break;
+            }
+            case 6 : {
+                qDebug("VerticesSize according to EC");
+                C=(*it)->EC();
+                std= (*it)->SEC();
+                maxC=maxEC;
+                break;
+            }
+            case 7 : {
+                qDebug("VerticesSize according to PC");
+                C=(*it)->PC();
+                std= (*it)->SPC();
+                maxC=maxPC;
+                break;
+            }
+            case 8 : {
+                qDebug("VerticesSize according to IC");
+                C=(*it)->IC();
+                std= (*it)->SIC();
+                maxC=maxIC;
+                break;
+            }
+            case 9 : {
+                qDebug("VerticesSize according to DP");
+                C=(*it)->SDP();
+                std= (*it)->SDP();
+                maxC=maxDP;
+                break;
+            }
+            case 10 : {
+                qDebug("VerticesSize according to PRP");
+                C=(*it)->PRC();
+                std= (*it)->SPRC();
+                maxC=maxPRC;
+                break;
+            }
+            case 11 : {
+                qDebug("VerticesSize according to PP");
+                C=(*it)->PP();
+                std= (*it)->SPP();
+                maxC=maxPP;
+                break;
+            }
+        };
+        qDebug () << "Vertex " << (*it)->name()
+                  << ": C=" << C << ", stdC=" << std
+                  << ", maxC " << maxC << ", C/maxC " << (C/maxC);
+
+        switch (static_cast<int> (ceil(maxC) )){
+        case 0: {
+            qDebug()<<"maxC=0.   Using initVertexSize";
+            new_size=initVertexSize;
+            //emit signal to change node size
+            emit setNodeSize((*it)->name(),  new_size);
+            break;
+        }
+        default: {
+            //Calculate new size
+            new_size=ceil ( initVertexSize /2.0  + (float) initVertexSize * (C/maxC));
+            qDebug ()<< "new vertex size "<< new_size << " call setSize()";
+            (*it)->setSize(new_size);
+            //emit signal to change node size
+            emit setNodeSize((*it)->name(),  new_size);
+            break;
+        }
+        };
+    }
+    graphModified=true;
+    emit graphChanged();
+}
 
 void Graph::setInitVertexShape(QString shape) {
     initVertexShape=shape;
@@ -3578,7 +3719,6 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0, double maxRadi
     double new_radius=0, new_x=0, new_y=0;
     double Pi = 3.14159265;
     int vert=vertices();
-
     for (QList<Vertex*>::iterator it=m_graph.begin(); it!=m_graph.end(); it++){
         switch (prominenceIndex) {
             case 1 : {

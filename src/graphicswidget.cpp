@@ -566,6 +566,8 @@ void GraphicsWidget::setNodeVisibility(long int number, bool toggle){
  * @return
  */
 bool GraphicsWidget::setNodeSize(long int number, int size ){
+    qDebug () << " GraphicsWidget::setNodeSize() node: "<< number
+              << " new size "<< size;
     if  ( nodeHash.contains (number) ) {
             if (size>0){
                 qDebug() << "GW: setNodeSize(): for "<< number << " to " << size ;
@@ -590,15 +592,15 @@ bool GraphicsWidget::setNodeSize(long int number, int size ){
  * @param size
  * @return
  */
-bool GraphicsWidget::setAllNodeSize(int size ){
+void GraphicsWidget::setAllNodeSize(int size ){
     qDebug() << "GW: setAllNodeSize() ";
     foreach ( Node *m_node, nodeHash ) {
         if (size>0){
-            qDebug() << "GW: setAllNodeSize(): "<< number << " to new size " << size ;
+            qDebug() << "GW: setAllNodeSize(): "<< m_node->nodeNumber() << " to new size " << size ;
             m_node -> setSize(size);
         }
         else {
-            qDebug() << "GW: setAllNodeSize(): "<< number << " to initial size " << m_nodeSize;
+            qDebug() << "GW: setAllNodeSize(): "<< m_node->nodeNumber() << " to initial size " << m_nodeSize;
             m_node -> setSize(m_nodeSize);
         }
     }
