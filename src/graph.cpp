@@ -5962,7 +5962,7 @@ QTextStream& operator <<  (QTextStream& os, Graph& m){
     The resulting matrix HAS NO spaces between elements.
 */
 void Graph::writeAdjacencyMatrix (const QString fn, const char* netName) {
-    qDebug()<<"Graph::writeAdjacencyMatrix() ";
+    qDebug()<<"Graph::writeAdjacencyMatrix() to : " << fn;
     QFile file( fn );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         emit statusMessage( QString(tr("Could not write to %1")).arg(fn) );
