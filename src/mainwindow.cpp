@@ -1211,20 +1211,31 @@ void MainWindow::initActions(){
                    "Adds a new relation to the active network. "
                    "Nodes will be preserved, edges will be removed. "));
 
-    nodeSizesByOutDegreeAct= new QAction(QIcon(":/images/nodeout.png"),tr("Node size according to outDegree"), this);
+    nodeSizesByOutDegreeAct= new QAction(QIcon(":/images/nodeout.png"),
+                                         tr("Node sizes by OutDegree"), this);
     nodeSizesByOutDegreeAct->setShortcut(tr("Alt+3"));
-    nodeSizesByOutDegreeAct->setStatusTip(tr("Resizes all nodes according to their out edges."));
-    nodeSizesByOutDegreeAct->setWhatsThis(tr("NodeSize = F (OutDegree) \n\n Adjusts the size of each node according to their out-edges (OutDegree). The more out-likned a node is, the bigger will appear..."));
+    nodeSizesByOutDegreeAct->
+            setStatusTip(tr("Resizes all nodes according to their outDegree."));
+    nodeSizesByOutDegreeAct
+            ->setWhatsThis(tr("Node sizes by OutDegree) \n\n"
+                              "Adjusts the size of each node according to its "
+                              "OutDegree. The more out-linked a node is, "
+                              "the bigger will appear..."));
     nodeSizesByOutDegreeAct->setCheckable(true);
     nodeSizesByOutDegreeAct->setChecked(false);
     connect(nodeSizesByOutDegreeAct, SIGNAL(triggered(bool)),
             this, SLOT(slotLayoutNodeSizesByOutDegree(bool)));
 
     nodeSizesByInDegreeAct= new QAction(
-                QIcon(":/images/nodein.png"),tr("Node size according to InDegree"), this);
+                QIcon(":/images/nodein.png"),tr("Node sizes by InDegree"), this);
     nodeSizesByInDegreeAct->setShortcut(tr("Alt+4"));
-    nodeSizesByInDegreeAct->setStatusTip(tr("Resizes all nodes according to their in edges."));
-    nodeSizesByInDegreeAct->setWhatsThis(tr("NodeSize = F (InDegree) \n\n This method adjusts the size of each node according to their in-edges (InDegree). The more in-linked a node is, the bigger will appear..."));
+    nodeSizesByInDegreeAct->setStatusTip(
+                tr("Resizes all nodes according to their InDegree."));
+    nodeSizesByInDegreeAct->
+            setWhatsThis(tr("Node sizes by InDegree) \n\n "
+                            "This method adjusts the size of each node according "
+                            "to its InDegree. The more in-linked a node is, "
+                            "the bigger will appear..."));
     nodeSizesByInDegreeAct->setCheckable(true);
     nodeSizesByInDegreeAct->setChecked(false);
     connect(nodeSizesByInDegreeAct, SIGNAL(triggered(bool)),
