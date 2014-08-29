@@ -88,6 +88,7 @@ protected:
 
 public slots:
     void changeRelation(int relation);
+
     void drawNode(	int i, int size, QString aColor,
                     QString nColor, int nSize,
                     QString label, QString lColor, int lSize,
@@ -96,17 +97,19 @@ public slots:
                     bool showLabels, bool labelIn, bool showNumbers
                     );
     void eraseNode(long int doomedJim);
+    void setNodeVisibility(long int, bool );	//Called from Graph via MW
+    void openNodeContextMenu();
+    void nodeClicked(Node *);
+    void moveNode(int, int, int);	//Called from Graph when creating random nets.
+    bool setNodeSize(long int, int size=0);
+    void setAllNodeSize(int size=0);
+
     void drawEdge(int, int, float, bool, bool, QString, bool);
     void eraseEdge(int, int);
     void setEdgeVisibility (int relation, int, int, bool);
-    void setNodeVisibility(long int, bool );	//Called from Graph via MW
-
-    void nodeClicked(Node *);
     void edgeClicked(Edge *);
-    void openNodeContextMenu();
     void openEdgeContextMenu();
 
-    void moveNode(int, int, int);			//Called from Graph when creating random nets.
     void changeZoom(const int value);
     void startEdge(Node *node);
     void drawEdgeReciprocal(int, int);

@@ -5275,7 +5275,11 @@ void MainWindow::layoutFruchterman (int state){
 */
 void MainWindow::slotLayoutNodeSizeProportionalOutEdges(bool checked){
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Wake up! \nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
+        QMessageBox::critical(
+                    this, "Error",
+                    tr("There are no nodes yet!\n"
+                       "Load a network file or create a new network first. "
+                       "Then we can talk about layouts!"), "OK",0);
         statusMessage( tr("I am really sorry. You must really load a file first... ")  );
         return;
     }
