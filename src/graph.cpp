@@ -5130,10 +5130,7 @@ bool Graph::saveGraphToPajekFormat (
  * @param maxHeight
  * @return
  */
-bool Graph::saveGraphToAdjacencyFormat (QString fileName)
-{
-    Q_UNUSED(maxWidth);
-    Q_UNUSED(maxHeight);
+bool Graph::saveGraphToAdjacencyFormat (QString fileName){
     QFile f( fileName );
     if ( !f.open( QIODevice::WriteOnly ) )  {
         emit statusMessage(QString(tr("Could not write to %1")).arg(fileName));
@@ -5152,15 +5149,22 @@ bool Graph::saveGraphToAdjacencyFormat (QString fileName)
 
 
 
-// Writes a known dataset to a file
+
+/**
+ * @brief Graph::writeDataSetToFile
+ * Writes a known dataset to the given file
+ * @param fileName
+ */
 void Graph::writeDataSetToFile (const QString fileName) {
     QFile file( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         emit statusMessage( QString(tr("Could not write to %1")).arg(fileName) );
         return;
     }
+    qDebug() << "Graph::writeDataSetToFile() file opened " << fileName;
+
     QTextStream outText( &file );
-    qDebug()<< "		... writing";
+    qDebug()<< "		... writing dataset ";
     QStringList fileNameNoPath=fileName.split ("/" );
     QString name=fileNameNoPath.last();
     QString datasetDescription=QString::null;

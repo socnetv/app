@@ -151,7 +151,7 @@ public:
                     QString networkName, int maxWidth, int maxHeight
                     );
     bool saveGraphToPajekFormat (QString fileName,QString networkName,  int maxWidth, int maxHeight);
-    bool saveGraphToAdjacencyFormat (QString fileName, int maxWidth, int maxHeight);
+    bool saveGraphToAdjacencyFormat (QString fileName);
     bool saveGraphToDotFormat (QString fileName, QString networkName, int maxWidth, int maxHeight);
     bool saveGraphToGraphMLFormat (QString fileName,QString networkName,  int maxWidth, int maxHeight);
 
@@ -226,7 +226,7 @@ public:
 
     /* PRINT OUT TO FILES*/
 
-    void writeDataSetToFile(QString );
+    void writeDataSetToFile(const QString );
     void writeAdjacencyMatrixTo(QTextStream& os);
     void writeAdjacencyMatrix(const QString, const char*);
 

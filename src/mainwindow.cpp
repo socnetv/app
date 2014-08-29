@@ -3163,7 +3163,7 @@ void MainWindow::slotImportEdgeList(){
  * @return
  */
 bool MainWindow::loadNetworkFile(QString m_fileName, int m_fileFormat ){
-    qDebug("MW: loadNetworkFile");
+    qDebug() << "MW::loadNetworkFile() : "<< m_fileName;
     initNet();
     int two_sm_mode = 0;
 
@@ -3871,7 +3871,9 @@ void MainWindow::slotRecreateDataSet (QString m_fileName) {
 
     initNet();
     m_fileName = dataDir + m_fileName;
+    qDebug()<< "slotRecreateDataSet() datadir fileName: " << m_fileName;
     activeGraph.writeDataSetToFile(m_fileName);
+
 
     if (m_fileName.endsWith(".graphml")) {
         m_fileFormat=1;
@@ -3908,7 +3910,8 @@ void MainWindow::slotRecreateDataSet (QString m_fileName) {
         fileName=m_fileName;
         previous_fileName=fileName;
         setWindowTitle("SocNetV "+ VERSION +" - "+fileNameNoPath.last());
-        QString message=tr("Network saved as ")+fileNameNoPath.last();
+        QString message=tr("Dataset loaded. Dataset file saved as ") +
+                fileNameNoPath.last();
         statusMessage( message );
     }
     else {
