@@ -5155,21 +5155,18 @@ bool Graph::saveGraphToAdjacencyFormat (QString fileName){
  * Writes a known dataset to the given file
  * @param fileName
  */
-void Graph::writeDataSetToFile (const QString fileName) {
+void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
+    qDebug() << "Graph::writeDataSetToFile() to " << dir+fileName;
     QFile file( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         emit statusMessage( QString(tr("Could not write to %1")).arg(fileName) );
         return;
     }
-    qDebug() << "Graph::writeDataSetToFile() file opened " << fileName;
-
     QTextStream outText( &file );
-    qDebug()<< "		... writing dataset ";
-    QStringList fileNameNoPath=fileName.split ("/" );
-    QString name=fileNameNoPath.last();
     QString datasetDescription=QString::null;
-    if ( name == "Krackhardt_High-tech_managers_Advice_relation.sm" ) {
-        qDebug()<< "		... to  " << name;
+    qDebug()<< "		... writing dataset ";
+    if ( fileName == "Krackhardt_High-tech_managers_Advice_relation.sm" ) {
+        qDebug()<< "		... to  " << fileName;
         outText <<
                    "0 1 0 1 0 0 0 1 0 0 0 0 0 0 0 1 0 1 0 0 1" << endl <<
                    "0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << endl <<
@@ -5194,7 +5191,7 @@ void Graph::writeDataSetToFile (const QString fileName) {
                    "0 1 1 1 0 1 1 1 0 0 0 1 0 1 0 0 1 1 0 1 0";
 
     }
-    else if (name == "Krackhardt_High-tech_managers_Friendship_relation.sm"){
+    else if (fileName == "Krackhardt_High-tech_managers_Friendship_relation.sm"){
         outText<< "0 1 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 0 0" << endl <<
                   "1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1" << endl <<
                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0" << endl <<
@@ -5217,7 +5214,7 @@ void Graph::writeDataSetToFile (const QString fileName) {
                   "0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0" << endl <<
                   "0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0" ;
     }
-    else if (name == "Krackhardt_High-tech_managers_ReportsTo_relation.sm"){
+    else if (fileName == "Krackhardt_High-tech_managers_ReportsTo_relation.sm"){
         outText<< "0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
                   "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << endl <<
@@ -5240,7 +5237,7 @@ void Graph::writeDataSetToFile (const QString fileName) {
                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << endl <<
                   "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0";
     }
-    else if (name == "Padgett_Florentine_Families_Marital_relation.net"){
+    else if (fileName == "Padgett_Florentine_Families_Marital_relation.net"){
         outText<< "*Network Padgett's Florentine Families Marital Relation" << endl <<
                   "*Vertices      16" << endl <<
                     "1 \"Acciaiuoli\"         0.2024    0.1006" << endl <<
@@ -5301,7 +5298,7 @@ void Graph::writeDataSetToFile (const QString fileName) {
                    "16  9 1" << endl <<
                   "16 13 1" ;
     }
-    else if (name == "Padgett_Florentine_Families_Business_relation.paj"){
+    else if (fileName == "Padgett_Florentine_Families_Business_relation.paj"){
         outText<< "*Network Padgett's Florentine Families Business Relation" << endl <<
                   "*Vertices      16" << endl <<
                     "1 \"Acciaiuoli\"         0.2024    0.1006" << endl <<
@@ -5352,7 +5349,7 @@ void Graph::writeDataSetToFile (const QString fileName) {
                    "14  9 1" << endl <<
                    "16  9 1";
     }
-    else if (name == "Zachary_Karate_Club_Simple_Ties.sm"){
+    else if (fileName == "Zachary_Karate_Club_Simple_Ties.sm"){
         outText<< "0 1 1 1 1 1 1 1 1 0 1 1 1 1 0 0 0 1 0 1 0 1 0 0 0 0 0 0 0 0 0 1 0 0" << endl <<
                   "1 0 1 1 0 0 0 1 0 0 0 0 0 1 0 0 0 1 0 1 0 1 0 0 0 0 0 0 0 0 1 0 0 0" << endl <<
                   "1 1 0 1 0 0 0 1 1 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 1 0" << endl <<
@@ -5388,7 +5385,7 @@ void Graph::writeDataSetToFile (const QString fileName) {
                   "0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 1 0 0 1 0 1 0 1 1 0 0 0 0 0 1 1 1 0 1" << endl <<
                   "0 0 0 0 0 0 0 0 1 1 0 0 0 1 1 1 0 0 1 1 1 0 1 1 0 0 1 1 1 1 1 1 1 0" ;
     }
-    else if (name == "Zachary_Karate_Club_Weighted_Ties.sm"){
+    else if (fileName == "Zachary_Karate_Club_Weighted_Ties.sm"){
         outText<< "0 4 5 3 3 3 3 2 2 0 2 3 1 3 0 0 0 2 0 2 0 2 0 0 0 0 0 0 0 0 0 2 0 0" << endl <<
                   "4 0 6 3 0 0 0 4 0 0 0 0 0 5 0 0 0 1 0 2 0 2 0 0 0 0 0 0 0 0 2 0 0 0" << endl <<
                   "5 6 0 3 0 0 0 4 5 1 0 0 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 2 2 0 0 0 2 0" << endl <<
@@ -5424,7 +5421,7 @@ void Graph::writeDataSetToFile (const QString fileName) {
                   "0 0 2 0 0 0 0 0 3 0 0 0 0 0 3 3 0 0 1 0 3 0 2 5 0 0 0 0 0 4 3 4 0 5" << endl <<
                   "0 0 0 0 0 0 0 0 4 2 0 0 0 3 2 4 0 0 2 1 1 0 3 4 0 0 2 4 2 2 3 4 5 0";
     }
-    else if (name == "Galaskiewicz_CEOs_and_clubs_affiliation_network_data.2sm"){
+    else if (fileName == "Galaskiewicz_CEOs_and_clubs_affiliation_network_data.2sm"){
         outText<< "0 0 1 1 0 0 0 0 1 0 0 0 0 0 0" << endl <<
                   "0 0 1 0 1 0 1 0 0 0 0 0 0 0 0" << endl <<
                   "0 0 1 0 0 0 0 0 0 0 0 1 0 0 0" << endl <<
@@ -5452,7 +5449,7 @@ void Graph::writeDataSetToFile (const QString fileName) {
                   "0 1 1 0 0 0 0 0 0 0 0 0 1 0 0" << endl <<
                   "0 1 1 0 0 0 0 0 0 0 0 1 0 0 0";
     }
-    else if (name == "Bernard_Killworth_Fraternity.dl"){
+    else if (fileName == "Bernard_Killworth_Fraternity.dl"){
         datasetDescription =
                 tr("Bernard & Killworth recorded the interactions among students living in a fraternity at "
                    "a West Virginia college. Subjects had been residents in the fraternity from 3 months to 3 years. "
@@ -5760,7 +5757,7 @@ void Graph::writeDataSetToFile (const QString fileName) {
                     "4 2 2 2 2 2 2 2 5 4 1 3 3 3 3 3 3 0";
 
     }
-    else if (name == "Mexican_Power_Network_1940s.lst"){
+    else if (fileName == "Mexican_Power_Network_1940s.lst"){
         outText<< "18 8 10 23 21" << endl <<
                   "19 11 21" << endl <<
                   "29 5 9 10" << endl <<
@@ -5781,7 +5778,7 @@ void Graph::writeDataSetToFile (const QString fileName) {
                   "37 8 36" << endl <<
                   "25 10 11 8";
     }
-    else if (name == "Knocke_Bureacracies_Information_Exchange_Network.pajek"){
+    else if (fileName == "Knocke_Bureacracies_Information_Exchange_Network.pajek"){
         qDebug()<< "		Knocke_Bureacracies_Information_Exchange_Network.pajek written... ";
         outText<< "*Network KNOKI " << endl <<
                   "*Vertices 10" << endl <<
@@ -5847,7 +5844,7 @@ void Graph::writeDataSetToFile (const QString fileName) {
                   " 10 7  1";
                     qDebug()<< "		Knocke_Bureacracies_Information_Exchange_Network.pajek written... ";
     }
-    else if (name == "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek"){
+    else if (fileName == "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek"){
         qDebug()<< "		Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek written... ";
         outText<< "*Network Countries_Trade_Basic_Manufactured_Goods" << endl <<
                   "*Vertices      24" << endl <<

@@ -3870,10 +3870,9 @@ void MainWindow::slotRecreateDataSet (QString m_fileName) {
     qDebug()<< "slotRecreateDataSet() fileName: " << m_fileName;
 
     initNet();
-    m_fileName = dataDir + m_fileName;
-    qDebug()<< "slotRecreateDataSet() datadir fileName: " << m_fileName;
-    activeGraph.writeDataSetToFile(m_fileName);
 
+    qDebug()<< "slotRecreateDataSet() datadir+fileName: " << dataDir+m_fileName;
+    activeGraph.writeDataSetToFile(dataDir, m_fileName);
 
     if (m_fileName.endsWith(".graphml")) {
         m_fileFormat=1;
@@ -3904,15 +3903,12 @@ void MainWindow::slotRecreateDataSet (QString m_fileName) {
         m_fileFormat=9;
     }
 
-
-    if ( loadNetworkFile(m_fileName, m_fileFormat) ) {
+    if ( loadNetworkFile(dataDir+m_fileName, m_fileFormat) ) {
         qDebug() << "slotRecreateDataSet() loaded file " << m_fileName;
-        fileNameNoPath=m_fileName.split ("/" );
         fileName=m_fileName;
         previous_fileName=fileName;
-        setWindowTitle("SocNetV "+ VERSION +" - "+fileNameNoPath.last());
-        QString message=tr("Dataset loaded. Dataset file saved as ") +
-                fileNameNoPath.last();
+        setWindowTitle("SocNetV "+ VERSION +" - "+fileName);
+        QString message=tr("Dataset loaded. Dataset file saved as ") + fileName;
         statusMessage( message );
     }
     else {

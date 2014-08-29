@@ -226,7 +226,7 @@ public:
 
     /* PRINT OUT TO FILES*/
 
-    void writeDataSetToFile(const QString );
+    void writeDataSetToFile(const QString dir, const QString );
     void writeAdjacencyMatrixTo(QTextStream& os);
     void writeAdjacencyMatrix(const QString, const char*);
 
