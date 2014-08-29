@@ -3906,6 +3906,7 @@ void MainWindow::slotRecreateDataSet (QString m_fileName) {
 
 
     if ( loadNetworkFile(m_fileName, m_fileFormat) ) {
+        qDebug() << "slotRecreateDataSet() loaded file " << m_fileName;
         fileNameNoPath=m_fileName.split ("/" );
         fileName=m_fileName;
         previous_fileName=fileName;

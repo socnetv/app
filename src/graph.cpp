@@ -5169,6 +5169,7 @@ void Graph::writeDataSetToFile (const QString fileName) {
     QString name=fileNameNoPath.last();
     QString datasetDescription=QString::null;
     if ( name == "Krackhardt_High-tech_managers_Advice_relation.sm" ) {
+        qDebug()<< "		... to  " << name;
         outText <<
                    "0 1 0 1 0 0 0 1 0 0 0 0 0 0 0 1 0 1 0 0 1" << endl <<
                    "0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << endl <<

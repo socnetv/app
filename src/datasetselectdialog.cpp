@@ -38,8 +38,24 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
 
     (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
 
-    QStringList datasets_list;
     datasets_list
+            << "Krackhardt: High-tech managers (advice)"
+            << "Krackhardt: High-tech managers (friendship)"
+            << "Krackhardt: High-tech managers (Reports To)"
+            << "Padgett: Florentine Families (marital)"
+            << "Padgett: Florentine Families (business)"
+            << "Zachary: Karate Club (simple ties)"
+            << "Zachary: Karate Club (weighted ties)"
+            << "Bernard: Killworth Fraternity"
+            << "Galaskiewicz: CEOs and clubs (affiliation data)"
+            << "Freeman: EIES network (acquaintanceship at time-1)"
+            << "Freeman: EIES network (acquaintanceship at time-2)"
+            << "Freeman: EIES network (messages)"
+            << "Mexican Power Network in the 1940s"
+            << "Knocke: Bureacracies Information Exchange Network"
+            << "Wasserman & Faust: Countries Trade (basic manufactured goods)";
+
+    datasets_filenames
             << "Krackhardt_High-tech_managers_Advice_relation.sm"
             << "Krackhardt_High-tech_managers_Friendship_relation.sm"
             << "Krackhardt_High-tech_managers_ReportsTo_relation.sm"
@@ -62,9 +78,10 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
 
 
 void DataSetSelectDialog::gatherData(){
-	qDebug()<< "Dialog: gathering Data!...";
-    QString dataset_name = (ui.selectBox) -> currentText();
-	qDebug()<< "Dialog: emitting userChoises signal ";
+    qDebug()<< "DataSetSelectDialog: gathering Data!...";
+    int index = (ui.selectBox) -> currentIndex();
+    QString dataset_name = datasets_filenames[index];
+    qDebug()<< "DataSetSelectDialog: user selected: " << dataset_name;
 	emit userChoices( dataset_name );
 			
 }
@@ -81,3 +98,6 @@ void DataSetSelectDialog::on_buttonBox_rejected()
     this->reject();
 }
 
+DataSetSelectDialog::~DataSetSelectDialog(){
+     datasets_list.clear(); datasets_filenames.clear();
+}

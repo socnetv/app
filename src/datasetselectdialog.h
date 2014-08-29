@@ -36,6 +36,7 @@ class DataSetSelectDialog: public QDialog
 	Q_OBJECT
 public:
 	DataSetSelectDialog (QWidget *parent = 0);
+    ~DataSetSelectDialog();
 public slots:
 	void gatherData();
 signals:
@@ -47,6 +48,7 @@ private slots:
 
 private:
     Ui::DataSetSelectDialog ui;
+    QStringList datasets_list, datasets_filenames;
 
 };
 
