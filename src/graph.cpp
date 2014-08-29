@@ -5157,7 +5157,7 @@ bool Graph::saveGraphToAdjacencyFormat (QString fileName){
  */
 void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
     qDebug() << "Graph::writeDataSetToFile() to " << dir+fileName;
-    QFile file( fileName );
+    QFile file( dir+fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         emit statusMessage( QString(tr("Could not write to %1")).arg(fileName) );
         return;
