@@ -5021,7 +5021,7 @@ bool Graph::saveGraph (
     }
     case 2: {			// Adjacency
         qDebug() << " 	... Adjacency formatted file";
-        return saveGraphToAdjacencyFormat(fileName, maxWidth,maxHeight);
+        return saveGraphToAdjacencyFormat(fileName);
         break;
     }
     case 3: {			// Dot
@@ -5123,9 +5123,14 @@ bool Graph::saveGraphToPajekFormat (
 }
 
 
-
-bool Graph::saveGraphToAdjacencyFormat (
-        QString fileName, int maxWidth, int maxHeight)
+/**
+ * @brief Graph::saveGraphToAdjacencyFormat
+ * @param fileName
+ * @param maxWidth
+ * @param maxHeight
+ * @return
+ */
+bool Graph::saveGraphToAdjacencyFormat (QString fileName)
 {
     Q_UNUSED(maxWidth);
     Q_UNUSED(maxHeight);
@@ -5146,14 +5151,15 @@ bool Graph::saveGraphToAdjacencyFormat (
 }
 
 
+
 // Writes a known dataset to a file
-void Graph::writeDataSetToFile (QString fileName) {
-    QFile f( fileName );
-    if ( !f.open( QIODevice::WriteOnly ) )  {
+void Graph::writeDataSetToFile (const QString fileName) {
+    QFile file( fileName );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
         emit statusMessage( QString(tr("Could not write to %1")).arg(fileName) );
         return;
     }
-    QTextStream outText( &f );
+    QTextStream outText( &file );
     qDebug()<< "		... writing";
     QStringList fileNameNoPath=fileName.split ("/" );
     QString name=fileNameNoPath.last();
@@ -5891,7 +5897,7 @@ void Graph::writeDataSetToFile (QString fileName) {
                    "1 1 0 1 1 0 1 1 1 0 1 1 1 0 0 1 1 1 1 1 1 1 1 0";
                     qDebug()<< "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek written... ";
     }
-    f.close();
+    file.close();
     if ( !datasetDescription.isEmpty() ) {
         emit describeDataset(datasetDescription);
     }
