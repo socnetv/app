@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer 
- version: 1.31
+ version: 1.4
  Written in Qt
 
                         matrix  -  description
