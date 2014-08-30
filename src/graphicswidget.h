@@ -132,6 +132,7 @@ signals:
     void selectedNode(Node *);
     void selectedEdge(Edge *);
     void zoomChanged(int);
+    void clearSelection();
 
 private:
     H_NumToNode nodeHash;	//This is used in drawEdge() method

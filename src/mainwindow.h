@@ -264,6 +264,7 @@ public slots:
     void slotHelpAbout();
     void slotAboutQt();
     //PUBLICLY AVAILABLE SLOTS. CALLED FROM GRAPHICSVIEW
+    void selectNone();
     void nodeInfoStatusBar(Node*);
     void linkInfoStatusBar (Edge*);
     void openNodeContextMenu();
@@ -288,9 +289,6 @@ public slots:
     //Called by Graph to display some message to the user
     void statusMessage(const QString);
     void showMessageToUser(const QString);
-
-    //Called by Graph to update what the selected node is.
-    void selectedNode (const int);
 
     //Called from Graph when a network file is loaded.
     void fileType(int, QString , int, int, bool);

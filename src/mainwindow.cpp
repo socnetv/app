@@ -33,6 +33,7 @@
 #include <QtGlobal>
 #include <QtDebug>
 #include <QPrintDialog>
+#include <QKeySequence>
 
 #include <ctime> 
 
@@ -115,6 +116,9 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect( graphicsWidget, SIGNAL( userMiddleClicked(int, int, float) ),
              this, SLOT( addLink(int, int, float) ) 	);
 
+    connect( graphicsWidget, SIGNAL(clearSelection()),
+             this, SLOT(selectNone()));
+
     connect( graphicsWidget, SIGNAL( openNodeMenu() ),
              this, SLOT( openNodeContextMenu() ) ) ;
 
@@ -179,9 +183,6 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     connect( &activeGraph, SIGNAL( describeDataset (QString) ),
              this, SLOT( showMessageToUser (QString) ) ) ;
-
-    connect( &activeGraph, SIGNAL( selectedVertex(int) ),
-             this, SLOT( selectedNode(int) ) ) ;
 
     connect( &activeGraph, SIGNAL( eraseNode(long int) ),
              graphicsWidget, SLOT(  eraseNode(long int) ) );
@@ -548,7 +549,9 @@ void MainWindow::initActions(){
     connect(addNodeAct, SIGNAL(triggered()), this, SLOT(addNode()));
 
     removeNodeAct = new QAction(QIcon(":/images/remove.png"),tr("Remove Node"), this);
-    removeNodeAct ->setShortcut(tr("Ctrl+Shift+A"));
+    removeNodeAct ->setShortcut(QKeySequence(Qt::CTRL+Qt::Key_Backspace));
+    //Single key shortcuts with backspace or del do no work in Mac
+    // see http://goo.gl/7hz7Dx
     removeNodeAct->setStatusTip(tr("Removes a node"));
     removeNodeAct->setWhatsThis(tr("Remove Node\n\nRemoves a node from the network"));
     connect(removeNodeAct, SIGNAL(triggered()), this, SLOT(slotRemoveNode()));
@@ -625,7 +628,7 @@ void MainWindow::initActions(){
     connect(addLinkAct, SIGNAL(triggered()), this, SLOT(slotAddLink()));
 
     removeLinkAct = new QAction(QIcon(":/images/disconnect.png"), tr("Remove"), this);
-    removeLinkAct ->setShortcut(tr("Ctrl+Shift+L"));
+    removeLinkAct ->setShortcut(QKeySequence(Qt::SHIFT+Qt::Key_Backspace));
     removeLinkAct->setStatusTip(tr("Removes a Link"));
     removeLinkAct->setWhatsThis(tr("Remove Link\n\nRemoves a Link from the network"));
     connect(removeLinkAct, SIGNAL(triggered()), this, SLOT(slotRemoveLink()));
@@ -2026,7 +2029,7 @@ void MainWindow::initToolBox(){
     removeNodeBt= new QPushButton(QIcon(":/images/remove.png"),tr("&Remove Node"));
     removeNodeBt->setFocusPolicy(Qt::NoFocus);
     removeNodeBt->setToolTip(
-                tr("Remove a node from the network (Ctrl+Shift+A). \n\n "
+                tr("Remove a node from the network (Del). \n\n "
                    "Alternately, you can remove a node \n"
                    "by right-clicking on it.")
                 );
@@ -2150,7 +2153,7 @@ void MainWindow::initToolBox(){
     toolBoxLayoutByIndexTypeLabel->setText(tr("Layout Type:"));
     toolBoxLayoutByIndexTypeSelect = new QComboBox;
     QStringList layoutTypes;
-    layoutTypes << "Circular" << "On Levels" << "Nodal";
+    layoutTypes << "Circular" << "On Levels" << "Nodal size";
     toolBoxLayoutByIndexTypeSelect->addItems(layoutTypes);
     toolBoxLayoutByIndexTypeSelect->setMinimumHeight(20);
 
@@ -2541,6 +2544,11 @@ void MainWindow::toolBoxLayoutByIndexButtonPressed(){
             slotLayoutLevelByProminenceIndex(selectedIndexText);
         else if (selectedLayoutType==2){
             slotLayoutNodeSizesByProminenceIndex(selectedIndexText);
+            // re-init other options for node sizes...
+            nodeSizesByOutDegreeAct->setChecked(false);
+            nodeSizesByOutDegreeBx->setChecked(false);
+            nodeSizesByInDegreeAct->setChecked(false);
+            nodeSizesByInDegreeBx->setChecked(false);
         }
         break;
     };
@@ -4285,12 +4293,6 @@ void MainWindow::slotFindNode(){
 
 
 
-/*
- * Called by Graph to update what the selected node is.
- */
-void MainWindow::selectedNode (const int vertex){
-    clickedJimNumber=vertex;
-}
 
 
 
@@ -4299,7 +4301,8 @@ void MainWindow::selectedNode (const int vertex){
 */
 void MainWindow::openNodeContextMenu() {
     clickedJimNumber=clickedJim->nodeNumber();
-    qDebug("MW: openNodeContextMenu() for node %i at %i, %i",clickedJimNumber, QCursor::pos().x(), QCursor::pos().y());
+    qDebug("MW: openNodeContextMenu() for node %i at %i, %i",
+           clickedJimNumber, QCursor::pos().x(), QCursor::pos().y());
 
     QMenu *nodeContextMenu = new QMenu(QString::number(clickedJimNumber), this);
     Q_CHECK_PTR( nodeContextMenu );  //displays "out of memory" if needed
@@ -4388,6 +4391,15 @@ void MainWindow::graphChanged(){
 }
 
 
+/**
+ * @brief MainWindow::selectNone
+ * called from GW to unselect everything
+ */
+void MainWindow::selectNone() {
+    nodeClicked=false;
+    linkClicked=false;
+    clickedJimNumber=-1;
+}
 
 /**
 *	When the user clicks on a node, displays some information about it on the status bar.
@@ -4409,7 +4421,6 @@ void MainWindow::nodeInfoStatusBar ( Node *jim) {
                                "has %5 in-Links and %6 out-Links.")).arg( ceil( clickedJim->x() ) )
                     .arg( ceil( clickedJim->y() )).arg( clickedJimNumber ).arg( clickedJim->labelText() )
                     .arg(inLinks).arg(outLinks) );
-    clickedJimNumber=-1;
 }
 
 
@@ -4470,10 +4481,10 @@ void MainWindow::slotRemoveNode() {
         qDebug("ERROR in finding min max nodeNumbers. Abort");
         return;
     }
-    else if (clickedJimNumber >= 0 && clickedJimNumber<= max ) {
+    else if (nodeClicked && clickedJimNumber >= 0 && clickedJimNumber<= max ) {
         doomedJim=clickedJimNumber ;
     }
-    else if (clickedJimNumber == -1 ) {
+    else if (!nodeClicked ) {
         doomedJim =  QInputDialog::getInt(this,"Remove node",tr("Choose a node to remove between ("
                                                                 + QString::number(min).toLatin1()+"..."+QString::number(max).toLatin1()+"):"),min, 1, max, 1, &ok);
         if (!ok) {
@@ -4484,6 +4495,7 @@ void MainWindow::slotRemoveNode() {
     qDebug ("MW: removing vertice with number %i from Graph", doomedJim);
     activeGraph.removeVertex(doomedJim);
     clickedJimNumber=-1;
+    nodeClicked=false;
     graphChanged();
     qDebug("MW: removeNode() completed. Node %i removed completely.",doomedJim);
     statusMessage( tr("Node removed completely. Ready. ") );
@@ -4513,7 +4525,7 @@ void MainWindow::slotAddLink(){
 
     if (min==max) return;		//if there is only one node -> no link
 
-    if (clickedJimNumber == -1) {
+    if (!nodeClicked) {
         sourceNode=QInputDialog::getInt(this, "Create new link, Step 1",tr("This will draw a new link between two nodes. \nEnter source node ("+QString::number(min).toLatin1()+"..."+QString::number(max).toLatin1()+"):"), min, 1, max , 1, &ok ) ;
         if (!ok) {
             statusMessage( "Add link operation cancelled." );
@@ -4529,7 +4541,11 @@ void MainWindow::slotAddLink(){
         return;
     }
 
-    targetNode=QInputDialog::getInt(this, "Create new link, Step 2", tr("Source node accepted. \nNow enter target node ("+QString::number(min).toLatin1()+"..."+QString::number(max).toLatin1()+"):"),min, 1, max , 1, &ok)     ;
+    targetNode=QInputDialog::getInt
+            (this, "Create new link, Step 2",
+             tr("Source node accepted. \nNow enter target node ("+
+                QString::number(min).toLatin1()+"..."+QString::number(max)
+                .toLatin1()+"):"),min, 1, max , 1, &ok)     ;
     if (!ok) {
         statusMessage( "Add link target operation cancelled." );
         return;
@@ -4541,7 +4557,10 @@ void MainWindow::slotAddLink(){
         return;
     }
 
-    weight=QInputDialog::getDouble(this, "Create new link, Step 3", tr("Source and target nodes accepted. \n Please, enter the weight of new link: "),1.0, -20.0, 20.0, 1, &ok);
+    weight=QInputDialog::getDouble(
+                this, "Create new link, Step 3",
+                tr("Source and target nodes accepted. \n "
+                   "Please, enter the weight of new link: "),1.0, -100.0, 100.0, 1, &ok);
     if (!ok) {
         statusMessage( "Add link operation cancelled." );
         return;
@@ -4597,7 +4616,10 @@ void MainWindow::slotRemoveLink(){
     max=activeGraph.lastVertexNumber();
 
     if (!linkClicked) {
-        sourceNode=QInputDialog::getInt(this,tr("Remove link"),tr("Source node:  (")+QString::number(min)+"..."+QString::number(max)+"):", min, 1, max , 1, &ok )   ;
+        sourceNode=QInputDialog::getInt(
+                    this,tr("Remove link"),
+                    tr("Source node:  (")+QString::number(min)+
+                    "..."+QString::number(max)+"):", min, 1, max , 1, &ok )   ;
         if (!ok) {
             statusMessage( "Remove link operation cancelled." );
             return;
@@ -4677,16 +4699,22 @@ void MainWindow::slotRemoveLink(){
 */
 void MainWindow::slotChangeNodeLabel(){
     if (!fileLoaded && !networkModified )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes! \nLoad a network file or create a new network first."), "OK",0);
+        QMessageBox::critical(
+                    this, "Error",
+                    tr("There are no nodes! \n"
+                       "Load a network file or create a new network first."),
+                    "OK",0);
         statusMessage( tr("No nodes created.")  );
         return;
     }
-    if (clickedJimNumber==-1) {
+    if (!nodeClicked) {
         statusMessage( tr("Please click on a node first... ")  );
         return;
     }
     bool ok;
-    QString text = QInputDialog::getText(this, "Change node label", tr("Enter new node label:"), QLineEdit::Normal,
+    QString text = QInputDialog::getText(
+                this, "Change node label",
+                tr("Enter new node label:"), QLineEdit::Normal,
                                          QString::null, &ok );
     if ( ok && !text.isEmpty() ) {
         qDebug()<<"MW: change label to "<< text.toLatin1();
@@ -4716,7 +4744,7 @@ void MainWindow::slotChangeNodeColor(){
     }
 
     bool ok;
-    if (clickedJimNumber==-1) {
+    if (nodeClicked) {
         int min=activeGraph.firstVertexNumber();
         int max=activeGraph.lastVertexNumber();
         long int node=QInputDialog::getInt(this, "Change node color",tr("Select node:  	("+QString::number(min).toLatin1()+"..."+QString::number(max).toLatin1()+"):"), min, 1, max , 1, &ok)   ;
@@ -4766,7 +4794,7 @@ void MainWindow::slotChangeNodeSize(){
         statusMessage( tr("Cannot change nothing.")  );
         return;
     }
-    if (clickedJimNumber==-1) {
+    if (nodeClicked) {
         statusMessage( tr("Error. ")  );
         return;
     }
@@ -4789,7 +4817,7 @@ void MainWindow::slotChangeNodeSize(){
 *	TODO Change the value of the clicked node.  
 */
 void MainWindow::slotChangeNodeValue(){
-    if (clickedJimNumber==-1) {
+    if (!nodeClicked) {
         statusMessage( tr("Error. ")  );
         return;
     }

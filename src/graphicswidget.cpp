@@ -277,6 +277,32 @@ void GraphicsWidget::edgeClicked(Edge *edge){
 
 
 
+/**
+    On the event of a right-click on a node, the node calls this function
+    to emit a signal to MW to open a context menu at the mouse position.
+    Node is already passed with selectedNode(Node *) signal
+    The position of the menu is determined by QMouse:pos()...
+*/
+void GraphicsWidget::openNodeContextMenu(){
+    qDebug("GW: emitting openNodeMenu()");
+    emit openNodeMenu();
+}
+
+
+/**
+    On the event of a right-click on an edge, the edge calls this function
+    to emit a signal to MW to open a context menu at the mouse position.
+    Edge is already passed with selectedEdge(Node *) signal
+    The position of the menu is determined by QMouse:pos()...
+*/
+void GraphicsWidget::openEdgeContextMenu(){
+    qDebug("GW: emitting openEdgeMenu()");
+    emit openEdgeMenu();
+}
+
+
+
+
 /** 
 	Called from each node when they move.
 	Updates 
@@ -766,6 +792,7 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
 		qDebug() << "GW: mousePressEvent(). No item here. "
 				<< "Starting a new selection rectangle or a new node";
 		this->scene()->clearSelection();
+        emit clearSelection(); //emit to MW that no node or edge is selected.
 		QGraphicsView::mousePressEvent(e);
 	} 
 
@@ -792,35 +819,6 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
 	//} 
 
 //}
-
-
-/** 	
-	On the event of a right-click on a node, the node calls this function
-	to emit a signal to MW to open a context menu at the mouse position.
-	Node is already passed with selectedNode(Node *) signal
-	The position of the menu is determined by QMouse:pos()...
-*/
-void GraphicsWidget::openNodeContextMenu(){
-	qDebug("GW: emitting openNodeMenu()");
-	emit openNodeMenu();
-}
-
-
-/** 	
-	On the event of a right-click on an edge, the edge calls this function
-	to emit a signal to MW to open a context menu at the mouse position.
-	Edge is already passed with selectedNode(Node *) signal
-	The position of the menu is determined by QMouse:pos()...
-*/
-void GraphicsWidget::openEdgeContextMenu(){
-	qDebug("GW: emitting openEdgeMenu()");
-	emit openEdgeMenu();
-}
-
-
-
-
-
 
 
 
