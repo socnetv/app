@@ -936,7 +936,7 @@ bool Parser::loadTwoModeSociomatrix(){
                                 for (int k = 1; k < i ; ++k) {
 				    qDebug() << "Checking earlier discovered actor k = " << k;
                                     if ( firstModeMultiMap.contains(k, j) ) {
-					undirected=2;
+                                        undirected=2;
                                         arrows=true;
                                         bezier=false;
                                         edgeWeight = 1;
@@ -1112,9 +1112,11 @@ void Parser::readGraphMLElementGraph(QXmlStreamReader &xml){
 	qDebug()<< "    edgedefault "<< defaultDirection;
 	if (defaultDirection=="undirected"){
 		undirected = 2;
+        arrows=false;
 	}
 	else {
-		undirected = 0;
+        undirected = 0;
+        arrows=true;
 	}
 	networkName = xmlStreamAttr.value("id").toString();
 	qDebug()<< "    graph id  "  << networkName; //store graph id to return it afterwards 
@@ -1272,8 +1274,9 @@ void Parser::readGraphMLElementEdge(QXmlStreamAttributes &xmlStreamAttr){
 	qDebug()<< "   Parser: readGraphMLElementEdge() id: " <<	xmlStreamAttr.value("id").toString();
 	QString s = xmlStreamAttr.value("source").toString();
 	QString t = xmlStreamAttr.value("target").toString();
-    if ( (xmlStreamAttr.value("directed")).toString() == "false")
+    if ( ((xmlStreamAttr.value("directed")).toString()).contains("false"),Qt::CaseInsensitive ) {
 		undirected = 2;
+    }
 	source = nodeNumber [s];
 	target = nodeNumber [t];
 	edgeWeight=initEdgeWeight;
@@ -1289,7 +1292,8 @@ void Parser::readGraphMLElementEdge(QXmlStreamAttributes &xmlStreamAttr){
 // called at the end of edge element   
 void Parser::endGraphMLElementEdge(QXmlStreamReader &xml){
 	Q_UNUSED(xml);
-	qDebug()<<"   Parser: endGraphMLElementEdge() *** emitting signal to create edge from "<< source << " to " << target;
+    qDebug()<<"   Parser: endGraphMLElementEdge() *** signal createEdge "
+           << source << " -> " << target << " undirected value " << undirected;
 	//FIXME need to return edge label as well!
 	emit createEdge(source, target, edgeWeight, edgeColor, undirected, arrows, bezier);
 	totalLinks++;
