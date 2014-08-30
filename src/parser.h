@@ -71,7 +71,8 @@ public:
 	void readGraphMLElementDefaultValue(QXmlStreamReader &);
 	void readGraphMLElementNodeGraphics (QXmlStreamReader &);
 	void readGraphMLElementEdgeGraphics (QXmlStreamReader &);
-	
+    void createEdgesMissingNodes();
+
 	bool isComment(QString str);  
     void createRandomNodes(int, QString, int);
 
@@ -95,21 +96,26 @@ private:
 	QMutex mutex;
 	QHash<QString, int> nodeNumber;
 	QHash<QString, QString> keyFor, keyName, keyType, keyDefaultValue ;
+    QHash<QString, QString> edgesMissingNodesHash;
+    QStringList edgeMissingNodesList,edgeMissingNodesListData;
 	QMultiMap<int, int> firstModeMultiMap, secondModeMultiMap;
 	QXmlStreamReader *xml;
-	QString fileName, networkName, initNodeColor, initEdgeColor, initNodeShape, initNodeNumberColor, initNodeLabelColor;
-	QString nodeColor, edgeColor, edgeType, nodeShape, nodeLabel, edgeLabel, nodeNumberColor, nodeLabelColor;
+    QString fileName, networkName, initNodeColor, initEdgeColor, initNodeShape;
+    QString initNodeNumberColor, initNodeLabelColor;
+    QString nodeColor, edgeColor, edgeType, nodeShape, nodeLabel, edgeLabel;
+    QString nodeNumberColor, nodeLabelColor;
+    QString key_id, key_value, key_name, key_what, key_type;
+    QString node_id, edge_id, edge_source, edge_target;
 	int gwWidth, gwHeight;
 	int totalLinks, aNodes, fileFormat, two_sm_mode, undirected;
-	int initNodeSize,  initNodeNumberSize, nodeNumberSize, initNodeLabelSize, nodeLabelSize, source, target, nodeSize;
+    int initNodeSize,  initNodeNumberSize, nodeNumberSize, initNodeLabelSize;
+    int nodeLabelSize, source, target, nodeSize;
 	float initEdgeWeight, edgeWeight, arrowSize;
 	float bez_p1_x,bez_p1_y, bez_p2_x, bez_p2_y;
-	  
+    bool missingNode;
 	bool arrows, bezier, conv_OK;
-    bool bool_key, bool_node, bool_edge, fileContainsNodeColors, fileContainsNodeCoords, fileContainsLinkColors;
-	
-	QString key_id, key_value, key_name, key_what, key_type;
-	QString node_id, edge_id, edge_source, edge_target; 
+    bool bool_key, bool_node, bool_edge, fileContainsNodeColors;
+    bool fileContainsNodeCoords, fileContainsLinkColors;
 	double randX, randY;
 };
 

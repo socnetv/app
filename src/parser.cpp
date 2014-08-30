@@ -978,6 +978,10 @@ bool Parser::loadGraphML(){
 	key_type = "";
 	key_value = "";
 	initEdgeWeight = 1;
+    edgeWeight=1;
+    edgeColor="black";
+    arrows=true;
+    undirected=0;
 	QFile file ( fileName );
     if ( ! file.open(QIODevice::ReadOnly )) return false;
 
@@ -1099,6 +1103,9 @@ void Parser::readGraphML(QXmlStreamReader &xml){
 					endGraphMLElementEdge(xml);
 		}
 	}
+    // call createEdgesMissingNodes() to create any edges with missing nodes
+    createEdgesMissingNodes();
+
 	
 }
 
@@ -1211,7 +1218,8 @@ void Parser::readGraphMLElementDefaultValue(QXmlStreamReader &xml) {
 			qDebug()<< "    this key default value "<< key_value << " is for edges weight";
             conv_OK=false;
 			initEdgeWeight= key_value.toFloat(&conv_OK);
-			if (!conv_OK) initEdgeWeight = 1;  
+            if (!conv_OK)
+                initEdgeWeight = 1;
 	}
 	if (keyName.value(key_id) == "color" && keyFor.value(key_id) == "edge" ) {
 			qDebug()<< "    this key default value "<< key_value << " is for edges color";
@@ -1254,8 +1262,9 @@ void Parser::readGraphMLElementNode(QXmlStreamReader &xml){
 void Parser::endGraphMLElementNode(QXmlStreamReader &xml){
 	Q_UNUSED(xml);
 	
-	qDebug()<<"   Parser: endGraphMLElementNode() *** signal to create node with id "
-		<< node_id << " nodenumber "<< aNodes << " coords " << randX << ", " << randY;
+    qDebug()<<"   Parser: endGraphMLElementNode() *** signal to create node "
+           << " nodenumber "<< aNodes  << " id " << node_id
+           << " label " << nodeLabel << " coords " <<randX << ", " <<randY;
 	emit createNode(
 					aNodes, nodeSize, nodeColor,
 					nodeNumberColor, nodeNumberSize,  
@@ -1272,17 +1281,46 @@ void Parser::endGraphMLElementNode(QXmlStreamReader &xml){
 // called at the start of an edge element
 void Parser::readGraphMLElementEdge(QXmlStreamAttributes &xmlStreamAttr){
 	qDebug()<< "   Parser: readGraphMLElementEdge() id: " <<	xmlStreamAttr.value("id").toString();
-	QString s = xmlStreamAttr.value("source").toString();
-	QString t = xmlStreamAttr.value("target").toString();
+    edge_source = xmlStreamAttr.value("source").toString();
+    edge_target = xmlStreamAttr.value("target").toString();
+
+    missingNode=false;
+    edgeWeight=initEdgeWeight;
+    edgeColor=initEdgeColor;
+    bool_edge= true;
+
     if ( ((xmlStreamAttr.value("directed")).toString()).contains("false"),Qt::CaseInsensitive ) {
 		undirected = 2;
     }
-	source = nodeNumber [s];
-	target = nodeNumber [t];
-	edgeWeight=initEdgeWeight;
-    bool_edge= true;
-	qDebug()<< "    edge source "<< s << " num "<< source;
-	qDebug()<< "    edge target "<< t << " num "<< target;
+    if (!nodeNumber.contains(edge_source)) {
+        qDebug() << "\n\n\nParser::readGraphMLElementEdge() source node id "
+                 << edge_source
+                 << "for edge from " << edge_source << " to " << edge_target
+                 << " DOES NOT EXIST!";
+        edgesMissingNodesHash.insert(edge_source+"===>"+edge_target,
+                                     QString::number(edgeWeight)+"|"+edgeColor
+                                     +"|"+QString::number(undirected));
+        missingNode=true;
+    }
+    if (!nodeNumber.contains(edge_target)) {
+        qDebug() << "\n\n\nParser::readGraphMLElementEdge() target node id "
+                 << edge_target
+                 << "for edge from " << edge_source << " to " << edge_target
+                 << " DOES NOT EXIST!";
+        edgesMissingNodesHash.insert(edge_source+"===>"+edge_target,
+                                     QString::number(edgeWeight)+"|"+edgeColor
+                                     +"|"+QString::number(undirected));
+        missingNode=true;
+    }
+
+    if (missingNode) {
+        return;
+    }
+
+    source = nodeNumber [edge_source];
+    target = nodeNumber [edge_target];
+    qDebug()<< "    edge source "<< edge_source << " num "<< source;
+    qDebug()<< "    edge target "<< edge_target << " num "<< target;
 
 	
 }
@@ -1292,6 +1330,11 @@ void Parser::readGraphMLElementEdge(QXmlStreamAttributes &xmlStreamAttr){
 // called at the end of edge element   
 void Parser::endGraphMLElementEdge(QXmlStreamReader &xml){
 	Q_UNUSED(xml);
+    if (missingNode) {
+        qDebug()<<"   Parser: endGraphMLElementEdge() *** missingNode true "
+               << " postponing edge creation signal";
+        return;
+    }
     qDebug()<<"   Parser: endGraphMLElementEdge() *** signal createEdge "
            << source << " -> " << target << " undirected value " << undirected;
 	//FIXME need to return edge label as well!
@@ -1383,12 +1426,22 @@ void Parser::readGraphMLElementData (QXmlStreamReader &xml){
 	else if (keyName.value(key_id) == "color" && keyFor.value(key_id) == "edge" ) {
 			qDebug()<< "     Data found. Edge color: "<< key_value << " for this edge";
 			edgeColor= key_value; 
+            if (missingNode){
+                edgesMissingNodesHash.insert(edge_source+"===>"+edge_target,
+                                             QString::number(edgeWeight)+"|"+edgeColor
+                                             +"|"+QString::number(undirected));
+            }
 	}
 	else if ( ( keyName.value(key_id) == "value" ||  keyName.value(key_id) == "weight" ) && keyFor.value(key_id) == "edge" ) {
             conv_OK=false;
 			edgeWeight= key_value.toFloat( &conv_OK );
 			if (!conv_OK) 
 				edgeWeight = 1.0;  	
+            if (missingNode){
+                edgesMissingNodesHash.insert(edge_source+"===>"+edge_target,
+                                             QString::number(edgeWeight)+"|"+edgeColor
+                                             +"|"+QString::number(undirected));
+            }
  			qDebug()<< "     Data found. Edge value: "<< key_value << " Using "<< edgeWeight << " for this edge";       
 	}
 	else if ( keyName.value(key_id) == "size of arrow"  && keyFor.value(key_id) == "edge" ) {
@@ -1398,6 +1451,15 @@ void Parser::readGraphMLElementData (QXmlStreamReader &xml){
 			else  arrowSize = temp;
 			qDebug()<< "     Data found. Edge arrow size: "<< key_value << " Using  "<< arrowSize << " for this edge";
 	}
+    else if (keyName.value(key_id) == "label" && keyFor.value(key_id) == "edge" ){
+            edgeLabel = key_value;
+            if (missingNode){
+                edgesMissingNodesHash.insert(edge_source+"===>"+edge_target,
+                                             QString::number(edgeWeight)+"|"+edgeColor
+                                             +"|"+QString::number(undirected));
+            }
+            qDebug()<< "     Data found. Edge label: "<< edgeLabel << " for this edge";
+    }
 
 
 	
@@ -1573,7 +1635,49 @@ void Parser::readGraphMLElementUnknown(QXmlStreamReader &xml) {
 }
 
 
+void Parser::createEdgesMissingNodes(){
+    int count=0;
+    bool ok;
+    edgeWeight = initEdgeWeight;
+    edgeColor = initEdgeColor;
+    undirected = 0;
+    if ( (count = edgesMissingNodesHash.size()) > 0 ) {
+        qDebug()<<"Parser::createEdgesMissingNodes() - edges to create " << count;
+        QHash<QString, QString>::const_iterator it =
+                edgesMissingNodesHash.constBegin();
+        while (it != edgesMissingNodesHash.constEnd()) {
+            qDebug() << "creating missing edge " << it.key() << " data " << it.value() ;
+            edgeMissingNodesList = (it.key()).split("===>");
+            if (! ((edgeMissingNodesList[0]).isEmpty() )
+                    && !((edgeMissingNodesList[1]).isEmpty()) ) {
+                source = nodeNumber.value(edgeMissingNodesList[0], -666);
+                target = nodeNumber.value(edgeMissingNodesList[1], -666);
+                if (source == -666 || target == -666 ) {
+                    //emit something that this node has not been declared
+                    continue;
+                }
+                edgeMissingNodesListData = (it.value()).split("|");
+                if (!edgeMissingNodesListData[0].isEmpty() ){
+                   edgeWeight = edgeMissingNodesListData[0].toInt(&ok, 10);
+                }
+                if (!edgeMissingNodesListData[1].isEmpty() ){
+                    edgeColor = edgeMissingNodesListData[1];
+                }
+                if (!edgeMissingNodesListData[2].isEmpty() ){
+                    if ( (edgeMissingNodesListData[2]).contains("2") )
+                        undirected=2;
 
+                }
+                qDebug()<<"   Parser: createEdgesMissingNodesHash() *** signal createEdge "
+                       << source << " -> " << target << " undirected value " << undirected;
+                //FIXME need to return edge label as well!
+                emit createEdge(source, target, edgeWeight, edgeColor, undirected, arrows, bezier);
+
+            }
+            ++it;
+        }
+    }
+}
 
 
 /**
