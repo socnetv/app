@@ -536,6 +536,7 @@ void GraphicsWidget::setEdgeVisibility(int relation, int source, int target, boo
         qDebug()<<"GW: setEdgeVisibility(). relation " << relation
                << " : " << source  << " ->  "<< target << " to " << toggle;
         edgesHash.value(edgeName) -> setVisible(toggle);
+        edgesHash.value(edgeName) -> setEnabled(toggle);
         return;
     }
     qDebug()<<"GW: setEdgeVisibility(). Cannot find edge " << relation
@@ -553,6 +554,7 @@ void GraphicsWidget::setNodeVisibility(long int number, bool toggle){
         qDebug() << "GW: setNodeVisibility(): for  "
                  << number << " to " << toggle;
         nodeHash.value(number) -> setVisible(toggle);
+        nodeHash.value(number) -> setEnabled(toggle);
         return;
     }
         qDebug() << "GW: setNodeVisibility(): cannot find node " << number;

@@ -261,47 +261,58 @@ void Node::setNumberInside (bool numIn){
 QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
 	QPointF newPos = value.toPointF();
 
-	switch (change) {
-		case ItemPositionHasChanged :
-		{
-			foreach (Edge *edge, inEdgeList)  //Move each inEdge of this node
-				edge->adjust();
-			foreach (Edge *edge, outEdgeList) //Move each outEdge of this node
-				edge->adjust();
-			//Move its graphic number
-			if ( m_hasNumber )
-			{
-				if (!m_isNumberInside) 	{ //move it outside
-					m_number -> setZValue(254);
-					m_number -> setPos( m_size+m_nd, 0);
-				}
-				else { 	//move it inside node
-					m_number -> setZValue(255);
-					m_number -> setPos(  - m_size, - m_size-3);
-				}
-			}
-			if (m_hasLabel) {
-				m_label->setPos( -2, m_ld+m_size);
-			}
-			if ( newPos.x() !=0 && newPos.y() != 0 ){
-				graphicsWidget->nodeMoved(nodeNumber(), (int) newPos.x(), (int) newPos.y());
-			}
-			else qDebug()<<  "Node: ItemChange():  Not emitting nodeMoved. Node "<< nodeNumber()<<" is at 0,0";
-			break;
-		}
-		case ItemEnabledHasChanged:{
-			return 0;
-		}
-	case ItemVisibleChange:
-		{
-			return 0;
-		}
-	default:
-		{
-			break;
-		}
-	};
-	return QGraphicsItem::itemChange(change, value);
+    switch (change) {
+    case ItemPositionHasChanged :
+    {
+        foreach (Edge *edge, inEdgeList)  //Move each inEdge of this node
+            edge->adjust();
+        foreach (Edge *edge, outEdgeList) //Move each outEdge of this node
+            edge->adjust();
+        //Move its graphic number
+        if ( m_hasNumber )
+        {
+            if (!m_isNumberInside) 	{ //move it outside
+                m_number -> setZValue(254);
+                m_number -> setPos( m_size+m_nd, 0);
+            }
+            else { 	//move it inside node
+                m_number -> setZValue(255);
+                m_number -> setPos(  - m_size, - m_size-3);
+            }
+        }
+        if (m_hasLabel) {
+            m_label->setPos( -2, m_ld+m_size);
+        }
+        if ( newPos.x() !=0 && newPos.y() != 0 ){
+            graphicsWidget->nodeMoved(nodeNumber(), (int) newPos.x(), (int) newPos.y());
+        }
+        else qDebug()<<  "Node: ItemChange():  Not emitting nodeMoved. Node "
+                      << nodeNumber()<<" is at 0,0";
+        break;
+    }
+    case ItemEnabledHasChanged:{
+        if (ItemEnabledHasChanged) {
+            return 1;
+        }
+        else{
+            return 0;
+        }
+    }
+    case ItemVisibleHasChanged:
+    {
+        if (ItemVisibleHasChanged){
+            return 1;
+        }
+        else{
+            return 0;
+        }
+    }
+    default:
+    {
+        break;
+    }
+    };
+    return QGraphicsItem::itemChange(change, value);
 }
 
 
