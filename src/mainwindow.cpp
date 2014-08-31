@@ -4417,8 +4417,8 @@ void MainWindow::nodeInfoStatusBar ( Node *jim) {
     outLinksLCD->display (outLinks);
     clucofLCD->display(activeGraph.clusteringCoefficient(clickedJimNumber));
 
-    statusMessage(  QString(tr("(%1, %2);  Node %3, with label %4, "
-                               "has %5 in-Links and %6 out-Links.")).arg( ceil( clickedJim->x() ) )
+    statusMessage(  QString(tr("(%1, %2);  Node %3, label %4 - "
+                               "In-Degree: %5, Out-Degree: %6")).arg( ceil( clickedJim->x() ) )
                     .arg( ceil( clickedJim->y() )).arg( clickedJimNumber ).arg( clickedJim->labelText() )
                     .arg(inLinks).arg(outLinks) );
 }
