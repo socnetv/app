@@ -297,7 +297,7 @@ void Graph::setCanvasDimensions(int w, int h){
  */
 void Graph::createEdge(int v1, int v2, float weight, QString color,
                        int reciprocal=0, bool drawArrows=true, bool bezier=false){
-    qDebug()<<" Graph::createEdge() " << v1 << " -> " << v2
+    qDebug()<<"\n\nGraph::createEdge() " << v1 << " -> " << v2
            << " weight " << weight << " relation " << m_curRelation;
     if ( reciprocal == 2) {
         qDebug()<<"  Creating edge as RECIPROCAL - emitting drawEdge signal to GW";

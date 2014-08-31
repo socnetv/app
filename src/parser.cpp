@@ -1283,7 +1283,8 @@ void Parser::readGraphMLElementNode(QXmlStreamReader &xml){
 	QXmlStreamAttributes xmlStreamAttr = xml.attributes();
 	node_id = (xmlStreamAttr.value("id")).toString();
 	aNodes++;
-	qDebug()<<"   Parser: readGraphMLElementNode() node id "<<  node_id << " index " << aNodes << " added to nodeNumber map";
+    qDebug()<<"   Parser: readGraphMLElementNode() node id "<<  node_id
+           << " index " << aNodes << " added to nodeNumber map";
 
 	nodeNumber[node_id]=aNodes;
 
