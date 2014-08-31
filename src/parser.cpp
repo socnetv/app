@@ -147,6 +147,8 @@ bool Parser::loadDL(){
     edgeWeight=0;
     bool labels_flag=false, data_flag=false, intOK=false, floatOK=false;
     bool relation_flag=false;
+    bool fullmatrixFormat=false;
+    bool edgelist1Format=false;
     QStringList lineElement, labelsList, relationsList;
 	totalLinks=0;
 
@@ -187,11 +189,13 @@ bool Parser::loadDL(){
                 if (!intOK) {
                     qDebug() <<
                                 "Parser: loadDL(): NM conversion error..." ;
-                    return false;}
+                    //emit something here...
+                    return false;
+                }
+                str.truncate(mark2);
+                str=str.trimmed();
+                qDebug() << " rest str becomes: " << str;
             }
-            str.truncate(mark2);
-            str=str.trimmed();
-            qDebug() << " rest str becomes: " << str;
             str=str.right(str.size()-mark-1);
             qDebug()<< "N is declared to be : " << str.toLatin1() ;
             aNodes=str.toInt(&intOK,10);
@@ -210,6 +214,12 @@ bool Parser::loadDL(){
             str=str.right(str.size()-mark-1);
             str=str.trimmed();
             qDebug()<<  "FORMAT = : " <<  str.toLatin1() ;
+            if (str.contains("FULLMATRIX",Qt::CaseInsensitive)) {
+                fullmatrixFormat=true;
+            }
+            else if (str.contains("edgelist",Qt::CaseInsensitive) ){
+                edgelist1Format=true;
+            }
             continue;
         }
         else if (str.startsWith( "labels", Qt::CaseInsensitive)
@@ -267,7 +277,7 @@ bool Parser::loadDL(){
                 emit addRelation( relation );
             }
         }
-        if ( data_flag){		//read edges
+        if ( data_flag && fullmatrixFormat){		//read edges in matrix format
             // check if we haven't created any nodes...
             if ( nodeSum < aNodes ){
                 qDebug() << " nodes have not been created yet. "
@@ -338,10 +348,47 @@ bool Parser::loadDL(){
 
 
         }
+        if (data_flag && edgelist1Format) { //read edges in edgelist1 format
+            // check if we haven't created any nodes...
+            if ( nodeSum < aNodes ){
+                qDebug() << " nodes have not been created yet. "
+                            << " calling createRandomNodes()" ;
+                createRandomNodes(1, QString::null, aNodes);
+                nodeSum = aNodes;
+            }
+            lineElement=str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+
+            if ( lineElement.count() != 3 ) {
+                qDebug()<< "*** Parser:loadDL(): Not an edgelist1 UCINET formatted file. Aborting!!";
+                file.close();
+                //emit something...
+                return false;
+            }
+
+            source =  (lineElement[0]).toInt(&intOK);
+            target =  (lineElement[1]).toInt(&intOK);
+            qDebug() << "	source node " << source  << " target node " << target;
+
+            edgeWeight=(lineElement[2]).toDouble(&intOK);
+            if (intOK) {
+                qDebug () << "	list file declares edge weight: " << edgeWeight;
+            }
+            else {
+                edgeWeight=1.0;
+                qDebug () << "	list file NOT declaring edge weight. Setting default: " << edgeWeight;
+            }
+
+            qDebug()<< "	Parser::loadDL() - Creating link "
+                << source << " -> "<< target << " weight= "<< edgeWeight
+                <<  " TotalLinks=  " << totalLinks+1;
+            emit createEdge(source, target, edgeWeight, initEdgeColor, undirected, arrows, bezier);
+            totalLinks++;
+        }
     }
     //sanity check
     if (nodeSum != aNodes) {
         qDebug()<< "Error: aborting";
+        //emit something
         return false;
     }
     //The network has been loaded. Tell MW the statistics and network type
@@ -867,7 +914,7 @@ bool Parser::loadAdjacency(){
 
 
 /**
-	Tries to load the file as adjacency sociomatrix-formatted. If not it returns -1
+    Tries to load the file as two-mode sociomatrix. If not it returns -1
 */
 bool Parser::loadTwoModeSociomatrix(){
 	qDebug("\n\nParser: loadTwoModeSociomatrix()");
