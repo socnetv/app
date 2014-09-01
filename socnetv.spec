@@ -180,7 +180,7 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 #CHANGELOG SECTION
 #
 %changelog
-* Sat Aug 30 2014 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 1.4-1
+* Mon Sep 01 2014 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 1.4-1
 - Synced with new stable version from upstream.
 * Thu Aug 27 2014 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 1.3-1
 - Synced with new stable version from upstream.
