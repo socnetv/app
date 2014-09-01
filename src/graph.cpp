@@ -1024,7 +1024,7 @@ QString Graph::edgeColor (long int s, long int t){
 */
 float Graph::hasEdge (int v1, int v2) {		
     qDebug() << "Graph: hasEdge() " << v1 << " -> " << v2 << " ? " ;
-    float weight=0;
+    //float weight=0;
     if ( ! m_graph[ index[v1] ] -> isEnabled() || ! m_graph[ index[v2] ] -> isEnabled())
         return 0;
     QString edgeName = QString::number(m_curRelation) + QString(":")
