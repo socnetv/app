@@ -67,6 +67,13 @@ bool Parser::load(QString fn, int iNS, QString iNC, QString iNSh,
 	fileFormat= fFormat;
 	two_sm_mode = sm_mode;
 
+    qDebug()<< "Parser: start() clearing hashes... ";
+    nodeNumber.clear();
+    keyFor.clear(); keyName.clear(); keyType.clear(); keyDefaultValue.clear();
+    edgesMissingNodesHash.clear();
+    edgeMissingNodesList.clear();edgeMissingNodesListData.clear();
+    firstModeMultiMap.clear(); secondModeMultiMap.clear();
+
 	//qDebug()<< "Parser: start() a new parsing thread for file format: " << fileFormat ;
 	if (!isRunning()) 
 		start(QThread::NormalPriority);
