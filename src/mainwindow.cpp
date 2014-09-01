@@ -3980,7 +3980,6 @@ void MainWindow::slotCreateRandomNetErdos(){
     }
 
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-
     activeGraph.createRandomNetErdos (newNodes, probability);
     QApplication::restoreOverrideCursor();
 

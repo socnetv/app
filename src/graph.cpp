@@ -60,6 +60,8 @@ Graph::Graph() {
 
     parser.setParent(this);
 
+    edgesHash.reserve(40000);
+
     connect (
                 &parser, SIGNAL( addRelation (QString) ),
                 this, SLOT(addRelationFromParser(QString) )
@@ -297,25 +299,36 @@ void Graph::setCanvasDimensions(int w, int h){
  */
 void Graph::createEdge(int v1, int v2, float weight, QString color,
                        int reciprocal=0, bool drawArrows=true, bool bezier=false){
-    qDebug()<<"\n\nGraph::createEdge() " << v1 << " -> " << v2
-           << " weight " << weight << " relation " << m_curRelation;
-    if ( reciprocal == 2) {
-        qDebug()<<"  Creating edge as RECIPROCAL - emitting drawEdge signal to GW";
-        addEdge ( v1, v2, weight, color, reciprocal);
-        emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier);
-    }
-    else if (this->hasEdge( v2, v1) )  {
-        qDebug()<<". Opposite arc exists. "
-               << "  Emitting drawEdgeReciprocal to GW ";
-        reciprocal = 1;
-        addEdge ( v1, v2, weight, color, reciprocal);
-        emit drawEdgeReciprocal(v2, v1);
+    QString edgeName = QString::number(m_curRelation) + QString(":")
+                + QString::number(v1) + QString(">")+ QString::number(v2);
+    qDebug()<<"\n\nGraph::createEdge() " << edgeName << " weight "
+           << " weight " << weight ;
+    // edgesHash is used as a fast lookup if we already have such an edge
+    // (see #713617 - https://bugs.launchpad.net/socnetv/+bug/713617)
+    if (! edgesHash.contains(edgeName)){
+        if ( reciprocal == 2) {
+            qDebug()<<"  Creating edge as RECIPROCAL - emitting drawEdge signal to GW";
+            addEdge ( v1, v2, weight, color, reciprocal);
+            emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier);
+        }
+        else if (this->hasEdge( v2, v1) )  {
+            qDebug()<<". Opposite arc exists. "
+                   << "  Emitting drawEdgeReciprocal to GW ";
+            reciprocal = 1;
+            addEdge ( v1, v2, weight, color, reciprocal);
+            emit drawEdgeReciprocal(v2, v1);
+        }
+        else {
+            qDebug()<<"  Opposite arc does not exist. Emitting drawEdge to GW...";
+            reciprocal = 0;
+            addEdge ( v1, v2, weight, color, reciprocal);
+            emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier);
+        }
+        edgesHash.insert(edgeName, weight);
     }
     else {
-        qDebug()<<"  Opposite arc does not exist. Emitting drawEdge to GW...";
-        reciprocal = 0;
-        addEdge ( v1, v2, weight, color, reciprocal);
-        emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier);
+        qDebug() << "n\nGraph::createEdge() - edge " << edgeName
+                 << " declared previously (exists) - nothing to do \n\n";
     }
     //draw new edges the same color with those of the file loaded,
     // on user clicks on the canvas
@@ -342,7 +355,7 @@ void Graph::createEdge(int v1, int v2, float weight, int reciprocal=0,
 */
 void Graph::createEdge (int source, int target){
     qDebug()<< " Graph::createEdge() - from " << source << " to " << target ;
-    if (this->hasEdge(source, target) ) {
+    if (this->hasEdge(source, target) ) { // FIXME maybe delete it, same check in main createEdge
         qDebug()<< "  Already exists - returning...";
         return;
     }
@@ -577,15 +590,30 @@ void Graph::setEdgeWeight (int v1, int v2, float weight) {
 /** 	Removes the edge (arc) between v1 and v2
 */
 void Graph::removeEdge (int v1, int v2) {	
-    qDebug ()<< "Graph: removeEdge edge " << v1 << " to " << v2 << " to be removed from graph";
-    qDebug() << "Graph: Vertex named " << m_graph[ index[v1] ]->name() << " has index = " << index[v1];
+    qDebug ()<< "\n\n Graph::removeEdge() edge from " << v1 << " index " << index[v1]
+                << " to " << v2 << " to be removed from graph";
     m_graph [ index[v1] ]->removeLinkTo(v2);
     m_graph [ index[v2] ]->removeLinkFrom(v1);
-    qDebug()<< "Graph: removeEdge between " << v1 << " i " << index[v1] << " and " << v2 << " i "<< index[v2]
-               << "  NOW vertex v1 reports edge weight " << m_graph [ index[v1] ]->isLinkedTo(v2) ;
-    if ( this->hasEdge(v2,v1) !=0) symmetricAdjacencyMatrix=false;
+    qDebug()<< "Graph: removeEdge between " << v1 << " i " << index[v1]
+               << " and " << v2 << " i "<< index[v2]
+               << "  NOW vertex v1 reports edge weight "
+               << m_graph [ index[v1] ]->isLinkedTo(v2) ;
+    QString edgeName = QString::number(m_curRelation) + QString(":")
+                + QString::number(v1) + QString(">")+ QString::number(v2);
+    H_StrToFloat::iterator it1=edgesHash.find(edgeName);
+    while (it1 != edgesHash.end() && it1.key() == edgeName ) {
+            qDebug() << "Graph::removeEdge() "
+                     << it1.key() << " relation " << m_curRelation
+                        << " to be erased from Graph::edgesHash";
+            it1=edgesHash.erase(it1);
+    }
+
+    if ( this->hasEdge(v2,v1) !=0)
+        symmetricAdjacencyMatrix=false;
+
     m_totalEdges--;
-    if (m_totalEdges<0) m_totalEdges=0;
+    if (m_totalEdges<0) //crazy check :)
+        m_totalEdges=0;
     graphModified=true;
     qDebug("Graph: removeEdge(): emitting eraseEdge to GW");
     emit eraseEdge(v1,v2);
@@ -999,13 +1027,21 @@ float Graph::hasEdge (int v1, int v2) {
     float weight=0;
     if ( ! m_graph[ index[v1] ] -> isEnabled() || ! m_graph[ index[v2] ] -> isEnabled())
         return 0;
-    if ( (weight=  m_graph[ index[v1] ] -> isLinkedTo(v2) ) != 0 ) {
-        //qDebug() << "Graph: hasEdge() between " <<  v1 << " " << index[v1] <<  " and " <<  v2 << " " << index[v2] << " = " << weight;
-        return weight;
+    QString edgeName = QString::number(m_curRelation) + QString(":")
+                + QString::number(v1) + QString(">")+ QString::number(v2);
+    if (edgesHash.contains(edgeName)) {
+        QHash<QString, float>::const_iterator it = edgesHash.find(edgeName);
+        return it.value();
     }
-    else {
+    else
         return 0;
-    }
+//    if ( (weight=  m_graph[ index[v1] ] -> isLinkedTo(v2) ) != 0 ) {
+//        //qDebug() << "Graph: hasEdge() between " <<  v1 << " " << index[v1] <<  " and " <<  v2 << " " << index[v2] << " = " << weight;
+//        return weight;
+//    }
+//    else {
+//        return 0;
+//    }
 }
 
 
@@ -1201,6 +1237,7 @@ void Graph::clear() {
     index.clear();
     //clear relations
     m_relationsList.clear();
+    edgesHash.clear();
     m_curRelation=0;
 
     discreteDPs.clear(); discreteDCs.clear(); discreteCCs.clear();
@@ -8900,6 +8937,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 Graph::~Graph() {
     clear();
     index.clear();
+    edgesHash.clear();
 }
 
 
