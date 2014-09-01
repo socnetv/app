@@ -1,3 +1,9 @@
+socnetv (1.4-3) trusty; urgency=medium
+
+  * upped rev for launchpad to accept package
+
+ -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Mon, 01 Sep 2014 20:14:34 +0300
+
 socnetv (1.4-1) trusty; urgency=medium
 
   * Sync to new upstream version

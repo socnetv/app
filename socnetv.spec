@@ -182,11 +182,11 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 %changelog
 * Mon Sep 01 2014 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 1.4-1
 - Synced with new stable version from upstream.
-* Thu Aug 27 2014 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 1.3-1
+* Wed Aug 27 2014 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 1.3-1
 - Synced with new stable version from upstream.
 * Mon Aug 18 2014 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 1.2-1
 - Synced with new stable version 1.2 from upstream.
-* Thu Aug 01 2014 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 1.1-1
+* Fri Aug 01 2014 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 1.1-1
 - Synced with new version from upstream.
 * Thu Feb 27 2014 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 1.0-2
 - Fixed spec for openSUSE
