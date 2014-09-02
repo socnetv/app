@@ -125,8 +125,8 @@ void Graph::changeRelation(int relation){
         qDebug() << "Graph::changeRelation(int) - negative relation - END ";
         return;
     }
-    QList<Vertex*>::iterator it;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() )
             continue;
        (*it)->changeRelation(relation);
@@ -477,7 +477,8 @@ void Graph::removeVertex(long int Doomed){
     long int indexOfDoomed=index[Doomed];
 
     //Remove links to Doomed from each other vertex
-    for (QList<Vertex*>::iterator it=m_graph.begin(); it!=m_graph.end(); it++){
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if  ( (*it)->isLinkedTo(Doomed) != 0) {
             qDebug()<< "Graph: Vertex " << (*it)->name()
                     << " is linked to doomed "<< Doomed << " and has "
@@ -643,8 +644,8 @@ void Graph::filterIsolateVertices(bool filterFlag){
     qDebug() << "*** Graph::filterIsolateVertices() "
                 << " setting all isolate nodes to " << filterFlag;
 
-    QList<Vertex*>::iterator it;
-    for ( it=m_graph.begin(); it!=m_graph.end(); it++){
+    QList<Vertex*>::const_iterator it;
+    for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( (*it)->isOutLinked() ||  (*it)->isInLinked() ){
             continue;
         }
@@ -671,8 +672,8 @@ void Graph::filterEdgesByWeight(float m_threshold, bool overThreshold){
     else
         qDebug() << "Graph: filterEdgesByWeight()  below "<< m_threshold ;
 
-    QList<Vertex*>::iterator it;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( (*it)->isOutLinked() ){
             (*it)->filterEdgesByWeight ( m_threshold, overThreshold );
         }
@@ -692,8 +693,8 @@ void Graph::filterEdgesByWeight(float m_threshold, bool overThreshold){
   */
 void Graph::filterEdgesByRelation(int relation, bool status){
     qDebug() << "Graph::filterEdgesByRelation() " ;
-    QList<Vertex*>::iterator it;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() )
             continue;
        (*it)->filterEdgesByRelation ( relation, status );
@@ -728,9 +729,9 @@ int Graph::hasVertex(long int num){
 */
 int Graph::hasVertex(QString label){			
     qDebug ()<<"Graph: hasVertex( "<< label.toUtf8() <<" ) ?" ;
-    QList<Vertex*>::iterator it;
+    QList<Vertex*>::const_iterator it;
     int i=0;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( (*it) ->label() == label)  {
             qDebug()<< "Graph: hasVertex() at pos %i" << i;
             return i;
@@ -756,147 +757,6 @@ void Graph::setVertexSize(long int v, int size) {
     emit graphChanged();
 }
 
-/**
- * @brief Graph::layoutVerticesSizeByProminenceIndex
- * changes the node size to be proportinal to given prominence index
- * @param prominenceIndex
- */
-void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex){
-    qDebug() << "Graph::layoutVerticesSizeByProminenceIndex - "
-                << "prominenceIndex index = " << prominenceIndex;
-    double std=0;
-    float C=0, maxC=0;
-    int new_size=0;
-
-    //first calculate centrality indices if needed
-    if ( prominenceIndex == 0) {
-        // do nothing
-    }
-    else if ( prominenceIndex == 1)
-        this->centralityDegree(true);
-    else if ( prominenceIndex == 3 )
-        this->centralityClosenessInfluenceRange();
-    else if ( prominenceIndex == 8 )
-        this->centralityInformation();
-    else if ( prominenceIndex == 9)
-        this->prestigeDegree(true);
-    else if ( prominenceIndex == 10 )
-        this->prestigePageRank();
-    else if ( prominenceIndex == 11 )
-        this->prestigeProximity();
-    else
-        this->createDistanceMatrix(true);
-
-    for (QList<Vertex*>::iterator it=m_graph.begin(); it!=m_graph.end(); it++){
-        switch (prominenceIndex) {
-        case 0: {
-            C=0;maxC=0;
-            break;
-        }
-            case 1 : {
-                qDebug("VerticesSize according to DC");
-                C=(*it)->SDC();
-                std= (*it)->SDC();
-                maxC=maxDC;
-                break;
-            }
-            case 2 : {
-                qDebug("VerticesSize according to CC");
-                C=(*it)->CC();
-                std= (*it)->SCC();
-                maxC=maxCC;
-                break;
-            }
-            case 3 : {
-                qDebug("VerticesSize according to IRCC");
-                C=(*it)->IRCC();
-                std= (*it)->SIRCC();
-                maxC=maxIRCC;
-                break;
-            }
-            case 4 : {
-                qDebug("VerticesSize according to BC");
-                C=(*it)->BC();
-                std= (*it)->SBC();
-                maxC=maxBC;
-                break;
-            }
-            case 5 : {
-                qDebug("VerticesSize according to SC");
-                C=(*it)->SC();
-                std= (*it)->SSC();
-                maxC=maxSC;
-                break;
-            }
-            case 6 : {
-                qDebug("VerticesSize according to EC");
-                C=(*it)->EC();
-                std= (*it)->SEC();
-                maxC=maxEC;
-                break;
-            }
-            case 7 : {
-                qDebug("VerticesSize according to PC");
-                C=(*it)->PC();
-                std= (*it)->SPC();
-                maxC=maxPC;
-                break;
-            }
-            case 8 : {
-                qDebug("VerticesSize according to IC");
-                C=(*it)->IC();
-                std= (*it)->SIC();
-                maxC=maxIC;
-                break;
-            }
-            case 9 : {
-                qDebug("VerticesSize according to DP");
-                C=(*it)->SDP();
-                std= (*it)->SDP();
-                maxC=maxDP;
-                break;
-            }
-            case 10 : {
-                qDebug("VerticesSize according to PRP");
-                C=(*it)->PRC();
-                std= (*it)->SPRC();
-                maxC=maxPRC;
-                break;
-            }
-            case 11 : {
-                qDebug("VerticesSize according to PP");
-                C=(*it)->PP();
-                std= (*it)->SPP();
-                maxC=maxPP;
-                break;
-            }
-        };
-        qDebug () << "Vertex " << (*it)->name()
-                  << ": C=" << C << ", stdC=" << std
-                  << ", maxC " << maxC << ", C/maxC " << (C/maxC);
-
-        switch (static_cast<int> (ceil(maxC) )){
-        case 0: {
-            qDebug()<<"maxC=0.   Using initVertexSize";
-            new_size=initVertexSize;
-            //emit signal to change node size
-            emit setNodeSize((*it)->name(),  new_size);
-            break;
-        }
-        default: {
-            //Calculate new size
-            new_size=ceil ( initVertexSize /2.0  + (float) initVertexSize * (C/maxC));
-            qDebug ()<< "new vertex size "<< new_size << " call setSize()";
-            (*it)->setSize(new_size);
-            //emit signal to change node size
-            emit setNodeSize((*it)->name(),  new_size);
-            break;
-        }
-        };
-    }
-    graphModified=true;
-    emit graphChanged();
-}
 
 void Graph::setInitVertexShape(QString shape) {
     initVertexShape=shape;
@@ -994,8 +854,8 @@ void Graph::setAllVerticesColor(QString color) {
     qDebug() << "*** Graph::setAllVerticesColor() "
                 << " to " << color;
     setInitVertexColor(color);
-    QList<Vertex*>::iterator it;
-    for ( it=m_graph.begin(); it!=m_graph.end(); it++){
+    QList<Vertex*>::const_iterator it;
+    for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() ){
             continue;
         }
@@ -1027,16 +887,17 @@ QString Graph::edgeColor (long int s, long int t){
 
 
 /**
-    Changes the color of edge (s,t).
+    Changes the color of all edges.
 */
 bool Graph::setAllEdgesColor(QString color){
     qDebug()<< "\n\nGraph::setAllEdgesColor()" << color;
     int target=0, source=0, count=0;
     setInitEdgeColor(color);
     QHash<int,float> *enabledOutLinks = new QHash<int,float>;
+    enabledOutLinks->reserve(10000);
     QHash<int,float>::const_iterator it1;
-    QList<Vertex*>::iterator it;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         //updateProgressDialog(++count);
         source = (*it)->name();
         if ( ! (*it)->isEnabled() )
@@ -1171,8 +1032,8 @@ int Graph::inDegree (int v1) {
 int Graph::totalEdges () {
     qDebug("Graph: totalEdges()");
     int tEdges=0;
-    QList<Vertex*>::iterator it;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         tEdges+=(*it)->outLinks();
     }
     qDebug() << "Graph: m_totalEdges = " << m_totalEdges << ", tEdges=" <<  tEdges;
@@ -1197,14 +1058,14 @@ QList<int> Graph::verticesIsolated(){
         return m_isolatedVerticesList;
     }
     int i=0, j=0;
-    QList<Vertex*>::iterator it, it1;
+    QList<Vertex*>::const_iterator it, it1;
     m_isolatedVerticesList.clear();
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         (*it)->setIsolated(true);
         if ( ! (*it)->isEnabled() )
             continue;
         j=i;
-        for (it1=it; it1!=m_graph.end(); it1++){
+        for (it1=it; it1!=m_graph.cend(); ++it1){
             (*it1)->setIsolated(true);
             if ( ! (*it1)->isEnabled() )
                 continue;
@@ -1251,9 +1112,9 @@ float Graph::density() {
  */
 bool Graph::isWeighted(){
     qDebug("Graph: isWeighted()");
-    QList<Vertex*>::iterator it, it1;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
-       for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
+    QList<Vertex*>::const_iterator it, it1;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+       for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
             if ( ( this->hasEdge ( (*it1)->name(), (*it)->name() ) )  > 1  )   {
                 qDebug("Graph: isWeighted: TRUE");
                 return true;
@@ -1393,9 +1254,10 @@ bool Graph::isSymmetric(){
     symmetricAdjacencyMatrix=true;
     int y=0, target=0, source=0;
     QHash<int,float> *enabledOutLinks = new QHash<int,float>;
+    enabledOutLinks->reserve(1000);
     QHash<int,float>::const_iterator it1;
-    QList<Vertex*>::iterator it;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         source = (*it)->name();
         if ( ! (*it)->isEnabled() )
             continue;
@@ -1431,11 +1293,11 @@ bool Graph::isSymmetric(){
 */
 void Graph::symmetrize(){
     qDebug("Graph: symmetrize");
-    QList<Vertex*>::iterator it;
+    QList<Vertex*>::const_iterator it;
     int y=0, target=0, source=0, weight;
     QHash<int,float> *enabledOutLinks = new QHash<int,float>;
     QHash<int,float>::const_iterator it1;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         source = (*it)->name();
         qDebug() << "Graph:symmetrize() - iterate over edges of source " << source;
         enabledOutLinks=(*it)->returnEnabledOutLinks();
@@ -1634,8 +1496,8 @@ void Graph::writeEccentricity(
                    "to all other nodes (star node))\n");
 
     outText << "Node"<<"\te\t\t%e\n";
-    QList<Vertex*>::iterator it;
-    for (it= m_graph.begin(); it!= m_graph.end(); it++){
+    QList<Vertex*>::const_iterator it;
+    for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
         outText << (*it)->name()<<"\t"<<(*it)->eccentricity() << "\t\t" <<
                    (100* ((*it)->eccentricity()) / sumEccentricity)<<endl;
     }
@@ -1702,7 +1564,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
         qDebug () << "	for all vertices set their sigmas as 0";
         TM.fillMatrix(0);
 
-        QList<Vertex*>::iterator it, it1;
+        QList<Vertex*>::const_iterator it, it1;
         QList<int>::iterator it2;
         int w=0, u=0,s=0, i=0;
         float d_sw=0, d_su=0;
@@ -1763,7 +1625,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 
         //Zero closeness indeces of each vertex
         if (doCalculcateCentralities)
-            for (it=m_graph.begin(); it!=m_graph.end(); it++) {
+            for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
                 qDebug() << " Graph:createDistanceMatrix() - ZEROing all indices";
                 (*it)->setBC( 0.0 );
                 (*it)->setSC( 0.0 );
@@ -1773,7 +1635,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                 (*it)->setPC( 0.0 );
             }
         qDebug("MAIN LOOP: for every s in V do (solve the single source shortest path problem...");
-        for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
             progressCounter++;
             emit updateProgressDialog( progressCounter );
             if ( ! (*it)->isEnabled() )
@@ -1787,7 +1649,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                     Stack.pop();
                 i=0;
                 qDebug("...and for each vertex: empty list Ps of predecessors");
-                for (it1=m_graph.begin(); it1!=m_graph.end(); it1++) {
+                for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1) {
                     (*it1)->clearPs();
                     //initialize all sizeOfNthOrderNeighborhood to zero
                     sizeOfNthOrderNeighborhood.insert(i, 0);
@@ -1837,7 +1699,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                 PC=0;
                 qDebug("PHASE 2 (ACCUMULATION): Start back propagation of dependencies."
                        "Set dependency delta[u]=0 on each vertex");
-                for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
+                for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
                     (*it1)->setDelta(0.0);
                     //Calculate Power Centrality: In = [ 1/(N-1) ] * ( Nd1 + Nd2 * 1/2 + ... + Ndi * 1/i )
                     // where Ndi (sizeOfNthOrderNeighborhood) is the number of nodes at distance i from this node.
@@ -1898,7 +1760,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
             averGraphDistance = averGraphDistance / (nonZeroDistancesCounter);
 
         if (doCalculcateCentralities) {
-            for (it=m_graph.begin(); it!=m_graph.end(); it++) {
+            for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
                 if (symmetricAdjacencyMatrix) {
                     qDebug("Betweenness centrality must be divided by two if the graph is undirected");
                     (*it)->setBC ( (*it)->BC()/2.0);
@@ -1931,7 +1793,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                 sumSC+=SC;
 
             }
-            for (it=m_graph.begin(); it!=m_graph.end(); it++) {
+            for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
                 if ((*it)->isIsolated())
                     continue;
                 BC=(*it)->BC();
@@ -1949,7 +1811,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                 nomCC += maxCC- (*it)->SCC();
 
             }
-            for (it=m_graph.begin(); it!=m_graph.end(); it++) {
+            for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
                 if ((*it)->isIsolated())
                     continue;
                 //Calculate numerator of groupSC
@@ -2223,9 +2085,9 @@ void Graph::centralityInformation(){
     qDebug() << "Graph:: centralityInformation() - R= " << rowSum << " D= "<<diagonalEntriesSum;
 
 
-    QList<Vertex*>::iterator it;
+    QList<Vertex*>::const_iterator it;
     i=0;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( (*it)->isIsolated() ) {
             (*it) -> setIC ( 0 );
             qDebug()<< "Graph:: centralityInformation() vertex: " <<  (*it)->name() << " isolated";
@@ -2246,7 +2108,7 @@ void Graph::centralityInformation(){
         qDebug()<< "Graph:: centralityInformation() vertex: " <<  (*it)->name() << " IC  " << IC ;
         i++;
     }
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         IC = (*it)->IC();
         SIC = IC / sumIC ;
         (*it)->setSIC( SIC );
@@ -2256,7 +2118,7 @@ void Graph::centralityInformation(){
     averageIC = sumSIC / n ;
     qDebug() << "sumSIC = " << sumSIC << "  n = " << n << "  averageIC = " << averageIC;
     groupIC=0;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         x = (  (*it)->SIC()  -  averageIC  ) ;
         x *=x;
         qDebug() << "SIC " <<  (*it)->SIC() << "  x " <<   (*it)->SIC() - averageIC  << " x*x" << x ;
@@ -2299,9 +2161,9 @@ void Graph::writeCentralityInformation(const QString fileName){
     outText << tr("IC  range:  0 < C < inf (this index has no max value)") << "\n";
     outText << tr("IC' range:  0 < C'< 1")<<"\n\n";
     outText << "Node"<<"\tIC\t\tIC'\t\t%IC\n";
-    QList<Vertex*>::iterator it;
+    QList<Vertex*>::const_iterator it;
     float IC=0, SIC=0;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         IC = (*it)->SIC();
         SIC = (*it)->SIC();
         outText << (*it)->name()<<"\t"
@@ -2365,12 +2227,12 @@ void Graph::centralityDegree(bool weights){
     varianceDegree=0;
     meanDegree=0;
     int vert=vertices();
-    QList<Vertex*>::iterator it, it1;
+    QList<Vertex*>::const_iterator it, it1;
     H_StrToInt::iterator it2;
 
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         DC=0;
-        for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
+        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
             if ( (weight=this->hasEdge ( (*it)->name(), (*it1)->name() ) ) !=0  )   {
                 qDebug() << "Graph: vertex " <<  (*it)->name() << " isLinkedTo = " <<  (*it1)->name();
                 if (weights)
@@ -2410,7 +2272,7 @@ void Graph::centralityDegree(bool weights){
     qDebug("Graph: sumDC = %f, meanDegree = %f", sumDC, meanDegree);
 
     // Calculate std Out-Degree, Variance and the Degree Centralisation of the whole graph.
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         DC= (*it)->DC();
         if (!weights) {
             (*it) -> setSDC( DC / (vert-1.0) );		//Set Standard InDegree
@@ -2490,8 +2352,8 @@ void Graph::writeCentralityDegree (
     outText << "DC' range: 0 < C'< 1"<<"\n\n";
 
     outText << "Node"<<"\tDC\tDC'\t%DC\n";
-    QList<Vertex*>::iterator it;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         outText << (*it)->name()<<"\t"
                    <<(*it)->DC() << "\t"<< (*it)->SDC() << "\t"
                   <<  (100* ((*it)->DC()) / sumDC)<< "\n";
@@ -2558,7 +2420,7 @@ void Graph::centralityClosenessInfluenceRange(){
         reachabilityMatrix();
      }
     // calculate centralities
-    QList<Vertex*>::iterator it;
+    QList<Vertex*>::const_iterator it;
     float IRCC=0;
     float Ji=0;
     classesIRCC=0;
@@ -2570,7 +2432,7 @@ void Graph::centralityClosenessInfluenceRange(){
     varianceIRCC=0;
     meanIRCC=0;
     H_StrToInt::iterator it2;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         IRCC=0;
         // find connected nodes
         QList<int> influencedVertices = influenceRanges.values((*it)->name()-1);
@@ -2619,7 +2481,7 @@ void Graph::centralityClosenessInfluenceRange(){
     qDebug("Graph::centralityClosenessImproved - sumIRCC = %f, meanIRCC = %f",
            sumIRCC, meanIRCC);
 
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         IRCC= (*it) -> IRCC();
         varianceIRCC += (IRCC-meanIRCC) * (IRCC-meanIRCC) ;
         (*it) -> setSIRCC ( IRCC / sumIRCC) ;
@@ -2675,8 +2537,8 @@ void Graph::writeCentralityCloseness(
     outText << tr("CC  range:  0 < C < ")<<QString::number(maxIndexCC)<<"\n";
     outText << tr("CC' range:  0 < C'< 1")<<"\n\n";
     outText << "Node"<<"\tCC\t\tCC'\t\t%CC\n";
-    QList<Vertex*>::iterator it;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         outText << (*it)->name()<<"\t"<<(*it)->CC() << "\t\t"
                    << (*it)->SCC() << "\t\t"
                    <<  (100* ((*it)->CC()) / sumCC)<<endl;
@@ -2751,8 +2613,8 @@ void Graph::writeCentralityClosenessInfluenceRange(
             <<" (IRCC is a ratio)\n";
     outText << tr("IRCC' is the standardized IRCC (divided by sumIRCC). \n\n");
     outText << "Node"<<"\tIRCC\t\tIRCC'\t\t%IRCC\n";
-    QList<Vertex*>::iterator it;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         outText << (*it)->name()<<"\t"<<(*it)->IRCC() << "\t\t"<< (*it)->SIRCC() << "\t\t" <<  (100* ((*it)->SIRCC()) )<<endl;
     }
     qDebug ("min %f, max %f", minIRCC, maxIRCC);
@@ -2813,8 +2675,8 @@ void Graph::writeCentralityBetweenness(
             << tr(" (Number of pairs of nodes excluding u)")<<"\n";
     outText << tr("BC' range: 0 < BC'< 1  (C' is 1 when the node falls on all geodesics)\n\n");
     outText << "Node"<<"\tBC\t\tBC'\t\t%BC\n";
-    QList<Vertex*>::iterator it;
-    for (it= m_graph.begin(); it!= m_graph.end(); it++){
+    QList<Vertex*>::const_iterator it;
+    for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
         outText <<(*it)->name()<<"\t"<<(*it)->BC()
                << "\t\t"<< (*it)->SBC() << "\t\t"
                <<  (100* ((*it)->BC()) /  sumBC)<<endl;
@@ -2882,8 +2744,8 @@ void Graph::writeCentralityStress(
     outText << tr("SC' range: 0 < SC'< 1  (SC'=1 when the node falls on all "
                   "geodesics)\n\n");
     outText  << "Node"<<"\tSC\t\tSC'\t\t%SC\n";
-    QList<Vertex*>::iterator it;
-    for (it= m_graph.begin(); it!= m_graph.end(); it++){
+    QList<Vertex*>::const_iterator it;
+    for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
         outText <<(*it)->name()<<"\t"<<(*it)->SC() << "\t\t"
                << (*it)->SSC() << "\t\t"
                <<  (100* ((*it)->SC()) /  sumSC)<<endl;
@@ -2951,8 +2813,8 @@ void Graph::writeCentralityEccentricity(
     outText << tr("GC  range: 0 < EC < 1 (GC=1 => max distance to all other nodes is 1)\n");
 
     outText << "Node"<<"\tEC\t\t%EC\n";
-    QList<Vertex*>::iterator it;
-    for (it= m_graph.begin(); it!= m_graph.end(); it++){
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         outText << (*it)->name()<<"\t"<<(*it)->EC() << "\t\t"
                 <<  (100* ((*it)->EC()) /  sumEC)<<endl;
     }
@@ -3010,8 +2872,8 @@ void Graph::writeCentralityPower(
             << tr(" (star node)")<<"\n";
     outText << tr("PC' range: 0 < PC'< 1 \n\n");
     outText << "Node"<<"\tPC\t\tPC'\t\t%PC\n";
-    QList<Vertex*>::iterator it;
-    for (it= m_graph.begin(); it!= m_graph.end(); it++){
+    QList<Vertex*>::const_iterator it;
+    for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
         outText << (*it)->name()<<"\t"<<(*it)->PC() << "\t\t"
                 << (*it)->SPC() << "\t\t"
                 <<  (100* ((*it)->PC()) /  sumPC)<<endl;
@@ -3060,13 +2922,13 @@ void Graph::prestigeDegree(bool weights){
     varianceDegree=0;
     meanDegree=0;
     symmetricAdjacencyMatrix = true;
-    QList<Vertex*>::iterator it, it1;
+    QList<Vertex*>::const_iterator it, it1;
     H_StrToInt::iterator it2;
     int vert=vertices();
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         DP=0;
         qDebug() << "Graph: prestigeDegree() vertex " <<  (*it)->name()  ;
-        for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
+        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
             if ( (weight=this->hasEdge ( (*it1)->name(), (*it)->name() ) ) !=0  )   {
                 if (weights)
                     DP+=weight;
@@ -3105,7 +2967,7 @@ void Graph::prestigeDegree(bool weights){
     qDebug("Graph: sumDP = %f, meanDegree = %f", sumDP, meanDegree);
 
     // Calculate std In-Degree, Variance and the Degree Centralisation of the whole graph.
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         DP= (*it)->DP();
         if (!weights) {
             (*it) -> setSDP( DP / (vert-1.0) );		//Set Standard InDegree
@@ -3182,8 +3044,8 @@ void Graph::writePrestigeDegree (const QString fileName, const bool considerWeig
 
     outText << "Node"<<"\tDP\tDP'\t%DP\n";
 
-    QList<Vertex*>::iterator it;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         outText <<(*it)->name()<<"\t"<<(*it)->DP() << "\t"<< (*it)->SDP() << "\t" <<  (100* ((*it)->DP()) / sumDP)<<endl;
     }
     if (symmetricAdjacencyMatrix) {
@@ -3249,7 +3111,7 @@ void Graph::prestigeProximity(){
         reachabilityMatrix();
     }
     // calculate centralities
-    QList<Vertex*>::iterator it;
+    QList<Vertex*>::const_iterator it;
     float PP=0;
     float Ii=0;
     int i=0;
@@ -3262,7 +3124,7 @@ void Graph::prestigeProximity(){
     variancePP=0;
     meanPP=0;
     H_StrToInt::iterator it2;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         PP=0; i=0;
         // find connected nodes
         QList<int> influencerVertices = influenceDomains.values((*it)->name()-1);
@@ -3318,7 +3180,7 @@ void Graph::prestigeProximity(){
     qDebug("Graph::prestigeProximity - sumPP = %f, meanPP = %f",
            sumPP, meanPP);
 
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         PP= (*it) -> PP();
         variancePP += (PP-meanPP) * (PP-meanPP) ;
         (*it) -> setSPP ( PP / sumPP) ;
@@ -3371,8 +3233,8 @@ void Graph::writePrestigeProximity(
             " (PP is a ratio)")<<"\n";
     outText << tr("PP' is the standardized PP (divided by sumPP). \n\n");
     outText << "Node"<<"\tPP\t\tPP'\t\t%PP'\n";
-    QList<Vertex*>::iterator it;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         outText << (*it)->name()<<"\t"
                 <<(*it)->PP() << "\t\t"
                << (*it)->SPP() << "\t\t"
@@ -3427,14 +3289,14 @@ int Graph::prestigePageRank(){
     float sumPageRanksOfLinkedNodes = 0;  // temporary variable to calculate PR
     float outDegree = 0;
     bool allNodesAreIsolated = true;
-    QList<Vertex*>::iterator it;
+    QList<Vertex*>::const_iterator it;
     int relation=0;
     bool edgeStatus=false;
     H_edges::const_iterator jt;
 
     // begin iteration - continue until we reach our desired delta
     while (maxDelta > delta) {
-        for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
             qDebug() << "Graph:: prestigePageRank() - calculating PR for node: "
                      << (*it)->name() ;
             // In the first iteration, we have no PageRanks
@@ -3515,11 +3377,11 @@ int Graph::prestigePageRank(){
         i++;
     }
     // calculate sumPRC
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         sumPRC +=  (*it)->PRC();
     }
     // calculate std and min/max PRCs
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         PRC = (*it)->PRC();
         resolveClasses(PRC,discretePRCs,classesPRC);
         if ( PRC > maxPRC ) {
@@ -3569,9 +3431,9 @@ void Graph::writePrestigePageRank(const QString fileName){
     outText << tr("PR' is the standardized PR")<<"\n";
     outText << tr("PR' range:  ") << dampingFactor / sumPRC  << " < C'< 1" <<"\n\n";
     outText << "Node"<<"\tPRC\t\tPRC'\t\t%PRC\n";
-    QList<Vertex*>::iterator it;
+    QList<Vertex*>::const_iterator it;
     float PRC=0, SPRC=0, sumSPRC=0;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         PRC = (*it)->PRC();
         SPRC = (*it)->SPRC();
         sumSPRC +=  SPRC;
@@ -3598,7 +3460,7 @@ void Graph::writePrestigePageRank(const QString fileName){
 
     qDebug() << "sumPRC = " << sumSPRC << "  n = " << n << "  averagePRC = " << averagePRC;
     groupPRC=0;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         x = ( 100 * (*it)->SPRC()  - 100 * averagePRC  ) ;
         x *=x;
         qDebug() << "SPRC " <<  (*it)->SPRC() << "  x " <<   (*it)->SPRC() - averagePRC  << " x*x" << x ;
@@ -3646,9 +3508,9 @@ void Graph::writeNumberOfCliques(
     outText << tr("CLQs range: 0 < CLQs < ") <<"\n\n";
     outText << "Node"<<"\tCLQs\n";
 
-    QList<Vertex*>::iterator it;
+    QList<Vertex*>::const_iterator it;
 
-    for (it= m_graph.begin(); it!= m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         cliques=this->numberOfCliques((*it)->name());
         outText << (*it)->name()<<"\t"<< cliques <<endl;
         cliques_sum += cliques;
@@ -3691,8 +3553,8 @@ void Graph::writeClusteringCoefficient(
     outText << "Node"<<"\tCLC\n";
 
 
-    QList<Vertex*>::iterator it;
-    for (it= m_graph.begin(); it!= m_graph.end(); it++){
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         outText << (*it)->name()<<"\t"<<(*it)->CLC() <<endl;
     }
     if ( isSymmetric()) {
@@ -3816,7 +3678,8 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0, double maxRadi
     double new_radius=0, new_x=0, new_y=0;
     double Pi = 3.14159265;
     int vert=vertices();
-    for (QList<Vertex*>::iterator it=m_graph.begin(); it!=m_graph.end(); it++){
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         switch (prominenceIndex) {
             case 1 : {
                 qDebug("Layout according to DC");
@@ -3834,9 +3697,13 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0, double maxRadi
             }
             case 3 : {
                 qDebug("Layout according to IRCC");
-                C=(*it)->IRCC();
-                std= (*it)->SIRCC();
-                maxC=maxIRCC;
+                qDebug() << "Layout according to IRCC C = " << (*it)->IRCC();
+                qDebug() << "Layout according to IRCC std = " << (*it)->SIRCC();
+                qDebug() << "Layout according to IRCC maxC= " << maxIRCC;
+//                C=(*it)->IRCC();
+//                std= (*it)->SIRCC();
+//                maxC=maxIRCC;
+
                 break;
             }
             case 4 : {
@@ -3974,8 +3841,8 @@ void Graph::layoutCircularRandom(double x0, double y0, double maxRadius){
     float offset=0.06, randomDecimal=0;;
     double Pi = 3.14159265;
     int vert=vertices();
-
-    for (QList<Vertex*>::iterator it=m_graph.begin(); it!=m_graph.end(); it++){
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         randomDecimal = (float ) ( rand()%100 ) / 100.0;
         new_radius=(maxRadius- (randomDecimal - offset)*maxRadius);
         qDebug () << "Vertice " << (*it)->name()
@@ -4037,7 +3904,8 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
     //	int vert=vertices();
     maxHeight-=offset;
     maxWidth-=offset;
-    for (QList<Vertex*>::iterator it=m_graph.begin(); it!=m_graph.end(); it++){
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         switch (prominenceIndex) {
             case 1 : {
                 qDebug("Layout according to DC");
@@ -4147,6 +4015,151 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
         emit addGuideHLine(static_cast<int> ( new_y ) );
     }
     graphModified=true;
+}
+
+
+
+
+/**
+ * @brief Graph::layoutVerticesSizeByProminenceIndex
+ * changes the node size to be proportinal to given prominence index
+ * @param prominenceIndex
+ */
+void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex){
+    qDebug() << "Graph::layoutVerticesSizeByProminenceIndex - "
+                << "prominenceIndex index = " << prominenceIndex;
+    double std=0;
+    float C=0, maxC=0;
+    int new_size=0;
+
+    //first calculate centrality indices if needed
+    if ( prominenceIndex == 0) {
+        // do nothing
+    }
+    else if ( prominenceIndex == 1)
+        this->centralityDegree(true);
+    else if ( prominenceIndex == 3 )
+        this->centralityClosenessInfluenceRange();
+    else if ( prominenceIndex == 8 )
+        this->centralityInformation();
+    else if ( prominenceIndex == 9)
+        this->prestigeDegree(true);
+    else if ( prominenceIndex == 10 )
+        this->prestigePageRank();
+    else if ( prominenceIndex == 11 )
+        this->prestigeProximity();
+    else
+        this->createDistanceMatrix(true);
+    QList<Vertex*>::const_iterator it;
+    for  (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        switch (prominenceIndex) {
+        case 0: {
+            C=0;maxC=0;
+            break;
+        }
+            case 1 : {
+                qDebug("VerticesSize according to DC");
+                C=(*it)->SDC();
+                std= (*it)->SDC();
+                maxC=maxDC;
+                break;
+            }
+            case 2 : {
+                qDebug("VerticesSize according to CC");
+                C=(*it)->CC();
+                std= (*it)->SCC();
+                maxC=maxCC;
+                break;
+            }
+            case 3 : {
+                qDebug("VerticesSize according to IRCC");
+                C=(*it)->IRCC();
+                std= (*it)->SIRCC();
+                maxC=maxIRCC;
+                break;
+            }
+            case 4 : {
+                qDebug("VerticesSize according to BC");
+                C=(*it)->BC();
+                std= (*it)->SBC();
+                maxC=maxBC;
+                break;
+            }
+            case 5 : {
+                qDebug("VerticesSize according to SC");
+                C=(*it)->SC();
+                std= (*it)->SSC();
+                maxC=maxSC;
+                break;
+            }
+            case 6 : {
+                qDebug("VerticesSize according to EC");
+                C=(*it)->EC();
+                std= (*it)->SEC();
+                maxC=maxEC;
+                break;
+            }
+            case 7 : {
+                qDebug("VerticesSize according to PC");
+                C=(*it)->PC();
+                std= (*it)->SPC();
+                maxC=maxPC;
+                break;
+            }
+            case 8 : {
+                qDebug("VerticesSize according to IC");
+                C=(*it)->IC();
+                std= (*it)->SIC();
+                maxC=maxIC;
+                break;
+            }
+            case 9 : {
+                qDebug("VerticesSize according to DP");
+                C=(*it)->SDP();
+                std= (*it)->SDP();
+                maxC=maxDP;
+                break;
+            }
+            case 10 : {
+                qDebug("VerticesSize according to PRP");
+                C=(*it)->PRC();
+                std= (*it)->SPRC();
+                maxC=maxPRC;
+                break;
+            }
+            case 11 : {
+                qDebug("VerticesSize according to PP");
+                C=(*it)->PP();
+                std= (*it)->SPP();
+                maxC=maxPP;
+                break;
+            }
+        };
+        qDebug () << "Vertex " << (*it)->name()
+                  << ": C=" << C << ", stdC=" << std
+                  << ", maxC " << maxC << ", C/maxC " << (C/maxC);
+
+        switch (static_cast<int> (ceil(maxC) )){
+        case 0: {
+            qDebug()<<"maxC=0.   Using initVertexSize";
+            new_size=initVertexSize;
+            //emit signal to change node size
+            emit setNodeSize((*it)->name(),  new_size);
+            break;
+        }
+        default: {
+            //Calculate new size
+            new_size=ceil ( initVertexSize /2.0  + (float) initVertexSize * (C/maxC));
+            qDebug ()<< "new vertex size "<< new_size << " call setSize()";
+            (*it)->setSize(new_size);
+            //emit signal to change node size
+            emit setNodeSize((*it)->name(),  new_size);
+            break;
+        }
+        };
+    }
+    graphModified=true;
+    emit graphChanged();
 }
 
 
@@ -5302,9 +5315,9 @@ bool Graph::saveGraphToPajekFormat (
     t<<"*Network "<<networkName<<"\n";
 
     t<<"*Vertices "<< vertices() <<"\n";
-    QList<Vertex*>::iterator it;
-    QList<Vertex*>::iterator jt;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    QList<Vertex*>::const_iterator it;
+    QList<Vertex*>::const_iterator jt;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         qDebug()<<" Name x "<<  (*it)->name()  ;
         t<<(*it)->name()  <<" "<<"\""<<(*it)->label()<<"\"" ;
         t << " ic ";
@@ -5317,7 +5330,7 @@ bool Graph::saveGraphToPajekFormat (
 
     t<<"*Arcs \n";
     qDebug()<< "Graph::saveGraphToPajekFormat: Arcs";
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         for (jt=m_graph.begin(); jt!=m_graph.end(); jt++){
             qDebug() << "Graph::saveGraphToPajekFormat:  it=" << (*it)->name() << ", jt=" << (*jt)->name() ;
             if  ( (weight=this->hasEdge( (*it)->name(), (*jt)->name())) !=0
@@ -5336,7 +5349,7 @@ bool Graph::saveGraphToPajekFormat (
 
     t<<"*Edges \n";
     qDebug() << "Graph::saveGraphToPajekFormat: Edges";
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         for (jt=m_graph.begin(); jt!=m_graph.end(); jt++){
             qDebug() << "Graph::saveGraphToPajekFormat:  it=" <<  (*it)->name() << ", jt=" <<(*jt)->name() ;
             if  ( (weight=this->hasEdge((*it)->name(), (*jt)->name()))!=0   &&
@@ -8351,11 +8364,11 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
 */
 void Graph::writeAdjacencyMatrixTo(QTextStream& os){
     qDebug("Graph: adjacencyMatrix(), writing matrix with %i vertices", vertices());
-    QList<Vertex*>::iterator it, it1;
+    QList<Vertex*>::const_iterator it, it1;
     float weight=-1;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() ) continue;
-        for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
+        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
             if ( ! (*it1)->isEnabled() ) continue;
             if ( (weight = this->hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
                 os << static_cast<int> (weight) << " ";
@@ -8373,7 +8386,7 @@ void Graph::writeAdjacencyMatrixTo(QTextStream& os){
 *	Used in slotExportSM() of MainWindow class.
 */
 QTextStream& operator <<  (QTextStream& os, Graph& m){
-    QList<Vertex*>::iterator it, it1;
+    QList<Vertex*>::const_iterator it, it1;
     float weight=-1;
     for (it=m.m_graph.begin(); it!=m.m_graph.end(); it++){
         for (it1=m.m_graph.begin(); it1!=m.m_graph.end(); it1++){
@@ -8407,10 +8420,10 @@ void Graph::writeAdjacencyMatrix (const QString fn, const char* netName) {
     float weight=0;
     outText << "-Social Network Visualizer- \n";
     outText << "Adjacency matrix of "<< netName<<": \n\n";
-    QList<Vertex*>::iterator it, it1;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    QList<Vertex*>::const_iterator it, it1;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() ) continue;
-        for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
+        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
             if ( ! (*it1)->isEnabled() ) continue;
             if ( (weight =  this->hasEdge ( (*it)->name(), (*it1)->name() )  )!=0 ) {
                 sum++;
@@ -8449,9 +8462,9 @@ void Graph::createAdjacencyMatrix(bool dropIsolates=false, bool omitWeights=fals
     }
     else
         AM.resize(m_totalVertices);
-    QList<Vertex*>::iterator it, it1;
+    QList<Vertex*>::const_iterator it, it1;
     qDebug() << "Graph::createAdjacencyMatrix() - creating new adjacency matrix ";
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() || ( (*it)->isIsolated() && dropIsolates) ) {
             qDebug()<<"Graph::createAdjacencyMatrix() - vertex "
                    << (*it)->name()
@@ -8515,7 +8528,7 @@ void Graph::invertAdjacencyMatrix(){
 void Graph::writeInvertAdjacencyMatrix(QString fn, const char* netName){
     qDebug("Graph::writeInvertAdjacencyMatrix() ");
     int i=0, j=0;
-    QList<Vertex*>::iterator it, it1;
+    QList<Vertex*>::const_iterator it, it1;
     QFile file( fn );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         emit statusMessage( QString(tr("Could not write to %1")).arg(fn) );
@@ -8526,11 +8539,11 @@ void Graph::writeInvertAdjacencyMatrix(QString fn, const char* netName){
     outText << "-Social Network Visualizer- \n";
     outText << "Invert Matrix of "<< netName<<": \n\n";
     invertAdjacencyMatrix();
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() )
             continue;
         j=0;
-        for (it1=m_graph.begin(); it1!=m_graph.end(); it1++){
+        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
             if ( ! (*it1)->isEnabled() )
                 continue;
             outText << invAM.item(i,j)<< " ";
@@ -8627,11 +8640,11 @@ bool Graph::saveGraphToGraphMLFormat (
     else
         outText << "  <graph id=\""<< networkName << "\" edgedefault=\"directed\"> \n";
 
-    QList<Vertex*>::iterator it;
-    QList<Vertex*>::iterator jt;
+    QList<Vertex*>::const_iterator it;
+    QList<Vertex*>::const_iterator jt;
 
     qDebug()<< "		    writing nodes data";
-    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled () )
             continue;
         qDebug() << " 	Node id: "<<  (*it)->name()  ;
@@ -8692,7 +8705,7 @@ bool Graph::saveGraphToGraphMLFormat (
 
     qDebug() << "		... writing edges data";
     edgeCount=0;
-    for (it=m_graph.begin(); it!=m_graph.end(); it++)
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
     {
         for (jt=m_graph.begin(); jt!=m_graph.end(); jt++)
         {

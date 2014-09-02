@@ -67,13 +67,6 @@ bool Parser::load(QString fn, int iNS, QString iNC, QString iNSh,
 	fileFormat= fFormat;
 	two_sm_mode = sm_mode;
 
-    qDebug()<< "Parser: start() clearing hashes... ";
-    nodeNumber.clear();
-    keyFor.clear(); keyName.clear(); keyType.clear(); keyDefaultValue.clear();
-    edgesMissingNodesHash.clear();
-    edgeMissingNodesList.clear();edgeMissingNodesListData.clear();
-    firstModeMultiMap.clear(); secondModeMultiMap.clear();
-
 	//qDebug()<< "Parser: start() a new parsing thread for file format: " << fileFormat ;
 	if (!isRunning()) 
 		start(QThread::NormalPriority);
@@ -93,6 +86,93 @@ bool Parser::load(QString fn, int iNS, QString iNC, QString iNSh,
 	}
     return true;
 }
+
+
+
+
+
+/** starts the new thread calling the load* methods
+*/
+void Parser::run()  {
+    qDebug()<< "**** Parser:: run(). This is a new thread! "
+            << " networkName "<< networkName
+            << " fileFormat "<< fileFormat ;
+
+    switch (fileFormat){
+    case 1:	//GraphML
+        if (loadGraphML()){
+            qDebug("* Parser: that was  a GraphML network");
+        }
+        else fileFormat=-1;
+        break;
+    case 2: //Pajek
+        if ( loadPajek() ) {
+            qDebug("* Parser: that was a Pajek network");
+        }
+        else fileFormat=-1;
+        break;
+    case 3: //Adjacency
+        if (loadAdjacency() ) {
+            qDebug("* Parser: that was an adjacency-matrix network");
+        }
+        else fileFormat=-1;
+        break;
+    case 4: //Dot
+        if (loadDot() ) {
+            qDebug("* Parser: that was a GraphViz (dot) network");
+        }
+        else fileFormat=-1;
+        break;
+        case 5:	//GML
+        if (loadGML() ){
+            qDebug("* Parser: that was a GML (gml) network");
+        }
+        else fileFormat=-1;
+        break;
+    case 6: //DL
+        if (loadDL() ){
+            qDebug("Parser: this is a DL formatted (.dl) network");
+        }
+        else fileFormat=-1;
+        break;
+
+    case 7:	// Weighted List
+        if (loadWeighedList() ){
+            qDebug("Parser: this is a weighted list formatted (.list) network");
+        }
+        else fileFormat=-1;
+        break;
+
+    case 8:	// List
+        if (loadSimpleList() ){
+            qDebug("Parser: this is a simple list formatted (.list) network");
+        }
+        else fileFormat=-1;
+        break;
+
+    case 9:	// twomode sociomatrix, affiliation network matrix
+        if (loadTwoModeSociomatrix() ){
+            qDebug("Parser: OK, this is a two-mode sociomatrix (.tsm) network");
+        }
+        else fileFormat=-1;
+        break;
+
+    default:	//GraphML
+        if (loadGraphML() ){
+            qDebug("Parser: this is a GraphML network");
+        }
+        else fileFormat=-1;
+        break;
+    }
+
+    qDebug()<< "Parser::run() clearing hashes... ";
+    nodeNumber.clear();
+    keyFor.clear(); keyName.clear(); keyType.clear(); keyDefaultValue.clear();
+    edgesMissingNodesHash.clear();
+    edgeMissingNodesList.clear();edgeMissingNodesListData.clear();
+    firstModeMultiMap.clear(); secondModeMultiMap.clear();
+}
+
 
 
 void Parser::createRandomNodes(int nodeNum=1,QString label=NULL, int totalNodes=1){
@@ -2359,85 +2439,6 @@ bool Parser::loadSimpleList(){
 }
 
 
-
-
-
-/** starts the new thread calling the load* methods
-*/
-void Parser::run()  {
-	qDebug()<< "**** Parser:: run(). This is a new thread! " 
-			<< " networkName "<< networkName
-			<< " fileFormat "<< fileFormat ;
-
-	switch (fileFormat){
-	case 1:	//GraphML
-		if (loadGraphML()){
-			qDebug("* Parser: that was  a GraphML network");
-		}
-		else fileFormat=-1;
-		break;
-	case 2: //Pajek
-		if ( loadPajek() ) {
-			qDebug("* Parser: that was a Pajek network");
-		}
-		else fileFormat=-1;
-		break;
-	case 3: //Adjacency
-		if (loadAdjacency() ) {
-			qDebug("* Parser: that was an adjacency-matrix network");
-		}
-		else fileFormat=-1;
-		break;
-	case 4: //Dot
-		if (loadDot() ) {
-			qDebug("* Parser: that was a GraphViz (dot) network");
-		}
-		else fileFormat=-1;
-		break;
-		case 5:	//GML
-		if (loadGML() ){
-			qDebug("* Parser: that was a GML (gml) network");
-		}
-		else fileFormat=-1;
-		break;
-	case 6: //DL
-		if (loadDL() ){
-			qDebug("Parser: this is a DL formatted (.dl) network");
-		}
-		else fileFormat=-1;
-		break;
-
-	case 7:	// Weighted List
-		if (loadWeighedList() ){
-			qDebug("Parser: this is a weighted list formatted (.list) network");
-		}
-		else fileFormat=-1;
-		break;
-
-	case 8:	// List
-		if (loadSimpleList() ){
-			qDebug("Parser: this is a simple list formatted (.list) network");
-		}
-		else fileFormat=-1;
-		break;
-
-	case 9:	// twomode sociomatrix, affiliation network matrix
-		if (loadTwoModeSociomatrix() ){
-			qDebug("Parser: OK, this is a two-mode sociomatrix (.tsm) network");
-		}
-		else fileFormat=-1;
-		break;
-
-	default:	//GraphML
-		if (loadGraphML() ){
-			qDebug("Parser: this is a GraphML network");
-		}
-		else fileFormat=-1;
-		break;
-	}
-
-
-}
 
 
 

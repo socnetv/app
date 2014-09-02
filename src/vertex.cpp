@@ -53,7 +53,7 @@ Vertex::Vertex(	Graph* parent,
 	//FIXME outLinkColors list need update when we remove vertices/edges
 //	outLinkColors=new  QString[1500];
 	//Q_CHECK_PTR(outLinkColors);
-	outLinkColors.reserve(1600);	
+    outLinkColors.reserve(2000);
     m_outLinksCounter=0;
     m_inLinksCounter=0;
     m_outDegree=0;
@@ -68,7 +68,8 @@ Vertex::Vertex(	Graph* parent,
     m_outLinked=false;
     m_reciprocalLinked=false;
     m_enabled = true;
-//    m_outLinks.reserve(1000);
+    m_outLinks.reserve(2000);
+    m_inLinks.reserve(2000);
     connect (this, SIGNAL (setEdgeVisibility ( int, int, int, bool) ),
              parent, SLOT (slotSetEdgeVisibility (int, int, int, bool)) );
 
@@ -387,6 +388,7 @@ long int Vertex::outLinks() {
 QHash<int,float>* Vertex::returnEnabledOutLinks(){
     qDebug() << " Vertex:: returnEnabledOutLinks()";
     QHash<int,float> *enabledOutLinks = new QHash<int,float>;
+    enabledOutLinks->reserve(10000);
     float m_weight=0;
     int relation = 0;
     bool edgeStatus=false;

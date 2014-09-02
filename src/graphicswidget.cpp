@@ -56,7 +56,7 @@ GraphicsWidget::GraphicsWidget( QGraphicsScene *sc, MainWindow* par)  : QGraphic
 	m_currentRotationAngle = 0;
 	markedNodeExists=false; //used in findNode()
     edgesHash.reserve(10000);
-    nodeHash.reserve(500);
+    nodeHash.reserve(1000);
 }
 
 
