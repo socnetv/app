@@ -1,6 +1,6 @@
 /****************************************************************************
 SocNetV: Social Networks Visualizer 
-version: 1.4
+version: 1.5
 Written in Qt
 
 			       texteditor.h
