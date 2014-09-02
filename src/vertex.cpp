@@ -721,7 +721,7 @@ QPointF Vertex::pos () {
 }
 
 
-
+//FIXME -- VERY SLOW?
 void Vertex::setOutLinkColor(long int target, QString color){
 	qDebug()<<"Vertex: update linkColor to vertex "<< target<< " color: "<< color;
 	outLinkColors[target]=color;

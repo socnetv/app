@@ -965,13 +965,6 @@ float Graph::hasEdge (int v1, int v2) {
     }
     else
         return 0;
-//    if ( (weight=  m_graph[ index[v1] ] -> isLinkedTo(v2) ) != 0 ) {
-//        //qDebug() << "Graph: hasEdge() between " <<  v1 << " " << index[v1] <<  " and " <<  v2 << " " << index[v2] << " = " << weight;
-//        return weight;
-//    }
-//    else {
-//        return 0;
-//    }
 }
 
 
