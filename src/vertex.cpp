@@ -636,10 +636,15 @@ void Vertex::setColor(QString color){
 }
 
 QString Vertex::color(){
-	return m_color;	
+    return m_color;
 }
 
-
+QString Vertex::colorToPajek(){
+    if (m_color.startsWith("#")) {
+        return  ("RGB"+m_color.right( m_color.size()-1 )).toUpper()  ;
+    }
+    return m_color;
+}
 
 
 void Vertex::setNumberColor (QString color) {

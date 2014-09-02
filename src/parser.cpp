@@ -437,7 +437,7 @@ bool Parser::loadPajek(){
 	j=0;  //counts how many real nodes exist in the file 
 	miss=0; //counts missing nodeNumbers. 
 	//if j + miss < nodeNum, it creates (nodeNum-miss) dummy nodes which are deleted in the end.
-	QList <int> toBeDeleted;
+    QList <int> toBeDeleted;  //FIXME ?
 	
 	while ( !ts.atEnd() )   {
 		str= ts.readLine();
@@ -555,6 +555,8 @@ bool Parser::loadPajek(){
 					}
 					//qDebug()<<"nodeColor:" << nodeColor;
 					if (nodeColor.contains (".") )  nodeColor=initNodeColor;
+                    if (nodeColor.startsWith("RGB")) nodeColor.replace(0,3,"#");
+                    qDebug () << " \n\n PAJEK color " << nodeColor;
 				}
 				else { //there is no nodeColor. Use the default
 					//qDebug("No nodeColor");

@@ -178,6 +178,11 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect( &activeGraph, SIGNAL( drawEdgeReciprocal(int, int) ),
              graphicsWidget, SLOT( drawEdgeReciprocal(int, int) ) );
 
+
+    connect( &activeGraph, SIGNAL( setLinkColor(long int,long int,QString)),
+             graphicsWidget, SLOT( setEdgeColor(long int,long int,QString) ) );
+
+
     connect( &activeGraph, SIGNAL( statusMessage (QString) ),
              this, SLOT( statusMessage (QString) ) ) ;
 
@@ -239,6 +244,9 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     connect( &activeGraph, SIGNAL( setNodeSize(long int, int)  ),
              graphicsWidget, SLOT(  setNodeSize (long int , int) ) );
+
+    connect( &activeGraph, SIGNAL( setNodeColor(long int,QString))  ,
+             graphicsWidget, SLOT(  setNodeColor(long int, QString) ) );
 
     connect( clearGuidesAct, SIGNAL(triggered()),
              graphicsWidget, SLOT(clearGuides()));
@@ -4775,50 +4783,68 @@ void MainWindow::slotChangeNodeLabel(){
 */
 void MainWindow::slotChangeNodeColor(){
     if (!fileLoaded && !networkModified )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes! \nLoad a network file or create a new network first."), "OK",0);
+        QMessageBox::critical(
+                    this,
+                    "Error",
+                    tr("There are no nodes! \n"
+                       "Load a network file or create a new network first."), "OK",0);
         statusMessage( tr("No nodes...")  );
         return;
     }
-
     bool ok;
-    if (nodeClicked) {
+    long int node=-1;
+    if (!nodeClicked) {
         int min=activeGraph.firstVertexNumber();
         int max=activeGraph.lastVertexNumber();
-        long int node=QInputDialog::getInt(this, "Change node color",tr("Select node:  	("+QString::number(min).toLatin1()+"..."+QString::number(max).toLatin1()+"):"), min, 1, max , 1, &ok)   ;
-        statusMessage( tr("Error. ")  );
+        node=QInputDialog::getInt(
+                    this, "Change node color",
+                    tr("Select node:  	("+QString::number(min).toLatin1()+"..."
+                       +QString::number(max).toLatin1()+"):"), min, 1, max , 1, &ok)   ;
         if (!ok) {
             statusMessage( "Change clicked node color operation cancelled." );
+            statusMessage( tr("Error. ")  );
             return;
         }
-
-        QString newColor = QInputDialog::getItem(this,"Change node color", "Select a  new color:", colorList, 1, true, &ok);
-        if (!ok) {
-            statusMessage( "Change clicked node color operation cancelled." );
-            return;
-        }
-
-        if (graphicsWidget->setNodeColor(node, newColor)) {
-            activeGraph.setVertexColor( node, newColor);
-            graphChanged();
-        }
-        else
-            statusMessage( tr("There is no such link. ") );
-
     }
     else{
-        QString nodeColor = QInputDialog::getItem(this,"Change node color", "Select a  color:", colorList, 1, true, &ok);
-        if ( ok ) {
-            clickedJim->setColor(nodeColor);
-            activeGraph.setVertexColor (clickedJimNumber, nodeColor);
-            graphChanged();
-            statusMessage( tr("Ready. ") );
-        }
-        else {
-            // user pressed Cancel
-            statusMessage( tr("Change node color aborted. ") );
-        }
+        node=clickedJimNumber;
+    }
+    QColor color = QColorDialog::getColor(
+                Qt::red, this, tr("Change color of node %1").arg(node) );
+    if ( color.isValid()) {
+        QString newColor=color.name();
+        activeGraph.setVertexColor( node, newColor);
+        graphChanged();
+    }
+    else {
+        // user pressed Cancel
+        statusMessage( tr("Change node color aborted. ") );
     }
 }
+
+
+
+
+/**
+*  Changes the color of all nodes
+*/
+void MainWindow::slotAllNodesColor(){
+    QColor color = QColorDialog::getColor( Qt::red, this,
+                                           "Change the color of all nodes" );
+    if (color.isValid()) {
+        initNodeColor=color.name();
+        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+        qDebug() << "MainWindow::slotAllNodesColor() : " << initNodeColor;
+        activeGraph.setAllVerticesColor(initNodeColor);
+        QApplication::restoreOverrideCursor();
+        statusMessage( tr("Ready. ")  );
+    }
+    else {
+        // user pressed Cancel
+        statusMessage( tr("Nodes color change aborted. ") );
+    }
+}
+
 
 
 
@@ -4827,7 +4853,11 @@ void MainWindow::slotChangeNodeColor(){
 */
 void MainWindow::slotChangeNodeSize(){
     if (!fileLoaded && !networkModified )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes! \nLoad a network file or create a new network first."), "OK",0);
+        QMessageBox::critical(
+                    this,
+                    "Error",
+                    tr("There are no nodes! \n"
+                       "Load a network file or create a new network first."), "OK",0);
         statusMessage( tr("Cannot change nothing.")  );
         return;
     }
@@ -7078,7 +7108,7 @@ void MainWindow::slotCentralityEccentricity(){
 void MainWindow::createProgressBar(){
 
     if (showProgressBarAct->isChecked() || activeGraph.totalEdges() > 2000){
-        progressDialog= new QProgressDialog("Please wait, for distance matrix creation....", "Cancel", 0, activeGraph.vertices(), this);
+        progressDialog= new QProgressDialog("Please wait....", "Cancel", 0, activeGraph.vertices(), this);
         progressDialog -> setWindowModality(Qt::WindowModal);
         connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
         progressDialog->setMinimumDuration(0);
@@ -7489,63 +7519,27 @@ void MainWindow::slotBackgroundColor () {
 }
 
 
-/**
-*  Changes the color of all nodes
-*/
-void MainWindow::slotAllNodesColor(){
-    bool ok=false;
-    initNodeColor = QInputDialog::getItem(this, "Nodes' colors", "Select a new color:", colorList, 1, true, &ok);
-    if ( ok ) {
-        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        qDebug ("MW: Will change color");
-        QList<QGraphicsItem *> list= scene->items();
-        for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
-            if ( (*it)->type() == TypeNode ) 	{
-                Node *jim = (Node *) (*it);
-                jim->setColor(initNodeColor);
-                qDebug ("MW: Changed color");
-                activeGraph.setVertexColor (jim->nodeNumber(), initNodeColor);
-                graphChanged();
-            }
-        activeGraph.setInitVertexColor(initNodeColor);
-        QApplication::restoreOverrideCursor();
-        statusMessage( tr("Ready. ")  );
-    }
-    else {
-        // user pressed Cancel
-        statusMessage( tr("Change node color aborted. ")  );
-    }
-
-}
-
-
 
 /**
 *  Changes the color of all links
 */
 void MainWindow::slotAllLinksColor(){
-    bool ok=false;
-    initLinkColor = QInputDialog::getItem(this, "Links' colors", "Select a new color:", colorList, 1, true, &ok);
-    if ( ok ) {
+    QColor color = QColorDialog::getColor( Qt::red, this,
+                                           "Change the color of all nodes" );
+    if (color.isValid()) {
+        initNodeColor=color.name();
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        qDebug ("MW: Will change color");
-        QList<QGraphicsItem *> list= scene->items();
-        for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
-            if ( (*it)->type() == TypeEdge ) 	{
-                Edge *link = (Edge *) (*it);
-                link->setColor(initLinkColor );
-                qDebug ("MW: Changed color");
-                activeGraph.setEdgeColor (link->sourceNodeNumber(), link->targetNodeNumber(), initLinkColor);
-                graphChanged();
-            }
-        activeGraph.setInitEdgeColor(initLinkColor);
+        qDebug() << "MainWindow::slotAllLinksColor() : " << initNodeColor;
+        //createProgressBar();
+        activeGraph.setAllEdgesColor(initNodeColor);
+        //destroyProgressBar();
         QApplication::restoreOverrideCursor();
+        graphChanged();
         statusMessage( tr("Ready. ")  );
-
     }
     else {
         // user pressed Cancel
-        statusMessage( tr("Change link color aborted. ")  );
+        statusMessage( tr("Nodes color change aborted. ") );
     }
 }
 

@@ -120,6 +120,7 @@ public:
 
     void setColor(QString);
     QString color();
+    QString colorToPajek();
 
     void setNumberColor (QString);
     QString numberColor();

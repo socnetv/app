@@ -96,6 +96,14 @@ QString Edge::color() {
 	return m_color; 
 }
 
+
+QString Edge::colorToPajek() {
+    if (m_color.startsWith("#")) {
+        return  ("RGB"+m_color.right( m_color.size()-1 )).toUpper()  ;
+    }
+    return m_color;
+}
+
 /*
 	Called from MW when user wants to change an edge's weight.
 	Updates both the width and the EdgeWeight

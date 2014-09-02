@@ -69,10 +69,6 @@ public:
 
     void setNumbersInsideNodes(bool);
 
-    bool setNodeColor(long int, QString);
-
-    bool setEdgeColor(int, int, QString);
-
     bool setEdgeWeight(int, int, float);
 
     void setAllItemsVisibility(int, bool);
@@ -98,6 +94,7 @@ public slots:
                     );
     void eraseNode(long int doomedJim);
     void setNodeVisibility(long int, bool );	//Called from Graph via MW
+    bool setNodeColor(long int, QString);
     void openNodeContextMenu();
     void nodeClicked(Node *);
     void moveNode(int, int, int);	//Called from Graph when creating random nets.
@@ -107,6 +104,7 @@ public slots:
     void drawEdge(int, int, float, bool, bool, QString, bool);
     void eraseEdge(int, int);
     void setEdgeVisibility (int relation, int, int, bool);
+    bool setEdgeColor(long int, long int, QString);
     void edgeClicked(Edge *);
     void openEdgeContextMenu();
 

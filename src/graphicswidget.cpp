@@ -441,17 +441,10 @@ void GraphicsWidget::setInitLinkColor(QString color){
 	Called from MW when the user changes the color of a node (right-clicking).
 */
 bool GraphicsWidget::setNodeColor(long int nodeNumber, QString color){
-	QList<QGraphicsItem *> list=scene()->items();
-	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!= list.end() ; it++){
-		if ( (*it)->type()==TypeNode) {
-			Node *node=(Node*) (*it);
-			if ( node->nodeNumber()==nodeNumber ) {
-				node->setColor(color);
-				return true;
-			}
-		}
-	}
-	return false;
+    qDebug() << "GraphicsWidget::setNodeColor() : " << color;
+    nodeHash.value(nodeNumber) -> setColor(color);
+    return true; // ???
+
 }
 
 
@@ -477,18 +470,22 @@ void   GraphicsWidget::setNumbersInsideNodes(bool numIn){
 	Changes/Sets the color of an edge.
 	Called from MW when the user changes the color of an edge (right-clicking).
 */
-bool GraphicsWidget::setEdgeColor(int source, int target, QString color){
-	QList<QGraphicsItem *> list=scene()->items();
-	for (QList<QGraphicsItem *>::iterator it=list.begin(); it!= list.end() ; it++){
-		if ( (*it)->type()==TypeEdge) {
-			Edge *edge=(Edge*) (*it);
-			if ( edge->sourceNodeNumber()==source && edge->targetNodeNumber()==target ) {
-				edge->setColor(color);
-				return true;
-			}
-		}
-	}
-	return false;
+bool GraphicsWidget::setEdgeColor(long int source, long int target, QString color){
+    qDebug()<<"\n\n#### GW: setEdgeColor(). " << source << "->" << target ;
+    QString edgeName =  QString::number(m_curRelation) + QString(":") +
+            QString::number( source ) + QString(">")+ QString::number( target );
+
+    if  ( edgesHash.contains (edgeName) ) {
+        qDebug()<<"GW: setEdgeColor(). relation " << m_curRelation
+               << " : " << source  << " ->  "<< target << " to " << color;
+        edgesHash.value(edgeName) -> setColor(color);
+        return true;
+    }
+    qDebug()<<"\n\n\n\n\n $$$$$$$$ GW: setEdgeColor(). Cannot find edge "
+           << m_curRelation
+                   << " : " << source  << " ->  "<< target ;
+    return false;
+
 }
 
 

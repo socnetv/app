@@ -84,6 +84,7 @@ Node::Node( GraphicsWidget* gw, int num, int size,
 void Node::setColor(QString str) {
 	prepareGeometryChange();
 	m_col=QColor(str);
+    update();
 }
 
 /** 
@@ -91,10 +92,11 @@ void Node::setColor(QString str) {
 */
 void Node::setColor(QColor color){
 	m_col=color;
+    m_col_str = m_col.name();
 }
 
 
-QString Node::color () { 
+QString Node::color() {
 	return m_col_str;
 }
 
@@ -163,7 +165,7 @@ QRectF Node::boundingRect() const {
 void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) {
 //	painter->setClipRect( option->exposedRect );
 
-	//if the node is being dragged aroung, darken it!
+    //if the node is being dragged around, darken it!
 	if (option->state & QStyle::State_Selected) {
 		//qDebug()<< " node : selected ";
 		painter->setBrush(m_col.dark(150));

@@ -128,7 +128,9 @@ signals:
     void setEdgeVisibility (int, int, int, bool);			// emitted from each Vertex
     void setVertexVisibility(long int, bool);		//notifies GW to disable a node
     void setNodeSize(long int, int);
+    void setNodeColor(long int, QString);
     void drawEdgeReciprocal(int, int);				//call GW to draw the edge as symmetric one
+    void setLinkColor(long int, long int, QString);
     void addGuideCircle(int, int, int);				//call GW to draw a circular layout line somewhere.
     void addGuideHLine (int);					//call GW to draw a horizontal layout line somewhere.
     void moveNode(int, int, int);
@@ -176,6 +178,7 @@ public:
 
     void setInitVertexColor (QString color);
     void setVertexColor(long int v, QString color);
+    void setAllVerticesColor(QString color);
 
     void setInitVertexNumberColor ( QString color);
     void setInitVertexNumberSize (int size);
@@ -215,6 +218,7 @@ public:
 
     void setEdgeColor(long int s, long int t, QString color);
     QString edgeColor (long int s, long int t);
+    bool setAllEdgesColor(QString color);
 
     int totalEdges ();
 

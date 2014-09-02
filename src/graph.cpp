@@ -635,7 +635,6 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,  bool goOut)
 
 
 
-
 /**
     Called from filterOrphanNodes via MainWindow  to filter nodes with no links
     For each orphan Vertex in the Graph, emits the filterVertex()
@@ -980,6 +979,7 @@ QString Graph::label(int v1){
 void Graph::setVertexColor(long int v1, QString color){
     qDebug()<< "Graph: setVertexColor for "<< v1 << ", index " << index[v1]<< " with color "<< color;
     m_graph[ index[v1] ]->setColor ( color );
+    emit setNodeColor ( m_graph[ index[v1] ]-> name(), color );
     graphModified=true;
     emit graphChanged();
 }
@@ -990,6 +990,27 @@ void Graph::setInitVertexColor(QString color){
 }
 
 
+void Graph::setAllVerticesColor(QString color) {
+    qDebug() << "*** Graph::setAllVerticesColor() "
+                << " to " << color;
+    setInitVertexColor(color);
+    QList<Vertex*>::iterator it;
+    for ( it=m_graph.begin(); it!=m_graph.end(); it++){
+        if ( ! (*it)->isEnabled() ){
+            continue;
+        }
+        else {
+            qDebug() << "Graph::setAllVerticesColor() Vertex " << (*it)->name()
+                     << " new color " << color;
+            (*it)->setColor(color) ;
+            emit setNodeColor ( (*it)-> name(), color );
+        }
+    }
+    graphModified=true;
+    emit graphChanged();
+
+}
+
 
 
 void Graph::setInitEdgeColor(QString color){
@@ -997,25 +1018,64 @@ void Graph::setInitEdgeColor(QString color){
 }
 
 
-/**
-    Changes the color of edge (s,t).
-*/
-void Graph::setEdgeColor(long int s, long int t, QString color){
-    qDebug()<< "Graph: setEdgeColor for edge ("<< s << ","<< t<<")"<<" with index ("<< index[s]<< ","<<index[t]<<")"<<" with color "<< color;
-    m_graph[ index[s] ]->setOutLinkColor(t, color);
-    if (isSymmetric()) {
-        m_graph[ index[t] ]->setOutLinkColor(s, color);
-    }
-    graphModified=true;
-    emit graphChanged();
-}	
-
 
 
 //Returns the edgeColor
 QString Graph::edgeColor (long int s, long int t){
     return m_graph[ index[s] ]->outLinkColor(t);
 }
+
+
+/**
+    Changes the color of edge (s,t).
+*/
+bool Graph::setAllEdgesColor(QString color){
+    qDebug()<< "\n\nGraph::setAllEdgesColor()" << color;
+    int target=0, source=0, count=0;
+    setInitEdgeColor(color);
+    QHash<int,float> *enabledOutLinks = new QHash<int,float>;
+    QHash<int,float>::const_iterator it1;
+    QList<Vertex*>::iterator it;
+    for (it=m_graph.begin(); it!=m_graph.end(); it++){
+        //updateProgressDialog(++count);
+        source = (*it)->name();
+        if ( ! (*it)->isEnabled() )
+            continue;
+        enabledOutLinks=(*it)->returnEnabledOutLinks();
+        it1=enabledOutLinks->cbegin();
+        while ( it1!=enabledOutLinks->cend() ){
+            target = it1.key();
+            qDebug() << "=== Graph::setAllEdgesColor() : "
+                        << source << "->" << target << " new color " << color;
+
+            setEdgeColor(source, target,color);
+            emit setLinkColor(source, target, color);
+            ++it1;
+        }
+    }
+    delete enabledOutLinks;
+    graphModified=true;
+    emit graphChanged();
+    return true;
+
+}
+
+
+/**
+    Changes the color of edge (s,t).
+*/
+void Graph::setEdgeColor(long int s, long int t, QString color){
+    qDebug()<< "\n\n === Graph::setEdgeColor() "<< s << " -> "<< t
+            <<" with index ("<< index[s]<< " -> "<<index[t]<<")"
+           <<" new color "<< color;
+    m_graph[ index[s] ]->setOutLinkColor(t, color);
+    if (isSymmetric()) {
+        m_graph[ index[t] ]->setOutLinkColor(s, color);
+    }
+    graphModified=true;
+    emit graphChanged();
+}
+
 
 
 
@@ -5248,7 +5308,7 @@ bool Graph::saveGraphToPajekFormat (
         qDebug()<<" Name x "<<  (*it)->name()  ;
         t<<(*it)->name()  <<" "<<"\""<<(*it)->label()<<"\"" ;
         t << " ic ";
-        t<<  (*it)->color() ;
+        t<<  (*it)->colorToPajek();
         qDebug()<<" Coordinates x " << (*it)->x()<< " "<<maxWidth<<" y " << (*it)->y()<< " "<<maxHeight;
         t << "\t\t" <<(*it)->x()/(maxWidth)<<" \t"<<(*it)->y()/(maxHeight);
         t << "\t"<<(*it)->shape();
