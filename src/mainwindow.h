@@ -87,6 +87,8 @@ public:		/**PUBLIC FUNCTIONS NOT VISIBLE BY OTHER WIDGETS NOR BY SLOT/LINK MECHA
     void initNet();
     void initView();
 
+    void setLastPath(QString filePath);
+    QString getLastPath();
     void createFortuneCookies();
     void createTips();
     void makeThingsLookRandom();
@@ -394,7 +396,7 @@ private:
     QAction *nextRelationAct, *prevRelationAct, *addRelationAct;
 
     QString fileName, networkName, previous_fileName;
-    QString dataDir;
+    QString dataDir, lastUsedDirPath;
     QStringList fileNameNoPath, fortuneCookie, rgbValues;
     QStringList tempFileNameNoPath, colorList, tips;
     int statusBarDuration,  minDuration, progressCounter;

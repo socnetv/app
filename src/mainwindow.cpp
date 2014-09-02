@@ -295,7 +295,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
     graphicsWidget->setInitNodeSize(initNodeSize);
     graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor)); //Qt::gray
     dataDir= QDir::homePath() +QDir::separator() + "socnetv-data" + QDir::separator() ;
-
+    lastUsedDirPath = "socnetv-initial-none";
     if (firstTime) {
         createFortuneCookies();
         createTips();
@@ -2808,6 +2808,28 @@ void MainWindow::slotCreateNew() {
 }
 
 
+/**
+ * @brief MainWindow::getLastPath
+ * returns the last path used by user to open/save something
+ */
+QString MainWindow::getLastPath() {
+    if ( lastUsedDirPath == "socnetv-initial-none") {
+        lastUsedDirPath = QDir::homePath();
+    }
+    qDebug() << lastUsedDirPath ;
+    return lastUsedDirPath ;
+}
+
+
+/**
+ * @brief MainWindow::setLastPath
+ * sets the last path used by user to open/save something
+ * @param filePath
+ */
+void MainWindow::setLastPath(QString filePath) {
+    lastUsedDirPath = filePath.left( filePath.lastIndexOf("/"));
+    qDebug() << lastUsedDirPath;
+}
 
 
 /**
@@ -2873,11 +2895,12 @@ void MainWindow::slotChooseFile() {
     m_fileName = QFileDialog::getOpenFileName(
                 this,
                 tr("Select one file to open"),
-                QDir::homePath(), fileType_string	);
+                getLastPath(), fileType_string	);
 
     if (!m_fileName.isEmpty()) {
         qDebug()<<"MW: file selected: " << m_fileName;
-        fileNameNoPath=m_fileName.split ("/" );
+        fileNameNoPath=m_fileName.split ("/");
+        setLastPath(m_fileName); // store this path
         if ( loadNetworkFile ( m_fileName, m_fileFormat  ) )
         {
             fileName=m_fileName;
@@ -2983,7 +3006,7 @@ void MainWindow::slotFileSaveAs() {
     QString fn =  QFileDialog::getSaveFileName(
                 this,
                 tr("Save GraphML Network to File Named..."),
-                QDir::homePath(), tr("GraphML (*.graphml *.xml);;All (*)") );
+                getLastPath(), tr("GraphML (*.graphml *.xml);;All (*)") );
     if (!fn.isEmpty())  {
         if  ( QFileInfo(fn).suffix().isEmpty() ){
             QMessageBox::information(this, "Missing Extension ",tr("File extension was missing! \nI am appending a standard .graphml to the given filename."), "OK",0);
@@ -2991,6 +3014,7 @@ void MainWindow::slotFileSaveAs() {
         }
         fileName=fn;
         fileNameNoPath=fileName.split ("/");
+        setLastPath(fileName); // store this path
         adjacencyFileLoaded=false;
         pajekFileLoaded=false;
         graphMLFileLoaded=false;
@@ -3487,11 +3511,12 @@ bool MainWindow::slotExportPNG(){
     }
     QString fn = QFileDialog::getSaveFileName(
                 this,tr("Save"),
-                QDir::homePath(), tr("Image Files (*.png)"));
+                getLastPath(), tr("Image Files (*.png)"));
     if (fn.isEmpty())  {
         statusMessage( tr("Saving aborted") );
         return false;
     }
+    setLastPath(fn); // store this path
     tempFileNameNoPath=fn.split ("/");
     qDebug("slotExportPNG: grabbing canvas");
     QPixmap picture;
@@ -3505,11 +3530,15 @@ bool MainWindow::slotExportPNG(){
     qDebug("slotExportPNG: checking filename");
     if (fn.contains("png", Qt::CaseInsensitive) ) {
         picture.toImage().save(fn, "PNG");
-        QMessageBox::information(this, "Export to PNG...",tr("Image Saved as: ")+tempFileNameNoPath.last(), "OK",0);
+        QMessageBox::information(this,
+                                 "Export to PNG...",
+                                 tr("Image Saved as: ")+tempFileNameNoPath.last(), "OK",0);
     }
     else {
         picture.toImage().save(fn+".png", "PNG");
-        QMessageBox::information(this, "Export to PNG...",tr("Image Saved as: ")+tempFileNameNoPath.last()+".png" , "OK",0);
+        QMessageBox::information(this,
+                                 "Export to PNG...",
+                                 tr("Image Saved as: ")+tempFileNameNoPath.last()+".png" , "OK",0);
     }
 
     statusMessage( tr("Exporting completed") );
@@ -3532,11 +3561,12 @@ bool MainWindow::slotExportBMP(){
     }
     QString format="bmp";
     QString fn = QFileDialog::getSaveFileName(
-                this,tr("Save Image as"), QDir::homePath(),tr("Image Files (*.bmp)"));
+                this,tr("Save Image as"), getLastPath(),tr("Image Files (*.bmp)"));
     if (fn.isEmpty())  {
         statusMessage( tr("Saving aborted") );
         return false;
     }
+    setLastPath(fn); // store this path
     tempFileNameNoPath=fn.split ("/");
 
     QPixmap picture;
@@ -3551,11 +3581,13 @@ bool MainWindow::slotExportBMP(){
     qDebug("slotExportBMP: checking file");
     if (fn.contains(format, Qt::CaseInsensitive) ) {
         picture.toImage().save(fn, format.toLatin1());
-        QMessageBox::information(this, tr("Export to BMP..."),tr("Image Saved as: ")+tempFileNameNoPath.last(), "OK",0);
+        QMessageBox::information(this, tr("Export to BMP..."),
+                                 tr("Image Saved as: ")+tempFileNameNoPath.last(), "OK",0);
     }
     else {
         picture.toImage().save(fn+"."+format, format.toLatin1());
-        QMessageBox::information(this, tr("Export to BMP..."),tr("Image Saved as: ")+tempFileNameNoPath.last()+"."+format , "OK",0);
+        QMessageBox::information(this, tr("Export to BMP..."),
+                                 tr("Image Saved as: ")+tempFileNameNoPath.last()+"."+format , "OK",0);
     }
     qDebug()<< "Exporting BMP to "<< fn;
 
@@ -3582,7 +3614,7 @@ bool MainWindow::slotExportPDF(){
     }
 
     QString m_fileName = QFileDialog::getSaveFileName(
-                this, tr("Export to PDF"), QDir::homePath(),
+                this, tr("Export to PDF"), getLastPath(),
                 tr("Portable Document Format files (*.pdf)"));
     if (m_fileName.isEmpty())  {
         statusMessage( tr("Saving aborted"));
@@ -3600,6 +3632,7 @@ bool MainWindow::slotExportPDF(){
     }
     qDebug()<< "Exporting PDF to "<< m_fileName;
     tempFileNameNoPath=m_fileName.split ("/");
+    setLastPath(m_fileName);
     QMessageBox::information(this, tr("Export to PDF..."),tr("File saved as: ")+tempFileNameNoPath.last() , "OK",0);
     statusMessage(  tr("Exporting completed") );
     return true;
@@ -3626,13 +3659,14 @@ void MainWindow::slotExportPajek()
     QString fn =  QFileDialog::getSaveFileName(
                 this,
                 tr("Export Network to File Named..."),
-                QDir::homePath(), tr("Pajek (*.paj *.net *.pajek);;All (*)") );
+                getLastPath(), tr("Pajek (*.paj *.net *.pajek);;All (*)") );
     if (!fn.isEmpty())  {
         if  ( QFileInfo(fn).suffix().isEmpty() ){
             QMessageBox::information(this, "Missing Extension ",tr("File extension was missing! \nI am appending a standard .paj to the given filename."), "OK",0);
             fn.append(".paj");
         }
         fileName=fn;
+        setLastPath(fileName);
         fileNameNoPath=fileName.split ("/");
     }
     else  {
@@ -3665,13 +3699,14 @@ void MainWindow::slotExportSM(){
     QString fn =  QFileDialog::getSaveFileName(
                 this,
                 tr("Export Network to File Named..."),
-                QDir::homePath(), tr("Adjacency (*.adj *.sm *.txt *.csv *.net);;All (*)") );
+                getLastPath(), tr("Adjacency (*.adj *.sm *.txt *.csv *.net);;All (*)") );
     if (!fn.isEmpty())  {
         if  ( QFileInfo(fn).suffix().isEmpty() ){
             QMessageBox::information(this, "Missing Extension ",tr("File extension was missing! \nI am appending a standard .adj to the given filename."), "OK",0);
             fn.append(".adj");
         }
         fileName=fn;
+        setLastPath(fileName);
         fileNameNoPath=fileName.split ("/");
     }
     else  {
@@ -3708,9 +3743,10 @@ bool MainWindow::slotExportDL(){
     if (fileName.isEmpty()) {
         statusMessage( tr("Saving network under new filename..."));
         QString fn = QFileDialog::getSaveFileName(
-                    this, "Export UCINET", QDir::homePath(), 0);
+                    this, "Export UCINET", getLastPath(), 0);
         if (!fn.isEmpty())  {
             fileName=fn;
+            setLastPath(fileName);
         }
         else  {
             statusMessage( tr("Saving aborted"));
@@ -3737,9 +3773,10 @@ bool MainWindow::slotExportGW(){
     if (fileName.isEmpty()) {
         statusMessage( tr("Saving network under new filename..."));
         QString fn = QFileDialog::getSaveFileName(
-                    this, "Export GW", QDir::homePath(), 0);
+                    this, "Export GW", getLastPath(), 0);
         if (!fn.isEmpty())  {
             fileName=fn;
+            setLastPath(fileName);
         }
         else  {
             statusMessage( tr("Saving aborted"));
@@ -3761,9 +3798,10 @@ bool MainWindow::slotExportList(){
     if (fileName.isEmpty()) {
         statusMessage( tr("Saving network under new filename..."));
         QString fn = QFileDialog::getSaveFileName(
-                    this, "Export List", QDir::homePath(), 0);
+                    this, "Export List", getLastPath(), 0);
         if (!fn.isEmpty())  {
             fileName=fn;
+            setLastPath(fileName);
         }
         else  {
             statusMessage( tr("Saving aborted"));
@@ -7657,13 +7695,15 @@ void MainWindow::slotBackgroundImage(bool toggle) {
     }
     else   {
         m_fileName = QFileDialog::getOpenFileName(
-                    this, tr("Select one image"), QDir::homePath(),
+                    this, tr("Select one image"), getLastPath(),
                     tr("All (*);;PNG (*.png);;JPG (*.jpg)")
                     );
-        graphicsWidget->setBackgroundBrush(QImage(m_fileName));
-        graphicsWidget->setCacheMode(QGraphicsView::CacheBackground);
-
-        statusMessage( tr("BackgroundImage on.") );
+        if (!m_fileName.isEmpty()) {
+            setLastPath(m_fileName);
+            graphicsWidget->setBackgroundBrush(QImage(m_fileName));
+            graphicsWidget->setCacheMode(QGraphicsView::CacheBackground);
+            statusMessage( tr("BackgroundImage on.") );
+        }
     }
 
 
