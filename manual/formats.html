@@ -3,7 +3,7 @@
 <h4><a name="Formats" id="Formats"></a>Supported Formats</h4>
 <div class="text">
 
-       SocNetV supports many network formats: 
+       SocNetV supports the following network data formats:
 	<ul>
 		<li>GraphML  (.graphml), </li> 
 		<li>GraphViz  (.dot),  </li> 
@@ -13,14 +13,26 @@
 
 	</ul>
 
-You can load   these kinds of files by clicking on menu File > Load or	by  specifying   them  explicitly at  the command line.	
-SocNetV uses simple inspection routines to check the format of the given file. 
-In most cases, it  will  load the file, no matter what the file extension is.
+The default network data format for saving new networks is GraphML.
+<strong>WARNING: </strong>If you create a new network and press Ctrl+S to save it, then by default SocNetV will save it in GraphML format.
 
+<p>You can load GraphML files by clicking on menu File > Load or
+by  specifying  them  explicitly at  the command line.</p
+
+<p>For other network data formats, you have to import the files using File -> Import.</p
+<p> Please note that Pajek and UCINET support is not complete.
+With regards to UCINET's dl files, SocNetV supports edgelist1 and fullmatrix.
+Pajek files that declare *Edges, *Arcs, *Arcslist, and *Matrix are supported -
+don't expect to load event-based files or vectors, though.<br /></p
 </div>
+
 <div class="text">
-<br />
-<strong>WARNING: </strong>The default file format of SocNetV is GraphML. If you create a new network and press Ctrl+S to save it, then by default SocNetV will save it in GraphML format.
+<strong>Colors</strong></br>
+When loading and saving network data, i.e. vertices and edges with colors, SocNeTV
+uses the list of
+<a href="http://www.w3.org/TR/SVG/types.html#ColorKeywords" target="_blank">SVG color keyword names</a> provided by the World Wide Web Consortium.
+For example, "steelblue" or "gainsboro". These color names work on all platforms.
+
 
 
 </div>
@@ -295,7 +307,32 @@ Another possibility, is the *ArcsList tag. When SocNetV finds that tag in a Paje
 
 
 
-UCINET's DL format is one of the easiest to understand. For the moment, we support only FULL MATRIX mode. Each file starts with the "DL" mark; then the amount N of nodes is declared and the format (i.e. if a diagonal is present or not). Then, after the "LABELS:" mark we read the labels of each node line by line. That is, if N was 100 then we expect to read 100 labels. In the end, a DL file declares network data ("DATA") which is only the edges. For instance the network below, contains 4 nodes and 7 arcs/edges: 
+UCINET's DL format is one of the easiest to understand.
+As of version 1.4, SocNetV support "full matrix" and "edgelist1" modes.
+Each UCINET file starts with the "DL" mark; then the amount N of nodes is declared
+and the format (i.e. if a diagonal is present or not).
+
+<p>Afterwards, after the "LABELS:" mark we read the labels of each node line by line.
+That is, if N was 100 then we expect to read 100 rows with arbitrary strings-labels. </p>
+
+<p>In the end, a DL file declares network data ("DATA") which describes the edges.
+If the declared format was "full matrix", SocNetV expects to read an adjacency matrix.
+If the declared format was edgelist1, SocNetV tries to read a list of edges of the form:<br />
+
+<pre> source target weight </pre>
+
+i.e.
+<pre>
+1 2 1
+1 3 1
+1 4 1
+2 1 1
+2 3 1
+2 4 1
+...
+
+</pre>
+For instance the UCINET-formatted file below, contains 4 nodes and 7 arcs/edges:
 <div class="code">
 <pre>
 DL

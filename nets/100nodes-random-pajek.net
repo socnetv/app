@@ -1,107 +1,106 @@
 *Network 100nodes-random-pajek.net
 *Vertices 100
-1 "1" ic gold		0.707621 	0.49892	circle
-2 "2" ic gold		0.751166 	0.522678	circle
-3 "3" ic gold		0.758942 	0.550756	circle
-4 "4" ic gold		0.679627 	0.550756	circle
-5 "5" ic gold		0.7014 	0.578834	circle
-6 "6" ic gold		0.746501 	0.62419	circle
-7 "7" ic gold		0.721617 	0.634989	circle
-8 "8" ic gold		0.670295 	0.62419	circle
-9 "9" ic gold		0.738725 	0.704104	circle
-10 "10" ic gold		0.692068 	0.688985	circle
-11 "11" ic gold		0.664075 	0.686825	circle
-12 "12" ic gold		0.673406 	0.723542	circle
-13 "13" ic gold		0.608087 	0.658747	circle
-14 "14" ic gold		0.648523 	0.74514	circle
-15 "15" ic gold		0.681182 	0.842333	circle
-16 "16" ic gold		0.66874 	0.859611	circle
-17 "17" ic gold		0.62986 	0.818574	circle
-18 "18" ic gold		0.611198 	0.816415	circle
-19 "19" ic gold		0.580093 	0.764579	circle
-20 "20" ic gold		0.586314 	0.840173	circle
-21 "21" ic gold		0.587869 	0.922246	circle
-22 "22" ic gold		0.511664 	0.576674	circle
-23 "23" ic gold		0.538103 	0.812095	circle
-24 "24" ic gold		0.520995 	0.777538	circle
-25 "25" ic gold		0.513219 	0.87041	circle
-26 "26" ic gold		0.499222 	0.807775	circle
-27 "27" ic gold		0.48056 	0.928726	circle
-28 "28" ic gold		0.469673 	0.86825	circle
-29 "29" ic gold		0.457232 	0.829374	circle
-30 "30" ic gold		0.427683 	0.930885	circle
-31 "31" ic gold		0.423017 	0.857451	circle
-32 "32" ic gold		0.415241 	0.822894	circle
-33 "33" ic gold		0.376361 	0.902808	circle
-34 "34" ic gold		0.382582 	0.827214	circle
-35 "35" ic gold		0.359253 	0.840173	circle
-36 "36" ic gold		0.365474 	0.784017	circle
-37 "37" ic gold		0.360809 	0.755939	circle
-38 "38" ic gold		0.374806 	0.701944	circle
-39 "39" ic gold		0.326594 	0.74946	circle
-40 "40" ic gold		0.318818 	0.730022	circle
-41 "41" ic gold		0.312597 	0.708423	circle
-42 "42" ic gold		0.315708 	0.678186	circle
-43 "43" ic gold		0.297045 	0.669546	circle
-44 "44" ic gold		0.353033 	0.604752	circle
-45 "45" ic gold		0.466563 	0.518359	circle
-46 "46" ic gold		0.311042 	0.591793	circle
-47 "47" ic gold		0.248834 	0.596112	circle
-48 "48" ic gold		0.222395 	0.578834	circle
-49 "49" ic gold		0.214619 	0.555076	circle
-50 "50" ic gold		0.22395 	0.524838	circle
-51 "51" ic gold		0.211509 	0.49892	circle
-52 "52" ic gold		0.351477 	0.483801	circle
-53 "53" ic gold		0.245723 	0.447084	circle
-54 "54" ic gold		0.216174 	0.414687	circle
-55 "55" ic gold		0.273717 	0.408207	circle
-56 "56" ic gold		0.307932 	0.401728	circle
-57 "57" ic gold		0.311042 	0.382289	circle
-58 "58" ic gold		0.237947 	0.308855	circle
-59 "59" ic gold		0.272162 	0.306695	circle
-60 "60" ic gold		0.303266 	0.306695	circle
-61 "61" ic gold		0.345257 	0.323974	circle
-62 "62" ic gold		0.283048 	0.220302	circle
-63 "63" ic gold		0.289269 	0.192225	circle
-64 "64" ic gold		0.354588 	0.261339	circle
-65 "65" ic gold		0.348367 	0.215983	circle
-66 "66" ic gold		0.377916 	0.241901	circle
-67 "67" ic gold		0.353033 	0.140389	circle
-68 "68" ic gold		0.385692 	0.181425	circle
-69 "69" ic gold		0.432348 	0.280778	circle
-70 "70" ic gold		0.412131 	0.155508	circle
-71 "71" ic gold		0.40902 	0.0734341	circle
-72 "72" ic gold		0.466563 	0.300216	circle
-73 "73" ic gold		0.457232 	0.153348	circle
-74 "74" ic gold		0.472784 	0.181425	circle
-75 "75" ic gold		0.48367 	0.112311	circle
-76 "76" ic gold		0.497667 	0.164147	circle
-77 "77" ic gold		0.513219 	0.133909	circle
-78 "78" ic gold		0.527216 	0.153348	circle
-79 "79" ic gold		0.542768 	0.144708	circle
-80 "80" ic gold		0.55832 	0.136069	circle
-81 "81" ic gold		0.583204 	0.0928726	circle
-82 "82" ic gold		0.584759 	0.161987	circle
-83 "83" ic gold		0.622084 	0.0950324	circle
-84 "84" ic gold		0.622084 	0.149028	circle
-85 "85" ic gold		0.650078 	0.12959	circle
-86 "86" ic gold		0.660964 	0.149028	circle
-87 "87" ic gold		0.628305 	0.25486	circle
-88 "88" ic gold		0.695179 	0.172786	circle
-89 "89" ic gold		0.693624 	0.213823	circle
-90 "90" ic gold		0.575428 	0.399568	circle
-91 "91" ic gold		0.730949 	0.237581	circle
-92 "92" ic gold		0.688958 	0.311015	circle
-93 "93" ic gold		0.514775 	0.483801	circle
-94 "94" ic gold		0.755832 	0.298056	circle
-95 "95" ic gold		0.681182 	0.384449	circle
-96 "96" ic gold		0.749611 	0.37149	circle
-97 "97" ic gold		0.777605 	0.386609	circle
-98 "98" ic gold		0.762053 	0.419006	circle
-99 "99" ic gold		0.772939 	0.444924	circle
-100 "100" ic gold		0.785381 	0.470842	circle
+1 "1" ic gold		0.71223 	0.502262	circle
+2 "2" ic gold		0.755396 	0.526395	circle
+3 "3" ic gold		0.764029 	0.553545	circle
+4 "4" ic gold		0.683453 	0.553545	circle
+5 "5" ic gold		0.705036 	0.582202	circle
+6 "6" ic gold		0.751079 	0.627451	circle
+7 "7" ic gold		0.726619 	0.639517	circle
+8 "8" ic gold		0.67482 	0.627451	circle
+9 "9" ic gold		0.743885 	0.708899	circle
+10 "10" ic gold		0.696403 	0.693816	circle
+11 "11" ic gold		0.667626 	0.690799	circle
+12 "12" ic gold		0.677698 	0.728507	circle
+13 "13" ic gold		0.611511 	0.66365	circle
+14 "14" ic gold		0.651799 	0.749623	circle
+15 "15" ic gold		0.684892 	0.847662	circle
+16 "16" ic gold		0.673381 	0.865762	circle
+17 "17" ic gold		0.633094 	0.823529	circle
+18 "18" ic gold		0.614388 	0.822021	circle
+19 "19" ic gold		0.584173 	0.769231	circle
+20 "20" ic gold		0.589928 	0.846154	circle
+21 "21" ic gold		0.591367 	0.92911	circle
+22 "22" ic gold		0.515108 	0.580694	circle
+23 "23" ic gold		0.541007 	0.817496	circle
+24 "24" ic gold		0.523741 	0.782805	circle
+25 "25" ic gold		0.516547 	0.87632	circle
+26 "26" ic gold		0.502158 	0.812971	circle
+27 "27" ic gold		0.483453 	0.935143	circle
+28 "28" ic gold		0.471942 	0.873303	circle
+29 "29" ic gold		0.460432 	0.835596	circle
+30 "30" ic gold		0.430216 	0.936652	circle
+31 "31" ic gold		0.425899 	0.862745	circle
+32 "32" ic gold		0.417266 	0.828054	circle
+33 "33" ic gold		0.378417 	0.909502	circle
+34 "34" ic gold		0.384173 	0.832579	circle
+35 "35" ic gold		0.361151 	0.846154	circle
+36 "36" ic gold		0.366906 	0.788839	circle
+37 "37" ic gold		0.36259 	0.760181	circle
+38 "38" ic gold		0.376978 	0.705882	circle
+39 "39" ic gold		0.328058 	0.754148	circle
+40 "40" ic gold		0.320863 	0.73454	circle
+41 "41" ic gold		0.313669 	0.713424	circle
+42 "42" ic gold		0.316547 	0.683258	circle
+43 "43" ic gold		0.297842 	0.674208	circle
+44 "44" ic gold		0.355396 	0.607843	circle
+45 "45" ic gold		0.469065 	0.52187	circle
+46 "46" ic gold		0.31223 	0.595777	circle
+47 "47" ic gold		0.25036 	0.600302	circle
+48 "48" ic gold		0.223022 	0.582202	circle
+49 "49" ic gold		0.215827 	0.558069	circle
+50 "50" ic gold		0.22446 	0.527903	circle
+51 "51" ic gold		0.21295 	0.502262	circle
+52 "52" ic gold		0.353957 	0.487179	circle
+53 "53" ic gold		0.247482 	0.449472	circle
+54 "54" ic gold		0.217266 	0.417798	circle
+55 "55" ic gold		0.27482 	0.410256	circle
+56 "56" ic gold		0.309353 	0.404223	circle
+57 "57" ic gold		0.31223 	0.384615	circle
+58 "58" ic gold		0.238849 	0.310709	circle
+59 "59" ic gold		0.273381 	0.307692	circle
+60 "60" ic gold		0.305036 	0.307692	circle
+61 "61" ic gold		0.346763 	0.325792	circle
+62 "62" ic gold		0.284892 	0.221719	circle
+63 "63" ic gold		0.290647 	0.193062	circle
+64 "64" ic gold		0.356835 	0.262443	circle
+65 "65" ic gold		0.34964 	0.217195	circle
+66 "66" ic gold		0.379856 	0.242836	circle
+67 "67" ic gold		0.355396 	0.140271	circle
+68 "68" ic gold		0.38705 	0.182504	circle
+69 "69" ic gold		0.434532 	0.282051	circle
+70 "70" ic gold		0.414388 	0.155354	circle
+71 "71" ic gold		0.411511 	0.0739065	circle
+72 "72" ic gold		0.469065 	0.301659	circle
+73 "73" ic gold		0.460432 	0.153846	circle
+74 "74" ic gold		0.47482 	0.182504	circle
+75 "75" ic gold		0.486331 	0.113122	circle
+76 "76" ic gold		0.500719 	0.164404	circle
+77 "77" ic gold		0.516547 	0.134238	circle
+78 "78" ic gold		0.530935 	0.153846	circle
+79 "79" ic gold		0.545324 	0.144796	circle
+80 "80" ic gold		0.561151 	0.135747	circle
+81 "81" ic gold		0.58705 	0.0935143	circle
+82 "82" ic gold		0.588489 	0.162896	circle
+83 "83" ic gold		0.625899 	0.0950226	circle
+84 "84" ic gold		0.625899 	0.149321	circle
+85 "85" ic gold		0.654676 	0.129713	circle
+86 "86" ic gold		0.664748 	0.149321	circle
+87 "87" ic gold		0.631655 	0.25641	circle
+88 "88" ic gold		0.699281 	0.173454	circle
+89 "89" ic gold		0.697842 	0.214178	circle
+90 "90" ic gold		0.578417 	0.401207	circle
+91 "91" ic gold		0.735252 	0.238311	circle
+92 "92" ic gold		0.693525 	0.312217	circle
+93 "93" ic gold		0.517986 	0.487179	circle
+94 "94" ic gold		0.761151 	0.300151	circle
+95 "95" ic gold		0.684892 	0.386124	circle
+96 "96" ic gold		0.753957 	0.374057	circle
+97 "97" ic gold		0.782734 	0.38914	circle
+98 "98" ic gold		0.766906 	0.420814	circle
+99 "99" ic gold		0.778417 	0.447964	circle
+100 "100" ic gold		0.789928 	0.473605	circle
 *Arcs 
-*Edges 
 1 5 1 c black
 1 10 1 c black
 1 27 1 c black
@@ -155,7 +154,6 @@
 14 26 1 c black
 14 37 1 c black
 14 52 1 c black
-15 15 1 c black
 15 93 1 c black
 17 19 1 c black
 17 48 1 c black
@@ -299,4 +297,6 @@
 93 99 1 c black
 94 95 1 c black
 94 96 1 c black
+*Edges 
+15 15 1 c black
 95 95 1 c black
