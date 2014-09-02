@@ -355,10 +355,6 @@ void Graph::createEdge(int v1, int v2, float weight, int reciprocal=0,
 */
 void Graph::createEdge (int source, int target){
     qDebug()<< " Graph::createEdge() - from " << source << " to " << target ;
-    if (this->hasEdge(source, target) ) { // FIXME maybe delete it, same check in main createEdge
-        qDebug()<< "  Already exists - returning...";
-        return;
-    }
     float weight = 1.0;
     bool reciprocal=false;
     bool drawArrows=true;
@@ -581,10 +577,23 @@ void Graph::addEdge (int v1, int v2, float weight, QString color, int reciprocal
     Change edge (arc) weight between v1 and v2
 */
 void Graph::setEdgeWeight (int v1, int v2, float weight) {
-    qDebug() << "Graph: setEdgeWeight between " << v1 << "[" << index[v1] << "] and " << v2 << "[" << index[v2] << "]" << " = " << weight;
+    qDebug() << "Graph: setEdgeWeight between " << v1 << "[" << index[v1]
+                << "] and " << v2 << "[" << index[v2] << "]" << " = " << weight;
     m_graph [ index[v1] ]->changeLinkWeightTo(v2, weight);
+
+    QString edgeName = QString::number(m_curRelation) + QString(":")
+                + QString::number(v1) + QString(">")+ QString::number(v2);
+
+    QMutableHashIterator <QString,float> it1 (edgesHash);
+    while ( it1.hasNext()) {
+        it1.next();
+        if ( it1.key() == edgeName ) {
+            it1.setValue(weight);
+        }
+    }
     graphModified=true;
     emit graphChanged();
+
 }
 
 
@@ -944,7 +953,7 @@ void Graph::setEdgeColor(long int s, long int t, QString color){
     Complexity:  O(logN) for index retrieval + O(1) for QList index retrieval + O(logN) for checking edge(v2)
 */
 float Graph::hasEdge (int v1, int v2) {		
-    qDebug() << "Graph: hasEdge() " << v1 << " -> " << v2 << " ? " ;
+    qDebug() << "Graph::hasEdge() " << v1 << " -> " << v2 << " ? " ;
     //float weight=0;
     if ( ! m_graph[ index[v1] ] -> isEnabled() || ! m_graph[ index[v2] ] -> isEnabled())
         return 0;
@@ -8427,8 +8436,7 @@ void Graph::writeAdjacencyMatrix (const QString fn, const char* netName) {
             if ( ! (*it1)->isEnabled() ) continue;
             if ( (weight =  this->hasEdge ( (*it)->name(), (*it1)->name() )  )!=0 ) {
                 sum++;
-                if (weight >= 1)
-                    outText << static_cast<int> (weight) << " "; // TODO make the matric look symmetrical
+                outText <<  (weight) << " "; // TODO make the matrix look symmetric
             }
             else
                 outText << "0 ";

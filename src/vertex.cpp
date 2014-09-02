@@ -175,7 +175,7 @@ void Vertex::addLinkFrom (long int source, float weight) {
 }
 
 void Vertex::changeLinkWeightTo(long int target, float weight){
-    qDebug() << "Vertex::changeEdgeWeightTo " << target;
+    qDebug() << "Vertex::changeEdgeWeightTo " << target << " weight " << weight ;
     qDebug() << " *** m_outLinks.count " <<
                 m_outLinks.count();
     qDebug() << "first find and remove old relation-weight pair" ;
