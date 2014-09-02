@@ -1195,7 +1195,7 @@ Transforms all arcs to double links (edges). The result is a symmetric network</
         <location filename="src/mainwindow.cpp" line="531"/>
         <location filename="src/mainwindow.cpp" line="587"/>
         <location filename="src/mainwindow.cpp" line="703"/>
-        <source>Betweeness</source>
+        <source>Betweenness</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1205,14 +1205,14 @@ Transforms all arcs to double links (edges). The result is a symmetric network</
     </message>
     <message>
         <location filename="src/mainwindow.cpp" line="533"/>
-        <source>Repositions the nodes on circles of different radius. More Betweeness Central Nodes are positioned towards the centre.</source>
+        <source>Repositions the nodes on circles of different radius. More Betweenness Central Nodes are positioned towards the centre.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="src/mainwindow.cpp" line="534"/>
-        <source>Circle Betweeness Centrality Layout
+        <source>Circle Betweenness Centrality Layout
 
- Repositions the nodes on circles of different radius. More Betweeness Central Nodes are positioned towards the centre.</source>
+ Repositions the nodes on circles of different radius. More Betweenness Central Nodes are positioned towards the centre.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1383,14 +1383,14 @@ Transforms all arcs to double links (edges). The result is a symmetric network</
     </message>
     <message>
         <location filename="src/mainwindow.cpp" line="589"/>
-        <source>Repositions the nodes on levels of different height. More Betweeness Central Nodes are situated on higher levels.</source>
+        <source>Repositions the nodes on levels of different height. More Betweenness Central Nodes are situated on higher levels.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="src/mainwindow.cpp" line="590"/>
-        <source>level Betweeness Centrality Layout
+        <source>level Betweenness Centrality Layout
 
- Repositions the nodes on levels of different height. More Betweeness Central Nodes are situated on higher levels.</source>
+ Repositions the nodes on levels of different height. More Betweenness Central Nodes are situated on higher levels.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1737,12 +1737,12 @@ Zooms out. What else did you expect?</source>
     </message>
     <message>
         <location filename="src/mainwindow.cpp" line="704"/>
-        <source>Calculates and displays Betweeness Centralities</source>
+        <source>Calculates and displays Betweenness Centralities</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="src/mainwindow.cpp" line="705"/>
-        <source>Betweeness Centrality
+        <source>Betweenness Centrality
 
  For each node k, this is the ratio of all geodesics between pairs of nodes which run through k. It reflects how often an node lies on the geodesics between the other nodes of the network. It can be interpreted as a measure of control.</source>
         <translation type="unfinished"></translation>
@@ -3517,7 +3517,7 @@ Then we can talk about layouts!</source>
     </message>
     <message>
         <location filename="src/mainwindow.cpp" line="3842"/>
-        <source>Nodes in inner circles have greater Betweeness Centrality. </source>
+        <source>Nodes in inner circles have greater Betweenness Centrality. </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3576,7 +3576,7 @@ Then we can talk about layouts!</source>
     </message>
     <message>
         <location filename="src/mainwindow.cpp" line="4026"/>
-        <source>Nodes in upper levels have greater Betweeness Centrality. </source>
+        <source>Nodes in upper levels have greater Betweenness Centrality. </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4097,7 +4097,7 @@ All nodes have the same BC value.
     </message>
     <message>
         <location filename="src/mainwindow.cpp" line="4613"/>
-        <source> different Betweeness Centrality classes.
+        <source> different Betweenness Centrality classes.
 </source>
         <translation type="unfinished"></translation>
     </message>
@@ -4122,7 +4122,7 @@ GROUP BETWEENESS CENTRALISATION (GBC)
     </message>
     <message>
         <location filename="src/mainwindow.cpp" line="4617"/>
-        <source>GBC = 0, when all the nodes have exactly the same betweeness index.
+        <source>GBC = 0, when all the nodes have exactly the same betweenness index.
 </source>
         <translation type="unfinished"></translation>
     </message>
@@ -4389,7 +4389,7 @@ GROUP ECCENTRICITY CENTRALISATION (GEC)
     </message>
     <message>
         <location filename="src/mainwindow.cpp" line="4817"/>
-        <source>GEC = 0, when all the nodes have exactly the same betweeness index.
+        <source>GEC = 0, when all the nodes have exactly the same betweenness index.
 </source>
         <translation type="unfinished"></translation>
     </message>

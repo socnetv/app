@@ -244,7 +244,7 @@ public:
     void writeCentralityDegree(const QString, const bool);	//Writes the out-degree centralities to a file
     void writeCentralityCloseness(const QString, const bool);	//Writes the closeness centralities to a file
     void writeCentralityClosenessInfluenceRange(const QString, const bool);
-    void writeCentralityBetweeness(const QString, const bool);	//Writes the betweeness centralities to a file
+    void writeCentralityBetweenness(const QString, const bool);	//Writes the betweenness centralities to a file
     void writeCentralityGraph(const QString, const bool);		//Writes the Graph centralities to a file
     void writeCentralityPower(const QString, const bool);		//Writes the Power centralities to a file
     void writeCentralityStress(const QString, const bool);		//Writes the Stress centralities to a file

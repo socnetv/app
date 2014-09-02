@@ -1611,7 +1611,7 @@ void Graph::writeEccentricity(
         graphDiameter is set to the length of the longest shortest path between every (i,j)
         Eccentricity(i) is set to the length of the longest shortest path from i to every j
         Also, if doCalculcateCentralities==true, it calculates the centralities for every u in V:
-        - Betweeness: BC(u) = Sum ( sigma(i,j,u)/sigma(i,j) ) for every s,t in V
+        - Betweenness: BC(u) = Sum ( sigma(i,j,u)/sigma(i,j) ) for every s,t in V
         - Stress: SC(u) = Sum ( sigma(i,j) ) for every s,t in V
         - Eccentricity: EC(u) =  1/maxDistance(u,t)  for some t in V
         - Closeness: CC(u) =  1 / Sum( DM(u,t) )  for every  t in V
@@ -1840,7 +1840,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
         if (doCalculcateCentralities) {
             for (it=m_graph.begin(); it!=m_graph.end(); it++) {
                 if (symmetricAdjacencyMatrix) {
-                    qDebug("Betweeness centrality must be divided by two if the graph is undirected");
+                    qDebug("Betweenness centrality must be divided by two if the graph is undirected");
                     (*it)->setBC ( (*it)->BC()/2.0);
                 }
                 BC=(*it)->BC();
@@ -1882,7 +1882,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                 //Find min & max SC
                 minmax( (*it)->SC(), (*it), maxSC, minSC, maxNodeSC, minNodeSC) ;
 
-                //Calculate the numerator of groupBC according to Freeman's group Betweeness
+                //Calculate the numerator of groupBC according to Freeman's group Betweenness
                 nomBC +=(maxBC - BC );
 
                 //Find numerator of groupCC
@@ -1902,7 +1902,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 
             nomBC*=2.0;
             denomBC =   (aVertices-1.0) *  (aVertices-1.0) * (aVertices-2.0);
-            groupBC=nomBC/denomBC;		//Calculate group Betweeness centrality
+            groupBC=nomBC/denomBC;		//Calculate group Betweenness centrality
 
             denomSC =   (aVertices-1.0); //TOFIX
             groupSC = nomSC/denomSC;	//Calculate group Stress centrality
@@ -2717,8 +2717,8 @@ void Graph::writeCentralityClosenessInfluenceRange(
 }
 
 
-//Writes the betweeness centralities to a file
-void Graph::writeCentralityBetweeness(
+//Writes the betweenness centralities to a file
+void Graph::writeCentralityBetweenness(
         const QString fileName, const bool considerWeights)
 {
     Q_UNUSED(considerWeights);
@@ -2739,7 +2739,7 @@ void Graph::writeCentralityBetweeness(
         qDebug() << " graph not modified, and centralities calculated. Returning";
     }
 
-    emit statusMessage ( QString(tr("Writing betweeness indices to file:"))
+    emit statusMessage ( QString(tr("Writing betweenness indices to file:"))
                          .arg(fileName) );
     outText.setRealNumberPrecision(m_precision);
     outText << tr("BETWEENESS CENTRALITY (BC)")<<"\n";
@@ -2772,14 +2772,14 @@ void Graph::writeCentralityBetweeness(
     outText << tr("GBC = ") <<  groupBC <<"\n\n";
 
     outText << tr("GBC range: 0 < GBC < 1\n");
-    outText << tr("GBC = 0, when all the nodes have exactly the same betweeness index.\n");
+    outText << tr("GBC = 0, when all the nodes have exactly the same betweenness index.\n");
     outText << tr("GBC = 1, when one node falls on all other geodesics between "
                   "all the remaining (N-1) nodes. "
                   "This is exactly the situation realised by a star graph.\n");
     outText << "(Wasserman & Faust, formula 5.13, p. 192)\n\n";
 
     outText << "\n\n";
-    outText << tr("Betweeness Centrality report, \n");
+    outText << tr("Betweenness Centrality report, \n");
     outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime()
                .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();

@@ -112,7 +112,7 @@ May 2008
 	Spring Embedder: Dynamic network reallocation
 	Thread support.
 	Much faster calculation of distances and centralities (BFS/dijkstra).
-	Betweeness centrality now is much more efficiently calculated. 
+	Betweenness centrality now is much more efficiently calculated. 
 	Changed license to GPL3
 	Layout in circles and levels by centrality.
 	Better graphics and antialiasing (disabled - enable by pressing F8).

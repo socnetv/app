@@ -799,7 +799,7 @@ void MainWindow::initActions(){
     connect(layoutCircular_IRCC_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutCircularByProminenceIndex()));
 
-    layoutCircular_BC_Act = new QAction( tr("Betweeness Centrality"), this);
+    layoutCircular_BC_Act = new QAction( tr("Betweenness Centrality"), this);
     layoutCircular_BC_Act ->setShortcut(tr("Ctrl+Alt+4"));
     layoutCircular_BC_Act ->setStatusTip(
                 tr(
@@ -808,7 +808,7 @@ void MainWindow::initActions(){
     layoutCircular_BC_Act->
             setWhatsThis(
                 tr(
-                    "Betweeness Centrality Circular Layout\n\n "
+                    "Betweenness Centrality Circular Layout\n\n "
                     "Repositions all nodes on concentric circles of radius "
                     "inversely proportional to their BC index."
                     "Nodes having higher BC score are closer to the centre."
@@ -1009,7 +1009,7 @@ void MainWindow::initActions(){
     connect(layoutLevel_IRCC_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutLevelByProminenceIndex()));
 
-    layoutLevel_BC_Act = new QAction( tr("Betweeness Centrality"), this);
+    layoutLevel_BC_Act = new QAction( tr("Betweenness Centrality"), this);
     layoutLevel_BC_Act ->setShortcut(tr("Ctrl+Shift+4"));
     layoutLevel_BC_Act ->setStatusTip(
                 tr(
@@ -1018,7 +1018,7 @@ void MainWindow::initActions(){
     layoutLevel_BC_Act->
              setWhatsThis(
                  tr(
-                     "Betweeness Centrality Levels Layout\n\n "
+                     "Betweenness Centrality Levels Layout\n\n "
                      "Repositions all nodes on horizontal levels of height"
                      "proportional to their BC index."
                      "Nodes having higher BC score are closer to the top."
@@ -1449,11 +1449,11 @@ void MainWindow::initActions(){
                    "(|J|/(n-1)) to the average distance of these nodes from v (sum(d(v,j))/|J|"));
     connect(cInfluenceRangeClosenessAct, SIGNAL(triggered()), this, SLOT(slotCentralityClosenessInfluenceRange()));
 
-    cBetweenessAct = new QAction(tr("Betweeness Centrality (BC)"), this);
-    cBetweenessAct->setShortcut(tr("Ctrl+4"));
-    cBetweenessAct->setWhatsThis(tr("Betweeness Centrality (BC)\n\n For each node v, BC is the ratio of all geodesics between pairs of nodes which run through v. It reflects how often an node lies on the geodesics between the other nodes of the network. It can be interpreted as a measure of control. A node which lies between many others is assumed to have a higher likelihood of being able to control information flow in the network. \n\n Note that betweeness centrality assumes that all geodesics have equal weight or are equally likely to be chosen for the flow of information between any two nodes. This is reasonable only on \"regular\" networks where all nodes have similar degrees. On networks with significant degree variance you might want to try informational centrality instead. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
-    cBetweenessAct->setStatusTip(tr("Betweeness Centrality indices and group Betweeness Centralization."));
-    connect(cBetweenessAct, SIGNAL(triggered()), this, SLOT(slotCentralityBetweeness()));
+    cBetweennessAct = new QAction(tr("Betweenness Centrality (BC)"), this);
+    cBetweennessAct->setShortcut(tr("Ctrl+4"));
+    cBetweennessAct->setWhatsThis(tr("Betweenness Centrality (BC)\n\n For each node v, BC is the ratio of all geodesics between pairs of nodes which run through v. It reflects how often an node lies on the geodesics between the other nodes of the network. It can be interpreted as a measure of control. A node which lies between many others is assumed to have a higher likelihood of being able to control information flow in the network. \n\n Note that betweenness centrality assumes that all geodesics have equal weight or are equally likely to be chosen for the flow of information between any two nodes. This is reasonable only on \"regular\" networks where all nodes have similar degrees. On networks with significant degree variance you might want to try informational centrality instead. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
+    cBetweennessAct->setStatusTip(tr("Betweenness Centrality indices and group Betweenness Centralization."));
+    connect(cBetweennessAct, SIGNAL(triggered()), this, SLOT(slotCentralityBetweenness()));
 
     cStressAct = new QAction(tr("Stress Centrality (SC)"), this);
     cStressAct->setShortcut(tr("Ctrl+5"));
@@ -1891,7 +1891,7 @@ void MainWindow::initMenuBar() {
     centrlMenu -> addAction (cDegreeAct);
     centrlMenu -> addAction (cClosenessAct);
     centrlMenu -> addAction (cInfluenceRangeClosenessAct);
-    centrlMenu -> addAction (cBetweenessAct);
+    centrlMenu -> addAction (cBetweennessAct);
     centrlMenu -> addAction (cStressAct);
     centrlMenu -> addAction (cEccentAct);
     centrlMenu -> addAction (cPowerAct);
@@ -2106,7 +2106,7 @@ void MainWindow::initToolBox(){
     prominenceCommands << "None selected"
                        << "Degree Centrality" << "Closeness Centrality"
                        << "Influence Range Closeness Centrality"
-                       << "Betweeness Centrality"
+                       << "Betweenness Centrality"
                        << "Stress Centrality" << "Eccentricity Centrality"
                        << "Power Centrality" << "Information Centrality"
                        << "Degree Prestige (inDegree)"  << "PageRank Prestige"
@@ -2140,7 +2140,7 @@ void MainWindow::initToolBox(){
     indicesList << "None/Original"<< "Random"
                 << "Degree Centrality" << "Closeness Centrality"
                 << "Influence Range Closeness Centrality"
-                << "Betweeness Centrality"
+                << "Betweenness Centrality"
                 << "Stress Centrality" << "Eccentricity Centrality"
                 << "Power Centrality" << "Information Centrality"
                 << "Degree Prestige (inDegree)"  << "PageRank Prestige"
@@ -2493,7 +2493,7 @@ void MainWindow::toolBoxAnalysisProminenceSelectChanged(int selectedIndex) {
         slotCentralityClosenessInfluenceRange();
         break;
     case 4:
-        slotCentralityBetweeness();
+        slotCentralityBetweenness();
         break;
     case 5:
         slotCentralityStress();
@@ -5464,7 +5464,7 @@ void MainWindow::slotLayoutCircularByProminenceIndex(){
         userChoice=2;
     else if (menuItemText == "Influence Range Closeness Centrality")
         userChoice=3;
-    else if (menuItemText == "Betweeness Centrality")
+    else if (menuItemText == "Betweenness Centrality")
         userChoice=4;
     else if (menuItemText == "Stress Centrality")
         userChoice=5;
@@ -5591,7 +5591,7 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
         userChoice=2;
     else if ( prominenceIndexName.contains("Influence Range Closeness Centrality"))
         userChoice=3;
-    else if ( prominenceIndexName.contains("Betweeness Centrality"))
+    else if ( prominenceIndexName.contains("Betweenness Centrality"))
         userChoice=4;
     else if (prominenceIndexName.contains("Stress Centrality"))
         userChoice=5;
@@ -5723,7 +5723,7 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
         userChoice=2;
     else if ( prominenceIndexName.contains("Influence Range Closeness Centrality"))
         userChoice=3;
-    else if ( prominenceIndexName.contains("Betweeness Centrality"))
+    else if ( prominenceIndexName.contains("Betweenness Centrality"))
         userChoice=4;
     else if (prominenceIndexName.contains("Stress Centrality"))
         userChoice=5;
@@ -5860,7 +5860,7 @@ void MainWindow::slotLayoutLevelByProminenceIndex(){
         userChoice=2;
     else if (menuItemText == "Influence Range Closeness Centrality")
         userChoice=3;
-    else if (menuItemText == "Betweeness Centrality")
+    else if (menuItemText == "Betweenness Centrality")
         userChoice=4;
     else if (menuItemText == "Stress Centrality")
         userChoice=5;
@@ -5989,7 +5989,7 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
         userChoice=2;
     else if (prominenceIndexName == "Influence Range Closeness Centrality")
         userChoice=3;
-    else if (prominenceIndexName == "Betweeness Centrality")
+    else if (prominenceIndexName == "Betweenness Centrality")
         userChoice=4;
     else if (prominenceIndexName == "Stress Centrality")
         userChoice=5;
@@ -6754,21 +6754,21 @@ void MainWindow::slotCentralityClosenessInfluenceRange(){
 
 
 /**
-*	Writes Betweeness Centralities into a file, then displays it.
+*	Writes Betweenness Centralities into a file, then displays it.
 */
-void MainWindow::slotCentralityBetweeness(){
+void MainWindow::slotCentralityBetweenness(){
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
     }
-    QString fn = dataDir + "socnetv-report-centrality_betweeness.dat";
+    QString fn = dataDir + "socnetv-report-centrality_betweenness.dat";
     bool considerWeights=true;
     statusMessage(  QString(tr(" Please wait...")));
 
     createProgressBar();
-    activeGraph.writeCentralityBetweeness(fn, considerWeights);
+    activeGraph.writeCentralityBetweenness(fn, considerWeights);
     destroyProgressBar();
 
     statusMessage( QString(tr(" displaying file...")));
@@ -6778,7 +6778,7 @@ void MainWindow::slotCentralityBetweeness(){
     ed->setWindowTitle(tempFileNameNoPath.last() );
     ed->show();
     QApplication::restoreOverrideCursor();
-    statusMessage(tr("Betweeness Centralities saved as: ")+tempFileNameNoPath.last());
+    statusMessage(tr("Betweenness Centralities saved as: ")+tempFileNameNoPath.last());
 }
 
 

@@ -220,7 +220,7 @@ public slots:
     void slotCentralityDegree();
     void slotCentralityCloseness();
     void slotCentralityClosenessInfluenceRange();
-    void slotCentralityBetweeness();
+    void slotCentralityBetweenness();
     void slotCentralityInformation();
     void slotCentralityStress();
     void slotCentralityPower();
@@ -376,7 +376,7 @@ private:
     QAction *walksAct,*totalWalksAct, *reachabilityMatrixAct, *connectednessAct;
     QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct, *invertAdjMatrixAct;
     QAction *cDegreeAct, *cInDegreeAct, *cClosenessAct, *cInfluenceRangeClosenessAct,
-            *cBetweenessAct, *cInformationAct, *cPageRankAct, *cStressAct,
+            *cBetweennessAct, *cInformationAct, *cPageRankAct, *cStressAct,
             *cPowerAct, *cEccentAct, *cProximityPrestigeAct;
     QAction *randLayoutAct, *randCircleLayoutAct, *clearGuidesAct;
     QAction *layoutCircular_DC_Act, *layoutCircular_DP_Act,

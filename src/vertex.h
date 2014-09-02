@@ -170,10 +170,10 @@ public:
     float IRCC() { return m_IRCC;}		/* Returns vertex IRCC */
     float SIRCC() { return m_SIRCC; }		/* Returns standard vertex IRCC*/
 
-    void setBC(float c){ m_BC=c;}		/* sets s vertex Betweeness Centrality*/
-    void setSBC (float c ) { m_SBC=c;}	/* sets standard vertex Betweeness Centrality*/
-    float BC() { return m_BC;}		/* Returns vertex Betweeness Centrality*/
-    float SBC() { return m_SBC; }		/* Returns standard vertex Betweeness Centrality*/
+    void setBC(float c){ m_BC=c;}		/* sets s vertex Betweenness Centrality*/
+    void setSBC (float c ) { m_SBC=c;}	/* sets standard vertex Betweenness Centrality*/
+    float BC() { return m_BC;}		/* Returns vertex Betweenness Centrality*/
+    float SBC() { return m_SBC; }		/* Returns standard vertex Betweenness Centrality*/
 
     void setSC (float c){ m_SC=c;}  	/* sets vertex Stress Centrality*/
     void setSSC (float c ) { m_SSC=c;}	/* sets standard vertex Stress Centrality*/
