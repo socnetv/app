@@ -232,7 +232,7 @@ private:
     QString m_color, m_numberColor, m_label, m_labelColor, m_shape;
     //QString *outLinkColors;
     H_IntToStr outLinkColors;
-    //FIXME vertice coords
+    //FIXME vertex coords
 
     double m_x, m_y;
     float m_CLC;

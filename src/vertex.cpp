@@ -199,7 +199,7 @@ void Vertex::changeLinkWeightTo(long int target, float weight){
 
 /**
  * @brief Vertex::removeLinkTo
- * finds and removes a link to vertice v2
+ * finds and removes a link to vertex v2
  * @param v2
  */
 void Vertex::removeLinkTo (long int v2) {
@@ -435,7 +435,7 @@ long int Vertex::inLinks() {
 
 /**
  * @brief Vertex::outDegree
- * Returns the outDegree (the sum of all enabled outLinks weights) of this vertice
+ * Returns the outDegree (the sum of all enabled outLinks weights) of this vertex
  * @return long int
  */
 long int Vertex::outDegree() {
@@ -463,7 +463,7 @@ long int Vertex::outDegree() {
 
 /**
  * @brief Vertex::inDegree
- * Returns the inDegree (the sum of all enabled inLinks weights) of this vertice
+ * Returns the inDegree (the sum of all enabled inLinks weights) of this vertex
  * @return long int
  */
 long int Vertex::inDegree() {

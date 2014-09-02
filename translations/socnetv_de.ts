@@ -4787,7 +4787,7 @@ Load a network file or create a new network!</source>
     </message>
     <message>
         <location filename="src/mainwindow.cpp" line="5434"/>
-        <source>Nodes can have the colors of your choice. Just right-click on a node and then select &gt; Options &gt; Change Color. You can select every color supported by the X.org pallette.</source>
+        <source>Nodes can have the colors of your choice. Just right-click on a node and then select &gt; Options &gt; Change Color. You can select every color supported by the X.org palette.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

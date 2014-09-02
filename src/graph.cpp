@@ -975,7 +975,7 @@ QString Graph::label(int v1){
 
 
 /**
-    Changes the color of vertice v1
+    Changes the color of vertex v1
 */
 void Graph::setVertexColor(long int v1, QString color){
     qDebug()<< "Graph: setVertexColor for "<< v1 << ", index " << index[v1]<< " with color "<< color;

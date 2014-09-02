@@ -1399,9 +1399,9 @@ void MainWindow::initActions(){
             ->setWhatsThis(
                 tr( "Degree Centrality (DC)\n\n "
                     "For each node v, the DC index is the number of edges "
-                    "attached to it (in undirected graphs) or the total numnber "
+                    "attached to it (in undirected graphs) or the total number "
                     "of arcs (outLinks) starting from it (in digraphs).\n"
-                    "This is oftenly considered a measure of actor activity. \n\n"
+                    "This is often considered a measure of actor activity. \n\n"
                     "This index can be calculated in both graphs and digraphs "
                     "but is usually best suited for undirected graphs. "
                     "It can also be calculated in weighted graphs. "
@@ -1530,7 +1530,7 @@ void MainWindow::initActions(){
     /**
     Options menu actions
     */
-    displayNodeNumbersAct = new QAction( tr("Display Num&bers"), this );
+    displayNodeNumbersAct = new QAction( tr("Display Numbers"), this );
     displayNodeNumbersAct->setStatusTip(tr("Toggles displaying of node numbers"));
     displayNodeNumbersAct->setWhatsThis(tr("Display Numbers\n\nEnables/disables node numbers"));
     displayNodeNumbersAct->setCheckable (true);
@@ -2039,7 +2039,7 @@ void MainWindow::initToolBox(){
     addLinkBt->setToolTip(
                 tr("Add a new link to the network (Ctrl+L).\n\n "
                    "Alternately, you can create a new link between two \n"
-                   "nodes by middle-clicking on them consequetively.")
+                   "nodes by middle-clicking on them consecutively.")
                 );
 
     removeLinkBt= new QPushButton(QIcon(":/images/disconnect.png"),tr("Remove Link"));
@@ -2185,8 +2185,8 @@ void MainWindow::initToolBox(){
     moveSpringEmbedderBx
             ->setToolTip(
                 tr("Embeds a spring-gravitational model on the network, where \n"
-                   "each node is regarded as physical object reppeling all \n"
-                   "other nodes, while springs between connected nodes attact them. \n"
+                   "each node is regarded as physical object repeling all \n"
+                   "other nodes, while springs between connected nodes attract them. \n"
                    "The result is constant movement. \n"
                    "This is a very SLOW process on networks with N > 100!"));
 
@@ -3464,7 +3464,7 @@ void MainWindow::addNode() {
     Called on double clicking
 */
 void MainWindow::addNodeWithMouse(int num, QPointF p) {
-    qDebug("MW: addNodeWithMouse(). Calling activeGraph::createVertex() for a vertice named %i", num);
+    qDebug("MW: addNodeWithMouse(). Calling activeGraph::createVertex() for a vertex named %i", num);
     activeGraph.createVertex(num, p);
     statusMessage( tr("New node (numbered %1) added.").arg(activeGraph.lastVertexNumber())  );
 }
@@ -3493,7 +3493,7 @@ bool MainWindow::slotExportPNG(){
         return false;
     }
     tempFileNameNoPath=fn.split ("/");
-    qDebug("slotExportPNG: grabing canvas");
+    qDebug("slotExportPNG: grabbing canvas");
     QPixmap picture;
     picture=QPixmap::grabWidget(graphicsWidget, graphicsWidget->rect());
     qDebug("slotExportPNG: adding logo");
@@ -3540,7 +3540,7 @@ bool MainWindow::slotExportBMP(){
     tempFileNameNoPath=fn.split ("/");
 
     QPixmap picture;
-    qDebug("slotExportBMP: grabing canvas");
+    qDebug("slotExportBMP: grabbing canvas");
     picture=QPixmap::grabWidget(graphicsWidget, graphicsWidget->viewport()->rect());
     QPainter p;
     qDebug("slotExportBMP: adding logo");
@@ -4491,7 +4491,7 @@ void MainWindow::slotRemoveNode() {
             return;
         }
     }
-    qDebug ("MW: removing vertice with number %i from Graph", doomedJim);
+    qDebug ("MW: removing vertex with number %i from Graph", doomedJim);
     activeGraph.removeVertex(doomedJim);
     clickedJimNumber=-1;
     nodeClicked=false;
@@ -7690,7 +7690,7 @@ void MainWindow::createTips(){
     tips+=tr("You can add a new link between two nodes, by middle-clicking (or pressing both mouse buttons simultanesously) on the first and then on the second node.");
     tips+=tr("You can remove a node by right-clicking on it and selecting Remove.");
     tips+=tr("You can change background color (from the menu Edit > Colors).");
-    tips+=tr("Nodes can have the colors of your choice. Just right-click on a node and then select > Options > Change Color. You can select every color supported by the X.org pallette.");
+    tips+=tr("Nodes can have the colors of your choice. Just right-click on a node and then select > Options > Change Color. You can select every color supported by the X.org palette.");
     tips+=tr("The tabs on the left dock show information about the network (nodes, edges, density, etc) as well as information about any node you clicked on (inDegrees, outDegrees, clustering).");
     tips+=tr("You can move a node easily by dragging it with your mouse.");
     tips+=tr("SocNetV can save the positions of the nodes in a network, if you save it in Pajek/GraphML format.");

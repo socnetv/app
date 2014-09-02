@@ -286,7 +286,7 @@ void Reader::run(){
 
     if (!page.contains ("a href"))  { //if a href doesnt exist, return
         //FIXME: Frameset pages are not parsed! See docs/manual.html for example.
-        qDebug() << "			READER: ### Empty or not usefull data from " << baseUrl.toLatin1() << " RETURN";
+        qDebug() << "			READER: ### Empty or not useful data from " << baseUrl.toLatin1() << " RETURN";
         newDataRead.wakeAll();
         return;
     }
