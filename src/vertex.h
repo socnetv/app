@@ -96,16 +96,14 @@ public:
     void setReciprocalLinked(bool reciprocal) { m_reciprocalLinked=reciprocal;}
 
     /* Returns true if there is an outLink from this vertex */
-    bool isOutLinked() { return m_outLinked;}
-    void setOutLinked(bool outLinked) { m_outLinked=outLinked;}
+    bool isOutLinked() { return (outLinks() > 0) ? true:false;}
     float isLinkedTo(long int V);	/* Returns the weight of the link to vertex V, otherwise zero*/
 
     /* Returns true if there is an outLink from this vertex */
-    bool isInLinked() { return m_inLinked;}
-    void setInLinked(bool inLinked) { m_inLinked=inLinked;}
+    bool isInLinked() { return  (inLinks() > 0) ? true:false;}
     float isLinkedFrom (long int v);
 
-    bool isIsolated() { return !(m_outLinked | m_inLinked) ; }
+    bool isIsolated() { return !(isOutLinked() | isInLinked()) ; }
     void setIsolated(bool isolated) {m_isolated = isolated; }
 
     void filterEdgesByWeight(float m_threshold, bool overThreshold);
@@ -229,7 +227,7 @@ private:
     long int m_name,  m_outLinksCounter, m_inLinksCounter, m_outDegree, m_inDegree, m_localDegree;
     float m_Eccentricity;
     int m_value, m_size, m_labelSize, m_numberSize, m_curRelation;
-    bool m_inLinked, m_outLinked, m_reciprocalLinked, m_enabled, m_hasCLC, m_isolated;
+    bool m_reciprocalLinked, m_enabled, m_hasCLC, m_isolated;
     QString m_color, m_numberColor, m_label, m_labelColor, m_shape;
     //QString *outLinkColors;
     H_IntToStr outLinkColors;

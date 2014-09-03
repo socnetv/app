@@ -669,7 +669,7 @@ void MainWindow::initActions(){
     filterIsolateNodesAct -> setChecked(false);
     filterIsolateNodesAct -> setStatusTip(tr("Filters nodes with no edges"));
     filterIsolateNodesAct -> setWhatsThis(tr("Filter Isolate Nodes\n\n Enables or disables displaying of isolate nodes. Isolate nodes are those with no edges..."));
-    connect(filterIsolateNodesAct, SIGNAL(triggered()), this, SLOT(slotFilterIsolateNodes()));
+    connect(filterIsolateNodesAct, SIGNAL(toggled(bool)), this, SLOT(slotFilterIsolateNodes(bool)));
 
     filterEdgesAct = new QAction(tr("Filter Links by weight"), this);
     filterEdgesAct -> setEnabled(true);
@@ -3390,6 +3390,7 @@ void MainWindow::prevRelation(){
     int index=changeRelationCombo->currentIndex();
     if (index>0){
         --index;
+        filterIsolateNodesAct->setChecked(false);
         changeRelationCombo->setCurrentIndex(index);
     }
 }
@@ -3405,6 +3406,7 @@ void MainWindow::nextRelation(){
     int relationsCounter=changeRelationCombo->count();
     if (index< (relationsCounter -1 )){
         ++index;
+        filterIsolateNodesAct->setChecked(false);
         changeRelationCombo->setCurrentIndex(index);
     }
 
@@ -5183,7 +5185,7 @@ void MainWindow::slotFilterNodes(){
  * @brief MainWindow::slotFilterIsolateNodes
  *Calls Graph::filterIsolateVertices to filter vertices with no links
  */
-void MainWindow::slotFilterIsolateNodes(){
+void MainWindow::slotFilterIsolateNodes(bool checked){
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical(this, "Error",tr("Nothing to filter! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
         statusMessage(  QString(tr("Nothing to filter!"))  );

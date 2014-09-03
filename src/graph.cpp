@@ -543,9 +543,7 @@ void Graph::addEdge (int v1, int v2, float weight, QString color, int reciprocal
     qDebug()<< "Graph: addEdge() from vertex "<< v1 << "["<< source
             << "] to vertex "<< v2 << "["<< target << "] of weight "<<weight;
 
-    m_graph [ source ]->setOutLinked(true) ;
     m_graph [ source ]->addLinkTo(v2, weight );
-    m_graph [ target ]->setInLinked(true) ;
     m_graph [ target ]->addLinkFrom(v1, weight);
     m_totalEdges++;
 
@@ -1052,38 +1050,16 @@ QList<int> Graph::verticesIsolated(){
     if (!graphModified){
         return m_isolatedVerticesList;
     }
-    int i=0, j=0;
-    QList<Vertex*>::const_iterator it, it1;
+    QList<Vertex*>::const_iterator it;
     m_isolatedVerticesList.clear();
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        (*it)->setIsolated(true);
         if ( ! (*it)->isEnabled() )
             continue;
-        j=i;
-        for (it1=it; it1!=m_graph.cend(); ++it1){
-            (*it1)->setIsolated(true);
-            if ( ! (*it1)->isEnabled() )
-                continue;
-            if (i != j ) {
-                if ( (this->hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
-                    (*it)->setIsolated(false);
-                    (*it1)->setIsolated(false);
-                    // this check is needed for Graph::createDistanceMatrix()
-                    // because we only run verticesIsolated() in the begining
-                    // and we do not know if the matrix is symmetric.
-                    // Symmetry test is needed for maxIndex*
-                    if ( this->hasEdge ( (*it1)->name(), (*it)->name() ) == 0 )
-                        symmetricAdjacencyMatrix=false;
-                    // FIXME DO WE REALLY NEED TO CHECK TWICE!!! ???
-                }
-            }
-            j++;
-        }
         if ((*it)->isIsolated()) {
-            m_isolatedVerticesList << i;
-            qDebug()<< "Graph::verticesIsolated() - node " << i+1 << " is isolated. Marking it." ;
+            m_isolatedVerticesList << (*it)->name();
+            qDebug()<< "Graph::verticesIsolated() - node " << (*it)->name()
+                    << " is isolated. Marking it." ;
         }
-        i++;
     }
     return m_isolatedVerticesList ;
 }
@@ -1548,6 +1524,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
 
     int aEdges = totalEdges();
     isolatedVertices = verticesIsolated().count();
+    symmetricAdjacencyMatrix = isSymmetric();
     //drop isolated vertices from calculations (i.e. std Centrality and group Centrality).
     int aVertices=vertices() - isolatedVertices;
 
@@ -2039,7 +2016,7 @@ void Graph::centralityInformation(){
     groupIC=0;
 
     TM.resize(m_totalVertices);
-    isolatedVertices=0;
+    isolatedVertices=verticesIsolated().count();
     int i=0, j=0, n=vertices();
     float m_weight=0, weightSum=1, diagonalEntriesSum=0, rowSum=0;
     float IC=0, SIC=0, sumSIC=0;;

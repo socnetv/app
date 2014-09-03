@@ -64,8 +64,6 @@ Vertex::Vertex(	Graph* parent,
     m_SC=0; m_SSC=0; m_IRCC=0; m_SIRCC=0;
     m_CLC=0; m_hasCLC=false;
     m_curRelation=0;
-    m_inLinked=false;
-    m_outLinked=false;
     m_reciprocalLinked=false;
     m_enabled = true;
     m_outLinks.reserve(2000);
@@ -89,8 +87,6 @@ Vertex::Vertex(int v1) {
     m_DC=0; m_SDC=0; m_DP=0; m_SDP=0; m_CC=0; m_SCC=0; m_BC=0; m_SBC=0;
     m_IRCC=0; m_SIRCC=0; m_SC=0; m_SSC=0;
     m_curRelation=0;
-    m_inLinked=false;
-    m_outLinked=false;
     m_reciprocalLinked=false;
 }
 
@@ -123,7 +119,6 @@ void Vertex::addLinkTo (long int target, float weight) {
     // do not use [] operator. It silently creates an item if key do not exist
     m_outLinks.insertMulti(
                 target, rel_w_bool(m_curRelation, pair_f_b(weight, true) ) );
-    m_outLinksCounter++;
 }
 
 
@@ -223,9 +218,6 @@ void Vertex::removeLinkTo (long int v2) {
                 ++it1;
             }
         }
-
-        m_outLinksCounter--;
-
         qDebug() << "Vertex: vertex " <<  m_name << " now has " <<  outLinks() << " out-edges";
 	}
 	else {
