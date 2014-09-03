@@ -1039,6 +1039,9 @@ int Graph::totalEdges () {
 int Graph::vertices() {
     qDebug("Graph: vertices()");
     return m_totalVertices;
+    //FIXME
+    // this needs to return only the enabled vertices (i.e. for LCD to display the right value)
+    // also in every method using vertices() we need to change the for loop so that it checks if the vertex is enabled or not.
 }
 
 /**
@@ -2289,7 +2292,9 @@ void Graph::centralityDegree(bool weights){
         groupDC=nom/denom;
     }
     else {
-        qDebug()<< "Graph::centralityDegree vertices isolated: " << verticesIsolated().count() << ". I will subtract groupDC by " << ((float)verticesIsolated().count()/(float)vert);
+        qDebug()<< "Graph::centralityDegree vertices isolated: "
+                << verticesIsolated().count() << ". I will subtract groupDC by "
+                << ((float)verticesIsolated().count()/(float)vert);
         groupDC=( ( nom * (vert-1.0))/( denom * maxDC) ) - ((float) verticesIsolated().count()/ (float) vert);
     }
 
