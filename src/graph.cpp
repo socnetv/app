@@ -954,17 +954,7 @@ void Graph::setEdgeColor(long int s, long int t, QString color){
 */
 float Graph::hasEdge (int v1, int v2) {		
     qDebug() << "Graph::hasEdge() " << v1 << " -> " << v2 << " ? " ;
-    //float weight=0;
-    if ( ! m_graph[ index[v1] ] -> isEnabled() || ! m_graph[ index[v2] ] -> isEnabled())
-        return 0;
-    QString edgeName = QString::number(m_curRelation) + QString(":")
-                + QString::number(v1) + QString(">")+ QString::number(v2);
-    if (edgesHash.contains(edgeName)) {
-        QHash<QString, float>::const_iterator it = edgesHash.find(edgeName);
-        return it.value();
-    }
-    else
-        return 0;
+    return m_graph[ index[v1] ]->isLinkedTo(v2);
 }
 
 
@@ -1046,7 +1036,7 @@ int Graph::totalEdges () {
 /**	
     Returns |V| of graph
 */
-int Graph::vertices () { 
+int Graph::vertices() {
     qDebug("Graph: vertices()");
     return m_totalVertices;
 }
@@ -2236,7 +2226,8 @@ void Graph::centralityDegree(bool weights){
         DC=0;
         for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
             if ( (weight=this->hasEdge ( (*it)->name(), (*it1)->name() ) ) !=0  )   {
-                qDebug() << "Graph: vertex " <<  (*it)->name() << " isLinkedTo = " <<  (*it1)->name();
+                qDebug() << "Graph: vertex " <<  (*it)->name()
+                         << " isLinkedTo = " <<  (*it1)->name();
                 if (weights)
                     DC+=weight;
                 else
