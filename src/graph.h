@@ -227,7 +227,7 @@ public:
     bool isSymmetric();
     void symmetrize();
 
-    void createAdjacencyMatrix(bool,bool);
+    void createAdjacencyMatrix(bool,bool, bool);
     void invertAdjacencyMatrix();
 
 
@@ -242,7 +242,7 @@ public:
     void writeNumberOfGeodesicsMatrix(const QString fn, const char*);
     void writeEccentricity(const QString, const bool);
 
-    friend QTextStream& operator <<  (QTextStream& os, Graph& m);
+ //   friend QTextStream& operator <<  (QTextStream& os, Graph& m);
 
     void writeCentralityDegree(const QString, const bool);	//Writes the out-degree centralities to a file
     void writeCentralityCloseness(const QString, const bool);	//Writes the closeness centralities to a file
@@ -280,7 +280,7 @@ public:
     void centralityClosenessInfluenceRange();
 
     void prestigeDegree(bool);
-    int prestigePageRank();
+    void prestigePageRank();
     void prestigeProximity();
 
     /* REACHABILTY AND WALKS */
@@ -413,7 +413,8 @@ private:
     H_StrToInt discretePCs, discreteICs,  discretePRCs, discretePPs;
 
     bool calculatedDP, calculatedDC, calculatedCentralities, dynamicMovement;
-    bool calculatedPP, calculatedIRCC;
+    bool calculatedPP, calculatedIRCC, calculatedIC, calculatedPRP;
+    bool calculatedTriad;
 
     int m_precision, m_curRelation;
     float meanDegree, varianceDegree;

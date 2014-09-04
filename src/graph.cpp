@@ -49,9 +49,12 @@ Graph::Graph() {
     distanceMatrixCreated=false;
     calculatedDP=false;
     calculatedDC=false;
+    calculatedIC=false;
     calculatedCentralities=false;
     calculatedIRCC=false;
     calculatedPP=false;
+    calculatedPRP=false;
+    calculatedTriad=false;
     m_precision = 3;
     m_curRelation=0;
     dynamicMovement=false;
@@ -133,6 +136,7 @@ void Graph::changeRelation(int relation){
     }
     m_curRelation = relation;
     emit relationChanged(m_curRelation);
+    graphModified=true;
     emit graphChanged();
 }
 
@@ -208,7 +212,6 @@ void Graph::createVertex(int i, int size, QString nodeColor, QString numColor,
     initVertexColor=nodeColor;
     initVertexShape=nodeShape;
     initVertexSize=size;
-
 } 
 
 
@@ -636,6 +639,8 @@ void Graph::filterIsolateVertices(bool filterFlag){
             qDebug() << "Graph::filterOrphanNodes() Vertex " << (*it)->name()
                      << " isolate. Toggling it and emitting setVertexVisibility signal to GW...";
             (*it)->setEnabled (filterFlag) ;
+            graphModified=true;
+            emit graphChanged();
             emit setVertexVisibility( (*it)-> name(), filterFlag );
         }
     }
@@ -659,6 +664,8 @@ void Graph::filterEdgesByWeight(float m_threshold, bool overThreshold){
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( (*it)->isOutLinked() ){
             (*it)->filterEdgesByWeight ( m_threshold, overThreshold );
+            graphModified=true;
+            emit graphChanged();
         }
         else
             qDebug() << "Graph:filterEdgesByWeight() Vertex " << (*it)->name()
@@ -1019,9 +1026,6 @@ int Graph::vertices() {
             ++m_totalVertices;
     }
     return m_totalVertices;
-    //FIXME
-    // this needs to return only the enabled vertices (i.e. for LCD to display the right value)
-    // also in every method using vertices() we need to change the for loop so that it checks if the vertex is enabled or not.
 }
 
 /**
@@ -1172,9 +1176,12 @@ void Graph::clear() {
     m_undirected=false;
     calculatedDP=false;
     calculatedDC=false;
+    calculatedIC=false;
     calculatedCentralities=false;
     calculatedIRCC=false;
     calculatedPP=false;
+    calculatedPRP=false;
+    calculatedTriad=false;
     adjacencyMatrixCreated=false;
     reachabilityMatrixCreated=false;
     graphModified=false;
@@ -1786,6 +1793,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
     }
 
     distanceMatrixCreated=true;
+
 }
 
 
@@ -1989,6 +1997,10 @@ void Graph::resolveClasses(float C, H_StrToInt &discreteClasses, int &classes, i
 
 void Graph::centralityInformation(){
     qDebug()<< "Graph:: centralityInformation()";
+    if (calculatedIC && !graphModified) {
+        return;
+    }
+
     discreteICs.clear();
     sumIC=0;
     maxIC=0;
@@ -2005,9 +2017,8 @@ void Graph::centralityInformation(){
         Otherwise, the TM might be singular, therefore non-invertible. */
     bool dropIsolates=true;
     bool omitWeights=false;
-
-    //TODO ASK THE USER TO SYMMETRIZE GRAPH?
-    createAdjacencyMatrix(dropIsolates, omitWeights);
+    bool symmetrize=true;
+    createAdjacencyMatrix(dropIsolates, omitWeights, symmetrize);
     n-=isolatedVertices;  //isolatedVertices updated in createAdjacencyMatrix
     qDebug() << "Graph:: centralityInformation() - computing node ICs for total n = " << n;
 
@@ -2081,7 +2092,7 @@ void Graph::centralityInformation(){
     groupIC  = groupIC  /  (n);
     qDebug() << "groupIC   " << groupIC   ;
 
-
+    calculatedIC = true;
 }
 
 
@@ -2098,6 +2109,7 @@ void Graph::writeCentralityInformation(const QString fileName){
 
     emit statusMessage ( (tr("Calculating information centralities. Please wait...")) );
     centralityInformation();
+
     emit statusMessage ( QString(tr("Writing information centralities to file: "))
                          .arg(fileName) );
     outText.setRealNumberPrecision(m_precision);
@@ -2108,7 +2120,9 @@ void Graph::writeCentralityInformation(const QString fileName){
     outText << tr("The standardized values IC' can be seen as the proportion "
                   "of total information flow that is controlled by each actor. "
                   "Note that standard IC' values sum to unity, unlike most "
-                  "other centrality indices.\n");
+                  "other centrality indices.\n"
+                  "Warning: The IC index is always calculated for the symmetrized "
+                  "adjacency even when the current graph is directed.");
     outText << "(Wasserman & Faust, p. 196)\n";
 
     outText << tr("IC  range:  0 < C < inf (this index has no max value)") << "\n";
@@ -2268,6 +2282,7 @@ void Graph::centralityDegree(bool weights){
     }
 
     calculatedDC=true;
+
 }
 
 
@@ -2465,7 +2480,6 @@ void Graph::writeCentralityCloseness(
         return;
     }
     QTextStream outText ( &file );
-
 
     if (graphModified || !calculatedCentralities ) {
             emit statusMessage ( (tr("Calculating shortest paths")) );
@@ -2964,6 +2978,7 @@ void Graph::prestigeDegree(bool weights){
         maxDP/=(float)(sumDP);
     }
     calculatedDP=true;
+
 }
 
 
@@ -3224,8 +3239,12 @@ void Graph::writePrestigeProximity(
 
 
 //Calculates the PageRank Prestige of each vertex
-int Graph::prestigePageRank(){
+void Graph::prestigePageRank(){
     qDebug()<< "Graph:: prestigePageRank()";
+    if (! graphModified && calculatedPRP ) {
+        qDebug() << " graph not changed - return ";
+        return;
+    }
     discretePRCs.clear();
     sumPRC=0;
     maxPRC=0;
@@ -3354,13 +3373,15 @@ int Graph::prestigePageRank(){
         qDebug()<< "Graph:: prestigePageRank() vertex: " <<  (*it)->name()
                 << " PageRank = " << PRC << " standard PR = " << SPRC;
     }
+    calculatedPRP= true;
+
     if (allNodesAreIsolated) {
         qDebug()<< "Graph:: prestigePageRank() all vertices are isolated. Equal PageRank for all....";
-        return 1;
+        return;
     }
     qDebug()<< "Graph:: prestigePageRank() vertex: " <<  maxNodePRC
             << " has max PageRank = " << maxPRC;
-    return 0;
+    return;
 
 }
 
@@ -3376,7 +3397,8 @@ void Graph::writePrestigePageRank(const QString fileName){
     QTextStream outText ( &file );
 
     emit statusMessage ( (tr("Calculating PageRank indices. Please wait...")) );
-    this->prestigePageRank();
+
+    prestigePageRank();
 
     emit statusMessage ( QString(tr("Writing PageRank indices to file: %1"))
                          .arg(fileName) );
@@ -3563,11 +3585,12 @@ void Graph::writeTriadCensus(
     QTextStream outText ( &file );
 
     emit statusMessage ( (tr("Conducting triad census. Please wait....")) );
-
-    if (!triadCensus()){
-        qDebug() << "Error in triadCensus(). Exiting...";
-        file.close();
-        return;
+    if (graphModified || !calculatedTriad) {
+        if (!triadCensus()){
+            qDebug() << "Error in triadCensus(). Exiting...";
+            file.close();
+            return;
+        }
     }
 
 
@@ -3656,9 +3679,9 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0, double maxRadi
                 qDebug() << "Layout according to IRCC C = " << (*it)->IRCC();
                 qDebug() << "Layout according to IRCC std = " << (*it)->SIRCC();
                 qDebug() << "Layout according to IRCC maxC= " << maxIRCC;
-//                C=(*it)->IRCC();
-//                std= (*it)->SIRCC();
-//                maxC=maxIRCC;
+                C=(*it)->IRCC();
+                std= (*it)->SIRCC();
+                maxC=maxIRCC;
 
                 break;
             }
@@ -3778,6 +3801,7 @@ void Graph::layoutRandom(double maxWidth, double maxHeight){
                 << " to new position " << new_x << " , "<< new_y;
         emit moveNode((*it)->name(),  new_x,  new_y);
     }
+    graphModified=true;
 }
 
 
@@ -3971,6 +3995,7 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
         emit addGuideHLine(static_cast<int> ( new_y ) );
     }
     graphModified=true;
+    emit graphChanged();
 }
 
 
@@ -4157,6 +4182,7 @@ void Graph::createRandomNetErdos(int vert, double probability){
         qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
     }
     addRelationFromGraph(tr("random")); //FIXME
+
     emit graphChanged();
 }
 
@@ -4206,6 +4232,7 @@ void Graph::createRandomNetRingLattice(
         qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
     }
     addRelationFromGraph(tr("random"));
+
     emit graphChanged();
 }
 
@@ -4332,7 +4359,8 @@ void Graph::createNumberOfWalksMatrix(int length) {
 
     bool dropIsolates=false;
     bool omitWeights=false;
-    createAdjacencyMatrix(dropIsolates, omitWeights);
+    bool symmetrize=false;
+    createAdjacencyMatrix(dropIsolates, omitWeights, symmetrize);
 
     int size = vertices();
     int maxPower = length;
@@ -4355,6 +4383,7 @@ void Graph::createNumberOfWalksMatrix(int length) {
         XM=PM;
         XSM = XSM+XM;
     }
+
 }
 
 
@@ -4528,6 +4557,7 @@ void Graph::reachabilityMatrix() {
             qDebug()<< endl;
         }
         reachabilityMatrixCreated=true;
+
     }
 
 }
@@ -4755,6 +4785,7 @@ float Graph:: numberOfCliques(int v1){
         } // end 2nd while
         ++it1;
     } // end 1st while
+
     return cliques;
 }
 
@@ -4833,6 +4864,7 @@ float Graph:: clusteringCoefficient(int v1){
     clucof = totalCliques / denom;
     qDebug() << "=== Graph::clusteringCoefficient() - vertex " <<  v1 << " ["<< index[v1] << "]" << " has CLUCOF = "<< clucof;
     m_graph[ index [v1] ] ->setCLC(clucof);
+
     return clucof;
 }
 
@@ -4952,6 +4984,8 @@ bool Graph::triadCensus(){
         }// end 2rd foreach
     }// end 1rd foreach
     qDebug() << " ****** 003 COUNTER: "<< counter_021;
+
+    calculatedTriad=true;
     return true;
 }
 
@@ -5245,6 +5279,7 @@ bool Graph::saveGraph (
         break;
     }
     };
+    graphModified=false;
     return true;
 }
 
@@ -5321,6 +5356,7 @@ bool Graph::saveGraphToPajekFormat (
     }
     f.close();
     QString fileNameNoPath=fileName.split("/").last();
+
     emit statusMessage (QString(tr( "File %1 saved" ) ).arg( fileNameNoPath ));
     return true;
 
@@ -8334,6 +8370,7 @@ void Graph::writeAdjacencyMatrixTo(QTextStream& os){
         }
         os << endl;
     }
+
 }
 
 
@@ -8341,21 +8378,21 @@ void Graph::writeAdjacencyMatrixTo(QTextStream& os){
 /**  	Outputs adjacency matrix to a text stream
 *	Used in slotExportSM() of MainWindow class.
 */
-QTextStream& operator <<  (QTextStream& os, Graph& m){
-    QList<Vertex*>::const_iterator it, it1;
-    float weight=-1;
-    for (it=m.m_graph.begin(); it!=m.m_graph.end(); it++){
-        for (it1=m.m_graph.begin(); it1!=m.m_graph.end(); it1++){
-            if ( (weight = m.hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
-                os << static_cast<int> (weight) << " ";
-            }
-            else
-                os << "0 ";
-        }
-        os << endl;
-    }
-    return os;
-}
+//QTextStream& operator <<  (QTextStream& os, Graph& m){
+//    QList<Vertex*>::const_iterator it, it1;
+//    float weight=-1;
+//    for (it=m.m_graph.begin(); it!=m.m_graph.end(); it++){
+//        for (it1=m.m_graph.begin(); it1!=m.m_graph.end(); it1++){
+//            if ( (weight = m.hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
+//                os << static_cast<int> (weight) << " ";
+//            }
+//            else
+//                os << "0 ";
+//        }
+//        os << endl;
+//    }
+//    return os;
+//}
 
 
 
@@ -8394,6 +8431,7 @@ void Graph::writeAdjacencyMatrix (const QString fn, const char* netName) {
     qDebug("Graph: Found a total of %i edge",sum);
     if ( sum != totalEdges() ) qDebug ("Error in edge count found!!!");
     else qDebug("Edge count OK!");
+
     file.close();
 }
 
@@ -8404,7 +8442,7 @@ void Graph::writeAdjacencyMatrix (const QString fn, const char* netName) {
  *  and AM(i,j)=0 if i not connected to j
  *  Used in Graph::centralityInformation() and Graph::invertAdjacencyMatrix()
  */
-void Graph::createAdjacencyMatrix(bool dropIsolates=false, bool omitWeights=false){
+void Graph::createAdjacencyMatrix(bool dropIsolates=false, bool omitWeights=false, bool symmetrize=false ){
     qDebug() << "Graph::createAdjacencyMatrix()";
     float m_weight=-1;
     int i=0, j=0;
@@ -8435,10 +8473,12 @@ void Graph::createAdjacencyMatrix(bool dropIsolates=false, bool omitWeights=fals
                 continue;
             }
             if ( (m_weight = this->hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
-                if (omitWeights)
+                if (omitWeights) {
                     AM.setItem(i,j, 1 );
-                else
+                }
+                else {
                     AM.setItem(i,j, m_weight );
+                }
             }
             else{
                 AM.setItem(i,j, 0);
@@ -8450,9 +8490,15 @@ void Graph::createAdjacencyMatrix(bool dropIsolates=false, bool omitWeights=fals
                         AM.setItem(j,i, 1 );
                     else
                         AM.setItem(j,i, m_weight );
+                    if (symmetrize && (AM.item(i,j) != AM.item(j,i)) ) {
+                        AM.setItem(i,j, AM.item(j,i) );
+                    }
                 }
                 else {
                     AM.setItem(j,i, 0);
+                    if (symmetrize && (AM.item(i,j) != AM.item(j,i)) )
+                        AM.setItem(j,i, AM.item(i,j) );
+
                 }
                 qDebug()<<" AM("<< j+1 << ","<< i+1 << ") = " <<  AM.item(j,i);
             }
@@ -8461,6 +8507,7 @@ void Graph::createAdjacencyMatrix(bool dropIsolates=false, bool omitWeights=fals
         i++;
     }
     qDebug() << "Graph::createAdjacencyMatrix() - Done.";
+
     adjacencyMatrixCreated=true;
 }
 
@@ -8509,6 +8556,7 @@ void Graph::writeInvertAdjacencyMatrix(QString fn, const char* netName){
         outText << endl;
         qDebug() << endl;
     }
+
     file.close();
 }
 
@@ -8520,6 +8568,7 @@ bool Graph::saveGraphToDotFormat (
     Q_UNUSED(networkName);
     Q_UNUSED(maxWidth);
     Q_UNUSED(maxHeight);
+
     return true;
 }
 
@@ -8706,6 +8755,7 @@ bool Graph::saveGraphToGraphMLFormat (
     f.close();
     QString fileNameNoPath=fileName.split("/").last();
     emit statusMessage( QString(tr( "File %1 saved" ) ).arg( fileNameNoPath ) );
+
     return true;
 }
 
