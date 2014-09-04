@@ -299,13 +299,10 @@ void Graph::setCanvasDimensions(int w, int h){
  */
 void Graph::createEdge(int v1, int v2, float weight, QString color,
                        int reciprocal=0, bool drawArrows=true, bool bezier=false){
-//    QString edgeName = QString::number(m_curRelation) + QString(":")
-//                + QString::number(v1) + QString(">")+ QString::number(v2);
     qDebug()<<"\n\nGraph::createEdge() " << v1 << " -> " << v2 << " weight "
            << " weight " << weight ;
-    // edgesHash is used as a fast lookup if we already have such an edge
+    // check whether there is already such an edge
     // (see #713617 - https://bugs.launchpad.net/socnetv/+bug/713617)
-    //if (! edgesHash.contains(edgeName)){
     if (!hasEdge(v1,v2)){
         if ( reciprocal == 2) {
             qDebug()<<"  Creating edge as RECIPROCAL - emitting drawEdge signal to GW";
@@ -325,7 +322,6 @@ void Graph::createEdge(int v1, int v2, float weight, QString color,
             addEdge ( v1, v2, weight, color, reciprocal);
             emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier);
         }
-     //   edgesHash.insert(edgeName, weight);
     }
     else {
         qDebug() << "n\nGraph::createEdge() - edge " << v1 << " -> " << v2
@@ -579,17 +575,6 @@ void Graph::setEdgeWeight (int v1, int v2, float weight) {
     qDebug() << "Graph: setEdgeWeight between " << v1 << "[" << index[v1]
                 << "] and " << v2 << "[" << index[v2] << "]" << " = " << weight;
     m_graph [ index[v1] ]->changeLinkWeightTo(v2, weight);
-
-//    QString edgeName = QString::number(m_curRelation) + QString(":")
-//                + QString::number(v1) + QString(">")+ QString::number(v2);
-
-//    QMutableHashIterator <QString,float> it1 (edgesHash);
-//    while ( it1.hasNext()) {
-//        it1.next();
-//        if ( it1.key() == edgeName ) {
-//            it1.setValue(weight);
-//        }
-//    }
     graphModified=true;
     emit graphChanged();
 
@@ -607,16 +592,6 @@ void Graph::removeEdge (int v1, int v2) {
                << " and " << v2 << " i "<< index[v2]
                << "  NOW vertex v1 reports edge weight "
                << m_graph [ index[v1] ]->isLinkedTo(v2) ;
-//    QString edgeName = QString::number(m_curRelation) + QString(":")
-//                + QString::number(v1) + QString(">")+ QString::number(v2);
-//    H_StrToFloat::iterator it1=edgesHash.find(edgeName);
-//    while (it1 != edgesHash.end() && it1.key() == edgeName ) {
-//            qDebug() << "Graph::removeEdge() "
-//                     << it1.key() << " relation " << m_curRelation
-//                        << " to be erased from Graph::edgesHash";
-//            it1=edgesHash.erase(it1);
-//    }
-
     if ( this->hasEdge(v2,v1) !=0)
         symmetricAdjacencyMatrix=false;
 
@@ -1037,6 +1012,12 @@ int Graph::totalEdges () {
 */
 int Graph::vertices() {
     qDebug("Graph: vertices()");
+    m_totalVertices=0;
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( (*it)->isEnabled() )
+            ++m_totalVertices;
+    }
     return m_totalVertices;
     //FIXME
     // this needs to return only the enabled vertices (i.e. for LCD to display the right value)
@@ -1130,7 +1111,6 @@ void Graph::clear() {
     index.clear();
     //clear relations
     m_relationsList.clear();
-//    edgesHash.clear();
     m_curRelation=0;
 
     discreteDPs.clear(); discreteDCs.clear(); discreteCCs.clear();
@@ -8985,7 +8965,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 Graph::~Graph() {
     clear();
     index.clear();
-   // edgesHash.clear();
+
 }
 
 

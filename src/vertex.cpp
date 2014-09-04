@@ -166,7 +166,6 @@ void Vertex::addLinkFrom (long int source, float weight) {
 //    qDebug() <<"Vertex: "<< name() << " addLinkFrom() "<< source;
     m_inLinks.insertMulti(
                 source, rel_w_bool (m_curRelation, pair_f_b(weight, true) ) );
-    m_inLinksCounter++;
 }
 
 void Vertex::changeLinkWeightTo(long int target, float weight){
@@ -250,8 +249,6 @@ void Vertex::removeLinkFrom(long int v2){
                 ++it;
             }
         }
-        m_inLinksCounter--;
-
         qDebug() << "Vertex: vertex " << m_name << " now has "
                  << inLinks() << " in-links"  ;
 	}

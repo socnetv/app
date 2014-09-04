@@ -64,7 +64,6 @@ typedef QPair <int, pair_f_b > rel_w_bool;
 typedef QHash < int, rel_w_bool > H_edges;
 typedef QHash<QString, bool> H_StrToBool;
 
-typedef QHash <QString, float> H_StrToFloat;
 
 class Graph:  public QObject{
     Q_OBJECT
@@ -403,7 +402,6 @@ private:
     QList<int>  m_isolatedVerticesList;
     QHash <int, int> influenceRanges, influenceDomains;
     QHash <int, int> notStronglyConnectedVertices;
-    H_StrToFloat edgesHash; // edges to weight hash. Key format "rel:source>target"
 
     Matrix  TM, DM, sumM, invAM, AM, invM;
     Matrix XM, XSM, XRM;
