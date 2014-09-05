@@ -254,6 +254,11 @@ This is often considered a measure of actor activity.
 <br /><br />
 This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs.
 It can also be calculated in weighted graphs. In weighted relations, ODC is the sum of weights of all edges/outLinks attached to v.
+<br /><br/>
+Note that for Degree Centralization (or Group Degree Centrality in SocNetV-speak) we use the Freeman's formula for unvalued graphs.
+For valued or weighted graphs, SocNetV (versions 1.5 and up) use a variant of Freeman's formula since there's no way to calculate the denominator.
+<br />
+( sum(maxDC-DC(v)) {for every v} ) / ( maxDC * (vertices-1) ) -  verticesIsolated / vertices
 </p>
 
 
