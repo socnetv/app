@@ -907,6 +907,7 @@ bool Parser::loadPajek(){
 	qDebug("Parser-loadPajek(): Clearing DumiesList from Pajek");
 	listDummiesPajek.clear();
     relationsList.clear();
+    emit changeRelation (0);
 	exit(0);
     return true;
 
