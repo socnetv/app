@@ -2708,6 +2708,7 @@ void Graph::writeCentralityStress(
     outText << tr("STRESS CENTRALITY (SC)")<<"\n";
     outText << tr("SC(u) is the sum of sigma(s,t,u): the number of geodesics "
                   "from s to t through u.")<<"\n";
+    outText << tr("This index was introduced by Shimbel (1953)")<<"\n";
     outText << tr("The SC index reflects the total number of geodesics between all "
                   "other nodes which run through u")<<"\n";
 
@@ -2773,8 +2774,9 @@ void Graph::writeCentralityEccentricity(
                          .arg(fileName) );
     outText.setRealNumberPrecision(m_precision);
     outText << tr("ECCENTRICITY CENTRALITY (EC)") << "\n";
-    outText << tr("The EC indx of a node is the inverse maximum geodesic distance "
+    outText << tr("The EC index of a node is the inverse maximum geodesic distance "
                   " from that node to all other nodes in the network.") << "\n";
+    outText << tr("This index is also known as Graph Centrality (Hage and Harary, 1995)") <<"\n";
     outText << tr("Therefore, the EC value reflects farness: how far, at most, is each "
                   " node from every other node.") << "\n";
     outText << tr("Nodes with very high EC index have short distances to all other "

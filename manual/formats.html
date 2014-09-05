@@ -5,11 +5,13 @@
 
        SocNetV supports the following network data formats:
 	<ul>
-		<li>GraphML  (.graphml), </li> 
+                <li>GraphML  (.graphml or .xml), </li>
 		<li>GraphViz  (.dot),  </li> 
-		<li>Adjacency matrix (.net, .txt)</li>
+                <li>Adjacency matrix (.sm, .adj or .csv )</li>
                 <li>Pajek  (.net, .paj or .pajek), </li>
 		<li>UCINET's Data Language (.dl)</li>
+                <li>Lists (.lst or .list)</li>
+                <li>Weighted Lists (.wlst or .wlist)</li>
 
 	</ul>
 
@@ -271,48 +273,50 @@ SocNetV also supports Pajek files which declare edges/arcs in matrices, like thi
 </pre>
 </div>
 <p class="text">
-Here, the *Matrix tag replaces *Arcs or *Edges. An ordinary adjacency matrix follows describing all links.
-<br />
+In the above example, the *Matrix tag replaces *Arcs or *Edges. An ordinary adjacency matrix follows describing all links.
+</p>
+<p class="text">
 SocNetV v1.5 and later supports multiple *Matrix declarations in the same Pajek file.
 It will parse each adjacency matrix and load it as a new relation of the same network.
-
-Example:
-
-<pre>
-*Network "4 possible graphs of N=5"
-*Vertices 5
-1 "1" ic red            0.221583        0.644042        circle
-2 "2" ic red            0.233094        0.351433        circle
-3 "3" ic red            0.696403        0.328808        circle
-4 "4" ic red            0.471942        0.197587        circle
-5 "5" ic red            0.726619        0.644042        circle
-*Matrix :1
-0 0 0 0 0
-0 0 0 0 0
-0 0 0 0 0
-0 0 0 0 0
-0 0 0 0 0
-*Matrix :2
-0 0 0 0 0
-0 0 0 1 0
-0 0 0 0 0
-0 1 0 0 0
-0 0 0 0 0
-*Matrix :3
-0 1 0 0 0
-1 0 0 1 0
-0 0 0 0 0
-0 1 0 0 0
-0 0 0 0 0
-*Matrix :4
-0 0 0 0 1
-0 0 0 1 0
-0 0 0 0 0
-0 1 0 0 0
-1 0 0 0 0
-
-</pre>
+<br />
+Below is an example pajek file with 4 relations/matrices and 5 actors:
 </p>
+<p class="code">
+*Network "4 possible graphs of N=5" <br />
+*Vertices 5<br />
+1 "1" ic red            0.221583        0.644042        circle<br />
+2 "2" ic red            0.233094        0.351433        circle<br />
+3 "3" ic red            0.696403        0.328808        circle<br />
+4 "4" ic red            0.471942        0.197587        circle<br />
+5 "5" ic red            0.726619        0.644042        circle<br />
+*Matrix :1<br />
+0 0 0 0 0<br />
+0 0 0 0 0<br />
+0 0 0 0 0<br />
+0 0 0 0 0<br />
+0 0 0 0 0<br />
+*Matrix :2<br />
+0 0 0 0 0<br />
+0 0 0 1 0<br />
+0 0 0 0 0<br />
+0 1 0 0 0<br />
+0 0 0 0 0<br />
+*Matrix :3<br />
+0 1 0 0 0<br />
+1 0 0 1 0<br />
+0 0 0 0 0<br />
+0 1 0 0 0<br />
+0 0 0 0 0<br />
+*Matrix :4<br />
+0 0 0 0 1<br />
+0 0 0 1 0<br />
+0 0 0 0 0<br />
+0 1 0 0 0<br />
+1 0 0 0 0<br />
+</p>
+</p>
+
+
 
 <p class="text">
 Another possibility, is the *ArcsList tag. When SocNetV finds that tag in a Pajek file, it expects each node to declare list of its link to other nodes. Here is an example:
@@ -344,9 +348,6 @@ Another possibility, is the *ArcsList tag. When SocNetV finds that tag in a Paje
 
 <h4><a name="DL" id="DL"></a>UCINET's DL files</h4>
 <p class="text">
-
-
-
 UCINET's DL format is one of the easiest to understand.
 As of version 1.4, SocNetV support "full matrix" and "edgelist1" modes.
 Each UCINET file starts with the "DL" mark; then the amount N of nodes is declared
@@ -390,3 +391,66 @@ DATA:
 0.1 1 1 0
 </pre>
 </div>
+
+
+<h4><a name="List" id="List"></a>List-formatted files</h4>
+<p class="text">
+The "list" format is the most simple format supported by SocNetV.
+It is suitable only for unvalued graphs or digraphs of dichotomous relations.
+It simply states what edges/arcs are present in the network.
+No other node or edge attributes are supported. <br />
+Files of this format consist of rows with (node) numbers only.  <br />
+Each row of the file declares the arcs (outbound edges) from a node.
+The first element of the row is always considered to be the source node
+while the subsequent elements are the numbers of the nodes outlinked by the source node.
+<br /><br />Below is an example.
+For instance, the first row declares that node 18 has outbound edges to nodes 8, 10, 23 and 21:
+</p>
+<p class="code">
+18 8 10 23 21 <br />
+19 11 21 <br />
+29 5 9 10 <br />
+23 8 9 18 11 <br />
+4 7 6 8 20 5 21 <br />
+5 4 29 20 7 6 8 9 26 21 <br />
+6 5 7 4 20 21 8 <br />
+7 4 6 5 8 20 21 <br />
+9 5 8 23 29 20 21 11 10 <br />
+8 18 23 4 5 6 7 21 24 26 25 9 10 37 20 <br />
+10 18 29 8 11 9 20 25 26 <br />
+11 19 23 9 10 25 21 36 <br />
+20 4 5 6 7 8 9 10 <br />
+24 8 26 <br />
+26 5 8 24 10 <br />
+21 19 4 5 6 7 8 9 11 18 <br />
+36 37 11 <br />
+37 8 36 <br />
+25 10 11 8 <br />
+</p>
+
+
+
+<h4><a name="WeightedList" id="WeightedList"></a>Weighted List-formatted files</h4>
+<p class="text">
+The "Weighted list" format is another simple format supported by SocNetV.
+It is suitable for both unvalued and valued graphs or digraphs - no colors or positions are supported though.<br />
+Files of this format consist of rows with three numbers: a pair of nodes along with a weight.  <br />
+Each row of the file declares an arc (outbound edge) from a source node to a target node.
+The first number of the row is always considered to be the source node,
+the second element is the target node and the third is the weight of the arc from source to target.
+<br /><br />Below is an example.
+For instance, the first row declares that node 1 has an outbound edge to node 2, of weight 4 .
+The second row declares that node 1 is out-linked to 3 and the weight of that arc is 2.
+</p>
+<p class="code">
+1 2 4<br />
+1 3 2<br />
+1 6 2<br />
+1 8 2<br />
+1 10 2<br />
+1 11 2<br />
+1 13 2<br />
+1 14 2<br />
+1 18 2<br />
+...
+</p>

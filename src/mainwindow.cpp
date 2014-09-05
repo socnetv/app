@@ -2678,6 +2678,7 @@ void MainWindow::initNet(){
     pajekFileLoaded=false;
     adjacencyFileLoaded=false;
     fileFormat = -1;
+    checkSelectFileType = true;
     dotFileLoaded=false;
     fileLoaded=false;
 
@@ -2849,16 +2850,21 @@ void MainWindow::slotChooseFile() {
     if (firstTime && fileFormat == -1 ) {
         QMessageBox::information( this, "SocNetV",
                                   tr("Attention: \n")+
-                                  tr("This menu option is suitable only for loading a network file with data in GraphML format, which is the default file format of SocNetV. \n")+
+                                  tr("This menu option is more suitable for loading "
+                                     "a network file in GraphML format (.graphml), "
+                                     "which is the default format of SocNetV. \n"
+                                     "Nevertheless, if you select other supported "
+                                     "filetype SocNetV will attempt to load it.\n")+
 
-                                  tr("If you want to import other supported network formats (i.e. Pajek, UCINET, dot, etc), ")+
-                                  tr("please use the options in the Import sub menu. \n")+
+                                  tr("If your file is not GraphML but you know its "
+                                     "format is supported (i.e. Pajek, UCINET, GraphViz, etc), ")+
+                                  tr("please use the options in the Import sub menu. They are more safe.\n")+
                                   tr("\n This warning message will not appear again."),
                                   "OK", 0 );
         firstTime=false;
     }
     if ( fileFormat == -1 )
-        fileFormat = 1;
+        fileFormat = -1;
 
     bool a_file_was_already_loaded=fileLoaded;
     previous_fileName=fileName;
@@ -2874,7 +2880,7 @@ void MainWindow::slotChooseFile() {
         fileType_string = tr("Pajek (*.net *.paj *.pajek);;All (*)");
         break;
     case 3: //Adjacency
-        fileType_string = tr("Adjacency (*.txt *.csv *.sm *.adj);;All (*)");
+        fileType_string = tr("Adjacency (*.csv *.sm *.adj);;All (*)");
         break;
     case 4: //Dot
         fileType_string = tr("GraphViz (*.dot);;All (*)");
@@ -2886,16 +2892,16 @@ void MainWindow::slotChooseFile() {
         fileType_string = tr("DL (*.dl);;All (*)");
         break;
     case 7:	// Weighted List
-        fileType_string = tr("List (*.lst *.list);;All (*)");
+        fileType_string = tr("Weighted List (*.wlst *.wlist);;All (*)");
         break;
     case 8:	// Simple List
         fileType_string = tr("List (*.lst *.list);;All (*)");
         break;
     case 9:	// Two mode sm
-        fileType_string = tr("Two-Mode Sociomatrix (*.txt *.2sm *.aff *.csv  *.sm);;All (*)");
+        fileType_string = tr("Two-Mode Sociomatrix (*.2sm *.aff);;All (*)");
         break;
     default:	//All
-        fileType_string = tr("All (*);;GraphML (*.graphml);;GraphViz (*.dot);;Adjacency (*.txt *.csv *.net *.adj *.sm);;Pajek (*.net *.pajek *.paj);;DL (*.dl *.net)");
+        fileType_string = tr("GraphML (*.graphml, *.xml);;Pajek (*.net *.pajek *.paj);;DL (*.dl *.dat);;Adjacency (*.csv *.adj *.sm);;GraphViz (*.dot);;List (*.lst *.list);;Weighted List (*.wlst *.wlist);;All (*)");
         break;
 
     }
@@ -2905,7 +2911,65 @@ void MainWindow::slotChooseFile() {
                 tr("Select one file to open"),
                 getLastPath(), fileType_string	);
 
+    if (checkSelectFileType) {
+        //check if user has changed the filetype filter and loaded other filetype
+        if (m_fileName.endsWith(".graphml",Qt::CaseInsensitive ) ||
+                m_fileName.endsWith(".xml",Qt::CaseInsensitive ) ) {
+            fileFormat=m_fileFormat=1;
+        }
+        else if (m_fileName.endsWith(".net",Qt::CaseInsensitive ) ||
+                 m_fileName.endsWith(".paj",Qt::CaseInsensitive )  ||
+                 m_fileName.endsWith(".pajek",Qt::CaseInsensitive ) ) {
+            fileFormat=m_fileFormat=2;
+        }
+        else if (m_fileName.endsWith(".sm",Qt::CaseInsensitive ) ||
+                 m_fileName.endsWith(".dat",Qt::CaseInsensitive )  ||
+                 m_fileName.endsWith(".adj",Qt::CaseInsensitive ) ||
+                 m_fileName.endsWith(".txt",Qt::CaseInsensitive )) {
+            fileFormat=m_fileFormat=3;
+        }
+        else if (m_fileName.endsWith(".dot",Qt::CaseInsensitive ) ) {
+            fileFormat=m_fileFormat=4;
+        }
+        else if (m_fileName.endsWith(".gml",Qt::CaseInsensitive ) ) {
+            fileFormat=m_fileFormat=5;
+        }
+        else if (m_fileName.endsWith(".dl",Qt::CaseInsensitive ) ) {
+            fileFormat=m_fileFormat=6;
+        }
+        else if (m_fileName.endsWith(".list",Qt::CaseInsensitive ) ||
+                 m_fileName.endsWith(".lst",Qt::CaseInsensitive )  ) {
+            fileFormat=m_fileFormat=7;
+        }
+        else if (m_fileName.endsWith(".wlist",Qt::CaseInsensitive ) ||
+                 m_fileName.endsWith(".wlst",Qt::CaseInsensitive )  ) {
+            fileFormat=m_fileFormat=8;
+        }
+        else if (m_fileName.endsWith(".2sm",Qt::CaseInsensitive ) ||
+                 m_fileName.endsWith(".aff",Qt::CaseInsensitive )  ) {
+            fileFormat=m_fileFormat=9;
+        }
+        else
+            fileFormat=m_fileFormat=-1;
+    }
     if (!m_fileName.isEmpty()) {
+        if (m_fileFormat == -1) {
+            QMessageBox::critical(this, "Unrecognized file extension", tr("Error! \n"
+                                  "SocNetV supports the following network file"
+                                  "formats. The filename you selected does not "
+                                  "end with any of the following extensions:\n"
+                                  "- GraphML (.graphml or .xml)\n"
+                                  "- Pajek (.paj or .pajek or .net)\n"
+                                  "- UCINET (.dl) \n"
+                                  "- GraphViz (.dot)\n"
+                                  "- Adjacency Matrix (.sm or .adj or .csv)\n"
+                                  "- List (.list or .lst)\n"
+                                  "- Weighted List (.wlist or .wlst)\n"
+                                  "- Two-Mode / affiliation (.2sm or .aff) \n\n"
+                                  "If you are sure the file is of a supported "
+                                  "format, perhaps you should just change its extension..."),
+                                  QMessageBox::Ok, 0);
+        }
         qDebug()<<"MW: file selected: " << m_fileName;
         fileNameNoPath=m_fileName.split ("/");
         setLastPath(m_fileName); // store this path
@@ -3123,7 +3187,8 @@ void MainWindow::slotPrintView() {
     Imports a network from a formatted file
 */
 void MainWindow::slotImportGraphML(){
-    fileFormat=1;
+//    fileFormat=-1;
+//    checkSelectFileType = true;
     this->slotChooseFile();
 }
 
@@ -3134,6 +3199,7 @@ void MainWindow::slotImportGraphML(){
 */
 void MainWindow::slotImportPajek(){
     fileFormat=2;
+    checkSelectFileType = false;
     this->slotChooseFile();
 }
 
@@ -3144,6 +3210,7 @@ void MainWindow::slotImportPajek(){
 */
 void MainWindow::slotImportSM(){
     fileFormat=3;
+    checkSelectFileType = false;
     this->slotChooseFile();
 }
 
@@ -3154,6 +3221,7 @@ void MainWindow::slotImportSM(){
 */
 void MainWindow::slotImportTwoModeSM(){
     fileFormat=9;
+    checkSelectFileType = false;
     this->slotChooseFile();
 }
 
@@ -3163,6 +3231,7 @@ void MainWindow::slotImportTwoModeSM(){
 */
 void MainWindow::slotImportDot(){
     fileFormat=4;
+    checkSelectFileType = false;
     this->slotChooseFile();
 }
 
@@ -3173,6 +3242,7 @@ void MainWindow::slotImportDot(){
 */
 void MainWindow::slotImportGML(){
     fileFormat=5;
+    checkSelectFileType = false;
     this->slotChooseFile();
 }
 
@@ -3182,6 +3252,7 @@ void MainWindow::slotImportGML(){
 */
 void MainWindow::slotImportDL(){
     fileFormat=6;
+    checkSelectFileType = false;
     this->slotChooseFile();
 }
 
@@ -3207,6 +3278,7 @@ void MainWindow::slotImportEdgeList(){
         fileFormat = 8;
         break;
     }
+    checkSelectFileType = false;
     this->slotChooseFile();
 }
 
@@ -3978,7 +4050,7 @@ void MainWindow::slotRecreateDataSet (QString m_fileName) {
     else if (m_fileName.endsWith(".2sm")) {
         m_fileFormat=9;
     }
-
+    checkSelectFileType = false;
     if ( loadNetworkFile(dataDir+m_fileName, m_fileFormat) ) {
         qDebug() << "slotRecreateDataSet() loaded file " << m_fileName;
         fileName=m_fileName;

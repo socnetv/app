@@ -6,4 +6,5 @@
      // These edges both have different line properties
      a -- b -- c [color=blue];
      b -- d [style=dotted];
+     c -- d [color=#ddd, style=dotted];
  }

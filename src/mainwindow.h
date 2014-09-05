@@ -404,7 +404,8 @@ private:
     int initNodeSize, labelDistance, numberDistance,initNumberSize, initLabelSize;
     int totalLinks, fortuneCookiesCounter,  tipsCounter;
     //QString VERSION;
-    bool pajekFileLoaded, adjacencyFileLoaded, dotFileLoaded, graphMLFileLoaded, fileLoaded;
+    bool pajekFileLoaded, adjacencyFileLoaded, dotFileLoaded, graphMLFileLoaded;
+    bool fileLoaded, checkSelectFileType;
     int fileFormat;
     bool networkModified;
     bool bezier,  linkClicked, nodeClicked, markedNodeExists, showProgressBar, firstTime;
