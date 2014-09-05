@@ -2248,7 +2248,8 @@ void Graph::centralityDegree(bool weights){
         else {
             (*it) -> setSDC( DC / (sumDC) );
         }
-        nom+= (maxDC-DC);
+        if (! (*it)->isIsolated())
+            nom+= (maxDC-DC);
         qDebug() << "Graph: vertex " <<  (*it)->name() << " SDC " << (*it)->SDC ();
 
         varianceDegree += (DC-meanDegree) * (DC-meanDegree) ;
@@ -2265,9 +2266,9 @@ void Graph::centralityDegree(bool weights){
     }
     else {
         qDebug()<< "Graph::centralityDegree vertices isolated: "
-                << verticesIsolated().count() << ". I will subtract groupDC by "
+                << verticesIsolated().count() << ". I will multiply groupDC by 1 - "
                 << ((float)verticesIsolated().count()/(float)vert);
-        groupDC= ( nom / ( maxDC * (vert-1.0)) -  (float)verticesIsolated().count()) / (float) vert ;
+        groupDC=  ( nom / ( maxDC * (vert-1.0) ) ) * ( 1.0 - ( (float)verticesIsolated().count() / (float) vert) ) ;
     }
 
     qDebug("Graph: varianceDegree = %f, groupDC = %f", varianceDegree, groupDC);
