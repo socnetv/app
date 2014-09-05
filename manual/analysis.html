@@ -307,19 +307,27 @@ The IRCC formula used is the ratio of the fraction of nodes reachable by v
 
 <h5><a name="BC" id="BC"></a>Betweenness Centrality (BC) </h5>
 <p class="text"> 
-For each node v, BC is the ratio of all geodesics between pairs of nodes which run through v. It reflects how often an node lies on the geodesics between the other nodes of the network. It can be interpreted as a measure of control. A node which lies between many others is assumed to have a higher likelihood of being able to control information flow in the network.
+For each node v, BC is the ratio of all geodesics between pairs of nodes which run through v.
+It reflects how often an node lies on the geodesics between the other nodes of the network.
+The BC of each actor can be interpreted as a measure of control.
+A node which lies between many others is assumed to have a higher likelihood of being able to control information flow in the network.
 <br /><br />
-Note that betweenness centrality assumes that all geodesics have equal weight or are equally likely to be chosen for the flow of information between any two nodes. This is reasonable only on "regular" networks where all nodes have similar degrees. On networks with significant degree variance you might want to try informational centrality instead.
+Note that betweenness centrality assumes that all geodesics have equal weight or are equally likely to be chosen for the flow of information between any two nodes.
+This is reasonable only on "regular" networks where all nodes have similar degrees.
+On networks with significant degree variance you might want to try informational centrality instead.
 <br /><br />
-This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1.
+This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs.
+It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1.
 </p>
 
 <h5><a name="SC" id="SC"></a>Stress Centrality (SC) </h5>
 <p class="text">
 
-For each node v, SC is the total number of geodesics between all other nodes which run through v. When one node falls on all other geodesics between all the remaining (N-1) nodes, then we have a star graph with maximum Stress Centrality.
+For each node v, SC is the total number of geodesics between all other nodes which run through v.
+When one node falls on all other geodesics between all the remaining (N-1) nodes, then we have a star graph with maximum Stress Centrality.
 <br /><br />
-This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1
+This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs.
+It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1
 </p>
 
 
@@ -353,15 +361,17 @@ This index can be calculated in both graphs and digraphs but is usually best sui
 
 <h5><a name="IC" id="IC"></a>Information Centrality (IC)</h5>
 <p class="text">
-The Information Centrality (IC) is an index suggested by Stephenson and Zelen (1989) which focuses on how information might flow through many different paths. IC counts all paths between nodes weighted by strength of tie and distance.
+The Information Centrality (IC) is an index suggested by Stephenson and Zelen (1989) which focuses on how information might flow through many different paths.
+The IC metric counts all paths between nodes weighted by strength of tie and distance.
 <br /><br />
-Since there is no known generalization of Stephenson & Zelen's theory for information centrality to directional relations, the index should be calculated only for graphs and is more meaningful in weighted graphs/networks.
+Since there is no known generalization of Stephenson & Zelen's theory for information centrality to directional relations,
+the index should be calculated only for graphs and is more meaningful in weighted graphs/networks.
 <br /><br />
-Note: To compute this index, SocNetV drops all isolated nodes
+Note: To compute this index, SocNetV drops all isolated nodes and symmetrizes (if needed) the adjacency matrix.
 
 </p>
 <p class="text">
-In order to calculate the IC of each actor, we create a N x N matrix A with:
+In order to calculate the IC of each actor, we create a N x N matrix A from the (symmetrized) sociomatrix with:
 </p>
 <p class="code">
 Aii=1+weighted_degree_ni <br />

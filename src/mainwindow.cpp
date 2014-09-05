@@ -2901,7 +2901,7 @@ void MainWindow::slotChooseFile() {
         fileType_string = tr("Two-Mode Sociomatrix (*.2sm *.aff);;All (*)");
         break;
     default:	//All
-        fileType_string = tr("GraphML (*.graphml, *.xml);;Pajek (*.net *.pajek *.paj);;DL (*.dl *.dat);;Adjacency (*.csv *.adj *.sm);;GraphViz (*.dot);;List (*.lst *.list);;Weighted List (*.wlst *.wlist);;All (*)");
+        fileType_string = tr("GraphML (*.graphml *.xml);;Pajek (*.net *.pajek *.paj);;DL (*.dl *.dat);;Adjacency (*.csv *.adj *.sm);;GraphViz (*.dot);;List (*.lst *.list);;Weighted List (*.wlst *.wlist);;All (*)");
         break;
 
     }
