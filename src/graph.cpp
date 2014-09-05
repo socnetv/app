@@ -2267,7 +2267,7 @@ void Graph::centralityDegree(bool weights){
         qDebug()<< "Graph::centralityDegree vertices isolated: "
                 << verticesIsolated().count() << ". I will subtract groupDC by "
                 << ((float)verticesIsolated().count()/(float)vert);
-        groupDC= nom  / maxDC;
+        groupDC= ( nom / ( maxDC * (vert-1.0)) -  (float)verticesIsolated().count()) / (float) vert ;
     }
 
     qDebug("Graph: varianceDegree = %f, groupDC = %f", varianceDegree, groupDC);

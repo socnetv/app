@@ -510,7 +510,9 @@ bool Parser::loadPajek(){
     bool zero_flag=false;
 	int   i=0, j=0, miss=0, source= -1, target=-1, nodeNum, colorIndex=-1, coordIndex=-1;
 	unsigned long int lineCounter=0;
+    int pos=-1, relationCounter=0;
 	float weight=1;
+    QString relation;
 	list<int> listDummiesPajek;
 	totalLinks=0;
 	aNodes=0;
@@ -518,24 +520,29 @@ bool Parser::loadPajek(){
 	miss=0; //counts missing nodeNumbers. 
 	//if j + miss < nodeNum, it creates (nodeNum-miss) dummy nodes which are deleted in the end.
     QList <int> toBeDeleted;  //FIXME ?
-	
+    QStringList relationsList;
+
+
 	while ( !ts.atEnd() )   {
 		str= ts.readLine();
-		
+        str = str.simplified();
+
 		if ( isComment(str)  ) 
 			continue;
 
 		lineCounter++;
 
 		if (lineCounter==1) {
-			if ( str.contains("graph",Qt::CaseInsensitive)  
-				|| str.contains("digraph",Qt::CaseInsensitive) 
-				|| str.contains("DL",Qt::CaseInsensitive) 
-				|| str.contains("list",Qt::CaseInsensitive)
-				|| str.contains("graphml",Qt::CaseInsensitive) 
-				|| str.contains("xml",Qt::CaseInsensitive)
+            if ( str.startsWith("graph",Qt::CaseInsensitive)
+                || str.startsWith("digraph",Qt::CaseInsensitive)
+                || str.startsWith("DL",Qt::CaseInsensitive)
+                || str.startsWith("list",Qt::CaseInsensitive)
+                || str.startsWith("graphml",Qt::CaseInsensitive)
+                || str.startsWith("<?xml",Qt::CaseInsensitive)
+                 || str.startsWith("LEDA.GRAPH",Qt::CaseInsensitive)
+                 || !str.startsWith("*network",Qt::CaseInsensitive)
 				) {
-				qDebug()<< "*** Parser:loadPajeck(): Not an Pajek-formatted file. Aborting!!";
+                qDebug()<< "*** Parser:loadPajeck(): Not an Pajek-formatted file. Aborting!!";
 				file.close();		
                 return false;
 			}
@@ -549,14 +556,16 @@ bool Parser::loadPajek(){
 				file.close();
                 return false;
 			}
-   			else if (str.contains( "network",Qt::CaseInsensitive) )  { //NETWORK NAME
-				if (str.contains(" ")) {
-					lineElement=str.split(QRegExp("\\s+"));	//split at one or more spaces
-					//qDebug()<<"Parser-loadPajek(): possible net name: "<<lineElement[1];
-					if (lineElement[1]!="") 
-						networkName=lineElement[1];
+            else if (str.startsWith( "*network",Qt::CaseInsensitive) )  { //NETWORK NAME
+                networkName = (str.right(str.size() - 8 )).simplified() ;
+                if (!networkName.isEmpty() ) {
+                    qDebug()<<"Parser::loadPajek(): networkName: "
+                           <<networkName;
 				}
-				qDebug()<<"Parser-loadPajek(): network name: "<<networkName;
+                else {
+                    qDebug()<<"Parser::loadPajek(): set networkName to unnamed.";
+                    networkName = "unnamed";
+                }
 				continue;
 			}
 			if (str.contains( "vertices", Qt::CaseInsensitive) )  {   
@@ -583,7 +592,27 @@ bool Parser::loadPajek(){
 			continue;
 		}
 		else if ( str.contains( "*matrix", Qt::CaseInsensitive) ) { 
-            arcs_flag=false; edges_flag=false; arcslist_flag=false; matrix_flag=true;
+            qDebug() << str ;
+            arcs_flag=false; edges_flag=false; arcslist_flag=false;
+            matrix_flag=true;
+            //check if pajek file has label for matrix data,
+            // and use it as relation name
+            if ( (pos = str.indexOf(":")) == 8 ) {
+                relation = str.right(str.size() - pos -1) ;
+                relation = relation.simplified();
+                qDebug() << "Parser::loadPajek() - adding relation "<< relation
+                         << " to relationsList and emitting addRelation ";
+                relationsList << relation;
+                emit addRelation( relation );
+                if (relationCounter > 0) {
+                    qDebug () << "Parser::loadPajek() relationCounter "
+                              << relationCounter
+                                 << "emitting changeRelation";
+                    emit changeRelation(relationCounter);
+                    i=0; // reset the source node index
+                }
+                relationCounter++;
+            }
 			continue;
 		}
 
@@ -720,7 +749,8 @@ bool Parser::loadPajek(){
 							);
 			initNodeColor=nodeColor; 
 		} 	
-		/**NODES CREATED. CREATE EDGES/ARCS NOW. */		
+        // NODES CREATED. CREATE EDGES/ARCS NOW.
+        // first check that all nodes are already created
 		else {
 			if (j && j!=aNodes)  {  //if there were more or less nodes than the file declared
 				qDebug()<<"*** WARNING ***: The Pajek file declares " << aNodes <<"  nodes, but I found " <<  j << " nodes...." ;
@@ -850,8 +880,11 @@ bool Parser::loadPajek(){
 				for (target = 0; target < lineElement.size(); target ++) {
 					if ( lineElement.at(target) != "0" ) {
 						edgeWeight  = lineElement.at(target).toFloat(&ok);					
-						qDebug()<<"Parser-loadPajek():  MATRIX: Creating arc source "<< source << " target "<< target +1<< " with weight "<< weight;
-						emit createEdge(source, target+1, edgeWeight, edgeColor, undirected, arrows, bezier);
+                        qDebug()<<"Parser-loadPajek():  MATRIX: Creating arc source "
+                               << source << " target "<< target +1
+                               << " with weight "<< weight;
+                        emit createEdge(source, target+1, edgeWeight, edgeColor,
+                                        undirected, arrows, bezier);
 						totalLinks++;
 					}
 				}
@@ -873,6 +906,7 @@ bool Parser::loadPajek(){
 	}
 	qDebug("Parser-loadPajek(): Clearing DumiesList from Pajek");
 	listDummiesPajek.clear();
+    relationsList.clear();
 	exit(0);
     return true;
 

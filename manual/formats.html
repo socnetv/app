@@ -8,7 +8,7 @@
 		<li>GraphML  (.graphml), </li> 
 		<li>GraphViz  (.dot),  </li> 
 		<li>Adjacency matrix (.net, .txt)</li>
-		<li>Pajek-like  (.net), </li> 
+                <li>Pajek  (.net, .paj or .pajek), </li>
 		<li>UCINET's Data Language (.dl)</li>
 
 	</ul>
@@ -22,7 +22,7 @@ by  specifying  them  explicitly at  the command line.</p
 <p>For other network data formats, you have to import the files using File -> Import.</p
 <p> Please note that Pajek and UCINET support is not complete.
 With regards to UCINET's dl files, SocNetV supports edgelist1 and fullmatrix.
-Pajek files that declare *Edges, *Arcs, *Arcslist, and *Matrix are supported -
+Pajek files that declare *Edges, *Arcs, *Arcslist, and multiple *Matrix are supported -
 don't expect to load event-based files or vectors, though.<br /></p
 </div>
 
@@ -272,6 +272,46 @@ SocNetV also supports Pajek files which declare edges/arcs in matrices, like thi
 </div>
 <p class="text">
 Here, the *Matrix tag replaces *Arcs or *Edges. An ordinary adjacency matrix follows describing all links.
+<br />
+SocNetV v1.5 and later supports multiple *Matrix declarations in the same Pajek file.
+It will parse each adjacency matrix and load it as a new relation of the same network.
+
+Example:
+
+<pre>
+*Network "4 possible graphs of N=5"
+*Vertices 5
+1 "1" ic red            0.221583        0.644042        circle
+2 "2" ic red            0.233094        0.351433        circle
+3 "3" ic red            0.696403        0.328808        circle
+4 "4" ic red            0.471942        0.197587        circle
+5 "5" ic red            0.726619        0.644042        circle
+*Matrix :1
+0 0 0 0 0
+0 0 0 0 0
+0 0 0 0 0
+0 0 0 0 0
+0 0 0 0 0
+*Matrix :2
+0 0 0 0 0
+0 0 0 1 0
+0 0 0 0 0
+0 1 0 0 0
+0 0 0 0 0
+*Matrix :3
+0 1 0 0 0
+1 0 0 1 0
+0 0 0 0 0
+0 1 0 0 0
+0 0 0 0 0
+*Matrix :4
+0 0 0 0 1
+0 0 0 1 0
+0 0 0 0 0
+0 1 0 0 0
+1 0 0 0 0
+
+</pre>
 </p>
 
 <p class="text">
