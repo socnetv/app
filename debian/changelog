@@ -1,3 +1,9 @@
+socnetv (1.5-beta) trusty; urgency=medium
+
+  * upped version for launchpad to accept for daily building
+
+ -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Fri, 05 Sep 2014 20:14:34 +0300
+
 socnetv (1.4-3) trusty; urgency=medium
 
   * upped rev for launchpad to accept package
