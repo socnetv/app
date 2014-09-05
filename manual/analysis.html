@@ -407,18 +407,25 @@ This index can be calculated only for digraphs. In weighted relations, DP is the
 </p>
 
 
-<h5><a name="PRP" id="PRP"></a>PageRank Centrality (PRP)</h5>
+<h5><a name="PRP" id="PRP"></a>PageRank Prestige (PRP)</h5>
 <p class="text">
-An importance ranking for each node based on the link structure of the network. PageRank, developed by Page and Brin (1997), focuses on how nodes are connected to each other, treating each link from a node as a citation/backlink/vote to another. In essence, for each node PageRank counts all backlinks to it, but it does so by not counting all links equally while it normalizes each link from a node by the total number of links from it. PageRank is calculated iteratively and it corresponds to the principal eigenvector of the normalized link matrix.
+The PageRank Prestige is an importance ranking for each node based on the structure of its in-link.
+The original PageRank algorithm, developed by Page and Brin (1997), focuses on how nodes are connected to each other, treating each link from a node as a citation/backlink/vote to another. In essence, for each node PageRank counts all backlinks to it, but it does so by not counting all links equally while it normalizes each link from a node by the total number of links from it.
+The PRP score of each node is calculated iteratively and corresponds to the principal eigenvector of the normalized link matrix.
 <br /><br />
-This index can be calculated in both graphs and digraphs but is usually best suited for directed graphs since it is a prestige measure. It can also be calculated in weighted graphs. In weighted relations, each backlink to a node v from another node u is considered to have weight=1 but it is normalized by the sum of outLinks weights (outDegree) of u. Therefore, nodes with high outLink weights give smaller percentage of their PR to node v.
+This index can be calculated in both graphs and digraphs but is usually best suited for directed graphs since it is a prestige measure.
+It can also be calculated in weighted graphs.
+In weighted relations, each backlink to a node v from another node u is considered to have weight=1 but it is normalized by the sum of outLinks weights (outDegree) of u.
+Therefore, nodes with high outLink weights give smaller percentage of their PR to node v.
 </p>
 
 
 
 <h5><a name="PP" id="PP"></a>Proximity Prestige (PP)</h5>
 <p class="text">
-This index measures how proximate a node v is to the nodes in its influence domain I (the influence domain I of a node is the number of other nodes that can reach it). In PP calculation, proximity is based on distances to rather than distances from node v. To put it simply, in PP what matters is how close are all the other nodes to node v.
+The Proximity Prestige index measures how proximate a node v is to the nodes in its influence domain I (the influence domain I of a node is the number of other nodes that can reach it).
+Apparently, in this metric the proximity of each node v is based on distances to rather than distances from it.
+To put it simply, in PP what matters is how close are all the other nodes to node v.
 <br /><br />
 The algorithm takes the average distance to node v of all nodes in its influence domain, standardizes it by multiplying with (N-1)/I and takes its reciprocal. In essence, the formula SocNetV uses to calculate PP for every node v is the ratio of the fraction of nodes that can reach node v, to the average distance of that nodes to v:</p>
 <p class="code">
