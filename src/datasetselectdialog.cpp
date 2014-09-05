@@ -52,6 +52,7 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
             << "Freeman: EIES network, at time-1, 48 actors"
             << "Freeman: EIES network, at time-2, 48 actors"
             << "Freeman: EIES network, number of messages, 48 actors"
+            << "Freeman: The 34 possible graphs with N=5 (as multirelational), 5 actors"
             << "Mexican Power Network in the 1940s (list format)"
             << "Knocke: Bureacracies Information Exchange Network, 10 actors"
             << "Wasserman & Faust: Countries Trade (basic manufactured goods), 24 actors";
@@ -70,6 +71,7 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
             << "Freeman_EIES_network_48actors_Acquaintanceship_at_time-1.dl"
             << "Freeman_EIES_network_48actors_Acquaintanceship_at_time-2.dl"
             << "Freeman_EIES_network_48actors_Messages.dl"
+            << "Freeman_34_possible_graphs_with_N_5_multirelational.paj"
             << "Mexican_Power_Network_1940s.lst"
             << "Knocke_Bureacracies_Information_Exchange_Network.pajek"
             << "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek";

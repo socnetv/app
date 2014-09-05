@@ -8200,6 +8200,226 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
               "32 32 219";
 
     }
+    else if (fileName=="Freeman_34_possible_graphs_with_N_5_multirelational.paj") {
+        datasetDescription=tr("This data comes from Freeman's (1979) seminal paper "
+                "\"Centrality in social networks\".\n"
+                "It illustrates all 34 possible graphs of five nodes. \n"
+                "Freeman used them to calculate and compare the three measures "
+                 "of Centrality: Degree, Betweenness and Closeness. \n"
+               "Use Relation buttons on the toolbar to move between the graphs.");
+        outText<< "*Network \"34 possible graphs of N=5\"" << endl <<
+                  "*Vertices 5" << endl <<
+                  "1 \"1\" ic red		0.221583 	0.644042	circle" << endl <<
+                  "2 \"2\" ic red		0.233094 	0.351433	circle" << endl <<
+                  "3 \"3\" ic red		0.696403 	0.328808	circle" << endl <<
+                  "4 \"4\" ic red		0.471942 	0.197587	circle" << endl <<
+                  "5 \"5\" ic red		0.726619 	0.644042	circle" << endl <<
+                  "*Matrix :1" << endl <<
+                  "0 0 0 0 0 " << endl <<
+                  "0 0 0 0 0 " << endl <<
+                  "0 0 0 0 0 " << endl <<
+                  "0 0 0 0 0 " << endl <<
+                  "0 0 0 0 0 " << endl <<
+                  "*Matrix :2" << endl <<
+                  "0 0 0 0 0 " << endl <<
+                  "0 0 0 1 0 " << endl <<
+                  "0 0 0 0 0 " << endl <<
+                  "0 1 0 0 0 " << endl <<
+                  "0 0 0 0 0 " << endl <<
+                  "*Matrix :3" << endl <<
+                  "0 1 0 0 0 " << endl <<
+                  "1 0 0 1 0 " << endl <<
+                  "0 0 0 0 0 " << endl <<
+                  "0 1 0 0 0 " << endl <<
+                  "0 0 0 0 0 " << endl <<
+                  "*Matrix :4" << endl <<
+                  "0 0 0 0 1 " << endl <<
+                  "0 0 0 1 0 " << endl <<
+                  "0 0 0 0 0 " << endl <<
+                  "0 1 0 0 0 " << endl <<
+                  "1 0 0 0 0 " << endl <<
+                  "*Matrix :5" << endl <<
+                  "0 1 0 0 0 " << endl <<
+                  "1 0 0 1 1 " << endl <<
+                  "0 0 0 0 0 " << endl <<
+                  "0 1 0 0 0 " << endl <<
+                  "0 1 0 0 0" << endl <<
+                  "*Matrix :6" << endl <<
+                  "0 1 0 0 0 " << endl <<
+                  "1 0 0 1 0 " << endl <<
+                  "0 0 0 0 1 " << endl <<
+                  "0 1 0 0 0 " << endl <<
+                  "0 0 1 0 0 " << endl <<
+                  "*Matrix :7" << endl <<
+                  "0 1 0 1 0 " << endl <<
+                  "1 0 0 1 0 " << endl <<
+                  "0 0 0 0 0 " << endl <<
+                  "1 1 0 0 0 " << endl <<
+                  "0 0 0 0 0 " << endl <<
+                  "*Matrix :8" << endl <<
+                  "0 1 0 0 0 " << endl <<
+                  "1 0 0 1 0 " << endl <<
+                  "0 0 0 1 0 " << endl <<
+                  "0 1 1 0 0 " << endl <<
+                  "0 0 0 0 0 " << endl <<
+                  "*Matrix :9 \"star\"" << endl <<
+                  "0 1 0 0 0 " << endl <<
+                  "1 0 1 1 1 " << endl <<
+                  "0 1 0 0 0 " << endl <<
+                  "0 1 0 0 0 " << endl <<
+                  "0 1 0 0 0 " << endl <<
+                  "*Matrix :10 \"fork\"" << endl <<
+                  "0 1 0 0 0 " << endl <<
+                  "1 0 0 1 1 " << endl <<
+                  "0 0 0 1 0 " << endl <<
+                  "0 1 1 0 0 " << endl <<
+                  "0 1 0 0 0 " << endl <<
+                  "*Matrix :11 \"chain\"" << endl <<
+                  "0 1 0 0 1 " << endl <<
+                  "1 0 0 1 0 " << endl <<
+                  "0 0 0 1 0 " << endl <<
+                  "0 1 1 0 0 " << endl <<
+                  "1 0 0 0 0 " << endl <<
+                  "*Matrix :12" << endl <<
+                  "0 1 0 1 0 " << endl <<
+                  "1 0 0 1 0 " << endl <<
+                  "0 0 0 1 0 " << endl <<
+                  "1 1 1 0 0 " << endl <<
+                  "0 0 0 0 0 " << endl <<
+                  "*Matrix :13" << endl <<
+                  "0 1 0 1 0 " << endl <<
+                  "1 0 0 1 0 " << endl <<
+                  "0 0 0 0 1 " << endl <<
+                  "1 1 0 0 0 " << endl <<
+                  "0 0 1 0 0 " << endl <<
+                  "*Matrix :14" << endl <<
+                  "0 1 1 0 0 " << endl <<
+                  "1 0 0 1 0 " << endl <<
+                  "1 0 0 1 0 " << endl <<
+                  "0 1 1 0 0 " << endl <<
+                  "0 0 0 0 0 " << endl <<
+                  "*Matrix :15" << endl <<
+                  "0 1 0 1 0 " << endl <<
+                  "1 0 0 1 0 " << endl <<
+                  "0 0 0 1 0 " << endl <<
+                  "1 1 1 0 1 " << endl <<
+                  "0 0 0 1 0 " << endl <<
+                  "*Matrix :16" << endl <<
+                  "0 1 0 0 0 " << endl <<
+                  "1 0 1 1 0 " << endl <<
+                  "0 1 0 1 1 " << endl <<
+                  "0 1 1 0 0 " << endl <<
+                  "0 0 1 0 0 " << endl <<
+                  "*Matrix :17" << endl <<
+                  "0 1 0 0 1 " << endl <<
+                  "1 0 1 1 0 " << endl <<
+                  "0 1 0 1 0 " << endl <<
+                  "0 1 1 0 0 " << endl <<
+                  "1 0 0 0 0 " << endl <<
+                  "*Matrix :18" << endl <<
+                  "0 1 1 0 0 " << endl <<
+                  "1 0 0 1 0 " << endl <<
+                  "1 0 0 1 1 " << endl <<
+                  "0 1 1 0 0 " << endl <<
+                  "0 0 1 0 0 " << endl <<
+                  "*Matrix :19" << endl <<
+                  "0 1 1 0 0 " << endl <<
+                  "1 0 1 1 0 " << endl <<
+                  "1 1 0 1 0 " << endl <<
+                  "0 1 1 0 0 " << endl <<
+                  "0 0 0 0 0 " << endl <<
+                  "*Matrix :20" << endl <<
+                  "0 1 0 0 1 " << endl <<
+                  "1 0 0 1 0 " << endl <<
+                  "0 0 0 1 1 " << endl <<
+                  "0 1 1 0 0 " << endl <<
+                  "1 0 1 0 0 " << endl <<
+                  "*Matrix :21" << endl <<
+                  "0 1 0 1 0 " << endl <<
+                  "1 0 0 1 0 " << endl <<
+                  "0 0 0 1 1 " << endl <<
+                  "1 1 1 0 1 " << endl <<
+                  "0 0 1 1 0 " << endl <<
+                  "*Matrix :22" << endl <<
+                  "0 1 1 0 0 " << endl <<
+                  "1 0 0 1 1 " << endl <<
+                  "1 0 0 1 1 " << endl <<
+                  "0 1 1 0 0 " << endl <<
+                  "0 1 1 0 0" << endl <<
+                  "*Matrix :23" << endl <<
+                  "0 1 1 0 0 " << endl <<
+                  "1 0 1 1 0 " << endl <<
+                  "1 1 0 1 1 " << endl <<
+                  "0 1 1 0 0 " << endl <<
+                  "0 0 1 0 0 " << endl <<
+                  "*Matrix :24" << endl <<
+                  "0 1 0 0 1 " << endl <<
+                  "1 0 1 1 0 " << endl <<
+                  "0 1 0 1 1 " << endl <<
+                  "0 1 1 0 0 " << endl <<
+                  "1 0 1 0 0" << endl <<
+                  "*Matrix :25" << endl <<
+                  "0 1 1 0 1 " << endl <<
+                  "1 0 1 1 0 " << endl <<
+                  "1 1 0 1 0 " << endl <<
+                  "0 1 1 0 0 " << endl <<
+                  "1 0 0 0 0 " << endl <<
+                  "*Matrix :26 " << endl <<
+                  "0 1 1 1 0 " << endl <<
+                  "1 0 1 1 0 " << endl <<
+                  "1 1 0 1 0 " << endl <<
+                  "1 1 1 0 0 " << endl <<
+                  "0 0 0 0 0 " << endl <<
+                  "*Matrix :27" << endl <<
+                  "0 1 0 1 1 " << endl <<
+                  "1 0 0 1 0 " << endl <<
+                  "0 0 0 1 1 " << endl <<
+                  "1 1 1 0 1 " << endl <<
+                  "1 0 1 1 0 " << endl <<
+                  "*Matrix :28" << endl <<
+                  "0 1 1 0 0 " << endl <<
+                  "1 0 1 1 1 " << endl <<
+                  "1 1 0 1 1 " << endl <<
+                  "0 1 1 0 0 " << endl <<
+                  "0 1 1 0 0 " << endl <<
+                  "*Matrix :29" << endl <<
+                  "0 1 1 0 1 " << endl <<
+                  "1 0 0 1 1 " << endl <<
+                  "1 0 0 1 1 " << endl <<
+                  "0 1 1 0 0 " << endl <<
+                  "1 1 1 0 0 " << endl <<
+                  "*Matrix :30" << endl <<
+                  "0 1 1 1 0 " << endl <<
+                  "1 0 1 1 0 " << endl <<
+                  "1 1 0 1 1 " << endl <<
+                  "1 1 1 0 0 " << endl <<
+                  "0 0 1 0 0 " << endl <<
+                  "*Matrix :31" << endl <<
+                  "0 1 0 1 1 " << endl <<
+                  "1 0 1 1 0 " << endl <<
+                  "0 1 0 1 1 " << endl <<
+                  "1 1 1 0 1 " << endl <<
+                  "1 0 1 1 0 " << endl <<
+                  "*Matrix :32" << endl <<
+                  "0 1 1 0 1 " << endl <<
+                  "1 0 1 1 1 " << endl <<
+                  "1 1 0 1 1 " << endl <<
+                  "0 1 1 0 0 " << endl <<
+                  "1 1 1 0 0 " << endl <<
+                  "*Matrix :33" << endl <<
+                  "0 1 1 1 1 " << endl <<
+                  "1 0 0 1 1 " << endl <<
+                  "1 0 0 1 1 " << endl <<
+                  "1 1 1 0 1 " << endl <<
+                  "1 1 1 1 0 " << endl <<
+                  "*Matrix :34" << endl <<
+                  "0 1 1 1 1 " << endl <<
+                  "1 0 1 1 1 " << endl <<
+                  "1 1 0 1 1 " << endl <<
+                  "1 1 1 0 1 " << endl <<
+                  "1 1 1 1 0 ";
+
+    }
     else if (fileName == "Mexican_Power_Network_1940s.lst"){
         outText<< "18 8 10 23 21" << endl <<
                   "19 11 21" << endl <<
