@@ -395,6 +395,8 @@ void Edge::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     graphicsWidget->edgeClicked(this);
     if ( event->button()==Qt::LeftButton ) {
         qDebug("Edge: edge pressEvent() left click > ");
+        source->setColor(QColor(source->color()).dark(150));
+        target->setColor(QColor(target->color()).dark(150));
         //	graphicsWidget->startNodeMovement(0);
     }
     if ( event->button()==Qt::RightButton ) {
