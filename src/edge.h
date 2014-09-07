@@ -67,7 +67,7 @@ public:
 	void setWeight( float  w) ;
 	float weight();
 	void setColor( QString str) ;
-	QString color() ;
+    QString color() ;
     QString colorToPajek();
 	void addWeight (EdgeWeight* canvasWeight  ) ;
 	void clearWeightList();
