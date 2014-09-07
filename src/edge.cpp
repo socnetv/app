@@ -219,65 +219,16 @@ void Edge::adjust(){
 QPainterPath Edge::shape () const {
     //qDebug()<<"Edge::shape()";		//too many debug messages...
     QPainterPath path;
-    qreal penWidth = 1;
-    qreal extra = ( penWidth + m_arrowSize) / 2.0;
-//    qreal angle=-0, slope = 0 ;
-//    if (targetPoint.x()==sourcePoint.x()){
-//        if ( targetPoint.y() > sourcePoint.y()){
-//            angle=Pi / 2;
-//        }
-//        else if (targetPoint.y() < sourcePoint.y()){
-//            angle=3 * Pi / 2;
-//        }
-//    }
-//    else if (targetPoint.y() == sourcePoint.y()){
-//        if (targetPoint.x() > sourcePoint.x() ) {
-//            angle = Pi;
-//        }
-//        else if (targetPoint.x() < sourcePoint.x() ){
-//            angle=0;
-//        }
-
-//    }
-//    else {
-//        slope = (targetPoint.y()  - sourcePoint.y() ) /
-//                (targetPoint.x()  - sourcePoint.x() );
-//        angle = qAtan(slope);
-//    }
-//    qDebug() << " slope " << slope << " angle " << angle;
-//    if (angle > (7*Pi/4) && angle <= (Pi / 4) ) {
-//        path.moveTo(sourcePoint.x()-extra, sourcePoint.y()-extra);
-//        path.lineTo(targetPoint.x()+extra, targetPoint.y()-extra);
-//        path.lineTo(targetPoint.x()+extra, targetPoint.y()+extra);
-//        path.lineTo(sourcePoint.x()-extra, sourcePoint.y()+extra );
-//    }
-//    else if (angle > (Pi / 4) && angle <= (3*Pi/4)  ) {
-//        path.moveTo(sourcePoint.x()-extra, sourcePoint.y()-extra);
-//        path.lineTo(targetPoint.x()-extra, targetPoint.y()+extra);
-//        path.lineTo(targetPoint.x()+extra, targetPoint.y()+extra);
-//        path.lineTo(sourcePoint.x()+extra, sourcePoint.y()-extra );
-
-
-//    }
-//    else if (angle > (3* Pi/4)  && angle <= (5*Pi/4)  ) {
-//        path.moveTo(sourcePoint.x()+extra, sourcePoint.y()-extra);
-//        path.lineTo(targetPoint.x()-extra, targetPoint.y()-extra);
-//        path.lineTo(targetPoint.x()-extra, targetPoint.y()+extra);
-//        path.lineTo(sourcePoint.x()+extra, sourcePoint.y()+extra );
-//    }
-
-//    else if (angle > (5* Pi /4)  && angle <= (7*Pi/4)  ) {
-//        path.moveTo(sourcePoint.x()-extra, sourcePoint.y()+extra);
-//        path.lineTo(targetPoint.x()-extra, targetPoint.y()-extra);
-//        path.lineTo(targetPoint.x()+extra, targetPoint.y()-extra);
-//        path.lineTo(sourcePoint.x()+extra, sourcePoint.y()+extra );
-
-//    }
-  //  lentgth = qSqrt( (QPointF::dotProduct(sourcePoint, targetPoint)) + extra;
-    path.moveTo(sourcePoint.x()-extra, sourcePoint.y()-extra);
-    path.lineTo(targetPoint.x()+extra, targetPoint.y()-extra);
-    path.lineTo(targetPoint.x()+extra, targetPoint.y()+extra);
-    path.lineTo(sourcePoint.x()-extra, sourcePoint.y()-extra );
+    qreal extra = ( width() + m_arrowSize) / 2.0;
+    QLineF line(sourcePoint, targetPoint);
+    QPolygonF poly;
+    line.translate(extra,extra);
+    poly.push_back(line.p1());
+    poly.push_back(line.p2());
+    line.translate(-extra,-extra);
+    poly.push_back(line.p1());
+    poly.push_back(line.p2());
+    path.addPolygon(poly);
     path.closeSubpath();
     //path.addRegion(boundingRegion(QTransform()));
  //   path.addRect(boundingRect());
@@ -428,7 +379,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 /** 
     Controls the width of the edge; is a function of edge weight
 */
-float Edge::width(){
+float Edge::width() const{
    // qDebug()<< "Edge::width() will return "<< fabs(m_weight);
     if ( fabs(m_weight) > 1  )
         return  1  + fabs(m_weight)/10;

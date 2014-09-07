@@ -71,7 +71,7 @@ public:
     QString colorToPajek();
 	void addWeight (EdgeWeight* canvasWeight  ) ;
 	void clearWeightList();
-	float width(); 
+    float width() const;
 	void showArrows(bool);
 	void toggleAntialiasing(bool);
 
