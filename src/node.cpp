@@ -91,8 +91,10 @@ void Node::setColor(QString str) {
 	Used by MW::slotFindNode() 
 */
 void Node::setColor(QColor color){
+    prepareGeometryChange();
 	m_col=color;
     m_col_str = m_col.name();
+    update();
 }
 
 

@@ -41,11 +41,12 @@ static const double Pi = 3.14159265;
 static double TwoPi = 2.0 * Pi;
 
 
-Edge::Edge(  GraphicsWidget *gw, Node *from, Node *to, float weight, int nodeSize, QString color, bool reciprocal, bool drawArrows, bool bez): graphicsWidget(gw) {
+Edge::Edge(  GraphicsWidget *gw, Node *from, Node *to, float weight, int nodeSize,
+             QString color, bool reciprocal, bool drawArrows, bool bez): graphicsWidget(gw) {
 
     qDebug("Edge: Edge()");
     Q_UNUSED(nodeSize);
-    graphicsWidget->scene()->addItem(this);  //Without this, edges don not appear on the screen...
+    graphicsWidget->scene()->addItem(this);  //add edge to scene to be displayed
 
     from->addOutLink( this );	//adds this Edge to sourceNode
     to->addInLink( this );		//adds this Edge to targetNode
@@ -166,7 +167,11 @@ int Edge::targetNodeNumber() {
 }
 
 
-//Called from EdgeWeight objects to 'connect' them to this edge. 
+/**
+ * @brief Edge::addWeight
+ * Called from EdgeWeight objects to 'connect' them to this edge.
+ * @param canvasWeight
+ */
 void Edge::addWeight (EdgeWeight* canvasWeight  )  {
     weightList.push_back( canvasWeight) ;
 }
@@ -180,12 +185,13 @@ void Edge::clearWeightList(){
 }
 
 
-/*
-    -leaves some empty space (offset) from node
-    -make the edge weight appear on the centre of the edge
-*/
+/**
+ * @brief Edge::adjust
+ * leaves some empty space (offset) from node -
+ * make the edge weight appear on the centre of the edge
+ */
 void Edge::adjust(){
-   // qDebug("Edge: adjust()");
+    // qDebug("Edge: adjust()");
     if (!source || !target)
         return;
     QLineF line(mapFromItem(source, 0, 0), mapFromItem(target, 0, 0));
@@ -219,7 +225,7 @@ void Edge::adjust(){
 QPainterPath Edge::shape () const {
     //qDebug()<<"Edge::shape()";		//too many debug messages...
     QPainterPath path;
-    qreal extra = ( width() + m_arrowSize) / 2.0;
+    qreal extra = ( width() + m_arrowSize);
     QLineF line(sourcePoint, targetPoint);
     QPolygonF poly;
     line.translate(extra,extra);
@@ -231,7 +237,7 @@ QPainterPath Edge::shape () const {
     path.addPolygon(poly);
     path.closeSubpath();
     //path.addRegion(boundingRegion(QTransform()));
- //   path.addRect(boundingRect());
+    //   path.addRect(boundingRect());
     return path;
 } 
 
@@ -283,7 +289,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     if (!source || !target)
         return;
     Q_UNUSED(option); //	painter->setClipRect( option->exposedRect );
-   // qDebug() <<"@@@ Edge::paint()";
+    // qDebug() <<"@@@ Edge::paint()";
 
     //    qDebug()<<endl <<"@@@ Edge::paint() edge from "<< sourceNodeNumber()
     //           << " at (" <<(sourceNode())->x() <<","<< (sourceNode())->y()
@@ -296,7 +302,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     //Construct the path
     if (source!=target) {
         if ( !m_Bezier){
-         //   qDebug()<< "*** Edge::paint(). Constructing a line";
+            //   qDebug()<< "*** Edge::paint(). Constructing a line";
             line.lineTo(targetPoint);
         }
         else {
@@ -365,7 +371,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
             //			painter->drawPolygon(QPolygonF() << line.p1() << srcArrowP1 << srcArrowP2);
         }
         else {
-           // qDebug() << "*** Edge::paint() Not symmetric edge. Finish";
+            // qDebug() << "*** Edge::paint() Not symmetric edge. Finish";
         }
     }
     else {
@@ -380,7 +386,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     Controls the width of the edge; is a function of edge weight
 */
 float Edge::width() const{
-   // qDebug()<< "Edge::width() will return "<< fabs(m_weight);
+    // qDebug()<< "Edge::width() will return "<< fabs(m_weight);
     if ( fabs(m_weight) > 1  )
         return  1  + fabs(m_weight)/10;
     return 1;	//	Default, if  m_weight in (-1, 1) space
@@ -395,8 +401,6 @@ void Edge::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     graphicsWidget->edgeClicked(this);
     if ( event->button()==Qt::LeftButton ) {
         qDebug("Edge: edge pressEvent() left click > ");
-        source->setColor(QColor(source->color()).dark(150));
-        target->setColor(QColor(target->color()).dark(150));
         //	graphicsWidget->startNodeMovement(0);
     }
     if ( event->button()==Qt::RightButton ) {
