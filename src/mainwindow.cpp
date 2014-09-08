@@ -2686,7 +2686,7 @@ void MainWindow::initNet(){
     fileSave->setIcon(QIcon(":/images/saved.png"));
     fileSave->setEnabled(true);
 
-    markedNodeExists=false;	//used by slotFindNode()
+    markedNodesExist=false;	//used by slotFindNode()
 
     cursorPosGW=QPointF(-1,-1);
     clickedJimNumber=-1;
@@ -4382,9 +4382,9 @@ void MainWindow::slotFindNode(){
         return;
     }
 
-    if ( markedNodeExists ) {				// if a node has been already marked
+    if ( markedNodesExist ) {				// if a node has been already marked
         graphicsWidget->setMarkedNode(""); 	// call setMarkedNode to just unmark it.
-        markedNodeExists=false;
+        markedNodesExist=false;
         statusMessage( tr("Node unmarked.") );
         return;								// and return to MW
     }
@@ -4400,7 +4400,7 @@ void MainWindow::slotFindNode(){
 
     else {
         if	( graphicsWidget->setMarkedNode(nodeText) ) {
-            markedNodeExists=true;
+            markedNodesExist=true;
             statusMessage( tr("Node found and marked. Press Ctrl+F again to unmark...") );
         }
         else {

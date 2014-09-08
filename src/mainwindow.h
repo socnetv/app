@@ -328,7 +328,6 @@ private:
     QProgressDialog *progressDialog;
 
     Node *clickedJim;
-    Node *markedNode;
     Edge *clickedLink;
 
     QMenu *importSubMenu, *exportSubMenu, *editMenu, *statMenu,  *helpMenu;
@@ -408,7 +407,7 @@ private:
     bool fileLoaded, checkSelectFileType;
     int fileFormat;
     bool networkModified;
-    bool bezier,  linkClicked, nodeClicked, markedNodeExists, showProgressBar, firstTime;
+    bool bezier,  linkClicked, nodeClicked, markedNodesExist, showProgressBar, firstTime;
     QString initLinkColor, initNumberColor,  initNodeShape, initLabelColor;
     QColor initBackgroundColor;
     QPointF cursorPosGW;	//Carries the position of the cursor in graphicsWidget coordinates

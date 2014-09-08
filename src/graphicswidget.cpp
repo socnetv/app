@@ -54,7 +54,7 @@ GraphicsWidget::GraphicsWidget( QGraphicsScene *sc, MainWindow* par)  : QGraphic
 	zoomIndex=3;
 	m_currentScaleFactor = 1;
 	m_currentRotationAngle = 0;
-	markedNodeExists=false; //used in findNode()
+    markedNodesExist=false; //used in findNode()
     edgesHash.reserve(10000);
     nodeHash.reserve(1000);
 }
@@ -268,9 +268,28 @@ void GraphicsWidget::nodeClicked(Node *node){
 	It emits the selectedEdge signal to MW which is used to
 	- display edge info on the status bar
 	- notify context menus for the clicked edge.
+    Also, it makes source and target nodes to stand out of other nodes.
 */
 void GraphicsWidget::edgeClicked(Edge *edge){
 	qDebug ("GW: Emitting selectedEdge()");
+    if (markedNodesExist) {
+        markedNode1->setSelected(false);		//unselect it, restores its color
+        markedNode2->setSelected(false);		//unselect it, restores its color
+        markedNode1->setSize(origNodeSizeMarkedNode1);	//restore its size
+        markedNode2->setSize(origNodeSizeMarkedNode2);	//restore its size
+        markedNodesExist=false;
+        return;
+    }
+    markedNode1=edge->sourceNode();
+    markedNode2=edge->targetNode();
+    markedNodesExist=true;
+    markedNode1->setSelected(true);
+    markedNode2->setSelected(true);
+    origNodeSizeMarkedNode1=markedNode1->size();
+    origNodeSizeMarkedNode2=markedNode2->size(); // save its original size
+    markedNode1->setSize(2*origNodeSizeMarkedNode1-1);	//now, make it larger
+    markedNode2->setSize(2*origNodeSizeMarkedNode2-1);	//now, make it larger
+
 	emit selectedEdge(edge);
 }
 
@@ -645,13 +664,13 @@ Node* GraphicsWidget::hasNode( QString text ){
             ( candidate->labelText() == text)
 			) {
 			qDebug() << "GW: hasNode(): Node " << text << " found!";
-			markedNodeExists=true;
+            markedNodesExist=true;
 			return candidate;
 			break;
 		}
 
 	}
-	return markedNode;	//dummy return. We check markedNodeExists flag first...
+    return markedNode1;	//dummy return. We check markedNodesExist flag first...
 }
 
 
@@ -662,20 +681,20 @@ Node* GraphicsWidget::hasNode( QString text ){
 */
 bool GraphicsWidget::setMarkedNode(QString nodeText){
 	qDebug ("GW: setMarkedNode()");
-	if (markedNodeExists) {
-		markedNode->setSelected(false);		//unselect it, so that it restores its color
-		markedNode->setSize(originalNodeSize);	//restore its size
-		markedNodeExists=false;
+    if (markedNodesExist) {
+        markedNode1->setSelected(false);		//unselect it, so that it restores its color
+        markedNode1->setSize(origNodeSizeMarkedNode1);	//restore its size
+        markedNodesExist=false;
 		return true;
 	}
 	
-	markedNode = hasNode (nodeText);
-	if (!markedNodeExists)
+    markedNode1 = hasNode (nodeText);
+    if (!markedNodesExist)
 		return false;
 	
-	markedNode->setSelected(true);		//select it, so that it changes color
-	originalNodeSize=markedNode->size(); // save its original size
-	markedNode->setSize(2*originalNodeSize-1);	//now, make it larger 
+    markedNode1->setSelected(true);		//select it, so that it changes color
+    origNodeSizeMarkedNode1=markedNode1->size(); // save its original size
+    markedNode1->setSize(2*origNodeSizeMarkedNode1-1);	//now, make it larger
 	return true;	
 }
 
