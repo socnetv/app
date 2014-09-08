@@ -89,9 +89,11 @@ class CompareDistances {
     public:
     bool operator()(Distance& t1, Distance& t2)
     {
-       //if (t1.distance < t2.distance) return true;
+       if (t1.distance == t2.distance)
+            return t1.target > t2.target;
        return t1.distance < t2.distance;
        // Returns true if t1 is closer than t2
+       // else
     }
 };
 

@@ -1597,14 +1597,15 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                 (*it)->setCC( 0.0 );
                 (*it)->setPC( 0.0 );
             }
-        qDebug("MAIN LOOP: for every s in V do (solve the single source shortest path problem...");
+        qDebug("MAIN LOOP: for every s in V solve the Single Source Shortest Path problem...");
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
             progressCounter++;
             emit updateProgressDialog( progressCounter );
             if ( ! (*it)->isEnabled() )
                 continue;
             s=index[(*it)->name()];
-            qDebug() << "Source vertex s = " << (*it)->name() << " of BFS algorithm has index " << s << ". Clearing Stack ...";
+            qDebug() << "Source vertex s = " << (*it)->name()
+                     << " of BFS algorithm has index " << s << ". Clearing Stack ...";
             if (doCalculcateCentralities){
                 qDebug("Empty stack Stack which will return vertices in order of their (non increasing) distance from S ...");
                 //- Complexity linear O(n)
@@ -1984,6 +1985,7 @@ void Graph::dijkstra(int s, bool doCalculcateCentralities){
         if (v != s ){
             //    dist[v]  := infinity  // Unknown distance function from source to v
             // dist initialization to infinity already done in createDistanceMatrix
+            DM.setItem(s,v,RAND_MAX);
 
             //    previous[v]  := undefined      // Previous node in optimal path from source
             //TODO
