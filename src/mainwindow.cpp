@@ -4551,7 +4551,10 @@ void MainWindow::linkInfoStatusBar (Edge* link) {
     clickedLink=link;
     linkClicked=true;
     nodeClicked=false;
-    statusMessage(  QString(tr("Link between node %1 and node %2, weight %3 and color %4.")).arg( link->sourceNodeNumber() ).arg(link->targetNodeNumber()).arg(link->weight()).arg(link->color() ) );
+    statusMessage(  QString(tr("Link between node %1 and node %2 (weight %3 and "
+                               "color %4) has been selected. Click again to unselect it."))
+                    .arg( link->sourceNodeNumber() ).arg(link->targetNodeNumber())
+                    .arg(link->weight()).arg(link->color() ) );
 }
 
 
