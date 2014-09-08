@@ -65,6 +65,41 @@ typedef QHash < int, rel_w_bool > H_edges;
 typedef QHash<QString, bool> H_StrToBool;
 
 
+
+
+class Distance
+{
+public:
+    int target;
+    int distance;
+
+    Distance(int t, int dist)
+        : target(t), distance(dist)
+    {
+
+    }
+};
+
+struct Distance1 {
+    int target;
+    int distance;
+};
+
+class CompareDistances {
+    public:
+    bool operator()(Distance& t1, Distance& t2)
+    {
+       //if (t1.distance < t2.distance) return true;
+       return t1.distance < t2.distance;
+       // Returns true if t1 is closer than t2
+    }
+};
+
+
+
+
+
+
 class Graph:  public QObject{
     Q_OBJECT
 
@@ -386,6 +421,7 @@ private:
 
     /** methods used by createDistanceMatrix()  */
     void BFS(int, bool);	//Breadth-First Search function
+    void dijkstra(int,bool);
     void minmax(
                 float C, Vertex *v, float &max, float &min,
                 int &maxNode, int &minNode

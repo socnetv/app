@@ -1513,6 +1513,9 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
     int aEdges = totalEdges();
     isolatedVertices = verticesIsolated().count();
     symmetricAdjacencyMatrix = isSymmetric();
+
+    bool valued = isWeighted();
+
     //drop isolated vertices from calculations (i.e. std Centrality and group Centrality).
     int aVertices=vertices() - isolatedVertices;
 
@@ -1520,7 +1523,7 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
         DM.fillMatrix(0);
     else {
         qDebug() << "	for all vertices set their distances to -1 (infinum)";
-        DM.fillMatrix(-1);
+        DM.fillMatrix(RAND_MAX);
         qDebug () << "	for all vertices set their sigmas as 0";
         TM.fillMatrix(0);
 
@@ -1617,9 +1620,14 @@ void Graph::createDistanceMatrix(bool doCalculcateCentralities) {
                 }
             }
 
-            qDebug() << "PHASE 1 (SSSP): Call BFS for source vertex " << (*it)->name()
-                     << " to determine distances and shortest path counts from s to every vertex t" ;
-            BFS(s,doCalculcateCentralities );
+            qDebug() << "PHASE 1 (SSSP): Call BFS or dijkstra for source vertex "
+                     << (*it)->name() << " index " << s
+                     << " to determine distances and geodesics from s to every vertex t" ;
+            if (!valued)
+                BFS(s,doCalculcateCentralities );
+            else
+                dijkstra(s, doCalculcateCentralities);
+
             qDebug("***** FINISHED PHASE 1 (SSSP) BFS ALGORITHM. Continuing to calculate centralities");
 
             if (doCalculcateCentralities){
@@ -1868,12 +1876,12 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
             w=index[ target ];
 //            qDebug("BFS: u=%i is connected with node %i of index w=%i. ", u, target, w);
 //            qDebug("BFS: Start path discovery");
-            if (	DM.item(s, w) == -1 ) { //if distance (s,w) is infinite, w found for the first time.
+            if (	DM.item(s, w) == RAND_MAX ) { //if distance (s,w) is infinite, w found for the first time.
 //                qDebug("BFS: first time visiting w=%i. Enqueuing w to the end of Q", w);
                 Q.push(w);
 //                qDebug()<<"BFS: First check if distance(s,u) = -1 (aka infinite :)) and set it to zero";
                 dist_u=DM.item(s,u);
-                if (dist_u < 0 )
+                if (dist_u == RAND_MAX )
                     dist_w = 0;
                 else
                     dist_w = dist_u + 1;
@@ -1932,6 +1940,168 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
 
 
 
+
+/**
+*	Breadth-First Search (BFS) method for unweighted graphs (directed or not)
+
+    INPUT:
+        a 'source' vertex with index s and a boolean doCalculcateCentralities.
+        (Implicitly, BFS uses the m_graph structure)
+
+    OUTPUT:
+        For every vertex t: DM(s, t) is set to the distance of each t from s
+        For every vertex t: TM(s, t) is set to the number of shortest paths between s and t
+
+        Also, if doCalculcateCentralities is true then BFS does extra operations:
+            a) For source vertex s:
+                it calculates CC(s) as the sum of its distances from every other vertex.
+                it calculates eccentricity(s) as the maximum distance from all other vertices.
+                it increases sizeOfNthOrderNeighborhood [ N ] by one, to store the number of nodes at distance n from source s
+            b) For every vertex u:
+                it increases SC(u) by one, when it finds a new shor. path from s to t through u.
+                appends each neighbor y of u to the list Ps, thus Ps stores all predecessors of y on all all shortest paths from s
+            c) Each vertex u popped from Q is pushed to a stack Stack
+
+*/
+void Graph::dijkstra(int s, bool doCalculcateCentralities){
+    int u,w,v, dist_u=0, temp=0, dist_w=0;
+    int relation=0, target=0;
+    int  weight=0;
+    bool edgeStatus=false;
+    H_edges::const_iterator it1;
+
+    //set distance of s from s equal to 0
+    DM.setItem(s,s,0);
+    //set sigma of s from s equal to 1
+    TM.setItem(s,s,1);
+
+    qDebug() << "dijkstra: Construct a priority queue Q of all vertices-distances";
+    priority_queue<Distance, vector<Distance>, CompareDistances> Q;
+
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
+        v=index[ (*it)->name() ];
+        if (v != s ){
+            //    dist[v]  := infinity  // Unknown distance function from source to v
+            // dist initialization to infinity already done in createDistanceMatrix
+
+            //    previous[v]  := undefined      // Previous node in optimal path from source
+            //TODO
+        }
+        qDebug() << " push " << v << " to priority Q";
+        Q.push(Distance(v,RAND_MAX));
+    }
+    qDebug()<<"dijkstra: Q size "<< Q.size();
+
+
+    qDebug() << "\n\n ### dijkstra: LOOP: While Q not empty ";
+    while ( !Q.empty() ) {
+
+        u=Q.top().target;
+        qDebug()<< "\n\n *** dijkstra: take u = "<< u
+                   << " from Q which has minimum distance from s = " << s;
+         Q.pop();
+
+        if ( ! m_graph [ u ]->isEnabled() )
+            continue ;
+
+        if (doCalculcateCentralities){
+//            qDebug("dijkstra: If we are to calculate centralities, we must push u=%i to global stack Stack ", u);
+            Stack.push(u);
+        }
+        qDebug() << "*** dijkstra: LOOP over every edge (u,w) e E, "
+                 <<  "that is for each neighbor w of u";
+        it1=m_graph [ u ] ->m_outLinks.cbegin();
+        while ( it1!=m_graph [ u ] -> m_outLinks.cend() ){
+            relation = it1.value().first;
+            if ( relation != currentRelation() )  {
+                ++it1;
+                continue;
+            }
+            edgeStatus=it1.value().second.second;
+            if ( edgeStatus != true)   {
+                ++it1;
+                continue;
+            }
+            target = it1.key();
+            weight = it1.value().second.first;
+            w=index[ target ];
+            qDebug("dijkstra: u=%i is connected with node %i of index w=%i. ", u, target, w);
+            qDebug("dijkstra: Start path discovery");
+
+            dist_u=DM.item(s,u);
+            if (dist_u == RAND_MAX || dist_u < 0) {
+                dist_w = RAND_MAX;
+                qDebug() << "dijkstra: dist_w = RAND_MAX " << RAND_MAX;
+            }
+            else {
+                dist_w = dist_u + weight;
+                qDebug() << "dijkstra: dist_w = dist_u + weight = "
+                         << dist_u << " + " << weight <<  " = " <<dist_w ;
+            }
+            qDebug() << "dijkstra: check if dist_w=" << dist_w
+                     <<  " is shorter than current DM(s,w)";
+            if (dist_w > 0 && dist_w < DM.item(s, w)  ) {
+                qDebug() << "dijkstra: Yeap. Set DM (s,w) = DM(" << s
+                         << ","<< w
+                         << ") = "<< dist_w ;
+                DM.setItem(s, w, dist_w);
+                averGraphDistance += dist_w;
+                nonZeroDistancesCounter++;
+
+
+                if (doCalculcateCentralities){
+                    //                    qDebug()<<"dijkstra: Calculate PC: store the number of nodes at distance " << dist_w << "from s";
+                    sizeOfNthOrderNeighborhood.insert(
+                                dist_w,
+                                sizeOfNthOrderNeighborhood.value(dist_w)+1
+                                );
+                    //                    qDebug()<<"dijkstra: Calculate CC: the sum of distances (will invert it l8r)";
+                    m_graph [s]->setCC (m_graph [s]->CC() + dist_w);
+                    //                    qDebug()<<"dijkstra: Calculate Eccentricity: the maximum distance ";
+                    if (m_graph [s]->eccentricity() < dist_w )
+                        m_graph [s]->setEccentricity(dist_w);
+
+                }
+                //                qDebug("dijkstra: Checking graphDiameter");
+                if ( dist_w > graphDiameter){
+                    graphDiameter=dist_w;
+                    //                    qDebug() << "dijkstra: new graphDiameter = " <<  graphDiameter ;
+                }
+
+            }
+            else
+                qDebug() << "dijkstra: NO";
+
+
+
+//            qDebug("dijkstra: Start path counting"); 	//Is edge (u,w) on a shortest path from s to w via u?
+            if ( DM.item(s,w)==DM.item(s,u)+weight) {
+                temp= TM.item(s,w)+TM.item(s,u);
+//                qDebug("dijkstra: Found a NEW SHORTEST PATH from s=%i to w=%i via u=%i. Setting Sigma(%i, %i) = %i",s, w, u, s, w,temp);
+                if (s!=w)
+                    TM.setItem(s,w, temp);
+                if (doCalculcateCentralities){
+//                    qDebug("dijkstra/SC: If we are to calculate centralities, we must calculate SC as well");
+                    if ( s!=w && s != u && u!=w ) {
+//                        qDebug() << "dijkstra: setSC of u="<<u<<" to "<<m_graph[u]->SC()+1;
+                        m_graph[u]->setSC(m_graph[u]->SC()+1);
+                    }
+                    else {
+//                        qDebug() << "dijkstra/SC: skipping setSC of u, because s="
+//                                 <<s<<" w="<< w << " u="<< u;
+                    }
+//                    qDebug() << "dijkstra/SC: SC is " << m_graph[u]->SC();
+//                    qDebug() << "dijkstra: appending u="<< u << " to list Ps[w=" << w
+//                             << "] with the predecessors of w on all shortest paths from s ";
+                    m_graph[w]->appendToPs(u);
+                }
+            }
+            ++it1;
+        }
+
+    }
+}
 
 
 
@@ -4522,7 +4692,7 @@ void Graph::reachabilityMatrix() {
             for (j=i; j < size ; j++) {
                 qDebug()<< "Graph::reachabilityMatrix()  total shortest paths between ("
                         << i+1 <<"," << j+1<< ")=" << TM.item(i,j) <<  " ";
-                if ( DM.item(i,j) > 0 ) {
+                if ( DM.item(i,j) > 0 && DM.item(i,j)< RAND_MAX) {
                     qDebug()<< "Graph::reachabilityMatrix()  - d("<<i+1<<","
                             <<j+1<<")=" << DM.item(i,j)
                             << " - inserting " << j+1
@@ -4540,7 +4710,7 @@ void Graph::reachabilityMatrix() {
                        XRM.setItem(i,j,0);
                        notStronglyConnectedVertices.insertMulti(i,j);
                 }
-                if ( DM.item(j,i) > 0 ) {
+                if ( DM.item(j,i) > 0 && DM.item(j,i)< RAND_MAX ) {
                     qDebug()<< "Graph::reachabilityMatrix()  - inverse path d("
                             <<j+1<<","<<i+1<<")="
                             << DM.item(j,i)
