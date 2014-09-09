@@ -2847,7 +2847,7 @@ void MainWindow::setLastPath(QString filePath) {
 */
 void MainWindow::slotChooseFile() {
 
-    if (firstTime && fileFormat == -1 ) {
+    if (firstTime && fileFormat == -500 ) {
         QMessageBox::information( this, "SocNetV",
                                   tr("Attention: \n")+
                                   tr("This menu option is more suitable for loading "
