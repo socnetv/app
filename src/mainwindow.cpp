@@ -6510,12 +6510,16 @@ void MainWindow::slotGeodesicsMatrix(){
         statusMessage(  QString(tr("Nothing to do!"))  );
         return;
     }
-    statusMessage( tr("Creating number of geodesics matrix. Please wait...") );
-    QString fn = dataDir + "socnetv-report-sigmas-matrix.dat";
 
+    QString fn = dataDir + "socnetv-report-sigmas-matrix.dat";
+    bool considerWeights=false, inverseWeights=true;
+    askAboutWeights(considerWeights, inverseWeights);
+
+    statusMessage( tr("Creating number of geodesics matrix. Please wait...") );
     createProgressBar();
 
-    activeGraph.writeNumberOfGeodesicsMatrix(fn, networkName.toLocal8Bit());
+    activeGraph.writeNumberOfGeodesicsMatrix(fn, networkName.toLocal8Bit(),
+                                             considerWeights, inverseWeights);
 
     destroyProgressBar();
 
@@ -6535,7 +6539,10 @@ void MainWindow::slotGeodesicsMatrix(){
 /**  Displays the network diameter (largest geodesic) */
 void MainWindow::slotDiameter() {
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes nor links!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        QMessageBox::critical(this, "Error"
+                              ,tr("There are no nodes nor links!\n"
+                                  "Load a network file or create a new network. \n"
+                                  "Then ask me to compute something!"), "OK",0);
 
         statusMessage(  QString(tr("Cannot find the diameter of nothing..."))  );
         return;
@@ -6548,9 +6555,11 @@ void MainWindow::slotDiameter() {
     destroyProgressBar();
 
     if (netDiameter > (activeGraph.vertices()-1) )
-        QMessageBox::information(this, "Diameter", "Network diameter = "+ QString::number(netDiameter)+"  > (vertices()-1).", "OK",0);
+        QMessageBox::information(this, "Diameter", "Network diameter = "
+                                 + QString::number(netDiameter)+"  > (vertices()-1).", "OK",0);
     else
-        QMessageBox::information(this, "Diameter", "Network diameter = " + QString::number(netDiameter), "OK",0);
+        QMessageBox::information(this, "Diameter", "Network diameter = "
+                                 + QString::number(netDiameter), "OK",0);
     statusMessage( tr("Diameter calculated. Ready.") );
 
 }

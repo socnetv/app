@@ -85,13 +85,14 @@ struct Distance1 {
     int distance;
 };
 
+// implement a min-priority queue
 class CompareDistances {
     public:
     bool operator()(Distance& t1, Distance& t2)
     {
        if (t1.distance == t2.distance)
             return t1.target > t2.target;
-       return t1.distance < t2.distance;
+       return t1.distance > t2.distance;  //minimum priority
        // Returns true if t1 is closer than t2
        // else
     }
@@ -275,8 +276,12 @@ public:
     void writeAdjacencyMatrix(const QString, const char*);
 
     void writeInvertAdjacencyMatrix(const QString filename,  const char*);
-    void writeDistanceMatrix(const QString fn, const char*, bool, bool);
-    void writeNumberOfGeodesicsMatrix(const QString fn, const char*);
+    void writeDistanceMatrix(const QString fn, const char*,
+                             const bool considerWeights,
+                             const bool inverseWeights);
+    void writeNumberOfGeodesicsMatrix(const QString fn, const char*,
+                                      const bool considerWeights,
+                                      const bool inverseWeights);
     void writeEccentricity(const QString, const bool);
 
  //   friend QTextStream& operator <<  (QTextStream& os, Graph& m);

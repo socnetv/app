@@ -1397,11 +1397,14 @@ void Graph::writeDistanceMatrix (QString fn, const char* netName,
 *  Saves the number of geodesic distances matrix TM to a file
 *
 */
-void Graph::writeNumberOfGeodesicsMatrix(const QString fn, const char* netName) {
+void Graph::writeNumberOfGeodesicsMatrix(const QString fn,
+                                         const char* netName,
+                                         const bool considerWeights,
+                                         const bool inverseWeights) {
     qDebug ("Graph::writeDistanceMatrix()");
     if ( !distanceMatrixCreated || graphModified ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
-        createDistanceMatrix(false);
+        createDistanceMatrix(false, considerWeights, inverseWeights);
     }
 
     qDebug ("Graph::writeDistanceMatrix() writing to file");
@@ -1637,7 +1640,8 @@ void Graph::createDistanceMatrix(bool centralities,
             qDebug("***** FINISHED PHASE 1 (SSSP) BFS ALGORITHM. Continuing to calculate centralities");
 
             if (centralities){
-                qDebug() << "Set centrality for current source vertex " << (*it)->name() << "  with index s = " << s ;
+                qDebug() << "Set CC for current source vertex " << (*it)->name()
+                         << "  with index s = " << s ;
                 if ( (*it)->CC() != 0 ) //Closeness centrality must be inverted
                     CC=1.0/(*it)->CC();
                 else CC=0;
@@ -1887,10 +1891,7 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
                 Q.push(w);
 //                qDebug()<<"BFS: First check if distance(s,u) = -1 (aka infinite :)) and set it to zero";
                 dist_u=DM.item(s,u);
-                if (dist_u == RAND_MAX )
-                    dist_w = 0;
-                else
-                    dist_w = dist_u + 1;
+                dist_w = dist_u + 1;
 //                qDebug("BFS: Setting distance of w=%i from s=%i equal to distance(s,u) plus 1. New distance = %i",w,s, dist_w );
                 DM.setItem(s, w, dist_w);
                 averGraphDistance += dist_w;
@@ -1976,34 +1977,33 @@ void Graph::dijkstra(int s, bool centralities, bool inverseWeights){
     bool edgeStatus=false;
     H_edges::const_iterator it1;
 
+    qDebug() << "dijkstra: Construct a priority queue Q of all vertices-distances";
+    priority_queue<Distance, vector<Distance>, CompareDistances> Q;
+
     //set distance of s from s equal to 0
     DM.setItem(s,s,0);
     //set sigma of s from s equal to 1
     TM.setItem(s,s,1);
 
-    qDebug() << "dijkstra: Construct a priority queue Q of all vertices-distances";
-    priority_queue<Distance, vector<Distance>, CompareDistances> Q;
-
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
         v=index[ (*it)->name() ];
         if (v != s ){
-            //    dist[v]  := infinity  // Unknown distance function from source to v
-            // dist initialization to infinity already done in createDistanceMatrix
-            DM.setItem(s,v,RAND_MAX);
-
-            //    previous[v]  := undefined      // Previous node in optimal path from source
-            //TODO
+            // DM initialization to RAND_MAX already done in createDistanceMatrix
+            //DM.setItem(s,v,RAND_MAX);
+            qDebug() << " push " << v << " to Q with infinite distance from s";
+            Q.push(Distance(v,RAND_MAX));
+            //TODO // Previous node in optimal path from source
+            //    previous[v]  := undefined
         }
-        qDebug() << " push " << v << " to priority Q";
-        Q.push(Distance(v,RAND_MAX));
     }
+    qDebug() << " push " << s << " to Q with 0 distance from s";
+    //crucial: without it the priority Q would pop arbitrary node at first loop
+    Q.push(Distance(s,0));
     qDebug()<<"dijkstra: Q size "<< Q.size();
-
 
     qDebug() << "\n\n ### dijkstra: LOOP: While Q not empty ";
     while ( !Q.empty() ) {
-
         u=Q.top().target;
         qDebug()<< "\n\n *** dijkstra: take u = "<< u
                    << " from Q which has minimum distance from s = " << s;
@@ -2013,10 +2013,11 @@ void Graph::dijkstra(int s, bool centralities, bool inverseWeights){
             continue ;
 
         if (centralities){
-//            qDebug("dijkstra: If we are to calculate centralities, we must push u=%i to global stack Stack ", u);
+            qDebug()<< "dijkstra: We will calculate centralities, push u="<< u
+                    << " to global stack Stack ";
             Stack.push(u);
         }
-        qDebug() << "*** dijkstra: LOOP over every edge (u,w) e E, "
+        qDebug() << "*** dijkstra: LOOP over every edge ("<< u <<",w) e E, "
                  <<  "that is for each neighbor w of u";
         it1=m_graph [ u ] ->m_outLinks.cbegin();
         while ( it1!=m_graph [ u ] -> m_outLinks.cend() ){
@@ -2033,9 +2034,9 @@ void Graph::dijkstra(int s, bool centralities, bool inverseWeights){
             target = it1.key();
             weight = it1.value().second.first;
             w=index[ target ];
-            qDebug()<<"dijkstra: u="<< u << " --> w="<< w << " (node "<< target
+            qDebug()<<"\ndijkstra: u="<< u << " --> w="<< w << " (node "<< target
                    << ") of weight "<<  weight;
-            if (inverseWeights) {
+            if (inverseWeights) { //only invert if user asked to do so
                 weight = 1.0 / weight;
                 qDebug () << " inverting weight to " << weight;
             }
@@ -2052,7 +2053,7 @@ void Graph::dijkstra(int s, bool centralities, bool inverseWeights){
                 qDebug() << "dijkstra: dist_w = dist_u + weight = "
                          << dist_u << " + " << weight <<  " = " <<dist_w ;
             }
-            qDebug() << "dijkstra: check if dist_w=" << dist_w
+            qDebug() << "dijkstra: RELAXATION : check if dist_w=" << dist_w
                      <<  " is shorter than current DM(s,w)";
             if (dist_w > 0 && dist_w < DM.item(s, w)  ) {
                 qDebug() << "dijkstra: Yeap. Set DM (s,w) = DM(" << s
@@ -2063,22 +2064,28 @@ void Graph::dijkstra(int s, bool centralities, bool inverseWeights){
                 nonZeroDistancesCounter++;
 
                 if (centralities){
-                    //                    qDebug()<<"dijkstra: Calculate PC: store the number of nodes at distance " << dist_w << "from s";
                     sizeOfNthOrderNeighborhood.insert(
                                 dist_w,
                                 sizeOfNthOrderNeighborhood.value(dist_w)+1
                                 );
-                    //                    qDebug()<<"dijkstra: Calculate CC: the sum of distances (will invert it l8r)";
+                    qDebug()<<"dijkstra/PC: number of nodes at distance "
+                           << dist_w << "from s is "
+                           <<  sizeOfNthOrderNeighborhood.value(dist_w);
+
                     m_graph [s]->setCC (m_graph [s]->CC() + dist_w);
-                    //                    qDebug()<<"dijkstra: Calculate Eccentricity: the maximum distance ";
+                    qDebug()<<"dijkstra/CC:: sum of distances = "
+                           <<  m_graph [s]->CC() << " (will invert it l8r)";
+
                     if (m_graph [s]->eccentricity() < dist_w )
                         m_graph [s]->setEccentricity(dist_w);
-
+                    qDebug()<<"dijkstra/Eccentricity: max distance  = "
+                              <<  m_graph [s]->eccentricity();
                 }
-                //                qDebug("dijkstra: Checking graphDiameter");
+
+                qDebug("dijkstra/graphDiameter");
                 if ( dist_w > graphDiameter){
                     graphDiameter=dist_w;
-                    //                    qDebug() << "dijkstra: new graphDiameter = " <<  graphDiameter ;
+                    qDebug() << "dijkstra: new graphDiameter = " << graphDiameter ;
                 }
 
             }
@@ -2086,26 +2093,30 @@ void Graph::dijkstra(int s, bool centralities, bool inverseWeights){
                 qDebug() << "dijkstra: NO";
 
 
-
-//            qDebug("dijkstra: Start path counting"); 	//Is edge (u,w) on a shortest path from s to w via u?
+            qDebug()<< "### dijkstra: Start path counting";
+            // Is (u,w) on a shortest path from s to w via u?
             if ( DM.item(s,w)==DM.item(s,u)+weight) {
                 temp= TM.item(s,w)+TM.item(s,u);
-//                qDebug("dijkstra: Found a NEW SHORTEST PATH from s=%i to w=%i via u=%i. Setting Sigma(%i, %i) = %i",s, w, u, s, w,temp);
+                qDebug()<<"dijkstra: Found a NEW SP from s=" << s
+                       << " to w=" << w << " via u="<< u
+                       << " - Setting Sigma(s, w) = "<< temp;
                 if (s!=w)
                     TM.setItem(s,w, temp);
                 if (centralities){
-//                    qDebug("dijkstra/SC: If we are to calculate centralities, we must calculate SC as well");
+                    qDebug()<< "dijkstra/SC:";
                     if ( s!=w && s != u && u!=w ) {
-//                        qDebug() << "dijkstra: setSC of u="<<u<<" to "<<m_graph[u]->SC()+1;
+                        qDebug() << "dijkstra: Calculate SC: setSC of u="<<u
+                                 <<" to "<<m_graph[u]->SC()+1;
                         m_graph[u]->setSC(m_graph[u]->SC()+1);
                     }
                     else {
-//                        qDebug() << "dijkstra/SC: skipping setSC of u, because s="
-//                                 <<s<<" w="<< w << " u="<< u;
+                        qDebug() << "dijkstra/SC: skipping setSC of u, because s="
+                                 <<s<<" w="<< w << " u="<< u;
                     }
-//                    qDebug() << "dijkstra/SC: SC is " << m_graph[u]->SC();
-//                    qDebug() << "dijkstra: appending u="<< u << " to list Ps[w=" << w
-//                             << "] with the predecessors of w on all shortest paths from s ";
+                    qDebug() << "dijkstra/SC: SC is " << m_graph[u]->SC();
+
+                    qDebug() << "dijkstra: appending u="<< u << " to list Ps[w=" << w
+                             << "] with the predecessors of w on all shortest paths from s ";
                     m_graph[w]->appendToPs(u);
                 }
             }
