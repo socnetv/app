@@ -4551,10 +4551,38 @@ void MainWindow::linkInfoStatusBar (Edge* link) {
     clickedLink=link;
     linkClicked=true;
     nodeClicked=false;
-    statusMessage(  QString(tr("Link between node %1 and node %2 (weight %3 and "
-                               "color %4) has been selected. Click again to unselect it."))
+
+    if (link->isReciprocal()) {
+        float outbound = activeGraph.hasEdge
+                (link->sourceNodeNumber(), link->targetNodeNumber());
+        float inbound = activeGraph.hasEdge
+                (link->targetNodeNumber(), link->sourceNodeNumber());
+        if (outbound==inbound)
+            statusMessage(  QString
+                        (tr("Symmetric edge %1 <--> %2 of weight %3 has been selected. "
+                                   "Click again to unselect it."))
                     .arg( link->sourceNodeNumber() ).arg(link->targetNodeNumber())
-                    .arg(link->weight()).arg(link->color() ) );
+                    .arg(link->weight()) ) ;
+        else
+            statusMessage(  QString
+                        (tr("Arc %1 --> %2 of weight %3 "
+                            " and Arc %4 --> %5 of weight %6"
+                            " have been selected. "
+                                   "Click again to unselect them."))
+                            .arg(link->sourceNodeNumber() )
+                            .arg(link->targetNodeNumber())
+                            .arg(outbound)
+                            .arg( link->targetNodeNumber() )
+                            .arg(link->sourceNodeNumber())
+                            .arg(inbound) ) ;
+
+    }
+    else {
+        statusMessage(  QString(tr("Arc %1 --> %2 of weight %3 has been selected. "
+                                   "Click again to unselect it."))
+                    .arg( link->sourceNodeNumber() ).arg(link->targetNodeNumber())
+                    .arg(link->weight()) ) ;
+    }
 }
 
 
@@ -6377,8 +6405,45 @@ void MainWindow::slotViewDistanceMatrix(){
     QString fn = dataDir + "socnetv-report-distance-matrix.dat";
 
     createProgressBar();
+    bool considerWeights=false, inverseWeights=true;
+    if (activeGraph.isWeighted()){
+        switch( QMessageBox::information( this, "Distance Matrix",
+                                          tr("This network is weighted.\n"
+                                             "Take edge weights into account (Default: No)?"),
+                                          tr("Yes"), tr("No"),
+                                          0, 1 ) )
+        {
+        case 0:
+            considerWeights=true;
+            break;
+        case 1:
+            considerWeights=false;
+            break;
+        default: // just for sanity
+            considerWeights=false;
+            return;
+            break;
+        }
+        switch( QMessageBox::information( this, "Distance Matrix",
+                                          tr("Inverse edge weights ? (Default: Yes)?"),
+                                          tr("Yes"), tr("No"),
+                                          0, 1 ) )
+        {
+        case 0:
+            inverseWeights=true;
+            break;
+        case 1:
+            inverseWeights=false;
+            break;
+        default: // just for sanity
+            inverseWeights=true;
+            return;
+            break;
+        }
 
-    activeGraph.writeDistanceMatrix(fn, networkName.toLocal8Bit());
+    }
+    activeGraph.writeDistanceMatrix(fn, networkName.toLocal8Bit(),
+                                    considerWeights, inverseWeights);
 
     destroyProgressBar();
 
