@@ -1306,7 +1306,7 @@ void MainWindow::initActions(){
                    "(i,j) element is the distance from node i to node j"
                    "The distance of two nodes is the length of the shortest path between them.")
                 );
-    connect(distanceMatrixAct, SIGNAL(triggered()), this, SLOT( slotViewDistanceMatrix() ) );
+    connect(distanceMatrixAct, SIGNAL(triggered()), this, SLOT( slotDistancesMatrix() ) );
 
     geodesicsMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesics Matrix"),this);
     geodesicsMatrixAct ->setShortcut(tr("Ctrl+Alt+G"));
@@ -1319,7 +1319,7 @@ void MainWindow::initActions(){
                     "A geodesic of two nodes is the shortest path between them.")
                 );
     connect(geodesicsMatrixAct, SIGNAL(triggered()),
-            this, SLOT( slotViewNumberOfGeodesicsMatrix()) );
+            this, SLOT( slotGeodesicsMatrix()) );
 
     diameterAct = new QAction(QIcon(":/images/diameter.png"), tr("Diameter"),this);
     diameterAct ->setShortcut(tr("Ctrl+D"));
@@ -2406,10 +2406,10 @@ void MainWindow::toolBoxAnalysisGeodesicsSelectChanged(int selectedIndex) {
         slotAverageGraphDistance();
         break;
     case 3:
-        slotViewDistanceMatrix();
+        slotDistancesMatrix();
         break;
     case 4:
-        slotViewNumberOfGeodesicsMatrix();
+        slotGeodesicsMatrix();
         break;
     case 5:
         slotEccentricity();
@@ -6394,8 +6394,8 @@ void MainWindow::slotGraphDistance(){
 /**
 *  Invokes calculation of the matrix of geodesic distances for the loaded network, then displays it.
 */
-void MainWindow::slotViewDistanceMatrix(){
-    qDebug("MW: slotViewDistanceMatrix()");
+void MainWindow::slotDistancesMatrix(){
+    qDebug("MW: slotDistancesMatrix()");
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical(this, "Error",tr("There are no nodes nor links!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
         statusMessage(  QString(tr("Nothing to do!"))  );
@@ -6424,10 +6424,16 @@ void MainWindow::slotViewDistanceMatrix(){
             return;
             break;
         }
-        switch( QMessageBox::information( this, "Distance Matrix",
-                                          tr("Inverse edge weights ? (Default: Yes)?"),
-                                          tr("Yes"), tr("No"),
-                                          0, 1 ) )
+        switch( QMessageBox::information
+                ( this, "Distance Matrix",
+                  tr("Inverse edge weights ? (Default: Yes)?\n"
+                     "If the weights denote cost (i.e. ), press No, since the "
+                     "distance between two nodes should be the quickest or cheaper one. \n"
+                     "If the weights denote value or strength (i.e. votes or interaction), "
+                     "press Yes to inverse the weights, since the distance between two "
+                     "nodes should be the most valuable one."),
+                  tr("Yes"), tr("No"),
+                  0, 1 ) )
         {
         case 0:
             inverseWeights=true;
@@ -6463,7 +6469,7 @@ void MainWindow::slotViewDistanceMatrix(){
 /**
 *  Invokes calculation of the sigmas matrix (the number of geodesic paths between each pair of nodes in the loaded network), then displays it.
 */
-void MainWindow::slotViewNumberOfGeodesicsMatrix(){
+void MainWindow::slotGeodesicsMatrix(){
     qDebug("MW: slotViewNumberOfGeodesics()");
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical(this, "Error",tr("There are no nodes nor links!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
