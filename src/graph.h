@@ -275,24 +275,39 @@ public:
     void writeAdjacencyMatrix(const QString, const char*);
 
     void writeInvertAdjacencyMatrix(const QString filename,  const char*);
-    void writeDistanceMatrix(const QString fn, const char*);
+    void writeDistanceMatrix(const QString fn, const char*, bool, bool);
     void writeNumberOfGeodesicsMatrix(const QString fn, const char*);
     void writeEccentricity(const QString, const bool);
 
  //   friend QTextStream& operator <<  (QTextStream& os, Graph& m);
 
-    void writeCentralityDegree(const QString, const bool);	//Writes the out-degree centralities to a file
-    void writeCentralityCloseness(const QString, const bool);	//Writes the closeness centralities to a file
-    void writeCentralityClosenessInfluenceRange(const QString, const bool);
-    void writeCentralityBetweenness(const QString, const bool);	//Writes the betweenness centralities to a file
-    void writeCentralityGraph(const QString, const bool);		//Writes the Graph centralities to a file
-    void writeCentralityPower(const QString, const bool);		//Writes the Power centralities to a file
-    void writeCentralityStress(const QString, const bool);		//Writes the Stress centralities to a file
-    void writeCentralityEccentricity(const QString, const bool);	//Writes the Eccentr centralities to a file
-    void writeCentralityInformation(const QString);			//Writes the Information centralities to a file
-
-    void writePrestigeDegree(const QString, bool);
-    void writePrestigeProximity(const QString, const bool);
+    void writeCentralityDegree(const QString, const bool weights);
+    void writeCentralityCloseness(const QString,
+                                  const bool weights,
+                                  const bool inverseWeights);
+    void writeCentralityClosenessInfluenceRange(const QString,
+                                                const bool weights,
+                                                const bool inverseWeights);
+    void writeCentralityBetweenness(const QString,
+                                    const bool weights,
+                                    const bool inverseWeights);
+    void writeCentralityGraph(const QString,
+                              const bool weights,
+                              const bool inverseWeights);
+    void writeCentralityPower(const QString,
+                              const bool weigths,
+                              const bool inverseWeights);
+    void writeCentralityStress(const QString,
+                               const bool weigths,
+                               const bool inverseWeights);
+    void writeCentralityEccentricity(const QString,
+                                     const bool weigths,
+                                     const bool inverseWeights);
+    void writeCentralityInformation(const QString,
+                                    const bool weigths,
+                                    const bool inverseWeights);
+    void writePrestigeDegree(const QString, const bool weights);
+    void writePrestigeProximity(const QString, const bool weights);
     void writePrestigePageRank(const QString);
 
 
@@ -311,7 +326,8 @@ public:
     float averageGraphDistance();
     int connectedness();
 
-    void createDistanceMatrix(bool);
+    void createDistanceMatrix(bool centralities=false, bool considerWeights=false,
+                              bool inverseWeights=true);
     void centralityDegree(bool);
     void centralityInformation();
     void centralityClosenessInfluenceRange();
@@ -349,13 +365,17 @@ public:
 
     void layoutCircularRandom(double x0, double y0, double maxRadius);
 
-    void layoutCircularByProminenceIndex(
-            double x0, double y0, double maxRadius, int type);
+    void layoutCircularByProminenceIndex(double x0, double y0, double maxRadius,
+                                         int type, const bool considerWeights,
+                                         const bool inverseWeights);
 
-    void layoutLevelByProminenceIndex(
-            double maxWidth, double maxHeight, int type);
+    void layoutLevelByProminenceIndex(double maxWidth, double maxHeight, int type,
+                                      const bool considerWeights,
+                                      const bool inverseWeights);
 
-    void layoutVerticesSizeByProminenceIndex(int index);
+    void layoutVerticesSizeByProminenceIndex(int index,
+                                             const bool considerWeights,
+                                             const bool inverseWeights);
 
     void layoutForceDirectedSpringEmbedder(bool dynamicMovement);
 
@@ -423,7 +443,7 @@ private:
 
     /** methods used by createDistanceMatrix()  */
     void BFS(int, bool);	//Breadth-First Search function
-    void dijkstra(int,bool);
+    void dijkstra(int s,bool centralities=false,bool inverseWeights=false);
     void minmax(
                 float C, Vertex *v, float &max, float &min,
                 int &maxNode, int &minNode

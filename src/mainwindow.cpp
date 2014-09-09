@@ -5289,6 +5289,7 @@ void MainWindow::slotFilterNodes(){
  *Calls Graph::filterIsolateVertices to filter vertices with no links
  */
 void MainWindow::slotFilterIsolateNodes(bool checked){
+    Q_UNUSED(checked);
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical(this, "Error",tr("Nothing to filter! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
         statusMessage(  QString(tr("Nothing to filter!"))  );
@@ -5518,7 +5519,7 @@ void MainWindow::slotLayoutNodeSizesByOutDegree(bool checked){
 
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
-        activeGraph.layoutVerticesSizeByProminenceIndex(0);
+        activeGraph.layoutVerticesSizeByProminenceIndex(0, false, false);
 
         QApplication::restoreOverrideCursor();
         return;
@@ -5529,10 +5530,15 @@ void MainWindow::slotLayoutNodeSizesByOutDegree(bool checked){
     nodeSizesByInDegreeAct->setChecked(false);
     nodeSizesByInDegreeBx->setChecked(false);
 
+    bool considerWeights=false, inverseWeights=true;
+    askAboutWeights(considerWeights, inverseWeights);
+
     statusMessage( tr("Embedding node size model on the network.... ")  );
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
-    activeGraph.layoutVerticesSizeByProminenceIndex(1);
+    activeGraph.layoutVerticesSizeByProminenceIndex(1,
+                                                    considerWeights,
+                                                    inverseWeights);
 
     QApplication::restoreOverrideCursor( );
 }
@@ -5561,7 +5567,7 @@ void MainWindow::slotLayoutNodeSizesByInDegree(bool checked){
 
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
-        activeGraph.layoutVerticesSizeByProminenceIndex(0);
+        activeGraph.layoutVerticesSizeByProminenceIndex(0, false,false);
 
         QApplication::restoreOverrideCursor();
         return;
@@ -5572,10 +5578,15 @@ void MainWindow::slotLayoutNodeSizesByInDegree(bool checked){
     nodeSizesByInDegreeAct->setChecked(true);
     nodeSizesByInDegreeBx->setChecked(true);
 
+    bool considerWeights=false, inverseWeights=true;
+    askAboutWeights(considerWeights, inverseWeights);
+
     statusMessage( tr("Embedding node size model on the network.... ")  );
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
-    activeGraph.layoutVerticesSizeByProminenceIndex(9);
+    activeGraph.layoutVerticesSizeByProminenceIndex(9,
+                                                    considerWeights,
+                                                    inverseWeights);
 
     QApplication::restoreOverrideCursor( );
 
@@ -5726,13 +5737,17 @@ void MainWindow::slotLayoutCircularByProminenceIndex(){
             break;
         }
     }
+    bool considerWeights=false, inverseWeights=true;
+    askAboutWeights(considerWeights, inverseWeights);
+
     double x0=scene->width()/2.0;
     double y0=scene->height()/2.0;
     double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
     graphicsWidget->clearGuides();
     createProgressBar();
-    activeGraph.layoutCircularByProminenceIndex(x0, y0, maxRadius,userChoice);
+    activeGraph.layoutCircularByProminenceIndex(x0, y0, maxRadius,userChoice,
+                                                considerWeights, inverseWeights);
     destroyProgressBar();
     statusMessage( tr("Nodes in inner circles have greater prominence index.") );
 }
@@ -5857,13 +5872,17 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
             break;
         }
     }
+    bool considerWeights=false, inverseWeights=true;
+    askAboutWeights(considerWeights, inverseWeights);
+
     double x0=scene->width()/2.0;
     double y0=scene->height()/2.0;
     double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
     graphicsWidget->clearGuides();
     createProgressBar();
-    activeGraph.layoutCircularByProminenceIndex(x0, y0, maxRadius, userChoice );
+    activeGraph.layoutCircularByProminenceIndex(x0, y0, maxRadius, userChoice,
+                                                considerWeights, inverseWeights);
     destroyProgressBar();
     statusMessage( tr("Nodes in inner circles have greater prominence index.") );
 }
@@ -5989,10 +6008,14 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
             break;
         }
     }
+    bool considerWeights=false, inverseWeights=true;
+    askAboutWeights(considerWeights, inverseWeights);
+
     statusMessage(  QString(tr("Calculating new node sizes. Please wait...")) );
     graphicsWidget->clearGuides();
     createProgressBar();
-    activeGraph.layoutVerticesSizeByProminenceIndex(userChoice);
+    activeGraph.layoutVerticesSizeByProminenceIndex(userChoice, considerWeights,
+                                                    inverseWeights);
     destroyProgressBar();
     statusMessage( tr("Bigger nodes have greater prominence index.") );
 }
@@ -6122,12 +6145,15 @@ void MainWindow::slotLayoutLevelByProminenceIndex(){
             break;
         }
     }
+    bool considerWeights=false, inverseWeights=true;
+    askAboutWeights(considerWeights, inverseWeights);
     double maxWidth=scene->width();
     double maxHeight=scene->height(); //pixels
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
     graphicsWidget->clearGuides();
     createProgressBar();
-    activeGraph.layoutLevelByProminenceIndex(maxWidth, maxHeight, userChoice);
+    activeGraph.layoutLevelByProminenceIndex(maxWidth, maxHeight, userChoice,
+                                             considerWeights,inverseWeights);
     destroyProgressBar();
     statusMessage( tr("Nodes in upper levels are more prominent. ") );
     }
@@ -6256,12 +6282,15 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
             break;
         }
     }
+    bool considerWeights=false, inverseWeights=true;
+    askAboutWeights(considerWeights, inverseWeights);
     double maxWidth=scene->width();
     double maxHeight=scene->height(); //pixels
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
     graphicsWidget->clearGuides();
     createProgressBar();
-    activeGraph.layoutLevelByProminenceIndex(maxWidth, maxHeight, userChoice);
+    activeGraph.layoutLevelByProminenceIndex(maxWidth, maxHeight, userChoice,
+                                             considerWeights, inverseWeights);
     destroyProgressBar();
     statusMessage( tr("Nodes in upper levels are more prominent. ") );
     }
@@ -6344,6 +6373,51 @@ void MainWindow::slotInvertAdjMatrix(){
 
 
 
+
+void MainWindow::askAboutWeights(bool &considerWeights, bool &inverseWeights){
+    if (activeGraph.isWeighted()){
+        switch( QMessageBox::information(
+                    this, "Edge weights and Distances",
+                    tr("This network is weighted.\n"
+                       "Take edge weights into account (Default: No)?"),
+                    QMessageBox::Yes|QMessageBox::No, QMessageBox::No) )
+        {
+        case QMessageBox::Yes:
+            considerWeights=true;
+            break;
+        case QMessageBox::No:
+            considerWeights=false;
+            break;
+        default: // just for sanity
+            considerWeights=false;
+            return;
+            break;
+        }
+        if (considerWeights)
+        switch( QMessageBox::information
+                ( this, "Edge weights and Distances",
+                  tr("Inverse edge weights ? (Default: Yes)?\n\n"
+                     "If the weights denote cost (i.e. ), press No, since the "
+                     "distance between two nodes should be the quickest or cheaper one. \n\n"
+                     "If the weights denote value or strength (i.e. votes or interaction), "
+                     "press Yes to inverse the weights, since the distance between two "
+                     "nodes should be the most valuable one."),
+                  QMessageBox::Yes|QMessageBox::No, QMessageBox::Yes) )
+        {
+        case QMessageBox::Yes:
+            inverseWeights=true;
+            break;
+        case QMessageBox::No:
+            inverseWeights=false;
+            break;
+        default: // just for sanity
+            inverseWeights=true;
+            return;
+            break;
+        }
+    }
+}
+
 /**
 *  Displays the graph distance (geodesic distance) between two user-specified nodes
     This is the length of the shortest path between them.
@@ -6404,50 +6478,10 @@ void MainWindow::slotDistancesMatrix(){
     statusMessage( tr("Creating distance matrix. Please wait...") );
     QString fn = dataDir + "socnetv-report-distance-matrix.dat";
 
-    createProgressBar();
     bool considerWeights=false, inverseWeights=true;
-    if (activeGraph.isWeighted()){
-        switch( QMessageBox::information( this, "Distance Matrix",
-                                          tr("This network is weighted.\n"
-                                             "Take edge weights into account (Default: No)?"),
-                                          tr("Yes"), tr("No"),
-                                          0, 1 ) )
-        {
-        case 0:
-            considerWeights=true;
-            break;
-        case 1:
-            considerWeights=false;
-            break;
-        default: // just for sanity
-            considerWeights=false;
-            return;
-            break;
-        }
-        switch( QMessageBox::information
-                ( this, "Distance Matrix",
-                  tr("Inverse edge weights ? (Default: Yes)?\n"
-                     "If the weights denote cost (i.e. ), press No, since the "
-                     "distance between two nodes should be the quickest or cheaper one. \n"
-                     "If the weights denote value or strength (i.e. votes or interaction), "
-                     "press Yes to inverse the weights, since the distance between two "
-                     "nodes should be the most valuable one."),
-                  tr("Yes"), tr("No"),
-                  0, 1 ) )
-        {
-        case 0:
-            inverseWeights=true;
-            break;
-        case 1:
-            inverseWeights=false;
-            break;
-        default: // just for sanity
-            inverseWeights=true;
-            return;
-            break;
-        }
+    askAboutWeights(considerWeights, inverseWeights);
 
-    }
+    createProgressBar();
     activeGraph.writeDistanceMatrix(fn, networkName.toLocal8Bit(),
                                     considerWeights, inverseWeights);
 
@@ -6894,7 +6928,7 @@ void MainWindow::slotCentralityCloseness(){
 
     case -1:
         QMessageBox::critical(this,
-                              "Centrality Closeness",
+                              "Closeness Centrality",
                               tr(
                                  "Disconnected graph/digraph!\n"
                                  "Since this network is disconnected, "
@@ -6914,12 +6948,15 @@ void MainWindow::slotCentralityCloseness(){
         break;
     };
 
+    bool considerWeights=false, inverseWeights=true;
+    askAboutWeights(considerWeights, inverseWeights);
+
     QString fn = dataDir + "socnetv-report-centrality_closeness.dat";
-    bool considerWeights=true;
 
     createProgressBar();
 
-    activeGraph.writeCentralityCloseness(fn, considerWeights);
+    activeGraph.writeCentralityCloseness(
+                fn, considerWeights, inverseWeights);
 
     destroyProgressBar();
 
@@ -6949,11 +6986,14 @@ void MainWindow::slotCentralityClosenessInfluenceRange(){
     }
 
     QString fn = dataDir + "socnetv-report-centrality_closeness_influence_range.dat";
-    bool considerWeights=true;
+
+    bool considerWeights=false, inverseWeights=true;
+    askAboutWeights(considerWeights, inverseWeights);
 
     createProgressBar();
 
-    activeGraph.writeCentralityClosenessInfluenceRange(fn, considerWeights);
+    activeGraph.writeCentralityClosenessInfluenceRange(
+                fn, considerWeights,inverseWeights);
 
     destroyProgressBar();
 
@@ -6981,11 +7021,14 @@ void MainWindow::slotCentralityBetweenness(){
         return;
     }
     QString fn = dataDir + "socnetv-report-centrality_betweenness.dat";
-    bool considerWeights=true;
-    statusMessage(  QString(tr(" Please wait...")));
 
+    bool considerWeights=false, inverseWeights=true;
+    askAboutWeights(considerWeights, inverseWeights);
+
+    statusMessage(  QString(tr(" Please wait...")));
     createProgressBar();
-    activeGraph.writeCentralityBetweenness(fn, considerWeights);
+    activeGraph.writeCentralityBetweenness(
+                fn, considerWeights, inverseWeights);
     destroyProgressBar();
 
     statusMessage( QString(tr(" displaying file...")));
@@ -7066,7 +7109,10 @@ void MainWindow::slotPrestigePageRank(){
         return;
     }
     QString fn = dataDir + "socnetv-report-prestige_pagerank.dat";
-    //   bool considerWeights=false;  //TODO Do we need to compute weigths in PageRank?
+
+    bool considerWeights=false, inverseWeights=true;
+    askAboutWeights(considerWeights, inverseWeights);
+
     statusMessage(  QString(tr(" Please wait...")));
 
     createProgressBar();
@@ -7093,8 +7139,10 @@ void MainWindow::slotPrestigeProximity(){
         return;
     }
     QString fn = dataDir + "socnetv-report-centrality_proximity_prestige.dat";
-    statusMessage(  QString(tr(" Please wait...")));
+    bool considerWeights=false, inverseWeights=true;
+    askAboutWeights(considerWeights, inverseWeights);
 
+    statusMessage(  QString(tr(" Please wait...")));
     createProgressBar();
     activeGraph.writePrestigeProximity(fn, true);
     destroyProgressBar();
@@ -7150,7 +7198,7 @@ void MainWindow::slotCentralityInformation(){
     statusMessage(  QString(tr(" Please wait...")));
 
     createProgressBar();
-    activeGraph.writeCentralityInformation(fn);
+    activeGraph.writeCentralityInformation(fn,true, true);
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);
@@ -7176,13 +7224,12 @@ void MainWindow::slotCentralityStress(){
     }
     QString fn = dataDir + "socnetv-report-centrality_stress.dat";
 
-    bool considerWeights=true;
+    bool considerWeights=false, inverseWeights=true;
+    askAboutWeights(considerWeights, inverseWeights);
+
     statusMessage(  QString(tr(" Please wait...")));
-
     createProgressBar();
-
-    activeGraph.writeCentralityStress(fn, considerWeights);
-
+    activeGraph.writeCentralityStress(fn, considerWeights, inverseWeights);
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
@@ -7208,13 +7255,12 @@ void MainWindow::slotCentralityPower(){
     }
     QString fn = dataDir + "socnetv-report-centrality_power.dat";
 
-    bool considerWeights=true;
+    bool considerWeights=false, inverseWeights=true;
+    askAboutWeights(considerWeights, inverseWeights);
+
     statusMessage(  QString(tr(" Please wait...")));
-
     createProgressBar();
-
-    activeGraph.writeCentralityPower(fn, considerWeights);
-
+    activeGraph.writeCentralityPower(fn, considerWeights, inverseWeights);
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
@@ -7237,11 +7283,13 @@ void MainWindow::slotCentralityEccentricity(){
         return;
     }
     QString fn = dataDir + "socnetv-report-centrality_eccentricity.dat";
-    bool considerWeights=true;
-    statusMessage(  QString(tr(" Please wait...")));
 
+    bool considerWeights=false, inverseWeights=true;
+    askAboutWeights(considerWeights, inverseWeights);
+
+    statusMessage(  QString(tr(" Please wait...")));
     createProgressBar();
-    activeGraph.writeCentralityEccentricity(fn, considerWeights);
+    activeGraph.writeCentralityEccentricity(fn, considerWeights, inverseWeights);
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW

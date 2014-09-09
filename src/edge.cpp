@@ -284,6 +284,9 @@ void Edge::unmakeReciprocal(){
     m_reciprocal= false;
 }
 
+bool Edge::isReciprocal() {
+    return m_reciprocal;
+}
 
 void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *){
     if (!source || !target)

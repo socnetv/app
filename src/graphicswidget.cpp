@@ -289,7 +289,6 @@ void GraphicsWidget::edgeClicked(Edge *edge){
     origNodeSizeMarkedNode2=markedNode2->size(); // save its original size
     markedNode1->setSize(2*origNodeSizeMarkedNode1-1);	//now, make it larger
     markedNode2->setSize(2*origNodeSizeMarkedNode2-1);	//now, make it larger
-
 	emit selectedEdge(edge);
 }
 

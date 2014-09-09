@@ -77,6 +77,7 @@ public:
 
 	void makeReciprocal();
 	void unmakeReciprocal();
+    bool isReciprocal();
 
 	QPainterPath shape() const;
 

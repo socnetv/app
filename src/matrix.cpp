@@ -27,7 +27,7 @@
 #include "matrix.h"
 
 #include <cstdlib>		//allows the use of RAND_MAX macro
-#include <math.h>		//need for fabs function
+#include <QtMath>		//needed for fabs, qFloor etc
 
 
 
@@ -165,7 +165,6 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
     m.findMinMaxValues(maxVal,minVal);
     float element;
 
-    //
     if (maxVal == -1 ||  maxVal==RAND_MAX )
          os << " max Value = " <<  QString("\xE2\x88\x9E") << endl;
         else
@@ -247,12 +246,23 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
                 newFieldWidth = fieldWidth -2;
             else if ( element > 9)
                 newFieldWidth = fieldWidth -1;
+            else if (element < 1.0 ) {
+                if ( element *10 == qFloor(10* element)  )
+                newFieldWidth = fieldWidth;
+                else if (element *100 == qFloor(100* element)  )
+                newFieldWidth = fieldWidth-2;
+                else if (element *1000 == qFloor(100* element)  )
+                newFieldWidth = fieldWidth-3;
+                else
+                    newFieldWidth = fieldWidth-3;
+            }
             else
                 newFieldWidth = fieldWidth;
             if ( element == -1 || element == RAND_MAX)  // we print infinity symbol instead of -1 (distances matrix).
                 os << qSetFieldWidth(newFieldWidth) << right << QString("\xE2\x88\x9E");
             else
-                os << qSetFieldWidth(newFieldWidth) << right << element;
+                os << qSetFieldWidth(newFieldWidth)
+                   << right << element;
         }
         os << '\n';
     }
@@ -547,7 +557,7 @@ Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
 		    << " Initial pivot " << m_pivot ;
         for ( register int i=l; i<n; i++) {
             temp_pivot = A.item(i,j);
-            if ( fabs( temp_pivot ) > fabs ( m_pivot ) ) {
+            if ( qFabs( temp_pivot ) > qFabs ( m_pivot ) ) {
                 qDebug() << " A("<< i+1 << ","<< j+1  << ") = " <<  temp_pivot
                          << " absolutely larger than current pivot "<< m_pivot
                          << ". Marking new pivot line: " << i+1;

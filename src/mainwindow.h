@@ -100,7 +100,6 @@ public:		/**PUBLIC FUNCTIONS NOT VISIBLE BY OTHER WIDGETS NOR BY SLOT/LINK MECHA
     // Main network file loader method
     bool loadNetworkFile ( QString, int );
 
-
     int activeLinks();
     int activeNodes();
 
@@ -201,8 +200,9 @@ public slots:
     void  slotLayoutNodeSizesByInDegree(bool);
 
     //STATISTICS MENU
-    void slotViewDistanceMatrix();
-    void slotViewNumberOfGeodesicsMatrix();
+    void askAboutWeights(bool &considerWeights, bool &inverseWeights);
+    void slotDistancesMatrix();
+    void slotGeodesicsMatrix();
     void slotGraphDistance();
     void slotAverageGraphDistance();
     void slotDiameter();
