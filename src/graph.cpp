@@ -2059,13 +2059,48 @@ void Graph::dijkstra(int s, bool centralities, bool inverseWeights){
             }
             qDebug() << "dijkstra: RELAXATION : check if dist_w=" << dist_w
                      <<  " is shorter than current DM(s,w)";
-            if (dist_w > 0 && dist_w < DM.item(s, w)  ) {
+            if  (dist_w == DM.item(s, w)  ) {
+                qDebug() << "dijkstra: dist_w : " << dist_w
+                         <<  " ==  DM(s,w) : " << DM.item(s, w);
+                temp= TM.item(s,w)+TM.item(s,u);
+                qDebug()<<"dijkstra: Found another SP from s=" << s
+                       << " to w=" << w << " via u="<< u
+                       << " - Setting Sigma(s, w) = "<< temp;
+                if (s!=w)
+                    TM.setItem(s,w, temp);
+                if (centralities){
+                    qDebug()<< "dijkstra/SC:";
+                    if ( s!=w && s != u && u!=w ) {
+                        qDebug() << "dijkstra: Calculate SC: setSC of u="<<u
+                                 <<" to "<<m_graph[u]->SC()+1;
+                        m_graph[u]->setSC(m_graph[u]->SC()+1);
+                    }
+                    else {
+                        qDebug() << "dijkstra/SC: skipping setSC of u, because s="
+                                 <<s<<" w="<< w << " u="<< u;
+                    }
+                    qDebug() << "dijkstra/SC: SC is " << m_graph[u]->SC();
+
+                    qDebug() << "dijkstra: appending u="<< u << " to list Ps[w=" << w
+                             << "] with the predecessors of w on all shortest paths from s ";
+                    m_graph[w]->appendToPs(u);
+                }
+            }
+
+            else if (dist_w > 0 && dist_w < DM.item(s, w)  ) {
                 qDebug() << "dijkstra: Yeap. Set DM (s,w) = DM(" << s
                          << ","<< w
                          << ") = "<< dist_w ;
                 DM.setItem(s, w, dist_w);
                 averGraphDistance += dist_w;
                 nonZeroDistancesCounter++;
+
+                if (s!=w) {
+                    qDebug()<<"dijkstra: Found NEW SP from s=" << s
+                           << " to w=" << w << " via u="<< u
+                           << " - Setting Sigma(s, w) = 1 ";
+                    TM.setItem(s,w, 1);
+                }
 
                 if (centralities){
                     sizeOfNthOrderNeighborhood.insert(
@@ -2097,33 +2132,12 @@ void Graph::dijkstra(int s, bool centralities, bool inverseWeights){
                 qDebug() << "dijkstra: NO";
 
 
-            qDebug()<< "### dijkstra: Start path counting";
-            // Is (u,w) on a shortest path from s to w via u?
-            if ( DM.item(s,w)==DM.item(s,u)+weight) {
-                temp= TM.item(s,w)+TM.item(s,u);
-                qDebug()<<"dijkstra: Found a NEW SP from s=" << s
-                       << " to w=" << w << " via u="<< u
-                       << " - Setting Sigma(s, w) = "<< temp;
-                if (s!=w)
-                    TM.setItem(s,w, temp);
-                if (centralities){
-                    qDebug()<< "dijkstra/SC:";
-                    if ( s!=w && s != u && u!=w ) {
-                        qDebug() << "dijkstra: Calculate SC: setSC of u="<<u
-                                 <<" to "<<m_graph[u]->SC()+1;
-                        m_graph[u]->setSC(m_graph[u]->SC()+1);
-                    }
-                    else {
-                        qDebug() << "dijkstra/SC: skipping setSC of u, because s="
-                                 <<s<<" w="<< w << " u="<< u;
-                    }
-                    qDebug() << "dijkstra/SC: SC is " << m_graph[u]->SC();
+//            qDebug()<< "### dijkstra: Start path counting";
+//            // Is (u,w) on a shortest path from s to w via u?
+//            if ( DM.item(s,w)==DM.item(s,u)+weight) {
+//                temp= TM.item(s,w)+TM.item(s,u);
 
-                    qDebug() << "dijkstra: appending u="<< u << " to list Ps[w=" << w
-                             << "] with the predecessors of w on all shortest paths from s ";
-                    m_graph[w]->appendToPs(u);
-                }
-            }
+//            }
             ++it1;
         }
 

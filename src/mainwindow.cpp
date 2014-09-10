@@ -6610,12 +6610,27 @@ void MainWindow::slotDiameter() {
 
     destroyProgressBar();
 
-    if (netDiameter > (activeGraph.vertices()-1) )
-        QMessageBox::information(this, "Diameter", "Network diameter = "
-                                 + QString::number(netDiameter)+"  > (vertices()-1).", "OK",0);
+    if ( activeGraph.isWeighted() && considerWeights )
+        QMessageBox::information(this, "Diameter",
+                                 tr("Diameter =  ")
+                                 + QString::number(netDiameter) +
+                                 tr("\n\nSince this is a weighted network \n"
+                                 "the diameter can be more than N"),
+                                 "OK",0);
+    else if ( activeGraph.isWeighted() && !considerWeights )
+        QMessageBox::information(this, "Diameter",
+                                 tr("Diameter =  ")
+                                 + QString::number(netDiameter) +
+                                 tr("\n\nThis is the diameter of the \n"
+                                    "corresponding network without weights"),
+                                 "OK",0);
     else
-        QMessageBox::information(this, "Diameter", "Network diameter = "
-                                 + QString::number(netDiameter), "OK",0);
+        QMessageBox::information(this, "Diameter",
+                                 tr("Diameter =  ")
+                                 + QString::number(netDiameter) +
+                                 tr("\n\nSince this is a non-weighted network, \n"
+                                 "the diameter is always less than N-1."),
+                                 "OK",0);
     statusMessage( tr("Diameter calculated. Ready.") );
 
 }
