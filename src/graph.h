@@ -326,9 +326,11 @@ public:
 
 
     /* DISTANCES, CENTRALITIES & PROMINENCE MEASURES */
-    int distance( int, int);
-    int diameter();
-    float averageGraphDistance();
+    int distance(const int, const int,
+                 const bool considerWeights, const bool inverseWeights);
+    int diameter(const bool considerWeights, const bool inverseWeights);
+    float averageGraphDistance(const bool considerWeights,
+                               const bool inverseWeights);
     int connectedness();
 
     void createDistanceMatrix(bool centralities=false, bool considerWeights=false,

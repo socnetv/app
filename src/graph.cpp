@@ -1306,10 +1306,12 @@ bool Graph::symmetricEdge(int v1, int v2){
 /**
 *  Returns the distance between nodes numbered (i-1) and (j-1)
 */
-int Graph::distance(int i, int j){
+int Graph::distance(const int i, const int j,
+                    const bool considerWeights,
+                    const bool inverseWeights){
     if ( !distanceMatrixCreated || graphModified ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
-        createDistanceMatrix(false);
+        createDistanceMatrix(false, considerWeights, inverseWeights);
     }
     return DM.item(index[i],index[j]);
 }
@@ -1319,10 +1321,11 @@ int Graph::distance(int i, int j){
 /**
 *  Returns the diameter of the graph, aka the largest geodesic distance between any two vertices
 */
-int Graph::diameter(){
+int Graph::diameter(const bool considerWeights,
+                    const bool inverseWeights){
     if ( !distanceMatrixCreated || graphModified ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
-        createDistanceMatrix(false);
+        createDistanceMatrix(false, considerWeights, inverseWeights);
     }
     return graphDiameter;
 }
@@ -1332,10 +1335,11 @@ int Graph::diameter(){
 /**
 *  Returns the average distance of the graph
 */
-float Graph::averageGraphDistance(){
+float Graph::averageGraphDistance(const bool considerWeights,
+                                  const bool inverseWeights){
     if ( !distanceMatrixCreated || graphModified ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
-        createDistanceMatrix(false);
+        createDistanceMatrix(false, considerWeights, inverseWeights);
     }
     return averGraphDistance;
 }

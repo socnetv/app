@@ -200,7 +200,7 @@ public slots:
     void  slotLayoutNodeSizesByInDegree(bool);
 
     //STATISTICS MENU
-    void askAboutWeights(bool &considerWeights, bool &inverseWeights);
+    void askAboutWeights();
     void slotDistancesMatrix();
     void slotGeodesicsMatrix();
     void slotGraphDistance();
@@ -243,6 +243,7 @@ public slots:
     void slotDrawLinksThickAsWeights();
     void slotDrawLinksBezier(bool toggle);
     void slotDisplayLinksWeightNumbers(bool toggle);
+    void slotConsiderLinkWeights(bool);
     void slotDisplayLinks(bool toggle);
     void slotDisplayLinksArrows(bool toggle);
 
@@ -366,8 +367,8 @@ private:
     QAction *filterNodesAct, *filterIsolateNodesAct, *filterEdgesAct, *transformNodes2LinksAct, *symmetrizeAct;
     QAction *changeBackColorAct, *changeAllNodesColorAct, *changeAllLinksColorAct, *changeAllNumbersColorAct,
             *changeAllLabelsColorAct;
-    QAction *drawLinksWeightsAct, *displayLinksWeightNumbersAct, *displayLinksAct, *displayLinksArrowsAct,
-            *drawLinksBezier;
+    QAction *drawLinksWeightsAct, *displayLinksWeightNumbersAct, *displayLinksAct;
+    QAction *displayLinksArrowsAct, *drawLinksBezier,*considerLinkWeightsAct;
     QAction *backgroundImageAct, *viewToolBar, *viewStatusBar, *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
     QAction *antialiasingAct;
     QAction *webCrawlerAct;
@@ -408,6 +409,7 @@ private:
     int fileFormat;
     bool networkModified;
     bool bezier,  linkClicked, nodeClicked, markedNodesExist, showProgressBar, firstTime;
+    bool considerWeights, inverseWeights, askedAboutWeights;
     QString initLinkColor, initNumberColor,  initNodeShape, initLabelColor;
     QColor initBackgroundColor;
     QPointF cursorPosGW;	//Carries the position of the cursor in graphicsWidget coordinates

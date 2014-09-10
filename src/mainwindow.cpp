@@ -1573,7 +1573,22 @@ void MainWindow::initActions(){
     displayLinksWeightNumbersAct->setWhatsThis(tr("Display Weight Numbers\n\nClick to enable or disable displaying numbers of links weight"));
     displayLinksWeightNumbersAct->setCheckable(true);
     displayLinksWeightNumbersAct->setChecked(false);
-    connect(displayLinksWeightNumbersAct, SIGNAL(toggled(bool)), this, SLOT(slotDisplayLinksWeightNumbers(bool)) );
+    connect(displayLinksWeightNumbersAct, SIGNAL(toggled(bool)),
+            this, SLOT(slotDisplayLinksWeightNumbers(bool)) );
+
+    considerLinkWeightsAct = new QAction(tr("Consider Weights in calculcations"),	this);
+    considerLinkWeightsAct->
+            setStatusTip(
+                tr("Toggles considering link weights during calculations (i.e. distances, centrality, etc)"));
+    considerLinkWeightsAct->
+            setWhatsThis(
+                tr("Display Weight Numbers\n\n"
+                   "Click to enable or disable considering link weights during "
+                   "calculations (i.e. distances, centrality, etc)"));
+    considerLinkWeightsAct->setCheckable(true);
+    considerLinkWeightsAct->setChecked(false);
+    connect(considerLinkWeightsAct, SIGNAL(triggered(bool)),
+            this, SLOT(slotConsiderLinkWeights(bool)) );
 
     displayLinksArrowsAct = new QAction( tr("Display Arrows"),this);
     displayLinksArrowsAct->setStatusTip(tr("Toggles displaying of arrows in the end of links"));
@@ -1925,6 +1940,7 @@ void MainWindow::initMenuBar() {
     optionsMenu -> addMenu (linkOptionsMenu);
     linkOptionsMenu -> addAction (displayLinksAct);
     linkOptionsMenu -> addAction (displayLinksWeightNumbersAct);
+    linkOptionsMenu -> addAction (considerLinkWeightsAct);
     linkOptionsMenu -> addAction (displayLinksArrowsAct );
     linkOptionsMenu -> addSeparator();
     linkOptionsMenu -> addAction (drawLinksWeightsAct);
@@ -2693,6 +2709,10 @@ void MainWindow::initNet(){
     linkClicked=false;
     nodeClicked=false;
 
+    considerWeights=false;
+    inverseWeights=false;
+    askedAboutWeights=false;
+
     /** Clear previous network data */
     activeGraph.clear();
     activeGraph.setSocNetV_Version(VERSION);
@@ -2737,6 +2757,7 @@ void MainWindow::initNet(){
     springLayoutAct->setChecked(false);
     FRLayoutAct->setChecked(false);
     displayLinksWeightNumbersAct->setChecked(false);
+    considerLinkWeightsAct->setChecked(false);
     //displayLinksArrowsAct->setChecked(false);		//FIXME: USER PREFS EMITTED TO GRAPH?
 
     filterIsolateNodesAct->setChecked(false); // re-init orphan nodes menu item
@@ -5530,8 +5551,7 @@ void MainWindow::slotLayoutNodeSizesByOutDegree(bool checked){
     nodeSizesByInDegreeAct->setChecked(false);
     nodeSizesByInDegreeBx->setChecked(false);
 
-    bool considerWeights=false, inverseWeights=true;
-    askAboutWeights(considerWeights, inverseWeights);
+    askAboutWeights();
 
     statusMessage( tr("Embedding node size model on the network.... ")  );
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
@@ -5578,8 +5598,7 @@ void MainWindow::slotLayoutNodeSizesByInDegree(bool checked){
     nodeSizesByInDegreeAct->setChecked(true);
     nodeSizesByInDegreeBx->setChecked(true);
 
-    bool considerWeights=false, inverseWeights=true;
-    askAboutWeights(considerWeights, inverseWeights);
+    askAboutWeights();
 
     statusMessage( tr("Embedding node size model on the network.... ")  );
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
@@ -5737,8 +5756,8 @@ void MainWindow::slotLayoutCircularByProminenceIndex(){
             break;
         }
     }
-    bool considerWeights=false, inverseWeights=true;
-    askAboutWeights(considerWeights, inverseWeights);
+
+    askAboutWeights();
 
     double x0=scene->width()/2.0;
     double y0=scene->height()/2.0;
@@ -5872,8 +5891,8 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
             break;
         }
     }
-    bool considerWeights=false, inverseWeights=true;
-    askAboutWeights(considerWeights, inverseWeights);
+
+    askAboutWeights();
 
     double x0=scene->width()/2.0;
     double y0=scene->height()/2.0;
@@ -6008,8 +6027,8 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
             break;
         }
     }
-    bool considerWeights=false, inverseWeights=true;
-    askAboutWeights(considerWeights, inverseWeights);
+
+    askAboutWeights();
 
     statusMessage(  QString(tr("Calculating new node sizes. Please wait...")) );
     graphicsWidget->clearGuides();
@@ -6145,8 +6164,8 @@ void MainWindow::slotLayoutLevelByProminenceIndex(){
             break;
         }
     }
-    bool considerWeights=false, inverseWeights=true;
-    askAboutWeights(considerWeights, inverseWeights);
+
+    askAboutWeights();
     double maxWidth=scene->width();
     double maxHeight=scene->height(); //pixels
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
@@ -6282,8 +6301,8 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
             break;
         }
     }
-    bool considerWeights=false, inverseWeights=true;
-    askAboutWeights(considerWeights, inverseWeights);
+
+    askAboutWeights();
     double maxWidth=scene->width();
     double maxHeight=scene->height(); //pixels
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
@@ -6374,8 +6393,15 @@ void MainWindow::slotInvertAdjMatrix(){
 
 
 
-void MainWindow::askAboutWeights(bool &considerWeights, bool &inverseWeights){
-    if (activeGraph.isWeighted()){
+void MainWindow::askAboutWeights(){
+    if (!activeGraph.isWeighted()  ){
+        considerWeights=false;
+        return;
+    }
+    if (askedAboutWeights)
+        return;
+
+    if ( ! considerLinkWeightsAct->isChecked() && !considerWeights){
         switch( QMessageBox::information(
                     this, "Edge weights and Distances",
                     tr("This network is weighted.\n"
@@ -6384,19 +6410,25 @@ void MainWindow::askAboutWeights(bool &considerWeights, bool &inverseWeights){
         {
         case QMessageBox::Yes:
             considerWeights=true;
+            considerLinkWeightsAct->setChecked(true);
             break;
         case QMessageBox::No:
             considerWeights=false;
+            considerLinkWeightsAct->setChecked(false);
             break;
         default: // just for sanity
             considerWeights=false;
+            considerLinkWeightsAct->setChecked(false);
             return;
             break;
         }
-        if (considerWeights)
+
+    }
+
+    if (considerWeights){
         switch( QMessageBox::information
                 ( this, "Edge weights and Distances",
-                  tr("Inverse edge weights ? (Default: Yes)?\n\n"
+                  tr("Inverse edge weights during calculations? (Default: Yes)?\n\n"
                      "If the weights denote cost (i.e. ), press No, since the "
                      "distance between two nodes should be the quickest or cheaper one. \n\n"
                      "If the weights denote value or strength (i.e. votes or interaction), "
@@ -6416,6 +6448,7 @@ void MainWindow::askAboutWeights(bool &considerWeights, bool &inverseWeights){
             break;
         }
     }
+    askedAboutWeights=true;
 }
 
 /**
@@ -6434,17 +6467,25 @@ void MainWindow::slotGraphDistance(){
     for (QList<QGraphicsItem *> ::iterator it=list.begin(); it!=list.end(); it++) {
         if ( (*it) -> type() == TypeNode ){
             Node *jim = (Node*) (*it);
-            if ( min>jim->nodeNumber() ) min=jim->nodeNumber();
-            if ( max<jim->nodeNumber() ) max=jim->nodeNumber();
+            if ( min>jim->nodeNumber() && jim->isEnabled() ) min=jim->nodeNumber();
+            if ( max<jim->nodeNumber() && jim->isEnabled() ) max=jim->nodeNumber();
         }
     }
-    i=QInputDialog::getInt(this, tr("Distance between two nodes"),tr("Select source node:  ("+QString::number(min).toLatin1()+"..."+QString::number(max).toLatin1()+"):"), min, 1, max , 1, &ok )   ;
+    i=QInputDialog::getInt(this, tr("Distance between two nodes"),
+                           tr("Select source node:  ("
+                              +QString::number(min).toLatin1()
+                              +"..."+QString::number(max).toLatin1()
+                              +"):"), min, 1, max , 1, &ok )   ;
     if (!ok) {
         statusMessage( "Distance calculation operation cancelled." );
         return;
     }
 
-    j=QInputDialog::getInt(this, tr("Distance between two nodes"), tr("Select target node:  ("+QString::number(min).toLatin1()+"..."+QString::number(max).toLatin1()+"):"),min, 1, max , 1, &ok )   ;
+    j=QInputDialog::getInt(this, tr("Distance between two nodes"),
+                           tr("Select target node:  ("
+                              +QString::number(min).toLatin1()+"..."
+                              +QString::number(max).toLatin1()
+                              +"):"),min, 1, max , 1, &ok )   ;
     if (!ok) {
         statusMessage( tr("Distance calculation operation cancelled.") );
         return;
@@ -6455,11 +6496,23 @@ void MainWindow::slotGraphDistance(){
     if (activeGraph.isSymmetric() && i>j) {
         qSwap(i,j);
     }
-     int distance = activeGraph.distance(i,j);
+
+
+    askAboutWeights();
+
+     int distance = activeGraph.distance(i,j,
+                                         considerWeights,
+                                         inverseWeights);
     if ( distance > 0 && distance < RAND_MAX)
-        QMessageBox::information(this, tr("Distance"), tr("Network distance (")+QString::number(i)+", "+QString::number(j)+") = "+QString::number(distance)+tr("\nThe nodes are connected."),"OK",0);
+        QMessageBox::information(this, tr("Distance"), tr("Network distance (")
+                                 +QString::number(i)+", "+QString::number(j)
+                                 +") = "+QString::number(distance)
+                                 +tr("\nThe nodes are connected."),"OK",0);
     else
-        QMessageBox::information(this, tr("Distance"), tr("Network distance (")+QString::number(i)+", "+QString::number(j)+") = "+ QString("\xE2\x88\x9E") +tr("\nThe nodes are not connected."),"OK",0);
+        QMessageBox::information(this, tr("Distance"), tr("Network distance (")
+                                 +QString::number(i)+", "+QString::number(j)
+                                 +") = "+ QString("\xE2\x88\x9E")
+                                 +tr("\nThe nodes are not connected."),"OK",0);
 }
 
 
@@ -6478,8 +6531,8 @@ void MainWindow::slotDistancesMatrix(){
     statusMessage( tr("Creating distance matrix. Please wait...") );
     QString fn = dataDir + "socnetv-report-distance-matrix.dat";
 
-    bool considerWeights=false, inverseWeights=true;
-    askAboutWeights(considerWeights, inverseWeights);
+
+    askAboutWeights();
 
     createProgressBar();
     activeGraph.writeDistanceMatrix(fn, networkName.toLocal8Bit(),
@@ -6512,8 +6565,8 @@ void MainWindow::slotGeodesicsMatrix(){
     }
 
     QString fn = dataDir + "socnetv-report-sigmas-matrix.dat";
-    bool considerWeights=false, inverseWeights=true;
-    askAboutWeights(considerWeights, inverseWeights);
+
+    askAboutWeights();
 
     statusMessage( tr("Creating number of geodesics matrix. Please wait...") );
     createProgressBar();
@@ -6548,9 +6601,12 @@ void MainWindow::slotDiameter() {
         return;
     }
 
+
+    askAboutWeights();
+
     createProgressBar();
 
-    int netDiameter=activeGraph.diameter();
+    int netDiameter=activeGraph.diameter(considerWeights, inverseWeights);
 
     destroyProgressBar();
 
@@ -6577,9 +6633,12 @@ void MainWindow::slotAverageGraphDistance() {
         return;
     }
 
+    askAboutWeights();
+
     createProgressBar();
 
-    float averGraphDistance=activeGraph.averageGraphDistance();
+    float averGraphDistance=activeGraph.averageGraphDistance(
+                considerWeights, inverseWeights);
 
     destroyProgressBar();
 
@@ -6957,8 +7016,8 @@ void MainWindow::slotCentralityCloseness(){
         break;
     };
 
-    bool considerWeights=false, inverseWeights=true;
-    askAboutWeights(considerWeights, inverseWeights);
+
+    askAboutWeights();
 
     QString fn = dataDir + "socnetv-report-centrality_closeness.dat";
 
@@ -6996,8 +7055,8 @@ void MainWindow::slotCentralityClosenessInfluenceRange(){
 
     QString fn = dataDir + "socnetv-report-centrality_closeness_influence_range.dat";
 
-    bool considerWeights=false, inverseWeights=true;
-    askAboutWeights(considerWeights, inverseWeights);
+
+    askAboutWeights();
 
     createProgressBar();
 
@@ -7031,8 +7090,8 @@ void MainWindow::slotCentralityBetweenness(){
     }
     QString fn = dataDir + "socnetv-report-centrality_betweenness.dat";
 
-    bool considerWeights=false, inverseWeights=true;
-    askAboutWeights(considerWeights, inverseWeights);
+
+    askAboutWeights();
 
     statusMessage(  QString(tr(" Please wait...")));
     createProgressBar();
@@ -7119,8 +7178,8 @@ void MainWindow::slotPrestigePageRank(){
     }
     QString fn = dataDir + "socnetv-report-prestige_pagerank.dat";
 
-    bool considerWeights=false, inverseWeights=true;
-    askAboutWeights(considerWeights, inverseWeights);
+
+    askAboutWeights();
 
     statusMessage(  QString(tr(" Please wait...")));
 
@@ -7148,8 +7207,8 @@ void MainWindow::slotPrestigeProximity(){
         return;
     }
     QString fn = dataDir + "socnetv-report-centrality_proximity_prestige.dat";
-    bool considerWeights=false, inverseWeights=true;
-    askAboutWeights(considerWeights, inverseWeights);
+
+    askAboutWeights();
 
     statusMessage(  QString(tr(" Please wait...")));
     createProgressBar();
@@ -7233,8 +7292,8 @@ void MainWindow::slotCentralityStress(){
     }
     QString fn = dataDir + "socnetv-report-centrality_stress.dat";
 
-    bool considerWeights=false, inverseWeights=true;
-    askAboutWeights(considerWeights, inverseWeights);
+
+    askAboutWeights();
 
     statusMessage(  QString(tr(" Please wait...")));
     createProgressBar();
@@ -7264,8 +7323,8 @@ void MainWindow::slotCentralityPower(){
     }
     QString fn = dataDir + "socnetv-report-centrality_power.dat";
 
-    bool considerWeights=false, inverseWeights=true;
-    askAboutWeights(considerWeights, inverseWeights);
+
+    askAboutWeights();
 
     statusMessage(  QString(tr(" Please wait...")));
     createProgressBar();
@@ -7293,8 +7352,8 @@ void MainWindow::slotCentralityEccentricity(){
     }
     QString fn = dataDir + "socnetv-report-centrality_eccentricity.dat";
 
-    bool considerWeights=false, inverseWeights=true;
-    askAboutWeights(considerWeights, inverseWeights);
+
+    askAboutWeights();
 
     statusMessage(  QString(tr(" Please wait...")));
     createProgressBar();
@@ -7608,6 +7667,20 @@ void MainWindow::slotDisplayLinksWeightNumbers(bool toggle) {
     activeGraph.setShowLabels(toggle);
 }
 
+
+/**
+ * @brief MainWindow::slotConsiderLinkWeights
+ * @param toggle
+ */
+void MainWindow::slotConsiderLinkWeights(bool toggle) {
+   if (toggle) {
+       considerWeights=true;
+       askedAboutWeights=false;
+        askAboutWeights(); // will only ask about inversion
+   }
+   else
+       considerWeights=false;
+}
 
 
 /**
