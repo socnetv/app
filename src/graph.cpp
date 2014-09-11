@@ -2717,7 +2717,7 @@ void Graph::writeCentralityCloseness(
                   "the ordinary CC is undefined. In that case, use "
                   "the Influence Range Closeness Centrality index.\n");
 
-    outText << tr("CC  range:  0 < C < ")<<QString::number(maxIndexCC)<<"\n";
+    outText << tr("CC  range:  0 < C < ")<<QString::number(1.0/maxIndexCC)<<"\n";
     outText << tr("CC' range:  0 < C'< 1")<<"\n\n";
     outText << "Node"<<"\tCC\t\tCC'\t\t%CC\n";
     QList<Vertex*>::const_iterator it;
