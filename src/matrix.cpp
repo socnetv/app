@@ -169,7 +169,10 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
          os << " max Value = " <<  QString("\xE2\x88\x9E") << endl;
         else
         os << " max Value = " << maxVal<< endl;
-    os << " min Value = " << minVal<< endl<<endl;
+    if (minVal == -1 ||  minVal==RAND_MAX )
+         os << " min Value = " <<  QString("\xE2\x88\x9E") << endl;
+    else
+        os << " min Value = " << minVal<< endl<<endl;
     if (maxVal > 999999 )
         fieldWidth = 14;
     else if (maxVal > 99999 )

@@ -1532,7 +1532,7 @@ void Graph::createDistanceMatrix(bool centralities,
     int aVertices=vertices() - isolatedVertices;
 
     if ( aEdges == 0 )
-        DM.fillMatrix(0);
+        DM.fillMatrix(RAND_MAX);
     else {
         qDebug() << "	for all vertices set their distances to -1 (infinum)";
         DM.fillMatrix(RAND_MAX);
