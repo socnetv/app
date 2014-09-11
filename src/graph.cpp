@@ -1386,7 +1386,7 @@ void Graph::writeDistanceMatrix (QString fn, const char* netName,
         return;
     }
     QTextStream outText(&file);
-    outText.setRealNumberPrecision(m_precision);
+    outText.setRealNumberPrecision(m_precision-1);
     outText << "-Social Network Visualizer- \n";
     if (!netName) netName="Unnamed network";
     outText << "Distance matrix of "<< netName<<": \n";

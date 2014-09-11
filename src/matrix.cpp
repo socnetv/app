@@ -160,7 +160,7 @@ float  Matrix::operator ()  (const int r, const int c){
 */
 QTextStream& operator <<  (QTextStream& os, Matrix& m){
     qDebug() << "Matrix: << Matrix";
-    int fieldWidth = 6, newFieldWidth = 6, actorNumber=1;
+    int fieldWidth = 8, newFieldWidth = 8, actorNumber=1;
     float maxVal, minVal;
     m.findMinMaxValues(maxVal,minVal);
     float element;
@@ -248,13 +248,13 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
                 newFieldWidth = fieldWidth -1;
             else if (element < 1.0 ) {
                 if ( element *10 == qFloor(10* element)  )
-                newFieldWidth = fieldWidth;
+                newFieldWidth = fieldWidth-1;
                 else if (element *100 == qFloor(100* element)  )
+                newFieldWidth = fieldWidth-1;
+                else if (element *1000 == qFloor(1000* element)  )
                 newFieldWidth = fieldWidth-2;
-                else if (element *1000 == qFloor(100* element)  )
-                newFieldWidth = fieldWidth-3;
                 else
-                    newFieldWidth = fieldWidth-3;
+                    newFieldWidth = fieldWidth-2;
             }
             else
                 newFieldWidth = fieldWidth;
