@@ -8131,9 +8131,12 @@ void MainWindow::slotHelp(){
 
     }
     qDebug () << "help path is: " << helpPath.toLatin1();
-    HTMLViewer *helpViewer = new HTMLViewer (helpPath, this);
-    helpViewer -> setWindowTitle ( "SocNetV "+ VERSION + tr(" Manual"));
-    helpViewer->show();
+
+    QDesktopServices::openUrl(QUrl(helpPath, QUrl::TolerantMode));
+
+//    HTMLViewer *helpViewer = new HTMLViewer (helpPath, this);
+//    helpViewer -> setWindowTitle ( "SocNetV "+ VERSION + tr(" Manual"));
+//    helpViewer->show();
 
 }
 

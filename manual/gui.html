@@ -4,7 +4,7 @@
 <h4><a name="Overview" id="Overview"></a>Interface overview</h4>
 
 <p class="text">
-SocNetV	has  a	simple	Graphical  User	 Interface  (GUI) which is composed of:
+SocNetV	has  a	simple	Graphical  User	 Interface  (GUI) composed of:
 
 <div class="text">
 <ul>
@@ -17,32 +17,87 @@ SocNetV	has  a	simple	Graphical  User	 Interface  (GUI) which is composed of:
 </div>
 </p>
 
+<img src="socnetv-main-window-annotated.png" style="width:90%;"/>
+
+<h5><a name="themenu" id="themenu"></a>The menu</h5>
 <p class="text">
-At the top, you' ll find the menu bar, filled with commands and options, organized in 6 menus:
+At the top of the window, there is the menu bar, filled with commands and options,
+organized in 6 menus:
 </p>
 <div class="text">
 <ul>
-<li> <b>Network menu </b> has options to load and save a network, export it, create random nets etc.</li>
-<li> <b>Edit menu </b> with action to add/remove nodes and edges, change colors, filter links/nodes, etc.</li>
-<li> <b>Layout menu </b> enables you to select a layout method, i.e. reposition all nodes according to their centrality.</li>
-<li> <b>Analysis menu </b> gives you tools to analyse the active network (density, diameter, centralities, distance matrix, etc).</li>
-<li> <b>Options menu </b>allows you to show/hide edges, edge arrows, turn on/off antialiasing, etc.</li>
+<li> <b>Network: </b> Options to load and save a network, export it, create random nets etc.</li>
+<li> <b>Edit: </b> Options to add/remove nodes and edges, change colors, filter links/isolate nodes, etc.</li>
+<li> <b>Layout:</b> Options to apply layout methods, i.e. reposition all nodes according to their centrality.</li>
+<li> <b>Analysis:</b> Gives you tools to analyse the active network (density, diameter, centralities, distance matrix, etc).</li>
+<li> <b>Options:</b>Allows you to show/hide edges, edge arrows, turn on/off antialiasing, etc.</li>
 </ul>
 </div>
 
+<h5><a name="toolbar" id="toolbar"></a>The toolbar</h5>
 <p class="text">
-Below the menu, the toolbar provides the usual icons: new network creation, load a network, save, zoom in-out, rotate, switch between relations (or add a new one) and display help messages for the menu options.
+Below the menu, the toolbar provides the usual icons: new network creation,
+load a network, save, zoom in-out, rotate, switch between relations (or add a new one)
+and display help messages for the menu options.
 </p>
 
 <p class="text">
-The middle part of the window is occupied by the dock (left-side) and a virtual "canvas" (right-side) where network nodes and edges appear. 
-</p>
-<p class="text">
-The dock, on the left of the window, has 4 buttons (add/remove node, add/remove link), some LCDs and some checkboxes. The LCDs display statistics for the active network (i.e. node and edges counters, density, counters of inLinked/outLinked nodes, etc) as well as the selected node (its number, in-Links and out-Links). Below the LCDs, there are some checkboxes to activate dynamic layout methods (i.e. Force directed) and/or change the way node sizes are calculated.
+The middle part of the window is occupied by the dock/toolbar (left-side)
+and a virtual "canvas" (right-side) where network nodes and edges appear.
 </p>
 
+<h5><a name="toolbox1" id="toolbox1"></a>The dock/toolbox: Controls</h5>
 <p class="text">
-The canvas is the main area of interaction. The initial background color is set to "red", but you can changed it from the Edit menu. Below, we describe how to work with SocNetV.
+The toolbox, on the left of the window, has two tabs: Controls and Statistics.
+At the top of the Controls tab there are 4 buttons to edit the network (add/remove node, add/remove link).
+Below them, there are two groups of options to Analyze and Visualize the loaded network.
+In the Analyze group, options are categorized in four submenus:
+</p>
+<div class="text">
+<ul>
+<li>Distances: Here you can select options to compute distances, geodesics, eccentricity and diameter
+<li>Connectivity: In this menu there are options for connectivity, walks and reachability
+<li>Clusterability: Click to compute cliques, triad census etc.
+<li>Prominence: This menu allows you to select and compute one of the many Centrality and Prestige indices that SocNetV supports.
+</ul>
+When you select an option, SocNetV computes what you asked and displays the report in a new window.
+Note: <em>All reports are automatically saved in a directory called "socnetv-data" in your HOME folder.</em>
+Of course, you can edit the report as you wish and save it to another filename. <br /><br />
+<img src="socnetv-analysis.jpg" style="width:75%;"/>
+</div>
+
+
+
+<p class="text">
+In the Visualize group, there are menus and checkboxes to apply visualization
+layouts to the current network. <br />
+With one click, SocNetV can visualize the network in intuitive ways:
+<div class="text">
+<ul>
+<li>By prominence indices. Here you can select a prominence metric (i.e. Betweenness) and a layout type (i.e. circular). Hit "Apply" and voila!</li>
+<li>By dynamic models (i.e. Force directed) </li>
+</ul>
+</div>
+<p class="text">
+Finally, at the end of the toolbox there are options to toggle node sizes according to their inDegree/outDegree and enable/disable layout guidelines.
+</p>
+
+<h5><a name="toolbox2" id="toolbox2"></a>The dock/toolbox: Statistics</h5>
+<p class="text">
+The Statistics tab is mainly occupied by informative LCDs.
+These display statistics for the active network (i.e. node and edges counters, density, counters of inLinked/outLinked nodes, etc)
+as well as the selected node (its number, in-Links and out-Links).
+
+</p>
+
+<img src="socnetv-main-window-annotated-2.png" style="width:90%;"/>
+
+<h5><a name="canvas" id="canvas"></a>The canvas</h5>
+<p class="text">
+The canvas is the main area of interaction.
+The initial background color is set to "white", but you can changed it from the Edit -> Colors menu.
+
+Below, we describe how to work with SocNetV.
 
 </p>
 
@@ -68,13 +123,25 @@ To  create  a new node, you can double-click on the canvas or click on the "Add 
 </p>
 <p class="text">
 You can move a node by left-clicking on it and moving the mouse.
+Right-click on a node to display a context menu with options to delete it, add link, change label, size or color etc.
+</p>
+<p  class="text">
+All nodes by default are accompanied by their node number. <br />
+If you want to display the labels as well, enable the option in the menu Options -> Node -> Display Labels.
+
+<br /><br /><em>Note: In large networks, it is sometimes difficult to locate a specific node. <br />
+In such cases, you can press Ctrl+F to find a desired node (by nodenumber or label). <br />
+SocNetV will highlight that node for you. Press Ctrl+F again to undo this.</em>
 </p>
 
 
 <h5><a name="LinkCreate" id="LinkCreate"></a>Creating a new link</h5>
 <p  class="text">
-To create a new link, middle-click on the source node and then middle-click again on the target	node.
-By default, all links created this way are weighted 1. If your mouse doesn't have middle button (did you try pressing the mouse wheel?), or you find it difficult, you can right-click on the source node, then select "Create Link".
+To create a new link, middle-click on the source node and then middle-click again on the target	node (or press Ctrl+L or the toolbox button).
+By default, all links created this way are weighted 1.
+</p>
+<p  class="text">
+If your mouse doesn't have middle button (did you try pressing the mouse wheel?), or you find it difficult, you can right-click on the source node, then select "Create Link".
 In the dialog, just enter the target node number and the desired link weight. Alternatively, you can click on the "Add link" button from the dock. In that case, you will be asked for both the source and the target node numbers (and the link weight). The keyboard shortcut for this action is Ctrl+L.
 </p>
 <p class="text">
@@ -82,6 +149,8 @@ Link Creation Example: Say you created two nodes, numbered 1 and 2, on the canva
 </p>
 <p class="text">
 Remember, each link you create this way has the default weight 1 and black colour.
+<br />Right-click on an edge to display a context menu with options to delete it, change weight, color etc.
+<br /><br /><em>Note: When you click on an edge, SocNetV highlights the source and target nodes for your convienience. Click again the edge to undo this.</em>
 </p>
 
 
