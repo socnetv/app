@@ -2306,7 +2306,7 @@ void Graph::centralityInformation(){
         groupIC  += x;
     }
     qDebug() << "groupIC   " << groupIC   << " n " << n ;
-    groupIC  = groupIC  /  (n);
+    groupIC  = groupIC  /  (float) n;
     qDebug() << "groupIC   " << groupIC   ;
 
     calculatedIC = true;
@@ -2350,7 +2350,7 @@ void Graph::writeCentralityInformation(const QString fileName,
     QList<Vertex*>::const_iterator it;
     float IC=0, SIC=0;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        IC = (*it)->SIC();
+        IC = (*it)->IC();
         SIC = (*it)->SIC();
         outText << (*it)->name()<<"\t"
                 << IC << "\t\t"
@@ -2366,6 +2366,7 @@ void Graph::writeCentralityInformation(const QString fileName,
         outText << "\n";
         outText << tr("Max IC' = ") << maxIC <<" (node "<< maxNodeIC  <<  ")  \n";
         outText << tr("Min IC' = ") << minIC <<" (node "<< minNodeIC <<  ")  \n";
+        outText << tr("Average IC' = ") << averageIC <<  " \n";
         outText << tr("IC classes = ") << classesIC<<" \n";
     }
     outText << "\n";
