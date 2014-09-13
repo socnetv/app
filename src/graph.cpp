@@ -1613,8 +1613,10 @@ void Graph::createDistanceMatrix(bool centralities,
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
             progressCounter++;
             emit updateProgressDialog( progressCounter );
-            if ( ! (*it)->isEnabled() )
-                continue;
+            //isolates are dropped by default in the beginning
+            //
+//            if ( ! (*it)->isEnabled() )
+//                continue;
             s=index[(*it)->name()];
             qDebug() << "Source vertex s = " << (*it)->name()
                      << " of BFS algorithm has index " << s << ". Clearing Stack ...";
@@ -2269,23 +2271,26 @@ void Graph::centralityInformation(){
             continue;
         }
         IC= 1.0 / ( invM.item(i,i) + (diagonalEntriesSum - 2.0 * rowSum) / n );
-        if ( IC > maxIC ) {
-            maxIC = IC;
-            maxNodeIC=(*it)->name();
-        }
-        if ( IC < minIC ) {
-            minIC = IC;
-            minNodeIC=(*it)->name();
-        }
 
         (*it) -> setIC ( IC );
         sumIC += IC;
-        qDebug()<< "Graph:: centralityInformation() vertex: " <<  (*it)->name() << " IC  " << IC ;
+        qDebug()<< "Graph:: centralityInformation() vertex: " <<  (*it)->name()
+                << " IC  " << IC ;
         i++;
     }
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         IC = (*it)->IC();
         SIC = IC / sumIC ;
+        if ( SIC > maxIC ) {
+            maxIC = SIC;
+            maxNodeIC=(*it)->name();
+        }
+        if ( SIC < minIC ) {
+            minIC = SIC;
+            minNodeIC=(*it)->name();
+        }
+
+        sumSIC += SIC;
         (*it)->setSIC( SIC );
     }
 
@@ -2296,7 +2301,8 @@ void Graph::centralityInformation(){
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         x = (  (*it)->SIC()  -  averageIC  ) ;
         x *=x;
-        qDebug() << "SIC " <<  (*it)->SIC() << "  x " <<   (*it)->SIC() - averageIC  << " x*x" << x ;
+        qDebug() << "SIC " <<  (*it)->SIC() << "  x "
+                 <<   (*it)->SIC() - averageIC  << " x*x" << x ;
         groupIC  += x;
     }
     qDebug() << "groupIC   " << groupIC   << " n " << n ;
@@ -2364,7 +2370,7 @@ void Graph::writeCentralityInformation(const QString fileName,
     }
     outText << "\n";
 
-    outText << tr("\nGROUP INFORMATION CENTRALISATION (GIC)\n\n");
+    outText << tr("\nGROUP INFORMATION CENTRALISATION (GIC) - VARIANCE\n\n");
     outText << tr("GIC = ") << groupIC<<"\n\n";
     outText << tr("GIC range: 0 < GIC < inf \n");
     outText << tr("GIC is computed using a simple variance formula. \n");
@@ -8724,6 +8730,94 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                   " 10 7  1";
                     qDebug()<< "		Knocke_Bureacracies_Information_Exchange_Network.pajek written... ";
     }
+    else if (fileName=="Stephenson&Zelen_40_AIDS_patiens_sex_contact.paj"){
+        qDebug()<<"Stephenson&Zelen_40_AIDS_patiens";
+        outText << "*Network Stephenson&Zelen_40_AIDS_patiens"<<endl<<
+                   "*Vertices 40"<<endl<<
+                   "1 \"1\" ic red		0.15899 	0.150442	circle"<<endl<<
+                   "2 \"2\" ic red		0.178306 	0.210914	circle"<<endl<<
+                   "3 \"3\" ic red		0.242199 	0.181416	circle"<<endl<<
+                   "4 \"4\" ic red		0.31055 	0.182891	circle"<<endl<<
+                   "5 \"5\" ic red		0.20951 	0.253687	circle"<<endl<<
+                   "6 \"6\" ic red		0.132244 	0.29351	circle"<<endl<<
+                   "7 \"7\" ic red		0.0846954 	0.327434	circle"<<endl<<
+                   "8 \"8\" ic red		0.200594 	0.351032	circle"<<endl<<
+                   "9 \"9\" ic red		0.170877 	0.412979	circle"<<endl<<
+                   "10 \"10\" ic red		0.120357 	0.458702	circle"<<endl<<
+                   "11 \"11\" ic red		0.283804 	0.292035	circle"<<endl<<
+                   "12 \"12\" ic red		0.329866 	0.244838	circle"<<endl<<
+                   "13 \"13\" ic red		0.389302 	0.210914	circle"<<endl<<
+                   "14 \"14\" ic red		0.459138 	0.238938	circle"<<endl<<
+                   "15 \"15\" ic red		0.497771 	0.294985	circle"<<endl<<
+                   "16 \"16\" ic red		0.401189 	0.351032	circle"<<endl<<
+                   "17 \"17\" ic red		0.280832 	0.349558	circle"<<endl<<
+                   "18 \"18\" ic red		0.251114 	0.482301	circle"<<endl<<
+                   "19 \"19\" ic red		0.344725 	0.547198	circle"<<endl<<
+                   "20 \"20\" ic red		0.317979 	0.463127	circle"<<endl<<
+                   "21 \"21\" ic red		0.401189 	0.449852	circle"<<endl<<
+                   "22 \"22\" ic red		0.536404 	0.418879	circle"<<endl<<
+                   "23 \"23\" ic red		0.63893 	0.355457	circle"<<endl<<
+                   "24 \"24\" ic red		0.658247 	0.268437	circle"<<endl<<
+                   "25 \"25\" ic red		0.676077 	0.443953	circle"<<endl<<
+                   "26 \"26\" ic red		0.576523 	0.516224	circle"<<endl<<
+                   "27 \"27\" ic red		0.468053 	0.511799	circle"<<endl<<
+                   "28 \"28\" ic red		0.482912 	0.600295	circle"<<endl<<
+                   "29 \"29\" ic red		0.482912 	0.675516	circle"<<endl<<
+                   "30 \"30\" ic red		0.423477 	0.728614	circle"<<endl<<
+                   "31 \"31\" ic red		0.592868 	0.646018	circle"<<endl<<
+                   "32 \"32\" ic red		0.59584 	0.728614	circle"<<endl<<
+                   "33 \"33\" ic red		0.594354 	0.792035	circle"<<endl<<
+                   "34 \"34\" ic red		0.69688 	0.839233	circle"<<endl<<
+                   "35 \"35\" ic red		0.805349 	0.889381	circle"<<endl<<
+                   "36 \"36\" ic red		0.710253 	0.669617	circle"<<endl<<
+                   "37 \"37\" ic red		0.787519 	0.70944	circle"<<endl<<
+                   "38 \"38\" ic red		0.698366 	0.539823	circle"<<endl<<
+                   "39 \"39\" ic red		0.808321 	0.466077	circle"<<endl<<
+                   "40 \"40\" ic red		0.817236 	0.564897	circle"<<endl<<
+                   "*Edges "<<endl<<
+                   "1 2 1 c black"<<endl<<
+                   "2 5 1 c black"<<endl<<
+                   "3 5 1 c black"<<endl<<
+                   "4 5 1 c black"<<endl<<
+                   "5 6 1 c black"<<endl<<
+                   "5 11 1 c black"<<endl<<
+                   "7 8 1 c black"<<endl<<
+                   "8 9 1 c black"<<endl<<
+                   "8 11 1 c black"<<endl<<
+                   "9 10 1 c black"<<endl<<
+                   "11 16 1 c black"<<endl<<
+                   "12 16 1 c black"<<endl<<
+                   "13 14 1 c black"<<endl<<
+                   "14 16 1 c black"<<endl<<
+                   "15 16 1 c black"<<endl<<
+                   "16 17 1 c black"<<endl<<
+                   "16 20 1 c black"<<endl<<
+                   "16 21 1 c black"<<endl<<
+                   "16 22 1 c black"<<endl<<
+                   "18 20 1 c black"<<endl<<
+                   "19 20 1 c black"<<endl<<
+                   "19 28 1 c black"<<endl<<
+                   "22 23 1 c black"<<endl<<
+                   "22 25 1 c black"<<endl<<
+                   "22 26 1 c black"<<endl<<
+                   "23 24 1 c black"<<endl<<
+                   "26 27 1 c black"<<endl<<
+                   "26 28 1 c black"<<endl<<
+                   "26 31 1 c black"<<endl<<
+                   "26 38 1 c black"<<endl<<
+                   "28 29 1 c black"<<endl<<
+                   "29 30 1 c black"<<endl<<
+                   "31 32 1 c black"<<endl<<
+                   "31 36 1 c black"<<endl<<
+                   "32 33 1 c black"<<endl<<
+                   "32 34 1 c black"<<endl<<
+                   "33 34 1 c black"<<endl<<
+                   "34 35 1 c black"<<endl<<
+                   "36 37 1 c black"<<endl<<
+                   "38 39 1 c black"<<endl<<
+                   "38 40 1 c black";
+
+    }
     else if (fileName == "Stephenson&Zelen_5actors_6edges_IC_test_dataset.paj"){
         qDebug() << "Stephenson&Zelen_5actors_6edges_IC_test_dataset.paj";
         outText<<"*Network Stephenson&Zelen_5_actors_6edges"<<endl<<
@@ -8746,6 +8840,42 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                  "1 0 10 0 0 "<<endl<<
                  "5 5 0 0 0 ";
 
+    }
+    else if (fileName=="Wasserman_Faust_7actors_star_circle_line_graphs.paj") {
+        qDebug () << "Wasserman_Faust_7actors_star_circle_line_graphs.paj";
+        outText<< "*Network 7actors-wasserman-test-net-all"<<endl<<
+                  "*Vertices 7"<<endl<<
+                  "1 \"1\" ic red         0.441826        0.426254        circle"<<endl<<
+                  "2 \"2\" ic red         0.584683        0.19469 circle"<<endl<<
+                  "3 \"3\" ic red         0.71134         0.417404        circle"<<endl<<
+                  "4 \"4\" ic red         0.664212        0.687316        circle"<<endl<<
+                  "5 \"5\" ic red         0.310751        0.70944 circle"<<endl<<
+                  "6 \"6\" ic red         0.157585        0.427729        circle"<<endl<<
+                  "7 \"7\" ic red         0.248895        0.193215        circle"<<endl<<
+                  "*Matrix :1 star"<<endl<<
+                  "0 1 1 1 1 1 1 "<<endl<<
+                  "1 0 0 0 0 0 0 "<<endl<<
+                  "1 0 0 0 0 0 0 "<<endl<<
+                  "1 0 0 0 0 0 0 "<<endl<<
+                  "1 0 0 0 0 0 0 "<<endl<<
+                  "1 0 0 0 0 0 0 "<<endl<<
+                  "1 0 0 0 0 0 0"<<endl<<
+                  "*Matrix :2 circle"<<endl<<
+                  "0 1 0 0 0 0 1 "<<endl<<
+                  "1 0 1 0 0 0 0 "<<endl<<
+                  "0 1 0 1 0 0 0 "<<endl<<
+                  "0 0 1 0 1 0 0 "<<endl<<
+                  "0 0 0 1 0 1 0 "<<endl<<
+                  "0 0 0 0 1 0 1 "<<endl<<
+                  "1 0 0 0 0 1 0 "<<endl<<
+                  "*Matrix :3 line"<<endl<<
+                  "0 1 1 0 0 0 0 "<<endl<<
+                  "1 0 0 1 0 0 0 "<<endl<<
+                  "1 0 0 0 1 0 0 "<<endl<<
+                  "0 1 0 0 0 1 0 "<<endl<<
+                  "0 0 1 0 0 0 1 "<<endl<<
+                  "0 0 0 1 0 0 0 "<<endl<<
+                  "0 0 0 0 1 0 0";
     }
     else if (fileName == "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek"){
         qDebug()<< "		Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek written... ";
