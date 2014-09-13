@@ -75,7 +75,7 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
             << "Freeman_34_possible_graphs_with_N_5_multirelational.paj"
             << "Mexican_Power_Network_1940s.lst"
             << "Knocke_Bureacracies_Information_Exchange_Network.pajek"
-            << "Stephenson&Zelen-5actors-6edges-IC-test-dataset.paj"
+            << "Stephenson&Zelen_5actors_6edges_IC_test_dataset.paj"
             << "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek";
 
     (ui.selectBox) -> insertItems( 1, datasets_list );

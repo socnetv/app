@@ -8724,8 +8724,8 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                   " 10 7  1";
                     qDebug()<< "		Knocke_Bureacracies_Information_Exchange_Network.pajek written... ";
     }
-    else if (fileName == ""){
-        qDebug() << "Stephenson&Zelen-5actors-6edges-IC-test-dataset.paj";
+    else if (fileName == "Stephenson&Zelen_5actors_6edges_IC_test_dataset.paj"){
+        qDebug() << "Stephenson&Zelen_5actors_6edges_IC_test_dataset.paj";
         outText<<"*Network Stephenson&Zelen_5_actors_6edges"<<endl<<
                  "*Vertices 5"<<endl<<
                  "1 \"1\" ic red		0.226804 	0.365782	circle"<<endl<<
