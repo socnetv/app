@@ -316,12 +316,21 @@ The IRCC formula used is the ratio of the fraction of nodes reachable by v
 <p class="text"> 
 For each node v, BC is the ratio of all geodesics between pairs of nodes which run through v.
 It reflects how often an node lies on the geodesics between the other nodes of the network.
-The BC of each actor can be interpreted as a measure of control.
-A node which lies between many others is assumed to have a higher likelihood of being able to control information flow in the network.
+<br /><br >
+The BC score of each actor can be interpreted as a measure of potential control as
+it quantifies just how much that actor acts as an intermediary to others.
+An actor which lies between many others is assumed to have a higher likelihood
+of being able to control information flow in the network.
 <br /><br />
-Note that betweenness centrality assumes that all geodesics have equal weight or are equally likely to be chosen for the flow of information between any two nodes.
+In essence, BC assumes that communication in a network occurs along the shortest possible path, the geodesic.
+It totally neglects the possibility of communication along non-geodesic paths between actors.
+If you need a centrality index which considers all possible paths, use the Information Centrality (IC).
+
+<br /><br />
+Note that betweenness centrality assumes that all geodesics have equal weight
+or are equally likely to be chosen for the flow of information between any two nodes.
 This is reasonable only on "regular" networks where all nodes have similar degrees.
-On networks with significant degree variance you might want to try informational centrality instead.
+On networks with significant degree variance you might want to try using IC instead.
 <br />
 Also, BC is very sensitive to network dynamics, i.e. it changes a lot when we add or remove
 a vertex or an edge.
@@ -371,8 +380,9 @@ This index can be calculated in both graphs and digraphs but is usually best sui
 
 <h5><a name="IC" id="IC"></a>Information Centrality (IC)</h5>
 <p class="text">
-The Information Centrality (IC) is an index suggested by Stephenson and Zelen (1989) which focuses on how information might flow through many different paths.
-The IC metric counts all paths between nodes weighted by strength of tie and distance.
+The Information Centrality (IC) is an index suggested by Stephenson and Zelen (1989)
+which focuses on how information might flow through many different paths.
+Unlike SC and BC, the IC metric uses all paths between actors weighted by strength of tie and distance.
 <br /><br />
 Since there is no known generalization of Stephenson & Zelen's theory for information centrality to directional relations,
 the index should be calculated only for graphs and is more meaningful in weighted graphs/networks.
@@ -381,7 +391,7 @@ Note: To compute this index, SocNetV drops all isolated nodes and symmetrizes (i
 
 </p>
 <p class="text">
-In order to calculate the IC of each actor, we create a N x N matrix A from the (symmetrized) sociomatrix with:
+In order to calculate the IC index of each actor, we create a N x N matrix A from the (symmetrized) sociomatrix with:
 </p>
 <p class="code">
 Aii=1+weighted_degree_ni <br />

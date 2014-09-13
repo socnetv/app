@@ -8724,6 +8724,29 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                   " 10 7  1";
                     qDebug()<< "		Knocke_Bureacracies_Information_Exchange_Network.pajek written... ";
     }
+    else if (fileName == ""){
+        qDebug() << "Stephenson&Zelen-5actors-6edges-IC-test-dataset.paj";
+        outText<<"*Network Stephenson&Zelen_5_actors_6edges"<<endl<<
+                 "*Vertices 5"<<endl<<
+                 "1 \"1\" ic red		0.226804 	0.365782	circle"<<endl<<
+                 "2 \"2\" ic red		0.745214 	0.365782	circle"<<endl<<
+                 "3 \"3\" ic red		0.758468 	0.724189	circle"<<endl<<
+                 "4 \"4\" ic red		0.226804 	0.724189	circle"<<endl<<
+                 "5 \"5\" ic red		0.480118 	0.10472	circle"<<endl<<
+                 "*Matrix :1 non-weighted"<<endl<<
+                 "0 1 0 1 1 "<<endl<<
+                 "1 0 1 0 1 "<<endl<<
+                 "0 1 0 1 0 "<<endl<<
+                 "1 0 1 0 0 "<<endl<<
+                 "1 1 0 0 0"<<endl<<
+                 "*Matrix :2 weighted"<<endl<<
+                 "0 2 0 1 5 "<<endl<<
+                 "2 0 1 0 5 "<<endl<<
+                 "0 1 0 10 0 "<<endl<<
+                 "1 0 10 0 0 "<<endl<<
+                 "5 5 0 0 0 ";
+
+    }
     else if (fileName == "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek"){
         qDebug()<< "		Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek written... ";
         outText<< "*Network Countries_Trade_Basic_Manufactured_Goods" << endl <<
