@@ -250,7 +250,9 @@ Centrality indices are calculated for each node (node Centrality) and for the wh
 In undirected graphs, the DC index of each node v is the number of edges attached to it.
 In digraphs, the DC is the total number of arcs (outLinks) starting from v (outDegree).
 <br />
-This is often considered a measure of actor activity.
+In social network theory, DC is often considered a measure of actor activity.
+<br />Along with other metrics which are based on the notion of distance
+(closeness, eccentricity etc), DC falls in the category of reachability measures.
 <br /><br />
 This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs.
 It can also be calculated in weighted graphs. In weighted relations, ODC is the sum of weights of all edges/outLinks attached to v.
@@ -320,6 +322,9 @@ A node which lies between many others is assumed to have a higher likelihood of 
 Note that betweenness centrality assumes that all geodesics have equal weight or are equally likely to be chosen for the flow of information between any two nodes.
 This is reasonable only on "regular" networks where all nodes have similar degrees.
 On networks with significant degree variance you might want to try informational centrality instead.
+<br />
+Also, BC is very sensitive to network dynamics, i.e. it changes a lot when we add or remove
+a vertex or an edge.
 <br /><br />
 This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs.
 It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1.
