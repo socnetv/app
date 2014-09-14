@@ -6960,7 +6960,8 @@ void MainWindow::slotCentralityDegree(){
 
     createProgressBar();
 
-    activeGraph.writeCentralityDegree(fn, considerWeights);
+    activeGraph.writeCentralityDegree(fn, considerWeights,
+                                      filterIsolateNodesAct->isChecked() );
 
     destroyProgressBar();
 
@@ -7167,7 +7168,8 @@ void MainWindow::slotPrestigeDegree(){
 
     createProgressBar();
 
-    activeGraph.writePrestigeDegree(fn, considerWeights);
+    activeGraph.writePrestigeDegree(fn, considerWeights,
+                                    filterIsolateNodesAct->isChecked() );
 
     destroyProgressBar();
 

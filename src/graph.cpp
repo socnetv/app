@@ -2397,20 +2397,20 @@ void Graph::writeCentralityInformation(const QString fileName,
 
 
 //Calculates the outDegree centrality of each vertex - diagonal included
-void Graph::centralityDegree(bool weights){
+void Graph::centralityDegree(bool weights, bool dropIsolates=false){
     qDebug("Graph:: centralityDegree()");
     if (!graphModified && calculatedDC ) {
         qDebug() << "Graph::centralityDegree() - graph not changed - returning";
         return;
     }
 
-    float DC=0, nom=0, denom=0;
+    float DC=0, nom=0, denom=0,  SDC=0;
     float weight;
     classesDC=0;
     discreteDCs.clear();
     sumDC=0;
     maxDC=0;
-    minDC=vertices()-1;
+    minDC=RAND_MAX;
     varianceDegree=0;
     meanDegree=0;
     int vert=vertices();
@@ -2427,15 +2427,17 @@ void Graph::centralityDegree(bool weights){
                     DC+=weight;
                 else
                     DC++;
+
                 //check here if the matrix is symmetric - we need this below
                 if ( ( this->hasEdge ( (*it1)->name(), (*it)->name() ) ) !=
                      ( this->hasEdge ( (*it)->name(), (*it1)->name() ) )   )
                     symmetricAdjacencyMatrix = false;
             }
         }
+        sumDC+=DC;
         (*it) -> setDC ( DC ) ;				//Set OutDegree
         qDebug() << "Graph: vertex " <<  (*it)->name() << " has DC = " << DC ;
-        sumDC += DC;
+
         it2 = discreteDCs.find(QString::number(DC));
         if (it2 == discreteDCs.end() )	{
             classesDC++;
@@ -2443,6 +2445,7 @@ void Graph::centralityDegree(bool weights){
             discreteDCs.insert ( QString::number(DC), classesDC );
         }
         qDebug("DC classes = %i ", classesDC);
+
         if (maxDC < DC ) {
             maxDC = DC ;
             maxNodeDC=(*it)->name();
@@ -2451,31 +2454,39 @@ void Graph::centralityDegree(bool weights){
             minDC = DC ;
             minNodeDC=(*it)->name();
         }
+
     }
 
     if (minDC == maxDC)
         maxNodeDC=-1;
 
     meanDegree = sumDC / (float) vert;
-    qDebug("Graph: sumDC = %f, meanDegree = %f", sumDC, meanDegree);
 
     // Calculate std Out-Degree, Variance and the Degree Centralisation of the whole graph.
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         DC= (*it)->DC();
         if (!weights) {
-            (*it) -> setSDC( DC / (vert-1.0) );		//Set Standard InDegree
+            SDC = ( DC / (vert-1.0) );
         }
         else {
-            (*it) -> setSDC( DC / (sumDC) );
+            SDC= ( DC / (sumDC) );
         }
-        if (! (*it)->isIsolated())
-            nom+= (maxDC-DC);
+        (*it) -> setSDC( SDC );		//Set Standard DC
+
         qDebug() << "Graph: vertex " <<  (*it)->name() << " SDC " << (*it)->SDC ();
 
         varianceDegree += (DC-meanDegree) * (DC-meanDegree) ;
+        if ( dropIsolates  ) {
+            if   ( ! (*it)->isIsolated() )
+                nom+= (maxDC-DC);
+        }
+        else
+            nom+= (maxDC-DC);
     }
-    varianceDegree=varianceDegree/(float) vert;
 
+    varianceDegree=varianceDegree/(float) vert;
+    qDebug() << "Graph: sumDC = " << sumDC << " meanDegree = " << meanDegree
+                << " variance = " << varianceDegree;
     if (symmetricAdjacencyMatrix)
         denom=(vert-1.0)*(vert-2.0);
     else
@@ -2484,24 +2495,6 @@ void Graph::centralityDegree(bool weights){
     if (!weights) {
         groupDC=nom/denom;
     }
-    else {
-        qDebug()<< "Graph::centralityDegree vertices isolated: "
-                << verticesIsolated().count() << ". I will multiply groupDC by 1 - "
-                << ((float)verticesIsolated().count()/(float)vert);
-        groupDC=  ( nom / ( maxDC * (vert-1.0) ) ) * ( 1.0 - ( (float)verticesIsolated().count() / (float) vert) ) ;
-    }
-
-    qDebug("Graph: varianceDegree = %f, groupDC = %f", varianceDegree, groupDC);
-
-    if (!weights) {
-        minDC/=(float)(vert-1); // standardize
-        maxDC/=(float)(vert-1);
-    }
-    else {
-        minDC/=(float)(sumDC); // standardize
-        maxDC/=(float)(sumDC);
-    }
-
 
     calculatedDC=true;
 
@@ -2510,8 +2503,9 @@ void Graph::centralityDegree(bool weights){
 
 
 
-void Graph::writeCentralityDegree (
-        const QString fileName, const bool considerWeights)
+void Graph::writeCentralityDegree ( const QString fileName,
+                                    const bool considerWeights,
+                                    const bool dropIsolates)
 {
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
@@ -2521,7 +2515,7 @@ void Graph::writeCentralityDegree (
     }
     QTextStream outText ( &file );
 
-    centralityDegree(considerWeights);
+    centralityDegree(considerWeights, dropIsolates);
 
     float maximumIndexValue=vertices()-1.0;
     outText.setRealNumberPrecision(m_precision);
@@ -2551,37 +2545,38 @@ void Graph::writeCentralityDegree (
                    <<(*it)->DC() << "\t"<< (*it)->SDC() << "\t"
                   <<  (100* ((*it)->DC()) / sumDC)<< "\n";
     }
-    if (symmetricAdjacencyMatrix) {
-        outText << "\n";
-        outText << tr("Mean Node Degree = ") << meanDegree<<"\n" ;
-        outText << tr("Degree Variance = ") << varianceDegree<<"\n";
-    }
-    else{
-        outText << "\n" ;
-        outText << tr("Mean Node OutDegree = ") << meanDegree<<"\n" ;
-        outText << tr("OutDegree Variance = ") << varianceDegree<<"\n";
-    }
     if ( minDC == maxDC )
         outText << tr("All nodes have the same DC value.") << "\n";
     else  {
-        outText << tr("Max DC' = ") << maxDC <<" (node "<< maxNodeDC <<  ")  \n";
-        outText << tr("Min DC' = ") << minDC <<" (node "<< minNodeDC <<  ")  \n";
+        outText << tr("Max DC = ") << maxDC <<" (node "<< maxNodeDC <<  ")  \n";
+        outText << tr("Min DC = ") << minDC <<" (node "<< minNodeDC <<  ")  \n";
         outText << tr("DC classes = ") << classesDC<<" \n";
     }
 
-    outText << "\nGROUP OUT-DEGREE CENTRALISATION (GDC)\n\n";
-    outText << "GDC = " << qSetRealNumberPrecision(m_precision) << groupDC<<"\n\n";
+    if (symmetricAdjacencyMatrix) {
+        outText << "\n";
+        outText << tr("DC Mean = ") << meanDegree<<"\n" ;
+        outText << tr("DC Variance = ") << varianceDegree<<"\n";
+    }
+    else{
+        outText << "\n" ;
+        outText << tr("ODC Mean = ") << meanDegree<<"\n" ;
+        outText << tr("ODC Variance = ") << varianceDegree<<"\n";
+    }
 
-    outText << "GDC range: 0 < GDC < 1\n";
-    outText << "GDC = 0, when all out-degrees are equal (i.e. regular lattice).\n";
-    outText << "GDC = 1, when one node completely dominates or overshadows the other nodes.\n";
-    outText << "(Wasserman & Faust, formula 5.5, p. 177)\n\n";
-    outText << "(Wasserman & Faust, p. 101)\n";
+    if (!considerWeights) {
+        outText << "\nGROUP DEGREE CENTRALISATION (GDC)\n\n";
+        outText << "GDC = " << qSetRealNumberPrecision(m_precision) << groupDC<<"\n\n";
 
-    if (considerWeights) {
-        outText << "\nNOTE: Because the network is weighted, we normalize Group "
-                   "Centrality multiplying by (N-1)/maxDC, where N is the total "
-                   "vertices, and subtracting the percentage of isolated vertices\n";
+        outText << "GDC range: 0 < GDC < 1\n";
+        outText << "GDC = 0, when all out-degrees are equal (i.e. regular lattice).\n";
+        outText << "GDC = 1, when one node completely dominates or overshadows the other nodes.\n";
+        outText << "(Wasserman & Faust, formula 5.5, p. 177)\n\n";
+        outText << "(Wasserman & Faust, p. 101)\n";
+    }
+    else {
+        outText << "This graph is weighted. No GDC value can be computed. \n"
+                << "You can use DC mean or variance as a group-level DC measure";
     }
 
     outText << "\n\n";
@@ -3093,7 +3088,7 @@ void Graph::writeCentralityPower( const QString fileName,
 *	Calculates Degree Prestige (in-degree) of each vertex - diagonal included
 *	Also the mean value and the variance of the in-degrees.
 */
-void Graph::prestigeDegree(bool weights){
+void Graph::prestigeDegree(bool weights, bool dropIsolates=false){
     qDebug()<< "Graph:: prestigeDegree()";
     if (!graphModified && calculatedDP ) {
         qDebug() << "Graph::prestigeDegree() - "
@@ -3124,7 +3119,8 @@ void Graph::prestigeDegree(bool weights){
                     DP++;
             }
             //check here if the matrix is symmetric - we need this below
-            if ( ( this->hasEdge ( (*it1)->name(), (*it)->name() ) ) != ( this->hasEdge ( (*it)->name(), (*it1)->name() ) )   )
+            if ( ( this->hasEdge ( (*it1)->name(), (*it)->name() ) )
+                 != ( this->hasEdge ( (*it)->name(), (*it1)->name() ) )   )
                 symmetricAdjacencyMatrix = false;
         }
         (*it) -> setDP ( DP ) ;				//Set InDegree
@@ -3164,7 +3160,8 @@ void Graph::prestigeDegree(bool weights){
             (*it) -> setSDP( DP / (sumDP) );
         }
         nom+= maxDP-DP;
-        qDebug() << "Graph: vertex = " <<  (*it)->name() << " has DP = " << DP << " and SDP " << (*it)->SDP ();
+        qDebug() << "Graph: vertex = " <<  (*it)->name() << " has DP = "
+                 << DP << " and SDP " << (*it)->SDP ();
 
         //qDebug("Graph: DP = %f, meanDegree = %f", DP, meanDegree);
         varianceDegree += (DP-meanDegree) * (DP-meanDegree) ;
@@ -3179,13 +3176,8 @@ void Graph::prestigeDegree(bool weights){
 
     if (!weights) {
         groupDP=nom/denom;
+        qDebug("Graph: varianceDegree = %f, groupDP = %f", varianceDegree, groupDP);
     }
-    else {
-        qDebug()<< "Graph::prestigeDegree vertices isolated: " << verticesIsolated().count() << ". I will subtract groupDP by " << ((float)verticesIsolated().count()/(float)vert);
-        groupDP=( ( nom * (vert-1.0))/( denom * maxDP) ) - ((float) verticesIsolated().count()/ (float) vert);
-    }
-
-    qDebug("Graph: varianceDegree = %f, groupDP = %f", varianceDegree, groupDP);
 
     if (!weights) {
         minDP/=(float)(vert-1); // standardize
@@ -3195,14 +3187,16 @@ void Graph::prestigeDegree(bool weights){
         minDP/=(float)(sumDP); // standardize
         maxDP/=(float)(sumDP);
     }
-    calculatedDP=true;
 
+    calculatedDP=true;
 }
 
 
 
 
-void Graph::writePrestigeDegree (const QString fileName, const bool considerWeights)
+void Graph::writePrestigeDegree (const QString fileName,
+                                 const bool considerWeights,
+                                 const bool dropIsolates)
 {
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
@@ -3212,7 +3206,7 @@ void Graph::writePrestigeDegree (const QString fileName, const bool considerWeig
     }
     QTextStream outText ( &file );
 
-    prestigeDegree(considerWeights);
+    prestigeDegree(considerWeights, dropIsolates);
 
     float maximumIndexValue=vertices()-1.0;
     outText.setRealNumberPrecision(m_precision);
@@ -3235,17 +3229,8 @@ void Graph::writePrestigeDegree (const QString fileName, const bool considerWeig
 
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        outText <<(*it)->name()<<"\t"<<(*it)->DP() << "\t"<< (*it)->SDP() << "\t" <<  (100* ((*it)->DP()) / sumDP)<<endl;
-    }
-    if (symmetricAdjacencyMatrix) {
-        outText << "\n";
-        outText << tr("Mean Nodal Degree = ") << meanDegree<<"\n" ;
-        outText << tr("Degree Variance = ") << varianceDegree<<"\n";
-    }
-    else{
-        outText << "\n";
-        outText << tr("Mean Nodal InDegree = ") << meanDegree<<"\n" ;
-        outText << tr("InDegree Variance = ") << varianceDegree<<"\n";
+        outText <<(*it)->name()<<"\t"<<(*it)->DP() << "\t"<< (*it)->SDP()
+               << "\t" <<  (100* ((*it)->DP()) / sumDP)<<endl;
     }
 
     if ( minDP == maxDP )
@@ -3256,19 +3241,29 @@ void Graph::writePrestigeDegree (const QString fileName, const bool considerWeig
         outText << tr("DP classes = ") << classesDP<<" \n";
     }
 
-    outText << "\nGROUP DEGREE PRESTIGE (GDP)\n\n";
-    outText << "GDP = " << groupDP<<"\n\n";
+    if (symmetricAdjacencyMatrix) {
+        outText << "\n";
+        outText << tr("DP Mean = ") << meanDegree<<"\n" ;
+        outText << tr("DP Variance = ") << varianceDegree<<"\n";
+    }
+    else{
+        outText << "\n";
+        outText << tr("DP Mean = ") << meanDegree<<"\n" ;
+        outText << tr("DP Variance = ") << varianceDegree<<"\n";
+    }
 
-    outText << "GDP range: 0 < GDP < 1\n";
-    outText << "GDP = 0, when all in-degrees are equal (i.e. regular lattice).\n";
-    outText << "GDP = 1, when one node is chosen by all other nodes (i.e. star).\n";
+    if (!considerWeights) {
+            outText << "\nGROUP DEGREE PRESTIGE (GDP)\n\n";
+            outText << "GDP = " << groupDP<<"\n\n";
 
-    outText << "(Wasserman & Faust, p. 203)\n";
-
-    if (considerWeights) {
-        outText << "\nNOTE: Because the network is weighted, we normalize "
-                   "Group Prestige multiplying by (N-1)/maxDP, where N is the "
-                   "total vertices, and subtracting the percentage of isolated vertices\n";
+            outText << "GDP range: 0 < GDP < 1\n";
+            outText << "GDP = 0, when all in-degrees are equal (i.e. regular lattice).\n";
+            outText << "GDP = 1, when one node is chosen by all other nodes (i.e. star).\n";
+            outText << "(Wasserman & Faust, p. 203)\n";
+    }
+    else {
+        outText << tr("\nBecause the network is weighted, we cannot compute Group DP"
+                   "You can use DP mean or variance instead.\n");
     }
 
     outText << "\n\n";
@@ -3321,7 +3316,6 @@ void Graph::prestigeProximity(){
         qDebug()<< "Graph::prestigeProximity - vertex " <<  (*it)->name()
                    << " Ii size: " << Ii;
         for ( i = 0; i < Ii; i++) {
-
             qDebug() << "Graph::prestigeProximity - vertex " <<  (*it)->name()
                      << " is inbound connected from  = " << influencerVertices.at(i) + 1
                      << " at distance " << DM.item (  influencerVertices.at(i), (*it)->name()-1);
@@ -3366,8 +3360,6 @@ void Graph::prestigeProximity(){
         maxNodePP=-1;
 
     meanPP = sumPP / (float) V;
-    qDebug("Graph::prestigeProximity - sumPP = %f, meanPP = %f",
-           sumPP, meanPP);
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         PP= (*it) -> PP();
@@ -3376,10 +3368,12 @@ void Graph::prestigeProximity(){
         qDebug() << "Graph::prestigeProximity - vertex " <<  (*it)->name()
                  << " has std PP = "
                  << PP << " / " << sumPP << " = " << (*it)->SPP();
-
     }
-
     variancePP=variancePP/(float) V;
+    qDebug() << "Graph::prestigeProximity - sumPP = " << sumPP
+                << " meanPP = " << meanPP
+                << " variancePP " << variancePP;
+
     calculatedPP=true;
 
 }
@@ -3434,13 +3428,12 @@ void Graph::writePrestigeProximity(
         outText << tr("\nAll nodes have the same PP value.\n");
     else  {
         outText << "\n";
-        outText << tr("Max PP' = ") << maxPP <<" (node "<< maxNodePP  <<  ")  \n";
-        outText << tr("Min PP' = ") << minPP <<" (node "<< minNodePP <<  ")  \n";
+        outText << tr("Max PP = ") << maxPP <<" (node "<< maxNodePP  <<  ")  \n";
+        outText << tr("Min PP = ") << minPP <<" (node "<< minNodePP <<  ")  \n";
         outText << tr("PP classes = ") << classesPP<<" \n";
     }
-
-    outText << tr("PP Mean = ") << meanPP<<"\n";
     outText << tr("PP Sum= ") << sumPP<<"\n";
+    outText << tr("PP Mean = ") << meanPP<<"\n";
     outText << tr("PP Variance = ") << variancePP<<"\n\n";
 
 

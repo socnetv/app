@@ -286,7 +286,8 @@ public:
 
  //   friend QTextStream& operator <<  (QTextStream& os, Graph& m);
 
-    void writeCentralityDegree(const QString, const bool weights);
+    void writeCentralityDegree(const QString, const bool weights,
+                               const bool dropIsolates);
     void writeCentralityCloseness(const QString,
                                   const bool weights,
                                   const bool inverseWeights);
@@ -311,7 +312,8 @@ public:
     void writeCentralityInformation(const QString,
                                     const bool weigths,
                                     const bool inverseWeights);
-    void writePrestigeDegree(const QString, const bool weights);
+    void writePrestigeDegree(const QString, const bool weights,
+                             const bool dropIsolates);
     void writePrestigeProximity(const QString, const bool weights);
     void writePrestigePageRank(const QString);
 
@@ -335,11 +337,11 @@ public:
 
     void createDistanceMatrix(bool centralities=false, bool considerWeights=false,
                               bool inverseWeights=true);
-    void centralityDegree(bool);
+    void centralityDegree(bool, bool);
     void centralityInformation();
     void centralityClosenessInfluenceRange();
 
-    void prestigeDegree(bool);
+    void prestigeDegree(bool, bool);
     void prestigePageRank();
     void prestigeProximity();
 
