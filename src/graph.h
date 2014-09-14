@@ -477,7 +477,7 @@ private:
     /** used in resolveClasses and createDistanceMatrix() */
     H_StrToInt discreteDPs, discreteDCs, discreteCCs, discreteBCs, discreteSCs;
     H_StrToInt discreteIRCCs, discreteECs, discreteEccentricities;
-    H_StrToInt discretePCs, discreteICs,  discretePRCs, discretePPs;
+    H_StrToInt discretePCs, discreteICs,  discretePRPs, discretePPs;
 
     bool calculatedDP, calculatedDC, calculatedCentralities, dynamicMovement;
     bool calculatedPP, calculatedIRCC, calculatedIC, calculatedPRP;
@@ -498,9 +498,9 @@ private:
     float minSC, maxSC, nomSC, denomSC, sumSC, groupSC, maxIndexSC;
     float minEC, maxEC, nomEC, denomEC, sumEC, groupEC, maxIndexEC;
     float minIC, maxIC, nomIC, denomIC, sumIC, groupIC, maxIndexIC;
-    float minPRC, maxPRC, nomPRC, denomPRC, sumPRC, groupPRC, maxIndexPRC;
+    float minPRP, maxPRP, nomPRC, denomPRC, sumPRP, variancePRP, maxIndexPRC;
     float minPP, maxPP, nomPP, denomPP, sumPP, groupPP;
-    float minCLC, maxCLC, averageCLC, averageIC, averagePRC, dampingFactor;
+    float minCLC, maxCLC, averageCLC, averageIC, averagePRP, dampingFactor;
     int maxNodeCLC, minNodeCLC;
     int classesDP, maxNodeDP, minNodeDP;
     int classesDC, maxNodeDC, minNodeDC;
@@ -512,7 +512,7 @@ private:
     int classesEC, maxNodeEC, minNodeEC;
     int classesEccentricity, maxNodeEccentricity, minNodeEccentricity;
     int classesIC, maxNodeIC, minNodeIC;
-    int classesPRC, maxNodePRC, minNodePRC;
+    int classesPRP, maxNodePRP, minNodePRP;
     int classesPP, maxNodePP, minNodePP;
     int sizeOfComponent;
 

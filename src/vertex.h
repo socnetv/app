@@ -199,10 +199,10 @@ public:
     float DP() { return m_DP;}		/* Returns vertex Degree Prestige */
     float SDP() { return m_SDP;}		/* Returns standard vertex Degree Prestige */
 
-    void setPRC (float c){ m_PRC=c;}		/* sets vertex PageRank*/
-    void setSPRC (float c ) { m_SPRC=c;}	/* sets standard vertex PageRank*/
-    float PRC() { return m_PRC;}		/* Returns vertex PageRank */
-    float SPRC() { return m_SPRC; }		/* Returns standard vertex PageRank*/
+    void setPRP (float c){ m_PRC=c;}		/* sets vertex PageRank*/
+    void setSPRP (float c ) { m_SPRC=c;}	/* sets standard vertex PageRank*/
+    float PRP() { return m_PRC;}		/* Returns vertex PageRank */
+    float SPRP() { return m_SPRC; }		/* Returns standard vertex PageRank*/
 
     void setPP (float c){ m_PP=c;}		/* sets vertex Proximity Prestige */
     void setSPP (float c ) { m_SPP=c;}	/* sets standard vertex Proximity Prestige */
