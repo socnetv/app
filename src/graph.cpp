@@ -1506,6 +1506,7 @@ void Graph::writeEccentricity(
         - Stress: SC(u) = Sum ( sigma(i,j) ) for every s,t in V
         - Eccentricity: EC(u) =  1/maxDistance(u,t)  for some t in V
         - Closeness: CC(u) =  1 / Sum( DM(u,t) )  for every  t in V
+        - Power:
  * @param doCalculcateCentralities
  */
 void Graph::createDistanceMatrix(bool centralities,
@@ -1544,6 +1545,8 @@ void Graph::createDistanceMatrix(bool centralities,
         int w=0, u=0,s=0, i=0;
         float d_sw=0, d_su=0;
         float CC=0, BC=0, SC= 0, eccentricity=0, EC=0, PC=0;
+        float tempVarianceBC=0, tempVarianceSC=0,tempVarianceEC=0;
+        float tempVarianceCC=0, tempVariancePC=0;
         int progressCounter=0;
 
         graphDiameter=0;
@@ -1777,6 +1780,27 @@ void Graph::createDistanceMatrix(bool centralities,
                 sumSC+=SC;
 
             }
+
+            meanBC = sumBC /(float) aVertices ;
+            varianceBC=0;
+            tempVarianceBC=0;
+
+            meanSC = sumSC /(float) aVertices ;
+            varianceSC=0;
+            tempVarianceSC=0;
+
+            meanCC = sumCC /(float) aVertices ;
+            varianceCC=0;
+            tempVarianceCC=0;
+
+            meanPC = sumPC /(float) aVertices ;
+            variancePC=0;
+            tempVariancePC=0;
+
+            meanEC = sumEC /(float) aVertices ;
+            varianceEC=0;
+            tempVarianceEC=0;
+
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
                 if ((*it)->isIsolated())
                     continue;
@@ -1790,11 +1814,39 @@ void Graph::createDistanceMatrix(bool centralities,
 
                 //Calculate the numerator of groupBC according to Freeman's group Betweenness
                 nomBC +=(maxBC - BC );
+                //calculate BC variance
+                tempVarianceBC = (  (*it)->BC()  -  meanBC  ) ;
+                tempVarianceBC *=tempVarianceBC;
+                varianceBC  += tempVarianceBC;
 
                 //Find numerator of groupCC
                 nomCC += maxCC- (*it)->SCC();
+                //calculate CC variance
+                tempVarianceCC = (  (*it)->CC()  -  meanCC  ) ;
+                tempVarianceCC *=tempVarianceCC;
+                varianceCC  += tempVarianceCC;
 
+                //calculate SC variance
+                tempVarianceSC = (  (*it)->SC()  -  meanSC  ) ;
+                tempVarianceSC *=tempVarianceSC;
+                varianceSC  += tempVarianceSC;
+
+                //calculate PC variance
+                tempVariancePC = (  (*it)->PC()  -  meanPC  ) ;
+                tempVariancePC *=tempVariancePC;
+                variancePC  += tempVariancePC;
+
+                //calculate EC variance
+                tempVarianceEC = (  (*it)->EC()  -  meanEC  ) ;
+                tempVarianceEC *=tempVarianceEC;
+                varianceEC  += tempVarianceEC;
             }
+            varianceBC  /=  (float) aVertices;
+            varianceSC  /=  (float) aVertices;
+            varianceCC  /=  (float) aVertices;
+            variancePC  /=  (float) aVertices;
+            varianceEC  /=  (float) aVertices;
+
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
                 if ((*it)->isIsolated())
                     continue;
@@ -2219,7 +2271,7 @@ void Graph::centralityInformation(){
     maxIC=0;
     minIC=RAND_MAX;
     classesIC=0;
-    groupIC=0;
+    varianceIC=0;
 
     TM.resize(m_totalVertices);
     isolatedVertices=verticesIsolated().count();
@@ -2295,19 +2347,20 @@ void Graph::centralityInformation(){
     }
 
     float x=0;
-    averageIC = sumSIC / n ;
-    qDebug() << "sumSIC = " << sumSIC << "  n = " << n << "  averageIC = " << averageIC;
-    groupIC=0;
+    meanIC = sumSIC /(float) n ;
+
+    qDebug() << "sumSIC = " << sumSIC << "  n = " << n << "  meanIC = " << meanIC;
+    varianceIC=0;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        x = (  (*it)->SIC()  -  averageIC  ) ;
+        x = (  (*it)->SIC()  -  meanIC  ) ;
         x *=x;
         qDebug() << "SIC " <<  (*it)->SIC() << "  x "
-                 <<   (*it)->SIC() - averageIC  << " x*x" << x ;
-        groupIC  += x;
+                 <<   (*it)->SIC() - meanIC  << " x*x" << x ;
+        varianceIC  += x;
     }
-    qDebug() << "groupIC   " << groupIC   << " n " << n ;
-    groupIC  = groupIC  /  (float) n;
-    qDebug() << "groupIC   " << groupIC   ;
+    qDebug() << "varianceIC   " << varianceIC   << " n " << n ;
+    varianceIC  /=  (float) n;
+    qDebug() << "varianceIC   " << varianceIC   ;
 
     calculatedIC = true;
 }
@@ -2366,22 +2419,18 @@ void Graph::writeCentralityInformation(const QString fileName,
         outText << "\n";
         outText << tr("Max IC' = ") << maxIC <<" (node "<< maxNodeIC  <<  ")  \n";
         outText << tr("Min IC' = ") << minIC <<" (node "<< minNodeIC <<  ")  \n";
-        outText << tr("Average IC' = ") << averageIC <<  " \n";
         outText << tr("IC classes = ") << classesIC<<" \n";
     }
     outText << "\n";
+    outText << tr("IC'Mean = ") << meanIC <<  " \n";
+    outText << tr("IC' Variance = ") << varianceIC <<  " \n";
 
-    outText << tr("\nGROUP INFORMATION CENTRALISATION (GIC) - VARIANCE\n\n");
-    outText << tr("GIC = ") << groupIC<<"\n\n";
-    outText << tr("GIC range: 0 < GIC < inf \n");
-    outText << tr("GIC is computed using a simple variance formula. \n");
-    outText << tr("In fact, following the results of Wasserman & Faust, we are "
-                  "using a bias-corrected sample variance.\n ");
+    outText << tr("Variance can be used as Group Information Centralization index. \n");
 
-    outText << tr("GIC = 0, when all nodes have the same IC value, i.e. a "
+    outText << tr("Variance = 0, when all nodes have the same IC value, i.e. a "
                   "complete or a circle graph).\n");
-    outText << tr("Larger values of GIC mean larger variability between the "
-                  "nodes' IC values.\n");
+    outText << tr("Larger values of variance suggest larger variability between the "
+                  "IC' values.\n");
     outText <<"(Wasserman & Faust, formula 5.20, p. 197)\n\n";
 
 
@@ -2411,8 +2460,8 @@ void Graph::centralityDegree(bool weights, bool dropIsolates=false){
     sumDC=0;
     maxDC=0;
     minDC=RAND_MAX;
-    varianceDegree=0;
-    meanDegree=0;
+    varianceDC=0;
+    meanDC=0;
     int vert=vertices();
     QList<Vertex*>::const_iterator it, it1;
     H_StrToInt::iterator it2;
@@ -2460,7 +2509,7 @@ void Graph::centralityDegree(bool weights, bool dropIsolates=false){
     if (minDC == maxDC)
         maxNodeDC=-1;
 
-    meanDegree = sumDC / (float) vert;
+    meanDC = sumDC / (float) vert;
 
     // Calculate std Out-Degree, Variance and the Degree Centralisation of the whole graph.
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -2475,18 +2524,20 @@ void Graph::centralityDegree(bool weights, bool dropIsolates=false){
 
         qDebug() << "Graph: vertex " <<  (*it)->name() << " SDC " << (*it)->SDC ();
 
-        varianceDegree += (DC-meanDegree) * (DC-meanDegree) ;
         if ( dropIsolates  ) {
             if   ( ! (*it)->isIsolated() )
+                varianceDC += (DC-meanDC) * (DC-meanDC) ;
                 nom+= (maxDC-DC);
         }
-        else
+        else {
             nom+= (maxDC-DC);
+            varianceDC += (DC-meanDC) * (DC-meanDC) ;
+        }
     }
 
-    varianceDegree=varianceDegree/(float) vert;
-    qDebug() << "Graph: sumDC = " << sumDC << " meanDegree = " << meanDegree
-                << " variance = " << varianceDegree;
+    varianceDC=varianceDC/(float) vert;
+    qDebug() << "Graph: sumDC = " << sumDC << " meanDC = " << meanDC
+                << " variance = " << varianceDC;
     if (symmetricAdjacencyMatrix)
         denom=(vert-1.0)*(vert-2.0);
     else
@@ -2553,16 +2604,10 @@ void Graph::writeCentralityDegree ( const QString fileName,
         outText << tr("DC classes = ") << classesDC<<" \n";
     }
 
-    if (symmetricAdjacencyMatrix) {
-        outText << "\n";
-        outText << tr("DC Mean = ") << meanDegree<<"\n" ;
-        outText << tr("DC Variance = ") << varianceDegree<<"\n";
-    }
-    else{
-        outText << "\n" ;
-        outText << tr("ODC Mean = ") << meanDegree<<"\n" ;
-        outText << tr("ODC Variance = ") << varianceDegree<<"\n";
-    }
+
+    outText << "\n";
+    outText << tr("DC Mean = ") << meanDC<<"\n" ;
+    outText << tr("DC Variance = ") << varianceDC<<"\n";
 
     if (!considerWeights) {
         outText << "\nGROUP DEGREE CENTRALISATION (GDC)\n\n";
@@ -2735,21 +2780,28 @@ void Graph::writeCentralityCloseness(
         outText << "\n";
         outText << tr("Max CC' = ") << maxCC <<" (node "<< maxNodeCC  <<  ")  \n";
         outText << tr("Min CC' = ") << minCC <<" (node "<< minNodeCC <<  ")  \n";
-        outText << tr("CC classes = ") << classesCC<<" \n";
+        outText << tr("CC classes = ") << classesCC<<" \n\n";
     }
+    outText << tr("CC sum = ") << sumCC<<" \n";
+    outText << tr("CC Mean = ") << meanCC<<" \n";
+    outText << tr("CC Variance = ") << varianceCC<<" \n";
 
-    outText << tr("\nGROUP CLOSENESS CENTRALISATION (GCC)\n\n");
-    outText << tr("GCC = ") << groupCC<<"\n\n";
+    if (!considerWeights) {
+        outText << tr("\nGROUP CLOSENESS CENTRALISATION (GCC)\n\n");
+        outText << tr("GCC = ") << groupCC<<"\n\n";
 
-    outText << tr("GCC range: 0 < GCC < 1\n");
-    outText << tr("GCC = 0, when the lengths of the geodesics are all equal "
-                  "(i.e. a complete or a circle graph).\n");
-    outText << tr("GCC = 1, when one node has geodesics of length 1 to all the "
-                  "other nodes, and the other nodes have geodesics of length 2 "
-                  "to the remaining (N-2) nodes. "
-                  "This is exactly the situation realised by a star graph.\n");
-    outText <<"(Wasserman & Faust, formula 5.9, p. 186-187)\n\n";
-
+        outText << tr("GCC range: 0 < GCC < 1\n");
+        outText << tr("GCC = 0, when the lengths of the geodesics are all equal "
+                      "(i.e. a complete or a circle graph).\n");
+        outText << tr("GCC = 1, when one node has geodesics of length 1 to all the "
+                      "other nodes, and the other nodes have geodesics of length 2 "
+                      "to the remaining (N-2) nodes. "
+                      "This is exactly the situation realised by a star graph.\n");
+        outText <<"(Wasserman & Faust, formula 5.9, p. 186-187)\n\n";
+    }
+    else
+        outText << tr("Because this graphs is weighted, we cannot compute Group Centralization\n")
+                << tr("Use variance instead.");
     outText << "\n\n";
     outText << tr("Closeness Centrality report, \n");
     outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime()
@@ -2811,9 +2863,9 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
         outText << tr("Min IRCC = ") << minIRCC <<" (node "<< minNodeIRCC <<  ")  \n";
         outText << tr("IRCC classes = ") << classesIRCC<<" \n";
     }
-    outText << tr("Mean IRCC = ") << meanIRCC<<"\n";
-    outText << tr("Sum IRCC= ") << sumIRCC<<"\n";
-    outText << tr("Variance IRCC = ") << varianceIRCC<<"\n\n";
+    outText << tr("IRCC sum = ") << sumIRCC<<"\n";
+    outText << tr("IRCC Mean = ") << meanIRCC<<"\n";
+    outText << tr("IRCC Variance = ") << varianceIRCC<<"\n";
 
 
     outText << "\n\n";
@@ -2871,18 +2923,26 @@ void Graph::writeCentralityBetweenness( const QString fileName,
         outText << "\n";
         outText << tr("Max BC = ") << maxBC <<" (node "<< maxNodeBC  <<  ")  \n";
         outText << tr("Min BC = ") << minBC <<" (node "<< minNodeBC <<  ")  \n";
-        outText << tr("BC classes = ") << classesBC<<" \n";
+        outText << tr("BC classes = ") << classesBC<<" \n\n";
     }
+    outText << tr("BC sum = ") << sumBC<<" \n";
+    outText << tr("BC Mean = ") << meanBC<<" \n";
+    outText << tr("BC Variance = ") << varianceBC<<" \n";
 
-    outText << tr("\nGROUP BETWEENESS CENTRALISATION (GBC)\n\n");
-    outText << tr("GBC = ") <<  groupBC <<"\n\n";
+    if (!considerWeights) {
+        outText << tr("\nGROUP BETWEENESS CENTRALISATION (GBC)\n\n");
+        outText << tr("GBC = ") <<  groupBC <<"\n\n";
 
-    outText << tr("GBC range: 0 < GBC < 1\n");
-    outText << tr("GBC = 0, when all the nodes have exactly the same betweenness index.\n");
-    outText << tr("GBC = 1, when one node falls on all other geodesics between "
-                  "all the remaining (N-1) nodes. "
-                  "This is exactly the situation realised by a star graph.\n");
-    outText << "(Wasserman & Faust, formula 5.13, p. 192)\n\n";
+        outText << tr("GBC range: 0 < GBC < 1\n");
+        outText << tr("GBC = 0, when all the nodes have exactly the same betweenness index.\n");
+        outText << tr("GBC = 1, when one node falls on all other geodesics between "
+                      "all the remaining (N-1) nodes. "
+                      "This is exactly the situation realised by a star graph.\n");
+        outText << "(Wasserman & Faust, formula 5.13, p. 192)\n\n";
+    }
+    else
+        outText << tr("Because this graph is weighted, we cannot compute Group Centralization\n")
+                << tr("Use variance instead.");
 
     outText << "\n\n";
     outText << tr("Betweenness Centrality report, \n");
@@ -2941,17 +3001,25 @@ void Graph::writeCentralityStress( const QString fileName,
         outText << "\n";
         outText << tr("Max SC = ") << maxSC <<" (node "<< maxNodeSC  <<  ")  \n";
         outText << tr("Min SC = ") << minSC <<" (node "<< minNodeSC <<  ")  \n";
-        outText << tr("SC classes = ") << classesSC<<" \n";
+        outText << tr("SC classes = ") << classesSC<<" \n\n";
     }
+    outText << tr("SC sum = ") << sumSC<<" \n";
+    outText << tr("SC Mean = ") << meanSC<<" \n";
+    outText << tr("SC Variance = ") << varianceSC<<" \n";
 
-    outText << tr("GROUP STRESS CENTRALISATION (GSC)")<<"\n";
-    outText << tr("GSC = ") <<  groupSC<<"\n\n";
+    if (!considerWeights) {
+        outText << tr("GROUP STRESS CENTRALISATION (GSC)")<<"\n";
+        outText << tr("GSC = ") <<  groupSC<<"\n\n";
 
-    outText << tr("GSC range: 0 < GSC < 1\n");
-    outText << tr("GSC = 0, when all the nodes have exactly the same stress index.\n");
-    outText << tr("GSC = 1, when one node falls on all other geodesics between "
-                  "all the remaining (N-1) nodes. "
-                  "This is exactly the situation realised by a star graph.\n");
+        outText << tr("GSC range: 0 < GSC < 1\n");
+        outText << tr("GSC = 0, when all the nodes have exactly the same stress index.\n");
+        outText << tr("GSC = 1, when one node falls on all other geodesics between "
+                      "all the remaining (N-1) nodes. "
+                      "This is exactly the situation realised by a star graph.\n");
+    }
+    else
+        outText << tr("Because this graph is weighted, we cannot compute Group Centralization\n")
+                << tr("Use variance instead.");
 
     outText << "\n\n";
     outText << tr("Stress Centrality report, \n");
@@ -3010,6 +3078,9 @@ void Graph::writeCentralityEccentricity( const QString fileName,
         outText << tr("Min EC = ") << minEC <<" (node "<< minNodeEC <<  ")  \n";
         outText << tr("EC classes = ") << classesEC<<" \n";
     }
+    outText << tr("EC sum = ") << sumEC<<" \n";
+    outText << tr("EC Mean = ") << meanEC<<" \n";
+    outText << tr("EC Variance = ") << varianceEC<<" \n";
 
     outText << "\n\n";
     outText << tr("Eccentricity Centrality report, \n");
@@ -3069,6 +3140,9 @@ void Graph::writeCentralityPower( const QString fileName,
         outText << tr("Min PC' = ") << minPC <<" (node "<< minNodePC <<  ")  \n";
         outText << tr("PC classes = ") << classesPC<<" \n";
     }
+    outText << tr("PC sum = ") << sumPC<<" \n";
+    outText << tr("PC Mean = ") << meanPC<<" \n";
+    outText << tr("PC Variance = ") << variancePC<<" \n";
 
     outText << "\n\n";
     outText << tr("Power Centrality report, \n");
@@ -3102,8 +3176,8 @@ void Graph::prestigeDegree(bool weights, bool dropIsolates=false){
     maxDP=0;
     minDP=vertices()-1;
     discreteDPs.clear();
-    varianceDegree=0;
-    meanDegree=0;
+    varianceDP=0;
+    meanDP=0;
     symmetricAdjacencyMatrix = true;
     QList<Vertex*>::const_iterator it, it1;
     H_StrToInt::iterator it2;
@@ -3147,8 +3221,8 @@ void Graph::prestigeDegree(bool weights, bool dropIsolates=false){
         maxNodeDP=-1;
 
 
-    meanDegree = sumDP / (float) vert;
-    qDebug("Graph: sumDP = %f, meanDegree = %f", sumDP, meanDegree);
+    meanDP = sumDP / (float) vert;
+    qDebug("Graph: sumDP = %f, meanDP = %f", sumDP, meanDP);
 
     // Calculate std In-Degree, Variance and the Degree Centralisation of the whole graph.
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -3163,11 +3237,11 @@ void Graph::prestigeDegree(bool weights, bool dropIsolates=false){
         qDebug() << "Graph: vertex = " <<  (*it)->name() << " has DP = "
                  << DP << " and SDP " << (*it)->SDP ();
 
-        //qDebug("Graph: DP = %f, meanDegree = %f", DP, meanDegree);
-        varianceDegree += (DP-meanDegree) * (DP-meanDegree) ;
+        //qDebug("Graph: DP = %f, meanDP = %f", DP, meanDP);
+        varianceDP += (DP-meanDP) * (DP-meanDP) ;
     }
 
-    varianceDegree=varianceDegree/(float) vert;
+    varianceDP=varianceDP/(float) vert;
 
     if (symmetricAdjacencyMatrix)
         denom=(vert-1.0)*(vert-2.0);
@@ -3176,7 +3250,7 @@ void Graph::prestigeDegree(bool weights, bool dropIsolates=false){
 
     if (!weights) {
         groupDP=nom/denom;
-        qDebug("Graph: varianceDegree = %f, groupDP = %f", varianceDegree, groupDP);
+        qDebug("Graph: varianceDP = %f, groupDP = %f", varianceDP, groupDP);
     }
 
     if (!weights) {
@@ -3243,13 +3317,13 @@ void Graph::writePrestigeDegree (const QString fileName,
 
     if (symmetricAdjacencyMatrix) {
         outText << "\n";
-        outText << tr("DP Mean = ") << meanDegree<<"\n" ;
-        outText << tr("DP Variance = ") << varianceDegree<<"\n";
+        outText << tr("DP Mean = ") << meanDP<<"\n" ;
+        outText << tr("DP Variance = ") << varianceDP<<"\n";
     }
     else{
         outText << "\n";
-        outText << tr("DP Mean = ") << meanDegree<<"\n" ;
-        outText << tr("DP Variance = ") << varianceDegree<<"\n";
+        outText << tr("DP Mean = ") << meanDP<<"\n" ;
+        outText << tr("DP Variance = ") << varianceDP<<"\n";
     }
 
     if (!considerWeights) {
@@ -3262,8 +3336,8 @@ void Graph::writePrestigeDegree (const QString fileName,
             outText << "(Wasserman & Faust, p. 203)\n";
     }
     else {
-        outText << tr("\nBecause the network is weighted, we cannot compute Group DP"
-                   "You can use DP mean or variance instead.\n");
+        outText << tr("\nBecause the network is weighted, we cannot compute Group Centralization"
+                   "You can use mean or variance instead.\n");
     }
 
     outText << "\n\n";
@@ -3434,9 +3508,7 @@ void Graph::writePrestigeProximity(
     }
     outText << tr("PP Sum= ") << sumPP<<"\n";
     outText << tr("PP Mean = ") << meanPP<<"\n";
-    outText << tr("PP Variance = ") << variancePP<<"\n\n";
-
-
+    outText << tr("PP Variance = ") << variancePP<<"\n";
 
     outText << "\n\n";
     outText << tr("Proximity Prestige report, \n");
@@ -3643,23 +3715,23 @@ void Graph::writePrestigePageRank(const QString fileName){
     float x=0;
     float n = ( this->vertices() - isolatedVertices );
     if (n != 0 )
-        averagePRP = sumSPRP / n ;
+        meanPRP = sumSPRP / n ;
     else
-        averagePRP = SPRP;
+        meanPRP = SPRP;
 
-    qDebug() << "sumPRP = " << sumSPRP << "  n = " << n << "  averagePRP = " << averagePRP;
+    qDebug() << "sumPRP = " << sumSPRP << "  n = " << n << "  meanPRP = " << meanPRP;
     variancePRP=0;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        x = ( (*it)->SPRP()  - averagePRP  ) ;
+        x = ( (*it)->SPRP()  - meanPRP  ) ;
         x *=x;
-        qDebug() << "SPRP " <<  (*it)->SPRP() << "  x " <<   (*it)->SPRP() - averagePRP  << " x*x" << x ;
+        qDebug() << "SPRP " <<  (*it)->SPRP() << "  x " <<   (*it)->SPRP() - meanPRP  << " x*x" << x ;
         variancePRP  += x;
     }
     qDebug() << "PRP' Variance   " << variancePRP   << " n " << n ;
     variancePRP  = variancePRP  /  (n);
     qDebug() << "PRP' Variance: " << variancePRP   ;
 
-    outText << tr("PRP' Mean = ") << averagePRP << endl;
+    outText << tr("PRP' Mean = ") << meanPRP << endl;
     outText << tr("PRP' Variance = ") << variancePRP << endl<< endl;
 
     outText << tr("PageRank Prestige report, \n");
@@ -3745,11 +3817,11 @@ void Graph::writeClusteringCoefficient(
     }
     if ( isSymmetric()) {
         outText << "\nAverage Clustering Coefficient = "<<  averageCLC<<"\n" ;
-        //	outText << "DC Variance = "<<  varianceDegree<<"\n\n";
+        //	outText << "DC Variance = "<<  varianceDC<<"\n\n";
     }
     else{
         outText << "\nAverage Clustering Coefficient= "<<  averageCLC<<"\n" ;
-        //		outText << "DC Variance = "<<  varianceDegree<<"\n\n";
+        //		outText << "DC Variance = "<<  varianceDC<<"\n\n";
     }
     if (  minCLC ==  maxCLC )
         outText << "\nAll nodes have the same clustering coefficient value.\n";
