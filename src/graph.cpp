@@ -1530,16 +1530,10 @@ void Graph::createDistanceMatrix(const bool centralities,
     TM.resize(m_totalVertices);
 
     int aEdges = totalEdges();
-    int aVertices =0;
-    isolatedVertices = verticesIsolated().count();
+    //drop isolated vertices from calculations (i.e. std C and group C).
+    int aVertices=vertices(dropIsolates);
+
     symmetricAdjacencyMatrix = isSymmetric();
-    if (dropIsolates) {
-        //drop isolated vertices from calculations (i.e. std Centrality and group Centrality).
-        aVertices=vertices() - isolatedVertices;
-    }
-    else {
-        aVertices=vertices();
-    }
 
     if ( aEdges == 0 )
         DM.fillMatrix(RAND_MAX);
