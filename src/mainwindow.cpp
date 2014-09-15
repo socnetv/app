@@ -5693,7 +5693,7 @@ void MainWindow::slotLayoutCircularByProminenceIndex(){
         switch ( connectedness ) {
         case 1:
             break;
-        case 0:
+        case -1:
             QMessageBox::critical(this,
                                   "Centrality Closeness",
                                   tr(
@@ -5711,7 +5711,7 @@ void MainWindow::slotLayoutCircularByProminenceIndex(){
             return;
             break;
 
-        case -1:
+        case -2:
             QMessageBox::critical(this,
                                   "Centrality Closeness",
                                   tr(

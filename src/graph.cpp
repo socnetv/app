@@ -1366,13 +1366,13 @@ int Graph::connectedness(){
     }
     if (isSymmetric() ) {
         if (isolatedVertices!=0 ) {
-             return -2;
+             return 0;  // undirected disconnected (has isolates)
          }
         return 1; // undirected and connected
     }
     else {
         if (isolatedVertices!=0 ) {
-            return 0; //directed disconnected
+            return -2; //directed disconnected (has isolates)
         }
         if (notStronglyConnectedVertices.size() != 0 ) {
             return -1;  //directed, weakly connected
