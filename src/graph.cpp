@@ -2861,12 +2861,11 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
         outText << "\n";
         outText << tr("Max IRCC = ") << maxIRCC <<" (node "<< maxNodeIRCC  <<  ")  \n";
         outText << tr("Min IRCC = ") << minIRCC <<" (node "<< minNodeIRCC <<  ")  \n";
-        outText << tr("IRCC classes = ") << classesIRCC<<" \n";
+        outText << tr("IRCC classes = ") << classesIRCC<<" \n\n";
     }
     outText << tr("IRCC sum = ") << sumIRCC<<"\n";
     outText << tr("IRCC Mean = ") << meanIRCC<<"\n";
     outText << tr("IRCC Variance = ") << varianceIRCC<<"\n";
-
 
     outText << "\n\n";
     outText << tr("InfluenceRange Closeness Centrality report, \n");
@@ -3008,7 +3007,7 @@ void Graph::writeCentralityStress( const QString fileName,
     outText << tr("SC Variance = ") << varianceSC<<" \n";
 
     if (!considerWeights) {
-        outText << tr("GROUP STRESS CENTRALISATION (GSC)")<<"\n";
+        outText << endl<< tr("GROUP STRESS CENTRALISATION (GSC)")<<"\n";
         outText << tr("GSC = ") <<  groupSC<<"\n\n";
 
         outText << tr("GSC range: 0 < GSC < 1\n");
@@ -3076,7 +3075,7 @@ void Graph::writeCentralityEccentricity( const QString fileName,
         outText << "\n";
         outText << tr("Max EC = ") << maxEC <<" (node "<< maxNodeEC  <<  ")  \n";
         outText << tr("Min EC = ") << minEC <<" (node "<< minNodeEC <<  ")  \n";
-        outText << tr("EC classes = ") << classesEC<<" \n";
+        outText << tr("EC classes = ") << classesEC<<" \n\n";
     }
     outText << tr("EC sum = ") << sumEC<<" \n";
     outText << tr("EC Mean = ") << meanEC<<" \n";
@@ -3138,7 +3137,7 @@ void Graph::writeCentralityPower( const QString fileName,
         outText << "\n";
         outText << tr("Max PC' = ") << maxPC <<" (node "<< maxNodePC  <<  ")  \n";
         outText << tr("Min PC' = ") << minPC <<" (node "<< minNodePC <<  ")  \n";
-        outText << tr("PC classes = ") << classesPC<<" \n";
+        outText << tr("PC classes = ") << classesPC<<" \n\n";
     }
     outText << tr("PC sum = ") << sumPC<<" \n";
     outText << tr("PC Mean = ") << meanPC<<" \n";
@@ -3312,22 +3311,15 @@ void Graph::writePrestigeDegree (const QString fileName,
     else  {
         outText << tr("Max DP' = ") << maxDP <<" (node "<< maxNodeDP <<  ")  \n";
         outText << tr("Min DP' = ") << minDP <<" (node "<< minNodeDP <<  ")  \n";
-        outText << tr("DP classes = ") << classesDP<<" \n";
+        outText << tr("DP classes = ") << classesDP<<" \n\n";
     }
 
-    if (symmetricAdjacencyMatrix) {
-        outText << "\n";
-        outText << tr("DP Mean = ") << meanDP<<"\n" ;
-        outText << tr("DP Variance = ") << varianceDP<<"\n";
-    }
-    else{
-        outText << "\n";
-        outText << tr("DP Mean = ") << meanDP<<"\n" ;
-        outText << tr("DP Variance = ") << varianceDP<<"\n";
-    }
+    outText << "\n";
+    outText << tr("DP Mean = ") << meanDP<<"\n" ;
+    outText << tr("DP Variance = ") << varianceDP<<"\n";
 
     if (!considerWeights) {
-            outText << "\nGROUP DEGREE PRESTIGE (GDP)\n\n";
+            outText << endl<<"GROUP DEGREE PRESTIGE (GDP)\n\n";
             outText << "GDP = " << groupDP<<"\n\n";
 
             outText << "GDP range: 0 < GDP < 1\n";
@@ -3504,7 +3496,7 @@ void Graph::writePrestigeProximity(
         outText << "\n";
         outText << tr("Max PP = ") << maxPP <<" (node "<< maxNodePP  <<  ")  \n";
         outText << tr("Min PP = ") << minPP <<" (node "<< minNodePP <<  ")  \n";
-        outText << tr("PP classes = ") << classesPP<<" \n";
+        outText << tr("PP classes = ") << classesPP<<" \n\n";
     }
     outText << tr("PP Sum= ") << sumPP<<"\n";
     outText << tr("PP Mean = ") << meanPP<<"\n";
