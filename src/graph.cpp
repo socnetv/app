@@ -1017,12 +1017,14 @@ int Graph::totalEdges () {
 /**	
     Returns |V| of graph
 */
-int Graph::vertices() {
+int Graph::vertices(const bool dropIsolates) {
     qDebug("Graph: vertices()");
     m_totalVertices=0;
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( (*it)->isEnabled() )
+        if (dropIsolates && (*it)->isIsolated())
+            continue;
+        if ( (*it)->isEnabled()  )
             ++m_totalVertices;
     }
     return m_totalVertices;
@@ -1361,6 +1363,9 @@ int Graph::connectedness(){
      return 0;
     else if ( (notStronglyConnectedVertices.size() != 0 ) && isolatedVertices !=0 )
         return -1;
+    else if (isSymmetric() && isolatedVertices!=0){
+        return -2;
+    }
     return 1;
 }
 
@@ -1493,7 +1498,7 @@ void Graph::writeEccentricity(
  * @brief Graph::createDistanceMatrix
   Creates a matrix DM which stores geodesic distances between all vertices
     INPUT:
-        boolean doCalculcateCentralities
+        boolean computeCentralities
         boolean considerWeights
         bool inverseWeights
     OUTPUT:
@@ -1501,17 +1506,18 @@ void Graph::writeEccentricity(
         TM(i,j)=number of shortest paths from vertex i to vertex j, called sigma(i,j).
         graphDiameter is set to the length of the longest shortest path between every (i,j)
         Eccentricity(i) is set to the length of the longest shortest path from i to every j
-        Also, if doCalculcateCentralities==true, it calculates the centralities for every u in V:
+        Also, if computeCentralities==true, it calculates the centralities for every u in V:
         - Betweenness: BC(u) = Sum ( sigma(i,j,u)/sigma(i,j) ) for every s,t in V
         - Stress: SC(u) = Sum ( sigma(i,j) ) for every s,t in V
         - Eccentricity: EC(u) =  1/maxDistance(u,t)  for some t in V
         - Closeness: CC(u) =  1 / Sum( DM(u,t) )  for every  t in V
         - Power:
- * @param doCalculcateCentralities
+ * @param computeCentralities
  */
-void Graph::createDistanceMatrix(bool centralities,
-                                 bool considerWeights,
-                                 bool inverseWeights) {
+void Graph::createDistanceMatrix(const bool centralities,
+                                 const bool considerWeights,
+                                 const bool inverseWeights,
+                                 const bool dropIsolates) {
     qDebug ("Graph::createDistanceMatrix()");
     if ( !graphModified && distanceMatrixCreated && !centralities)  {
         qDebug("Graph: distanceMatrix not mofified. Escaping.");
@@ -1524,13 +1530,16 @@ void Graph::createDistanceMatrix(bool centralities,
     TM.resize(m_totalVertices);
 
     int aEdges = totalEdges();
+    int aVertices =0;
     isolatedVertices = verticesIsolated().count();
     symmetricAdjacencyMatrix = isSymmetric();
-
-  //  bool valued = isWeighted();
-
-    //drop isolated vertices from calculations (i.e. std Centrality and group Centrality).
-    int aVertices=vertices() - isolatedVertices;
+    if (dropIsolates) {
+        //drop isolated vertices from calculations (i.e. std Centrality and group Centrality).
+        aVertices=vertices() - isolatedVertices;
+    }
+    else {
+        aVertices=vertices();
+    }
 
     if ( aEdges == 0 )
         DM.fillMatrix(RAND_MAX);
@@ -1642,9 +1651,9 @@ void Graph::createDistanceMatrix(bool centralities,
                      << (*it)->name() << " index " << s
                      << " to determine distances and geodesics from s to every vertex t" ;
             if (!considerWeights)
-                BFS(s,centralities );
+                BFS(s,centralities, dropIsolates );
             else
-                dijkstra(s, centralities, inverseWeights);
+                dijkstra(s, centralities, inverseWeights, dropIsolates);
 
             qDebug("***** FINISHED PHASE 1 (SSSP) BFS ALGORITHM. Continuing to calculate centralities");
 
@@ -1880,14 +1889,14 @@ void Graph::createDistanceMatrix(bool centralities,
 *	Breadth-First Search (BFS) method for unweighted graphs (directed or not)
 
     INPUT:
-        a 'source' vertex with index s and a boolean doCalculcateCentralities.
+        a 'source' vertex with index s and a boolean computeCentralities.
         (Implicitly, BFS uses the m_graph structure)
 
     OUTPUT:
         For every vertex t: DM(s, t) is set to the distance of each t from s
         For every vertex t: TM(s, t) is set to the number of shortest paths between s and t
 
-        Also, if doCalculcateCentralities is true then BFS does extra operations:
+        Also, if computeCentralities is true then BFS does extra operations:
             a) For source vertex s:
                 it calculates CC(s) as the sum of its distances from every other vertex.
                 it calculates eccentricity(s) as the maximum distance from all other vertices.
@@ -1898,7 +1907,8 @@ void Graph::createDistanceMatrix(bool centralities,
             c) Each vertex u popped from Q is pushed to a stack Stack
 
 */ 
-void Graph::BFS(int s, bool doCalculcateCentralities){
+void Graph::BFS(int s, const bool computeCentralities=false,
+                const bool dropIsolates=false){
     int u,w, dist_u=0, temp=0, dist_w=0;
     int relation=0, target=0;
     //int  weight=0;
@@ -1922,7 +1932,7 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
 
         if ( ! m_graph [ u ]->isEnabled() ) continue ;
 
-        if (doCalculcateCentralities){
+        if (computeCentralities){
 //            qDebug("BFS: If we are to calculate centralities, we must push u=%i to global stack Stack ", u);
             Stack.push(u);
         }
@@ -1955,7 +1965,7 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
                 averGraphDistance += dist_w;
                 nonZeroDistancesCounter++;
 
-                if (doCalculcateCentralities){
+                if (computeCentralities){
 //                    qDebug()<<"BFS: Calculate PC: store the number of nodes at distance " << dist_w << "from s";
                     sizeOfNthOrderNeighborhood.insert(
                                 dist_w,
@@ -1981,7 +1991,7 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
 //                qDebug("BFS: Found a NEW SHORTEST PATH from s=%i to w=%i via u=%i. Setting Sigma(%i, %i) = %i",s, w, u, s, w,temp);
                 if (s!=w)
                     TM.setItem(s,w, temp);
-                if (doCalculcateCentralities){
+                if (computeCentralities){
 //                    qDebug("BFS/SC: If we are to calculate centralities, we must calculate SC as well");
                     if ( s!=w && s != u && u!=w ) {
 //                        qDebug() << "BFS: setSC of u="<<u<<" to "<<m_graph[u]->SC()+1;
@@ -2010,14 +2020,14 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
 *	Breadth-First Search (BFS) method for unweighted graphs (directed or not)
 
     INPUT:
-        a 'source' vertex with index s and a boolean doCalculcateCentralities.
+        a 'source' vertex with index s and a boolean computeCentralities.
         (Implicitly, BFS uses the m_graph structure)
 
     OUTPUT:
         For every vertex t: DM(s, t) is set to the distance of each t from s
         For every vertex t: TM(s, t) is set to the number of shortest paths between s and t
 
-        Also, if doCalculcateCentralities is true then BFS does extra operations:
+        Also, if computeCentralities is true then BFS does extra operations:
             a) For source vertex s:
                 it calculates CC(s) as the sum of its distances from every other vertex.
                 it calculates eccentricity(s) as the maximum distance from all other vertices.
@@ -2028,7 +2038,9 @@ void Graph::BFS(int s, bool doCalculcateCentralities){
             c) Each vertex u popped from Q is pushed to a stack Stack
 
 */
-void Graph::dijkstra(int s, bool centralities, bool inverseWeights){
+void Graph::dijkstra(int s, const bool computeCentralities=false,
+                     const bool inverseWeights=false,
+                     const bool dropIsolates=false){
     int u,w,v, temp=0;
     int relation=0, target=0;
     float  weight=0, dist_u=0,  dist_w=0;
@@ -2070,7 +2082,7 @@ void Graph::dijkstra(int s, bool centralities, bool inverseWeights){
         if ( ! m_graph [ u ]->isEnabled() )
             continue ;
 
-        if (centralities){
+        if (computeCentralities){
             qDebug()<< "dijkstra: We will calculate centralities, push u="<< u
                     << " to global stack Stack ";
             Stack.push(u);
@@ -2122,7 +2134,7 @@ void Graph::dijkstra(int s, bool centralities, bool inverseWeights){
                        << " - Setting Sigma(s, w) = "<< temp;
                 if (s!=w)
                     TM.setItem(s,w, temp);
-                if (centralities){
+                if (computeCentralities){
                     qDebug()<< "dijkstra/SC:";
                     if ( s!=w && s != u && u!=w ) {
                         qDebug() << "dijkstra: Calculate SC: setSC of u="<<u
@@ -2156,7 +2168,7 @@ void Graph::dijkstra(int s, bool centralities, bool inverseWeights){
                     TM.setItem(s,w, 1);
                 }
 
-                if (centralities){
+                if (computeCentralities){
                     sizeOfNthOrderNeighborhood.insert(
                                 dist_w,
                                 sizeOfNthOrderNeighborhood.value(dist_w)+1
@@ -2370,7 +2382,9 @@ void Graph::centralityInformation(){
 //Writes the information centralities to a file
 void Graph::writeCentralityInformation(const QString fileName,
                                        const bool considerWeights,
-                                       const bool inverseWeights){
+                                       const bool inverseWeights,
+                                       const bool dropIsolates){
+    Q_UNUSED(dropIsolates);
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
@@ -2462,25 +2476,30 @@ void Graph::centralityDegree(bool weights, bool dropIsolates=false){
     minDC=RAND_MAX;
     varianceDC=0;
     meanDC=0;
-    int vert=vertices();
+    int vert=vertices(dropIsolates);
+        qDebug() << "Graph::centralityDegree() - dropIsolates " << dropIsolates
+                    << " vertices " << vert;
+
     QList<Vertex*>::const_iterator it, it1;
     H_StrToInt::iterator it2;
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         DC=0;
-        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
-            if ( (weight=this->hasEdge ( (*it)->name(), (*it1)->name() ) ) !=0  )   {
-                qDebug() << "Graph: vertex " <<  (*it)->name()
-                         << " isLinkedTo = " <<  (*it1)->name();
-                if (weights)
-                    DC+=weight;
-                else
-                    DC++;
+        if (!(*it)->isIsolated()) {
+            for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
+                if ( (weight=this->hasEdge ( (*it)->name(), (*it1)->name() ) ) !=0  )   {
+                    qDebug() << "Graph: vertex " <<  (*it)->name()
+                             << " isLinkedTo = " <<  (*it1)->name();
+                    if (weights)
+                        DC+=weight;
+                    else
+                        DC++;
 
-                //check here if the matrix is symmetric - we need this below
-                if ( ( this->hasEdge ( (*it1)->name(), (*it)->name() ) ) !=
-                     ( this->hasEdge ( (*it)->name(), (*it1)->name() ) )   )
-                    symmetricAdjacencyMatrix = false;
+                    //check here if the matrix is symmetric - we need this below
+                    if ( ( this->hasEdge ( (*it1)->name(), (*it)->name() ) ) !=
+                         ( this->hasEdge ( (*it)->name(), (*it1)->name() ) )   )
+                        symmetricAdjacencyMatrix = false;
+                }
             }
         }
         sumDC+=DC;
@@ -2565,7 +2584,9 @@ void Graph::writeCentralityDegree ( const QString fileName,
         return;
     }
     QTextStream outText ( &file );
-
+    qDebug()<< "Graph:: writeCentralityDegree() considerWeights "
+            << considerWeights
+               << " dropIsolates " <<dropIsolates;
     centralityDegree(considerWeights, dropIsolates);
 
     float maximumIndexValue=vertices()-1.0;
@@ -2731,8 +2752,10 @@ void Graph::centralityClosenessInfluenceRange(){
 
 //Writes the closeness centralities to a file
 void Graph::writeCentralityCloseness(
-        const QString fileName, const bool considerWeights,
-        const bool inverseWeights) {
+        const QString fileName,
+        const bool considerWeights,
+        const bool inverseWeights,
+        const bool dropIsolates) {
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
@@ -2743,7 +2766,8 @@ void Graph::writeCentralityCloseness(
 
     if (graphModified || !calculatedCentralities ) {
             emit statusMessage ( (tr("Calculating shortest paths")) );
-            createDistanceMatrix(true, considerWeights, inverseWeights);
+            createDistanceMatrix(true, considerWeights,
+                                 inverseWeights, dropIsolates);
     }
     else {
         qDebug() << " graph not modified, and centralities calculated. Returning";
@@ -2760,7 +2784,8 @@ void Graph::writeCentralityCloseness(
                   "is central if it can quickly interact with all others\n");
 
     outText << tr("CC' is the standardized CC (multiplied by N-1 minus isolates).")<<"\n";
-    outText << tr("Note: In not strongly connected graphs or digraphs, "
+    outText << tr("Note: Isolate nodes are dropped by default. "
+                  "In not strongly connected graphs or digraphs, "
                   "the ordinary CC is undefined. In that case, use "
                   "the Influence Range Closeness Centrality index.\n");
 
@@ -2816,8 +2841,10 @@ void Graph::writeCentralityCloseness(
 //Writes the "improved" closeness centrality indices to a file
 void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
                                                    const bool considerWeights,
-                                                   const bool inverseWeights)
+                                                   const bool inverseWeights,
+                                                   const bool dropIsolates)
 {
+    Q_UNUSED(dropIsolates);
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
@@ -2852,7 +2879,8 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
     outText << "Node"<<"\tIRCC\t\tIRCC'\t\t%IRCC\n";
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        outText << (*it)->name()<<"\t"<<(*it)->IRCC() << "\t\t"<< (*it)->SIRCC() << "\t\t" <<  (100* ((*it)->SIRCC()) )<<endl;
+        outText << (*it)->name()<<"\t"<<(*it)->IRCC() << "\t\t"<<
+                   (*it)->SIRCC() << "\t\t" <<  (100* ((*it)->SIRCC()) )<<endl;
     }
     qDebug ("min %f, max %f", minIRCC, maxIRCC);
     if ( minIRCC == maxIRCC )
@@ -2869,16 +2897,18 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
 
     outText << "\n\n";
     outText << tr("InfluenceRange Closeness Centrality report, \n");
-    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().
+               toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
 }
 
 
 //Writes the betweenness centralities to a file
-void Graph::writeCentralityBetweenness( const QString fileName,
+void Graph::writeCentralityBetweenness(const QString fileName,
                                         const bool considerWeights,
-                                        const bool inverseWeights) {
+                                        const bool inverseWeights,
+                                       const bool dropIsolates) {
      QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
@@ -2890,7 +2920,7 @@ void Graph::writeCentralityBetweenness( const QString fileName,
 
     if (graphModified || !calculatedCentralities ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
-        createDistanceMatrix(true, considerWeights, inverseWeights);
+        createDistanceMatrix(true, considerWeights, inverseWeights, dropIsolates);
     }
     else {
         qDebug() << " graph not modified, and centralities calculated. Returning";
@@ -2956,7 +2986,8 @@ void Graph::writeCentralityBetweenness( const QString fileName,
 //Writes the Stress centralities to a file
 void Graph::writeCentralityStress( const QString fileName,
                                    const bool considerWeights,
-                                   const bool inverseWeights ) {
+                                   const bool inverseWeights,
+                                   const bool dropIsolates) {
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
@@ -2967,7 +2998,7 @@ void Graph::writeCentralityStress( const QString fileName,
 
     if (graphModified || !calculatedCentralities ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
-        createDistanceMatrix(true, considerWeights, inverseWeights);
+        createDistanceMatrix(true, considerWeights, inverseWeights,dropIsolates);
     }
     else {
         qDebug() << " graph not modified, and centralities calculated. Returning";
@@ -3030,9 +3061,10 @@ void Graph::writeCentralityStress( const QString fileName,
 
 
 
-void Graph::writeCentralityEccentricity( const QString fileName,
+void Graph::writeCentralityEccentricity(const QString fileName,
                                          const bool considerWeights,
-                                         const bool inverseWeights) {
+                                         const bool inverseWeights,
+                                        const bool dropIsolates) {
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
@@ -3043,7 +3075,7 @@ void Graph::writeCentralityEccentricity( const QString fileName,
 
     if (graphModified || !calculatedCentralities ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
-        createDistanceMatrix(true, considerWeights, inverseWeights);
+        createDistanceMatrix(true, considerWeights, inverseWeights,dropIsolates);
     }
     else {
         qDebug() << " graph not modified, and centralities calculated. Returning";
@@ -3092,9 +3124,10 @@ void Graph::writeCentralityEccentricity( const QString fileName,
 
 
 
-void Graph::writeCentralityPower( const QString fileName,
+void Graph::writeCentralityPower(const QString fileName,
                                   const bool considerWeights,
-                                  const bool inverseWeights) {
+                                  const bool inverseWeights,
+                                 const bool dropIsolates) {
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
@@ -3105,7 +3138,7 @@ void Graph::writeCentralityPower( const QString fileName,
 
     if (graphModified || !calculatedCentralities ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
-        createDistanceMatrix(true, considerWeights, inverseWeights);
+        createDistanceMatrix(true, considerWeights, inverseWeights, dropIsolates);
     }
     else {
         qDebug() << " graph not modified, and centralities calculated. Returning";
@@ -3905,25 +3938,27 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
                                             double maxRadius,
                                             int prominenceIndex,
                                             const bool considerWeights,
-                                            const bool inverseWeights){
+                                            const bool inverseWeights,
+                                            const bool dropIsolates){
     qDebug() << "Graph::layoutCircularByProminenceIndex - "
                 << "prominenceIndex index = " << prominenceIndex;
     //first calculate centrality indices if needed
 
     if ( prominenceIndex == 1)
-        this->centralityDegree(true);
+        this->centralityDegree(considerWeights, dropIsolates);
     else if ( prominenceIndex == 3 )
         this->centralityClosenessInfluenceRange();
     else if ( prominenceIndex == 8 )
-        this->centralityInformation();
+        this->centralityInformation();  //drops isolates by default
     else if ( prominenceIndex == 9)
-        this->prestigeDegree(true);
+        this->prestigeDegree(true, dropIsolates);
     else if ( prominenceIndex == 10 )
-        this->prestigePageRank();
+        this->prestigePageRank();  // drops isolates by default
     else if ( prominenceIndex == 11 )
         this->prestigeProximity();
     else
-        this->createDistanceMatrix(true, considerWeights, inverseWeights);
+        this->createDistanceMatrix(
+                true, considerWeights, inverseWeights, dropIsolates);
 
     double rad=0;
     double i=0, std=0;
@@ -4136,23 +4171,25 @@ void Graph::layoutCircularRandom(double x0, double y0, double maxRadius){
 void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
                                          int prominenceIndex,
                                          const bool considerWeights,
-                                         const bool inverseWeights){
+                                         const bool inverseWeights,
+                                         const bool dropIsolates){
     qDebug("Graph: layoutLevelCentrality...");
 
     if (prominenceIndex == 1)
-        this->centralityDegree(true);
+        this->centralityDegree(true, dropIsolates);
     else if ( prominenceIndex == 3 )
         this->centralityClosenessInfluenceRange();
     else if ( prominenceIndex == 8 )
         this->centralityInformation();
     else if ( prominenceIndex == 9)
-        this->prestigeDegree(true);
+        this->prestigeDegree(true, dropIsolates);
     else if ( prominenceIndex == 10 )
         this->prestigePageRank();
     else if ( prominenceIndex == 11 )
         this->prestigeProximity();
     else
-        this->createDistanceMatrix(true, considerWeights, inverseWeights);
+        this->createDistanceMatrix(true, considerWeights,
+                                   inverseWeights, dropIsolates);
 
     double i=0, std=0;
     //offset controls how far from the top the central nodes will be
@@ -4285,7 +4322,8 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
  */
 void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
                                                  const bool considerWeights,
-                                                 const bool inverseWeights){
+                                                 const bool inverseWeights,
+                                                 const bool dropIsolates){
     qDebug() << "Graph::layoutVerticesSizeByProminenceIndex - "
                 << "prominenceIndex index = " << prominenceIndex;
     double std=0;
@@ -4297,19 +4335,20 @@ void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
         // do nothing
     }
     else if ( prominenceIndex == 1)
-        this->centralityDegree(true);
+        this->centralityDegree(true, dropIsolates);
     else if ( prominenceIndex == 3 )
         this->centralityClosenessInfluenceRange();
     else if ( prominenceIndex == 8 )
         this->centralityInformation();
     else if ( prominenceIndex == 9)
-        this->prestigeDegree(true);
+        this->prestigeDegree(true, dropIsolates);
     else if ( prominenceIndex == 10 )
         this->prestigePageRank();
     else if ( prominenceIndex == 11 )
         this->prestigeProximity();
     else
-        this->createDistanceMatrix(true, considerWeights, inverseWeights);
+        this->createDistanceMatrix(true, considerWeights,
+                                   inverseWeights, dropIsolates);
     QList<Vertex*>::const_iterator it;
     for  (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         switch (prominenceIndex) {
@@ -4777,7 +4816,7 @@ QList<int> Graph::influenceDomain(int v1){
     In the process, this function creates the InfluenceRange and InfluenceDomain
     of each node.
 */
-void Graph::reachabilityMatrix() {
+void Graph::reachabilityMatrix(const bool dropIsolates) {
     qDebug()<< "Graph::reachabilityMatrix()";
 
     if (reachabilityMatrixCreated && !graphModified) {
@@ -4787,7 +4826,7 @@ void Graph::reachabilityMatrix() {
     }
     else {
         int size = vertices(), i=0, j=0;
-        createDistanceMatrix(false);
+        createDistanceMatrix(false, false,false, dropIsolates);
         XRM.zeroMatrix(size);
         qDebug()<< "Graph::reachabilityMatrix() - calculating XRM..." ;
         influenceRanges.clear();

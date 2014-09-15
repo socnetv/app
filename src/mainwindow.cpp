@@ -5540,7 +5540,8 @@ void MainWindow::slotLayoutNodeSizesByOutDegree(bool checked){
 
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
-        activeGraph.layoutVerticesSizeByProminenceIndex(0, false, false);
+        activeGraph.layoutVerticesSizeByProminenceIndex(
+                    0, false, false, false);
 
         QApplication::restoreOverrideCursor();
         return;
@@ -5556,9 +5557,9 @@ void MainWindow::slotLayoutNodeSizesByOutDegree(bool checked){
     statusMessage( tr("Embedding node size model on the network.... ")  );
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
-    activeGraph.layoutVerticesSizeByProminenceIndex(1,
-                                                    considerWeights,
-                                                    inverseWeights);
+    activeGraph.layoutVerticesSizeByProminenceIndex(
+                1,considerWeights,inverseWeights,
+                filterIsolateNodesAct->isChecked());
 
     QApplication::restoreOverrideCursor( );
 }
@@ -5587,7 +5588,8 @@ void MainWindow::slotLayoutNodeSizesByInDegree(bool checked){
 
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
-        activeGraph.layoutVerticesSizeByProminenceIndex(0, false,false);
+        activeGraph.layoutVerticesSizeByProminenceIndex(
+                    0, false,false, false);
 
         QApplication::restoreOverrideCursor();
         return;
@@ -5603,9 +5605,9 @@ void MainWindow::slotLayoutNodeSizesByInDegree(bool checked){
     statusMessage( tr("Embedding node size model on the network.... ")  );
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
-    activeGraph.layoutVerticesSizeByProminenceIndex(9,
-                                                    considerWeights,
-                                                    inverseWeights);
+    activeGraph.layoutVerticesSizeByProminenceIndex(
+                9, considerWeights, inverseWeights,
+                filterIsolateNodesAct->isChecked());
 
     QApplication::restoreOverrideCursor( );
 
@@ -5685,6 +5687,7 @@ void MainWindow::slotLayoutCircularByProminenceIndex(){
         userChoice=11;
 
     //check if CC was selected and the graph is disconnected.
+    bool dropIsolates=false;
     if (userChoice == 2 ) {
         int connectedness=activeGraph.connectedness();
         switch ( connectedness ) {
@@ -5724,6 +5727,24 @@ void MainWindow::slotLayoutCircularByProminenceIndex(){
                                       "Read more in the SocNetV manual."
                                       ), "OK",0);
             return;
+            break;
+        case -2:
+            QMessageBox::information(this,
+                                  "Closeness Centrality",
+                                  tr(
+                                     "Undirected graph has isolate nodes!\n"
+                                     "Since this network has isolate nodes, "
+                                     "I will drop them from calculations"
+                                      "otherwise Closeness Centrality "
+                                     "index can not be defined, because d(u,v) will be "
+                                     "infinite for any isolate node u or v.\n"
+                                     "You can conside using the slightly different "
+                                     "but improved Influence Range Closeness index "
+                                     "which considers how proximate is each node "
+                                     "to the nodes in its influence range.\n"
+                                      "Read more in the SocNetV manual."
+                                     ), "OK",0);
+            dropIsolates=true;
             break;
         default:
             QMessageBox::critical(this, "Connectedness", "Something went wrong!.", "OK",0);
@@ -5765,8 +5786,10 @@ void MainWindow::slotLayoutCircularByProminenceIndex(){
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
     graphicsWidget->clearGuides();
     createProgressBar();
-    activeGraph.layoutCircularByProminenceIndex(x0, y0, maxRadius,userChoice,
-                                                considerWeights, inverseWeights);
+    activeGraph.layoutCircularByProminenceIndex(
+                x0, y0, maxRadius,userChoice,
+                considerWeights, inverseWeights,
+                filterIsolateNodesAct->isChecked()|| dropIsolates);
     destroyProgressBar();
     statusMessage( tr("Nodes in inner circles have greater prominence index.") );
 }
@@ -5819,6 +5842,7 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
              << "prominenceIndexName " << prominenceIndexName
                 << " userChoice " << userChoice;
 
+    bool dropIsolates=false;
     //check if CC was selected and the graph is disconnected.
     if (userChoice == 2 ) {
         int connectedness=activeGraph.connectedness();
@@ -5860,6 +5884,24 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
                                       ), "OK",0);
             return;
             break;
+        case -2:
+            QMessageBox::information(this,
+                                  "Closeness Centrality",
+                                  tr(
+                                     "Undirected graph has isolate nodes!\n"
+                                     "Since this network has isolate nodes, "
+                                     "I will drop them from calculations "
+                                      "otherwise Closeness Centrality "
+                                     "index can not be defined, because d(u,v) will be "
+                                     "infinite for any isolate node u or v.\n"
+                                     "You can conside using the slightly different "
+                                     "but improved Influence Range Closeness index "
+                                     "which considers how proximate is each node "
+                                     "to the nodes in its influence range.\n"
+                                      "Read more in the SocNetV manual."
+                                     ), "OK",0);
+            dropIsolates=true;
+            break;
         default:
             QMessageBox::critical(this, "Connectedness", "Something went wrong!.", "OK",0);
             break;
@@ -5900,8 +5942,10 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
     graphicsWidget->clearGuides();
     createProgressBar();
-    activeGraph.layoutCircularByProminenceIndex(x0, y0, maxRadius, userChoice,
-                                                considerWeights, inverseWeights);
+    activeGraph.layoutCircularByProminenceIndex(
+                x0, y0, maxRadius, userChoice,
+                considerWeights, inverseWeights,
+                filterIsolateNodesAct->isChecked() || dropIsolates);
     destroyProgressBar();
     statusMessage( tr("Nodes in inner circles have greater prominence index.") );
 }
@@ -5956,6 +6000,7 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
                 << " userChoice " << userChoice;
 
     //check if CC was selected and the graph is disconnected.
+    bool dropIsolates=false;
     if (userChoice == 2 ) {
         int connectedness=activeGraph.connectedness();
         switch ( connectedness ) {
@@ -5996,6 +6041,24 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
                                       ), "OK",0);
             return;
             break;
+        case -2:
+            QMessageBox::information(this,
+                                  "Closeness Centrality",
+                                  tr(
+                                     "Undirected graph has isolate nodes!\n"
+                                     "Since this network has isolate nodes, "
+                                     "I will drop them from calculations "
+                                      "otherwise Closeness Centrality "
+                                     "index can not be defined, because d(u,v) will be "
+                                     "infinite for any isolate node u or v.\n"
+                                     "You can conside using the slightly different "
+                                     "but improved Influence Range Closeness index "
+                                     "which considers how proximate is each node "
+                                     "to the nodes in its influence range.\n"
+                                      "Read more in the SocNetV manual."
+                                     ), "OK",0);
+            dropIsolates=true;
+            break;
         default:
             QMessageBox::critical(this, "Connectedness", "Something went wrong!.", "OK",0);
             break;
@@ -6033,8 +6096,9 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
     statusMessage(  QString(tr("Calculating new node sizes. Please wait...")) );
     graphicsWidget->clearGuides();
     createProgressBar();
-    activeGraph.layoutVerticesSizeByProminenceIndex(userChoice, considerWeights,
-                                                    inverseWeights);
+    activeGraph.layoutVerticesSizeByProminenceIndex(
+                userChoice, considerWeights,
+                inverseWeights, filterIsolateNodesAct->isChecked() || dropIsolates);
     destroyProgressBar();
     statusMessage( tr("Bigger nodes have greater prominence index.") );
 }
@@ -6092,6 +6156,7 @@ void MainWindow::slotLayoutLevelByProminenceIndex(){
     else if (menuItemText ==  "Proximity Prestige")
         userChoice=11;
 
+    bool dropIsolates=false;
     //check if CC was selected and the graph is disconnected.
     if (userChoice == 2 ) {
         int connectedness=activeGraph.connectedness();
@@ -6133,6 +6198,24 @@ void MainWindow::slotLayoutLevelByProminenceIndex(){
                                       ), "OK",0);
             return;
             break;
+        case -2:
+            QMessageBox::information(this,
+                                  "Closeness Centrality",
+                                  tr(
+                                     "Undirected graph has isolate nodes!\n"
+                                     "Since this network has isolate nodes, "
+                                     "I will drop them from calculations "
+                                      "otherwise Closeness Centrality "
+                                     "index can not be defined, because d(u,v) will be "
+                                     "infinite for any isolate node u or v.\n"
+                                     "You can conside using the slightly different "
+                                     "but improved Influence Range Closeness index "
+                                     "which considers how proximate is each node "
+                                     "to the nodes in its influence range.\n"
+                                      "Read more in the SocNetV manual."
+                                     ), "OK",0);
+            dropIsolates=true;
+            break;
         default:
             QMessageBox::critical(this, "Connectedness", "Something went wrong!.", "OK",0);
             break;
@@ -6171,8 +6254,10 @@ void MainWindow::slotLayoutLevelByProminenceIndex(){
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
     graphicsWidget->clearGuides();
     createProgressBar();
-    activeGraph.layoutLevelByProminenceIndex(maxWidth, maxHeight, userChoice,
-                                             considerWeights,inverseWeights);
+    activeGraph.layoutLevelByProminenceIndex(
+                maxWidth, maxHeight, userChoice,
+                considerWeights,inverseWeights,
+                filterIsolateNodesAct->isChecked() || dropIsolates);
     destroyProgressBar();
     statusMessage( tr("Nodes in upper levels are more prominent. ") );
     }
@@ -6228,7 +6313,7 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
              << "prominenceIndexName " << prominenceIndexName
               << " userChoice " << userChoice;
 
-
+    bool dropIsolates=false;
     //check if CC was selected and the graph is disconnected.
     if (userChoice == 2 ) {
         int connectedness=activeGraph.connectedness();
@@ -6270,6 +6355,24 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
                                       ), "OK",0);
             return;
             break;
+        case -2:
+            QMessageBox::information(this,
+                                  "Closeness Centrality",
+                                  tr(
+                                     "Undirected graph has isolate nodes!\n"
+                                     "Since this network has isolate nodes, "
+                                     "I will drop them from calculations "
+                                      "otherwise Closeness Centrality "
+                                     "index can not be defined, because d(u,v) will be "
+                                     "infinite for any isolate node u or v.\n"
+                                     "You can conside using the slightly different "
+                                     "but improved Influence Range Closeness index "
+                                     "which considers how proximate is each node "
+                                     "to the nodes in its influence range.\n"
+                                      "Read more in the SocNetV manual."
+                                     ), "OK",0);
+            dropIsolates=true;
+            break;
         default:
             QMessageBox::critical(this, "Connectedness", "Something went wrong!.", "OK",0);
             break;
@@ -6308,8 +6411,10 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
     statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
     graphicsWidget->clearGuides();
     createProgressBar();
-    activeGraph.layoutLevelByProminenceIndex(maxWidth, maxHeight, userChoice,
-                                             considerWeights, inverseWeights);
+    activeGraph.layoutLevelByProminenceIndex(
+                maxWidth, maxHeight, userChoice,
+                considerWeights, inverseWeights,
+                filterIsolateNodesAct->isChecked() || dropIsolates);
     destroyProgressBar();
     statusMessage( tr("Nodes in upper levels are more prominent. ") );
     }
@@ -6724,6 +6829,10 @@ void MainWindow::slotConnectedness(){
     QMessageBox::information(this, "Connectedness", "The graph representing "
                              "the loaded network is disconnected.", "OK",0);
     break;
+    case -2:
+        QMessageBox::information(this, tr("Connectedness"),
+                                 tr("The graph is undirected symmetric, "
+                                    " but it has isolate nodes."), QMessageBox::Ok, 0);
     default:
         QMessageBox::critical(this, "Connectedness", "Something went wrong!.", "OK",0);
         break;
@@ -6988,7 +7097,7 @@ void MainWindow::slotCentralityCloseness(){
         return;
     }
     int connectedness=activeGraph.connectedness();
-
+    bool dropIsolates=false;
     switch ( connectedness ) {
     case 1:
         break;
@@ -7027,6 +7136,24 @@ void MainWindow::slotCentralityCloseness(){
                                  ), "OK",0);
         return;
     break;
+    case -2:
+        QMessageBox::information(this,
+                              "Closeness Centrality",
+                              tr(
+                                 "Undirected graph has isolate nodes!\n"
+                                 "Since this network has isolate nodes, "
+                                 "I will drop them from calculations "
+                                  "otherwise Closeness Centrality "
+                                 "index can not be defined, because d(u,v) will be "
+                                 "infinite for any isolate node u or v.\n"
+                                 "You can conside using the slightly different "
+                                 "but improved Influence Range Closeness index "
+                                 "which considers how proximate is each node "
+                                 "to the nodes in its influence range.\n"
+                                  "Read more in the SocNetV manual."
+                                 ), "OK",0);
+        dropIsolates=true;
+    break;
     default:
         QMessageBox::critical(this, "Connectedness", "Something went wrong!.", "OK",0);
         break;
@@ -7040,7 +7167,8 @@ void MainWindow::slotCentralityCloseness(){
     createProgressBar();
 
     activeGraph.writeCentralityCloseness(
-                fn, considerWeights, inverseWeights);
+                fn, considerWeights, inverseWeights,
+                filterIsolateNodesAct->isChecked() || dropIsolates);
 
     destroyProgressBar();
 
@@ -7077,7 +7205,8 @@ void MainWindow::slotCentralityClosenessInfluenceRange(){
     createProgressBar();
 
     activeGraph.writeCentralityClosenessInfluenceRange(
-                fn, considerWeights,inverseWeights);
+                fn, considerWeights,inverseWeights,
+                filterIsolateNodesAct->isChecked());
 
     destroyProgressBar();
 
@@ -7112,7 +7241,8 @@ void MainWindow::slotCentralityBetweenness(){
     statusMessage(  QString(tr(" Please wait...")));
     createProgressBar();
     activeGraph.writeCentralityBetweenness(
-                fn, considerWeights, inverseWeights);
+                fn, considerWeights, inverseWeights,
+                filterIsolateNodesAct->isChecked());
     destroyProgressBar();
 
     statusMessage( QString(tr(" displaying file...")));
@@ -7283,7 +7413,8 @@ void MainWindow::slotCentralityInformation(){
     statusMessage(  QString(tr(" Please wait...")));
 
     createProgressBar();
-    activeGraph.writeCentralityInformation(fn,true, true);
+    activeGraph.writeCentralityInformation(fn,true, true,
+                                           filterIsolateNodesAct->isChecked());
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);
@@ -7314,7 +7445,9 @@ void MainWindow::slotCentralityStress(){
 
     statusMessage(  QString(tr(" Please wait...")));
     createProgressBar();
-    activeGraph.writeCentralityStress(fn, considerWeights, inverseWeights);
+    activeGraph.writeCentralityStress(
+                fn, considerWeights, inverseWeights,
+                filterIsolateNodesAct->isChecked());
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
@@ -7345,7 +7478,9 @@ void MainWindow::slotCentralityPower(){
 
     statusMessage(  QString(tr(" Please wait...")));
     createProgressBar();
-    activeGraph.writeCentralityPower(fn, considerWeights, inverseWeights);
+    activeGraph.writeCentralityPower(
+                fn, considerWeights, inverseWeights,
+                filterIsolateNodesAct->isChecked());
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
@@ -7374,7 +7509,9 @@ void MainWindow::slotCentralityEccentricity(){
 
     statusMessage(  QString(tr(" Please wait...")));
     createProgressBar();
-    activeGraph.writeCentralityEccentricity(fn, considerWeights, inverseWeights);
+    activeGraph.writeCentralityEccentricity(
+                fn, considerWeights, inverseWeights,
+                filterIsolateNodesAct->isChecked());
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW

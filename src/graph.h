@@ -230,7 +230,7 @@ public:
 
     void updateVertCoords(int v, int x, int y);
 
-    int vertices() ;
+    int vertices(const bool dropIsolates=false) ;
 
     int outboundEdges (int i) ;
     int inboundEdges (int i) ;
@@ -286,32 +286,37 @@ public:
 
  //   friend QTextStream& operator <<  (QTextStream& os, Graph& m);
 
-    void writeCentralityDegree(const QString, const bool weights,
+    void writeCentralityDegree(const QString,
+                               const bool weights,
                                const bool dropIsolates);
     void writeCentralityCloseness(const QString,
                                   const bool weights,
-                                  const bool inverseWeights);
+                                  const bool inverseWeights,
+                                  const bool dropIsolates);
     void writeCentralityClosenessInfluenceRange(const QString,
                                                 const bool weights,
-                                                const bool inverseWeights);
+                                                const bool inverseWeights,
+                                                const bool dropIsolates);
     void writeCentralityBetweenness(const QString,
                                     const bool weights,
-                                    const bool inverseWeights);
-    void writeCentralityGraph(const QString,
-                              const bool weights,
-                              const bool inverseWeights);
+                                    const bool inverseWeights,
+                                    const bool dropIsolates);
     void writeCentralityPower(const QString,
                               const bool weigths,
-                              const bool inverseWeights);
+                              const bool inverseWeights,
+                              const bool dropIsolates);
     void writeCentralityStress(const QString,
                                const bool weigths,
-                               const bool inverseWeights);
+                               const bool inverseWeights,
+                               const bool dropIsolates);
     void writeCentralityEccentricity(const QString,
                                      const bool weigths,
-                                     const bool inverseWeights);
+                                     const bool inverseWeights,
+                                     const bool dropIsolates);
     void writeCentralityInformation(const QString,
                                     const bool weigths,
-                                    const bool inverseWeights);
+                                    const bool inverseWeights,
+                                    const bool dropIsolates);
     void writePrestigeDegree(const QString, const bool weights,
                              const bool dropIsolates);
     void writePrestigeProximity(const QString, const bool weights);
@@ -335,9 +340,11 @@ public:
                                const bool inverseWeights);
     int connectedness();
 
-    void createDistanceMatrix(bool centralities=false, bool considerWeights=false,
-                              bool inverseWeights=true);
-    void centralityDegree(bool, bool);
+    void createDistanceMatrix(const bool centralities=false,
+                              const bool considerWeights=false,
+                              const bool inverseWeights=true,
+                              const bool dropIsolates=false);
+    void centralityDegree(const bool weights, const bool dropIsolates);
     void centralityInformation();
     void centralityClosenessInfluenceRange();
 
@@ -353,7 +360,7 @@ public:
     int reachable(int v1, int v2) ;
     QList<int> influenceRange(int v1);
     QList<int> influenceDomain(int v2);
-    void reachabilityMatrix();
+    void reachabilityMatrix(const bool dropIsolates=false);
     void writeReachabilityMatrix(QString fn, QString netName);
 
 
@@ -376,15 +383,18 @@ public:
 
     void layoutCircularByProminenceIndex(double x0, double y0, double maxRadius,
                                          int type, const bool considerWeights,
-                                         const bool inverseWeights);
+                                         const bool inverseWeights,
+                                         const bool dropIsolates);
 
     void layoutLevelByProminenceIndex(double maxWidth, double maxHeight, int type,
                                       const bool considerWeights,
-                                      const bool inverseWeights);
+                                      const bool inverseWeights,
+                                      const bool dropIsolates);
 
     void layoutVerticesSizeByProminenceIndex(int index,
                                              const bool considerWeights,
-                                             const bool inverseWeights);
+                                             const bool inverseWeights,
+                                             const bool dropIsolates);
 
     void layoutForceDirectedSpringEmbedder(bool dynamicMovement);
 
@@ -451,8 +461,10 @@ private:
     void addEdge (int v1, int v2, float w, QString color, int reciprocal);
 
     /** methods used by createDistanceMatrix()  */
-    void BFS(int, bool);	//Breadth-First Search function
-    void dijkstra(int s,bool centralities=false,bool inverseWeights=false);
+    void BFS(const int s, const bool computeCentralities,
+             const bool dropIsolates);
+    void dijkstra(const int s,const bool computeCentralities,
+                  const bool inverseWeights, const bool dropIsolates);
     void minmax(
                 float C, Vertex *v, float &max, float &min,
                 int &maxNode, int &minNode
