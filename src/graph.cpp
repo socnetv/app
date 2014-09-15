@@ -2541,17 +2541,20 @@ void Graph::centralityDegree(bool weights, bool dropIsolates=false){
         }
         (*it) -> setSDC( SDC );		//Set Standard DC
 
+
         qDebug() << "Graph: vertex " <<  (*it)->name() << " SDC " << (*it)->SDC ();
 
         if ( dropIsolates  ) {
-            if   ( ! (*it)->isIsolated() )
+            if   ( ! (*it)->isIsolated() ) {
                 varianceDC += (DC-meanDC) * (DC-meanDC) ;
                 nom+= (maxDC-DC);
+            }
         }
         else {
             nom+= (maxDC-DC);
             varianceDC += (DC-meanDC) * (DC-meanDC) ;
         }
+
     }
 
     varianceDC=varianceDC/(float) vert;
