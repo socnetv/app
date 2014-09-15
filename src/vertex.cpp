@@ -516,7 +516,7 @@ long int Vertex::localDegree(){
  * @return
  */
 float Vertex::isLinkedTo(long int v2){
-    qDebug()<< "Vertex::isLinkedTo()" ;
+    //qDebug()<< "Vertex::isLinkedTo()" ;
     float m_weight=0;
     bool edgeStatus=false;
     H_edges::iterator it1=m_outLinks.find(v2);
@@ -525,10 +525,10 @@ float Vertex::isLinkedTo(long int v2){
             edgeStatus=it1.value().second.second;
             if ( edgeStatus == true) {
                 m_weight=it1.value().second.first;
-                qDebug()<< "***** Vertex::isLinkedTo() - relation "
-                           << it1.value().first
-                        <<" link "  <<  this->name()
-                        << " -> " << v2 << "exists, weight "<< m_weight;
+//                qDebug()<< "***** Vertex::isLinkedTo() - relation "
+//                           << it1.value().first
+//                        <<" link "  <<  this->name()
+//                        << " -> " << v2 << "exists, weight "<< m_weight;
                 return m_weight;
             }
             else
@@ -541,7 +541,7 @@ float Vertex::isLinkedTo(long int v2){
         }
         ++it1;
     }
-    qDebug()<< "Vertex::isLinkedTo() - INEXISTENT LINK IN RELATION " << m_curRelation;
+   // qDebug()<< "Vertex::isLinkedTo() - INEXISTENT LINK IN RELATION " << m_curRelation;
 	return 0;
 }
 

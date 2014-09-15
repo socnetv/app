@@ -6779,11 +6779,14 @@ void MainWindow::slotEccentricity(){
         return;
     }
     QString fn = dataDir + "socnetv-report-eccentricity.dat";
-    bool considerWeights=true;
+
+    askAboutWeights();
     statusMessage(  QString(tr(" Please wait...")));
 
     createProgressBar();
-    activeGraph.writeEccentricity(fn, considerWeights);
+    activeGraph.writeEccentricity(
+                fn, considerWeights, inverseWeights,
+                filterIsolateNodesAct->isChecked());
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW

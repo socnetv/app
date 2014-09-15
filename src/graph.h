@@ -230,7 +230,7 @@ public:
 
     void updateVertCoords(int v, int x, int y);
 
-    int vertices(const bool dropIsolates=false) ;
+    int vertices(const bool dropIsolates=false, const bool countAll=false) ;
 
     int outboundEdges (int i) ;
     int inboundEdges (int i) ;
@@ -282,7 +282,8 @@ public:
     void writeNumberOfGeodesicsMatrix(const QString fn, const char*,
                                       const bool considerWeights,
                                       const bool inverseWeights);
-    void writeEccentricity(const QString, const bool);
+    void writeEccentricity(const QString, const bool considerWeights,
+                           const bool inverseWeights, const bool dropIsolates);
 
  //   friend QTextStream& operator <<  (QTextStream& os, Graph& m);
 

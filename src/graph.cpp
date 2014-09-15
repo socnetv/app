@@ -632,7 +632,7 @@ void Graph::filterIsolateVertices(bool filterFlag){
 
     QList<Vertex*>::const_iterator it;
     for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( (*it)->isOutLinked() ||  (*it)->isInLinked() ){
+        if ( !(*it)->isIsolated() ){
             continue;
         }
         else {
@@ -933,8 +933,8 @@ void Graph::setEdgeColor(long int s, long int t, QString color){
 /**	Checks if there is an edge from v1 to v2
     Complexity:  O(logN) for index retrieval + O(1) for QList index retrieval + O(logN) for checking edge(v2)
 */
-float Graph::hasEdge (int v1, int v2) {		
-    qDebug() << "Graph::hasEdge() " << v1 << " -> " << v2 << " ? " ;
+float Graph::hasEdge (int v1, int v2) {
+    //qDebug() << "Graph::hasEdge() " << v1 << " -> " << v2 << " ? " ;
     return m_graph[ index[v1] ]->isLinkedTo(v2);
 }
 
@@ -1017,15 +1017,20 @@ int Graph::totalEdges () {
 /**	
     Returns |V| of graph
 */
-int Graph::vertices(const bool dropIsolates) {
+int Graph::vertices(const bool dropIsolates, const bool countAll) {
     qDebug("Graph: vertices()");
     m_totalVertices=0;
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if (dropIsolates && (*it)->isIsolated())
-            continue;
-        if ( (*it)->isEnabled()  )
+        if (countAll) {
             ++m_totalVertices;
+        }
+        else {
+            if (dropIsolates && (*it)->isIsolated())
+                continue;
+            if ( (*it)->isEnabled()  )
+                ++m_totalVertices;
+        }
     }
     return m_totalVertices;
 }
@@ -1313,7 +1318,7 @@ int Graph::distance(const int i, const int j,
                     const bool inverseWeights){
     if ( !distanceMatrixCreated || graphModified ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
-        createDistanceMatrix(false, considerWeights, inverseWeights);
+        createDistanceMatrix(false, considerWeights, inverseWeights, false);
     }
     return DM.item(index[i],index[j]);
 }
@@ -1327,7 +1332,7 @@ int Graph::diameter(const bool considerWeights,
                     const bool inverseWeights){
     if ( !distanceMatrixCreated || graphModified ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
-        createDistanceMatrix(false, considerWeights, inverseWeights);
+        createDistanceMatrix(false, considerWeights, inverseWeights, false);
     }
     return graphDiameter;
 }
@@ -1341,7 +1346,7 @@ float Graph::averageGraphDistance(const bool considerWeights,
                                   const bool inverseWeights){
     if ( !distanceMatrixCreated || graphModified ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
-        createDistanceMatrix(false, considerWeights, inverseWeights);
+        createDistanceMatrix(false, considerWeights, inverseWeights,false);
     }
     return averGraphDistance;
 }
@@ -1359,13 +1364,22 @@ int Graph::connectedness(){
     if (!reachabilityMatrixCreated || graphModified) {
         reachabilityMatrix();
     }
-    if ( (notStronglyConnectedVertices.size() != 0 ) && isolatedVertices == 0 )
-     return 0;
-    else if ( (notStronglyConnectedVertices.size() != 0 ) && isolatedVertices !=0 )
-        return -1;
-    else if (isSymmetric() && isolatedVertices!=0){
-        return -2;
+    if (isSymmetric() ) {
+        if (isolatedVertices!=0 ) {
+             return -2;
+         }
+        return 1; // undirected and connected
     }
+    else {
+        if (isolatedVertices!=0 ) {
+            return 0; //directed disconnected
+        }
+        if (notStronglyConnectedVertices.size() != 0 ) {
+            return -1;  //directed, weakly connected
+        }
+        return 2;  //directed but connected
+    }
+
     return 1;
 }
 
@@ -1379,7 +1393,7 @@ void Graph::writeDistanceMatrix (QString fn, const char* netName,
 
     if ( !distanceMatrixCreated || graphModified ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
-        createDistanceMatrix(false, considerWeights, inverseWeights);
+        createDistanceMatrix(false, considerWeights, inverseWeights, false);
     }
 
     qDebug ("Graph::writeDistanceMatrix() writing to file");
@@ -1413,7 +1427,7 @@ void Graph::writeNumberOfGeodesicsMatrix(const QString fn,
     qDebug ("Graph::writeDistanceMatrix()");
     if ( !distanceMatrixCreated || graphModified ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
-        createDistanceMatrix(false, considerWeights, inverseWeights);
+        createDistanceMatrix(false, considerWeights, inverseWeights, false);
     }
 
     qDebug ("Graph::writeDistanceMatrix() writing to file");
@@ -1440,9 +1454,10 @@ void Graph::writeNumberOfGeodesicsMatrix(const QString fn,
 
 
 void Graph::writeEccentricity(
-        const QString fileName, const bool considerWeights)
+        const QString fileName, const bool considerWeights=false,
+        const bool inverseWeights=false, const bool dropIsolates=false)
 {
-    Q_UNUSED(considerWeights);
+
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
@@ -1452,7 +1467,8 @@ void Graph::writeEccentricity(
     QTextStream outText ( &file );
     if ( !distanceMatrixCreated || graphModified ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
-        createDistanceMatrix(true);
+        createDistanceMatrix(true, considerWeights,
+                             inverseWeights, dropIsolates);
     }
     emit statusMessage ( QString(tr("Writing eccentricity to file:")).arg(fileName) );
 
@@ -1524,6 +1540,7 @@ void Graph::createDistanceMatrix(const bool centralities,
         return;
     }
     //Create a NxN DistanceMatrix. Initialise values to zero.
+    m_totalVertices = vertices(false,true);
     qDebug() << "Graph::createDistanceMatrix() Resizing Matrices to hold "
              << m_totalVertices << " vertices";
     DM.resize(m_totalVertices);
@@ -1531,7 +1548,7 @@ void Graph::createDistanceMatrix(const bool centralities,
 
     int aEdges = totalEdges();
     //drop isolated vertices from calculations (i.e. std C and group C).
-    int aVertices=vertices(dropIsolates);
+    int aVertices=vertices(dropIsolates);  //FIXME FIXME ALTERS m_totalVertices.
 
     symmetricAdjacencyMatrix = isSymmetric();
 
@@ -1547,7 +1564,7 @@ void Graph::createDistanceMatrix(const bool centralities,
         QList<int>::iterator it2;
         int w=0, u=0,s=0, i=0;
         float d_sw=0, d_su=0;
-        float CC=0, BC=0, SC= 0, eccentricity=0, EC=0, PC=0;
+        float CC=0, BC=0, SBC=0, SC= 0, eccentricity=0, EC=0, PC=0;
         float tempVarianceBC=0, tempVarianceSC=0,tempVarianceEC=0;
         float tempVarianceCC=0, tempVariancePC=0;
         int progressCounter=0;
@@ -1759,10 +1776,10 @@ void Graph::createDistanceMatrix(const bool centralities,
                 qDebug("Resolving BC classes...");
                 resolveClasses(BC, discreteBCs, classesBC);
                 qDebug("******************* BC %f maxIndex: %f", BC, maxIndexBC);
-                (*it)->setSBC( BC/maxIndexBC );
-                //Find min & max BC - not using stdBC:  Wasserman & Faust, pp. 191-192
-                sumBC+=BC;
-                minmax( BC, (*it), maxBC, minBC, maxNodeBC, minNodeBC) ;
+                SBC = BC/maxIndexBC;
+                (*it)->setSBC( SBC );
+                sumBC+=SBC;
+                minmax( SBC, (*it), maxBC, minBC, maxNodeBC, minNodeBC) ;
 
                 qDebug()<< "Calculating Std Closeness centrality";
                 CC = (*it)->CC();
@@ -1807,7 +1824,7 @@ void Graph::createDistanceMatrix(const bool centralities,
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
                 if ((*it)->isIsolated())
                     continue;
-                BC=(*it)->BC();
+                SBC=(*it)->SBC();
                 SC=(*it)->SC();
 
                 qDebug()<< "Calculating Std Stress centrality";
@@ -1816,9 +1833,9 @@ void Graph::createDistanceMatrix(const bool centralities,
                 minmax( (*it)->SC(), (*it), maxSC, minSC, maxNodeSC, minNodeSC) ;
 
                 //Calculate the numerator of groupBC according to Freeman's group Betweenness
-                nomBC +=(maxBC - BC );
+                nomBC +=(maxBC - SBC );
                 //calculate BC variance
-                tempVarianceBC = (  (*it)->BC()  -  meanBC  ) ;
+                tempVarianceBC = (  SBC  -  meanBC  ) ;
                 tempVarianceBC *=tempVarianceBC;
                 varianceBC  += tempVarianceBC;
 
@@ -1861,8 +1878,9 @@ void Graph::createDistanceMatrix(const bool centralities,
             denomCC = ( ( aVertices-1.0) * (aVertices-2.0) ) / (2.0 * aVertices -3.0);
             groupCC = nomCC/denomCC;	//Calculate group Closeness centrality
 
-            nomBC*=2.0;
-            denomBC =   (aVertices-1.0) *  (aVertices-1.0) * (aVertices-2.0);
+            //nomBC*=2.0;
+//            denomBC =   (aVertices-1.0) *  (aVertices-1.0) * (aVertices-2.0);
+            denomBC =   (aVertices-1.0) ;  // Wasserman&Faust - formula 5.14
             groupBC=nomBC/denomBC;		//Calculate group Betweenness centrality
 
             denomSC =   (aVertices-1.0); //TOFIX
@@ -1919,9 +1937,9 @@ void Graph::BFS(int s, const bool computeCentralities=false,
 
     Q.push(s);
 
-//    qDebug("BFS: LOOP: While Q not empty ");
+    qDebug("BFS: LOOP: While Q not empty ");
     while ( !Q.empty() ) {
-//        qDebug("BFS: Dequeue: first element of Q is u=%i", Q.front());
+        qDebug("BFS: Dequeue: first element of Q is u=%i", Q.front());
         u=Q.front(); Q.pop();
 
         if ( ! m_graph [ u ]->isEnabled() ) continue ;
@@ -1930,7 +1948,7 @@ void Graph::BFS(int s, const bool computeCentralities=false,
 //            qDebug("BFS: If we are to calculate centralities, we must push u=%i to global stack Stack ", u);
             Stack.push(u);
         }
-//        qDebug() << "BFS: LOOP over every edge (u,w) e E, that is all neighbors w of vertex u";
+        qDebug() << "BFS: LOOP over every edge (u,w) e E, that is all neighbors w of vertex u";
         it1=m_graph [ u ] ->m_outLinks.cbegin();
         while ( it1!=m_graph [ u ] -> m_outLinks.cend() ){
             relation = it1.value().first;
@@ -1946,28 +1964,28 @@ void Graph::BFS(int s, const bool computeCentralities=false,
             target = it1.key();
           //  weight = it1.value().second.first;
             w=index[ target ];
-//            qDebug("BFS: u=%i is connected with node %i of index w=%i. ", u, target, w);
+            qDebug("BFS: u=%i is connected with node %i of index w=%i. ", u, target, w);
 //            qDebug("BFS: Start path discovery");
             if (	DM.item(s, w) == RAND_MAX ) { //if distance (s,w) is infinite, w found for the first time.
-//                qDebug("BFS: first time visiting w=%i. Enqueuing w to the end of Q", w);
+                qDebug("BFS: first time visiting w=%i. Enqueuing w to the end of Q", w);
                 Q.push(w);
-//                qDebug()<<"BFS: First check if distance(s,u) = -1 (aka infinite :)) and set it to zero";
+                qDebug()<<"BFS: First check if distance(s,u) = -1 (aka infinite :)) and set it to zero";
                 dist_u=DM.item(s,u);
                 dist_w = dist_u + 1;
-//                qDebug("BFS: Setting distance of w=%i from s=%i equal to distance(s,u) plus 1. New distance = %i",w,s, dist_w );
+                qDebug("BFS: Setting distance of w=%i from s=%i equal to distance(s,u) plus 1. New distance = %i",w,s, dist_w );
                 DM.setItem(s, w, dist_w);
                 averGraphDistance += dist_w;
                 nonZeroDistancesCounter++;
 
                 if (computeCentralities){
-//                    qDebug()<<"BFS: Calculate PC: store the number of nodes at distance " << dist_w << "from s";
+                    qDebug()<<"BFS: Calculate PC: store the number of nodes at distance " << dist_w << "from s";
                     sizeOfNthOrderNeighborhood.insert(
                                 dist_w,
                                 sizeOfNthOrderNeighborhood.value(dist_w)+1
                                 );
-//                    qDebug()<<"BFS: Calculate CC: the sum of distances (will invert it l8r)";
+                    qDebug()<<"BFS: Calculate CC: the sum of distances (will invert it l8r)";
                     m_graph [s]->setCC (m_graph [s]->CC() + dist_w);
-//                    qDebug()<<"BFS: Calculate Eccentricity: the maximum distance ";
+                    qDebug()<<"BFS: Calculate Eccentricity: the maximum distance ";
                     if (m_graph [s]->eccentricity() < dist_w )
                         m_graph [s]->setEccentricity(dist_w);
 
@@ -1979,16 +1997,16 @@ void Graph::BFS(int s, const bool computeCentralities=false,
                 }
             }
 
-//            qDebug("BFS: Start path counting"); 	//Is edge (u,w) on a shortest path from s to w via u?
+            qDebug("BFS: Start path counting"); 	//Is edge (u,w) on a shortest path from s to w via u?
             if ( DM.item(s,w)==DM.item(s,u)+1) {
                 temp= TM.item(s,w)+TM.item(s,u);
-//                qDebug("BFS: Found a NEW SHORTEST PATH from s=%i to w=%i via u=%i. Setting Sigma(%i, %i) = %i",s, w, u, s, w,temp);
+                qDebug("BFS: Found a NEW SHORTEST PATH from s=%i to w=%i via u=%i. Setting Sigma(%i, %i) = %i",s, w, u, s, w,temp);
                 if (s!=w)
                     TM.setItem(s,w, temp);
                 if (computeCentralities){
-//                    qDebug("BFS/SC: If we are to calculate centralities, we must calculate SC as well");
+                    qDebug("BFS/SC: If we are to calculate centralities, we must calculate SC as well");
                     if ( s!=w && s != u && u!=w ) {
-//                        qDebug() << "BFS: setSC of u="<<u<<" to "<<m_graph[u]->SC()+1;
+                        qDebug() << "BFS: setSC of u="<<u<<" to "<<m_graph[u]->SC()+1;
                         m_graph[u]->setSC(m_graph[u]->SC()+1);
                     }
                     else {
@@ -1996,8 +2014,8 @@ void Graph::BFS(int s, const bool computeCentralities=false,
 //                                 <<s<<" w="<< w << " u="<< u;
                     }
 //                    qDebug() << "BFS/SC: SC is " << m_graph[u]->SC();
-//                    qDebug() << "BFS: appending u="<< u << " to list Ps[w=" << w
-//                             << "] with the predecessors of w on all shortest paths from s ";
+                    qDebug() << "BFS: appending u="<< u << " to list Ps[w=" << w
+                             << "] with the predecessors of w on all shortest paths from s ";
                     m_graph[w]->appendToPs(u);
                 }
             }
@@ -2455,12 +2473,11 @@ void Graph::writeCentralityInformation(const QString fileName,
 
 //Calculates the outDegree centrality of each vertex - diagonal included
 void Graph::centralityDegree(bool weights, bool dropIsolates=false){
-    qDebug("Graph:: centralityDegree()");
+    qDebug("Graph::centralityDegree()");
     if (!graphModified && calculatedDC ) {
         qDebug() << "Graph::centralityDegree() - graph not changed - returning";
         return;
     }
-
     float DC=0, nom=0, denom=0,  SDC=0;
     float weight;
     classesDC=0;
@@ -2471,8 +2488,6 @@ void Graph::centralityDegree(bool weights, bool dropIsolates=false){
     varianceDC=0;
     meanDC=0;
     int vert=vertices(dropIsolates);
-        qDebug() << "Graph::centralityDegree() - dropIsolates " << dropIsolates
-                    << " vertices " << vert;
 
     QList<Vertex*>::const_iterator it, it1;
     H_StrToInt::iterator it2;
@@ -2482,8 +2497,9 @@ void Graph::centralityDegree(bool weights, bool dropIsolates=false){
         if (!(*it)->isIsolated()) {
             for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
                 if ( (weight=this->hasEdge ( (*it)->name(), (*it1)->name() ) ) !=0  )   {
-                    qDebug() << "Graph: vertex " <<  (*it)->name()
-                             << " isLinkedTo = " <<  (*it1)->name();
+//                    qDebug() << "Graph::centralityDegree() - vertex "
+//                             <<  (*it)->name()
+//                             << " isLinkedTo = " <<  (*it1)->name();
                     if (weights)
                         DC+=weight;
                     else
@@ -2498,15 +2514,16 @@ void Graph::centralityDegree(bool weights, bool dropIsolates=false){
         }
         sumDC+=DC;
         (*it) -> setDC ( DC ) ;				//Set OutDegree
-        qDebug() << "Graph: vertex " <<  (*it)->name() << " has DC = " << DC ;
+        qDebug() << "Graph:centralityDegree() - vertex "
+                 <<  (*it)->name() << " has DC = " << DC ;
 
         it2 = discreteDCs.find(QString::number(DC));
         if (it2 == discreteDCs.end() )	{
             classesDC++;
-            qDebug("This is a new DC class");
+           // qDebug("This is a new DC class");
             discreteDCs.insert ( QString::number(DC), classesDC );
         }
-        qDebug("DC classes = %i ", classesDC);
+        //qDebug() << "DC classes =  " << classesDC;
 
         if (maxDC < DC ) {
             maxDC = DC ;
@@ -2524,6 +2541,8 @@ void Graph::centralityDegree(bool weights, bool dropIsolates=false){
 
     meanDC = sumDC / (float) vert;
 
+//    qDebug() << "Graph::centralityDegree() - sumDC  " << sumDC
+//             << " vertices " << vert << " meanDC = sumDC / vert = " << meanDC;
     // Calculate std Out-Degree, Variance and the Degree Centralisation of the whole graph.
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         DC= (*it)->DC();
@@ -2535,8 +2554,8 @@ void Graph::centralityDegree(bool weights, bool dropIsolates=false){
         }
         (*it) -> setSDC( SDC );		//Set Standard DC
 
-
-        qDebug() << "Graph: vertex " <<  (*it)->name() << " SDC " << (*it)->SDC ();
+//        qDebug() << "Graph::centralityDegree() - vertex "
+//                 <<  (*it)->name() << " SDC " << (*it)->SDC ();
 
         if ( dropIsolates  ) {
             if   ( ! (*it)->isIsolated() ) {
@@ -2548,14 +2567,13 @@ void Graph::centralityDegree(bool weights, bool dropIsolates=false){
             nom+= (maxDC-DC);
             varianceDC += (DC-meanDC) * (DC-meanDC) ;
         }
-
     }
 
     varianceDC=varianceDC/(float) vert;
-    qDebug() << "Graph: sumDC = " << sumDC << " meanDC = " << meanDC
-                << " variance = " << varianceDC;
-    if (symmetricAdjacencyMatrix)
+//    qDebug() << "Graph::centralityDegree() - variance = " << varianceDC;
+    if (symmetricAdjacencyMatrix) {
         denom=(vert-1.0)*(vert-2.0);
+    }
     else
         denom=(vert-1.0)*(vert-1.0);
 
@@ -2586,7 +2604,7 @@ void Graph::writeCentralityDegree ( const QString fileName,
                << " dropIsolates " <<dropIsolates;
     centralityDegree(considerWeights, dropIsolates);
 
-    float maximumIndexValue=vertices()-1.0;
+    float maximumIndexValue=vertices(dropIsolates)-1.0;
     outText.setRealNumberPrecision(m_precision);
     outText << tr("DEGREE CENTRALITY (DC)\n");
     outText << tr("In undirected graphs, the DC index is the sum of edges "
@@ -2598,7 +2616,6 @@ void Graph::writeCentralityDegree ( const QString fileName,
     outText << tr("DC' is the standardized DC\n\n");
 
     if (considerWeights){
-        maximumIndexValue=(vertices()-1.0)*maxDC;
         outText << tr("DC  range: 0 < C < undefined (since this is a weighted network)")<<"\n";
     }
     else
@@ -4822,13 +4839,15 @@ void Graph::reachabilityMatrix(const bool dropIsolates) {
         return;
     }
     else {
-        int size = vertices(), i=0, j=0;
+        int size = vertices(false,false), i=0, j=0;
+        isolatedVertices=0;
         createDistanceMatrix(false, false,false, dropIsolates);
         XRM.zeroMatrix(size);
         qDebug()<< "Graph::reachabilityMatrix() - calculating XRM..." ;
         influenceRanges.clear();
         influenceDomains.clear();
         notStronglyConnectedVertices.clear();
+        bool isolateVertex=true;
         for (i=0; i < size ; i++) {
             for (j=i; j < size ; j++) {
                 qDebug()<< "Graph::reachabilityMatrix()  total shortest paths between ("
@@ -4843,6 +4862,7 @@ void Graph::reachabilityMatrix(const bool dropIsolates) {
                     XRM.setItem(i,j,1);
                     influenceRanges.insertMulti(i,j);
                     influenceDomains.insertMulti(j,i);
+                    isolateVertex=false;
                 }
                 else if (i==j) {
                        XRM.setItem(i,j,1);
@@ -4860,6 +4880,7 @@ void Graph::reachabilityMatrix(const bool dropIsolates) {
                     XRM.setItem(j,i,1);
                     influenceDomains.insertMulti(i,j);
                     influenceRanges.insertMulti(j,i);
+                    isolateVertex=false;
                 }
                 else if (i==j) {
                        XRM.setItem(i,j,1);
@@ -4870,6 +4891,9 @@ void Graph::reachabilityMatrix(const bool dropIsolates) {
                 }
             }
             qDebug()<< endl;
+        }
+        if (isolateVertex) {
+            isolatedVertices++;
         }
         reachabilityMatrixCreated=true;
 
