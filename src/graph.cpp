@@ -1919,8 +1919,8 @@ void Graph::createDistanceMatrix(const bool centralities,
             denomBC =   (aVertices-1.0) ;  // Wasserman&Faust - formula 5.14
             groupBC=nomBC/denomBC;		//Calculate group Betweenness centrality
 
-            denomSC =   (aVertices-1.0); //TOFIX
-            groupSC = nomSC/denomSC;	//Calculate group Stress centrality
+//            denomSC = (aVertices-1.0); //TOFIX
+//            groupSC = nomSC/denomSC;	//Calculate group Stress centrality
             calculatedCentralities=true;
         }
     }
@@ -3114,19 +3114,19 @@ void Graph::writeCentralityStress( const QString fileName,
     outText << tr("SC Mean = ") << meanSC<<" \n";
     outText << tr("SC Variance = ") << varianceSC<<" \n";
 
-    if (!considerWeights) {
-        outText << endl<< tr("GROUP STRESS CENTRALISATION (GSC)")<<"\n";
-        outText << tr("GSC = ") <<  groupSC<<"\n\n";
+//    if (!considerWeights) {
+//        outText << endl<< tr("GROUP STRESS CENTRALISATION (GSC)")<<"\n";
+//        outText << tr("GSC = ") <<  groupSC<<"\n\n";
 
-        outText << tr("GSC range: 0 < GSC < 1\n");
-        outText << tr("GSC = 0, when all the nodes have exactly the same stress index.\n");
-        outText << tr("GSC = 1, when one node falls on all other geodesics between "
-                      "all the remaining (N-1) nodes. "
-                      "This is exactly the situation realised by a star graph.\n");
-    }
-    else
-        outText << tr("Because this graph is weighted, we cannot compute Group Centralization\n")
-                << tr("Use variance instead.");
+//        outText << tr("GSC range: 0 < GSC < 1\n");
+//        outText << tr("GSC = 0, when all the nodes have exactly the same stress index.\n");
+//        outText << tr("GSC = 1, when one node falls on all other geodesics between "
+//                      "all the remaining (N-1) nodes. "
+//                      "This is exactly the situation realised by a star graph.\n");
+//    }
+//    else
+//        outText << tr("Because this graph is weighted, we cannot compute Group Centralization\n")
+//                << tr("Use variance instead.");
 
     outText << "\n\n";
     outText << tr("Stress Centrality report, \n");
@@ -4912,7 +4912,8 @@ void Graph::reachabilityMatrix(const bool dropIsolates) {
         disconnectedVertices.clear();
         bool isolateVertex=true;
         for (i=0; i < size ; i++) {
-            for (j=i; j < size ; j++) {
+            for (j=i+1; j < size ; j++) {
+
                 if ( XRM.item(i,j) ==1 ) {
                     qDebug()<< "Graph::reachabilityMatrix() - d("<<i+1<<","
                             <<j+1<<")=" << DM.item(i,j)
