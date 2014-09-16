@@ -4133,7 +4133,7 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
                   << ", y= "<< (*it)->y() << ": C=" << C << ", stdC=" << std
                   << ", maxradius " <<  maxRadius
                   << ", maxC " << maxC << ", C/maxC " << (C/maxC)
-                  << ", *maxRadius " << (C/maxC - 0.06)*maxRadius;
+                  << ", newradius " << (C/maxC - offset)*maxRadius;
         switch (static_cast<int> (ceil(maxC)) ){
         case 0: {
             qDebug("maxC=0.   Using maxHeight");
