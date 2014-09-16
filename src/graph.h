@@ -481,7 +481,9 @@ private:
     QList<int>  triadTypeFreqs; 	//stores triad type frequencies
     QList<int>  m_isolatedVerticesList;
     QHash <int, int> influenceRanges, influenceDomains;
-    QHash <int, int> notStronglyConnectedVertices;
+    QHash <int, int> disconnectedVertices;
+    QHash <int, int> unilaterallyConnectedVertices;
+
 
     Matrix  TM, DM, sumM, invAM, AM, invM;
     Matrix XM, XSM, XRM;

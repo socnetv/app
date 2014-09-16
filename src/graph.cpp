@@ -64,6 +64,8 @@ Graph::Graph() {
     parser.setParent(this);
 
  //   edgesHash.reserve(40000);
+    influenceDomains.reserve(1000);
+    influenceRanges.reserve(1000);
 
     connect (
                 &parser, SIGNAL( addRelation (QString) ),
@@ -881,7 +883,7 @@ QString Graph::edgeColor (long int s, long int t){
 */
 bool Graph::setAllEdgesColor(QString color){
     qDebug()<< "\n\nGraph::setAllEdgesColor()" << color;
-    int target=0, source=0, count=0;
+    int target=0, source=0;
     setInitEdgeColor(color);
     QHash<int,float> *enabledOutLinks = new QHash<int,float>;
     enabledOutLinks->reserve(10000);
@@ -1046,8 +1048,8 @@ QList<int> Graph::verticesIsolated(){
     QList<Vertex*>::const_iterator it;
     m_isolatedVerticesList.clear();
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( ! (*it)->isEnabled() )
-            continue;
+//        if ( ! (*it)->isEnabled() )
+//            continue;
         if ((*it)->isIsolated()) {
             m_isolatedVerticesList << (*it)->name();
             qDebug()<< "Graph::verticesIsolated() - node " << (*it)->name()
@@ -1168,7 +1170,8 @@ void Graph::clear() {
 
 
     m_isolatedVerticesList.clear();
-    notStronglyConnectedVertices.clear();
+    disconnectedVertices.clear();
+    unilaterallyConnectedVertices.clear();
     influenceDomains.clear();
     influenceRanges.clear();
     triadTypeFreqs.clear();
@@ -1355,32 +1358,63 @@ float Graph::averageGraphDistance(const bool considerWeights,
 /**
  * @brief Graph::connectedness()
  * @return int:
- * 1: connected graph or strongly connected digraph
-*  0 => weakly connected digraph
-*  -1 -> disconnected graph/digraph
+
+ * 2: strongly connected digraph (exists path from i to j and vice versa for every i,j)
+ * 1: connected undirected graph
+ * 0: not connected undirected graph no isolates
+ * -1: not connected undirected graph with isolates
+ * -2: unilaterally connected digraph (exists path only from i to j or from j to i, not both)
+ * -3  disconnected digraph (with isolates).
+ * -4  disconnected digraph (there are pairs not connected at all).
  */
-int Graph::connectedness(){
+int Graph::connectedness() {
     qDebug() << "Graph::connectedness() ";
     if (!reachabilityMatrixCreated || graphModified) {
         reachabilityMatrix();
     }
-    if (isSymmetric() ) {
-        if (isolatedVertices!=0 ) {
-             return 0;  // undirected disconnected (has isolates)
-         }
-        return 1; // undirected and connected
+    isolatedVertices=verticesIsolated().count();
+    if ( isSymmetric() ) {
+        qDebug() << "Graph::connectedness() IS SYMMETRIC";
+        if ( disconnectedVertices.size() != 0 ) {
+            if (isolatedVertices!=0 ) {
+                qDebug() << "undirected graph is disconnected  (has isolates)" ;
+                return -1;
+
+            }
+            else
+            {
+                qDebug() << " undirected graph is disconnected (no isolates)";
+                return 0;
+            }
+        }
+        qDebug() << " undirected graph is connected ";
+        return 1;
     }
     else {
-        if (isolatedVertices!=0 ) {
-            return -2; //directed disconnected (has isolates)
+        qDebug() << "Graph::connectedness() NOT SYMMETRIC";
+        if ( disconnectedVertices.size() != 0 ) {
+            if ( unilaterallyConnectedVertices.size() == 0 ) {
+                if (isolatedVertices!=0) {
+                    qDebug() << " directed graph is disconnected (has isolates)";
+                    return -3; // - can be connected directed if we remove isolate nodes
+                }
+            }
+            qDebug () << " directed graph is disconnected (no isolates)";
+            return -4;
         }
-        if (notStronglyConnectedVertices.size() != 0 ) {
-            return -1;  //directed, weakly connected
+        else {
+            if ( unilaterallyConnectedVertices.size() != 0 ) {
+                qDebug () << " directed graph is unilaterally connected";
+                return -2; // (exists path only from i to j or from j to i, not both)
+            }
+            else{
+                qDebug () << " directed graph is connected ";
+                return 2;
+            }
         }
-        return 2;  //directed but connected
-    }
 
-    return 1;
+    }
+    return -666; // for sanity check :P
 }
 
 
@@ -1545,6 +1579,7 @@ void Graph::createDistanceMatrix(const bool centralities,
              << m_totalVertices << " vertices";
     DM.resize(m_totalVertices);
     TM.resize(m_totalVertices);
+    XRM.zeroMatrix(m_totalVertices);
 
     int aEdges = totalEdges();
     //drop isolated vertices from calculations (i.e. std C and group C).
@@ -1665,6 +1700,7 @@ void Graph::createDistanceMatrix(const bool centralities,
                 BFS(s,centralities, dropIsolates );
             else
                 dijkstra(s, centralities, inverseWeights, dropIsolates);
+
 
             qDebug("***** FINISHED PHASE 1 (SSSP) BFS ALGORITHM. Continuing to calculate centralities");
 
@@ -1977,6 +2013,19 @@ void Graph::BFS(int s, const bool computeCentralities=false,
                 averGraphDistance += dist_w;
                 nonZeroDistancesCounter++;
 
+
+                qDebug()<< "Graph::BFS()  - d("
+                        << s <<"," << w
+                        <<")=" << DM.item(s,w)
+                       << " - inserting " << w
+                       << " to inflRange J of " << s
+                       << " - and " << s
+                       << " to inflDomain I of "<< w;
+                XRM.setItem(s,w,1);
+                influenceRanges.insert(s,w);
+                influenceDomains.insert(w,s);
+//                disconnectedVertices
+
                 if (computeCentralities){
                     qDebug()<<"BFS: Calculate PC: store the number of nodes at distance " << dist_w << "from s";
                     sizeOfNthOrderNeighborhood.insert(
@@ -2172,6 +2221,20 @@ void Graph::dijkstra(int s, const bool computeCentralities=false,
                 DM.setItem(s, w, dist_w);
                 averGraphDistance += dist_w;
                 nonZeroDistancesCounter++;
+
+
+                qDebug()<< "Graph::dijkstra()  - d("
+                        << s <<"," << w
+                        <<")=" << DM.item(s,w)
+                       << " - inserting " << w
+                       << " to inflRange J of " << s
+                       << " - and " << s
+                       << " to inflDomain I of "<< w;
+                XRM.setItem(s,w,1);
+                influenceRanges.insert(s,w);
+                influenceDomains.insert(w,s);
+//                disconnectedVertices
+
 
                 if (s!=w) {
                     qDebug()<<"dijkstra: Found NEW SP from s=" << s
@@ -2958,7 +3021,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
         outText <<(*it)->name()<<"\t"<<(*it)->BC()
                << "\t\t"<< (*it)->SBC() << "\t\t"
-               <<  (100* ((*it)->BC()) /  sumBC)<<endl;
+               <<  (100* ((*it)->SBC()) /  sumBC)<<endl;
     }
     if ( minBC ==  maxBC)
         outText << "\n"<< tr("All nodes have the same BC value.\n");
@@ -4827,6 +4890,7 @@ QList<int> Graph::influenceDomain(int v1){
     where the {i,j} element is 1 if the vertices i and j are reachable
     Actually, this just checks the corresponding element of Distance Matrix,
     If d(i,j) is non-zero, then the two nodes are reachable
+
     In the process, this function creates the InfluenceRange and InfluenceDomain
     of each node.
 */
@@ -4839,66 +4903,58 @@ void Graph::reachabilityMatrix(const bool dropIsolates) {
         return;
     }
     else {
-        int size = vertices(false,false), i=0, j=0;
-        isolatedVertices=0;
+
         createDistanceMatrix(false, false,false, dropIsolates);
-        XRM.zeroMatrix(size);
+        int size = vertices(false,false), i=0, j=0;
         qDebug()<< "Graph::reachabilityMatrix() - calculating XRM..." ;
         influenceRanges.clear();
         influenceDomains.clear();
-        notStronglyConnectedVertices.clear();
+        disconnectedVertices.clear();
         bool isolateVertex=true;
         for (i=0; i < size ; i++) {
             for (j=i; j < size ; j++) {
-                qDebug()<< "Graph::reachabilityMatrix()  total shortest paths between ("
-                        << i+1 <<"," << j+1<< ")=" << TM.item(i,j) <<  " ";
-                if ( DM.item(i,j) > 0 && DM.item(i,j)< RAND_MAX) {
-                    qDebug()<< "Graph::reachabilityMatrix()  - d("<<i+1<<","
+                if ( XRM.item(i,j) ==1 ) {
+                    qDebug()<< "Graph::reachabilityMatrix() - d("<<i+1<<","
                             <<j+1<<")=" << DM.item(i,j)
-                            << " - inserting " << j+1
-                            << " to inflRange J of " << i+1
-                            << " - and " << i+1
-                            << " to inflDomain I of "<< j+1 ;
-                    XRM.setItem(i,j,1);
+                           << " - inserting " << j+1
+                           << " to inflRange J of " << i+1
+                           << " - and " << i+1
+                           << " to inflDomain I of "<< j+1 ;
                     influenceRanges.insertMulti(i,j);
                     influenceDomains.insertMulti(j,i);
                     isolateVertex=false;
-                }
-                else if (i==j) {
-                       XRM.setItem(i,j,1);
-                }
-                else {
-                       XRM.setItem(i,j,0);
-                       notStronglyConnectedVertices.insertMulti(i,j);
-                }
-                if ( DM.item(j,i) > 0 && DM.item(j,i)< RAND_MAX ) {
-                    qDebug()<< "Graph::reachabilityMatrix()  - inverse path d("
-                            <<j+1<<","<<i+1<<")="
-                            << DM.item(j,i)
-                            << " - inserting " << j+1 << " to influenceDomain I of " << i+1
-                            << " - and " << i+1 << " to influenceRange J of " << j+1 ;
-                    XRM.setItem(j,i,1);
-                    influenceDomains.insertMulti(i,j);
-                    influenceRanges.insertMulti(j,i);
-                    isolateVertex=false;
-                }
-                else if (i==j) {
-                       XRM.setItem(i,j,1);
+                    if ( XRM.item(j,i) ==1 ) {
+                        qDebug()<< "Graph::reachabilityMatrix() - inverse path d("
+                                <<j+1<<","<<i+1<<")="
+                               << DM.item(j,i)
+                               << " - inserting " << j+1 << " to influenceDomain I of " << i+1
+                               << " - and " << i+1 << " to influenceRange J of " << j+1 ;
+                        influenceDomains.insertMulti(i,j);
+                        influenceRanges.insertMulti(j,i);
+                    }
+                    else {
+                        qDebug()<< "Graph::reachabilityMatrix() - ("
+                                <<i+1<<","<<j+1<<") unilaterallyConnectedVertices";
+                        unilaterallyConnectedVertices.insertMulti(i,j);
+                    }
                 }
                 else {
-                       XRM.setItem(j,i,0);
-                       notStronglyConnectedVertices.insertMulti(j,i);
+                    if ( XRM.item(j,i) == 0 ) {
+                        qDebug()<< "Graph::reachabilityMatrix() - ("
+                                <<j+1<<","<<i+1<<") disConnectedVertices";
+                        disconnectedVertices.insertMulti(i,j);
+                    }
+                    else {
+                        qDebug()<< "Graph::reachabilityMatrix() - ("
+                                <<j+1<<","<<i+1<<") unilaterallyConnectedVertices";
+                        unilaterallyConnectedVertices.insertMulti(j,i);
+                    }
                 }
             }
-            qDebug()<< endl;
         }
-        if (isolateVertex) {
-            isolatedVertices++;
-        }
+
         reachabilityMatrixCreated=true;
-
     }
-
 }
 
 
@@ -9720,7 +9776,5 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 
 Graph::~Graph() {
     clear();
-    index.clear();
-
 }
 
