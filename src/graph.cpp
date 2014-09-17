@@ -1651,6 +1651,7 @@ void Graph::createDistanceMatrix(const bool centralities,
         minNodeEccentricity=0; sumEccentricity=0; discreteEccentricities.clear();
         classesEccentricity=0;
         maxPC=0; minPC=RAND_MAX; maxNodePC=0; minNodePC=0; sumPC=0;
+        float t_sumPC=0, t_sumEC=0, t_sumCC=0, t_sumBC=0, t_sumSC=0;
         discretePCs.clear(); classesPC=0;
         maxEC=0; minEC=RAND_MAX; nomEC=0; denomEC=0; groupEC=0; maxNodeEC=0;
         minNodeEC=0; sumEC=0;
@@ -1732,10 +1733,9 @@ void Graph::createDistanceMatrix(const bool centralities,
                                classesEccentricity ,(*it)->name() );
                 sumEccentricity+=eccentricity;
 
-                //Find min/max Eccentricity centrality
-                minmax( EC, (*it), maxEC, minEC, maxNodeEC, minNodeEC) ;
-                sumEC+=EC;
+                //sum EC -- used later for std
                 resolveClasses(EC, discreteECs, classesEC,(*it)->name() );
+                t_sumEC+=EC;
 
                 i=1; //used in calculating power centrality
                 sizeOfComponent = 1;
@@ -1760,7 +1760,7 @@ void Graph::createDistanceMatrix(const bool centralities,
                     PC = ( 1.0/(sizeOfComponent-1.0) ) * PC;
                 else
                     PC = 0;
-                (*it)->setSPC( PC );		//Set Standardized Power Centrality
+               // (*it)->setSPC( PC );		//Set Standardized Power Centrality
 
                 qDebug() << "Visit all vertices in reverse order of their discovery (from s = " << s
                          << " ) to sum dependencies. Initial Stack size has " << Stack.size();
@@ -1799,11 +1799,32 @@ void Graph::createDistanceMatrix(const bool centralities,
                 }
             }
         }
+
+
+
         if (averGraphDistance!=0)
             averGraphDistance = averGraphDistance / (nonZeroDistancesCounter);
 
         if (centralities) {
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
+
+                // Compute std values for EC and PC
+                SEC = EC/t_sumEC ;
+                (*it)->setSEC( SEC );
+                sumEC+=SEC;
+                minmax( SEC, (*it), maxEC, minEC, maxNodeEC, minNodeEC) ;
+
+                // Compute std values for PC
+                SPC = PC/t_sumPC ;
+                (*it)->setSPC( SPC );
+                sumPC+=SPC;
+                minmax( SEC, (*it), maxPC, minPC, maxNodePC, minNodePC) ;
+                (*it)->setSPC( PC/sumPC );
+
+                //Find min/max Eccentricity centrality
+
+
+
                 if (symmetricAdjacencyMatrix) {
                     qDebug("Betweenness centrality must be divided by two if the graph is undirected");
                     (*it)->setBC ( (*it)->BC()/2.0);
