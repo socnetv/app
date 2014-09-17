@@ -2382,7 +2382,7 @@ void Graph::centralityInformation(){
     isolatedVertices=verticesIsolated().count();
     int i=0, j=0, n=vertices();
     float m_weight=0, weightSum=1, diagonalEntriesSum=0, rowSum=0;
-    float IC=0, SIC=0, sumSIC=0;;
+    float IC=0, SIC=0, t_sumIC=0;
     /* Note: isolated nodes must be dropped from the AM
         Otherwise, the TM might be singular, therefore non-invertible. */
     bool dropIsolates=true;
@@ -2440,20 +2440,14 @@ void Graph::centralityInformation(){
         SIC = IC / t_sumIC ;
         (*it)->setSIC( SIC );
         sumIC+=SIC;
-        if ( SIC > maxIC ) {
-            maxIC = SIC;
-            maxNodeIC=(*it)->name();
-        }
-        if ( SIC < minIC ) {
-            minIC = SIC;
-            minNodeIC=(*it)->name();
-        }
+        resolveClasses(SIC, discreteICs, classesIC);
+        minmax( SIC, (*it), maxIC, minIC, maxNodeIC, minNodeIC) ;
     }
 
     float x=0;
-    meanIC = sumSIC /(float) n ;
+    meanIC = sumIC /(float) n ;
 
-    qDebug() << "sumSIC = " << sumSIC << "  n = " << n << "  meanIC = " << meanIC;
+    qDebug() << "sumSIC = " << sumIC << "  n = " << n << "  meanIC = " << meanIC;
     varianceIC=0;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         x = (  (*it)->SIC()  -  meanIC  ) ;
@@ -2528,7 +2522,8 @@ void Graph::writeCentralityInformation(const QString fileName,
         outText << tr("IC classes = ") << classesIC<<" \n";
     }
     outText << "\n";
-    outText << tr("IC'Mean = ") << meanIC <<  " \n";
+    outText << tr("IC' sum = ") << sumIC <<  " \n";
+    outText << tr("IC' Mean = ") << meanIC <<  " \n";
     outText << tr("IC' Variance = ") << varianceIC <<  " \n";
 
     outText << tr("Variance can be used as Group Information Centralization index. \n");
@@ -2769,7 +2764,7 @@ void Graph::centralityClosenessInfluenceRange(){
      }
     // calculate centralities
     QList<Vertex*>::const_iterator it;
-    float IRCC=0;
+    float IRCC=0,SIRCC=0;
     float Ji=0;
     float t_sumIRCC=0;
     classesIRCC=0;
@@ -2809,6 +2804,7 @@ void Graph::centralityClosenessInfluenceRange(){
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         IRCC = (*it) -> IRCC ( ) ;
         SIRCC = IRCC / t_sumIRCC;
+        (*it) -> setSIRCC ( SIRCC ) ;
         sumIRCC +=SIRCC;
         resolveClasses(SIRCC, discreteIRCCs, classesIRCC);
         minmax( SIRCC, (*it), maxIRCC, minIRCC, maxNodeIRCC, minNodeIRCC) ;
@@ -2821,10 +2817,8 @@ void Graph::centralityClosenessInfluenceRange(){
         maxNodeIRCC=-1;
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        IRCC= (*it) -> IRCC();
-        varianceIRCC += (IRCC-meanIRCC) * (IRCC-meanIRCC) ;
-        (*it) -> setSIRCC ( IRCC / sumIRCC) ;
-
+        SIRCC= (*it) -> SIRCC();
+        varianceIRCC += (SIRCC-meanIRCC) * (SIRCC-meanIRCC) ;
     }
 
     varianceIRCC=varianceIRCC/(float) V;
@@ -3181,7 +3175,8 @@ void Graph::writeCentralityEccentricity(const QString fileName,
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         outText << (*it)->name()<<"\t"<<(*it)->EC() << "\t\t"
-                <<  (100* ((*it)->EC()) /  sumEC)<<endl;
+                   << (*it)->SEC() << "\t\t"
+                <<  (100* ((*it)->SEC()) )<<endl;
     }
     if ( minEC ==  maxEC)
         outText << tr("\nAll nodes have the same EC value.\n");
