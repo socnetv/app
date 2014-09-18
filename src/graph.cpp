@@ -1652,7 +1652,7 @@ void Graph::createDistanceMatrix(const bool centralities,
         float SCC=0, SBC=0, SSC=0, SEC=0, SPC=0;
         float tempVarianceBC=0, tempVarianceSC=0,tempVarianceEC=0;
         float tempVarianceCC=0, tempVariancePC=0;
-        float t_sumPC=0, t_sumEC=0, t_sumSC=0;
+        float t_sumPC=0, t_sumEC=0, t_sumSC=0, t_sumCC;
         discretePCs.clear(); classesPC=0;
         maxEC=0; minEC=RAND_MAX; nomEC=0; denomEC=0; groupEC=0; maxNodeEC=0;
         minNodeEC=0; sumEC=0;
@@ -1707,15 +1707,14 @@ void Graph::createDistanceMatrix(const bool centralities,
             qDebug("***** FINISHED PHASE 1 (SSSP) BFS ALGORITHM. Continuing to calculate centralities");
 
             if (centralities){
-                qDebug() << "Set CC for current source vertex " << (*it)->name()
+                qDebug() << "Set CC for source vertex " << (*it)->name()
                          << "  with index s = " << s ;
                 if ( (*it)->CC() != 0 ) //Closeness centrality must be inverted
                     CC=1.0/(*it)->CC();
-                else CC=0;
-                //Resolve classes CC
-                qDebug("=========Resolving CC classes...");
-                resolveClasses(CC, discreteCCs, classesCC,(*it)->name() );
+                else
+                    CC=0;
                 (*it)->setCC( CC );
+                t_sumCC+=CC;
 
                 //Check eccentricity (max geodesic distance)
                 eccentricity = (*it)->eccentricity();
@@ -1723,8 +1722,12 @@ void Graph::createDistanceMatrix(const bool centralities,
                     //Eccentricity Centrality is the inverted Eccentricity
                     EC=1.0 / eccentricity;
                 }
-                else { EC=0;eccentricity=0;}
+                else {
+                    EC=0;
+                    eccentricity=0;
+                }
                 (*it)->setEC( EC ); //Set Eccentricity Centrality = 0
+                t_sumEC+=EC;  //set temp sum EC -- used later to compute stdCC
 
                 //Find min/max Eccentricity
                 minmax( eccentricity, (*it), maxEccentricity, minEccentricity,
@@ -1733,29 +1736,35 @@ void Graph::createDistanceMatrix(const bool centralities,
                                classesEccentricity ,(*it)->name() );
                 sumEccentricity+=eccentricity;
 
-                //temp sum EC -- used later for std
-                t_sumEC+=EC;
+                qDebug()<< "PHASE 2 (ACCUMULATION): Start back propagation of dependencies." <<
+                       "Set dependency delta[u]=0 on each vertex";
 
                 i=1; //used in calculating power centrality
                 sizeOfComponent = 1;
                 PC=0;
-                qDebug("PHASE 2 (ACCUMULATION): Start back propagation of dependencies."
-                       "Set dependency delta[u]=0 on each vertex");
                 for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
+
                     (*it1)->setDelta(0.0);
                     //Calculate Power Centrality: In = [ 1/(N-1) ] * ( Nd1 + Nd2 * 1/2 + ... + Ndi * 1/i )
                     // where Ndi (sizeOfNthOrderNeighborhood) is the number of nodes at distance i from this node.
+                    //FIXME do we need to check for disabled nodes somewhere?
+                    qDebug() << " sizeOfNthOrderNeighborhood.value("<< i<<")"
+                                << sizeOfNthOrderNeighborhood.value(i);
                     PC += ( 1.0 / (float) i ) * sizeOfNthOrderNeighborhood.value(i);
                     // where N is the sum Nd0 + Nd1 + Nd2 + ... + Ndi, that is the amount of nodes in the same component as the current node
                     sizeOfComponent += sizeOfNthOrderNeighborhood.value(i);
                     i++;
                 }
                 (*it)->setPC( PC );		//Set Power Centrality
-                t_sumPC += PC;
+                t_sumPC += PC;   //add to temp sumPC
                 if ( sizeOfComponent != 1 )
-                    PC = ( 1.0/(sizeOfComponent-1.0) ) * PC;
+                    SPC = ( 1.0/(sizeOfComponent-1.0) ) * PC;
                 else
-                    PC = 0;
+                    SPC = 0;
+
+                (*it)->setSPC( SPC );		//Set std PC
+
+                sumPC += SPC;   //add to sumPC -- used later to compute mean and variance
 
                 qDebug() << "Visit all vertices in reverse order of their discovery (from s = " << s
                          << " ) to sum dependencies. Initial Stack size has " << Stack.size();
@@ -1801,55 +1810,60 @@ void Graph::createDistanceMatrix(const bool centralities,
         if (centralities) {
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
 
-                // Compute std values for EC
+                // Compute std EC, classes and min/maxEC
+                EC=(*it)->EC();
                 SEC = EC/t_sumEC ;
                 (*it)->setSEC( SEC );
                 resolveClasses(SEC, discreteECs, classesEC,(*it)->name() );
                 sumEC+=SEC;
-                //Find min/max std EC centrality
                 minmax( SEC, (*it), maxEC, minEC, maxNodeEC, minNodeEC) ;
 
-                // Compute std values for PC
-                SPC = PC/t_sumPC ;
-                (*it)->setSPC( SPC );
+                // Compute classes and min/maxPC
+
+                SPC = (*it)->SPC(  );
                 resolveClasses(SPC, discretePCs, classesPC,(*it)->name() );
-                sumPC+=SPC;
-                //Find min & max std PC
                 minmax( SPC, (*it), maxPC, minPC, maxNodePC, minNodePC) ;
 
+                // Compute std BC, classes and min/maxBC
                 if (symmetricAdjacencyMatrix) {
                     qDebug("Betweenness centrality must be divided by two if the graph is undirected");
                     (*it)->setBC ( (*it)->BC()/2.0);
                 }
-                // Compute std values for PC
                 BC=(*it)->BC();
                 SBC = BC/maxIndexBC;
                 (*it)->setSBC( SBC );
                 resolveClasses(SBC, discreteBCs, classesBC);
                 sumBC+=SBC;
-                //Find min & max std BC
                 minmax( SBC, (*it), maxBC, minBC, maxNodeBC, minNodeBC) ;
 
-                // Compute std values for CC
+                // Compute std CC, classes and min/maxCC
                 CC = (*it)->CC();
                 SCC = maxIndexCC * CC;
                 (*it)->setSCC (  SCC );
+                resolveClasses(SCC, discreteCCs, classesCC,(*it)->name() );
                 sumCC+=SCC;
-                //Find min & max std CC
                 minmax( SCC, (*it), maxCC, minCC, maxNodeCC, minNodeCC) ;
 
-                qDebug() << "SC OF " <<(*it)->name() << " is "<< (*it)->SC();
+                //prepare to compute stdSC
                 SC=(*it)->SC();
                 if (symmetricAdjacencyMatrix){
-                    qDebug() << "SC OF " <<(*it)->name()
-                             << " must be divided by 2 because the graph is symmetric";
                     (*it)->setSC(SC/2.0);
                     SC=(*it)->SC();
-                    qDebug() << "SC OF " <<(*it)->name() << " now is "<< (*it)->SC();
+                    qDebug() << "SC of " <<(*it)->name()
+                             << "  divided by 2 (because the graph is symmetric) "
+                                << (*it)->SC();
                 }
                 t_sumSC+=SC;
+
+                qDebug() << "vertex " << (*it)->name() << " - "
+                         << " EC: "<< (*it)->EC()
+                         << " CC: "<< (*it)->CC()
+                         << " BC: "<< (*it)->BC()
+                         << " SC: "<< (*it)->SC()
+                         << " PC: "<< (*it)->PC();
             }
 
+            // calculate mean values and prepare to compute variances
             meanBC = sumBC /(float) aVertices ;
             varianceBC=0;
             tempVarianceBC=0;
@@ -1869,33 +1883,34 @@ void Graph::createDistanceMatrix(const bool centralities,
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
                 if ((*it)->isIsolated())
                     continue;
-                SBC=(*it)->SBC();
-                SC=(*it)->SC();
 
-                qDebug()<< "Calculating Std Stress centrality";
+                // Compute std SC, classes and min/maxSC
+                SC=(*it)->SC();
                 SSC=SC/t_sumSC;
                 (*it)->setSSC(SSC);
-                sumSC+=SSC;
                 resolveClasses(SSC, discreteSCs, classesSC);
-                //Find min & max SC
+                sumSC+=SSC;
                 minmax( SSC, (*it), maxSC, minSC, maxNodeSC, minNodeSC) ;
 
-                //Calculate the numerator of groupBC according to Freeman's group Betweenness
+                //Compute numerator of groupBC
+                SBC=(*it)->SBC();
                 nomBC +=(maxBC - SBC );
+
                 //calculate BC variance
                 tempVarianceBC = (  SBC  -  meanBC  ) ;
                 tempVarianceBC *=tempVarianceBC;
                 varianceBC  += tempVarianceBC;
 
-                //Find numerator of groupCC
+                //Compute numerator of groupCC
                 nomCC += maxCC- (*it)->SCC();
+
                 //calculate CC variance
-                tempVarianceCC = (  (*it)->CC()  -  meanCC  ) ;
+                tempVarianceCC = (  (*it)->SCC()  -  meanCC  ) ;
                 tempVarianceCC *=tempVarianceCC;
                 varianceCC  += tempVarianceCC;
 
                 //calculate PC variance
-                tempVariancePC = (  (*it)->PC()  -  meanPC  ) ;
+                tempVariancePC = (  (*it)->SPC()  -  meanPC  ) ;
                 tempVariancePC *=tempVariancePC;
                 variancePC  += tempVariancePC;
 
@@ -1905,28 +1920,25 @@ void Graph::createDistanceMatrix(const bool centralities,
                 varianceEC  += tempVarianceEC;
             }
 
-
-            meanSC = sumSC /(float) aVertices ;
-            varianceSC=0;
-            tempVarianceSC=0;
-
-
+            //compute final variances
             varianceBC  /=  (float) aVertices;
             varianceCC  /=  (float) aVertices;
             variancePC  /=  (float) aVertices;
             varianceEC  /=  (float) aVertices;
 
+            // calculate SC mean value and prepare to compute variance
+            meanSC = sumSC /(float) aVertices ;
+            varianceSC=0;
+            tempVarianceSC=0;
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
                 if ((*it)->isIsolated())
                     continue;
-                //Calculate numerator of groupSC
-                //nomSC +=( maxSC - (*it)->SC() );
-                //calculate SC variance
+
                 tempVarianceSC = (  (*it)->SSC()  -  meanSC  ) ;
                 tempVarianceSC *=tempVarianceSC;
                 varianceSC  += tempVarianceSC;
-
             }
+            //calculate final SC variance
             varianceSC  /=  (float) aVertices;
 
             denomCC = ( ( aVertices-1.0) * (aVertices-2.0) ) / (2.0 * aVertices -3.0);
@@ -1937,8 +1949,6 @@ void Graph::createDistanceMatrix(const bool centralities,
             denomBC =   (aVertices-1.0) ;  // Wasserman&Faust - formula 5.14
             groupBC=nomBC/denomBC;		//Calculate group Betweenness centrality
 
-//            denomSC = (aVertices-1.0); //TOFIX
-//            groupSC = nomSC/denomSC;	//Calculate group Stress centrality
             calculatedCentralities=true;
         }
     }
@@ -2872,7 +2882,7 @@ void Graph::writeCentralityCloseness(
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         outText << (*it)->name()<<"\t"<<(*it)->CC() << "\t\t"
                    << (*it)->SCC() << "\t\t"
-                   <<  (100* ((*it)->CC()) / sumCC)<<endl;
+                   <<  (100* ((*it)->SCC()) / sumCC)<<endl;
     }
     qDebug ("min %f, max %f", minCC, maxCC);
     if ( minCC == maxCC )
@@ -2956,7 +2966,7 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         outText << (*it)->name()<<"\t"<<(*it)->IRCC() << "\t\t"<<
-                   (*it)->SIRCC() << "\t\t" <<  (100* ((*it)->SIRCC()) )<<endl;
+                   (*it)->SIRCC() << "\t\t" <<  (100* ((*it)->SIRCC()) / sumIRCC )<<endl;
     }
     qDebug ("min %f, max %f", minIRCC, maxIRCC);
     if ( minIRCC == maxIRCC )
@@ -3098,7 +3108,7 @@ void Graph::writeCentralityStress( const QString fileName,
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
         outText <<(*it)->name()<<"\t"<<(*it)->SC() << "\t\t"
                << (*it)->SSC() << "\t\t"
-               <<  (100* ((*it)->SC()) /  sumSC)<<endl;
+               <<  (100* ((*it)->SSC()) /  sumSC)<<endl;
     }
 
     if ( minSC ==  maxSC)
@@ -3176,7 +3186,7 @@ void Graph::writeCentralityEccentricity(const QString fileName,
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         outText << (*it)->name()<<"\t"<<(*it)->EC() << "\t\t"
                    << (*it)->SEC() << "\t\t"
-                <<  (100* ((*it)->SEC()) )<<endl;
+                <<  (100* ((*it)->SEC())/ sumEC )<<endl;
     }
     if ( minEC ==  maxEC)
         outText << tr("\nAll nodes have the same EC value.\n");
@@ -3239,7 +3249,7 @@ void Graph::writeCentralityPower(const QString fileName,
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
         outText << (*it)->name()<<"\t"<<(*it)->PC() << "\t\t"
                 << (*it)->SPC() << "\t\t"
-                <<  (100* ((*it)->PC()) /  sumPC)<<endl;
+                <<  (100* ((*it)->SPC()) /  sumPC)<<endl;
     }
     if ( minPC ==  maxPC)
         outText << tr("\nAll nodes have the same PC value.\n");
@@ -3413,7 +3423,7 @@ void Graph::writePrestigeDegree (const QString fileName,
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         outText <<(*it)->name()<<"\t"<<(*it)->DP() << "\t"<< (*it)->SDP()
-               << "\t" <<  (100* ((*it)->DP()) / sumDP)<<endl;
+               << "\t" <<  (100* ((*it)->SDP()) / sumDP)<<endl;
     }
 
     if ( minDP == maxDP )
@@ -3597,7 +3607,7 @@ void Graph::writePrestigeProximity(
         outText << (*it)->name()<<"\t"
                 <<(*it)->PP() << "\t\t"
                << (*it)->SPP() << "\t\t"
-               <<  (100* (*it)->SPP()) <<endl;
+               <<  (100* (*it)->SPP() / sumPP) <<endl;
     }
     qDebug ("min %f, max %f", minPP, maxPP);
     if ( minPP == maxPP )
