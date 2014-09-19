@@ -1615,7 +1615,7 @@ void Graph::createDistanceMatrix(const bool centralities,
 
 
         maxIndexBC=0;
-        maxIndexSC=0;
+        xx=0;
 
         qDebug() << "Graph: createDistanceMatrix() - "
                     " initialising variables for maximum centrality indeces";
@@ -1652,7 +1652,7 @@ void Graph::createDistanceMatrix(const bool centralities,
         float SCC=0, SBC=0, SSC=0, SEC=0, SPC=0;
         float tempVarianceBC=0, tempVarianceSC=0,tempVarianceEC=0;
         float tempVarianceCC=0, tempVariancePC=0;
-        float t_sumPC=0, t_sumEC=0, t_sumSC=0, t_sumCC;
+        float t_sumPC=0, t_sumEC=0, t_sumSC=0;
         discretePCs.clear(); classesPC=0;
         maxEC=0; minEC=RAND_MAX; nomEC=0; denomEC=0; groupEC=0; maxNodeEC=0;
         minNodeEC=0; sumEC=0;
@@ -1679,14 +1679,17 @@ void Graph::createDistanceMatrix(const bool centralities,
 //                continue;
             s=index[(*it)->name()];
             qDebug() << "Source vertex s = " << (*it)->name()
-                     << " of BFS algorithm has index " << s << ". Clearing Stack ...";
+                     << " of BFS algorithm has index " << s
+
+                     << ". Clearing Stack ...";
             if (centralities){
-                qDebug("Empty stack Stack which will return vertices in order of their (non increasing) distance from S ...");
+                qDebug()<< "Empty stack Stack which will return vertices in "
+                           "order of their (non increasing) distance from S ...";
                 //- Complexity linear O(n)
                 while ( !Stack.empty() )
                     Stack.pop();
                 i=0;
-                qDebug("...and for each vertex: empty list Ps of predecessors");
+                qDebug()<< "...and for each vertex: empty list Ps of predecessors";
                 for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1) {
                     (*it1)->clearPs();
                     //initialize all sizeOfNthOrderNeighborhood to zero
@@ -1714,7 +1717,6 @@ void Graph::createDistanceMatrix(const bool centralities,
                 else
                     CC=0;
                 (*it)->setCC( CC );
-                t_sumCC+=CC;
 
                 //Check eccentricity (max geodesic distance)
                 eccentricity = (*it)->eccentricity();
@@ -1820,7 +1822,11 @@ void Graph::createDistanceMatrix(const bool centralities,
                 minmax( SEC, (*it), maxEC, minEC, maxNodeEC, minNodeEC) ;
 
                 // Compute classes and min/maxPC
+<<<<<<< HEAD
                 SPC = (*it)->SPC();  //same as PC
+=======
+                SPC = (*it)->SPC(  );
+>>>>>>> ca6851c1d3e22590dd79d7f140f59b5cbe8559ec
                 resolveClasses(SPC, discretePCs, classesPC,(*it)->name() );
                 minmax( SPC, (*it), maxPC, minPC, maxNodePC, minNodePC) ;
 
@@ -2901,9 +2907,9 @@ void Graph::writeCentralityCloseness(
         outText << tr("Min CC' = ") << minCC <<" (node "<< minNodeCC <<  ")  \n";
         outText << tr("CC classes = ") << classesCC<<" \n\n";
     }
-    outText << tr("CC sum = ") << sumCC<<" \n";
-    outText << tr("CC Mean = ") << meanCC<<" \n";
-    outText << tr("CC Variance = ") << varianceCC<<" \n";
+    outText << tr("CC' sum = ") << sumCC<<" \n";
+    outText << tr("CC' Mean = ") << meanCC<<" \n";
+    outText << tr("CC' Variance = ") << varianceCC<<" \n";
 
     if (!considerWeights) {
         outText << tr("\nGROUP CLOSENESS CENTRALISATION (GCC)\n\n");
@@ -3044,13 +3050,13 @@ void Graph::writeCentralityBetweenness(const QString fileName,
         outText << "\n"<< tr("All nodes have the same BC value.\n");
     else {
         outText << "\n";
-        outText << tr("Max BC = ") << maxBC <<" (node "<< maxNodeBC  <<  ")  \n";
-        outText << tr("Min BC = ") << minBC <<" (node "<< minNodeBC <<  ")  \n";
+        outText << tr("Max BC' = ") << maxBC <<" (node "<< maxNodeBC  <<  ")  \n";
+        outText << tr("Min BC' = ") << minBC <<" (node "<< minNodeBC <<  ")  \n";
         outText << tr("BC classes = ") << classesBC<<" \n\n";
     }
-    outText << tr("BC sum = ") << sumBC<<" \n";
-    outText << tr("BC Mean = ") << meanBC<<" \n";
-    outText << tr("BC Variance = ") << varianceBC<<" \n";
+    outText << tr("BC' sum = ") << sumBC<<" \n";
+    outText << tr("BC' Mean = ") << meanBC<<" \n";
+    outText << tr("BC' Variance = ") << varianceBC<<" \n";
 
     if (!considerWeights) {
         outText << tr("\nGROUP BETWEENESS CENTRALISATION (GBC)\n\n");
@@ -4151,7 +4157,7 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
                   << ", y= "<< (*it)->y() << ": C=" << C << ", stdC=" << std
                   << ", maxradius " <<  maxRadius
                   << ", maxC " << maxC << ", C/maxC " << (C/maxC)
-                  << ", newradius " << (C/maxC - offset)*maxRadius;
+                  << ", newradius " << (std/maxC - offset)*maxRadius;
         switch (static_cast<int> (ceil(maxC)) ){
         case 0: {
             qDebug("maxC=0.   Using maxHeight");
@@ -4159,7 +4165,7 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
             break;
         }
         default: {
-            new_radius=(maxRadius- (C/maxC - offset)*maxRadius);
+            new_radius=(maxRadius- (std/maxC - offset)*maxRadius);
             break;
         }
         };
@@ -4380,8 +4386,8 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
                 << ", maxC "<<	maxC << ", maxWidth " << maxWidth
                 <<" , maxHeight "<<maxHeight;
         //Calculate new position
-        qDebug ("C/maxC %f, *maxHeight %f, +maxHeight %f "
-                , C/maxC, (C/maxC)*maxHeight, maxHeight-(C/maxC)*maxHeight );
+        qDebug ("std %f, maxHeight-(std)*maxHeight = %f "
+                , std, maxHeight-(std)*maxHeight );
         switch ( static_cast<int> (ceil(maxC)) ){
         case 0: {
             qDebug("maxC=0.   Using maxHeight");
@@ -4389,7 +4395,7 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
             break;
         }
         default: {
-            new_y=offset/2.0+maxHeight-(C/maxC)*maxHeight;
+            new_y=offset/2.0+maxHeight-(std)*maxHeight;
             break;
         }
         };
@@ -4397,7 +4403,8 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
         qDebug ("new_x %f, new_y %f", new_x, new_y);
         (*it)->setX( new_x );
         (*it)->setY( new_y );
-        qDebug("Finished Calculation. Vertice will move to x=%f and y=%f ",new_x, new_y);
+        qDebug() << "Finished Calculation. "
+                    "Vertice will move to x="<< new_x << " and y= " << new_y;
         //Move node to new position
         emit moveNode((*it)->name(),  new_x,  new_y);
         i++;
@@ -4543,7 +4550,7 @@ void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
         }
         default: {
             //Calculate new size
-            new_size=ceil ( initVertexSize /2.0  + (float) initVertexSize * (C/maxC));
+            new_size=ceil ( initVertexSize /2.0  + (float) initVertexSize * (std));
             qDebug ()<< "new vertex size "<< new_size << " call setSize()";
             (*it)->setSize(new_size);
             //emit signal to change node size
