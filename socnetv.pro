@@ -89,7 +89,7 @@ win32 {
   QMAKE_CXXFLAGS += -msse -mfpmath=sse -ffast-math  
 }
 unix:!macx{
-  QMAKE_CXXFLAGS += -msse -mfpmath=sse -ffast-math  
+  QMAKE_CXXFLAGS += -ffast-math  
 }
 macx {
   QMAKE_CXXFLAGS += -msse  -ffast-math 
