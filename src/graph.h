@@ -516,7 +516,7 @@ private:
     float minCC, maxCC, nomCC, denomCC, sumCC, groupCC, maxIndexCC;
     float minIRCC, maxIRCC, nomIRCC, denomIRCC, sumIRCC, groupIRCC;
     float minBC, maxBC, nomBC, denomBC, sumBC, groupBC, maxIndexBC;
-    float minPC, maxPC, sumPC, maxIndexPC;
+    float minPC, maxPC, nomPC, denomPC, sumPC, groupPC, maxIndexPC;
     float minSC, maxSC, nomSC, denomSC, sumSC, groupSC, maxIndexSC;
     float minEC, maxEC, nomEC, denomEC, sumEC, groupEC, maxIndexEC;
     float minIC, maxIC, nomIC, denomIC, sumIC, maxIndexIC;

@@ -1755,14 +1755,15 @@ void Graph::createDistanceMatrix(const bool centralities,
                     sizeOfComponent += sizeOfNthOrderNeighborhood.value(i);
                     i++;
                 }
-                (*it)->setPC( PC );		//Set Power Centrality
+
                 t_sumPC += PC;   //add to temp sumPC
                 if ( sizeOfComponent != 1 )
                     SPC = ( 1.0/(sizeOfComponent-1.0) ) * PC;
                 else
                     SPC = 0;
 
-                (*it)->setSPC( SPC );		//Set std PC
+                (*it)->setPC( SPC );	//Power Centrality is stdized already
+                (*it)->setSPC( SPC );	//Set std PC
 
                 sumPC += SPC;   //add to sumPC -- used later to compute mean and variance
 
@@ -1819,8 +1820,7 @@ void Graph::createDistanceMatrix(const bool centralities,
                 minmax( SEC, (*it), maxEC, minEC, maxNodeEC, minNodeEC) ;
 
                 // Compute classes and min/maxPC
-
-                SPC = (*it)->SPC(  );
+                SPC = (*it)->SPC();  //same as PC
                 resolveClasses(SPC, discretePCs, classesPC,(*it)->name() );
                 minmax( SPC, (*it), maxPC, minPC, maxNodePC, minNodePC) ;
 
@@ -1909,6 +1909,10 @@ void Graph::createDistanceMatrix(const bool centralities,
                 tempVarianceCC *=tempVarianceCC;
                 varianceCC  += tempVarianceCC;
 
+                //Compute numerator of groupPC
+                SPC=(*it)->SPC();
+                nomPC +=(maxPC - SPC );
+
                 //calculate PC variance
                 tempVariancePC = (  (*it)->SPC()  -  meanPC  ) ;
                 tempVariancePC *=tempVariancePC;
@@ -1940,6 +1944,10 @@ void Graph::createDistanceMatrix(const bool centralities,
             }
             //calculate final SC variance
             varianceSC  /=  (float) aVertices;
+
+            denomPC = (  (aVertices-2.0) ) / (2.0 );   //only for connected nets
+            //what if the net is disconnected (isolates exist) ?
+            groupPC = nomPC/denomPC;
 
             denomCC = ( ( aVertices-1.0) * (aVertices-2.0) ) / (2.0 * aVertices -3.0);
             groupCC = nomCC/denomCC;	//Calculate group Closeness centrality
