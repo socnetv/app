@@ -7293,9 +7293,13 @@ void MainWindow::slotPrestigeDegree(){
         return;
     }
     if (activeGraph.isSymmetric()) {
-        QMessageBox::critical(this, "Error",tr("Non-directed graph!\nDegree Prestige applies on directed graphs only. Load a digraph, directed network file or create a new network. \nThen ask me to compute it again!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to do..."))  );
-        return;
+        QMessageBox::warning(
+                    this,
+                    "Warning",
+                    tr("Undirected graph!\n"
+                       "Degree Prestige counts inbound edges, therefore is more "
+                       "meaningful on directed graphs."
+                       "For undirected graphs, the DP scores are the same as Degree Centrality..."), "OK",0);
     }
 
     bool considerWeights=false;
