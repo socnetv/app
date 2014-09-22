@@ -461,7 +461,10 @@ The Proximity Prestige index measures how proximate a node v is to the nodes in 
 Apparently, in this metric the proximity of each node v is based on distances to rather than distances from it.
 To put it simply, in PP what matters is how close are all the other nodes to node v.
 <br /><br />
-The algorithm takes the average distance to node v of all nodes in its influence domain, standardizes it by multiplying with (N-1)/I and takes its reciprocal. In essence, the formula SocNetV uses to calculate PP for every node v is the ratio of the fraction of nodes that can reach node v, to the average distance of that nodes to v:</p>
+The algorithm takes the average distance to node v of all nodes in its influence domain, standardizes it
+by multiplying with (N-1)/I and takes its reciprocal (Wasserman & Faust, formula 5.25, p. 204).
+In essence, the formula SocNetV uses to calculate PP for every node v is the ratio
+of the fraction of nodes that can reach node v, to the average distance of that nodes to v:</p>
 <p class="code">
 PP = (I/(N-1))/(sum{d(u,v)}/I)
 </p>
