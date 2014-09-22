@@ -1613,10 +1613,6 @@ void Graph::createDistanceMatrix(const bool centralities,
                  << " outboundEdgesVert "<<  outboundEdgesVert;
         qDebug() << "	aEdges " << aEdges <<  " aVertices " << aVertices;
 
-
-        maxIndexBC=0;
-        xx=0;
-
         qDebug() << "Graph: createDistanceMatrix() - "
                     " initialising variables for maximum centrality indeces";
         if (symmetricAdjacencyMatrix) {
@@ -1822,11 +1818,7 @@ void Graph::createDistanceMatrix(const bool centralities,
                 minmax( SEC, (*it), maxEC, minEC, maxNodeEC, minNodeEC) ;
 
                 // Compute classes and min/maxPC
-<<<<<<< HEAD
                 SPC = (*it)->SPC();  //same as PC
-=======
-                SPC = (*it)->SPC(  );
->>>>>>> ca6851c1d3e22590dd79d7f140f59b5cbe8559ec
                 resolveClasses(SPC, discretePCs, classesPC,(*it)->name() );
                 minmax( SPC, (*it), maxPC, minPC, maxNodePC, minNodePC) ;
 
@@ -2891,12 +2883,12 @@ void Graph::writeCentralityCloseness(
 
     outText << tr("CC  range:  0 < C < ")<<QString::number(1.0/maxIndexCC)<<"\n";
     outText << tr("CC' range:  0 < C'< 1")<<"\n\n";
-    outText << "Node"<<"\tCC\t\tCC'\t\t%CC\n";
+    outText << "Node"<<"\tCC\t\tCC'\t\t%CC'\n";
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         outText << (*it)->name()<<"\t"<<(*it)->CC() << "\t\t"
                    << (*it)->SCC() << "\t\t"
-                   <<  (100* ((*it)->SCC()) / sumCC)<<endl;
+                   <<  (100* ((*it)->SCC()) )<<endl;
     }
     qDebug ("min %f, max %f", minCC, maxCC);
     if ( minCC == maxCC )
@@ -4395,7 +4387,7 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
             break;
         }
         default: {
-            new_y=offset/2.0+maxHeight-(std)*maxHeight;
+            new_y=offset/2.0+maxHeight-(std/maxC)*maxHeight;
             break;
         }
         };
@@ -4538,7 +4530,7 @@ void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
         };
         qDebug () << "Vertex " << (*it)->name()
                   << ": C=" << C << ", stdC=" << std
-                  << ", maxC " << maxC << ", C/maxC " << (C/maxC);
+                  << ", maxC " << maxC << ", std/maxC " << (std/maxC);
 
         switch (static_cast<int> (ceil(maxC) )){
         case 0: {
@@ -4550,6 +4542,7 @@ void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
         }
         default: {
             //Calculate new size
+            // we don't divide std by maxC so that node sizes do appear uniformly
             new_size=ceil ( initVertexSize /2.0  + (float) initVertexSize * (std));
             qDebug ()<< "new vertex size "<< new_size << " call setSize()";
             (*it)->setSize(new_size);
