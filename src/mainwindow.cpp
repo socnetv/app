@@ -5702,7 +5702,7 @@ void MainWindow::slotLayoutCircularByProminenceIndex(){
                                          "Undirected graph has isolate nodes!\n"
                                          "Since this network has isolate nodes, "
                                          "I will drop them from calculations "
-                                         "otherwise the CC index"
+                                         "otherwise the CC index "
                                          "cannot be computed, because d(u,v) will be "
                                          "infinite for any isolate node u or v.\n"
                                          "You can also try the slightly different "
@@ -5721,7 +5721,7 @@ void MainWindow::slotLayoutCircularByProminenceIndex(){
                                      "Directed graph has isolate nodes!\n"
                                          "Since this digraph has isolate nodes, "
                                          "I will drop them from calculations "
-                                         "otherwise the CC index"
+                                         "otherwise the CC index "
                                          "cannot be computed, because d(u,v) will be "
                                          "infinite for any isolate node u or v.\n"
                                          "You can also try the slightly different "
@@ -5858,7 +5858,7 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
                                          "Undirected graph has isolate nodes!\n"
                                          "Since this network has isolate nodes, "
                                          "I will drop them from calculations "
-                                         "otherwise the CC index"
+                                         "otherwise the CC index "
                                          "cannot be computed, because d(u,v) will be "
                                          "infinite for any isolate node u or v.\n"
                                          "You can also try the slightly different "
@@ -6015,7 +6015,7 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
                                          "Undirected graph has isolate nodes!\n"
                                          "Since this network has isolate nodes, "
                                          "I will drop them from calculations "
-                                         "otherwise the CC index"
+                                         "otherwise the CC index "
                                          "cannot be computed, because d(u,v) will be "
                                          "infinite for any isolate node u or v.\n"
                                          "You can also try the slightly different "
@@ -6034,7 +6034,7 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
                                      "Directed graph has isolate nodes!\n"
                                      "Since this digraph has isolate nodes, "
                                          "I will drop them from calculations "
-                                         "otherwise the CC index"
+                                         "otherwise the CC index "
                                          "cannot be computed, because d(u,v) will be "
                                          "infinite for any isolate node u or v.\n"
                                          "You can also try the slightly different "
@@ -6172,7 +6172,7 @@ void MainWindow::slotLayoutLevelByProminenceIndex(){
                                          "Undirected graph has isolate nodes!\n"
                                          "Since this network has isolate nodes, "
                                          "I will drop them from calculations "
-                                         "otherwise the CC index"
+                                         "otherwise the CC index "
                                          "cannot be computed, because d(u,v) will be "
                                          "infinite for any isolate node u or v.\n"
                                          "You can also try the slightly different "
@@ -6191,7 +6191,7 @@ void MainWindow::slotLayoutLevelByProminenceIndex(){
                                      "Directed graph has isolate nodes!\n"
                                      "Since this digraph has isolate nodes, "
                                          "I will drop them from calculations "
-                                         "otherwise the CC index"
+                                         "otherwise the CC index "
                                          "cannot be computed, because d(u,v) will be "
                                          "infinite for any isolate node u or v.\n"
                                          "You can also try the slightly different "
@@ -6329,7 +6329,7 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
                                          "Undirected graph has isolate nodes!\n"
                                          "Since this network has isolate nodes, "
                                          "I will drop them from calculations "
-                                         "otherwise the CC index"
+                                         "otherwise the CC index "
                                          "cannot be computed, because d(u,v) will be "
                                          "infinite for any isolate node u or v.\n"
                                          "You can also try the slightly different "
@@ -6348,7 +6348,7 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
                                      "Directed graph has isolate nodes!\n"
                                      "Since this digraph has isolate nodes, "
                                          "I will drop them from calculations "
-                                         "otherwise the CC index"
+                                         "otherwise the CC index "
                                          "cannot be computed, because d(u,v) will be "
                                          "infinite for any isolate node u or v.\n"
                                          "You can also try the slightly different "
@@ -7134,7 +7134,7 @@ void MainWindow::slotCentralityCloseness(){
                                  "Undirected graph has isolate nodes!\n"
                                  "Since this network has isolate nodes, "
                                  "I will drop them from calculations "
-                                 "otherwise the CC index"
+                                 "otherwise the CC index "
                                  "cannot be computed, because d(u,v) will be "
                                  "infinite for any isolate node u or v.\n"
                                  "You can also try the slightly different "
@@ -7153,7 +7153,7 @@ void MainWindow::slotCentralityCloseness(){
                                  "Directed graph has isolate nodes!\n"
                                  "Since this digraph has isolate nodes, "
                                      "I will drop them from calculations "
-                                     "otherwise the CC index"
+                                     "otherwise the CC index "
                                      "cannot be computed, because d(u,v) will be "
                                      "infinite for any isolate node u or v.\n"
                                      "You can also try the slightly different "
@@ -7298,8 +7298,9 @@ void MainWindow::slotPrestigeDegree(){
                     "Warning",
                     tr("Undirected graph!\n"
                        "Degree Prestige counts inbound edges, therefore is more "
-                       "meaningful on directed graphs."
-                       "For undirected graphs, the DP scores are the same as Degree Centrality..."), "OK",0);
+                       "meaningful on directed graphs.\n"
+                       "For undirected graphs, the DP scores are the same as "
+                       "Degree Centrality..."), "OK",0);
     }
 
     bool considerWeights=false;
@@ -7376,7 +7377,11 @@ void MainWindow::slotPrestigePageRank(){
 */
 void MainWindow::slotPrestigeProximity(){
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        QMessageBox::critical(
+                    this, "Error",
+                    tr("There are no nodes!\n"
+                       "Load a network file or create a new network. \n"
+                       "Then ask me to compute something!"), "OK",0);
 
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
@@ -7408,7 +7413,12 @@ void MainWindow::slotPrestigeProximity(){
 */
 void MainWindow::slotCentralityInformation(){
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        QMessageBox::critical(
+                    this,
+                    "Error",
+                    tr("There are no nodes!\n"
+                       "Load a network file or create a new network. \n"
+                       "Then ask me to compute something!"), "OK",0);
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
     }
@@ -7461,7 +7471,12 @@ void MainWindow::slotCentralityInformation(){
 */
 void MainWindow::slotCentralityStress(){
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        QMessageBox::critical(
+                    this,
+                    "Error",
+                    tr("There are no nodes!\n"
+                       "Load a network file or create a new network. \n"
+                       "Then ask me to compute something!"), "OK",0);
 
         statusMessage(  QString(tr(" Nothing to do! Why don't you try creating something first?"))  );
         return;
