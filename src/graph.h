@@ -265,7 +265,10 @@ public:
     bool isSymmetric();
     void symmetrize();
 
-    void createAdjacencyMatrix(bool,bool, bool);
+    void createAdjacencyMatrix(const bool dropIsolates=false,
+                               const bool considerWeights=true,
+                               const bool inverseWeights=false,
+                               const bool symmetrize=false );
     void invertAdjacencyMatrix();
 
 
@@ -316,11 +319,12 @@ public:
                                      const bool dropIsolates);
     void writeCentralityInformation(const QString,
                                     const bool weigths,
-                                    const bool inverseWeights,
-                                    const bool dropIsolates);
+                                    const bool inverseWeights);
     void writePrestigeDegree(const QString, const bool weights,
                              const bool dropIsolates);
-    void writePrestigeProximity(const QString, const bool weights);
+    void writePrestigeProximity(const QString, const bool weights,
+                                const bool inverseWeights,
+                                const bool dropIsolates);
     void writePrestigePageRank(const QString);
 
 
@@ -346,12 +350,17 @@ public:
                               const bool inverseWeights=true,
                               const bool dropIsolates=false);
     void centralityDegree(const bool weights, const bool dropIsolates);
-    void centralityInformation();
-    void centralityClosenessInfluenceRange();
+    void centralityInformation(const bool considerWeights=false,
+                               const bool inverseWeights=false);
+    void centralityClosenessInfluenceRange(const bool considerWeights=false,
+                                           const bool inverseWeights=false,
+                                           const bool dropIsolates=false);
 
     void prestigeDegree(bool, bool);
     void prestigePageRank();
-    void prestigeProximity();
+    void prestigeProximity(const bool considerWeights=false,
+                           const bool inverseWeights=false,
+                           const bool dropIsolates=false);
 
     /* REACHABILTY AND WALKS */
     int numberOfWalks(int v1, int v2,int length);
@@ -361,8 +370,11 @@ public:
     int reachable(int v1, int v2) ;
     QList<int> influenceRange(int v1);
     QList<int> influenceDomain(int v2);
-    void reachabilityMatrix(const bool dropIsolates=false);
-    void writeReachabilityMatrix(QString fn, QString netName);
+    void reachabilityMatrix(const bool considerWeights=false,
+                            const bool inverseWeights=false,
+                            const bool dropIsolates=false);
+    void writeReachabilityMatrix(QString fn, QString netName,
+                                 const bool dropIsolates=false);
 
 
     float numberOfTriples(int v1);

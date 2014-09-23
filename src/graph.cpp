@@ -1370,7 +1370,7 @@ float Graph::averageGraphDistance(const bool considerWeights,
 int Graph::connectedness() {
     qDebug() << "Graph::connectedness() ";
     if (!reachabilityMatrixCreated || graphModified) {
-        reachabilityMatrix();
+        reachabilityMatrix(false,false,false);
     }
     isolatedVertices=verticesIsolated().count();
     if ( isSymmetric() ) {
@@ -2380,12 +2380,12 @@ void Graph::resolveClasses(float C, H_StrToInt &discreteClasses, int &classes, i
  *  for information centrality to directional data
 */
 
-void Graph::centralityInformation(){
+void Graph::centralityInformation(const bool considerWeights,
+                                  const bool inverseWeights){
     qDebug()<< "Graph:: centralityInformation()";
     if (calculatedIC && !graphModified) {
         return;
     }
-
     discreteICs.clear();
     sumIC=0;
     maxIC=0;
@@ -2402,9 +2402,8 @@ void Graph::centralityInformation(){
     /* Note: isolated nodes must be dropped from the AM
         Otherwise, the TM might be singular, therefore non-invertible. */
     bool dropIsolates=true;
-    bool omitWeights=false;
     bool symmetrize=true;
-    createAdjacencyMatrix(dropIsolates, omitWeights, symmetrize);
+    createAdjacencyMatrix(dropIsolates, considerWeights, inverseWeights, symmetrize);
     n-=isolatedVertices;  //isolatedVertices updated in createAdjacencyMatrix
     qDebug() << "Graph:: centralityInformation() - computing node ICs for total n = " << n;
 
@@ -2484,9 +2483,7 @@ void Graph::centralityInformation(){
 //Writes the information centralities to a file
 void Graph::writeCentralityInformation(const QString fileName,
                                        const bool considerWeights,
-                                       const bool inverseWeights,
-                                       const bool dropIsolates){
-    Q_UNUSED(dropIsolates);
+                                       const bool inverseWeights){
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
@@ -2497,7 +2494,7 @@ void Graph::writeCentralityInformation(const QString fileName,
 
     if (graphModified || !calculatedIC ) {
             emit statusMessage ( (tr("Calculating IC scores...")) );
-            centralityInformation();
+            centralityInformation(considerWeights, inverseWeights);
     }
 
     emit statusMessage ( QString(tr("Writing information centralities to file: "))
@@ -2781,7 +2778,9 @@ void Graph::writeCentralityDegree ( const QString fileName,
  * range and divides it by the average distance of those nodes from v,
  * ignoring nodes that are not reachable from it.
  */
-void Graph::centralityClosenessInfluenceRange(){
+void Graph::centralityClosenessInfluenceRange(const bool considerWeights,
+                                              const bool inverseWeights,
+                                              const bool dropIsolates){
     qDebug()<< "Graph::centralityClosenessImproved()";
     if (!graphModified && calculatedIRCC ) {
         qDebug() << "Graph::centralityClosenessImproved() - "
@@ -2791,7 +2790,7 @@ void Graph::centralityClosenessInfluenceRange(){
      if (!reachabilityMatrixCreated || graphModified) {
          qDebug()<< "Graph::centralityClosenessImproved() - "
                     "call reachabilityMatrix()";
-        reachabilityMatrix();
+        reachabilityMatrix(considerWeights, inverseWeights, dropIsolates);
      }
     // calculate centralities
     QList<Vertex*>::const_iterator it;
@@ -2956,7 +2955,7 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
 
     emit statusMessage ( (tr("calculating IRCC indices")) );
 
-    centralityClosenessInfluenceRange();
+    centralityClosenessInfluenceRange(considerWeights,inverseWeights, dropIsolates);
 
     emit statusMessage ( QString(tr("Writing IR closeness indices to file:")
                          .arg(fileName) ));
@@ -3319,20 +3318,22 @@ void Graph::prestigeDegree(bool weights, bool dropIsolates=false){
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         DP=0;
         qDebug() << "Graph: prestigeDegree() vertex " <<  (*it)->name()  ;
-        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
-            if ( (weight=this->hasEdge ( (*it1)->name(), (*it)->name() ) ) !=0  )   {
-                if (weights)
-                    DP+=weight;
-                else
-                    DP++;
+        if (!(*it)->isIsolated()) {
+            for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
+                if ( (weight=this->hasEdge ( (*it1)->name(), (*it)->name() ) ) !=0  )   {
+                    if (weights)
+                        DP+=weight;
+                    else
+                        DP++;
+                }
+                //check if the matrix is symmetric - we need this below
+                if ( ( this->hasEdge ( (*it1)->name(), (*it)->name() ) )
+                     != ( this->hasEdge ( (*it)->name(), (*it1)->name() ) )   )
+                    symmetricAdjacencyMatrix = false;
             }
-            //check if the matrix is symmetric - we need this below
-            if ( ( this->hasEdge ( (*it1)->name(), (*it)->name() ) )
-                 != ( this->hasEdge ( (*it)->name(), (*it1)->name() ) )   )
-                symmetricAdjacencyMatrix = false;
+            (*it) -> setDP ( DP ) ;		//Set DP
+            t_sumDP += DP;
         }
-        (*it) -> setDP ( DP ) ;		//Set DP
-        t_sumDP += DP;
     }
 
     // Calculate std DP, min,max, mean
@@ -3375,6 +3376,18 @@ void Graph::prestigeDegree(bool weights, bool dropIsolates=false){
     // Calculate Variance and the Degree Prestigation of the whole graph. :)
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         SDP= (*it)->SDP();
+        if ( dropIsolates  ) {
+            if   ( ! (*it)->isIsolated() ) {
+                varianceDC += (SDC-meanDC) * (SDC-meanDC) ;
+                nom+= (maxDC-SDC);
+            }
+        }
+        else {
+            nom+= (maxDC-SDC);
+            varianceDC += (SDC-meanDC) * (SDC-meanDC) ;
+        }
+
+
         nom+= maxDP-SDP;
         varianceDP += (SDP-meanDP) * (SDP-meanDP) ;
 
@@ -3481,7 +3494,9 @@ void Graph::writePrestigeDegree (const QString fileName,
  * Calculates Proximity Prestige of each vertex
  * Also the mean value and the variance of it..
  */
-void Graph::prestigeProximity(const bool considerWeights){
+void Graph::prestigeProximity( const bool considerWeights,
+                               const bool inverseWeights,
+                               const bool dropIsolates){
     qDebug()<< "Graph::prestigeProximity()";
     if (!graphModified && calculatedPP ) {
         qDebug() << "Graph::prestigeProximity() - "
@@ -3491,7 +3506,7 @@ void Graph::prestigeProximity(const bool considerWeights){
     if (!reachabilityMatrixCreated || graphModified) {
         qDebug()<< "Graph::prestigeProximity() - "
                    "call reachabilityMatrix()";
-        reachabilityMatrix();
+        reachabilityMatrix(considerWeights, inverseWeights, dropIsolates);
     }
     // calculate centralities
     QList<Vertex*>::const_iterator it;
@@ -3577,8 +3592,9 @@ void Graph::prestigeProximity(const bool considerWeights){
 
 
 //Writes the proximity prestige indeces to a file
-void Graph::writePrestigeProximity(
-        const QString fileName, const bool considerWeights)
+void Graph::writePrestigeProximity( const QString fileName,
+        const bool considerWeights, const bool inverseWeights,
+                                    const bool dropIsolates)
 {
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
@@ -3589,7 +3605,7 @@ void Graph::writePrestigeProximity(
     QTextStream outText ( &file );
 
     emit statusMessage ( (tr("Calculating prestige proximity indices")) );
-    prestigeProximity(considerWeights);
+    prestigeProximity(considerWeights, inverseWeights, dropIsolates);
     emit statusMessage ( QString(tr("Writing proximity prestige indices to file:"))
                          .arg(fileName) );
     outText.setRealNumberPrecision(m_precision);
@@ -4056,7 +4072,7 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
         }
         else if ( prominenceIndex == 11 ){
             if (graphModified || !calculatedPP )
-                prestigeProximity();
+                prestigeProximity(considerWeights, inverseWeights);
         }
         else{
             if (graphModified || !calculatedCentralities )
@@ -4301,7 +4317,7 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
         }
         else if ( prominenceIndex == 11 ){
             if (graphModified || !calculatedPP )
-                prestigeProximity();
+                prestigeProximity(considerWeights, inverseWeights);
         }
         else{
             if (graphModified || !calculatedCentralities )
@@ -4475,7 +4491,7 @@ void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
     }
     else if ( prominenceIndex == 11 ){
         if (graphModified || !calculatedPP )
-            prestigeProximity();
+            prestigeProximity(considerWeights, inverseWeights);
     }
     else{
         if (graphModified || !calculatedCentralities )
@@ -4812,9 +4828,10 @@ void Graph::createNumberOfWalksMatrix(int length) {
     qDebug()<<"Graph::numberOfWalks() - first create the Adjacency Matrix AM";
 
     bool dropIsolates=false;
-    bool omitWeights=false;
+    bool considerWeights=true;
+    bool inverseWeights=false;
     bool symmetrize=false;
-    createAdjacencyMatrix(dropIsolates, omitWeights, symmetrize);
+    createAdjacencyMatrix(dropIsolates, considerWeights, inverseWeights, symmetrize);
 
     int size = vertices();
     int maxPower = length;
@@ -4953,7 +4970,9 @@ QList<int> Graph::influenceDomain(int v1){
     In the process, this function creates the InfluenceRange and InfluenceDomain
     of each node.
 */
-void Graph::reachabilityMatrix(const bool dropIsolates) {
+void Graph::reachabilityMatrix( const bool considerWeights,
+                                const bool inverseWeights,
+                                const bool dropIsolates) {
     qDebug()<< "Graph::reachabilityMatrix()";
 
     if (reachabilityMatrixCreated && !graphModified) {
@@ -4963,7 +4982,7 @@ void Graph::reachabilityMatrix(const bool dropIsolates) {
     }
     else {
 
-        createDistanceMatrix(false, false,false, dropIsolates);
+        createDistanceMatrix(false, considerWeights,inverseWeights,dropIsolates);
         int size = vertices(false,false), i=0, j=0;
         qDebug()<< "Graph::reachabilityMatrix() - calculating XRM..." ;
         influenceRanges.clear();
@@ -5021,7 +5040,8 @@ void Graph::reachabilityMatrix(const bool dropIsolates) {
 /**
     Writes the reachability matrix X^R of the graph to a file
 */
-void Graph::writeReachabilityMatrix(QString fn, QString netName) {
+void Graph::writeReachabilityMatrix(QString fn, QString netName,
+                                   const bool dropIsolates) {
     qDebug("Graph::writeReachabilityMatrix() ");
 
     QFile file (fn);
@@ -5041,7 +5061,7 @@ void Graph::writeReachabilityMatrix(QString fn, QString netName) {
     out << "If nodes i and j are reachable then XR(i,j)=1 otherwise XR(i,j)=0.\n\n";
 
     if (!reachabilityMatrixCreated || graphModified) {
-        reachabilityMatrix();
+        reachabilityMatrix(false, false, dropIsolates);
     }
 
     out << XRM ;
@@ -9264,7 +9284,10 @@ void Graph::writeAdjacencyMatrix (const QString fn, const char* netName) {
  *  and AM(i,j)=0 if i not connected to j
  *  Used in Graph::centralityInformation() and Graph::invertAdjacencyMatrix()
  */
-void Graph::createAdjacencyMatrix(bool dropIsolates=false, bool omitWeights=false, bool symmetrize=false ){
+void Graph::createAdjacencyMatrix(const bool dropIsolates,
+                                  const bool considerWeights,
+                                  const bool inverseWeights,
+                                  const bool symmetrize ){
     qDebug() << "Graph::createAdjacencyMatrix()";
     float m_weight=-1;
     int i=0, j=0;
@@ -9295,11 +9318,14 @@ void Graph::createAdjacencyMatrix(bool dropIsolates=false, bool omitWeights=fals
                 continue;
             }
             if ( (m_weight = this->hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
-                if (omitWeights) {
+                if (!considerWeights) {
                     AM.setItem(i,j, 1 );
                 }
                 else {
-                    AM.setItem(i,j, m_weight );
+                    if (inverseWeights)
+                        AM.setItem(i,j, 1.0 / m_weight );
+                    else
+                        AM.setItem(i,j, m_weight );
                 }
             }
             else{
@@ -9308,10 +9334,14 @@ void Graph::createAdjacencyMatrix(bool dropIsolates=false, bool omitWeights=fals
             qDebug()<<" AM("<< i+1 << ","<< j+1 << ") = " <<  AM.item(i,j);
             if (i != j ) {
                 if ( (m_weight = this->hasEdge ( (*it1)->name(), (*it)->name() )  ) !=0 ) {
-                    if (omitWeights)
+                    if (!considerWeights)
                         AM.setItem(j,i, 1 );
-                    else
-                        AM.setItem(j,i, m_weight );
+                    else {
+                        if (inverseWeights)
+                            AM.setItem(j,i, 1.0 / m_weight );
+                        else
+                            AM.setItem(j,i, m_weight );
+                    }
                     if (symmetrize && (AM.item(i,j) != AM.item(j,i)) ) {
                         AM.setItem(i,j, AM.item(j,i) );
                     }
@@ -9338,8 +9368,8 @@ void Graph::invertAdjacencyMatrix(){
     qDebug() << "Graph::invertAdjacencyMatrix()";
     qDebug()<<"Graph::invertAdjacencyMatrix() - first create the Adjacency Matrix AM";
     bool dropIsolates=true;
-    bool omitWeights=true;
-    createAdjacencyMatrix(dropIsolates, omitWeights);
+    bool considerWeights=false;
+    createAdjacencyMatrix(dropIsolates, considerWeights);
     invAM.resize(m_totalVertices-isolatedVertices);
     qDebug()<<"Graph::invertAdjacencyMatrix() - invert the Adjacency Matrix AM and store it to invAM";
     invAM.inverseByGaussJordanElimination(AM);
