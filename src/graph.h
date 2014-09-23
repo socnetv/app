@@ -326,7 +326,7 @@ public:
     void writePrestigeProximity(const QString, const bool weights,
                                 const bool inverseWeights,
                                 const bool dropIsolates);
-    void writePrestigePageRank(const QString);
+    void writePrestigePageRank(const QString, const bool Isolates=false);
 
 
     void writeNumberOfCliques(
@@ -350,7 +350,7 @@ public:
                               const bool considerWeights=false,
                               const bool inverseWeights=true,
                               const bool dropIsolates=false);
-    void centralityDegree(const bool weights, const bool dropIsolates);
+    void centralityDegree(const bool weights, const bool dropIsolates=false);
     void centralityInformation(const bool considerWeights=false,
                                const bool inverseWeights=false);
     void centralityClosenessInfluenceRange(const bool considerWeights=false,
@@ -358,7 +358,7 @@ public:
                                            const bool dropIsolates=false);
 
     void prestigeDegree(bool, bool);
-    void prestigePageRank();
+    void prestigePageRank(const bool dropIsolates=false);
     void prestigeProximity(const bool considerWeights=false,
                            const bool inverseWeights=false,
                            const bool dropIsolates=false);
@@ -533,7 +533,7 @@ private:
     float minSC, maxSC, nomSC, denomSC, sumSC, groupSC, maxIndexSC;
     float minEC, maxEC, nomEC, denomEC, sumEC, groupEC, maxIndexEC;
     float minIC, maxIC, nomIC, denomIC, sumIC, maxIndexIC;
-    float minPRP, maxPRP, nomPRC, denomPRC, t_sumPC, sumPRP;
+    float minPRP, maxPRP, nomPRC, denomPRC, t_sumPC, t_sumPRP, sumPRP;
     float minPP, maxPP, nomPP, denomPP, sumPP, groupPP;
     float minCLC, maxCLC, averageCLC, dampingFactor;
     int maxNodeCLC, minNodeCLC;

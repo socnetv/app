@@ -7361,7 +7361,7 @@ void MainWindow::slotPrestigePageRank(){
     statusMessage(  QString(tr(" Please wait...")));
 
     createProgressBar();
-    activeGraph.writePrestigePageRank(fn);
+    activeGraph.writePrestigePageRank(fn, filterIsolateNodesAct->isChecked());
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW

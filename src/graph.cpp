@@ -1641,6 +1641,9 @@ void Graph::createDistanceMatrix(const bool centralities,
         maxSC=0; minSC=RAND_MAX; nomSC=0; denomSC=0; groupSC=0; maxNodeSC=0;
         minNodeSC=0; sumSC=0;
         discreteSCs.clear(); classesSC=0;
+        maxPC=0; minPC=RAND_MAX; nomPC=0; denomPC=0; groupPC=0; maxNodePC=0;
+        minNodePC=0; sumPC=0;t_sumPC=0;
+        discretePCs.clear(); classesPC=0;
         maxEccentricity=0; minEccentricity=RAND_MAX; maxNodeEccentricity=0;
         minNodeEccentricity=0; sumEccentricity=0; discreteEccentricities.clear();
         classesEccentricity=0;
@@ -1650,8 +1653,7 @@ void Graph::createDistanceMatrix(const bool centralities,
         float tempVarianceBC=0, tempVarianceSC=0,tempVarianceEC=0;
         float tempVarianceCC=0, tempVariancePC=0;
         float t_sumSC=0;
-        t_sumPC=0;
-        discretePCs.clear(); classesPC=0;
+
         maxEC=0; minEC=RAND_MAX; nomEC=0; denomEC=0; groupEC=0; maxNodeEC=0;
         minNodeEC=0; sumEC=0;
         discreteECs.clear(); classesEC=0;
@@ -1949,10 +1951,15 @@ void Graph::createDistanceMatrix(const bool centralities,
             varianceSC  /=  (float) aVertices;
 
             denomPC = (  (aVertices-2.0) ) / (2.0 );   //only for connected nets
+            if (aVertices < 3 )
+                 denomPC = aVertices-1.0;
             //what if the net is disconnected (isolates exist) ?
             groupPC = nomPC/denomPC;
 
             denomCC = ( ( aVertices-1.0) * (aVertices-2.0) ) / (2.0 * aVertices -3.0);
+            if (aVertices < 3 )
+                 denomCC = aVertices-1.0;
+
             groupCC = nomCC/denomCC;	//Calculate group Closeness centrality
 
             //nomBC*=2.0;
@@ -2509,16 +2516,12 @@ void Graph::writeCentralityInformation(const QString fileName,
                          .arg(fileName) );
     outText.setRealNumberPrecision(m_precision);
     outText << tr("INFORMATION CENTRALITY (IC)")<<"\n";
-    outText << tr("The IC index measures the information that is contained in "
-                  "the paths passing through each actor.\n");
-    outText << tr("IC' is the standardized IC: IC divided by the sumIC.")<<"\n";
-    outText << tr("The standardized values IC' can be seen as the proportion "
-                  "of total information flow that is controlled by each actor. "
-                  "Note that standard IC' values sum to unity, unlike most "
-                  "other centrality indices.\n"
-                  "Warning: The IC index is always calculated for the symmetrized "
-                  "adjacency even when the current graph is directed. ");
-    outText << "(Wasserman & Faust, p. 196)\n";
+    outText << tr("The IC index measures the information flow through "
+                  "all paths between actors weighted by strength of tie and distance\n");
+    outText << tr("IC' is the standardized IC (IC divided by the sumIC).") <<"\n"
+               << tr ("Warning: To compute this index, SocNetV drops all isolated "
+                      "nodes and symmetrizes (if needed) the adjacency matrix. "
+                      "Read the Manual for more.") << "\n\n";
 
     outText << tr("IC  range:  0 < IC < inf (this index has no max value)") << "\n";
     outText << tr("IC' range:  0 < IC'< 1 (" )<<"\n\n";
@@ -2572,7 +2575,7 @@ void Graph::writeCentralityInformation(const QString fileName,
 
 
 //Calculates the outDegree centrality of each vertex - diagonal included
-void Graph::centralityDegree(bool weights, bool dropIsolates=false){
+void Graph::centralityDegree(const bool weights, const bool dropIsolates){
     qDebug("Graph::centralityDegree()");
     if (!graphModified && calculatedDC ) {
         qDebug() << "Graph::centralityDegree() - graph not changed - returning";
@@ -2690,7 +2693,7 @@ void Graph::centralityDegree(bool weights, bool dropIsolates=false){
 
     if (vert < 3 )
          denom = vert-1.0;
-
+    //    qDebug () << "*** vert is " << vert << " nom " << nom << " denom is " << denom;
     if (!weights) {
         groupDC=nom/denom;
     }
@@ -3307,6 +3310,19 @@ void Graph::writeCentralityPower(const QString fileName,
     outText << tr("PC' Mean = ") << meanPC<<" \n";
     outText << tr("PC' Variance = ") << variancePC<<" \n";
 
+    if (!considerWeights) {
+            outText << endl<<"GROUP POWER CENTRALIZATION (GPC)\n\n";
+            outText << "GPC = " << groupPC<<"\n\n";
+
+            outText << "GPC range: 0 < GPC < 1\n";
+            outText << "GPC = 0, when all in-degrees are equal (i.e. regular lattice).\n";
+            outText << "GPC = 1, when one node is linked to all other nodes (i.e. star).\n";
+    }
+    else {
+        outText << tr("\nBecause the network is weighted, we cannot compute Group Centralization"
+                   "You can use mean or variance instead.\n");
+    }
+
     outText << "\n\n";
     outText << tr("Power Centrality report, \n");
     outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime()
@@ -3422,6 +3438,8 @@ void Graph::prestigeDegree(bool weights, bool dropIsolates=false){
         denom=(vert-1.0)*(vert-1.0);
     if (vert < 3 )
          denom = vert-1.0;
+
+    //qDebug () << "*** vert is " << vert << " nom " << nom << " denom is " << denom;
     if (!weights) {
         groupDP=nom/denom;
         qDebug("Graph: varianceDP = %f, groupDP = %f", varianceDP, groupDP);
@@ -3646,8 +3664,7 @@ void Graph::writePrestigeProximity( const QString fileName,
     outText << tr("PROXIMITY PRESTIGE (PP)\n"
                   "The PP index of a node u is the ratio of the proportion of "
                   "nodes who can reach u to the average distance these nodes are "
-                  "from u. Read the Manual for more.");
-    outText <<"(Wasserman & Faust, formula 5.25, p. 204)\n\n";
+                  "from u. Read the Manual for more.") <<"\n\n";
 
     outText << tr("PP range:  0 < PP < 1 "
             " (PP is a ratio)")<<"\n\n";
@@ -3688,7 +3705,7 @@ void Graph::writePrestigeProximity( const QString fileName,
 
 
 //Calculates the PageRank Prestige of each vertex
-void Graph::prestigePageRank(){
+void Graph::prestigePageRank(const bool dropIsolates){
     qDebug()<< "Graph:: prestigePageRank()";
     if (! graphModified && calculatedPRP ) {
         qDebug() << " graph not changed - return ";
@@ -3696,23 +3713,23 @@ void Graph::prestigePageRank(){
     }
     discretePRPs.clear();
     sumPRP=0;
+    t_sumPRP=0;
     maxPRP=0;
     minPRP=RAND_MAX;
     classesPRP=0;
     variancePRP=0;
-    isolatedVertices = 0 ;
     dampingFactor = 0.85; // The parameter d is a damping factor which can be set between 0 and 1. Google creators set d to 0.85.
 
     float PRP=0, oldPRP = 0;
     float SPRP=0;
     int i = 1; // a counter
     int referrer;
-
     float delta = 0.01; // The delta where we will stop the iterative calculation
     float maxDelta = RAND_MAX;
     float sumPageRanksOfLinkedNodes = 0;  // temporary variable to calculate PR
     float outDegree = 0;
-    bool allNodesAreIsolated = true;
+    float t_variance=0;
+    float aVert =  vertices(dropIsolates) ;
     QList<Vertex*>::const_iterator it;
     int relation=0;
     bool edgeStatus=false;
@@ -3720,6 +3737,14 @@ void Graph::prestigePageRank(){
 
     // begin iteration - continue until we reach our desired delta
     while (maxDelta > delta) {
+        if (aVert ==0 ) {
+            qDebug()<< "Graph:: prestigePageRank() "
+                    << "aVert: " << aVert
+                    << " total vertices " << vertices()
+                    <<" - all vertices are isolated. Break";
+            break;
+        }
+        t_sumPRP=0;
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
             qDebug() << "Graph:: prestigePageRank() - calculating PR for node: "
                      << (*it)->name() ;
@@ -3729,18 +3754,13 @@ void Graph::prestigePageRank(){
                 (*it)->setPRP( 1 - dampingFactor );
                 qDebug() << "Graph:: prestigePageRank() - 1st iteration - node: "
                          << (*it)->name() << " PR = " << (*it)->PRP() ;
-                if ( (*it)->isIsolated() ) {
-                    isolatedVertices++;
-                    qDebug()<< "Graph:: prestigePageRank() vertex: "
-                            << (*it)->name()
-                            << " is isolated. PR will be just 1-d. Continue... ";
-                }
-                else
-                    allNodesAreIsolated = false;
             }
             // In every other iteration we calculate PageRanks.
             else {
                 sumPageRanksOfLinkedNodes = 0;
+                if ( (*it)->isIsolated() ) {
+                    continue;
+                }
                 maxDelta = 0;
                 oldPRP = (*it)->PRP();
                 // take every other node which links to the current node.
@@ -3777,6 +3797,7 @@ void Graph::prestigePageRank(){
                 PRP = (1-dampingFactor) + dampingFactor * sumPageRanksOfLinkedNodes;
                 // store new PageRank
                 (*it) -> setPRP ( PRP );
+                t_sumPRP+=PRP;
                 // calculate diff from last PageRank value for this vertex
                 // and set it to minDelta if the latter is bigger.
                 qDebug()<< "Graph:: prestigePageRank() vertex: " <<  (*it)->name()
@@ -3791,52 +3812,63 @@ void Graph::prestigePageRank(){
 
             }
         }
-        if (allNodesAreIsolated) {
-            qDebug()<< "Graph:: prestigePageRank() all vertices are isolated. Break...";
-            qDebug() << "isolatedVertices: " << isolatedVertices
-                     << " total vertices " << this->vertices();
-
-            break;
-        }
         i++;
     }
-    // calculate sumPRP
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        sumPRP +=  (*it)->PRP();
-    }
+
     // calculate std and min/max PRPs
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if (dropIsolates && (*it)->isIsolated()) {
+            continue;
+        }
         PRP = (*it)->PRP();
-        resolveClasses(PRP,discretePRPs,classesPRP);
-        if ( PRP > maxPRP ) {
-            maxPRP = PRP;
-            maxNodePRP=(*it)->name();
-        }
-        if ( PRP < minPRP ) {
-            minPRP = PRP;
-            minNodePRP=(*it)->name();
-        }
-
-        SPRP = PRP / sumPRP ;
+        SPRP = PRP / t_sumPRP ;
         (*it)->setSPRP( SPRP );
+        sumPRP +=  SPRP;
         qDebug()<< "Graph:: prestigePageRank() vertex: " <<  (*it)->name()
                 << " PageRank = " << PRP << " standard PR = " << SPRP;
     }
+
+    if (aVert != 0 )
+        meanPRP = sumPRP / aVert ;
+    else
+        meanPRP = SPRP;
+
+    qDebug() << "sumPRP = " << sumPRP << "  aVert = " << aVert << "  meanPRP = " << meanPRP;
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if (dropIsolates && (*it)->isIsolated()) {
+            continue;
+        }
+        SPRP=(*it)->SPRP();
+        resolveClasses(SPRP,discretePRPs,classesPRP);
+        if ( SPRP > maxPRP ) {
+            maxPRP = SPRP;
+            maxNodePRP=(*it)->name();
+        }
+        if ( SPRP < minPRP ) {
+            minPRP = SPRP;
+            minNodePRP=(*it)->name();
+        }
+
+        t_variance = ( SPRP  - meanPRP  ) ;
+        t_variance *=t_variance;
+        qDebug() << "SPRP " <<  (*it)->SPRP() << "  t_variance "
+                 << SPRP - meanPRP  << " t_variance^2" << t_variance ;
+        variancePRP  += t_variance;
+    }
+    qDebug() << "PRP' Variance   " << variancePRP   << " aVert " << aVert ;
+    variancePRP  = variancePRP  /  (aVert);
+    qDebug() << "PRP' Variance: " << variancePRP   ;
+
     calculatedPRP= true;
 
-    if (allNodesAreIsolated) {
-        qDebug()<< "Graph:: prestigePageRank() all vertices are isolated. Equal PageRank for all....";
-        return;
-    }
-    qDebug()<< "Graph:: prestigePageRank() vertex: " <<  maxNodePRP
-            << " has max PageRank = " << maxPRP;
     return;
 
 }
 
 
 //Writes the PageRank indices to a file
-void Graph::writePrestigePageRank(const QString fileName){
+void Graph::writePrestigePageRank(const QString fileName, const bool dropIsolates){
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
@@ -3847,7 +3879,7 @@ void Graph::writePrestigePageRank(const QString fileName){
 
     emit statusMessage ( (tr("Calculating PageRank indices. Please wait...")) );
 
-    prestigePageRank();
+    prestigePageRank(dropIsolates);
 
     emit statusMessage ( QString(tr("Writing PageRank indices to file: %1"))
                          .arg(fileName) );
@@ -3857,13 +3889,12 @@ void Graph::writePrestigePageRank(const QString fileName){
     outText << tr("PRP  range:  1-d < PRP  where d=") << dampingFactor   << "\n";
     outText << tr("PRP' is the standardized PR (PR divided by sumPR)")<<"\n";
     outText << tr("PRP' range:  ") << dampingFactor / sumPRP  << " < C'< 1" <<"\n\n";
-    outText << "Node"<<"\tPRP\t\tPRP'\t\t%PRP\n";
+    outText << "Node"<<"\tPRP\t\tPRP'\t\t%PRP'\n";
     QList<Vertex*>::const_iterator it;
-    float PRP=0, SPRP=0, sumSPRP=0;
+    float PRP=0, SPRP=0;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         PRP = (*it)->PRP();
         SPRP = (*it)->SPRP();
-        sumSPRP +=  SPRP;
         outText << (*it)->name()<<"\t"<< PRP << "\t\t"<< SPRP  << "\t\t"
                 <<  ( 100* SPRP )<<endl;
     }
@@ -3878,25 +3909,8 @@ void Graph::writePrestigePageRank(const QString fileName){
     }
     outText << "\n";
 
-    float x=0;
-    float n = ( this->vertices() - isolatedVertices );
-    if (n != 0 )
-        meanPRP = sumSPRP / n ;
-    else
-        meanPRP = SPRP;
-
-    qDebug() << "sumPRP = " << sumSPRP << "  n = " << n << "  meanPRP = " << meanPRP;
-    variancePRP=0;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        x = ( (*it)->SPRP()  - meanPRP  ) ;
-        x *=x;
-        qDebug() << "SPRP " <<  (*it)->SPRP() << "  x " <<   (*it)->SPRP() - meanPRP  << " x*x" << x ;
-        variancePRP  += x;
-    }
-    qDebug() << "PRP' Variance   " << variancePRP   << " n " << n ;
-    variancePRP  = variancePRP  /  (n);
-    qDebug() << "PRP' Variance: " << variancePRP   ;
-
+    outText << tr("PRP sum = ") << t_sumPRP << endl;
+    outText << tr("PRP' sum = ") << sumPRP << endl;
     outText << tr("PRP' Mean = ") << meanPRP << endl;
     outText << tr("PRP' Variance = ") << variancePRP << endl<< endl;
 
