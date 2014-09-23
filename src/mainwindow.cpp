@@ -6641,7 +6641,8 @@ void MainWindow::slotDistancesMatrix(){
 
     createProgressBar();
     activeGraph.writeDistanceMatrix(fn, networkName.toLocal8Bit(),
-                                    considerWeights, inverseWeights);
+                                    considerWeights, inverseWeights,
+                                    filterIsolateNodesAct->isChecked());
 
     destroyProgressBar();
 
