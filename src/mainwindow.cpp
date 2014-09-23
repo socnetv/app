@@ -7392,7 +7392,8 @@ void MainWindow::slotPrestigeProximity(){
 
     statusMessage(  QString(tr(" Please wait...")));
     createProgressBar();
-    activeGraph.writePrestigeProximity(fn, true);
+    activeGraph.writePrestigeProximity(fn, true, false ,
+                                       filterIsolateNodesAct->isChecked());
     destroyProgressBar();
 
     statusMessage( QString(tr(" displaying file...")));
@@ -7450,9 +7451,9 @@ void MainWindow::slotCentralityInformation(){
     QString fn = dataDir + "socnetv-report-centrality_information.dat";
     statusMessage(  QString(tr(" Please wait...")));
 
+    askAboutWeights();
     createProgressBar();
-    activeGraph.writeCentralityInformation(fn,true, true,
-                                           filterIsolateNodesAct->isChecked());
+    activeGraph.writeCentralityInformation(fn,considerWeights, inverseWeights);
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);

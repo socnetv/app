@@ -3317,7 +3317,6 @@ void Graph::prestigeDegree(bool weights, bool dropIsolates=false){
     int vert=vertices();
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         DP=0;
-        qDebug() << "Graph: prestigeDegree() vertex " <<  (*it)->name()  ;
         if (!(*it)->isIsolated()) {
             for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
                 if ( (weight=this->hasEdge ( (*it1)->name(), (*it)->name() ) ) !=0  )   {
@@ -3331,9 +3330,11 @@ void Graph::prestigeDegree(bool weights, bool dropIsolates=false){
                      != ( this->hasEdge ( (*it)->name(), (*it1)->name() ) )   )
                     symmetricAdjacencyMatrix = false;
             }
-            (*it) -> setDP ( DP ) ;		//Set DP
-            t_sumDP += DP;
         }
+        (*it) -> setDP ( DP ) ;		//Set DP
+        t_sumDP += DP;
+        qDebug() << "Graph: prestigeDegree() vertex " <<  (*it)->name()
+                 << " DP "  << DP;
     }
 
     // Calculate std DP, min,max, mean
@@ -3378,19 +3379,14 @@ void Graph::prestigeDegree(bool weights, bool dropIsolates=false){
         SDP= (*it)->SDP();
         if ( dropIsolates  ) {
             if   ( ! (*it)->isIsolated() ) {
-                varianceDC += (SDC-meanDC) * (SDC-meanDC) ;
-                nom+= (maxDC-SDC);
+                nom+= maxDP-SDP;
+                varianceDP += (SDP-meanDP) * (SDP-meanDP) ;
             }
         }
         else {
-            nom+= (maxDC-SDC);
-            varianceDC += (SDC-meanDC) * (SDC-meanDC) ;
+            nom+= maxDP-SDP;
+            varianceDP += (SDP-meanDP) * (SDP-meanDP) ;
         }
-
-
-        nom+= maxDP-SDP;
-        varianceDP += (SDP-meanDP) * (SDP-meanDP) ;
-
     }
     varianceDP=varianceDP/(float) vert;
 
@@ -3524,32 +3520,34 @@ void Graph::prestigeProximity( const bool considerWeights,
     H_StrToInt::iterator it2;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         PP=0; i=0;
-        // find connected nodes
-        QList<int> influencerVertices = influenceDomains.values((*it)->name()-1);
-        Ii=influencerVertices.size();
-        qDebug()<< "Graph::prestigeProximity - vertex " <<  (*it)->name()
-                   << " Ii size: " << Ii;
-        for ( i = 0; i < Ii; i++) {
-            qDebug() << "Graph::prestigeProximity - vertex " <<  (*it)->name()
-                     << " is inbound connected from  = " << influencerVertices.at(i) + 1
-                     << " at distance " << DM.item (  influencerVertices.at(i), (*it)->name()-1);
-            PP += DM.item (  influencerVertices.at(i), (*it)->name()-1);
-        }
-        qDebug()<< "Graph::prestigeProximity - "
-                   "size of influenceDomain Ii = " << Ii
-                << " PP=" << PP << " divided by Ii=" << Ii
-                << " yields graph-dependant PP index =" << PP / Ii;
+        if (!(*it)->isIsolated()){
+            // find connected nodes
+            QList<int> influencerVertices = influenceDomains.values((*it)->name()-1);
+            Ii=influencerVertices.size();
+            qDebug()<< "Graph::PP - vertex " <<  (*it)->name()
+                    << " Ii size: " << Ii;
+            for ( i = 0; i < Ii; i++) {
+                qDebug() << "Graph::PP - vertex " <<  (*it)->name()
+                         << " is inbound connected from " << influencerVertices.at(i) + 1
+                         << " at distance " << DM.item (  influencerVertices.at(i), (*it)->name()-1);
+                PP += DM.item (  influencerVertices.at(i), (*it)->name()-1);
+            }
+            qDebug()<< "Graph::PP - "
+                       "size of influenceDomain Ii = " << Ii
+                    << " PP=" << PP << " divided by Ii=" << Ii
+                    << " yields graph-dependant PP index =" << PP / Ii;
 
-        qDebug() << "Graph::prestigeProximity - vertex " <<  (*it)->name()
-                 << " has PP = "
-                 << Ii / (V-1) << " / " << PP / Ii << " = " << ( Ii / (V-1) ) / (PP/Ii);
+            qDebug() << "Graph::PP - vertex " <<  (*it)->name()
+                     << " has PP = "
+                     << Ii / (V-1) << " / " << PP / Ii << " = " << ( Ii / (V-1) ) / (PP/Ii);
 
-        // sanity check for PP=0 (=> node is disconnected)
-        if (PP != 0)  {
-            PP /= Ii;
-            PP =  ( Ii / (V-1) ) / PP;
+            // sanity check for PP=0 (=> node is disconnected)
+            if (PP != 0)  {
+                PP /= Ii;
+                PP =  ( Ii / (V-1) ) / PP;
+            }
+            sumPP += PP;
         }
-        sumPP += PP;
         (*it) -> setPP ( PP ) ;
         (*it) -> setSPP ( PP ) ; // PP is already stdized
 
@@ -3577,8 +3575,16 @@ void Graph::prestigeProximity( const bool considerWeights,
     meanPP = sumPP / (float) V;
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        PP= (*it) -> PP();
-        variancePP += (PP-meanPP) * (PP-meanPP) ;
+        if (dropIsolates) {
+            if (!(*it)->isIsolated()) {
+                PP= (*it) -> PP();
+                variancePP += (PP-meanPP) * (PP-meanPP) ;
+            }
+        }
+        else {
+            PP= (*it) -> PP();
+            variancePP += (PP-meanPP) * (PP-meanPP) ;
+        }
     }
     variancePP=variancePP/(float) V;
     qDebug() << "Graph::prestigeProximity - sumPP = " << sumPP
@@ -3593,7 +3599,8 @@ void Graph::prestigeProximity( const bool considerWeights,
 
 //Writes the proximity prestige indeces to a file
 void Graph::writePrestigeProximity( const QString fileName,
-        const bool considerWeights, const bool inverseWeights,
+                                    const bool considerWeights,
+                                    const bool inverseWeights,
                                     const bool dropIsolates)
 {
     QFile file ( fileName );
@@ -3624,9 +3631,14 @@ void Graph::writePrestigeProximity( const QString fileName,
     outText << "Node"<<"\tPP=PP'\t\t%PP\n";
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        outText << (*it)->name()<<"\t"
+        if (!dropIsolates) {
+            outText << (*it)->name()<<"\t"
                 <<(*it)->PP() << "\t\t"
                <<  (100* (*it)->SPP() ) <<endl;
+        }
+        else {
+            outText << (*it)->name()<<"\t -- \t\t --" <<endl;
+        }
     }
     qDebug ("min %f, max %f", minPP, maxPP);
     if ( minPP == maxPP )
