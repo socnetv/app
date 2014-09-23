@@ -405,10 +405,17 @@ The Information Centrality (IC) is an index suggested by Stephenson and Zelen (1
 which focuses on how information might flow through many different paths.
 Unlike SC and BC, the IC metric uses all paths between actors weighted by strength of tie and distance.
 <br /><br />
-Since there is no known generalization of Stephenson & Zelen's theory for information centrality to directional relations,
-the index should be calculated only for graphs and is more meaningful in weighted graphs/networks.
+The IC' score is the standardized IC (IC divided by the sumIC) and can be seen as
+the proportion of total information flow that is controlled by each actor.
+<br />
+Note that standard IC' values sum to unity, unlike most other centrality indices.
 <br /><br />
-Note: To compute this index, SocNetV drops all isolated nodes and symmetrizes (if needed) the adjacency matrix.
+Since there is no known generalization of Stephenson & Zelen's theory for information centrality
+to directional relations, the index should be calculated only for graphs and is
+more meaningful in weighted graphs/networks.
+<br /><br />
+Note: To compute this index, SocNetV drops all isolated nodes and symmetrizes
+(if needed) the adjacency matrix even when the graph is directed (Wasserman & Faust, p. 196).
 
 </p>
 <p class="text">
@@ -486,7 +493,7 @@ Therefore, nodes with high outLink weights give smaller percentage of their PR t
 <h5><a name="PP" id="PP"></a>Proximity Prestige (PP)</h5>
 <p class="text">
 The Proximity Prestige index measures how proximate a node u is to the nodes in its
-influence domain I (the influence domain I of a node is the number of other nodes that can reach it).
+influence domain I - the influence domain I of a node is the number of other nodes that can reach it.
 Apparently, in this metric the proximity of each node u is based on distances to rather than distances from it.
 To put it simply, in PP what matters is how close are all the other nodes to node u.
 <br /><br />
