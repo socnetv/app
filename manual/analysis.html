@@ -267,20 +267,25 @@ You can use DC variance or mean instead.</em>
 
 <h5><a name="CC" id="CC"></a>Closeness Centrality (CC)</h5>
 <p class="text"> 
-For each node v, CC the inverse sum of the geosesic distances from that node to
-every other node.
-CC is interpreted as the ability to access information through the \"grapevine\" of network members.
+For each node u, the CC score is the inverse sum of geodesic distances from that node to
+every other node.<br />
+This measure focuses on how close each node is to all other nodes in the network.
 Nodes with high closeness centrality are those who can reach many other nodes in few steps.
+The idea is that a node is more central if it can quickly interact with more of the others.
+CC is also interpreted as the ability to access information through the "grapevine" of network members.
 <br /><br />
 This index can be calculated in graphs and strongly connected digraphs
 (that is, if there is a directed path from v to u for all nodes v and u in the graph).
-It can also be calculated in weighted graphs although the weight of each
-edge (v,u) in E is always considered to be 1.
+If there are isolate nodes in the network, they are dropped by default.
+In not strongly connected digraphs, the ordinary CC is undefined.
+In that case, you can use the Influence Range Closeness Centrality index.
 <br /><br />
-<em>Undirected graphs</em>
+CC can also be calculated in weighted graphs although the value of each
+edge (u,v) is always considered to be 1.
+<br /><br />
 The maximum value of CC is 1/(N-1), when the node is adjacent to all others.
-Thus the standard CC index (CC') is calculated by (N-1) * CC in undirected graphs.
-If the graph is directed, a standard CC' is calculated by (CC/sumCC)
+Thus the standardized CC index (CC') is calculated by (N-1) * CC.
+
 <br /><br />
 Group CC is calculated using Freeman's general formula, in undirected graphs: <br />
 </p>
@@ -288,35 +293,36 @@ Group CC is calculated using Freeman's general formula, in undirected graphs: <b
 GCC =  ( Sum ( maxCC' - CC'  ) )  / ( (N-1) *  (N-2) / (2 * N - 1) );
 </p>
 <p class="text">
-<em>Directed graphs (digraphs)</em>
+Note: As with all centrality indices in directed graphs, CC considers only outbound edges.
+If you want to analyze inbound edges, use Prestige indices, i.e. Proximity Prestige.
 </p>
 
 
 
 <h5><a name="IRCC" id="IRCC"></a>Influence Range Closeness Centrality (CC)</h5>
 <p class="text">
-For each node v, IRCC is the standardized inverse average distance
-between v and every other node reachable from v.
+For each node u, IRCC is the standardized inverse average distance
+between u and every other node reachable from it.
 <br />
 This improved CC index is optimized for graphs and directed graphs which
 are not strongly connected. Unlike the ordinary CC, which is the inverted
 sum of distances from node v to all others (thus undefined if a node is isolated
-or the digraph is not strongly connected), IRCC considers only distances from
-node v to nodes in its influence range J (nodes reachable from v).
+or the digraph is not strongly connected), the IRCC considers only distances from
+node u to nodes in its influence range J (nodes reachable from u).
 <br />
-The IRCC formula used is the ratio of the fraction of nodes reachable by v
-(|J|/(n-1)) to the average distance of these nodes from v sum(d(v,j))/|J|
+The IRCC formula used is the ratio of the fraction of nodes reachable by u
+(|J|/(n-1)) to the average distance of these nodes from u sum(d(u,j))/|J|
 </p>
 <p class="code">
-( |J| / (n-1) ) / ( sum( d(v,j) ) / |J| )
+( |J| / (n-1) ) / ( sum( d(u,j) ) / |J| )
 </p>
 
 
 
 <h5><a name="BC" id="BC"></a>Betweenness Centrality (BC) </h5>
 <p class="text"> 
-For each node v, BC is the ratio of all geodesics between pairs of nodes which run through v.
-It reflects how often an node lies on the geodesics between the other nodes of the network.
+For each node u, BC is the ratio of all geodesics between pairs of nodes which run through u.
+It reflects how often that node lies on the geodesics between the other nodes of the network.
 <br /><br >
 The BC score of each actor can be interpreted as a measure of potential control as
 it quantifies just how much that actor acts as an intermediary to others.
@@ -337,42 +343,56 @@ Also, BC is very sensitive to network dynamics, i.e. it changes a lot when we ad
 a vertex or an edge.
 <br /><br />
 This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs.
-It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1.
+It can also be calculated in weighted graphs although the weight of each edge (u,v) in E is always considered to be 1.
 </p>
 
 <h5><a name="SC" id="SC"></a>Stress Centrality (SC) </h5>
 <p class="text">
-
-For each node v, SC is the total number of geodesics between all other nodes which run through v.
-When one node falls on all other geodesics between all the remaining (N-1) nodes, then we have a star graph with maximum Stress Centrality.
+The SC of each node u is the total number of geodesics between all other nodes which run through u.
+When one node falls on all geodesics between all the remaining (N-1) nodes,
+then we have a star graph with maximum Stress Centrality.
+This index reflects how often a node lies on the geodesics between other nodes.
 <br /><br />
 This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs.
 It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1
+<br />
+This index was introduced by Shimbel (1953).
 </p>
 
 
 <h5><a name="EC" id="EC"></a>Eccentricity Centrality (EC)</h5>
 <p class="text"> 
-For each node v, the Eccentricity Centrality is the largest geodesic distance (v,u) from every other node u. Therefore, EC(v) reflects how far, at most, is each node from every other node.
+For each node u, the Eccentricity Centrality is the largest geodesic distance (u,v) to every other node v.
+Therefore, the EC score reflects how far, at most, is each node from every other node.
+<br />
+Nodes with very high EC score have short distances to all other nodes in the graph. <br />
+Nodes with very low EC score have longer distances to some other nodes in the graph.
 <br /><br />
-This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1.
+This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs.
+It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1.
 <br /><br />
-of a node k is the largest geodesic distance (k,t) from every other vertex.
-Therefore, EC(u) reflects how far, at most, is each node from every other node.
-
+The EC is also known as Graph Centrality (Hage and Harary, 1995).
 </p>
 
 
 
 <h5><a name="PC" id="PC"></a>Power Centrality (PC)</h5>
 <p class="text">
-The Power Centrality (PC) is a centrality measure suggested by Gil and Schmidt.
+The Power Centrality (PC) is a a generalised degree centrality measure suggested by Gil and Schmidt.
 <br /><br />
-For each node v, this index sums its degree (with weight 1), with the size of the 2nd-order neighbourhood (with weight 2), and in general, with the size of the kth order neighbourhood (with weight k).
+For each node u, this index sums its degree (with weight 1), with the size of the
+2nd-order neighbourhood (with weight 2), and in general, with the size of the kth
+order neighbourhood (with weight k).
 <br /><br />
-Thus, for each node in the network the most important other nodes are its immediate neighbours and then in decreasing importance the nodes of the 2nd-order neighbourhood, 3rd-order neighbourhood etc. For each node, the sum obtained is normalised by the total numbers of nodes in the same component minus 1.
+Thus, for each node u the most important other nodes are its immediate
+neighbours and then in decreasing importance the nodes of the 2nd-order neighbourhood,
+3rd-order neighbourhood etc.
+For each node, the sum obtained is normalised by the total numbers of nodes in the same component minus 1.
 <br /><br />
-This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1 (therefore not considered).
+This index can be calculated in both graphs and digraphs but is usually best suited
+for undirected graphs.
+It can also be calculated in weighted graphs although the weight of each edge
+(u,v) in E is always considered to be 1 (therefore not considered).
 
 </p>
 
@@ -422,9 +442,10 @@ IC has a minimum value but not a maximum.
 
 <h5><a name="DP" id="DP"></a>Degree Prestige (DP) or InDegree Centrality</h5>
 <p class="text">
-For each node u, this the number of arcs ending at u.
-In directed graphs, this index measures the prestige of each node/actor.
-Thus it is called Degree Prestige; it is also known as InDegree Centrality.
+For each node u, this metric counts the number of inbound arcs at u.
+The index is meaningful in directed graphs as a measure of the prestige of each node.
+Thus it is called Degree Prestige (it is also known as InDegree Centrality).
+Note that in undirected graphs, the DP index is identical to Degree Centrality.
 <br /><br />
 Actors with higher DP are considered more prominent among others because
 they receive more nominations or choices (they have larger inDegree).
@@ -444,30 +465,40 @@ You can use DP variance or mean instead.</em>
 <h5><a name="PRP" id="PRP"></a>PageRank Prestige (PRP)</h5>
 <p class="text">
 The PageRank Prestige is an importance ranking for each node based on the structure of its in-link.
-The original PageRank algorithm, developed by Page and Brin (1997), focuses on how nodes are connected to each other, treating each link from a node as a citation/backlink/vote to another. In essence, for each node PageRank counts all backlinks to it, but it does so by not counting all links equally while it normalizes each link from a node by the total number of links from it.
-The PRP score of each node is calculated iteratively and corresponds to the principal eigenvector of the normalized link matrix.
+The original PageRank algorithm, developed by Page and Brin (1997),
+focuses on how nodes are connected to each other, treating each link from a node
+as a citation/backlink/vote to another.  <br />
+In essence, for each node PageRank counts all backlinks to it, but it does so
+by not counting all links equally while it normalizes each link from a node by
+the total number of links from it. <br />
+The PRP score of each node is calculated iteratively and corresponds to the
+principal eigenvector of the normalized link matrix.
 <br /><br />
 This index can be calculated in both graphs and digraphs but is usually best suited for directed graphs since it is a prestige measure.
 It can also be calculated in weighted graphs.
-In weighted relations, each backlink to a node v from another node u is considered to have weight=1 but it is normalized by the sum of outLinks weights (outDegree) of u.
-Therefore, nodes with high outLink weights give smaller percentage of their PR to node v.
+In weighted relations, each backlink to a node u from another node v is considered
+to have weight=1 but it is normalized by the sum of outLinks weights (outDegree) of v.
+Therefore, nodes with high outLink weights give smaller percentage of their PR to node u.
 </p>
 
 
 
 <h5><a name="PP" id="PP"></a>Proximity Prestige (PP)</h5>
 <p class="text">
-The Proximity Prestige index measures how proximate a node v is to the nodes in its influence domain I (the influence domain I of a node is the number of other nodes that can reach it).
-Apparently, in this metric the proximity of each node v is based on distances to rather than distances from it.
-To put it simply, in PP what matters is how close are all the other nodes to node v.
+The Proximity Prestige index measures how proximate a node u is to the nodes in its
+influence domain I (the influence domain I of a node is the number of other nodes that can reach it).
+Apparently, in this metric the proximity of each node u is based on distances to rather than distances from it.
+To put it simply, in PP what matters is how close are all the other nodes to node u.
 <br /><br />
-The algorithm takes the average distance to node v of all nodes in its influence domain, standardizes it
-by multiplying with (N-1)/I and takes its reciprocal (Wasserman & Faust, formula 5.25, p. 204).
-In essence, the formula SocNetV uses to calculate PP for every node v is the ratio
-of the fraction of nodes that can reach node v, to the average distance of that nodes to v:</p>
+The algorithm takes the average distance to node u of all nodes in its influence domain,
+standardizes it by multiplying with (N-1)/|I| and takes its reciprocal.
+In essence, the formula SocNetV uses to calculate PP for every node u is the ratio
+of the fraction of nodes that can reach node u, to the average distance of that nodes to u
+(Wasserman & Faust, formula 5.25, p. 204):</p>
 <p class="code">
-PP = (I/(N-1))/(sum{d(u,v)}/I)
+PP = (I/(N-1))/(sum{d(v,u)}/I)
 </p>
 <p class="text">
-where the sum is over all nodes in I.
+where the sum is over every node v in I.
 </p>
+
