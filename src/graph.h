@@ -281,7 +281,8 @@ public:
     void writeInvertAdjacencyMatrix(const QString filename,  const char*);
     void writeDistanceMatrix(const QString fn, const char*,
                              const bool considerWeights,
-                             const bool inverseWeights);
+                             const bool inverseWeights,
+                             const bool dropIsolates);
     void writeNumberOfGeodesicsMatrix(const QString fn, const char*,
                                       const bool considerWeights,
                                       const bool inverseWeights);
