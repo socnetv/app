@@ -5642,9 +5642,7 @@ void MainWindow::slotLayoutGuides(int state){
 /**
  * @brief MainWindow::slotLayoutCircularByProminenceIndex
  * Checks sender text() to find out who QMenu item was pressed
- * and what index was chosen
- * then repositions all nodes  on a Circular layout based on that index
-*  More prominent nodes are closer to the centre of the screen.
+ * calls slotLayoutCircularByProminenceIndex(QString)
  */
 void MainWindow::slotLayoutCircularByProminenceIndex(){
     qDebug() << "MainWindow::slotLayoutCircularByProminenceIndex()";
@@ -5657,141 +5655,13 @@ void MainWindow::slotLayoutCircularByProminenceIndex(){
         statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
         return;
     }
-    int userChoice=0;
     QAction *menuitem=(QAction *) sender();
     QString menuItemText=menuitem->text();
     qDebug() << "MainWindow::slotLayoutCircularByProminenceIndex() - " <<
                 "SENDER MENU IS " << menuItemText;
 
-    if (menuItemText == "Degree Centrality")
-        userChoice=1;
-    else if (menuItemText == "Closeness Centrality")
-        userChoice=2;
-    else if (menuItemText == "Influence Range Closeness Centrality")
-        userChoice=3;
-    else if (menuItemText == "Betweenness Centrality")
-        userChoice=4;
-    else if (menuItemText == "Stress Centrality")
-        userChoice=5;
-    else if (menuItemText == "Eccentricity Centrality")
-        userChoice=6;
-    else if (menuItemText == "Power Centrality")
-        userChoice=7;
-    else if (menuItemText ==  "Information Centrality")
-        userChoice=8;
-    else if (menuItemText == "Degree Prestige")
-        userChoice=9;
-    else if (menuItemText ==  "PageRank Prestige")
-        userChoice=10;
-    else if (menuItemText ==  "Proximity Prestige")
-        userChoice=11;
+    slotLayoutCircularByProminenceIndex(menuItemText);
 
-    //check if CC was selected and the graph is disconnected.
-    bool dropIsolates=false;
-    if (userChoice == 2 ) {
-        int connectedness=activeGraph.connectedness();
-        switch ( connectedness ) {
-        case 1:
-            break;
-        case 2:
-            break;
-        case -1:
-            QMessageBox::information(this,
-                                  "Closeness Centrality",
-                                     tr(
-                                         "Undirected graph has isolate nodes!\n"
-                                         "Since this network has isolate nodes, "
-                                         "I will drop them from calculations "
-                                         "otherwise the CC index "
-                                         "cannot be computed, because d(u,v) will be "
-                                         "infinite for any isolate node u or v.\n"
-                                         "You can also try the slightly different "
-                                         "but improved Influence Range Closeness index "
-                                         "which considers how proximate is each node "
-                                         "to the nodes in its influence range.\n"
-                                         "Read more in the SocNetV manual."
-                                     ), "OK",0);
-            dropIsolates=true;
-            break;
-
-        case -3:
-            QMessageBox::information(this,
-                                  "Closeness Centrality",
-                                  tr(
-                                     "Directed graph has isolate nodes!\n"
-                                         "Since this digraph has isolate nodes, "
-                                         "I will drop them from calculations "
-                                         "otherwise the CC index "
-                                         "cannot be computed, because d(u,v) will be "
-                                         "infinite for any isolate node u or v.\n"
-                                         "You can also try the slightly different "
-                                         "but improved Influence Range Closeness index "
-                                         "which considers how proximate is each node "
-                                         "to the nodes in its influence range.\n"
-                                         "Read more in the SocNetV manual."
-                                     ), "OK",0);
-            dropIsolates=true;
-            break;
-        default:
-            QMessageBox::critical(this,
-                                  "Centrality Closeness",
-                                  tr(
-                                      "Disconnected graph/digraph!\n"
-                                      "Since this network is disconnected, "
-                                      "the ordinary Closeness Centrality "
-                                      "index is not defined, because d(u,v) will be "
-                                      "infinite for any isolate nodes u or v.\n"
-                                      "Please use the slightly different but improved "
-                                      "Influence Range Closeness (IRCC) index "
-                                      "which considers how proximate is each node "
-                                      "to the nodes in its influence range.\n"
-                                      "Read more in the SocNetV manual."
-                                      ), "OK",0);
-            return;
-            break;
-        };
-
-    }
-    if (userChoice==8 && activeNodes() > 200) {
-        switch(
-               QMessageBox::critical(
-                   this, "Slow function warning",
-                   tr("Please note that this function is <b>VERY SLOW</b> on large "
-                      "networks (n>200), since it will calculate  a (n x n) matrix A with:"
-                      "Aii=1+weighted_degree_ni"
-                      "Aij=1 if (i,j)=0"
-                      "Aij=1-wij if (i,j)=wij"
-                      "Next, it will compute the inverse matrix C of A."
-                      "The computation of the inverse matrix is VERY CPU intensive function."
-                      "because it uses the Gauss-Jordan elimination algorithm.\n\n "
-                      "Are you sure you want to continue?"), QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
-        case QMessageBox::Ok:
-            break;
-
-        case QMessageBox::Cancel:
-            // Cancel was clicked
-            return;
-            break;
-        default:
-            // should never be reached
-            break;
-        }
-    }
-
-    askAboutWeights();
-
-    double x0=scene->width()/2.0;
-    double y0=scene->height()/2.0;
-    double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearGuides();
-    createProgressBar();
-    activeGraph.layoutCircularByProminenceIndex(
-                x0, y0, maxRadius,userChoice,
-                considerWeights, inverseWeights,
-                filterIsolateNodesAct->isChecked()|| dropIsolates);
-    destroyProgressBar();
-    statusMessage( tr("Nodes in inner circles have greater prominence index.") );
 }
 
 
@@ -5800,6 +5670,9 @@ void MainWindow::slotLayoutCircularByProminenceIndex(){
 /**
  * @brief MainWindow::slotLayoutCircularByProminenceIndex
  * Overloaded - called when selectbox changes in the toolbox
+ * or from slotLayoutCircularByProminenceIndex() when the user click on menu
+ * Repositions all nodes  on a Circular layout based on that index
+*  More prominent nodes are closer to the centre of the screen.
  */
 void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
         qDebug() << "MainWindow::slotLayoutCircularByProminenceIndex() ";
@@ -5841,6 +5714,9 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
     qDebug() << "MainWindow::slotLayoutCircularByProminenceIndex() "
              << "prominenceIndexName " << prominenceIndexName
                 << " userChoice " << userChoice;
+
+    toolBoxLayoutByIndexSelect->setCurrentIndex(userChoice+1);
+    toolBoxLayoutByIndexTypeSelect->setCurrentIndex(0);
 
     bool dropIsolates=false;
     //check if CC was selected and the graph is disconnected.
@@ -5999,6 +5875,9 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
              << "prominenceIndexName " << prominenceIndexName
                 << " userChoice " << userChoice;
 
+    toolBoxLayoutByIndexSelect->setCurrentIndex(userChoice+1);
+    toolBoxLayoutByIndexTypeSelect->setCurrentIndex(0);
+
     //check if CC was selected and the graph is disconnected.
     bool dropIsolates=false;
     if (userChoice == 2 ) {
@@ -6109,10 +5988,8 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
  * @brief MainWindow::slotLayoutLevelByProminenceIndex
  * Checks sender text() to find out who QMenu item was pressed
  * and what prominence index was chosen
- * then repositions all nodes  on different top-down levels according to the
-*  chosen prominence index.
-*	More prominent nodes are closer to the top of the canvas
- */
+ * calls slotLayoutLevelByProminenceIndex(QString)
+  */
 void MainWindow::slotLayoutLevelByProminenceIndex(){
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical
@@ -6127,147 +6004,25 @@ void MainWindow::slotLayoutLevelByProminenceIndex(){
         statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
         return;
     }
-    int userChoice = 0;
     QAction *menuitem=(QAction *) sender();
     QString menuItemText = menuitem->text();
     qDebug() << "MainWindow::slotLayoutLevelByProminenceIndex() - " <<
                 "SENDER MENU IS " << menuItemText;
 
-    if (menuItemText == "Degree Centrality")
-        userChoice=1;
-    else if (menuItemText == "Closeness Centrality")
-        userChoice=2;
-    else if (menuItemText == "Influence Range Closeness Centrality")
-        userChoice=3;
-    else if (menuItemText == "Betweenness Centrality")
-        userChoice=4;
-    else if (menuItemText == "Stress Centrality")
-        userChoice=5;
-    else if (menuItemText == "Eccentricity Centrality")
-        userChoice=6;
-    else if (menuItemText == "Power Centrality")
-        userChoice=7;
-    else if (menuItemText ==  "Information Centrality")
-        userChoice=8;
-    else if (menuItemText == "Degree Prestige")
-        userChoice=9;
-    else if (menuItemText ==  "PageRank Prestige")
-        userChoice=10;
-    else if (menuItemText ==  "Proximity Prestige")
-        userChoice=11;
+    slotLayoutLevelByProminenceIndex(menuItemText);
 
-    bool dropIsolates=false;
-    //check if CC was selected and the graph is disconnected.
-    if (userChoice == 2 ) {
-        int connectedness=activeGraph.connectedness();
-        switch ( connectedness ) {
-        case 1:
-            break;
-        case 2:
-            break;
-        case -1:
-            QMessageBox::information(this,
-                                  "Closeness Centrality",
-                                  tr(
-                                         "Undirected graph has isolate nodes!\n"
-                                         "Since this network has isolate nodes, "
-                                         "I will drop them from calculations "
-                                         "otherwise the CC index "
-                                         "cannot be computed, because d(u,v) will be "
-                                         "infinite for any isolate node u or v.\n"
-                                         "You can also try the slightly different "
-                                         "but improved Influence Range Closeness index "
-                                         "which considers how proximate is each node "
-                                         "to the nodes in its influence range.\n"
-                                          "Read more in the SocNetV manual."
-                                     ), "OK",0);
-            dropIsolates=true;
-            break;
-
-        case -3:
-            QMessageBox::information(this,
-                                  "Closeness Centrality",
-                                  tr(
-                                     "Directed graph has isolate nodes!\n"
-                                     "Since this digraph has isolate nodes, "
-                                         "I will drop them from calculations "
-                                         "otherwise the CC index "
-                                         "cannot be computed, because d(u,v) will be "
-                                         "infinite for any isolate node u or v.\n"
-                                         "You can also try the slightly different "
-                                         "but improved Influence Range Closeness index "
-                                         "which considers how proximate is each node "
-                                         "to the nodes in its influence range.\n"
-                                         "Read more in the SocNetV manual."
-                                     ), "OK",0);
-            dropIsolates=true;
-            break;
-        default:
-            QMessageBox::critical(this,
-                                  "Centrality Closeness",
-                                  tr(
-                                      "Disconnected graph/digraph!\n"
-                                      "Since this network is disconnected, "
-                                      "the ordinary Closeness Centrality "
-                                      "index is not defined, because d(u,v) will be "
-                                      "infinite for any isolate nodes u or v.\n"
-                                      "Please use the slightly different but improved "
-                                      "Influence Range Closeness (IRCC) index "
-                                      "which considers how proximate is each node "
-                                      "to the nodes in its influence range.\n"
-                                      "Read more in the SocNetV manual."
-                                      ), "OK",0);
-            return;
-            break;
-        };
-
-    }
-    if (userChoice==8 && activeNodes() > 200) {
-        switch(
-               QMessageBox::critical(
-                   this, "Slow function warning",
-                   tr("Please note that this function is <b>VERY SLOW</b> on large "
-                      "networks (n>200), since it will calculate  a (n x n) matrix A with:"
-                      "Aii=1+weighted_degree_ni"
-                      "Aij=1 if (i,j)=0"
-                      "Aij=1-wij if (i,j)=wij"
-                      "Next, it will compute the inverse matrix C of A."
-                      "The computation of the inverse matrix is VERY CPU intensive function."
-                      "because it uses the Gauss-Jordan elimination algorithm.\n\n "
-                      "Are you sure you want to continue?"), QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
-        case QMessageBox::Ok:
-            break;
-
-        case QMessageBox::Cancel:
-            // Cancel was clicked
-            return;
-            break;
-        default:
-            // should never be reached
-            break;
-        }
-    }
-
-    askAboutWeights();
-    double maxWidth=scene->width();
-    double maxHeight=scene->height(); //pixels
-    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearGuides();
-    createProgressBar();
-    activeGraph.layoutLevelByProminenceIndex(
-                maxWidth, maxHeight, userChoice,
-                considerWeights,inverseWeights,
-                filterIsolateNodesAct->isChecked() || dropIsolates);
-    destroyProgressBar();
-    statusMessage( tr("Nodes in upper levels are more prominent. ") );
-    }
+}
 
 
 
 
 /**
- * @brief MainWindow::slotLayoutLevelByProminenceIndex
- * Overloaded - called from toolbox
+ * @brief MainWindow::slotLayoutLevelByProminenceIndex(QString)
+ * Overloaded - called when user clicks on toolbox options and when
+ * the user selects a menu option (called by slotLayoutLevelByProminenceIndex())
+ * Repositions all nodes  on different top-down levels according to the
+*  chosen prominence index.
+* More prominent nodes are closer to the top of the canvas
  */
 void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
     if (!fileLoaded && !networkModified  )  {
@@ -6312,6 +6067,9 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
     qDebug() << "MainWindow::slotLayoutLevelByProminenceIndex() "
              << "prominenceIndexName " << prominenceIndexName
               << " userChoice " << userChoice;
+
+    toolBoxLayoutByIndexSelect->setCurrentIndex(userChoice+1);
+    toolBoxLayoutByIndexTypeSelect->setCurrentIndex(1);
 
     bool dropIsolates=false;
     //check if CC was selected and the graph is disconnected.
