@@ -205,15 +205,15 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
     os.setPadChar('-');
     for (register int r = 0; r < m.cols()+1; ++r) {
         if ( r > 99999)
-            newFieldWidth = fieldWidth -5;
+            newFieldWidth = fieldWidth -6;
         else if ( r > 9999)
-            newFieldWidth = fieldWidth -4;
+            newFieldWidth = fieldWidth -5;
         else if ( r > 999)
-            newFieldWidth = fieldWidth -3;
+            newFieldWidth = fieldWidth -4;
         else if ( r > 99)
-            newFieldWidth = fieldWidth -2;
+            newFieldWidth = fieldWidth -3;
         else if ( r > 9)
-            newFieldWidth = fieldWidth -1;
+            newFieldWidth = fieldWidth -2 ;
         os << qSetFieldWidth(newFieldWidth) <<  QString("-") ;
     }
     os << qSetFieldWidth(1) << QString("-");
@@ -249,6 +249,16 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
                 newFieldWidth = fieldWidth -2;
             else if ( element > 9)
                 newFieldWidth = fieldWidth -1;
+            else if ( (element - floor (element) ) != 0  ) {
+                if ( element *10 == qFloor(10* element)  )
+                newFieldWidth = fieldWidth-1;
+                else if (element *100 == qFloor(100* element)  )
+                newFieldWidth = fieldWidth-1;
+                else if (element *1000 == qFloor(1000* element)  )
+                newFieldWidth = fieldWidth-2;
+                else
+                    newFieldWidth = fieldWidth-2;
+            }
             else if (element < 1.0 ) {
                 if ( element *10 == qFloor(10* element)  )
                 newFieldWidth = fieldWidth-1;
