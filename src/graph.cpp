@@ -1440,7 +1440,7 @@ void Graph::writeDistanceMatrix (QString fn, const char* netName,
         return;
     }
     QTextStream outText(&file);
-    outText.setRealNumberPrecision(m_precision-1);
+    outText.setRealNumberPrecision(m_precision);
     outText << "-Social Network Visualizer- \n";
     if (!netName) netName="Unnamed network";
     outText << "Distance matrix of "<< netName<<": \n";
@@ -2176,7 +2176,7 @@ void Graph::dijkstra(int s, const bool computeCentralities=false,
             //    previous[v]  := undefined
         }
     }
-    qDebug() << " push " << s << " to Q with 0 distance from s";
+    qDebug() << " finally push source " << s << " to Q with 0 distance from s";
     //crucial: without it the priority Q would pop arbitrary node at first loop
     Q.push(Distance(s,0));
     qDebug()<<"dijkstra: Q size "<< Q.size();
@@ -2226,6 +2226,7 @@ void Graph::dijkstra(int s, const bool computeCentralities=false,
             if (dist_u == RAND_MAX || dist_u < 0) {
                 dist_w = RAND_MAX;
                 qDebug() << "dijkstra: dist_w = RAND_MAX " << RAND_MAX;
+
             }
             else {
                 dist_w = dist_u + weight;
@@ -2234,7 +2235,7 @@ void Graph::dijkstra(int s, const bool computeCentralities=false,
             }
             qDebug() << "dijkstra: RELAXATION : check if dist_w=" << dist_w
                      <<  " is shorter than current DM(s,w)";
-            if  (dist_w == DM.item(s, w)  ) {
+            if  (dist_w == DM.item(s, w)  && dist_w < RAND_MAX) {
                 qDebug() << "dijkstra: dist_w : " << dist_w
                          <<  " ==  DM(s,w) : " << DM.item(s, w);
                 temp= TM.item(s,w)+TM.item(s,u);
