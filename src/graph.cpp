@@ -9764,7 +9764,7 @@ void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
      * compute max spring length as function of canvas area divided by the
      * total vertices area
     */
-    qreal max_len = qCeil (log10( canvasHeight*canvasWidth / ( V * (a*a) ) ) * 50.0);
+    qreal max_len = qCeil (log10( canvasHeight*canvasWidth / ( V * (a*a) ) ) * 30.0);
     qreal natural_length= a + max_len;
     qreal c4=0.1,  dux=0, duy=0;
     double dist = 0;
