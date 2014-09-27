@@ -35,6 +35,8 @@
 #include "graph.h"
 
 
+static qreal Pi = 3.14159265;
+
 Graph::Graph() {
     m_totalVertices=0;
     outboundEdgesVert=0;
@@ -4135,7 +4137,7 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
     //offset controls how far from the centre the central nodes be positioned
     float C=0, maxC=0, offset=0.06;
     double new_radius=0, new_x=0, new_y=0;
-    double Pi = 3.14159265;
+
     int vert=vertices();
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -4298,8 +4300,7 @@ void Graph::layoutCircularRandom(double x0, double y0, double maxRadius){
     double rad=0, new_radius=0, new_x=0, new_y=0;
     double i=0;
     //offset controls how far from the centre the central nodes be positioned
-    float offset=0.06, randomDecimal=0;;
-    double Pi = 3.14159265;
+    float offset=0.06, randomDecimal=0;
     int vert=vertices();
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -4721,7 +4722,6 @@ void Graph::createRandomNetRingLattice(
     int y=0;
     int progressCounter=0;
 
-    double Pi = 3.14159265;
     double rad= (2.0* Pi/ vert );
 
     index.reserve(vert);
@@ -9679,7 +9679,8 @@ void Graph::setShowNumbersInsideNodes(bool toggle){
 
 
 /** 
-    This slot is activated when the user clicks on the relevant MainWindow checkbox (SpringEmbedder, Fruchterman)
+    This slot is activated when the user clicks on the relevant MainWindow checkbox
+    (SpringEmbedder, Fruchterman)
     to start or stop the movement of nodes, according to the requested model.
     PARAMETERS:
     state: movement on/off toggle
@@ -9757,16 +9758,19 @@ void Graph::timerEvent(QTimerEvent *event) {
 
 void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
     qreal xvel = 0, yvel = 0, dx=0, dy=0, ulv_x=0, ulv_y=0;
-    qreal c_rep=25000, c_spring=2;
+    qreal angle=0;
+    qreal degrees=0;
     qreal V = (qreal) vertices() ;
     qreal a = (qreal)  initVertexSize ;
     /**
      * compute max spring length as function of canvas area divided by the
      * total vertices area
     */
-    qreal max_len = qCeil (log10( canvasHeight*canvasWidth / ( V * (a*a) ) ) * 50.0);
+    qreal max_len = qCeil (log10( canvasHeight*canvasWidth / ( V * (a*a) ) ) * 40.0);
     qreal natural_length= a + max_len;
-    qreal c4=0.1,  dux=0, duy=0;
+    qreal c_rep=(max_len * max_len) , c_spring=2;
+    qreal c4=0.1;
+    qreal dux=0, duy=0;
     double dist = 0;
     QPointF curPos, newPos, pos ;
 
@@ -9798,6 +9802,14 @@ void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
                 qDebug()<< " dist(" << v1->name() <<  ", " <<  v2->name()
                         << ") = " << dist << " - dx " << dx << " dy " << dy;
 
+                if ( dist >0 )
+                    angle = qAcos( dx / dist );
+                else
+                    angle =0;
+                degrees = angle * 180.0 / M_PI;
+                qDebug ("The arc cosine of %f is %f degrees - cos: %f sin: %f ",
+                        angle, degrees,qCos(dx / dist), qSin(dx/dist));
+
                 if ( this->hasEdge (v1->name(), v2->name())  ) {
                     /**
                          * calculate spring forces between adjacent nodes
@@ -9805,34 +9817,26 @@ void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
                         */
                     qDebug() << " source vertex v1 = "<<v1->name()
                              <<  " connected to (pulled) v2= "<< v2->name();
-                    ulv_x =  1;
-                    ulv_y =  1;
-                    if (dx < 0) {
-                        c_spring = - qAbs(c_spring);
-                    }
-                    else
-                        c_spring=qAbs(c_spring);
+                    ulv_x =  qCos(dx/dist)  ;
+                    ulv_y =  qSin(dx/dist) ;
 
                     dux = (ulv_x * c_spring) * log ( dist / natural_length );
 
-                    qDebug()  <<" c_spring=" << c_spring
+                    qDebug() << " ulv_x " <<ulv_x
+                            <<" c_spring=" << c_spring
                              <<"  nat_length =" << natural_length
                             << "log ( dist / natural_length ) "
                             << log ( dist / natural_length )
                             << " dux="<< dux ;
 
-                    if (dy < 0) {
-                        c_spring = - qAbs(c_spring);
-                    }
-                    else
-                        c_spring=qAbs(c_spring);
-
                     duy = (ulv_y * c_spring) * log ( dist / natural_length );
 
-                    qDebug()  <<" c_spring=" << c_spring
+                    qDebug() << " ulv_y " <<ulv_y
+                            <<" c_spring=" << c_spring
                              <<"  nat_length =" << natural_length
                             << "log ( dist / natural_length ) "
                             << log ( dist / natural_length )
+
                             << " duy="<< duy;
 
                 }
@@ -9842,54 +9846,48 @@ void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
                          *  non-adjacent vertices.
                          */
                     qDebug() << " v1 = "<<v1->name()
-                             <<  " NOT connected to (pushed away) v2 = ";
-                    ulv_x = 1;
-                    ulv_y = 1;
-                    if (dx < 0) {
-                        c_rep =  qAbs(c_rep);
-                    }
-                    else
-                        c_rep= - qAbs(c_rep);
+                             <<  " NOT connected to (pushed away) v2 = " <<v2->name();
+                    ulv_x =  qCos(dx/dist)  ;
+                    ulv_y =  qSin(dx/dist) ;
 
                     dux = (ulv_x * c_rep) / (dist * dist);
-                    qDebug() <<"  c_rep=" << c_rep
+                    qDebug() << " ulv_x " <<ulv_x
+                            <<"  c_rep=" << c_rep
                             <<" dist^2="<<dist * dist
                            << " dux=" << dux;
-                    if (dy < 0) {
-                        c_rep =  qAbs(c_rep);
-                    }
-                    else
-                        c_rep= - qAbs(c_rep);
+
                     duy = (ulv_y * c_rep) / ( dist * dist) ;
-                    qDebug() <<"  c_rep=" << c_rep
+                    qDebug() << " ulv_y " <<ulv_y
+                            <<"  c_rep=" << c_rep
                             <<" dist^2="<<dist * dist
                            << " duy=" << duy;
                 }
                 // calculate new overall velocity vector
                 xvel +=  c4*dux;
                 yvel +=  c4*duy;
+                qDebug() << " ##### source vertex  " <<  v1->name()
+                         << " xvel,yvel = ("<< xvel << ", "<< yvel << ")";
+//                // Move target node by dux, duy if they are big enough
+//                if ( qAbs( dux ) > 0.1 && qAbs( duy ) > 0.1 ) {
+//                    qDebug() << " ##### target vertex v2 " <<  v2->name()
+//                             << " will move by ("<< -dux << ", "<< -duy << ")";
+//                    newPos = QPointF(v2->x()- dux, v2->y()-duy);
+//                    // check if new pos is out of screen and adjust
+//                    if (newPos.x() < 45.0 )  {
+//                        newPos.setX(45.0);
+//                    }
+//                    else if ( newPos.x() > (canvasWidth -38) ) {
+//                        newPos.setX (canvasWidth -40);
+//                    }
+//                    if (newPos.y() < 45.0 ) {
+//                        newPos.setY(45.0);
+//                    }
+//                    else if ( newPos.y() > (canvasHeight-38) ) {
+//                        newPos.setY (canvasHeight -40);
+//                    }
 
-                // Move target node by dux, duy if they are big enough
-                if ( qAbs( dux ) > 1.1 && qAbs( duy ) > 1.1 ) {
-                    qDebug() << " ##### target vertex v2 " <<  v2->name()
-                             << " will move by ("<< -dux << ", "<< -duy << ")";
-                    newPos = QPointF(v2->x()- dux, v2->y()-duy);
-                    // check if new pos is out of screen and adjust
-                    if (newPos.x() < 45.0 )  {
-                        newPos.setX(45.0);
-                    }
-                    else if ( newPos.x() > (canvasWidth -38) ) {
-                        newPos.setX (canvasWidth -40);
-                    }
-                    if (newPos.y() < 45.0 ) {
-                        newPos.setY(45.0);
-                    }
-                    else if ( newPos.y() > (canvasHeight-38) ) {
-                        newPos.setY (canvasHeight -40);
-                    }
-
-                    emit moveNode((*v2).name(),  newPos.x(),  newPos.y());
-                }
+//                    emit moveNode((*v2).name(),  newPos.x(),  newPos.y());
+//                }
 
             }
 
@@ -9900,7 +9898,7 @@ void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
                     << "Possible new pos (" <<  newPos.x() << ","
                     << newPos.y()<< ")";
 
-            if ( qAbs( xvel ) < 1.1 && qAbs( yvel ) < 1.1 ) {
+            if ( qAbs( xvel ) < 0.1 && qAbs( yvel ) < 0.1 ) {
                 qDebug () << "xvel and yvel too small - stop";
                 continue;
             }
