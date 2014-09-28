@@ -143,6 +143,7 @@ public slots:
     void filterEdgesByRelation(int relation, bool status);
 
     void webCrawl( QString, int, int, bool);	//Called by MW to start a web crawler...
+    void setGraphChanged(bool changed) { graphModified = changed; }
 
 signals:
     /** Signals to MainWindow */
@@ -170,7 +171,7 @@ signals:
     void setLinkColor(long int, long int, QString);
     void addGuideCircle(int, int, int);				//call GW to draw a circular layout line somewhere.
     void addGuideHLine (int);					//call GW to draw a horizontal layout line somewhere.
-    void moveNode(int, int, int);
+    void moveNode(int, qreal, qreal);
 
     /** Signals to Vertice */
     void relationChanged(int);
@@ -410,7 +411,7 @@ public:
                                              const bool inverseWeights,
                                              const bool dropIsolates);
 
-    void layoutForceDirectedSpringEmbedder(bool dynamicMovement);
+    void layoutForceDirectedSpringEmbedder(bool &dynamicMovement);
 
     void layoutForceDirectedFruchtermanReingold(bool dynamicMovement);
 

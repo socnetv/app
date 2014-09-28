@@ -338,9 +338,11 @@ void GraphicsWidget::nodeMoved(int number, int x, int y){
 	Called from activeGraph to update node coordinates 
 	on the canvas  
 */
-void GraphicsWidget::moveNode(int number, int x, int y){
-//	qDebug ("GW: updateNode() %i with %i, %i", number, x,y);
+void GraphicsWidget::moveNode(int number, qreal x, qreal y){
+    qDebug() << "GW: moveNode() " << number << ": " << x << y;
 	nodeHash.value(number)->setPos(x,y);
+    qDebug() << "GW: moveNode() node reports x, y as "
+             << nodeHash.value(number)->x() << nodeHash.value(number)->x();
 }
 
 

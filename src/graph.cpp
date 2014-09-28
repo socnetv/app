@@ -4494,8 +4494,8 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
         i++;
         emit addGuideHLine(static_cast<int> ( new_y ) );
     }
-    graphModified=true;
-    emit graphChanged();
+//    graphModified=true;
+//    emit graphChanged();
 }
 
 
@@ -4660,8 +4660,8 @@ void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
         }
         };
     }
-    graphModified=true;
-    emit graphChanged();
+//    graphModified=true;
+//    emit graphChanged();
 }
 
 
@@ -9693,8 +9693,10 @@ void Graph::nodeMovement(bool state, int type, int cW, int cH){
     qDebug()<< "Graph: startNodeMovement() - state " << state;
     canvasWidth = cW;
     canvasHeight = cH;
-    //layoutForceDirectedSpringEmbedder(true);
-    int factor=50;		//factor controls speed. Decrease it to increase speed...
+    //factor controls speed. Decrease it to increase speed...
+    // the smaller the factor is, the less responsive is the application
+    // when there are many nodes.
+    int factor=100;
     if (state == true){
         qDebug()<< "Graph: startNodeMovement() - STARTING dynamicMovement" ;
         dynamicMovement = true;
@@ -9756,32 +9758,35 @@ void Graph::timerEvent(QTimerEvent *event) {
     we will assume weaker logarithmic forces between far apart vertices...
 */
 
-void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
-    qreal xvel = 0, yvel = 0, dx=0, dy=0, ulv_x=0, ulv_y=0;
-    qreal angle=0;
-    qreal degrees=0;
+void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
+    qreal xvel = 0, yvel = 0, dx=0, dy=0, ulv_x=1, ulv_y=1;
     qreal V = (qreal) vertices() ;
-    qreal a = (qreal)  initVertexSize ;
+    qreal vertexWidth = (qreal)  2.0 * initVertexSize ;
+    qreal screenArea = canvasHeight*canvasWidth;
+    qreal vertexMaxArea = screenArea / V;
     /**
      * compute max spring length as function of canvas area divided by the
      * total vertices area
     */
-    qreal max_len = qCeil (log10( canvasHeight*canvasWidth / ( V * (a*a) ) ) * 40.0);
-    qreal natural_length= a + max_len;
-    qreal c_rep=(max_len * max_len) , c_spring=2;
+    qreal maxLength =  qCeil ( qSqrt( vertexMaxArea ) /2.0) ;
+    qreal naturalLength= vertexWidth + maxLength;
+    qreal c_rep=qCeil (log10( canvasHeight*canvasWidth / ( V ) ) ) * 300;
+    qreal c_spring=2;
     qreal c4=0.1;
+    qreal forceRepelling=0, forceSpring=0;
     qreal dux=0, duy=0;
     double dist = 0;
-    QPointF curPos, newPos, pos ;
+    QPointF newPos ;
+    qreal angle, degrees;
 
     qDebug() << "layoutForceDirectedSpringEmbedder() "
-             << "canvasWidth "<< canvasWidth << "canvasHeight "<< canvasHeight
+             << " screenArea "<< screenArea
              << " vertices " << V
-             <<" initVertexSize "<< initVertexSize
-               << "log(...) " << log( canvasHeight*canvasWidth / ( V * (a*a) ) )
-             << " max_length" << max_len;
+             << " initVertexSize "<< initVertexSize
+             << " vertexMaxArea " << vertexMaxArea
+             << " maxLength" << maxLength
+             << " naturalLength " << naturalLength;
     if (dynamicMovement){
-
         dynamicMovement=false;
         foreach (Vertex *v1, m_graph)  {
             xvel=0; yvel=0;
@@ -9797,6 +9802,7 @@ void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
                 }
                 dx = v2->x() - v1->x();
                 dy = v2->y() - v1->y();
+
                 //the euclideian distance of the two vertices
                 dist = sqrt (dx * dx + dy * dy);
                 qDebug()<< " dist(" << v1->name() <<  ", " <<  v2->name()
@@ -9807,61 +9813,75 @@ void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
                 else
                     angle =0;
                 degrees = angle * 180.0 / M_PI;
-                qDebug ("The arc cosine of %f is %f degrees - cos: %f sin: %f ",
-                        angle, degrees,qCos(dx / dist), qSin(dx/dist));
+                ulv_x =  qCos(degrees)  ;
+                ulv_y =  qSin(degrees) ;
+
+                qDebug() << "The arc cosine of " << angle << " is " << degrees
+                         << "degrees - cos: " << qCos(degrees)
+                         << "sin: " << qSin(degrees)
+                         << "ulv_x" << ulv_x
+                         << "ulv_y" << ulv_y;
 
                 if ( this->hasEdge (v1->name(), v2->name())  ) {
                     /**
-                         * calculate spring forces between adjacent nodes
-                         * that pull them together
-                        */
-                    qDebug() << " source vertex v1 = "<<v1->name()
-                             <<  " connected to (pulled) v2= "<< v2->name();
-                    ulv_x =  qCos(dx/dist)  ;
-                    ulv_y =  qSin(dx/dist) ;
+                    * calculate spring forces between adjacent nodes
+                    * that pull them together
+                    */
 
-                    dux = (ulv_x * c_spring) * log ( dist / natural_length );
+                    forceSpring = c_spring * log10 ( dist / naturalLength );
 
-                    qDebug() << " ulv_x " <<ulv_x
+                    qDebug()<<" source vertex v1 = "<<v1->name()
+                            <<" connected to (pulled) v2= "<< v2->name()
                             <<" c_spring=" << c_spring
-                             <<"  nat_length =" << natural_length
-                            << "log ( dist / natural_length ) "
-                            << log ( dist / natural_length )
-                            << " dux="<< dux ;
+                            <<" naturalLength =" << naturalLength
+                            <<" log ( dist / naturalLength ) "
+                            << log10( dist / naturalLength )
+                            << " forceSpring="<< forceSpring ;
 
-                    duy = (ulv_y * c_spring) * log ( dist / natural_length );
+                    dux = (ulv_x * forceSpring );
+                    duy = (ulv_y * forceSpring );
 
-                    qDebug() << " ulv_y " <<ulv_y
-                            <<" c_spring=" << c_spring
-                             <<"  nat_length =" << natural_length
-                            << "log ( dist / natural_length ) "
-                            << log ( dist / natural_length )
-
-                            << " duy="<< duy;
+                    if ( dx < 0 ) {
+                            dux = -dux;
+                    }
+                    if ( dy < 0 ) {
+                            duy = -duy;
+                    }
+                    qDebug() << " dux="<< dux << " duy="<< duy;
 
                 }
                 else {
                     /**
-                         *  calculate electric (repulsive) forces between
+                      *  calculate electric (repulsive) forces between
                          *  non-adjacent vertices.
                          */
-                    qDebug() << " v1 = "<<v1->name()
-                             <<  " NOT connected to (pushed away) v2 = " <<v2->name();
-                    ulv_x =  qCos(dx/dist)  ;
-                    ulv_y =  qSin(dx/dist) ;
+                    if (dist !=0)
+                        forceRepelling =  c_rep / (dist * dist);
+                    else
+                        forceRepelling = 200; //move away
 
-                    dux = (ulv_x * c_rep) / (dist * dist);
-                    qDebug() << " ulv_x " <<ulv_x
-                            <<"  c_rep=" << c_rep
-                            <<" dist^2="<<dist * dist
-                           << " dux=" << dux;
+                    qDebug() <<" v1 = "<<v1->name()
+                             <<" NOT connected to (pushed away) v2 = " <<v2->name()
+                             <<" c_rep=" << c_rep
+                             <<" dist^2="<<dist * dist
+                             <<" forceRepelling=" << forceRepelling;
 
-                    duy = (ulv_y * c_rep) / ( dist * dist) ;
-                    qDebug() << " ulv_y " <<ulv_y
-                            <<"  c_rep=" << c_rep
-                            <<" dist^2="<<dist * dist
-                           << " duy=" << duy;
+                    dux = (ulv_x * forceRepelling);
+                    duy = (ulv_y * forceRepelling);
+                    if ( dx > 0 ) {
+                            dux = -dux;
+                    }
+                    if ( dy > 0 ) {
+                            duy = -duy;
+                    }
+                    if ( dux > 0 && duy > 0){
+                        dux *=10;
+                        duy *=10;
+                    }
+                    qDebug()<<" dux="<< dux
+                            <<" duy=" << duy;
                 }
+
                 // calculate new overall velocity vector
                 xvel +=  c4*dux;
                 yvel +=  c4*duy;
@@ -9898,10 +9918,11 @@ void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
                     << "Possible new pos (" <<  newPos.x() << ","
                     << newPos.y()<< ")";
 
-            if ( qAbs( xvel ) < 0.1 && qAbs( yvel ) < 0.1 ) {
-                qDebug () << "xvel and yvel too small - stop";
-                continue;
-            }
+//            if ( qAbs( xvel ) < 0.01 && qAbs( yvel ) < 0.01 ) {
+//                qDebug () << "xvel and yvel too small "
+//                             << "dynamicMovement=false and continue";
+//                continue;
+//            }
 
             dynamicMovement=true;
 
