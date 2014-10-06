@@ -35,6 +35,8 @@
 #include "graph.h"
 
 
+static qreal Pi = 3.14159265;
+
 Graph::Graph() {
     m_totalVertices=0;
     outboundEdgesVert=0;
@@ -4135,7 +4137,7 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
     //offset controls how far from the centre the central nodes be positioned
     float C=0, maxC=0, offset=0.06;
     double new_radius=0, new_x=0, new_y=0;
-    double Pi = 3.14159265;
+
     int vert=vertices();
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -4298,8 +4300,7 @@ void Graph::layoutCircularRandom(double x0, double y0, double maxRadius){
     double rad=0, new_radius=0, new_x=0, new_y=0;
     double i=0;
     //offset controls how far from the centre the central nodes be positioned
-    float offset=0.06, randomDecimal=0;;
-    double Pi = 3.14159265;
+    float offset=0.06, randomDecimal=0;
     int vert=vertices();
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -4493,8 +4494,8 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
         i++;
         emit addGuideHLine(static_cast<int> ( new_y ) );
     }
-    graphModified=true;
-    emit graphChanged();
+//    graphModified=true;
+//    emit graphChanged();
 }
 
 
@@ -4659,8 +4660,8 @@ void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
         }
         };
     }
-    graphModified=true;
-    emit graphChanged();
+//    graphModified=true;
+//    emit graphChanged();
 }
 
 
@@ -4721,7 +4722,6 @@ void Graph::createRandomNetRingLattice(
     int y=0;
     int progressCounter=0;
 
-    double Pi = 3.14159265;
     double rad= (2.0* Pi/ vert );
 
     index.reserve(vert);
@@ -9679,7 +9679,8 @@ void Graph::setShowNumbersInsideNodes(bool toggle){
 
 
 /** 
-    This slot is activated when the user clicks on the relevant MainWindow checkbox (SpringEmbedder, Fruchterman)
+    This slot is activated when the user clicks on the relevant MainWindow checkbox
+    (SpringEmbedder, Fruchterman)
     to start or stop the movement of nodes, according to the requested model.
     PARAMETERS:
     state: movement on/off toggle
@@ -9692,8 +9693,10 @@ void Graph::nodeMovement(bool state, int type, int cW, int cH){
     qDebug()<< "Graph: startNodeMovement() - state " << state;
     canvasWidth = cW;
     canvasHeight = cH;
-    //layoutForceDirectedSpringEmbedder(true);
-    int factor=50;		//factor controls speed. Decrease it to increase speed...
+    //factor controls speed. Decrease it to increase speed...
+    // the smaller the factor is, the less responsive is the application
+    // when there are many nodes.
+    int factor=50;
     if (state == true){
         qDebug()<< "Graph: startNodeMovement() - STARTING dynamicMovement" ;
         dynamicMovement = true;
@@ -9755,29 +9758,36 @@ void Graph::timerEvent(QTimerEvent *event) {
     we will assume weaker logarithmic forces between far apart vertices...
 */
 
-void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
-    qreal xvel = 0, yvel = 0, dx=0, dy=0, ulv_x=0, ulv_y=0;
-    qreal c_rep=25000, c_spring=2;
-    qreal V = (qreal) vertices() ;
-    qreal a = (qreal)  initVertexSize ;
+void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
+    qreal xvel = 0, yvel = 0, dx=0, dy=0, ulv_x=1, ulv_y=1;
+    qreal dux=0, duy=0;
+    qreal dist = 0;
+    QPointF newPos;
+    qreal angle1, angle2, degrees1, degrees2;
     /**
      * compute max spring length as function of canvas area divided by the
      * total vertices area
     */
-    qreal max_len = qCeil (log10( canvasHeight*canvasWidth / ( V * (a*a) ) ) * 30.0);
-    qreal natural_length= a + max_len;
-    qreal c4=0.1,  dux=0, duy=0;
-    double dist = 0;
-    QPointF curPos, newPos, pos ;
+    qreal V = (qreal) vertices() ;
+    qreal vertexWidth = (qreal)  2.0 * initVertexSize ;
+    qreal screenArea = canvasHeight*canvasWidth;
+    qreal vertexMaxArea = screenArea / V;
+    qreal maxLength =  qCeil ( qSqrt( vertexMaxArea ) /2.0) ;
+    qreal naturalLength= vertexWidth + maxLength;
+    //qreal c_rep=qCeil (log10( vertexMaxArea ) ) * 600;
+    qreal c_rep=maxLength * maxLength ;
+    qreal c_spring=2;
+    qreal c4=0.1;
+    qreal forceRepelling=0, forceSpring=0;
 
     qDebug() << "layoutForceDirectedSpringEmbedder() "
-             << "canvasWidth "<< canvasWidth << "canvasHeight "<< canvasHeight
+             << " screenArea "<< screenArea
              << " vertices " << V
-             <<" initVertexSize "<< initVertexSize
-               << "log(...) " << log( canvasHeight*canvasWidth / ( V * (a*a) ) )
-             << " max_length" << max_len;
+             << " initVertexSize "<< initVertexSize
+             << " vertexMaxArea " << vertexMaxArea
+             << " maxLength" << maxLength
+             << " naturalLength " << naturalLength;
     if (dynamicMovement){
-
         dynamicMovement=false;
         foreach (Vertex *v1, m_graph)  {
             xvel=0; yvel=0;
@@ -9793,103 +9803,120 @@ void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
                 }
                 dx = v2->x() - v1->x();
                 dy = v2->y() - v1->y();
+
                 //the euclideian distance of the two vertices
                 dist = sqrt (dx * dx + dy * dy);
-                qDebug()<< " dist(" << v1->name() <<  ", " <<  v2->name()
-                        << ") = " << dist << " - dx " << dx << " dy " << dy;
+
+                if ( dist >0 ) {
+                    angle1 = qAcos( qAbs(dx) / dist );   // radians
+                    angle2 = (M_PI  / 2.0) -angle1;   // radians (pi/2 -a1)
+                }
+                else {
+                    angle1 =0;
+                    angle2 =0;
+                }
+                degrees1 = angle1 * 180.0 / M_PI; // convert to degrees
+                degrees2 = angle2 * 180.0 / M_PI; // convert to degrees
+                ulv_x =  qCos( angle1 )  ;
+                ulv_y =  qSin( angle2 ) ;
+
+                qDebug()<< "   dist("<< v1->name()<<", "<< v2->name()<< ") = "
+                         << dist << " dx=" << dx << " dy=" << dy
+                         << "phi= " << degrees1 << " degrees "
+                         << "omega= 90 - phi= " << degrees2 << " degrees"
+                         << "ulv_x=cos=" << qCos( angle1 )
+                         << "ulv_y=sin=" << qSin( angle2 );
 
                 if ( this->hasEdge (v1->name(), v2->name())  ) {
                     /**
-                         * calculate spring forces between adjacent nodes
-                         * that pull them together
-                        */
-                    qDebug() << " source vertex v1 = "<<v1->name()
-                             <<  " connected to (pulled) v2= "<< v2->name();
-                    ulv_x =  1;
-                    ulv_y =  1;
-                    if (dx < 0) {
-                        c_spring = - qAbs(c_spring);
+                    * calculate spring forces between adjacent nodes
+                    * that pull them together
+                    */
+                    forceSpring = c_spring * log10 ( dist / naturalLength );
+
+                    qDebug()<<"   source vertex v1 = "<<v1->name()
+                            <<" connected to (pulled) v2= "<< v2->name()
+                            <<" c_spring=" << c_spring
+                            <<" naturalLength =" << naturalLength
+                            <<" log ( dist / naturalLength ) "
+                            << log10( dist / naturalLength )
+                            << " forceSpring="<< forceSpring ;
+
+                    dux = (ulv_x * forceSpring );
+                    duy = (ulv_y * forceSpring );
+
+                    if ( dx < 0 ) {
+                            dux = -dux;
                     }
-                    else
-                        c_spring=qAbs(c_spring);
-
-                    dux = (ulv_x * c_spring) * log ( dist / natural_length );
-
-                    qDebug()  <<" c_spring=" << c_spring
-                             <<"  nat_length =" << natural_length
-                            << "log ( dist / natural_length ) "
-                            << log ( dist / natural_length )
-                            << " dux="<< dux ;
-
-                    if (dy < 0) {
-                        c_spring = - qAbs(c_spring);
+                    if ( dy < 0 ) {
+                            duy = -duy;
                     }
-                    else
-                        c_spring=qAbs(c_spring);
-
-                    duy = (ulv_y * c_spring) * log ( dist / natural_length );
-
-                    qDebug()  <<" c_spring=" << c_spring
-                             <<"  nat_length =" << natural_length
-                            << "log ( dist / natural_length ) "
-                            << log ( dist / natural_length )
-                            << " duy="<< duy;
+                    qDebug() << "   dux="<< dux << " duy="<< duy;
 
                 }
                 else {
                     /**
-                         *  calculate electric (repulsive) forces between
+                      *  calculate electric (repulsive) forces between
                          *  non-adjacent vertices.
                          */
-                    qDebug() << " v1 = "<<v1->name()
-                             <<  " NOT connected to (pushed away) v2 = ";
-                    ulv_x = 1;
-                    ulv_y = 1;
-                    if (dx < 0) {
-                        c_rep =  qAbs(c_rep);
+                    if (dist !=0){
+                        forceRepelling =  c_rep / (dist * dist);
+                        if (forceRepelling > 1.0) {
+                            // do not repel if distance > naturalLength
+                            forceRepelling =0;
+                        }
                     }
                     else
-                        c_rep= - qAbs(c_rep);
+                        forceRepelling = maxLength ; //move away
 
-                    dux = (ulv_x * c_rep) / (dist * dist);
-                    qDebug() <<"  c_rep=" << c_rep
-                            <<" dist^2="<<dist * dist
-                           << " dux=" << dux;
-                    if (dy < 0) {
-                        c_rep =  qAbs(c_rep);
+                    qDebug() <<" v1 = "<<v1->name()
+                             <<" NOT connected to (pushed away) v2 = " <<v2->name()
+                             <<" c_rep=" << c_rep
+                             <<" dist^2="<<dist * dist
+                             <<" forceRepelling=" << forceRepelling;
+
+                    dux = (ulv_x * forceRepelling);
+                    duy = (ulv_y * forceRepelling);
+                    if ( dx > 0 ) {
+                            dux = -dux;
                     }
-                    else
-                        c_rep= - qAbs(c_rep);
-                    duy = (ulv_y * c_rep) / ( dist * dist) ;
-                    qDebug() <<"  c_rep=" << c_rep
-                            <<" dist^2="<<dist * dist
-                           << " duy=" << duy;
+                    if ( dy > 0 ) {
+                            duy = -duy;
+                    }
+                    if ( dux > 0 && duy > 0){
+                        dux *=10;
+                        duy *=10;
+                    }
+                    qDebug()<<" dux="<< dux
+                            <<" duy=" << duy;
                 }
+
                 // calculate new overall velocity vector
                 xvel +=  c4*dux;
                 yvel +=  c4*duy;
+                qDebug() << " ##### source vertex  " <<  v1->name()
+                         << " xvel,yvel = ("<< xvel << ", "<< yvel << ")";
+//                // Move target node by dux, duy if they are big enough
+//                if ( qAbs( dux ) > 0.1 && qAbs( duy ) > 0.1 ) {
+//                    qDebug() << " ##### target vertex v2 " <<  v2->name()
+//                             << " will move by ("<< -dux << ", "<< -duy << ")";
+//                    newPos = QPointF(v2->x()- dux, v2->y()-duy);
+//                    // check if new pos is out of screen and adjust
+//                    if (newPos.x() < 45.0 )  {
+//                        newPos.setX(45.0);
+//                    }
+//                    else if ( newPos.x() > (canvasWidth -38) ) {
+//                        newPos.setX (canvasWidth -40);
+//                    }
+//                    if (newPos.y() < 45.0 ) {
+//                        newPos.setY(45.0);
+//                    }
+//                    else if ( newPos.y() > (canvasHeight-38) ) {
+//                        newPos.setY (canvasHeight -40);
+//                    }
 
-                // Move target node by dux, duy if they are big enough
-                if ( qAbs( dux ) > 1.1 && qAbs( duy ) > 1.1 ) {
-                    qDebug() << " ##### target vertex v2 " <<  v2->name()
-                             << " will move by ("<< -dux << ", "<< -duy << ")";
-                    newPos = QPointF(v2->x()- dux, v2->y()-duy);
-                    // check if new pos is out of screen and adjust
-                    if (newPos.x() < 45.0 )  {
-                        newPos.setX(45.0);
-                    }
-                    else if ( newPos.x() > (canvasWidth -38) ) {
-                        newPos.setX (canvasWidth -40);
-                    }
-                    if (newPos.y() < 45.0 ) {
-                        newPos.setY(45.0);
-                    }
-                    else if ( newPos.y() > (canvasHeight-38) ) {
-                        newPos.setY (canvasHeight -40);
-                    }
-
-                    emit moveNode((*v2).name(),  newPos.x(),  newPos.y());
-                }
+//                    emit moveNode((*v2).name(),  newPos.x(),  newPos.y());
+//                }
 
             }
 
@@ -9900,10 +9927,11 @@ void Graph::layoutForceDirectedSpringEmbedder(bool dynamicMovement){
                     << "Possible new pos (" <<  newPos.x() << ","
                     << newPos.y()<< ")";
 
-            if ( qAbs( xvel ) < 1.1 && qAbs( yvel ) < 1.1 ) {
-                qDebug () << "xvel and yvel too small - stop";
-                continue;
-            }
+//            if ( qAbs( xvel ) < 0.01 && qAbs( yvel ) < 0.01 ) {
+//                qDebug () << "xvel and yvel too small "
+//                             << "dynamicMovement=false and continue";
+//                continue;
+//            }
 
             dynamicMovement=true;
 

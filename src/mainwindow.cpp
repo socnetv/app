@@ -137,8 +137,8 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect( &activeGraph, SIGNAL( addGuideHLine(int) ),
              graphicsWidget, SLOT(  addGuideHLine(int) ) ) ;
 
-    connect( &activeGraph, SIGNAL( moveNode(int, int, int) ),
-             graphicsWidget, SLOT( moveNode(int, int, int) ) ) ;
+    connect( &activeGraph, SIGNAL( moveNode(int, qreal, qreal) ),
+             graphicsWidget, SLOT( moveNode(int, qreal, qreal) ) ) ;
 
 
     connect( &activeGraph,

@@ -97,7 +97,7 @@ public slots:
     bool setNodeColor(long int, QString);
     void openNodeContextMenu();
     void nodeClicked(Node *);
-    void moveNode(int, int, int);	//Called from Graph when creating random nets.
+    void moveNode(int, qreal, qreal);	//Called from Graph when creating random nets.
     bool setNodeSize(long int, int size=0);
     void setAllNodeSize(int size=0);
 
