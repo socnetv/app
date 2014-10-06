@@ -9772,10 +9772,10 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
     qreal vertexWidth = (qreal)  2.0 * initVertexSize ;
     qreal screenArea = canvasHeight*canvasWidth;
     qreal vertexMaxArea = screenArea / V;
-    qreal maxLength =  qCeil ( qSqrt( vertexMaxArea ) /2.0) ;
+    qreal maxLength =  qCeil ( qSqrt( vertexMaxArea ) ) ;
     qreal naturalLength= vertexWidth + maxLength;
     //qreal c_rep=qCeil (log10( vertexMaxArea ) ) * 600;
-    qreal c_rep=maxLength * maxLength ;
+    qreal c_rep=maxLength*  maxLength;
     qreal c_spring=2;
     qreal c4=0.1;
     qreal forceRepelling=0, forceSpring=0;
@@ -9827,13 +9827,17 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
                          << "ulv_x=cos=" << qCos( angle1 )
                          << "ulv_y=sin=" << qSin( angle2 );
 
-                if ( this->hasEdge (v1->name(), v2->name())  ) {
+                if ( this->hasEdge (v1->name(), v2->name()) ||
+                     this->hasEdge (v2->name(), v1->name())   ) {
                     /**
                     * calculate spring forces between adjacent nodes
                     * that pull them together
                     */
                     forceSpring = c_spring * log10 ( dist / naturalLength );
-
+                    if (qAbs(dist - naturalLength) < 1) {
+                        // zero spring force if distance ~ naturalLength
+                        forceSpring =0 ;
+                    }
                     qDebug()<<"   source vertex v1 = "<<v1->name()
                             <<" connected to (pulled) v2= "<< v2->name()
                             <<" c_spring=" << c_spring
@@ -9861,9 +9865,9 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
                          */
                     if (dist !=0){
                         forceRepelling =  c_rep / (dist * dist);
-                        if (forceRepelling > 1.0) {
-                            // do not repel if distance > naturalLength
-                            forceRepelling =0;
+                        if (forceRepelling < 1.0) {
+                            // zero repel froce if distance > naturalLength
+                            forceRepelling = 0;
                         }
                     }
                     else
