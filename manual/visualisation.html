@@ -35,8 +35,41 @@ In level layout methods the nodes are repositioned into levels of different heig
 
 <em>Spring Embedder </em>
 <br />
-In this model, nodes are regarded as physical bodies (i.e. electrons) which exert repelling forces to each other, while edges are springs connecting adjacents nodes. Non-adjacent nodes repel each other while connected nodes are The algorithm continues until the system retains an equilibrium state in which all forces cancel each other.
+The Spring Embedder model (Eades, 1984), part of the Force Directed Placement (FDP) family,
+embeds a mechanical system in the graph by replacing nodes with rings and edges
+with springs which excert forces. In the words of Eades himself:
+<br /><br />
+<em>"The basic idea is as follows. To embed [lay out] a graph we replace the
+vertices by steel rings and replace each edge with a spring to form a
+mechanical system . . . The vertices are placed in some initial layout and
+let go so that the spring forces on the rings move the system to a minimal
+energy state."</em>
+<br /><br />
+In our implementation, non-connecting nodes are regarded as physical bodies (i.e. rings) which exert
+repelling forces to each other, while edges become springs which also excert forces.
+<br /><br />
+These forces are applied to the nodes iteratively, pulling them closer together or pushing them further apart,
+until the system comes to an equilibrium state (node positions do not change anymore).
 
+Note that, following Eades, we do not need to have a faithful simulation;
+we can -and we do- apply unrealistic forces in an unrealistic manner.
+For instance, instead of the forces described by Hooke's law,
+we assume weaker logarithmic forces between connected vertices:
+</p>
+<p class="code">
+forceSpring = c_spring * log10 ( dist / naturalLength );
+</p>
+<p class="code">
+forceRepelling =  c_rep / (dist * dist);
+</p>
+<p class="text">
+where
+<br />
+c_spring=2
+<br />
+naturalLength= vertexWidth + qCeil ( qSqrt( screenArea / V ) )
+<br />
+c_rep=maxLength *  maxLength;
 </p>
 <p class="text">
 
