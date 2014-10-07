@@ -10070,10 +10070,10 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
                     << newPos.y()<< ")";
 
             newPos.rx() = qMin (
-                        canvasWidth / 2.0 - 40.0, qMax (-canvasWidth /2.0  +40.0, newPos.x() )
+                        canvasWidth / 2.0 , qMax (-canvasWidth /2.0 , newPos.x() )
                         );
             newPos.ry() = qMin (
-                        canvasHeight/ 2.0  - 40.0, qMax (-canvasHeight/2.0 +40.0, newPos.y() )
+                        canvasHeight/ 2.0 , qMax (-canvasHeight/2.0 , newPos.y() )
                         );
             //Move node to new position
             //if (newPos.x() < 5.0  ||newPos.y() < 5.0   || newPos.x() >= (canvasWidth -5)||   newPos.y() >= (canvasHeight-5)|| (v1->x() == newPos.x() && v1->y() == newPos.y() )) continue;
@@ -10092,7 +10092,7 @@ qreal Graph::FR_att(const qreal &dist, const qreal &optimalDistance) {
 }
 
 qreal Graph::FR_rep(const qreal &dist, const qreal &optimalDistance) {
-    if ( (2 * optimalDistance) < dist ) return 0;
+    if ( (2.0 * optimalDistance) < dist ) return 0;
     return optimalDistance * optimalDistance  /  dist ;
 }
 
