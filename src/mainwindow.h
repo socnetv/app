@@ -337,7 +337,7 @@ private:
     QMenu *networkMenu, *randomNetworkMenu, *filterMenu;
     QMenu *randomLayoutMenu, *circleLayoutMenu, *levelLayoutMenu, *physicalLayoutMenu;
     QMenu *colorationMenu;
-    QCheckBox *moveSpringEmbedderBx, *moveFruchtermanBx, *moveKamandaBx,
+    QCheckBox *layoutEadesBx, *layoutFruchtermanBx, *layoutKamandaBx,
     *nodeSizesByOutDegreeBx,*nodeSizesByInDegreeBx,
     *layoutGuidesBx;
     QComboBox *toolBoxAnalysisGeodesicsSelect,*toolBoxAnalysisConnectivitySelect,

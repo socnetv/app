@@ -9976,11 +9976,13 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
 */
 void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
     qreal xvel = 0, yvel = 0, ulv_x=0, ulv_y=0;
-    qreal temperature=2; //limits the displacement of the vertex
+    qreal angle1=0, angle2=0;
+    qreal degrees1=0, degrees2=0;
+
     qreal dist = 0;
     QPointF newPos, Delta;
     QPointF disp_u, disp_v;  //displacement vectors
-
+    qreal temperature=canvasWidth / 10.0; //limits the displacement of the vertex
     qreal V = (qreal) vertices() ;
     qreal vertexWidth = (qreal)  2.0 * initVertexSize ;
     qreal screenArea = canvasHeight*canvasWidth;
@@ -10030,8 +10032,21 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 
                 dist = euclideian_distance( Delta );
 
-                ulv_x =  - Delta.x() / dist;
-                ulv_y =  - Delta.y() / dist;
+                if ( dist >0 ) {
+                    angle1 = qAcos( qAbs(Delta.x()) / dist );   // radians
+                    angle2 = (M_PI  / 2.0) -angle1;   // radians (pi/2 -a1)
+                }
+                else {
+                    angle1 =0;
+                    angle2 =0;
+                }
+                degrees1 = angle1 * 180.0 / M_PI; // convert to degrees
+                degrees2 = angle2 * 180.0 / M_PI; // convert to degrees
+//                ulv_x =  qCos( angle1 )  ;
+//                ulv_y =  qSin( angle2 ) ;
+
+                ulv_x =  - qCos( angle1 ) * (Delta.x() / dist);
+                ulv_y =  - qSin( angle2 ) * (Delta.y() / dist);
 
                 //calculate repulsive force between vertices
                 disp_u.rx() += ulv_x * FR_rep (dist , optimalDistance) ;
@@ -10040,6 +10055,10 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 
                 qDebug()<< "  v= " << v1->name() <<  " u= " <<  v2->name()
                         << " distance = " << dist
+                        << " delta.x / dist " << Delta.x() / dist
+                        << " delta.y / dist " << Delta.y() / dist
+                        << " qCos( angle1 ) " << qCos( angle1 )
+                        << " qSin( angle2 ) " << qSin( angle2 )
                         << " ulv_x="<<ulv_x <<" ulv_y="<<ulv_y
                         << "FR_rep " << FR_rep (dist , optimalDistance)
                         << " disp_u.x="<< disp_u.x() << " disp_u.y="<< disp_u.y();
@@ -10076,7 +10095,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
                         canvasHeight/ 2.0 , qMax (-canvasHeight/2.0 , newPos.y() )
                         );
             //Move node to new position
-            //if (newPos.x() < 5.0  ||newPos.y() < 5.0   || newPos.x() >= (canvasWidth -5)||   newPos.y() >= (canvasHeight-5)|| (v1->x() == newPos.x() && v1->y() == newPos.y() )) continue;
+            if (newPos.x() < 5.0  ||newPos.y() < 5.0   || newPos.x() >= (canvasWidth -5)||   newPos.y() >= (canvasHeight-5)|| (v1->x() == newPos.x() && v1->y() == newPos.y() )) continue;
             qDebug(">>> current x and y: %f, %f. This node will move to new x new y = %f, %f", v1->x(), v1->y(),  newPos.x(), newPos.y());
             emit moveNode((*v1).name(),  newPos.x(),  newPos.y());
         }
@@ -10092,7 +10111,12 @@ qreal Graph::FR_att(const qreal &dist, const qreal &optimalDistance) {
 }
 
 qreal Graph::FR_rep(const qreal &dist, const qreal &optimalDistance) {
-    if ( (2.0 * optimalDistance) < dist ) return 0;
+    if ( (2.0 * optimalDistance) < dist ) {
+        //neglect more distant vertices
+        return 0;
+    }
+    // repelsive forces are applied only to vertices within a circular area
+    // of radius 2*optimalDistance
     return optimalDistance * optimalDistance  /  dist ;
 }
 

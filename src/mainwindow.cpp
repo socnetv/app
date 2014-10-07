@@ -1161,7 +1161,7 @@ void MainWindow::initActions(){
             this, SLOT(slotLayoutLevelByProminenceIndex()));
 
 
-    springLayoutAct= new QAction(tr("Spring Embedder"), this);
+    springLayoutAct= new QAction(tr("Spring Embedder (Eades)"), this);
     springLayoutAct->setShortcut(tr("Alt+1"));
     springLayoutAct->setCheckable(true);
     springLayoutAct->setChecked(false);
@@ -1864,7 +1864,7 @@ void MainWindow::initMenuBar() {
     levelLayoutMenu -> addAction (layoutLevel_PP_Act);
 
     layoutMenu->addSeparator();
-    physicalLayoutMenu = new QMenu (tr("Physical..."));
+    physicalLayoutMenu = new QMenu (tr("Force-Directed..."));
     layoutMenu -> addMenu (physicalLayoutMenu);
     physicalLayoutMenu -> addAction (springLayoutAct);
     physicalLayoutMenu -> addAction (FRLayoutAct);
@@ -2202,45 +2202,44 @@ void MainWindow::initToolBox(){
     layoutByIndexBox->setLayout (layoutByIndexGrid );
 
 
-    // create widgets for the "Dynamic" groupBox
-    moveSpringEmbedderBx = new QCheckBox(tr("Spring Embedder") );
-    moveSpringEmbedderBx->setEnabled(true);
-    moveSpringEmbedderBx->setChecked(false);
-    moveSpringEmbedderBx
+    // create widgets for the "Force-Directed Models" groupBox
+    layoutEadesBx = new QCheckBox(tr("Spring Embedder (Eades)") );
+    layoutEadesBx->setEnabled(true);
+    layoutEadesBx->setChecked(false);
+    layoutEadesBx
             ->setToolTip(
                 tr("Embeds a spring-gravitational model on the network, where \n"
-                   "each node is regarded as physical object repeling all \n"
+                   "each node is regarded as physical object (ring) repeling all \n"
                    "other nodes, while springs between connected nodes attract them. \n"
-                   "The result is constant movement. \n"
                    "This is a very SLOW process on networks with N > 100!"));
 
-    moveFruchtermanBx = new QCheckBox(tr("Fruchterman-Reingold") );
-    moveFruchtermanBx->setEnabled(true);
-    moveFruchtermanBx->setChecked(false);
-    moveFruchtermanBx
+    layoutFruchtermanBx = new QCheckBox(tr("Fruchterman-Reingold") );
+    layoutFruchtermanBx->setEnabled(true);
+    layoutFruchtermanBx->setChecked(false);
+    layoutFruchtermanBx
             ->setToolTip(
                 tr("In Fruchterman-Reingold model, the vertices behave as atomic \n"
                    "particles or celestial bodies, exerting attractive and repulsive \n"
                    "forces to each other. Again, only vertices that are neighbours \n"
-                   "attract each other but, unlike Spring Embedder, all vertices \n"
+                   "attract each other but, unlike Eades Spring Embedder, all vertices \n"
                    "repel each other. "));
 
-    moveKamandaBx= new QCheckBox(tr("Kamanda-Kwei") );
-    moveKamandaBx->setEnabled(false);
-    moveKamandaBx->setToolTip(tr("!"));
+    layoutKamandaBx= new QCheckBox(tr("Kamanda-Kawai") );
+    layoutKamandaBx->setEnabled(false);
+    layoutKamandaBx->setToolTip(tr("!"));
 
     //create layout for dynamic visualisation
-    QGridLayout *layoutDynamicGrid = new QGridLayout();
-    layoutDynamicGrid -> addWidget(moveSpringEmbedderBx, 0,0);
-    layoutDynamicGrid -> addWidget(moveFruchtermanBx, 1,0);
-    layoutDynamicGrid -> addWidget(moveKamandaBx, 2,0);
-    layoutDynamicGrid->setSpacing(10);
-    layoutDynamicGrid->setMargin(0);
+    QGridLayout *layoutForceDirectedGrid = new QGridLayout();
+    layoutForceDirectedGrid -> addWidget(layoutEadesBx, 0,0);
+    layoutForceDirectedGrid -> addWidget(layoutFruchtermanBx, 1,0);
+    layoutForceDirectedGrid -> addWidget(layoutKamandaBx, 2,0);
+    layoutForceDirectedGrid->setSpacing(10);
+    layoutForceDirectedGrid->setMargin(0);
 
     //create a box for dynamic layout options
-    QGroupBox *layoutDynamicBox= new QGroupBox(tr("By Dynamic Model"));
+    QGroupBox *layoutDynamicBox= new QGroupBox(tr("By Force-Directed Model"));
     layoutDynamicBox->setMaximumWidth(300);
-    layoutDynamicBox->setLayout (layoutDynamicGrid );
+    layoutDynamicBox->setLayout (layoutForceDirectedGrid );
 
 
     //create widgets for additional visualization options box
@@ -2306,9 +2305,9 @@ void MainWindow::initToolBox(){
     toolBox->addTab(controlGroupBox, tr("Controls"));
 
 
-    connect(moveSpringEmbedderBx, SIGNAL(clicked(bool)),
+    connect(layoutEadesBx, SIGNAL(clicked(bool)),
             this, SLOT(slotLayoutSpringEmbedder(bool)));
-    connect(moveFruchtermanBx, SIGNAL(stateChanged(int)),
+    connect(layoutFruchtermanBx, SIGNAL(stateChanged(int)),
             this, SLOT(layoutFruchterman(int)));
 
     connect(nodeSizesByOutDegreeBx , SIGNAL(clicked(bool)),
@@ -2753,7 +2752,7 @@ void MainWindow::initNet(){
     toolBoxLayoutByIndexTypeSelect ->setCurrentIndex(0);
     nodeSizesByOutDegreeBx->setChecked(false);
     nodeSizesByInDegreeBx->setChecked(false);
-    moveSpringEmbedderBx->setChecked(false);
+    layoutEadesBx->setChecked(false);
     springLayoutAct->setChecked(false);
     FRLayoutAct->setChecked(false);
     displayLinksWeightNumbersAct->setChecked(false);
@@ -5450,24 +5449,24 @@ void MainWindow::slotLayoutSpringEmbedder(bool state ){
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical(this, "Error",tr("There are node nodes yet!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
         statusMessage( tr("I am really sorry. You must really load a file first... ")  );
-        moveSpringEmbedderBx->setCheckState(Qt::Unchecked);
+        layoutEadesBx->setCheckState(Qt::Unchecked);
         return;
     }
 
     //Stop any other layout running
-    moveFruchtermanBx->setCheckState(Qt::Unchecked);
+    layoutFruchtermanBx->setCheckState(Qt::Unchecked);
     activeGraph.nodeMovement(!state, 2, graphicsWidget->width(), graphicsWidget->height());
 
     scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
 
     if (state){
         statusMessage( tr("Embedding a spring-gravitational model on the network.... ")  );
-        moveSpringEmbedderBx->setCheckState(Qt::Checked);
+        layoutEadesBx->setCheckState(Qt::Checked);
         activeGraph.nodeMovement(state, 1, graphicsWidget->width(), graphicsWidget->height());
         statusMessage( tr("Click on the checkbox \"Spring-Embedder\" to stop movement!") );
     }
     else {
-        moveSpringEmbedderBx->setCheckState(Qt::Unchecked);
+        layoutEadesBx->setCheckState(Qt::Unchecked);
         activeGraph.nodeMovement(state, 1, graphicsWidget->width(), graphicsWidget->height());
         statusMessage( tr("Movement stopped!") );
     }
@@ -5487,13 +5486,13 @@ void MainWindow::slotLayoutFruchterman(){
         statusMessage( tr("I am really sorry. You must really load a file first... ")  );
         return;
     }
-    if (moveFruchtermanBx->checkState() == Qt::Unchecked){
+    if (layoutFruchtermanBx->checkState() == Qt::Unchecked){
         statusMessage( tr("Embedding a repelling-attracting forces model on the network.... ")  );
-        moveFruchtermanBx->setCheckState(Qt::Checked);
+        layoutFruchtermanBx->setCheckState(Qt::Checked);
         statusMessage( tr("Click on the checkbox \"Fruchterman-Reingold\" to stop movement!") );
     }
     else {
-        moveFruchtermanBx->setCheckState(Qt::Unchecked);
+        layoutFruchtermanBx->setCheckState(Qt::Unchecked);
         statusMessage( tr("Movement stopped!") );
     }
 
@@ -5506,7 +5505,7 @@ void MainWindow::slotLayoutFruchterman(){
 */
 void MainWindow::layoutFruchterman (int state){
     qDebug("MW: layoutFruchterman ()");
-    moveSpringEmbedderBx->setChecked(false);
+    layoutEadesBx->setChecked(false);
     scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
     activeGraph.nodeMovement(state, 2, graphicsWidget->width(), graphicsWidget->height());
     scene->setItemIndexMethod (QGraphicsScene::BspTreeIndex); //best when not moving items
