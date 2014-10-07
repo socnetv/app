@@ -245,6 +245,11 @@ public:
 
     QList<int> verticesIsolated();
 
+    qreal euclideian_distance(const QPointF &a, const QPointF &b);
+    qreal euclideian_distance(const QPointF &a);
+    qreal FR_rep(const qreal &dist, const qreal &optimalDistance) ;
+    qreal FR_att(const qreal &dist, const qreal &optimalDistance) ;
+
     /* EDGES */
     float hasEdge (int v1, int v2);
     void removeEdge (int v1, int v2);

@@ -45,16 +45,14 @@ mechanical system . . . The vertices are placed in some initial layout and
 let go so that the spring forces on the rings move the system to a minimal
 energy state."</em>
 <br /><br />
-In our implementation, non-connecting nodes are regarded as physical bodies (i.e. rings) which exert
-repelling forces to each other, while edges become springs which also excert forces.
+In our implementation, nodes are regarded as physical bodies (i.e. rings) which exert
+repelling forces to each other, while edges become springs which excert attractive forces.
 <br /><br />
 These forces are applied to the nodes iteratively, pulling them closer together or pushing them further apart,
 until the system comes to an equilibrium state (node positions do not change anymore).
 
-Note that, following Eades, we do not need to have a faithful simulation;
-we can -and we do- apply unrealistic forces in an unrealistic manner.
-For instance, instead of the forces described by Hooke's law,
-we assume weaker logarithmic forces between connected vertices:
+Note that, following Eades, the forces of springs do now follow Hooke'w Law.
+Instead we assume weaker logarithmic forces between vertices:
 </p>
 <p class="code">
 forceSpring = c_spring * log10 ( dist / naturalLength );
@@ -70,12 +68,31 @@ c_spring=2
 naturalLength= vertexWidth + qCeil ( qSqrt( screenArea / V ) )
 <br />
 c_rep=maxLength *  maxLength;
+
+<br />
+Note: Repulsive forces are calculated between every pair of
+vertices, but attractive forces are calculated only between neighbours.
+
 </p>
 <p class="text">
 
 <em>Fruchterman-Reingold </em>
 <br />
+Fruchterman and Reingold (1991) refined the Spring Embedder model by replacing
+nodes with electrically charged  or gravitational bodies.
 
+In their words:
+<em>"Consider the following analogy: the vertices behave as atomic particles or celestial
+bodies, exerting attractive and repulsive forces on one another; the forces induce
+movement. Our algorithm will resemble molecular or planetary simulations, some-
+times called n -body problems. Following Eades, however, we know that we need
+not have a faithful simulation; we can apply unrealistic forces in an unrealistic
+manner. So, like Eades, we make only vertices that are neighbours attract each
+other, but all vertices repel each other. This is consistent with the asymmetry of our
+two guidelines above." </em>
+<br /><br />
+Again, only neighbouring vertices attract each other while all vertices repel each other.
+<br /><br />
 
 
 </p>
