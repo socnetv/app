@@ -943,6 +943,40 @@ float Graph::hasEdge (int v1, int v2) {
 }
 
 
+
+void Graph::edges(){
+    H_edges::const_iterator it1;
+    QList<Vertex*>::const_iterator it;
+    int  relation=0,source=0, target=0, w=0;
+    float weight=0;
+    bool edgeStatus=false;
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
+        if ( ! (*it)->isEnabled() )
+            continue ;
+        source = index[ (*it)->name() ];
+        it1=m_graph [ source ] ->m_outLinks.cbegin();
+        while ( it1!=m_graph [ source ] -> m_outLinks.cend() ){
+            relation = it1.value().first;
+            if ( relation != currentRelation() )  {
+                ++it1;
+                continue;
+            }
+            edgeStatus=it1.value().second.second;
+            if ( edgeStatus != true)   {
+                ++it1;
+                continue;
+            }
+            target = it1.key();
+            w=index[ target ];
+            weight = it1.value().second.first;
+            qDebug("u=%i is connected with node %i of index w=%i. ", source, target, w);
+            ++it1;
+        }
+    }
+
+}
+
 /**
     Called from MainWindow
 */
@@ -9807,16 +9841,8 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
 
                 dist = euclideian_distance(v1->pos(), v2->pos());
 
-                if ( dist >0 ) {
-                    angle1 = qAcos( qAbs(Delta.x()) / dist );   // radians
-                    angle2 = (M_PI  / 2.0) -angle1;   // radians (pi/2 -a1)
-                }
-                else {
-                    angle1 =0;
-                    angle2 =0;
-                }
-                degrees1 = angle1 * 180.0 / M_PI; // convert to degrees
-                degrees2 = angle2 * 180.0 / M_PI; // convert to degrees
+                compute_angles(Delta, dist, angle1, angle2, degrees1, degrees2 );
+
                 ulv_x =  qCos( angle1 )  ;
                 ulv_y =  qSin( angle2 ) ;
 
@@ -9962,9 +9988,6 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
 }
 
 
-
-
-
 /**
     Fruchterman and Reingold (1991) refined the Spring Embedder model by replacing the forces.
     In this model, "the vertices behave as atomic particles or celestial bodies,
@@ -9975,14 +9998,13 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
     sometimes called n-body problems.
 */
 void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
-    qreal xvel = 0, yvel = 0, ulv_x=0, ulv_y=0;
+    qreal ulv_x=0, ulv_y=0;
     qreal angle1=0, angle2=0;
     qreal degrees1=0, degrees2=0;
-
     qreal dist = 0;
-    QPointF newPos, Delta;
-    QPointF disp_u, disp_v;  //displacement vectors
-    qreal temperature=canvasWidth / 10.0; //limits the displacement of the vertex
+    QPointF Delta;
+    //qreal temperature=canvasWidth / 10.0; //limits the displacement of the vertex
+    qreal temperature=2.0; //limits the displacement of the vertex
     qreal V = (qreal) vertices() ;
     qreal vertexWidth = (qreal)  2.0 * initVertexSize ;
     qreal screenArea = canvasHeight*canvasWidth;
@@ -9996,8 +10018,13 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
         qDebug () << "Graph: Setting optimalDistance = "<<  optimalDistance
                   << "...following Fruchterman-Reingold (1991) formula ";
 
-        xvel=0;
-        yvel=0;
+
+        //setup init disp
+        foreach (Vertex *v1, m_graph)  {
+            v1->disp().rx() = 0;
+            v1->disp().ry() = 0;
+
+        }
 
         foreach (Vertex *v1, m_graph)  {
 
@@ -10009,9 +10036,6 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
                 qDebug() << "  vertex v " << v1->name() << " disabled. Continue";
                 continue;
             }
-
-            disp_u.setX(0); disp_u.setY(0);
-            disp_v.setX(0); disp_v.setY(0);
 
             foreach (Vertex *v2, m_graph)  {
                 qDebug () << "  u = "<< v2->name()
@@ -10032,16 +10056,8 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 
                 dist = euclideian_distance( Delta );
 
-                if ( dist >0 ) {
-                    angle1 = qAcos( qAbs(Delta.x()) / dist );   // radians
-                    angle2 = (M_PI  / 2.0) -angle1;   // radians (pi/2 -a1)
-                }
-                else {
-                    angle1 =0;
-                    angle2 =0;
-                }
-                degrees1 = angle1 * 180.0 / M_PI; // convert to degrees
-                degrees2 = angle2 * 180.0 / M_PI; // convert to degrees
+                compute_angles(Delta, dist, angle1, angle2, degrees1, degrees2 );
+
 //                ulv_x =  qCos( angle1 )  ;
 //                ulv_y =  qSin( angle2 ) ;
 
@@ -10049,9 +10065,8 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
                 ulv_y =  - qSin( angle2 ) * (Delta.y() / dist);
 
                 //calculate repulsive force between vertices
-                disp_u.rx() += ulv_x * FR_rep (dist , optimalDistance) ;
-                disp_u.ry() += ulv_y * FR_rep (dist , optimalDistance) ;
-
+                v1->disp().rx() += ulv_x * FR_rep (dist , optimalDistance) ;
+                v1->disp().ry() += ulv_y * FR_rep (dist , optimalDistance) ;
 
                 qDebug()<< "  v= " << v1->name() <<  " u= " <<  v2->name()
                         << " distance = " << dist
@@ -10061,48 +10076,67 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
                         << " qSin( angle2 ) " << qSin( angle2 )
                         << " ulv_x="<<ulv_x <<" ulv_y="<<ulv_y
                         << "FR_rep " << FR_rep (dist , optimalDistance)
-                        << " disp_u.x="<< disp_u.x() << " disp_u.y="<< disp_u.y();
+                        << " disp_u.x="<< v1->disp().rx() << " disp_u.y="<< v1->disp().ry();
 
                 if ( this->hasEdge (v1->name(), v2->name())  ) {
                     //calculate attracting force
-                    disp_u.rx() += ulv_x * FR_att (dist , optimalDistance) ;
-                    disp_u.ry() += ulv_y * FR_att (dist , optimalDistance) ;
-//                    disp_v.rx() += ulv_x * FR_att (dist , optimalDistance) ;
-//                    disp_v.ry() += ulv_y * FR_att (dist , optimalDistance) ;
+                    v1->disp().rx() += ulv_x * FR_att (dist , optimalDistance) ;
+                    v1->disp().ry() += ulv_y * FR_att (dist , optimalDistance) ;
+                    v2->disp().rx() -= ulv_x * FR_att (dist , optimalDistance) ;
+                    v2->disp().ry() -= ulv_y * FR_att (dist , optimalDistance) ;
+
                     qDebug() << "  v= "<<v1->name()
                              <<  " attracted by u= "<< v2->name()
                              <<"  optimalDistance =" << optimalDistance
                             << "FR_att " << FR_att (dist , optimalDistance)
-                           << " dux="<< disp_u.x() << " duy="<< disp_u.y();
+                           << " dux="<< v1->disp().rx() << " duy="<< v1->disp().ry();
                 }
 
             }
 
-            // compute the new position
-            // limit the maximum displacement to a maximum temperature
-            xvel = ( disp_u.x() / qAbs (disp_u.x()) ) *  qMin( qAbs(disp_u.x()), temperature) ;
-            yvel = ( disp_u.y() / qAbs (disp_u.y()) ) *  qMin( qAbs(disp_u.y()), temperature) ;
-            newPos = QPointF(v1->x()+ xvel, v1->y()+yvel);
-            qDebug()<< " source vertex v1 " << v1->name()
-                    << " current pos: (" << v1->x() << "," << v1->y() << ")"
-                    << "Possible new pos (" <<  newPos.x() << ","
-                    << newPos.y()<< ")";
-
-            newPos.rx() = qMin (
-                        canvasWidth / 2.0 , qMax (-canvasWidth /2.0 , newPos.x() )
-                        );
-            newPos.ry() = qMin (
-                        canvasHeight/ 2.0 , qMax (-canvasHeight/2.0 , newPos.y() )
-                        );
-            //Move node to new position
-            if (newPos.x() < 5.0  ||newPos.y() < 5.0   || newPos.x() >= (canvasWidth -5)||   newPos.y() >= (canvasHeight-5)|| (v1->x() == newPos.x() && v1->y() == newPos.y() )) continue;
-            qDebug(">>> current x and y: %f, %f. This node will move to new x new y = %f, %f", v1->x(), v1->y(),  newPos.x(), newPos.y());
-            emit moveNode((*v1).name(),  newPos.x(),  newPos.y());
         }
-        // reduce the temperature as the layout approaches a better configuration
 
+        layout_FD_moveNodes(temperature);
+
+        // reduce the temperature as the layout approaches a better configuration
+        //cool(temperature);
     }
 
+}
+
+void Graph::layout_FD_moveNodes(const qreal temperature) {
+
+    qDebug() << "\n\n *****  layout_FD_moveNodes() \n\n " ;
+    QPointF newPos;
+    qreal xvel = 0, yvel = 0;
+    foreach (Vertex *v1, m_graph) {
+        // compute the new position
+        // limit the maximum displacement to a maximum temperature
+        xvel = ( v1->disp().rx() / qAbs (v1->disp().rx()) ) *  qMin( qAbs(v1->disp().rx()), temperature) ;
+        yvel = ( v1->disp().ry() / qAbs (v1->disp().ry()) ) *  qMin( qAbs(v1->disp().ry()), temperature) ;
+        newPos = QPointF(v1->x()+ xvel, v1->y()+yvel);
+        qDebug()<< " source vertex v1 " << v1->name()
+                << " current pos: (" << v1->x() << "," << v1->y() << ")"
+                << "Possible new pos (" <<  newPos.x() << ","
+                << newPos.y()<< ")";
+
+        newPos.rx() = qMin (
+                    canvasWidth / 2.0 , qMax (-canvasWidth /2.0 , newPos.x() )
+                    );
+        newPos.ry() = qMin (
+                    canvasHeight/ 2.0 , qMax (-canvasHeight/2.0 , newPos.y() )
+                    );
+        //Move node to new position
+        if ( newPos.x() < 5.0  ||newPos.y() < 5.0   ||
+                newPos.x() >= (canvasWidth -5)||
+                newPos.y() >= (canvasHeight-5)||
+                (v1->x() == newPos.x() && v1->y() == newPos.y() )
+                )
+            continue;
+        qDebug(">>> current x and y: %f, %f. This node will move to new x new y = %f, %f",
+               v1->x(), v1->y(),  newPos.x(), newPos.y());
+        emit moveNode((*v1).name(),  newPos.x(),  newPos.y());
+    }
 }
 
 
@@ -10121,13 +10155,41 @@ qreal Graph::FR_rep(const qreal &dist, const qreal &optimalDistance) {
 }
 
 
-// return the new FR velocity
-//QPointF Graph::FR_vel(const QPointF disp, const qreal t){
-//    QPointF accel;
-//    accel.rx() = ( disp.x() / qAbs (disp.x()) ) *  qMin( qAbs(disp_u.x()), t) ;
-//    accel.ry() = ( disp.y() / qAbs (disp.y()) ) *  qMin( qAbs(disp_u.y()), t) ;
-//    return accel;
-//}
+
+/**
+ * @brief Graph::compute_angles
+ * Computes the two angles of the orthogonal triangle shaped by two points
+ * of difference vector delta and distance dist
+ * A = 90
+ * B = angle1
+ * C = angle2
+ *
+ * @param Delta
+ * @param dist
+ * @param angle1
+ * @param angle2
+ * @param degrees1
+ * @param degrees2
+ */
+void Graph::compute_angles(const QPointF &Delta,
+                           const qreal &dist,
+                           qreal &angle1,
+                           qreal &angle2,
+                           qreal &degrees1,
+                           qreal &degrees2 )
+{
+    if ( dist >0 ) {
+        angle1 = qAcos( qAbs(Delta.x()) / dist );   // radians
+        angle2 = (M_PI  / 2.0) -angle1;   // radians (pi/2 -a1)
+    }
+    else {
+        angle1 =0;
+        angle2 =0;
+    }
+    degrees1 = angle1 * 180.0 / M_PI; // convert to degrees
+    degrees2 = angle2 * 180.0 / M_PI; // convert to degrees
+}
+
 
 /**
  * @brief Graph::euclideian_distance

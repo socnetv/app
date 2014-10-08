@@ -28,7 +28,6 @@
 
 
 #include <QtDebug>		//used for qDebug messages
-#include <QPointF>
 #include "graph.h"
 
 Vertex::Vertex(	Graph* parent, 

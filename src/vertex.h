@@ -31,6 +31,7 @@
 #include <QString>
 #include <QHash>
 #include <QList>
+#include <QPointF>
 #include <map>
 
 using namespace std;
@@ -143,6 +144,11 @@ public:
 
     QPointF pos ();
 
+    QPointF & disp() { return m_disp; }  //displacement vector
+
+    void set_dispX (float x) { m_disp.rx() = x ; }
+    void set_dispY (float y) { m_disp.ry() = y ; }
+
     void setOutLinkColor(long int, QString);
     QString outLinkColor(int);
 
@@ -229,6 +235,7 @@ private:
     int m_value, m_size, m_labelSize, m_numberSize, m_curRelation;
     bool m_reciprocalLinked, m_enabled, m_hasCLC, m_isolated;
     QString m_color, m_numberColor, m_label, m_labelColor, m_shape;
+    QPointF m_disp;
     //QString *outLinkColors;
     H_IntToStr outLinkColors;
     //FIXME vertex coords

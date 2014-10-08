@@ -250,7 +250,17 @@ public:
     qreal FR_rep(const qreal &dist, const qreal &optimalDistance) ;
     qreal FR_att(const qreal &dist, const qreal &optimalDistance) ;
 
+    void layout_FD_moveNodes(const qreal temperature) ;
+
+    void compute_angles( const QPointF &Delta,
+                         const qreal &dist,
+                         qreal &angle1,
+                         qreal &angle2,
+                         qreal &degrees1,
+                         qreal &degrees2 );
+
     /* EDGES */
+    void edges();
     float hasEdge (int v1, int v2);
     void removeEdge (int v1, int v2);
 
