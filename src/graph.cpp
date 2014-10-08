@@ -10112,8 +10112,10 @@ void Graph::layout_FD_moveNodes(const qreal temperature) {
     foreach (Vertex *v1, m_graph) {
         // compute the new position
         // limit the maximum displacement to a maximum temperature
-        xvel = ( v1->disp().rx() / qAbs (v1->disp().rx()) ) *  qMin( qAbs(v1->disp().rx()), temperature) ;
-        yvel = ( v1->disp().ry() / qAbs (v1->disp().ry()) ) *  qMin( qAbs(v1->disp().ry()), temperature) ;
+        xvel = ( v1->disp().rx() / qAbs (v1->disp().rx()) ) *
+                qMin( qAbs(v1->disp().rx()), temperature) ;
+        yvel = ( v1->disp().ry() / qAbs (v1->disp().ry()) ) *
+                qMin( qAbs(v1->disp().ry()), temperature) ;
         newPos = QPointF(v1->x()+ xvel, v1->y()+yvel);
         qDebug()<< " source vertex v1 " << v1->name()
                 << " current pos: (" << v1->x() << "," << v1->y() << ")"
