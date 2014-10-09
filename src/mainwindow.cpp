@@ -110,6 +110,9 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect( graphicsWidget, SIGNAL( windowResized(int, int)),
              this, SLOT( windowInfoStatusBar(int,int)) 	);
 
+    connect( graphicsWidget, SIGNAL( windowResized(int, int)),
+             &activeGraph, SLOT( setCanvasDimensions(int,int)) 	);
+
     connect( graphicsWidget, SIGNAL( userDoubleClicked(int, QPointF) ),
              this, SLOT( addNodeWithMouse(int,QPointF) ) ) ;
 

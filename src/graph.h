@@ -247,11 +247,15 @@ public:
 
     qreal euclideian_distance(const QPointF &a, const QPointF &b);
     qreal euclideian_distance(const QPointF &a);
-    qreal FR_rep(const qreal &dist, const qreal &optimalDistance) ;
-    qreal FR_att(const qreal &dist, const qreal &optimalDistance) ;
+    int sign(const qreal &D);
 
-    void layout_FD_moveNodes(const qreal temperature) ;
+    qreal layoutForceDirected_F_rep(const qreal &dist,const qreal &optimalDistance) ;
+    qreal layoutForceDirected_F_att(const qreal &dist,const qreal &optimalDistance) ;
 
+    void layoutForceDirected_Eades_moveNodes(const qreal &c4);
+    void layoutForceDirected_FR_moveNodes(const qreal &temperature) ;
+
+    qreal computeOptimalDistance(const int &Vertices);
     void compute_angles( const QPointF &Delta,
                          const qreal &dist,
                          qreal &angle1,
