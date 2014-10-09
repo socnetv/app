@@ -9805,7 +9805,7 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
     qreal V = (qreal) vertices() ;
     qreal naturalLength= computeOptimalDistance(V);
 
-    qDebug() << "layoutForceDirectedSpringEmbedder() "
+    qDebug() << "\n\n layoutForceDirectedSpringEmbedder() "
              << " vertices " << V
              << " naturalLength " << naturalLength;
 
@@ -9855,8 +9855,8 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
                 v1->disp().rx() += sign( DV.x() ) * f_rep ;
                 v1->disp().ry() += sign( DV.y() ) * f_rep  ;
 
-                qDebug() <<" v1 = "<<v1->name()
-                         <<" NOT connected to (pushed away) v2 = " <<v2->name()
+                qDebug() <<" s = "<<v1->name()
+                         <<" pushed away from t = " <<v2->name()
                         <<" f_rep=" << f_rep
                        << " signdx " << sign( DV.x() )
                        << " signdy " << sign( DV.y() )
@@ -9879,7 +9879,6 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
 
                     qDebug() << "  s= "<<v1->name()
                              << " attracted by t= "<< v2->name()
-                             <<"  naturalLength =" << naturalLength
                              << " f_att="<< f_att
                              << " signdx " << sign( DV.x() )
                              << " signdy " << sign( DV.y() )
@@ -10160,7 +10159,7 @@ qreal Graph::euclideian_distance (const QPointF & a){
 
 
 void Graph::layoutForceDirected_Eades_moveNodes(const qreal &c4) {
-    qDebug() << "\n\n *****  layoutForceDirected_Eades_moveNodes() \n\n " ;
+    qDebug() << "\n *****  layoutForceDirected_Eades_moveNodes() \n " ;
     QPointF newPos;
     qreal xvel = 0, yvel = 0;
     foreach (Vertex *v1, m_graph) {
@@ -10187,7 +10186,7 @@ void Graph::layoutForceDirected_Eades_moveNodes(const qreal &c4) {
                     );
 
 
-        qDebug() << "Final new pos (" <<  newPos.x() << ","
+        qDebug() << "  Final new pos (" <<  newPos.x() << ","
                  << newPos.y()<< ")";
         emit moveNode((*v1).name(),  newPos.x(),  newPos.y());
 
