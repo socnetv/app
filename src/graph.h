@@ -208,7 +208,8 @@ public:
     void removeVertex (long int );
 
     void setInitVertexSize (long int);
-    void setVertexSize(long int v, int );
+    void setVertexSize(const long int &v, const int &newsize );
+    void setAllVerticesSize(const int &newsize);
 
     void setInitVertexShape (QString);
     void setVertexShape(int v, QString shape);

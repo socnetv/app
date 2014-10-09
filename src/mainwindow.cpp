@@ -4989,19 +4989,42 @@ void MainWindow::slotChangeNodeSize(){
         statusMessage( tr("Cannot change nothing.")  );
         return;
     }
-    if (nodeClicked) {
-        statusMessage( tr("Error. ")  );
-        return;
-    }
     bool ok=false;
-    int newSize = QInputDialog::getInt(this, "Change node size", tr("Change node size to: (1-100)"),initNodeSize, 1, 100, 1, &ok ) ;
+    long int nodenumber;
+    int newSize;
+    if (!nodeClicked) {
+        long int min = activeGraph.firstVertexNumber();
+        long int max = activeGraph.lastVertexNumber();
+        if (min==-1 || max==-1 ) {
+            qDebug("ERROR in finding min max nodeNumbers. Abort");
+            return;
+        }
+        nodenumber =  QInputDialog::getInt(
+                    this,"Remove node",
+                    tr("Choose a node to remove between ("
+                       + QString::number(min).toLatin1()+"..."
+                       + QString::number(max).toLatin1()+"):"),
+                    min, 1, max, 1, &ok);
+        if (!ok) {
+            statusMessage( "Change size operation cancelled." );
+            return;
+        }
+    }
+    else
+    {
+        nodenumber = clickedJimNumber;
+    }
+
+    newSize = QInputDialog::getInt(
+                this, "Change node size",
+                tr("Change node size to: (1-100)"),initNodeSize, 1, 100, 1, &ok ) ;
     if (!ok) {
         statusMessage( "Change size operation cancelled." );
         return;
     }
-    clickedJim->setSize(newSize);
-    activeGraph.setVertexSize(clickedJimNumber,newSize);
-    graphChanged();
+
+    activeGraph.setVertexSize(nodenumber,newSize);
+
     statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
     return;
 }
@@ -7463,7 +7486,11 @@ void MainWindow::slotDisplayNodeLabels(bool toggle){
 void MainWindow::slotChangeAllNodesSize() {
     bool ok=false;
 
-    int newSize = QInputDialog::getInt(this, "Change node size", tr("Select new size for all nodes: (1-16)"),initNodeSize, 1, 16, 1, &ok );
+    int newSize = QInputDialog::getInt(
+                this,
+                "Change node size",
+                tr("Select new size for all nodes: (1-16)"),
+                initNodeSize, 1, 16, 1, &ok );
     if (!ok) {
         statusMessage( "Change node size operation cancelled." );
         return;
@@ -7497,14 +7524,7 @@ void MainWindow::changeAllNodesSize(int size) {
         }
     }
     initNodeSize = size;
-    activeGraph.setInitVertexSize(initNodeSize);
-    qDebug () << "MW: changeAllNodesSize: changing to " <<  size;
-    QList<QGraphicsItem *> list=scene->items();
-    for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
-        if ( (*it) -> type() == TypeNode ){
-            Node *jim = (Node*) (*it);
-            (*jim).setSize(size);
-        }
+    activeGraph.setAllVerticesSize(size);
 }
 
 

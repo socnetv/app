@@ -745,10 +745,31 @@ void Graph::setInitVertexSize (long int size) {
 
 
 //Changes the size.of vertex v 
-void Graph::setVertexSize(long int v, int size) {
+void Graph::setVertexSize(const long int &v, const int &size) {
     m_graph[ index[v] ]->setSize(size);
     graphModified=true;
     emit graphChanged();
+    emit setNodeSize(v, size);
+}
+
+
+//Changes the size.of all vertices
+void Graph::setAllVerticesSize(const int &size) {
+    setInitVertexSize(size);
+    QList<Vertex*>::const_iterator it;
+    for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( ! (*it)->isEnabled() ){
+            continue;
+        }
+        else {
+            (*it)->setSize(size) ;
+            emit setNodeSize((*it)->name(), size);
+        }
+    }
+    graphModified=true;
+    emit graphChanged();
+
+
 }
 
 
