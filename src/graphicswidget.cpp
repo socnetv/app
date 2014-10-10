@@ -339,10 +339,10 @@ void GraphicsWidget::nodeMoved(int number, int x, int y){
 	on the canvas  
 */
 void GraphicsWidget::moveNode(int number, qreal x, qreal y){
-    qDebug() << "GW: moveNode() " << number << ": " << x << y;
+    qDebug() << "   GW: moveNode() " << number << ": " << x << y;
 	nodeHash.value(number)->setPos(x,y);
-    qDebug() << "GW: moveNode() node reports x, y as "
-             << nodeHash.value(number)->x() << nodeHash.value(number)->x();
+//    qDebug() << "GW: moveNode() node reports x, y as "
+//             << nodeHash.value(number)->x() << nodeHash.value(number)->x();
 }
 
 

@@ -969,7 +969,8 @@ void Graph::edges(){
     H_edges::const_iterator it1;
     QList<Vertex*>::const_iterator it;
     int  relation=0,source=0, target=0, w=0;
-    float weight=0;
+    float weight;
+    weight=0;
     bool edgeStatus=false;
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
@@ -5093,7 +5094,8 @@ void Graph::reachabilityMatrix( const bool considerWeights,
         influenceRanges.clear();
         influenceDomains.clear();
         disconnectedVertices.clear();
-        bool isolateVertex=true;
+        bool isolateVertex;
+        isolateVertex=true;
         for (i=0; i < size ; i++) {
             for (j=i+1; j < size ; j++) {
                 if ( XRM.item(i,j) ==1 ) {
@@ -9836,6 +9838,7 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
         foreach (Vertex *v1, m_graph)  {
             v1->disp().rx() = 0;
             v1->disp().ry() = 0;
+            qDebug() << " 0000 s " << v1->name() << " zeroing rx/ry";
         }
 
         foreach (Vertex *v1, m_graph)  {
@@ -9850,8 +9853,6 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
             }
 
             foreach (Vertex *v2, m_graph)  {
-                qDebug() <<" #### check target t = "<< v2->name()<<" pos ("
-                        <<  v2->x() << "," << v2->y() << ")";
 
                 if ( ! v2->isEnabled() ) {
                     qDebug() << "   t " << v1->name() << " disabled. Continue";
@@ -9875,14 +9876,12 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
                 f_rep = layoutForceDirected_F_rep (dist, naturalLength) ;
                 v1->disp().rx() += sign( DV.x() ) * f_rep ;
                 v1->disp().ry() += sign( DV.y() ) * f_rep  ;
-
-                qDebug() <<" s = "<<v1->name()
+                qDebug() <<"  s = "<<v1->name()
                          <<" pushed away from t = " <<v2->name()
-                        <<" f_rep=" << f_rep
-                       << " signdx " << sign( DV.x() )
-                       << " signdy " << sign( DV.y() )
-                        << " disp_s.x="<< v1->disp().rx()
-                        << " disp_s.y="<< v1->disp().ry();
+                           << " dist " <<dist
+                        << " f_rep=" << f_rep
+                        << " sign * f_repx " << sign( DV.x() ) * f_rep
+                        << " sign * f_repy " << sign( DV.y() ) * f_rep ;
 
                 /**
                 * calculate spring forces between adjacent nodes
@@ -9900,9 +9899,10 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
 
                     qDebug() << "  s= "<<v1->name()
                              << " attracted by t= "<< v2->name()
+                                << " dist " <<dist
                              << " f_att="<< f_att
-                             << " signdx " << sign( DV.x() )
-                             << " signdy " << sign( DV.y() )
+                             << " sdx * f_att " <<sign( DV.x() ) * f_att
+                             << " sdy * f_att " <<sign( DV.y() ) * f_att
                              << " disp_s.x="<< v1->disp().rx()
                              << " disp_s.y="<< v1->disp().ry()
                              << " disp_t.x="<< v2->disp().rx()
@@ -9913,12 +9913,16 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
             } //end for v2
             //recompute naturalLength (in case the user resized the window)
             naturalLength= computeOptimalDistance(V);
+            qDebug() << "  >>> final s = "<<v1->name()
+                     << " disp_s.x="<< v1->disp().rx()
+                      << " disp_s.y="<< v1->disp().ry();
+
         } // end for v1
 
 
         layoutForceDirected_Eades_moveNodes(c4) ;
 
-    }
+    } //end dynamicMovement
 }
 
 
@@ -9953,6 +9957,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
         foreach (Vertex *v1, m_graph)  {
             v1->disp().rx() = 0;
             v1->disp().ry() = 0;
+            qDebug() << " 0000 s " << v1->name() << " zeroing rx/ry";
         }
 
         foreach (Vertex *v1, m_graph)  {
@@ -10051,17 +10056,12 @@ qreal Graph::layoutForceDirected_F_att( const qreal &dist, const qreal &optimalD
     qreal f_att;
     if (layoutType == 1) {  //layoutType -> Eades
         qreal c_spring=2;
-        if (qAbs(dist - optimalDistance) < 1 ) {
-            // zero spring force if distance ~ optimalDistance
-            f_att =0 ;
-        }
-        else {
-            f_att = c_spring * log10 ( dist / optimalDistance );
-        }
+        f_att = c_spring * log10 ( dist / optimalDistance );
     }
     else {   // layoutType -> FR
         f_att= ( dist * dist ) / optimalDistance;
     }
+
     return f_att;
 }
 
@@ -10070,11 +10070,10 @@ qreal Graph::layoutForceDirected_F_rep(const qreal &dist, const qreal &optimalDi
     qreal f_rep;
     if (layoutType == 1) { //layoutType -> Eades
         if (dist !=0){
-            // qreal c_rep=maxLength*  maxLength;
             qreal c_rep= 1.0;
             f_rep =  c_rep / (dist * dist);
-            if ( (2.0 * optimalDistance) < dist ) {
-                //neglect vertices outside circular area of radius 2*optimalDistance
+            if ( dist > (2.0 * optimalDistance)   ) {
+                //neglect vertices outside circular area of radius 2 * optimalDistance
                 f_rep=0;
             }
         }
@@ -10180,7 +10179,7 @@ qreal Graph::euclideian_distance (const QPointF & a){
 
 
 void Graph::layoutForceDirected_Eades_moveNodes(const qreal &c4) {
-    qDebug() << "\n *****  layoutForceDirected_Eades_moveNodes() \n " ;
+    qDebug() << "\n *****  layoutForceDirected_Eades_moveNodes() " ;
     QPointF newPos;
     qreal xvel = 0, yvel = 0;
     foreach (Vertex *v1, m_graph) {
@@ -10190,13 +10189,16 @@ void Graph::layoutForceDirected_Eades_moveNodes(const qreal &c4) {
         qDebug() << " ##### source vertex  " <<  v1->name()
                  << " xvel,yvel = ("<< xvel << ", "<< yvel << ")";
 
-        //Move source node to new position according to overall velocity
-        newPos = QPointF(v1->x()+ xvel, v1->y()+yvel);
+         //fix Qt error a positive QPoint to the floor
+        // when we ask for moveNode to happen.
+         xvel < 1 && xvel > 0 ? xvel = 1 : xvel = xvel;
+         yvel < 1 && yvel > 0 ? yvel = 1 : yvel = yvel;
 
-        qDebug()<< " source vertex v1 " << v1->name()
-                << " current pos: (" << v1->x() << "," << v1->y() << ")"
-                << "Possible new pos (" <<  newPos.x() << ","
-                << newPos.y()<< ")";
+        //Move source node to new position according to overall velocity
+        newPos = QPointF( (qreal) v1->x() + xvel, (qreal) v1->y() + yvel);
+
+        qDebug(" source vertex v1 %i current pos: (%f, %f) Possible new pos (%f,%f)",
+                v1->name(), v1->x(), v1->y() , newPos.x() ,newPos.y() );
 
         // check if new pos is out of screen and adjust
         newPos.rx() = qMin (
