@@ -4,9 +4,12 @@ Social Networks Visualiser (SocNetV)
 SocNetV News
 -==========-
 
+Oct 2014
+========
+- Version 1.5 released. First version with dijkstra algorithm for the SSSP in weighted nets. See Changelog for more.
+
 Sep 2014
 ========
-- Version 1.5 released. <Add new features here>
 - Version 1.4 released. Brought new layout type (nodal size by prominence index), edgelist1 UCINET format import method and many bugfixes.
 
 Aug 2014

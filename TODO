@@ -10,10 +10,6 @@ KNOWN BUGS
 9: closeness reports wrong indices in digraphs, where one actor has only one outLink
 10: fix other related indices for digraphs when d(i,j) = inf
 
-OLD, NOT EASILY FIXED BUT NOT CRITICAL BUGS
-===========================================
-101: When many lines intersect, right-click > removeLink may remove wrong link!
-
 
 TODO
 ====
