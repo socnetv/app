@@ -4,37 +4,48 @@
 
 <h4><a name="Layout" id="Layout"></a>Layout algorithms</h4>
 <p class="text">
-SocNetV implements special algorithms to layout the network so that each node has a position that reflects her centrality status, index or rank. 
-</p>
-<p class="text">
-You  can apply these algorithms from the menu "Layout" or by clicking on the checkboxes on the left dock. 
-Not all layouts methods appear on the dock though.
-</p>
-<p class="text">
-A variety of layout methods are supported. Most of them are based on centralities, while others follow energy models (such as spring-embedder). The former reposition  all  nodes in circles or levels, so that more central nodes appear near the centre or the top of the canvas, respectively. 
-</p>
-
-<h4><a name="Circular" id="Circular"></a>Circular Layout</h4>
-<p class="text">
-Circular layout means that nodes will be repositioned onto the circumferences of concentric circles of different radiuses. 
-Circles of smaller radius hold nodes of greater centrality. Thus, more central nodes will be positioned closer to the centre of the canvas. 
-
-Please note that this kind of layout does not take care of crossing links. 
-It is only meaningful as a visual representation of the status of each node.
-</p>
-
-
-<h4><a name="Level" id="Level"></a>Level Layout</h4>
-      
-<p class="text">
-In level layout methods the nodes are repositioned into levels of different height. More central nodes appear at the top of the screen.
-</p>
-
-<h4><a name="Energy" id="Energy"></a>Energy based</h4>
-<p class="text">
-
-<em>Spring Embedder </em>
+SocNetV supports two kinds of network visualizations: By Prominence index and Force-Directed.
 <br />
+You  can select visualizations from the menu "Layout" or by clicking on the checkboxes on the left dock.
+</p>
+
+<h4><a name="LayoutByProminence" id="LayoutByProminence"></a>by Prominence Index</h4>
+<p class="text">
+SocNetV implements algorithms to layout the network so that each node takes
+a position that reflects its centrality or prestige status inside the network. <br />
+These algorithms supports all prominence indices and a variety of layout types (circular, level, nodal).<br />
+In the left dock choose a prominence index, a layout type and then press the Apply button.
+<br /> <br />
+Please note that these algorithms do not take care of crossing links.
+They are only meaningful as a visual representation of the status of each node.
+</p>
+<h4><a name="Circular" id="Circular"></a>Circular</h4>
+<p class="text">
+If you select circular layout type, all nodes will be repositioned on the circumferences of
+concentric circles of different radiuses.<br />
+Nodes with higher centrality or prestige are positioned closer to the centre of the screen.
+</p>
+
+<h4><a name="Level" id="Level"></a>On Levels</h4>
+<p class="text">
+If you select the "on levels" layout tupe, all nodes will be repositioned on levels
+of different height. <br />
+More central nodes will appear towards the top of the screen.
+</p>
+
+<h4><a name="Nodal" id="Nodal"></a>Nodal size</h4>
+
+<p class="text">
+In this layout type, the size of each node will change to reflect its centrality or prestige score.<br />
+You can apply this layout type along with circular or level layout for a more meaningful visualization.
+</p>
+
+
+<h4><a name="Force-Directed" id="Force-Directed"></a>Force-Directed Placement</h4>
+<p class="text">
+
+<h5><em>Eades Spring Embedder </em></h5>
+<p class="text">
 The Spring Embedder model (Eades, 1984), part of the Force Directed Placement (FDP) family,
 embeds a mechanical system in the graph by replacing nodes with rings and edges
 with springs which excert forces. In the words of Eades himself:
@@ -52,36 +63,44 @@ These forces are applied to the nodes iteratively, pulling them closer together 
 until the system comes to an equilibrium state (node positions do not change anymore).
 
 Note that, following Eades, the forces of springs do now follow Hooke'w Law.
-Instead we assume weaker logarithmic forces between vertices:
-</p>
-<p class="code">
-forceSpring = c_spring * log10 ( dist / naturalLength );
-</p>
-<p class="code">
-forceRepelling =  c_rep / (dist * dist);
-</p>
-<p class="text">
+Instead we assume weaker logarithmic forces between pair of vertices v and u:
+<br />
+<span class="code">
+AttractiveForce= c_spring * log10 ( distance(v,u) / naturalLength )
+</span>
+<br />
+<span class="code">
+RepellingForce =  c_rep / (distance(v,u) * distance(v,u) );
+</span>
+<br />
 where
 <br />
+<span class="code">
+naturalLength= vertexWidth +  Sqrt( screenArea / |Vertices| )
+</span>
+<br />
+<span class="code">
 c_spring=2
+</span>
 <br />
-naturalLength= vertexWidth + qCeil ( qSqrt( screenArea / V ) )
-<br />
-c_rep=maxLength *  maxLength;
+<span class="code">
+c_rep=1;
+</span>
 
 <br />
 Note: Repulsive forces are calculated between every pair of
 vertices, but attractive forces are calculated only between neighbours.
 
 </p>
+
 <p class="text">
 
-<em>Fruchterman-Reingold </em>
-<br />
+<h5><em>Fruchterman-Reingold Spring Embedder</em></h5>
+<p class="text">
 Fruchterman and Reingold (1991) refined the Spring Embedder model by replacing
 nodes with electrically charged  or gravitational bodies.
-
-In their words:
+<br />
+In their words:<br />
 <em>"Consider the following analogy: the vertices behave as atomic particles or celestial
 bodies, exerting attractive and repulsive forces on one another; the forces induce
 movement. Our algorithm will resemble molecular or planetary simulations, some-
@@ -89,9 +108,28 @@ times called n -body problems. Following Eades, however, we know that we need
 not have a faithful simulation; we can apply unrealistic forces in an unrealistic
 manner. So, like Eades, we make only vertices that are neighbours attract each
 other, but all vertices repel each other. This is consistent with the asymmetry of our
-two guidelines above." </em>
-<br /><br />
+two guidelines above." </em><br />
 Again, only neighbouring vertices attract each other while all vertices repel each other.
+<br /><br />
+In our implementation the attracting and repulsive forces are computed as follows:
+<br />
+<span class="code">
+AttractingForce = ( dist(v,u) * dist(v,u) ) / optimalDistance
+</span>
+<br />
+<span  class="code">
+RepulsiveForce = (optimalDistance * optimalDistance  /  dist(v,u))
+</span>
+<br />
+where <br />
+<span class="code">
+optimalDistance=  sqrt ( screenArea / |Vertices| )
+</span>
+<br />
+Following Fruchterman and Reingold, for every vertex v we compute repulsive forces
+only for vertices within a circular area of radius 2*optimalDistance from v.
+
+
 <br /><br />
 
 
