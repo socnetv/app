@@ -539,7 +539,7 @@ void MainWindow::initActions(){
 
     webCrawlerAct = new QAction(QIcon(":/images/webcrawler.png"), tr("Web Crawler"),	this);
     webCrawlerAct->setShortcut(tr("Shift+C"));
-    webCrawlerAct->setEnabled(false);
+    webCrawlerAct->setEnabled(true);
     webCrawlerAct->setStatusTip(tr("Creates a network from all links found in a given website"));
     webCrawlerAct->setWhatsThis(tr("Web Crawler \n\nA Web crawler is a built-in bot, which starts with a given URL (website or webpage) to visit. As the algorithm crawls this webpage, it identifies all the links in the page and adds them to a list of URLs (called frontier). Then, all the URLs from the frontier are recursively visited. You must provide maximum recursion level (how many URLs from the frontier will be visited) and maximum running time, along with the initial web address..."));
     connect(webCrawlerAct, SIGNAL(triggered()), this, SLOT(slotShowWebCrawlerDialog()));
