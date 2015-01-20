@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer
- version: 1.5
+ version: 1.6
  Written in Qt
 
                           matrix.h  -  description
                              -------------------
-    copyright            : (C) 2005-2014 by dimitris kalamaras
+    copyright            : (C) 2005-2015 by dimitris kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 

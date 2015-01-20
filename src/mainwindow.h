@@ -1,11 +1,11 @@
 /***************************************************************************
  SocNetV: Social Networks Visualizer
- version: 1.5
+ version: 1.6
  Written in Qt
  
                          mainwindow.h  -  description
                              -------------------
-    copyright            : (C) 2005-2014 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2015 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -42,7 +42,7 @@
 #include "datasetselectdialog.h"
 
 
-static const QString VERSION="1.5";
+static const QString VERSION="1.6";
 
 /**
   * This Class is the base class. It sets up the main
