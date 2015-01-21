@@ -32,7 +32,7 @@ using namespace std;
 #include <QThread>
 #include <QNetworkReply>
 
-class Reader : public QThread  {
+class WebCrawler_Parser : public QThread  {
 	Q_OBJECT
 public:  
 	void createNode(QString url, bool enqueue_to_frontier);
@@ -49,7 +49,24 @@ protected:
 };
 
 
-class WebCrawler :  public QThread {
+class WebCrawler_Spider : public QThread  {
+    Q_OBJECT
+public:
+    void createNode(QString url, bool enqueue_to_frontier);
+    void createEdge (int source, int target);
+
+public slots:
+    void load(QNetworkReply*);
+signals:
+    void signalCreateNode(QString url, int no);
+    void signalCreateEdge (int source, int target);
+
+protected:
+    void run();
+};
+
+
+class WebCrawler :  public QObject {
 	Q_OBJECT
 public:
 	void load(QString seed, int maxNodes, int maxRecursion, bool goOut);
@@ -64,6 +81,7 @@ protected:
 	void run();
 private: 
 	QString url;
-	Reader reader;
+    WebCrawler_Parser wc_parser;
+    WebCrawler_Spider wc_spider;
 };
 #endif

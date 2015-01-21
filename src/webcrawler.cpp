@@ -53,9 +53,6 @@ bool goOut=false, hasUrlPrefix=false;
 
 void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){ 
 
-    if (seed.contains(" "))		//urls can't have spaces...
-        return;
-
     seed=url;       //the initial url/domain we will crawl
     maxPages=maxN;		//maxPages we'll check
     maxRecursion = maxRec;
@@ -68,19 +65,48 @@ void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){
     knownUrls.clear();
     currentUrl="", domain="", previous_domain="", path="", urlPrefix="";
 
-    frontier.enqueue(seed);		//queue the seed to frontier
-    currentNode=1;			//start at node 1
-    discoveredNodes = 1;
+
+    //seed url can't have spaces...
+    seed=seed.simplified();
+    if (seed.contains(" "))	{
+        seed.remove(" ");
+    }
+
+    if ( seed.startsWith ("http://", Qt::CaseInsensitive ) )
+        seed.remove ("http://");
+    else if ( seed.startsWith  ("https://",  Qt::CaseInsensitive ) )
+        seed.remove ("https://");
+
+    if ( seed.startsWith("//" ) )
+        seed.remove ("//");
+    else if ( seed.startsWith("/" ) )
+        seed.replace (0,1,"");
+
+    // extract the seed domain
+     seed_domain = seed;
+
+    if ( seed_domain.startsWith  ("www.",  Qt::CaseInsensitive ) )
+        seed_domain=seed_domain.remove ("www.");
+
+    if ( seed_domain.indexOf ("/") !=-1 )
+        seed_domain = seed_domain.left(seed_domain.indexOf ("/"));
+
+    qDebug() << "WebCrawler:: seed: " << seed
+             << " seed_domain: " << seed_domain ;
+
+    frontier.enqueue(seed); // queue the seed url to frontier
+    currentNode=1;          // current node counter
+    discoveredNodes = 1;    // counts how many nodes have been discovered
 
     qDebug() << "WebCrawler:: I will start a new QThread!";
 
     connect (
-                &reader, SIGNAL( signalCreateNode (QString, int) ),
+                &wc_parser, SIGNAL( signalCreateNode (QString, int) ),
                 this, SLOT(slotCreateNode(QString, int ) )
                 ) ;
 
     connect (
-                &reader, SIGNAL(signalCreateEdge (int, int)),
+                &wc_parser, SIGNAL(signalCreateEdge (int, int)),
                 this, SLOT(slotCreateEdge (int, int) )
                 );
 
@@ -93,12 +119,12 @@ void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){
 
 
 
-//called from reader createNode signal
+//called from wc_parser createNode signal
 void WebCrawler::slotCreateNode(QString url, int number) {
     emit createNode(url, number);
 }
 
-//called from reader createEdge signal
+//called from wc_parser createEdge signal
 void WebCrawler::slotCreateEdge (int source, int target){
     emit createEdge (source, target);
 }
@@ -107,7 +133,7 @@ void WebCrawler::slotCreateEdge (int source, int target){
 
 /*
  * Parses urls from frontier and downloads their data.
-*  When http signals finished() then reader thread is loaded
+*  When http signals finished() then wc_parser thread is loaded
 *  to parse the data
 */
 void WebCrawler::run(){
@@ -116,7 +142,7 @@ void WebCrawler::run(){
     do { 	//repeat forever....
 
         if ( currentNode > 1 ) {
-            maxRecursion --;
+            maxRecursion --;   // TODO DO WE NEED THIS ?
         }
 
         if (frontier.size() ==0 ) {     //  until we crawl all urls in frontier.
@@ -139,7 +165,8 @@ void WebCrawler::run(){
             }
         }
 
-        //take the first url from frontier - name it currentUrl
+        // take the first url from frontier - name it currentUrl
+        // initially this is the seed url entered by the user
         currentUrl = frontier.head();
 
         if ( ! visitedUrls[currentUrl] ) {
@@ -155,7 +182,7 @@ void WebCrawler::run(){
 
                 if ( !currentUrl.contains( seed_domain, Qt::CaseInsensitive) ) {
 
-                    qDebug() << "	WebCrawler: unknown external currentUrl : "
+                    qDebug() << "	WebCrawler: yes, external currentUrl it is: "
                              <<currentUrl;
 
                     if  ( currentNode != 1 && !goOut  ) {
@@ -195,27 +222,20 @@ void WebCrawler::run(){
 
                 }
             }
-            else { //no http:// in currentUrl - this is an internal node
-                if (currentNode==1) {		//only if this is the seed node
-                    if ( (pos=currentUrl.indexOf ("/")) !=-1 ) {
-                        domain = currentUrl.left(pos);
-                        qDebug() << "		WebCrawler: Initial Host domain: "
-                                 <<  domain.toLatin1();
-                        qDebug() << "		WebCrawler: Initial Webpage to get: "
-                                 <<  currentUrl.toLatin1() ;
-                        seed_domain = domain;
-                    }
-                    else {
-                        qDebug() << "		WebCrawler: Initial url: "
-                                 << currentUrl.toLatin1() << " I' ll just get /...";
-                        domain = currentUrl;
-                    }
+            else {
+                qDebug() << "	no // in currentUrl - internal or seed url";
+                if (currentNode==1) {
+                    qDebug() << "	currentNode " <<  currentNode
+                                << " - this is the seed url - creating node";
+                    domain = seed_domain;
                     emit createNode(currentUrl, 1);
                 }
                 else {
-                    qDebug() << "		WebCrawler: internal url detected "
-                             << currentUrl.toLatin1() << " I will use previous domain "
-                             << domain.toLatin1();
+                    qDebug() << "	currentNode " <<  currentNode
+                                << " - this is internal url "
+                                   << " using current domain"
+                                   << domain.toLatin1();
+
                     if (currentUrl.startsWith('.', Qt::CaseInsensitive) )
                         currentUrl=currentUrl.remove(0, 1);
                     else if (!currentUrl.startsWith('/',  Qt::CaseInsensitive) ) {
@@ -230,9 +250,9 @@ void WebCrawler::run(){
             request->setUrl(QUrl(currentUrl));
 
 
-            //TODO connect finished() signal to load() of 2ond Reader class
+            //TODO connect finished() signal to load() of 2ond wc_parser class
             connect (http,SIGNAL( finished(QNetworkReply*) ),
-                     &reader, SLOT( load(QNetworkReply*) ) );
+                     &wc_parser, SLOT( load(QNetworkReply*) ) );
 
             http->get(*request) ;
 
@@ -272,8 +292,8 @@ void WebCrawler::run(){
 
     } while ( 1 );
 
-    if (reader.isRunning() )		//tell the other thread that we must quit!
-        reader.quit();
+    if (wc_parser.isRunning() )		//tell the other thread that we must quit!
+        wc_parser.quit();
     qDebug() << "			Finished!";
 }
 
@@ -281,19 +301,19 @@ void WebCrawler::run(){
 
 //called from Graph, when closing network, to terminate all processes
 void WebCrawler::terminateReaderQuit (){
-    if (reader.isRunning() )		//tell the other thread that we must quit!
-        reader.quit();
+    if (wc_parser.isRunning() )		//tell the other thread that we must quit!
+        wc_parser.quit();
 }
 
 
 
 /* 
-*  This method starts the Reader thread
+*  This method starts the wc_parser thread
 * 	It is called when the http object has emitted the done() signal
 * 	(that is, when last pending request has finished).
 */ 
-void Reader::load(QNetworkReply* reply){
-    qDebug()  << "			READER::load()  to read something!";
+void WebCrawler_Parser::load(QNetworkReply* reply){
+    qDebug()  << "			wc_parser::load()  to read something!";
     ba=reply->readAll();
 
     if (!isRunning())
@@ -303,13 +323,13 @@ void Reader::load(QNetworkReply* reply){
 
 
 /*
- * This method is all that the Reader thread does.
+ * This method is all that the wc_parser thread does.
  * Essentially, it's called when http has finished all pending requests.
  * First, we start by reading all from http to the QString page.
  * Then we parse the page string, searching for url substrings.
  */
-void Reader::run(){
-    qDebug()  << "			READER: read something!";
+void WebCrawler_Parser::run(){
+    qDebug()  << "			wc_parser: read something!";
     QString newUrl;
     bool createNodeFlag = false, createEdgeFlag=false ;
 //    Q_UNUSED(createNodeFlag);
@@ -320,7 +340,7 @@ void Reader::run(){
 
     if (!page.contains ("a href"))  { //if a href doesnt exist, return
         //FIXME: Frameset pages are not parsed! See docs/manual.html for example.
-        qDebug() << "			READER: ### Empty or not useful data from " << currentUrl.toLatin1() << " RETURN";
+        qDebug() << "			wc_parser: ### Empty or not useful data from " << currentUrl.toLatin1() << " RETURN";
         newDataRead.wakeAll();
         return;
     }
@@ -355,11 +375,11 @@ void Reader::run(){
         newUrl=page.left(end);			//Save new url to newUrl :)
         newUrl=newUrl.simplified();
 
-        qDebug()<< "			READER: page still contains links - Parsing " << newUrl.toLatin1();
+        qDebug()<< "			wc_parser: page still contains links - Parsing " << newUrl.toLatin1();
         // if this is not the 1st node, and it has been already checked ...
         QMap<QString, int>::const_iterator index = knownUrls.find(newUrl);
         if (   index!= knownUrls.end() ) {
-            qDebug()<< "			READER: #---> newUrl "  <<  newUrl.toLatin1()
+            qDebug()<< "			wc_parser: #---> newUrl "  <<  newUrl.toLatin1()
                     << " already CHECKED - Just creating an edge from " << currentNode << " to " << index.value();
             //this->createEdge (sourceMap [ index.value() ], index.value());	// ... then create an edge from the previous node ...
             this->createEdge (currentNode, index.value() );
@@ -382,7 +402,7 @@ void Reader::run(){
                      newUrl.endsWith("css?H", Qt::CaseInsensitive)  )
 
                 {
-                    qDebug()<< "			READER: # absolute newUrl " << newUrl
+                    qDebug()<< "			wc_parser: # absolute newUrl " << newUrl
                             << " must be a web 2.0 element (rss, favicon, etc) or file. Skipping...";
                     //	emit createNode(currentUrl, currentNode);
                     //  perhaps we paint that node with a different colour or check a variable?
@@ -391,13 +411,13 @@ void Reader::run(){
             if ( !goOut ) {		// ... and we need to limit ourselves within the seed domain...
                 if (  !newUrl.startsWith(seed_domain, Qt::CaseInsensitive ) ||
                       !newUrl.startsWith( "http://"+seed_domain, Qt::CaseInsensitive)  ) {	//...then check if the newUrl is out of the seed domain
-                    qDebug()<< "			READER: # absolute newUrl "  <<  newUrl.toLatin1()
+                    qDebug()<< "			wc_parser: # absolute newUrl "  <<  newUrl.toLatin1()
                             << " is OUT OF the seed (original) domain. I will create a node but NOT add it to frontier...";
                     this->createNode(newUrl, false);
                     this->createEdge(currentNode, discoveredNodes);
                 }
                 else {
-                    qDebug()<< "			READER: absolute newUrl" << newUrl.toLatin1()
+                    qDebug()<< "			wc_parser: absolute newUrl" << newUrl.toLatin1()
                             << " appears INSIDE the seed domain "
                             << seed_domain << " - I will create a node here..." ;
                     this->createNode(newUrl, true);
@@ -407,7 +427,7 @@ void Reader::run(){
 
             }
             else {				// ... else if we can go out the seed domain, then just add it.
-                qDebug()<< "			READER: absolute newUrl" << newUrl.toLatin1()
+                qDebug()<< "			wc_parser: absolute newUrl" << newUrl.toLatin1()
                         << " is outside the seed domain "
                         << seed_domain << " - and we are allowed to go there, so I will create a node here..." ;
                 this->createNode(newUrl, true);
@@ -418,7 +438,7 @@ void Reader::run(){
         else {	//	if this is an internal or relative url ....
             //  ...and an index, then skip it.
             if (newUrl == "index.html" || newUrl == "index.htm" || newUrl == "index.php"){
-                qDebug()<< "			READER: # non-absolute newUrl "  <<  newUrl.toLatin1()
+                qDebug()<< "			wc_parser: # non-absolute newUrl "  <<  newUrl.toLatin1()
                         << " must be an index file. Creating edge from 1 to " << discoveredNodes;
                 this->createEdge ( 1 , discoveredNodes);
                 continue;
@@ -438,7 +458,7 @@ void Reader::run(){
                      newUrl.endsWith("favicon.jpg", Qt::CaseInsensitive) ||
                      newUrl.endsWith("css?H", Qt::CaseInsensitive)   )
                 {
-                    qDebug()<< "			READER: # non-absolute newUrl " << newUrl
+                    qDebug()<< "			wc_parser: # non-absolute newUrl " << newUrl
                             << " must be a web 2.0 element (rss, favicon, etc) or file. Skipping...";
                     //	emit createNode(currentUrl, currentNode);
                     //  perhaps we paint that node with a different colour or check a variable?
@@ -446,7 +466,7 @@ void Reader::run(){
                 }
             }
             // .. else create node and add it to frontier.
-            qDebug()<< "			READER: non-absolute newUrl "  <<  newUrl.toLatin1()
+            qDebug()<< "			wc_parser: non-absolute newUrl "  <<  newUrl.toLatin1()
                     <<  " first time visited. I will create a node for it and add it to frontier";
             this->createNode(newUrl, true);
             this->createEdge(currentNode, discoveredNodes);
@@ -460,22 +480,22 @@ void Reader::run(){
 
 
 
-//signals node creation  Called from Reader::load()
+//signals node creation  Called from wc_parser::load()
 
-void Reader::createNode(QString newUrl, bool enqueue_to_frontier) {
+void WebCrawler_Parser::createNode(QString newUrl, bool enqueue_to_frontier) {
     discoveredNodes++;
     sourceMap[ discoveredNodes ] = currentNode;
     knownUrls[newUrl]=discoveredNodes;
     if (enqueue_to_frontier) {
         frontier.enqueue(newUrl);
-        qDebug()<< "\n\n		READER: * Creating node " << discoveredNodes
+        qDebug()<< "\n\n		wc_parser: * Creating node " << discoveredNodes
                 << " newUrl "<< newUrl << " Frontier size: "<<  frontier.size()
                 << " = discoveredNodes: " <<discoveredNodes<<  " - source: " <<  sourceMap[ discoveredNodes ]
                    << "\n\n";
 
     }
     else {
-        qDebug()<< "\n\n		READER: * Creating node " << discoveredNodes
+        qDebug()<< "\n\n		wc_parser: * Creating node " << discoveredNodes
                 << " newUrl "<< newUrl << " NOT enqueuing to frontier"
                 << "  discoveredNodes: " <<discoveredNodes<<  " - source: " <<  sourceMap[ discoveredNodes ]
                    << "\n\n";
@@ -486,9 +506,9 @@ void Reader::createNode(QString newUrl, bool enqueue_to_frontier) {
 
 
 
-//signals edge creation  Called from Reader::load
-void Reader::createEdge (int source, int target){
-    qDebug()<< "\n\n		READER: --> Creating edge from " << source
+//signals edge creation  Called from wc_parser::load
+void WebCrawler_Parser::createEdge (int source, int target){
+    qDebug()<< "\n\n		wc_parser: --> Creating edge from " << source
             << " to "<< target << "\n\n";
     emit signalCreateEdge (source, target);
 }
