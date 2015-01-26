@@ -110,11 +110,15 @@ void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){
                 this, SLOT(slotCreateEdge (int, int) )
                 );
 
+    wc_spider.start();
+    wc_parser.start();
+    wc_spider.wait();
+    wc_parser.wait();
 
-    if (!isRunning()) {
-        start(QThread::TimeCriticalPriority);
-            qDebug() << "WebCrawler:: started!";
-    }
+//    if (!isRunning()) {
+//        start(QThread::TimeCriticalPriority);
+//            qDebug() << "WebCrawler:: started!";
+//    }
 }
 
 
@@ -131,12 +135,25 @@ void WebCrawler::slotCreateEdge (int source, int target){
 
 
 
+
+
+//called from Graph, when closing network, to terminate all processes
+void WebCrawler::terminateReaderQuit (){
+    if (wc_parser.isRunning() )		//tell the parser thread that we must quit!
+        wc_parser.quit();
+    if (wc_spider.isRunning() )		//tell the spider thread that we must quit!
+        wc_spider.quit();
+
+}
+
+
+
 /*
  * Parses urls from frontier and downloads their data.
 *  When http signals finished() then wc_parser thread is loaded
 *  to parse the data
 */
-void WebCrawler::run(){
+void WebCrawler_Spider::run(){
     int pos;
 
     do { 	//repeat forever....
@@ -292,17 +309,8 @@ void WebCrawler::run(){
 
     } while ( 1 );
 
-    if (wc_parser.isRunning() )		//tell the other thread that we must quit!
-        wc_parser.quit();
-    qDebug() << "			Finished!";
-}
 
-
-
-//called from Graph, when closing network, to terminate all processes
-void WebCrawler::terminateReaderQuit (){
-    if (wc_parser.isRunning() )		//tell the other thread that we must quit!
-        wc_parser.quit();
+    qDebug() << "		Spider Finished!";
 }
 
 

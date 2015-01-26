@@ -617,9 +617,9 @@ void Graph::removeEdge (int v1, int v2) {
 
 //Called by MW to start a web crawler...
 void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,  bool goOut){
-    qDebug() << "Graph:: webCrawl - Calling thread for " << seed ;
+    qDebug() << "Graph:: webCrawl - Calling crawler.load() for multithreading " << seed ;
     crawler.load(seed, maxNodes, maxRecursion, goOut);
-    qDebug("Graph:: See the thread? :)");
+    qDebug("Graph::webCrawl() - reach the end - See the threads running? ");
 }
 
 
