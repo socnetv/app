@@ -150,7 +150,7 @@ void WebCrawler::terminateReaderQuit (){
 
 /*
  * Parses urls from frontier and downloads their data.
-*  When http signals finished() then wc_parser thread is loaded
+*  When http signals finished() then wc_parser thread is loaded8
 *  to parse the data
 */
 void WebCrawler_Spider::run(){
@@ -269,7 +269,7 @@ void WebCrawler_Spider::run(){
 
             //TODO connect finished() signal to load() of 2ond wc_parser class
             connect (http,SIGNAL( finished(QNetworkReply*) ),
-                     &wc_parser, SLOT( load(QNetworkReply*) ) );
+                     this, SLOT( load(QNetworkReply*) ) );
 
             http->get(*request) ;
 
