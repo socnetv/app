@@ -39,15 +39,22 @@ QNetworkAccessManager *http;
 QNetworkRequest *request;
 QNetworkReply *reply;
 
-QQueue<QString> frontier;
+const int bufferSize = 200; //size of circular buffer
+
+QQueue<QString> frontier;  //our circular buffer
+
 QMap <int, int> sourceMap;
 QMap <QString, bool> visitedUrls;
 QMap <QString, int> knownUrls;
 QByteArray ba;
-QWaitCondition newDataRead;
+
+QWaitCondition frontierNotEmpty;
+QWaitCondition frontierNotFull;
 QMutex mutex;
+
 QString currentUrl="", seed="", domain="", seed_domain = "", previous_domain="";
 QString path="", urlPrefix="";
+
 int maxPages, discoveredNodes=0, currentNode, maxRecursion;
 bool goOut=false, hasUrlPrefix=false;
 
@@ -98,27 +105,38 @@ void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){
     currentNode=1;          // current node counter
     discoveredNodes = 1;    // counts how many nodes have been discovered
 
-    qDebug() << "WebCrawler:: I will start a new QThread!";
+    qDebug() << "	WebCrawler: creating node 1 with label "
+             << currentUrl.toLatin1();
 
-    connect (
-                &wc_parser, SIGNAL( signalCreateNode (QString, int) ),
-                this, SLOT(slotCreateNode(QString, int ) )
-                ) ;
+    knownUrls[seed]=currentNode;
 
-    connect (
-                &wc_parser, SIGNAL(signalCreateEdge (int, int)),
-                this, SLOT(slotCreateEdge (int, int) )
-                );
+    emit createNode(seed, 1);
 
-    wc_spider.start();
-    wc_parser.start();
-    wc_spider.wait();
-    wc_parser.wait();
+    WebCrawler_Parser *wc_parser = new WebCrawler_Parser;
+    WebCrawler_Spider *wc_spider = new WebCrawler_Spider;
 
-//    if (!isRunning()) {
-//        start(QThread::TimeCriticalPriority);
-//            qDebug() << "WebCrawler:: started!";
-//    }
+    qDebug() << "WebCrawler:: I will start new QThreads!";
+
+    wc_parser->moveToThread(&parserThread);
+    wc_spider->moveToThread(&spiderThread);
+
+    connect(&parserThread, &QThread::finished, wc_parser, &QObject::deleteLater);
+    connect(&spiderThread, &QThread::finished, wc_spider, &QObject::deleteLater);
+
+  //  connect(this, &WebCrawler::operateParser, wc_parser, &WebCrawler_Parser::parse);
+    connect(this, &WebCrawler::operateSpider, wc_spider, &WebCrawler_Spider::get);
+
+    connect(wc_parser, &WebCrawler_Parser::signalCreateNode, this, &WebCrawler::slotCreateNode);
+    connect(wc_parser, &WebCrawler_Parser::signalCreateEdge, this, &WebCrawler::slotCreateEdge);
+
+    connect(wc_spider, &WebCrawler_Spider::resultReady, wc_parser, &WebCrawler_Parser::parse);
+
+
+    parserThread.start();
+    spiderThread.start();
+
+    emit operateSpider();
+
 }
 
 
@@ -139,10 +157,10 @@ void WebCrawler::slotCreateEdge (int source, int target){
 
 //called from Graph, when closing network, to terminate all processes
 void WebCrawler::terminateReaderQuit (){
-    if (wc_parser.isRunning() )		//tell the parser thread that we must quit!
-        wc_parser.quit();
-    if (wc_spider.isRunning() )		//tell the spider thread that we must quit!
-        wc_spider.quit();
+    if (parserThread.isRunning() )		//tell the parser thread that we must quit!
+        parserThread.quit();
+    if (spiderThread.isRunning() )		//tell the spider thread that we must quit!
+        spiderThread.quit();
 
 }
 
@@ -153,14 +171,25 @@ void WebCrawler::terminateReaderQuit (){
 *  When http signals finished() then wc_parser thread is loaded8
 *  to parse the data
 */
-void WebCrawler_Spider::run(){
+void WebCrawler_Spider::get(){
     int pos;
 
     do { 	//repeat forever....
 
-        if ( currentNode > 1 ) {
-            maxRecursion --;   // TODO DO WE NEED THIS ?
+
+        qDebug() << "		WebCrawler_Spider: "
+                 <<" frontier size " << frontier.size()
+                 << " currentNode " << currentNode;
+
+        if (currentNode != 1) {
+//            qDebug() << " MUTEX LOCK - Waiting for frontierNotFull...";
+//            mutex.lock();
+//            frontierNotFull.wait(&mutex);
+//            mutex.unlock();
+//            qDebug () <<"		WebCrawler_Spider: Waking up to continue: frontier size = "
+//                     << frontier.size();
         }
+
 
         if (frontier.size() ==0 ) {     //  until we crawl all urls in frontier.
             qDebug () <<"	WebCrawler #### Frontier is empty: "
@@ -187,7 +216,7 @@ void WebCrawler_Spider::run(){
         currentUrl = frontier.head();
 
         if ( ! visitedUrls[currentUrl] ) {
-            // currentUrl has not been crawled yet. Check what it is.
+
             qDebug() << "	WebCrawler: currentUrl "  <<  currentUrl.toLatin1()
                      << " not visited. Adding it to visitedUrls - Checking it.";
 
@@ -195,7 +224,7 @@ void WebCrawler_Spider::run(){
 
             if ( currentUrl.contains ("//" ) ) {
                 qDebug() << "	WebCrawler: currentUrl probably external: "
-                         <<currentUrl;
+                         << currentUrl;
 
                 if ( !currentUrl.contains( seed_domain, Qt::CaseInsensitive) ) {
 
@@ -209,12 +238,7 @@ void WebCrawler_Spider::run(){
 
                     }
                     else if ( currentNode == 1 ){
-                        qDebug() << "	WebCrawler: creating node 1 with label "
-                                 << currentUrl.toLatin1();
 
-                        knownUrls[currentUrl]=currentNode;
-
-                        emit createNode(currentUrl, 1);
                     }
                     if ( currentUrl.contains ("http://" ) )
                         domain=currentUrl.remove ("http://");
@@ -242,10 +266,10 @@ void WebCrawler_Spider::run(){
             else {
                 qDebug() << "	no // in currentUrl - internal or seed url";
                 if (currentNode==1) {
-                    qDebug() << "	currentNode " <<  currentNode
-                                << " - this is the seed url - creating node";
-                    domain = seed_domain;
-                    emit createNode(currentUrl, 1);
+//                    qDebug() << "	currentNode " <<  currentNode
+//                                << " - this is the seed url - creating node";
+//                    domain = seed_domain;
+                    //emit createNode(currentUrl, 1);
                 }
                 else {
                     qDebug() << "	currentNode " <<  currentNode
@@ -261,6 +285,8 @@ void WebCrawler_Spider::run(){
                     }
                 }
             }
+
+
             // download currentUrl
             http = new QNetworkAccessManager(this);
             request = new QNetworkRequest;
@@ -269,9 +295,10 @@ void WebCrawler_Spider::run(){
 
             //TODO connect finished() signal to load() of 2ond wc_parser class
             connect (http,SIGNAL( finished(QNetworkReply*) ),
-                     this, SLOT( load(QNetworkReply*) ) );
+                     this, SLOT( result(QNetworkReply*) ) );
 
-            http->get(*request) ;
+            //http->get(*request) ;
+            http->get(QNetworkRequest(QUrl("http://qt-project.org")));
 
         }
         else {
@@ -290,15 +317,6 @@ void WebCrawler_Spider::run(){
         }
 
 
-        //lock mutex
-        mutex.lock();
-        qDebug() << "		WebCrawler: ZZzz We should wait a bit..."
-                 <<"frontier size " << frontier.size() << " currentNode " << currentNode ;
-        //Thread goes to sleep to protect all variables (locked by mutex).
-        newDataRead.wait(&mutex);
-        //Unlock it
-        mutex.unlock();
-        qDebug () <<"		WebCrawler: OK. Waking up to continue: frontier size = " << frontier.size();
 
 
         qDebug () <<"		WebCrawler: Increasing currentNode, dequeuing frontier and setting previous domain to domain";
@@ -314,31 +332,22 @@ void WebCrawler_Spider::run(){
 }
 
 
-
-/* 
-*  This method starts the wc_parser thread
-* 	It is called when the http object has emitted the done() signal
-* 	(that is, when last pending request has finished).
-*/ 
-void WebCrawler_Parser::load(QNetworkReply* reply){
-    qDebug()  << "			wc_parser::load()  to read something!";
-    ba=reply->readAll();
-
-    if (!isRunning())
-        start(QThread::NormalPriority);
+void WebCrawler_Spider::result(QNetworkReply *reply){
+    qDebug() << "WebCrawler_Spider - emitting result";
+    emit resultReady(reply);
 }
 
 
 
 /*
- * This method is all that the wc_parser thread does.
- * Essentially, it's called when http has finished all pending requests.
+ * This method is called when http has finished all pending requests.
  * First, we start by reading all from http to the QString page.
  * Then we parse the page string, searching for url substrings.
  */
-void WebCrawler_Parser::run(){
+void WebCrawler_Parser::parse(QNetworkReply *reply){
     qDebug()  << "			wc_parser: read something!";
     QString newUrl;
+     ba=reply->readAll();
     bool createNodeFlag = false, createEdgeFlag=false ;
 //    Q_UNUSED(createNodeFlag);
 //    Q_UNUSED(createEdgeFlag);
@@ -349,7 +358,7 @@ void WebCrawler_Parser::run(){
     if (!page.contains ("a href"))  { //if a href doesnt exist, return
         //FIXME: Frameset pages are not parsed! See docs/manual.html for example.
         qDebug() << "			wc_parser: ### Empty or not useful data from " << currentUrl.toLatin1() << " RETURN";
-        newDataRead.wakeAll();
+        frontierNotEmpty.wakeAll();
         return;
     }
     mutex.lock();
@@ -389,8 +398,8 @@ void WebCrawler_Parser::run(){
         if (   index!= knownUrls.end() ) {
             qDebug()<< "			wc_parser: #---> newUrl "  <<  newUrl.toLatin1()
                     << " already CHECKED - Just creating an edge from " << currentNode << " to " << index.value();
-            //this->createEdge (sourceMap [ index.value() ], index.value());	// ... then create an edge from the previous node ...
-            this->createEdge (currentNode, index.value() );
+
+            emit signalCreateEdge (currentNode, index.value() );
             continue;											// .... and continue skipping it!
         }
 
@@ -422,14 +431,15 @@ void WebCrawler_Parser::run(){
                     qDebug()<< "			wc_parser: # absolute newUrl "  <<  newUrl.toLatin1()
                             << " is OUT OF the seed (original) domain. I will create a node but NOT add it to frontier...";
                     this->createNode(newUrl, false);
-                    this->createEdge(currentNode, discoveredNodes);
+
+                    emit signalCreateEdge (currentNode, discoveredNodes);
                 }
                 else {
                     qDebug()<< "			wc_parser: absolute newUrl" << newUrl.toLatin1()
                             << " appears INSIDE the seed domain "
                             << seed_domain << " - I will create a node here..." ;
                     this->createNode(newUrl, true);
-                    this->createEdge(currentNode, discoveredNodes);
+                    emit signalCreateEdge (currentNode, discoveredNodes);
                 }
 
 
@@ -439,7 +449,7 @@ void WebCrawler_Parser::run(){
                         << " is outside the seed domain "
                         << seed_domain << " - and we are allowed to go there, so I will create a node here..." ;
                 this->createNode(newUrl, true);
-                this->createEdge(currentNode, discoveredNodes);
+                emit signalCreateEdge (currentNode, discoveredNodes);
             }
 
         }
@@ -448,7 +458,7 @@ void WebCrawler_Parser::run(){
             if (newUrl == "index.html" || newUrl == "index.htm" || newUrl == "index.php"){
                 qDebug()<< "			wc_parser: # non-absolute newUrl "  <<  newUrl.toLatin1()
                         << " must be an index file. Creating edge from 1 to " << discoveredNodes;
-                this->createEdge ( 1 , discoveredNodes);
+                emit signalCreateEdge ( 1 , discoveredNodes);
                 continue;
             }
 
@@ -477,11 +487,12 @@ void WebCrawler_Parser::run(){
             qDebug()<< "			wc_parser: non-absolute newUrl "  <<  newUrl.toLatin1()
                     <<  " first time visited. I will create a node for it and add it to frontier";
             this->createNode(newUrl, true);
-            this->createEdge(currentNode, discoveredNodes);
+            emit signalCreateEdge (currentNode, discoveredNodes);
+
 
         }
     }
-    newDataRead.wakeAll();
+    frontierNotEmpty.wakeAll();
     mutex.unlock();
 }
 
@@ -512,12 +523,4 @@ void WebCrawler_Parser::createNode(QString newUrl, bool enqueue_to_frontier) {
     emit signalCreateNode(newUrl, discoveredNodes);
 }
 
-
-
-//signals edge creation  Called from wc_parser::load
-void WebCrawler_Parser::createEdge (int source, int target){
-    qDebug()<< "\n\n		wc_parser: --> Creating edge from " << source
-            << " to "<< target << "\n\n";
-    emit signalCreateEdge (source, target);
-}
 

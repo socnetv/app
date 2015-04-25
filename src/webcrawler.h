@@ -32,42 +32,36 @@ using namespace std;
 #include <QThread>
 #include <QNetworkReply>
 
-class WebCrawler_Parser : public QThread  {
+
+// CONSUMER
+class WebCrawler_Parser : public QObject  {
 	Q_OBJECT
 public:  
 	void createNode(QString url, bool enqueue_to_frontier);
-	void createEdge (int source, int target);
 
 public slots:
-    void load(QNetworkReply*);
+    void parse(QNetworkReply *reply);
 signals:
 	void signalCreateNode(QString url, int no);
 	void signalCreateEdge (int source, int target);
-	
-protected:
-	void run();
 };
 
 
-class WebCrawler_Spider : public QThread  {
+// PRODUCER CLASS
+class WebCrawler_Spider : public QObject  {
     Q_OBJECT
-public:
-    void createNode(QString url, bool enqueue_to_frontier);
-    void createEdge (int source, int target);
-
 public slots:
-    void load(QNetworkReply*);
+    void get();
+    void result(QNetworkReply *reply);
 signals:
-    void signalCreateNode(QString url, int no);
-    void signalCreateEdge (int source, int target);
-
-protected:
-    void run();
+    void resultReady( QNetworkReply *reply);
 };
 
 
 class WebCrawler :  public QObject {
 	Q_OBJECT
+    QThread parserThread;
+    QThread spiderThread;
 public:
 	void load(QString seed, int maxNodes, int maxRecursion, bool goOut);
 	void terminateReaderQuit ();
@@ -77,11 +71,11 @@ public slots:
 signals:
 	void createNode(QString url, int no);
 	void createEdge (int source, int target);
-protected:
-	void run();
+    void operateParser();
+    void operateSpider();
 private: 
 	QString url;
-    WebCrawler_Parser wc_parser;
-    WebCrawler_Spider wc_spider;
+    WebCrawler_Parser *wc_parser;
+    WebCrawler_Spider *wc_spider;
 };
 #endif
