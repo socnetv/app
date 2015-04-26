@@ -52,9 +52,8 @@ class WebCrawler_Spider : public QObject  {
     Q_OBJECT
 public slots:
     void get();
-    void result(QNetworkReply *reply);
 signals:
-    void resultReady( QNetworkReply *reply);
+    void createNode(QString url, int no);
 };
 
 
