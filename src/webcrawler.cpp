@@ -72,7 +72,6 @@ void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){
     knownUrls.clear();
     currentUrl="", domain="", previous_domain="", path="", urlPrefix="";
 
-
     //seed url can't have spaces...
     seed=seed.simplified();
     if (seed.contains(" "))	{
@@ -111,7 +110,6 @@ void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){
     // create spider and parser threads
     WebCrawler_Parser *wc_parser = new WebCrawler_Parser;
     WebCrawler_Spider *wc_spider = new WebCrawler_Spider;
-    http = new QNetworkAccessManager(this);
 
     qDebug() << "WebCrawler:: I will start new QThreads!";
 
@@ -132,15 +130,11 @@ void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){
     connect(wc_parser, &WebCrawler_Parser::signalCreateEdge,
             this, &WebCrawler::slotCreateEdge);
 
-    connect (http, &QNetworkAccessManager::finished,
-             wc_spider, &WebCrawler_Spider::httpFinished);
+//    connect (http, &QNetworkAccessManager::finished,
+//             wc_spider, &WebCrawler_Spider::httpFinished);
 
     connect (wc_spider, &WebCrawler_Spider::parse,
                  wc_parser, &WebCrawler_Parser::parse );
-
-
-//    connect (http, &QNetworkAccessManager::finished,
-//             wc_parser, &WebCrawler_Parser::parse );
 
     frontier.enqueue(seed);
 
@@ -302,22 +296,28 @@ void WebCrawler_Spider::get(){
                         currentUrl = "/"+currentUrl;
                     }
 
-
                     currentUrl = "http://" + domain + currentUrl;
 
                 }
             }
 
-            qDebug() << "	Spider: get currentUrl "  <<  currentUrl.toLatin1();
+            qDebug() << "	Spider: get currentUrl "
+                     <<  currentUrl.toLatin1();
             // download currentUrl
+
+           http = new QNetworkAccessManager(this);
+
+           connect ( http, &QNetworkAccessManager::finished,
+                         this, &WebCrawler_Spider::httpFinished );
+
 
             QNetworkRequest *request = new QNetworkRequest;
             request->setUrl(QUrl(currentUrl));
-            request->setRawHeader("User-Agent",
-                                  "SocNetV innocent spider - see http://socnetv.sf.net");
+            request->setRawHeader(
+                        "User-Agent",
+                        "SocNetV innocent spider - see http://socnetv.sf.net");
 
             QNetworkReply *reply =  http->get(*request) ;
-
 
         }
         else {
@@ -350,11 +350,11 @@ void WebCrawler_Spider::get(){
 
 
 void WebCrawler_Spider::httpFinished(QNetworkReply *reply){
-    qDebug() << "TEST";
+    qDebug() << "           WebCrawler_Spider - httpFinished";
     mutex.lock();
-    emit parse (reply);
     frontierNotEmpty.wakeAll();
     mutex.unlock();
+    emit parse (reply);
 }
 
 
@@ -364,10 +364,11 @@ void WebCrawler_Spider::httpFinished(QNetworkReply *reply){
  * Then we parse the page string, searching for url substrings.
  */
 void WebCrawler_Parser::parse(QNetworkReply *reply){
+    qDebug() << "           WebCrawler_Parser - parse";
 
-    mutex.lock();
-    frontierNotEmpty.wait(&mutex);
-    mutex.unlock();
+//    mutex.lock();
+//    frontierNotEmpty.wait(&mutex);
+//    mutex.unlock();
 
 
     qDebug()  << "			wc_parser: read something!";
@@ -539,6 +540,7 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
 //signals node creation  Called from wc_parser::load()
 
 void WebCrawler_Parser::createNode(QString newUrl, bool enqueue_to_frontier) {
+    qDebug() << " create node ";
     discoveredNodes++;
     sourceMap[ discoveredNodes ] = currentNode;
     knownUrls[newUrl]=discoveredNodes;
@@ -551,9 +553,9 @@ void WebCrawler_Parser::createNode(QString newUrl, bool enqueue_to_frontier) {
 
         if (currentNode != 1 && frontier.size() > bufferSize  ) {
             qDebug() << " MUTEX UNLOCK - WaitCondition frontierNotEmpty...";
-            mutex.lock();
-            frontierNotFull.wakeAll();
-            mutex.unlock();
+//            mutex.lock();
+//            frontierNotFull.wakeAll();
+//            mutex.unlock();
         }
 
     }

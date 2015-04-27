@@ -36,11 +36,10 @@ using namespace std;
 // CONSUMER
 class WebCrawler_Parser : public QObject  {
 	Q_OBJECT
-public:  
-	void createNode(QString url, bool enqueue_to_frontier);
 
 public slots:
     void parse(QNetworkReply *reply);
+    void createNode(QString url, bool enqueue_to_frontier);
 signals:
 	void signalCreateNode(QString url, int no);
 	void signalCreateEdge (int source, int target);
