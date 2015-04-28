@@ -32,14 +32,13 @@
 #include <QDebug>
 #include <QQueue>
 #include <QVector>
-#include <QMutex>
-#include <QWaitCondition>
 
-QNetworkAccessManager *http;
-
-QNetworkReply *reply;
-
-const int bufferSize = 30; //size of circular buffer
+//#include <QMutex>
+//#include <QWaitCondition>
+//const int bufferSize = 30; //size of circular buffer
+//QWaitCondition frontierNotEmpty;
+//QWaitCondition frontierNotFull;
+//QMutex mutex;
 
 QQueue<QString> frontier;  //our circular buffer
 
@@ -48,14 +47,9 @@ QMap <QString, bool> visitedUrls;
 QMap <QString, int> knownUrls;
 QByteArray ba;
 
-QWaitCondition frontierNotEmpty;
-QWaitCondition frontierNotFull;
-QMutex mutex;
-
 QString currentUrl="", seed="", domain="", seed_domain = "", previous_domain="";
 
-
-int maxPages, discoveredNodes=0, currentNode=0, maxRecursion;
+int maxPages, discoveredNodes=0, currentNode=0, maxRecursion=1;
 bool goOut=false, seedStartsWithWWW=false;
 
 void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){ 
@@ -72,6 +66,7 @@ void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){
     knownUrls.clear();
     currentUrl="", domain="", previous_domain="";
     currentNode = 0;
+    discoveredNodes=0;
 
     //seed url can't have spaces...
     seed=seed.simplified();
@@ -110,7 +105,7 @@ void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){
     qDebug() << "WebCrawler::load():  seed: " << seed
              << " seed_domain: " << seed_domain
              << " Adding seed to frontier queue and knownUrls map. "
-             << " Creating node 1.";
+             << " Creating node " << discoveredNodes+1;
 
     discoveredNodes++;
     frontier.enqueue(seed);
@@ -140,8 +135,8 @@ void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){
     connect(wc_parser, &WebCrawler_Parser::signalCreateEdge,
             this, &WebCrawler::slotCreateEdge);
 
-//    connect (http, &QNetworkAccessManager::finished,
-//             wc_spider, &WebCrawler_Spider::httpFinished);
+    connect (wc_spider, &WebCrawler_Spider::finished,
+             this, &WebCrawler::terminateThreads);
 
     connect (wc_spider, &WebCrawler_Spider::parse,
                  wc_parser, &WebCrawler_Parser::parse );
@@ -171,7 +166,9 @@ void WebCrawler::slotCreateEdge (int source, int target){
 
 
 //called from Graph, when closing network, to terminate all processes
-void WebCrawler::terminateReaderQuit (){
+//also called indirectly when wc_spider finishes
+void WebCrawler::terminateThreads (QString reason){
+    qDebug() << "WebCrawler::terminateThreads() - reason " << reason;
     //tell the parser thread that we must quit!
     if (parserThread.isRunning() )
         parserThread.quit();
@@ -181,6 +178,19 @@ void WebCrawler::terminateReaderQuit (){
 }
 
 
+/*
+ * Constructor connects http manager signal
+ * to httpfinished() slot
+ * which in turn emits http reply to WebCrawler_Parser
+ */
+WebCrawler_Spider::WebCrawler_Spider(){
+
+    http = new QNetworkAccessManager(this);
+
+    connect ( http, &QNetworkAccessManager::finished,
+              this, &WebCrawler_Spider::httpFinished );
+
+}
 
 /*
  * WebCrawer_Spider main functionality
@@ -208,6 +218,7 @@ void WebCrawler_Spider::get(){
             if (currentNode == maxPages ) {
                 qDebug () <<"   wc_spider::get(): #### Seems we have reached maxPages!"
                          << " - we will stop now" ;
+                emit finished("maxpages");
                 break;
             }
         }
@@ -216,8 +227,8 @@ void WebCrawler_Spider::get(){
 
         qDebug() << "   wc_spider::get():"
                  <<" frontier size " << frontier.size()
-                 << " Increasing currentNode to: " << currentNode
-                 << " - Take the first url from frontier  ";
+                << " Increasing currentNode to: " << currentNode
+                << " - Take the first url from frontier  ";
 
         currentUrl = frontier.dequeue();
 
@@ -227,7 +238,7 @@ void WebCrawler_Spider::get(){
         if ( ! visitedUrls[currentUrl] ) {
 
             qDebug() << "   wc_spider::get(): currentUrl not visited."
-                        << " Adding it to visitedUrls - Checking it.";
+                     << " Adding it to visitedUrls - Checking it.";
 
             visitedUrls[currentUrl]=true;
 
@@ -241,9 +252,9 @@ void WebCrawler_Spider::get(){
                     qDebug() << "   wc_spider::get(): currentUrl is EXTERNAL. ";
 
                     if  ( !goOut  ) {
-                         qDebug() << "   wc_spider::get(): goOut is false. "
-                                  << " CONTINUE...";
-                         continue;
+                        qDebug() << "   wc_spider::get(): goOut is false. "
+                                 << " CONTINUE...";
+                        continue;
                     }
                     else {
                         //find new domain
@@ -294,16 +305,12 @@ void WebCrawler_Spider::get(){
             }
 
 
-           qDebug() << "   wc_spider::get(): currentUrl: "
-                      <<  currentUrl.toLatin1()
-                       << " downloading html ";
+            qDebug() << "   wc_spider::get(): currentUrl: "
+                     <<  currentUrl.toLatin1()
+                      << " downloading html ";
 
-           http = new QNetworkAccessManager(this);
 
-           connect ( http, &QNetworkAccessManager::finished,
-                         this, &WebCrawler_Spider::httpFinished );
-
-            QNetworkRequest *request = new QNetworkRequest;
+            request = new QNetworkRequest;
             request->setUrl(QUrl(currentUrl));
             request->setRawHeader(
                         "User-Agent",
@@ -336,22 +343,7 @@ void WebCrawler_Spider::get(){
 
 void WebCrawler_Spider::httpFinished(QNetworkReply *reply){
     qDebug() << "   wc_spider::httpFinished()";
-//    mutex.lock();
-//    frontierNotEmpty.wakeAll();
-//    mutex.unlock();
-//    qDebug() << "   wc_spider::httpFinished(): MUTEX UNLOCKED for frontierNotEmpty";
     emit parse (reply);
-
-//    if (currentNode >= 1 && frontier.size() <= bufferSize  ) {
-//        qDebug() << "   wc_spider::get(): MUTEX LOCKED - waiting frontierNotFull...";
-//        mutex.lock();
-//        frontierNotFull.wait(&mutex);
-//        mutex.unlock();
-//        qDebug () <<"   wc_spider::get(): Waking up: frontier size = "
-//                 << frontier.size();
-//    }
-
-
 }
 
 
@@ -361,12 +353,12 @@ void WebCrawler_Spider::httpFinished(QNetworkReply *reply){
  * Then we parse the page string, searching for url substrings.
  */
 void WebCrawler_Parser::parse(QNetworkReply *reply){
-    qDebug() << "   wc_parser::parse()";
+    QString requestUrl = reply->request().url().toString();
+    int sourceNode = knownUrls [ requestUrl ];
+    qDebug() << "   wc_parser::parse() response for request " 
+             << requestUrl << " which is node " << sourceNode;
 
-
-    qDebug()  << "   wc_parser::parse(): read something!";
     QString newUrl;
-
     int start=-1, end=-1, equal=-1 ;// index=-1;
 
     ba=reply->readAll();
@@ -377,9 +369,6 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
         //FIXME: Frameset pages are not parsed! See docs/manual.html for example.
         qDebug() << "   wc_parser::parse(): ### Empty or not useful data from "
                  << currentUrl.toLatin1() << " RETURN";
-//        mutex.lock();
-//        frontierNotFull.wakeAll();
-//        mutex.unlock();
         return;
     }
 
