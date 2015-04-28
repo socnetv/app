@@ -43,6 +43,7 @@ public slots:
 signals:
 	void signalCreateNode(QString url, int no);
 	void signalCreateEdge (int source, int target);
+    void startSpider();
 };
 
 
