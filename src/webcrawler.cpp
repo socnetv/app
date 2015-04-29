@@ -33,12 +33,6 @@
 #include <QQueue>
 #include <QVector>
 
-//#include <QMutex>
-//#include <QWaitCondition>
-//const int bufferSize = 30; //size of circular buffer
-//QWaitCondition frontierNotEmpty;
-//QWaitCondition frontierNotFull;
-//QMutex mutex;
 
 QQueue<QString> frontier;  //our circular buffer
 
@@ -192,6 +186,25 @@ WebCrawler_Spider::WebCrawler_Spider(){
 
 }
 
+
+QString WebCrawler_Spider::urlDomain(QString url) {
+    qDebug() << "   wc_spider::urlDomain() find which domain from " << url;
+    //find new domain
+    int pos;
+    if ( url.contains ("http://" ) )
+        url.remove ("http://");
+    if ( url.contains ("https://" ) )
+        url.remove ("https://");
+    if ( url.contains ("//" ) )
+        url.remove ("//");
+    if ( (pos=url.indexOf ("/")) !=-1 ) {
+        url = url.left(pos);
+    }
+    qDebug() << "   wc_spider::domain(): new domain is: "
+             << url.toLatin1();
+    return url;
+}
+
 /*
  * WebCrawer_Spider main functionality
  * Parses urls from frontier and downloads their data.
@@ -258,17 +271,7 @@ void WebCrawler_Spider::get(){
                     }
                     else {
                         //find new domain
-                        if ( domain.contains ("http://" ) )
-                            domain.remove ("http://");
-                        if ( domain.contains ("https://" ) )
-                            domain.remove ("https://");
-                        if ( domain.contains ("//" ) )
-                            domain.remove ("//");
-                        if ( (pos=domain.indexOf ("/")) !=-1 ) {
-                            domain = domain.left(pos);
-                        }
-                        qDebug() << "   wc_spider::get(): new domain is: "
-                                 << domain.toLatin1();
+                        domain = urlDomain(domain);
                     }
                 }
                 else {
@@ -303,7 +306,6 @@ void WebCrawler_Spider::get(){
                     currentUrl = "http://" + domain + currentUrl;
 
             }
-
 
             qDebug() << "   wc_spider::get(): currentUrl: "
                      <<  currentUrl.toLatin1()
@@ -353,6 +355,8 @@ void WebCrawler_Spider::httpFinished(QNetworkReply *reply){
  * Then we parse the page string, searching for url substrings.
  */
 void WebCrawler_Parser::parse(QNetworkReply *reply){
+    // find which is the source node
+    // we get this fromm the http request
     QString requestUrl = reply->request().url().toString();
     int sourceNode = knownUrls [ requestUrl ];
     qDebug() << "   wc_parser::parse() response for request " 
