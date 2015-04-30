@@ -37,12 +37,14 @@ using namespace std;
 class WebCrawler_Parser : public QObject  {
     Q_OBJECT
 public slots:
+    QString urlDomain(QString);
     void parse(QNetworkReply *reply);
     void createNode(QString url, bool enqueue_to_frontier);
 signals:
     void signalCreateNode(QString url, int no);
     void signalCreateEdge (int source, int target);
     void startSpider();
+    void finished (QString);
 };
 
 
@@ -51,7 +53,6 @@ class WebCrawler_Spider : public QObject  {
     Q_OBJECT
 public:
     WebCrawler_Spider();
-    QString urlDomain(QString);
 public slots:
     void get();
     void httpFinished(QNetworkReply *reply);
