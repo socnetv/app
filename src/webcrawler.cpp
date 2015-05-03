@@ -63,8 +63,8 @@ void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){
     visitedNodes = 0;
     discoveredNodes=0;
 
-    //seed url can't have spaces...
-    seed=seed.simplified();
+    //seed url can't have spaces nor capital letters...
+    seed=seed.simplified().toLower();
 
     if (seed.contains(" "))	{
         seed.remove(" ");
@@ -302,12 +302,12 @@ QString WebCrawler_Parser::urlDomain(QString url) {
  * Then we parse the page string, searching for url substrings.
  */
 void WebCrawler_Parser::parse(QNetworkReply *reply){
-    // find which is the source node
-    // we get this fromm the http request
+    // find hte node the response html belongs to
+    // we get this from the reply object request method
     QString requestUrl = reply->request().url().toString();
     int sourceNode = knownUrls [ requestUrl ];
     QString sourceBaseUrl = urlDomain(requestUrl);
-    qDebug() << "   wc_parser::parse() response for request " 
+    qDebug() << "   wc_parser::parse() response html of url "
              << requestUrl << " which is source node " << sourceNode
               << " sourceBaseUrl " << sourceBaseUrl;
 
@@ -318,10 +318,13 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
     ba=reply->readAll();
     QString page(ba);
 
-    if (!page.contains ("a href"))  { //if a href doesnt exist, return
+    if (!page.contains ("href"))  { //if a href doesnt exist, return
         //FIXME: Frameset pages are not parsed! See docs/manual.html for example.
-        qDebug() << "   wc_parser::parse(): ### Empty or not useful data from "
-                 << currentUrl.toLatin1() << " RETURN";
+        qDebug() << "   wc_parser::parse(): ### Empty or not useful html from "
+                 << requestUrl
+                 << " page size " << page.size()
+                 << " \npage contents: " << page
+                 << " RETURN";
         return;
     }
 
