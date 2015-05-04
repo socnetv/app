@@ -10195,8 +10195,11 @@ void Graph::layoutForceDirected_Eades_moveNodes(const qreal &c4) {
         //Move source node to new position according to overall velocity
         newPos = QPointF( (qreal) v1->x() + xvel, (qreal) v1->y() + yvel);
 
-        qDebug(" source vertex v1 %i current pos: (%f, %f) Possible new pos (%f,%f)",
-                v1->name(), v1->x(), v1->y() , newPos.x() ,newPos.y() );
+        qDebug() << " source vertex v1 " << v1->name()
+                    << " current pos: (" <<  v1->x()
+                    << " , " << v1->y()
+                    << " Possible new pos (" <<  newPos.x()
+                    << " , " <<  newPos.y();
 
         // check if new pos is out of screen and adjust
         newPos.rx() = qMin (

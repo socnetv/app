@@ -49,7 +49,7 @@ signals:
 
 
 // PRODUCER CLASS
-class WebCrawler_Spider : public QObject  {
+class  WebCrawler_Spider : public QObject  {
     Q_OBJECT
 public:
     WebCrawler_Spider();

@@ -70,24 +70,24 @@ void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){
         seed.remove(" ");
     }
 
-    if ( seed.startsWith("//" ) )
-        seed.remove ("//");
-    else if ( seed.startsWith("/" ) )
-        seed.replace (0,1,"");
+    if ( seed.startsWith("//" ) ) {
+           seed.remove ("//");
+    }
+    else if ( seed.startsWith("/" ) ) {
+           seed.replace (0,1,"");
+    }
 
     // extract the seed domain
      seed_domain = seed;
 
-    // add http for seed url
-   if ( !seed.startsWith("http://" ) || !seed.startsWith("https://" ) )
+     // add http for seed url
+    if ( !seed.startsWith("http:" ) )
        seed = "http://" + seed;
 
+
+
    // extract plain domain name
-    if ( seed_domain.startsWith("//" ) )
-        seed_domain.remove ("//");
-    else if ( seed_domain.startsWith("/" ) )
-        seed_domain.replace (0,1,"");
-    else if ( seed_domain.startsWith( "http://", Qt::CaseInsensitive   ) )
+    if ( seed_domain.startsWith( "http://", Qt::CaseInsensitive   ) )
         seed_domain.remove ("http://");
     else if ( seed_domain.startsWith( "https://",  Qt::CaseInsensitive ) )
         seed_domain.remove ("https://");
@@ -233,7 +233,7 @@ void WebCrawler_Spider::get(){
         currentUrl = frontier.dequeue();
 
         qDebug() << "   wc_spider::get():  currentUrl: "
-                 <<  currentUrl.toLatin1();
+                 <<  currentUrl;
 
         if ( ! visitedUrls[currentUrl] ) {
 
@@ -305,7 +305,23 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
     // find hte node the response html belongs to
     // we get this from the reply object request method
     QString requestUrl = reply->request().url().toString();
+    QString locationHeader = reply->header(QNetworkRequest::LocationHeader).toString();
     int sourceNode = knownUrls [ requestUrl ];
+    qDebug () << "locationHeader" << reply->header(QNetworkRequest::LocationHeader) ;
+    qDebug () << "requestUrl " << requestUrl ;
+    if ( locationHeader != "" && locationHeader != requestUrl ) {
+        qDebug () << "   wc_parser::parse() Location response header "
+                  << locationHeader
+                  << " differs from requestUrl " << requestUrl;
+        discoveredNodes++;
+        createNode( locationHeader , true );
+        signalCreateEdge(sourceNode , discoveredNodes);
+        qDebug () << "   wc_parser::parse() increasing discoveredNodes, "
+                     << " creating redirect node and link to it. RETURN";
+        return;
+    }
+
+
     QString sourceBaseUrl = urlDomain(requestUrl);
     qDebug() << "   wc_parser::parse() response html of url "
              << requestUrl << " which is source node " << sourceNode
@@ -329,9 +345,19 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
     }
 
     qDebug() << "   wc_parser::parse(): erasing <head></head>";
-    start=page.indexOf ("<head>");		//Find head pos
+    start=page.indexOf ("<head");		//Find head pos -- deliberately open tag
     end=page.indexOf ("</head>");		//Find head pos
-    page = page.remove(start, end);		//erase head
+    if ( start != -1 && end != -1 ) {
+        page = page.remove(start, end);		//erase head
+    }
+    else if ( start == -1  ) {
+        qDebug() << "   wc_parser::parse(): ERROR IN locating tag <head> start";
+    }
+    else if ( end == -1  ) {
+        qDebug() << "   wc_parser::parse(): ERROR IN locating tag </head> end";
+    }
+
+
 
     while (page.contains("href")) {	//as long there is a href in the page...
 
@@ -365,7 +391,9 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
 
         qDebug() << "   wc_parser::parse(): "
                  << " found newUrl: "
-                 << newUrl.toLatin1();
+                 << newUrl;
+
+         qDebug() << "utf8 " << newUrl.toUtf8();
 
         if ( newUrl == "/") {
             newUrl = "http://" + sourceBaseUrl;
@@ -379,7 +407,7 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
         }
 
         if (maxPages>0) {
-            if (discoveredNodes == maxPages ) {
+            if (discoveredNodes >= maxPages ) {
                 qDebug () <<"   wc_parser::parse(): #### Seems we have reached maxPages!"
                          << " - we will stop now" ;
                 emit finished("maxpages");
@@ -505,7 +533,7 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
 //signals node creation  Called from wc_parser::load()
 
 void WebCrawler_Parser::createNode(QString newUrl,  bool enqueue_to_frontier) {
-    qDebug() << "   wc_parser::createNode() ";
+    qDebug() << "   wc_parser::createNode() : newUrl " <<  newUrl;
 
     knownUrls[newUrl]=discoveredNodes;
     emit signalCreateNode(newUrl, discoveredNodes);
