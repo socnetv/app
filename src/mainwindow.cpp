@@ -195,6 +195,9 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect( &activeGraph, SIGNAL( eraseNode(long int) ),
              graphicsWidget, SLOT(  eraseNode(long int) ) );
 
+    connect( &activeGraph, &Graph::signalNodeSizesByOutDegree,
+             this, &MainWindow::slotLayoutNodeSizesByOutDegree );
+
 
     //connect some signals/slots with MW widgets
     connect( addNodeBt,SIGNAL(clicked()), this, SLOT( addNode() ) );

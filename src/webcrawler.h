@@ -84,6 +84,7 @@ signals:
     void createEdge (int source, int target);
     void operateParser();
     void operateSpider();
+    void signalLayoutNodeSizesByOutDegree(bool);
 private: 
     QString url;
     WebCrawler_Parser *wc_parser;

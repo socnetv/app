@@ -113,6 +113,9 @@ Graph::Graph() {
                 );
 
 
+     connect(&crawler, &WebCrawler::signalLayoutNodeSizesByOutDegree,
+                    this, &Graph::nodeSizesByOutDegree);
+
 }
 
 

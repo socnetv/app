@@ -45,7 +45,7 @@ QString currentUrl="", seed="", domain="", seed_domain = "";
 
 int maxPages, discoveredNodes=0, visitedNodes=0, maxRecursion=1;
 
-bool goOut=false;
+bool goOut=false, onlyExternalUrls=true;
 
 void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){ 
 
@@ -171,8 +171,11 @@ void WebCrawler::terminateThreads (QString reason){
     if (parserThread.isRunning() )
         parserThread.quit();
     //tell the spider thread that we must quit!
-    if (spiderThread.isRunning() )
+    if (spiderThread.isRunning() ) {
         spiderThread.quit();
+        emit signalLayoutNodeSizesByOutDegree(true);
+     }
+
 }
 
 
@@ -315,7 +318,7 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
                   << " differs from requestUrl " << requestUrl;
         discoveredNodes++;
         createNode( locationHeader , true );
-        signalCreateEdge(sourceNode , discoveredNodes);
+        emit signalCreateEdge(sourceNode , discoveredNodes);
         qDebug () << "   wc_parser::parse() increasing discoveredNodes, "
                      << " creating redirect node and link to it. RETURN";
         return;
@@ -483,7 +486,14 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
                 }
                 else {
                     qDebug()<< "   wc_parser::parse(): absolute newUrl"
-                            << " is unknown and INTERNAL "
+                            << " is unknown and INTERNAL ";
+
+                    if (onlyExternalUrls){
+                        qDebug()<< "   wc_parser::parse(): onlyExternalUrls = TRUE"
+                                  << " SKIPPING node creation";
+                        continue;
+                    }
+                    qDebug()<< "   wc_parser::parse(): onlyExternalUrls = FALSE"
                             <<" Creating new node and ADDING it to frontier...";
                     this->createNode(newUrl, true);
                     qDebug()<< "--   wc_parser::parse(): Creating link from "
@@ -495,7 +505,13 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
         else {   //	if this is relative url ....
 
             qDebug()<< "   wc_parser::parse(): relative newUrl "
-                    <<  " is unknown and INTERNAL "
+                    <<  " is unknown and INTERNAL ";
+            if (onlyExternalUrls ){
+                qDebug()<< "   wc_parser::parse(): onlyExternalUrls = TRUE"
+                        << " SKIPPING node creation";
+                        continue;
+            }
+            qDebug()<< "   wc_parser::parse(): onlyExternalUrls = FALSE"
                     <<  " Creating new node and ADDING it to frontier...";
             if (newUrl.startsWith('/', Qt::CaseInsensitive ) ){
                 qDebug () << "   wc_parser::parse(): relative newUrl starts with /."

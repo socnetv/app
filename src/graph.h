@@ -144,6 +144,7 @@ public slots:
 
     void webCrawl( QString, int, int, bool);	//Called by MW to start a web crawler...
     void setGraphChanged(bool changed) { graphModified = changed; }
+    void nodeSizesByOutDegree (bool flag) { emit signalNodeSizesByOutDegree(flag);}
 
 signals:
     /** Signals to MainWindow */
@@ -155,6 +156,7 @@ signals:
     void statusMessage (QString message);			//updates statusbar message
     void addRelationToMW(QString newRelation);
     void describeDataset(QString);
+    void signalNodeSizesByOutDegree(bool);
 
     /** Signals to GraphicsWidget */
     void drawNode( int ,int,  QString, QString, int, QString, QString, int,
