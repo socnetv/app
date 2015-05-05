@@ -64,6 +64,7 @@ Graph::Graph() {
     layoutType=0;
 
     parser.setParent(this);
+    crawler = 0;
 
  //   edgesHash.reserve(40000);
     influenceDomains.reserve(1000);
@@ -102,19 +103,6 @@ Graph::Graph() {
 
 
 
-    connect (
-                &crawler, SIGNAL( createNode (QString, int) ),
-                this, SLOT(createVertex(QString, int ) )
-                ) ;
-
-    connect (
-                &crawler, SIGNAL(createEdge (int, int)),
-                this, SLOT(createEdge (int, int) )
-                );
-
-
-     connect(&crawler, &WebCrawler::signalLayoutNodeSizesByOutDegree,
-                    this, &Graph::nodeSizesByOutDegree);
 
 }
 
@@ -619,9 +607,26 @@ void Graph::removeEdge (int v1, int v2) {
 
 
 //Called by MW to start a web crawler...
-void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,  bool goOut){
+void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
+                      bool extLinks, bool intLinks){
     qDebug() << "Graph::webCrawl() - Calling crawler.load() for " << seed ;
-    crawler.load(seed, maxNodes, maxRecursion, goOut);
+    WebCrawler *crawler = new WebCrawler;
+
+    connect (
+                crawler, SIGNAL( createNode (QString, int) ),
+                this, SLOT(createVertex(QString, int ) )
+                ) ;
+
+    connect (
+                crawler, SIGNAL(createEdge (int, int)),
+                this, SLOT(createEdge (int, int) )
+                );
+
+
+     connect(crawler, &WebCrawler::signalLayoutNodeSizesByOutDegree,
+                    this, &Graph::nodeSizesByOutDegree);
+
+    crawler->load(seed, maxNodes, maxRecursion, extLinks, intLinks);
     qDebug("Graph::webCrawl() - reach the end - See the threads running? ");
 }
 
@@ -1260,8 +1265,13 @@ void Graph::clear() {
     if (parser.isRunning() )		//tell the other thread that we must quit!
         parser.quit();
 
-    //tell threads that we must quit!
-    crawler.terminateThreads();
+    qDebug ()<< "Graph::clear()  -check crawler pointer ";
+   if (crawler) {
+    qDebug ()<< "Graph::clear()  -tell crawler threads that we must quit! ";
+    crawler->terminateThreads("graph clear INIT");
+    delete crawler;
+    crawler = 0;  // see why here: https://goo.gl/tQxpGA
+   }
 
     qDebug("Graph: m_graph cleared. Now reports size %i", m_graph.size());
 }

@@ -34,32 +34,34 @@
 #include <QVector>
 
 
-QQueue<QString> frontier;  //our circular buffer
+QQueue<QUrl> frontier;  //our url buffer
 
-QMap <int, int> sourceMap;
-QMap <QString, bool> visitedUrls;
-QMap <QString, int> knownUrls;
+QMap <QUrl, bool> visitedUrls;
+QMap <QUrl, int> knownUrls;
 QByteArray ba;
 
-QString currentUrl="", seed="", domain="", seed_domain = "";
+QString  seed="", domain="", seed_domain = "";
 
 int maxPages, discoveredNodes=0, visitedNodes=0, maxRecursion=1;
+bool m_extLinks, m_intLinks;
 
-bool goOut=false, onlyExternalUrls=true;
-
-void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){ 
+void WebCrawler::load(
+        QString url,
+        int maxN,
+        int maxRec,
+        bool extLinks,
+        bool intLinks){
 
     seed=url;       //the initial url/domain we will crawl
     maxPages=maxN;  //maxPages we'll check
     maxRecursion = maxRec;
-    goOut = gOut;
-
+    m_extLinks = extLinks;
+    m_intLinks = intLinks;
     //clear global variables
     frontier.clear();
-    sourceMap.clear();
     visitedUrls.clear();
     knownUrls.clear();
-    currentUrl="", domain="";
+    domain="";
     visitedNodes = 0;
     discoveredNodes=0;
 
@@ -97,21 +99,21 @@ void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){
     if ( seed_domain.indexOf ("/") !=-1 )
         seed_domain = seed_domain.left(seed_domain.indexOf ("/"));
 
-    qDebug() << "WebCrawler::load():  seed: " << seed
+    qDebug() << "WebCrawler::WebCrawler()  seed: " << seed
              << " seed_domain: " << seed_domain
              << " Adding seed to frontier queue and knownUrls map. "
              << " Creating node " << discoveredNodes+1;
 
     discoveredNodes++;
-    frontier.enqueue(seed);
-    knownUrls[seed]=discoveredNodes;
+    frontier.enqueue(QUrl(seed));
+    knownUrls[QUrl(seed)]=discoveredNodes;
     createNode(seed, discoveredNodes);
 
-    // create spider and parser threads
+    qDebug() << "WebCrawler::WebCrawler()create spider and parser threads";
     WebCrawler_Parser *wc_parser = new WebCrawler_Parser;
     WebCrawler_Spider *wc_spider = new WebCrawler_Spider;
 
-    qDebug() << "WebCrawler::load(): I will start new QThreads!";
+    qDebug() << "WebCrawler::WebCrawler() I will move parser/spider to new QThreads!";
 
     wc_parser->moveToThread(&parserThread);
     wc_spider->moveToThread(&spiderThread);
@@ -151,6 +153,26 @@ void WebCrawler::load (QString url, int maxN, int maxRec, bool gOut){
 
 }
 
+WebCrawler::~WebCrawler() {
+    qDebug() << "WebCrawler::~WebCrawler() DESTRUCTOR " ;
+    terminateThreads();
+    frontier.clear();
+    ba.clear();
+    visitedUrls.clear();
+    knownUrls.clear();
+    domain="";
+    visitedNodes = 0;
+    discoveredNodes=0;
+}
+
+//void WebCrawler::load(){
+//    qDebug () << "WebCrawler::load()  start threads";
+//    parserThread.start();
+//    spiderThread.start();
+
+//    qDebug () << "WebCrawler::load()  operate spider thread";
+//    emit operateSpider();
+//}
 
 //called from wc_parser createNode signal
 void WebCrawler::slotCreateNode(QString url, int number) {
@@ -224,7 +246,7 @@ void WebCrawler_Spider::get(){
             if (visitedNodes == maxPages ) {
                 qDebug () <<"   wc_spider::get(): #### Seems we have reached maxPages!"
                          << " - we will stop now" ;
-                emit finished("maxpages");
+                emit finished("maxpages from spider");
                 break;
             }
         }
@@ -247,11 +269,11 @@ void WebCrawler_Spider::get(){
             visitedUrls[currentUrl]=true;
 
             qDebug() << "   wc_spider::get(): currentUrl: "
-                     <<  currentUrl.toLatin1()
+                     <<  currentUrl
                       << " downloading html ";
 
             request = new QNetworkRequest;
-            request->setUrl(QUrl(currentUrl));
+            request->setUrl(currentUrl);
             request->setRawHeader(
                         "User-Agent",
                         "SocNetV innocent spider 1 - see http://socnetv.sf.net");
@@ -280,24 +302,6 @@ void WebCrawler_Spider::httpFinished(QNetworkReply *reply){
 
 
 
-QString WebCrawler_Parser::urlDomain(QString url) {
-    qDebug() << "   wc_parser::urlDomain() find which domain from " << url;
-    //find new domain
-    int pos;
-    if ( url.contains ("http://" ) )
-        url.remove ("http://");
-    if ( url.contains ("https://" ) )
-        url.remove ("https://");
-    if ( url.contains ("//" ) )
-        url.remove ("//");
-    if ( (pos=url.indexOf ("/")) !=-1 ) {
-        url = url.left(pos);
-    }
-    qDebug() << "   wc_parser::domain(): new domain is: "
-             << url.toLatin1();
-    return url;
-}
-
 
 /*
  * This method is called when http has finished all pending requests.
@@ -307,32 +311,37 @@ QString WebCrawler_Parser::urlDomain(QString url) {
 void WebCrawler_Parser::parse(QNetworkReply *reply){
     // find hte node the response html belongs to
     // we get this from the reply object request method
-    QString requestUrl = reply->request().url().toString();
+    QUrl requestUrl = reply->request().url();
+    QString requestUrlStr = requestUrl.toString();
     QString locationHeader = reply->header(QNetworkRequest::LocationHeader).toString();
     int sourceNode = knownUrls [ requestUrl ];
-    qDebug () << "locationHeader" << reply->header(QNetworkRequest::LocationHeader) ;
-    qDebug () << "requestUrl " << requestUrl ;
-    if ( locationHeader != "" && locationHeader != requestUrl ) {
+    QString host = requestUrl.host();
+    QString path = requestUrl.path();
+    qDebug() << "   wc_parser::parse() response html of url "
+             << requestUrlStr << " sourceNode " << sourceNode
+              << " host " << host
+              << " path " << path;
+
+    qDebug () << "decoded locationHeader" << locationHeader ;
+
+    qDebug () << "encoded requestUrl  " << requestUrl;
+    qDebug () << "decoded requestUrl " << requestUrlStr;
+    qDebug () << "requestUrl host " << host;
+
+    if ( locationHeader != "" && locationHeader != requestUrlStr ) {
         qDebug () << "   wc_parser::parse() Location response header "
                   << locationHeader
-                  << " differs from requestUrl " << requestUrl;
-        discoveredNodes++;
-        createNode( locationHeader , true );
-        emit signalCreateEdge(sourceNode , discoveredNodes);
-        qDebug () << "   wc_parser::parse() increasing discoveredNodes, "
-                     << " creating redirect node and link to it. RETURN";
+                  << " differs from requestUrl " << requestUrlStr
+                  << " Creating node redirect - Creating edge - RETURN ";
+        newLink( sourceNode, locationHeader , true );
         return;
     }
 
 
-    QString sourceBaseUrl = urlDomain(requestUrl);
-    qDebug() << "   wc_parser::parse() response html of url "
-             << requestUrl << " which is source node " << sourceNode
-              << " sourceBaseUrl " << sourceBaseUrl;
 
-    QString newUrl;
-
-    int start=-1, end=-1, equal=-1 ;// index=-1;
+    QUrl newUrl;
+    QString newUrlStr;
+    int start=-1, end=-1, equal=-1 , invalidUrlsCount =0; // index=-1;
 
     ba=reply->readAll();
     QString page(ba);
@@ -360,9 +369,26 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
         qDebug() << "   wc_parser::parse(): ERROR IN locating tag </head> end";
     }
 
-
+    while (page.contains("<script")) {
+        qDebug () << "   wc_parser::parse(): deleting scripts";
+        start=page.indexOf ("<script");		//Find pos -- deliberately open tag
+        end=page.indexOf ("</script>");		//Find pos
+        if ( start != -1 && end != -1 ) {
+            page = page.remove(start, end);		//erase head
+        }
+    }
 
     while (page.contains("href")) {	//as long there is a href in the page...
+
+        if (maxPages>0) {
+            if (discoveredNodes >= maxPages ) {
+                qDebug () <<"   wc_parser::newLink(): #### Seems we have reached maxPages!"
+                         << " - STOP!" ;
+                emit finished("maxpages from parse()");
+                return;
+            }
+        }
+
 
         // remove whitespace from the start and the end
         // all whitespace sequence becomes single space
@@ -388,157 +414,124 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
             //end=page.indexOf ("\'");
         }
 
-        newUrl=page.left(end);			//Save new url to newUrl :)
+        newUrlStr=page.left(end);			//Save new url to newUrl :)
 
-        newUrl=newUrl.simplified();
+        newUrlStr=newUrlStr.simplified();
 
-        qDebug() << "   wc_parser::parse(): "
-                 << " found newUrl: "
-                 << newUrl;
+        newUrl = QUrl(newUrlStr);
 
-         qDebug() << "utf8 " << newUrl.toUtf8();
-
-        if ( newUrl == "/") {
-            newUrl = "http://" + sourceBaseUrl;
-            qDebug() << "   wc_parser::parse(): newUrl is /"
-                        << " same as source: " << newUrl;
-        }
-        else if ( newUrl == (requestUrl + "/") ) {
-            newUrl = "http://" + sourceBaseUrl;
-            qDebug() << "   wc_parser::parse(): newUrl is "
-                        << " same as source: " << newUrl;
-        }
-
-        if (maxPages>0) {
-            if (discoveredNodes >= maxPages ) {
-                qDebug () <<"   wc_parser::parse(): #### Seems we have reached maxPages!"
-                         << " - we will stop now" ;
-                emit finished("maxpages");
-                break;
+        if (!newUrl.isValid()) {
+            invalidUrlsCount ++;
+            qDebug() << "   wc_parser::parse(): found INVALID newUrl "
+                        << newUrl.toString()
+                        << " in page " << requestUrlStr
+                        << " Will CONTINUE only if invalidUrlsCount < 200";
+            if (invalidUrlsCount > 200) {
+                qDebug() << "   wc_parser::parse(): INVALID newUrls > 200";
+                emit finished("invalidUrlsCount > 200");
+                return;
             }
-        }
-
-        // check if the new url has been discovered previously
-        QMap<QString, int>::const_iterator index = knownUrls.find(newUrl);
-        if (   index!= knownUrls.end() ) {
-            qDebug()<< "   wc_parser::parse(): newUrl already discovered "
-                    << " in knownUrls - Just creating an edge from "
-                    << sourceNode << " to " << index.value();
-            emit signalCreateEdge (sourceNode, index.value() );
             continue;
         }
 
+        qDebug() << "   wc_parser::parse(): "
+                 << " found VALID newUrl : "
+                 << newUrlStr
+                 << " in page " << requestUrlStr
+                 << " decoded newUrl " << newUrl.toString();
+
+
+        newUrlStr = newUrl.toString();
+
         //	...skip css, favicon, rss, ping, etc
-         if ( newUrl.startsWith("#", Qt::CaseInsensitive) ||
-              newUrl.endsWith(".css", Qt::CaseInsensitive) ||
-              newUrl.endsWith("feed/", Qt::CaseInsensitive) ||
-              newUrl.endsWith("rss/", Qt::CaseInsensitive) ||
-              newUrl.endsWith("atom/", Qt::CaseInsensitive) ||
-              newUrl.endsWith("xmlrpc.php", Qt::CaseInsensitive) ||
-              newUrl.endsWith("?rsd", Qt::CaseInsensitive) ||
-              newUrl.endsWith(".xml", Qt::CaseInsensitive) ||
-              newUrl.endsWith(".ico", Qt::CaseInsensitive) ||
-              newUrl.endsWith(".gif", Qt::CaseInsensitive) ||
-              newUrl.endsWith(".jpg", Qt::CaseInsensitive) ||
-              newUrl.endsWith(".png", Qt::CaseInsensitive) ||
-              newUrl.endsWith(".js", Qt::CaseInsensitive) ||
-              newUrl.endsWith("css?H", Qt::CaseInsensitive)   )    {
+         if ( newUrlStr.startsWith("#", Qt::CaseInsensitive) ||
+              newUrlStr.endsWith("feed/", Qt::CaseInsensitive) ||
+              newUrlStr.endsWith("rss/", Qt::CaseInsensitive) ||
+              newUrlStr.endsWith("atom/", Qt::CaseInsensitive) ||
+              newUrl.fileName().endsWith("xmlrpc.php", Qt::CaseInsensitive) ||
+              newUrl.fileName().endsWith(".xml", Qt::CaseInsensitive) ||
+              newUrl.fileName().endsWith(".ico", Qt::CaseInsensitive) ||
+              newUrl.fileName().endsWith(".gif", Qt::CaseInsensitive) ||
+              newUrl.fileName().endsWith(".png", Qt::CaseInsensitive) ||
+              newUrl.fileName().endsWith(".jpg", Qt::CaseInsensitive) ||
+              newUrl.fileName().endsWith(".js", Qt::CaseInsensitive) ||
+              newUrl.fileName().endsWith(".css", Qt::CaseInsensitive) ||
+              newUrl.fileName().endsWith(".rsd", Qt::CaseInsensitive)   )    {
                 qDebug()<< "   wc_parser::parse(): # newUrl "
                         << " seems a page resource or anchor (rss, favicon, etc) "
                         << "Skipping...";
                 continue;
          }
 
-        discoveredNodes++;
-        qDebug() << "   wc_parser::parse(): newUrl is unknown. "
-                 << " discoveredNodes: " << discoveredNodes
-                 << "  Checking if it is absolute or relative url";
 
-        if ( newUrl.contains("http://", Qt::CaseInsensitive) ||
-             newUrl.contains("ftp://", Qt::CaseInsensitive)  ||
-             newUrl.contains("https://", Qt::CaseInsensitive) ||
-             newUrl.contains("//", Qt::CaseInsensitive)  ) {
+        if ( newUrl.isRelative() ) {
+            newUrl = requestUrl.resolved(newUrl);
+            newUrlStr = newUrl.toString();
 
-              qDebug()<< "   wc_parser::parse(): absolute newUrl ";
+            qDebug() << "   wc_parser::parse(): isRelative TRUE"
+                        << " host: " << host
+                        << " resolved url "
+                        << newUrl.toString();
 
-               //     Check if the absolute newUrl is EXTERNAL
-                if (  !newUrl.contains(sourceBaseUrl, Qt::CaseInsensitive ) ||
-                      !newUrl.startsWith( "http://"+sourceBaseUrl, Qt::CaseInsensitive) )   //fixme should check for source domain
-                {
-                    qDebug()<< "   wc_parser::parse(): absolute newUrl "
-                             <<  " is unknown and EXTERNAL ";
-                    if ( !goOut ) {
-                        qDebug()<< "   wc_parser::parse(): goOut = false . "
-                                <<" Creating new node but NOT ADDING it to frontier...";
-                        this->createNode(newUrl, false);
-                        qDebug()<< "--   wc_parser::parse(): Creating link from "
-                                << sourceNode << " to " << discoveredNodes;
-                        emit signalCreateEdge (sourceNode, discoveredNodes);
-                    }
-                    else {
-                        qDebug()<< "   wc_parser::parse():  goOut = true  "
-                                <<" Creating new node and ADDING it to frontier...";
-                        this->createNode(newUrl, true);
-                        qDebug()<< "--   wc_parser::parse(): Creating link from "
-                                << sourceNode << " to " << discoveredNodes;
-                        emit signalCreateEdge (sourceNode, discoveredNodes);
-                    }
-                }
-                else {
-                    qDebug()<< "   wc_parser::parse(): absolute newUrl"
-                            << " is unknown and INTERNAL ";
-
-                    if (onlyExternalUrls){
-                        qDebug()<< "   wc_parser::parse(): onlyExternalUrls = TRUE"
-                                  << " SKIPPING node creation";
-                        continue;
-                    }
-                    qDebug()<< "   wc_parser::parse(): onlyExternalUrls = FALSE"
-                            <<" Creating new node and ADDING it to frontier...";
-                    this->createNode(newUrl, true);
-                    qDebug()<< "--   wc_parser::parse(): Creating link from "
-                            << sourceNode << " to " << discoveredNodes;
-                    emit signalCreateEdge (sourceNode, discoveredNodes);
-                }
-
-        }
-        else {   //	if this is relative url ....
-
-            qDebug()<< "   wc_parser::parse(): relative newUrl "
-                    <<  " is unknown and INTERNAL ";
-            if (onlyExternalUrls ){
-                qDebug()<< "   wc_parser::parse(): onlyExternalUrls = TRUE"
+            if (!m_intLinks ){
+                qDebug()<< "   wc_parser::parse(): m_IntLinks = FALSE"
                         << " SKIPPING node creation";
                         continue;
             }
-            qDebug()<< "   wc_parser::parse(): onlyExternalUrls = FALSE"
-                    <<  " Creating new node and ADDING it to frontier...";
-            if (newUrl.startsWith('/', Qt::CaseInsensitive ) ){
-                qDebug () << "   wc_parser::parse(): relative newUrl starts with /."
-                          << " Creating node with sourceBaseUrl";
-                newUrl= "http://" + sourceBaseUrl + newUrl;
-            }
-            else if (newUrl.startsWith('.', Qt::CaseInsensitive) ) {
-                qDebug () << "   wc_parser::parse(): relative newUrl starts with dot."
-                          << " Removing dot from url and adding /"
-                          << " Creating node with sourceBaseUrl";
-                newUrl=newUrl.remove(0, 1);
-                newUrl= "http://" + sourceBaseUrl + "/" + newUrl;
+
+            if (requestUrl.path() == newUrl.path()) {
+                qDebug()<< "   wc_parser::parse(): m_IntLinks = TRUE"
+                        << " requestUrl.path() = requestUrl.path()"
+                        <<  " Creating new node, NOT ADDING it to frontier...";
+                this->newLink(sourceNode, newUrl, false);
+
             }
             else {
-                qDebug () << "   wc_parser::parse(): relative newUrl not starting "
-                          << " either with dot or /. Something WRONG HERE???"
-                           << " Creating node with sourceBaseUrl";
-                newUrl="http://" + sourceBaseUrl + "/" + newUrl;
+                qDebug()<< "   wc_parser::parse(): m_IntLinks = TRUE"
+                        <<  " Creating new node and ADDING it to frontier...";
+                this->newLink(sourceNode, newUrl, true);
+
             }
-            this->createNode(newUrl, true);
-
-            qDebug()<< "--   wc_parser::parse(): Creating link from "
-                    << sourceNode << " to " << discoveredNodes;
-
-            emit signalCreateEdge (sourceNode, discoveredNodes);
-
         }
+        else {
+            qDebug() << "   wc_parser::parse(): isRelative FALSE";
+
+            if ( newUrl.scheme() != "http"  && newUrl.scheme() != "https"  &&
+                      newUrl.scheme() != "ftp" && newUrl.scheme() != "ftps") {
+                qDebug() << "   wc_parser::parse(): found INVALID newUrl SCHEME"
+                            << newUrl.toString();
+                continue;
+            }
+
+            if (  newUrl.host() != host  ) {
+                qDebug()<< "   wc_parser::parse(): absolute newUrl "
+                         <<  " is EXTERNAL ";
+                if ( !m_extLinks ) {
+                    qDebug()<< "   wc_parser::parse(): m_extLinks = false . "
+                            <<" Creating new node but NOT ADDING it to frontier...";
+                    this->newLink(sourceNode, newUrl, false);
+                }
+                else {
+                    qDebug()<< "   wc_parser::parse():  m_extLinks = true  "
+                            <<" Creating new node and ADDING it to frontier...";
+                    this->newLink(sourceNode, newUrl, true);
+                }
+            }
+            else {
+                qDebug()<< "   wc_parser::parse(): absolute newUrl"
+                        << " is INTERNAL ";
+
+                if (!m_intLinks){
+                    qDebug()<< "   wc_parser::parse(): m_IntLinks = FALSE"
+                              << " SKIPPING node creation";
+                    continue;
+                }
+                qDebug()<< "   wc_parser::parse(): m_IntLinks = TRUE"
+                        <<" Creating new node and ADDING it to frontier...";
+                this->newLink(sourceNode, newUrl, true);
+            }
+        }
+
     }
 
 }
@@ -548,24 +541,52 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
 
 //signals node creation  Called from wc_parser::load()
 
-void WebCrawler_Parser::createNode(QString newUrl,  bool enqueue_to_frontier) {
-    qDebug() << "   wc_parser::createNode() : newUrl " <<  newUrl;
+void WebCrawler_Parser::newLink(int s, QUrl target,  bool enqueue_to_frontier) {
+    qDebug() << "   wc_parser::newLink() : from s " <<  s
+                << " to target " << target.toString();
 
-    knownUrls[newUrl]=discoveredNodes;
-    emit signalCreateNode(newUrl, discoveredNodes);
+    if (maxPages>0) {
+        if (discoveredNodes >= maxPages ) {
+            qDebug () <<"   wc_parser::newLink(): #### Seems we have reached maxPages!"
+                     << " - STOP!" ;
+            emit finished("maxpages from newLink");
+            return;
+        }
+    }
+
+    // check if the new url has been discovered previously
+    QMap<QUrl, int>::const_iterator index = knownUrls.find(target);
+    if (   index!= knownUrls.end() ) {
+        qDebug()<< "--   wc_parser::newLink(): target already discovered "
+                << " in knownUrls. Creating edge from "
+                << s << " to " << index.value();
+        emit signalCreateEdge (s, index.value() );
+        return;
+    }
+
+    discoveredNodes++;
+    knownUrls[target]=discoveredNodes;
+    emit signalCreateNode( target.toString(), discoveredNodes);
+    qDebug()<< "**   wc_parser::newLink(): Creating node " << discoveredNodes
+            << " url "<< target.toString();
 
     if (enqueue_to_frontier) {
-        frontier.enqueue(newUrl);
-        qDebug()<< "**   wc_parser::createNode(): Creating node " << discoveredNodes
-                << " url "<< newUrl << " Frontier size: "<<  frontier.size()
-                << " = discoveredNodes: " << discoveredNodes;
+
+        frontier.enqueue(target);
+        qDebug()<< "**   wc_parser::newLink(): Enqueuing new node to frontier "
+                   << " frontier size: "<<  frontier.size();
+
         emit startSpider();
     }
     else {
-        qDebug()<< "##   wc_parser::createNode(): Creating node " << discoveredNodes
-                << " url "<< newUrl << " NOT enqueuing to frontier"
-                << "  discoveredNodes: " <<discoveredNodes;
+        qDebug()<< "##   wc_parser::newLink(): NOT enqueuing to frontier";
     }
+
+    qDebug()<< "--   wc_parser::newLink(): Creating edge from "
+            << s << " to " << discoveredNodes;
+
+    emit signalCreateEdge (s, discoveredNodes);
+
 
 }
 

@@ -39,9 +39,10 @@ class WebCrawlerDialog: public QDialog
 public:
 	WebCrawlerDialog (QWidget *parent = 0);
 public slots:
+    void checkErrors ();
 	void gatherData ();
 signals:
-	void userChoices( QString, int, int, bool);	
+    void userChoices( QString, int, int, bool, bool);
 private:
 	Ui::WebCrawlerDialog ui;
 

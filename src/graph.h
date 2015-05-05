@@ -142,7 +142,7 @@ public slots:
     void filterEdgesByWeight (float, bool);		//Called by MW to filter edges over/under a weight
     void filterEdgesByRelation(int relation, bool status);
 
-    void webCrawl( QString, int, int, bool);	//Called by MW to start a web crawler...
+    void webCrawl(QString, int, int, bool extLinks, bool intLinks);	//Called by MW to start a web crawler...
     void setGraphChanged(bool changed) { graphModified = changed; }
     void nodeSizesByOutDegree (bool flag) { emit signalNodeSizesByOutDegree(flag);}
 
@@ -484,7 +484,7 @@ private:
 
     Parser parser;	//file loader threaded class.
 
-    WebCrawler crawler;
+    WebCrawler *crawler;
 
     /** private member functions */
 

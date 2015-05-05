@@ -236,8 +236,8 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect( &m_filterEdgesByWeightDialog, SIGNAL( userChoices( float, bool) ),
              &activeGraph, SLOT( filterEdgesByWeight (float, bool) ) );
 
-    connect( &m_WebCrawlerDialog, SIGNAL( userChoices( QString, int, int, bool)  ),
-             this, SLOT(  slotWebCrawl( QString, int, int, bool) ) );
+    connect( &m_WebCrawlerDialog, &WebCrawlerDialog::userChoices,
+             this, &MainWindow::slotWebCrawl );
 
     connect( &m_datasetSelectDialog, SIGNAL( userChoices( QString) ),
              this, SLOT( slotRecreateDataSet(QString) ) );
@@ -4389,9 +4389,11 @@ void MainWindow::slotShowWebCrawlerDialog() {
 *   Clears the loaded network (saving if needed)    
 *	then passes parameters to webCrawl of ActiveGraph class.  
 */ 
-void MainWindow::slotWebCrawl(QString  seed, int maxNodes, int maxRecursion,  bool goOut ) {
+void MainWindow::slotWebCrawl ( QString  seed, int maxNodes, int maxRecursion,
+                                bool extLinks, bool intLinks) {
     this->slotFileClose();
-    activeGraph.webCrawl( seed, maxNodes, maxRecursion,  goOut ) ;
+    activeGraph.webCrawl( seed, maxNodes, maxRecursion,  extLinks, intLinks) ;
+
 }
 
 

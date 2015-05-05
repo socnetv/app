@@ -24,7 +24,7 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
- 
+
 
 #include "webcrawlerdialog.h"
 #include  <QDebug>
@@ -32,34 +32,64 @@
 
 WebCrawlerDialog::WebCrawlerDialog(QWidget *parent) : QDialog (parent)
 {
-	ui.setupUi(this);	
-	connect ( ui.buttonBox,SIGNAL(accepted()), this, SLOT(gatherData()) );
-	
-	(ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
-	
-	(ui.goOutCheckBox)-> setChecked(true);
-	(ui.websiteLineEdit)->setFocus();
-	
+    ui.setupUi(this);
+    connect ( ui.buttonBox,SIGNAL(accepted()), this, SLOT(gatherData()) );
+
+    (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
+
+    (ui.seedUrlEdit)->setFocus();
+
+    connect (ui.extLinksCheckBox, &QCheckBox::stateChanged,
+             this, &WebCrawlerDialog::checkErrors);
+
+    connect (ui.intLinksCheckBox, &QCheckBox::stateChanged,
+             this, &WebCrawlerDialog::checkErrors);
+
+    if ( !ui.extLinksCheckBox->isChecked()  &&!ui.intLinksCheckBox->isChecked() )
+    {
+        (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setDisabled(true);
+    }
+
 }
 
+void WebCrawlerDialog::checkErrors(){
+    qDebug()<< "WebCrawlerDialog::checkErrors...";
+    if ( !ui.extLinksCheckBox->isChecked()  && !ui.intLinksCheckBox->isChecked() )
+    {
+        (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setDisabled(true);
+    }
+    else
+        (ui.buttonBox) -> button (QDialogButtonBox::Ok)->setEnabled(true);
 
+}
 
 void WebCrawlerDialog::gatherData(){
-	qDebug()<< "Dialog: gathering Data!...";
-	bool goOut=false;
-	QString website = (ui.websiteLineEdit)->text() ;
-	int maxRecursion = (ui.maxRecursionLevelSpinBox) -> value();
-	int maxNodes = (ui.maxNodesSpinBox) -> value();
-	
-	if ( ui.goOutCheckBox -> isChecked() ) {
-		qDebug()<< "	We will go out of this site... " ;
-		goOut = true;
-	}
-	else {
-		qDebug()<< "	We will not go out of this site... ";
-		goOut = false;
-	}	
-	qDebug()<< "	Website: " << website;  
-	qDebug()<< "	maxRecursion " << maxRecursion << "  maxNodes " << maxNodes  ;
-	emit userChoices( website, maxNodes, maxRecursion,  goOut );		
+    qDebug()<< "WebCrawlerDialog::gatherData()...";
+    bool extLinks=true, intLinks=false;
+    QString website = (ui.seedUrlEdit)->text() ;
+    int maxRecursion = (ui.maxRecursionLevelSpinBox) -> value();
+    int maxNodes = (ui.maxNodesSpinBox) -> value();
+
+    if ( ui.extLinksCheckBox -> isChecked() ) {
+        qDebug()<< "	External links will be crawled... " ;
+        extLinks = true;
+    }
+    else {
+        qDebug()<< "	No external links... ";
+        extLinks = false;
+    }
+    if ( ui.intLinksCheckBox -> isChecked() ) {
+        qDebug()<< "	Internal links will be crawled too. " ;
+        intLinks = true;
+    }
+    else {
+        qDebug()<< "	No internal links. ";
+        intLinks = false;
+        if (!intLinks && !extLinks)
+            return;
+    }
+
+    qDebug()<< "	Website: " << website;
+    qDebug()<< "	maxRecursion " << maxRecursion << "  maxNodes " << maxNodes  ;
+    emit userChoices( website, maxNodes, maxRecursion,  extLinks, intLinks );
 }

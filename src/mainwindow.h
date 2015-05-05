@@ -149,7 +149,7 @@ public slots:
     void slotCreateRandomNetRingLattice();
     void slotCreateSmallWorldRandomNetwork();
     void slotShowWebCrawlerDialog();
-    void slotWebCrawl(QString, int, int, bool);
+    void slotWebCrawl(QString, int, int, bool, bool);
 
     void prevRelation();
     void nextRelation();

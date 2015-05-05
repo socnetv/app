@@ -37,9 +37,8 @@ using namespace std;
 class WebCrawler_Parser : public QObject  {
     Q_OBJECT
 public slots:
-    QString urlDomain(QString);
     void parse(QNetworkReply *reply);
-    void createNode(QString url, bool enqueue_to_frontier);
+    void newLink(int s, QUrl target, bool enqueue_to_frontier);
 signals:
     void signalCreateNode(QString url, int no);
     void signalCreateEdge (int source, int target);
@@ -65,7 +64,7 @@ private:
     QNetworkAccessManager *http;
     QNetworkRequest *request;
     QNetworkReply *reply;
-
+    QUrl currentUrl ;
 };
 
 
@@ -74,7 +73,9 @@ class WebCrawler :  public QObject {
     QThread parserThread;
     QThread spiderThread;
 public:
-    void load(QString seed, int maxNodes, int maxRecursion, bool goOut);
+    //WebCrawler(QString seed, int maxNodes, int maxRecursion,bool extLinks, bool intLinks);
+    ~WebCrawler();
+    void load(QString seed, int maxNodes, int maxRecursion,bool extLinks, bool intLinks);
     void terminateThreads (QString reason="none");
 public slots:
     void slotCreateNode(QString url, int no);

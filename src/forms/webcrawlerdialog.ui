@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>477</width>
-    <height>288</height>
+    <width>639</width>
+    <height>313</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -21,10 +21,17 @@
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
-    <widget class="QLabel" name="label_2">
+    <widget class="QLabel" name="description">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="text">
-      <string>SocNetV includes a simple web crawler. A web crawler (or spider) is a tool which scans and reports all links found in a given website. All links will appear as edges while the original site and all other sites found will appear as nodes. 
- Enter below the web address of the site you wish to crawl, and set the maximum recursion depth:</string>
+      <string>SocNetV includes a simple web crawler.  
+A web crawler is an online robot which scans the html code of given URL  (i.e. a website or a webpage) and maps all internal or external links to other pages found there. Links will appear on the SocNetV canvas as edges while the initial website and all other sites/pages found will appear as nodes. 
+ Enter below the web address of  a site to start crawling. You can set the maximum nodes/pages (default 1000). By default I will crawl only external links.</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
@@ -34,7 +41,36 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="0">
+   <item row="1" column="0">
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Enter the initial URL to start crawling:</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="seedUrlEdit">
+      <property name="minimumSize">
+       <size>
+        <width>380</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the initial url/domain to start crawling from, i.e. http://www.iefimerida.gr  &lt;/p&gt;&lt;p&gt;You may omit http:// if you want. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+    </widget>
+   </item>
+   <item row="2" column="0">
     <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="1">
       <spacer name="horizontalSpacer">
@@ -102,7 +138,7 @@ Set value to 1, if you just want to display links from the source website...</st
         </size>
        </property>
        <property name="text">
-        <string>Maximum nodes to display</string>
+        <string>Maximum nodes/urls  to crawl</string>
        </property>
       </widget>
      </item>
@@ -133,53 +169,70 @@ p, li { white-space: pre-wrap; }
         <number>9999</number>
        </property>
        <property name="value">
-        <number>0</number>
+        <number>1000</number>
        </property>
       </widget>
      </item>
     </layout>
    </item>
-   <item row="4" column="0">
-    <widget class="QCheckBox" name="goOutCheckBox">
+   <item row="3" column="0">
+    <widget class="QCheckBox" name="extLinksCheckBox">
+     <property name="minimumSize">
+      <size>
+       <width>13</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="focusPolicy">
+      <enum>Qt::TabFocus</enum>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, the crawler will map &lt;span style=&quot; font-weight:600;&quot;&gt;external links&lt;/span&gt;. For instance, if you start crawling from www.iefimerida.gr and we find there a link to another domain, i.e. www.linuxinsider.gr, then we will go outside of iefimerida.gr and crawl linuxinsider.gr too. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;If you don't want to crawl external links, disable this option. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
      <property name="text">
-      <string>Go outside of this domain</string>
+      <string>Crawl external links</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+     <property name="tristate">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QCheckBox" name="intLinksCheckBox">
+     <property name="focusPolicy">
+      <enum>Qt::TabFocus</enum>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled the crawler will scan and map &lt;span style=&quot; font-weight:600;&quot;&gt;internal links &lt;/span&gt;as well (i.e. pages within the initial website).&lt;/p&gt;&lt;p&gt; If you do not want to crawl internal links disable this option. Default is not to crawl internal links.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <property name="text">
+      <string>Crawl internal links</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
      </property>
     </widget>
    </item>
    <item row="5" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QSplitter" name="splitter">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>Source Website:</string>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="websiteLineEdit">
-      <property name="minimumSize">
-       <size>
-        <width>300</width>
-        <height>32</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>32</height>
-       </size>
-      </property>
-     </widget>
     </widget>
    </item>
   </layout>
