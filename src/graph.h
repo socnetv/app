@@ -32,6 +32,7 @@
 #include <QList>
 #include <QHash>
 #include <QTextStream>
+#include <QThread>
 //FYI: stack is a wrapper around <deque> in C++, see: www.cplusplus.com/reference/stl/stack
 #include <stack>
 #include <map>
@@ -105,7 +106,8 @@ class CompareDistances {
 
 class Graph:  public QObject{
     Q_OBJECT
-
+    QThread parserThread;
+    QThread spiderThread;
 public slots:
     int currentRelation();
 
@@ -124,7 +126,7 @@ public slots:
     /** Slots to signals from GraphicsWidget and Parser*/
     void createEdge (int, int, float, QString, int, bool, bool);	//GW and Parser.
     void createEdge (int, int, float, int, bool, bool);		//GW
-    void createEdge (int, int);					//WebCrawler
+    void createEdgeWebCrawler (int, int);					//WebCrawler
     void nodeMovement(bool state, int type, int cW, int cH);		//Called by MW to start movement
 
     void slotSetEdgeVisibility(int relation, int, int, bool);
@@ -132,7 +134,7 @@ public slots:
     //auxiliary createVertex functions
     void createVertex(int i, QPointF p); 				//Called by GW
     void createVertex(int i, int canvasWidth, int canvasHeight); 	//Called by MW
-    void createVertex(QString label, int i) ; 			//Called by WebCrawler
+    void createVertexWebCrawler(QString label, int i) ;
 
     /** Slots to signals from MainWindow */
     void changeRelation(int);
@@ -144,7 +146,7 @@ public slots:
 
     void webCrawl(QString, int, int, bool extLinks, bool intLinks);	//Called by MW to start a web crawler...
     void setGraphChanged(bool changed) { graphModified = changed; }
-    void nodeSizesByOutDegree (bool flag) { emit signalNodeSizesByOutDegree(flag);}
+
 
 signals:
     /** Signals to MainWindow */
@@ -177,6 +179,9 @@ signals:
 
     /** Signals to Vertice */
     void relationChanged(int);
+
+    /** Signals to Crawler threads */
+    void  operateSpider();
 
 
 public: 	
@@ -437,6 +442,10 @@ public:
 
     void layoutForceDirectedFruchtermanReingold(bool dynamicMovement);
 
+
+    /* CRAWLER */
+    void terminateCrawlerThreads (QString reason);
+
     /**RANDOM NETWORKS*/
     void createRandomNetErdos
     (int, double);
@@ -484,7 +493,9 @@ private:
 
     Parser parser;	//file loader threaded class.
 
-    WebCrawler *crawler;
+    //WebCrawler *crawler;
+    WebCrawler_Parser *wc_parser;
+    WebCrawler_Spider *wc_spider;
 
     /** private member functions */
 

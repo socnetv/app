@@ -33,9 +33,11 @@ using namespace std;
 #include <QNetworkReply>
 
 
-// CONSUMER CLASS
 class WebCrawler_Parser : public QObject  {
     Q_OBJECT
+public:
+    WebCrawler_Parser(QString seed, int maxNodes, int maxRecursion, bool extLinks, bool intLinks);
+    ~WebCrawler_Parser();
 public slots:
     void parse(QNetworkReply *reply);
     void newLink(int s, QUrl target, bool enqueue_to_frontier);
@@ -44,51 +46,41 @@ signals:
     void signalCreateEdge (int source, int target);
     void startSpider();
     void finished (QString);
+private:
+    QByteArray ba;
+    QMap <QUrl, int> knownUrls;
+    QUrl  m_seed;
+    int m_maxPages;
+    int m_discoveredNodes;
+    int m_maxRecursion;
+    bool m_extLinks, m_intLinks;
 };
 
 
-// PRODUCER CLASS
 class  WebCrawler_Spider : public QObject  {
     Q_OBJECT
 public:
-    WebCrawler_Spider();
+    WebCrawler_Spider(QString seed, int maxNodes, int maxRecursion,bool extLinks, bool intLinks);
+    ~WebCrawler_Spider();
 public slots:
     void get();
     void httpFinished(QNetworkReply *reply);
 
 signals:
-    void createNode(QString url, int no);
     void parse(QNetworkReply *reply);
     void finished (QString);
 private:
+    QMap <QUrl, bool> visitedUrls;
     QNetworkAccessManager *http;
     QNetworkRequest *request;
     QNetworkReply *reply;
     QUrl currentUrl ;
+    QString  m_seed;
+    int m_maxPages;
+    int m_visitedNodes;
+    int m_maxRecursion;
+    bool m_extLinks, m_intLinks;
+
 };
 
-
-class WebCrawler :  public QObject {
-    Q_OBJECT
-    QThread parserThread;
-    QThread spiderThread;
-public:
-    //WebCrawler(QString seed, int maxNodes, int maxRecursion,bool extLinks, bool intLinks);
-    ~WebCrawler();
-    void load(QString seed, int maxNodes, int maxRecursion,bool extLinks, bool intLinks);
-    void terminateThreads (QString reason="none");
-public slots:
-    void slotCreateNode(QString url, int no);
-    void slotCreateEdge (int source, int target);
-signals:
-    void createNode(QString url, int no);
-    void createEdge (int source, int target);
-    void operateParser();
-    void operateSpider();
-    void signalLayoutNodeSizesByOutDegree(bool);
-private: 
-    QString url;
-    WebCrawler_Parser *wc_parser;
-    WebCrawler_Spider *wc_spider;
-};
 #endif

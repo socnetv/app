@@ -27,8 +27,9 @@
 
 
 #include "webcrawlerdialog.h"
-#include  <QDebug>
+#include <QDebug>
 #include <QPushButton>
+#include <QUrl>
 
 WebCrawlerDialog::WebCrawlerDialog(QWidget *parent) : QDialog (parent)
 {
@@ -66,7 +67,34 @@ void WebCrawlerDialog::checkErrors(){
 void WebCrawlerDialog::gatherData(){
     qDebug()<< "WebCrawlerDialog::gatherData()...";
     bool extLinks=true, intLinks=false;
-    QString website = (ui.seedUrlEdit)->text() ;
+    //url can't have spaces nor capital letters...
+    QString website = (ui.seedUrlEdit)->text().simplified().toLower() ;
+    //construct QUrl
+    QUrl newUrl(website);
+    qDebug()<< "WebCrawlerDialog::gatherData()  URL" << newUrl.toString()
+                   << " host " << newUrl.host()
+                   << " scheme " << newUrl.scheme();
+    //check QUrl
+     if ( newUrl.scheme() != "http"  && newUrl.scheme() != "https"  &&
+                  newUrl.scheme() != "ftp" && newUrl.scheme() != "ftps") {
+            qDebug()<< "WebCrawlerDialog::gatherData()  URL scheme missing "
+                    << newUrl.scheme()
+                    << " setting the default scheme http ";
+            newUrl = QUrl ("http://" + website);
+            qDebug() << newUrl;
+        }
+        else {
+            qDebug()<< "WebCrawlerDialog::gatherData()  URL scheme "
+                    << newUrl.scheme() ;
+        }
+
+    if (! newUrl.isValid() || newUrl.host() == "") {
+        emit webCrawlerDialogError(website);
+        qDebug()<< "WebCrawlerDialog::gatherData()  not valid URL";
+        return;
+    }
+    website = newUrl.toString();
+
     int maxRecursion = (ui.maxRecursionLevelSpinBox) -> value();
     int maxNodes = (ui.maxNodesSpinBox) -> value();
 

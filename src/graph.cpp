@@ -64,7 +64,8 @@ Graph::Graph() {
     layoutType=0;
 
     parser.setParent(this);
-    crawler = 0;
+    wc_parser = 0;
+    wc_spider = 0;
 
  //   edgesHash.reserve(40000);
     influenceDomains.reserve(1000);
@@ -258,9 +259,9 @@ void Graph::createVertex(int i, int cWidth, int cHeight){
     Then calls the main creation slot with init node values.
 */
 
-void Graph::createVertex(QString label, int i) {
+void Graph::createVertexWebCrawler(QString label, int i) {
     if ( i < 0 )  i = lastVertexNumber() +1;
-    qDebug() << "Graph::createVertex() " << i << " rand coords with label";
+    qDebug() << "Graph::createVertexWebCrawler() " << i << " rand coords with label";
     QPointF p;
     p.setX(rand()%canvasWidth);
     p.setY(rand()%canvasHeight);
@@ -348,8 +349,8 @@ void Graph::createEdge(int v1, int v2, float weight, int reciprocal=0,
     Called from WebCrawler when it finds an new link
     Calls the above createEdge() method with initEdgeColor
 */
-void Graph::createEdge (int source, int target){
-    qDebug()<< " Graph::createEdge() - from " << source << " to " << target ;
+void Graph::createEdgeWebCrawler (int source, int target){
+    qDebug()<< " Graph::createEdgeWebCrawler() - from " << source << " to " << target ;
     float weight = 1.0;
     bool reciprocal=false;
     bool drawArrows=true;
@@ -609,28 +610,101 @@ void Graph::removeEdge (int v1, int v2) {
 //Called by MW to start a web crawler...
 void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
                       bool extLinks, bool intLinks){
-    qDebug() << "Graph::webCrawl() - Calling crawler.load() for " << seed ;
-    WebCrawler *crawler = new WebCrawler;
 
-    connect (
-                crawler, SIGNAL( createNode (QString, int) ),
-                this, SLOT(createVertex(QString, int ) )
-                ) ;
+    qDebug() << "Graph::webCrawl() - seed " << seed ;
+    //WebCrawler *crawler = new WebCrawler;
 
-    connect (
-                crawler, SIGNAL(createEdge (int, int)),
-                this, SLOT(createEdge (int, int) )
-                );
+    qDebug() << "Graph::webCrawl() Creating spider & parser objects";
+    WebCrawler_Parser *wc_parser = new WebCrawler_Parser(seed, maxNodes,
+                                                         maxRecursion,
+                                                         extLinks,
+                                                         intLinks);
+    WebCrawler_Spider *wc_spider = new WebCrawler_Spider (seed, maxNodes,
+                                                          maxRecursion,
+                                                          extLinks, intLinks);
+
+    qDebug() << "Graph::webCrawl()  Moving parser & spider to new QThreads!";
+    qDebug () << " graph thread  " << this->thread();
+    qDebug () << " wc_parser thread  " << wc_parser->thread();
+    qDebug () << " wc_spider thread  " << wc_spider->thread();
+    wc_parser->moveToThread(&parserThread);
+    wc_spider->moveToThread(&spiderThread);
+    qDebug () << " graph thread is " << this->thread();
+    qDebug () << " wc_parser thread now " << wc_parser->thread();
+    qDebug () << " wc_spider thread now " << wc_spider->thread();
 
 
-     connect(crawler, &WebCrawler::signalLayoutNodeSizesByOutDegree,
-                    this, &Graph::nodeSizesByOutDegree);
+    qDebug() << "Graph::webCrawl()  Connecting signals from/to parser & spider";
+    connect(&parserThread, &QThread::finished,
+            wc_parser, &QObject::deleteLater);
 
-    crawler->load(seed, maxNodes, maxRecursion, extLinks, intLinks);
+    connect(&spiderThread, &QThread::finished,
+            wc_spider, &QObject::deleteLater);
+
+    connect(this, &Graph::operateSpider,
+             wc_spider, &WebCrawler_Spider::get);
+
+    connect(wc_parser, &WebCrawler_Parser::signalCreateNode,
+            this, &Graph::createVertexWebCrawler);
+
+    connect(wc_parser, &WebCrawler_Parser::signalCreateEdge,
+            this, &Graph::createEdgeWebCrawler);
+
+    connect (wc_spider, &WebCrawler_Spider::finished,
+             this, &Graph::terminateCrawlerThreads);
+
+    connect (wc_parser, &WebCrawler_Parser::finished,
+             this, &Graph::terminateCrawlerThreads);
+
+    connect (wc_spider, &WebCrawler_Spider::parse,
+                 wc_parser, &WebCrawler_Parser::parse );
+
+    connect (wc_parser, &WebCrawler_Parser::startSpider,
+             wc_spider, &WebCrawler_Spider::get );
+
+
+    qDebug() << "Graph::webCrawl()  Starting parser & spider QThreads!";
+    parserThread.start();
+    spiderThread.start();
+
+    qDebug() << "Graph::webCrawl()  Creating initial node 1, url: " << seed;
+    createVertexWebCrawler(seed, 1);
+
+    qDebug() << "Graph::webCrawl()  calling spider get() for that url!";
+    emit operateSpider();
+
     qDebug("Graph::webCrawl() - reach the end - See the threads running? ");
 }
 
 
+//called from Graph, when closing network, to terminate all processes
+//also called indirectly when wc_spider finishes
+void Graph::terminateCrawlerThreads (QString reason){
+    qDebug() << "Graph::terminateCrawlerThreads() - reason " << reason;
+    qDebug() << "Graph::terminateCrawlerThreads()  check if parserThread is running...";
+    if (parserThread.isRunning() ) {
+         qDebug() << "Graph::terminateCrawlerThreads()  parser thread quit";
+        parserThread.quit();
+        qDebug() << "Graph::terminateCrawlerThreads() - deleting wc_parser pointer";
+        delete wc_parser;
+        wc_parser = 0;  // see why here: https://goo.gl/tQxpGA
+
+    }
+    qDebug() << "Graph::terminateCrawlerThreads()  check if spiderThread is running...";
+    if (spiderThread.isRunning() ) {
+        qDebug() << "Graph::terminateCrawlerThreads()  spider thread quit";
+        spiderThread.quit();
+        qDebug() << "Graph::terminateCrawlerThreads() - deleting wc_spider pointer";
+        delete wc_spider;
+        wc_spider= 0;  // see why here: https://goo.gl/tQxpGA
+
+        emit signalNodeSizesByOutDegree(true);
+     }
+
+
+
+
+}
 
 
 
@@ -1266,12 +1340,8 @@ void Graph::clear() {
         parser.quit();
 
     qDebug ()<< "Graph::clear()  -check crawler pointer ";
-   if (crawler) {
-    qDebug ()<< "Graph::clear()  -tell crawler threads that we must quit! ";
-    crawler->terminateThreads("graph clear INIT");
-    delete crawler;
-    crawler = 0;  // see why here: https://goo.gl/tQxpGA
-   }
+    terminateCrawlerThreads("Graph:: init Net");
+
 
     qDebug("Graph: m_graph cleared. Now reports size %i", m_graph.size());
 }

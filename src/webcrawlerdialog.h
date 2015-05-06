@@ -43,6 +43,7 @@ public slots:
 	void gatherData ();
 signals:
     void userChoices( QString, int, int, bool, bool);
+    void webCrawlerDialogError(QString);
 private:
 	Ui::WebCrawlerDialog ui;
 
