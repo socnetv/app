@@ -61,7 +61,6 @@ WebCrawler_Spider::WebCrawler_Spider(
     m_extLinks = extLinks;
     m_intLinks = intLinks;
     m_visitedNodes = 0;
-    visitedUrls.clear();
 
     qDebug() << "   wc_spider::WebCrawler_Spider() Creating http";
     http = new QNetworkAccessManager(this);
@@ -78,7 +77,6 @@ WebCrawler_Spider::WebCrawler_Spider(
 
 
 WebCrawler_Spider::~WebCrawler_Spider() {
-    visitedUrls.clear();
     m_visitedNodes = 0;
     delete http;
 }
@@ -126,38 +124,29 @@ void WebCrawler_Spider::get(){
         qDebug() << "   wc_spider::get():  currentUrl: "
                  <<  currentUrl;
 
-//        if ( ! visitedUrls[currentUrl] ) {
 
-            qDebug() << "   wc_spider::get(): currentUrl not visited."
-                     << " Increasing visitedNodes to: " << m_visitedNodes + 1
-                     << " Adding it to visitedUrls map - let us visit it.";
+        qDebug() << "   wc_spider::get(): currentUrl not visited."
+                 << " Increasing visitedNodes to: " << m_visitedNodes + 1
+                 << " Let us visit it.";
 
-//            visitedUrls[currentUrl]=true;
+        qDebug() << "   wc_spider::get(): currentUrl: "
+                 <<  currentUrl
+                  << " downloading html ";
 
-            qDebug() << "   wc_spider::get(): currentUrl: "
-                     <<  currentUrl
-                      << " downloading html ";
+        request = new QNetworkRequest;
+        request->setUrl(currentUrl);
+        request->setRawHeader(
+                    "User-Agent",
+                    "SocNetV innocent spider 1 - see http://socnetv.sf.net");
 
-            request = new QNetworkRequest;
-            request->setUrl(currentUrl);
-            request->setRawHeader(
-                        "User-Agent",
-                        "SocNetV innocent spider 1 - see http://socnetv.sf.net");
+        qDebug() << "   wc_spider::get(): http->get() ";
 
-            qDebug() << "   wc_spider::get(): http->get() ";
+        qDebug() << "   wc_spider::get() http->thread() " << http->thread() ;
 
-            qDebug() << "   wc_spider::get() http->thread() " << http->thread() ;
+        QNetworkReply *reply =  http->get(*request) ;
 
-            QNetworkReply *reply =  http->get(*request) ;
+        m_visitedNodes++;
 
-            m_visitedNodes++;
-
-//        }
-//        else {
-//            qDebug() << "   wc_spider::get(): currentUrl "
-//                     << " already visited. Skipping.";
-//            continue;
-//        }
 
     } while ( 1 );
 
@@ -234,6 +223,7 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
               << " host " << host
               << " path " << path;
 
+    qDebug () << "original locationHeader" << reply->header(QNetworkRequest::LocationHeader) ;
     qDebug () << "decoded locationHeader" << locationHeader ;
 
     qDebug () << "encoded requestUrl  " << requestUrl;
@@ -248,7 +238,6 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
         newLink( sourceNode, locationHeader , true );
         return;
     }
-
 
 
     QUrl newUrl;

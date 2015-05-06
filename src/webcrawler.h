@@ -70,7 +70,6 @@ signals:
     void parse(QNetworkReply *reply);
     void finished (QString);
 private:
-    QMap <QUrl, bool> visitedUrls;
     QNetworkAccessManager *http;
     QNetworkRequest *request;
     QNetworkReply *reply;
