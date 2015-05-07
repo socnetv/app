@@ -66,12 +66,21 @@ void WebCrawlerDialog::checkErrors(){
 
 void WebCrawlerDialog::gatherData(){
     qDebug()<< "WebCrawlerDialog::gatherData()...";
+
     bool extLinks=true, intLinks=false;
-    //url can't have spaces nor capital letters...
-    QString website = (ui.seedUrlEdit)->text().simplified().toLower() ;
+
+    QString seedUrl = (ui.seedUrlEdit)->text();
+
+    qDebug()<< "WebCrawlerDialog::gatherData() initial seed url "
+               << seedUrl
+               << " simplifying and lowering it";
+
+    seedUrl = seedUrl.simplified().toLower() ;
+
     //construct QUrl
-    QUrl newUrl(website);
-    qDebug()<< "WebCrawlerDialog::gatherData()  URL" << newUrl.toString()
+    QUrl newUrl(seedUrl);
+
+    qDebug()<< "WebCrawlerDialog::gatherData()  QUrl " << newUrl.toString()
                    << " host " << newUrl.host()
                    << " scheme " << newUrl.scheme();
     //check QUrl
@@ -80,7 +89,7 @@ void WebCrawlerDialog::gatherData(){
             qDebug()<< "WebCrawlerDialog::gatherData()  URL scheme missing "
                     << newUrl.scheme()
                     << " setting the default scheme http ";
-            newUrl = QUrl ("http://" + website);
+            newUrl = QUrl ("http://" + seedUrl);
             qDebug() << newUrl;
         }
         else {
@@ -89,11 +98,14 @@ void WebCrawlerDialog::gatherData(){
         }
 
     if (! newUrl.isValid() || newUrl.host() == "") {
-        emit webCrawlerDialogError(website);
+        emit webCrawlerDialogError(seedUrl);
         qDebug()<< "WebCrawlerDialog::gatherData()  not valid URL";
         return;
     }
-    website = newUrl.toString();
+
+    seedUrl = newUrl.toString();
+    qDebug()<< "WebCrawlerDialog::gatherData() final seed url "
+               << seedUrl;
 
     int maxRecursion = (ui.maxRecursionLevelSpinBox) -> value();
     int maxNodes = (ui.maxNodesSpinBox) -> value();
@@ -117,7 +129,7 @@ void WebCrawlerDialog::gatherData(){
             return;
     }
 
-    qDebug()<< "	Website: " << website;
+    qDebug()<< "	seedUrl: " << seedUrl;
     qDebug()<< "	maxRecursion " << maxRecursion << "  maxNodes " << maxNodes  ;
-    emit userChoices( website, maxNodes, maxRecursion,  extLinks, intLinks );
+    emit userChoices( seedUrl, maxNodes, maxRecursion,  extLinks, intLinks );
 }
