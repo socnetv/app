@@ -209,7 +209,7 @@ WebCrawler_Parser::~WebCrawler_Parser() {
  * Then we parse the page string, searching for url substrings.
  */
 void WebCrawler_Parser::parse(QNetworkReply *reply){
-    qDebug () << " wc_spider::parse() thread " << this->thread();
+    qDebug () << "   wc_parser::parse() thread " << this->thread();
     // find hte node the response html belongs to
     // we get this from the reply object request method
     QUrl requestUrl = reply->request().url();
@@ -223,12 +223,11 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
               << " host " << host
               << " path " << path;
 
-    qDebug () << "original locationHeader" << reply->header(QNetworkRequest::LocationHeader) ;
-    qDebug () << "decoded locationHeader" << locationHeader ;
+    qDebug () << "   wc_parser::parse(): original locationHeader" << reply->header(QNetworkRequest::LocationHeader) ;
+    qDebug () << "   wc_parser::parse(): decoded locationHeader" << locationHeader ;
 
-    qDebug () << "encoded requestUrl  " << requestUrl;
-    qDebug () << "decoded requestUrl " << requestUrlStr;
-    qDebug () << "requestUrl host " << host;
+    qDebug () << "   wc_parser::parse(): encoded requestUrl  " << requestUrl;
+    qDebug () << "   wc_parser::parse(): decoded requestUrl " << requestUrlStr;
 
     if ( locationHeader != "" && locationHeader != requestUrlStr ) {
         qDebug () << "   wc_parser::parse() Location response header "
@@ -382,8 +381,8 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
 
             if (requestUrl.path() == newUrl.path()) {
                 qDebug()<< "   wc_parser::parse(): m_IntLinks = TRUE"
-                        << " requestUrl.path() = requestUrl.path()"
-                        <<  " Creating new node, NOT ADDING it to frontier...";
+                        << " requestUrl.path() = newUrl.path()"
+                        <<  " Creating self link only";
                 this->newLink(sourceNode, newUrl, false);
 
             }

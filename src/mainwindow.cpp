@@ -2382,10 +2382,10 @@ void MainWindow::initToolBox(){
 
     QLabel *labelClucofLCD  = new QLabel;
     labelClucofLCD -> setText (tr("Clustering Coef."));
-    labelClucofLCD -> setToolTip (tr("The Clustering Coefficient quantifies how close the clicked vertex and its neighbors are to being a clique. \nThe value is the proportion of links between the vertices within the neighbourhood of the clicked vertex,\n divided by the number of links that could possibly exist between them. \n\n WARNING: This value is displayed for each node when you click on it,\n but only if you have computed CluCof from the menu Analysis > Clustering Coefficient "));
+    labelClucofLCD -> setToolTip (tr("The Clustering Coefficient quantifies how close the clicked vertex and its neighbors are to being a clique. \nThe value is the proportion of links between the vertices within the neighbourhood of the clicked vertex,\n divided by the number of links that could possibly exist between them. \n\n WARNING: This value is automatically calculated only if vertices < 500.\n If your network is larger than 500 vertices, compute CluCof from the menu Analysis > Clustering Coefficient "));
     clucofLCD = new QLCDNumber(7);
     clucofLCD -> setSegmentStyle(QLCDNumber::Flat);
-    clucofLCD  -> setToolTip (tr("The Clustering Coefficient quantifies how close the clicked vertex and its neighbors are to being a clique. \nThe value is the proportion of links between the vertices within the neighbourhood of the clicked vertex,\n divided by the number of links that could possibly exist between them. \n\n WARNING: This value is displayed for each node when you click on it,\n but only if you have computed CluCof from the menu Analysis > Clustering Coefficient "));
+    clucofLCD  -> setToolTip (tr("The Clustering Coefficient quantifies how close the clicked vertex and its neighbors are to being a clique. \nThe value is the proportion of links between the vertices within the neighbourhood of the clicked vertex,\n divided by the number of links that could possibly exist between them. \n\n This value is automatically calculated only if vertices < 500.\n If your network is larger than 500 vertices, compute CluCof from the menu Analysis > Clustering Coefficient "));
 
 
     propertiesGrid -> addWidget(dummyLabel, 6,0);
@@ -4563,7 +4563,8 @@ void MainWindow::nodeInfoStatusBar ( Node *jim) {
     selectedNodeLCD->display (clickedJimNumber);
     inLinksLCD->display (inLinks);
     outLinksLCD->display (outLinks);
-    clucofLCD->display(activeGraph.clusteringCoefficient(clickedJimNumber));
+    if (activeGraph.vertices() < 500)
+        clucofLCD->display(activeGraph.clusteringCoefficient(clickedJimNumber));
 
     statusMessage(  QString(tr("(%1, %2);  Node %3, label %4 - "
                                "In-Degree: %5, Out-Degree: %6")).arg( ceil( clickedJim->x() ) )

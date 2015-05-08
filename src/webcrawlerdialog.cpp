@@ -72,30 +72,29 @@ void WebCrawlerDialog::gatherData(){
     QString seedUrl = (ui.seedUrlEdit)->text();
 
     qDebug()<< "WebCrawlerDialog::gatherData() initial seed url "
-               << seedUrl
-               << " simplifying and lowering it";
+            << seedUrl
+            << " simplifying and lowering it";
 
     seedUrl = seedUrl.simplified().toLower() ;
 
-    //construct QUrl
+    qDebug()<< "WebCrawlerDialog::gatherData() adding / to seed url ";
+    seedUrl = seedUrl + "/";
+
     QUrl newUrl(seedUrl);
 
     qDebug()<< "WebCrawlerDialog::gatherData()  QUrl " << newUrl.toString()
-                   << " host " << newUrl.host()
-                   << " scheme " << newUrl.scheme();
-    //check QUrl
-     if ( newUrl.scheme() != "http"  && newUrl.scheme() != "https"  &&
-                  newUrl.scheme() != "ftp" && newUrl.scheme() != "ftps") {
-            qDebug()<< "WebCrawlerDialog::gatherData()  URL scheme missing "
-                    << newUrl.scheme()
-                    << " setting the default scheme http ";
-            newUrl = QUrl ("http://" + seedUrl);
-            qDebug() << newUrl;
-        }
-        else {
-            qDebug()<< "WebCrawlerDialog::gatherData()  URL scheme "
-                    << newUrl.scheme() ;
-        }
+            << " scheme " << newUrl.scheme()
+            << " host " << newUrl.host()
+            << " path " << newUrl.path();
+
+    if ( newUrl.scheme() != "http"  && newUrl.scheme() != "https"  &&
+         newUrl.scheme() != "ftp" && newUrl.scheme() != "ftps") {
+        qDebug()<< "WebCrawlerDialog::gatherData()  URL scheme missing "
+                << newUrl.scheme()
+                << " setting the default scheme http ";
+        newUrl = QUrl ("http://" + seedUrl);
+        qDebug() << newUrl;
+    }
 
     if (! newUrl.isValid() || newUrl.host() == "") {
         emit webCrawlerDialogError(seedUrl);
@@ -104,8 +103,11 @@ void WebCrawlerDialog::gatherData(){
     }
 
     seedUrl = newUrl.toString();
-    qDebug()<< "WebCrawlerDialog::gatherData() final seed url "
-               << seedUrl;
+
+    qDebug()<< "WebCrawlerDialog::gatherData()  final seed url " << newUrl
+            << " scheme " << newUrl.scheme()
+            << " host " << newUrl.host()
+            << " path " << newUrl.path();
 
     int maxRecursion = (ui.maxRecursionLevelSpinBox) -> value();
     int maxNodes = (ui.maxNodesSpinBox) -> value();
