@@ -5236,6 +5236,8 @@ void MainWindow::slotChangeLinkWeight(){
         qDebug() << "MW: slotChangeLinkWeight() - a link has already been clicked";
         sourceNode=clickedLink->sourceNodeNumber();
         targetNode=clickedLink->targetNodeNumber();
+        qDebug() << "MW: slotChangeLinkWeight() from "
+                 << sourceNode << " to " << targetNode;
         if ( activeGraph.symmetricEdge(sourceNode, targetNode) ) {
             QString s=QString::number(sourceNode);
             QString t=QString::number(targetNode);
@@ -5297,11 +5299,15 @@ void MainWindow::slotChangeLinkWeight(){
             }
         }
         else {
-            qDebug("MW: slotChangeLinkWeight()  real edge %i -> %i", sourceNode, targetNode);
+            qDebug() << "MW: slotChangeLinkWeight()  real edge " << sourceNode
+                     << " -> " <<targetNode;
             newWeight=QInputDialog::getDouble(this,
-                                              "Change link weight...",tr("New link weight: "), 1.0, -100.0, 100.00 ,1, &ok) ;
+                                              "Change link weight...",tr("New link weight: "), 1.0, -100, 100 ,1, &ok) ;
             if (ok) {
+                qDebug() << "MW: slotChangeLinkWeight()  setWeight to  "
+                         << newWeight;
                 clickedLink->setWeight(newWeight);
+                qDebug() << "MW: slotChangeLinkWeight()  calling update  ";
                 clickedLink->update();
                 qDebug()<<"MW: newWeight will be "<< newWeight;
                 activeGraph.setEdgeWeight(sourceNode, targetNode, newWeight);

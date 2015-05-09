@@ -250,18 +250,28 @@ From the menu Network select Create Random Network > Small World (or press Shift
 
 <h4><a name="WebCrawler" id="WebCrawler"></a>Web Crawler</h4>
 <p class="text">
-SocNetV offers a built-in web crawler, allowing you to automatically create networks from all links found in a given website.
-<p>
+SocNetV includes a simple web crawler, which consists of two parts:
+a spider and a parser.</p>
 <p class="text">
-A Web Crawler is a software bot (an algorithm), which starts with a given URL (website or webpage) to visit.
-</p>
+The spider visits a given initial URL (i.e. a website or a webpage) and downloads its HTML code. <br />
+The parser scans the code for 'href' links to other pages (internal or external)
+and adds them to a queue of URLs (called frontier).<br />
+As URLs are added in the queue, the spider visits them and downloads their HTML
+which is scanned for more links by the parser, and so on...<br />
+The end result is the 'network' of all visited webpages as nodes and their real links as edges.
 <p class="text">
-As the algorithm crawls that webpage, it identifies all the links in the page and adds them to a list of URLs (called frontier).
-Then, all the URLs from the frontier are recursively visited.
+Please note that the parser searches for 'href' links only in the body section of the HTML code.
 </p>
+
 <p class="text">
 To start the web crawler, go to menu Network > Web Crawler or press Shift+C.
-A dialog will appear, where you must enter initial web address (seed), the maximum recursion level (how many URLs from the frontier will be visited) and the maximum running time...
+A dialog will appear, where you must enter the initial web page (seed).
+</p>
+
+<p class="text">
+You can also set the maximum nodes/pages (default 600) and what kind of links to
+crawl: internal, external or both. <br />
+By default the spider will crawl both internal and external links.
 </p>
 
 
