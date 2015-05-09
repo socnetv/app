@@ -4713,7 +4713,7 @@ void MainWindow::slotAddLink(){
         }
     }
     else sourceNode=clickedJimNumber;
-
+    qDebug () << "sourceNode=clickedJimNumber " << clickedJimNumber;
     if ( (sourceIndex =activeGraph.hasVertex(sourceNode)) ==-1 ) {
         statusMessage( tr("Aborting. ")  );
         QMessageBox::critical(this,"Error","No such node.", "OK",0);
@@ -4725,7 +4725,7 @@ void MainWindow::slotAddLink(){
             (this, "Create new link, Step 2",
              tr("Source node accepted. \nNow enter target node ("+
                 QString::number(min).toLatin1()+"..."+QString::number(max)
-                .toLatin1()+"):"),min, 1, max , 1, &ok)     ;
+                .toLatin1()+"):"),min, min, max , 1, &ok)     ;
     if (!ok) {
         statusMessage( "Add link target operation cancelled." );
         return;
