@@ -10,4 +10,4 @@ Section: Science/Mathematics
 
 Format: HTML
 Index: /usr/share/doc/socnetv/manual/manual.html
-Files: /usr/share/doc/socnetv/manual/*.html
+Files: /usr/share/doc/socnetv/manual/*
