@@ -4,16 +4,50 @@ SocNetV -A Social Networks Visualizer
 1. Overview
 -----------
 
-Social Networks Visualizer (SocNetV) is a graphical and flexible application, 
-which allows you to draw and visualize social networks (think mathematical graphs) 
-and compute network statistics, i.e. distances, centralities, diameter etc. 
+Social Networks Visualizer (SocNetV) is a cross-platform, user-friendly tool 
+for the analysis and visualization of Social Networks. 
 
-Various network file formats are supported, such as GraphML, Adjacency, Pajek, 
-and GraphViz. You can modify an existing network, draw a new network using 
-your mouse or have SocNetV create random networks for you.
+It lets you construct social networks (mathematical graphs) with a few clicks 
+on a virtual canvas or load social network data of various formats (GraphML, 
+GraphViz, Adjacency, Pajek, UCINET, etc).
 
-Furthermore, SocNetV can crawl an internet website for you and create 
-the network of its outLinks.
+SocNetV enables you to modify the social networks, analyse their social and 
+mathematical properties, produce reports for these properties and apply 
+visualization layouts for relevant presentation of each network. 
+
+The application supports multirelational loading and editing. 
+You can load a network consisting of multiple relations or create a network 
+on your own and add multiple relations to it.
+
+SocNetV computes graph-theoretic properties, such as density, diameter, geodesics 
+and distances (geodesic lengths), connectedness, eccentricity, etc. 
+It also calculates advanced structural measures for social network analysis 
+such as centrality and prestige indices (i.e. closeness centrality, betweeness 
+centrality, information centrality, power centrality, proximity and rank prestige), 
+triad census, cliques, clustering coefficient, etc.
+
+Furthermore, random networks (Erdos-Renyi, Watts-Strogatz, ring lattice, etc) and 
+well-known social network datasets (i.e. Padgett's Florentine families) can be easily 
+recreated. 
+
+SocNetV also offers a built-in web crawler, allowing you to automatically create 
+networks from links found in a given initial URL.
+
+SocNetV offers various layout algorithms based on either prominence indices 
+(i.e. circular, level and nodal sizes by centrality score) or force-directed 
+models (i.e. Eades, Fruchterman-Reingold, etc) for meaningful visualizations 
+of the social networks.
+
+There is also comprehensive documentation, both online and while running the 
+application, which explains each feature and algorithm of SocNetV in detail.
+
+SocNetV runs in Windows, Linux and Mac OS X.
+
+The program is Free Software, licensed under the GNU General Public License 3 (GPL3).
+You can copy it as many times as you wish, or modify it, provided you keep the 
+same license. 
+
+The documentation is also Free, licensed under the Free Documentation License (FDL).
 
 
 2. Availability & License
@@ -24,7 +58,8 @@ Official Website: http://socnetv.sourceforge.net
 Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 My Blog:   http://dimitris.apeiro.gr
 
-SocNetV is a cross-platform application, developed in C++ programming language using the Qt5 multiplatform library and tools
+SocNetV is a cross-platform application, developed in C++ language 
+using the Qt5 multiplatform library and tools.
 
 This means you can compile and run SocNetV on Linux, Mac and Windows. 
 
@@ -85,20 +120,26 @@ socnetv
 
 b) Install a binary package or executable (Linux/Mac/Windows)
 
-To install SocNetV from a binary package for Linux or an executable for Windows, 
-check http://socnetv.sourceforge.net/downloads.html and see if there 
-is a package of the latest version for your operating system. 
+To install SocNetV from a binary package for Linux or an executable for 
+Windows, check http://socnetv.sourceforge.net/downloads.html and see if 
+there is a package of the latest version for your operating system. 
+
 Please note that SocNetV is also available in most Linux distributions,
 although not always the latest version.
+
 In Debian and Ubuntu, install SocNetV from repos with:
+
 sudo apt-get install socnetv
+
 In Fedora, use the command:
 sudo yum install socnetv
+
 In openSUSE:
 sudo zypper in socnetv
 
 Mac OS users may download the disk image of the latest version from 
 http://socnetv.sourceforge.net/downloads.html.
+
 Double click on the .img file, then on the new window click socnetv icon 
 while pressing down the meta key.
 

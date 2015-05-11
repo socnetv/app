@@ -4,6 +4,10 @@ Social Networks Visualiser (SocNetV)
 SocNetV News
 -==========-
 
+May 2015
+========
+- Version 1.6 released. New and improved web crawler functionality. See Changelog for more.
+
 Oct 2014
 ========
 - Version 1.5 released. First version with dijkstra algorithm for the SSSP in weighted nets. See Changelog for more.
