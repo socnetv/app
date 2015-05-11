@@ -45,10 +45,9 @@ QQueue<QUrl> frontier;
  * - Connects http NetworkManager signal to httpfinished() slot
  * which in turn emits http reply to WebCrawler_Parser
  */
-WebCrawler_Spider::WebCrawler_Spider(
-        QString url,
+WebCrawler_Spider::WebCrawler_Spider(QString url,
         int maxN,
-        int maxRec,
+        int maxLinksPerPage,
         bool extLinks,
         bool intLinks) {
     qDebug() << "   wc_spider::WebCrawler_Spider() "
@@ -57,7 +56,7 @@ WebCrawler_Spider::WebCrawler_Spider(
 
     m_seed=url;       //the initial url/domain we will crawl
     m_maxPages=maxN;  //maxPages we'll check
-    m_maxRecursion = maxRec;
+    m_maxLinksPerPage = maxLinksPerPage;
     m_extLinks = extLinks;
     m_intLinks = intLinks;
     m_visitedNodes = 0;
@@ -95,13 +94,6 @@ void WebCrawler_Spider::get(){
         if (frontier.size() ==0 ) {
             qDebug () <<"   wc_spider::get() #### Frontier is empty: "
                      <<frontier.size() << " - we will stop now "  ;
-            break;
-        }
-
-        //  or until we reach maxRecursion
-        if ( m_maxRecursion  == 0 ) {
-            qDebug () <<"   wc_spider::get() #### Reached maxRecursion: "
-                     <<m_maxRecursion << " - we will stop now "  ;
             break;
         }
 
@@ -165,7 +157,7 @@ void WebCrawler_Spider::httpFinished(QNetworkReply *reply){
 //constructor called from parent thread - does nothing
 WebCrawler_Parser::WebCrawler_Parser(QString url,
                                      int maxN,
-                                     int maxRec,
+                                     int maxLinksPerPage,
                                      bool extLinks,
                                      bool intLinks) {
     qDebug () << "   wc_parser::WebCrawler_Parser() this->thread() "
@@ -174,9 +166,10 @@ WebCrawler_Parser::WebCrawler_Parser(QString url,
 
     m_seed=QUrl (url);   //the initial url/domain we will crawl
     m_maxPages=maxN;  //maxPages we'll check
-    m_maxRecursion = maxRec;
+    m_maxLinksPerPage = maxLinksPerPage;
     m_extLinks = extLinks;
     m_intLinks = intLinks;
+
     //clear global variables
     frontier.clear();
     ba.clear();
@@ -188,9 +181,13 @@ WebCrawler_Parser::WebCrawler_Parser(QString url,
     knownUrls[m_seed]=m_discoveredNodes;
 
     qDebug() << "   wc_parser::WebCrawler_Parser()  seed: " << m_seed
-                 << " seed_domain: " << m_seed.host()
+             << " seed_domain: " << m_seed.host()
              << " Added seed to frontier queue and knownUrls map. "
-             << " Node " << m_discoveredNodes << " should be alread created";
+             << " Node " << m_discoveredNodes << " should be already created. "
+             << " m_maxPages " << m_maxPages
+             << " m_maxLinksPerPage " << m_maxLinksPerPage
+             << " m_extLinks " << m_extLinks
+             << " m_intLinks " << m_intLinks;
 
 }
 
@@ -210,27 +207,28 @@ WebCrawler_Parser::~WebCrawler_Parser() {
  */
 void WebCrawler_Parser::parse(QNetworkReply *reply){
     qDebug () << "   wc_parser::parse() thread " << this->thread();
-    // find hte node the response html belongs to
-    // we get this from the reply object request method
+    // find to which node the response HTML belongs to
+    // Get this from the reply object request method
     QUrl requestUrl = reply->request().url();
     QString requestUrlStr = requestUrl.toString();
     QString locationHeader = reply->header(QNetworkRequest::LocationHeader).toString();
     int sourceNode = knownUrls [ requestUrl ];
     QString host = requestUrl.host();
     QString path = requestUrl.path();
-    qDebug() << "   wc_parser::parse() response html of url "
+    qDebug() << "   wc_parser::parse() response HTML of url "
              << requestUrlStr << " sourceNode " << sourceNode
               << " host " << host
               << " path " << path;
 
-    qDebug () << "   wc_parser::parse(): original locationHeader" << reply->header(QNetworkRequest::LocationHeader) ;
+    qDebug () << "   wc_parser::parse(): original locationHeader"
+              << reply->header(QNetworkRequest::LocationHeader) ;
     qDebug () << "   wc_parser::parse(): decoded locationHeader" << locationHeader ;
 
     qDebug () << "   wc_parser::parse(): encoded requestUrl  " << requestUrl;
     qDebug () << "   wc_parser::parse(): decoded requestUrl " << requestUrlStr;
 
     if ( locationHeader != "" && locationHeader != requestUrlStr ) {
-        qDebug () << "   wc_parser::parse() Location response header "
+        qDebug () << "&&   wc_parser::parse() Location response header "
                   << locationHeader
                   << " differs from requestUrl " << requestUrlStr
                   << " Creating node redirect - Creating edge - RETURN ";
@@ -241,8 +239,8 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
 
     QUrl newUrl;
     QString newUrlStr;
-    int start=-1, end=-1, equal=-1 , invalidUrlsCount =0; // index=-1;
-
+    int start=-1, end=-1, equal=-1 , invalidUrlsInPage =0; // index=-1;
+    int validUrlsInPage = 0;
     ba=reply->readAll();
     QString page(ba);
 
@@ -282,8 +280,7 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
 
         if (m_maxPages>0) {
             if (m_discoveredNodes >= m_maxPages ) {
-                qDebug () <<"   wc_parser::parse(): #### Seems we have reached maxPages!"
-                         << " - STOP!" ;
+                qDebug () <<"!!   wc_parser::parse(): Reached maxPages! STOP ";
                 emit finished("maxpages from parse()");
                 return;
             }
@@ -321,21 +318,20 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
         newUrl = QUrl(newUrlStr);
 
         if (!newUrl.isValid()) {
-            invalidUrlsCount ++;
+            invalidUrlsInPage ++;
             qDebug() << "   wc_parser::parse(): found INVALID newUrl "
                         << newUrl.toString()
                         << " in page " << requestUrlStr
-                        << " Will CONTINUE only if invalidUrlsCount < 200";
-            if (invalidUrlsCount > 200) {
+                        << " Will CONTINUE only if invalidUrlsInPage < 200";
+            if (invalidUrlsInPage > 200) {
                 qDebug() << "   wc_parser::parse(): INVALID newUrls > 200";
-                emit finished("invalidUrlsCount > 200");
+                emit finished("invalidUrlsInPage > 200");
                 return;
             }
             continue;
         }
 
-        qDebug() << "   wc_parser::parse(): "
-                 << " found VALID newUrl : "
+        qDebug() << "@@   wc_parser::parse(): found VALID newUrl: "
                  << newUrlStr
                  << " in page " << requestUrlStr
                  << " decoded newUrl " << newUrl.toString();
@@ -357,7 +353,7 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
               newUrl.fileName().endsWith(".js", Qt::CaseInsensitive) ||
               newUrl.fileName().endsWith(".css", Qt::CaseInsensitive) ||
               newUrl.fileName().endsWith(".rsd", Qt::CaseInsensitive)   )    {
-                qDebug()<< "   wc_parser::parse(): # newUrl "
+                qDebug()<< "!!   wc_parser::parse(): # newUrl "
                         << " seems a page resource or anchor (rss, favicon, etc) "
                         << "Skipping...";
                 continue;
@@ -432,6 +428,16 @@ void WebCrawler_Parser::parse(QNetworkReply *reply){
             }
         }
 
+        validUrlsInPage ++;
+        qDebug() << "   wc_parser::parse(): validUrlsInPage " << validUrlsInPage;
+        //  or until we reach maxRecursion
+        if ( m_maxLinksPerPage  != 0 ) {
+            if ( validUrlsInPage > m_maxLinksPerPage ) {
+                qDebug () <<"!!   wc_spider::parse() Reached m_maxLinksPerPage "
+                         <<m_maxLinksPerPage << " - we will stop now "  ;
+                break;
+            }
+        }
     }
 
 }

@@ -109,8 +109,8 @@ void WebCrawlerDialog::gatherData(){
             << " host " << newUrl.host()
             << " path " << newUrl.path();
 
-    int maxRecursion = (ui.maxRecursionLevelSpinBox) -> value();
-    int maxNodes = (ui.maxNodesSpinBox) -> value();
+    int maxLinksPerPage = (ui.maxLinksPerPageSpinBox) -> value();
+    int totalUrlsToCrawl = (ui.totalUrlsToCrawlSpinBox) -> value();
 
     if ( ui.extLinksCheckBox -> isChecked() ) {
         qDebug()<< "	External links will be crawled... " ;
@@ -132,6 +132,7 @@ void WebCrawlerDialog::gatherData(){
     }
 
     qDebug()<< "	seedUrl: " << seedUrl;
-    qDebug()<< "	maxRecursion " << maxRecursion << "  maxNodes " << maxNodes  ;
-    emit userChoices( seedUrl, maxNodes, maxRecursion,  extLinks, intLinks );
+    qDebug()<< "	maxLinksPerPage " << maxLinksPerPage
+            << "  totalUrlsToCrawl " << totalUrlsToCrawl  ;
+    emit userChoices( seedUrl, totalUrlsToCrawl, maxLinksPerPage, extLinks, intLinks );
 }

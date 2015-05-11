@@ -36,7 +36,8 @@ using namespace std;
 class WebCrawler_Parser : public QObject  {
     Q_OBJECT
 public:
-    WebCrawler_Parser(QString seed, int maxNodes, int maxRecursion, bool extLinks, bool intLinks);
+    WebCrawler_Parser(QString seed, int maxNodes, int maxLinksPerPage,
+                      bool extLinks, bool intLinks);
     ~WebCrawler_Parser();
 public slots:
     void parse(QNetworkReply *reply);
@@ -52,7 +53,7 @@ private:
     QUrl  m_seed;
     int m_maxPages;
     int m_discoveredNodes;
-    int m_maxRecursion;
+    int m_maxLinksPerPage;
     bool m_extLinks, m_intLinks;
 };
 
@@ -60,7 +61,8 @@ private:
 class  WebCrawler_Spider : public QObject  {
     Q_OBJECT
 public:
-    WebCrawler_Spider(QString seed, int maxNodes, int maxRecursion,bool extLinks, bool intLinks);
+    WebCrawler_Spider(QString seed, int maxNodes, int maxLinksPerPage
+                      ,bool extLinks, bool intLinks);
     ~WebCrawler_Spider();
 public slots:
     void get();
@@ -77,7 +79,7 @@ private:
     QString  m_seed;
     int m_maxPages;
     int m_visitedNodes;
-    int m_maxRecursion;
+    int m_maxLinksPerPage;
     bool m_extLinks, m_intLinks;
 
 };

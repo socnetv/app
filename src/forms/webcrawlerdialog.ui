@@ -29,9 +29,9 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>SocNetV includes a simple web crawler.  
-A web crawler is an online robot which scans the html code of given URL  (i.e. a website or a webpage) and maps all internal or external links to other pages found there. Links will appear on the SocNetV canvas as edges while the initial website and all other sites/pages found will appear as nodes. 
- Enter below the web address of  a site to start crawling. You can set the maximum nodes/pages (default 1000). By default I will crawl only external links.</string>
+      <string>SocNetV includes a simple web crawler. It scans the HTML  code of a given initial URL  (i.e. a website) and maps all internal or external links to other pages found there. As new urls are discovered, the crawler follows them to scan their HTML code for links as well. 
+
+ For more details, see the Manual.</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
@@ -93,8 +93,14 @@ A web crawler is an online robot which scans the html code of given URL  (i.e. a
          <height>0</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>Set the max links inside a page to be followed and crawled by SocNetV.
+
+ Set this to zero if you don't want to have this limit. 
+In this case SocNetV will follow and crawl each one link found in a page.</string>
+       </property>
        <property name="text">
-        <string>Maximum recursion depth level</string>
+        <string>Max links in each page to follow</string>
        </property>
       </widget>
      </item>
@@ -112,7 +118,7 @@ A web crawler is an online robot which scans the html code of given URL  (i.e. a
       </spacer>
      </item>
      <item row="1" column="2">
-      <widget class="QSpinBox" name="maxRecursionLevelSpinBox">
+      <widget class="QSpinBox" name="maxLinksPerPageSpinBox">
        <property name="minimumSize">
         <size>
          <width>46</width>
@@ -120,12 +126,19 @@ A web crawler is an online robot which scans the html code of given URL  (i.e. a
         </size>
        </property>
        <property name="toolTip">
-        <string>Enter a value to set the recursion maximum depth level.
-That is the maximum nodes to be considered as source. 
-Set value to 1, if you just want to display links from the source website...</string>
+        <string>Set the max links inside a page to be followed and crawled by SocNetV.
+
+ Set this to zero if you don't want to have this limit. 
+In this case SocNetV will follow and crawl each one link found in a page.</string>
        </property>
        <property name="minimum">
-        <number>1</number>
+        <number>0</number>
+       </property>
+       <property name="maximum">
+        <number>500</number>
+       </property>
+       <property name="value">
+        <number>0</number>
        </property>
       </widget>
      </item>
@@ -137,13 +150,17 @@ Set value to 1, if you just want to display links from the source website...</st
          <height>0</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>Set the total urls to be crawled - this is the total nodes the result network will have. 
+Set value to 0, if you don't want any limits...</string>
+       </property>
        <property name="text">
-        <string>Maximum nodes/urls  to crawl</string>
+        <string>Total urls  to crawl</string>
        </property>
       </widget>
      </item>
      <item row="0" column="2">
-      <widget class="QSpinBox" name="maxNodesSpinBox">
+      <widget class="QSpinBox" name="totalUrlsToCrawlSpinBox">
        <property name="minimumSize">
         <size>
          <width>46</width>
@@ -151,7 +168,7 @@ Set value to 1, if you just want to display links from the source website...</st
         </size>
        </property>
        <property name="toolTip">
-        <string>Enter a non-zero value to set the maximum nodes to be crawled. 
+        <string>Set the total urls to be crawled - this is the total nodes the result network will have. 
 Set value to 0, if you don't want any limits...</string>
        </property>
        <property name="whatsThis">
