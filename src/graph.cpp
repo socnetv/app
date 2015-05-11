@@ -4123,8 +4123,8 @@ void Graph::writeClusteringCoefficient(
     emit statusMessage ( (tr("Calculating shortest paths")) );
     float clucof= clusteringCoefficient();
     Q_UNUSED(clucof);
-    emit statusMessage ( QString(tr("Writing clustering coefficients to file:"))
-                         .arg(fileName) );
+    emit statusMessage ( QString(tr("Writing clustering coefficients to file: "))
+                         + fileName );
     outText.setRealNumberPrecision(m_precision);
     outText << tr("CLUSTERING COEFFICIENT (CLC)\n");
     outText << tr("CLC  range: 0 < C < 1") <<"\n";
@@ -4194,8 +4194,8 @@ void Graph::writeTriadCensus(
     }
 
 
-    emit statusMessage ( QString(tr("Writing clustering coefficients to file:"))
-                         .arg(fileName) );
+    emit statusMessage ( QString(tr("Writing clustering coefficients to file: ")) +
+                         fileName );
 
     outText << "Type\t\tCensus\t\tExpected Value" << "\n";
     outText << "003" << "\t\t" << triadTypeFreqs[0] << "\n";
@@ -5489,42 +5489,53 @@ float Graph::numberOfTriples(int v1){
 
 /**
     Returns the clustering coefficient (CLUCOF) of a vertex v1
-    CLUCOF in a graph quantifies how close the vertex and its neighbors are to being a clique
+    CLUCOF in a graph quantifies how close the vertex and its neighbors are
+    to being a clique.
     This is used to determine whether a graph is a small-world network.
 */
 float Graph:: clusteringCoefficient(int v1){
     float clucof=0;
     if ( !graphModified && (m_graph[ index [v1] ] -> hasCLC() ) )  {
         float clucof=m_graph[ index [v1] ] ->CLC();
-        qDebug("Graph: clusteringCoefficient(%i) not modified. Returning previous clucof = %f", v1, clucof);
+        qDebug() << "Graph::clusteringCoefficient("<< v1 << ") - "
+                 << " Not modified. Returning previous clucof = " << clucof;
         return clucof;
     }
-
-    qDebug("Graph::	clusteringCoefficient(v1) - Graph changed or clucof not calculated. Calling numberOfCliques() for vertex %i", v1);
+    qDebug() << "Graph::clusteringCoefficient("<< v1 << ") - "
+            << " Graph changed or clucof not calculated."
+           << " Calling numberOfCliques(" << v1 << ")";
     float totalCliques=numberOfCliques(v1);
-    qDebug("Graph::	Number of Cliques for %i is %f.", v1, totalCliques);
+    qDebug() << "Graph::clusteringCoefficient("<< v1 << ") - "
+            << " numberOfCliques(" << v1 << ") = " << totalCliques;
 
     if (totalCliques==0) return 0;	//stop if we're at a leaf.
 
     float denom=0, totalDegree=0;
 
     if (isSymmetric()){
-        totalCliques = totalCliques / 2.0;
-        qDebug(" Graph::Calculating number of triples");
+        totalCliques = totalCliques;  // / 2.0;
+        qDebug() << "Graph::clusteringCoefficient("<< v1 << ") - "
+                    << " SYMMETRIC network. Calculating number of triples";
         totalDegree=outboundEdges(v1);
         denom =	totalDegree * (totalDegree -1.0) / 2.0;
-        qDebug("Graph:: Symmetric. Number of triples is %f.  Dividing number of cliques with it", denom);
+        qDebug() <<  "Graph::clusteringCoefficient("<< v1 << ") - "
+                  << " Number of triples is " << denom
+                     << " Dividing number of cliques with it";
 
     }
     else {
-        qDebug(" Graph::Calculating number of triples");
+        qDebug() << "Graph::clusteringCoefficient("<< v1 << ") - "
+                    << " NOT SYMMETRIC network. Calculating number of triples";
         totalDegree=outboundEdges(v1) + inboundEdges(v1);  //FIXME
         denom = totalDegree * (totalDegree -1.0);
-        qDebug("Graph:: Symmetric. Number of triples is %f.  Dividing number of cliques with it", denom);
+        qDebug() <<  "Graph::clusteringCoefficient("<< v1 << ") - "
+                  << " Number of triples is " << denom
+                     << " Dividing number of cliques with it";
     }
 
     clucof = totalCliques / denom;
-    qDebug() << "=== Graph::clusteringCoefficient() - vertex " <<  v1 << " ["<< index[v1] << "]" << " has CLUCOF = "<< clucof;
+    qDebug() << "=== Graph::clusteringCoefficient() - vertex " <<  v1
+             << " ["<< index[v1] << "]" << " has CLUCOF = "<< clucof;
     m_graph[ index [v1] ] ->setCLC(clucof);
 
     return clucof;
