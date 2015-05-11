@@ -8038,7 +8038,7 @@ void MainWindow::slotHelp(){
                 manualFound = false;
             }
         }
-        if (d.cd("../../../manual") ) {         // for Mac
+        if (d.cd("../manual") ) {         // for Mac
             if ( d.exists("manual.html") ) {
                 helpPath=d.filePath("manual.html");
                 manualFound = true;
@@ -8109,7 +8109,7 @@ void MainWindow::slotHelp(){
     }
     qDebug () << "help path is: " << helpPath.toLatin1();
 
-    QDesktopServices::openUrl(QUrl(helpPath, QUrl::TolerantMode));
+    QDesktopServices::openUrl(QUrl::fromLocalFile(helpPath));
 
 //    HTMLViewer *helpViewer = new HTMLViewer (helpPath, this);
 //    helpViewer -> setWindowTitle ( "SocNetV "+ VERSION + tr(" Manual"));
