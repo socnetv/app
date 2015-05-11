@@ -1,2 +1,2 @@
 version=3
-http://sf.net/project/socnetv/SocNetV-(.*)\.tar\.gz
+https://launchpad.net/socnetv/+download  https://launchpad.net/socnetv/.*/.*/\+download/SocNetV-([0-9.]+)\.tar\.bz2
