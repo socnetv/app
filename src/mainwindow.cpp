@@ -8038,6 +8038,8 @@ void MainWindow::slotHelp(){
                 manualFound = false;
             }
         }
+        // MacOS: assumes manual dir in socnetv.app/Contents/
+        // before deploy copy there the manual dir
         if (d.cd("../manual") ) {         // for Mac
             if ( d.exists("manual.html") ) {
                 helpPath=d.filePath("manual.html");
