@@ -1,5 +1,5 @@
 /***************************************************************************
- SocNetV: Social Networks Visualizer 
+ SocNetV: Social Network Visualizer 
  version: 1.6
  Written in Qt
 
@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     if ( argc > 1 )     {
         option = argv[1];
 			if (option=="--help" || option=="-h" || option=="--h" ) {
-				cout<<"\nSocial Networks Visualizer v." << qPrintable(VERSION)<< "\n"
+				cout<<"\nSocial Network Visualizer v." << qPrintable(VERSION)<< "\n"
 					<<"\nUsage: socnetv [flags] [file]\n"
 					<<"-h, --help 	Displayes this help message\n"
 					<<"-V, --version	Displays version number\n\n"
@@ -64,12 +64,12 @@ int main(int argc, char *argv[])
 				return -1;
 			}
 			else if (option=="-V" || option=="--version") {
-				cout<<"\nSocial Networks Visualizer v." << qPrintable(VERSION)
+				cout<<"\nSocial Network Visualizer v." << qPrintable(VERSION)
 					<< "\nCopyright Dimitris V. Kalamaras, \nLicense: GPL3\n\n";
 				return -1;
 			}
 			else  {
-				cout<<"\nSocial Networks Visualizer v." << qPrintable(VERSION);
+				cout<<"\nSocial Network Visualizer v." << qPrintable(VERSION);
 				cout<<"\nLoading file: " << qPrintable(option) << "\n\n";
 			}
 		

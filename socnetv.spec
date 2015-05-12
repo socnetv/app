@@ -94,7 +94,7 @@ BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 
 %description
-SocNetV (Social Networks Visualiser) is a flexible and 
+SocNetV (Social Network Visualiser) is a flexible and 
 user-friendly tool for Social Networks Analysis and Visualisation. 
 It lets you create new networks (graphs) with a few clicks on a 
 virtual canvas or load networks of various formats (GraphViz, 

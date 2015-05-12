@@ -1,5 +1,5 @@
 /***************************************************************************
- SocNetV: Social Networks Visualizer
+ SocNetV: Social Network Visualizer
  version: 1.6
  Written in Qt
 
@@ -338,7 +338,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     graphicsWidget->setFocus();
 
-    statusMessage( tr("Welcome to Social Networks Visualizer, Version ")+VERSION);
+    statusMessage( tr("Welcome to Social Network Visualizer, Version ")+VERSION);
 
 }
 
