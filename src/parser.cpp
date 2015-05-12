@@ -1163,10 +1163,16 @@ bool Parser::loadGraphML(){
 	while (!xml->atEnd()) {
 		xml->readNext();
 		qDebug()<< " loadGraphML(): xml->token "<< xml->tokenString();
+        if (xml->isStartDocument()) {
+                qDebug()<< " loadGraphML(): xml startDocument" << " version "
+                        << xml->documentVersion()
+                << " encoding " << xml->documentEncoding();
+        }
 		if (xml->isStartElement()) {
-			qDebug()<< " loadGraphML(): element name "<< xml->name().toString()<<" version " << xml->attributes().value("version").toString()  ;
+            qDebug()<< " loadGraphML(): element name "<< xml->name().toString();
 			if (xml->name() == "graphml") {	//this is a GraphML document, call method.
 				qDebug()<< " loadGraphML(): OK. NamespaceUri is "<< xml->namespaceUri().toString();
+
 				readGraphML(*xml);				
 			}
             else {	//not a GraphML doc, return false.

@@ -9641,8 +9641,10 @@ bool Graph::saveGraphToGraphMLFormat (
         return false;
     }
     QTextStream outText( &f );
+    qDebug () << " codec used for saving stream: " << outText.codec()->name();
+
     qDebug()<< "		... writing xml version";
-    outText << "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n";
+    outText << "<?xml version=\"1.0\" encoding=\"" << outText.codec()->name() << "\"?> \n";
     outText << " <!-- Created by SocNetV v."<<  VERSION << " --> \n" ;
     outText << "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" "
                "      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance \" "
