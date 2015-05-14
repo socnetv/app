@@ -250,6 +250,7 @@ void TextEditor::loadFile(const QString &fileName)
 
     setCurrentFile(fileName);
     statusBar()->showMessage(tr("File loaded"), 2000);
+    file.close();
 }
 
 bool TextEditor::saveFile(const QString &fileName)
@@ -263,13 +264,15 @@ bool TextEditor::saveFile(const QString &fileName)
         return false;
     }
 
-    QTextStream out(&file);
+    QTextStream outText(&file);
+    outText.setCodec("UTF-8");
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    out << textEdit->toPlainText();
+    outText << textEdit->toPlainText();
     QApplication::restoreOverrideCursor();
 
     setCurrentFile(fileName);
     statusBar()->showMessage(tr("File saved"), 2000);
+    file.close();
     return true;
 }
 

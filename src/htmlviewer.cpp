@@ -143,10 +143,6 @@ void HTMLViewer::openFile()
             return;
         }
 
-//        QTextStream out(&file);
-//        QString output = out.readAll();
-
-
         view->load( QUrl::fromLocalFile(fn) );
     }
 #endif

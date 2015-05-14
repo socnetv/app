@@ -1581,6 +1581,7 @@ void Graph::writeDistanceMatrix (QString fn, const char* netName,
         return;
     }
     QTextStream outText(&file);
+    outText.setCodec("UTF-8");
     outText.setRealNumberPrecision(m_precision);
     outText << "-Social Network Visualizer- \n";
     if (!netName) netName="Unnamed network";
@@ -1615,13 +1616,13 @@ void Graph::writeNumberOfGeodesicsMatrix(const QString fn,
         return;
     }
 
-    QTextStream out(&file);
-
-    out << "-Social Network Visualizer- \n";
+    QTextStream outText(&file);
+    outText.setCodec("UTF-8");
+    outText << "-Social Network Visualizer- \n";
     if (!netName) netName="Unnamed network";
-    out << "Number of geodesics matrix of  "<< netName<<": \n";
+    outText << "Number of geodesics matrix of  "<< netName<<": \n";
 
-    out << TM ;
+    outText << TM ;
 
     file.close();
 
@@ -1641,6 +1642,7 @@ void Graph::writeEccentricity(
         return;
     }
     QTextStream outText ( &file );
+    outText.setCodec("UTF-8");
     if ( !distanceMatrixCreated || graphModified ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
         createDistanceMatrix(true, considerWeights,
@@ -2648,7 +2650,7 @@ void Graph::writeCentralityInformation(const QString fileName,
         return;
     }
     QTextStream outText ( &file );
-
+    outText.setCodec("UTF-8");
     if (graphModified || !calculatedIC ) {
             emit statusMessage ( (tr("Calculating IC scores...")) );
             centralityInformation(considerWeights, inverseWeights);
@@ -2858,6 +2860,7 @@ void Graph::writeCentralityDegree ( const QString fileName,
         return;
     }
     QTextStream outText ( &file );
+    outText.setCodec("UTF-8");
     qDebug()<< "Graph:: writeCentralityDegree() considerWeights "
             << considerWeights
                << " dropIsolates " <<dropIsolates;
@@ -3029,7 +3032,7 @@ void Graph::writeCentralityCloseness(
         emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
         return;
     }
-    QTextStream outText ( &file );
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if (graphModified || !calculatedCentralities ) {
             emit statusMessage ( (tr("Calculating shortest paths")) );
@@ -3119,7 +3122,7 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
         emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
         return;
     }
-    QTextStream outText ( &file );
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     emit statusMessage ( (tr("calculating IRCC indices")) );
 
@@ -3182,7 +3185,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
         emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
         return;
     }
-    QTextStream outText ( &file );
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
 
     if (graphModified || !calculatedCentralities ) {
@@ -3264,7 +3267,7 @@ void Graph::writeCentralityStress( const QString fileName,
         emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
         return;
     }
-    QTextStream outText ( &file );
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if (graphModified || !calculatedCentralities ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
@@ -3343,7 +3346,7 @@ void Graph::writeCentralityEccentricity(const QString fileName,
         emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
         return;
     }
-    QTextStream outText ( &file );
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if (graphModified || !calculatedCentralities ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
@@ -3404,7 +3407,7 @@ void Graph::writeCentralityPower(const QString fileName,
         emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
         return;
     }
-    QTextStream outText ( &file );
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     if (graphModified || !calculatedCentralities ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
@@ -3603,7 +3606,7 @@ void Graph::writePrestigeDegree (const QString fileName,
         emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
         return;
     }
-    QTextStream outText ( &file );
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     prestigeDegree(considerWeights, dropIsolates);
 
@@ -3796,7 +3799,7 @@ void Graph::writePrestigeProximity( const QString fileName,
         emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
         return;
     }
-    QTextStream outText ( &file );
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     emit statusMessage ( (tr("Calculating prestige proximity indices")) );
     prestigeProximity(considerWeights, inverseWeights, dropIsolates);
@@ -4017,7 +4020,7 @@ void Graph::writePrestigePageRank(const QString fileName, const bool dropIsolate
         emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
         return;
     }
-    QTextStream outText ( &file );
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     emit statusMessage ( (tr("Calculating PageRank indices. Please wait...")) );
 
@@ -4080,7 +4083,7 @@ void Graph::writeNumberOfCliques(
     }
     long int cliques=0, cliques_sum=0, N = vertices();
 
-    QTextStream outText ( &file );
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     emit statusMessage ( QString(tr("Writing number of triangles to file:")).arg(fileName) );
 
@@ -4120,7 +4123,7 @@ void Graph::writeClusteringCoefficient(
         emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
         return;
     }
-    QTextStream outText ( &file );
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     emit statusMessage ( (tr("Calculating shortest paths")) );
     float clucof= clusteringCoefficient();
@@ -4184,7 +4187,7 @@ void Graph::writeTriadCensus(
         return;
     }
 
-    QTextStream outText ( &file );
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     emit statusMessage ( (tr("Conducting triad census. Please wait....")) );
     if (graphModified || !calculatedTriad) {
@@ -5058,17 +5061,17 @@ void Graph::writeTotalNumberOfWalksMatrix(QString fn, QString netName, int lengt
         return;
     }
 
-    QTextStream out(&file);
-
-    out << "-Social Network Visualizer- \n";
-    out << "Network name "<< netName<<": \n";
-    out << "Total number of walks of any length less than or equal to "<< length
+    QTextStream outText(&file);
+    outText.setCodec("UTF-8");
+    outText << "-Social Network Visualizer- \n";
+    outText << "Network name "<< netName<<": \n";
+    outText << "Total number of walks of any length less than or equal to "<< length
         <<" between each pair of nodes \n\n";
-    out << "Warning: Walk counts consider unordered pairs of nodes\n\n";
+    outText << "Warning: Walk counts consider unordered pairs of nodes\n\n";
 
     createNumberOfWalksMatrix(length);
 
-    out << XSM ;
+    outText << XSM ;
 
     file.close();
 
@@ -5084,15 +5087,15 @@ void Graph::writeNumberOfWalksMatrix(QString fn, QString netName, int length){
         return;
     }
 
-    QTextStream out(&file);
-
-    out << "-Social Network Visualizer- \n";
-    out << "Network name "<< netName<<": \n";
-    out << "Number of walks of length "<< length <<" between each pair of nodes \n\n";
+    QTextStream outText(&file);
+    outText.setCodec("UTF-8");
+    outText << "-Social Network Visualizer- \n";
+    outText << "Network name "<< netName<<": \n";
+    outText << "Number of walks of length "<< length <<" between each pair of nodes \n\n";
 
     createNumberOfWalksMatrix(length);
 
-    out << XM ;
+    outText << XM ;
 
     file.close();
 }
@@ -5241,19 +5244,19 @@ void Graph::writeReachabilityMatrix(QString fn, QString netName,
         return;
     }
 
-    QTextStream out(&file);
+    QTextStream outText(&file);
 
-    out << "-Social Network Visualizer- \n";
-    out << "Network name: "<< netName<<" \n";
-    out << "Reachability Matrix (XR) \n";
-    out << "Two nodes are reachable if there is a walk between them (their geodesic distance is non-zero). \n";
-    out << "If nodes i and j are reachable then XR(i,j)=1 otherwise XR(i,j)=0.\n\n";
+    outText << "-Social Network Visualizer- \n";
+    outText << "Network name: "<< netName<<" \n";
+    outText << "Reachability Matrix (XR) \n";
+    outText << "Two nodes are reachable if there is a walk between them (their geodesic distance is non-zero). \n";
+    outText << "If nodes i and j are reachable then XR(i,j)=1 otherwise XR(i,j)=0.\n\n";
 
     if (!reachabilityMatrixCreated || graphModified) {
         reachabilityMatrix(false, false, dropIsolates);
     }
 
-    out << XRM ;
+    outText << XRM ;
 
     file.close();
 }
@@ -5978,6 +5981,7 @@ bool Graph::saveGraphToPajekFormat (
         return false;
     }
     QTextStream t( &f );
+    t.setCodec("UTF-8");
     t<<"*Network "<<networkName<<"\n";
 
     t<<"*Vertices "<< vertices() <<"\n";
@@ -6048,17 +6052,18 @@ bool Graph::saveGraphToPajekFormat (
  * @return
  */
 bool Graph::saveGraphToAdjacencyFormat (QString fileName){
-    QFile f( fileName );
-    if ( !f.open( QIODevice::WriteOnly ) )  {
+    QFile file( fileName );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
         emit statusMessage(QString(tr("Could not write to %1")).arg(fileName));
         return false;
     }
-    QTextStream t( &f );
+    QTextStream outText( &file );
+    outText.setCodec("UTF-8");
     qDebug("Graph: saveGraphToAdjacencyFormat() for %i vertices", vertices());
 
-    writeAdjacencyMatrixTo(t);
+    writeAdjacencyMatrixTo(outText);
 
-    f.close();
+    file.close();
     QString fileNameNoPath=fileName.split("/").last();
     emit statusMessage (QString( tr("Adjacency matrix-formatted network saved into file %1") ).arg( fileNameNoPath ));
     return true;
@@ -6080,6 +6085,7 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
         return;
     }
     QTextStream outText( &file );
+    outText.setCodec("UTF-8");
     QString datasetDescription=QString::null;
     qDebug()<< "		... writing dataset ";
     if ( fileName == "Krackhardt_High-tech_managers_Advice_relation.sm" ) {
@@ -9451,6 +9457,7 @@ void Graph::writeAdjacencyMatrix (const QString fn, const char* netName) {
         return;
     }
     QTextStream outText( &file );
+    outText.setCodec("UTF-8");
     int sum=0;
     float weight=0;
     outText << "-Social Network Visualizer- \n";
@@ -9589,7 +9596,7 @@ void Graph::writeInvertAdjacencyMatrix(QString fn, const char* netName){
         return;
     }
     QTextStream outText( &file );
-
+    outText.setCodec("UTF-8");
     outText << "-Social Network Visualizer- \n";
     outText << "Invert Matrix of "<< netName<<": \n\n";
     invertAdjacencyMatrix();
