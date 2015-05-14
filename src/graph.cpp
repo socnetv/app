@@ -9641,6 +9641,7 @@ bool Graph::saveGraphToGraphMLFormat (
         return false;
     }
     QTextStream outText( &f );
+    outText.setCodec("UTF-8");
     qDebug () << " codec used for saving stream: " << outText.codec()->name();
 
     qDebug()<< "		... writing xml version";
