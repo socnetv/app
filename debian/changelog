@@ -1,3 +1,9 @@
+socnetv (1.7-3) trusty; urgency=medium
+
+  * daily development build
+
+ -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Fri, 15 May 2015 12:13:03 +0300
+
 socnetv (1.6-3) trusty; urgency=medium
 
   * Build to fix upload in ubuntu archive 
