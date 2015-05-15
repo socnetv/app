@@ -34,6 +34,7 @@
 #include <QtDebug>		//used for qDebug messages
 #include <QPointF>
 #include <QMessageBox>
+#include <QTextCodec>
 #include <list>
 #include "graph.h"	//needed for setParent
 
@@ -1165,7 +1166,9 @@ bool Parser::loadGraphML(){
 	QXmlStreamReader *xml = new QXmlStreamReader();
 	
 	xml->setDevice(&file);
-	
+
+    QTextCodec *normalCodec = QTextCodec::codecForLocale();
+
 	while (!xml->atEnd()) {
 		xml->readNext();
 		qDebug()<< " loadGraphML(): xml->token "<< xml->tokenString();
@@ -1174,6 +1177,10 @@ bool Parser::loadGraphML(){
                         << xml->documentVersion()
                 << " encoding " << xml->documentEncoding();
         }
+        //QTextCodec::codecForUtfText()
+        // Temporarily change codec of Qt locale
+
+        QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
 		if (xml->isStartElement()) {
             qDebug()<< " loadGraphML(): element name "<< xml->name().toString();
 			if (xml->name() == "graphml") {	//this is a GraphML document, call method.
@@ -1195,7 +1202,7 @@ bool Parser::loadGraphML(){
             return false;
 		}
 	}
-
+    QTextCodec::setCodecForLocale(normalCodec);
 	//The network has been loaded. Tell MW the statistics and network type
 	// 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List
 	emit fileType(1, networkName, aNodes, totalLinks, undirected);
