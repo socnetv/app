@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer 
- version: 1.6
+ version: 1.7-dev
  Written in Qt
  
                          parser.cpp  -  description
@@ -37,13 +37,15 @@
 #include <list>
 #include "graph.h"	//needed for setParent
 
-bool Parser::load(QString fn, int iNS, QString iNC, QString iNSh, 
-					QString iNNC, int iNNS, 
-					QString iNLC, int iNLS , 
-					QString iEC, 
-					int width, int height,
-					int fFormat,
-					int sm_mode
+bool Parser::load( const QString fn,
+                   const QString m_codec,
+                   const int iNS, const QString iNC, const QString iNSh,
+                    const QString iNNC, const int iNNS,
+                    const QString iNLC, const int iNLS ,
+                    const QString iEC,
+                    const int width, const int height,
+                    const int fFormat,
+                    const int sm_mode
 					)
 {
 	qDebug("Parser: load()");
@@ -59,6 +61,7 @@ bool Parser::load(QString fn, int iNS, QString iNC, QString iNSh,
 	
     undirected=0; arrows=false; bezier=false;
 	fileName=fn;
+    userSelectedCodecName = m_codec;
 	networkName=(fileName.split ("/")).last();
 	gwWidth=width;
 	gwHeight=height;
@@ -226,7 +229,7 @@ bool Parser::loadDL(){
 	QFile file ( fileName );
     if ( ! file.open(QIODevice::ReadOnly )) return false;
 	QTextStream ts( &file );
-
+    ts.setCodec(userSelectedCodecName.toUtf8());
     QString str, label, nm_str, relation, prevLineStr;
 	
     int source=1, target=1, nm=0,lineCounter=0, mark=0, mark2=0, nodeSum=0;
@@ -497,6 +500,7 @@ bool Parser::loadPajek(){
 	QFile file ( fileName );
     if ( ! file.open(QIODevice::ReadOnly )) return false;
 	QTextStream ts( &file );
+        ts.setCodec(userSelectedCodecName.toUtf8());
 	QString str, label, temp;
 	nodeColor="";
 	edgeColor="";
@@ -926,6 +930,7 @@ bool Parser::loadAdjacency(){
 	QFile file ( fileName );
     if ( ! file.open(QIODevice::ReadOnly )) return false;
 	QTextStream ts( &file );
+        ts.setCodec(userSelectedCodecName.toUtf8());
 	QString str;
 	QStringList lineElement;
 	int i=0, j=0,  aNodes=0, newCount=0, lastCount=0;
@@ -1046,6 +1051,7 @@ bool Parser::loadTwoModeSociomatrix(){
 	if ( ! file.open(QIODevice::ReadOnly ))
         return false;
 	QTextStream ts( &file );
+        ts.setCodec(userSelectedCodecName.toUtf8());
 	QString str;
 	QStringList lineElement;
 	int i=0, j=0,  aNodes=0, newCount=0, lastCount=0;
@@ -1872,6 +1878,7 @@ bool Parser::loadGML(){
 
     if ( ! file.open(QIODevice::ReadOnly )) return false;
 	QTextStream ts( &file );
+        ts.setCodec(userSelectedCodecName.toUtf8());
 	while (!ts.atEnd() )   {
 		str= ts.readLine() ;
 		fileLine++;
@@ -1929,6 +1936,7 @@ bool Parser::loadDot(){
 	QFile file ( fileName );
     if ( ! file.open(QIODevice::ReadOnly )) return false;
 	QTextStream ts( &file );
+        ts.setCodec(userSelectedCodecName.toUtf8());
 	aNodes=0;
 	while (!ts.atEnd() )   {
 		str= ts.readLine() ;
@@ -2285,6 +2293,7 @@ bool Parser::loadWeighedList(){
 	if ( ! file.open(QIODevice::ReadOnly ))
         return false;
 	QTextStream ts( &file );
+        ts.setCodec(userSelectedCodecName.toUtf8());
 	QString str;
 	QStringList lineElement;
 	int  j=0,  source=0, target=0, newCount=0,  maxNodeCreated=0;
@@ -2394,6 +2403,7 @@ bool Parser::loadSimpleList(){
 	if ( ! file.open(QIODevice::ReadOnly )) 
         return false;
 	QTextStream ts( &file );
+    ts.setCodec(userSelectedCodecName.toUtf8());  // set the userselectedCodec
 	QString str;
 	QStringList lineElement;
 	int i=0, j=0, num=0, source=0, target=0, maxNodeCreated=0;

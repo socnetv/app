@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 1.6
+ version: 1.7-dev
  Written in Qt
  
                          graph.h  -  description
@@ -198,7 +198,12 @@ public:
     void setShowNumbersInsideNodes(bool toggle);
 
     /*FILES (READ AND WRITE)*/
-    bool loadGraph ( QString, bool,	int maxWidth, int maxHeight, int format, int two_sm_mode);
+    bool loadGraph (const QString, const QString m_codecName,
+                    const bool,
+                    const int maxWidth,
+                    const int maxHeight,
+                    const int format,
+                    const int two_sm_mode);
 
     bool saveGraph( QString fileName, int fileType,
                     QString networkName, int maxWidth, int maxHeight

@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 1.6
+ version: 1.7-dev
  Written in Qt
 
 -                           mainwindow.cpp  -  description
@@ -49,6 +49,7 @@
 #include "filteredgesbyweightdialog.h"
 #include "guide.h"
 #include "vertex.h"
+#include "previewform.h"
 
 
 
@@ -326,15 +327,22 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     }
 
+    qDebug() << "MW::MainWindow() call findCodecs" ;
+    findCodecs();
 
-    /** Try to load a GraphML network file on exec time*/
+    qDebug() << "MW::MainWindow() create PreviewForm object and set codecs" ;
+    previewForm = new PreviewForm(this);
+    previewForm->setCodecList(codecs);
+
+    connect (previewForm, &PreviewForm::userCodec, this, &MainWindow::userCodec );
+
+    qDebug() << "MW::MainWindow() Try load *graphml* file on exec time ";
     if (!m_fileName.isEmpty())
     {
         fileName=m_fileName;
         fileNameNoPath=fileName.split ("/");
-        loadNetworkFile(fileName, 0 );
+        previewNetworkFile( fileName, 0 );
     }
-
 
     graphicsWidget->setFocus();
 
@@ -2700,6 +2708,7 @@ void MainWindow::initNet(){
     pajekFileLoaded=false;
     adjacencyFileLoaded=false;
     fileFormat = -1;
+    initFileCodec= "UTF-8";
     checkSelectFileType = true;
     dotFileLoaded=false;
     fileLoaded=false;
@@ -2870,7 +2879,7 @@ void MainWindow::setLastPath(QString filePath) {
 
 /**
     Prompts the user a directory dialogue to choose a file from.
-    Loads the specified file, calling loadNetworkFile()
+    Calls previewNetworkFile()
 */
 void MainWindow::slotChooseFile() {
 
@@ -3000,23 +3009,9 @@ void MainWindow::slotChooseFile() {
         qDebug()<<"MW: file selected: " << m_fileName;
         fileNameNoPath=m_fileName.split ("/");
         setLastPath(m_fileName); // store this path
-        if ( loadNetworkFile ( m_fileName, m_fileFormat  ) )
-        {
-            fileName=m_fileName;
-            previous_fileName=fileName;
-            setWindowTitle("SocNetV "+ VERSION +" - "+fileNameNoPath.last());
-            QString message=tr("Loaded network: ")+fileNameNoPath.last();
-            statusMessage( message );
-        }
-        else {
-            statusMessage( tr("Error loading requested file. Aborted."));
-            QMessageBox::critical( this, "SocNetV",
-                                   tr("Error! \n")+
-                                   tr("Sorry, the selected file is not in GraphML format, which is the default file format of SocNetV. \n")+
-                                   tr("If you want to import other network formats (i.e. Pajek, UCINET, dot, etc), ")+
-                                   tr("please use the options in the Import sub menu. \n"),
-                                   "OK", 0 );
-        }
+
+        previewNetworkFile(m_fileName, m_fileFormat );
+
     }
     else  {
         statusMessage( tr("Opening aborted"));
@@ -3310,6 +3305,64 @@ void MainWindow::slotImportEdgeList(){
 }
 
 
+void MainWindow::findCodecs()
+{
+    QMap<QString, QTextCodec *> codecMap;
+    QRegExp iso8859RegExp("ISO[- ]8859-([0-9]+).*");
+
+    foreach (int mib, QTextCodec::availableMibs()) {
+        QTextCodec *codec = QTextCodec::codecForMib(mib);
+
+        QString sortKey = codec->name().toUpper();
+        int rank;
+
+        if (sortKey.startsWith("UTF-8")) {
+            rank = 1;
+        } else if (sortKey.startsWith("UTF-16")) {
+            rank = 2;
+        } else if (iso8859RegExp.exactMatch(sortKey)) {
+            if (iso8859RegExp.cap(1).size() == 1)
+                rank = 3;
+            else
+                rank = 4;
+        } else {
+            rank = 5;
+        }
+        sortKey.prepend(QChar('0' + rank));
+
+        codecMap.insert(sortKey, codec);
+    }
+    codecs = codecMap.values();
+}
+
+
+
+bool MainWindow::previewNetworkFile(QString m_fileName, int m_fileFormat ){
+    qDebug() << "MW::previewNetworkFile() : "<< m_fileName;
+
+    if (!m_fileName.isEmpty()) {
+        QFile file(m_fileName);
+        if (!file.open(QFile::ReadOnly)) {
+            QMessageBox::warning(this, tr("previewNetworkFile"),
+                                 tr("Cannot read file %1:\n%2")
+                                 .arg(m_fileName)
+                                 .arg(file.errorString()));
+            return false;
+        }
+        qDebug() << "MW::loadNetworkFile() reading the file now... " ;
+        QByteArray data = file.readAll();
+
+        previewForm->setEncodedData(data,m_fileName, m_fileFormat);
+        previewForm->exec();
+    }
+
+}
+
+void MainWindow::userCodec(const QString m_fileName,
+                           const QString m_codecName,
+                           const int m_fileFormat) {
+    loadNetworkFile(m_fileName, m_codecName, m_fileFormat );
+}
 
 
 /**
@@ -3321,9 +3374,17 @@ void MainWindow::slotImportEdgeList(){
  * @param m_fileFormat
  * @return
  */
-bool MainWindow::loadNetworkFile(QString m_fileName, int m_fileFormat ){
-    qDebug() << "MW::loadNetworkFile() : "<< m_fileName;
+bool MainWindow::loadNetworkFile(const QString m_fileName,
+                                 const QString m_codecName,
+                                 const int m_fileFormat )
+{
+    qDebug() << "MW::loadNetworkFile() : "<< m_fileName
+                    << " m_codecName " << m_codecName
+                    << " m_fileFormat " << m_fileFormat;
     initNet();
+
+    userSelectedCodecName = m_codecName; //var for future use in a Settings dialog
+
     int two_sm_mode = 0;
 
     if ( m_fileFormat == 9 ) {
@@ -3341,14 +3402,34 @@ bool MainWindow::loadNetworkFile(QString m_fileName, int m_fileFormat ){
             break;
         }
     }
+
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
     bool loadGraphStatus = activeGraph.loadGraph (
                 m_fileName,
+                m_codecName,
                 displayNodeLabelsAct->isChecked(),
                 graphicsWidget->width(),
                 graphicsWidget->height(),
                 m_fileFormat, two_sm_mode
                 );
+
+    if ( loadGraphStatus )
+    {
+        fileName=m_fileName;
+        previous_fileName=fileName;
+        setWindowTitle("SocNetV "+ VERSION +" - "+fileNameNoPath.last());
+        QString message=tr("Loaded network: ")+fileNameNoPath.last();
+        statusMessage( message );
+    }
+    else {
+        statusMessage( tr("Error loading requested file. Aborted."));
+        QMessageBox::critical( this, "SocNetV",
+                               tr("Error! \n")+
+                               tr("Sorry, the selected file is not in valid format or encoding. \n")+
+                               tr("Try a different codec in the preview window or if you are trying to import legacy formats (i.e. Pajek, UCINET, dot, etc), ")+
+                               tr("please use the options in the Import sub menu. \n"),
+                               "OK", 0 );
+    }
     QApplication::restoreOverrideCursor();
     return loadGraphStatus;
 }
@@ -4078,7 +4159,7 @@ void MainWindow::slotRecreateDataSet (QString m_fileName) {
         m_fileFormat=9;
     }
     checkSelectFileType = false;
-    if ( loadNetworkFile(dataDir+m_fileName, m_fileFormat) ) {
+    if ( loadNetworkFile(dataDir+m_fileName, "UTF-8", m_fileFormat) ) {
         qDebug() << "slotRecreateDataSet() loaded file " << m_fileName;
         fileName=m_fileName;
         previous_fileName=fileName;
@@ -8126,7 +8207,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
     int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Mon May 11 13:33:37 EEST 2015";
+QString BUILD="Fri May 15 13:15:41 EEST 2015";
     QMessageBox::about( this, "About SocNetV",
                         "<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
                         "<p><b>Version</b>: " + VERSION + "</p>"

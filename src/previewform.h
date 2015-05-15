@@ -1,13 +1,15 @@
-/****************************************************************************
-SocNetV: Social Network Visualizer 
-version: 1.7-dev
-Written in Qt
+/***************************************************************************
+ SocNetV: Social Network Visualizer
+ version: 1.7-dev
+ Written in Qt
 
-			       texteditor.h
+                         previewform.h  -  description
                              -------------------
     copyright            : (C) 2005-2015 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
-*****************************************************************************/
+    website:             : http://dimitris.apeiro.gr
+    project site         : http://socnetv.sourceforge.net
+ ***************************************************************************/
 
 /*******************************************************************************
 *     This program is free software: you can redistribute it and/or modify     *
@@ -24,67 +26,42 @@ Written in Qt
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef TEXTEDITOR_H
-#define TEXTEDITOR_H
 
-#include <QMainWindow>
+#ifndef PREVIEWFORM_H
+#define PREVIEWFORM_H
 
-class QAction;
-class QMenu;
+#include <QDialog>
+#include <QList>
+
+class QComboBox;
+class QDialogButtonBox;
+class QLabel;
+class QTextCodec;
 class QTextEdit;
 
-class TextEditor : public QMainWindow
+class PreviewForm : public QDialog
 {
     Q_OBJECT
-
 public:
-	TextEditor(const QString &fileName);
-
-protected:
-	void closeEvent(QCloseEvent *event);
-
+    explicit PreviewForm(QWidget *parent = 0);
+    void setCodecList(const QList<QTextCodec *> &list);
+    void setEncodedData(const QByteArray &data, const QString, const int );
+    QString decodedString() const { return decodedStr; }
+signals:
+    void userCodec(const QString, const QString, const int);
 private slots:
-	void newFile();
-	void open();
-	bool save();
-	bool saveAs();
-	void about();
-	void documentWasModified();
+    void updateTextEdit();
+    void accept();
 
 private:
-	void createActions();
-	void createMenus();
-	void createToolBars();
-	void createStatusBar();
-	void readSettings();
-	void writeSettings();
-	bool maybeSave();
-	void loadFile(const QString &fileName);
-	bool saveFile(const QString &fileName);
-	void setCurrentFile(const QString &fileName);
-	QString strippedName(const QString &fullFileName);
-
-	QTextEdit *textEdit;
-	QString curFile;
-
-	QMenu *fileMenu;
-	QMenu *editMenu;
-	QMenu *helpMenu;
-	QToolBar *fileToolBar;
-	QToolBar *editToolBar;
-	QAction *newAct;
-	QAction *openAct;
-	QAction *saveAct;
-	QAction *saveAsAct;
-	QAction *exitAct;
-	QAction *cutAct;
-	QAction *copyAct;
-	QAction *pasteAct;
-	QAction *aboutAct;
-	QAction *aboutQtAct;
+    QByteArray encodedData;
+    QString decodedStr, fileName;
+    int format;
+    QComboBox *encodingComboBox;
+    QLabel *encodingLabel;
+    QTextEdit *textEdit;
+    QDialogButtonBox *buttonBox;
 
 };
 
-
-
-#endif
+#endif // PREVIEWFORM_H

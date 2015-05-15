@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 1.6
+ version: 1.7-dev
  Written in Qt
  
                          mainwindow.h  -  description
@@ -43,8 +43,7 @@
 #include "webcrawlerdialog.h"
 #include "datasetselectdialog.h"
 
-
-static const QString VERSION="1.6";
+static const QString VERSION="1.7-dev";
 
 /**
   * This Class is the base class. It sets up the main
@@ -69,13 +68,13 @@ class QComboBox;
 class QGroupBox;
 class QTabWidget;
 class QSpinBox;
-
+class PreviewForm;
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
-public:		/**PUBLIC FUNCTIONS NOT VISIBLE BY OTHER WIDGETS NOR BY SLOT/LINK MECHANISM */
+public:
     GraphicsWidget *graphicsWidget;
 
     MainWindow(const QString &f);
@@ -99,8 +98,9 @@ public:		/**PUBLIC FUNCTIONS NOT VISIBLE BY OTHER WIDGETS NOR BY SLOT/LINK MECHA
     bool showNumbersInsideNodes();
     bool showNumbers();
 
-    // Main network file loader method
-    bool loadNetworkFile ( QString, int );
+    // Main network file loader methods
+    bool previewNetworkFile(QString , int );
+    bool loadNetworkFile ( const QString, const QString, const int );
 
     int activeLinks();
     int activeNodes();
@@ -142,6 +142,10 @@ public slots:
     //NETWORK MENU
     void slotOpenTextEditor();
     void slotViewNetworkFile();
+
+    void findCodecs();
+    void userCodec(const QString, const QString, const int );
+
     void slotViewAdjacencyMatrix();
     void slotShowDataSetSelectDialog();
     void slotRecreateDataSet(QString);
@@ -321,6 +325,10 @@ private:
 
     FilterEdgesByWeightDialog m_filterEdgesByWeightDialog;
     WebCrawlerDialog m_WebCrawlerDialog;
+
+    PreviewForm *previewForm;
+    QList<QTextCodec *> codecs;
+    QString userSelectedCodecName;
     DataSetSelectDialog m_datasetSelectDialog;
     Graph activeGraph;
     QPrinter *printer;
@@ -412,6 +420,7 @@ private:
     bool networkModified;
     bool bezier,  linkClicked, nodeClicked, markedNodesExist, showProgressBar, firstTime;
     bool considerWeights, inverseWeights, askedAboutWeights;
+    QString initFileCodec;
     QString initLinkColor, initNumberColor,  initNodeShape, initLabelColor;
     QColor initBackgroundColor;
     QPointF cursorPosGW;	//Carries the position of the cursor in graphicsWidget coordinates
@@ -420,6 +429,8 @@ private:
 
     QDateTime actualDateTime, actualDate, actualTime;
     QTime eTime;     //used  to time algorithms.
+
+
 };
 #endif 
 

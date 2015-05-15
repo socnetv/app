@@ -60,7 +60,8 @@ HEADERS += src/guide.h \
 	   src/filteredgesbyweightdialog.h \
 	   src/webcrawlerdialog.h \
 	   src/webcrawler.h \
-	   src/datasetselectdialog.h
+	   src/datasetselectdialog.h \
+    src/previewform.h
 
 SOURCES += src/guide.cpp \
            src/graphicswidget.cpp \
@@ -80,7 +81,8 @@ SOURCES += src/guide.cpp \
 	   src/filteredgesbyweightdialog.cpp \
 	   src/webcrawlerdialog.cpp \
 	   src/webcrawler.cpp \
-	   src/datasetselectdialog.cpp
+	   src/datasetselectdialog.cpp \
+    src/previewform.cpp
 
 
 

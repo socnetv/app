@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer 
- version: 1.6
+ version: 1.7-dev
  Written in Qt
  
                          parser.h  -  description
@@ -44,8 +44,11 @@ class Parser :  public QThread {
 	Q_OBJECT
 public:
 	
-	bool load(QString fn, int iNS, QString iNC, QString iNSh, QString iNNC,
-		 int iNNS, QString iNLC, int iNLS , QString iEC, int w, int h, int format, int sm_mode);
+    bool load(const QString fn, const QString codec, const int iNS,
+              const QString iNC, const QString iNSh, const QString iNNC,
+              const int iNNS, const QString iNLC, const int iNLS ,
+              const QString iEC, const int w, const int h, const int format,
+              const int sm_mode);
 	bool loadPajek();
 	bool loadAdjacency();
 	bool loadDot();
@@ -100,7 +103,7 @@ private:
     QStringList edgeMissingNodesList,edgeMissingNodesListData;
 	QMultiMap<int, int> firstModeMultiMap, secondModeMultiMap;
 	QXmlStreamReader *xml;
-    QString fileName, networkName, initNodeColor, initEdgeColor, initNodeShape;
+    QString fileName, userSelectedCodecName, networkName, initNodeColor, initEdgeColor, initNodeShape;
     QString initNodeNumberColor, initNodeLabelColor;
     QString nodeColor, edgeColor, edgeType, nodeShape, nodeLabel, edgeLabel;
     QString nodeNumberColor, nodeLabelColor;

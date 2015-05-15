@@ -1,6 +1,6 @@
 /******************************************************************************
  SocNetV: Social Network Visualizer
- version: 1.6
+ version: 1.7-dev
  Written in Qt
  
                          graph.cpp  -  description
@@ -5901,12 +5901,15 @@ int Graph:: factorial(int x) {
     Our almost universal network loader. :)
     Actually it calls the load() method of parser/qthread class.
 */
-bool Graph::loadGraph (	QString fileName,  bool iSL,
-                        int maxWidth, int maxHeight,
-                        int fileFormat, int two_sm_mode){
-    initShowLabels = iSL;
+bool Graph::loadGraph (	const QString m_fileName,
+                        const QString m_codecName,
+                        const bool m_showLabels,
+                        const int maxWidth, const int maxHeight,
+                        const int fileFormat, const int two_sm_mode){
+    initShowLabels = m_showLabels;
     bool loadGraphStatus = parser.load(
-                fileName,
+                m_fileName,
+                m_codecName,
                 initVertexSize, initVertexColor,
                 initVertexShape,
                 initVertexNumberColor, initVertexNumberSize,
