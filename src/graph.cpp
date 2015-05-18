@@ -27,14 +27,19 @@
 ********************************************************************************/
 
 
-#include <cstdlib>		//allows the use of RAND_MAX macro 
+#include "graph.h"
+#include <QFile>
+#include <QtMath>
 #include <QPointF>
 #include <QDebug>		//used for qDebug messages
-#include <QDateTime> 	// used in exporting centrality files
-#include <QHash> 
+#include <QHash>
+#include <QTextCodec>
+
+#include <cstdlib>		//allows the use of RAND_MAX macro 
+#include <math.h>
 #include <queue>		//for BFS queue Q
 
-#include "graph.h"
+
 
 
 static qreal Pi = 3.14159265;

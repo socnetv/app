@@ -44,7 +44,6 @@
 #include "nodenumber.h"
 #include "nodelabel.h"
 #include "edgeweight.h"
-#include "htmlviewer.h"
 #include "texteditor.h"
 #include "filteredgesbyweightdialog.h"
 #include "guide.h"
@@ -8093,7 +8092,7 @@ void MainWindow::createTips(){
 
 
 /**
-    Loads the HTML Help file and displays it via HTMLViewer.
+    Loads the HTML Help file and displays it via system browser
 */
 void MainWindow::slotHelp(){
 
@@ -8193,10 +8192,6 @@ void MainWindow::slotHelp(){
     qDebug () << "help path is: " << helpPath.toLatin1();
 
     QDesktopServices::openUrl(QUrl::fromLocalFile(helpPath));
-
-//    HTMLViewer *helpViewer = new HTMLViewer (helpPath, this);
-//    helpViewer -> setWindowTitle ( "SocNetV "+ VERSION + tr(" Manual"));
-//    helpViewer->show();
 
 }
 

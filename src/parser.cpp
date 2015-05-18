@@ -27,10 +27,11 @@
 #include "parser.h"
 
 #include <QFile>
+#include <QXmlStreamReader>
+#include <QXmlStreamAttributes>
 #include <QTextStream>
 #include <QString>
 #include <QRegExp>
-#include <QStringList>
 #include <QtDebug>		//used for qDebug messages
 #include <QPointF>
 #include <QMessageBox>

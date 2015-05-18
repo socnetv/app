@@ -28,12 +28,11 @@
 #define GRAPHICSWIDGET_H
 
 
+
 #include <QGraphicsView>
-#include "graph.h"
-#include <QGraphicsScene>
+
 
 class MainWindow;
-//class QGraphicsSceneMouseEvent;
 class Node;
 class Edge;
 class NodeNumber;

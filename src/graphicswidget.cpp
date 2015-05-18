@@ -32,6 +32,7 @@
 #include <QDebug>
 #include <QWheelEvent>
 #include <math.h>
+
 #include "mainwindow.h"
 #include "node.h"
 #include "edge.h"

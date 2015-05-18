@@ -31,6 +31,7 @@
 
 
 #include <QObject>
+#include <QDateTime> 	// used in exporting centrality files
 #include <QList>
 #include <QHash>
 #include <QTextStream>
@@ -46,8 +47,9 @@
 
 using namespace std;
 
+
 class QPointF;
-class QDateTime;
+
 
 /**	This is the main class for a Graph, used in conjuction with Vertex, Parser and Matrix objects.
 

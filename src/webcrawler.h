@@ -31,6 +31,11 @@ using namespace std;
 
 #include <QThread>
 #include <QNetworkReply>
+#include <QUrl>
+
+class QNetworkAccessManager;
+class QNetworkRequest;
+
 
 
 class WebCrawler_Parser : public QObject  {

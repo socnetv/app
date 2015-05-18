@@ -32,7 +32,6 @@ CONFIG  += qt thread warn_on release
 LANGUAGE = C++
 
 # support
-QT += webkitwidgets
 QT += xml 
 QT += network
 QT += widgets
@@ -48,7 +47,6 @@ HEADERS += src/guide.h \
            src/edge.h \
            src/edgeweight.h \
            src/graph.h \
-           src/htmlviewer.h \
            src/mainwindow.h \
            src/matrix.h \
            src/node.h \
@@ -68,7 +66,6 @@ SOURCES += src/guide.cpp \
            src/edge.cpp \
            src/edgeweight.cpp \
            src/graph.cpp \
-           src/htmlviewer.cpp \
            src/main.cpp \
            src/mainwindow.cpp \
            src/matrix.cpp \

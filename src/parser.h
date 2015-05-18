@@ -30,12 +30,15 @@
 using namespace std;
 
 #include <QThread>
-#include <QPointF>
 #include <QMutex>
+#include <QHash>
+#include <QStringList>
+#include <QPointF>
 #include <QObject>
-#include <QtXml>	
 #include <QMultiMap>
 
+class QXmlStreamReader;
+class QXmlStreamAttributes;
 /** 	
 	Main class for network file parsing and loading
 	Currently, it supports Pajek, Adjacency, Graphviz, GraphML
@@ -60,7 +63,9 @@ public:
 	bool loadWeighedList();
 	bool loadTwoModeSociomatrix();
 
-	void dotProperties(QString str, float &, QString &label, QString &shape, QString &color, QString &fontName, QString &fontColor );
+    void dotProperties(QString str, float &, QString &label,
+                       QString &shape, QString &color, QString &fontName,
+                       QString &fontColor );
 	void readGraphML (QXmlStreamReader &);
 	void readGraphMLElementGraph(QXmlStreamReader &);
 	void readGraphMLElementNode (QXmlStreamReader &);
@@ -103,8 +108,8 @@ private:
     QStringList edgeMissingNodesList,edgeMissingNodesListData;
 	QMultiMap<int, int> firstModeMultiMap, secondModeMultiMap;
 	QXmlStreamReader *xml;
-    QString fileName, userSelectedCodecName, networkName, initNodeColor, initEdgeColor, initNodeShape;
-    QString initNodeNumberColor, initNodeLabelColor;
+    QString fileName, userSelectedCodecName, networkName, initNodeColor;
+    QString initEdgeColor, initNodeShape, initNodeNumberColor, initNodeLabelColor;
     QString nodeColor, edgeColor, edgeType, nodeShape, nodeLabel, edgeLabel;
     QString nodeNumberColor, nodeLabelColor;
     QString key_id, key_value, key_name, key_what, key_type;
