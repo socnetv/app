@@ -829,17 +829,15 @@ void Graph::setAllVerticesSize(const int &size) {
     }
     graphModified=true;
     emit graphChanged();
-
-
 }
 
 
-void Graph::setInitVertexShape(QString shape) {
+void Graph::setInitVertexShape(const QString shape) {
     initVertexShape=shape;
 }
 
 //Changes the shape.of vertex v 
-void Graph::setVertexShape(int v1, QString shape){
+void Graph::setVertexShape(const int v1, const QString shape){
     m_graph[ index[v1] ]->setShape(shape);
     graphModified=true;
     emit graphChanged();
@@ -847,10 +845,27 @@ void Graph::setVertexShape(int v1, QString shape){
 
 
 //returns the shape of this vertex
-QString Graph::shape(int v1){
+QString Graph::shape(const int v1){
     return m_graph[ index[v1] ]->shape();
 
 }
+
+void Graph::setAllVerticesShape(const QString shape) {
+    setInitVertexShape(shape);
+    QList<Vertex*>::const_iterator it;
+    for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( ! (*it)->isEnabled() ){
+            continue;
+        }
+        else {
+            (*it)->setShape(shape);
+            emit setNodeShape((*it)->name(), shape);
+        }
+    }
+    graphModified=true;
+    emit graphChanged();
+}
+
 
 //Changes the initial color of vertices numbers 
 void Graph::setInitVertexNumberColor (QString color) {

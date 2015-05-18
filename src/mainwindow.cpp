@@ -251,6 +251,9 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect( &activeGraph, SIGNAL( setNodeSize(long int, int)  ),
              graphicsWidget, SLOT(  setNodeSize (long int , int) ) );
 
+    connect( &activeGraph, SIGNAL( setNodeShape(const long int, const QString)  ),
+             graphicsWidget, SLOT(  setNodeShape (const long int , const QString) ) );
+
     connect( &activeGraph, SIGNAL( setNodeColor(long int,QString))  ,
              graphicsWidget, SLOT(  setNodeColor(long int, QString) ) );
 

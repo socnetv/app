@@ -129,11 +129,12 @@ int Node::size(){
 
 
 /**  Called every time the user needs to change the shape of an node. */
-void Node::setShape(QString shape) {
+void Node::setShape(const QString shape) {
 	qDebug("Node: setShape()");
 	prepareGeometryChange();
 	m_shape=shape;
 	qDebug ("Node: setShape(): node is at x=%f and y=%f", x(), y());
+    update();
 }
 
 

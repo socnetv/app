@@ -73,7 +73,7 @@ public:
 	void setSize(int);
 	int size();
 
-	void setShape (QString);
+    void setShape (const QString);
 	QString nodeShape() {return m_shape;}
 
 	void setColor(QString str);
