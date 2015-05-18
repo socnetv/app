@@ -72,13 +72,34 @@ Parser::Parser( const QString fn,
     randY=0;
     fileFormat= fFormat;
     two_sm_mode = sm_mode;
-
+    xml=0;
 
 }
 
 
 
+Parser::~Parser () {
+    qDebug()<< "**** Parser::~Parser() destructor " << this->thread()
+                <<" clearing hashes... ";
+    nodeNumber.clear();
+    keyFor.clear();
+    keyName.clear();
+    keyType.clear();
+    keyDefaultValue.clear();
+    edgesMissingNodesHash.clear();
+    edgeMissingNodesList.clear();
+    edgeMissingNodesListData.clear();
+    firstModeMultiMap.clear();
+    secondModeMultiMap.clear();
+    if (xml!=0) {
+        qDebug()<< "**** Parser::~Parser() clearing xml reader object " ;
+        xml->clear();
+        delete xml;
+        xml=0;
+    }
 
+
+}
 
 /** starts the new thread calling the load* methods
 */
@@ -157,13 +178,7 @@ bool Parser::run()  {
     qDebug()<< "**** Parser::run() - we return back to Graph and MW! "
                         << " fileFormat now "<< fileFormat ;
 
-    qDebug()<< "Parser::run() clearing hashes... ";
-    nodeNumber.clear();
-    keyFor.clear(); keyName.clear(); keyType.clear(); keyDefaultValue.clear();
-    edgesMissingNodesHash.clear();
-    edgeMissingNodesList.clear();edgeMissingNodesListData.clear();
-    firstModeMultiMap.clear(); secondModeMultiMap.clear();
-
+    emit finished ("Parser::run() - reach end");
     return (fileFormat==-1) ? false: true;
 }
 
@@ -904,7 +919,6 @@ bool Parser::loadPajek(){
     relationsList.clear();
     emit changeRelation (0);
 
-    exit(0);
     return true;
 
 }

@@ -51,6 +51,7 @@ public:
               const int iNNS, const QString iNLC, const int iNLS ,
               const QString iEC, const int w, const int h, const int format,
               const int sm_mode);
+    ~Parser();
     bool run();
 	bool loadPajek();
 	bool loadAdjacency();
@@ -97,6 +98,7 @@ signals:
 	void createEdge (int, int, float, QString, int, bool, bool);
 	void fileType(int, QString, int, int, bool);
 	void removeDummyNode (int);
+    void finished(QString);
 	
 protected:
 

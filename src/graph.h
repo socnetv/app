@@ -127,6 +127,7 @@ public slots:
 
     void setFileType(int, QString, int,int, bool);
     void removeDummyNode(int);
+    void terminateParserThreads (QString reason);
 
     /** Slots to signals from GraphicsWidget and Parser*/
     void createEdge (int, int, float, QString, int, bool, bool);	//GW and Parser.
