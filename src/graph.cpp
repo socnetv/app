@@ -1368,7 +1368,7 @@ bool Graph::isSymmetric(){
     symmetricAdjacencyMatrix=true;
     int y=0, target=0, source=0;
     QHash<int,float> *enabledOutLinks = new QHash<int,float>;
-    enabledOutLinks->reserve(1000);
+
     QHash<int,float>::const_iterator it1;
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -1382,6 +1382,8 @@ bool Graph::isSymmetric(){
         while ( it1!=enabledOutLinks->cend() ){
             target = it1.key();
             y=index[ target ];
+            qDebug() << "Graph: isSymmetric: check if " << source
+                     << " is inLinked from " <<  target  ;
             if ( ! m_graph[y]->isLinkedTo( source)) {
                 qDebug() << "Graph: isSymmetric: u = " << source
                          << " IS NOT inLinked from y = " <<  target  ;

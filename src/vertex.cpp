@@ -374,9 +374,8 @@ long int Vertex::outLinks() {
  * @return  QHash<int,float>*
  */
 QHash<int,float>* Vertex::returnEnabledOutLinks(){
-    qDebug() << " Vertex:: returnEnabledOutLinks()";
+    qDebug() << " Vertex::returnEnabledOutLinks() vertex " << this->name();
     QHash<int,float> *enabledOutLinks = new QHash<int,float>;
-    enabledOutLinks->reserve(10000);
     float m_weight=0;
     int relation = 0;
     bool edgeStatus=false;
@@ -388,10 +387,14 @@ QHash<int,float>* Vertex::returnEnabledOutLinks(){
             if ( edgeStatus == true) {
                 m_weight=it1.value().second.first;
                 enabledOutLinks->insert(it1.key(), m_weight);
+                qDebug() <<  " Vertex::returnEnabledOutLinks() count:"
+                             << enabledOutLinks->count();
             }
         }
         ++it1;
     }
+    qDebug() <<  " Vertex::returnEnabledOutLinks() total count:"
+                 << enabledOutLinks->count();
     return enabledOutLinks;
 }
 
