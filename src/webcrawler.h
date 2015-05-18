@@ -29,7 +29,6 @@
 
 using namespace std;
 
-#include <QThread>
 #include <QNetworkReply>
 #include <QUrl>
 

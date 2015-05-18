@@ -30,7 +30,6 @@
 using namespace std;
 
 #include <QThread>
-#include <QMutex>
 #include <QHash>
 #include <QStringList>
 #include <QPointF>
@@ -43,15 +42,16 @@ class QXmlStreamAttributes;
 	Main class for network file parsing and loading
 	Currently, it supports Pajek, Adjacency, Graphviz, GraphML
 */
-class Parser :  public QThread {
+class Parser :  public QObject {
 	Q_OBJECT
 public:
 	
-    bool load(const QString fn, const QString codec, const int iNS,
+    Parser(const QString fn, const QString codec, const int iNS,
               const QString iNC, const QString iNSh, const QString iNNC,
               const int iNNS, const QString iNLC, const int iNLS ,
               const QString iEC, const int w, const int h, const int format,
               const int sm_mode);
+    bool run();
 	bool loadPajek();
 	bool loadAdjacency();
 	bool loadDot();
@@ -99,9 +99,8 @@ signals:
 	void removeDummyNode (int);
 	
 protected:
-	void run();
+
 private: 
-	QMutex mutex;
 	QHash<QString, int> nodeNumber;
 	QHash<QString, QString> keyFor, keyName, keyType, keyDefaultValue ;
     QHash<QString, QString> edgesMissingNodesHash;

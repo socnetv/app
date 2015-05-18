@@ -110,8 +110,9 @@ class CompareDistances {
 
 class Graph:  public QObject{
     Q_OBJECT
-    QThread parserThread;
-    QThread spiderThread;
+    QThread file_parserThread;
+    QThread wc_parserThread;
+    QThread wc_spiderThread;
 public slots:
     int currentRelation();
 
@@ -500,9 +501,8 @@ private:
     */
     Vertices m_graph;
 
-    Parser parser;	//file loader threaded class.
+    Parser *file_parser;	//file loader threaded class.
 
-    //WebCrawler *crawler;
     WebCrawler_Parser *wc_parser;
     WebCrawler_Spider *wc_spider;
 

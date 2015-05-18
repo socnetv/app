@@ -70,7 +70,7 @@ Graph::Graph() {
     timerId=0;
     layoutType=0;
 
-    parser.setParent(this);
+    file_parser = 0;
     wc_parser = 0;
     wc_spider = 0;
 
@@ -78,36 +78,6 @@ Graph::Graph() {
     influenceDomains.reserve(1000);
     influenceRanges.reserve(1000);
 
-    connect (
-                &parser, SIGNAL( addRelation (QString) ),
-                this, SLOT(addRelationFromParser(QString) )
-                ) ;
-
-    connect (
-                &parser, SIGNAL( changeRelation (int) ),
-                this, SLOT( changeRelation (int) )
-                ) ;
-
-
-    connect (
-                &parser, SIGNAL( createNode (int,int,QString, QString, int, QString, QString, int, QPointF, QString, bool) ),
-                this, SLOT(createVertex(int,int,QString, QString, int, QString, QString, int, QPointF, QString, bool) )
-                ) ;
-
-    connect (
-                &parser, SIGNAL(createEdge (int, int, float, QString, int, bool, bool)),
-                this, SLOT(createEdge (int, int, float, QString, int, bool, bool) )
-                );
-
-    connect (
-                &parser, SIGNAL(fileType(int, QString, int, int, bool)),
-                this, SLOT(setFileType(int, QString, int, int, bool))
-                );
-
-    connect (
-                &parser, SIGNAL(removeDummyNode(int)),
-                this, SLOT (removeDummyNode(int))
-                );
 
 
 
@@ -439,6 +409,8 @@ void Graph::setFileType (
     qDebug("Graph: setFileType %i", type);
     m_undirected = undirected;
     emit signalFileType (type, networkName, aNodes, totalLinks, m_undirected);
+    qDebug ()<< "Graph::setFileType()  -check parser if running...";
+
 }
 
 
@@ -621,7 +593,7 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
     qDebug() << "Graph::webCrawl() - seed " << seed ;
     //WebCrawler *crawler = new WebCrawler;
 
-    qDebug() << "Graph::webCrawl() Creating spider & parser objects";
+    qDebug() << "Graph::webCrawl() Creating wc_spider & wc_parser objects";
     WebCrawler_Parser *wc_parser = new WebCrawler_Parser(seed, maxNodes,
                                                          maxRecursion,
                                                          extLinks,
@@ -634,18 +606,18 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
     qDebug () << " graph thread  " << this->thread();
     qDebug () << " wc_parser thread  " << wc_parser->thread();
     qDebug () << " wc_spider thread  " << wc_spider->thread();
-    wc_parser->moveToThread(&parserThread);
-    wc_spider->moveToThread(&spiderThread);
+    wc_parser->moveToThread(&wc_parserThread);
+    wc_spider->moveToThread(&wc_spiderThread);
     qDebug () << " graph thread is " << this->thread();
     qDebug () << " wc_parser thread now " << wc_parser->thread();
     qDebug () << " wc_spider thread now " << wc_spider->thread();
 
 
     qDebug() << "Graph::webCrawl()  Connecting signals from/to parser & spider";
-    connect(&parserThread, &QThread::finished,
+    connect(&wc_parserThread, &QThread::finished,
             wc_parser, &QObject::deleteLater);
 
-    connect(&spiderThread, &QThread::finished,
+    connect(&wc_spiderThread, &QThread::finished,
             wc_spider, &QObject::deleteLater);
 
     connect(this, &Graph::operateSpider,
@@ -671,8 +643,8 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
 
 
     qDebug() << "Graph::webCrawl()  Starting parser & spider QThreads!";
-    parserThread.start();
-    spiderThread.start();
+    wc_parserThread.start();
+    wc_spiderThread.start();
 
     qDebug() << "Graph::webCrawl()  Creating initial node 1, url: " << seed;
     createVertexWebCrawler(seed, 1);
@@ -688,19 +660,19 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
 //also called indirectly when wc_spider finishes
 void Graph::terminateCrawlerThreads (QString reason){
     qDebug() << "Graph::terminateCrawlerThreads() - reason " << reason;
-    qDebug() << "Graph::terminateCrawlerThreads()  check if parserThread is running...";
-    if (parserThread.isRunning() ) {
+    qDebug() << "Graph::terminateCrawlerThreads()  check if wc_parserThread is running...";
+    if (wc_parserThread.isRunning() ) {
          qDebug() << "Graph::terminateCrawlerThreads()  parser thread quit";
-        parserThread.quit();
+        wc_parserThread.quit();
         qDebug() << "Graph::terminateCrawlerThreads() - deleting wc_parser pointer";
         delete wc_parser;
         wc_parser = 0;  // see why here: https://goo.gl/tQxpGA
 
     }
-    qDebug() << "Graph::terminateCrawlerThreads()  check if spiderThread is running...";
-    if (spiderThread.isRunning() ) {
+    qDebug() << "Graph::terminateCrawlerThreads()  check if wc_spiderThread is running...";
+    if (wc_spiderThread.isRunning() ) {
         qDebug() << "Graph::terminateCrawlerThreads()  spider thread quit";
-        spiderThread.quit();
+        wc_spiderThread.quit();
         qDebug() << "Graph::terminateCrawlerThreads() - deleting wc_spider pointer";
         delete wc_spider;
         wc_spider= 0;  // see why here: https://goo.gl/tQxpGA
@@ -998,7 +970,7 @@ bool Graph::setAllEdgesColor(QString color){
     int target=0, source=0;
     setInitEdgeColor(color);
     QHash<int,float> *enabledOutLinks = new QHash<int,float>;
-    enabledOutLinks->reserve(10000);
+    //enabledOutLinks->reserve(10000);
     QHash<int,float>::const_iterator it1;
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -1012,8 +984,7 @@ bool Graph::setAllEdgesColor(QString color){
             target = it1.key();
             qDebug() << "=== Graph::setAllEdgesColor() : "
                         << source << "->" << target << " new color " << color;
-
-            setEdgeColor(source, target,color);
+            (*it)->setOutLinkColor(target, color);
             emit setLinkColor(source, target, color);
             ++it1;
         }
@@ -1034,8 +1005,10 @@ void Graph::setEdgeColor(long int s, long int t, QString color){
             <<" with index ("<< index[s]<< " -> "<<index[t]<<")"
            <<" new color "<< color;
     m_graph[ index[s] ]->setOutLinkColor(t, color);
+    emit setLinkColor(s, t, color);
     if (isSymmetric()) {
         m_graph[ index[t] ]->setOutLinkColor(s, color);
+        emit setLinkColor(t, s, color);
     }
     graphModified=true;
     emit graphChanged();
@@ -1343,8 +1316,11 @@ void Graph::clear() {
     graphModified=false;
     symmetricAdjacencyMatrix=true;
 
-    if (parser.isRunning() )		//tell the other thread that we must quit!
-        parser.quit();
+    qDebug ()<< "Graph::clear()  -check parser if running...";
+//    if (parser->isRunning() ) {
+//        qDebug () << " tell parser thread that we must quit!";
+//        parser->quit();
+//    }
 
     qDebug ()<< "Graph::clear()  -check crawler pointer ";
     terminateCrawlerThreads("Graph:: init Net");
@@ -5914,7 +5890,10 @@ bool Graph::loadGraph (	const QString m_fileName,
                         const int maxWidth, const int maxHeight,
                         const int fileFormat, const int two_sm_mode){
     initShowLabels = m_showLabels;
-    bool loadGraphStatus = parser.load(
+    qDebug() << "Graph::loadGraph() : "<< m_fileName
+                << " calling parser.load() from thread " << this->thread();
+
+    Parser *parser = new Parser(
                 m_fileName,
                 m_codecName,
                 initVertexSize, initVertexColor,
@@ -5926,6 +5905,52 @@ bool Graph::loadGraph (	const QString m_fileName,
                 fileFormat,
                 two_sm_mode
                 );
+
+    qDebug () << "Graph::loadGraph() file_parser thread  " << parser->thread()
+                 << " moving it to new thread ";
+
+    parser->moveToThread(&file_parserThread);
+
+    qDebug () << "Graph::loadGraph() file_parser thread now " << parser->thread();
+
+    qDebug () << "Graph::loadGraph()  connecting file_parser signals ";
+    connect (
+                parser, SIGNAL( addRelation (QString) ),
+                this, SLOT(addRelationFromParser(QString) )
+                ) ;
+
+    connect (
+                parser, SIGNAL( changeRelation (int) ),
+                this, SLOT( changeRelation (int) )
+                ) ;
+
+
+    connect (
+                parser, SIGNAL( createNode (int,int,QString, QString, int, QString, QString, int, QPointF, QString, bool) ),
+                this, SLOT(createVertex(int,int,QString, QString, int, QString, QString, int, QPointF, QString, bool) )
+                ) ;
+
+    connect (
+                parser, SIGNAL(createEdge (int, int, float, QString, int, bool, bool)),
+                this, SLOT(createEdge (int, int, float, QString, int, bool, bool) )
+                );
+
+    connect (
+                parser, SIGNAL(fileType(int, QString, int, int, bool)),
+                this, SLOT(setFileType(int, QString, int, int, bool))
+                );
+
+    connect (
+                parser, SIGNAL(removeDummyNode(int)),
+                this, SLOT (removeDummyNode(int))
+                );
+
+    qDebug() << "Graph::loadGraph()  Starting file_parserThread ";
+
+    file_parserThread.start();
+
+    bool loadGraphStatus = parser->run();
+    qDebug() << "Graph::loadGraph() : loadGraphStatus "<< loadGraphStatus;
     return loadGraphStatus;
 }
 

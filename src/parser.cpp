@@ -39,7 +39,7 @@
 #include <list>
 #include "graph.h"	//needed for setParent
 
-bool Parser::load( const QString fn,
+Parser::Parser( const QString fn,
                    const QString m_codec,
                    const int iNS, const QString iNC, const QString iNSh,
                    const QString iNNC, const int iNNS,
@@ -50,7 +50,8 @@ bool Parser::load( const QString fn,
                    const int sm_mode
                    )
 {
-    qDebug("Parser: load()");
+    qDebug() << "Parser::load() fn: " << fn
+                << "running on thread "  << this->thread() ;
     initNodeSize=iNS;
     initNodeColor=iNC;
     initNodeShape=iNSh;
@@ -72,24 +73,7 @@ bool Parser::load( const QString fn,
     fileFormat= fFormat;
     two_sm_mode = sm_mode;
 
-    //qDebug()<< "Parser: start() a new parsing thread for file format: " << fileFormat ;
-    if (!isRunning())
-        start(QThread::NormalPriority);
 
-    if (isFinished()) {
-        //qDebug()<< "**** Parser:: thread has finished! "
-        //<< " fileFormat now "<< fileFormat ;
-        if ( fileFormat != -1 ) {
-            return true;
-        }
-        else
-            return false;
-    }
-    else {
-        qDebug()<< "**** Parser:: thread has not finished yet but we return back to Graph and MW! "
-                << " fileFormat now "<< fileFormat ;
-    }
-    return true;
 }
 
 
@@ -98,8 +82,8 @@ bool Parser::load( const QString fn,
 
 /** starts the new thread calling the load* methods
 */
-void Parser::run()  {
-    qDebug()<< "**** Parser:: run(). This is a new thread! "
+bool Parser::run()  {
+    qDebug()<< "**** Parser:: run(). on a new thread " << this->thread()
             << " networkName "<< networkName
             << " fileFormat "<< fileFormat ;
 
@@ -170,12 +154,17 @@ void Parser::run()  {
         break;
     }
 
+    qDebug()<< "**** Parser::run() - we return back to Graph and MW! "
+                        << " fileFormat now "<< fileFormat ;
+
     qDebug()<< "Parser::run() clearing hashes... ";
     nodeNumber.clear();
     keyFor.clear(); keyName.clear(); keyType.clear(); keyDefaultValue.clear();
     edgesMissingNodesHash.clear();
     edgeMissingNodesList.clear();edgeMissingNodesListData.clear();
     firstModeMultiMap.clear(); secondModeMultiMap.clear();
+
+    return (fileFormat==-1) ? false: true;
 }
 
 
@@ -914,6 +903,7 @@ bool Parser::loadPajek(){
     listDummiesPajek.clear();
     relationsList.clear();
     emit changeRelation (0);
+
     exit(0);
     return true;
 

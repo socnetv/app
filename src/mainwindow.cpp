@@ -3403,6 +3403,7 @@ bool MainWindow::loadNetworkFile(const QString m_fileName,
     }
 
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+    qDebug() << "MW::loadNetworkFile() : calling activeGraph.loadGraph() ";
     bool loadGraphStatus = activeGraph.loadGraph (
                 m_fileName,
                 m_codecName,
@@ -3411,11 +3412,13 @@ bool MainWindow::loadNetworkFile(const QString m_fileName,
                 graphicsWidget->height(),
                 m_fileFormat, two_sm_mode
                 );
-
+    qDebug() << "MW::loadNetworkFile() : loadGraphStatus " << loadGraphStatus;
     if ( loadGraphStatus )
     {
         fileName=m_fileName;
         previous_fileName=fileName;
+        fileNameNoPath = fileName.split("/");
+        Q_ASSERT_X( !fileNameNoPath.isEmpty(),  "not empty filename ", "empty filename " );
         setWindowTitle("SocNetV "+ VERSION +" - "+fileNameNoPath.last());
         QString message=tr("Loaded network: ")+fileNameNoPath.last();
         statusMessage( message );
@@ -3430,6 +3433,7 @@ bool MainWindow::loadNetworkFile(const QString m_fileName,
                                "OK", 0 );
     }
     QApplication::restoreOverrideCursor();
+    qDebug() << "MW::loadNetworkFile() : returning " << loadGraphStatus;
     return loadGraphStatus;
 }
 
@@ -4124,7 +4128,7 @@ void MainWindow::slotRecreateDataSet (QString m_fileName) {
     int m_fileFormat=0;
     qDebug()<< "slotRecreateDataSet() fileName: " << m_fileName;
 
-    initNet();
+    //initNet();
 
     qDebug()<< "slotRecreateDataSet() datadir+fileName: " << dataDir+m_fileName;
     activeGraph.writeDataSetToFile(dataDir, m_fileName);
@@ -5202,8 +5206,10 @@ void MainWindow::slotChangeLinkLabel(){
 *	If no link is clicked, then it asks the user to specify one.
 */
 void MainWindow::slotChangeLinkColor(){
+    qDebug() << "MW::slotChangeLinkColor()";
     if (!fileLoaded && !networkModified )  {
-        QMessageBox::critical(this, "Error",tr("No links here! \nLoad a network file or create a new network first."), "OK",0);
+        QMessageBox::critical(this, "Error",
+                              tr("No links here! \nLoad a network file or create a new network first."), "OK",0);
         statusMessage( tr("No links present...")  );
         return;
     }
@@ -5215,41 +5221,63 @@ void MainWindow::slotChangeLinkColor(){
     int max=activeGraph.lastVertexNumber();
 
     if (!linkClicked) {	//no edge clicked. Ask user to define an edge.
-        sourceNode=QInputDialog::getInt(this, "Change link color",tr("Select link source node:  ("+QString::number(min).toLatin1()+"..."+QString::number(max).toLatin1()+"):"), min, 1, max , 1, &ok)   ;
+        sourceNode=QInputDialog::getInt(this,
+                                        "Change link color",
+                                        tr("Select link source node:  ("+
+                                           QString::number(min).toLatin1()+
+                                           "..."+QString::number(max).toLatin1()+
+                                           "):"), min, 1, max , 1, &ok)   ;
         if (!ok) {
             statusMessage( "Change link color operation cancelled." );
             return;
         }
-        targetNode=QInputDialog::getInt(this, "Change link color...", tr("Select link target node:  ("+QString::number(min).toLatin1()+"..."+QString::number(max).toLatin1()+"):"),min, 1, max , 1, &ok  )   ;
+        targetNode=QInputDialog::getInt(this,
+                                        "Change link color...",
+                                        tr("Select link target node:  ("+
+                                         QString::number(min).toLatin1()+"..." +
+                                         QString::number(max).toLatin1()+"):"),
+                                        min, 1, max , 1, &ok  )   ;
         if (!ok) {
             statusMessage( "Change link color operation cancelled." );
             return;
         }
 
-        qDebug("source %i target %i",sourceNode, targetNode);
+        if ( ! activeGraph.hasEdge (sourceNode, targetNode ) )  {
+             statusMessage( tr("There is no such link. ") );
+             QMessageBox::critical(this, "Error",
+                                   tr("No link! \nNo such link found in current network."), "OK",0);
 
-        newColor = QInputDialog::getItem(this , "Change link color....", "Select a  color:", colorList, 1, false, &ok );
-        if ( ok ) {
-            if (graphicsWidget->setEdgeColor(sourceNode, targetNode, newColor))
-                activeGraph.setEdgeColor( sourceNode, targetNode, newColor);
-            else
-                statusMessage( tr("There is no such link. ") );
+             return;
         }
-        else
-            statusMessage( tr("Change link color cancelled. ") );
+
+
+        QColor color = QColorDialog::getColor(
+                    Qt::black, this, tr("Select new color....") );
+        if ( color.isValid()) {
+            QString newColor=color.name();
+            qDebug() << "MW::slotChangeLinkColor() to " << newColor;
+            activeGraph.setEdgeColor( sourceNode, targetNode, newColor);
+            statusMessage( tr("Ready. ")  );
+        }
+        else {
+            statusMessage( tr("Change link color aborted. ") );
+        }
 
     }
     else {	//edge has been clicked. Just ask the color and call the appropriate methods.
-        newColor = QInputDialog::getItem(this, "Change link color....", "Select a new color for the clicked link:", colorList, 1, false, &ok );
-        if ( ok ) {
-            clickedLink->setColor(newColor);
-            activeGraph.setEdgeColor( clickedLink->sourceNodeNumber(), clickedLink->targetNodeNumber(), newColor);
+        QColor color = QColorDialog::getColor(
+                    Qt::black, this, tr("Select new color....") );
+        if ( color.isValid()) {
+            QString newColor=color.name();
+            qDebug() << "MW::slotChangeLinkColor() to " << newColor;
+            activeGraph.setEdgeColor( clickedLink->sourceNodeNumber(),
+                                      clickedLink->targetNodeNumber(), newColor);
             statusMessage( tr("Ready. ")  );
+        }
+        else {
+            statusMessage( tr("Change link color aborted. ") );
+        }
 
-        }
-        else {       // user pressed Cancel
-            statusMessage( tr("User abort. ")  );
-        }
     }
 }
 
