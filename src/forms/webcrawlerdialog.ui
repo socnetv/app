@@ -31,12 +31,11 @@
      <property name="font">
       <font>
        <family>Sans Serif</family>
+       <pointsize>11</pointsize>
       </font>
      </property>
      <property name="text">
-      <string>SocNetV includes a simple web crawler. It scans the HTML  code of a given initial URL  (i.e. a website) and maps all internal or external links to other pages found there. As new urls are discovered, the crawler follows them to scan their HTML code for links as well. 
-
- For more details, see the Manual.</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt;&quot;&gt;SocNetV includes a simple web crawler. It scans the HTML  code of a given initial URL  (i.e. a website) and maps all internal or external links to other pages found there. As new urls are discovered, the crawler follows them to scan their HTML code for links as well.  For more details, see the Manual.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
