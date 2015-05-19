@@ -28,6 +28,11 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="font">
+      <font>
+       <family>Sans Serif</family>
+      </font>
+     </property>
      <property name="text">
       <string>SocNetV includes a simple web crawler. It scans the HTML  code of a given initial URL  (i.e. a website) and maps all internal or external links to other pages found there. As new urls are discovered, the crawler follows them to scan their HTML code for links as well. 
 
@@ -47,6 +52,11 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <widget class="QLabel" name="label">
+      <property name="font">
+       <font>
+        <family>Sans Serif</family>
+       </font>
+      </property>
       <property name="text">
        <string>Enter the initial URL to start crawling:</string>
       </property>
@@ -92,6 +102,11 @@
          <width>201</width>
          <height>0</height>
         </size>
+       </property>
+       <property name="font">
+        <font>
+         <family>Sans Serif</family>
+        </font>
        </property>
        <property name="toolTip">
         <string>Set the max links inside a page to be followed and crawled by SocNetV.
@@ -150,6 +165,11 @@ In this case SocNetV will follow and crawl each one link found in a page.</strin
          <height>0</height>
         </size>
        </property>
+       <property name="font">
+        <font>
+         <family>Sans Serif</family>
+        </font>
+       </property>
        <property name="toolTip">
         <string>Set the total urls to be crawled - this is the total nodes the result network will have. 
 Set value to 0, if you don't want any limits...</string>
@@ -200,6 +220,11 @@ p, li { white-space: pre-wrap; }
        <height>0</height>
       </size>
      </property>
+     <property name="font">
+      <font>
+       <family>Sans Serif</family>
+      </font>
+     </property>
      <property name="focusPolicy">
       <enum>Qt::TabFocus</enum>
      </property>
@@ -222,6 +247,11 @@ p, li { white-space: pre-wrap; }
    </item>
    <item row="4" column="0">
     <widget class="QCheckBox" name="intLinksCheckBox">
+     <property name="font">
+      <font>
+       <family>Sans Serif</family>
+      </font>
+     </property>
      <property name="focusPolicy">
       <enum>Qt::TabFocus</enum>
      </property>
@@ -243,6 +273,11 @@ p, li { white-space: pre-wrap; }
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="enabled">
       <bool>true</bool>
+     </property>
+     <property name="font">
+      <font>
+       <family>Sans Serif</family>
+      </font>
      </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>

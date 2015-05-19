@@ -4170,7 +4170,7 @@ void Graph::writeClusteringCoefficient(
 
 
 
-        //Writes the triad census to a file
+//Writes the triad census to a file
 void Graph::writeTriadCensus(
         const QString fileName, const bool considerWeights)
 {
@@ -4193,9 +4193,10 @@ void Graph::writeTriadCensus(
         }
     }
 
-
-    emit statusMessage ( QString(tr("Writing clustering coefficients to file: ")) +
+    emit statusMessage ( QString(tr("Writing triad census to file: ")) +
                          fileName );
+
+    outText << tr("TRIAD CENSUS (TRC)\n");
 
     outText << "Type\t\tCensus\t\tExpected Value" << "\n";
     outText << "003" << "\t\t" << triadTypeFreqs[0] << "\n";
@@ -5580,17 +5581,18 @@ bool Graph::triadCensus(){
     int mut=0, asy=0, nul =0;
     int temp_mut=0, temp_asy=0, temp_nul =0, counter_021=0;
     int ver1, ver2, ver3;
-    QString last_char;
-
     int progressCounter = 0;
+
+    qDebug() << "Graph::triadCensus()";
     /*
      * QList::triadTypeFreqs stores triad type frequencies with the following order:
      * 0	1	2	3		4	5	6	7	8		9	10	11	12		13	14	15
      * 003 012 102	021D 021U 021C 111D	111U 030T 030C 201 	120D 120U 120C 210 300
     */
 
-    for (int i = 0; i < 15; ++i) {
+    for (int i = 0; i <= 15; ++i) {
         triadTypeFreqs.append(0);
+        qDebug() << " initializing triadTypeFreqs[" << i << "] = "<< triadTypeFreqs[i];
     }
     QList<Vertex*>::iterator v1;
     QList<Vertex*>::iterator v2;
@@ -5646,7 +5648,8 @@ bool Graph::triadCensus(){
                 else
                     nul++;
 
-                //qDebug()<< "triad of ("<< ver1 << ","<< ver2 << ","<< ver3 << ") = ("	<<mut<<","<< asy<<","<<nul<<")";
+                qDebug()<< "triad of ("<< ver1 << ","<< ver2 << ","<< ver3
+                        << ") = ("	<<mut<<","<< asy<<","<<nul<<")";
                 examine_MAN_label(mut, asy, nul, (*v1), (*v2),  (*v3) ) ;
                 progressCounter++ ;
                 emit updateProgressDialog( progressCounter );
@@ -5670,15 +5673,19 @@ bool Graph::triadCensus(){
     and increases by one the proper frequency element
     inside QList::triadTypeFreqs
 */
-void Graph:: examine_MAN_label(int mut, int asy, int nul, 
+void Graph::examine_MAN_label(int mut, int asy, int nul,
                                Vertex* vert1,
                                Vertex* vert2,
                                Vertex* vert3
                                ) 	{
-    QString last_char;
     QList<Vertex*> m_triad;
     bool isDown=false, isUp=false, isCycle=false, isTrans=false;
     bool isOutLinked=false, isInLinked=false;
+
+    qDebug () << "Graph::examine_MAN_label() "
+        << " adding ("<< vert1->name() << ","<< vert2->name()
+        << ","<< vert3->name() << ") to m_triad ";
+
     m_triad<<vert1<<vert2<<vert3;
 
     switch (mut){
