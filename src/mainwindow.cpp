@@ -583,11 +583,10 @@ void MainWindow::initActions(){
     connect(removeNodeAct, SIGNAL(triggered()), this, SLOT(slotRemoveNode()));
 
     propertiesNodeAct = new QAction(QIcon(":/images/properties.png"),tr("Node Properties"), this);
-    propertiesNodeAct ->setShortcut(QKeySequence(Qt::CTRL+Qt::Key_Asterisk));
+    propertiesNodeAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_P));
     propertiesNodeAct->setStatusTip(tr("Open node properties"));
     propertiesNodeAct->setWhatsThis(tr("Node Properties\n\nOpens node properties to edit label, size, color, shape etc"));
     connect(propertiesNodeAct, SIGNAL(triggered()), this, SLOT(slotChangeNodeProperties()));
-
 
     changeAllNodesSizeAct = new QAction(QIcon(":/images/resize.png"), tr("Change all Nodes Size"),	this);
     changeAllNodesSizeAct->setStatusTip(tr("This option lets you change the size of all nodes"));
@@ -598,7 +597,6 @@ void MainWindow::initActions(){
     changeAllNodesShapeAct->setStatusTip(tr("This option lets you change the shape of all nodes"));
     changeAllNodesShapeAct->setWhatsThis(tr("Nodes Shape\n\nThis option lets you change the shape of all nodes"));
     connect(changeAllNodesShapeAct, SIGNAL(triggered()), this, SLOT(slotChangeAllNodesShape()) );
-
 
     changeNumbersSizeAct = new QAction( tr("Change all Numbers Size"),	this);
     changeNumbersSizeAct->setStatusTip(tr("It lets you change the font size of the numbers of all nodes"));
