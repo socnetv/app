@@ -2,8 +2,8 @@
  SocNetV: Social Network Visualizer
  version: 1.7-dev
  Written in Qt
- 
-                         webcrawlerdialog.h  -  description
+
+                         nodeeditdialog.h  -  description
                              -------------------
     copyright            : (C) 2005-2015 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
@@ -27,31 +27,43 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef WEBCRAWLERDIALOG_H
-#define WEBCRAWLERDIALOG_H
 
+#ifndef NODEEDITDIALOG_H
+#define NODEEDITDIALOG_H
 
 #include <QDialog>
 
-#include "ui_webcrawlerdialog.h"
- 
 
-class WebCrawlerDialog: public QDialog
+
+#include "ui_nodeeditdialog.h"
+
+
+class NodeEditDialog : public QDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	WebCrawlerDialog (QWidget *parent = 0);
+    explicit NodeEditDialog(QWidget *parent = 0,
+                            QColor c= QColor("red"),
+                            QString sh = "circle");
 public slots:
     void checkErrors ();
-	void gatherData ();
+    void gatherData ();
+    void selectColor();
 signals:
-    void userChoices( QString, int, int, bool, bool);
-    void webCrawlerDialogError(QString);
+    void userChoices( const QString, const int, const QString, const QColor, const QString);
+    void nodeEditDialogError(QString);
+
 private:
-	Ui::WebCrawlerDialog ui;
+    QColor nodeColor;
+    QString nodeShape;
+    QString nodeValue;
+    QString nodeLabel;
+    QPixmap pixmap;
+    int nodeSize;
+    Ui::NodeEditDialog ui;
+
+
 
 };
 
-
-
-#endif
+#endif // NODEEDITDIALOG_H

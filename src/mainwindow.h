@@ -41,6 +41,7 @@
 #include "graph.h"
 #include "filteredgesbyweightdialog.h"
 #include "webcrawlerdialog.h"
+#include "nodeeditdialog.h"
 #include "datasetselectdialog.h"
 
 static const QString VERSION="1.7-dev";
@@ -166,16 +167,10 @@ public slots:
     void slotFindNode();
     void slotAddLink();
     void slotRemoveNode();
+    void slotNodeProperties( const QString, const int, const QString,
+                             const QColor, const QString);
     void slotRemoveLink();
-    void slotChangeNodeLabel();
-    void slotChangeNodeColor();
-    void slotChangeNodeValue();
-    void slotChangeNodeSize();
-    void slotChangeNodeBox();
-    void slotChangeNodeCircle();
-    void slotChangeNodeTriangle();
-    void slotChangeNodeDiamond();
-    void slotChangeNodeEllipse();
+    void slotChangeNodeProperties();
     void slotChangeLinkLabel();
     void slotChangeLinkColor();
     void slotChangeLinkWeight();
@@ -326,6 +321,8 @@ private:
     FilterEdgesByWeightDialog m_filterEdgesByWeightDialog;
     WebCrawlerDialog m_WebCrawlerDialog;
 
+    NodeEditDialog *m_nodeEditDialog;
+
     PreviewForm *previewForm;
     QList<QTextCodec *> codecs;
     QString userSelectedCodecName;
@@ -368,11 +365,9 @@ private:
     QAction *createUniformRandomNetworkAct, *createGaussianRandomNetworkAct, *createLatticeNetworkAct;
     QAction *createSmallWorldRandomNetworkAct, *createSameDegreeRandomNetworkAct;
     QAction *displayNodeNumbersAct, *displayNodeLabelsAct, *displayNumbersInsideNodesAct;
-    QAction *findNodeAct,*addNodeAct, *addLinkAct, *removeNodeAct, *removeLinkAct;
-    QAction *changeNumbersSizeAct, *changeNodeLabelAct, *changeNodeColorAct, *changeNodeValueAct, *changeNodeSizeAct;
+    QAction *findNodeAct,*addNodeAct, *addLinkAct, *removeNodeAct, *propertiesNodeAct, *removeLinkAct;
+    QAction *changeNumbersSizeAct;
     QAction *changeLabelsSizeAct, *changeAllNodesSizeAct, *changeAllNodesShapeAct;
-    QAction *changeNodeBoxAct, *changeNodeCircleAct, *changeNodeTriangleAct, *changeNodeDiamondAct,
-            *changeNodeEllipseAct;
     QAction *changeLinkLabelAct, *changeLinkColorAct, *changeLinkWeightAct;
     QAction *filterNodesAct, *filterIsolateNodesAct, *filterEdgesAct, *transformNodes2LinksAct, *symmetrizeAct;
     QAction *changeBackColorAct, *changeAllNodesColorAct, *changeAllLinksColorAct, *changeAllNumbersColorAct,

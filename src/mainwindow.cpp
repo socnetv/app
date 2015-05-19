@@ -236,6 +236,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect( &m_filterEdgesByWeightDialog, SIGNAL( userChoices( float, bool) ),
              &activeGraph, SLOT( filterEdgesByWeight (float, bool) ) );
 
+
     connect( &m_WebCrawlerDialog, &WebCrawlerDialog::userChoices,
              this, &MainWindow::slotWebCrawl );
 
@@ -581,25 +582,12 @@ void MainWindow::initActions(){
     removeNodeAct->setWhatsThis(tr("Remove Node\n\nRemoves a node from the network"));
     connect(removeNodeAct, SIGNAL(triggered()), this, SLOT(slotRemoveNode()));
 
-    changeNodeLabelAct = new QAction(QIcon(":/images/letters.png"), tr("Change Label"),	this);
-    changeNodeLabelAct->setStatusTip(tr("Changes the Label of a node"));
-    changeNodeLabelAct->setWhatsThis(tr("Change Label\n\nChanges the label of a node"));
-    connect(changeNodeLabelAct, SIGNAL(triggered()), this, SLOT(slotChangeNodeLabel()));
+    propertiesNodeAct = new QAction(QIcon(":/images/properties.png"),tr("Node Properties"), this);
+    propertiesNodeAct ->setShortcut(QKeySequence(Qt::CTRL+Qt::Key_Asterisk));
+    propertiesNodeAct->setStatusTip(tr("Open node properties"));
+    propertiesNodeAct->setWhatsThis(tr("Node Properties\n\nOpens node properties to edit label, size, color, shape etc"));
+    connect(propertiesNodeAct, SIGNAL(triggered()), this, SLOT(slotChangeNodeProperties()));
 
-    changeNodeColorAct = new QAction(QIcon(":/images/colorize.png"), tr("Change Color"), this);
-    changeNodeColorAct->setStatusTip(tr("Changes the color of a node"));
-    changeNodeColorAct->setWhatsThis(tr("Change Color\n\nChanges the Color of a node"));
-    connect(changeNodeColorAct, SIGNAL(triggered()), this, SLOT(slotChangeNodeColor()));
-
-    changeNodeSizeAct = new QAction(QIcon(":/images/resize.png"),tr("Change Size"), this);
-    changeNodeSizeAct->setStatusTip(tr("Changes the actual size of a node"));
-    changeNodeSizeAct->setWhatsThis(tr("Change Size\n\nChanges the actual size of a node"));
-    connect(changeNodeSizeAct, SIGNAL(triggered()), this, SLOT(slotChangeNodeSize()));
-
-    changeNodeValueAct = new QAction(tr("Change Value"), this);
-    changeNodeValueAct->setStatusTip(tr("Changes the value of a node"));
-    changeNodeValueAct->setWhatsThis(tr("Change Value\n\nChanges the value of a node"));
-    connect(changeNodeValueAct, SIGNAL(triggered()), this, SLOT(slotChangeNodeValue()));
 
     changeAllNodesSizeAct = new QAction(QIcon(":/images/resize.png"), tr("Change all Nodes Size"),	this);
     changeAllNodesSizeAct->setStatusTip(tr("This option lets you change the size of all nodes"));
@@ -611,30 +599,6 @@ void MainWindow::initActions(){
     changeAllNodesShapeAct->setWhatsThis(tr("Nodes Shape\n\nThis option lets you change the shape of all nodes"));
     connect(changeAllNodesShapeAct, SIGNAL(triggered()), this, SLOT(slotChangeAllNodesShape()) );
 
-    changeNodeBoxAct = new QAction(QIcon(":/images/box.png"), tr("Change Node Shape to Box"),this);
-    changeNodeBoxAct->setStatusTip(tr("This option lets you change the shape of a node to a box"));
-    changeNodeBoxAct->setWhatsThis(tr("Node as a box\n\nThis option lets you change the shape of a node to a box"));
-    connect(changeNodeBoxAct, SIGNAL(triggered()), this, SLOT(slotChangeNodeBox()) );
-
-    changeNodeTriangleAct = new QAction( tr("Change Node Shape to Triangle"),	this);
-    changeNodeTriangleAct->setStatusTip(tr("This option lets you change the shape of a node to a box"));
-    changeNodeTriangleAct->setWhatsThis(tr("Node as a box\n\nThis option lets you change the shape of a node to a box"));
-    connect(changeNodeTriangleAct, SIGNAL(triggered()), this, SLOT(slotChangeNodeTriangle()) );
-
-    changeNodeCircleAct = new QAction(QIcon(":/images/circle.png"), tr("Change Node Shape to Circle"),	this);
-    changeNodeCircleAct->setStatusTip(tr("This option lets you change the shape of a node to a box"));
-    changeNodeCircleAct->setWhatsThis(tr("Node as a box\n\nThis option lets you change the shape of a node to a box"));
-    connect(changeNodeCircleAct, SIGNAL(triggered()), this, SLOT(slotChangeNodeCircle()) );
-
-    changeNodeDiamondAct = new QAction(QIcon(":/images/diamond.png"), tr("Change Node Shape to Diamond"),	this);
-    changeNodeDiamondAct->setStatusTip(tr("This option lets you change the shape of a node to a box"));
-    changeNodeDiamondAct->setWhatsThis(tr("Node as a box\n\nThis option lets you change the shape of a node to a box"));
-    connect(changeNodeDiamondAct, SIGNAL(triggered()), this, SLOT(slotChangeNodeDiamond()) );
-
-    changeNodeEllipseAct = new QAction( tr("Change Node Shape to Ellipse"),	this);
-    changeNodeEllipseAct->setStatusTip(tr("This option lets you change the shape of a node to a box"));
-    changeNodeEllipseAct->setWhatsThis(tr("Node as a box\n\nThis option lets you change the shape of a node to a box"));
-    connect(changeNodeEllipseAct, SIGNAL(triggered()), this, SLOT(slotChangeNodeEllipse()) );
 
     changeNumbersSizeAct = new QAction( tr("Change all Numbers Size"),	this);
     changeNumbersSizeAct->setStatusTip(tr("It lets you change the font size of the numbers of all nodes"));
@@ -1396,7 +1360,7 @@ void MainWindow::initActions(){
     reachabilityMatrixAct->setWhatsThis(tr("Reachability Matrix\n\n     Calculates the reachability matrix X<sup>R</sup> of the graph where the {i,j} element is 1 if the vertices i and j are reachable. \n\n Actually, this just checks whether the corresponding element of Distances matrix is not zero.\n "));
     connect(reachabilityMatrixAct, SIGNAL(triggered()), this, SLOT(slotReachabilityMatrix() )  );
 
-    cliquesAct = new QAction(QIcon(":/images/triangle.png"), tr("Number of Cliques"),this);
+    cliquesAct = new QAction(QIcon(":/images/clique.png"), tr("Number of Cliques"),this);
     cliquesAct->setShortcut(tr("Ctrl+T"));
     cliquesAct->setStatusTip(tr("The number of cliques (triangles) of each node v."));
     cliquesAct->setWhatsThis(tr("Number of Cliques\n\n A triangle is a complete subgraph of three nodes of G. This method calculates the number of triangles of each node v is defined as delta(v) = |{{u, w} in E : {v, u} in E and {v, w} in E}|.  \n "));
@@ -1410,7 +1374,7 @@ void MainWindow::initActions(){
     connect(clusteringCoefAct, SIGNAL(triggered()), this, SLOT(slotClusteringCoefficient() )  );
 
 
-    triadCensusAct = new QAction(QIcon(":/images/clique.png"), tr("Triad Census"),this);
+    triadCensusAct = new QAction(QIcon(":/images/triad.png"), tr("Triad Census"),this);
     triadCensusAct->setShortcut(tr("Ctrl+Shift+T"));
     triadCensusAct->setStatusTip(tr("Conducts a triad census for the active network."));
     triadCensusAct->setWhatsThis(tr("Triad Census\n\n A triad census counts all the different kinds of observed triads within a network and codes them according to their number of mutual, asymmetric and non-existent dyads. \n "));
@@ -1791,12 +1755,12 @@ void MainWindow::initMenuBar() {
     editNodeMenu -> addAction (findNodeAct);
     editNodeMenu -> addAction (addNodeAct);
     editNodeMenu -> addAction (removeNodeAct);
+    editNodeMenu -> addSeparator();
+
+    editNodeMenu -> addAction (propertiesNodeAct);
 
     editNodeMenu -> addSeparator();
-    editNodeMenu -> addAction (changeNodeLabelAct);
-    editNodeMenu -> addAction (changeNodeColorAct);
-    editNodeMenu -> addAction (changeNodeSizeAct);
-    editNodeMenu -> addAction (changeNodeValueAct);
+
 
     editNodeMenu -> addSeparator();
     editNodeMenu -> addAction (changeAllNodesSizeAct);
@@ -4544,17 +4508,7 @@ void MainWindow::openNodeContextMenu() {
 
     nodeContextMenu -> addAction(addLinkAct);
     nodeContextMenu -> addAction(removeNodeAct );
-    QMenu *options=new QMenu(tr("Options"), this);
-    nodeContextMenu -> addMenu( options );
-    options -> addAction( changeNodeLabelAct );
-    options -> addAction( changeNodeSizeAct );
-    options -> addAction( changeNodeValueAct );
-    options -> addAction( changeNodeColorAct );
-    options -> addAction( changeNodeBoxAct );
-    options -> addAction( changeNodeCircleAct );
-    options -> addAction( changeNodeDiamondAct );
-    options -> addAction( changeNodeEllipseAct);
-    options -> addAction( changeNodeTriangleAct );
+    nodeContextMenu -> addAction(propertiesNodeAct );
     //QCursor::pos() is good only for menus not related with node coordinates
     nodeContextMenu -> exec(QCursor::pos() );
     delete  nodeContextMenu;
@@ -4715,7 +4669,7 @@ void MainWindow::linkInfoStatusBar (Edge* link) {
     Called from nodeContextMenu
 */
 void MainWindow::slotRemoveNode() {
-    qDebug("MW: slotRemoveNode()");
+    qDebug() << "MW: slotRemoveNode()";
     if (!activeGraph.vertices())  {
         QMessageBox::critical(
                     this,
@@ -4769,8 +4723,91 @@ void MainWindow::slotRemoveNode() {
 }
 
 
+void MainWindow::slotChangeNodeProperties() {
 
+    qDebug() << "MW::slotChangeNodeProperties()";
+//    if (!fileLoaded && !networkModified )  {
+    if (!activeGraph.vertices())  {
+        QMessageBox::critical(
+                    this,
+                    "Error",
+                    tr("Nothing to do! \n"
+                       "Load a network file or add some nodes first."), "OK",0);
+        statusMessage( tr("Nothing to remove.")  );
+        return;
+    }
+    int doomedJim=-1, min=-1, max=-1;
+    bool ok=false;
 
+    min = activeGraph.firstVertexNumber();
+    max = activeGraph.lastVertexNumber();
+    qDebug("MW: min is %i and max is %i", min, max);
+    if (min==-1 || max==-1 ) {
+        qDebug("ERROR in finding min max nodeNumbers. Abort");
+        return;
+    }
+    else if (nodeClicked && clickedJimNumber >= 0 && clickedJimNumber<= max ) {
+        doomedJim=clickedJimNumber ;
+    }
+    else if (!nodeClicked ) {
+        doomedJim =  QInputDialog::getInt(
+                    this,
+                    "Remove node",
+                    tr("Choose a node between ("
+                    + QString::number(min).toLatin1()
+                    +"..."
+                    + QString::number(max).toLatin1()+"):"),min, 1, max, 1, &ok);
+        if (!ok) {
+            statusMessage( "Node properties cancelled." );
+            return;
+        }
+    }
+    qDebug ()<< "MW: changing properties for "<< doomedJim;
+    //activeGraph.color
+    m_nodeEditDialog = new NodeEditDialog(this, QColor("red"), "circle") ;
+
+    connect( m_nodeEditDialog, &NodeEditDialog::userChoices,
+             this, &MainWindow::slotNodeProperties );
+
+    m_nodeEditDialog->exec();
+
+    statusMessage( tr("Node properties dialog opened. Ready. ") );
+}
+
+void MainWindow::slotNodeProperties( const QString label, const int size,
+                                     const QString value, const QColor color,
+                                     const QString shape) {
+    qDebug()<< "MW::slotNodeProperties() "
+            << " label " << label
+            << " size " << size
+            << "value " << value
+            << " color " << color
+            << " shape " << shape
+               << " clickedJimNumber " <<clickedJimNumber;
+
+    qDebug()<<"MW: updating label ";
+    clickedJim->setLabelText(label);
+    activeGraph.setVertexLabel( clickedJimNumber, label);
+    if (!showLabels())
+        displayNodeLabelsAct->setChecked(true);
+
+    qDebug()<<"MW: updating color ";
+    activeGraph.setVertexColor( clickedJimNumber, color.name());
+
+    qDebug()<<"MW: updating size ";
+    activeGraph.setVertexSize(clickedJimNumber,size);
+
+    qDebug()<<"MW: updating value ";
+    //activeGraph.setVertexValue (clickedJimNumber,size);
+
+    qDebug()<<"MW: updating shape ";
+    activeGraph.setVertexShape( clickedJimNumber, shape);
+    clickedJim->setShape(shape);
+
+    graphChanged();
+    statusMessage( tr("Ready. "));
+
+}
 
 /**
 *	Adds a new link between two nodes specified by the user.
@@ -4961,88 +4998,6 @@ void MainWindow::slotRemoveLink(){
 
 
 
-/**
-*	Changes the label of the clicked node
-*/
-void MainWindow::slotChangeNodeLabel(){
-    if (!fileLoaded && !networkModified )  {
-        QMessageBox::critical(
-                    this, "Error",
-                    tr("There are no nodes! \n"
-                       "Load a network file or create a new network first."),
-                    "OK",0);
-        statusMessage( tr("No nodes created.")  );
-        return;
-    }
-    if (!nodeClicked) {
-        statusMessage( tr("Please click on a node first... ")  );
-        return;
-    }
-    bool ok;
-    QString text = QInputDialog::getText(
-                this, "Change node label",
-                tr("Enter new node label:"), QLineEdit::Normal,
-                                         QString::null, &ok );
-    if ( ok && !text.isEmpty() ) {
-        qDebug()<<"MW: change label to "<< text.toLatin1();
-        clickedJim->setLabelText(text);
-        activeGraph.setVertexLabel( clickedJimNumber, text);
-        if (!showLabels())
-            displayNodeLabelsAct->setChecked(true);
-        statusMessage( tr("Changed label to %1. Ready. ").arg(text)  );
-        graphChanged();
-    }
-    else {
-        statusMessage( tr("No label text. Abort. ")  );
-    }
-}
-
-
-
-
-/**
-*	Changes the colour of the clicked node
-*/
-void MainWindow::slotChangeNodeColor(){
-    if (!fileLoaded && !networkModified )  {
-        QMessageBox::critical(
-                    this,
-                    "Error",
-                    tr("There are no nodes! \n"
-                       "Load a network file or create a new network first."), "OK",0);
-        statusMessage( tr("No nodes...")  );
-        return;
-    }
-    bool ok;
-    long int node=-1;
-    if (!nodeClicked) {
-        int min=activeGraph.firstVertexNumber();
-        int max=activeGraph.lastVertexNumber();
-        node=QInputDialog::getInt(
-                    this, "Change node color",
-                    tr("Select node:  	("+QString::number(min).toLatin1()+"..."
-                       +QString::number(max).toLatin1()+"):"), min, 1, max , 1, &ok)   ;
-        if (!ok) {
-            statusMessage( "Change clicked node color operation cancelled." );
-            statusMessage( tr("Error. ")  );
-            return;
-        }
-    }
-    else{
-        node=clickedJimNumber;
-    }
-    QColor color = QColorDialog::getColor(
-                Qt::red, this, tr("Change color of node %1").arg(node) );
-    if ( color.isValid()) {
-        QString newColor=color.name();
-        activeGraph.setVertexColor( node, newColor);
-        graphChanged();
-    }
-    else {
-        // user pressed Cancel
-        statusMessage( tr("Change node color aborted. ") );
-    }
-}
 
 
 
@@ -5070,131 +5025,7 @@ void MainWindow::slotAllNodesColor(){
 
 
 
-/**
-*	Changes the size of the clicked node.  
-*/
-void MainWindow::slotChangeNodeSize(){
-    if (!fileLoaded && !networkModified )  {
-        QMessageBox::critical(
-                    this,
-                    "Error",
-                    tr("There are no nodes! \n"
-                       "Load a network file or create a new network first."), "OK",0);
-        statusMessage( tr("Cannot change nothing.")  );
-        return;
-    }
-    bool ok=false;
-    long int nodenumber;
-    int newSize;
-    if (!nodeClicked) {
-        long int min = activeGraph.firstVertexNumber();
-        long int max = activeGraph.lastVertexNumber();
-        if (min==-1 || max==-1 ) {
-            qDebug("ERROR in finding min max nodeNumbers. Abort");
-            return;
-        }
-        nodenumber =  QInputDialog::getInt(
-                    this,"Remove node",
-                    tr("Choose a node to remove between ("
-                       + QString::number(min).toLatin1()+"..."
-                       + QString::number(max).toLatin1()+"):"),
-                    min, 1, max, 1, &ok);
-        if (!ok) {
-            statusMessage( "Change size operation cancelled." );
-            return;
-        }
-    }
-    else
-    {
-        nodenumber = clickedJimNumber;
-    }
 
-    newSize = QInputDialog::getInt(
-                this, "Change node size",
-                tr("Change node size to: (1-100)"),initNodeSize, 1, 100, 1, &ok ) ;
-    if (!ok) {
-        statusMessage( "Change size operation cancelled." );
-        return;
-    }
-
-    activeGraph.setVertexSize(nodenumber,newSize);
-
-    statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
-    return;
-}
-
-
-
-/**
-*	TODO Change the value of the clicked node.  
-*/
-void MainWindow::slotChangeNodeValue(){
-    if (!nodeClicked) {
-        statusMessage( tr("Error. ")  );
-        return;
-    }
-    //	bool ok=false;
-    //int newSize =   QInputDialog::getInt(this, "Change node value", tr("Change node size to: (1-16)"),1, 1, 16, 1, &ok ) ;
-    //	clickedJim->setSize(newSize);
-    graphChanged();
-    statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
-    return;
-}
-
-
-
-/**
-*	Changes the shape of the clicked node to box
-*/
-void MainWindow::slotChangeNodeBox(){
-    activeGraph.setVertexShape( clickedJim->nodeNumber(), "box");
-    clickedJim->setShape("box");
-    graphChanged();
-}
-
-
-
-/**
-*	Changes the shape of the clicked node to triangle
-*/
-void MainWindow::slotChangeNodeTriangle(){
-    activeGraph.setVertexShape( clickedJim->nodeNumber(), "triangle");
-    clickedJim->setShape("triangle");
-    graphChanged();
-}
-
-
-
-/**
-*	Changes the shape of the clicked node to circle
-*/
-void MainWindow::slotChangeNodeCircle(){
-    activeGraph.setVertexShape( clickedJim->nodeNumber(), "circle");
-    clickedJim->setShape("circle");
-    graphChanged();
-}
-
-
-
-/**
-*	Changes the shape of the clicked node to diamond
-*/
-void MainWindow::slotChangeNodeDiamond(){
-    activeGraph.setVertexShape( clickedJim->nodeNumber(), "diamond");
-    clickedJim->setShape("diamond");
-    graphChanged();
-}
-
-
-
-/**
-*	Changes the shape of the clicked node to ellipse
-*/
-void MainWindow::slotChangeNodeEllipse(){
-    activeGraph.setVertexShape( clickedJim->nodeNumber(), "ellipse");
-    clickedJim->setShape("ellipse");
-    graphChanged();
-}
 
 
 //TODO slotChangeLinkLabel

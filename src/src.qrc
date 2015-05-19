@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
+      
+	<file>images/properties.png</file>
         <file>images/new.png</file>
         <file>images/open.png</file>
         <file>images/save.png</file>
@@ -27,6 +29,8 @@
         <file>images/box.png</file>
         <file>images/circle.png</file>
         <file>images/diamond.png</file>
+	<file>images/triangle.png</file>
+	<file>images/ellipse.png</file>
         <file>images/symmetry.png</file>
         <file>images/plines.png</file>
         <file>images/zoomin.png</file>
@@ -46,7 +50,7 @@
         <file>images/circular.png</file>
         <file>images/clique.png</file>
         <file>images/walk.png</file>
-        <file>images/triangle.png</file>
+        <file>images/triad.png</file>
         <file>images/avdistance.png</file>
         <file>images/symmetrize.png</file>
         <file>images/nodeout.png</file>
