@@ -138,12 +138,13 @@ private:
     int timerId,  layoutType, m_nodeSize, m_numberDistance, m_labelDistance;
     double m_currentScaleFactor;
     int m_currentRotationAngle;
-    int zoomIndex, origNodeSizeMarkedNode1,origNodeSizeMarkedNode2;
+    int zoomIndex, markedNodeOrigSize,markedEdgeSourceOrigSize, markedEdgeTargetOrigSize;
     QString m_nodeLabel, m_numberColor, m_nodeColor, m_labelColor, m_linkColor;
-    bool secondDoubleClick, dynamicMovement, markedNodesExist;
+    bool secondDoubleClick, dynamicMovement, markedNodeExist, markedEdgeExist;
     QGraphicsItem *moving;
     QPointF startPoint, endPoint;
-    Node *firstNode, *secondNode, *markedNode1, *markedNode2, *tempNode ;
+    Node *firstNode, *secondNode, *markedNode1, *markedEdgeSource;
+    Node *markedEdgeTarget, *tempNode ;
 
 };
 

@@ -55,7 +55,8 @@ GraphicsWidget::GraphicsWidget( QGraphicsScene *sc, MainWindow* par)  : QGraphic
 	zoomIndex=3;
 	m_currentScaleFactor = 1;
 	m_currentRotationAngle = 0;
-    markedNodesExist=false; //used in findNode()
+    markedNodeExist=false; //used in findNode()
+    markedEdgeExist = false; //used in selecting and edge
     edgesHash.reserve(1000);
     nodeHash.reserve(1000);
 }
@@ -82,6 +83,8 @@ void GraphicsWidget::clear() {
     edgesHash.clear();
     scene()->clear();
     m_curRelation=0;
+    markedNodeExist=false;
+    markedEdgeExist = false;
 
 }
 
@@ -273,23 +276,28 @@ void GraphicsWidget::nodeClicked(Node *node){
 */
 void GraphicsWidget::edgeClicked(Edge *edge){
 	qDebug ("GW: Emitting selectedEdge()");
-    if (markedNodesExist) {
-        markedNode1->setSelected(false);		//unselect it, restores its color
-        markedNode2->setSelected(false);		//unselect it, restores its color
-        markedNode1->setSize(origNodeSizeMarkedNode1);	//restore its size
-        markedNode2->setSize(origNodeSizeMarkedNode2);	//restore its size
-        markedNodesExist=false;
+    if (markedEdgeExist) {
+        //unselect them, restore their color
+        markedEdgeSource->setSelected(false);
+        markedEdgeTarget->setSelected(false);
+        //restore their size
+        markedEdgeSource->setSize(markedEdgeSourceOrigSize);
+        markedEdgeTarget->setSize(markedEdgeTargetOrigSize);
+        markedEdgeExist=false;
         return;
     }
-    markedNode1=edge->sourceNode();
-    markedNode2=edge->targetNode();
-    markedNodesExist=true;
-    markedNode1->setSelected(true);
-    markedNode2->setSelected(true);
-    origNodeSizeMarkedNode1=markedNode1->size();
-    origNodeSizeMarkedNode2=markedNode2->size(); // save its original size
-    markedNode1->setSize(2*origNodeSizeMarkedNode1-1);	//now, make it larger
-    markedNode2->setSize(2*origNodeSizeMarkedNode2-1);	//now, make it larger
+    markedEdgeSource=edge->sourceNode();
+    markedEdgeTarget=edge->targetNode();
+    markedEdgeExist=true;
+    // select nodes to change their color
+    markedEdgeSource->setSelected(true);
+    markedEdgeTarget->setSelected(true);
+    // save their original size
+    markedEdgeSourceOrigSize=markedEdgeSource->size();
+    markedEdgeTargetOrigSize=markedEdgeTarget->size();
+    //now, make them larger
+    markedEdgeSource->setSize(2*markedEdgeSourceOrigSize-1);
+    markedEdgeTarget->setSize(2*markedEdgeTargetOrigSize-1);
 	emit selectedEdge(edge);
 }
 
@@ -666,13 +674,13 @@ Node* GraphicsWidget::hasNode( QString text ){
             ( candidate->labelText() == text)
 			) {
 			qDebug() << "GW: hasNode(): Node " << text << " found!";
-            markedNodesExist=true;
+            markedNodeExist=true;
 			return candidate;
 			break;
 		}
 
 	}
-    return markedNode1;	//dummy return. We check markedNodesExist flag first...
+    return markedNode1;	//dummy return. We check markedNodeExist flag first...
 }
 
 
@@ -683,20 +691,20 @@ Node* GraphicsWidget::hasNode( QString text ){
 */
 bool GraphicsWidget::setMarkedNode(QString nodeText){
 	qDebug ("GW: setMarkedNode()");
-    if (markedNodesExist) {
+    if (markedNodeExist) {
         markedNode1->setSelected(false);		//unselect it, so that it restores its color
-        markedNode1->setSize(origNodeSizeMarkedNode1);	//restore its size
-        markedNodesExist=false;
+        markedNode1->setSize(markedNodeOrigSize);	//restore its size
+        markedNodeExist=false;
 		return true;
 	}
 	
     markedNode1 = hasNode (nodeText);
-    if (!markedNodesExist)
+    if (!markedNodeExist)
 		return false;
 	
     markedNode1->setSelected(true);		//select it, so that it changes color
-    origNodeSizeMarkedNode1=markedNode1->size(); // save its original size
-    markedNode1->setSize(2*origNodeSizeMarkedNode1-1);	//now, make it larger
+    markedNodeOrigSize=markedNode1->size(); // save its original size
+    markedNode1->setSize(2*markedNodeOrigSize-1);	//now, make it larger
 	return true;	
 }
 

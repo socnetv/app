@@ -4069,6 +4069,7 @@ void Graph::writePrestigePageRank(const QString fileName, const bool dropIsolate
 void Graph::writeNumberOfCliques(
         const QString fileName, const bool considerWeights)
 {
+    qDebug()<< "Graph::writeNumberOfCliques() ";
     Q_UNUSED(considerWeights);
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
