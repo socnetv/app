@@ -77,7 +77,7 @@ protected:
     void wheelEvent(QWheelEvent *event);
     void mouseDoubleClickEvent ( QMouseEvent * e );
     void mousePressEvent ( QMouseEvent * e );
-    //void mouseReleaseEvent(QMouseEvent * e );
+    void mouseReleaseEvent(QMouseEvent * e );
     void resizeEvent( QResizeEvent *e );
     void paintEvent ( QPaintEvent * event );
 
@@ -130,6 +130,7 @@ signals:
     void selectedEdge(Edge *);
     void zoomChanged(int);
     void clearSelection();
+    void openContextMenu(const QPointF p);
 
 private:
     H_NumToNode nodeHash;	//This is used in drawEdge() method

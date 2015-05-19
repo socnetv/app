@@ -128,6 +128,9 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect( graphicsWidget, SIGNAL( openEdgeMenu() ),
              this, SLOT( openLinkContextMenu() ) ) ;
 
+    connect (graphicsWidget, &GraphicsWidget::openContextMenu,
+             this, &MainWindow::openContextMenu);
+
     connect( graphicsWidget, SIGNAL(updateNodeCoords(int, int, int)),
              this, SLOT( updateNodeCoords(int, int, int) ) );
 
@@ -4537,7 +4540,7 @@ void MainWindow::openLinkContextMenu() {
 */
 void MainWindow::openContextMenu( const QPointF &mPos) {
     cursorPosGW=mPos;
-    QMenu *contextMenu = new QMenu("Link Menu",this);
+    QMenu *contextMenu = new QMenu(" Menu",this);
     Q_CHECK_PTR( contextMenu );  //displays "out of memory" if needed
     contextMenu -> addAction( addNodeAct );
     QMenu *options=new QMenu("Options", this);
