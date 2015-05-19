@@ -4196,7 +4196,7 @@ void Graph::writeTriadCensus(
     emit statusMessage ( QString(tr("Writing triad census to file: ")) +
                          fileName );
 
-    outText << tr("TRIAD CENSUS (TRC)\n");
+    outText << tr("TRIAD CENSUS (TRC)\n\n");
 
     outText << "Type\t\tCensus\t\tExpected Value" << "\n";
     outText << "003" << "\t\t" << triadTypeFreqs[0] << "\n";

@@ -70,7 +70,7 @@
      </property>
      <property name="font">
       <font>
-       <family>Sans Serif</family>
+       <family>DejaVu Sans</family>
        <pointsize>11</pointsize>
       </font>
      </property>
@@ -95,7 +95,7 @@ p, li { white-space: pre-wrap; }
     <widget class="QLabel" name="selectLabel">
      <property name="font">
       <font>
-       <family>Sans Serif</family>
+       <family>DejaVu Sans</family>
        <pointsize>10</pointsize>
       </font>
      </property>
@@ -131,6 +131,11 @@ p, li { white-space: pre-wrap; }
    </item>
    <item row="2" column="0" colspan="2">
     <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="font">
+      <font>
+       <family>DejaVu Sans</family>
+      </font>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>

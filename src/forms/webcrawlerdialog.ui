@@ -30,7 +30,7 @@
      </property>
      <property name="font">
       <font>
-       <family>Sans Serif</family>
+       <family>DejaVu Sans</family>
        <pointsize>11</pointsize>
       </font>
      </property>
@@ -53,7 +53,7 @@
      <widget class="QLabel" name="label">
       <property name="font">
        <font>
-        <family>Sans Serif</family>
+        <family>DejaVu Sans</family>
        </font>
       </property>
       <property name="text">
@@ -104,7 +104,7 @@
        </property>
        <property name="font">
         <font>
-         <family>Sans Serif</family>
+         <family>DejaVu Sans</family>
         </font>
        </property>
        <property name="toolTip">
@@ -166,7 +166,10 @@ In this case SocNetV will follow and crawl each one link found in a page.</strin
        </property>
        <property name="font">
         <font>
-         <family>Sans Serif</family>
+         <family>DejaVu Sans</family>
+         <pointsize>10</pointsize>
+         <weight>50</weight>
+         <bold>false</bold>
         </font>
        </property>
        <property name="toolTip">
@@ -221,7 +224,7 @@ p, li { white-space: pre-wrap; }
      </property>
      <property name="font">
       <font>
-       <family>Sans Serif</family>
+       <family>DejaVu Sans</family>
       </font>
      </property>
      <property name="focusPolicy">
@@ -248,7 +251,7 @@ p, li { white-space: pre-wrap; }
     <widget class="QCheckBox" name="intLinksCheckBox">
      <property name="font">
       <font>
-       <family>Sans Serif</family>
+       <family>DejaVu Sans</family>
       </font>
      </property>
      <property name="focusPolicy">
@@ -275,7 +278,7 @@ p, li { white-space: pre-wrap; }
      </property>
      <property name="font">
       <font>
-       <family>Sans Serif</family>
+       <family>DejaVu Sans</family>
       </font>
      </property>
      <property name="orientation">
