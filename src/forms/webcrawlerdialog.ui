@@ -73,6 +73,11 @@
         <height>32</height>
        </size>
       </property>
+      <property name="font">
+       <font>
+        <family>DejaVu Sans</family>
+       </font>
+      </property>
       <property name="toolTip">
        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the initial url/domain to start crawling from, i.e. http://www.iefimerida.gr  &lt;/p&gt;&lt;p&gt;You may omit http:// if you want. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>

@@ -41,6 +41,12 @@ PreviewForm::PreviewForm(QWidget *parent) :
     encodingLabel->setBuddy(encodingComboBox);
 
     textEdit = new QTextEdit;
+    textEdit->setToolTip(tr("In this area you can preview your file.\n")
+                           + (" Select the correct encoding from the menu.\n")
+                           + (" Mac and Linux users select UTF-8\n")
+                           + (" Windows users select Windows-1253 or UTF-8\n")
+                           + (" Windows users in Russia select KOI8-R\n"));
+
     textEdit->setLineWrapMode(QTextEdit::NoWrap);
     textEdit->setReadOnly(true);
 
