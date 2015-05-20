@@ -4581,7 +4581,7 @@ void MainWindow::openLinkContextMenu() {
     int source=clickedLink->sourceNodeNumber();
     int target=clickedLink->targetNodeNumber();
     qDebug("MW: openLinkContextMenu() for edge %i-%i at %i, %i",source, target, QCursor::pos().x(), QCursor::pos().y());
-    QString edgeName=QString::number(source)+QString("-")+QString::number(target);
+    QString edgeName=QString::number(source)+QString("->")+QString::number(target);
     //make the menu
     QMenu *linkContextMenu = new QMenu(edgeName, this);
     linkContextMenu -> addAction( "## EDGE " + edgeName + " ##  ");
