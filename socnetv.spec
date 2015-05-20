@@ -116,7 +116,7 @@ Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 
 %prep
 %setup 
-chmod -R a-x+X COPYING ChangeLog INSTALL NEWS README TODO manual man nets src
+chmod -R a-x+X COPYING changelog.gz INSTALL NEWS README TODO manual man nets src
 chmod 644 nets/*
 find . -type f -name '*~' -delete
 find . -type f -name '*.bak' -delete
@@ -172,7 +172,7 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 %{_datadir}/applications/%{name}.desktop
 %{_datadir}/pixmaps/%{name}.png
 %{_mandir}/man1/*
-%doc ChangeLog NEWS README TODO COPYING AUTHORS INSTALL manual
+%doc changelog.gz NEWS README TODO COPYING AUTHORS INSTALL manual
 
 
 
