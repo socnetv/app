@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer 
- version: 1.7-dev
+ version: 1.7
  Written in Qt
  
                          nodenumber.h  -  description

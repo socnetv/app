@@ -16,7 +16,7 @@
 
 
 %define name    socnetv
-%define version 1.7-dev
+%define version 1.7
 %define release 1
 %define prefix  /usr/local
 %define lastrev %(LANG=en_US.UTF-8 && date +"%a %b %e %Y")
@@ -180,6 +180,8 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 #CHANGELOG SECTION
 #
 %changelog
+* Wed May 20 2015 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 1.7-1
+- Synced with new stable version from upstream.
 * Mon May 11 2015 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 1.6-1
 - Synced with new stable version from upstream.
 * Fri Oct 10 2014 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 1.5-1

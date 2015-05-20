@@ -1,8 +1,8 @@
 socnetv (1.7-3) trusty; urgency=medium
 
-  * daily development build
+  * New upstream version. See http://socnetv.sf.net/ChangeLog
 
- -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Fri, 15 May 2015 12:13:03 +0300
+ -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Wed, 20 May 2015 16:13:03 +0300
 
 socnetv (1.6-3) trusty; urgency=medium
 
