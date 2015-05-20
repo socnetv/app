@@ -884,6 +884,7 @@ void Graph::setInitVertexNumberSize (int size) {
 void Graph::setVertexLabel(int v1, QString label){
     qDebug()<< "Graph: setVertexLabel for "<< v1 << ", index " << index[v1]<< " with label"<< label;
     m_graph[ index[v1] ]->setLabel ( label);
+    emit setNodeLabel ( m_graph[ index[v1] ]-> name(), label);
     graphModified=true;
     emit graphChanged();
 }

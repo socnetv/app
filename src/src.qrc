@@ -2,6 +2,8 @@
     <qresource prefix="/">
       
 	<file>images/properties.png</file>
+	<file>images/selectall.png</file>
+	<file>images/selectnone.png</file>
         <file>images/new.png</file>
         <file>images/open.png</file>
         <file>images/save.png</file>

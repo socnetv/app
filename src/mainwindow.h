@@ -164,6 +164,8 @@ public slots:
     void addRelation(QString relationName);
 
     //EDIT MENU
+    void slotSelectAll();
+    void slotSelectNone();
     void slotFindNode();
     void slotAddLink();
     void slotRemoveNode();
@@ -268,14 +270,12 @@ public slots:
     void slotHelpAbout();
     void slotAboutQt();
     //PUBLICLY AVAILABLE SLOTS. CALLED FROM GRAPHICSVIEW
-    void selectedItems(QList<QGraphicsItem *> l);
     void nodeInfoStatusBar(Node*);
     void linkInfoStatusBar (Edge*);
     void openNodeContextMenu();
     void openLinkContextMenu() ;
     void windowInfoStatusBar(int, int);
     void graphChanged();
-
 
     //Called by graphicswidget to update node coords in activeGraph
     void updateNodeCoords(int no, int x, int y);
@@ -304,6 +304,8 @@ public slots:
     void toolBoxAnalysisClusterabilitySelectChanged(int);
     void toolBoxLayoutByIndexButtonPressed();
 
+    QList<QGraphicsItem *> selectedNodes();
+
 protected:
     void resizeEvent( QResizeEvent * );
     void closeEvent( QCloseEvent* ce );
@@ -315,14 +317,12 @@ signals:
 
 private:
 
-
     QGraphicsScene *scene;
 
     FilterEdgesByWeightDialog m_filterEdgesByWeightDialog;
     WebCrawlerDialog m_WebCrawlerDialog;
 
     NodeEditDialog *m_nodeEditDialog;
-    QList<QGraphicsItem *> selectedNodes;
 
     PreviewForm *previewForm;
     QList<QTextCodec *> codecs;
@@ -366,6 +366,7 @@ private:
     QAction *createUniformRandomNetworkAct, *createGaussianRandomNetworkAct, *createLatticeNetworkAct;
     QAction *createSmallWorldRandomNetworkAct, *createSameDegreeRandomNetworkAct;
     QAction *displayNodeNumbersAct, *displayNodeLabelsAct, *displayNumbersInsideNodesAct;
+    QAction *selectNoneAct, *selectAllAct;
     QAction *findNodeAct,*addNodeAct, *addLinkAct, *removeNodeAct, *propertiesNodeAct, *removeLinkAct;
     QAction *changeNumbersSizeAct;
     QAction *changeLabelsSizeAct, *changeAllNodesSizeAct, *changeAllNodesShapeAct;

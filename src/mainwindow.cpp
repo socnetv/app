@@ -120,9 +120,6 @@ MainWindow::MainWindow(const QString & m_fileName) {
              this, SLOT( addLink(int, int, float) ) 	);
 
 
-    connect( graphicsWidget, &GraphicsWidget::selectedItems,this,
-             &MainWindow::selectedItems);
-
     connect( graphicsWidget, SIGNAL( openNodeMenu() ),
              this, SLOT( openNodeContextMenu() ) ) ;
 
@@ -261,6 +258,9 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     connect( &activeGraph, SIGNAL( setNodeColor(long int,QString))  ,
              graphicsWidget, SLOT(  setNodeColor(long int, QString) ) );
+
+    connect( &activeGraph, &Graph::setNodeLabel ,
+             graphicsWidget, &GraphicsWidget::setNodeLabel );
 
     connect( clearGuidesAct, SIGNAL(triggered()),
              graphicsWidget, SLOT(clearGuides()));
@@ -566,22 +566,35 @@ void MainWindow::initActions(){
     /**
     Edit menu actions
     */
+
+    selectAllAct = new QAction(QIcon(":/images/selectall.png"), tr("Select All"), this);
+    selectAllAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_A));
+    selectAllAct->setStatusTip(tr("Selects all nodes"));
+    selectAllAct->setWhatsThis(tr("Select All\n\nSelects all nodes in the network"));
+    connect(selectAllAct, SIGNAL(triggered()), this, SLOT(slotSelectAll()));
+
+    selectNoneAct = new QAction(QIcon(":/images/selectnone.png"), tr("Deselect all"), this);
+    selectNoneAct->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_A));
+    selectNoneAct->setStatusTip(tr("Deselects all nodes"));
+    selectNoneAct->setWhatsThis(tr("Deselect all\n\n Clears the node selection"));
+    connect(selectNoneAct, SIGNAL(triggered()), this, SLOT(slotSelectNone()));
+
+
     findNodeAct = new QAction(QIcon(":/images/find.png"), tr("Find Node"), this);
-    findNodeAct->setShortcut(tr("Ctrl+F"));
+    findNodeAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_F));
     findNodeAct->setStatusTip(tr("Finds and highlights a node by number or label. Press Ctrl+F again to undo."));
     findNodeAct->setWhatsThis(tr("Find Node\n\nFinds a node with a given number or label and doubles its size. Ctrl+F again resizes back the node"));
     connect(findNodeAct, SIGNAL(triggered()), this, SLOT(slotFindNode()) );
 
     addNodeAct = new QAction(QIcon(":/images/add.png"), tr("Add Node"), this);
-    addNodeAct->setShortcut(tr("Ctrl+A"));
+    addNodeAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_A));
     addNodeAct->setStatusTip(tr("Adds a node"));
     addNodeAct->setWhatsThis(tr("Add Node\n\nAdds a node to the network"));
     connect(addNodeAct, SIGNAL(triggered()), this, SLOT(addNode()));
 
     removeNodeAct = new QAction(QIcon(":/images/remove.png"),tr("Remove Node"), this);
-    removeNodeAct ->setShortcut(QKeySequence(Qt::CTRL+Qt::Key_Backspace));
-    //Single key shortcuts with backspace or del do no work in Mac
-    // see http://goo.gl/7hz7Dx
+    removeNodeAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_Backspace));
+    //Single key shortcuts with backspace or del do no work in Mac http://goo.gl/7hz7Dx
     removeNodeAct->setStatusTip(tr("Removes a node"));
     removeNodeAct->setWhatsThis(tr("Remove Node\n\nRemoves a node from the network"));
     connect(removeNodeAct, SIGNAL(triggered()), this, SLOT(slotRemoveNode()));
@@ -613,13 +626,15 @@ void MainWindow::initActions(){
     connect(changeLabelsSizeAct, SIGNAL(triggered()), this, SLOT(slotChangeLabelsSize()) );
 
     addLinkAct = new QAction(QIcon(":/images/plines.png"), tr("Add Link"),this);
-    addLinkAct->setShortcut(tr("Ctrl+L"));
+    //addLinkAct->setShortcut(tr("Ctrl+L"));
+    addLinkAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_A));
     addLinkAct->setStatusTip(tr("Adds a Link to a Node"));
     addLinkAct->setWhatsThis(tr("Add Link\n\nAdds a Link to the network"));
     connect(addLinkAct, SIGNAL(triggered()), this, SLOT(slotAddLink()));
 
     removeLinkAct = new QAction(QIcon(":/images/disconnect.png"), tr("Remove"), this);
-    removeLinkAct ->setShortcut(QKeySequence(Qt::SHIFT+Qt::Key_Backspace));
+    //removeLinkAct ->setShortcut(QKeySequence(Qt::SHIFT+Qt::Key_Backspace));
+    removeLinkAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_Backspace));
     removeLinkAct->setStatusTip(tr("Removes a Link"));
     removeLinkAct->setWhatsThis(tr("Remove Link\n\nRemoves a Link from the network"));
     connect(removeLinkAct, SIGNAL(triggered()), this, SLOT(slotRemoveLink()));
@@ -693,7 +708,7 @@ void MainWindow::initActions(){
     connect(transformNodes2LinksAct, SIGNAL(triggered()), this, SLOT(slotTransformNodes2Links()));
 
     symmetrizeAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Symmetrize Links"), this);
-    symmetrizeAct->setShortcut(tr("Shift+R"));
+    symmetrizeAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_S));
     symmetrizeAct->setStatusTip(tr("Makes all edges reciprocal (thus, a symmetric graph)."));
     symmetrizeAct->setWhatsThis(tr("Symmetrize Edges\n\nTransforms all arcs to double links (edges). The result is a symmetric network"));
     connect(symmetrizeAct, SIGNAL(triggered()), this, SLOT(slotSymmetrize()));
@@ -1754,16 +1769,14 @@ void MainWindow::initMenuBar() {
     editNodeMenu = new QMenu(tr("Node..."));
     editNodeMenu -> setIcon(QIcon(":/images/node.png"));
     editMenu -> addMenu ( editNodeMenu );
+    editNodeMenu -> addAction (selectAllAct);
+    editNodeMenu -> addAction (selectNoneAct);
+    editNodeMenu -> addSeparator();
     editNodeMenu -> addAction (findNodeAct);
     editNodeMenu -> addAction (addNodeAct);
     editNodeMenu -> addAction (removeNodeAct);
     editNodeMenu -> addSeparator();
-
     editNodeMenu -> addAction (propertiesNodeAct);
-
-    editNodeMenu -> addSeparator();
-
-
     editNodeMenu -> addSeparator();
     editNodeMenu -> addAction (changeAllNodesSizeAct);
     editNodeMenu -> addAction (changeAllNodesShapeAct);
@@ -1775,9 +1788,14 @@ void MainWindow::initMenuBar() {
     editMenu-> addMenu (editLinkMenu);
     editLinkMenu -> addAction(addLinkAct);
     editLinkMenu -> addAction(removeLinkAct);
+    editLinkMenu  ->addSeparator();
     editLinkMenu -> addAction(changeLinkLabelAct);
     editLinkMenu -> addAction(changeLinkColorAct);
     editLinkMenu -> addAction(changeLinkWeightAct);
+    editLinkMenu  ->addSeparator();
+    //   transformNodes2LinksAct -> addTo (editMenu);
+    editLinkMenu  -> addAction (symmetrizeAct);
+
 
     editMenu ->addSeparator();
     filterMenu = new QMenu ( tr("Filter..."));
@@ -1787,9 +1805,6 @@ void MainWindow::initMenuBar() {
     filterMenu -> addAction(filterIsolateNodesAct );
     filterMenu -> addAction(filterEdgesAct );
 
-    editMenu ->addSeparator();
-    //   transformNodes2LinksAct -> addTo (editMenu);
-    editMenu -> addAction (symmetrizeAct);
 
     editNodeMenu -> addSeparator();
     colorOptionsMenu=new QMenu(tr("Colors"));
@@ -2027,7 +2042,7 @@ void MainWindow::initToolBox(){
     addNodeBt= new QPushButton(QIcon(":/images/add.png"),tr("&Add Node"));
     addNodeBt->setFocusPolicy(Qt::NoFocus);
     addNodeBt->setToolTip(
-                tr("Add a new node to the network (Ctrl+A). \n\n "
+                tr("Add a new node to the network (Ctrl+X, Ctrl+A). \n\n "
                    "Alternately, you can create a new node \n"
                    "in a specific position by double-clicking \n"
                    "on that spot of the canvas.")
@@ -3323,7 +3338,7 @@ bool MainWindow::previewNetworkFile(QString m_fileName, int m_fileFormat ){
         previewForm->setEncodedData(data,m_fileName, m_fileFormat);
         previewForm->exec();
     }
-
+    return true;
 }
 
 void MainWindow::userCodec(const QString m_fileName,
@@ -4514,6 +4529,22 @@ void MainWindow::graphChanged(){
 
 
 
+void MainWindow::slotSelectAll(){
+    qDebug() << "MainWindow::slotSelectAll()";
+    graphicsWidget->selectAll();
+    statusMessage( QString(tr("Selected nodes: %1") )
+                   .arg( selectedNodes().count() ) );
+
+}
+
+
+void MainWindow::slotSelectNone(){
+    qDebug() << "MainWindow::slotSelectNone()";
+    graphicsWidget->selectNone();
+    statusMessage( QString(tr("Selection cleared") ) );
+}
+
+
 /**
      Popups a context menu with some options when the user right-clicks on a node
 */
@@ -4524,7 +4555,14 @@ void MainWindow::openNodeContextMenu() {
 
     QMenu *nodeContextMenu = new QMenu(QString::number(clickedJimNumber), this);
     Q_CHECK_PTR( nodeContextMenu );  //displays "out of memory" if needed
+    if ( selectedNodes().count() == 1) {
+        nodeContextMenu -> addAction( tr("## NODE ") + QString::number(clickedJimNumber) + " ##  ");
+    }
+    else {
+        nodeContextMenu -> addAction( tr("## NODE ") + QString::number(clickedJimNumber) + " ##  " + tr(" (selected nodes: ") + QString::number (selectedNodes().count() ) + ")");
+    }
 
+    nodeContextMenu -> addSeparator();
     nodeContextMenu -> addAction(addLinkAct);
     nodeContextMenu -> addAction(removeNodeAct );
     nodeContextMenu -> addAction(propertiesNodeAct );
@@ -4546,6 +4584,8 @@ void MainWindow::openLinkContextMenu() {
     QString edgeName=QString::number(source)+QString("-")+QString::number(target);
     //make the menu
     QMenu *linkContextMenu = new QMenu(edgeName, this);
+    linkContextMenu -> addAction( "## EDGE " + edgeName + " ##  ");
+    linkContextMenu -> addSeparator();
     linkContextMenu -> addAction( removeLinkAct );
     linkContextMenu -> addAction( changeLinkWeightAct );
     linkContextMenu -> addAction( changeLinkColorAct );
@@ -4560,17 +4600,30 @@ void MainWindow::openContextMenu( const QPointF &mPos) {
     cursorPosGW=mPos;
     QMenu *contextMenu = new QMenu(" Menu",this);
     Q_CHECK_PTR( contextMenu );  //displays "out of memory" if needed
+
+
+    contextMenu -> addAction( "## Selected nodes: "
+                              + QString::number(  selectedNodes().count() ) + " ##  ");
+
+    contextMenu -> addSeparator();
+
     contextMenu -> addAction( addNodeAct );
-    QMenu *options=new QMenu("Options", this);
-    contextMenu -> addMenu(options );
-    if (selectedNodes.count()) {
+
+    if (selectedNodes().count()) {
         contextMenu -> addAction(propertiesNodeAct );
     }
-    options -> addAction(changeBackColorAct  );
-    options -> addAction(changeAllNodesSizeAct );
-    options -> addAction(changeAllNodesShapeAct  );
-    options -> addAction(changeAllNodesColorAct );
-    options -> addAction(changeAllLinksColorAct  );
+
+    contextMenu -> addAction( addLinkAct );
+
+    QMenu *options=new QMenu("Options", this);
+    contextMenu -> addMenu(options );
+
+    options -> addAction (changeBackColorAct  );
+    options -> addAction (backgroundImageAct  );
+    options -> addAction (changeAllNodesSizeAct );
+    options -> addAction (changeAllNodesShapeAct  );
+    options -> addAction (changeAllNodesColorAct );
+    options -> addAction (changeAllLinksColorAct  );
     options -> addAction (displayNodeNumbersAct);
     options -> addAction (displayNodeLabelsAct);
     //QCursor::pos() is good only for menus not related with node coordinates
@@ -4582,26 +4635,12 @@ void MainWindow::openContextMenu( const QPointF &mPos) {
 
 
 
+QList<QGraphicsItem *> MainWindow::selectedNodes() {
+    return graphicsWidget->selectedItems();
 
-
-
-/**
- * @brief MainWindow::selectedItems
- * called from GW to set selection related variables
- */
-void MainWindow::selectedItems(QList<QGraphicsItem *> l) {
-    selectedNodes = l;
-    if (selectedNodes.count() == 0) {
-        nodeClicked=false;
-        linkClicked=false;
-        clickedJimNumber=-1;
-
-        statusMessage( QString(tr("Selection cleared") ) );
-    }
-    else {
-        statusMessage( QString(tr("Selected nodes: %1") ).arg(selectedNodes.count()) );
-    }
 }
+
+
 
 
 
@@ -4756,20 +4795,19 @@ void MainWindow::slotChangeNodeProperties() {
     int doomedJim=-1, min=-1, max=-1;
     bool ok=false;
 
-    min = activeGraph.firstVertexNumber();
-    max = activeGraph.lastVertexNumber();
-    qDebug("MW: min is %i and max is %i", min, max);
-    if (min==-1 || max==-1 ) {
-        qDebug("ERROR in finding min max nodeNumbers. Abort");
-        return;
-    }
-    else if (nodeClicked && clickedJimNumber >= 0 && clickedJimNumber<= max ) {
-        doomedJim=clickedJimNumber ;
-    }
-    else if (!nodeClicked ) {
-        doomedJim =  QInputDialog::getInt(
+
+    if ( selectedNodes().count() == 0) {
+        min = activeGraph.firstVertexNumber();
+        max = activeGraph.lastVertexNumber();
+        qDebug("MW: min is %i and max is %i", min, max);
+        if (min==-1 || max==-1 ) {
+            qDebug("ERROR in finding min max nodeNumbers. Abort");
+            return;
+        }
+
+        clickedJimNumber =  QInputDialog::getInt(
                     this,
-                    "Remove node",
+                    "Node Properties",
                     tr("Choose a node between ("
                     + QString::number(min).toLatin1()
                     +"..."
@@ -4801,47 +4839,40 @@ void MainWindow::slotNodeProperties( const QString label, const int size,
             << " color " << color
             << " shape " << shape
                << " clickedJimNumber " <<clickedJimNumber
-                  << " selectedNodes " << selectedNodes;
+                  << " selectedNodes " << selectedNodes().count();
 
-    if (!selectedNodes.count()) {
-        qDebug()<<"MW: updating label ";
-        clickedJim->setLabelText(label);
-        activeGraph.setVertexLabel( clickedJimNumber, label);
-        if (!showLabels())
-            displayNodeLabelsAct->setChecked(true);
+    foreach (QGraphicsItem *item, selectedNodes() ) {
+        if ( (clickedJim = qgraphicsitem_cast<Node *>(item) )) {
 
-        qDebug()<<"MW: updating color ";
-        activeGraph.setVertexColor( clickedJimNumber, color.name());
+            clickedJimNumber = clickedJim->nodeNumber();
+            if ( selectedNodes().count() > 1 )
+            {
+                activeGraph.setVertexLabel(
+                            clickedJimNumber,
+                            label + QString::number(clickedJimNumber)
+                            );
+            }
+            else
+                activeGraph.setVertexLabel(
+                            clickedJimNumber,
+                            label
+                            );
 
-        qDebug()<<"MW: updating size ";
-        activeGraph.setVertexSize(clickedJimNumber,size);
+            if (!showLabels())
+                displayNodeLabelsAct->setChecked(true);
 
-        qDebug()<<"MW: updating value ";
-        //activeGraph.setVertexValue (clickedJimNumber,size);
-
-        qDebug()<<"MW: updating shape ";
-        activeGraph.setVertexShape( clickedJimNumber, shape);
-        clickedJim->setShape(shape);
-
+            qDebug () <<  clickedJimNumber;
+            qDebug()<<"MW: updating color ";
+            activeGraph.setVertexColor( clickedJimNumber, color.name());
+            qDebug()<<"MW: updating size ";
+            activeGraph.setVertexSize(clickedJimNumber,size);
+            qDebug()<<"MW: updating shape ";
+            activeGraph.setVertexShape( clickedJimNumber, shape);
+            clickedJim->setShape(shape);
+        }
     }
-    else {
-         foreach (QGraphicsItem *item, selectedNodes) {
-                if ( (clickedJim = qgraphicsitem_cast<Node *>(item) )) {
-                    clickedJimNumber = clickedJim->nodeNumber();
-                    qDebug () <<  clickedJimNumber;
-                    qDebug()<<"MW: updating color ";
-                    activeGraph.setVertexColor( clickedJimNumber, color.name());
-                    qDebug()<<"MW: updating size ";
-                    activeGraph.setVertexSize(clickedJimNumber,size);
-                    qDebug()<<"MW: updating shape ";
-                    activeGraph.setVertexShape( clickedJimNumber, shape);
-                    clickedJim->setShape(shape);
-                }
-         }
-         clickedJim=0;
-         clickedJimNumber=-1;
-
-    }
+    clickedJim=0;
+    clickedJimNumber=-1;
 
     graphChanged();
     statusMessage( tr("Ready. "));
@@ -4948,7 +4979,7 @@ void MainWindow::addLink (int v1, int v2, float weight) {
 **/
 void MainWindow::slotRemoveLink(){ 
     if ( (!fileLoaded && !networkModified) || activeGraph.totalEdges() ==0 )  {
-        QMessageBox::critical(this, "Error",tr("No links present! \nLoad a network file or create a new network first."), "OK",0);
+        QMessageBox::critical(this, "Error",tr("There are no links! \nLoad a network file or create a new network first."), "OK",0);
         statusMessage( tr("No links to remove - sorry.")  );
         return;
     }
@@ -5080,9 +5111,9 @@ void MainWindow::slotChangeLinkLabel(){
 */
 void MainWindow::slotChangeLinkColor(){
     qDebug() << "MW::slotChangeLinkColor()";
-    if (!fileLoaded && !networkModified )  {
+    if ( ( !fileLoaded && !networkModified) || activeGraph.totalEdges() ==0 )  {
         QMessageBox::critical(this, "Error",
-                              tr("No links here! \nLoad a network file or create a new network first."), "OK",0);
+                              tr("There are no links! \nLoad a network file or create a new network first."), "OK",0);
         statusMessage( tr("No links present...")  );
         return;
     }
@@ -5162,8 +5193,8 @@ void MainWindow::slotChangeLinkColor(){
 *	If no link is clicked, asks the user to specify a link.
 */
 void MainWindow::slotChangeLinkWeight(){
-    if (!fileLoaded && !networkModified )  {
-        QMessageBox::critical(this, "Error",tr("There are no links here! \nLoad a network file or create a new network first."), "OK",0);
+    if ( ( !fileLoaded && !networkModified) || activeGraph.totalEdges() ==0 )  {
+        QMessageBox::critical(this, "Error",tr("There are no links! \nLoad a network file or create a new network first."), "OK",0);
         statusMessage( tr("No links present...")  );
         return;
     }
@@ -5377,8 +5408,8 @@ void MainWindow::slotTransformNodes2Links(){
 *	Converts all edges to double edges, so that the network becomes undirected (symmetric adjacency matrix).
 */
 void MainWindow::slotSymmetrize(){
-    if (!fileLoaded && !networkModified )  {
-        QMessageBox::critical(this, "Error",tr("No links here! \nLoad a network file or create a new network first."), "OK",0);
+    if ( ( !fileLoaded && !networkModified) || activeGraph.totalEdges() ==0 )  {
+        QMessageBox::critical(this, "Error",tr("There are no links! \nLoad a network file or create a new network first."), "OK",0);
         statusMessage( tr("No links present...")  );
         return;
     }

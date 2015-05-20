@@ -472,7 +472,19 @@ void GraphicsWidget::setInitLinkColor(QString color){
 bool GraphicsWidget::setNodeColor(long int nodeNumber, QString color){
     qDebug() << "GraphicsWidget::setNodeColor() : " << color;
     nodeHash.value(nodeNumber) -> setColor(color);
-    return true; // ???
+    return true;
+
+}
+
+
+/**
+    Sets the label of an node.
+    Called from MW when the user changes it
+*/
+bool GraphicsWidget::setNodeLabel(long int nodeNumber, QString label){
+    qDebug() << "GraphicsWidget::setNodeLabel() : " << label;
+    nodeHash.value(nodeNumber) -> setLabelText (label);
+    return true;
 
 }
 
@@ -766,7 +778,32 @@ void GraphicsWidget::clearGuides(){
 
 
 
+/* Called from MW */
+void GraphicsWidget::selectAll()
+{
+    qDebug() << "GraphicsWidget::selectAll()";
+    QPainterPath path;
+    path.addRect(0,0, this->scene()->width() , this->scene()->height());
+    this->scene()->setSelectionArea(path);
+    qDebug() << "selected items now: "
+             << selectedItems().count();
+}
 
+
+/* Called from MW */
+void GraphicsWidget::selectNone()
+{
+    qDebug() << "GraphicsWidget::selectNone()";
+
+    this->scene()->clearSelection();
+
+}
+
+/* Called from MW */
+QList<QGraphicsItem *> GraphicsWidget::selectedItems(){
+     return this->scene()->selectedItems();
+
+}
 
 /** 	
     Starts a new node when the user double-clicks somewhere
@@ -802,35 +839,25 @@ void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
 void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
 
     QPointF p = mapToScene(e->pos());
-    QList<QGraphicsItem *> m_selectedItems = this->scene()->selectedItems();
-    int m_selectedItemsCount = this->scene()->selectedItems().count();
+
     bool ctrlKey = (e->modifiers() == Qt::ControlModifier);
 
 
     qDebug() << "GW::mousePressEvent() click at "
                 << e->pos().x() << ","<< e->pos().y()
                 << " or "<<  p.x() << ","<< p.y()
-                << " selectedItems " << m_selectedItemsCount;
+                << " selectedItems " << selectedItems().count();
 
-    emit selectedItems(m_selectedItems);
+  //  emit selectedItems(m_selectedItems);
 
     if ( QGraphicsItem *item= itemAt(e->pos() ) ) {
 
         qDebug() << "GW::mousePressEvent() click on an item" ;
 
         if (Node *node = qgraphicsitem_cast<Node *>(item)) {
-
             Q_UNUSED(node);
-
             qDebug() << "GW::mousePressEvent() single click on a node " ;
-
-            if ( m_selectedItemsCount > 0 && ctrlKey ) {
-                qDebug() << " opening selection context menu" ;
-                emit openContextMenu(p);
-            }
-            else {
-                    QGraphicsView::mousePressEvent(e);
-            }
+            QGraphicsView::mousePressEvent(e);
             return;
         }
         if (Edge *edge= qgraphicsitem_cast<Edge *>(item)) {
@@ -843,7 +870,7 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
     else{
         qDebug() << "GW::mousePressEvent()  click on empty space. ";
 
-        if ( m_selectedItemsCount > 0 && ctrlKey ) {
+        if ( selectedItems().count() > 0 && ctrlKey ) {
             qDebug() << " opening selection context menu ";
             emit openContextMenu(p);
         }
@@ -866,20 +893,20 @@ void GraphicsWidget::mouseReleaseEvent( QMouseEvent * e ) {
              << e->pos().x() << ","<< e->pos().y()
              << " or "<<  p.x() << ","<<p.y();
 
-    QList<QGraphicsItem *> m_selectedItems = this->scene()->selectedItems();
-    emit selectedItems(m_selectedItems);
     if ( QGraphicsItem *item= itemAt(e->pos() ) ) {
         if (Node *node = qgraphicsitem_cast<Node *>(item)) {
             qDebug() << "GW::mouseReleaseEvent() on a node ";
             Q_UNUSED(node);
             QGraphicsView::mouseReleaseEvent(e);
-            return;
         }
     }
     else{
         qDebug() << "GW::mouseReleaseEvent() on empty space. ";
 
     }
+
+    qDebug() << "GW::mouseReleaseEvent() - selected items now: "
+             << selectedItems().count();
 
 }
 

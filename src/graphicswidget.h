@@ -54,6 +54,11 @@ public:
     //	Node* hasNode(int number);
     bool setMarkedNode(QString text);
 
+    QList<QGraphicsItem *> selectedItems();
+
+    void selectAll();
+    void selectNone();
+
     void removeItem(Edge*);
     void removeItem(Node*);
     void removeItem(NodeNumber*);
@@ -94,6 +99,7 @@ public slots:
     void eraseNode(long int doomedJim);
     void setNodeVisibility(long int, bool );	//Called from Graph via MW
     bool setNodeColor(long int, QString);
+    bool setNodeLabel(long int , QString );
     void openNodeContextMenu();
     void nodeClicked(Node *);
     void moveNode(int, qreal, qreal);	//Called from Graph when creating random nets.
@@ -130,7 +136,6 @@ signals:
     void selectedNode(Node *);
     void selectedEdge(Edge *);
     void zoomChanged(int);
-    void selectedItems(QList<QGraphicsItem *> );
 
 
 

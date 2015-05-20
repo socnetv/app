@@ -80,7 +80,7 @@ public:
 	void setColor(QColor color);
 	QString color ();
 	
-	void setLabelText ( QString label) ;		// Used by MW:: slotChangeNodeLabel()
+    void setLabelText ( QString label) ;
 	QString labelText () ;						// Used by GW:: hasNode()
 	NodeLabel* label();
 	void addLabel (NodeLabel* gfxLabel  ) ;
@@ -106,7 +106,6 @@ protected:
 	void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
 signals: 
 	void nodeClicked(Node*);
-	void startNodeMovement(int);	
 	void openNodeContextMenu();
 	void startEdge(Node *);
 	void adjustOutEdge();

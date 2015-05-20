@@ -178,6 +178,7 @@ signals:
     void setNodeSize(long int, int);
     void setNodeShape(const long int, const QString);
     void setNodeColor(long int, QString);
+    void setNodeLabel(long int, QString);
     void drawEdgeReciprocal(int, int);				//call GW to draw the edge as symmetric one
     void setLinkColor(long int, long int, QString);
     void addGuideCircle(int, int, int);				//call GW to draw a circular layout line somewhere.

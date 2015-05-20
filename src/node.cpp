@@ -324,13 +324,14 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
 
 /** handles the events of a click on a node */
 void Node::mousePressEvent(QGraphicsSceneMouseEvent *event) {  
-	qDebug("Node: >> pressEvent() emitting nodeClicked");
+    qDebug() << "Node::mousePressEvent() "
+                << " set selected and emitting nodeClicked";
+    this->setSelected(true);
 //	emit nodeClicked(this);
 	graphicsWidget->nodeClicked(this);
 	if ( event->button()==Qt::LeftButton ) {
-		qDebug("Node: pressEvent() left click > startNodeMovement");
-//		emit startNodeMovement(0);
-//		graphicsWidget->startNodeMovement(0);
+        qDebug("Node::mousePressEvent() left click ");
+
 	}
 	if ( event->button()==Qt::RightButton ) {
 		qDebug("Node: Right-click on node, at %i, %i", event->screenPos().x(), event->screenPos().y()); 
@@ -345,6 +346,7 @@ void Node::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 //		emit startEdge(this);
 		graphicsWidget->startEdge(this);
 	}
+
 }
 
 
