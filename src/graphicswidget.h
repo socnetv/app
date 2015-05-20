@@ -125,12 +125,14 @@ signals:
     void userMiddleClicked(int, int, float);
     void openNodeMenu();
     void openEdgeMenu();
+    void openContextMenu(const QPointF p);
     void updateNodeCoords(int, int, int);
     void selectedNode(Node *);
     void selectedEdge(Edge *);
     void zoomChanged(int);
-    void clearSelection();
-    void openContextMenu(const QPointF p);
+    void selectedItems(QList<QGraphicsItem *> );
+
+
 
 private:
     H_NumToNode nodeHash;	//This is used in drawEdge() method

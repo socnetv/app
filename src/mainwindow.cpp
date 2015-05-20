@@ -119,8 +119,9 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect( graphicsWidget, SIGNAL( userMiddleClicked(int, int, float) ),
              this, SLOT( addLink(int, int, float) ) 	);
 
-    connect( graphicsWidget, SIGNAL(clearSelection()),
-             this, SLOT(selectNone()));
+
+    connect( graphicsWidget, &GraphicsWidget::selectedItems,this,
+             &MainWindow::selectedItems);
 
     connect( graphicsWidget, SIGNAL( openNodeMenu() ),
              this, SLOT( openNodeContextMenu() ) ) ;
@@ -4495,6 +4496,23 @@ void MainWindow::slotFindNode(){
 
 
 
+/**
+*	A slot activated when something has been changed in the graph.
+    Makes the fileSave icon active and refreshes any LCD values.
+    Also called from graphicsWidget.
+*/
+void MainWindow::graphChanged(){
+    qDebug("MW: graphChanged");
+    networkModified=true;
+    fileSave->setIcon(QIcon(":/images/save.png"));
+    fileSave->setEnabled(true);
+
+    nodesLCD->display(activeGraph.vertices());
+    edgesLCD->display(activeGraph.totalEdges());
+    densityLCD->display( activeGraph.density() );
+}
+
+
 
 /**
      Popups a context menu with some options when the user right-clicks on a node
@@ -4545,6 +4563,9 @@ void MainWindow::openContextMenu( const QPointF &mPos) {
     contextMenu -> addAction( addNodeAct );
     QMenu *options=new QMenu("Options", this);
     contextMenu -> addMenu(options );
+    if (selectedNodes.count()) {
+        contextMenu -> addAction(propertiesNodeAct );
+    }
     options -> addAction(changeBackColorAct  );
     options -> addAction(changeAllNodesSizeAct );
     options -> addAction(changeAllNodesShapeAct  );
@@ -4565,31 +4586,26 @@ void MainWindow::openContextMenu( const QPointF &mPos) {
 
 
 /**
-*	A slot activated when something has been changed in the graph.
-    Makes the fileSave icon active and refreshes any LCD values.
-    Also called from graphicsWidget.
-*/
-void MainWindow::graphChanged(){
-    qDebug("MW: graphChanged");
-    networkModified=true;
-    fileSave->setIcon(QIcon(":/images/save.png"));
-    fileSave->setEnabled(true);
-
-    nodesLCD->display(activeGraph.vertices());
-    edgesLCD->display(activeGraph.totalEdges());
-    densityLCD->display( activeGraph.density() );
-}
-
-
-/**
- * @brief MainWindow::selectNone
- * called from GW to unselect everything
+ * @brief MainWindow::selectedItems
+ * called from GW to set selection related variables
  */
-void MainWindow::selectNone() {
-    nodeClicked=false;
-    linkClicked=false;
-    clickedJimNumber=-1;
+void MainWindow::selectedItems(QList<QGraphicsItem *> l) {
+    selectedNodes = l;
+    if (selectedNodes.count() == 0) {
+        nodeClicked=false;
+        linkClicked=false;
+        clickedJimNumber=-1;
+
+        statusMessage( QString(tr("Selection cleared") ) );
+    }
+    else {
+        statusMessage( QString(tr("Selected nodes: %1") ).arg(selectedNodes.count()) );
+    }
 }
+
+
+
+
 
 /**
 *	When the user clicks on a node, displays some information about it on the status bar.
@@ -4784,26 +4800,48 @@ void MainWindow::slotNodeProperties( const QString label, const int size,
             << "value " << value
             << " color " << color
             << " shape " << shape
-               << " clickedJimNumber " <<clickedJimNumber;
+               << " clickedJimNumber " <<clickedJimNumber
+                  << " selectedNodes " << selectedNodes;
 
-    qDebug()<<"MW: updating label ";
-    clickedJim->setLabelText(label);
-    activeGraph.setVertexLabel( clickedJimNumber, label);
-    if (!showLabels())
-        displayNodeLabelsAct->setChecked(true);
+    if (!selectedNodes.count()) {
+        qDebug()<<"MW: updating label ";
+        clickedJim->setLabelText(label);
+        activeGraph.setVertexLabel( clickedJimNumber, label);
+        if (!showLabels())
+            displayNodeLabelsAct->setChecked(true);
 
-    qDebug()<<"MW: updating color ";
-    activeGraph.setVertexColor( clickedJimNumber, color.name());
+        qDebug()<<"MW: updating color ";
+        activeGraph.setVertexColor( clickedJimNumber, color.name());
 
-    qDebug()<<"MW: updating size ";
-    activeGraph.setVertexSize(clickedJimNumber,size);
+        qDebug()<<"MW: updating size ";
+        activeGraph.setVertexSize(clickedJimNumber,size);
 
-    qDebug()<<"MW: updating value ";
-    //activeGraph.setVertexValue (clickedJimNumber,size);
+        qDebug()<<"MW: updating value ";
+        //activeGraph.setVertexValue (clickedJimNumber,size);
 
-    qDebug()<<"MW: updating shape ";
-    activeGraph.setVertexShape( clickedJimNumber, shape);
-    clickedJim->setShape(shape);
+        qDebug()<<"MW: updating shape ";
+        activeGraph.setVertexShape( clickedJimNumber, shape);
+        clickedJim->setShape(shape);
+
+    }
+    else {
+         foreach (QGraphicsItem *item, selectedNodes) {
+                if ( (clickedJim = qgraphicsitem_cast<Node *>(item) )) {
+                    clickedJimNumber = clickedJim->nodeNumber();
+                    qDebug () <<  clickedJimNumber;
+                    qDebug()<<"MW: updating color ";
+                    activeGraph.setVertexColor( clickedJimNumber, color.name());
+                    qDebug()<<"MW: updating size ";
+                    activeGraph.setVertexSize(clickedJimNumber,size);
+                    qDebug()<<"MW: updating shape ";
+                    activeGraph.setVertexShape( clickedJimNumber, shape);
+                    clickedJim->setShape(shape);
+                }
+         }
+         clickedJim=0;
+         clickedJimNumber=-1;
+
+    }
 
     graphChanged();
     statusMessage( tr("Ready. "));

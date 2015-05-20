@@ -315,8 +315,8 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     else { //self-link
         QPointF c1 = QPointF( targetPoint.x() -30,  targetPoint.y() -30 );
         QPointF c2 = QPointF( targetPoint.x() +30,  targetPoint.y() -30 );
-        qDebug()<< "*** Edge::paint(). Constructing a bezier self curve c1 "
-                <<c1.x()<<","<<c1.y()  << " and c2 "<<c2.x()<<","<<c2.y();
+//        qDebug()<< "*** Edge::paint(). Constructing a bezier self curve c1 "
+//                <<c1.x()<<","<<c1.y()  << " and c2 "<<c2.x()<<","<<c2.y();
         line.cubicTo( c1, c2, targetPoint);
     }
 
@@ -359,8 +359,8 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
         line.addPolygon ( destP);
         //painter->drawPolygon(QPolygonF() << line.p2() << destArrowP1 << destArrowP2);
         if (m_reciprocal) {
-            qDebug() << "**** Edge::paint() This edge is SYMMETRIC! "
-                     << " So, we need to create Arrow at src node as well";
+//            qDebug() << "**** Edge::paint() This edge is SYMMETRIC! "
+//                     << " So, we need to create Arrow at src node as well";
             QPointF srcArrowP1 = sourcePoint + QPointF(sin(angle +Pi / 3) * m_arrowSize,
                                                        cos(angle +Pi / 3) * m_arrowSize);
             QPointF srcArrowP2 = sourcePoint + QPointF(sin(angle +Pi - Pi  / 3) * m_arrowSize,
@@ -378,7 +378,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
         }
     }
     else {
-        qDebug()<< "*** Edge::paint(). This edge is self-link - CONTINUE!";
+//        qDebug()<< "*** Edge::paint(). This edge is self-link - CONTINUE!";
     }
     //	qDebug()<< "### Edge::paint(). DrawPath now....";
     painter->drawPath(line);
@@ -403,7 +403,7 @@ void Edge::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     qDebug("Edge: pressEvent() emitting edgeClicked");
     graphicsWidget->edgeClicked(this);
     if ( event->button()==Qt::LeftButton ) {
-        qDebug("Edge: edge pressEvent() left click > ");
+        qDebug() << "Edge: edge pressEvent() left click > ";
         //	graphicsWidget->startNodeMovement(0);
     }
     if ( event->button()==Qt::RightButton ) {

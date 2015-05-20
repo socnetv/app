@@ -268,7 +268,7 @@ public slots:
     void slotHelpAbout();
     void slotAboutQt();
     //PUBLICLY AVAILABLE SLOTS. CALLED FROM GRAPHICSVIEW
-    void selectNone();
+    void selectedItems(QList<QGraphicsItem *> l);
     void nodeInfoStatusBar(Node*);
     void linkInfoStatusBar (Edge*);
     void openNodeContextMenu();
@@ -322,6 +322,7 @@ private:
     WebCrawlerDialog m_WebCrawlerDialog;
 
     NodeEditDialog *m_nodeEditDialog;
+    QList<QGraphicsItem *> selectedNodes;
 
     PreviewForm *previewForm;
     QList<QTextCodec *> codecs;

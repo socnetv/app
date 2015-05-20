@@ -119,7 +119,7 @@ void NodeEditDialog::checkErrors() {
         QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
         effect->setColor(QColor("red"));
         ui.labelEdit->setGraphicsEffect(effect);
-        (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
+        //(ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
     }
     else {
         ui.labelEdit->setGraphicsEffect(0);
