@@ -360,13 +360,13 @@ This index was introduced by Shimbel (1953).
 </p>
 
 
-<h5><a name="EC" id="EC"></a>Eccentricity Centrality (EC)</h5>
+<h5><a name="EC" id="EC"></a>Eccentricity Centrality (EC) or Harary Graph Centrality</h5>
 <p class="text"> 
-For each node u, the Eccentricity Centrality is the largest geodesic distance (u,v) to every other node v.
-Therefore, the EC score reflects how far, at most, is each node from every other node.
+For each node u, the Eccentricity Centrality is the inverse of the largest geodesic distance (u,v) to every other node v in the network.
+Therefore, the EC score reflects how close is each node to every other node and therefore to the middle of the network.
 <br />
-Nodes with very high EC score have short distances to all other nodes in the graph. <br />
-Nodes with very low EC score have longer distances to some other nodes in the graph.
+Nodes with high EC score have short distances to other nodes in the graph and therefore are likely to be near the middle of the network. <br />
+Nodes with low EC score have longer distances to some other nodes in the graph, and therefore are most likely towards the "edge" of the network.
 <br /><br />
 This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs.
 It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1.
