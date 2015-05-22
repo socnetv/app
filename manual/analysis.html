@@ -138,6 +138,17 @@ If it is not zero, then the nodes (i,j) are reachable and the X<sup>R</sup>
 element is 1.
 </p>
 
+<h4><a name="CliqueCensus" id="CliqueCensus"></a>Clique Census</h4>
+<p class="text">
+A triangle or a clique is a complete subgraph of three nodes of G.
+It is defined as delta(v) = |{{u, w} in E : {v, u} in E and {v, w} in E}|.
+
+This method computes the number of triangles each node v belongs to and the
+total number of cliques present in the network.
+
+Please note this method can be very slow. Its computational cost increases very
+rapidly in large and / or dense networks, it can run for hours or even days :)
+
 
 <h4><a name="Coefficient" id="Coefficient"></a>Clustering Coefficient</h4>
 <p class="text">

@@ -1377,10 +1377,10 @@ void MainWindow::initActions(){
     reachabilityMatrixAct->setWhatsThis(tr("Reachability Matrix\n\n     Calculates the reachability matrix X<sup>R</sup> of the graph where the {i,j} element is 1 if the vertices i and j are reachable. \n\n Actually, this just checks whether the corresponding element of Distances matrix is not zero.\n "));
     connect(reachabilityMatrixAct, SIGNAL(triggered()), this, SLOT(slotReachabilityMatrix() )  );
 
-    cliquesAct = new QAction(QIcon(":/images/clique.png"), tr("Number of Cliques"),this);
+    cliquesAct = new QAction(QIcon(":/images/clique.png"), tr("Clique Census"),this);
     cliquesAct->setShortcut(tr("Ctrl+T"));
-    cliquesAct->setStatusTip(tr("The number of cliques (triangles) of each node v."));
-    cliquesAct->setWhatsThis(tr("Number of Cliques\n\n A triangle is a complete subgraph of three nodes of G. This method calculates the number of triangles of each node v is defined as delta(v) = |{{u, w} in E : {v, u} in E and {v, w} in E}|.  \n "));
+    cliquesAct->setStatusTip(tr("Counts cliques (triangles) for each node v and the whole network."));
+    cliquesAct->setWhatsThis(tr("Clique Census\n\n A triangle or a clique is a complete subgraph of three nodes of G. This method computes the number of triangles each node v belongs to. It is defined as delta(v) = |{{u, w} in E : {v, u} in E and {v, w} in E}|.  \n "));
     connect(cliquesAct, SIGNAL(triggered()), this, SLOT(slotNumberOfCliques() )  );
 
 
