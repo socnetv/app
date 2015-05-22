@@ -216,7 +216,7 @@ public slots:
     void slotReachabilityMatrix();
     void slotConnectedness();
 
-    void slotNumberOfCliques();
+    void slotCliqueCensus();
     void slotClusteringCoefficient();
     void slotTriadCensus();
     void slotCheckSymmetry();

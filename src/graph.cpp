@@ -279,13 +279,13 @@ void Graph::createEdge(int v1, int v2, float weight, QString color,
            << " weight " << weight ;
     // check whether there is already such an edge
     // (see #713617 - https://bugs.launchpad.net/socnetv/+bug/713617)
-    if (!hasEdge(v1,v2)){
+    if (!hasArc(v1,v2)){
         if ( reciprocal == 2) {
             qDebug()<<"  Creating edge as RECIPROCAL - emitting drawEdge signal to GW";
             addEdge ( v1, v2, weight, color, reciprocal);
             emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier);
         }
-        else if (this->hasEdge( v2, v1) )  {
+        else if (this->hasArc( v2, v1) )  {
             qDebug()<<". Opposite arc exists. "
                    << "  Emitting drawEdgeReciprocal to GW ";
             reciprocal = 1;
@@ -570,7 +570,7 @@ void Graph::removeEdge (int v1, int v2) {
                << " and " << v2 << " i "<< index[v2]
                << "  NOW vertex v1 reports edge weight "
                << m_graph [ index[v1] ]->isLinkedTo(v2) ;
-    if ( this->hasEdge(v2,v1) !=0)
+    if ( this->hasArc(v2,v1) !=0)
         symmetricAdjacencyMatrix=false;
 
     m_totalEdges--;
@@ -1034,14 +1034,21 @@ void Graph::setEdgeColor(long int s, long int t, QString color){
 
 
 
-/**	Checks if there is an edge from v1 to v2
+/**	Checks if there is a directed edge (arc) from v1 to v2
     Complexity:  O(logN) for index retrieval + O(1) for QList index retrieval + O(logN) for checking edge(v2)
 */
-float Graph::hasEdge (int v1, int v2) {
-    //qDebug() << "Graph::hasEdge() " << v1 << " -> " << v2 << " ? " ;
+float Graph::hasArc (int v1, int v2) {
+    //qDebug() << "Graph::hasArc() " << v1 << " -> " << v2 << " ? " ;
     return m_graph[ index[v1] ]->isLinkedTo(v2);
 }
 
+/**	Checks if there is a edge between v1 and v2 (both arcs exist)
+*/
+bool Graph::hasEdge (int v1, int v2) {
+    //qDebug() << "Graph::hasEdge() " << v1 << " <-> " << v2 << " ? " ;
+    return ( m_graph[ index[v1] ]->isLinkedTo(v2)
+            && m_graph[ index[v1] ]->isLinkedTo(v2) ) ? true: false;
+}
 
 
 void Graph::edges(){
@@ -1217,7 +1224,7 @@ bool Graph::isWeighted(){
     QList<Vertex*>::const_iterator it, it1;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
-            if ( ( this->hasEdge ( (*it1)->name(), (*it)->name() ) )  > 1  )   {
+            if ( ( this->hasArc ( (*it1)->name(), (*it)->name() ) )  > 1  )   {
                 qDebug("Graph: isWeighted: TRUE");
                 return true;
             }
@@ -1436,7 +1443,7 @@ void Graph::symmetrize(){
 //Returns TRUE if (v1, v2) is symmetric.
 bool Graph::symmetricEdge(int v1, int v2){
     qDebug("***Graph: symmetricEdge()");
-    if ( (this->hasEdge ( v1, v2 ) ) > 0  &&  (this->hasEdge ( v2, v1 ) ) > 0   ) {
+    if ( (this->hasArc ( v1, v2 ) ) > 0  &&  (this->hasArc ( v2, v1 ) ) > 0   ) {
         qDebug("Graph: symmetricEdge: YES");
         return true;
     }
@@ -2741,7 +2748,7 @@ void Graph::centralityDegree(const bool weights, const bool dropIsolates){
         DC=0;
         if (!(*it)->isIsolated()) {
             for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
-                if ( (weight=this->hasEdge ( (*it)->name(), (*it1)->name() ) ) !=0  )   {
+                if ( (weight=this->hasArc ( (*it)->name(), (*it1)->name() ) ) !=0  )   {
 //                    qDebug() << "Graph::centralityDegree() - vertex "
 //                             <<  (*it)->name()
 //                             << " isLinkedTo = " <<  (*it1)->name();
@@ -2751,8 +2758,8 @@ void Graph::centralityDegree(const bool weights, const bool dropIsolates){
                         DC++;
 
                     //check here if the matrix is symmetric - we need this below
-                    if ( ( this->hasEdge ( (*it1)->name(), (*it)->name() ) ) !=
-                         ( this->hasEdge ( (*it)->name(), (*it1)->name() ) )   )
+                    if ( ( this->hasArc ( (*it1)->name(), (*it)->name() ) ) !=
+                         ( this->hasArc ( (*it)->name(), (*it1)->name() ) )   )
                         symmetricAdjacencyMatrix = false;
                 }
             }
@@ -3508,15 +3515,15 @@ void Graph::prestigeDegree(bool weights, bool dropIsolates=false){
         DP=0;
         if (!(*it)->isIsolated()) {
             for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
-                if ( (weight=this->hasEdge ( (*it1)->name(), (*it)->name() ) ) !=0  )   {
+                if ( (weight=this->hasArc ( (*it1)->name(), (*it)->name() ) ) !=0  )   {
                     if (weights)
                         DP+=weight;
                     else
                         DP++;
                 }
                 //check if the matrix is symmetric - we need this below
-                if ( ( this->hasEdge ( (*it1)->name(), (*it)->name() ) )
-                     != ( this->hasEdge ( (*it)->name(), (*it1)->name() ) )   )
+                if ( ( this->hasArc ( (*it1)->name(), (*it)->name() ) )
+                     != ( this->hasArc ( (*it)->name(), (*it1)->name() ) )   )
                     symmetricAdjacencyMatrix = false;
             }
         }
@@ -3908,8 +3915,7 @@ void Graph::prestigePageRank(const bool dropIsolates){
                 // take every other node which links to the current node.
                 jt=(*it)->m_inLinks.cbegin();
                 while ( jt != (*it) -> m_inLinks.cend() ){
-                    qDebug() << "Graph::numberOfCliques() "
-                             << " iterate over all inLinks ";
+                    qDebug() << "   iterate over all inLinks ";
                     relation = jt.value().first;
                     if ( relation != currentRelation() ){
                         ++jt;
@@ -3924,7 +3930,7 @@ void Graph::prestigePageRank(const bool dropIsolates){
                     qDebug() << "Graph:: prestigePageRank " << (*it)->name()
                              << " is inLinked from " << referrer  ;
 
-                    if ( this->hasEdge( referrer , (*it)->name() ) ) {
+                    if ( this->hasArc( referrer , (*it)->name() ) ) {
                         outDegree = m_graph[ index[referrer] ] ->outDegree();
                         PRP =  m_graph[ index[referrer] ]->PRP();
                         qDebug()<< "Graph:: prestigePageRank() " <<  referrer
@@ -4068,10 +4074,10 @@ void Graph::writePrestigePageRank(const QString fileName, const bool dropIsolate
 /**
 *	Writes the number of cliques (triangles) of each vertex into a given file.
 */
-void Graph::writeNumberOfCliques(
+void Graph::writeCliqueCensus(
         const QString fileName, const bool considerWeights)
 {
-    qDebug()<< "Graph::writeNumberOfCliques() ";
+    qDebug()<< "Graph::writeCliqueCensus() ";
     Q_UNUSED(considerWeights);
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
@@ -4085,7 +4091,7 @@ void Graph::writeNumberOfCliques(
 
     emit statusMessage ( QString(tr("Writing number of triangles to file:")).arg(fileName) );
 
-    outText << tr("NUMBER OF CLIQUES (CLQs)") << "\n";
+    outText << tr("CLIQUE CENSUS (CLQs)") << "\n";
     outText << tr("CLQs range: 0 < CLQs < ") <<"\n\n";
     outText << "Node"<<"\tCLQs\n";
 
@@ -4103,7 +4109,7 @@ void Graph::writeNumberOfCliques(
         outText << tr("CLQSUM Range: 0 < CLQSUM < ") << N * (N-1) * (N-2)/ 3 << endl;
 
     outText <<"\n\n" ;
-    outText << tr("Number of Cliques Report,\n");
+    outText << tr("Clique Census Report,\n");
     outText << tr("created by SocNetV: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
 
     file.close();
@@ -4916,7 +4922,7 @@ void Graph::createRandomNetSmallWorld (
     for (register int i=1;i<vert; i++) {
         for (register int j=i+1;j<vert; j++) {
             qDebug()<<">>>>> REWIRING: Check if  "<< i << " is linked to " << j;
-            if ( this-> hasEdge(i, j) ) {
+            if ( this-> hasArc(i, j) ) {
                 qDebug()<<">>>>> REWIRING: They're linked. Do a random REWIRING "
                           "Experiment between "<< i<< " and " << j
                        << " Beta parameter is " << beta;
@@ -4930,7 +4936,7 @@ void Graph::createRandomNetSmallWorld (
                         if (candidate == 0 || candidate == i) continue;
                         qDebug()<<">>>>> REWIRING: Candidate: "<< candidate;
                         //Only if differs from i and hasnot edge with it
-                        if (! this->hasEdge(i, candidate) )
+                        if (! this->hasArc(i, candidate) )
                             qDebug("<----> Random New Edge Experiment between %i and %i:", i, candidate);
                         if (rand() % 100 > 0.5) {
                             qDebug("Creating new link!");
@@ -5263,130 +5269,29 @@ void Graph::writeReachabilityMatrix(QString fn, QString netName,
 
 
 /**
-    Calculates and returns the number of cliques which include vertex v1
-    A clique (or triangle) is a complete subgraph of three nodes.
+    Calculates and returns the number of cliques which include 'source' vertex
+    A clique (or triangle) is a complete subgraph of three vertices.
+    All three vertices must be mutually adjacenct.
 */	
-float Graph:: numberOfCliques(int v1){
-    qDebug("*** Graph::numberOfCliques(%i) ", v1);
+float Graph:: numberOfCliques(int source){
+    qDebug("*** Graph::numberOfCliques(%i) ", source);
     float cliques=0;
-    int  connectedVertex1=0, connectedVertex2=0;
+    int  vert1=0, vert2=0;
     int relation=0;
 //    int weight=0;
     bool edgeStatus=false;
-    bool symmetric=false;
     H_edges::const_iterator it1, it2;
 
-    qDebug() << "Graph::numberOfCliques() Source vertex " << v1
-             << "[" << index[v1] << "] has inDegree " << inboundEdges(v1)
-             << " and outDegree "<< outboundEdges(v1);
-
-    if ( ! (symmetric = isSymmetric()) ) {
-        qDebug () << "Graph::numberOfCliques() - graph is not symmetric"
-                  << " checking inLinks to " << v1;
-        it1=m_graph [ index[v1] ] ->m_inLinks.cbegin();
-        while ( it1!=m_graph [ index[v1] ] -> m_inLinks.cend() ){
-            relation = it1.value().first;
-            if ( relation != currentRelation() ) {
-                ++it1;
-                continue;
-            }
-            edgeStatus=it1.value().second.second;
-            if ( edgeStatus != true) {
-                ++it1;
-                continue;
-            }
-            connectedVertex1 = it1.key();
-//            weight = it1.value().second.first;
-            qDebug() << "Graph::numberOfCliques() "
-                        << " inLink from 1st neighbor " << connectedVertex1
-                     << "[" << index[connectedVertex1] << "] "
-                        << "...Cross-checking with it inLinks from other neighbors";
-            it2=m_graph [ index[v1] ] ->m_inLinks.cbegin();
-            while ( it2!=m_graph [ index[v1] ] -> m_inLinks.cend() ){
-                qDebug() << "Graph::numberOfCliques() "
-                         << " iterate over all inLinks ";
-                relation = it2.value().first;
-                if ( relation != currentRelation() ){
-                    ++it2;
-                    continue;
-                }
-                edgeStatus=it2.value().second.second;
-                if ( edgeStatus != true){
-                    ++it2;
-                    continue;
-                }
-                connectedVertex2 = it2.key();
-                qDebug() << "Graph::numberOfCliques() "
-                         << " possible other neighbor" << connectedVertex2;
-                if (connectedVertex1 == connectedVertex2) {
-                    qDebug() << "Graph::numberOfCliques() "
-                             << " it is the same 1st neighbor - CONTINUE";
-                    ++it2;
-                    continue;
-                }
-                else {
-                    qDebug() << "Graph::numberOfCliques() "
-                             << " inLink from other neighbor "
-                             << connectedVertex2
-                             << "[" << index[connectedVertex2] << "]";
-                    if ( this->hasEdge( connectedVertex1, connectedVertex2 ) ) {
-                        qDebug() << "Graph::numberOfCliques() "
-                                 << " 1st neighbor " << connectedVertex1
-                                 << " has OutLink to other neighbor "
-                                  << connectedVertex2
-                                  << " Therefore we found a clique!";
-                        cliques++;
-                        qDebug("Graph::numberOfCliques() cliques = %f" ,  cliques);
-                    }
-                }
-                ++it2;
-            }
-            qDebug()<< "Graph::numberOfCliques()  .....Checking outLinks.... ";
-            it2=m_graph [ index[v1] ] ->m_outLinks.cbegin();
-            while ( it2!=m_graph [ index[v1]  ] -> m_outLinks.cend() ){
-                relation = it2.value().first;
-                if ( relation != currentRelation() ) {
-                    ++it2;
-                    continue;
-                }
-                edgeStatus=it2.value().second.second;
-                if ( edgeStatus != true) {
-                    ++it2;
-                    continue;
-                }
-                connectedVertex2=it2.key();
-                if (connectedVertex1 == connectedVertex2) {
-                    ++it2;
-                    continue;
-                }
-                else {
-                    qDebug() << "Graph::numberOfCliques() "
-                             << " outLink to other neighbor "
-                             << connectedVertex2
-                             << "["  << index[connectedVertex2] << "]";
-                    if ( this->hasEdge( connectedVertex1, connectedVertex2 )
-                         || this-> hasEdge( connectedVertex2, connectedVertex1 ) ) {
-                        qDebug() << "Graph::numberOfCliques() "
-                               << " other neighbor " << connectedVertex2
-                                  << " is connected to neighbor "
-                                  << connectedVertex1
-                                  <<  "Therefore we found a clique!";
-                        cliques++;
-                        qDebug("Graph::numberOfCliques() cliques = %f" ,  cliques);
-                    }
-                }
-                ++it2;
-            } // end 2nd while loop
-            ++it1;
-        } // end 1st while
-
-    } // end if not symmetric
+    qDebug() << "Graph::numberOfCliques() Source vertex " << source
+             << "[" << index[source] << "] has inDegree " << inboundEdges(source)
+             << " and outDegree "<< outboundEdges(source);
 
 
-    it1=m_graph [ index[v1] ] ->m_outLinks.cbegin();
-    while ( it1!=m_graph [ index[v1]  ] -> m_outLinks.cend() ){
+    qDebug () << "Graph::numberOfCliques() - Checking inLinks to " << source;
+    it1=m_graph [ index[source] ] ->m_inLinks.cbegin();
+    while ( it1!=m_graph [ index[source] ] -> m_inLinks.cend() ){
         relation = it1.value().first;
-        if ( relation != currentRelation() ){
+        if ( relation != currentRelation() ) {
             ++it1;
             continue;
         }
@@ -5395,14 +5300,23 @@ float Graph:: numberOfCliques(int v1){
             ++it1;
             continue;
         }
-        connectedVertex1=it1.key();
-        qDebug() << "Graph::numberOfCliques() "
-                    << " outLink to 1st neighbor " << connectedVertex1
-                 << "[" << index[connectedVertex1] << "] "
-                    << "...Cross-checking with it outLinks to other neighbors";
+        vert1 = it1.key();
+        //            weight = it1.value().second.first;
+        qDebug() << "Graph::numberOfCliques() - inLink from 1st neighbor "
+                 << vert1
+                 << "[" << index[vert1] << "] ";
 
-        it2=m_graph [ index[v1] ] ->m_outLinks.cbegin();
-        while ( it2!=m_graph [ index[v1]  ] -> m_outLinks.cend() ){
+        if (  this->hasArc( source, vert1 )  == 0 )  {
+            qDebug() << "Graph::numberOfCliques() - Not mutual link - CONTINUE";
+            ++it1;
+            continue;
+
+        }
+        qDebug() << "Graph::numberOfCliques() - Mutual link! "
+                 << " Iterate over all inLinks of " << vert1;
+        it2=m_graph [ index[vert1] ] ->m_inLinks.cbegin();
+        while ( it2!=m_graph [ index[vert1] ] -> m_inLinks.cend() ){
+
             relation = it2.value().first;
             if ( relation != currentRelation() ){
                 ++it2;
@@ -5413,44 +5327,42 @@ float Graph:: numberOfCliques(int v1){
                 ++it2;
                 continue;
             }
-            connectedVertex2=it2.key();
-            if (connectedVertex1 == connectedVertex2){
+            vert2 = it2.key();
+            qDebug() << "Graph::numberOfCliques() -     Possible other neighbor"
+                     << vert2 << "[" << index[vert2] << "]";
+            if (source == vert2) {
+                qDebug() << "Graph::numberOfCliques() -     It's the source - CONTINUE";
                 ++it2;
                 continue;
             }
-            else if ( (connectedVertex1 >= connectedVertex2) && symmetric){
+            if (  this->hasArc( vert2, vert1 ) == 0 )  {
+                qDebug() << "Graph::numberOfCliques() -     Not mutual link - CONTINUE";
                 ++it2;
                 continue;
             }
             else {
-                qDebug() << "Graph::numberOfCliques() "
-                         << " outLink to other neighbor "
-                         << connectedVertex2
-                         << "["  << index[connectedVertex2] << "]";
-                if ( this->hasEdge( connectedVertex1, connectedVertex2 ) ) {
-                    qDebug() << "Graph::numberOfCliques() "
-                           << " 1st neighbor " << connectedVertex1
-                              << " is connected to other neighbor "
-                              << connectedVertex2
-                              <<  "Therefore we found a clique!";
+                qDebug() << "Graph::numberOfCliques() -     Mutual link "
+                         << vert2 << " <-> " << vert1
+                            << ". Checking if "
+                            << vert2 << " <-> " << source << " ?? ";
+
+                if ( this->hasEdge( source, vert2 ) ) {
+                    qDebug() << "Graph::numberOfCliques() -     Mutual link "
+                             << vert2 << " <-> " << source
+                             << " Therefore we found a clique: "
+                             << source << " " << vert1 << " " << vert2 ;
                     cliques++;
                     qDebug("Graph::numberOfCliques() cliques = %f" ,  cliques);
                 }
-                if (!symmetric)
-                    if ( this->hasEdge( connectedVertex2, connectedVertex1 ) ) {
-                        qDebug() << "Graph::numberOfCliques() "
-                               << " other neighbor " << connectedVertex2
-                                  << " has also inLink connected to 1st neighbor "
-                                  << connectedVertex1
-                                  <<  "Therefore we found a clique!";
-                        cliques++;
-                        qDebug("Graph::numberOfCliques() cliques = %f" ,  cliques);
-                    }
+                else {
+                    qDebug() << "Graph::numberOfCliques() -     Not mutual - CONTINUE";
+                }
             }
             ++it2;
-        } // end 2nd while
+        }
         ++it1;
     } // end 1st while
+
 
     return cliques;
 }
@@ -6082,8 +5994,8 @@ bool Graph::saveGraphToPajekFormat (
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         for (jt=m_graph.begin(); jt!=m_graph.end(); jt++){
             qDebug() << "Graph::saveGraphToPajekFormat:  it=" << (*it)->name() << ", jt=" << (*jt)->name() ;
-            if  ( (weight=this->hasEdge( (*it)->name(), (*jt)->name())) !=0
-                  &&   ( this->hasEdge((*jt)->name(), (*it)->name())) == 0
+            if  ( (weight=this->hasArc( (*it)->name(), (*jt)->name())) !=0
+                  &&   ( this->hasArc((*jt)->name(), (*it)->name())) == 0
                   )
             {
                 qDebug()<<"Graph::saveGraphToPajekFormat  weight "<< weight << " color "<<  (*it)->outLinkColor( (*jt)->name() ) ;
@@ -6101,8 +6013,8 @@ bool Graph::saveGraphToPajekFormat (
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         for (jt=m_graph.begin(); jt!=m_graph.end(); jt++){
             qDebug() << "Graph::saveGraphToPajekFormat:  it=" <<  (*it)->name() << ", jt=" <<(*jt)->name() ;
-            if  ( (weight=this->hasEdge((*it)->name(), (*jt)->name()))!=0   &&
-                  (this->hasEdge((*jt)->name(), (*it)->name()))!=0
+            if  ( (weight=this->hasArc((*it)->name(), (*jt)->name()))!=0   &&
+                  (this->hasArc((*jt)->name(), (*it)->name()))!=0
                   )  {
                 if ( (*it)->name() > (*jt)->name() )
                     continue;
@@ -9489,7 +9401,7 @@ void Graph::writeAdjacencyMatrixTo(QTextStream& os){
         if ( ! (*it)->isEnabled() ) continue;
         for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
             if ( ! (*it1)->isEnabled() ) continue;
-            if ( (weight = this->hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
+            if ( (weight = this->hasArc ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
                 os << static_cast<int> (weight) << " ";
             }
             else
@@ -9510,7 +9422,7 @@ void Graph::writeAdjacencyMatrixTo(QTextStream& os){
 //    float weight=-1;
 //    for (it=m.m_graph.begin(); it!=m.m_graph.end(); it++){
 //        for (it1=m.m_graph.begin(); it1!=m.m_graph.end(); it1++){
-//            if ( (weight = m.hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
+//            if ( (weight = m.hasArc ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
 //                os << static_cast<int> (weight) << " ";
 //            }
 //            else
@@ -9546,7 +9458,7 @@ void Graph::writeAdjacencyMatrix (const QString fn, const char* netName) {
         if ( ! (*it)->isEnabled() ) continue;
         for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
             if ( ! (*it1)->isEnabled() ) continue;
-            if ( (weight =  this->hasEdge ( (*it)->name(), (*it1)->name() )  )!=0 ) {
+            if ( (weight =  this->hasArc ( (*it)->name(), (*it1)->name() )  )!=0 ) {
                 sum++;
                 outText <<  (weight) << " "; // TODO make the matrix look symmetric
             }
@@ -9603,7 +9515,7 @@ void Graph::createAdjacencyMatrix(const bool dropIsolates,
                        << " is isolated. Continue";
                 continue;
             }
-            if ( (m_weight = this->hasEdge ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
+            if ( (m_weight = this->hasArc ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
                 if (!considerWeights) {
                     AM.setItem(i,j, 1 );
                 }
@@ -9619,7 +9531,7 @@ void Graph::createAdjacencyMatrix(const bool dropIsolates,
             }
             qDebug()<<" AM("<< i+1 << ","<< j+1 << ") = " <<  AM.item(i,j);
             if (i != j ) {
-                if ( (m_weight = this->hasEdge ( (*it1)->name(), (*it)->name() )  ) !=0 ) {
+                if ( (m_weight = this->hasArc ( (*it1)->name(), (*it)->name() )  ) !=0 ) {
                     if (!considerWeights)
                         AM.setItem(j,i, 1 );
                     else {
@@ -9857,7 +9769,7 @@ bool Graph::saveGraphToGraphMLFormat (
             source=(*it)->name();
             target=(*jt)->name();
 
-            if  ( 	(weight= this->hasEdge( source,target ) ) !=0 )
+            if  ( 	(weight= this->hasArc( source,target ) ) !=0 )
             {
                 ++edgeCount;
                 m_color = (*it)->outLinkColor( target );
@@ -10071,7 +9983,7 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
                 * that pull them together (if d > naturalLength)
                 * or push them apart (if d < naturalLength)
                 */
-                if ( this->hasEdge (v1->name(), v2->name()) ) {
+                if ( this->hasArc (v1->name(), v2->name()) ) {
 
                     f_att = layoutForceDirected_F_att (dist, naturalLength) ;
 
@@ -10091,7 +10003,7 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
                              << " disp_t.x="<< v2->disp().rx()
                              << " disp_t.y="<< v2->disp().ry();
 
-                }  // end if hasEdge
+                }  // end if hasArc
 
             } //end for v2
             //recompute naturalLength (in case the user resized the window)
@@ -10184,7 +10096,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
                         << " disp_s.x="<< v1->disp().rx()
                         << " disp_s.y="<< v1->disp().ry();
 
-                if ( this->hasEdge (v1->name(), v2->name()) ) {
+                if ( this->hasArc (v1->name(), v2->name()) ) {
                     //calculate attracting force
                     f_att = layoutForceDirected_F_att (dist, optimalDistance);
                     v1->disp().rx() += sign( DV.x() ) * f_att;

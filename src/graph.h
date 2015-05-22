@@ -287,7 +287,8 @@ public:
 
     /* EDGES */
     void edges();
-    float hasEdge (int v1, int v2);
+    float hasArc (int v1, int v2);
+    bool hasEdge (int v1, int v2);
     void removeEdge (int v1, int v2);
 
     bool isWeighted();
@@ -371,7 +372,7 @@ public:
     void writePrestigePageRank(const QString, const bool Isolates=false);
 
 
-    void writeNumberOfCliques(
+    void writeCliqueCensus(
             const QString fileName, const bool considerWeights
             );
 

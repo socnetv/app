@@ -1381,7 +1381,7 @@ void MainWindow::initActions(){
     cliquesAct->setShortcut(tr("Ctrl+T"));
     cliquesAct->setStatusTip(tr("Counts cliques (triangles) for each node v and the whole network."));
     cliquesAct->setWhatsThis(tr("Clique Census\n\n A triangle or a clique is a complete subgraph of three nodes of G. This method computes the number of triangles each node v belongs to. It is defined as delta(v) = |{{u, w} in E : {v, u} in E and {v, w} in E}|.  \n "));
-    connect(cliquesAct, SIGNAL(triggered()), this, SLOT(slotNumberOfCliques() )  );
+    connect(cliquesAct, SIGNAL(triggered()), this, SLOT(slotCliqueCensus() )  );
 
 
     clusteringCoefAct = new QAction(QIcon(":/images/clique.png"), tr("Clustering Coefficient"),this);
@@ -2478,7 +2478,7 @@ void MainWindow::toolBoxAnalysisClusterabilitySelectChanged(int selectedIndex) {
         break;
     case 1:
         qDebug()<< "Cliques";
-        slotNumberOfCliques();
+        slotCliqueCensus();
         break;
     case 2:
         qDebug()<< "Clustering Coefficient";
@@ -4680,9 +4680,9 @@ void MainWindow::linkInfoStatusBar (Edge* link) {
     nodeClicked=false;
 
     if (link->isReciprocal()) {
-        float outbound = activeGraph.hasEdge
+        float outbound = activeGraph.hasArc
                 (link->sourceNodeNumber(), link->targetNodeNumber());
-        float inbound = activeGraph.hasEdge
+        float inbound = activeGraph.hasArc
                 (link->targetNodeNumber(), link->sourceNodeNumber());
         if (outbound==inbound)
             statusMessage(  QString
@@ -4940,7 +4940,7 @@ void MainWindow::slotAddLink(){
         return;
     }
     //Check if this link already exists...
-    if (activeGraph.hasEdge(sourceNode, targetNode)!=0 ) {
+    if (activeGraph.hasArc(sourceNode, targetNode)!=0 ) {
         qDebug("Link exists. Aborting");
         statusMessage( tr("Aborting. ")  );
         QMessageBox::critical(this,"Error","Link already exists.", "OK",0);
@@ -5004,7 +5004,7 @@ void MainWindow::slotRemoveLink(){
             statusMessage( "Remove link operation cancelled." );
             return;
         }
-        if ( activeGraph.hasEdge(sourceNode, targetNode)!=0 ) {
+        if ( activeGraph.hasArc(sourceNode, targetNode)!=0 ) {
             if (activeGraph.symmetricEdge(sourceNode, targetNode) )
                 graphicsWidget->unmakeEdgeReciprocal(targetNode, sourceNode);
             graphicsWidget->eraseEdge(sourceNode, targetNode);
@@ -5146,7 +5146,7 @@ void MainWindow::slotChangeLinkColor(){
             return;
         }
 
-        if ( ! activeGraph.hasEdge (sourceNode, targetNode ) )  {
+        if ( ! activeGraph.hasArc (sourceNode, targetNode ) )  {
              statusMessage( tr("There is no such link. ") );
              QMessageBox::critical(this, "Error",
                                    tr("No link! \nNo such link found in current network."), "OK",0);
@@ -6781,21 +6781,21 @@ void MainWindow::slotReachabilityMatrix(){
 }
 
 /**
-*	Calls Graph:: writeNumberOfCliques() to write the number of cliques (triangles)
+*	Calls Graph:: writeCliqueCensus() to write the number of cliques (triangles)
 *  of each vertex into a file, then displays it.
 */
-void MainWindow::slotNumberOfCliques(){
+void MainWindow::slotCliqueCensus(){
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
         statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
         return;
     }
-    QString fn = dataDir + "socnetv-report-number-of-cliques.dat";
+    QString fn = dataDir + "socnetv-report-clique-census.dat";
     bool considerWeights=true;
 
     createProgressBar();
 
-    activeGraph.writeNumberOfCliques(fn, considerWeights);
+    activeGraph.writeCliqueCensus(fn, considerWeights);
 
     destroyProgressBar();
 
@@ -6804,7 +6804,7 @@ void MainWindow::slotNumberOfCliques(){
     ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-    statusMessage("Number of cliques saved as: " + tempFileNameNoPath.last());
+    statusMessage("Clique Census saved as: " + tempFileNameNoPath.last());
 }
 
 
