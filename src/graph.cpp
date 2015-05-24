@@ -4085,28 +4085,28 @@ void Graph::writeCliqueCensus(
         emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
         return;
     }
-    long int cliques=0, cliques_sum=0, N = vertices();
+    long int cliqueCount=0, cliques_sum=0, N = vertices();
 
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
     emit statusMessage ( QString(tr("Writing number of triangles to file:")).arg(fileName) );
 
     outText << tr("CLIQUE CENSUS (CLQs)") << "\n";
-    outText << tr("CLQs range: 0 < CLQs < ") <<"\n\n";
+    outText << tr("CLQs range: 0 < CLQs < ")<< ( N * (N-1) * (N-2) ) /2 <<"\n\n";
     outText << "Node"<<"\tCLQs\n";
 
     QList<Vertex*>::const_iterator it;
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        cliques=this->numberOfCliques((*it)->name());
-        outText << (*it)->name()<<"\t"<< cliques <<endl;
-        cliques_sum += cliques;
+        cliqueCount=this->numberOfCliques((*it)->name());
+        outText << (*it)->name()<<"\t"<< cliqueCount <<endl;
+        cliques_sum += cliqueCount;
     }
 
     outText << endl << tr("NUMBER OF CLIQUES (CLQSUM) OF GRAPH")<< endl;
     outText << "CLQSUM = " <<  cliques_sum / 3.0 <<"\n\n";
     if ( N > 3)
-        outText << tr("CLQSUM Range: 0 < CLQSUM < ") << N * (N-1) * (N-2)/ 3 << endl;
+        outText << tr("CLQSUM Range: 0 < CLQSUM < ") << ( N * (N-1) * (N-2)/ 3 ) / 2<< endl;
 
     outText <<"\n\n" ;
     outText << tr("Clique Census Report,\n");
@@ -5282,6 +5282,10 @@ float Graph:: numberOfCliques(int source){
     bool edgeStatus=false;
     H_edges::const_iterator it1, it2;
 
+    QString triad, triad_alt;
+    H_StrToBool dyads;
+    H_StrToBool triads;
+
     qDebug() << "Graph::numberOfCliques() Source vertex " << source
              << "[" << index[source] << "] has inDegree " << inboundEdges(source)
              << " and outDegree "<< outboundEdges(source);
@@ -5312,8 +5316,9 @@ float Graph:: numberOfCliques(int source){
             continue;
 
         }
-        qDebug() << "Graph::numberOfCliques() - Mutual link! "
+        qDebug() << "Graph::numberOfCliques() - Mutual link - a dyad! "
                  << " Iterate over all inLinks of " << vert1;
+        dyads.insert(QString::number(source) + ", " + QString::number(vert1),true);
         it2=m_graph [ index[vert1] ] ->m_inLinks.cbegin();
         while ( it2!=m_graph [ index[vert1] ] -> m_inLinks.cend() ){
 
@@ -5347,12 +5352,27 @@ float Graph:: numberOfCliques(int source){
                             << vert2 << " <-> " << source << " ?? ";
 
                 if ( this->hasEdge( source, vert2 ) ) {
+                    triad = QString::number(source) + ", " +
+                            QString::number(vert1) + ", " +
+                            QString::number(vert2) ;
+                    triad_alt = QString::number(source) + ", " +
+                            QString::number(vert2) + ", " +
+                            QString::number(vert1) ;
+
                     qDebug() << "Graph::numberOfCliques() -     Mutual link "
                              << vert2 << " <-> " << source
-                             << " Therefore we found a clique: "
-                             << source << " " << vert1 << " " << vert2 ;
+                             << " Found a (new?) triad clique: "
+                             << triad  << " alt " << triad_alt;
+                    if ( triads.contains(triad) || triads.contains(triad_alt)) {
+                        qDebug() << "Graph::numberOfCliques() -     "
+                                 <<
+                                    "Already found - skip";
+                        ++it2;
+                        continue;
+                    }
                     cliques++;
-                    qDebug("Graph::numberOfCliques() cliques = %f" ,  cliques);
+                    triads.insert(triad,true);
+                    qDebug() << "Graph::numberOfCliques() Cliques = " <<  cliques;
                 }
                 else {
                     qDebug() << "Graph::numberOfCliques() -     Not mutual - CONTINUE";
