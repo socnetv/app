@@ -424,6 +424,7 @@ public:
     float numberOfTriples(int v1);
     float numberOfCliques(int v1);
     float numberOfCliques();
+    bool addClique (QList<int> list);
     float clusteringCoefficient(int v1);
     float clusteringCoefficient ();
 
@@ -545,6 +546,9 @@ private:
     QHash <int, int> disconnectedVertices;
     QHash <int, int> unilaterallyConnectedVertices;
 
+    H_StrToBool cliques_2_Vertex;
+    H_StrToBool cliques_3_Vertex;
+    H_StrToBool cliques_4_Vertex;
 
     Matrix  TM, DM, sumM, invAM, AM, invM;
     Matrix XM, XSM, XRM;
