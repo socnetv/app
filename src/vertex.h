@@ -29,6 +29,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QStringList>
 #include <QHash>
 #include <QList>
 #include <QPointF>
@@ -219,6 +220,37 @@ public:
     void setCLC(float clucof)  { m_CLC=clucof; m_hasCLC=true; }
     bool hasCLC() { 	return m_hasCLC; }
 
+    int twoVertexCliques() { return m_twoVertexCliques.count();}
+    bool addTwoVertexClique(QString clique) { m_twoVertexCliques << clique; return true;}
+    void clearTwoVertexCliques() { m_twoVertexCliques.clear(); }
+
+    int threeVertexCliques() { return m_threeVertexCliques.count();}
+    bool addThreeVertexClique(QString clique) {
+        QStringList members = clique.split(",");
+
+        if (! m_threeVertexCliques.contains( clique) &&
+            ! m_threeVertexCliques.contains( QString::number (this->name()) + "," + members[2] + "," + members[1] ) ) {
+            m_threeVertexCliques << clique; return true ;
+        } else { return false; }
+    }
+    void clearThreeVertexCliques() { m_threeVertexCliques.clear(); }
+
+    int fourVertexCliques() { return m_fourVertexCliques.count();}
+    bool addFourVertexClique(QString clique)  {
+        QStringList members = clique.split(",");
+
+        if (! m_fourVertexCliques.contains( clique) &&
+            ! m_fourVertexCliques.contains(  QString::number (this->name()) + "," + members[1] + "," + members[3] + "," + members[2] ) &&
+            ! m_fourVertexCliques.contains(  QString::number (this->name()) + "," + members[2] + "," + members[1] + "," + members[3] ) &&
+            ! m_fourVertexCliques.contains(  QString::number (this->name()) + "," + members[2] + "," + members[3] + "," + members[1] ) &&
+            ! m_fourVertexCliques.contains(  QString::number (this->name()) + "," + members[3] + "," + members[1] + "," + members[2] ) &&
+            ! m_fourVertexCliques.contains(  QString::number (this->name()) + "," + members[3] + "," + members[2] + "," + members[1] ) )
+        {
+            m_fourVertexCliques << clique; return true ;
+        } else { return false; }
+    }
+    void clearFourVertexCliques() { m_fourVertexCliques.clear(); }
+
     //hold all outbound and inboud edges of this vertex.
     H_edges m_outLinks, m_inLinks;
 signals:
@@ -233,6 +265,9 @@ private:
     long int m_name,  m_outLinksCounter, m_inLinksCounter, m_outDegree, m_inDegree, m_localDegree;
     float m_Eccentricity;
     int m_value, m_size, m_labelSize, m_numberSize, m_curRelation;
+    QList<QString> m_twoVertexCliques;
+    QList<QString> m_threeVertexCliques;
+    QList<QString> m_fourVertexCliques;
     bool m_reciprocalLinked, m_enabled, m_hasCLC, m_isolated;
     QString m_color, m_numberColor, m_label, m_labelColor, m_shape;
     QPointF m_disp;

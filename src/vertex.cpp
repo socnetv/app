@@ -742,6 +742,8 @@ ilist Vertex::Ps(void) {
 	 return myPs;
 }
 
+
+
 Vertex::~Vertex() {
     qDebug() << " Vertex:: destroying my data";
     m_outLinks.clear();
