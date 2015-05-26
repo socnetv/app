@@ -46,6 +46,7 @@ typedef QList<int> ilist;
 typedef QPair <float, bool> pair_f_b;
 typedef QPair <int, pair_f_b > rel_w_bool;
 typedef QHash < int, rel_w_bool > H_edges;
+typedef QHash <QString, int> H_StrToInt;
 
 class Vertex : public QObject{
     Q_OBJECT
@@ -220,36 +221,81 @@ public:
     void setCLC(float clucof)  { m_CLC=clucof; m_hasCLC=true; }
     bool hasCLC() { 	return m_hasCLC; }
 
-    int twoVertexCliques() { return m_twoVertexCliques.count();}
-    bool addTwoVertexClique(QString clique) { m_twoVertexCliques << clique; return true;}
-    void clearTwoVertexCliques() { m_twoVertexCliques.clear(); }
 
-    int threeVertexCliques() { return m_threeVertexCliques.count();}
-    bool addThreeVertexClique(QString clique) {
-        QStringList members = clique.split(",");
-
-        if (! m_threeVertexCliques.contains( clique) &&
-            ! m_threeVertexCliques.contains( QString::number (this->name()) + "," + members[2] + "," + members[1] ) ) {
-            m_threeVertexCliques << clique; return true ;
-        } else { return false; }
+    int cliques (int size)
+    {
+        int count = 0;
+        foreach (int value, m_cliques) {
+            if ( value == size ) {
+                count ++;
+            }
+        }
+        return count ;
     }
-    void clearThreeVertexCliques() { m_threeVertexCliques.clear(); }
 
-    int fourVertexCliques() { return m_fourVertexCliques.count();}
-    bool addFourVertexClique(QString clique)  {
+    bool addClique (QString clique, int size) {
         QStringList members = clique.split(",");
-
-        if (! m_fourVertexCliques.contains( clique) &&
-            ! m_fourVertexCliques.contains(  QString::number (this->name()) + "," + members[1] + "," + members[3] + "," + members[2] ) &&
-            ! m_fourVertexCliques.contains(  QString::number (this->name()) + "," + members[2] + "," + members[1] + "," + members[3] ) &&
-            ! m_fourVertexCliques.contains(  QString::number (this->name()) + "," + members[2] + "," + members[3] + "," + members[1] ) &&
-            ! m_fourVertexCliques.contains(  QString::number (this->name()) + "," + members[3] + "," + members[1] + "," + members[2] ) &&
-            ! m_fourVertexCliques.contains(  QString::number (this->name()) + "," + members[3] + "," + members[2] + "," + members[1] ) )
+        switch (size) {
+        case 2:
         {
-            m_fourVertexCliques << clique; return true ;
-        } else { return false; }
+            m_cliques.insert( clique, size);
+            break;
+        }
+        case 3:
+        {
+            if (! m_cliques.contains( clique) &&
+                ! m_cliques.contains( QString::number (this->name()) +
+                                      "," + members[2] +
+                                      "," + members[1] ) )
+            {
+                m_cliques.insert( clique, size);
+                return true ;
+            }
+            else
+                return false;
+            break;
+        }
+        case 4:
+        {
+            if (! m_cliques.contains( clique) &&
+                    ! m_cliques.contains(  QString::number (this->name()) +
+                                           "," + members[1] +
+                                           "," + members[3] +
+                                           "," + members[2] ) &&
+                    ! m_cliques.contains(  QString::number (this->name()) +
+                                           "," + members[2] +
+                                           "," + members[1] +
+                                           "," + members[3] ) &&
+                    ! m_cliques.contains(  QString::number (this->name()) +
+                                           "," + members[2] +
+                                           "," + members[3] +
+                                           "," + members[1] ) &&
+                    ! m_cliques.contains(  QString::number (this->name()) +
+                                           "," + members[3] +
+                                           "," + members[1] +
+                                           "," + members[2] ) &&
+                    ! m_cliques.contains(  QString::number (this->name()) +
+                                           "," + members[3] +
+                                           "," + members[2] +
+                                           "," + members[1] )
+                    )
+            {
+                m_cliques.insert( clique, size);
+                return true ;
+            }
+            else
+            {
+                return false;
+            }
+
+            break;
+        }
+        };
     }
-    void clearFourVertexCliques() { m_fourVertexCliques.clear(); }
+
+    void clearCliques() {
+        m_cliques.clear();
+    }
 
     //hold all outbound and inboud edges of this vertex.
     H_edges m_outLinks, m_inLinks;
@@ -265,9 +311,7 @@ private:
     long int m_name,  m_outLinksCounter, m_inLinksCounter, m_outDegree, m_inDegree, m_localDegree;
     float m_Eccentricity;
     int m_value, m_size, m_labelSize, m_numberSize, m_curRelation;
-    QList<QString> m_twoVertexCliques;
-    QList<QString> m_threeVertexCliques;
-    QList<QString> m_fourVertexCliques;
+    H_StrToInt m_cliques;
     bool m_reciprocalLinked, m_enabled, m_hasCLC, m_isolated;
     QString m_color, m_numberColor, m_label, m_labelColor, m_shape;
     QPointF m_disp;

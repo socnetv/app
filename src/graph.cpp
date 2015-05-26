@@ -5239,7 +5239,7 @@ void Graph::writeCliqueCensus(
         emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
         return;
     }
-    long int twoVertexCliques=0, fourVertexCliques=0, threeVertexCliques=0 ;
+
     long int N = vertices();
 
     cliques_2_Vertex.clear();
@@ -5248,63 +5248,66 @@ void Graph::writeCliqueCensus(
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
     {
-        (*it)->clearTwoVertexCliques();
-        (*it)->clearThreeVertexCliques();
-        (*it)->clearFourVertexCliques();
+        (*it)->clearCliques();
     }
 
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    emit statusMessage ( QString(tr("Writing number of triangles to file:")).arg(fileName) );
+    emit statusMessage ( QString(tr("Writing clique census to file: ")).arg(fileName) );
 
-    outText << tr("CLIQUE CENSUS (CLQs)") << "\n";
+    outText << tr("CLIQUE CENSUS (CLQs)") << endl<<endl;
 
-    outText << "Node"<<"\t2-Vertex\t3-Vertex\t4-Vertex\n";
-
+    outText << tr("CLIQUE COUNTS BY VERTEX") << endl;
+    outText << tr("Node")<<"\t"<< tr("2-Vertex") << "\t" << tr("3-Vertex")
+            << "\t" << tr("4-Vertex") << endl;
 
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        numberOfCliques ((*it)->name());
-        outText << (*it)->name()<<"\t"<< (*it)->twoVertexCliques()
-                << "\t" <<  (*it)->threeVertexCliques()
-                << "\t"<<  (*it)->fourVertexCliques()  <<endl;
-        twoVertexCliques +=(*it)->twoVertexCliques() ;
-        threeVertexCliques +=(*it)->threeVertexCliques() ;
-        fourVertexCliques +=(*it)->fourVertexCliques() ;
+        countCliquesWith ((*it)->name());
+        outText << (*it)->name()<<"\t"<< (*it)->cliques(2)
+                << "\t" <<  (*it)->cliques(3)
+                << "\t"<<  (*it)->cliques(4)  <<endl;
 
     }
 
-    outText << endl << tr("AGGREGATE COUNTS OF CLIQUES")<< endl;
-    outText << "2-Vertex" <<"\t" << twoVertexCliques   / 2.0 << " (max: " << ( N * (N-1)  ) /2  << ")\n";
-    outText << "3-Vertex" <<"\t" << threeVertexCliques / 3.0 << " (max: " << ( N * (N-1) * (N-2)  ) /6  << ")\n";
-    outText << "4-Vertex" <<"\t" << fourVertexCliques  / 3.0 << "\n";
+    outText << endl<< endl << tr("AGGREGATE COUNTS OF CLIQUES")<< endl;
 
-        outText <<"\n\n" ;
-
-        outText << "2-Vertex" <<"\t" << cliques_2_Vertex.count()   << " (max: " << ( N * (N-1)  ) /2  << ")\n";
-        outText << "3-Vertex" <<"\t" << cliques_3_Vertex.count()   << " (max: " << ( N * (N-1) * (N-2)  ) /6  << ")\n";
-        outText << "4-Vertex" <<"\t" << cliques_4_Vertex.count()   << "\n";
+    outText << "2-Vertex cliques" <<"\t" << cliques_2_Vertex.count()
+            << "\t (max: " << ( N * (N-1)  ) /2  << ")\n";
+    outText << "3-Vertex cliques" <<"\t" << cliques_3_Vertex.count()
+            << "\t (max: " << ( N * (N-1) * (N-2)  ) /6  << ")\n";
+    outText << "4-Vertex cliques" <<"\t" << cliques_4_Vertex.count()
+            << "\t (max: " << ( N * (N-1) * (N-2) * (N-3)  ) /24  << ")\n";
 
 
-        outText << "3-Vertex cliques" <<"\n" ;
+    outText << endl<< endl << tr("CLIQUE ENUMERATION BY THEIR SIZE")<< endl;
+    QHash<QString, bool>::const_iterator i;
 
-        QHash<QString, bool>::const_iterator i;
+    outText << endl << tr("2-Vertex cliques") << endl ;
 
-        for (i = cliques_3_Vertex.constBegin(); i != cliques_3_Vertex.constEnd(); ++i) {
-            outText << i.key() << endl;
-        }
-
-        outText << "4-Vertex cliques" <<"\n" ;
+    for (i = cliques_2_Vertex.constBegin(); i != cliques_2_Vertex.constEnd(); ++i) {
+        outText << i.key() << endl;
+    }
 
 
-        for (i = cliques_4_Vertex.constBegin(); i != cliques_4_Vertex.constEnd(); ++i) {
-            outText << i.key() << endl;
+    outText << endl << tr("3-Vertex cliques") << endl ;
 
-        }
+    for (i = cliques_3_Vertex.constBegin(); i != cliques_3_Vertex.constEnd(); ++i) {
+        outText << i.key() << endl;
+    }
 
-        outText <<"\n\n" ;
+    outText << endl << tr("4-Vertex cliques") << endl ;
+
+
+    for (i = cliques_4_Vertex.constBegin(); i != cliques_4_Vertex.constEnd(); ++i) {
+        outText << i.key() << endl;
+
+    }
+
+    outText <<"\n\n" ;
     outText << tr("Clique Census Report,\n");
-    outText << tr("created by SocNetV: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    outText << tr("created by SocNetV: ")<< actualDateTime.currentDateTime().
+               toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
 
     file.close();
 }
@@ -5338,7 +5341,7 @@ bool Graph:: addClique(QList<int> list){
 
         }
 
-        if ( m_graph[ index[list.at(0)] ]->addTwoVertexClique(dyad) ) {
+        if ( m_graph[ index[list.at(0)] ]->addClique(dyad,list.size()) ) {
             qDebug() << "*** Graph::addClique() - new 2-vertex clique: "
                         << list.at(0) << "," << list.at(1) ;
             return true;
@@ -5371,7 +5374,7 @@ bool Graph:: addClique(QList<int> list){
             qDebug() << "*** Graph::addClique() - new 3-vertex clique "
                         << " adding it to global list ";
         }
-        if ( m_graph[ index[list.at(0)] ]->addThreeVertexClique(triad) ) {
+        if ( m_graph[ index[list.at(0)] ]->addClique(triad,list.size()) ) {
             qDebug() << "*** Graph::addClique() - new 3-vertex clique: "
                      << list.at(0) << "," << list.at(1) << "," << list.at(2) ;
             return true;
@@ -5384,30 +5387,37 @@ bool Graph:: addClique(QList<int> list){
      {
         for (int i = 0; i < list.size(); ++i)
         {
-            quart = QString::number(list.at( (i)%3 ))
-                    + ", " + QString::number(list.at( (i+1) % 3 ) )
-                    + ", " + QString::number(list.at( (i+2) % 3 ) )
-                    + ", " + QString::number(list.at( (i+3) % 3 ) );
-            quart_alt1 = QString::number(list.at( (i)%3 ))
-                    + ", " + QString::number(list.at( (i+1) % 3 ) )
-                    + ", " + QString::number(list.at( (i+3) % 3 ) )
-                    + ", " + QString::number(list.at( (i+2) % 3 ) );
-            quart_alt2 = QString::number(list.at( (i)%3 ))
-                    + ", " + QString::number(list.at( (i+2) % 3 ) )
-                    + ", " + QString::number(list.at( (i+3) % 3 ) )
-                    + ", " + QString::number(list.at( (i+1) % 3 ) );
-            quart_alt3 = QString::number(list.at( (i)%3 ))
-                    + ", " + QString::number(list.at( (i+2) % 3 ) )
-                    + ", " + QString::number(list.at( (i+1) % 3 ) )
-                    + ", " + QString::number(list.at( (i+3) % 3 ) );
-            quart_alt3 = QString::number(list.at( (i)%3 ))
-                    + ", " + QString::number(list.at( (i+3) % 3 ) )
-                    + ", " + QString::number(list.at( (i+1) % 3 ) )
-                    + ", " + QString::number(list.at( (i+2) % 3 ) );
-            quart_alt3 = QString::number(list.at( (i)%3 ))
-                    + ", " + QString::number(list.at( (i+3) % 3 ) )
-                    + ", " + QString::number(list.at( (i+2) % 3 ) )
-                    + ", " + QString::number(list.at( (i+1) % 3 ) );
+            quart = QString::number(list.at( (i)%4 ))
+                    + ", " + QString::number(list.at( (i+1) % 4 ) )
+                    + ", " + QString::number(list.at( (i+2) % 4 ) )
+                    + ", " + QString::number(list.at( (i+3) % 4 ) );
+            quart_alt1 = QString::number(list.at( (i)%4 ))
+                    + ", " + QString::number(list.at( (i+1) % 4 ) )
+                    + ", " + QString::number(list.at( (i+3) % 4 ) )
+                    + ", " + QString::number(list.at( (i+2) % 4 ) );
+            quart_alt2 = QString::number(list.at( (i)%4 ))
+                    + ", " + QString::number(list.at( (i+2) % 4 ) )
+                    + ", " + QString::number(list.at( (i+3) % 4 ) )
+                    + ", " + QString::number(list.at( (i+1) % 4 ) );
+            quart_alt3 = QString::number(list.at( (i)%4 ))
+                    + ", " + QString::number(list.at( (i+2) % 4 ) )
+                    + ", " + QString::number(list.at( (i+1) % 4 ) )
+                    + ", " + QString::number(list.at( (i+3) % 4 ) );
+            quart_alt4 = QString::number(list.at( (i)%4 ))
+                    + ", " + QString::number(list.at( (i+3) % 4 ) )
+                    + ", " + QString::number(list.at( (i+1) % 4 ) )
+                    + ", " + QString::number(list.at( (i+2) % 4 ) );
+            quart_alt5 = QString::number(list.at( (i)%4 ))
+                    + ", " + QString::number(list.at( (i+3) % 4 ) )
+                    + ", " + QString::number(list.at( (i+2) % 4 ) )
+                    + ", " + QString::number(list.at( (i+1) % 4 ) );
+            qDebug() << " checking other possible combinations: ";
+            qDebug() << quart;
+            qDebug() << quart_alt1;
+            qDebug() << quart_alt2;
+            qDebug() << quart_alt3;
+            qDebug() << quart_alt4;
+            qDebug() << quart_alt5;
             if (  cliques_4_Vertex.contains(quart) ||
                   cliques_4_Vertex.contains(quart_alt1) ||
                   cliques_4_Vertex.contains(quart_alt2) ||
@@ -5425,11 +5435,11 @@ bool Graph:: addClique(QList<int> list){
         if (! knownClique) {
             cliques_4_Vertex.insert(quart, true);
             qDebug() << "*** Graph::addClique() - new 4-vertex clique "
+                        << quart
                     << " adding it to global list ";
         }
 
-
-        if ( m_graph[ index[list.at(0)] ]->addFourVertexClique(quart) ) {
+        if ( m_graph[ index[list.at(0)] ]->addClique(quart,list.size()) ) {
             qDebug() << "*** Graph::addClique() - new 4-vertex clique: "
                      << list.at(0) << "," << list.at(1)
                      << "," << list.at(2) << "," << list.at(3) ;
@@ -5442,29 +5452,29 @@ bool Graph:: addClique(QList<int> list){
 }
 
 /**
-    Calculates and returns the number of cliques which include 'source' vertex
+    Calculates and returns the number of cliques which include given vertex 'source'
     A clique is a complete subgraph of N vertices.
     All N vertices must be mutually adjacenct.
     Due to computational complexity, SocNetV computes 2-vertex,
     3-vertex and 4-vertex cliques only.
 */	
-float Graph:: numberOfCliques(int source){
-    qDebug() << "*** Graph::numberOfCliques(" <<  source << ")";
-    float cliques=0;
+float Graph:: countCliquesWith(int source, int size){
+    qDebug() << "*** Graph::countCliquesWith(" <<  source << ")";
+
     int  vert1=0, vert2=0, vert3=0;
     int relation=0;
-//    int weight=0;
+
     bool edgeStatus=false;
     H_edges::const_iterator it1, it2, it3;
 
-    QList<int> dyad, triad, quartet;
+    QList<int> dyad, triad, quad;
 
-    qDebug() << "Graph::numberOfCliques() Source vertex " << source
+    qDebug() << "Graph::countCliquesWith() Source vertex " << source
              << "[" << index[source] << "] has inDegree " << inboundEdges(source)
              << " and outDegree "<< outboundEdges(source);
 
 
-    qDebug () << "Graph::numberOfCliques() - Checking inLinks to " << source;
+    qDebug () << "Graph::countCliquesWith() - Checking inLinks to " << source;
 
     it1=m_graph [ index[source] ] ->m_inLinks.cbegin();
 
@@ -5481,26 +5491,33 @@ float Graph:: numberOfCliques(int source){
         }
         vert1 = it1.key();
         //            weight = it1.value().second.first;
-        qDebug() << "Graph::numberOfCliques() - inLink from 1st neighbor "
+        qDebug() << "Graph::countCliquesWith() - inLink from 1st neighbor "
                  << vert1
                  << "[" << index[vert1] << "] ";
 
+        if (source == vert1) {
+            qDebug() << "Graph::countCliquesWith() -     It's the source - CONTINUE";
+            ++it1;
+            continue;
+        }
+
+
         if (  this->hasArc( source, vert1 )  == 0 )  {
-            qDebug() << "Graph::numberOfCliques() - icomplete 2v-subgraph - CONTINUE";
+            qDebug() << "Graph::countCliquesWith() - incomplete 2v-subgraph - CONTINUE";
             ++it1;
             continue;
 
         }
-        qDebug() << "Graph::numberOfCliques() - complete 2v-subgraph ";
+        qDebug() << "Graph::countCliquesWith() - complete 2v-subgraph ";
 
         dyad.clear();
         dyad << source << vert1;
         if ( addClique( dyad ) ) {
-            qDebug() << "Graph::numberOfCliques() - 2v cliques "
+            qDebug() << "Graph::countCliquesWith() - 2v cliques "
                      << cliques_2_Vertex.count();
         }
 
-        qDebug() << "Graph::numberOfCliques() - "
+        qDebug() << "Graph::countCliquesWith() - "
                  << " Iterate over all inLinks of " << vert1;
 
         it2=m_graph [ index[vert1] ] ->m_inLinks.cbegin();
@@ -5517,40 +5534,46 @@ float Graph:: numberOfCliques(int source){
                 continue;
             }
             vert2 = it2.key();
-            qDebug() << "Graph::numberOfCliques() -     Possible other neighbor (for 3v clique)"
+            qDebug() << "Graph::countCliquesWith() -     Possible other neighbor (for 3v clique)"
                      << vert2 << "[" << index[vert2] << "]";
             if (source == vert2) {
-                qDebug() << "Graph::numberOfCliques() -     It's the source - CONTINUE";
+                qDebug() << "Graph::countCliquesWith() -     It's the source - CONTINUE";
                 ++it2;
                 continue;
             }
+            if (vert1 == vert2) {
+                qDebug() << "Graph::countCliquesWith() -     It's the vert1 - CONTINUE";
+                ++it2;
+                continue;
+            }
+
             if (  this->hasArc( vert1, vert2 ) == 0 )  {
-                qDebug() << "Graph::numberOfCliques() -     "
+                qDebug() << "Graph::countCliquesWith() -     "
                             <<  vert1 << "  not outLinked to  " << vert2
                                << " - incomplete 3vertex-subgraph - CONTINUE";
                 ++it2;
                 continue;
             }
             else {
-                qDebug() << "Graph::numberOfCliques() -     complete 3vertex-subgraph ?"
+                qDebug() << "Graph::countCliquesWith() -     complete 3vertex-subgraph ? "
                          << vert2 << " <-> " << vert1
                             << ". Checking if "
-                            << vert2 << " <-> " << source << " ?? ";
+                            << vert2 << " <-> " << source << " ... ";
 
                 if ( this->hasEdge( source, vert2 ) ) {
 
-                    qDebug() << "Graph::numberOfCliques() -     complete 3v-subgraph "
-                             << vert2 << " <-> " << source
+                    qDebug() << "Graph::countCliquesWith() -     complete 3v-subgraph "
+                             << source << " <-> " << vert2
                              << " possible (new?) 3-vertex clique: ";
 
                     triad.clear();
                     triad << source << vert1 << vert2;
                     if ( addClique( triad ) ) {
-                        qDebug() << "Graph::numberOfCliques() -     3-vertex cliques "
+                        qDebug() << "Graph::countCliquesWith() -     3-vertex cliques "
                                  << cliques_3_Vertex.count();
                     }
 
-                    qDebug() << "Graph::numberOfCliques() -         "
+                    qDebug() << "Graph::countCliquesWith() -         "
                                 << " Iterate over all inLinks of " << vert2;
                     it3=m_graph [ index[vert2] ] ->m_inLinks.cbegin();
                     while ( it3!=m_graph [ index[vert2] ] -> m_inLinks.cend() ){
@@ -5565,19 +5588,28 @@ float Graph:: numberOfCliques(int source){
                             continue;
                         }
                         vert3 = it3.key();
-                        qDebug() << "Graph::numberOfCliques() -     Possible other neighbor (for 4v clique)"
+                        qDebug() << "Graph::countCliquesWith() -     Possible other neighbor (for 4v clique)"
                                  << vert3 << "[" << index[vert3] << "]";
                         if (source == vert3 || vert1 == vert3  || vert2 == vert3 ) {
-                            qDebug() << "Graph::numberOfCliques() -     same as source, vert1 or vert2- CONTINUE";
+                            qDebug() << "Graph::countCliquesWith() -     same as source, vert1 or vert2- CONTINUE";
                             ++it3;
                             continue;
                         }
-                        if (  this->hasArc( vert3, source ) == 0  ||
-                              this->hasArc( vert3, vert1 ) == 0  ||
-                              this->hasArc( vert3, vert2 ) == 0 )  {
-                            qDebug() << "Graph::numberOfCliques() -     icomplete 4v-subgraph - CONTINUE";
+                        if (  this->hasEdge( source, vert3  ) == 0  ||
+                              this->hasEdge( vert1,  vert3  ) == 0  ||
+                              this->hasArc ( vert2,  vert3  ) == 0 )  {
+                            qDebug() << "Graph::countCliquesWith() -     incomplete 4v-subgraph - CONTINUE";
                             ++it3;
                             continue;
+                        }
+                        quad.clear();
+                        quad << source << vert1 << vert2<< vert3;
+                        qDebug() << "Graph::countCliquesWith() -     complete 4v-subgraph "
+                                 << source << "," << vert1 << "," << vert2 << "," << vert3
+                                 << " possible (new?) 3-vertex clique: ";
+                        if ( addClique( quad ) ) {
+                            qDebug() << "Graph::countCliquesWith() -     4-vertex cliques "
+                                     << cliques_4_Vertex.count();
                         }
                         ++it3;
                     }
@@ -5586,7 +5618,7 @@ float Graph:: numberOfCliques(int source){
 
                 }
                 else {
-                    qDebug() << "Graph::numberOfCliques() -     Not mutual - CONTINUE";
+                    qDebug() << "Graph::countCliquesWith() -     Not mutual - CONTINUE";
                 }
             }
             ++it2;
@@ -5594,25 +5626,45 @@ float Graph:: numberOfCliques(int source){
         ++it1;
     } // end 1st while
 
+    switch (size) {
+    case 2: {
+        return m_graph [ index[source] ] -> cliques(2);
+        break;
+    }
+    case 3: {
+        return m_graph [ index[source] ] -> cliques(3);
+        break;
+    }
+    case 4: {
+        return m_graph [ index[source] ] -> cliques(4);
+        break;
+    }
+    default:
+        return 0;
+        break;
+    };
 
-    return cliques;
+    return 0;
 }
 
 
 /**
     Calculates and returns the total number of cliques in the graph.
-    Calls numberOfCliques(v1) to calculate the number of cliques of each vertex v1,
+    Calls countCliquesWith(v1) to calculate the number of cliques of each vertex v1,
     sums the total number, then divides it by 3 because each vertex has been counted three times.
 */	
-float Graph::numberOfCliques(){
-    qDebug("Graph::	numberOfCliques()");
+float Graph::countCliquesOfSize(int size){
+    qDebug("Graph::countCliquesOfSize()");
     float cliques=0;
     foreach (Vertex *v1, m_graph)  {
-        cliques += numberOfCliques(v1->name());
-        qDebug("Graph::	numberOfCliques now %f", cliques );
+        cliques += countCliquesWith(v1->name(), size);
     }
-    cliques = cliques / 3.0;
-    qDebug("Graph::	numberOfCliques Dividing by three we get %f", cliques );
+    cliques = cliques / size;
+
+    //actually we can just return cliques_*_Vertex.count();
+
+    qDebug() << "Graph::countCliquesOfSize - Dividing by size we get "<< cliques ;
+
     return cliques ;
 }
 
@@ -5650,10 +5702,10 @@ float Graph:: clusteringCoefficient(int v1){
     }
     qDebug() << "Graph::clusteringCoefficient("<< v1 << ") - "
             << " Graph changed or clucof not calculated."
-           << " Calling numberOfCliques(" << v1 << ")";
-    float totalCliques=numberOfCliques(v1);
+           << " Calling countCliquesWith(" << v1 << ")";
+    float totalCliques=countCliquesWith(v1, 3);
     qDebug() << "Graph::clusteringCoefficient("<< v1 << ") - "
-            << " numberOfCliques(" << v1 << ") = " << totalCliques;
+            << " countCliquesWith(" << v1 << ") = " << totalCliques;
 
     if (totalCliques==0) return 0;	//stop if we're at a leaf.
 

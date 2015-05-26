@@ -422,9 +422,10 @@ public:
 
 
     float numberOfTriples(int v1);
-    float numberOfCliques(int v1);
-    float numberOfCliques();
+    float countCliquesWith(int source, int size=0);
+
     bool addClique (QList<int> list);
+    float countCliquesOfSize(int size );
     float clusteringCoefficient(int v1);
     float clusteringCoefficient ();
 
