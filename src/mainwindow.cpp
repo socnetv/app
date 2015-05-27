@@ -4165,13 +4165,26 @@ void MainWindow::slotRecreateDataSet (QString m_fileName) {
 */
 void MainWindow::slotCreateRandomNetErdos(){
     bool ok;
-    statusMessage( "You have selected to create a random symmetric network. ");
-    int newNodes=( QInputDialog::getInt(this, "Create random network", tr("This will create a new random symmetric network of G(n,p) model, \nwhere n is the nodes and p is the edge probability. \nPlease enter the number n of nodes you want:"),20, 1, maxNodes, 1, &ok ) ) ;
+    statusMessage( "Creating a random symmetric network... ");
+    int newNodes= QInputDialog::getInt(
+                       this,
+                       tr("Create random network"),
+                       tr("This will create a new random symmetric network of G(n,p) model,")
+                       + tr("\n where n is the nodes and p is the edge probability.")
+                       + tr(" \nPlease enter the number n of nodes you want:"),
+                       100, 1, maxNodes, 1, &ok
+                       )  ;
     if (!ok) {
         statusMessage( "You did not enter an integer. Aborting.");
         return;
     }
-    double probability= QInputDialog::getDouble(this,"Create random network", "Enter an edge probability % (0-100):", 4, 0, 100, 1, &ok );
+    double probability= QInputDialog::getDouble(
+                this,
+                tr("Create random network"),
+                tr("Enter an edge probability % (0-100):"),
+                4, 0, 100, 1,
+                &ok
+                );
     if (!ok) {
         statusMessage( "You did not enter an integer. Aborting.");
         return;
@@ -4182,7 +4195,6 @@ void MainWindow::slotCreateRandomNetErdos(){
     makeThingsLookRandom();
     statusMessage( tr("Creating random network. Please wait... ")  );
 
-    qDebug("MW Erdos network:  Create random network of %i nodes and %f edge probability.",newNodes, probability);
 
     if (showProgressBarAct->isChecked() && newNodes > 500 && probability > 1){
         progressDialog= new QProgressDialog(
@@ -4208,28 +4220,35 @@ void MainWindow::slotCreateRandomNetErdos(){
     setWindowTitle("Untitled");
     double threshold = log(newNodes)/newNodes;
     //float avGraphDistance=activeGraph.averageGraphDistance();
-    //float clucof=activeGraph.clusteringCoefficient();
+    float clucof=activeGraph.clusteringCoefficient();
     if ( (probability/100 ) > threshold )
-        QMessageBox::information(this, "New Random Network",
-                                 tr("Random network created. \n")+
-                                 tr("\nNodes: ")+ QString::number(activeNodes())+
-                                 tr("\nEdges: ")+  QString::number( activeLinks()/2.0)+
-                                 //tr("\nAverage path length: ") + QString::number(avGraphDistance)+
-                                 //tr("\nClustering coefficient: ")+QString::number(clucof)+
-                                 tr("\n\nOn the average, edges should be ") + QString::number(probability * newNodes*(newNodes-1)/100) +
-                                 tr("\nThis graph is almost surely connected because: \nprobability > ln(n)/n, that is: \n") + QString::number(probability/100)+
-                                 tr(" bigger than ")+ QString::number(threshold) , "OK",0);
+        QMessageBox::information(
+                    this,
+                    "New Random Network",
+                    tr("Random network created. \n")+
+                    tr("\nNodes: ")+ QString::number(activeNodes())+
+                    tr("\nEdges: ")+  QString::number( activeLinks()/2.0)+
+                    //tr("\nAverage path length: ") + QString::number(avGraphDistance)+
+                    tr("\nClustering coefficient: ")+QString::number(clucof)+
+                    tr("\n\nOn the average, edges should be ") +
+                    QString::number(probability * newNodes*(newNodes-1)/100) +
+                    tr("\nThis graph is almost surely connected because: \nprobability > ln(n)/n, that is: \n")
+                    + QString::number(probability/100)+
+                    tr(" bigger than ")+ QString::number(threshold) , "OK",0);
 
     else
-        QMessageBox::information(this, "New Random Network",
-                                 tr("Random network created. \n")+
-                                 tr("\nNodes: ")+ QString::number(activeNodes())+
-                                 tr("\nEdges: ")+  QString::number( activeLinks()/2.0)+
-                                 //tr("\nAverage path length: ") + QString::number(avGraphDistance)+
-                                 //tr("\nClustering coefficient: ")+QString::number(clucof)+
-                                 tr("\n\nOn the average, edges should be ") +QString::number(probability * newNodes*(newNodes-1)/100) +
-                                 tr("\nThis graph is almost surely not connected because: \nprobability < ln(n)/n, that is: \n") +
-                                 QString::number(probability/100)+ " smaller than "+ QString::number(threshold) , "OK",0);
+        QMessageBox::information(
+                    this,
+                    "New Random Network",
+                    tr("Random network created. \n")+
+                    tr("\nNodes: ")+ QString::number(activeNodes())+
+                    tr("\nEdges: ")+  QString::number( activeLinks()/2.0)+
+                    //tr("\nAverage path length: ") + QString::number(avGraphDistance)+
+                    tr("\nClustering coefficient: ")+QString::number(clucof)+
+                    tr("\n\nOn the average, edges should be ")
+                    + QString::number(probability * newNodes*(newNodes-1)/100) +
+                    tr("\nThis graph is almost surely not connected because: \nprobability < ln(n)/n, that is: \n") +
+                    QString::number(probability/100)+ " smaller than "+ QString::number(threshold) , "OK",0);
 
     statusMessage( "Random network created. ");
 
@@ -4252,15 +4271,30 @@ void MainWindow::slotCreateRandomNetErdos(){
 */
 void MainWindow::slotCreateSameDegreeRandomNetwork(){
     bool ok;
-    statusMessage( "You have selected to create a pseudo-random network where each node has the same degree. ");
-    int newNodes=( QInputDialog::getInt(this, "Create same degree network", tr("This will create a same degree network. \nPlease enter the number of nodes you want:"),20, 1, maxNodes, 1, &ok ) ) ;
+    statusMessage( "Creating a pseudo-random network where each node has the same degree... ");
+    int newNodes= QInputDialog::getInt(
+                       this,
+                       tr("Create same degree network"),
+                       tr("This will create a same degree network. \nPlease enter the number of nodes you want:"),
+                       100, 1, maxNodes, 1, &ok
+                ) ;
     if (!ok) {
         statusMessage( "You did not enter an integer. Aborting.");
         return;
     }
-    int degree = QInputDialog::getInt(this,"Create same degree network...", "Now, select an even number d. \nThis will be the number of links of each node:", 2, 2, newNodes-1, 2, &ok);
+    int degree = QInputDialog::getInt(
+                this,
+                tr("Create same degree network..."),
+                tr("Now, select an even number d. \nThis will be the number of links of each node:"),
+                2, 2, newNodes-1, 2, &ok
+                );
+
     if ( (degree% 2)==1 ) {
-        QMessageBox::critical(this, "Error",tr(" Sorry. I cannot create such a network. Links must be even number"), "OK",0);
+        QMessageBox::critical(
+                    this,
+                    "Error",
+                    tr(" Sorry. I cannot create such a network. Links must be even number"),
+                    "OK",0 );
         return;
     }
     statusMessage( "Erasing any existing network. ");
@@ -4269,7 +4303,8 @@ void MainWindow::slotCreateSameDegreeRandomNetwork(){
     statusMessage( "Creating a pseudo-random network where each node has the same degree... ");
 
     if (showProgressBarAct->isChecked() && newNodes > 300){
-        progressDialog= new QProgressDialog("Creating random network. Please wait (or disable me from Options > View > ProgressBar, next time ;)).", "Cancel", 0, (int) (newNodes+newNodes), this);
+        progressDialog= new QProgressDialog (
+                    "Creating random network. Please wait (or disable me from Options > View > ProgressBar, next time ;)).", "Cancel", 0, (int) (newNodes+newNodes), this);
         progressDialog -> setWindowModality(Qt::WindowModal);
         connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
         progressDialog->setMinimumDuration(0);
@@ -4288,7 +4323,9 @@ void MainWindow::slotCreateSameDegreeRandomNetwork(){
 
     graphChanged();
     setWindowTitle("Untitled");
-    statusMessage( "Uniform random network created: "+QString::number(activeNodes())+" Nodes, "+QString::number( activeLinks())+" Links");
+    statusMessage( "Uniform random network created: "
+                   +QString::number(activeNodes())+" Nodes, "
+                   +QString::number( activeLinks())+" Links");
 
 }
 
@@ -4302,29 +4339,36 @@ void MainWindow::slotCreateGaussianRandomNetwork(){
 
 void MainWindow::slotCreateSmallWorldRandomNetwork(){
     bool ok=false;
-    statusMessage( "You have selected to create a small world network.");
-    int newNodes=( QInputDialog::getInt(this, "Create small world",
-                                        tr("This will create a small world network, \n")+
-                                        tr("that is an undirected graph with N nodes and N*d/2 edges,\n")+
-                                        tr("where d is the mean edge degree.\n")+
-                                        tr("Please enter the number N of nodes you want:"),
-                                        20, 1, maxNodes, 1, &ok ) ) ;
+    statusMessage( "Creating a small world network...");
+    int newNodes=( QInputDialog::getInt(
+                       this, "Create small world",
+                       tr("This will create a small world network, \n")+
+                       tr("that is an undirected graph with N nodes and N*d/2 edges,\n")+
+                       tr("where d is the mean edge degree.\n")+
+                       tr("Please enter the number N of nodes you want:"),
+                       100, 1, maxNodes, 1, &ok ) ) ;
     if (!ok) {
         statusMessage( "You did not enter an integer. Aborting.");
         return;
     }
-    int degree = QInputDialog::getInt(this,"Create small world...",
-                                      tr("Now, enter an even number d. \n")+
-                                      tr("This is the mean edge degree each new node will have:"),
-                                      2, 2, newNodes-1, 2, &ok);
+    int degree = QInputDialog::getInt(
+                this,"Create small world...",
+                tr("Now, enter an even number d. \n")+
+                tr("This is the mean edge degree each new node will have:"),
+                6, 2, newNodes-1, 2, &ok);
     if ( (degree% 2)==1 ) {
-        QMessageBox::critical(this, "Error",tr(" Sorry. I cannot create such a network. Links must be even number"), "OK",0);
+        QMessageBox::critical(
+                    this,
+                    "Error",
+                    tr(" Sorry. I cannot create such a network. Links must be even number"),
+                    "OK",0);
         return;
     }
-    double beta = QInputDialog::getDouble(this,"Create small world...",
-                                          tr("Now, enter a parameter beta. \n")+
-                                          tr("This is the edge rewiring probability:"),
-                                          0.6, 0.00, 1.00, 2, &ok);
+    double beta = QInputDialog::getDouble(
+                this,"Create small world...",
+                tr("Now, enter a parameter beta. \n")+
+                tr("This is the edge rewiring probability:"),
+                0.3, 0.00, 1.00, 2, &ok);
 
     statusMessage( tr("Erasing any existing network. "));
     initNet();
@@ -4344,6 +4388,7 @@ void MainWindow::slotCreateSmallWorldRandomNetwork(){
     }
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
     activeGraph.createRandomNetSmallWorld(newNodes, degree, beta, x0, y0, radius);
+    activeGraph.symmetrize();
     QApplication::restoreOverrideCursor();
 
     if (showProgressBarAct->isChecked() && newNodes > 300 )
@@ -4355,13 +4400,13 @@ void MainWindow::slotCreateSmallWorldRandomNetwork(){
     setWindowTitle("Untitled");
     statusMessage( tr("Small world random network created: ")+QString::number(activeNodes())+" nodes, "+QString::number( activeLinks())+" links");
     //float avGraphDistance=activeGraph.averageGraphDistance();
-    //float clucof=activeGraph.clusteringCoefficient();
+    float clucof=activeGraph.clusteringCoefficient();
     QMessageBox::information(this, "New Small World",
                              tr("Small world network created.\n")+
                              tr("\nNodes: ")+ QString::number(activeNodes())+
                              tr("\nEdges: ")+  QString::number( activeLinks()/2.0)
                              //+  tr("\nAverage path length: ") + QString::number(avGraphDistance)
-                             //+ tr("\nClustering coefficient: ")+QString::number(clucof)
+                             + tr("\nClustering coefficient: ")+QString::number(clucof)
                              , "OK",0);
 
 }
@@ -4377,12 +4422,20 @@ void MainWindow::slotCreateSmallWorldRandomNetwork(){
 void MainWindow::slotCreateRandomNetRingLattice(){
     bool ok;
     statusMessage( "You have selected to create a ring lattice network. ");
-    int newNodes=( QInputDialog::getInt(this, "Create ring lattice", tr("This will create a ring lattice network, where each node has degree d:\n d/2 edges to the right and d/2 to the left.\n Please enter the number of nodes you want:"),20, 1, maxNodes, 1, &ok ) ) ;
+    int newNodes=( QInputDialog::getInt(
+                       this,
+                       tr("Create ring lattice"),
+                       tr("This will create a ring lattice network, where each node has degree d:\n d/2 edges to the right and d/2 to the left.\n Please enter the number of nodes you want:"),
+                       100, 4, maxNodes, 1, &ok ) ) ;
     if (!ok) {
         statusMessage( "You did not enter an integer. Aborting.");
         return;
     }
-    int degree = QInputDialog::getInt(this,"Create ring lattice...", "Now, enter an even number d. \nThis is the total number of links each new node will have:", 2, 2, newNodes-1, 2, &ok);
+    int degree = QInputDialog::getInt(
+                this,
+                tr("Create ring lattice..."),
+                tr("Now, enter an even number d. \nThis is the total number of links each new node will have:"),
+                2, 2, newNodes-1, 2, &ok);
     if ( (degree% 2)==1 ) {
         QMessageBox::critical(this, "Error",tr(" Sorry. I cannot create such a network. Links must be even number"), "OK",0);
         return;
