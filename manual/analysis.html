@@ -1,8 +1,18 @@
 <link rel="stylesheet" href="socnetv.css" type="text/css" />
+<script type="text/javascript"
+src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'>
+</script>
 
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  asciimath2jax: {
+    delimiters: [['\`','\`'],['`','`']]
+  }
+});
+</script>
 <h4><a name="Analysis" id="Analysis"></a>Analysis</h4>
 
-<p class="text">
+<p>
 Once you load or create a network in SocNetV, you may use the options in the
 Analysis menu to analyse it. <br /> <br />
 
@@ -15,7 +25,7 @@ In other words, when the adjacency matrix is symmetric.
 
 
 <h4><em><a name="Distances" id="Distances"></a>Distances & Diameter</em></h4>
-<p class="text">
+<p>
 The next options in the Analysis menu (<em>Distance</em>, <em>Average Distance</em>,
 <em>Distances Matrix</em>, <em>Diameter</em>) etc focus on basic network/graph measures,
 such as the geodesic distance between nodes, the mean distance between all nodes,
@@ -24,7 +34,7 @@ of each node. Each option is explained below.
 </p>
 
 <h5><a name="Distance" id="Distance"></a>Distance</h5>
-<p class="text">
+<p>
 In graph theory, the shortest path between two vertices of the graph
 is called "geodesic".<br />
 
@@ -37,7 +47,7 @@ Then their distance will be calculated and displayed.
 </p>
 
 <h5><a name="AvgDistance" id="AvgDistance"></a>Average Distance</h5>
-<p class="text">
+<p>
 The average distance in a social network is the average length of all shortest
 paths (geodesics) between the connected pairs of vertices in the corresponding
 graph.
@@ -45,7 +55,7 @@ graph.
 
 
 <h5><a name="DistanceMatrix" id="DistanceMatrix"></a>Distances Matrix</h5>
-<p class="text">
+<p>
 The 'Distances Matrix' option calculates and displays a matrix of geodesic
 distances between all possible pair of nodes in the social network.
 A distances matrix is a n x n square matrix, in which the (i,j) element
@@ -54,14 +64,14 @@ is the distance from node i to node j.
 </p>
 
 <h5><a name="NumberOfGeodesicsMatrix" id="NumberOfGeodesicsMatrix"></a>Geodesics Matrix</h5>
-<p class="text">
+<p>
 This option calculates and displays a n x n square matrix, where the (i,j) element
 is the number of geodesics between node i and node j.
 The produced matrix, called sigma matrix, is used in Centralities calculation (see below).
 </p>
 
 <h5><a name="Eccentricity" id="Eccentricity"></a>Eccentricity</h5>
-<p class="text">
+<p>
 The eccentricity or association number of each node i is the largest geodesic
 distance between node i and every other node in the graph.
 Therefore, in social network analysis, the eccentricity reflects how far, at
@@ -74,7 +84,7 @@ edge (v,u) in E is always considered to be 1.
 </p>
 
 <h5><a name="Diameter" id="Diameter"></a>Diameter</h5>
-<p class="text">
+<p>
 The diameter of a social network is the maximum eccentricity of any vertex in
 the corresponding graph G(V,E), that is the maximum distance between any two
 connected nodes.
@@ -83,7 +93,7 @@ connected nodes.
 <h4><em><a name="WalksReach" id="WalksReach"></a>Walks & Reachability</em></h4>
 
 <h5><a name="Connectedness" id="Connectedness"></a>Connectedness</h5>
-<p class="text">
+<p>
 Checks whether the network is a connected graph, a weakly connected digraph or
 a disconnected graph/digraph.
 <br />
@@ -99,13 +109,14 @@ A digraph or a graph is <b>disconnected</b> if at least one node is isolate.
 
 
 <h5><a name="Walks" id="Walks"></a>Walks of a given length</h5>
-<p class="text">
+<p>
 Clicking this option asks for a desired walk length (max: n-1).
 Then SocNetV calculates and displays a square matrix where each element (i,j)
 is the number of walks of the given length between the corresponding pair of
 nodes i and j.
 <br />
 A walk is a sequence of alternating vertices and edges such as
+
 v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>,
 where each edge, e<sub>i</sub> is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}.
 <br />
@@ -113,7 +124,7 @@ This function calculates the number of walks of the given length between
 each pair of nodes, by studying the powers of the sociomatrix. </p>
 
 <h5><a name="TotalWalks" id="TotalWalks"></a>Total Walks</h5>
-<p class="text">
+<p>
 Calculates and displays a (n x n) square matrix whose elements denote the
 number of walks of any length between each pair of nodes.
 The algorithm is based on the powers of the sociomatrix.
@@ -128,7 +139,7 @@ Reachability Matrix function instead.
 
 
 <h5><a name="ReachabilityMatrix" id="ReachabilityMatrix"></a>Reachability Matrix</h5>
-<p class="text">
+<p>
 Calculates the reachability matrix X<sup>R</sup> of the graph where each (i,j)
 element is 1 if nodes i and j are reachable, otherwise is 0.
 <br />
@@ -139,19 +150,19 @@ element is 1.
 </p>
 
 <h4><a name="CliqueCensus" id="CliqueCensus"></a>Clique Census</h4>
-<p class="text">
+<p>
 A triangle or a clique is a complete subgraph of three nodes of G.
 It is defined as delta(v) = |{{u, w} in E : {v, u} in E and {v, w} in E}|.
-
-This method computes the number of triangles each node v belongs to and the
+</p>
+<p>This method computes the number of triangles each node v belongs to and the
 total number of cliques present in the network.
-
+<p>
 Please note this method can be very slow. Its computational cost increases very
 rapidly in large and / or dense networks, it can run for hours or even days :)
-
+</p>
 
 <h4><a name="Coefficient" id="Coefficient"></a>Clustering Coefficient</h4>
-<p class="text">
+<p>
 The Clustering Coefficient of a node quantifies how close the node and its
 neighbors are to being a clique.
 This is used to determine whether a network is a small-world or not.
@@ -159,15 +170,22 @@ This is used to determine whether a network is a small-world or not.
 This option calculates and displays the clustering coefficients of all nodes. 
 </p>
 
+<p>
+For the ring lattice the clustering coeffient is
 
-<p class="text">
+$$ C(0)=\frac{3(K-2)}{4(K-1)} $$
+
+tending to \( 3/4 \) as \( K\)  grows, where K the mean degree.
+</p>
+
+<p>
 <em>Tip</em>: All the basic network statistics, such as nodes, edges and density
 are displayed and automatically updated in the Analysis tab of the left dock in
 SocNetV main window.
  </p>
 
 <h4><em><a name="TriadCensus" id="TriadCensus"></a>Triad Census</em></h4>
-<p class="text">
+<p>
 By clicking the "Triad Census" menu option, SocNetV will examine each of the
 triads present in the current network, and count how many of these belong to a
 certain triad type.
@@ -195,17 +213,17 @@ and Davis in their studies.<br />
 In the M-A-N scheme, each triad type has a label with four characters:
 </p>
 <ul>
-<li class="text">The first character is the number of mutual (M) duads in the triad.
+<li>The first character is the number of mutual (M) duads in the triad.
   Possible values: 0, 1, 2, 3.</li>
-<li class="text">The second character is the number of asymmetric (A) duads in the triad.
+<li>The second character is the number of asymmetric (A) duads in the triad.
   Possible values: 0, 1, 2, 3.</li>
-<li class="text">The third character is the number of null (N) duads in the triad.
+<li>The third character is the number of null (N) duads in the triad.
   Possible values: 0, 1, 2, 3.</li>
-<li class="text">The fourth character is infered from features or the nature of the triad,
+<li>The fourth character is infered from features or the nature of the triad,
   i.e. presence of cycle or transitivity.
   Possible values: none, D ("Down"), U ("Up"), C ("Cyclic"), T ("Transitive")</li>
   </ul>
-<p class="text">
+<p>
 In the seven rows below, you can see all the sixteen triad types (classes).<br /> 
 Within each row, all the triad types have the same number of arcs present:<br />
 </p>
@@ -219,7 +237,7 @@ Within each row, all the triad types have the same number of arcs present:<br />
 300
 </pre>
 
-<p class="text">
+<p>
 So, when you click on Triad Census menu option, SocNetV calculates and displays
 a vector T of length 16.<br />
 Each vector element (Tu) is the frequency of each one triad type inside the
@@ -232,32 +250,32 @@ T = [ T003, T012, T102, T021D, T021U, T021C, T111D, T111U, T030T, T030C, T201, T
 Apparently, the sum of all these frequencies Tu is C(N,3).</p>
 
 <h4><a name="Centralities" id="Centralities"></a>Centralities and Prestige</h4>
-<p class="text"> 
+<p>
 The last option in the Analysis menu opens the "Centrality and Prestige" sub-menu.
 
-<p class="text">
+<p>
 Social network analysts use various metrics (measures or indices) to calculate how 'prominent' or important each actor (node) is inside a network (graph). For instance, we might want to know how important is a person inside her friendship network or how critical is a power station inside the power company grid...
 </p>
 
- <p class="text">Although there are various metrics, focusing on different graph notions and applying to different graph types, they are usually refered to as 'centralities' collectively.
+ <p>Although there are various metrics, focusing on different graph notions and applying to different graph types, they are usually refered to as 'centralities' collectively.
 </p>
 
- <p class="text">SocNetV follows the conceptualization of prominence that Wasserman and Faust as well as Knoke and Burt use in their essays. To our understanding, all indeces attempt to measure the visibility, the importance or the "prominence" of each node. But we distinguish two types of prominence: Centrality and Prestige.
+ <p>SocNetV follows the conceptualization of prominence that Wasserman and Faust as well as Knoke and Burt use in their essays. To our understanding, all indeces attempt to measure the visibility, the importance or the "prominence" of each node. But we distinguish two types of prominence: Centrality and Prestige.
 </p>
 
- <p class="text">Centrality metrics attempt to quantify how central is each node inside the network and usually examine the ties attached to that node and its geodesic distances (shortest path lengths) to other nodes. Most Centrality indices were designed for undirected graphs (symmetric), where the relations are non-directional. For instance, SocNetV can calculate Betweenness, Closeness, Degree, Stress, Graph and Eccentricity centrality indices.
+ <p>Centrality metrics attempt to quantify how central is each node inside the network and usually examine the ties attached to that node and its geodesic distances (shortest path lengths) to other nodes. Most Centrality indices were designed for undirected graphs (symmetric), where the relations are non-directional. For instance, SocNetV can calculate Betweenness, Closeness, Degree, Stress, Graph and Eccentricity centrality indices.
 </p>
 
- <p class="text">For digraphs, where the relations are directional, most centrality indices can also be calculated by focusing on "choices made" (or outLinks). But due to the nature of the directional relations in digraphs, the social networks researcher usually needs to measure the "prestige" (as known as status, rank or popularity) of each node, focusing on "choices received" by other nodes rather than "choices made" by that node. Prestige indices focus exactly on "choices received" to a node. These indices measure the nominations or ties to each node from all others (or inLinks). Thus, Prestige indices can only be calculated on directed graphs..
+ <p>For digraphs, where the relations are directional, most centrality indices can also be calculated by focusing on "choices made" (or outLinks). But due to the nature of the directional relations in digraphs, the social networks researcher usually needs to measure the "prestige" (as known as status, rank or popularity) of each node, focusing on "choices received" by other nodes rather than "choices made" by that node. Prestige indices focus exactly on "choices received" to a node. These indices measure the nominations or ties to each node from all others (or inLinks). Thus, Prestige indices can only be calculated on directed graphs..
 </p>
 
- <p class="text">
+ <p>
 Centrality indices are calculated for each node (node Centrality) and for the whole network (group Centrality). Thus, when you click on a centrality option, SocNetV will calculate the corresponding index of every node and the whole network and it will display them in a new window (a small text editor). From there you can save the analysis into a text file of your choice. By default, analysis files are saved on bin/ subfolder.
 </p>
 
 
 <h5><a name="DC" id="DC"></a>Degree Centrality (DC)</h5>
-<p class="text">
+<p>
 In undirected graphs, the DC index of each node v is the number of edges attached to it.
 In digraphs, the DC is the total number of arcs (outLinks) starting from v (outDegree).
 <br />
@@ -277,7 +295,7 @@ You can use DC variance or mean instead.</em>
 
 
 <h5><a name="CC" id="CC"></a>Closeness Centrality (CC)</h5>
-<p class="text"> 
+<p>
 For each node u, the CC score is the inverse sum of geodesic distances from that node to
 every other node.<br />
 This measure focuses on how close each node is to all other nodes in the network.
@@ -300,10 +318,10 @@ Thus the standardized CC index (CC') is calculated by (N-1) * CC.
 <br /><br />
 Group CC is calculated using Freeman's general formula, in undirected graphs: <br />
 </p>
-<p class="code">
-GCC =  ( Sum ( maxCC' - CC'  ) )  / ( (N-1) *  (N-2) / (2 * N - 1) );
-</p>
-<p class="text">
+
+$$ GCC =  \frac {  \sum { ( maxCC' - CC'  ) }  }   {  (N-1) \cdot   (N-2) / (2 \cdot  N - 1)  } $$
+
+<p>
 Note: As with all centrality indices in directed graphs, CC considers only outbound edges.
 If you want to analyze inbound edges, use Prestige indices, i.e. Proximity Prestige.
 </p>
@@ -311,7 +329,7 @@ If you want to analyze inbound edges, use Prestige indices, i.e. Proximity Prest
 
 
 <h5><a name="IRCC" id="IRCC"></a>Influence Range Closeness Centrality (CC)</h5>
-<p class="text">
+<p>
 For each node u, IRCC is the standardized inverse average distance
 between u and every other node reachable from it.
 <br />
@@ -324,14 +342,13 @@ node u to nodes in its influence range J (nodes reachable from u).
 The IRCC formula used is the ratio of the fraction of nodes reachable by u
 (|J|/(n-1)) to the average distance of these nodes from u sum(d(u,j))/|J|
 </p>
-<p class="code">
-( |J| / (n-1) ) / ( sum( d(u,j) ) / |J| )
-</p>
-
+$$
+\frac {  \frac  { |J| } {  (n-1) } }  { \frac {  \sum  d(u,j)  } { |J| }  }
+$$
 
 
 <h5><a name="BC" id="BC"></a>Betweenness Centrality (BC) </h5>
-<p class="text"> 
+<p>
 For each node u, BC is the ratio of all geodesics between pairs of nodes which run through u.
 It reflects how often that node lies on the geodesics between the other nodes of the network.
 <br /><br >
@@ -358,7 +375,7 @@ It can also be calculated in weighted graphs although the weight of each edge (u
 </p>
 
 <h5><a name="SC" id="SC"></a>Stress Centrality (SC) </h5>
-<p class="text">
+<p>
 The SC of each node u is the total number of geodesics between all other nodes which run through u.
 When one node falls on all geodesics between all the remaining (N-1) nodes,
 then we have a star graph with maximum Stress Centrality.
@@ -372,7 +389,7 @@ This index was introduced by Shimbel (1953).
 
 
 <h5><a name="EC" id="EC"></a>Eccentricity Centrality (EC) or Harary Graph Centrality</h5>
-<p class="text"> 
+<p>
 For each node u, the Eccentricity Centrality is the inverse of the largest geodesic distance (u,v) to every other node v in the network.
 Therefore, the EC score reflects how close is each node to every other node and therefore to the middle of the network.
 <br />
@@ -388,7 +405,7 @@ The EC is also known as Graph Centrality (Hage and Harary, 1995).
 
 
 <h5><a name="PC" id="PC"></a>Power Centrality (PC)</h5>
-<p class="text">
+<p>
 The Power Centrality (PC) is a a generalised degree centrality measure suggested by Gil and Schmidt.
 <br /><br />
 For each node u, this index sums its degree (with weight 1), with the size of the
@@ -411,7 +428,7 @@ It can also be calculated in weighted graphs although the weight of each edge
 
 
 <h5><a name="IC" id="IC"></a>Information Centrality (IC)</h5>
-<p class="text">
+<p>
 The Information Centrality (IC) is an index suggested by Stephenson and Zelen (1989)
 which focuses on how information might flow through many different paths.
 Unlike SC and BC, the IC metric uses all paths between actors weighted by strength of tie and distance.
@@ -429,7 +446,7 @@ Note: To compute this index, SocNetV drops all isolated nodes and symmetrizes
 (if needed) the adjacency matrix even when the graph is directed (Wasserman & Faust, p. 196).
 
 </p>
-<p class="text">
+<p>
 In order to calculate the IC index of each actor, we create a N x N matrix A from the (symmetrized) sociomatrix with:
 </p>
 <p class="code">
@@ -437,29 +454,29 @@ Aii=1+weighted_degree_ni <br />
 Aij=1 if (i,j)=0  <br />
 Aij=1-wij if (i,j)=wij
 </p>
-<p class="text">
+<p>
 Next, we compute the inverse matrix of A, for instance C. Note that we can always compute C since the matrix A is always a diagonally strong matrix, hence it is always invertible.
 </p>
-<p class="text">
+<p>
 Finally, IC is computed by the formula:
 </p>
 <p class="code">
 IC(i) - 1 /  [ Cii + (T-2R)/ N]
 </p>
 
-<p class="text">
+<p>
 where: <br />
 T is the trace of matrix C (the sum of diagonal elements) and
 R is the sum of the elements of any row (since all rows of C have the same sum)
 </p>
-<p class="text">
+<p>
 IC has a minimum value but not a maximum.
 </p>
 
 
 
 <h5><a name="DP" id="DP"></a>Degree Prestige (DP) or InDegree Centrality</h5>
-<p class="text">
+<p>
 For each node u, this metric counts the number of inbound arcs at u.
 The index is meaningful in directed graphs as a measure of the prestige of each node.
 Thus it is called Degree Prestige (it is also known as InDegree Centrality).
@@ -481,7 +498,7 @@ You can use DP variance or mean instead.</em>
 
 
 <h5><a name="PRP" id="PRP"></a>PageRank Prestige (PRP)</h5>
-<p class="text">
+<p>
 The PageRank Prestige is an importance ranking for each node based on the structure of its in-link.
 The original PageRank algorithm, developed by Page and Brin (1997),
 focuses on how nodes are connected to each other, treating each link from a node
@@ -502,7 +519,7 @@ Therefore, nodes with high outLink weights give smaller percentage of their PR t
 
 
 <h5><a name="PP" id="PP"></a>Proximity Prestige (PP)</h5>
-<p class="text">
+<p>
 The Proximity Prestige index measures how proximate a node u is to the nodes in its
 influence domain I - the influence domain I of a node is the number of other nodes that can reach it.
 Apparently, in this metric the proximity of each node u is based on distances to rather than distances from it.
@@ -516,7 +533,7 @@ of the fraction of nodes that can reach node u, to the average distance of that 
 <p class="code">
 PP = (I/(N-1))/(sum{d(v,u)}/I)
 </p>
-<p class="text">
+<p>
 where the sum is over every node v in I.
 </p>
 
