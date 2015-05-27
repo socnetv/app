@@ -178,7 +178,9 @@ void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool 
     //			<<  nodeHash.value(j)->nodeNumber() << " weight "
     //			<< weight << " nodesize "
     //			<<  m_nodeSize << " edgecolor "<< color ;
-    Edge *edge=new Edge (this, nodeHash.value(i), nodeHash.value(j), weight,
+    Edge *edge=new Edge (this, nodeHash.value(i), nodeHash.value(j),
+                         Qt::SolidLine,
+                         weight,
                          m_nodeSize, color, reciprocal, drawArrows, bezier);
     edge -> setZValue(253);		//Edges have lower z than nodes. Nodes always appear above edges.
     // Keep it here so that it doesnt interfere with dashed lines.

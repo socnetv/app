@@ -48,7 +48,10 @@ class Edge : public QObject, public QGraphicsItem {
 	Q_INTERFACES (QGraphicsItem)
 
 public:
-	Edge(GraphicsWidget *, Node*, Node*, float, int, QString, bool, bool, bool);
+    Edge(GraphicsWidget *, Node*, Node*,
+         const Qt::PenStyle &style,
+         const float &, const int &, const QString &,
+         const bool&, const bool&, const bool &);
     ~Edge();
 	enum { Type = UserType + 2 };
 	int type() const { return Type; }
@@ -64,20 +67,28 @@ public:
 
 	int sourceNodeNumber();
 	int targetNodeNumber();
-	void setWeight( float  w) ;
-	float weight();
-	void setColor( QString str) ;
-    QString color() ;
-    QString colorToPajek();
-	void addWeight (EdgeWeight* canvasWeight  ) ;
-	void clearWeightList();
-    float width() const;
-	void showArrows(bool);
-	void toggleAntialiasing(bool);
+    void setWeight( const float  &w) ;
 
-	void makeReciprocal();
-	void unmakeReciprocal();
+    float weight() const;
+    void addWeight (EdgeWeight* canvasWeight  ) ;
+    void clearWeightList();
+
+    void showArrows(bool);
+    void toggleAntialiasing(bool);
+
+    void makeReciprocal();
+    void unmakeReciprocal();
     bool isReciprocal();
+
+    float width() const;
+
+    QPen pen() const;
+    void setStyle( const Qt::PenStyle  &style);
+    Qt::PenStyle style() const;
+
+    void setColor( const QString &str) ;
+    QString color() const ;
+    QString colorToPajek();
 
 	QPainterPath shape() const;
 
@@ -95,6 +106,7 @@ private:
 	Node *source, *target;
 	QPointF sourcePoint, targetPoint;
 	qreal m_arrowSize, m_startOffset, m_endOffset;
+    Qt::PenStyle m_style;
 	list<EdgeWeight*> weightList;
 	QString m_color;
 	int eFrom, eTo;

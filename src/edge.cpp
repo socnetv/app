@@ -41,8 +41,17 @@ static const double Pi = 3.14159265;
 static double TwoPi = 2.0 * Pi;
 
 
-Edge::Edge(  GraphicsWidget *gw, Node *from, Node *to, float weight, int nodeSize,
-             QString color, bool reciprocal, bool drawArrows, bool bez): graphicsWidget(gw) {
+Edge::Edge(  GraphicsWidget *gw,
+             Node *from,
+             Node *to,
+             const Qt::PenStyle &style,
+             const float &weight,
+             const int &nodeSize,
+             const QString &color,
+             const bool &reciprocal,
+             const bool &drawArrows,
+             const bool &bez ) : graphicsWidget(gw)
+{
 
     qDebug("Edge: Edge()");
     Q_UNUSED(nodeSize);
@@ -53,6 +62,7 @@ Edge::Edge(  GraphicsWidget *gw, Node *from, Node *to, float weight, int nodeSiz
 
     source=from;			//saves the sourceNode
     target=to;			//Saves the targetNode
+    m_style = style;
     m_color=color;
     m_drawArrows=drawArrows;
     m_reciprocal=reciprocal;
@@ -87,14 +97,14 @@ void Edge::removeRefs(){
 }
 
 
-void Edge::setColor( QString str) {
+void Edge::setColor( const QString &str) {
     m_color=str;
     prepareGeometryChange();
 }
 
 
 
-QString Edge::color() { 
+QString Edge::color() const{
     return m_color;
 }
 
@@ -116,14 +126,14 @@ QString Edge::colorToPajek() {
     Updates both the width and the EdgeWeight
  * @param w
  */
-void Edge::setWeight( float w) {
+void Edge::setWeight(const float &w) {
     m_weight = w;
     foreach (EdgeWeight *wgt, weightList) 		///update the edgeWeight of this edge as well.
         wgt->setPlainText (QString::number(w));
 
 }
 
-float Edge::weight() { 
+float Edge::weight() const {
     return m_weight;
 }
 
@@ -288,6 +298,25 @@ bool Edge::isReciprocal() {
     return m_reciprocal;
 }
 
+
+void Edge::setStyle( const Qt::PenStyle  &style ) {
+    m_style = style;
+}
+
+Qt::PenStyle Edge::style() const{
+    return m_style;
+
+}
+
+QPen Edge::pen() const {
+    if (m_weight < 0 ){
+        return  QPen(QColor("red"), width(), Qt::DashLine, Qt::RoundCap, Qt::RoundJoin);
+    }
+    return QPen(QColor(m_color), width(), style(), Qt::RoundCap, Qt::RoundJoin);
+}
+
+
+
 void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *){
     if (!source || !target)
         return;
@@ -322,11 +351,8 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 
     //Prepare the pen
     //	qDebug()<<"*** Edge::paint(). Preparing the pen with width "<< width();
-    if (m_weight > 0)
-        painter->setPen(QPen(QColor(m_color), width(), Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-    else
-        painter->setPen(QPen(QColor(m_color), width(), Qt::DashLine, Qt::RoundCap, Qt::RoundJoin));
 
+     painter->setPen( pen() );
 
     //Draw the arrows only if we have different nodes.
     if (m_drawArrows && source!=target) {
