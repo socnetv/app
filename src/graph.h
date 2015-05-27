@@ -227,18 +227,20 @@ public:
     int hasVertex(QString);
     void removeVertex (long int );
 
-    void setInitVertexSize (long int);
+    void setInitVertexSize (const long int);
     void setVertexSize(const long int &v, const int &newsize );
     void setAllVerticesSize(const int &newsize);
+    int vertexSize(const long int &v);
 
     void setInitVertexShape (const QString);
     void setVertexShape(const int v, const QString shape);
     void setAllVerticesShape(const QString shape);
-    QString shape(const int v);
+    QString vertexShape(const int &v);
 
-    void setInitVertexColor (QString color);
-    void setVertexColor(long int v, QString color);
-    void setAllVerticesColor(QString color);
+    void setInitVertexColor (const QString &color);
+    void setVertexColor(const long &v, const QString &color);
+    void setAllVerticesColor(const QString &color);
+    QColor vertexColor(const long int &v);
 
     void setInitVertexNumberColor ( QString color);
     void setInitVertexNumberSize (int size);
@@ -249,7 +251,7 @@ public:
     void setInitVertexLabelColor(QString color);
     void setVertexLabel(int v, QString label);
     void setVertexLabelColor(int v1, QString color);
-    QString label(int);
+    QString vertexLabel(const long int &v1);
 
     void updateVertCoords(int v, int x, int y);
 
@@ -287,18 +289,18 @@ public:
 
     /* EDGES */
     void edges();
-    float hasArc (int v1, int v2);
-    bool hasEdge (int v1, int v2);
+    float hasArc (const long &v1, const long &v2);
+    bool hasEdge (const int &v1, const long int &v2);
     void removeEdge (int v1, int v2);
 
     bool isWeighted();
 
-    void setEdgeWeight (int v1, int v2, float w);
-    void setInitEdgeColor(QString);
+    void setArcWeight (const long int &v1, const long int &v2, const float &w);
+    void setInitEdgeColor(const QString &);
 
-    void setEdgeColor(long int s, long int t, QString color);
-    QString edgeColor (long int s, long int t);
-    bool setAllEdgesColor(QString color);
+    void setEdgeColor(const long int &v1, const long int &v2, const QString &color);
+    QString edgeColor (const long int &v1, const long int &v2);
+    bool setAllEdgesColor(const QString &color);
 
     int totalEdges ();
 
@@ -424,9 +426,9 @@ public:
     float numberOfTriples(int v1);
     float countCliquesWith(int source, int size=0);
 
-    bool addClique (QList<int> list);
+    bool addClique (const QList<int> &list);
     float countCliquesOfSize(int size );
-    float clusteringCoefficient(int v1);
+    float clusteringCoefficient(const long int &v1);
     float clusteringCoefficient ();
 
     bool triadCensus();

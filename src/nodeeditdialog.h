@@ -43,8 +43,10 @@ class NodeEditDialog : public QDialog
     Q_OBJECT
 public:
     explicit NodeEditDialog(QWidget *parent = 0,
-                            QColor c= QColor("red"),
-                            QString sh = "circle");
+                            const QString &l = "",
+                            const int &s = 8,
+                            const QColor &c= QColor("red"),
+                            const QString &sh = "circle");
 public slots:
     void checkErrors ();
     void gatherData ();
@@ -58,8 +60,8 @@ private:
     QString nodeShape;
     QString nodeValue;
     QString nodeLabel;
-    QPixmap pixmap;
     int nodeSize;
+    QPixmap pixmap;
     Ui::NodeEditDialog ui;
 
 

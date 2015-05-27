@@ -4792,7 +4792,9 @@ void MainWindow::slotChangeNodeProperties() {
         statusMessage( tr("Nothing to remove.")  );
         return;
     }
-    int doomedJim=-1, min=-1, max=-1;
+    int min=-1, max=-1, size = initNodeSize;
+    QColor color = QColor(initNodeColor);
+    QString shape= initNodeShape, label="";
     bool ok=false;
 
 
@@ -4817,9 +4819,28 @@ void MainWindow::slotChangeNodeProperties() {
             return;
         }
     }
-    qDebug ()<< "MW: changing properties for "<< doomedJim;
-    //activeGraph.color
-    m_nodeEditDialog = new NodeEditDialog(this, QColor("red"), "circle") ;
+    else   {
+        foreach (QGraphicsItem *item, selectedNodes() ) {
+           if ( (clickedJim = qgraphicsitem_cast<Node *>(item) )) {
+               if ( selectedNodes().count() > 1 ) {
+                   clickedJimNumber = clickedJim->nodeNumber();
+                   color = activeGraph.vertexColor( clickedJimNumber );
+                   shape = activeGraph.vertexShape( clickedJimNumber);
+                   size = activeGraph.vertexSize ( clickedJimNumber);
+               }
+               else {
+                    clickedJimNumber = clickedJim->nodeNumber();
+                    label = activeGraph.vertexLabel( clickedJimNumber );
+                    color = activeGraph.vertexColor( clickedJimNumber );
+                    shape = activeGraph.vertexShape( clickedJimNumber);
+                    size = activeGraph.vertexSize ( clickedJimNumber);
+               }
+           }
+        }
+    }
+    qDebug ()<< "MW: changing properties for "<< clickedJimNumber ;
+
+    m_nodeEditDialog = new NodeEditDialog(this, label, size, color, shape) ;
 
     connect( m_nodeEditDialog, &NodeEditDialog::userChoices,
              this, &MainWindow::slotNodeProperties );
@@ -4828,6 +4849,8 @@ void MainWindow::slotChangeNodeProperties() {
 
     statusMessage( tr("Node properties dialog opened. Ready. ") );
 }
+
+
 
 void MainWindow::slotNodeProperties( const QString label, const int size,
                                      const QString value, const QColor color,
@@ -5233,7 +5256,7 @@ void MainWindow::slotChangeLinkWeight(){
                     if (ok) {
                         link->setWeight(newWeight);
                         link->update();
-                        activeGraph.setEdgeWeight(sourceNode, targetNode, newWeight);
+                        activeGraph.setArcWeight(sourceNode, targetNode, newWeight);
                         statusMessage(  QString(tr("Ready."))  );
                         return;
                     }
@@ -5266,7 +5289,7 @@ void MainWindow::slotChangeLinkWeight(){
                     clickedLink->setWeight(newWeight);
                     clickedLink->update();
                     qDebug()<<"MW: newWeight will be "<< newWeight;
-                    activeGraph.setEdgeWeight(sourceNode, targetNode, newWeight);
+                    activeGraph.setArcWeight(sourceNode, targetNode, newWeight);
                     statusMessage(  QString(tr("Ready."))  );
                     return;
                 }
@@ -5281,7 +5304,7 @@ void MainWindow::slotChangeLinkWeight(){
                                                           "Change link weight...",tr("New link Weight: "), 1, -100, 100 ,1, &ok ) ;
                 if (ok) {
                     qDebug()<<"MW: newWeight will be "<< newWeight;
-                    activeGraph.setEdgeWeight( targetNode, sourceNode, newWeight);
+                    activeGraph.setArcWeight( targetNode, sourceNode, newWeight);
                     statusMessage(  QString(tr("Ready."))  );
                     return;
                 }
@@ -5297,9 +5320,9 @@ void MainWindow::slotChangeLinkWeight(){
 
                 if (ok) {
                     qDebug()<<"MW: Changing first direction. NewWeight will be "<< newWeight;
-                    activeGraph.setEdgeWeight(sourceNode, targetNode, newWeight);
+                    activeGraph.setArcWeight(sourceNode, targetNode, newWeight);
                     qDebug()<<"MW: Changing opposite direction. NewWeight will be "<< newWeight;
-                    activeGraph.setEdgeWeight( targetNode, sourceNode, newWeight);
+                    activeGraph.setArcWeight( targetNode, sourceNode, newWeight);
                     statusMessage(  QString(tr("Ready."))  );
                     return;
                 }
@@ -5322,7 +5345,7 @@ void MainWindow::slotChangeLinkWeight(){
                 qDebug() << "MW: slotChangeLinkWeight()  calling update  ";
                 clickedLink->update();
                 qDebug()<<"MW: newWeight will be "<< newWeight;
-                activeGraph.setEdgeWeight(sourceNode, targetNode, newWeight);
+                activeGraph.setArcWeight(sourceNode, targetNode, newWeight);
                 statusMessage(  QString(tr("Ready."))  );
                 return;
             }

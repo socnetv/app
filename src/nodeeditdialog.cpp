@@ -40,13 +40,22 @@
 
 #include "nodeeditdialog.h"
 
-NodeEditDialog::NodeEditDialog(QWidget *parent, QColor col, QString sh) :
+NodeEditDialog::NodeEditDialog(QWidget *parent,
+                               const QString &l,
+                               const int &s,
+                               const QColor &col,
+                               const QString &sh) :
     QDialog(parent)
 {
     ui.setupUi(this);
-
+    nodeSize = s;
     nodeColor = col;
     nodeShape = sh;
+    nodeLabel = l;
+
+    ui.labelEdit->setText(nodeLabel);
+    ui.sizeSpin->setValue(nodeSize);
+
     if ( nodeShape == "box"  ){
        ui.boxRadio->setChecked (true);
     }
@@ -67,7 +76,7 @@ NodeEditDialog::NodeEditDialog(QWidget *parent, QColor col, QString sh) :
     pixmap.fill(nodeColor);
     ui.colorButton->setIcon(QIcon(pixmap));
 
-    connect ( ui.buttonBox,SIGNAL(accepted()), this, SLOT(checkErrors()) );
+    connect ( ui.buttonBox,SIGNAL(accepted()), this, SLOT(gatherData()) );
 
     (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
 
@@ -125,7 +134,7 @@ void NodeEditDialog::checkErrors() {
         ui.labelEdit->setGraphicsEffect(0);
         (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);
     }
-    gatherData();
+    //gatherData();
 }
 
 void NodeEditDialog::selectColor() {

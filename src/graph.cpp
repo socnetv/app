@@ -33,6 +33,7 @@
 #include <QPointF>
 #include <QDebug>		//used for qDebug messages
 #include <QHash>
+#include <QColor>
 #include <QTextCodec>
 
 #include <cstdlib>		//allows the use of RAND_MAX macro 
@@ -549,8 +550,8 @@ void Graph::addEdge (int v1, int v2, float weight, QString color, int reciprocal
 /**	
     Change edge (arc) weight between v1 and v2
 */
-void Graph::setEdgeWeight (int v1, int v2, float weight) {
-    qDebug() << "Graph: setEdgeWeight between " << v1 << "[" << index[v1]
+void Graph::setArcWeight (const long &v1, const long &v2, const float &weight) {
+    qDebug() << "Graph::setArcWeight between " << v1 << "[" << index[v1]
                 << "] and " << v2 << "[" << index[v2] << "]" << " = " << weight;
     m_graph [ index[v1] ]->changeLinkWeightTo(v2, weight);
     graphModified=true;
@@ -577,7 +578,7 @@ void Graph::removeEdge (int v1, int v2) {
     if (m_totalEdges<0) //crazy check :)
         m_totalEdges=0;
     graphModified=true;
-    qDebug("Graph: removeEdge(): emitting eraseEdge to GW");
+
     emit eraseEdge(v1,v2);
     emit graphChanged();
 }
@@ -800,7 +801,7 @@ int Graph::hasVertex(QString label){
 
 
 
-void Graph::setInitVertexSize (long int size) {
+void Graph::setInitVertexSize (const long int size) {
     initVertexSize=size;
 }
 
@@ -813,6 +814,9 @@ void Graph::setVertexSize(const long int &v, const int &size) {
     emit setNodeSize(v, size);
 }
 
+int Graph::vertexSize(const long &v ) {
+    return m_graph[ index[v] ]-> size();
+}
 
 //Changes the size.of all vertices
 void Graph::setAllVerticesSize(const int &size) {
@@ -846,7 +850,7 @@ void Graph::setVertexShape(const int v1, const QString shape){
 
 
 //returns the shape of this vertex
-QString Graph::shape(const int v1){
+QString Graph::vertexShape(const int &v1){
     return m_graph[ index[v1] ]->shape();
 
 }
@@ -921,7 +925,7 @@ void Graph::setInitVertexLabelColor(QString color){
 }
 
 
-QString Graph::label(int v1){
+QString Graph::vertexLabel(const long int &v1){
     return m_graph[ index[v1] ]->label ();
 }
 
@@ -929,7 +933,7 @@ QString Graph::label(int v1){
 /**
     Changes the color of vertex v1
 */
-void Graph::setVertexColor(long int v1, QString color){
+void Graph::setVertexColor(const long int &v1, const QString &color){
     qDebug()<< "Graph: setVertexColor for "<< v1 << ", index " << index[v1]<< " with color "<< color;
     m_graph[ index[v1] ]->setColor ( color );
     emit setNodeColor ( m_graph[ index[v1] ]-> name(), color );
@@ -937,13 +941,16 @@ void Graph::setVertexColor(long int v1, QString color){
     emit graphChanged();
 }
 
+QColor Graph::vertexColor(const long int &v1){
+    return  QColor ( m_graph[ index[v1] ] -> color() ) ;
+}
 
-void Graph::setInitVertexColor(QString color){
+void Graph::setInitVertexColor(const QString &color){
     initVertexColor=color;
 }
 
 
-void Graph::setAllVerticesColor(QString color) {
+void Graph::setAllVerticesColor(const QString &color) {
     qDebug() << "*** Graph::setAllVerticesColor() "
                 << " to " << color;
     setInitVertexColor(color);
@@ -966,7 +973,7 @@ void Graph::setAllVerticesColor(QString color) {
 
 
 
-void Graph::setInitEdgeColor(QString color){
+void Graph::setInitEdgeColor(const QString &color){
     initEdgeColor=color;
 }
 
@@ -974,20 +981,19 @@ void Graph::setInitEdgeColor(QString color){
 
 
 //Returns the edgeColor
-QString Graph::edgeColor (long int s, long int t){
-    return m_graph[ index[s] ]->outLinkColor(t);
+QString Graph::edgeColor (const long &v1, const long &v2){
+    return m_graph[ index[v1] ]->outLinkColor(v2);
 }
 
 
 /**
     Changes the color of all edges.
 */
-bool Graph::setAllEdgesColor(QString color){
+bool Graph::setAllEdgesColor(const QString &color){
     qDebug()<< "\n\nGraph::setAllEdgesColor()" << color;
     int target=0, source=0;
     setInitEdgeColor(color);
     QHash<int,float> *enabledOutLinks = new QHash<int,float>;
-    //enabledOutLinks->reserve(10000);
     QHash<int,float>::const_iterator it1;
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -1017,15 +1023,15 @@ bool Graph::setAllEdgesColor(QString color){
 /**
     Changes the color of edge (s,t).
 */
-void Graph::setEdgeColor(long int s, long int t, QString color){
-    qDebug()<< "\n\n === Graph::setEdgeColor() "<< s << " -> "<< t
-            <<" with index ("<< index[s]<< " -> "<<index[t]<<")"
+void Graph::setEdgeColor(const long &v1, const long &v2, const QString &color){
+    qDebug()<< "\n\n === Graph::setEdgeColor() "<< v1 << " -> "<< v2
+            <<" with index ("<< index[v1]<< " -> "<<index[v2]<<")"
            <<" new color "<< color;
-    m_graph[ index[s] ]->setOutLinkColor(t, color);
-    emit setLinkColor(s, t, color);
+    m_graph[ index[v1] ]->setOutLinkColor(v2, color);
+    emit setLinkColor(v1, v2, color);
     if (isSymmetric()) {
-        m_graph[ index[t] ]->setOutLinkColor(s, color);
-        emit setLinkColor(t, s, color);
+        m_graph[ index[v2] ]->setOutLinkColor(v1, color);
+        emit setLinkColor(v2, v1, color);
     }
     graphModified=true;
     emit graphChanged();
@@ -1037,14 +1043,14 @@ void Graph::setEdgeColor(long int s, long int t, QString color){
 /**	Checks if there is a directed edge (arc) from v1 to v2
     Complexity:  O(logN) for index retrieval + O(1) for QList index retrieval + O(logN) for checking edge(v2)
 */
-float Graph::hasArc (int v1, int v2) {
+float Graph::hasArc (const long int &v1, const long int &v2) {
     //qDebug() << "Graph::hasArc() " << v1 << " -> " << v2 << " ? " ;
     return m_graph[ index[v1] ]->isLinkedTo(v2);
 }
 
 /**	Checks if there is a edge between v1 and v2 (both arcs exist)
 */
-bool Graph::hasEdge (int v1, int v2) {
+bool Graph::hasEdge (const int &v1, const long &v2) {
     //qDebug() << "Graph::hasEdge() " << v1 << " <-> " << v2 << " ? " ;
     return ( m_graph[ index[v1] ]->isLinkedTo(v2)
             && m_graph[ index[v2] ]->isLinkedTo(v1) ) ? true: false;
@@ -1055,8 +1061,7 @@ void Graph::edges(){
     H_edges::const_iterator it1;
     QList<Vertex*>::const_iterator it;
     int  relation=0,source=0, target=0, w=0;
-    float weight;
-    weight=0;
+    float weight=0;
     bool edgeStatus=false;
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
@@ -5313,7 +5318,7 @@ void Graph::writeCliqueCensus(
 }
 
 
-bool Graph:: addClique(QList<int> list){
+bool Graph:: addClique(const QList<int> &list){
     qDebug() << "*** Graph::addClique()" <<
                 list.count();
     for (int i = 0; i < list.size(); ++i) {
@@ -5692,7 +5697,7 @@ float Graph::numberOfTriples(int v1){
     to being a clique.
     This is used to determine whether a graph is a small-world network.
 */
-float Graph:: clusteringCoefficient(int v1){
+float Graph:: clusteringCoefficient(const long int &v1){
     float clucof=0;
     if ( !graphModified && (m_graph[ index [v1] ] -> hasCLC() ) )  {
         float clucof=m_graph[ index [v1] ] ->CLC();
