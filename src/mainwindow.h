@@ -151,7 +151,7 @@ public slots:
     void slotShowDataSetSelectDialog();
     void slotRecreateDataSet(QString);
     void slotCreateRandomNetErdos();
-    void slotCreateSameDegreeRandomNetwork();
+    void slotCreateRegularRandomNetwork();
     void slotCreateGaussianRandomNetwork();
     void slotCreateRandomNetRingLattice();
     void slotCreateSmallWorldRandomNetwork();
@@ -364,7 +364,7 @@ private:
     QAction *viewNetworkFileAct, *openTextEditorAct, *viewSociomatrixAct, *recreateDataSetAct;
 
     QAction *createUniformRandomNetworkAct, *createGaussianRandomNetworkAct, *createLatticeNetworkAct;
-    QAction *createSmallWorldRandomNetworkAct, *createSameDegreeRandomNetworkAct;
+    QAction *createSmallWorldRandomNetworkAct, *createRegularRandomNetworkAct;
     QAction *displayNodeNumbersAct, *displayNodeLabelsAct, *displayNumbersInsideNodesAct;
     QAction *selectNoneAct, *selectAllAct;
     QAction *findNodeAct,*addNodeAct, *addLinkAct, *removeNodeAct, *propertiesNodeAct, *removeLinkAct;

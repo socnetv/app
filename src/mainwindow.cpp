@@ -536,10 +536,10 @@ void MainWindow::initActions(){
     createLatticeNetworkAct->setWhatsThis(tr("Ring Lattice \n\nA ring lattice or a physicist's lattice is a graph with N nodes each connected to K neighbors, K / 2 on each side."));
     connect(createLatticeNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateRandomNetRingLattice()));
 
-    createSameDegreeRandomNetworkAct = new QAction(QIcon(":/images/net.png"), tr("Same Degree"), this);
-    createSameDegreeRandomNetworkAct->setStatusTip(tr("Creates a random network where all nodes have the same degree."));
-    createSameDegreeRandomNetworkAct->setWhatsThis(tr("Same Degree \n\nCreates a random network where all nodes have the same degree "));
-    connect(createSameDegreeRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateSameDegreeRandomNetwork()));
+    createRegularRandomNetworkAct = new QAction(QIcon(":/images/net.png"), tr("d-Regular"), this);
+    createRegularRandomNetworkAct->setStatusTip(tr("Creates a random network where every node has the same degree d."));
+    createRegularRandomNetworkAct->setWhatsThis(tr("d-Regular \n\nCreates a random network where each node have the same number of neighbours, aka the same degree d "));
+    connect(createRegularRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateRegularRandomNetwork()));
 
     createGaussianRandomNetworkAct = new QAction(tr("Gaussian"),	this);
     createGaussianRandomNetworkAct->setStatusTip(tr("Creates a Gaussian distributed random network"));
@@ -1731,7 +1731,7 @@ void MainWindow::initMenuBar() {
     randomNetworkMenu -> addAction (createUniformRandomNetworkAct );
     // createGaussianRandomNetworkAct -> addTo(randomNetworkMenu);
     randomNetworkMenu -> addAction (createLatticeNetworkAct);
-    randomNetworkMenu -> addAction (createSameDegreeRandomNetworkAct);
+    randomNetworkMenu -> addAction (createRegularRandomNetworkAct);
     networkMenu->addSeparator();
 
     networkMenu  -> addAction(webCrawlerAct);
@@ -4269,13 +4269,14 @@ void MainWindow::slotCreateRandomNetErdos(){
 /**
     Creates a pseudo-random network where every node has the same degree
 */
-void MainWindow::slotCreateSameDegreeRandomNetwork(){
+void MainWindow::slotCreateRegularRandomNetwork(){
     bool ok;
     statusMessage( "Creating a pseudo-random network where each node has the same degree... ");
     int newNodes= QInputDialog::getInt(
                        this,
-                       tr("Create same degree network"),
-                       tr("This will create a same degree network. \nPlease enter the number of nodes you want:"),
+                       tr("Create k-regular network"),
+                       tr("This will create a network with nodes of the same degree d.")
+                          + tr("\nPlease enter the number of nodes:"),
                        100, 1, maxNodes, 1, &ok
                 ) ;
     if (!ok) {
@@ -4284,7 +4285,7 @@ void MainWindow::slotCreateSameDegreeRandomNetwork(){
     }
     int degree = QInputDialog::getInt(
                 this,
-                tr("Create same degree network..."),
+                tr("Create k-regular network..."),
                 tr("Now, select an even number d. \nThis will be the number of links of each node:"),
                 2, 2, newNodes-1, 2, &ok
                 );
