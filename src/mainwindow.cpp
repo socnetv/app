@@ -105,7 +105,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
              this, SLOT( nodeInfoStatusBar(Node*) ) 	);
 
     connect( graphicsWidget, SIGNAL( selectedEdge(Edge*) ),
-             this, SLOT ( linkInfoStatusBar(Edge*) )  );
+             this, SLOT ( edgeInfoStatusBar(Edge*) )  );
 
     connect( graphicsWidget, SIGNAL( windowResized(int, int)),
              this, SLOT( windowInfoStatusBar(int,int)) 	);
@@ -117,14 +117,14 @@ MainWindow::MainWindow(const QString & m_fileName) {
              this, SLOT( addNodeWithMouse(int,QPointF) ) ) ;
 
     connect( graphicsWidget, SIGNAL( userMiddleClicked(int, int, float) ),
-             this, SLOT( addLink(int, int, float) ) 	);
+             this, SLOT( addEdge(int, int, float) ) 	);
 
 
     connect( graphicsWidget, SIGNAL( openNodeMenu() ),
              this, SLOT( openNodeContextMenu() ) ) ;
 
     connect( graphicsWidget, SIGNAL( openEdgeMenu() ),
-             this, SLOT( openLinkContextMenu() ) ) ;
+             this, SLOT( openEdgeContextMenu() ) ) ;
 
     connect (graphicsWidget, &GraphicsWidget::openContextMenu,
              this, &MainWindow::openContextMenu);
@@ -183,7 +183,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
              graphicsWidget, SLOT( drawEdgeReciprocal(int, int) ) );
 
 
-    connect( &activeGraph, SIGNAL( setLinkColor(long int,long int,QString)),
+    connect( &activeGraph, SIGNAL( setEdgeColor(long int,long int,QString)),
              graphicsWidget, SLOT( setEdgeColor(long int,long int,QString) ) );
 
 
@@ -203,11 +203,11 @@ MainWindow::MainWindow(const QString & m_fileName) {
     //connect some signals/slots with MW widgets
     connect( addNodeBt,SIGNAL(clicked()), this, SLOT( addNode() ) );
 
-    connect( addLinkBt,SIGNAL(clicked()), this, SLOT( slotAddLink() ) );
+    connect( addEdgeBt,SIGNAL(clicked()), this, SLOT( slotAddEdge() ) );
 
     connect( removeNodeBt,SIGNAL(clicked()), this, SLOT( slotRemoveNode() ) );
 
-    connect( removeLinkBt,SIGNAL(clicked()), this, SLOT( slotRemoveLink() ) );
+    connect( removeEdgeBt,SIGNAL(clicked()), this, SLOT( slotRemoveEdge() ) );
 
     connect( zoomCombo, SIGNAL(currentIndexChanged(const int &)),
              graphicsWidget, SLOT( changeZoom(const int &))  );
@@ -512,7 +512,7 @@ void MainWindow::initActions(){
     viewSociomatrixAct = new QAction(QIcon(":/images/sm.png"), tr("View Adjacency Matrix"),  this);
     viewSociomatrixAct ->setShortcut(tr("F6"));
     viewSociomatrixAct->setStatusTip(tr("Displays the adjacency matrix of the active network. See manual or online help for more..."));
-    viewSociomatrixAct->setWhatsThis(tr("View Adjacency Matrix\n\nDisplays the adjacency matrix of the active network. \n\n The adjacency matrix of a network is a matrix where each element a(i,j) is equal to the weight of the link from node i to node j. If the nodes are not connected, then a(i,j)=0. "));
+    viewSociomatrixAct->setWhatsThis(tr("View Adjacency Matrix\n\nDisplays the adjacency matrix of the active network. \n\n The adjacency matrix of a network is a matrix where each element a(i,j) is equal to the weight of the Edge from node i to node j. If the nodes are not connected, then a(i,j)=0. "));
     connect(viewSociomatrixAct, SIGNAL(triggered()), this, SLOT(slotViewAdjacencyMatrix()));
 
 
@@ -527,18 +527,25 @@ void MainWindow::initActions(){
     createUniformRandomNetworkAct = new QAction(QIcon(":/images/erdos.png"), tr("Erdos-Renyi G(n,p)"),  this);
     createUniformRandomNetworkAct ->setShortcut(tr("Shift+U"));
     createUniformRandomNetworkAct->setStatusTip(tr("Creates a random network where each edge is included with a given probability"));
-    createUniformRandomNetworkAct->setWhatsThis(tr("Uniform \n\nCreates a random network of G(n, p) model by connecting nodes randomly. Each edge is included in the graph with equal probability p, independently of the other edges"));
+    createUniformRandomNetworkAct->setWhatsThis(
+                tr("Erdos-Renyi \n\n") +
+                tr("Creates a random network of G(n, p) model by connecting nodes randomly.") +
+                tr("Each edge is included in the graph with equal probability p, independently of the other edges"));
     connect(createUniformRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateRandomNetErdos()));
 
     createLatticeNetworkAct = new QAction( QIcon(":/images/net1.png"), tr("Ring Lattice"), this);
     createLatticeNetworkAct ->setShortcut(tr("Shift+L"));
     createLatticeNetworkAct->setStatusTip(tr("Creates a ring lattice random network"));
-    createLatticeNetworkAct->setWhatsThis(tr("Ring Lattice \n\nA ring lattice or a physicist's lattice is a graph with N nodes each connected to K neighbors, K / 2 on each side."));
+    createLatticeNetworkAct->setWhatsThis(
+                tr("Ring Lattice \n\n")+
+                tr("A ring lattice is a graph with N nodes each connected to d neighbors, d / 2 on each side."));
     connect(createLatticeNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateRandomNetRingLattice()));
 
     createRegularRandomNetworkAct = new QAction(QIcon(":/images/net.png"), tr("d-Regular"), this);
     createRegularRandomNetworkAct->setStatusTip(tr("Creates a random network where every node has the same degree d."));
-    createRegularRandomNetworkAct->setWhatsThis(tr("d-Regular \n\nCreates a random network where each node have the same number of neighbours, aka the same degree d "));
+    createRegularRandomNetworkAct->setWhatsThis(
+                tr("d-Regular \n\n") +
+                tr("Creates a random network where each node have the same number of neighbours, aka the same degree d "));
     connect(createRegularRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateRegularRandomNetwork()));
 
     createGaussianRandomNetworkAct = new QAction(tr("Gaussian"),	this);
@@ -549,7 +556,9 @@ void MainWindow::initActions(){
     createSmallWorldRandomNetworkAct = new QAction(QIcon(":/images/sw.png"), tr("Small World"),	this);
     createSmallWorldRandomNetworkAct->setShortcut(tr("Shift+W"));
     createSmallWorldRandomNetworkAct->setStatusTip(tr("Creates a random network with small world properties"));
-    createSmallWorldRandomNetworkAct->setWhatsThis(tr("Small World \n\nA Small World, according to the Watts and Strogatz model, is a random network with short average path lengths and high clustering coefficient."));
+    createSmallWorldRandomNetworkAct->setWhatsThis(
+                tr("Small World \n\n") +
+                tr("A Small World, according to the Watts and Strogatz model, is a random network with short average path lengths and high clustering coefficient."));
     connect(createSmallWorldRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateSmallWorldRandomNetwork()));
 
 
@@ -625,35 +634,34 @@ void MainWindow::initActions(){
     changeLabelsSizeAct->setWhatsThis(tr("Labels Size\n\nChange the fontsize of the labels of all nodes"));
     connect(changeLabelsSizeAct, SIGNAL(triggered()), this, SLOT(slotChangeLabelsSize()) );
 
-    addLinkAct = new QAction(QIcon(":/images/plines.png"), tr("Add Link"),this);
-    //addLinkAct->setShortcut(tr("Ctrl+L"));
-    addLinkAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_A));
-    addLinkAct->setStatusTip(tr("Adds a Link to a Node"));
-    addLinkAct->setWhatsThis(tr("Add Link\n\nAdds a Link to the network"));
-    connect(addLinkAct, SIGNAL(triggered()), this, SLOT(slotAddLink()));
+    addEdgeAct = new QAction(QIcon(":/images/plines.png"), tr("Add Edge"),this);
+    addEdgeAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_A));
+    addEdgeAct->setStatusTip(tr("Adds a directed edge from a node to another"));
+    addEdgeAct->setWhatsThis(tr("Add Edge\n\nAdds a directed edge from a node to another"));
+    connect(addEdgeAct, SIGNAL(triggered()), this, SLOT(slotAddEdge()));
 
-    removeLinkAct = new QAction(QIcon(":/images/disconnect.png"), tr("Remove"), this);
-    //removeLinkAct ->setShortcut(QKeySequence(Qt::SHIFT+Qt::Key_Backspace));
-    removeLinkAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_Backspace));
-    removeLinkAct->setStatusTip(tr("Removes a Link"));
-    removeLinkAct->setWhatsThis(tr("Remove Link\n\nRemoves a Link from the network"));
-    connect(removeLinkAct, SIGNAL(triggered()), this, SLOT(slotRemoveLink()));
+    removeEdgeAct = new QAction(QIcon(":/images/disconnect.png"), tr("Remove"), this);
+    //removeEdgeAct ->setShortcut(QKeySequence(Qt::SHIFT+Qt::Key_Backspace));
+    removeEdgeAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_Backspace));
+    removeEdgeAct->setStatusTip(tr("Removes an Edge"));
+    removeEdgeAct->setWhatsThis(tr("Remove Edge\n\nRemoves an Edge from the network"));
+    connect(removeEdgeAct, SIGNAL(triggered()), this, SLOT(slotRemoveEdge()));
 
-    changeLinkLabelAct = new QAction(QIcon(":/images/letters.png"), tr("Change Label"), this);
-    changeLinkLabelAct->setStatusTip(tr("Changes the Label of a Link"));
-    changeLinkLabelAct->setWhatsThis(tr("Change Label\n\nChanges the label of a Link"));
-    connect(changeLinkLabelAct, SIGNAL(triggered()), this, SLOT(slotChangeLinkLabel()));
-    changeLinkLabelAct->setEnabled(false);
+    changeEdgeLabelAct = new QAction(QIcon(":/images/letters.png"), tr("Change Label"), this);
+    changeEdgeLabelAct->setStatusTip(tr("Changes the Label of an Edge"));
+    changeEdgeLabelAct->setWhatsThis(tr("Change Label\n\nChanges the label of an Edge"));
+    connect(changeEdgeLabelAct, SIGNAL(triggered()), this, SLOT(slotChangeEdgeLabel()));
+    changeEdgeLabelAct->setEnabled(false);
 
-    changeLinkColorAct = new QAction(QIcon(":/images/colorize.png"),tr("Change Color"),	this);
-    changeLinkColorAct->setStatusTip(tr("Changes the Color of a Link"));
-    changeLinkColorAct->setWhatsThis(tr("Change Color\n\nChanges the Color of a Link"));
-    connect(changeLinkColorAct, SIGNAL(triggered()), this, SLOT(slotChangeLinkColor()));
+    changeEdgeColorAct = new QAction(QIcon(":/images/colorize.png"),tr("Change Color"),	this);
+    changeEdgeColorAct->setStatusTip(tr("Changes the Color of an Edge"));
+    changeEdgeColorAct->setWhatsThis(tr("Change Color\n\nChanges the Color of an Edge"));
+    connect(changeEdgeColorAct, SIGNAL(triggered()), this, SLOT(slotChangeEdgeColor()));
 
-    changeLinkWeightAct = new QAction(tr("Change Weight"), this);
-    changeLinkWeightAct->setStatusTip(tr("Changes the Weight of a Link"));
-    changeLinkWeightAct->setWhatsThis(tr("Change Value\n\nChanges the Weight of a Link"));
-    connect(changeLinkWeightAct, SIGNAL(triggered()), this, SLOT(slotChangeLinkWeight()));
+    changeEdgeWeightAct = new QAction(tr("Change Weight"), this);
+    changeEdgeWeightAct->setStatusTip(tr("Changes the Weight of an Edge"));
+    changeEdgeWeightAct->setWhatsThis(tr("Change Value\n\nChanges the Weight of an Edge"));
+    connect(changeEdgeWeightAct, SIGNAL(triggered()), this, SLOT(slotChangeEdgeWeight()));
 
     filterNodesAct = new QAction(tr("Filter Nodes"), this);
     filterNodesAct -> setEnabled(false);
@@ -669,10 +677,10 @@ void MainWindow::initActions(){
     filterIsolateNodesAct -> setWhatsThis(tr("Filter Isolate Nodes\n\n Enables or disables displaying of isolate nodes. Isolate nodes are those with no edges..."));
     connect(filterIsolateNodesAct, SIGNAL(toggled(bool)), this, SLOT(slotFilterIsolateNodes(bool)));
 
-    filterEdgesAct = new QAction(tr("Filter Links by weight"), this);
+    filterEdgesAct = new QAction(tr("Filter Edges by weight"), this);
     filterEdgesAct -> setEnabled(true);
-    filterEdgesAct -> setStatusTip(tr("Filters Links of some weight out of the network"));
-    filterEdgesAct -> setWhatsThis(tr("Filter Links\n\nFilters Link of some specific weight out of the network."));
+    filterEdgesAct -> setStatusTip(tr("Filters Edges of some weight out of the network"));
+    filterEdgesAct -> setWhatsThis(tr("Filter Edges\n\nFilters Edge of some specific weight out of the network."));
     connect(filterEdgesAct , SIGNAL(triggered()), this, SLOT(slotShowFilterEdgesDialog()));
 
     changeBackColorAct = new QAction(QIcon(":/images/color.png"), tr("Change Background Color"), this);
@@ -695,22 +703,22 @@ void MainWindow::initActions(){
     changeAllLabelsColorAct->setWhatsThis(tr("Numbers\n\nChanges the color of all node labels."));
     connect(changeAllLabelsColorAct, SIGNAL(triggered()), this, SLOT(slotAllLabelsColor()));
 
-    changeAllLinksColorAct = new QAction( tr("Change all Links Colors"), this);
-    changeAllLinksColorAct->setStatusTip(tr("Click to change the color of all links."));
-    changeAllLinksColorAct->setWhatsThis(tr("Background\n\nChanges all links color"));
-    connect(changeAllLinksColorAct, SIGNAL(triggered()), this, SLOT(slotAllLinksColor()));
+    changeAllEdgesColorAct = new QAction( tr("Change all Edges Colors"), this);
+    changeAllEdgesColorAct->setStatusTip(tr("Click to change the color of all Edges."));
+    changeAllEdgesColorAct->setWhatsThis(tr("Background\n\nChanges all Edges color"));
+    connect(changeAllEdgesColorAct, SIGNAL(triggered()), this, SLOT(slotAllEdgesColor()));
 
 
 
-    transformNodes2LinksAct = new QAction( tr("Transform Nodes to Links"),this);
-    transformNodes2LinksAct->setStatusTip(tr("Transforms the network so that nodes become links and vice versa"));
-    transformNodes2LinksAct->setWhatsThis(tr("Transform Nodes LinksAct\n\nTransforms network so that nodes become links and vice versa"));
-    connect(transformNodes2LinksAct, SIGNAL(triggered()), this, SLOT(slotTransformNodes2Links()));
+    transformNodes2EdgesAct = new QAction( tr("Transform Nodes to Edges"),this);
+    transformNodes2EdgesAct->setStatusTip(tr("Transforms the network so that nodes become Edges and vice versa"));
+    transformNodes2EdgesAct->setWhatsThis(tr("Transform Nodes EdgesAct\n\nTransforms network so that nodes become Edges and vice versa"));
+    connect(transformNodes2EdgesAct, SIGNAL(triggered()), this, SLOT(slotTransformNodes2Edges()));
 
-    symmetrizeAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Symmetrize Links"), this);
-    symmetrizeAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_L, Qt::CTRL + Qt::Key_S));
+    symmetrizeAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Symmetrize Edges"), this);
+    symmetrizeAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_S));
     symmetrizeAct->setStatusTip(tr("Makes all edges reciprocal (thus, a symmetric graph)."));
-    symmetrizeAct->setWhatsThis(tr("Symmetrize Edges\n\nTransforms all arcs to double links (edges). The result is a symmetric network"));
+    symmetrizeAct->setWhatsThis(tr("Symmetrize Edges\n\nTransforms all directed arcs to undirected edges. The result is a symmetric network"));
     connect(symmetrizeAct, SIGNAL(triggered()), this, SLOT(slotSymmetrize()));
 
 
@@ -1506,7 +1514,7 @@ void MainWindow::initActions(){
     cPageRankAct->setShortcut(tr("Ctrl+K"));
     cPageRankAct->setEnabled(true);
     cPageRankAct->setStatusTip(tr("Calculate and display PageRank Prestige"));
-    cPageRankAct->setWhatsThis(tr("PageRank Prestige\n\n An importance ranking for each node based on the link structure of the network. PageRank, developed by Page and Brin (1997), focuses on how nodes are connected to each other, treating each link from a node as a citation/backlink/vote to another. In essence, for each node PageRank counts all backlinks to it, but it does so by not counting all links equally while it normalizes each link from a node by the total number of links from it. PageRank is calculated iteratively and it corresponds to the principal eigenvector of the normalized link matrix. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for directed graphs since it is a prestige measure. It can also be calculated in weighted graphs. In weighted relations, each backlink to a node v from another node u is considered to have weight=1 but it is normalized by the sum of outLinks weights (outDegree) of u. Therefore, nodes with high outLink weights give smaller percentage of their PR to node v."));
+    cPageRankAct->setWhatsThis(tr("PageRank Prestige\n\n An importance ranking for each node based on the link structure of the network. PageRank, developed by Page and Brin (1997), focuses on how nodes are connected to each other, treating each edge from a node as a citation/backlink/vote to another. In essence, for each node PageRank counts all backlinks to it, but it does so by not counting all edges equally while it normalizes each edge from a node by the total number of edges from it. PageRank is calculated iteratively and it corresponds to the principal eigenvector of the normalized link matrix. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for directed graphs since it is a prestige measure. It can also be calculated in weighted graphs. In weighted relations, each backlink to a node v from another node u is considered to have weight=1 but it is normalized by the sum of outLinks weights (outDegree) of u. Therefore, nodes with high outLink weights give smaller percentage of their PR to node v."));
     connect(cPageRankAct, SIGNAL(triggered()), this, SLOT(slotPrestigePageRank()));
 
     cProximityPrestigeAct = new QAction(tr("Proximity Prestige (PP)"),	this);
@@ -1559,57 +1567,57 @@ void MainWindow::initActions(){
     connect(displayNumbersInsideNodesAct, SIGNAL(toggled(bool)), this, SLOT(slotDisplayNumbersInsideNodes(bool)));
 
 
-    displayLinksAct = new QAction(tr("Display Links"),	this);
-    displayLinksAct->setStatusTip(tr("Toggle to display or not links"));
-    displayLinksAct->setWhatsThis(tr("Display Links\n\nClick to enable or disable displaying of links"));
-    displayLinksAct->setCheckable(true);
-    displayLinksAct->setChecked(true);
-    connect(displayLinksAct, SIGNAL(toggled(bool)), this, SLOT(slotDisplayLinks(bool)) );
+    displayEdgesAct = new QAction(tr("Display Edges"),	this);
+    displayEdgesAct->setStatusTip(tr("Toggle to display or not Edges"));
+    displayEdgesAct->setWhatsThis(tr("Display Edges\n\nClick to enable or disable displaying of Edges"));
+    displayEdgesAct->setCheckable(true);
+    displayEdgesAct->setChecked(true);
+    connect(displayEdgesAct, SIGNAL(toggled(bool)), this, SLOT(slotDisplayEdges(bool)) );
 
-    displayLinksWeightNumbersAct = new QAction(tr("Display Link Weights"),	this);
-    displayLinksWeightNumbersAct->setStatusTip(tr("Toggles displaying of numbers of links weights"));
-    displayLinksWeightNumbersAct->setWhatsThis(tr("Display Weight Numbers\n\nClick to enable or disable displaying numbers of links weight"));
-    displayLinksWeightNumbersAct->setCheckable(true);
-    displayLinksWeightNumbersAct->setChecked(false);
-    connect(displayLinksWeightNumbersAct, SIGNAL(toggled(bool)),
-            this, SLOT(slotDisplayLinksWeightNumbers(bool)) );
+    displayEdgesWeightNumbersAct = new QAction(tr("Display Edge Weights"),	this);
+    displayEdgesWeightNumbersAct->setStatusTip(tr("Toggles displaying of numbers of Edges weights"));
+    displayEdgesWeightNumbersAct->setWhatsThis(tr("Display Weight Numbers\n\nClick to enable or disable displaying numbers of Edges weight"));
+    displayEdgesWeightNumbersAct->setCheckable(true);
+    displayEdgesWeightNumbersAct->setChecked(false);
+    connect(displayEdgesWeightNumbersAct, SIGNAL(toggled(bool)),
+            this, SLOT(slotDisplayEdgesWeightNumbers(bool)) );
 
-    considerLinkWeightsAct = new QAction(tr("Consider Weights in calculcations"),	this);
-    considerLinkWeightsAct->
+    considerEdgeWeightsAct = new QAction(tr("Consider Weights in calculcations"),	this);
+    considerEdgeWeightsAct->
             setStatusTip(
-                tr("Toggles considering link weights during calculations (i.e. distances, centrality, etc)"));
-    considerLinkWeightsAct->
+                tr("Toggles considering Edge weights during calculations (i.e. distances, centrality, etc)"));
+    considerEdgeWeightsAct->
             setWhatsThis(
                 tr("Display Weight Numbers\n\n"
-                   "Click to enable or disable considering link weights during "
+                   "Click to enable or disable considering edge weights during "
                    "calculations (i.e. distances, centrality, etc)"));
-    considerLinkWeightsAct->setCheckable(true);
-    considerLinkWeightsAct->setChecked(false);
-    connect(considerLinkWeightsAct, SIGNAL(triggered(bool)),
-            this, SLOT(slotConsiderLinkWeights(bool)) );
+    considerEdgeWeightsAct->setCheckable(true);
+    considerEdgeWeightsAct->setChecked(false);
+    connect(considerEdgeWeightsAct, SIGNAL(triggered(bool)),
+            this, SLOT(slotConsiderEdgeWeights(bool)) );
 
-    displayLinksArrowsAct = new QAction( tr("Display Arrows"),this);
-    displayLinksArrowsAct->setStatusTip(tr("Toggles displaying of arrows in the end of links"));
-    displayLinksArrowsAct->setWhatsThis(tr("Display Arrows\n\nClick to enable or disable displaying of arrows in the end of links"));
-    displayLinksArrowsAct->setCheckable(true);
-    displayLinksArrowsAct->setChecked(true);
-    connect(displayLinksArrowsAct, SIGNAL(toggled(bool)), this, SLOT(slotDisplayLinksArrows(bool)) );
+    displayEdgesArrowsAct = new QAction( tr("Display Arrows"),this);
+    displayEdgesArrowsAct->setStatusTip(tr("Toggles displaying of arrows on edges"));
+    displayEdgesArrowsAct->setWhatsThis(tr("Display Arrows\n\nClick to enable or disable displaying of arrows on edges"));
+    displayEdgesArrowsAct->setCheckable(true);
+    displayEdgesArrowsAct->setChecked(true);
+    connect(displayEdgesArrowsAct, SIGNAL(toggled(bool)), this, SLOT(slotDisplayEdgesArrows(bool)) );
 
-    drawLinksWeightsAct = new QAction( tr("Thickness=Weight"), this);
-    drawLinksWeightsAct->setStatusTip(tr("Draws links as thick as their weights (if specified)"));
-    drawLinksWeightsAct->setWhatsThis(tr("Draw As Thick As Weights\n\nClick to toggle having all links as thick as their weight (if specified)"));
-    drawLinksWeightsAct->setCheckable(true);
-    drawLinksWeightsAct->setChecked(false);
-    drawLinksWeightsAct->setEnabled(false);
-    connect(drawLinksWeightsAct, SIGNAL(toggled(bool)), this, SLOT(slotDrawLinksThickAsWeights()) );
+    drawEdgesWeightsAct = new QAction( tr("Thickness=Weight"), this);
+    drawEdgesWeightsAct->setStatusTip(tr("Draws edges as thick as their weights (if specified)"));
+    drawEdgesWeightsAct->setWhatsThis(tr("Draw As Thick As Weights\n\nClick to toggle having all edges as thick as their weight (if specified)"));
+    drawEdgesWeightsAct->setCheckable(true);
+    drawEdgesWeightsAct->setChecked(false);
+    drawEdgesWeightsAct->setEnabled(false);
+    connect(drawEdgesWeightsAct, SIGNAL(toggled(bool)), this, SLOT(slotDrawEdgesThickAsWeights()) );
 
-    drawLinksBezier = new QAction( tr("Bezier Curves"),	this);
-    drawLinksBezier->setStatusTip(tr("Draws links as Bezier curves"));
-    drawLinksBezier->setWhatsThis(tr("Links Bezier\n\nEnables/Disables drawing Links as Bezier curves."));
-    drawLinksBezier->setCheckable(true);
-    drawLinksBezier->setChecked (false);
-    drawLinksBezier->setEnabled(false);
-    connect(drawLinksBezier, SIGNAL(toggled(bool)), this, SLOT(slotDrawLinksBezier(bool)) );
+    drawEdgesBezier = new QAction( tr("Bezier Curves"),	this);
+    drawEdgesBezier->setStatusTip(tr("Draws Edges as Bezier curves"));
+    drawEdgesBezier->setWhatsThis(tr("Edges Bezier\n\nEnables/Disables drawing Edges as Bezier curves."));
+    drawEdgesBezier->setCheckable(true);
+    drawEdgesBezier->setChecked (false);
+    drawEdgesBezier->setEnabled(false);
+    connect(drawEdgesBezier, SIGNAL(toggled(bool)), this, SLOT(slotDrawEdgesBezier(bool)) );
 
 
     /**
@@ -1783,18 +1791,18 @@ void MainWindow::initMenuBar() {
     editNodeMenu -> addAction (changeNumbersSizeAct);
     editNodeMenu -> addAction (changeLabelsSizeAct);
 
-    editLinkMenu = new QMenu(tr("Link..."));
-    editLinkMenu -> setIcon(QIcon(":/images/line.png"));
-    editMenu-> addMenu (editLinkMenu);
-    editLinkMenu -> addAction(addLinkAct);
-    editLinkMenu -> addAction(removeLinkAct);
-    editLinkMenu  ->addSeparator();
-    editLinkMenu -> addAction(changeLinkLabelAct);
-    editLinkMenu -> addAction(changeLinkColorAct);
-    editLinkMenu -> addAction(changeLinkWeightAct);
-    editLinkMenu  ->addSeparator();
-    //   transformNodes2LinksAct -> addTo (editMenu);
-    editLinkMenu  -> addAction (symmetrizeAct);
+    editEdgeMenu = new QMenu(tr("Edge..."));
+    editEdgeMenu -> setIcon(QIcon(":/images/line.png"));
+    editMenu-> addMenu (editEdgeMenu);
+    editEdgeMenu -> addAction(addEdgeAct);
+    editEdgeMenu -> addAction(removeEdgeAct);
+    editEdgeMenu  ->addSeparator();
+    editEdgeMenu -> addAction(changeEdgeLabelAct);
+    editEdgeMenu -> addAction(changeEdgeColorAct);
+    editEdgeMenu -> addAction(changeEdgeWeightAct);
+    editEdgeMenu  ->addSeparator();
+    //   transformNodes2EdgesAct -> addTo (editMenu);
+    editEdgeMenu  -> addAction (symmetrizeAct);
 
 
     editMenu ->addSeparator();
@@ -1812,7 +1820,7 @@ void MainWindow::initMenuBar() {
     editMenu -> addMenu (colorOptionsMenu);
     colorOptionsMenu -> addAction (changeBackColorAct);
     colorOptionsMenu -> addAction (changeAllNodesColorAct);
-    colorOptionsMenu -> addAction (changeAllLinksColorAct);
+    colorOptionsMenu -> addAction (changeAllEdgesColorAct);
     colorOptionsMenu -> addAction (changeAllNumbersColorAct);
     colorOptionsMenu -> addAction (changeAllLabelsColorAct);
 
@@ -1932,17 +1940,17 @@ void MainWindow::initMenuBar() {
     nodeOptionsMenu -> addAction (displayNodeLabelsAct);
     nodeOptionsMenu -> addAction (displayNumbersInsideNodesAct);
 
-    linkOptionsMenu=new QMenu(tr("Links..."));
-    linkOptionsMenu -> setIcon(QIcon(":/images/line.png"));
+    edgeOptionsMenu=new QMenu(tr("Edges..."));
+    edgeOptionsMenu -> setIcon(QIcon(":/images/line.png"));
 
-    optionsMenu -> addMenu (linkOptionsMenu);
-    linkOptionsMenu -> addAction (displayLinksAct);
-    linkOptionsMenu -> addAction (displayLinksWeightNumbersAct);
-    linkOptionsMenu -> addAction (considerLinkWeightsAct);
-    linkOptionsMenu -> addAction (displayLinksArrowsAct );
-    linkOptionsMenu -> addSeparator();
-    linkOptionsMenu -> addAction (drawLinksWeightsAct);
-    linkOptionsMenu -> addAction (drawLinksBezier);
+    optionsMenu -> addMenu (edgeOptionsMenu);
+    edgeOptionsMenu -> addAction (displayEdgesAct);
+    edgeOptionsMenu -> addAction (displayEdgesWeightNumbersAct);
+    edgeOptionsMenu -> addAction (considerEdgeWeightsAct);
+    edgeOptionsMenu -> addAction (displayEdgesArrowsAct );
+    edgeOptionsMenu -> addSeparator();
+    edgeOptionsMenu -> addAction (drawEdgesWeightsAct);
+    edgeOptionsMenu -> addAction (drawEdgesBezier);
 
     viewOptionsMenu = new QMenu (tr("&View..."));
     viewOptionsMenu -> setIcon(QIcon(":/images/view.png"));
@@ -2051,24 +2059,24 @@ void MainWindow::initToolBox(){
     removeNodeBt= new QPushButton(QIcon(":/images/remove.png"),tr("&Remove Node"));
     removeNodeBt->setFocusPolicy(Qt::NoFocus);
     removeNodeBt->setToolTip(
-                tr("Remove a node from the network (Del). \n\n "
+                tr("Remove a node from the network. \n\n "
                    "Alternately, you can remove a node \n"
                    "by right-clicking on it.")
                 );
 
-    addLinkBt= new QPushButton(QIcon(":/images/connect.png"),tr("Add &Link"));
-    addLinkBt->setFocusPolicy(Qt::NoFocus);
-    addLinkBt->setToolTip(
-                tr("Add a new link to the network (Ctrl+L).\n\n "
-                   "Alternately, you can create a new link between two \n"
+    addEdgeBt= new QPushButton(QIcon(":/images/connect.png"),tr("Add &Edge"));
+    addEdgeBt->setFocusPolicy(Qt::NoFocus);
+    addEdgeBt->setToolTip(
+                tr("Add a new Edge from a node to another (Ctrl+E,Ctrl+A).\n\n "
+                   "Alternately, you can create a new edge between two \n"
                    "nodes by middle-clicking on them consecutively.")
                 );
 
-    removeLinkBt= new QPushButton(QIcon(":/images/disconnect.png"),tr("Remove Link"));
-    removeLinkBt->setFocusPolicy(Qt::NoFocus);
-    removeLinkBt->setToolTip(
-                tr("Remove a link from the network  \n\n "
-                   "Alternately, you can remove a link \n"
+    removeEdgeBt= new QPushButton(QIcon(":/images/disconnect.png"),tr("Remove Edge"));
+    removeEdgeBt->setFocusPolicy(Qt::NoFocus);
+    removeEdgeBt->setToolTip(
+                tr("Remove an Edge from the network  \n\n "
+                   "Alternately, you can remove an Edge \n"
                    "by right-clicking on it."
                    )
                 );
@@ -2077,8 +2085,8 @@ void MainWindow::initToolBox(){
     QGridLayout *buttonsGrid = new QGridLayout;
     buttonsGrid -> addWidget(addNodeBt, 0,0);
     buttonsGrid -> addWidget(removeNodeBt, 0,1);
-    buttonsGrid -> addWidget(addLinkBt,1,0);
-    buttonsGrid -> addWidget(removeLinkBt,1,1);
+    buttonsGrid -> addWidget(addEdgeBt,1,0);
+    buttonsGrid -> addWidget(removeEdgeBt,1,1);
     buttonsGrid->setSpacing(10);
     buttonsGrid->setMargin(0);
 
@@ -2118,12 +2126,22 @@ void MainWindow::initToolBox(){
                          << "Clustering Coefficient"
                          << "Triad Census";
     toolBoxAnalysisClusterabilitySelect->addItems(clusterabilityCommands);
-//    toolBoxAnalysisConnectivitySelect->setMaximumHeight(20);
 
 
     QLabel *toolBoxAnalysisProminenceSelectLabel  = new QLabel;
     toolBoxAnalysisProminenceSelectLabel->setText(tr("Prominence:"));
     toolBoxAnalysisProminenceSelect = new QComboBox;
+    toolBoxAnalysisProminenceSelect -> setToolTip(
+                tr("Various metrics to calculate how 'prominent' or important each actor (node) is inside the network.\n\n")
+                );
+    toolBoxAnalysisProminenceSelect -> setWhatsThis(
+                tr("Various metrics to calculate how 'prominent' or important each actor (node) is inside the network.\n\n") +
+                tr("Centrality metrics quantify how central is each node by examining its ties and its geodesic distances (shortest path lengths) to other nodes. ")+
+                tr("Most Centrality indices were designed for undirected graphs.\n\n")+
+                tr("Prestige indices focus on \"choices received\" to a node. \n")+
+                tr("These indices measure the nominations or ties to each node from all others (or inLinks). ") +
+                tr("Prestige indices are suitable (and can be calculated only) on directed graphs.")
+                );
     QStringList prominenceCommands;
     prominenceCommands << "None selected"
                        << "Degree Centrality" << "Closeness Centrality"
@@ -2247,8 +2265,8 @@ void MainWindow::initToolBox(){
     nodeSizesByOutDegreeBx
             ->setToolTip(
                 tr("If you enable this, all nodes will be resized so that their "
-                   "size reflect their out-degree. "
-                   "To put it simply, more out-linked nodes will be bigger..."));
+                   "size reflect their out-degree. \n"
+                   "Nodes with more directed edges starting from them will be bigger..."));
 
     nodeSizesByInDegreeBx = new QCheckBox(
                 tr("Node sizes by InDegree") );
@@ -2256,8 +2274,8 @@ void MainWindow::initToolBox(){
     nodeSizesByInDegreeBx
             ->setToolTip(
                 tr("If you enable this, all nodes will be resized so that their "
-                   "size reflect their in-degree. "
-                   "To put it simply, more in-linked nodes will be bigger..."));
+                   "size reflect their in-degree. \n"
+                   "Nodes with more directed edges ending at them will be bigger..."));
 
     layoutGuidesBx = new QCheckBox(
                 tr("Layout guidelines") );
@@ -2318,19 +2336,19 @@ void MainWindow::initToolBox(){
     QLabel *labelNodesLCD = new QLabel;
     labelNodesLCD->setText(tr("Total Nodes"));
     QLabel *labelEdgesLCD = new QLabel;
-    labelEdgesLCD->setText(tr("Total Links"));
+    labelEdgesLCD->setText(tr("Total Edges (Arcs)"));
     nodesLCD=new QLCDNumber(7);
     nodesLCD->setSegmentStyle(QLCDNumber::Flat);
     nodesLCD->setToolTip(tr("Counts how many nodes (vertices) exist in the whole network."));
     edgesLCD=new QLCDNumber(7);
     edgesLCD->setSegmentStyle(QLCDNumber::Flat);
-    edgesLCD->setToolTip(tr("Counts how many links (in and out) exist in the whole network."));
+    edgesLCD->setToolTip(tr("Counts how many edges (arcs) exist in the whole network."));
 
     QLabel *labelDensityLCD = new QLabel;
     labelDensityLCD->setText(tr("Density"));
     densityLCD=new QLCDNumber(7);
     densityLCD->setSegmentStyle(QLCDNumber::Flat);
-    densityLCD->setToolTip(tr("The density of a network is the ratio of existing links to all possible links (n(n-1)) between nodes."));
+    densityLCD->setToolTip(tr("The density of a network is the ratio of existing edges to all possible edges ( n*(n-1) ) between nodes."));
 
     //create a grid layout
     QGridLayout *propertiesGrid = new QGridLayout();
@@ -2350,6 +2368,7 @@ void MainWindow::initToolBox(){
     dummyLabel-> setText (" ");
     QLabel *labelNode = new QLabel;
     labelNode-> setText (tr("Active Node"));
+    labelNode ->setFont(QFont("sans-serif", 10, QFont::Bold));
 
     QLabel *labelSelectedNodeLCD = new QLabel;
     labelSelectedNodeLCD -> setText (tr("Node Number:"));
@@ -2358,35 +2377,35 @@ void MainWindow::initToolBox(){
     selectedNodeLCD =new QLCDNumber(7);
     selectedNodeLCD ->setSegmentStyle(QLCDNumber::Flat);
 
-    QLabel *labelInLinksLCD = new QLabel;
-    labelInLinksLCD -> setText (tr("Node In-Degree:"));
-    labelInLinksLCD -> setToolTip (tr("The sum of all in-edge weights of the node you clicked.."));
-    inLinksLCD=new QLCDNumber(7);
-    inLinksLCD -> setSegmentStyle(QLCDNumber::Flat);
-    inLinksLCD -> setToolTip (tr("The sum of all in-edge weights of the node you clicked."));
-    QLabel *labelOutLinksLCD = new QLabel;
-    labelOutLinksLCD -> setText (tr("Node Out-Degree:"));
-    labelOutLinksLCD -> setToolTip (tr("The sum of all out-edge weights of the node you clicked."));
-    outLinksLCD=new QLCDNumber(7);
-    outLinksLCD -> setSegmentStyle(QLCDNumber::Flat);
-    outLinksLCD -> setToolTip (tr("The sum of all out-edge weights of the node you clicked."));
+    QLabel *labelInDegreeLCD = new QLabel;
+    labelInDegreeLCD -> setText (tr("Node In-Degree:"));
+    labelInDegreeLCD -> setToolTip (tr("The sum of all in-edge weights of the node you clicked.."));
+    inDegreeLCD=new QLCDNumber(7);
+    inDegreeLCD -> setSegmentStyle(QLCDNumber::Flat);
+    inDegreeLCD -> setToolTip (tr("The sum of all in-edge weights of the node you clicked."));
+    QLabel *labelOutDegreeLCD = new QLabel;
+    labelOutDegreeLCD -> setText (tr("Node Out-Degree:"));
+    labelOutDegreeLCD -> setToolTip (tr("The sum of all out-edge weights of the node you clicked."));
+    outDegreeLCD=new QLCDNumber(7);
+    outDegreeLCD -> setSegmentStyle(QLCDNumber::Flat);
+    outDegreeLCD -> setToolTip (tr("The sum of all out-edge weights of the node you clicked."));
 
     QLabel *labelClucofLCD  = new QLabel;
     labelClucofLCD -> setText (tr("Clustering Coef."));
-    labelClucofLCD -> setToolTip (tr("The Clustering Coefficient quantifies how close the clicked vertex and its neighbors are to being a clique. \nThe value is the proportion of links between the vertices within the neighbourhood of the clicked vertex,\n divided by the number of links that could possibly exist between them. \n\n WARNING: This value is automatically calculated only if vertices < 500.\n If your network is larger than 500 vertices, compute CluCof from the menu Analysis > Clustering Coefficient "));
+    labelClucofLCD -> setToolTip (tr("The Clustering Coefficient quantifies how close the clicked vertex and its neighbors are to being a clique. \nThe value is the proportion of Edges between the vertices within the neighbourhood of the clicked vertex,\n divided by the number of Edges that could possibly exist between them. \n\n WARNING: This value is automatically calculated only if vertices < 500.\n If your network is larger than 500 vertices, compute CluCof from the menu Analysis > Clustering Coefficient "));
     clucofLCD = new QLCDNumber(7);
     clucofLCD -> setSegmentStyle(QLCDNumber::Flat);
-    clucofLCD  -> setToolTip (tr("The Clustering Coefficient quantifies how close the clicked vertex and its neighbors are to being a clique. \nThe value is the proportion of links between the vertices within the neighbourhood of the clicked vertex,\n divided by the number of links that could possibly exist between them. \n\n This value is automatically calculated only if vertices < 500.\n If your network is larger than 500 vertices, compute CluCof from the menu Analysis > Clustering Coefficient "));
+    clucofLCD  -> setToolTip (tr("The Clustering Coefficient quantifies how close the clicked vertex and its neighbors are to being a clique. \nThe value is the proportion of Edges between the vertices within the neighbourhood of the clicked vertex,\n divided by the number of Edges that could possibly exist between them. \n\n This value is automatically calculated only if vertices < 500.\n If your network is larger than 500 vertices, compute CluCof from the menu Analysis > Clustering Coefficient "));
 
 
     propertiesGrid -> addWidget(dummyLabel, 6,0);
     propertiesGrid -> addWidget(labelNode, 7,0);
     propertiesGrid -> addWidget(labelSelectedNodeLCD , 8,0);
     propertiesGrid -> addWidget(selectedNodeLCD ,8,1);
-    propertiesGrid -> addWidget(labelInLinksLCD, 9,0);
-    propertiesGrid -> addWidget(inLinksLCD, 9,1);
-    propertiesGrid -> addWidget(labelOutLinksLCD, 10,0);
-    propertiesGrid -> addWidget(outLinksLCD,10,1);
+    propertiesGrid -> addWidget(labelInDegreeLCD, 9,0);
+    propertiesGrid -> addWidget(inDegreeLCD, 9,1);
+    propertiesGrid -> addWidget(labelOutDegreeLCD, 10,0);
+    propertiesGrid -> addWidget(outDegreeLCD,10,1);
     propertiesGrid -> addWidget(labelClucofLCD, 11,0);
     propertiesGrid -> addWidget(clucofLCD,11,1);
     propertiesGrid -> setRowStretch(12,1);   //fix stretch
@@ -2670,7 +2689,7 @@ void MainWindow::initNet(){
 
     initNodeSize=8;
     initNodeColor="red";
-    initLinkColor="black";
+    initEdgeColor="black";
     initLabelColor="darkblue";
     initLabelSize=7;
     initNumberSize=7;
@@ -2682,7 +2701,6 @@ void MainWindow::initNet(){
     maxNodes=5000;		//Max nodes used by createRandomNetwork dialogues
     labelDistance=8;
     numberDistance=5;
-    totalLinks=0;
     networkName="";
 
     previous_fileName=fileName;
@@ -2704,7 +2722,7 @@ void MainWindow::initNet(){
 
     cursorPosGW=QPointF(-1,-1);
     clickedJimNumber=-1;
-    linkClicked=false;
+    edgeClicked=false;
     nodeClicked=false;
 
     considerWeights=false;
@@ -2725,7 +2743,7 @@ void MainWindow::initNet(){
     activeGraph.setInitVertexLabelColor(initLabelColor);
     activeGraph.setInitVertexLabelSize(initLabelSize);
 
-    activeGraph.setInitEdgeColor(initLinkColor);
+    activeGraph.setInitEdgeColor(initEdgeColor);
 
     activeGraph.setShowLabels(this->showLabels());
     activeGraph.setShowNumbersInsideNodes( this->showNumbersInsideNodes());
@@ -2735,10 +2753,10 @@ void MainWindow::initNet(){
 
     /** Clear LCDs **/
     nodesLCD->display(activeGraph.vertices());
-    edgesLCD->display(activeGraph.totalEdges());
+    edgesLCD->display(activeEdges());
     densityLCD->display(activeGraph.density());
-    inLinksLCD->display(0);
-    outLinksLCD->display(0);
+    inDegreeLCD->display(0);
+    outDegreeLCD->display(0);
     clucofLCD->display(0);
     selectedNodeLCD->display(0);
 
@@ -2754,9 +2772,9 @@ void MainWindow::initNet(){
     layoutEadesBx->setChecked(false);
     springLayoutAct->setChecked(false);
     FRLayoutAct->setChecked(false);
-    displayLinksWeightNumbersAct->setChecked(false);
-    considerLinkWeightsAct->setChecked(false);
-    //displayLinksArrowsAct->setChecked(false);		//FIXME: USER PREFS EMITTED TO GRAPH?
+    displayEdgesWeightNumbersAct->setChecked(false);
+    considerEdgeWeightsAct->setChecked(false);
+    //displayEdgesArrowsAct->setChecked(false);		//FIXME: USER PREFS EMITTED TO GRAPH?
 
     filterIsolateNodesAct->setChecked(false); // re-init orphan nodes menu item
 
@@ -3429,11 +3447,11 @@ bool MainWindow::loadNetworkFile(const QString m_fileName,
  * @param type
  * @param netName
  * @param aNodes
- * @param totalLinks
+ * @param totalEdges
  * @param undirected
  */
 void MainWindow::fileType (
-        int type, QString netName, int aNodes, int totalLinks, bool undirected)
+        int type, QString netName, int aNodes, int totalEdges, bool undirected)
 {
     qDebug()<< "MW: fileType() networkName is: " << netName << " type " << type;
     Q_UNUSED (undirected);
@@ -3456,7 +3474,7 @@ void MainWindow::fileType (
         graphMLFileLoaded=true;
         fileLoaded=true;
         networkModified=false;
-        statusMessage( QString(tr("GraphML formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
+        statusMessage( QString(tr("GraphML formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
         break;
 
     case 2:
@@ -3465,7 +3483,7 @@ void MainWindow::fileType (
         graphMLFileLoaded=false;
         fileLoaded=true;
         networkModified=false;
-        statusMessage( QString(tr("Pajek formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ));
+        statusMessage( QString(tr("Pajek formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ));
         break;
 
     case 3:
@@ -3474,7 +3492,7 @@ void MainWindow::fileType (
         graphMLFileLoaded=false;
         fileLoaded=true;
         networkModified=false;
-        statusMessage( QString(tr("Adjacency formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
+        statusMessage( QString(tr("Adjacency formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
         break;
 
     case 4:
@@ -3484,7 +3502,7 @@ void MainWindow::fileType (
         graphMLFileLoaded=false;
         fileLoaded=true;
         networkModified=false;
-        statusMessage( QString(tr("Dot formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
+        statusMessage( QString(tr("Dot formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
         break;
 
     case 5:
@@ -3494,7 +3512,7 @@ void MainWindow::fileType (
         graphMLFileLoaded=false;
         fileLoaded=true;
         networkModified=false;
-        statusMessage( QString(tr("DL-formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
+        statusMessage( QString(tr("DL-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
         break;
     case 6:
         pajekFileLoaded=false;
@@ -3503,7 +3521,7 @@ void MainWindow::fileType (
         graphMLFileLoaded=false;
         fileLoaded=true;
         networkModified=false;
-        statusMessage( QString(tr("GML-formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
+        statusMessage( QString(tr("GML-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
         break;
     case 7:
         pajekFileLoaded=false;
@@ -3512,7 +3530,7 @@ void MainWindow::fileType (
         graphMLFileLoaded=false;
         fileLoaded=true;
         networkModified=false;
-        statusMessage( QString(tr("Weighted list-formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
+        statusMessage( QString(tr("Weighted list-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
         break;
     case 8:
         pajekFileLoaded=false;
@@ -3521,7 +3539,7 @@ void MainWindow::fileType (
         graphMLFileLoaded=false;
         fileLoaded=true;
         networkModified=false;
-        statusMessage( QString(tr("Simple list-formatted network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
+        statusMessage( QString(tr("Simple list-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
         break;
     case 9:
         pajekFileLoaded=false;
@@ -3530,7 +3548,7 @@ void MainWindow::fileType (
         graphMLFileLoaded=false;
         fileLoaded=true;
         networkModified=false;
-        statusMessage( QString(tr("Two-mode affiliation network, named %1, loaded with %2 Nodes and %3 total Links.")).arg( networkName ).arg( aNodes ).arg(totalLinks ) );
+        statusMessage( QString(tr("Two-mode affiliation network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
         break;
 
     default: // just for sanity
@@ -4161,7 +4179,7 @@ void MainWindow::slotRecreateDataSet (QString m_fileName) {
 
 /**
     Calls activeGraph.createRandomNetErdos () to create a symmetric network
-    Link existance is controlled by a user specified possibility.
+    Edge existance is controlled by a user specified possibility.
 */
 void MainWindow::slotCreateRandomNetErdos(){
     bool ok;
@@ -4227,7 +4245,7 @@ void MainWindow::slotCreateRandomNetErdos(){
                     "New Random Network",
                     tr("Random network created. \n")+
                     tr("\nNodes: ")+ QString::number(activeNodes())+
-                    tr("\nEdges: ")+  QString::number( activeLinks()/2.0)+
+                    tr("\nEdges: ")+  QString::number( activeEdges()/2.0)+
                     //tr("\nAverage path length: ") + QString::number(avGraphDistance)+
                     tr("\nClustering coefficient: ")+QString::number(clucof)+
                     tr("\n\nOn the average, edges should be ") +
@@ -4242,7 +4260,7 @@ void MainWindow::slotCreateRandomNetErdos(){
                     "New Random Network",
                     tr("Random network created. \n")+
                     tr("\nNodes: ")+ QString::number(activeNodes())+
-                    tr("\nEdges: ")+  QString::number( activeLinks()/2.0)+
+                    tr("\nEdges: ")+  QString::number( activeEdges()/2.0)+
                     //tr("\nAverage path length: ") + QString::number(avGraphDistance)+
                     tr("\nClustering coefficient: ")+QString::number(clucof)+
                     tr("\n\nOn the average, edges should be ")
@@ -4286,7 +4304,7 @@ void MainWindow::slotCreateRegularRandomNetwork(){
     int degree = QInputDialog::getInt(
                 this,
                 tr("Create k-regular network..."),
-                tr("Now, select an even number d. \nThis will be the number of links of each node:"),
+                tr("Now, select an even number d. \nThis will be the degree (number of edges) of each node:"),
                 2, 2, newNodes-1, 2, &ok
                 );
 
@@ -4294,7 +4312,7 @@ void MainWindow::slotCreateRegularRandomNetwork(){
         QMessageBox::critical(
                     this,
                     "Error",
-                    tr(" Sorry. I cannot create such a network. Links must be even number"),
+                    tr(" Sorry. I cannot create such a network. Degree must be even number"),
                     "OK",0 );
         return;
     }
@@ -4326,7 +4344,7 @@ void MainWindow::slotCreateRegularRandomNetwork(){
     setWindowTitle("Untitled");
     statusMessage( "Uniform random network created: "
                    +QString::number(activeNodes())+" Nodes, "
-                   +QString::number( activeLinks())+" Links");
+                   +QString::number( activeEdges())+" Edges");
 
 }
 
@@ -4361,7 +4379,7 @@ void MainWindow::slotCreateSmallWorldRandomNetwork(){
         QMessageBox::critical(
                     this,
                     "Error",
-                    tr(" Sorry. I cannot create such a network. Links must be even number"),
+                    tr(" Sorry. I cannot create such a network. Degree must be even number"),
                     "OK",0);
         return;
     }
@@ -4399,13 +4417,13 @@ void MainWindow::slotCreateSmallWorldRandomNetwork(){
 
     graphChanged();
     setWindowTitle("Untitled");
-    statusMessage( tr("Small world random network created: ")+QString::number(activeNodes())+" nodes, "+QString::number( activeLinks())+" links");
+    statusMessage( tr("Small world random network created: ")+QString::number(activeNodes())+" nodes, "+QString::number( activeEdges())+" edges");
     //float avGraphDistance=activeGraph.averageGraphDistance();
     float clucof=activeGraph.clusteringCoefficient();
     QMessageBox::information(this, "New Small World",
                              tr("Small world network created.\n")+
                              tr("\nNodes: ")+ QString::number(activeNodes())+
-                             tr("\nEdges: ")+  QString::number( activeLinks()/2.0)
+                             tr("\nEdges: ")+  QString::number( activeEdges()/2.0)
                              //+  tr("\nAverage path length: ") + QString::number(avGraphDistance)
                              + tr("\nClustering coefficient: ")+QString::number(clucof)
                              , "OK",0);
@@ -4418,7 +4436,7 @@ void MainWindow::slotCreateSmallWorldRandomNetwork(){
 
 /**
     Creates a lattice network, i.e. a connected network where every node
-    has the same degree and is linked with its neighborhood.
+    has the same degree and is Edgeed with its neighborhood.
 */
 void MainWindow::slotCreateRandomNetRingLattice(){
     bool ok;
@@ -4435,10 +4453,10 @@ void MainWindow::slotCreateRandomNetRingLattice(){
     int degree = QInputDialog::getInt(
                 this,
                 tr("Create ring lattice..."),
-                tr("Now, enter an even number d. \nThis is the total number of links each new node will have:"),
+                tr("Now, enter an even number d. \nThis is the total number of edges each new node will have:"),
                 2, 2, newNodes-1, 2, &ok);
     if ( (degree% 2)==1 ) {
-        QMessageBox::critical(this, "Error",tr(" Sorry. I cannot create such a network. Links must be even number"), "OK",0);
+        QMessageBox::critical(this, "Error",tr(" Sorry. I cannot create such a network. Degree must be even number"), "OK",0);
         return;
     }
 
@@ -4470,7 +4488,7 @@ void MainWindow::slotCreateRandomNetRingLattice(){
 
     //	graphChanged();
 
-    statusMessage( "Ring lattice random network created: "+QString::number(activeNodes())+" nodes, "+QString::number( activeLinks())+" links");
+    statusMessage( "Ring lattice random network created: "+QString::number(activeNodes())+" nodes, "+QString::number( activeEdges())+" edges");
 
     setWindowTitle("Untitled");
     //float avGraphDistance=activeGraph.averageGraphDistance();
@@ -4478,7 +4496,7 @@ void MainWindow::slotCreateRandomNetRingLattice(){
     QMessageBox::information(this, "Ring Lattice",
                              tr("Ring lattice network created.\n")+
                              tr("\nNodes: ")+ QString::number(activeNodes())+
-                             tr("\nEdges: ")+  QString::number( activeLinks()/2.0)
+                             tr("\nEdges: ")+  QString::number( activeEdges()/2.0)
                              // + tr("\nAverage path length: ") + QString::number(avGraphDistance)
                              //+ tr("\nClustering coefficient: ")+QString::number(clucof)
                              , "OK",0);
@@ -4577,7 +4595,7 @@ void MainWindow::graphChanged(){
     fileSave->setEnabled(true);
 
     nodesLCD->display(activeGraph.vertices());
-    edgesLCD->display(activeGraph.totalEdges());
+    edgesLCD->display(activeEdges());
     densityLCD->display( activeGraph.density() );
 }
 
@@ -4617,7 +4635,7 @@ void MainWindow::openNodeContextMenu() {
     }
 
     nodeContextMenu -> addSeparator();
-    nodeContextMenu -> addAction(addLinkAct);
+    nodeContextMenu -> addAction(addEdgeAct);
     nodeContextMenu -> addAction(removeNodeAct );
     nodeContextMenu -> addAction(propertiesNodeAct );
     //QCursor::pos() is good only for menus not related with node coordinates
@@ -4629,22 +4647,22 @@ void MainWindow::openNodeContextMenu() {
 
 
 /**
-     Popups a context menu with some options when the user right-clicks on a link
+     Popups a context menu with some options when the user right-clicks on an Edge
 */
-void MainWindow::openLinkContextMenu() {
-    int source=clickedLink->sourceNodeNumber();
-    int target=clickedLink->targetNodeNumber();
-    qDebug("MW: openLinkContextMenu() for edge %i-%i at %i, %i",source, target, QCursor::pos().x(), QCursor::pos().y());
+void MainWindow::openEdgeContextMenu() {
+    int source=clickedEdge->sourceNodeNumber();
+    int target=clickedEdge->targetNodeNumber();
+    qDebug("MW: openEdgeContextMenu() for edge %i-%i at %i, %i",source, target, QCursor::pos().x(), QCursor::pos().y());
     QString edgeName=QString::number(source)+QString("->")+QString::number(target);
     //make the menu
-    QMenu *linkContextMenu = new QMenu(edgeName, this);
-    linkContextMenu -> addAction( "## EDGE " + edgeName + " ##  ");
-    linkContextMenu -> addSeparator();
-    linkContextMenu -> addAction( removeLinkAct );
-    linkContextMenu -> addAction( changeLinkWeightAct );
-    linkContextMenu -> addAction( changeLinkColorAct );
-    linkContextMenu -> exec(QCursor::pos() );
-    delete  linkContextMenu;
+    QMenu *edgeContextMenu = new QMenu(edgeName, this);
+    edgeContextMenu -> addAction( "## EDGE " + edgeName + " ##  ");
+    edgeContextMenu -> addSeparator();
+    edgeContextMenu -> addAction( removeEdgeAct );
+    edgeContextMenu -> addAction( changeEdgeWeightAct );
+    edgeContextMenu -> addAction( changeEdgeColorAct );
+    edgeContextMenu -> exec(QCursor::pos() );
+    delete  edgeContextMenu;
 }
 
 /**
@@ -4667,7 +4685,7 @@ void MainWindow::openContextMenu( const QPointF &mPos) {
         contextMenu -> addAction(propertiesNodeAct );
     }
 
-    contextMenu -> addAction( addLinkAct );
+    contextMenu -> addAction( addEdgeAct );
 
     QMenu *options=new QMenu("Options", this);
     contextMenu -> addMenu(options );
@@ -4677,7 +4695,7 @@ void MainWindow::openContextMenu( const QPointF &mPos) {
     options -> addAction (changeAllNodesSizeAct );
     options -> addAction (changeAllNodesShapeAct  );
     options -> addAction (changeAllNodesColorAct );
-    options -> addAction (changeAllLinksColorAct  );
+    options -> addAction (changeAllEdgesColorAct  );
     options -> addAction (displayNodeNumbersAct);
     options -> addAction (displayNodeLabelsAct);
     //QCursor::pos() is good only for menus not related with node coordinates
@@ -4705,64 +4723,64 @@ QList<QGraphicsItem *> MainWindow::selectedNodes() {
 */
 void MainWindow::nodeInfoStatusBar ( Node *jim) {
     qDebug ("MW: NodeInfoStatusBar()");
-    linkClicked=false;
+    edgeClicked=false;
     nodeClicked=true;
     clickedJim=jim;
     clickedJimNumber=clickedJim->nodeNumber();
-    int inLinks=activeGraph.inDegree(clickedJimNumber);
-    int outLinks=activeGraph.outDegree(clickedJimNumber);
+    int inDegree=activeGraph.inDegree(clickedJimNumber);
+    int outDegree=activeGraph.outDegree(clickedJimNumber);
     selectedNodeLCD->display (clickedJimNumber);
-    inLinksLCD->display (inLinks);
-    outLinksLCD->display (outLinks);
+    inDegreeLCD->display (inDegree);
+    outDegreeLCD->display (outDegree);
     if (activeGraph.vertices() < 500)
         clucofLCD->display(activeGraph.clusteringCoefficient(clickedJimNumber));
 
     statusMessage(  QString(tr("(%1, %2);  Node %3, label %4 - "
                                "In-Degree: %5, Out-Degree: %6")).arg( ceil( clickedJim->x() ) )
                     .arg( ceil( clickedJim->y() )).arg( clickedJimNumber ).arg( clickedJim->labelText() )
-                    .arg(inLinks).arg(outLinks) );
+                    .arg(inDegree).arg(outDegree) );
 }
 
 
 
 /**
-*	When the user clicks on a link, displays some information about it on the status bar.
+*	When the user clicks on an Edge, displays some information about it on the status bar.
 */
-void MainWindow::linkInfoStatusBar (Edge* link) {
-    clickedLink=link;
-    linkClicked=true;
+void MainWindow::edgeInfoStatusBar (Edge* edge) {
+    clickedEdge=edge;
+    edgeClicked=true;
     nodeClicked=false;
 
-    if (link->isReciprocal()) {
+    if (edge->isReciprocal()) {
         float outbound = activeGraph.hasArc
-                (link->sourceNodeNumber(), link->targetNodeNumber());
+                (edge->sourceNodeNumber(), edge->targetNodeNumber());
         float inbound = activeGraph.hasArc
-                (link->targetNodeNumber(), link->sourceNodeNumber());
+                (edge->targetNodeNumber(), edge->sourceNodeNumber());
         if (outbound==inbound)
             statusMessage(  QString
                         (tr("Symmetric edge %1 <--> %2 of weight %3 has been selected. "
                                    "Click again to unselect it."))
-                    .arg( link->sourceNodeNumber() ).arg(link->targetNodeNumber())
-                    .arg(link->weight()) ) ;
+                    .arg( edge->sourceNodeNumber() ).arg(edge->targetNodeNumber())
+                    .arg(edge->weight()) ) ;
         else
             statusMessage(  QString
                         (tr("Arc %1 --> %2 of weight %3 "
                             " and Arc %4 --> %5 of weight %6"
                             " have been selected. "
                                    "Click again to unselect them."))
-                            .arg(link->sourceNodeNumber() )
-                            .arg(link->targetNodeNumber())
+                            .arg(edge->sourceNodeNumber() )
+                            .arg(edge->targetNodeNumber())
                             .arg(outbound)
-                            .arg( link->targetNodeNumber() )
-                            .arg(link->sourceNodeNumber())
+                            .arg( edge->targetNodeNumber() )
+                            .arg(edge->sourceNodeNumber())
                             .arg(inbound) ) ;
 
     }
     else {
         statusMessage(  QString(tr("Arc %1 --> %2 of weight %3 has been selected. "
                                    "Click again to unselect it."))
-                    .arg( link->sourceNodeNumber() ).arg(link->targetNodeNumber())
-                    .arg(link->weight()) ) ;
+                    .arg( edge->sourceNodeNumber() ).arg(edge->targetNodeNumber())
+                    .arg(edge->weight()) ) ;
     }
 }
 
@@ -4773,7 +4791,7 @@ void MainWindow::linkInfoStatusBar (Edge* link) {
 
 
 /**
-* 	Deletes a node and the attached objects (links, etc).
+* 	Deletes a node and the attached objects (edges, etc).
 *	It deletes clickedJim (signal from GraphicsView or set by another function) 
 *	or else asks for a nodeNumber to remove. The nodeNumber is doomedJim.
     Called from nodeContextMenu
@@ -4957,13 +4975,13 @@ void MainWindow::slotNodeProperties( const QString label, const int size,
 }
 
 /**
-*	Adds a new link between two nodes specified by the user.
-    Called when user clicks on the MW button "Add Link".
+*	Adds a new edge between two nodes specified by the user.
+    Called when user clicks on the MW button "Add edge".
 */
-void MainWindow::slotAddLink(){
-    qDebug ("MW: slotAddLink()");
+void MainWindow::slotAddEdge(){
+    qDebug ("MW: slotAddEdge()");
     if (!fileLoaded && !networkModified )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to link to! \nCreate some nodes first."), "OK",0);
+        QMessageBox::critical(this, "Error",tr("No nodes!! \nCreate some nodes first."), "OK",0);
         statusMessage( tr("There are no nodes yet...")  );
         return;
     }
@@ -4974,12 +4992,12 @@ void MainWindow::slotAddLink(){
     int min=activeGraph.firstVertexNumber();
     int max=activeGraph.lastVertexNumber();
 
-    if (min==max) return;		//if there is only one node -> no link
+    if (min==max) return;		//if there is only one node -> no edge
 
     if (!nodeClicked) {
-        sourceNode=QInputDialog::getInt(this, "Create new link, Step 1",tr("This will draw a new link between two nodes. \nEnter source node ("+QString::number(min).toLatin1()+"..."+QString::number(max).toLatin1()+"):"), min, 1, max , 1, &ok ) ;
+        sourceNode=QInputDialog::getInt(this, "Create new edge, Step 1",tr("This will draw a new edge between two nodes. \nEnter source node ("+QString::number(min).toLatin1()+"..."+QString::number(max).toLatin1()+"):"), min, 1, max , 1, &ok ) ;
         if (!ok) {
-            statusMessage( "Add link operation cancelled." );
+            statusMessage( "Add edge operation cancelled." );
             return;
         }
     }
@@ -4988,43 +5006,43 @@ void MainWindow::slotAddLink(){
     if ( (sourceIndex =activeGraph.hasVertex(sourceNode)) ==-1 ) {
         statusMessage( tr("Aborting. ")  );
         QMessageBox::critical(this,"Error","No such node.", "OK",0);
-        qDebug ("MW: slotAddLink: Cant find sourceNode %i.", sourceNode);
+        qDebug ("MW: slotAddEdge: Cant find sourceNode %i.", sourceNode);
         return;
     }
 
     targetNode=QInputDialog::getInt
-            (this, "Create new link, Step 2",
+            (this, "Create new edge, Step 2",
              tr("Source node accepted. \nNow enter target node ("+
                 QString::number(min).toLatin1()+"..."+QString::number(max)
                 .toLatin1()+"):"),min, min, max , 1, &ok)     ;
     if (!ok) {
-        statusMessage( "Add link target operation cancelled." );
+        statusMessage( "Add edge target operation cancelled." );
         return;
     }
     if ( (targetIndex=activeGraph.hasVertex(targetNode)) ==-1 ) {
         statusMessage( tr("Aborting. ")  );
         QMessageBox::critical(this,"Error","No such node.", "OK",0);
-        qDebug ("MW: slotAddLink: Cant find targetNode %i",targetNode);
+        qDebug ("MW: slotAddEdge: Cant find targetNode %i",targetNode);
         return;
     }
 
     weight=QInputDialog::getDouble(
-                this, "Create new link, Step 3",
+                this, "Create new edge, Step 3",
                 tr("Source and target nodes accepted. \n "
-                   "Please, enter the weight of new link: "),1.0, -100.0, 100.0, 1, &ok);
+                   "Please, enter the weight of new edge: "),1.0, -100.0, 100.0, 1, &ok);
     if (!ok) {
-        statusMessage( "Add link operation cancelled." );
+        statusMessage( "Add edge operation cancelled." );
         return;
     }
-    //Check if this link already exists...
+    //Check if this edge already exists...
     if (activeGraph.hasArc(sourceNode, targetNode)!=0 ) {
-        qDebug("Link exists. Aborting");
+        qDebug("edge exists. Aborting");
         statusMessage( tr("Aborting. ")  );
-        QMessageBox::critical(this,"Error","Link already exists.", "OK",0);
+        QMessageBox::critical(this,"Error","edge already exists.", "OK",0);
         return;
     }
 
-    addLink(sourceNode, targetNode, weight);
+    addEdge(sourceNode, targetNode, weight);
     graphChanged();
     statusMessage( tr("Ready. ")  );
 }
@@ -5032,32 +5050,32 @@ void MainWindow::slotAddLink(){
 
 
 /** 	
-    helper to slotAddLink() above
-    Also called from GW::userMiddleClicked() signal when user creates links with middle-clicks
+    helper to slotAddEdge() above
+    Also called from GW::userMiddleClicked() signal when user creates edges with middle-clicks
     Calls Graph::createEdge method to add the new edge to the active Graph
 */
-void MainWindow::addLink (int v1, int v2, float weight) {
-    qDebug("MW: addLink() - setting user preferences and calling Graph::createEdge(...)");
-    bool drawArrows=displayLinksArrowsAct->isChecked();
+void MainWindow::addEdge (int v1, int v2, float weight) {
+    qDebug("MW: addEdge() - setting user preferences and calling Graph::createEdge(...)");
+    bool drawArrows=displayEdgesArrowsAct->isChecked();
     int reciprocal=0;
     bool bezier = false;
     activeGraph.createEdge(v1, v2, weight, reciprocal, drawArrows, bezier);
 
-    if ( activeGraph.totalEdges() == 1 && changeRelationCombo->count() == 0 ) {
+    if ( activeEdges() == 1 && changeRelationCombo->count() == 0 ) {
         addRelation();
     }
 }
 
 
 /**
-*	Erases the clicked link. Otherwise asks the user to specify one link.
+*	Erases the clicked edge. Otherwise asks the user to specify one edge.
 *	First deletes arc reference from object nodeVector
 *	then deletes arc item from scene
 **/
-void MainWindow::slotRemoveLink(){ 
-    if ( (!fileLoaded && !networkModified) || activeGraph.totalEdges() ==0 )  {
-        QMessageBox::critical(this, "Error",tr("There are no links! \nLoad a network file or create a new network first."), "OK",0);
-        statusMessage( tr("No links to remove - sorry.")  );
+void MainWindow::slotRemoveEdge(){
+    if ( (!fileLoaded && !networkModified) || activeEdges() ==0 )  {
+        QMessageBox::critical(this, "Error",tr("There are no edges! \nLoad a network file or create a new network first."), "OK",0);
+        statusMessage( tr("No edges to remove - sorry.")  );
         return;
     }
 
@@ -5066,19 +5084,19 @@ void MainWindow::slotRemoveLink(){
     min=activeGraph.firstVertexNumber();
     max=activeGraph.lastVertexNumber();
 
-    if (!linkClicked) {
+    if (!edgeClicked) {
         sourceNode=QInputDialog::getInt(
-                    this,tr("Remove link"),
+                    this,tr("Remove edge"),
                     tr("Source node:  (")+QString::number(min)+
                     "..."+QString::number(max)+"):", min, 1, max , 1, &ok )   ;
         if (!ok) {
-            statusMessage( "Remove link operation cancelled." );
+            statusMessage( "Remove edge operation cancelled." );
             return;
         }
 
-        targetNode=QInputDialog::getInt(this, tr("Remove link"), tr("Target node:  (")+QString::number(min)+"..."+QString::number(max)+"):",min, 1, max , 1, &ok )   ;
+        targetNode=QInputDialog::getInt(this, tr("Remove edge"), tr("Target node:  (")+QString::number(min)+"..."+QString::number(max)+"):",min, 1, max , 1, &ok )   ;
         if (!ok) {
-            statusMessage( "Remove link operation cancelled." );
+            statusMessage( "Remove edge operation cancelled." );
             return;
         }
         if ( activeGraph.hasArc(sourceNode, targetNode)!=0 ) {
@@ -5088,41 +5106,41 @@ void MainWindow::slotRemoveLink(){
             activeGraph.removeEdge(sourceNode, targetNode);
         }
         else {
-            QMessageBox::critical(this, "Remove link",tr("There is no such link."), "OK",0);
+            QMessageBox::critical(this, "Remove edge",tr("There is no such edge."), "OK",0);
             statusMessage( tr("There are no nodes yet...")  );
             return;
         }
 
     }
     else {
-        sourceNode = clickedLink->sourceNodeNumber();
-        targetNode = clickedLink->targetNodeNumber();
+        sourceNode = clickedEdge->sourceNodeNumber();
+        targetNode = clickedEdge->targetNodeNumber();
         if (activeGraph.symmetricEdge(sourceNode, targetNode) ) {
             QString s=QString::number(sourceNode);
             QString t=QString::number(targetNode);
-            switch (QMessageBox::information( this, tr("Remove link"),
-                                              tr("This link is reciprocal. \n") +
+            switch (QMessageBox::information( this, tr("Remove edge"),
+                                              tr("This edge is directed. \n") +
                                               tr("Select what Direction to delete or Both..."),
                                               s+" -> "+ t, t+" -> "+s, tr("Both"), 0, 1 ))
 
             {
             case 0:
-                graphicsWidget->removeItem(clickedLink);
+                graphicsWidget->removeItem(clickedEdge);
                 activeGraph.removeEdge(sourceNode, targetNode);
-                //make new link
-                // 						graphicsWidget->unmakeEdgeReciprocal(clickedLink->targetNodeNumber(), clickedLink->sourceNodeNumber());
+                //make new edge
+                // 						graphicsWidget->unmakeEdgeReciprocal(clickedEdge->targetNodeNumber(), clickedEdge->sourceNodeNumber());
                 //FIXME weight should be the same
-                graphicsWidget->drawEdge(targetNode, sourceNode, 1, false, displayLinksArrowsAct->isChecked(), initLinkColor, false);
+                graphicsWidget->drawEdge(targetNode, sourceNode, 1, false, displayEdgesArrowsAct->isChecked(), initEdgeColor, false);
 
                 break;
             case 1:
-                clickedLink->unmakeReciprocal();
-                //graphicsWidget->removeItem(clickedLink);
+                clickedEdge->unmakeReciprocal();
+                //graphicsWidget->removeItem(clickedEdge);
                 activeGraph.removeEdge(targetNode, sourceNode);
-                //						graphicsWidget->drawEdge(i, j, false, drawArrowsAct->isChecked(), initLinkColor, false);
+                //						graphicsWidget->drawEdge(i, j, false, drawArrowsAct->isChecked(), initEdgeColor, false);
                 break;
             case 2:
-                graphicsWidget->removeItem(clickedLink);
+                graphicsWidget->removeItem(clickedEdge);
                 activeGraph.removeEdge(sourceNode, targetNode);
                 activeGraph.removeEdge(targetNode, sourceNode);
             }
@@ -5130,7 +5148,7 @@ void MainWindow::slotRemoveLink(){
 
         }
         else {
-            graphicsWidget->removeItem(clickedLink);
+            graphicsWidget->removeItem(clickedEdge);
             activeGraph.removeEdge(sourceNode, targetNode);
 
         }
@@ -5175,23 +5193,23 @@ void MainWindow::slotAllNodesColor(){
 
 
 
-//TODO slotChangeLinkLabel
-void MainWindow::slotChangeLinkLabel(){
+//TODO slotChangeEdgeLabel
+void MainWindow::slotChangeEdgeLabel(){
     graphChanged();
 }
 
 
 
 /**
-*	Changes the colour of the clicked link. 
-*	If no link is clicked, then it asks the user to specify one.
+*	Changes the colour of the clicked edge.
+*	If no edge is clicked, then it asks the user to specify one.
 */
-void MainWindow::slotChangeLinkColor(){
-    qDebug() << "MW::slotChangeLinkColor()";
-    if ( ( !fileLoaded && !networkModified) || activeGraph.totalEdges() ==0 )  {
+void MainWindow::slotChangeEdgeColor(){
+    qDebug() << "MW::slotChangeEdgeColor()";
+    if ( ( !fileLoaded && !networkModified) || activeEdges() ==0 )  {
         QMessageBox::critical(this, "Error",
-                              tr("There are no links! \nLoad a network file or create a new network first."), "OK",0);
-        statusMessage( tr("No links present...")  );
+                              tr("There are no edges! \nLoad a network file or create a new network first."), "OK",0);
+        statusMessage( tr("No edges present...")  );
         return;
     }
 
@@ -5201,32 +5219,32 @@ void MainWindow::slotChangeLinkColor(){
     int min=activeGraph.firstVertexNumber();
     int max=activeGraph.lastVertexNumber();
 
-    if (!linkClicked) {	//no edge clicked. Ask user to define an edge.
+    if (!edgeClicked) {	//no edge clicked. Ask user to define an edge.
         sourceNode=QInputDialog::getInt(this,
-                                        "Change link color",
-                                        tr("Select link source node:  ("+
+                                        "Change edge color",
+                                        tr("Select edge source node:  ("+
                                            QString::number(min).toLatin1()+
                                            "..."+QString::number(max).toLatin1()+
                                            "):"), min, 1, max , 1, &ok)   ;
         if (!ok) {
-            statusMessage( "Change link color operation cancelled." );
+            statusMessage( "Change edge color operation cancelled." );
             return;
         }
         targetNode=QInputDialog::getInt(this,
-                                        "Change link color...",
-                                        tr("Select link target node:  ("+
+                                        "Change edge color...",
+                                        tr("Select edge target node:  ("+
                                          QString::number(min).toLatin1()+"..." +
                                          QString::number(max).toLatin1()+"):"),
                                         min, 1, max , 1, &ok  )   ;
         if (!ok) {
-            statusMessage( "Change link color operation cancelled." );
+            statusMessage( "Change edge color operation cancelled." );
             return;
         }
 
         if ( ! activeGraph.hasArc (sourceNode, targetNode ) )  {
-             statusMessage( tr("There is no such link. ") );
+             statusMessage( tr("There is no such edge. ") );
              QMessageBox::critical(this, "Error",
-                                   tr("No link! \nNo such link found in current network."), "OK",0);
+                                   tr("No edge! \nNo such edge found in current network."), "OK",0);
 
              return;
         }
@@ -5236,12 +5254,12 @@ void MainWindow::slotChangeLinkColor(){
                     Qt::black, this, tr("Select new color....") );
         if ( color.isValid()) {
             QString newColor=color.name();
-            qDebug() << "MW::slotChangeLinkColor() to " << newColor;
+            qDebug() << "MW::slotChangeEdgeColor() to " << newColor;
             activeGraph.setEdgeColor( sourceNode, targetNode, newColor);
             statusMessage( tr("Ready. ")  );
         }
         else {
-            statusMessage( tr("Change link color aborted. ") );
+            statusMessage( tr("Change edge color aborted. ") );
         }
 
     }
@@ -5250,13 +5268,13 @@ void MainWindow::slotChangeLinkColor(){
                     Qt::black, this, tr("Select new color....") );
         if ( color.isValid()) {
             QString newColor=color.name();
-            qDebug() << "MW::slotChangeLinkColor() to " << newColor;
-            activeGraph.setEdgeColor( clickedLink->sourceNodeNumber(),
-                                      clickedLink->targetNodeNumber(), newColor);
+            qDebug() << "MW::slotChangeEdgeColor() to " << newColor;
+            activeGraph.setEdgeColor( clickedEdge->sourceNodeNumber(),
+                                      clickedEdge->targetNodeNumber(), newColor);
             statusMessage( tr("Ready. ")  );
         }
         else {
-            statusMessage( tr("Change link color aborted. ") );
+            statusMessage( tr("Change edge color aborted. ") );
         }
 
     }
@@ -5266,33 +5284,33 @@ void MainWindow::slotChangeLinkColor(){
 
 
 /**
-*	Changes the weight of the clicked link. 
-*	If no link is clicked, asks the user to specify a link.
+*	Changes the weight of the clicked edge.
+*	If no edge is clicked, asks the user to specify an Edge.
 */
-void MainWindow::slotChangeLinkWeight(){
-    if ( ( !fileLoaded && !networkModified) || activeGraph.totalEdges() ==0 )  {
-        QMessageBox::critical(this, "Error",tr("There are no links! \nLoad a network file or create a new network first."), "OK",0);
-        statusMessage( tr("No links present...")  );
+void MainWindow::slotChangeEdgeWeight(){
+    if ( ( !fileLoaded && !networkModified) || activeEdges() ==0 )  {
+        QMessageBox::critical(this, "Error",tr("There are no edges! \nLoad a network file or create a new network first."), "OK",0);
+        statusMessage( tr("No edges present...")  );
         return;
     }
 
-    qDebug("MW: slotChangeLinkWeight()");
+    qDebug("MW::slotChangeEdgeWeight()");
     int  sourceNode=-1, targetNode=-1;
     float newWeight=1.0;
     int min=activeGraph.firstVertexNumber();
     int max=activeGraph.lastVertexNumber();
 
     bool ok=false;
-    if (!linkClicked) {
-        sourceNode=QInputDialog::getInt(this, "Change link weight",tr("Select link source node:  ("+QString::number(min).toLatin1()+"..."+QString::number(max).toLatin1()+"):"), min, 1, max , 1, &ok)   ;
+    if (!edgeClicked) {
+        sourceNode=QInputDialog::getInt(this, "Change edge weight",tr("Select edge source node:  ("+QString::number(min).toLatin1()+"..."+QString::number(max).toLatin1()+"):"), min, 1, max , 1, &ok)   ;
         if (!ok) {
-            statusMessage( "Change link weight operation cancelled." );
+            statusMessage( "Change edge weight operation cancelled." );
             return;
         }
 
-        targetNode=QInputDialog::getInt(this, "Change link weight...", tr("Select link target node:  ("+QString::number(min).toLatin1()+"..."+QString::number(max).toLatin1()+"):"),min, 1, max , 1, &ok  )   ;
+        targetNode=QInputDialog::getInt(this, "Change edge weight...", tr("Select edge target node:  ("+QString::number(min).toLatin1()+"..."+QString::number(max).toLatin1()+"):"),min, 1, max , 1, &ok  )   ;
         if (!ok) {
-            statusMessage( "Change link weight operation cancelled." );
+            statusMessage( "Change edge weight operation cancelled." );
             return;
         }
 
@@ -5301,15 +5319,15 @@ void MainWindow::slotChangeLinkWeight(){
         QList<QGraphicsItem *> list=scene->items();
         for (QList<QGraphicsItem *>::iterator it=list.begin(); it!= list.end() ; it++)
             if ( (*it)->type()==TypeEdge) {
-                Edge *link=(Edge*) (*it);
-                qDebug ("MW: searching link...");
-                if ( link->sourceNodeNumber()==sourceNode && link->targetNodeNumber()==targetNode ) {
-                    qDebug("MW: link found");
+                Edge *edge=(Edge*) (*it);
+                qDebug ("MW: searching edge...");
+                if ( edge->sourceNodeNumber()==sourceNode && edge->targetNodeNumber()==targetNode ) {
+                    qDebug("MW: edge found");
                     newWeight=(float) QInputDialog::getDouble(this,
-                                                              "Change link weight...",tr("New link Weight: "), 1, -100, 100 ,1, &ok ) ;
+                                                              "Change edge weight...",tr("New edge Weight: "), 1, -100, 100 ,1, &ok ) ;
                     if (ok) {
-                        link->setWeight(newWeight);
-                        link->update();
+                        edge->setWeight(newWeight);
+                        edge->update();
                         activeGraph.setArcWeight(sourceNode, targetNode, newWeight);
                         statusMessage(  QString(tr("Ready."))  );
                         return;
@@ -5321,41 +5339,41 @@ void MainWindow::slotChangeLinkWeight(){
                 }
             }
     }
-    else {  //linkClicked
-        qDebug() << "MW: slotChangeLinkWeight() - a link has already been clicked";
-        sourceNode=clickedLink->sourceNodeNumber();
-        targetNode=clickedLink->targetNodeNumber();
-        qDebug() << "MW: slotChangeLinkWeight() from "
+    else {  //edgeClicked
+        qDebug() << "MW: slotChangeedgeWeight() - an Edge has already been clicked";
+        sourceNode=clickedEdge->sourceNodeNumber();
+        targetNode=clickedEdge->targetNodeNumber();
+        qDebug() << "MW: slotChangeEdgeWeight() from "
                  << sourceNode << " to " << targetNode;
         if ( activeGraph.symmetricEdge(sourceNode, targetNode) ) {
             QString s=QString::number(sourceNode);
             QString t=QString::number(targetNode);
-            switch (QMessageBox::information( this, tr("Change link weight"),
-                                              tr("This link is reciprocal. \n") +
+            switch (QMessageBox::information( this, tr("Change edge weight"),
+                                              tr("This edge is reciprocal. \n") +
                                               tr("Select what Direction to change or Both..."),
                                               s+" -> "+ t, t+" -> "+s, tr("Both"), 0, 1 ))
             {
             case 0:
-                qDebug("MW: slotChangeLinkWeight()  real edge %i -> %i", sourceNode, targetNode);
+                qDebug("MW: slotChangeEdgeWeight()  real edge %i -> %i", sourceNode, targetNode);
                 newWeight=QInputDialog::getDouble(this,
-                                                  "Change link weight...",tr("New link weight: "), 1.0, -100.0, 100.00 ,1, &ok) ;
+                                                  "Change edge weight...",tr("New edge weight: "), 1.0, -100.0, 100.00 ,1, &ok) ;
                 if (ok) {
-                    clickedLink->setWeight(newWeight);
-                    clickedLink->update();
+                    clickedEdge->setWeight(newWeight);
+                    clickedEdge->update();
                     qDebug()<<"MW: newWeight will be "<< newWeight;
                     activeGraph.setArcWeight(sourceNode, targetNode, newWeight);
                     statusMessage(  QString(tr("Ready."))  );
                     return;
                 }
                 else {
-                    statusMessage(  QString(tr("Change link weight cancelled."))  );
+                    statusMessage(  QString(tr("Change edge weight cancelled."))  );
                     return;
                 }
                 break;
             case 1:
-                qDebug("MW: slotChangeLinkWeight() virtual edge %i -> %i",targetNode , sourceNode);
+                qDebug("MW: slotChangeEdgeWeight() virtual edge %i -> %i",targetNode , sourceNode);
                 newWeight=(float) QInputDialog::getDouble(this,
-                                                          "Change link weight...",tr("New link Weight: "), 1, -100, 100 ,1, &ok ) ;
+                                                          "Change edge weight...",tr("New edge Weight: "), 1, -100, 100 ,1, &ok ) ;
                 if (ok) {
                     qDebug()<<"MW: newWeight will be "<< newWeight;
                     activeGraph.setArcWeight( targetNode, sourceNode, newWeight);
@@ -5363,14 +5381,14 @@ void MainWindow::slotChangeLinkWeight(){
                     return;
                 }
                 else {
-                    statusMessage(  QString(tr("Change link weight cancelled."))  );
+                    statusMessage(  QString(tr("Change edge weight cancelled."))  );
                     return;
                 }
                 break;
             case 2:
-                qDebug("MW: slotChangeLinkWeight()  both directions %i <-> %i",targetNode , sourceNode);
+                qDebug("MW: slotChangeEdgeWeight()  both directions %i <-> %i",targetNode , sourceNode);
                 newWeight=(float) QInputDialog::getDouble(this,
-                                                          "Change link weight...",tr("New link Weight: "), 1, -100, 100 ,1, &ok ) ;
+                                                          "Change edge weight...",tr("New edge Weight: "), 1, -100, 100 ,1, &ok ) ;
 
                 if (ok) {
                     qDebug()<<"MW: Changing first direction. NewWeight will be "<< newWeight;
@@ -5381,35 +5399,35 @@ void MainWindow::slotChangeLinkWeight(){
                     return;
                 }
                 else {
-                    statusMessage(  QString(tr("Change link weight cancelled."))  );
+                    statusMessage(  QString(tr("Change edge weight cancelled."))  );
                     return;
                 }
                 break;
             }
         }
         else {
-            qDebug() << "MW: slotChangeLinkWeight()  real edge " << sourceNode
+            qDebug() << "MW: slotChangeEdgeWeight()  real edge " << sourceNode
                      << " -> " <<targetNode;
             newWeight=QInputDialog::getDouble(this,
-                                              "Change link weight...",tr("New link weight: "), 1.0, -100, 100 ,1, &ok) ;
+                                              "Change edge weight...",tr("New edge weight: "), 1.0, -100, 100 ,1, &ok) ;
             if (ok) {
-                qDebug() << "MW: slotChangeLinkWeight()  setWeight to  "
+                qDebug() << "MW: slotChangeEdgeWeight()  setWeight to  "
                          << newWeight;
-                clickedLink->setWeight(newWeight);
-                qDebug() << "MW: slotChangeLinkWeight()  calling update  ";
-                clickedLink->update();
+                clickedEdge->setWeight(newWeight);
+                qDebug() << "MW: slotChangeEdgeWeight()  calling update  ";
+                clickedEdge->update();
                 qDebug()<<"MW: newWeight will be "<< newWeight;
                 activeGraph.setArcWeight(sourceNode, targetNode, newWeight);
                 statusMessage(  QString(tr("Ready."))  );
                 return;
             }
             else {
-                statusMessage(  QString(tr("Change link weight cancelled."))  );
+                statusMessage(  QString(tr("Change edge weight cancelled."))  );
                 return;
             }
 
         }
-        linkClicked=false;
+        edgeClicked=false;
     }
 
 }
@@ -5434,7 +5452,7 @@ void MainWindow::slotFilterNodes(){
 
 /**
  * @brief MainWindow::slotFilterIsolateNodes
- *Calls Graph::filterIsolateVertices to filter vertices with no links
+ *Calls Graph::filterIsolateVertices to filter vertices with no edges
  */
 void MainWindow::slotFilterIsolateNodes(bool checked){
     Q_UNUSED(checked);
@@ -5469,10 +5487,10 @@ void MainWindow::slotShowFilterEdgesDialog() {
 
 
 /**
-*	Transforms all nodes to links
-    TODO slotTransformNodes2Links
+*	Transforms all nodes to edges
+    TODO slotTransformNodes2Edges
 */
-void MainWindow::slotTransformNodes2Links(){
+void MainWindow::slotTransformNodes2Edges(){
     graphChanged();
 
 }
@@ -5485,14 +5503,14 @@ void MainWindow::slotTransformNodes2Links(){
 *	Converts all edges to double edges, so that the network becomes undirected (symmetric adjacency matrix).
 */
 void MainWindow::slotSymmetrize(){
-    if ( ( !fileLoaded && !networkModified) || activeGraph.totalEdges() ==0 )  {
-        QMessageBox::critical(this, "Error",tr("There are no links! \nLoad a network file or create a new network first."), "OK",0);
-        statusMessage( tr("No links present...")  );
+    if ( ( !fileLoaded && !networkModified) || activeEdges() ==0 )  {
+        QMessageBox::critical(this, "Error",tr("There are no edges! \nLoad a network file or create a new network first."), "OK",0);
+        statusMessage( tr("No edges present...")  );
         return;
     }
     qDebug("MW: slotSymmetrize() calling symmetrize");
     activeGraph.symmetrize();
-    QMessageBox::information(this, "Symmetrize",tr("All links are reciprocal. \nYour network is symmetric..."), "OK",0);
+    QMessageBox::information(this, "Symmetrize",tr("All edges are reciprocal. \nYour network is symmetric..."), "OK",0);
     statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
 }
 
@@ -6306,12 +6324,11 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
 
 
 /**
-*	Returns the amount of active links on the scene.
+*	Returns the amount of active edges on the scene.
 */
-int MainWindow::activeLinks(){
-    qDebug ("activeLinks()");
-    totalLinks=activeGraph.totalEdges();
-    return totalLinks;
+int MainWindow::activeEdges(){
+    qDebug () << "MW::activeEdges()";
+    return activeGraph.totalEdges();
 }
 
 
@@ -6391,7 +6408,7 @@ void MainWindow::askAboutWeights(){
     if (askedAboutWeights)
         return;
 
-    if ( ! considerLinkWeightsAct->isChecked() && !considerWeights){
+    if ( ! considerEdgeWeightsAct->isChecked() && !considerWeights){
         switch( QMessageBox::information(
                     this, "Edge weights and Distances",
                     tr("This network is weighted.\n"
@@ -6400,15 +6417,15 @@ void MainWindow::askAboutWeights(){
         {
         case QMessageBox::Yes:
             considerWeights=true;
-            considerLinkWeightsAct->setChecked(true);
+            considerEdgeWeightsAct->setChecked(true);
             break;
         case QMessageBox::No:
             considerWeights=false;
-            considerLinkWeightsAct->setChecked(false);
+            considerEdgeWeightsAct->setChecked(false);
             break;
         default: // just for sanity
             considerWeights=false;
-            considerLinkWeightsAct->setChecked(false);
+            considerEdgeWeightsAct->setChecked(false);
             return;
             break;
         }
@@ -6514,7 +6531,7 @@ void MainWindow::slotGraphDistance(){
 void MainWindow::slotDistancesMatrix(){
     qDebug("MW: slotDistancesMatrix()");
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes nor links!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        QMessageBox::critical(this, "Error",tr("There are no nodes nor edges!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
         statusMessage(  QString(tr("Nothing to do!"))  );
         return;
     }
@@ -6550,7 +6567,7 @@ void MainWindow::slotDistancesMatrix(){
 void MainWindow::slotGeodesicsMatrix(){
     qDebug("MW: slotViewNumberOfGeodesics()");
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes nor links!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        QMessageBox::critical(this, "Error",tr("There are no nodes nor edges!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
         statusMessage(  QString(tr("Nothing to do!"))  );
         return;
     }
@@ -6584,7 +6601,7 @@ void MainWindow::slotGeodesicsMatrix(){
 void MainWindow::slotDiameter() {
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical(this, "Error"
-                              ,tr("There are no nodes nor links!\n"
+                              ,tr("There are no nodes nor edges!\n"
                                   "Load a network file or create a new network. \n"
                                   "Then ask me to compute something!"), "OK",0);
 
@@ -6633,7 +6650,7 @@ void MainWindow::slotDiameter() {
 /**  Displays the  average shortest path length (average graph distance) */
 void MainWindow::slotAverageGraphDistance() {
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes nor links!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        QMessageBox::critical(this, "Error",tr("There are no nodes nor edges!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 
         statusMessage(  QString(tr("Cannot find the diameter of nothing..."))  );
         return;
@@ -6692,7 +6709,7 @@ void MainWindow::slotEccentricity(){
  */
 void MainWindow::slotConnectedness(){
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes nor links!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        QMessageBox::critical(this, "Error",tr("There are no nodes nor edges!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
 
         statusMessage(  QString(tr("Nothing to do..."))  );
         return;
@@ -7456,7 +7473,7 @@ void MainWindow::slotCentralityEccentricity(){
 
 void MainWindow::createProgressBar(){
 
-    if (showProgressBarAct->isChecked() || activeGraph.totalEdges() > 2000){
+    if (showProgressBarAct->isChecked() || activeEdges() > 2000){
         progressDialog= new QProgressDialog("Please wait....", "Cancel", 0, activeGraph.vertices(), this);
         progressDialog -> setWindowModality(Qt::WindowModal);
         connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
@@ -7471,7 +7488,7 @@ void MainWindow::createProgressBar(){
 void MainWindow::destroyProgressBar(){
     QApplication::restoreOverrideCursor();
 
-    if (showProgressBarAct->isChecked() || activeGraph.totalEdges() > 1000)
+    if (showProgressBarAct->isChecked() || activeEdges() > 1000)
         progressDialog->deleteLater();
 }
 
@@ -7714,26 +7731,25 @@ void MainWindow::slotChangeLabelsSize() {
 
 
 /**
-    Turns on/off drawing links as thick as their weights.
+    Turns on/off drawing edges as thick as their weights.
     TODO
 */
-void MainWindow::slotDrawLinksThickAsWeights() {
+void MainWindow::slotDrawEdgesThickAsWeights() {
 
 }
 
 
 
 /**
-*  Turns on/off displaying link weight numbers
+*  Turns on/off displaying edge weight numbers
 */
-void MainWindow::slotDisplayLinksWeightNumbers(bool toggle) {
+void MainWindow::slotDisplayEdgesWeightNumbers(bool toggle) {
     if (!fileLoaded && ! networkModified) {
-        QMessageBox::critical(this, "Error",tr("There are no links! \nLoad a network file or create a new network first."), "OK",0);
+        QMessageBox::critical(this, "Error",tr("There are no edges! \nLoad a network file or create a new network first."), "OK",0);
         statusMessage( tr("No nodes or edges found. Sorry...") );
         return;
     }
-    qDebug() << "MW: slotDisplayLinksWeightNumbers - Toggling Edges Weights. Please wait...";
-
+    qDebug() << "MW::slotDisplayEdgesWeightNumbers - Toggling Edges Weights. Please wait...";
     statusMessage( tr("Toggle Edges Weights. Please wait...") );
 
     if (!toggle) 	{
@@ -7750,10 +7766,10 @@ void MainWindow::slotDisplayLinksWeightNumbers(bool toggle) {
 
 
 /**
- * @brief MainWindow::slotConsiderLinkWeights
+ * @brief MainWindow::slotConsiderEdgeWeights
  * @param toggle
  */
-void MainWindow::slotConsiderLinkWeights(bool toggle) {
+void MainWindow::slotConsiderEdgeWeights(bool toggle) {
    if (toggle) {
        considerWeights=true;
        askedAboutWeights=false;
@@ -7765,25 +7781,25 @@ void MainWindow::slotConsiderLinkWeights(bool toggle) {
 
 
 /**
-*  Turns on/off displaying links
+*  Turns on/off displaying edges
 */
-void MainWindow::slotDisplayLinks(bool toggle){
+void MainWindow::slotDisplayEdges(bool toggle){
     if (!fileLoaded && ! networkModified) {
-        QMessageBox::critical(this, "Error",tr("There are no nodes nor links! \nLoad a network file or create a new network first!"), "OK",0);
+        QMessageBox::critical(this, "Error",tr("There are no nodes nor edges! \nLoad a network file or create a new network first!"), "OK",0);
 
-        statusMessage( tr("No links found...") );
+        statusMessage( tr("No edges found...") );
         return;
     }
     statusMessage( tr("Toggle Edges Arrows. Please wait...") );
 
     if (!toggle) 	{
         graphicsWidget->setAllItemsVisibility(TypeEdge, false);
-        statusMessage( tr("Links are invisible now. Click again the same menu to display them.") );
+        statusMessage( tr("Edges are invisible now. Click again the same menu to display them.") );
         return;
     }
     else{
         graphicsWidget->setAllItemsVisibility(TypeEdge, true);
-        statusMessage( tr("Links visible again...") );
+        statusMessage( tr("Edges visible again...") );
     }
 
 }
@@ -7791,13 +7807,13 @@ void MainWindow::slotDisplayLinks(bool toggle){
 
 
 /**
-*  Turns on/off the arrows of links
+*  Turns on/off the arrows of edges
 */
-void MainWindow::slotDisplayLinksArrows(bool toggle){
+void MainWindow::slotDisplayEdgesArrows(bool toggle){
     if (!fileLoaded && ! networkModified) {
-        QMessageBox::critical(this, "Error",tr("There are no links! \nLoad a network file or create a new network first!"), "OK",0);
+        QMessageBox::critical(this, "Error",tr("There are no edges! \nLoad a network file or create a new network first!"), "OK",0);
 
-        statusMessage( tr("No links found...") );
+        statusMessage( tr("No edges found...") );
         return;
     }
     statusMessage( tr("Toggle Edges Arrows. Please wait...") );
@@ -7826,16 +7842,16 @@ void MainWindow::slotDisplayLinksArrows(bool toggle){
 
 
 /**
-*  FIXME links Bezier 
+*  FIXME edges Bezier
 */
-void MainWindow::slotDrawLinksBezier(bool toggle){
+void MainWindow::slotDrawEdgesBezier(bool toggle){
     if (!fileLoaded && ! networkModified) {
-        QMessageBox::critical(this, "Error",tr("There are no links! \nLoad a network file or create a new network!"), "OK",0);
+        QMessageBox::critical(this, "Error",tr("There are no edges! \nLoad a network file or create a new network!"), "OK",0);
 
-        statusMessage( tr("There are NO links here!") );
+        statusMessage( tr("There are NO edges here!") );
         return;
     }
-    statusMessage( tr("Toggle links bezier. Please wait...") );
+    statusMessage( tr("Toggle edges bezier. Please wait...") );
     // //	graphicsWidget->setBezier(toggle);
     if (!toggle) 	{
         // 		QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
@@ -7881,15 +7897,15 @@ void MainWindow::slotBackgroundColor () {
 
 
 /**
-*  Changes the color of all links
+*  Changes the color of all edges
 */
-void MainWindow::slotAllLinksColor(){
+void MainWindow::slotAllEdgesColor(){
     QColor color = QColorDialog::getColor( Qt::red, this,
                                            "Change the color of all nodes" );
     if (color.isValid()) {
         initNodeColor=color.name();
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        qDebug() << "MainWindow::slotAllLinksColor() : " << initNodeColor;
+        qDebug() << "MainWindow::slotAllEdgesColor() : " << initNodeColor;
         //createProgressBar();
         activeGraph.setAllEdgesColor(initNodeColor);
         //destroyProgressBar();
@@ -7910,7 +7926,7 @@ void MainWindow::slotAllLinksColor(){
 *  Changes the color of nodes' numbers
 */
 void MainWindow::slotAllNumbersColor(){
-    // = QInputDialog::getItem(this, "Links' colors", "Select a new color:", colorList, 1, true, &ok);
+
     QColor textColor = QColorDialog::getColor( Qt::black, this );
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
     qDebug ("MW: Will change color");
@@ -8081,7 +8097,7 @@ void MainWindow::createTips(){
     tips+=tr("You can add a new node by clicking on Add button.");
     tips+=tr("You can remove a node by clicking on Remove button.");
     tips+=tr("You can rotate the network by selecting a new angle on the dock.");
-    tips+=tr("You can add a new link between two nodes, by middle-clicking (or pressing both mouse buttons simultanesously) on the first and then on the second node.");
+    tips+=tr("You can add a new edge between two nodes, by middle-clicking (or pressing both mouse buttons simultanesously) on the first and then on the second node.");
     tips+=tr("You can remove a node by right-clicking on it and selecting Remove.");
     tips+=tr("You can change background color (from the menu Edit > Colors).");
     tips+=tr("Nodes can have the colors of your choice. Just right-click on a node and then select > Options > Change Color. You can select every color supported by the X.org palette.");
@@ -8090,9 +8106,9 @@ void MainWindow::createTips(){
     tips+=tr("SocNetV can save the positions of the nodes in a network, if you save it in Pajek/GraphML format.");
     tips+=tr("You can apply layout algorithms on the network from the menu Layout or by clicking on the Dock > Layout tab checkboxes");
     tips+=tr("You can change the label of node by right-clicking on it, and selecting Options > Change Label.");
-    tips+=tr("All basic operations of SocNetV are available from the dock on the left, or by right-clicking on a node or a link.");
+    tips+=tr("All basic operations of SocNetV are available from the dock on the left, or by right-clicking on a node or an Edge.");
     tips+=tr("Node information is displayed on the Status bar, when you left-click on it.");
-    tips+=tr("Link information is displayed on the Status bar, when you left-click on it.");
+    tips+=tr("Edge information is displayed on the Status bar, when you left-click on it.");
 
     tipsCounter = 16;
 }

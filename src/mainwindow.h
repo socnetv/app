@@ -103,7 +103,7 @@ public:
     bool previewNetworkFile(QString , int );
     bool loadNetworkFile ( const QString, const QString, const int );
 
-    int activeLinks();
+    int activeEdges();
     int activeNodes();
 
     void openContextMenu(const QPointF & mPos);
@@ -167,19 +167,19 @@ public slots:
     void slotSelectAll();
     void slotSelectNone();
     void slotFindNode();
-    void slotAddLink();
+    void slotAddEdge();
     void slotRemoveNode();
     void slotNodeProperties( const QString, const int, const QString,
                              const QColor, const QString);
-    void slotRemoveLink();
+    void slotRemoveEdge();
     void slotChangeNodeProperties();
-    void slotChangeLinkLabel();
-    void slotChangeLinkColor();
-    void slotChangeLinkWeight();
+    void slotChangeEdgeLabel();
+    void slotChangeEdgeColor();
+    void slotChangeEdgeWeight();
     void slotFilterNodes();
     void slotFilterIsolateNodes(bool checked);
     void slotShowFilterEdgesDialog();
-    void slotTransformNodes2Links();
+    void slotTransformNodes2Edges();
     void slotSymmetrize();
 
     // LAYOUT MENU
@@ -243,16 +243,16 @@ public slots:
     void slotChangeAllNodesShape();
     void slotChangeNumbersSize();
     void slotChangeLabelsSize();
-    void slotDrawLinksThickAsWeights();
-    void slotDrawLinksBezier(bool toggle);
-    void slotDisplayLinksWeightNumbers(bool toggle);
-    void slotConsiderLinkWeights(bool);
-    void slotDisplayLinks(bool toggle);
-    void slotDisplayLinksArrows(bool toggle);
+    void slotDrawEdgesThickAsWeights();
+    void slotDrawEdgesBezier(bool toggle);
+    void slotDisplayEdgesWeightNumbers(bool toggle);
+    void slotConsiderEdgeWeights(bool);
+    void slotDisplayEdges(bool toggle);
+    void slotDisplayEdgesArrows(bool toggle);
 
     void slotBackgroundColor ();
     void slotAllNodesColor();
-    void slotAllLinksColor();
+    void slotAllEdgesColor();
     void slotAllNumbersColor();
     void slotAllLabelsColor();
 
@@ -271,9 +271,9 @@ public slots:
     void slotAboutQt();
     //PUBLICLY AVAILABLE SLOTS. CALLED FROM GRAPHICSVIEW
     void nodeInfoStatusBar(Node*);
-    void linkInfoStatusBar (Edge*);
+    void edgeInfoStatusBar (Edge*);
     void openNodeContextMenu();
-    void openLinkContextMenu() ;
+    void openEdgeContextMenu() ;
     void windowInfoStatusBar(int, int);
     void graphChanged();
 
@@ -283,7 +283,7 @@ public slots:
     //Called when user pushes the New Node button on the MW
     void addNode();
     //Called by graphicswidget when the user middle-clicks
-    void addLink (int v1, int v2, float weight);
+    void addEdge (int v1, int v2, float weight);
     //Called by graphicswidget when the user double-clicks
     void addNodeWithMouse(int, QPointF);
 
@@ -337,11 +337,11 @@ private:
     QProgressDialog *progressDialog;
 
     Node *clickedJim;
-    Edge *clickedLink;
+    Edge *clickedEdge;
 
     QMenu *importSubMenu, *exportSubMenu, *editMenu, *statMenu,  *helpMenu;
-    QMenu *optionsMenu, *colorOptionsMenu, *linkOptionsMenu, *nodeOptionsMenu, *viewOptionsMenu;
-    QMenu *editNodeMenu, *editLinkMenu, *centrlMenu, *layoutMenu;
+    QMenu *optionsMenu, *colorOptionsMenu, *edgeOptionsMenu, *nodeOptionsMenu, *viewOptionsMenu;
+    QMenu *editNodeMenu, *editEdgeMenu, *centrlMenu, *layoutMenu;
     QMenu *networkMenu, *randomNetworkMenu, *filterMenu;
     QMenu *randomLayoutMenu, *circleLayoutMenu, *levelLayoutMenu, *physicalLayoutMenu;
     QMenu *colorationMenu;
@@ -352,7 +352,7 @@ private:
             *toolBoxAnalysisProminenceSelect, *toolBoxAnalysisClusterabilitySelect;
     QComboBox *toolBoxLayoutByIndexSelect, *toolBoxLayoutByIndexTypeSelect;
 
-    QPushButton *addNodeBt, *addLinkBt, *removeNodeBt, *removeLinkBt,
+    QPushButton *addNodeBt, *addEdgeBt, *removeNodeBt, *removeEdgeBt,
     *toolBoxLayoutByIndexButton;
 
     QSpinBox *rotateSpinBox ;
@@ -367,15 +367,15 @@ private:
     QAction *createSmallWorldRandomNetworkAct, *createRegularRandomNetworkAct;
     QAction *displayNodeNumbersAct, *displayNodeLabelsAct, *displayNumbersInsideNodesAct;
     QAction *selectNoneAct, *selectAllAct;
-    QAction *findNodeAct,*addNodeAct, *addLinkAct, *removeNodeAct, *propertiesNodeAct, *removeLinkAct;
+    QAction *findNodeAct,*addNodeAct, *addEdgeAct, *removeNodeAct, *propertiesNodeAct, *removeEdgeAct;
     QAction *changeNumbersSizeAct;
     QAction *changeLabelsSizeAct, *changeAllNodesSizeAct, *changeAllNodesShapeAct;
-    QAction *changeLinkLabelAct, *changeLinkColorAct, *changeLinkWeightAct;
-    QAction *filterNodesAct, *filterIsolateNodesAct, *filterEdgesAct, *transformNodes2LinksAct, *symmetrizeAct;
-    QAction *changeBackColorAct, *changeAllNodesColorAct, *changeAllLinksColorAct, *changeAllNumbersColorAct,
+    QAction *changeEdgeLabelAct, *changeEdgeColorAct, *changeEdgeWeightAct;
+    QAction *filterNodesAct, *filterIsolateNodesAct, *filterEdgesAct, *transformNodes2EdgesAct, *symmetrizeAct;
+    QAction *changeBackColorAct, *changeAllNodesColorAct, *changeAllEdgesColorAct, *changeAllNumbersColorAct,
             *changeAllLabelsColorAct;
-    QAction *drawLinksWeightsAct, *displayLinksWeightNumbersAct, *displayLinksAct;
-    QAction *displayLinksArrowsAct, *drawLinksBezier,*considerLinkWeightsAct;
+    QAction *drawEdgesWeightsAct, *displayEdgesWeightNumbersAct, *displayEdgesAct;
+    QAction *displayEdgesArrowsAct, *drawEdgesBezier,*considerEdgeWeightsAct;
     QAction *backgroundImageAct, *viewToolBar, *viewStatusBar, *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
     QAction *antialiasingAct;
     QAction *webCrawlerAct;
@@ -409,19 +409,19 @@ private:
     int statusBarDuration,  minDuration, progressCounter;
     int maxNodes;
     int initNodeSize, labelDistance, numberDistance,initNumberSize, initLabelSize;
-    int totalLinks, fortuneCookiesCounter,  tipsCounter;
+    int fortuneCookiesCounter,  tipsCounter;
     //QString VERSION;
     bool pajekFileLoaded, adjacencyFileLoaded, dotFileLoaded, graphMLFileLoaded;
     bool fileLoaded, checkSelectFileType;
     int fileFormat;
     bool networkModified;
-    bool bezier,  linkClicked, nodeClicked, markedNodesExist, showProgressBar, firstTime;
+    bool bezier,  edgeClicked, nodeClicked, markedNodesExist, showProgressBar, firstTime;
     bool considerWeights, inverseWeights, askedAboutWeights;
     QString initFileCodec;
-    QString initLinkColor, initNumberColor,  initNodeShape, initLabelColor;
+    QString initEdgeColor, initNumberColor,  initNodeShape, initLabelColor;
     QColor initBackgroundColor;
     QPointF cursorPosGW;	//Carries the position of the cursor in graphicsWidget coordinates
-    QLCDNumber  *inLinksLCD, *outLinksLCD , *selectedNodeLCD, *clucofLCD;
+    QLCDNumber  *inDegreeLCD, *outDegreeLCD , *selectedNodeLCD, *clucofLCD;
     QLCDNumber *nodesLCD, *edgesLCD, *densityLCD;
 
     QDateTime actualDateTime, actualDate, actualTime;
