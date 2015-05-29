@@ -43,6 +43,7 @@
 #include "webcrawlerdialog.h"
 #include "nodeeditdialog.h"
 #include "datasetselectdialog.h"
+#include "randerdosrenyidialog.h"
 
 static const QString VERSION="1.8-dev";
 
@@ -93,7 +94,6 @@ public:
     QString getLastPath();
     void createFortuneCookies();
     void createTips();
-    void makeThingsLookRandom();
 
     bool showLabels();
     bool showNumbersInsideNodes();
@@ -151,6 +151,12 @@ public slots:
     void slotShowDataSetSelectDialog();
     void slotRecreateDataSet(QString);
     void slotCreateRandomNetErdos();
+    void createRandomNetErdos( const int N,
+                               const QString model,
+                               const int edges,
+                               const float eprob,
+                               const QString mode,
+                               const bool diag) ;
     void slotCreateRegularRandomNetwork();
     void slotCreateGaussianRandomNetwork();
     void slotCreateRandomNetRingLattice();
@@ -323,6 +329,8 @@ private:
     WebCrawlerDialog m_WebCrawlerDialog;
 
     NodeEditDialog *m_nodeEditDialog;
+
+    RandErdosRenyiDialog *m_randErdosRenyiDialog;
 
     PreviewForm *previewForm;
     QList<QTextCodec *> codecs;

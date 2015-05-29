@@ -276,8 +276,9 @@ void Graph::setCanvasDimensions(int w, int h){
  */
 void Graph::createEdge(int v1, int v2, float weight, QString color,
                        int reciprocal=0, bool drawArrows=true, bool bezier=false){
-    qDebug()<<"\n\nGraph::createEdge() " << v1 << " -> " << v2 << " weight "
-           << " weight " << weight ;
+    qDebug()<<"\n\nGraph::createEdge() " << v1 << " -> " << v2
+           << " weight " << weight
+              << " reciprocal " << reciprocal;
     // check whether there is already such an edge
     // (see #713617 - https://bugs.launchpad.net/socnetv/+bug/713617)
     if (!hasArc(v1,v2)){
@@ -4774,16 +4775,47 @@ void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
 
 
 
+
+/**
+    Adds a little universal randomness :)
+*/
+void Graph::makeThingsLookRandom()   {
+    time_t now;				/* define 'now'. time_t is probably a typedef	*/
+    now = time((time_t *)NULL);		/* Get the system time and put it
+                     * into 'now' as 'calender time' the number of seconds since  1/1/1970   	*/
+
+    srand( (unsigned int ) now);
+}
+
+
+
 /** layman's attempt to create a random network
 */
-void Graph::createRandomNetErdos(int vert, double probability){
-    qDebug("Graph: createRandomNetErdos");
+void Graph::createRandomNetErdos(  const int &vert,
+                                   const QString &model,
+                                   const int &edges,
+                                   const float &eprob,
+                                   const QString &mode,
+                                   const bool &diag)
+{
+    qDebug() << "Graph::createRandomNetErdos() - vertices " << vert
+                << " model " << model
+                << " edges " << edges
+                << " edge probability " << eprob
+                << " graph mode " << mode
+                << " diag " << diag;
 
     index.reserve(vert);
 
-    int progressCounter=0;
+    makeThingsLookRandom();
 
-    for (register int i=0; i< vert ; i++) {
+    int progressCounter=0;
+    int edgeCount = 0;
+
+    qDebug() << "Graph::createRandomNetErdos() - Creating nodes...";
+
+    for (register int i=0; i< vert ; i++)
+    {
         int x=10+rand() %640;
         int y=10+rand() %480;
         qDebug("Graph: createRandomNetErdos, new node i=%i, at x=%i, y=%i", i+1, x,y);
@@ -4796,20 +4828,82 @@ void Graph::createRandomNetErdos(int vert, double probability){
         progressCounter++;
         emit updateProgressDialog( progressCounter );
     }
-    for (register int i=0;i<vert; i++) {
-        for (register int j=0; j<vert; j++) {
-            qDebug("Random Experiment for link creation between %i and %i:", i+1, j+1);
-            if (rand() % 100 < probability)    {
-                qDebug("Creating link!");
-                createEdge(i+1, j+1, 1, "black", true, true, false);
+
+    qDebug() << "Graph::createRandomNetErdos() - Creating edges...";
+    if ( model == "G(n,p)")
+    {
+        qDebug() << "Graph::createRandomNetErdos() - G(n,p) model...";
+        for (register int i=0;i<vert; i++) {
+            for (register int j=0; j<vert; j++) {
+                qDebug() << "Graph::createRandomNetErdos() - Bernoulli trial "
+                       << "for edge " <<  i+1 << " -> " << j+1;
+                if (!diag && i==j) {
+                    qDebug()<< " Graph::createRandomNetErdos() - skip because "
+                            << i+1 << " = " << j+1
+                            << " and diag " << diag;
+                    continue;
+                }
+                if ( ( rand() % 100 + 1 ) / 100.0 < eprob )    {
+                    edgeCount ++ ;
+
+                    if (mode == "graph") {
+                        qDebug() << "Graph::createRandomNetErdos() - "
+                                    <<" create undirected Edge no "
+                                    << edgeCount;
+                        createEdge(i+1, j+1, 1, "black", 2, true, false);
+                    }
+                    else {
+                        qDebug() << "Graph::createRandomNetErdos() - "
+                                    <<" create directed Edge no "
+                                    << edgeCount;
+
+                        createEdge(i+1, j+1, 1, "black", 0, true, false);
+                    }
+                }
+                else
+                    qDebug() << "Graph::createRandomNetErdos() - do not create Edge";
             }
-            else
-                qDebug("Will not create link!");
+            progressCounter++;
+            emit updateProgressDialog(progressCounter );
+            qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
         }
-        progressCounter++;
-        emit updateProgressDialog(progressCounter );
-        qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
+
     }
+    else
+    {
+        qDebug() << "Graph::createRandomNetErdos() - G(n,M) model...";
+        int source = 0, target = 0 ;
+        do {
+            source =  rand() % vert + 1;
+            target =  rand() % vert + 1;
+            qDebug() << "Graph::createRandomNetErdos() - random pair "
+                        << " " << source
+                           << " , " << target ;
+            if (!diag && source == target ) {
+                qDebug() << "Graph::createRandomNetErdos() - skip self loop pair ";
+                continue;
+            }
+            if ( hasArc(source, target) ) {
+                qDebug() << "Graph::createRandomNetErdos() - skip pair - exists";
+                continue;
+            }
+            edgeCount ++;
+            if (mode == "graph") {
+                qDebug() << "Graph::createRandomNetErdos() - create "
+                            << " undirected Edge no " << edgeCount;
+                createEdge(source, target, 1, "black", 2, true, false);
+            }
+            else {
+                qDebug() << "Graph::createRandomNetErdos() - create "
+                            << " directed Edge no " << edgeCount;
+                createEdge(source, target, 1, "black", 0, true, false);
+            }
+
+        } while ( edgeCount != edges );
+
+    }
+
+
     addRelationFromGraph(tr("random")); //FIXME
 
     emit graphChanged();
@@ -4831,6 +4925,8 @@ void Graph::createRandomNetRingLattice(
     int progressCounter=0;
 
     double rad= (2.0* Pi/ vert );
+
+    makeThingsLookRandom();
 
     index.reserve(vert);
 
@@ -4924,6 +5020,7 @@ void Graph::createSameDegreeRandomNetwork(int vert, int degree){
 
     int progressCounter=0;
 
+    makeThingsLookRandom();
     index.reserve(vert);
 
     for (register int i=0; i< vert ; i++) {

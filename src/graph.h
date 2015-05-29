@@ -466,8 +466,18 @@ public:
     void terminateCrawlerThreads (QString reason);
 
     /**RANDOM NETWORKS*/
-    void createRandomNetErdos
-    (int, double);
+
+
+
+    void makeThingsLookRandom();
+
+
+    void createRandomNetErdos (  const int &vert,
+                                 const QString &model,
+                                 const int &edges,
+                                 const float &eprob,
+                                 const QString &mode,
+                                 const bool &diag);
 
     void createRandomNetRingLattice
     (int, int, double, double, double);

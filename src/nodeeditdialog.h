@@ -33,8 +33,6 @@
 
 #include <QDialog>
 
-
-
 #include "ui_nodeeditdialog.h"
 
 

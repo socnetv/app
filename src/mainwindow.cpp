@@ -524,13 +524,14 @@ void MainWindow::initActions(){
 
 
 
-    createUniformRandomNetworkAct = new QAction(QIcon(":/images/erdos.png"), tr("Erdos-Renyi G(n,p)"),  this);
+    createUniformRandomNetworkAct = new QAction(QIcon(":/images/erdos.png"), tr("Erdős–Rényi"),  this);
     createUniformRandomNetworkAct ->setShortcut(tr("Shift+U"));
-    createUniformRandomNetworkAct->setStatusTip(tr("Creates a random network where each edge is included with a given probability"));
+    createUniformRandomNetworkAct->setStatusTip(tr("Creates a random network according to the Erdős–Rényi model"));
     createUniformRandomNetworkAct->setWhatsThis(
-                tr("Erdos-Renyi \n\n") +
-                tr("Creates a random network of G(n, p) model by connecting nodes randomly.") +
-                tr("Each edge is included in the graph with equal probability p, independently of the other edges"));
+                tr("Erdős–Rényi \n\n") +
+                tr("Creates a random network either of G(n, p) model or G(n,M) model.\n") +
+                tr("In the first, edges are created with Bernoulli trials (probability p).\n") +
+                tr("In the second, a graph of exactly M edges is created."));
     connect(createUniformRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateRandomNetErdos()));
 
     createLatticeNetworkAct = new QAction( QIcon(":/images/net1.png"), tr("Ring Lattice"), this);
@@ -4011,19 +4012,6 @@ bool MainWindow::slotExportList(){
 
 
 
-/**
-    Adds a little universal randomness :)
-*/
-void MainWindow::makeThingsLookRandom()   {
-    time_t now;				/* define 'now'. time_t is probably a typedef	*/
-    now = time((time_t *)NULL);		/* Get the system time and put it
-                     * into 'now' as 'calender time' the number of seconds since  1/1/1970   	*/
-
-    srand( (unsigned int ) now);
-}
-
-
-
 
 /**
     Displays the file of the loaded network.
@@ -4182,39 +4170,41 @@ void MainWindow::slotRecreateDataSet (QString m_fileName) {
     Edge existance is controlled by a user specified possibility.
 */
 void MainWindow::slotCreateRandomNetErdos(){
-    bool ok;
-    statusMessage( "Creating a random symmetric network... ");
-    int newNodes= QInputDialog::getInt(
-                       this,
-                       tr("Create random network"),
-                       tr("This will create a new random symmetric network of G(n,p) model,")
-                       + tr("\n where n is the nodes and p is the edge probability.")
-                       + tr(" \nPlease enter the number n of nodes you want:"),
-                       100, 1, maxNodes, 1, &ok
-                       )  ;
-    if (!ok) {
-        statusMessage( "You did not enter an integer. Aborting.");
-        return;
-    }
-    double probability= QInputDialog::getDouble(
-                this,
-                tr("Create random network"),
-                tr("Enter an edge probability % (0-100):"),
-                4, 0, 100, 1,
-                &ok
-                );
-    if (!ok) {
-        statusMessage( "You did not enter an integer. Aborting.");
-        return;
-    }
-    statusMessage( "Erasing any existing network. ");
 
+    statusMessage( "Creating a random symmetric network... ");
+
+    m_randErdosRenyiDialog = new RandErdosRenyiDialog(this);
+
+    connect( m_randErdosRenyiDialog, &RandErdosRenyiDialog::userChoices,
+             this, &MainWindow::createRandomNetErdos );
+
+
+    m_randErdosRenyiDialog->exec();
+
+
+}
+
+
+
+
+
+
+void MainWindow::createRandomNetErdos( const int newNodes,
+                                       const QString model,
+                                       const int edges,
+                                       const float eprob,
+                                       const QString mode,
+                                       const bool diag)
+{
+    qDebug() << "MW::createRandomNetErdos()";
+
+    statusMessage( "Erasing any existing network. ");
     initNet();
-    makeThingsLookRandom();
+
     statusMessage( tr("Creating random network. Please wait... ")  );
 
 
-    if (showProgressBarAct->isChecked() && newNodes > 500 && probability > 1){
+    if (showProgressBarAct->isChecked() && newNodes > 500 && eprob > 0.06){
         progressDialog= new QProgressDialog(
                     "Creating random network. \n "
                     " Please wait (or disable me from Options > View > ProgressBar, next time ;)).",
@@ -4225,10 +4215,17 @@ void MainWindow::slotCreateRandomNetErdos(){
     }
 
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-    activeGraph.createRandomNetErdos (newNodes, probability);
+
+    activeGraph.createRandomNetErdos ( newNodes,
+                                       model,
+                                       edges,
+                                       eprob,
+                                       mode,
+                                       diag);
+
     QApplication::restoreOverrideCursor();
 
-    if (showProgressBarAct->isChecked() && newNodes > 500 && probability > 1)
+    if (showProgressBarAct->isChecked() && newNodes > 500 && eprob > 0.06)
         progressDialog->deleteLater();
 
     fileLoaded=false;
@@ -4237,21 +4234,24 @@ void MainWindow::slotCreateRandomNetErdos(){
 
     setWindowTitle("Untitled");
     double threshold = log(newNodes)/newNodes;
+
     //float avGraphDistance=activeGraph.averageGraphDistance();
+
     float clucof=activeGraph.clusteringCoefficient();
-    if ( (probability/100 ) > threshold )
+
+    if ( (eprob ) > threshold )
         QMessageBox::information(
                     this,
                     "New Random Network",
                     tr("Random network created. \n")+
                     tr("\nNodes: ")+ QString::number(activeNodes())+
-                    tr("\nEdges: ")+  QString::number( activeEdges()/2.0)+
+                    tr("\nEdges: ")+  QString::number( (mode == "graph") ? activeEdges()/2.0 : activeEdges() ) +
                     //tr("\nAverage path length: ") + QString::number(avGraphDistance)+
                     tr("\nClustering coefficient: ")+QString::number(clucof)+
                     tr("\n\nOn the average, edges should be ") +
-                    QString::number(probability * newNodes*(newNodes-1)/100) +
+                    QString::number( eprob * newNodes*(newNodes-1)) +
                     tr("\nThis graph is almost surely connected because: \nprobability > ln(n)/n, that is: \n")
-                    + QString::number(probability/100)+
+                    + QString::number(eprob)+
                     tr(" bigger than ")+ QString::number(threshold) , "OK",0);
 
     else
@@ -4260,24 +4260,17 @@ void MainWindow::slotCreateRandomNetErdos(){
                     "New Random Network",
                     tr("Random network created. \n")+
                     tr("\nNodes: ")+ QString::number(activeNodes())+
-                    tr("\nEdges: ")+  QString::number( activeEdges()/2.0)+
+                    tr("\nEdges: ")+  QString::number(  (mode == "graph") ? activeEdges()/2.0 : activeEdges()  )+
                     //tr("\nAverage path length: ") + QString::number(avGraphDistance)+
                     tr("\nClustering coefficient: ")+QString::number(clucof)+
                     tr("\n\nOn the average, edges should be ")
-                    + QString::number(probability * newNodes*(newNodes-1)/100) +
+                    + QString::number(eprob * newNodes*(newNodes-1)) +
                     tr("\nThis graph is almost surely not connected because: \nprobability < ln(n)/n, that is: \n") +
-                    QString::number(probability/100)+ " smaller than "+ QString::number(threshold) , "OK",0);
+                    QString::number(eprob)+ " smaller than "+ QString::number(threshold) , "OK",0);
 
     statusMessage( "Random network created. ");
 
 }
-
-
-
-
-
-
-
 
 
 
@@ -4318,7 +4311,6 @@ void MainWindow::slotCreateRegularRandomNetwork(){
     }
     statusMessage( "Erasing any existing network. ");
     initNet();
-    makeThingsLookRandom();
     statusMessage( "Creating a pseudo-random network where each node has the same degree... ");
 
     if (showProgressBarAct->isChecked() && newNodes > 300){
@@ -4391,7 +4383,6 @@ void MainWindow::slotCreateSmallWorldRandomNetwork(){
 
     statusMessage( tr("Erasing any existing network. "));
     initNet();
-    makeThingsLookRandom();
     statusMessage( tr("Creating small world. Please wait..."));
     double x0=scene->width()/2.0;
     double y0=scene->height()/2.0;
@@ -4462,7 +4453,6 @@ void MainWindow::slotCreateRandomNetRingLattice(){
 
     statusMessage( "Erasing any existing network. ");
     initNet();
-    makeThingsLookRandom();
     statusMessage( "Creating ring lattice network. Please wait...");
     double x0=scene->width()/2.0;
     double y0=scene->height()/2.0;
