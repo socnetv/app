@@ -41,7 +41,8 @@ INCLUDEPATH  += ./src
 FORMS += src/forms/filteredgesbyweightdialog.ui \
 	src/forms/webcrawlerdialog.ui \
         src/forms/nodeeditdialog.ui \
-	src/forms/datasetselectdialog.ui 
+	src/forms/datasetselectdialog.ui \
+	src/forms/randerdosrenyidialog.ui 
 
 HEADERS += src/guide.h \
            src/graphicswidget.h \
@@ -61,7 +62,8 @@ HEADERS += src/guide.h \
 	   src/webcrawler.h \
 	   src/datasetselectdialog.h \
     src/previewform.h \
-    src/nodeeditdialog.h
+    src/nodeeditdialog.h \
+    src/randerdosrenyidialog.h
 
 SOURCES += src/guide.cpp \
            src/graphicswidget.cpp \
@@ -82,7 +84,8 @@ SOURCES += src/guide.cpp \
 	   src/webcrawler.cpp \
 	   src/datasetselectdialog.cpp \
     src/previewform.cpp \
-    src/nodeeditdialog.cpp
+    src/nodeeditdialog.cpp \
+    src/randerdosrenyidialog.cpp
 
 
 
