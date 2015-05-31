@@ -2314,9 +2314,9 @@ by right-clicking on it.</source>
     </message>
     <message>
         <location filename="src/mainwindow.cpp" line="1201"/>
-        <source>This the number of nodes with outLinks
+        <source>This the number of nodes with outEdges
  to another node. They may also have 
-inLinks or reciprocal links. 
+inEdges or reciprocal links. 
 Meaningful on directed graphs.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2327,9 +2327,9 @@ Meaningful on directed graphs.</source>
     </message>
     <message>
         <location filename="src/mainwindow.cpp" line="1206"/>
-        <source>This the number of nodes with inLinks 
+        <source>This the number of nodes with inEdges 
 from another node. These may also have 
-outLinks or reciprocal links.
+outEdges or reciprocal links.
 Meaningful on directed graphs.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2341,7 +2341,7 @@ Meaningful on directed graphs.</source>
     <message>
         <location filename="src/mainwindow.cpp" line="1211"/>
         <source>This the number of nodes with reciprocal links, 
-namely, both inLinks and outLinks to another node.</source>
+namely, both inEdges and outEdges to another node.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

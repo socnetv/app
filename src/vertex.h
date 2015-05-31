@@ -53,57 +53,62 @@ class Vertex : public QObject{
 
 public:
 
-    Vertex(	Graph* parent,
-            int v1,  int val, int size, QString color,
-            QString numColor, int numSize,
-            QString label, QString labelColor, int labelSize,
-            QPointF p,
-            QString shape);
+    Vertex(Graph* parent,
+            const long int &name, const int &val, const int &size,
+            const QString &color,
+            const QString &numColor, const int &numSize,
+            const QString &label, const QString &labelColor,
+            const int &labelSize,
+            const QPointF &p,
+            const QString &shape);
 
-    Vertex(int v1);
+    Vertex(const long int &name);
 
     ~Vertex();
 
-    long int name();
-    void setName (long int );
+    long int name() const { return m_name; }
 
-    void setEnabled (bool flag );
-    bool isEnabled ();
+    void setName (const long int &name) { m_name=name; }
+
+    void setEnabled (const bool &flag ) { m_enabled=flag; }
+    bool isEnabled () const { return m_enabled; }
 
     void changeRelation(int) ;
 
-    void addLinkTo (long int target, float weight);	/* Adds an outLink to target with weight w */
-    void addLinkFrom(long int source, float weight);
+    void addEdgeTo (const long int &v2, const float &weight);
+    void addEdgeFrom(const long int &v1, const float &weight);
 
     void changeLinkWeightTo (long int target, float weight);
 
     void setOutLinkEnabled (long int, bool);
 
-    void removeLinkTo (long int target);		/* Removes edge to vertex t */
-    void removeLinkFrom(long int source);	/* Removes edge from vertex s	*/
+    void removeLinkTo (long int target);
+    void removeLinkFrom(long int source);
 
-    long int outLinks();
+    long int outEdges();
     QHash<int,float>* returnEnabledOutLinks();
 
-    long int inLinks();
+    long int inEdges();
 
     long int outDegree();
     long int inDegree();
     long int localDegree();
 
-    void setEccentricity (float c){ m_Eccentricity=c;}		/* sets eccentricity */
-    float eccentricity() { return m_Eccentricity;}		/* Returns eccentricity */
+    /* sets eccentricity */
+    void setEccentricity (float c){ m_Eccentricity=c;}
+    float eccentricity() { return m_Eccentricity;}
 
     /* Returns true if there is a reciprocal link from this vertex */
     bool isReciprocalLinked() { return m_reciprocalLinked;}
     void setReciprocalLinked(bool reciprocal) { m_reciprocalLinked=reciprocal;}
 
     /* Returns true if there is an outLink from this vertex */
-    bool isOutLinked() { return (outLinks() > 0) ? true:false;}
-    float isLinkedTo(long int V);	/* Returns the weight of the link to vertex V, otherwise zero*/
+    bool isOutLinked() { return (outEdges() > 0) ? true:false;}
+    /* Returns the weight of the link to vertex V, otherwise zero*/
+    float isLinkedTo(long int V);
 
     /* Returns true if there is an outLink from this vertex */
-    bool isInLinked() { return  (inLinks() > 0) ? true:false;}
+    bool isInLinked() { return  (inEdges() > 0) ? true:false;}
     float isLinkedFrom (long int v);
 
     bool isIsolated() { return !(isOutLinked() | isInLinked()) ; }
@@ -113,46 +118,55 @@ public:
     //	void filterEdgesByColor(float m_threshold, bool overThreshold);
     void filterEdgesByRelation(int relation, bool status);
 
-    void setSize(int );
-    int  size();
+    void setSize(const int &size ) { m_size=size; }
+    int size()  const { return m_size; }
 
-    void setShape(QString);
-    QString shape();
+    void setShape(const QString &shape) { m_shape=shape; }
+    QString shape() const { return m_shape; }
 
-    void setColor(QString);
-    QString color();
+    void setColor(const QString &color) { m_color=color; }
+    QString color() const { return m_color; }
     QString colorToPajek();
 
-    void setNumberColor (QString);
-    QString numberColor();
+    void setNumberColor (const QString &color) { m_numberColor = color; }
+    QString numberColor() const { return m_numberColor; }
 
-    void setNumberSize (int);
-    int numberSize();
+    void setNumberSize (const int &size) { m_numberSize=size; }
+    int numberSize() const { return m_numberSize; }
 
-    void setLabel (QString);
-    QString label();
+    void setLabel (const QString &label) { m_label=label; }
+    QString label() const { return m_label; }
 
-    void setLabelColor (QString);
-    QString labelColor();
+    void setLabelColor (const QString &labelColor) { m_labelColor=labelColor; }
+    QString labelColor() const { return m_labelColor; }
 
-    void setLabelSize(int);
-    int labelSize();
+    void setLabelSize(const int &newSize) { m_labelSize=newSize; }
+    int labelSize() const { return m_labelSize; }
 
-    void setX(float );
-    float x();
+    void setX(const float &x) { m_x=x; }
+    float x() const { return m_x; }
 
-    void setY(float );
-    float y();
+    void setY(const float &y) { m_y=y; }
+    float y() const { return m_y; }
 
-    QPointF pos ();
+    QPointF pos () const { return QPointF ( x(), y() ); }
 
-    QPointF & disp() { return m_disp; }  //displacement vector
+    //returns displacement vector
+    QPointF & disp() { return m_disp; }
 
     void set_dispX (float x) { m_disp.rx() = x ; }
     void set_dispY (float y) { m_disp.ry() = y ; }
 
-    void setOutLinkColor(long int, QString);
-    QString outLinkColor(int);
+    //FIXME -- VERY SLOW?
+    void setOutLinkColor(const long int &v2, const QString &color) {
+        outLinkColors[v2]=color;
+    }
+    //FIXME: See MW line 1965 - FIXME MULTIGRAPH
+    QString outLinkColor(const long int &v2) {
+        if (outLinkColors.contains(v2))
+            return outLinkColors.value(v2);
+        else return "black";
+    }
 
     void setDelta (float c){ m_delta=c;} 		/* Sets vertex pair dependancy */
     float delta() { return m_delta;}		/* Returns vertex pair dependancy */
@@ -222,83 +236,16 @@ public:
     bool hasCLC() { 	return m_hasCLC; }
 
 
-    int cliques (int size)
-    {
-        int count = 0;
-        foreach (int value, m_cliques) {
-            if ( value == size ) {
-                count ++;
-            }
-        }
-        return count ;
-    }
+    int cliques (const int &size);
 
-    bool addClique (QString clique, int size) {
-        QStringList members = clique.split(",");
-        switch (size) {
-        case 2:
-        {
-            m_cliques.insert( clique, size);
-            break;
-        }
-        case 3:
-        {
-            if (! m_cliques.contains( clique) &&
-                ! m_cliques.contains( QString::number (this->name()) +
-                                      "," + members[2] +
-                                      "," + members[1] ) )
-            {
-                m_cliques.insert( clique, size);
-                return true ;
-            }
-            else
-                return false;
-            break;
-        }
-        case 4:
-        {
-            if (! m_cliques.contains( clique) &&
-                    ! m_cliques.contains(  QString::number (this->name()) +
-                                           "," + members[1] +
-                                           "," + members[3] +
-                                           "," + members[2] ) &&
-                    ! m_cliques.contains(  QString::number (this->name()) +
-                                           "," + members[2] +
-                                           "," + members[1] +
-                                           "," + members[3] ) &&
-                    ! m_cliques.contains(  QString::number (this->name()) +
-                                           "," + members[2] +
-                                           "," + members[3] +
-                                           "," + members[1] ) &&
-                    ! m_cliques.contains(  QString::number (this->name()) +
-                                           "," + members[3] +
-                                           "," + members[1] +
-                                           "," + members[2] ) &&
-                    ! m_cliques.contains(  QString::number (this->name()) +
-                                           "," + members[3] +
-                                           "," + members[2] +
-                                           "," + members[1] )
-                    )
-            {
-                m_cliques.insert( clique, size);
-                return true ;
-            }
-            else
-            {
-                return false;
-            }
-
-            break;
-        }
-        };
-    }
+    bool addClique (const QString &clique, const int &size);
 
     void clearCliques() {
         m_cliques.clear();
     }
 
     //hold all outbound and inboud edges of this vertex.
-    H_edges m_outLinks, m_inLinks;
+    H_edges m_outEdges, m_inEdges;
 signals:
     void setEdgeVisibility (int, int, int, bool);
 
@@ -308,7 +255,7 @@ private:
 
     Graph *parentGraph;
     ilist myPs;
-    long int m_name,  m_outLinksCounter, m_inLinksCounter, m_outDegree, m_inDegree, m_localDegree;
+    long int m_name,  m_outEdgesCounter, m_inEdgesCounter, m_outDegree, m_inDegree, m_localDegree;
     float m_Eccentricity;
     int m_value, m_size, m_labelSize, m_numberSize, m_curRelation;
     H_StrToInt m_cliques;

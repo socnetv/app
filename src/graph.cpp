@@ -455,8 +455,8 @@ void Graph::removeVertex(long int Doomed){
         if  ( (*it)->isLinkedTo(Doomed) != 0) {
             qDebug()<< "Graph: Vertex " << (*it)->name()
                     << " is linked to doomed "<< Doomed << " and has "
-                    << (*it)->outLinks() << " and " <<  (*it)->outDegree() ;
-            if ( (*it)->outLinks() == 1 && (*it)->isLinkedFrom(Doomed) != 0 )	{
+                    << (*it)->outEdges() << " and " <<  (*it)->outDegree() ;
+            if ( (*it)->outEdges() == 1 && (*it)->isLinkedFrom(Doomed) != 0 )	{
                 qDebug() << "Graph: decreasing reciprocalEdgesVert";
                 (*it)->setReciprocalLinked(false);
             }
@@ -520,8 +520,8 @@ void Graph::addEdge (int v1, int v2, float weight, QString color, int reciprocal
     qDebug()<< "Graph: addEdge() from vertex "<< v1 << "["<< source
             << "] to vertex "<< v2 << "["<< target << "] of weight "<<weight;
 
-    m_graph [ source ]->addLinkTo(v2, weight );
-    m_graph [ target ]->addLinkFrom(v1, weight);
+    m_graph [ source ]->addEdgeTo(v2, weight );
+    m_graph [ target ]->addEdgeFrom(v1, weight);
     m_totalEdges++;
 
     if (reciprocal == 1){
@@ -531,8 +531,8 @@ void Graph::addEdge (int v1, int v2, float weight, QString color, int reciprocal
     else if (reciprocal == 2){
         m_graph [ source ]->setReciprocalLinked(true);
         m_graph [ target ]->setReciprocalLinked(true);
-        m_graph [ target ]->addLinkTo(v1, weight );
-        m_graph [ source ]->addLinkFrom(target, weight);
+        m_graph [ target ]->addEdgeTo(v1, weight );
+        m_graph [ source ]->addEdgeFrom(target, weight);
         m_totalEdges++;
     }
 
@@ -1069,8 +1069,8 @@ void Graph::edges(){
         if ( ! (*it)->isEnabled() )
             continue ;
         source = index[ (*it)->name() ];
-        it1=m_graph [ source ] ->m_outLinks.cbegin();
-        while ( it1!=m_graph [ source ] -> m_outLinks.cend() ){
+        it1=m_graph [ source ] ->m_outEdges.cbegin();
+        while ( it1!=m_graph [ source ] -> m_outEdges.cend() ){
             relation = it1.value().first;
             if ( relation != currentRelation() )  {
                 ++it1;
@@ -1111,7 +1111,7 @@ void Graph::updateVertCoords(int v1, int  x, int y){
  */
 int Graph::outboundEdges(int v1) {
     qDebug("Graph: outboundEdges()");
-    return m_graph[ index[v1] ]->outLinks();
+    return m_graph[ index[v1] ]->outEdges();
 }
 
 
@@ -1123,7 +1123,7 @@ int Graph::outboundEdges(int v1) {
  */
 int Graph::inboundEdges (int v1) {
     qDebug("Graph: inboundEdges()");
-    return m_graph[ index[v1] ]->inLinks();
+    return m_graph[ index[v1] ]->inEdges();
 }
 
 
@@ -1131,7 +1131,7 @@ int Graph::inboundEdges (int v1) {
 
 /**
  * @brief Graph::outDegree
- * Returns the outDegree (sum of outLinks weights) of vertex v1
+ * Returns the outDegree (sum of outEdges weights) of vertex v1
  * @param v1
  * @return
  */
@@ -1142,7 +1142,7 @@ int Graph::outDegree (int v1) {
 
 
 /**
-    Returns the inDegree (sum of inLinks weights) of vertex v1
+    Returns the inDegree (sum of inEdges weights) of vertex v1
 */
 int Graph::inDegree (int v1) {
     qDebug("Graph: inDegree()");
@@ -1159,7 +1159,7 @@ int Graph::totalEdges () {
     int tEdges=0;
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        tEdges+=(*it)->outLinks();
+        tEdges+=(*it)->outEdges();
     }
     qDebug() << "Graph: m_totalEdges = " << m_totalEdges << ", tEdges=" <<  tEdges;
     return tEdges;
@@ -2185,8 +2185,8 @@ void Graph::BFS(int s, const bool computeCentralities=false,
             Stack.push(u);
         }
         qDebug() << "BFS: LOOP over every edge (u,w) e E, that is all neighbors w of vertex u";
-        it1=m_graph [ u ] ->m_outLinks.cbegin();
-        while ( it1!=m_graph [ u ] -> m_outLinks.cend() ){
+        it1=m_graph [ u ] ->m_outEdges.cbegin();
+        while ( it1!=m_graph [ u ] -> m_outEdges.cend() ){
             relation = it1.value().first;
             if ( relation != currentRelation() )  {
                 ++it1;
@@ -2351,8 +2351,8 @@ void Graph::dijkstra(int s, const bool computeCentralities=false,
         }
         qDebug() << "*** dijkstra: LOOP over every edge ("<< u <<",w) e E, "
                  <<  "that is for each neighbor w of u";
-        it1=m_graph [ u ] ->m_outLinks.cbegin();
-        while ( it1!=m_graph [ u ] -> m_outLinks.cend() ){
+        it1=m_graph [ u ] ->m_outEdges.cbegin();
+        while ( it1!=m_graph [ u ] -> m_outEdges.cend() ){
             relation = it1.value().first;
             if ( relation != currentRelation() )  {
                 ++it1;
@@ -3919,9 +3919,9 @@ void Graph::prestigePageRank(const bool dropIsolates){
                 maxDelta = 0;
                 oldPRP = (*it)->PRP();
                 // take every other node which links to the current node.
-                jt=(*it)->m_inLinks.cbegin();
-                while ( jt != (*it) -> m_inLinks.cend() ){
-                    qDebug() << "   iterate over all inLinks ";
+                jt=(*it)->m_inEdges.cbegin();
+                while ( jt != (*it) -> m_inEdges.cend() ){
+                    qDebug() << "   iterate over all inEdges ";
                     relation = jt.value().first;
                     if ( relation != currentRelation() ){
                         ++jt;
@@ -5576,11 +5576,11 @@ float Graph:: countCliquesWith(int source, int size){
              << " and outDegree "<< outboundEdges(source);
 
 
-    qDebug () << "Graph::countCliquesWith() - Checking inLinks to " << source;
+    qDebug () << "Graph::countCliquesWith() - Checking inEdges to " << source;
 
-    it1=m_graph [ index[source] ] ->m_inLinks.cbegin();
+    it1=m_graph [ index[source] ] ->m_inEdges.cbegin();
 
-    while ( it1!=m_graph [ index[source] ] -> m_inLinks.cend() ){
+    while ( it1!=m_graph [ index[source] ] -> m_inEdges.cend() ){
         relation = it1.value().first;
         if ( relation != currentRelation() ) {
             ++it1;
@@ -5620,10 +5620,10 @@ float Graph:: countCliquesWith(int source, int size){
         }
 
         qDebug() << "Graph::countCliquesWith() - "
-                 << " Iterate over all inLinks of " << vert1;
+                 << " Iterate over all inEdges of " << vert1;
 
-        it2=m_graph [ index[vert1] ] ->m_inLinks.cbegin();
-        while ( it2!=m_graph [ index[vert1] ] -> m_inLinks.cend() ){
+        it2=m_graph [ index[vert1] ] ->m_inEdges.cbegin();
+        while ( it2!=m_graph [ index[vert1] ] -> m_inEdges.cend() ){
 
             relation = it2.value().first;
             if ( relation != currentRelation() ){
@@ -5676,9 +5676,9 @@ float Graph:: countCliquesWith(int source, int size){
                     }
 
                     qDebug() << "Graph::countCliquesWith() -         "
-                                << " Iterate over all inLinks of " << vert2;
-                    it3=m_graph [ index[vert2] ] ->m_inLinks.cbegin();
-                    while ( it3!=m_graph [ index[vert2] ] -> m_inLinks.cend() ){
+                                << " Iterate over all inEdges of " << vert2;
+                    it3=m_graph [ index[vert2] ] ->m_inEdges.cbegin();
+                    while ( it3!=m_graph [ index[vert2] ] -> m_inEdges.cend() ){
                         relation = it3.value().first;
                         if ( relation != currentRelation() ){
                             ++it3;

@@ -266,7 +266,7 @@ Social network analysts use various metrics (measures or indices) to calculate h
  <p>Centrality metrics attempt to quantify how central is each node inside the network and usually examine the ties attached to that node and its geodesic distances (shortest path lengths) to other nodes. Most Centrality indices were designed for undirected graphs (symmetric), where the relations are non-directional. For instance, SocNetV can calculate Betweenness, Closeness, Degree, Stress, Graph and Eccentricity centrality indices.
 </p>
 
- <p>For digraphs, where the relations are directional, most centrality indices can also be calculated by focusing on "choices made" (or outLinks). But due to the nature of the directional relations in digraphs, the social networks researcher usually needs to measure the "prestige" (as known as status, rank or popularity) of each node, focusing on "choices received" by other nodes rather than "choices made" by that node. Prestige indices focus exactly on "choices received" to a node. These indices measure the nominations or ties to each node from all others (or inLinks). Thus, Prestige indices can only be calculated on directed graphs..
+ <p>For digraphs, where the relations are directional, most centrality indices can also be calculated by focusing on "choices made" (or outEdges). But due to the nature of the directional relations in digraphs, the social networks researcher usually needs to measure the "prestige" (as known as status, rank or popularity) of each node, focusing on "choices received" by other nodes rather than "choices made" by that node. Prestige indices focus exactly on "choices received" to a node. These indices measure the nominations or ties to each node from all others (or inLinks). Thus, Prestige indices can only be calculated on directed graphs..
 </p>
 
  <p>
@@ -277,14 +277,14 @@ Centrality indices are calculated for each node (node Centrality) and for the wh
 <h5><a name="DC" id="DC"></a>Degree Centrality (DC)</h5>
 <p>
 In undirected graphs, the DC index of each node v is the number of edges attached to it.
-In digraphs, the DC is the total number of arcs (outLinks) starting from v (outDegree).
+In digraphs, the DC is the total number of arcs (outEdges) starting from v (outDegree).
 <br />
 In social network theory, DC is often considered a measure of actor activity.
 <br />Along with other metrics which are based on the notion of distance
 (closeness, eccentricity etc), DC falls in the category of reachability measures.
 <br /><br />
 This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs.
-It can also be calculated in weighted graphs. In weighted relations, ODC is the sum of weights of all edges/outLinks attached to v.
+It can also be calculated in weighted graphs. In weighted relations, ODC is the sum of weights of all edges/outEdges attached to v.
 <br /><br/>
 To compute Degree Centralization (or Group Degree Centrality in SocNetV-speak),
 we use the Freeman's formula for unvalued graphs.
@@ -512,7 +512,7 @@ principal eigenvector of the normalized link matrix.
 This index can be calculated in both graphs and digraphs but is usually best suited for directed graphs since it is a prestige measure.
 It can also be calculated in weighted graphs.
 In weighted relations, each backlink to a node u from another node v is considered
-to have weight=1 but it is normalized by the sum of outLinks weights (outDegree) of v.
+to have weight=1 but it is normalized by the sum of outEdges weights (outDegree) of v.
 Therefore, nodes with high outLink weights give smaller percentage of their PR to node u.
 </p>
 

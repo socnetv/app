@@ -38,7 +38,7 @@ class RandErdosRenyiDialog  : public QDialog
 {
     Q_OBJECT
 public:
-    explicit RandErdosRenyiDialog(QWidget *parent);
+    explicit RandErdosRenyiDialog(QWidget *parent=0);
 
 public slots:
     void checkErrors();

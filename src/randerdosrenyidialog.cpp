@@ -36,7 +36,7 @@
 
 #include "randerdosrenyidialog.h"
 
-RandErdosRenyiDialog::RandErdosRenyiDialog(QWidget *parent = 0) :
+RandErdosRenyiDialog::RandErdosRenyiDialog(QWidget *parent ) :
 
     QDialog(parent)
 {
