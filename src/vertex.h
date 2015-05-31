@@ -78,15 +78,15 @@ public:
     void addEdgeTo (const long int &v2, const float &weight);
     void addEdgeFrom(const long int &v1, const float &weight);
 
-    void changeLinkWeightTo (long int target, float weight);
+    void changeOutEdgeWeight (long int target, float weight);
 
-    void setOutLinkEnabled (long int, bool);
+    void setOutEdgeEnabled (long int, bool);
 
-    void removeLinkTo (long int target);
-    void removeLinkFrom(long int source);
+    void removeEdgeTo (long int target);
+    void removeEdgeFrom(long int source);
 
     long int outEdges();
-    QHash<int,float>* returnEnabledOutLinks();
+    QHash<int,float>* returnEnabledOutEdges();
 
     long int inEdges();
 
@@ -105,11 +105,11 @@ public:
     /* Returns true if there is an outLink from this vertex */
     bool isOutLinked() { return (outEdges() > 0) ? true:false;}
     /* Returns the weight of the link to vertex V, otherwise zero*/
-    float isLinkedTo(long int V);
+    float hasEdgeTo(long int V);
 
     /* Returns true if there is an outLink from this vertex */
     bool isInLinked() { return  (inEdges() > 0) ? true:false;}
-    float isLinkedFrom (long int v);
+    float hasEdgeFrom (long int v);
 
     bool isIsolated() { return !(isOutLinked() | isInLinked()) ; }
     void setIsolated(bool isolated) {m_isolated = isolated; }

@@ -452,18 +452,18 @@ void Graph::removeVertex(long int Doomed){
     //Remove links to Doomed from each other vertex
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if  ( (*it)->isLinkedTo(Doomed) != 0) {
+        if  ( (*it)->hasEdgeTo(Doomed) != 0) {
             qDebug()<< "Graph: Vertex " << (*it)->name()
                     << " is linked to doomed "<< Doomed << " and has "
                     << (*it)->outEdges() << " and " <<  (*it)->outDegree() ;
-            if ( (*it)->outEdges() == 1 && (*it)->isLinkedFrom(Doomed) != 0 )	{
+            if ( (*it)->outEdges() == 1 && (*it)->hasEdgeFrom(Doomed) != 0 )	{
                 qDebug() << "Graph: decreasing reciprocalEdgesVert";
                 (*it)->setReciprocalLinked(false);
             }
-            (*it)->removeLinkTo(Doomed) ;
+            (*it)->removeEdgeTo(Doomed) ;
         }
-        if (  (*it)->isLinkedFrom(Doomed) != 0 ) {
-            (*it)->removeLinkFrom(Doomed);
+        if (  (*it)->hasEdgeFrom(Doomed) != 0 ) {
+            (*it)->removeEdgeFrom(Doomed);
         }
     }
 
@@ -554,7 +554,7 @@ void Graph::addEdge (int v1, int v2, float weight, QString color, int reciprocal
 void Graph::setArcWeight (const long &v1, const long &v2, const float &weight) {
     qDebug() << "Graph::setArcWeight between " << v1 << "[" << index[v1]
                 << "] and " << v2 << "[" << index[v2] << "]" << " = " << weight;
-    m_graph [ index[v1] ]->changeLinkWeightTo(v2, weight);
+    m_graph [ index[v1] ]->changeOutEdgeWeight(v2, weight);
     graphModified=true;
     emit graphChanged();
 
@@ -566,12 +566,12 @@ void Graph::setArcWeight (const long &v1, const long &v2, const float &weight) {
 void Graph::removeEdge (int v1, int v2) {	
     qDebug ()<< "\n\n Graph::removeEdge() edge from " << v1 << " index " << index[v1]
                 << " to " << v2 << " to be removed from graph";
-    m_graph [ index[v1] ]->removeLinkTo(v2);
-    m_graph [ index[v2] ]->removeLinkFrom(v1);
+    m_graph [ index[v1] ]->removeEdgeTo(v2);
+    m_graph [ index[v2] ]->removeEdgeFrom(v1);
     qDebug()<< "Graph: removeEdge between " << v1 << " i " << index[v1]
                << " and " << v2 << " i "<< index[v2]
                << "  NOW vertex v1 reports edge weight "
-               << m_graph [ index[v1] ]->isLinkedTo(v2) ;
+               << m_graph [ index[v1] ]->hasEdgeTo(v2) ;
     if ( this->hasArc(v2,v1) !=0)
         symmetricAdjacencyMatrix=false;
 
@@ -994,7 +994,7 @@ bool Graph::setAllEdgesColor(const QString &color){
     qDebug()<< "\n\nGraph::setAllEdgesColor()" << color;
     int target=0, source=0;
     setInitEdgeColor(color);
-    QHash<int,float> *enabledOutLinks = new QHash<int,float>;
+    QHash<int,float> *enabledOutEdges = new QHash<int,float>;
     QHash<int,float>::const_iterator it1;
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -1002,9 +1002,9 @@ bool Graph::setAllEdgesColor(const QString &color){
         source = (*it)->name();
         if ( ! (*it)->isEnabled() )
             continue;
-        enabledOutLinks=(*it)->returnEnabledOutLinks();
-        it1=enabledOutLinks->cbegin();
-        while ( it1!=enabledOutLinks->cend() ){
+        enabledOutEdges=(*it)->returnEnabledOutEdges();
+        it1=enabledOutEdges->cbegin();
+        while ( it1!=enabledOutEdges->cend() ){
             target = it1.key();
             qDebug() << "=== Graph::setAllEdgesColor() : "
                         << source << "->" << target << " new color " << color;
@@ -1013,7 +1013,7 @@ bool Graph::setAllEdgesColor(const QString &color){
             ++it1;
         }
     }
-    delete enabledOutLinks;
+    delete enabledOutEdges;
     graphModified=true;
     emit graphChanged();
     return true;
@@ -1046,15 +1046,15 @@ void Graph::setEdgeColor(const long &v1, const long &v2, const QString &color){
 */
 float Graph::hasArc (const long int &v1, const long int &v2) {
     //qDebug() << "Graph::hasArc() " << v1 << " -> " << v2 << " ? " ;
-    return m_graph[ index[v1] ]->isLinkedTo(v2);
+    return m_graph[ index[v1] ]->hasEdgeTo(v2);
 }
 
 /**	Checks if there is a edge between v1 and v2 (both arcs exist)
 */
 bool Graph::hasEdge (const int &v1, const long &v2) {
     //qDebug() << "Graph::hasEdge() " << v1 << " <-> " << v2 << " ? " ;
-    return ( m_graph[ index[v1] ]->isLinkedTo(v2)
-            && m_graph[ index[v2] ]->isLinkedTo(v1) ) ? true: false;
+    return ( m_graph[ index[v1] ]->hasEdgeTo(v2)
+            && m_graph[ index[v2] ]->hasEdgeTo(v1) ) ? true: false;
 }
 
 
@@ -1370,7 +1370,7 @@ bool Graph::isSymmetric(){
     }
     symmetricAdjacencyMatrix=true;
     int y=0, target=0, source=0;
-    QHash<int,float> *enabledOutLinks = new QHash<int,float>;
+    QHash<int,float> *enabledOutEdges = new QHash<int,float>;
 
     QHash<int,float>::const_iterator it1;
     QList<Vertex*>::const_iterator it;
@@ -1380,14 +1380,14 @@ bool Graph::isSymmetric(){
             continue;
         qDebug() << "Graph::isSymmetric(): GRAPH Modified! " <<
                     " Iterate over all edges of " << source ;
-        enabledOutLinks=(*it)->returnEnabledOutLinks();
-        it1=enabledOutLinks->cbegin();
-        while ( it1!=enabledOutLinks->cend() ){
+        enabledOutEdges=(*it)->returnEnabledOutEdges();
+        it1=enabledOutEdges->cbegin();
+        while ( it1!=enabledOutEdges->cend() ){
             target = it1.key();
             y=index[ target ];
             qDebug() << "Graph: isSymmetric: check if " << source
                      << " is inLinked from " <<  target  ;
-            if ( ! m_graph[y]->isLinkedTo( source)) {
+            if ( ! m_graph[y]->hasEdgeTo( source)) {
                 qDebug() << "Graph: isSymmetric: u = " << source
                          << " IS NOT inLinked from y = " <<  target  ;
                 symmetricAdjacencyMatrix=false;
@@ -1400,7 +1400,7 @@ bool Graph::isSymmetric(){
             ++it1;
         }
     }
-    delete enabledOutLinks;
+    delete enabledOutEdges;
     qDebug() << "Graph: isSymmetric()" << symmetricAdjacencyMatrix;
     return symmetricAdjacencyMatrix;
 }
@@ -1414,21 +1414,21 @@ void Graph::symmetrize(){
     qDebug("Graph: symmetrize");
     QList<Vertex*>::const_iterator it;
     int y=0, target=0, source=0, weight;
-    QHash<int,float> *enabledOutLinks = new QHash<int,float>;
+    QHash<int,float> *enabledOutEdges = new QHash<int,float>;
     QHash<int,float>::const_iterator it1;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         source = (*it)->name();
         qDebug() << "Graph:symmetrize() - iterate over edges of source " << source;
-        enabledOutLinks=(*it)->returnEnabledOutLinks();
-        it1=enabledOutLinks->cbegin();
-        while ( it1!=enabledOutLinks->cend() ){
+        enabledOutEdges=(*it)->returnEnabledOutEdges();
+        it1=enabledOutEdges->cbegin();
+        while ( it1!=enabledOutEdges->cend() ){
             target = it1.key();
             weight = it1.value();
             y=index[ target ];
             qDebug() << "Graph:symmetrize() - "
                      << " source " << source
                      << " outLinked to " << target << " weight " << weight;
-            if ( ! m_graph[y]->isLinkedTo( source )) {
+            if ( ! m_graph[y]->hasEdgeTo( source )) {
                 qDebug() << "Graph:symmetrize(): s = " << source
                          << " is NOT inLinked from y = " <<  target  ;
                 createEdge( target, source, weight, initEdgeColor, false, true, false);
@@ -1439,7 +1439,7 @@ void Graph::symmetrize(){
             ++it1;
         }
     }
-    delete enabledOutLinks;
+    delete enabledOutEdges;
     graphModified=true;
     symmetricAdjacencyMatrix=true;
     emit graphChanged();
@@ -2757,7 +2757,7 @@ void Graph::centralityDegree(const bool weights, const bool dropIsolates){
                 if ( (weight=this->hasArc ( (*it)->name(), (*it1)->name() ) ) !=0  )   {
 //                    qDebug() << "Graph::centralityDegree() - vertex "
 //                             <<  (*it)->name()
-//                             << " isLinkedTo = " <<  (*it1)->name();
+//                             << " hasEdgeTo = " <<  (*it1)->name();
                     if (weights)
                         DC+=weight;
                     else
@@ -5907,13 +5907,13 @@ bool Graph::triadCensus(){
 
             temp_mut=0, temp_asy=0, temp_nul =0;
 
-            if ( (*v1)->isLinkedTo( ver2 ) ) {
-                if ( (*v2)->isLinkedTo( ver1 ) )
+            if ( (*v1)->hasEdgeTo( ver2 ) ) {
+                if ( (*v2)->hasEdgeTo( ver1 ) )
                     temp_mut++;
                 else
                     temp_asy++;
             }
-            else if ( (*v2)->isLinkedTo( ver1 )  )
+            else if ( (*v2)->hasEdgeTo( ver1 )  )
                 temp_asy++;
             else
                 temp_nul++;
@@ -5926,24 +5926,24 @@ bool Graph::triadCensus(){
 
                 ver3=(*v3)->name();
 
-                if ( (*v1)->isLinkedTo( ver3 ) ) {
-                    if ( (*v3)->isLinkedTo( ver1 ) )
+                if ( (*v1)->hasEdgeTo( ver3 ) ) {
+                    if ( (*v3)->hasEdgeTo( ver1 ) )
                         mut++;
                     else
                         asy++;
                 }
-                else if ( (*v3)->isLinkedTo( ver1 )  )
+                else if ( (*v3)->hasEdgeTo( ver1 )  )
                     asy++;
                 else
                     nul++;
 
-                if ( (*v2)->isLinkedTo( ver3 ) ) {
-                    if ( (*v3)->isLinkedTo( ver2 ) )
+                if ( (*v2)->hasEdgeTo( ver3 ) ) {
+                    if ( (*v3)->hasEdgeTo( ver2 ) )
                         mut++;
                     else
                         asy++;
                 }
-                else if ( (*v3)->isLinkedTo( ver2 )  )
+                else if ( (*v3)->hasEdgeTo( ver2 )  )
                     asy++;
                 else
                     nul++;
@@ -6008,7 +6008,7 @@ void Graph::examine_MAN_label(int mut, int asy, int nul,
                     if ( source->name() == target->name() )
                         continue;
 
-                    if ( source->isLinkedTo(target->name()) ){
+                    if ( source->hasEdgeTo(target->name()) ){
                         if ( isOutLinked ){
                             triadTypeFreqs[3] ++;//"021D"
                             break;
@@ -6021,7 +6021,7 @@ void Graph::examine_MAN_label(int mut, int asy, int nul,
                             isOutLinked=true;
                         }
                     }
-                    else if( target->isLinkedTo(source->name()) ){
+                    else if( target->hasEdgeTo(source->name()) ){
                         //	qDebug() << "    Vertex " << source->name()  << " is IN linked from " <<target->name();
                         if ( isInLinked ){
                             triadTypeFreqs[4] ++;//"021U"
@@ -6050,7 +6050,7 @@ void Graph::examine_MAN_label(int mut, int asy, int nul,
                     if ( source->name() == target->name() )
                         continue;
 
-                    if ( source->isLinkedTo(target->name()) ){
+                    if ( source->hasEdgeTo(target->name()) ){
 
                         if ( isOutLinked ){
                             triadTypeFreqs[8] ++;//"030T"
@@ -6087,7 +6087,7 @@ void Graph::examine_MAN_label(int mut, int asy, int nul,
                     if ( source->name() == target->name() )
                         continue;
 
-                    if ( target->isLinkedTo(source->name()) ){
+                    if ( target->hasEdgeTo(source->name()) ){
 
                         if ( isInLinked ){
                             triadTypeFreqs[6] ++;//"030T"
@@ -6116,8 +6116,8 @@ void Graph::examine_MAN_label(int mut, int asy, int nul,
                     if ( source->name() == target->name() )
                         continue;
 
-                    if ( source->isLinkedTo(target->name()) ){
-                        if (target->isLinkedTo(source->name() ) ){
+                    if ( source->hasEdgeTo(target->name()) ){
+                        if (target->hasEdgeTo(source->name() ) ){
                             isInLinked=true;
                             isOutLinked=true;
                             continue;
@@ -6132,9 +6132,9 @@ void Graph::examine_MAN_label(int mut, int asy, int nul,
                             isOutLinked=true;
                         }
                     }
-                    else if( target->isLinkedTo(source->name()) ){
+                    else if( target->hasEdgeTo(source->name()) ){
                         //	qDebug() << "    Vertex " << source->name()  << " is IN linked from " <<target->name();
-                        if (source->isLinkedTo(target->name())){
+                        if (source->hasEdgeTo(target->name())){
                             isOutLinked=true;
                             isInLinked=true;
                             continue;

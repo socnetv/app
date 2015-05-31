@@ -136,12 +136,12 @@ void Vertex::addEdgeTo (const long &v2, const float &weight) {
 
 
 /**
- * @brief Vertex::setOutLinkEnabled
+ * @brief Vertex::setOutEdgeEnabled
  * @param target
  * @param status
  */
-void Vertex::setOutLinkEnabled (long int target, bool status){
-    qDebug () << "Vertex::setOutLinkEnabled - set outLink to " << target
+void Vertex::setOutEdgeEnabled (long int target, bool status){
+    qDebug () << "Vertex::setOutEdgeEnabled - set outLink to " << target
               << " as " << status
                  << ". Finding outLink...";
     QMutableHashIterator < int, rel_w_bool > it1 (m_outEdges);
@@ -182,7 +182,7 @@ void Vertex::addEdgeFrom (const long int &v1, const float &weight) {
 }
 
 
-void Vertex::changeLinkWeightTo(long int target, float weight){
+void Vertex::changeOutEdgeWeight(long int target, float weight){
     qDebug() << "Vertex::changeEdgeWeightTo " << target << " weight " << weight ;
     qDebug() << " *** m_outEdges.count " <<
                 m_outEdges.count();
@@ -207,12 +207,12 @@ void Vertex::changeLinkWeightTo(long int target, float weight){
 
 
 /**
- * @brief Vertex::removeLinkTo
+ * @brief Vertex::removeEdgeTo
  * finds and removes a link to vertex v2
  * @param v2
  */
-void Vertex::removeLinkTo (long int v2) {
-    qDebug() << "Vertex: removeLinkTo() - vertex " << m_name
+void Vertex::removeEdgeTo (long int v2) {
+    qDebug() << "Vertex: removeEdgeTo() - vertex " << m_name
              << " has " <<outEdges() << " out-links. Removing link to "<< v2 ;
 
     if (outEdges()>0) {
@@ -240,11 +240,11 @@ void Vertex::removeLinkTo (long int v2) {
 
 
 /**
- * @brief Vertex::removeLinkFrom
+ * @brief Vertex::removeEdgeFrom
  * @param v2
  */
-void Vertex::removeLinkFrom(long int v2){
-    qDebug() << "Vertex: removeLinkFrom() vertex " << m_name
+void Vertex::removeEdgeFrom(long int v2){
+    qDebug() << "Vertex: removeEdgeFrom() vertex " << m_name
              << " has " <<  inEdges() << "  in-edges. RemovingEdgeFrom " << v2 ;
 
     if (inEdges()>0) {
@@ -384,13 +384,13 @@ long int Vertex::outEdges() {
 }
 
 /**
- * @brief Vertex::returnEnabledOutLinks
+ * @brief Vertex::returnEnabledOutEdges
  * Returns a qhash of all enabled outEdges in the active relation
  * @return  QHash<int,float>*
  */
-QHash<int,float>* Vertex::returnEnabledOutLinks(){
-    qDebug() << " Vertex::returnEnabledOutLinks() vertex " << this->name();
-    QHash<int,float> *enabledOutLinks = new QHash<int,float>;
+QHash<int,float>* Vertex::returnEnabledOutEdges(){
+    qDebug() << " Vertex::returnEnabledOutEdges() vertex " << this->name();
+    QHash<int,float> *enabledOutEdges = new QHash<int,float>;
     float m_weight=0;
     int relation = 0;
     bool edgeStatus=false;
@@ -401,16 +401,16 @@ QHash<int,float>* Vertex::returnEnabledOutLinks(){
             edgeStatus=it1.value().second.second;
             if ( edgeStatus == true) {
                 m_weight=it1.value().second.first;
-                enabledOutLinks->insert(it1.key(), m_weight);
-                qDebug() <<  " Vertex::returnEnabledOutLinks() count:"
-                             << enabledOutLinks->count();
+                enabledOutEdges->insert(it1.key(), m_weight);
+                qDebug() <<  " Vertex::returnEnabledOutEdges() count:"
+                             << enabledOutEdges->count();
             }
         }
         ++it1;
     }
-    qDebug() <<  " Vertex::returnEnabledOutLinks() total count:"
-                 << enabledOutLinks->count();
-    return enabledOutLinks;
+    qDebug() <<  " Vertex::returnEnabledOutEdges() total count:"
+                 << enabledOutEdges->count();
+    return enabledOutEdges;
 }
 
 
@@ -514,7 +514,7 @@ long int Vertex::localDegree(){
             edgeStatus=it1.value().second.second;
             if ( edgeStatus == true) {
                 v2=it1.key();
-                if (this->isLinkedFrom (v2) ) m_localDegree--;
+                if (this->hasEdgeFrom (v2) ) m_localDegree--;
             }
         }
         ++it1;
@@ -526,14 +526,14 @@ long int Vertex::localDegree(){
 
 
 /**
- * @brief Vertex::isLinkedTo
+ * @brief Vertex::hasEdgeTo
  * Checks if this vertex is outlinked to v2 and returns the weight of the link
  * only if the outLink is enabled.
  * @param v2
  * @return
  */
-float Vertex::isLinkedTo(long int v2){
-    //qDebug()<< "Vertex::isLinkedTo()" ;
+float Vertex::hasEdgeTo(long int v2){
+    //qDebug()<< "Vertex::hasEdgeTo()" ;
     float m_weight=0;
     bool edgeStatus=false;
     H_edges::iterator it1=m_outEdges.find(v2);
@@ -542,14 +542,14 @@ float Vertex::isLinkedTo(long int v2){
             edgeStatus=it1.value().second.second;
             if ( edgeStatus == true) {
                 m_weight=it1.value().second.first;
-//                qDebug()<< "***** Vertex::isLinkedTo() - relation "
+//                qDebug()<< "***** Vertex::hasEdgeTo() - relation "
 //                           << it1.value().first
 //                        <<" link "  <<  this->name()
 //                        << " -> " << v2 << "exists, weight "<< m_weight;
                 return m_weight;
             }
             else
-                qDebug()<< "Vertex::isLinkedTo() - relation "
+                qDebug()<< "Vertex::hasEdgeTo() - relation "
                            << it1.value().first
                         <<" link "  <<  this->name()
                         << " -> " << v2 << "exists, weight "<< m_weight
@@ -558,20 +558,20 @@ float Vertex::isLinkedTo(long int v2){
         }
         ++it1;
     }
-   // qDebug()<< "Vertex::isLinkedTo() - INEXISTENT LINK IN RELATION " << m_curRelation;
+   // qDebug()<< "Vertex::hasEdgeTo() - INEXISTENT LINK IN RELATION " << m_curRelation;
 	return 0;
 }
 
 
 /**
- * @brief Vertex::isLinkedFrom
+ * @brief Vertex::hasEdgeFrom
  * Checks if this vertex is inLinked from v2 and returns the weight of the link
  * only if the inLink is enabled.
  * @param v2
  * @return
  */
-float Vertex::isLinkedFrom(long int v2){
-    qDebug()<< "Vertex::isLinkedFrom()" ;
+float Vertex::hasEdgeFrom(long int v2){
+    qDebug()<< "Vertex::hasEdgeFrom()" ;
     float m_weight=0;
     bool edgeStatus=false;
     H_edges::iterator it1=m_inEdges.find(v2);
@@ -580,12 +580,12 @@ float Vertex::isLinkedFrom(long int v2){
             edgeStatus=it1.value().second.second;
             if ( edgeStatus == true) {
                 m_weight=it1.value().second.first;
-                qDebug()<< "Vertex::isLinkedFrom() - a ("  <<  this->name()
+                qDebug()<< "Vertex::hasEdgeFrom() - a ("  <<  this->name()
                         << ", " << v2 << ") = "<< m_weight;
                 return m_weight;
             }
             else
-                qDebug()<< "Vertex::isLinkedFrom() - a ("  <<  this->name()
+                qDebug()<< "Vertex::hasEdgeFrom() - a ("  <<  this->name()
                         << ", " << v2 << ") = "<< m_weight
                         << " but edgeStatus " << edgeStatus;
                 return 0;
@@ -593,7 +593,7 @@ float Vertex::isLinkedFrom(long int v2){
         }
         ++it1;
     }
-    qDebug()<< "Vertex::isLinkedFrom() - a ("  <<  this->name()  << ", " << v2 << ") = 0 ";
+    qDebug()<< "Vertex::hasEdgeFrom() - a ("  <<  this->name()  << ", " << v2 << ") = 0 ";
     return 0;
 }
 
