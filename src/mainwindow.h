@@ -43,7 +43,6 @@
 #include "webcrawlerdialog.h"
 #include "nodeeditdialog.h"
 #include "datasetselectdialog.h"
-#include "randerdosrenyidialog.h"
 
 static const QString VERSION="1.8-dev";
 
@@ -71,6 +70,10 @@ class QGroupBox;
 class QTabWidget;
 class QSpinBox;
 class PreviewForm;
+
+class RandErdosRenyiDialog;
+class RandSmallWorldDialog;
+
 
 class MainWindow : public QMainWindow
 {
@@ -161,6 +164,11 @@ public slots:
     void slotCreateGaussianRandomNetwork();
     void slotCreateRandomNetRingLattice();
     void slotCreateSmallWorldRandomNetwork();
+    void createSmallWorldNetwork (const int &nodes,
+                                   const int &degree,
+                                   const float &beta,
+                                   const QString &mode,
+                                   const bool &diag);
     void slotShowWebCrawlerDialog();
     void slotWebCrawl(QString, int, int, bool, bool);
 
@@ -331,6 +339,7 @@ private:
     NodeEditDialog *m_nodeEditDialog;
 
     RandErdosRenyiDialog *m_randErdosRenyiDialog;
+    RandSmallWorldDialog *m_randSmallWorldDialog;
 
     PreviewForm *previewForm;
     QList<QTextCodec *> codecs;

@@ -49,6 +49,8 @@
 #include "guide.h"
 #include "vertex.h"
 #include "previewform.h"
+#include "randerdosrenyidialog.h"
+#include "randsmallworlddialog.h"
 
 
 
@@ -4348,60 +4350,48 @@ void MainWindow::slotCreateGaussianRandomNetwork(){
 
 
 
-void MainWindow::slotCreateSmallWorldRandomNetwork(){
-    bool ok=false;
-    statusMessage( "Creating a small world network...");
-    int newNodes=( QInputDialog::getInt(
-                       this, "Create small world",
-                       tr("This will create a small world network, \n")+
-                       tr("that is an undirected graph with N nodes and N*d/2 edges,\n")+
-                       tr("where d is the mean edge degree.\n")+
-                       tr("Please enter the number N of nodes you want:"),
-                       100, 1, maxNodes, 1, &ok ) ) ;
-    if (!ok) {
-        statusMessage( "You did not enter an integer. Aborting.");
-        return;
-    }
-    int degree = QInputDialog::getInt(
-                this,"Create small world...",
-                tr("Now, enter an even number d. \n")+
-                tr("This is the mean edge degree each new node will have:"),
-                6, 2, newNodes-1, 2, &ok);
-    if ( (degree% 2)==1 ) {
-        QMessageBox::critical(
-                    this,
-                    "Error",
-                    tr(" Sorry. I cannot create such a network. Degree must be even number"),
-                    "OK",0);
-        return;
-    }
-    double beta = QInputDialog::getDouble(
-                this,"Create small world...",
-                tr("Now, enter a parameter beta. \n")+
-                tr("This is the edge rewiring probability:"),
-                0.3, 0.00, 1.00, 2, &ok);
+void MainWindow::slotCreateSmallWorldRandomNetwork()
+{
+    qDebug() << "MW;:slotCreateSmallWorldRandomNetwork()";
+    m_randSmallWorldDialog = new RandSmallWorldDialog(this);
 
+    connect( m_randSmallWorldDialog, &RandSmallWorldDialog::userChoices,
+             this, &MainWindow::createSmallWorldNetwork);
+
+
+    m_randSmallWorldDialog->exec();
+
+}
+
+void MainWindow::createSmallWorldNetwork (const int &nodes,
+                                            const int &degree,
+                                            const float &beta,
+                                            const QString &mode,
+                                            const bool &diag)
+{
+    qDebug() << "MW;:createSmallWorldNetwork()";
     statusMessage( tr("Erasing any existing network. "));
     initNet();
-    statusMessage( tr("Creating small world. Please wait..."));
+    statusMessage( tr("Creating small world network. Please wait..."));
+
     double x0=scene->width()/2.0;
     double y0=scene->height()/2.0;
     double radius=(graphicsWidget->height()/2.0)-50;          //pixels
 
-    if (showProgressBarAct->isChecked() && newNodes > 300){
+    if (showProgressBarAct->isChecked() && nodes > 300){
         progressDialog= new QProgressDialog(
                     tr("Creating random network. Please wait \n (or disable me from Options > View > ProgressBar, next time )."),
-                    "Cancel", 0, (int) (newNodes+newNodes), this);
+                    "Cancel", 0, (int) (2* nodes), this);
         progressDialog -> setWindowModality(Qt::WindowModal);
         connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
         progressDialog->setMinimumDuration(0);
     }
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-    activeGraph.createRandomNetSmallWorld(newNodes, degree, beta, x0, y0, radius);
+    activeGraph.createRandomNetSmallWorld(nodes, degree, beta, x0, y0, radius);
     activeGraph.symmetrize();
     QApplication::restoreOverrideCursor();
 
-    if (showProgressBarAct->isChecked() && newNodes > 300 )
+    if (showProgressBarAct->isChecked() && nodes > 300 )
         progressDialog->deleteLater();
 
     fileLoaded=false;
