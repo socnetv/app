@@ -422,7 +422,7 @@ QHash<int,float>* Vertex::returnEnabledOutEdges(){
  * @return  QHash<int,float>*
  */
 QHash<int,float>* Vertex::returnReciprocalEdges(){
-    qDebug() << " Vertex::returnReciprocalEdges() vertex " << this->name();
+//    qDebug() << "Vertex::returnReciprocalEdges() - vertex " << this->name();
     QHash<int,float> *reciprocalEdges = new QHash<int,float>;
     float m_weight=0;
     int relation = 0;
@@ -436,19 +436,15 @@ QHash<int,float>* Vertex::returnReciprocalEdges(){
                 m_weight=it1.value().second.first;
                 if (this->hasEdgeFrom (it1.key()) )
                     reciprocalEdges->insertMulti(it1.key(), m_weight);
-                qDebug() <<  " Vertex::returnReciprocalEdges() count:"
-                             << reciprocalEdges->count();
             }
         }
         ++it1;
     }
 
+    qDebug() << "Vertex::returnReciprocalEdges() - vertex " << this->name()
+             <<  " = "
+              << reciprocalEdges->count();
 
-    qDebug() <<  " Vertex::returnReciprocalEdges() total "
-                 << reciprocalEdges->count();
-
-    qDebug() <<  " Vertex::returnReciprocalEdges() localDegree "
-                 << this->localDegree();
     return reciprocalEdges;
 }
 

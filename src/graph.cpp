@@ -5800,7 +5800,7 @@ float Graph::numberOfTriples(int v1){
 /**
     Returns the local clustering coefficient (CLUCOF) of a vertex v1
     CLUCOF in a graph quantifies how close the vertex and its neighbors are
-    to being a clique.
+    to being a clique, a connected subgraph.
     This is used to determine whether a graph is a small-world network.
 */
 float Graph:: localClusteringCoefficient(const long int &v1){
@@ -5824,7 +5824,7 @@ float Graph:: localClusteringCoefficient(const long int &v1){
     }
 
     float clucof=0, denom = 0 , nom = 0;
-    int v2 = 0 , v3 = 0, k = 0;
+    int u1 = 0 , u2 = 0, k = 0;
 
     H_StrToBool neighborhoodEdges;
     neighborhoodEdges.clear();
@@ -5836,55 +5836,62 @@ float Graph:: localClusteringCoefficient(const long int &v1){
     qDebug () << "Graph::localClusteringCoefficient() - "
               << " Checking edges adjacent to " << v1;
 
-    QHash<int,float> *allEdges = new QHash<int,float>;
+    QHash<int,float> *reciprocalEdges = new QHash<int,float>;
+    reciprocalEdges = m_graph [ index[v1] ] -> returnReciprocalEdges();
+
     QHash<int,float>::const_iterator it1;
     QHash<int,float>::const_iterator it2;
-    allEdges = m_graph [ index[v1] ] -> returnReciprocalEdges();
-    it1=allEdges->cbegin();
 
-    while ( it1 != allEdges->cend() )
+    it1=reciprocalEdges->cbegin();
+
+    while ( it1 != reciprocalEdges->cend() )
     {
-        v2 = it1.key();
+        u1 = it1.key();
 
         qDebug() << "Graph::localClusteringCoefficient() - "
                  << " edge with neighbor "
-                 << v2
-                 << " [" << index[v2] << "] "
+                 << u1
+                 << " [" << index[u1] << "] "
                  << " weight " << it1.value();
 
-        if (v1== v2) {
+        if ( v1 == u1 ) {
             qDebug() << "Graph::localClusteringCoefficient() - "
-                        << " v1 == v2 - CONTINUE";
+                     << " v1 == u1 - CONTINUE";
             ++it1;
             continue;
         }
-        it2=allEdges->cbegin();
-        while ( it2 != allEdges->cend() ){
 
-            v3 = it2.key();
+        it2=reciprocalEdges->cbegin();
+
+        while ( it2 != reciprocalEdges->cend() ){
+
+            u2 = it2.key();
 
             qDebug() << "Graph::localClusteringCoefficient() - "
                      << " cross-checking edge with neighbor "
-                     << v3
-                     << " [" << index[v3] << "] "
+                     << u2
+                     << " [" << index[u2] << "] "
                      << " weight " << it2.value();
 
-            if (v2== v3) {
+            if ( u1 == u2 ) {
                 qDebug() << "Graph::localClusteringCoefficient() - "
-                         << " v2 == v3 - CONTINUE";
+                         << " u1 == u2 - CONTINUE";
                 ++it2;
                 continue;
             }
 
-            if (  hasArc( v2, v3 ) != 0   )
+            if ( hasArc( u1, u2 ) != 0 )
             {
                 qDebug() << "Graph::localClusteringCoefficient() - "
                          << " connected neighbors: "
-                         << v2 << " -> " << v3;
+                         << u1 << " -> " << u2;
 
-                QString edge = QString::number(v2) + "->" + QString::number(v3);
+                QString edge = QString::number(u1) + "->" + QString::number(u2);
+                QString revedge = QString::number(u2) + "->" + QString::number(u1);
 
-                if ( ! neighborhoodEdges.contains(edge) )
+                if ( ! neighborhoodEdges.contains(edge) &&
+                     ( graphSymmetric && ! neighborhoodEdges.contains(revedge) )
+                     )
                 {
                     neighborhoodEdges.insert(edge, true);
                     qDebug() << "Graph::localClusteringCoefficient() - "
@@ -5896,16 +5903,16 @@ float Graph:: localClusteringCoefficient(const long int &v1){
                              << " edge discovered previously... ";
                 }
             }
-            if (! graphSymmetric )
+            if ( ! graphSymmetric )
             {
-                if (  hasArc( v3, v2 ) != 0   )
+                if (  hasArc( u2, u1 ) != 0   )
                 {
                     qDebug() << "Graph::localClusteringCoefficient() - "
                              << " graph not symmetric  "
                              << " connected neighbors: "
-                             << v3 << " -> " << v2;
+                             << u2 << " -> " << u1;
 
-                    QString edge = QString::number(v3) + "->" + QString::number(v2);
+                    QString edge = QString::number(u2) + "->" + QString::number(u1);
 
                     if ( ! neighborhoodEdges.contains(edge) )
                     {
@@ -5926,7 +5933,6 @@ float Graph:: localClusteringCoefficient(const long int &v1){
         ++it1;
     }
 
-
     nom=neighborhoodEdges.count();
 
     qDebug() << "Graph::localClusteringCoefficient("<< v1 << ") - "
@@ -5936,7 +5942,7 @@ float Graph:: localClusteringCoefficient(const long int &v1){
         return 0;	//stop if we're at a leaf.
 
     if ( graphSymmetric ){
-        k=allEdges->count();
+        k=reciprocalEdges->count();
         denom =	k * (k -1.0) / 2.0;
 
         qDebug() << "Graph::localClusteringCoefficient("<< v1 << ") - "
@@ -5947,7 +5953,7 @@ float Graph:: localClusteringCoefficient(const long int &v1){
     else {
         // fixme : normally we should have a special method
         // to compute the number of vertices k_i = |N_i|, in the neighborhood N_i
-        k=allEdges->count();
+        k=reciprocalEdges->count();
         denom = k * (k -1.0);
 
         qDebug() << "Graph::localClusteringCoefficient("<< v1 << ") - "
@@ -5960,7 +5966,7 @@ float Graph:: localClusteringCoefficient(const long int &v1){
     qDebug() << "=== Graph::localClusteringCoefficient("<< v1 << ") - "
              << " CLUCOF = "<< clucof;
 
-    m_graph[ index [v1] ] ->setCLC(clucof);
+    m_graph[ index [v1] ] -> setCLC(clucof);
 
     neighborhoodEdges.clear();
     return clucof;
