@@ -1052,9 +1052,9 @@ float Graph::hasArc (const long int &v1, const long int &v2) {
 /**	Checks if there is a edge between v1 and v2 (both arcs exist)
 */
 bool Graph::hasEdge (const int &v1, const long &v2) {
-    //qDebug() << "Graph::hasEdge() " << v1 << " <-> " << v2 << " ? " ;
-    return ( m_graph[ index[v1] ]->hasEdgeTo(v2)
-            && m_graph[ index[v2] ]->hasEdgeTo(v1) ) ? true: false;
+    qDebug() << "Graph::hasEdge() " << v1 << " <-> " << v2 << " ? " ;
+    return ( ( m_graph[ index[v1] ]->hasEdgeTo(v2) != 0 )
+            && ( m_graph[ index[v2] ]->hasEdgeTo(v1) != 0) ) ? true: false;
 }
 
 
@@ -1364,44 +1364,50 @@ void Graph::clear() {
  * @return bool
  */
 bool Graph::isSymmetric(){
-    qDebug("Graph: isSymmetric ");
+    qDebug() << "Graph::isSymmetric() ";
     if (!graphModified){
         return symmetricAdjacencyMatrix;
     }
     symmetricAdjacencyMatrix=true;
-    int y=0, target=0, source=0;
+    int y=0, v2=0, v1=0;
+
     QHash<int,float> *enabledOutEdges = new QHash<int,float>;
 
-    QHash<int,float>::const_iterator it1;
-    QList<Vertex*>::const_iterator it;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        source = (*it)->name();
-        if ( ! (*it)->isEnabled() )
+    QHash<int,float>::const_iterator hit;
+    QList<Vertex*>::const_iterator lit;
+
+
+    for ( lit = m_graph.cbegin(); lit != m_graph.cend(); ++lit)
+    {
+        v1 = (*lit) -> name();
+
+        if ( ! (*lit)->isEnabled() )
             continue;
-        qDebug() << "Graph::isSymmetric(): GRAPH Modified! " <<
-                    " Iterate over all edges of " << source ;
-        enabledOutEdges=(*it)->returnEnabledOutEdges();
-        it1=enabledOutEdges->cbegin();
-        while ( it1!=enabledOutEdges->cend() ){
-            target = it1.key();
-            y=index[ target ];
-            qDebug() << "Graph: isSymmetric: check if " << source
-                     << " is inLinked from " <<  target  ;
-            if ( ! m_graph[y]->hasEdgeTo( source)) {
-                qDebug() << "Graph: isSymmetric: u = " << source
-                         << " IS NOT inLinked from y = " <<  target  ;
+        qDebug() << "Graph::isSymmetric() - Graph modified! " <<
+                    " Iterate over all edges of " << v1 ;
+
+        enabledOutEdges=(*lit)->returnEnabledOutEdges();
+
+        hit=enabledOutEdges->cbegin();
+
+        while ( hit!=enabledOutEdges->cend() ){
+            v2 = hit.key();
+            y=index[ v2 ];
+            float weight = hit.value();
+            if (  m_graph[y]->hasEdgeTo( v1) != weight) {
                 symmetricAdjacencyMatrix=false;
-                qDebug("Graph: isSymmetric()  NO");
+//                qDebug() <<"Graph::isSymmetric() - "
+//                         << " graph not symmetric because "
+//                         << v1 << " -> " << v2 << " weight " << weight
+//                         << " differs from " << v2 << " -> " << v1 ;
+
                 break;
             }
-            else {
-                //	qDebug("Graph: isSymmetric():  u = %i IS inLinked from y = %i",it1->first, (*it)->name()  );
-            }
-            ++it1;
+            ++hit;
         }
     }
     delete enabledOutEdges;
-    qDebug() << "Graph: isSymmetric()" << symmetricAdjacencyMatrix;
+    qDebug() << "Graph: isSymmetric() -"  << symmetricAdjacencyMatrix;
     return symmetricAdjacencyMatrix;
 }
 
@@ -1413,29 +1419,29 @@ bool Graph::isSymmetric(){
 void Graph::symmetrize(){
     qDebug("Graph: symmetrize");
     QList<Vertex*>::const_iterator it;
-    int y=0, target=0, source=0, weight;
+    int y=0, v2=0, v1=0, weight;
     QHash<int,float> *enabledOutEdges = new QHash<int,float>;
     QHash<int,float>::const_iterator it1;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        source = (*it)->name();
-        qDebug() << "Graph:symmetrize() - iterate over edges of source " << source;
+        v1 = (*it)->name();
+        qDebug() << "Graph:symmetrize() - iterate over edges of v1 " << v1;
         enabledOutEdges=(*it)->returnEnabledOutEdges();
         it1=enabledOutEdges->cbegin();
         while ( it1!=enabledOutEdges->cend() ){
-            target = it1.key();
+            v2 = it1.key();
             weight = it1.value();
-            y=index[ target ];
+            y=index[ v2 ];
             qDebug() << "Graph:symmetrize() - "
-                     << " source " << source
-                     << " outLinked to " << target << " weight " << weight;
-            if ( ! m_graph[y]->hasEdgeTo( source )) {
-                qDebug() << "Graph:symmetrize(): s = " << source
-                         << " is NOT inLinked from y = " <<  target  ;
-                createEdge( target, source, weight, initEdgeColor, false, true, false);
+                     << " v1 " << v1
+                     << " outLinked to " << v2 << " weight " << weight;
+            if (  m_graph[y]->hasEdgeTo( v1 ) == 0 ) {
+                qDebug() << "Graph:symmetrize(): s = " << v1
+                         << " is NOT inLinked from y = " <<  v2  ;
+                createEdge( v2, v1, weight, initEdgeColor, false, true, false);
             }
             else
-                qDebug() << "Graph: symmetrize(): source = " << source
-                         << " is already inLinked from target = " << target ;
+                qDebug() << "Graph: symmetrize(): v1 = " << v1
+                         << " is already inLinked from v2 = " << v2 ;
             ++it1;
         }
     }
@@ -4091,29 +4097,28 @@ void Graph::writeClusteringCoefficient(
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    emit statusMessage ( (tr("Calculating shortest paths")) );
-    float clucof= clusteringCoefficient();
-    Q_UNUSED(clucof);
+    emit statusMessage ( (tr("Calculating local and network clustering...")) );
+
+    averageCLC= clusteringCoefficient();
+
     emit statusMessage ( QString(tr("Writing clustering coefficients to file: "))
                          + fileName );
+
     outText.setRealNumberPrecision(m_precision);
-    outText << tr("CLUSTERING COEFFICIENT (CLC)\n");
-    outText << tr("CLC  range: 0 < C < 1") <<"\n";
-    outText << "Node"<<"\tCLC\n";
+
+    outText << tr("CLUSTERING COEFFICIENT (CLC) REPORT\n");
+
+    outText << tr("local CLC  range: 0 < C < 1") <<"\n";
+    outText << "Node"<<"\tlocal CLC\n";
 
 
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         outText << (*it)->name()<<"\t"<<(*it)->CLC() <<endl;
     }
-    if ( isSymmetric()) {
-        outText << "\nAverage Clustering Coefficient = "<<  averageCLC<<"\n" ;
-        //	outText << "DC Variance = "<<  varianceDC<<"\n\n";
-    }
-    else{
-        outText << "\nAverage Clustering Coefficient= "<<  averageCLC<<"\n" ;
-        //		outText << "DC Variance = "<<  varianceDC<<"\n\n";
-    }
+
+    outText << "\nAverage local Clustering Coefficient = "<<  averageCLC<<"\n" ;
+
     if (  minCLC ==  maxCLC )
         outText << "\nAll nodes have the same clustering coefficient value.\n";
     else  {
@@ -4123,7 +4128,7 @@ void Graph::writeClusteringCoefficient(
                 << " has the minimum Clustering Coefficient: " <<  minCLC <<"\n";
     }
 
-    outText << "\nGRAPH CLUSTERING COEFFICIENT (GCLC)\n\n";
+    outText << "\nNETWORK AVERAGE CLUSTERING COEFFICIENT (GCLC)\n\n";
     outText << "GCLC = " <<  averageCLC<<"\n\n";
     outText << tr("Range: 0 < GCLC < 1\n");
     outText << tr("GCLC = 0, when there are no cliques (i.e. acyclic tree).\n");
@@ -5572,8 +5577,8 @@ float Graph:: countCliquesWith(int source, int size){
     QList<int> dyad, triad, quad;
 
     qDebug() << "Graph::countCliquesWith() Source vertex " << source
-             << "[" << index[source] << "] has inDegree " << inboundEdges(source)
-             << " and outDegree "<< outboundEdges(source);
+             << "[" << index[source] << "] has inEdges " << inboundEdges(source)
+             << " and outEdges "<< outboundEdges(source);
 
 
     qDebug () << "Graph::countCliquesWith() - Checking inEdges to " << source;
@@ -5758,8 +5763,12 @@ float Graph:: countCliquesWith(int source, int size){
 float Graph::countCliquesOfSize(int size){
     qDebug("Graph::countCliquesOfSize()");
     float cliques=0;
-    foreach (Vertex *v1, m_graph)  {
-        cliques += countCliquesWith(v1->name(), size);
+
+    QList<Vertex*>::const_iterator v1;
+
+    for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1)
+    {
+        cliques += countCliquesWith( (*v1) -> name(), size );
     }
     cliques = cliques / size;
 
@@ -5789,83 +5798,201 @@ float Graph::numberOfTriples(int v1){
 
 
 /**
-    Returns the clustering coefficient (CLUCOF) of a vertex v1
+    Returns the local clustering coefficient (CLUCOF) of a vertex v1
     CLUCOF in a graph quantifies how close the vertex and its neighbors are
     to being a clique.
     This is used to determine whether a graph is a small-world network.
 */
-float Graph:: clusteringCoefficient(const long int &v1){
-    float clucof=0;
+float Graph:: localClusteringCoefficient(const long int &v1){
     if ( !graphModified && (m_graph[ index [v1] ] -> hasCLC() ) )  {
         float clucof=m_graph[ index [v1] ] ->CLC();
-        qDebug() << "Graph::clusteringCoefficient("<< v1 << ") - "
+        qDebug() << "Graph::localClusteringCoefficient("<< v1 << ") - "
                  << " Not modified. Returning previous clucof = " << clucof;
         return clucof;
     }
-    qDebug() << "Graph::clusteringCoefficient("<< v1 << ") - "
-            << " Graph changed or clucof not calculated."
-           << " Calling countCliquesWith(" << v1 << ")";
-    float totalCliques=countCliquesWith(v1, 3);
-    qDebug() << "Graph::clusteringCoefficient("<< v1 << ") - "
-            << " countCliquesWith(" << v1 << ") = " << totalCliques;
 
-    if (totalCliques==0) return 0;	//stop if we're at a leaf.
+    qDebug() << "Graph::localClusteringCoefficient("<< v1 << ") - "
+            << " Graph changed or clucof not calculated.";
 
-    float denom=0, totalDegree=0;
+    bool graphSymmetric = false;
 
-    if (isSymmetric()){
-        totalCliques = totalCliques;  // / 2.0;
-        qDebug() << "Graph::clusteringCoefficient("<< v1 << ") - "
-                    << " SYMMETRIC network. Calculating number of triples";
-        totalDegree=outboundEdges(v1);
-        denom =	totalDegree * (totalDegree -1.0) / 2.0;
-        qDebug() <<  "Graph::clusteringCoefficient("<< v1 << ") - "
-                  << " Number of triples is " << denom
-                     << " Dividing number of cliques with it";
+    if ( isSymmetric() ) {
+        graphSymmetric = true;
+    }
+    else {
+        graphSymmetric = false;
+    }
+
+    float clucof=0, denom = 0 , nom = 0;
+    int v2 = 0 , v3 = 0, k = 0;
+
+    H_StrToBool neighborhoodEdges;
+    neighborhoodEdges.clear();
+
+    qDebug() << "Graph::localClusteringCoefficient() - vertex " << v1
+             << "[" << index[v1] << "] ";
+
+
+    qDebug () << "Graph::localClusteringCoefficient() - "
+              << " Checking edges adjacent to " << v1;
+
+    QHash<int,float> *allEdges = new QHash<int,float>;
+    QHash<int,float>::const_iterator it1;
+    QHash<int,float>::const_iterator it2;
+    allEdges = m_graph [ index[v1] ] -> returnReciprocalEdges();
+    it1=allEdges->cbegin();
+
+    while ( it1 != allEdges->cend() )
+    {
+        v2 = it1.key();
+
+        qDebug() << "Graph::localClusteringCoefficient() - "
+                 << " edge with neighbor "
+                 << v2
+                 << " [" << index[v2] << "] "
+                 << " weight " << it1.value();
+
+        if (v1== v2) {
+            qDebug() << "Graph::localClusteringCoefficient() - "
+                        << " v1 == v2 - CONTINUE";
+            ++it1;
+            continue;
+        }
+        it2=allEdges->cbegin();
+        while ( it2 != allEdges->cend() ){
+
+            v3 = it2.key();
+
+            qDebug() << "Graph::localClusteringCoefficient() - "
+                     << " cross-checking edge with neighbor "
+                     << v3
+                     << " [" << index[v3] << "] "
+                     << " weight " << it2.value();
+
+            if (v2== v3) {
+                qDebug() << "Graph::localClusteringCoefficient() - "
+                         << " v2 == v3 - CONTINUE";
+                ++it2;
+                continue;
+            }
+
+            if (  hasArc( v2, v3 ) != 0   )
+            {
+                qDebug() << "Graph::localClusteringCoefficient() - "
+                         << " connected neighbors: "
+                         << v2 << " -> " << v3;
+
+                QString edge = QString::number(v2) + "->" + QString::number(v3);
+
+                if ( ! neighborhoodEdges.contains(edge) )
+                {
+                    neighborhoodEdges.insert(edge, true);
+                    qDebug() << "Graph::localClusteringCoefficient() - "
+                             << " adding edge to neighborhoodEdges ";
+
+                }
+                else {
+                    qDebug() << "Graph::localClusteringCoefficient() - "
+                             << " edge discovered previously... ";
+                }
+            }
+            if (! graphSymmetric )
+            {
+                if (  hasArc( v3, v2 ) != 0   )
+                {
+                    qDebug() << "Graph::localClusteringCoefficient() - "
+                             << " graph not symmetric  "
+                             << " connected neighbors: "
+                             << v3 << " -> " << v2;
+
+                    QString edge = QString::number(v3) + "->" + QString::number(v2);
+
+                    if ( ! neighborhoodEdges.contains(edge) )
+                    {
+                        neighborhoodEdges.insert(edge, true);
+                        qDebug() << "Graph::localClusteringCoefficient() - "
+                                 << " adding edge to neighborhoodEdges ";
+
+                    }
+                    else {
+                        qDebug() << "Graph::localClusteringCoefficient() - "
+                                 << " edge discovered previously... ";
+                    }
+                }
+
+            }
+            ++it2;
+        }
+        ++it1;
+    }
+
+
+    nom=neighborhoodEdges.count();
+
+    qDebug() << "Graph::localClusteringCoefficient("<< v1 << ") - "
+            << " actual edges in neighborhood " <<  nom;
+
+    if ( nom == 0)
+        return 0;	//stop if we're at a leaf.
+
+    if ( graphSymmetric ){
+        k=allEdges->count();
+        denom =	k * (k -1.0) / 2.0;
+
+        qDebug() << "Graph::localClusteringCoefficient("<< v1 << ") - "
+                    << " symmetric graph. "
+                    << " max edges in neighborhood" << denom ;
 
     }
     else {
-        qDebug() << "Graph::clusteringCoefficient("<< v1 << ") - "
-                    << " NOT SYMMETRIC network. Calculating number of triples";
-        totalDegree=outboundEdges(v1) + inboundEdges(v1);  //FIXME
-        denom = totalDegree * (totalDegree -1.0);
-        qDebug() <<  "Graph::clusteringCoefficient("<< v1 << ") - "
-                  << " Number of triples is " << denom
-                     << " Dividing number of cliques with it";
+        // fixme : normally we should have a special method
+        // to compute the number of vertices k_i = |N_i|, in the neighborhood N_i
+        k=allEdges->count();
+        denom = k * (k -1.0);
+
+        qDebug() << "Graph::localClusteringCoefficient("<< v1 << ") - "
+                    << " not symmetric graph. "
+                    << " max edges in neighborhood" << denom ;
     }
 
-    clucof = totalCliques / denom;
-    qDebug() << "=== Graph::clusteringCoefficient() - vertex " <<  v1
-             << " ["<< index[v1] << "]" << " has CLUCOF = "<< clucof;
+    clucof = nom / denom;
+
+    qDebug() << "=== Graph::localClusteringCoefficient("<< v1 << ") - "
+             << " CLUCOF = "<< clucof;
+
     m_graph[ index [v1] ] ->setCLC(clucof);
 
+    neighborhoodEdges.clear();
     return clucof;
 }
 
 
 /**
-    Calculates and returns the Clustering Coefficient for the whole graph
+    Calculates local clustering coefficients
+    and returns the network average Clustering Coefficient
 */
 float Graph::clusteringCoefficient (){
-    qDebug("=== Graph::graphClusteringCoefficient()  ");
+    qDebug("=== Graph::clusteringCoefficient()  ");
     averageCLC=0;
     maxCLC=0; minCLC=1;
     float temp=0;
-    foreach (Vertex *v1, m_graph)  {
-        temp = clusteringCoefficient(v1->name());
+    QList<Vertex*>::const_iterator vertex;
+    for ( vertex = m_graph.cbegin(); vertex != m_graph.cend(); ++vertex)
+    {
+        temp = localClusteringCoefficient( (*vertex)->name() );
         if (temp > maxCLC)  {
             maxCLC = temp;
-            maxNodeCLC = v1->name();
+            maxNodeCLC = (*vertex)->name();
         }
         if ( temp < minCLC ) {
-            minNodeCLC = v1->name();
+            minNodeCLC = (*vertex)->name();
             minCLC= temp;
         }
         averageCLC += temp;
     }
 
     averageCLC = averageCLC / vertices();
-    qDebug("=== Graph::graphClusteringCoefficient()  is equal to %f", averageCLC);
+    qDebug() << "Graph::clusteringCoefficient() network average " << averageCLC;
 
     return averageCLC;
 }
@@ -5894,13 +6021,13 @@ bool Graph::triadCensus(){
         triadTypeFreqs.append(0);
         qDebug() << " initializing triadTypeFreqs[" << i << "] = "<< triadTypeFreqs[i];
     }
-    QList<Vertex*>::iterator v1;
-    QList<Vertex*>::iterator v2;
-    QList<Vertex*>::iterator v3;
+    QList<Vertex*>::const_iterator v1;
+    QList<Vertex*>::const_iterator v2;
+    QList<Vertex*>::const_iterator v3;
 
-    for (v1=m_graph.begin(); v1!=m_graph.end(); v1++) {
+    for (v1=m_graph.cbegin(); v1!=m_graph.cend(); v1++) {
 
-        for (v2=(v1+1); v2!=m_graph.end(); v2++) {
+        for (v2=(v1+1); v2!=m_graph.cend(); v2++) {
 
             ver1=(*v1)->name();
             ver2=(*v2)->name();
@@ -5918,7 +6045,7 @@ bool Graph::triadCensus(){
             else
                 temp_nul++;
 
-            for (v3=(v2+1); v3!=m_graph.end(); v3++){
+            for (v3=(v2+1); v3!=m_graph.cend(); v3++){
 
                 mut = temp_mut ;
                 asy = temp_asy ;
@@ -5956,9 +6083,9 @@ bool Graph::triadCensus(){
                 if ( mut==3 && asy==0 && nul==0 ){
                     counter_021++;
                 }
-            } // end 3rd foreach
-        }// end 2rd foreach
-    }// end 1rd foreach
+            } // end 3rd for
+        }// end 2rd for
+    }// end 1rd for
     qDebug() << " ****** 003 COUNTER: "<< counter_021;
 
     calculatedTriad=true;
@@ -6106,7 +6233,9 @@ void Graph::examine_MAN_label(int mut, int asy, int nul,
             break;
         case 2:
             isDown=false; isUp=false; isCycle=true;
-            qDebug() << "triad vertices: ( "<< vert1->name() << ", "<< vert2->name()<< ", "<< vert3->name()<< " ) = ("	<<mut<<","<< asy<<","<<nul<<")";
+            qDebug() << "triad vertices: ( "<< vert1->name() << ", "
+                     << vert2->name()<< ", "<< vert3->name()<< " ) = ("
+                     <<mut<<","<< asy<<","<<nul<<")";
 
             foreach (Vertex *source, m_triad)  {
                 //qDebug() << "  Vertex " << source->name() ;
@@ -9843,7 +9972,7 @@ void Graph::writeAdjacencyMatrix (const QString fn, const char* netName) {
         if ( ! (*it)->isEnabled() ) continue;
         for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
             if ( ! (*it1)->isEnabled() ) continue;
-            if ( (weight =  this->hasArc ( (*it)->name(), (*it1)->name() )  )!=0 ) {
+            if ( (weight =  hasArc ( (*it)->name(), (*it1)->name() )  )!=0 ) {
                 sum++;
                 outText <<  (weight) << " "; // TODO make the matrix look symmetric
             }
@@ -10301,6 +10430,9 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
     QPointF DV;
     qreal c4=0.1; //normalization factor for final displacement
 
+    QList<Vertex*>::const_iterator v1;
+    QList<Vertex*>::const_iterator v2;
+
     /**
      * compute max spring length as function of canvas area divided by the
      * total vertices area
@@ -10315,27 +10447,29 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
     if (dynamicMovement){
 
         //setup init disp
-        foreach (Vertex *v1, m_graph)  {
-            v1->disp().rx() = 0;
-            v1->disp().ry() = 0;
-            qDebug() << " 0000 s " << v1->name() << " zeroing rx/ry";
+
+        for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1)
+        {
+            (*v1) -> disp().rx() = 0;
+            (*v1) -> disp().ry() = 0;
+            qDebug() << " 0000 s " << (*v1)->name() << " zeroing rx/ry";
         }
 
-        foreach (Vertex *v1, m_graph)  {
-
+        for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1)
+        {
             qDebug() << "*********  Calculate forces for source s  "
-                     << v1->name()<<" index "<< index[v1->name()]
-                     <<" pos "<< v1->x()<< ", "<< v1->y();
+                     << (*v1) -> name()
+                     <<" pos "<< (*v1) -> x()<< ", "<< (*v1) -> y();
 
-            if ( ! v1->isEnabled() ) {
-                qDebug() << "  vertex s " << v1->name() << " disabled. Continue";
+            if ( ! (*v1)->isEnabled() ) {
+                qDebug() << "  vertex s disabled. Continue";
                 continue;
             }
 
-            foreach (Vertex *v2, m_graph)  {
-
-                if ( ! v2->isEnabled() ) {
-                    qDebug() << "   t " << v1->name() << " disabled. Continue";
+            for (v2=m_graph.cbegin(); v2!=m_graph.cend(); ++v2)
+            {
+                if ( ! (*v2)->isEnabled() ) {
+                    qDebug() << "   t " << (*v1)->name() << " disabled. Continue";
                     continue;
                 }
 
@@ -10344,8 +10478,8 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
                     continue;
                 }
 
-                DV.setX(v2->x() - v1->x());
-                DV.setY(v2->y() - v1->y());
+                DV.setX( (*v2) -> x() - (*v1)->x());
+                DV.setY( (*v2) -> y() - (*v1)->y());
 
                 dist = euclideian_distance(DV);
 
@@ -10354,10 +10488,10 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
                   *  all vertices.
                   */
                 f_rep = layoutForceDirected_F_rep (dist, naturalLength) ;
-                v1->disp().rx() += sign( DV.x() ) * f_rep ;
-                v1->disp().ry() += sign( DV.y() ) * f_rep  ;
-                qDebug() <<"  s = "<<v1->name()
-                         <<" pushed away from t = " <<v2->name()
+                (*v1)->disp().rx() += sign( DV.x() ) * f_rep ;
+                (*v1)->disp().ry() += sign( DV.y() ) * f_rep  ;
+                qDebug() <<"  s = "<< (*v1)->name()
+                         <<" pushed away from t = " << (*v2) -> name()
                            << " dist " <<dist
                         << " f_rep=" << f_rep
                         << " sign * f_repx " << sign( DV.x() ) * f_rep
@@ -10368,34 +10502,34 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
                 * that pull them together (if d > naturalLength)
                 * or push them apart (if d < naturalLength)
                 */
-                if ( this->hasArc (v1->name(), v2->name()) ) {
+                if ( this->hasArc ( (*v1) ->name(), (*v2) -> name()) ) {
 
                     f_att = layoutForceDirected_F_att (dist, naturalLength) ;
 
-                    v1->disp().rx() += sign( DV.x() ) * f_att ;
-                    v1->disp().ry() += sign( DV.y() ) * f_att ;
-                    v2->disp().rx() -= sign( DV.x() ) * f_att ;
-                    v2->disp().ry() -= sign( DV.y() ) * f_att ;
+                    (*v1)->disp().rx() += sign( DV.x() ) * f_att ;
+                    (*v1)->disp().ry() += sign( DV.y() ) * f_att ;
+                    (*v2)->disp().rx() -= sign( DV.x() ) * f_att ;
+                    (*v2)->disp().ry() -= sign( DV.y() ) * f_att ;
 
-                    qDebug() << "  s= "<<v1->name()
-                             << " attracted by t= "<< v2->name()
+                    qDebug() << "  s= "<<(*v1)->name()
+                             << " attracted by t= "<< (*v2)->name()
                                 << " dist " <<dist
                              << " f_att="<< f_att
                              << " sdx * f_att " <<sign( DV.x() ) * f_att
                              << " sdy * f_att " <<sign( DV.y() ) * f_att
-                             << " disp_s.x="<< v1->disp().rx()
-                             << " disp_s.y="<< v1->disp().ry()
-                             << " disp_t.x="<< v2->disp().rx()
-                             << " disp_t.y="<< v2->disp().ry();
+                             << " disp_s.x="<< (*v2)->disp().rx()
+                             << " disp_s.y="<< (*v2)->disp().ry()
+                             << " disp_t.x="<< (*v2)->disp().rx()
+                             << " disp_t.y="<< (*v2)->disp().ry();
 
                 }  // end if hasArc
 
             } //end for v2
             //recompute naturalLength (in case the user resized the window)
             naturalLength= computeOptimalDistance(V);
-            qDebug() << "  >>> final s = "<<v1->name()
-                     << " disp_s.x="<< v1->disp().rx()
-                      << " disp_s.y="<< v1->disp().ry();
+            qDebug() << "  >>> final s = "<< (*v1)->name()
+                     << " disp_s.x="<< (*v1)->disp().rx()
+                      << " disp_s.y="<< (*v1)->disp().ry();
 
         } // end for v1
 
@@ -10427,6 +10561,8 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
     // we add vertexWidth to it
     qreal optimalDistance= C * computeOptimalDistance(V);
 
+    QList<Vertex*>::const_iterator v1;
+    QList<Vertex*>::const_iterator v2;
 
     if (dynamicMovement){
         qDebug() << "Graph: layoutForceDirectedFruchtermanReingold() ";
@@ -10434,29 +10570,31 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
                   << "...following Fruchterman-Reingold (1991) formula ";
 
         //setup init disp
-        foreach (Vertex *v1, m_graph)  {
-            v1->disp().rx() = 0;
-            v1->disp().ry() = 0;
-            qDebug() << " 0000 s " << v1->name() << " zeroing rx/ry";
+        for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1)
+        {
+            (*v1)->disp().rx() = 0;
+            (*v1)->disp().ry() = 0;
+            qDebug() << " 0000 s " << (*v1)->name() << " zeroing rx/ry";
         }
 
-        foreach (Vertex *v1, m_graph)  {
+        for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1)
+        {
+            qDebug() << "*****  Calculate forces for s " << (*v1)->name()
+                     << " index " <<  index[(*v1)->name()]
+                     << " pos "<< (*v1)->x() << ", "<< (*v1)->y();
 
-            qDebug() << "*****  Calculate forces for s " << v1->name()
-                     << " index " <<  index[v1->name()]
-                     << " pos "<< v1->x() << ", "<< v1->y();
-
-            if ( ! v1->isEnabled() ) {
-                qDebug() << "  vertex s " << v1->name() << " disabled. Continue";
+            if ( ! (*v1)->isEnabled() ) {
+                qDebug() << "  vertex s " << (*v1)->name() << " disabled. Continue";
                 continue;
             }
 
-            foreach (Vertex *v2, m_graph)  {
-                qDebug () << "  t = "<< v2->name()
-                          << "  pos (" <<  v2->x() << "," << v2->y() << ")";
+            for (v2=m_graph.cbegin(); v2!=m_graph.cend(); ++v2)
+            {
+                qDebug () << "  t = "<< (*v2)->name()
+                          << "  pos (" <<  (*v2)->x() << "," << (*v2)->y() << ")";
 
-                if ( ! v2->isEnabled() ) {
-                    qDebug()<< " t "<< v2->name()<< " disabled. Continue";
+                if ( ! (*v2)->isEnabled() ) {
+                    qDebug()<< " t "<< (*v2)->name()<< " disabled. Continue";
                     continue;
                 }
 
@@ -10465,38 +10603,38 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
                     continue;
                 }
 
-                DV.setX( v2->x() - v1->x() );
-                DV.setY( v2->y() - v1->y() );
+                DV.setX( (*v2)->x() - (*v1)->x() );
+                DV.setY( (*v2)->y() - (*v1)->y() );
 
                 dist = euclideian_distance( DV );
 
                 //calculate repulsive force from _near_ vertices
                 f_rep = layoutForceDirected_F_rep(dist, optimalDistance);
-                v1->disp().rx() += sign( DV.x() ) * f_rep;
-                v1->disp().ry() += sign( DV.y() ) * f_rep ;
+                (*v1)->disp().rx() += sign( DV.x() ) * f_rep;
+                (*v1)->disp().ry() += sign( DV.y() ) * f_rep ;
 
-                qDebug()<< " dist( " << v1->name() <<  "," <<  v2->name() <<  " = "
+                qDebug()<< " dist( " << (*v1)->name() <<  "," <<  (*v2)->name() <<  " = "
                         << dist
                         << " f_rep " << f_rep
-                        << " disp_s.x="<< v1->disp().rx()
-                        << " disp_s.y="<< v1->disp().ry();
+                        << " disp_s.x="<< (*v1)->disp().rx()
+                        << " disp_s.y="<< (*v1)->disp().ry();
 
-                if ( this->hasArc (v1->name(), v2->name()) ) {
+                if ( this->hasArc ((*v1)->name(), (*v2)->name()) ) {
                     //calculate attracting force
                     f_att = layoutForceDirected_F_att (dist, optimalDistance);
-                    v1->disp().rx() += sign( DV.x() ) * f_att;
-                    v1->disp().ry() += sign( DV.y() ) * f_att;
-                    v2->disp().rx() -= sign( DV.x() ) * f_att ;
-                    v2->disp().ry() -= sign( DV.y() ) * f_att ;
+                    (*v1)->disp().rx() += sign( DV.x() ) * f_att;
+                    (*v1)->disp().ry() += sign( DV.y() ) * f_att;
+                    (*v2)->disp().rx() -= sign( DV.x() ) * f_att ;
+                    (*v2)->disp().ry() -= sign( DV.y() ) * f_att ;
 
-                    qDebug() << "  s= "<<v1->name()
-                             << " attracted by t= "<< v2->name()
+                    qDebug() << "  s= "<<(*v1)->name()
+                             << " attracted by t= "<< (*v2)->name()
                              <<"  optimalDistance =" << optimalDistance
                              << " f_att " << f_att
-                             << " disp_s.x="<< v1->disp().rx()
-                             << " disp_s.y="<< v1->disp().ry()
-                             << " disp_t.x="<< v2->disp().rx()
-                             << " disp_t.y="<< v2->disp().ry();
+                             << " disp_s.x="<< (*v1)->disp().rx()
+                             << " disp_s.y="<< (*v1)->disp().ry()
+                             << " disp_t.x="<< (*v2)->disp().rx()
+                             << " disp_t.y="<< (*v2)->disp().ry();
                 } //endif
 
             }//end for v2
@@ -10662,11 +10800,14 @@ void Graph::layoutForceDirected_Eades_moveNodes(const qreal &c4) {
     qDebug() << "\n *****  layoutForceDirected_Eades_moveNodes() " ;
     QPointF newPos;
     qreal xvel = 0, yvel = 0;
-    foreach (Vertex *v1, m_graph) {
+    QList<Vertex*>::const_iterator v1;
+
+    for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1)
+    {
         // calculate new overall velocity vector
-        xvel =  c4*v1->disp().rx();
-        yvel =  c4*v1->disp().ry();
-        qDebug() << " ##### source vertex  " <<  v1->name()
+        xvel =  c4 * (*v1)->disp().rx();
+        yvel =  c4 * (*v1)->disp().ry();
+        qDebug() << " ##### source vertex  " <<  (*v1)->name()
                  << " xvel,yvel = ("<< xvel << ", "<< yvel << ")";
 
          //fix Qt error a positive QPoint to the floor
@@ -10675,11 +10816,11 @@ void Graph::layoutForceDirected_Eades_moveNodes(const qreal &c4) {
          yvel < 1 && yvel > 0 ? yvel = 1 : yvel = yvel;
 
         //Move source node to new position according to overall velocity
-        newPos = QPointF( (qreal) v1->x() + xvel, (qreal) v1->y() + yvel);
+        newPos = QPointF( (qreal) (*v1)->x() + xvel, (qreal) (*v1)->y() + yvel);
 
-        qDebug() << " source vertex v1 " << v1->name()
-                    << " current pos: (" <<  v1->x()
-                    << " , " << v1->y()
+        qDebug() << " source vertex v1 " << (*v1)->name()
+                    << " current pos: (" <<  (*v1)->x()
+                    << " , " << (*v1)->y()
                     << " Possible new pos (" <<  newPos.x()
                     << " , " <<  newPos.y();
 
@@ -10694,7 +10835,7 @@ void Graph::layoutForceDirected_Eades_moveNodes(const qreal &c4) {
 
         qDebug() << "  Final new pos (" <<  newPos.x() << ","
                  << newPos.y()<< ")";
-        emit moveNode((*v1).name(),  newPos.x(),  newPos.y());
+        emit moveNode((*v1)->name(),  newPos.x(),  newPos.y());
 
     }
 
@@ -10709,14 +10850,17 @@ void Graph::layoutForceDirected_FR_moveNodes(const qreal &temperature) {
     qDebug() << "\n\n *****  layoutForceDirected_FR_moveNodes() \n\n " ;
     QPointF newPos;
     qreal xvel = 0, yvel = 0;
-    foreach (Vertex *v1, m_graph) {
+    QList<Vertex*>::const_iterator v1;
+
+    for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1)
+    {
         // compute the new position
         // limit the maximum displacement to a maximum temperature
-        xvel = sign(v1->disp().rx()) * qMin( qAbs(v1->disp().rx()), temperature) ;
-        yvel = sign(v1->disp().ry()) * qMin( qAbs(v1->disp().ry()), temperature) ;
-        newPos = QPointF(v1->x()+ xvel, v1->y()+yvel);
-        qDebug()<< " source vertex v1 " << v1->name()
-                << " current pos: (" << v1->x() << "," << v1->y() << ")"
+        xvel = sign((*v1)->disp().rx()) * qMin( qAbs((*v1)->disp().rx()), temperature) ;
+        yvel = sign((*v1)->disp().ry()) * qMin( qAbs((*v1)->disp().ry()), temperature) ;
+        newPos = QPointF((*v1)->x()+ xvel, (*v1)->y()+yvel);
+        qDebug()<< " source vertex v1 " << (*v1)->name()
+                << " current pos: (" << (*v1)->x() << "," << (*v1)->y() << ")"
                 << "Possible new pos (" <<  newPos.x() << ","
                 << newPos.y()<< ")";
 
@@ -10730,13 +10874,13 @@ void Graph::layoutForceDirected_FR_moveNodes(const qreal &temperature) {
         if ( newPos.x() < 5.0  ||newPos.y() < 5.0   ||
                 newPos.x() >= (canvasWidth -5)||
                 newPos.y() >= (canvasHeight-5)||
-                (v1->x() == newPos.x() && v1->y() == newPos.y() )
+                ((*v1)->x() == newPos.x() && (*v1)->y() == newPos.y() )
                 )
             continue;
         qDebug()<< " final new pos "
                 <<  newPos.x() << ","
                 << newPos.y()<< ")";
-        emit moveNode((*v1).name(),  newPos.x(),  newPos.y());
+        emit moveNode((*v1)->name(),  newPos.x(),  newPos.y());
     }
 }
 

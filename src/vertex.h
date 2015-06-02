@@ -85,8 +85,11 @@ public:
     void removeEdgeTo (long int target);
     void removeEdgeFrom(long int source);
 
-    long int outEdges();
+    long int outEdges()
+    ;
     QHash<int,float>* returnEnabledOutEdges();
+
+    QHash<int,float>* returnReciprocalEdges();
 
     long int inEdges();
 

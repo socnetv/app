@@ -428,7 +428,7 @@ public:
 
     bool addClique (const QList<int> &list);
     float countCliquesOfSize(int size );
-    float clusteringCoefficient(const long int &v1);
+    float localClusteringCoefficient(const long int &v1);
     float clusteringCoefficient ();
 
     bool triadCensus();

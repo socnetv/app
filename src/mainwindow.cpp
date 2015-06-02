@@ -4713,7 +4713,7 @@ void MainWindow::nodeInfoStatusBar ( Node *jim) {
     inDegreeLCD->display (inDegree);
     outDegreeLCD->display (outDegree);
     if (activeGraph.vertices() < 500)
-        clucofLCD->display(activeGraph.clusteringCoefficient(clickedJimNumber));
+        clucofLCD->display(activeGraph.localClusteringCoefficient(clickedJimNumber));
 
     statusMessage(  QString(tr("(%1, %2);  Node %3, label %4 - "
                                "In-Degree: %5, Out-Degree: %6")).arg( ceil( clickedJim->x() ) )
