@@ -10,6 +10,11 @@
     <height>191</height>
    </rect>
   </property>
+  <property name="font">
+   <font>
+    <family>DejaVu Sans</family>
+   </font>
+  </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
