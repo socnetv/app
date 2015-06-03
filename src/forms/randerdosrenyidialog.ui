@@ -54,7 +54,7 @@
      <property name="font">
       <font>
        <family>DejaVu Sans</family>
-       <pointsize>13</pointsize>
+       <pointsize>12</pointsize>
        <weight>50</weight>
        <bold>false</bold>
       </font>
@@ -98,7 +98,7 @@ while in G(n,M) a graph is randomly selected from all graphs with
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>13</pointsize>
+         <pointsize>12</pointsize>
          <weight>50</weight>
          <bold>false</bold>
         </font>
@@ -125,7 +125,7 @@ while in G(n,M) a graph is randomly selected from all graphs with
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>13</pointsize>
+         <pointsize>12</pointsize>
          <weight>50</weight>
          <bold>false</bold>
         </font>
@@ -162,7 +162,7 @@ while in G(n,M) a graph is randomly selected from all graphs with
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>13</pointsize>
+         <pointsize>12</pointsize>
          <weight>50</weight>
          <bold>false</bold>
         </font>
@@ -185,7 +185,7 @@ while in G(n,M) a graph is randomly selected from all graphs with
          <property name="font">
           <font>
            <family>DejaVu Sans</family>
-           <pointsize>13</pointsize>
+           <pointsize>12</pointsize>
            <weight>50</weight>
            <bold>false</bold>
           </font>
@@ -227,7 +227,7 @@ p, li { white-space: pre-wrap; }
          <property name="font">
           <font>
            <family>DejaVu Sans</family>
-           <pointsize>13</pointsize>
+           <pointsize>12</pointsize>
            <weight>50</weight>
            <bold>false</bold>
           </font>
@@ -269,7 +269,7 @@ p, li { white-space: pre-wrap; }
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>13</pointsize>
+         <pointsize>12</pointsize>
          <weight>50</weight>
          <bold>false</bold>
         </font>
@@ -290,7 +290,7 @@ p, li { white-space: pre-wrap; }
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>13</pointsize>
+         <pointsize>12</pointsize>
          <weight>50</weight>
          <bold>false</bold>
         </font>
@@ -324,7 +324,7 @@ p, li { white-space: pre-wrap; }
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>13</pointsize>
+         <pointsize>12</pointsize>
          <weight>50</weight>
          <bold>false</bold>
         </font>
@@ -351,7 +351,7 @@ p, li { white-space: pre-wrap; }
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>13</pointsize>
+         <pointsize>12</pointsize>
          <weight>50</weight>
          <bold>false</bold>
         </font>
@@ -391,7 +391,7 @@ p, li { white-space: pre-wrap; }
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>13</pointsize>
+         <pointsize>12</pointsize>
          <weight>50</weight>
          <bold>false</bold>
         </font>
@@ -420,7 +420,7 @@ p, li { white-space: pre-wrap; }
          <property name="font">
           <font>
            <family>DejaVu Sans</family>
-           <pointsize>13</pointsize>
+           <pointsize>12</pointsize>
            <weight>50</weight>
            <italic>false</italic>
            <bold>false</bold>
@@ -456,7 +456,7 @@ p, li { white-space: pre-wrap; }
          <property name="font">
           <font>
            <family>DejaVu Sans</family>
-           <pointsize>13</pointsize>
+           <pointsize>12</pointsize>
            <weight>50</weight>
            <bold>false</bold>
           </font>
@@ -492,7 +492,7 @@ p, li { white-space: pre-wrap; }
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>13</pointsize>
+         <pointsize>12</pointsize>
          <weight>50</weight>
          <bold>false</bold>
         </font>
@@ -521,7 +521,7 @@ p, li { white-space: pre-wrap; }
          <property name="font">
           <font>
            <family>DejaVu Sans</family>
-           <pointsize>13</pointsize>
+           <pointsize>12</pointsize>
            <weight>50</weight>
            <bold>false</bold>
           </font>
@@ -543,7 +543,7 @@ p, li { white-space: pre-wrap; }
      <property name="font">
       <font>
        <family>DejaVu Sans</family>
-       <pointsize>13</pointsize>
+       <pointsize>12</pointsize>
        <weight>50</weight>
        <bold>false</bold>
       </font>
