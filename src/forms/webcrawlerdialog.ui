@@ -11,7 +11,7 @@
   <property name="minimumSize">
    <size>
     <width>500</width>
-    <height>330</height>
+    <height>310</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -29,13 +29,13 @@
      <property name="minimumSize">
       <size>
        <width>450</width>
-       <height>90</height>
+       <height>80</height>
       </size>
      </property>
      <property name="font">
       <font>
        <family>DejaVu Sans</family>
-       <pointsize>11</pointsize>
+       <pointsize>10</pointsize>
        <stylestrategy>PreferAntialias</stylestrategy>
       </font>
      </property>
@@ -54,7 +54,7 @@
     <widget class="QSplitter" name="splitter">
      <property name="font">
       <font>
-       <pointsize>11</pointsize>
+       <pointsize>10</pointsize>
        <stylestrategy>PreferAntialias</stylestrategy>
       </font>
      </property>
@@ -71,7 +71,7 @@
       <property name="font">
        <font>
         <family>DejaVu Sans</family>
-        <pointsize>11</pointsize>
+        <pointsize>10</pointsize>
         <weight>50</weight>
         <bold>false</bold>
         <stylestrategy>PreferAntialias</stylestrategy>
@@ -97,7 +97,7 @@
       <property name="font">
        <font>
         <family>DejaVu Sans</family>
-        <pointsize>11</pointsize>
+        <pointsize>10</pointsize>
         <stylestrategy>PreferAntialias</stylestrategy>
        </font>
       </property>
@@ -113,7 +113,7 @@
       <spacer name="horizontalSpacer">
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <pointsize>10</pointsize>
          <stylestrategy>PreferAntialias</stylestrategy>
         </font>
        </property>
@@ -139,7 +139,7 @@
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
+         <pointsize>10</pointsize>
          <weight>50</weight>
          <bold>false</bold>
          <stylestrategy>PreferAntialias</stylestrategy>
@@ -160,7 +160,7 @@ In this case SocNetV will follow and crawl each one link found in a page.</strin
       <spacer name="horizontalSpacer_2">
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <pointsize>10</pointsize>
          <stylestrategy>PreferAntialias</stylestrategy>
         </font>
        </property>
@@ -185,7 +185,7 @@ In this case SocNetV will follow and crawl each one link found in a page.</strin
        </property>
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <pointsize>10</pointsize>
          <stylestrategy>PreferAntialias</stylestrategy>
         </font>
        </property>
@@ -217,7 +217,7 @@ In this case SocNetV will follow and crawl each one link found in a page.</strin
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
+         <pointsize>10</pointsize>
          <weight>50</weight>
          <bold>false</bold>
          <stylestrategy>PreferAntialias</stylestrategy>
@@ -242,7 +242,7 @@ Set value to 0, if you don't want any limits...</string>
        </property>
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <pointsize>10</pointsize>
          <stylestrategy>PreferAntialias</stylestrategy>
         </font>
        </property>
@@ -282,7 +282,7 @@ p, li { white-space: pre-wrap; }
      <property name="font">
       <font>
        <family>DejaVu Sans</family>
-       <pointsize>11</pointsize>
+       <pointsize>10</pointsize>
        <stylestrategy>PreferAntialias</stylestrategy>
       </font>
      </property>
@@ -311,7 +311,7 @@ p, li { white-space: pre-wrap; }
      <property name="font">
       <font>
        <family>DejaVu Sans</family>
-       <pointsize>11</pointsize>
+       <pointsize>10</pointsize>
        <stylestrategy>PreferAntialias</stylestrategy>
       </font>
      </property>
@@ -340,7 +340,7 @@ p, li { white-space: pre-wrap; }
      <property name="font">
       <font>
        <family>DejaVu Sans</family>
-       <pointsize>11</pointsize>
+       <pointsize>10</pointsize>
        <stylestrategy>PreferAntialias</stylestrategy>
       </font>
      </property>
