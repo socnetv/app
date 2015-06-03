@@ -1666,21 +1666,26 @@ void Graph::writeEccentricity(
     }
     emit statusMessage ( QString(tr("Writing eccentricity to file:")).arg(fileName) );
 
-    outText << tr("ECCENTRICITY (e)") <<"\n";
+    outText << tr("ECCENTRICITY (e)") << endl << endl;
     outText << tr("The eccentricity e of a node is the maximum geodesic distance "
-                  " from that node to all other nodes in the network.") << "\n";
+                  " from that node to all other nodes in the network.") ;
+    outText << endl  ;
     outText << tr("Therefore, e reflects farness: how far, at most, is each "
-                  " node from every other node.") << "\n";
+                  " node from every other node.") ;
+    outText << endl  ;
+    outText << tr("A node has maximum e when it has distance 1 "
+          "to all other nodes (star node))\n");
+
+    outText << endl << endl ;
 
     outText << tr("Range: 0 < e < ") << vertices()-1 <<" (g-1, "
-             << tr("where g is the number of nodes |V|)\n")
-             << tr("A node has maximum e when it has distance 1 "
-                   "to all other nodes (star node))\n");
+             << tr("where g is the number of nodes |V|)");
 
+    outText << endl << endl ;
     outText << "Node"<<"\te\t\t%e\n";
     QList<Vertex*>::const_iterator it;
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
-        outText << (*it)->name()<<"\t"<<(*it)->eccentricity() << "\t\t" <<
+        outText << (*it)->name()<<"\t"<<(*it)->eccentricity() << "\t" <<
                    (100* ((*it)->eccentricity()) / sumEccentricity)<<endl;
     }
     if ( minEccentricity ==  maxEccentricity)
@@ -4106,10 +4111,10 @@ void Graph::writeClusteringCoefficient(
 
     outText.setRealNumberPrecision(m_precision);
 
-    outText << tr("CLUSTERING COEFFICIENT (CLC) REPORT\n");
+    outText << tr("CLUSTERING COEFFICIENT (CLC) REPORT") << endl << endl;
 
-    outText << tr("local CLC  range: 0 < C < 1") <<"\n";
-    outText << "Node"<<"\tlocal CLC\n";
+    outText << tr("Local CLC  range: 0 < C < 1") << endl<<endl;
+    outText << "Node"<<"\tLocal CLC\n";
 
 
     QList<Vertex*>::const_iterator it;
@@ -4128,8 +4133,9 @@ void Graph::writeClusteringCoefficient(
                 << " has the minimum Clustering Coefficient: " <<  minCLC <<"\n";
     }
 
-    outText << "\nNETWORK AVERAGE CLUSTERING COEFFICIENT (GCLC)\n\n";
-    outText << "GCLC = " <<  averageCLC<<"\n\n";
+    outText << endl;
+    outText << tr("NETWORK AVERAGE CLUSTERING COEFFICIENT (GCLC)") << endl <<endl;
+    outText << "GCLC = " <<  averageCLC <<"\n\n";
     outText << tr("Range: 0 < GCLC < 1\n");
     outText << tr("GCLC = 0, when there are no cliques (i.e. acyclic tree).\n");
     outText << tr(
@@ -5379,11 +5385,11 @@ void Graph::writeCliqueCensus(
 
     outText << endl<< endl << tr("AGGREGATE COUNTS OF CLIQUES")<< endl;
 
-    outText << "2-Vertex cliques" <<"\t" << cliques_2_Vertex.count()
+    outText << "2-Vertex cliques" <<"\t " << cliques_2_Vertex.count()
             << "\t (max: " << ( N * (N-1)  ) /2  << ")\n";
-    outText << "3-Vertex cliques" <<"\t" << cliques_3_Vertex.count()
+    outText << "3-Vertex cliques" <<"\t " << cliques_3_Vertex.count()
             << "\t (max: " << ( N * (N-1) * (N-2)  ) /6  << ")\n";
-    outText << "4-Vertex cliques" <<"\t" << cliques_4_Vertex.count()
+    outText << "4-Vertex cliques" <<"\t " << cliques_4_Vertex.count()
             << "\t (max: " << ( N * (N-1) * (N-2) * (N-3)  ) /24  << ")\n";
 
 
