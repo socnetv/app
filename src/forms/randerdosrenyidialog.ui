@@ -14,6 +14,12 @@
     <height>350</height>
    </size>
   </property>
+  <property name="maximumSize">
+   <size>
+    <width>600</width>
+    <height>400</height>
+   </size>
+  </property>
   <property name="font">
    <font>
     <family>DejaVu Sans</family>
