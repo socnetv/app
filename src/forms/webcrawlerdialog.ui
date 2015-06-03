@@ -11,13 +11,7 @@
   <property name="minimumSize">
    <size>
     <width>500</width>
-    <height>300</height>
-   </size>
-  </property>
-  <property name="maximumSize">
-   <size>
-    <width>627</width>
-    <height>300</height>
+    <height>330</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -35,16 +29,18 @@
      <property name="minimumSize">
       <size>
        <width>450</width>
-       <height>80</height>
+       <height>90</height>
       </size>
      </property>
      <property name="font">
       <font>
        <family>DejaVu Sans</family>
+       <pointsize>11</pointsize>
+       <stylestrategy>PreferAntialias</stylestrategy>
       </font>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt;&quot;&gt;SocNetV includes a simple web crawler. It scans the HTML  code of a given initial URL  (i.e. a website) and maps all internal or external links to other pages found there. As new urls are discovered, the crawler follows them to scan their HTML code for links as well.  For more details, see the Manual.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SocNetV includes a simple web crawler. It scans the HTML code of a given initial URL (i.e. a website) and maps all internal or external links to other pages found there. As new urls are discovered, the crawler follows them to scan their HTML code for links as well. For more details, see the Manual.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
@@ -56,6 +52,12 @@
    </item>
    <item row="1" column="0">
     <widget class="QSplitter" name="splitter">
+     <property name="font">
+      <font>
+       <pointsize>11</pointsize>
+       <stylestrategy>PreferAntialias</stylestrategy>
+      </font>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -69,6 +71,10 @@
       <property name="font">
        <font>
         <family>DejaVu Sans</family>
+        <pointsize>11</pointsize>
+        <weight>50</weight>
+        <bold>false</bold>
+        <stylestrategy>PreferAntialias</stylestrategy>
        </font>
       </property>
       <property name="text">
@@ -91,6 +97,8 @@
       <property name="font">
        <font>
         <family>DejaVu Sans</family>
+        <pointsize>11</pointsize>
+        <stylestrategy>PreferAntialias</stylestrategy>
        </font>
       </property>
       <property name="toolTip">
@@ -103,6 +111,12 @@
     <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="1">
       <spacer name="horizontalSpacer">
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+         <stylestrategy>PreferAntialias</stylestrategy>
+        </font>
+       </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -125,6 +139,10 @@
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
+         <pointsize>11</pointsize>
+         <weight>50</weight>
+         <bold>false</bold>
+         <stylestrategy>PreferAntialias</stylestrategy>
         </font>
        </property>
        <property name="toolTip">
@@ -140,6 +158,12 @@ In this case SocNetV will follow and crawl each one link found in a page.</strin
      </item>
      <item row="1" column="1">
       <spacer name="horizontalSpacer_2">
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+         <stylestrategy>PreferAntialias</stylestrategy>
+        </font>
+       </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -158,6 +182,12 @@ In this case SocNetV will follow and crawl each one link found in a page.</strin
          <width>46</width>
          <height>0</height>
         </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+         <stylestrategy>PreferAntialias</stylestrategy>
+        </font>
        </property>
        <property name="toolTip">
         <string>Set the max links inside a page to be followed and crawled by SocNetV.
@@ -187,9 +217,10 @@ In this case SocNetV will follow and crawl each one link found in a page.</strin
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>10</pointsize>
+         <pointsize>11</pointsize>
          <weight>50</weight>
          <bold>false</bold>
+         <stylestrategy>PreferAntialias</stylestrategy>
         </font>
        </property>
        <property name="toolTip">
@@ -208,6 +239,12 @@ Set value to 0, if you don't want any limits...</string>
          <width>46</width>
          <height>0</height>
         </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+         <stylestrategy>PreferAntialias</stylestrategy>
+        </font>
        </property>
        <property name="toolTip">
         <string>Set the total urls to be crawled - this is the total nodes the result network will have. 
@@ -245,6 +282,8 @@ p, li { white-space: pre-wrap; }
      <property name="font">
       <font>
        <family>DejaVu Sans</family>
+       <pointsize>11</pointsize>
+       <stylestrategy>PreferAntialias</stylestrategy>
       </font>
      </property>
      <property name="focusPolicy">
@@ -272,6 +311,8 @@ p, li { white-space: pre-wrap; }
      <property name="font">
       <font>
        <family>DejaVu Sans</family>
+       <pointsize>11</pointsize>
+       <stylestrategy>PreferAntialias</stylestrategy>
       </font>
      </property>
      <property name="focusPolicy">
@@ -299,6 +340,8 @@ p, li { white-space: pre-wrap; }
      <property name="font">
       <font>
        <family>DejaVu Sans</family>
+       <pointsize>11</pointsize>
+       <stylestrategy>PreferAntialias</stylestrategy>
       </font>
      </property>
      <property name="orientation">
