@@ -35,7 +35,6 @@
 #include <QPrintDialog>
 #include <QKeySequence>
 
-#include <ctime> 
 
 #include "mainwindow.h"
 #include "graphicswidget.h"
