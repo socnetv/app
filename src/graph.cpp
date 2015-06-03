@@ -1682,7 +1682,7 @@ void Graph::writeEccentricity(
              << tr("where g is the number of nodes |V|)");
 
     outText << endl << endl ;
-    outText << "Node"<<"\te\t\t%e\n";
+    outText << "Node"<<"\te\t%e\n";
     QList<Vertex*>::const_iterator it;
     for (it= m_graph.cbegin(); it!= m_graph.cend(); ++it){
         outText << (*it)->name()<<"\t"<<(*it)->eccentricity() << "\t" <<
