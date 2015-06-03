@@ -1,9 +1,8 @@
 <RCC>
     <qresource prefix="/">
-      
-	<file>images/properties.png</file>
-	<file>images/selectall.png</file>
-	<file>images/selectnone.png</file>
+        <file>images/properties.png</file>
+        <file>images/selectall.png</file>
+        <file>images/selectnone.png</file>
         <file>images/new.png</file>
         <file>images/open.png</file>
         <file>images/save.png</file>
@@ -31,8 +30,8 @@
         <file>images/box.png</file>
         <file>images/circle.png</file>
         <file>images/diamond.png</file>
-	<file>images/triangle.png</file>
-	<file>images/ellipse.png</file>
+        <file>images/triangle.png</file>
+        <file>images/ellipse.png</file>
         <file>images/symmetry.png</file>
         <file>images/plines.png</file>
         <file>images/zoomin.png</file>
@@ -65,5 +64,10 @@
         <file>images/prevrelation.png</file>
         <file>images/addrelation.png</file>
         <file>images/nextrelation.png</file>
+        <file>images/texteditor.png</file>
+        <file>images/networkfile.png</file>
+        <file>images/random.png</file>
+        <file>images/filter.png</file>
+        <file>images/import.png</file>
     </qresource>
 </RCC>

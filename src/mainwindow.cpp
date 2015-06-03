@@ -497,14 +497,16 @@ void MainWindow::initActions(){
     connect(fileQuit, SIGNAL(triggered()), this, SLOT(close()));
 
 
-    openTextEditorAct = new QAction(QIcon(""), tr("Open Text Editor"),this);
+    openTextEditorAct = new QAction(QIcon(":/images/texteditor.png"),
+                                    tr("Open Text Editor"),this);
     openTextEditorAct ->setShortcut(tr("Shift+F5"));
-    openTextEditorAct->setStatusTip(tr("Opens the SocNetV text editor. You can copy/paste network data, save and then import them..."));
+    openTextEditorAct->setStatusTip(tr("Opens the SocNetV text editor."
+                                       "You can copy/paste network data, save and then import them..."));
     openTextEditorAct->setWhatsThis(tr("Open Text Editor\n\nOpens the SocNetV text editor where you can copy paste network data, of any supported format, and save to a file. Then you can import that file to SocNetV..."));
     connect(openTextEditorAct, SIGNAL(triggered()), this, SLOT(slotOpenTextEditor()));
 
 
-    viewNetworkFileAct = new QAction(QIcon(":/images/net2.png"), tr("View Loaded File"),this);
+    viewNetworkFileAct = new QAction(QIcon(":/images/networkfile.png"), tr("View Loaded File"),this);
     viewNetworkFileAct ->setShortcut(tr("F5"));
     viewNetworkFileAct->setStatusTip(tr("Displays the loaded network file"));
     viewNetworkFileAct->setWhatsThis(tr("View Loaded File\n\nDisplays the file of the loaded network"));
@@ -1717,6 +1719,7 @@ void MainWindow::initMenuBar() {
     networkMenu -> addAction(fileNew);
     networkMenu -> addAction(fileOpen);
     importSubMenu = new QMenu(tr("Import ..."));
+    importSubMenu -> setIcon(QIcon(":/images/import.png"));
     importSubMenu -> addAction(importPajek);
     importSubMenu -> addAction(importSM);
     importSubMenu -> addAction(importTwoModeSM);
@@ -1736,7 +1739,9 @@ void MainWindow::initMenuBar() {
     networkMenu -> addSeparator();
 
     randomNetworkMenu = new QMenu(tr("Create Random Network..."));
+    randomNetworkMenu -> setIcon(QIcon(":/images/random.png"));
     networkMenu ->addMenu (randomNetworkMenu);
+
     randomNetworkMenu -> addAction (createSmallWorldRandomNetworkAct);
     randomNetworkMenu -> addAction (createUniformRandomNetworkAct );
     // createGaussianRandomNetworkAct -> addTo(randomNetworkMenu);
@@ -1752,7 +1757,6 @@ void MainWindow::initMenuBar() {
     networkMenu  -> addSeparator();
 
     exportSubMenu = networkMenu  -> addMenu(tr("Export..."));
-
 
     exportSubMenu -> addAction (exportBMP);
     exportSubMenu -> addAction (exportPNG);
@@ -1809,6 +1813,7 @@ void MainWindow::initMenuBar() {
 
     editMenu ->addSeparator();
     filterMenu = new QMenu ( tr("Filter..."));
+    filterMenu -> setIcon(QIcon(":/images/filter.png"));
     editMenu ->addMenu(filterMenu);
 
     filterMenu -> addAction(filterNodesAct );
@@ -1885,7 +1890,7 @@ void MainWindow::initMenuBar() {
 
 
     /** menuBar entry: statistics menu */
-    statMenu = menuBar()->addMenu(tr("&Analysis"));
+    statMenu = menuBar()->addMenu(tr("&Analyze"));
     statMenu -> addAction (symmetryAct);
     statMenu -> addAction (invertAdjMatrixAct);
     //	statMenu -> addAction (netDensity);

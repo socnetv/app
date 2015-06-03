@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>368</width>
-    <height>191</height>
+    <width>370</width>
+    <height>210</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>370</width>
+    <height>210</height>
+   </size>
   </property>
   <property name="font">
    <font>
@@ -20,100 +26,91 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
-    <widget class="QSplitter" name="splitter_2">
+    <widget class="QLabel" name="label_2">
      <property name="font">
       <font>
        <family>DejaVu Sans</family>
       </font>
      </property>
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
+     <property name="text">
+      <string>With this temporary action, you will make invisible some links according to their weight. Select a threshold then click on the desired radiobox below:</string>
      </property>
-     <widget class="QLabel" name="label_2">
-      <property name="font">
-       <font>
-        <family>DejaVu Sans</family>
-       </font>
-      </property>
-      <property name="text">
-       <string>With this temporary action, you will make invisible some links according to their weight. Select a threshold then click on the desired radiobox below:</string>
-      </property>
-      <property name="textFormat">
-       <enum>Qt::RichText</enum>
-      </property>
-      <property name="wordWrap">
-       <bool>true</bool>
-      </property>
-     </widget>
-     <widget class="QWidget" name="layoutWidget">
-      <property name="font">
-       <font>
-        <family>DejaVu Sans</family>
-       </font>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <widget class="QLabel" name="label">
-         <property name="font">
-          <font>
-           <family>DejaVu Sans</family>
-          </font>
-         </property>
-         <property name="text">
-          <string>Weight Threshold</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QDoubleSpinBox" name="weightThreshold">
-         <property name="font">
-          <font>
-           <family>DejaVu Sans</family>
-          </font>
-         </property>
-         <property name="decimals">
-          <number>1</number>
-         </property>
-         <property name="minimum">
-          <double>-100.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QSplitter" name="splitter">
-      <property name="font">
-       <font>
-        <family>DejaVu Sans</family>
-       </font>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <widget class="QRadioButton" name="overThresholdBt">
-       <property name="font">
-        <font>
-         <family>DejaVu Sans</family>
-        </font>
-       </property>
-       <property name="text">
-        <string>Filter edges with weight over threshold</string>
-       </property>
-      </widget>
-      <widget class="QRadioButton" name="belowThresholdBt">
-       <property name="font">
-        <font>
-         <family>DejaVu Sans</family>
-        </font>
-       </property>
-       <property name="text">
-        <string>Filter edges with weight below threshold</string>
-       </property>
-      </widget>
-     </widget>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
     </widget>
    </item>
    <item row="1" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="spacing">
+      <number>-1</number>
+     </property>
+     <property name="sizeConstraint">
+      <enum>QLayout::SetDefaultConstraint</enum>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="font">
+        <font>
+         <family>DejaVu Sans</family>
+        </font>
+       </property>
+       <property name="text">
+        <string>Weight Threshold</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QDoubleSpinBox" name="weightThreshold">
+       <property name="font">
+        <font>
+         <family>DejaVu Sans</family>
+        </font>
+       </property>
+       <property name="decimals">
+        <number>1</number>
+       </property>
+       <property name="minimum">
+        <double>-100.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="2" column="0">
+    <widget class="QRadioButton" name="overThresholdBt">
+     <property name="font">
+      <font>
+       <family>DejaVu Sans</family>
+      </font>
+     </property>
+     <property name="text">
+      <string>Filter edges with weight over threshold</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QRadioButton" name="belowThresholdBt">
+     <property name="font">
+      <font>
+       <family>DejaVu Sans</family>
+      </font>
+     </property>
+     <property name="text">
+      <string>Filter edges with weight below threshold</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="font">
       <font>

@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>WebCrawlerDialog</class>
  <widget class="QDialog" name="WebCrawlerDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>500</width>
+    <height>310</height>
+   </rect>
+  </property>
   <property name="sizePolicy">
    <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
     <horstretch>0</horstretch>
@@ -40,8 +48,8 @@
      </property>
      <property name="font">
       <font>
-       <family>DejaVu Sans</family>
-       <pointsize>10</pointsize>
+       <family>Lucida Grande</family>
+       <pointsize>13</pointsize>
        <stylestrategy>PreferAntialias</stylestrategy>
       </font>
      </property>
@@ -77,7 +85,7 @@
       <property name="font">
        <font>
         <family>DejaVu Sans</family>
-        <pointsize>10</pointsize>
+        <pointsize>13</pointsize>
         <weight>50</weight>
         <bold>false</bold>
         <stylestrategy>PreferAntialias</stylestrategy>
@@ -103,7 +111,7 @@
       <property name="font">
        <font>
         <family>DejaVu Sans</family>
-        <pointsize>10</pointsize>
+        <pointsize>13</pointsize>
         <stylestrategy>PreferAntialias</stylestrategy>
        </font>
       </property>
@@ -145,7 +153,7 @@
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>10</pointsize>
+         <pointsize>13</pointsize>
          <weight>50</weight>
          <bold>false</bold>
          <stylestrategy>PreferAntialias</stylestrategy>
@@ -191,7 +199,7 @@ In this case SocNetV will follow and crawl each one link found in a page.</strin
        </property>
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>13</pointsize>
          <stylestrategy>PreferAntialias</stylestrategy>
         </font>
        </property>
@@ -223,7 +231,7 @@ In this case SocNetV will follow and crawl each one link found in a page.</strin
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>10</pointsize>
+         <pointsize>13</pointsize>
          <weight>50</weight>
          <bold>false</bold>
          <stylestrategy>PreferAntialias</stylestrategy>
@@ -248,7 +256,7 @@ Set value to 0, if you don't want any limits...</string>
        </property>
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>13</pointsize>
          <stylestrategy>PreferAntialias</stylestrategy>
         </font>
        </property>
@@ -288,7 +296,7 @@ p, li { white-space: pre-wrap; }
      <property name="font">
       <font>
        <family>DejaVu Sans</family>
-       <pointsize>10</pointsize>
+       <pointsize>13</pointsize>
        <stylestrategy>PreferAntialias</stylestrategy>
       </font>
      </property>
@@ -317,7 +325,7 @@ p, li { white-space: pre-wrap; }
      <property name="font">
       <font>
        <family>DejaVu Sans</family>
-       <pointsize>10</pointsize>
+       <pointsize>13</pointsize>
        <stylestrategy>PreferAntialias</stylestrategy>
       </font>
      </property>

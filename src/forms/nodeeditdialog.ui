@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>450</width>
+    <width>464</width>
     <height>280</height>
    </rect>
   </property>
@@ -32,11 +32,11 @@
       <widget class="QLabel" name="label">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>13</pointsize>
         </font>
        </property>
        <property name="text">
-        <string>Enter node label </string>
+        <string>Node label </string>
        </property>
       </widget>
      </item>
@@ -44,7 +44,7 @@
       <widget class="QLineEdit" name="labelEdit">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>13</pointsize>
         </font>
        </property>
       </widget>
@@ -60,11 +60,11 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>13</pointsize>
         </font>
        </property>
        <property name="text">
-        <string>Enter node value (disabled)</string>
+        <string>Node value (disabled)</string>
        </property>
       </widget>
      </item>
@@ -72,7 +72,7 @@
       <spacer name="horizontalSpacer_2">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>13</pointsize>
         </font>
        </property>
        <property name="orientation">
@@ -93,7 +93,7 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>13</pointsize>
         </font>
        </property>
       </widget>
@@ -106,11 +106,11 @@
       <widget class="QLabel" name="label_5">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>13</pointsize>
         </font>
        </property>
        <property name="text">
-        <string>Select node shape</string>
+        <string>Node shape</string>
        </property>
       </widget>
      </item>
@@ -118,7 +118,7 @@
       <spacer name="horizontalSpacer_4">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>13</pointsize>
         </font>
        </property>
        <property name="orientation">
@@ -136,7 +136,7 @@
       <widget class="QRadioButton" name="boxRadio">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>13</pointsize>
         </font>
        </property>
        <property name="text">
@@ -152,7 +152,7 @@
       <widget class="QRadioButton" name="circleRadio">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>13</pointsize>
         </font>
        </property>
        <property name="text">
@@ -168,7 +168,7 @@
       <widget class="QRadioButton" name="diamondRadio">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>13</pointsize>
         </font>
        </property>
        <property name="text">
@@ -184,7 +184,7 @@
       <widget class="QRadioButton" name="ellipseRadio">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>13</pointsize>
         </font>
        </property>
        <property name="text">
@@ -200,7 +200,7 @@
       <widget class="QRadioButton" name="triangleRadio">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>13</pointsize>
         </font>
        </property>
        <property name="text">
@@ -218,7 +218,7 @@
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="font">
       <font>
-       <pointsize>10</pointsize>
+       <pointsize>13</pointsize>
       </font>
      </property>
      <property name="orientation">
@@ -235,11 +235,11 @@
       <widget class="QLabel" name="label_4">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>13</pointsize>
         </font>
        </property>
        <property name="text">
-        <string>Select the node color (click the button)</string>
+        <string>Node color (click the button to select)</string>
        </property>
       </widget>
      </item>
@@ -247,7 +247,7 @@
       <spacer name="horizontalSpacer_3">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>13</pointsize>
         </font>
        </property>
        <property name="orientation">
@@ -271,7 +271,7 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>13</pointsize>
         </font>
        </property>
        <property name="text">
@@ -293,11 +293,11 @@
       <widget class="QLabel" name="label_2">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>13</pointsize>
         </font>
        </property>
        <property name="text">
-        <string>Select the node size (default 8)</string>
+        <string>Node size (default 8)</string>
        </property>
       </widget>
      </item>
@@ -305,7 +305,7 @@
       <spacer name="horizontalSpacer">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>13</pointsize>
         </font>
        </property>
        <property name="orientation">
@@ -323,7 +323,7 @@
       <widget class="QSpinBox" name="sizeSpin">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>13</pointsize>
         </font>
        </property>
        <property name="value">
