@@ -2,18 +2,22 @@
 <ui version="4.0">
  <class>WebCrawlerDialog</class>
  <widget class="QDialog" name="WebCrawlerDialog">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>639</width>
-    <height>313</height>
-   </rect>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
-    <width>14</width>
-    <height>0</height>
+    <width>500</width>
+    <height>300</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>627</width>
+    <height>300</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -23,15 +27,20 @@
    <item row="0" column="0">
     <widget class="QLabel" name="description">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="minimumSize">
+      <size>
+       <width>450</width>
+       <height>80</height>
+      </size>
+     </property>
      <property name="font">
       <font>
        <family>DejaVu Sans</family>
-       <pointsize>11</pointsize>
       </font>
      </property>
      <property name="text">
@@ -51,19 +60,25 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <widget class="QLabel" name="label">
+      <property name="minimumSize">
+       <size>
+        <width>200</width>
+        <height>0</height>
+       </size>
+      </property>
       <property name="font">
        <font>
         <family>DejaVu Sans</family>
        </font>
       </property>
       <property name="text">
-       <string>Enter the initial URL to start crawling:</string>
+       <string>Initial URL</string>
       </property>
      </widget>
      <widget class="QLineEdit" name="seedUrlEdit">
       <property name="minimumSize">
        <size>
-        <width>370</width>
+        <width>250</width>
         <height>32</height>
        </size>
       </property>
@@ -236,7 +251,7 @@ p, li { white-space: pre-wrap; }
       <enum>Qt::TabFocus</enum>
      </property>
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, the crawler will map &lt;span style=&quot; font-weight:600;&quot;&gt;external links&lt;/span&gt;. For instance, if you start crawling from www.iefimerida.gr and we find there a link to another domain, i.e. www.linuxinsider.gr, then we will go outside of iefimerida.gr and crawl linuxinsider.gr too. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;If you don't want to crawl external links, disable this option. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, the crawler will map &lt;span style=&quot; font-weight:600;&quot;&gt;external links&lt;/span&gt;. For instance, if you start crawling from www.iefimerida.gr and we find there a link to another domain, i.e. www.linuxinsider.gr, then we will go outside of iefimerida.gr and crawl linuxinsider.gr too. &lt;/p&gt;&lt;p&gt;If you don't want to crawl external links, disable this option. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="layoutDirection">
       <enum>Qt::LeftToRight</enum>

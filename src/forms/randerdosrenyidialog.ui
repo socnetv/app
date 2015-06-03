@@ -2,19 +2,22 @@
 <ui version="4.0">
  <class>RandErdosRenyiDialog</class>
  <widget class="QDialog" name="RandErdosRenyiDialog">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>500</width>
-    <height>349</height>
-   </rect>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
-    <width>500</width>
-    <height>0</height>
+    <width>530</width>
+    <height>350</height>
    </size>
+  </property>
+  <property name="font">
+   <font>
+    <family>DejaVu Sans</family>
+   </font>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
@@ -23,7 +26,7 @@
    <item row="0" column="0">
     <widget class="QLabel" name="label_2">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -36,10 +39,7 @@
      </property>
      <property name="font">
       <font>
-       <weight>50</weight>
-       <italic>false</italic>
-       <bold>false</bold>
-       <underline>false</underline>
+       <family>DejaVu Sans</family>
       </font>
      </property>
      <property name="frameShape">
@@ -78,6 +78,11 @@ while in G(n,M) a graph is randomly selected from all graphs with
          <height>0</height>
         </size>
        </property>
+       <property name="font">
+        <font>
+         <family>DejaVu Sans</family>
+        </font>
+       </property>
        <property name="text">
         <string>Nodes</string>
        </property>
@@ -96,6 +101,11 @@ while in G(n,M) a graph is randomly selected from all graphs with
          <width>100</width>
          <height>0</height>
         </size>
+       </property>
+       <property name="font">
+        <font>
+         <family>DejaVu Sans</family>
+        </font>
        </property>
        <property name="minimum">
         <number>0</number>
@@ -126,6 +136,11 @@ while in G(n,M) a graph is randomly selected from all graphs with
          <height>0</height>
         </size>
        </property>
+       <property name="font">
+        <font>
+         <family>DejaVu Sans</family>
+        </font>
+       </property>
        <property name="text">
         <string>Model to use</string>
        </property>
@@ -140,6 +155,11 @@ while in G(n,M) a graph is randomly selected from all graphs with
            <width>100</width>
            <height>0</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>DejaVu Sans</family>
+          </font>
          </property>
          <property name="toolTip">
           <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -175,6 +195,11 @@ p, li { white-space: pre-wrap; }
            <height>0</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>DejaVu Sans</family>
+          </font>
+         </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This will create a new random network using &lt;span style=&quot; font-weight:600;&quot;&gt;G(n,M)&lt;/span&gt; model, where&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt; n&lt;/span&gt; is the number of nodes in the final graph&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt; M&lt;/span&gt; is the number of edges in the final graph&lt;/p&gt;&lt;p&gt;If you select this model, you must enter both the number of nodes n and the number of edges M&lt;/p&gt;&lt;p&gt;You may also select if the final network will be undirected or directed and if you want to allow nodes to link to themselves (diagonal non zero).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -209,6 +234,11 @@ p, li { white-space: pre-wrap; }
          <height>0</height>
         </size>
        </property>
+       <property name="font">
+        <font>
+         <family>DejaVu Sans</family>
+        </font>
+       </property>
        <property name="text">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Edges &lt;span style=&quot; color:#7c7c7c;&quot;&gt;for G(n,M) model only&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -221,6 +251,11 @@ p, li { white-space: pre-wrap; }
          <width>100</width>
          <height>0</height>
         </size>
+       </property>
+       <property name="font">
+        <font>
+         <family>DejaVu Sans</family>
+        </font>
        </property>
        <property name="minimum">
         <number>10</number>
@@ -248,6 +283,11 @@ p, li { white-space: pre-wrap; }
          <height>0</height>
         </size>
        </property>
+       <property name="font">
+        <font>
+         <family>DejaVu Sans</family>
+        </font>
+       </property>
        <property name="text">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Edge Probability &lt;span style=&quot; color:#7c7c7c;&quot;&gt;applicable only in G(n,p) model&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -266,6 +306,11 @@ p, li { white-space: pre-wrap; }
          <width>100</width>
          <height>0</height>
         </size>
+       </property>
+       <property name="font">
+        <font>
+         <family>DejaVu Sans</family>
+        </font>
        </property>
        <property name="minimum">
         <double>0.010000000000000</double>
@@ -301,6 +346,7 @@ p, li { white-space: pre-wrap; }
        </property>
        <property name="font">
         <font>
+         <family>DejaVu Sans</family>
          <weight>50</weight>
          <bold>false</bold>
         </font>
@@ -328,6 +374,7 @@ p, li { white-space: pre-wrap; }
          </property>
          <property name="font">
           <font>
+           <family>DejaVu Sans</family>
            <italic>false</italic>
            <underline>false</underline>
            <strikeout>false</strikeout>
@@ -358,6 +405,11 @@ p, li { white-space: pre-wrap; }
            <height>0</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>DejaVu Sans</family>
+          </font>
+         </property>
          <property name="text">
           <string>Directed</string>
          </property>
@@ -386,6 +438,11 @@ p, li { white-space: pre-wrap; }
          <height>0</height>
         </size>
        </property>
+       <property name="font">
+        <font>
+         <family>DejaVu Sans</family>
+        </font>
+       </property>
        <property name="text">
         <string>Allow diagonals (loops) or set to zero?</string>
        </property>
@@ -407,6 +464,11 @@ p, li { white-space: pre-wrap; }
            <height>0</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>DejaVu Sans</family>
+          </font>
+         </property>
          <property name="text">
           <string>Yes, allow</string>
          </property>
@@ -421,6 +483,11 @@ p, li { white-space: pre-wrap; }
    </item>
    <item row="7" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="font">
+      <font>
+       <family>DejaVu Sans</family>
+      </font>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
