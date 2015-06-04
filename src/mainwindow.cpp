@@ -50,6 +50,7 @@
 #include "previewform.h"
 #include "randerdosrenyidialog.h"
 #include "randsmallworlddialog.h"
+#include "randscalefreedialog.h"
 
 
 
@@ -197,8 +198,8 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect( &activeGraph, SIGNAL( eraseNode(long int) ),
              graphicsWidget, SLOT(  eraseNode(long int) ) );
 
-    connect( &activeGraph, &Graph::signalNodeSizesByOutDegree,
-             this, &MainWindow::slotLayoutNodeSizesByOutDegree );
+    connect( &activeGraph, &Graph::signalNodeSizesByInDegree,
+             this, &MainWindow::slotLayoutNodeSizesByInDegree );
 
 
     //connect some signals/slots with MW widgets
@@ -527,15 +528,15 @@ void MainWindow::initActions(){
 
 
 
-    createUniformRandomNetworkAct = new QAction(QIcon(":/images/erdos.png"), tr("Erdős–Rényi"),  this);
-    createUniformRandomNetworkAct ->setShortcut(tr("Shift+U"));
-    createUniformRandomNetworkAct->setStatusTip(tr("Creates a random network according to the Erdős–Rényi model"));
-    createUniformRandomNetworkAct->setWhatsThis(
+    createErdosRenyiRandomNetworkAct = new QAction(QIcon(":/images/erdos.png"), tr("Erdős–Rényi"),  this);
+    createErdosRenyiRandomNetworkAct ->setShortcut(tr("Shift+U"));
+    createErdosRenyiRandomNetworkAct->setStatusTip(tr("Creates a random network according to the Erdős–Rényi model"));
+    createErdosRenyiRandomNetworkAct->setWhatsThis(
                 tr("Erdős–Rényi \n\n") +
                 tr("Creates a random network either of G(n, p) model or G(n,M) model.\n") +
                 tr("In the first, edges are created with Bernoulli trials (probability p).\n") +
                 tr("In the second, a graph of exactly M edges is created."));
-    connect(createUniformRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateRandomNetErdos()));
+    connect(createErdosRenyiRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateRandomErdosRenyi()));
 
     createLatticeNetworkAct = new QAction( QIcon(":/images/net1.png"), tr("Ring Lattice"), this);
     createLatticeNetworkAct ->setShortcut(tr("Shift+L"));
@@ -543,7 +544,7 @@ void MainWindow::initActions(){
     createLatticeNetworkAct->setWhatsThis(
                 tr("Ring Lattice \n\n")+
                 tr("A ring lattice is a graph with N nodes each connected to d neighbors, d / 2 on each side."));
-    connect(createLatticeNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateRandomNetRingLattice()));
+    connect(createLatticeNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateRandomRingLattice()));
 
     createRegularRandomNetworkAct = new QAction(QIcon(":/images/net.png"), tr("d-Regular"), this);
     createRegularRandomNetworkAct->setStatusTip(tr("Creates a random network where every node has the same degree d."));
@@ -555,16 +556,30 @@ void MainWindow::initActions(){
     createGaussianRandomNetworkAct = new QAction(tr("Gaussian"),	this);
     createGaussianRandomNetworkAct->setStatusTip(tr("Creates a Gaussian distributed random network"));
     createGaussianRandomNetworkAct->setWhatsThis(tr("Gaussian \n\nCreates a random network of Gaussian distribution"));
-    connect(createGaussianRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateGaussianRandomNetwork()));
+    connect(createGaussianRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateRandomGaussian()));
 
     createSmallWorldRandomNetworkAct = new QAction(QIcon(":/images/sw.png"), tr("Small World"),	this);
     createSmallWorldRandomNetworkAct->setShortcut(tr("Shift+W"));
     createSmallWorldRandomNetworkAct->setStatusTip(tr("Creates a random network with small world properties"));
-    createSmallWorldRandomNetworkAct->setWhatsThis(
+    createSmallWorldRandomNetworkAct ->
+            setWhatsThis(
                 tr("Small World \n\n") +
-                tr("A Small World, according to the Watts and Strogatz model, is a random network with short average path lengths and high clustering coefficient."));
-    connect(createSmallWorldRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateSmallWorldRandomNetwork()));
+                tr("A Small World, according to the Watts and Strogatz model, "
+                   "is a random network with short average path lengths and high clustering coefficient."));
+    connect(createSmallWorldRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateRandomSmallWorld()));
 
+    createScaleFreeRandomNetworkAct = new QAction(
+                QIcon(":/images/scalefree.png"), tr("Scale-free"),	this);
+    createScaleFreeRandomNetworkAct->setShortcut(tr("Shift+S"));
+    createScaleFreeRandomNetworkAct->setStatusTip(
+                tr("Creates a random network with power-law degree distribution."));
+    createScaleFreeRandomNetworkAct->
+            setWhatsThis(
+                tr("Scale-free (power-law)\n\n") +
+                tr("A scale-free network is a network whose degree distribution follows a power law."
+                   " This method generates random scale-free networks according to the "
+                   " Barabási–Albert (BA) model using a preferential attachment mechanism."));
+    connect(createScaleFreeRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateRandomScaleFree()));
 
 
 
@@ -1742,8 +1757,9 @@ void MainWindow::initMenuBar() {
     randomNetworkMenu -> setIcon(QIcon(":/images/random.png"));
     networkMenu ->addMenu (randomNetworkMenu);
 
+    randomNetworkMenu -> addAction (createScaleFreeRandomNetworkAct);
     randomNetworkMenu -> addAction (createSmallWorldRandomNetworkAct);
-    randomNetworkMenu -> addAction (createUniformRandomNetworkAct );
+    randomNetworkMenu -> addAction (createErdosRenyiRandomNetworkAct );
     // createGaussianRandomNetworkAct -> addTo(randomNetworkMenu);
     randomNetworkMenu -> addAction (createLatticeNetworkAct);
     randomNetworkMenu -> addAction (createRegularRandomNetworkAct);
@@ -1878,6 +1894,7 @@ void MainWindow::initMenuBar() {
 
     layoutMenu->addSeparator();
     physicalLayoutMenu = new QMenu (tr("Force-Directed..."));
+    physicalLayoutMenu -> setIcon(QIcon(":/images/force.png"));
     layoutMenu -> addMenu (physicalLayoutMenu);
     physicalLayoutMenu -> addAction (springLayoutAct);
     physicalLayoutMenu -> addAction (FRLayoutAct);
@@ -4175,7 +4192,7 @@ void MainWindow::slotRecreateDataSet (QString m_fileName) {
     Calls activeGraph.createRandomNetErdos () to create a symmetric network
     Edge existance is controlled by a user specified possibility.
 */
-void MainWindow::slotCreateRandomNetErdos(){
+void MainWindow::slotCreateRandomErdosRenyi(){
 
     statusMessage( "Creating a random symmetric network... ");
 
@@ -4347,16 +4364,81 @@ void MainWindow::slotCreateRegularRandomNetwork(){
 }
 
 
-void MainWindow::slotCreateGaussianRandomNetwork(){
+
+
+void MainWindow::slotCreateRandomGaussian(){
     graphChanged();
 
 }
 
 
 
-void MainWindow::slotCreateSmallWorldRandomNetwork()
+
+void MainWindow::slotCreateRandomScaleFree() {
+    qDebug() << "MW;:slotCreateRandomScaleFree()";
+    m_randScaleFreeDialog = new RandScaleFreeDialog(this);
+
+    connect( m_randScaleFreeDialog, &RandScaleFreeDialog::userChoices,
+             this, &MainWindow::createScaleFreeNetwork);
+
+    m_randScaleFreeDialog->exec();
+
+}
+
+
+void MainWindow::createScaleFreeNetwork (const int &nodes,
+                                            const int &initialNodes,
+                                            const QString &mode,
+                                            const bool &diag)
 {
-    qDebug() << "MW;:slotCreateSmallWorldRandomNetwork()";
+    qDebug() << "MW;:createScaleFreeNetwork()";
+    statusMessage( tr("Erasing any existing network. "));
+    initNet();
+    statusMessage( tr("Creating small world network. Please wait..."));
+
+    double x0=scene->width()/2.0;
+    double y0=scene->height()/2.0;
+    double radius=(graphicsWidget->height()/2.0)-50;          //pixels
+
+    if (showProgressBarAct->isChecked() && nodes > 300){
+        progressDialog= new QProgressDialog(
+                    tr("Creating random network. Please wait \n (or disable me from Options > View > ProgressBar, next time )."),
+                    "Cancel", 0, (int) (2* nodes), this);
+        progressDialog -> setWindowModality(Qt::WindowModal);
+        connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
+        progressDialog->setMinimumDuration(0);
+    }
+    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+//    activeGraph.createRandomNetScaleFree(nodes, initialNodes, x0, y0, radius);
+//    activeGraph.symmetrize();
+    QApplication::restoreOverrideCursor();
+
+    if (showProgressBarAct->isChecked() && nodes > 300 )
+        progressDialog->deleteLater();
+
+    fileLoaded=false;
+
+    graphChanged();
+    setWindowTitle("Untitled");
+    statusMessage( tr("Scale-free random network created: ")
+                   + QString::number(activeNodes())
+                   + " nodes, "+QString::number( activeEdges())+" edges");
+    //float avGraphDistance=activeGraph.averageGraphDistance();
+    float clucof=activeGraph.clusteringCoefficient();
+    QMessageBox::information(this, "New scale-free network",
+                             tr("Scale-free random network created.\n")+
+                             tr("\nNodes: ")+ QString::number(activeNodes())+
+                             tr("\nEdges: ")+  QString::number( activeEdges()/2.0)
+                             //+  tr("\nAverage path length: ") + QString::number(avGraphDistance)
+                             + tr("\nClustering coefficient: ")+QString::number(clucof)
+                             , "OK",0);
+
+}
+
+
+void MainWindow::slotCreateRandomSmallWorld()
+{
+    qDebug() << "MW;:slotCreateRandomSmallWorld()";
     m_randSmallWorldDialog = new RandSmallWorldDialog(this);
 
     connect( m_randSmallWorldDialog, &RandSmallWorldDialog::userChoices,
@@ -4423,7 +4505,7 @@ void MainWindow::createSmallWorldNetwork (const int &nodes,
     Creates a lattice network, i.e. a connected network where every node
     has the same degree and is Edgeed with its neighborhood.
 */
-void MainWindow::slotCreateRandomNetRingLattice(){
+void MainWindow::slotCreateRandomRingLattice(){
     bool ok;
     statusMessage( "You have selected to create a ring lattice network. ");
     int newNodes=( QInputDialog::getInt(

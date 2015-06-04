@@ -30,6 +30,7 @@
   </property>
   <property name="font">
    <font>
+    <family>DejaVu Sans Mono</family>
     <pointsize>12</pointsize>
    </font>
   </property>
@@ -53,7 +54,7 @@
      </property>
      <property name="font">
       <font>
-       <family>Lucida Grande</family>
+       <family>DejaVu Sans</family>
        <pointsize>11</pointsize>
        <stylestrategy>PreferAntialias</stylestrategy>
       </font>

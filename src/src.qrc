@@ -69,5 +69,7 @@
         <file>images/random.png</file>
         <file>images/filter.png</file>
         <file>images/import.png</file>
+        <file>images/force.png</file>
+        <file>images/scalefree.png</file>
     </qresource>
 </RCC>

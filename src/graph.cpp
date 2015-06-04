@@ -679,7 +679,7 @@ void Graph::terminateCrawlerThreads (QString reason){
         delete wc_spider;
         wc_spider= 0;  // see why here: https://goo.gl/tQxpGA
 
-        emit signalNodeSizesByOutDegree(true);
+        emit signalNodeSizesByInDegree(true);
      }
 
 

@@ -73,6 +73,7 @@ class PreviewForm;
 
 class RandErdosRenyiDialog;
 class RandSmallWorldDialog;
+class RandScaleFreeDialog;
 
 
 class MainWindow : public QMainWindow
@@ -153,7 +154,7 @@ public slots:
     void slotViewAdjacencyMatrix();
     void slotShowDataSetSelectDialog();
     void slotRecreateDataSet(QString);
-    void slotCreateRandomNetErdos();
+    void slotCreateRandomErdosRenyi();
     void createRandomNetErdos( const int N,
                                const QString model,
                                const int edges,
@@ -161,9 +162,16 @@ public slots:
                                const QString mode,
                                const bool diag) ;
     void slotCreateRegularRandomNetwork();
-    void slotCreateGaussianRandomNetwork();
-    void slotCreateRandomNetRingLattice();
-    void slotCreateSmallWorldRandomNetwork();
+    void slotCreateRandomGaussian();
+    void slotCreateRandomRingLattice();
+    void slotCreateRandomScaleFree();
+    void createScaleFreeNetwork (const int &nodes,
+                                 const int &initialNodes,
+                                 const QString &mode,
+                                 const bool &diag);
+
+    void slotCreateRandomSmallWorld();
+
     void createSmallWorldNetwork (const int &nodes,
                                    const int &degree,
                                    const float &beta,
@@ -340,6 +348,7 @@ private:
 
     RandErdosRenyiDialog *m_randErdosRenyiDialog;
     RandSmallWorldDialog *m_randSmallWorldDialog;
+    RandScaleFreeDialog *m_randScaleFreeDialog;
 
     PreviewForm *previewForm;
     QList<QTextCodec *> codecs;
@@ -380,8 +389,10 @@ private:
 
     QAction *viewNetworkFileAct, *openTextEditorAct, *viewSociomatrixAct, *recreateDataSetAct;
 
-    QAction *createUniformRandomNetworkAct, *createGaussianRandomNetworkAct, *createLatticeNetworkAct;
+    QAction *createErdosRenyiRandomNetworkAct, *createGaussianRandomNetworkAct;
+    QAction *createLatticeNetworkAct, *createScaleFreeRandomNetworkAct;
     QAction *createSmallWorldRandomNetworkAct, *createRegularRandomNetworkAct;
+
     QAction *displayNodeNumbersAct, *displayNodeLabelsAct, *displayNumbersInsideNodesAct;
     QAction *selectNoneAct, *selectAllAct;
     QAction *findNodeAct,*addNodeAct, *addEdgeAct, *removeNodeAct, *propertiesNodeAct, *removeEdgeAct;

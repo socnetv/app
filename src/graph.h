@@ -165,6 +165,7 @@ signals:
     void addRelationToMW(QString newRelation);
     void describeDataset(QString);
     void signalNodeSizesByOutDegree(bool);
+    void signalNodeSizesByInDegree(bool);
 
     /** Signals to GraphicsWidget */
     void drawNode( int ,int,  QString, QString, int, QString, QString, int,
