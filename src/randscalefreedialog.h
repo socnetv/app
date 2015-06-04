@@ -19,13 +19,19 @@ public slots:
     void setDiag();
 
 signals:
-    void userChoices( const int nodes,
-                      const int initialNodes,
-                      const QString mode,
-                      const bool diag);
+    void userChoices( const int &nodes,
+                      const int &power,
+                      const int &initialNodes,
+                      const int &edgesPerStep,
+                      const float &zeroAppeal,
+                      const QString &mode);
 private:
     QString mode;
-    int nodes, initialNodes;
+    int nodes; // n
+    int initialNodes; // m0
+    int edgesPerStep; //m
+    int power;
+    float zeroAppeal; // a
     bool diag;
     Ui::RandScaleFreeDialog ui;
 

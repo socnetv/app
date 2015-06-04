@@ -26,8 +26,10 @@ RandScaleFreeDialog::RandScaleFreeDialog(QWidget *parent) :
     (ui.nodesSpinBox )->setFocus();
 
     ui.initialNodesSpinBox-> setEnabled(true);
-    ui.undirectedRadioButton->setChecked(true);
-    ui.directedRadioButton->setEnabled(false);
+    ui.undirectedRadioButton->setChecked(false);
+    ui.directedRadioButton->setEnabled(true);
+    ui.directedRadioButton->setChecked(true);
+    ui.diagCheckBox->setText("No, set zero");
     ui.diagCheckBox ->setChecked(false);
     ui.diagCheckBox -> setEnabled(false);
 
@@ -81,14 +83,18 @@ void RandScaleFreeDialog::checkErrors() {
 void RandScaleFreeDialog::gatherData() {
     qDebug() << "RandScaleFreeDialog::gatherData() " ;
     nodes = ui.nodesSpinBox->value();
-    initialNodes= ui.initialNodesSpinBox->value();
+    power = ui.powerSpinBox->value();
+    initialNodes = ui.initialNodesSpinBox->value();
+    edgesPerStep = ui.edgesPerStepSpinBox ->value();
+    zeroAppeal = ui.zeroAppealSpinBox->value();
     mode = (ui.directedRadioButton->isChecked() ? "digraph" : "graph" );
-    diag = (ui.diagCheckBox -> isChecked() ? true : false);
+ //   diag = (ui.diagCheckBox -> isChecked() ? true : false);
+
     qDebug() << "nodes " << nodes ;
     qDebug() << "initialNodes " << initialNodes;
     qDebug() << "mode " << mode;
     qDebug() << "diag " << diag;
-    emit userChoices(nodes, initialNodes, mode, diag);
+    emit userChoices(nodes, power, initialNodes, edgesPerStep,zeroAppeal, mode);
 
 }
 

@@ -4401,10 +4401,12 @@ void MainWindow::slotCreateRandomScaleFree() {
 }
 
 
-void MainWindow::createScaleFreeNetwork (const int &nodes,
-                                            const int &initialNodes,
-                                            const QString &mode,
-                                            const bool &diag)
+void MainWindow::createScaleFreeNetwork ( const int &nodes,
+                                          const int &power,
+                                          const int &initialNodes,
+                                          const int &edgesPerStep,
+                                          const float &zeroAppeal,
+                                          const QString &mode)
 {
     qDebug() << "MW;:createScaleFreeNetwork()";
     statusMessage( tr("Erasing any existing network. "));
@@ -4424,7 +4426,15 @@ void MainWindow::createScaleFreeNetwork (const int &nodes,
         progressDialog->setMinimumDuration(0);
     }
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-    activeGraph.createRandomNetScaleFree(nodes, initialNodes, x0, y0, radius);
+    activeGraph.createRandomNetScaleFree( nodes,
+                                          power,
+                                          initialNodes,
+                                          edgesPerStep,
+                                          zeroAppeal,
+                                          mode,
+                                          x0,
+                                          y0,
+                                          radius);
 //    activeGraph.symmetrize();
     QApplication::restoreOverrideCursor();
 
@@ -4443,7 +4453,8 @@ void MainWindow::createScaleFreeNetwork (const int &nodes,
     QMessageBox::information(this, "New scale-free network",
                              tr("Scale-free random network created.\n")+
                              tr("\nNodes: ")+ QString::number(activeNodes())+
-                             tr("\nEdges: ")+  QString::number( activeEdges()/2.0)
+                             tr("\nEdges: ")
+                             +  QString::number( (mode == "graph" ) ? activeEdges()/2.0 : activeEdges())
                              //+  tr("\nAverage path length: ") + QString::number(avGraphDistance)
                              + tr("\nClustering coefficient: ")+QString::number(clucof)
                              , "OK",0);
@@ -4505,7 +4516,8 @@ void MainWindow::createSmallWorldNetwork (const int &nodes,
     QMessageBox::information(this, "New Small World",
                              tr("Small world network created.\n")+
                              tr("\nNodes: ")+ QString::number(activeNodes())+
-                             tr("\nEdges: ")+  QString::number( activeEdges()/2.0)
+                             tr("\nEdges: ")
+                              +  QString::number( (mode == "graph" ) ? activeEdges()/2.0 : activeEdges())
                              //+  tr("\nAverage path length: ") + QString::number(avGraphDistance)
                              + tr("\nClustering coefficient: ")+QString::number(clucof)
                              , "OK",0);

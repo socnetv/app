@@ -4973,9 +4973,15 @@ void Graph::createRandomNetRingLattice(
 
 
 
-void Graph::createRandomNetScaleFree(
-        int vert, int m0,
-        double x0, double y0, double radius)
+void Graph::createRandomNetScaleFree (const int &n,
+                                       const int &power,
+                                       const int &m0,
+                                       const int &m,
+                                       const float &alpha,
+                                       const QString &mode,
+                                       const double &x0,
+                                       const double &y0,
+                                       const double &radius)
 {
     qDebug() << "Graph::createRandomNetScaleFree() - "
                 << "Create initial connected net of m0 nodes";
@@ -4986,12 +4992,13 @@ void Graph::createRandomNetScaleFree(
 
     int x=0;
     int y=0;
+    int newEdges = 0;
     double sumDegrees=0;
     double k_j;
-    double rad= (2.0* Pi/ vert );
+    double rad= (2.0* Pi/ n );
     double  prob_j = 0, prob=0;
 
-    index.reserve(vert);
+    index.reserve( n );
 
     for (register int i=0; i< m0 ; ++i) {
         x=x0 + radius * cos(i * rad);
@@ -5021,10 +5028,10 @@ void Graph::createRandomNetScaleFree(
     }
 
     qDebug()<< endl << "Graph::createRandomNetScaleFree() - "
-               << " start network growth to " << vert
+               << " start network growth to " << n
                << " nodes with preferential attachment" << endl;
 
-    for (register int i=m0; i< vert ; ++i) {
+    for (register int i= m0 ; i < n ; ++i) {
 
         x=x0 + radius * cos(i * rad);
         y=y0 + radius * sin(i * rad);
@@ -5042,29 +5049,60 @@ void Graph::createRandomNetScaleFree(
         progressCounter++;
         emit updateProgressDialog( progressCounter );
 
+        // no need to multiply by 2, since totalEdges already reports
+        // twice the current number of edges in the network
         sumDegrees =  totalEdges();
 
-        for (register int j=0; j< i  ; ++j) {
+        newEdges = 0;
 
-            // no need to multiply by 2, since totalEdges already reports
-            // twice the current number of edges in the network
+        for (;;)
+        {	//do until we create m new edges
 
-            k_j = inDegree(j+1);
-            prob_j = k_j  / sumDegrees ;
-            prob  = ( rand() % 100 + 1 ) / 100.0;
+            for (register int j=0; j < i  ; ++j) {
+                qDebug() << "Graph::createRandomNetScaleFree() - "
+                           << " preferential attachment test of new node i "
+                           << i+1
+                           << " with node j " << j+1
+                            << " - newEdges " << newEdges ;
 
-            qDebug() << "Graph::createRandomNetScaleFree() - "
-                       << " Creating edges for new node i " << i+1
-                        << " Compute edge probability with existing node "
-                        << j+1 << " degree " << k_j
-                         << " sumDegrees " << sumDegrees
-                         << " prob " << prob << "  prob_j " << prob_j;
+                if (newEdges == m)
+                    break;
 
-            if ( prob  <=  prob_j )  {
-                qDebug() << " --- Creating pref.att. edge "
-                         <<  i+1 << " <-> " << j+1;
-                createEdge (i+1, j+1, 1, "black", 2, true, false);
+                k_j = inDegree(j+1);
+                k_j = pow ( k_j , power );
+                if (sumDegrees < 1 )
+                    prob_j = 1; // always create edge if no other edge exist
+                else
+                    prob_j = ( alpha + k_j  ) / sumDegrees ;
+
+                prob  = ( rand() % 100 + 1 ) / 100.0;
+
+                qDebug() << "Graph::createRandomNetScaleFree() - "
+                            << " Edge probability with old node "
+                            << j+1 << " is: alpha + k_j ^ power " << alpha + k_j
+                             << " / sumDegrees " << sumDegrees
+                             << " = prob_j " << prob_j
+                                << " prob " << prob ;
+
+                if ( prob  <=  prob_j )  {
+                    if ( mode == "graph") {
+                        qDebug() << " --- Creating pref.att. reciprocal edge "
+                                 <<  i+1 << " <-> " << j+1;
+                        createEdge (i+1, j+1, 1, "black", 2, true, false);
+                        newEdges ++;
+
+                    }
+                    else {
+                        qDebug() << " --- Creating pref.att. directed edge "
+                                 <<  i+1 << " <-> " << j+1;
+                        createEdge (i+1, j+1, 1, "black", 1, true, false);
+                        newEdges ++;
+
+                    }
+                }
             }
+            if ( newEdges == m )
+                break;
         }
     }
 

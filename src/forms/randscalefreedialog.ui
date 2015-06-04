@@ -194,7 +194,7 @@ p, li { white-space: pre-wrap; }
         <number>9999</number>
        </property>
        <property name="singleStep">
-        <number>2</number>
+        <number>1</number>
        </property>
        <property name="value">
         <number>1</number>
@@ -259,7 +259,7 @@ p, li { white-space: pre-wrap; }
         <number>9999</number>
        </property>
        <property name="singleStep">
-        <number>2</number>
+        <number>1</number>
        </property>
        <property name="value">
         <number>1</number>
@@ -324,10 +324,10 @@ p, li { white-space: pre-wrap; }
         <number>9999</number>
        </property>
        <property name="singleStep">
-        <number>2</number>
+        <number>1</number>
        </property>
        <property name="value">
-        <number>1</number>
+        <number>2</number>
        </property>
       </widget>
      </item>
@@ -389,10 +389,10 @@ p, li { white-space: pre-wrap; }
         <number>9999</number>
        </property>
        <property name="singleStep">
-        <number>2</number>
+        <number>1</number>
        </property>
        <property name="value">
-        <number>0</number>
+        <number>1</number>
        </property>
       </widget>
      </item>
@@ -570,16 +570,6 @@ p, li { white-space: pre-wrap; }
     </widget>
    </item>
   </layout>
-  <zorder>label_2</zorder>
-  <zorder>buttonBox</zorder>
-  <zorder>layoutWidget</zorder>
-  <zorder>layoutWidget_2</zorder>
-  <zorder>layoutWidget</zorder>
-  <zorder>layoutWidget</zorder>
-  <zorder>layoutWidget</zorder>
-  <zorder>layoutWidget</zorder>
-  <zorder>label_4</zorder>
-  <zorder>layoutWidget_3</zorder>
  </widget>
  <resources/>
  <connections>

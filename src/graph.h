@@ -486,8 +486,16 @@ public:
     void createSameDegreeRandomNetwork
     (int, int);
 
-    void createRandomNetScaleFree
-        (int, int m0, double, double, double);
+    void createRandomNetScaleFree (const int &n,
+                                    const int &power,
+                                    const int &m0,
+                                    const int &m,
+                                    const float &alpha,
+                                    const QString &mode,
+                                    const double &x0,
+                                    const double &y0,
+                                    const double &radius);
+
 
     void createRandomNetSmallWorld
     (int, int, double, double, double, double);

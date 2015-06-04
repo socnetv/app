@@ -165,10 +165,13 @@ public slots:
     void slotCreateRandomGaussian();
     void slotCreateRandomRingLattice();
     void slotCreateRandomScaleFree();
+
     void createScaleFreeNetwork (const int &nodes,
+                                 const int &power,
                                  const int &initialNodes,
-                                 const QString &mode,
-                                 const bool &diag);
+                                 const int &edgesPerStep,
+                                 const float &zeroAppeal,
+                                 const QString &mode);
 
     void slotCreateRandomSmallWorld();
 

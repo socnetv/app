@@ -741,6 +741,7 @@ bool Vertex::addClique (const QString &clique, const int &size) {
         break;
     }
     };
+    return false;
 }
 
 
