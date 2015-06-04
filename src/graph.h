@@ -486,6 +486,9 @@ public:
     void createSameDegreeRandomNetwork
     (int, int);
 
+    void createRandomNetScaleFree
+        (int, int m0, double, double, double);
+
     void createRandomNetSmallWorld
     (int, int, double, double, double, double);
 

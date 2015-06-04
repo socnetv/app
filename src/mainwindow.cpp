@@ -4409,7 +4409,7 @@ void MainWindow::createScaleFreeNetwork (const int &nodes,
         progressDialog->setMinimumDuration(0);
     }
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-//    activeGraph.createRandomNetScaleFree(nodes, initialNodes, x0, y0, radius);
+    activeGraph.createRandomNetScaleFree(nodes, initialNodes, x0, y0, radius);
 //    activeGraph.symmetrize();
     QApplication::restoreOverrideCursor();
 

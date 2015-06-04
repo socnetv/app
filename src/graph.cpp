@@ -4973,6 +4973,106 @@ void Graph::createRandomNetRingLattice(
 
 
 
+void Graph::createRandomNetScaleFree(
+        int vert, int m0,
+        double x0, double y0, double radius)
+{
+    qDebug() << "Graph::createRandomNetScaleFree() - "
+                << "Create initial connected net of m0 nodes";
+
+    int progressCounter=0;
+
+    makeThingsLookRandom();
+
+    int x=0;
+    int y=0;
+    double sumDegrees=0;
+    double k_j;
+    double rad= (2.0* Pi/ vert );
+    double  prob_j = 0, prob=0;
+
+    index.reserve(vert);
+
+    for (register int i=0; i< m0 ; ++i) {
+        x=x0 + radius * cos(i * rad);
+        y=y0 + radius * sin(i * rad);
+
+        qDebug() << "Graph::createRandomNetScaleFree() - "
+                    << " initial node i " << i+1 << " pos " << x << "," << y;
+        createVertex(
+                    i+1, initVertexSize,initVertexColor,
+                    initVertexNumberColor, initVertexNumberSize,
+                    QString::number (i+1), initVertexLabelColor, initVertexLabelSize,
+                    QPoint(x, y), initVertexShape,false
+                    );
+        progressCounter++;
+        emit updateProgressDialog( progressCounter );
+    }
+
+    for (register int i=0; i < m0; ++i){
+        qDebug() << "Graph::createRandomNetScaleFree() - "
+                   << " Creating all edges for initial node i " << i+1;
+        for (register int j=i+1; j< m0  ; ++j) {
+            qDebug() << " --- Creating initial edge " << i+1 << " <-> " << j+1;
+            createEdge (i+1, j+1, 1, "black", 2, true, false);
+        }
+        progressCounter++;
+        emit updateProgressDialog(progressCounter );
+    }
+
+    qDebug()<< endl << "Graph::createRandomNetScaleFree() - "
+               << " start network growth to " << vert
+               << " nodes with preferential attachment" << endl;
+
+    for (register int i=m0; i< vert ; ++i) {
+
+        x=x0 + radius * cos(i * rad);
+        y=y0 + radius * sin(i * rad);
+
+        qDebug() << "Graph::createRandomNetScaleFree() - "
+                    << " adding new node i " << i+1
+                    << " pos " << x << "," << y << endl;
+
+        createVertex(
+                    i+1, initVertexSize,initVertexColor,
+                    initVertexNumberColor, initVertexNumberSize,
+                    QString::number (i+1), initVertexLabelColor, initVertexLabelSize,
+                    QPoint(x, y), initVertexShape,false
+                    );
+        progressCounter++;
+        emit updateProgressDialog( progressCounter );
+
+        sumDegrees =  totalEdges();
+
+        for (register int j=0; j< i  ; ++j) {
+
+            // no need to multiply by 2, since totalEdges already reports
+            // twice the current number of edges in the network
+
+            k_j = outDegree(j+1);
+            prob_j = k_j  / sumDegrees ;
+            prob  = ( rand() % 100 + 1 ) / 100.0;
+
+            qDebug() << "Graph::createRandomNetScaleFree() - "
+                       << " Creating edges for new node i " << i+1
+                        << " Compute edge probability with existing node "
+                        << j+1 << " degree " << k_j
+                         << " sumDegrees " << sumDegrees
+                         << " prob " << prob << "  prob_j " << prob_j;
+
+            if ( prob  <=  prob_j )  {
+                qDebug() << " --- Creating pref.att. edge "
+                         <<  i+1 << " <-> " << j+1;
+                createEdge (i+1, j+1, 1, "black", 2, true, false);
+            }
+        }
+    }
+
+    addRelationFromGraph(tr("scale-free"));
+    emit graphChanged();
+
+}
+
 
 
 void Graph::createRandomNetSmallWorld (
@@ -5061,7 +5161,6 @@ void Graph::createSameDegreeRandomNetwork(int vert, int degree){
         progressCounter++;
         emit updateProgressDialog(progressCounter );
         qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
-
     }
     addRelationFromGraph(tr("random"));
     emit graphChanged();
