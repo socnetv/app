@@ -5049,7 +5049,7 @@ void Graph::createRandomNetScaleFree(
             // no need to multiply by 2, since totalEdges already reports
             // twice the current number of edges in the network
 
-            k_j = outDegree(j+1);
+            k_j = inDegree(j+1);
             prob_j = k_j  / sumDegrees ;
             prob  = ( rand() % 100 + 1 ) / 100.0;
 
