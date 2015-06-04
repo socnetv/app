@@ -2,15 +2,16 @@
 body {
   background: white none;
   color: black;
-  font-family: sans-serif;
+  font-family: serif;
   font-size: 16px;
+  line-height: 120%;
   padding: 0 15px 0 5px;
   margin: 0; 
 }
 
 
 
-p, h1, h2, h3, h4, h5, h6, td, th { 
+h1, h2, h3, h4, h5, h6, td, th {
   font-family: sans-serif;
 
 }
@@ -22,36 +23,38 @@ vertical-align: bottom;
 }
 
 h1 {
-          font-size: 28px;
+          font-size: 30px;
 }
 
 
 h2 {
-          font-size: 24px;
+          font-size: 26px;
 }
 
 
 h3 {
-          font-size: 20px;
+          font-size: 24px;
 }
 
 
 h4 {
   padding:  0px 0px 0px 0px;
-  margin: 20px 0px 5px 0px;
-  font-size: 18px;
+  margin: 45px 0px 5px 5px;
+  font-size: 20px;
 }
 
 h5 {
   padding:  0px 0px 0px 0px;
-  margin: 20px 0px 5px 5px;
-  font-size: 16px;
+  margin: 30px 0px 5px 10px;
+  font-size: 18px;
+  font-style: italic;
 }
 
 p { 
-  text-align: justify; 
+  text-align: left;
   font-size: 16px;
   margin-left:10px;
+  line-height: 120%;
 }
 
 

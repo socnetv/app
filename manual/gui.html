@@ -239,85 +239,17 @@ By default, SocNetV displays the adjacency matrix as integer-valued only (althou
 </p>
 
 
+<h4><a name="Datasets" id="Datasets"></a>Known data sets</h4>
+
+<p>SocNetV can recreate known data sets. <a href="generate.html#datasets" target="2">Read more<a>.</p>
 
 <h4><a name="Random" id="Random"></a>Random network creation</h4>
-<p>
-SocNetV can create a random network for you. At the moment, it can create the following types of random networks:
-</p>
-<ul>
-<li><b>Small Worlds</b></li>
-<li><b>Erdos-Renyi networks</b></li>
-<li><b>Ring lattices</b></li>
-<li><b>Same degree networks</b></li>
-</ul>
-
-<h5><a name="RandomSW" id="RandomSW"></a>Small Worlds</h5>
-<p>SocNetV creates small worlds using the Watts and Strogatz model.
-According to that model, a 'small world' is a random network with short average path lengths and high clustering.
-<br />
-Given the desired number of nodes N, the mean degree K (assumed to be an even integer),
-and a special parameter \(  \beta \), satisfying \(  0 \le \beta \le 1 \)
-and \(  N\gg K \gg \ln(N)\gg 1 \), the model constructs an undirected graph with N nodes and
-\(  \frac{NK}{2} \) edges in the following way:</p>
-<ul>
-<li>Construct a regular ring lattice, a graph with \(  N \) nodes each connected to \(  K \) neighbors, \(  K/2 \) on each side.
-</li><li>
-For every node \( n_i=n_0,\dots, n_{N-1} \) take every edge \( (n_i, n_j) \) with \( i < j \), and rewire it with probability \( \beta \). Rewiring is done by replacing \( (n_i, n_j) \) with \( (n_i, n_k) \) where \( k \) is chosen with uniform probability from all possible values that avoid self-loops (\( k \ne i \)) and link duplication (there is no edge \( (n_i, n_{k'}) \) with \( k' = k \) at this point in the algorithm).
-</li>
-</ul>
-
-<p>From the menu Network select Create Random Network > Small World (or press Shift+W).
-<br />
-You will be asked for the number of nodes N, their mean degree K and a rewiring probability \(  \beta \). </p>
-
-
-<h5><a name="RandomER" id="RandomER"></a>Erdos-Renyi networks</h5>
-<p>According to G(n, p) model (Erdos-Renyi), a random network is created by connecting nodes randomly. </p>
-<p>Each edge is included in the graph with equal probability P, independently of the other edges.</p>
-<p>From the menu Network select Create Random Network > Erdos-Renyi (or press Shift+R). </p>
-<p>You will be asked for the number of nodes and an edge probability. </p>
-
-<h5><a name="RandomER" id="RandomER"></a>Ring lattices</h5>
-
-<p>Ring lattices (or physicist's lattices) are 'random' networks where all nodes are positioned in a ring.</p>
-<p>Each one has the same even degree (number of edges) d with her "neighbourhood", namely she is linked with the d/2 nodes before and d/2 nodes after her.
-<p>For instance in a 4-lattice of 10 nodes, node 6 will be linked with 4, 5, 7 and 8. </p>
-<p>To create a ring lattice network click Network > Create Random Network > Ring Lattice (or press Shift+L). </p>
-<p>You will be asked for the number of nodes and the degree of each node.</p>
-
-<h5><a name="RandomER" id="RandomRegular"></a>Regular Networks</h5>
-<p>These are random network where each node have the same number of "neighbours", aka the same degree d.
-<p>Nodes are arbitrarily linked with each other other. </p>
-
-
+<p>SocNetV can create a random network for you. <a href="generate.html#Random" target="2">Read more</a>.<p>
 
 
 
 <h4><a name="WebCrawler" id="WebCrawler"></a>Web Crawler</h4>
-<p>
-SocNetV includes a simple web crawler, which consists of two parts:
-a spider and a parser.</p>
-<p>
-The spider visits a given initial URL (i.e. a website or a webpage) and downloads its HTML code. <br />
-The parser scans the code for 'href' links to other pages (internal or external)
-and adds them to a queue of URLs (called frontier).<br />
-As URLs are added in the queue, the spider visits them and downloads their HTML
-which is scanned for more links by the parser, and so on...<br />
-The end result is the 'network' of all visited webpages as nodes and their real links as edges.
-<p>
-Please note that the parser searches for 'href' links only in the body section of the HTML code.
-</p>
-
-<p>
-To start the web crawler, go to menu Network > Web Crawler or press Shift+C.
-A dialog will appear, where you must enter the initial web page (seed).
-</p>
-
-<p>
-You can also set the maximum nodes/pages (default 600) and what kind of links to
-crawl: internal, external or both. <br />
-By default the spider will crawl both internal and external links.
-</p>
+<p>SocNetV includes a simple web crawler. <a href="generate.html#WebCrawler" target="2">Read more</a>.</p>
 
 
 <h4><a name="Export" id="Export"></a>Printing and Exporting</h4>
