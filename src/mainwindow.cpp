@@ -529,7 +529,9 @@ void MainWindow::initActions(){
 
 
     createErdosRenyiRandomNetworkAct = new QAction(QIcon(":/images/erdos.png"), tr("Erdős–Rényi"),  this);
-    createErdosRenyiRandomNetworkAct ->setShortcut(tr("Shift+U"));
+    createErdosRenyiRandomNetworkAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_E)
+                );
     createErdosRenyiRandomNetworkAct->setStatusTip(tr("Creates a random network according to the Erdős–Rényi model"));
     createErdosRenyiRandomNetworkAct->setWhatsThis(
                 tr("Erdős–Rényi \n\n") +
@@ -539,7 +541,9 @@ void MainWindow::initActions(){
     connect(createErdosRenyiRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateRandomErdosRenyi()));
 
     createLatticeNetworkAct = new QAction( QIcon(":/images/net1.png"), tr("Ring Lattice"), this);
-    createLatticeNetworkAct ->setShortcut(tr("Shift+L"));
+    createLatticeNetworkAct -> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_L)
+                );
     createLatticeNetworkAct->setStatusTip(tr("Creates a ring lattice random network"));
     createLatticeNetworkAct->setWhatsThis(
                 tr("Ring Lattice \n\n")+
@@ -547,6 +551,9 @@ void MainWindow::initActions(){
     connect(createLatticeNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateRandomRingLattice()));
 
     createRegularRandomNetworkAct = new QAction(QIcon(":/images/net.png"), tr("d-Regular"), this);
+    createRegularRandomNetworkAct -> setShortcut(
+                        QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_R)
+                        );
     createRegularRandomNetworkAct->setStatusTip(tr("Creates a random network where every node has the same degree d."));
     createRegularRandomNetworkAct->setWhatsThis(
                 tr("d-Regular \n\n") +
@@ -554,12 +561,17 @@ void MainWindow::initActions(){
     connect(createRegularRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateRegularRandomNetwork()));
 
     createGaussianRandomNetworkAct = new QAction(tr("Gaussian"),	this);
+    createGaussianRandomNetworkAct -> setShortcut(
+                    QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_G)
+                    );
     createGaussianRandomNetworkAct->setStatusTip(tr("Creates a Gaussian distributed random network"));
     createGaussianRandomNetworkAct->setWhatsThis(tr("Gaussian \n\nCreates a random network of Gaussian distribution"));
     connect(createGaussianRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateRandomGaussian()));
 
     createSmallWorldRandomNetworkAct = new QAction(QIcon(":/images/sw.png"), tr("Small World"),	this);
-    createSmallWorldRandomNetworkAct->setShortcut(tr("Shift+W"));
+    createSmallWorldRandomNetworkAct-> setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_W)
+                );
     createSmallWorldRandomNetworkAct->setStatusTip(tr("Creates a random network with small world properties"));
     createSmallWorldRandomNetworkAct ->
             setWhatsThis(
@@ -570,7 +582,10 @@ void MainWindow::initActions(){
 
     createScaleFreeRandomNetworkAct = new QAction(
                 QIcon(":/images/scalefree.png"), tr("Scale-free"),	this);
-    createScaleFreeRandomNetworkAct->setShortcut(tr("Shift+S"));
+
+    createScaleFreeRandomNetworkAct->setShortcut(
+                QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_S)
+                );
     createScaleFreeRandomNetworkAct->setStatusTip(
                 tr("Creates a random network with power-law degree distribution."));
     createScaleFreeRandomNetworkAct->

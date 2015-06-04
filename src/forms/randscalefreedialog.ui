@@ -67,7 +67,7 @@
       <enum>QFrame::Sunken</enum>
      </property>
      <property name="text">
-      <string>Generate random scale-free network according the Barabási–Albert (BA) model using a preferential attachment mechanism.</string>
+      <string>Generate a random scale-free network according to the Barabási–Albert (BA) model which uses a preferential attachment mechanism.</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
@@ -197,7 +197,7 @@ p, li { white-space: pre-wrap; }
         <number>2</number>
        </property>
        <property name="value">
-        <number>10</number>
+        <number>2</number>
        </property>
       </widget>
      </item>
