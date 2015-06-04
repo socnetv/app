@@ -4915,7 +4915,7 @@ void Graph::createRandomNetErdos(  const int &vert,
     }
 
 
-    addRelationFromGraph(tr("random")); //FIXME
+    addRelationFromGraph(tr("erdos-renyi")); //FIXME
 
     emit graphChanged();
 }
@@ -4966,7 +4966,7 @@ void Graph::createRandomNetRingLattice(
         emit updateProgressDialog(progressCounter );
         qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
     }
-    addRelationFromGraph(tr("random"));
+    addRelationFromGraph(tr("ring lattice"));
 
     emit graphChanged();
 }
@@ -5107,6 +5107,7 @@ void Graph::createRandomNetScaleFree (const int &n,
     }
 
     addRelationFromGraph(tr("scale-free"));
+    emit signalNodeSizesByInDegree(true);
     emit graphChanged();
 
 }
@@ -5155,6 +5156,8 @@ void Graph::createRandomNetSmallWorld (
             }
         }
     }
+
+    emit signalNodeSizesByInDegree(true);
 }
 
 

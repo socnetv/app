@@ -4426,6 +4426,7 @@ void MainWindow::createScaleFreeNetwork ( const int &nodes,
         progressDialog->setMinimumDuration(0);
     }
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+
     activeGraph.createRandomNetScaleFree( nodes,
                                           power,
                                           initialNodes,
@@ -4435,7 +4436,7 @@ void MainWindow::createScaleFreeNetwork ( const int &nodes,
                                           x0,
                                           y0,
                                           radius);
-//    activeGraph.symmetrize();
+
     QApplication::restoreOverrideCursor();
 
     if (showProgressBarAct->isChecked() && nodes > 300 )
