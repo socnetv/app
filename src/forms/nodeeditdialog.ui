@@ -22,6 +22,12 @@
     <height>300</height>
    </size>
   </property>
+  <property name="font">
+   <font>
+    <family>DejaVu Sans</family>
+    <pointsize>11</pointsize>
+   </font>
+  </property>
   <property name="windowTitle">
    <string>Node Properties</string>
   </property>
@@ -32,7 +38,8 @@
       <widget class="QLabel" name="label">
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <family>DejaVu Sans</family>
+         <pointsize>11</pointsize>
         </font>
        </property>
        <property name="text">
@@ -44,7 +51,8 @@
       <widget class="QLineEdit" name="labelEdit">
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <family>DejaVu Sans</family>
+         <pointsize>11</pointsize>
         </font>
        </property>
       </widget>
@@ -60,7 +68,8 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <family>DejaVu Sans</family>
+         <pointsize>11</pointsize>
         </font>
        </property>
        <property name="text">
@@ -72,7 +81,8 @@
       <spacer name="horizontalSpacer_2">
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <family>DejaVu Sans</family>
+         <pointsize>11</pointsize>
         </font>
        </property>
        <property name="orientation">
@@ -93,7 +103,8 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <family>DejaVu Sans</family>
+         <pointsize>11</pointsize>
         </font>
        </property>
       </widget>
@@ -106,7 +117,8 @@
       <widget class="QLabel" name="label_5">
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <family>DejaVu Sans</family>
+         <pointsize>11</pointsize>
         </font>
        </property>
        <property name="text">
@@ -118,7 +130,8 @@
       <spacer name="horizontalSpacer_4">
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <family>DejaVu Sans</family>
+         <pointsize>11</pointsize>
         </font>
        </property>
        <property name="orientation">
@@ -136,7 +149,8 @@
       <widget class="QRadioButton" name="boxRadio">
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <family>DejaVu Sans</family>
+         <pointsize>11</pointsize>
         </font>
        </property>
        <property name="text">
@@ -152,7 +166,8 @@
       <widget class="QRadioButton" name="circleRadio">
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <family>DejaVu Sans</family>
+         <pointsize>11</pointsize>
         </font>
        </property>
        <property name="text">
@@ -168,7 +183,8 @@
       <widget class="QRadioButton" name="diamondRadio">
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <family>DejaVu Sans</family>
+         <pointsize>11</pointsize>
         </font>
        </property>
        <property name="text">
@@ -184,7 +200,8 @@
       <widget class="QRadioButton" name="ellipseRadio">
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <family>DejaVu Sans</family>
+         <pointsize>11</pointsize>
         </font>
        </property>
        <property name="text">
@@ -200,7 +217,8 @@
       <widget class="QRadioButton" name="triangleRadio">
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <family>DejaVu Sans</family>
+         <pointsize>11</pointsize>
         </font>
        </property>
        <property name="text">
@@ -218,7 +236,8 @@
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="font">
       <font>
-       <pointsize>12</pointsize>
+       <family>DejaVu Sans</family>
+       <pointsize>11</pointsize>
       </font>
      </property>
      <property name="orientation">
@@ -235,7 +254,8 @@
       <widget class="QLabel" name="label_4">
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <family>DejaVu Sans</family>
+         <pointsize>11</pointsize>
         </font>
        </property>
        <property name="text">
@@ -247,7 +267,8 @@
       <spacer name="horizontalSpacer_3">
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <family>DejaVu Sans</family>
+         <pointsize>11</pointsize>
         </font>
        </property>
        <property name="orientation">
@@ -271,7 +292,8 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <family>DejaVu Sans</family>
+         <pointsize>11</pointsize>
         </font>
        </property>
        <property name="text">
@@ -293,7 +315,8 @@
       <widget class="QLabel" name="label_2">
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <family>DejaVu Sans</family>
+         <pointsize>11</pointsize>
         </font>
        </property>
        <property name="text">
@@ -305,7 +328,8 @@
       <spacer name="horizontalSpacer">
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <family>DejaVu Sans</family>
+         <pointsize>11</pointsize>
         </font>
        </property>
        <property name="orientation">
@@ -323,7 +347,8 @@
       <widget class="QSpinBox" name="sizeSpin">
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <family>DejaVu Sans</family>
+         <pointsize>11</pointsize>
         </font>
        </property>
        <property name="value">

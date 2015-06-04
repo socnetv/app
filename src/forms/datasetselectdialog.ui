@@ -50,7 +50,7 @@
      </property>
      <property name="font">
       <font>
-       <pointsize>12</pointsize>
+       <pointsize>11</pointsize>
       </font>
      </property>
      <property name="text">
@@ -87,7 +87,7 @@
      <property name="font">
       <font>
        <family>DejaVu Sans</family>
-       <pointsize>12</pointsize>
+       <pointsize>11</pointsize>
       </font>
      </property>
      <property name="text">
@@ -107,7 +107,7 @@ Select the data set you want to re-create from the list: </string>
      <property name="font">
       <font>
        <family>DejaVu Sans</family>
-       <pointsize>12</pointsize>
+       <pointsize>11</pointsize>
       </font>
      </property>
      <property name="text">
@@ -129,7 +129,7 @@ Select the data set you want to re-create from the list: </string>
      <property name="font">
       <font>
        <family>DejaVu Sans</family>
-       <pointsize>11</pointsize>
+       <pointsize>10</pointsize>
       </font>
      </property>
      <property name="cursor">
@@ -145,7 +145,7 @@ Select the data set you want to re-create from the list: </string>
      <property name="font">
       <font>
        <family>DejaVu Sans</family>
-       <pointsize>12</pointsize>
+       <pointsize>11</pointsize>
       </font>
      </property>
      <property name="orientation">

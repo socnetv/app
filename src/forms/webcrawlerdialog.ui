@@ -34,7 +34,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Generate network from web links</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
@@ -54,7 +54,7 @@
      <property name="font">
       <font>
        <family>Lucida Grande</family>
-       <pointsize>13</pointsize>
+       <pointsize>11</pointsize>
        <stylestrategy>PreferAntialias</stylestrategy>
       </font>
      </property>
@@ -73,7 +73,7 @@
     <widget class="QSplitter" name="splitter">
      <property name="font">
       <font>
-       <pointsize>10</pointsize>
+       <pointsize>11</pointsize>
        <stylestrategy>PreferAntialias</stylestrategy>
       </font>
      </property>
@@ -90,7 +90,7 @@
       <property name="font">
        <font>
         <family>DejaVu Sans</family>
-        <pointsize>13</pointsize>
+        <pointsize>11</pointsize>
         <weight>50</weight>
         <bold>false</bold>
         <stylestrategy>PreferAntialias</stylestrategy>
@@ -116,7 +116,7 @@
       <property name="font">
        <font>
         <family>DejaVu Sans</family>
-        <pointsize>13</pointsize>
+        <pointsize>11</pointsize>
         <stylestrategy>PreferAntialias</stylestrategy>
        </font>
       </property>
@@ -132,7 +132,7 @@
       <spacer name="horizontalSpacer">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>11</pointsize>
          <stylestrategy>PreferAntialias</stylestrategy>
         </font>
        </property>
@@ -158,7 +158,7 @@
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>13</pointsize>
+         <pointsize>11</pointsize>
          <weight>50</weight>
          <bold>false</bold>
          <stylestrategy>PreferAntialias</stylestrategy>
@@ -179,7 +179,7 @@ In this case SocNetV will follow and crawl each one link found in a page.</strin
       <spacer name="horizontalSpacer_2">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>11</pointsize>
          <stylestrategy>PreferAntialias</stylestrategy>
         </font>
        </property>
@@ -204,7 +204,7 @@ In this case SocNetV will follow and crawl each one link found in a page.</strin
        </property>
        <property name="font">
         <font>
-         <pointsize>13</pointsize>
+         <pointsize>11</pointsize>
          <stylestrategy>PreferAntialias</stylestrategy>
         </font>
        </property>
@@ -236,7 +236,7 @@ In this case SocNetV will follow and crawl each one link found in a page.</strin
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>13</pointsize>
+         <pointsize>11</pointsize>
          <weight>50</weight>
          <bold>false</bold>
          <stylestrategy>PreferAntialias</stylestrategy>
@@ -261,7 +261,7 @@ Set value to 0, if you don't want any limits...</string>
        </property>
        <property name="font">
         <font>
-         <pointsize>13</pointsize>
+         <pointsize>11</pointsize>
          <stylestrategy>PreferAntialias</stylestrategy>
         </font>
        </property>
@@ -301,7 +301,7 @@ p, li { white-space: pre-wrap; }
      <property name="font">
       <font>
        <family>DejaVu Sans</family>
-       <pointsize>13</pointsize>
+       <pointsize>11</pointsize>
        <stylestrategy>PreferAntialias</stylestrategy>
       </font>
      </property>
@@ -330,7 +330,7 @@ p, li { white-space: pre-wrap; }
      <property name="font">
       <font>
        <family>DejaVu Sans</family>
-       <pointsize>13</pointsize>
+       <pointsize>11</pointsize>
        <stylestrategy>PreferAntialias</stylestrategy>
       </font>
      </property>
@@ -359,7 +359,7 @@ p, li { white-space: pre-wrap; }
      <property name="font">
       <font>
        <family>DejaVu Sans</family>
-       <pointsize>10</pointsize>
+       <pointsize>11</pointsize>
        <stylestrategy>PreferAntialias</stylestrategy>
       </font>
      </property>

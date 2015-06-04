@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>540</width>
-    <height>365</height>
+    <width>610</width>
+    <height>371</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,13 +18,13 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>540</width>
+    <width>610</width>
     <height>365</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>600</width>
+    <width>650</width>
     <height>400</height>
    </size>
   </property>
@@ -34,7 +34,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Erdős–Rényi network generator</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
@@ -47,14 +47,14 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>470</width>
+       <width>560</width>
        <height>50</height>
       </size>
      </property>
      <property name="font">
       <font>
        <family>DejaVu Sans</family>
-       <pointsize>12</pointsize>
+       <pointsize>11</pointsize>
        <weight>50</weight>
        <bold>false</bold>
       </font>
@@ -98,7 +98,7 @@ while in G(n,M) a graph is randomly selected from all graphs with
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>12</pointsize>
+         <pointsize>11</pointsize>
          <weight>50</weight>
          <bold>false</bold>
         </font>
@@ -125,7 +125,7 @@ while in G(n,M) a graph is randomly selected from all graphs with
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>12</pointsize>
+         <pointsize>11</pointsize>
          <weight>50</weight>
          <bold>false</bold>
         </font>
@@ -162,7 +162,7 @@ while in G(n,M) a graph is randomly selected from all graphs with
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>12</pointsize>
+         <pointsize>11</pointsize>
          <weight>50</weight>
          <bold>false</bold>
         </font>
@@ -185,7 +185,7 @@ while in G(n,M) a graph is randomly selected from all graphs with
          <property name="font">
           <font>
            <family>DejaVu Sans</family>
-           <pointsize>12</pointsize>
+           <pointsize>11</pointsize>
            <weight>50</weight>
            <bold>false</bold>
           </font>
@@ -227,7 +227,7 @@ p, li { white-space: pre-wrap; }
          <property name="font">
           <font>
            <family>DejaVu Sans</family>
-           <pointsize>12</pointsize>
+           <pointsize>11</pointsize>
            <weight>50</weight>
            <bold>false</bold>
           </font>
@@ -269,7 +269,7 @@ p, li { white-space: pre-wrap; }
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>12</pointsize>
+         <pointsize>11</pointsize>
          <weight>50</weight>
          <bold>false</bold>
         </font>
@@ -290,7 +290,7 @@ p, li { white-space: pre-wrap; }
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>12</pointsize>
+         <pointsize>11</pointsize>
          <weight>50</weight>
          <bold>false</bold>
         </font>
@@ -324,7 +324,7 @@ p, li { white-space: pre-wrap; }
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>12</pointsize>
+         <pointsize>11</pointsize>
          <weight>50</weight>
          <bold>false</bold>
         </font>
@@ -351,7 +351,7 @@ p, li { white-space: pre-wrap; }
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>12</pointsize>
+         <pointsize>11</pointsize>
          <weight>50</weight>
          <bold>false</bold>
         </font>
@@ -391,7 +391,7 @@ p, li { white-space: pre-wrap; }
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>12</pointsize>
+         <pointsize>11</pointsize>
          <weight>50</weight>
          <bold>false</bold>
         </font>
@@ -420,7 +420,7 @@ p, li { white-space: pre-wrap; }
          <property name="font">
           <font>
            <family>DejaVu Sans</family>
-           <pointsize>12</pointsize>
+           <pointsize>11</pointsize>
            <weight>50</weight>
            <italic>false</italic>
            <bold>false</bold>
@@ -456,7 +456,7 @@ p, li { white-space: pre-wrap; }
          <property name="font">
           <font>
            <family>DejaVu Sans</family>
-           <pointsize>12</pointsize>
+           <pointsize>11</pointsize>
            <weight>50</weight>
            <bold>false</bold>
           </font>
@@ -492,7 +492,7 @@ p, li { white-space: pre-wrap; }
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>12</pointsize>
+         <pointsize>11</pointsize>
          <weight>50</weight>
          <bold>false</bold>
         </font>
@@ -521,7 +521,7 @@ p, li { white-space: pre-wrap; }
          <property name="font">
           <font>
            <family>DejaVu Sans</family>
-           <pointsize>12</pointsize>
+           <pointsize>11</pointsize>
            <weight>50</weight>
            <bold>false</bold>
           </font>
@@ -543,7 +543,7 @@ p, li { white-space: pre-wrap; }
      <property name="font">
       <font>
        <family>DejaVu Sans</family>
-       <pointsize>12</pointsize>
+       <pointsize>11</pointsize>
        <weight>50</weight>
        <bold>false</bold>
       </font>
