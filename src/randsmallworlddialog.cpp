@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 1.8-dev
+ version: 1.8
  Written in Qt
 
                          randsmallworlddialog.cpp  -  description

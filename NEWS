@@ -6,7 +6,12 @@ SocNetV News
 
 June 2015
 =========
-- Version 1.8 development
+- Version 1.8 released with the following new features: 
+  New clique census routine to compute maximal cliques with up to 4 vertices.
+  New Scale-free random generation methods. Improved Erdos-Renyi generation to include G(n,M) model. 
+  Fixed bug in Clustering Coefficient - SocNetV now computes CluCof correctly in all cases.
+  New improved dialogs for easy random network generation (Scale-free, Erdos-Renyi, and Small-World)
+  Fixed bug in Node Properties dialog. It is now populated with current node settings.
 
 May 2015
 ========
