@@ -10,6 +10,8 @@ MathJax.Hub.Config({
   }
 });
 </script>
+
+
 <h4><a name="Analysis" id="Analysis"></a>Analysis</h4>
 
 <p>
@@ -18,8 +20,8 @@ Analysis menu to analyse it. <br /> <br />
 
 The first option in the Analysis menu is (<em>Symmetry Test</em>).
 It reports  whether the network is symmetric or not.
-A network is called "symmetric" if for every edge (i,j) in the set E of the
-corresponding graph G(V,E) , the 'opposite' (j,i) edge also exists in E.
+A network is called "symmetric" if for every edge \( (i,j) \) in the set E of the
+corresponding graph \( G(V,E) \), the 'opposite' \( (j,i) \) edge also exists in \( E \).
 In other words, when the adjacency matrix is symmetric.
 </p>
 
@@ -36,14 +38,15 @@ of each node. Each option is explained below.
 <h5><a name="Distance" id="Distance"></a>Distance</h5>
 <p>
 In graph theory, the shortest path between two vertices of the graph
-is called "geodesic".<br />
-
+is called "geodesic".
+</p>
+<p>
 The distance (or geodesic distance) of two nodes in a social network is the
 length of the shortest path between the corresponding vertices in the graph G(V,E).
-<br />
+</p>
+<p>
 By clicking on the "Distance" option (or pressing Ctrl+G) you will be asked for
-source and target nodes.
-Then their distance will be calculated and displayed.
+source and target nodes. Then their distance will be calculated and displayed.
 </p>
 
 <h5><a name="AvgDistance" id="AvgDistance"></a>Average Distance</h5>
@@ -58,14 +61,14 @@ graph.
 <p>
 The 'Distances Matrix' option calculates and displays a matrix of geodesic
 distances between all possible pair of nodes in the social network.
-A distances matrix is a n x n square matrix, in which the (i,j) element
+</p>
+<p>A distances matrix is a \( N * N \) square matrix, in which the \( (i,j) \) element
 is the distance from node i to node j.
-
 </p>
 
 <h5><a name="NumberOfGeodesicsMatrix" id="NumberOfGeodesicsMatrix"></a>Geodesics Matrix</h5>
 <p>
-This option calculates and displays a n x n square matrix, where the (i,j) element
+This option calculates and displays a n x n square matrix, where the \( (i,j) \) element
 is the number of geodesics between node i and node j.
 The produced matrix, called sigma matrix, is used in Centralities calculation (see below).
 </p>
@@ -100,7 +103,7 @@ a disconnected graph/digraph.
 In graph theory, a graph is <b>connected</b> if there is a path between every pair of nodes.
 <br />
 A digraph is <b>strongly connected</b> if there the a path from i to j and
-from j to i for all pair of nodes (i,j).
+from j to i for all pair of nodes \( (i,j) \).
 <br />
 A digraph is <b>weakly connected</b> if at least a pair of nodes are joined by a semipath.
 <br />
@@ -111,7 +114,7 @@ A digraph or a graph is <b>disconnected</b> if at least one node is isolate.
 <h5><a name="Walks" id="Walks"></a>Walks of a given length</h5>
 <p>
 Clicking this option asks for a desired walk length (max: n-1).
-Then SocNetV calculates and displays a square matrix where each element (i,j)
+Then SocNetV calculates and displays a square matrix where each element \( (i,j) \)
 is the number of walks of the given length between the corresponding pair of
 nodes i and j.
 <br />
@@ -140,22 +143,27 @@ Reachability Matrix function instead.
 
 <h5><a name="ReachabilityMatrix" id="ReachabilityMatrix"></a>Reachability Matrix</h5>
 <p>
-Calculates the reachability matrix X<sup>R</sup> of the graph where each (i,j)
+Calculates the reachability matrix X<sup>R</sup> of the graph where each \( (i,j) \)
 element is 1 if nodes i and j are reachable, otherwise is 0.
 <br />
 This function is based on the Distances Matrix; it checks whether the
 corresponding element of the Distances matrix is not zero.
-If it is not zero, then the nodes (i,j) are reachable and the X<sup>R</sup>
+If it is not zero, then the nodes \( (i,j) \) are reachable and the X<sup>R</sup>
 element is 1.
 </p>
 
 <h4><a name="CliqueCensus" id="CliqueCensus"></a>Clique Census</h4>
 <p>
-A triangle or a clique is a complete subgraph of three nodes of G.
-It is defined as delta(v) = |{{u, w} in E : {v, u} in E and {v, w} in E}|.
+In social network analysis, a clique is a group of actors who interact with each other more regularly and intensely than others in the same network.
 </p>
-<p>This method computes the number of triangles each node v belongs to and the
-total number of cliques present in the network.
+<p>In formal mathematics, a clique C is any subset of vertices of an undirected graph G, such that its induced subgraph is complete.
+This means that every two distinct vertices in a clique are always adjacent.
+</p>
+<p>SocNetV computes only "partial" clique census statistics on the active network.
+
+The clique census report includes aggregate counts of cliques (up to clique number 4),
+ along with disaggregation by vertex and co-membership information.
+
 <p>
 Please note this method can be very slow. Its computational cost increases very
 rapidly in large and / or dense networks, it can run for hours or even days :)
@@ -449,20 +457,21 @@ Note: To compute this index, SocNetV drops all isolated nodes and symmetrizes
 <p>
 In order to calculate the IC index of each actor, we create a N x N matrix A from the (symmetrized) sociomatrix with:
 </p>
-<p class="code">
-Aii=1+weighted_degree_ni <br />
-Aij=1 if (i,j)=0  <br />
-Aij=1-wij if (i,j)=wij
-</p>
+
+$$  A_ii = 1 + d_i $$
+$$  A_ij = 1 \space if \space (i,j)=0  $$
+$$  A_ij = 1 -w_{ij} \space if \space (i,j) = w_{ij} $$
+
 <p>
-Next, we compute the inverse matrix of A, for instance C. Note that we can always compute C since the matrix A is always a diagonally strong matrix, hence it is always invertible.
+Next, we compute the inverse matrix of A, for instance C.
+Note that we can always compute C since the matrix A is always a diagonally strong matrix, hence it is always invertible.
 </p>
 <p>
 Finally, IC is computed by the formula:
 </p>
-<p class="code">
-IC(i) - 1 /  [ Cii + (T-2R)/ N]
-</p>
+
+$$  \frac { IC_i - 1 } {   C_{ii} + \frac { T-2 \cdot R } {  N }  }  $$
+
 
 <p>
 where: <br />
@@ -521,19 +530,21 @@ Therefore, nodes with high outLink weights give smaller percentage of their PR t
 <h5><a name="PP" id="PP"></a>Proximity Prestige (PP)</h5>
 <p>
 The Proximity Prestige index measures how proximate a node u is to the nodes in its
-influence domain I - the influence domain I of a node is the number of other nodes that can reach it.
+influence domain \( I \) - the influence domain I of a node is the number of other nodes that can reach it.
 Apparently, in this metric the proximity of each node u is based on distances to rather than distances from it.
 To put it simply, in PP what matters is how close are all the other nodes to node u.
-<br /><br />
-The algorithm takes the average distance to node u of all nodes in its influence domain,
-standardizes it by multiplying with (N-1)/|I| and takes its reciprocal.
-In essence, the formula SocNetV uses to calculate PP for every node u is the ratio
-of the fraction of nodes that can reach node u, to the average distance of that nodes to u
-(Wasserman & Faust, formula 5.25, p. 204):</p>
-<p class="code">
-PP = (I/(N-1))/(sum{d(v,u)}/I)
 </p>
 <p>
-where the sum is over every node v in I.
+The algorithm takes the average distance to node \( u \) of all nodes in its influence domain,
+standardizes it by multiplying with \( (N-1)/|I|  \) and takes its reciprocal.
+</p>
+<p>In essence, the formula SocNetV uses to calculate PP for every node \( u \) is the ratio
+of the fraction of nodes that can reach node \( u \), to the average distance of that nodes to \( u \)
+(Wasserman & Faust, formula 5.25, p. 204):</p>
+
+$$  PP = \frac  {  \frac { I } { N-1 } }    { \sum{d(v,u)} / I } $$
+
+<p>
+where the sum is over every node \( v \)  in  \( I \).
 </p>
 

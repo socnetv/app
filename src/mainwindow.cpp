@@ -1421,8 +1421,8 @@ void MainWindow::initActions(){
 
     cliquesAct = new QAction(QIcon(":/images/clique.png"), tr("Clique Census (clique number <= 4) "),this);
     cliquesAct->setShortcut(tr("Ctrl+T"));
-    cliquesAct->setStatusTip(tr("Counts cliques for each node v and the whole network."));
-    cliquesAct->setWhatsThis(tr("Clique Census\n\n A triangle or a clique is a complete subgraph of three nodes of G. This method computes the number of triangles each node v belongs to. It is defined as delta(v) = |{{u, w} in E : {v, u} in E and {v, w} in E}|.  \n "));
+    cliquesAct->setStatusTip(tr("Computes a partial clique census report (for cliques up to 4 vertices)."));
+    cliquesAct->setWhatsThis(tr("Clique Census\n\n Computes aggregate counts of cliques (up to clique number 4), along with disaggregation by vertex and co-membership information. "));
     connect(cliquesAct, SIGNAL(triggered()), this, SLOT(slotCliqueCensus() )  );
 
 

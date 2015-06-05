@@ -202,15 +202,14 @@ a:visited {
 }
 
 
-
+pre,
 .code {
 color: black;
 font: normal 12px monospace;
 background-color: #eceae9;
 border: 1px dashed lightgray;
 text-align: left;
-margin-bottom:10px;
-margin-top:0px;
-padding: 0 15px 0 25px;
+margin:10px 10px;
+padding: 15px 15px 15px 25px;
 }
 
