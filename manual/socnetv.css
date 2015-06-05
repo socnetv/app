@@ -213,3 +213,11 @@ margin:10px 10px;
 padding: 15px 15px 15px 25px;
 }
 
+img {
+  width: 90%;
+  margin: 10px 5%;
+}
+
+img.logo {
+    width: 60px;
+}

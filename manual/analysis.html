@@ -165,17 +165,35 @@ The clique census report includes aggregate counts of cliques (up to clique numb
  along with disaggregation by vertex and co-membership information.
 
 <p>
-Please note this method can be very slow. Its computational cost increases very
-rapidly in large and / or dense networks, it can run for hours or even days :)
+Please note this computation can be very slow!
+In general, the clique problem (the problem of finding a maximum clique, or all cliques), in a given graph is NP-complete.
+This means that no fast solution to this problem is known.</p>
+
+<p>This is because the computational cost increases very rapidly in large and / or dense networks.
+So, if you run a clique census on a very large network or a network with thousands of edges, it can run for hours or even days :)
 </p>
 
 <h4><a name="Coefficient" id="Coefficient"></a>Clustering Coefficient</h4>
 <p>
-The Clustering Coefficient of a node quantifies how close the node and its
-neighbors are to being a clique.
-This is used to determine whether a network is a small-world or not.
-<br />
-This option calculates and displays the clustering coefficients of all nodes. 
+The Clustering Coefficient \( C \) of a node quantifies how close the node and its
+neighbors are to being a clique.</p>
+<p>
+This method computes and displays the local clustering coefficients of all nodes.</p>
+
+<p>The clustering coefficient in a directed network is computed with the formula:</p>
+
+$$ C_i = \frac{|\{e_{jk}: v_j,v_k \in N_i, e_{jk} \in E\}|}{k_i(k_i-1)} $$
+
+<p>In undirected networks, the formula is:</p>
+
+$$ C_i = \frac{2|\{e_{jk}: v_j,v_k \in N_i, e_{jk} \in E\}|}{k_i(k_i-1)}. $$
+
+<p>The method also computes the network average clustering coefficient (Watts and Strogatz): </p>
+
+$$ \bar{C} = \frac{1}{n}\sum_{i=1}^{n} C_i $$
+
+
+<p>Note: The clustering can be used to determine whether a network is a small-world or not.
 </p>
 
 <p>
