@@ -52,8 +52,11 @@ source and target nodes. Then their distance will be calculated and displayed.
 <h5><a name="AvgDistance" id="AvgDistance"></a>Average Distance</h5>
 <p>
 The average distance in a social network is the average length of all shortest
-paths (geodesics) between the connected pairs of vertices in the corresponding
+paths (geodesics) between all pairs of vertices in the corresponding
 graph.
+
+$$ \bar {d} =  \frac { \sum_{u \ne v } { \{ d(u,v), \forall u,v \in V  \} } } { n \cdot (n-1) } $$
+
 </p>
 
 
@@ -75,13 +78,19 @@ The produced matrix, called sigma matrix, is used in Centralities calculation (s
 
 <h5><a name="Eccentricity" id="Eccentricity"></a>Eccentricity</h5>
 <p>
-The eccentricity or association number of each node i is the largest geodesic
-distance between node i and every other node in the graph.
-Therefore, in social network analysis, the eccentricity reflects how far, at
-most, is each node from every other node.
+The eccentricity or association number of each node \( u  \) is the largest geodesic
+distance between that node and every other node in the network.
+
 <br />
+$$ \epsilon_u =  \max { \{ d(u,v), \forall v \in V  \} } $$
+
+
+<p>
+Therefore, the measure reflects how far, at most, is each node from every other node.
+</p>
+<p>
 This index can be calculated in both graphs and digraphs but is usually best
-suited for undirected graphs.
+suited for undirected graphs. <br />
 It can also be calculated in weighted graphs although the weight of each
 edge (v,u) in E is always considered to be 1.
 </p>
@@ -91,6 +100,8 @@ edge (v,u) in E is always considered to be 1.
 The diameter of a social network is the maximum eccentricity of any vertex in
 the corresponding graph G(V,E), that is the maximum distance between any two
 connected nodes.
+<br />
+$$ D =  \max { \{ d(u,v), \forall u,v \in V  \} } $$
 </p>
 
 <h4><em><a name="WalksReach" id="WalksReach"></a>Walks & Reachability</em></h4>
@@ -280,55 +291,80 @@ Apparently, the sum of all these frequencies Tu is C(N,3).</p>
 The last option in the Analysis menu opens the "Centrality and Prestige" sub-menu.
 
 <p>
-Social network analysts use various metrics (measures or indices) to calculate how 'prominent' or important each actor (node) is inside a network (graph). For instance, we might want to know how important is a person inside her friendship network or how critical is a power station inside the power company grid...
+Social network analysts use various metrics (measures or indices) to calculate how 'prominent' or important each actor (node) is inside a network (graph).
+For instance, we might want to know how important is a person inside her friendship network or how critical is a power station inside the power company grid...
 </p>
 
  <p>Although there are various metrics, focusing on different graph notions and applying to different graph types, they are usually refered to as 'centralities' collectively.
 </p>
 
- <p>SocNetV follows the conceptualization of prominence that Wasserman and Faust as well as Knoke and Burt use in their essays. To our understanding, all indeces attempt to measure the visibility, the importance or the "prominence" of each node. But we distinguish two types of prominence: Centrality and Prestige.
+ <p>SocNetV follows the conceptualization of prominence that Wasserman and Faust as well as Knoke and Burt use in their essays.
+ To our understanding, all indeces attempt to measure the visibility, the importance or the "prominence" of each node.
+ But we distinguish two types of prominence: Centrality and Prestige.
 </p>
 
- <p>Centrality metrics attempt to quantify how central is each node inside the network and usually examine the ties attached to that node and its geodesic distances (shortest path lengths) to other nodes. Most Centrality indices were designed for undirected graphs (symmetric), where the relations are non-directional. For instance, SocNetV can calculate Betweenness, Closeness, Degree, Stress, Graph and Eccentricity centrality indices.
+ <p>Centrality metrics attempt to quantify how central is each node inside the network and usually examine the ties attached to that node and its geodesic distances (shortest path lengths) to other nodes.
+ Most Centrality indices were designed for undirected graphs (symmetric), where the relations are non-directional.
+ For instance, SocNetV can calculate Betweenness, Closeness, Degree, Stress, Graph and Eccentricity centrality indices.
 </p>
 
- <p>For digraphs, where the relations are directional, most centrality indices can also be calculated by focusing on "choices made" (or outEdges). But due to the nature of the directional relations in digraphs, the social networks researcher usually needs to measure the "prestige" (as known as status, rank or popularity) of each node, focusing on "choices received" by other nodes rather than "choices made" by that node. Prestige indices focus exactly on "choices received" to a node. These indices measure the nominations or ties to each node from all others (or inLinks). Thus, Prestige indices can only be calculated on directed graphs..
+ <p>For digraphs, where the relations are directional, most centrality indices can also be calculated by focusing on "choices made" (or outEdges).
+ But due to the nature of the directional relations in digraphs, the social networks researcher usually needs to measure the "prestige" (as known as status, rank or popularity) of each node, focusing on "choices received" by other nodes rather than "choices made" by that node. Prestige indices focus exactly on "choices received" to a node.
+ These indices measure the nominations or ties to each node from all others (or inLinks).
+ Thus, Prestige indices can only be calculated on directed graphs..
 </p>
 
  <p>
-Centrality indices are calculated for each node (node Centrality) and for the whole network (group Centrality). Thus, when you click on a centrality option, SocNetV will calculate the corresponding index of every node and the whole network and it will display them in a new window (a small text editor). From there you can save the analysis into a text file of your choice. By default, analysis files are saved on bin/ subfolder.
+Centrality indices are calculated for each node (node Centrality) and for the whole network (group Centrality).
+Thus, when you click on a centrality option, SocNetV will calculate the corresponding index of every node and the whole network and it will display them in a new window (a small text editor).
+From there you can save the analysis into a text file of your choice. By default, analysis files are saved on bin/ subfolder.
 </p>
 
 
 <h5><a name="DC" id="DC"></a>Degree Centrality (DC)</h5>
 <p>
-In undirected graphs, the DC index of each node v is the number of edges attached to it.
-In digraphs, the DC is the total number of arcs (outEdges) starting from v (outDegree).
+The DC measure quantifies how many ties a node has to other nodes in the network.
+In social network theory, this index is often considered a measure of actor activity.
+It can be computed in both undirected and directed networks/relations,
+but is usually best suited for undirected ones.
+<p>
+Mathematically, in undirected graphs, the DC index of each vertex \( u \) is the number of edges attached to it.
 <br />
-In social network theory, DC is often considered a measure of actor activity.
-<br />Along with other metrics which are based on the notion of distance
-(closeness, eccentricity etc), DC falls in the category of reachability measures.
-<br /><br />
-This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs.
-It can also be calculated in weighted graphs. In weighted relations, ODC is the sum of weights of all edges/outEdges attached to v.
-<br /><br/>
-To compute Degree Centralization (or Group Degree Centrality in SocNetV-speak),
-we use the Freeman's formula for unvalued graphs.
-<br /><br />
-<em>Note: For valued or weighted graphs, we cannot calculate Group DC using Freeman's formula.
-You can use DC variance or mean instead.</em>
+In directed graphs, the DC is the total number of arcs (outEdges) starting from \( u \) (outDegree).
+<br />
+The index can be computed in weighted graphs as well. In that case, the DC of each node \( u \)
+is the sum of weights of all edges/outEdges attached to \( u \).
+</p>
+<p>
+Along with other metrics which are based on the notion of distance
+(closeness, eccentricity etc), the DC falls in the category of reachability measures.
+</p>
+<p>
+
+To compute Degree Centralization (or Group Degree Centrality),
+SocNetV uses the Freeman's formula for unvalued graphs.
+<br />
+$$ GDC =  \frac {  \sum { ( maxDC' - DC'  ) }  }   {  (N-1) \cdot   (N-2) / (2 \cdot  N - 1)  } $$
+
+<em>Note: In valued (or weighted) graphs, GDC cannot be computed with Freeman's formula.
+As a measure of degree centralization, one can use DC variance or mean instead.</em>
 </p>
 
 
 <h5><a name="CC" id="CC"></a>Closeness Centrality (CC)</h5>
 <p>
-For each node u, the CC score is the inverse sum of geodesic distances from that node to
-every other node.<br />
-This measure focuses on how close each node is to all other nodes in the network.
-Nodes with high closeness centrality are those who can reach many other nodes in few steps.
+This CC index focuses on how close each node is to all other nodes in the network.
+<br />
+Nodes with high Closeness Centrality are those who can reach many other nodes in few steps.
 The idea is that a node is more central if it can quickly interact with more of the others.
 CC is also interpreted as the ability to access information through the "grapevine" of network members.
-<br /><br />
+<p>
+For each node  \( u \), the CC score is the inverse sum of geodesic distances from that node to
+every other node.<br />
+$$ CC_u =  \frac {  1  }    {  \sum_{v \in E} { d(u,v) }  } $$
+
+
+<p>
 This index can be calculated in graphs and strongly connected digraphs
 (that is, if there is a directed path from v to u for all nodes v and u in the graph).
 If there are isolate nodes in the network, they are dropped by default.
