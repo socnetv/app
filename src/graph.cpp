@@ -729,15 +729,10 @@ void Graph::filterEdgesByWeight(float m_threshold, bool overThreshold){
 
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( (*it)->isOutLinked() ){
             (*it)->filterEdgesByWeight ( m_threshold, overThreshold );
-            graphModified=true;
-            emit graphChanged();
-        }
-        else
-            qDebug() << "Graph:filterEdgesByWeight() Vertex " << (*it)->name()
-                     << " not linked. Proceeding...";
     }
+    graphModified=true;
+    emit graphChanged();
     emit statusMessage("Edges have been filtered.");
 }
 

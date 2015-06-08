@@ -699,6 +699,7 @@ void MainWindow::initActions(){
 
     filterNodesAct = new QAction(tr("Filter Nodes"), this);
     filterNodesAct -> setEnabled(false);
+    //filterNodesAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_F));
     filterNodesAct->setStatusTip(tr("Filters Nodes of some value out of the network"));
     filterNodesAct->setWhatsThis(tr("Filter Nodes\n\nFilters Nodes of some value out of the network."));
     connect(filterNodesAct, SIGNAL(triggered()), this, SLOT(slotFilterNodes()));
@@ -707,12 +708,14 @@ void MainWindow::initActions(){
     filterIsolateNodesAct -> setEnabled(true);
     filterIsolateNodesAct -> setCheckable(true);
     filterIsolateNodesAct -> setChecked(false);
+    filterIsolateNodesAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_F));
     filterIsolateNodesAct -> setStatusTip(tr("Filters nodes with no edges"));
     filterIsolateNodesAct -> setWhatsThis(tr("Filter Isolate Nodes\n\n Enables or disables displaying of isolate nodes. Isolate nodes are those with no edges..."));
     connect(filterIsolateNodesAct, SIGNAL(toggled(bool)), this, SLOT(slotFilterIsolateNodes(bool)));
 
     filterEdgesAct = new QAction(tr("Filter Edges by weight"), this);
     filterEdgesAct -> setEnabled(true);
+    filterEdgesAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_F));
     filterEdgesAct -> setStatusTip(tr("Filters Edges of some weight out of the network"));
     filterEdgesAct -> setWhatsThis(tr("Filter Edges\n\nFilters Edge of some specific weight out of the network."));
     connect(filterEdgesAct , SIGNAL(triggered()), this, SLOT(slotShowFilterEdgesDialog()));
@@ -5546,7 +5549,7 @@ void MainWindow::slotFilterNodes(){
 
 /**
  * @brief MainWindow::slotFilterIsolateNodes
- *Calls Graph::filterIsolateVertices to filter vertices with no edges
+ *Calls Graph::filterIsolateVertices to toggle visibility of isolated vertices
  */
 void MainWindow::slotFilterIsolateNodes(bool checked){
     Q_UNUSED(checked);
@@ -5557,6 +5560,7 @@ void MainWindow::slotFilterIsolateNodes(bool checked){
     }
     qDebug()<< "MW: slotFilterIsolateNodes";
     activeGraph.filterIsolateVertices( ! filterIsolateNodesAct->isChecked() );
+    statusMessage(  QString(tr("Isolate nodes visibility toggled!"))  );
 }
 
 
@@ -6755,7 +6759,7 @@ void MainWindow::slotAverageGraphDistance() {
     createProgressBar();
 
     float averGraphDistance=activeGraph.averageGraphDistance(
-                considerWeights, inverseWeights);
+                considerWeights, inverseWeights,  filterIsolateNodesAct->isChecked() );
 
     destroyProgressBar();
 
