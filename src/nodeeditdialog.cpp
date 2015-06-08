@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 1.8
+ version: 1.9-dev
  Written in Qt
 
                          nodeeditdialog.cpp  -  description
