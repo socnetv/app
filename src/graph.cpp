@@ -738,6 +738,7 @@ void Graph::filterEdgesByWeight(float m_threshold, bool overThreshold){
             qDebug() << "Graph:filterEdgesByWeight() Vertex " << (*it)->name()
                      << " not linked. Proceeding...";
     }
+    emit statusMessage("Edges have been filtered.");
 }
 
 
@@ -1502,10 +1503,11 @@ int Graph::diameter(const bool considerWeights,
 *  Returns the average distance of the graph
 */
 float Graph::averageGraphDistance(const bool considerWeights,
-                                  const bool inverseWeights){
+                                  const bool inverseWeights,
+                                  const bool dropIsolates){
     if ( !distanceMatrixCreated || graphModified ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
-        createDistanceMatrix(false, considerWeights, inverseWeights,false);
+        createDistanceMatrix(false, considerWeights, inverseWeights,dropIsolates);
     }
     return averGraphDistance;
 }
@@ -1972,8 +1974,10 @@ void Graph::createDistanceMatrix(const bool centralities,
             }
         }
 
-        if (averGraphDistance!=0)
-            averGraphDistance = averGraphDistance / (nonZeroDistancesCounter);
+        if (averGraphDistance!=0) {
+             averGraphDistance = averGraphDistance / ( aVertices * ( aVertices-1.0 ) );
+        }
+
 
         if (centralities) {
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {

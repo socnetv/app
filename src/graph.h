@@ -389,7 +389,7 @@ public:
                  const bool considerWeights, const bool inverseWeights);
     int diameter(const bool considerWeights, const bool inverseWeights);
     float averageGraphDistance(const bool considerWeights,
-                               const bool inverseWeights);
+                               const bool inverseWeights, const bool dropIsolates);
     int connectedness();
 
     void createDistanceMatrix(const bool centralities=false,
