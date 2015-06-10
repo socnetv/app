@@ -540,7 +540,9 @@ long int Vertex::outDegree() {
     return m_outDegree;
 }
 
-
+long int Vertex::outDegreeConst() {
+    return m_outDegree;
+}
 
 /**
  * @brief Vertex::inDegree
@@ -569,6 +571,10 @@ long int Vertex::inDegree() {
     return m_inDegree;
 }
 
+
+long int Vertex::inDegreeConst() {
+    return m_inDegree;
+}
 
 
 /**

@@ -94,7 +94,9 @@ public:
     long int inEdges();
 
     long int outDegree();
+    long int outDegreeConst();
     long int inDegree();
+    long int inDegreeConst();
     long int localDegree();
 
     /* sets eccentricity */
