@@ -3883,7 +3883,9 @@ void Graph::prestigePageRank(const bool dropIsolates){
     minPRP=RAND_MAX;
     classesPRP=0;
     variancePRP=0;
-    dampingFactor = 0.85; // The parameter d is a damping factor which can be set between 0 and 1. Google creators set d to 0.85.
+    // The parameter d is a damping factor which can be set between 0 and 1.
+    // Google creators set d to 0.85.
+    dampingFactor = 0.85;
 
     float PRP=0, oldPRP = 0;
     float SPRP=0;
@@ -3917,8 +3919,10 @@ void Graph::prestigePageRank(const bool dropIsolates){
             // So we set them to (1-d)
             if ( i == 1 ) {
                 (*it)->setPRP( 1 - dampingFactor );
+                outDegree = (*it)->outDegree();
                 qDebug() << "Graph:: prestigePageRank() - 1st iteration - node: "
-                         << (*it)->name() << " PR = " << (*it)->PRP() ;
+                         << (*it)->name() << " PR = " << (*it)->PRP()
+                         << " computed outDegree (const): " << outDegree;
             }
             // In every other iteration we calculate PageRanks.
             else {
@@ -3947,7 +3951,7 @@ void Graph::prestigePageRank(const bool dropIsolates){
                              << " is inLinked from " << referrer  ;
 
                     if ( this->hasArc( referrer , (*it)->name() ) ) {
-                        outDegree = m_graph[ index[referrer] ] ->outDegree();
+                        outDegree = m_graph[ index[referrer] ] ->outDegreeConst();
                         PRP =  m_graph[ index[referrer] ]->PRP();
                         qDebug()<< "Graph:: prestigePageRank() " <<  referrer
                                 << " has PRP = " << PRP
