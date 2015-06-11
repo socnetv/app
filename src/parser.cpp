@@ -541,7 +541,8 @@ bool Parser::loadPajek(){
             continue;
 
         lineCounter++;
-
+        qDebug()<< "*** Parser:loadPajek(): "
+                << str;
         if (lineCounter==1) {
             if ( str.startsWith("graph",Qt::CaseInsensitive)
                  || str.startsWith("digraph",Qt::CaseInsensitive)
@@ -550,9 +551,10 @@ bool Parser::loadPajek(){
                  || str.startsWith("graphml",Qt::CaseInsensitive)
                  || str.startsWith("<?xml",Qt::CaseInsensitive)
                  || str.startsWith("LEDA.GRAPH",Qt::CaseInsensitive)
-                 || !str.startsWith("*network",Qt::CaseInsensitive)
+                 || ( !str.startsWith("*network",Qt::CaseInsensitive)
+                    && !str.startsWith("*vertices",Qt::CaseInsensitive) )
                  ) {
-                qDebug()<< "*** Parser:loadPajeck(): Not an Pajek-formatted file. Aborting!!";
+                qDebug()<< "*** Parser:loadPajek(): Not a Pajek-formatted file. Aborting!!";
                 file.close();
                 return false;
             }
@@ -560,8 +562,12 @@ bool Parser::loadPajek(){
 
         if (!edges_flag && !arcs_flag && !nodes_flag && !arcslist_flag && !matrix_flag) {
             //qDebug("Parser-loadPajek(): reading headlines");
-            if ( (lineCounter == 1) &&  (!str.contains("network",Qt::CaseInsensitive) && !str.contains("vertices",Qt::CaseInsensitive) ) ) {
-                //this is not a pajek file. Abort
+            if ( (lineCounter == 1) &&
+                 (!str.contains("network",Qt::CaseInsensitive)
+                  && !str.contains("vertices",Qt::CaseInsensitive)
+                  )
+                )
+            {
                 qDebug("*** Parser-loadPajek(): Not a Pajek file. Aborting!");
                 file.close();
                 return false;
