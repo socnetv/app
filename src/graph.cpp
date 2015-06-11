@@ -3918,7 +3918,7 @@ void Graph::prestigePageRank(const bool dropIsolates){
             // In the first iteration, we have no PageRanks
             // So we set them to (1-d)
             if ( i == 1 ) {
-                (*it)->setPRP( 1 - dampingFactor );
+                (*it)->setPRP( 1.0 / aVert );
                 outDegree = (*it)->outDegree();
                 qDebug() << "Graph:: prestigePageRank() - 1st iteration - node: "
                          << (*it)->name() << " PR = " << (*it)->PRP()
@@ -3962,7 +3962,7 @@ void Graph::prestigePageRank(const bool dropIsolates){
                     ++jt;
                 }
                 // OK. Now calculate PageRank of current node
-                PRP = (1-dampingFactor) + dampingFactor * sumPageRanksOfLinkedNodes;
+                PRP = (1-dampingFactor) / aVert + dampingFactor * sumPageRanksOfLinkedNodes;
                 // store new PageRank
                 (*it) -> setPRP ( PRP );
                 t_sumPRP+=PRP;

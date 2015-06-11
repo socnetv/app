@@ -1977,6 +1977,7 @@ bool Parser::loadDot(){
     nodeShape="";
     edgeWeight=1.0;
     float nodeValue=1.0;
+    bool netProperties = false;
     QStringList labels;
     QList<QString> nodeSequence;   //holds edges
     QList<QString> nodesDiscovered; //holds nodes;
@@ -1997,6 +1998,7 @@ bool Parser::loadDot(){
             continue;
 
         fileLine++;
+
         qDebug ()<<"Reading fileLine "<< fileLine;
 
         if ( fileLine == 1 ) {
@@ -2031,9 +2033,17 @@ bool Parser::loadDot(){
             }
         }
 
-        if ( str.startsWith("label",Qt::CaseInsensitive)
+        if (  str.contains("graph [" ,Qt::CaseInsensitive) ) {
+                netProperties == true;
+        }
+
+        if (
+             str.startsWith("label",Qt::CaseInsensitive)
              || str.startsWith("mincross",Qt::CaseInsensitive)
              || str.startsWith("ratio",Qt::CaseInsensitive)
+                || str.startsWith("name",Qt::CaseInsensitive)
+                || str.startsWith("type",Qt::CaseInsensitive)
+                || str.startsWith("loops",Qt::CaseInsensitive)
              ) { 	 //Default network properties
             next=str.indexOf('=', 1);
             qDebug("Found next = at %i. Start is at %i", next, 1);
@@ -2041,7 +2051,7 @@ bool Parser::loadDot(){
             qDebug()<<"Prop: "<<prop.toLatin1() ;
             value=str.right(str.count()-next-1).simplified();
             qDebug() << "Value "<< value;
-            if ( prop == "label" ){
+            if ( prop == "label" || prop == "name"){
                 networkLabel= value;
             }
             else if ( prop == "ratio" ){
@@ -2052,7 +2062,13 @@ bool Parser::loadDot(){
             }
 
         }
-        else if ( str.startsWith("node",Qt::CaseInsensitive) ) { 	 //Default node properties
+        else if ( netProperties && str.contains ("]",Qt::CaseInsensitive) )
+        {
+            netProperties = false;
+        }
+        else if ( str.startsWith("node",Qt::CaseInsensitive) )
+        { 	 //Default node properties
+            netProperties = false;
             qDebug() << "* Node properties found...";
             start=str.indexOf('[');
             end=str.indexOf(']');
@@ -2068,6 +2084,7 @@ bool Parser::loadDot(){
             qDebug ("* Finished NODE PROPERTIES");
         }
         else if ( str.startsWith("edge",Qt::CaseInsensitive) ) { //Default edge properties
+            netProperties = false;
             qDebug("* Edge properties found...");
             start=str.indexOf('[');
             end=str.indexOf(']');
@@ -2084,7 +2101,10 @@ bool Parser::loadDot(){
         else if ( !str.startsWith('[', Qt::CaseInsensitive)
                   && !str.contains("--",Qt::CaseInsensitive)
                   && !str.contains("->",Qt::CaseInsensitive)
-                  ) {
+                  && str.contains ("=",Qt::CaseInsensitive)
+                  && !netProperties
+                  )
+        {
             qDebug()<< "* A node definition must be here ..." << str;
             end=str.indexOf('[');
             if (end!=-1) {
@@ -2126,7 +2146,59 @@ bool Parser::loadDot(){
                 end=str.indexOf(';');
             qDebug ("* Finished node!");
         }
-        else if (str.contains('-',Qt::CaseInsensitive)) {
+        else if ( !str.contains('[', Qt::CaseInsensitive)
+                  && !str.contains('node', Qt::CaseInsensitive)
+                  && !str.contains(']', Qt::CaseInsensitive)
+                  && !str.contains("--",Qt::CaseInsensitive)
+                  && !str.contains("->",Qt::CaseInsensitive)
+                  && !str.contains ("=",Qt::CaseInsensitive)
+                  && !netProperties
+                  )
+        {
+            qDebug()<< "* A node definition must be here ..." << str;
+            end=str.indexOf(';');
+            if (end!=-1) {
+                temp=str.right(str.size()-end-1); //keep the properties
+                temp=temp.remove(']');
+                temp=temp.remove(';');
+                node=str.left(end-1);
+                node=node.remove('\"');
+                qDebug()<<"node named "<<node.toLatin1();
+                qDebug()<<"node properties "<<temp.toLatin1();
+                nodeLabel=node;  //Will change only if label exists in dotProperties
+                nodeLabel=node;
+                aNodes++;
+                randX=rand()%gwWidth;
+                randY=rand()%gwHeight;
+                qDebug()<<" *** Creating node "<< aNodes
+                       << " at "<< randX <<","<< randY
+                       <<" label "<<node.toLatin1()
+                      << " colored "<< initNodeColor
+                      << "initNodeSize " << initNodeSize
+                      << "initNodeNumberColor " <<initNodeNumberColor
+                      << "initNodeNumberSize " << initNodeNumberSize
+                      << "initNodeLabelColor " << initNodeLabelColor
+                      << "nodeShape" <<  initNodeShape;
+                emit createNode(
+                            aNodes, initNodeSize, initNodeColor,
+                            initNodeNumberColor, initNodeNumberSize,
+                            nodeLabel , initNodeLabelColor, initNodeLabelSize,
+                            QPointF(randX,randY),
+                            initNodeShape, false
+                            );
+                nodesDiscovered.push_back( node  );			// Note that we push the numbered nodelabel whereas we create the node with its file specified node label.
+                qDebug()<<" * Total aNodes " << aNodes<< " nodesDiscovered  "<< nodesDiscovered.size() ;
+                target=aNodes;
+
+            }
+            else
+                end=str.indexOf(';');
+            qDebug ("* Finished node!");
+        }
+
+        else if (str.contains('-',Qt::CaseInsensitive))
+        {
+            netProperties = false;
             qDebug("* Edge definition found ...");
             end=str.indexOf('[');
             if (end!=-1) {
@@ -2198,7 +2270,11 @@ bool Parser::loadDot(){
             nodeSequence.clear();
             qDebug("Finished reading fileLine %i ",fileLine);
         }
-        else if ( str.contains ("[",Qt::CaseInsensitive) ) { 	 //Default node properties - no node keyword
+        else if ( str.contains ("[",Qt::CaseInsensitive)
+             && str.contains("=")
+                  && !netProperties )
+        { 	 //Default node properties - no node keyword
+
             qDebug("* Node properties found but with no Node keyword in the beginning!");
             start=str.indexOf('[');
             end=str.indexOf(']');
@@ -2233,6 +2309,9 @@ bool Parser::loadDot(){
                     qDebug("discovered node - skipping it!");
                 }
             }
+        }
+
+
         }
         else {
             qDebug() <<  "  Redudant data: "<< str.toLatin1();
