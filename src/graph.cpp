@@ -3871,7 +3871,7 @@ void Graph::writePrestigeProximity( const QString fileName,
 
 //Calculates the PageRank Prestige of each vertex
 void Graph::prestigePageRank(const bool dropIsolates){
-    qDebug()<< "Graph:: prestigePageRank()";
+    qDebug()<< "Graph::prestigePageRank()";
     if (! graphModified && calculatedPRP ) {
         qDebug() << " graph not changed - return ";
         return;
@@ -3885,16 +3885,16 @@ void Graph::prestigePageRank(const bool dropIsolates){
     variancePRP=0;
     // The parameter d is a damping factor which can be set between 0 and 1.
     // Google creators set d to 0.85.
-    dampingFactor = 0.85;
+    d_factor = 0.85;
 
     float PRP=0, oldPRP = 0;
     float SPRP=0;
     int i = 1; // a counter
     int referrer;
-    float delta = 0.01; // The delta where we will stop the iterative calculation
+    float delta = 0.001; // The delta where we will stop the iterative calculation
     float maxDelta = RAND_MAX;
-    float sumPageRanksOfLinkedNodes = 0;  // temporary variable to calculate PR
-    float outDegree = 0;
+    float sumInLinksPR = 0;  // temp var for inlinks sum PR
+    float inLinks = 0;       // temp var for number of inlinks
     float t_variance=0;
     float aVert =  vertices(dropIsolates) ;
     QList<Vertex*>::const_iterator it;
@@ -3902,83 +3902,108 @@ void Graph::prestigePageRank(const bool dropIsolates){
     bool edgeStatus=false;
     H_edges::const_iterator jt;
 
+
+    qDebug()<< "Graph::prestigePageRank() "
+            << "active vertices: " << aVert
+            << " total vertices: " << vertices();
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        // At first, PR scores have probability distribution
+        // from 0 to 1, so each one is set to 1/N
+        (*it)->setPRP( 1.0 / aVert );
+        // compute inEdges() to warm up inEdgesConst for everyone
+        inLinks = (*it)->inEdges();
+        qDebug() << "Graph::prestigePageRank() - node "
+                 << (*it)->name() << " PR = " << (*it)->PRP()
+                 << " inLinks (set const): " << inLinks;
+    }
+
+    if ( totalEdges() == 0 ) {
+        qDebug()<< "Graph::prestigePageRank() "
+                <<" - all vertices are isolated and of equal PR. Stop";
+        return;
+    }
+
     // begin iteration - continue until we reach our desired delta
     while (maxDelta > delta) {
-        if (aVert ==0 ) {
-            qDebug()<< "Graph:: prestigePageRank() "
-                    << "aVert: " << aVert
-                    << " total vertices " << vertices()
-                    <<" - all vertices are isolated. Break";
-            break;
-        }
+
         t_sumPRP=0;
-        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-            qDebug() << "Graph:: prestigePageRank() - calculating PR for node: "
+
+        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
+        {
+            qDebug() << "Graph::prestigePageRank() - compute PR for node: "
                      << (*it)->name() ;
-            // In the first iteration, we have no PageRanks
-            // So we set them to (1-d)
-            if ( i == 1 ) {
-                (*it)->setPRP( 1.0 / aVert );
-                outDegree = (*it)->outDegree();
-                qDebug() << "Graph:: prestigePageRank() - 1st iteration - node: "
-                         << (*it)->name() << " PR = " << (*it)->PRP()
-                         << " computed outDegree (const): " << outDegree;
+
+            if ( (*it)->isIsolated() ) {
+                // isolates have constant PR = 1/N
+                continue;
             }
-            // In every other iteration we calculate PageRanks.
-            else {
-                sumPageRanksOfLinkedNodes = 0;
-                if ( (*it)->isIsolated() ) {
+
+            maxDelta = 0;
+            sumInLinksPR = 0;
+            oldPRP = (*it)->PRP();
+
+            jt=(*it)->m_inEdges.cbegin();
+
+            while ( jt != (*it) -> m_inEdges.cend() )
+            {
+                qDebug() << "   iterate over inEdges of " << (*it)->name() ;
+
+                relation = jt.value().first;
+                if ( relation != currentRelation() ){
+                    ++jt;
                     continue;
                 }
-                maxDelta = 0;
-                oldPRP = (*it)->PRP();
-                // take every other node which links to the current node.
-                jt=(*it)->m_inEdges.cbegin();
-                while ( jt != (*it) -> m_inEdges.cend() ){
-                    qDebug() << "   iterate over all inEdges ";
-                    relation = jt.value().first;
-                    if ( relation != currentRelation() ){
-                        ++jt;
-                        continue;
-                    }
-                    edgeStatus=jt.value().second.second;
-                    if ( edgeStatus != true){
-                        ++jt;
-                        continue;
-                    }
-                    referrer = jt.key();
-                    qDebug() << "Graph:: prestigePageRank " << (*it)->name()
-                             << " is inLinked from " << referrer  ;
-
-                    if ( this->hasArc( referrer , (*it)->name() ) ) {
-                        outDegree = m_graph[ index[referrer] ] ->outDegreeConst();
-                        PRP =  m_graph[ index[referrer] ]->PRP();
-                        qDebug()<< "Graph:: prestigePageRank() " <<  referrer
-                                << " has PRP = " << PRP
-                                << " and outDegree = " << outDegree
-                                << " PRP / outDegree = " << PRP / outDegree ;
-                        sumPageRanksOfLinkedNodes += PRP / outDegree;
-                    }
+                edgeStatus=jt.value().second.second;
+                if ( edgeStatus != true){
                     ++jt;
-                }
-                // OK. Now calculate PageRank of current node
-                PRP = (1-dampingFactor) / aVert + dampingFactor * sumPageRanksOfLinkedNodes;
-                // store new PageRank
-                (*it) -> setPRP ( PRP );
-                t_sumPRP+=PRP;
-                // calculate diff from last PageRank value for this vertex
-                // and set it to minDelta if the latter is bigger.
-                qDebug()<< "Graph:: prestigePageRank() vertex: " <<  (*it)->name()
-                        << " new PageRank = " << PRP
-                        << " old PR was = " << oldPRP
-                        << " diff = " << fabs(PRP - oldPRP);
-                if ( maxDelta < fabs(PRP - oldPRP) ) {
-                    maxDelta = fabs(PRP - oldPRP);
-                    qDebug()<< "Graph:: prestigePageRank() setting new maxDelta = "
-                            <<  maxDelta;
+                    continue;
                 }
 
+                referrer = jt.key();
+
+                qDebug() << "Graph::prestigePageRank() " << (*it)->name()
+                         << " inLinked from " << referrer  << " index " << index[referrer];
+
+                if ( this->hasArc( referrer , (*it)->name() ) )
+                {
+                    inLinks = m_graph[ index[referrer] ] ->inEdgesConst();
+
+                    PRP =  m_graph[ index[referrer] ]->PRP();
+
+                    qDebug()<< "Graph::prestigePageRank() - neighbor " << referrer
+                            << " has PRP = " << PRP
+                            << " and inLinks = " << inLinks;
+
+                    sumInLinksPR +=  (inLinks != 0 ) ? ( PRP / inLinks ) : PRP;
+
+                }
+                ++jt;
             }
+
+            PRP = (1-d_factor) / aVert + d_factor * sumInLinksPR;
+
+            qDebug() << "Graph::prestigePageRank() - node "
+                     << (*it)->name()
+                      << " new PR = " << PRP;
+
+            (*it) -> setPRP ( PRP );
+
+            t_sumPRP+=PRP;
+
+            // calculate diff from last PageRank value for this vertex
+            // and set it to minDelta if the latter is bigger.
+            qDebug()<< "Graph::prestigePageRank() vertex: " <<  (*it)->name()
+                    << " new PageRank = " << PRP
+                    << " old PR was = " << oldPRP
+                    << " diff = " << fabs(PRP - oldPRP);
+            if ( maxDelta < fabs(PRP - oldPRP) ) {
+                maxDelta = fabs(PRP - oldPRP);
+                qDebug()<< "Graph::prestigePageRank() setting new maxDelta = "
+                        <<  maxDelta;
+            }
+
+
         }
         i++;
     }
@@ -3990,9 +4015,10 @@ void Graph::prestigePageRank(const bool dropIsolates){
         }
         PRP = (*it)->PRP();
         SPRP = PRP / t_sumPRP ;
+        (*it)->setPRP( SPRP ); // ???
         (*it)->setSPRP( SPRP );
         sumPRP +=  SPRP;
-        qDebug()<< "Graph:: prestigePageRank() vertex: " <<  (*it)->name()
+        qDebug()<< "Graph::prestigePageRank() vertex: " <<  (*it)->name()
                 << " PageRank = " << PRP << " standard PR = " << SPRP;
     }
 
@@ -4054,9 +4080,10 @@ void Graph::writePrestigePageRank(const QString fileName, const bool dropIsolate
     outText.setRealNumberPrecision(m_precision);
     outText << tr("PAGERANK PRESTIGE (PRP)")<<"\n";
     outText << tr("")<<"\n";
-    outText << tr("PRP  range:  1-d < PRP  where d=") << dampingFactor   << "\n";
+    outText << tr("PRP  range: (1-d)/N ") << " < PRP" << endl;
+    outText << " d =" << d_factor   << endl;
     outText << tr("PRP' is the standardized PR (PR divided by sumPR)")<<"\n";
-    outText << tr("PRP' range:  ") << dampingFactor / sumPRP  << " < C'< 1" <<"\n\n";
+    outText << tr("PRP' range:  ") << " (1-d)/N < C'< 1" <<"\n\n";
     outText << "Node"<<"\tPRP\t\tPRP'\t\t%PRP'\n";
     QList<Vertex*>::const_iterator it;
     float PRP=0, SPRP=0;

@@ -2147,7 +2147,7 @@ bool Parser::loadDot(){
             qDebug ("* Finished node!");
         }
         else if ( !str.contains('[', Qt::CaseInsensitive)
-                  && !str.contains('node', Qt::CaseInsensitive)
+                  && !str.contains("node", Qt::CaseInsensitive)
                   && !str.contains(']', Qt::CaseInsensitive)
                   && !str.contains("--",Qt::CaseInsensitive)
                   && !str.contains("->",Qt::CaseInsensitive)
@@ -2311,8 +2311,6 @@ bool Parser::loadDot(){
             }
         }
 
-
-        }
         else {
             qDebug() <<  "  Redudant data: "<< str.toLatin1();
         }

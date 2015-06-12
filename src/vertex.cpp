@@ -384,6 +384,17 @@ long int Vertex::outEdges() {
 }
 
 /**
+ * @brief Vertex::outEdgesConst
+ * Returns the number of active outbound arcs
+ * Needs to have outEdges called before the call to this method
+ * @return long int
+ */
+long int Vertex::outEdgesConst() const {
+    return m_outEdgesCounter;
+}
+
+
+/**
  * @brief Vertex::returnEnabledOutEdges
  * Returns a qhash of all enabled outEdges in the active relation
  * @return  QHash<int,float>*
@@ -511,6 +522,16 @@ long int Vertex::inEdges() {
     return m_inEdgesCounter;
 }
 
+
+/**
+ * @brief Vertex::inEdgesConst
+ * Returns the number of active inbound arcs
+ * Needs to have inEdges called before the call to this method
+ * @return long int
+ */
+long int Vertex::inEdgesConst() const {
+    return m_inEdgesCounter;
+}
 
 
 
