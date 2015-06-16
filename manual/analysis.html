@@ -560,21 +560,39 @@ You can use DP variance or mean instead.</em>
 </p>
 
 
-<h5><a name="PRP" id="PRP"></a>PageRank Prestige (PRP)</h5>
+<h5><a name="PRP" id="PRP"></a>PageRank prestige (PR)</h5>
 <p>
-The PageRank Prestige is an importance ranking for each node based on the structure of its in-link.
-The original PageRank algorithm, developed by Page and Brin (1997),
+The PageRank prestige is an importance ranking for each node based on the
+structure of its incoming links/edges and the rank of the nodes linking to it.
+
+<p>The original PageRank algorithm, developed by Page and Brin (1997),
 focuses on how nodes are connected to each other, treating each link from a node
-as a citation/backlink/vote to another.  <br />
-In essence, for each node PageRank counts all backlinks to it, but it does so
-by not counting all links equally while it normalizes each link from a node by
-the total number of links from it. <br />
-The PRP score of each node is calculated iteratively and corresponds to the
-principal eigenvector of the normalized link matrix.
-<br /><br />
+as a citation/backlink/vote to another.
+<p>
+In essence, for each node the algorithm counts all incoming links (edges) to it,
+but it does so by not counting all links equally while it normalizes each in-link
+from a node by the total number of its outgoing edges.
+
+<p>The PR index for each node \( u \) is computed  iteratively by the formula:
+
+$$ PR_u = \frac { 1- d } { N } + d \cdot  \sum_{v \in M_u} \frac {PR_v }{DC_v}  $$
+
+where<br />
+\( u \) is the node, <br />
+\( d \) is a dumping factor (\( d = 0.85 \)),<br />
+\( N \) the number of of vertices in the network<br />
+\( M_u \) all nodes which link to \( u \)<br />
+\( DC_v \) the outDegree of node \( v \)<br />
+
+
+<p>
+The PR values correspond to the principal eigenvector of the normalized link matrix.
+<p>
 This index can be calculated in both graphs and digraphs but is usually best suited for directed graphs since it is a prestige measure.
-It can also be calculated in weighted graphs.
-In weighted relations, each backlink to a node u from another node v is considered
+
+<p>The PageRank prestige index can also be calculated in weighted graphs.
+
+<p>Note: In weighted relations, each backlink to a node u from another node v is considered
 to have weight=1 but it is normalized by the sum of outEdges weights (outDegree) of v.
 Therefore, nodes with high outLink weights give smaller percentage of their PR to node u.
 </p>
