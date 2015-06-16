@@ -1005,7 +1005,7 @@ bool Graph::setAllEdgesColor(const QString &color){
             qDebug() << "=== Graph::setAllEdgesColor() : "
                         << source << "->" << target << " new color " << color;
             (*it)->setOutLinkColor(target, color);
-            emit setLinkColor(source, target, color);
+            emit changeEdgeColor(source, target, color);
             ++it1;
         }
     }
@@ -1021,14 +1021,14 @@ bool Graph::setAllEdgesColor(const QString &color){
     Changes the color of edge (s,t).
 */
 void Graph::setEdgeColor(const long &v1, const long &v2, const QString &color){
-    qDebug()<< "\n\n === Graph::setEdgeColor() "<< v1 << " -> "<< v2
-            <<" with index ("<< index[v1]<< " -> "<<index[v2]<<")"
+    qDebug()<< "Graph::setEdgeColor() - "<< v1 << " -> "<< v2
+            <<" index ("<< index[v1]<< " -> "<<index[v2]<<")"
            <<" new color "<< color;
     m_graph[ index[v1] ]->setOutLinkColor(v2, color);
-    emit setLinkColor(v1, v2, color);
+    emit changeEdgeColor(v1, v2, color);
     if (isSymmetric()) {
         m_graph[ index[v2] ]->setOutLinkColor(v1, color);
-        emit setLinkColor(v2, v1, color);
+        emit changeEdgeColor(v2, v1, color);
     }
     graphModified=true;
     emit graphChanged();

@@ -185,7 +185,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
              graphicsWidget, SLOT( drawEdgeReciprocal(int, int) ) );
 
 
-    connect( &activeGraph, SIGNAL( setEdgeColor(long int,long int,QString)),
+    connect( &activeGraph, SIGNAL( changeEdgeColor(long int,long int,QString)),
              graphicsWidget, SLOT( setEdgeColor(long int,long int,QString) ) );
 
 
@@ -5315,11 +5315,12 @@ void MainWindow::slotChangeEdgeColor(){
 
     int sourceNode=-1, targetNode=-1;
     bool ok=false;
-    QString newColor;
+
     int min=activeGraph.firstVertexNumber();
     int max=activeGraph.lastVertexNumber();
 
-    if (!edgeClicked) {	//no edge clicked. Ask user to define an edge.
+    if (!edgeClicked)
+    {	//no edge clicked. Ask user to define an edge.
         sourceNode=QInputDialog::getInt(this,
                                         "Change edge color",
                                         tr("Select edge source node:  ("+
@@ -5349,35 +5350,28 @@ void MainWindow::slotChangeEdgeColor(){
              return;
         }
 
-
-        QColor color = QColorDialog::getColor(
-                    Qt::black, this, tr("Select new color....") );
-        if ( color.isValid()) {
-            QString newColor=color.name();
-            qDebug() << "MW::slotChangeEdgeColor() to " << newColor;
-            activeGraph.setEdgeColor( sourceNode, targetNode, newColor);
-            statusMessage( tr("Ready. ")  );
-        }
-        else {
-            statusMessage( tr("Change edge color aborted. ") );
-        }
-
     }
-    else {	//edge has been clicked. Just ask the color and call the appropriate methods.
-        QColor color = QColorDialog::getColor(
-                    Qt::black, this, tr("Select new color....") );
-        if ( color.isValid()) {
-            QString newColor=color.name();
-            qDebug() << "MW::slotChangeEdgeColor() to " << newColor;
-            activeGraph.setEdgeColor( clickedEdge->sourceNodeNumber(),
-                                      clickedEdge->targetNodeNumber(), newColor);
-            statusMessage( tr("Ready. ")  );
-        }
-        else {
-            statusMessage( tr("Change edge color aborted. ") );
-        }
-
+    else
+    {	//edge has been clicked.
+         sourceNode = clickedEdge->sourceNodeNumber();
+         targetNode = clickedEdge->targetNodeNumber();
     }
+
+    QColor color = QColorDialog::getColor(
+                Qt::black, this, tr("Select new color....") );
+
+    if ( color.isValid()) {
+        QString newColor=color.name();
+        qDebug() << "MW::slotChangeEdgeColor() - " << sourceNode << " -> "
+                    << targetNode << " newColor "
+                 << newColor;
+        activeGraph.setEdgeColor( sourceNode, targetNode, newColor);
+        statusMessage( tr("Ready. ")  );
+    }
+    else {
+        statusMessage( tr("Change edge color aborted. ") );
+    }
+
 }
 
 
