@@ -3891,7 +3891,7 @@ void Graph::prestigePageRank(const bool dropIsolates){
     float SPRP=0;
     int iterations = 1; // a counter
     int referrer;
-    float delta = 0.001; // The delta where we will stop the iterative calculation
+    float delta = 0.00001; // The delta where we will stop the iterative calculation
     float maxDelta = RAND_MAX;
     float sumInLinksPR = 0;  // temp var for inlinks sum PR
     float transferedPRP = 0;
@@ -4105,7 +4105,8 @@ void Graph::writePrestigePageRank(const QString fileName, const bool dropIsolate
     outText.setRealNumberPrecision(m_precision);
     outText << tr("PAGERANK PRESTIGE (PRP)")<<"\n";
     outText << tr("")<<"\n";
-    outText << tr("PRP  range: (1-d)/N ") << " < PRP" << endl;
+    outText << tr("PRP  range: (1-d)/N = ") << ( 1- d_factor ) / vertices()
+            << " < PRP" << endl;
     outText << " d =" << d_factor   << endl;
     outText << tr("PRP' is the standardized PR (PR divided by sumPR)")<<"\n";
     outText << tr("PRP' range:  ") << " (1-d)/N < C'< 1" <<"\n\n";

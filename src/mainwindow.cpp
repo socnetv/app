@@ -414,9 +414,12 @@ void MainWindow::initActions(){
     connect(importDL, SIGNAL(triggered()), this, SLOT(slotImportDL()));
 
 
-    importList = new QAction( QIcon(":/images/open.png"), tr("&List"), this);
-    importList->setStatusTip(tr("Import network from a List-formatted file. "));
-    importList->setWhatsThis(tr("Import List\n\nImport a network from a List-formatted file"));
+    importList = new QAction( QIcon(":/images/open.png"), tr("&Edge list"), this);
+    importList->setStatusTip(tr("Import network from an edge list file. "));
+    importList->setWhatsThis(tr("Import edge list\n\n"
+                                "Import a network from an edgelist file. "
+                                " The file can be unvalued or valued (see manual)"
+                                ));
     connect(importList, SIGNAL(triggered()), this, SLOT(slotImportEdgeList()));
 
 
