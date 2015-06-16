@@ -235,7 +235,6 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect( &activeGraph, SIGNAL(relationChanged(int)),
              graphicsWidget, SLOT( changeRelation(int))  ) ;
 
-
     connect( &m_filterEdgesByWeightDialog, SIGNAL( userChoices( float, bool) ),
              &activeGraph, SLOT( filterEdgesByWeight (float, bool) ) );
 
@@ -4104,7 +4103,7 @@ void MainWindow::slotViewNetworkFile(){
 void MainWindow::slotOpenTextEditor(){
     qDebug() << "slotOpenTextEditor() : ";
 
-    TextEditor *ed = new TextEditor("");
+    TextEditor *ed = new TextEditor("", this);
     ed->setWindowTitle(tr("New Network File"));
     ed->show();
     statusMessage(  tr("Enter your network data here" ) );

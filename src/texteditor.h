@@ -38,7 +38,7 @@ class TextEditor : public QMainWindow
     Q_OBJECT
 
 public:
-	TextEditor(const QString &fileName);
+    TextEditor(const QString &fileName , QWidget *parent=0 );
 
 protected:
 	void closeEvent(QCloseEvent *event);
