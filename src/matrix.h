@@ -30,6 +30,7 @@
 #define MATRIX_H
 
 
+
 #include <QtGlobal>		//used for qDebug function
 #include <QDebug>
 #include <QTextStream>
@@ -176,6 +177,9 @@ public:
     Matrix& sum (Matrix &a, Matrix &b) ;
 
     Matrix& inverseByGaussJordanElimination(Matrix &a);
+
+    void ludcmp (Matrix &a, const int &n);
+
 
     void swapRows(int rowA,int rowB);		/* elementary matrix algebra */
     void multiplyRow(int row, float value);		/* Multiply every elememt of row A by value */

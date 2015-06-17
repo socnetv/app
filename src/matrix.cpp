@@ -26,6 +26,10 @@
 
 #include "matrix.h"
 
+
+
+#define TINY 1.0e-20
+
 #include <cstdlib>		//allows the use of RAND_MAX macro
 #include <QtMath>		//needed for fabs, qFloor etc
 
@@ -156,7 +160,7 @@ float  Matrix::operator ()  (const int r, const int c){
 }
 
 
-/**  	Outputs matrix m to a text stream
+/**  	Outputs matrix m to a text str
 */
 QTextStream& operator <<  (QTextStream& os, Matrix& m){
     qDebug() << "Matrix: << Matrix";
@@ -627,4 +631,74 @@ Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
 
 	}
 	return *this;
+}
+
+
+// Code from Knuth's Numerical Recipes in C
+void ludcmp (Matrix &a, const int &n) {
+    int i,imax,j,k;
+    float big,dum,sum,temp;
+    float *vv;            // vv stores the implicit scaling of each row
+
+    vv=vector<int>(1,n);
+
+    *d=1.0;               // No row interchanges yet.
+
+    for (i=1;i<=n;i++) {  // Loop over rows to get the implicit scaling information.
+        big=0.0;
+        for (j=1;j<=n;j++)
+            if ((temp=fabs( a.item(i,j) ) ) > big) big=temp;
+        if (big == 0.0)  //       No nonzero largest element.
+        {
+            qDebug() << "Singular matrix in routine ludcmp";
+            return;
+        }
+        vv[i]=1.0/big;  //  Save the scaling.
+    }
+    for (j=1;j<=n;j++) { //     This is the loop over columns of Crout’s method.
+        for (i=1;i<j;i++) { //  This is equation (2.3.12) except for i = j.
+            sum= a.item(i,j);
+            for (k=1;k<i;k++) sum -= a.item(i,k) * a.item(k,j);
+            a.setItem(i,j)=sum;
+        }
+        big=0.0; //      Initialize for the search for largest pivot element.
+        for (i=j;i<=n;i++) {  //         This is i = j of equation (2.3.12) and i = j + 1 . . . N
+            sum=a.item(i,j);     //     of equation (2.3.13).
+            for (k=1;k<j;k++)
+                sum -= a.item(i,k) * a.item(k,j);
+            a.setItem(i,j)=sum;
+            if ( ( dum= vv[i] * fabs(sum) ) >= big) {
+                //  Is the figure of merit for the pivot better than the best so far?
+                big=dum;
+                imax=i;
+            }
+        }
+        if (j != imax) { //          Do we need to interchange rows?
+            for ( k=1; k<=n; k++ ) { //            Yes, do so...
+                dum=a.item(imax,k);
+                a.setItem(imax,k)=a.item(j,k);
+                a.setItem(j,k)=dum;
+            }
+            *d = -(*d);  //..and change the parity of d.
+            vv[imax]=vv[j];  //         Also interchange the scale factor.
+        }
+        indx[j]=imax;
+        if ( a.item(j,j) == 0 )
+            a.setItem(j,j)=TINY;
+        // If the pivot element is zero the matrix is singular (at least to the precision of the
+        // algorithm). For some applications on singular matrices, it is desirable to substitute
+        // TINY for zero.
+        if (j != n) { //         Now, finally, divide by the pivot element.
+            dum=1.0/(a.item(j,j));
+            for (i=j+1;i<=n;i++)
+                a.setItem(i,j) *= dum;
+        }
+    }  // Go back for the next column in the reduction.
+
+
+ free_vector(vv,1,n);
+
+
+
+
 }
