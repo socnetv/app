@@ -54,13 +54,18 @@ class Vertex : public QObject{
 public:
 
     Vertex(Graph* parent,
-            const long int &name, const int &val, const int &size,
-            const QString &color,
-            const QString &numColor, const int &numSize,
-            const QString &label, const QString &labelColor,
-            const int &labelSize,
-            const QPointF &p,
-            const QString &shape);
+           const long int &name,
+           const int &val,
+           const int &relation,
+           const int &size,
+           const QString &color,
+           const QString &numColor,
+           const int &numSize,
+           const QString &label,
+           const QString &labelColor,
+           const int &labelSize,
+           const QPointF &p,
+           const QString &shape);
 
     Vertex(const long int &name);
 

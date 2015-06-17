@@ -92,14 +92,14 @@ Graph::Graph() {
  * @param relation
  */
 void Graph::changeRelation(int relation){
-    qDebug() << "\n \n \n Graph::changeRelation(int) to relation " << relation
-             << " current relation is " << m_curRelation << "\n\n\n";
+    qDebug() << "++ Graph::changeRelation(int) to relation " << relation
+             << " current relation is " << m_curRelation ;
     if (m_curRelation == relation ) {
-        qDebug() << "Graph::changeRelation(int) - same relation - END";
+        qDebug() << "++ Graph::changeRelation(int) - same relation - END";
         return;
     }
     if ( relation < 0) {
-        qDebug() << "Graph::changeRelation(int) - negative relation - END ";
+        qDebug() << "++ Graph::changeRelation(int) - negative relation - END ";
         return;
     }
     QList<Vertex*>::const_iterator it;
@@ -123,8 +123,8 @@ void Graph::changeRelation(int relation){
  */
 void Graph::addRelationFromUser(QString newRelation){
     m_relationsList << newRelation;
-    qDebug() << "\n\nGraph::addRelationFromUser(string) " << newRelation
-                << " total relations now " << relations() << "\n\n";
+    qDebug() << "Graph::addRelationFromUser(string) " << newRelation
+                << " total relations now " << relations() ;
 
 }
 
@@ -276,33 +276,36 @@ void Graph::setCanvasDimensions(int w, int h){
  */
 void Graph::createEdge(int v1, int v2, float weight, QString color,
                        int reciprocal=0, bool drawArrows=true, bool bezier=false){
-    qDebug()<<"\n\nGraph::createEdge() " << v1 << " -> " << v2
+    qDebug()<<"-- Graph::createEdge() - " << v1 << " -> " << v2
            << " weight " << weight
               << " reciprocal " << reciprocal;
     // check whether there is already such an edge
     // (see #713617 - https://bugs.launchpad.net/socnetv/+bug/713617)
     if (!hasArc(v1,v2)){
         if ( reciprocal == 2) {
-            qDebug()<<"  Creating edge as RECIPROCAL - emitting drawEdge signal to GW";
+            qDebug()<< "-- Graph::createEdge() - "
+                    << "Creating RECIPROCAL edge - emitting drawEdge signal to GW";
             addEdge ( v1, v2, weight, color, reciprocal);
             emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier);
         }
         else if (this->hasArc( v2, v1) )  {
-            qDebug()<<". Opposite arc exists. "
+            qDebug()<<"-- Graph::createEdge() - Opposite arc exists. "
                    << "  Emitting drawEdgeReciprocal to GW ";
             reciprocal = 1;
             addEdge ( v1, v2, weight, color, reciprocal);
             emit drawEdgeReciprocal(v2, v1);
         }
         else {
-            qDebug()<<"  Opposite arc does not exist. Emitting drawEdge to GW...";
+            qDebug()<< "-- Graph::createEdge() - "
+                       << "Opposite arc does not exist. Emitting drawEdge to GW...";
             reciprocal = 0;
             addEdge ( v1, v2, weight, color, reciprocal);
             emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier);
         }
     }
     else {
-        qDebug() << "n\nGraph::createEdge() - edge " << v1 << " -> " << v2
+        qDebug() << "-- Graph::createEdge() - "
+                    << "Edge " << v1 << " -> " << v2
                  << " declared previously (exists) - nothing to do \n\n";
     }
     //draw new edges the same color with those of the file loaded,
@@ -318,7 +321,7 @@ void Graph::createEdge(int v1, int v2, float weight, QString color,
 */
 void Graph::createEdge(int v1, int v2, float weight, int reciprocal=0,
                        bool drawArrows=true, bool bezier=false){
-    qDebug()<< " Graph::createEdge() - " << v1<< " -> " << v2 ;
+    qDebug()<< "Graph::createEdge() - " << v1<< " -> " << v2 ;
     createEdge(v1, v2, (float) weight, initEdgeColor, reciprocal,
                drawArrows, bezier);
 }
@@ -386,8 +389,8 @@ void Graph::addVertex (
 
     m_graph.append(
                 new Vertex
-                (this, v1, val, size, color, numColor, numSize, label,
-                 labelColor, labelSize, p, shape
+                (this, v1, val, m_curRelation , size, color, numColor, numSize,
+                 label, labelColor, labelSize, p, shape
                  )
                 );
     m_totalVertices++;
@@ -1150,15 +1153,17 @@ int Graph::inDegree (int v1) {
 /** 
     Returns |E| of graph
 */
-int Graph::totalEdges () {
-    qDebug("Graph: totalEdges()");
-    int tEdges=0;
+int Graph::totalEdges() {
+
+    int recountedEdges=0;
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        tEdges+=(*it)->outEdges();
+        recountedEdges+=(*it)->outEdges();
     }
-    qDebug() << "Graph: m_totalEdges = " << m_totalEdges << ", tEdges=" <<  tEdges;
-    return tEdges;
+    qDebug() << "Graph::totalEdges() - m_totalEdges: " << m_totalEdges
+             << ", edges recounted: " <<  recountedEdges;
+
+    return recountedEdges;
 }
 
 
