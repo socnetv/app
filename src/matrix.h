@@ -35,29 +35,31 @@
 #include <QDebug>
 #include <QTextStream>
 
+#include <utility>      // std::pair, std::make_pair
+
 using namespace std; //or else compiler groans for nothrow
 
 class Row {
 public:
-    Row (int Actors=0) {
-        cell=new (nothrow) float [m_Actors=Actors];
+    Row (int cols=0) {
+        cell=new (nothrow) float [m_cols=cols];
 		Q_CHECK_PTR( cell );
-        for (register int i=0;i<m_Actors; i++) {
+        for (register int i=0;i<m_cols; i++) {
             cell[i]=0;
         }
 		m_outEdges=0;
 	}
 
-    ~Row() { m_Actors=0, m_outEdges=0 ; delete [] cell;}
+    ~Row() { m_cols=0, m_outEdges=0 ; delete [] cell;}
 	
     Row& operator =(Row & a) {
         if (this != &a){
-            if (a.m_Actors!=m_Actors) {
+            if (a.m_cols!=m_cols) {
                 delete [] cell;
-                cell=new (nothrow) float[m_Actors=a.m_Actors];
+                cell=new (nothrow) float[m_cols=a.m_cols];
                 Q_CHECK_PTR( cell);
             }
-            for (int i=0;i<m_Actors; i++) {
+            for (int i=0;i<m_cols; i++) {
                     cell[i]=a.cell[i];
             }
         }
@@ -67,6 +69,10 @@ public:
 	float column ( int c ) const {
 		return cell[c];
 	}
+
+
+    float& operator [] (const int k) { return cell[k]; }
+
 	
 	void setColumn (int index, float elem) {
 		cell[index]=elem;
@@ -84,31 +90,31 @@ public:
 	//FIXME 
 	void updateOutEdges(){
 		m_outEdges=0;
-		for (int i=0;i<m_Actors; i++) { 
+        for (int i=0;i<m_cols; i++) {
 			if (cell[i])
 			    m_outEdges++;
 		}
 	}
 
-	void resize(int Actors) {
+    void resize(int cols) {
 		delete [] cell;
-        cell=new (nothrow) float[m_Actors=Actors];
+        cell=new (nothrow) float[m_cols=cols];
 		Q_CHECK_PTR( cell);
-		for (int i=0;i<m_Actors; i++) { 
+        for (int i=0;i<m_cols; i++) {
 			cell[i]=0;
 		}
 		m_outEdges=0;
 	}
 	
-	void setSize(int Actors){
-		m_Actors=Actors;
+    void setSize(int cols){
+        m_cols=cols;
 		//FIXME Matrix.row setSize m_outEdges should be zero
 	}
 	int outEdges () { return m_outEdges;}
 
 private:
 	float *cell;
-	int m_Actors, m_outEdges;
+    int m_cols, m_outEdges;
 };
 
 
@@ -116,7 +122,8 @@ private:
 
 class Matrix {
 public:
-    Matrix (int Actors=0) ; /**default constructor - default size 0 */
+    /**default constructor - default rows = cols = 0 */
+    Matrix (int rowDim=0, int colDim=0)  ;
 
     Matrix(const Matrix &b) ;	/* Copy constructor allows Matrix a=b  */
 
@@ -124,19 +131,24 @@ public:
 
     void clear();
 
-    void resize (int Actors) ;
+    void resize (const int m, const int n) ;
 
     float item( int r, int c ) ;
 
-    void setItem( int r, int c, float elem );
+    void setItem(const int r, const int c, const float elem );
+
+    //WARNING: this operator is slow! Avoid using it.
+     float  operator ()  (const int r, const int c) { return  row[r].column(c);  }
+
+     Row& operator []  (const int &r)  { return row[r]; }
 
     void clearItem( int r, int c ) ;
 
-    int cols() {return m_Actors;}
+    int cols() {return m_cols;}
 
-    int rows() {return m_Actors;}
+    int rows() {return m_rows;}
 
-    int size() { return m_Actors;}
+    int  size() { return m_rows * m_cols; }
 
     void findMinMaxValues(float&,float&);
 
@@ -144,15 +156,15 @@ public:
 
     int edgesFrom(int Actor);
 
-    int edgesTo(int Actor);
+    int edgesTo(const int Actor);
 
     int totalEdges();
 
     bool printMatrixConsole();
 
-    void identityMatrix (int);
+    void identityMatrix (int dim);
 
-    void zeroMatrix (int);
+    void zeroMatrix (const int m, const int n);
 
     void fillMatrix (float value );
 
@@ -161,8 +173,6 @@ public:
     Matrix& operator +(Matrix & b);
 
     Matrix operator *(Matrix & b);	    // undefined
-
-    float  operator ()  (const int r, const int c) ;
 
     friend QTextStream& operator <<  (QTextStream& os, Matrix& m);
 
@@ -176,9 +186,13 @@ public:
 
     Matrix& sum (Matrix &a, Matrix &b) ;
 
+    void ludcmp ( Matrix &a, const int &n, int *indx, float *d ) ;
+
+    void lubksb ( Matrix &a, const int &n, int *indx, float b[]);
+
     Matrix& inverseByGaussJordanElimination(Matrix &a);
 
-    void ludcmp (Matrix &a, const int &n);
+    Matrix& inverse(Matrix &a);
 
 
     void swapRows(int rowA,int rowB);		/* elementary matrix algebra */
@@ -187,6 +201,8 @@ public:
 private:
     Row *row;
     int m_Actors;
+    int m_rows;
+    int m_cols;
 };
 
 

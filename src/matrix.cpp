@@ -41,11 +41,11 @@
  * Use resize(int) to resize it
  * @param Actors
  */
-Matrix::Matrix (int Actors)   {
-    row = new (nothrow) Row[ m_Actors=Actors ];
+Matrix::Matrix (int rowDim, int colDim)  : m_rows (rowDim), m_cols(colDim) {
+    row = new (nothrow) Row[ m_rows ];
     Q_CHECK_PTR( row );
-    for (register int i=0;i<m_Actors; i++) {
-        row[i].resize(m_Actors);
+    for (register int i=0;i<m_rows; i++) {
+        row[i].resize( m_cols );
     }
 }
 
@@ -60,12 +60,14 @@ Matrix::Matrix (int Actors)   {
 */
 Matrix::Matrix(const Matrix &b) {
     qDebug()<< "Matrix:: constructor";
-    row = new Row[m_Actors=b.m_Actors];
+    m_rows=b.m_rows;
+    m_cols=b.m_cols ;
+    row = new Row[m_rows];
     Q_CHECK_PTR( row );
-    for (register int i=0;i<m_Actors; i++) {
-        row[i].resize(m_Actors);
+    for (register int i=0;i<m_rows; i++) {
+        row[i].resize( m_cols );
     }
-    for (register int i=0; i<m_Actors; i++) {
+    for (register int i=0; i<m_rows; i++) {
         row[i]=b.row[i];
     }
 }
@@ -84,28 +86,31 @@ Matrix::~Matrix() {
  * clears data
  */
 void Matrix::clear() {
-    if (m_Actors > 0){
+    if (m_rows > 0){
         qDebug() << "Matrix::clear() deleting old rows";
-        m_Actors=0;
+        m_rows=0;
+        m_cols=0;
         delete [] row;
     }
 }
 
 /**
  * @brief Matrix::resize
- * Resize this matrix.
+ * Resize this matrix to m x n
  * Called before every operation on new matrices.
  * Every Row object holds max_int=32762
  * @param Actors
  */
-void Matrix::resize (int Actors) {
+void Matrix::resize (const int m, const int n) {
     qDebug() << "Matrix: resize() ";
     clear();
-    row = new (nothrow) Row [m_Actors=Actors];
+    m_rows = m;
+    m_cols = n;
+    row = new (nothrow) Row [ m_rows  ];
     Q_CHECK_PTR( row );
     qDebug() << "Matrix: resize() -- resizing each row";
-    for (register int i=0;i<m_Actors; i++) {
-        row[i].resize(m_Actors);
+    for (register int i=0;i<m_rows; i++) {
+        row[i].resize( m_cols );  // CHECK ME
     }
 }
 
@@ -122,15 +127,17 @@ void Matrix::resize (int Actors) {
 Matrix& Matrix::operator = (Matrix & a) {
     qDebug()<< "Matrix::operator asignment =";
     if (this != &a){
-		if (a.m_Actors!=m_Actors) {
+        if (a.m_rows!=m_rows) {
             clear();
-            row=new (nothrow) Row[m_Actors=a.m_Actors];
+            m_rows=a.m_rows;
+            m_cols=a.m_cols;
+            row=new (nothrow) Row[m_rows];
 			Q_CHECK_PTR( row );
-			for (int i=0;i<m_Actors; i++) {
-				row[i].resize(m_Actors); //every Row object holds max_int=32762 actors
+            for (int i=0;i<m_rows; i++) {
+                row[i].resize(m_cols); //every Row object holds max_int=32762
 			}
 		}
-       for (int i=0;i<m_Actors; i++)
+       for (int i=0;i<m_rows; i++)
            row[i]=a.row[i];
 	}
 	return *this;
@@ -140,7 +147,7 @@ Matrix& Matrix::operator = (Matrix & a) {
 /**
 * @brief Matrix::operator +
 * Matrix addition: +
-* Adds two matrices of the same size and returns the sum.
+* Adds two matrices of the same dim and returns the sum matrix.
 * Allows to sum two matrices using c=a+b
 * @param a
 * @return
@@ -154,10 +161,8 @@ Matrix& Matrix::operator = (Matrix & a) {
  }
 
 
- //WARNING: this operator is slow! Avoid using it.
-float  Matrix::operator ()  (const int r, const int c){
-	return  row[r].column(c);
-}
+
+
 
 
 /**  	Outputs matrix m to a text str
@@ -303,30 +308,33 @@ void Matrix::findMinMaxValues (float & maxVal, float &minVal){
 
 
 
-// makes this matrix the identity matrix I
-void Matrix::identityMatrix(int Actors) {
-	qDebug() << "Matrix: identityMatrix() -- deleting old rows";
+// makes this square matrix the identity square matrix I
+void Matrix::identityMatrix(int dim) {
+    qDebug() << "Matrix: identityMatrix() -- deleting old rows";
     clear();
-    row = new (nothrow) Row [m_Actors=Actors];
-	Q_CHECK_PTR( row );
-	qDebug() << "Matrix: resize() -- resizing each row";
-	for (int i=0;i<m_Actors; i++) {
-		row[i].resize(m_Actors);
-		setItem(i,i, 1);
-	}
-
+    m_rows=dim;
+    m_cols=dim;
+    row = new (nothrow) Row [m_rows];
+    Q_CHECK_PTR( row );
+    qDebug() << "Matrix: resize() -- resizing each row";
+    for (int i=0;i<m_rows; i++) {
+        row[i].resize(m_rows);
+        setItem(i,i, 1);
+    }
 }
 
 
 // makes this matrix the zero matrix of size Actors
-void Matrix::zeroMatrix(int Actors) {
-    qDebug() << "Matrix:: zeroMatrix() of size " << Actors;
+void Matrix::zeroMatrix(const int m, const int n) {
+    qDebug() << "Matrix:: zeroMatrix() m " << m << " n " << n;
     clear();
-    row = new (nothrow) Row [m_Actors=Actors];
+    m_rows=m;
+    m_cols=n;
+    row = new (nothrow) Row [m_rows];
     Q_CHECK_PTR( row );
     qDebug() << "Matrix::zeroMatrix - resizing each row";
-    for (int i=0;i<m_Actors; i++) {
-        row[i].resize(m_Actors);
+    for (int i=0;i<m_rows; i++) {
+        row[i].resize(m_cols);
         setItem(i,i, 0);
     }
 
@@ -338,7 +346,7 @@ float Matrix::item( int r, int c ){
 }
 
 // sets the (r,c) matrix element calling the setColumn method
-void Matrix::setItem( int r, int c, float elem ) {
+void Matrix::setItem( const int r, const int c, const float elem ) {
     row [ r ].setColumn(c, elem);
 }
 
@@ -355,7 +363,7 @@ int Matrix::edgesFrom(int r){
 }
 
 
-int Matrix::edgesTo(int t){
+int Matrix::edgesTo(const int t){
     int m_inEdges=0;
     for (register int i = 0; i < rows(); ++i) {
         if ( item(i, t) != 0 )
@@ -390,12 +398,12 @@ bool Matrix::printMatrixConsole(){
 
 void Matrix::deleteRowColumn(int erased){
     qDebug() << "Matrix: deleteRowColumn() : "<< erased;
-    qDebug() << "Matrix: mActors before " <<  m_Actors;
+    qDebug() << "Matrix: m_rows before " <<  m_rows;
 
-    --m_Actors;
-    qDebug() << "Matrix: mActors now " << m_Actors << ". Resizing...";
-    for (register int i=0;i<m_Actors+1; i++) {
-        for (register int j=0;j<m_Actors+1; j++) {
+    --m_rows;
+    qDebug() << "Matrix: m_rows now " << m_rows << ". Resizing...";
+    for (register int i=0;i<m_rows+1; i++) {
+        for (register int j=0;j<m_rows+1; j++) {
             qDebug() << "Matrix: (" <<  i << ", " << j << ")="<< item(i, j) ;
             if ( j==erased && item(i,erased) ){
                 clearItem(i,j);
@@ -416,14 +424,14 @@ void Matrix::deleteRowColumn(int erased){
                 setItem( i, j, item(i+1,j+1) ) ;
                 qDebug() <<"case 4";
             }
-            if (i>=m_Actors || j>=m_Actors) {
+            if (i>=m_rows || j>=m_rows) {
                 setItem( i, j, 0) ;
                 qDebug() <<"case 5 (border)";
             }
             qDebug() << "Matrix: new value (" <<  i << ", " << j << ")="<< item(i, j) ;
         }
     }
-    for (register int i=0;i<m_Actors; i++)
+    for (register int i=0;i<m_rows; i++)
         row[i].updateOutEdges();
 
 }
@@ -435,8 +443,8 @@ void Matrix::deleteRowColumn(int erased){
  * @param value
  */
 void Matrix::fillMatrix(float value )   {
-    for (int i=0;i<m_Actors; i++)
-        for (int j=0;j<m_Actors; j++)
+    for (int i=0;i< rows() ; i++)
+        for (int j=0;j< cols(); j++)
             setItem(i,j, value);
 }
 
@@ -447,7 +455,7 @@ Matrix& Matrix::product( Matrix &a, Matrix & b, bool symmetry)  {
     for (register int i=0;i< rows();i++)
         for (register int j=0;j<cols();j++) {
             setItem(i,j,0);
-            for (register int k=0;k<m_Actors;k++) {
+            for (register int k=0;k<m_rows;k++) {
                 qDebug() << "Matrix::product() - a("<< i+1 << ","<< k+1 << ")="
                          << a.item(i,k) << "* b("<< k+1 << ","<< j+1 << ")="
                          << b.item(k,j)  << " gives "  << a.item(i,k)*b.item(k,j);
@@ -465,13 +473,13 @@ Matrix& Matrix::product( Matrix &a, Matrix & b, bool symmetry)  {
     return *this;
 }
 		
-//takes two (AXA) matrices (symmetric) and outputs an upper triangular matrix
+//takes two ( N x N ) matrices (symmetric) and outputs an upper triangular matrix
 Matrix& Matrix::productSym( Matrix &a, Matrix & b)  {
-	for (register int i=0;i<m_Actors;i++)
-	    for (register int j=0;j<m_Actors;j++) {
+    for (register int i=0;i<rows();i++)
+        for (register int j=0;j<cols();j++) {
 			setItem(i,j,0);
 			if (i>=j) continue;
-			for (register int k=0;k<m_Actors;k++)
+            for (register int k=0;k<m_rows;k++)
 				if  ( k > j ) {
 					if (a.item(i,k)!=0 && b.item(j,k)!=0)
 						setItem(i,j, item(i,j)+a.item(i,k)*b.item(j,k));
@@ -561,8 +569,11 @@ void Matrix::multiplyRow(int row, float value) {
 Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
 	qDebug()<< "Matrix::inverseByGaussJordanElimination()";
 	int n=A.cols();
-	qDebug()<<"Matrix::inverseByGaussJordanElimination() - starting with the identity Matrix; this will become A^-1 in the end";
-	identityMatrix( n );
+    qDebug()<<"Matrix::inverseByGaussJordanElimination() - build I size " << n
+             << " This will become A^-1 in the end";
+
+    identityMatrix( n );
+
 	int l=0, m_pivotLine=0;
 	float m_pivot=0, temp_pivot=0, elim_coef=0;
 
@@ -634,14 +645,27 @@ Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
 }
 
 
-// Code from Knuth's Numerical Recipes in C
-void ludcmp (Matrix &a, const int &n) {
-    int i,imax,j,k;
+
+/**
+ * @brief Matrix::ludcmp(Matrix &a, const int &n, int *indx, float *d)
+ * Given matrix a, it replaces a by the LU decomposition of a rowwise permutation of itself.
+ * Used in combination with lubksb to solve linear equations or invert a matrix.
+ * @param a: input matrix n x n and output arranged as in Knuth's equation (2.3.14)
+ * @param n: input size of matrix
+ * @param indx: output vector, records the row permutation effected by the partial pivoting
+ * @param d: output as ±1 depending on whether the number of row interchanges was even or odd
+ * @return:
+ *
+ * Code adapted from Knuth's Numerical Recipes in C, pp 46
+ *
+ */
+void Matrix::ludcmp (Matrix &a, const int &n, int *indx, float *d) {
+    int i=0, j=0, imax=0, k;
     float big,dum,sum,temp;
     float *vv;            // vv stores the implicit scaling of each row
 
-    vv=vector<int>(1,n);
-
+    //vv=vector<float>(1,n);
+    vv=new (nothrow) float [n];
     *d=1.0;               // No row interchanges yet.
 
     for (i=1;i<=n;i++) {  // Loop over rows to get the implicit scaling information.
@@ -658,15 +682,16 @@ void ludcmp (Matrix &a, const int &n) {
     for (j=1;j<=n;j++) { //     This is the loop over columns of Crout’s method.
         for (i=1;i<j;i++) { //  This is equation (2.3.12) except for i = j.
             sum= a.item(i,j);
-            for (k=1;k<i;k++) sum -= a.item(i,k) * a.item(k,j);
-            a.setItem(i,j)=sum;
+            for (k=1;k<i;k++)
+                sum -= a.item(i,k) * a.item(k,j);
+            a.setItem(i,j, sum );
         }
         big=0.0; //      Initialize for the search for largest pivot element.
         for (i=j;i<=n;i++) {  //         This is i = j of equation (2.3.12) and i = j + 1 . . . N
             sum=a.item(i,j);     //     of equation (2.3.13).
             for (k=1;k<j;k++)
                 sum -= a.item(i,k) * a.item(k,j);
-            a.setItem(i,j)=sum;
+            a.setItem(i,j, sum);
             if ( ( dum= vv[i] * fabs(sum) ) >= big) {
                 //  Is the figure of merit for the pivot better than the best so far?
                 big=dum;
@@ -676,29 +701,105 @@ void ludcmp (Matrix &a, const int &n) {
         if (j != imax) { //          Do we need to interchange rows?
             for ( k=1; k<=n; k++ ) { //            Yes, do so...
                 dum=a.item(imax,k);
-                a.setItem(imax,k)=a.item(j,k);
-                a.setItem(j,k)=dum;
+                a.setItem( imax, k , a.item(j,k) ) ;
+                a.setItem(j,k,dum);
             }
             *d = -(*d);  //..and change the parity of d.
             vv[imax]=vv[j];  //         Also interchange the scale factor.
         }
         indx[j]=imax;
         if ( a.item(j,j) == 0 )
-            a.setItem(j,j)=TINY;
+            a.setItem(j,j,TINY);
         // If the pivot element is zero the matrix is singular (at least to the precision of the
         // algorithm). For some applications on singular matrices, it is desirable to substitute
         // TINY for zero.
         if (j != n) { //         Now, finally, divide by the pivot element.
             dum=1.0/(a.item(j,j));
             for (i=j+1;i<=n;i++)
-                a.setItem(i,j) *= dum;
+                a.setItem(i,j, a.item(i,j) * dum );
         }
     }  // Go back for the next column in the reduction.
 
 
- free_vector(vv,1,n);
-
-
-
+ //free_vector(vv,1,n);
+    delete vv;
 
 }
+
+
+
+
+/**
+ * @brief Matrix::lubksb(float **a, int n, int *indx, float b[])
+ *
+ * Solves the set of n linear equations A·X = b, where A nxn matrix
+ * decomposed as L·U (L lower triangular and U upper triangular)
+ * by forward substitution and  backsubstitution.
+ *
+ * Given A = L·U we have
+ * A · x = (L · U) · x = L · (U · x) = b
+ * So, this routine first solves
+ * L · y = b
+ * for the vector y by forward substitution and then solves
+ * U · x = y
+ * for the vector x using backsubstitution
+
+ * @param a: input matrix a as the LU decomposition of A, returned by the routine ludcmp
+ * @param n: input size of matrix
+ * @param indx: input vector, records the row permutation, returned by the routine ludcmp
+ * @param b: input array as the right-hand side vector B, and ouput with the solution vector X
+ * @return:
+ *
+ * a, n, and indx are not modified by this routine and can be left in place for
+ * successive calls with different right-hand sides b.
+ * This routine takes into account the possibility that b will begin with many
+ * zero elements, so it is efficient for use in matrix inversion.
+
+* Code adapted from Knuth's Numerical Recipes in C, pp 47
+ *
+ */
+void Matrix::lubksb(Matrix &a, const int &n, int *indx, float b[])
+{
+    int i, j, ii=0,ip;
+    float sum;
+    for ( i=0;i<n;i++) {  // When ii is set to a positive value, it will become the
+        ip=indx[i];       // index of the first nonvanishing element of b. We now
+        sum=b[ip];        // do the forward substitution, equation (2.3.6). The
+        b[ip]=b[i];       // only new wrinkle is to unscramble the permutation
+        if (ii)           // as we go.
+            for ( j=ii;j<=i-1;j++)
+                sum -= a[i][j]*b[j];
+        else if (sum)     // A nonzero element was encountered, so from now on we
+            ii=i;         //  will have to do the sums in the loop above.
+        b[i]=sum;
+    }
+    for ( i=n;i>=1;i--) {  // Now we do the backsubstitution, equation (2.3.7).
+        sum=b[i];
+        for ( j=i+1;j<=n;j++)
+            sum -= a[i][j]*b[j];
+        b[i]=sum/a[i][i]; //  Store a component of the solution vector X. All done!
+    }
+}
+
+Matrix& Matrix::inverse(Matrix &a)
+{
+    int i,j, n=a.rows();
+    float d,*col;
+   // int *indx = new int [n];
+     int *indx;
+
+    ludcmp(a,n,indx,&d);      //  Decompose the matrix just once.
+
+    for ( j=0; j<n; j++) {    //    Find inverse by columns.
+        for( i=0; i<n; i++)
+            col[i]=0;
+        col[j]=1.0;
+
+        lubksb(a,n,indx,col);
+
+        for( i=0; i<n; i++)
+            this->setItem( i, j , col[i]);
+    }
+    return *this;
+}
+

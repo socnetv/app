@@ -65,7 +65,7 @@ Graph::Graph() {
     calculatedPP=false;
     calculatedPRP=false;
     calculatedTriad=false;
-    m_precision = 3;
+    m_precision = 5;
     m_curRelation=0;
     dynamicMovement=false;
     timerId=0;
@@ -1744,9 +1744,9 @@ void Graph::createDistanceMatrix(const bool centralities,
     m_totalVertices = vertices(false,true);
     qDebug() << "Graph::createDistanceMatrix() Resizing Matrices to hold "
              << m_totalVertices << " vertices";
-    DM.resize(m_totalVertices);
-    TM.resize(m_totalVertices);
-    XRM.zeroMatrix(m_totalVertices);
+    DM.resize(m_totalVertices, m_totalVertices);
+    TM.resize(m_totalVertices, m_totalVertices);
+    XRM.zeroMatrix(m_totalVertices, m_totalVertices);
 
     int aEdges = totalEdges();
     //drop isolated vertices from calculations (i.e. std C and group C).
@@ -2578,7 +2578,7 @@ void Graph::centralityInformation(const bool considerWeights,
     classesIC=0;
     varianceIC=0;
 
-    TM.resize(m_totalVertices);
+    TM.resize(m_totalVertices, m_totalVertices);
     isolatedVertices=verticesIsolated().count();
     int i=0, j=0, n=vertices();
     float m_weight=0, weightSum=1, diagonalEntriesSum=0, rowSum=0;
@@ -2588,6 +2588,7 @@ void Graph::centralityInformation(const bool considerWeights,
     bool dropIsolates=true;
     bool symmetrize=true;
     createAdjacencyMatrix(dropIsolates, considerWeights, inverseWeights, symmetrize);
+
     n-=isolatedVertices;  //isolatedVertices updated in createAdjacencyMatrix
     qDebug() << "Graph:: centralityInformation() - computing node ICs for total n = " << n;
 
@@ -5306,7 +5307,7 @@ void Graph::createNumberOfWalksMatrix(int length) {
     XM = AM;   // XM will be the product matrix
     XSM = AM;  // XSM is the sum of product matrices
     Matrix PM; // temp matrix
-    PM.zeroMatrix(size);
+    PM.zeroMatrix(size, size);
 
     qDebug()<< "Graph::writeNumberOfWalksMatrix() XM is  " ;
     for (register int i=0; i < size ; i++) {
@@ -10221,10 +10222,12 @@ void Graph::createAdjacencyMatrix(const bool dropIsolates,
         isolatedVertices = verticesIsolated().count();
         qDebug() << "Graph::createAdjacencyMatrix() - found " << isolatedVertices << " isolates to drop. "
                  << " Will resize AM to " << m_totalVertices-isolatedVertices;
-        AM.resize(m_totalVertices-isolatedVertices);
+
+        int m = m_totalVertices-isolatedVertices;
+        AM.resize( m , m);
     }
     else
-        AM.resize(m_totalVertices);
+        AM.resize(m_totalVertices, m_totalVertices);
     QList<Vertex*>::const_iterator it, it1;
     qDebug() << "Graph::createAdjacencyMatrix() - creating new adjacency matrix ";
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -10290,14 +10293,20 @@ void Graph::createAdjacencyMatrix(const bool dropIsolates,
 
 
 void Graph::invertAdjacencyMatrix(){
-    qDebug() << "Graph::invertAdjacencyMatrix()";
     qDebug()<<"Graph::invertAdjacencyMatrix() - first create the Adjacency Matrix AM";
-    bool dropIsolates=true;
+
+    bool dropIsolates=true; // always drop isolates else AM will be singular
     bool considerWeights=false;
+
     createAdjacencyMatrix(dropIsolates, considerWeights);
-    invAM.resize(m_totalVertices-isolatedVertices);
-    qDebug()<<"Graph::invertAdjacencyMatrix() - invert the Adjacency Matrix AM and store it to invAM";
+
+    int  m = m_totalVertices-isolatedVertices;
+    qDebug()<<"Graph::invertAdjacencyMatrix() - Create the invAM to be the inverted one";
+    invAM.resize(m , m);
+
+    qDebug()<<"Graph::invertAdjacencyMatrix() - invert AM and store it to invAM";
     invAM.inverseByGaussJordanElimination(AM);
+
 
 
 }

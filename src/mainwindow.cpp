@@ -2830,6 +2830,16 @@ void MainWindow::initNet(){
     QApplication::restoreOverrideCursor();
     statusMessage( tr("Ready"));
     qDebug("MW: initNet() INITIALISATION END");
+
+//    QTextStream stream(stdout);
+//    Matrix m(10,10);
+//    stream << "(9,1) = " << m[9][1] ;
+//    m[9][1]=1212;
+
+//    stream<< m;
+
+//    stream << "(9,1) = " << m[9][1] ;
+
 }
 
 
