@@ -659,38 +659,52 @@ Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
  * Code adapted from Knuth's Numerical Recipes in C, pp 46
  *
  */
-void Matrix::ludcmp (Matrix &a, const int &n, int *indx, float *d) {
+bool Matrix::ludcmp (Matrix &a, const int &n, int *indx, float &d) {
     int i=0, j=0, imax=0, k;
     float big,dum,sum,temp;
     float *vv;            // vv stores the implicit scaling of each row
-
+    qDebug () << "Matrix::ludcmp () - decomposing matrix a to L*U";
     //vv=vector<float>(1,n);
     vv=new (nothrow) float [n];
-    *d=1.0;               // No row interchanges yet.
+    d=1.0;               // No row interchanges yet.
 
-    for (i=1;i<=n;i++) {  // Loop over rows to get the implicit scaling information.
+    for (i=0;i<n;i++) {  // Loop over rows to get the implicit scaling information.
+        qDebug () << "Matrix::ludcmp () - i " <<  i;
         big=0.0;
-        for (j=1;j<=n;j++)
-            if ((temp=fabs( a.item(i,j) ) ) > big) big=temp;
-        if (big == 0.0)  //       No nonzero largest element.
+        for (j=0;j<n;j++) {
+            qDebug () << "Matrix::ludcmp () - a["<< i <<"]["<< j<< "]="
+                         <<  a[i][j];
+            if ((temp=fabs( a.item(i,j) ) ) > big)
+                big=temp;
+        }
+        qDebug () << "Matrix::ludcmp () - big "<< big;
+        if (big == 0)  //       No nonzero largest element.
         {
             qDebug() << "Singular matrix in routine ludcmp";
-            return;
+            return false;
         }
         vv[i]=1.0/big;  //  Save the scaling.
     }
-    for (j=1;j<=n;j++) { //     This is the loop over columns of Crout’s method.
-        for (i=1;i<j;i++) { //  This is equation (2.3.12) except for i = j.
+    qDebug () << "Matrix::ludcmp () - Start loop over columns";
+    for (j=0;j<n;j++) { //     This is the loop over columns of Crout’s method.
+        qDebug () << "Matrix::ludcmp () - column j " <<  j;
+        for (i=0;i<j;i++) { //  This is equation (2.3.12) except for i = j.
             sum= a.item(i,j);
-            for (k=1;k<i;k++)
+            qDebug () << "Matrix::ludcmp () - sum = a["<< i <<"]["<< j<< "]=" << sum;
+            for (k=0;k<i;k++)
                 sum -= a.item(i,k) * a.item(k,j);
+            qDebug () << "Matrix::ludcmp () - SUM a_ik * b_kj = a["<< i <<"][k] * b[k]["<< j<< "]="
+                         <<  sum;
             a.setItem(i,j, sum );
         }
-        big=0.0; //      Initialize for the search for largest pivot element.
-        for (i=j;i<=n;i++) {  //         This is i = j of equation (2.3.12) and i = j + 1 . . . N
+        big=0; //      Initialize for the search for largest pivot element.
+        qDebug () << "Matrix::ludcmp () - search largest pivot";
+        for (i=j;i<n;i++) {  //         This is i = j of equation (2.3.12) and i = j + 1 . . . N
             sum=a.item(i,j);     //     of equation (2.3.13).
-            for (k=1;k<j;k++)
+            qDebug () << "Matrix::ludcmp () - sum = a["<< i <<"]["<< j<< "]=" << sum;
+            for (k=0;k<j;k++)
                 sum -= a.item(i,k) * a.item(k,j);
+            qDebug () << "Matrix::ludcmp () - final SUM a_ik * b_kj = a["<< i <<"][k] * b[k]["<< j<< "]=" << sum;
             a.setItem(i,j, sum);
             if ( ( dum= vv[i] * fabs(sum) ) >= big) {
                 //  Is the figure of merit for the pivot better than the best so far?
@@ -698,13 +712,17 @@ void Matrix::ludcmp (Matrix &a, const int &n, int *indx, float *d) {
                 imax=i;
             }
         }
+        qDebug () << "Matrix::ludcmp () - check for row interchange ";
         if (j != imax) { //          Do we need to interchange rows?
-            for ( k=1; k<=n; k++ ) { //            Yes, do so...
+            qDebug () << "Matrix::ludcmp () - row interchange ";
+            for ( k=0; k<n; k++ ) { //            Yes, do so...
                 dum=a.item(imax,k);
                 a.setItem( imax, k , a.item(j,k) ) ;
                 a.setItem(j,k,dum);
             }
-            *d = -(*d);  //..and change the parity of d.
+            qDebug () << "Matrix::ludcmp () - change parity d " << d;
+            d = -(d);  //..and change the parity of d.
+            qDebug () << "Matrix::ludcmp () - new parity d " << d;
             vv[imax]=vv[j];  //         Also interchange the scale factor.
         }
         indx[j]=imax;
@@ -713,9 +731,11 @@ void Matrix::ludcmp (Matrix &a, const int &n, int *indx, float *d) {
         // If the pivot element is zero the matrix is singular (at least to the precision of the
         // algorithm). For some applications on singular matrices, it is desirable to substitute
         // TINY for zero.
+        qDebug () << "Matrix::ludcmp () - divide by pivot? ";
         if (j != n) { //         Now, finally, divide by the pivot element.
+            qDebug () << "Matrix::ludcmp () - dividing by pivot " << a.item(j,j);
             dum=1.0/(a.item(j,j));
-            for (i=j+1;i<=n;i++)
+            for (i=j+1;i<n;i++)
                 a.setItem(i,j, a.item(i,j) * dum );
         }
     }  // Go back for the next column in the reduction.
@@ -787,8 +807,12 @@ Matrix& Matrix::inverse(Matrix &a)
     float d,*col;
    // int *indx = new int [n];
      int *indx;
-
-    ludcmp(a,n,indx,&d);      //  Decompose the matrix just once.
+    qDebug () << "Matrix::inverse() - inverting AM=a";
+    if ( ! ludcmp(a,n,indx,d) ) { //  Decompose the matrix just once.
+        qDebug () << "Matrix::inverse() - AM singular - RETURN";
+        Matrix t=*this;
+        return t;
+    }
 
     for ( j=0; j<n; j++) {    //    Find inverse by columns.
         for( i=0; i<n; i++)

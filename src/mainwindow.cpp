@@ -6491,13 +6491,17 @@ void MainWindow::slotInvertAdjMatrix(){
     qDebug ("MW: calling Graph::writeInvertAdjacencyMatrix with %i nodes", aNodes);
     QString fn = dataDir + "socnetv-report-invert-adjacency-matrix.dat";
 
-    activeGraph.writeInvertAdjacencyMatrix(fn, networkName.toLocal8Bit()) ;
-
+    QTime timer;
+    timer.start();
+    activeGraph.writeInvertAdjacencyMatrix(fn, networkName, QString("lu")) ;
+    int msecs = timer.elapsed();
+    statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
     //Open a text editor window for the new file created by graph class
     TextEditor *ed = new TextEditor(fn);
     tempFileNameNoPath=fn.split( "/");
     ed->setWindowTitle(tr("View Adjacency Matrix - ") + tempFileNameNoPath.last());
     ed->show();
+
 
 }
 

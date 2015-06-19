@@ -315,7 +315,7 @@ public:
                                const bool considerWeights=true,
                                const bool inverseWeights=false,
                                const bool symmetrize=false );
-    void invertAdjacencyMatrix();
+    void invertAdjacencyMatrix(const QString &method);
 
 
     /* PRINT OUT TO FILES*/
@@ -324,7 +324,9 @@ public:
     void writeAdjacencyMatrixTo(QTextStream& os);
     void writeAdjacencyMatrix(const QString, const char*);
 
-    void writeInvertAdjacencyMatrix(const QString filename,  const char*);
+    void writeInvertAdjacencyMatrix(const QString &filename,
+                                    const QString &,
+                                    const QString &);
     void writeDistanceMatrix(const QString fn, const char*,
                              const bool considerWeights,
                              const bool inverseWeights,

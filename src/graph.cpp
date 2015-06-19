@@ -10292,8 +10292,8 @@ void Graph::createAdjacencyMatrix(const bool dropIsolates,
 }
 
 
-void Graph::invertAdjacencyMatrix(){
-    qDebug()<<"Graph::invertAdjacencyMatrix() - first create the Adjacency Matrix AM";
+void Graph::invertAdjacencyMatrix(const QString &method){
+    qDebug()<<"Graph::invertAdjacencyMatrix() - First init the Adjacency Matrix AM";
 
     bool dropIsolates=true; // always drop isolates else AM will be singular
     bool considerWeights=false;
@@ -10301,19 +10301,29 @@ void Graph::invertAdjacencyMatrix(){
     createAdjacencyMatrix(dropIsolates, considerWeights);
 
     int  m = m_totalVertices-isolatedVertices;
-    qDebug()<<"Graph::invertAdjacencyMatrix() - Create the invAM to be the inverted one";
-    invAM.resize(m , m);
+    qDebug()<<"Graph::invertAdjacencyMatrix() - init the invAM";
+    invAM.resize(m,m);
 
-    qDebug()<<"Graph::invertAdjacencyMatrix() - invert AM and store it to invAM";
-    invAM.inverseByGaussJordanElimination(AM);
-
+    if ( method == "gauss") {
+        qDebug()<<"Graph::invertAdjacencyMatrix() - invert AM using Gauss-Jordan "
+                  << "and store it to invAM";
+        invAM.inverseByGaussJordanElimination(AM);
+     }
+    else {
+        qDebug()<<"Graph::invertAdjacencyMatrix() - invert AM using LU decomposition"
+                  << "and store it to invAM";
+        invAM.inverse(AM);
+     }
 
 
 }
 
 
 
-void Graph::writeInvertAdjacencyMatrix(QString fn, const char* netName){
+void Graph::writeInvertAdjacencyMatrix(const QString &fn,
+                                       const QString &netName,
+                                       const QString &method)
+{
     qDebug("Graph::writeInvertAdjacencyMatrix() ");
     int i=0, j=0;
     QList<Vertex*>::const_iterator it, it1;
@@ -10326,7 +10336,7 @@ void Graph::writeInvertAdjacencyMatrix(QString fn, const char* netName){
     outText.setCodec("UTF-8");
     outText << "-Social Network Visualizer- \n";
     outText << "Invert Matrix of "<< netName<<": \n\n";
-    invertAdjacencyMatrix();
+    invertAdjacencyMatrix(method);
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() )
             continue;
