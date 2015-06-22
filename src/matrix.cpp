@@ -662,23 +662,23 @@ Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
 bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], float &d) {
     qDebug () << "Matrix::ludcmp () - decomposing matrix a to L*U";
     int i=0, j=0, imax=0, k;
-    float big,dum,sum,temp;
+    float big,temp;
     //vv=vector<float>(1,n);
     float *vv;            // vv stores the implicit scaling of each row
     vv=new (nothrow) float [n];
     Q_CHECK_PTR( vv );
 
-    QTextStream stream(stdout);
-    stream << "a = LU = " << a ;
+//    QTextStream stream(stdout);
+//    stream << "a = LU = " << a ;
 
     d=1.0;               // No row interchanges yet.
 
     qDebug () << "Matrix::ludcmp() - loop over row to get scaling info" ;
     for (i=0;i<n;i++) {  // Loop over rows to get the implicit scaling information.
         qDebug () << "Matrix::ludcmp() - row i " <<  i+1;
-        big=0.0;
+        big=0;
         for (j=0;j<n;j++) {
-            if ((temp=fabs( a.item(i,j) ) ) > big)
+            if ((temp=fabs( a[i][j] ) ) > big)
                 big=temp;
         }
         if (big == 0)  //       No nonzero largest element.
@@ -692,53 +692,30 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], float &d) {
 
     qDebug () << "Matrix::ludcmp() - Start Crout's LOOP over columns";
 
-    for (j=0;j<n;j++)
-    { //     This is the loop over columns of Crout’s method.
+    for (j=0;j<n;j++) //     This is the loop over columns of Crout’s method.
+    {
+        qDebug () << "Matrix::ludcmp() - COLUMN j " <<  j+1 << " search largest pivot";
+        big=0;  //      Initialize for the search for largest pivot element.
+        imax = j;
 
-        qDebug () << "Matrix::ludcmp() - COLUMN j " <<  j+1;
-        for (i=0;i<j;i++) { //  This is equation (2.3.12) except for i = j.
-            qDebug () << "Matrix::ludcmp() - find upper triangular a["<< i+1 << "][" << j+1 <<"]";
-            sum= a[i][j];
-            qDebug () << "Matrix::ludcmp() - upper sum = a["<< i+1 <<"]["<< j+1<< "]=" << sum;
-            for (k=0;k<i;k++) {
-                sum -= a.item(i,k) * a.item(k,j);
-               qDebug () << "Matrix::ludcmp() -  new sum ( a[i][k] * b[k][j] ) = a["<< i+1 <<"][" << k+1 <<"] * b["<<  k+1 << "]["<< j+1<< "]=" <<  sum;
-            }
-            qDebug () << "Matrix::ludcmp() - upper a["<< i+1 << "][" << j+1 <<"] = sum ( a[i][k] * b[k][j] ) = a["<< i+1 <<"][k] * b[k]["<< j+1<< "]="
-                         <<  sum;
-            a.setItem(i,j, sum );
-        }
-
-        big=0; //      Initialize for the search for largest pivot element.
-
-        qDebug () << "Matrix::ludcmp() - search largest pivot";
-
-        for (i=j;i<n;i++) {  //         This is i = j of equation (2.3.12)
-            sum=a[i][j];     //     and i = j + 1...N of equation (2.3.13).
-            qDebug () << "Matrix::ludcmp() - down sum = a["<< i+1 <<"]["<< j+1<< "]=" << sum;
-
-            for (k=0;k<j;k++) {
-                sum -= a[i][k]*a[k][j];
-                qDebug () << "Matrix::ludcmp() -  new sum ( a[i][k] * b[k][j] ) = a["<< i+1 <<"][" << k+1 <<"] * b["<<  k+1 << "]["<< j+1<< "]=" <<  sum;
-            }
-
-            qDebug () << "Matrix::ludcmp() - down a["<< i+1 << "][" << j+1 <<"] = sum ( a_ik * b_kj ) = a["<< i+1 <<"][k] * b[k]["<< j+1<< "]=" << sum;
-
-            a.setItem(i,j, sum);
-
-            if ( ( dum= vv[i] * fabs(sum) ) >= big) {   //  Is the figure of merit for the pivot better than the best so far?
-                big=dum;
+        for (i=j;i<n;i++)
+        {
+            if ( ( temp = vv[i] * fabs( a[i][j] ) ) > big)
+            {   //  Is the figure of merit for the pivot better than the best so far?
+                big=temp;
                 imax=i;
-                qDebug () << "Matrix::ludcmp() - found new largest pivot at row " <<  imax+1 << " big " << dum;
+                qDebug () << "Matrix::ludcmp() - found new largest pivot at row " <<  imax+1 << " big " << temp;
             }
         }
+
         qDebug () << "Matrix::ludcmp() - check for row interchange ";
-        if (j != imax) { //          Do we need to interchange rows?
+        if (j != imax) //          Do we need to interchange rows?
+        {
             qDebug () << "Matrix::ludcmp() - interchanging rows " << imax+1 << " and " << j+1;
             for ( k=0; k<n; k++ ) { //            Yes, do so...
-                dum=a[imax][k];
+                temp=a[imax][k];
                 a[imax][k] = a[j][k];
-                a[j][k] = dum;
+                a[j][k] = temp;
             }
             d = -(d);  //..and change the parity of d.
             vv[imax]=vv[j];  //         Also interchange the scale factor.
@@ -747,23 +724,22 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], float &d) {
         indx[j]=imax;
         qDebug () << "Matrix::ludcmp() - indx[j]=imax=" <<  indx[j] +1;
         if ( a[j][j] == 0 ) {
-            a[j][j] = TINY;
+            a[j][j] = TINY; // For some apps, on singular matrices, it is desirable to substitute TINY for zero.
             qDebug () << "Matrix::ludcmp() - WARNING singular matrix set a[j][j]=TINY ";
         }
-        // If the pivot element is zero the matrix is singular (at least to the precision of the
-        // algorithm). For some applications on singular matrices, it is desirable to substitute
-        // TINY for zero.
-        qDebug () << "Matrix::ludcmp() - divide by pivot? ";
-        //     Now, finally, divide by the pivot element.
-        dum=1.0/(a.item(j,j));
-        qDebug () << "Matrix::ludcmp() - j " << j+1<< " dividing by pivot " << a.item(j,j) << " dum 1/a[j][j] = " << dum;
+
         for (i=j+1;i<n;i++) {
-            a[i][j] *= dum;  //a.setItem(i,j, a.item(i,j) * dum );
-            qDebug () << "Matrix::ludcmp() - lower a["<< i+1 << "][" << j+1 <<"] = " << a[i][j];
+            //     Now, divide by the pivot element.
+            temp=a[i][j] /=  a[j][j] ;
+            qDebug () << "Matrix::ludcmp() - j " << j+1<< " dividing by pivot " << a.item(j,j) << " temp  = " << temp;
+            for (k=j+1;k<n;k++) {       //reduce remaining submatrix
+                a[i][k] -= ( temp * a[j][k] );
+                qDebug () << "Matrix::ludcmp() - lower a["<< i+1 << "][" << k+1 <<"] = " << a[i][k];
+            }
         }
 
 
-           stream << endl << "at j " << j+1 << " matrix a = LU = " << a ;
+//           stream << endl << "at j " << j+1 << " matrix a = LU = " << a ;
     }  // Go back for the next column in the reduction.
 
 
@@ -772,7 +748,7 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], float &d) {
     delete[] vv;
 
 
-   stream << "final a = LU = " << a ;
+//   stream << "final a = LU = " << a ;
 
 
     return true;
@@ -820,11 +796,11 @@ void Matrix::lubksb(Matrix &a, const int &n, int indx[], float b[])
         ip=indx[i];       // index of the first nonvanishing element of b. We now
         sum=b[ip];        // do the forward substitution, equation (2.3.6). The
         b[ip]=b[i];       // only new wrinkle is to unscramble the permutation
-        if (ii)           // as we go.
-            for ( j=ii;j<=i-1;j++)
+        if (ii != 0 )           // as we go.
+            for ( j=(ii-1);j<=i-1;j++)
                 sum -= a[i][j]*b[j];
-        else if (sum)     // A nonzero element was encountered, so from now on we
-            ii=i;         //  will have to do the sums in the loop above.
+        else if (sum !=0 )     // A nonzero element was encountered, so from now on we
+            ii=i+1;         //  will have to do the sums in the loop above.
         qDebug() << "Matrix::lubksb() "<< "i " << i  << " ip=indx[i] " << ip <<  " b[ip] " << b[ip] << " b[i] " << b[i] <<  "sum " << sum ;
         b[i]=sum;
     }
@@ -863,6 +839,7 @@ Matrix& Matrix::inverse(Matrix &a)
         for( i=0; i<n; i++)
             this->setItem( i, j , col[i]);
     }
+        qDebug () << "Matrix::inverse() - finished!";
     return *this;
 }
 

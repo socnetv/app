@@ -2578,7 +2578,6 @@ void Graph::centralityInformation(const bool considerWeights,
     classesIC=0;
     varianceIC=0;
 
-    TM.resize(m_totalVertices, m_totalVertices);
     isolatedVertices=verticesIsolated().count();
     int i=0, j=0, n=vertices();
     float m_weight=0, weightSum=1, diagonalEntriesSum=0, rowSum=0;
@@ -2591,6 +2590,9 @@ void Graph::centralityInformation(const bool considerWeights,
 
     n-=isolatedVertices;  //isolatedVertices updated in createAdjacencyMatrix
     qDebug() << "Graph:: centralityInformation() - computing node ICs for total n = " << n;
+
+    TM.resize(n, n);
+    invM.resize(n, n);
 
     for (i=0; i<n; i++){
         weightSum = 1;
@@ -2607,8 +2609,8 @@ void Graph::centralityInformation(const bool considerWeights,
     }
 
     //invM.inverseByGaussJordanElimination(TM);
-    invAM.inverse(AM);
-
+    invM.inverse(TM);
+    qDebug() << "Graph:: centralityInformation() - Matrix::inverse finished " ;
     diagonalEntriesSum = 0;
     rowSum = 0;
     for (j=0; j<n; j++){
