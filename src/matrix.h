@@ -186,9 +186,9 @@ public:
 
     Matrix& sum (Matrix &a, Matrix &b) ;
 
-    bool ludcmp (Matrix &a, const int &n, int *indx, float &d ) ;
+    bool ludcmp (Matrix &a, const int &n, int indx[], float &d ) ;
 
-    void lubksb ( Matrix &a, const int &n, int *indx, float b[]);
+    void lubksb (Matrix &a, const int &n, int indx[], float b[]);
 
     Matrix& inverseByGaussJordanElimination(Matrix &a);
 

@@ -2606,7 +2606,8 @@ void Graph::centralityInformation(const bool considerWeights,
         qDebug() << "Graph:: centralityInformation() - A("<< i << ","<< i <<") = 1+sum of all tie values = " << weightSum;
     }
 
-    invM.inverseByGaussJordanElimination(TM);
+    //invM.inverseByGaussJordanElimination(TM);
+    invAM.inverse(AM);
 
     diagonalEntriesSum = 0;
     rowSum = 0;
@@ -10312,6 +10313,8 @@ void Graph::invertAdjacencyMatrix(const QString &method){
     else {
         qDebug()<<"Graph::invertAdjacencyMatrix() - invert AM using LU decomposition"
                   << "and store it to invAM";
+
+        //invAM.inverseByGaussJordanElimination(AM);
         invAM.inverse(AM);
      }
 
