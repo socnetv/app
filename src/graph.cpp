@@ -351,7 +351,6 @@ void Graph::createEdgeWebCrawler (int source, int target){
 void Graph::removeDummyNode(int i){
     qDebug("**Graph: RemoveDummyNode %i", i);
     removeVertex(i);
-    //	emit selectedVertex(i);
 
 }
 
@@ -460,7 +459,7 @@ void Graph::removeVertex(long int Doomed){
                     << " is linked to doomed "<< Doomed << " and has "
                     << (*it)->outEdges() << " and " <<  (*it)->outDegree() ;
             if ( (*it)->outEdges() == 1 && (*it)->hasEdgeFrom(Doomed) != 0 )	{
-                qDebug() << "Graph: decreasing reciprocalEdgesVert";
+               // qDebug() << "Graph: decreasing reciprocalEdgesVert";
                 (*it)->setReciprocalLinked(false);
             }
             (*it)->removeEdgeTo(Doomed) ;
@@ -513,7 +512,8 @@ void Graph::removeVertex(long int Doomed){
 
 
 
-/**	Creates an edge between v1 and v2
+/**
+ * Creates an edge between v1 and v2
 */
 void Graph::addEdge (int v1, int v2, float weight, QString color, int reciprocal) {
 
@@ -537,10 +537,9 @@ void Graph::addEdge (int v1, int v2, float weight, QString color, int reciprocal
         m_graph [ source ]->addEdgeFrom(target, weight);
     }
 
-
-    qDebug()<<"Graph: addEdge() now a("<< v1 << ","<< v2<< ") = " << weight
-           << " with color "<<  color
-           <<" . Storing edge color..." ;
+//    qDebug()<<"Graph: addEdge() now a("<< v1 << ","<< v2<< ") = " << weight
+//           << " with color "<<  color
+//           <<" . Storing edge color..." ;
     m_graph[ source]->setOutLinkColor(v2, color);
 
     graphModified=true;
@@ -569,10 +568,10 @@ void Graph::removeEdge (int v1, int v2) {
                 << " to " << v2 << " to be removed from graph";
     m_graph [ index[v1] ]->removeEdgeTo(v2);
     m_graph [ index[v2] ]->removeEdgeFrom(v1);
-    qDebug()<< "Graph: removeEdge between " << v1 << " i " << index[v1]
-               << " and " << v2 << " i "<< index[v2]
-               << "  NOW vertex v1 reports edge weight "
-               << m_graph [ index[v1] ]->hasEdgeTo(v2) ;
+//    qDebug()<< "Graph: removeEdge between " << v1 << " i " << index[v1]
+//               << " and " << v2 << " i "<< index[v2]
+//               << "  NOW vertex v1 reports edge weight "
+//               << m_graph [ index[v1] ]->hasEdgeTo(v2) ;
     if ( this->hasArc(v2,v1) !=0)
         symmetricAdjacencyMatrix=false;
 
@@ -680,9 +679,6 @@ void Graph::terminateCrawlerThreads (QString reason){
         emit signalNodeSizesByInDegree(true);
      }
 
-
-
-
 }
 
 
@@ -784,12 +780,11 @@ int Graph::hasVertex(QString label){
     int i=0;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( (*it) ->label() == label)  {
-            qDebug()<< "Graph: hasVertex() at pos %i" << i;
+//            qDebug()<< "Graph: hasVertex() at pos %i" << i;
             return i;
         }
         i++;
     }
-    qDebug("Graph: hasVertex() NO - returning -1");
     return -1;
 }
 
@@ -1000,8 +995,8 @@ bool Graph::setAllEdgesColor(const QString &color){
         it1=enabledOutEdges->cbegin();
         while ( it1!=enabledOutEdges->cend() ){
             target = it1.key();
-            qDebug() << "=== Graph::setAllEdgesColor() : "
-                        << source << "->" << target << " new color " << color;
+//            qDebug() << "=== Graph::setAllEdgesColor() : "
+//                        << source << "->" << target << " new color " << color;
             (*it)->setOutLinkColor(target, color);
             emit changeEdgeColor(source, target, color);
             ++it1;
@@ -1073,7 +1068,7 @@ void Graph::edges(){
     H_edges::const_iterator it1;
     QList<Vertex*>::const_iterator it;
     int  relation=0,source=0, target=0, w=0;
-    float weight=0;
+    float weight=0; Q_UNUSED(weight);
     bool edgeStatus=false;
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
@@ -1229,12 +1224,10 @@ bool Graph::isWeighted(){
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
             if ( ( this->hasArc ( (*it1)->name(), (*it)->name() ) )  > 1  )   {
-                qDebug("Graph: isWeighted: TRUE");
                 return true;
             }
         }
     }
-    qDebug("Graph: isWeighted: FALSE");
     return false;
 }
 
@@ -1453,11 +1446,11 @@ void Graph::symmetrize(){
 bool Graph::symmetricEdge(int v1, int v2){
     qDebug("***Graph: symmetricEdge()");
     if ( (this->hasArc ( v1, v2 ) ) > 0  &&  (this->hasArc ( v2, v1 ) ) > 0   ) {
-        qDebug("Graph: symmetricEdge: YES");
+//        qDebug("Graph: symmetricEdge: YES");
         return true;
     }
     else {
-        qDebug("Graph: symmetricEdge: NO");
+//        qDebug("Graph: symmetricEdge: NO");
         return false;
     }
 
@@ -2531,7 +2524,6 @@ void Graph::resolveClasses(float C, H_StrToInt &discreteClasses, int &classes){
     it2 = discreteClasses.find(QString::number(C));    //Amort. O(1) complexity
     if (it2 == discreteClasses.end() )	{
         classes++;
-        qDebug("######This is a new centrality class. Amount of classes = %i", classes);
         discreteClasses.insert(QString::number(C), classes);
     }
 }
@@ -2542,10 +2534,10 @@ void Graph::resolveClasses(float C, H_StrToInt &discreteClasses, int &classes){
  */
 void Graph::resolveClasses(float C, H_StrToInt &discreteClasses, int &classes, int vertex){
     H_StrToInt::iterator it2;
+    Q_UNUSED(vertex);
     it2 = discreteClasses.find(QString::number(C));    //Amort. O(1) complexity
     if (it2 == discreteClasses.end() )	{
         classes++;
-        qDebug("######Vertex %i  belongs to a new centrality class. Amount of classes = %i", vertex, classes);
         discreteClasses.insert(QString::number(C), classes);
     }
 }
@@ -2585,7 +2577,6 @@ void Graph::centralityInformation(const bool considerWeights,
     createAdjacencyMatrix(dropIsolates, considerWeights, inverseWeights, symmetrize);
 
     n-=isolatedVertices;  //isolatedVertices updated in createAdjacencyMatrix
-    qDebug() << "Graph:: centralityInformation() - computing node ICs for total n = " << n;
 
     TM.resize(n, n);
     invM.resize(n, n);
@@ -2597,16 +2588,13 @@ void Graph::centralityInformation(const bool considerWeights,
                 continue;
             m_weight = AM.item(i,j);
             weightSum += m_weight; //sum of weights for all edges incident to i
-            qDebug() << "Graph:: centralityInformation() -A("<< i <<  ","<< j <<") = 1-Xij = " << 1-m_weight;
             TM.setItem(i,j,1-m_weight);
         }
         TM.setItem(i,i,weightSum);
-        qDebug() << "Graph:: centralityInformation() - A("<< i << ","<< i <<") = 1+sum of all tie values = " << weightSum;
     }
 
-    //invM.inverseByGaussJordanElimination(TM);
     invM.inverse(TM);
-    qDebug() << "Graph:: centralityInformation() - Matrix::inverse finished " ;
+
     diagonalEntriesSum = 0;
     rowSum = 0;
     for (j=0; j<n; j++){
@@ -2615,23 +2603,18 @@ void Graph::centralityInformation(const bool considerWeights,
     for (i=0; i<n; i++){
         diagonalEntriesSum  += invM.item(i,i);  // calculate the matrix trace
     }
-    qDebug() << "Graph:: centralityInformation() - R= " << rowSum << " D= "<<diagonalEntriesSum;
-
 
     QList<Vertex*>::const_iterator it;
     i=0;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( (*it)->isIsolated() ) {
             (*it) -> setIC ( 0 );
-            qDebug()<< "Graph:: centralityInformation() vertex: " <<  (*it)->name() << " isolated";
             continue;
         }
         IC= 1.0 / ( invM.item(i,i) + (diagonalEntriesSum - 2.0 * rowSum) / n );
 
         (*it) -> setIC ( IC );
         t_sumIC += IC;
-        qDebug()<< "Graph:: centralityInformation() vertex: " <<  (*it)->name()
-                << " IC  " << IC ;
         i++;
     }
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -2646,18 +2629,14 @@ void Graph::centralityInformation(const bool considerWeights,
     float x=0;
     meanIC = sumIC /(float) n ;
 
-    qDebug() << "sumSIC = " << sumIC << "  n = " << n << "  meanIC = " << meanIC;
     varianceIC=0;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         x = (  (*it)->SIC()  -  meanIC  ) ;
         x *=x;
-        qDebug() << "SIC " <<  (*it)->SIC() << "  x "
-                 <<   (*it)->SIC() - meanIC  << " x*x" << x ;
         varianceIC  += x;
     }
-    qDebug() << "varianceIC   " << varianceIC   << " n " << n ;
+
     varianceIC  /=  (float) n;
-    qDebug() << "varianceIC   " << varianceIC   ;
 
     calculatedIC = true;
 }
@@ -5455,8 +5434,7 @@ void Graph::reachabilityMatrix( const bool considerWeights,
         influenceRanges.clear();
         influenceDomains.clear();
         disconnectedVertices.clear();
-        bool isolateVertex;
-        isolateVertex=true;
+        bool isolateVertex=true; Q_UNUSED(isolateVertex);
         for (i=0; i < size ; i++) {
             for (j=i+1; j < size ; j++) {
                 if ( XRM.item(i,j) ==1 ) {
@@ -10217,31 +10195,22 @@ void Graph::createAdjacencyMatrix(const bool dropIsolates,
     float m_weight=-1;
     int i=0, j=0;
     if (dropIsolates){
-        qDebug() << "Graph::createAdjacencyMatrix() - Find and dropp possible isolates";
+        qDebug() << "Graph::createAdjacencyMatrix() - Find and drop possible isolates";
         isolatedVertices = verticesIsolated().count();
-        qDebug() << "Graph::createAdjacencyMatrix() - found " << isolatedVertices << " isolates to drop. "
-                 << " Will resize AM to " << m_totalVertices-isolatedVertices;
-
         int m = m_totalVertices-isolatedVertices;
         AM.resize( m , m);
     }
     else
         AM.resize(m_totalVertices, m_totalVertices);
     QList<Vertex*>::const_iterator it, it1;
-    qDebug() << "Graph::createAdjacencyMatrix() - creating new adjacency matrix ";
+    //qDebug() << "Graph::createAdjacencyMatrix() - creating new adjacency matrix ";
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() || ( (*it)->isIsolated() && dropIsolates) ) {
-            qDebug()<<"Graph::createAdjacencyMatrix() - vertex "
-                   << (*it)->name()
-                   << " is isolated. Continue";
             continue;
         }
         j=i;
         for (it1=it; it1!=m_graph.end(); it1++){
             if ( ! (*it1)->isEnabled() || ( (*it1)->isIsolated() && dropIsolates) ) {
-                qDebug()<<"Graph::createAdjacencyMatrix() - vertex "
-                       << (*it1)->name()
-                       << " is isolated. Continue";
                 continue;
             }
             if ( (m_weight = this->hasArc ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
@@ -10285,38 +10254,50 @@ void Graph::createAdjacencyMatrix(const bool dropIsolates,
         }
         i++;
     }
-    qDebug() << "Graph::createAdjacencyMatrix() - Done.";
 
     adjacencyMatrixCreated=true;
 }
 
 
-void Graph::invertAdjacencyMatrix(const QString &method){
-    qDebug()<<"Graph::invertAdjacencyMatrix() - First init the Adjacency Matrix AM";
+bool Graph::invertAdjacencyMatrix(const QString &method){
+    qDebug()<<"Graph::invertAdjacencyMatrix() ";
+
+    bool considerWeights=false;
+    long int i=0, j=0;
+    bool isSingular=true;
 
     bool dropIsolates=true; // always drop isolates else AM will be singular
-    bool considerWeights=false;
 
     createAdjacencyMatrix(dropIsolates, considerWeights);
 
     int  m = m_totalVertices-isolatedVertices;
-    qDebug()<<"Graph::invertAdjacencyMatrix() - init the invAM";
+
     invAM.resize(m,m);
 
     if ( method == "gauss") {
-        qDebug()<<"Graph::invertAdjacencyMatrix() - invert AM using Gauss-Jordan "
-                  << "and store it to invAM";
         invAM.inverseByGaussJordanElimination(AM);
      }
     else {
-        qDebug()<<"Graph::invertAdjacencyMatrix() - invert AM using LU decomposition"
-                  << "and store it to invAM";
-
-        //invAM.inverseByGaussJordanElimination(AM);
         invAM.inverse(AM);
      }
 
+    QList<Vertex*>::const_iterator it, it1;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( ! (*it)->isEnabled() )
+            continue;
+        j=0;
+        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
+            if ( ! (*it1)->isEnabled() )
+                continue;
+            if ( invAM.item(i,j) != 0)
+                isSingular = false;
+            j++;
+        }
+        i++;
+        qDebug() << endl;
+    }
 
+    return isSingular;
 }
 
 
@@ -10336,8 +10317,9 @@ void Graph::writeInvertAdjacencyMatrix(const QString &fn,
     QTextStream outText( &file );
     outText.setCodec("UTF-8");
     outText << "-Social Network Visualizer- \n";
-    outText << "Invert Matrix of "<< netName<<": \n\n";
-    invertAdjacencyMatrix(method);
+    outText << "Invert Matrix of network named: "<< netName<< endl;
+    if (!invertAdjacencyMatrix(method))
+            outText << " The adjacency matrix is singular.";
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() )
             continue;

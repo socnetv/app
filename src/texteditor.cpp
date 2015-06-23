@@ -28,7 +28,7 @@ Written in Qt
 #include <QtWidgets>
 #include "texteditor.h"
 
-TextEditor::TextEditor(const QString &fileName, QWidget *parent)
+TextEditor::TextEditor(const QString &fileName, QWidget *parent) : QMainWindow(parent)
 {
 	qDebug("TextEditor()");
 	textEdit = new QTextEdit;

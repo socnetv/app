@@ -2035,6 +2035,7 @@ bool Parser::loadDot(){
 
         if (  str.contains("graph [" ,Qt::CaseInsensitive) ) {
                 netProperties == true;
+                Q_UNUSED(netProperties);
         }
 
         if (

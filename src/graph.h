@@ -158,7 +158,6 @@ signals:
     /** Signals to MainWindow */
     void updateProgressDialog(int );
     void graphChanged();					//call to update MW widgets
-    void selectedVertex(int);				//notifies MW who is the selected node
 
     void signalFileType (int, QString, int,int, bool);	//notifies MW what we have loaded.
     void statusMessage (QString message);			//updates statusbar message
@@ -314,7 +313,7 @@ public:
                                const bool considerWeights=true,
                                const bool inverseWeights=false,
                                const bool symmetrize=false );
-    void invertAdjacencyMatrix(const QString &method);
+    bool invertAdjacencyMatrix(const QString &method);
 
 
     /* PRINT OUT TO FILES*/

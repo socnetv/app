@@ -4497,6 +4497,7 @@ void MainWindow::createSmallWorldNetwork (const int &nodes,
                                             const QString &mode,
                                             const bool &diag)
 {
+    Q_UNUSED(diag);
     qDebug() << "MW;:createSmallWorldNetwork()";
     statusMessage( tr("Erasing any existing network. "));
     initNet();
@@ -7438,14 +7439,14 @@ void MainWindow::slotCentralityInformation(){
         switch(
                QMessageBox::critical(
                    this, "Slow function warning",
-                   tr("Please note that this function is <b>VERY SLOW</b> on large "
+                   tr("Please note that this function is <b>SLOW</b> on large "
                       "networks (n>200), since it will calculate  a (n x n) matrix A with:"
                       "Aii=1+weighted_degree_ni"
                       "Aij=1 if (i,j)=0"
-                      "Aij=1-wij if (i,j)=wij"
+                      "Aij=1-wij if (i,j)=wij\n"
                       "Next, it will compute the inverse matrix C of A."
-                      "The computation of the inverse matrix is VERY CPU intensive function."
-                      "because it uses the Gauss-Jordan elimination algorithm.\n\n "
+                      "The computation of the inverse matrix is a CPU intensive function."
+                      "although it uses LU decomposition.\n\n "
                       "Are you sure you want to continue?"), QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
         case QMessageBox::Ok:
             break;

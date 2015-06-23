@@ -501,15 +501,14 @@ the proportion of total information flow that is controlled by each actor.
 Note that standard IC' values sum to unity, unlike most other centrality indices.
 <br /><br />
 Since there is no known generalization of Stephenson & Zelen's theory for information centrality
-to directional relations, the index should be calculated only for graphs and is
+to directional relations, the index should be calculated only for undirected graphs and is
 more meaningful in weighted graphs/networks.
 <br /><br />
 Note: To compute this index, SocNetV drops all isolated nodes and symmetrizes
 (if needed) the adjacency matrix even when the graph is directed (Wasserman & Faust, p. 196).
-
 </p>
 <p>
-In order to calculate the IC index of each actor, we create a N x N matrix A from the (symmetrized) sociomatrix with:
+<b>ALGORITHM</b>: In order to calculate the IC index of each actor, we create a N x N matrix A from the (symmetrized) sociomatrix with:
 </p>
 
 $$  A_ii = 1 + d_i $$
@@ -517,7 +516,7 @@ $$  A_ij = 1 \space if \space (i,j)=0  $$
 $$  A_ij = 1 -w_{ij} \space if \space (i,j) = w_{ij} $$
 
 <p>
-Next, we compute the inverse matrix of A, for instance C.
+Next, we compute the inverse matrix of A, for instance C, using LU decomposition.
 Note that we can always compute C since the matrix A is always a diagonally strong matrix, hence it is always invertible.
 </p>
 <p>

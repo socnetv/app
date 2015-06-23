@@ -138,9 +138,9 @@ public:
     void setItem(const int r, const int c, const float elem );
 
     //WARNING: this operator is slow! Avoid using it.
-     float  operator ()  (const int r, const int c) { return  row[r].column(c);  }
+    float  operator ()  (const int r, const int c) { return  row[r].column(c);  }
 
-     Row& operator []  (const int &r)  { return row[r]; }
+    Row& operator []  (const int &r)  { return row[r]; }
 
     void clearItem( int r, int c ) ;
 
@@ -193,7 +193,6 @@ public:
     Matrix& inverseByGaussJordanElimination(Matrix &a);
 
     Matrix& inverse(Matrix &a);
-
 
     void swapRows(int rowA,int rowB);		/* elementary matrix algebra */
     void multiplyRow(int row, float value);		/* Multiply every elememt of row A by value */

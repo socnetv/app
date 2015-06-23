@@ -136,7 +136,7 @@ void WebCrawler_Spider::get(){
         qDebug() << "   wc_spider::get() http->thread() " << http->thread() ;
 
         QNetworkReply *reply =  http->get(*request) ;
-
+        Q_UNUSED(reply);
         m_visitedNodes++;
 
 

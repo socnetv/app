@@ -324,7 +324,7 @@ void Matrix::identityMatrix(int dim) {
 }
 
 
-// makes this matrix the zero matrix of size Actors
+// makes this matrix the zero matrix of size mxn
 void Matrix::zeroMatrix(const int m, const int n) {
     qDebug() << "Matrix:: zeroMatrix() m " << m << " n " << n;
     clear();
@@ -818,13 +818,17 @@ Matrix& Matrix::inverse(Matrix &a)
 {
     int i,j, n=a.rows();
     float d, col[n];
-    //int *indx = new int [n];
+
     int indx[n];
-    qDebug () << "Matrix::inverse() - inverting AM=a";
-    if ( ! ludcmp(a,n,indx,d) ) { //  Decompose the matrix just once.
-        qDebug () << "Matrix::inverse() - AM singular - RETURN";
-        Matrix t=*this;
-        return t;
+    qDebug () << "Matrix::inverse() - inverting matrix a - size " << n;
+    if (n==0) {
+        return (*this);
+    }
+    if ( ! ludcmp(a,n,indx,d) )
+    { //  Decompose the matrix just once.
+        qDebug () << "Matrix::inverse() - matrix a singular - RETURN";
+        (this)->zeroMatrix(n,n);
+        return *this;
     }
 
     qDebug () << "Matrix::inverse() - find inverse by columns";
@@ -836,10 +840,13 @@ Matrix& Matrix::inverse(Matrix &a)
         qDebug () << "Matrix::inverse() - call lubksb";
         lubksb(a,n,indx,col);
 
-        for( i=0; i<n; i++)
-            this->setItem( i, j , col[i]);
+        for( i=0; i<n; i++) {
+             (*this)[i][j] = col[i];
+        }
+
     }
         qDebug () << "Matrix::inverse() - finished!";
+
     return *this;
 }
 
