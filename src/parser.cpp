@@ -2035,10 +2035,7 @@ bool Parser::loadDot(){
 
         if (  str.contains("graph [" ,Qt::CaseInsensitive) ) {
                 netProperties == true;
-<<<<<<< HEAD
-=======
                 Q_UNUSED(netProperties);
->>>>>>> develop
         }
 
         if (
@@ -2151,11 +2148,7 @@ bool Parser::loadDot(){
             qDebug ("* Finished node!");
         }
         else if ( !str.contains('[', Qt::CaseInsensitive)
-<<<<<<< HEAD
-                  && !str.contains('node', Qt::CaseInsensitive)
-=======
                   && !str.contains("node", Qt::CaseInsensitive)
->>>>>>> develop
                   && !str.contains(']', Qt::CaseInsensitive)
                   && !str.contains("--",Qt::CaseInsensitive)
                   && !str.contains("->",Qt::CaseInsensitive)
@@ -2319,11 +2312,6 @@ bool Parser::loadDot(){
             }
         }
 
-<<<<<<< HEAD
-
-        }
-=======
->>>>>>> develop
         else {
             qDebug() <<  "  Redudant data: "<< str.toLatin1();
         }

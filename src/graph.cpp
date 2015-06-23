@@ -3869,11 +3869,7 @@ void Graph::prestigePageRank(const bool dropIsolates){
     variancePRP=0;
     // The parameter d is a damping factor which can be set between 0 and 1.
     // Google creators set d to 0.85.
-<<<<<<< HEAD
-    dampingFactor = 0.85;
-=======
     d_factor = 0.85;
->>>>>>> develop
 
     float PRP=0, oldPRP = 0;
     float SPRP=0;
@@ -3922,19 +3918,6 @@ void Graph::prestigePageRank(const bool dropIsolates){
         qDebug()<< "Graph::prestigePageRank() - ITERATION : " << iterations;
 
         t_sumPRP=0;
-<<<<<<< HEAD
-        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-            qDebug() << "Graph:: prestigePageRank() - calculating PR for node: "
-                     << (*it)->name() ;
-            // In the first iteration, we have no PageRanks
-            // So we set them to (1-d)
-            if ( i == 1 ) {
-                (*it)->setPRP( 1.0 / aVert );
-                outDegree = (*it)->outDegree();
-                qDebug() << "Graph:: prestigePageRank() - 1st iteration - node: "
-                         << (*it)->name() << " PR = " << (*it)->PRP()
-                         << " computed outDegree (const): " << outDegree;
-=======
         maxDelta = 0;
 
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
@@ -3949,7 +3932,6 @@ void Graph::prestigePageRank(const bool dropIsolates){
                 // isolates have constant PR = 1/N
                 qDebug() << "Graph::prestigePageRank() - isolated - CONTINUE ";
                 continue;
->>>>>>> develop
             }
 
             jt=(*it)->m_inEdges.cbegin();
@@ -3964,60 +3946,11 @@ void Graph::prestigePageRank(const bool dropIsolates){
                     ++jt;
                     continue;
                 }
-<<<<<<< HEAD
-                maxDelta = 0;
-                oldPRP = (*it)->PRP();
-                // take every other node which links to the current node.
-                jt=(*it)->m_inEdges.cbegin();
-                while ( jt != (*it) -> m_inEdges.cend() ){
-                    qDebug() << "   iterate over all inEdges ";
-                    relation = jt.value().first;
-                    if ( relation != currentRelation() ){
-                        ++jt;
-                        continue;
-                    }
-                    edgeStatus=jt.value().second.second;
-                    if ( edgeStatus != true){
-                        ++jt;
-                        continue;
-                    }
-                    referrer = jt.key();
-                    qDebug() << "Graph:: prestigePageRank " << (*it)->name()
-                             << " is inLinked from " << referrer  ;
-
-                    if ( this->hasArc( referrer , (*it)->name() ) ) {
-                        outDegree = m_graph[ index[referrer] ] ->outDegreeConst();
-                        PRP =  m_graph[ index[referrer] ]->PRP();
-                        qDebug()<< "Graph:: prestigePageRank() " <<  referrer
-                                << " has PRP = " << PRP
-                                << " and outDegree = " << outDegree
-                                << " PRP / outDegree = " << PRP / outDegree ;
-                        sumPageRanksOfLinkedNodes += PRP / outDegree;
-                    }
-=======
                 edgeStatus=jt.value().second.second;
                 if ( edgeStatus != true){
->>>>>>> develop
                     ++jt;
                     continue;
                 }
-<<<<<<< HEAD
-                // OK. Now calculate PageRank of current node
-                PRP = (1-dampingFactor) / aVert + dampingFactor * sumPageRanksOfLinkedNodes;
-                // store new PageRank
-                (*it) -> setPRP ( PRP );
-                t_sumPRP+=PRP;
-                // calculate diff from last PageRank value for this vertex
-                // and set it to minDelta if the latter is bigger.
-                qDebug()<< "Graph:: prestigePageRank() vertex: " <<  (*it)->name()
-                        << " new PageRank = " << PRP
-                        << " old PR was = " << oldPRP
-                        << " diff = " << fabs(PRP - oldPRP);
-                if ( maxDelta < fabs(PRP - oldPRP) ) {
-                    maxDelta = fabs(PRP - oldPRP);
-                    qDebug()<< "Graph:: prestigePageRank() setting new maxDelta = "
-                            <<  maxDelta;
-=======
 
                 referrer = jt.key();
 
@@ -4041,7 +3974,6 @@ void Graph::prestigePageRank(const bool dropIsolates){
 
                     sumInLinksPR +=  transferedPRP;
 
->>>>>>> develop
                 }
                 ++jt;
             }
