@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 1.8
+ version: 1.9
  Written in Qt
  
                          vertex.h  -  description
@@ -54,13 +54,18 @@ class Vertex : public QObject{
 public:
 
     Vertex(Graph* parent,
-            const long int &name, const int &val, const int &size,
-            const QString &color,
-            const QString &numColor, const int &numSize,
-            const QString &label, const QString &labelColor,
-            const int &labelSize,
-            const QPointF &p,
-            const QString &shape);
+           const long int &name,
+           const int &val,
+           const int &relation,
+           const int &size,
+           const QString &color,
+           const QString &numColor,
+           const int &numSize,
+           const QString &label,
+           const QString &labelColor,
+           const int &labelSize,
+           const QPointF &p,
+           const QString &shape);
 
     Vertex(const long int &name);
 
@@ -85,13 +90,14 @@ public:
     void removeEdgeTo (long int target);
     void removeEdgeFrom(long int source);
 
-    long int outEdges()
-    ;
     QHash<int,float>* returnEnabledOutEdges();
-
     QHash<int,float>* returnReciprocalEdges();
 
+    long int outEdges();
+    long int outEdgesConst() const ;
+
     long int inEdges();
+    long int inEdgesConst() const ;
 
     long int outDegree();
     long int outDegreeConst();

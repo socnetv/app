@@ -1,6 +1,6 @@
 /******************************************************************************
  SocNetV: Social Network Visualizer
- version: 1.8
+ version: 1.9
  Written in Qt
  
                          graph.cpp  -  description
@@ -65,7 +65,7 @@ Graph::Graph() {
     calculatedPP=false;
     calculatedPRP=false;
     calculatedTriad=false;
-    m_precision = 3;
+    m_precision = 5;
     m_curRelation=0;
     dynamicMovement=false;
     timerId=0;
@@ -92,14 +92,14 @@ Graph::Graph() {
  * @param relation
  */
 void Graph::changeRelation(int relation){
-    qDebug() << "\n \n \n Graph::changeRelation(int) to relation " << relation
-             << " current relation is " << m_curRelation << "\n\n\n";
+    qDebug() << "++ Graph::changeRelation(int) to relation " << relation
+             << " current relation is " << m_curRelation ;
     if (m_curRelation == relation ) {
-        qDebug() << "Graph::changeRelation(int) - same relation - END";
+        qDebug() << "++ Graph::changeRelation(int) - same relation - END";
         return;
     }
     if ( relation < 0) {
-        qDebug() << "Graph::changeRelation(int) - negative relation - END ";
+        qDebug() << "++ Graph::changeRelation(int) - negative relation - END ";
         return;
     }
     QList<Vertex*>::const_iterator it;
@@ -123,8 +123,8 @@ void Graph::changeRelation(int relation){
  */
 void Graph::addRelationFromUser(QString newRelation){
     m_relationsList << newRelation;
-    qDebug() << "\n\nGraph::addRelationFromUser(string) " << newRelation
-                << " total relations now " << relations() << "\n\n";
+    qDebug() << "Graph::addRelationFromUser(string) " << newRelation
+                << " total relations now " << relations() ;
 
 }
 
@@ -276,33 +276,36 @@ void Graph::setCanvasDimensions(int w, int h){
  */
 void Graph::createEdge(int v1, int v2, float weight, QString color,
                        int reciprocal=0, bool drawArrows=true, bool bezier=false){
-    qDebug()<<"\n\nGraph::createEdge() " << v1 << " -> " << v2
+    qDebug()<<"-- Graph::createEdge() - " << v1 << " -> " << v2
            << " weight " << weight
               << " reciprocal " << reciprocal;
     // check whether there is already such an edge
     // (see #713617 - https://bugs.launchpad.net/socnetv/+bug/713617)
     if (!hasArc(v1,v2)){
         if ( reciprocal == 2) {
-            qDebug()<<"  Creating edge as RECIPROCAL - emitting drawEdge signal to GW";
+            qDebug()<< "-- Graph::createEdge() - "
+                    << "Creating RECIPROCAL edge - emitting drawEdge signal to GW";
             addEdge ( v1, v2, weight, color, reciprocal);
             emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier);
         }
         else if (this->hasArc( v2, v1) )  {
-            qDebug()<<". Opposite arc exists. "
+            qDebug()<<"-- Graph::createEdge() - Opposite arc exists. "
                    << "  Emitting drawEdgeReciprocal to GW ";
             reciprocal = 1;
             addEdge ( v1, v2, weight, color, reciprocal);
             emit drawEdgeReciprocal(v2, v1);
         }
         else {
-            qDebug()<<"  Opposite arc does not exist. Emitting drawEdge to GW...";
+            qDebug()<< "-- Graph::createEdge() - "
+                       << "Opposite arc does not exist. Emitting drawEdge to GW...";
             reciprocal = 0;
             addEdge ( v1, v2, weight, color, reciprocal);
             emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier);
         }
     }
     else {
-        qDebug() << "n\nGraph::createEdge() - edge " << v1 << " -> " << v2
+        qDebug() << "-- Graph::createEdge() - "
+                    << "Edge " << v1 << " -> " << v2
                  << " declared previously (exists) - nothing to do \n\n";
     }
     //draw new edges the same color with those of the file loaded,
@@ -318,7 +321,7 @@ void Graph::createEdge(int v1, int v2, float weight, QString color,
 */
 void Graph::createEdge(int v1, int v2, float weight, int reciprocal=0,
                        bool drawArrows=true, bool bezier=false){
-    qDebug()<< " Graph::createEdge() - " << v1<< " -> " << v2 ;
+    qDebug()<< "Graph::createEdge() - " << v1<< " -> " << v2 ;
     createEdge(v1, v2, (float) weight, initEdgeColor, reciprocal,
                drawArrows, bezier);
 }
@@ -348,7 +351,6 @@ void Graph::createEdgeWebCrawler (int source, int target){
 void Graph::removeDummyNode(int i){
     qDebug("**Graph: RemoveDummyNode %i", i);
     removeVertex(i);
-    //	emit selectedVertex(i);
 
 }
 
@@ -386,8 +388,8 @@ void Graph::addVertex (
 
     m_graph.append(
                 new Vertex
-                (this, v1, val, size, color, numColor, numSize, label,
-                 labelColor, labelSize, p, shape
+                (this, v1, val, m_curRelation , size, color, numColor, numSize,
+                 label, labelColor, labelSize, p, shape
                  )
                 );
     m_totalVertices++;
@@ -457,7 +459,7 @@ void Graph::removeVertex(long int Doomed){
                     << " is linked to doomed "<< Doomed << " and has "
                     << (*it)->outEdges() << " and " <<  (*it)->outDegree() ;
             if ( (*it)->outEdges() == 1 && (*it)->hasEdgeFrom(Doomed) != 0 )	{
-                qDebug() << "Graph: decreasing reciprocalEdgesVert";
+               // qDebug() << "Graph: decreasing reciprocalEdgesVert";
                 (*it)->setReciprocalLinked(false);
             }
             (*it)->removeEdgeTo(Doomed) ;
@@ -499,7 +501,7 @@ void Graph::removeVertex(long int Doomed){
     m_graph.removeAt( indexOfDoomed ) ;
     m_totalVertices--;
     qDebug() << "Graph: Now graph vertices=size="<< vertices() << "="
-             << m_graph.size() <<  " total edges now  " << totalEdges();
+             << m_graph.size() <<  " total edges now  " << enabledEdges();
 
     order=false;
     graphModified=true;
@@ -510,7 +512,8 @@ void Graph::removeVertex(long int Doomed){
 
 
 
-/**	Creates an edge between v1 and v2
+/**
+ * Creates an edge between v1 and v2
 */
 void Graph::addEdge (int v1, int v2, float weight, QString color, int reciprocal) {
 
@@ -522,7 +525,6 @@ void Graph::addEdge (int v1, int v2, float weight, QString color, int reciprocal
 
     m_graph [ source ]->addEdgeTo(v2, weight );
     m_graph [ target ]->addEdgeFrom(v1, weight);
-    m_totalEdges++;
 
     if (reciprocal == 1){
         m_graph [ source ]->setReciprocalLinked(true);
@@ -533,13 +535,11 @@ void Graph::addEdge (int v1, int v2, float weight, QString color, int reciprocal
         m_graph [ target ]->setReciprocalLinked(true);
         m_graph [ target ]->addEdgeTo(v1, weight );
         m_graph [ source ]->addEdgeFrom(target, weight);
-        m_totalEdges++;
     }
 
-
-    qDebug()<<"Graph: addEdge() now a("<< v1 << ","<< v2<< ") = " << weight
-           << " with color "<<  color
-           <<" . Storing edge color..." << ". Total Links " <<m_totalEdges;
+//    qDebug()<<"Graph: addEdge() now a("<< v1 << ","<< v2<< ") = " << weight
+//           << " with color "<<  color
+//           <<" . Storing edge color..." ;
     m_graph[ source]->setOutLinkColor(v2, color);
 
     graphModified=true;
@@ -568,16 +568,13 @@ void Graph::removeEdge (int v1, int v2) {
                 << " to " << v2 << " to be removed from graph";
     m_graph [ index[v1] ]->removeEdgeTo(v2);
     m_graph [ index[v2] ]->removeEdgeFrom(v1);
-    qDebug()<< "Graph: removeEdge between " << v1 << " i " << index[v1]
-               << " and " << v2 << " i "<< index[v2]
-               << "  NOW vertex v1 reports edge weight "
-               << m_graph [ index[v1] ]->hasEdgeTo(v2) ;
+//    qDebug()<< "Graph: removeEdge between " << v1 << " i " << index[v1]
+//               << " and " << v2 << " i "<< index[v2]
+//               << "  NOW vertex v1 reports edge weight "
+//               << m_graph [ index[v1] ]->hasEdgeTo(v2) ;
     if ( this->hasArc(v2,v1) !=0)
         symmetricAdjacencyMatrix=false;
 
-    m_totalEdges--;
-    if (m_totalEdges<0) //crazy check :)
-        m_totalEdges=0;
     graphModified=true;
 
     emit eraseEdge(v1,v2);
@@ -682,9 +679,6 @@ void Graph::terminateCrawlerThreads (QString reason){
         emit signalNodeSizesByInDegree(true);
      }
 
-
-
-
 }
 
 
@@ -729,15 +723,11 @@ void Graph::filterEdgesByWeight(float m_threshold, bool overThreshold){
 
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( (*it)->isOutLinked() ){
             (*it)->filterEdgesByWeight ( m_threshold, overThreshold );
-            graphModified=true;
-            emit graphChanged();
-        }
-        else
-            qDebug() << "Graph:filterEdgesByWeight() Vertex " << (*it)->name()
-                     << " not linked. Proceeding...";
     }
+    graphModified=true;
+    emit graphChanged();
+    emit statusMessage("Edges have been filtered.");
 }
 
 
@@ -790,12 +780,11 @@ int Graph::hasVertex(QString label){
     int i=0;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( (*it) ->label() == label)  {
-            qDebug()<< "Graph: hasVertex() at pos %i" << i;
+//            qDebug()<< "Graph: hasVertex() at pos %i" << i;
             return i;
         }
         i++;
     }
-    qDebug("Graph: hasVertex() NO - returning -1");
     return -1;
 }
 
@@ -1006,10 +995,10 @@ bool Graph::setAllEdgesColor(const QString &color){
         it1=enabledOutEdges->cbegin();
         while ( it1!=enabledOutEdges->cend() ){
             target = it1.key();
-            qDebug() << "=== Graph::setAllEdgesColor() : "
-                        << source << "->" << target << " new color " << color;
+//            qDebug() << "=== Graph::setAllEdgesColor() : "
+//                        << source << "->" << target << " new color " << color;
             (*it)->setOutLinkColor(target, color);
-            emit setLinkColor(source, target, color);
+            emit changeEdgeColor(source, target, color);
             ++it1;
         }
     }
@@ -1025,14 +1014,14 @@ bool Graph::setAllEdgesColor(const QString &color){
     Changes the color of edge (s,t).
 */
 void Graph::setEdgeColor(const long &v1, const long &v2, const QString &color){
-    qDebug()<< "\n\n === Graph::setEdgeColor() "<< v1 << " -> "<< v2
-            <<" with index ("<< index[v1]<< " -> "<<index[v2]<<")"
+    qDebug()<< "Graph::setEdgeColor() - "<< v1 << " -> "<< v2
+            <<" index ("<< index[v1]<< " -> "<<index[v2]<<")"
            <<" new color "<< color;
     m_graph[ index[v1] ]->setOutLinkColor(v2, color);
-    emit setLinkColor(v1, v2, color);
+    emit changeEdgeColor(v1, v2, color);
     if (isSymmetric()) {
         m_graph[ index[v2] ]->setOutLinkColor(v1, color);
-        emit setLinkColor(v2, v1, color);
+        emit changeEdgeColor(v2, v1, color);
     }
     graphModified=true;
     emit graphChanged();
@@ -1058,11 +1047,28 @@ bool Graph::hasEdge (const int &v1, const long &v2) {
 }
 
 
+
+/**
+    Returns |E| of graph
+*/
+int Graph::enabledEdges() {
+
+    int recountedEdges=0;
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        recountedEdges+=(*it)->outEdges();
+    }
+    qDebug() << "Graph::enabledEdges() - edges recounted: " <<  recountedEdges;
+
+    return recountedEdges;
+}
+
+
 void Graph::edges(){
     H_edges::const_iterator it1;
     QList<Vertex*>::const_iterator it;
     int  relation=0,source=0, target=0, w=0;
-    float weight=0;
+    float weight=0; Q_UNUSED(weight);
     bool edgeStatus=false;
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
@@ -1151,19 +1157,6 @@ int Graph::inDegree (int v1) {
 
 
 
-/** 
-    Returns |E| of graph
-*/
-int Graph::totalEdges () {
-    qDebug("Graph: totalEdges()");
-    int tEdges=0;
-    QList<Vertex*>::const_iterator it;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        tEdges+=(*it)->outEdges();
-    }
-    qDebug() << "Graph: m_totalEdges = " << m_totalEdges << ", tEdges=" <<  tEdges;
-    return tEdges;
-}
 
 
 /**	
@@ -1216,7 +1209,7 @@ float Graph::density() {
     qDebug("Graph: density()");
     int vert=vertices();
     if (vert!=0 && vert!=1)
-        return  (float) totalEdges() / (float)(vert*(vert-1.0));
+        return  (float) enabledEdges() / (float)(vert*(vert-1.0));
     else return 0;
 }
 
@@ -1231,12 +1224,10 @@ bool Graph::isWeighted(){
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
             if ( ( this->hasArc ( (*it1)->name(), (*it)->name() ) )  > 1  )   {
-                qDebug("Graph: isWeighted: TRUE");
                 return true;
             }
         }
     }
-    qDebug("Graph: isWeighted: FALSE");
     return false;
 }
 
@@ -1326,7 +1317,6 @@ void Graph::clear() {
     triadTypeFreqs.clear();
 
     m_totalVertices=0;
-    m_totalEdges=0;
     outboundEdgesVert=0;
     inboundEdgesVert=0;
     reciprocalEdgesVert=0;
@@ -1456,11 +1446,11 @@ void Graph::symmetrize(){
 bool Graph::symmetricEdge(int v1, int v2){
     qDebug("***Graph: symmetricEdge()");
     if ( (this->hasArc ( v1, v2 ) ) > 0  &&  (this->hasArc ( v2, v1 ) ) > 0   ) {
-        qDebug("Graph: symmetricEdge: YES");
+//        qDebug("Graph: symmetricEdge: YES");
         return true;
     }
     else {
-        qDebug("Graph: symmetricEdge: NO");
+//        qDebug("Graph: symmetricEdge: NO");
         return false;
     }
 
@@ -1502,10 +1492,11 @@ int Graph::diameter(const bool considerWeights,
 *  Returns the average distance of the graph
 */
 float Graph::averageGraphDistance(const bool considerWeights,
-                                  const bool inverseWeights){
+                                  const bool inverseWeights,
+                                  const bool dropIsolates){
     if ( !distanceMatrixCreated || graphModified ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
-        createDistanceMatrix(false, considerWeights, inverseWeights,false);
+        createDistanceMatrix(false, considerWeights, inverseWeights,dropIsolates);
     }
     return averGraphDistance;
 }
@@ -1742,11 +1733,11 @@ void Graph::createDistanceMatrix(const bool centralities,
     m_totalVertices = vertices(false,true);
     qDebug() << "Graph::createDistanceMatrix() Resizing Matrices to hold "
              << m_totalVertices << " vertices";
-    DM.resize(m_totalVertices);
-    TM.resize(m_totalVertices);
-    XRM.zeroMatrix(m_totalVertices);
+    DM.resize(m_totalVertices, m_totalVertices);
+    TM.resize(m_totalVertices, m_totalVertices);
+    XRM.zeroMatrix(m_totalVertices, m_totalVertices);
 
-    int aEdges = totalEdges();
+    int aEdges = enabledEdges();
     //drop isolated vertices from calculations (i.e. std C and group C).
     int aVertices=vertices(dropIsolates);
 
@@ -1972,8 +1963,10 @@ void Graph::createDistanceMatrix(const bool centralities,
             }
         }
 
-        if (averGraphDistance!=0)
-            averGraphDistance = averGraphDistance / (nonZeroDistancesCounter);
+        if (averGraphDistance!=0) {
+             averGraphDistance = averGraphDistance / ( aVertices * ( aVertices-1.0 ) );
+        }
+
 
         if (centralities) {
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
@@ -2531,7 +2524,6 @@ void Graph::resolveClasses(float C, H_StrToInt &discreteClasses, int &classes){
     it2 = discreteClasses.find(QString::number(C));    //Amort. O(1) complexity
     if (it2 == discreteClasses.end() )	{
         classes++;
-        qDebug("######This is a new centrality class. Amount of classes = %i", classes);
         discreteClasses.insert(QString::number(C), classes);
     }
 }
@@ -2542,10 +2534,10 @@ void Graph::resolveClasses(float C, H_StrToInt &discreteClasses, int &classes){
  */
 void Graph::resolveClasses(float C, H_StrToInt &discreteClasses, int &classes, int vertex){
     H_StrToInt::iterator it2;
+    Q_UNUSED(vertex);
     it2 = discreteClasses.find(QString::number(C));    //Amort. O(1) complexity
     if (it2 == discreteClasses.end() )	{
         classes++;
-        qDebug("######Vertex %i  belongs to a new centrality class. Amount of classes = %i", vertex, classes);
         discreteClasses.insert(QString::number(C), classes);
     }
 }
@@ -2574,7 +2566,6 @@ void Graph::centralityInformation(const bool considerWeights,
     classesIC=0;
     varianceIC=0;
 
-    TM.resize(m_totalVertices);
     isolatedVertices=verticesIsolated().count();
     int i=0, j=0, n=vertices();
     float m_weight=0, weightSum=1, diagonalEntriesSum=0, rowSum=0;
@@ -2584,8 +2575,11 @@ void Graph::centralityInformation(const bool considerWeights,
     bool dropIsolates=true;
     bool symmetrize=true;
     createAdjacencyMatrix(dropIsolates, considerWeights, inverseWeights, symmetrize);
+
     n-=isolatedVertices;  //isolatedVertices updated in createAdjacencyMatrix
-    qDebug() << "Graph:: centralityInformation() - computing node ICs for total n = " << n;
+
+    TM.resize(n, n);
+    invM.resize(n, n);
 
     for (i=0; i<n; i++){
         weightSum = 1;
@@ -2594,14 +2588,12 @@ void Graph::centralityInformation(const bool considerWeights,
                 continue;
             m_weight = AM.item(i,j);
             weightSum += m_weight; //sum of weights for all edges incident to i
-            qDebug() << "Graph:: centralityInformation() -A("<< i <<  ","<< j <<") = 1-Xij = " << 1-m_weight;
             TM.setItem(i,j,1-m_weight);
         }
         TM.setItem(i,i,weightSum);
-        qDebug() << "Graph:: centralityInformation() - A("<< i << ","<< i <<") = 1+sum of all tie values = " << weightSum;
     }
 
-    invM.inverseByGaussJordanElimination(TM);
+    invM.inverse(TM);
 
     diagonalEntriesSum = 0;
     rowSum = 0;
@@ -2611,23 +2603,18 @@ void Graph::centralityInformation(const bool considerWeights,
     for (i=0; i<n; i++){
         diagonalEntriesSum  += invM.item(i,i);  // calculate the matrix trace
     }
-    qDebug() << "Graph:: centralityInformation() - R= " << rowSum << " D= "<<diagonalEntriesSum;
-
 
     QList<Vertex*>::const_iterator it;
     i=0;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( (*it)->isIsolated() ) {
             (*it) -> setIC ( 0 );
-            qDebug()<< "Graph:: centralityInformation() vertex: " <<  (*it)->name() << " isolated";
             continue;
         }
         IC= 1.0 / ( invM.item(i,i) + (diagonalEntriesSum - 2.0 * rowSum) / n );
 
         (*it) -> setIC ( IC );
         t_sumIC += IC;
-        qDebug()<< "Graph:: centralityInformation() vertex: " <<  (*it)->name()
-                << " IC  " << IC ;
         i++;
     }
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -2642,18 +2629,14 @@ void Graph::centralityInformation(const bool considerWeights,
     float x=0;
     meanIC = sumIC /(float) n ;
 
-    qDebug() << "sumSIC = " << sumIC << "  n = " << n << "  meanIC = " << meanIC;
     varianceIC=0;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         x = (  (*it)->SIC()  -  meanIC  ) ;
         x *=x;
-        qDebug() << "SIC " <<  (*it)->SIC() << "  x "
-                 <<   (*it)->SIC() - meanIC  << " x*x" << x ;
         varianceIC  += x;
     }
-    qDebug() << "varianceIC   " << varianceIC   << " n " << n ;
+
     varianceIC  /=  (float) n;
-    qDebug() << "varianceIC   " << varianceIC   ;
 
     calculatedIC = true;
 }
@@ -3872,7 +3855,7 @@ void Graph::writePrestigeProximity( const QString fileName,
 
 //Calculates the PageRank Prestige of each vertex
 void Graph::prestigePageRank(const bool dropIsolates){
-    qDebug()<< "Graph:: prestigePageRank()";
+    qDebug()<< "Graph::prestigePageRank()";
     if (! graphModified && calculatedPRP ) {
         qDebug() << " graph not changed - return ";
         return;
@@ -3886,16 +3869,22 @@ void Graph::prestigePageRank(const bool dropIsolates){
     variancePRP=0;
     // The parameter d is a damping factor which can be set between 0 and 1.
     // Google creators set d to 0.85.
+<<<<<<< HEAD
     dampingFactor = 0.85;
+=======
+    d_factor = 0.85;
+>>>>>>> develop
 
     float PRP=0, oldPRP = 0;
     float SPRP=0;
-    int i = 1; // a counter
+    int iterations = 1; // a counter
     int referrer;
-    float delta = 0.01; // The delta where we will stop the iterative calculation
+    float delta = 0.00001; // The delta where we will stop the iterative calculation
     float maxDelta = RAND_MAX;
-    float sumPageRanksOfLinkedNodes = 0;  // temporary variable to calculate PR
-    float outDegree = 0;
+    float sumInLinksPR = 0;  // temp var for inlinks sum PR
+    float transferedPRP = 0;
+    float inLinks = 0;       // temp var
+    float outLinks = 0;       // temp var
     float t_variance=0;
     float aVert =  vertices(dropIsolates) ;
     QList<Vertex*>::const_iterator it;
@@ -3903,16 +3892,37 @@ void Graph::prestigePageRank(const bool dropIsolates){
     bool edgeStatus=false;
     H_edges::const_iterator jt;
 
+
+    qDebug()<< "Graph::prestigePageRank() "
+            << "active vertices: " << aVert
+            << " total vertices: " << vertices();
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        // At first, PR scores have probability distribution
+        // from 0 to 1, so each one is set to 1/N
+        (*it)->setPRP( 1.0 / aVert );
+        // compute inEdges() to warm up inEdgesConst for everyone
+        inLinks = (*it)->inEdges();
+        outLinks = (*it)->outEdges();
+        qDebug() << "Graph::prestigePageRank() - node "
+                 << (*it)->name() << " PR = " << (*it)->PRP()
+                 << " inLinks (set const): " << inLinks
+                 << " outLinks (set const): " << outLinks;
+    }
+
+    if ( enabledEdges() == 0 ) {
+        qDebug()<< "Graph::prestigePageRank() "
+                <<" - all vertices are isolated and of equal PR. Stop";
+        return;
+    }
+
     // begin iteration - continue until we reach our desired delta
     while (maxDelta > delta) {
-        if (aVert ==0 ) {
-            qDebug()<< "Graph:: prestigePageRank() "
-                    << "aVert: " << aVert
-                    << " total vertices " << vertices()
-                    <<" - all vertices are isolated. Break";
-            break;
-        }
+
+        qDebug()<< "Graph::prestigePageRank() - ITERATION : " << iterations;
+
         t_sumPRP=0;
+<<<<<<< HEAD
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
             qDebug() << "Graph:: prestigePageRank() - calculating PR for node: "
                      << (*it)->name() ;
@@ -3924,13 +3934,37 @@ void Graph::prestigePageRank(const bool dropIsolates){
                 qDebug() << "Graph:: prestigePageRank() - 1st iteration - node: "
                          << (*it)->name() << " PR = " << (*it)->PRP()
                          << " computed outDegree (const): " << outDegree;
+=======
+        maxDelta = 0;
+
+        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
+        {
+            sumInLinksPR = 0;
+            oldPRP = (*it)->PRP();
+
+            qDebug() << "Graph::prestigePageRank() - computing PR for node: "
+                     << (*it)->name()  << " current PR " << oldPRP;
+
+            if ( (*it)->isIsolated() ) {
+                // isolates have constant PR = 1/N
+                qDebug() << "Graph::prestigePageRank() - isolated - CONTINUE ";
+                continue;
+>>>>>>> develop
             }
-            // In every other iteration we calculate PageRanks.
-            else {
-                sumPageRanksOfLinkedNodes = 0;
-                if ( (*it)->isIsolated() ) {
+
+            jt=(*it)->m_inEdges.cbegin();
+
+            qDebug() << "Graph::prestigePageRank() - Iterate over inEdges of "
+                     << (*it)->name() ;
+
+            while ( jt != (*it) -> m_inEdges.cend() )
+            {
+                relation = jt.value().first;
+                if ( relation != currentRelation() ){
+                    ++jt;
                     continue;
                 }
+<<<<<<< HEAD
                 maxDelta = 0;
                 oldPRP = (*it)->PRP();
                 // take every other node which links to the current node.
@@ -3960,8 +3994,14 @@ void Graph::prestigePageRank(const bool dropIsolates){
                                 << " PRP / outDegree = " << PRP / outDegree ;
                         sumPageRanksOfLinkedNodes += PRP / outDegree;
                     }
+=======
+                edgeStatus=jt.value().second.second;
+                if ( edgeStatus != true){
+>>>>>>> develop
                     ++jt;
+                    continue;
                 }
+<<<<<<< HEAD
                 // OK. Now calculate PageRank of current node
                 PRP = (1-dampingFactor) / aVert + dampingFactor * sumPageRanksOfLinkedNodes;
                 // store new PageRank
@@ -3977,15 +4017,75 @@ void Graph::prestigePageRank(const bool dropIsolates){
                     maxDelta = fabs(PRP - oldPRP);
                     qDebug()<< "Graph:: prestigePageRank() setting new maxDelta = "
                             <<  maxDelta;
-                }
+=======
 
+                referrer = jt.key();
+
+                qDebug() << "Graph::prestigePageRank() - Node " << (*it)->name()
+                         << " inLinked from neighbor " << referrer  << " index "
+                         << index[referrer];
+
+                if ( this->hasArc( referrer , (*it)->name() ) )
+                {
+                    inLinks = m_graph[ index[referrer] ] ->inEdgesConst();
+                    outLinks = m_graph[ index[referrer] ]-> outEdgesConst();
+
+                    PRP =  m_graph[ index[referrer] ]->PRP();
+
+                    transferedPRP = (outLinks != 0 ) ? ( PRP / outLinks ) : PRP;
+
+                    qDebug()<< "Graph::prestigePageRank() - neighbor " << referrer
+                            << " has PR = " << PRP
+                            << " and outLinks = " << outLinks
+                               << "  will transfer " << transferedPRP ;
+
+                    sumInLinksPR +=  transferedPRP;
+
+>>>>>>> develop
+                }
+                ++jt;
             }
+
+            PRP = (1-d_factor) / aVert + d_factor * sumInLinksPR;
+
+           (*it) -> setPRP ( PRP );
+
+            t_sumPRP+=PRP;
+
+            qDebug() << "Graph::prestigePageRank() - Node "
+                     << (*it)->name()
+                      << " new PR = " << PRP
+                    << " old PR was = " << oldPRP
+                    << " diff = " << fabs(PRP - oldPRP);
+
+            // calculate diff from last PageRank value for this vertex
+            // and set it to minDelta if the latter is bigger.
+
+            if ( maxDelta < fabs(PRP - oldPRP) ) {
+                maxDelta = fabs(PRP - oldPRP);
+                qDebug()<< "Graph::prestigePageRank() - Setting new maxDelta = "
+                        <<  maxDelta;
+            }
+
         }
-        i++;
+        // normalize in every iteration
+        qDebug() << "Graph::prestigePageRank() - sumPRP for this iteration " <<
+                    t_sumPRP;
+        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
+            PRP = (*it)->PRP();
+            SPRP = PRP / t_sumPRP ;
+//            (*it)->setPRP( SPRP ); // ???
+
+            qDebug() << "Graph::prestigePageRank() - Node "
+                     << (*it)->name()
+                        << " normalized SPRP =  " << SPRP;
+        }
+        iterations++;
     }
 
     // calculate std and min/max PRPs
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
+    {
         if (dropIsolates && (*it)->isIsolated()) {
             continue;
         }
@@ -3993,8 +4093,9 @@ void Graph::prestigePageRank(const bool dropIsolates){
         SPRP = PRP / t_sumPRP ;
         (*it)->setSPRP( SPRP );
         sumPRP +=  SPRP;
-        qDebug()<< "Graph:: prestigePageRank() vertex: " <<  (*it)->name()
-                << " PageRank = " << PRP << " standard PR = " << SPRP;
+        qDebug()<< "Graph::prestigePageRank() vertex: " <<  (*it)->name()
+                << " PR = " << PRP << " standard PR = " << SPRP
+                   << " t_sumPRP " << t_sumPRP;
     }
 
     if (aVert != 0 )
@@ -4002,7 +4103,8 @@ void Graph::prestigePageRank(const bool dropIsolates){
     else
         meanPRP = SPRP;
 
-    qDebug() << "sumPRP = " << sumPRP << "  aVert = " << aVert << "  meanPRP = " << meanPRP;
+    qDebug() << "sumPRP = " << sumPRP << "  aVert = " << aVert
+             << "  meanPRP = " << meanPRP;
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if (dropIsolates && (*it)->isIsolated()) {
@@ -4055,9 +4157,11 @@ void Graph::writePrestigePageRank(const QString fileName, const bool dropIsolate
     outText.setRealNumberPrecision(m_precision);
     outText << tr("PAGERANK PRESTIGE (PRP)")<<"\n";
     outText << tr("")<<"\n";
-    outText << tr("PRP  range:  1-d < PRP  where d=") << dampingFactor   << "\n";
+    outText << tr("PRP  range: (1-d)/N = ") << ( 1- d_factor ) / vertices()
+            << " < PRP" << endl;
+    outText << " d =" << d_factor   << endl;
     outText << tr("PRP' is the standardized PR (PR divided by sumPR)")<<"\n";
-    outText << tr("PRP' range:  ") << dampingFactor / sumPRP  << " < C'< 1" <<"\n\n";
+    outText << tr("PRP' range:  ") << " (1-d)/N < C'< 1" <<"\n\n";
     outText << "Node"<<"\tPRP\t\tPRP'\t\t%PRP'\n";
     QList<Vertex*>::const_iterator it;
     float PRP=0, SPRP=0;
@@ -5053,9 +5157,9 @@ void Graph::createRandomNetScaleFree (const int &n,
         progressCounter++;
         emit updateProgressDialog( progressCounter );
 
-        // no need to multiply by 2, since totalEdges already reports
+        // no need to multiply by 2, since enabledEdges already reports
         // twice the current number of edges in the network
-        sumDegrees =  totalEdges();
+        sumDegrees =  enabledEdges();
 
         newEdges = 0;
 
@@ -5249,7 +5353,7 @@ void Graph::createNumberOfWalksMatrix(int length) {
     XM = AM;   // XM will be the product matrix
     XSM = AM;  // XSM is the sum of product matrices
     Matrix PM; // temp matrix
-    PM.zeroMatrix(size);
+    PM.zeroMatrix(size, size);
 
     qDebug()<< "Graph::writeNumberOfWalksMatrix() XM is  " ;
     for (register int i=0; i < size ; i++) {
@@ -5398,8 +5502,7 @@ void Graph::reachabilityMatrix( const bool considerWeights,
         influenceRanges.clear();
         influenceDomains.clear();
         disconnectedVertices.clear();
-        bool isolateVertex;
-        isolateVertex=true;
+        bool isolateVertex=true; Q_UNUSED(isolateVertex);
         for (i=0; i < size ; i++) {
             for (j=i+1; j < size ; j++) {
                 if ( XRM.item(i,j) ==1 ) {
@@ -10139,7 +10242,7 @@ void Graph::writeAdjacencyMatrix (const QString fn, const char* netName) {
     }
 
     qDebug("Graph: Found a total of %i edge",sum);
-    if ( sum != totalEdges() ) qDebug ("Error in edge count found!!!");
+    if ( sum != enabledEdges() ) qDebug ("Error in edge count found!!!");
     else qDebug("Edge count OK!");
 
     file.close();
@@ -10160,29 +10263,22 @@ void Graph::createAdjacencyMatrix(const bool dropIsolates,
     float m_weight=-1;
     int i=0, j=0;
     if (dropIsolates){
-        qDebug() << "Graph::createAdjacencyMatrix() - Find and dropp possible isolates";
+        qDebug() << "Graph::createAdjacencyMatrix() - Find and drop possible isolates";
         isolatedVertices = verticesIsolated().count();
-        qDebug() << "Graph::createAdjacencyMatrix() - found " << isolatedVertices << " isolates to drop. "
-                 << " Will resize AM to " << m_totalVertices-isolatedVertices;
-        AM.resize(m_totalVertices-isolatedVertices);
+        int m = m_totalVertices-isolatedVertices;
+        AM.resize( m , m);
     }
     else
-        AM.resize(m_totalVertices);
+        AM.resize(m_totalVertices, m_totalVertices);
     QList<Vertex*>::const_iterator it, it1;
-    qDebug() << "Graph::createAdjacencyMatrix() - creating new adjacency matrix ";
+    //qDebug() << "Graph::createAdjacencyMatrix() - creating new adjacency matrix ";
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() || ( (*it)->isIsolated() && dropIsolates) ) {
-            qDebug()<<"Graph::createAdjacencyMatrix() - vertex "
-                   << (*it)->name()
-                   << " is isolated. Continue";
             continue;
         }
         j=i;
         for (it1=it; it1!=m_graph.end(); it1++){
             if ( ! (*it1)->isEnabled() || ( (*it1)->isIsolated() && dropIsolates) ) {
-                qDebug()<<"Graph::createAdjacencyMatrix() - vertex "
-                       << (*it1)->name()
-                       << " is isolated. Continue";
                 continue;
             }
             if ( (m_weight = this->hasArc ( (*it)->name(), (*it1)->name() )  ) !=0 ) {
@@ -10226,28 +10322,57 @@ void Graph::createAdjacencyMatrix(const bool dropIsolates,
         }
         i++;
     }
-    qDebug() << "Graph::createAdjacencyMatrix() - Done.";
 
     adjacencyMatrixCreated=true;
 }
 
 
-void Graph::invertAdjacencyMatrix(){
-    qDebug() << "Graph::invertAdjacencyMatrix()";
-    qDebug()<<"Graph::invertAdjacencyMatrix() - first create the Adjacency Matrix AM";
-    bool dropIsolates=true;
+bool Graph::invertAdjacencyMatrix(const QString &method){
+    qDebug()<<"Graph::invertAdjacencyMatrix() ";
+
     bool considerWeights=false;
+    long int i=0, j=0;
+    bool isSingular=true;
+
+    bool dropIsolates=true; // always drop isolates else AM will be singular
+
     createAdjacencyMatrix(dropIsolates, considerWeights);
-    invAM.resize(m_totalVertices-isolatedVertices);
-    qDebug()<<"Graph::invertAdjacencyMatrix() - invert the Adjacency Matrix AM and store it to invAM";
-    invAM.inverseByGaussJordanElimination(AM);
 
+    int  m = m_totalVertices-isolatedVertices;
 
+    invAM.resize(m,m);
+
+    if ( method == "gauss") {
+        invAM.inverseByGaussJordanElimination(AM);
+     }
+    else {
+        invAM.inverse(AM);
+     }
+
+    QList<Vertex*>::const_iterator it, it1;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( ! (*it)->isEnabled() || (*it)->isIsolated())
+            continue;
+        j=0;
+        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
+            if ( ! (*it1)->isEnabled() || (*it)->isIsolated() )
+                continue;
+            if ( invAM.item(i,j) != 0)
+                isSingular = false;
+            j++;
+        }
+        i++;
+    }
+
+    return !isSingular;
 }
 
 
 
-void Graph::writeInvertAdjacencyMatrix(QString fn, const char* netName){
+void Graph::writeInvertAdjacencyMatrix(const QString &fn,
+                                       const QString &netName,
+                                       const QString &method)
+{
     qDebug("Graph::writeInvertAdjacencyMatrix() ");
     int i=0, j=0;
     QList<Vertex*>::const_iterator it, it1;
@@ -10259,17 +10384,24 @@ void Graph::writeInvertAdjacencyMatrix(QString fn, const char* netName){
     QTextStream outText( &file );
     outText.setCodec("UTF-8");
     outText << "-Social Network Visualizer- \n";
-    outText << "Invert Matrix of "<< netName<<": \n\n";
-    invertAdjacencyMatrix();
+    outText << "Invert Matrix of network named: "<< netName<< endl;
+    if (!invertAdjacencyMatrix(method)) {
+            outText << endl<< " The adjacency matrix is singular.";
+            file.close();
+            return;
+    }
+    if ( verticesIsolated().count() > 0  )
+            outText << endl<< "Dropped "<< isolatedVertices << " isolated vertices"
+                    << endl<< endl;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( ! (*it)->isEnabled() )
+        if ( ! (*it)->isEnabled() || (*it)->isIsolated() )
             continue;
         j=0;
         for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
-            if ( ! (*it1)->isEnabled() )
+            if ( ! (*it1)->isEnabled() || (*it)->isIsolated() )
                 continue;
             outText << invAM.item(i,j)<< " ";
-            qDebug() << invAM.item(i,j)<< " ";
+            qDebug() << i << "," << j << " = " << invAM.item(i,j);
             j++;
         }
         i++;

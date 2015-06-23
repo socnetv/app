@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 1.8
+ version: 1.9
  Written in Qt
  
                          graphicswidget.h  -  description
@@ -109,7 +109,7 @@ public slots:
     void drawEdge(int, int, float, bool, bool, QString, bool);
     void eraseEdge(int, int);
     void setEdgeVisibility (int relation, int, int, bool);
-    bool setEdgeColor(long int, long int, QString);
+    void setEdgeColor(long int, long int, QString);
     void edgeClicked(Edge *);
     void openEdgeContextMenu();
 

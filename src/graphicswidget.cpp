@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 1.8
+ version: 1.9
  Written in Qt
 
                         graphicswidget.cpp description
@@ -513,22 +513,16 @@ void   GraphicsWidget::setNumbersInsideNodes(bool numIn){
     Changes/Sets the color of an edge.
     Called from MW when the user changes the color of an edge (right-clicking).
 */
-// FIXME VERY SLOW
-bool GraphicsWidget::setEdgeColor(long int source, long int target, QString color){
-    qDebug()<<"\n\n#### GW: setEdgeColor(). " << source << "->" << target ;
+
+void GraphicsWidget::setEdgeColor(long int source, long int target, QString color){
+
     QString edgeName =  QString::number(m_curRelation) + QString(":") +
             QString::number( source ) + QString(">")+ QString::number( target );
 
-    //    if  ( edgesHash.contains (edgeName) ) {
-    qDebug()<<"GW: setEdgeColor(). relation " << m_curRelation
-           << " : " << source  << " ->  "<< target << " to " << color;
+    qDebug()<<"GW::setEdgeColor() -" << edgeName << " to "  << color;;
+
+    //    if  ( edgesHash.contains (edgeName) ) { // VERY SLOW
     edgesHash.value(edgeName) -> setColor(color);
-    return true;
-    //    }
-    //    qDebug()<<"\n\n\n\n\n $$$$$$$$ GW: setEdgeColor(). Cannot find edge "
-    //           << m_curRelation
-    //                   << " : " << source  << " ->  "<< target ;
-    //    return false;
 
 }
 
@@ -826,10 +820,10 @@ void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
     }
 
     QPointF p = mapToScene(e->pos());
-    qDebug()<< " GW::mouseDoubleClickEvent()"
-            << " double click detected on empty space. "
-            << " Emitting signal to MW to create a new vertex in graph. e->pos() "
-            << e->pos().x() << ", "<< e->pos().y() << ", "<< p.x() << ", " <<p.y();
+    qDebug()<< "GW::mouseDoubleClickEvent()"
+            << " double click on empty space. "
+            << " Signaling MW to create a new vertex in graph. e->pos() "
+            << e->pos().x() << ","<< e->pos().y() << ", "<< p.x() << "," <<p.y();
     emit userDoubleClicked(-1, p);
     qDebug() << "GW::mouseDoubleClickEvent() "
              << "Scene items: "<< scene()->items().size()

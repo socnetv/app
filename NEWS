@@ -6,6 +6,21 @@ SocNetV News
 
 June 2015
 =========
+- Version 1.9 released with lots of bugfixes and a faster matrix inverse routine using LU decomposition. 
+  Also Information Centrality is greatly improved in terms of computation speed.
+  PageRank Prestige algorithm corrected to compute PR using the correct formula. The initial PR score 
+  of each node is now 1/N.
+  Bugs closed:
+  #1463069 wrong average distance when there are isolates 
+  #1365037 certain sparse matrices crash socnetv on invertMatrix method 
+  #1365582 centralityInformation() is slow when network N>100 
+  #1463095 edge filter works but the user cannot undo 
+  #1464422 wrong pagerank results 
+  #1464430 socnetv refuses to read pajek files not starting with *Network 
+  #1465774 edges do not always follow relations 
+  #1463082 edge color change is not taking place 
+  #1464418 socnetv crashes on pagerank computation on isolated nodes 
+
 - Version 1.8 released with the following new features: 
   New clique census routine to compute maximal cliques with up to 4 vertices.
   New Scale-free random generation methods. Improved Erdos-Renyi generation to include G(n,M) model. 

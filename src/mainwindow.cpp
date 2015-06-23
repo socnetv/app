@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 1.8
+ version: 1.9
  Written in Qt
 
 -                           mainwindow.cpp  -  description
@@ -185,7 +185,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
              graphicsWidget, SLOT( drawEdgeReciprocal(int, int) ) );
 
 
-    connect( &activeGraph, SIGNAL( setEdgeColor(long int,long int,QString)),
+    connect( &activeGraph, SIGNAL( changeEdgeColor(long int,long int,QString)),
              graphicsWidget, SLOT( setEdgeColor(long int,long int,QString) ) );
 
 
@@ -234,7 +234,6 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     connect( &activeGraph, SIGNAL(relationChanged(int)),
              graphicsWidget, SLOT( changeRelation(int))  ) ;
-
 
     connect( &m_filterEdgesByWeightDialog, SIGNAL( userChoices( float, bool) ),
              &activeGraph, SLOT( filterEdgesByWeight (float, bool) ) );
@@ -414,9 +413,12 @@ void MainWindow::initActions(){
     connect(importDL, SIGNAL(triggered()), this, SLOT(slotImportDL()));
 
 
-    importList = new QAction( QIcon(":/images/open.png"), tr("&List"), this);
-    importList->setStatusTip(tr("Import network from a List-formatted file. "));
-    importList->setWhatsThis(tr("Import List\n\nImport a network from a List-formatted file"));
+    importList = new QAction( QIcon(":/images/open.png"), tr("&Edge list"), this);
+    importList->setStatusTip(tr("Import network from an edge list file. "));
+    importList->setWhatsThis(tr("Import edge list\n\n"
+                                "Import a network from an edgelist file. "
+                                " The file can be unvalued or valued (see manual)"
+                                ));
     connect(importList, SIGNAL(triggered()), this, SLOT(slotImportEdgeList()));
 
 
@@ -699,6 +701,7 @@ void MainWindow::initActions(){
 
     filterNodesAct = new QAction(tr("Filter Nodes"), this);
     filterNodesAct -> setEnabled(false);
+    //filterNodesAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_F));
     filterNodesAct->setStatusTip(tr("Filters Nodes of some value out of the network"));
     filterNodesAct->setWhatsThis(tr("Filter Nodes\n\nFilters Nodes of some value out of the network."));
     connect(filterNodesAct, SIGNAL(triggered()), this, SLOT(slotFilterNodes()));
@@ -707,12 +710,14 @@ void MainWindow::initActions(){
     filterIsolateNodesAct -> setEnabled(true);
     filterIsolateNodesAct -> setCheckable(true);
     filterIsolateNodesAct -> setChecked(false);
+    filterIsolateNodesAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_F));
     filterIsolateNodesAct -> setStatusTip(tr("Filters nodes with no edges"));
     filterIsolateNodesAct -> setWhatsThis(tr("Filter Isolate Nodes\n\n Enables or disables displaying of isolate nodes. Isolate nodes are those with no edges..."));
     connect(filterIsolateNodesAct, SIGNAL(toggled(bool)), this, SLOT(slotFilterIsolateNodes(bool)));
 
     filterEdgesAct = new QAction(tr("Filter Edges by weight"), this);
     filterEdgesAct -> setEnabled(true);
+    filterEdgesAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_F));
     filterEdgesAct -> setStatusTip(tr("Filters Edges of some weight out of the network"));
     filterEdgesAct -> setWhatsThis(tr("Filter Edges\n\nFilters Edge of some specific weight out of the network."));
     connect(filterEdgesAct , SIGNAL(triggered()), this, SLOT(slotShowFilterEdgesDialog()));
@@ -2825,6 +2830,16 @@ void MainWindow::initNet(){
     QApplication::restoreOverrideCursor();
     statusMessage( tr("Ready"));
     qDebug("MW: initNet() INITIALISATION END");
+
+//    QTextStream stream(stdout);
+//    Matrix m(10,10);
+//    stream << "(9,1) = " << m[9][1] ;
+//    m[9][1]=1212;
+
+//    stream<< m;
+
+//    stream << "(9,1) = " << m[9][1] ;
+
 }
 
 
@@ -4098,7 +4113,7 @@ void MainWindow::slotViewNetworkFile(){
 void MainWindow::slotOpenTextEditor(){
     qDebug() << "slotOpenTextEditor() : ";
 
-    TextEditor *ed = new TextEditor("");
+    TextEditor *ed = new TextEditor("", this);
     ed->setWindowTitle(tr("New Network File"));
     ed->show();
     statusMessage(  tr("Enter your network data here" ) );
@@ -4482,6 +4497,7 @@ void MainWindow::createSmallWorldNetwork (const int &nodes,
                                             const QString &mode,
                                             const bool &diag)
 {
+    Q_UNUSED(diag);
     qDebug() << "MW;:createSmallWorldNetwork()";
     statusMessage( tr("Erasing any existing network. "));
     initNet();
@@ -5309,11 +5325,12 @@ void MainWindow::slotChangeEdgeColor(){
 
     int sourceNode=-1, targetNode=-1;
     bool ok=false;
-    QString newColor;
+
     int min=activeGraph.firstVertexNumber();
     int max=activeGraph.lastVertexNumber();
 
-    if (!edgeClicked) {	//no edge clicked. Ask user to define an edge.
+    if (!edgeClicked)
+    {	//no edge clicked. Ask user to define an edge.
         sourceNode=QInputDialog::getInt(this,
                                         "Change edge color",
                                         tr("Select edge source node:  ("+
@@ -5343,35 +5360,28 @@ void MainWindow::slotChangeEdgeColor(){
              return;
         }
 
-
-        QColor color = QColorDialog::getColor(
-                    Qt::black, this, tr("Select new color....") );
-        if ( color.isValid()) {
-            QString newColor=color.name();
-            qDebug() << "MW::slotChangeEdgeColor() to " << newColor;
-            activeGraph.setEdgeColor( sourceNode, targetNode, newColor);
-            statusMessage( tr("Ready. ")  );
-        }
-        else {
-            statusMessage( tr("Change edge color aborted. ") );
-        }
-
     }
-    else {	//edge has been clicked. Just ask the color and call the appropriate methods.
-        QColor color = QColorDialog::getColor(
-                    Qt::black, this, tr("Select new color....") );
-        if ( color.isValid()) {
-            QString newColor=color.name();
-            qDebug() << "MW::slotChangeEdgeColor() to " << newColor;
-            activeGraph.setEdgeColor( clickedEdge->sourceNodeNumber(),
-                                      clickedEdge->targetNodeNumber(), newColor);
-            statusMessage( tr("Ready. ")  );
-        }
-        else {
-            statusMessage( tr("Change edge color aborted. ") );
-        }
-
+    else
+    {	//edge has been clicked.
+         sourceNode = clickedEdge->sourceNodeNumber();
+         targetNode = clickedEdge->targetNodeNumber();
     }
+
+    QColor color = QColorDialog::getColor(
+                Qt::black, this, tr("Select new color....") );
+
+    if ( color.isValid()) {
+        QString newColor=color.name();
+        qDebug() << "MW::slotChangeEdgeColor() - " << sourceNode << " -> "
+                    << targetNode << " newColor "
+                 << newColor;
+        activeGraph.setEdgeColor( sourceNode, targetNode, newColor);
+        statusMessage( tr("Ready. ")  );
+    }
+    else {
+        statusMessage( tr("Change edge color aborted. ") );
+    }
+
 }
 
 
@@ -5546,7 +5556,7 @@ void MainWindow::slotFilterNodes(){
 
 /**
  * @brief MainWindow::slotFilterIsolateNodes
- *Calls Graph::filterIsolateVertices to filter vertices with no edges
+ *Calls Graph::filterIsolateVertices to toggle visibility of isolated vertices
  */
 void MainWindow::slotFilterIsolateNodes(bool checked){
     Q_UNUSED(checked);
@@ -5557,6 +5567,7 @@ void MainWindow::slotFilterIsolateNodes(bool checked){
     }
     qDebug()<< "MW: slotFilterIsolateNodes";
     activeGraph.filterIsolateVertices( ! filterIsolateNodesAct->isChecked() );
+    statusMessage(  QString(tr("Isolate nodes visibility toggled!"))  );
 }
 
 
@@ -6418,11 +6429,11 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
 
 
 /**
-*	Returns the amount of active edges on the scene.
+*	Returns the amount of enabled/active edges on the scene.
 */
 int MainWindow::activeEdges(){
     qDebug () << "MW::activeEdges()";
-    return activeGraph.totalEdges();
+    return activeGraph.enabledEdges();
 }
 
 
@@ -6481,13 +6492,17 @@ void MainWindow::slotInvertAdjMatrix(){
     qDebug ("MW: calling Graph::writeInvertAdjacencyMatrix with %i nodes", aNodes);
     QString fn = dataDir + "socnetv-report-invert-adjacency-matrix.dat";
 
-    activeGraph.writeInvertAdjacencyMatrix(fn, networkName.toLocal8Bit()) ;
-
+    QTime timer;
+    timer.start();
+    activeGraph.writeInvertAdjacencyMatrix(fn, networkName, QString("lu")) ;
+    int msecs = timer.elapsed();
+    statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
     //Open a text editor window for the new file created by graph class
     TextEditor *ed = new TextEditor(fn);
     tempFileNameNoPath=fn.split( "/");
     ed->setWindowTitle(tr("View Adjacency Matrix - ") + tempFileNameNoPath.last());
     ed->show();
+
 
 }
 
@@ -6755,7 +6770,7 @@ void MainWindow::slotAverageGraphDistance() {
     createProgressBar();
 
     float averGraphDistance=activeGraph.averageGraphDistance(
-                considerWeights, inverseWeights);
+                considerWeights, inverseWeights,  filterIsolateNodesAct->isChecked() );
 
     destroyProgressBar();
 
@@ -7424,14 +7439,14 @@ void MainWindow::slotCentralityInformation(){
         switch(
                QMessageBox::critical(
                    this, "Slow function warning",
-                   tr("Please note that this function is <b>VERY SLOW</b> on large "
+                   tr("Please note that this function is <b>SLOW</b> on large "
                       "networks (n>200), since it will calculate  a (n x n) matrix A with:"
                       "Aii=1+weighted_degree_ni"
                       "Aij=1 if (i,j)=0"
-                      "Aij=1-wij if (i,j)=wij"
+                      "Aij=1-wij if (i,j)=wij\n"
                       "Next, it will compute the inverse matrix C of A."
-                      "The computation of the inverse matrix is VERY CPU intensive function."
-                      "because it uses the Gauss-Jordan elimination algorithm.\n\n "
+                      "The computation of the inverse matrix is a CPU intensive function."
+                      "although it uses LU decomposition.\n\n "
                       "Are you sure you want to continue?"), QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
         case QMessageBox::Ok:
             break;
@@ -8321,7 +8336,7 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
     int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
-QString BUILD="Fri Jun  5 17:05:15 EEST 2015";
+QString BUILD="Tue Jun 23 17:31:02 EEST 2015";
     QMessageBox::about( this, "About SocNetV",
                         "<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
                         "<p><b>Version</b>: " + VERSION + "</p>"

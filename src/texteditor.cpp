@@ -1,6 +1,6 @@
 /****************************************************************************
 SocNetV: Social Network Visualizer 
-version: 1.8
+version: 1.9
 Written in Qt
 
                                texteditor.cpp 
@@ -28,7 +28,7 @@ Written in Qt
 #include <QtWidgets>
 #include "texteditor.h"
 
-TextEditor::TextEditor(const QString &fileName)
+TextEditor::TextEditor(const QString &fileName, QWidget *parent) : QMainWindow(parent)
 {
 	qDebug("TextEditor()");
 	textEdit = new QTextEdit;

@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 1.8
+ version: 1.9
  Written in Qt
  
                          webcrawler.cpp  -  description
@@ -136,7 +136,7 @@ void WebCrawler_Spider::get(){
         qDebug() << "   wc_spider::get() http->thread() " << http->thread() ;
 
         QNetworkReply *reply =  http->get(*request) ;
-
+        Q_UNUSED(reply);
         m_visitedNodes++;
 
 

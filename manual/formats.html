@@ -22,7 +22,7 @@ MathJax.Hub.Config({
                 <li>Adjacency matrix (.sm, .adj or .csv )</li>
                 <li>Pajek  (.net, .paj or .pajek), </li>
 		<li>UCINET's Data Language (.dl)</li>
-                <li>Lists (.lst or .list)</li>
+                <li>edge list (.lst or .list)</li>
                 <li>Weighted Lists (.wlst or .wlist)</li>
 
 	</ul>
@@ -413,18 +413,39 @@ DATA:
 
 
 
-<h4><a name="List" id="List"></a>List-formatted files</h4>
+<h4><a name="List" id="List"></a>Simple Edgelist</h4>
 <p>
-The "list" format is the most simple format supported by SocNetV.
-It is suitable only for unvalued graphs or digraphs of dichotomous relations.
-It simply states what edges/arcs are present in the network.
-No other node or edge attributes are supported. <br />
-Files of this format consist of rows with (node) numbers only.  <br />
-Each row of the file declares the arcs (outbound edges) from a node.
-The first element of the row is always considered to be the source node
+The "edgelist" format is the most simple network file supported by SocNetV as it
+maps what edges/arcs are present in the network.
+
+<p>SocNetV supports two kinds of edgelist files: unvalued and valued (see "Weighted edge list" below).
+
+<p>In an unvalued edgelist file, each line declares one or more directed edges by vertex numbers
+which are separated by a space(s) or tab(s).
+
+<p>The first element of the row is always considered to be the source node number
 while the subsequent elements are the numbers of the nodes outlinked by the source node.
-<br /><br />Below is an example.
-For instance, the first row declares that node 18 has outbound edges to nodes 8, 10, 23 and 21:
+
+No other node or edge attributes are supported. <br />
+
+For example the line <br />
+
+<pre>1 2</pre>
+
+<p>declares one edge (the directed edge from node 1 to node 2), while the line</p>
+<pre>1 2 3 4 5</pre>
+
+<p>declares these four arcs: <br />
+1 -> 2 <br />
+1 -> 3<br />
+1 -> 4<br />
+1 -> 5<br />
+</p>
+
+<p>The simple edgelist format is suitable for unvalued graphs or digraphs of dichotomous relations.
+
+<p>Here's a more complicated example. This is a network of 37 nodes.
+The first row declares that node 18 has outbound edges to nodes 8, 10, 23 and 21:
 </p>
 <pre>
 18 8 10 23 21
@@ -450,16 +471,19 @@ For instance, the first row declares that node 18 has outbound edges to nodes 8,
 
 
 
-<h4><a name="WeightedList" id="WeightedList"></a>Weighted List-formatted files</h4>
+<h4><a name="WeightedList" id="WeightedList"></a>Weighted edge list</h4>
 <p>
-The "Weighted list" format is another simple format supported by SocNetV.
+The "Weighted list" format another kind of edgelist format supported by SocNetV.
 It is suitable for both unvalued and valued graphs or digraphs - no colors or positions are supported though.<br />
-Files of this format consist of rows with three numbers: a pair of nodes along with a weight.  <br />
-Each row of the file declares an arc (outbound edge) from a source node to a target node.
+
+<p>Files of this format consist of rows with three numbers: <br />
+a pair of nodes along with a weight.  <br />
+
+<p>Each row of the file declares an arc (outbound edge) from a source node to a target node.
 The first number of the row is always considered to be the source node,
 the second element is the target node and the third is the weight of the arc from source to target.
-<br /><br />Below is an example.
-For instance, the first row declares that node 1 has an outbound edge to node 2, of weight 4 .
+<p>
+For instance, in the example below, the first row declares that node 1 has an outbound edge to node 2, of weight 4 .
 The second row declares that node 1 is out-linked to 3 and the weight of that arc is 2.
 </p>
 <p class="code">

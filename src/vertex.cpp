@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer 
- version: 1.8
+ version: 1.9
  Written in Qt
  
                          vertex.cpp  -  description
@@ -31,14 +31,20 @@
 #include "graph.h"
 
 Vertex::Vertex(Graph* parent,
-               const long &name, const int &val, const int &size,
+               const long &name,
+               const int &val,
+               const int &relation,
+               const int &size,
                const QString &color,
-               const QString &numColor, const int &numSize,
-               const QString &label, const QString &labelColor,
+               const QString &numColor,
+               const int &numSize,
+               const QString &label,
+               const QString &labelColor,
                const int &labelSize,
                const QPointF &p,
                const QString &shape): parentGraph (parent)
 { 
+    qDebug() << "Vertex::Vertex() - "<<  name << " setting values";
     m_name=name;
 	m_value=val;
 	m_size=size;
@@ -66,7 +72,7 @@ Vertex::Vertex(Graph* parent,
     m_DC=0; m_SDC=0; m_DP=0; m_SDP=0; m_CC=0; m_SCC=0; m_BC=0; m_SBC=0;
     m_SC=0; m_SSC=0; m_IRCC=0; m_SIRCC=0;
     m_CLC=0; m_hasCLC=false;
-    m_curRelation=0;
+    m_curRelation=relation;
     m_reciprocalLinked=false;
     m_enabled = true;
 
@@ -77,6 +83,7 @@ Vertex::Vertex(Graph* parent,
 
 // constructor with default values
 Vertex::Vertex(const long int &name) {
+    qDebug() << "Vertex::Vertex() - "<<  name << " using default values";
     m_name=name;
 	m_value=1;
 	m_size=9;
@@ -99,8 +106,8 @@ Vertex::Vertex(const long int &name) {
 * @param relation
 */
 void Vertex::changeRelation(int relation) {
-    qDebug() << "Vertice::changeRelation() to relation " << relation
-                << " from current relation " << m_curRelation;
+    qDebug() << "Vertex::changeRelation() - Current: " << m_curRelation
+                << " new: " << relation;
     // first make false all edges of current relation
     filterEdgesByRelation(m_curRelation, false);
     // then make true all edges of new relation
@@ -333,8 +340,8 @@ void Vertex::filterEdgesByWeight(float m_threshold, bool overThreshold){
  * @param relation
  */
 void Vertex::filterEdgesByRelation(int relation, bool status ){
-    qDebug() << "Vertex::filterEdgesByRelation of vertex " << this->m_name
-                << " relation " << relation << " to " << status;
+    qDebug() << "Vertex::filterEdgesByRelation() - Vertex " << this->m_name
+                << " filtering edges of relation " << relation << " to " << status;
     int target=0;
     float weight =0;
     int edgeRelation=0;
@@ -382,6 +389,17 @@ long int Vertex::outEdges() {
     }
     return m_outEdgesCounter;
 }
+
+/**
+ * @brief Vertex::outEdgesConst
+ * Returns the number of active outbound arcs
+ * Needs to have outEdges called before the call to this method
+ * @return long int
+ */
+long int Vertex::outEdgesConst() const {
+    return m_outEdgesCounter;
+}
+
 
 /**
  * @brief Vertex::returnEnabledOutEdges
@@ -512,6 +530,16 @@ long int Vertex::inEdges() {
 }
 
 
+/**
+ * @brief Vertex::inEdgesConst
+ * Returns the number of active inbound arcs
+ * Needs to have inEdges called before the call to this method
+ * @return long int
+ */
+long int Vertex::inEdgesConst() const {
+    return m_inEdgesCounter;
+}
+
 
 
 /**
@@ -520,7 +548,7 @@ long int Vertex::inEdges() {
  * @return long int
  */
 long int Vertex::outDegree() {
-    qDebug() << " Vertex:: outDegree()";
+    qDebug() << "Vertex::outDegree()";
     m_outDegree=0;
     float m_weight=0;
     int relation = 0;
@@ -550,7 +578,7 @@ long int Vertex::outDegreeConst() {
  * @return long int
  */
 long int Vertex::inDegree() {
-    qDebug() << " Vertex::inDegree()";
+    qDebug() << "Vertex::inDegree()";
     m_inDegree=0;
     float m_weight=0;
     int relation = 0;

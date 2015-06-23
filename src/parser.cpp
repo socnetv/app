@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 1.8
+ version: 1.9
  Written in Qt
  
                          parser.cpp  -  description
@@ -2035,6 +2035,10 @@ bool Parser::loadDot(){
 
         if (  str.contains("graph [" ,Qt::CaseInsensitive) ) {
                 netProperties == true;
+<<<<<<< HEAD
+=======
+                Q_UNUSED(netProperties);
+>>>>>>> develop
         }
 
         if (
@@ -2147,7 +2151,11 @@ bool Parser::loadDot(){
             qDebug ("* Finished node!");
         }
         else if ( !str.contains('[', Qt::CaseInsensitive)
+<<<<<<< HEAD
                   && !str.contains('node', Qt::CaseInsensitive)
+=======
+                  && !str.contains("node", Qt::CaseInsensitive)
+>>>>>>> develop
                   && !str.contains(']', Qt::CaseInsensitive)
                   && !str.contains("--",Qt::CaseInsensitive)
                   && !str.contains("->",Qt::CaseInsensitive)
@@ -2311,8 +2319,11 @@ bool Parser::loadDot(){
             }
         }
 
+<<<<<<< HEAD
 
         }
+=======
+>>>>>>> develop
         else {
             qDebug() <<  "  Redudant data: "<< str.toLatin1();
         }
@@ -2537,15 +2548,17 @@ bool Parser::loadSimpleList(){
     QStringList lineElement;
     int i=0, j=0, num=0, source=0, target=0, maxNodeCreated=0;
     bool intOK=false;
+    bool nodeNumberingZero = false;
     initEdgeWeight=1.0;
 
     undirected=false;
     arrows=true;
     bezier=false;
 
+    qDebug () << "Parser::loadSimpleList() - check node numbering...";
     while ( !ts.atEnd() )   {
         str= ts.readLine() ;
-        qDebug()<< " str " << str;
+        qDebug()<< "Parser::loadSimpleList() - line: " << endl << str;
         str=str.simplified();
 
         if ( isComment(str) )
@@ -2567,15 +2580,46 @@ bool Parser::loadSimpleList(){
 
         lineElement=str.split(" ");
 
-        qDebug () << " Parser::loadSimpleList() - file lines have different amount of elements...";
+        if (lineElement.contains("0")) {
+            nodeNumberingZero = true;
+            break;
+        }
+
+    }
+
+    if (nodeNumberingZero) {
+        qDebug()<< "Parser::loadSimpleList() - node numbers start from zero ";
+    }
+    else
+        qDebug()<< "Parser::loadSimpleList() - node numbers start from one ";
+
+    ts.seek(0);
+
+    qDebug () << "Parser::loadSimpleList() - reset and read lines...";
+
+    while ( !ts.atEnd() )   {
+        str= ts.readLine() ;
+
+        str=str.simplified();
+
+        qDebug()<< "Parser::loadSimpleList() - line: " << endl << str;
+
+        if ( isComment(str) )
+            continue;
+
+        lineElement=str.split(" ");
+
         i=0;
         for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
             num = (*it1).toInt(&intOK);
-            if ( !intOK ||  num == 0 ) {
-                qDebug()<< "Error! Stumbled upon a zero or an error occured during a string conversion to integer...";
+            if ( !intOK  ) {
+                qDebug()<< "Error! Error occured during a string conversion to integer...";
                 file.close();
                 return false;
             }
+            if (nodeNumberingZero)
+               num =  num + 1;
+
             if (i==0){
                 source = num;
                 qDebug() << "	source node: " << source;

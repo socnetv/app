@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 1.8
+ version: 1.9
  Written in Qt
  
                          graph.h  -  description
@@ -158,7 +158,6 @@ signals:
     /** Signals to MainWindow */
     void updateProgressDialog(int );
     void graphChanged();					//call to update MW widgets
-    void selectedVertex(int);				//notifies MW who is the selected node
 
     void signalFileType (int, QString, int,int, bool);	//notifies MW what we have loaded.
     void statusMessage (QString message);			//updates statusbar message
@@ -181,7 +180,7 @@ signals:
     void setNodeColor(long int, QString);
     void setNodeLabel(long int, QString);
     void drawEdgeReciprocal(int, int);				//call GW to draw the edge as symmetric one
-    void setLinkColor(long int, long int, QString);
+    void changeEdgeColor(long int, long int, QString);
     void addGuideCircle(int, int, int);				//call GW to draw a circular layout line somewhere.
     void addGuideHLine (int);					//call GW to draw a horizontal layout line somewhere.
     void moveNode(int, qreal, qreal);
@@ -289,6 +288,7 @@ public:
                          qreal &degrees2 );
 
     /* EDGES */
+    int enabledEdges();
     void edges();
     float hasArc (const long &v1, const long &v2);
     bool hasEdge (const int &v1, const long int &v2);
@@ -303,8 +303,6 @@ public:
     QString edgeColor (const long int &v1, const long int &v2);
     bool setAllEdgesColor(const QString &color);
 
-    int totalEdges ();
-
     float density();
 
     bool symmetricEdge(int v1, int v2);
@@ -315,7 +313,7 @@ public:
                                const bool considerWeights=true,
                                const bool inverseWeights=false,
                                const bool symmetrize=false );
-    void invertAdjacencyMatrix();
+    bool invertAdjacencyMatrix(const QString &method);
 
 
     /* PRINT OUT TO FILES*/
@@ -324,7 +322,9 @@ public:
     void writeAdjacencyMatrixTo(QTextStream& os);
     void writeAdjacencyMatrix(const QString, const char*);
 
-    void writeInvertAdjacencyMatrix(const QString filename,  const char*);
+    void writeInvertAdjacencyMatrix(const QString &filename,
+                                    const QString &,
+                                    const QString &);
     void writeDistanceMatrix(const QString fn, const char*,
                              const bool considerWeights,
                              const bool inverseWeights,
@@ -389,7 +389,7 @@ public:
                  const bool considerWeights, const bool inverseWeights);
     int diameter(const bool considerWeights, const bool inverseWeights);
     float averageGraphDistance(const bool considerWeights,
-                               const bool inverseWeights);
+                               const bool inverseWeights, const bool dropIsolates);
     int connectedness();
 
     void createDistanceMatrix(const bool centralities=false,
@@ -612,7 +612,7 @@ private:
     float minIC, maxIC, nomIC, denomIC, sumIC, maxIndexIC;
     float minPRP, maxPRP, nomPRC, denomPRC, t_sumPC, t_sumPRP, sumPRP;
     float minPP, maxPP, nomPP, denomPP, sumPP, groupPP;
-    float minCLC, maxCLC, averageCLC, dampingFactor;
+    float minCLC, maxCLC, averageCLC, d_factor;
     int maxNodeCLC, minNodeCLC;
     int classesDP, maxNodeDP, minNodeDP;
     int classesDC, maxNodeDC, minNodeDC;
@@ -630,7 +630,7 @@ private:
 
     /** General & initialisation variables */
 
-    long int m_totalEdges, m_totalVertices, graphDiameter, initVertexSize;
+    long int m_totalVertices, graphDiameter, initVertexSize;
     int initVertexLabelSize, initVertexNumberSize;
 
     int isolatedVertices;
