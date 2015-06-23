@@ -289,6 +289,7 @@ public:
                          qreal &degrees2 );
 
     /* EDGES */
+    int enabledEdges();
     void edges();
     float hasArc (const long &v1, const long &v2);
     bool hasEdge (const int &v1, const long int &v2);
@@ -302,8 +303,6 @@ public:
     void setEdgeColor(const long int &v1, const long int &v2, const QString &color);
     QString edgeColor (const long int &v1, const long int &v2);
     bool setAllEdgesColor(const QString &color);
-
-    int totalEdges ();
 
     float density();
 
@@ -632,7 +631,7 @@ private:
 
     /** General & initialisation variables */
 
-    long int m_totalEdges, m_totalVertices, graphDiameter, initVertexSize;
+    long int m_totalVertices, graphDiameter, initVertexSize;
     int initVertexLabelSize, initVertexNumberSize;
 
     int isolatedVertices;

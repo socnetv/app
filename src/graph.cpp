@@ -502,7 +502,7 @@ void Graph::removeVertex(long int Doomed){
     m_graph.removeAt( indexOfDoomed ) ;
     m_totalVertices--;
     qDebug() << "Graph: Now graph vertices=size="<< vertices() << "="
-             << m_graph.size() <<  " total edges now  " << totalEdges();
+             << m_graph.size() <<  " total edges now  " << enabledEdges();
 
     order=false;
     graphModified=true;
@@ -525,7 +525,6 @@ void Graph::addEdge (int v1, int v2, float weight, QString color, int reciprocal
 
     m_graph [ source ]->addEdgeTo(v2, weight );
     m_graph [ target ]->addEdgeFrom(v1, weight);
-    m_totalEdges++;
 
     if (reciprocal == 1){
         m_graph [ source ]->setReciprocalLinked(true);
@@ -536,13 +535,12 @@ void Graph::addEdge (int v1, int v2, float weight, QString color, int reciprocal
         m_graph [ target ]->setReciprocalLinked(true);
         m_graph [ target ]->addEdgeTo(v1, weight );
         m_graph [ source ]->addEdgeFrom(target, weight);
-        m_totalEdges++;
     }
 
 
     qDebug()<<"Graph: addEdge() now a("<< v1 << ","<< v2<< ") = " << weight
            << " with color "<<  color
-           <<" . Storing edge color..." << ". Total Links " <<m_totalEdges;
+           <<" . Storing edge color..." ;
     m_graph[ source]->setOutLinkColor(v2, color);
 
     graphModified=true;
@@ -578,9 +576,6 @@ void Graph::removeEdge (int v1, int v2) {
     if ( this->hasArc(v2,v1) !=0)
         symmetricAdjacencyMatrix=false;
 
-    m_totalEdges--;
-    if (m_totalEdges<0) //crazy check :)
-        m_totalEdges=0;
     graphModified=true;
 
     emit eraseEdge(v1,v2);
@@ -1057,6 +1052,23 @@ bool Graph::hasEdge (const int &v1, const long &v2) {
 }
 
 
+
+/**
+    Returns |E| of graph
+*/
+int Graph::enabledEdges() {
+
+    int recountedEdges=0;
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        recountedEdges+=(*it)->outEdges();
+    }
+    qDebug() << "Graph::enabledEdges() - edges recounted: " <<  recountedEdges;
+
+    return recountedEdges;
+}
+
+
 void Graph::edges(){
     H_edges::const_iterator it1;
     QList<Vertex*>::const_iterator it;
@@ -1150,21 +1162,6 @@ int Graph::inDegree (int v1) {
 
 
 
-/** 
-    Returns |E| of graph
-*/
-int Graph::totalEdges() {
-
-    int recountedEdges=0;
-    QList<Vertex*>::const_iterator it;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        recountedEdges+=(*it)->outEdges();
-    }
-    qDebug() << "Graph::totalEdges() - m_totalEdges: " << m_totalEdges
-             << ", edges recounted: " <<  recountedEdges;
-
-    return recountedEdges;
-}
 
 
 /**	
@@ -1217,7 +1214,7 @@ float Graph::density() {
     qDebug("Graph: density()");
     int vert=vertices();
     if (vert!=0 && vert!=1)
-        return  (float) totalEdges() / (float)(vert*(vert-1.0));
+        return  (float) enabledEdges() / (float)(vert*(vert-1.0));
     else return 0;
 }
 
@@ -1327,7 +1324,6 @@ void Graph::clear() {
     triadTypeFreqs.clear();
 
     m_totalVertices=0;
-    m_totalEdges=0;
     outboundEdgesVert=0;
     inboundEdgesVert=0;
     reciprocalEdgesVert=0;
@@ -1748,7 +1744,7 @@ void Graph::createDistanceMatrix(const bool centralities,
     TM.resize(m_totalVertices, m_totalVertices);
     XRM.zeroMatrix(m_totalVertices, m_totalVertices);
 
-    int aEdges = totalEdges();
+    int aEdges = enabledEdges();
     //drop isolated vertices from calculations (i.e. std C and group C).
     int aVertices=vertices(dropIsolates);
 
@@ -3931,7 +3927,7 @@ void Graph::prestigePageRank(const bool dropIsolates){
                  << " outLinks (set const): " << outLinks;
     }
 
-    if ( totalEdges() == 0 ) {
+    if ( enabledEdges() == 0 ) {
         qDebug()<< "Graph::prestigePageRank() "
                 <<" - all vertices are isolated and of equal PR. Stop";
         return;
@@ -5114,9 +5110,9 @@ void Graph::createRandomNetScaleFree (const int &n,
         progressCounter++;
         emit updateProgressDialog( progressCounter );
 
-        // no need to multiply by 2, since totalEdges already reports
+        // no need to multiply by 2, since enabledEdges already reports
         // twice the current number of edges in the network
-        sumDegrees =  totalEdges();
+        sumDegrees =  enabledEdges();
 
         newEdges = 0;
 
@@ -10200,7 +10196,7 @@ void Graph::writeAdjacencyMatrix (const QString fn, const char* netName) {
     }
 
     qDebug("Graph: Found a total of %i edge",sum);
-    if ( sum != totalEdges() ) qDebug ("Error in edge count found!!!");
+    if ( sum != enabledEdges() ) qDebug ("Error in edge count found!!!");
     else qDebug("Edge count OK!");
 
     file.close();

@@ -6428,11 +6428,11 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
 
 
 /**
-*	Returns the amount of active edges on the scene.
+*	Returns the amount of enabled/active edges on the scene.
 */
 int MainWindow::activeEdges(){
     qDebug () << "MW::activeEdges()";
-    return activeGraph.totalEdges();
+    return activeGraph.enabledEdges();
 }
 
 
