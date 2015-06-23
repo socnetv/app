@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer 
- version: 1.9-dev
+ version: 1.9
  Written in Qt
 
                         matrix  -  description
@@ -827,7 +827,6 @@ Matrix& Matrix::inverse(Matrix &a)
     if ( ! ludcmp(a,n,indx,d) )
     { //  Decompose the matrix just once.
         qDebug () << "Matrix::inverse() - matrix a singular - RETURN";
-        (this)->zeroMatrix(n,n);
         return *this;
     }
 

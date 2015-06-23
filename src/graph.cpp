@@ -1,6 +1,6 @@
 /******************************************************************************
  SocNetV: Social Network Visualizer
- version: 1.9-dev
+ version: 1.9
  Written in Qt
  
                          graph.cpp  -  description
@@ -10283,21 +10283,20 @@ bool Graph::invertAdjacencyMatrix(const QString &method){
 
     QList<Vertex*>::const_iterator it, it1;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( ! (*it)->isEnabled() )
+        if ( ! (*it)->isEnabled() || (*it)->isIsolated())
             continue;
         j=0;
         for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
-            if ( ! (*it1)->isEnabled() )
+            if ( ! (*it1)->isEnabled() || (*it)->isIsolated() )
                 continue;
             if ( invAM.item(i,j) != 0)
                 isSingular = false;
             j++;
         }
         i++;
-        qDebug() << endl;
     }
 
-    return isSingular;
+    return !isSingular;
 }
 
 
@@ -10318,17 +10317,23 @@ void Graph::writeInvertAdjacencyMatrix(const QString &fn,
     outText.setCodec("UTF-8");
     outText << "-Social Network Visualizer- \n";
     outText << "Invert Matrix of network named: "<< netName<< endl;
-    if (!invertAdjacencyMatrix(method))
-            outText << " The adjacency matrix is singular.";
+    if (!invertAdjacencyMatrix(method)) {
+            outText << endl<< " The adjacency matrix is singular.";
+            file.close();
+            return;
+    }
+    if ( verticesIsolated().count() > 0  )
+            outText << endl<< "Dropped "<< isolatedVertices << " isolated vertices"
+                    << endl<< endl;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( ! (*it)->isEnabled() )
+        if ( ! (*it)->isEnabled() || (*it)->isIsolated() )
             continue;
         j=0;
         for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
-            if ( ! (*it1)->isEnabled() )
+            if ( ! (*it1)->isEnabled() || (*it)->isIsolated() )
                 continue;
             outText << invAM.item(i,j)<< " ";
-            qDebug() << invAM.item(i,j)<< " ";
+            qDebug() << i << "," << j << " = " << invAM.item(i,j);
             j++;
         }
         i++;
