@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 1.9
+ version: 2.0
  Written in Qt
  
                          mainwindow.h  -  description
@@ -44,7 +44,7 @@
 #include "nodeeditdialog.h"
 #include "datasetselectdialog.h"
 
-static const QString VERSION="1.9";
+static const QString VERSION="2.0";
 
 /**
   * This Class is the base class. It sets up the main

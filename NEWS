@@ -4,6 +4,12 @@ Social Networks Visualiser (SocNetV)
 SocNetV News
 -==========-
 
+July 2015
+=========
+- Version 2.0 development starts.
+- New doxygen source documentation 
+- New Windows Installer
+
 June 2015
 =========
 - Version 1.9 released with lots of bugfixes and a faster matrix inverse routine using LU decomposition. 

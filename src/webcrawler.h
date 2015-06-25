@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 1.9
+ version: 2.0
  Written in Qt
  
                          webcrawler.h  -  description
