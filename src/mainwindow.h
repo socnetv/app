@@ -30,11 +30,11 @@
 #define MAINWINDOW_H
 
 
-/// \file mainwindow.h
-///
-/// \brief Documentation for the mainwindow file.
-///
-///
+/** \file mainwindow.h
+
+ \brief Documentation for the mainwindow file.
+
+*/
 
 #include <QMainWindow>
 #include <QGraphicsScene>
@@ -76,12 +76,13 @@ class RandSmallWorldDialog;
 class RandScaleFreeDialog;
 
 
-///
-/// \brief The base window of SocNetV contains all widgets and functionality.
-///
-/// It sets up the main window and provides a menubar, toolbar and statusbar.
-/// For the main view, an instance of class GraphicsWidget is
-/// created which creates a graphics widget.
+/**
+  \brief The base window of SocNetV contains all widgets and functionality.
+
+    It sets up the main window and provides a menubar, toolbar and statusbar.
+    For the main view, an instance of class GraphicsWidget is
+    created which creates a graphics widget.
+ */
 
 
 class MainWindow : public QMainWindow

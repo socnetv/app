@@ -1,0 +1,241 @@
+/** \page gui User Interface overview
+
+\tableofcontents
+
+SocNetV	has  a	simple	Graphical  User	 Interface  (GUI) composed of:
+
+
+- a \ref themenu [menu bar]
+- a \ref toolbar toolbar
+- a \ref dock dock
+- a \ref canvas canvas
+- a  statusbar
+
+
+
+![SocNetV Main Window](./manual/socnetv-main-window-annotated.png)
+
+\section themenu The menu
+
+At the top of the window, there is the menu bar, filled with commands and options,
+organized in 6 menus:
+
+
+
+-  <b>Network: </b> Options to load and save a network, export it, create random nets etc.
+-  <b>Edit: </b> Options to add/remove nodes and edges, change colors, filter edges/isolate nodes, etc.
+-  <b>Layout:</b> Options to apply layout methods, i.e. reposition all nodes according to their centrality.
+-  <b>Analysis:</b> Gives you tools to analyse the active network (density, diameter, centralities, distance matrix, etc).
+-  <b>Options:</b>Allows you to show/hide edges, edge arrows, turn on/off antialiasing, etc.
+
+
+
+\section toolbar The toolbar
+
+Below the menu, the toolbar provides the usual icons: new network creation,
+load a network, save, zoom in-out, rotate, switch between relations (or add a new one)
+and display help messages for the menu options.
+
+
+
+The middle part of the window is occupied by the dock/toolbar (left-side)
+and a virtual "canvas" (right-side) where network nodes and edges appear.
+
+
+\section dock The dock/toolbox
+
+The toolbox, on the left of the window, has two tabs: Controls and Statistics.
+
+\subsection dockControls Controls tab
+
+At the top of the Controls tab there are 4 buttons to edit the network (add/remove node, add/remove edge).
+
+Below them, there are two groups of options to Analyze and Visualize the loaded network.
+
+In the Analyze group, options are categorized in four submenus:
+
+- Distances: Here you can select options to compute distances, geodesics, eccentricity and diameter
+- Connectivity: In this menu there are options for connectivity, walks and reachability
+- Clusterability: Click to compute cliques, triad census etc.
+- Prominence: This menu allows you to select and compute one of the many Centrality and Prestige indices that SocNetV supports.
+
+When you select an option, SocNetV computes what you asked and displays the report in a new window.
+
+\note All reports are automatically saved in a directory called "socnetv-data" in your HOME folder. Of course, you can edit the report as you wish and save it to another filename. 
+
+![SocNetV Analysis](./manual/socnetv-analysis.jpg)
+
+In the Visualize group, there are menus and checkboxes to apply visualization
+layouts to the current network. 
+
+With one click, SocNetV can visualize the network in intuitive ways:
+
+- By prominence indices. Here you can select a prominence metric (i.e. Betweenness) and a layout type (i.e. circular). Hit "Apply" and voila!
+- By dynamic models (i.e. Force directed) 
+
+
+Finally, at the end of the toolbox there are options to toggle node sizes according to their inDegree/outDegree and enable/disable layout guidelines.
+
+
+\subsection dockStatistics Statistics tab
+
+The Statistics tab is mainly occupied by informative LCDs.
+
+These display statistics for the active network (i.e. node and edges counters, density, counters of inLinked/outLinked nodes, etc) as well as the selected node (its number, in-Links and out-Links).
+
+
+![Main Window annotated](./manual/socnetv-main-window-annotated-2.png)
+
+
+\section  canvas The canvas
+
+The canvas is the main area of interaction. You can:
+
+- point and click on a node/edge to select it, left-click to open context menu 
+- double-click on empty space to add a node, 
+- middle-click on a node to add a directed edge from it.
+
+The initial background color is set to "white", but you can changed it from the Edit -> Colors menu.
+
+Below, we describe how to work with SocNetV.
+
+
+\section  howto Working with SocNetV
+
+\subsection  NetworkCreate Network creation
+
+To start working with SocNetV you need network data, i.e. a graph of nodes (vertices) and links (edges).
+
+SocNetV enables you to create networks by point and clicking on the canvas or load them from files.
+
+There are multiple ways to create or edit nodes and links in SocNetV:
+
+- from the menus 
+- from the dock buttons, or
+- by right/left/middle-clicking on the canvas. 
+
+
+
+\subsection NodeCreate Creating and handling nodes
+
+To create  a new node, you can double-click on the canvas or click on the "Add node" button. 
+
+You can move a node by left-clicking on it and moving the mouse.
+Right-click on a node to display a context menu with options to delete it, add link, change label, size or color etc.
+
+All nodes by default are tagged by their node number. 
+
+If you want to display the labels as well, enable the option in the menu Options -> Node -> Display Labels.
+
+\warning In large networks, it is sometimes difficult to locate a specific node. In such cases, you can press Ctrl+F to find a desired node (by nodenumber or label). SocNetV will highlight that node for you. Press Ctrl+F again to undo this.
+
+When you right-click on  a node, a context menu appears. From there you can remove the node or select Node Properties to change its color, label, size, shape, etc.  A similar menu appears when you right click on a \ref LinkCreate edge.
+
+SocNetV  supports many  kinds  of node shapes, i.e rectangles, diamond, ellipse, circle, etc. To change the shape of a node, right-click on it and in the context menu select Node Properties.
+
+If you want to select more than one node, press and hold down the left mouse button on the canvas. By moving your mouse, a rectangle will be drawed. All nodes inside this rectangle will be selected the moment you release the mouse button. 
+
+\warning In networks with thousands of edges, the group selection process can be slow...
+
+
+\subsection LinkCreate Creating and editing edges 
+
+To create a new directed edge, middle-click on the source node and then middle-click again on the target	node. By default, all new links created this way have weight 1.
+
+If your mouse doesn't have middle button (did you try pressing the mouse wheel?), or you find it difficult, you can right-click on the source node, then select "Create Edge".
+
+In the dialog, just enter the target node number and the desired edg weight. Alternatively, you can click on the "Add edge" button from the dock. In that case, you will be asked for both the source and the target node numbers (and the edge weight). 
+
+\note When you create the first edge of a network, you will be asked to label the current \ref Relations relationship.
+
+Edge Creation Example: 
+
+Say you created two nodes, numbered 1 and 2, on the canvas. To create a new directed edge from node 1 to node 2, middle click on node 1 (the mouse pointer will become a hand) and afterwards middle-click on node 2. A new line will be drawn instantly. If you want an undirected edge (edge) repeat the process from node 2 to node 1.
+
+Remember, each edge you create this way has the default weight 1 and black colour.
+
+Right-click on an edge to display a context menu with options to delete it, change weight, color etc.
+
+\note When you click on an edge, SocNetV highlights the source and target nodes for your convienience. Click again the edge to undo this.
+
+
+
+\section Relations Relations
+
+The first time you create an edge in your network, the application asks you to enter a name (or label) for the new relation between actors/nodes.
+
+A relation is a collection of ties of a specific kind between the network actors.
+
+For instance, you might want to label a relation "friendship" if the edges between nodes refer to the set of friendships between pairs of actors.
+
+
+Starting from version 1.3, SocNetV supports multirelational networks, that is networks with ties of different kind between actors. 
+
+You can add more relations to your network by pressing the + button in the toolbar.
+
+You can switch between relations by clicking the previous and next arrow buttons in the toolbar.
+
+\note  While modifying a multirelational network, you can add more nodes but you may not remove a node from the network.
+
+\warning Each time you save a network, SocNetV saves the active relation only. You can save another relation by moving to it and then save again to another file.
+
+ 
+
+\section basicfunction Basic functions in Network Menu
+
+
+
+\subsection LoadNetwork Loading a network
+
+The easiest way to start working with SocNetV is when you have already a network in a supported format (see \ref formats [Formats]. 
+
+For instance, you might have another program (for example a simulation) creating adjacency networks which you want to visualise. In that case, from the SocNetV's menu go File > Load. In the dialogue that will appear, navigate to the desired folder and select the appropriate network file. SocNetV will automatically recognise the format and, if it is supported, it will visualise the network.
+
+
+\subsection SaveNetwork Saving the active network
+
+To save the active network, just press Ctrl+S or click on the menu entry File > Save. By default, it will be saved in GraphML format. 
+
+
+If you like, you can export it to another supported format (menu Network > Export To). Note that some \ref formats [Formats] are supported only for loading - not for saving. 
+
+\note Each time you save a network, SocNetV saves the active relation.
+
+
+
+\subsection menuAdjacency   View the adjacency matrix
+
+The adjacency matrix of a network is a matrix where each element a(i,j) is equal to the weight of the edge from node i to node j.  If the nodes are not connected, then a(i,j)=0. 
+
+To view the adjacency matrix of a network, press F6.
+
+By default, SocNetV displays the adjacency matrix as integer-valued only (although we do allow float weights).
+
+
+
+\subsection menuDatasets  Known data sets
+
+SocNetV can recreate known data sets. \ref generate [Read more].
+
+\subsection menuRandom   Random network creation
+SocNetV can create a random network for you. \ref generate [Read more].
+
+
+
+\subsection menuWebCrawler   Web Crawler
+SocNetV includes a simple web crawler. \ref generate [Read more].
+
+
+\subsection menuExport   Printing and Exporting
+
+To print the network directly to your printer, press Ctrl+P. 
+
+Keep in mind, that SocNetV follows the "what you see is what you print" principle:  
+we print what is viewable in the canvas, i.e. if you zoom-in to a network, the application will only print that specific network portion. So, you might need to zoom-out enough so that the whole network is viewable and therefore printable.  
+
+
+Except printing, you can export your work into raster (BMP and PNG) images, as well as PDF documents. The latter are vector-based, and therefore offer the best quality. Again, keep in mind the rule "what you see is what you print". 
+
+
+
+*/

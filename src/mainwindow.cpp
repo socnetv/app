@@ -3414,15 +3414,7 @@ void MainWindow::userCodec(const QString m_fileName,
 }
 
 
-/**
- * @brief MainWindow::loadNetworkFile
- * Main network file loader method
- * First, inits everything to default values.
- * Then calls activeGraph::loadGraph to actually load the network...
- * @param m_fileName
- * @param m_fileFormat
- * @return
- */
+
 bool MainWindow::loadNetworkFile(const QString m_fileName,
                                  const QString m_codecName,
                                  const int m_fileFormat )

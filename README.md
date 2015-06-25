@@ -1,6 +1,11 @@
-# SocNetV -A Social Network Visualizer
+SocNetV -A Social Network Visualizer
+====================================
 
-# 1. Overview
+
+\tableofcontents
+
+1. Overview
+------------
 
 Social Network Visualizer (SocNetV) is a cross-platform, user-friendly tool 
 for the analysis and visualization of Social Networks. 
@@ -48,7 +53,8 @@ same license.
 The documentation is also Free, licensed under the Free Documentation License (FDL).
 
 
-# 2. Availability & License
+2. Availability & License
+-------------------------
 
 Official Website: http://socnetv.sourceforge.net
 
@@ -70,7 +76,8 @@ See section 6 (bug reporting) below.
 
 
 
-# 3. Installation
+3. Installation
+---------------
 
 You can install SocNetV by:
 
