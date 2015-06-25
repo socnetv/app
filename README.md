@@ -1,8 +1,6 @@
-SocNetV -A Social Network Visualizer
--------------------------------------
+# SocNetV -A Social Network Visualizer
 
-1. Overview
------------
+# 1. Overview
 
 Social Network Visualizer (SocNetV) is a cross-platform, user-friendly tool 
 for the analysis and visualization of Social Networks. 
@@ -50,8 +48,7 @@ same license.
 The documentation is also Free, licensed under the Free Documentation License (FDL).
 
 
-2. Availability & License
--------------------------
+# 2. Availability & License
 
 Official Website: http://socnetv.sourceforge.net
 
@@ -73,8 +70,7 @@ See section 6 (bug reporting) below.
 
 
 
-3. Installation
----------------
+# 3. Installation
 
 You can install SocNetV by:
 
@@ -91,7 +87,7 @@ Please note that SocNetV uses QtWebKit to display online help.
 QtWebKit has been added to Qt from version 4.4, which means you can't compile 
 SocNetV in distros with older releases of Qt.
 
-a) Compile from Source Code
+## a) Compile from Source Code
 	
 To compile from source code, download the tarball archive with the source code 
 of the latest SocNetV version (you probably already have this :P). 
@@ -118,7 +114,7 @@ If everything is ok, then you can run SocNetV by entering:
 socnetv
 
 
-b) Install a binary package or executable (Linux/Mac/Windows)
+## b) Install a binary package or executable (Linux/Mac/Windows)
 
 To install SocNetV from a binary package for Linux or an executable for 
 Windows, check http://socnetv.sourceforge.net/downloads.html and see if 
@@ -147,8 +143,7 @@ You can also find versions for Mac on the Internet, although these are
 not supported. See: http://pdb.finkproject.org/pdb/package.php/socnetv-mac
 
 
-4. Command Line Options
------------------------
+# 4. Command Line Options
 	
 SocNetV is primarily a GUI program. Nevertheless, some command line options 
 are available. Type:
@@ -163,8 +158,7 @@ are available. Type:
 
 
 
-5. Usage 
---------
+# 5. Usage 
 
 For usage documentation, see online help.
 
@@ -174,15 +168,13 @@ There are some example networks inside the /usr/local/doc/socnetv/net folder.
 Just press Ctrl+O, go there  and choose one file.
 
 
-6. Bug reporting
-----------------
+# 6. Bug reporting
 
 Please, file any bug reports in our bug tracker:
 https://bugs.launchpad.net/socnetv/+filebug
 
 
-7. Note to packagers
---------------------
+# 7. Note to packagers
 
 Packagers: please note that the SocNetV manual is copied to 
 $(DESTDIR)$(prefix)/doc/$(name)/manual

@@ -109,8 +109,7 @@ QString Edge::color() const{
 }
 
 /**
- * @brief Edge::colorToPajek
- * Called from Graph::saveGraphToPajekFormat()
+ * @brief Called from Graph::saveGraphToPajekFormat()
  * @return
  */
 QString Edge::colorToPajek() {
@@ -121,8 +120,7 @@ QString Edge::colorToPajek() {
 }
 
 /**
- * @brief Edge::setWeight
- * Called from MW when user wants to change an edge's weight.
+ * @brief Called from MW when user wants to change an edge's weight.
     Updates both the width and the EdgeWeight
  * @param w
  */
@@ -178,8 +176,7 @@ int Edge::targetNodeNumber() {
 
 
 /**
- * @brief Edge::addWeight
- * Called from EdgeWeight objects to 'connect' them to this edge.
+ * @brief Called from EdgeWeight objects to 'connect' them to this edge.
  * @param canvasWeight
  */
 void Edge::addWeight (EdgeWeight* canvasWeight  )  {
@@ -196,8 +193,7 @@ void Edge::clearWeightList(){
 
 
 /**
- * @brief Edge::adjust
- * leaves some empty space (offset) from node -
+ * @brief Leaves some empty space (offset) from node -
  * make the edge weight appear on the centre of the edge
  */
 void Edge::adjust(){
@@ -224,8 +220,7 @@ void Edge::adjust(){
 
 
 /**
- * @brief Edge::shape
- * Returns the shape of this edge as a QPainterPath in local coordinates.
+ * @brief  Returns the shape of this edge as a QPainterPath in local coordinates.
  * The shape is used for many things, including collision detection, hit tests,
  * and for the QGraphicsScene::items() functions.
  * The default implementation calls boundingRect() to return a simple rectangular shape,
@@ -253,8 +248,7 @@ QPainterPath Edge::shape () const {
 
 
 /**
- * @brief Edge::boundingRect
- * Defines the outer bounds of the edge as a rectangle;
+ * @brief Defines the outer bounds of the edge as a rectangle;
  * All painting will be restricted to inside the edge's bounding rect.
  * Qt uses this bounding rect to determine whether the edge requires redrawing.
  * @return

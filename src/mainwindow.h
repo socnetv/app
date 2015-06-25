@@ -26,9 +26,15 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef APP_H
-#define APP_H
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
 
+
+/// \file mainwindow.h
+///
+/// \brief Documentation for the mainwindow file.
+///
+///
 
 #include <QMainWindow>
 #include <QGraphicsScene>
@@ -46,12 +52,6 @@
 
 static const QString VERSION="2.0";
 
-/**
-  * This Class is the base class. It sets up the main
-  * window and provides a menubar, toolbar and statusbar.
-  * For the main view, an instance of class GraphicsWidget is
-  * created which creates a graphics widget.
-  */
 
 using namespace std;
 
@@ -74,6 +74,14 @@ class PreviewForm;
 class RandErdosRenyiDialog;
 class RandSmallWorldDialog;
 class RandScaleFreeDialog;
+
+
+///
+/// \brief The base window of SocNetV contains all widgets and functionality.
+///
+/// It sets up the main window and provides a menubar, toolbar and statusbar.
+/// For the main view, an instance of class GraphicsWidget is
+/// created which creates a graphics widget.
 
 
 class MainWindow : public QMainWindow
@@ -103,8 +111,16 @@ public:
     bool showNumbersInsideNodes();
     bool showNumbers();
 
-    // Main network file loader methods
+
+    /// \brief  Main network file loader methods
     bool previewNetworkFile(QString , int );
+
+    ///
+    /// \brief Main network file loader method
+    /// First, inits everything to default values.
+    /// Then calls activeGraph::loadGraph to actually load the network...
+    /// \param m_fileName
+    /// \param m_fileFormat
     bool loadNetworkFile ( const QString, const QString, const int );
 
     int activeEdges();
@@ -122,7 +138,12 @@ public:
 
 public slots:
     //FILE MENU
+
+    /// \brief        Creates a new network
     void slotCreateNew();
+
+    /// \brief  Prompts the user a directory dialogue to choose a file from.
+    /// Calls previewNetworkFile()
     void slotChooseFile();
     void slotImportGraphML();
     void slotImportPajek();

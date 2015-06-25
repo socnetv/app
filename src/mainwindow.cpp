@@ -2900,9 +2900,6 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
 
 
 
-/**
-    Creates a new network
-*/
 void MainWindow::slotCreateNew() {
     slotFileClose();
 }
@@ -2932,10 +2929,7 @@ void MainWindow::setLastPath(QString filePath) {
 }
 
 
-/**
-    Prompts the user a directory dialogue to choose a file from.
-    Calls previewNetworkFile()
-*/
+
 void MainWindow::slotChooseFile() {
 
     if (firstTime && fileFormat == -500 ) {
