@@ -120,20 +120,22 @@ There are multiple ways to create or edit nodes and links in SocNetV:
 
 To create  a new node, you can double-click on the canvas or click on the "Add node" button. 
 
-You can move a node by left-clicking on it and moving the mouse.
-Right-click on a node to display a context menu with options to delete it, add link, change label, size or color etc.
+You can move a node by left-clicking on it and dragging it with mouse.
 
-All nodes by default are tagged by their node number. 
+Right-click on a node to display a context menu with options to delete it, add edge, change node properties (see below). To change the color, size or label of a node, right-click on it and in the context menu select Node Properties. 
 
-If you want to display the labels as well, enable the option in the menu Options -> Node -> Display Labels.
+All nodes by default are tagged by their node number. If you want to display the labels as well, enable the option in the menu Options -> Node -> Display Labels.
 
 \warning In large networks, it is sometimes difficult to locate a specific node. In such cases, you can press Ctrl+F to find a desired node (by nodenumber or label). SocNetV will highlight that node for you. Press Ctrl+F again to undo this.
 
-When you right-click on  a node, a context menu appears. From there you can remove the node or select Node Properties to change its color, label, size, shape, etc.  A similar menu appears when you right click on a \ref LinkCreate edge.
+When you right-click on  a node, a context menu appears. From there you can remove the node, add an edge or select Node Properties to change its color, label, size, shape, etc.  A similar menu appears when you right click on an edge.
 
-SocNetV  supports many  kinds  of node shapes, i.e rectangles, diamond, ellipse, circle, etc. To change the shape of a node, right-click on it and in the context menu select Node Properties.
+![Node Properties dialog](http://socnetv.sourceforge.net/data/uploads/screenshots/17/socnetv-1.7-node-properties.png)
 
-If you want to select more than one node, press and hold down the left mouse button on the canvas. By moving your mouse, a rectangle will be drawed. All nodes inside this rectangle will be selected the moment you release the mouse button. 
+From the Node Properties dialog, you can enter a node label, change the node size (and "value" in future versions), edit the node color and select a proper node shape. SocNetV  supports many  kinds  of node shapes, i.e rectangles, diamond, ellipse, circle, etc.  Click OK and all your changes will be done in one step. For instance clicking on the red color button will bring up a nice Colors dialog where you can select every possible color.
+
+<b>Group select</b>
+If you want to select more than one node, press and hold down the left mouse button on the canvas. By moving your mouse, a rectangle will be drawed. All nodes inside this rectangle will be selected the moment you release the mouse button. You can also edit multiple selected nodes at once.  Left-click on the canvas and drag to make a selection area. Then right click on one of the selected nodes to open the Node Properties dialog for all of them. Any change you make will be applied to all selected nodes.
 
 \warning In networks with thousands of edges, the group selection process can be slow...
 
@@ -187,9 +189,26 @@ You can switch between relations by clicking the previous and next arrow buttons
 
 \subsection LoadNetwork Loading a network
 
-The easiest way to start working with SocNetV is when you have already a network in a supported format (see \ref formats [Formats]. 
+The easiest way to start working with SocNetV is when you have already network data saved in a supported format (see \ref formats [Formats]. 
 
-For instance, you might have another program (for example a simulation) creating adjacency networks which you want to visualise. In that case, from the SocNetV's menu go File > Load. In the dialogue that will appear, navigate to the desired folder and select the appropriate network file. SocNetV will automatically recognise the format and, if it is supported, it will visualise the network.
+For instance, you might have another program (for example a simulation) creating adjacency networks which you want to visualise. In that case, from the SocNetV's menu go to File > Load. In the dialogue that will appear, navigate to the desired folder and select the appropriate network file. 
+
+Once you select a file, SocNetV will first display it in a File Previewer window. This allows you to select -if you need to- a specific codepage for that file.  You might need this feature due to the different codepages used by the Windows, Linux  and Mac operating systems. For example, say you use SocNetV in Mac OS X and you want to open a Windows network file containing non-Latin characters (such as é or some curillic "кЧДЛХКЮ"). To properly open that file you need to select its original codepage, i.e. KOI8-R. That's what File Previewer allows you to do. 
+
+![From File Previewer you can select a specific codepage for the file](http://socnetv.sourceforge.net/data/uploads/screenshots/17/socnetv-1.7-previewer.png)
+
+Of course, if the file has been created in the same OS as yours or by SocNetV you do not need to select another codepage, just press OK to load the network in the canvas.
+
+\note The default codepage for loading files is UTF-8. Select another codepage only if you know that the file comes from Windows or has non-latin characters.
+
+\note Linux and Mac users should always use UTF-8, except when they try to load files saved in Windows computers.
+
+\note Windows users should probably use Windows-1253, except when they want to load files saved in Mac/Linux or files containing non-latin chars (i.e. Russian). 
+
+\note Russian Windows users should probably use KOI8-R encoding, except when reading files saved from SocNetV (UTF-8)
+
+
+
 
 
 \subsection SaveNetwork Saving the active network
@@ -201,6 +220,7 @@ If you like, you can export it to another supported format (menu Network > Expor
 
 \note Each time you save a network, SocNetV saves the active relation.
 
+\note By default, UTF-8 is used for writing files. This means SocNetV by default uses UTF-8 codec for all output textstreams, such as network files.
 
 
 \subsection menuAdjacency   View the adjacency matrix

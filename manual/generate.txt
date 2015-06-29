@@ -108,30 +108,34 @@ Nodes are arbitrarily linked with each other other.
 
 
 
-\subsection WebCrawler      Web Crawler
+\section WebCrawler      Web Crawler
 
 SocNetV includes a simple web crawler, which consists of two parts:
 a spider and a parser.
 
 The spider visits a given initial URL (i.e. a website or a webpage) and downloads its HTML code. 
+
 The parser scans the code for 'href' links to other pages (internal or external)
 and adds them to a queue of URLs (called frontier).
+
 As URLs are added in the queue, the spider visits them and downloads their HTML
 which is scanned for more links by the parser, and so on...
 The end result is the 'network' of all visited webpages as nodes and their real links as edges.
-
-Please note that the parser searches for 'href' links only in the body section of the HTML code.
-
 
 
 To start the web crawler, go to menu Network > Web Crawler or press Shift+C.
 A dialog will appear, where you must enter the initial web page (seed).
 
+![Web crawler dialog](http://socnetv.sourceforge.net/data/uploads/screenshots/16/socnetv-1.6-crawler-1.jpg)
+
 
 
 You can also set the maximum nodes/pages (default 600) and what kind of links to
 crawl: internal, external or both. 
-By default the spider will crawl both internal and external links.
+
+\note By default the spider will crawl both internal and external links.
+
+\warning The parser searches for 'href' links only in the body section of the HTML code.
 
 
 */
