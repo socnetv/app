@@ -391,7 +391,8 @@ bool Parser::loadDL(){
             lineElement=str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
 
             if (lineElement.count() < aNodes ) {
-                qDebug() << "This line has fewer than " << aNodes << " edges";
+                qDebug() << "This line has " << lineElement.count()
+                         << " elements, expected " << aNodes << " - appending next line";
                 prevLineStr=str;
                 continue;
             }
