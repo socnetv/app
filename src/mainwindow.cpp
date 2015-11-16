@@ -2697,7 +2697,7 @@ void MainWindow::initView() {
     graphicsWidget->setFocusPolicy(Qt::StrongFocus);
     graphicsWidget->setFocus();
 
-    this->resize(1024,768);
+    this->resize(1280,900);
 
     //set minimum size of canvas
 
