@@ -320,7 +320,8 @@ QPen Edge::pen() const {
 void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *){
     if (!source || !target)
         return;
-    Q_UNUSED(option); //	painter->setClipRect( option->exposedRect );
+    //Q_UNUSED(option);
+    painter->setClipRect( option->exposedRect );
     // qDebug() <<"@@@ Edge::paint()";
 
     //    qDebug()<<endl <<"@@@ Edge::paint() edge from "<< sourceNodeNumber()
