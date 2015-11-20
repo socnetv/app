@@ -1,6 +1,6 @@
 /******************************************************************************
  SocNetV: Social Network Visualizer
- version: 1.9
+ version: 2.0
  Written in Qt
  
                          graph.cpp  -  description
@@ -117,8 +117,7 @@ void Graph::changeRelation(int relation){
 
 
 /**
- * @brief Graph::addRelationFromUser
- * Called from MW to add a relation and change to that new relation
+ * @brief Called from MW to add a relation and change to that new relation
  * @param newRelation
  */
 void Graph::addRelationFromUser(QString newRelation){
@@ -129,8 +128,7 @@ void Graph::addRelationFromUser(QString newRelation){
 }
 
 /**
- * @brief Graph::addRelationFromGraph
- * Called when creating random networks
+ * @brief Called when creating random networks
  * emits addRelationToMW
  * @param newRelation
  */
@@ -141,8 +139,7 @@ void Graph::addRelationFromGraph(QString newRelation) {
 }
 
 /**
- * @brief Graph::addRelationFromParser
- * Called by file parser to add a new relation
+ * @brief Called by file parser to add a new relation
  * emits addRelationToMW
  * @param newRelation
  */
@@ -153,7 +150,7 @@ void Graph::addRelationFromParser(QString newRelation) {
 }
 
 /**
- * @brief Graph::currentRelation
+ * @brief Returns current relation index
  * @return int current relation index
  */
 int Graph::currentRelation(){
@@ -260,10 +257,9 @@ void Graph::setCanvasDimensions(int w, int h){
 
 
 /**
- * @brief Graph::createEdge
-    Called from homonymous signal of Parser class.
-    Adds an Edge to the Graph, then emits drawEdge() which calls
+ * @brief Adds an Edge to the Graph, then emits drawEdge() which calls
     GraphicsWidget::addEdge() to draw the new edge.
+    Called from homonymous signal of Parser class.
     Also called from MW when user clicks on the "add link" button
     Alse called from GW (via createEdge() below) when user middle-clicks.
  * @param v1
@@ -343,10 +339,10 @@ void Graph::createEdgeWebCrawler (int source, int target){
 
 
 /**
- * @brief Graph::removeDummyNode
+ * @brief Deletes any dymmy nodes
  * This is called from loadPajek method of Parser in order to delete any
  * redundant (dummy) nodes.
- * @param i
+ * @param [in] i number of node
  */
 void Graph::removeDummyNode(int i){
     qDebug("**Graph: RemoveDummyNode %i", i);
@@ -357,8 +353,7 @@ void Graph::removeDummyNode(int i){
 
 
 /**
- * @brief Graph::addVertex
- * Adds a Vertex named v1, valued val, sized nszm colored nc, labeled nl,
+ * @brief  Adds a Vertex named v1, valued val, sized nszm colored nc, labeled nl,
  * labelColored lc, shaped nsp, at point p.
  * This method is called by createVertex() method
  * @param v1
@@ -405,7 +400,7 @@ void Graph::addVertex (
 
 
 /**
-    updates MW  with the file type (0=nofile, 1=Pajek, 2=Adjacency etc)
+    Updates MW  with the file type (0=nofile, 1=Pajek, 2=Adjacency etc)
 */
 void Graph::setFileType (
         int type, QString networkName, int aNodes, int totalLinks, bool undirected)
@@ -419,8 +414,9 @@ void Graph::setFileType (
 
 
 
-/**	Returns the name of the last vertex.
-    Used by slotRemoveNode of MW
+/**
+ * Returns the name of the last vertex.
+   Used by slotRemoveNode of MW
 */
 int Graph::lastVertexNumber() {
     if (m_totalVertices>0)

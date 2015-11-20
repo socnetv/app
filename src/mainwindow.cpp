@@ -1,6 +1,6 @@
 /***************************************************************************
  SocNetV: Social Network Visualizer
- version: 1.9
+ version: 2.0
  Written in Qt
 
 -                           mainwindow.cpp  -  description
@@ -2697,7 +2697,7 @@ void MainWindow::initView() {
     graphicsWidget->setFocusPolicy(Qt::StrongFocus);
     graphicsWidget->setFocus();
 
-    this->resize(1024,768);
+    this->resize(1280,900);
 
     //set minimum size of canvas
 
@@ -2900,9 +2900,6 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
 
 
 
-/**
-    Creates a new network
-*/
 void MainWindow::slotCreateNew() {
     slotFileClose();
 }
@@ -2932,10 +2929,7 @@ void MainWindow::setLastPath(QString filePath) {
 }
 
 
-/**
-    Prompts the user a directory dialogue to choose a file from.
-    Calls previewNetworkFile()
-*/
+
 void MainWindow::slotChooseFile() {
 
     if (firstTime && fileFormat == -500 ) {
@@ -3420,15 +3414,7 @@ void MainWindow::userCodec(const QString m_fileName,
 }
 
 
-/**
- * @brief MainWindow::loadNetworkFile
- * Main network file loader method
- * First, inits everything to default values.
- * Then calls activeGraph::loadGraph to actually load the network...
- * @param m_fileName
- * @param m_fileFormat
- * @return
- */
+
 bool MainWindow::loadNetworkFile(const QString m_fileName,
                                  const QString m_codecName,
                                  const int m_fileFormat )
@@ -8336,7 +8322,11 @@ void MainWindow::slotHelp(){
 */
 void MainWindow::slotHelpAbout(){
     int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
+<<<<<<< HEAD
 QString BUILD="Tue Jun 23 18:52:00 EEST 2015";
+=======
+QString BUILD="Thu Jun 25 10:42:08 EEST 2015";
+>>>>>>> develop
     QMessageBox::about( this, "About SocNetV",
                         "<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
                         "<p><b>Version</b>: " + VERSION + "</p>"

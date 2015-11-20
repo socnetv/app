@@ -1,0 +1,141 @@
+/** \page generate Network Generator
+
+\tableofcontents
+
+\section Datasets      Known data-sets
+
+SocNetV can recreate one of the following known social network data-sets:
+
+- Krackhardt: High-tech managers (advice), 24 actors
+- Krackhardt: High-tech managers (friendship), 24 actors
+- Krackhardt: High-tech managers (Reports To), 24 actors
+- Padgett: Florentine Families (marital relationship), 16 actors
+- Padgett: Florentine Families (business relationship), 16 actors
+- Zachary: Karate Club (simple ties), 34 actors
+- Zachary: Karate Club (weighted ties), 34 actors
+- Bernard: Killworth Fraternity (multirelational), 58 actors
+- Galaskiewicz: CEOs and clubs (affiliation data)
+- Freeman's EIES networks (multirelational, 32 actors)
+- Freeman: EIES network, at time-1, 48 actors
+- Freeman: EIES network, at time-2, 48 actors
+- Freeman: EIES network, number of messages, 48 actors
+- Freeman: The 34 possible graphs with N=5 (as multirelational), 5 actors
+- Mexican Power Network in the 1940s (list format)
+- Knocke: Bureacracies Information Exchange Network, 10 actors
+- Stephenson and Zelen (1989): Network of 40 AIDS patiens (sex relationship)
+- Stephenson and Zelen (1989): Information Centrality test dataset, 5 actors
+- Wasserman and Faust: star, circle and line graphs of 7 actors (multirelational)
+- Wasserman and Faust: Countries Trade (basic manufactured goods), 24 actors
+            
+
+From File menu select "Create known data set" or press F7.
+
+A dialog will appear where you select one of the data-sets above.
+
+Press OK and the network will be displayed in the canvas.
+
+
+
+\section Random      Random network creation
+
+SocNetV can create a random network for you. At the moment, it can create the following types of random networks:
+
+
+- <b>Scale-free</b>
+- <b>Small world</b>
+- <b>Erdos-Renyi</b>
+- <b>Ring lattices</b>
+- <b>d-regular</b>
+
+
+\subsection RandomSF Scale-free
+SocNetV generates random scale-free networks of <span style=" font-style:italic;">n</span>
+nodes according to the Barabási–Albert (BA) model which uses a preferential attachment mechanism.
+
+The algorithm starts with the given \f$ m_0 \f$ connected nodes.
+
+In each step a single new node is added, along with \f$ m \f$ edges to existing nodes.
+
+The probability that the new node will connect to an existing node \f$ i \f$
+ is:
+\f[ p_i = \frac { (α + d_i ^ p) } {  \sum_j {d_j} } \f]
+
+where: 
+\f$ α \f$ the  initial 'attractiveness' of each node,
+\f$ d_i \f$ the degree of node \f$ i \f$
+\f$ \sum_j {d_j}  \f$  the sum of degrees of all pre-existing nodes \f$ j  \f$
+
+
+ if \f$ α = 0 \f$ and \f$ p = 1 \f$ then the preferential attachment is linear (BA model).
+
+
+\subsection RandomSW      Small Worlds
+SocNetV creates small worlds using the Watts and Strogatz model.
+According to that model, a 'small world' is a random network with short average path lengths and high clustering.
+
+Given the desired number of nodes N, the mean degree K (assumed to be an even integer),
+and a special parameter \f$  \beta \f$, satisfying \f$  0 \le \beta \le 1 \f$
+and \f$  N\gg K \gg \ln(N)\gg 1 \f$, the model constructs an undirected graph with N nodes and
+\f$  \frac{NK}{2} \f$ edges in the following way:
+
+- Construct a regular ring lattice, a graph with \f$  N \f$ nodes each connected to \f$  K \f$ neighbors, \f$  K/2 \f$ on each side.
+- 
+For every node \f$ n_i=n_0,\dots, n_{N-1} \f$ take every edge \f$ (n_i, n_j) \f$ with \f$ i < j \f$, and rewire it with probability \f$ \beta \f$. Rewiring is done by replacing \f$ (n_i, n_j) \f$ with \f$ (n_i, n_k) \f$ where \f$ k \f$ is chosen with uniform probability from all possible values that avoid self-loops (\f$ k \ne i \f$) and link duplication (there is no edge \f$ (n_i, n_{k'}) \f$ with \f$ k' = k \f$ at this point in the algorithm).
+
+
+From the menu Network select Create Random Network > Small World.
+
+A dialog will appear where you can enter the number of nodes N, their mean degree K and a rewiring probability \f$  \beta \f$. 
+
+
+\subsection RandomER      Erdos-Renyi networks
+According to G(n, p) model (Erdos-Renyi), a random network is created by connecting nodes randomly. 
+Each edge is included in the graph with equal probability P, independently of the other edges.
+From the menu Network select Create Random Network > Erdos-Renyi (or press Shift+R). 
+You will be asked for the number of nodes and an edge probability. 
+
+\subsection RandomER      Ring lattices
+
+Ring lattices (or physicist's lattices) are 'random' networks where all nodes are positioned in a ring.
+Each one has the same even degree (number of edges) d with her "neighbourhood", namely she is linked with the d/2 nodes before and d/2 nodes after her.
+For instance in a 4-lattice of 10 nodes, node 6 will be linked with 4, 5, 7 and 8. 
+To create a ring lattice network click Network > Create Random Network > Ring Lattice (or press Shift+L). 
+You will be asked for the number of nodes and the degree of each node.
+
+\subsection RandomRegular      d-regular networks
+These are random network where each node have the same number of "neighbours", aka the same degree d.
+Nodes are arbitrarily linked with each other other. 
+
+
+
+\section WebCrawler      Web Crawler
+
+SocNetV includes a simple web crawler, which consists of two parts:
+a spider and a parser.
+
+The spider visits a given initial URL (i.e. a website or a webpage) and downloads its HTML code. 
+
+The parser scans the code for 'href' links to other pages (internal or external)
+and adds them to a queue of URLs (called frontier).
+
+As URLs are added in the queue, the spider visits them and downloads their HTML
+which is scanned for more links by the parser, and so on...
+The end result is the 'network' of all visited webpages as nodes and their real links as edges.
+
+
+To start the web crawler, go to menu Network > Web Crawler or press Shift+C.
+A dialog will appear, where you must enter the initial web page (seed).
+
+![Web crawler dialog](http://socnetv.sourceforge.net/data/uploads/screenshots/16/socnetv-1.6-crawler-1.jpg)
+
+
+
+You can also set the maximum nodes/pages (default 600) and what kind of links to
+crawl: internal, external or both. 
+
+\note By default the spider will crawl both internal and external links.
+
+\warning The parser searches for 'href' links only in the body section of the HTML code.
+
+
+*/
