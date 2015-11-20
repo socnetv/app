@@ -103,6 +103,7 @@ protected:
 
 private:
 	GraphicsWidget *graphicsWidget;
+    QPainterPath *line;
 	Node *source, *target;
 	QPointF sourcePoint, targetPoint;
 	qreal m_arrowSize, m_startOffset, m_endOffset;
