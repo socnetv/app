@@ -234,23 +234,21 @@ void Edge::adjust(){
  */
 QPainterPath Edge::shape () const {
     //qDebug()<<"Edge::shape()";		//too many debug messages...
-//    QPainterPath path;
-//    qreal extra = ( width() + m_arrowSize);
-//    QLineF line(sourcePoint, targetPoint);
-//    QPolygonF poly;
-//    line.translate(extra,extra);
-//    poly.push_back(line.p1());
-//    poly.push_back(line.p2());
-//    line.translate(-extra,-extra);
-//    poly.push_back(line.p1());
-//    poly.push_back(line.p2());
-//    path.addPolygon(poly);
-//    path.closeSubpath();
-//    //path.addRegion(boundingRegion(QTransform()));
-//    //   path.addRect(boundingRect());
-//    return path;
-
-    return (*line);
+    QPainterPath path;
+    qreal extra = ( width() + m_arrowSize);
+    QLineF line(sourcePoint, targetPoint);
+    QPolygonF poly;
+    line.translate(extra,extra);
+    poly.push_back(line.p1());
+    poly.push_back(line.p2());
+    line.translate(-extra,-extra);
+    poly.push_back(line.p1());
+    poly.push_back(line.p2());
+    path.addPolygon(poly);
+    path.closeSubpath();
+    //path.addRegion(boundingRegion(QTransform()));
+    //   path.addRect(boundingRect());
+    return path;
 } 
 
 
@@ -332,14 +330,13 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     //           <<","<< (targetNode())->y() << ") of weight "<< m_weight;
 
     //Define the path upon which we' ll draw the line
-    //QPainterPath line(sourcePoint);
-    line = new QPainterPath;
-    line->moveTo(sourcePoint);
+    QPainterPath line(sourcePoint);
+
     //Construct the path
     if (source!=target) {
         if ( !m_Bezier){
             //   qDebug()<< "*** Edge::paint(). Constructing a line";
-            line->lineTo(targetPoint);
+            line.lineTo(targetPoint);
         }
         else {
             qDebug() << "*** Edge::paint(). Constructing a bezier curve";
@@ -350,7 +347,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
         QPointF c2 = QPointF( targetPoint.x() +30,  targetPoint.y() -30 );
 //        qDebug()<< "*** Edge::paint(). Constructing a bezier self curve c1 "
 //                <<c1.x()<<","<<c1.y()  << " and c2 "<<c2.x()<<","<<c2.y();
-        line->cubicTo( c1, c2, targetPoint);
+        line.cubicTo( c1, c2, targetPoint);
     }
 
     //Prepare the pen
@@ -361,10 +358,10 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     //Draw the arrows only if we have different nodes.
     if (m_drawArrows && source!=target) {
         angle = 0;
-        line_length = line->length();
+        line_length = line.length();
         line_dx = targetPoint.x()-sourcePoint.x();
         line_dy = targetPoint.y()-sourcePoint.y();
-        if ( line->length() >0 )
+        if ( line.length() >0 )
             angle = ::acos( line_dx / line_length );
         //		qDebug() << " acos() " << ::acos( line_dx  / line_length ) ;
 
@@ -386,7 +383,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
         painter->setBrush(QColor(m_color));
         QPolygonF destP;
         destP << targetPoint << destArrowP1 << destArrowP2;
-        line->addPolygon ( destP);
+        line.addPolygon ( destP);
         //painter->drawPolygon(QPolygonF() << line.p2() << destArrowP1 << destArrowP2);
         if (m_reciprocal) {
 //            qDebug() << "**** Edge::paint() This edge is SYMMETRIC! "
@@ -399,7 +396,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
             //									<< "  srcArrowP2 " <<  srcArrowP2.x() << "," << srcArrowP2.y();
             QPolygonF srcP;
             srcP << sourcePoint<< srcArrowP1<< srcArrowP2;
-            line->addPolygon ( srcP);
+            line.addPolygon ( srcP);
 
             //			painter->drawPolygon(QPolygonF() << line.p1() << srcArrowP1 << srcArrowP2);
         }
@@ -411,7 +408,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 //        qDebug()<< "*** Edge::paint(). This edge is self-link - CONTINUE!";
     }
     //	qDebug()<< "### Edge::paint(). DrawPath now....";
-    painter->drawPath(*line);
+    painter->drawPath(line);
 }
 
 

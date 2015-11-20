@@ -48,13 +48,14 @@ Node::Node( GraphicsWidget* gw, int num, int size,
 	graphicsWidget->scene()->addItem(this); //Without this nodes don't appear on the screen...
 
 //ItemSendsGeometryChanges  introduced in Qt 4.6...
-//#if QT_VERSION >= 0x040600
-    setFlags(ItemSendsGeometryChanges | ItemIsSelectable | ItemIsMovable );
-  //  setCacheMode(QGraphicsItem::ItemCoordinateCache); //QT < 4.6 if a cache mode is set, nodes do not respond to hover events
+#if QT_VERSION >= 0x040600
+	setFlags(ItemSendsGeometryChanges | ItemIsSelectable | ItemIsMovable);
+    setCacheMode(QGraphicsItem::ItemCoordinateCache); //QT < 4.6 if a cache mode is set, nodes do not respond to hover events
 //DeviceCoordinateCache
-
-   // setCacheMode(QGraphicsItem::NoCache); //QT < 4.6 if a cache mode is set, nodes do not respond to hover events
-
+#else
+	setFlags(ItemIsSelectable | ItemIsMovable ); //Without this, the node cannot move nor be selected ...
+	setCacheMode(QGraphicsItem::NoCache); //QT < 4.6 if a cache mode is set, nodes do not respond to hover events
+#endif
     setAcceptHoverEvents(true);
 
 	m_num=num;
