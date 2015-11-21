@@ -13,7 +13,7 @@ SocNetV	has  a	simple	Graphical  User	 Interface  (GUI) composed of:
 
 
 
-![SocNetV Main Window](./manual/socnetv-main-window-annotated.png)
+![SocNetV Main Window](./src/manual/socnetv-main-window-annotated.png)
 
 \section themenu The menu
 
@@ -63,7 +63,7 @@ When you select an option, SocNetV computes what you asked and displays the repo
 
 \note All reports are automatically saved in a directory called "socnetv-data" in your HOME folder. Of course, you can edit the report as you wish and save it to another filename. 
 
-![SocNetV Analysis](./manual/socnetv-analysis.jpg)
+![SocNetV Analysis](./src/manual/socnetv-analysis.jpg)
 
 In the Visualize group, there are menus and checkboxes to apply visualization
 layouts to the current network. 
@@ -84,7 +84,7 @@ The Statistics tab is mainly occupied by informative LCDs.
 These display statistics for the active network (i.e. node and edges counters, density, counters of inLinked/outLinked nodes, etc) as well as the selected node (its number, in-Links and out-Links).
 
 
-![Main Window annotated](./manual/socnetv-main-window-annotated-2.png)
+![Main Window annotated](./src/manual/socnetv-main-window-annotated-2.png)
 
 
 \section  canvas The canvas
