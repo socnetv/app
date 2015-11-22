@@ -279,6 +279,7 @@ public:
     void layoutForceDirected_Eades_moveNodes(const qreal &c4);
     void layoutForceDirected_FR_moveNodes(const qreal &temperature) ;
 
+    qreal temperature() const;
     qreal computeOptimalDistance(const int &Vertices);
     void compute_angles( const QPointF &Delta,
                          const qreal &dist,
@@ -637,7 +638,7 @@ private:
     float averGraphDistance, nonZeroDistancesCounter;
     int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;
     int timerId,  layoutType, canvasWidth, canvasHeight;
-
+    int iteration;
     bool order, initShowLabels, initNumbersInsideNodes;
     bool adjacencyMatrixCreated, symmetricAdjacencyMatrix, graphModified,
         distanceMatrixCreated;

@@ -10578,7 +10578,8 @@ void Graph::nodeMovement(bool state, int type, int cW, int cH){
     //factor controls speed. Decrease it to increase speed...
     // the smaller the factor is, the less responsive is the application
     // when there are many nodes.
-    int factor=50;
+    int factor=30;
+    iteration = 0;
     if (state == true){
         qDebug()<< "Graph: startNodeMovement() - STARTING dynamicMovement" ;
         dynamicMovement = true;
@@ -10661,7 +10662,7 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
              << " naturalLength " << naturalLength;
 
     if (dynamicMovement){
-
+        iteration++;
         //setup init disp
 
         for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1)
@@ -10770,7 +10771,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
     qreal f_att, f_rep;
     QPointF DV;   //difference vector
     //qreal temperature=canvasWidth / 10.0; //limits the displacement of the vertex
-    qreal temperature=2.0; //limits the displacement of the vertex
+    //qreal temperature=5.8309518948453; //limits the displacement of the vertex
     qreal V = (qreal) vertices() ;
     qreal C=0.9; //this is found experimentally
     // optimalDistance (or k) is the radius of the empty area around a  vertex -
@@ -10781,6 +10782,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
     QList<Vertex*>::const_iterator v2;
 
     if (dynamicMovement){
+        iteration++;
         qDebug() << "Graph: layoutForceDirectedFruchtermanReingold() ";
         qDebug () << "Graph: Setting optimalDistance = "<<  optimalDistance
                   << "...following Fruchterman-Reingold (1991) formula ";
@@ -10858,15 +10860,35 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
             optimalDistance= C * computeOptimalDistance(V);
         } //end for v1
 
-        layoutForceDirected_FR_moveNodes(temperature);
+        // limit the max displacement to the temperature t
+        // prevent placement outside of the frame/canvas
+        layoutForceDirected_FR_moveNodes( temperature () );
 
-        // reduce the temperature as the layout approaches a better configuration
-        //cool(temperature);
     }
 
 }
 
 
+
+/**
+ * @brief Graph::temperature
+ * reduces the temperature as the layout approaches a better configuration
+ * @return qreal temperature
+ */
+qreal Graph::temperature() const{
+    qreal temp=0;
+    qDebug() << "cool iteration " << iteration;
+    if (iteration < 10)
+        temp =canvasWidth / 10.0;
+    else
+        temp =canvasWidth / (iteration + 10) ;
+    if (iteration > 100)  // follow Eades advice...
+        temp = 0;
+    qDebug() << "Graph::temperature() - iteration " << iteration
+             << " temp " << temp;
+    return temp;
+
+}
 
 /**
  * @brief Graph::computeOptimalDistance
@@ -10917,6 +10939,7 @@ qreal Graph::layoutForceDirected_F_rep(const qreal &dist, const qreal &optimalDi
 
     }
     else {  // layoutType -> FR
+        // To speed up our algorithm we use the grid-variant algorithm.
         if ( (2.0 * optimalDistance) < dist ) {
             //neglect vertices outside circular area of radius 2*optimalDistance
             f_rep=0;
