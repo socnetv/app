@@ -242,9 +242,9 @@ public slots:
     void slotLayoutGuides(int);
 
 
-    void slotLayoutSpringEmbedder(bool);
+    void slotLayoutSpringEmbedder();
     void slotLayoutFruchterman();
-    void layoutFruchterman(int);
+
 
     void  slotLayoutNodeSizesByOutDegree(bool);
     void  slotLayoutNodeSizesByInDegree(bool);
@@ -350,6 +350,7 @@ public slots:
     void toolBoxAnalysisProminenceSelectChanged(int);
     void toolBoxAnalysisClusterabilitySelectChanged(int);
     void toolBoxLayoutByIndexButtonPressed();
+    void toolBoxLayoutForceDirectedButtonPressed();
 
     QList<QGraphicsItem *> selectedNodes();
 
@@ -396,15 +397,14 @@ private:
     QMenu *networkMenu, *randomNetworkMenu, *filterMenu;
     QMenu *randomLayoutMenu, *circleLayoutMenu, *levelLayoutMenu, *physicalLayoutMenu;
     QMenu *colorationMenu;
-    QCheckBox *layoutEadesBx, *layoutFruchtermanBx, *layoutKamandaBx,
-    *nodeSizesByOutDegreeBx,*nodeSizesByInDegreeBx,
-    *layoutGuidesBx;
+    QCheckBox  *nodeSizesByOutDegreeBx,*nodeSizesByInDegreeBx, *layoutGuidesBx;
     QComboBox *toolBoxAnalysisGeodesicsSelect,*toolBoxAnalysisConnectivitySelect,
             *toolBoxAnalysisProminenceSelect, *toolBoxAnalysisClusterabilitySelect;
     QComboBox *toolBoxLayoutByIndexSelect, *toolBoxLayoutByIndexTypeSelect;
+    QComboBox *toolBoxLayoutForceDirectedSelect;
 
-    QPushButton *addNodeBt, *addEdgeBt, *removeNodeBt, *removeEdgeBt,
-    *toolBoxLayoutByIndexButton;
+    QPushButton *addNodeBt, *addEdgeBt, *removeNodeBt, *removeEdgeBt;
+    QPushButton *toolBoxLayoutByIndexButton, *toolBoxLayoutForceDirectedButton;
 
     QSpinBox *rotateSpinBox ;
 

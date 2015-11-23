@@ -282,6 +282,9 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect(toolBoxLayoutByIndexButton, SIGNAL (clicked() ),
             this, SLOT(toolBoxLayoutByIndexButtonPressed() ) );
 
+    connect(toolBoxLayoutForceDirectedButton, SIGNAL (clicked() ),
+            this, SLOT(toolBoxLayoutForceDirectedButtonPressed() ) );
+
     connect( layoutGuidesBx, SIGNAL(stateChanged(int)),
              this, SLOT(slotLayoutGuides(int)));
 
@@ -1208,16 +1211,12 @@ void MainWindow::initActions(){
 
     springLayoutAct= new QAction(tr("Spring Embedder (Eades)"), this);
     springLayoutAct->setShortcut(tr("Alt+1"));
-    springLayoutAct->setCheckable(true);
-    springLayoutAct->setChecked(false);
     springLayoutAct->setStatusTip(tr("All nodes repel each other while the connected ones are attracted as if connected by springs."));
     springLayoutAct->setWhatsThis(tr("Spring Embedder Layout\n\n In this model, nodes are regarded as physical bodies (i.e. electrons) which exert repelling forces to each other, while edges are springs connecting adjacents nodes. Non-adjacent nodes repel each other while connected nodes are The algorithm continues until the system retains an equilibrium state in which all forces cancel each other. "));
-    connect(springLayoutAct, SIGNAL(triggered(bool)), this, SLOT(slotLayoutSpringEmbedder(bool)));
+    connect(springLayoutAct, SIGNAL(triggered(bool)), this, SLOT(slotLayoutSpringEmbedder()));
 
     FRLayoutAct= new QAction( tr("Fruchterman-Reingold"),	this);
     FRLayoutAct->setShortcut(tr("Alt+2"));
-    FRLayoutAct->setCheckable(true);
-    FRLayoutAct->setChecked(false);
     FRLayoutAct->setStatusTip(tr("Repelling forces between all nodes, and attracting forces between adjacent nodes."));
     FRLayoutAct->setWhatsThis(tr("Fruchterman-Reingold Layout\n\n Embeds a layout all nodes according to a model in which	repelling forces are used between every pair of nodes, while attracting forces are used only between adjacent nodes. The algorithm continues until the system retains its equilibrium state where all forces cancel each other."));
     connect(FRLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutFruchterman()));
@@ -2137,11 +2136,14 @@ void MainWindow::initToolBox(){
     //create a groupbox "Edit" - Inside, display the vertical layout of widgets
     QGroupBox *editGroupBox= new QGroupBox(tr("Edit"));
     editGroupBox->setLayout(buttonsGrid);
-    editGroupBox->setMaximumSize(300,100);
+    editGroupBox->setMaximumWidth(285);
+    editGroupBox->setMinimumHeight(100);
+    editGroupBox->setMaximumHeight(100);
 
     //create widgets for the "Analysis" box
     QLabel *toolBoxAnalysisGeodesicsSelectLabel = new QLabel;
     toolBoxAnalysisGeodesicsSelectLabel->setText(tr("Distances:"));
+    toolBoxAnalysisGeodesicsSelectLabel->setMinimumWidth(120);
     toolBoxAnalysisGeodesicsSelect = new QComboBox;
     QStringList geodesicsCommandsList;
     geodesicsCommandsList << "None selected"
@@ -2149,20 +2151,22 @@ void MainWindow::initToolBox(){
                           << "Distances Matrix" << "Geodesics Matrix"
                           << "Eccentricity" << "Diameter";
     toolBoxAnalysisGeodesicsSelect->addItems(geodesicsCommandsList);
-//    toolBoxAnalysisGeodesicsSelect->setMaximumHeight(20);
+    toolBoxAnalysisGeodesicsSelect->setMinimumWidth(130);
 
     QLabel *toolBoxAnalysisConnectivitySelectLabel  = new QLabel;
     toolBoxAnalysisConnectivitySelectLabel->setText(tr("Connectivity:"));
+    toolBoxAnalysisConnectivitySelectLabel->setMinimumWidth(120);
     toolBoxAnalysisConnectivitySelect = new QComboBox;
     QStringList connectivityCommands;
     connectivityCommands << "None selected"
                          << "Connectedness" << "Walks of given length"
                          << "Total Walks" << "Reachability Matrix";
     toolBoxAnalysisConnectivitySelect->addItems(connectivityCommands);
-//    toolBoxAnalysisConnectivitySelect->setMaximumHeight(20);
+    toolBoxAnalysisConnectivitySelect->setMinimumWidth(130);
 
     QLabel *toolBoxAnalysisClusterabilitySelectLabel  = new QLabel;
     toolBoxAnalysisClusterabilitySelectLabel->setText(tr("Clusterability:"));
+    toolBoxAnalysisClusterabilitySelectLabel->setMinimumWidth(120);
     toolBoxAnalysisClusterabilitySelect = new QComboBox;
     QStringList clusterabilityCommands;
     clusterabilityCommands << "None selected"
@@ -2170,10 +2174,12 @@ void MainWindow::initToolBox(){
                          << "Clustering Coefficient"
                          << "Triad Census";
     toolBoxAnalysisClusterabilitySelect->addItems(clusterabilityCommands);
+    toolBoxAnalysisClusterabilitySelect->setMinimumWidth(130);
 
 
     QLabel *toolBoxAnalysisProminenceSelectLabel  = new QLabel;
     toolBoxAnalysisProminenceSelectLabel->setText(tr("Prominence:"));
+    toolBoxAnalysisProminenceSelectLabel->setMinimumWidth(120);
     toolBoxAnalysisProminenceSelect = new QComboBox;
     toolBoxAnalysisProminenceSelect -> setToolTip(
                 tr("Various metrics to calculate how 'prominent' or important each actor (node) is inside the network.\n\n")
@@ -2196,7 +2202,7 @@ void MainWindow::initToolBox(){
                        << "Degree Prestige (inDegree)"  << "PageRank Prestige"
                        << "Proximity Prestige";
     toolBoxAnalysisProminenceSelect->addItems(prominenceCommands);
-//    toolBoxAnalysisProminenceSelect->setMaximumHeight(20);
+    toolBoxAnalysisProminenceSelect->setMinimumWidth(130);
 
     //create layout for analysis options
     QGridLayout *analysisGrid = new QGridLayout();
@@ -2212,16 +2218,18 @@ void MainWindow::initToolBox(){
 
     //create a box and set the above layout inside
     QGroupBox *analysisBox= new QGroupBox(tr("Analyze"));
-    analysisBox->setMaximumWidth(300);
+    analysisBox->setMinimumHeight(200);
+    analysisBox->setMaximumHeight(250);
     analysisBox->setLayout (analysisGrid );
 
 
     //create widgets for the "Visualization By Index" box
     QLabel *toolBoxLayoutByIndexSelectLabel = new QLabel;
     toolBoxLayoutByIndexSelectLabel->setText(tr("Index:"));
+    toolBoxLayoutByIndexSelectLabel->setMinimumWidth(100);
     toolBoxLayoutByIndexSelect = new QComboBox;
     QStringList indicesList;
-    indicesList << "None/Original"<< "Random"
+    indicesList << "None"<< "Random"
                 << "Degree Centrality" << "Closeness Centrality"
                 << "Influence Range Closeness Centrality"
                 << "Betweenness Centrality"
@@ -2231,15 +2239,18 @@ void MainWindow::initToolBox(){
                 << "Proximity Prestige";
     toolBoxLayoutByIndexSelect->addItems(indicesList);
     toolBoxLayoutByIndexSelect->setMinimumHeight(20);
+    toolBoxLayoutByIndexSelect->setMinimumWidth(120);
 
 
     QLabel *toolBoxLayoutByIndexTypeLabel = new QLabel;
     toolBoxLayoutByIndexTypeLabel->setText(tr("Layout Type:"));
+    toolBoxLayoutByIndexTypeLabel->setMinimumWidth(10);
     toolBoxLayoutByIndexTypeSelect = new QComboBox;
     QStringList layoutTypes;
     layoutTypes << "Circular" << "On Levels" << "Nodal size";
     toolBoxLayoutByIndexTypeSelect->addItems(layoutTypes);
     toolBoxLayoutByIndexTypeSelect->setMinimumHeight(20);
+    toolBoxLayoutByIndexTypeSelect->setMinimumWidth(120);
 
     toolBoxLayoutByIndexButton = new QPushButton(tr("Apply"));
     toolBoxLayoutByIndexButton->setFocusPolicy(Qt::NoFocus);
@@ -2254,51 +2265,64 @@ void MainWindow::initToolBox(){
     layoutByIndexGrid -> addWidget(toolBoxLayoutByIndexTypeLabel, 1,0);
     layoutByIndexGrid -> addWidget(toolBoxLayoutByIndexTypeSelect, 1,1);
     layoutByIndexGrid -> addWidget(toolBoxLayoutByIndexButton, 2,1);
-    //layoutByIndexGrid -> setRowStretch(0,1);   //fix stretch
+    layoutByIndexGrid -> setSpacing(10);
+    layoutByIndexGrid -> setMargin(0);
 
     //create a box and set the above layout inside
     QGroupBox *layoutByIndexBox= new QGroupBox(tr("By Prominence Index"));
-    layoutByIndexBox->setMaximumWidth(300);
+    layoutByIndexBox->setMinimumHeight(150);
+    layoutByIndexBox->setMaximumHeight(200);
     layoutByIndexBox->setLayout (layoutByIndexGrid );
 
 
-    // create widgets for the "Force-Directed Models" groupBox
-    layoutEadesBx = new QCheckBox(tr("Spring Embedder (Eades)") );
-    layoutEadesBx->setEnabled(true);
-    layoutEadesBx->setChecked(false);
-    layoutEadesBx
-            ->setToolTip(
-                tr("Embeds a spring-gravitational model on the network, where \n"
-                   "each node is regarded as physical object (ring) repeling all \n"
-                   "other nodes, while springs between connected nodes attract them. \n"
-                   "This is a very SLOW process on networks with N > 100!"));
+    // create widgets for the "Force-Directed Models" Box
+    QLabel *toolBoxLayoutForceDirectedSelectLabel = new QLabel;
+    toolBoxLayoutForceDirectedSelectLabel->setText(tr("Model:"));
+    toolBoxLayoutForceDirectedSelectLabel->setMinimumWidth(100);
+    toolBoxLayoutForceDirectedSelect = new QComboBox;
+    QStringList modelsList;
+    modelsList << tr("None")
+                << tr("Spring Embedder (Eades)")
+                << tr("Fruchterman-Reingold")
+                << tr("Kamanda-Kawai") ;
 
-    layoutFruchtermanBx = new QCheckBox(tr("Fruchterman-Reingold") );
-    layoutFruchtermanBx->setEnabled(true);
-    layoutFruchtermanBx->setChecked(false);
-    layoutFruchtermanBx
-            ->setToolTip(
-                tr("In Fruchterman-Reingold model, the vertices behave as atomic \n"
-                   "particles or celestial bodies, exerting attractive and repulsive \n"
-                   "forces to each other. Again, only vertices that are neighbours \n"
-                   "attract each other but, unlike Eades Spring Embedder, all vertices \n"
-                   "repel each other. "));
+    toolBoxLayoutForceDirectedSelect->addItems(modelsList);
+    toolBoxLayoutForceDirectedSelect->setMinimumHeight(20);
+    toolBoxLayoutForceDirectedSelect->setMinimumWidth(120);
+    toolBoxLayoutForceDirectedSelect->setToolTip (
+                tr("Select one of the following models to embed to the network\n\n"
+                   "Eades model\n "
+                   "A spring-gravitational model, where each node is \n"
+                   "regarded as physical object (ring) repeling all other \n"
+                   "nodes, while springs between connected nodes attract them. \n\n"
 
-    layoutKamandaBx= new QCheckBox(tr("Kamanda-Kawai") );
-    layoutKamandaBx->setEnabled(false);
-    layoutKamandaBx->setToolTip(tr("!"));
+                   "Fruchterman-Reingold\n"
+                   "In this model, the vertices behave as atomic particles \n"
+                   "or celestial bodies, exerting attractive and repulsive \n"
+                   "forces to each other. Again, only vertices that are \n"
+                   "neighbours  attract each other but, unlike Eades Spring \n"
+                   "Embedder, all vertices repel each other.\n\n"
+                   "Kamanda-Kawai\n"
+                   )
+                );
+
+    toolBoxLayoutForceDirectedButton = new QPushButton(tr("Apply"));
+    toolBoxLayoutForceDirectedButton->setFocusPolicy(Qt::NoFocus);
+    toolBoxLayoutForceDirectedButton->setMinimumHeight(20);
+    toolBoxLayoutForceDirectedButton->setMaximumWidth(60);
 
     //create layout for dynamic visualisation
     QGridLayout *layoutForceDirectedGrid = new QGridLayout();
-    layoutForceDirectedGrid -> addWidget(layoutEadesBx, 0,0);
-    layoutForceDirectedGrid -> addWidget(layoutFruchtermanBx, 1,0);
-    layoutForceDirectedGrid -> addWidget(layoutKamandaBx, 2,0);
+    layoutForceDirectedGrid -> addWidget(toolBoxLayoutForceDirectedSelectLabel, 0,0);
+    layoutForceDirectedGrid -> addWidget(toolBoxLayoutForceDirectedSelect, 0,1);
+    layoutForceDirectedGrid -> addWidget(toolBoxLayoutForceDirectedButton, 1,1);
     layoutForceDirectedGrid->setSpacing(10);
     layoutForceDirectedGrid->setMargin(0);
 
     //create a box for dynamic layout options
     QGroupBox *layoutDynamicBox= new QGroupBox(tr("By Force-Directed Model"));
-    layoutDynamicBox->setMaximumWidth(300);
+    layoutDynamicBox->setMinimumHeight(100);
+    layoutDynamicBox->setMaximumHeight(150);
     layoutDynamicBox->setLayout (layoutForceDirectedGrid );
 
 
@@ -2337,7 +2361,8 @@ void MainWindow::initToolBox(){
 
     //Box for additional layout options
     QGroupBox *layoutOptionsBox= new QGroupBox(tr("Options"));
-    layoutOptionsBox->setMaximumWidth(300);
+    layoutOptionsBox->setMinimumHeight(120);
+    layoutOptionsBox->setMaximumHeight(150);
     layoutOptionsBox->setLayout (layoutOptionsGrid );
 
 
@@ -2347,7 +2372,10 @@ void MainWindow::initToolBox(){
     visualizationBoxLayout -> addWidget(layoutDynamicBox);
     visualizationBoxLayout -> addWidget(layoutOptionsBox);
     QGroupBox *visualizationBox= new QGroupBox(tr("Visualize"));
-    visualizationBox->setMaximumWidth(300);
+    visualizationBox->setMaximumWidth(290);
+
+    visualizationBox->setMinimumHeight(350);
+    visualizationBox->setMaximumHeight(500);
     visualizationBox->setLayout (visualizationBoxLayout );
 
     //Parent box with vertical layout for all boxes of Controls
@@ -2360,15 +2388,11 @@ void MainWindow::initToolBox(){
 
     QGroupBox *controlGroupBox = new QGroupBox;
     controlGroupBox->setLayout(controlTabVerticalLayout);
-    controlGroupBox->setMaximumWidth(300);
+    controlGroupBox->setMaximumWidth(290);
+    controlGroupBox->setMinimumHeight(700);
+    controlGroupBox->setMaximumHeight(800);
     controlGroupBox->setContentsMargins(0,0,0,0);
     toolBox->addTab(controlGroupBox, tr("Controls"));
-
-
-    connect(layoutEadesBx, SIGNAL(clicked(bool)),
-            this, SLOT(slotLayoutSpringEmbedder(bool)));
-    connect(layoutFruchtermanBx, SIGNAL(stateChanged(int)),
-            this, SLOT(layoutFruchterman(int)));
 
     connect(nodeSizesByOutDegreeBx , SIGNAL(clicked(bool)),
             this, SLOT(slotLayoutNodeSizesByOutDegree(bool)));
@@ -2639,6 +2663,35 @@ void MainWindow::toolBoxLayoutByIndexButtonPressed(){
 }
 
 
+
+void MainWindow::toolBoxLayoutForceDirectedButtonPressed(){
+    qDebug()<<"MW::toolBoxLayoutForceDirectedButtonPressed()";
+    int selectedModel = toolBoxLayoutForceDirectedSelect->currentIndex();
+    QString selectedModelText = toolBoxLayoutForceDirectedSelect -> currentText();
+    qDebug() << " selected index is " << selectedModelText << " : "
+             << selectedModel;
+
+    switch(selectedModel) {
+    case 0:
+        activeGraph.nodeMovement(false, 1, graphicsWidget->width(), graphicsWidget->height());
+        activeGraph.nodeMovement(false, 2, graphicsWidget->width(), graphicsWidget->height());
+        break;
+    case 1:
+        slotLayoutSpringEmbedder();
+        break;
+    case 2:
+        slotLayoutFruchterman();
+        break;
+    default:
+        toolBoxLayoutForceDirectedSelect->setCurrentIndex(0);
+        activeGraph.nodeMovement(false, 1, graphicsWidget->width(), graphicsWidget->height());
+        activeGraph.nodeMovement(false, 2, graphicsWidget->width(), graphicsWidget->height());
+        break;
+    };
+}
+
+
+
 //FIXME this is a bug: Graph calls GraphicsWidget which calls this to call Graph!
 void MainWindow::updateNodeCoords(int nodeNumber, int x, int y){
     //	qDebug("MW: updateNodeCoords() for %i with x %i and y %i", nodeNumber, x, y);
@@ -2811,11 +2864,9 @@ void MainWindow::initNet(){
     toolBoxAnalysisProminenceSelect->setCurrentIndex(0);
     toolBoxLayoutByIndexSelect->setCurrentIndex(0);
     toolBoxLayoutByIndexTypeSelect ->setCurrentIndex(0);
+    toolBoxLayoutForceDirectedSelect->setCurrentIndex(0);
     nodeSizesByOutDegreeBx->setChecked(false);
     nodeSizesByInDegreeBx->setChecked(false);
-    layoutEadesBx->setChecked(false);
-    springLayoutAct->setChecked(false);
-    FRLayoutAct->setChecked(false);
     displayEdgesWeightNumbersAct->setChecked(false);
     considerEdgeWeightsAct->setChecked(false);
     //displayEdgesArrowsAct->setChecked(false);		//FIXME: USER PREFS EMITTED TO GRAPH?
@@ -5679,35 +5730,24 @@ void MainWindow::slotLayoutCircularRandom(){
 
 
 /**
-        slotLayoutSpringEmbedder called from menu or toolbox checkbox
+        Called from menu or toolbox checkbox
+        Calls Graph::startNodeMovement to embed a spring-gravitational model
 */
-void MainWindow::slotLayoutSpringEmbedder(bool state ){
+void MainWindow::slotLayoutSpringEmbedder(){
     qDebug()<< "MW:slotLayoutSpringEmbedder";
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical(this, "Error",tr("There are node nodes yet!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
         statusMessage( tr("I am really sorry. You must really load a file first... ")  );
-        layoutEadesBx->setCheckState(Qt::Unchecked);
+
         return;
     }
 
     //Stop any other layout running
-    layoutFruchtermanBx->setCheckState(Qt::Unchecked);
-    activeGraph.nodeMovement(!state, 2, graphicsWidget->width(), graphicsWidget->height());
-
-    scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
-
-    if (state){
-        statusMessage( tr("Embedding a spring-gravitational model on the network.... ")  );
-        layoutEadesBx->setCheckState(Qt::Checked);
-        activeGraph.nodeMovement(state, 1, graphicsWidget->width(), graphicsWidget->height());
-        statusMessage( tr("Click on the checkbox \"Spring-Embedder\" to stop movement!") );
-    }
-    else {
-        layoutEadesBx->setCheckState(Qt::Unchecked);
-        activeGraph.nodeMovement(state, 1, graphicsWidget->width(), graphicsWidget->height());
-        statusMessage( tr("Movement stopped!") );
-    }
-    scene->setItemIndexMethod (QGraphicsScene::BspTreeIndex); //best when not moving items
+    activeGraph.nodeMovement(false, 2, graphicsWidget->width(), graphicsWidget->height());
+    //scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
+    statusMessage( tr("Embedding a spring-gravitational model on the network.... ")  );
+    activeGraph.nodeMovement(true, 1, graphicsWidget->width(), graphicsWidget->height());
+    //scene->setItemIndexMethod (QGraphicsScene::BspTreeIndex); //best when not moving items
 }
 
 
@@ -5715,38 +5755,25 @@ void MainWindow::slotLayoutSpringEmbedder(bool state ){
 
 
 /**
-    slotLayoutFruchterman called from menu
+    Called from menu or toolbox
+    Calls Graph::startNodeMovement to embed a repelling-attracting forces model
 */
 void MainWindow::slotLayoutFruchterman(){
+    qDebug("MW: slotLayoutFruchterman ()");
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical(this, "Error",tr("There are no nodes yet!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
         statusMessage( tr("I am really sorry. You must really load a file first... ")  );
         return;
     }
-    if (layoutFruchtermanBx->checkState() == Qt::Unchecked){
-        statusMessage( tr("Embedding a repelling-attracting forces model on the network.... ")  );
-        layoutFruchtermanBx->setCheckState(Qt::Checked);
-        statusMessage( tr("Click on the checkbox \"Fruchterman-Reingold\" to stop movement!") );
-    }
-    else {
-        layoutFruchtermanBx->setCheckState(Qt::Unchecked);
-        statusMessage( tr("Movement stopped!") );
-    }
+
+    activeGraph.nodeMovement(false, 1, graphicsWidget->width(), graphicsWidget->height());
+    statusMessage( tr("Embedding a repelling-attracting forces model on the network.... ")  );
+//    scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
+    activeGraph.nodeMovement(true, 2, graphicsWidget->width(), graphicsWidget->height());
+//    scene->setItemIndexMethod (QGraphicsScene::BspTreeIndex); //best when not moving items
 
 }
 
-
-/** 
-    Called when user presses button.
-    Calls Graph::startNodeMovement to embed a repelling-attracting forces layout...
-*/
-void MainWindow::layoutFruchterman (int state){
-    qDebug("MW: layoutFruchterman ()");
-    layoutEadesBx->setChecked(false);
-    scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
-    activeGraph.nodeMovement(state, 2, graphicsWidget->width(), graphicsWidget->height());
-    scene->setItemIndexMethod (QGraphicsScene::BspTreeIndex); //best when not moving items
-}
 
 
 
