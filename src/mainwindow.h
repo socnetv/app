@@ -458,7 +458,7 @@ private:
     QString fileName, networkName, previous_fileName;
     QString dataDir, lastUsedDirPath;
     QStringList fileNameNoPath, fortuneCookie, rgbValues;
-    QStringList tempFileNameNoPath, colorList, tips;
+    QStringList tempFileNameNoPath, tips;
     int statusBarDuration,  minDuration, progressCounter;
     int maxNodes;
     int initNodeSize, labelDistance, numberDistance,initNumberSize, initLabelSize;

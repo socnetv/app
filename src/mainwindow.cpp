@@ -94,8 +94,6 @@ MainWindow::MainWindow(const QString & m_fileName) {
     initToolBar();  //build the toolbar
     initStatusBar();  //and now add the status bar.
     initToolBox(); //finally, build the toolbox
-    //and fill a stringList with all X-supported color names
-    colorList = QColor::colorNames();
 
     //set MW minimum size, before creating scene and canvas
     this->setMinimumSize(1024,750);
