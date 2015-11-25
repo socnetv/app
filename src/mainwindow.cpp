@@ -98,7 +98,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
     colorList = QColor::colorNames();
 
     //set MW minimum size, before creating scene and canvas
-    this->setMinimumSize(900,600);
+    this->setMinimumSize(1024,750);
 
     initView(); //create the canvas
 
@@ -320,6 +320,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
     graphicsWidget->setInitLabelDistance(labelDistance);
     graphicsWidget->setInitNodeSize(initNodeSize);
     graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor)); //Qt::gray
+
     dataDir= QDir::homePath() +QDir::separator() + "socnetv-data" + QDir::separator() ;
     lastUsedDirPath = "socnetv-initial-none";
     if (firstTime) {
@@ -2754,7 +2755,8 @@ void MainWindow::initView() {
 
     //set minimum size of canvas
 
-    graphicsWidget->setMinimumSize( (qreal)  ( this->width()-toolBox->sizeHint().width() -40 ) , (qreal) ( this->height()-statusBar()->sizeHint().height() -toolBar->sizeHint().height() -menuBar()->sizeHint().height() -20 ) );
+    graphicsWidget->setMinimumSize( (qreal)  ( this->width()-toolBox->sizeHint().width() -40 ) ,
+                                    (qreal) ( this->height()-statusBar()->sizeHint().height() -toolBar->sizeHint().height() -menuBar()->sizeHint().height() -20 ) );
     qDebug ("MW initView(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
 
 }
