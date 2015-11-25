@@ -5766,11 +5766,16 @@ void MainWindow::slotLayoutFruchterman(){
         return;
     }
 
-    activeGraph.nodeMovement(false, 1, graphicsWidget->width(), graphicsWidget->height());
+    //activeGraph.nodeMovement(false, 1, graphicsWidget->width(), graphicsWidget->height());
     statusMessage( tr("Embedding a repelling-attracting forces model on the network.... ")  );
-//    scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
-    activeGraph.nodeMovement(true, 2, graphicsWidget->width(), graphicsWidget->height());
-//    scene->setItemIndexMethod (QGraphicsScene::BspTreeIndex); //best when not moving items
+    //scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
+    //activeGraph.nodeMovement(true, 2, graphicsWidget->width(), graphicsWidget->height());
+    activeGraph.layoutForceDirectedFruchtermanReingold(true, 100,graphicsWidget->width(), graphicsWidget->height());
+    activeGraph.layoutForceDirectedFruchtermanReingold(true, 50,graphicsWidget->width(), graphicsWidget->height());
+    activeGraph.layoutForceDirectedFruchtermanReingold(true, 50,graphicsWidget->width(), graphicsWidget->height());
+    activeGraph.layoutForceDirectedFruchtermanReingold(true, 50,graphicsWidget->width(), graphicsWidget->height());
+    activeGraph.layoutForceDirectedFruchtermanReingold(true, 50,graphicsWidget->width(), graphicsWidget->height());
+    //scene->setItemIndexMethod (QGraphicsScene::BspTreeIndex); //best when not moving items
 
 }
 

@@ -10579,7 +10579,7 @@ void Graph::nodeMovement(bool state, int type, int cW, int cH){
     // the smaller the factor is, the less responsive is the application
     // when there are many nodes.
     int factor=30;
-    iteration = 0;
+    //iteration = 0;
     if (state == true){
         qDebug()<< "Graph: startNodeMovement() - STARTING dynamicMovement" ;
         dynamicMovement = true;
@@ -10613,7 +10613,7 @@ void Graph::timerEvent(QTimerEvent *event) {
         break;
     }
     case 2: {
-        layoutForceDirectedFruchtermanReingold(dynamicMovement);
+        layoutForceDirectedFruchtermanReingold(dynamicMovement,100, 1, 1);
         break;
     }
     }
@@ -10656,7 +10656,7 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
     */
     qreal V = (qreal) vertices() ;
     qreal naturalLength= computeOptimalDistance(V);
-
+    int iteration = 0;
     qDebug() << "\n\n layoutForceDirectedSpringEmbedder() "
              << " vertices " << V
              << " naturalLength " << naturalLength;
@@ -10766,7 +10766,7 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
     These forces induce movement. The algorithm might resemble molecular or planetary simulations,
     sometimes called n-body problems.
 */
-void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
+void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement, const int maxIterations, const int cW, const int cH){
     qreal dist = 0;
     qreal f_att, f_rep;
     QPointF DV;   //difference vector
@@ -10776,48 +10776,52 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
     qreal C=0.9; //this is found experimentally
     // optimalDistance (or k) is the radius of the empty area around a  vertex -
     // we add vertexWidth to it
+    canvasWidth = cW;
+    canvasHeight = cH;
     qreal optimalDistance= C * computeOptimalDistance(V);
 
+    qDebug() << "Graph: layoutForceDirectedFruchtermanReingold() ";
+    qDebug () << "Graph: Setting optimalDistance = "<<  optimalDistance
+              << "...following Fruchterman-Reingold (1991) formula ";
+
+    qDebug() << "Graph: canvasWidth " << canvasWidth << " canvasHeight " << canvasHeight;
     QList<Vertex*>::const_iterator v1;
     QList<Vertex*>::const_iterator v2;
-
-    if (dynamicMovement){
-        iteration++;
-        qDebug() << "Graph: layoutForceDirectedFruchtermanReingold() ";
-        qDebug () << "Graph: Setting optimalDistance = "<<  optimalDistance
-                  << "...following Fruchterman-Reingold (1991) formula ";
+    int iteration = 1 ;
+//    if (dynamicMovement){
+      for ( iteration=1; iteration <= maxIterations ; iteration++) {
 
         //setup init disp
         for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1)
         {
             (*v1)->disp().rx() = 0;
             (*v1)->disp().ry() = 0;
-            qDebug() << " 0000 s " << (*v1)->name() << " zeroing rx/ry";
+            //qDebug() << " 0000 s " << (*v1)->name() << " zeroing rx/ry";
         }
 
         for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1)
         {
-            qDebug() << "*****  Calculate forces for s " << (*v1)->name()
-                     << " index " <<  index[(*v1)->name()]
-                     << " pos "<< (*v1)->x() << ", "<< (*v1)->y();
+//            qDebug() << "*****  Calculate forces for s " << (*v1)->name()
+//                     << " index " <<  index[(*v1)->name()]
+//                     << " pos "<< (*v1)->x() << ", "<< (*v1)->y();
 
             if ( ! (*v1)->isEnabled() ) {
-                qDebug() << "  vertex s " << (*v1)->name() << " disabled. Continue";
+//                qDebug() << "  vertex s " << (*v1)->name() << " disabled. Continue";
                 continue;
             }
 
             for (v2=m_graph.cbegin(); v2!=m_graph.cend(); ++v2)
             {
-                qDebug () << "  t = "<< (*v2)->name()
-                          << "  pos (" <<  (*v2)->x() << "," << (*v2)->y() << ")";
+//                qDebug () << "  t = "<< (*v2)->name()
+//                          << "  pos (" <<  (*v2)->x() << "," << (*v2)->y() << ")";
 
                 if ( ! (*v2)->isEnabled() ) {
-                    qDebug()<< " t "<< (*v2)->name()<< " disabled. Continue";
+//                    qDebug()<< " t "<< (*v2)->name()<< " disabled. Continue";
                     continue;
                 }
 
                 if (v2 == v1) {
-                    qDebug() << "  s==t, continuing";
+//                    qDebug() << "  s==t, continuing";
                     continue;
                 }
 
@@ -10831,11 +10835,11 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
                 (*v1)->disp().rx() += sign( DV.x() ) * f_rep;
                 (*v1)->disp().ry() += sign( DV.y() ) * f_rep ;
 
-                qDebug()<< " dist( " << (*v1)->name() <<  "," <<  (*v2)->name() <<  " = "
-                        << dist
-                        << " f_rep " << f_rep
-                        << " disp_s.x="<< (*v1)->disp().rx()
-                        << " disp_s.y="<< (*v1)->disp().ry();
+//                qDebug()<< " dist( " << (*v1)->name() <<  "," <<  (*v2)->name() <<  " = "
+//                        << dist
+//                        << " f_rep " << f_rep
+//                        << " disp_s.x="<< (*v1)->disp().rx()
+//                        << " disp_s.y="<< (*v1)->disp().ry();
 
                 if ( this->hasArc ((*v1)->name(), (*v2)->name()) ) {
                     //calculate attracting force
@@ -10857,12 +10861,12 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
 
             }//end for v2
             //recompute optimalDistance (in case the user resized the window)
-            optimalDistance= C * computeOptimalDistance(V);
+//            optimalDistance= C * computeOptimalDistance(V);
         } //end for v1
 
         // limit the max displacement to the temperature t
         // prevent placement outside of the frame/canvas
-        layoutForceDirected_FR_moveNodes( temperature () );
+        layoutForceDirected_FR_moveNodes( temperature (iteration) );
 
     }
 
@@ -10875,7 +10879,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement){
  * reduces the temperature as the layout approaches a better configuration
  * @return qreal temperature
  */
-qreal Graph::temperature() const{
+qreal Graph::temperature(const int iteration) const{
     qreal temp=0;
     qDebug() << "cool iteration " << iteration;
     if (iteration < 10)
@@ -11087,6 +11091,7 @@ void Graph::layoutForceDirected_Eades_moveNodes(const qreal &c4) {
 void Graph::layoutForceDirected_FR_moveNodes(const qreal &temperature) {
 
     qDebug() << "\n\n *****  layoutForceDirected_FR_moveNodes() \n\n " ;
+    qDebug () << " temperature " << temperature;
     QPointF newPos;
     qreal xvel = 0, yvel = 0;
     QList<Vertex*>::const_iterator v1;
