@@ -5,10 +5,9 @@ KNOWN BUGS
 2: UCINET (DL) files in nodelist1 format (one-mode) are not supported.  
 3: isSymmetric() not 100% (check a-symmetry.net)
 4: Some Graphviz (dot) files do not load. See test2.dot. Cant read when one line and nodes dont appear...
-7: SocNetV cannot load GraphML files with node labels which contain the & character. 
-8: 2014-02-28: In Reciprocal links with diferrent weight, only the first weight is taken into account
-9: closeness reports wrong indices in digraphs, where one actor has only one outLink
-10: fix other related indices for digraphs when d(i,j) = inf
+5: 2014-02-28: In Reciprocal links with diferrent weight, only the first weight is taken into account
+6: closeness reports wrong indices in digraphs, where one actor has only one outLink
+7: fix other related indices for digraphs when d(i,j) = inf
 
 
 TODO

@@ -4,11 +4,12 @@ Social Networks Visualiser (SocNetV)
 SocNetV News
 -==========-
 
-July 2015
+Dec 2015
 =========
 - Version 2.0 development starts.
 - New doxygen source documentation 
 - New Windows Installer
+- Improved Force-Directed layouts, i.e. Fructherman-Reingold, Eades
 
 June 2015
 =========
