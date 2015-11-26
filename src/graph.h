@@ -133,7 +133,6 @@ public slots:
     void createEdge (int, int, float, QString, int, bool, bool);	//GW and Parser.
     void createEdge (int, int, float, int, bool, bool);		//GW
     void createEdgeWebCrawler (int, int);					//WebCrawler
-    void nodeMovement(bool state, int type, int cW, int cH);		//Called by MW to start movement
 
     void slotSetEdgeVisibility(int relation, int, int, bool);
 
@@ -459,10 +458,10 @@ public:
                                              const bool inverseWeights,
                                              const bool dropIsolates);
 
-    void layoutForceDirectedSpringEmbedder(bool &dynamicMovement);
+    void layoutForceDirectedSpringEmbedder(const int maxIterations,
+                                           const int cW, const int cH);
 
-    void layoutForceDirectedFruchtermanReingold(bool dynamicMovement,
-                                                const int maxIterations,
+    void layoutForceDirectedFruchtermanReingold(const int maxIterations,
                                                 const int cW, const int cH);
 
 

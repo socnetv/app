@@ -10560,63 +10560,15 @@ void Graph::setShowNumbersInsideNodes(bool toggle){
 
 
 
-/** 
-    This slot is activated when the user clicks on the relevant MainWindow checkbox
-    (SpringEmbedder, Fruchterman)
-    to start or stop the movement of nodes, according to the requested model.
-    PARAMETERS:
-    state: movement on/off toggle
-    type:  controls the type of layout model requested. Available options
-            1: Spring Embedder
-            2: FruchtermanReingold
-    cW, cH: control the current canvasWidth and canvasHeight
-*/
-void Graph::nodeMovement(bool state, int type, int cW, int cH){
-    qDebug()<< "Graph: startNodeMovement() - state " << state;
-    canvasWidth = cW;
-    canvasHeight = cH;
-    //factor controls speed. Decrease it to increase speed...
-    // the smaller the factor is, the less responsive is the application
-    // when there are many nodes.
-    int factor=30;
-    //iteration = 0;
-    if (state == true){
-        qDebug()<< "Graph: startNodeMovement() - STARTING dynamicMovement" ;
-        dynamicMovement = true;
-        layoutType=type;
-        if (!timerId) {
-            qDebug("Graph: startTimer()");
-            timerId = startTimer(factor);
-        }
-    }
-    else {
-        qDebug()<< "Graph: startNodeMovement() - STOPPING dynamicMovement" ;
-        dynamicMovement = false;
-        killTimer(timerId);
-        timerId = 0;
-    }
-}
-
-
 
 
 /**	
     This method is automatically invoked when a QTimerEvent occurs
-    It checks layoutType to call the appropriate method with the Force Directed Placement algorithm.
+    UNUSED
 */
 void Graph::timerEvent(QTimerEvent *event) {	
     qDebug("Graph: timerEvent()");
     Q_UNUSED(event);
-    switch (layoutType){
-    case 1: {
-        layoutForceDirectedSpringEmbedder(dynamicMovement);
-        break;
-    }
-    case 2: {
-        layoutForceDirectedFruchtermanReingold(dynamicMovement,100, 1, 1);
-        break;
-    }
-    }
     if (!graphModified) {
         qDebug("Timer will be KILLED since no vertex is movin any more...");
         killTimer(timerId);
@@ -10641,11 +10593,15 @@ void Graph::timerEvent(QTimerEvent *event) {
     we will assume weaker logarithmic forces between far apart vertices...
 */
 
-void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
+void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations,
+                                              const int cW, const int cH){
     qreal dist = 0;
     qreal f_rep=0, f_att=0;
     QPointF DV;
     qreal c4=0.1; //normalization factor for final displacement
+
+    canvasWidth = cW;
+    canvasHeight = cH;
 
     QList<Vertex*>::const_iterator v1;
     QList<Vertex*>::const_iterator v2;
@@ -10656,15 +10612,14 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
     */
     qreal V = (qreal) vertices() ;
     qreal naturalLength= computeOptimalDistance(V);
-    int iteration = 0;
     qDebug() << "\n\n layoutForceDirectedSpringEmbedder() "
              << " vertices " << V
              << " naturalLength " << naturalLength;
 
-    if (dynamicMovement){
-        iteration++;
-        //setup init disp
+    int iteration = 1 ;
+    for ( iteration=1; iteration <= maxIterations ; iteration++) {
 
+        //setup init disp
         for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1)
         {
             (*v1) -> disp().rx() = 0;
@@ -10742,8 +10697,7 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
                 }  // end if hasArc
 
             } //end for v2
-            //recompute naturalLength (in case the user resized the window)
-            naturalLength= computeOptimalDistance(V);
+
             qDebug() << "  >>> final s = "<< (*v1)->name()
                      << " disp_s.x="<< (*v1)->disp().rx()
                       << " disp_s.y="<< (*v1)->disp().ry();
@@ -10753,7 +10707,7 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
 
         layoutForceDirected_Eades_moveNodes(c4) ;
 
-    } //end dynamicMovement
+    } //end iterations
 }
 
 
@@ -10766,7 +10720,7 @@ void Graph::layoutForceDirectedSpringEmbedder(bool &dynamicMovement){
     These forces induce movement. The algorithm might resemble molecular or planetary simulations,
     sometimes called n-body problems.
 */
-void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement, const int maxIterations, const int cW, const int cH){
+void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations, const int cW, const int cH){
     qreal dist = 0;
     qreal f_att, f_rep;
     QPointF DV;   //difference vector
@@ -10788,7 +10742,6 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement, const i
     QList<Vertex*>::const_iterator v1;
     QList<Vertex*>::const_iterator v2;
     int iteration = 1 ;
-//    if (dynamicMovement){
       for ( iteration=1; iteration <= maxIterations ; iteration++) {
 
         //setup init disp
@@ -10860,8 +10813,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(bool dynamicMovement, const i
                 } //endif
 
             }//end for v2
-            //recompute optimalDistance (in case the user resized the window)
-//            optimalDistance= C * computeOptimalDistance(V);
+
         } //end for v1
 
         // limit the max displacement to the temperature t
@@ -11074,7 +11026,6 @@ void Graph::layoutForceDirected_Eades_moveNodes(const qreal &c4) {
         newPos.ry() = qMin (
                     canvasHeight -42.0 , qMax (42.0 , newPos.y() )
                     );
-
 
         qDebug() << "  Final new pos (" <<  newPos.x() << ","
                  << newPos.y()<< ")";

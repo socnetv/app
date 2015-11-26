@@ -55,7 +55,7 @@
 
 
 
-bool printDebug=false;
+bool printDebug=true;
 
 
 void myMessageOutput (
@@ -1684,7 +1684,7 @@ void MainWindow::initActions(){
     printDebugAct->setWhatsThis(tr("Enables or disable Debug Messages\n\nPrinting debug messages to strerr. Enabling has a significant cpu cost but lets you know what SocNetV is actually doing."));
     printDebugAct->setCheckable(true);
     printDebugAct->setChecked (false);
-    printDebug=false;
+    //printDebug=false;
     connect(printDebugAct, SIGNAL(toggled(bool)), this, SLOT(slotPrintDebug(bool)));
 
 
@@ -2672,8 +2672,6 @@ void MainWindow::toolBoxLayoutForceDirectedButtonPressed(){
 
     switch(selectedModel) {
     case 0:
-        activeGraph.nodeMovement(false, 1, graphicsWidget->width(), graphicsWidget->height());
-        activeGraph.nodeMovement(false, 2, graphicsWidget->width(), graphicsWidget->height());
         break;
     case 1:
         slotLayoutSpringEmbedder();
@@ -2683,8 +2681,6 @@ void MainWindow::toolBoxLayoutForceDirectedButtonPressed(){
         break;
     default:
         toolBoxLayoutForceDirectedSelect->setCurrentIndex(0);
-        activeGraph.nodeMovement(false, 1, graphicsWidget->width(), graphicsWidget->height());
-        activeGraph.nodeMovement(false, 2, graphicsWidget->width(), graphicsWidget->height());
         break;
     };
 }
@@ -2755,7 +2751,8 @@ void MainWindow::initView() {
 
     graphicsWidget->setMinimumSize( (qreal)  ( this->width()-toolBox->sizeHint().width() -40 ) ,
                                     (qreal) ( this->height()-statusBar()->sizeHint().height() -toolBar->sizeHint().height() -menuBar()->sizeHint().height() -20 ) );
-    qDebug ("MW initView(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
+    qDebug ("MW initView(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(),
+            graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
 
 }
 
@@ -5730,8 +5727,9 @@ void MainWindow::slotLayoutCircularRandom(){
 
 
 /**
-        Called from menu or toolbox checkbox
-        Calls Graph::startNodeMovement to embed a spring-gravitational model
+    Called from menu or toolbox checkbox
+    Calls Graph::layoutForceDirectedSpringEmbedder to embed a
+    spring-gravitational model
 */
 void MainWindow::slotLayoutSpringEmbedder(){
     qDebug()<< "MW:slotLayoutSpringEmbedder";
@@ -5741,12 +5739,9 @@ void MainWindow::slotLayoutSpringEmbedder(){
 
         return;
     }
-
-    //Stop any other layout running
-    activeGraph.nodeMovement(false, 2, graphicsWidget->width(), graphicsWidget->height());
-    //scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
     statusMessage( tr("Embedding a spring-gravitational model on the network.... ")  );
-    activeGraph.nodeMovement(true, 1, graphicsWidget->width(), graphicsWidget->height());
+    //scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
+    activeGraph.layoutForceDirectedSpringEmbedder(100,graphicsWidget->width(), graphicsWidget->height());
     //scene->setItemIndexMethod (QGraphicsScene::BspTreeIndex); //best when not moving items
 }
 
@@ -5756,7 +5751,8 @@ void MainWindow::slotLayoutSpringEmbedder(){
 
 /**
     Called from menu or toolbox
-    Calls Graph::startNodeMovement to embed a repelling-attracting forces model
+    Calls Graph::layoutForceDirectedFruchtermanReingold to embed
+    a repelling-attracting forces model
 */
 void MainWindow::slotLayoutFruchterman(){
     qDebug("MW: slotLayoutFruchterman ()");
@@ -5766,15 +5762,11 @@ void MainWindow::slotLayoutFruchterman(){
         return;
     }
 
-    //activeGraph.nodeMovement(false, 1, graphicsWidget->width(), graphicsWidget->height());
     statusMessage( tr("Embedding a repelling-attracting forces model on the network.... ")  );
     //scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
-    //activeGraph.nodeMovement(true, 2, graphicsWidget->width(), graphicsWidget->height());
-    activeGraph.layoutForceDirectedFruchtermanReingold(true, 100,graphicsWidget->width(), graphicsWidget->height());
-    activeGraph.layoutForceDirectedFruchtermanReingold(true, 50,graphicsWidget->width(), graphicsWidget->height());
-    activeGraph.layoutForceDirectedFruchtermanReingold(true, 50,graphicsWidget->width(), graphicsWidget->height());
-    activeGraph.layoutForceDirectedFruchtermanReingold(true, 50,graphicsWidget->width(), graphicsWidget->height());
-    activeGraph.layoutForceDirectedFruchtermanReingold(true, 50,graphicsWidget->width(), graphicsWidget->height());
+    activeGraph.layoutForceDirectedFruchtermanReingold(100,graphicsWidget->width(), graphicsWidget->height());
+    activeGraph.layoutForceDirectedFruchtermanReingold(100,graphicsWidget->width(), graphicsWidget->height());
+    activeGraph.layoutForceDirectedFruchtermanReingold(100,graphicsWidget->width(), graphicsWidget->height());
     //scene->setItemIndexMethod (QGraphicsScene::BspTreeIndex); //best when not moving items
 
 }
@@ -5783,7 +5775,7 @@ void MainWindow::slotLayoutFruchterman(){
 
 
 /**
- * @brief MainWindow::slotLayoutNodeSizesByOutDegree
+ * @brief
  * Resizes all nodes according to their outDegree
  * Called when user selects the relevant menu entry or the option in the toolbox
  * @param checked
@@ -5835,7 +5827,7 @@ void MainWindow::slotLayoutNodeSizesByOutDegree(bool checked){
 
 
 /**
- * @brief MainWindow::slotLayoutNodeSizesByInDegree
+ * @brief
  * Resizes all nodes according to their inDegree
  * Called when user selects the relevant menu entry or the option in the toolbox
  * @param checked
@@ -5883,7 +5875,8 @@ void MainWindow::slotLayoutNodeSizesByInDegree(bool checked){
 
 
 /**
- * @brief MainWindow::slotLayoutGuides
+ * @brief
+ * Enables/disables layout guides
  * @param state
  */
 void MainWindow::slotLayoutGuides(int state){
@@ -5908,7 +5901,7 @@ void MainWindow::slotLayoutGuides(int state){
 
 
 /**
- * @brief MainWindow::slotLayoutCircularByProminenceIndex
+ * @brief
  * Checks sender text() to find out who QMenu item was pressed
  * calls slotLayoutCircularByProminenceIndex(QString)
  */
@@ -5936,7 +5929,7 @@ void MainWindow::slotLayoutCircularByProminenceIndex(){
 
 
 /**
- * @brief MainWindow::slotLayoutCircularByProminenceIndex
+ * @brief
  * Overloaded - called when selectbox changes in the toolbox
  * or from slotLayoutCircularByProminenceIndex() when the user click on menu
  * Repositions all nodes  on a Circular layout based on that index
@@ -6099,7 +6092,7 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
 
 
 /**
- * @brief MainWindow::slotLayoutNodeSizesByProminenceIndex
+ * @brief
  * Called when selectbox changes in the toolbox
  */
 void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
@@ -6253,7 +6246,7 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
 
 
 /**
- * @brief MainWindow::slotLayoutLevelByProminenceIndex
+ * @brief
  * Checks sender text() to find out who QMenu item was pressed
  * and what prominence index was chosen
  * calls slotLayoutLevelByProminenceIndex(QString)
