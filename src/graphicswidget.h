@@ -143,12 +143,12 @@ private:
     H_NumToNode nodeHash;	//This is used in drawEdge() method
     H_StrToEdge edgesHash; // helper hash to easily find edges
     int m_curRelation;
-    int timerId,  layoutType, m_nodeSize, m_numberDistance, m_labelDistance;
+    int  m_nodeSize, m_numberDistance, m_labelDistance;
     double m_currentScaleFactor;
     int m_currentRotationAngle;
     int zoomIndex, markedNodeOrigSize,markedEdgeSourceOrigSize, markedEdgeTargetOrigSize;
     QString m_nodeLabel, m_numberColor, m_nodeColor, m_labelColor, m_linkColor;
-    bool secondDoubleClick, dynamicMovement, markedNodeExist, markedEdgeExist;
+    bool secondDoubleClick, markedNodeExist, markedEdgeExist;
     QGraphicsItem *moving;
     QPointF startPoint, endPoint;
     Node *firstNode, *secondNode, *markedNode1, *markedEdgeSource;

@@ -55,7 +55,7 @@
 
 
 
-bool printDebug=true;
+bool printDebug=false;
 
 
 void myMessageOutput (
@@ -1684,7 +1684,7 @@ void MainWindow::initActions(){
     printDebugAct->setWhatsThis(tr("Enables or disable Debug Messages\n\nPrinting debug messages to strerr. Enabling has a significant cpu cost but lets you know what SocNetV is actually doing."));
     printDebugAct->setCheckable(true);
     printDebugAct->setChecked (false);
-    //printDebug=false;
+    printDebug=false;
     connect(printDebugAct, SIGNAL(toggled(bool)), this, SLOT(slotPrintDebug(bool)));
 
 
@@ -5741,7 +5741,9 @@ void MainWindow::slotLayoutSpringEmbedder(){
     }
     statusMessage( tr("Embedding a spring-gravitational model on the network.... ")  );
     //scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
+    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
     activeGraph.layoutForceDirectedSpringEmbedder(100,graphicsWidget->width(), graphicsWidget->height());
+    QApplication::restoreOverrideCursor();
     //scene->setItemIndexMethod (QGraphicsScene::BspTreeIndex); //best when not moving items
 }
 
@@ -5764,9 +5766,12 @@ void MainWindow::slotLayoutFruchterman(){
 
     statusMessage( tr("Embedding a repelling-attracting forces model on the network.... ")  );
     //scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
+    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+    activeGraph.layoutForceDirectedFruchtermanReingold(70,graphicsWidget->width(), graphicsWidget->height());
+    activeGraph.layoutForceDirectedFruchtermanReingold(70,graphicsWidget->width(), graphicsWidget->height());
     activeGraph.layoutForceDirectedFruchtermanReingold(100,graphicsWidget->width(), graphicsWidget->height());
     activeGraph.layoutForceDirectedFruchtermanReingold(100,graphicsWidget->width(), graphicsWidget->height());
-    activeGraph.layoutForceDirectedFruchtermanReingold(100,graphicsWidget->width(), graphicsWidget->height());
+    QApplication::restoreOverrideCursor();
     //scene->setItemIndexMethod (QGraphicsScene::BspTreeIndex); //best when not moving items
 
 }

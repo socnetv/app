@@ -67,9 +67,7 @@ Graph::Graph() {
     calculatedTriad=false;
     m_precision = 5;
     m_curRelation=0;
-    dynamicMovement=false;
-    timerId=0;
-    layoutType=0;
+
 
     file_parser = 0;
     wc_parser = 0;
@@ -10659,7 +10657,7 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations,
                   *  calculate electric (repulsive) forces between
                   *  all vertices.
                   */
-                f_rep = layoutForceDirected_F_rep (dist, naturalLength) ;
+                f_rep = layoutForceDirected_F_rep ("Eades", dist, naturalLength) ;
                 (*v1)->disp().rx() += sign( DV.x() ) * f_rep ;
                 (*v1)->disp().ry() += sign( DV.y() ) * f_rep  ;
                 qDebug() <<"  s = "<< (*v1)->name()
@@ -10676,7 +10674,7 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations,
                 */
                 if ( this->hasArc ( (*v1) ->name(), (*v2) -> name()) ) {
 
-                    f_att = layoutForceDirected_F_att (dist, naturalLength) ;
+                    f_att = layoutForceDirected_F_att ("Eades", dist, naturalLength) ;
 
                     (*v1)->disp().rx() += sign( DV.x() ) * f_att ;
                     (*v1)->disp().ry() += sign( DV.y() ) * f_att ;
@@ -10784,7 +10782,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations, cons
                 dist = euclideian_distance( DV );
 
                 //calculate repulsive force from _near_ vertices
-                f_rep = layoutForceDirected_F_rep(dist, optimalDistance);
+                f_rep = layoutForceDirected_F_rep( "FR", dist, optimalDistance);
                 (*v1)->disp().rx() += sign( DV.x() ) * f_rep;
                 (*v1)->disp().ry() += sign( DV.y() ) * f_rep ;
 
@@ -10796,7 +10794,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations, cons
 
                 if ( this->hasArc ((*v1)->name(), (*v2)->name()) ) {
                     //calculate attracting force
-                    f_att = layoutForceDirected_F_att (dist, optimalDistance);
+                    f_att = layoutForceDirected_F_att ("FR", dist, optimalDistance);
                     (*v1)->disp().rx() += sign( DV.x() ) * f_att;
                     (*v1)->disp().ry() += sign( DV.y() ) * f_att;
                     (*v2)->disp().rx() -= sign( DV.x() ) * f_att ;
@@ -10864,13 +10862,14 @@ qreal Graph::computeOptimalDistance(const int &Vertices){
 
 
 
-qreal Graph::layoutForceDirected_F_att( const qreal &dist, const qreal &optimalDistance) {
+qreal Graph::layoutForceDirected_F_att( const QString model, const qreal &dist,
+                                        const qreal &optimalDistance) {
     qreal f_att;
-    if (layoutType == 1) {  //layoutType -> Eades
+    if (model == "Eades") {
         qreal c_spring=2;
         f_att = c_spring * log10 ( dist / optimalDistance );
     }
-    else {   // layoutType -> FR
+    else {   // model -> FR
         f_att= ( dist * dist ) / optimalDistance;
     }
 
@@ -10878,9 +10877,10 @@ qreal Graph::layoutForceDirected_F_att( const qreal &dist, const qreal &optimalD
 }
 
 
-qreal Graph::layoutForceDirected_F_rep(const qreal &dist, const qreal &optimalDistance) {
+qreal Graph::layoutForceDirected_F_rep( const QString model, const qreal &dist,
+                                        const qreal &optimalDistance) {
     qreal f_rep;
-    if (layoutType == 1) { //layoutType -> Eades
+    if (model == "Eades") {
         if (dist !=0){
             qreal c_rep= 1.0;
             f_rep =  c_rep / (dist * dist);
@@ -10894,7 +10894,7 @@ qreal Graph::layoutForceDirected_F_rep(const qreal &dist, const qreal &optimalDi
         }
 
     }
-    else {  // layoutType -> FR
+    else {  // model -> FR
         // To speed up our algorithm we use the grid-variant algorithm.
         if ( (2.0 * optimalDistance) < dist ) {
             //neglect vertices outside circular area of radius 2*optimalDistance

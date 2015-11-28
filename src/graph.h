@@ -272,8 +272,10 @@ public:
     qreal euclideian_distance(const QPointF &a);
     int sign(const qreal &D);
 
-    qreal layoutForceDirected_F_rep(const qreal &dist,const qreal &optimalDistance) ;
-    qreal layoutForceDirected_F_att(const qreal &dist,const qreal &optimalDistance) ;
+    qreal layoutForceDirected_F_rep(const QString model, const qreal &dist,
+                                    const qreal &optimalDistance) ;
+    qreal layoutForceDirected_F_att(const QString model, const qreal &dist,
+                                    const qreal &optimalDistance) ;
 
     void layoutForceDirected_Eades_moveNodes(const qreal &c4);
     void layoutForceDirected_FR_moveNodes(const qreal &temperature) ;
@@ -586,7 +588,7 @@ private:
     H_StrToInt discreteIRCCs, discreteECs, discreteEccentricities;
     H_StrToInt discretePCs, discreteICs,  discretePRPs, discretePPs;
 
-    bool calculatedDP, calculatedDC, calculatedCentralities, dynamicMovement;
+    bool calculatedDP, calculatedDC, calculatedCentralities;
     bool calculatedPP, calculatedIRCC, calculatedIC, calculatedPRP;
     bool calculatedTriad;
 
@@ -638,7 +640,7 @@ private:
     int isolatedVertices;
     float averGraphDistance, nonZeroDistancesCounter;
     int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;
-    int timerId,  layoutType, canvasWidth, canvasHeight;
+    int timerId,  canvasWidth, canvasHeight;
     bool order, initShowLabels, initNumbersInsideNodes;
     bool adjacencyMatrixCreated, symmetricAdjacencyMatrix, graphModified,
         distanceMatrixCreated;

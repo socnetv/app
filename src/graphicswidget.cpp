@@ -47,10 +47,7 @@
 GraphicsWidget::GraphicsWidget( QGraphicsScene *sc, MainWindow* par)  : QGraphicsView ( sc,par) {
     setScene(sc);
     secondDoubleClick=false;
-    dynamicMovement=false;
     moving=0;
-    timerId=0;
-    layoutType=0;
     m_nodeLabel="";
     zoomIndex=3;
     m_currentScaleFactor = 1;
