@@ -58,38 +58,33 @@ let go so that the spring forces on the rings move the system to a minimal
 energy state."</em>
 
 
-In our implementation, nodes are regarded as physical bodies (i.e. rings) which exert
-repelling forces to each other, while edges become springs which excert attractive forces.
+In our implementation, every node \f$ u \in V \f$ of the network is regarded as a
+physical body (i.e. ring) which exert repelling force \f$ F_{r} \f$ to every other node.
+At the same time, every edge \f$(u,v) \in E \f$ becomes a "spring" which excert 
+attractive force \f$ F_{a} \f$ between the nodes \f$u\f$ and \f$v\f$ it connects. 
+Following Eades, the forces of springs do now follow Hooke'w Law.
+Instead we assume weaker, logarithmic forces between edges \f$(u,v) \in E \f$:
+
+
+\f[  F_{a}^{u,v} = c_1 \cdot \log{ \frac{d_{u,v}}{c_2} } \f]
+
+where \f$d\f$ the euclidean distance, the constant \f$ c_1 = 2 \f$ and the other constant \f$ c_2 \f$ is the "natural length" of the spring which is a function of screen/viewport area and the width of the vertex:
+
+\f$ c_2 = vertexWidth +  \sqrt{ \frac { screenArea }  { |V| } } \f$
+
+
+The repelling force \f$ F_{r} \f$ between every pair of nodes is computed with the formula:
+
+\f[ F_{r}  =  \frac { c_3 }  {  d_{u,v} ^2  } \f]
+
+
+where \f$ c_3=1 \f$
 
 
 These forces are applied to the nodes iteratively, pulling them closer together or pushing them further apart,
 until the system comes to an equilibrium state (node positions do not change anymore).
 
-
-Note that, following Eades, the forces of springs do now follow Hooke'w Law.
-Instead we assume weaker logarithmic forces between pair of vertices v and u:
-
-
-~~~~~
-AttractiveForce= c_spring * log10 ( distance(v,u) / naturalLength )
-~~~~~
-
-~~~~~
-RepellingForce =  c_rep / (distance(v,u) * distance(v,u) );
-~~~~~
-
-
-where
-
-~~~~~
-naturalLength= vertexWidth +  Sqrt( screenArea / |Vertices| )
-c_spring=2
-c_rep=1;
-~~~~~
-
-
-Note: Repulsive forces are calculated between every pair of
-vertices, but attractive forces are calculated only between neighbours.
+Note: Repulsive forces are calculated between every pair of vertices, but attractive forces are calculated only between neighbours (nodes connected by an edge/arc).
 
 
 \subsection LayoutFR Fruchterman-Reingold 
