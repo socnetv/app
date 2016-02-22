@@ -2309,7 +2309,7 @@ void MainWindow::initToolBox(){
                    "is the state with the minimum imbalance. The degree of \n"
                    "imbalance is formulated as the total spring energy: \n"
                    "the square summation of the differences between desirable \n"
-                   "distances and real ones for all pairs of vertices""
+                   "distances and real ones for all pairs of vertices"
                    )
                 );
 

@@ -280,7 +280,7 @@ public:
     void layoutForceDirected_Eades_moveNodes(const qreal &c4);
     void layoutForceDirected_FR_moveNodes(const qreal &temperature) ;
 
-    qreal temperature(const int iteration) const;
+    qreal layoutForceDirected_FR_temperature(const int iteration) const;
     qreal computeOptimalDistance(const int &Vertices);
     void compute_angles( const QPointF &Delta,
                          const qreal &dist,
@@ -467,6 +467,8 @@ public:
                                                 const int cW, const int cH);
 
 
+    void layoutForceDirectedKamadaKawai(const int maxIterations,
+                                        const int cW, const int cH);
     /* CRAWLER */
     void terminateCrawlerThreads (QString reason);
 

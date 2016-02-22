@@ -10816,7 +10816,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations, cons
 
         // limit the max displacement to the temperature t
         // prevent placement outside of the frame/canvas
-        layoutForceDirected_FR_moveNodes( temperature (iteration) );
+        layoutForceDirected_FR_moveNodes( layoutForceDirected_FR_temperature (iteration) );
 
     }
 
@@ -10824,21 +10824,59 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations, cons
 
 
 
+
 /**
- * @brief Graph::temperature
- * reduces the temperature as the layout approaches a better configuration
+ * @brief Graph::layoutForceDirectedKamadaKawai
+ * In this model, the graph is considered to be a dynamic system
+ * where every two vertices are connected  by a 'spring' of a
+ * desirable length, which corresponds to their graph theoretic
+ * distance. In this way, the optimal layout of the graph
+ * is the state with the minimum imbalance. The degree of
+ * imbalance is formulated as the total spring energy:
+ * the square summation of the differences between desirable
+ * distances and real ones for all pairs of vertices
  * @return qreal temperature
  */
-qreal Graph::temperature(const int iteration) const{
+
+void Graph::layoutForceDirectedKamadaKawai(const int maxIterations, const int cW, const int cH){
+
+    // compute dij for 1 <= i!=j <= n
+
+    // compute lij for 1 <= i!=j <= n
+
+    // compute kij for 1 <= i!=j <= n
+
+    // initialize p1, p2, ... pn;
+
+    // while ( max_D_i > e )
+
+      // let pm the particle satisfying  D_m = max_D_i
+
+      // while ( D_m > e)
+
+        // compute delta_x and delta_y by solving equations 11 and 12
+        // x_m = x_m + delta_x
+        // y_m = y_m + delta_y
+
+
+
+}
+
+/**
+ * @brief Graph::layoutForceDirected_FR_temperature
+ * Reduces the temperature as the layout approaches a better configuration
+ * @return qreal temperature
+ */
+qreal Graph::layoutForceDirected_FR_temperature(const int iteration) const{
     qreal temp=0;
-    qDebug() << "cool iteration " << iteration;
+    qDebug() << "Graph::layoutForceDirected_FR_temperature(): cool iteration " << iteration;
     if (iteration < 10)
         temp =canvasWidth / 10.0;
     else
         temp =canvasWidth / (iteration + 10) ;
     if (iteration > 100)  // follow Eades advice...
         temp = 0;
-    qDebug() << "Graph::temperature() - iteration " << iteration
+    qDebug() << "Graph::layoutForceDirected_FR_temperature() - iteration " << iteration
              << " temp " << temp;
     return temp;
 
