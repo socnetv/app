@@ -2306,7 +2306,7 @@ void MainWindow::initToolBox(){
                    "of a desirable length, which corresponds to their graph \n"
                    "theoretic distance. The optimal layout in this model is \n "
                    "the state in which the total spring energy of the system \n"
-                   "becomes minimal."
+                   "becomes minimal. "
                    )
                 );
 

@@ -31,7 +31,6 @@ Many thanks to:
 - Martin Hohenberg	
 - Victor Cardoso
 - Paul Johnson
-- David de Ugarte, for an older Spanish translation
 
 
 
