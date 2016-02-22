@@ -2302,11 +2302,14 @@ void MainWindow::initToolBox(){
                    "neighbours  attract each other but, unlike Eades Spring \n"
                    "Embedder, all vertices repel each other.\n\n"
                    "Kamada-Kawai\n"
-                   "In this model, every two vertices are connected by a 'spring' \n"
-                   "of a desirable length, which corresponds to their graph \n"
-                   "theoretic distance. The optimal layout in this model is \n "
-                   "the state in which the total spring energy of the system \n"
-                   "becomes minimal. "
+                   "In this model, the graph is considered to be a dynamic system \n"
+                   "where every two vertices are connected  by a 'spring' of a \n"
+                   "desirable length, which corresponds to their graph theoretic \n"
+                   "distance. In this way, the optimal layout of the graph \n"
+                   "is the state with the minimum imbalance. The degree of \n"
+                   "imbalance is formulated as the total spring energy: \n"
+                   "the square summation of the differences between desirable \n"
+                   "distances and real ones for all pairs of vertices""
                    )
                 );
 
