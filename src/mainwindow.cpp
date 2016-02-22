@@ -2283,7 +2283,7 @@ void MainWindow::initToolBox(){
     modelsList << tr("None")
                 << tr("Spring Embedder (Eades)")
                 << tr("Fruchterman-Reingold")
-                << tr("Kamanda-Kawai") ;
+                << tr("Kamada-Kawai") ;
 
     toolBoxLayoutForceDirectedSelect->addItems(modelsList);
     toolBoxLayoutForceDirectedSelect->setMinimumHeight(20);
@@ -2301,7 +2301,12 @@ void MainWindow::initToolBox(){
                    "forces to each other. Again, only vertices that are \n"
                    "neighbours  attract each other but, unlike Eades Spring \n"
                    "Embedder, all vertices repel each other.\n\n"
-                   "Kamanda-Kawai\n"
+                   "Kamada-Kawai\n"
+                   "In this model, every two vertices are connected by a 'spring' \n"
+                   "of a desirable length, which corresponds to their graph \n"
+                   "theoretic distance. The optimal layout in this model is \n "
+                   "the state in which the total spring energy of the system \n"
+                   "becomes minimal."
                    )
                 );
 
