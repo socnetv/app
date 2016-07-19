@@ -2134,7 +2134,6 @@ void MainWindow::initToolBox(){
 
     //create a groupbox "Edit" - Inside, display the grid layout of widgets
     QGroupBox *editGroupBox= new QGroupBox(tr("Edit"));
-    editGroupBox->setFlat(true);
     editGroupBox->setLayout(buttonsGrid);
     editGroupBox->setMaximumWidth(285);
     editGroupBox->setMinimumHeight(100);
@@ -2220,7 +2219,6 @@ void MainWindow::initToolBox(){
 
     //create a box and set the above layout inside
     QGroupBox *analysisBox= new QGroupBox(tr("Analyze"));
-    analysisBox->setFlat(true);
     analysisBox->setMinimumHeight(200);
     analysisBox->setMaximumHeight(250);
     analysisBox->setLayout (analysisGrid );
@@ -2269,11 +2267,10 @@ void MainWindow::initToolBox(){
     layoutByIndexGrid -> addWidget(toolBoxLayoutByIndexTypeSelect, 1,1);
     layoutByIndexGrid -> addWidget(toolBoxLayoutByIndexButton, 2,1);
     layoutByIndexGrid -> setSpacing(10);
-    layoutByIndexGrid -> setMargin(0);
+    layoutByIndexGrid -> setContentsMargins(10, 0, 10, 10);
 
     //create a box and set the above layout inside
     QGroupBox *layoutByIndexBox= new QGroupBox(tr("By Prominence Index"));
-    layoutByIndexBox->setFlat(true);
     layoutByIndexBox->setMinimumHeight(150);
     layoutByIndexBox->setMaximumHeight(200);
     layoutByIndexBox->setLayout (layoutByIndexGrid );
@@ -2328,8 +2325,8 @@ void MainWindow::initToolBox(){
     layoutForceDirectedGrid -> addWidget(toolBoxLayoutForceDirectedSelectLabel, 0,0);
     layoutForceDirectedGrid -> addWidget(toolBoxLayoutForceDirectedSelect, 0,1);
     layoutForceDirectedGrid -> addWidget(toolBoxLayoutForceDirectedButton, 1,1);
-    layoutForceDirectedGrid->setSpacing(10);
-    layoutForceDirectedGrid->setMargin(0);
+    layoutForceDirectedGrid -> setSpacing(10);
+    layoutForceDirectedGrid -> setContentsMargins(10, 0, 10, 10);
 
     //create a box for dynamic layout options
     QGroupBox *layoutDynamicBox= new QGroupBox(tr("By Force-Directed Model"));
@@ -2395,8 +2392,8 @@ void MainWindow::initToolBox(){
     controlTabVerticalLayout -> addWidget(editGroupBox);
     controlTabVerticalLayout -> addWidget(analysisBox);
     controlTabVerticalLayout -> addWidget(visualizationBox);
-    controlTabVerticalLayout->setSpacing(0);
-    controlTabVerticalLayout->setMargin(0);
+    controlTabVerticalLayout -> setSpacing(0);
+    controlTabVerticalLayout -> setContentsMargins(10, 0, 10, 10);
 
     QGroupBox *controlGroupBox = new QGroupBox;
     controlGroupBox->setLayout(controlTabVerticalLayout);
