@@ -2130,7 +2130,7 @@ void MainWindow::initToolBox(){
     buttonsGrid -> addWidget(addEdgeBt,1,0);
     buttonsGrid -> addWidget(removeEdgeBt,1,1);
     buttonsGrid->setSpacing(10);
-    buttonsGrid -> setContentsMargins(10, 0, 10, 10);
+    buttonsGrid -> setContentsMargins(10, 10, 10, 10);
 
     //create a groupbox "Edit" - Inside, display the grid layout of widgets
     QGroupBox *editGroupBox= new QGroupBox(tr("Edit"));
@@ -2214,7 +2214,7 @@ void MainWindow::initToolBox(){
     analysisGrid -> addWidget(toolBoxAnalysisProminenceSelectLabel, 4,0);
     analysisGrid -> addWidget(toolBoxAnalysisProminenceSelect, 4,1);
     analysisGrid -> setSpacing(10);
-    analysisGrid -> setContentsMargins(10, 0, 10, 10);
+    analysisGrid -> setContentsMargins(10, 10, 10, 10);
     //layoutByIndexGrid -> setRowStretch(0,1);   //fix stretch
 
     //create a box and set the above layout inside
@@ -2392,15 +2392,14 @@ void MainWindow::initToolBox(){
     controlTabVerticalLayout -> addWidget(editGroupBox);
     controlTabVerticalLayout -> addWidget(analysisBox);
     controlTabVerticalLayout -> addWidget(visualizationBox);
-    controlTabVerticalLayout -> setSpacing(0);
-    controlTabVerticalLayout -> setContentsMargins(10, 0, 10, 10);
+    controlTabVerticalLayout -> setSpacing(10);
+    controlTabVerticalLayout -> setContentsMargins(0, 20, 0, 0);
 
     QGroupBox *controlGroupBox = new QGroupBox;
     controlGroupBox->setLayout(controlTabVerticalLayout);
-    controlGroupBox->setMaximumWidth(290);
+    controlGroupBox->setFixedWidth(290);
     controlGroupBox->setMinimumHeight(700);
     controlGroupBox->setMaximumHeight(800);
-    controlGroupBox->setContentsMargins(0,0,0,0);
     toolBox->addTab(controlGroupBox, tr("Controls"));
 
     connect(nodeSizesByOutDegreeBx , SIGNAL(clicked(bool)),
@@ -2495,7 +2494,7 @@ void MainWindow::initToolBox(){
     toolBox->addTab( networkPropertiesGroup, tr("Statistics"));
     toolBox->setMinimumWidth(controlGroupBox->sizeHint().width());
     toolBox->setFixedWidth(300);
-    //toolBox->setStyleSheet("* { background-color:#ededed}}");
+    //toolBox->setStyleSheet("* { background-color:#eee}}");
 
 }
 
