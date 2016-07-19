@@ -2130,10 +2130,11 @@ void MainWindow::initToolBox(){
     buttonsGrid -> addWidget(addEdgeBt,1,0);
     buttonsGrid -> addWidget(removeEdgeBt,1,1);
     buttonsGrid->setSpacing(10);
-    buttonsGrid->setMargin(0);
+    buttonsGrid -> setContentsMargins(10, 0, 10, 10);
 
-    //create a groupbox "Edit" - Inside, display the vertical layout of widgets
+    //create a groupbox "Edit" - Inside, display the grid layout of widgets
     QGroupBox *editGroupBox= new QGroupBox(tr("Edit"));
+    editGroupBox->setFlat(true);
     editGroupBox->setLayout(buttonsGrid);
     editGroupBox->setMaximumWidth(285);
     editGroupBox->setMinimumHeight(100);
@@ -2213,10 +2214,13 @@ void MainWindow::initToolBox(){
     analysisGrid -> addWidget(toolBoxAnalysisClusterabilitySelect, 3,1);
     analysisGrid -> addWidget(toolBoxAnalysisProminenceSelectLabel, 4,0);
     analysisGrid -> addWidget(toolBoxAnalysisProminenceSelect, 4,1);
+    analysisGrid -> setSpacing(10);
+    analysisGrid -> setContentsMargins(10, 0, 10, 10);
     //layoutByIndexGrid -> setRowStretch(0,1);   //fix stretch
 
     //create a box and set the above layout inside
     QGroupBox *analysisBox= new QGroupBox(tr("Analyze"));
+    analysisBox->setFlat(true);
     analysisBox->setMinimumHeight(200);
     analysisBox->setMaximumHeight(250);
     analysisBox->setLayout (analysisGrid );
@@ -2269,6 +2273,7 @@ void MainWindow::initToolBox(){
 
     //create a box and set the above layout inside
     QGroupBox *layoutByIndexBox= new QGroupBox(tr("By Prominence Index"));
+    layoutByIndexBox->setFlat(true);
     layoutByIndexBox->setMinimumHeight(150);
     layoutByIndexBox->setMaximumHeight(200);
     layoutByIndexBox->setLayout (layoutByIndexGrid );
