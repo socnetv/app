@@ -81,343 +81,45 @@ void myMessageOutput (
 }
 
 
-/** MainWindow contruction method **/
+
+/**
+ * @brief MainWindow::MainWindow
+ * @param m_fileName
+ * MainWindow contruction method
+ */
 MainWindow::MainWindow(const QString & m_fileName) {
 
     qInstallMessageHandler( myMessageOutput );
 
     setWindowIcon (QIcon(":/images/socnetv.png"));
 
-    /** inits that invoke all other construction parts **/
-    initActions();  //register and construct menu Actions
-    initMenuBar();  //construct menu
-    initToolBar();  //build the toolbar
-    initStatusBar();  //and now add the status bar.
-    initToolBox(); //finally, build the toolbox
+    /** functions that invoke all other construction parts **/
+    initActions();      //register and construct menu Actions
 
-    //set MW minimum size, before creating scene and canvas
-    this->setMinimumSize(1024,750);
+    initMenuBar();      //construct the menu
 
-    initView(); //create the canvas
+    initToolBar();      //build the toolbar
 
+    initStatusBar();    //add the status bar
 
+    initToolBox();      //build the toolbox
 
+    this->setMinimumSize(1024,750); //set MW minimum size, before creating canvas
 
-    int size = style()->pixelMetric(QStyle::PM_ToolBarIconSize);
-    QSize iconSize(size, size);
+    initView();         //init our network "canvas"
 
-    // Zoom slider
-    zoomInBtn = new QToolButton;
-    zoomInBtn->setAutoRepeat(true);
-    zoomInBtn->setAutoRepeatInterval(33);
-    zoomInBtn->setAutoRepeatDelay(0);
-    zoomInBtn->setIcon(QPixmap(":/images/zoomin.png"));
-    zoomInBtn->setIconSize(iconSize);
+    initMainWindow();   //init the application window, set layout etc
 
-    zoomOutBtn = new QToolButton;
+    initSignalSlots();  //connect signals and slots between app components
 
-    zoomOutBtn->setAutoRepeat(true);
-    zoomOutBtn->setAutoRepeatInterval(33);
-    zoomOutBtn->setAutoRepeatDelay(0);
-    zoomOutBtn->setIcon(QPixmap(":/images/zoomout.png"));
-    zoomOutBtn->setIconSize(iconSize);
-
-    zoomSlider = new QSlider;
-    zoomSlider->setMinimum(0);
-    zoomSlider->setMaximum(500);
-    zoomSlider->setValue(250);
-    zoomSlider->setTickPosition(QSlider::TicksRight);
-
-    // Zoom slider layout
-    QVBoxLayout *zoomSliderLayout = new QVBoxLayout;
-    zoomSliderLayout->addWidget(zoomInBtn);
-    zoomSliderLayout->addWidget(zoomSlider);
-    zoomSliderLayout->addWidget(zoomOutBtn);
-
-    // Rotate slider
-    rotateLeftBtn = new QToolButton;
-    rotateLeftBtn->setIcon(QPixmap(":/images/rotateleft.png"));
-    rotateLeftBtn->setIconSize(iconSize);
-    rotateRightBtn = new QToolButton;
-    rotateRightBtn ->setIcon(QPixmap(":/images/rotateright.png"));
-    rotateRightBtn ->setIconSize(iconSize);
-    rotateSlider = new QSlider;
-    rotateSlider->setOrientation(Qt::Horizontal);
-    rotateSlider->setMinimum(-360);
-    rotateSlider->setMaximum(360);
-    rotateSlider->setValue(0);
-    rotateSlider->setTickPosition(QSlider::TicksBelow);
-
-    // Rotate slider layout
-    QHBoxLayout *rotateSliderLayout = new QHBoxLayout;
-    rotateSliderLayout->addWidget(rotateLeftBtn);
-    rotateSliderLayout->addWidget(rotateSlider);
-    rotateSliderLayout->addWidget(rotateRightBtn );
-
-    resetSlidersBtn = new QToolButton;
-    resetSlidersBtn->setText(tr("0"));
-    resetSlidersBtn->setEnabled(false);
-
-    // Create a layout for the toolbox and the canvas.
-    // This will be the layout of our MW central widget
-    QGridLayout *layout = new QGridLayout;
-    layout->addWidget(toolBox, 0, 0, 2,1); 		//add them
-    layout->addWidget(graphicsWidget,0,1);
-    layout->addLayout(zoomSliderLayout, 0, 2);
-    layout->addLayout(rotateSliderLayout, 1, 1, 1, 1);
-    layout->addWidget(resetSlidersBtn, 1, 2, 1, 1);
-
-    //create a dummy widget, and set the above layout
-    QWidget *widget = new QWidget;
-    widget->setLayout(layout);
-
-    //now set this as central widget of MW
-    setCentralWidget(widget);
-
-
-
-
-
-
-    //Connect some signals to/from the canvas and the Graph
-    connect( graphicsWidget, SIGNAL( selectedNode(Node*) ),
-             this, SLOT( nodeInfoStatusBar(Node*) ) 	);
-
-    connect( graphicsWidget, SIGNAL( selectedEdge(Edge*) ),
-             this, SLOT ( edgeInfoStatusBar(Edge*) )  );
-
-    connect( graphicsWidget, SIGNAL( windowResized(int, int)),
-             this, SLOT( windowInfoStatusBar(int,int)) 	);
-
-    connect( graphicsWidget, SIGNAL( windowResized(int, int)),
-             &activeGraph, SLOT( setCanvasDimensions(int,int)) 	);
-
-    connect( graphicsWidget, SIGNAL( userDoubleClicked(int, QPointF) ),
-             this, SLOT( addNodeWithMouse(int,QPointF) ) ) ;
-
-    connect( graphicsWidget, SIGNAL( userMiddleClicked(int, int, float) ),
-             this, SLOT( addEdge(int, int, float) ) 	);
-
-
-    connect( graphicsWidget, SIGNAL( openNodeMenu() ),
-             this, SLOT( openNodeContextMenu() ) ) ;
-
-    connect( graphicsWidget, SIGNAL( openEdgeMenu() ),
-             this, SLOT( openEdgeContextMenu() ) ) ;
-
-    connect (graphicsWidget, &GraphicsWidget::openContextMenu,
-             this, &MainWindow::openContextMenu);
-
-    connect( graphicsWidget, SIGNAL(updateNodeCoords(int, int, int)),
-             this, SLOT( updateNodeCoords(int, int, int) ) );
-
-    connect( graphicsWidget, SIGNAL(zoomChanged(int)),
-             zoomCombo, SLOT( setCurrentIndex(int)) );
-
-    connect( &activeGraph, SIGNAL( addGuideCircle(int, int, int) ),
-             graphicsWidget, SLOT(  addGuideCircle(int, int, int) ) ) ;
-
-    connect( &activeGraph, SIGNAL( addGuideHLine(int) ),
-             graphicsWidget, SLOT(  addGuideHLine(int) ) ) ;
-
-    connect( &activeGraph, SIGNAL( moveNode(int, qreal, qreal) ),
-             graphicsWidget, SLOT( moveNode(int, qreal, qreal) ) ) ;
-
-
-    connect( &activeGraph,
-             SIGNAL(
-                 drawNode( int ,int,  QString, QString, int, QString, QString,
-                           int, QPointF, QString, bool, bool, bool)
-                 ),
-             graphicsWidget,
-             SLOT(
-                 drawNode( int ,int,  QString, QString, int, QString, QString,
-                           int, QPointF, QString, bool, bool, bool)
-                 )
-             ) ;
-
-    connect( &activeGraph, SIGNAL( eraseEdge(int, int)),
-             graphicsWidget, SLOT( eraseEdge(int, int) ) );
-
-    connect( &activeGraph, SIGNAL( graphChanged() ),
-             this, SLOT( graphChanged() ) ) ;
-
-    connect( &activeGraph,
-             SIGNAL(
-                 signalFileType(int , QString , int , int, bool) ),
-             this,
-             SLOT( fileType(int , QString , int , int, bool) )
-             ) ;
-
-    connect( &activeGraph,
-             SIGNAL(
-                 drawEdge( int, int, float, bool, bool, QString, bool)
-                 ),
-             graphicsWidget,
-             SLOT(
-                 drawEdge( int, int,float, bool, bool, QString, bool)
-                 )  ) ;
-
-    connect( &activeGraph, SIGNAL( drawEdgeReciprocal(int, int) ),
-             graphicsWidget, SLOT( drawEdgeReciprocal(int, int) ) );
-
-
-    connect( &activeGraph, SIGNAL( changeEdgeColor(long int,long int,QString)),
-             graphicsWidget, SLOT( setEdgeColor(long int,long int,QString) ) );
-
-
-    connect( &activeGraph, SIGNAL( statusMessage (QString) ),
-             this, SLOT( statusMessage (QString) ) ) ;
-
-    connect( &activeGraph, SIGNAL( describeDataset (QString) ),
-             this, SLOT( showMessageToUser (QString) ) ) ;
-
-    connect( &activeGraph, SIGNAL( eraseNode(long int) ),
-             graphicsWidget, SLOT(  eraseNode(long int) ) );
-
-    connect( &activeGraph, &Graph::signalNodeSizesByInDegree,
-             this, &MainWindow::slotLayoutNodeSizesByInDegree );
-
-
-    //connect some signals/slots with MW widgets
-    connect( addNodeBt,SIGNAL(clicked()), this, SLOT( addNode() ) );
-
-    connect( addEdgeBt,SIGNAL(clicked()), this, SLOT( slotAddEdge() ) );
-
-    connect( removeNodeBt,SIGNAL(clicked()), this, SLOT( slotRemoveNode() ) );
-
-    connect( removeEdgeBt,SIGNAL(clicked()), this, SLOT( slotRemoveEdge() ) );
-
-    connect( zoomCombo, SIGNAL(currentIndexChanged(const int &)),
-             graphicsWidget, SLOT( changeZoom(const int &))  );
-
-    connect( zoomOutAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomOut() ) );
-    connect( zoomInAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomIn() ) );
-
-    connect( zoomInBtn, SIGNAL(clicked()), graphicsWidget, SLOT( zoomIn() ) );
-    connect( zoomOutBtn, SIGNAL(clicked()), graphicsWidget, SLOT( zoomOut() ) );
-
-    connect( rotateSpinBox, SIGNAL(valueChanged(int)), graphicsWidget, SLOT( rot(int) ) );
-
-    connect( nextRelationAct, SIGNAL(triggered()), this, SLOT( nextRelation() ) );
-    connect( prevRelationAct, SIGNAL(triggered()), this, SLOT( prevRelation() ) );
-    connect( addRelationAct, SIGNAL(triggered()), this, SLOT( addRelation() ) );
-
-    connect( changeRelationCombo , SIGNAL( currentIndexChanged(int) ) ,
-             &activeGraph, SLOT( changeRelation(int) ) );
-
-    connect( this , SIGNAL(addRelationToGraph(QString)),
-             &activeGraph, SLOT( addRelationFromUser(QString) ) );
-
-    connect ( &activeGraph, SIGNAL(addRelationToMW(QString)),
-              this, SLOT(addRelation(QString)));
-
-    connect( &activeGraph, SIGNAL(relationChanged(int)),
-             graphicsWidget, SLOT( changeRelation(int))  ) ;
-
-    connect( &m_filterEdgesByWeightDialog, SIGNAL( userChoices( float, bool) ),
-             &activeGraph, SLOT( filterEdgesByWeight (float, bool) ) );
-
-
-    connect( &m_WebCrawlerDialog, &WebCrawlerDialog::userChoices,
-             this, &MainWindow::slotWebCrawl );
-
-    connect( &m_datasetSelectDialog, SIGNAL( userChoices( QString) ),
-             this, SLOT( slotRecreateDataSet(QString) ) );
-
-    connect( &activeGraph, SIGNAL( setEdgeVisibility (int, int, int, bool) ),
-             graphicsWidget, SLOT(  setEdgeVisibility (int, int, int, bool) ) );
-
-    connect( &activeGraph, SIGNAL( setVertexVisibility(long int, bool)  ),
-             graphicsWidget, SLOT(  setNodeVisibility (long int ,  bool) ) );
-
-    connect( &activeGraph, SIGNAL( setNodeSize(long int, int)  ),
-             graphicsWidget, SLOT(  setNodeSize (long int , int) ) );
-
-    connect( &activeGraph, SIGNAL( setNodeShape(const long int, const QString)  ),
-             graphicsWidget, SLOT(  setNodeShape (const long int , const QString) ) );
-
-    connect( &activeGraph, SIGNAL( setNodeColor(long int,QString))  ,
-             graphicsWidget, SLOT(  setNodeColor(long int, QString) ) );
-
-    connect( &activeGraph, &Graph::setNodeLabel ,
-             graphicsWidget, &GraphicsWidget::setNodeLabel );
-
-    connect( clearGuidesAct, SIGNAL(triggered()),
-             graphicsWidget, SLOT(clearGuides()));
-
-    connect(toolBoxAnalysisGeodesicsSelect, SIGNAL (currentIndexChanged(int) ),
-            this, SLOT(toolBoxAnalysisGeodesicsSelectChanged(int) ) );
-
-    connect(toolBoxAnalysisConnectivitySelect, SIGNAL (currentIndexChanged(int) ),
-            this, SLOT(toolBoxAnalysisConnectivitySelectChanged(int) ) );
-
-    connect(toolBoxAnalysisClusterabilitySelect, SIGNAL (currentIndexChanged(int) ),
-            this, SLOT(toolBoxAnalysisClusterabilitySelectChanged(int) ) );
-
-    connect(toolBoxAnalysisProminenceSelect, SIGNAL (currentIndexChanged(int) ),
-            this, SLOT(toolBoxAnalysisProminenceSelectChanged(int) ) );
-
-
-    connect(toolBoxLayoutByIndexButton, SIGNAL (clicked() ),
-            this, SLOT(toolBoxLayoutByIndexButtonPressed() ) );
-
-    connect(toolBoxLayoutForceDirectedButton, SIGNAL (clicked() ),
-            this, SLOT(toolBoxLayoutForceDirectedButtonPressed() ) );
-
-    connect( layoutGuidesBx, SIGNAL(stateChanged(int)),
-             this, SLOT(slotLayoutGuides(int)));
-
-
-
-    /*
-        initialise default network parameters
-    */
+    /*  initialise default network parameters  */
     qDebug()<<"   initialise default network parameters";
     initNet();
 
+    initPersistentSettings(); // init default (or user-defined) app settings
 
-    /*
-     *  DEFAULTING HERE DOES NOT CHANGE BOOL VALUE
-        EVERY TIME INITNET IS CALLED
-    */
-    bezier=false;
-    firstTime=true;
-
-    graphicsWidget->setInitNodeColor(initNodeColor);
-    graphicsWidget->setInitNumberDistance(numberDistance);
-    graphicsWidget->setInitLabelDistance(labelDistance);
-    graphicsWidget->setInitNodeSize(initNodeSize);
-    graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor)); //Qt::gray
-
-    dataDir= QDir::homePath() +QDir::separator() + "socnetv-data" + QDir::separator() ;
-    lastUsedDirPath = "socnetv-initial-none";
-    if (firstTime) {
-        createFortuneCookies();
-        createTips();
-        QDir ourDir(dataDir);
-        if ( !ourDir.exists() ) {
-            ourDir.mkdir(dataDir);
-            QMessageBox::information(this, "SocNetV Data Directory",
-                                 tr("SocNetV saves reports and files in the "
-                                    "directory %1")
-                                 .arg (ourDir.absolutePath())
-                                 , QMessageBox::Ok, 0);
-
-        }
-
-    }
-
-    qDebug() << "MW::MainWindow() call findCodecs" ;
-    findCodecs();
-
-    qDebug() << "MW::MainWindow() create PreviewForm object and set codecs" ;
-    previewForm = new PreviewForm(this);
-    previewForm->setCodecList(codecs);
-
-    connect (previewForm, &PreviewForm::userCodec, this, &MainWindow::userCodec );
-
-    qDebug() << "MW::MainWindow() Try load *graphml* file on exec time ";
+    // Check if user-provided network file on startup
+    qDebug() << "MW::MainWindow() Checking if user provided file on startup...";
     if (!m_fileName.isEmpty())
     {
         fileName=m_fileName;
@@ -434,14 +136,21 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
 
 MainWindow::~MainWindow() {
+    qDebug() << "MW::~MainWindow() Destruct function running...";
     delete printer;
     delete scene;
     delete graphicsWidget;
+    qDebug() << "MW::~MainWindow() Destruct function finshed - bye!";
 }
 
 
 
-/** initializes all QActions of the application */
+
+/**
+ * @brief MainWindow::initActions
+ * Initializes ALL QActions of the application
+ * Take a breath, the listing below is HUGE.
+ */
 void MainWindow::initActions(){
     printer = new QPrinter;
 
@@ -2150,7 +1859,11 @@ void MainWindow::initToolBar(){
 
 
 
-//Creates a dock widget for instant menu access
+
+/**
+ * @brief MainWindow::initToolBox
+ * Creates a dock widget for instant menu access
+ */
 void MainWindow::initToolBox(){
     toolBox = new QTabWidget;
     //toolBox->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Ignored));
@@ -2634,8 +2347,13 @@ void MainWindow::toolBoxAnalysisConnectivitySelectChanged(int selectedIndex) {
 
 
 
-//Called from MW, when user selects something in the Clusterability selectbox
-// of toolbox
+
+/**
+ * @brief MainWindow::toolBoxAnalysisClusterabilitySelectChanged
+ * @param selectedIndex
+ * Called from MW, when user selects something in the Clusterability selectbox
+ * of toolbox
+ */
 void MainWindow::toolBoxAnalysisClusterabilitySelectChanged(int selectedIndex) {
     qDebug()<< "MW::toolBoxAnalysisClusterabilitySelectChanged "
                "selected text index: " << selectedIndex;
@@ -2654,7 +2372,6 @@ void MainWindow::toolBoxAnalysisClusterabilitySelectChanged(int selectedIndex) {
         qDebug() << "Triad Census";
         slotTriadCensus();
         break;
-
     };
 
 }
@@ -2662,8 +2379,13 @@ void MainWindow::toolBoxAnalysisClusterabilitySelectChanged(int selectedIndex) {
 
 
 
-//Called from MW, when user selects something in the Prominence selectbox
-// of toolbox
+
+/**
+ * @brief MainWindow::toolBoxAnalysisProminenceSelectChanged
+ * @param selectedIndex
+ * Called from MW, when user selects something in the Prominence selectbox
+ *  of toolbox
+ */
 void MainWindow::toolBoxAnalysisProminenceSelectChanged(int selectedIndex) {
     qDebug()<< "MW::toolBoxAnalysisProminenceSelectChanged "
                "selected text index: " << selectedIndex;
@@ -2775,6 +2497,7 @@ void MainWindow::updateNodeCoords(int nodeNumber, int x, int y){
 
 
 
+
 /**
     Initializes the status bar
 */
@@ -2788,10 +2511,11 @@ void MainWindow::initStatusBar() {
 
 
 
-
 /**
-    Initializes the scene and its graphicsWidget, the main widget of SocNetV
-*/
+ * @brief MainWindow::initView
+ * Initializes the scene and the corresponding graphicsWidget,
+ * The latter is a QGraphicsView canvas which is the main widget of SocNetV.
+ */
 void MainWindow::initView() {
     qDebug ("MW initView()");
     //create a scene
@@ -2825,23 +2549,118 @@ void MainWindow::initView() {
     graphicsWidget->setFocusPolicy(Qt::StrongFocus);
     graphicsWidget->setFocus();
 
-    this->resize(1280,900);
 
-    //set minimum size of canvas
-
-   // graphicsWidget->setMinimumSize( (qreal)  ( this->width()-toolBox->sizeHint().width() -40 ) ,
-    //                                (qreal) ( this->height()-statusBar()->sizeHint().height() -toolBar->sizeHint().height() -menuBar()->sizeHint().height() -20 ) );
-    qDebug ("MW initView(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(),
-            graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
 
 }
 
 
 
+/**
+    Initializes the application window UI:
+    Creates helper widgets and sets the main layout of the MainWindow
+*/
+void MainWindow::initMainWindow() {
+
+    int size = style()->pixelMetric(QStyle::PM_ToolBarIconSize);
+    QSize iconSize(size, size);
+
+    // Zoom slider
+    zoomInBtn = new QToolButton;
+    zoomInBtn->setAutoRepeat(true);
+    zoomInBtn->setAutoRepeatInterval(33);
+    zoomInBtn->setAutoRepeatDelay(0);
+    zoomInBtn->setIcon(QPixmap(":/images/zoomin.png"));
+    zoomInBtn->setIconSize(iconSize);
+
+    zoomOutBtn = new QToolButton;
+
+    zoomOutBtn->setAutoRepeat(true);
+    zoomOutBtn->setAutoRepeatInterval(33);
+    zoomOutBtn->setAutoRepeatDelay(0);
+    zoomOutBtn->setIcon(QPixmap(":/images/zoomout.png"));
+    zoomOutBtn->setIconSize(iconSize);
+
+    zoomSlider = new QSlider;
+    zoomSlider->setMinimum(0);
+    zoomSlider->setMaximum(500);
+    zoomSlider->setValue(250);
+    zoomSlider->setTickPosition(QSlider::TicksRight);
+
+    // Zoom slider layout
+    QVBoxLayout *zoomSliderLayout = new QVBoxLayout;
+    zoomSliderLayout->addWidget(zoomInBtn);
+    zoomSliderLayout->addWidget(zoomSlider);
+    zoomSliderLayout->addWidget(zoomOutBtn);
+
+    // Rotate slider
+    rotateLeftBtn = new QToolButton;
+    rotateLeftBtn->setIcon(QPixmap(":/images/rotateleft.png"));
+    rotateLeftBtn->setIconSize(iconSize);
+    rotateRightBtn = new QToolButton;
+    rotateRightBtn ->setIcon(QPixmap(":/images/rotateright.png"));
+    rotateRightBtn ->setIconSize(iconSize);
+    rotateSlider = new QSlider;
+    rotateSlider->setOrientation(Qt::Horizontal);
+    rotateSlider->setMinimum(-360);
+    rotateSlider->setMaximum(360);
+    rotateSlider->setValue(0);
+    rotateSlider->setTickPosition(QSlider::TicksBelow);
+
+    // Rotate slider layout
+    QHBoxLayout *rotateSliderLayout = new QHBoxLayout;
+    rotateSliderLayout->addWidget(rotateLeftBtn);
+    rotateSliderLayout->addWidget(rotateSlider);
+    rotateSliderLayout->addWidget(rotateRightBtn );
+
+    resetSlidersBtn = new QToolButton;
+    resetSlidersBtn->setText(tr("0"));
+    resetSlidersBtn->setEnabled(false);
+
+    // Create a layout for the toolbox and the canvas.
+    // This will be the layout of our MW central widget
+    QGridLayout *layout = new QGridLayout;
+    layout->addWidget(toolBox, 0, 0, 2,1); 		//add them
+    layout->addWidget(graphicsWidget,0,1);
+    layout->addLayout(zoomSliderLayout, 0, 2);
+    layout->addLayout(rotateSliderLayout, 1, 1, 1, 1);
+    layout->addWidget(resetSlidersBtn, 1, 2, 1, 1);
+
+    //create a dummy widget, and set the above layout
+    QWidget *widget = new QWidget;
+    widget->setLayout(layout);
+
+    //now set this as central widget of MW
+    setCentralWidget(widget);
+
+
+    this->resize(1280,900);
+
+    //set minimum size of graphicsWidget
+
+    graphicsWidget->setMinimumSize(
+                (qreal)  ( this->width()
+                           - toolBox->sizeHint().width()
+                           - zoomSliderLayout->sizeHint().width()
+                           - 40 ) ,
+                (qreal) ( this->height()
+                          - statusBar()->sizeHint().height()
+                          - toolBar->sizeHint().height()
+                          - menuBar()->sizeHint().height()
+                          - rotateSliderLayout->sizeHint().height()
+                          -20 )
+                );
+    qDebug ("MW initMainWindow(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(),
+            graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
+}
+
+
+
+
 
 /**
-    Resizes the scene when the window is resized.
-*/
+ * @brief MainWindow::resizeEvent
+ * Resizes the scene when the window is resized.
+ */
 void MainWindow::resizeEvent( QResizeEvent * ){
     qDebug ("MW resizeEvent():INITIAL window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
 
@@ -2851,10 +2670,222 @@ void MainWindow::resizeEvent( QResizeEvent * ){
 }
 
 
+
+
 /**
-    Initializes the default network parameters.
-    Also used when erasing a network to start a new one
-*/
+ * @brief MainWindow::initSignalSlots
+ * Connect signals & slots between various parts of the app:
+ * - the GraphicsWidget and the Graph
+ * - the GraphicsWidget and the MainWindow
+ * This must be called after all widgets have been created.
+ *
+ */
+void MainWindow::initSignalSlots() {
+
+    // Signals from graphicsWidget to MainWindow
+    connect( graphicsWidget, SIGNAL( selectedNode(Node*) ),
+             this, SLOT( nodeInfoStatusBar(Node*) ) 	);
+
+    connect( graphicsWidget, SIGNAL( selectedEdge(Edge*) ),
+             this, SLOT ( edgeInfoStatusBar(Edge*) )  );
+
+    connect( graphicsWidget, SIGNAL( windowResized(int, int)),
+             this, SLOT( windowInfoStatusBar(int,int)) 	);
+
+    connect( graphicsWidget, SIGNAL( windowResized(int, int)),
+             &activeGraph, SLOT( setCanvasDimensions(int,int)) 	);
+
+    connect( graphicsWidget, SIGNAL( userDoubleClicked(int, QPointF) ),
+             this, SLOT( addNodeWithMouse(int,QPointF) ) ) ;
+
+    connect( graphicsWidget, SIGNAL( userMiddleClicked(int, int, float) ),
+             this, SLOT( addEdge(int, int, float) ) 	);
+
+
+    connect( graphicsWidget, SIGNAL( openNodeMenu() ),
+             this, SLOT( openNodeContextMenu() ) ) ;
+
+    connect( graphicsWidget, SIGNAL( openEdgeMenu() ),
+             this, SLOT( openEdgeContextMenu() ) ) ;
+
+    connect (graphicsWidget, &GraphicsWidget::openContextMenu,
+             this, &MainWindow::openContextMenu);
+
+    connect( graphicsWidget, SIGNAL(updateNodeCoords(int, int, int)),
+             this, SLOT( updateNodeCoords(int, int, int) ) );
+
+    connect( graphicsWidget, SIGNAL(zoomChanged(int)),
+             zoomCombo, SLOT( setCurrentIndex(int)) );
+
+    // Signals from activeGraph to graphicsWidget
+    connect( &activeGraph, SIGNAL( addGuideCircle(int, int, int) ),
+             graphicsWidget, SLOT(  addGuideCircle(int, int, int) ) ) ;
+
+    connect( &activeGraph, SIGNAL( addGuideHLine(int) ),
+             graphicsWidget, SLOT(  addGuideHLine(int) ) ) ;
+
+    connect( &activeGraph, SIGNAL( moveNode(int, qreal, qreal) ),
+             graphicsWidget, SLOT( moveNode(int, qreal, qreal) ) ) ;
+
+
+    connect( &activeGraph,
+             SIGNAL(
+                 drawNode( int ,int,  QString, QString, int, QString, QString,
+                           int, QPointF, QString, bool, bool, bool)
+                 ),
+             graphicsWidget,
+             SLOT(
+                 drawNode( int ,int,  QString, QString, int, QString, QString,
+                           int, QPointF, QString, bool, bool, bool)
+                 )
+             ) ;
+
+    connect( &activeGraph, SIGNAL( eraseEdge(int, int)),
+             graphicsWidget, SLOT( eraseEdge(int, int) ) );
+
+    connect( &activeGraph, SIGNAL( graphChanged() ),
+             this, SLOT( graphChanged() ) ) ;
+
+    connect( &activeGraph,
+             SIGNAL(
+                 signalFileType(int , QString , int , int, bool) ),
+             this,
+             SLOT( fileType(int , QString , int , int, bool) )
+             ) ;
+
+    connect( &activeGraph,
+             SIGNAL(
+                 drawEdge( int, int, float, bool, bool, QString, bool)
+                 ),
+             graphicsWidget,
+             SLOT(
+                 drawEdge( int, int,float, bool, bool, QString, bool)
+                 )  ) ;
+
+    connect( &activeGraph, SIGNAL( drawEdgeReciprocal(int, int) ),
+             graphicsWidget, SLOT( drawEdgeReciprocal(int, int) ) );
+
+
+    connect( &activeGraph, SIGNAL( changeEdgeColor(long int,long int,QString)),
+             graphicsWidget, SLOT( setEdgeColor(long int,long int,QString) ) );
+
+
+
+    connect( &activeGraph, SIGNAL( eraseNode(long int) ),
+             graphicsWidget, SLOT(  eraseNode(long int) ) );
+
+    connect( &activeGraph, SIGNAL( setEdgeVisibility (int, int, int, bool) ),
+             graphicsWidget, SLOT(  setEdgeVisibility (int, int, int, bool) ) );
+
+    connect( &activeGraph, SIGNAL( setVertexVisibility(long int, bool)  ),
+             graphicsWidget, SLOT(  setNodeVisibility (long int ,  bool) ) );
+
+    connect( &activeGraph, SIGNAL( setNodeSize(long int, int)  ),
+             graphicsWidget, SLOT(  setNodeSize (long int , int) ) );
+
+    connect( &activeGraph, SIGNAL( setNodeShape(const long int, const QString)  ),
+             graphicsWidget, SLOT(  setNodeShape (const long int , const QString) ) );
+
+    connect( &activeGraph, SIGNAL( setNodeColor(long int,QString))  ,
+             graphicsWidget, SLOT(  setNodeColor(long int, QString) ) );
+
+    connect( &activeGraph, &Graph::setNodeLabel ,
+             graphicsWidget, &GraphicsWidget::setNodeLabel );
+
+
+    connect( &activeGraph, SIGNAL( statusMessage (QString) ),
+             this, SLOT( statusMessage (QString) ) ) ;
+
+    connect( &activeGraph, SIGNAL( describeDataset (QString) ),
+             this, SLOT( showMessageToUser (QString) ) ) ;
+
+    connect( &activeGraph, &Graph::signalNodeSizesByInDegree,
+             this, &MainWindow::slotLayoutNodeSizesByInDegree );
+
+
+    //signals and slots inside MainWindow
+    connect( addNodeBt,SIGNAL(clicked()), this, SLOT( addNode() ) );
+
+    connect( addEdgeBt,SIGNAL(clicked()), this, SLOT( slotAddEdge() ) );
+
+    connect( removeNodeBt,SIGNAL(clicked()), this, SLOT( slotRemoveNode() ) );
+
+    connect( removeEdgeBt,SIGNAL(clicked()), this, SLOT( slotRemoveEdge() ) );
+
+    connect( zoomCombo, SIGNAL(currentIndexChanged(const int &)),
+             graphicsWidget, SLOT( changeZoom(const int &))  );
+
+    connect( zoomOutAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomOut() ) );
+    connect( zoomInAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomIn() ) );
+
+    connect( zoomInBtn, SIGNAL(clicked()), graphicsWidget, SLOT( zoomIn() ) );
+    connect( zoomOutBtn, SIGNAL(clicked()), graphicsWidget, SLOT( zoomOut() ) );
+
+    connect( rotateSpinBox, SIGNAL(valueChanged(int)), graphicsWidget, SLOT( rot(int) ) );
+
+    connect( nextRelationAct, SIGNAL(triggered()), this, SLOT( nextRelation() ) );
+    connect( prevRelationAct, SIGNAL(triggered()), this, SLOT( prevRelation() ) );
+    connect( addRelationAct, SIGNAL(triggered()), this, SLOT( addRelation() ) );
+
+    connect( changeRelationCombo , SIGNAL( currentIndexChanged(int) ) ,
+             &activeGraph, SLOT( changeRelation(int) ) );
+
+    connect( this , SIGNAL(addRelationToGraph(QString)),
+             &activeGraph, SLOT( addRelationFromUser(QString) ) );
+
+    connect ( &activeGraph, SIGNAL(addRelationToMW(QString)),
+              this, SLOT(addRelation(QString)));
+
+    connect( &activeGraph, SIGNAL(relationChanged(int)),
+             graphicsWidget, SLOT( changeRelation(int))  ) ;
+
+    connect( &m_filterEdgesByWeightDialog, SIGNAL( userChoices( float, bool) ),
+             &activeGraph, SLOT( filterEdgesByWeight (float, bool) ) );
+
+
+    connect( &m_WebCrawlerDialog, &WebCrawlerDialog::userChoices,
+             this, &MainWindow::slotWebCrawl );
+
+    connect( &m_datasetSelectDialog, SIGNAL( userChoices( QString) ),
+             this, SLOT( slotRecreateDataSet(QString) ) );
+
+    connect( clearGuidesAct, SIGNAL(triggered()),
+             graphicsWidget, SLOT(clearGuides()));
+
+    connect(toolBoxAnalysisGeodesicsSelect, SIGNAL (currentIndexChanged(int) ),
+            this, SLOT(toolBoxAnalysisGeodesicsSelectChanged(int) ) );
+
+    connect(toolBoxAnalysisConnectivitySelect, SIGNAL (currentIndexChanged(int) ),
+            this, SLOT(toolBoxAnalysisConnectivitySelectChanged(int) ) );
+
+    connect(toolBoxAnalysisClusterabilitySelect, SIGNAL (currentIndexChanged(int) ),
+            this, SLOT(toolBoxAnalysisClusterabilitySelectChanged(int) ) );
+
+    connect(toolBoxAnalysisProminenceSelect, SIGNAL (currentIndexChanged(int) ),
+            this, SLOT(toolBoxAnalysisProminenceSelectChanged(int) ) );
+
+
+    connect(toolBoxLayoutByIndexButton, SIGNAL (clicked() ),
+            this, SLOT(toolBoxLayoutByIndexButtonPressed() ) );
+
+    connect(toolBoxLayoutForceDirectedButton, SIGNAL (clicked() ),
+            this, SLOT(toolBoxLayoutForceDirectedButtonPressed() ) );
+
+    connect( layoutGuidesBx, SIGNAL(stateChanged(int)),
+             this, SLOT(slotLayoutGuides(int)));
+
+}
+
+
+
+
+
+
+/**
+ * @brief MainWindow::initNet
+ * Initializes the default network parameters.
+ * Used on app start and especially when erasing a network to start a new one
+ */
 void MainWindow::initNet(){
     qDebug()<<"MW: initNet() START INITIALISATION";
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
@@ -2871,10 +2902,6 @@ void MainWindow::initNet(){
     initNodeShape="circle";
     initBackgroundColor="white"; //"gainsboro";
 
-    minDuration=3000; //dialogue duration - obsolete
-    maxNodes=5000;		//Max nodes used by createRandomNetwork dialogues
-    labelDistance=8;
-    numberDistance=5;
     networkName="";
 
     previous_fileName=fileName;
@@ -2969,6 +2996,64 @@ void MainWindow::initNet(){
 //    stream << "(9,1) = " << m[9][1] ;
 
 }
+
+
+
+/**
+ * @brief MainWindow::initPersistentSettings
+ * init default (or user-defined) app settings
+ */
+void MainWindow::initPersistentSettings()
+{
+    /*
+     *  DEFAULTING HERE DOES NOT CHANGE BOOL VALUE
+        EVERY TIME INITNET IS CALLED
+    */
+    maxNodes=5000;		//Max nodes used by createRandomNetwork dialogues
+    labelDistance=8;
+    numberDistance=5;
+
+    bezier=false;
+    firstTime=true;
+
+    graphicsWidget->setInitNodeColor(initNodeColor);
+    graphicsWidget->setInitNumberDistance(numberDistance);
+    graphicsWidget->setInitLabelDistance(labelDistance);
+    graphicsWidget->setInitNodeSize(initNodeSize);
+    graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor)); //Qt::gray
+
+    dataDir= QDir::homePath() +QDir::separator() + "socnetv-data" + QDir::separator() ;
+    lastUsedDirPath = "socnetv-initial-none";
+    if (firstTime) {
+        createFortuneCookies();
+        createTips();
+        QDir ourDir(dataDir);
+        if ( !ourDir.exists() ) {
+            ourDir.mkdir(dataDir);
+            QMessageBox::information(this, "SocNetV Data Directory",
+                                 tr("SocNetV saves reports and files in the "
+                                    "directory %1")
+                                 .arg (ourDir.absolutePath())
+                                 , QMessageBox::Ok, 0);
+
+        }
+
+    }
+
+
+
+    // Call findCodecs to setup a list of all supported codecs
+    qDebug() << "MW::MainWindow() - calling findCodecs" ;
+    findCodecs();
+
+    qDebug() << "MW::MainWindow() creating PreviewForm object and setting codecs list" ;
+    previewForm = new PreviewForm(this);
+    previewForm->setCodecList(codecs);
+
+    connect (previewForm, &PreviewForm::userCodec, this, &MainWindow::userCodec );
+}
+
+
 
 
 
@@ -3482,6 +3567,10 @@ void MainWindow::slotImportEdgeList(){
 }
 
 
+/**
+ * @brief MainWindow::findCodecs
+ * Setup a list of all codecs supported by current OS
+ */
 void MainWindow::findCodecs()
 {
     QMap<QString, QTextCodec *> codecMap;

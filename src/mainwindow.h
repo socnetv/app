@@ -103,8 +103,11 @@ public:
     void initToolBar();
     void initToolBox();
     void initStatusBar();
-    void initNet();
     void initView();
+    void initMainWindow();
+    void initSignalSlots();
+    void initNet();
+    void initPersistentSettings();
 
     void setLastPath(QString filePath);
     QString getLastPath();
@@ -463,7 +466,7 @@ private:
     QString dataDir, lastUsedDirPath;
     QStringList fileNameNoPath, fortuneCookie, rgbValues;
     QStringList tempFileNameNoPath, tips;
-    int statusBarDuration,  minDuration, progressCounter;
+    int statusBarDuration, progressCounter;
     int maxNodes;
     int initNodeSize, labelDistance, numberDistance,initNumberSize, initLabelSize;
     int fortuneCookiesCounter,  tipsCounter;
