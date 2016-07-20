@@ -100,6 +100,85 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     initView(); //create the canvas
 
+
+
+
+    int size = style()->pixelMetric(QStyle::PM_ToolBarIconSize);
+    QSize iconSize(size, size);
+
+    // Zoom slider
+    zoomInBtn = new QToolButton;
+    zoomInBtn->setAutoRepeat(true);
+    zoomInBtn->setAutoRepeatInterval(33);
+    zoomInBtn->setAutoRepeatDelay(0);
+    zoomInBtn->setIcon(QPixmap(":/images/zoomin.png"));
+    zoomInBtn->setIconSize(iconSize);
+
+    zoomOutBtn = new QToolButton;
+
+    zoomOutBtn->setAutoRepeat(true);
+    zoomOutBtn->setAutoRepeatInterval(33);
+    zoomOutBtn->setAutoRepeatDelay(0);
+    zoomOutBtn->setIcon(QPixmap(":/images/zoomout.png"));
+    zoomOutBtn->setIconSize(iconSize);
+
+    zoomSlider = new QSlider;
+    zoomSlider->setMinimum(0);
+    zoomSlider->setMaximum(500);
+    zoomSlider->setValue(250);
+    zoomSlider->setTickPosition(QSlider::TicksRight);
+
+    // Zoom slider layout
+    QVBoxLayout *zoomSliderLayout = new QVBoxLayout;
+    zoomSliderLayout->addWidget(zoomInBtn);
+    zoomSliderLayout->addWidget(zoomSlider);
+    zoomSliderLayout->addWidget(zoomOutBtn);
+
+    // Rotate slider
+    rotateLeftBtn = new QToolButton;
+    rotateLeftBtn->setIcon(QPixmap(":/images/rotateleft.png"));
+    rotateLeftBtn->setIconSize(iconSize);
+    rotateRightBtn = new QToolButton;
+    rotateRightBtn ->setIcon(QPixmap(":/images/rotateright.png"));
+    rotateRightBtn ->setIconSize(iconSize);
+    rotateSlider = new QSlider;
+    rotateSlider->setOrientation(Qt::Horizontal);
+    rotateSlider->setMinimum(-360);
+    rotateSlider->setMaximum(360);
+    rotateSlider->setValue(0);
+    rotateSlider->setTickPosition(QSlider::TicksBelow);
+
+    // Rotate slider layout
+    QHBoxLayout *rotateSliderLayout = new QHBoxLayout;
+    rotateSliderLayout->addWidget(rotateLeftBtn);
+    rotateSliderLayout->addWidget(rotateSlider);
+    rotateSliderLayout->addWidget(rotateRightBtn );
+
+    resetSlidersBtn = new QToolButton;
+    resetSlidersBtn->setText(tr("0"));
+    resetSlidersBtn->setEnabled(false);
+
+    // Create a layout for the toolbox and the canvas.
+    // This will be the layout of our MW central widget
+    QGridLayout *layout = new QGridLayout;
+    layout->addWidget(toolBox, 0, 0, 2,1); 		//add them
+    layout->addWidget(graphicsWidget,0,1);
+    layout->addLayout(zoomSliderLayout, 0, 2);
+    layout->addLayout(rotateSliderLayout, 1, 1, 1, 1);
+    layout->addWidget(resetSlidersBtn, 1, 2, 1, 1);
+
+    //create a dummy widget, and set the above layout
+    QWidget *widget = new QWidget;
+    widget->setLayout(layout);
+
+    //now set this as central widget of MW
+    setCentralWidget(widget);
+
+
+
+
+
+
     //Connect some signals to/from the canvas and the Graph
     connect( graphicsWidget, SIGNAL( selectedNode(Node*) ),
              this, SLOT( nodeInfoStatusBar(Node*) ) 	);
@@ -215,6 +294,9 @@ MainWindow::MainWindow(const QString & m_fileName) {
     connect( zoomOutAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomOut() ) );
     connect( zoomInAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomIn() ) );
 
+    connect( zoomInBtn, SIGNAL(clicked()), graphicsWidget, SLOT( zoomIn() ) );
+    connect( zoomOutBtn, SIGNAL(clicked()), graphicsWidget, SLOT( zoomOut() ) );
+
     connect( rotateSpinBox, SIGNAL(valueChanged(int)), graphicsWidget, SLOT( rot(int) ) );
 
     connect( nextRelationAct, SIGNAL(triggered()), this, SLOT( nextRelation() ) );
@@ -287,17 +369,6 @@ MainWindow::MainWindow(const QString & m_fileName) {
              this, SLOT(slotLayoutGuides(int)));
 
 
-
-    //create an horizontal layout for the toolbox and the canvas.
-    // This will be our MW layout.
-    QHBoxLayout *layout = new QHBoxLayout;
-    layout->addWidget(toolBox); 		//add them
-    layout->addWidget(graphicsWidget);
-    //create a dummy widget, for the above layout
-    QWidget *widget = new QWidget;
-    widget->setLayout(layout);
-    //now set this as central widget of MW
-    setCentralWidget(widget);
 
     /*
         initialise default network parameters
@@ -2728,7 +2799,7 @@ void MainWindow::initView() {
 
     //create a view widget for this scene
     graphicsWidget=new GraphicsWidget(scene, this);
-    graphicsWidget->setViewportUpdateMode( QGraphicsView::BoundingRectViewportUpdate );
+    graphicsWidget->setViewportUpdateMode( QGraphicsView::SmartViewportUpdate );
     //  FullViewportUpdate  // MinimalViewportUpdate //SmartViewportUpdate  //BoundingRectViewportUpdate
     //QGraphicsView can cache pre-rendered content in a QPixmap, which is then drawn onto the viewport.
     graphicsWidget->setCacheMode(QGraphicsView::CacheNone);  //CacheBackground | CacheNone
@@ -2738,7 +2809,7 @@ void MainWindow::initView() {
     graphicsWidget->setRenderHint(QPainter::SmoothPixmapTransform, true);
     //Optimization flags:
     //if items do restore their state, it's not needed for graphicsWidget to do the same...
-    graphicsWidget->setOptimizationFlag(QGraphicsView::DontSavePainterState, false);
+    graphicsWidget->setOptimizationFlag(QGraphicsView::DontSavePainterState, true);
     //Disables QGraphicsView's antialiasing auto-adjustment of exposed areas.
     graphicsWidget->setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, false);
     //"QGraphicsScene applies an indexing algorithm to the scene, to speed up item discovery functions like items() and itemAt().
@@ -2758,8 +2829,8 @@ void MainWindow::initView() {
 
     //set minimum size of canvas
 
-    graphicsWidget->setMinimumSize( (qreal)  ( this->width()-toolBox->sizeHint().width() -40 ) ,
-                                    (qreal) ( this->height()-statusBar()->sizeHint().height() -toolBar->sizeHint().height() -menuBar()->sizeHint().height() -20 ) );
+   // graphicsWidget->setMinimumSize( (qreal)  ( this->width()-toolBox->sizeHint().width() -40 ) ,
+    //                                (qreal) ( this->height()-statusBar()->sizeHint().height() -toolBar->sizeHint().height() -menuBar()->sizeHint().height() -20 ) );
     qDebug ("MW initView(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(),
             graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
 

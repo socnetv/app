@@ -53,8 +53,7 @@
 static const QString VERSION="2.0";
 
 
-using namespace std;
-
+QT_BEGIN_NAMESPACE
 class QMenu;
 class QAction;
 class QCheckBox;
@@ -63,14 +62,18 @@ class Edge;
 class Node;
 
 class QPushButton;
+class QToolButton;
 class QLCDNumber;
 class QSlider;
-class QComboBox;	
+class QComboBox;
 class QGroupBox;
 class QTabWidget;
 class QSpinBox;
-class PreviewForm;
+QT_END_NAMESPACE
 
+using namespace std;
+
+class PreviewForm;
 class RandErdosRenyiDialog;
 class RandSmallWorldDialog;
 class RandScaleFreeDialog;
@@ -405,7 +408,8 @@ private:
 
     QPushButton *addNodeBt, *addEdgeBt, *removeNodeBt, *removeEdgeBt;
     QPushButton *toolBoxLayoutByIndexButton, *toolBoxLayoutForceDirectedButton;
-
+    QToolButton *zoomInBtn,*zoomOutBtn,*rotateLeftBtn,*rotateRightBtn, *resetSlidersBtn ;
+    QSlider *zoomSlider, *rotateSlider;
     QSpinBox *rotateSpinBox ;
 
     QAction *fileNew, *fileOpen, *fileSave, *fileSaveAs,*fileClose, *printNetwork,*fileQuit;

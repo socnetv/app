@@ -71,5 +71,7 @@
         <file>images/import.png</file>
         <file>images/force.png</file>
         <file>images/scalefree.png</file>
+        <file>images/rotateleft.png</file>
+        <file>images/rotateright.png</file>
     </qresource>
 </RCC>
