@@ -70,6 +70,7 @@ public:
     void setInitNodeSize(int);
     void setInitNumberDistance(int);
     void setInitLabelDistance(int);
+    void setInitZoomIndex (int);
 
     void setNumbersInsideNodes(bool);
 
@@ -121,8 +122,8 @@ public slots:
     void clearGuides();
     void addGuideCircle( int x0, int y0, int radius);
     void addGuideHLine(int y0);
-    void zoomIn();
-    void zoomOut();
+    void zoomIn(int level = 1);
+    void zoomOut(int level = 1);
     void rot(int angle);
 
 signals:
@@ -146,7 +147,7 @@ private:
     int  m_nodeSize, m_numberDistance, m_labelDistance;
     double m_currentScaleFactor;
     int m_currentRotationAngle;
-    int zoomIndex, markedNodeOrigSize,markedEdgeSourceOrigSize, markedEdgeTargetOrigSize;
+    int m_zoomIndex, markedNodeOrigSize,markedEdgeSourceOrigSize, markedEdgeTargetOrigSize;
     QString m_nodeLabel, m_numberColor, m_nodeColor, m_labelColor, m_linkColor;
     bool secondDoubleClick, markedNodeExist, markedEdgeExist;
     QGraphicsItem *moving;

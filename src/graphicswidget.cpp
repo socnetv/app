@@ -49,7 +49,7 @@ GraphicsWidget::GraphicsWidget( QGraphicsScene *sc, MainWindow* par)  : QGraphic
     secondDoubleClick=false;
     moving=0;
     m_nodeLabel="";
-    zoomIndex=3;
+    m_zoomIndex=250;
     m_currentScaleFactor = 1;
     m_currentRotationAngle = 0;
     markedNodeExist=false; //used in findNode()
@@ -579,6 +579,16 @@ void GraphicsWidget::setInitLabelDistance(int labelDistance){
 }
 
 
+/**
+ * @brief GraphicsWidget::setInitZoomIndex
+ * Passes initial zoom setting
+ * Called from MW on startup
+ */
+void GraphicsWidget::setInitZoomIndex(int zoomIndex) {
+    m_zoomIndex = zoomIndex;
+}
+
+
 
 
 
@@ -919,9 +929,9 @@ void GraphicsWidget::wheelEvent(QWheelEvent *e) {
     float m_scale = e->delta() / qreal(600);
     qDebug("GW: m_scale = %f", m_scale);
     if ( m_scale > 0)
-        zoomIn();
+        zoomIn(1);
     else  if ( m_scale < 0)
-        zoomOut();
+        zoomOut(1);
     else m_scale=1;
 }
 
@@ -929,40 +939,49 @@ void GraphicsWidget::wheelEvent(QWheelEvent *e) {
 /** 
     Called from MW magnifier widgets
 */
-void GraphicsWidget::zoomOut (){
-    if (zoomIndex > 0) {
-        zoomIndex--;
-        changeZoom(zoomIndex);
+void GraphicsWidget::zoomOut (int level){
+
+    qDebug() << "GW: ZoomOut(): zoom index "<< m_zoomIndex
+             << " - level " << level;
+    m_zoomIndex-=level;
+    if (m_zoomIndex <= 0) {
+        m_zoomIndex = 0;
     }
-    qDebug("GW: ZoomOut() index %i", zoomIndex);
-    emit zoomChanged(zoomIndex);
+    emit zoomChanged(m_zoomIndex);
+
 }	
 
 
 /** 
     Called from MW magnifier widgets
 */
-void GraphicsWidget::zoomIn(){
-    qDebug("GW: ZoomIn()");
-    if (zoomIndex < 6) {
-        zoomIndex++;
-        changeZoom(zoomIndex);
+void GraphicsWidget::zoomIn(int level){
+
+    qDebug() << "GW: ZoomIn(): index "<< m_zoomIndex << " + level " << level;
+    m_zoomIndex+=level;
+    if (m_zoomIndex > 500) {
+        m_zoomIndex=500;
     }
-    qDebug("GW: ZoomIn() index %i", zoomIndex);
-    emit zoomChanged(zoomIndex);
+    emit zoomChanged(m_zoomIndex);
+
+
 }
 
 
 /**
-      Initiated from MW zoomCombo widget to zoom in or out.
+      Initiated from MW zoomSlider widget to zoom in or out.
 */
 void GraphicsWidget::changeZoom(int value) {
-    double scaleFactor = 0.25;
-    scaleFactor *= (value + 1);
-    m_currentScaleFactor = scaleFactor;
+    qDebug() << "GW: changeZoom() to" <<  value;
+
+    qreal scaleFactor = pow(qreal(2), ( value - 250) / qreal(50) );
+    m_currentScaleFactor = scaleFactor ;
     resetMatrix();
-    this->scale(scaleFactor, scaleFactor);
+    scale(m_currentScaleFactor, m_currentScaleFactor);
     rotate(m_currentRotationAngle);
+
+    //setResetButtonEnabled();
+
 }
 
 
@@ -972,7 +991,7 @@ void GraphicsWidget::rot(int angle){
     m_currentRotationAngle = angle;
     resetMatrix();
     scale(m_currentScaleFactor, m_currentScaleFactor);
-    rotate(angle);
+    rotate(m_currentRotationAngle);
 
 }
 

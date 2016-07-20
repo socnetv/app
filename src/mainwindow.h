@@ -104,7 +104,7 @@ public:
     void initToolBox();
     void initStatusBar();
     void initView();
-    void initMainWindow();
+    void initWindowLayout();
     void initSignalSlots();
     void initNet();
     void initPersistentSettings();
@@ -389,7 +389,7 @@ private:
     Graph activeGraph;
     QPrinter *printer;
     QToolBar *toolBar;
-    QComboBox *zoomCombo, *changeRelationCombo;
+    QComboBox *changeRelationCombo;
     QTabWidget *toolBox;
 
     QProgressDialog *progressDialog;
@@ -459,7 +459,6 @@ private:
     QAction *strongColorationAct, *regularColorationAct, *showProgressBarAct, *printDebugAct;
     QAction *springLayoutAct, *FRLayoutAct;
     QAction *nodeSizesByOutDegreeAct,  *nodeSizesByInDegreeAct;
-    QAction *zoomInAct, *zoomOutAct ;
     QAction *nextRelationAct, *prevRelationAct, *addRelationAct;
 
     QString fileName, networkName, previous_fileName;

@@ -108,7 +108,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     initView();         //init our network "canvas"
 
-    initMainWindow();   //init the application window, set layout etc
+    initWindowLayout();   //init the application window, set layout etc
 
     initSignalSlots();  //connect signals and slots between app components
 
@@ -1001,17 +1001,6 @@ void MainWindow::initActions(){
     connect(FRLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutFruchterman()));
 
 
-    zoomInAct = new QAction(QIcon(":/images/zoomin.png"), tr("Zoom &in"),  this);
-    zoomInAct->setShortcut(Qt::CTRL + Qt::Key_Plus);
-    zoomInAct->setToolTip(tr("Zoom in (Ctrl++)"));
-    zoomInAct->setStatusTip(tr("Zooms inside the actual network."));
-    zoomInAct->setWhatsThis(tr("Zoom In.\n\nZooms in. What else did you expect?"));
-
-    zoomOutAct = new QAction(QIcon(":/images/zoomout.png"), tr("Zoom &out"),  this);
-    zoomOutAct->setShortcut(Qt::CTRL + Qt::Key_Minus);
-    zoomOutAct->setToolTip(tr("Zoom out (Ctrl+-)"));
-    zoomOutAct->setStatusTip(tr("Zooms out of the actual network."));
-    zoomOutAct->setWhatsThis(tr("Zoom out.\n\nZooms out. What else did you expect?"));
 
 
     nextRelationAct = new QAction(QIcon(":/images/nextrelation.png"),
@@ -1810,19 +1799,7 @@ void MainWindow::initToolBar(){
     toolBar -> addAction (printNetwork);
     toolBar -> addSeparator();
 
-    toolBar -> addAction(zoomInAct);
 
-    //Create zooming widget
-    zoomCombo = new QComboBox;
-    QStringList scales;
-    scales << tr("25%") << tr("50%") << tr("75%") << tr("100%") << tr("125%") << tr("150%")<<tr("175%")  ;
-    zoomCombo->addItems(scales);
-    zoomCombo->setCurrentIndex(3);
-
-    toolBar -> addWidget(zoomCombo);
-    toolBar -> addAction(zoomOutAct);
-
-    toolBar -> addSeparator();
 
     QLabel *labelRotateSpinBox= new QLabel;
     labelRotateSpinBox ->setText(tr("Rotation:"));
@@ -2541,8 +2518,8 @@ void MainWindow::initView() {
     // For dynamic scenes, or scenes with many animated items, the index bookkeeping can outweight the fast lookup speeds." So...
     scene->setItemIndexMethod(QGraphicsScene::BspTreeIndex); //NoIndex (for anime) | BspTreeIndex
 
-    graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-    graphicsWidget->setResizeAnchor(QGraphicsView::AnchorViewCenter);
+    graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+    //graphicsWidget->setResizeAnchor(QGraphicsView::AnchorViewCenter);
 
     // sets dragging the mouse over the scene while the left mouse button is pressed.
     graphicsWidget->setDragMode(QGraphicsView::RubberBandDrag);
@@ -2555,17 +2532,23 @@ void MainWindow::initView() {
 
 
 
+
 /**
-    Initializes the application window UI:
-    Creates helper widgets and sets the main layout of the MainWindow
-*/
-void MainWindow::initMainWindow() {
+ * @brief MainWindow::initWindowLayout
+ * Initializes the application window UI:
+ * Creates helper widgets and sets the main layout of the MainWindow
+ */
+void MainWindow::initWindowLayout() {
 
     int size = style()->pixelMetric(QStyle::PM_ToolBarIconSize);
     QSize iconSize(size, size);
 
     // Zoom slider
     zoomInBtn = new QToolButton;
+    zoomInBtn->setShortcut(Qt::CTRL + Qt::Key_Plus);
+    zoomInBtn->setToolTip(tr("Zoom in (Ctrl++)"));
+    zoomInBtn->setStatusTip(tr("Zooms inside the actual network."));
+    zoomInBtn->setWhatsThis(tr("Zoom In.\n\nZooms in. What else did you expect?"));
     zoomInBtn->setAutoRepeat(true);
     zoomInBtn->setAutoRepeatInterval(33);
     zoomInBtn->setAutoRepeatDelay(0);
@@ -2573,7 +2556,11 @@ void MainWindow::initMainWindow() {
     zoomInBtn->setIconSize(iconSize);
 
     zoomOutBtn = new QToolButton;
-
+    zoomOutBtn->setAutoRepeat(true);
+    zoomOutBtn->setShortcut(Qt::CTRL + Qt::Key_Minus);
+    zoomOutBtn->setToolTip(tr("Zoom out (Ctrl+-)"));
+    zoomOutBtn->setStatusTip(tr("Zooms out of the actual network."));
+    zoomOutBtn->setWhatsThis(tr("Zoom out.\n\nZooms out. What else did you expect?"));
     zoomOutBtn->setAutoRepeat(true);
     zoomOutBtn->setAutoRepeatInterval(33);
     zoomOutBtn->setAutoRepeatDelay(0);
@@ -2649,8 +2636,12 @@ void MainWindow::initMainWindow() {
                           - rotateSliderLayout->sizeHint().height()
                           -20 )
                 );
-    qDebug ("MW initMainWindow(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(),
-            graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
+    qDebug() << "MW initMainWindow(): window size: "
+             << this->width() << ", "<< this->height()
+             << " graphicsWidget size: "
+             << graphicsWidget->width() << ", "<< graphicsWidget->height()
+             << " scene size: "
+             << graphicsWidget->scene()->width() << ", " <<  graphicsWidget->scene()->height();
 }
 
 
@@ -2714,8 +2705,6 @@ void MainWindow::initSignalSlots() {
     connect( graphicsWidget, SIGNAL(updateNodeCoords(int, int, int)),
              this, SLOT( updateNodeCoords(int, int, int) ) );
 
-    connect( graphicsWidget, SIGNAL(zoomChanged(int)),
-             zoomCombo, SLOT( setCurrentIndex(int)) );
 
     // Signals from activeGraph to graphicsWidget
     connect( &activeGraph, SIGNAL( addGuideCircle(int, int, int) ),
@@ -2812,11 +2801,14 @@ void MainWindow::initSignalSlots() {
 
     connect( removeEdgeBt,SIGNAL(clicked()), this, SLOT( slotRemoveEdge() ) );
 
-    connect( zoomCombo, SIGNAL(currentIndexChanged(const int &)),
-             graphicsWidget, SLOT( changeZoom(const int &))  );
+    connect( graphicsWidget, SIGNAL(zoomChanged(const int &)),
+             zoomSlider, SLOT( setValue(const int &)) );
 
-    connect( zoomOutAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomOut() ) );
-    connect( zoomInAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomIn() ) );
+//    connect( zoomCombo, SIGNAL(currentIndexChanged(const int &)),
+//             graphicsWidget, SLOT( changeZoom(const int &))  );
+
+
+    connect(zoomSlider, SIGNAL(valueChanged(const int &)), graphicsWidget, SLOT(changeZoom(const int &)));
 
     connect( zoomInBtn, SIGNAL(clicked()), graphicsWidget, SLOT( zoomIn() ) );
     connect( zoomOutBtn, SIGNAL(clicked()), graphicsWidget, SLOT( zoomOut() ) );
@@ -3019,6 +3011,7 @@ void MainWindow::initPersistentSettings()
     graphicsWidget->setInitNodeColor(initNodeColor);
     graphicsWidget->setInitNumberDistance(numberDistance);
     graphicsWidget->setInitLabelDistance(labelDistance);
+    graphicsWidget->setInitZoomIndex(250);
     graphicsWidget->setInitNodeSize(initNodeSize);
     graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor)); //Qt::gray
 
