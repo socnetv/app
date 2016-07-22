@@ -936,9 +936,11 @@ void GraphicsWidget::wheelEvent(QWheelEvent *e) {
 }
 
 
-/** 
-    Called from MW magnifier widgets
-*/
+/**
+ * @brief GraphicsWidget::zoomOut
+ * @param level
+ * Called from MW magnifier button
+ */
 void GraphicsWidget::zoomOut (int level){
 
     qDebug() << "GW: ZoomOut(): zoom index "<< m_zoomIndex
@@ -949,12 +951,15 @@ void GraphicsWidget::zoomOut (int level){
     }
     emit zoomChanged(m_zoomIndex);
 
-}	
+}
 
 
-/** 
-    Called from MW magnifier widgets
-*/
+
+/**
+ * @brief GraphicsWidget::zoomIn
+ * @param level
+ * Called from MW magnifier button
+ */
 void GraphicsWidget::zoomIn(int level){
 
     qDebug() << "GW: ZoomIn(): index "<< m_zoomIndex << " + level " << level;
@@ -963,18 +968,29 @@ void GraphicsWidget::zoomIn(int level){
         m_zoomIndex=500;
     }
     emit zoomChanged(m_zoomIndex);
-
-
 }
 
 
-/**
-      Initiated from MW zoomSlider widget to zoom in or out.
-*/
-void GraphicsWidget::changeZoom(int value) {
-    qDebug() << "GW: changeZoom() to" <<  value;
 
+void GraphicsWidget::rotateLeft(){
+    m_currentRotationAngle-=10;
+    emit rotationChanged(m_currentRotationAngle);
+}
+
+void GraphicsWidget::rotateRight() {
+    m_currentRotationAngle+=10;
+    emit rotationChanged(m_currentRotationAngle);
+}
+
+
+
+/**
+      Initiated from MW zoomSlider and rotateSlider widgets
+*/
+void GraphicsWidget::changeMatrixScale(int value) {
     qreal scaleFactor = pow(qreal(2), ( value - 250) / qreal(50) );
+    qDebug() << "GW: changeMatrixScale(): value " <<  value
+             << " new scaleFactor " << scaleFactor;
     m_currentScaleFactor = scaleFactor ;
     resetMatrix();
     scale(m_currentScaleFactor, m_currentScaleFactor);
@@ -986,8 +1002,8 @@ void GraphicsWidget::changeZoom(int value) {
 
 
 
-void GraphicsWidget::rot(int angle){
-    qDebug("rotating");
+void GraphicsWidget::changeMatrixRotation(int angle){
+    qDebug() << "GW: changeMatrixRotation(): angle " <<  angle;
     m_currentRotationAngle = angle;
     resetMatrix();
     scale(m_currentScaleFactor, m_currentScaleFactor);

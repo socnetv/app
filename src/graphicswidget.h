@@ -114,7 +114,6 @@ public slots:
     void edgeClicked(Edge *);
     void openEdgeContextMenu();
 
-    void changeZoom(const int value);
     void startEdge(Node *node);
     void drawEdgeReciprocal(int, int);
     void unmakeEdgeReciprocal(int, int);
@@ -122,9 +121,13 @@ public slots:
     void clearGuides();
     void addGuideCircle( int x0, int y0, int radius);
     void addGuideHLine(int y0);
+
     void zoomIn(int level = 1);
     void zoomOut(int level = 1);
-    void rot(int angle);
+    void rotateLeft();
+    void rotateRight();
+    void changeMatrixScale(const int value);
+    void changeMatrixRotation(int angle);
 
 signals:
     void windowResized(int,int);
@@ -136,7 +139,8 @@ signals:
     void updateNodeCoords(int, int, int);
     void selectedNode(Node *);
     void selectedEdge(Edge *);
-    void zoomChanged(int);
+    void zoomChanged(const int);
+    void rotationChanged(const int);
 
 
 

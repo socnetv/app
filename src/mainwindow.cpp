@@ -2518,7 +2518,7 @@ void MainWindow::initView() {
     // For dynamic scenes, or scenes with many animated items, the index bookkeeping can outweight the fast lookup speeds." So...
     scene->setItemIndexMethod(QGraphicsScene::BspTreeIndex); //NoIndex (for anime) | BspTreeIndex
 
-    graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+    graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
     //graphicsWidget->setResizeAnchor(QGraphicsView::AnchorViewCenter);
 
     // sets dragging the mouse over the scene while the left mouse button is pressed.
@@ -2581,11 +2581,16 @@ void MainWindow::initWindowLayout() {
 
     // Rotate slider
     rotateLeftBtn = new QToolButton;
+    rotateLeftBtn->setAutoRepeat(true);
+    rotateLeftBtn->setAutoRepeat(false);
     rotateLeftBtn->setIcon(QPixmap(":/images/rotateleft.png"));
     rotateLeftBtn->setIconSize(iconSize);
+
     rotateRightBtn = new QToolButton;
+    rotateRightBtn->setAutoRepeat(false);
     rotateRightBtn ->setIcon(QPixmap(":/images/rotateright.png"));
     rotateRightBtn ->setIconSize(iconSize);
+
     rotateSlider = new QSlider;
     rotateSlider->setOrientation(Qt::Horizontal);
     rotateSlider->setMinimum(-360);
@@ -2804,16 +2809,20 @@ void MainWindow::initSignalSlots() {
     connect( graphicsWidget, SIGNAL(zoomChanged(const int &)),
              zoomSlider, SLOT( setValue(const int &)) );
 
-//    connect( zoomCombo, SIGNAL(currentIndexChanged(const int &)),
-//             graphicsWidget, SLOT( changeZoom(const int &))  );
-
-
-    connect(zoomSlider, SIGNAL(valueChanged(const int &)), graphicsWidget, SLOT(changeZoom(const int &)));
+    connect(zoomSlider, SIGNAL(valueChanged(const int &)), graphicsWidget, SLOT(changeMatrixScale(const int &)));
 
     connect( zoomInBtn, SIGNAL(clicked()), graphicsWidget, SLOT( zoomIn() ) );
     connect( zoomOutBtn, SIGNAL(clicked()), graphicsWidget, SLOT( zoomOut() ) );
 
-    connect( rotateSpinBox, SIGNAL(valueChanged(int)), graphicsWidget, SLOT( rot(int) ) );
+    connect( graphicsWidget, SIGNAL(rotationChanged(const int &)),
+             rotateSlider, SLOT( setValue(const int &)) );
+
+    connect(rotateSlider, SIGNAL(valueChanged(const int &)), graphicsWidget, SLOT(changeMatrixRotation(const int &)));
+
+    connect(rotateLeftBtn, SIGNAL(clicked()), graphicsWidget, SLOT(rotateLeft()));
+    connect(rotateRightBtn, SIGNAL(clicked()), graphicsWidget, SLOT(rotateRight()));
+
+    //connect( rotateSpinBox, SIGNAL(valueChanged(int)), graphicsWidget, SLOT( rot(int) ) );
 
     connect( nextRelationAct, SIGNAL(triggered()), this, SLOT( nextRelation() ) );
     connect( prevRelationAct, SIGNAL(triggered()), this, SLOT( prevRelation() ) );
@@ -2941,8 +2950,10 @@ void MainWindow::initNet(){
     activeGraph.setShowLabels(this->showLabels());
     activeGraph.setShowNumbersInsideNodes( this->showNumbersInsideNodes());
 
-    /** Clear scene **/
+    /** Clear graphicsWidget scene and reset transformations **/
     graphicsWidget->clear();
+    rotateSlider->setValue(0);
+    zoomSlider->setValue(250);
 
     /** Clear LCDs **/
     nodesLCD->display(activeGraph.vertices());
