@@ -10593,6 +10593,8 @@ void Graph::timerEvent(QTimerEvent *event) {
 
 void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations,
                                               const int cW, const int cH){
+
+    int progressCounter=0;
     qreal dist = 0;
     qreal f_rep=0, f_att=0;
     QPointF DV;
@@ -10603,6 +10605,9 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations,
 
     QList<Vertex*>::const_iterator v1;
     QList<Vertex*>::const_iterator v2;
+
+    /* apply an inital random layout */
+    layoutRandom(canvasWidth, canvasHeight);
 
     /**
      * compute max spring length as function of canvas area divided by the
@@ -10705,6 +10710,9 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations,
 
         layoutForceDirected_Eades_moveNodes(c4) ;
 
+        progressCounter++;
+        emit updateProgressDialog(progressCounter );
+
     } //end iterations
 }
 
@@ -10719,6 +10727,7 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations,
     sometimes called n-body problems.
 */
 void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations, const int cW, const int cH){
+    int progressCounter=0;
     qreal dist = 0;
     qreal f_att, f_rep;
     QPointF DV;   //difference vector
@@ -10731,6 +10740,10 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations, cons
     canvasWidth = cW;
     canvasHeight = cH;
     qreal optimalDistance= C * computeOptimalDistance(V);
+
+
+    /* apply an inital random layout */
+    layoutRandom(canvasWidth, canvasHeight);
 
     qDebug() << "Graph: layoutForceDirectedFruchtermanReingold() ";
     qDebug () << "Graph: Setting optimalDistance = "<<  optimalDistance
@@ -10818,6 +10831,8 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations, cons
         // prevent placement outside of the frame/canvas
         layoutForceDirected_FR_moveNodes( layoutForceDirected_FR_temperature (iteration) );
 
+        progressCounter++;
+        emit updateProgressDialog(progressCounter );
     }
 
 }

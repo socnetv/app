@@ -2243,7 +2243,6 @@ void MainWindow::initToolBox(){
     statsPanel = new QGroupBox(tr("Statistics"));
     statsPanel -> setLayout (propertiesGrid);
 
-
 }
 
 
@@ -5901,10 +5900,15 @@ void MainWindow::slotLayoutSpringEmbedder(){
 
         return;
     }
+    double maxWidth=graphicsWidget->width();
+    double maxHeight=graphicsWidget->height();
+
     statusMessage( tr("Embedding a spring-gravitational model on the network.... ")  );
     //scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-    activeGraph.layoutForceDirectedSpringEmbedder(100,graphicsWidget->width(), graphicsWidget->height());
+    createProgressBar();
+    activeGraph.layoutForceDirectedSpringEmbedder(100,maxWidth, maxHeight);
+    destroyProgressBar();
     QApplication::restoreOverrideCursor();
     //scene->setItemIndexMethod (QGraphicsScene::BspTreeIndex); //best when not moving items
 }
@@ -5925,14 +5929,14 @@ void MainWindow::slotLayoutFruchterman(){
         statusMessage( tr("I am really sorry. You must really load a file first... ")  );
         return;
     }
-
+    double maxWidth=graphicsWidget->width();
+    double maxHeight=graphicsWidget->height();
     statusMessage( tr("Embedding a repelling-attracting forces model on the network.... ")  );
     //scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-    activeGraph.layoutForceDirectedFruchtermanReingold(70,graphicsWidget->width(), graphicsWidget->height());
-    activeGraph.layoutForceDirectedFruchtermanReingold(70,graphicsWidget->width(), graphicsWidget->height());
-    activeGraph.layoutForceDirectedFruchtermanReingold(100,graphicsWidget->width(), graphicsWidget->height());
-    activeGraph.layoutForceDirectedFruchtermanReingold(100,graphicsWidget->width(), graphicsWidget->height());
+    createProgressBar();
+    activeGraph.layoutForceDirectedFruchtermanReingold(100,maxWidth, maxHeight);
+    destroyProgressBar();
     QApplication::restoreOverrideCursor();
     //scene->setItemIndexMethod (QGraphicsScene::BspTreeIndex); //best when not moving items
 
