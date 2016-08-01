@@ -1,0 +1,657 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PreferencesDialog</class>
+ <widget class="QDialog" name="PreferencesDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>422</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="2" column="0">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="generalTab">
+      <attribute name="title">
+       <string>General</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Default save folder</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="dataDirEdit">
+           <property name="minimumSize">
+            <size>
+             <width>180</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default Save / Export folder &lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is the path of the folder where all SocNetV files and reports will be saved. &lt;/p&gt;&lt;p&gt;Click the button on the right to select a new folder. &lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. If the folder does not exist, it wil be created.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="whatsThis">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default Save / Export folder &lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is the path of the folder where all SocNetV files and reports will be saved. &lt;/p&gt;&lt;p&gt;Click the button on the right to select a new folder. &lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. If the folder does not exist, it wil be created.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="dataDirSelectButton">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default Save / Export folder &lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click this button to select a folder, where all SocNetV files and reports will be saved by default.  &lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. If the folder does not exist, it wil be created.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="whatsThis">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default Save / Export folder &lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click this button to select a folder, where all SocNetV files and reports will be saved by default. &lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. If the folder does not exist, it wil be created.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>...</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0">
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Options</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="progressBarsChkBox">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Progress Bars&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable the application Progress Bars.&lt;/p&gt;&lt;p&gt;Progress Bars may appear during time-cost operations. &lt;/p&gt;&lt;p&gt;Enabling Progress Bars has a significant cpu cost but lets you know about the progress of a given operation.&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="whatsThis">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Progress Bars&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable the application Progress Bars.&lt;/p&gt;&lt;p&gt;Progress Bars may appear during time-cost operations. &lt;/p&gt;&lt;p&gt;Enabling Progress Bars has a significant cpu cost but lets you know about the progress of a given operation.&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="layoutDirection">
+             <enum>Qt::LeftToRight</enum>
+            </property>
+            <property name="text">
+             <string>Show progress bars</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QCheckBox" name="toolBarChkBox">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Toolbar&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable the application toolbar.&lt;/p&gt;&lt;p&gt;The toolbar is the widget right below the menu, and carries useful icons. You can disable it if you like from here...&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="whatsThis">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Toolbar&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable the application toolbar.&lt;/p&gt;&lt;p&gt;The toolbar is the widget right below the menu, and carries useful icons. You can disable it if you like from here...&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="layoutDirection">
+             <enum>Qt::LeftToRight</enum>
+            </property>
+            <property name="text">
+             <string>Show toolbar</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QCheckBox" name="statusBarChkBox">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Statusbar&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable the application statusbar.&lt;/p&gt;&lt;p&gt;The statusbar is the widget at the bottom of the window, where messages appear. &lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="whatsThis">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Statusbar&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable the application statusbar.&lt;/p&gt;&lt;p&gt;The statusbar is the widget at the bottom of the window, where messages appear. &lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="layoutDirection">
+             <enum>Qt::LeftToRight</enum>
+            </property>
+            <property name="text">
+             <string>Show statusbar</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QCheckBox" name="debugChkBox">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Debug Messages&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enables or disable debug messages to strerr. &lt;/p&gt;&lt;p&gt;Enabling has a significant cpu cost but lets you know what SocNetV is actually doing.&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="whatsThis">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Debug Messages&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enables or disable debug messages to strerr. &lt;/p&gt;&lt;p&gt;Enabling has a significant cpu cost but lets you know what SocNetV is actually doing.&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="layoutDirection">
+             <enum>Qt::LeftToRight</enum>
+            </property>
+            <property name="text">
+             <string>Show debug messages</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="canvasTab">
+      <attribute name="title">
+       <string>Canvas</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="0" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QLabel" name="label_4">
+           <property name="font">
+            <font>
+             <family>Ubuntu</family>
+             <pointsize>10</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Background color</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_3">
+           <property name="font">
+            <font>
+             <family>DejaVu Sans</family>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QToolButton" name="bgColorButton">
+           <property name="minimumSize">
+            <size>
+             <width>60</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <family>DejaVu Sans</family>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Background color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click this button to select a new background color. &lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="whatsThis">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Background color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click this button to select a new background color. &lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>...</string>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>60</width>
+             <height>20</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Background Image</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="bgImageSelectEdit">
+           <property name="minimumSize">
+            <size>
+             <width>200</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Background image&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is the path of the default background image. &lt;/p&gt;&lt;p&gt;Click the button on the right to select a new background image.&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. If the file does not exist, the default background color will be used.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="whatsThis">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Background image&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is the path of the default background image. &lt;/p&gt;&lt;p&gt;Click the button on the right to select a new background image.&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. If the file does not exist, the default background color will be used.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="bgImageSelectButton">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Background image&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click this button to select a new background image.&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV.  If the file does not exist, the default background color will be used.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="whatsThis">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Background image&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click this button to select a new background image.&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. If the file does not exist, the default background color will be used.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>...</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="0">
+        <widget class="QGroupBox" name="groupBox_2">
+         <property name="title">
+          <string>Options</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_2">
+          <property name="fieldGrowthPolicy">
+           <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+          </property>
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="antialiasingChkBox">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Anti-Aliasing&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable Anti-Aliasing.&lt;/p&gt;&lt;p&gt;Anti-aliasing is a technique which makes nodes, lines and text, smoother and fancier. But it comes at the cost of speed... &lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="whatsThis">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Anti-Aliasing&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable Anti-Aliasing.&lt;/p&gt;&lt;p&gt;Anti-aliasing is a technique which makes nodes, lines and text, smoother and fancier. But it comes at the cost of speed... &lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="layoutDirection">
+             <enum>Qt::LeftToRight</enum>
+            </property>
+            <property name="text">
+             <string>Enable antialiasing</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="nodesTab">
+      <attribute name="title">
+       <string>Nodes</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_4">
+       <item row="0" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="QLabel" name="label_6">
+           <property name="font">
+            <font>
+             <family>DejaVu Sans</family>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Default color</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_5">
+           <property name="font">
+            <font>
+             <family>DejaVu Sans</family>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QToolButton" name="colorButton">
+           <property name="minimumSize">
+            <size>
+             <width>60</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <family>DejaVu Sans</family>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>...</string>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>60</width>
+             <height>20</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <item>
+          <widget class="QLabel" name="label_5">
+           <property name="font">
+            <font>
+             <family>DejaVu Sans</family>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Default shape</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_4">
+           <property name="font">
+            <font>
+             <family>DejaVu Sans</family>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="boxRadio">
+           <property name="font">
+            <font>
+             <family>DejaVu Sans</family>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../src.qrc">
+             <normaloff>:/images/box.png</normaloff>:/images/box.png</iconset>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="circleRadio">
+           <property name="font">
+            <font>
+             <family>DejaVu Sans</family>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../src.qrc">
+             <normaloff>:/images/circle.png</normaloff>:/images/circle.png</iconset>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="diamondRadio">
+           <property name="font">
+            <font>
+             <family>DejaVu Sans</family>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../src.qrc">
+             <normaloff>:/images/diamond.png</normaloff>:/images/diamond.png</iconset>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="ellipseRadio">
+           <property name="font">
+            <font>
+             <family>DejaVu Sans</family>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../src.qrc">
+             <normaloff>:/images/ellipse.png</normaloff>:/images/ellipse.png</iconset>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="triangleRadio">
+           <property name="font">
+            <font>
+             <family>DejaVu Sans</family>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../src.qrc">
+             <normaloff>:/images/triangle.png</normaloff>:/images/triangle.png</iconset>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <item>
+          <widget class="QLabel" name="label_3">
+           <property name="font">
+            <font>
+             <family>DejaVu Sans</family>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Default size</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_6">
+           <property name="font">
+            <font>
+             <family>DejaVu Sans</family>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="sizeSpin">
+           <property name="font">
+            <font>
+             <family>DejaVu Sans</family>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="value">
+            <number>8</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="0">
+        <widget class="QGroupBox" name="groupBox_3">
+         <property name="title">
+          <string>Options</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_3">
+          <property name="fieldGrowthPolicy">
+           <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+          </property>
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="nodeNumbersChkBox">
+            <property name="layoutDirection">
+             <enum>Qt::LeftToRight</enum>
+            </property>
+            <property name="text">
+             <string>Display numbers</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QCheckBox" name="nodeLabelsChkBox">
+            <property name="layoutDirection">
+             <enum>Qt::LeftToRight</enum>
+            </property>
+            <property name="text">
+             <string>Display Labels</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QCheckBox" name="nodeNumbersInsideChkBox">
+            <property name="layoutDirection">
+             <enum>Qt::LeftToRight</enum>
+            </property>
+            <property name="text">
+             <string>Display numbers inside nodes</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="edgesTab">
+      <attribute name="title">
+       <string>Edges</string>
+      </attribute>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="../src.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>PreferencesDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>227</x>
+     <y>281</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>PreferencesDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>295</x>
+     <y>287</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

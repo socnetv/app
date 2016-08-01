@@ -51,6 +51,7 @@
 #include "randerdosrenyidialog.h"
 #include "randsmallworlddialog.h"
 #include "randscalefreedialog.h"
+#include "preferencesdialog.h"
 
 
 
@@ -1463,14 +1464,14 @@ void MainWindow::initActions(){
     viewToolBar->setWhatsThis(tr("Enable or disable Toolbar\n\nThe toolbar is the widget right below the menu, and carries useful icons. You can disable it if you like..."));
     viewToolBar->setCheckable(true);
     viewToolBar->setChecked(true);
-    connect(viewToolBar, SIGNAL(toggled(bool)), this, SLOT(slotViewToolBar(bool)));
+    connect(viewToolBar, SIGNAL(toggled(bool)), this, SLOT(slotShowToolBar(bool)));
 
     viewStatusBar = new QAction(tr("Statusbar"),	this);
     viewStatusBar->setStatusTip(tr("Enables/disables the statusbar"));
     viewStatusBar->setWhatsThis(tr("Enable or disable Statusbar\n\nThe statusbar is the widget at the bottom of the window, where messages appear. You might want to disable it..."));
     viewStatusBar->setCheckable(true);
     viewStatusBar->setChecked(true);
-    connect(viewStatusBar, SIGNAL(toggled(bool)), this, SLOT(slotViewStatusBar(bool)));
+    connect(viewStatusBar, SIGNAL(toggled(bool)), this, SLOT(slotShowStatusBar(bool)));
 
     backgroundImageAct = new QAction(tr("Background Image"),	this);
     backgroundImageAct->setStatusTip(tr("Enables/disables displaying a user-defined custom image in the background"));
@@ -1478,6 +1479,13 @@ void MainWindow::initActions(){
     backgroundImageAct->setCheckable(true);
     backgroundImageAct->setChecked(false);
     connect(backgroundImageAct, SIGNAL(toggled(bool)), this, SLOT(slotBackgroundImage(bool)));
+
+    openPreferencesAct = new QAction(tr("Preferences"),	this);
+    openPreferencesAct->setShortcut(tr("Ctrl+Shift+P"));
+    openPreferencesAct->setEnabled(true);
+    openPreferencesAct->setStatusTip(tr("Open SocNetV Preferences dialog"));
+    openPreferencesAct->setWhatsThis(tr("Preferences\n\n Opens the Preferences dialog where you can save permanent settings."));
+    connect(openPreferencesAct, SIGNAL(triggered()), this, SLOT(slotOpenPreferencesDialog()));
 
 
 
@@ -1772,6 +1780,9 @@ void MainWindow::initMenuBar() {
     viewOptionsMenu-> addAction (showProgressBarAct);
     viewOptionsMenu-> addAction (viewToolBar);
     viewOptionsMenu-> addAction (viewStatusBar);
+
+    optionsMenu -> addSeparator();
+    optionsMenu -> addAction (openPreferencesAct);
 
 
     /**  menuBar entry helpMenu */
@@ -8312,7 +8323,7 @@ void MainWindow::slotPrintDebug(bool toggle){
 /**
 *  Turns Toolbar on or off
 */
-void MainWindow::slotViewToolBar(bool toggle) {
+void MainWindow::slotShowToolBar(bool toggle) {
     statusMessage( tr("Toggle toolbar..."));
     if (toggle== false)   {
         toolBar->hide();
@@ -8329,7 +8340,7 @@ void MainWindow::slotViewToolBar(bool toggle) {
 /**
 *  Turns Statusbar on or off
 */
-void MainWindow::slotViewStatusBar(bool toggle) {
+void MainWindow::slotShowStatusBar(bool toggle) {
     statusMessage( tr("Toggle statusbar..."));
 
     if (toggle == false)   {
@@ -8368,6 +8379,37 @@ void MainWindow::slotBackgroundImage(bool toggle) {
     }
 
 
+}
+
+
+
+
+
+void MainWindow::slotOpenPreferencesDialog() {
+    qDebug() << "MW;:slotOpenPreferencesDialog()";
+
+    // load preferences
+    // ..
+
+    // build dialog
+    m_preferencesDialog = new PreferencesDialog(this, &dataDir);
+
+    connect( m_preferencesDialog, &PreferencesDialog::setProgressBars,
+             this, &MainWindow::slotShowProgressBar);
+
+    connect( m_preferencesDialog, &PreferencesDialog::setToolBars,
+             this, &MainWindow::slotShowToolBar);
+
+    connect( m_preferencesDialog, &PreferencesDialog::setStatusBars,
+             this, &MainWindow::slotShowStatusBar);
+
+    connect( m_preferencesDialog, &PreferencesDialog::setAntialiasing,
+             this, &MainWindow::slotAntialiasing);
+
+    // show preferences dialog
+    m_preferencesDialog->exec();
+
+    statusMessage(dataDir );
 }
 
 /**

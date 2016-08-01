@@ -77,6 +77,7 @@ class PreviewForm;
 class RandErdosRenyiDialog;
 class RandSmallWorldDialog;
 class RandScaleFreeDialog;
+class PreferencesDialog;
 
 
 /**
@@ -313,9 +314,11 @@ public slots:
     void slotAntialiasing(bool );
     void slotShowProgressBar(bool toggle);
     void slotPrintDebug(bool toggle);
-    void slotViewToolBar(bool toggle);
-    void slotViewStatusBar(bool toggle);
+    void slotShowToolBar(bool toggle);
+    void slotShowStatusBar(bool toggle);
     void slotBackgroundImage(bool toggle);
+
+    void slotOpenPreferencesDialog();
 
     //HELP MENU
     void slotTips();
@@ -381,6 +384,7 @@ private:
     RandErdosRenyiDialog *m_randErdosRenyiDialog;
     RandSmallWorldDialog *m_randSmallWorldDialog;
     RandScaleFreeDialog *m_randScaleFreeDialog;
+    PreferencesDialog *m_preferencesDialog;
 
     PreviewForm *previewForm;
     QList<QTextCodec *> codecs;
@@ -439,6 +443,7 @@ private:
     QAction *drawEdgesWeightsAct, *displayEdgesWeightNumbersAct, *displayEdgesAct;
     QAction *displayEdgesArrowsAct, *drawEdgesBezier,*considerEdgeWeightsAct;
     QAction *backgroundImageAct, *viewToolBar, *viewStatusBar, *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
+    QAction *openPreferencesAct;
     QAction *antialiasingAct;
     QAction *webCrawlerAct;
 
