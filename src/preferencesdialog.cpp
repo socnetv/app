@@ -27,13 +27,17 @@
 #include "preferencesdialog.h"
 #include "ui_preferencesdialog.h"
 #include <QFileDialog>
+#include <QColorDialog>
 
 
-PreferencesDialog::PreferencesDialog(QWidget *parent, QString *dataDir) :
+PreferencesDialog::PreferencesDialog(QWidget *parent,
+                                     QString *dataDir,
+                                     QColor *bgColor) :
     QDialog(parent),
     ui(new Ui::PreferencesDialog)
 {
     ui->setupUi(this);
+
     m_dataDir = new QString ;
     m_dataDir  = dataDir;
     ui->dataDirEdit->setText(*dataDir);
@@ -41,23 +45,45 @@ PreferencesDialog::PreferencesDialog(QWidget *parent, QString *dataDir) :
     connect (ui->progressBarsChkBox, &QCheckBox::stateChanged, this, &PreferencesDialog::setProgressBars);
     connect (ui->toolBarChkBox, &QCheckBox::stateChanged, this, &PreferencesDialog::setToolBars);
     connect (ui->statusBarChkBox, &QCheckBox::stateChanged, this, &PreferencesDialog::setStatusBars);
+    connect (ui->debugChkBox, &QCheckBox::stateChanged, this, &PreferencesDialog::setDebugMsgs);
     connect (ui->antialiasingChkBox, &QCheckBox::stateChanged, this, &PreferencesDialog::setAntialiasing);
+
+    m_bgColor = new QColor;
+    m_bgColor = bgColor;
+    m_pixmap = QPixmap(60,20) ;
+    m_pixmap.fill(*m_bgColor);
+    ui->bgColorButton->setIcon(QIcon(m_pixmap));
+
+    connect (ui->bgColorButton, &QToolButton::clicked,
+             this, &PreferencesDialog::getBgColor);
+
+
 }
 
 
 void PreferencesDialog::getDataDir(){
 
-//        QString newDataDir = QFileDialog::getOpenFileName(
-//                    this,
-//                    tr("Select a new data dir "),
-//                    ui->dataDirEdit->text());
     *m_dataDir = QFileDialog::getExistingDirectory(this, tr("Select a new data dir"),
                                                     ui->dataDirEdit->text(),
                                                     QFileDialog::ShowDirsOnly
                                                     | QFileDialog::DontResolveSymlinks);
-
     ui->dataDirEdit->setText(*m_dataDir);
 }
+
+void PreferencesDialog::getBgColor(){
+    *m_bgColor = QColorDialog::getColor(
+                *m_bgColor, this, tr("Select canvas background color") );
+    if ( m_bgColor->isValid()) {
+        m_pixmap.fill(*m_bgColor);
+        ui->bgColorButton->setIcon(QIcon(m_pixmap));
+        emit setBgColor(*m_bgColor);
+    }
+    else {
+        // user pressed Cancel
+    }
+
+}
+
 
 PreferencesDialog::~PreferencesDialog()
 {

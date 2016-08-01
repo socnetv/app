@@ -8191,8 +8191,8 @@ void MainWindow::slotDrawEdgesBezier(bool toggle){
 */
 void MainWindow::slotBackgroundColor () {
     qDebug("MW: slotBackgroundColor ");
-    QColor backgrColor = QColorDialog::getColor( initBackgroundColor, this );
-    graphicsWidget ->setBackgroundBrush(QBrush(backgrColor));
+    //QColor backgrColor = QColorDialog::getColor( initBackgroundColor, this );
+    graphicsWidget ->setBackgroundBrush(QBrush(initBackgroundColor));
     statusMessage( tr("Ready. ") );
 }
 
@@ -8392,7 +8392,8 @@ void MainWindow::slotOpenPreferencesDialog() {
     // ..
 
     // build dialog
-    m_preferencesDialog = new PreferencesDialog(this, &dataDir);
+    m_preferencesDialog = new PreferencesDialog(this, &dataDir,
+                                                &initBackgroundColor);
 
     connect( m_preferencesDialog, &PreferencesDialog::setProgressBars,
              this, &MainWindow::slotShowProgressBar);
@@ -8406,10 +8407,17 @@ void MainWindow::slotOpenPreferencesDialog() {
     connect( m_preferencesDialog, &PreferencesDialog::setAntialiasing,
              this, &MainWindow::slotAntialiasing);
 
+    connect( m_preferencesDialog, &PreferencesDialog::setDebugMsgs,
+                     this, &MainWindow::slotPrintDebug);
+
+    connect( m_preferencesDialog, &PreferencesDialog::setBgColor,
+                     this, &MainWindow::slotBackgroundColor);
+
     // show preferences dialog
     m_preferencesDialog->exec();
 
     statusMessage(dataDir );
+
 }
 
 /**

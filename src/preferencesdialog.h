@@ -38,8 +38,11 @@ class PreferencesDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit PreferencesDialog(QWidget *parent = 0, QString *dataDir = 0);
+    explicit PreferencesDialog(QWidget *parent = 0,
+                               QString *dataDir = 0,
+                               QColor *bgColor = 0);
     void getDataDir();
+    void getBgColor();
     ~PreferencesDialog();
 
 signals:
@@ -47,10 +50,13 @@ signals:
     void setToolBars(bool);
     void setStatusBars(bool);
     void setAntialiasing(bool);
-
+    void setDebugMsgs(bool);
+    void setBgColor(QColor);
 private:
      Ui::PreferencesDialog *ui;
      QString *m_dataDir;
+     QPixmap m_pixmap;
+     QColor *m_bgColor;
 };
 
 #endif // PREFERENCESDIALOG_H
