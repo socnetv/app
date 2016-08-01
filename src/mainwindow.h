@@ -389,8 +389,10 @@ private:
     Graph activeGraph;
     QPrinter *printer;
     QToolBar *toolBar;
+
+    QGroupBox *editPanel, *statsPanel ;
+
     QComboBox *changeRelationCombo;
-    QTabWidget *toolBox;
 
     QProgressDialog *progressDialog;
 

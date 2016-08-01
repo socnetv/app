@@ -1842,8 +1842,6 @@ void MainWindow::initToolBar(){
  * Creates a dock widget for instant menu access
  */
 void MainWindow::initToolBox(){
-    toolBox = new QTabWidget;
-    //toolBox->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Ignored));
 
     /*
      *  create widgets for the Controls Tab
@@ -1890,15 +1888,15 @@ void MainWindow::initToolBox(){
     buttonsGrid -> addWidget(removeNodeBt, 0,1);
     buttonsGrid -> addWidget(addEdgeBt,1,0);
     buttonsGrid -> addWidget(removeEdgeBt,1,1);
-    buttonsGrid->setSpacing(10);
-    buttonsGrid -> setContentsMargins(10, 10, 10, 10);
+    buttonsGrid -> setSpacing(5);
+    buttonsGrid -> setContentsMargins(5, 5, 5, 5);
 
     //create a groupbox "Edit" - Inside, display the grid layout of widgets
     QGroupBox *editGroupBox= new QGroupBox(tr("Edit"));
     editGroupBox->setLayout(buttonsGrid);
-    editGroupBox->setMaximumWidth(285);
+    editGroupBox->setMaximumWidth(280);
     editGroupBox->setMinimumHeight(100);
-    editGroupBox->setMaximumHeight(100);
+
 
     //create widgets for the "Analysis" box
     QLabel *toolBoxAnalysisGeodesicsSelectLabel = new QLabel;
@@ -1974,21 +1972,21 @@ void MainWindow::initToolBox(){
     analysisGrid -> addWidget(toolBoxAnalysisClusterabilitySelect, 3,1);
     analysisGrid -> addWidget(toolBoxAnalysisProminenceSelectLabel, 4,0);
     analysisGrid -> addWidget(toolBoxAnalysisProminenceSelect, 4,1);
-    analysisGrid -> setSpacing(10);
-    analysisGrid -> setContentsMargins(10, 10, 10, 10);
-    //layoutByIndexGrid -> setRowStretch(0,1);   //fix stretch
+    analysisGrid -> setContentsMargins(5, 5, 5, 5);
+
+
 
     //create a box and set the above layout inside
     QGroupBox *analysisBox= new QGroupBox(tr("Analyze"));
     analysisBox->setMinimumHeight(200);
-    analysisBox->setMaximumHeight(250);
+    analysisBox->setMaximumWidth(280);
     analysisBox->setLayout (analysisGrid );
 
 
     //create widgets for the "Visualization By Index" box
     QLabel *toolBoxLayoutByIndexSelectLabel = new QLabel;
     toolBoxLayoutByIndexSelectLabel->setText(tr("Index:"));
-    toolBoxLayoutByIndexSelectLabel->setMinimumWidth(100);
+    toolBoxLayoutByIndexSelectLabel->setMinimumWidth(110);
     toolBoxLayoutByIndexSelect = new QComboBox;
     QStringList indicesList;
     indicesList << "None"<< "Random"
@@ -2027,20 +2025,18 @@ void MainWindow::initToolBox(){
     layoutByIndexGrid -> addWidget(toolBoxLayoutByIndexTypeLabel, 1,0);
     layoutByIndexGrid -> addWidget(toolBoxLayoutByIndexTypeSelect, 1,1);
     layoutByIndexGrid -> addWidget(toolBoxLayoutByIndexButton, 2,1);
-    layoutByIndexGrid -> setSpacing(10);
-    layoutByIndexGrid -> setContentsMargins(10, 0, 10, 10);
+    layoutByIndexGrid -> setContentsMargins(10, 10, 10, 10);
 
     //create a box and set the above layout inside
     QGroupBox *layoutByIndexBox= new QGroupBox(tr("By Prominence Index"));
     layoutByIndexBox->setMinimumHeight(150);
-    layoutByIndexBox->setMaximumHeight(200);
     layoutByIndexBox->setLayout (layoutByIndexGrid );
 
 
     // create widgets for the "Force-Directed Models" Box
     QLabel *toolBoxLayoutForceDirectedSelectLabel = new QLabel;
     toolBoxLayoutForceDirectedSelectLabel->setText(tr("Model:"));
-    toolBoxLayoutForceDirectedSelectLabel->setMinimumWidth(100);
+    toolBoxLayoutForceDirectedSelectLabel->setMinimumWidth(110);
     toolBoxLayoutForceDirectedSelect = new QComboBox;
     QStringList modelsList;
     modelsList << tr("None")
@@ -2086,13 +2082,11 @@ void MainWindow::initToolBox(){
     layoutForceDirectedGrid -> addWidget(toolBoxLayoutForceDirectedSelectLabel, 0,0);
     layoutForceDirectedGrid -> addWidget(toolBoxLayoutForceDirectedSelect, 0,1);
     layoutForceDirectedGrid -> addWidget(toolBoxLayoutForceDirectedButton, 1,1);
-    layoutForceDirectedGrid -> setSpacing(10);
-    layoutForceDirectedGrid -> setContentsMargins(10, 0, 10, 10);
+    layoutForceDirectedGrid -> setContentsMargins(10,10, 10, 10);
 
     //create a box for dynamic layout options
     QGroupBox *layoutDynamicBox= new QGroupBox(tr("By Force-Directed Model"));
     layoutDynamicBox->setMinimumHeight(100);
-    layoutDynamicBox->setMaximumHeight(150);
     layoutDynamicBox->setLayout (layoutForceDirectedGrid );
 
 
@@ -2122,46 +2116,42 @@ void MainWindow::initToolBox(){
     layoutGuidesBx->setToolTip(
                 tr("Disable to not display layout guidelines"));
 
+
+
+
     QGridLayout *layoutOptionsGrid = new QGridLayout();
     layoutOptionsGrid -> addWidget(nodeSizesByOutDegreeBx, 0,0);
     layoutOptionsGrid -> addWidget(nodeSizesByInDegreeBx, 1,0);
     layoutOptionsGrid -> addWidget(layoutGuidesBx, 2,0);
-    layoutOptionsGrid->setSpacing(10);
-    layoutOptionsGrid->setMargin(0);
+    layoutOptionsGrid->setContentsMargins(10, 10, 10, 10);
 
-    //Box for additional layout options
-    QGroupBox *layoutOptionsBox= new QGroupBox(tr("Options"));
-    layoutOptionsBox->setMinimumHeight(120);
-    layoutOptionsBox->setMaximumHeight(150);
-    layoutOptionsBox->setLayout (layoutOptionsGrid );
+    //Box for additional visualization options
+    QGroupBox *visualizeOptionsBox= new QGroupBox(tr("Options"));
+    visualizeOptionsBox->setMinimumHeight(120);
+    visualizeOptionsBox->setMaximumWidth(280);
+    visualizeOptionsBox->setLayout (layoutOptionsGrid );
 
 
     //Parent box with vertical layout for all layout/visualization boxes
     QVBoxLayout *visualizationBoxLayout = new QVBoxLayout;
     visualizationBoxLayout -> addWidget(layoutByIndexBox);
     visualizationBoxLayout -> addWidget(layoutDynamicBox);
-    visualizationBoxLayout -> addWidget(layoutOptionsBox);
-    QGroupBox *visualizationBox= new QGroupBox(tr("Visualize"));
-    visualizationBox->setMaximumWidth(290);
+    visualizationBoxLayout -> addWidget(visualizeOptionsBox);
 
-    visualizationBox->setMinimumHeight(350);
-    visualizationBox->setMaximumHeight(500);
+    QGroupBox *visualizationBox= new QGroupBox(tr("Visualize"));
+    visualizationBox->setMaximumWidth(280);
     visualizationBox->setLayout (visualizationBoxLayout );
 
     //Parent box with vertical layout for all boxes of Controls
-    QVBoxLayout *controlTabVerticalLayout = new QVBoxLayout;
-    controlTabVerticalLayout -> addWidget(editGroupBox);
-    controlTabVerticalLayout -> addWidget(analysisBox);
-    controlTabVerticalLayout -> addWidget(visualizationBox);
-    controlTabVerticalLayout -> setSpacing(10);
-    controlTabVerticalLayout -> setContentsMargins(0, 20, 0, 0);
+    QGridLayout *editGrid = new QGridLayout;
+    editGrid -> addWidget(editGroupBox, 0,0);
+    editGrid -> addWidget(analysisBox, 1, 0);
+    editGrid -> addWidget(visualizationBox, 2, 0);
+    editGrid -> setRowStretch(3,1);   //fix stretch
 
-    QGroupBox *controlGroupBox = new QGroupBox;
-    controlGroupBox->setLayout(controlTabVerticalLayout);
-    controlGroupBox->setFixedWidth(290);
-    controlGroupBox->setMinimumHeight(700);
-    controlGroupBox->setMaximumHeight(800);
-    toolBox->addTab(controlGroupBox, tr("Controls"));
+    //create a box with title
+    editPanel = new QGroupBox(tr("Control"));
+    editPanel -> setLayout (editGrid);
 
     connect(nodeSizesByOutDegreeBx , SIGNAL(clicked(bool)),
             this, SLOT(slotLayoutNodeSizesByOutDegree(bool)));
@@ -2189,48 +2179,50 @@ void MainWindow::initToolBox(){
 
     //create a grid layout
     QGridLayout *propertiesGrid = new QGridLayout();
-
     propertiesGrid -> setColumnMinimumWidth(0, 10);
     propertiesGrid -> setColumnMinimumWidth(1, 10);
 
-    propertiesGrid -> addWidget(labelNodesLCD, 0,0);
-    propertiesGrid -> addWidget(labelEdgesLCD, 0,1);
-    propertiesGrid -> addWidget(nodesLCD,1,0);
-    propertiesGrid -> addWidget(edgesLCD,1,1);
-
-    propertiesGrid -> addWidget(labelDensityLCD, 2,0);
-    propertiesGrid -> addWidget(densityLCD,2,1);
+    QLabel *networkLabel = new QLabel;
+    networkLabel-> setText ("Network");
+    networkLabel ->setFont(QFont("sans-serif", 10, QFont::Bold));
+    propertiesGrid -> addWidget(networkLabel , 0,0);
+    propertiesGrid -> addWidget(labelNodesLCD, 1,0);
+    propertiesGrid -> addWidget(nodesLCD,1,1);
+    propertiesGrid -> addWidget(labelEdgesLCD, 2,0);
+    propertiesGrid -> addWidget(edgesLCD,2,1);
+    propertiesGrid -> addWidget(labelDensityLCD, 3,0);
+    propertiesGrid -> addWidget(densityLCD,3,1);
 
     QLabel *dummyLabel = new QLabel;
-    dummyLabel-> setText (" ");
+    dummyLabel-> setText ("");
     QLabel *labelNode = new QLabel;
     labelNode-> setText (tr("Active Node"));
     labelNode ->setFont(QFont("sans-serif", 10, QFont::Bold));
 
     QLabel *labelSelectedNodeLCD = new QLabel;
-    labelSelectedNodeLCD -> setText (tr("Node Number:"));
+    labelSelectedNodeLCD -> setText (tr("Number:"));
     labelSelectedNodeLCD -> setToolTip (tr("This is the number of the last selected node."));
 
-    selectedNodeLCD =new QLCDNumber(7);
+    selectedNodeLCD =new QLCDNumber(5);
     selectedNodeLCD ->setSegmentStyle(QLCDNumber::Flat);
 
     QLabel *labelInDegreeLCD = new QLabel;
-    labelInDegreeLCD -> setText (tr("Node In-Degree:"));
+    labelInDegreeLCD -> setText (tr("In-Degree:"));
     labelInDegreeLCD -> setToolTip (tr("The sum of all in-edge weights of the node you clicked.."));
-    inDegreeLCD=new QLCDNumber(7);
+    inDegreeLCD=new QLCDNumber(5);
     inDegreeLCD -> setSegmentStyle(QLCDNumber::Flat);
     inDegreeLCD -> setToolTip (tr("The sum of all in-edge weights of the node you clicked."));
     QLabel *labelOutDegreeLCD = new QLabel;
-    labelOutDegreeLCD -> setText (tr("Node Out-Degree:"));
+    labelOutDegreeLCD -> setText (tr("Out-Degree:"));
     labelOutDegreeLCD -> setToolTip (tr("The sum of all out-edge weights of the node you clicked."));
-    outDegreeLCD=new QLCDNumber(7);
+    outDegreeLCD=new QLCDNumber(5);
     outDegreeLCD -> setSegmentStyle(QLCDNumber::Flat);
     outDegreeLCD -> setToolTip (tr("The sum of all out-edge weights of the node you clicked."));
 
     QLabel *labelClucofLCD  = new QLabel;
-    labelClucofLCD -> setText (tr("Clustering Coef."));
+    labelClucofLCD -> setText (tr("Clu.Coef."));
     labelClucofLCD -> setToolTip (tr("The Clustering Coefficient quantifies how close the clicked vertex and its neighbors are to being a clique. \nThe value is the proportion of Edges between the vertices within the neighbourhood of the clicked vertex,\n divided by the number of Edges that could possibly exist between them. \n\n WARNING: This value is automatically calculated only if vertices < 500.\n If your network is larger than 500 vertices, compute CluCof from the menu Analysis > Clustering Coefficient "));
-    clucofLCD = new QLCDNumber(7);
+    clucofLCD = new QLCDNumber(5);
     clucofLCD -> setSegmentStyle(QLCDNumber::Flat);
     clucofLCD  -> setToolTip (tr("The Clustering Coefficient quantifies how close the clicked vertex and its neighbors are to being a clique. \nThe value is the proportion of Edges between the vertices within the neighbourhood of the clicked vertex,\n divided by the number of Edges that could possibly exist between them. \n\n This value is automatically calculated only if vertices < 500.\n If your network is larger than 500 vertices, compute CluCof from the menu Analysis > Clustering Coefficient "));
 
@@ -2247,15 +2239,10 @@ void MainWindow::initToolBox(){
     propertiesGrid -> addWidget(clucofLCD,11,1);
     propertiesGrid -> setRowStretch(12,1);   //fix stretch
 
-    //create a box with title
-    QGroupBox *networkPropertiesGroup = new QGroupBox(tr(""));
-    networkPropertiesGroup -> setLayout (propertiesGrid);
+    //create a panel with title
+    statsPanel = new QGroupBox(tr("Statistics"));
+    statsPanel -> setLayout (propertiesGrid);
 
-
-    toolBox->addTab( networkPropertiesGroup, tr("Statistics"));
-    toolBox->setMinimumWidth(controlGroupBox->sizeHint().width());
-    toolBox->setFixedWidth(300);
-    //toolBox->setStyleSheet("* { background-color:#eee}}");
 
 }
 
@@ -2611,9 +2598,10 @@ void MainWindow::initWindowLayout() {
     // Create a layout for the toolbox and the canvas.
     // This will be the layout of our MW central widget
     QGridLayout *layout = new QGridLayout;
-    layout->addWidget(toolBox, 0, 0, 2,1); 		//add them
+    layout->addWidget(editPanel, 0, 0, 2,1);
     layout->addWidget(graphicsWidget,0,1);
     layout->addLayout(zoomSliderLayout, 0, 2);
+    layout->addWidget(statsPanel, 0, 3,2,1);
     layout->addLayout(rotateSliderLayout, 1, 1, 1, 1);
     layout->addWidget(resetSlidersBtn, 1, 2, 1, 1);
 
@@ -2626,20 +2614,21 @@ void MainWindow::initWindowLayout() {
 
 
     this->resize(1280,900);
-
+    //this->showMaximized();
     //set minimum size of graphicsWidget
 
     graphicsWidget->setMinimumSize(
                 (qreal)  ( this->width()
-                           - toolBox->sizeHint().width()
+                           - editPanel->sizeHint().width()
                            - zoomSliderLayout->sizeHint().width()
+                           - statsPanel ->sizeHint().width()
                            - 40 ) ,
                 (qreal) ( this->height()
                           - statusBar()->sizeHint().height()
                           - toolBar->sizeHint().height()
                           - menuBar()->sizeHint().height()
                           - rotateSliderLayout->sizeHint().height()
-                          -20 )
+                          -40 )
                 );
     qDebug() << "MW initMainWindow(): window size: "
              << this->width() << ", "<< this->height()
