@@ -235,6 +235,8 @@ public slots:
     void slotShowFilterEdgesDialog();
     void slotTransformNodes2Edges();
     void slotSymmetrize();
+    void slotChangeBackgroundImage(QString path);
+    void slotOpenPreferencesDialog();
 
     // LAYOUT MENU
     void slotColorationStrongStructural();
@@ -318,7 +320,6 @@ public slots:
     void slotShowStatusBar(bool toggle);
     void slotBackgroundImage(bool toggle);
 
-    void slotOpenPreferencesDialog();
 
     //HELP MENU
     void slotTips();
@@ -469,7 +470,7 @@ private:
     QAction *nextRelationAct, *prevRelationAct, *addRelationAct;
 
     QString fileName, networkName, previous_fileName;
-    QString dataDir, lastUsedDirPath;
+    QString dataDir, lastUsedDirPath, preferencesFilePath;
     QStringList fileNameNoPath, fortuneCookie, rgbValues;
     QStringList tempFileNameNoPath, tips;
     int statusBarDuration, progressCounter;

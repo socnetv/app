@@ -544,7 +544,12 @@ void MainWindow::initActions(){
     connect(symmetrizeAct, SIGNAL(triggered()), this, SLOT(slotSymmetrize()));
 
 
-
+    openPreferencesAct = new QAction(tr("Preferences"),	this);
+    openPreferencesAct->setShortcut(tr("Ctrl+Shift+P"));
+    openPreferencesAct->setEnabled(true);
+    openPreferencesAct->setStatusTip(tr("Open SocNetV Preferences dialog"));
+    openPreferencesAct->setWhatsThis(tr("Preferences\n\n Opens the Preferences dialog where you can save permanent settings."));
+    connect(openPreferencesAct, SIGNAL(triggered()), this, SLOT(slotOpenPreferencesDialog()));
 
     /**
     Layout menu actions
@@ -1480,12 +1485,7 @@ void MainWindow::initActions(){
     backgroundImageAct->setChecked(false);
     connect(backgroundImageAct, SIGNAL(toggled(bool)), this, SLOT(slotBackgroundImage(bool)));
 
-    openPreferencesAct = new QAction(tr("Preferences"),	this);
-    openPreferencesAct->setShortcut(tr("Ctrl+Shift+P"));
-    openPreferencesAct->setEnabled(true);
-    openPreferencesAct->setStatusTip(tr("Open SocNetV Preferences dialog"));
-    openPreferencesAct->setWhatsThis(tr("Preferences\n\n Opens the Preferences dialog where you can save permanent settings."));
-    connect(openPreferencesAct, SIGNAL(triggered()), this, SLOT(slotOpenPreferencesDialog()));
+
 
 
 
@@ -1643,6 +1643,9 @@ void MainWindow::initMenuBar() {
     colorOptionsMenu -> addAction (changeAllLabelsColorAct);
 
 
+    editMenu -> addSeparator();
+    editMenu -> addAction (openPreferencesAct);
+
     /** menuBar entry layoutMenu  */
 
     layoutMenu = menuBar()->addMenu(tr("&Layout"));
@@ -1781,8 +1784,6 @@ void MainWindow::initMenuBar() {
     viewOptionsMenu-> addAction (viewToolBar);
     viewOptionsMenu-> addAction (viewStatusBar);
 
-    optionsMenu -> addSeparator();
-    optionsMenu -> addAction (openPreferencesAct);
 
 
     /**  menuBar entry helpMenu */
@@ -3011,6 +3012,10 @@ void MainWindow::initPersistentSettings()
      *  DEFAULTING HERE DOES NOT CHANGE BOOL VALUE
         EVERY TIME INITNET IS CALLED
     */
+
+
+    preferencesFilePath = QDir::homePath() +QDir::separator() + ".socnetv.pref";
+
     maxNodes=5000;		//Max nodes used by createRandomNetwork dialogues
     labelDistance=8;
     numberDistance=5;
@@ -8383,6 +8388,25 @@ void MainWindow::slotBackgroundImage(bool toggle) {
 
 
 
+/*
+ * Enables/disables displaying a user-defined custom image in the background
+ */
+void MainWindow::slotChangeBackgroundImage(QString path) {
+    statusMessage( tr("Toggle BackgroundImage..."));
+    if (path.isEmpty())   {
+        statusMessage( tr("BackgroundImage off.") );
+        graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor));
+    }
+    else   {
+        setLastPath(path);
+        graphicsWidget->setBackgroundBrush(QImage(path));
+        graphicsWidget->setCacheMode(QGraphicsView::CacheBackground);
+        statusMessage( tr("BackgroundImage on.") );
+    }
+
+
+}
+
 
 
 void MainWindow::slotOpenPreferencesDialog() {
@@ -8392,8 +8416,12 @@ void MainWindow::slotOpenPreferencesDialog() {
     // ..
 
     // build dialog
-    m_preferencesDialog = new PreferencesDialog(this, &dataDir,
-                                                &initBackgroundColor);
+    lastUsedDirPath = getLastPath();
+    m_preferencesDialog = new PreferencesDialog(this,
+                                                preferencesFilePath,
+                                                &dataDir,
+                                                &initBackgroundColor,
+                                                &lastUsedDirPath);
 
     connect( m_preferencesDialog, &PreferencesDialog::setProgressBars,
              this, &MainWindow::slotShowProgressBar);
@@ -8412,6 +8440,10 @@ void MainWindow::slotOpenPreferencesDialog() {
 
     connect( m_preferencesDialog, &PreferencesDialog::setBgColor,
                      this, &MainWindow::slotBackgroundColor);
+
+    connect( m_preferencesDialog, &PreferencesDialog::setBgImage,
+                     this, &MainWindow::slotChangeBackgroundImage);
+
 
     // show preferences dialog
     m_preferencesDialog->exec();

@@ -39,10 +39,14 @@ class PreferencesDialog : public QDialog
 
 public:
     explicit PreferencesDialog(QWidget *parent = 0,
+                               QString preferencesFilePath ="",
                                QString *dataDir = 0,
-                               QColor *bgColor = 0);
+                               QColor *bgColor = 0,
+                               QString *lastPath = 0);
     void getDataDir();
     void getBgColor();
+    void getBgImage();
+    void savePreferences();
     ~PreferencesDialog();
 
 signals:
@@ -52,11 +56,15 @@ signals:
     void setAntialiasing(bool);
     void setDebugMsgs(bool);
     void setBgColor(QColor);
+    void setBgImage(QString);
 private:
      Ui::PreferencesDialog *ui;
      QString *m_dataDir;
      QPixmap m_pixmap;
      QColor *m_bgColor;
+     QString *m_lastPath;
+     QString *m_bgImage;
+     QString m_preferencesPath;
 };
 
 #endif // PREFERENCESDIALOG_H

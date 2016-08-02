@@ -28,15 +28,19 @@
 #include "ui_preferencesdialog.h"
 #include <QFileDialog>
 #include <QColorDialog>
-
+#include <QTextStream>
 
 PreferencesDialog::PreferencesDialog(QWidget *parent,
+                                     QString preferencesFilePath,
                                      QString *dataDir,
-                                     QColor *bgColor) :
+                                     QColor *bgColor,
+                                     QString *lastPath) :
     QDialog(parent),
     ui(new Ui::PreferencesDialog)
 {
     ui->setupUi(this);
+
+    m_preferencesPath = preferencesFilePath;
 
     m_dataDir = new QString ;
     m_dataDir  = dataDir;
@@ -48,6 +52,7 @@ PreferencesDialog::PreferencesDialog(QWidget *parent,
     connect (ui->debugChkBox, &QCheckBox::stateChanged, this, &PreferencesDialog::setDebugMsgs);
     connect (ui->antialiasingChkBox, &QCheckBox::stateChanged, this, &PreferencesDialog::setAntialiasing);
 
+
     m_bgColor = new QColor;
     m_bgColor = bgColor;
     m_pixmap = QPixmap(60,20) ;
@@ -57,7 +62,12 @@ PreferencesDialog::PreferencesDialog(QWidget *parent,
     connect (ui->bgColorButton, &QToolButton::clicked,
              this, &PreferencesDialog::getBgColor);
 
+    m_lastPath = new QString;
+    m_lastPath = lastPath;
+    connect (ui->bgImageSelectButton, &QToolButton::clicked, this, &PreferencesDialog::getBgImage);
 
+
+    connect ( ui->buttonBox, &QDialogButtonBox::accepted, this, &PreferencesDialog::savePreferences );
 }
 
 
@@ -76,6 +86,7 @@ void PreferencesDialog::getBgColor(){
     if ( m_bgColor->isValid()) {
         m_pixmap.fill(*m_bgColor);
         ui->bgColorButton->setIcon(QIcon(m_pixmap));
+        ui->bgImageSelectEdit->setText("");
         emit setBgColor(*m_bgColor);
     }
     else {
@@ -84,6 +95,44 @@ void PreferencesDialog::getBgColor(){
 
 }
 
+
+/*
+ *
+ */
+void PreferencesDialog::getBgImage(){
+    QString m_bgImage = QFileDialog::getOpenFileName(
+                this, tr("Select one image for background"), *m_lastPath,
+                tr("All (*);;PNG (*.png);;JPG (*.jpg)")
+                );
+    if (!m_bgImage.isEmpty() ) {
+        ui->bgImageSelectEdit->setText(m_bgImage);
+        emit setBgImage(m_bgImage);
+    }
+    else { //user pressed Cancel
+
+    }
+
+}
+
+void PreferencesDialog::savePreferences(){
+    QFile file ( m_preferencesPath );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        //qDebug()<< "Error opening preferences file!";
+        //emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        return;
+    }
+    QTextStream outText ( &file );
+
+    outText.setCodec("UTF-8");
+    outText << "Default save folder == " << ui->dataDirEdit->text();
+    outText << "Show progress bars" << ui->progressBarsChkBox->isChecked();
+    outText << ui->toolBarChkBox->isChecked();
+    outText << ui->statusBarChkBox->isChecked();
+    outText << ui->debugChkBox->isChecked();
+    outText << ui->antialiasingChkBox->isChecked();
+
+    file.close();
+}
 
 PreferencesDialog::~PreferencesDialog()
 {
