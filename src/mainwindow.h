@@ -77,7 +77,7 @@ class PreviewForm;
 class RandErdosRenyiDialog;
 class RandSmallWorldDialog;
 class RandScaleFreeDialog;
-class PreferencesDialog;
+class SettingsDialog;
 
 
 /**
@@ -385,7 +385,7 @@ private:
     RandErdosRenyiDialog *m_randErdosRenyiDialog;
     RandSmallWorldDialog *m_randSmallWorldDialog;
     RandScaleFreeDialog *m_randScaleFreeDialog;
-    PreferencesDialog *m_preferencesDialog;
+    SettingsDialog *m_settingsDialog;
 
     PreviewForm *previewForm;
     QList<QTextCodec *> codecs;

@@ -3,7 +3,7 @@
  version: 2.0
  Written in Qt
 
-                         preferencesdialog.h  -  description
+                         settingsdialog.h  -  description
                              -------------------
     copyright            : (C) 2005-2015 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
@@ -24,22 +24,22 @@
 *     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
 ********************************************************************************/
 
-#ifndef PREFERENCESDIALOG_H
-#define PREFERENCESDIALOG_H
+#ifndef SETTINGSDIALOG_H
+#define SETTINGSDIALOG_H
 
 #include <QDialog>
 #include <QMap>
 
 namespace Ui {
-class PreferencesDialog;
+class SettingsDialog;
 }
 
-class PreferencesDialog : public QDialog
+class SettingsDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit PreferencesDialog(const QMap<QString, QString> &appSettings ,
+    explicit SettingsDialog(QMap<QString, QString> &appSettings ,
                                     QWidget *parent = 0,
 
                                QString settingsFilePath ="",
@@ -49,8 +49,8 @@ public:
     void getDataDir();
     void getBgColor();
     void getBgImage();
-    void savePreferences();
-    ~PreferencesDialog();
+    void saveSettings();
+    ~SettingsDialog();
 
 signals:
     void setProgressBars(bool);
@@ -61,13 +61,14 @@ signals:
     void setBgColor(QColor);
     void setBgImage(QString);
 private:
-     Ui::PreferencesDialog *ui;
+     Ui::SettingsDialog *ui;
+     QMap<QString, QString> m_appSettings ;
      QString *m_dataDir;
      QPixmap m_pixmap;
-     QColor *m_bgColor;
+     QColor m_bgColor;
      QString *m_lastPath;
      QString *m_bgImage;
-     QString m_preferencesPath;
+     QString m_settingsPath;
 };
 
-#endif // PREFERENCESDIALOG_H
+#endif // SETTINGSDIALOG_H

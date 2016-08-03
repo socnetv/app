@@ -47,7 +47,7 @@ FORMS += src/forms/filteredgesbyweightdialog.ui \
         src/forms/randsmallworlddialog.ui \
         src/forms/randscalefreedialog.ui \
         src/forms/randerdosrenyidialog.ui \
-        src/forms/preferencesdialog.ui
+        src/forms/settingsdialog.ui
 
 HEADERS += src/guide.h \
            src/graphicswidget.h \
@@ -71,7 +71,7 @@ HEADERS += src/guide.h \
     src/randerdosrenyidialog.h \
     src/randsmallworlddialog.h \
     src/randscalefreedialog.h \
-    src/preferencesdialog.h
+    src/settingsdialog.h
 
 SOURCES += src/guide.cpp \
            src/graphicswidget.cpp \
@@ -96,7 +96,7 @@ SOURCES += src/guide.cpp \
     src/randerdosrenyidialog.cpp \
     src/randsmallworlddialog.cpp \
     src/randscalefreedialog.cpp \
-    src/preferencesdialog.cpp
+    src/settingsdialog.cpp
 
 
 

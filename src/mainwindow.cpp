@@ -51,7 +51,7 @@
 #include "randerdosrenyidialog.h"
 #include "randsmallworlddialog.h"
 #include "randscalefreedialog.h"
-#include "preferencesdialog.h"
+#include "settingsdialog.h"
 
 
 
@@ -1480,11 +1480,11 @@ void MainWindow::initActions(){
     backgroundImageAct->setChecked(false);
     connect(backgroundImageAct, SIGNAL(toggled(bool)), this, SLOT(slotBackgroundImage(bool)));
 
-    openSettingsAct = new QAction(tr("Preferences"),	this);
+    openSettingsAct = new QAction(tr("Settings"),	this);
     openSettingsAct->setShortcut(tr("Ctrl+Shift+P"));
     openSettingsAct->setEnabled(true);
-    openSettingsAct->setStatusTip(tr("Open SocNetV Preferences dialog"));
-    openSettingsAct->setWhatsThis(tr("Preferences\n\n Opens the Preferences dialog where you can save permanent settings."));
+    openSettingsAct->setStatusTip(tr("Open SocNetV Settings dialog"));
+    openSettingsAct->setWhatsThis(tr("Settings\n\n Opens the Settings dialog where you can save permanent settings."));
     connect(openSettingsAct, SIGNAL(triggered()), this, SLOT(slotOpenSettingsDialog()));
 
 
@@ -3004,7 +3004,6 @@ void MainWindow::initNet(){
 
     // Init basic variables
 
-    initBackgroundColor="white"; //"gainsboro";
 
     considerWeights=false;
     inverseWeights=false;
@@ -3124,7 +3123,9 @@ void MainWindow::initPersistentSettings()
     graphicsWidget->setInitLabelDistance(labelDistance);
     graphicsWidget->setInitZoomIndex(250);
     graphicsWidget->setInitNodeSize(appSettings["initNodeSize"].toInt(0, 10));
-    graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor)); //Qt::gray
+    graphicsWidget->setBackgroundBrush(
+                QBrush(QColor (appSettings["initBackgroundColor"]))
+                ); //Qt::gray
 
     dataDir= QDir::homePath() +QDir::separator() + "socnetv-data" + QDir::separator() ;
     lastUsedDirPath = "socnetv-initial-none";
@@ -5473,7 +5474,7 @@ void MainWindow::slotAddEdge(){
     Calls Graph::createEdge method to add the new edge to the active Graph
 */
 void MainWindow::addEdge (int v1, int v2, float weight) {
-    qDebug("MW: addEdge() - setting user preferences and calling Graph::createEdge(...)");
+    qDebug("MW: addEdge() - setting user settings and calling Graph::createEdge(...)");
     bool drawArrows=displayEdgesArrowsAct->isChecked();
     int reciprocal=0;
     bool bezier = false;
@@ -8292,9 +8293,10 @@ void MainWindow::slotDrawEdgesBezier(bool toggle){
 *  Changes the background color of the scene
 */
 void MainWindow::slotBackgroundColor () {
-    qDebug("MW: slotBackgroundColor ");
-    //QColor backgrColor = QColorDialog::getColor( initBackgroundColor, this );
-    graphicsWidget ->setBackgroundBrush(QBrush(initBackgroundColor));
+    qDebug() << "MW: slotBackgroundColor " << appSettings["initBackgroundColor"];
+    graphicsWidget ->setBackgroundBrush(
+                QBrush(QColor (appSettings["initBackgroundColor"]))
+            );
     statusMessage( tr("Ready. ") );
 }
 
@@ -8465,19 +8467,16 @@ void MainWindow::slotBackgroundImage(bool toggle) {
     QString m_fileName ;
     if (toggle == false)   {
         statusMessage( tr("BackgroundImage off.") );
-        graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor));
+        graphicsWidget->setBackgroundBrush(
+                     QBrush(QColor (appSettings["initBackgroundColor"] ) )
+                    );
     }
     else   {
         m_fileName = QFileDialog::getOpenFileName(
                     this, tr("Select one image"), getLastPath(),
                     tr("All (*);;PNG (*.png);;JPG (*.jpg)")
                     );
-        if (!m_fileName.isEmpty()) {
-            setLastPath(m_fileName);
-            graphicsWidget->setBackgroundBrush(QImage(m_fileName));
-            graphicsWidget->setCacheMode(QGraphicsView::CacheBackground);
-            statusMessage( tr("BackgroundImage on.") );
-        }
+        slotChangeBackgroundImage(m_fileName);
     }
 
 
@@ -8492,7 +8491,9 @@ void MainWindow::slotChangeBackgroundImage(QString path) {
     statusMessage( tr("Toggle BackgroundImage..."));
     if (path.isEmpty())   {
         statusMessage( tr("BackgroundImage off.") );
-        graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor));
+        graphicsWidget->setBackgroundBrush(
+                     QBrush(QColor (appSettings["initBackgroundColor"] ) )
+                    );
     }
     else   {
         setLastPath(path);
@@ -8509,43 +8510,43 @@ void MainWindow::slotChangeBackgroundImage(QString path) {
 void MainWindow::slotOpenSettingsDialog() {
     qDebug() << "MW;:slotOpenSettingsDialog()";
 
-    // load preferences
+    // load settings
     // ..
 
     // build dialog
     lastUsedDirPath = getLastPath();
-    m_preferencesDialog = new PreferencesDialog(
-                                                appSettings,
+    m_settingsDialog = new SettingsDialog(
+                appSettings,
                 this,
-                                                settingsFilePath,
-                                                &dataDir,
-                                                &initBackgroundColor,
-                                                &lastUsedDirPath);
+                settingsFilePath,
+                &dataDir,
+                &initBackgroundColor,
+                &lastUsedDirPath);
 
-    connect( m_preferencesDialog, &PreferencesDialog::setProgressBars,
+    connect( m_settingsDialog, &SettingsDialog::setProgressBars,
              this, &MainWindow::slotShowProgressBar);
 
-    connect( m_preferencesDialog, &PreferencesDialog::setToolBars,
+    connect( m_settingsDialog, &SettingsDialog::setToolBars,
              this, &MainWindow::slotShowToolBar);
 
-    connect( m_preferencesDialog, &PreferencesDialog::setStatusBars,
+    connect( m_settingsDialog, &SettingsDialog::setStatusBars,
              this, &MainWindow::slotShowStatusBar);
 
-    connect( m_preferencesDialog, &PreferencesDialog::setAntialiasing,
+    connect( m_settingsDialog, &SettingsDialog::setAntialiasing,
              this, &MainWindow::slotAntialiasing);
 
-    connect( m_preferencesDialog, &PreferencesDialog::setDebugMsgs,
+    connect( m_settingsDialog, &SettingsDialog::setDebugMsgs,
                      this, &MainWindow::slotPrintDebug);
 
-    connect( m_preferencesDialog, &PreferencesDialog::setBgColor,
+    connect( m_settingsDialog, &SettingsDialog::setBgColor,
                      this, &MainWindow::slotBackgroundColor);
 
-    connect( m_preferencesDialog, &PreferencesDialog::setBgImage,
+    connect( m_settingsDialog, &SettingsDialog::setBgImage,
                      this, &MainWindow::slotChangeBackgroundImage);
 
 
-    // show preferences dialog
-    m_preferencesDialog->exec();
+    // show settings dialog
+    m_settingsDialog->exec();
 
     statusMessage(dataDir );
 
