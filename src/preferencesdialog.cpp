@@ -29,9 +29,12 @@
 #include <QFileDialog>
 #include <QColorDialog>
 #include <QTextStream>
+#include <QMap>
 
-PreferencesDialog::PreferencesDialog(QWidget *parent,
-                                     QString preferencesFilePath,
+PreferencesDialog::PreferencesDialog(
+                                     const QMap<QString, QString> &appSettings ,
+        QWidget *parent,
+                                     QString settingsFilePath,
                                      QString *dataDir,
                                      QColor *bgColor,
                                      QString *lastPath) :
@@ -40,7 +43,7 @@ PreferencesDialog::PreferencesDialog(QWidget *parent,
 {
     ui->setupUi(this);
 
-    m_preferencesPath = preferencesFilePath;
+    m_preferencesPath = settingsFilePath;
 
     m_dataDir = new QString ;
     m_dataDir  = dataDir;
@@ -53,10 +56,13 @@ PreferencesDialog::PreferencesDialog(QWidget *parent,
     connect (ui->antialiasingChkBox, &QCheckBox::stateChanged, this, &PreferencesDialog::setAntialiasing);
 
 
-    m_bgColor = new QColor;
-    m_bgColor = bgColor;
-    m_pixmap = QPixmap(60,20) ;
-    m_pixmap.fill(*m_bgColor);
+//    m_bgColor = new QColor;
+//    m_bgColor = bgColor;
+//    m_pixmap = QPixmap(60,20) ;
+//    m_pixmap.fill(*m_bgColor);
+        m_pixmap = QPixmap(60,20) ;
+        m_pixmap.fill( appSettings["initBackgroundColor"]);
+
     ui->bgColorButton->setIcon(QIcon(m_pixmap));
 
     connect (ui->bgColorButton, &QToolButton::clicked,

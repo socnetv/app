@@ -28,6 +28,7 @@
 #define PREFERENCESDIALOG_H
 
 #include <QDialog>
+#include <QMap>
 
 namespace Ui {
 class PreferencesDialog;
@@ -38,8 +39,10 @@ class PreferencesDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit PreferencesDialog(QWidget *parent = 0,
-                               QString preferencesFilePath ="",
+    explicit PreferencesDialog(const QMap<QString, QString> &appSettings ,
+                                    QWidget *parent = 0,
+
+                               QString settingsFilePath ="",
                                QString *dataDir = 0,
                                QColor *bgColor = 0,
                                QString *lastPath = 0);

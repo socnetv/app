@@ -115,6 +115,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     /*  initialise default network parameters  */
     qDebug()<<"   initialise default network parameters";
+    appSettings = initSettings();
     initNet();
 
     initPersistentSettings(); // init default (or user-defined) app settings
@@ -544,12 +545,6 @@ void MainWindow::initActions(){
     connect(symmetrizeAct, SIGNAL(triggered()), this, SLOT(slotSymmetrize()));
 
 
-    openPreferencesAct = new QAction(tr("Preferences"),	this);
-    openPreferencesAct->setShortcut(tr("Ctrl+Shift+P"));
-    openPreferencesAct->setEnabled(true);
-    openPreferencesAct->setStatusTip(tr("Open SocNetV Preferences dialog"));
-    openPreferencesAct->setWhatsThis(tr("Preferences\n\n Opens the Preferences dialog where you can save permanent settings."));
-    connect(openPreferencesAct, SIGNAL(triggered()), this, SLOT(slotOpenPreferencesDialog()));
 
     /**
     Layout menu actions
@@ -1485,6 +1480,12 @@ void MainWindow::initActions(){
     backgroundImageAct->setChecked(false);
     connect(backgroundImageAct, SIGNAL(toggled(bool)), this, SLOT(slotBackgroundImage(bool)));
 
+    openSettingsAct = new QAction(tr("Preferences"),	this);
+    openSettingsAct->setShortcut(tr("Ctrl+Shift+P"));
+    openSettingsAct->setEnabled(true);
+    openSettingsAct->setStatusTip(tr("Open SocNetV Preferences dialog"));
+    openSettingsAct->setWhatsThis(tr("Preferences\n\n Opens the Preferences dialog where you can save permanent settings."));
+    connect(openSettingsAct, SIGNAL(triggered()), this, SLOT(slotOpenSettingsDialog()));
 
 
 
@@ -1643,8 +1644,6 @@ void MainWindow::initMenuBar() {
     colorOptionsMenu -> addAction (changeAllLabelsColorAct);
 
 
-    editMenu -> addSeparator();
-    editMenu -> addAction (openPreferencesAct);
 
     /** menuBar entry layoutMenu  */
 
@@ -1783,6 +1782,10 @@ void MainWindow::initMenuBar() {
     viewOptionsMenu-> addAction (showProgressBarAct);
     viewOptionsMenu-> addAction (viewToolBar);
     viewOptionsMenu-> addAction (viewStatusBar);
+
+
+    optionsMenu -> addSeparator();
+    optionsMenu -> addAction (openSettingsAct);
 
 
 
@@ -2883,6 +2886,114 @@ void MainWindow::initSignalSlots() {
 
 
 /**
+  * @brief MainWindow::initSettings()
+  *
+  */
+QMap<QString,QString> MainWindow::initSettings(){
+
+    printDebug = true;
+    qDebug()<< "MW::initSettings";
+
+    // hard-coded initial settings to use only on first app load
+    appSettings["initNodeSize"]= "8";
+    appSettings["initNodeColor"]="red";
+    appSettings["initEdgeColor"]="black";
+    appSettings["initLabelColor"]="darkblue";
+    appSettings["initLabelSize"]="7";
+    appSettings["initNumberSize"]="7";
+    appSettings["initNumberColor"]="black";
+    appSettings["initNodeShape"]="circle";
+    appSettings["initBackgroundColor"]="white"; //"gainsboro";
+    appSettings["considerWeights"]="false";
+    appSettings["inverseWeights"]="false";
+    appSettings["askedAboutWeights"]="false";
+    appSettings["printDebug"] = "true";
+
+    QString settingsDir =  QDir::homePath() +QDir::separator() + "socnetv-data" ;
+    settingsFilePath = settingsDir +QDir::separator()  + "settings.conf";
+    QFile file(settingsFilePath);
+    qDebug () << "MW::initSettings - checking for settings file: "
+              << settingsFilePath;
+
+    if (!file.exists()) {
+        // application settings file does not exist - create it
+        // this must be the first time SocNetV runs in this computer
+        // or the user might have deleted seetings file.
+        QDir dir;
+        dir.mkdir(settingsDir);
+        if (!file.open(QIODevice::WriteOnly ) ) {
+            QMessageBox::critical(this, "File Write Error", tr("Error! \n"
+                                  "I cannot write the new settings file "
+                                  "in \n" + settingsFilePath.toLocal8Bit() +
+                                   "\n"
+                                  "You can continue using SocNetV with default "
+                                  "settings but any changes to them will not "
+                                  " be saved for future sessions \n"
+                                  "Please, check permissions in your home folder "
+                                  " and conduct the developer."
+                                  ),
+                                  QMessageBox::Ok, 0);
+           return appSettings;
+        }
+        qDebug()<< "MW::initSettings - settings file does not exist - Creating it";
+        QTextStream out(&file);
+        qDebug()<< "MW::initSettings - writing settings to settings file first ";
+        QMap<QString, QString>::const_iterator i = appSettings.constBegin();
+        while (i != appSettings.constEnd()) {
+            qDebug() << "   setting: " <<  i.key() << " = " << i.value();
+            out << i.key() << " = " << i.value() << endl;
+            ++i;
+        }
+        file.close();
+
+    }
+    else {
+        qDebug()<< "MW::initSettings - settings file exist - Reading it";
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QMessageBox::critical(this, "File Read Error", tr("Error! \n"
+                                  "I cannot read the settings file "
+                                   "in \n" + settingsFilePath.toLocal8Bit() +
+                                   "\n"
+                                  "You can continue using SocNetV with default "
+                                  "settings but any changes to them will not "
+                                  " be saved for future sessions \n"
+                                  "Please, check permissions in your home folder "
+                                  " and conduct the developer."
+                                  ),
+                                  QMessageBox::Ok, 0);
+           return appSettings;
+        }
+        QTextStream in(&file);
+        QStringList setting;
+        while (!in.atEnd()) {
+            QString line = in.readLine();
+            if (!line.isEmpty()) {
+                setting = line.simplified().split('=');
+                qDebug() << "   setting: " <<  setting[0].simplified() << " = " << setting[1].simplified();
+                appSettings.insert (setting[0].simplified() , setting[1].simplified() );
+            }
+        }
+
+        file.close();
+
+    }
+    qDebug() << "MW::initSettings - Final settings";
+    QMap<QString, QString>::const_iterator i = appSettings.constBegin();
+    while (i != appSettings.constEnd()) {
+        qDebug() << "setting: " <<  i.key() << " = " << i.value();
+        ++i;
+    }
+
+
+    return appSettings;
+}
+
+
+
+
+
+
+/**
  * @brief MainWindow::initNet
  * Initializes the default network parameters.
  * Used on app start and especially when erasing a network to start a new one
@@ -2893,15 +3004,12 @@ void MainWindow::initNet(){
 
     // Init basic variables
 
-    initNodeSize=8;
-    initNodeColor="red";
-    initEdgeColor="black";
-    initLabelColor="darkblue";
-    initLabelSize=7;
-    initNumberSize=7;
-    initNumberColor="black";
-    initNodeShape="circle";
     initBackgroundColor="white"; //"gainsboro";
+
+    considerWeights=false;
+    inverseWeights=false;
+    askedAboutWeights=false;
+
 
     networkName="";
 
@@ -2927,25 +3035,22 @@ void MainWindow::initNet(){
     edgeClicked=false;
     nodeClicked=false;
 
-    considerWeights=false;
-    inverseWeights=false;
-    askedAboutWeights=false;
 
     /** Clear previous network data */
     activeGraph.clear();
     activeGraph.setSocNetV_Version(VERSION);
 
-    activeGraph.setInitVertexShape(initNodeShape);
-    activeGraph.setInitVertexSize(initNodeSize);
-    activeGraph.setInitVertexColor(initNodeColor);
+    activeGraph.setInitVertexShape(appSettings["initNodeShape"]);
+    activeGraph.setInitVertexSize(appSettings["initNodeSize"].toInt(0, 10));
+    activeGraph.setInitVertexColor( appSettings["initNodeColor"] );
 
-    activeGraph.setInitVertexNumberSize(initNumberSize);
-    activeGraph.setInitVertexNumberColor(initNumberColor);
+    activeGraph.setInitVertexNumberSize(appSettings["initNumberSize"].toInt(0,10));
+    activeGraph.setInitVertexNumberColor(appSettings["initNumberColor"]);
 
-    activeGraph.setInitVertexLabelColor(initLabelColor);
-    activeGraph.setInitVertexLabelSize(initLabelSize);
+    activeGraph.setInitVertexLabelColor(appSettings["initLabelColor"]);
+    activeGraph.setInitVertexLabelSize(appSettings["initLabelSize"].toInt(0,10));
 
-    activeGraph.setInitEdgeColor(initEdgeColor);
+    activeGraph.setInitEdgeColor(appSettings["initEdgeColor"]);
 
     activeGraph.setShowLabels(this->showLabels());
     activeGraph.setShowNumbersInsideNodes( this->showNumbersInsideNodes());
@@ -2989,17 +3094,8 @@ void MainWindow::initNet(){
     statusMessage( tr("Ready"));
     qDebug("MW: initNet() INITIALISATION END");
 
-//    QTextStream stream(stdout);
-//    Matrix m(10,10);
-//    stream << "(9,1) = " << m[9][1] ;
-//    m[9][1]=1212;
-
-//    stream<< m;
-
-//    stream << "(9,1) = " << m[9][1] ;
 
 }
-
 
 
 /**
@@ -3014,7 +3110,7 @@ void MainWindow::initPersistentSettings()
     */
 
 
-    preferencesFilePath = QDir::homePath() +QDir::separator() + ".socnetv.pref";
+
 
     maxNodes=5000;		//Max nodes used by createRandomNetwork dialogues
     labelDistance=8;
@@ -3023,11 +3119,11 @@ void MainWindow::initPersistentSettings()
     bezier=false;
     firstTime=true;
 
-    graphicsWidget->setInitNodeColor(initNodeColor);
+    graphicsWidget->setInitNodeColor(appSettings["initNodeColor"]);
     graphicsWidget->setInitNumberDistance(numberDistance);
     graphicsWidget->setInitLabelDistance(labelDistance);
     graphicsWidget->setInitZoomIndex(250);
-    graphicsWidget->setInitNodeSize(initNodeSize);
+    graphicsWidget->setInitNodeSize(appSettings["initNodeSize"].toInt(0, 10));
     graphicsWidget->setBackgroundBrush(QBrush(initBackgroundColor)); //Qt::gray
 
     dataDir= QDir::homePath() +QDir::separator() + "socnetv-data" + QDir::separator() ;
@@ -5185,9 +5281,10 @@ void MainWindow::slotChangeNodeProperties() {
         statusMessage( tr("Nothing to remove.")  );
         return;
     }
-    int min=-1, max=-1, size = initNodeSize;
-    QColor color = QColor(initNodeColor);
-    QString shape= initNodeShape, label="";
+    int min=-1, max=-1, size = appSettings["initNodeSize"].toInt(0, 10);
+    QColor color = QColor(appSettings["initNodeColor"]);
+    QString shape= appSettings["initNodeShape"];
+    QString label="";
     bool ok=false;
 
 
@@ -5451,14 +5548,14 @@ void MainWindow::slotRemoveEdge(){
                 //make new edge
                 // 						graphicsWidget->unmakeEdgeReciprocal(clickedEdge->targetNodeNumber(), clickedEdge->sourceNodeNumber());
                 //FIXME weight should be the same
-                graphicsWidget->drawEdge(targetNode, sourceNode, 1, false, displayEdgesArrowsAct->isChecked(), initEdgeColor, false);
+                graphicsWidget->drawEdge(targetNode, sourceNode, 1, false, displayEdgesArrowsAct->isChecked(), appSettings["initEdgeColor"], false);
 
                 break;
             case 1:
                 clickedEdge->unmakeReciprocal();
                 //graphicsWidget->removeItem(clickedEdge);
                 activeGraph.removeEdge(targetNode, sourceNode);
-                //						graphicsWidget->drawEdge(i, j, false, drawArrowsAct->isChecked(), initEdgeColor, false);
+                //						graphicsWidget->drawEdge(i, j, false, drawArrowsAct->isChecked(), appSettings["initEdgeColor"], false);
                 break;
             case 2:
                 graphicsWidget->removeItem(clickedEdge);
@@ -5495,10 +5592,10 @@ void MainWindow::slotAllNodesColor(){
     QColor color = QColorDialog::getColor( Qt::red, this,
                                            "Change the color of all nodes" );
     if (color.isValid()) {
-        initNodeColor=color.name();
+        appSettings["initNodeColor"] = color.name();
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        qDebug() << "MainWindow::slotAllNodesColor() : " << initNodeColor;
-        activeGraph.setAllVerticesColor(initNodeColor);
+        qDebug() << "MainWindow::slotAllNodesColor() : " << appSettings["initNodeColor"];
+        activeGraph.setAllVerticesColor(appSettings["initNodeColor"]);
         QApplication::restoreOverrideCursor();
         statusMessage( tr("Ready. ")  );
     }
@@ -7916,7 +8013,7 @@ void MainWindow::slotChangeAllNodesSize() {
                 this,
                 "Change node size",
                 tr("Select new size for all nodes: (1-16)"),
-                initNodeSize, 1, 16, 1, &ok );
+                appSettings["initNodeSize"].toInt(0, 10), 1, 16, 1, &ok );
     if (!ok) {
         statusMessage( "Change node size operation cancelled." );
         return;
@@ -7949,7 +8046,7 @@ void MainWindow::changeAllNodesSize(int size) {
             size = 2;
         }
     }
-    initNodeSize = size;
+   // initNodeSize = size;
     activeGraph.setAllVerticesSize(size);
 }
 
@@ -7989,7 +8086,7 @@ void MainWindow::slotChangeAllNodesShape() {
 void MainWindow::slotChangeNumbersSize() {
     bool ok=false;
     int newSize;
-    newSize = QInputDialog::getInt(this, "Change text size", tr("Change all nodenumbers size to: (1-16)"),initNumberSize, 1, 16, 1, &ok );
+    newSize = QInputDialog::getInt(this, "Change text size", tr("Change all nodenumbers size to: (1-16)"),appSettings["initNumberSize"].toInt(0,10), 1, 16, 1, &ok );
     if (!ok) {
         statusMessage( tr("Change font size: Aborted.") );
         return;
@@ -8015,7 +8112,7 @@ void MainWindow::slotChangeNumbersSize() {
 void MainWindow::slotChangeLabelsSize() {
     bool ok=false;
     int newSize;
-    newSize = QInputDialog::getInt(this, "Change text size", tr("Change all node labels size to: (1-16)"),initNumberSize, 1, 16, 1, &ok );
+    newSize = QInputDialog::getInt(this, "Change text size", tr("Change all node labels size to: (1-16)"),appSettings["initLabelSize"].toInt(0,10), 1, 16, 1, &ok );
     if (!ok) {
         statusMessage( tr("Change font size: Aborted.") );
         return;
@@ -8210,11 +8307,11 @@ void MainWindow::slotAllEdgesColor(){
     QColor color = QColorDialog::getColor( Qt::red, this,
                                            "Change the color of all nodes" );
     if (color.isValid()) {
-        initNodeColor=color.name();
+        appSettings["initEdgeColor"]=color.name();
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        qDebug() << "MainWindow::slotAllEdgesColor() : " << initNodeColor;
+        qDebug() << "MainWindow::slotAllEdgesColor() : " << appSettings["initEdgeColor"];
         //createProgressBar();
-        activeGraph.setAllEdgesColor(initNodeColor);
+        activeGraph.setAllEdgesColor(appSettings["initEdgeColor"]);
         //destroyProgressBar();
         QApplication::restoreOverrideCursor();
         graphChanged();
@@ -8222,7 +8319,7 @@ void MainWindow::slotAllEdgesColor(){
     }
     else {
         // user pressed Cancel
-        statusMessage( tr("Nodes color change aborted. ") );
+        statusMessage( tr("edges color change aborted. ") );
     }
 }
 
@@ -8409,16 +8506,18 @@ void MainWindow::slotChangeBackgroundImage(QString path) {
 
 
 
-void MainWindow::slotOpenPreferencesDialog() {
-    qDebug() << "MW;:slotOpenPreferencesDialog()";
+void MainWindow::slotOpenSettingsDialog() {
+    qDebug() << "MW;:slotOpenSettingsDialog()";
 
     // load preferences
     // ..
 
     // build dialog
     lastUsedDirPath = getLastPath();
-    m_preferencesDialog = new PreferencesDialog(this,
-                                                preferencesFilePath,
+    m_preferencesDialog = new PreferencesDialog(
+                                                appSettings,
+                this,
+                                                settingsFilePath,
                                                 &dataDir,
                                                 &initBackgroundColor,
                                                 &lastUsedDirPath);

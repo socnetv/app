@@ -107,6 +107,7 @@ public:
     void initView();
     void initWindowLayout();
     void initSignalSlots();
+    QMap<QString, QString> initSettings();
     void initNet();
     void initPersistentSettings();
 
@@ -138,7 +139,6 @@ public:
 
     void changeAllNodesSize(int size);
 
-    QString initNodeColor;
     int clickedJimNumber; //it is public because we need to be visible from activegraph.
 
     void createProgressBar();
@@ -236,7 +236,7 @@ public slots:
     void slotTransformNodes2Edges();
     void slotSymmetrize();
     void slotChangeBackgroundImage(QString path);
-    void slotOpenPreferencesDialog();
+    void slotOpenSettingsDialog();
 
     // LAYOUT MENU
     void slotColorationStrongStructural();
@@ -374,7 +374,7 @@ signals:
     void addRelationToGraph(QString);
 
 private:
-
+    QMap<QString,QString> appSettings;
     QGraphicsScene *scene;
 
     FilterEdgesByWeightDialog m_filterEdgesByWeightDialog;
@@ -444,7 +444,7 @@ private:
     QAction *drawEdgesWeightsAct, *displayEdgesWeightNumbersAct, *displayEdgesAct;
     QAction *displayEdgesArrowsAct, *drawEdgesBezier,*considerEdgeWeightsAct;
     QAction *backgroundImageAct, *viewToolBar, *viewStatusBar, *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
-    QAction *openPreferencesAct;
+    QAction *openSettingsAct;
     QAction *antialiasingAct;
     QAction *webCrawlerAct;
 
@@ -470,12 +470,12 @@ private:
     QAction *nextRelationAct, *prevRelationAct, *addRelationAct;
 
     QString fileName, networkName, previous_fileName;
-    QString dataDir, lastUsedDirPath, preferencesFilePath;
+    QString dataDir, lastUsedDirPath, settingsFilePath;
     QStringList fileNameNoPath, fortuneCookie, rgbValues;
     QStringList tempFileNameNoPath, tips;
     int statusBarDuration, progressCounter;
     int maxNodes;
-    int initNodeSize, labelDistance, numberDistance,initNumberSize, initLabelSize;
+    int labelDistance, numberDistance;
     int fortuneCookiesCounter,  tipsCounter;
     //QString VERSION;
     bool pajekFileLoaded, adjacencyFileLoaded, dotFileLoaded, graphMLFileLoaded;
@@ -485,7 +485,7 @@ private:
     bool bezier,  edgeClicked, nodeClicked, markedNodesExist, showProgressBar, firstTime;
     bool considerWeights, inverseWeights, askedAboutWeights;
     QString initFileCodec;
-    QString initEdgeColor, initNumberColor,  initNodeShape, initLabelColor;
+
     QColor initBackgroundColor;
     QPointF cursorPosGW;	//Carries the position of the cursor in graphicsWidget coordinates
     QLCDNumber  *inDegreeLCD, *outDegreeLCD , *selectedNodeLCD, *clucofLCD;
