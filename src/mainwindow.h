@@ -141,7 +141,7 @@ public:
 
     int clickedJimNumber; //it is public because we need to be visible from activegraph.
 
-    void createProgressBar();
+    void createProgressBar(int max=0, QString msg="Please wait...");
     void destroyProgressBar();
 
 public slots:
@@ -442,9 +442,8 @@ private:
             *changeAllLabelsColorAct;
     QAction *drawEdgesWeightsAct, *displayEdgesWeightNumbersAct, *displayEdgesAct;
     QAction *displayEdgesArrowsAct, *drawEdgesBezier,*considerEdgeWeightsAct;
-    QAction *backgroundImageAct, *viewToolBar, *viewStatusBar, *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
+    QAction *backgroundImageAct,*helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
     QAction *openSettingsAct;
-    QAction *antialiasingAct;
     QAction *webCrawlerAct;
 
     QAction *netDensity, *symmetryAct, *graphDistanceAct, *averGraphDistanceAct,
@@ -463,7 +462,7 @@ private:
     *layoutLevel_CC_Act, *layoutLevel_SC_Act, *layoutLevel_EC_Act,
     *layoutLevel_PC_Act, *layoutLevel_BC_Act, *layoutLevel_IC_Act,
     *layoutLevel_IRCC_Act,*layoutLevel_PRP_Act, *layoutLevel_PP_Act;
-    QAction *strongColorationAct, *regularColorationAct, *showProgressBarAct;
+    QAction *strongColorationAct, *regularColorationAct;
     QAction *springLayoutAct, *FRLayoutAct;
     QAction *nodeSizesByOutDegreeAct,  *nodeSizesByInDegreeAct;
     QAction *nextRelationAct, *prevRelationAct, *addRelationAct;

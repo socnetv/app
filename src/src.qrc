@@ -73,5 +73,6 @@
         <file>images/scalefree.png</file>
         <file>images/rotateleft.png</file>
         <file>images/rotateright.png</file>
+        <file>images/appsettings.png</file>
     </qresource>
 </RCC>

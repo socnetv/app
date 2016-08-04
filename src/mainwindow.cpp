@@ -149,6 +149,172 @@ MainWindow::~MainWindow() {
 
 
 /**
+  * @brief MainWindow::initSettings()
+  * Init default (or user-defined) app settings
+  *
+  */
+QMap<QString,QString> MainWindow::initSettings(){
+    qDebug()<< "MW::initSettings";
+
+    printDebug = true; // comment it to stop debug override
+
+    firstTime=true;  // becomes false on user IO
+
+    // Create fortune cookies and tips
+    createFortuneCookies();
+    createTips();
+
+    // Call findCodecs to setup a list of all supported codecs
+    qDebug() << "MW::initSettings - calling findCodecs" ;
+    findCodecs();
+
+    qDebug() << "MW::initSettings - creating PreviewForm object and setting codecs list" ;
+    previewForm = new PreviewForm(this);
+    previewForm->setCodecList(codecs);
+
+    connect (previewForm, &PreviewForm::userCodec, this, &MainWindow::userCodec );
+
+    qDebug() << "MW::initSettings - creating default settings" ;
+    settingsDir = QDir::homePath() +QDir::separator() + "socnetv-data" + QDir::separator() ;
+    settingsFilePath = settingsDir + "settings.conf";
+
+    // initially they are the same, but dataDir may be changed by the user
+    QString dataDir= settingsDir ;
+
+
+
+    maxNodes=5000;		//Max nodes used by createRandomNetwork dialogues
+    labelDistance=8;
+    numberDistance=5;
+
+    bezier=false;
+
+    // hard-coded initial settings to use only on first app load
+    // when there are no user defined values
+    appSettings["initNodeSize"]= "8";
+    appSettings["initNodeColor"]="red";
+    appSettings["initEdgeColor"]="black";
+    appSettings["initLabelColor"]="darkblue";
+    appSettings["initLabelSize"]="7";
+    appSettings["initNumberSize"]="7";
+    appSettings["initNumberColor"]="black";
+    appSettings["initNodeShape"]="circle";
+    appSettings["initBackgroundColor"]="white"; //"gainsboro";
+    appSettings["initBackgroundImage"]="";
+    appSettings["considerWeights"]="false";
+    appSettings["inverseWeights"]="false";
+    appSettings["askedAboutWeights"]="false";
+    appSettings["printDebug"] = (printDebug) ? "true" : "false";
+    appSettings["showProgressBar"] = "false";
+    appSettings["showToolBar"] = "true";
+    appSettings["showStatusBar"] = "true";
+    appSettings["antialiasing"] = "true";
+    appSettings["dataDir"]= dataDir ;
+    appSettings["lastUsedDirPath"]= dataDir ;
+
+    // Try to load settings configuration file
+    // First check if our settings folder exist
+    QDir socnetvDir(settingsDir);
+    if ( !socnetvDir.exists() ) {
+        qDebug() << "MW::initSettings -  dir does not exist - create it";
+        socnetvDir.mkdir(settingsDir);
+    }
+    // Then check if the conf file exists inside the folder
+    qDebug () << "MW::initSettings - checking for settings file: "
+              << settingsFilePath;
+
+    if (!socnetvDir.exists(settingsFilePath)) {
+        saveSettings();
+    }
+    else {
+        qDebug()<< "MW::initSettings - settings file exist - Reading it";
+        QFile file(settingsFilePath);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QMessageBox::critical(this, "File Read Error", tr("Error! \n"
+                                  "I cannot read the settings file "
+                                   "in \n" + settingsFilePath.toLocal8Bit() +
+                                   "\n"
+                                  "You can continue using SocNetV with default "
+                                  "settings but any changes to them will not "
+                                  " be saved for future sessions \n"
+                                  "Please, check permissions in your home folder "
+                                  " and conduct the developer."
+                                  ),
+                                  QMessageBox::Ok, 0);
+           return appSettings;
+        }
+        QTextStream in(&file);
+        QStringList setting;
+        while (!in.atEnd()) {
+            QString line = in.readLine();
+            if (!line.isEmpty()) {
+                setting = line.simplified().split('=');
+                qDebug() << "   setting: " <<  setting[0].simplified() << " = " << setting[1].simplified();
+                appSettings.insert (setting[0].simplified() , setting[1].simplified() );
+            }
+        }
+
+        file.close();
+    }
+
+    // restore user setting for debug messages
+    printDebug = (appSettings["printDebug"] == "true") ? true:false;
+
+    qDebug() << "MW::initSettings - Final settings";
+    QMap<QString, QString>::const_iterator i = appSettings.constBegin();
+    while (i != appSettings.constEnd()) {
+        qDebug() << "setting: " <<  i.key() << " = " << i.value();
+        ++i;
+    }
+
+    return appSettings;
+}
+
+
+
+/**
+ * @brief MainWindow::saveSettings
+ *  Saves default (or user-defined) app settings
+ */
+void MainWindow::saveSettings() {
+    qDebug () << "MW::saveSettings to "<< settingsFilePath;
+    QFile file(settingsFilePath);
+
+    // application settings file does not exist - create it
+    // this must be the first time SocNetV runs in this computer
+    // or the user might have deleted seetings file.
+    if (!file.open(QIODevice::WriteOnly ) ) {
+        QMessageBox::critical(this,
+                              "File Write Error",
+                              tr("Error! \n"
+                                 "I cannot write the new settings file "
+                                 "in \n" + settingsFilePath.toLocal8Bit() +
+                                 "\n"
+                                 "You can continue using SocNetV with default "
+                                 "settings but any changes to them will not "
+                                 " be saved for future sessions \n"
+                                 "Please, check permissions in your home folder "
+                                 " and conduct the developer."
+                                 ),
+                              QMessageBox::Ok, 0);
+        return;
+    }
+    qDebug()<< "MW::saveSettings - settings file does not exist - Creating it";
+    QTextStream out(&file);
+    qDebug()<< "MW::saveSettings - writing settings to settings file first ";
+    QMap<QString, QString>::const_iterator i = appSettings.constBegin();
+    while (i != appSettings.constEnd()) {
+        qDebug() << "   setting: " <<  i.key() << " = " << i.value();
+        out << i.key() << " = " << i.value() << endl;
+        ++i;
+    }
+    file.close();
+
+}
+
+
+
+/**
  * @brief MainWindow::initActions
  * Initializes ALL QActions of the application
  * Take a breath, the listing below is HUGE.
@@ -1427,45 +1593,6 @@ void MainWindow::initActions(){
     connect(drawEdgesBezier, SIGNAL(toggled(bool)), this, SLOT(slotDrawEdgesBezier(bool)) );
 
 
-    /**
-    Options > View menu actions
-    */
-
-    antialiasingAct = new QAction(tr("Anti-Aliasing"), this);
-    antialiasingAct ->setShortcut(tr("F8"));
-    antialiasingAct ->setStatusTip(tr("Enables/disables anti-aliasing"));
-    antialiasingAct ->setWhatsThis(tr("Enable or disable Anti-Aliasing\n\n Anti-aliasing is a technique which makes nodes, lines and text, smoother and fancier. But it comes at the cost of speed..."));
-    antialiasingAct ->setCheckable(true);
-    antialiasingAct ->setChecked (true);
-    connect(antialiasingAct , SIGNAL(toggled(bool)), this, SLOT(slotAntialiasing(bool)));
-
-
-    showProgressBarAct = new QAction(tr("Progress Bars"), this);
-    showProgressBarAct ->setShortcut(tr("F10"));
-    showProgressBarAct->setStatusTip(tr("Enables/disables Progress Bars"));
-    showProgressBarAct->setWhatsThis(tr("Enable or disable Progress Bars\n\nProgress Bars may appear during time-cost operations. Enabling progressBar has a significant cpu cost but lets you know about the progress of a given operation."));
-    showProgressBarAct->setCheckable(true);
-    showProgressBarAct->setChecked (true);
-    connect(showProgressBarAct, SIGNAL(toggled(bool)), this, SLOT(slotShowProgressBar(bool)));
-
-
-
-
-
-    viewToolBar = new QAction(tr("Toolbar"), this);
-    viewToolBar->setStatusTip(tr("Enables/disables the toolbar"));
-    viewToolBar->setWhatsThis(tr("Enable or disable Toolbar\n\nThe toolbar is the widget right below the menu, and carries useful icons. You can disable it if you like..."));
-    viewToolBar->setCheckable(true);
-    viewToolBar->setChecked(true);
-    connect(viewToolBar, SIGNAL(toggled(bool)), this, SLOT(slotShowToolBar(bool)));
-
-    viewStatusBar = new QAction(tr("Statusbar"),	this);
-    viewStatusBar->setStatusTip(tr("Enables/disables the statusbar"));
-    viewStatusBar->setWhatsThis(tr("Enable or disable Statusbar\n\nThe statusbar is the widget at the bottom of the window, where messages appear. You might want to disable it..."));
-    viewStatusBar->setCheckable(true);
-    viewStatusBar->setChecked(true);
-    connect(viewStatusBar, SIGNAL(toggled(bool)), this, SLOT(slotShowStatusBar(bool)));
-
     backgroundImageAct = new QAction(tr("Background Image"),	this);
     backgroundImageAct->setStatusTip(tr("Enables/disables displaying a user-defined custom image in the background"));
     backgroundImageAct->setWhatsThis(tr("Enable or disable background image\n\n If you enable it, you will be asked for a image file, which will be displayed in the background instead of plain color.."));
@@ -1473,7 +1600,7 @@ void MainWindow::initActions(){
     backgroundImageAct->setChecked(false);
     connect(backgroundImageAct, SIGNAL(toggled(bool)), this, SLOT(slotBackgroundImage(bool)));
 
-    openSettingsAct = new QAction(tr("Settings"),	this);
+    openSettingsAct = new QAction(QIcon(":/images/appsettings.png"), tr("Settings"),	this);
     openSettingsAct->setShortcut(tr("Ctrl+Shift+P"));
     openSettingsAct->setEnabled(true);
     openSettingsAct->setStatusTip(tr("Open SocNetV Settings dialog"));
@@ -1770,10 +1897,7 @@ void MainWindow::initMenuBar() {
     viewOptionsMenu -> setIcon(QIcon(":/images/view.png"));
     optionsMenu -> addMenu (viewOptionsMenu);
     viewOptionsMenu-> addAction (backgroundImageAct);
-    viewOptionsMenu-> addAction (antialiasingAct);
-    viewOptionsMenu-> addAction (showProgressBarAct);
-    viewOptionsMenu-> addAction (viewToolBar);
-    viewOptionsMenu-> addAction (viewStatusBar);
+
 
 
     optionsMenu -> addSeparator();
@@ -1805,8 +1929,6 @@ void MainWindow::initToolBar(){
     toolBar -> addAction (fileSave);
     toolBar -> addAction (printNetwork);
     toolBar -> addSeparator();
-
-
 
     QLabel *labelRotateSpinBox= new QLabel;
     labelRotateSpinBox ->setText(tr("Rotation:"));
@@ -2498,9 +2620,11 @@ void MainWindow::initView() {
     //QGraphicsView can cache pre-rendered content in a QPixmap, which is then drawn onto the viewport.
     graphicsWidget->setCacheMode(QGraphicsView::CacheNone);  //CacheBackground | CacheNone
 
-    graphicsWidget->setRenderHint(QPainter::Antialiasing, true);
-    graphicsWidget->setRenderHint(QPainter::TextAntialiasing, true);
-    graphicsWidget->setRenderHint(QPainter::SmoothPixmapTransform, true);
+    bool antialiasing = (appSettings["antialiasing"] == "true" ) ? true:false;
+    graphicsWidget->setRenderHint(QPainter::Antialiasing, antialiasing );
+    graphicsWidget->setRenderHint(
+                QPainter::TextAntialiasing, antialiasing );
+    graphicsWidget->setRenderHint(QPainter::SmoothPixmapTransform, antialiasing );
     //Optimization flags:
     //if items do restore their state, it's not needed for graphicsWidget to do the same...
     graphicsWidget->setOptimizationFlag(QGraphicsView::DontSavePainterState, true);
@@ -2877,165 +3001,6 @@ void MainWindow::initSignalSlots() {
 
 
 
-/**
-  * @brief MainWindow::initSettings()
-  * Init default (or user-defined) app settings
-  *
-  */
-QMap<QString,QString> MainWindow::initSettings(){
-    qDebug()<< "MW::initSettings";
-
-    printDebug = true; // comment it to stop debug override
-
-    firstTime=true;  // becomes false on user IO
-
-    // Create fortune cookies and tips
-    createFortuneCookies();
-    createTips();
-
-    // Call findCodecs to setup a list of all supported codecs
-    qDebug() << "MW::initSettings - calling findCodecs" ;
-    findCodecs();
-
-    qDebug() << "MW::initSettings - creating PreviewForm object and setting codecs list" ;
-    previewForm = new PreviewForm(this);
-    previewForm->setCodecList(codecs);
-
-    connect (previewForm, &PreviewForm::userCodec, this, &MainWindow::userCodec );
-
-    qDebug() << "MW::initSettings - creating default settings" ;
-    settingsDir = QDir::homePath() +QDir::separator() + "socnetv-data" + QDir::separator() ;
-    settingsFilePath = settingsDir + "settings.conf";
-
-    // initially they are the same, but dataDir may be changed by the user
-    QString dataDir= settingsDir ;
-
-
-
-    maxNodes=5000;		//Max nodes used by createRandomNetwork dialogues
-    labelDistance=8;
-    numberDistance=5;
-
-    bezier=false;
-
-    // hard-coded initial settings to use only on first app load
-    // when there are no user defined values
-    appSettings["initNodeSize"]= "8";
-    appSettings["initNodeColor"]="red";
-    appSettings["initEdgeColor"]="black";
-    appSettings["initLabelColor"]="darkblue";
-    appSettings["initLabelSize"]="7";
-    appSettings["initNumberSize"]="7";
-    appSettings["initNumberColor"]="black";
-    appSettings["initNodeShape"]="circle";
-    appSettings["initBackgroundColor"]="white"; //"gainsboro";
-    appSettings["initBackgroundImage"]="";
-    appSettings["considerWeights"]="false";
-    appSettings["inverseWeights"]="false";
-    appSettings["askedAboutWeights"]="false";
-    appSettings["printDebug"] = (printDebug) ? "true" : "false";
-    appSettings["dataDir"]= dataDir ;
-    appSettings["lastUsedDirPath"]= dataDir ;
-
-    // Try to load settings configuration file
-    // First check if our settings folder exist
-    QDir socnetvDir(settingsDir);
-    if ( !socnetvDir.exists() ) {
-        qDebug() << "MW::initSettings -  dir does not exist - create it";
-        socnetvDir.mkdir(settingsDir);
-    }
-    // Then check if the conf file exists inside the folder
-    qDebug () << "MW::initSettings - checking for settings file: "
-              << settingsFilePath;
-
-    if (!socnetvDir.exists(settingsFilePath)) {
-        saveSettings();
-    }
-    else {
-        qDebug()<< "MW::initSettings - settings file exist - Reading it";
-        QFile file(settingsFilePath);
-        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            QMessageBox::critical(this, "File Read Error", tr("Error! \n"
-                                  "I cannot read the settings file "
-                                   "in \n" + settingsFilePath.toLocal8Bit() +
-                                   "\n"
-                                  "You can continue using SocNetV with default "
-                                  "settings but any changes to them will not "
-                                  " be saved for future sessions \n"
-                                  "Please, check permissions in your home folder "
-                                  " and conduct the developer."
-                                  ),
-                                  QMessageBox::Ok, 0);
-           return appSettings;
-        }
-        QTextStream in(&file);
-        QStringList setting;
-        while (!in.atEnd()) {
-            QString line = in.readLine();
-            if (!line.isEmpty()) {
-                setting = line.simplified().split('=');
-                qDebug() << "   setting: " <<  setting[0].simplified() << " = " << setting[1].simplified();
-                appSettings.insert (setting[0].simplified() , setting[1].simplified() );
-            }
-        }
-
-        file.close();
-    }
-
-    // restore user setting for debug messages
-    printDebug = (appSettings["printDebug"] == "true") ? true:false;
-
-    qDebug() << "MW::initSettings - Final settings";
-    QMap<QString, QString>::const_iterator i = appSettings.constBegin();
-    while (i != appSettings.constEnd()) {
-        qDebug() << "setting: " <<  i.key() << " = " << i.value();
-        ++i;
-    }
-
-    return appSettings;
-}
-
-
-
-/**
- * @brief MainWindow::saveSettings
- *  Saves default (or user-defined) app settings
- */
-void MainWindow::saveSettings() {
-    qDebug () << "MW::saveSettings to "<< settingsFilePath;
-    QFile file(settingsFilePath);
-
-    // application settings file does not exist - create it
-    // this must be the first time SocNetV runs in this computer
-    // or the user might have deleted seetings file.
-    if (!file.open(QIODevice::WriteOnly ) ) {
-        QMessageBox::critical(this,
-                              "File Write Error",
-                              tr("Error! \n"
-                                 "I cannot write the new settings file "
-                                 "in \n" + settingsFilePath.toLocal8Bit() +
-                                 "\n"
-                                 "You can continue using SocNetV with default "
-                                 "settings but any changes to them will not "
-                                 " be saved for future sessions \n"
-                                 "Please, check permissions in your home folder "
-                                 " and conduct the developer."
-                                 ),
-                              QMessageBox::Ok, 0);
-        return;
-    }
-    qDebug()<< "MW::saveSettings - settings file does not exist - Creating it";
-    QTextStream out(&file);
-    qDebug()<< "MW::saveSettings - writing settings to settings file first ";
-    QMap<QString, QString>::const_iterator i = appSettings.constBegin();
-    while (i != appSettings.constEnd()) {
-        qDebug() << "   setting: " <<  i.key() << " = " << i.value();
-        out << i.key() << " = " << i.value() << endl;
-        ++i;
-    }
-    file.close();
-
-}
 
 /**
  * @brief MainWindow::initNet
@@ -4558,15 +4523,10 @@ void MainWindow::createRandomNetErdos( const int newNodes,
     statusMessage( tr("Creating random network. Please wait... ")  );
 
 
-    if (showProgressBarAct->isChecked() && newNodes > 500 && eprob > 0.06){
-        progressDialog= new QProgressDialog(
-                    "Creating random network. \n "
-                    " Please wait (or disable me from Options > View > ProgressBar, next time ;)).",
-                    "Cancel", 0, newNodes+newNodes, this);
-        progressDialog -> setWindowModality(Qt::WindowModal);
-        connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
-        progressDialog->setMinimumDuration(0);
-    }
+    QString msg = "Creating random network. \n "
+                " Please wait (or disable progress bars from Options -> Settings).";
+    createProgressBar(2*newNodes, msg);
+
 
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
@@ -4577,10 +4537,6 @@ void MainWindow::createRandomNetErdos( const int newNodes,
                                        mode,
                                        diag);
 
-    QApplication::restoreOverrideCursor();
-
-    if (showProgressBarAct->isChecked() && newNodes > 500 && eprob > 0.06)
-        progressDialog->deleteLater();
 
     fileLoaded=false;
 
@@ -4589,9 +4545,10 @@ void MainWindow::createRandomNetErdos( const int newNodes,
     setWindowTitle("Untitled");
     double threshold = log(newNodes)/newNodes;
 
-    //float avGraphDistance=activeGraph.averageGraphDistance();
-
     float clucof=activeGraph.clusteringCoefficient();
+
+    QApplication::restoreOverrideCursor();
+    destroyProgressBar();
 
     if ( (eprob ) > threshold )
         QMessageBox::information(
@@ -4621,6 +4578,9 @@ void MainWindow::createRandomNetErdos( const int newNodes,
                     + QString::number(eprob * newNodes*(newNodes-1)) +
                     tr("\nThis graph is almost surely not connected because: \nprobability < ln(n)/n, that is: \n") +
                     QString::number(eprob)+ " smaller than "+ QString::number(threshold) , "OK",0);
+
+
+
 
     statusMessage( "Random network created. ");
 
@@ -4667,13 +4627,10 @@ void MainWindow::slotCreateRegularRandomNetwork(){
     initNet();
     statusMessage( "Creating a pseudo-random network where each node has the same degree... ");
 
-    if (showProgressBarAct->isChecked() && newNodes > 300){
-        progressDialog= new QProgressDialog (
-                    "Creating random network. Please wait (or disable me from Options > View > ProgressBar, next time ;)).", "Cancel", 0, (int) (newNodes+newNodes), this);
-        progressDialog -> setWindowModality(Qt::WindowModal);
-        connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
-        progressDialog->setMinimumDuration(0);
-    }
+    QString msg = "Creating random network. \n"
+            "Please wait (or disable progress bars from Options -> Settings).";
+    createProgressBar(2*newNodes, msg);
+
 
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
@@ -4681,8 +4638,7 @@ void MainWindow::slotCreateRegularRandomNetwork(){
 
     QApplication::restoreOverrideCursor();
 
-    if (showProgressBarAct->isChecked() && newNodes > 300)
-        progressDialog->deleteLater();
+    destroyProgressBar();
 
     fileLoaded=false;
 
@@ -4733,9 +4689,9 @@ void MainWindow::createScaleFreeNetwork ( const int &nodes,
     double y0=scene->height()/2.0;
     double radius=(graphicsWidget->height()/2.0)-50;          //pixels
 
-    if (showProgressBarAct->isChecked() && nodes > 300){
+    if (appSettings["showProgressBar"] == "true" && nodes > 100){
         progressDialog= new QProgressDialog(
-                    tr("Creating random network. Please wait \n (or disable me from Options > View > ProgressBar, next time )."),
+                    tr("Creating random network. Please wait \n (or disable progress bars from Options -> Settings)."),
                     "Cancel", 0, (int) (2* nodes), this);
         progressDialog -> setWindowModality(Qt::WindowModal);
         connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
@@ -4755,7 +4711,7 @@ void MainWindow::createScaleFreeNetwork ( const int &nodes,
 
     QApplication::restoreOverrideCursor();
 
-    if (showProgressBarAct->isChecked() && nodes > 300 )
+    if (appSettings["showProgressBar"] == "true" && nodes > 100 )
         progressDialog->deleteLater();
 
     fileLoaded=false;
@@ -4808,9 +4764,9 @@ void MainWindow::createSmallWorldNetwork (const int &nodes,
     double y0=scene->height()/2.0;
     double radius=(graphicsWidget->height()/2.0)-50;          //pixels
 
-    if (showProgressBarAct->isChecked() && nodes > 300){
+    if (appSettings["showProgressBar"] == "true" && nodes > 100){
         progressDialog= new QProgressDialog(
-                    tr("Creating random network. Please wait \n (or disable me from Options > View > ProgressBar, next time )."),
+                    tr("Creating random network. Please wait \n (or disable progress bars from Options -> Settings )."),
                     "Cancel", 0, (int) (2* nodes), this);
         progressDialog -> setWindowModality(Qt::WindowModal);
         connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
@@ -4821,7 +4777,7 @@ void MainWindow::createSmallWorldNetwork (const int &nodes,
     activeGraph.symmetrize();
     QApplication::restoreOverrideCursor();
 
-    if (showProgressBarAct->isChecked() && nodes > 300 )
+    if (appSettings["showProgressBar"] == "true" && nodes > 100 )
         progressDialog->deleteLater();
 
     fileLoaded=false;
@@ -4879,8 +4835,8 @@ void MainWindow::slotCreateRandomRingLattice(){
     double y0=scene->height()/2.0;
     double radius=(graphicsWidget->height()/2.0)-50;          //pixels
 
-    if (showProgressBarAct->isChecked() && newNodes > 300){
-        progressDialog= new QProgressDialog("Creating random network. Please wait (or disable me from Options > View > ProgressBar, next time ;)).", "Cancel", 0, (int) (newNodes+newNodes), this);
+    if (appSettings["showProgressBar"] == "true" && newNodes > 100){
+        progressDialog= new QProgressDialog("Creating random network. Please wait (or disable progress bars from Options -> Settings).", "Cancel", 0, (int) (newNodes+newNodes), this);
         progressDialog -> setWindowModality(Qt::WindowModal);
         connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
         progressDialog->setMinimumDuration(0);
@@ -4892,7 +4848,7 @@ void MainWindow::slotCreateRandomRingLattice(){
 
     QApplication::restoreOverrideCursor();
 
-    if (showProgressBarAct->isChecked() && newNodes > 300)
+    if (appSettings["showProgressBar"] == "true" && newNodes > 100)
         progressDialog->deleteLater();
 
     fileLoaded=false;
@@ -7826,13 +7782,25 @@ void MainWindow::slotCentralityEccentricity(){
 
 
 
-void MainWindow::createProgressBar(){
+/**
+ * @brief MainWindow::createProgressBar
+ * @param max
+ * @param msg
+ * Creates a Qt Progress Dialog
+ * if max = 0, then max becomes equal to active vertices*
+ */
+void MainWindow::createProgressBar(int max, QString msg){
 
-    if (showProgressBarAct->isChecked() || activeEdges() > 2000){
-        progressDialog= new QProgressDialog("Please wait....", "Cancel", 0, activeGraph.vertices(), this);
+    if ( max == 0 ) {
+            max = activeGraph.vertices();
+        }
+
+    if ( ( appSettings["showProgressBar"] == "true"  && max > 200 )
+         || activeEdges() > 2000 ){
+        progressDialog= new QProgressDialog(msg, "Cancel", 0, max, this);
         progressDialog -> setWindowModality(Qt::WindowModal);
         connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
-        progressDialog->setMinimumDuration(0);
+        progressDialog->setMinimumDuration(1);
     }
 
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
@@ -7842,9 +7810,13 @@ void MainWindow::createProgressBar(){
 
 void MainWindow::destroyProgressBar(){
     QApplication::restoreOverrideCursor();
-
-    if (showProgressBarAct->isChecked() || activeEdges() > 1000)
+    qDebug () << "MainWindow::destroyProgressBar - check progressbar visible?";
+    if ( ( appSettings["showProgressBar"] == "true" || activeEdges() > 2000 ) ) {
+        qDebug () << "MainWindow::destroyProgressBar - visible - destroying";
         progressDialog->deleteLater();
+    }
+
+
 }
 
 
@@ -8335,10 +8307,14 @@ void MainWindow::slotAntialiasing(bool toggle) {
     graphicsWidget->setRenderHint(QPainter::TextAntialiasing, toggle);
     graphicsWidget->setRenderHint(QPainter::SmoothPixmapTransform, toggle);
     QApplication::restoreOverrideCursor();
-    if (!toggle)
+    if (!toggle) {
         statusMessage( tr("Anti-aliasing off.") );
-    else
+        appSettings["antialiasing"] = "false";
+    }
+    else {
+        appSettings["antialiasing"] = "true";
         statusMessage( tr("Anti-aliasing on.") );
+    }
 
 }
 
@@ -8350,9 +8326,11 @@ void MainWindow::slotAntialiasing(bool toggle) {
 void MainWindow::slotShowProgressBar(bool toggle) {
     statusMessage( tr("Toggle progressbar..."));
     if (!toggle)  {
+        appSettings["showProgressBar"] = "false";
         statusMessage( tr("Progress bars off.") );
     }
     else   {
+        appSettings["showProgressBar"] = "true";
         statusMessage( tr("Progress bars on.") );
     }
 }
@@ -8389,10 +8367,12 @@ void MainWindow::slotShowToolBar(bool toggle) {
     statusMessage( tr("Toggle toolbar..."));
     if (toggle== false)   {
         toolBar->hide();
+        appSettings["showToolBar"] = "false";
         statusMessage( tr("Toolbar off.") );
     }
     else  {
         toolBar->show();
+        appSettings["showToolBar"] = "true";
         statusMessage( tr("Toolbar on.") );
     }
 }
@@ -8407,10 +8387,12 @@ void MainWindow::slotShowStatusBar(bool toggle) {
 
     if (toggle == false)   {
         statusBar()->hide();
+        appSettings["showStatusBar"] = "false";
         statusMessage( tr("Status bar off.") );
     }
     else   {
         statusBar()->show();
+        appSettings["showStatusBar"] = "true";
         statusMessage( tr("Status bar on.") );
     }
 
@@ -8439,8 +8421,6 @@ void MainWindow::slotBackgroundImage(bool toggle) {
         appSettings["initBackgroundImage"] = m_fileName;
         slotChangeBackgroundImage();
     }
-
-
 }
 
 
@@ -8481,10 +8461,10 @@ void MainWindow::slotOpenSettingsDialog() {
     connect( m_settingsDialog, &SettingsDialog::setProgressBars,
              this, &MainWindow::slotShowProgressBar);
 
-    connect( m_settingsDialog, &SettingsDialog::setToolBars,
+    connect( m_settingsDialog, &SettingsDialog::setToolBar,
              this, &MainWindow::slotShowToolBar);
 
-    connect( m_settingsDialog, &SettingsDialog::setStatusBars,
+    connect( m_settingsDialog, &SettingsDialog::setStatusBar,
              this, &MainWindow::slotShowStatusBar);
 
     connect( m_settingsDialog, &SettingsDialog::setAntialiasing,

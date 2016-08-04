@@ -42,40 +42,57 @@ SettingsDialog::SettingsDialog(
 
    // m_appSettings = appSettings; //only use if var passed by pointer
 
+    //data export
     ui->dataDirEdit->setText(  (m_appSettings)["dataDir"]);
 
-    ui->debugChkBox->setChecked(
+    //debugging
+    ui->printDebugChkBox->setChecked(
                 (appSettings["printDebug"] == "true") ? true:false
             );
+
+    ui->progressBarsChkBox->setChecked(
+                (appSettings["showProgressBar"] == "true") ? true:false
+                );
+
+    //canvas options
+    ui->antialiasingChkBox->setChecked(
+                (appSettings["antialiasing"] == "true") ? true:false
+                );
 
     m_bgColor = QColor (m_appSettings["initBackgroundColor"]);
     m_pixmap = QPixmap(60,20) ;
     m_pixmap.fill( m_bgColor );
     ui->bgColorButton->setIcon(QIcon(m_pixmap));
 
+    ui->bgImageSelectEdit->setText((m_appSettings)["initBackgroundImage"]);
 
+
+    // signals
     connect (ui->dataDirSelectButton, &QToolButton::clicked,
              this, &SettingsDialog::getDataDir);
-    connect (ui->progressBarsChkBox, &QCheckBox::stateChanged,
-             this, &SettingsDialog::setProgressBars);
-    connect (ui->toolBarChkBox, &QCheckBox::stateChanged,
-             this, &SettingsDialog::setToolBars);
 
-    connect (ui->statusBarChkBox, &QCheckBox::stateChanged,
-             this, &SettingsDialog::setStatusBars);
-
-    connect (ui->debugChkBox, &QCheckBox::stateChanged,
+    connect (ui->printDebugChkBox, &QCheckBox::stateChanged,
              this, &SettingsDialog::setDebugMsgs);
 
     connect (ui->antialiasingChkBox, &QCheckBox::stateChanged,
              this, &SettingsDialog::setAntialiasing);
-
 
     connect (ui->bgColorButton, &QToolButton::clicked,
              this, &SettingsDialog::getBgColor);
 
     connect (ui->bgImageSelectButton, &QToolButton::clicked,
              this, &SettingsDialog::getBgImage);
+
+    connect (ui->progressBarsChkBox, &QCheckBox::stateChanged,
+             this, &SettingsDialog::setProgressBars);
+
+    connect (ui->showToolBarChkBox, &QCheckBox::stateChanged,
+             this, &SettingsDialog::setToolBar);
+
+    connect (ui->showStatusBarChkBox, &QCheckBox::stateChanged,
+             this, &SettingsDialog::setStatusBar);
+
+
 
     connect ( ui->buttonBox, &QDialogButtonBox::accepted,
               this, &SettingsDialog::validateSettings );
@@ -136,8 +153,8 @@ void SettingsDialog::getBgImage(){
                 tr("All (*);;PNG (*.png);;JPG (*.jpg)")
                 );
     if (!m_bgImage.isEmpty() ) {
-        ui->bgImageSelectEdit->setText(m_bgImage);
         (m_appSettings)["initBackgroundImage"] = m_bgImage ;
+        ui->bgImageSelectEdit->setText((m_appSettings)["initBackgroundImage"]);
         emit setBgImage();
     }
     else { //user pressed Cancel

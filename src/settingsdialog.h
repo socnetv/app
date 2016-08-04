@@ -48,8 +48,8 @@ public:
 
 signals:
     void setProgressBars(bool);
-    void setToolBars(bool);
-    void setStatusBars(bool);
+    void setToolBar(bool);
+    void setStatusBar(bool);
     void setAntialiasing(bool);
     void setDebugMsgs(bool);
     void setBgColor(QColor);
