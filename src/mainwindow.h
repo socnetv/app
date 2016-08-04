@@ -330,7 +330,6 @@ public slots:
     void edgeInfoStatusBar (Edge*);
     void openNodeContextMenu();
     void openEdgeContextMenu() ;
-    void windowInfoStatusBar(int, int);
     void graphChanged();
 
     //Called by graphicswidget to update node coords in activeGraph

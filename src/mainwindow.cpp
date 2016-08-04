@@ -69,6 +69,10 @@ void myMessageOutput (
         case QtDebugMsg:
             fprintf( stderr, "Debug: %s\n", localMsg.constData() );
             break;
+        case QtInfoMsg:
+            fprintf( stderr, "Info: %s\n", localMsg.constData() );
+            break;
+
         case QtWarningMsg:
             fprintf( stderr, "Warning: %s\n", localMsg.constData() );
             break;
@@ -78,6 +82,7 @@ void myMessageOutput (
         case QtCriticalMsg:
             fprintf( stderr, "Critical: %s\n", localMsg.constData() );
             abort();                    // deliberately core dump
+
         }
 }
 
@@ -142,7 +147,7 @@ MainWindow::~MainWindow() {
     delete printer;
     delete scene;
     delete graphicsWidget;
-    qDebug() << "MW::~MainWindow() Destruct function finshed - bye!";
+    qDebug() << "MW::~MainWindow() Destruct function finished - bye!";
 }
 
 
@@ -263,7 +268,7 @@ QMap<QString,QString> MainWindow::initSettings(){
     qDebug() << "MW::initSettings - Final settings";
     QMap<QString, QString>::const_iterator i = appSettings.constBegin();
     while (i != appSettings.constEnd()) {
-        qDebug() << "setting: " <<  i.key() << " = " << i.value();
+        qInfo() << "setting: " <<  i.key() << " = " << i.value();
         ++i;
     }
 
@@ -471,13 +476,11 @@ void MainWindow::initActions(){
     viewSociomatrixAct->setWhatsThis(tr("View Adjacency Matrix\n\nDisplays the adjacency matrix of the active network. \n\n The adjacency matrix of a network is a matrix where each element a(i,j) is equal to the weight of the Edge from node i to node j. If the nodes are not connected, then a(i,j)=0. "));
     connect(viewSociomatrixAct, SIGNAL(triggered()), this, SLOT(slotViewAdjacencyMatrix()));
 
-
     recreateDataSetAct = new QAction(QIcon(":/images/sm.png"), tr("Create Known Data Sets"),  this);
     recreateDataSetAct ->setShortcut(tr("F7"));
     recreateDataSetAct->setStatusTip(tr("Recreates a variety of known data sets."));
     recreateDataSetAct->setWhatsThis(tr("Known Data Sets\n\nRecreates some of the most widely used data sets in network analysis studies"));
     connect(recreateDataSetAct, SIGNAL(triggered()), this, SLOT(slotShowDataSetSelectDialog()));
-
 
 
     createErdosRenyiRandomNetworkAct = new QAction(QIcon(":/images/erdos.png"), tr("Erdős–Rényi"),  this);
@@ -2602,7 +2605,6 @@ void MainWindow::initStatusBar() {
 
 
 
-
 /**
  * @brief MainWindow::initView
  * Initializes the scene and the corresponding graphicsWidget,
@@ -2642,8 +2644,6 @@ void MainWindow::initView() {
     graphicsWidget->setDragMode(QGraphicsView::RubberBandDrag);
     graphicsWidget->setFocusPolicy(Qt::StrongFocus);
     graphicsWidget->setFocus();
-
-
 
 }
 
@@ -2780,8 +2780,16 @@ void MainWindow::resizeEvent( QResizeEvent * ){
     qDebug ("MW resizeEvent():INITIAL window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
 
     //the area of the scene displayed by the CanvasView
-    scene->setSceneRect(0, 0, (qreal) ( graphicsWidget->width() -5 ), (qreal) (graphicsWidget->height() -5 ) );
+    scene->setSceneRect(0, 0, (qreal) ( graphicsWidget->width() ), (qreal) (graphicsWidget->height()  ) );
+    activeGraph.setMaximumSize(graphicsWidget->width(), graphicsWidget->height());
     qDebug ("MW resizeEvent(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
+    statusMessage(
+                QString(
+                    tr("Window resized to (%1, %2)px. Canvas size: (%3, %4) px"))
+                .arg(width()).arg(height())
+                .arg(graphicsWidget->width()).arg(graphicsWidget->height())
+                );
+
 }
 
 
@@ -2803,12 +2811,6 @@ void MainWindow::initSignalSlots() {
 
     connect( graphicsWidget, SIGNAL( selectedEdge(Edge*) ),
              this, SLOT ( edgeInfoStatusBar(Edge*) )  );
-
-    connect( graphicsWidget, SIGNAL( windowResized(int, int)),
-             this, SLOT( windowInfoStatusBar(int,int)) 	);
-
-    connect( graphicsWidget, SIGNAL( windowResized(int, int)),
-             &activeGraph, SLOT( setCanvasDimensions(int,int)) 	);
 
     connect( graphicsWidget, SIGNAL( userDoubleClicked(int, QPointF) ),
              this, SLOT( addNodeWithMouse(int,QPointF) ) ) ;
@@ -3119,16 +3121,20 @@ void MainWindow::initNet(){
 
 
 
-
-
-
-/*
+/**
+ * @brief MainWindow::statusMessage
+ * @param message
  * Slot called by Graph::statusMessage to display some message to the user
  */
 void MainWindow::statusMessage(const QString message){
     statusBar()->showMessage( message, statusBarDuration );
 }
 
+
+/**
+ * @brief MainWindow::showMessageToUser
+ * @param message
+ */
 void MainWindow::showMessageToUser(const QString message) {
     QMessageBox::information(this, tr("Info"),
                           message,
@@ -3136,12 +3142,6 @@ void MainWindow::showMessageToUser(const QString message) {
 }
 
 
-/**
-*	Displays a message	on the status bar when you resize the window.
-*/
-void MainWindow::windowInfoStatusBar(int w, int h){
-    statusMessage(  QString(tr("Window resized to (%1, %2) pixels.")).arg(w).arg(h) );
-}
 
 
 
@@ -4484,10 +4484,11 @@ void MainWindow::slotRecreateDataSet (QString m_fileName) {
     }
 }
 
+
 /**
-    Calls activeGraph.createRandomNetErdos () to create a symmetric network
-    Edge existance is controlled by a user specified possibility.
-*/
+ * @brief MainWindow::slotCreateRandomErdosRenyi
+ * Shows the Erdos-Renyi network creation dialog
+ */
 void MainWindow::slotCreateRandomErdosRenyi(){
 
     statusMessage( "Creating a random symmetric network... ");
@@ -4497,17 +4498,24 @@ void MainWindow::slotCreateRandomErdosRenyi(){
     connect( m_randErdosRenyiDialog, &RandErdosRenyiDialog::userChoices,
              this, &MainWindow::createRandomNetErdos );
 
-
     m_randErdosRenyiDialog->exec();
-
 
 }
 
 
 
 
-
-
+/**
+ * @brief MainWindow::createRandomNetErdos
+ * @param newNodes
+ * @param model
+ * @param edges
+ * @param eprob
+ * @param mode
+ * @param diag
+ * Calls activeGraph.createRandomNetErdos () to create a symmetric network
+ * Edge existance is controlled by a user specified possibility.
+ */
 void MainWindow::createRandomNetErdos( const int newNodes,
                                        const QString model,
                                        const int edges,
@@ -4517,7 +4525,7 @@ void MainWindow::createRandomNetErdos( const int newNodes,
 {
     qDebug() << "MW::createRandomNetErdos()";
 
-    statusMessage( "Erasing any existing network. ");
+    statusMessage( tr("Erasing any existing network."));
     initNet();
 
     statusMessage( tr("Creating random network. Please wait... ")  );
@@ -4526,7 +4534,6 @@ void MainWindow::createRandomNetErdos( const int newNodes,
     QString msg = "Creating random network. \n "
                 " Please wait (or disable progress bars from Options -> Settings).";
     createProgressBar(2*newNodes, msg);
-
 
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
@@ -4537,14 +4544,13 @@ void MainWindow::createRandomNetErdos( const int newNodes,
                                        mode,
                                        diag);
 
-
     fileLoaded=false;
 
     graphChanged();
 
     setWindowTitle("Untitled");
-    double threshold = log(newNodes)/newNodes;
 
+    double threshold = log(newNodes)/newNodes;
     float clucof=activeGraph.clusteringCoefficient();
 
     QApplication::restoreOverrideCursor();
@@ -4580,8 +4586,6 @@ void MainWindow::createRandomNetErdos( const int newNodes,
                     QString::number(eprob)+ " smaller than "+ QString::number(threshold) , "OK",0);
 
 
-
-
     statusMessage( "Random network created. ");
 
 }
@@ -4596,6 +4600,7 @@ void MainWindow::createRandomNetErdos( const int newNodes,
 */
 void MainWindow::slotCreateRegularRandomNetwork(){
     bool ok;
+
     statusMessage( "Creating a pseudo-random network where each node has the same degree... ");
     int newNodes= QInputDialog::getInt(
                        this,
@@ -4634,7 +4639,8 @@ void MainWindow::slotCreateRegularRandomNetwork(){
 
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
-    activeGraph.createSameDegreeRandomNetwork (newNodes, degree);
+    activeGraph.createSameDegreeRandomNetwork (newNodes,
+                                               degree);
 
     QApplication::restoreOverrideCursor();
 
@@ -4880,9 +4886,7 @@ void MainWindow::slotCreateRandomRingLattice(){
 *	creates a new network by crawling a given website 
 */ 
 void MainWindow::slotShowWebCrawlerDialog() {
-    qDebug () << "MW: slotShowWebCrawlerDialog() - sending canvasWidth and Height";
-    activeGraph.setCanvasDimensions(graphicsWidget->width(), graphicsWidget->height());
-
+    qDebug () << "MW: slotShowWebCrawlerDialog() - canvas Width & Height already sent";
     m_WebCrawlerDialog.exec() ;
 }
 
@@ -7791,6 +7795,7 @@ void MainWindow::slotCentralityEccentricity(){
  */
 void MainWindow::createProgressBar(int max, QString msg){
 
+    qDebug() << "MW::createProgressBar" ;
     if ( max == 0 ) {
             max = activeGraph.vertices();
         }
@@ -7799,7 +7804,8 @@ void MainWindow::createProgressBar(int max, QString msg){
          || activeEdges() > 2000 ){
         progressDialog= new QProgressDialog(msg, "Cancel", 0, max, this);
         progressDialog -> setWindowModality(Qt::WindowModal);
-        connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
+        connect( &activeGraph, SIGNAL( updateProgressDialog(int) ),
+                 progressDialog, SLOT(setValue(int) ) ) ;
         progressDialog->setMinimumDuration(0);
     }
 
@@ -7808,12 +7814,15 @@ void MainWindow::createProgressBar(int max, QString msg){
 }
 
 
+/**
+ * @brief MainWindow::destroyProgressBar
+ */
 void MainWindow::destroyProgressBar(){
+    qDebug () << "MainWindow::destroyProgressBar";
     QApplication::restoreOverrideCursor();
-    qDebug () << "MainWindow::destroyProgressBar - check progressbar visible?";
-    if ( ( appSettings["showProgressBar"] == "true" || activeEdges() > 2000 ) &&
-         progressDialog->isVisible()) {
-        qDebug () << "MainWindow::destroyProgressBar - visible - destroying";
+    qDebug () << "MainWindow::destroyProgressBar - check if a progressbar exists";
+    if ( ( appSettings["showProgressBar"] == "true" || activeEdges() > 2000 ) ) {
+        qDebug () << "MainWindow::destroyProgressBar - progressbar exists. Dstroying";
         progressDialog->deleteLater();
     }
 
