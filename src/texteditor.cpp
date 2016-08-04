@@ -88,7 +88,9 @@ bool TextEditor::save()
 
 bool TextEditor::saveAs()
 {
-    QString fileName = QFileDialog::getSaveFileName(this);
+
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save file"),
+                                                    curFile);
     if (fileName.isEmpty())
         return false;
 
@@ -236,7 +238,7 @@ void TextEditor::loadFile(const QString &fileName)
 {
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        QMessageBox::warning(this, tr("Application"),
+        QMessageBox::warning(this, tr("SocNetV Editor"),
                              tr("Cannot read file %1:\n%2.")
                              .arg(fileName)
                              .arg(file.errorString()));
@@ -257,7 +259,7 @@ bool TextEditor::saveFile(const QString &fileName)
 {
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
-        QMessageBox::warning(this, tr("TextEditor"),
+        QMessageBox::warning(this, tr("SocNetV Editor"),
                              tr("Cannot write file %1:\n%2.")
                              .arg(fileName)
                              .arg(file.errorString()));
@@ -288,7 +290,7 @@ void TextEditor::setCurrentFile(const QString &fileName)
     else
         shownName = strippedName(curFile);
 
-    setWindowTitle(tr("%1[*] - %2").arg(shownName).arg(tr("TextEditor")));
+    setWindowTitle(tr("%1[*] - %2").arg(shownName).arg(tr("SocNetV Editor")));
 }
 
 QString TextEditor::strippedName(const QString &fullFileName)
