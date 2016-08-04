@@ -1011,6 +1011,7 @@ void GraphicsWidget::changeMatrixRotation(int angle){
 
 }
 
+
 /** Resizing the view causes a repositioning of the nodes maintaining the same pattern*/
 void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
    // Q_UNUSED(e);
@@ -1034,6 +1035,11 @@ void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
                 else 	item->setPos(mapToScene(item->x()*fX, item->y()*fY));
             }
 
+      //update the scene width and height with that of the graphicsWidget
+      scene()->setSceneRect(0, 0, (qreal) ( width() -50 ), (qreal) ( height() -50 ) );
+      qDebug() << "GW::resizeEvent - scene: ("
+               << scene()->width() << "," << scene()->height() << ")";
+      emit resized( width() -50,  height() -50);
 }
 
 

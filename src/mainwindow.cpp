@@ -2656,7 +2656,7 @@ void MainWindow::initView() {
  * Creates helper widgets and sets the main layout of the MainWindow
  */
 void MainWindow::initWindowLayout() {
-
+    qInfo () << "MW::initWindowLayout";
     int size = style()->pixelMetric(QStyle::PM_ToolBarIconSize);
     QSize iconSize(size, size);
 
@@ -2742,30 +2742,30 @@ void MainWindow::initWindowLayout() {
     //now set this as central widget of MW
     setCentralWidget(widget);
 
-
+    qInfo () << "MW::initWindowLayout - resize to 1280x900";
     this->resize(1280,900);
     //this->showMaximized();
     //set minimum size of graphicsWidget
 
-    graphicsWidget->setMinimumSize(
-                (qreal)  ( this->width()
-                           - editPanel->sizeHint().width()
-                           - zoomSliderLayout->sizeHint().width()
-                           - statsPanel ->sizeHint().width()
-                           - 40 ) ,
-                (qreal) ( this->height()
-                          - statusBar()->sizeHint().height()
-                          - toolBar->sizeHint().height()
-                          - menuBar()->sizeHint().height()
-                          - rotateSliderLayout->sizeHint().height()
-                          -40 )
-                );
-    qDebug() << "MW initMainWindow(): window size: "
-             << this->width() << ", "<< this->height()
-             << " graphicsWidget size: "
-             << graphicsWidget->width() << ", "<< graphicsWidget->height()
-             << " scene size: "
-             << graphicsWidget->scene()->width() << ", " <<  graphicsWidget->scene()->height();
+//    graphicsWidget->setMinimumSize(
+//                (qreal)  ( this->width()
+//                           - editPanel->sizeHint().width()
+//                           - zoomSliderLayout->sizeHint().width()
+//                           - statsPanel ->sizeHint().width()
+//                           - 40 ) ,
+//                (qreal) ( this->height()
+//                          - statusBar()->sizeHint().height()
+//                          - toolBar->sizeHint().height()
+//                          - menuBar()->sizeHint().height()
+//                          - rotateSliderLayout->sizeHint().height()
+//                          -40 )
+//                );
+//    qDebug() << "MW initMainWindow(): window size: "
+//             << this->width() << ", "<< this->height()
+//             << " graphicsWidget size: "
+//             << graphicsWidget->width() << ", "<< graphicsWidget->height()
+//             << " scene size: "
+//             << graphicsWidget->scene()->width() << ", " <<  graphicsWidget->scene()->height();
 }
 
 
@@ -2777,12 +2777,8 @@ void MainWindow::initWindowLayout() {
  * Resizes the scene when the window is resized.
  */
 void MainWindow::resizeEvent( QResizeEvent * ){
-    qDebug ("MW resizeEvent():INITIAL window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
 
-    //the area of the scene displayed by the CanvasView
-    scene->setSceneRect(0, 0, (qreal) ( graphicsWidget->width() ), (qreal) (graphicsWidget->height()  ) );
-    activeGraph.setMaximumSize(graphicsWidget->width(), graphicsWidget->height());
-    qDebug ("MW resizeEvent(): now window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
+    qInfo ("MW resizeEvent():  window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
     statusMessage(
                 QString(
                     tr("Window resized to (%1, %2)px. Canvas size: (%3, %4) px"))
@@ -2806,6 +2802,10 @@ void MainWindow::resizeEvent( QResizeEvent * ){
 void MainWindow::initSignalSlots() {
 
     // Signals from graphicsWidget to MainWindow
+
+    connect( graphicsWidget, SIGNAL( resized(int, int)),
+                &activeGraph, SLOT( setMaximumSize(int,int)) ) ;
+
     connect( graphicsWidget, SIGNAL( selectedNode(Node*) ),
              this, SLOT( nodeInfoStatusBar(Node*) ) 	);
 

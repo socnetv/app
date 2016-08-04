@@ -140,6 +140,7 @@ signals:
     void selectedEdge(Edge *);
     void zoomChanged(const int);
     void rotationChanged(const int);
+    void resized(const int, const int);
 
 
 
