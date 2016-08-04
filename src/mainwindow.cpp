@@ -7800,7 +7800,7 @@ void MainWindow::createProgressBar(int max, QString msg){
         progressDialog= new QProgressDialog(msg, "Cancel", 0, max, this);
         progressDialog -> setWindowModality(Qt::WindowModal);
         connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
-        progressDialog->setMinimumDuration(1);
+        progressDialog->setMinimumDuration(0);
     }
 
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
@@ -7811,7 +7811,8 @@ void MainWindow::createProgressBar(int max, QString msg){
 void MainWindow::destroyProgressBar(){
     QApplication::restoreOverrideCursor();
     qDebug () << "MainWindow::destroyProgressBar - check progressbar visible?";
-    if ( ( appSettings["showProgressBar"] == "true" || activeEdges() > 2000 ) ) {
+    if ( ( appSettings["showProgressBar"] == "true" || activeEdges() > 2000 ) &&
+         progressDialog->isVisible()) {
         qDebug () << "MainWindow::destroyProgressBar - visible - destroying";
         progressDialog->deleteLater();
     }
