@@ -130,7 +130,6 @@ public slots:
     void changeMatrixRotation(int angle);
 
 signals:
-    void windowResized(int,int);
     void userDoubleClicked(int, QPointF);
     void userMiddleClicked(int, int, float);
     void openNodeMenu();

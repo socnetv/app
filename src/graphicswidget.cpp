@@ -1013,26 +1013,26 @@ void GraphicsWidget::changeMatrixRotation(int angle){
 
 /** Resizing the view causes a repositioning of the nodes maintaining the same pattern*/
 void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
-    Q_UNUSED(e);
-//        qDebug ("GraphicsWidget: resizeEvent");
-//        int w=e->size().width();
-//        int h=e->size().height();
-//        int w0=e->oldSize().width();
-//        int h0=e->oldSize().height();
-//        qDebug() << " old w " << w0 << " old h " << h0
-//                 << " new w " << w << " new h " << h;
-//        qreal fX=  (double)(w)/(double)(w0);
-//        qreal fY= (double)(h)/(double)(h0);
-//        foreach (QGraphicsItem *item, scene()->items()) {
-//            qDebug ("item will move by %f, %f", fX, fY);
-//            if (Node *node = qgraphicsitem_cast<Node *>(item) ) {
-//                qDebug("Node original position %f, %f", item->x(), item->y());
-//                qDebug("Node will move to %f, %f",item->x()*fX, item->y()*fY);
-//                node->setPos(mapToScene(item->x()*fX, item->y()*fY));
-//            }
-//            else 	item->setPos(mapToScene(item->x()*fX, item->y()*fY));
-//        }
-//        emit windowResized(w, h);
+   // Q_UNUSED(e);
+            qDebug () << "GW::resizeEvent";
+            int w=e->size().width();
+            int h=e->size().height();
+            int w0=e->oldSize().width();
+            int h0=e->oldSize().height();
+            qDebug () << "GW::resizeEvent"
+                      << " old w " << w0 << " old h " << h0
+                     << " new w " << w << " new h " << h;
+            qreal fX=  (double)(w)/(double)(w0);
+            qreal fY= (double)(h)/(double)(h0);
+            foreach (QGraphicsItem *item, scene()->items()) {
+                qDebug ("GW::resizeEvent - item will move by %f, %f", fX, fY);
+                if (Node *node = qgraphicsitem_cast<Node *>(item) ) {
+                    qDebug("GW::resizeEvent - Node original position %f, %f", item->x(), item->y());
+                    qDebug("GW::resizeEvent - Node will move to %f, %f",item->x()*fX, item->y()*fY);
+                    node->setPos(mapToScene(item->x()*fX, item->y()*fY));
+                }
+                else 	item->setPos(mapToScene(item->x()*fX, item->y()*fY));
+            }
 
 }
 
