@@ -247,8 +247,8 @@ void Graph::createVertexWebCrawler(QString label, int i) {
 }
 
 
-void Graph::setCanvasDimensions(int w, int h){
-    qDebug() << "Graph:: setCanvasDimensions() to " << w << " " << h ;
+void Graph::setMaximumSize(int w, int h){
+    qDebug() << "Graph:: setMaximumSize() - (" << w << ", " << h<<")";
     canvasWidth = w;
     canvasHeight= h;
 }
@@ -4834,8 +4834,16 @@ void Graph::makeThingsLookRandom()   {
 
 
 
-/** layman's attempt to create a random network
-*/
+/**
+ * @brief Graph::createRandomNetErdos
+ * @param vert
+ * @param model
+ * @param edges
+ * @param eprob
+ * @param mode
+ * @param diag
+ * Create an erdos-renyi random network according to the given model
+ */
 void Graph::createRandomNetErdos(  const int &vert,
                                    const QString &model,
                                    const int &edges,
@@ -4848,7 +4856,9 @@ void Graph::createRandomNetErdos(  const int &vert,
                 << " edges " << edges
                 << " edge probability " << eprob
                 << " graph mode " << mode
-                << " diag " << diag;
+                << " diag " << diag
+                << " canvasWidth " <<canvasWidth
+                << "canvasHeigt " << canvasHeight;
 
     index.reserve(vert);
 
@@ -4861,8 +4871,8 @@ void Graph::createRandomNetErdos(  const int &vert,
 
     for (register int i=0; i< vert ; i++)
     {
-        int x=10+rand() %640;
-        int y=10+rand() %480;
+        int x=10+rand() %canvasWidth;
+        int y=10+rand() %canvasHeight;
         qDebug("Graph: createRandomNetErdos, new node i=%i, at x=%i, y=%i", i+1, x,y);
         createVertex (
                     i+1, initVertexSize, initVertexColor,
@@ -4947,7 +4957,6 @@ void Graph::createRandomNetErdos(  const int &vert,
         } while ( edgeCount != edges );
 
     }
-
 
     addRelationFromGraph(tr("erdos-renyi")); //FIXME
 
@@ -5201,7 +5210,9 @@ void Graph::createRandomNetSmallWorld (
 /** layman's attempt to create a random network where nodes have the same degree.
 */
 
-void Graph::createSameDegreeRandomNetwork(int vert, int degree){
+void Graph::createSameDegreeRandomNetwork( const int &vert,
+                                           const int &degree
+                                           ){
     qDebug("Graph: createSameDegreeRandomNetwork");
 
     int progressCounter=0;
@@ -5210,8 +5221,8 @@ void Graph::createSameDegreeRandomNetwork(int vert, int degree){
     index.reserve(vert);
 
     for (register int i=0; i< vert ; i++) {
-        int x=10+rand() %640;
-        int y=10+rand() %480;
+        int x=10+rand() % canvasWidth;
+        int y=10+rand() % canvasHeight;
         qDebug("Graph: createUniformRandomNetwork, new node i=%i, at x=%i, y=%i", i+1, x,y);
         createVertex(
                     i+1, initVertexSize,initVertexColor,

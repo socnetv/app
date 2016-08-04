@@ -144,7 +144,7 @@ public slots:
     /** Slots to signals from MainWindow */
     void changeRelation(int);
     void addRelationFromUser(QString relation);
-    void setCanvasDimensions(int w, int h);
+    void setMaximumSize(int w, int h);
     void filterIsolateVertices ( bool );		//Called by MW to filter orphan vertices
     void filterEdgesByWeight (float, bool);		//Called by MW to filter edges over/under a weight
     void filterEdgesByRelation(int relation, bool status);
@@ -489,8 +489,8 @@ public:
     void createRandomNetRingLattice
     (int, int, double, double, double);
 
-    void createSameDegreeRandomNetwork
-    (int, int);
+    void createSameDegreeRandomNetwork (const int &,
+                                         const int &);
 
     void createRandomNetScaleFree (const int &n,
                                     const int &power,
