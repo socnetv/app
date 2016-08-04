@@ -39,17 +39,11 @@ class SettingsDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit SettingsDialog(QMap<QString, QString> &appSettings ,
-                                    QWidget *parent = 0,
-
-                               QString settingsFilePath ="",
-                               QString *dataDir = 0,
-                               QColor *bgColor = 0,
-                               QString *lastPath = 0);
+    explicit SettingsDialog(QMap<QString, QString> &appSettings, QWidget *parent = 0 );
     void getDataDir();
     void getBgColor();
     void getBgImage();
-    void saveSettings();
+    void validateSettings();
     ~SettingsDialog();
 
 signals:
@@ -59,16 +53,13 @@ signals:
     void setAntialiasing(bool);
     void setDebugMsgs(bool);
     void setBgColor(QColor);
-    void setBgImage(QString);
+    void setBgImage();
+    void saveSettings();
 private:
+     QMap<QString, QString> &m_appSettings ;
      Ui::SettingsDialog *ui;
-     QMap<QString, QString> m_appSettings ;
-     QString *m_dataDir;
      QPixmap m_pixmap;
      QColor m_bgColor;
-     QString *m_lastPath;
-     QString *m_bgImage;
-     QString m_settingsPath;
 };
 
 #endif // SETTINGSDIALOG_H

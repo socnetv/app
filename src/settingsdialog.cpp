@@ -32,60 +32,79 @@
 #include <QMap>
 
 SettingsDialog::SettingsDialog(
-                                      QMap<QString, QString> &appSettings ,
-        QWidget *parent,
-                                     QString settingsFilePath,
-                                     QString *dataDir,
-                                     QColor *bgColor,
-                                     QString *lastPath) :
+        QMap<QString, QString> &appSettings,
+        QWidget *parent) :
     QDialog(parent),
+    m_appSettings(appSettings),
     ui(new Ui::SettingsDialog)
 {
     ui->setupUi(this);
 
-    m_appSettings = appSettings;
+   // m_appSettings = appSettings; //only use if var passed by pointer
 
-    m_settingsPath = settingsFilePath;
+    ui->dataDirEdit->setText(  (m_appSettings)["dataDir"]);
 
-    m_dataDir = new QString ;
-    m_dataDir  = dataDir;
-    ui->dataDirEdit->setText(*dataDir);
-    connect (ui->dataDirSelectButton, &QToolButton::clicked, this, &SettingsDialog::getDataDir);
-    connect (ui->progressBarsChkBox, &QCheckBox::stateChanged, this, &SettingsDialog::setProgressBars);
-    connect (ui->toolBarChkBox, &QCheckBox::stateChanged, this, &SettingsDialog::setToolBars);
-    connect (ui->statusBarChkBox, &QCheckBox::stateChanged, this, &SettingsDialog::setStatusBars);
-    connect (ui->debugChkBox, &QCheckBox::stateChanged, this, &SettingsDialog::setDebugMsgs);
-    connect (ui->antialiasingChkBox, &QCheckBox::stateChanged, this, &SettingsDialog::setAntialiasing);
+    ui->debugChkBox->setChecked(
+                (appSettings["printDebug"] == "true") ? true:false
+            );
 
-
-//    m_bgColor = new QColor;
-//    m_bgColor = bgColor;
-//    m_pixmap = QPixmap(60,20) ;
-//    m_pixmap.fill(*m_bgColor);
-    m_bgColor = QColor (appSettings["initBackgroundColor"]);
+    m_bgColor = QColor (m_appSettings["initBackgroundColor"]);
     m_pixmap = QPixmap(60,20) ;
     m_pixmap.fill( m_bgColor );
     ui->bgColorButton->setIcon(QIcon(m_pixmap));
 
+
+    connect (ui->dataDirSelectButton, &QToolButton::clicked,
+             this, &SettingsDialog::getDataDir);
+    connect (ui->progressBarsChkBox, &QCheckBox::stateChanged,
+             this, &SettingsDialog::setProgressBars);
+    connect (ui->toolBarChkBox, &QCheckBox::stateChanged,
+             this, &SettingsDialog::setToolBars);
+
+    connect (ui->statusBarChkBox, &QCheckBox::stateChanged,
+             this, &SettingsDialog::setStatusBars);
+
+    connect (ui->debugChkBox, &QCheckBox::stateChanged,
+             this, &SettingsDialog::setDebugMsgs);
+
+    connect (ui->antialiasingChkBox, &QCheckBox::stateChanged,
+             this, &SettingsDialog::setAntialiasing);
+
+
     connect (ui->bgColorButton, &QToolButton::clicked,
              this, &SettingsDialog::getBgColor);
 
-    m_lastPath = new QString;
-    m_lastPath = lastPath;
-    connect (ui->bgImageSelectButton, &QToolButton::clicked, this, &SettingsDialog::getBgImage);
+    connect (ui->bgImageSelectButton, &QToolButton::clicked,
+             this, &SettingsDialog::getBgImage);
 
-
-    connect ( ui->buttonBox, &QDialogButtonBox::accepted, this, &SettingsDialog::saveSettings );
+    connect ( ui->buttonBox, &QDialogButtonBox::accepted,
+              this, &SettingsDialog::validateSettings );
 }
 
 
+/**
+ * @brief SettingsDialog::validateSettings
+ * Validates form data and signals saveSettings to MW
+ */
+void SettingsDialog::validateSettings(){
+    emit saveSettings();
+
+}
+
 void SettingsDialog::getDataDir(){
 
-    *m_dataDir = QFileDialog::getExistingDirectory(this, tr("Select a new data dir"),
+    QString m_dataDir = QFileDialog::getExistingDirectory(this, tr("Select a new data dir"),
                                                     ui->dataDirEdit->text(),
                                                     QFileDialog::ShowDirsOnly
                                                     | QFileDialog::DontResolveSymlinks);
-    ui->dataDirEdit->setText(*m_dataDir);
+    if (!m_dataDir.isEmpty()) {
+        if (!m_dataDir.endsWith( QDir::separator() )) {
+            m_dataDir += QDir::separator();
+        }
+       ui->dataDirEdit->setText(m_dataDir);
+       m_appSettings["dataDir"]= m_dataDir;
+    }
+
 }
 
 
@@ -98,7 +117,7 @@ void SettingsDialog::getBgColor(){
         m_pixmap.fill(m_bgColor);
         ui->bgColorButton->setIcon(QIcon(m_pixmap));
         ui->bgImageSelectEdit->setText("");
-        m_appSettings["initBackgroundColor"] = m_bgColor.name();
+        (m_appSettings)["initBackgroundColor"] = m_bgColor.name();
         emit setBgColor(m_bgColor);
     }
     else {
@@ -113,12 +132,13 @@ void SettingsDialog::getBgColor(){
  */
 void SettingsDialog::getBgImage(){
     QString m_bgImage = QFileDialog::getOpenFileName(
-                this, tr("Select one image for background"), *m_lastPath,
+                this, tr("Select one image for background"), (m_appSettings)["lastUsedDirPath"],
                 tr("All (*);;PNG (*.png);;JPG (*.jpg)")
                 );
     if (!m_bgImage.isEmpty() ) {
         ui->bgImageSelectEdit->setText(m_bgImage);
-        emit setBgImage(m_bgImage);
+        (m_appSettings)["initBackgroundImage"] = m_bgImage ;
+        emit setBgImage();
     }
     else { //user pressed Cancel
 
@@ -126,25 +146,6 @@ void SettingsDialog::getBgImage(){
 
 }
 
-void SettingsDialog::saveSettings(){
-    QFile file ( m_settingsPath );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
-        //qDebug()<< "Error opening settings file!";
-        //emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
-        return;
-    }
-    QTextStream outText ( &file );
-
-    outText.setCodec("UTF-8");
-    outText << "Default save folder == " << ui->dataDirEdit->text();
-    outText << "Show progress bars" << ui->progressBarsChkBox->isChecked();
-    outText << ui->toolBarChkBox->isChecked();
-    outText << ui->statusBarChkBox->isChecked();
-    outText << ui->debugChkBox->isChecked();
-    outText << ui->antialiasingChkBox->isChecked();
-
-    file.close();
-}
 
 SettingsDialog::~SettingsDialog()
 {

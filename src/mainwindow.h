@@ -108,8 +108,8 @@ public:
     void initWindowLayout();
     void initSignalSlots();
     QMap<QString, QString> initSettings();
+    void saveSettings();
     void initNet();
-    void initPersistentSettings();
 
     void setLastPath(QString filePath);
     QString getLastPath();
@@ -235,7 +235,7 @@ public slots:
     void slotShowFilterEdgesDialog();
     void slotTransformNodes2Edges();
     void slotSymmetrize();
-    void slotChangeBackgroundImage(QString path);
+    void slotChangeBackgroundImage();
     void slotOpenSettingsDialog();
 
     // LAYOUT MENU
@@ -315,11 +315,10 @@ public slots:
     //VIEW MENU
     void slotAntialiasing(bool );
     void slotShowProgressBar(bool toggle);
-    void slotPrintDebug(bool toggle);
     void slotShowToolBar(bool toggle);
     void slotShowStatusBar(bool toggle);
     void slotBackgroundImage(bool toggle);
-
+    void slotPrintDebug(bool toggle);
 
     //HELP MENU
     void slotTips();
@@ -464,13 +463,13 @@ private:
     *layoutLevel_CC_Act, *layoutLevel_SC_Act, *layoutLevel_EC_Act,
     *layoutLevel_PC_Act, *layoutLevel_BC_Act, *layoutLevel_IC_Act,
     *layoutLevel_IRCC_Act,*layoutLevel_PRP_Act, *layoutLevel_PP_Act;
-    QAction *strongColorationAct, *regularColorationAct, *showProgressBarAct, *printDebugAct;
+    QAction *strongColorationAct, *regularColorationAct, *showProgressBarAct;
     QAction *springLayoutAct, *FRLayoutAct;
     QAction *nodeSizesByOutDegreeAct,  *nodeSizesByInDegreeAct;
     QAction *nextRelationAct, *prevRelationAct, *addRelationAct;
 
     QString fileName, networkName, previous_fileName;
-    QString dataDir, lastUsedDirPath, settingsFilePath;
+    QString settingsFilePath, settingsDir ;
     QStringList fileNameNoPath, fortuneCookie, rgbValues;
     QStringList tempFileNameNoPath, tips;
     int statusBarDuration, progressCounter;

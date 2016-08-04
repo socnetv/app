@@ -56,15 +56,15 @@
 
 
 
-bool printDebug=false;
+bool printDebug = false;
 
 
 void myMessageOutput (
-        QtMsgType type, const QMessageLogContext &context, const QString &msg )
+        QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
     QByteArray localMsg = msg.toLocal8Bit();
     Q_UNUSED(context);
-    if (printDebug)
+    if ( printDebug )
         switch ( type ) {
         case QtDebugMsg:
             fprintf( stderr, "Debug: %s\n", localMsg.constData() );
@@ -90,7 +90,9 @@ void myMessageOutput (
  */
 MainWindow::MainWindow(const QString & m_fileName) {
 
-    qInstallMessageHandler( myMessageOutput );
+    appSettings = initSettings();
+
+    qInstallMessageHandler( myMessageOutput);
 
     setWindowIcon (QIcon(":/images/socnetv.png"));
 
@@ -113,12 +115,10 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     initSignalSlots();  //connect signals and slots between app components
 
-    /*  initialise default network parameters  */
+    /*  load and initialise default network parameters  */
     qDebug()<<"   initialise default network parameters";
-    appSettings = initSettings();
-    initNet();
 
-    initPersistentSettings(); // init default (or user-defined) app settings
+    initNet();
 
     // Check if user-provided network file on startup
     qDebug() << "MW::MainWindow() Checking if user provided file on startup...";
@@ -1448,14 +1448,7 @@ void MainWindow::initActions(){
     showProgressBarAct->setChecked (true);
     connect(showProgressBarAct, SIGNAL(toggled(bool)), this, SLOT(slotShowProgressBar(bool)));
 
-    printDebugAct = new QAction(tr("Debug Messages"),	this);
-    printDebugAct ->setShortcut(tr("F9"));
-    printDebugAct->setStatusTip(tr("Enables/disables printing debug messages to stdout"));
-    printDebugAct->setWhatsThis(tr("Enables or disable Debug Messages\n\nPrinting debug messages to strerr. Enabling has a significant cpu cost but lets you know what SocNetV is actually doing."));
-    printDebugAct->setCheckable(true);
-    printDebugAct->setChecked (false);
-    printDebug=false;
-    connect(printDebugAct, SIGNAL(toggled(bool)), this, SLOT(slotPrintDebug(bool)));
+
 
 
 
@@ -1778,7 +1771,6 @@ void MainWindow::initMenuBar() {
     optionsMenu -> addMenu (viewOptionsMenu);
     viewOptionsMenu-> addAction (backgroundImageAct);
     viewOptionsMenu-> addAction (antialiasingAct);
-    viewOptionsMenu-> addAction (printDebugAct);
     viewOptionsMenu-> addAction (showProgressBarAct);
     viewOptionsMenu-> addAction (viewToolBar);
     viewOptionsMenu-> addAction (viewStatusBar);
@@ -2887,14 +2879,47 @@ void MainWindow::initSignalSlots() {
 
 /**
   * @brief MainWindow::initSettings()
+  * Init default (or user-defined) app settings
   *
   */
 QMap<QString,QString> MainWindow::initSettings(){
-
-    printDebug = true;
     qDebug()<< "MW::initSettings";
 
+    printDebug = true; // comment it to stop debug override
+
+    firstTime=true;  // becomes false on user IO
+
+    // Create fortune cookies and tips
+    createFortuneCookies();
+    createTips();
+
+    // Call findCodecs to setup a list of all supported codecs
+    qDebug() << "MW::initSettings - calling findCodecs" ;
+    findCodecs();
+
+    qDebug() << "MW::initSettings - creating PreviewForm object and setting codecs list" ;
+    previewForm = new PreviewForm(this);
+    previewForm->setCodecList(codecs);
+
+    connect (previewForm, &PreviewForm::userCodec, this, &MainWindow::userCodec );
+
+    qDebug() << "MW::initSettings - creating default settings" ;
+    settingsDir = QDir::homePath() +QDir::separator() + "socnetv-data" + QDir::separator() ;
+    settingsFilePath = settingsDir + "settings.conf";
+
+    // initially they are the same, but dataDir may be changed by the user
+    QString dataDir= settingsDir ;
+
+
+
+    maxNodes=5000;		//Max nodes used by createRandomNetwork dialogues
+    labelDistance=8;
+    numberDistance=5;
+
+    bezier=false;
+
     // hard-coded initial settings to use only on first app load
+    // when there are no user defined values
     appSettings["initNodeSize"]= "8";
     appSettings["initNodeColor"]="red";
     appSettings["initEdgeColor"]="black";
@@ -2904,51 +2929,31 @@ QMap<QString,QString> MainWindow::initSettings(){
     appSettings["initNumberColor"]="black";
     appSettings["initNodeShape"]="circle";
     appSettings["initBackgroundColor"]="white"; //"gainsboro";
+    appSettings["initBackgroundImage"]="";
     appSettings["considerWeights"]="false";
     appSettings["inverseWeights"]="false";
     appSettings["askedAboutWeights"]="false";
-    appSettings["printDebug"] = "true";
+    appSettings["printDebug"] = (printDebug) ? "true" : "false";
+    appSettings["dataDir"]= dataDir ;
+    appSettings["lastUsedDirPath"]= dataDir ;
 
-    QString settingsDir =  QDir::homePath() +QDir::separator() + "socnetv-data" ;
-    settingsFilePath = settingsDir +QDir::separator()  + "settings.conf";
-    QFile file(settingsFilePath);
+    // Try to load settings configuration file
+    // First check if our settings folder exist
+    QDir socnetvDir(settingsDir);
+    if ( !socnetvDir.exists() ) {
+        qDebug() << "MW::initSettings -  dir does not exist - create it";
+        socnetvDir.mkdir(settingsDir);
+    }
+    // Then check if the conf file exists inside the folder
     qDebug () << "MW::initSettings - checking for settings file: "
               << settingsFilePath;
 
-    if (!file.exists()) {
-        // application settings file does not exist - create it
-        // this must be the first time SocNetV runs in this computer
-        // or the user might have deleted seetings file.
-        QDir dir;
-        dir.mkdir(settingsDir);
-        if (!file.open(QIODevice::WriteOnly ) ) {
-            QMessageBox::critical(this, "File Write Error", tr("Error! \n"
-                                  "I cannot write the new settings file "
-                                  "in \n" + settingsFilePath.toLocal8Bit() +
-                                   "\n"
-                                  "You can continue using SocNetV with default "
-                                  "settings but any changes to them will not "
-                                  " be saved for future sessions \n"
-                                  "Please, check permissions in your home folder "
-                                  " and conduct the developer."
-                                  ),
-                                  QMessageBox::Ok, 0);
-           return appSettings;
-        }
-        qDebug()<< "MW::initSettings - settings file does not exist - Creating it";
-        QTextStream out(&file);
-        qDebug()<< "MW::initSettings - writing settings to settings file first ";
-        QMap<QString, QString>::const_iterator i = appSettings.constBegin();
-        while (i != appSettings.constEnd()) {
-            qDebug() << "   setting: " <<  i.key() << " = " << i.value();
-            out << i.key() << " = " << i.value() << endl;
-            ++i;
-        }
-        file.close();
-
+    if (!socnetvDir.exists(settingsFilePath)) {
+        saveSettings();
     }
     else {
         qDebug()<< "MW::initSettings - settings file exist - Reading it";
+        QFile file(settingsFilePath);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             QMessageBox::critical(this, "File Read Error", tr("Error! \n"
                                   "I cannot read the settings file "
@@ -2975,8 +2980,11 @@ QMap<QString,QString> MainWindow::initSettings(){
         }
 
         file.close();
-
     }
+
+    // restore user setting for debug messages
+    printDebug = (appSettings["printDebug"] == "true") ? true:false;
+
     qDebug() << "MW::initSettings - Final settings";
     QMap<QString, QString>::const_iterator i = appSettings.constBegin();
     while (i != appSettings.constEnd()) {
@@ -2984,14 +2992,50 @@ QMap<QString,QString> MainWindow::initSettings(){
         ++i;
     }
 
-
     return appSettings;
 }
 
 
 
+/**
+ * @brief MainWindow::saveSettings
+ *  Saves default (or user-defined) app settings
+ */
+void MainWindow::saveSettings() {
+    qDebug () << "MW::saveSettings to "<< settingsFilePath;
+    QFile file(settingsFilePath);
 
+    // application settings file does not exist - create it
+    // this must be the first time SocNetV runs in this computer
+    // or the user might have deleted seetings file.
+    if (!file.open(QIODevice::WriteOnly ) ) {
+        QMessageBox::critical(this,
+                              "File Write Error",
+                              tr("Error! \n"
+                                 "I cannot write the new settings file "
+                                 "in \n" + settingsFilePath.toLocal8Bit() +
+                                 "\n"
+                                 "You can continue using SocNetV with default "
+                                 "settings but any changes to them will not "
+                                 " be saved for future sessions \n"
+                                 "Please, check permissions in your home folder "
+                                 " and conduct the developer."
+                                 ),
+                              QMessageBox::Ok, 0);
+        return;
+    }
+    qDebug()<< "MW::saveSettings - settings file does not exist - Creating it";
+    QTextStream out(&file);
+    qDebug()<< "MW::saveSettings - writing settings to settings file first ";
+    QMap<QString, QString>::const_iterator i = appSettings.constBegin();
+    while (i != appSettings.constEnd()) {
+        qDebug() << "   setting: " <<  i.key() << " = " << i.value();
+        out << i.key() << " = " << i.value() << endl;
+        ++i;
+    }
+    file.close();
 
+}
 
 /**
  * @brief MainWindow::initNet
@@ -3086,6 +3130,16 @@ void MainWindow::initNet(){
 
     changeRelationCombo->clear();
 
+    graphicsWidget->setInitNodeColor(appSettings["initNodeColor"]);
+    graphicsWidget->setInitNumberDistance(numberDistance);
+    graphicsWidget->setInitLabelDistance(labelDistance);
+    graphicsWidget->setInitZoomIndex(250);
+    graphicsWidget->setInitNodeSize(appSettings["initNodeSize"].toInt(0, 10));
+    graphicsWidget->setBackgroundBrush(
+                QBrush(QColor (appSettings["initBackgroundColor"]))
+                ); //Qt::gray
+
+
     /** set window title **/
     setWindowTitle(tr("Social Network Visualizer ")+VERSION);
 
@@ -3097,66 +3151,6 @@ void MainWindow::initNet(){
 }
 
 
-/**
- * @brief MainWindow::initPersistentSettings
- * init default (or user-defined) app settings
- */
-void MainWindow::initPersistentSettings()
-{
-    /*
-     *  DEFAULTING HERE DOES NOT CHANGE BOOL VALUE
-        EVERY TIME INITNET IS CALLED
-    */
-
-
-
-
-    maxNodes=5000;		//Max nodes used by createRandomNetwork dialogues
-    labelDistance=8;
-    numberDistance=5;
-
-    bezier=false;
-    firstTime=true;
-
-    graphicsWidget->setInitNodeColor(appSettings["initNodeColor"]);
-    graphicsWidget->setInitNumberDistance(numberDistance);
-    graphicsWidget->setInitLabelDistance(labelDistance);
-    graphicsWidget->setInitZoomIndex(250);
-    graphicsWidget->setInitNodeSize(appSettings["initNodeSize"].toInt(0, 10));
-    graphicsWidget->setBackgroundBrush(
-                QBrush(QColor (appSettings["initBackgroundColor"]))
-                ); //Qt::gray
-
-    dataDir= QDir::homePath() +QDir::separator() + "socnetv-data" + QDir::separator() ;
-    lastUsedDirPath = "socnetv-initial-none";
-    if (firstTime) {
-        createFortuneCookies();
-        createTips();
-        QDir ourDir(dataDir);
-        if ( !ourDir.exists() ) {
-            ourDir.mkdir(dataDir);
-            QMessageBox::information(this, "SocNetV Data Directory",
-                                 tr("SocNetV saves reports and files in the "
-                                    "directory %1")
-                                 .arg (ourDir.absolutePath())
-                                 , QMessageBox::Ok, 0);
-
-        }
-
-    }
-
-
-
-    // Call findCodecs to setup a list of all supported codecs
-    qDebug() << "MW::MainWindow() - calling findCodecs" ;
-    findCodecs();
-
-    qDebug() << "MW::MainWindow() creating PreviewForm object and setting codecs list" ;
-    previewForm = new PreviewForm(this);
-    previewForm->setCodecList(codecs);
-
-    connect (previewForm, &PreviewForm::userCodec, this, &MainWindow::userCodec );
-}
 
 
 
@@ -3228,11 +3222,11 @@ void MainWindow::slotCreateNew() {
  * returns the last path used by user to open/save something
  */
 QString MainWindow::getLastPath() {
-    if ( lastUsedDirPath == "socnetv-initial-none") {
-        lastUsedDirPath = QDir::homePath();
+    if ( appSettings["lastUsedDirPath"] == "socnetv-initial-none") {
+        appSettings["lastUsedDirPath"] = appSettings["dataDir"];
     }
-    qDebug() << lastUsedDirPath ;
-    return lastUsedDirPath ;
+    qDebug() << appSettings["lastUsedDirPath"] ;
+    return appSettings["lastUsedDirPath"] ;
 }
 
 
@@ -3242,8 +3236,8 @@ QString MainWindow::getLastPath() {
  * @param filePath
  */
 void MainWindow::setLastPath(QString filePath) {
-    lastUsedDirPath = filePath.left( filePath.lastIndexOf("/"));
-    qDebug() << lastUsedDirPath;
+    appSettings["lastUsedDirPath"] = filePath.left( filePath.lastIndexOf("/"));
+    qDebug() << appSettings["lastUsedDirPath"];
 }
 
 
@@ -4448,16 +4442,14 @@ void MainWindow::slotViewAdjacencyMatrix(){
     int aNodes=activeNodes();
     statusBar() ->  showMessage ( QString (tr ("creating adjacency adjacency matrix of %1 nodes")).arg(aNodes) );
     qDebug ("MW: calling Graph::writeAdjacencyMatrix with %i nodes", aNodes);
-    QString fn = dataDir + "socnetv-report-adjacency-matrix.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-adjacency-matrix.dat";
 
     activeGraph.writeAdjacencyMatrix(fn, networkName.toLocal8Bit()) ;
 
     //Open a text editor window for the new file created by graph class
     TextEditor *ed = new TextEditor(fn);
-    tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
-    statusMessage(tr("Adjacency Matrix saved at ") + tempFileNameNoPath.last());
+    statusMessage(tr("Adjacency Matrix saved as ") + fn);
 }
 
 
@@ -4481,8 +4473,9 @@ void MainWindow::slotRecreateDataSet (QString m_fileName) {
 
     //initNet();
 
-    qDebug()<< "slotRecreateDataSet() datadir+fileName: " << dataDir+m_fileName;
-    activeGraph.writeDataSetToFile(dataDir, m_fileName);
+    qDebug()<< "slotRecreateDataSet() datadir+fileName: "
+            << appSettings["dataDir"]+m_fileName;
+    activeGraph.writeDataSetToFile(appSettings["dataDir"], m_fileName);
 
     if (m_fileName.endsWith(".graphml")) {
         m_fileFormat=1;
@@ -4513,7 +4506,7 @@ void MainWindow::slotRecreateDataSet (QString m_fileName) {
         m_fileFormat=9;
     }
     checkSelectFileType = false;
-    if ( loadNetworkFile(dataDir+m_fileName, "UTF-8", m_fileFormat) ) {
+    if ( loadNetworkFile(appSettings["dataDir"]+m_fileName, "UTF-8", m_fileFormat) ) {
         qDebug() << "slotRecreateDataSet() loaded file " << m_fileName;
         fileName=m_fileName;
         previous_fileName=fileName;
@@ -6786,7 +6779,7 @@ void MainWindow::slotInvertAdjMatrix(){
     int aNodes=activeNodes();
     statusBar() ->  showMessage ( QString (tr ("inverting adjacency adjacency matrix of %1 nodes")).arg(aNodes) );
     qDebug ("MW: calling Graph::writeInvertAdjacencyMatrix with %i nodes", aNodes);
-    QString fn = dataDir + "socnetv-report-invert-adjacency-matrix.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-invert-adjacency-matrix.dat";
 
     QTime timer;
     timer.start();
@@ -6795,8 +6788,7 @@ void MainWindow::slotInvertAdjMatrix(){
     statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
     //Open a text editor window for the new file created by graph class
     TextEditor *ed = new TextEditor(fn);
-    tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle(tr("View Adjacency Matrix - ") + tempFileNameNoPath.last());
+    ed->setWindowTitle(tr("Inverse adjacency matrix saved as ") + fn);
     ed->show();
 
 
@@ -6941,7 +6933,7 @@ void MainWindow::slotDistancesMatrix(){
         return;
     }
     statusMessage( tr("Creating distance matrix. Please wait...") );
-    QString fn = dataDir + "socnetv-report-distance-matrix.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-distance-matrix.dat";
 
 
     askAboutWeights();
@@ -6955,12 +6947,9 @@ void MainWindow::slotDistancesMatrix(){
 
     //Open a text editor window for the new file created by graph class
     TextEditor *ed = new TextEditor(fn);
-    tempFileNameNoPath=fn.split( "/");
-
-    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-    statusMessage(tr("Distance matrix saved as: ")+tempFileNameNoPath.last());
+    statusMessage(tr("Distance matrix saved as: ")+fn);
 }
 
 
@@ -6977,7 +6966,7 @@ void MainWindow::slotGeodesicsMatrix(){
         return;
     }
 
-    QString fn = dataDir + "socnetv-report-sigmas-matrix.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-sigmas-matrix.dat";
 
     askAboutWeights();
 
@@ -6992,12 +6981,9 @@ void MainWindow::slotGeodesicsMatrix(){
     //Open a text editor window for the new file created by graph class
 
     TextEditor *ed = new TextEditor(fn);
-    tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-    statusMessage(tr("Matrix of geodesic path counts saved as: ")
-                  + tempFileNameNoPath.last());
+    statusMessage(tr("Matrix of geodesic path counts saved as: ") + fn);
 }
 
 
@@ -7086,7 +7072,7 @@ void MainWindow::slotEccentricity(){
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
     }
-    QString fn = dataDir + "socnetv-report-eccentricity.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-eccentricity.dat";
 
     askAboutWeights();
     statusMessage(  QString(tr(" Please wait...")));
@@ -7098,11 +7084,9 @@ void MainWindow::slotEccentricity(){
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-    statusMessage(tr("Eccentricity report saved as: ") + tempFileNameNoPath.last());
+    statusMessage(tr("Eccentricity report saved as: ") + fn );
 }
 
 
@@ -7185,7 +7169,7 @@ void MainWindow::slotWalksOfGivenLength(){
         return;
     }
 
-    QString fn = dataDir + "socnetv-report-number-of-walks.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-number-of-walks.dat";
      bool ok=false;
     createProgressBar();
 
@@ -7200,11 +7184,9 @@ void MainWindow::slotWalksOfGivenLength(){
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-    statusMessage(tr("Number of walks saved as: ") + tempFileNameNoPath.last());
+    statusMessage(tr("Number of walks saved as: ") + fn );
 }
 
 
@@ -7233,7 +7215,7 @@ void MainWindow::slotTotalWalks(){
             break;
         }
     }
-    QString fn = dataDir + "socnetv-report-total-number-of-walks.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-total-number-of-walks.dat";
     createProgressBar();
 
     int maxLength=activeNodes()-1;
@@ -7242,11 +7224,9 @@ void MainWindow::slotTotalWalks(){
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle( tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-    statusMessage("Total number of walks saved as: " + tempFileNameNoPath.last());
+    statusMessage("Total number of walks saved as: " + fn);
 
 }
 
@@ -7263,7 +7243,7 @@ void MainWindow::slotReachabilityMatrix(){
         return;
     }
 
-    QString fn = dataDir + "socnetv-report-reachability-matrix.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-reachability-matrix.dat";
 
     createProgressBar();
 
@@ -7272,11 +7252,9 @@ void MainWindow::slotReachabilityMatrix(){
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-    statusMessage("Reachability Matrix saved as: " + tempFileNameNoPath.last());
+    statusMessage("Reachability Matrix saved as: " + fn );
 }
 
 /**
@@ -7289,7 +7267,7 @@ void MainWindow::slotCliqueCensus(){
         statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
         return;
     }
-    QString fn = dataDir + "socnetv-report-clique-census.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-clique-census.dat";
     bool considerWeights=true;
 
     createProgressBar();
@@ -7299,11 +7277,9 @@ void MainWindow::slotCliqueCensus(){
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-    statusMessage("Clique Census saved as: " + tempFileNameNoPath.last());
+    statusMessage("Clique Census saved as: " + fn);
 }
 
 
@@ -7320,7 +7296,7 @@ void MainWindow::slotClusteringCoefficient (){
         statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
         return;
     }
-    QString fn = dataDir + "socnetv-report-clustering-coefficients.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-clustering-coefficients.dat";
     bool considerWeights=true;
 
     createProgressBar();
@@ -7330,11 +7306,9 @@ void MainWindow::slotClusteringCoefficient (){
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-    statusMessage("Clustering Coefficients saved as: " + tempFileNameNoPath.last());
+    statusMessage("Clustering Coefficients saved as: " + fn);
 }
 
 
@@ -7350,7 +7324,7 @@ void MainWindow::slotTriadCensus() {
         statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
         return;
     }
-    QString fn = dataDir + "socnetv-report-triad-census.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-triad-census.dat";
     bool considerWeights=true;
 
     createProgressBar();
@@ -7360,11 +7334,9 @@ void MainWindow::slotTriadCensus() {
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-    statusMessage("Triad Census saved as: " + tempFileNameNoPath.last());
+    statusMessage("Triad Census saved as: " + fn);
 }
 
 
@@ -7397,7 +7369,7 @@ void MainWindow::slotCentralityDegree(){
         }
 
     }
-    QString fn = dataDir + "socnetv-report-centrality-out-degree.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-out-degree.dat";
 
     createProgressBar();
 
@@ -7407,11 +7379,9 @@ void MainWindow::slotCentralityDegree(){
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-    statusMessage(tr("Out-Degree Centralities saved as: ") + tempFileNameNoPath.last());
+    statusMessage(tr("Out-Degree Centralities saved as: ") + fn);
 }
 
 
@@ -7494,7 +7464,7 @@ void MainWindow::slotCentralityCloseness(){
 
     askAboutWeights();
 
-    QString fn = dataDir + "socnetv-report-centrality_closeness.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_closeness.dat";
 
     createProgressBar();
 
@@ -7505,11 +7475,9 @@ void MainWindow::slotCentralityCloseness(){
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle( tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-    statusMessage(tr("Closeness Centralities  saved as: ") + tempFileNameNoPath.last());
+    statusMessage(tr("Closeness Centralities  saved as: ") + fn);
 }
 
 
@@ -7529,7 +7497,7 @@ void MainWindow::slotCentralityClosenessInfluenceRange(){
         return;
     }
 
-    QString fn = dataDir + "socnetv-report-centrality_closeness_influence_range.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_closeness_influence_range.dat";
 
 
     askAboutWeights();
@@ -7545,11 +7513,9 @@ void MainWindow::slotCentralityClosenessInfluenceRange(){
     statusMessage( QString(tr(" displaying file...")));
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-    statusMessage(tr("Influence Range Closeness Centrality saved as: ")+tempFileNameNoPath.last());
+    statusMessage(tr("Influence Range Closeness Centrality saved as: ")+fn);
 }
 
 
@@ -7565,7 +7531,7 @@ void MainWindow::slotCentralityBetweenness(){
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
     }
-    QString fn = dataDir + "socnetv-report-centrality_betweenness.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_betweenness.dat";
 
 
     askAboutWeights();
@@ -7580,11 +7546,9 @@ void MainWindow::slotCentralityBetweenness(){
     statusMessage( QString(tr(" displaying file...")));
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle(tempFileNameNoPath.last() );
     ed->show();
     QApplication::restoreOverrideCursor();
-    statusMessage(tr("Betweenness Centralities saved as: ")+tempFileNameNoPath.last());
+    statusMessage(tr("Betweenness Centralities saved as: ")+fn);
 }
 
 
@@ -7631,7 +7595,7 @@ void MainWindow::slotPrestigeDegree(){
         }
 
     }
-    QString fn = dataDir + "socnetv-report-degree-prestige.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-degree-prestige.dat";
 
     createProgressBar();
 
@@ -7641,11 +7605,9 @@ void MainWindow::slotPrestigeDegree(){
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle( tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-    statusMessage(tr("Degree Prestige (in-degree) saved as: ") + tempFileNameNoPath.last());
+    statusMessage(tr("Degree Prestige (in-degree) saved as: ") + fn);
 }
 
 
@@ -7660,7 +7622,7 @@ void MainWindow::slotPrestigePageRank(){
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
     }
-    QString fn = dataDir + "socnetv-report-prestige_pagerank.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-prestige_pagerank.dat";
 
 
     askAboutWeights();
@@ -7672,11 +7634,9 @@ void MainWindow::slotPrestigePageRank(){
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-    statusMessage(tr("PageRank Prestige indices saved as: ")+ tempFileNameNoPath.last());
+    statusMessage(tr("PageRank Prestige indices saved as: ")+ fn);
 }
 
 
@@ -7694,7 +7654,7 @@ void MainWindow::slotPrestigeProximity(){
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
     }
-    QString fn = dataDir + "socnetv-report-centrality_proximity_prestige.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_proximity_prestige.dat";
 
     askAboutWeights();
 
@@ -7707,11 +7667,9 @@ void MainWindow::slotPrestigeProximity(){
     statusMessage( QString(tr(" displaying file...")));
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle( tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-    statusMessage(tr("Proximity Prestige Centralities saved as: ")+ tempFileNameNoPath.last());
+    statusMessage(tr("Proximity Prestige Centralities saved as: ")+ fn);
 }
 
 
@@ -7756,7 +7714,7 @@ void MainWindow::slotCentralityInformation(){
             break;
         }
     }
-    QString fn = dataDir + "socnetv-report-centrality_information.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_information.dat";
     statusMessage(  QString(tr(" Please wait...")));
 
     askAboutWeights();
@@ -7765,11 +7723,9 @@ void MainWindow::slotCentralityInformation(){
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);
-    tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-    statusMessage(tr("Information Centralities saved as: ")+ tempFileNameNoPath.last());
+    statusMessage(tr("Information Centralities saved as: ")+ fn);
 }
 
 
@@ -7790,7 +7746,7 @@ void MainWindow::slotCentralityStress(){
         statusMessage(  QString(tr(" Nothing to do! Why don't you try creating something first?"))  );
         return;
     }
-    QString fn = dataDir + "socnetv-report-centrality_stress.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_stress.dat";
 
 
     askAboutWeights();
@@ -7803,11 +7759,9 @@ void MainWindow::slotCentralityStress(){
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-    statusMessage(tr("Stress Centralities saved as: ")+ tempFileNameNoPath.last());
+    statusMessage(tr("Stress Centralities saved as: ")+ fn);
 }
 
 
@@ -7823,7 +7777,7 @@ void MainWindow::slotCentralityPower(){
         statusMessage(  QString(tr(" Nothing to do! Why don't you try creating something first?"))  );
         return;
     }
-    QString fn = dataDir + "socnetv-report-centrality_power.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_power.dat";
 
 
     askAboutWeights();
@@ -7836,11 +7790,9 @@ void MainWindow::slotCentralityPower(){
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-    statusMessage(tr("Stress Centralities saved as: ")+ tempFileNameNoPath.last());
+    statusMessage(tr("Stress Centralities saved as: ")+ fn);
 }
 
 
@@ -7854,7 +7806,7 @@ void MainWindow::slotCentralityEccentricity(){
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
     }
-    QString fn = dataDir + "socnetv-report-centrality_eccentricity.dat";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality_eccentricity.dat";
 
 
     askAboutWeights();
@@ -7867,11 +7819,9 @@ void MainWindow::slotCentralityEccentricity(){
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
-    tempFileNameNoPath=fn.split( "/");
-    ed->setWindowTitle(tempFileNameNoPath.last());
     ed->show();
     QApplication::restoreOverrideCursor();
-    statusMessage(tr("Eccentricity Centralities saved as: ")+ tempFileNameNoPath.last());
+    statusMessage(tr("Eccentricity Centralities saved as: ")+ fn);
 }
 
 
@@ -8393,8 +8343,10 @@ void MainWindow::slotAntialiasing(bool toggle) {
 }
 
 /**
-*  turn progressbar on or off
-*/
+ * @brief MainWindow::slotShowProgressBar
+ * @param toggle
+ * turn progressbar on or off
+ */
 void MainWindow::slotShowProgressBar(bool toggle) {
     statusMessage( tr("Toggle progressbar..."));
     if (!toggle)  {
@@ -8408,14 +8360,18 @@ void MainWindow::slotShowProgressBar(bool toggle) {
 
 
 /**
-*  Turns debugging messages on or off
-*/
+ * @brief MainWindow::slotPrintDebug
+ * @param toggle
+ * Turns debugging messages on or off
+ */
 void MainWindow::slotPrintDebug(bool toggle){
     if (!toggle)   {
+        appSettings["printDebug"] = "false";
         printDebug=false;
         statusMessage( tr("Debug messages off.") );
     }
     else  {
+        appSettings["printDebug"] = "true";
         printDebug=true;
         statusMessage( tr("Debug messages on.") );
     }
@@ -8425,8 +8381,10 @@ void MainWindow::slotPrintDebug(bool toggle){
 
 
 /**
-*  Turns Toolbar on or off
-*/
+ * @brief MainWindow::slotShowToolBar
+ * @param toggle
+ * Turns Toolbar on or off
+ */
 void MainWindow::slotShowToolBar(bool toggle) {
     statusMessage( tr("Toggle toolbar..."));
     if (toggle== false)   {
@@ -8476,7 +8434,10 @@ void MainWindow::slotBackgroundImage(bool toggle) {
                     this, tr("Select one image"), getLastPath(),
                     tr("All (*);;PNG (*.png);;JPG (*.jpg)")
                     );
-        slotChangeBackgroundImage(m_fileName);
+        if (m_fileName.isNull() )
+            appSettings["initBackgroundImage"] = "";
+        appSettings["initBackgroundImage"] = m_fileName;
+        slotChangeBackgroundImage();
     }
 
 
@@ -8487,17 +8448,17 @@ void MainWindow::slotBackgroundImage(bool toggle) {
 /*
  * Enables/disables displaying a user-defined custom image in the background
  */
-void MainWindow::slotChangeBackgroundImage(QString path) {
+void MainWindow::slotChangeBackgroundImage() {
     statusMessage( tr("Toggle BackgroundImage..."));
-    if (path.isEmpty())   {
+    if (appSettings["initBackgroundImage"].isEmpty())   {
         statusMessage( tr("BackgroundImage off.") );
         graphicsWidget->setBackgroundBrush(
                      QBrush(QColor (appSettings["initBackgroundColor"] ) )
                     );
     }
     else   {
-        setLastPath(path);
-        graphicsWidget->setBackgroundBrush(QImage(path));
+        setLastPath(appSettings["initBackgroundImage"]);
+        graphicsWidget->setBackgroundBrush(QImage(appSettings["initBackgroundImage"]));
         graphicsWidget->setCacheMode(QGraphicsView::CacheBackground);
         statusMessage( tr("BackgroundImage on.") );
     }
@@ -8510,18 +8471,12 @@ void MainWindow::slotChangeBackgroundImage(QString path) {
 void MainWindow::slotOpenSettingsDialog() {
     qDebug() << "MW;:slotOpenSettingsDialog()";
 
-    // load settings
-    // ..
-
     // build dialog
-    lastUsedDirPath = getLastPath();
-    m_settingsDialog = new SettingsDialog(
-                appSettings,
-                this,
-                settingsFilePath,
-                &dataDir,
-                &initBackgroundColor,
-                &lastUsedDirPath);
+
+    m_settingsDialog = new SettingsDialog( appSettings, this);
+
+    connect( m_settingsDialog, &SettingsDialog::saveSettings,
+                     this, &MainWindow::saveSettings);
 
     connect( m_settingsDialog, &SettingsDialog::setProgressBars,
              this, &MainWindow::slotShowProgressBar);
@@ -8536,7 +8491,8 @@ void MainWindow::slotOpenSettingsDialog() {
              this, &MainWindow::slotAntialiasing);
 
     connect( m_settingsDialog, &SettingsDialog::setDebugMsgs,
-                     this, &MainWindow::slotPrintDebug);
+                         this, &MainWindow::slotPrintDebug);
+
 
     connect( m_settingsDialog, &SettingsDialog::setBgColor,
                      this, &MainWindow::slotBackgroundColor);
@@ -8548,7 +8504,7 @@ void MainWindow::slotOpenSettingsDialog() {
     // show settings dialog
     m_settingsDialog->exec();
 
-    statusMessage(dataDir );
+    qDebug ()<< appSettings["initBackgroundImage"] ;
 
 }
 
