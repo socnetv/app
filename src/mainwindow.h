@@ -395,7 +395,7 @@ private:
     QPrinter *printer;
     QToolBar *toolBar;
 
-    QGroupBox *editPanel, *statsPanel ;
+    QGroupBox *leftPanel, *rightPanel ;
 
     QComboBox *changeRelationCombo;
 

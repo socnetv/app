@@ -10554,19 +10554,24 @@ bool Graph::saveGraphToGraphMLFormat (
 
 
 
-
+/**
+ * @brief Graph::setShowLabels
+ * @param toggle
+ */
 void Graph::setShowLabels(bool toggle){
     initShowLabels=toggle;
 
 }
 
+
+/**
+ * @brief Graph::setShowNumbersInsideNodes
+ * @param toggle
+ */
 void Graph::setShowNumbersInsideNodes(bool toggle){
     initNumbersInsideNodes=toggle;
 
 }
-
-
-
 
 
 
@@ -10588,8 +10593,11 @@ void Graph::timerEvent(QTimerEvent *event) {
 
 
 
-/** 
-    The Spring Embedder model (Eades, 1984), part of the Force Directed Placement (FDP) family,
+
+/**
+ * @brief Graph::layoutForceDirectedSpringEmbedder
+ * @param maxIterations
+ *  The Spring Embedder model (Eades, 1984), part of the Force Directed Placement (FDP) family,
     assigns forces to all vertices and edges, as if nodes were electrically charged particles (Coulomb's law)
     and all edges were springs (i.e. Hooke's law).
 
@@ -10600,10 +10608,8 @@ void Graph::timerEvent(QTimerEvent *event) {
     we can -and we do- apply unrealistic forces in an unrealistic manner.
     For instance, instead of the forces described by Hooke's law,
     we will assume weaker logarithmic forces between far apart vertices...
-*/
-
-void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations,
-                                              const int cW, const int cH){
+ */
+void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations){
 
     int progressCounter=0;
     qreal dist = 0;
@@ -10611,8 +10617,6 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations,
     QPointF DV;
     qreal c4=0.1; //normalization factor for final displacement
 
-    canvasWidth = cW;
-    canvasHeight = cH;
 
     QList<Vertex*>::const_iterator v1;
     QList<Vertex*>::const_iterator v2;
@@ -10728,16 +10732,19 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations,
 }
 
 
+
 /**
-    Fruchterman and Reingold (1991) refined the Spring Embedder model by replacing the forces.
+ * @brief Graph::layoutForceDirectedFruchtermanReingold
+ * @param maxIterations
+ *  Fruchterman and Reingold (1991) refined the Spring Embedder model by replacing the forces.
     In this model, "the vertices behave as atomic particles or celestial bodies,
     exerting attractive and repulsive forces on one another." (ibid).
     Again, only vertices that are neighbours attract each other but, unlike Spring Embedder,
     all vertices repel each other.
     These forces induce movement. The algorithm might resemble molecular or planetary simulations,
     sometimes called n-body problems.
-*/
-void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations, const int cW, const int cH){
+ */
+void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
     int progressCounter=0;
     qreal dist = 0;
     qreal f_att, f_rep;
@@ -10748,8 +10755,6 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations, cons
     qreal C=0.9; //this is found experimentally
     // optimalDistance (or k) is the radius of the empty area around a  vertex -
     // we add vertexWidth to it
-    canvasWidth = cW;
-    canvasHeight = cH;
     qreal optimalDistance= C * computeOptimalDistance(V);
 
 
@@ -10864,8 +10869,8 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations, cons
  * @return qreal temperature
  */
 
-void Graph::layoutForceDirectedKamadaKawai(const int maxIterations, const int cW, const int cH){
-
+void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
+    Q_UNUSED(maxIterations);
     // compute dij for 1 <= i!=j <= n
 
     // compute lij for 1 <= i!=j <= n

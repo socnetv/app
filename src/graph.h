@@ -460,15 +460,12 @@ public:
                                              const bool inverseWeights,
                                              const bool dropIsolates);
 
-    void layoutForceDirectedSpringEmbedder(const int maxIterations,
-                                           const int cW, const int cH);
+    void layoutForceDirectedSpringEmbedder(const int maxIterations);
 
-    void layoutForceDirectedFruchtermanReingold(const int maxIterations,
-                                                const int cW, const int cH);
+    void layoutForceDirectedFruchtermanReingold(const int maxIterations);
 
 
-    void layoutForceDirectedKamadaKawai(const int maxIterations,
-                                        const int cW, const int cH);
+    void layoutForceDirectedKamadaKawai(const int maxIterations);
     /* CRAWLER */
     void terminateCrawlerThreads (QString reason);
 

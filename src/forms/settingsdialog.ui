@@ -284,7 +284,7 @@
          </property>
          <layout class="QFormLayout" name="formLayout_2">
           <item row="0" column="0">
-           <widget class="QCheckBox" name="leftPaneChkBox">
+           <widget class="QCheckBox" name="leftPanelChkBox">
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Statusbar&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable the application statusbar.&lt;/p&gt;&lt;p&gt;The statusbar is the widget at the bottom of the window, where messages appear. &lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
@@ -295,7 +295,7 @@
              <enum>Qt::LeftToRight</enum>
             </property>
             <property name="text">
-             <string>Show left pane (Controls)</string>
+             <string>Show left panel (Control)</string>
             </property>
             <property name="checked">
              <bool>true</bool>
@@ -303,7 +303,7 @@
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QCheckBox" name="rightPaneChkBox">
+           <widget class="QCheckBox" name="rightPanelChkBox">
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Statusbar&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable the application statusbar.&lt;/p&gt;&lt;p&gt;The statusbar is the widget at the bottom of the window, where messages appear. &lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
@@ -314,7 +314,7 @@
              <enum>Qt::LeftToRight</enum>
             </property>
             <property name="text">
-             <string>Show right pane (Statistics)</string>
+             <string>Show right panel (Statistics)</string>
             </property>
             <property name="checked">
              <bool>true</bool>

@@ -329,12 +329,15 @@ void GraphicsWidget::openEdgeContextMenu(){
 
 
 
-/** 
-    Called from each node when they move.
-    Updates
+/**
+ * @brief GraphicsWidget::nodeMoved
+ * @param number
+ * @param x
+ * @param y
+ * Called from each node when they move.
+ * Updates
     - node coordinates in activeGraph (via updateNodeCoords() signal)
-
-*/
+ */
 void GraphicsWidget::nodeMoved(int number, int x, int y){
     //qDebug ("GW: nodeMoved() for %i with %i, %i. Emitting updateNodeCoords() signal", number, x,y);
     emit updateNodeCoords(number, x, y);
@@ -1036,10 +1039,10 @@ void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
             }
 
       //update the scene width and height with that of the graphicsWidget
-      scene()->setSceneRect(0, 0, (qreal) ( width() -50 ), (qreal) ( height() -50 ) );
+      scene()->setSceneRect(0, 0, (qreal) ( w ), (qreal) ( h  ) );
       qDebug() << "GW::resizeEvent - scene: ("
                << scene()->width() << "," << scene()->height() << ")";
-      emit resized( width() -50,  height() -50);
+      emit resized( width() ,  height() );
 }
 
 

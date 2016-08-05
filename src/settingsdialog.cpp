@@ -66,6 +66,15 @@ SettingsDialog::SettingsDialog(
 
     ui->bgImageSelectEdit->setText((m_appSettings)["initBackgroundImage"]);
 
+    // window options
+
+    ui->leftPanelChkBox->setChecked(
+                ( appSettings["showLeftPanel"] == "true") ? true:false
+                );
+
+    ui->rightPanelChkBox->setChecked(
+                ( appSettings["showRightPanel"] == "true") ? true:false
+                );
 
     // signals
     connect (ui->dataDirSelectButton, &QToolButton::clicked,
@@ -92,10 +101,10 @@ SettingsDialog::SettingsDialog(
     connect (ui->showStatusBarChkBox, &QCheckBox::stateChanged,
              this, &SettingsDialog::setStatusBar);
 
-    connect (ui->leftPaneChkBox, &QCheckBox::stateChanged,
+    connect (ui->leftPanelChkBox, &QCheckBox::stateChanged,
              this, &SettingsDialog::setLeftPanel);
 
-    connect (ui->rightPaneChkBox, &QCheckBox::stateChanged,
+    connect (ui->rightPanelChkBox, &QCheckBox::stateChanged,
              this, &SettingsDialog::setRightPanel);
 
     connect ( ui->buttonBox, &QDialogButtonBox::accepted,
