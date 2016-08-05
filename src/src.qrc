@@ -74,5 +74,8 @@
         <file>images/rotateleft.png</file>
         <file>images/rotateright.png</file>
         <file>images/appsettings.png</file>
+        <file>images/spider.png</file>
+        <file>images/image.png</file>
+        <file>images/pdf.png</file>
     </qresource>
 </RCC>

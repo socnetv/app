@@ -69,9 +69,13 @@ void myMessageOutput (
         case QtDebugMsg:
             fprintf( stderr, "Debug: %s\n", localMsg.constData() );
             break;
+
+#if QT_VERSION >= 0x050500
         case QtInfoMsg:
             fprintf( stderr, "Info: %s\n", localMsg.constData() );
             break;
+
+#endif
 
         case QtWarningMsg:
             fprintf( stderr, "Warning: %s\n", localMsg.constData() );
@@ -268,7 +272,7 @@ QMap<QString,QString> MainWindow::initSettings(){
     qDebug() << "MW::initSettings - Final settings";
     QMap<QString, QString>::const_iterator i = appSettings.constBegin();
     while (i != appSettings.constEnd()) {
-        qInfo() << "setting: " <<  i.key() << " = " << i.value();
+        qDebug() << "setting: " <<  i.key() << " = " << i.value();
         ++i;
     }
 
@@ -396,18 +400,18 @@ void MainWindow::initActions(){
     fileSaveAs->setWhatsThis(tr("Save As\n\nSaves the actual network under a new filename"));
     connect(fileSaveAs, SIGNAL(triggered()), this, SLOT(slotFileSaveAs()));
 
-    exportBMP = new QAction(QIcon(":/images/save.png"), tr("&BMP..."), this);
+    exportBMP = new QAction(QIcon(":/images/image.png"), tr("&BMP..."), this);
     exportBMP->setStatusTip(tr("Export network to a BMP image"));
     exportBMP->setWhatsThis(tr("Export BMP \n\n Export network to a BMP image"));
     connect(exportBMP, SIGNAL(triggered()), this, SLOT(slotExportBMP()));
 
-    exportPNG = new QAction( QIcon(":/images/save.png"), tr("&PNG..."), this);
+    exportPNG = new QAction( QIcon(":/images/image.png"), tr("&PNG..."), this);
     exportPNG->setStatusTip(tr("Export network to a PNG image"));
     exportPNG->setWhatsThis(tr("Export PNG \n\n Export network to a PNG image"));
     connect(exportPNG, SIGNAL(triggered()), this, SLOT(slotExportPNG()));
 
 
-    exportPDF = new QAction( QIcon(":/images/save.png"), tr("&PDF..."), this);
+    exportPDF = new QAction( QIcon(":/images/pdf.png"), tr("&PDF..."), this);
     exportPDF->setStatusTip(tr("Export network to a PDF file"));
     exportPDF->setWhatsThis(tr("Export PDF\n\n Export network to a PDF document"));
     connect(exportPDF, SIGNAL(triggered()), this, SLOT(slotExportPDF()));
@@ -553,7 +557,7 @@ void MainWindow::initActions(){
 
 
 
-    webCrawlerAct = new QAction(QIcon(":/images/webcrawler.png"), tr("Web Crawler"),	this);
+    webCrawlerAct = new QAction(QIcon(":/images/spider.png"), tr("Web Crawler"),	this);
     webCrawlerAct->setShortcut(tr("Shift+C"));
     webCrawlerAct->setEnabled(true);
     webCrawlerAct->setStatusTip(tr("Creates a network from all links found in a given website"));
@@ -2656,7 +2660,7 @@ void MainWindow::initView() {
  * Creates helper widgets and sets the main layout of the MainWindow
  */
 void MainWindow::initWindowLayout() {
-    qInfo () << "MW::initWindowLayout";
+    qDebug () << "MW::initWindowLayout";
     int size = style()->pixelMetric(QStyle::PM_ToolBarIconSize);
     QSize iconSize(size, size);
 
@@ -2742,7 +2746,7 @@ void MainWindow::initWindowLayout() {
     //now set this as central widget of MW
     setCentralWidget(widget);
 
-    qInfo () << "MW::initWindowLayout - resize to 1280x900";
+    qDebug () << "MW::initWindowLayout - resize to 1280x900";
     this->resize(1280,900);
     //this->showMaximized();
     //set minimum size of graphicsWidget
@@ -2778,7 +2782,7 @@ void MainWindow::initWindowLayout() {
  */
 void MainWindow::resizeEvent( QResizeEvent * ){
 
-    qInfo ("MW resizeEvent():  window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
+    qDebug ("MW resizeEvent():  window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
     statusMessage(
                 QString(
                     tr("Window resized to (%1, %2)px. Canvas size: (%3, %4) px"))
