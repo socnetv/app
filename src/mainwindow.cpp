@@ -220,6 +220,8 @@ QMap<QString,QString> MainWindow::initSettings(){
     appSettings["antialiasing"] = "true";
     appSettings["dataDir"]= dataDir ;
     appSettings["lastUsedDirPath"]= dataDir ;
+    appSettings["showRightPanel"] = "true";
+    appSettings["showLeftPanel"] = "true";
 
     // Try to load settings configuration file
     // First check if our settings folder exist
@@ -258,7 +260,7 @@ QMap<QString,QString> MainWindow::initSettings(){
             QString line = in.readLine();
             if (!line.isEmpty()) {
                 setting = line.simplified().split('=');
-                qDebug() << "   setting: " <<  setting[0].simplified() << " = " << setting[1].simplified();
+                //qDebug() << "   setting: " <<  setting[0].simplified() << " = " << setting[1].simplified();
                 appSettings.insert (setting[0].simplified() , setting[1].simplified() );
             }
         }
@@ -2286,8 +2288,8 @@ void MainWindow::initToolBox(){
     editGrid -> setRowStretch(3,1);   //fix stretch
 
     //create a box with title
-    editPanel = new QGroupBox(tr("Control"));
-    editPanel -> setLayout (editGrid);
+    leftPanel = new QGroupBox(tr("Control Panel"));
+    leftPanel -> setLayout (editGrid);
 
     connect(nodeSizesByOutDegreeBx , SIGNAL(clicked(bool)),
             this, SLOT(slotLayoutNodeSizesByOutDegree(bool)));
@@ -2376,8 +2378,8 @@ void MainWindow::initToolBox(){
     propertiesGrid -> setRowStretch(12,1);   //fix stretch
 
     //create a panel with title
-    statsPanel = new QGroupBox(tr("Statistics"));
-    statsPanel -> setLayout (propertiesGrid);
+    rightPanel = new QGroupBox(tr("Statistics Panel"));
+    rightPanel -> setLayout (propertiesGrid);
 
 }
 
@@ -2732,10 +2734,10 @@ void MainWindow::initWindowLayout() {
     // Create a layout for the toolbox and the canvas.
     // This will be the layout of our MW central widget
     QGridLayout *layout = new QGridLayout;
-    layout->addWidget(editPanel, 0, 0, 2,1);
+    layout->addWidget(leftPanel, 0, 0, 2,1);
     layout->addWidget(graphicsWidget,0,1);
     layout->addLayout(zoomSliderLayout, 0, 2);
-    layout->addWidget(statsPanel, 0, 3,2,1);
+    layout->addWidget(rightPanel, 0, 3,2,1);
     layout->addLayout(rotateSliderLayout, 1, 1, 1, 1);
     layout->addWidget(resetSlidersBtn, 1, 2, 1, 1);
 
@@ -2746,6 +2748,15 @@ void MainWindow::initWindowLayout() {
     //now set this as central widget of MW
     setCentralWidget(widget);
 
+    // set panels visibility
+    if ( appSettings["showRightPanel"] == "false") {
+        slotShowRightPanel(false);
+    }
+
+    if ( appSettings["showLeftPanel"] == "false") {
+        slotShowLeftPanel(false);
+    }
+
     qDebug () << "MW::initWindowLayout - resize to 1280x900";
     this->resize(1280,900);
     //this->showMaximized();
@@ -2753,9 +2764,9 @@ void MainWindow::initWindowLayout() {
 
 //    graphicsWidget->setMinimumSize(
 //                (qreal)  ( this->width()
-//                           - editPanel->sizeHint().width()
+//                           - leftPanel->sizeHint().width()
 //                           - zoomSliderLayout->sizeHint().width()
-//                           - statsPanel ->sizeHint().width()
+//                           - rightPanel ->sizeHint().width()
 //                           - 40 ) ,
 //                (qreal) ( this->height()
 //                          - statusBar()->sizeHint().height()
@@ -2770,6 +2781,8 @@ void MainWindow::initWindowLayout() {
 //             << graphicsWidget->width() << ", "<< graphicsWidget->height()
 //             << " scene size: "
 //             << graphicsWidget->scene()->width() << ", " <<  graphicsWidget->scene()->height();
+
+
 }
 
 
@@ -5971,14 +5984,12 @@ void MainWindow::slotLayoutSpringEmbedder(){
 
         return;
     }
-    double maxWidth=graphicsWidget->width();
-    double maxHeight=graphicsWidget->height();
 
     statusMessage( tr("Embedding a spring-gravitational model on the network.... ")  );
     //scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
     createProgressBar();
-    activeGraph.layoutForceDirectedSpringEmbedder(100,maxWidth, maxHeight);
+    activeGraph.layoutForceDirectedSpringEmbedder(100);
     destroyProgressBar();
     QApplication::restoreOverrideCursor();
     //scene->setItemIndexMethod (QGraphicsScene::BspTreeIndex); //best when not moving items
@@ -6000,13 +6011,13 @@ void MainWindow::slotLayoutFruchterman(){
         statusMessage( tr("I am really sorry. You must really load a file first... ")  );
         return;
     }
-    double maxWidth=graphicsWidget->width();
-    double maxHeight=graphicsWidget->height();
+
     statusMessage( tr("Embedding a repelling-attracting forces model on the network.... ")  );
     //scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
     createProgressBar();
-    activeGraph.layoutForceDirectedFruchtermanReingold(100,maxWidth, maxHeight);
+    activeGraph.layoutForceDirectedFruchtermanReingold(100);
+
     destroyProgressBar();
     QApplication::restoreOverrideCursor();
     //scene->setItemIndexMethod (QGraphicsScene::BspTreeIndex); //best when not moving items
@@ -7804,7 +7815,7 @@ void MainWindow::createProgressBar(int max, QString msg){
             max = activeGraph.vertices();
         }
 
-    if ( ( appSettings["showProgressBar"] == "true"  && max > 200 )
+    if ( ( appSettings["showProgressBar"] == "true"  && max > 100 )
          || activeEdges() > 2000 ){
         progressDialog= new QProgressDialog(msg, "Cancel", 0, max, this);
         progressDialog -> setWindowModality(Qt::WindowModal);
@@ -7825,9 +7836,9 @@ void MainWindow::destroyProgressBar(){
     qDebug () << "MainWindow::destroyProgressBar";
     QApplication::restoreOverrideCursor();
     qDebug () << "MainWindow::destroyProgressBar - check if a progressbar exists";
-    if ( ( appSettings["showProgressBar"] == "true" || activeEdges() > 2000 ) ) {
+    if ( ( appSettings["showProgressBar"] == "true" || activeEdges() > 2000 ) && progressDialog) {
         qDebug () << "MainWindow::destroyProgressBar - progressbar exists. Dstroying";
-        progressDialog->deleteLater();
+        //progressDialog->hide();
     }
 
 
@@ -8477,14 +8488,14 @@ void MainWindow::slotShowLeftPanel(bool toggle) {
     statusMessage( tr("Toggle left panel..."));
 
     if (toggle == false)   {
-        editPanel->hide();
+        leftPanel->hide();
         appSettings["showLeftPanel"] = "false";
-        statusMessage( tr("Status bar off.") );
+        statusMessage( tr("Left Panel off.") );
     }
     else   {
-        editPanel->show();
+        leftPanel->show();
         appSettings["showLeftPanel"] = "true";
-        statusMessage( tr("Status bar on.") );
+        statusMessage( tr("Left Panel on.") );
     }
 
 }
@@ -8498,14 +8509,14 @@ void MainWindow::slotShowRightPanel(bool toggle) {
     statusMessage( tr("Toggle left panel..."));
 
     if (toggle == false)   {
-        statsPanel->hide();
+        rightPanel->hide();
         appSettings["showRightPanel"] = "false";
-        statusMessage( tr("Status bar off.") );
+        statusMessage( tr("Right Panel off.") );
     }
     else   {
-        statsPanel->show();
+        rightPanel->show();
         appSettings["showRightPanel"] = "true";
-        statusMessage( tr("Status bar on.") );
+        statusMessage( tr("Right Panel on.") );
     }
 
 }
