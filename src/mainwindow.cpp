@@ -2458,7 +2458,7 @@ void MainWindow::initWindowLayout() {
     zoomInBtn->setShortcut(Qt::CTRL + Qt::Key_Plus);
     zoomInBtn->setToolTip(tr("Zoom in (Ctrl++)"));
     zoomInBtn->setStatusTip(tr("Zooms inside the actual network."));
-    zoomInBtn->setWhatsThis(tr("Zoom In.\n\nZooms in. What else did you expect?"));
+    zoomInBtn->setWhatsThis(tr("Zoom In.\n\nZooms in the actual network"));
     zoomInBtn->setAutoRepeat(true);
     zoomInBtn->setAutoRepeatInterval(33);
     zoomInBtn->setAutoRepeatDelay(0);
@@ -2470,7 +2470,7 @@ void MainWindow::initWindowLayout() {
     zoomOutBtn->setShortcut(Qt::CTRL + Qt::Key_Minus);
     zoomOutBtn->setToolTip(tr("Zoom out (Ctrl+-)"));
     zoomOutBtn->setStatusTip(tr("Zooms out of the actual network."));
-    zoomOutBtn->setWhatsThis(tr("Zoom out.\n\nZooms out. What else did you expect?"));
+    zoomOutBtn->setWhatsThis(tr("Zoom out.\n\nZooms out the actual network"));
     zoomOutBtn->setAutoRepeat(true);
     zoomOutBtn->setAutoRepeatInterval(33);
     zoomOutBtn->setAutoRepeatDelay(0);
@@ -2481,6 +2481,10 @@ void MainWindow::initWindowLayout() {
     zoomSlider->setMinimum(0);
     zoomSlider->setMaximum(500);
     zoomSlider->setValue(250);
+    zoomSlider->setToolTip(tr("Zoom slider: Drag up to zoom in. \n"
+                                "Drag down to zoom out. "));
+    zoomSlider->setWhatsThis(tr("Zoom slider: Drag up to zoom in. \n"
+                                "Drag down to zoom out. "));
     zoomSlider->setTickPosition(QSlider::TicksBothSides);
 
     // Zoom slider layout
@@ -2494,12 +2498,18 @@ void MainWindow::initWindowLayout() {
     rotateLeftBtn->setAutoRepeat(true);
     rotateLeftBtn->setShortcut(Qt::CTRL + Qt::Key_Left);
     rotateLeftBtn->setIcon(QPixmap(":/images/rotateleft.png"));
+    rotateLeftBtn->setToolTip(tr("Rotate counterclockwise (Ctrl+Left Arrow)"));
+    rotateLeftBtn->setStatusTip(tr("Rotate counterclockwise (Ctrl+Left Arrow)"));
+    rotateLeftBtn->setWhatsThis(tr("Rotates counterclockwise (Ctrl+Left Arrow)"));
     rotateLeftBtn->setIconSize(iconSize);
 
     rotateRightBtn = new QToolButton;
     rotateRightBtn->setAutoRepeat(true);
     rotateRightBtn->setShortcut(Qt::CTRL + Qt::Key_Right);
     rotateRightBtn ->setIcon(QPixmap(":/images/rotateright.png"));
+    rotateRightBtn->setToolTip(tr("Rotate clockwise (Ctrl+Right Arrow)"));
+    rotateRightBtn->setStatusTip(tr("Rotate clockwise (Ctrl+Right Arrow)"));
+    rotateRightBtn->setWhatsThis(tr("Rotates clockwise (Ctrl+Right Arrow)"));
     rotateRightBtn ->setIconSize(iconSize);
 
     rotateSlider = new QSlider;
@@ -2508,6 +2518,10 @@ void MainWindow::initWindowLayout() {
     rotateSlider->setMaximum(180);
     rotateSlider->setTickInterval(5);
     rotateSlider->setValue(0);
+    rotateSlider->setToolTip(tr("Rotate slider: Drag to left to rotate clockwise. \n"
+                                "Drag to right to rotate counterclockwise. "));
+    rotateSlider->setWhatsThis(tr("Rotate slider: Drag to left to rotate clockwise. "
+                                "Drag to right to rotate counterclockwise. "));
     rotateSlider->setTickPosition(QSlider::TicksBothSides);
 
     // Rotate slider layout
@@ -2520,7 +2534,9 @@ void MainWindow::initWindowLayout() {
     resetSlidersBtn->setText(tr("Reset"));
     resetSlidersBtn->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_0);
     resetSlidersBtn->setToolTip(tr("Reset zoom and rotation to zero"));
-    resetSlidersBtn ->setIcon(QPixmap(":/images/reset.png"));
+    resetSlidersBtn->setWhatsThis(tr("Reset zoom and rotation to zero"));
+    resetSlidersBtn->setIcon(QPixmap(":/images/reset.png"));
+    resetSlidersBtn ->setIconSize(iconSize);
     resetSlidersBtn->setEnabled(true);
 
     // Create a layout for the toolbox and the canvas.
