@@ -317,6 +317,8 @@ public slots:
     void slotShowProgressBar(bool toggle);
     void slotShowToolBar(bool toggle);
     void slotShowStatusBar(bool toggle);
+    void slotShowLeftPanel(bool toggle);
+    void slotShowRightPanel(bool toggle);
     void slotBackgroundImage(bool toggle);
     void slotPrintDebug(bool toggle);
 

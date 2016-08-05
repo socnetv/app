@@ -54,6 +54,8 @@ signals:
     void setDebugMsgs(bool);
     void setBgColor(QColor);
     void setBgImage();
+    void setRightPanel(bool);
+    void setLeftPanel(bool);
     void saveSettings();
 private:
      QMap<QString, QString> &m_appSettings ;

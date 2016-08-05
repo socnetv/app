@@ -92,7 +92,11 @@ SettingsDialog::SettingsDialog(
     connect (ui->showStatusBarChkBox, &QCheckBox::stateChanged,
              this, &SettingsDialog::setStatusBar);
 
+    connect (ui->leftPaneChkBox, &QCheckBox::stateChanged,
+             this, &SettingsDialog::setLeftPanel);
 
+    connect (ui->rightPaneChkBox, &QCheckBox::stateChanged,
+             this, &SettingsDialog::setRightPanel);
 
     connect ( ui->buttonBox, &QDialogButtonBox::accepted,
               this, &SettingsDialog::validateSettings );

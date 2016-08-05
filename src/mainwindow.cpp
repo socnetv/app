@@ -8372,48 +8372,10 @@ void MainWindow::slotPrintDebug(bool toggle){
 
 
 
+
 /**
- * @brief MainWindow::slotShowToolBar
+ * @brief MainWindow::slotBackgroundImage
  * @param toggle
- * Turns Toolbar on or off
- */
-void MainWindow::slotShowToolBar(bool toggle) {
-    statusMessage( tr("Toggle toolbar..."));
-    if (toggle== false)   {
-        toolBar->hide();
-        appSettings["showToolBar"] = "false";
-        statusMessage( tr("Toolbar off.") );
-    }
-    else  {
-        toolBar->show();
-        appSettings["showToolBar"] = "true";
-        statusMessage( tr("Toolbar on.") );
-    }
-}
-
-
-
-/**
-*  Turns Statusbar on or off
-*/
-void MainWindow::slotShowStatusBar(bool toggle) {
-    statusMessage( tr("Toggle statusbar..."));
-
-    if (toggle == false)   {
-        statusBar()->hide();
-        appSettings["showStatusBar"] = "false";
-        statusMessage( tr("Status bar off.") );
-    }
-    else   {
-        statusBar()->show();
-        appSettings["showStatusBar"] = "true";
-        statusMessage( tr("Status bar on.") );
-    }
-
-}
-
-
-/*
  * Enables/disables displaying a user-defined custom image in the background
  */
 void MainWindow::slotBackgroundImage(bool toggle) {
@@ -8462,6 +8424,98 @@ void MainWindow::slotChangeBackgroundImage() {
 
 
 
+
+/**
+ * @brief MainWindow::slotShowToolBar
+ * @param toggle
+ * Turns Toolbar on or off
+ */
+void MainWindow::slotShowToolBar(bool toggle) {
+    statusMessage( tr("Toggle toolbar..."));
+    if (toggle== false)   {
+        toolBar->hide();
+        appSettings["showToolBar"] = "false";
+        statusMessage( tr("Toolbar off.") );
+    }
+    else  {
+        toolBar->show();
+        appSettings["showToolBar"] = "true";
+        statusMessage( tr("Toolbar on.") );
+    }
+}
+
+
+
+
+/**
+ * @brief MainWindow::slotShowStatusBar
+ * @param toggle
+ * Turns Statusbar on or off
+ */
+void MainWindow::slotShowStatusBar(bool toggle) {
+    statusMessage( tr("Toggle statusbar..."));
+
+    if (toggle == false)   {
+        statusBar()->hide();
+        appSettings["showStatusBar"] = "false";
+        statusMessage( tr("Status bar off.") );
+    }
+    else   {
+        statusBar()->show();
+        appSettings["showStatusBar"] = "true";
+        statusMessage( tr("Status bar on.") );
+    }
+
+}
+
+
+/**
+ * @brief MainWindow::slotShowLeftPanel
+ * @param toggle
+ */
+void MainWindow::slotShowLeftPanel(bool toggle) {
+    statusMessage( tr("Toggle left panel..."));
+
+    if (toggle == false)   {
+        editPanel->hide();
+        appSettings["showLeftPanel"] = "false";
+        statusMessage( tr("Status bar off.") );
+    }
+    else   {
+        editPanel->show();
+        appSettings["showLeftPanel"] = "true";
+        statusMessage( tr("Status bar on.") );
+    }
+
+}
+
+
+/**
+ * @brief MainWindow::slotShowRightPanel
+ * @param toggle
+ */
+void MainWindow::slotShowRightPanel(bool toggle) {
+    statusMessage( tr("Toggle left panel..."));
+
+    if (toggle == false)   {
+        statsPanel->hide();
+        appSettings["showRightPanel"] = "false";
+        statusMessage( tr("Status bar off.") );
+    }
+    else   {
+        statsPanel->show();
+        appSettings["showRightPanel"] = "true";
+        statusMessage( tr("Status bar on.") );
+    }
+
+}
+
+
+
+/**
+ * @brief MainWindow::slotOpenSettingsDialog
+ * Open Settings dialog
+ */
 void MainWindow::slotOpenSettingsDialog() {
     qDebug() << "MW;:slotOpenSettingsDialog()";
 
@@ -8472,21 +8526,14 @@ void MainWindow::slotOpenSettingsDialog() {
     connect( m_settingsDialog, &SettingsDialog::saveSettings,
                      this, &MainWindow::saveSettings);
 
-    connect( m_settingsDialog, &SettingsDialog::setProgressBars,
-             this, &MainWindow::slotShowProgressBar);
-
-    connect( m_settingsDialog, &SettingsDialog::setToolBar,
-             this, &MainWindow::slotShowToolBar);
-
-    connect( m_settingsDialog, &SettingsDialog::setStatusBar,
-             this, &MainWindow::slotShowStatusBar);
-
-    connect( m_settingsDialog, &SettingsDialog::setAntialiasing,
-             this, &MainWindow::slotAntialiasing);
-
     connect( m_settingsDialog, &SettingsDialog::setDebugMsgs,
                          this, &MainWindow::slotPrintDebug);
 
+    connect( m_settingsDialog, &SettingsDialog::setProgressBars,
+             this, &MainWindow::slotShowProgressBar);
+
+    connect( m_settingsDialog, &SettingsDialog::setAntialiasing,
+             this, &MainWindow::slotAntialiasing);
 
     connect( m_settingsDialog, &SettingsDialog::setBgColor,
                      this, &MainWindow::slotBackgroundColor);
@@ -8494,6 +8541,17 @@ void MainWindow::slotOpenSettingsDialog() {
     connect( m_settingsDialog, &SettingsDialog::setBgImage,
                      this, &MainWindow::slotChangeBackgroundImage);
 
+    connect( m_settingsDialog, &SettingsDialog::setToolBar,
+             this, &MainWindow::slotShowToolBar);
+
+    connect( m_settingsDialog, &SettingsDialog::setStatusBar,
+             this, &MainWindow::slotShowStatusBar);
+
+    connect( m_settingsDialog, &SettingsDialog::setLeftPanel,
+             this, &MainWindow::slotShowLeftPanel);
+
+    connect( m_settingsDialog, &SettingsDialog::setRightPanel,
+             this, &MainWindow::slotShowRightPanel);
 
     // show settings dialog
     m_settingsDialog->exec();
