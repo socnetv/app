@@ -30,6 +30,7 @@
 #include <QColorDialog>
 #include <QTextStream>
 #include <QMap>
+#include <QtDebug>
 
 SettingsDialog::SettingsDialog(
         QMap<QString, QString> &appSettings,
@@ -107,6 +108,9 @@ SettingsDialog::SettingsDialog(
     connect (ui->rightPanelChkBox, &QCheckBox::stateChanged,
              this, &SettingsDialog::setRightPanel);
 
+    connect (ui->boxRadio, &QRadioButton::clicked,
+             this, &SettingsDialog::getNodeShape);
+
     connect ( ui->buttonBox, &QDialogButtonBox::accepted,
               this, &SettingsDialog::validateSettings );
 }
@@ -157,8 +161,9 @@ void SettingsDialog::getBgColor(){
 }
 
 
-/*
- *
+
+/**
+ * @brief SettingsDialog::getBgImage
  */
 void SettingsDialog::getBgImage(){
     QString m_bgImage = QFileDialog::getOpenFileName(
@@ -176,6 +181,34 @@ void SettingsDialog::getBgImage(){
 
 }
 
+
+/**
+ * @brief SettingsDialog::getNodeShape
+ */
+void SettingsDialog::getNodeShape(){
+
+    QString nodeShape;
+    if ( ui->boxRadio->isChecked () ){
+       nodeShape  = "box";
+    }
+    else if ( ui->circleRadio->isChecked() ){
+       nodeShape  = "circle";
+    }
+    else if ( ui->diamondRadio->isChecked() ){
+       nodeShape  = "diamond";
+    }
+    else if ( ui->ellipseRadio->isChecked() ){
+        nodeShape  = "ellipse";
+    }
+    else if ( ui->triangleRadio->isChecked() ){
+        nodeShape  = "triangle";
+    }
+    else {
+        nodeShape = "box";
+    }
+    qDebug()<< "SettingsDialog::getNodeShape() - new default shape " << nodeShape;
+    emit setNodeShape(nodeShape, 0);
+}
 
 SettingsDialog::~SettingsDialog()
 {

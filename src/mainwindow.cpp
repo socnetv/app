@@ -499,7 +499,7 @@ void MainWindow::initActions(){
                 tr("Creates a random network either of G(n, p) model or G(n,M) model.\n") +
                 tr("In the first, edges are created with Bernoulli trials (probability p).\n") +
                 tr("In the second, a graph of exactly M edges is created."));
-    connect(createErdosRenyiRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateRandomErdosRenyi()));
+    connect(createErdosRenyiRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotRandomErdosRenyiDialog()));
 
     createLatticeNetworkAct = new QAction( QIcon(":/images/net1.png"), tr("Ring Lattice"), this);
     createLatticeNetworkAct -> setShortcut(
@@ -509,7 +509,7 @@ void MainWindow::initActions(){
     createLatticeNetworkAct->setWhatsThis(
                 tr("Ring Lattice \n\n")+
                 tr("A ring lattice is a graph with N nodes each connected to d neighbors, d / 2 on each side."));
-    connect(createLatticeNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateRandomRingLattice()));
+    connect(createLatticeNetworkAct, SIGNAL(triggered()), this, SLOT(slotRandomRingLattice()));
 
     createRegularRandomNetworkAct = new QAction(QIcon(":/images/net.png"), tr("d-Regular"), this);
     createRegularRandomNetworkAct -> setShortcut(
@@ -519,7 +519,7 @@ void MainWindow::initActions(){
     createRegularRandomNetworkAct->setWhatsThis(
                 tr("d-Regular \n\n") +
                 tr("Creates a random network where each node have the same number of neighbours, aka the same degree d "));
-    connect(createRegularRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateRegularRandomNetwork()));
+    connect(createRegularRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotRandomRegularNetwork()));
 
     createGaussianRandomNetworkAct = new QAction(tr("Gaussian"),	this);
     createGaussianRandomNetworkAct -> setShortcut(
@@ -527,7 +527,7 @@ void MainWindow::initActions(){
                     );
     createGaussianRandomNetworkAct->setStatusTip(tr("Creates a Gaussian distributed random network"));
     createGaussianRandomNetworkAct->setWhatsThis(tr("Gaussian \n\nCreates a random network of Gaussian distribution"));
-    connect(createGaussianRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateRandomGaussian()));
+    connect(createGaussianRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotRandomGaussian()));
 
     createSmallWorldRandomNetworkAct = new QAction(QIcon(":/images/sw.png"), tr("Small World"),	this);
     createSmallWorldRandomNetworkAct-> setShortcut(
@@ -539,7 +539,7 @@ void MainWindow::initActions(){
                 tr("Small World \n\n") +
                 tr("A Small World, according to the Watts and Strogatz model, "
                    "is a random network with short average path lengths and high clustering coefficient."));
-    connect(createSmallWorldRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateRandomSmallWorld()));
+    connect(createSmallWorldRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotRandomSmallWorldDialog()));
 
     createScaleFreeRandomNetworkAct = new QAction(
                 QIcon(":/images/scalefree.png"), tr("Scale-free"),	this);
@@ -555,7 +555,8 @@ void MainWindow::initActions(){
                 tr("A scale-free network is a network whose degree distribution follows a power law."
                    " This method generates random scale-free networks according to the "
                    " Barabási–Albert (BA) model using a preferential attachment mechanism."));
-    connect(createScaleFreeRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotCreateRandomScaleFree()));
+    connect(createScaleFreeRandomNetworkAct, SIGNAL(triggered()),
+            this, SLOT(slotRandomScaleFreeDialog()));
 
 
 
@@ -607,7 +608,7 @@ void MainWindow::initActions(){
     propertiesNodeAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_P));
     propertiesNodeAct->setStatusTip(tr("Open node properties"));
     propertiesNodeAct->setWhatsThis(tr("Node Properties\n\nOpens node properties to edit label, size, color, shape etc"));
-    connect(propertiesNodeAct, SIGNAL(triggered()), this, SLOT(slotChangeNodeProperties()));
+    connect(propertiesNodeAct, SIGNAL(triggered()), this, SLOT(slotNodePropertiesDialog()));
 
     changeAllNodesSizeAct = new QAction(QIcon(":/images/resize.png"), tr("Change all Nodes Size"),	this);
     changeAllNodesSizeAct->setStatusTip(tr("This option lets you change the size of all nodes"));
@@ -1182,7 +1183,7 @@ void MainWindow::initActions(){
     nextRelationAct = new QAction(QIcon(":/images/nextrelation.png"),
                                   tr("Next Relation"),  this);
     nextRelationAct->setShortcut(Qt::ALT + Qt::Key_Right);
-    nextRelationAct->setToolTip(tr("Goto next graph relation (Ctrl+Right)"));
+    nextRelationAct->setToolTip(tr("Goto next graph relation (ALT+Right)"));
     nextRelationAct->setStatusTip(tr("Loads the next relation of the network (if any)."));
     nextRelationAct->setWhatsThis(tr("Next Relation\n\nLoads the next relation of the network (if any)"));
 
@@ -1190,7 +1191,7 @@ void MainWindow::initActions(){
                                       tr("Previous Relation"),  this);
     prevRelationAct->setShortcut(Qt::ALT + Qt::Key_Left);
     prevRelationAct->setToolTip(
-                tr("Goto previous graph relation (Ctrl+Left)"));
+                tr("Goto previous graph relation (ALT+Left)"));
     prevRelationAct->setStatusTip(
                 tr("Loads the previous relation of the network (if any)."));
     prevRelationAct->setWhatsThis(
@@ -1950,6 +1951,7 @@ void MainWindow::initToolBar(){
     toolBar -> addWidget (labelRelationSelect);
     toolBar -> addAction (prevRelationAct);
     changeRelationCombo = new QComboBox;
+    changeRelationCombo->setMinimumWidth(180);
     changeRelationCombo->setCurrentIndex(0);
     toolBar -> addWidget(changeRelationCombo);
     toolBar -> addAction (nextRelationAct);
@@ -4540,17 +4542,17 @@ void MainWindow::slotRecreateDataSet (QString m_fileName) {
 
 
 /**
- * @brief MainWindow::slotCreateRandomErdosRenyi
+ * @brief MainWindow::slotRandomErdosRenyiDialog
  * Shows the Erdos-Renyi network creation dialog
  */
-void MainWindow::slotCreateRandomErdosRenyi(){
+void MainWindow::slotRandomErdosRenyiDialog(){
 
     statusMessage( "Creating a random symmetric network... ");
 
     m_randErdosRenyiDialog = new RandErdosRenyiDialog(this);
 
     connect( m_randErdosRenyiDialog, &RandErdosRenyiDialog::userChoices,
-             this, &MainWindow::createRandomNetErdos );
+             this, &MainWindow::slotRandomErdosRenyi );
 
     m_randErdosRenyiDialog->exec();
 
@@ -4560,24 +4562,24 @@ void MainWindow::slotCreateRandomErdosRenyi(){
 
 
 /**
- * @brief MainWindow::createRandomNetErdos
+ * @brief MainWindow::slotRandomErdosRenyi
  * @param newNodes
  * @param model
  * @param edges
  * @param eprob
  * @param mode
  * @param diag
- * Calls activeGraph.createRandomNetErdos () to create a symmetric network
+ * Calls activeGraph.slotRandomErdosRenyi () to create a symmetric network
  * Edge existance is controlled by a user specified possibility.
  */
-void MainWindow::createRandomNetErdos( const int newNodes,
+void MainWindow::slotRandomErdosRenyi( const int newNodes,
                                        const QString model,
                                        const int edges,
                                        const float eprob,
                                        const QString mode,
                                        const bool diag)
 {
-    qDebug() << "MW::createRandomNetErdos()";
+    qDebug() << "MW::slotRandomErdosRenyi()";
 
     statusMessage( tr("Erasing any existing network."));
     initNet();
@@ -4650,9 +4652,10 @@ void MainWindow::createRandomNetErdos( const int newNodes,
 
 
 /**
-    Creates a pseudo-random network where every node has the same degree
-*/
-void MainWindow::slotCreateRegularRandomNetwork(){
+ * @brief MainWindow::slotRandomRegularNetwork
+ * Creates a pseudo-random network where every node has the same degree
+ */
+void MainWindow::slotRandomRegularNetwork(){
     bool ok;
 
     statusMessage( "Creating a pseudo-random network where each node has the same degree... ");
@@ -4713,34 +4716,45 @@ void MainWindow::slotCreateRegularRandomNetwork(){
 
 
 
-void MainWindow::slotCreateRandomGaussian(){
+void MainWindow::slotRandomGaussian(){
     graphChanged();
 
 }
 
 
 
-
-void MainWindow::slotCreateRandomScaleFree() {
-    qDebug() << "MW;:slotCreateRandomScaleFree()";
+/**
+ * @brief MainWindow::slotRandomScaleFreeDialog
+ */
+void MainWindow::slotRandomScaleFreeDialog() {
+    qDebug() << "MW;:slotRandomScaleFreeDialog()";
     m_randScaleFreeDialog = new RandScaleFreeDialog(this);
 
     connect( m_randScaleFreeDialog, &RandScaleFreeDialog::userChoices,
-             this, &MainWindow::createScaleFreeNetwork);
+             this, &MainWindow::slotRandomScaleFree);
 
     m_randScaleFreeDialog->exec();
 
 }
 
 
-void MainWindow::createScaleFreeNetwork ( const int &nodes,
+/**
+ * @brief MainWindow::slotRandomScaleFree
+ * @param nodes
+ * @param power
+ * @param initialNodes
+ * @param edgesPerStep
+ * @param zeroAppeal
+ * @param mode
+ */
+void MainWindow::slotRandomScaleFree ( const int &nodes,
                                           const int &power,
                                           const int &initialNodes,
                                           const int &edgesPerStep,
                                           const float &zeroAppeal,
                                           const QString &mode)
 {
-    qDebug() << "MW;:createScaleFreeNetwork()";
+    qDebug() << "MW;:slotRandomScaleFree()";
     statusMessage( tr("Erasing any existing network. "));
     initNet();
     statusMessage( tr("Creating small world network. Please wait..."));
@@ -4795,27 +4809,40 @@ void MainWindow::createScaleFreeNetwork ( const int &nodes,
 }
 
 
-void MainWindow::slotCreateRandomSmallWorld()
+
+/**
+ * @brief MainWindow::slotRandomSmallWorldDialog
+ */
+void MainWindow::slotRandomSmallWorldDialog()
 {
-    qDebug() << "MW;:slotCreateRandomSmallWorld()";
+    qDebug() << "MW::slotRandomSmallWorldDialog()";
     m_randSmallWorldDialog = new RandSmallWorldDialog(this);
 
     connect( m_randSmallWorldDialog, &RandSmallWorldDialog::userChoices,
-             this, &MainWindow::createSmallWorldNetwork);
+             this, &MainWindow::slotRandomSmallWorld);
 
 
     m_randSmallWorldDialog->exec();
 
 }
 
-void MainWindow::createSmallWorldNetwork (const int &nodes,
+
+/**
+ * @brief MainWindow::slotrandomSmallWorldNetwork
+ * @param nodes
+ * @param degree
+ * @param beta
+ * @param mode
+ * @param diag
+ */
+void MainWindow::slotRandomSmallWorld(const int &nodes,
                                             const int &degree,
                                             const float &beta,
                                             const QString &mode,
                                             const bool &diag)
 {
     Q_UNUSED(diag);
-    qDebug() << "MW;:createSmallWorldNetwork()";
+    qDebug() << "MW::slotRandomSmallWorld()";
     statusMessage( tr("Erasing any existing network. "));
     initNet();
     statusMessage( tr("Creating small world network. Please wait..."));
@@ -4862,11 +4889,13 @@ void MainWindow::createSmallWorldNetwork (const int &nodes,
 
 
 
+
 /**
-    Creates a lattice network, i.e. a connected network where every node
+ * @brief MainWindow::slotRandomRingLattice
+ * Creates a lattice network, i.e. a connected network where every node
     has the same degree and is Edgeed with its neighborhood.
-*/
-void MainWindow::slotCreateRandomRingLattice(){
+ */
+void MainWindow::slotRandomRingLattice(){
     bool ok;
     statusMessage( "You have selected to create a ring lattice network. ");
     int newNodes=( QInputDialog::getInt(
@@ -5276,9 +5305,13 @@ void MainWindow::slotRemoveNode() {
 }
 
 
-void MainWindow::slotChangeNodeProperties() {
 
-    qDebug() << "MW::slotChangeNodeProperties()";
+/**
+ * @brief MainWindow::slotNodePropertiesDialog
+ */
+void MainWindow::slotNodePropertiesDialog() {
+
+    qDebug() << "MW::slotNodePropertiesDialog()";
 //    if (!fileLoaded && !networkModified )  {
     if (!activeGraph.vertices())  {
         QMessageBox::critical(
@@ -5349,7 +5382,14 @@ void MainWindow::slotChangeNodeProperties() {
 }
 
 
-
+/**
+ * @brief MainWindow::slotNodeProperties
+ * @param label
+ * @param size
+ * @param value
+ * @param color
+ * @param shape
+ */
 void MainWindow::slotNodeProperties( const QString label, const int size,
                                      const QString value, const QColor color,
                                      const QString shape) {
@@ -8064,6 +8104,18 @@ void MainWindow::slotChangeAllNodesShape() {
 }
 
 
+/**
+ * @brief MainWindow::slotNodeShape
+ * @param shape
+ * Calls Graph::setAllVerticesShape(QString)
+ */
+void MainWindow::slotNodeShape(const QString shape, const int vertex) {
+    qDebug() << "MW::slotNodeShape() - vertex " << vertex << " new shape " << shape;
+    if (vertex == 0)
+        activeGraph.setAllVerticesShape(shape);
+    else
+        activeGraph.setVertexShape(vertex, shape);
+}
 
 /**
 *  Change size of all nodes' numbers (outside ones)
@@ -8600,6 +8652,10 @@ void MainWindow::slotOpenSettingsDialog() {
 
     connect( m_settingsDialog, &SettingsDialog::setRightPanel,
              this, &MainWindow::slotShowRightPanel);
+
+    connect( m_settingsDialog, &SettingsDialog::setNodeShape,
+             this, &MainWindow::slotNodeShape);
+
 
     // show settings dialog
     m_settingsDialog->exec();

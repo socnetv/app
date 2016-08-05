@@ -183,32 +183,37 @@ public slots:
     void slotViewAdjacencyMatrix();
     void slotShowDataSetSelectDialog();
     void slotRecreateDataSet(QString);
-    void slotCreateRandomErdosRenyi();
-    void createRandomNetErdos( const int N,
+
+    void slotRandomErdosRenyiDialog();
+    void slotRandomErdosRenyi( const int N,
                                const QString model,
                                const int edges,
                                const float eprob,
                                const QString mode,
                                const bool diag) ;
-    void slotCreateRegularRandomNetwork();
-    void slotCreateRandomGaussian();
-    void slotCreateRandomRingLattice();
-    void slotCreateRandomScaleFree();
+    void slotRandomRegularNetwork();
 
-    void createScaleFreeNetwork (const int &nodes,
+    void slotRandomGaussian();
+
+    void slotRandomScaleFreeDialog();
+
+    void slotRandomScaleFree(const int &nodes,
                                  const int &power,
                                  const int &initialNodes,
                                  const int &edgesPerStep,
                                  const float &zeroAppeal,
                                  const QString &mode);
 
-    void slotCreateRandomSmallWorld();
+    void slotRandomSmallWorldDialog();
 
-    void createSmallWorldNetwork (const int &nodes,
+    void slotRandomSmallWorld  (const int &nodes,
                                    const int &degree,
                                    const float &beta,
                                    const QString &mode,
                                    const bool &diag);
+
+    void slotRandomRingLattice();
+
     void slotShowWebCrawlerDialog();
     void slotWebCrawl(QString, int, int, bool, bool);
 
@@ -223,10 +228,11 @@ public slots:
     void slotFindNode();
     void slotAddEdge();
     void slotRemoveNode();
+    void slotRemoveEdge();
+    void slotNodePropertiesDialog();
     void slotNodeProperties( const QString, const int, const QString,
                              const QColor, const QString);
-    void slotRemoveEdge();
-    void slotChangeNodeProperties();
+    void slotNodeShape(const QString shape, const int vertex = 0);
     void slotChangeEdgeLabel();
     void slotChangeEdgeColor();
     void slotChangeEdgeWeight();
@@ -297,6 +303,7 @@ public slots:
     void slotDisplayNumbersInsideNodes(bool toggle);
     void slotChangeAllNodesSize();
     void slotChangeAllNodesShape();
+
     void slotChangeNumbersSize();
     void slotChangeLabelsSize();
     void slotDrawEdgesThickAsWeights();

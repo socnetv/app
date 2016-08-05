@@ -44,6 +44,7 @@ public:
     void getBgColor();
     void getBgImage();
     void validateSettings();
+    void getNodeShape();
     ~SettingsDialog();
 
 signals:
@@ -56,6 +57,7 @@ signals:
     void setBgImage();
     void setRightPanel(bool);
     void setLeftPanel(bool);
+    void setNodeShape(const QString, const long int);
     void saveSettings();
 private:
      QMap<QString, QString> &m_appSettings ;

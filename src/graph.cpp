@@ -840,6 +840,7 @@ QString Graph::vertexShape(const int &v1){
 }
 
 void Graph::setAllVerticesShape(const QString shape) {
+    qDebug() << "Graph::setAllVerticesShape - shape " <<shape;
     setInitVertexShape(shape);
     QList<Vertex*>::const_iterator it;
     for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
