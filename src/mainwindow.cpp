@@ -4091,7 +4091,9 @@ bool MainWindow::slotExportPNG(){
     QPainter p;
     p.begin(&picture);
     p.setFont(QFont ("Helvetica", 10, QFont::Normal, false));
-    p.drawText(5,10,"SocNetV: "+tempFileNameNoPath.last());
+    QImage logo(":/images/socnetv-logo.png");
+    p.drawImage(5,5, logo);
+    p.drawText(7,47,tempFileNameNoPath.last());
     p.end();
     qDebug("slotExportPNG: checking filename");
     if (fn.contains("png", Qt::CaseInsensitive) ) {
@@ -4142,7 +4144,9 @@ bool MainWindow::slotExportBMP(){
     qDebug("slotExportBMP: adding logo");
     p.begin(&picture);
     p.setFont(QFont ("Helvetica", 10, QFont::Normal, false));
-    p.drawText(5,10,"SocNetV: "+tempFileNameNoPath.last());
+    QImage logo(":/images/socnetv-logo.png");
+    p.drawImage(5,5, logo);
+    p.drawText(7,47,tempFileNameNoPath.last());
     p.end();
     qDebug("slotExportBMP: checking file");
     if (fn.contains(format, Qt::CaseInsensitive) ) {
