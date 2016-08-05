@@ -2567,7 +2567,7 @@ void MainWindow::initWindowLayout() {
 
     qDebug () << "MW::initWindowLayout - resize to 1280x900";
     this->resize(1280,900);
-    //this->showMaximized();
+    this->showMaximized();
     //set minimum size of graphicsWidget
 
 }
