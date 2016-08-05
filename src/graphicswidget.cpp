@@ -47,6 +47,7 @@
 GraphicsWidget::GraphicsWidget( QGraphicsScene *sc, MainWindow* par)  : QGraphicsView ( sc,par) {
     setScene(sc);
     secondDoubleClick=false;
+    transformationActive = false;
     moving=0;
     m_nodeLabel="";
     m_zoomIndex=250;
@@ -970,79 +971,115 @@ void GraphicsWidget::zoomIn(int level){
     if (m_zoomIndex > 500) {
         m_zoomIndex=500;
     }
+    if (m_zoomIndex < 0) {
+        m_zoomIndex = 0;
+    }
     emit zoomChanged(m_zoomIndex);
 }
 
 
 
+
+
+/**
+ * @brief GraphicsWidget::changeMatrixScale
+ * @param value
+ * Initiated from MW zoomSlider and rotateSlider widgets
+ */
+void GraphicsWidget::changeMatrixScale(int value) {
+    transformationActive = true;
+    qreal scaleFactor = pow(qreal(2), ( value - 250) / qreal(50) );
+    m_currentScaleFactor = scaleFactor ;
+    qDebug() << "GW: changeMatrixScale(): value " <<  value
+             << " m_currentScaleFactor " << m_currentScaleFactor
+              << " m_currentRotationAngle " << m_currentRotationAngle;
+
+    resetMatrix();
+    scale(m_currentScaleFactor, m_currentScaleFactor);
+    rotate(m_currentRotationAngle);
+
+}
+
+
+
 void GraphicsWidget::rotateLeft(){
-    m_currentRotationAngle-=10;
+    m_currentRotationAngle-=5;
     emit rotationChanged(m_currentRotationAngle);
 }
 
 void GraphicsWidget::rotateRight() {
-    m_currentRotationAngle+=10;
+    m_currentRotationAngle+=5;
     emit rotationChanged(m_currentRotationAngle);
 }
 
 
+/**
+ * @brief GraphicsWidget::changeMatrixRotation
+ * @param angle
+ */
+void GraphicsWidget::changeMatrixRotation(int angle){
+    transformationActive = true;
+    m_currentRotationAngle = angle;
+    qDebug() << "GW: changeMatrixRotation(): angle " <<  angle
+              << " m_currentRotationAngle " << m_currentRotationAngle
+              << " m_currentScaleFactor " << m_currentScaleFactor;
+    resetMatrix();
+    scale(m_currentScaleFactor, m_currentScaleFactor);
+    rotate(angle);
+
+}
 
 /**
-      Initiated from MW zoomSlider and rotateSlider widgets
-*/
-void GraphicsWidget::changeMatrixScale(int value) {
-    qreal scaleFactor = pow(qreal(2), ( value - 250) / qreal(50) );
-    qDebug() << "GW: changeMatrixScale(): value " <<  value
-             << " new scaleFactor " << scaleFactor;
-    m_currentScaleFactor = scaleFactor ;
-    resetMatrix();
-    scale(m_currentScaleFactor, m_currentScaleFactor);
-    rotate(m_currentRotationAngle);
-
-    //setResetButtonEnabled();
-
+ * @brief GraphicsWidget::reset
+ * Resets the transformation matrix to the identity matrix ( default zoom and scale )
+ */
+void GraphicsWidget::reset() {
+    m_currentRotationAngle=0;
+    m_currentScaleFactor = 1;
+    m_zoomIndex=250;
+    emit zoomChanged(m_zoomIndex);
+    emit rotationChanged(m_currentRotationAngle);
 }
 
 
-
-void GraphicsWidget::changeMatrixRotation(int angle){
-    qDebug() << "GW: changeMatrixRotation(): angle " <<  angle;
-    m_currentRotationAngle = angle;
-    resetMatrix();
-    scale(m_currentScaleFactor, m_currentScaleFactor);
-    rotate(m_currentRotationAngle);
-
-}
-
-
-/** Resizing the view causes a repositioning of the nodes maintaining the same pattern*/
+/**
+ * @brief GraphicsWidget::resizeEvent
+ * @param e
+ * Resizing the view causes a repositioning of the nodes maintaining proportions
+ */
 void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
-   // Q_UNUSED(e);
-            qDebug () << "GW::resizeEvent";
-            int w=e->size().width();
-            int h=e->size().height();
-            int w0=e->oldSize().width();
-            int h0=e->oldSize().height();
-            qDebug () << "GW::resizeEvent"
-                      << " old w " << w0 << " old h " << h0
-                     << " new w " << w << " new h " << h;
-            qreal fX=  (double)(w)/(double)(w0);
-            qreal fY= (double)(h)/(double)(h0);
-            foreach (QGraphicsItem *item, scene()->items()) {
-                qDebug ("GW::resizeEvent - item will move by %f, %f", fX, fY);
-                if (Node *node = qgraphicsitem_cast<Node *>(item) ) {
-                    qDebug("GW::resizeEvent - Node original position %f, %f", item->x(), item->y());
-                    qDebug("GW::resizeEvent - Node will move to %f, %f",item->x()*fX, item->y()*fY);
-                    node->setPos(mapToScene(item->x()*fX, item->y()*fY));
-                }
-                else 	item->setPos(mapToScene(item->x()*fX, item->y()*fY));
-            }
+    if (transformationActive)  {
+        transformationActive = false;
+        return;
+    }
+    int w=e->size().width();
+    int h=e->size().height();
+    int w0=e->oldSize().width();
+    int h0=e->oldSize().height();
+    qreal fX=  (double)(w)/(double)(w0);
+    qreal fY= (double)(h)/(double)(h0);
 
-      //update the scene width and height with that of the graphicsWidget
-      scene()->setSceneRect(0, 0, (qreal) ( w ), (qreal) ( h  ) );
-      qDebug() << "GW::resizeEvent - scene: ("
-               << scene()->width() << "," << scene()->height() << ")";
-      emit resized( width() ,  height() );
+    qDebug () << "GW::resizeEvent - old size: ("
+              << w0 << "," << h0
+              << ") - new size: (" << w << "," << h << ")"
+              << " fX,fY " <<  fX << ","<< fY;
+    foreach (QGraphicsItem *item, scene()->items()) {
+        if (Node *node = qgraphicsitem_cast<Node *>(item) ) {
+            qDebug()<< "GW::resizeEvent - Node " << node->nodeNumber()
+                    << " original position ("
+                    <<  item->x() << "," << item->y()
+                     << ") - will move to ("
+                     << item->x()*fX << ", " << item->y()*fY << ")" ;
+            node->setPos(mapToScene(item->x()*fX, item->y()*fY));
+        }
+        //else 	item->setPos(mapToScene(item->x()*fX, item->y()*fY));
+    }
+
+    //update the scene width and height with that of the graphicsWidget
+    scene()->setSceneRect(0, 0, (qreal) ( w ), (qreal) ( h  ) );
+    qDebug() << "GW::resizeEvent - scene: ("
+             << scene()->width() << "," << scene()->height() << ")";
+    emit resized( w ,  h );
 }
 
 

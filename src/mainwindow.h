@@ -420,7 +420,6 @@ private:
     QPushButton *toolBoxLayoutByIndexButton, *toolBoxLayoutForceDirectedButton;
     QToolButton *zoomInBtn,*zoomOutBtn,*rotateLeftBtn,*rotateRightBtn, *resetSlidersBtn ;
     QSlider *zoomSlider, *rotateSlider;
-    QSpinBox *rotateSpinBox ;
 
     QAction *fileNew, *fileOpen, *fileSave, *fileSaveAs,*fileClose, *printNetwork,*fileQuit;
     QAction *exportBMP, *exportPNG, *exportPajek, *exportPDF, *exportDL, *exportGW, *exportSM, *exportList;

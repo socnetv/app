@@ -128,6 +128,7 @@ public slots:
     void rotateRight();
     void changeMatrixScale(const int value);
     void changeMatrixRotation(int angle);
+    void reset();
 
 signals:
     void userDoubleClicked(int, QPointF);
@@ -158,7 +159,7 @@ private:
     QPointF startPoint, endPoint;
     Node *firstNode, *secondNode, *markedNode1, *markedEdgeSource;
     Node *markedEdgeTarget, *tempNode ;
-
+    bool transformationActive;
 };
 
 #endif

@@ -77,5 +77,6 @@
         <file>images/spider.png</file>
         <file>images/image.png</file>
         <file>images/pdf.png</file>
+        <file>images/reset.png</file>
     </qresource>
 </RCC>

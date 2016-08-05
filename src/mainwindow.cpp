@@ -1181,14 +1181,14 @@ void MainWindow::initActions(){
 
     nextRelationAct = new QAction(QIcon(":/images/nextrelation.png"),
                                   tr("Next Relation"),  this);
-    nextRelationAct->setShortcut(Qt::CTRL + Qt::Key_Right);
+    nextRelationAct->setShortcut(Qt::ALT + Qt::Key_Right);
     nextRelationAct->setToolTip(tr("Goto next graph relation (Ctrl+Right)"));
     nextRelationAct->setStatusTip(tr("Loads the next relation of the network (if any)."));
     nextRelationAct->setWhatsThis(tr("Next Relation\n\nLoads the next relation of the network (if any)"));
 
     prevRelationAct = new QAction(QIcon(":/images/prevrelation.png"),
                                       tr("Previous Relation"),  this);
-    prevRelationAct->setShortcut(Qt::CTRL + Qt::Key_Left);
+    prevRelationAct->setShortcut(Qt::ALT + Qt::Key_Left);
     prevRelationAct->setToolTip(
                 tr("Goto previous graph relation (Ctrl+Left)"));
     prevRelationAct->setStatusTip(
@@ -1942,14 +1942,6 @@ void MainWindow::initToolBar(){
     QLabel *labelRotateSpinBox= new QLabel;
     labelRotateSpinBox ->setText(tr("Rotation:"));
 
-    rotateSpinBox = new QSpinBox;
-    rotateSpinBox ->setRange(-360, 360);
-    rotateSpinBox->setSingleStep(1);
-    rotateSpinBox->setValue(0);
-
-    toolBar -> addWidget(labelRotateSpinBox);
-    toolBar -> addWidget(rotateSpinBox);
-
     toolBar -> addSeparator();
 
     //Create relation select widget
@@ -2384,224 +2376,17 @@ void MainWindow::initToolBox(){
 }
 
 
-//Called from MW, when user selects something in the Geodesics selectbox
-// of toolbox
-void MainWindow::toolBoxAnalysisGeodesicsSelectChanged(int selectedIndex) {
-    qDebug()<< "MW::toolBoxAnalysisGeodesicsSelectChanged "
-               "selected text index: " << selectedIndex;
-    switch(selectedIndex){
-    case 0:
-        break;
-    case 1:
-        slotGraphDistance();
-        break;
-    case 2:
-        slotAverageGraphDistance();
-        break;
-    case 3:
-        slotDistancesMatrix();
-        break;
-    case 4:
-        slotGeodesicsMatrix();
-        break;
-    case 5:
-        slotEccentricity();
-        break;
-    case 6:
-        slotDiameter();
-        break;
-    };
-
-
-}
 
 
 
-
-//Called from MW, when user selects something in the Connectivity selectbox
-// of toolbox
-void MainWindow::toolBoxAnalysisConnectivitySelectChanged(int selectedIndex) {
-    qDebug()<< "MW::toolBoxAnalysisConnectivitySelectChanged "
-               "selected text index: " << selectedIndex;
-    switch(selectedIndex){
-    case 0:
-        break;
-    case 1:
-        qDebug()<< "Connectedness";
-        slotConnectedness();
-        break;
-    case 2:
-        qDebug()<< "Walks of given length";
-        slotWalksOfGivenLength();
-        break;
-    case 3:
-        qDebug() << "Total Walks selected";
-        slotTotalWalks();
-        break;
-    case 4:
-        qDebug() << "Reachability Matrix";
-        slotReachabilityMatrix();
-        break;
-    };
-
-}
 
 
 
 
 /**
- * @brief MainWindow::toolBoxAnalysisClusterabilitySelectChanged
- * @param selectedIndex
- * Called from MW, when user selects something in the Clusterability selectbox
- * of toolbox
+ * @brief MainWindow::initStatusBar
+ * Initializes the status bar
  */
-void MainWindow::toolBoxAnalysisClusterabilitySelectChanged(int selectedIndex) {
-    qDebug()<< "MW::toolBoxAnalysisClusterabilitySelectChanged "
-               "selected text index: " << selectedIndex;
-    switch(selectedIndex){
-    case 0:
-        break;
-    case 1:
-        qDebug()<< "Cliques";
-        slotCliqueCensus();
-        break;
-    case 2:
-        qDebug()<< "Clustering Coefficient";
-        slotClusteringCoefficient();
-        break;
-    case 3:
-        qDebug() << "Triad Census";
-        slotTriadCensus();
-        break;
-    };
-
-}
-
-
-
-
-
-/**
- * @brief MainWindow::toolBoxAnalysisProminenceSelectChanged
- * @param selectedIndex
- * Called from MW, when user selects something in the Prominence selectbox
- *  of toolbox
- */
-void MainWindow::toolBoxAnalysisProminenceSelectChanged(int selectedIndex) {
-    qDebug()<< "MW::toolBoxAnalysisProminenceSelectChanged "
-               "selected text index: " << selectedIndex;
-    switch(selectedIndex){
-    case 0:
-        break;
-    case 1:
-        slotCentralityDegree();
-        break;
-    case 2:
-        slotCentralityCloseness();
-        break;
-    case 3:
-        slotCentralityClosenessInfluenceRange();
-        break;
-    case 4:
-        slotCentralityBetweenness();
-        break;
-    case 5:
-        slotCentralityStress();
-        break;
-    case 6:
-        slotCentralityEccentricity();
-        break;
-    case 7:
-        slotCentralityPower();
-        break;
-    case 8:
-        slotCentralityInformation();
-        break;
-    case 9:
-        slotPrestigeDegree();
-        break;
-    case 10:
-        slotPrestigePageRank();
-        break;
-    case 11:
-        slotPrestigeProximity();
-        break;
-    };
-
-
-}
-
-void MainWindow::toolBoxLayoutByIndexButtonPressed(){
-    qDebug()<<"MW::toolBoxLayoutByIndexButtonPressed()";
-    int selectedIndex = toolBoxLayoutByIndexSelect->currentIndex();
-    QString selectedIndexText = toolBoxLayoutByIndexSelect -> currentText();
-    int selectedLayoutType = toolBoxLayoutByIndexTypeSelect ->currentIndex();
-    qDebug() << " selected index is " << selectedIndexText << " : " << selectedIndex
-             << " selected layout type is " << selectedLayoutType;
-    switch(selectedIndex) {
-    case 0:
-        break;
-    case 1:
-        if (selectedLayoutType==0)
-            slotLayoutCircularRandom();
-        else if (selectedLayoutType==1)
-            slotLayoutRandom();
-        break;
-    default:
-        if (selectedLayoutType==0)
-            slotLayoutCircularByProminenceIndex(selectedIndexText);
-        else if (selectedLayoutType==1)
-            slotLayoutLevelByProminenceIndex(selectedIndexText);
-        else if (selectedLayoutType==2){
-            slotLayoutNodeSizesByProminenceIndex(selectedIndexText);
-            // re-init other options for node sizes...
-            nodeSizesByOutDegreeAct->setChecked(false);
-            nodeSizesByOutDegreeBx->setChecked(false);
-            nodeSizesByInDegreeAct->setChecked(false);
-            nodeSizesByInDegreeBx->setChecked(false);
-        }
-        break;
-    };
-}
-
-
-
-void MainWindow::toolBoxLayoutForceDirectedButtonPressed(){
-    qDebug()<<"MW::toolBoxLayoutForceDirectedButtonPressed()";
-    int selectedModel = toolBoxLayoutForceDirectedSelect->currentIndex();
-    QString selectedModelText = toolBoxLayoutForceDirectedSelect -> currentText();
-    qDebug() << " selected index is " << selectedModelText << " : "
-             << selectedModel;
-
-    switch(selectedModel) {
-    case 0:
-        break;
-    case 1:
-        slotLayoutSpringEmbedder();
-        break;
-    case 2:
-        slotLayoutFruchterman();
-        break;
-    default:
-        toolBoxLayoutForceDirectedSelect->setCurrentIndex(0);
-        break;
-    };
-}
-
-
-
-//FIXME this is a bug: Graph calls GraphicsWidget which calls this to call Graph!
-void MainWindow::updateNodeCoords(int nodeNumber, int x, int y){
-    //	qDebug("MW: updateNodeCoords() for %i with x %i and y %i", nodeNumber, x, y);
-    activeGraph.updateVertCoords(nodeNumber, x, y);
-}
-
-
-
-
-/**
-    Initializes the status bar
-*/
 void MainWindow::initStatusBar() {
     statusBarDuration=3000;
     statusMessage( tr("Ready."));
@@ -2644,7 +2429,9 @@ void MainWindow::initView() {
     scene->setItemIndexMethod(QGraphicsScene::BspTreeIndex); //NoIndex (for anime) | BspTreeIndex
 
     graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-    //graphicsWidget->setResizeAnchor(QGraphicsView::AnchorViewCenter);
+    //graphicsWidget->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+    //graphicsWidget->setTransformationAnchor(QGraphicsView::NoAnchor);
+    graphicsWidget->setResizeAnchor(QGraphicsView::AnchorViewCenter);
 
     // sets dragging the mouse over the scene while the left mouse button is pressed.
     graphicsWidget->setDragMode(QGraphicsView::RubberBandDrag);
@@ -2694,7 +2481,7 @@ void MainWindow::initWindowLayout() {
     zoomSlider->setMinimum(0);
     zoomSlider->setMaximum(500);
     zoomSlider->setValue(250);
-    zoomSlider->setTickPosition(QSlider::TicksRight);
+    zoomSlider->setTickPosition(QSlider::TicksBothSides);
 
     // Zoom slider layout
     QVBoxLayout *zoomSliderLayout = new QVBoxLayout;
@@ -2705,21 +2492,23 @@ void MainWindow::initWindowLayout() {
     // Rotate slider
     rotateLeftBtn = new QToolButton;
     rotateLeftBtn->setAutoRepeat(true);
-    rotateLeftBtn->setAutoRepeat(false);
+    rotateLeftBtn->setShortcut(Qt::CTRL + Qt::Key_Left);
     rotateLeftBtn->setIcon(QPixmap(":/images/rotateleft.png"));
     rotateLeftBtn->setIconSize(iconSize);
 
     rotateRightBtn = new QToolButton;
-    rotateRightBtn->setAutoRepeat(false);
+    rotateRightBtn->setAutoRepeat(true);
+    rotateRightBtn->setShortcut(Qt::CTRL + Qt::Key_Right);
     rotateRightBtn ->setIcon(QPixmap(":/images/rotateright.png"));
     rotateRightBtn ->setIconSize(iconSize);
 
     rotateSlider = new QSlider;
     rotateSlider->setOrientation(Qt::Horizontal);
-    rotateSlider->setMinimum(-360);
-    rotateSlider->setMaximum(360);
+    rotateSlider->setMinimum(-180);
+    rotateSlider->setMaximum(180);
+    rotateSlider->setTickInterval(5);
     rotateSlider->setValue(0);
-    rotateSlider->setTickPosition(QSlider::TicksBelow);
+    rotateSlider->setTickPosition(QSlider::TicksBothSides);
 
     // Rotate slider layout
     QHBoxLayout *rotateSliderLayout = new QHBoxLayout;
@@ -2728,8 +2517,11 @@ void MainWindow::initWindowLayout() {
     rotateSliderLayout->addWidget(rotateRightBtn );
 
     resetSlidersBtn = new QToolButton;
-    resetSlidersBtn->setText(tr("0"));
-    resetSlidersBtn->setEnabled(false);
+    resetSlidersBtn->setText(tr("Reset"));
+    resetSlidersBtn->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_0);
+    resetSlidersBtn->setToolTip(tr("Reset zoom and rotation to zero"));
+    resetSlidersBtn ->setIcon(QPixmap(":/images/reset.png"));
+    resetSlidersBtn->setEnabled(true);
 
     // Create a layout for the toolbox and the canvas.
     // This will be the layout of our MW central widget
@@ -2762,48 +2554,10 @@ void MainWindow::initWindowLayout() {
     //this->showMaximized();
     //set minimum size of graphicsWidget
 
-//    graphicsWidget->setMinimumSize(
-//                (qreal)  ( this->width()
-//                           - leftPanel->sizeHint().width()
-//                           - zoomSliderLayout->sizeHint().width()
-//                           - rightPanel ->sizeHint().width()
-//                           - 40 ) ,
-//                (qreal) ( this->height()
-//                          - statusBar()->sizeHint().height()
-//                          - toolBar->sizeHint().height()
-//                          - menuBar()->sizeHint().height()
-//                          - rotateSliderLayout->sizeHint().height()
-//                          -40 )
-//                );
-//    qDebug() << "MW initMainWindow(): window size: "
-//             << this->width() << ", "<< this->height()
-//             << " graphicsWidget size: "
-//             << graphicsWidget->width() << ", "<< graphicsWidget->height()
-//             << " scene size: "
-//             << graphicsWidget->scene()->width() << ", " <<  graphicsWidget->scene()->height();
-
-
 }
 
 
 
-
-
-/**
- * @brief MainWindow::resizeEvent
- * Resizes the scene when the window is resized.
- */
-void MainWindow::resizeEvent( QResizeEvent * ){
-
-    qDebug ("MW resizeEvent():  window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",this->width(),this->height(), graphicsWidget->width(),graphicsWidget->height(), graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
-    statusMessage(
-                QString(
-                    tr("Window resized to (%1, %2)px. Canvas size: (%3, %4) px"))
-                .arg(width()).arg(height())
-                .arg(graphicsWidget->width()).arg(graphicsWidget->height())
-                );
-
-}
 
 
 
@@ -2847,6 +2601,26 @@ void MainWindow::initSignalSlots() {
 
     connect( graphicsWidget, SIGNAL(updateNodeCoords(int, int, int)),
              this, SLOT( updateNodeCoords(int, int, int) ) );
+
+
+    connect( graphicsWidget, SIGNAL(zoomChanged(const int &)),
+             zoomSlider, SLOT( setValue(const int &)) );
+
+    connect(zoomSlider, SIGNAL(valueChanged(const int &)), graphicsWidget, SLOT(changeMatrixScale(const int &)));
+
+    connect( zoomInBtn, SIGNAL(clicked()), graphicsWidget, SLOT( zoomIn() ) );
+    connect( zoomOutBtn, SIGNAL(clicked()), graphicsWidget, SLOT( zoomOut() ) );
+
+    connect( graphicsWidget, SIGNAL(rotationChanged(const int &)),
+             rotateSlider, SLOT( setValue(const int &)) );
+
+    connect(rotateSlider, SIGNAL(valueChanged(const int &)), graphicsWidget, SLOT(changeMatrixRotation(const int &)));
+
+    connect(rotateLeftBtn, SIGNAL(clicked()), graphicsWidget, SLOT(rotateLeft()));
+    connect(rotateRightBtn, SIGNAL(clicked()), graphicsWidget, SLOT(rotateRight()));
+
+    connect(resetSlidersBtn, SIGNAL(clicked()), graphicsWidget, SLOT(reset()));
+
 
 
     // Signals from activeGraph to graphicsWidget
@@ -2935,6 +2709,8 @@ void MainWindow::initSignalSlots() {
              this, &MainWindow::slotLayoutNodeSizesByInDegree );
 
 
+
+
     //signals and slots inside MainWindow
     connect( addNodeBt,SIGNAL(clicked()), this, SLOT( addNode() ) );
 
@@ -2944,23 +2720,6 @@ void MainWindow::initSignalSlots() {
 
     connect( removeEdgeBt,SIGNAL(clicked()), this, SLOT( slotRemoveEdge() ) );
 
-    connect( graphicsWidget, SIGNAL(zoomChanged(const int &)),
-             zoomSlider, SLOT( setValue(const int &)) );
-
-    connect(zoomSlider, SIGNAL(valueChanged(const int &)), graphicsWidget, SLOT(changeMatrixScale(const int &)));
-
-    connect( zoomInBtn, SIGNAL(clicked()), graphicsWidget, SLOT( zoomIn() ) );
-    connect( zoomOutBtn, SIGNAL(clicked()), graphicsWidget, SLOT( zoomOut() ) );
-
-    connect( graphicsWidget, SIGNAL(rotationChanged(const int &)),
-             rotateSlider, SLOT( setValue(const int &)) );
-
-    connect(rotateSlider, SIGNAL(valueChanged(const int &)), graphicsWidget, SLOT(changeMatrixRotation(const int &)));
-
-    connect(rotateLeftBtn, SIGNAL(clicked()), graphicsWidget, SLOT(rotateLeft()));
-    connect(rotateRightBtn, SIGNAL(clicked()), graphicsWidget, SLOT(rotateRight()));
-
-    //connect( rotateSpinBox, SIGNAL(valueChanged(int)), graphicsWidget, SLOT( rot(int) ) );
 
     connect( nextRelationAct, SIGNAL(triggered()), this, SLOT( nextRelation() ) );
     connect( prevRelationAct, SIGNAL(triggered()), this, SLOT( prevRelation() ) );
@@ -3141,6 +2900,7 @@ void MainWindow::initNet(){
 /**
  * @brief MainWindow::statusMessage
  * @param message
+ * Convenience method to show a message in the status bar, with the given duration
  * Slot called by Graph::statusMessage to display some message to the user
  */
 void MainWindow::statusMessage(const QString message){
@@ -3148,9 +2908,11 @@ void MainWindow::statusMessage(const QString message){
 }
 
 
+
 /**
  * @brief MainWindow::showMessageToUser
  * @param message
+ * Convenience method
  */
 void MainWindow::showMessageToUser(const QString message) {
     QMessageBox::information(this, tr("Info"),
@@ -3159,6 +2921,261 @@ void MainWindow::showMessageToUser(const QString message) {
 }
 
 
+
+
+/**
+ * @brief MainWindow::updateNodeCoords
+ * @param nodeNumber
+ * @param x
+ * @param y
+ * Called from GraphicsWidget when a node moves to update vertex coordinates
+ *  in Graph
+ */
+void MainWindow::updateNodeCoords(int nodeNumber, int x, int y){
+    //	qDebug("MW: updateNodeCoords() for %i with x %i and y %i", nodeNumber, x, y);
+    activeGraph.updateVertCoords(nodeNumber, x, y);
+}
+
+
+
+
+
+/**
+ * @brief MainWindow::toolBoxAnalysisGeodesicsSelectChanged
+ * @param selectedIndex
+ * Called from MW, when user selects something in the Geodesics selectbox of
+ *  toolbox
+ */
+void MainWindow::toolBoxAnalysisGeodesicsSelectChanged(int selectedIndex) {
+    qDebug()<< "MW::toolBoxAnalysisGeodesicsSelectChanged "
+               "selected text index: " << selectedIndex;
+    switch(selectedIndex){
+    case 0:
+        break;
+    case 1:
+        slotGraphDistance();
+        break;
+    case 2:
+        slotAverageGraphDistance();
+        break;
+    case 3:
+        slotDistancesMatrix();
+        break;
+    case 4:
+        slotGeodesicsMatrix();
+        break;
+    case 5:
+        slotEccentricity();
+        break;
+    case 6:
+        slotDiameter();
+        break;
+    };
+
+
+}
+
+
+
+
+
+/**
+ * @brief MainWindow::toolBoxAnalysisConnectivitySelectChanged
+ * @param selectedIndex
+ * Called from MW, when user selects something in the Connectivity selectbox of
+ *  toolbox
+ */
+void MainWindow::toolBoxAnalysisConnectivitySelectChanged(int selectedIndex) {
+    qDebug()<< "MW::toolBoxAnalysisConnectivitySelectChanged "
+               "selected text index: " << selectedIndex;
+    switch(selectedIndex){
+    case 0:
+        break;
+    case 1:
+        qDebug()<< "Connectedness";
+        slotConnectedness();
+        break;
+    case 2:
+        qDebug()<< "Walks of given length";
+        slotWalksOfGivenLength();
+        break;
+    case 3:
+        qDebug() << "Total Walks selected";
+        slotTotalWalks();
+        break;
+    case 4:
+        qDebug() << "Reachability Matrix";
+        slotReachabilityMatrix();
+        break;
+    };
+
+}
+
+
+
+
+/**
+ * @brief MainWindow::toolBoxAnalysisClusterabilitySelectChanged
+ * @param selectedIndex
+ * Called from MW, when user selects something in the Clusterability selectbox
+ * of toolbox
+ */
+void MainWindow::toolBoxAnalysisClusterabilitySelectChanged(int selectedIndex) {
+    qDebug()<< "MW::toolBoxAnalysisClusterabilitySelectChanged "
+               "selected text index: " << selectedIndex;
+    switch(selectedIndex){
+    case 0:
+        break;
+    case 1:
+        qDebug()<< "Cliques";
+        slotCliqueCensus();
+        break;
+    case 2:
+        qDebug()<< "Clustering Coefficient";
+        slotClusteringCoefficient();
+        break;
+    case 3:
+        qDebug() << "Triad Census";
+        slotTriadCensus();
+        break;
+    };
+
+}
+
+
+
+
+
+/**
+ * @brief MainWindow::toolBoxAnalysisProminenceSelectChanged
+ * @param selectedIndex
+ * Called from MW, when user selects something in the Prominence selectbox
+ *  of toolbox
+ */
+void MainWindow::toolBoxAnalysisProminenceSelectChanged(int selectedIndex) {
+    qDebug()<< "MW::toolBoxAnalysisProminenceSelectChanged "
+               "selected text index: " << selectedIndex;
+    switch(selectedIndex){
+    case 0:
+        break;
+    case 1:
+        slotCentralityDegree();
+        break;
+    case 2:
+        slotCentralityCloseness();
+        break;
+    case 3:
+        slotCentralityClosenessInfluenceRange();
+        break;
+    case 4:
+        slotCentralityBetweenness();
+        break;
+    case 5:
+        slotCentralityStress();
+        break;
+    case 6:
+        slotCentralityEccentricity();
+        break;
+    case 7:
+        slotCentralityPower();
+        break;
+    case 8:
+        slotCentralityInformation();
+        break;
+    case 9:
+        slotPrestigeDegree();
+        break;
+    case 10:
+        slotPrestigePageRank();
+        break;
+    case 11:
+        slotPrestigeProximity();
+        break;
+    };
+
+
+}
+
+void MainWindow::toolBoxLayoutByIndexButtonPressed(){
+    qDebug()<<"MW::toolBoxLayoutByIndexButtonPressed()";
+    int selectedIndex = toolBoxLayoutByIndexSelect->currentIndex();
+    QString selectedIndexText = toolBoxLayoutByIndexSelect -> currentText();
+    int selectedLayoutType = toolBoxLayoutByIndexTypeSelect ->currentIndex();
+    qDebug() << " selected index is " << selectedIndexText << " : " << selectedIndex
+             << " selected layout type is " << selectedLayoutType;
+    switch(selectedIndex) {
+    case 0:
+        break;
+    case 1:
+        if (selectedLayoutType==0)
+            slotLayoutCircularRandom();
+        else if (selectedLayoutType==1)
+            slotLayoutRandom();
+        break;
+    default:
+        if (selectedLayoutType==0)
+            slotLayoutCircularByProminenceIndex(selectedIndexText);
+        else if (selectedLayoutType==1)
+            slotLayoutLevelByProminenceIndex(selectedIndexText);
+        else if (selectedLayoutType==2){
+            slotLayoutNodeSizesByProminenceIndex(selectedIndexText);
+            // re-init other options for node sizes...
+            nodeSizesByOutDegreeAct->setChecked(false);
+            nodeSizesByOutDegreeBx->setChecked(false);
+            nodeSizesByInDegreeAct->setChecked(false);
+            nodeSizesByInDegreeBx->setChecked(false);
+        }
+        break;
+    };
+}
+
+
+
+void MainWindow::toolBoxLayoutForceDirectedButtonPressed(){
+    qDebug()<<"MW::toolBoxLayoutForceDirectedButtonPressed()";
+    int selectedModel = toolBoxLayoutForceDirectedSelect->currentIndex();
+    QString selectedModelText = toolBoxLayoutForceDirectedSelect -> currentText();
+    qDebug() << " selected index is " << selectedModelText << " : "
+             << selectedModel;
+
+    switch(selectedModel) {
+    case 0:
+        break;
+    case 1:
+        slotLayoutSpringEmbedder();
+        break;
+    case 2:
+        slotLayoutFruchterman();
+        break;
+    default:
+        toolBoxLayoutForceDirectedSelect->setCurrentIndex(0);
+        break;
+    };
+}
+
+
+
+
+
+
+/**
+ * @brief MainWindow::resizeEvent
+ * Resizes the scene when the window is resized.
+ */
+void MainWindow::resizeEvent( QResizeEvent * ){
+
+    qDebug ("MW resizeEvent():  window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",
+            width(),height(),
+            graphicsWidget->width(),graphicsWidget->height(),
+            graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
+    statusMessage(
+                QString(
+                    tr("Window resized to (%1, %2)px. Canvas size: (%3, %4) px"))
+                .arg(width()).arg(height())
+                .arg(graphicsWidget->width()).arg(graphicsWidget->height())
+                );
+
+}
 
 
 
