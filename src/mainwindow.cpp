@@ -1959,7 +1959,7 @@ void MainWindow::initToolBar(){
 
     toolBar -> addSeparator();
     toolBar -> addAction ( QWhatsThis::createAction (this));
-
+    toolBar -> setIconSize(QSize(16,16));
 }
 
 
@@ -1982,6 +1982,7 @@ void MainWindow::initToolBox(){
     // create 4 buttons for the Edit groupbox
     addNodeBt= new QPushButton(QIcon(":/images/add.png"),tr("&Add Node"));
     addNodeBt->setFocusPolicy(Qt::NoFocus);
+    addNodeBt->setMinimumWidth(100);
     addNodeBt->setToolTip(
                 tr("Add a new node to the network (Ctrl+X, Ctrl+A). \n\n "
                    "Alternately, you can create a new node \n"
@@ -1991,6 +1992,7 @@ void MainWindow::initToolBox(){
 
     removeNodeBt= new QPushButton(QIcon(":/images/remove.png"),tr("&Remove Node"));
     removeNodeBt->setFocusPolicy(Qt::NoFocus);
+    removeNodeBt->setMinimumWidth(100);
     removeNodeBt->setToolTip(
                 tr("Remove a node from the network. \n\n "
                    "Alternately, you can remove a node \n"
@@ -1999,6 +2001,7 @@ void MainWindow::initToolBox(){
 
     addEdgeBt= new QPushButton(QIcon(":/images/connect.png"),tr("Add &Edge"));
     addEdgeBt->setFocusPolicy(Qt::NoFocus);
+    addEdgeBt->setMinimumWidth(100);
     addEdgeBt->setToolTip(
                 tr("Add a new Edge from a node to another (Ctrl+E,Ctrl+A).\n\n "
                    "Alternately, you can create a new edge between two \n"
@@ -2007,6 +2010,7 @@ void MainWindow::initToolBox(){
 
     removeEdgeBt= new QPushButton(QIcon(":/images/disconnect.png"),tr("Remove Edge"));
     removeEdgeBt->setFocusPolicy(Qt::NoFocus);
+    removeEdgeBt->setMinimumWidth(100);
     removeEdgeBt->setToolTip(
                 tr("Remove an Edge from the network  \n\n "
                    "Alternately, you can remove an Edge \n"
@@ -2033,7 +2037,7 @@ void MainWindow::initToolBox(){
     //create widgets for the "Analysis" box
     QLabel *toolBoxAnalysisGeodesicsSelectLabel = new QLabel;
     toolBoxAnalysisGeodesicsSelectLabel->setText(tr("Distances:"));
-    toolBoxAnalysisGeodesicsSelectLabel->setMinimumWidth(120);
+    toolBoxAnalysisGeodesicsSelectLabel->setMinimumWidth(115);
     toolBoxAnalysisGeodesicsSelect = new QComboBox;
     QStringList geodesicsCommandsList;
     geodesicsCommandsList << "None selected"
@@ -2041,22 +2045,22 @@ void MainWindow::initToolBox(){
                           << "Distances Matrix" << "Geodesics Matrix"
                           << "Eccentricity" << "Diameter";
     toolBoxAnalysisGeodesicsSelect->addItems(geodesicsCommandsList);
-    toolBoxAnalysisGeodesicsSelect->setMinimumWidth(130);
+    toolBoxAnalysisGeodesicsSelect->setMinimumWidth(115);
 
     QLabel *toolBoxAnalysisConnectivitySelectLabel  = new QLabel;
     toolBoxAnalysisConnectivitySelectLabel->setText(tr("Connectivity:"));
-    toolBoxAnalysisConnectivitySelectLabel->setMinimumWidth(120);
+    toolBoxAnalysisConnectivitySelectLabel->setMinimumWidth(115);
     toolBoxAnalysisConnectivitySelect = new QComboBox;
     QStringList connectivityCommands;
     connectivityCommands << "None selected"
                          << "Connectedness" << "Walks of given length"
                          << "Total Walks" << "Reachability Matrix";
     toolBoxAnalysisConnectivitySelect->addItems(connectivityCommands);
-    toolBoxAnalysisConnectivitySelect->setMinimumWidth(130);
+    toolBoxAnalysisConnectivitySelect->setMinimumWidth(115);
 
     QLabel *toolBoxAnalysisClusterabilitySelectLabel  = new QLabel;
     toolBoxAnalysisClusterabilitySelectLabel->setText(tr("Clusterability:"));
-    toolBoxAnalysisClusterabilitySelectLabel->setMinimumWidth(120);
+    toolBoxAnalysisClusterabilitySelectLabel->setMinimumWidth(115);
     toolBoxAnalysisClusterabilitySelect = new QComboBox;
     QStringList clusterabilityCommands;
     clusterabilityCommands << "None selected"
@@ -2064,12 +2068,12 @@ void MainWindow::initToolBox(){
                          << "Clustering Coefficient"
                          << "Triad Census";
     toolBoxAnalysisClusterabilitySelect->addItems(clusterabilityCommands);
-    toolBoxAnalysisClusterabilitySelect->setMinimumWidth(130);
+    toolBoxAnalysisClusterabilitySelect->setMinimumWidth(115);
 
 
     QLabel *toolBoxAnalysisProminenceSelectLabel  = new QLabel;
     toolBoxAnalysisProminenceSelectLabel->setText(tr("Prominence:"));
-    toolBoxAnalysisProminenceSelectLabel->setMinimumWidth(120);
+    toolBoxAnalysisProminenceSelectLabel->setMinimumWidth(115);
     toolBoxAnalysisProminenceSelect = new QComboBox;
     toolBoxAnalysisProminenceSelect -> setToolTip(
                 tr("Various metrics to calculate how 'prominent' or important each actor (node) is inside the network.\n\n")
@@ -2092,7 +2096,7 @@ void MainWindow::initToolBox(){
                        << "Degree Prestige (inDegree)"  << "PageRank Prestige"
                        << "Proximity Prestige";
     toolBoxAnalysisProminenceSelect->addItems(prominenceCommands);
-    toolBoxAnalysisProminenceSelect->setMinimumWidth(130);
+    toolBoxAnalysisProminenceSelect->setMinimumWidth(115);
 
     //create layout for analysis options
     QGridLayout *analysisGrid = new QGridLayout();
@@ -2104,13 +2108,13 @@ void MainWindow::initToolBox(){
     analysisGrid -> addWidget(toolBoxAnalysisClusterabilitySelect, 3,1);
     analysisGrid -> addWidget(toolBoxAnalysisProminenceSelectLabel, 4,0);
     analysisGrid -> addWidget(toolBoxAnalysisProminenceSelect, 4,1);
-    analysisGrid -> setContentsMargins(5, 5, 5, 5);
-
+    analysisGrid -> setSpacing(5);
+    analysisGrid -> setContentsMargins(15, 5, 15, 5);
 
 
     //create a box and set the above layout inside
     QGroupBox *analysisBox= new QGroupBox(tr("Analyze"));
-    analysisBox->setMinimumHeight(200);
+    analysisBox->setMinimumHeight(170);
     analysisBox->setMaximumWidth(280);
     analysisBox->setLayout (analysisGrid );
 
@@ -2157,11 +2161,12 @@ void MainWindow::initToolBox(){
     layoutByIndexGrid -> addWidget(toolBoxLayoutByIndexTypeLabel, 1,0);
     layoutByIndexGrid -> addWidget(toolBoxLayoutByIndexTypeSelect, 1,1);
     layoutByIndexGrid -> addWidget(toolBoxLayoutByIndexButton, 2,1);
-    layoutByIndexGrid -> setContentsMargins(10, 10, 10, 10);
+    layoutByIndexGrid -> setSpacing(5);
+    layoutByIndexGrid -> setContentsMargins(5, 5, 5, 5);
 
     //create a box and set the above layout inside
     QGroupBox *layoutByIndexBox= new QGroupBox(tr("By Prominence Index"));
-    layoutByIndexBox->setMinimumHeight(150);
+    layoutByIndexBox->setMinimumHeight(120);
     layoutByIndexBox->setLayout (layoutByIndexGrid );
 
 
@@ -2214,11 +2219,12 @@ void MainWindow::initToolBox(){
     layoutForceDirectedGrid -> addWidget(toolBoxLayoutForceDirectedSelectLabel, 0,0);
     layoutForceDirectedGrid -> addWidget(toolBoxLayoutForceDirectedSelect, 0,1);
     layoutForceDirectedGrid -> addWidget(toolBoxLayoutForceDirectedButton, 1,1);
-    layoutForceDirectedGrid -> setContentsMargins(10,10, 10, 10);
+    layoutForceDirectedGrid -> setSpacing(5);
+    layoutForceDirectedGrid -> setContentsMargins(5,5, 5, 5);
 
     //create a box for dynamic layout options
     QGroupBox *layoutDynamicBox= new QGroupBox(tr("By Force-Directed Model"));
-    layoutDynamicBox->setMinimumHeight(100);
+    layoutDynamicBox->setMinimumHeight(90);
     layoutDynamicBox->setLayout (layoutForceDirectedGrid );
 
 
@@ -2255,11 +2261,12 @@ void MainWindow::initToolBox(){
     layoutOptionsGrid -> addWidget(nodeSizesByOutDegreeBx, 0,0);
     layoutOptionsGrid -> addWidget(nodeSizesByInDegreeBx, 1,0);
     layoutOptionsGrid -> addWidget(layoutGuidesBx, 2,0);
-    layoutOptionsGrid->setContentsMargins(10, 10, 10, 10);
+    layoutOptionsGrid->setSpacing(5);
+    layoutOptionsGrid->setContentsMargins(5, 5, 5, 5);
 
     //Box for additional visualization options
     QGroupBox *visualizeOptionsBox= new QGroupBox(tr("Options"));
-    visualizeOptionsBox->setMinimumHeight(120);
+    visualizeOptionsBox->setMinimumHeight(110);
     visualizeOptionsBox->setMaximumWidth(280);
     visualizeOptionsBox->setLayout (layoutOptionsGrid );
 
@@ -2454,7 +2461,8 @@ void MainWindow::initWindowLayout() {
     qDebug () << "MW::initWindowLayout";
     int size = style()->pixelMetric(QStyle::PM_ToolBarIconSize);
     QSize iconSize(size, size);
-
+    iconSize.setHeight(16);
+    iconSize.setWidth(16);
     // Zoom slider
     zoomInBtn = new QToolButton;
     zoomInBtn->setShortcut(Qt::CTRL + Qt::Key_Plus);
