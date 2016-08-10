@@ -820,19 +820,22 @@ QList<QGraphicsItem *> GraphicsWidget::selectedItems(){
         Yes, we make a full circle! :)
 */
 void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
-
+    qDebug() << "GW: mouseDoubleClickEvent()";
     if ( QGraphicsItem *item= itemAt(e->pos() ) ) {
         if (Node *node = qgraphicsitem_cast<Node *>(item)) {
-            Q_UNUSED(node);
-            qDebug() << "GW: mouseDoubleClickEvent() double click on a node detected!"
-                     << " Cant create new one!";
+            //Q_UNUSED(node);
+            qDebug() << "GW: mouseDoubleClickEvent() - on a node!"
+                     << " Starting new edge!";
+            node->setSelected(true);
+            nodeClicked(node);
+            startEdge(node);
+            QGraphicsView::mouseDoubleClickEvent(e);
             return;
         }
     }
 
     QPointF p = mapToScene(e->pos());
-    qDebug()<< "GW::mouseDoubleClickEvent()"
-            << " double click on empty space. "
+    qDebug()<< "GW::mouseDoubleClickEvent() - on empty space. "
             << " Signaling MW to create a new vertex in graph. e->pos() "
             << e->pos().x() << ","<< e->pos().y() << ", "<< p.x() << "," <<p.y();
     emit userDoubleClicked(-1, p);
@@ -849,8 +852,7 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
 
     bool ctrlKey = (e->modifiers() == Qt::ControlModifier);
 
-
-    qDebug() << "GW::mousePressEvent() click at "
+    qDebug() << "GW::mousePressEvent() - click at "
                 << e->pos().x() << ","<< e->pos().y()
                 << " or "<<  p.x() << ","<< p.y()
                 << " selectedItems " << selectedItems().count();
@@ -859,17 +861,27 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
 
     if ( QGraphicsItem *item= itemAt(e->pos() ) ) {
 
-        qDebug() << "GW::mousePressEvent() click on an item" ;
-
         if (Node *node = qgraphicsitem_cast<Node *>(item)) {
-            Q_UNUSED(node);
-            qDebug() << "GW::mousePressEvent() single click on a node " ;
+            qDebug() << "GW::mousePressEvent() - single click on a node. "
+                     << "Setting selected and emitting nodeClicked";
+            node->setSelected(true);
+            nodeClicked(node);
+            if ( e->button()==Qt::RightButton ) {
+                qDebug() << "GW::mousePressEvent() - Right-click on node. "
+                         << "Calling openNodeContextMenu() ";
+                openNodeContextMenu();
+            }
+            if ( e->button()==Qt::MidButton) {
+                qDebug() << "GW::mousePressEvent() - Middle-click on node.  "
+                         << "Calling startEdge() ";
+                startEdge(node);
+            }
             QGraphicsView::mousePressEvent(e);
             return;
         }
         if (Edge *edge= qgraphicsitem_cast<Edge *>(item)) {
+            qDebug() << "GW::mousePressEvent() - single click on an edge ";
             Q_UNUSED(edge);
-            qDebug() << "GW::mousePressEvent() single click on an edge ";
             QGraphicsView::mousePressEvent(e);
             return;
         }
@@ -905,6 +917,12 @@ void GraphicsWidget::mouseReleaseEvent( QMouseEvent * e ) {
             qDebug() << "GW::mouseReleaseEvent() on a node ";
             Q_UNUSED(node);
             QGraphicsView::mouseReleaseEvent(e);
+        }
+        if (Edge *edge= qgraphicsitem_cast<Edge *>(item)) {
+            Q_UNUSED(edge);
+            qDebug() << "GW::mouseReleaseEvent() on an edge ";
+            QGraphicsView::mouseReleaseEvent(e);
+            return;
         }
     }
     else{
