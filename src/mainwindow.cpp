@@ -337,45 +337,49 @@ void MainWindow::initActions(){
     File menu actions
     */
     fileNew = new QAction(QIcon(":/images/new.png"), tr("&New"),  this);
-    fileNew->setShortcut(tr("Ctrl+N"));
+    fileNew->setShortcut(Qt::CTRL+Qt::Key_N);
     fileNew->setStatusTip(tr("Creates a new network"));
     fileNew->setToolTip(tr("New network (Ctrl+N)"));
     fileNew->setWhatsThis(tr("New\n\nCreates a new network"));
     connect(fileNew, SIGNAL(triggered()), this, SLOT(slotCreateNew()));
 
     fileOpen = new QAction(QIcon(":/images/open.png"), tr("&Open"), this);
-    fileOpen->setShortcut(tr("Ctrl+O"));
+    fileOpen->setShortcut(Qt::CTRL+Qt::Key_O);
     fileOpen->setToolTip(tr("Open network (Ctrl+O)"));
-    fileOpen->setStatusTip(tr("Open a GraphML-formatted file of an existing network"));
-    fileOpen->setWhatsThis(tr("Open\n\nOpens a file of an existing network in GraphML format"));
+    fileOpen->setStatusTip(tr("Open GraphML-formatted file of an existing network"));
+    fileOpen->setWhatsThis(tr("Open\n\n"
+                              "Opens a file of an existing network in GraphML format"));
     connect(fileOpen, SIGNAL(triggered()), this, SLOT(slotImportGraphML()));
 
 
     importPajek = new QAction( QIcon(":/images/open.png"), tr("&Pajek"), this);
-    importPajek->setStatusTip(tr("Import a Pajek-formatted file"));
-    importPajek->setWhatsThis(tr("Import  Pajek \n\n Imports a network from a Pajek-formatted file"));
+    importPajek->setStatusTip(tr("Import Pajek-formatted file"));
+    importPajek->setWhatsThis(tr("Import Pajek \n\n"
+                                 "Imports a network from a Pajek-formatted file"));
     connect(importPajek, SIGNAL(triggered()), this, SLOT(slotImportPajek()));
 
 
     importSM = new QAction( QIcon(":/images/open.png"), tr("&Adjacency Matrix"), this);
-    importSM->setStatusTip(tr("Import an Adjacency matrix file"));
-    importSM->setWhatsThis(tr("Import Sociomatrix \n\n  Imports a network from an Adjacency matrix-formatted file"));
+    importSM->setStatusTip(tr("Import Adjacency matrix"));
+    importSM->setWhatsThis(tr("Import Sociomatrix \n\n"
+                              "Imports a network from an Adjacency matrix-formatted file"));
     connect(importSM, SIGNAL(triggered()), this, SLOT(slotImportSM()));
 
     importDot = new QAction( QIcon(":/images/open.png"), tr("GraphViz (.dot)"), this);
-    importDot->setStatusTip(tr("Import an dot file"));
-    importDot->setWhatsThis(tr("Import GraphViz \n\n  Imports a network from an GraphViz formatted file"));
+    importDot->setStatusTip(tr("Import dot file"));
+    importDot->setWhatsThis(tr("Import GraphViz \n\n "
+                               "Imports a network from an GraphViz formatted file"));
     connect(importDot, SIGNAL(triggered()), this, SLOT(slotImportDot()));
 
 
     importDL = new QAction( QIcon(":/images/open.png"), tr("UCINET (.dl)..."), this);
-    importDL->setStatusTip(tr("Import network to a DL-formatted file (UCINET)"));
+    importDL->setStatusTip(tr("ImportDL-formatted file (UCINET)"));
     importDL->setWhatsThis(tr("Import UCINET\n\nImports a network from a DL-formatted file"));
     connect(importDL, SIGNAL(triggered()), this, SLOT(slotImportDL()));
 
 
     importList = new QAction( QIcon(":/images/open.png"), tr("&Edge list"), this);
-    importList->setStatusTip(tr("Import network from an edge list file. "));
+    importList->setStatusTip(tr("Import an edge list file. "));
     importList->setWhatsThis(tr("Import edge list\n\n"
                                 "Import a network from an edgelist file. "
                                 " The file can be unvalued or valued (see manual)"
@@ -384,78 +388,92 @@ void MainWindow::initActions(){
 
 
     importTwoModeSM = new QAction( QIcon(":/images/open.png"), tr("&Two Mode Sociomatrix"), this);
-    importTwoModeSM->setStatusTip(tr("Imports a two mode sociomatrix (affiliation network) file"));
-    importTwoModeSM->setWhatsThis(tr("Import Sociomatrix \n\n  Imports a two mode network from a sociomatrix file. Two-mode networks are described by affiliation network matrices, where A(i,j) codes the events/organizations each actor is affiliated with."));
+    importTwoModeSM->setStatusTip(tr("Import two-mode sociomatrix (affiliation network) file"));
+    importTwoModeSM->setWhatsThis(tr("Import Two-Mode Sociomatrix \n\n "
+                                     "Imports a two-mode network from a sociomatrix file. "
+                                     "Two-mode networks are described by affiliation "
+                                     "network matrices, where A(i,j) codes the "
+                                     "events/organizations each actor is affiliated with."));
     connect(importTwoModeSM, SIGNAL(triggered()), this, SLOT(slotImportTwoModeSM()));
 
 
     fileSave = new QAction(QIcon(":/images/save.png"), tr("&Save"),  this);
-    fileSave->setShortcut(tr("Ctrl+S"));
+    fileSave->setShortcut(Qt::CTRL+Qt::Key_S);
     fileSave->setToolTip(tr("Save network (Ctrl+S)"));
-    fileSave->setStatusTip(tr("Saves the actual network to the current file"));
-    fileSave->setWhatsThis(tr("Save.\n\nSaves the actual network"));
+    fileSave->setStatusTip(tr("Save to the current file"));
+    fileSave->setWhatsThis(tr("Save.\n\n"
+                              "Saves the actual network to the current file"));
     connect(fileSave, SIGNAL(triggered()), this, SLOT(slotFileSave()));
 
     fileSaveAs = new QAction(QIcon(":/images/save.png"), tr("Save &As..."),  this);
-    fileSaveAs->setShortcut(tr("Ctrl+Shift+S"));
-    fileSaveAs->setStatusTip(tr("Saves the actual network under a new filename"));
-    fileSaveAs->setWhatsThis(tr("Save As\n\nSaves the actual network under a new filename"));
+    fileSaveAs->setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_S);
+    fileSaveAs->setStatusTip(tr("Save under a new filename"
+                                "Ctrl+Shift+S"));
+    fileSaveAs->setWhatsThis(tr("Save As\n\n"
+                                "Saves the actual network under a new filename"));
     connect(fileSaveAs, SIGNAL(triggered()), this, SLOT(slotFileSaveAs()));
 
     exportBMP = new QAction(QIcon(":/images/image.png"), tr("&BMP..."), this);
-    exportBMP->setStatusTip(tr("Export network to a BMP image"));
-    exportBMP->setWhatsThis(tr("Export BMP \n\n Export network to a BMP image"));
+    exportBMP->setStatusTip(tr("Export to BMP image"));
+    exportBMP->setWhatsThis(tr("Export BMP \n\n Exports the network to a BMP image"));
     connect(exportBMP, SIGNAL(triggered()), this, SLOT(slotExportBMP()));
 
     exportPNG = new QAction( QIcon(":/images/image.png"), tr("&PNG..."), this);
-    exportPNG->setStatusTip(tr("Export network to a PNG image"));
-    exportPNG->setWhatsThis(tr("Export PNG \n\n Export network to a PNG image"));
+    exportPNG->setStatusTip(tr("Export to PNG image"));
+    exportPNG->setWhatsThis(tr("Export PNG \n\n Exports the network to a PNG image"));
     connect(exportPNG, SIGNAL(triggered()), this, SLOT(slotExportPNG()));
 
 
     exportPDF = new QAction( QIcon(":/images/pdf.png"), tr("&PDF..."), this);
-    exportPDF->setStatusTip(tr("Export network to a PDF file"));
-    exportPDF->setWhatsThis(tr("Export PDF\n\n Export network to a PDF document"));
+    exportPDF->setStatusTip(tr("Export to PDF"));
+    exportPDF->setWhatsThis(tr("Export PDF\n\n Exports the network to a PDF document"));
     connect(exportPDF, SIGNAL(triggered()), this, SLOT(slotExportPDF()));
 
     exportSM = new QAction( QIcon(":/images/save.png"), tr("&Adjacency Matrix"), this);
-    exportSM->setStatusTip(tr("Export network to an adjacency matrix file"));
-    exportSM->setWhatsThis(tr("Export Sociomatrix \n\n Export network to a adjacency matrix-formatted file"));
+    exportSM->setStatusTip(tr("Export to adjacency matrix file"));
+    exportSM->setWhatsThis(tr("Export Sociomatrix \n\n"
+                              "Exports the network to an "
+                              "adjacency matrix-formatted file"));
     connect(exportSM, SIGNAL(triggered()), this, SLOT(slotExportSM()));
 
     exportPajek = new QAction( QIcon(":/images/save.png"), tr("&Pajek"), this);
-    exportPajek->setStatusTip(tr("Export network to a Pajek-formatted file"));
-    exportPajek->setWhatsThis(tr("Export Pajek \n\n Export network to a Pajek-formatted file"));
+    exportPajek->setStatusTip(tr("Export to Pajek-formatted file"));
+    exportPajek->setWhatsThis(tr("Export Pajek \n\n "
+                                 "Exports the network to a Pajek-formatted file"));
     connect(exportPajek, SIGNAL(triggered()), this, SLOT(slotExportPajek()));
 
     exportList = new QAction( QIcon(":/images/save.png"), tr("&List"), this);
-    exportList->setStatusTip(tr("Export network to a List-formatted file. "));
-    exportList->setWhatsThis(tr("Export List\n\nExport network to a List-formatted file"));
+    exportList->setStatusTip(tr("Export to List-formatted file. "));
+    exportList->setWhatsThis(tr("Export List\n\n"
+                                "Exports the network to a ""List-formatted file"));
     connect(exportList, SIGNAL(triggered()), this, SLOT(slotExportList()));
 
     exportDL = new QAction( QIcon(":/images/save.png"), tr("&DL..."), this);
-    exportDL->setStatusTip(tr("Export network to a DL-formatted file"));
+    exportDL->setStatusTip(tr("Export to DL-formatted file"));
     exportDL->setWhatsThis(tr("Export DL\n\nExport network to a DL-formatted"));
     connect(exportDL, SIGNAL(triggered()), this, SLOT(slotExportDL()));
 
     exportGW = new QAction( QIcon(":/images/save.png"), tr("&GW..."), this);
-    exportGW->setStatusTip(tr("Export network to a GW-formatted file"));
+    exportGW->setStatusTip(tr("Export to GW-formatted file"));
     exportGW->setWhatsThis(tr("Export\n\nExport network to a GW formatted file"));
     connect(exportGW, SIGNAL(triggered()), this, SLOT(slotExportGW()));
 
     fileClose = new QAction( tr("&Close"), this);
-    fileClose->setStatusTip(tr("Closes the actual network"));
+    fileClose->setStatusTip(tr("Close the actual network"));
     fileClose->setWhatsThis(tr("Close \n\nCloses the actual network"));
     connect(fileClose, SIGNAL(triggered()), this, SLOT(slotFileClose()));
 
     printNetwork = new QAction(QIcon(":/images/print.png"), tr("&Print"), this);
-    printNetwork->setShortcut(tr("Ctrl+P"));
-    printNetwork->setStatusTip(tr("Prints whatever is viewable on the canvas."));
-    printNetwork->setWhatsThis(tr("Printing \n\n This function prints whatever is viewable on the canvas. \nTo print the whole network, you might want to zoom-out."));
+    printNetwork->setShortcut(Qt::CTRL+Qt::Key_Q);
+    printNetwork->setStatusTip(tr("Send the network to the printer (Ctrl+P)"));
+    printNetwork->setWhatsThis(tr("Printing \n\n"
+                                  "This function prints whatever is viewable on "
+                                  "the canvas. \nTo print the whole network, "
+                                  "you might want to zoom-out."));
     connect(printNetwork, SIGNAL(triggered()), this, SLOT(slotPrintView()));
 
     fileQuit = new QAction(QIcon(":/images/exit.png"), tr("E&xit"), this);
-    fileQuit->setShortcut(tr("Ctrl+Q"));
+    fileQuit->setShortcut(Qt::CTRL+Qt::Key_Q);
     fileQuit->setStatusTip(tr("Quits the application"));
     fileQuit->setWhatsThis(tr("Exit\n\nQuits the application"));
     connect(fileQuit, SIGNAL(triggered()), this, SLOT(close()));
@@ -463,45 +481,68 @@ void MainWindow::initActions(){
 
     openTextEditorAct = new QAction(QIcon(":/images/texteditor.png"),
                                     tr("Open Text Editor"),this);
-    openTextEditorAct ->setShortcut(tr("Shift+F5"));
-    openTextEditorAct->setStatusTip(tr("Opens the SocNetV text editor."
-                                       "You can copy/paste network data, save and then import them..."));
-    openTextEditorAct->setWhatsThis(tr("Open Text Editor\n\nOpens the SocNetV text editor where you can copy paste network data, of any supported format, and save to a file. Then you can import that file to SocNetV..."));
+    openTextEditorAct ->setShortcut(Qt::SHIFT+Qt::Key_F5);
+    openTextEditorAct->setStatusTip(tr("Opens a simple text editor "
+                                       "to take notes, copy/paste network data, etc"
+                                       "(Shift+F5)"));
+    openTextEditorAct->setWhatsThis(tr("Open Text Editor\n\n"
+                                       "Opens the SocNetV text editor where you can "
+                                       "copy paste network data, of any supported format, "
+                                       "and save to a file. Then you can import that file to SocNetV..."));
     connect(openTextEditorAct, SIGNAL(triggered()), this, SLOT(slotOpenTextEditor()));
 
 
-    viewNetworkFileAct = new QAction(QIcon(":/images/networkfile.png"), tr("View Loaded File"),this);
-    viewNetworkFileAct ->setShortcut(tr("F5"));
-    viewNetworkFileAct->setStatusTip(tr("Displays the loaded network file"));
-    viewNetworkFileAct->setWhatsThis(tr("View Loaded File\n\nDisplays the file of the loaded network"));
+    viewNetworkFileAct = new QAction(QIcon(":/images/networkfile.png"),
+                                     tr("View Loaded File"),this);
+    viewNetworkFileAct ->setShortcut(Qt::Key_F5);
+    viewNetworkFileAct->setStatusTip(tr("Displays the loaded network file (F5)"));
+    viewNetworkFileAct->setWhatsThis(tr("View Loaded File\n\n"
+                                        "Displays the file of the loaded network"));
     connect(viewNetworkFileAct, SIGNAL(triggered()), this, SLOT(slotViewNetworkFile()));
 
-    viewSociomatrixAct = new QAction(QIcon(":/images/sm.png"), tr("View Adjacency Matrix"),  this);
-    viewSociomatrixAct ->setShortcut(tr("F6"));
-    viewSociomatrixAct->setStatusTip(tr("Displays the adjacency matrix of the active network. See manual or online help for more..."));
-    viewSociomatrixAct->setWhatsThis(tr("View Adjacency Matrix\n\nDisplays the adjacency matrix of the active network. \n\n The adjacency matrix of a network is a matrix where each element a(i,j) is equal to the weight of the Edge from node i to node j. If the nodes are not connected, then a(i,j)=0. "));
-    connect(viewSociomatrixAct, SIGNAL(triggered()), this, SLOT(slotViewAdjacencyMatrix()));
+    viewSociomatrixAct = new QAction(QIcon(":/images/sm.png"),
+                                     tr("View Adjacency Matrix"),  this);
+    viewSociomatrixAct ->setShortcut(Qt::Key_F6);
+    viewSociomatrixAct->setStatusTip(tr("Display the adjacency matrix of the network. "
+                                        "(F6)"));
+    viewSociomatrixAct->setWhatsThis(tr("View Adjacency Matrix\n\n"
+                                        "Displays the adjacency matrix of the active network. \n\n"
+                                        "The adjacency matrix of a network is a matrix "
+                                        "where each element a(i,j) is equal to the weight "
+                                        "of the arc from node i to node j. "
+                                        "If the nodes are not connected, then a(i,j)=0. "));
+    connect(viewSociomatrixAct, SIGNAL(triggered()),
+            this, SLOT(slotViewAdjacencyMatrix()));
 
-    recreateDataSetAct = new QAction(QIcon(":/images/sm.png"), tr("Create Known Data Sets"),  this);
-    recreateDataSetAct ->setShortcut(tr("F7"));
-    recreateDataSetAct->setStatusTip(tr("Recreates a variety of known data sets."));
-    recreateDataSetAct->setWhatsThis(tr("Known Data Sets\n\nRecreates some of the most widely used data sets in network analysis studies"));
-    connect(recreateDataSetAct, SIGNAL(triggered()), this, SLOT(slotShowDataSetSelectDialog()));
+    recreateDataSetAct = new QAction(QIcon(":/images/sm.png"),
+                                     tr("Create Known Data Sets"),  this);
+    recreateDataSetAct ->setShortcut(Qt::Key_F7);
+    recreateDataSetAct->setStatusTip(tr("Recreate a variety of known data sets."));
+    recreateDataSetAct->setWhatsThis(tr("Known Data Sets\n\n"
+                                        "Recreates some of the most widely used "
+                                        "data sets in network analysis studies, i.e. "
+                                        "Krackhardt's high-tech managers"));
+    connect(recreateDataSetAct, SIGNAL(triggered()),
+            this, SLOT(slotShowDataSetSelectDialog()));
 
 
-    createErdosRenyiRandomNetworkAct = new QAction(QIcon(":/images/erdos.png"), tr("Erdős–Rényi"),  this);
+    createErdosRenyiRandomNetworkAct = new QAction(QIcon(":/images/erdos.png"),
+                                                   tr("Erdős–Rényi"),  this);
     createErdosRenyiRandomNetworkAct -> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_E)
                 );
-    createErdosRenyiRandomNetworkAct->setStatusTip(tr("Creates a random network according to the Erdős–Rényi model"));
+    createErdosRenyiRandomNetworkAct->setStatusTip(tr("Creates a random network "
+                                                      "according to the Erdős–Rényi model"));
     createErdosRenyiRandomNetworkAct->setWhatsThis(
-                tr("Erdős–Rényi \n\n") +
-                tr("Creates a random network either of G(n, p) model or G(n,M) model.\n") +
-                tr("In the first, edges are created with Bernoulli trials (probability p).\n") +
-                tr("In the second, a graph of exactly M edges is created."));
-    connect(createErdosRenyiRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotRandomErdosRenyiDialog()));
+                tr("Erdős–Rényi \n\n"
+                "Creates a random network either of G(n, p) model or G(n,M) model.\n"
+                "In the first, edges are created with Bernoulli trials (probability p).\n"
+                "In the second, a graph of exactly M edges is created."));
+    connect(createErdosRenyiRandomNetworkAct, SIGNAL(triggered()),
+            this, SLOT(slotRandomErdosRenyiDialog()));
 
-    createLatticeNetworkAct = new QAction( QIcon(":/images/net1.png"), tr("Ring Lattice"), this);
+    createLatticeNetworkAct = new QAction( QIcon(":/images/net1.png"),
+                                           tr("Ring Lattice"), this);
     createLatticeNetworkAct -> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_L)
                 );
