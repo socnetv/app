@@ -464,7 +464,7 @@ void MainWindow::initActions(){
     connect(fileClose, SIGNAL(triggered()), this, SLOT(slotFileClose()));
 
     printNetwork = new QAction(QIcon(":/images/print.png"), tr("&Print"), this);
-    printNetwork->setShortcut(Qt::CTRL+Qt::Key_Q);
+    printNetwork->setShortcut(Qt::CTRL+Qt::Key_P);
     printNetwork->setStatusTip(tr("Send the network to the printer (Ctrl+P)"));
     printNetwork->setWhatsThis(tr("Printing \n\n"
                                   "This function prints whatever is viewable on "
@@ -546,7 +546,7 @@ void MainWindow::initActions(){
     createLatticeNetworkAct -> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_L)
                 );
-    createLatticeNetworkAct->setStatusTip(tr("Creates a ring lattice random network"));
+    createLatticeNetworkAct->setStatusTip(tr("Create a ring lattice random network"));
     createLatticeNetworkAct->setWhatsThis(
                 tr("Ring Lattice \n\n")+
                 tr("A ring lattice is a graph with N nodes each connected to d neighbors, d / 2 on each side."));
@@ -556,7 +556,7 @@ void MainWindow::initActions(){
     createRegularRandomNetworkAct -> setShortcut(
                         QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_R)
                         );
-    createRegularRandomNetworkAct->setStatusTip(tr("Creates a random network where every node has the same degree d."));
+    createRegularRandomNetworkAct->setStatusTip(tr("Create a random network where every node has the same degree d."));
     createRegularRandomNetworkAct->setWhatsThis(
                 tr("d-Regular \n\n") +
                 tr("Creates a random network where each node have the same number of neighbours, aka the same degree d "));
@@ -566,7 +566,7 @@ void MainWindow::initActions(){
     createGaussianRandomNetworkAct -> setShortcut(
                     QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_G)
                     );
-    createGaussianRandomNetworkAct->setStatusTip(tr("Creates a Gaussian distributed random network"));
+    createGaussianRandomNetworkAct->setStatusTip(tr("Create a Gaussian distributed random network"));
     createGaussianRandomNetworkAct->setWhatsThis(tr("Gaussian \n\nCreates a random network of Gaussian distribution"));
     connect(createGaussianRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotRandomGaussian()));
 
@@ -574,7 +574,7 @@ void MainWindow::initActions(){
     createSmallWorldRandomNetworkAct-> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_W)
                 );
-    createSmallWorldRandomNetworkAct->setStatusTip(tr("Creates a random network with small world properties"));
+    createSmallWorldRandomNetworkAct->setStatusTip(tr("Create a random network with small world properties"));
     createSmallWorldRandomNetworkAct ->
             setWhatsThis(
                 tr("Small World \n\n") +
@@ -589,7 +589,7 @@ void MainWindow::initActions(){
                 QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_S)
                 );
     createScaleFreeRandomNetworkAct->setStatusTip(
-                tr("Creates a random network with power-law degree distribution."));
+                tr("Create a random network with power-law degree distribution."));
     createScaleFreeRandomNetworkAct->
             setWhatsThis(
                 tr("Scale-free (power-law)\n\n") +
@@ -602,10 +602,21 @@ void MainWindow::initActions(){
 
 
     webCrawlerAct = new QAction(QIcon(":/images/spider.png"), tr("Web Crawler"),	this);
-    webCrawlerAct->setShortcut(tr("Shift+C"));
+    webCrawlerAct->setShortcut(Qt::SHIFT+Qt::Key_C);
     webCrawlerAct->setEnabled(true);
-    webCrawlerAct->setStatusTip(tr("Creates a network from all links found in a given website"));
-    webCrawlerAct->setWhatsThis(tr("Web Crawler \n\nA Web crawler is a built-in bot, which starts with a given URL (website or webpage) to visit. As the algorithm crawls this webpage, it identifies all the links in the page and adds them to a list of URLs (called frontier). Then, all the URLs from the frontier are recursively visited. You must provide maximum recursion level (how many URLs from the frontier will be visited) and maximum running time, along with the initial web address..."));
+    webCrawlerAct->setStatusTip(tr("Create a network from all links found in a given website"
+                                   "Shift+C"));
+    webCrawlerAct->setWhatsThis(tr("Web Crawler \n\n"
+                                   "A Web crawler is a built-in bot, which "
+                                   "starts with a given URL (website or webpage) "
+                                   "to visit. As the algorithm crawls this webpage, "
+                                   "it identifies all the links in the page and adds "
+                                   "them to a list of URLs (called frontier). "
+                                   "Then, all the URLs from the frontier are "
+                                   "recursively visited. You must provide maximum "
+                                   "recursion level (how many URLs from the frontier "
+                                   "will be visited) and maximum running time, along "
+                                   "with the initial web address..."));
     connect(webCrawlerAct, SIGNAL(triggered()), this, SLOT(slotShowWebCrawlerDialog()));
 
 
@@ -615,33 +626,34 @@ void MainWindow::initActions(){
 
     selectAllAct = new QAction(QIcon(":/images/selectall.png"), tr("Select All"), this);
     selectAllAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_A));
-    selectAllAct->setStatusTip(tr("Selects all nodes"));
+    selectAllAct->setStatusTip(tr("Select all nodes"));
     selectAllAct->setWhatsThis(tr("Select All\n\nSelects all nodes in the network"));
     connect(selectAllAct, SIGNAL(triggered()), this, SLOT(slotSelectAll()));
 
     selectNoneAct = new QAction(QIcon(":/images/selectnone.png"), tr("Deselect all"), this);
     selectNoneAct->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_A));
-    selectNoneAct->setStatusTip(tr("Deselects all nodes"));
+    selectNoneAct->setStatusTip(tr("Deselect all nodes"));
     selectNoneAct->setWhatsThis(tr("Deselect all\n\n Clears the node selection"));
     connect(selectNoneAct, SIGNAL(triggered()), this, SLOT(slotSelectNone()));
 
 
     findNodeAct = new QAction(QIcon(":/images/find.png"), tr("Find Node"), this);
     findNodeAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_F));
-    findNodeAct->setStatusTip(tr("Finds and highlights a node by number or label. Press Ctrl+F again to undo."));
+    findNodeAct->setStatusTip(tr("Find and highlights a node by number or label. "
+                                 "Press Ctrl+F again to undo."));
     findNodeAct->setWhatsThis(tr("Find Node\n\nFinds a node with a given number or label and doubles its size. Ctrl+F again resizes back the node"));
     connect(findNodeAct, SIGNAL(triggered()), this, SLOT(slotFindNode()) );
 
     addNodeAct = new QAction(QIcon(":/images/add.png"), tr("Add Node"), this);
     addNodeAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_A));
-    addNodeAct->setStatusTip(tr("Adds a node"));
+    addNodeAct->setStatusTip(tr("Add a node"));
     addNodeAct->setWhatsThis(tr("Add Node\n\nAdds a node to the network"));
     connect(addNodeAct, SIGNAL(triggered()), this, SLOT(addNode()));
 
     removeNodeAct = new QAction(QIcon(":/images/remove.png"),tr("Remove Node"), this);
     removeNodeAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_Backspace));
     //Single key shortcuts with backspace or del do no work in Mac http://goo.gl/7hz7Dx
-    removeNodeAct->setStatusTip(tr("Removes a node"));
+    removeNodeAct->setStatusTip(tr("Remove a node"));
     removeNodeAct->setWhatsThis(tr("Remove Node\n\nRemoves a node from the network"));
     connect(removeNodeAct, SIGNAL(triggered()), this, SLOT(slotRemoveNode()));
 
@@ -2025,7 +2037,13 @@ void MainWindow::initToolBox(){
     addNodeBt->setFocusPolicy(Qt::NoFocus);
     addNodeBt->setMinimumWidth(100);
     addNodeBt->setToolTip(
-                tr("Add a new node to the network (Ctrl+X, Ctrl+A). \n\n "
+                tr("Add a new node to the network (Ctrl+X+A). \n\n "
+                   "You can also create a new node \n"
+                   "in a specific position by double-clicking \n")
+                );
+    addNodeBt->setWhatsThis(
+                tr("Add new node\n\n"
+                   "Adds a new node to the network (Ctrl+X+A). \n\n "
                    "Alternately, you can create a new node \n"
                    "in a specific position by double-clicking \n"
                    "on that spot of the canvas.")
@@ -2035,7 +2053,11 @@ void MainWindow::initToolBox(){
     removeNodeBt->setFocusPolicy(Qt::NoFocus);
     removeNodeBt->setMinimumWidth(100);
     removeNodeBt->setToolTip(
-                tr("Remove a node from the network. \n\n "
+                tr("Remove a node from the network (Ctrl+X+Backspace). ")
+                );
+    removeNodeBt->setWhatsThis(
+                tr("Remove node\n\n"
+                   "Removes a node from the network (Ctrl+X+Backspace). \n\n "
                    "Alternately, you can remove a node \n"
                    "by right-clicking on it.")
                 );
@@ -2044,20 +2066,31 @@ void MainWindow::initToolBox(){
     addEdgeBt->setFocusPolicy(Qt::NoFocus);
     addEdgeBt->setMinimumWidth(100);
     addEdgeBt->setToolTip(
-                tr("Add a new Edge from a node to another (Ctrl+E,Ctrl+A).\n\n "
-                   "Alternately, you can create a new edge between two \n"
-                   "nodes by middle-clicking on them consecutively.")
+                tr("Add a new Edge from a node to another (Ctrl+E+A).\n\n "
+                   "You can also create an edge between two nodes\n"
+                   "by double-clicking or middle-clicking on them consecutively.")
+                );
+    addEdgeBt->setWhatsThis(
+                tr("Add edge\n\n"
+                   "Adds a new Edge from a node to another (Ctrl+E+A).\n\n "
+                   "Alternately, you can create a new edge between two nodes\n"
+                   "by double-clicking or middle-clicking on them consecutively.")
                 );
 
     removeEdgeBt= new QPushButton(QIcon(":/images/disconnect.png"),tr("Remove Edge"));
     removeEdgeBt->setFocusPolicy(Qt::NoFocus);
     removeEdgeBt->setMinimumWidth(100);
     removeEdgeBt->setToolTip(
-                tr("Remove an Edge from the network  \n\n "
+                tr("Remove an Edge from the network"
+                   )
+                );
+    removeEdgeBt->setWhatsThis(
+                tr("Remove edge\n\nRemoves an Edge from the network. "
                    "Alternately, you can remove an Edge \n"
                    "by right-clicking on it."
                    )
                 );
+
 
     //create a grid layout for these buttons
     QGridLayout *buttonsGrid = new QGridLayout;
@@ -2080,6 +2113,13 @@ void MainWindow::initToolBox(){
     toolBoxAnalysisGeodesicsSelectLabel->setText(tr("Distances:"));
     toolBoxAnalysisGeodesicsSelectLabel->setMinimumWidth(115);
     toolBoxAnalysisGeodesicsSelect = new QComboBox;
+    toolBoxAnalysisGeodesicsSelect -> setToolTip(
+                tr("Compute basic graph-theoretic features of the network, "
+                   "i.e. diameter."));
+    toolBoxAnalysisGeodesicsSelect -> setWhatsThis(
+                tr("Analyze Distances\n\n"
+                   "Compute basic graph-theoretic features of the network "
+                   "i.e. diameter, eccentricity, distances etc."));
     QStringList geodesicsCommandsList;
     geodesicsCommandsList << "None selected"
                           << "Distance" << "Average Distance"
@@ -2088,10 +2128,18 @@ void MainWindow::initToolBox(){
     toolBoxAnalysisGeodesicsSelect->addItems(geodesicsCommandsList);
     toolBoxAnalysisGeodesicsSelect->setMinimumWidth(115);
 
+
     QLabel *toolBoxAnalysisConnectivitySelectLabel  = new QLabel;
     toolBoxAnalysisConnectivitySelectLabel->setText(tr("Connectivity:"));
     toolBoxAnalysisConnectivitySelectLabel->setMinimumWidth(115);
     toolBoxAnalysisConnectivitySelect = new QComboBox;
+    toolBoxAnalysisConnectivitySelect->setToolTip(
+                tr("Compute 'connectivity' metrics such as network connectedness, "
+                   "walks, reachability etc."));
+    toolBoxAnalysisConnectivitySelect->setWhatsThis(
+                tr("Analyze Connectivity\\n\n"
+                   "Compute 'connectivity' metrics such as network connectedness, "
+                   "walks, reachability etc."));
     QStringList connectivityCommands;
     connectivityCommands << "None selected"
                          << "Connectedness" << "Walks of given length"
@@ -2099,10 +2147,16 @@ void MainWindow::initToolBox(){
     toolBoxAnalysisConnectivitySelect->addItems(connectivityCommands);
     toolBoxAnalysisConnectivitySelect->setMinimumWidth(115);
 
+
     QLabel *toolBoxAnalysisClusterabilitySelectLabel  = new QLabel;
     toolBoxAnalysisClusterabilitySelectLabel->setText(tr("Clusterability:"));
     toolBoxAnalysisClusterabilitySelectLabel->setMinimumWidth(115);
     toolBoxAnalysisClusterabilitySelect = new QComboBox;
+    toolBoxAnalysisClusterabilitySelect->setToolTip(
+                tr("Compute 'clusterability' metrics, such as cliques"));
+            toolBoxAnalysisClusterabilitySelect->setWhatsThis(
+                        tr("Analyze Clusterability\n\n"
+                           "Compute 'clusterability' metrics, such as cliques"));
     QStringList clusterabilityCommands;
     clusterabilityCommands << "None selected"
                          << "Cliques"
@@ -2117,15 +2171,24 @@ void MainWindow::initToolBox(){
     toolBoxAnalysisProminenceSelectLabel->setMinimumWidth(115);
     toolBoxAnalysisProminenceSelect = new QComboBox;
     toolBoxAnalysisProminenceSelect -> setToolTip(
-                tr("Various metrics to calculate how 'prominent' or important each actor (node) is inside the network.\n\n")
+                tr("Compute metrics to see how 'prominent' or "
+                   "important each actor (node) is inside the network.")
                 );
     toolBoxAnalysisProminenceSelect -> setWhatsThis(
-                tr("Various metrics to calculate how 'prominent' or important each actor (node) is inside the network.\n\n") +
-                tr("Centrality metrics quantify how central is each node by examining its ties and its geodesic distances (shortest path lengths) to other nodes. ")+
-                tr("Most Centrality indices were designed for undirected graphs.\n\n")+
-                tr("Prestige indices focus on \"choices received\" to a node. \n")+
-                tr("These indices measure the nominations or ties to each node from all others (or inLinks). ") +
-                tr("Prestige indices are suitable (and can be calculated only) on directed graphs.")
+                tr("Analyze Prominence\n\n"
+                   "Computes various metrics to see how 'prominent' or "
+                   "important each actor (node) is inside the network.")
+                );
+    toolBoxAnalysisProminenceSelect -> setWhatsThis(
+                tr("Analyze Prominence\n\n"
+                   "Computes various metrics to see how 'prominent' or "
+                   "important each actor (node) is inside the network.\n\n"
+                "Centrality metrics quantify how central is each node by examining "
+                   "its ties and its geodesic distances (shortest path lengths) to other nodes. "
+                "Most Centrality indices were designed for undirected graphs.\n\n"
+                "Prestige indices focus on \"choices received\" to a node. \n"
+                "These indices measure the nominations or ties to each node from all others (or inLinks). "
+                "Prestige indices are suitable (and can be calculated only) on directed graphs.")
                 );
     QStringList prominenceCommands;
     prominenceCommands << "None selected"
@@ -2165,6 +2228,12 @@ void MainWindow::initToolBox(){
     toolBoxLayoutByIndexSelectLabel->setText(tr("Index:"));
     toolBoxLayoutByIndexSelectLabel->setMinimumWidth(110);
     toolBoxLayoutByIndexSelect = new QComboBox;
+    toolBoxLayoutByIndexSelect->setToolTip(tr("Apply a prominence-based layout model"));
+    toolBoxLayoutByIndexSelect->setWhatsThis(
+                tr("Visualize by prominence index\n\n"
+                   "Apply a prominence-based layout model to the network "
+                   "For instance, you can apply a degree centrality layout. "
+                   "For each prominence index, you can select a cicular or level layout."));
     QStringList indicesList;
     indicesList << "None"<< "Random"
                 << "Degree Centrality" << "Closeness Centrality"
@@ -2183,6 +2252,12 @@ void MainWindow::initToolBox(){
     toolBoxLayoutByIndexTypeLabel->setText(tr("Layout Type:"));
     toolBoxLayoutByIndexTypeLabel->setMinimumWidth(10);
     toolBoxLayoutByIndexTypeSelect = new QComboBox;
+    toolBoxLayoutByIndexTypeSelect->setToolTip(
+                tr("Select circular or level layout type (you must select an index above)"));
+    toolBoxLayoutByIndexTypeSelect->setWhatsThis(
+                tr("Layout Type\n\n"
+                   "Select a layout type (circular or level) for the selected prominence-based model "
+                   "you want to apply to the network.)"));
     QStringList layoutTypes;
     layoutTypes << "Circular" << "On Levels" << "Nodal size";
     toolBoxLayoutByIndexTypeSelect->addItems(layoutTypes);
@@ -2487,6 +2562,17 @@ void MainWindow::initView() {
     graphicsWidget->setDragMode(QGraphicsView::RubberBandDrag);
     graphicsWidget->setFocusPolicy(Qt::StrongFocus);
     graphicsWidget->setFocus();
+    graphicsWidget->setToolTip(tr("The canvas of SocNetV. \n\n"
+                                  "Inside this area you create and edit networks, "
+                                  "load networks from files and visualize them \n"
+                                  "according to selected metrics. \n\n"
+                                  " - To create a new node, double-click anywhere (Ctrl+X+A)\n"
+                                  " - To add an arc between two nodes, double-click"
+                                  " on the first node then double-click on the second (Ctrl+E+A)\n"
+                                  " - To change network appearance, right click on empty space\n"
+                                  " - To change/edit the properties of a node, right-click on it\n"
+                                  " - To change/edit the properties of an edge, right-click on it."
+                                  ""));
 
 }
 
