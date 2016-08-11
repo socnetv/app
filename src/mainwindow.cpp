@@ -3032,9 +3032,19 @@ void MainWindow::initNet(){
     graphicsWidget->setInitLabelDistance(labelDistance);
     graphicsWidget->setInitZoomIndex(250);
     graphicsWidget->setInitNodeSize(appSettings["initNodeSize"].toInt(0, 10));
-    graphicsWidget->setBackgroundBrush(
-                QBrush(QColor (appSettings["initBackgroundColor"]))
-                ); //Qt::gray
+    if (appSettings["initBackgroundImage"] != ""
+            && QFileInfo(appSettings["initBackgroundImage"]).exists()) {
+        graphicsWidget->setBackgroundBrush(QImage(appSettings["initBackgroundImage"]));
+        graphicsWidget->setCacheMode(QGraphicsView::CacheBackground);
+        statusMessage( tr("BackgroundImage on.") );
+    }
+    else {
+        graphicsWidget->setBackgroundBrush(
+                    QBrush(QColor (appSettings["initBackgroundColor"]))
+                    ); //Qt::gray
+    }
+
+
 
 
     /** set window title **/
