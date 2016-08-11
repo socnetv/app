@@ -52,6 +52,7 @@ signals:
     void setToolBar(bool);
     void setStatusBar(bool);
     void setAntialiasing(bool);
+    void setPrintLogo(bool);
     void setDebugMsgs(bool);
     void setBgColor(QColor);
     void setBgImage();

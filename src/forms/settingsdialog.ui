@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>459</width>
-    <height>604</height>
+    <width>469</width>
+    <height>613</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -140,14 +140,6 @@
            <layout class="QHBoxLayout" name="horizontalLayout_3">
             <item>
              <widget class="QLabel" name="label_4">
-              <property name="font">
-               <font>
-                <family>Ubuntu</family>
-                <pointsize>10</pointsize>
-                <weight>50</weight>
-                <bold>false</bold>
-               </font>
-              </property>
               <property name="text">
                <string>Background color</string>
               </property>
@@ -287,6 +279,9 @@
             </property>
             <property name="text">
              <string>Print logo on Image export</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
             </property>
            </widget>
           </item>

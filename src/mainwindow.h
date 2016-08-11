@@ -321,6 +321,7 @@ public slots:
 
     //VIEW MENU
     void slotAntialiasing(bool );
+    void slotPrintLogo(bool toggle);
     void slotShowProgressBar(bool toggle);
     void slotShowToolBar(bool toggle);
     void slotShowStatusBar(bool toggle);

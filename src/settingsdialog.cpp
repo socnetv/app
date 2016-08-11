@@ -59,6 +59,9 @@ SettingsDialog::SettingsDialog(
     ui->antialiasingChkBox->setChecked(
                 (appSettings["antialiasing"] == "true") ? true:false
                 );
+    ui->printLogoChkBox->setChecked(
+                (appSettings["printLogo"] == "true") ? true:false
+                );
 
     m_bgColor = QColor (m_appSettings["initBackgroundColor"]);
     m_pixmap = QPixmap(60,20) ;
@@ -86,6 +89,9 @@ SettingsDialog::SettingsDialog(
 
     connect (ui->antialiasingChkBox, &QCheckBox::stateChanged,
              this, &SettingsDialog::setAntialiasing);
+
+    connect (ui->printLogoChkBox, &QCheckBox::stateChanged,
+             this, &SettingsDialog::setPrintLogo);
 
     connect (ui->bgColorButton, &QToolButton::clicked,
              this, &SettingsDialog::getBgColor);

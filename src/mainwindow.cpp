@@ -222,6 +222,7 @@ QMap<QString,QString> MainWindow::initSettings(){
     appSettings["lastUsedDirPath"]= dataDir ;
     appSettings["showRightPanel"] = "true";
     appSettings["showLeftPanel"] = "true";
+    appSettings["printLogo"] = "true";
 
     // Try to load settings configuration file
     // First check if our settings folder exist
@@ -4228,9 +4229,13 @@ bool MainWindow::slotExportPNG(){
     QPainter p;
     p.begin(&picture);
     p.setFont(QFont ("Helvetica", 10, QFont::Normal, false));
-    QImage logo(":/images/socnetv-logo.png");
-    p.drawImage(5,5, logo);
-    p.drawText(7,47,tempFileNameNoPath.last());
+    if (appSettings["printLogo"]=="true") {
+        QImage logo(":/images/socnetv-logo.png");
+        p.drawImage(5,5, logo);
+        p.drawText(7,47,tempFileNameNoPath.last());
+    }
+    else
+        p.drawText(5,15,tempFileNameNoPath.last());
     p.end();
     qDebug("slotExportPNG: checking filename");
     if (fn.contains("png", Qt::CaseInsensitive) ) {
@@ -4281,9 +4286,13 @@ bool MainWindow::slotExportBMP(){
     qDebug("slotExportBMP: adding logo");
     p.begin(&picture);
     p.setFont(QFont ("Helvetica", 10, QFont::Normal, false));
-    QImage logo(":/images/socnetv-logo.png");
-    p.drawImage(5,5, logo);
-    p.drawText(7,47,tempFileNameNoPath.last());
+    if (appSettings["printLogo"]=="true") {
+        QImage logo(":/images/socnetv-logo.png");
+        p.drawImage(5,5, logo);
+        p.drawText(7,47,tempFileNameNoPath.last());
+    }
+    else
+        p.drawText(5,15,tempFileNameNoPath.last());
     p.end();
     qDebug("slotExportBMP: checking file");
     if (fn.contains(format, Qt::CaseInsensitive) ) {
@@ -4334,8 +4343,11 @@ bool MainWindow::slotExportPDF(){
         QPrinter printer(QPrinter::HighResolution);
         printer.setOutputFormat(QPrinter::PdfFormat);
         printer.setOutputFileName(m_fileName);
-        QPainter painter(&printer);
-        graphicsWidget->render(&painter);
+        QPainter p;
+        p.begin(&printer);
+        graphicsWidget->render(&p);
+        p.end();
+
     }
     qDebug()<< "Exporting PDF to "<< m_fileName;
     tempFileNameNoPath=m_fileName.split ("/");
@@ -8567,6 +8579,22 @@ void MainWindow::slotAntialiasing(bool toggle) {
 
 }
 
+
+/**
+ * @brief MainWindow::slotPrintLogo
+ * @param toggle
+ */
+void MainWindow::slotPrintLogo(bool toggle){
+    if (!toggle) {
+        statusMessage( tr("SocNetV logo print off.") );
+        appSettings["printLogo"] = "false";
+    }
+    else {
+        appSettings["printLogo"] = "true";
+        statusMessage( tr("SocNetV logo print on.") );
+    }
+}
+
 /**
  * @brief MainWindow::slotShowProgressBar
  * @param toggle
@@ -8769,6 +8797,9 @@ void MainWindow::slotOpenSettingsDialog() {
 
     connect( m_settingsDialog, &SettingsDialog::setAntialiasing,
              this, &MainWindow::slotAntialiasing);
+
+    connect( m_settingsDialog, &SettingsDialog::setPrintLogo,
+                 this, &MainWindow::slotPrintLogo);
 
     connect( m_settingsDialog, &SettingsDialog::setBgColor,
                      this, &MainWindow::slotBackgroundColor);
