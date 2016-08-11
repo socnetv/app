@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Settings &amp; Preferences</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_9">
    <item row="0" column="0">
@@ -393,12 +393,6 @@
            <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
              <widget class="QLabel" name="label_6">
-              <property name="font">
-               <font>
-                <family>Sans Serif</family>
-                <pointsize>9</pointsize>
-               </font>
-              </property>
               <property name="text">
                <string>Node color</string>
               </property>
@@ -424,7 +418,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QToolButton" name="colorButton">
+             <widget class="QToolButton" name="nodeColorBtn">
               <property name="minimumSize">
                <size>
                 <width>60</width>
@@ -457,12 +451,6 @@
            <layout class="QHBoxLayout" name="horizontalLayout_5">
             <item>
              <widget class="QLabel" name="label_5">
-              <property name="font">
-               <font>
-                <family>Sans Serif</family>
-                <pointsize>9</pointsize>
-               </font>
-              </property>
               <property name="text">
                <string>Node shape</string>
               </property>
@@ -593,12 +581,6 @@
            <layout class="QHBoxLayout" name="horizontalLayout_6">
             <item>
              <widget class="QLabel" name="label_3">
-              <property name="font">
-               <font>
-                <family>Sans Serif</family>
-                <pointsize>9</pointsize>
-               </font>
-              </property>
               <property name="text">
                <string>Node size</string>
               </property>
@@ -654,12 +636,6 @@
            <layout class="QHBoxLayout" name="horizontalLayout_11">
             <item>
              <widget class="QLabel" name="label_11">
-              <property name="font">
-               <font>
-                <family>Sans Serif</family>
-                <pointsize>9</pointsize>
-               </font>
-              </property>
               <property name="text">
                <string>Number color</string>
               </property>
@@ -685,7 +661,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QToolButton" name="numberColorButton">
+             <widget class="QToolButton" name="nodeNumberColorButton">
               <property name="minimumSize">
                <size>
                 <width>60</width>
@@ -715,12 +691,6 @@
            <layout class="QHBoxLayout" name="horizontalLayout_12">
             <item>
              <widget class="QLabel" name="label_12">
-              <property name="font">
-               <font>
-                <family>Sans Serif</family>
-                <pointsize>9</pointsize>
-               </font>
-              </property>
               <property name="text">
                <string>Number distance</string>
               </property>
@@ -746,7 +716,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QSpinBox" name="numberDistanceSpin">
+             <widget class="QSpinBox" name="nodeNumberDistanceSpin">
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>
@@ -777,12 +747,6 @@
            <layout class="QHBoxLayout" name="horizontalLayout_10">
             <item>
              <widget class="QLabel" name="label_10">
-              <property name="font">
-               <font>
-                <family>Sans Serif</family>
-                <pointsize>9</pointsize>
-               </font>
-              </property>
               <property name="text">
                <string>Number size</string>
               </property>
@@ -808,7 +772,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QSpinBox" name="numberSizeSpin">
+             <widget class="QSpinBox" name="nodeNumberSizeSpin">
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>
@@ -855,12 +819,6 @@
            <layout class="QHBoxLayout" name="horizontalLayout_8">
             <item>
              <widget class="QLabel" name="label_8">
-              <property name="font">
-               <font>
-                <family>Sans Serif</family>
-                <pointsize>9</pointsize>
-               </font>
-              </property>
               <property name="text">
                <string>Label color</string>
               </property>
@@ -886,7 +844,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QToolButton" name="labelColorButton">
+             <widget class="QToolButton" name="nodeLabelColorButton">
               <property name="minimumSize">
                <size>
                 <width>60</width>
@@ -916,12 +874,6 @@
            <layout class="QHBoxLayout" name="horizontalLayout_7">
             <item>
              <widget class="QLabel" name="label_7">
-              <property name="font">
-               <font>
-                <family>Sans Serif</family>
-                <pointsize>9</pointsize>
-               </font>
-              </property>
               <property name="text">
                <string>Label size</string>
               </property>
@@ -947,7 +899,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QSpinBox" name="labelSizeSpin">
+             <widget class="QSpinBox" name="nodeLabelSizeSpin">
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>
@@ -965,12 +917,6 @@
            <layout class="QHBoxLayout" name="horizontalLayout_9">
             <item>
              <widget class="QLabel" name="label_9">
-              <property name="font">
-               <font>
-                <family>Sans Serif</family>
-                <pointsize>9</pointsize>
-               </font>
-              </property>
               <property name="text">
                <string>Label distance</string>
               </property>
@@ -996,7 +942,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QSpinBox" name="labelDistanceSpin">
+             <widget class="QSpinBox" name="nodeLabelDistanceSpin">
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>
