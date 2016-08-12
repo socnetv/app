@@ -145,42 +145,37 @@ public:
     void destroyProgressBar();
 
 public slots:
-    //FILE MENU
-
-    /// \brief        Creates a new network
-    void slotCreateNew();
-
-    /// \brief  Prompts the user a directory dialogue to choose a file from.
-    /// Calls previewNetworkFile()
-    void slotChooseFile();
-    void slotImportGraphML();
-    void slotImportPajek();
-    void slotImportSM();
-    void slotImportDot();
-    void slotImportGML();
-    void slotImportDL();
-    void slotImportEdgeList();
-    void slotImportTwoModeSM();
-    void slotFileSave();
-    void slotFileSaveAs();
-    void slotFileClose();
-    void slotPrintView();
-    bool slotExportBMP();
-    bool slotExportPNG();
-    bool slotExportPDF();
-    void slotExportPajek();
-    void slotExportSM();
-    bool slotExportDL();
-    bool slotExportGW();
-    bool slotExportList();
     //NETWORK MENU
+
+    void slotNetworkNew();
+    void slotNetworkChooseFile();
+    void slotNetworkImportGraphML();
+    void slotNetworkImportPajek();
+    void slotNetworkImportSM();
+    void slotNetworkImportDot();
+    void slotNetworkImportGML();
+    void slotNetworkImportDL();
+    void slotNetworkImportEdgeList();
+    void slotNetworkImportTwoModeSM();
+    void slotNetworkSave();
+    void slotNetworkSaveAs();
+    void slotNetworkClose();
+    void slotNetworkPrint();
+    void slotNetworkViewSociomatrix();
+    bool slotNetworkExportBMP();
+    bool slotNetworkExportPNG();
+    bool slotNetworkExportPDF();
+    void slotNetworkExportPajek();
+    void slotNetworkExportSM();
+    bool slotNetworkExportDL();
+    bool slotNetworkExportGW();
+    bool slotNetworkExportList();
     void slotOpenTextEditor();
-    void slotViewNetworkFile();
+    void slotNetworkViewFile();
 
     void findCodecs();
     void userCodec(const QString, const QString, const int );
 
-    void slotViewAdjacencyMatrix();
     void slotShowDataSetSelectDialog();
     void slotRecreateDataSet(QString);
 
@@ -241,7 +236,7 @@ public slots:
     void slotShowFilterEdgesDialog();
     void slotTransformNodes2Edges();
     void slotSymmetrize();
-    void slotChangeBackgroundImage();
+    void slotSettingsBackgroundImage();
     void slotOpenSettingsDialog();
 
     // LAYOUT MENU
@@ -429,11 +424,15 @@ private:
     QToolButton *zoomInBtn,*zoomOutBtn,*rotateLeftBtn,*rotateRightBtn, *resetSlidersBtn ;
     QSlider *zoomSlider, *rotateSlider;
 
-    QAction *fileNew, *fileOpen, *fileSave, *fileSaveAs,*fileClose, *printNetwork,*fileQuit;
-    QAction *exportBMP, *exportPNG, *exportPajek, *exportPDF, *exportDL, *exportGW, *exportSM, *exportList;
-    QAction *importPajek,*importSM, *importList,  *importDot , *importDL, *importTwoModeSM;
-
-    QAction *viewNetworkFileAct, *openTextEditorAct, *viewSociomatrixAct, *recreateDataSetAct;
+    QAction *networkNew, *networkOpen, *networkSave, *networkSaveAs,
+    *networkClose, *networkPrint,*networkQuit;
+    QAction *networkExportBMP, *networkExportPNG, *networkExportPajek,
+    *networkExportPDF, *networkExportDL, *networkExportGW, *networkExportSM,
+    *networkExportList;
+    QAction *networkImportPajek,*networkImportSM, *networkImportList,
+    *networkImportDot , *networkImportDL, *networkImportTwoModeSM;
+    QAction *networkViewFileAct, *openTextEditorAct, *networkViewSociomatrixAct,
+    *recreateDataSetAct;
 
     QAction *createErdosRenyiRandomNetworkAct, *createGaussianRandomNetworkAct;
     QAction *createLatticeNetworkAct, *createScaleFreeRandomNetworkAct;

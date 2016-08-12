@@ -10126,7 +10126,7 @@ void Graph::writeAdjacencyMatrixTo(QTextStream& os){
 
 
 /**  	Outputs adjacency matrix to a text stream
-*	Used in slotExportSM() of MainWindow class.
+*	Used in slotNetworkExportSM() of MainWindow class.
 */
 //QTextStream& operator <<  (QTextStream& os, Graph& m){
 //    QList<Vertex*>::const_iterator it, it1;

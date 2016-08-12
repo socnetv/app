@@ -335,149 +335,155 @@ void MainWindow::initActions(){
     printer = new QPrinter;
 
     /**
-    File menu actions
+    Network menu actions
     */
-    fileNew = new QAction(QIcon(":/images/new.png"), tr("&New"),  this);
-    fileNew->setShortcut(Qt::CTRL+Qt::Key_N);
-    fileNew->setStatusTip(tr("Creates a new network"));
-    fileNew->setToolTip(tr("New network (Ctrl+N)"));
-    fileNew->setWhatsThis(tr("New\n\nCreates a new network"));
-    connect(fileNew, SIGNAL(triggered()), this, SLOT(slotCreateNew()));
+    networkNew = new QAction(QIcon(":/images/new.png"), tr("&New"),  this);
+    networkNew->setShortcut(Qt::CTRL+Qt::Key_N);
+    networkNew->setStatusTip(tr("Creates a new network"));
+    networkNew->setToolTip(tr("New network (Ctrl+N)"));
+    networkNew->setWhatsThis(tr("New\n\nCreates a new network"));
+    connect(networkNew, SIGNAL(triggered()), this, SLOT(slotNetworkNew()));
 
-    fileOpen = new QAction(QIcon(":/images/open.png"), tr("&Open"), this);
-    fileOpen->setShortcut(Qt::CTRL+Qt::Key_O);
-    fileOpen->setToolTip(tr("Open network (Ctrl+O)"));
-    fileOpen->setStatusTip(tr("Open GraphML-formatted file of an existing network"));
-    fileOpen->setWhatsThis(tr("Open\n\n"
+    networkOpen = new QAction(QIcon(":/images/open.png"), tr("&Open"), this);
+    networkOpen->setShortcut(Qt::CTRL+Qt::Key_O);
+    networkOpen->setToolTip(tr("Open network (Ctrl+O)"));
+    networkOpen->setStatusTip(tr("Open GraphML-formatted file of an existing network"));
+    networkOpen->setWhatsThis(tr("Open\n\n"
                               "Opens a file of an existing network in GraphML format"));
-    connect(fileOpen, SIGNAL(triggered()), this, SLOT(slotImportGraphML()));
+    connect(networkOpen, SIGNAL(triggered()), this, SLOT(slotNetworkImportGraphML()));
 
 
-    importPajek = new QAction( QIcon(":/images/open.png"), tr("&Pajek"), this);
-    importPajek->setStatusTip(tr("Import Pajek-formatted file"));
-    importPajek->setWhatsThis(tr("Import Pajek \n\n"
+    networkImportPajek = new QAction( QIcon(":/images/open.png"), tr("&Pajek"), this);
+    networkImportPajek->setStatusTip(tr("Import Pajek-formatted file"));
+    networkImportPajek->setWhatsThis(tr("Import Pajek \n\n"
                                  "Imports a network from a Pajek-formatted file"));
-    connect(importPajek, SIGNAL(triggered()), this, SLOT(slotImportPajek()));
+    connect(networkImportPajek, SIGNAL(triggered()), this, SLOT(slotNetworkImportPajek()));
 
 
-    importSM = new QAction( QIcon(":/images/open.png"), tr("&Adjacency Matrix"), this);
-    importSM->setStatusTip(tr("Import Adjacency matrix"));
-    importSM->setWhatsThis(tr("Import Sociomatrix \n\n"
+    networkImportSM = new QAction( QIcon(":/images/open.png"), tr("&Adjacency Matrix"), this);
+    networkImportSM->setStatusTip(tr("Import Adjacency matrix"));
+    networkImportSM->setWhatsThis(tr("Import Sociomatrix \n\n"
                               "Imports a network from an Adjacency matrix-formatted file"));
-    connect(importSM, SIGNAL(triggered()), this, SLOT(slotImportSM()));
+    connect(networkImportSM, SIGNAL(triggered()), this, SLOT(slotNetworkImportSM()));
 
-    importDot = new QAction( QIcon(":/images/open.png"), tr("GraphViz (.dot)"), this);
-    importDot->setStatusTip(tr("Import dot file"));
-    importDot->setWhatsThis(tr("Import GraphViz \n\n "
+    networkImportDot = new QAction( QIcon(":/images/open.png"), tr("GraphViz (.dot)"), this);
+    networkImportDot->setStatusTip(tr("Import dot file"));
+    networkImportDot->setWhatsThis(tr("Import GraphViz \n\n "
                                "Imports a network from an GraphViz formatted file"));
-    connect(importDot, SIGNAL(triggered()), this, SLOT(slotImportDot()));
+    connect(networkImportDot, SIGNAL(triggered()),
+            this, SLOT(slotNetworkImportDot()));
 
 
-    importDL = new QAction( QIcon(":/images/open.png"), tr("UCINET (.dl)..."), this);
-    importDL->setStatusTip(tr("ImportDL-formatted file (UCINET)"));
-    importDL->setWhatsThis(tr("Import UCINET\n\nImports a network from a DL-formatted file"));
-    connect(importDL, SIGNAL(triggered()), this, SLOT(slotImportDL()));
+    networkImportDL = new QAction( QIcon(":/images/open.png"), tr("UCINET (.dl)..."), this);
+    networkImportDL->setStatusTip(tr("ImportDL-formatted file (UCINET)"));
+    networkImportDL->setWhatsThis(tr("Import UCINET\n\nImports a network from a DL-formatted file"));
+    connect(networkImportDL, SIGNAL(triggered()), this, SLOT(slotNetworkImportDL()));
 
 
-    importList = new QAction( QIcon(":/images/open.png"), tr("&Edge list"), this);
-    importList->setStatusTip(tr("Import an edge list file. "));
-    importList->setWhatsThis(tr("Import edge list\n\n"
+    networkImportList = new QAction( QIcon(":/images/open.png"), tr("&Edge list"), this);
+    networkImportList->setStatusTip(tr("Import an edge list file. "));
+    networkImportList->setWhatsThis(tr("Import edge list\n\n"
                                 "Import a network from an edgelist file. "
                                 " The file can be unvalued or valued (see manual)"
                                 ));
-    connect(importList, SIGNAL(triggered()), this, SLOT(slotImportEdgeList()));
+    connect(networkImportList, SIGNAL(triggered()),
+            this, SLOT(slotNetworkImportEdgeList()));
 
 
-    importTwoModeSM = new QAction( QIcon(":/images/open.png"), tr("&Two Mode Sociomatrix"), this);
-    importTwoModeSM->setStatusTip(tr("Import two-mode sociomatrix (affiliation network) file"));
-    importTwoModeSM->setWhatsThis(tr("Import Two-Mode Sociomatrix \n\n "
+    networkImportTwoModeSM = new QAction( QIcon(":/images/open.png"), tr("&Two Mode Sociomatrix"), this);
+    networkImportTwoModeSM->setStatusTip(tr("Import two-mode sociomatrix (affiliation network) file"));
+    networkImportTwoModeSM->setWhatsThis(tr("Import Two-Mode Sociomatrix \n\n "
                                      "Imports a two-mode network from a sociomatrix file. "
                                      "Two-mode networks are described by affiliation "
                                      "network matrices, where A(i,j) codes the "
                                      "events/organizations each actor is affiliated with."));
-    connect(importTwoModeSM, SIGNAL(triggered()), this, SLOT(slotImportTwoModeSM()));
+    connect(networkImportTwoModeSM, SIGNAL(triggered()),
+            this, SLOT(slotNetworkImportTwoModeSM()));
 
 
-    fileSave = new QAction(QIcon(":/images/save.png"), tr("&Save"),  this);
-    fileSave->setShortcut(Qt::CTRL+Qt::Key_S);
-    fileSave->setToolTip(tr("Save network (Ctrl+S)"));
-    fileSave->setStatusTip(tr("Save to the current file"));
-    fileSave->setWhatsThis(tr("Save.\n\n"
+    networkSave = new QAction(QIcon(":/images/save.png"), tr("&Save"),  this);
+    networkSave->setShortcut(Qt::CTRL+Qt::Key_S);
+    networkSave->setToolTip(tr("Save network (Ctrl+S)"));
+    networkSave->setStatusTip(tr("Save to the current file"));
+    networkSave->setWhatsThis(tr("Save.\n\n"
                               "Saves the actual network to the current file"));
-    connect(fileSave, SIGNAL(triggered()), this, SLOT(slotFileSave()));
+    connect(networkSave, SIGNAL(triggered()), this, SLOT(slotNetworkSave()));
 
-    fileSaveAs = new QAction(QIcon(":/images/save.png"), tr("Save &As..."),  this);
-    fileSaveAs->setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_S);
-    fileSaveAs->setStatusTip(tr("Save under a new filename"
+    networkSaveAs = new QAction(QIcon(":/images/save.png"), tr("Save &As..."),  this);
+    networkSaveAs->setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_S);
+    networkSaveAs->setStatusTip(tr("Save under a new filename"
                                 "Ctrl+Shift+S"));
-    fileSaveAs->setWhatsThis(tr("Save As\n\n"
+    networkSaveAs->setWhatsThis(tr("Save As\n\n"
                                 "Saves the actual network under a new filename"));
-    connect(fileSaveAs, SIGNAL(triggered()), this, SLOT(slotFileSaveAs()));
+    connect(networkSaveAs, SIGNAL(triggered()), this, SLOT(slotNetworkSaveAs()));
 
-    exportBMP = new QAction(QIcon(":/images/image.png"), tr("&BMP..."), this);
-    exportBMP->setStatusTip(tr("Export to BMP image"));
-    exportBMP->setWhatsThis(tr("Export BMP \n\n Exports the network to a BMP image"));
-    connect(exportBMP, SIGNAL(triggered()), this, SLOT(slotExportBMP()));
+    networkExportBMP = new QAction(QIcon(":/images/image.png"), tr("&BMP..."), this);
+    networkExportBMP->setStatusTip(tr("Export to BMP image"));
+    networkExportBMP->setWhatsThis(tr("Export BMP \n\n Exports the network to a BMP image"));
+    connect(networkExportBMP, SIGNAL(triggered()), this, SLOT(slotNetworkExportBMP()));
 
-    exportPNG = new QAction( QIcon(":/images/image.png"), tr("&PNG..."), this);
-    exportPNG->setStatusTip(tr("Export to PNG image"));
-    exportPNG->setWhatsThis(tr("Export PNG \n\n Exports the network to a PNG image"));
-    connect(exportPNG, SIGNAL(triggered()), this, SLOT(slotExportPNG()));
+    networkExportPNG = new QAction( QIcon(":/images/image.png"), tr("&PNG..."), this);
+    networkExportPNG->setStatusTip(tr("Export to PNG image"));
+    networkExportPNG->setWhatsThis(tr("Export PNG \n\n Exports the network to a PNG image"));
+    connect(networkExportPNG, SIGNAL(triggered()), this, SLOT(slotNetworkExportPNG()));
 
 
-    exportPDF = new QAction( QIcon(":/images/pdf.png"), tr("&PDF..."), this);
-    exportPDF->setStatusTip(tr("Export to PDF"));
-    exportPDF->setWhatsThis(tr("Export PDF\n\n Exports the network to a PDF document"));
-    connect(exportPDF, SIGNAL(triggered()), this, SLOT(slotExportPDF()));
+    networkExportPDF = new QAction( QIcon(":/images/pdf.png"), tr("&PDF..."), this);
+    networkExportPDF->setStatusTip(tr("Export to PDF"));
+    networkExportPDF->setWhatsThis(tr("Export PDF\n\n Exports the network to a PDF document"));
+    connect(networkExportPDF, SIGNAL(triggered()), this, SLOT(slotNetworkExportPDF()));
 
-    exportSM = new QAction( QIcon(":/images/save.png"), tr("&Adjacency Matrix"), this);
-    exportSM->setStatusTip(tr("Export to adjacency matrix file"));
-    exportSM->setWhatsThis(tr("Export Sociomatrix \n\n"
+    networkExportSM = new QAction( QIcon(":/images/save.png"), tr("&Adjacency Matrix"), this);
+    networkExportSM->setStatusTip(tr("Export to adjacency matrix file"));
+    networkExportSM->setWhatsThis(tr("Export Sociomatrix \n\n"
                               "Exports the network to an "
                               "adjacency matrix-formatted file"));
-    connect(exportSM, SIGNAL(triggered()), this, SLOT(slotExportSM()));
+    connect(networkExportSM, SIGNAL(triggered()), this, SLOT(slotNetworkExportSM()));
 
-    exportPajek = new QAction( QIcon(":/images/save.png"), tr("&Pajek"), this);
-    exportPajek->setStatusTip(tr("Export to Pajek-formatted file"));
-    exportPajek->setWhatsThis(tr("Export Pajek \n\n "
+    networkExportPajek = new QAction( QIcon(":/images/save.png"), tr("&Pajek"), this);
+    networkExportPajek->setStatusTip(tr("Export to Pajek-formatted file"));
+    networkExportPajek->setWhatsThis(tr("Export Pajek \n\n "
                                  "Exports the network to a Pajek-formatted file"));
-    connect(exportPajek, SIGNAL(triggered()), this, SLOT(slotExportPajek()));
+    connect(networkExportPajek, SIGNAL(triggered()), this, SLOT(slotNetworkExportPajek()));
 
-    exportList = new QAction( QIcon(":/images/save.png"), tr("&List"), this);
-    exportList->setStatusTip(tr("Export to List-formatted file. "));
-    exportList->setWhatsThis(tr("Export List\n\n"
-                                "Exports the network to a ""List-formatted file"));
-    connect(exportList, SIGNAL(triggered()), this, SLOT(slotExportList()));
 
-    exportDL = new QAction( QIcon(":/images/save.png"), tr("&DL..."), this);
-    exportDL->setStatusTip(tr("Export to DL-formatted file"));
-    exportDL->setWhatsThis(tr("Export DL\n\nExport network to a DL-formatted"));
-    connect(exportDL, SIGNAL(triggered()), this, SLOT(slotExportDL()));
+    networkExportList = new QAction( QIcon(":/images/save.png"), tr("&List"), this);
+    networkExportList->setStatusTip(tr("Export to List-formatted file. "));
+    networkExportList->setWhatsThis(tr("Export List\n\n"
+                                "Exports the network to a List-formatted file"));
+    connect(networkExportList, SIGNAL(triggered()), this, SLOT(slotNetworkExportList()));
 
-    exportGW = new QAction( QIcon(":/images/save.png"), tr("&GW..."), this);
-    exportGW->setStatusTip(tr("Export to GW-formatted file"));
-    exportGW->setWhatsThis(tr("Export\n\nExport network to a GW formatted file"));
-    connect(exportGW, SIGNAL(triggered()), this, SLOT(slotExportGW()));
+    networkExportDL = new QAction( QIcon(":/images/save.png"), tr("&DL..."), this);
+    networkExportDL->setStatusTip(tr("Export to DL-formatted file"));
+    networkExportDL->setWhatsThis(tr("Export DL\n\n"
+                                     "Exports the active network to a DL-formatted"));
+    connect(networkExportDL, SIGNAL(triggered()), this, SLOT(slotNetworkExportDL()));
 
-    fileClose = new QAction( tr("&Close"), this);
-    fileClose->setStatusTip(tr("Close the actual network"));
-    fileClose->setWhatsThis(tr("Close \n\nCloses the actual network"));
-    connect(fileClose, SIGNAL(triggered()), this, SLOT(slotFileClose()));
+    networkExportGW = new QAction( QIcon(":/images/save.png"), tr("&GW..."), this);
+    networkExportGW->setStatusTip(tr("Export to GW-formatted file"));
+    networkExportGW->setWhatsThis(tr("Export\n\n"
+                                     "Exports the active network to a GW formatted file"));
+    connect(networkExportGW, SIGNAL(triggered()), this, SLOT(slotNetworkExportGW()));
 
-    printNetwork = new QAction(QIcon(":/images/print.png"), tr("&Print"), this);
-    printNetwork->setShortcut(Qt::CTRL+Qt::Key_P);
-    printNetwork->setStatusTip(tr("Send the network to the printer (Ctrl+P)"));
-    printNetwork->setWhatsThis(tr("Printing \n\n"
+    networkClose = new QAction( tr("&Close"), this);
+    networkClose->setStatusTip(tr("Close the actual network"));
+    networkClose->setWhatsThis(tr("Close \n\nCloses the actual network"));
+    connect(networkClose, SIGNAL(triggered()), this, SLOT(slotNetworkClose()));
+
+    networkPrint = new QAction(QIcon(":/images/print.png"), tr("&Print"), this);
+    networkPrint->setShortcut(Qt::CTRL+Qt::Key_P);
+    networkPrint->setStatusTip(tr("Send the network to the printer (Ctrl+P)"));
+    networkPrint->setWhatsThis(tr("Printing \n\n"
                                   "This function prints whatever is viewable on "
                                   "the canvas. \nTo print the whole network, "
                                   "you might want to zoom-out."));
-    connect(printNetwork, SIGNAL(triggered()), this, SLOT(slotPrintView()));
+    connect(networkPrint, SIGNAL(triggered()), this, SLOT(slotNetworkPrint()));
 
-    fileQuit = new QAction(QIcon(":/images/exit.png"), tr("E&xit"), this);
-    fileQuit->setShortcut(Qt::CTRL+Qt::Key_Q);
-    fileQuit->setStatusTip(tr("Quits the application"));
-    fileQuit->setWhatsThis(tr("Exit\n\nQuits the application"));
-    connect(fileQuit, SIGNAL(triggered()), this, SLOT(close()));
+    networkQuit = new QAction(QIcon(":/images/exit.png"), tr("E&xit"), this);
+    networkQuit->setShortcut(Qt::CTRL+Qt::Key_Q);
+    networkQuit->setStatusTip(tr("Quits the application"));
+    networkQuit->setWhatsThis(tr("Exit\n\nQuits the application"));
+    connect(networkQuit, SIGNAL(triggered()), this, SLOT(close()));
 
 
     openTextEditorAct = new QAction(QIcon(":/images/texteditor.png"),
@@ -493,27 +499,27 @@ void MainWindow::initActions(){
     connect(openTextEditorAct, SIGNAL(triggered()), this, SLOT(slotOpenTextEditor()));
 
 
-    viewNetworkFileAct = new QAction(QIcon(":/images/networkfile.png"),
+    networkViewFileAct = new QAction(QIcon(":/images/networkfile.png"),
                                      tr("View Loaded File"),this);
-    viewNetworkFileAct ->setShortcut(Qt::Key_F5);
-    viewNetworkFileAct->setStatusTip(tr("Displays the loaded network file (F5)"));
-    viewNetworkFileAct->setWhatsThis(tr("View Loaded File\n\n"
+    networkViewFileAct ->setShortcut(Qt::Key_F5);
+    networkViewFileAct->setStatusTip(tr("Displays the loaded network file (F5)"));
+    networkViewFileAct->setWhatsThis(tr("View Loaded File\n\n"
                                         "Displays the file of the loaded network"));
-    connect(viewNetworkFileAct, SIGNAL(triggered()), this, SLOT(slotViewNetworkFile()));
+    connect(networkViewFileAct, SIGNAL(triggered()), this, SLOT(slotNetworkViewFile()));
 
-    viewSociomatrixAct = new QAction(QIcon(":/images/sm.png"),
+    networkViewSociomatrixAct = new QAction(QIcon(":/images/sm.png"),
                                      tr("View Adjacency Matrix"),  this);
-    viewSociomatrixAct ->setShortcut(Qt::Key_F6);
-    viewSociomatrixAct->setStatusTip(tr("Display the adjacency matrix of the network. "
+    networkViewSociomatrixAct ->setShortcut(Qt::Key_F6);
+    networkViewSociomatrixAct->setStatusTip(tr("Display the adjacency matrix of the network. "
                                         "(F6)"));
-    viewSociomatrixAct->setWhatsThis(tr("View Adjacency Matrix\n\n"
+    networkViewSociomatrixAct->setWhatsThis(tr("View Adjacency Matrix\n\n"
                                         "Displays the adjacency matrix of the active network. \n\n"
                                         "The adjacency matrix of a network is a matrix "
                                         "where each element a(i,j) is equal to the weight "
                                         "of the arc from node i to node j. "
                                         "If the nodes are not connected, then a(i,j)=0. "));
-    connect(viewSociomatrixAct, SIGNAL(triggered()),
-            this, SLOT(slotViewAdjacencyMatrix()));
+    connect(networkViewSociomatrixAct, SIGNAL(triggered()),
+            this, SLOT(slotNetworkViewSociomatrix()));
 
     recreateDataSetAct = new QAction(QIcon(":/images/sm.png"),
                                      tr("Create Known Data Sets"),  this);
@@ -1711,23 +1717,23 @@ void MainWindow::initMenuBar() {
 
     /** menuBar entry networkMenu */
     networkMenu = menuBar()->addMenu(tr("&Network"));
-    networkMenu -> addAction(fileNew);
-    networkMenu -> addAction(fileOpen);
+    networkMenu -> addAction(networkNew);
+    networkMenu -> addAction(networkOpen);
     importSubMenu = new QMenu(tr("Import ..."));
     importSubMenu -> setIcon(QIcon(":/images/import.png"));
-    importSubMenu -> addAction(importPajek);
-    importSubMenu -> addAction(importSM);
-    importSubMenu -> addAction(importTwoModeSM);
-    importSubMenu -> addAction(importList);
-    importSubMenu -> addAction(importDL);
-    importSubMenu -> addAction(importDot);
+    importSubMenu -> addAction(networkImportPajek);
+    importSubMenu -> addAction(networkImportSM);
+    importSubMenu -> addAction(networkImportTwoModeSM);
+    importSubMenu -> addAction(networkImportList);
+    importSubMenu -> addAction(networkImportDL);
+    importSubMenu -> addAction(networkImportDot);
     networkMenu ->addMenu (importSubMenu);
 
     networkMenu -> addSeparator();
     networkMenu -> addAction (openTextEditorAct);
-    networkMenu -> addAction (viewNetworkFileAct);
+    networkMenu -> addAction (networkViewFileAct);
     networkMenu -> addSeparator();
-    networkMenu -> addAction (viewSociomatrixAct);
+    networkMenu -> addAction (networkViewSociomatrixAct);
     networkMenu -> addSeparator();
 
     networkMenu -> addAction (recreateDataSetAct);
@@ -1748,27 +1754,27 @@ void MainWindow::initMenuBar() {
     networkMenu  -> addAction(webCrawlerAct);
 
     networkMenu  -> addSeparator();
-    networkMenu  -> addAction(fileSave);
-    networkMenu  -> addAction(fileSaveAs);
+    networkMenu  -> addAction(networkSave);
+    networkMenu  -> addAction(networkSaveAs);
     networkMenu  -> addSeparator();
 
     exportSubMenu = networkMenu  -> addMenu(tr("Export..."));
 
-    exportSubMenu -> addAction (exportBMP);
-    exportSubMenu -> addAction (exportPNG);
-    exportSubMenu -> addAction (exportPDF);
+    exportSubMenu -> addAction (networkExportBMP);
+    exportSubMenu -> addAction (networkExportPNG);
+    exportSubMenu -> addAction (networkExportPDF);
     exportSubMenu -> addSeparator();
-    exportSubMenu -> addAction (exportSM);
-    exportSubMenu -> addAction (exportPajek);
-    //   exportList->addTo(exportSubMenu);
-    //   exportDL->addTo(exportSubMenu);
-    //   exportGW->addTo(exportSubMenu);
+    exportSubMenu -> addAction (networkExportSM);
+    exportSubMenu -> addAction (networkExportPajek);
+    //exportSubMenu -> addAction (networkExportList);
+    //exportSubMenu -> addAction (networkExportDL);
+    //exportSubMenu -> addAction (networkExportGW);
 
     networkMenu  -> addSeparator();
-    networkMenu  -> addAction(printNetwork);
+    networkMenu  -> addAction(networkPrint);
     networkMenu  -> addSeparator();
-    networkMenu  -> addAction(fileClose);
-    networkMenu  -> addAction(fileQuit);
+    networkMenu  -> addAction(networkClose);
+    networkMenu  -> addAction(networkQuit);
 
 
 
@@ -1988,10 +1994,10 @@ void MainWindow::initMenuBar() {
 void MainWindow::initToolBar(){
     toolBar = addToolBar("operations");
 
-    toolBar -> addAction (fileNew);
-    toolBar -> addAction (fileOpen);
-    toolBar -> addAction (fileSave);
-    toolBar -> addAction (printNetwork);
+    toolBar -> addAction (networkNew);
+    toolBar -> addAction (networkOpen);
+    toolBar -> addAction (networkSave);
+    toolBar -> addAction (networkPrint);
     toolBar -> addSeparator();
 
     QLabel *labelRotateSpinBox= new QLabel;
@@ -2965,8 +2971,8 @@ void MainWindow::initNet(){
     fileLoaded=false;
 
     networkModified=false;
-    fileSave->setIcon(QIcon(":/images/saved.png"));
-    fileSave->setEnabled(true);
+    networkSave->setIcon(QIcon(":/images/saved.png"));
+    networkSave->setEnabled(true);
 
     markedNodesExist=false;	//used by slotFindNode()
 
@@ -3359,7 +3365,7 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
                                       0, 1 ) )
     {
     case 0:
-        slotFileSave();
+        slotNetworkSave();
         ce->accept();
         break;
     case 1:
@@ -3374,9 +3380,12 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
 
 
 
-
-void MainWindow::slotCreateNew() {
-    slotFileClose();
+/**
+ * @brief MainWindow::slotNetworkNew
+ * Creates a new network
+ */
+void MainWindow::slotNetworkNew() {
+    slotNetworkClose();
 }
 
 
@@ -3404,8 +3413,12 @@ void MainWindow::setLastPath(QString filePath) {
 }
 
 
-
-void MainWindow::slotChooseFile() {
+/**
+ * @brief MainWindow::slotNetworkChooseFile
+ * Prompts the user a directory dialogue to choose a file from.
+ * Calls previewNetworkFile()
+ */
+void MainWindow::slotNetworkChooseFile() {
 
     if (firstTime && fileFormat == -500 ) {
         QMessageBox::information( this, "SocNetV",
@@ -3552,9 +3565,10 @@ void MainWindow::slotChooseFile() {
 
 
 /**
-    Saves the network in the same file
-*/
-void MainWindow::slotFileSave() {
+ * @brief MainWindow::slotNetworkSave
+ * Saves the network in the same file
+ */
+void MainWindow::slotNetworkSave() {
     statusMessage( tr("Saving file..."));
 
     if (!fileLoaded && !networkModified ) {
@@ -3562,7 +3576,7 @@ void MainWindow::slotFileSave() {
         return;
     }
     if ( fileName.isEmpty() ) {
-        slotFileSaveAs();
+        slotNetworkSaveAs();
         return;
     }
 
@@ -3615,10 +3629,12 @@ void MainWindow::slotFileSave() {
 
 
 
+
 /**
-    Saves the network in a new file
-*/
-void MainWindow::slotFileSaveAs() {
+ * @brief MainWindow::slotNetworkSaveAs
+ * Saves the network in a new file
+ */
+void MainWindow::slotNetworkSaveAs() {
     statusMessage( tr("Saving network under new filename..."));
 
     QString fn =  QFileDialog::getSaveFileName(
@@ -3636,7 +3652,7 @@ void MainWindow::slotFileSaveAs() {
         adjacencyFileLoaded=false;
         pajekFileLoaded=false;
         graphMLFileLoaded=false;
-        slotFileSave();
+        slotNetworkSave();
     }
     else  {
         statusMessage( tr("Saving aborted"));
@@ -3647,8 +3663,10 @@ void MainWindow::slotFileSaveAs() {
 
 
 
-/*
- *	Called from Graph when we try to save file
+/**
+ * @brief MainWindow::networkSaved
+ * @param saved_ok
+ * Called from Graph when we try to save file
  */
 void MainWindow::networkSaved(int saved_ok)
 {
@@ -3659,8 +3677,8 @@ void MainWindow::networkSaved(int saved_ok)
     }
     else
     {
-        fileSave->setIcon(QIcon(":/images/saved.png"));
-        fileSave->setEnabled(false);
+        networkSave->setIcon(QIcon(":/images/saved.png"));
+        networkSave->setEnabled(false);
         fileLoaded=true; networkModified=false;
         setWindowTitle( fileNameNoPath.last() );
         statusMessage( tr("Network saved under filename: ")+fileNameNoPath.last()+tr(".") );
@@ -3689,20 +3707,22 @@ void MainWindow::networkSaved(int saved_ok)
     }
 }
 
+
+
 /**
-    Closes the network. Saves it if necessary.
-    Used by createNew.
-*/
-void MainWindow::slotFileClose() {
-    statusMessage( tr("Closing file..."));
-    qDebug()<<"slotFileClose()";
+ * @brief MainWindow::slotNetworkClose
+ * Closes the network. Saves it if necessary. Used by createNew.
+ */
+void MainWindow::slotNetworkClose() {
+    qDebug()<<"slotNetworkClose()";
+    statusMessage( tr("Closing network file..."));
     if (networkModified) {
         switch ( QMessageBox::information (this,
                                            "Closing Network...",
                                            tr("Network has not been saved. \nDo you want to save before closing it?"),
                                            "Yes", "No",0,1))
         {
-        case 0: slotFileSave(); break;
+        case 0: slotNetworkSave(); break;
         case 1: break;
         }
     }
@@ -3714,9 +3734,10 @@ void MainWindow::slotFileClose() {
 
 
 /**
-    Prints whatever is viewable on the Graphics widget
-*/
-void MainWindow::slotPrintView() {
+ * @brief MainWindow::slotNetworkPrint
+ * Sends the active network to the printer
+ */
+void MainWindow::slotNetworkPrint() {
     statusMessage( tr("Printing..."));
     QPrintDialog dialog(printer, this);
     if ( dialog.exec() )   {
@@ -3729,84 +3750,100 @@ void MainWindow::slotPrintView() {
 
 
 
-/**	
-    Imports a network from a formatted file
-*/
-void MainWindow::slotImportGraphML(){
+
+/**
+ * @brief MainWindow::slotNetworkImportGraphML
+ * Imports a network from a GraphML formatted file
+ */
+void MainWindow::slotNetworkImportGraphML(){
 //    fileFormat=-1;
 //    checkSelectFileType = true;
-    this->slotChooseFile();
+    this->slotNetworkChooseFile();
 }
 
 
 
-/**	
-    Imports a network from a formatted file
-*/
-void MainWindow::slotImportPajek(){
+
+/**
+ * @brief MainWindow::slotNetworkImportPajek
+ * Imports a network from a Pajek-like formatted file
+ */
+void MainWindow::slotNetworkImportPajek(){
     fileFormat=2;
     checkSelectFileType = false;
-    this->slotChooseFile();
+    this->slotNetworkChooseFile();
 }
 
 
 
-/**	
-    Imports a network from a Adjacency matrix formatted file
-*/
-void MainWindow::slotImportSM(){
+
+/**
+ * @brief MainWindow::slotNetworkImportSM
+ * Imports a network from a Adjacency matrix formatted file
+ */
+void MainWindow::slotNetworkImportSM(){
     fileFormat=3;
     checkSelectFileType = false;
-    this->slotChooseFile();
+    this->slotNetworkChooseFile();
+}
+
+
+
+
+/**
+ * @brief MainWindow::slotNetworkImportTwoModeSM
+ * Imports a network from a two mode sociomatrix formatted file
+ */
+void MainWindow::slotNetworkImportTwoModeSM(){
+    fileFormat=9;
+    checkSelectFileType = false;
+    this->slotNetworkChooseFile();
 }
 
 
 
 /**
-    Imports a network from a two mode sociomatrix formatted file
-*/
-void MainWindow::slotImportTwoModeSM(){
-    fileFormat=9;
-    checkSelectFileType = false;
-    this->slotChooseFile();
-}
-
-
-/**	
-    Imports a network from a Dot formatted file
-*/
-void MainWindow::slotImportDot(){
+ * @brief MainWindow::slotNetworkImportDot
+ * Imports a network from a Dot formatted file
+ */
+void MainWindow::slotNetworkImportDot(){
     fileFormat=4;
     checkSelectFileType = false;
-    this->slotChooseFile();
+    this->slotNetworkChooseFile();
 }
 
 
 
-/**	
-    Imports a network from a GML formatted file
-*/
-void MainWindow::slotImportGML(){
+/**
+ * @brief MainWindow::slotNetworkImportGML
+ * Imports a network from a GML formatted file
+ */
+void MainWindow::slotNetworkImportGML(){
     fileFormat=5;
     checkSelectFileType = false;
-    this->slotChooseFile();
+    this->slotNetworkChooseFile();
 }
 
 
-/**	
-    Imports a network from a UCINET formatted file
-*/
-void MainWindow::slotImportDL(){
+
+
+/**
+ * @brief MainWindow::slotNetworkImportDL
+ * Imports a network from a UCINET formatted file
+ */
+void MainWindow::slotNetworkImportDL(){
     fileFormat=6;
     checkSelectFileType = false;
-    this->slotChooseFile();
+    this->slotNetworkChooseFile();
 }
 
 
-/**	
-    Imports a network from a List formatted file
-*/
-void MainWindow::slotImportEdgeList(){
+
+/**
+ * @brief MainWindow::slotNetworkImportEdgeList
+ * Imports a network from a List formatted file
+ */
+void MainWindow::slotNetworkImportEdgeList(){
     switch( QMessageBox::question( this, "Type of list format",
                                    tr("I can parse two kinds of lists: \n\n")+
                                    tr("A. Weighted lists, with each line having exactly 3 columns (source, target, weight), i.e.\n  1 2 5 \n \n")+
@@ -3816,16 +3853,16 @@ void MainWindow::slotImportEdgeList(){
             )
     {
     case 0:
-        qDebug() << "***  MW: slotImportEdgeList - Weighted list selected! " ;
+        qDebug() << "***  MW::slotNetworkImportEdgeList - Weighted list selected! " ;
         fileFormat  = 7;
         break;
     case 1:
-        qDebug() << "***  MW: slotImportEdgeList - Simple list selected! " ;
+        qDebug() << "***  MW: slotNetworkImportEdgeList - Simple list selected! " ;
         fileFormat = 8;
         break;
     }
     checkSelectFileType = false;
-    this->slotChooseFile();
+    this->slotNetworkChooseFile();
 }
 
 
@@ -4080,9 +4117,10 @@ void MainWindow::fileType (
         break;
     }
     graphChanged();
-    fileSave->setIcon(QIcon(":/images/saved.png"));
-    fileSave->setEnabled(false);
+    networkSave->setIcon(QIcon(":/images/saved.png"));
+    networkSave->setEnabled(false);
 }
+
 
 /**
  * @brief MainWindow::prevRelation
@@ -4183,10 +4221,12 @@ void MainWindow::addRelation(){
 
 
 
+
 /**
-    Calls Graph::createVertex method to add a new RANDOM node into the activeGraph.
-    Called when "Create Node" button is clicked on the Main Window.
-*/
+ * @brief MainWindow::addNode
+ * Calls Graph::createVertex method to add a new RANDOM node into the activeGraph.
+ * Called when "Create Node" button is clicked on the Main Window.
+ */
 void MainWindow::addNode() {
     qDebug() << "MW::addNode() ";
     // minus a  screen edge offset...
@@ -4212,14 +4252,16 @@ void MainWindow::addNodeWithMouse(int num, QPointF p) {
 
 
 /**
-    Exports the network to a PNG image
-    Mediocre Quality but smaller file
-*/
-
-bool MainWindow::slotExportPNG(){
-    qDebug("slotExportPNG");
+ * @brief MainWindow::slotExportPNG
+ * @return
+ * Exports the network to a PNG image - Mediocre Quality but smaller file
+ */
+bool MainWindow::slotNetworkExportPNG(){
+    qDebug()<< "MW::slotNetworkExportPNG";
     if (!fileLoaded && !networkModified )  {
-        QMessageBox::critical(this, "Error",tr("The canvas is empty!\nLoad a network file or create a new network first."), "OK",0);
+        QMessageBox::critical(this, "Error",
+                              tr("The canvas is empty!\n"
+                              "Load a network file or create a new network first."), "OK",0);
         statusMessage( tr("Cannot export PNG.") );
         return false;
     }
@@ -4268,14 +4310,21 @@ bool MainWindow::slotExportPNG(){
 
 
 
+
 /**
-    Exports the network to a BMP image
-    Better Quality but larger file
-*/
-bool MainWindow::slotExportBMP(){
-    qDebug(	"slotExportBMP()");
+ * @brief MainWindow::slotNetworkExportBMP
+ * @return
+ * Exports the network to a BMP image - Better Quality but larger file
+ */
+bool MainWindow::slotNetworkExportBMP(){
+    qDebug(	"slotNetworkExportBMP()");
     if (!fileLoaded && !networkModified )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to export! \nLoad a network file or create a new network first."), "OK",0);
+        QMessageBox::critical(this,
+                              "Error",
+                              tr(
+                                  "Nothing to export! \n"
+                                 "Load a network file or create a new network first."),
+                              "OK",0);
         statusMessage( tr("Cannot export BMP.") );
         return false;
     }
@@ -4290,10 +4339,10 @@ bool MainWindow::slotExportBMP(){
     tempFileNameNoPath=fn.split ("/");
 
     QPixmap picture;
-    qDebug("slotExportBMP: grabbing canvas");
+    qDebug("slotNetworkExportBMP: grabbing canvas");
     picture=QPixmap::grabWidget(graphicsWidget, graphicsWidget->viewport()->rect());
     QPainter p;
-    qDebug("slotExportBMP: adding logo");
+    qDebug("slotNetworkExportBMP: adding logo");
     p.begin(&picture);
     p.setFont(QFont ("Helvetica", 10, QFont::Normal, false));
     if (appSettings["printLogo"]=="true") {
@@ -4304,7 +4353,7 @@ bool MainWindow::slotExportBMP(){
     else
         p.drawText(5,15,tempFileNameNoPath.last());
     p.end();
-    qDebug("slotExportBMP: checking file");
+    qDebug("slotNetworkExportBMP: checking file");
     if (fn.contains(format, Qt::CaseInsensitive) ) {
         picture.toImage().save(fn, format.toLatin1());
         QMessageBox::information(this, tr("Export to BMP..."),
@@ -4328,13 +4377,17 @@ bool MainWindow::slotExportBMP(){
 
 
 /**
-    Exports the network to a PDF Document
-    Best Quality
-*/
-bool MainWindow::slotExportPDF(){
-    qDebug(	"slotExportPDF()");
+ * @brief MainWindow::slotExportPDF
+ * @return
+ * Exports the network to a PDF Document - Best Quality
+ */
+bool MainWindow::slotNetworkExportPDF(){
+    qDebug()<< "MW::slotNetworkExportPDF()";
     if (!fileLoaded && !networkModified )  {
-        QMessageBox::critical(this, "Error",tr("The canvas is empty!\nLoad a network file or create a new network first."), "OK",0);
+        QMessageBox::critical(this,
+                              "Error",
+                              tr("The canvas is empty!\n"
+                                 "Load a network file or create a new network first."), "OK",0);
         statusMessage( tr("Cannot export PDF.")  );
         return false;
     }
@@ -4362,7 +4415,9 @@ bool MainWindow::slotExportPDF(){
     qDebug()<< "Exporting PDF to "<< m_fileName;
     tempFileNameNoPath=m_fileName.split ("/");
     setLastPath(m_fileName);
-    QMessageBox::information(this, tr("Export to PDF..."),tr("File saved as: ")+tempFileNameNoPath.last() , "OK",0);
+    QMessageBox::information(this, tr("Export to PDF..."),
+                             tr("File saved as: ")+tempFileNameNoPath.last() ,
+                             "OK",0);
     statusMessage(  tr("Exporting completed") );
     return true;
 }
@@ -4371,12 +4426,13 @@ bool MainWindow::slotExportPDF(){
 
 
 /**
-    Exports the network to a Pajek-formatted file
-    Calls the relevant Graph method.
-*/
-void MainWindow::slotExportPajek()
+ * @brief MainWindow::slotExportPajek
+ * Exports the network to a Pajek-formatted file
+ * Calls the relevant Graph method.
+ */
+void MainWindow::slotNetworkExportPajek()
 {
-    qDebug ("MW: slotExportPajek");
+    qDebug () << "MW::slotNetworkExportPajek";
 
     if (!fileLoaded && !networkModified )  {
         QMessageBox::critical(this, "Error",tr("Nothing to export! \nLoad a network file or create a new network first."), "OK",0);
@@ -4414,11 +4470,13 @@ void MainWindow::slotExportPajek()
 
 
 
-/**	Exports the network to a adjacency matrix-formatted file
-    Calls the relevant Graph method.
-*/
-void MainWindow::slotExportSM(){
-    qDebug("MW: slotExportSM()");
+/**
+ * @brief MainWindow::slotNetworkExportSM
+ * Exports the network to a adjacency matrix-formatted file
+ * Calls the relevant Graph method.
+ */
+void MainWindow::slotNetworkExportSM(){
+    qDebug("MW: slotNetworkExportSM()");
     if (!fileLoaded && !networkModified )  {
         QMessageBox::critical(this, "Error",tr("Nothing to export!\nLoad a network file or create a new network first."), "OK",0);
         statusMessage( tr("Cannot export to Adjacency Matrix.")  );
@@ -4457,12 +4515,12 @@ void MainWindow::slotExportSM(){
 
 
 
-
 /**
-    Exports the network to a DL-formatted file
-    TODO slotExportDL
-*/
-bool MainWindow::slotExportDL(){
+ * @brief MainWindow::slotNetworkExportDL
+ * @return Exports the network to a DL-formatted file
+ * - TODO slotNetworkExportDL
+ */
+bool MainWindow::slotNetworkExportDL(){
     if (!fileLoaded && !networkModified )  {
         QMessageBox::critical(this, "Error",tr("Nothing to export!\nLoad a network file or create a new network first."), "OK",0);
         statusMessage( tr("Cannot export to DL.")  );
@@ -4490,9 +4548,9 @@ bool MainWindow::slotExportDL(){
 
 /**
     Exports the network to a GW-formatted file
-    TODO slotExportGW
+    TODO slotNetworkExportGW
 */ 
-bool MainWindow::slotExportGW(){
+bool MainWindow::slotNetworkExportGW(){
     if (!fileLoaded && !networkModified )  {
         QMessageBox::critical(this, "Error",tr("Nothing to export!\nLoad a network file or create a new network first."), "OK",0);
         statusMessage( tr("Cannot export to GW.")  );
@@ -4521,9 +4579,9 @@ bool MainWindow::slotExportGW(){
 
 /**
     Exports the network to a list-formatted file
-    TODO slotExportList
+    TODO slotNetworkExportList
 */
-bool MainWindow::slotExportList(){
+bool MainWindow::slotNetworkExportList(){
     if (fileName.isEmpty()) {
         statusMessage( tr("Saving network under new filename..."));
         QString fn = QFileDialog::getSaveFileName(
@@ -4547,12 +4605,13 @@ bool MainWindow::slotExportList(){
 
 
 /**
-    Displays the file of the loaded network.
-    Network _must_ be unchanged since last save/load.
-    Otherwise it will ask the user to first save the network, then view its file.
-*/
-void MainWindow::slotViewNetworkFile(){
-    qDebug() << "slotViewNetworkFile() : " << fileName.toLatin1();
+ * @brief MainWindow::slotNetworkViewFile
+ * Displays the file of the loaded network.
+   Network _must_ be unchanged since last save/load.
+   Otherwise it will ask the user to first save the network, then view its file.
+ */
+void MainWindow::slotNetworkViewFile(){
+    qDebug() << "slotNetworkViewFile() : " << fileName.toLatin1();
     if ( fileLoaded && !networkModified ) { //file network unmodified
         QFile f( fileName );
         if ( !f.open( QIODevice::ReadOnly ) ) {
@@ -4567,15 +4626,15 @@ void MainWindow::slotViewNetworkFile(){
     else if (fileName.isEmpty() && networkModified)     {  //New network + something
         QMessageBox::information (this, "Viewing network file",
                                   tr("This network has not been saved yet. \nI will open a dialog for you to save it now. \nPlease choose a filename..."), "OK",0);
-        slotFileSaveAs();
+        slotNetworkSaveAs();
     }
     else if (fileLoaded && networkModified ) {   //file network + modified
         QMessageBox::information (this, "Viewing network file",
                                   //FIXME maybe better to save automagically rather than asking?
                                   tr("The network has been modified. \nI will save it to the original file for you now."), "OK",0);
         networkModified = false;
-        slotFileSave();
-        slotViewNetworkFile();
+        slotNetworkSave();
+        slotNetworkViewFile();
     }
     else	{
         QMessageBox::critical(this, "Error",
@@ -4588,8 +4647,9 @@ void MainWindow::slotViewNetworkFile(){
 
 
 /**
-    Opens the embedded text editor
-*/
+ * @brief MainWindow::slotOpenTextEditor
+ * Opens the embedded text editor
+ */
 void MainWindow::slotOpenTextEditor(){
     qDebug() << "slotOpenTextEditor() : ";
 
@@ -4604,12 +4664,14 @@ void MainWindow::slotOpenTextEditor(){
 
 
 /**
-    Displays the adjacency matrix of the network.
-    It uses a different method for writing the matrix to a file.
-    While slotExportSM uses << operator of Matrix class (via adjacencyMatrix of Graph class),
-    this is using directly the writeAdjacencyMatrix method of Graph class
-*/
-void MainWindow::slotViewAdjacencyMatrix(){
+ * @brief MainWindow::slotNetworkViewSociomatrix
+ *  Displays the adjacency matrix of the network.
+ *  It uses a different method for writing the matrix to a file.
+ *  While slotNetworkExportSM uses << operator of Matrix class
+ *  (via adjacencyMatrix of Graph class), this is using directly the
+ *  writeAdjacencyMatrix method of Graph class
+ */
+void MainWindow::slotNetworkViewSociomatrix(){
     if ( !fileLoaded && !networkModified) {
         QMessageBox::critical (this, "Error",
                                tr("Empty network! \nLoad a network file or create something by double-clicking on the canvas!"), "OK",0);
@@ -5142,7 +5204,7 @@ void MainWindow::slotShowWebCrawlerDialog() {
 */ 
 void MainWindow::slotWebCrawl ( QString  seed, int maxNodes, int maxRecursion,
                                 bool extLinks, bool intLinks) {
-    this->slotFileClose();
+    this->slotNetworkClose();
     activeGraph.webCrawl( seed, maxNodes, maxRecursion,  extLinks, intLinks) ;
 
 }
@@ -5196,14 +5258,14 @@ void MainWindow::slotFindNode(){
 
 /**
 *	A slot activated when something has been changed in the graph.
-    Makes the fileSave icon active and refreshes any LCD values.
+    Makes the networkSave icon active and refreshes any LCD values.
     Also called from graphicsWidget.
 */
 void MainWindow::graphChanged(){
     qDebug("MW: graphChanged");
     networkModified=true;
-    fileSave->setIcon(QIcon(":/images/save.png"));
-    fileSave->setEnabled(true);
+    networkSave->setIcon(QIcon(":/images/save.png"));
+    networkSave->setEnabled(true);
 
     nodesLCD->display(activeGraph.vertices());
     edgesLCD->display(activeEdges());
@@ -8668,7 +8730,7 @@ void MainWindow::slotBackgroundImage(bool toggle) {
         if (m_fileName.isNull() )
             appSettings["initBackgroundImage"] = "";
         appSettings["initBackgroundImage"] = m_fileName;
-        slotChangeBackgroundImage();
+        slotSettingsBackgroundImage();
     }
 }
 
@@ -8677,7 +8739,7 @@ void MainWindow::slotBackgroundImage(bool toggle) {
 /*
  * Enables/disables displaying a user-defined custom image in the background
  */
-void MainWindow::slotChangeBackgroundImage() {
+void MainWindow::slotSettingsBackgroundImage() {
     statusMessage( tr("Toggle BackgroundImage..."));
     if (appSettings["initBackgroundImage"].isEmpty())   {
         statusMessage( tr("BackgroundImage off.") );
@@ -8815,7 +8877,7 @@ void MainWindow::slotOpenSettingsDialog() {
                      this, &MainWindow::slotBackgroundColor);
 
     connect( m_settingsDialog, &SettingsDialog::setBgImage,
-                     this, &MainWindow::slotChangeBackgroundImage);
+                     this, &MainWindow::slotSettingsBackgroundImage);
 
     connect( m_settingsDialog, &SettingsDialog::setToolBar,
              this, &MainWindow::slotShowToolBar);
