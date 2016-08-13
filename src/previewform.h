@@ -48,7 +48,7 @@ public:
     void setEncodedData(const QByteArray &data, const QString, const int );
     QString decodedString() const { return decodedStr; }
 signals:
-    void userCodec(const QString, const QString, const int);
+    void loadNetworkFileWithCodec(const QString, const QString, const int);
 private slots:
     void updateTextEdit();
     void accept();

@@ -135,7 +135,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
     {
         fileName=m_fileName;
         fileNameNoPath=fileName.split ("/");
-        previewNetworkFile( fileName, 0 );
+        slotNetworkFilePreview( fileName, 0 );
     }
 
     graphicsWidget->setFocus();
@@ -173,15 +173,16 @@ QMap<QString,QString> MainWindow::initSettings(){
     createFortuneCookies();
     createTips();
 
-    // Call findCodecs to setup a list of all supported codecs
-    qDebug() << "MW::initSettings - calling findCodecs" ;
-    findCodecs();
+    // Call slotNetworkAvailableTextCodecs to setup a list of all supported codecs
+    qDebug() << "MW::initSettings - calling slotNetworkAvailableTextCodecs" ;
+    slotNetworkAvailableTextCodecs();
 
     qDebug() << "MW::initSettings - creating PreviewForm object and setting codecs list" ;
     previewForm = new PreviewForm(this);
     previewForm->setCodecList(codecs);
 
-    connect (previewForm, &PreviewForm::userCodec, this, &MainWindow::userCodec );
+    connect (previewForm, &PreviewForm::loadNetworkFileWithCodec,
+             this, &MainWindow::slotNetworkFileLoad );
 
     qDebug() << "MW::initSettings - creating default settings" ;
     settingsDir = QDir::homePath() +QDir::separator() + "socnetv-data" + QDir::separator() ;
@@ -321,6 +322,67 @@ void MainWindow::saveSettings() {
         ++i;
     }
     file.close();
+
+}
+
+
+
+
+/**
+ * @brief MainWindow::slotOpenSettingsDialog
+ * Open Settings dialog
+ */
+void MainWindow::slotOpenSettingsDialog() {
+    qDebug() << "MW;:slotOpenSettingsDialog()";
+
+    // build dialog
+
+    m_settingsDialog = new SettingsDialog( appSettings, this);
+
+    connect( m_settingsDialog, &SettingsDialog::saveSettings,
+                     this, &MainWindow::saveSettings);
+
+    connect( m_settingsDialog, &SettingsDialog::setDebugMsgs,
+                         this, &MainWindow::slotPrintDebug);
+
+    connect( m_settingsDialog, &SettingsDialog::setProgressBars,
+             this, &MainWindow::slotShowProgressBar);
+
+    connect( m_settingsDialog, &SettingsDialog::setAntialiasing,
+             this, &MainWindow::slotAntialiasing);
+
+    connect( m_settingsDialog, &SettingsDialog::setPrintLogo,
+                 this, &MainWindow::slotPrintLogo);
+
+    connect( m_settingsDialog, &SettingsDialog::setBgColor,
+                     this, &MainWindow::slotBackgroundColor);
+
+    connect( m_settingsDialog, &SettingsDialog::setBgImage,
+                     this, &MainWindow::slotSettingsBackgroundImage);
+
+    connect( m_settingsDialog, &SettingsDialog::setToolBar,
+             this, &MainWindow::slotShowToolBar);
+
+    connect( m_settingsDialog, &SettingsDialog::setStatusBar,
+             this, &MainWindow::slotShowStatusBar);
+
+    connect( m_settingsDialog, &SettingsDialog::setLeftPanel,
+             this, &MainWindow::slotShowLeftPanel);
+
+    connect( m_settingsDialog, &SettingsDialog::setRightPanel,
+             this, &MainWindow::slotShowRightPanel);
+
+    connect(m_settingsDialog, SIGNAL(setNodeColor(QColor)),
+            this, SLOT(slotEditNodeColorAll(QColor)) );
+
+    connect( m_settingsDialog, &SettingsDialog::setNodeShape,
+             this, &MainWindow::slotNodeShape);
+
+
+    // show settings dialog
+    m_settingsDialog->exec();
+
+    qDebug ()<< appSettings["initBackgroundImage"] ;
 
 }
 
@@ -505,7 +567,7 @@ void MainWindow::initActions(){
     networkViewFileAct->setStatusTip(tr("Displays the loaded network file (F5)"));
     networkViewFileAct->setWhatsThis(tr("View Loaded File\n\n"
                                         "Displays the file of the loaded network"));
-    connect(networkViewFileAct, SIGNAL(triggered()), this, SLOT(slotNetworkViewFile()));
+    connect(networkViewFileAct, SIGNAL(triggered()), this, SLOT(slotNetworkFileView()));
 
     networkViewSociomatrixAct = new QAction(QIcon(":/images/sm.png"),
                                      tr("View Adjacency Matrix"),  this);
@@ -521,16 +583,16 @@ void MainWindow::initActions(){
     connect(networkViewSociomatrixAct, SIGNAL(triggered()),
             this, SLOT(slotNetworkViewSociomatrix()));
 
-    recreateDataSetAct = new QAction(QIcon(":/images/sm.png"),
+    networkDataSetSelectAct = new QAction(QIcon(":/images/sm.png"),
                                      tr("Create Known Data Sets"),  this);
-    recreateDataSetAct ->setShortcut(Qt::Key_F7);
-    recreateDataSetAct->setStatusTip(tr("Recreate a variety of known data sets."));
-    recreateDataSetAct->setWhatsThis(tr("Known Data Sets\n\n"
+    networkDataSetSelectAct ->setShortcut(Qt::Key_F7);
+    networkDataSetSelectAct->setStatusTip(tr("Recreate a variety of known data sets."));
+    networkDataSetSelectAct->setWhatsThis(tr("Known Data Sets\n\n"
                                         "Recreates some of the most widely used "
                                         "data sets in network analysis studies, i.e. "
                                         "Krackhardt's high-tech managers"));
-    connect(recreateDataSetAct, SIGNAL(triggered()),
-            this, SLOT(slotShowDataSetSelectDialog()));
+    connect(networkDataSetSelectAct, SIGNAL(triggered()),
+            this, SLOT(slotNetworkDataSetSelect()));
 
 
     createErdosRenyiRandomNetworkAct = new QAction(QIcon(":/images/erdos.png"),
@@ -644,28 +706,59 @@ void MainWindow::initActions(){
     connect(selectNoneAct, SIGNAL(triggered()), this, SLOT(slotSelectNone()));
 
 
+    editRelationNextAct = new QAction(QIcon(":/images/nextrelation.png"),
+                                  tr("Next Relation"),  this);
+    editRelationNextAct->setShortcut(Qt::ALT + Qt::Key_Right);
+    editRelationNextAct->setToolTip(tr("Goto next graph relation (ALT+Right)"));
+    editRelationNextAct->setStatusTip(tr("Loads the next relation of the network (if any)."));
+    editRelationNextAct->setWhatsThis(tr("Next Relation\n\nLoads the next relation of the network (if any)"));
+
+    editRelationPreviousAct = new QAction(QIcon(":/images/prevrelation.png"),
+                                      tr("Previous Relation"),  this);
+    editRelationPreviousAct->setShortcut(Qt::ALT + Qt::Key_Left);
+    editRelationPreviousAct->setToolTip(
+                tr("Goto previous graph relation (ALT+Left)"));
+    editRelationPreviousAct->setStatusTip(
+                tr("Loads the previous relation of the network (if any)."));
+    editRelationPreviousAct->setWhatsThis(
+                tr("Previous Relation\n\n"
+                   "Loads the previous relation of the network (if any)"));
+
+    editRelationAddAct = new QAction(QIcon(":/images/addrelation.png"),
+                                      tr("Add New Relation"),  this);
+    editRelationAddAct->setShortcut(Qt::ALT + Qt::CTRL + Qt::Key_N);
+    editRelationAddAct->setToolTip(
+                tr("Add a new relation to the active graph (Ctrl+Shift+N)"));
+    editRelationAddAct->setStatusTip(
+                tr("Adds a new relation to the network. "
+                   "Nodes will be preserved, edges will be removed. "));
+    editRelationAddAct->setWhatsThis(
+                tr("Add New Relation\n\n"
+                   "Adds a new relation to the active network. "
+                   "Nodes will be preserved, edges will be removed. "));
+
     findNodeAct = new QAction(QIcon(":/images/find.png"), tr("Find Node"), this);
-    findNodeAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_F));
+    findNodeAct->setShortcut(Qt::CTRL + Qt::Key_F);
     findNodeAct->setStatusTip(tr("Find and highlights a node by number or label. "
                                  "Press Ctrl+F again to undo."));
     findNodeAct->setWhatsThis(tr("Find Node\n\nFinds a node with a given number or label and doubles its size. Ctrl+F again resizes back the node"));
     connect(findNodeAct, SIGNAL(triggered()), this, SLOT(slotFindNode()) );
 
     addNodeAct = new QAction(QIcon(":/images/add.png"), tr("Add Node"), this);
-    addNodeAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_A));
+    addNodeAct->setShortcut(Qt::CTRL + Qt::Key_Period);
     addNodeAct->setStatusTip(tr("Add a node"));
     addNodeAct->setWhatsThis(tr("Add Node\n\nAdds a node to the network"));
     connect(addNodeAct, SIGNAL(triggered()), this, SLOT(addNode()));
 
     removeNodeAct = new QAction(QIcon(":/images/remove.png"),tr("Remove Node"), this);
-    removeNodeAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_Backspace));
+    removeNodeAct ->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_Period);
     //Single key shortcuts with backspace or del do no work in Mac http://goo.gl/7hz7Dx
     removeNodeAct->setStatusTip(tr("Remove a node"));
     removeNodeAct->setWhatsThis(tr("Remove Node\n\nRemoves a node from the network"));
     connect(removeNodeAct, SIGNAL(triggered()), this, SLOT(slotRemoveNode()));
 
     propertiesNodeAct = new QAction(QIcon(":/images/properties.png"),tr("Node Properties"), this);
-    propertiesNodeAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_P));
+    propertiesNodeAct ->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_Period );
     propertiesNodeAct->setStatusTip(tr("Open node properties"));
     propertiesNodeAct->setWhatsThis(tr("Node Properties\n\nOpens node properties to edit label, size, color, shape etc"));
     connect(propertiesNodeAct, SIGNAL(triggered()), this, SLOT(slotNodePropertiesDialog()));
@@ -690,15 +783,30 @@ void MainWindow::initActions(){
     changeLabelsSizeAct->setWhatsThis(tr("Labels Size\n\nChange the fontsize of the labels of all nodes"));
     connect(changeLabelsSizeAct, SIGNAL(triggered()), this, SLOT(slotChangeLabelsSize()) );
 
+    editNodeColorAll = new QAction(QIcon(":/images/nodecolor.png"), tr("Change all Nodes Colors"),	this);
+    editNodeColorAll->setStatusTip(tr("Click to choose a new color for all nodes."));
+    editNodeColorAll->setWhatsThis(tr("All Nodes\n\nChanges all nodes color at once."));
+    connect(editNodeColorAll, SIGNAL(triggered()), this, SLOT(slotEditNodeColorAll()) );
+
+    changeAllNumbersColorAct = new QAction( tr("Change all Numbers Colors"),	this);
+    changeAllNumbersColorAct->setStatusTip(tr("Click to change the color of all numbers."));
+    changeAllNumbersColorAct->setWhatsThis(tr("Numbers\n\nChanges the color of all numbers."));
+    connect(changeAllNumbersColorAct, SIGNAL(triggered()), this, SLOT(slotAllNumbersColor()));
+
+    changeAllLabelsColorAct = new QAction( tr("Change all Labels Colors"),	this);
+    changeAllLabelsColorAct->setStatusTip(tr("Click to change the color of all node labels."));
+    changeAllLabelsColorAct->setWhatsThis(tr("Numbers\n\nChanges the color of all node labels."));
+    connect(changeAllLabelsColorAct, SIGNAL(triggered()), this, SLOT(slotAllLabelsColor()));
+
+
     addEdgeAct = new QAction(QIcon(":/images/plines.png"), tr("Add Edge"),this);
-    addEdgeAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_A));
+    addEdgeAct->setShortcut(Qt::CTRL + Qt::Key_Slash);
     addEdgeAct->setStatusTip(tr("Adds a directed edge from a node to another"));
     addEdgeAct->setWhatsThis(tr("Add Edge\n\nAdds a directed edge from a node to another"));
     connect(addEdgeAct, SIGNAL(triggered()), this, SLOT(slotAddEdge()));
 
     removeEdgeAct = new QAction(QIcon(":/images/disconnect.png"), tr("Remove"), this);
-    //removeEdgeAct ->setShortcut(QKeySequence(Qt::SHIFT+Qt::Key_Backspace));
-    removeEdgeAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_Backspace));
+    removeEdgeAct ->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_Slash);
     removeEdgeAct->setStatusTip(tr("Removes an Edge"));
     removeEdgeAct->setWhatsThis(tr("Remove Edge\n\nRemoves an Edge from the network"));
     connect(removeEdgeAct, SIGNAL(triggered()), this, SLOT(slotRemoveEdge()));
@@ -747,20 +855,6 @@ void MainWindow::initActions(){
     changeBackColorAct->setWhatsThis(tr("Background\n\nChanges background color"));
     connect(changeBackColorAct, SIGNAL(triggered()), this, SLOT(slotBackgroundColor()));
 
-    changeAllNodesColorAct = new QAction(QIcon(":/images/nodecolor.png"), tr("Change all Nodes Colors"),	this);
-    changeAllNodesColorAct->setStatusTip(tr("Click to choose a new color for all nodes."));
-    changeAllNodesColorAct->setWhatsThis(tr("All Nodes\n\nChanges all nodes color at once."));
-    connect(changeAllNodesColorAct, SIGNAL(triggered()), this, SLOT(slotAllNodesColor()) );
-
-    changeAllNumbersColorAct = new QAction( tr("Change all Numbers Colors"),	this);
-    changeAllNumbersColorAct->setStatusTip(tr("Click to change the color of all numbers."));
-    changeAllNumbersColorAct->setWhatsThis(tr("Numbers\n\nChanges the color of all numbers."));
-    connect(changeAllNumbersColorAct, SIGNAL(triggered()), this, SLOT(slotAllNumbersColor()));
-
-    changeAllLabelsColorAct = new QAction( tr("Change all Labels Colors"),	this);
-    changeAllLabelsColorAct->setStatusTip(tr("Click to change the color of all node labels."));
-    changeAllLabelsColorAct->setWhatsThis(tr("Numbers\n\nChanges the color of all node labels."));
-    connect(changeAllLabelsColorAct, SIGNAL(triggered()), this, SLOT(slotAllLabelsColor()));
 
     changeAllEdgesColorAct = new QAction( tr("Change all Edges Colors"), this);
     changeAllEdgesColorAct->setStatusTip(tr("Click to change the color of all Edges."));
@@ -1240,36 +1334,6 @@ void MainWindow::initActions(){
 
 
 
-    nextRelationAct = new QAction(QIcon(":/images/nextrelation.png"),
-                                  tr("Next Relation"),  this);
-    nextRelationAct->setShortcut(Qt::ALT + Qt::Key_Right);
-    nextRelationAct->setToolTip(tr("Goto next graph relation (ALT+Right)"));
-    nextRelationAct->setStatusTip(tr("Loads the next relation of the network (if any)."));
-    nextRelationAct->setWhatsThis(tr("Next Relation\n\nLoads the next relation of the network (if any)"));
-
-    prevRelationAct = new QAction(QIcon(":/images/prevrelation.png"),
-                                      tr("Previous Relation"),  this);
-    prevRelationAct->setShortcut(Qt::ALT + Qt::Key_Left);
-    prevRelationAct->setToolTip(
-                tr("Goto previous graph relation (ALT+Left)"));
-    prevRelationAct->setStatusTip(
-                tr("Loads the previous relation of the network (if any)."));
-    prevRelationAct->setWhatsThis(
-                tr("Previous Relation\n\n"
-                   "Loads the previous relation of the network (if any)"));
-
-    addRelationAct = new QAction(QIcon(":/images/addrelation.png"),
-                                      tr("Add New Relation"),  this);
-    addRelationAct->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_N);
-    addRelationAct->setToolTip(
-                tr("Add a new relation to the active graph (Ctrl+Shift+N)"));
-    addRelationAct->setStatusTip(
-                tr("Adds a new relation to the network. "
-                   "Nodes will be preserved, edges will be removed. "));
-    addRelationAct->setWhatsThis(
-                tr("Add New Relation\n\n"
-                   "Adds a new relation to the active network. "
-                   "Nodes will be preserved, edges will be removed. "));
 
     nodeSizesByOutDegreeAct= new QAction(QIcon(":/images/nodeout.png"),
                                          tr("Node sizes by OutDegree"), this);
@@ -1671,7 +1735,7 @@ void MainWindow::initActions(){
     connect(backgroundImageAct, SIGNAL(toggled(bool)), this, SLOT(slotBackgroundImage(bool)));
 
     openSettingsAct = new QAction(QIcon(":/images/appsettings.png"), tr("Settings"),	this);
-    openSettingsAct->setShortcut(tr("Ctrl+Shift+P"));
+    openSettingsAct->setShortcut(Qt::CTRL + Qt::Key_Comma);
     openSettingsAct->setEnabled(true);
     openSettingsAct->setStatusTip(tr("Open SocNetV Settings dialog"));
     openSettingsAct->setWhatsThis(tr("Settings\n\n Opens the Settings dialog where you can save permanent settings."));
@@ -1736,7 +1800,7 @@ void MainWindow::initMenuBar() {
     networkMenu -> addAction (networkViewSociomatrixAct);
     networkMenu -> addSeparator();
 
-    networkMenu -> addAction (recreateDataSetAct);
+    networkMenu -> addAction (networkDataSetSelectAct);
     networkMenu -> addSeparator();
 
     randomNetworkMenu = new QMenu(tr("Create Random Network..."));
@@ -1782,18 +1846,26 @@ void MainWindow::initMenuBar() {
     /** menuBar entry editMenu */
 
     editMenu = menuBar()->addMenu(tr("&Edit"));
+
+    editMenu -> addAction (editRelationPreviousAct);
+    editMenu -> addAction (editRelationNextAct);
+    editMenu -> addAction (editRelationAddAct);
+    editMenu -> addSeparator();
+
     editNodeMenu = new QMenu(tr("Node..."));
     editNodeMenu -> setIcon(QIcon(":/images/node.png"));
     editMenu -> addMenu ( editNodeMenu );
     editNodeMenu -> addAction (selectAllAct);
     editNodeMenu -> addAction (selectNoneAct);
     editNodeMenu -> addSeparator();
+
     editNodeMenu -> addAction (findNodeAct);
     editNodeMenu -> addAction (addNodeAct);
     editNodeMenu -> addAction (removeNodeAct);
     editNodeMenu -> addSeparator();
     editNodeMenu -> addAction (propertiesNodeAct);
     editNodeMenu -> addSeparator();
+    editNodeMenu -> addAction (editNodeColorAll);
     editNodeMenu -> addAction (changeAllNodesSizeAct);
     editNodeMenu -> addAction (changeAllNodesShapeAct);
     editNodeMenu -> addAction (changeNumbersSizeAct);
@@ -1828,11 +1900,61 @@ void MainWindow::initMenuBar() {
     colorOptionsMenu -> setIcon(QIcon(":/images/colorize.png"));
     editMenu -> addMenu (colorOptionsMenu);
     colorOptionsMenu -> addAction (changeBackColorAct);
-    colorOptionsMenu -> addAction (changeAllNodesColorAct);
+    colorOptionsMenu -> addAction (editNodeColorAll);
     colorOptionsMenu -> addAction (changeAllEdgesColorAct);
     colorOptionsMenu -> addAction (changeAllNumbersColorAct);
     colorOptionsMenu -> addAction (changeAllLabelsColorAct);
 
+
+
+
+    /** menuBar entry: analyze menu */
+    statMenu = menuBar()->addMenu(tr("&Analyze"));
+    statMenu -> addAction (symmetryAct);
+    statMenu -> addAction (invertAdjMatrixAct);
+    //	statMenu -> addAction (netDensity);
+
+    statMenu -> addSeparator();
+    statMenu -> addAction (graphDistanceAct);
+    statMenu -> addAction (averGraphDistanceAct);
+
+    statMenu -> addAction (distanceMatrixAct);
+    statMenu -> addAction (geodesicsMatrixAct);
+    statMenu -> addAction (eccentricityAct);
+    statMenu -> addAction (diameterAct);
+
+
+    statMenu -> addSeparator();
+    statMenu -> addAction(connectednessAct);
+    statMenu -> addAction (walksAct);
+    statMenu -> addAction (totalWalksAct);
+    statMenu -> addAction (reachabilityMatrixAct);
+
+    statMenu -> addSeparator();
+    statMenu -> addAction (cliquesAct);
+    statMenu -> addAction (clusteringCoefAct);
+
+    statMenu -> addSeparator();
+    statMenu -> addAction (triadCensusAct);
+
+    statMenu->addSeparator();
+    centrlMenu = new QMenu(tr("Centrality and Prestige indices..."));
+    centrlMenu -> setIcon(QIcon(":/images/centrality.png"));
+    statMenu->addMenu(centrlMenu);
+    centrlMenu -> addSection(QIcon(":/images/centrality.png"), tr("Centrality"));
+
+    centrlMenu -> addAction (cDegreeAct);
+    centrlMenu -> addAction (cClosenessAct);
+    centrlMenu -> addAction (cInfluenceRangeClosenessAct);
+    centrlMenu -> addAction (cBetweennessAct);
+    centrlMenu -> addAction (cStressAct);
+    centrlMenu -> addAction (cEccentAct);
+    centrlMenu -> addAction (cPowerAct);
+    centrlMenu -> addAction (cInformationAct);
+    centrlMenu -> addSection(QIcon(":/images/prestige.png"), tr("Prestige"));
+    centrlMenu -> addAction (cInDegreeAct);
+    centrlMenu -> addAction (cPageRankAct);
+    centrlMenu -> addAction (cProximityPrestigeAct);
 
 
     /** menuBar entry layoutMenu  */
@@ -1892,54 +2014,6 @@ void MainWindow::initMenuBar() {
     layoutMenu -> addAction (clearGuidesAct);
 
 
-
-    /** menuBar entry: statistics menu */
-    statMenu = menuBar()->addMenu(tr("&Analyze"));
-    statMenu -> addAction (symmetryAct);
-    statMenu -> addAction (invertAdjMatrixAct);
-    //	statMenu -> addAction (netDensity);
-
-    statMenu -> addSeparator();
-    statMenu -> addAction (graphDistanceAct);
-    statMenu -> addAction (averGraphDistanceAct);
-
-    statMenu -> addAction (distanceMatrixAct);
-    statMenu -> addAction (geodesicsMatrixAct);
-    statMenu -> addAction (eccentricityAct);
-    statMenu -> addAction (diameterAct);
-
-
-    statMenu -> addSeparator();
-    statMenu -> addAction(connectednessAct);
-    statMenu -> addAction (walksAct);
-    statMenu -> addAction (totalWalksAct);
-    statMenu -> addAction (reachabilityMatrixAct);
-
-    statMenu -> addSeparator();
-    statMenu -> addAction (cliquesAct);
-    statMenu -> addAction (clusteringCoefAct);
-
-    statMenu -> addSeparator();
-    statMenu -> addAction (triadCensusAct);
-
-    statMenu->addSeparator();
-    centrlMenu = new QMenu(tr("Centrality and Prestige indices..."));
-    centrlMenu -> setIcon(QIcon(":/images/centrality.png"));
-    statMenu->addMenu(centrlMenu);
-    centrlMenu -> addSection(QIcon(":/images/centrality.png"), tr("Centrality"));
-
-    centrlMenu -> addAction (cDegreeAct);
-    centrlMenu -> addAction (cClosenessAct);
-    centrlMenu -> addAction (cInfluenceRangeClosenessAct);
-    centrlMenu -> addAction (cBetweennessAct);
-    centrlMenu -> addAction (cStressAct);
-    centrlMenu -> addAction (cEccentAct);
-    centrlMenu -> addAction (cPowerAct);
-    centrlMenu -> addAction (cInformationAct);
-    centrlMenu -> addSection(QIcon(":/images/prestige.png"), tr("Prestige"));
-    centrlMenu -> addAction (cInDegreeAct);
-    centrlMenu -> addAction (cPageRankAct);
-    centrlMenu -> addAction (cProximityPrestigeAct);
 
     /** menuBar entry optionsMenu  */
     optionsMenu = menuBar()->addMenu(tr("&Options"));
@@ -2009,13 +2083,13 @@ void MainWindow::initToolBar(){
     QLabel *labelRelationSelect= new QLabel;
     labelRelationSelect ->setText(tr("Relation:"));
     toolBar -> addWidget (labelRelationSelect);
-    toolBar -> addAction (prevRelationAct);
+    toolBar -> addAction (editRelationPreviousAct);
     changeRelationCombo = new QComboBox;
     changeRelationCombo->setMinimumWidth(180);
     changeRelationCombo->setCurrentIndex(0);
     toolBar -> addWidget(changeRelationCombo);
-    toolBar -> addAction (nextRelationAct);
-    toolBar -> addAction (addRelationAct);
+    toolBar -> addAction (editRelationNextAct);
+    toolBar -> addAction (editRelationAddAct);
 
     toolBar -> addSeparator();
     toolBar -> addAction ( QWhatsThis::createAction (this));
@@ -2044,13 +2118,13 @@ void MainWindow::initToolBox(){
     addNodeBt->setFocusPolicy(Qt::NoFocus);
     addNodeBt->setMinimumWidth(100);
     addNodeBt->setToolTip(
-                tr("Add a new node to the network (Ctrl+X+A). \n\n "
+                tr("Add a new node to the network (Ctrl+.). \n\n "
                    "You can also create a new node \n"
                    "in a specific position by double-clicking \n")
                 );
     addNodeBt->setWhatsThis(
                 tr("Add new node\n\n"
-                   "Adds a new node to the network (Ctrl+X+A). \n\n "
+                   "Adds a new node to the network (Ctrl+.). \n\n "
                    "Alternately, you can create a new node \n"
                    "in a specific position by double-clicking \n"
                    "on that spot of the canvas.")
@@ -2060,11 +2134,11 @@ void MainWindow::initToolBox(){
     removeNodeBt->setFocusPolicy(Qt::NoFocus);
     removeNodeBt->setMinimumWidth(100);
     removeNodeBt->setToolTip(
-                tr("Remove a node from the network (Ctrl+X+Backspace). ")
+                tr("Remove a node from the network (Ctrl+Alt+.). ")
                 );
     removeNodeBt->setWhatsThis(
                 tr("Remove node\n\n"
-                   "Removes a node from the network (Ctrl+X+Backspace). \n\n "
+                   "Removes a node from the network (Ctrl+Alt+.). \n\n "
                    "Alternately, you can remove a node \n"
                    "by right-clicking on it.")
                 );
@@ -2073,13 +2147,13 @@ void MainWindow::initToolBox(){
     addEdgeBt->setFocusPolicy(Qt::NoFocus);
     addEdgeBt->setMinimumWidth(100);
     addEdgeBt->setToolTip(
-                tr("Add a new Edge from a node to another (Ctrl+E+A).\n\n "
+                tr("Add a new Edge from a node to another (Ctrl+/).\n\n "
                    "You can also create an edge between two nodes\n"
                    "by double-clicking or middle-clicking on them consecutively.")
                 );
     addEdgeBt->setWhatsThis(
                 tr("Add edge\n\n"
-                   "Adds a new Edge from a node to another (Ctrl+E+A).\n\n "
+                   "Adds a new Edge from a node to another (Ctrl+/).\n\n "
                    "Alternately, you can create a new edge between two nodes\n"
                    "by double-clicking or middle-clicking on them consecutively.")
                 );
@@ -2088,11 +2162,12 @@ void MainWindow::initToolBox(){
     removeEdgeBt->setFocusPolicy(Qt::NoFocus);
     removeEdgeBt->setMinimumWidth(100);
     removeEdgeBt->setToolTip(
-                tr("Remove an Edge from the network"
+                tr("Remove an Edge from the network (Ctrl+Alt+/)"
                    )
                 );
     removeEdgeBt->setWhatsThis(
-                tr("Remove edge\n\nRemoves an Edge from the network. "
+                tr("Remove edge\n\n"
+                   "Removes an Edge from the network  (Ctrl+Alt+/)."
                    "Alternately, you can remove an Edge \n"
                    "by right-clicking on it."
                    )
@@ -2569,7 +2644,7 @@ void MainWindow::initView() {
     graphicsWidget->setDragMode(QGraphicsView::RubberBandDrag);
     graphicsWidget->setFocusPolicy(Qt::StrongFocus);
     graphicsWidget->setFocus();
-    graphicsWidget->setToolTip(tr("The canvas of SocNetV. \n\n"
+    graphicsWidget->setWhatsThis(tr("The canvas of SocNetV. \n\n"
                                   "Inside this area you create and edit networks, "
                                   "load networks from files and visualize them \n"
                                   "according to selected metrics. \n\n"
@@ -2711,8 +2786,8 @@ void MainWindow::initWindowLayout() {
 
     qDebug () << "MW::initWindowLayout - resize to 1280x900";
     this->resize(1280,900);
+
     this->showMaximized();
-    //set minimum size of graphicsWidget
 
 }
 
@@ -2766,7 +2841,8 @@ void MainWindow::initSignalSlots() {
     connect( graphicsWidget, SIGNAL(zoomChanged(const int &)),
              zoomSlider, SLOT( setValue(const int &)) );
 
-    connect(zoomSlider, SIGNAL(valueChanged(const int &)), graphicsWidget, SLOT(changeMatrixScale(const int &)));
+    connect(zoomSlider, SIGNAL(valueChanged(const int &)),
+            graphicsWidget, SLOT(changeMatrixScale(const int &)));
 
     connect( zoomInBtn, SIGNAL(clicked()), graphicsWidget, SLOT( zoomIn() ) );
     connect( zoomOutBtn, SIGNAL(clicked()), graphicsWidget, SLOT( zoomOut() ) );
@@ -2774,7 +2850,8 @@ void MainWindow::initSignalSlots() {
     connect( graphicsWidget, SIGNAL(rotationChanged(const int &)),
              rotateSlider, SLOT( setValue(const int &)) );
 
-    connect(rotateSlider, SIGNAL(valueChanged(const int &)), graphicsWidget, SLOT(changeMatrixRotation(const int &)));
+    connect(rotateSlider, SIGNAL(valueChanged(const int &)),
+            graphicsWidget, SLOT(changeMatrixRotation(const int &)));
 
     connect(rotateLeftBtn, SIGNAL(clicked()), graphicsWidget, SLOT(rotateLeft()));
     connect(rotateRightBtn, SIGNAL(clicked()), graphicsWidget, SLOT(rotateRight()));
@@ -2881,9 +2958,11 @@ void MainWindow::initSignalSlots() {
     connect( removeEdgeBt,SIGNAL(clicked()), this, SLOT( slotRemoveEdge() ) );
 
 
-    connect( nextRelationAct, SIGNAL(triggered()), this, SLOT( nextRelation() ) );
-    connect( prevRelationAct, SIGNAL(triggered()), this, SLOT( prevRelation() ) );
-    connect( addRelationAct, SIGNAL(triggered()), this, SLOT( addRelation() ) );
+    connect( editRelationNextAct, SIGNAL(triggered()),
+             this, SLOT( slotRelationNext() ) );
+    connect( editRelationPreviousAct, SIGNAL(triggered()),
+             this, SLOT( slotRelationPrev() ) );
+    connect( editRelationAddAct, SIGNAL(triggered()), this, SLOT( slotEditRelationAdd() ) );
 
     connect( changeRelationCombo , SIGNAL( currentIndexChanged(int) ) ,
              &activeGraph, SLOT( changeRelation(int) ) );
@@ -2892,7 +2971,7 @@ void MainWindow::initSignalSlots() {
              &activeGraph, SLOT( addRelationFromUser(QString) ) );
 
     connect ( &activeGraph, SIGNAL(addRelationToMW(QString)),
-              this, SLOT(addRelation(QString)));
+              this, SLOT(slotEditRelationAdd(QString)));
 
     connect( &activeGraph, SIGNAL(relationChanged(int)),
              graphicsWidget, SLOT( changeRelation(int))  ) ;
@@ -2905,7 +2984,7 @@ void MainWindow::initSignalSlots() {
              this, &MainWindow::slotWebCrawl );
 
     connect( &m_datasetSelectDialog, SIGNAL( userChoices( QString) ),
-             this, SLOT( slotRecreateDataSet(QString) ) );
+             this, SLOT( slotNetworkDataSetRecreate(QString) ) );
 
     connect( clearGuidesAct, SIGNAL(triggered()),
              graphicsWidget, SLOT(clearGuides()));
@@ -3263,9 +3342,13 @@ void MainWindow::toolBoxAnalysisProminenceSelectChanged(int selectedIndex) {
         break;
     };
 
-
 }
 
+/**
+ * @brief MainWindow::toolBoxLayoutByIndexButtonPressed
+ * Called from MW, when user selects an index in the Layout by index selectbox
+ *  of the left panel.
+ */
 void MainWindow::toolBoxLayoutByIndexButtonPressed(){
     qDebug()<<"MW::toolBoxLayoutByIndexButtonPressed()";
     int selectedIndex = toolBoxLayoutByIndexSelect->currentIndex();
@@ -3301,6 +3384,11 @@ void MainWindow::toolBoxLayoutByIndexButtonPressed(){
 
 
 
+/**
+ * @brief MainWindow::toolBoxLayoutForceDirectedButtonPressed
+ * Called from MW, when user selects a model in the Layout by Force Directed
+ * selectbox of left panel.
+ */
 void MainWindow::toolBoxLayoutForceDirectedButtonPressed(){
     qDebug()<<"MW::toolBoxLayoutForceDirectedButtonPressed()";
     int selectedModel = toolBoxLayoutForceDirectedSelect->currentIndex();
@@ -3349,10 +3437,12 @@ void MainWindow::resizeEvent( QResizeEvent * ){
 
 
 
+
 /**
-    Closes the application.
-    Asks to write any unsaved network data.
-*/
+ * @brief MainWindow::closeEvent
+ * @param ce
+ * Closes the application. Asks to write any unsaved network data.
+ */
 void MainWindow::closeEvent( QCloseEvent* ce ) {
     if ( !networkModified )       {
         ce->accept();
@@ -3389,6 +3479,7 @@ void MainWindow::slotNetworkNew() {
 }
 
 
+
 /**
  * @brief MainWindow::getLastPath
  * returns the last path used by user to open/save something
@@ -3414,11 +3505,11 @@ void MainWindow::setLastPath(QString filePath) {
 
 
 /**
- * @brief MainWindow::slotNetworkChooseFile
+ * @brief MainWindow::slotNetworkFileChoose
  * Prompts the user a directory dialogue to choose a file from.
- * Calls previewNetworkFile()
+ * Calls slotNetworkFilePreview()
  */
-void MainWindow::slotNetworkChooseFile() {
+void MainWindow::slotNetworkFileChoose() {
 
     if (firstTime && fileFormat == -500 ) {
         QMessageBox::information( this, "SocNetV",
@@ -3547,7 +3638,7 @@ void MainWindow::slotNetworkChooseFile() {
         fileNameNoPath=m_fileName.split ("/");
         setLastPath(m_fileName); // store this path
 
-        previewNetworkFile(m_fileName, m_fileFormat );
+        slotNetworkFilePreview(m_fileName, m_fileFormat );
 
     }
     else  {
@@ -3758,7 +3849,7 @@ void MainWindow::slotNetworkPrint() {
 void MainWindow::slotNetworkImportGraphML(){
 //    fileFormat=-1;
 //    checkSelectFileType = true;
-    this->slotNetworkChooseFile();
+    this->slotNetworkFileChoose();
 }
 
 
@@ -3771,7 +3862,7 @@ void MainWindow::slotNetworkImportGraphML(){
 void MainWindow::slotNetworkImportPajek(){
     fileFormat=2;
     checkSelectFileType = false;
-    this->slotNetworkChooseFile();
+    this->slotNetworkFileChoose();
 }
 
 
@@ -3784,7 +3875,7 @@ void MainWindow::slotNetworkImportPajek(){
 void MainWindow::slotNetworkImportSM(){
     fileFormat=3;
     checkSelectFileType = false;
-    this->slotNetworkChooseFile();
+    this->slotNetworkFileChoose();
 }
 
 
@@ -3797,7 +3888,7 @@ void MainWindow::slotNetworkImportSM(){
 void MainWindow::slotNetworkImportTwoModeSM(){
     fileFormat=9;
     checkSelectFileType = false;
-    this->slotNetworkChooseFile();
+    this->slotNetworkFileChoose();
 }
 
 
@@ -3809,7 +3900,7 @@ void MainWindow::slotNetworkImportTwoModeSM(){
 void MainWindow::slotNetworkImportDot(){
     fileFormat=4;
     checkSelectFileType = false;
-    this->slotNetworkChooseFile();
+    this->slotNetworkFileChoose();
 }
 
 
@@ -3821,7 +3912,7 @@ void MainWindow::slotNetworkImportDot(){
 void MainWindow::slotNetworkImportGML(){
     fileFormat=5;
     checkSelectFileType = false;
-    this->slotNetworkChooseFile();
+    this->slotNetworkFileChoose();
 }
 
 
@@ -3834,7 +3925,7 @@ void MainWindow::slotNetworkImportGML(){
 void MainWindow::slotNetworkImportDL(){
     fileFormat=6;
     checkSelectFileType = false;
-    this->slotNetworkChooseFile();
+    this->slotNetworkFileChoose();
 }
 
 
@@ -3862,15 +3953,15 @@ void MainWindow::slotNetworkImportEdgeList(){
         break;
     }
     checkSelectFileType = false;
-    this->slotNetworkChooseFile();
+    this->slotNetworkFileChoose();
 }
 
 
 /**
- * @brief MainWindow::findCodecs
- * Setup a list of all codecs supported by current OS
+ * @brief MainWindow::slotNetworkAvailableTextCodecs
+ * Setup a list of all text codecs supported by current OS
  */
-void MainWindow::findCodecs()
+void MainWindow::slotNetworkAvailableTextCodecs()
 {
     QMap<QString, QTextCodec *> codecMap;
     QRegExp iso8859RegExp("ISO[- ]8859-([0-9]+).*");
@@ -3901,20 +3992,29 @@ void MainWindow::findCodecs()
 }
 
 
-
-bool MainWindow::previewNetworkFile(QString m_fileName, int m_fileFormat ){
-    qDebug() << "MW::previewNetworkFile() : "<< m_fileName;
+/**
+ * @brief MainWindow::slotNetworkFilePreview
+ * @param m_fileName
+ * @param m_fileFormat
+ * @return
+ * Called from slotNetworkFileChoose()
+ * Opens a window to preview the selected file where the user
+ * can select an appropriate text codec
+ */
+bool MainWindow::slotNetworkFilePreview(const QString m_fileName,
+                                    const int m_fileFormat ){
+    qDebug() << "MW::slotNetworkFilePreview() : "<< m_fileName;
 
     if (!m_fileName.isEmpty()) {
         QFile file(m_fileName);
         if (!file.open(QFile::ReadOnly)) {
-            QMessageBox::warning(this, tr("previewNetworkFile"),
+            QMessageBox::warning(this, tr("Network File Previewer"),
                                  tr("Cannot read file %1:\n%2")
                                  .arg(m_fileName)
                                  .arg(file.errorString()));
             return false;
         }
-        qDebug() << "MW::loadNetworkFile() reading the file now... " ;
+        qDebug() << "MW::slotNetworkFilePreview() reading the file now... " ;
         QByteArray data = file.readAll();
 
         previewForm->setEncodedData(data,m_fileName, m_fileFormat);
@@ -3923,19 +4023,24 @@ bool MainWindow::previewNetworkFile(QString m_fileName, int m_fileFormat ){
     return true;
 }
 
-void MainWindow::userCodec(const QString m_fileName,
-                           const QString m_codecName,
-                           const int m_fileFormat) {
-    loadNetworkFile(m_fileName, m_codecName, m_fileFormat );
-}
 
 
-
-bool MainWindow::loadNetworkFile(const QString m_fileName,
+/**
+ * @brief MainWindow::slotNetworkFileLoad
+ * @param m_fileName
+ * @param m_codecName
+ * @param m_fileFormat
+ * @return
+ * Main network file loader method
+ * Called from previewForm and slotNetworkDataSetRecreate
+ * Calls initNet to init to default values.
+ * Then calls activeGraph::loadGraph to actually load the network...
+ */
+bool MainWindow::slotNetworkFileLoad(const QString m_fileName,
                                  const QString m_codecName,
                                  const int m_fileFormat )
 {
-    qDebug() << "MW::loadNetworkFile() : "<< m_fileName
+    qDebug() << "MW::slotNetworkFileLoad() : "<< m_fileName
                     << " m_codecName " << m_codecName
                     << " m_fileFormat " << m_fileFormat;
     initNet();
@@ -3961,7 +4066,7 @@ bool MainWindow::loadNetworkFile(const QString m_fileName,
     }
 
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-    qDebug() << "MW::loadNetworkFile() : calling activeGraph.loadGraph() ";
+    qDebug() << "MW::slotNetworkFileLoad() : calling activeGraph.loadGraph() ";
     bool loadGraphStatus = activeGraph.loadGraph (
                 m_fileName,
                 m_codecName,
@@ -3970,7 +4075,7 @@ bool MainWindow::loadNetworkFile(const QString m_fileName,
                 graphicsWidget->height(),
                 m_fileFormat, two_sm_mode
                 );
-    qDebug() << "MW::loadNetworkFile() : loadGraphStatus " << loadGraphStatus;
+    qDebug() << "MW::slotNetworkFileLoad() : loadGraphStatus " << loadGraphStatus;
     if ( loadGraphStatus )
     {
         fileName=m_fileName;
@@ -3991,7 +4096,7 @@ bool MainWindow::loadNetworkFile(const QString m_fileName,
                                "OK", 0 );
     }
     QApplication::restoreOverrideCursor();
-    qDebug() << "MW::loadNetworkFile() : returning " << loadGraphStatus;
+    qDebug() << "MW::slotNetworkFileLoad() : returning " << loadGraphStatus;
     return loadGraphStatus;
 }
 
@@ -4123,12 +4228,12 @@ void MainWindow::fileType (
 
 
 /**
- * @brief MainWindow::prevRelation
+ * @brief MainWindow::slotRelationPrev
  * Decreases the index of changeRelationCombo
  * which signals to Graph::changeRelation()
  */
-void MainWindow::prevRelation(){
-    qDebug() << "MW::prevRelation()";
+void MainWindow::slotRelationPrev(){
+    qDebug() << "MW::slotRelationPrev()";
     int index=changeRelationCombo->currentIndex();
     if (index>0){
         --index;
@@ -4138,12 +4243,12 @@ void MainWindow::prevRelation(){
 }
 
 /**
- * @brief MainWindow::nextRelation
+ * @brief MainWindow::slotRelationNext
  * Increases the index of changeRelationCombo
  * which signals to Graph::changeRelation()
  */
-void MainWindow::nextRelation(){
-    qDebug() << "MW::nextRelation()";
+void MainWindow::slotRelationNext(){
+    qDebug() << "MW::slotRelationNext()";
     int index=changeRelationCombo->currentIndex();
     int relationsCounter=changeRelationCombo->count();
     if (index< (relationsCounter -1 )){
@@ -4157,51 +4262,51 @@ void MainWindow::nextRelation(){
 
 
 /**
- * @brief MainWindow::addRelation
+ * @brief MainWindow::slotEditRelationAdd
  * called from activeGraph::addRelationFromGraph(QString) when the parser or a
  * Graph method demands a new relation to be added in the Combobox.
  * @param relationName (NULL)
  */
-void MainWindow::addRelation(QString relationName){
-    qDebug() << "MW::addRelation(string)" << relationName;
+void MainWindow::slotEditRelationAdd(QString relationName){
+    qDebug() << "MW::slotEditRelationAdd(string)" << relationName;
     if ( !relationName.isNull() ){
         changeRelationCombo->addItem(relationName);
     }
 }
 
 /**
- * @brief MainWindow::addRelation
+ * @brief MainWindow::slotEditRelationAdd
  * Called from MW when user clicks New Relation btn
  * or when the user creates the first edge visually.
  */
-void MainWindow::addRelation(){
-    qDebug() << "MW::addRelation()";
+void MainWindow::slotEditRelationAdd(){
+    qDebug() << "MW::slotEditRelationAdd()";
     bool ok;
     QString newRelationName;
     int relationsCounter=changeRelationCombo->count();
     if (relationsCounter==0) {
-        newRelationName = QInputDialog::getText(this, tr("Add new relation"),
-                              tr("Since you have just created the first edge "
-                                 "of this social network, please enter a name \n"
-                                 "for this new relation between the actors.\n "
-                                 "A relation is a collection of ties of a "
-                                 "specific kind between the network actors.\n"
-                                 "For instance, enter \"friendship\" if the "
-                                 "edges of this relation refer to the set of \n"
-                                 "friendships between pairs of actors."),
+        newRelationName = QInputDialog::getText(
+                    this,
+                    tr("Add new relation"),
+                    tr("Enter a name for this new relation between the actors.\n"
+                        "A relation is a collection of ties of a "
+                        "specific kind between the network actors.\n"
+                        "For instance, enter \"friendship\" if the "
+                        "edges of this relation refer to the set of \n"
+                        "friendships between pairs of actors."),
                               QLineEdit::Normal, QString::null, &ok );
     }
     else {
         newRelationName = QInputDialog::getText(
                     this, tr("Add new relation"),
-                    tr("Please enter a name for the new relation:"),
+                    tr("Enter a name for the new relation (or press Cancel):"),
                     QLineEdit::Normal,QString::null, &ok );
     }
     if (ok && !newRelationName.isEmpty()){
         changeRelationCombo->addItem(newRelationName);
         emit addRelationToGraph(newRelationName);
         if (relationsCounter != 0){ //dont do it if its the first relation added
-            qDebug() << "MW::addRelation() - updating combo index";
+            qDebug() << "MW::slotEditRelationAdd() - updating combo index";
             changeRelationCombo->setCurrentIndex(relationsCounter);
         }
     }
@@ -4209,7 +4314,7 @@ void MainWindow::addRelation(){
         QMessageBox::critical(this, tr("Error"),
                               tr("You did not type a name for this new relation"),
                               QMessageBox::Ok, 0);
-        addRelation();
+        slotEditRelationAdd();
     }
     else {
         statusMessage( QString(tr("New relation cancelled.")) );
@@ -4605,13 +4710,13 @@ bool MainWindow::slotNetworkExportList(){
 
 
 /**
- * @brief MainWindow::slotNetworkViewFile
+ * @brief MainWindow::slotNetworkFileView
  * Displays the file of the loaded network.
    Network _must_ be unchanged since last save/load.
    Otherwise it will ask the user to first save the network, then view its file.
  */
-void MainWindow::slotNetworkViewFile(){
-    qDebug() << "slotNetworkViewFile() : " << fileName.toLatin1();
+void MainWindow::slotNetworkFileView(){
+    qDebug() << "slotNetworkFileView() : " << fileName.toLatin1();
     if ( fileLoaded && !networkModified ) { //file network unmodified
         QFile f( fileName );
         if ( !f.open( QIODevice::ReadOnly ) ) {
@@ -4634,7 +4739,7 @@ void MainWindow::slotNetworkViewFile(){
                                   tr("The network has been modified. \nI will save it to the original file for you now."), "OK",0);
         networkModified = false;
         slotNetworkSave();
-        slotNetworkViewFile();
+        slotNetworkFileView();
     }
     else	{
         QMessageBox::critical(this, "Error",
@@ -4694,26 +4799,30 @@ void MainWindow::slotNetworkViewSociomatrix(){
 
 
 
-/*
- * Calls the m_datasetSelectionDialog to display the datasetselection dialog
+/**
+ * @brief MainWindow::slotNetworkDataSetSelect
+ * Calls the m_datasetSelectionDialog to display the dataset selection dialog
  */
-void MainWindow::slotShowDataSetSelectDialog(){
-    qDebug()<< "slotShowDataSetSelectDialog()";
+void MainWindow::slotNetworkDataSetSelect(){
+    qDebug()<< "MW::slotNetworkDataSetSelect()";
     m_datasetSelectDialog.exec();
 }
 
 
-/*
- * Recreates some of the most famous and widely used data sets
- * in network analysis studies
+
+/**
+ * @brief MainWindow::slotNetworkDataSetRecreate
+ * @param m_fileName
+ * Recreates some of the most famous and widely used data sets in
+ * network analysis studies
  */
-void MainWindow::slotRecreateDataSet (QString m_fileName) {
+void MainWindow::slotNetworkDataSetRecreate (const QString m_fileName) {
     int m_fileFormat=0;
-    qDebug()<< "slotRecreateDataSet() fileName: " << m_fileName;
+    qDebug()<< "MW::slotNetworkDataSetRecreate() fileName: " << m_fileName;
 
     //initNet();
 
-    qDebug()<< "slotRecreateDataSet() datadir+fileName: "
+    qDebug()<< "MW::slotNetworkDataSetRecreate() datadir+fileName: "
             << appSettings["dataDir"]+m_fileName;
     activeGraph.writeDataSetToFile(appSettings["dataDir"], m_fileName);
 
@@ -4746,8 +4855,8 @@ void MainWindow::slotRecreateDataSet (QString m_fileName) {
         m_fileFormat=9;
     }
     checkSelectFileType = false;
-    if ( loadNetworkFile(appSettings["dataDir"]+m_fileName, "UTF-8", m_fileFormat) ) {
-        qDebug() << "slotRecreateDataSet() loaded file " << m_fileName;
+    if ( slotNetworkFileLoad(appSettings["dataDir"]+m_fileName, "UTF-8", m_fileFormat) ) {
+        qDebug() << "slotNetworkDataSetRecreate() loaded file " << m_fileName;
         fileName=m_fileName;
         previous_fileName=fileName;
         setWindowTitle("SocNetV "+ VERSION +" - "+fileName);
@@ -5347,30 +5456,37 @@ void MainWindow::openContextMenu( const QPointF &mPos) {
     Q_CHECK_PTR( contextMenu );  //displays "out of memory" if needed
 
 
+
     contextMenu -> addAction( "## Selected nodes: "
                               + QString::number(  selectedNodes().count() ) + " ##  ");
 
     contextMenu -> addSeparator();
 
-    contextMenu -> addAction( addNodeAct );
-
     if (selectedNodes().count()) {
         contextMenu -> addAction(propertiesNodeAct );
+        contextMenu -> addSeparator();
     }
 
+    contextMenu -> addAction( addNodeAct );
     contextMenu -> addAction( addEdgeAct );
+    contextMenu -> addSeparator();
 
     QMenu *options=new QMenu("Options", this);
     contextMenu -> addMenu(options );
 
-    options -> addAction (changeBackColorAct  );
-    options -> addAction (backgroundImageAct  );
+    options -> addAction (openSettingsAct  );
+    options -> addSeparator();
     options -> addAction (changeAllNodesSizeAct );
     options -> addAction (changeAllNodesShapeAct  );
-    options -> addAction (changeAllNodesColorAct );
-    options -> addAction (changeAllEdgesColorAct  );
+    options -> addAction (editNodeColorAll );
     options -> addAction (displayNodeNumbersAct);
     options -> addAction (displayNodeLabelsAct);
+    options -> addSeparator();
+    options -> addAction (changeAllEdgesColorAct  );
+    options -> addSeparator();
+    options -> addAction (changeBackColorAct  );
+    options -> addAction (backgroundImageAct  );
+
     //QCursor::pos() is good only for menus not related with node coordinates
     contextMenu -> exec(QCursor::pos() );
     delete  contextMenu;
@@ -5747,7 +5863,7 @@ void MainWindow::addEdge (int v1, int v2, float weight) {
     activeGraph.createEdge(v1, v2, weight, reciprocal, drawArrows, bezier);
 
     if ( activeEdges() == 1 && changeRelationCombo->count() == 0 ) {
-        addRelation();
+        slotEditRelationAdd();
     }
 }
 
@@ -5852,16 +5968,40 @@ void MainWindow::slotRemoveEdge(){
 
 
 
+
+/**
+ * @brief MainWindow::slotEditNodeColorAll
+ * Changes the color of all nodes
+ * Called from Settings Dialog
+ */
+void MainWindow::slotEditNodeColorAll(QColor color){
+    if (color.isValid()) {
+        appSettings["initNodeColor"] = color.name();
+        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+        qDebug() << "MW::slotEditNodeColorAll() : " << appSettings["initNodeColor"];
+        activeGraph.setAllVerticesColor(appSettings["initNodeColor"]);
+        QApplication::restoreOverrideCursor();
+        statusMessage( tr("Ready. ")  );
+    }
+    else {
+        // user pressed Cancel
+        statusMessage( tr("Invalid color. ") );
+    }
+}
+
+
+
+
 /**
 *  Changes the color of all nodes
 */
-void MainWindow::slotAllNodesColor(){
+void MainWindow::slotEditNodeColorAll(){
     QColor color = QColorDialog::getColor( Qt::red, this,
                                            "Change the color of all nodes" );
     if (color.isValid()) {
         appSettings["initNodeColor"] = color.name();
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        qDebug() << "MainWindow::slotAllNodesColor() : " << appSettings["initNodeColor"];
+        qDebug() << "MW::slotEditNodeColorAll() : " << appSettings["initNodeColor"];
         activeGraph.setAllVerticesColor(appSettings["initNodeColor"]);
         QApplication::restoreOverrideCursor();
         statusMessage( tr("Ready. ")  );
@@ -5871,9 +6011,6 @@ void MainWindow::slotAllNodesColor(){
         statusMessage( tr("Nodes color change aborted. ") );
     }
 }
-
-
-
 
 
 
@@ -8846,61 +8983,6 @@ void MainWindow::slotShowRightPanel(bool toggle) {
 }
 
 
-
-/**
- * @brief MainWindow::slotOpenSettingsDialog
- * Open Settings dialog
- */
-void MainWindow::slotOpenSettingsDialog() {
-    qDebug() << "MW;:slotOpenSettingsDialog()";
-
-    // build dialog
-
-    m_settingsDialog = new SettingsDialog( appSettings, this);
-
-    connect( m_settingsDialog, &SettingsDialog::saveSettings,
-                     this, &MainWindow::saveSettings);
-
-    connect( m_settingsDialog, &SettingsDialog::setDebugMsgs,
-                         this, &MainWindow::slotPrintDebug);
-
-    connect( m_settingsDialog, &SettingsDialog::setProgressBars,
-             this, &MainWindow::slotShowProgressBar);
-
-    connect( m_settingsDialog, &SettingsDialog::setAntialiasing,
-             this, &MainWindow::slotAntialiasing);
-
-    connect( m_settingsDialog, &SettingsDialog::setPrintLogo,
-                 this, &MainWindow::slotPrintLogo);
-
-    connect( m_settingsDialog, &SettingsDialog::setBgColor,
-                     this, &MainWindow::slotBackgroundColor);
-
-    connect( m_settingsDialog, &SettingsDialog::setBgImage,
-                     this, &MainWindow::slotSettingsBackgroundImage);
-
-    connect( m_settingsDialog, &SettingsDialog::setToolBar,
-             this, &MainWindow::slotShowToolBar);
-
-    connect( m_settingsDialog, &SettingsDialog::setStatusBar,
-             this, &MainWindow::slotShowStatusBar);
-
-    connect( m_settingsDialog, &SettingsDialog::setLeftPanel,
-             this, &MainWindow::slotShowLeftPanel);
-
-    connect( m_settingsDialog, &SettingsDialog::setRightPanel,
-             this, &MainWindow::slotShowRightPanel);
-
-    connect( m_settingsDialog, &SettingsDialog::setNodeShape,
-             this, &MainWindow::slotNodeShape);
-
-
-    // show settings dialog
-    m_settingsDialog->exec();
-
-    qDebug ()<< appSettings["initBackgroundImage"] ;
-
-}
 
 /**
 *  Displays a random tip

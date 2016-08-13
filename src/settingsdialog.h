@@ -44,6 +44,7 @@ public:
     void getBgColor();
     void getBgImage();
     void validateSettings();
+    void getNodeColor();
     void getNodeShape();
     ~SettingsDialog();
 
@@ -54,17 +55,18 @@ signals:
     void setAntialiasing(bool);
     void setPrintLogo(bool);
     void setDebugMsgs(bool);
-    void setBgColor(QColor);
+    void setBgColor(const QColor);
     void setBgImage();
     void setRightPanel(bool);
     void setLeftPanel(bool);
+    void setNodeColor(QColor);
     void setNodeShape(const QString, const long int);
     void saveSettings();
 private:
      QMap<QString, QString> &m_appSettings ;
      Ui::SettingsDialog *ui;
      QPixmap m_pixmap;
-     QColor m_bgColor;
+     QColor m_bgColor, m_nodeColor;
 };
 
 #endif // SETTINGSDIALOG_H

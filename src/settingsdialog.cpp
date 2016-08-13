@@ -80,6 +80,12 @@ SettingsDialog::SettingsDialog(
                 ( appSettings["showRightPanel"] == "true") ? true:false
                 );
 
+
+    m_nodeColor = QColor (m_appSettings["initNodeColor"]);
+    m_pixmap = QPixmap(60,20) ;
+    m_pixmap.fill( m_nodeColor );
+    ui->nodeColorBtn->setIcon(QIcon(m_pixmap));
+
     // signals
     connect (ui->dataDirSelectButton, &QToolButton::clicked,
              this, &SettingsDialog::getDataDir);
@@ -119,6 +125,9 @@ SettingsDialog::SettingsDialog(
 
     connect ( ui->buttonBox, &QDialogButtonBox::accepted,
               this, &SettingsDialog::validateSettings );
+
+    connect (ui->nodeColorBtn, &QToolButton::clicked,
+             this, &SettingsDialog::getNodeColor);
 }
 
 
@@ -148,7 +157,10 @@ void SettingsDialog::getDataDir(){
 }
 
 
-
+/**
+ * @brief SettingsDialog::getBgColor
+ * Opens a QColorDialog for the user to select a new bg color
+ */
 void SettingsDialog::getBgColor(){
 
     m_bgColor = QColorDialog::getColor(
@@ -187,6 +199,26 @@ void SettingsDialog::getBgImage(){
 
 }
 
+
+/**
+ * @brief SettingsDialog::getNodeColor
+ * * Opens a QColorDialog for the user to select a new node color
+ */
+void SettingsDialog::getNodeColor(){
+    m_nodeColor = QColorDialog::getColor(
+                m_nodeColor, this, tr("Select canvas background color") );
+    if ( m_nodeColor.isValid()) {
+        m_pixmap.fill(m_nodeColor);
+        ui->nodeColorBtn->setIcon(QIcon(m_pixmap));
+        (m_appSettings)["initNodeColor"] = m_nodeColor.name();
+        emit setNodeColor(m_nodeColor);
+    }
+    else {
+        // user pressed Cancel
+    }
+
+
+}
 
 /**
  * @brief SettingsDialog::getNodeShape

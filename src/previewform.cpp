@@ -105,7 +105,7 @@ void PreviewForm::accept() {
                       encodingComboBox->currentIndex()).toInt();
     QTextCodec *codec = QTextCodec::codecForMib(mib);
     qDebug () << " PreviewForm::accept() returning codec name " << codec->name();
-    emit userCodec(fileName, codec->name(), format);
+    emit loadNetworkFileWithCodec(fileName, codec->name(), format);
     QDialog::accept();
 
 }

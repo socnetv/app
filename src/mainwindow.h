@@ -120,18 +120,6 @@ public:
     bool showNumbersInsideNodes();
     bool showNumbers();
 
-
-    /// \brief  Main network file loader methods
-    bool previewNetworkFile(QString , int );
-
-    ///
-    /// \brief Main network file loader method
-    /// First, inits everything to default values.
-    /// Then calls activeGraph::loadGraph to actually load the network...
-    /// \param m_fileName
-    /// \param m_fileFormat
-    bool loadNetworkFile ( const QString, const QString, const int );
-
     int activeEdges();
     int activeNodes();
 
@@ -146,9 +134,12 @@ public:
 
 public slots:
     //NETWORK MENU
-
     void slotNetworkNew();
-    void slotNetworkChooseFile();
+    void slotNetworkFileChoose();
+    void slotNetworkAvailableTextCodecs();
+    bool slotNetworkFilePreview(const QString , const int );
+    bool slotNetworkFileLoad ( const QString, const QString, const int );
+    void slotNetworkFileView();
     void slotNetworkImportGraphML();
     void slotNetworkImportPajek();
     void slotNetworkImportSM();
@@ -171,13 +162,8 @@ public slots:
     bool slotNetworkExportGW();
     bool slotNetworkExportList();
     void slotOpenTextEditor();
-    void slotNetworkViewFile();
-
-    void findCodecs();
-    void userCodec(const QString, const QString, const int );
-
-    void slotShowDataSetSelectDialog();
-    void slotRecreateDataSet(QString);
+    void slotNetworkDataSetSelect();
+    void slotNetworkDataSetRecreate(const QString);
 
     void slotRandomErdosRenyiDialog();
     void slotRandomErdosRenyi( const int N,
@@ -212,22 +198,26 @@ public slots:
     void slotShowWebCrawlerDialog();
     void slotWebCrawl(QString, int, int, bool, bool);
 
-    void prevRelation();
-    void nextRelation();
-    void addRelation();
-    void addRelation(QString relationName);
-
     //EDIT MENU
     void slotSelectAll();
     void slotSelectNone();
+
+    void slotRelationPrev();
+    void slotRelationNext();
+    void slotEditRelationAdd();
+    void slotEditRelationAdd(QString relationName);
+
     void slotFindNode();
-    void slotAddEdge();
     void slotRemoveNode();
-    void slotRemoveEdge();
     void slotNodePropertiesDialog();
     void slotNodeProperties( const QString, const int, const QString,
                              const QColor, const QString);
+    void slotEditNodeColorAll();
+    void slotEditNodeColorAll(QColor);
     void slotNodeShape(const QString shape, const int vertex = 0);
+
+    void slotAddEdge();
+    void slotRemoveEdge();
     void slotChangeEdgeLabel();
     void slotChangeEdgeColor();
     void slotChangeEdgeWeight();
@@ -309,7 +299,7 @@ public slots:
     void slotDisplayEdgesArrows(bool toggle);
 
     void slotBackgroundColor ();
-    void slotAllNodesColor();
+
     void slotAllEdgesColor();
     void slotAllNumbersColor();
     void slotAllLabelsColor();
@@ -432,7 +422,7 @@ private:
     QAction *networkImportPajek,*networkImportSM, *networkImportList,
     *networkImportDot , *networkImportDL, *networkImportTwoModeSM;
     QAction *networkViewFileAct, *openTextEditorAct, *networkViewSociomatrixAct,
-    *recreateDataSetAct;
+    *networkDataSetSelectAct;
 
     QAction *createErdosRenyiRandomNetworkAct, *createGaussianRandomNetworkAct;
     QAction *createLatticeNetworkAct, *createScaleFreeRandomNetworkAct;
@@ -445,7 +435,7 @@ private:
     QAction *changeLabelsSizeAct, *changeAllNodesSizeAct, *changeAllNodesShapeAct;
     QAction *changeEdgeLabelAct, *changeEdgeColorAct, *changeEdgeWeightAct;
     QAction *filterNodesAct, *filterIsolateNodesAct, *filterEdgesAct, *transformNodes2EdgesAct, *symmetrizeAct;
-    QAction *changeBackColorAct, *changeAllNodesColorAct, *changeAllEdgesColorAct, *changeAllNumbersColorAct,
+    QAction *changeBackColorAct, *editNodeColorAll, *changeAllEdgesColorAct, *changeAllNumbersColorAct,
             *changeAllLabelsColorAct;
     QAction *drawEdgesWeightsAct, *displayEdgesWeightNumbersAct, *displayEdgesAct;
     QAction *displayEdgesArrowsAct, *drawEdgesBezier,*considerEdgeWeightsAct;
@@ -472,7 +462,7 @@ private:
     QAction *strongColorationAct, *regularColorationAct;
     QAction *springLayoutAct, *FRLayoutAct;
     QAction *nodeSizesByOutDegreeAct,  *nodeSizesByInDegreeAct;
-    QAction *nextRelationAct, *prevRelationAct, *addRelationAct;
+    QAction *editRelationNextAct, *editRelationPreviousAct, *editRelationAddAct;
 
     QString fileName, networkName, previous_fileName;
     QString settingsFilePath, settingsDir ;
