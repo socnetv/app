@@ -378,6 +378,8 @@ void MainWindow::slotOpenSettingsDialog() {
     connect( m_settingsDialog, &SettingsDialog::setNodeShape,
              this, &MainWindow::slotNodeShape);
 
+    connect( m_settingsDialog, &SettingsDialog::setNodeSize,
+             this, &MainWindow::slotEditNodeSizeAllNormalized);
 
     // show settings dialog
     m_settingsDialog->exec();
@@ -558,7 +560,7 @@ void MainWindow::initActions(){
                                        "Opens the SocNetV text editor where you can "
                                        "copy paste network data, of any supported format, "
                                        "and save to a file. Then you can import that file to SocNetV..."));
-    connect(openTextEditorAct, SIGNAL(triggered()), this, SLOT(slotOpenTextEditor()));
+    connect(openTextEditorAct, SIGNAL(triggered()), this, SLOT(slotNetworkTextEditor()));
 
 
     networkViewFileAct = new QAction(QIcon(":/images/networkfile.png"),
@@ -686,25 +688,12 @@ void MainWindow::initActions(){
                                    "recursion level (how many URLs from the frontier "
                                    "will be visited) and maximum running time, along "
                                    "with the initial web address..."));
-    connect(webCrawlerAct, SIGNAL(triggered()), this, SLOT(slotShowWebCrawlerDialog()));
+    connect(webCrawlerAct, SIGNAL(triggered()), this, SLOT(slotNetworkWebCrawlerDialog()));
 
 
     /**
     Edit menu actions
     */
-
-    selectAllAct = new QAction(QIcon(":/images/selectall.png"), tr("Select All"), this);
-    selectAllAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_A));
-    selectAllAct->setStatusTip(tr("Select all nodes"));
-    selectAllAct->setWhatsThis(tr("Select All\n\nSelects all nodes in the network"));
-    connect(selectAllAct, SIGNAL(triggered()), this, SLOT(slotSelectAll()));
-
-    selectNoneAct = new QAction(QIcon(":/images/selectnone.png"), tr("Deselect all"), this);
-    selectNoneAct->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_A));
-    selectNoneAct->setStatusTip(tr("Deselect all nodes"));
-    selectNoneAct->setWhatsThis(tr("Deselect all\n\n Clears the node selection"));
-    connect(selectNoneAct, SIGNAL(triggered()), this, SLOT(slotSelectNone()));
-
 
     editRelationNextAct = new QAction(QIcon(":/images/nextrelation.png"),
                                   tr("Next Relation"),  this);
@@ -750,55 +739,72 @@ void MainWindow::initActions(){
     zoomOutAct->setWhatsThis(tr("Zoom Out.\n\nZooms out of the actual network"));
     connect(zoomOutAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomOut()) );
 
-    rotateLeftAct = new QAction(QIcon(":/images/rotateleft.png"), tr("Rotate counterclockwise"), this);
-    rotateLeftAct->setToolTip(tr("Rotate counterclockwise. Better, use the canvas button or (Ctrl+Left Arrow)"));
-    rotateLeftAct->setStatusTip(tr("Rotate counterclockwise. Better, use the canvas button or Ctrl+Left Arrow"));
-    rotateLeftAct ->setWhatsThis(tr("Rotates the network counterclockwise (Ctrl+Left Arrow)"));
-    connect(rotateLeftAct, SIGNAL(triggered()), graphicsWidget, SLOT( rotateLeft()) );
+    editRotateRightAct = new QAction(QIcon(":/images/rotateleft.png"), tr("Rotate counterclockwise"), this);
+    editRotateRightAct->setToolTip(tr("Rotate counterclockwise. Better, use the canvas button or (Ctrl+Left Arrow)"));
+    editRotateRightAct->setStatusTip(tr("Rotate counterclockwise. Better, use the canvas button or Ctrl+Left Arrow"));
+    editRotateRightAct ->setWhatsThis(tr("Rotates the network counterclockwise (Ctrl+Left Arrow)"));
+    connect(editRotateRightAct, SIGNAL(triggered()), graphicsWidget, SLOT( rotateLeft()) );
 
-    rotateRightAct = new QAction(QIcon(":/images/rotateright.png"), tr("Rotate clockwise"), this);
-    rotateRightAct->setStatusTip(tr("Rotate clockwise. Better, use the canvas button or (Ctrl+Right Arrow)"));
-    rotateRightAct->setToolTip(tr("Rotate clockwise. Better, use the canvas button or (Ctrl+Right Arrow)"));
-    rotateRightAct ->setWhatsThis(tr("Rotates the network clockwise (Ctrl+Right Arrow)"));
-    connect(rotateRightAct, SIGNAL(triggered()), graphicsWidget, SLOT( rotateRight()) );
+    editRotateRightAct = new QAction(QIcon(":/images/rotateright.png"), tr("Rotate clockwise"), this);
+    editRotateRightAct->setStatusTip(tr("Rotate clockwise. Better, use the canvas button or (Ctrl+Right Arrow)"));
+    editRotateRightAct->setToolTip(tr("Rotate clockwise. Better, use the canvas button or (Ctrl+Right Arrow)"));
+    editRotateRightAct ->setWhatsThis(tr("Rotates the network clockwise (Ctrl+Right Arrow)"));
+    connect(editRotateRightAct, SIGNAL(triggered()), graphicsWidget, SLOT( rotateRight()) );
+
+    editResetSlidersAct = new QAction(QIcon(":/images/reset.png"), tr("Reset Zoom and Rotation"), this);
+    editResetSlidersAct->setStatusTip(tr("Reset zoom and rotation to zero (Ctrl+0)"));
+    editResetSlidersAct->setToolTip(tr("Reset zoom and rotation to zero (Ctrl+0)"));
+    editResetSlidersAct->setWhatsThis(tr("Reset zoom and rotation to zero (Ctrl+0)"));
+    connect(editResetSlidersAct, SIGNAL(triggered()), graphicsWidget, SLOT( reset()) );
 
 
-    resetSlidersAct = new QAction(QIcon(":/images/reset.png"), tr("Reset Zoom and Rotation"), this);
-    resetSlidersAct->setStatusTip(tr("Reset zoom and rotation to zero (Ctrl+0)"));
-    resetSlidersAct->setToolTip(tr("Reset zoom and rotation to zero (Ctrl+0)"));
-    resetSlidersAct->setWhatsThis(tr("Reset zoom and rotation to zero (Ctrl+0)"));
-    connect(resetSlidersAct, SIGNAL(triggered()), graphicsWidget, SLOT( reset()) );
+    editNodeSelectAllAct = new QAction(QIcon(":/images/selectall.png"), tr("Select All"), this);
+    editNodeSelectAllAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_A));
+    editNodeSelectAllAct->setStatusTip(tr("Select all nodes"));
+    editNodeSelectAllAct->setWhatsThis(tr("Select All\n\nSelects all nodes in the network"));
+    connect(editNodeSelectAllAct, SIGNAL(triggered()), this, SLOT(slotEditNodeSelectAll()));
 
-    findNodeAct = new QAction(QIcon(":/images/find.png"), tr("Find Node"), this);
-    findNodeAct->setShortcut(Qt::CTRL + Qt::Key_F);
-    findNodeAct->setStatusTip(tr("Find and highlight a node by number or label. "
+    editNodeSelectNoneAct = new QAction(QIcon(":/images/selectnone.png"), tr("Deselect all"), this);
+    editNodeSelectNoneAct->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_A));
+    editNodeSelectNoneAct->setStatusTip(tr("Deselect all nodes"));
+    editNodeSelectNoneAct->setWhatsThis(tr("Deselect all\n\n Clears the node selection"));
+    connect(editNodeSelectNoneAct, SIGNAL(triggered()), this, SLOT(slotEditNodeSelectNone()));
+
+    editNodeFindAct = new QAction(QIcon(":/images/find.png"), tr("Find Node"), this);
+    editNodeFindAct->setShortcut(Qt::CTRL + Qt::Key_F);
+    editNodeFindAct->setStatusTip(tr("Find and highlight a node by number or label. "
                                  "Press Ctrl+F again to undo."));
-    findNodeAct->setWhatsThis(tr("Find Node\n\nFinds a node with a given number or label and doubles its size. Ctrl+F again resizes back the node"));
-    connect(findNodeAct, SIGNAL(triggered()), this, SLOT(slotFindNode()) );
+    editNodeFindAct->setWhatsThis(tr("Find Node\n\nFinds a node with a given number or label and doubles its size. Ctrl+F again resizes back the node"));
+    connect(editNodeFindAct, SIGNAL(triggered()), this, SLOT(slotEditNodeFind()) );
 
-    addNodeAct = new QAction(QIcon(":/images/add.png"), tr("Add Node"), this);
-    addNodeAct->setShortcut(Qt::CTRL + Qt::Key_Period);
-    addNodeAct->setStatusTip(tr("Add a node"));
-    addNodeAct->setWhatsThis(tr("Add Node\n\nAdds a node to the network"));
-    connect(addNodeAct, SIGNAL(triggered()), this, SLOT(addNode()));
+    editNodeAddAct = new QAction(QIcon(":/images/add.png"), tr("Add Node"), this);
+    editNodeAddAct->setShortcut(Qt::CTRL + Qt::Key_Period);
+    editNodeAddAct->setStatusTip(tr("Add a node"));
+    editNodeAddAct->setWhatsThis(tr("Add Node\n\nAdds a node to the network"));
+    connect(editNodeAddAct, SIGNAL(triggered()), this, SLOT(slotEditNodeAdd()));
 
-    removeNodeAct = new QAction(QIcon(":/images/remove.png"),tr("Remove Node"), this);
-    removeNodeAct ->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_Period);
+    editNodeRemoveAct = new QAction(QIcon(":/images/remove.png"),tr("Remove Node"), this);
+    editNodeRemoveAct ->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_Period);
     //Single key shortcuts with backspace or del do no work in Mac http://goo.gl/7hz7Dx
-    removeNodeAct->setStatusTip(tr("Remove a node"));
-    removeNodeAct->setWhatsThis(tr("Remove Node\n\nRemoves a node from the network"));
-    connect(removeNodeAct, SIGNAL(triggered()), this, SLOT(slotRemoveNode()));
+    editNodeRemoveAct->setStatusTip(tr("Remove a node"));
+    editNodeRemoveAct->setWhatsThis(tr("Remove Node\n\nRemoves a node from the network"));
+    connect(editNodeRemoveAct, SIGNAL(triggered()), this, SLOT(slotEditNodeRemove()));
 
     propertiesNodeAct = new QAction(QIcon(":/images/properties.png"),tr("Node Properties"), this);
     propertiesNodeAct ->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_Period );
     propertiesNodeAct->setStatusTip(tr("Open node properties"));
     propertiesNodeAct->setWhatsThis(tr("Node Properties\n\nOpens node properties to edit label, size, color, shape etc"));
-    connect(propertiesNodeAct, SIGNAL(triggered()), this, SLOT(slotNodePropertiesDialog()));
+    connect(propertiesNodeAct, SIGNAL(triggered()), this, SLOT(slotEditNodePropertiesDialog()));
+
+    editNodeColorAll = new QAction(QIcon(":/images/nodecolor.png"), tr("Change all Nodes Colors"),	this);
+    editNodeColorAll->setStatusTip(tr("Click to choose a new color for all nodes."));
+    editNodeColorAll->setWhatsThis(tr("All Nodes\n\nChanges all nodes color at once."));
+    connect(editNodeColorAll, SIGNAL(triggered()), this, SLOT(slotEditNodeColorAll()) );
 
     changeAllNodesSizeAct = new QAction(QIcon(":/images/resize.png"), tr("Change all Nodes Size"),	this);
     changeAllNodesSizeAct->setStatusTip(tr("This option lets you change the size of all nodes"));
     changeAllNodesSizeAct->setWhatsThis(tr("Nodes Size\n\nThis option lets you change the size of all nodes"));
-    connect(changeAllNodesSizeAct, SIGNAL(triggered()), this, SLOT(slotChangeAllNodesSize()) );
+    connect(changeAllNodesSizeAct, SIGNAL(triggered()), this, SLOT(slotEditNodeSizeAll()) );
 
     changeAllNodesShapeAct = new QAction( tr("Change all Nodes Shape"),	this);
     changeAllNodesShapeAct->setStatusTip(tr("This option lets you change the shape of all nodes"));
@@ -815,10 +821,6 @@ void MainWindow::initActions(){
     changeLabelsSizeAct->setWhatsThis(tr("Labels Size\n\nChange the fontsize of the labels of all nodes"));
     connect(changeLabelsSizeAct, SIGNAL(triggered()), this, SLOT(slotChangeLabelsSize()) );
 
-    editNodeColorAll = new QAction(QIcon(":/images/nodecolor.png"), tr("Change all Nodes Colors"),	this);
-    editNodeColorAll->setStatusTip(tr("Click to choose a new color for all nodes."));
-    editNodeColorAll->setWhatsThis(tr("All Nodes\n\nChanges all nodes color at once."));
-    connect(editNodeColorAll, SIGNAL(triggered()), this, SLOT(slotEditNodeColorAll()) );
 
     changeAllNumbersColorAct = new QAction( tr("Change all Numbers Colors"),	this);
     changeAllNumbersColorAct->setStatusTip(tr("Click to change the color of all numbers."));
@@ -831,17 +833,17 @@ void MainWindow::initActions(){
     connect(changeAllLabelsColorAct, SIGNAL(triggered()), this, SLOT(slotAllLabelsColor()));
 
 
-    addEdgeAct = new QAction(QIcon(":/images/plines.png"), tr("Add Edge"),this);
-    addEdgeAct->setShortcut(Qt::CTRL + Qt::Key_Slash);
-    addEdgeAct->setStatusTip(tr("Adds a directed edge from a node to another"));
-    addEdgeAct->setWhatsThis(tr("Add Edge\n\nAdds a directed edge from a node to another"));
-    connect(addEdgeAct, SIGNAL(triggered()), this, SLOT(slotAddEdge()));
+    editEdgeAddAct = new QAction(QIcon(":/images/plines.png"), tr("Add Edge"),this);
+    editEdgeAddAct->setShortcut(Qt::CTRL + Qt::Key_Slash);
+    editEdgeAddAct->setStatusTip(tr("Adds a directed edge from a node to another"));
+    editEdgeAddAct->setWhatsThis(tr("Add Edge\n\nAdds a directed edge from a node to another"));
+    connect(editEdgeAddAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeAdd()));
 
-    removeEdgeAct = new QAction(QIcon(":/images/disconnect.png"), tr("Remove"), this);
-    removeEdgeAct ->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_Slash);
-    removeEdgeAct->setStatusTip(tr("Removes an Edge"));
-    removeEdgeAct->setWhatsThis(tr("Remove Edge\n\nRemoves an Edge from the network"));
-    connect(removeEdgeAct, SIGNAL(triggered()), this, SLOT(slotRemoveEdge()));
+    editEdgeRemoveAct = new QAction(QIcon(":/images/disconnect.png"), tr("Remove"), this);
+    editEdgeRemoveAct ->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_Slash);
+    editEdgeRemoveAct->setStatusTip(tr("Removes an Edge"));
+    editEdgeRemoveAct->setWhatsThis(tr("Remove Edge\n\nRemoves an Edge from the network"));
+    connect(editEdgeRemoveAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeRemove()));
 
     changeEdgeLabelAct = new QAction(QIcon(":/images/letters.png"), tr("Change Label"), this);
     changeEdgeLabelAct->setStatusTip(tr("Changes the Label of an Edge"));
@@ -1890,26 +1892,24 @@ void MainWindow::initMenuBar() {
 
     editMenu -> addSeparator();
 
-    editMenu -> addAction ( rotateLeftAct );
-    editMenu -> addAction ( rotateRightAct );
+    editMenu -> addAction ( editRotateRightAct );
+    editMenu -> addAction ( editRotateRightAct );
 
     editMenu -> addSeparator();
-    editMenu -> addAction (resetSlidersAct );
+    editMenu -> addAction (editResetSlidersAct );
 
     editMenu -> addSeparator();
     editNodeMenu = new QMenu(tr("Node..."));
     editNodeMenu -> setIcon(QIcon(":/images/node.png"));
     editMenu -> addMenu ( editNodeMenu );
-    editNodeMenu -> addAction (selectAllAct);
-    editNodeMenu -> addAction (selectNoneAct);
+    editNodeMenu -> addAction (editNodeSelectAllAct);
+    editNodeMenu -> addAction (editNodeSelectNoneAct);
 
     editNodeMenu -> addSeparator();
 
-
-
-    editNodeMenu -> addAction (findNodeAct);
-    editNodeMenu -> addAction (addNodeAct);
-    editNodeMenu -> addAction (removeNodeAct);
+    editNodeMenu -> addAction (editNodeFindAct);
+    editNodeMenu -> addAction (editNodeAddAct);
+    editNodeMenu -> addAction (editNodeRemoveAct);
 
     editNodeMenu -> addSeparator();
 
@@ -1927,8 +1927,8 @@ void MainWindow::initMenuBar() {
     editEdgeMenu = new QMenu(tr("Edge..."));
     editEdgeMenu -> setIcon(QIcon(":/images/line.png"));
     editMenu-> addMenu (editEdgeMenu);
-    editEdgeMenu -> addAction(addEdgeAct);
-    editEdgeMenu -> addAction(removeEdgeAct);
+    editEdgeMenu -> addAction(editEdgeAddAct);
+    editEdgeMenu -> addAction(editEdgeRemoveAct);
     editEdgeMenu  ->addSeparator();
     editEdgeMenu -> addAction(changeEdgeLabelAct);
     editEdgeMenu -> addAction(changeEdgeColorAct);
@@ -2175,16 +2175,16 @@ void MainWindow::initToolBox(){
      */
 
     // create 4 buttons for the Edit groupbox
-    addNodeBt= new QPushButton(QIcon(":/images/add.png"),tr("&Add Node"));
-    addNodeBt->setFocusPolicy(Qt::NoFocus);
-    addNodeBt->setMinimumWidth(100);
-    addNodeBt->setStatusTip( tr("Add a new node to the network.") ) ;
-    addNodeBt->setToolTip(
+    editNodeAddBt= new QPushButton(QIcon(":/images/add.png"),tr("&Add Node"));
+    editNodeAddBt->setFocusPolicy(Qt::NoFocus);
+    editNodeAddBt->setMinimumWidth(100);
+    editNodeAddBt->setStatusTip( tr("Add a new node to the network.") ) ;
+    editNodeAddBt->setToolTip(
                 tr("Add a new node to the network (Ctrl+.). \n\n "
                    "You can also create a new node \n"
                    "in a specific position by double-clicking \n")
                 );
-    addNodeBt->setWhatsThis(
+    editNodeAddBt->setWhatsThis(
                 tr("Add new node\n\n"
                    "Adds a new node to the network (Ctrl+.). \n\n "
                    "Alternately, you can create a new node \n"
@@ -2207,33 +2207,33 @@ void MainWindow::initToolBox(){
                    "by right-clicking on it.")
                 );
 
-    addEdgeBt= new QPushButton(QIcon(":/images/connect.png"),tr("Add &Edge"));
-    addEdgeBt->setFocusPolicy(Qt::NoFocus);
-    addEdgeBt->setMinimumWidth(100);
-    addEdgeBt->setStatusTip(
+    editEdgeAddBt= new QPushButton(QIcon(":/images/connect.png"),tr("Add &Edge"));
+    editEdgeAddBt->setFocusPolicy(Qt::NoFocus);
+    editEdgeAddBt->setMinimumWidth(100);
+    editEdgeAddBt->setStatusTip(
                 tr("Add a new Edge from a node to another. ")
                 );
-    addEdgeBt->setToolTip(
+    editEdgeAddBt->setToolTip(
                 tr("Add a new Edge from a node to another (Ctrl+/).\n\n "
                    "You can also create an edge between two nodes\n"
                    "by double-clicking or middle-clicking on them consecutively.")
                 );
-    addEdgeBt->setWhatsThis(
+    editEdgeAddBt->setWhatsThis(
                 tr("Add edge\n\n"
                    "Adds a new Edge from a node to another (Ctrl+/).\n\n "
                    "Alternately, you can create a new edge between two nodes\n"
                    "by double-clicking or middle-clicking on them consecutively.")
                 );
 
-    removeEdgeBt= new QPushButton(QIcon(":/images/disconnect.png"),tr("Remove Edge"));
-    removeEdgeBt->setFocusPolicy(Qt::NoFocus);
-    removeEdgeBt->setMinimumWidth(100);
-    removeEdgeBt->setStatusTip( tr("Remove an Edge from the network ")  );
-    removeEdgeBt->setToolTip(
+    editEdgeRemoveBt= new QPushButton(QIcon(":/images/disconnect.png"),tr("Remove Edge"));
+    editEdgeRemoveBt->setFocusPolicy(Qt::NoFocus);
+    editEdgeRemoveBt->setMinimumWidth(100);
+    editEdgeRemoveBt->setStatusTip( tr("Remove an Edge from the network ")  );
+    editEdgeRemoveBt->setToolTip(
                 tr("Remove an Edge from the network (Ctrl+Alt+/)"
                    )
                 );
-    removeEdgeBt->setWhatsThis(
+    editEdgeRemoveBt->setWhatsThis(
                 tr("Remove edge\n\n"
                    "Removes an Edge from the network  (Ctrl+Alt+/)."
                    "Alternately, you can remove an Edge \n"
@@ -2244,10 +2244,10 @@ void MainWindow::initToolBox(){
 
     //create a grid layout for these buttons
     QGridLayout *buttonsGrid = new QGridLayout;
-    buttonsGrid -> addWidget(addNodeBt, 0,0);
+    buttonsGrid -> addWidget(editNodeAddBt, 0,0);
     buttonsGrid -> addWidget(removeNodeBt, 0,1);
-    buttonsGrid -> addWidget(addEdgeBt,1,0);
-    buttonsGrid -> addWidget(removeEdgeBt,1,1);
+    buttonsGrid -> addWidget(editEdgeAddBt,1,0);
+    buttonsGrid -> addWidget(editEdgeRemoveBt,1,1);
     buttonsGrid -> setSpacing(5);
     buttonsGrid -> setContentsMargins(5, 5, 5, 5);
 
@@ -2936,20 +2936,20 @@ void MainWindow::initSignalSlots() {
              this, SLOT ( edgeInfoStatusBar(Edge*) )  );
 
     connect( graphicsWidget, SIGNAL( userDoubleClicked(int, QPointF) ),
-             this, SLOT( addNodeWithMouse(int,QPointF) ) ) ;
+             this, SLOT( slotEditNodeAddWithMouse(int,QPointF) ) ) ;
 
     connect( graphicsWidget, SIGNAL( userMiddleClicked(int, int, float) ),
-             this, SLOT( addEdge(int, int, float) ) 	);
+             this, SLOT( slotEditEdgeCreate(int, int, float) ) 	);
 
 
     connect( graphicsWidget, SIGNAL( openNodeMenu() ),
-             this, SLOT( openNodeContextMenu() ) ) ;
+             this, SLOT( slotEditNodeOpenContextMenu() ) ) ;
 
     connect( graphicsWidget, SIGNAL( openEdgeMenu() ),
              this, SLOT( openEdgeContextMenu() ) ) ;
 
     connect (graphicsWidget, &GraphicsWidget::openContextMenu,
-             this, &MainWindow::openContextMenu);
+             this, &MainWindow::slotEditOpenContextMenu);
 
     connect( graphicsWidget, SIGNAL(updateNodeCoords(int, int, int)),
              this, SLOT( updateNodeCoords(int, int, int) ) );
@@ -3065,13 +3065,13 @@ void MainWindow::initSignalSlots() {
 
 
     //signals and slots inside MainWindow
-    connect( addNodeBt,SIGNAL(clicked()), this, SLOT( addNode() ) );
+    connect( editNodeAddBt,SIGNAL(clicked()), this, SLOT( slotEditNodeAdd() ) );
 
-    connect( addEdgeBt,SIGNAL(clicked()), this, SLOT( slotAddEdge() ) );
+    connect( editEdgeAddBt,SIGNAL(clicked()), this, SLOT( slotEditEdgeAdd() ) );
 
-    connect( removeNodeBt,SIGNAL(clicked()), this, SLOT( slotRemoveNode() ) );
+    connect( removeNodeBt,SIGNAL(clicked()), this, SLOT( slotEditNodeRemove() ) );
 
-    connect( removeEdgeBt,SIGNAL(clicked()), this, SLOT( slotRemoveEdge() ) );
+    connect( editEdgeRemoveBt,SIGNAL(clicked()), this, SLOT( slotEditEdgeRemove() ) );
 
 
     connect( editRelationNextAct, SIGNAL(triggered()),
@@ -3097,7 +3097,7 @@ void MainWindow::initSignalSlots() {
 
 
     connect( &m_WebCrawlerDialog, &WebCrawlerDialog::userChoices,
-             this, &MainWindow::slotWebCrawl );
+             this, &MainWindow::slotNetworkWebCrawler );
 
     connect( &m_datasetSelectDialog, SIGNAL( userChoices( QString) ),
              this, SLOT( slotNetworkDataSetRecreate(QString) ) );
@@ -3169,7 +3169,7 @@ void MainWindow::initNet(){
     networkSave->setIcon(QIcon(":/images/saved.png"));
     networkSave->setEnabled(true);
 
-    markedNodesExist=false;	//used by slotFindNode()
+    markedNodesExist=false;	//used by slotEditNodeFind()
 
     cursorPosGW=QPointF(-1,-1);
     clickedJimNumber=-1;
@@ -4443,32 +4443,6 @@ void MainWindow::slotEditRelationAdd(){
 
 
 
-/**
- * @brief MainWindow::addNode
- * Calls Graph::createVertex method to add a new RANDOM node into the activeGraph.
- * Called when "Create Node" button is clicked on the Main Window.
- */
-void MainWindow::addNode() {
-    qDebug() << "MW::addNode() ";
-    // minus a  screen edge offset...
-    activeGraph.createVertex (
-                -1, graphicsWidget->width()-10,  graphicsWidget->height()-10);
-    statusMessage( tr("New node (numbered %1) added.")
-                   .arg(activeGraph.lastVertexNumber())  );
-}
-
-
-/**
-    Calls Graph::createVertex method to add a new node into the activeGraph.
-    Called on double clicking
-*/
-void MainWindow::addNodeWithMouse(int num, QPointF p) {
-    qDebug("MW: addNodeWithMouse(). Calling activeGraph::createVertex() for a vertex named %i", num);
-    activeGraph.createVertex(num, p);
-    statusMessage( tr("New node (numbered %1) added.").arg(activeGraph.lastVertexNumber())  );
-}
-
-
 
 
 
@@ -4868,11 +4842,11 @@ void MainWindow::slotNetworkFileView(){
 
 
 /**
- * @brief MainWindow::slotOpenTextEditor
+ * @brief MainWindow::slotNetworkTextEditor
  * Opens the embedded text editor
  */
-void MainWindow::slotOpenTextEditor(){
-    qDebug() << "slotOpenTextEditor() : ";
+void MainWindow::slotNetworkTextEditor(){
+    qDebug() << "slotNetworkTextEditor() : ";
 
     TextEditor *ed = new TextEditor("", this);
     ed->setWindowTitle(tr("New Network File"));
@@ -5412,8 +5386,8 @@ void MainWindow::slotRandomRingLattice(){
 *	Shows a dialog from where the user   
 *	creates a new network by crawling a given website 
 */ 
-void MainWindow::slotShowWebCrawlerDialog() {
-    qDebug () << "MW: slotShowWebCrawlerDialog() - canvas Width & Height already sent";
+void MainWindow::slotNetworkWebCrawlerDialog() {
+    qDebug () << "MW: slotNetworkWebCrawlerDialog() - canvas Width & Height already sent";
     m_WebCrawlerDialog.exec() ;
 }
 
@@ -5427,7 +5401,7 @@ void MainWindow::slotShowWebCrawlerDialog() {
 *   Clears the loaded network (saving if needed)    
 *	then passes parameters to webCrawl of ActiveGraph class.  
 */ 
-void MainWindow::slotWebCrawl ( QString  seed, int maxNodes, int maxRecursion,
+void MainWindow::slotNetworkWebCrawler ( QString  seed, int maxNodes, int maxRecursion,
                                 bool extLinks, bool intLinks) {
     this->slotNetworkClose();
     activeGraph.webCrawl( seed, maxNodes, maxRecursion,  extLinks, intLinks) ;
@@ -5436,11 +5410,154 @@ void MainWindow::slotWebCrawl ( QString  seed, int maxNodes, int maxRecursion,
 
 
 
+
+
+
 /**
-     Calls GW: findNode() to find a node by its number or label. The node is then marked.
+*	A slot activated when something has been changed in the graph.
+    Makes the networkSave icon active and refreshes any LCD values.
+    Also called from graphicsWidget.
 */
-void MainWindow::slotFindNode(){
-    qDebug ("MW: slotFindNode()");
+void MainWindow::graphChanged(){
+    qDebug("MW: graphChanged");
+    networkModified=true;
+    networkSave->setIcon(QIcon(":/images/save.png"));
+    networkSave->setEnabled(true);
+
+    nodesLCD->display(activeGraph.vertices());
+    edgesLCD->display(activeEdges());
+    densityLCD->display( activeGraph.density() );
+}
+
+
+
+/**
+ * @brief MainWindow::slotEditNodeSelectAll
+ */
+void MainWindow::slotEditNodeSelectAll(){
+    qDebug() << "MainWindow::slotEditNodeSelectAll()";
+    graphicsWidget->selectAll();
+    statusMessage( QString(tr("Selected nodes: %1") )
+                   .arg( selectedNodes().count() ) );
+
+}
+
+
+/**
+ * @brief MainWindow::slotEditNodeSelectNone
+ */
+void MainWindow::slotEditNodeSelectNone(){
+    qDebug() << "MainWindow::slotEditNodeSelectNone()";
+    graphicsWidget->selectNone();
+    statusMessage( QString(tr("Selection cleared") ) );
+}
+
+
+
+
+/**
+ * @brief MainWindow::slotEditOpenContextMenu
+ * Popups a context menu with some options when the user right-clicks on the scene
+ * @param mPos
+ */
+void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
+    cursorPosGW=mPos;
+    QMenu *contextMenu = new QMenu(" Menu",this);
+    Q_CHECK_PTR( contextMenu );  //displays "out of memory" if needed
+
+
+
+    contextMenu -> addAction( "## Selected nodes: "
+                              + QString::number(  selectedNodes().count() ) + " ##  ");
+
+    contextMenu -> addSeparator();
+
+    if (selectedNodes().count()) {
+        contextMenu -> addAction(propertiesNodeAct );
+        contextMenu -> addSeparator();
+    }
+
+    contextMenu -> addAction( editNodeAddAct );
+    contextMenu -> addAction( editEdgeAddAct );
+    contextMenu -> addSeparator();
+
+    QMenu *options=new QMenu("Options", this);
+    contextMenu -> addMenu(options );
+
+    options -> addAction (openSettingsAct  );
+    options -> addSeparator();
+    options -> addAction (changeAllNodesSizeAct );
+    options -> addAction (changeAllNodesShapeAct  );
+    options -> addAction (editNodeColorAll );
+    options -> addAction (displayNodeNumbersAct);
+    options -> addAction (displayNodeLabelsAct);
+    options -> addSeparator();
+    options -> addAction (changeAllEdgesColorAct  );
+    options -> addSeparator();
+    options -> addAction (changeBackColorAct  );
+    options -> addAction (backgroundImageAct  );
+
+    //QCursor::pos() is good only for menus not related with node coordinates
+    contextMenu -> exec(QCursor::pos() );
+    delete  contextMenu;
+    cursorPosGW=QPoint(-1,-1);
+}
+
+
+
+/**
+ * @brief MainWindow::selectedNodes
+ * Returns a QList of all selected nodes
+ * @return
+ */
+QList<QGraphicsItem *> MainWindow::selectedNodes() {
+    return graphicsWidget->selectedItems();
+
+}
+
+
+
+
+
+
+/**
+ * @brief MainWindow::slotEditNodeAdd
+ * Calls Graph::createVertex method to add a new RANDOM node into the activeGraph.
+ * Called when "Add Node" button is clicked on the Main Window.
+ */
+void MainWindow::slotEditNodeAdd() {
+    qDebug() << "MW::slotEditNodeAdd() ";
+    // minus a  screen edge offset...
+    activeGraph.createVertex (
+                -1, graphicsWidget->width()-10,  graphicsWidget->height()-10);
+    statusMessage( tr("New node (numbered %1) added.")
+                   .arg(activeGraph.lastVertexNumber())  );
+}
+
+
+
+/**
+ * @brief MainWindow::slotEditNodeAddWithMouse
+ * Called by GW when user double-clicks to add a new node
+ * Calls Graph::createVertex method to add a new node into the activeGraph.
+ * @param num
+ * @param p
+ */
+void MainWindow::slotEditNodeAddWithMouse(int num, QPointF p) {
+    qDebug("MW: slotEditNodeAddWithMouse(). Calling activeGraph::createVertex() for a vertex named %i", num);
+    activeGraph.createVertex(num, p);
+    statusMessage( tr("New node (numbered %1) added.").arg(activeGraph.lastVertexNumber())  );
+}
+
+
+
+/**
+ * @brief MainWindow::slotEditNodeFind
+ * Calls GW::setMarkedNode() to find a node by its number or label.
+ * The node is then marked.
+ */
+void MainWindow::slotEditNodeFind(){
+    qDebug ("MW: slotEditNodeFind()");
     if (!fileLoaded && !networkModified  ) {
         QMessageBox::critical( this, tr("Find Node"),
                                tr("No nodes present! \nLoad a network file first or create some nodes..."),
@@ -5482,45 +5599,411 @@ void MainWindow::slotFindNode(){
 
 
 /**
-*	A slot activated when something has been changed in the graph.
-    Makes the networkSave icon active and refreshes any LCD values.
-    Also called from graphicsWidget.
-*/
-void MainWindow::graphChanged(){
-    qDebug("MW: graphChanged");
-    networkModified=true;
-    networkSave->setIcon(QIcon(":/images/save.png"));
-    networkSave->setEnabled(true);
+ * @brief MainWindow::slotEditNodeRemove
+ * Deletes a node and the attached objects (edges, etc).
+ * It deletes clickedJim (signal from GraphicsView or set by another function)
+ * or else asks for a nodeNumber to remove. The nodeNumber is doomedJim.
+ * Called from nodeContextMenu
+ */
+void MainWindow::slotEditNodeRemove() {
+    qDebug() << "MW: slotEditNodeRemove()";
+    if (!activeGraph.vertices())  {
+        QMessageBox::critical(
+                    this,
+                    "Error",
+                    tr("Nothing to do! \n"
+                       "Load a network file or add some nodes first."), "OK",0);
+        statusMessage( tr("Nothing to remove.")  );
+        return;
+    }
+    if (activeGraph.relations() > 1){
+        QMessageBox::critical(
+                    this, "Error",
+                    tr("Cannot remove node! \n"
+                       "This a network with more than 1 relations. If you remove "
+                       "a node from the active relation, and then ask me to go "
+                       "to the previous or the next relation, then I would crash "
+                       "because I would try to display edges from a delete node."
+                       "You can only add nodes in multirelational networks."),
+                    "OK",0);
+        statusMessage( tr("Nothing to remove.")  );
+        return;
+    }
+    int doomedJim=-1, min=-1, max=-1;
+    bool ok=false;
 
-    nodesLCD->display(activeGraph.vertices());
-    edgesLCD->display(activeEdges());
-    densityLCD->display( activeGraph.density() );
+    min = activeGraph.firstVertexNumber();
+    max = activeGraph.lastVertexNumber();
+    qDebug("MW: min is %i and max is %i", min, max);
+    if (min==-1 || max==-1 ) {
+        qDebug("ERROR in finding min max nodeNumbers. Abort");
+        return;
+    }
+    else if (nodeClicked && clickedJimNumber >= 0 && clickedJimNumber<= max ) {
+        doomedJim=clickedJimNumber ;
+    }
+    else if (!nodeClicked ) {
+        doomedJim =  QInputDialog::getInt(this,"Remove node",tr("Choose a node to remove between ("
+                                                                + QString::number(min).toLatin1()+"..."+QString::number(max).toLatin1()+"):"),min, 1, max, 1, &ok);
+        if (!ok) {
+            statusMessage( "Remove node operation cancelled." );
+            return;
+        }
+    }
+    qDebug ("MW: removing vertex with number %i from Graph", doomedJim);
+    activeGraph.removeVertex(doomedJim);
+    clickedJimNumber=-1;
+    nodeClicked=false;
+    graphChanged();
+    qDebug("MW: removeNode() completed. Node %i removed completely.",doomedJim);
+    statusMessage( tr("Node removed completely. Ready. ") );
 }
 
 
 
-void MainWindow::slotSelectAll(){
-    qDebug() << "MainWindow::slotSelectAll()";
-    graphicsWidget->selectAll();
-    statusMessage( QString(tr("Selected nodes: %1") )
-                   .arg( selectedNodes().count() ) );
+/**
+ * @brief MainWindow::slotEditNodePropertiesDialog
+ */
+void MainWindow::slotEditNodePropertiesDialog() {
 
-}
+    qDebug() << "MW::slotEditNodePropertiesDialog()";
+//    if (!fileLoaded && !networkModified )  {
+    if (!activeGraph.vertices())  {
+        QMessageBox::critical(
+                    this,
+                    "Error",
+                    tr("Nothing to do! \n"
+                       "Load a network file or add some nodes first."), "OK",0);
+        statusMessage( tr("Nothing to remove.")  );
+        return;
+    }
+    int min=-1, max=-1, size = appSettings["initNodeSize"].toInt(0, 10);
+    QColor color = QColor(appSettings["initNodeColor"]);
+    QString shape= appSettings["initNodeShape"];
+    QString label="";
+    bool ok=false;
 
 
-void MainWindow::slotSelectNone(){
-    qDebug() << "MainWindow::slotSelectNone()";
-    graphicsWidget->selectNone();
-    statusMessage( QString(tr("Selection cleared") ) );
+    if ( selectedNodes().count() == 0) {
+        min = activeGraph.firstVertexNumber();
+        max = activeGraph.lastVertexNumber();
+        qDebug("MW: min is %i and max is %i", min, max);
+        if (min==-1 || max==-1 ) {
+            qDebug("ERROR in finding min max nodeNumbers. Abort");
+            return;
+        }
+
+        clickedJimNumber =  QInputDialog::getInt(
+                    this,
+                    "Node Properties",
+                    tr("Choose a node between ("
+                    + QString::number(min).toLatin1()
+                    +"..."
+                    + QString::number(max).toLatin1()+"):"),min, 1, max, 1, &ok);
+        if (!ok) {
+            statusMessage( "Node properties cancelled." );
+            return;
+        }
+    }
+    else   {
+        foreach (QGraphicsItem *item, selectedNodes() ) {
+           if ( (clickedJim = qgraphicsitem_cast<Node *>(item) )) {
+               if ( selectedNodes().count() > 1 ) {
+                   clickedJimNumber = clickedJim->nodeNumber();
+                   color = activeGraph.vertexColor( clickedJimNumber );
+                   shape = activeGraph.vertexShape( clickedJimNumber);
+                   size = activeGraph.vertexSize ( clickedJimNumber);
+               }
+               else {
+                    clickedJimNumber = clickedJim->nodeNumber();
+                    label = activeGraph.vertexLabel( clickedJimNumber );
+                    color = activeGraph.vertexColor( clickedJimNumber );
+                    shape = activeGraph.vertexShape( clickedJimNumber);
+                    size = activeGraph.vertexSize ( clickedJimNumber);
+               }
+           }
+        }
+    }
+    qDebug ()<< "MW: changing properties for "<< clickedJimNumber ;
+
+    m_nodeEditDialog = new NodeEditDialog(this, label, size, color, shape) ;
+
+    connect( m_nodeEditDialog, &NodeEditDialog::userChoices,
+             this, &MainWindow::slotEditNodeProperties );
+
+    m_nodeEditDialog->exec();
+
+    statusMessage( tr("Node properties dialog opened. Ready. ") );
 }
 
 
 /**
-     Popups a context menu with some options when the user right-clicks on a node
+ * @brief MainWindow::slotEditNodeProperties
+ * @param label
+ * @param size
+ * @param value
+ * @param color
+ * @param shape
+ */
+void MainWindow::slotEditNodeProperties( const QString label, const int size,
+                                     const QString value, const QColor color,
+                                     const QString shape) {
+    qDebug()<< "MW::slotEditNodeProperties() "
+            << " label " << label
+            << " size " << size
+            << "value " << value
+            << " color " << color
+            << " shape " << shape
+               << " clickedJimNumber " <<clickedJimNumber
+                  << " selectedNodes " << selectedNodes().count();
+
+    foreach (QGraphicsItem *item, selectedNodes() ) {
+        if ( (clickedJim = qgraphicsitem_cast<Node *>(item) )) {
+
+            clickedJimNumber = clickedJim->nodeNumber();
+            if ( selectedNodes().count() > 1 )
+            {
+                activeGraph.setVertexLabel(
+                            clickedJimNumber,
+                            label + QString::number(clickedJimNumber)
+                            );
+            }
+            else
+                activeGraph.setVertexLabel(
+                            clickedJimNumber,
+                            label
+                            );
+
+            if (!showLabels())
+                displayNodeLabelsAct->setChecked(true);
+
+            qDebug () <<  clickedJimNumber;
+            qDebug()<<"MW: updating color ";
+            activeGraph.setVertexColor( clickedJimNumber, color.name());
+            qDebug()<<"MW: updating size ";
+            activeGraph.setVertexSize(clickedJimNumber,size);
+            qDebug()<<"MW: updating shape ";
+            activeGraph.setVertexShape( clickedJimNumber, shape);
+            clickedJim->setShape(shape);
+        }
+    }
+    clickedJim=0;
+    clickedJimNumber=-1;
+
+    graphChanged();
+    statusMessage( tr("Ready. "));
+
+}
+
+
+
+
+
+
+/**
+ * @brief MainWindow::slotEditNodeColorAll
+ * Changes the color of all nodes
+ * Called from Settings Dialog
+ */
+void MainWindow::slotEditNodeColorAll(QColor color){
+    if (color.isValid()) {
+        appSettings["initNodeColor"] = color.name();
+        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+        qDebug() << "MW::slotEditNodeColorAll() : " << appSettings["initNodeColor"];
+        activeGraph.setAllVerticesColor(appSettings["initNodeColor"]);
+        QApplication::restoreOverrideCursor();
+        statusMessage( tr("Ready. ")  );
+    }
+    else {
+        // user pressed Cancel
+        statusMessage( tr("Invalid color. ") );
+    }
+}
+
+
+
+
+/**
+ * @brief MainWindow::slotEditNodeColorAll
+ * Open a QColorDialog to select a new node color, then changes the color of all nodes
+ */
+void MainWindow::slotEditNodeColorAll(){
+    QColor color = QColorDialog::getColor( Qt::red, this,
+                                           "Change the color of all nodes" );
+    if (color.isValid()) {
+        appSettings["initNodeColor"] = color.name();
+        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+        qDebug() << "MW::slotEditNodeColorAll() : " << appSettings["initNodeColor"];
+        activeGraph.setAllVerticesColor(appSettings["initNodeColor"]);
+        QApplication::restoreOverrideCursor();
+        statusMessage( tr("Ready. ")  );
+    }
+    else {
+        // user pressed Cancel
+        statusMessage( tr("Nodes color change aborted. ") );
+    }
+}
+
+
+
+
+
+/**
+ * @brief MainWindow::slotEditNodeSizeAll
+ * Changes the size of all nodes
+ * Called when user clicks on relevant menu option
+ */
+void MainWindow::slotEditNodeSizeAll() {
+    bool ok=false;
+
+    int newSize = QInputDialog::getInt(
+                this,
+                "Change node size",
+                tr("Select new size for all nodes: (1-16)"),
+                appSettings["initNodeSize"].toInt(0, 10), 1, 16, 1, &ok );
+    if (!ok) {
+        statusMessage( "Change node size operation cancelled." );
+        return;
+    }
+
+    qDebug ("MW: slotEditNodeSizeAll:");
+    slotEditNodeSizeAllNormalized(newSize);
+    graphChanged();
+    statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
+    return;
+}
+
+
+
+/**
+ * @brief MainWindow::slotEditNodeSizeAllNormalized
+ * Changes the size of nodes to size.
+ * @param size
+ */
+void MainWindow::slotEditNodeSizeAllNormalized(int size) {
+    qDebug() << "MW: slotEditNodeSizeAllNormalized:" << size;
+    if (size == 0 ) {
+        if (activeNodes() < 200) {
+            return;
+        }
+        else if (activeNodes() >= 200 && activeNodes() < 500){
+            size = 4;
+        }
+        else if (activeNodes() >= 500 && activeNodes() < 1000) {
+            size = 3;
+        }
+        else if (activeNodes() >= 1000) {
+            size = 2;
+        }
+    }
+    appSettings["initNodeSize"]= QString::number(size);
+    activeGraph.setAllVerticesSize(size);
+}
+
+
+/**
+*  Changes the shape of all nodes.
 */
-void MainWindow::openNodeContextMenu() {
+void MainWindow::slotChangeAllNodesShape() {
+    bool ok=false;
+    QStringList lst;
+    lst << "box"<< "circle"<< "diamond"<< "ellipse"<< "triangle";
+    QString newShape = QInputDialog::getItem(this, "Node shapes", "Select a shape for all nodes: ", lst, 1, true, &ok);
+    if ( ok ) {
+        //user selected an item and pressed OK
+        QList<QGraphicsItem *> list=scene->items();
+        for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
+            if ( (*it) -> type() == TypeNode ){
+                Node *jim = (Node*) (*it);
+                (*jim).setShape(newShape);
+                activeGraph.setVertexShape ((*jim).nodeNumber(), newShape);
+            }
+        graphChanged();
+        activeGraph.setInitVertexShape(newShape);
+        statusBar()->showMessage (QString(tr("All shapes have been changed. Ready")), statusBarDuration) ;
+    } else {
+        //user pressed Cancel
+        statusBar()->showMessage (QString(tr("Change node shapes aborted...")), statusBarDuration) ;
+    }
+
+}
+
+
+/**
+ * @brief MainWindow::slotNodeShape
+ * @param shape
+ * Calls Graph::setAllVerticesShape(QString)
+ */
+void MainWindow::slotNodeShape(const QString shape, const int vertex) {
+    qDebug() << "MW::slotNodeShape() - vertex " << vertex << " new shape " << shape;
+    if (vertex == 0)
+        activeGraph.setAllVerticesShape(shape);
+    else
+        activeGraph.setVertexShape(vertex, shape);
+}
+
+/**
+*  Change size of all nodes' numbers (outside ones)
+*/
+void MainWindow::slotChangeNumbersSize() {
+    bool ok=false;
+    int newSize;
+    newSize = QInputDialog::getInt(this, "Change text size", tr("Change all nodenumbers size to: (1-16)"),appSettings["initNumberSize"].toInt(0,10), 1, 16, 1, &ok );
+    if (!ok) {
+        statusMessage( tr("Change font size: Aborted.") );
+        return;
+    }
+
+    QList<QGraphicsItem *> list=scene->items();
+    for (QList<QGraphicsItem *>::iterator it2=list.begin();it2!=list.end(); it2++)
+
+        if ( (*it2)->type()==TypeNumber) {
+            NodeNumber * number= (NodeNumber*) (*it2);
+            qDebug ("MW: slotChangeNumbersSize Found");
+            number->setFont( QFont (number->font().family(), newSize, QFont::Light, false) );
+        }
+
+    activeGraph.setInitVertexNumberSize(newSize);
+    statusMessage( tr("Changed numbers size. Ready.") );
+}
+
+
+/**
+*  Changes size of all nodes' labels
+*/
+void MainWindow::slotChangeLabelsSize() {
+    bool ok=false;
+    int newSize;
+    newSize = QInputDialog::getInt(this, "Change text size", tr("Change all node labels size to: (1-16)"),appSettings["initLabelSize"].toInt(0,10), 1, 16, 1, &ok );
+    if (!ok) {
+        statusMessage( tr("Change font size: Aborted.") );
+        return;
+    }
+    QList<QGraphicsItem *> list=scene->items();
+    for (QList<QGraphicsItem *>::iterator it2=list.begin();it2!=list.end(); it2++)
+
+        if ( (*it2)->type()==TypeLabel) {
+            NodeLabel *label= (NodeLabel*) (*it2);
+            qDebug ("MW: slotChangeLabelsSize Found");
+            label->setFont( QFont (label->font().family(), newSize, QFont::Light, false) );
+            activeGraph.setVertexLabelSize ( (label->node())->nodeNumber(), newSize);
+        }
+    activeGraph.setInitVertexLabelSize(newSize);
+    statusMessage( tr("Changed labels size. Ready.") );
+}
+
+
+
+
+
+/**
+ * @brief MainWindow::slotEditNodeOpenContextMenu
+ * Called from GW when the user has right-clicked on a node
+ * Opens a node context menu with some options when the user right-clicks on a node
+ */
+void MainWindow::slotEditNodeOpenContextMenu() {
     clickedJimNumber=clickedJim->nodeNumber();
-    qDebug("MW: openNodeContextMenu() for node %i at %i, %i",
+    qDebug("MW: slotEditNodeOpenContextMenu() for node %i at %i, %i",
            clickedJimNumber, QCursor::pos().x(), QCursor::pos().y());
 
     QMenu *nodeContextMenu = new QMenu(QString::number(clickedJimNumber), this);
@@ -5533,8 +6016,8 @@ void MainWindow::openNodeContextMenu() {
     }
 
     nodeContextMenu -> addSeparator();
-    nodeContextMenu -> addAction(addEdgeAct);
-    nodeContextMenu -> addAction(removeNodeAct );
+    nodeContextMenu -> addAction(editEdgeAddAct);
+    nodeContextMenu -> addAction(editNodeRemoveAct );
     nodeContextMenu -> addAction(propertiesNodeAct );
     //QCursor::pos() is good only for menus not related with node coordinates
     nodeContextMenu -> exec(QCursor::pos() );
@@ -5556,65 +6039,11 @@ void MainWindow::openEdgeContextMenu() {
     QMenu *edgeContextMenu = new QMenu(edgeName, this);
     edgeContextMenu -> addAction( "## EDGE " + edgeName + " ##  ");
     edgeContextMenu -> addSeparator();
-    edgeContextMenu -> addAction( removeEdgeAct );
+    edgeContextMenu -> addAction( editEdgeRemoveAct );
     edgeContextMenu -> addAction( changeEdgeWeightAct );
     edgeContextMenu -> addAction( changeEdgeColorAct );
     edgeContextMenu -> exec(QCursor::pos() );
     delete  edgeContextMenu;
-}
-
-/**
-     Popups a context menu with some options when the user right-clicks on the scene
-*/
-void MainWindow::openContextMenu( const QPointF &mPos) {
-    cursorPosGW=mPos;
-    QMenu *contextMenu = new QMenu(" Menu",this);
-    Q_CHECK_PTR( contextMenu );  //displays "out of memory" if needed
-
-
-
-    contextMenu -> addAction( "## Selected nodes: "
-                              + QString::number(  selectedNodes().count() ) + " ##  ");
-
-    contextMenu -> addSeparator();
-
-    if (selectedNodes().count()) {
-        contextMenu -> addAction(propertiesNodeAct );
-        contextMenu -> addSeparator();
-    }
-
-    contextMenu -> addAction( addNodeAct );
-    contextMenu -> addAction( addEdgeAct );
-    contextMenu -> addSeparator();
-
-    QMenu *options=new QMenu("Options", this);
-    contextMenu -> addMenu(options );
-
-    options -> addAction (openSettingsAct  );
-    options -> addSeparator();
-    options -> addAction (changeAllNodesSizeAct );
-    options -> addAction (changeAllNodesShapeAct  );
-    options -> addAction (editNodeColorAll );
-    options -> addAction (displayNodeNumbersAct);
-    options -> addAction (displayNodeLabelsAct);
-    options -> addSeparator();
-    options -> addAction (changeAllEdgesColorAct  );
-    options -> addSeparator();
-    options -> addAction (changeBackColorAct  );
-    options -> addAction (backgroundImageAct  );
-
-    //QCursor::pos() is good only for menus not related with node coordinates
-    contextMenu -> exec(QCursor::pos() );
-    delete  contextMenu;
-    cursorPosGW=QPoint(-1,-1);
-}
-
-
-
-
-QList<QGraphicsItem *> MainWindow::selectedNodes() {
-    return graphicsWidget->selectedItems();
-
 }
 
 
@@ -5695,208 +6124,14 @@ void MainWindow::edgeInfoStatusBar (Edge* edge) {
 
 
 
-/**
-* 	Deletes a node and the attached objects (edges, etc).
-*	It deletes clickedJim (signal from GraphicsView or set by another function) 
-*	or else asks for a nodeNumber to remove. The nodeNumber is doomedJim.
-    Called from nodeContextMenu
-*/
-void MainWindow::slotRemoveNode() {
-    qDebug() << "MW: slotRemoveNode()";
-    if (!activeGraph.vertices())  {
-        QMessageBox::critical(
-                    this,
-                    "Error",
-                    tr("Nothing to do! \n"
-                       "Load a network file or add some nodes first."), "OK",0);
-        statusMessage( tr("Nothing to remove.")  );
-        return;
-    }
-    if (activeGraph.relations() > 1){
-        QMessageBox::critical(
-                    this, "Error",
-                    tr("Cannot remove node! \n"
-                       "This a network with more than 1 relations. If you remove "
-                       "a node from the active relation, and then ask me to go "
-                       "to the previous or the next relation, then I would crash "
-                       "because I would try to display edges from a delete node."
-                       "You can only add nodes in multirelational networks."),
-                    "OK",0);
-        statusMessage( tr("Nothing to remove.")  );
-        return;
-    }
-    int doomedJim=-1, min=-1, max=-1;
-    bool ok=false;
-
-    min = activeGraph.firstVertexNumber();
-    max = activeGraph.lastVertexNumber();
-    qDebug("MW: min is %i and max is %i", min, max);
-    if (min==-1 || max==-1 ) {
-        qDebug("ERROR in finding min max nodeNumbers. Abort");
-        return;
-    }
-    else if (nodeClicked && clickedJimNumber >= 0 && clickedJimNumber<= max ) {
-        doomedJim=clickedJimNumber ;
-    }
-    else if (!nodeClicked ) {
-        doomedJim =  QInputDialog::getInt(this,"Remove node",tr("Choose a node to remove between ("
-                                                                + QString::number(min).toLatin1()+"..."+QString::number(max).toLatin1()+"):"),min, 1, max, 1, &ok);
-        if (!ok) {
-            statusMessage( "Remove node operation cancelled." );
-            return;
-        }
-    }
-    qDebug ("MW: removing vertex with number %i from Graph", doomedJim);
-    activeGraph.removeVertex(doomedJim);
-    clickedJimNumber=-1;
-    nodeClicked=false;
-    graphChanged();
-    qDebug("MW: removeNode() completed. Node %i removed completely.",doomedJim);
-    statusMessage( tr("Node removed completely. Ready. ") );
-}
-
-
 
 /**
- * @brief MainWindow::slotNodePropertiesDialog
+ * @brief MainWindow::slotEditEdgeAdd
+ * Adds a new edge between two nodes specified by the user.
+ * Called when user clicks on the MW button/menu item "Add edge"
  */
-void MainWindow::slotNodePropertiesDialog() {
-
-    qDebug() << "MW::slotNodePropertiesDialog()";
-//    if (!fileLoaded && !networkModified )  {
-    if (!activeGraph.vertices())  {
-        QMessageBox::critical(
-                    this,
-                    "Error",
-                    tr("Nothing to do! \n"
-                       "Load a network file or add some nodes first."), "OK",0);
-        statusMessage( tr("Nothing to remove.")  );
-        return;
-    }
-    int min=-1, max=-1, size = appSettings["initNodeSize"].toInt(0, 10);
-    QColor color = QColor(appSettings["initNodeColor"]);
-    QString shape= appSettings["initNodeShape"];
-    QString label="";
-    bool ok=false;
-
-
-    if ( selectedNodes().count() == 0) {
-        min = activeGraph.firstVertexNumber();
-        max = activeGraph.lastVertexNumber();
-        qDebug("MW: min is %i and max is %i", min, max);
-        if (min==-1 || max==-1 ) {
-            qDebug("ERROR in finding min max nodeNumbers. Abort");
-            return;
-        }
-
-        clickedJimNumber =  QInputDialog::getInt(
-                    this,
-                    "Node Properties",
-                    tr("Choose a node between ("
-                    + QString::number(min).toLatin1()
-                    +"..."
-                    + QString::number(max).toLatin1()+"):"),min, 1, max, 1, &ok);
-        if (!ok) {
-            statusMessage( "Node properties cancelled." );
-            return;
-        }
-    }
-    else   {
-        foreach (QGraphicsItem *item, selectedNodes() ) {
-           if ( (clickedJim = qgraphicsitem_cast<Node *>(item) )) {
-               if ( selectedNodes().count() > 1 ) {
-                   clickedJimNumber = clickedJim->nodeNumber();
-                   color = activeGraph.vertexColor( clickedJimNumber );
-                   shape = activeGraph.vertexShape( clickedJimNumber);
-                   size = activeGraph.vertexSize ( clickedJimNumber);
-               }
-               else {
-                    clickedJimNumber = clickedJim->nodeNumber();
-                    label = activeGraph.vertexLabel( clickedJimNumber );
-                    color = activeGraph.vertexColor( clickedJimNumber );
-                    shape = activeGraph.vertexShape( clickedJimNumber);
-                    size = activeGraph.vertexSize ( clickedJimNumber);
-               }
-           }
-        }
-    }
-    qDebug ()<< "MW: changing properties for "<< clickedJimNumber ;
-
-    m_nodeEditDialog = new NodeEditDialog(this, label, size, color, shape) ;
-
-    connect( m_nodeEditDialog, &NodeEditDialog::userChoices,
-             this, &MainWindow::slotNodeProperties );
-
-    m_nodeEditDialog->exec();
-
-    statusMessage( tr("Node properties dialog opened. Ready. ") );
-}
-
-
-/**
- * @brief MainWindow::slotNodeProperties
- * @param label
- * @param size
- * @param value
- * @param color
- * @param shape
- */
-void MainWindow::slotNodeProperties( const QString label, const int size,
-                                     const QString value, const QColor color,
-                                     const QString shape) {
-    qDebug()<< "MW::slotNodeProperties() "
-            << " label " << label
-            << " size " << size
-            << "value " << value
-            << " color " << color
-            << " shape " << shape
-               << " clickedJimNumber " <<clickedJimNumber
-                  << " selectedNodes " << selectedNodes().count();
-
-    foreach (QGraphicsItem *item, selectedNodes() ) {
-        if ( (clickedJim = qgraphicsitem_cast<Node *>(item) )) {
-
-            clickedJimNumber = clickedJim->nodeNumber();
-            if ( selectedNodes().count() > 1 )
-            {
-                activeGraph.setVertexLabel(
-                            clickedJimNumber,
-                            label + QString::number(clickedJimNumber)
-                            );
-            }
-            else
-                activeGraph.setVertexLabel(
-                            clickedJimNumber,
-                            label
-                            );
-
-            if (!showLabels())
-                displayNodeLabelsAct->setChecked(true);
-
-            qDebug () <<  clickedJimNumber;
-            qDebug()<<"MW: updating color ";
-            activeGraph.setVertexColor( clickedJimNumber, color.name());
-            qDebug()<<"MW: updating size ";
-            activeGraph.setVertexSize(clickedJimNumber,size);
-            qDebug()<<"MW: updating shape ";
-            activeGraph.setVertexShape( clickedJimNumber, shape);
-            clickedJim->setShape(shape);
-        }
-    }
-    clickedJim=0;
-    clickedJimNumber=-1;
-
-    graphChanged();
-    statusMessage( tr("Ready. "));
-
-}
-
-/**
-*	Adds a new edge between two nodes specified by the user.
-    Called when user clicks on the MW button "Add edge".
-*/
-void MainWindow::slotAddEdge(){
-    qDebug ("MW: slotAddEdge()");
+void MainWindow::slotEditEdgeAdd(){
+    qDebug ("MW: slotEditEdgeAdd()");
     if (!fileLoaded && !networkModified )  {
         QMessageBox::critical(this, "Error",tr("No nodes!! \nCreate some nodes first."), "OK",0);
         statusMessage( tr("There are no nodes yet...")  );
@@ -5923,7 +6158,7 @@ void MainWindow::slotAddEdge(){
     if ( (sourceIndex =activeGraph.hasVertex(sourceNode)) ==-1 ) {
         statusMessage( tr("Aborting. ")  );
         QMessageBox::critical(this,"Error","No such node.", "OK",0);
-        qDebug ("MW: slotAddEdge: Cant find sourceNode %i.", sourceNode);
+        qDebug ("MW: slotEditEdgeAdd: Cant find sourceNode %i.", sourceNode);
         return;
     }
 
@@ -5939,7 +6174,7 @@ void MainWindow::slotAddEdge(){
     if ( (targetIndex=activeGraph.hasVertex(targetNode)) ==-1 ) {
         statusMessage( tr("Aborting. ")  );
         QMessageBox::critical(this,"Error","No such node.", "OK",0);
-        qDebug ("MW: slotAddEdge: Cant find targetNode %i",targetNode);
+        qDebug ("MW: slotEditEdgeAdd: Cant find targetNode %i",targetNode);
         return;
     }
 
@@ -5959,20 +6194,24 @@ void MainWindow::slotAddEdge(){
         return;
     }
 
-    addEdge(sourceNode, targetNode, weight);
+    slotEditEdgeCreate(sourceNode, targetNode, weight);
     graphChanged();
     statusMessage( tr("Ready. ")  );
 }
 
 
 
-/** 	
-    helper to slotAddEdge() above
-    Also called from GW::userMiddleClicked() signal when user creates edges with middle-clicks
-    Calls Graph::createEdge method to add the new edge to the active Graph
-*/
-void MainWindow::addEdge (int v1, int v2, float weight) {
-    qDebug("MW: addEdge() - setting user settings and calling Graph::createEdge(...)");
+/**
+ * @brief MainWindow::slotEditEdgeCreate
+ * helper to slotEditEdgeAdd() above
+ * Also called from GW::userMiddleClicked() signal when user creates edges with middle-clicks
+ * Calls Graph::createEdge method to add the new edge to the active Graph
+  * @param v1
+ * @param v2
+ * @param weight
+ */
+void MainWindow::slotEditEdgeCreate (int v1, int v2, float weight) {
+    qDebug("MW: slotEditEdgeCreate() - setting user settings and calling Graph::createEdge(...)");
     bool drawArrows=displayEdgesArrowsAct->isChecked();
     int reciprocal=0;
     bool bezier = false;
@@ -5984,12 +6223,13 @@ void MainWindow::addEdge (int v1, int v2, float weight) {
 }
 
 
+
 /**
-*	Erases the clicked edge. Otherwise asks the user to specify one edge.
-*	First deletes arc reference from object nodeVector
-*	then deletes arc item from scene
-**/
-void MainWindow::slotRemoveEdge(){
+ * @brief MainWindow::slotEditEdgeRemove
+ * Erases the clicked edge. Otherwise asks the user to specify one edge.
+ * First deletes arc reference from object nodeVector then deletes arc item from scene
+ */
+void MainWindow::slotEditEdgeRemove(){
     if ( (!fileLoaded && !networkModified) || activeEdges() ==0 )  {
         QMessageBox::critical(this, "Error",tr("There are no edges! \nLoad a network file or create a new network first."), "OK",0);
         statusMessage( tr("No edges to remove - sorry.")  );
@@ -6080,53 +6320,6 @@ void MainWindow::slotRemoveEdge(){
 
 
 
-
-
-
-
-
-/**
- * @brief MainWindow::slotEditNodeColorAll
- * Changes the color of all nodes
- * Called from Settings Dialog
- */
-void MainWindow::slotEditNodeColorAll(QColor color){
-    if (color.isValid()) {
-        appSettings["initNodeColor"] = color.name();
-        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        qDebug() << "MW::slotEditNodeColorAll() : " << appSettings["initNodeColor"];
-        activeGraph.setAllVerticesColor(appSettings["initNodeColor"]);
-        QApplication::restoreOverrideCursor();
-        statusMessage( tr("Ready. ")  );
-    }
-    else {
-        // user pressed Cancel
-        statusMessage( tr("Invalid color. ") );
-    }
-}
-
-
-
-
-/**
-*  Changes the color of all nodes
-*/
-void MainWindow::slotEditNodeColorAll(){
-    QColor color = QColorDialog::getColor( Qt::red, this,
-                                           "Change the color of all nodes" );
-    if (color.isValid()) {
-        appSettings["initNodeColor"] = color.name();
-        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        qDebug() << "MW::slotEditNodeColorAll() : " << appSettings["initNodeColor"];
-        activeGraph.setAllVerticesColor(appSettings["initNodeColor"]);
-        QApplication::restoreOverrideCursor();
-        statusMessage( tr("Ready. ")  );
-    }
-    else {
-        // user pressed Cancel
-        statusMessage( tr("Nodes color change aborted. ") );
-    }
-}
 
 
 
@@ -8495,148 +8688,6 @@ void MainWindow::slotDisplayNodeLabels(bool toggle){
         statusMessage( tr("Node Labels are visible again...") );
     }
     activeGraph.setShowLabels(toggle);
-}
-
-
-
-
-/**
-*   Changes the size of all nodes
-*/
-void MainWindow::slotChangeAllNodesSize() {
-    bool ok=false;
-
-    int newSize = QInputDialog::getInt(
-                this,
-                "Change node size",
-                tr("Select new size for all nodes: (1-16)"),
-                appSettings["initNodeSize"].toInt(0, 10), 1, 16, 1, &ok );
-    if (!ok) {
-        statusMessage( "Change node size operation cancelled." );
-        return;
-    }
-
-    qDebug ("MW: slotChangeAllNodesSize:");
-    changeAllNodesSize(newSize);
-    graphChanged();
-    statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
-    return;
-}
-
-
-/**
-*   Changes the size of nodes. 
-*/
-void MainWindow::changeAllNodesSize(int size) {
-    qDebug ("MW: changeAllNodesSize:");
-    if (size == 0 ) {
-        if (activeNodes() < 200) {
-            return;
-        }
-        else if (activeNodes() >= 200 && activeNodes() < 500){
-            size = 4;
-        }
-        else if (activeNodes() >= 500 && activeNodes() < 1000) {
-            size = 3;
-        }
-        else if (activeNodes() >= 1000) {
-            size = 2;
-        }
-    }
-   // initNodeSize = size;
-    activeGraph.setAllVerticesSize(size);
-}
-
-
-/**
-*  Changes the shape of all nodes. 
-*/
-void MainWindow::slotChangeAllNodesShape() {
-    bool ok=false;
-    QStringList lst;
-    lst << "box"<< "circle"<< "diamond"<< "ellipse"<< "triangle";
-    QString newShape = QInputDialog::getItem(this, "Node shapes", "Select a shape for all nodes: ", lst, 1, true, &ok);
-    if ( ok ) {
-        //user selected an item and pressed OK
-        QList<QGraphicsItem *> list=scene->items();
-        for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
-            if ( (*it) -> type() == TypeNode ){
-                Node *jim = (Node*) (*it);
-                (*jim).setShape(newShape);
-                activeGraph.setVertexShape ((*jim).nodeNumber(), newShape);
-            }
-        graphChanged();
-        activeGraph.setInitVertexShape(newShape);
-        statusBar()->showMessage (QString(tr("All shapes have been changed. Ready")), statusBarDuration) ;
-    } else {
-        //user pressed Cancel
-        statusBar()->showMessage (QString(tr("Change node shapes aborted...")), statusBarDuration) ;
-    }
-
-}
-
-
-/**
- * @brief MainWindow::slotNodeShape
- * @param shape
- * Calls Graph::setAllVerticesShape(QString)
- */
-void MainWindow::slotNodeShape(const QString shape, const int vertex) {
-    qDebug() << "MW::slotNodeShape() - vertex " << vertex << " new shape " << shape;
-    if (vertex == 0)
-        activeGraph.setAllVerticesShape(shape);
-    else
-        activeGraph.setVertexShape(vertex, shape);
-}
-
-/**
-*  Change size of all nodes' numbers (outside ones)
-*/
-void MainWindow::slotChangeNumbersSize() {
-    bool ok=false;
-    int newSize;
-    newSize = QInputDialog::getInt(this, "Change text size", tr("Change all nodenumbers size to: (1-16)"),appSettings["initNumberSize"].toInt(0,10), 1, 16, 1, &ok );
-    if (!ok) {
-        statusMessage( tr("Change font size: Aborted.") );
-        return;
-    }
-
-    QList<QGraphicsItem *> list=scene->items();
-    for (QList<QGraphicsItem *>::iterator it2=list.begin();it2!=list.end(); it2++)
-
-        if ( (*it2)->type()==TypeNumber) {
-            NodeNumber * number= (NodeNumber*) (*it2);
-            qDebug ("MW: slotChangeNumbersSize Found");
-            number->setFont( QFont (number->font().family(), newSize, QFont::Light, false) );
-        }
-
-    activeGraph.setInitVertexNumberSize(newSize);
-    statusMessage( tr("Changed numbers size. Ready.") );
-}
-
-
-/**
-*  Changes size of all nodes' labels
-*/
-void MainWindow::slotChangeLabelsSize() {
-    bool ok=false;
-    int newSize;
-    newSize = QInputDialog::getInt(this, "Change text size", tr("Change all node labels size to: (1-16)"),appSettings["initLabelSize"].toInt(0,10), 1, 16, 1, &ok );
-    if (!ok) {
-        statusMessage( tr("Change font size: Aborted.") );
-        return;
-    }
-    QList<QGraphicsItem *> list=scene->items();
-    for (QList<QGraphicsItem *>::iterator it2=list.begin();it2!=list.end(); it2++)
-
-        if ( (*it2)->type()==TypeLabel) {
-            NodeLabel *label= (NodeLabel*) (*it2);
-            qDebug ("MW: slotChangeLabelsSize Found");
-            label->setFont( QFont (label->font().family(), newSize, QFont::Light, false) );
-            activeGraph.setVertexLabelSize ( (label->node())->nodeNumber(), newSize);
-        }
-    activeGraph.setInitVertexLabelSize(newSize);
-    statusMessage( tr("Changed labels size. Ready.") );
 }
 
 

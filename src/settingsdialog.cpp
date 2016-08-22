@@ -28,6 +28,7 @@
 #include "ui_settingsdialog.h"
 #include <QFileDialog>
 #include <QColorDialog>
+#include <QSpinBox>
 #include <QTextStream>
 #include <QMap>
 #include <QtDebug>
@@ -86,6 +87,10 @@ SettingsDialog::SettingsDialog(
     m_pixmap.fill( m_nodeColor );
     ui->nodeColorBtn->setIcon(QIcon(m_pixmap));
 
+
+    ui->nodeSizeSpin->setValue( appSettings["initNodeSize"].toInt(0, 10) );
+
+
     // signals
     connect (ui->dataDirSelectButton, &QToolButton::clicked,
              this, &SettingsDialog::getDataDir);
@@ -122,6 +127,10 @@ SettingsDialog::SettingsDialog(
 
     connect (ui->nodeShapeRadioBox, &QRadioButton::clicked,
              this, &SettingsDialog::getNodeShape);
+
+
+    connect(ui->nodeSizeSpin, SIGNAL(valueChanged(int)),
+            this, SLOT(getNodeSize(int)) );
 
     connect ( ui->buttonBox, &QDialogButtonBox::accepted,
               this, &SettingsDialog::validateSettings );
@@ -246,6 +255,16 @@ void SettingsDialog::getNodeShape(){
     }
     qDebug()<< "SettingsDialog::getNodeShape() - new default shape " << nodeShape;
     emit setNodeShape(nodeShape, 0);
+}
+
+
+/**
+ * @brief SettingsDialog::getNodeSize
+ * @param size
+ */
+void SettingsDialog::getNodeSize( int size) {
+    m_appSettings["initNodeSize"]= QString::number(size);
+    emit setNodeSize(size);
 }
 
 SettingsDialog::~SettingsDialog()

@@ -101,7 +101,6 @@ public slots:
     void setNodeVisibility(long int, bool );	//Called from Graph via MW
     bool setNodeColor(long int, QString);
     bool setNodeLabel(long int , QString );
-    void openNodeContextMenu();
     void nodeClicked(Node *);
     void moveNode(int, qreal, qreal);	//Called from Graph when creating random nets.
     bool setNodeSize(long int, int size=0);

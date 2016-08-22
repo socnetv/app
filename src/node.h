@@ -106,7 +106,6 @@ protected:
 	void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
 signals: 
 	void nodeClicked(Node*);
-	void openNodeContextMenu();
 	void startEdge(Node *);
 	void adjustOutEdge();
 	void adjustInEdge();

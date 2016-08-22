@@ -164,7 +164,7 @@ int Graph::relations(){
 
 /**
     main node creation slot, associated with homonymous signal from Parser.
-    Adds a Vertex to the Graph and calls addNode of GraphicsWidget
+    Adds a Vertex to the Graph and calls editNodeAdd of GraphicsWidget
     p holds the desired position of the new node.
     The new Vertex is named i and stores its color, label, label color, shape and position p.
 */

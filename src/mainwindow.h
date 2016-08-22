@@ -123,10 +123,6 @@ public:
     int activeEdges();
     int activeNodes();
 
-    void openContextMenu(const QPointF & mPos);
-
-    void changeAllNodesSize(int size);
-
     int clickedJimNumber; //it is public because we need to be visible from activegraph.
 
     void createProgressBar(int max=0, QString msg="Please wait...");
@@ -161,7 +157,7 @@ public slots:
     bool slotNetworkExportDL();
     bool slotNetworkExportGW();
     bool slotNetworkExportList();
-    void slotOpenTextEditor();
+    void slotNetworkTextEditor();
     void slotNetworkDataSetSelect();
     void slotNetworkDataSetRecreate(const QString);
 
@@ -195,32 +191,49 @@ public slots:
 
     void slotRandomRingLattice();
 
-    void slotShowWebCrawlerDialog();
-    void slotWebCrawl(QString, int, int, bool, bool);
+    void slotNetworkWebCrawlerDialog();
+    void slotNetworkWebCrawler(QString, int, int, bool, bool);
 
     //EDIT MENU
-    void slotSelectAll();
-    void slotSelectNone();
 
     void slotRelationPrev();
     void slotRelationNext();
     void slotEditRelationAdd();
     void slotEditRelationAdd(QString relationName);
 
-    void slotFindNode();
-    void slotRemoveNode();
-    void slotNodePropertiesDialog();
-    void slotNodeProperties( const QString, const int, const QString,
+    void slotEditOpenContextMenu(const QPointF & mPos);
+
+    void slotEditNodeSelectAll();
+    void slotEditNodeSelectNone();
+
+    void slotEditNodeAdd();
+    void slotEditNodeAddWithMouse(int, QPointF);
+
+    void slotEditNodeFind();
+    void slotEditNodeRemove();
+    void slotEditNodeOpenContextMenu();
+    void slotEditNodePropertiesDialog();
+    void slotEditNodeProperties( const QString, const int, const QString,
                              const QColor, const QString);
     void slotEditNodeColorAll();
     void slotEditNodeColorAll(QColor);
-    void slotNodeShape(const QString shape, const int vertex = 0);
 
-    void slotAddEdge();
-    void slotRemoveEdge();
+    void slotEditNodeSizeAll();
+    void slotEditNodeSizeAllNormalized(int size);
+
+    void slotChangeAllNodesShape();
+    void slotNodeShape(const QString shape, const int vertex = 0);
+    void slotChangeNumbersSize();
+    void slotChangeLabelsSize();
+
+
+    void slotEditEdgeAdd();
+    void slotEditEdgeCreate (int v1, int v2, float weight);
+    void slotEditEdgeRemove();
     void slotChangeEdgeLabel();
     void slotChangeEdgeColor();
     void slotChangeEdgeWeight();
+
     void slotFilterNodes();
     void slotFilterIsolateNodes(bool checked);
     void slotShowFilterEdgesDialog();
@@ -286,11 +299,6 @@ public slots:
     void slotDisplayNodeNumbers(bool toggle);
     void slotDisplayNodeLabels(bool toggle);
     void slotDisplayNumbersInsideNodes(bool toggle);
-    void slotChangeAllNodesSize();
-    void slotChangeAllNodesShape();
-
-    void slotChangeNumbersSize();
-    void slotChangeLabelsSize();
     void slotDrawEdgesThickAsWeights();
     void slotDrawEdgesBezier(bool toggle);
     void slotDisplayEdgesWeightNumbers(bool toggle);
@@ -323,19 +331,13 @@ public slots:
     //PUBLICLY AVAILABLE SLOTS. CALLED FROM GRAPHICSVIEW
     void nodeInfoStatusBar(Node*);
     void edgeInfoStatusBar (Edge*);
-    void openNodeContextMenu();
+
     void openEdgeContextMenu() ;
     void graphChanged();
 
     //Called by graphicswidget to update node coords in activeGraph
     void updateNodeCoords(int no, int x, int y);
 
-    //Called when user pushes the New Node button on the MW
-    void addNode();
-    //Called by graphicswidget when the user middle-clicks
-    void addEdge (int v1, int v2, float weight);
-    //Called by graphicswidget when the user double-clicks
-    void addNodeWithMouse(int, QPointF);
 
     //Called by Graph on saving file. int is the network type saved.
     void networkSaved(int);
@@ -409,10 +411,12 @@ private:
     QComboBox *toolBoxLayoutByIndexSelect, *toolBoxLayoutByIndexTypeSelect;
     QComboBox *toolBoxLayoutForceDirectedSelect;
 
-    QPushButton *addNodeBt, *addEdgeBt, *removeNodeBt, *removeEdgeBt;
+    QPushButton *editNodeAddBt, *editEdgeAddBt, *removeNodeBt, *editEdgeRemoveBt;
     QPushButton *toolBoxLayoutByIndexButton, *toolBoxLayoutForceDirectedButton;
-    QAction *zoomInAct,*zoomOutAct,*rotateLeftAct,*rotateRightAct, *resetSlidersAct ;
+
+    QAction *zoomInAct,*zoomOutAct,*editRotateRightAct,*editRotateLeftAct, *editResetSlidersAct ;
     QToolButton *zoomInBtn,*zoomOutBtn,*rotateLeftBtn,*rotateRightBtn, *resetSlidersBtn ;
+
     QSlider *zoomSlider, *rotateSlider;
 
     QAction *networkNew, *networkOpen, *networkSave, *networkSaveAs,
@@ -430,8 +434,9 @@ private:
     QAction *createSmallWorldRandomNetworkAct, *createRegularRandomNetworkAct;
 
     QAction *displayNodeNumbersAct, *displayNodeLabelsAct, *displayNumbersInsideNodesAct;
-    QAction *selectNoneAct, *selectAllAct;
-    QAction *findNodeAct,*addNodeAct, *addEdgeAct, *removeNodeAct, *propertiesNodeAct, *removeEdgeAct;
+    QAction *editNodeSelectNoneAct, *editNodeSelectAllAct;
+    QAction *editNodeFindAct,*editNodeAddAct, *editNodeRemoveAct, *propertiesNodeAct;
+    QAction *editEdgeAddAct, *editEdgeRemoveAct;
     QAction *changeNumbersSizeAct;
     QAction *changeLabelsSizeAct, *changeAllNodesSizeAct, *changeAllNodesShapeAct;
     QAction *changeEdgeLabelAct, *changeEdgeColorAct, *changeEdgeWeightAct;

@@ -38,15 +38,20 @@ class SettingsDialog : public QDialog
 {
     Q_OBJECT
 
+
 public:
     explicit SettingsDialog(QMap<QString, QString> &appSettings, QWidget *parent = 0 );
+    ~SettingsDialog();
+
+public slots:
     void getDataDir();
     void getBgColor();
     void getBgImage();
     void validateSettings();
     void getNodeColor();
     void getNodeShape();
-    ~SettingsDialog();
+    void getNodeSize(int);
+
 
 signals:
     void setProgressBars(bool);
@@ -61,6 +66,7 @@ signals:
     void setLeftPanel(bool);
     void setNodeColor(QColor);
     void setNodeShape(const QString, const long int);
+    void setNodeSize(int);
     void saveSettings();
 private:
      QMap<QString, QString> &m_appSettings ;

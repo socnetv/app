@@ -304,17 +304,6 @@ void GraphicsWidget::edgeClicked(Edge *edge){
 
 
 
-/**
-    On the event of a right-click on a node, the node calls this function
-    to emit a signal to MW to open a context menu at the mouse position.
-    Node is already passed with selectedNode(Node *) signal
-    The position of the menu is determined by QMouse:pos()...
-*/
-void GraphicsWidget::openNodeContextMenu(){
-    qDebug("GW: emitting openNodeMenu()");
-    emit openNodeMenu();
-}
-
 
 /**
     On the event of a right-click on an edge, the edge calls this function
@@ -706,7 +695,7 @@ Node* GraphicsWidget::hasNode( QString text ){
 
 /**
      Marks (by double-sizing and highlighting) or unmarks a node, given its number or label.
-     Called by MW:slotFindNode()
+     Called by MW:slotEditNodeFind()
 */
 bool GraphicsWidget::setMarkedNode(QString nodeText){
     qDebug ("GW: setMarkedNode()");
@@ -814,7 +803,7 @@ QList<QGraphicsItem *> GraphicsWidget::selectedItems(){
 
 /** 	
     Starts a new node when the user double-clicks somewhere
-    Emits userDoubleClicked to MW slot addNodeWithMouse() which
+    Emits userDoubleClicked to MW slot slotEditNodeAddWithMouse() which
         - displays node info on MW status bar and
         - calls Graph::createVertex(), which in turn calls this->drawNode()...
         Yes, we make a full circle! :)
@@ -868,8 +857,8 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
             nodeClicked(node);
             if ( e->button()==Qt::RightButton ) {
                 qDebug() << "GW::mousePressEvent() - Right-click on node. "
-                         << "Calling openNodeContextMenu() ";
-                openNodeContextMenu();
+                         << "emitting openNodeMenu() ";
+                emit openNodeMenu();
             }
             if ( e->button()==Qt::MidButton) {
                 qDebug() << "GW::mousePressEvent() - Middle-click on node.  "

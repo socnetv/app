@@ -83,7 +83,7 @@ void Node::setColor(QString str) {
 }
 
 /** 
-	Used by MW::slotFindNode() 
+    Used by MW::slotEditNodeFind()
 */
 void Node::setColor(QColor color){
     prepareGeometryChange();
