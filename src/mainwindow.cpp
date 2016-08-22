@@ -105,6 +105,10 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     setWindowIcon (QIcon(":/images/socnetv.png"));
 
+    this->setMinimumSize(1024,750); //set MW minimum size, before creating canvas
+
+    initView();         //init our network "canvas"
+
     /** functions that invoke all other construction parts **/
     initActions();      //register and construct menu Actions
 
@@ -115,10 +119,6 @@ MainWindow::MainWindow(const QString & m_fileName) {
     initStatusBar();    //add the status bar
 
     initToolBox();      //build the toolbox
-
-    this->setMinimumSize(1024,750); //set MW minimum size, before creating canvas
-
-    initView();         //init our network "canvas"
 
     initWindowLayout();   //init the application window, set layout etc
 
@@ -737,9 +737,41 @@ void MainWindow::initActions(){
                    "Adds a new relation to the active network. "
                    "Nodes will be preserved, edges will be removed. "));
 
+
+    zoomInAct = new QAction(QIcon(":/images/zoomin.png"), tr("Zoom In"), this);
+    zoomInAct->setStatusTip(tr("Zoom in. Better, use the canvas button or press Ctrl++ or press Cltr and use mouse wheel."));
+    zoomInAct->setToolTip(tr("Zoom in. Better, use the canvas button or (Ctrl++)"));
+    zoomInAct->setWhatsThis(tr("Zoom In.\n\nZooms in the actual network"));
+    connect(zoomInAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomIn()) );
+
+    zoomOutAct = new QAction(QIcon(":/images/zoomout.png"), tr("Zoom Out"), this);
+    zoomOutAct->setStatusTip(tr("Zoom out. Better, use the canvas button or press Ctrl+- or press Cltr and use mouse wheel."));
+    zoomOutAct->setToolTip(tr("Zoom in. Better, use the canvas button or (Ctrl+-)"));
+    zoomOutAct->setWhatsThis(tr("Zoom Out.\n\nZooms out of the actual network"));
+    connect(zoomOutAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomOut()) );
+
+    rotateLeftAct = new QAction(QIcon(":/images/rotateleft.png"), tr("Rotate counterclockwise"), this);
+    rotateLeftAct->setToolTip(tr("Rotate counterclockwise. Better, use the canvas button or (Ctrl+Left Arrow)"));
+    rotateLeftAct->setStatusTip(tr("Rotate counterclockwise. Better, use the canvas button or Ctrl+Left Arrow"));
+    rotateLeftAct ->setWhatsThis(tr("Rotates the network counterclockwise (Ctrl+Left Arrow)"));
+    connect(rotateLeftAct, SIGNAL(triggered()), graphicsWidget, SLOT( rotateLeft()) );
+
+    rotateRightAct = new QAction(QIcon(":/images/rotateright.png"), tr("Rotate clockwise"), this);
+    rotateRightAct->setStatusTip(tr("Rotate clockwise. Better, use the canvas button or (Ctrl+Right Arrow)"));
+    rotateRightAct->setToolTip(tr("Rotate clockwise. Better, use the canvas button or (Ctrl+Right Arrow)"));
+    rotateRightAct ->setWhatsThis(tr("Rotates the network clockwise (Ctrl+Right Arrow)"));
+    connect(rotateRightAct, SIGNAL(triggered()), graphicsWidget, SLOT( rotateRight()) );
+
+
+    resetSlidersAct = new QAction(QIcon(":/images/reset.png"), tr("Reset Zoom and Rotation"), this);
+    resetSlidersAct->setStatusTip(tr("Reset zoom and rotation to zero (Ctrl+0)"));
+    resetSlidersAct->setToolTip(tr("Reset zoom and rotation to zero (Ctrl+0)"));
+    resetSlidersAct->setWhatsThis(tr("Reset zoom and rotation to zero (Ctrl+0)"));
+    connect(resetSlidersAct, SIGNAL(triggered()), graphicsWidget, SLOT( reset()) );
+
     findNodeAct = new QAction(QIcon(":/images/find.png"), tr("Find Node"), this);
     findNodeAct->setShortcut(Qt::CTRL + Qt::Key_F);
-    findNodeAct->setStatusTip(tr("Find and highlights a node by number or label. "
+    findNodeAct->setStatusTip(tr("Find and highlight a node by number or label. "
                                  "Press Ctrl+F again to undo."));
     findNodeAct->setWhatsThis(tr("Find Node\n\nFinds a node with a given number or label and doubles its size. Ctrl+F again resizes back the node"));
     connect(findNodeAct, SIGNAL(triggered()), this, SLOT(slotFindNode()) );
@@ -897,7 +929,7 @@ void MainWindow::initActions(){
     connect(regularColorationAct, SIGNAL(triggered() ), this, SLOT(slotColorationRegular()) );//TODO
 
     randLayoutAct = new QAction( tr("Random"),this);
-    randLayoutAct -> setShortcut(Qt::CTRL+Qt::Key_0);
+    randLayoutAct -> setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_0);
     randLayoutAct -> setStatusTip(tr("Repositions all nodes in random places"));
     randLayoutAct -> setWhatsThis(tr("Random Layout\n\n Repositions all nodes in random places"));
     connect(randLayoutAct, SIGNAL(triggered()), this, SLOT(slotLayoutRandom()));
@@ -1850,26 +1882,47 @@ void MainWindow::initMenuBar() {
     editMenu -> addAction (editRelationPreviousAct);
     editMenu -> addAction (editRelationNextAct);
     editMenu -> addAction (editRelationAddAct);
+
     editMenu -> addSeparator();
 
+    editMenu -> addAction ( zoomInAct );
+    editMenu -> addAction ( zoomOutAct );
+
+    editMenu -> addSeparator();
+
+    editMenu -> addAction ( rotateLeftAct );
+    editMenu -> addAction ( rotateRightAct );
+
+    editMenu -> addSeparator();
+    editMenu -> addAction (resetSlidersAct );
+
+    editMenu -> addSeparator();
     editNodeMenu = new QMenu(tr("Node..."));
     editNodeMenu -> setIcon(QIcon(":/images/node.png"));
     editMenu -> addMenu ( editNodeMenu );
     editNodeMenu -> addAction (selectAllAct);
     editNodeMenu -> addAction (selectNoneAct);
+
     editNodeMenu -> addSeparator();
+
+
 
     editNodeMenu -> addAction (findNodeAct);
     editNodeMenu -> addAction (addNodeAct);
     editNodeMenu -> addAction (removeNodeAct);
+
     editNodeMenu -> addSeparator();
+
     editNodeMenu -> addAction (propertiesNodeAct);
+
     editNodeMenu -> addSeparator();
+
     editNodeMenu -> addAction (editNodeColorAll);
     editNodeMenu -> addAction (changeAllNodesSizeAct);
     editNodeMenu -> addAction (changeAllNodesShapeAct);
     editNodeMenu -> addAction (changeNumbersSizeAct);
     editNodeMenu -> addAction (changeLabelsSizeAct);
+
 
     editEdgeMenu = new QMenu(tr("Edge..."));
     editEdgeMenu -> setIcon(QIcon(":/images/line.png"));
@@ -2084,10 +2137,18 @@ void MainWindow::initToolBar(){
     labelRelationSelect ->setText(tr("Relation:"));
     toolBar -> addWidget (labelRelationSelect);
     toolBar -> addAction (editRelationPreviousAct);
-    changeRelationCombo = new QComboBox;
-    changeRelationCombo->setMinimumWidth(180);
-    changeRelationCombo->setCurrentIndex(0);
-    toolBar -> addWidget(changeRelationCombo);
+    editRelationChangeCombo = new QComboBox;
+    editRelationChangeCombo->setMinimumWidth(180);
+    editRelationChangeCombo->setCurrentIndex(0);
+    editRelationChangeCombo->setToolTip(
+                tr("Displays current relation - Click to change graph relation"));
+    editRelationChangeCombo->setStatusTip(
+                tr("Displays current relation - Click to change graph relation"));
+    editRelationChangeCombo->setWhatsThis(
+                tr("Previous Relation\n\n"
+                   "Displays current relation - Click to change graph relation (if any)"));
+
+    toolBar -> addWidget(editRelationChangeCombo);
     toolBar -> addAction (editRelationNextAct);
     toolBar -> addAction (editRelationAddAct);
 
@@ -2117,6 +2178,7 @@ void MainWindow::initToolBox(){
     addNodeBt= new QPushButton(QIcon(":/images/add.png"),tr("&Add Node"));
     addNodeBt->setFocusPolicy(Qt::NoFocus);
     addNodeBt->setMinimumWidth(100);
+    addNodeBt->setStatusTip( tr("Add a new node to the network.") ) ;
     addNodeBt->setToolTip(
                 tr("Add a new node to the network (Ctrl+.). \n\n "
                    "You can also create a new node \n"
@@ -2133,9 +2195,11 @@ void MainWindow::initToolBox(){
     removeNodeBt= new QPushButton(QIcon(":/images/remove.png"),tr("&Remove Node"));
     removeNodeBt->setFocusPolicy(Qt::NoFocus);
     removeNodeBt->setMinimumWidth(100);
+    removeNodeBt->setStatusTip( tr("Remove a node from the network. ") );
     removeNodeBt->setToolTip(
                 tr("Remove a node from the network (Ctrl+Alt+.). ")
                 );
+
     removeNodeBt->setWhatsThis(
                 tr("Remove node\n\n"
                    "Removes a node from the network (Ctrl+Alt+.). \n\n "
@@ -2146,6 +2210,9 @@ void MainWindow::initToolBox(){
     addEdgeBt= new QPushButton(QIcon(":/images/connect.png"),tr("Add &Edge"));
     addEdgeBt->setFocusPolicy(Qt::NoFocus);
     addEdgeBt->setMinimumWidth(100);
+    addEdgeBt->setStatusTip(
+                tr("Add a new Edge from a node to another. ")
+                );
     addEdgeBt->setToolTip(
                 tr("Add a new Edge from a node to another (Ctrl+/).\n\n "
                    "You can also create an edge between two nodes\n"
@@ -2161,6 +2228,7 @@ void MainWindow::initToolBox(){
     removeEdgeBt= new QPushButton(QIcon(":/images/disconnect.png"),tr("Remove Edge"));
     removeEdgeBt->setFocusPolicy(Qt::NoFocus);
     removeEdgeBt->setMinimumWidth(100);
+    removeEdgeBt->setStatusTip( tr("Remove an Edge from the network ")  );
     removeEdgeBt->setToolTip(
                 tr("Remove an Edge from the network (Ctrl+Alt+/)"
                    )
@@ -2195,6 +2263,8 @@ void MainWindow::initToolBox(){
     toolBoxAnalysisGeodesicsSelectLabel->setText(tr("Distances:"));
     toolBoxAnalysisGeodesicsSelectLabel->setMinimumWidth(115);
     toolBoxAnalysisGeodesicsSelect = new QComboBox;
+    toolBoxAnalysisGeodesicsSelect -> setStatusTip(
+                tr("Basic graph-theoretic metrics i.e. diameter."));
     toolBoxAnalysisGeodesicsSelect -> setToolTip(
                 tr("Compute basic graph-theoretic features of the network, "
                    "i.e. diameter."));
@@ -2215,6 +2285,8 @@ void MainWindow::initToolBox(){
     toolBoxAnalysisConnectivitySelectLabel->setText(tr("Connectivity:"));
     toolBoxAnalysisConnectivitySelectLabel->setMinimumWidth(115);
     toolBoxAnalysisConnectivitySelect = new QComboBox;
+    toolBoxAnalysisConnectivitySelect->setStatusTip(
+                tr("'Connectivity' metrics i.e. connectedness, walks, etc."));
     toolBoxAnalysisConnectivitySelect->setToolTip(
                 tr("Compute 'connectivity' metrics such as network connectedness, "
                    "walks, reachability etc."));
@@ -2234,6 +2306,8 @@ void MainWindow::initToolBox(){
     toolBoxAnalysisClusterabilitySelectLabel->setText(tr("Clusterability:"));
     toolBoxAnalysisClusterabilitySelectLabel->setMinimumWidth(115);
     toolBoxAnalysisClusterabilitySelect = new QComboBox;
+    toolBoxAnalysisClusterabilitySelect->setStatusTip(
+                tr("'Clusterability' metrics, i.e. cliques"));
     toolBoxAnalysisClusterabilitySelect->setToolTip(
                 tr("Compute 'clusterability' metrics, such as cliques"));
             toolBoxAnalysisClusterabilitySelect->setWhatsThis(
@@ -2252,6 +2326,9 @@ void MainWindow::initToolBox(){
     toolBoxAnalysisProminenceSelectLabel->setText(tr("Prominence:"));
     toolBoxAnalysisProminenceSelectLabel->setMinimumWidth(115);
     toolBoxAnalysisProminenceSelect = new QComboBox;
+    toolBoxAnalysisProminenceSelect -> setStatusTip(
+                tr("Metrics of how 'prominent' or important each node is.")
+                );
     toolBoxAnalysisProminenceSelect -> setToolTip(
                 tr("Compute metrics to see how 'prominent' or "
                    "important each actor (node) is inside the network.")
@@ -2310,6 +2387,7 @@ void MainWindow::initToolBox(){
     toolBoxLayoutByIndexSelectLabel->setText(tr("Index:"));
     toolBoxLayoutByIndexSelectLabel->setMinimumWidth(110);
     toolBoxLayoutByIndexSelect = new QComboBox;
+    toolBoxLayoutByIndexSelect->setStatusTip(tr("Select a prominence-based layout model"));
     toolBoxLayoutByIndexSelect->setToolTip(tr("Apply a prominence-based layout model"));
     toolBoxLayoutByIndexSelect->setWhatsThis(
                 tr("Visualize by prominence index\n\n"
@@ -2334,6 +2412,8 @@ void MainWindow::initToolBox(){
     toolBoxLayoutByIndexTypeLabel->setText(tr("Layout Type:"));
     toolBoxLayoutByIndexTypeLabel->setMinimumWidth(10);
     toolBoxLayoutByIndexTypeSelect = new QComboBox;
+    toolBoxLayoutByIndexTypeSelect->setStatusTip(
+                tr("Select layout type for the selected model"));
     toolBoxLayoutByIndexTypeSelect->setToolTip(
                 tr("Select circular or level layout type (you must select an index above)"));
     toolBoxLayoutByIndexTypeSelect->setWhatsThis(
@@ -2382,8 +2462,32 @@ void MainWindow::initToolBox(){
     toolBoxLayoutForceDirectedSelect->addItems(modelsList);
     toolBoxLayoutForceDirectedSelect->setMinimumHeight(20);
     toolBoxLayoutForceDirectedSelect->setMinimumWidth(120);
+    toolBoxLayoutForceDirectedSelect->setStatusTip (
+                            tr("Select a Force-Directed layout model. "));
     toolBoxLayoutForceDirectedSelect->setToolTip (
-                tr("Select one of the following models to embed to the network\n\n"
+                tr("Select a Force-Directed layout model to embed to the network\n\n"
+                   "Available models: \n"
+                   "Eades:\n"
+                   "A spring-gravitational model, where each node is \n"
+                   "regarded as physical object (ring) repeling all other \n"
+                   "nodes, while springs between connected nodes attract them. \n\n"
+
+                   "Fruchterman-Reingold: Vertices that are neighbours "
+                   "attract each other but, unlike Eades Spring "
+                   "Embedder, all vertices repel each other.\n\n"
+                   "Kamada-Kawai\n"
+                   "Every two vertices are connected  by a 'spring' of a \n"
+                   "desirable length, which corresponds to their graph theoretic \n"
+                   "distance. In this way, the optimal layout of the graph \n"
+                   "is the state with the minimum imbalance. The degree of \n"
+                   "imbalance is formulated as the total spring energy: \n"
+                   "the square summation of the differences between desirable \n"
+                   "distances and real ones for all pairs of vertices"
+                   )
+                );
+    toolBoxLayoutForceDirectedSelect->setWhatsThis(
+                tr("Visualize by a Force-Directed layout model.\n\n"
+                   "Available models: \n\n "
                    "Eades model\n "
                    "A spring-gravitational model, where each node is \n"
                    "regarded as physical object (ring) repeling all other \n"
@@ -2431,6 +2535,11 @@ void MainWindow::initToolBox(){
                 tr("Node sizes by OutDegree") );
     nodeSizesByOutDegreeBx ->setEnabled(true);
     nodeSizesByOutDegreeBx
+            ->setStatusTip(
+                tr("Enable to have all nodes resized so that their "
+                   "size reflect their out-degree."));
+
+    nodeSizesByOutDegreeBx
             ->setToolTip(
                 tr("If you enable this, all nodes will be resized so that their "
                    "size reflect their out-degree. \n"
@@ -2439,6 +2548,10 @@ void MainWindow::initToolBox(){
     nodeSizesByInDegreeBx = new QCheckBox(
                 tr("Node sizes by InDegree") );
     nodeSizesByInDegreeBx ->setEnabled(true);
+    nodeSizesByInDegreeBx
+            ->setStatusTip(
+                tr("Enable to have all nodes resized so that their "
+                   "size reflect their in-degree." ) );
     nodeSizesByInDegreeBx
             ->setToolTip(
                 tr("If you enable this, all nodes will be resized so that their "
@@ -2676,8 +2789,10 @@ void MainWindow::initWindowLayout() {
     zoomInBtn = new QToolButton;
     zoomInBtn->setShortcut(Qt::CTRL + Qt::Key_Plus);
     zoomInBtn->setToolTip(tr("Zoom in (Ctrl++)"));
-    zoomInBtn->setStatusTip(tr("Zooms inside the actual network."));
-    zoomInBtn->setWhatsThis(tr("Zoom In.\n\nZooms in the actual network"));
+    zoomInBtn->setStatusTip(tr("Zoom inside the actual network. Or press Cltr and use mouse wheel."));
+    zoomInBtn->setWhatsThis(tr("Zoom In.\n\n"
+                               "Zooms in the actual network"
+                               "You can also press Cltr and use mouse wheel."));
     zoomInBtn->setAutoRepeat(true);
     zoomInBtn->setAutoRepeatInterval(33);
     zoomInBtn->setAutoRepeatDelay(0);
@@ -2688,8 +2803,10 @@ void MainWindow::initWindowLayout() {
     zoomOutBtn->setAutoRepeat(true);
     zoomOutBtn->setShortcut(Qt::CTRL + Qt::Key_Minus);
     zoomOutBtn->setToolTip(tr("Zoom out (Ctrl+-)"));
-    zoomOutBtn->setStatusTip(tr("Zooms out of the actual network."));
-    zoomOutBtn->setWhatsThis(tr("Zoom out.\n\nZooms out the actual network"));
+    zoomOutBtn->setStatusTip(tr("Zoom out of the actual network. Or press Cltr and use mouse wheel."));
+    zoomOutBtn->setWhatsThis(tr("Zoom out.\n\n"
+                                "Zooms out the actual network"
+                                "You can also press Cltr and use mouse wheel."));
     zoomOutBtn->setAutoRepeat(true);
     zoomOutBtn->setAutoRepeatInterval(33);
     zoomOutBtn->setAutoRepeatDelay(0);
@@ -2751,9 +2868,9 @@ void MainWindow::initWindowLayout() {
 
     resetSlidersBtn = new QToolButton;
     resetSlidersBtn->setText(tr("Reset"));
-    resetSlidersBtn->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_0);
-    resetSlidersBtn->setToolTip(tr("Reset zoom and rotation to zero"));
-    resetSlidersBtn->setWhatsThis(tr("Reset zoom and rotation to zero"));
+    resetSlidersBtn->setShortcut(Qt::CTRL + Qt::Key_0);
+    resetSlidersBtn->setToolTip(tr("Reset zoom and rotation to zero (Ctrl+0)"));
+    resetSlidersBtn->setWhatsThis(tr("Reset zoom and rotation to zero (Ctrl+0)"));
     resetSlidersBtn->setIcon(QPixmap(":/images/reset.png"));
     resetSlidersBtn ->setIconSize(iconSize);
     resetSlidersBtn->setEnabled(true);
@@ -2857,7 +2974,6 @@ void MainWindow::initSignalSlots() {
     connect(rotateRightBtn, SIGNAL(clicked()), graphicsWidget, SLOT(rotateRight()));
 
     connect(resetSlidersBtn, SIGNAL(clicked()), graphicsWidget, SLOT(reset()));
-
 
 
     // Signals from activeGraph to graphicsWidget
@@ -2964,7 +3080,7 @@ void MainWindow::initSignalSlots() {
              this, SLOT( slotRelationPrev() ) );
     connect( editRelationAddAct, SIGNAL(triggered()), this, SLOT( slotEditRelationAdd() ) );
 
-    connect( changeRelationCombo , SIGNAL( currentIndexChanged(int) ) ,
+    connect( editRelationChangeCombo , SIGNAL( currentIndexChanged(int) ) ,
              &activeGraph, SLOT( changeRelation(int) ) );
 
     connect( this , SIGNAL(addRelationToGraph(QString)),
@@ -3110,7 +3226,7 @@ void MainWindow::initNet(){
 
     filterIsolateNodesAct->setChecked(false); // re-init orphan nodes menu item
 
-    changeRelationCombo->clear();
+    editRelationChangeCombo->clear();
 
     graphicsWidget->setInitNodeColor(appSettings["initNodeColor"]);
     graphicsWidget->setInitNumberDistance(numberDistance);
@@ -4229,32 +4345,32 @@ void MainWindow::fileType (
 
 /**
  * @brief MainWindow::slotRelationPrev
- * Decreases the index of changeRelationCombo
+ * Decreases the index of editRelationChangeCombo
  * which signals to Graph::changeRelation()
  */
 void MainWindow::slotRelationPrev(){
     qDebug() << "MW::slotRelationPrev()";
-    int index=changeRelationCombo->currentIndex();
+    int index=editRelationChangeCombo->currentIndex();
     if (index>0){
         --index;
         filterIsolateNodesAct->setChecked(false);
-        changeRelationCombo->setCurrentIndex(index);
+        editRelationChangeCombo->setCurrentIndex(index);
     }
 }
 
 /**
  * @brief MainWindow::slotRelationNext
- * Increases the index of changeRelationCombo
+ * Increases the index of editRelationChangeCombo
  * which signals to Graph::changeRelation()
  */
 void MainWindow::slotRelationNext(){
     qDebug() << "MW::slotRelationNext()";
-    int index=changeRelationCombo->currentIndex();
-    int relationsCounter=changeRelationCombo->count();
+    int index=editRelationChangeCombo->currentIndex();
+    int relationsCounter=editRelationChangeCombo->count();
     if (index< (relationsCounter -1 )){
         ++index;
         filterIsolateNodesAct->setChecked(false);
-        changeRelationCombo->setCurrentIndex(index);
+        editRelationChangeCombo->setCurrentIndex(index);
     }
 
 }
@@ -4270,7 +4386,7 @@ void MainWindow::slotRelationNext(){
 void MainWindow::slotEditRelationAdd(QString relationName){
     qDebug() << "MW::slotEditRelationAdd(string)" << relationName;
     if ( !relationName.isNull() ){
-        changeRelationCombo->addItem(relationName);
+        editRelationChangeCombo->addItem(relationName);
     }
 }
 
@@ -4283,7 +4399,7 @@ void MainWindow::slotEditRelationAdd(){
     qDebug() << "MW::slotEditRelationAdd()";
     bool ok;
     QString newRelationName;
-    int relationsCounter=changeRelationCombo->count();
+    int relationsCounter=editRelationChangeCombo->count();
     if (relationsCounter==0) {
         newRelationName = QInputDialog::getText(
                     this,
@@ -4303,11 +4419,11 @@ void MainWindow::slotEditRelationAdd(){
                     QLineEdit::Normal,QString::null, &ok );
     }
     if (ok && !newRelationName.isEmpty()){
-        changeRelationCombo->addItem(newRelationName);
+        editRelationChangeCombo->addItem(newRelationName);
         emit addRelationToGraph(newRelationName);
         if (relationsCounter != 0){ //dont do it if its the first relation added
             qDebug() << "MW::slotEditRelationAdd() - updating combo index";
-            changeRelationCombo->setCurrentIndex(relationsCounter);
+            editRelationChangeCombo->setCurrentIndex(relationsCounter);
         }
     }
     else if ( newRelationName.isEmpty() && ok ){
@@ -5862,7 +5978,7 @@ void MainWindow::addEdge (int v1, int v2, float weight) {
     bool bezier = false;
     activeGraph.createEdge(v1, v2, weight, reciprocal, drawArrows, bezier);
 
-    if ( activeEdges() == 1 && changeRelationCombo->count() == 0 ) {
+    if ( activeEdges() == 1 && editRelationChangeCombo->count() == 0 ) {
         slotEditRelationAdd();
     }
 }
