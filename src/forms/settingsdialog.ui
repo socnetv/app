@@ -17,7 +17,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="generalTab">
       <attribute name="title">
@@ -476,7 +476,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QRadioButton" name="boxRadio">
+             <widget class="QRadioButton" name="nodeShapeRadioBox">
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>
@@ -496,7 +496,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QRadioButton" name="circleRadio">
+             <widget class="QRadioButton" name="nodeShapeRadioCircle">
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>
@@ -516,7 +516,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QRadioButton" name="diamondRadio">
+             <widget class="QRadioButton" name="nodeShapeRadioDiamond">
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>
@@ -536,7 +536,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QRadioButton" name="ellipseRadio">
+             <widget class="QRadioButton" name="nodeShapeRadioEllipse">
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>
@@ -556,7 +556,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QRadioButton" name="triangleRadio">
+             <widget class="QRadioButton" name="nodeShapeRadioTriangle">
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>
