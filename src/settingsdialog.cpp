@@ -120,7 +120,7 @@ SettingsDialog::SettingsDialog(
     connect (ui->rightPanelChkBox, &QCheckBox::stateChanged,
              this, &SettingsDialog::setRightPanel);
 
-    connect (ui->boxRadio, &QRadioButton::clicked,
+    connect (ui->nodeShapeRadioBox, &QRadioButton::clicked,
              this, &SettingsDialog::getNodeShape);
 
     connect ( ui->buttonBox, &QDialogButtonBox::accepted,
@@ -226,19 +226,19 @@ void SettingsDialog::getNodeColor(){
 void SettingsDialog::getNodeShape(){
 
     QString nodeShape;
-    if ( ui->boxRadio->isChecked () ){
+    if ( ui->nodeShapeRadioBox->isChecked () ){
        nodeShape  = "box";
     }
-    else if ( ui->circleRadio->isChecked() ){
+    else if ( ui->nodeShapeRadioCircle->isChecked() ){
        nodeShape  = "circle";
     }
-    else if ( ui->diamondRadio->isChecked() ){
+    else if ( ui->nodeShapeRadioDiamond->isChecked() ){
        nodeShape  = "diamond";
     }
-    else if ( ui->ellipseRadio->isChecked() ){
+    else if ( ui->nodeShapeRadioEllipse->isChecked() ){
         nodeShape  = "ellipse";
     }
-    else if ( ui->triangleRadio->isChecked() ){
+    else if ( ui->nodeShapeRadioTriangle->isChecked() ){
         nodeShape  = "triangle";
     }
     else {

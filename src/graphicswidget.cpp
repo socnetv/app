@@ -946,15 +946,19 @@ void GraphicsWidget::mouseReleaseEvent( QMouseEvent * e ) {
     It passes delta as new m_scale
 */
 void GraphicsWidget::wheelEvent(QWheelEvent *e) {
+    bool ctrlKey = (e->modifiers() == Qt::ControlModifier);
     qDebug("GW: Mouse wheel event");
     qDebug() << "GW: delta = " << e->delta();
-    float m_scale = e->delta() / qreal(600);
-    qDebug("GW: m_scale = %f", m_scale);
-    if ( m_scale > 0)
-        zoomIn(1);
-    else  if ( m_scale < 0)
-        zoomOut(1);
-    else m_scale=1;
+    if (ctrlKey) {
+        float m_scale = e->delta() / qreal(600);
+        qDebug("GW: m_scale = %f", m_scale);
+        if ( m_scale > 0)
+            zoomIn(1);
+        else  if ( m_scale < 0)
+            zoomOut(1);
+        else m_scale=1;
+    }
+
 }
 
 

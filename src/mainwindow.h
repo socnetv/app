@@ -390,7 +390,7 @@ private:
 
     QGroupBox *leftPanel, *rightPanel ;
 
-    QComboBox *changeRelationCombo;
+    QComboBox *editRelationChangeCombo;
 
     QProgressDialog *progressDialog;
 
@@ -411,6 +411,7 @@ private:
 
     QPushButton *addNodeBt, *addEdgeBt, *removeNodeBt, *removeEdgeBt;
     QPushButton *toolBoxLayoutByIndexButton, *toolBoxLayoutForceDirectedButton;
+    QAction *zoomInAct,*zoomOutAct,*rotateLeftAct,*rotateRightAct, *resetSlidersAct ;
     QToolButton *zoomInBtn,*zoomOutBtn,*rotateLeftBtn,*rotateRightBtn, *resetSlidersBtn ;
     QSlider *zoomSlider, *rotateSlider;
 
