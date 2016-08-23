@@ -222,8 +222,8 @@ public slots:
     void slotEditNodeSizeAll();
     void slotEditNodeSizeAllNormalized(int size);
 
-    void slotChangeAllNodesShape();
-    void slotNodeShape(const QString shape, const int vertex = 0);
+    void slotEditNodeShapeAll();
+    void slotEditNodeShape(const QString shape, const int vertex = 0);
     void slotChangeNumbersSize();
     void slotChangeLabelsSize();
 
@@ -439,7 +439,7 @@ private:
     QAction *editNodeFindAct,*editNodeAddAct, *editNodeRemoveAct, *propertiesNodeAct;
     QAction *editEdgeAddAct, *editEdgeRemoveAct;
     QAction *changeNumbersSizeAct;
-    QAction *changeLabelsSizeAct, *changeAllNodesSizeAct, *changeAllNodesShapeAct;
+    QAction *changeLabelsSizeAct, *changeAllNodesSizeAct, *editNodeShapeAll;
     QAction *changeEdgeLabelAct, *changeEdgeColorAct, *changeEdgeWeightAct;
     QAction *filterNodesAct, *filterIsolateNodesAct, *filterEdgesAct, *transformNodes2EdgesAct, *symmetrizeAct;
     QAction *changeBackColorAct, *editNodeColorAll, *changeAllEdgesColorAct, *changeAllNumbersColorAct,

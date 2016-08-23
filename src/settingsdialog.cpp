@@ -72,7 +72,6 @@ SettingsDialog::SettingsDialog(
     ui->bgImageSelectEdit->setText((m_appSettings)["initBackgroundImage"]);
 
     // window options
-
     ui->leftPanelChkBox->setChecked(
                 ( appSettings["showLeftPanel"] == "true") ? true:false
                 );
@@ -81,12 +80,32 @@ SettingsDialog::SettingsDialog(
                 ( appSettings["showRightPanel"] == "true") ? true:false
                 );
 
-
+    // nodes options
     m_nodeColor = QColor (m_appSettings["initNodeColor"]);
     m_pixmap = QPixmap(60,20) ;
     m_pixmap.fill( m_nodeColor );
     ui->nodeColorBtn->setIcon(QIcon(m_pixmap));
 
+    //m_nodeShape = m_appSettings["initNodeShape"];
+    if (m_appSettings["initNodeShape"] == "box") {
+        ui->nodeShapeRadioBox->setChecked(true);
+    }
+    else if (m_appSettings["initNodeShape"] == "circle") {
+        ui->nodeShapeRadioCircle->setChecked(true);
+    }
+    else if (m_appSettings["initNodeShape"] == "diamond") {
+        ui->nodeShapeRadioDiamond->setChecked(true);
+    }
+    else if (m_appSettings["initNodeShape"] == "ellipse") {
+        ui->nodeShapeRadioEllipse->setChecked(true);
+    }
+    else if (m_appSettings["initNodeShape"] == "triangle") {
+        ui->nodeShapeRadioTriangle->setChecked(true);
+
+    }
+    else { // default
+       ui->nodeShapeRadioCircle->setChecked(true);
+    }
 
     ui->nodeSizeSpin->setValue( appSettings["initNodeSize"].toInt(0, 10) );
 
@@ -126,6 +145,14 @@ SettingsDialog::SettingsDialog(
              this, &SettingsDialog::setRightPanel);
 
     connect (ui->nodeShapeRadioBox, &QRadioButton::clicked,
+             this, &SettingsDialog::getNodeShape);
+    connect (ui->nodeShapeRadioCircle, &QRadioButton::clicked,
+             this, &SettingsDialog::getNodeShape);
+    connect (ui->nodeShapeRadioDiamond, &QRadioButton::clicked,
+             this, &SettingsDialog::getNodeShape);
+    connect (ui->nodeShapeRadioEllipse, &QRadioButton::clicked,
+             this, &SettingsDialog::getNodeShape);
+    connect (ui->nodeShapeRadioTriangle, &QRadioButton::clicked,
              this, &SettingsDialog::getNodeShape);
 
 
@@ -236,25 +263,25 @@ void SettingsDialog::getNodeShape(){
 
     QString nodeShape;
     if ( ui->nodeShapeRadioBox->isChecked () ){
-       nodeShape  = "box";
+       m_appSettings["initNodeShape"]  = "box";
     }
     else if ( ui->nodeShapeRadioCircle->isChecked() ){
-       nodeShape  = "circle";
+       m_appSettings["initNodeShape"]  = "circle";
     }
     else if ( ui->nodeShapeRadioDiamond->isChecked() ){
-       nodeShape  = "diamond";
+       m_appSettings["initNodeShape"]  = "diamond";
     }
     else if ( ui->nodeShapeRadioEllipse->isChecked() ){
-        nodeShape  = "ellipse";
+        m_appSettings["initNodeShape"]  = "ellipse";
     }
     else if ( ui->nodeShapeRadioTriangle->isChecked() ){
-        nodeShape  = "triangle";
+        m_appSettings["initNodeShape"]  = "triangle";
     }
     else {
-        nodeShape = "box";
+        m_appSettings["initNodeShape"] = "box";
     }
     qDebug()<< "SettingsDialog::getNodeShape() - new default shape " << nodeShape;
-    emit setNodeShape(nodeShape, 0);
+    emit setNodeShape(m_appSettings["initNodeShape"], 0);
 }
 
 

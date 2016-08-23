@@ -72,6 +72,7 @@ private:
      QMap<QString, QString> &m_appSettings ;
      Ui::SettingsDialog *ui;
      QPixmap m_pixmap;
+     //QString m_nodeShape;
      QColor m_bgColor, m_nodeColor;
 };
 

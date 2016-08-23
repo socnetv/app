@@ -376,7 +376,7 @@ void MainWindow::slotOpenSettingsDialog() {
             this, SLOT(slotEditNodeColorAll(QColor)) );
 
     connect( m_settingsDialog, &SettingsDialog::setNodeShape,
-             this, &MainWindow::slotNodeShape);
+             this, &MainWindow::slotEditNodeShape);
 
     connect( m_settingsDialog, &SettingsDialog::setNodeSize,
              this, &MainWindow::slotEditNodeSizeAllNormalized);
@@ -806,10 +806,10 @@ void MainWindow::initActions(){
     changeAllNodesSizeAct->setWhatsThis(tr("Nodes Size\n\nThis option lets you change the size of all nodes"));
     connect(changeAllNodesSizeAct, SIGNAL(triggered()), this, SLOT(slotEditNodeSizeAll()) );
 
-    changeAllNodesShapeAct = new QAction( tr("Change all Nodes Shape"),	this);
-    changeAllNodesShapeAct->setStatusTip(tr("This option lets you change the shape of all nodes"));
-    changeAllNodesShapeAct->setWhatsThis(tr("Nodes Shape\n\nThis option lets you change the shape of all nodes"));
-    connect(changeAllNodesShapeAct, SIGNAL(triggered()), this, SLOT(slotChangeAllNodesShape()) );
+    editNodeShapeAll = new QAction( tr("Change all Nodes Shape"),	this);
+    editNodeShapeAll->setStatusTip(tr("This option lets you change the shape of all nodes"));
+    editNodeShapeAll->setWhatsThis(tr("Nodes Shape\n\nThis option lets you change the shape of all nodes"));
+    connect(editNodeShapeAll, SIGNAL(triggered()), this, SLOT(slotEditNodeShapeAll()) );
 
     changeNumbersSizeAct = new QAction( tr("Change all Numbers Size"),	this);
     changeNumbersSizeAct->setStatusTip(tr("It lets you change the font size of the numbers of all nodes"));
@@ -1919,7 +1919,7 @@ void MainWindow::initMenuBar() {
 
     editNodeMenu -> addAction (editNodeColorAll);
     editNodeMenu -> addAction (changeAllNodesSizeAct);
-    editNodeMenu -> addAction (changeAllNodesShapeAct);
+    editNodeMenu -> addAction (editNodeShapeAll);
     editNodeMenu -> addAction (changeNumbersSizeAct);
     editNodeMenu -> addAction (changeLabelsSizeAct);
 
@@ -3041,9 +3041,6 @@ void MainWindow::initSignalSlots() {
 
     connect( &activeGraph, SIGNAL( setNodeSize(long int, int)  ),
              graphicsWidget, SLOT(  setNodeSize (long int , int) ) );
-
-    connect( &activeGraph, SIGNAL( setNodeShape(const long int, const QString)  ),
-             graphicsWidget, SLOT(  setNodeShape (const long int , const QString) ) );
 
     connect( &activeGraph, SIGNAL( setNodeColor(long int,QString))  ,
              graphicsWidget, SLOT(  setNodeColor(long int, QString) ) );
@@ -5476,7 +5473,7 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
     options -> addAction (openSettingsAct  );
     options -> addSeparator();
     options -> addAction (changeAllNodesSizeAct );
-    options -> addAction (changeAllNodesShapeAct  );
+    options -> addAction (editNodeShapeAll  );
     options -> addAction (editNodeColorAll );
     options -> addAction (displayNodeNumbersAct);
     options -> addAction (displayNodeLabelsAct);
@@ -5911,10 +5908,14 @@ void MainWindow::slotEditNodeSizeAllNormalized(int size) {
 }
 
 
+
 /**
-*  Changes the shape of all nodes.
-*/
-void MainWindow::slotChangeAllNodesShape() {
+ * @brief MainWindow::slotEditNodeShapeAll
+ * Called when user clicks on Edit -> Node > Change all nodes shapes
+ * Offers the user a list of available node shapes to select.
+ * Then changes the shape of all nodes/vertices accordingly.
+ */
+void MainWindow::slotEditNodeShapeAll() {
     bool ok=false;
     QStringList lst;
     lst << "box"<< "circle"<< "diamond"<< "ellipse"<< "triangle";
@@ -5929,7 +5930,7 @@ void MainWindow::slotChangeAllNodesShape() {
                 activeGraph.setVertexShape ((*jim).nodeNumber(), newShape);
             }
         slotNetworkChanged();
-        activeGraph.setInitVertexShape(newShape);
+        activeGraph.setAllVerticesShape(newShape);
         statusBar()->showMessage (QString(tr("All shapes have been changed. Ready")), statusBarDuration) ;
     } else {
         //user pressed Cancel
@@ -5940,16 +5941,42 @@ void MainWindow::slotChangeAllNodesShape() {
 
 
 /**
- * @brief MainWindow::slotNodeShape
- * @param shape
+ * @brief MainWindow::slotEditNodeShape
+ * Called from SettingsDialog when the user has selected a new default node shape
  * Calls Graph::setAllVerticesShape(QString)
+ * @param shape
+ *
  */
-void MainWindow::slotNodeShape(const QString shape, const int vertex) {
-    qDebug() << "MW::slotNodeShape() - vertex " << vertex << " new shape " << shape;
-    if (vertex == 0)
+void MainWindow::slotEditNodeShape(const QString shape, const int vertex) {
+
+    qDebug() << "MW::slotEditNodeShape() - vertex " << vertex
+             << " (0 means all) - new shape " << shape;
+
+    if (vertex == 0) { //change all nodes shapes
+        QList<QGraphicsItem *> list=scene->items();
+        for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
+            if ( (*it) -> type() == TypeNode ){
+                Node *jim = (Node*) (*it);
+                (*jim).setShape(shape);
+                activeGraph.setVertexShape ((*jim).nodeNumber(), shape);
+            }
+        slotNetworkChanged();
         activeGraph.setAllVerticesShape(shape);
-    else
-        activeGraph.setVertexShape(vertex, shape);
+        statusBar()->showMessage (QString(tr("All shapes have been changed. Ready")), statusBarDuration) ;
+
+    }
+    else { //only one
+
+       activeGraph.setVertexShape( vertex, shape);
+       QList<QGraphicsItem *> list=scene->items();
+       for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
+           if ( (*it) -> type() == TypeNode ){
+               Node *jim = (Node*) (*it);
+               if ( (*jim).nodeNumber() ==  vertex ) {
+                 (*jim).setShape(shape);
+               }
+           }
+      }
 }
 
 /**
