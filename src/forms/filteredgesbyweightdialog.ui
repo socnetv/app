@@ -29,8 +29,7 @@
     <widget class="QLabel" name="label_2">
      <property name="font">
       <font>
-       <family>DejaVu Sans</family>
-       <pointsize>11</pointsize>
+       <family>Sans Serif</family>
       </font>
      </property>
      <property name="text">
@@ -62,8 +61,7 @@
       <widget class="QLabel" name="label">
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
@@ -93,8 +91,7 @@
     <widget class="QRadioButton" name="overThresholdBt">
      <property name="font">
       <font>
-       <family>DejaVu Sans</family>
-       <pointsize>11</pointsize>
+       <family>Sans Serif</family>
       </font>
      </property>
      <property name="text">
@@ -106,8 +103,7 @@
     <widget class="QRadioButton" name="belowThresholdBt">
      <property name="font">
       <font>
-       <family>DejaVu Sans</family>
-       <pointsize>11</pointsize>
+       <family>Sans Serif</family>
       </font>
      </property>
      <property name="text">
