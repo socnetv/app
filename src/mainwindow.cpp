@@ -739,11 +739,11 @@ void MainWindow::initActions(){
     zoomOutAct->setWhatsThis(tr("Zoom Out.\n\nZooms out of the actual network"));
     connect(zoomOutAct, SIGNAL(triggered()), graphicsWidget, SLOT( zoomOut()) );
 
-    editRotateRightAct = new QAction(QIcon(":/images/rotateleft.png"), tr("Rotate counterclockwise"), this);
-    editRotateRightAct->setToolTip(tr("Rotate counterclockwise. Better, use the canvas button or (Ctrl+Left Arrow)"));
-    editRotateRightAct->setStatusTip(tr("Rotate counterclockwise. Better, use the canvas button or Ctrl+Left Arrow"));
-    editRotateRightAct ->setWhatsThis(tr("Rotates the network counterclockwise (Ctrl+Left Arrow)"));
-    connect(editRotateRightAct, SIGNAL(triggered()), graphicsWidget, SLOT( rotateLeft()) );
+    editRotateLeftAct = new QAction(QIcon(":/images/rotateleft.png"), tr("Rotate counterclockwise"), this);
+    editRotateLeftAct->setToolTip(tr("Rotate counterclockwise. Better, use the canvas button or (Ctrl+Left Arrow)"));
+    editRotateLeftAct->setStatusTip(tr("Rotate counterclockwise. Better, use the canvas button or Ctrl+Left Arrow"));
+    editRotateLeftAct ->setWhatsThis(tr("Rotates the network counterclockwise (Ctrl+Left Arrow)"));
+    connect(editRotateLeftAct, SIGNAL(triggered()), graphicsWidget, SLOT( rotateLeft()) );
 
     editRotateRightAct = new QAction(QIcon(":/images/rotateright.png"), tr("Rotate clockwise"), this);
     editRotateRightAct->setStatusTip(tr("Rotate clockwise. Better, use the canvas button or (Ctrl+Right Arrow)"));
@@ -1892,7 +1892,7 @@ void MainWindow::initMenuBar() {
 
     editMenu -> addSeparator();
 
-    editMenu -> addAction ( editRotateRightAct );
+    editMenu -> addAction ( editRotateLeftAct );
     editMenu -> addAction ( editRotateRightAct );
 
     editMenu -> addSeparator();
@@ -3003,7 +3003,7 @@ void MainWindow::initSignalSlots() {
              graphicsWidget, SLOT( eraseEdge(int, int) ) );
 
     connect( &activeGraph, SIGNAL( graphChanged() ),
-             this, SLOT( graphChanged() ) ) ;
+             this, SLOT( slotNetworkChanged() ) ) ;
 
     connect( &activeGraph,
              SIGNAL(
@@ -3075,9 +3075,9 @@ void MainWindow::initSignalSlots() {
 
 
     connect( editRelationNextAct, SIGNAL(triggered()),
-             this, SLOT( slotRelationNext() ) );
+             this, SLOT( slotEditRelationNext() ) );
     connect( editRelationPreviousAct, SIGNAL(triggered()),
-             this, SLOT( slotRelationPrev() ) );
+             this, SLOT( slotEditRelationPrev() ) );
     connect( editRelationAddAct, SIGNAL(triggered()), this, SLOT( slotEditRelationAdd() ) );
 
     connect( editRelationChangeCombo , SIGNAL( currentIndexChanged(int) ) ,
@@ -3879,7 +3879,7 @@ void MainWindow::networkSaved(int saved_ok)
 {
     if (saved_ok <= 0)
     {
-        graphChanged();
+        slotNetworkChanged();
         statusMessage( tr("Error! Could not save this file... ")+fileNameNoPath.last()+tr(".") );
     }
     else
@@ -4337,19 +4337,19 @@ void MainWindow::fileType (
                               " which is the file-format using Import Menu.","OK",0);
         break;
     }
-    graphChanged();
+    slotNetworkChanged();
     networkSave->setIcon(QIcon(":/images/saved.png"));
     networkSave->setEnabled(false);
 }
 
 
 /**
- * @brief MainWindow::slotRelationPrev
+ * @brief MainWindow::slotEditRelationPrev
  * Decreases the index of editRelationChangeCombo
  * which signals to Graph::changeRelation()
  */
-void MainWindow::slotRelationPrev(){
-    qDebug() << "MW::slotRelationPrev()";
+void MainWindow::slotEditRelationPrev(){
+    qDebug() << "MW::slotEditRelationPrev()";
     int index=editRelationChangeCombo->currentIndex();
     if (index>0){
         --index;
@@ -4359,12 +4359,12 @@ void MainWindow::slotRelationPrev(){
 }
 
 /**
- * @brief MainWindow::slotRelationNext
+ * @brief MainWindow::slotEditRelationNext
  * Increases the index of editRelationChangeCombo
  * which signals to Graph::changeRelation()
  */
-void MainWindow::slotRelationNext(){
-    qDebug() << "MW::slotRelationNext()";
+void MainWindow::slotEditRelationNext(){
+    qDebug() << "MW::slotEditRelationNext()";
     int index=editRelationChangeCombo->currentIndex();
     int relationsCounter=editRelationChangeCombo->count();
     if (index< (relationsCounter -1 )){
@@ -5020,7 +5020,8 @@ void MainWindow::slotRandomErdosRenyi( const int newNodes,
 
     fileLoaded=false;
 
-    graphChanged();
+    slotEditNodeSizeAllNormalized(0);
+    slotNetworkChanged();
 
     setWindowTitle("Untitled");
 
@@ -5123,7 +5124,7 @@ void MainWindow::slotRandomRegularNetwork(){
 
     fileLoaded=false;
 
-    graphChanged();
+    slotNetworkChanged();
     setWindowTitle("Untitled");
     statusMessage( "Uniform random network created: "
                    +QString::number(activeNodes())+" Nodes, "
@@ -5135,7 +5136,7 @@ void MainWindow::slotRandomRegularNetwork(){
 
 
 void MainWindow::slotRandomGaussian(){
-    graphChanged();
+    slotNetworkChanged();
 
 }
 
@@ -5208,7 +5209,7 @@ void MainWindow::slotRandomScaleFree ( const int &nodes,
 
     fileLoaded=false;
 
-    graphChanged();
+    slotNetworkChanged();
     setWindowTitle("Untitled");
     statusMessage( tr("Scale-free random network created: ")
                    + QString::number(activeNodes())
@@ -5287,7 +5288,7 @@ void MainWindow::slotRandomSmallWorld(const int &nodes,
 
     fileLoaded=false;
 
-    graphChanged();
+    slotNetworkChanged();
     setWindowTitle("Untitled");
     statusMessage( tr("Small world random network created: ")+QString::number(activeNodes())+" nodes, "+QString::number( activeEdges())+" edges");
     //float avGraphDistance=activeGraph.averageGraphDistance();
@@ -5360,7 +5361,7 @@ void MainWindow::slotRandomRingLattice(){
 
     fileLoaded=false;
 
-    //	graphChanged();
+    //	slotNetworkChanged();
 
     statusMessage( "Ring lattice random network created: "+QString::number(activeNodes())+" nodes, "+QString::number( activeEdges())+" edges");
 
@@ -5383,9 +5384,10 @@ void MainWindow::slotRandomRingLattice(){
 
 
 /**
-*	Shows a dialog from where the user   
-*	creates a new network by crawling a given website 
-*/ 
+ * @brief MainWindow::slotNetworkWebCrawlerDialog
+ * Shows a dialog where enters a website url
+ * and the app creates a new network by crawling it
+ */
 void MainWindow::slotNetworkWebCrawlerDialog() {
     qDebug () << "MW: slotNetworkWebCrawlerDialog() - canvas Width & Height already sent";
     m_WebCrawlerDialog.exec() ;
@@ -5397,10 +5399,16 @@ void MainWindow::slotNetworkWebCrawlerDialog() {
 
 
 /**
-*	Called from m_WebCrawlerDialog
-*   Clears the loaded network (saving if needed)    
-*	then passes parameters to webCrawl of ActiveGraph class.  
-*/ 
+ * @brief MainWindow::slotNetworkWebCrawler
+ * Called from m_WebCrawlerDialog
+ * Clears the loaded network (saving if needed) then passes parameters to
+ * Graph::webCrawl function
+ * @param seed
+ * @param maxNodes
+ * @param maxRecursion
+ * @param extLinks
+ * @param intLinks
+ */
 void MainWindow::slotNetworkWebCrawler ( QString  seed, int maxNodes, int maxRecursion,
                                 bool extLinks, bool intLinks) {
     this->slotNetworkClose();
@@ -5412,14 +5420,14 @@ void MainWindow::slotNetworkWebCrawler ( QString  seed, int maxNodes, int maxRec
 
 
 
-
 /**
-*	A slot activated when something has been changed in the graph.
-    Makes the networkSave icon active and refreshes any LCD values.
-    Also called from graphicsWidget.
-*/
-void MainWindow::graphChanged(){
-    qDebug("MW: graphChanged");
+ * @brief MainWindow::slotNetworkChanged
+ * Activated when something has been changed in the graph.
+ * Makes the networkSave icon active and refreshes any LCD values.
+ * Also called from activeGraph and graphicsWidget.
+ */
+void MainWindow::slotNetworkChanged(){
+    qDebug("MW: slotNetworkChanged");
     networkModified=true;
     networkSave->setIcon(QIcon(":/images/save.png"));
     networkSave->setEnabled(true);
@@ -5431,26 +5439,7 @@ void MainWindow::graphChanged(){
 
 
 
-/**
- * @brief MainWindow::slotEditNodeSelectAll
- */
-void MainWindow::slotEditNodeSelectAll(){
-    qDebug() << "MainWindow::slotEditNodeSelectAll()";
-    graphicsWidget->selectAll();
-    statusMessage( QString(tr("Selected nodes: %1") )
-                   .arg( selectedNodes().count() ) );
 
-}
-
-
-/**
- * @brief MainWindow::slotEditNodeSelectNone
- */
-void MainWindow::slotEditNodeSelectNone(){
-    qDebug() << "MainWindow::slotEditNodeSelectNone()";
-    graphicsWidget->selectNone();
-    statusMessage( QString(tr("Selection cleared") ) );
-}
 
 
 
@@ -5518,6 +5507,27 @@ QList<QGraphicsItem *> MainWindow::selectedNodes() {
 
 
 
+
+/**
+ * @brief MainWindow::slotEditNodeSelectAll
+ */
+void MainWindow::slotEditNodeSelectAll(){
+    qDebug() << "MainWindow::slotEditNodeSelectAll()";
+    graphicsWidget->selectAll();
+    statusMessage( QString(tr("Selected nodes: %1") )
+                   .arg( selectedNodes().count() ) );
+
+}
+
+
+/**
+ * @brief MainWindow::slotEditNodeSelectNone
+ */
+void MainWindow::slotEditNodeSelectNone(){
+    qDebug() << "MainWindow::slotEditNodeSelectNone()";
+    graphicsWidget->selectNone();
+    statusMessage( QString(tr("Selection cleared") ) );
+}
 
 
 /**
@@ -5654,7 +5664,7 @@ void MainWindow::slotEditNodeRemove() {
     activeGraph.removeVertex(doomedJim);
     clickedJimNumber=-1;
     nodeClicked=false;
-    graphChanged();
+    slotNetworkChanged();
     qDebug("MW: removeNode() completed. Node %i removed completely.",doomedJim);
     statusMessage( tr("Node removed completely. Ready. ") );
 }
@@ -5790,7 +5800,7 @@ void MainWindow::slotEditNodeProperties( const QString label, const int size,
     clickedJim=0;
     clickedJimNumber=-1;
 
-    graphChanged();
+    slotNetworkChanged();
     statusMessage( tr("Ready. "));
 
 }
@@ -5867,8 +5877,9 @@ void MainWindow::slotEditNodeSizeAll() {
     }
 
     qDebug ("MW: slotEditNodeSizeAll:");
+    appSettings["initNodeSize"]= QString::number(newSize);
     slotEditNodeSizeAllNormalized(newSize);
-    graphChanged();
+    slotNetworkChanged();
     statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
     return;
 }
@@ -5887,16 +5898,15 @@ void MainWindow::slotEditNodeSizeAllNormalized(int size) {
             return;
         }
         else if (activeNodes() >= 200 && activeNodes() < 500){
-            size = 4;
+            size = 6;
         }
         else if (activeNodes() >= 500 && activeNodes() < 1000) {
-            size = 3;
+            size = 6;
         }
         else if (activeNodes() >= 1000) {
-            size = 2;
+            size = 5;
         }
     }
-    appSettings["initNodeSize"]= QString::number(size);
     activeGraph.setAllVerticesSize(size);
 }
 
@@ -5918,7 +5928,7 @@ void MainWindow::slotChangeAllNodesShape() {
                 (*jim).setShape(newShape);
                 activeGraph.setVertexShape ((*jim).nodeNumber(), newShape);
             }
-        graphChanged();
+        slotNetworkChanged();
         activeGraph.setInitVertexShape(newShape);
         statusBar()->showMessage (QString(tr("All shapes have been changed. Ready")), statusBarDuration) ;
     } else {
@@ -6195,7 +6205,7 @@ void MainWindow::slotEditEdgeAdd(){
     }
 
     slotEditEdgeCreate(sourceNode, targetNode, weight);
-    graphChanged();
+    slotNetworkChanged();
     statusMessage( tr("Ready. ")  );
 }
 
@@ -6312,7 +6322,7 @@ void MainWindow::slotEditEdgeRemove(){
 
 
     }
-    graphChanged();
+    slotNetworkChanged();
     qDebug("MW: View items now: %i ", graphicsWidget->items().size());
     qDebug("MW: Scene items now: %i ", scene->items().size());
 }
@@ -6326,7 +6336,7 @@ void MainWindow::slotEditEdgeRemove(){
 
 //TODO slotChangeEdgeLabel
 void MainWindow::slotChangeEdgeLabel(){
-    graphChanged();
+    slotNetworkChanged();
 }
 
 
@@ -6617,7 +6627,7 @@ void MainWindow::slotShowFilterEdgesDialog() {
     TODO slotTransformNodes2Edges
 */
 void MainWindow::slotTransformNodes2Edges(){
-    graphChanged();
+    slotNetworkChanged();
 
 }
 
@@ -8875,7 +8885,7 @@ void MainWindow::slotAllEdgesColor(){
         activeGraph.setAllEdgesColor(appSettings["initEdgeColor"]);
         //destroyProgressBar();
         QApplication::restoreOverrideCursor();
-        graphChanged();
+        slotNetworkChanged();
         statusMessage( tr("Ready. ")  );
     }
     else {

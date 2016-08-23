@@ -144,6 +144,7 @@ public slots:
     void slotNetworkImportDL();
     void slotNetworkImportEdgeList();
     void slotNetworkImportTwoModeSM();
+    void slotNetworkChanged();
     void slotNetworkSave();
     void slotNetworkSaveAs();
     void slotNetworkClose();
@@ -196,8 +197,8 @@ public slots:
 
     //EDIT MENU
 
-    void slotRelationPrev();
-    void slotRelationNext();
+    void slotEditRelationPrev();
+    void slotEditRelationNext();
     void slotEditRelationAdd();
     void slotEditRelationAdd(QString relationName);
 
@@ -333,7 +334,7 @@ public slots:
     void edgeInfoStatusBar (Edge*);
 
     void openEdgeContextMenu() ;
-    void graphChanged();
+
 
     //Called by graphicswidget to update node coords in activeGraph
     void updateNodeCoords(int no, int x, int y);
