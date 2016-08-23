@@ -827,7 +827,6 @@ void Graph::setInitVertexShape(const QString shape) {
 //Changes the shape.of vertex v 
 void Graph::setVertexShape(const int v1, const QString shape){
     m_graph[ index[v1] ]->setShape(shape);
-    //emit setNodeShape( v1, shape);
     graphModified=true;
     emit graphChanged();
 }
@@ -849,7 +848,6 @@ void Graph::setAllVerticesShape(const QString shape) {
         }
         else {
             (*it)->setShape(shape);
-            emit setNodeShape((*it)->name(), shape);
         }
     }
     graphModified=true;

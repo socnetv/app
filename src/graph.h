@@ -175,7 +175,6 @@ signals:
     void setEdgeVisibility (int, int, int, bool);			// emitted from each Vertex
     void setVertexVisibility(long int, bool);		//notifies GW to disable a node
     void setNodeSize(long int, int);
-    void setNodeShape(const long int, const QString);
     void setNodeColor(long int, QString);
     void setNodeLabel(long int, QString);
     void drawEdgeReciprocal(int, int);				//call GW to draw the edge as symmetric one
