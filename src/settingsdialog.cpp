@@ -107,8 +107,11 @@ SettingsDialog::SettingsDialog(
        ui->nodeShapeRadioCircle->setChecked(true);
     }
 
-    ui->nodeSizeSpin->setValue( appSettings["initNodeSize"].toInt(0, 10) );
+    ui->nodeSizeSpin->setValue( m_appSettings["initNodeSize"].toInt(0, 10) );
 
+    ui->nodeNumbersChkBox->setChecked(
+                (m_appSettings["initNodeNumbersVisibility"] == "true" ) ? true:false
+                );
 
     // signals
     connect (ui->dataDirSelectButton, &QToolButton::clicked,
@@ -164,6 +167,12 @@ SettingsDialog::SettingsDialog(
 
     connect (ui->nodeColorBtn, &QToolButton::clicked,
              this, &SettingsDialog::getNodeColor);
+
+
+    connect (ui->nodeNumbersChkBox, &QCheckBox::stateChanged,
+                     this, &SettingsDialog::setNodeNumbersVisibility);
+
+
 }
 
 

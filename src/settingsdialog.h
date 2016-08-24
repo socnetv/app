@@ -67,6 +67,7 @@ signals:
     void setNodeColor(QColor);
     void setNodeShape(const QString, const long int);
     void setNodeSize(int);
+    void setNodeNumbersVisibility(bool);
     void saveSettings();
 private:
      QMap<QString, QString> &m_appSettings ;

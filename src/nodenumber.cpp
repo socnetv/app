@@ -35,6 +35,8 @@ NodeNumber::NodeNumber( Node *jim , int size, QString labelText) :QGraphicsTextI
 	setPlainText( labelText ); 
     setFont( QFont ("Times", size, QFont::Black, false) );
 	setZValue(254);
+    setAcceptHoverEvents(false);
+
 }
 
 void NodeNumber::removeRefs(){

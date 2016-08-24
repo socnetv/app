@@ -211,6 +211,9 @@ QMap<QString,QString> MainWindow::initSettings(){
     appSettings["initNodeShape"]="circle";
     appSettings["initBackgroundColor"]="white"; //"gainsboro";
     appSettings["initBackgroundImage"]="";
+    appSettings["initNodeNumbersVisibility"] = "true";
+    appSettings["initNodeLabelsVisibility"] = "true";
+    appSettings["initNodeNumbersInside"] = "false";
     appSettings["considerWeights"]="false";
     appSettings["inverseWeights"]="false";
     appSettings["askedAboutWeights"]="false";
@@ -380,6 +383,10 @@ void MainWindow::slotOpenSettingsDialog() {
 
     connect( m_settingsDialog, &SettingsDialog::setNodeSize,
              this, &MainWindow::slotEditNodeSizeAllNormalized);
+
+    connect( m_settingsDialog, &SettingsDialog::setNodeNumbersVisibility,
+             this, &MainWindow::slotOptionsNodeNumbersVisibility);
+
 
     // show settings dialog
     m_settingsDialog->exec();
@@ -790,36 +797,28 @@ void MainWindow::initActions(){
     editNodeRemoveAct->setWhatsThis(tr("Remove Node\n\nRemoves a node from the network"));
     connect(editNodeRemoveAct, SIGNAL(triggered()), this, SLOT(slotEditNodeRemove()));
 
-    propertiesNodeAct = new QAction(QIcon(":/images/properties.png"),tr("Node Properties"), this);
-    propertiesNodeAct ->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_Period );
-    propertiesNodeAct->setStatusTip(tr("Open node properties"));
-    propertiesNodeAct->setWhatsThis(tr("Node Properties\n\nOpens node properties to edit label, size, color, shape etc"));
-    connect(propertiesNodeAct, SIGNAL(triggered()), this, SLOT(slotEditNodePropertiesDialog()));
+    editNodePropertiesAct = new QAction(QIcon(":/images/properties.png"),tr("Node Properties"), this);
+    editNodePropertiesAct ->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_Period );
+    editNodePropertiesAct->setStatusTip(tr("Open node properties"));
+    editNodePropertiesAct->setWhatsThis(tr("Node Properties\n\nOpens node properties to edit label, size, color, shape etc"));
+    connect(editNodePropertiesAct, SIGNAL(triggered()), this, SLOT(slotEditNodePropertiesDialog()));
+
 
     editNodeColorAll = new QAction(QIcon(":/images/nodecolor.png"), tr("Change all Nodes Colors"),	this);
     editNodeColorAll->setStatusTip(tr("Click to choose a new color for all nodes."));
     editNodeColorAll->setWhatsThis(tr("All Nodes\n\nChanges all nodes color at once."));
     connect(editNodeColorAll, SIGNAL(triggered()), this, SLOT(slotEditNodeColorAll()) );
 
-    changeAllNodesSizeAct = new QAction(QIcon(":/images/resize.png"), tr("Change all Nodes Size"),	this);
-    changeAllNodesSizeAct->setStatusTip(tr("This option lets you change the size of all nodes"));
-    changeAllNodesSizeAct->setWhatsThis(tr("Nodes Size\n\nThis option lets you change the size of all nodes"));
-    connect(changeAllNodesSizeAct, SIGNAL(triggered()), this, SLOT(slotEditNodeSizeAll()) );
+    editNodeSizeAllAct = new QAction(QIcon(":/images/resize.png"), tr("Change all Nodes Size"),	this);
+    editNodeSizeAllAct->setStatusTip(tr("This option lets you change the size of all nodes"));
+    editNodeSizeAllAct->setWhatsThis(tr("Nodes Size\n\nThis option lets you change the size of all nodes"));
+    connect(editNodeSizeAllAct, SIGNAL(triggered()), this, SLOT(slotEditNodeSizeAll()) );
 
     editNodeShapeAll = new QAction( tr("Change all Nodes Shape"),	this);
     editNodeShapeAll->setStatusTip(tr("This option lets you change the shape of all nodes"));
     editNodeShapeAll->setWhatsThis(tr("Nodes Shape\n\nThis option lets you change the shape of all nodes"));
     connect(editNodeShapeAll, SIGNAL(triggered()), this, SLOT(slotEditNodeShapeAll()) );
 
-    changeNumbersSizeAct = new QAction( tr("Change all Numbers Size"),	this);
-    changeNumbersSizeAct->setStatusTip(tr("It lets you change the font size of the numbers of all nodes"));
-    changeNumbersSizeAct->setWhatsThis(tr("Numbers Size\n\nChanges the size of the numbers of all nodes"));
-    connect(changeNumbersSizeAct, SIGNAL(triggered()), this, SLOT(slotChangeNumbersSize()) );
-
-    changeLabelsSizeAct = new QAction( tr("Change all Labels Size"), this);
-    changeLabelsSizeAct->setStatusTip(tr("You can change the font size of the labels of all nodes"));
-    changeLabelsSizeAct->setWhatsThis(tr("Labels Size\n\nChange the fontsize of the labels of all nodes"));
-    connect(changeLabelsSizeAct, SIGNAL(triggered()), this, SLOT(slotChangeLabelsSize()) );
 
 
     changeAllNumbersColorAct = new QAction( tr("Change all Numbers Colors"),	this);
@@ -1685,27 +1684,36 @@ void MainWindow::initActions(){
     /**
     Options menu actions
     */
-    displayNodeNumbersAct = new QAction( tr("Display Numbers"), this );
-    displayNodeNumbersAct->setStatusTip(tr("Toggles displaying of node numbers"));
-    displayNodeNumbersAct->setWhatsThis(tr("Display Numbers\n\nEnables/disables node numbers"));
-    displayNodeNumbersAct->setCheckable (true);
-    displayNodeNumbersAct->setChecked(true);
-    connect(displayNodeNumbersAct, SIGNAL(toggled(bool)), this, SLOT(slotDisplayNodeNumbers(bool)));
+    optionsNodeNumbersVisibilityAct = new QAction( tr("Display Numbers"), this );
+    optionsNodeNumbersVisibilityAct->setStatusTip(tr("Toggles displaying of node numbers"));
+    optionsNodeNumbersVisibilityAct->setWhatsThis(tr("Display Numbers\n\nEnables/disables node numbers"));
+    optionsNodeNumbersVisibilityAct->setCheckable (true);
+    optionsNodeNumbersVisibilityAct->setChecked( ( appSettings["initNodeNumbersVisibility"] == "true" ) ? true: false );
+    connect(optionsNodeNumbersVisibilityAct, SIGNAL(toggled(bool)), this, SLOT(slotOptionsNodeNumbersVisibility(bool)));
 
-    displayNodeLabelsAct= new QAction(tr("Display Labels"),	this );
-    displayNodeLabelsAct->setStatusTip(tr("Toggles displaying of node labels"));
-    displayNodeLabelsAct->setWhatsThis(tr("Display Labels\n\nEnables/disables node labels"));
-    displayNodeLabelsAct->setCheckable (true);
-    displayNodeLabelsAct->setChecked(false);
-    connect(displayNodeLabelsAct, SIGNAL(toggled(bool)), this, SLOT(slotDisplayNodeLabels(bool)));
+    optionsNodeNumbersInsideAct = new QAction(tr("Display Numbers Inside Nodes"),	this );
+    optionsNodeNumbersInsideAct->setStatusTip(tr("Toggles displaying numbers inside nodes"));
+    optionsNodeNumbersInsideAct->setWhatsThis(tr("Display Numbers Inside Nodes\n\nTurns on/off displaying nodenumbers inside nodes"));
+    optionsNodeNumbersInsideAct->setCheckable (true);
+    optionsNodeNumbersInsideAct->setChecked(( appSettings["initNodeNumbersInside"] == "true" ) ? true: false );
+    connect(optionsNodeNumbersInsideAct, SIGNAL(toggled(bool)), this, SLOT(slotOptionsNodeNumbersInside(bool)));
 
+    optionsNodeNumbersSizeAct = new QAction( tr("Change all Numbers Size"),	this);
+    optionsNodeNumbersSizeAct->setStatusTip(tr("It lets you change the font size of the numbers of all nodes"));
+    optionsNodeNumbersSizeAct->setWhatsThis(tr("Numbers Size\n\nChanges the size of the numbers of all nodes"));
+    connect(optionsNodeNumbersSizeAct, SIGNAL(triggered()), this, SLOT(slotOptionsNodeNumbersSize()) );
 
-    displayNumbersInsideNodesAct= new QAction(tr("Display Numbers Inside Nodes"),	this );
-    displayNumbersInsideNodesAct->setStatusTip(tr("Toggles displaying numbers inside nodes"));
-    displayNumbersInsideNodesAct->setWhatsThis(tr("Display Numbers Inside Nodes\n\nTurns on/off displaying nodenumbers inside nodes"));
-    displayNumbersInsideNodesAct->setCheckable (true);
-    displayNumbersInsideNodesAct->setChecked(false);
-    connect(displayNumbersInsideNodesAct, SIGNAL(toggled(bool)), this, SLOT(slotDisplayNumbersInsideNodes(bool)));
+    optionsNodeLabelsVisibilityAct= new QAction(tr("Display Labels"),	this );
+    optionsNodeLabelsVisibilityAct->setStatusTip(tr("Toggles displaying of node labels"));
+    optionsNodeLabelsVisibilityAct->setWhatsThis(tr("Display Labels\n\nEnables/disables node labels"));
+    optionsNodeLabelsVisibilityAct->setCheckable (true);
+    optionsNodeLabelsVisibilityAct->setChecked( ( appSettings["initNodeLabelsVisibility"] == "true" ) ? true: false );
+    connect(optionsNodeLabelsVisibilityAct, SIGNAL(toggled(bool)), this, SLOT(slotOptionsNodeLabelsVisibility(bool)));
+
+    optionsNodeLabelsSizeAct = new QAction( tr("Change all Labels Size"), this);
+    optionsNodeLabelsSizeAct->setStatusTip(tr("You can change the font size of the labels of all nodes"));
+    optionsNodeLabelsSizeAct->setWhatsThis(tr("Labels Size\n\nChange the fontsize of the labels of all nodes"));
+    connect(optionsNodeLabelsSizeAct, SIGNAL(triggered()), this, SLOT(slotChangeLabelsSize()) );
 
 
     displayEdgesAct = new QAction(tr("Display Edges"),	this);
@@ -1913,15 +1921,15 @@ void MainWindow::initMenuBar() {
 
     editNodeMenu -> addSeparator();
 
-    editNodeMenu -> addAction (propertiesNodeAct);
+    editNodeMenu -> addAction (editNodePropertiesAct);
 
     editNodeMenu -> addSeparator();
 
     editNodeMenu -> addAction (editNodeColorAll);
-    editNodeMenu -> addAction (changeAllNodesSizeAct);
+    editNodeMenu -> addAction (editNodeSizeAllAct);
     editNodeMenu -> addAction (editNodeShapeAll);
-    editNodeMenu -> addAction (changeNumbersSizeAct);
-    editNodeMenu -> addAction (changeLabelsSizeAct);
+    editNodeMenu -> addAction (optionsNodeNumbersSizeAct);
+    editNodeMenu -> addAction (optionsNodeLabelsSizeAct);
 
 
     editEdgeMenu = new QMenu(tr("Edge..."));
@@ -2074,9 +2082,9 @@ void MainWindow::initMenuBar() {
     nodeOptionsMenu -> setIcon(QIcon(":/images/nodes.png"));
 
     optionsMenu -> addMenu (nodeOptionsMenu);
-    nodeOptionsMenu -> addAction (displayNodeNumbersAct);
-    nodeOptionsMenu -> addAction (displayNodeLabelsAct);
-    nodeOptionsMenu -> addAction (displayNumbersInsideNodesAct);
+    nodeOptionsMenu -> addAction (optionsNodeNumbersVisibilityAct);
+    nodeOptionsMenu -> addAction (optionsNodeLabelsVisibilityAct);
+    nodeOptionsMenu -> addAction (optionsNodeNumbersInsideAct);
 
     edgeOptionsMenu=new QMenu(tr("Edges..."));
     edgeOptionsMenu -> setIcon(QIcon(":/images/line.png"));
@@ -3190,8 +3198,12 @@ void MainWindow::initNet(){
 
     activeGraph.setInitEdgeColor(appSettings["initEdgeColor"]);
 
-    activeGraph.setShowLabels(this->showLabels());
-    activeGraph.setShowNumbersInsideNodes( this->showNumbersInsideNodes());
+    activeGraph.setShowLabels(
+                (appSettings["initNodeLabelsVisibility"] == "true" ) ? true: false
+                );
+    activeGraph.setShowNumbersInsideNodes(
+                ( appSettings["initNodeNumbersInside"] == "true" ) ? true: false
+                );
 
     /** Clear graphicsWidget scene and reset transformations **/
     graphicsWidget->clear();
@@ -4183,7 +4195,7 @@ bool MainWindow::slotNetworkFileLoad(const QString m_fileName,
     bool loadGraphStatus = activeGraph.loadGraph (
                 m_fileName,
                 m_codecName,
-                displayNodeLabelsAct->isChecked(),
+                (appSettings["initNodeLabelsVisibility"] == "true" ) ? true: false,
                 graphicsWidget->width(),
                 graphicsWidget->height(),
                 m_fileFormat, two_sm_mode
@@ -5459,7 +5471,7 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
     contextMenu -> addSeparator();
 
     if (selectedNodes().count()) {
-        contextMenu -> addAction(propertiesNodeAct );
+        contextMenu -> addAction(editNodePropertiesAct );
         contextMenu -> addSeparator();
     }
 
@@ -5472,11 +5484,11 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
 
     options -> addAction (openSettingsAct  );
     options -> addSeparator();
-    options -> addAction (changeAllNodesSizeAct );
+    options -> addAction (editNodeSizeAllAct );
     options -> addAction (editNodeShapeAll  );
     options -> addAction (editNodeColorAll );
-    options -> addAction (displayNodeNumbersAct);
-    options -> addAction (displayNodeLabelsAct);
+    options -> addAction (optionsNodeNumbersVisibilityAct);
+    options -> addAction (optionsNodeLabelsVisibilityAct);
     options -> addSeparator();
     options -> addAction (changeAllEdgesColorAct  );
     options -> addSeparator();
@@ -5781,8 +5793,8 @@ void MainWindow::slotEditNodeProperties( const QString label, const int size,
                             label
                             );
 
-            if (!showLabels())
-                displayNodeLabelsAct->setChecked(true);
+            if (appSettings["initNodeLabelsVisibility"] != "true")
+                slotOptionsNodeLabelsVisibility(true);
 
             qDebug () <<  clickedJimNumber;
             qDebug()<<"MW: updating color ";
@@ -5861,9 +5873,9 @@ void MainWindow::slotEditNodeColorAll(){
  * Called when user clicks on relevant menu option
  */
 void MainWindow::slotEditNodeSizeAll() {
+    qDebug ("MW: slotEditNodeSizeAll:");
     bool ok=false;
-
-    int newSize = QInputDialog::getInt(
+int newSize = QInputDialog::getInt(
                 this,
                 "Change node size",
                 tr("Select new size for all nodes: (1-16)"),
@@ -5872,8 +5884,6 @@ void MainWindow::slotEditNodeSizeAll() {
         statusMessage( "Change node size operation cancelled." );
         return;
     }
-
-    qDebug ("MW: slotEditNodeSizeAll:");
     appSettings["initNodeSize"]= QString::number(newSize);
     slotEditNodeSizeAllNormalized(newSize);
     slotNetworkChanged();
@@ -5979,55 +5989,6 @@ void MainWindow::slotEditNodeShape(const QString shape, const int vertex) {
       }
 }
 
-/**
-*  Change size of all nodes' numbers (outside ones)
-*/
-void MainWindow::slotChangeNumbersSize() {
-    bool ok=false;
-    int newSize;
-    newSize = QInputDialog::getInt(this, "Change text size", tr("Change all nodenumbers size to: (1-16)"),appSettings["initNumberSize"].toInt(0,10), 1, 16, 1, &ok );
-    if (!ok) {
-        statusMessage( tr("Change font size: Aborted.") );
-        return;
-    }
-
-    QList<QGraphicsItem *> list=scene->items();
-    for (QList<QGraphicsItem *>::iterator it2=list.begin();it2!=list.end(); it2++)
-
-        if ( (*it2)->type()==TypeNumber) {
-            NodeNumber * number= (NodeNumber*) (*it2);
-            qDebug ("MW: slotChangeNumbersSize Found");
-            number->setFont( QFont (number->font().family(), newSize, QFont::Light, false) );
-        }
-
-    activeGraph.setInitVertexNumberSize(newSize);
-    statusMessage( tr("Changed numbers size. Ready.") );
-}
-
-
-/**
-*  Changes size of all nodes' labels
-*/
-void MainWindow::slotChangeLabelsSize() {
-    bool ok=false;
-    int newSize;
-    newSize = QInputDialog::getInt(this, "Change text size", tr("Change all node labels size to: (1-16)"),appSettings["initLabelSize"].toInt(0,10), 1, 16, 1, &ok );
-    if (!ok) {
-        statusMessage( tr("Change font size: Aborted.") );
-        return;
-    }
-    QList<QGraphicsItem *> list=scene->items();
-    for (QList<QGraphicsItem *>::iterator it2=list.begin();it2!=list.end(); it2++)
-
-        if ( (*it2)->type()==TypeLabel) {
-            NodeLabel *label= (NodeLabel*) (*it2);
-            qDebug ("MW: slotChangeLabelsSize Found");
-            label->setFont( QFont (label->font().family(), newSize, QFont::Light, false) );
-            activeGraph.setVertexLabelSize ( (label->node())->nodeNumber(), newSize);
-        }
-    activeGraph.setInitVertexLabelSize(newSize);
-    statusMessage( tr("Changed labels size. Ready.") );
-}
 
 
 
@@ -6055,7 +6016,7 @@ void MainWindow::slotEditNodeOpenContextMenu() {
     nodeContextMenu -> addSeparator();
     nodeContextMenu -> addAction(editEdgeAddAct);
     nodeContextMenu -> addAction(editNodeRemoveAct );
-    nodeContextMenu -> addAction(propertiesNodeAct );
+    nodeContextMenu -> addAction(editNodePropertiesAct );
     //QCursor::pos() is good only for menus not related with node coordinates
     nodeContextMenu -> exec(QCursor::pos() );
     delete  nodeContextMenu;
@@ -8626,21 +8587,13 @@ void MainWindow::destroyProgressBar(){
 
 
 
-/**
-*	Called from Graph::
-*/ 
-bool MainWindow::showNumbers(){
-    return displayNodeNumbersAct->isChecked();
-}
-
-
-
-
 
 /**
-*  Turns on/off displaying the numbers of nodes (outside ones)
-*/
-void MainWindow::slotDisplayNodeNumbers(bool toggle) {
+ * @brief MainWindow::slotOptionsNodeNumbersVisibility
+ * Turns on/off displaying the numbers of nodes (outside ones)
+ * @param toggle
+ */
+void MainWindow::slotOptionsNodeNumbersVisibility(bool toggle) {
     if (!fileLoaded && ! networkModified) {
         QMessageBox::critical(this, "Error",tr("There are no nodes! \nLoad a network file or create a new network."), "OK",0);
         statusMessage( tr("Errr...no nodes here. Sorry!") );
@@ -8660,35 +8613,21 @@ void MainWindow::slotDisplayNodeNumbers(bool toggle) {
 }
 
 
-/**
-*	Called by Graph:: and this->initNet()
-*/
-bool MainWindow::showLabels(){
-    return displayNodeLabelsAct->isChecked();
-}
-
 
 
 /**
-*	Called by Graph:: and this->initNet()
-*/
-bool MainWindow::showNumbersInsideNodes(){
-    return displayNumbersInsideNodesAct->isChecked();
-}
-
-
-
-/**
-*  Turns on/off displaying the nodenumbers inside the nodes.
-*/
-void MainWindow::slotDisplayNumbersInsideNodes(bool toggle){
+ * @brief MainWindow::slotOptionsNodeNumbersInside
+ * Turns on/off displaying the nodenumbers inside the nodes.
+ * @param toggle
+ */
+void MainWindow::slotOptionsNodeNumbersInside(bool toggle){
     statusMessage( tr("Toggle Numbers inside nodes. Please wait...") );
 
-    if ( showNumbers() ) 	{
+    if ( appSettings["initNodeNumbersVisibility"] != "true" )  	{
         // ?
     }
     else{
-        displayNodeNumbersAct->setChecked(true);
+        slotOptionsNodeNumbersVisibility(true);
     }
 
     activeGraph.setShowNumbersInsideNodes(toggle);
@@ -8704,10 +8643,66 @@ void MainWindow::slotDisplayNumbersInsideNodes(bool toggle){
     }
 }
 
+
+
+
+
+/**
+*  Change size of all nodes' numbers (outside ones)
+*/
+void MainWindow::slotOptionsNodeNumbersSize() {
+    bool ok=false;
+    int newSize;
+    newSize = QInputDialog::getInt(this, "Change text size", tr("Change all nodenumbers size to: (1-16)"),appSettings["initNumberSize"].toInt(0,10), 1, 16, 1, &ok );
+    if (!ok) {
+        statusMessage( tr("Change font size: Aborted.") );
+        return;
+    }
+
+    QList<QGraphicsItem *> list=scene->items();
+    for (QList<QGraphicsItem *>::iterator it2=list.begin();it2!=list.end(); it2++)
+
+        if ( (*it2)->type()==TypeNumber) {
+            NodeNumber * number= (NodeNumber*) (*it2);
+            qDebug ("MW: slotOptionsNodeNumbersSize Found");
+            number->setFont( QFont (number->font().family(), newSize, QFont::Light, false) );
+        }
+
+    activeGraph.setInitVertexNumberSize(newSize);
+    statusMessage( tr("Changed numbers size. Ready.") );
+}
+
+
+/**
+*  Changes size of all nodes' labels
+*/
+void MainWindow::slotChangeLabelsSize() {
+    bool ok=false;
+    int newSize;
+    newSize = QInputDialog::getInt(this, "Change text size", tr("Change all node labels size to: (1-16)"),appSettings["initLabelSize"].toInt(0,10), 1, 16, 1, &ok );
+    if (!ok) {
+        statusMessage( tr("Change font size: Aborted.") );
+        return;
+    }
+    QList<QGraphicsItem *> list=scene->items();
+    for (QList<QGraphicsItem *>::iterator it2=list.begin();it2!=list.end(); it2++)
+
+        if ( (*it2)->type()==TypeLabel) {
+            NodeLabel *label= (NodeLabel*) (*it2);
+            qDebug ("MW: slotChangeLabelsSize Found");
+            label->setFont( QFont (label->font().family(), newSize, QFont::Light, false) );
+            activeGraph.setVertexLabelSize ( (label->node())->nodeNumber(), newSize);
+        }
+    activeGraph.setInitVertexLabelSize(newSize);
+    statusMessage( tr("Changed labels size. Ready.") );
+}
+
+
+
 /**
 *  Turns on/off displaying labels
 */
-void MainWindow::slotDisplayNodeLabels(bool toggle){
+void MainWindow::slotOptionsNodeLabelsVisibility(bool toggle){
     if (!fileLoaded && ! networkModified) {
         QMessageBox::critical(this, "Error",tr("There are no nodes! \nLoad a network file or create a new network first. "), "OK",0);
         statusMessage( tr("No nodes found. Sorry...") );
@@ -8726,7 +8721,6 @@ void MainWindow::slotDisplayNodeLabels(bool toggle){
     }
     activeGraph.setShowLabels(toggle);
 }
-
 
 
 

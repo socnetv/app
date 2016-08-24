@@ -116,9 +116,6 @@ public:
     void createFortuneCookies();
     void createTips();
 
-    bool showLabels();
-    bool showNumbersInsideNodes();
-    bool showNumbers();
 
     int activeEdges();
     int activeNodes();
@@ -224,8 +221,6 @@ public slots:
 
     void slotEditNodeShapeAll();
     void slotEditNodeShape(const QString shape, const int vertex = 0);
-    void slotChangeNumbersSize();
-    void slotChangeLabelsSize();
 
 
     void slotEditEdgeAdd();
@@ -297,15 +292,22 @@ public slots:
     void slotPrestigeProximity();
 
     //OPTIONS MENU
-    void slotDisplayNodeNumbers(bool toggle);
-    void slotDisplayNodeLabels(bool toggle);
-    void slotDisplayNumbersInsideNodes(bool toggle);
+    void slotOptionsNodeNumbersVisibility(bool toggle);
+    void slotOptionsNodeNumbersInside(bool toggle);
+
+    void slotOptionsNodeLabelsVisibility(bool toggle);
+
+    void slotOptionsNodeNumbersSize();
+    void slotChangeLabelsSize();
+
+
     void slotDrawEdgesThickAsWeights();
     void slotDrawEdgesBezier(bool toggle);
     void slotDisplayEdgesWeightNumbers(bool toggle);
     void slotConsiderEdgeWeights(bool);
     void slotDisplayEdges(bool toggle);
     void slotDisplayEdgesArrows(bool toggle);
+
 
     void slotBackgroundColor ();
 
@@ -434,12 +436,12 @@ private:
     QAction *createLatticeNetworkAct, *createScaleFreeRandomNetworkAct;
     QAction *createSmallWorldRandomNetworkAct, *createRegularRandomNetworkAct;
 
-    QAction *displayNodeNumbersAct, *displayNodeLabelsAct, *displayNumbersInsideNodesAct;
+    QAction *optionsNodeNumbersVisibilityAct, *optionsNodeLabelsVisibilityAct, *optionsNodeNumbersInsideAct;
     QAction *editNodeSelectNoneAct, *editNodeSelectAllAct;
-    QAction *editNodeFindAct,*editNodeAddAct, *editNodeRemoveAct, *propertiesNodeAct;
+    QAction *editNodeFindAct,*editNodeAddAct, *editNodeRemoveAct, *editNodePropertiesAct;
     QAction *editEdgeAddAct, *editEdgeRemoveAct;
-    QAction *changeNumbersSizeAct;
-    QAction *changeLabelsSizeAct, *changeAllNodesSizeAct, *editNodeShapeAll;
+    QAction *optionsNodeNumbersSizeAct, *optionsNodeLabelsSizeAct;
+    QAction *editNodeSizeAllAct, *editNodeShapeAll;
     QAction *changeEdgeLabelAct, *changeEdgeColorAct, *changeEdgeWeightAct;
     QAction *filterNodesAct, *filterIsolateNodesAct, *filterEdgesAct, *transformNodes2EdgesAct, *symmetrizeAct;
     QAction *changeBackColorAct, *editNodeColorAll, *changeAllEdgesColorAct, *changeAllNumbersColorAct,
