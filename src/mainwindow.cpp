@@ -201,7 +201,7 @@ QMap<QString,QString> MainWindow::initSettings(){
 
     // hard-coded initial settings to use only on first app load
     // when there are no user defined values
-    appSettings["initNodeSize"]= "8";
+    appSettings["initNodeSize"]= "7";
     appSettings["initNodeColor"]="red";
     appSettings["initEdgeColor"]="black";
     appSettings["initLabelColor"]="darkblue";
@@ -212,7 +212,7 @@ QMap<QString,QString> MainWindow::initSettings(){
     appSettings["initBackgroundColor"]="white"; //"gainsboro";
     appSettings["initBackgroundImage"]="";
     appSettings["initNodeNumbersVisibility"] = "true";
-    appSettings["initNodeLabelsVisibility"] = "true";
+    appSettings["initNodeLabelsVisibility"] = "false";
     appSettings["initNodeNumbersInside"] = "false";
     appSettings["considerWeights"]="false";
     appSettings["inverseWeights"]="false";
@@ -786,51 +786,90 @@ void MainWindow::initActions(){
 
     editNodeAddAct = new QAction(QIcon(":/images/add.png"), tr("Add Node"), this);
     editNodeAddAct->setShortcut(Qt::CTRL + Qt::Key_Period);
-    editNodeAddAct->setStatusTip(tr("Add a node"));
-    editNodeAddAct->setWhatsThis(tr("Add Node\n\nAdds a node to the network"));
+    editNodeAddAct->setStatusTip(tr("Add a new node"));
+    editNodeAddAct->setWhatsThis(tr("Add Node\n\n"
+                                    "Adds a new node to the active network"));
     connect(editNodeAddAct, SIGNAL(triggered()), this, SLOT(slotEditNodeAdd()));
 
     editNodeRemoveAct = new QAction(QIcon(":/images/remove.png"),tr("Remove Node"), this);
     editNodeRemoveAct ->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_Period);
     //Single key shortcuts with backspace or del do no work in Mac http://goo.gl/7hz7Dx
     editNodeRemoveAct->setStatusTip(tr("Remove a node"));
-    editNodeRemoveAct->setWhatsThis(tr("Remove Node\n\nRemoves a node from the network"));
+    editNodeRemoveAct->setWhatsThis(tr("Remove Node\n\n"
+                                       "Removes an existing node from the network"));
     connect(editNodeRemoveAct, SIGNAL(triggered()), this, SLOT(slotEditNodeRemove()));
 
     editNodePropertiesAct = new QAction(QIcon(":/images/properties.png"),tr("Node Properties"), this);
     editNodePropertiesAct ->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_Period );
-    editNodePropertiesAct->setStatusTip(tr("Open node properties"));
-    editNodePropertiesAct->setWhatsThis(tr("Node Properties\n\nOpens node properties to edit label, size, color, shape etc"));
+    editNodePropertiesAct->setStatusTip(tr("Open node properties dialog -- "
+                                           "There must be some nodes on the canvas!"));
+    editNodePropertiesAct->setWhatsThis(tr("Node Properties\n\n"
+                                           "Opens node properties dialog to edit label, size, color, shape etc"));
     connect(editNodePropertiesAct, SIGNAL(triggered()), this, SLOT(slotEditNodePropertiesDialog()));
 
 
-    editNodeColorAll = new QAction(QIcon(":/images/nodecolor.png"), tr("Change all Nodes Colors"),	this);
-    editNodeColorAll->setStatusTip(tr("Click to choose a new color for all nodes."));
-    editNodeColorAll->setWhatsThis(tr("All Nodes\n\nChanges all nodes color at once."));
+    editNodeColorAll = new QAction(QIcon(":/images/nodecolor.png"), tr("Change all Nodes Colors (this session)"),	this);
+    editNodeColorAll->setStatusTip(tr("Choose a new color for all nodes (for this session only)."));
+    editNodeColorAll->setWhatsThis(tr("Nodes Color\n\n"
+                                      "Changes all nodes color at once. \n"
+                                      "This setting will apply to this session only. \n"
+                                      "To permanently change it, use Settings & Preferences"));
     connect(editNodeColorAll, SIGNAL(triggered()), this, SLOT(slotEditNodeColorAll()) );
 
-    editNodeSizeAllAct = new QAction(QIcon(":/images/resize.png"), tr("Change all Nodes Size"),	this);
-    editNodeSizeAllAct->setStatusTip(tr("This option lets you change the size of all nodes"));
-    editNodeSizeAllAct->setWhatsThis(tr("Nodes Size\n\nThis option lets you change the size of all nodes"));
+    editNodeSizeAllAct = new QAction(QIcon(":/images/resize.png"), tr("Change all Nodes Size (this session)"),	this);
+    editNodeSizeAllAct->setStatusTip(tr("Change the size of all nodes (for this session only)"));
+    editNodeSizeAllAct->setWhatsThis(tr("Nodes Size\n\n"
+                                        "Click to select and apply a new size for all nodes at once. \n"
+                                        "This setting will apply to this session only. \n"
+                                        "To permanently change it, use Settings & Preferences"));
     connect(editNodeSizeAllAct, SIGNAL(triggered()), this, SLOT(slotEditNodeSizeAll()) );
 
-    editNodeShapeAll = new QAction( tr("Change all Nodes Shape"),	this);
-    editNodeShapeAll->setStatusTip(tr("This option lets you change the shape of all nodes"));
-    editNodeShapeAll->setWhatsThis(tr("Nodes Shape\n\nThis option lets you change the shape of all nodes"));
+    editNodeShapeAll = new QAction( tr("Change all Nodes Shape (this session)"),	this);
+    editNodeShapeAll->setStatusTip(tr("Change the shape of all nodes (for this session only)"));
+    editNodeShapeAll->setWhatsThis(tr("Nodes Shape\n\n"
+                                      "Click to select and apply a new shape for all nodes at once."
+                                      "This setting will apply to this session only. \n"
+                                      "To permanently change it, use Settings & Preferences"));
     connect(editNodeShapeAll, SIGNAL(triggered()), this, SLOT(slotEditNodeShapeAll()) );
 
 
+    editNodeNumbersSizeAct = new QAction( tr("Change all Numbers Size (this session)"),	this);
+    editNodeNumbersSizeAct->setStatusTip(tr("Change the font size of the numbers of all nodes"
+                                            "(for this session only)"));
+    editNodeNumbersSizeAct->setWhatsThis(tr("Numbers Size\n\n"
+                                            "Click to select and apply a new font size for all node numbers"
+                                            "This setting will apply to this session only. \n"
+                                            "To permanently change it, use Settings & Preferences"));
+    connect(editNodeNumbersSizeAct, SIGNAL(triggered()), this, SLOT(slotEditNodeNumbersSize()) );
 
-    changeAllNumbersColorAct = new QAction( tr("Change all Numbers Colors"),	this);
-    changeAllNumbersColorAct->setStatusTip(tr("Click to change the color of all numbers."));
-    changeAllNumbersColorAct->setWhatsThis(tr("Numbers\n\nChanges the color of all numbers."));
-    connect(changeAllNumbersColorAct, SIGNAL(triggered()), this, SLOT(slotAllNumbersColor()));
 
-    changeAllLabelsColorAct = new QAction( tr("Change all Labels Colors"),	this);
-    changeAllLabelsColorAct->setStatusTip(tr("Click to change the color of all node labels."));
-    changeAllLabelsColorAct->setWhatsThis(tr("Numbers\n\nChanges the color of all node labels."));
-    connect(changeAllLabelsColorAct, SIGNAL(triggered()), this, SLOT(slotAllLabelsColor()));
+    editNodeNumbersColorAct = new QAction( tr("Change all Numbers Color (this session)"),	this);
+    editNodeNumbersColorAct->setStatusTip(tr("Change the color of the numbers of all nodes."
+                                              "(for this session only)"));
+    editNodeNumbersColorAct->setWhatsThis(tr("Numbers Color\n\n"
+                                              "Click to select and apply a new color "
+                                              "to all node numbers."
+                                              "This setting will apply to this session only. \n"
+                                              "To permanently change it, use Settings & Preferences"));
+    connect(editNodeNumbersColorAct, SIGNAL(triggered()), this, SLOT(slotEditNodeNumbersColor()));
 
+    editNodeLabelsSizeAct = new QAction( tr("Change all Labels Size (this session)"), this);
+    editNodeLabelsSizeAct->setStatusTip(tr("Change the font size of the labels of all nodes"
+                                           "(for this session only)"));
+    editNodeLabelsSizeAct->setWhatsThis(tr("Labels Size\n\n"
+                                           "Click to select and apply a new font-size to all node labels"
+                                           "This setting will apply to this session only. \n"
+                                           "To permanently change it, use Settings & Preferences"));
+    connect(editNodeLabelsSizeAct, SIGNAL(triggered()), this, SLOT(slotEditNodeLabelsSize()) );
+
+    changeAllLabelsColorAct = new QAction( tr("Change all Labels Colors (this session)"),	this);
+    changeAllLabelsColorAct->setStatusTip(tr("Change the color of the labels of all nodes "
+                                             "(for this session only)"));
+    changeAllLabelsColorAct->setWhatsThis(tr("Labels Color\n\n"
+                                             "Click to select and apply a new color to all node labels."
+                                             "This setting will apply to this session only. \n"
+                                             "To permanently change it, use Settings & Preferences"));
+    connect(changeAllLabelsColorAct, SIGNAL(triggered()), this, SLOT(slotEditNodeLabelsColor()));
 
     editEdgeAddAct = new QAction(QIcon(":/images/plines.png"), tr("Add Edge"),this);
     editEdgeAddAct->setShortcut(Qt::CTRL + Qt::Key_Slash);
@@ -1698,10 +1737,6 @@ void MainWindow::initActions(){
     optionsNodeNumbersInsideAct->setChecked(( appSettings["initNodeNumbersInside"] == "true" ) ? true: false );
     connect(optionsNodeNumbersInsideAct, SIGNAL(toggled(bool)), this, SLOT(slotOptionsNodeNumbersInside(bool)));
 
-    optionsNodeNumbersSizeAct = new QAction( tr("Change all Numbers Size"),	this);
-    optionsNodeNumbersSizeAct->setStatusTip(tr("It lets you change the font size of the numbers of all nodes"));
-    optionsNodeNumbersSizeAct->setWhatsThis(tr("Numbers Size\n\nChanges the size of the numbers of all nodes"));
-    connect(optionsNodeNumbersSizeAct, SIGNAL(triggered()), this, SLOT(slotOptionsNodeNumbersSize()) );
 
     optionsNodeLabelsVisibilityAct= new QAction(tr("Display Labels"),	this );
     optionsNodeLabelsVisibilityAct->setStatusTip(tr("Toggles displaying of node labels"));
@@ -1709,11 +1744,6 @@ void MainWindow::initActions(){
     optionsNodeLabelsVisibilityAct->setCheckable (true);
     optionsNodeLabelsVisibilityAct->setChecked( ( appSettings["initNodeLabelsVisibility"] == "true" ) ? true: false );
     connect(optionsNodeLabelsVisibilityAct, SIGNAL(toggled(bool)), this, SLOT(slotOptionsNodeLabelsVisibility(bool)));
-
-    optionsNodeLabelsSizeAct = new QAction( tr("Change all Labels Size"), this);
-    optionsNodeLabelsSizeAct->setStatusTip(tr("You can change the font size of the labels of all nodes"));
-    optionsNodeLabelsSizeAct->setWhatsThis(tr("Labels Size\n\nChange the fontsize of the labels of all nodes"));
-    connect(optionsNodeLabelsSizeAct, SIGNAL(triggered()), this, SLOT(slotChangeLabelsSize()) );
 
 
     displayEdgesAct = new QAction(tr("Display Edges"),	this);
@@ -1928,8 +1958,8 @@ void MainWindow::initMenuBar() {
     editNodeMenu -> addAction (editNodeColorAll);
     editNodeMenu -> addAction (editNodeSizeAllAct);
     editNodeMenu -> addAction (editNodeShapeAll);
-    editNodeMenu -> addAction (optionsNodeNumbersSizeAct);
-    editNodeMenu -> addAction (optionsNodeLabelsSizeAct);
+    editNodeMenu -> addAction (editNodeNumbersSizeAct);
+    editNodeMenu -> addAction (editNodeLabelsSizeAct);
 
 
     editEdgeMenu = new QMenu(tr("Edge..."));
@@ -1963,7 +1993,7 @@ void MainWindow::initMenuBar() {
     colorOptionsMenu -> addAction (changeBackColorAct);
     colorOptionsMenu -> addAction (editNodeColorAll);
     colorOptionsMenu -> addAction (changeAllEdgesColorAct);
-    colorOptionsMenu -> addAction (changeAllNumbersColorAct);
+    colorOptionsMenu -> addAction (editNodeNumbersColorAct);
     colorOptionsMenu -> addAction (changeAllLabelsColorAct);
 
 
@@ -2943,6 +2973,11 @@ void MainWindow::initSignalSlots() {
     connect( graphicsWidget, SIGNAL( selectedEdge(Edge*) ),
              this, SLOT ( edgeInfoStatusBar(Edge*) )  );
 
+
+
+    connect( graphicsWidget, SIGNAL( userClickOnEmptySpace() ),
+                     this, SLOT( slotEditClickOnEmptySpace() ) ) ;
+
     connect( graphicsWidget, SIGNAL( userDoubleClicked(int, QPointF) ),
              this, SLOT( slotEditNodeAddWithMouse(int,QPointF) ) ) ;
 
@@ -3052,6 +3087,10 @@ void MainWindow::initSignalSlots() {
 
     connect( &activeGraph, SIGNAL( setNodeColor(long int,QString))  ,
              graphicsWidget, SLOT(  setNodeColor(long int, QString) ) );
+
+    connect( &activeGraph, SIGNAL( setNodeShape(long int,QString))  ,
+             graphicsWidget, SLOT(  setNodeShape(long int, QString) ) );
+
 
     connect( &activeGraph, &Graph::setNodeLabel ,
              graphicsWidget, &GraphicsWidget::setNodeLabel );
@@ -5514,6 +5553,16 @@ QList<QGraphicsItem *> MainWindow::selectedNodes() {
 }
 
 
+/**
+ * @brief MainWindow::slotEditClickOnEmptySpace
+ * Called from GW when the user clicks on empty space.
+ */
+void MainWindow::slotEditClickOnEmptySpace() {
+    selectedNodeLCD->display (0);
+    inDegreeLCD->display (0);
+    outDegreeLCD->display (0);
+    clucofLCD->display(0);
+}
 
 
 
@@ -5682,6 +5731,8 @@ void MainWindow::slotEditNodeRemove() {
 
 /**
  * @brief MainWindow::slotEditNodePropertiesDialog
+ * Reads values from selected nodes
+ * then open Node Properties dialog
  */
 void MainWindow::slotEditNodePropertiesDialog() {
 
@@ -5758,6 +5809,8 @@ void MainWindow::slotEditNodePropertiesDialog() {
 
 /**
  * @brief MainWindow::slotEditNodeProperties
+ * Applies new (user-defined) values to all selected nodes
+ * Called on exit from NodeEditDialog
  * @param label
  * @param size
  * @param value
@@ -5821,30 +5874,9 @@ void MainWindow::slotEditNodeProperties( const QString label, const int size,
 
 /**
  * @brief MainWindow::slotEditNodeColorAll
- * Changes the color of all nodes
- * Called from Settings Dialog
- */
-void MainWindow::slotEditNodeColorAll(QColor color){
-    if (color.isValid()) {
-        appSettings["initNodeColor"] = color.name();
-        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        qDebug() << "MW::slotEditNodeColorAll() : " << appSettings["initNodeColor"];
-        activeGraph.setAllVerticesColor(appSettings["initNodeColor"]);
-        QApplication::restoreOverrideCursor();
-        statusMessage( tr("Ready. ")  );
-    }
-    else {
-        // user pressed Cancel
-        statusMessage( tr("Invalid color. ") );
-    }
-}
-
-
-
-
-/**
- * @brief MainWindow::slotEditNodeColorAll
- * Open a QColorDialog to select a new node color, then changes the color of all nodes
+ * Opens a QColorDialog to select a new node color for all nodes.
+ * Calls  activeGraph.setAllVerticesColor to do the work
+ * Called from Edit menu option
  */
 void MainWindow::slotEditNodeColorAll(){
     QColor color = QColorDialog::getColor( Qt::red, this,
@@ -5866,16 +5898,41 @@ void MainWindow::slotEditNodeColorAll(){
 
 
 
+/**
+ * @brief MainWindow::slotEditNodeColorAll
+ * Overloaded
+ * Changes the color of all nodes to parameter color
+ * Calls  activeGraph.setAllVerticesColor to do the work
+ * Called from Settings Dialog
+ * @param color
+ */
+void MainWindow::slotEditNodeColorAll(QColor color){
+    if (color.isValid()) {
+        appSettings["initNodeColor"] = color.name();
+        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+        qDebug() << "MW::slotEditNodeColorAll() : " << appSettings["initNodeColor"];
+        activeGraph.setAllVerticesColor(appSettings["initNodeColor"]);
+        QApplication::restoreOverrideCursor();
+        statusMessage( tr("Ready. ")  );
+    }
+    else {
+        // user pressed Cancel
+        statusMessage( tr("Invalid color. ") );
+    }
+}
+
+
 
 /**
  * @brief MainWindow::slotEditNodeSizeAll
- * Changes the size of all nodes
- * Called when user clicks on relevant menu option
+ * Asks the user a new size for all nodes
+ * Calls MW::slotEditNodeSizeAllNormalized to do the work.
+ * Called when user clicks on relevant Edit menu option
  */
 void MainWindow::slotEditNodeSizeAll() {
     qDebug ("MW: slotEditNodeSizeAll:");
     bool ok=false;
-int newSize = QInputDialog::getInt(
+    int newSize = QInputDialog::getInt(
                 this,
                 "Change node size",
                 tr("Select new size for all nodes: (1-16)"),
@@ -5896,6 +5953,9 @@ int newSize = QInputDialog::getInt(
 /**
  * @brief MainWindow::slotEditNodeSizeAllNormalized
  * Changes the size of nodes to size.
+ * Calls activeGraph.setAllVerticesSize to do the work.
+ * Called from MainWindow::slotEditNodeSizeAll and MW::slotRandomErdosRenyi
+ * as well as from SettingsDialog
  * @param size
  */
 void MainWindow::slotEditNodeSizeAllNormalized(int size) {
@@ -5932,13 +5992,13 @@ void MainWindow::slotEditNodeShapeAll() {
     QString newShape = QInputDialog::getItem(this, "Node shapes", "Select a shape for all nodes: ", lst, 1, true, &ok);
     if ( ok ) {
         //user selected an item and pressed OK
-        QList<QGraphicsItem *> list=scene->items();
-        for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
-            if ( (*it) -> type() == TypeNode ){
-                Node *jim = (Node*) (*it);
-                (*jim).setShape(newShape);
-                activeGraph.setVertexShape ((*jim).nodeNumber(), newShape);
-            }
+//        QList<QGraphicsItem *> list=scene->items();
+//        for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
+//            if ( (*it) -> type() == TypeNode ){
+//                Node *jim = (Node*) (*it);
+//                (*jim).setShape(newShape);
+//                activeGraph.setVertexShape ((*jim).nodeNumber(), newShape);
+//            }
         slotNetworkChanged();
         activeGraph.setAllVerticesShape(newShape);
         statusBar()->showMessage (QString(tr("All shapes have been changed. Ready")), statusBarDuration) ;
@@ -5963,13 +6023,13 @@ void MainWindow::slotEditNodeShape(const QString shape, const int vertex) {
              << " (0 means all) - new shape " << shape;
 
     if (vertex == 0) { //change all nodes shapes
-        QList<QGraphicsItem *> list=scene->items();
-        for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
-            if ( (*it) -> type() == TypeNode ){
-                Node *jim = (Node*) (*it);
-                (*jim).setShape(shape);
-                activeGraph.setVertexShape ((*jim).nodeNumber(), shape);
-            }
+//        QList<QGraphicsItem *> list=scene->items();
+//        for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
+//            if ( (*it) -> type() == TypeNode ){
+//                Node *jim = (Node*) (*it);
+//                (*jim).setShape(shape);
+//                activeGraph.setVertexShape ((*jim).nodeNumber(), shape);
+//            }
         slotNetworkChanged();
         activeGraph.setAllVerticesShape(shape);
         statusBar()->showMessage (QString(tr("All shapes have been changed. Ready")), statusBarDuration) ;
@@ -5978,19 +6038,126 @@ void MainWindow::slotEditNodeShape(const QString shape, const int vertex) {
     else { //only one
 
        activeGraph.setVertexShape( vertex, shape);
-       QList<QGraphicsItem *> list=scene->items();
-       for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
-           if ( (*it) -> type() == TypeNode ){
-               Node *jim = (Node*) (*it);
-               if ( (*jim).nodeNumber() ==  vertex ) {
-                 (*jim).setShape(shape);
-               }
-           }
+//       QList<QGraphicsItem *> list=scene->items();
+//       for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
+//           if ( (*it) -> type() == TypeNode ){
+//               Node *jim = (Node*) (*it);
+//               if ( (*jim).nodeNumber() ==  vertex ) {
+//                 (*jim).setShape(shape);
+//               }
+//           }
       }
 }
 
 
 
+
+/**
+ * @brief MainWindow::slotEditNodeNumbersSize
+ * Changes the size of all nodes' numbers.
+ * Asks the user to enter a new node number font size
+ * Called from Edit menu option
+ */
+void MainWindow::slotEditNodeNumbersSize() {
+    bool ok=false;
+    int newSize;
+    newSize = QInputDialog::getInt(this, "Change text size", tr("Change all nodenumbers size to: (1-16)"),appSettings["initNumberSize"].toInt(0,10), 1, 16, 1, &ok );
+    if (!ok) {
+        statusMessage( tr("Change font size: Aborted.") );
+        return;
+    }
+
+    QList<QGraphicsItem *> list=scene->items();
+    for (QList<QGraphicsItem *>::iterator it2=list.begin();it2!=list.end(); it2++)
+
+        if ( (*it2)->type()==TypeNumber) {
+            NodeNumber * number= (NodeNumber*) (*it2);
+            qDebug ("MW: slotEditNodeNumbersSize Found");
+            number->setFont( QFont (number->font().family(), newSize, QFont::Light, false) );
+        }
+
+    activeGraph.setInitVertexNumberSize(newSize);
+    statusMessage( tr("Changed numbers size. Ready.") );
+}
+
+
+/**
+ * @brief MainWindow::slotEditNodeLabelsSize
+ * Changes the size of all nodes' labels.
+ * Asks the user to enter a new node label font size
+ */
+void MainWindow::slotEditNodeLabelsSize() {
+    bool ok=false;
+    int newSize;
+    newSize = QInputDialog::getInt(this, "Change text size", tr("Change all node labels size to: (1-16)"),appSettings["initLabelSize"].toInt(0,10), 1, 16, 1, &ok );
+    if (!ok) {
+        statusMessage( tr("Change font size: Aborted.") );
+        return;
+    }
+    QList<QGraphicsItem *> list=scene->items();
+    for (QList<QGraphicsItem *>::iterator it2=list.begin();it2!=list.end(); it2++)
+
+        if ( (*it2)->type()==TypeLabel) {
+            NodeLabel *label= (NodeLabel*) (*it2);
+            qDebug ("MW: slotEditNodeLabelsSize Found");
+            label->setFont( QFont (label->font().family(), newSize, QFont::Light, false) );
+            activeGraph.setVertexLabelSize ( (label->node())->nodeNumber(), newSize);
+        }
+    activeGraph.setInitVertexLabelSize(newSize);
+    statusMessage( tr("Changed labels size. Ready.") );
+}
+
+
+
+
+
+/**
+ * @brief MainWindow::slotEditNodeNumbersColor
+ * Changes the color of all nodes' numbers.
+ * Asks the user to enter a new node number color
+ */
+void MainWindow::slotEditNodeNumbersColor(){
+
+    QColor textColor = QColorDialog::getColor( Qt::black, this );
+    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+    qDebug ("MW: Will change color");
+    QList<QGraphicsItem *> list= scene->items();
+    for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
+        if ( (*it)->type() == TypeNumber) 		{
+            NodeNumber *jimNumber = (NodeNumber *) (*it);
+            jimNumber->update();
+            jimNumber->setDefaultTextColor(textColor);
+        }
+    }
+    activeGraph.setInitVertexNumberColor( textColor.name() );
+    QApplication::restoreOverrideCursor();
+    statusMessage( tr("Numbers' colors changed. Ready. ")  );
+}
+
+
+
+/**
+ * @brief MainWindow::slotEditNodeLabelsColor
+ * Changes the color of all nodes' labels.
+ * Asks the user to enter a new node label color
+ */
+void MainWindow::slotEditNodeLabelsColor(){
+    QColor textColor = QColorDialog::getColor( Qt::black, this );
+    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+    qDebug ("MW: Will change label color");
+    QList<QGraphicsItem *> list= scene->items();
+    for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
+        if ( (*it)->type() == TypeNode ) 	{
+            Node *jim = (Node *) (*it);
+            jim->label()->update();
+            jim->label()->setDefaultTextColor(textColor);
+            qDebug ("MW: Changed color");
+            activeGraph.setVertexLabelColor (jim->nodeNumber(), textColor.name());
+        }
+    activeGraph.setInitVertexLabelColor(textColor.name());
+    QApplication::restoreOverrideCursor();
+    statusMessage( tr("Label colors changed. Ready. ")  );
+}
 
 
 
@@ -6023,26 +6190,6 @@ void MainWindow::slotEditNodeOpenContextMenu() {
     clickedJimNumber=-1;    //undo node selection
 }
 
-
-
-/**
-     Popups a context menu with some options when the user right-clicks on an Edge
-*/
-void MainWindow::openEdgeContextMenu() {
-    int source=clickedEdge->sourceNodeNumber();
-    int target=clickedEdge->targetNodeNumber();
-    qDebug("MW: openEdgeContextMenu() for edge %i-%i at %i, %i",source, target, QCursor::pos().x(), QCursor::pos().y());
-    QString edgeName=QString::number(source)+QString("->")+QString::number(target);
-    //make the menu
-    QMenu *edgeContextMenu = new QMenu(edgeName, this);
-    edgeContextMenu -> addAction( "## EDGE " + edgeName + " ##  ");
-    edgeContextMenu -> addSeparator();
-    edgeContextMenu -> addAction( editEdgeRemoveAct );
-    edgeContextMenu -> addAction( changeEdgeWeightAct );
-    edgeContextMenu -> addAction( changeEdgeColorAct );
-    edgeContextMenu -> exec(QCursor::pos() );
-    delete  edgeContextMenu;
-}
 
 
 
@@ -6121,6 +6268,28 @@ void MainWindow::edgeInfoStatusBar (Edge* edge) {
 
 
 
+
+
+
+
+/**
+     Popups a context menu with some options when the user right-clicks on an Edge
+*/
+void MainWindow::openEdgeContextMenu() {
+    int source=clickedEdge->sourceNodeNumber();
+    int target=clickedEdge->targetNodeNumber();
+    qDebug("MW: openEdgeContextMenu() for edge %i-%i at %i, %i",source, target, QCursor::pos().x(), QCursor::pos().y());
+    QString edgeName=QString::number(source)+QString("->")+QString::number(target);
+    //make the menu
+    QMenu *edgeContextMenu = new QMenu(edgeName, this);
+    edgeContextMenu -> addAction( "## EDGE " + edgeName + " ##  ");
+    edgeContextMenu -> addSeparator();
+    edgeContextMenu -> addAction( editEdgeRemoveAct );
+    edgeContextMenu -> addAction( changeEdgeWeightAct );
+    edgeContextMenu -> addAction( changeEdgeColorAct );
+    edgeContextMenu -> exec(QCursor::pos() );
+    delete  edgeContextMenu;
+}
 
 
 /**
@@ -6325,6 +6494,33 @@ void MainWindow::slotEditEdgeRemove(){
 //TODO slotChangeEdgeLabel
 void MainWindow::slotChangeEdgeLabel(){
     slotNetworkChanged();
+}
+
+
+
+
+
+/**
+*  Changes the color of all edges
+*/
+void MainWindow::slotAllEdgesColor(){
+    QColor color = QColorDialog::getColor( Qt::red, this,
+                                           "Change the color of all nodes" );
+    if (color.isValid()) {
+        appSettings["initEdgeColor"]=color.name();
+        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+        qDebug() << "MainWindow::slotAllEdgesColor() : " << appSettings["initEdgeColor"];
+        //createProgressBar();
+        activeGraph.setAllEdgesColor(appSettings["initEdgeColor"]);
+        //destroyProgressBar();
+        QApplication::restoreOverrideCursor();
+        slotNetworkChanged();
+        statusMessage( tr("Ready. ")  );
+    }
+    else {
+        // user pressed Cancel
+        statusMessage( tr("edges color change aborted. ") );
+    }
 }
 
 
@@ -8648,58 +8844,6 @@ void MainWindow::slotOptionsNodeNumbersInside(bool toggle){
 
 
 /**
-*  Change size of all nodes' numbers (outside ones)
-*/
-void MainWindow::slotOptionsNodeNumbersSize() {
-    bool ok=false;
-    int newSize;
-    newSize = QInputDialog::getInt(this, "Change text size", tr("Change all nodenumbers size to: (1-16)"),appSettings["initNumberSize"].toInt(0,10), 1, 16, 1, &ok );
-    if (!ok) {
-        statusMessage( tr("Change font size: Aborted.") );
-        return;
-    }
-
-    QList<QGraphicsItem *> list=scene->items();
-    for (QList<QGraphicsItem *>::iterator it2=list.begin();it2!=list.end(); it2++)
-
-        if ( (*it2)->type()==TypeNumber) {
-            NodeNumber * number= (NodeNumber*) (*it2);
-            qDebug ("MW: slotOptionsNodeNumbersSize Found");
-            number->setFont( QFont (number->font().family(), newSize, QFont::Light, false) );
-        }
-
-    activeGraph.setInitVertexNumberSize(newSize);
-    statusMessage( tr("Changed numbers size. Ready.") );
-}
-
-
-/**
-*  Changes size of all nodes' labels
-*/
-void MainWindow::slotChangeLabelsSize() {
-    bool ok=false;
-    int newSize;
-    newSize = QInputDialog::getInt(this, "Change text size", tr("Change all node labels size to: (1-16)"),appSettings["initLabelSize"].toInt(0,10), 1, 16, 1, &ok );
-    if (!ok) {
-        statusMessage( tr("Change font size: Aborted.") );
-        return;
-    }
-    QList<QGraphicsItem *> list=scene->items();
-    for (QList<QGraphicsItem *>::iterator it2=list.begin();it2!=list.end(); it2++)
-
-        if ( (*it2)->type()==TypeLabel) {
-            NodeLabel *label= (NodeLabel*) (*it2);
-            qDebug ("MW: slotChangeLabelsSize Found");
-            label->setFont( QFont (label->font().family(), newSize, QFont::Light, false) );
-            activeGraph.setVertexLabelSize ( (label->node())->nodeNumber(), newSize);
-        }
-    activeGraph.setInitVertexLabelSize(newSize);
-    statusMessage( tr("Changed labels size. Ready.") );
-}
-
-
-
-/**
 *  Turns on/off displaying labels
 */
 void MainWindow::slotOptionsNodeLabelsVisibility(bool toggle){
@@ -8891,76 +9035,6 @@ void MainWindow::slotBackgroundColor () {
 }
 
 
-
-/**
-*  Changes the color of all edges
-*/
-void MainWindow::slotAllEdgesColor(){
-    QColor color = QColorDialog::getColor( Qt::red, this,
-                                           "Change the color of all nodes" );
-    if (color.isValid()) {
-        appSettings["initEdgeColor"]=color.name();
-        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        qDebug() << "MainWindow::slotAllEdgesColor() : " << appSettings["initEdgeColor"];
-        //createProgressBar();
-        activeGraph.setAllEdgesColor(appSettings["initEdgeColor"]);
-        //destroyProgressBar();
-        QApplication::restoreOverrideCursor();
-        slotNetworkChanged();
-        statusMessage( tr("Ready. ")  );
-    }
-    else {
-        // user pressed Cancel
-        statusMessage( tr("edges color change aborted. ") );
-    }
-}
-
-
-
-
-/**
-*  Changes the color of nodes' numbers
-*/
-void MainWindow::slotAllNumbersColor(){
-
-    QColor textColor = QColorDialog::getColor( Qt::black, this );
-    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-    qDebug ("MW: Will change color");
-    QList<QGraphicsItem *> list= scene->items();
-    for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
-        if ( (*it)->type() == TypeNumber) 		{
-            NodeNumber *jimNumber = (NodeNumber *) (*it);
-            jimNumber->update();
-            jimNumber->setDefaultTextColor(textColor);
-        }
-    }
-    activeGraph.setInitVertexNumberColor( textColor.name() );
-    QApplication::restoreOverrideCursor();
-    statusMessage( tr("Numbers' colors changed. Ready. ")  );
-}
-
-
-
-/**
-*  Changes the color of nodes labels
-*/
-void MainWindow::slotAllLabelsColor(){
-    QColor textColor = QColorDialog::getColor( Qt::black, this );
-    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-    qDebug ("MW: Will change label color");
-    QList<QGraphicsItem *> list= scene->items();
-    for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
-        if ( (*it)->type() == TypeNode ) 	{
-            Node *jim = (Node *) (*it);
-            jim->label()->update();
-            jim->label()->setDefaultTextColor(textColor);
-            qDebug ("MW: Changed color");
-            activeGraph.setVertexLabelColor (jim->nodeNumber(), textColor.name());
-        }
-    activeGraph.setInitVertexLabelColor(textColor.name());
-    QApplication::restoreOverrideCursor();
-    statusMessage( tr("Label colors changed. Ready. ")  );
-}
 
 
 

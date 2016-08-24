@@ -99,6 +99,7 @@ public slots:
                     );
     void eraseNode(long int doomedJim);
     void setNodeVisibility(long int, bool );	//Called from Graph via MW
+    bool setNodeShape(long int, QString);
     bool setNodeColor(long int, QString);
     bool setNodeLabel(long int , QString );
     void nodeClicked(Node *);
@@ -132,6 +133,7 @@ public slots:
 signals:
     void userDoubleClicked(int, QPointF);
     void userMiddleClicked(int, int, float);
+    void userClickOnEmptySpace();
     void openNodeMenu();
     void openEdgeMenu();
     void openContextMenu(const QPointF p);

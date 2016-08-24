@@ -201,12 +201,13 @@ public slots:
 
     void slotEditOpenContextMenu(const QPointF & mPos);
 
+    void slotEditClickOnEmptySpace ();
+
     void slotEditNodeSelectAll();
     void slotEditNodeSelectNone();
 
     void slotEditNodeAdd();
     void slotEditNodeAddWithMouse(int, QPointF);
-
     void slotEditNodeFind();
     void slotEditNodeRemove();
     void slotEditNodeOpenContextMenu();
@@ -215,13 +216,14 @@ public slots:
                              const QColor, const QString);
     void slotEditNodeColorAll();
     void slotEditNodeColorAll(QColor);
-
     void slotEditNodeSizeAll();
     void slotEditNodeSizeAllNormalized(int size);
-
     void slotEditNodeShapeAll();
     void slotEditNodeShape(const QString shape, const int vertex = 0);
-
+    void slotEditNodeNumbersSize();
+    void slotEditNodeNumbersColor();
+    void slotEditNodeLabelsSize();
+    void slotEditNodeLabelsColor();
 
     void slotEditEdgeAdd();
     void slotEditEdgeCreate (int v1, int v2, float weight);
@@ -229,6 +231,7 @@ public slots:
     void slotChangeEdgeLabel();
     void slotChangeEdgeColor();
     void slotChangeEdgeWeight();
+    void slotAllEdgesColor();
 
     void slotFilterNodes();
     void slotFilterIsolateNodes(bool checked);
@@ -236,7 +239,7 @@ public slots:
     void slotTransformNodes2Edges();
     void slotSymmetrize();
     void slotSettingsBackgroundImage();
-    void slotOpenSettingsDialog();
+
 
     // LAYOUT MENU
     void slotColorationStrongStructural();
@@ -292,15 +295,10 @@ public slots:
     void slotPrestigeProximity();
 
     //OPTIONS MENU
+    void slotOpenSettingsDialog();
     void slotOptionsNodeNumbersVisibility(bool toggle);
     void slotOptionsNodeNumbersInside(bool toggle);
-
     void slotOptionsNodeLabelsVisibility(bool toggle);
-
-    void slotOptionsNodeNumbersSize();
-    void slotChangeLabelsSize();
-
-
     void slotDrawEdgesThickAsWeights();
     void slotDrawEdgesBezier(bool toggle);
     void slotDisplayEdgesWeightNumbers(bool toggle);
@@ -308,12 +306,8 @@ public slots:
     void slotDisplayEdges(bool toggle);
     void slotDisplayEdgesArrows(bool toggle);
 
-
     void slotBackgroundColor ();
 
-    void slotAllEdgesColor();
-    void slotAllNumbersColor();
-    void slotAllLabelsColor();
 
     //VIEW MENU
     void slotAntialiasing(bool );
@@ -440,11 +434,11 @@ private:
     QAction *editNodeSelectNoneAct, *editNodeSelectAllAct;
     QAction *editNodeFindAct,*editNodeAddAct, *editNodeRemoveAct, *editNodePropertiesAct;
     QAction *editEdgeAddAct, *editEdgeRemoveAct;
-    QAction *optionsNodeNumbersSizeAct, *optionsNodeLabelsSizeAct;
+    QAction *editNodeNumbersSizeAct, *editNodeLabelsSizeAct;
     QAction *editNodeSizeAllAct, *editNodeShapeAll;
     QAction *changeEdgeLabelAct, *changeEdgeColorAct, *changeEdgeWeightAct;
     QAction *filterNodesAct, *filterIsolateNodesAct, *filterEdgesAct, *transformNodes2EdgesAct, *symmetrizeAct;
-    QAction *changeBackColorAct, *editNodeColorAll, *changeAllEdgesColorAct, *changeAllNumbersColorAct,
+    QAction *changeBackColorAct, *editNodeColorAll, *changeAllEdgesColorAct, *editNodeNumbersColorAct,
             *changeAllLabelsColorAct;
     QAction *drawEdgesWeightsAct, *displayEdgesWeightNumbersAct, *displayEdgesAct;
     QAction *displayEdgesArrowsAct, *drawEdgesBezier,*considerEdgeWeightsAct;

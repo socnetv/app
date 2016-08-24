@@ -470,6 +470,18 @@ bool GraphicsWidget::setNodeColor(long int nodeNumber, QString color){
 
 
 /**
+    Sets the shape of an node.
+    Called from MW when the user changes the shape of a node
+*/
+bool GraphicsWidget::setNodeShape(long int nodeNumber, QString shape){
+    qDebug() << "GraphicsWidget::setNodeShape() : " << shape;
+    nodeHash.value(nodeNumber) -> setShape(shape);
+    return true;
+
+}
+
+
+/**
     Sets the label of an node.
     Called from MW when the user changes it
 */
@@ -803,7 +815,7 @@ QList<QGraphicsItem *> GraphicsWidget::selectedItems(){
 
 /** 	
     Starts a new node when the user double-clicks somewhere
-    Emits userDoubleClicked to MW slot slotEditNodeAddWithMouse() which
+    Emits userDoubleClicked to MW::slotEditNodeAddWithMouse() which
         - displays node info on MW status bar and
         - calls Graph::createVertex(), which in turn calls this->drawNode()...
         Yes, we make a full circle! :)
@@ -812,7 +824,6 @@ void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
     qDebug() << "GW: mouseDoubleClickEvent()";
     if ( QGraphicsItem *item= itemAt(e->pos() ) ) {
         if (Node *node = qgraphicsitem_cast<Node *>(item)) {
-            //Q_UNUSED(node);
             qDebug() << "GW: mouseDoubleClickEvent() - on a node!"
                      << " Starting new edge!";
             node->setSelected(true);
@@ -886,6 +897,9 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
         else if ( e->button()==Qt::RightButton   ) {
             qDebug() << "GW::mousePressEvent() Right-click on empty space ";
             emit openContextMenu(p);
+        }
+        else {
+            emit userClickOnEmptySpace();
         }
         QGraphicsView::mousePressEvent(e);
     }
