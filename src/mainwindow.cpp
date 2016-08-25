@@ -227,6 +227,7 @@ QMap<QString,QString> MainWindow::initSettings(){
     appSettings["showRightPanel"] = "true";
     appSettings["showLeftPanel"] = "true";
     appSettings["printLogo"] = "true";
+    appSettings["randomErdosEdgeProbability"] = "0.04";
 
     // Try to load settings configuration file
     // First check if our settings folder exist
@@ -5079,7 +5080,8 @@ void MainWindow::slotRandomErdosRenyiDialog(){
 
     statusMessage( "Creating a random symmetric network... ");
 
-    m_randErdosRenyiDialog = new RandErdosRenyiDialog(this);
+    m_randErdosRenyiDialog = new RandErdosRenyiDialog(
+                this, appSettings["randomErdosEdgeProbability"].toFloat(0));
 
     connect( m_randErdosRenyiDialog, &RandErdosRenyiDialog::userChoices,
              this, &MainWindow::slotRandomErdosRenyi );
@@ -5120,7 +5122,7 @@ void MainWindow::slotRandomErdosRenyi( const int newNodes,
     QString msg = "Creating random network. \n "
                 " Please wait (or disable progress bars from Options -> Settings).";
     createProgressBar(2*newNodes, msg);
-
+    appSettings["randomErdosEdgeProbability"] = QString::number(eprob);
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
     activeGraph.createRandomNetErdos ( newNodes,

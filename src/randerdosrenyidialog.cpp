@@ -36,7 +36,7 @@
 
 #include "randerdosrenyidialog.h"
 
-RandErdosRenyiDialog::RandErdosRenyiDialog(QWidget *parent ) :
+RandErdosRenyiDialog::RandErdosRenyiDialog(QWidget *parent, const float eprob) :
 
     QDialog(parent)
 {
@@ -47,7 +47,7 @@ RandErdosRenyiDialog::RandErdosRenyiDialog(QWidget *parent ) :
     nodes = 0;
     model = "";
     edges = 0;
-    eprob = 0;
+    ui.probDoubleSpinBox->setValue(eprob);
     mode = "";
     diag = false;
 
@@ -143,7 +143,7 @@ void RandErdosRenyiDialog::gatherData() {
     nodes = ui.nodesSpinBox->value();
     model = ( ui.gnpRadioButton->isChecked() ) ? "G(n,p)" : "G(n,M)";
     if (  ui.gnpRadioButton->isChecked() ) {
-        eprob = ui.probDoubleSpinBox->value();
+//        eprob = ui.probDoubleSpinBox->value();
     }
     else {
         edges = ui.edgesSpinBox->value();
@@ -152,10 +152,10 @@ void RandErdosRenyiDialog::gatherData() {
     diag = (ui.diagCheckBox -> isChecked() ? true : false);
     qDebug() << "nodes " << nodes ;
     qDebug() << "model " << model;
-    qDebug() << "eprob " << eprob;
+    qDebug() << "eprob " << ui.probDoubleSpinBox->value();
     qDebug() << "edges " << edges;
     qDebug() << "mode " << mode;
     qDebug() << "diag " << diag;
-    emit userChoices(nodes, model, edges, eprob, mode, diag);
+    emit userChoices(nodes, model, edges, ui.probDoubleSpinBox->value(), mode, diag);
 
 }

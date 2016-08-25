@@ -476,13 +476,12 @@ private:
     bool networkModified;
     bool bezier,  edgeClicked, nodeClicked, markedNodesExist, showProgressBar, firstTime;
     bool considerWeights, inverseWeights, askedAboutWeights;
+    float randomErdosEdgeProb;
     QString initFileCodec;
-
     QColor initBackgroundColor;
     QPointF cursorPosGW;	//Carries the position of the cursor in graphicsWidget coordinates
     QLCDNumber  *inDegreeLCD, *outDegreeLCD , *selectedNodeLCD, *clucofLCD;
     QLCDNumber *nodesLCD, *edgesLCD, *densityLCD;
-
     QDateTime actualDateTime, actualDate, actualTime;
     QTime eTime;     //used  to time algorithms.
 

@@ -38,7 +38,7 @@ class RandErdosRenyiDialog  : public QDialog
 {
     Q_OBJECT
 public:
-    explicit RandErdosRenyiDialog(QWidget *parent=0);
+    explicit RandErdosRenyiDialog(QWidget *parent=0, const float eprob = 0);
 
 public slots:
     void checkErrors();
@@ -60,7 +60,7 @@ private:
     QString model;
     QString mode;
     int nodes, edges;
-    float eprob;
+
     bool diag;
     Ui::RandErdosRenyiDialog ui;
 };
