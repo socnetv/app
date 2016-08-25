@@ -171,7 +171,7 @@ QMap<QString,QString> MainWindow::initSettings(){
 
     // Create fortune cookies and tips
     createFortuneCookies();
-    createTips();
+    slotHelpCreateTips();
 
     // Call slotNetworkAvailableTextCodecs to setup a list of all supported codecs
     qDebug() << "MW::initSettings - calling slotNetworkAvailableTextCodecs" ;
@@ -346,34 +346,34 @@ void MainWindow::slotOpenSettingsDialog() {
                      this, &MainWindow::saveSettings);
 
     connect( m_settingsDialog, &SettingsDialog::setDebugMsgs,
-                         this, &MainWindow::slotPrintDebug);
+                         this, &MainWindow::slotOptionsDebugMessages);
 
     connect( m_settingsDialog, &SettingsDialog::setProgressBars,
-             this, &MainWindow::slotShowProgressBar);
+             this, &MainWindow::slotOptionsProgressBarVisibility);
 
     connect( m_settingsDialog, &SettingsDialog::setAntialiasing,
-             this, &MainWindow::slotAntialiasing);
+             this, &MainWindow::slotOptionsAntialiasing);
 
     connect( m_settingsDialog, &SettingsDialog::setPrintLogo,
-                 this, &MainWindow::slotPrintLogo);
+                 this, &MainWindow::slotOptionsEmbedLogoExporting);
 
     connect( m_settingsDialog, &SettingsDialog::setBgColor,
                      this, &MainWindow::slotBackgroundColor);
 
     connect( m_settingsDialog, &SettingsDialog::setBgImage,
-                     this, &MainWindow::slotSettingsBackgroundImage);
+                     this, &MainWindow::slotOptionsBackgroundImage);
 
     connect( m_settingsDialog, &SettingsDialog::setToolBar,
-             this, &MainWindow::slotShowToolBar);
+             this, &MainWindow::slotOptionsToolbarVisibility);
 
     connect( m_settingsDialog, &SettingsDialog::setStatusBar,
-             this, &MainWindow::slotShowStatusBar);
+             this, &MainWindow::slotOptionsStatusBarVisibility);
 
     connect( m_settingsDialog, &SettingsDialog::setLeftPanel,
-             this, &MainWindow::slotShowLeftPanel);
+             this, &MainWindow::slotOptionsLeftPanelVisibility);
 
     connect( m_settingsDialog, &SettingsDialog::setRightPanel,
-             this, &MainWindow::slotShowRightPanel);
+             this, &MainWindow::slotOptionsRightPanelVisibility);
 
     connect(m_settingsDialog, SIGNAL(setNodeColor(QColor)),
             this, SLOT(slotEditNodeColorAll(QColor)) );
@@ -1720,98 +1720,162 @@ void MainWindow::initActions(){
                    "where the sum is over all nodes in I."));
     connect(cProximityPrestigeAct, SIGNAL(triggered()), this, SLOT(slotPrestigeProximity()));
 
+
     /**
     Options menu actions
     */
-    optionsNodeNumbersVisibilityAct = new QAction( tr("Display Numbers"), this );
-    optionsNodeNumbersVisibilityAct->setStatusTip(tr("Toggles displaying of node numbers"));
-    optionsNodeNumbersVisibilityAct->setWhatsThis(tr("Display Numbers\n\nEnables/disables node numbers"));
+    optionsNodeNumbersVisibilityAct = new QAction( tr("Display Node Numbers"), this );
+    optionsNodeNumbersVisibilityAct->setStatusTip(
+                tr("Toggle displaying of node numbers (this session only)"));
+    optionsNodeNumbersVisibilityAct->setWhatsThis(
+                tr("Display Node Numbers\n\n"
+                   "Enables or disables displaying of node numbers\n"
+                   "This setting will apply to this session only. \n"
+                   "To permanently change it, use Settings & Preferences"));
     optionsNodeNumbersVisibilityAct->setCheckable (true);
-    optionsNodeNumbersVisibilityAct->setChecked( ( appSettings["initNodeNumbersVisibility"] == "true" ) ? true: false );
-    connect(optionsNodeNumbersVisibilityAct, SIGNAL(toggled(bool)), this, SLOT(slotOptionsNodeNumbersVisibility(bool)));
+    optionsNodeNumbersVisibilityAct->setChecked (
+                ( appSettings["initNodeNumbersVisibility"] == "true" ) ? true: false );
+    connect(optionsNodeNumbersVisibilityAct, SIGNAL(toggled(bool)),
+            this, SLOT(slotOptionsNodeNumbersVisibility(bool)));
+
 
     optionsNodeNumbersInsideAct = new QAction(tr("Display Numbers Inside Nodes"),	this );
-    optionsNodeNumbersInsideAct->setStatusTip(tr("Toggles displaying numbers inside nodes"));
-    optionsNodeNumbersInsideAct->setWhatsThis(tr("Display Numbers Inside Nodes\n\nTurns on/off displaying nodenumbers inside nodes"));
+    optionsNodeNumbersInsideAct->setStatusTip(
+                tr("Toggle displaying of numbers inside nodes (this session only)"));
+    optionsNodeNumbersInsideAct->setWhatsThis(
+                tr("Display Numbers Inside Nodes\n\n"
+                   "Enables or disables displaying node numbers inside nodes.\n"
+                   "This setting will apply to this session only. \n"
+                   "To permanently change it, use Settings & Preferences"));
     optionsNodeNumbersInsideAct->setCheckable (true);
-    optionsNodeNumbersInsideAct->setChecked(( appSettings["initNodeNumbersInside"] == "true" ) ? true: false );
-    connect(optionsNodeNumbersInsideAct, SIGNAL(toggled(bool)), this, SLOT(slotOptionsNodeNumbersInside(bool)));
+    optionsNodeNumbersInsideAct->setChecked(
+                ( appSettings["initNodeNumbersInside"] == "true" ) ? true: false );
+    connect(optionsNodeNumbersInsideAct, SIGNAL(toggled(bool)),
+            this, SLOT(slotOptionsNodeNumbersInside(bool)));
 
 
-    optionsNodeLabelsVisibilityAct= new QAction(tr("Display Labels"),	this );
-    optionsNodeLabelsVisibilityAct->setStatusTip(tr("Toggles displaying of node labels"));
-    optionsNodeLabelsVisibilityAct->setWhatsThis(tr("Display Labels\n\nEnables/disables node labels"));
+    optionsNodeLabelsVisibilityAct= new QAction(tr("Display Node Labels"),	this );
+    optionsNodeLabelsVisibilityAct->setStatusTip(
+                tr("Toggle displaying of node labels (this session only"));
+    optionsNodeLabelsVisibilityAct->setWhatsThis(
+                tr("Display Node Labels\n\n"
+                   "Enables or disables node labels.\n"
+                   "This setting will apply to this session only. \n"
+                   "To permanently change it, use Settings & Preferences"));
     optionsNodeLabelsVisibilityAct->setCheckable (true);
-    optionsNodeLabelsVisibilityAct->setChecked( ( appSettings["initNodeLabelsVisibility"] == "true" ) ? true: false );
-    connect(optionsNodeLabelsVisibilityAct, SIGNAL(toggled(bool)), this, SLOT(slotOptionsNodeLabelsVisibility(bool)));
+    optionsNodeLabelsVisibilityAct->setChecked(
+                ( appSettings["initNodeLabelsVisibility"] == "true" ) ? true: false );
+    connect(optionsNodeLabelsVisibilityAct, SIGNAL(toggled(bool)),
+            this, SLOT(slotOptionsNodeLabelsVisibility(bool)));
 
 
-    displayEdgesAct = new QAction(tr("Display Edges"),	this);
-    displayEdgesAct->setStatusTip(tr("Toggle to display or not Edges"));
-    displayEdgesAct->setWhatsThis(tr("Display Edges\n\nClick to enable or disable displaying of Edges"));
+    displayEdgesAct = new QAction(tr("Display Edges"), this);
+    displayEdgesAct->setStatusTip(tr("Toggle displaying edges"));
+    displayEdgesAct->setWhatsThis(
+                tr("Display Edges\n\n"
+                "Enables or disables displaying of edges"
+                "This setting will apply to this session only. \n"
+                "To permanently change it, use Settings & Preferences"));
     displayEdgesAct->setCheckable(true);
     displayEdgesAct->setChecked(true);
-    connect(displayEdgesAct, SIGNAL(toggled(bool)), this, SLOT(slotDisplayEdges(bool)) );
+    connect(displayEdgesAct, SIGNAL(toggled(bool)),
+            this, SLOT(slotOptionsEdgesVisibility(bool)) );
 
-    displayEdgesWeightNumbersAct = new QAction(tr("Display Edge Weights"),	this);
-    displayEdgesWeightNumbersAct->setStatusTip(tr("Toggles displaying of numbers of Edges weights"));
-    displayEdgesWeightNumbersAct->setWhatsThis(tr("Display Weight Numbers\n\nClick to enable or disable displaying numbers of Edges weight"));
+
+    displayEdgesWeightNumbersAct = new QAction(tr("Display edge Weights"),	this);
+    displayEdgesWeightNumbersAct->setStatusTip(
+                tr("Toggles displaying of numbers of Edges weights (this session only)"));
+    displayEdgesWeightNumbersAct->setWhatsThis(
+                tr("Display edge Weights\n\n"
+                   "Enables or disables displaying edge weight numbers.\n"
+                   "This setting will apply to this session only. \n"
+                   "To permanently change it, use Settings & Preferences"));
     displayEdgesWeightNumbersAct->setCheckable(true);
     displayEdgesWeightNumbersAct->setChecked(false);
     connect(displayEdgesWeightNumbersAct, SIGNAL(toggled(bool)),
-            this, SLOT(slotDisplayEdgesWeightNumbers(bool)) );
+            this, SLOT(slotOptionsEdgeWeightNumbersVisibility(bool)) );
 
-    considerEdgeWeightsAct = new QAction(tr("Consider Weights in calculcations"),	this);
+    considerEdgeWeightsAct = new QAction(tr("Consider edge Weights in calculations"),	this);
     considerEdgeWeightsAct->
             setStatusTip(
-                tr("Toggles considering Edge weights during calculations (i.e. distances, centrality, etc)"));
+                tr("Toggle considering edge Weights during calculations "
+                   "(i.e. distances, centrality, etc)"));
     considerEdgeWeightsAct->
             setWhatsThis(
-                tr("Display Weight Numbers\n\n"
-                   "Click to enable or disable considering edge weights during "
-                   "calculations (i.e. distances, centrality, etc)"));
+                tr("Consider edge weights in calculations\n\n"
+                   "Enables or disables considering edge weights during "
+                   "calculations (i.e. distances, centrality, etc).\n"
+                   "This setting will apply to this session only. \n"
+                   "To permanently change it, use Settings & Preferences"));
     considerEdgeWeightsAct->setCheckable(true);
     considerEdgeWeightsAct->setChecked(false);
     connect(considerEdgeWeightsAct, SIGNAL(triggered(bool)),
-            this, SLOT(slotConsiderEdgeWeights(bool)) );
+            this, SLOT(slotOptionsEdgeWeightsDuringComputation(bool)) );
 
-    displayEdgesArrowsAct = new QAction( tr("Display Arrows"),this);
-    displayEdgesArrowsAct->setStatusTip(tr("Toggles displaying of arrows on edges"));
-    displayEdgesArrowsAct->setWhatsThis(tr("Display Arrows\n\nClick to enable or disable displaying of arrows on edges"));
+    displayEdgesArrowsAct = new QAction( tr("Display edge Arrows"),this);
+    displayEdgesArrowsAct->setStatusTip(
+                tr("Toggles displaying directional Arrows on edges"));
+    displayEdgesArrowsAct->setWhatsThis(
+                tr("Display edge Arrows\n\n"
+                   "Enables or disables displaying of arrows on edges.\n "
+                   "Useful if all links are reciprocal (undirected graph).\n"
+                   "This setting will apply to this session only. \n"
+                   "To permanently change it, use Settings & Preferences"));
     displayEdgesArrowsAct->setCheckable(true);
     displayEdgesArrowsAct->setChecked(true);
-    connect(displayEdgesArrowsAct, SIGNAL(toggled(bool)), this, SLOT(slotDisplayEdgesArrows(bool)) );
+    connect(displayEdgesArrowsAct, SIGNAL(toggled(bool)),
+            this, SLOT(slotOptionsEdgeArrrowsVisibility(bool)) );
 
-    drawEdgesWeightsAct = new QAction( tr("Thickness=Weight"), this);
-    drawEdgesWeightsAct->setStatusTip(tr("Draws edges as thick as their weights (if specified)"));
-    drawEdgesWeightsAct->setWhatsThis(tr("Draw As Thick As Weights\n\nClick to toggle having all edges as thick as their weight (if specified)"));
+    drawEdgesWeightsAct = new QAction( tr("Edge thickness reflects weight"), this);
+    drawEdgesWeightsAct->setStatusTip(tr("Draw edges as thick as their weights (if specified)"));
+    drawEdgesWeightsAct->setWhatsThis(
+                tr("Edge thickness reflects weight\n\n"
+                   "Click to toggle having all edges as thick as their weight (if specified)"));
     drawEdgesWeightsAct->setCheckable(true);
     drawEdgesWeightsAct->setChecked(false);
     drawEdgesWeightsAct->setEnabled(false);
-    connect(drawEdgesWeightsAct, SIGNAL(toggled(bool)), this, SLOT(slotDrawEdgesThickAsWeights()) );
+    connect(drawEdgesWeightsAct, SIGNAL(toggled(bool)),
+            this, SLOT(slotOptionsEdgesThicknessPerWeight()) );
 
     drawEdgesBezier = new QAction( tr("Bezier Curves"),	this);
-    drawEdgesBezier->setStatusTip(tr("Draws Edges as Bezier curves"));
-    drawEdgesBezier->setWhatsThis(tr("Edges Bezier\n\nEnables/Disables drawing Edges as Bezier curves."));
+    drawEdgesBezier->setStatusTip(tr("Draw Edges as Bezier curves"));
+    drawEdgesBezier->setWhatsThis(
+                tr("Edges Bezier\n\n"
+                   "Enable or disables drawing Edges as Bezier curves."
+                   "This setting will apply to this session only. \n"
+                   "To permanently change it, use Settings & Preferences"));
     drawEdgesBezier->setCheckable(true);
     drawEdgesBezier->setChecked (false);
     drawEdgesBezier->setEnabled(false);
-    connect(drawEdgesBezier, SIGNAL(toggled(bool)), this, SLOT(slotDrawEdgesBezier(bool)) );
+    connect(drawEdgesBezier, SIGNAL(toggled(bool)), this, SLOT(slotOptionsEdgesBezier(bool)) );
 
 
-    backgroundImageAct = new QAction(tr("Background Image"),	this);
-    backgroundImageAct->setStatusTip(tr("Enables/disables displaying a user-defined custom image in the background"));
-    backgroundImageAct->setWhatsThis(tr("Enable or disable background image\n\n If you enable it, you will be asked for a image file, which will be displayed in the background instead of plain color.."));
+    backgroundImageAct = new QAction(tr("Background Image (this session)"),	this);
+    backgroundImageAct->setStatusTip(
+                tr("Select and display a custom image in the background"
+                   "(for this session only)"));
+    backgroundImageAct->setWhatsThis(
+                tr("Background image\n\n "
+                   "Enable to select an image file from your computer, "
+                   "which will be displayed in the background instead of plain color."
+                   "This setting will apply to this session only. \n"
+                   "To permanently change it, use Settings & Preferences"));
     backgroundImageAct->setCheckable(true);
     backgroundImageAct->setChecked(false);
-    connect(backgroundImageAct, SIGNAL(toggled(bool)), this, SLOT(slotBackgroundImage(bool)));
+    connect(backgroundImageAct, SIGNAL(toggled(bool)), this, SLOT(slotOptionsBackgroundImageSelect(bool)));
 
     openSettingsAct = new QAction(QIcon(":/images/appsettings.png"), tr("Settings"),	this);
     openSettingsAct->setShortcut(Qt::CTRL + Qt::Key_Comma);
     openSettingsAct->setEnabled(true);
-    openSettingsAct->setStatusTip(tr("Open SocNetV Settings dialog"));
-    openSettingsAct->setWhatsThis(tr("Settings\n\n Opens the Settings dialog where you can save permanent settings."));
-    connect(openSettingsAct, SIGNAL(triggered()), this, SLOT(slotOpenSettingsDialog()));
+    openSettingsAct->setStatusTip(
+                tr("Open Settings dialog where you can save your preferences "
+                   "for all future sessions"));
+    openSettingsAct->setWhatsThis(
+                tr("Settings\n\n "
+                   "Opens the Settings dialog where you can edit and save settings "
+                   "permanently for all subsequent sessions."));
+    connect(openSettingsAct, SIGNAL(triggered()),
+            this, SLOT(slotOpenSettingsDialog()));
 
 
 
@@ -1828,7 +1892,7 @@ void MainWindow::initActions(){
     tipsApp = new QAction(tr("Tip of the Day"), this);
     tipsApp->setStatusTip(tr("Read useful tips"));
     tipsApp->setWhatsThis(tr("Quick Tips\n\nDisplays some useful and quick tips"));
-    connect(tipsApp, SIGNAL(triggered()), this, SLOT(slotTips()));
+    connect(tipsApp, SIGNAL(triggered()), this, SLOT(slotHelpTips()));
 
     helpAboutApp = new QAction(tr("About SocNetV"), this);
     helpAboutApp->setStatusTip(tr("About SocNetV"));
@@ -2932,11 +2996,11 @@ void MainWindow::initWindowLayout() {
 
     // set panels visibility
     if ( appSettings["showRightPanel"] == "false") {
-        slotShowRightPanel(false);
+        slotOptionsRightPanelVisibility(false);
     }
 
     if ( appSettings["showLeftPanel"] == "false") {
-        slotShowLeftPanel(false);
+        slotOptionsLeftPanelVisibility(false);
     }
 
     qDebug () << "MW::initWindowLayout - resize to 1280x900";
@@ -6000,6 +6064,7 @@ void MainWindow::slotEditNodeShapeAll() {
 //                activeGraph.setVertexShape ((*jim).nodeNumber(), newShape);
 //            }
         slotNetworkChanged();
+        appSettings["initNodeShape"] = newShape;
         activeGraph.setAllVerticesShape(newShape);
         statusBar()->showMessage (QString(tr("All shapes have been changed. Ready")), statusBarDuration) ;
     } else {
@@ -8844,8 +8909,10 @@ void MainWindow::slotOptionsNodeNumbersInside(bool toggle){
 
 
 /**
-*  Turns on/off displaying labels
-*/
+ * @brief MainWindow::slotOptionsNodeLabelsVisibility
+ * Turns on/off displaying labels
+ * @param toggle
+ */
 void MainWindow::slotOptionsNodeLabelsVisibility(bool toggle){
     if (!fileLoaded && ! networkModified) {
         QMessageBox::critical(this, "Error",tr("There are no nodes! \nLoad a network file or create a new network first. "), "OK",0);
@@ -8869,26 +8936,20 @@ void MainWindow::slotOptionsNodeLabelsVisibility(bool toggle){
 
 
 
-/**
-    Turns on/off drawing edges as thick as their weights.
-    TODO
-*/
-void MainWindow::slotDrawEdgesThickAsWeights() {
-
-}
-
 
 
 /**
-*  Turns on/off displaying edge weight numbers
-*/
-void MainWindow::slotDisplayEdgesWeightNumbers(bool toggle) {
+ * @brief MainWindow::slotOptionsEdgeWeightNumbersVisibility
+ * Turns on/off displaying edge weight numbers
+ * @param toggle
+ */
+void MainWindow::slotOptionsEdgeWeightNumbersVisibility(bool toggle) {
     if (!fileLoaded && ! networkModified) {
         QMessageBox::critical(this, "Error",tr("There are no edges! \nLoad a network file or create a new network first."), "OK",0);
         statusMessage( tr("No nodes or edges found. Sorry...") );
         return;
     }
-    qDebug() << "MW::slotDisplayEdgesWeightNumbers - Toggling Edges Weights. Please wait...";
+    qDebug() << "MW::slotOptionsEdgeWeightNumbersVisibility - Toggling Edges Weights. Please wait...";
     statusMessage( tr("Toggle Edges Weights. Please wait...") );
 
     if (!toggle) 	{
@@ -8904,11 +8965,12 @@ void MainWindow::slotDisplayEdgesWeightNumbers(bool toggle) {
 }
 
 
+
 /**
- * @brief MainWindow::slotConsiderEdgeWeights
+ * @brief MainWindow::slotOptionsEdgeWeightsDuringComputation
  * @param toggle
  */
-void MainWindow::slotConsiderEdgeWeights(bool toggle) {
+void MainWindow::slotOptionsEdgeWeightsDuringComputation(bool toggle) {
    if (toggle) {
        considerWeights=true;
        askedAboutWeights=false;
@@ -8919,10 +8981,12 @@ void MainWindow::slotConsiderEdgeWeights(bool toggle) {
 }
 
 
+
 /**
-*  Turns on/off displaying edges
-*/
-void MainWindow::slotDisplayEdges(bool toggle){
+ * @brief MainWindow::slotOptionsEdgesVisibility
+ * @param toggle
+ */
+void MainWindow::slotOptionsEdgesVisibility(bool toggle){
     if (!fileLoaded && ! networkModified) {
         QMessageBox::critical(this, "Error",tr("There are no nodes nor edges! \nLoad a network file or create a new network first!"), "OK",0);
 
@@ -8948,7 +9012,7 @@ void MainWindow::slotDisplayEdges(bool toggle){
 /**
 *  Turns on/off the arrows of edges
 */
-void MainWindow::slotDisplayEdgesArrows(bool toggle){
+void MainWindow::slotOptionsEdgeArrrowsVisibility(bool toggle){
     if (!fileLoaded && ! networkModified) {
         QMessageBox::critical(this, "Error",tr("There are no edges! \nLoad a network file or create a new network first!"), "OK",0);
 
@@ -8983,7 +9047,7 @@ void MainWindow::slotDisplayEdgesArrows(bool toggle){
 /**
 *  FIXME edges Bezier
 */
-void MainWindow::slotDrawEdgesBezier(bool toggle){
+void MainWindow::slotOptionsEdgesBezier(bool toggle){
     if (!fileLoaded && ! networkModified) {
         QMessageBox::critical(this, "Error",tr("There are no edges! \nLoad a network file or create a new network!"), "OK",0);
 
@@ -9022,6 +9086,14 @@ void MainWindow::slotDrawEdgesBezier(bool toggle){
 }
 
 
+/**
+ * @brief MainWindow::slotOptionsEdgesThicknessPerWeight
+ * @param toggle
+ */
+void MainWindow::slotOptionsEdgesThicknessPerWeight(bool toggle) {
+
+}
+
 
 /**
 *  Changes the background color of the scene
@@ -9038,10 +9110,13 @@ void MainWindow::slotBackgroundColor () {
 
 
 
+
 /**
-*  turns antialiasing on or off
-*/
-void MainWindow::slotAntialiasing(bool toggle) {
+ * @brief MainWindow::slotOptionsAntialiasing
+ * Turns antialiasing on or off
+ * @param toggle
+ */
+void MainWindow::slotOptionsAntialiasing(bool toggle) {
     statusMessage( tr("Toggle anti-aliasing. This will take some time if the network is large (>500)...") );
     //Inform graphicsWidget about the change
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
@@ -9062,10 +9137,11 @@ void MainWindow::slotAntialiasing(bool toggle) {
 
 
 /**
- * @brief MainWindow::slotPrintLogo
+ * @brief MainWindow::slotOptionsEmbedLogoExporting
+ *
  * @param toggle
  */
-void MainWindow::slotPrintLogo(bool toggle){
+void MainWindow::slotOptionsEmbedLogoExporting(bool toggle){
     if (!toggle) {
         statusMessage( tr("SocNetV logo print off.") );
         appSettings["printLogo"] = "false";
@@ -9077,11 +9153,11 @@ void MainWindow::slotPrintLogo(bool toggle){
 }
 
 /**
- * @brief MainWindow::slotShowProgressBar
+ * @brief MainWindow::slotOptionsProgressBarVisibility
  * @param toggle
  * turn progressbar on or off
  */
-void MainWindow::slotShowProgressBar(bool toggle) {
+void MainWindow::slotOptionsProgressBarVisibility(bool toggle) {
     statusMessage( tr("Toggle progressbar..."));
     if (!toggle)  {
         appSettings["showProgressBar"] = "false";
@@ -9096,11 +9172,11 @@ void MainWindow::slotShowProgressBar(bool toggle) {
 
 
 /**
- * @brief MainWindow::slotPrintDebug
+ * @brief MainWindow::slotOptionsDebugMessages
  * @param toggle
  * Turns debugging messages on or off
  */
-void MainWindow::slotPrintDebug(bool toggle){
+void MainWindow::slotOptionsDebugMessages(bool toggle){
     if (!toggle)   {
         appSettings["printDebug"] = "false";
         printDebug=false;
@@ -9118,11 +9194,13 @@ void MainWindow::slotPrintDebug(bool toggle){
 
 
 /**
- * @brief MainWindow::slotBackgroundImage
+ * @brief MainWindow::slotOptionsBackgroundImageSelect
+ * Toggles displaying a custom image in the background
+ * If toggle = true, presents a dialog to select an image file
+ * Called from app menu option
  * @param toggle
- * Enables/disables displaying a user-defined custom image in the background
  */
-void MainWindow::slotBackgroundImage(bool toggle) {
+void MainWindow::slotOptionsBackgroundImageSelect(bool toggle) {
     statusMessage( tr("Toggle BackgroundImage..."));
     QString m_fileName ;
     if (toggle == false)   {
@@ -9139,16 +9217,18 @@ void MainWindow::slotBackgroundImage(bool toggle) {
         if (m_fileName.isNull() )
             appSettings["initBackgroundImage"] = "";
         appSettings["initBackgroundImage"] = m_fileName;
-        slotSettingsBackgroundImage();
+        slotOptionsBackgroundImage();
     }
 }
 
 
 
-/*
+/**
+ * @brief MainWindow::slotOptionsBackgroundImage
  * Enables/disables displaying a user-defined custom image in the background
+ * Called from Settings Dialog and
  */
-void MainWindow::slotSettingsBackgroundImage() {
+void MainWindow::slotOptionsBackgroundImage() {
     statusMessage( tr("Toggle BackgroundImage..."));
     if (appSettings["initBackgroundImage"].isEmpty())   {
         statusMessage( tr("BackgroundImage off.") );
@@ -9170,11 +9250,11 @@ void MainWindow::slotSettingsBackgroundImage() {
 
 
 /**
- * @brief MainWindow::slotShowToolBar
+ * @brief MainWindow::slotOptionsToolbarVisibility
  * @param toggle
  * Turns Toolbar on or off
  */
-void MainWindow::slotShowToolBar(bool toggle) {
+void MainWindow::slotOptionsToolbarVisibility(bool toggle) {
     statusMessage( tr("Toggle toolbar..."));
     if (toggle== false)   {
         toolBar->hide();
@@ -9192,11 +9272,11 @@ void MainWindow::slotShowToolBar(bool toggle) {
 
 
 /**
- * @brief MainWindow::slotShowStatusBar
+ * @brief MainWindow::slotOptionsStatusBarVisibility
  * @param toggle
  * Turns Statusbar on or off
  */
-void MainWindow::slotShowStatusBar(bool toggle) {
+void MainWindow::slotOptionsStatusBarVisibility(bool toggle) {
     statusMessage( tr("Toggle statusbar..."));
 
     if (toggle == false)   {
@@ -9214,10 +9294,10 @@ void MainWindow::slotShowStatusBar(bool toggle) {
 
 
 /**
- * @brief MainWindow::slotShowLeftPanel
+ * @brief MainWindow::slotOptionsLeftPanelVisibility
  * @param toggle
  */
-void MainWindow::slotShowLeftPanel(bool toggle) {
+void MainWindow::slotOptionsLeftPanelVisibility(bool toggle) {
     statusMessage( tr("Toggle left panel..."));
 
     if (toggle == false)   {
@@ -9235,10 +9315,10 @@ void MainWindow::slotShowLeftPanel(bool toggle) {
 
 
 /**
- * @brief MainWindow::slotShowRightPanel
+ * @brief MainWindow::slotOptionsRightPanelVisibility
  * @param toggle
  */
-void MainWindow::slotShowRightPanel(bool toggle) {
+void MainWindow::slotOptionsRightPanelVisibility(bool toggle) {
     statusMessage( tr("Toggle left panel..."));
 
     if (toggle == false)   {
@@ -9259,7 +9339,7 @@ void MainWindow::slotShowRightPanel(bool toggle) {
 /**
 *  Displays a random tip
 */
-void MainWindow::slotTips() {
+void MainWindow::slotHelpTips() {
     int randomTip=rand()%tipsCounter; //Pick a tip.
     QMessageBox::about( this, tr("Tip Of The Day"), tips[randomTip]);
 }
@@ -9269,7 +9349,7 @@ void MainWindow::slotTips() {
 /**
     Creates our tips.
 */
-void MainWindow::createTips(){
+void MainWindow::slotHelpCreateTips(){
     tips+=tr("You can add a new node by double-clicking on the scene.");
     tips+=tr("You can add a new node by clicking on Add button.");
     tips+=tr("You can remove a node by clicking on Remove button.");

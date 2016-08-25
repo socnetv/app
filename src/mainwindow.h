@@ -114,8 +114,7 @@ public:
     void setLastPath(QString filePath);
     QString getLastPath();
     void createFortuneCookies();
-    void createTips();
-
+    void slotHelpCreateTips();
 
     int activeEdges();
     int activeNodes();
@@ -193,7 +192,6 @@ public slots:
     void slotNetworkWebCrawler(QString, int, int, bool, bool);
 
     //EDIT MENU
-
     void slotEditRelationPrev();
     void slotEditRelationNext();
     void slotEditRelationAdd();
@@ -238,7 +236,6 @@ public slots:
     void slotShowFilterEdgesDialog();
     void slotTransformNodes2Edges();
     void slotSymmetrize();
-    void slotSettingsBackgroundImage();
 
 
     // LAYOUT MENU
@@ -252,14 +249,10 @@ public slots:
     void slotLayoutLevelByProminenceIndex();
     void slotLayoutLevelByProminenceIndex(QString);
     void slotLayoutGuides(int);
-
-
     void slotLayoutSpringEmbedder();
     void slotLayoutFruchterman();
-
-
-    void  slotLayoutNodeSizesByOutDegree(bool);
-    void  slotLayoutNodeSizesByInDegree(bool);
+    void slotLayoutNodeSizesByOutDegree(bool);
+    void slotLayoutNodeSizesByInDegree(bool);
 
     //STATISTICS MENU
     void askAboutWeights();
@@ -299,32 +292,33 @@ public slots:
     void slotOptionsNodeNumbersVisibility(bool toggle);
     void slotOptionsNodeNumbersInside(bool toggle);
     void slotOptionsNodeLabelsVisibility(bool toggle);
-    void slotDrawEdgesThickAsWeights();
-    void slotDrawEdgesBezier(bool toggle);
-    void slotDisplayEdgesWeightNumbers(bool toggle);
-    void slotConsiderEdgeWeights(bool);
-    void slotDisplayEdges(bool toggle);
-    void slotDisplayEdgesArrows(bool toggle);
+    void slotOptionsEdgesThicknessPerWeight(bool);
+    void slotOptionsEdgesBezier(bool toggle);
+    void slotOptionsEdgeWeightNumbersVisibility(bool toggle);
+    void slotOptionsEdgeWeightsDuringComputation(bool);
+    void slotOptionsEdgesVisibility(bool toggle);
+    void slotOptionsEdgeArrrowsVisibility(bool toggle);
 
     void slotBackgroundColor ();
+    void slotOptionsBackgroundImageSelect(bool toggle);
+    void slotOptionsBackgroundImage();
 
-
-    //VIEW MENU
-    void slotAntialiasing(bool );
-    void slotPrintLogo(bool toggle);
-    void slotShowProgressBar(bool toggle);
-    void slotShowToolBar(bool toggle);
-    void slotShowStatusBar(bool toggle);
-    void slotShowLeftPanel(bool toggle);
-    void slotShowRightPanel(bool toggle);
-    void slotBackgroundImage(bool toggle);
-    void slotPrintDebug(bool toggle);
+    void slotOptionsAntialiasing(bool );
+    void slotOptionsEmbedLogoExporting(bool toggle);
+    void slotOptionsProgressBarVisibility(bool toggle);
+    void slotOptionsToolbarVisibility(bool toggle);
+    void slotOptionsStatusBarVisibility(bool toggle);
+    void slotOptionsLeftPanelVisibility(bool toggle);
+    void slotOptionsRightPanelVisibility(bool toggle);
+    void slotOptionsDebugMessages(bool toggle);
 
     //HELP MENU
-    void slotTips();
+    void slotHelpTips();
     void slotHelp();
     void slotHelpAbout();
     void slotAboutQt();
+
+
     //PUBLICLY AVAILABLE SLOTS. CALLED FROM GRAPHICSVIEW
     void nodeInfoStatusBar(Node*);
     void edgeInfoStatusBar (Edge*);
