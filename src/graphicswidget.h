@@ -107,6 +107,7 @@ public slots:
     bool setNodeSize(long int, int size=0);
     void setAllNodeSize(int size=0);
     bool setNodeNumberSize(const long int &, const int &size=0);
+    bool setNodeLabelSize(const long int &, const int &size=0);
 
     void drawEdge(int, int, float, bool, bool, QString, bool);
     void eraseEdge(int, int);

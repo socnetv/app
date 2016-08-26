@@ -220,7 +220,7 @@ public slots:
     void slotEditNodeShape(const QString shape, const int vertex = 0);
     void slotEditNodeNumberSize(int v1=0, int newSize=0);
     void slotEditNodeNumbersColor();
-    void slotEditNodeLabelsSize();
+    void slotEditNodeLabelSize(int v1=0, int newSize=0);
     void slotEditNodeLabelsColor();
 
     void slotEditEdgeAdd();

@@ -40,6 +40,7 @@ public:
 	void removeRefs();
  	enum { Type = UserType + 4 };
 	int type() const { return Type; }
+    void setSize(const int size);
 	~NodeLabel();
 	Node* node() { return source; }
 private:

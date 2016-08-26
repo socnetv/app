@@ -179,6 +179,7 @@ signals:
     void setNodeColor(long int, QString);
     void setNodeLabel(long int, QString);
     void setNodeNumberSize(const long int &, const int &);
+    void setNodeLabelSize(const long int &, const int &);
 
     void drawEdgeReciprocal(int, int);				//call GW to draw the edge as symmetric one
     void changeEdgeColor(long int, long int, QString);
@@ -249,7 +250,8 @@ public:
     void setVertexNumberSizeAll (const int &);
 
     void setInitVertexLabelSize(int newSize);
-    void setVertexLabelSize(int v, int newSize);
+    void setVertexLabelSize(const long int &v, const int &newsize );
+    void setVertexLabelSizeAll (const int &);
 
     void setInitVertexLabelColor(QString color);
     void setVertexLabel(int v, QString label);

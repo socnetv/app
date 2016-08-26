@@ -73,6 +73,7 @@ signals:
     void setNodeNumberSize(const int v, const int &);
     void setNodeNumberColor(const QColor);
     void setNodeLabelColor(const QColor);
+    void setNodeLabelSize(const int v, const int &);
     void saveSettings();
 private:
      QMap<QString, QString> &m_appSettings ;

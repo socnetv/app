@@ -393,6 +393,10 @@ void MainWindow::slotOpenSettingsDialog() {
     connect( m_settingsDialog, &SettingsDialog::setNodeNumberSize,
              this, &MainWindow::slotEditNodeNumberSize);
 
+    connect( m_settingsDialog, &SettingsDialog::setNodeLabelSize,
+             this, &MainWindow::slotEditNodeLabelSize);
+
+
 
     // show settings dialog
     m_settingsDialog->exec();
@@ -3169,9 +3173,11 @@ void MainWindow::initSignalSlots() {
     connect( &activeGraph, SIGNAL( setNodeNumberSize(long int, int)  ),
              graphicsWidget, SLOT(  setNodeNumberSize (long int , int) ) );
 
-
     connect( &activeGraph, &Graph::setNodeLabel ,
              graphicsWidget, &GraphicsWidget::setNodeLabel );
+
+    connect( &activeGraph, SIGNAL( setNodeLabelSize(long int, int)  ),
+             graphicsWidget, SLOT(  setNodeLabelSize (long int , int) ) );
 
 
     connect( &activeGraph, SIGNAL( statusMessage (QString) ),
@@ -6146,7 +6152,7 @@ void MainWindow::slotEditNodeNumberSize(int v1, int newSize) {
     qDebug() << "MW::slotEditNodeNumberSize - newSize " << newSize;
     if (!newSize) {
         newSize = QInputDialog::getInt(this, "Change text size",
-                                       tr("Change all nodenumbers size to: (1-16)"),appSettings["initNodeNumberSize"].toInt(0,10), 1, 16, 1, &ok );
+                                       tr("Change all node numbers size to: (1-16)"),appSettings["initNodeNumberSize"].toInt(0,10), 1, 16, 1, &ok );
         if (!ok) {
             statusMessage( tr("Change font size: Aborted.") );
             return;
@@ -6159,35 +6165,44 @@ void MainWindow::slotEditNodeNumberSize(int v1, int newSize) {
         appSettings["initNodeNumberSize"] = QString::number(newSize);
         activeGraph.setVertexNumberSizeAll(newSize);
     }
-    statusMessage( tr("Changed numbers size. Ready.") );
+    statusMessage( tr("Changed node numbers size. Ready.") );
 }
+
+
+
 
 
 /**
- * @brief MainWindow::slotEditNodeLabelsSize
- * Changes the size of all nodes' labels.
- * Asks the user to enter a new node label font size
+ * @brief MainWindow::slotEditNodeLabelSize
+ * Changes the size of one or all node Labels.
+ * Called from Edit menu option and SettingsDialog
+ * if newSize=0, asks the user to enter a new node Label font size
+ * if v1=0, it changes all node Labels
+ * @param v1
+ * @param newSize
  */
-void MainWindow::slotEditNodeLabelsSize() {
+void MainWindow::slotEditNodeLabelSize(int v1, int newSize) {
     bool ok=false;
-    int newSize;
-    newSize = QInputDialog::getInt(this, "Change text size", tr("Change all node labels size to: (1-16)"),appSettings["initNodeLabelSize"].toInt(0,10), 1, 16, 1, &ok );
-    if (!ok) {
-        statusMessage( tr("Change font size: Aborted.") );
-        return;
-    }
-    QList<QGraphicsItem *> list=scene->items();
-    for (QList<QGraphicsItem *>::iterator it2=list.begin();it2!=list.end(); it2++)
-
-        if ( (*it2)->type()==TypeLabel) {
-            NodeLabel *label= (NodeLabel*) (*it2);
-            qDebug ("MW: slotEditNodeLabelsSize Found");
-            label->setFont( QFont (label->font().family(), newSize, QFont::Light, false) );
-            activeGraph.setVertexLabelSize ( (label->node())->nodeNumber(), newSize);
+    qDebug() << "MW::slotEditNodeLabelSize - newSize " << newSize;
+    if (!newSize) {
+        newSize = QInputDialog::getInt(this, "Change text size",
+                                       tr("Change all node labels text size to: (1-16)"),
+                                       appSettings["initNodeLabelSize"].toInt(0,10), 1, 16, 1, &ok );
+        if (!ok) {
+            statusMessage( tr("Change font size: Aborted.") );
+            return;
         }
-    activeGraph.setInitVertexLabelSize(newSize);
-    statusMessage( tr("Changed labels size. Ready.") );
+    }
+    if (v1) { //change one node Label only
+        activeGraph.setVertexLabelSize(v1, newSize);
+    }
+    else { //change all
+        appSettings["initNodeLabelSize"] = QString::number(newSize);
+        activeGraph.setVertexLabelSizeAll(newSize);
+    }
+    statusMessage( tr("Changed node label size. Ready.") );
 }
+
 
 
 

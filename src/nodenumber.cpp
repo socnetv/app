@@ -43,7 +43,6 @@ void NodeNumber::setSize(const int size) {
     prepareGeometryChange();
     setFont( QFont ("Times", size, QFont::Black, false) );
     //update();
-
 }
 
 void NodeNumber::removeRefs(){

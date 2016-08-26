@@ -877,8 +877,12 @@ void Graph::setVertexNumberSize(const long int &v, const int &size) {
 }
 
 
+/**
+ * @brief Graph::setVertexNumberSizeAll
+ * @param size
+ */
 void Graph::setVertexNumberSizeAll(const int &size) {
-    qDebug() << "*** Graph::setAllVerticesColor() "
+    qDebug() << "*** Graph::setVertexNumberSizeAll() "
                 << " to " << size;
     setInitVertexNumberSize(size);
     QList<Vertex*>::const_iterator it;
@@ -895,8 +899,8 @@ void Graph::setVertexNumberSizeAll(const int &size) {
     }
     graphModified=true;
     emit graphChanged();
-
 }
+
 
 /**Changes the label.of vertex v  */
 void Graph::setVertexLabel(int v1, QString label){
@@ -916,15 +920,38 @@ void Graph::setInitVertexLabelSize(int newSize) {
 
 
 //Changes the size of a vertex label
-void Graph::setVertexLabelSize(int v1, int newSize) {
-    qDebug()<< "Graph: setVertexLabelSize for "<< v1 << ", index " << index[v1]<< " with size "<< newSize;
-    m_graph[ index[v1] ] -> setLabelSize ( newSize );
+void Graph::setVertexLabelSize(const long int &v1, const int &size) {
+    qDebug()<< "Graph: setVertexLabelSize for "<< v1 << ", index "
+            << index[v1]<< " with size "<< size;
+    m_graph[ index[v1] ] -> setLabelSize ( size );
     graphModified=true;
     emit graphChanged();
 
 }
 
-
+/**
+ * @brief Graph::setVertexLabelSizeAll
+ * @param size
+ */
+void Graph::setVertexLabelSizeAll(const int &size) {
+    qDebug() << "*** Graph::setVertexLabelSizeAll() "
+                << " to " << size;
+    setInitVertexLabelSize(size);
+    QList<Vertex*>::const_iterator it;
+    for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( ! (*it)->isEnabled() ){
+            continue;
+        }
+        else {
+            qDebug() << "Graph::setVertexLabelSizeAll() Vertex " << (*it)->name()
+                     << " new size " << size;
+            (*it)->setLabelSize(size) ;
+            emit setNodeLabelSize ( (*it)-> name(), size);
+        }
+    }
+    graphModified=true;
+    emit graphChanged();
+}
 
 //Changes the shape.of vertex v 
 void Graph::setVertexLabelColor(int v1, QString color){

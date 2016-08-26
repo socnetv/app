@@ -151,7 +151,7 @@ public:
     void setLabelColor (const QString &labelColor) { m_labelColor=labelColor; }
     QString labelColor() const { return m_labelColor; }
 
-    void setLabelSize(const int &newSize) { m_labelSize=newSize; }
+    void setLabelSize(const int &size) { m_labelSize=size; }
     int labelSize() const { return m_labelSize; }
 
     void setX(const float &x) { m_x=x; }

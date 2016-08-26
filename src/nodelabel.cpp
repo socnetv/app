@@ -38,6 +38,14 @@ NodeLabel::NodeLabel( Node *jim ,  int size,  QString labelText) :QGraphicsTextI
 	setZValue (253);
 }
 
+
+
+void NodeLabel::setSize(const int size) {
+    prepareGeometryChange();
+    setFont( QFont ("Times", size, QFont::Black, false) );
+    //update();
+}
+
 void NodeLabel::removeRefs(){
 	source->deleteLabel();
 
