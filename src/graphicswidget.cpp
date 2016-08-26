@@ -682,6 +682,34 @@ void GraphicsWidget::setAllNodeSize(int size ){
 }
 
 
+
+/**
+ * @brief GraphicsWidget::setNodeNumberSize
+ * @param number
+ * @param size
+ */
+bool GraphicsWidget::setNodeNumberSize(const long int &number, const int &size){
+    qDebug () << " GraphicsWidget::setNodeNumberSize() node number: "<< number
+              << " new number size "<< size;
+    if  ( nodeHash.contains (number) ) {
+        if (size>0){
+            qDebug() << "GW: setNodeNumberSize(): for "<< number << " to " << size ;
+            nodeHash.value(number) ->number()->setSize (size); // -> setNumberSize(size);
+            return true;
+
+        }
+        else {
+            qDebug() << "GW: setNodeNumberSize(): for "<< number
+                     << " to initial size" << m_nodeSize;
+            nodeHash.value(number) ->number()->setSize (size);
+            return true;
+
+        }
+    }
+    qDebug() << "GW: setNodeSize(): cannot find node " << number;
+    return false;
+}
+
 /*
  * Used by findNode.
  * Returns, if found, the node with label or number 'text'

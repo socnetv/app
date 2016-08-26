@@ -178,6 +178,8 @@ signals:
     void setNodeShape(long int, QString);
     void setNodeColor(long int, QString);
     void setNodeLabel(long int, QString);
+    void setNodeNumberSize(const long int &, const int &);
+
     void drawEdgeReciprocal(int, int);				//call GW to draw the edge as symmetric one
     void changeEdgeColor(long int, long int, QString);
     void addGuideCircle(int, int, int);				//call GW to draw a circular layout line somewhere.
@@ -242,7 +244,9 @@ public:
     QColor vertexColor(const long int &v);
 
     void setInitVertexNumberColor ( QString color);
-    void setInitVertexNumberSize (int size);
+    void setInitVertexNumberSize (const int &size);
+    void setVertexNumberSize(const long int &v, const int &newsize );
+    void setVertexNumberSizeAll (const int &);
 
     void setInitVertexLabelSize(int newSize);
     void setVertexLabelSize(int v, int newSize);

@@ -389,7 +389,9 @@ void Node::clearLabel(){
 
 
 
-
+NodeNumber* Node::number(){
+    return m_number;
+}
 
 void Node::addNumber (NodeNumber *gfxNum ) {
 	 m_number=gfxNum ;

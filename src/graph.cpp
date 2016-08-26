@@ -863,11 +863,40 @@ void Graph::setInitVertexNumberColor (QString color) {
 }
 
 //Changes the initial size of vertices numbers 
-void Graph::setInitVertexNumberSize (int size) {
+void Graph::setInitVertexNumberSize (const int &size) {
     initVertexNumberSize = size;
 }
 
 
+//Changes the size.of vertex v number
+void Graph::setVertexNumberSize(const long int &v, const int &size) {
+    m_graph[ index[v] ]->setNumberSize (size);
+    graphModified=true;
+    emit graphChanged();
+    emit setNodeNumberSize(v, size);
+}
+
+
+void Graph::setVertexNumberSizeAll(const int &size) {
+    qDebug() << "*** Graph::setAllVerticesColor() "
+                << " to " << size;
+    setInitVertexNumberSize(size);
+    QList<Vertex*>::const_iterator it;
+    for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( ! (*it)->isEnabled() ){
+            continue;
+        }
+        else {
+            qDebug() << "Graph::setVertexNumberSizeAll() Vertex " << (*it)->name()
+                     << " new size " << size;
+            (*it)->setNumberSize(size) ;
+            emit setNodeNumberSize ( (*it)-> name(), size);
+        }
+    }
+    graphModified=true;
+    emit graphChanged();
+
+}
 
 /**Changes the label.of vertex v  */
 void Graph::setVertexLabel(int v1, QString label){

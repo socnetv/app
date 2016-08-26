@@ -51,7 +51,9 @@ public slots:
     void getNodeColor();
     void getNodeShape();
     void getNodeSize(int);
-
+    void getNodeNumberColor();
+    void getNodeNumberSize(int);
+    void getNodeLabelColor();
 
 signals:
     void setProgressBars(bool);
@@ -68,13 +70,16 @@ signals:
     void setNodeShape(const QString, const long int);
     void setNodeSize(int);
     void setNodeNumbersVisibility(bool);
+    void setNodeNumberSize(const int v, const int &);
+    void setNodeNumberColor(const QColor);
+    void setNodeLabelColor(const QColor);
     void saveSettings();
 private:
      QMap<QString, QString> &m_appSettings ;
      Ui::SettingsDialog *ui;
      QPixmap m_pixmap;
      //QString m_nodeShape;
-     QColor m_bgColor, m_nodeColor;
+     QColor m_bgColor, m_nodeColor, m_nodeNumberColor, m_nodeLabelColor;
 };
 
 #endif // SETTINGSDIALOG_H

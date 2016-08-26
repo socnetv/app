@@ -113,6 +113,21 @@ SettingsDialog::SettingsDialog(
                 (m_appSettings["initNodeNumbersVisibility"] == "true" ) ? true:false
                 );
 
+    ui->nodeNumberSizeSpin->setValue( m_appSettings["initNodeNumberSize"].toInt(0, 10) );
+
+    m_nodeNumberColor = QColor (m_appSettings["initNodeNumberColor"]);
+    m_pixmap = QPixmap(60,20) ;
+    m_pixmap.fill( m_nodeNumberColor );
+    ui->nodeNumberColorBtn->setIcon(QIcon(m_pixmap));
+
+    ui->nodeLabelSizeSpin->setValue( m_appSettings["initNodeLabelSize"].toInt(0, 10) );
+
+    m_nodeLabelColor = QColor (m_appSettings["initNodeLabelColor"]);
+    m_pixmap = QPixmap(60,20) ;
+    m_pixmap.fill( m_nodeLabelColor );
+    ui->nodeLabelColorBtn->setIcon(QIcon(m_pixmap));
+
+
     // signals
     connect (ui->dataDirSelectButton, &QToolButton::clicked,
              this, &SettingsDialog::getDataDir);
@@ -172,6 +187,17 @@ SettingsDialog::SettingsDialog(
     connect (ui->nodeNumbersChkBox, &QCheckBox::stateChanged,
                      this, &SettingsDialog::setNodeNumbersVisibility);
 
+    connect(ui->nodeNumberSizeSpin, SIGNAL(valueChanged(int)),
+            this, SLOT(getNodeNumberSize(int)) );
+
+
+
+    connect (ui->nodeNumberColorBtn, &QToolButton::clicked,
+             this, &SettingsDialog::getNodeNumberColor);
+
+    connect (ui->nodeLabelColorBtn, &QToolButton::clicked,
+             this, &SettingsDialog::getNodeLabelColor);
+
 
 }
 
@@ -209,7 +235,7 @@ void SettingsDialog::getDataDir(){
 void SettingsDialog::getBgColor(){
 
     m_bgColor = QColorDialog::getColor(
-                m_bgColor, this, tr("Select canvas background color") );
+                m_bgColor, this, tr("Select default canvas background color") );
     if ( m_bgColor.isValid()) {
         m_pixmap.fill(m_bgColor);
         ui->bgColorButton->setIcon(QIcon(m_pixmap));
@@ -230,7 +256,7 @@ void SettingsDialog::getBgColor(){
  */
 void SettingsDialog::getBgImage(){
     QString m_bgImage = QFileDialog::getOpenFileName(
-                this, tr("Select one image for background"), (m_appSettings)["lastUsedDirPath"],
+                this, tr("Select default canvas background image "), (m_appSettings)["lastUsedDirPath"],
                 tr("All (*);;PNG (*.png);;JPG (*.jpg)")
                 );
     if (!m_bgImage.isEmpty() ) {
@@ -251,7 +277,7 @@ void SettingsDialog::getBgImage(){
  */
 void SettingsDialog::getNodeColor(){
     m_nodeColor = QColorDialog::getColor(
-                m_nodeColor, this, tr("Select canvas background color") );
+                m_nodeColor, this, tr("Select default node color") );
     if ( m_nodeColor.isValid()) {
         m_pixmap.fill(m_nodeColor);
         ui->nodeColorBtn->setIcon(QIcon(m_pixmap));
@@ -261,9 +287,8 @@ void SettingsDialog::getNodeColor(){
     else {
         // user pressed Cancel
     }
-
-
 }
+
 
 /**
  * @brief SettingsDialog::getNodeShape
@@ -302,6 +327,60 @@ void SettingsDialog::getNodeSize( int size) {
     m_appSettings["initNodeSize"]= QString::number(size);
     emit setNodeSize(size);
 }
+
+
+
+
+
+/**
+ * @brief SettingsDialog::getNodeNumberSize
+ * @param size
+ */
+void SettingsDialog::getNodeNumberSize( int size) {
+    m_appSettings["initNodeNumberSize"]= QString::number(size);
+    emit setNodeNumberSize(0, size);
+}
+
+
+/**
+ * @brief SettingsDialog::getNodeNumberColor
+ * * Opens a QColorDialog for the user to select a new node number color
+ */
+void SettingsDialog::getNodeNumberColor(){
+    m_nodeNumberColor = QColorDialog::getColor(
+                m_nodeColor, this, tr("Select default node number color") );
+    if ( m_nodeNumberColor.isValid()) {
+        m_pixmap.fill(m_nodeNumberColor);
+        ui->nodeNumberColorBtn->setIcon(QIcon(m_pixmap));
+        (m_appSettings)["initNodeNumberColor"] = m_nodeNumberColor.name();
+        emit setNodeNumberColor(m_nodeNumberColor);
+    }
+    else {
+        // user pressed Cancel
+    }
+}
+
+
+
+/**
+ * @brief SettingsDialog::getNodeLabelColor
+ * * Opens a QColorDialog for the user to select a new node Label color
+ */
+void SettingsDialog::getNodeLabelColor(){
+    m_nodeLabelColor = QColorDialog::getColor(
+                m_nodeColor, this, tr("Select default node Label color") );
+    if ( m_nodeLabelColor.isValid()) {
+        m_pixmap.fill(m_nodeLabelColor);
+        ui->nodeLabelColorBtn->setIcon(QIcon(m_pixmap));
+        (m_appSettings)["initNodeLabelColor"] = m_nodeLabelColor.name();
+        emit setNodeLabelColor(m_nodeLabelColor);
+    }
+    else {
+        // user pressed Cancel
+    }
+}
+
+
 
 SettingsDialog::~SettingsDialog()
 {

@@ -96,6 +96,7 @@ public:
 	void setNumberInside(bool);
 
 	void addNumber (NodeNumber *gfxNum ) ;
+    NodeNumber* number();
 	void deleteNumber();
 	
 	void toggleAntialiasing(bool);

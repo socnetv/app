@@ -218,7 +218,7 @@ public slots:
     void slotEditNodeSizeAllNormalized(int size);
     void slotEditNodeShapeAll();
     void slotEditNodeShape(const QString shape, const int vertex = 0);
-    void slotEditNodeNumbersSize();
+    void slotEditNodeNumberSize(int v1=0, int newSize=0);
     void slotEditNodeNumbersColor();
     void slotEditNodeLabelsSize();
     void slotEditNodeLabelsColor();
@@ -433,7 +433,7 @@ private:
     QAction *changeEdgeLabelAct, *changeEdgeColorAct, *changeEdgeWeightAct;
     QAction *filterNodesAct, *filterIsolateNodesAct, *filterEdgesAct, *transformNodes2EdgesAct, *symmetrizeAct;
     QAction *changeBackColorAct, *editNodeColorAll, *changeAllEdgesColorAct, *editNodeNumbersColorAct,
-            *changeAllLabelsColorAct;
+            *editNodeLabelsColorAct;
     QAction *drawEdgesWeightsAct, *displayEdgesWeightNumbersAct, *displayEdgesAct;
     QAction *displayEdgesArrowsAct, *drawEdgesBezier,*considerEdgeWeightsAct;
     QAction *backgroundImageAct,*helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;

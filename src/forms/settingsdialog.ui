@@ -17,7 +17,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="generalTab">
       <attribute name="title">
@@ -27,7 +27,7 @@
        <item row="0" column="0">
         <widget class="QGroupBox" name="groupBox_6">
          <property name="title">
-          <string>Data export</string>
+          <string>Data Export</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_7">
           <item row="0" column="0">
@@ -89,7 +89,7 @@
        <item row="1" column="0">
         <widget class="QGroupBox" name="groupBox_5">
          <property name="title">
-          <string>Debugging and progressing</string>
+          <string>Debugging and Progressing</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_2">
           <item row="0" column="0">
@@ -133,7 +133,7 @@
        <item row="2" column="0">
         <widget class="QGroupBox" name="groupBox_2">
          <property name="title">
-          <string>Canvas Options</string>
+          <string>Canvas options</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_3">
           <item row="0" column="0">
@@ -291,7 +291,7 @@
        <item row="3" column="0">
         <widget class="QGroupBox" name="groupBox">
          <property name="title">
-          <string>Window Options</string>
+          <string>Window options</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_6">
           <item row="0" column="0">
@@ -386,7 +386,7 @@
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default node settings&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Any change to these settings will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, these settings will be saved and they will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="title">
-          <string>Default node settings</string>
+          <string>Node settings</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
@@ -629,7 +629,7 @@
        <item row="1" column="0">
         <widget class="QGroupBox" name="groupBox_4">
          <property name="title">
-          <string>Node number settings</string>
+          <string>Node Numbers settings</string>
          </property>
          <layout class="QGridLayout" name="gridLayout">
           <item row="2" column="0">
@@ -661,7 +661,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QToolButton" name="nodeNumberColorButton">
+             <widget class="QToolButton" name="nodeNumberColorBtn">
               <property name="minimumSize">
                <size>
                 <width>60</width>
@@ -802,7 +802,7 @@
        <item row="2" column="0">
         <widget class="QGroupBox" name="groupBox_3">
          <property name="title">
-          <string>Node label settings</string>
+          <string>Node Labels settings</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_4">
           <item row="0" column="0">
@@ -844,7 +844,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QToolButton" name="nodeLabelColorButton">
+             <widget class="QToolButton" name="nodeLabelColorBtn">
               <property name="minimumSize">
                <size>
                 <width>60</width>

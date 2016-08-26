@@ -106,6 +106,7 @@ public slots:
     void moveNode(int, qreal, qreal);	//Called from Graph when creating random nets.
     bool setNodeSize(long int, int size=0);
     void setAllNodeSize(int size=0);
+    bool setNodeNumberSize(const long int &, const int &size=0);
 
     void drawEdge(int, int, float, bool, bool, QString, bool);
     void eraseEdge(int, int);
