@@ -419,7 +419,8 @@ public:
 
     /* REACHABILTY AND WALKS */
     int numberOfWalks(int v1, int v2,int length);
-    void createNumberOfWalksMatrix(int length);
+    void createNumberOfWalksMatrix(const int length,
+                                   const bool updateProgress=false);
     void writeTotalNumberOfWalksMatrix(QString fn, QString netName, int length);
     void writeNumberOfWalksMatrix(QString fn, QString netName, int length);
     int reachable(int v1, int v2) ;
@@ -427,7 +428,8 @@ public:
     QList<int> influenceDomain(int v2);
     void reachabilityMatrix(const bool considerWeights=false,
                             const bool inverseWeights=false,
-                            const bool dropIsolates=false);
+                            const bool dropIsolates=false,
+                            const bool updateProgress=false);
     void writeReachabilityMatrix(QString fn, QString netName,
                                  const bool dropIsolates=false);
 
@@ -438,7 +440,7 @@ public:
     bool addClique (const QList<int> &list);
     float countCliquesOfSize(int size );
     float localClusteringCoefficient(const long int &v1);
-    float clusteringCoefficient ();
+    float clusteringCoefficient (const bool updateProgress=false);
 
     bool triadCensus();
     void examine_MAN_label(int, int, int, Vertex*,  Vertex*, Vertex* );
@@ -470,15 +472,11 @@ public:
 
     void layoutForceDirectedFruchtermanReingold(const int maxIterations);
 
-
     void layoutForceDirectedKamadaKawai(const int maxIterations);
     /* CRAWLER */
     void terminateCrawlerThreads (QString reason);
 
     /**RANDOM NETWORKS*/
-
-
-
     void makeThingsLookRandom();
 
 
@@ -489,8 +487,10 @@ public:
                                  const QString &mode,
                                  const bool &diag);
 
-    void createRandomNetRingLattice
-    (int, int, double, double, double);
+    void createRandomNetRingLattice ( const int &vert, const int &degree,
+                                      const double &x0, const double &y0,
+                                      const double &radius,
+                                      const bool updateProgress=false);
 
     void createSameDegreeRandomNetwork (const int &,
                                          const int &);
@@ -505,9 +505,9 @@ public:
                                     const double &y0,
                                     const double &radius);
 
-
-    void createRandomNetSmallWorld
-    (int, int, double, double, double, double);
+    void createRandomNetSmallWorld(const int &vert, const int &degree,
+                                   const double &beta, const double &x0,
+                                   const double &y0, const double &radius);
 
     int factorial (int);
 

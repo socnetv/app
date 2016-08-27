@@ -1568,7 +1568,7 @@ float Graph::averageGraphDistance(const bool considerWeights,
 int Graph::connectedness() {
     qDebug() << "Graph::connectedness() ";
     if (!reachabilityMatrixCreated || graphModified) {
-        reachabilityMatrix(false,false,false);
+        reachabilityMatrix();
     }
     isolatedVertices=verticesIsolated().count();
     if ( isSymmetric() ) {
@@ -3751,7 +3751,7 @@ void Graph::prestigeProximity( const bool considerWeights,
     if (!reachabilityMatrixCreated || graphModified) {
         qDebug()<< "Graph::prestigeProximity() - "
                    "call reachabilityMatrix()";
-        reachabilityMatrix(considerWeights, inverseWeights, dropIsolates);
+        reachabilityMatrix(considerWeights, inverseWeights, dropIsolates, false);
     }
     // calculate centralities
     QList<Vertex*>::const_iterator it;
@@ -4179,123 +4179,6 @@ void Graph::writePrestigePageRank(const QString fileName, const bool dropIsolate
 
 
 
-
-//Writes the clustering coefficients to a file
-void Graph::writeClusteringCoefficient(
-        const QString fileName, const bool considerWeights)
-{
-    Q_UNUSED(considerWeights);
-    QFile file ( fileName );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
-        qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
-        return;
-    }
-    QTextStream outText ( &file ); outText.setCodec("UTF-8");
-
-    emit statusMessage ( (tr("Calculating local and network clustering...")) );
-
-    averageCLC= clusteringCoefficient();
-
-    emit statusMessage ( QString(tr("Writing clustering coefficients to file: "))
-                         + fileName );
-
-    outText.setRealNumberPrecision(m_precision);
-
-    outText << tr("CLUSTERING COEFFICIENT (CLC) REPORT") << endl << endl;
-
-    outText << tr("Local CLC  range: 0 < C < 1") << endl<<endl;
-    outText << "Node"<<"\tLocal CLC\n";
-
-
-    QList<Vertex*>::const_iterator it;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        outText << (*it)->name()<<"\t"<<(*it)->CLC() <<endl;
-    }
-
-    outText << "\nAverage local Clustering Coefficient = "<<  averageCLC<<"\n" ;
-
-    if (  minCLC ==  maxCLC )
-        outText << "\nAll nodes have the same clustering coefficient value.\n";
-    else  {
-        outText << "\nNode "<<  maxNodeCLC
-                << " has the maximum Clustering Coefficient: " <<  maxCLC <<"\n";
-        outText << "\nNode "<<  minNodeCLC
-                << " has the minimum Clustering Coefficient: " <<  minCLC <<"\n";
-    }
-
-    outText << endl;
-    outText << tr("NETWORK AVERAGE CLUSTERING COEFFICIENT (GCLC)") << endl <<endl;
-    outText << "GCLC = " <<  averageCLC <<"\n\n";
-    outText << tr("Range: 0 < GCLC < 1\n");
-    outText << tr("GCLC = 0, when there are no cliques (i.e. acyclic tree).\n");
-    outText << tr(
-      "GCLC = 1, when every node and its neighborhood are complete cliques.\n");
-
-    outText <<"\n\n" ;
-    outText << tr("Clustering Coefficient Report,\n");
-    outText << tr("created by SocNetV: ")<< actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
-
-    file.close();
-}
-
-
-
-
-//Writes the triad census to a file
-void Graph::writeTriadCensus(
-        const QString fileName, const bool considerWeights)
-{
-    Q_UNUSED(considerWeights);
-    QFile file ( fileName );
-    if ( !file.open( QIODevice::WriteOnly ) )  {
-        qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
-        return;
-    }
-
-    QTextStream outText ( &file ); outText.setCodec("UTF-8");
-
-    emit statusMessage ( (tr("Conducting triad census. Please wait....")) );
-    if (graphModified || !calculatedTriad) {
-        if (!triadCensus()){
-            qDebug() << "Error in triadCensus(). Exiting...";
-            file.close();
-            return;
-        }
-    }
-
-    emit statusMessage ( QString(tr("Writing triad census to file: ")) +
-                         fileName );
-
-    outText << tr("TRIAD CENSUS (TRC)\n\n");
-
-    outText << "Type\t\tCensus\t\tExpected Value" << "\n";
-    outText << "003" << "\t\t" << triadTypeFreqs[0] << "\n";
-    outText << "012" << "\t\t" <<triadTypeFreqs[1] <<"\n";
-    outText << "102" << "\t\t" <<triadTypeFreqs[2] <<"\n";
-    outText << "021D"<< "\t\t" <<triadTypeFreqs[3] <<"\n";
-    outText << "021U"<< "\t\t" <<triadTypeFreqs[4] <<"\n";
-    outText << "021C"<< "\t\t" <<triadTypeFreqs[5] <<"\n";
-    outText << "111D"<< "\t\t" <<triadTypeFreqs[6] <<"\n";
-    outText << "111U"<< "\t\t" <<triadTypeFreqs[7] <<"\n";
-    outText << "030T"<< "\t\t" <<triadTypeFreqs[8] <<"\n";
-    outText << "030C"<< "\t\t" <<triadTypeFreqs[9] <<"\n";
-    outText << "201" << "\t\t" <<triadTypeFreqs[10] <<"\n";
-    outText << "120D"<< "\t\t" <<triadTypeFreqs[11] <<"\n";
-    outText << "120U"<< "\t\t" <<triadTypeFreqs[12] <<"\n";
-    outText << "120C"<< "\t\t" <<triadTypeFreqs[13] <<"\n";
-    outText << "210" << "\t\t" <<triadTypeFreqs[14] <<"\n";
-    outText << "300" << "\t\t" <<triadTypeFreqs[15] <<"\n";
-
-    outText << "\n\n";
-    outText << tr("Triad Census report, \n");
-    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime()
-               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
-    file.close();
-
-}
 
 
 
@@ -4937,8 +4820,6 @@ void Graph::createRandomNetErdos(  const int &vert,
                     QString::number (i+1), initVertexLabelColor, initVertexLabelSize,
                     QPoint(x, y), initVertexShape, false
                     );
-        progressCounter++;
-        emit updateProgressDialog( progressCounter );
     }
 
     qDebug() << "Graph::createRandomNetErdos() - Creating edges...";
@@ -4975,9 +4856,9 @@ void Graph::createRandomNetErdos(  const int &vert,
                 else
                     qDebug() << "Graph::createRandomNetErdos() - do not create Edge";
             }
-            progressCounter++;
-            emit updateProgressDialog(progressCounter );
-            qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
+
+            emit updateProgressDialog(++progressCounter );
+
         }
 
     }
@@ -5010,7 +4891,7 @@ void Graph::createRandomNetErdos(  const int &vert,
                             << " directed Edge no " << edgeCount;
                 createEdge(source, target, 1, "black", 0, true, false);
             }
-
+          emit updateProgressDialog(++progressCounter );
         } while ( edgeCount != edges );
 
     }
@@ -5026,9 +4907,10 @@ void Graph::createRandomNetErdos(  const int &vert,
 /** layman's attempt to create a random ring lattice network.
 */
 
-void Graph::createRandomNetRingLattice( 
-        int vert, int degree,
-        double x0, double y0, double radius)
+void Graph::createRandomNetRingLattice( const int &vert, const int &degree,
+                                        const double &x0, const double &y0,
+                                        const double &radius,
+                                        const bool updateProgress)
 {
     qDebug("Graph: createRingLatticeNetwork");
     int x=0;
@@ -5049,8 +4931,6 @@ void Graph::createRandomNetRingLattice(
                         QString::number (i+1), initVertexLabelColor,  initVertexLabelSize,
                         QPoint(x, y), initVertexShape, false);
         qDebug("Graph: createPhysicistLatticeNetwork, new node i=%i, at x=%i, y=%i", i+1, x,y);
-        progressCounter++;
-        emit updateProgressDialog( progressCounter );
     }
     int target = 0;
     for (register int i=0;i<vert; i++){
@@ -5062,9 +4942,7 @@ void Graph::createRandomNetRingLattice(
             qDebug("Creating Link between %i  and %i", i+1, target+1);
             createEdge(i+1, target+1, 1, "black", true, true, false);
         }
-        progressCounter++;
-        emit updateProgressDialog(progressCounter );
-        qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
+        emit updateProgressDialog( updateProgress ? ++progressCounter:0 );
     }
     addRelationFromGraph(tr("ring lattice"));
 
@@ -5112,8 +4990,6 @@ void Graph::createRandomNetScaleFree (const int &n,
                     QString::number (i+1), initVertexLabelColor, initVertexLabelSize,
                     QPoint(x, y), initVertexShape,false
                     );
-        progressCounter++;
-        emit updateProgressDialog( progressCounter );
     }
 
     for (register int i=0; i < m0; ++i){
@@ -5123,8 +4999,7 @@ void Graph::createRandomNetScaleFree (const int &n,
             qDebug() << " --- Creating initial edge " << i+1 << " <-> " << j+1;
             createEdge (i+1, j+1, 1, "black", 2, true, false);
         }
-        progressCounter++;
-        emit updateProgressDialog(progressCounter );
+        emit updateProgressDialog( ++progressCounter );
     }
 
     qDebug()<< endl << "Graph::createRandomNetScaleFree() - "
@@ -5146,8 +5021,8 @@ void Graph::createRandomNetScaleFree (const int &n,
                     QString::number (i+1), initVertexLabelColor, initVertexLabelSize,
                     QPoint(x, y), initVertexShape,false
                     );
-        progressCounter++;
-        emit updateProgressDialog( progressCounter );
+
+        emit updateProgressDialog( ++progressCounter );
 
         // no need to multiply by 2, since enabledEdges already reports
         // twice the current number of edges in the network
@@ -5215,17 +5090,17 @@ void Graph::createRandomNetScaleFree (const int &n,
 
 
 void Graph::createRandomNetSmallWorld (
-        int vert, int degree, double beta,
-        double x0, double y0, double radius)
+        const int &vert, const int &degree, const double &beta,
+        const double &x0, const double &y0, const double &radius)
 {
     qDebug("Graph: createRandomNetSmallWorld. First creating a ring lattice");
 
-    createRandomNetRingLattice(vert, degree, x0, y0, radius);
+    createRandomNetRingLattice(vert, degree, x0, y0, radius, false);
 
     qDebug("******** Graph: REWIRING starts...");
 
     int candidate;
-
+    int progressCounter=1;
     for (register int i=1;i<vert; i++) {
         for (register int j=i+1;j<vert; j++) {
             qDebug()<<">>>>> REWIRING: Check if  "<< i << " is linked to " << j;
@@ -5255,6 +5130,7 @@ void Graph::createRandomNetSmallWorld (
                 else  qDebug("Will not break link!");
             }
         }
+        emit updateProgressDialog( ++progressCounter );
     }
 
     emit signalNodeSizesByInDegree(true);
@@ -5287,9 +5163,6 @@ void Graph::createSameDegreeRandomNetwork( const int &vert,
                     QString::number (i+1), initVertexLabelColor, initVertexLabelSize,
                     QPoint(x, y), initVertexShape,false
                     );
-        progressCounter++;
-        emit updateProgressDialog( progressCounter );
-
     }
     int target = 0;
     for (register int i=0;i<vert; i++){
@@ -5301,9 +5174,7 @@ void Graph::createSameDegreeRandomNetwork( const int &vert,
             qDebug("Creating Link between %i  and %i", i+1, target+1);
             createEdge(i+1, target+1, 1, "black", true, true, false);
         }
-        progressCounter++;
-        emit updateProgressDialog(progressCounter );
-        qDebug("Emitting UPDATE PROGRESS %i", progressCounter);
+        emit updateProgressDialog(++progressCounter );
     }
     addRelationFromGraph(tr("random"));
     emit graphChanged();
@@ -5332,7 +5203,7 @@ int Graph::numberOfWalks(int v1, int v2, int length) {
     possible walks. If you need to make a simple reachability test, we advise to
     use the reachabilityMatrix() function instead.
 */
-void Graph::createNumberOfWalksMatrix(int length) {
+void Graph::createNumberOfWalksMatrix(const int length, const bool updateProgress) {
     qDebug()<<"Graph::numberOfWalks() - first create the Adjacency Matrix AM";
 
     bool dropIsolates=false;
@@ -5340,7 +5211,6 @@ void Graph::createNumberOfWalksMatrix(int length) {
     bool inverseWeights=false;
     bool symmetrize=false;
     createAdjacencyMatrix(dropIsolates, considerWeights, inverseWeights, symmetrize);
-
     int size = vertices();
     int maxPower = length;
 
@@ -5350,17 +5220,21 @@ void Graph::createNumberOfWalksMatrix(int length) {
     PM.zeroMatrix(size, size);
 
     qDebug()<< "Graph::writeNumberOfWalksMatrix() XM is  " ;
-    for (register int i=0; i < size ; i++) {
-        for (register int j=0; j < size ; j++) {
+    for (int i=0; i < size ; i++) {
+        for (int j=0; j < size ; j++) {
             qDebug() << XM.item(i,j) <<  " ";
         }
         qDebug()<< endl;
     }
+    if (updateProgress)
+        emit updateProgressDialog (1);
     qDebug()<< "Graph::writeNumberOfWalksMatrix() calculating sociomatrix powers up to " << maxPower;
-    for (register int i=2; i <= maxPower ; i++) {
+    for (int i=2; i <= maxPower ; i++) {
         PM.product(XM,AM, false);
         XM=PM;
         XSM = XSM+XM;
+        if (updateProgress)
+            emit updateProgressDialog (i);
     }
 
 }
@@ -5370,7 +5244,6 @@ void Graph::writeTotalNumberOfWalksMatrix(QString fn, QString netName, int lengt
     qDebug("Graph::writeTotalNumberOfWalksMatrix() ");
 
     QFile file (fn);
-
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
         emit statusMessage (QString(tr("Could not write to %1")).arg(fn) );
@@ -5385,7 +5258,7 @@ void Graph::writeTotalNumberOfWalksMatrix(QString fn, QString netName, int lengt
         <<" between each pair of nodes \n\n";
     outText << "Warning: Walk counts consider unordered pairs of nodes\n\n";
 
-    createNumberOfWalksMatrix(length);
+    createNumberOfWalksMatrix(length, true);
 
     outText << XSM ;
 
@@ -5409,7 +5282,7 @@ void Graph::writeNumberOfWalksMatrix(QString fn, QString netName, int length){
     outText << "Network name "<< netName<<": \n";
     outText << "Number of walks of length "<< length <<" between each pair of nodes \n\n";
 
-    createNumberOfWalksMatrix(length);
+    createNumberOfWalksMatrix(length, true);
 
     outText << XM ;
 
@@ -5478,9 +5351,10 @@ QList<int> Graph::influenceDomain(int v1){
     In the process, this function creates the InfluenceRange and InfluenceDomain
     of each node.
 */
-void Graph::reachabilityMatrix( const bool considerWeights,
-                                const bool inverseWeights,
-                                const bool dropIsolates) {
+void Graph::reachabilityMatrix(const bool considerWeights,
+                               const bool inverseWeights,
+                               const bool dropIsolates,
+                               const bool updateProgress) {
     qDebug()<< "Graph::reachabilityMatrix()";
 
     if (reachabilityMatrixCreated && !graphModified) {
@@ -5537,6 +5411,8 @@ void Graph::reachabilityMatrix( const bool considerWeights,
                     }
                 }
             }
+            if (updateProgress)
+                emit updateProgressDialog(i+1);
         }
 
         reachabilityMatrixCreated=true;
@@ -5568,7 +5444,7 @@ void Graph::writeReachabilityMatrix(QString fn, QString netName,
     outText << "If nodes i and j are reachable then XR(i,j)=1 otherwise XR(i,j)=0.\n\n";
 
     if (!reachabilityMatrixCreated || graphModified) {
-        reachabilityMatrix(false, false, dropIsolates);
+        reachabilityMatrix(false, false, dropIsolates, true);
     }
 
     outText << XRM ;
@@ -5577,6 +5453,126 @@ void Graph::writeReachabilityMatrix(QString fn, QString netName,
 }
 
 
+
+
+
+
+//Writes the clustering coefficients to a file
+void Graph::writeClusteringCoefficient(
+        const QString fileName, const bool considerWeights)
+{
+    Q_UNUSED(considerWeights);
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        return;
+    }
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
+
+    emit statusMessage ( (tr("Calculating local and network clustering...")) );
+
+    averageCLC= clusteringCoefficient(true);
+
+    emit statusMessage ( QString(tr("Writing clustering coefficients to file: "))
+                         + fileName );
+
+    outText.setRealNumberPrecision(m_precision);
+
+    outText << tr("CLUSTERING COEFFICIENT (CLC) REPORT") << endl << endl;
+
+    outText << tr("Local CLC  range: 0 < C < 1") << endl<<endl;
+    outText << "Node"<<"\tLocal CLC\n";
+
+
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        outText << (*it)->name()<<"\t"<<(*it)->CLC() <<endl;
+    }
+
+    outText << "\nAverage local Clustering Coefficient = "<<  averageCLC<<"\n" ;
+
+    if (  minCLC ==  maxCLC )
+        outText << "\nAll nodes have the same clustering coefficient value.\n";
+    else  {
+        outText << "\nNode "<<  maxNodeCLC
+                << " has the maximum Clustering Coefficient: " <<  maxCLC <<"\n";
+        outText << "\nNode "<<  minNodeCLC
+                << " has the minimum Clustering Coefficient: " <<  minCLC <<"\n";
+    }
+
+    outText << endl;
+    outText << tr("NETWORK AVERAGE CLUSTERING COEFFICIENT (GCLC)") << endl <<endl;
+    outText << "GCLC = " <<  averageCLC <<"\n\n";
+    outText << tr("Range: 0 < GCLC < 1\n");
+    outText << tr("GCLC = 0, when there are no cliques (i.e. acyclic tree).\n");
+    outText << tr(
+      "GCLC = 1, when every node and its neighborhood are complete cliques.\n");
+
+    outText <<"\n\n" ;
+    outText << tr("Clustering Coefficient Report,\n");
+    outText << tr("created by SocNetV: ")<< actualDateTime.currentDateTime()
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+
+    file.close();
+}
+
+
+
+
+//Writes the triad census to a file
+void Graph::writeTriadCensus(
+        const QString fileName, const bool considerWeights)
+{
+    Q_UNUSED(considerWeights);
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        return;
+    }
+
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
+
+    emit statusMessage ( (tr("Conducting triad census. Please wait....")) );
+    if (graphModified || !calculatedTriad) {
+        if (!triadCensus()){
+            qDebug() << "Error in triadCensus(). Exiting...";
+            file.close();
+            return;
+        }
+    }
+
+    emit statusMessage ( QString(tr("Writing triad census to file: ")) +
+                         fileName );
+
+    outText << tr("TRIAD CENSUS (TRC)\n\n");
+
+    outText << "Type\t\tCensus\t\tExpected Value" << "\n";
+    outText << "003" << "\t\t" << triadTypeFreqs[0] << "\n";
+    outText << "012" << "\t\t" <<triadTypeFreqs[1] <<"\n";
+    outText << "102" << "\t\t" <<triadTypeFreqs[2] <<"\n";
+    outText << "021D"<< "\t\t" <<triadTypeFreqs[3] <<"\n";
+    outText << "021U"<< "\t\t" <<triadTypeFreqs[4] <<"\n";
+    outText << "021C"<< "\t\t" <<triadTypeFreqs[5] <<"\n";
+    outText << "111D"<< "\t\t" <<triadTypeFreqs[6] <<"\n";
+    outText << "111U"<< "\t\t" <<triadTypeFreqs[7] <<"\n";
+    outText << "030T"<< "\t\t" <<triadTypeFreqs[8] <<"\n";
+    outText << "030C"<< "\t\t" <<triadTypeFreqs[9] <<"\n";
+    outText << "201" << "\t\t" <<triadTypeFreqs[10] <<"\n";
+    outText << "120D"<< "\t\t" <<triadTypeFreqs[11] <<"\n";
+    outText << "120U"<< "\t\t" <<triadTypeFreqs[12] <<"\n";
+    outText << "120C"<< "\t\t" <<triadTypeFreqs[13] <<"\n";
+    outText << "210" << "\t\t" <<triadTypeFreqs[14] <<"\n";
+    outText << "300" << "\t\t" <<triadTypeFreqs[15] <<"\n";
+
+    outText << "\n\n";
+    outText << tr("Triad Census report, \n");
+    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime()
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    file.close();
+
+}
 
 
 /**
@@ -5615,13 +5611,13 @@ void Graph::writeCliqueCensus(
     outText << tr("Node")<<"\t"<< tr("2-Vertex") << "\t" << tr("3-Vertex")
             << "\t" << tr("4-Vertex") << endl;
 
-
+    long int progressCounter = 0;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         countCliquesWith ((*it)->name());
         outText << (*it)->name()<<"\t"<< (*it)->cliques(2)
                 << "\t" <<  (*it)->cliques(3)
                 << "\t"<<  (*it)->cliques(4)  <<endl;
-
+        emit updateProgressDialog(++progressCounter);
     }
 
     outText << endl<< endl << tr("AGGREGATE COUNTS OF CLIQUES")<< endl;
@@ -5665,6 +5661,7 @@ void Graph::writeCliqueCensus(
 
     file.close();
 }
+
 
 
 bool Graph:: addClique(const QList<int> &list){
@@ -6224,11 +6221,13 @@ float Graph:: localClusteringCoefficient(const long int &v1){
     Calculates local clustering coefficients
     and returns the network average Clustering Coefficient
 */
-float Graph::clusteringCoefficient (){
+float Graph::clusteringCoefficient (const bool updateProgress){
     qDebug("=== Graph::clusteringCoefficient()  ");
     averageCLC=0;
     maxCLC=0; minCLC=1;
     float temp=0;
+    int progressCounter = 0;
+    Q_UNUSED(progressCounter );
     QList<Vertex*>::const_iterator vertex;
     for ( vertex = m_graph.cbegin(); vertex != m_graph.cend(); ++vertex)
     {
@@ -6242,6 +6241,8 @@ float Graph::clusteringCoefficient (){
             minCLC= temp;
         }
         averageCLC += temp;
+        if (updateProgress)
+            emit updateProgressDialog(++progressCounter);
     }
 
     averageCLC = averageCLC / vertices();
@@ -6331,13 +6332,13 @@ bool Graph::triadCensus(){
                 qDebug()<< "triad of ("<< ver1 << ","<< ver2 << ","<< ver3
                         << ") = ("	<<mut<<","<< asy<<","<<nul<<")";
                 examine_MAN_label(mut, asy, nul, (*v1), (*v2),  (*v3) ) ;
-                progressCounter++ ;
-                emit updateProgressDialog( progressCounter );
+
                 if ( mut==3 && asy==0 && nul==0 ){
                     counter_021++;
                 }
             } // end 3rd for
         }// end 2rd for
+        emit updateProgressDialog( ++progressCounter );
     }// end 1rd for
     qDebug() << " ****** 003 COUNTER: "<< counter_021;
 

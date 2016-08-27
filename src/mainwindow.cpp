@@ -5138,11 +5138,11 @@ void MainWindow::slotRandomErdosRenyi( const int newNodes,
     statusMessage( tr("Creating random network. Please wait... ")  );
 
 
-    QString msg = "Creating random network. \n "
+    QString msg = "Creating random Erdos-Renyi network. \n "
                 " Please wait (or disable progress bars from Options -> Settings).";
-    createProgressBar(2*newNodes, msg);
+    createProgressBar( edges != 0 ? edges:newNodes, msg);
     appSettings["randomErdosEdgeProbability"] = QString::number(eprob);
-    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+
 
     activeGraph.createRandomNetErdos ( newNodes,
                                        model,
@@ -5151,18 +5151,19 @@ void MainWindow::slotRandomErdosRenyi( const int newNodes,
                                        mode,
                                        diag);
 
+    destroyProgressBar();
+
     fileLoaded=false;
 
     slotEditNodeSizeAllNormalized(0);
+
     slotNetworkChanged();
 
     setWindowTitle("Untitled");
 
     double threshold = log(newNodes)/newNodes;
-    float clucof=activeGraph.clusteringCoefficient();
 
-    QApplication::restoreOverrideCursor();
-    destroyProgressBar();
+    float clucof=activeGraph.clusteringCoefficient();
 
     if ( (eprob ) > threshold )
         QMessageBox::information(
@@ -5241,17 +5242,12 @@ void MainWindow::slotRandomRegularNetwork(){
     initNet();
     statusMessage( "Creating a pseudo-random network where each node has the same degree... ");
 
-    QString msg = "Creating random network. \n"
+    QString msg = "Creating random k-regular network. \n"
             "Please wait (or disable progress bars from Options -> Settings).";
-    createProgressBar(2*newNodes, msg);
-
-
-    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+    createProgressBar(newNodes, msg);
 
     activeGraph.createSameDegreeRandomNetwork (newNodes,
                                                degree);
-
-    QApplication::restoreOverrideCursor();
 
     destroyProgressBar();
 
@@ -5315,15 +5311,9 @@ void MainWindow::slotRandomScaleFree ( const int &nodes,
     double y0=scene->height()/2.0;
     double radius=(graphicsWidget->height()/2.0)-50;          //pixels
 
-    if (appSettings["showProgressBar"] == "true" && nodes > 100){
-        progressDialog= new QProgressDialog(
-                    tr("Creating random network. Please wait \n (or disable progress bars from Options -> Settings)."),
-                    "Cancel", 0, (int) (2* nodes), this);
-        progressDialog -> setWindowModality(Qt::WindowModal);
-        connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
-        progressDialog->setMinimumDuration(0);
-    }
-    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+    QString msg = "Creating random scale-free network. \n"
+            "Please wait (or disable progress bars from Options -> Settings).";
+    createProgressBar(nodes, msg);
 
     activeGraph.createRandomNetScaleFree( nodes,
                                           power,
@@ -5335,10 +5325,7 @@ void MainWindow::slotRandomScaleFree ( const int &nodes,
                                           y0,
                                           radius);
 
-    QApplication::restoreOverrideCursor();
-
-    if (appSettings["showProgressBar"] == "true" && nodes > 100 )
-        progressDialog->deleteLater();
+    destroyProgressBar();
 
     fileLoaded=false;
 
@@ -5403,21 +5390,14 @@ void MainWindow::slotRandomSmallWorld(const int &nodes,
     double y0=scene->height()/2.0;
     double radius=(graphicsWidget->height()/2.0)-50;          //pixels
 
-    if (appSettings["showProgressBar"] == "true" && nodes > 100){
-        progressDialog= new QProgressDialog(
-                    tr("Creating random network. Please wait \n (or disable progress bars from Options -> Settings )."),
-                    "Cancel", 0, (int) (2* nodes), this);
-        progressDialog -> setWindowModality(Qt::WindowModal);
-        connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
-        progressDialog->setMinimumDuration(0);
-    }
-    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+    QString msg = "Creating random small-world network. \n"
+            "Please wait (or disable progress bars from Options -> Settings).";
+    createProgressBar(nodes, msg);
+
     activeGraph.createRandomNetSmallWorld(nodes, degree, beta, x0, y0, radius);
     activeGraph.symmetrize();
-    QApplication::restoreOverrideCursor();
 
-    if (appSettings["showProgressBar"] == "true" && nodes > 100 )
-        progressDialog->deleteLater();
+    destroyProgressBar();
 
     fileLoaded=false;
 
@@ -5453,7 +5433,10 @@ void MainWindow::slotRandomRingLattice(){
     int newNodes=( QInputDialog::getInt(
                        this,
                        tr("Create ring lattice"),
-                       tr("This will create a ring lattice network, where each node has degree d:\n d/2 edges to the right and d/2 to the left.\n Please enter the number of nodes you want:"),
+                       tr("This will create a ring lattice network, "
+                          "where each node has degree d:\n d/2 edges to the right "
+                          "and d/2 to the left.\n "
+                          "Please enter the number of nodes you want:"),
                        100, 4, maxNodes, 1, &ok ) ) ;
     if (!ok) {
         statusMessage( "You did not enter an integer. Aborting.");
@@ -5462,10 +5445,12 @@ void MainWindow::slotRandomRingLattice(){
     int degree = QInputDialog::getInt(
                 this,
                 tr("Create ring lattice..."),
-                tr("Now, enter an even number d. \nThis is the total number of edges each new node will have:"),
+                tr("Now, enter an even number d. \n"
+                   "This is the total number of edges each new node will have:"),
                 2, 2, newNodes-1, 2, &ok);
     if ( (degree% 2)==1 ) {
-        QMessageBox::critical(this, "Error",tr(" Sorry. I cannot create such a network. Degree must be even number"), "OK",0);
+        QMessageBox::critical(this, "Error",tr(" Sorry. I cannot create such a network. "
+                                               "Degree must be even number"), "OK",0);
         return;
     }
 
@@ -5476,18 +5461,14 @@ void MainWindow::slotRandomRingLattice(){
     double y0=scene->height()/2.0;
     double radius=(graphicsWidget->height()/2.0)-50;          //pixels
 
-    if (appSettings["showProgressBar"] == "true" && newNodes > 100){
-        progressDialog= new QProgressDialog("Creating random network. Please wait (or disable progress bars from Options -> Settings).", "Cancel", 0, (int) (newNodes+newNodes), this);
-        progressDialog -> setWindowModality(Qt::WindowModal);
-        connect( &activeGraph, SIGNAL( updateProgressDialog(int) ), progressDialog, SLOT(setValue(int) ) ) ;
-        progressDialog->setMinimumDuration(0);
-    }
 
-    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+    QString msg = "Creating random ring-lattice network. \n"
+            "Please wait (or disable progress bars from Options -> Settings).";
+    createProgressBar(newNodes, msg);
 
-    activeGraph.createRandomNetRingLattice(newNodes, degree, x0, y0, radius );
+    activeGraph.createRandomNetRingLattice(newNodes, degree, x0, y0, radius, false );
 
-    QApplication::restoreOverrideCursor();
+    destroyProgressBar();
 
     if (appSettings["showProgressBar"] == "true" && newNodes > 100)
         progressDialog->deleteLater();
@@ -5496,7 +5477,9 @@ void MainWindow::slotRandomRingLattice(){
 
     //	slotNetworkChanged();
 
-    statusMessage( "Ring lattice random network created: "+QString::number(activeNodes())+" nodes, "+QString::number( activeEdges())+" edges");
+    statusMessage( "Ring lattice random network created: "+
+                   QString::number(activeNodes())+" nodes, "+
+                   QString::number( activeEdges())+" edges");
 
     setWindowTitle("Untitled");
     //float avGraphDistance=activeGraph.averageGraphDistance();
@@ -6966,7 +6949,7 @@ void MainWindow::slotLayoutRandom(){
     double maxHeight=graphicsWidget->height();
     statusMessage(  QString(tr("Randomizing nodes positions. Please wait...")) );
     graphicsWidget->clearGuides();
-    createProgressBar();
+    createProgressBar(0);
     activeGraph.layoutRandom(maxWidth, maxHeight);
     destroyProgressBar();
     statusMessage( tr("Node positions are now randomized.") );
@@ -7021,7 +7004,7 @@ void MainWindow::slotLayoutSpringEmbedder(){
     statusMessage( tr("Embedding a spring-gravitational model on the network.... ")  );
     //scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-    createProgressBar();
+    createProgressBar(0);
     activeGraph.layoutForceDirectedSpringEmbedder(100);
     destroyProgressBar();
     QApplication::restoreOverrideCursor();
@@ -8200,9 +8183,10 @@ void MainWindow::slotWalksOfGivenLength(){
 
 
 /**
-*	Calls Graph:: writeTotalNumberOfWalksMatrix() to calculate and print
-*   the total number of walks of any length , between each pair of nodes.
-*/
+ * @brief MainWindow::slotTotalWalks
+*  Calls Graph:: writeTotalNumberOfWalksMatrix() to calculate and print
+*  the total number of walks of any length , between each pair of nodes.
+ */
 void MainWindow::slotTotalWalks(){
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
@@ -8224,11 +8208,9 @@ void MainWindow::slotTotalWalks(){
         }
     }
     QString fn = appSettings["dataDir"] + "socnetv-report-total-number-of-walks.dat";
-    createProgressBar();
-
     int maxLength=activeNodes()-1;
+    createProgressBar(maxLength,"Computing total walks. Please wait...");
     activeGraph.writeTotalNumberOfWalksMatrix(fn, networkName, maxLength);
-
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
@@ -8278,7 +8260,7 @@ void MainWindow::slotCliqueCensus(){
     QString fn = appSettings["dataDir"] + "socnetv-report-clique-census.dat";
     bool considerWeights=true;
 
-    createProgressBar();
+    createProgressBar( 0 , "Computing number of cliques. Please wait... ");
 
     activeGraph.writeCliqueCensus(fn, considerWeights);
 
@@ -8307,7 +8289,7 @@ void MainWindow::slotClusteringCoefficient (){
     QString fn = appSettings["dataDir"] + "socnetv-report-clustering-coefficients.dat";
     bool considerWeights=true;
 
-    createProgressBar();
+    createProgressBar( 0 , "Computing clustering coefficient. Please wait... ");
 
     activeGraph.writeClusteringCoefficient(fn, considerWeights);
 
@@ -8335,7 +8317,7 @@ void MainWindow::slotTriadCensus() {
     QString fn = appSettings["dataDir"] + "socnetv-report-triad-census.dat";
     bool considerWeights=true;
 
-    createProgressBar();
+    createProgressBar(0, "Computing triad census. Please wait... ");
 
     activeGraph.writeTriadCensus(fn, considerWeights);
 
@@ -8820,7 +8802,7 @@ void MainWindow::slotCentralityEccentricity(){
     askAboutWeights();
 
     statusMessage(  QString(tr(" Please wait...")));
-    createProgressBar();
+    createProgressBar(0);
     activeGraph.writeCentralityEccentricity(
                 fn, considerWeights, inverseWeights,
                 filterIsolateNodesAct->isChecked());
@@ -8849,7 +8831,7 @@ void MainWindow::createProgressBar(int max, QString msg){
         }
 
     if ( ( appSettings["showProgressBar"] == "true"  && max > 100 )
-         || activeEdges() > 2000 ){
+         || activeEdges() > 5000 ){
         progressDialog= new QProgressDialog(msg, "Cancel", 0, max, this);
         progressDialog -> setWindowModality(Qt::WindowModal);
         connect( &activeGraph, SIGNAL( updateProgressDialog(int) ),
@@ -8871,7 +8853,7 @@ void MainWindow::destroyProgressBar(){
     qDebug () << "MainWindow::destroyProgressBar - check if a progressbar exists";
     if ( ( appSettings["showProgressBar"] == "true" || activeEdges() > 2000 ) && progressDialog) {
         qDebug () << "MainWindow::destroyProgressBar - progressbar exists. Dstroying";
-        //progressDialog->hide();
+        progressDialog->deleteLater();
     }
 
 
