@@ -99,8 +99,8 @@ public slots:
                     );
     void eraseNode(long int doomedJim);
     void setNodeVisibility(long int, bool );	//Called from Graph via MW
-    bool setNodeShape(long int, QString);
-    bool setNodeColor(long int, QString);
+    bool setNodeShape(const long int &nodeNumber, const QString &shape);
+    bool setNodeColor(const long int &, const QString &color);
     bool setNodeLabel(long int , QString );
     void nodeClicked(Node *);
     void moveNode(int, qreal, qreal);	//Called from Graph when creating random nets.

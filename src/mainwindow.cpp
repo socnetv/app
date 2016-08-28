@@ -393,9 +393,14 @@ void MainWindow::slotOpenSettingsDialog() {
     connect( m_settingsDialog, &SettingsDialog::setNodeNumberSize,
              this, &MainWindow::slotEditNodeNumberSize);
 
+    connect( m_settingsDialog, &SettingsDialog::setNodeNumberColor,
+             this, &MainWindow::slotEditNodeNumbersColor);
+
     connect( m_settingsDialog, &SettingsDialog::setNodeLabelSize,
              this, &MainWindow::slotEditNodeLabelSize);
 
+    connect( m_settingsDialog, &SettingsDialog::setNodeLabelColor,
+             this, &MainWindow::slotEditNodeLabelsColor);
 
 
     // show settings dialog
@@ -5940,45 +5945,29 @@ void MainWindow::slotEditNodeProperties( const QString label, const int size,
 
 
 
-/**
- * @brief MainWindow::slotEditNodeColorAll
- * Opens a QColorDialog to select a new node color for all nodes.
- * Calls  activeGraph.setAllVerticesColor to do the work
- * Called from Edit menu option
- */
-void MainWindow::slotEditNodeColorAll(){
-    QColor color = QColorDialog::getColor( Qt::red, this,
-                                           "Change the color of all nodes" );
-    if (color.isValid()) {
-        appSettings["initNodeColor"] = color.name();
-        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        qDebug() << "MW::slotEditNodeColorAll() : " << appSettings["initNodeColor"];
-        activeGraph.setAllVerticesColor(appSettings["initNodeColor"]);
-        QApplication::restoreOverrideCursor();
-        statusMessage( tr("Ready. ")  );
-    }
-    else {
-        // user pressed Cancel
-        statusMessage( tr("Nodes color change aborted. ") );
-    }
-}
-
 
 
 
 /**
  * @brief MainWindow::slotEditNodeColorAll
- * Overloaded
  * Changes the color of all nodes to parameter color
  * Calls  activeGraph.setAllVerticesColor to do the work
- * Called from Settings Dialog
+ * If parameter color is invalid, opens a QColorDialog to
+ * select a new node color for all nodes.
+ * Called from Settings Dialog and Edit menu option
  * @param color
  */
 void MainWindow::slotEditNodeColorAll(QColor color){
+    if (!color.isValid()) {
+        color = QColorDialog::getColor( QColor ( appSettings["initNodeColor"] ),
+                                        this,
+                                               "Change the color of all nodes" );
+    }
     if (color.isValid()) {
         appSettings["initNodeColor"] = color.name();
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        qDebug() << "MW::slotEditNodeColorAll() : " << appSettings["initNodeColor"];
+        qDebug() << "MW::slotEditNodeColorAll() : "
+                 << appSettings["initNodeColor"];
         activeGraph.setAllVerticesColor(appSettings["initNodeColor"]);
         QApplication::restoreOverrideCursor();
         statusMessage( tr("Ready. ")  );
@@ -6200,7 +6189,7 @@ void MainWindow::slotEditNodeNumbersColor(){
 
     QColor textColor = QColorDialog::getColor( Qt::black, this );
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-    qDebug ("MW: Will change color");
+    qDebug() << "MW:slotEditNodeNumbersColor() - change color ";
     QList<QGraphicsItem *> list= scene->items();
     for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
         if ( (*it)->type() == TypeNumber) 		{
@@ -6209,6 +6198,7 @@ void MainWindow::slotEditNodeNumbersColor(){
             jimNumber->setDefaultTextColor(textColor);
         }
     }
+
     activeGraph.setInitVertexNumberColor( textColor.name() );
     QApplication::restoreOverrideCursor();
     statusMessage( tr("Numbers' colors changed. Ready. ")  );

@@ -457,15 +457,19 @@ void GraphicsWidget::setInitLinkColor(QString color){
 
 
 
-/** 
-    Sets the color of an node.
-    Called from MW when the user changes the color of a node (right-clicking).
-*/
-bool GraphicsWidget::setNodeColor(long int nodeNumber, QString color){
+/**
+ * @brief GraphicsWidget::setNodeColor
+ * Sets the color of an node.
+ * Called from MW when the user changes the color of a node (right-clicking).
+ * @param nodeNumber
+ * @param color
+ * @return
+ */
+bool GraphicsWidget::setNodeColor(const long int &nodeNumber,
+                                  const QString &color){
     qDebug() << "GraphicsWidget::setNodeColor() : " << color;
     nodeHash.value(nodeNumber) -> setColor(color);
     return true;
-
 }
 
 
@@ -473,7 +477,7 @@ bool GraphicsWidget::setNodeColor(long int nodeNumber, QString color){
     Sets the shape of an node.
     Called from MW when the user changes the shape of a node
 */
-bool GraphicsWidget::setNodeShape(long int nodeNumber, QString shape){
+bool GraphicsWidget::setNodeShape(const long &nodeNumber, const QString &shape){
     qDebug() << "GraphicsWidget::setNodeShape() : " << shape;
     nodeHash.value(nodeNumber) -> setShape(shape);
     return true;

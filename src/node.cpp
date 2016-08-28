@@ -65,9 +65,36 @@ Node::Node( GraphicsWidget* gw, int num, int size,
 	m_ld=ldist;
 	m_poly_t=new QPolygon(3);
 	m_poly_d=new QPolygon(4);
-	qDebug()<< "Node: constructor: initial position at: "
+
+    m_path = new QPainterPath;
+    if ( m_shape == "circle") {
+        m_path->addEllipse (-m_size, -m_size, 2*m_size, 2*m_size);
+    }
+    else if ( m_shape == "ellipse") {
+        m_path->addEllipse(-m_size, -m_size, 2*m_size, 1.5* m_size);
+    }
+    else if ( m_shape == "box" || m_shape == "rectangle"  ) {  //rectangle: for GraphML compliance
+        m_path->addRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size );
+    }
+    else if (m_shape == "roundrectangle"  ) {  //roundrectangle: GraphML only
+        m_path->addRoundedRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size, 60.0, 60.0, Qt::RelativeSize );
+    }
+    else if ( m_shape == "triangle") {
+        m_poly_t -> setPoints (3,  0,-m_size,  -m_size,m_size, m_size,+m_size);
+        m_path->addPolygon(*m_poly_t);
+        m_path->closeSubpath();
+    }
+    else if ( m_shape == "diamond"){
+        m_poly_d -> setPoints (4, 0,-m_size,  -m_size,0,       0,+m_size,     +m_size,0);
+        m_path->addPolygon(*m_poly_d);
+        m_path->closeSubpath();
+    }
+
+    qDebug()<< "Node: constructor: initial position at: "
 			<< this->x()<<", "<<this->y()
 			<< " Will move at: "<< p.x()<<", "<<p.y();;
+
+
 
 } 
 
@@ -129,6 +156,30 @@ void Node::setShape(const QString shape) {
 	prepareGeometryChange();
 	m_shape=shape;
 	qDebug ("Node: setShape(): node is at x=%f and y=%f", x(), y());
+
+    m_path = new QPainterPath;
+    if ( m_shape == "circle") {
+        m_path->addEllipse (-m_size, -m_size, 2*m_size, 2*m_size);
+    }
+    else if ( m_shape == "ellipse") {
+        m_path->addEllipse(-m_size, -m_size, 2*m_size, 1.5* m_size);
+    }
+    else if ( m_shape == "box" || m_shape == "rectangle"  ) {  //rectangle: for GraphML compliance
+        m_path->addRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size );
+    }
+    else if (m_shape == "roundrectangle"  ) {  //roundrectangle: GraphML only
+        m_path->addRoundedRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size, 60.0, 60.0, Qt::RelativeSize );
+    }
+    else if ( m_shape == "triangle") {
+        m_poly_t -> setPoints (3,  0,-m_size,  -m_size,m_size, m_size,+m_size);
+        m_path->addPolygon(*m_poly_t);
+        m_path->closeSubpath();
+    }
+    else if ( m_shape == "diamond"){
+        m_poly_d -> setPoints (4, 0,-m_size,  -m_size,0,       0,+m_size,     +m_size,0);
+        m_path->addPolygon(*m_poly_d);
+        m_path->closeSubpath();
+    }
     update();
 }
 
@@ -185,30 +236,6 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 	}
 	painter->setPen(QPen(Qt::black, 0));
 
-	m_path = new QPainterPath;
-	if ( m_shape == "circle") {
-		m_path->addEllipse (-m_size, -m_size, 2*m_size, 2*m_size);
-	}
-	else if ( m_shape == "ellipse") {
-		m_path->addEllipse(-m_size, -m_size, 2*m_size, 1.5* m_size);
-	}
-	else if ( m_shape == "box" || m_shape == "rectangle"  ) {  //rectangle: for GraphML compliance
-		m_path->addRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size );
-	}
-	else if (m_shape == "roundrectangle"  ) {  //roundrectangle: GraphML only
-		m_path->addRoundedRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size, 60.0, 60.0, Qt::RelativeSize );
-	}
-	else if ( m_shape == "triangle") {
-		m_poly_t -> setPoints (3,  0,-m_size,  -m_size,m_size, m_size,+m_size);
-		m_path->addPolygon(*m_poly_t);
-		m_path->closeSubpath();
-	}	
-	else if ( m_shape == "diamond"){
-		m_poly_d -> setPoints (4, 0,-m_size,  -m_size,0,       0,+m_size,     +m_size,0);
-		m_path->addPolygon(*m_poly_d);
-		m_path->closeSubpath();
-	}
-
 	painter->drawPath (*m_path);
 }
 
@@ -264,6 +291,7 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
     switch (change) {
     case ItemPositionHasChanged :
     {
+        //setCacheMode( QGraphicsItem::ItemCoordinateCache );
         foreach (Edge *edge, inEdgeList)  //Move each inEdge of this node
             edge->adjust();
         foreach (Edge *edge, outEdgeList) //Move each outEdge of this node
@@ -328,6 +356,21 @@ void Node::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 	QGraphicsItem::mouseReleaseEvent(event);
 }
 
+void Node::hoverEnterEvent(QGraphicsSceneHoverEvent *event) {
+    foreach (Edge *edge, inEdgeList)
+        edge->highlight(true);
+    foreach (Edge *edge, outEdgeList)
+        edge->highlight(true);
+    QGraphicsItem::hoverEnterEvent(event);
+}
+
+void Node::hoverLeaveEvent(QGraphicsSceneHoverEvent *event){
+    foreach (Edge *edge, inEdgeList)
+        edge->highlight(false);
+    foreach (Edge *edge, outEdgeList)
+        edge->highlight(false);
+    QGraphicsItem::hoverLeaveEvent(event);
+}
 
 
 void Node::addInLink( Edge *edge ) {

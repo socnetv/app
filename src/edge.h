@@ -90,6 +90,8 @@ public:
     QString color() const ;
     QString colorToPajek();
 
+    void highlight (const bool &flag);
+
 	QPainterPath shape() const;
 
 public slots:
@@ -104,13 +106,15 @@ protected:
 private:
 	GraphicsWidget *graphicsWidget;
 	Node *source, *target;
+    QPainterPath *m_path;
 	QPointF sourcePoint, targetPoint;
 	qreal m_arrowSize, m_startOffset, m_endOffset;
     Qt::PenStyle m_style;
 	list<EdgeWeight*> weightList;
-	QString m_color;
+
+    QString m_color, m_tempColor;
 	int eFrom, eTo;
-	float m_weight;
+    float m_weight, m_tempweight;
 	int tox1, tox2, toy1, toy2, size;
 	double rad, theta, theta1, theta2;
 	qreal angle, line_length, line_dx, line_dy;

@@ -175,8 +175,8 @@ signals:
     void setEdgeVisibility (int, int, int, bool);			// emitted from each Vertex
     void setVertexVisibility(long int, bool);		//notifies GW to disable a node
     void setNodeSize(long int, int);
-    void setNodeShape(long int, QString);
-    void setNodeColor(long int, QString);
+    void setNodeShape(const long int v, const QString &shape);
+    void setNodeColor(const long int v, const QString &color);
     void setNodeLabel(long int, QString);
     void setNodeNumberSize(const long int &, const int &);
     void setNodeLabelSize(const long int &, const int &);

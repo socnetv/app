@@ -212,8 +212,7 @@ public slots:
     void slotEditNodePropertiesDialog();
     void slotEditNodeProperties( const QString, const int, const QString,
                              const QColor, const QString);
-    void slotEditNodeColorAll();
-    void slotEditNodeColorAll(QColor);
+    void slotEditNodeColorAll(QColor color=QColor());
     void slotEditNodeSizeAll();
     void slotEditNodeSizeAllNormalized(int size);
     void slotEditNodeShapeAll();

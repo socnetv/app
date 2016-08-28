@@ -77,6 +77,8 @@ Edge::Edge(  GraphicsWidget *gw,
     eTo = target->nodeNumber() ;
     m_weight = weight ;
     m_Bezier = bez;
+    setAcceptHoverEvents(true);
+//    setFlags(QGraphicsItem::ItemIsSelectable);
     adjust();
 }
 
@@ -200,11 +202,16 @@ void Edge::adjust(){
     // qDebug("Edge: adjust()");
     if (!source || !target)
         return;
-    QLineF line(mapFromItem(source, 0, 0), mapFromItem(target, 0, 0));
+    //QLineF line(mapFromItem(source, 0, 0), mapFromItem(target, 0, 0));
+    QLineF line(source->x(), source->y(), target->x(), target->y());
     QPointF edgeOffset;
+    line_length = line.length();
+    line_dx = line.dx();
+    line_dy = line.dy();
     if (source!=target) {
-        qreal length = line.length();
-        edgeOffset = QPointF((line.dx() * m_endOffset) / length, (line.dy() *m_endOffset) / length);
+        edgeOffset = QPointF(
+                    (line_dx * m_endOffset) / line_length,
+                    (line_dy * m_endOffset) / line_length);
     }
     else edgeOffset = QPointF(0, 0);
 
@@ -212,9 +219,97 @@ void Edge::adjust(){
 
     sourcePoint = line.p1() + edgeOffset;
     targetPoint = line.p2() - edgeOffset;
-    //	qDebug()<<"----Edge: adjust() "<< sourcePoint.x()<< " "<<sourcePoint.y();
+//    qDebug()<<"----Edge: adjust()  ("<< sourcePoint.x()<< ","<<sourcePoint.y() << ") -> ("
+//                                   << targetPoint.x()<< " "<<targetPoint.y() << ")";
     foreach (EdgeWeight *wgt, weightList) 		//Move the weight of this edge
         wgt->setPos( (source->x()+target->x())/2.0, (source->y()+target->y())/2.0 );
+
+
+
+    //Define the path upon which we' ll draw the line
+    //QPainterPath line(sourcePoint);
+    m_path = new QPainterPath(sourcePoint);
+
+    //Construct the path
+    if (source!=target) {
+        if ( !m_Bezier){
+            //   qDebug()<< "*** Edge::paint(). Constructing a line";
+            m_path->lineTo(targetPoint);
+        }
+        else {
+            qDebug() << "*** Edge::paint(). Constructing a bezier curve";
+        }
+    }
+    else { //self-link
+        QPointF c1 = QPointF( targetPoint.x() -30,  targetPoint.y() -30 );
+        QPointF c2 = QPointF( targetPoint.x() +30,  targetPoint.y() -30 );
+//        qDebug()<< "*** Edge::paint(). Constructing a bezier self curve c1 "
+//                <<c1.x()<<","<<c1.y()  << " and c2 "<<c2.x()<<","<<c2.y();
+        m_path->cubicTo( c1, c2, targetPoint);
+    }
+
+    //Draw the arrows only if we have different nodes.
+    if (m_drawArrows && source!=target) {
+        angle = 0;
+//        line_length = m_path->length();
+//        line_dx = targetPoint.x()-sourcePoint.x();
+//        line_dy = targetPoint.y()-sourcePoint.y();
+        if ( line_length > 0 )
+            angle = ::acos( line_dx / line_length );
+        //		qDebug() << " acos() " << ::acos( line_dx  / line_length ) ;
+
+        if ( line_dy  >= 0)
+            angle = TwoPi - angle;
+
+        if (line_length > 10) {
+//            qDebug() << "*** Edge::paint(). Constructing arrows. "
+//                        "First Arrow at target node"
+//                     << "target-source: " << line_dx
+//                     << " length: " << line_length
+//                     << " angle: "<< angle;
+
+            QPointF destArrowP1 = targetPoint + QPointF(sin(angle - Pi / 3) * m_arrowSize,
+                                                        cos(angle - Pi / 3) * m_arrowSize);
+            QPointF destArrowP2 = targetPoint + QPointF(sin(angle - Pi + Pi / 3) * m_arrowSize,
+                                                        cos(angle - Pi + Pi / 3) * m_arrowSize);
+//            qDebug() << "*** Edge::paint() destArrowP1 "
+//                     <<  destArrowP1.x() << "," << destArrowP1.y()
+//                      << "  destArrowP2 " <<  destArrowP2.x() << "," << destArrowP2.y();
+
+            m_path->addPolygon ( QPolygonF()
+                                 << targetPoint
+                                 << destArrowP1
+                                 << destArrowP2
+                                 << targetPoint
+                                 );
+
+            if (m_reciprocal ) {
+    //            qDebug() << "**** Edge::paint() This edge is SYMMETRIC! "
+    //                     << " So, we need to create Arrow at src node as well";
+                QPointF srcArrowP1 = sourcePoint + QPointF(sin(angle +Pi / 3) * m_arrowSize,
+                                                           cos(angle +Pi / 3) * m_arrowSize);
+                QPointF srcArrowP2 = sourcePoint + QPointF(sin(angle +Pi - Pi  / 3) * m_arrowSize,
+                                                           cos(angle +Pi - Pi / 3) * m_arrowSize);
+
+                m_path->addPolygon ( QPolygonF()
+                                     << sourcePoint
+                                     << srcArrowP1
+                                     << srcArrowP2
+                                     <<sourcePoint
+                                     );
+
+            }
+            else {
+                // qDebug() << "*** Edge::paint() Not symmetric edge. Finish";
+            }
+        }
+
+    }
+    else {
+//        qDebug()<< "*** Edge::paint(). This edge is self-link - CONTINUE!";
+    }
+
+
 }
 
 
@@ -229,21 +324,20 @@ void Edge::adjust(){
  */
 QPainterPath Edge::shape () const {
     //qDebug()<<"Edge::shape()";		//too many debug messages...
-    QPainterPath path;
-    qreal extra = ( width() + m_arrowSize);
-    QLineF line(sourcePoint, targetPoint);
-    QPolygonF poly;
-    line.translate(extra,extra);
-    poly.push_back(line.p1());
-    poly.push_back(line.p2());
-    line.translate(-extra,-extra);
-    poly.push_back(line.p1());
-    poly.push_back(line.p2());
-    path.addPolygon(poly);
-    path.closeSubpath();
-    //path.addRegion(boundingRegion(QTransform()));
-    //   path.addRect(boundingRect());
-    return path;
+//    QPainterPath path;
+//    qreal extra = ( width() + m_arrowSize);
+//    QLineF line(sourcePoint, targetPoint);
+//    QPolygonF poly;
+//    line.translate(extra,extra);
+//    poly.push_back(line.p1());
+//    poly.push_back(line.p2());
+//    line.translate(-extra,-extra);
+//    poly.push_back(line.p1());
+//    poly.push_back(line.p2());
+//    path.addPolygon(poly);
+//    path.closeSubpath();
+//    return path;
+    return *m_path;
 } 
 
 
@@ -256,20 +350,21 @@ QPainterPath Edge::shape () const {
 QRectF Edge::boundingRect() const {
     if (!source || !target)
         return QRectF();
-    qreal penWidth = 1;
-    qreal extra = ( penWidth + m_arrowSize) / 2.0;
-    QRectF a = QRectF (
-                sourcePoint,
-                QSizeF(
-                    targetPoint.x() - sourcePoint.x(), targetPoint.y() - sourcePoint.y())
-                ).normalized().adjusted(-extra, -extra, extra, extra);
-    //qDebug()<<"Edge::boundingRect() extra = " << extra << "QSizeF width "<< a.width() << " QSizeF height "<< a.height();
-    if (source==target) {		//self-edge has different bounding rect.
-        return QRectF (
-                    sourcePoint-QPointF(30,30),
-                    QSizeF(60,30)).normalized().adjusted(-extra, -extra, extra, extra);
-    }
-    return a;
+//    qreal penWidth = 1;
+//    qreal extra = ( penWidth + m_arrowSize) / 2.0;
+//    QRectF a = QRectF (
+//                sourcePoint,
+//                QSizeF(
+//                    targetPoint.x() - sourcePoint.x(), targetPoint.y() - sourcePoint.y())
+//                ).normalized().adjusted(-extra, -extra, extra, extra);
+//    //qDebug()<<"Edge::boundingRect() extra = " << extra << "QSizeF width "<< a.width() << " QSizeF height "<< a.height();
+//    if (source==target) {		//self-edge has different bounding rect.
+//        return QRectF (
+//                    sourcePoint-QPointF(30,30),
+//                    QSizeF(60,30)).normalized().adjusted(-extra, -extra, extra, extra);
+//    }
+//    return a;
+    return m_path->controlPointRect();
 }
 
 
@@ -322,86 +417,25 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     //           << ") to node "<<targetNodeNumber() << " at ("<<(targetNode())->x()
     //           <<","<< (targetNode())->y() << ") of weight "<< m_weight;
 
-    //Define the path upon which we' ll draw the line
-    QPainterPath line(sourcePoint);
-
-    //Construct the path
-    if (source!=target) {
-        if ( !m_Bezier){
-            //   qDebug()<< "*** Edge::paint(). Constructing a line";
-            line.lineTo(targetPoint);
-        }
-        else {
-            qDebug() << "*** Edge::paint(). Constructing a bezier curve";
-        }
-    }
-    else { //self-link
-        QPointF c1 = QPointF( targetPoint.x() -30,  targetPoint.y() -30 );
-        QPointF c2 = QPointF( targetPoint.x() +30,  targetPoint.y() -30 );
-//        qDebug()<< "*** Edge::paint(). Constructing a bezier self curve c1 "
-//                <<c1.x()<<","<<c1.y()  << " and c2 "<<c2.x()<<","<<c2.y();
-        line.cubicTo( c1, c2, targetPoint);
-    }
-
-    //Prepare the pen
-    //	qDebug()<<"*** Edge::paint(). Preparing the pen with width "<< width();
-
      painter->setPen( pen() );
+     // painter->setBrush(QColor(m_color));
 
-    //Draw the arrows only if we have different nodes.
-    if (m_drawArrows && source!=target) {
-        angle = 0;
-        line_length = line.length();
-        line_dx = targetPoint.x()-sourcePoint.x();
-        line_dy = targetPoint.y()-sourcePoint.y();
-        if ( line.length() >0 )
-            angle = ::acos( line_dx / line_length );
-        //		qDebug() << " acos() " << ::acos( line_dx  / line_length ) ;
-
-        if ( line_dy  >= 0)
-            angle = TwoPi - angle;
-
-        //		qDebug() << "*** Edge::paint(). Constructing arrows. First Arrow at target node"
-        //					<< "target-source: " << line_dx
-        //					<< " length: " << line_length
-        //					<< " angle: "<< angle;
-
-        QPointF destArrowP1 = targetPoint + QPointF(sin(angle - Pi / 3) * m_arrowSize,
-                                                    cos(angle - Pi / 3) * m_arrowSize);
-        QPointF destArrowP2 = targetPoint + QPointF(sin(angle - Pi + Pi / 3) * m_arrowSize,
-                                                    cos(angle - Pi + Pi / 3) * m_arrowSize);
-        //		qDebug() << "*** Edge::paint() destArrowP1 "
-        //                 <<  destArrowP1.x() << "," << destArrowP1.y()
-        //                  << "  destArrowP2 " <<  destArrowP2.x() << "," << destArrowP2.y();
-        painter->setBrush(QColor(m_color));
-        QPolygonF destP;
-        destP << targetPoint << destArrowP1 << destArrowP2;
-        line.addPolygon ( destP);
-        //painter->drawPolygon(QPolygonF() << line.p2() << destArrowP1 << destArrowP2);
-        if (m_reciprocal) {
-//            qDebug() << "**** Edge::paint() This edge is SYMMETRIC! "
-//                     << " So, we need to create Arrow at src node as well";
-            QPointF srcArrowP1 = sourcePoint + QPointF(sin(angle +Pi / 3) * m_arrowSize,
-                                                       cos(angle +Pi / 3) * m_arrowSize);
-            QPointF srcArrowP2 = sourcePoint + QPointF(sin(angle +Pi - Pi  / 3) * m_arrowSize,
-                                                       cos(angle +Pi - Pi / 3) * m_arrowSize);
-            //			qDebug() << "*** Edge::paint() srcArrowP1 " <<  srcArrowP1.x() << "," << srcArrowP1.y()
-            //									<< "  srcArrowP2 " <<  srcArrowP2.x() << "," << srcArrowP2.y();
-            QPolygonF srcP;
-            srcP << sourcePoint<< srcArrowP1<< srcArrowP2;
-            line.addPolygon ( srcP);
-
-            //			painter->drawPolygon(QPolygonF() << line.p1() << srcArrowP1 << srcArrowP2);
-        }
-        else {
-            // qDebug() << "*** Edge::paint() Not symmetric edge. Finish";
-        }
-    }
-    else {
-//        qDebug()<< "*** Edge::paint(). This edge is self-link - CONTINUE!";
-    }
+     //if the edge is being dragged around, darken it!
+     if (option->state & QStyle::State_Selected) {
+         //qDebug()<< " node : selected ";
+         painter->setPen(
+                     QPen(QColor("m_red"), width(), style(), Qt::RoundCap, Qt::RoundJoin)
+                     );
+     }
+     else if (option->state & QStyle::State_MouseOver) {
+         //qDebug()<< " node : mouse over";
+         painter->setPen(
+                     QPen(QColor("red"), width()+5, style(), Qt::RoundCap, Qt::RoundJoin)
+                     );
+         setZValue(255);
+     }
     //	qDebug()<< "### Edge::paint(). DrawPath now....";
-    painter->drawPath(line);
+    painter->drawPath(*m_path);
 }
 
 
@@ -417,6 +451,21 @@ float Edge::width() const{
 
 
 
+/**
+ * @brief Edge::highlight
+ * @param flag
+ */
+void Edge::highlight(const bool &flag) {
+    qDebug()<< "highlight " << flag;
+    if (flag) {
+        m_tempColor = m_color;
+        m_tempweight = m_weight;
+        setColor("red");
+        setWeight (m_weight+5);
+    }
+    else setColor(m_tempColor);
+    setWeight (m_tempweight);
+}
 
 /** handles the events of a click on an edge*/
 void Edge::mousePressEvent(QGraphicsSceneMouseEvent *event) {  
