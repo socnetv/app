@@ -163,18 +163,42 @@ int Graph::relations(){
 
 
 /**
-    main node creation slot, associated with homonymous signal from Parser.
-    Adds a Vertex to the Graph and calls editNodeAdd of GraphicsWidget
-    p holds the desired position of the new node.
-    The new Vertex is named i and stores its color, label, label color, shape and position p.
+
 */
-void Graph::createVertex(int i, int size, QString nodeColor, QString numColor,
-                         int numSize, QString label, QString lColor, int lSize,
-                         QPointF p, QString nodeShape, bool signalMW){
+/**
+ * @brief Graph::createVertex
+ * Main node creation slot, associated with homonymous signal from Parser.
+ * Adds a Vertex to the Graph and calls editNodeAdd of GraphicsWidget
+ * The new Vertex is named i and stores its color, label, label color, shape and position p.
+ * p holds the desired position of the new node.
+ * @param num
+ * @param size
+ * @param nodeColor
+ * @param numColor
+ * @param numSize
+ * @param label
+ * @param lColor
+ * @param lSize
+ * @param p
+ * @param nodeShape
+ * @param signalMW
+ */
+void Graph::createVertex(const int &num, const int &size, const QString &nodeColor,
+                         const QString &numColor, const int &numSize,
+                         const QString &label, const QString &lColor, const int &lSize,
+                         const QPointF &p, const QString &nodeShape,
+                         const bool &signalMW){
     int value = 1;
-    addVertex(i, value, size,  nodeColor, numColor, numSize, label, lColor, lSize, p, nodeShape);
-    emit drawNode( i, size,  nodeColor, numColor, numSize, label, lColor, lSize,
-                   p, nodeShape, initShowLabels, initNumbersInsideNodes, true);
+
+    addVertex ( num, value, size,  nodeColor,
+               numColor, numSize,
+               label, lColor, lSize, p, nodeShape);
+
+    emit drawNode( num, size,  nodeColor,
+                   numColor, numSize,
+                   label, lColor, lSize,p, nodeShape,
+                   initShowLabels, initNumbersInsideNodes, true);
+
     if (signalMW)
         emit graphChanged();
     //draw new user-clicked nodes with the same color with that of the file loaded
@@ -366,12 +390,11 @@ void Graph::removeDummyNode(int i){
  * @param p
  * @param shape
  */
-void Graph::addVertex (
-        int v1, int val, int size, QString color,
-        QString numColor, int numSize,
-        QString label, QString labelColor, int labelSize,
-        QPointF p, QString shape
-        ){
+void Graph::addVertex ( const int &v1, const int &val, const int &size,
+                        const QString &color, const QString &numColor,
+                        const int &numSize, const QString &label,
+                        const QString &labelColor, const int &labelSize,
+                        const QPointF &p, const QString &shape ){
 
     qDebug() << "Graph::addVertex() ";
     if (order)
@@ -6632,8 +6655,18 @@ bool Graph::loadGraph (	const QString m_fileName,
 
 
     connect (
-                file_parser, SIGNAL( createNode (int,int,QString, QString, int, QString, QString, int, QPointF, QString, bool) ),
-                this, SLOT(createVertex(int,int,QString, QString, int, QString, QString, int, QPointF, QString, bool) )
+                file_parser, SIGNAL( createNode (const int &,const int &,
+                                                 const QString &, const QString &,
+                                                 const int&, const QString &,
+                                                 const QString &, const int&,
+                                                 const QPointF&, const QString &,
+                                                 const bool &) ),
+                this, SLOT( createVertex( const int &, const int &,
+                                          const QString &, const QString &,
+                                          const int &, const QString &,
+                                          const QString &, const int &,
+                                          const QPointF &, const QString &,
+                                          const bool &) )
                 ) ;
 
     connect (

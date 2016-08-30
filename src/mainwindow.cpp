@@ -3116,13 +3116,19 @@ void MainWindow::initSignalSlots() {
 
     connect( &activeGraph,
              SIGNAL(
-                 drawNode( int ,int,  QString, QString, int, QString, QString,
-                           int, QPointF, QString, bool, bool, bool)
+                 drawNode( const int &, const int &,  const QString &,
+                           const QString &, const int &, const QString&,
+                           const QString &,
+                           const int &, const QPointF &, const QString &,
+                           const bool &, const bool &, const bool &)
                  ),
              graphicsWidget,
              SLOT(
-                 drawNode( int ,int,  QString, QString, int, QString, QString,
-                           int, QPointF, QString, bool, bool, bool)
+                 drawNode( const int & ,const int &,  const QString &,
+                           const QString &, const int &, const QString &,
+                           const QString &,
+                           const int &, const QPointF &, const QString &,
+                           const bool &, const bool &, const bool&)
                  )
              ) ;
 

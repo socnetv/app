@@ -119,10 +119,11 @@ public slots:
     /** Slots to signals from Parser */
 
     void addRelationFromParser(QString);
-    void createVertex(	int i, int size, QString nodeColor,
-                        QString numColor, int numSize,
-                        QString label, QString lColor, int lSize,
-                        QPointF p, QString nodeShape, bool signalMW
+    void createVertex( const int &num, const int &size, const QString &nodeColor,
+                       const QString &numColor, const int &numSize,
+                       const QString &label, const QString &lColor,
+                       const int &lSize, const QPointF &p, const QString &nodeShape,
+                       const bool &signalMW
                         );//Main vertex creation call
 
     void setFileType(int, QString, int,int, bool);
@@ -166,8 +167,14 @@ signals:
     void signalNodeSizesByInDegree(bool);
 
     /** Signals to GraphicsWidget */
-    void drawNode( int ,int,  QString, QString, int, QString, QString, int,
-                   QPointF, QString, bool, bool, bool);	//call GW to draw a node
+    void drawNode( const int &num, const int &size,
+                   const QString &nodeColor, const QString &numberColor,
+                   const int &numSize, const QString &label,
+                   const QString &labelColor,
+                   const int &labelSize,
+                   const QPointF &p, const QString &nodeShape,
+                   const bool &showLabels,
+                   const bool &numbersInside, const bool &showNumbers);
 
     void eraseNode (long int);						//erase node from GW
     void drawEdge(int, int, float, bool, bool, QString, bool);	//call GW to draw an edge
@@ -547,13 +554,11 @@ private:
     WebCrawler_Spider *wc_spider;
 
     /** private member functions */
-
-    void addVertex (
-            int v1, int val, int size, QString color,
-            QString numColor, int numSize,
-            QString label, QString labelColor, int labelSize,
-            QPointF p, QString shape
-            );
+    void addVertex  ( const int &v1, const int &val, const int &size,
+                      const QString &color, const QString &numColor,
+                      const int &numSize, const QString &label,
+                      const QString &labelColor, const int &labelSize,
+                      const QPointF &p, const QString &shape );
 
     void addEdge (int v1, int v2, float w, QString color, int reciprocal);
 

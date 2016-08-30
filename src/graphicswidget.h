@@ -90,13 +90,17 @@ protected:
 public slots:
     void changeRelation(int relation);
 
-    void drawNode(	int i, int size, QString aColor,
-                    QString nColor, int nSize,
-                    QString label, QString lColor, int lSize,
-                    QPointF p,
-                    QString nodeShape,
-                    bool showLabels, bool labelIn, bool showNumbers
-                    );
+    void drawNode(const int &num, const int &nodeSize,
+                   const QString &nodeColor,
+                   const QString &numberColor, const int &numberSize,
+                   const QString &nodeLabel, const QString &labelColor,
+                   const int &labelSize,
+                   const QPointF &p,
+                   const QString &nodeShape,
+                   const bool &showLabels,
+                   const bool &numberInsideNode,
+                   const bool &showNumbers
+                   );
     void eraseNode(long int doomedJim);
     void setNodeVisibility(long int, bool );	//Called from Graph via MW
     bool setNodeShape(const long int &nodeNumber, const QString &shape);

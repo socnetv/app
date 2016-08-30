@@ -98,56 +98,74 @@ void GraphicsWidget::changeRelation(int relation) {
 
 
 
-/**	
-    Adds a new node onto the scene
-    Called from Graph::createVertex method when:
-        we load files or
-        the user presses "Add Node" button or
-        the user double clicks (mouseDoubleClickEvent() calls Graph::createVertex
-*/
-void GraphicsWidget::drawNode(
-        int num, int size, QString nodeColor,
-        QString numberColor, int numberSize,
-        QString nodeLabel, QString labelColor, int labelSize,
-        QPointF p,
-        QString shape,
-        bool showLabels, bool numberInsideNode, bool showNumbers
-        ) {
-    qDebug()<< "GW: drawNode(): drawing new node at: "
-            << p.x() << ", "<< p.y() ;
+/**
+ * @brief GraphicsWidget::drawNode
+ * Adds a new node onto the scene
+ * Called from Graph::createVertex method when:
+ * - we load files or
+ * - the user presses "Add Node" button or
+ * - the user double clicks (mouseDoubleClickEvent() calls Graph::createVertex
+ * @param num
+ * @param nodeSize
+ * @param nodeColor
+ * @param numberColor
+ * @param numberSize
+ * @param nodeLabel
+ * @param labelColor
+ * @param labelSize
+ * @param p
+ * @param nodeShape
+ * @param showLabels
+ * @param numberInsideNode
+ * @param showNumbers
+ */
+void GraphicsWidget::drawNode(const int &num, const int &nodeSize,
+                               const QString &nodeColor,
+                               const QString &numberColor, const int &numberSize,
+                               const QString &nodeLabel, const QString &labelColor,
+                               const int &labelSize,
+                               const QPointF &p,
+                               const QString &nodeShape,
+                               const bool &showLabels,
+                               const bool &numberInsideNode,
+                               const bool &showNumbers
+                               ) {
+    qDebug()<< "GW: drawNode(): drawing new node " << num
+            << " at: " << p.x() << ", "<< p.y() ;
+
+    int m_nodeSize = nodeSize;
+    int m_numberSize = numberSize;
 
     if (numberInsideNode)
-        size = size +3;
+        m_nodeSize = m_nodeSize +3;
 
     Node *jim= new Node (
-                this, num, size, nodeColor, shape,
+                this, num, nodeSize, nodeColor, nodeShape,
                 numberInsideNode, m_labelDistance, m_numberDistance,
                 p
                 );
 
-    //Drawing node label - label will be moved by the node movement (see last code line in this method)
+    //Drawing node label
+    // label will be moved by the node movement (see last code line in this method)
     NodeLabel *labelJim = new  NodeLabel (jim, labelSize, nodeLabel );
     labelJim -> setDefaultTextColor (labelColor);
     labelJim -> setTextInteractionFlags(Qt::TextEditorInteraction);
-
-    if (showLabels) {
-        //qDebug()<< "GW: drawNode: display label " <<  nodeLabel.toUtf8() << " for node " << num;
-    }
-    else {
+    if (!showLabels) {
         //qDebug()<<"GW: drawNode: hiding label for node " << num;
         labelJim->hide();
     }
 
-    // drawing node number - label will be moved by the node movement (see last code line in this method)
+    // drawing node number
+    // label will be moved by the node movement (see last code line in this method)
     if (numberInsideNode)
-        numberSize = size-2;
+        m_numberSize = m_nodeSize-2;
 
-    NodeNumber *numberJim = new  NodeNumber ( jim, numberSize, QString::number(num));
+    NodeNumber *numberJim = new  NodeNumber ( jim, m_numberSize, QString::number(num));
     numberJim -> setDefaultTextColor (numberColor);
-
     if (!showNumbers){
         numberJim->hide();
     }
+
     nodeHash.insert(num, jim);//add new node to a container to ease finding, edge creation etc
     jim -> setPos( p.x(), p.y());	//finally, move the node where it belongs!
 }

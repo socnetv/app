@@ -89,11 +89,11 @@ signals:
     void addRelation( QString );
     void changeRelation( int );
 	void createNode( 
-			int num, int size, QString color,
-			QString numColor, int numSize,
-			QString label, QString lColor, int lSize,
-			QPointF p,
-			QString shape, bool signalMW);
+            const int &num, const int &size, const QString &color,
+            const QString &numColor, const int &numSize,
+            const QString &label, const QString &lColor, const int &lSize,
+            const QPointF &p,
+            const QString &shape, const bool &signalMW);
 
 	void createEdge (int, int, float, QString, int, bool, bool);
 	void fileType(int, QString, int, int, bool);
