@@ -3761,6 +3761,7 @@ QString MainWindow::getLastPath() {
  */
 void MainWindow::setLastPath(QString filePath) {
     appSettings["lastUsedDirPath"] = filePath.left( filePath.lastIndexOf("/"));
+    saveSettings();
     qDebug() << appSettings["lastUsedDirPath"];
 }
 
@@ -4346,6 +4347,7 @@ bool MainWindow::slotNetworkFileLoad(const QString m_fileName,
         setWindowTitle("SocNetV "+ VERSION +" - "+fileNameNoPath.last());
         QString message=tr("Loaded network: ")+fileNameNoPath.last();
         statusMessage( message );
+
     }
     else {
         statusMessage( tr("Error loading requested file. Aborted."));
@@ -6586,7 +6588,7 @@ void MainWindow::slotAllEdgesColor(){
     if (color.isValid()) {
         appSettings["initEdgeColor"]=color.name();
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        qDebug() << "MainWindow::slotAllEdgesColor() : " << appSettings["initEdgeColor"];
+        qDebug() << "MainWindow::slotAllEdgesColor() - new edge color: " << appSettings["initEdgeColor"];
         //createProgressBar();
         activeGraph.setAllEdgesColor(appSettings["initEdgeColor"]);
         //destroyProgressBar();
