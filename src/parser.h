@@ -95,7 +95,9 @@ signals:
             const QPointF &p,
             const QString &shape, const bool &signalMW);
 
-	void createEdge (int, int, float, QString, int, bool, bool);
+    void createEdge (const int &source, const int &target, const float &weight,
+                     const QString &color, const int &undirected,
+                     const bool &arrows, const bool &bezier);
 	void fileType(int, QString, int, int, bool);
 	void removeDummyNode (int);
     void finished(QString);

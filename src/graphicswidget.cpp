@@ -101,10 +101,9 @@ void GraphicsWidget::changeRelation(int relation) {
 /**
  * @brief GraphicsWidget::drawNode
  * Adds a new node onto the scene
- * Called from Graph::createVertex method when:
- * - we load files or
- * - the user presses "Add Node" button or
- * - the user double clicks (mouseDoubleClickEvent() calls Graph::createVertex
+ * Called from Graph::createVertex method primarily when we load files
+ * It is also called in the end when the user presses "Add Node" button or
+ * the user double clicks (mouseDoubleClickEvent() calls Graph::createVertex)
  * @param num
  * @param nodeSize
  * @param nodeColor
@@ -139,24 +138,24 @@ void GraphicsWidget::drawNode(const int &num, const int &nodeSize,
     if (numberInsideNode)
         m_nodeSize = m_nodeSize +3;
 
+    //Draw node
     Node *jim= new Node (
                 this, num, nodeSize, nodeColor, nodeShape,
                 numberInsideNode, m_labelDistance, m_numberDistance,
                 p
                 );
 
-    //Drawing node label
-    // label will be moved by the node movement (see last code line in this method)
+    //Draw node label
+    // label will be moved by node movement (see last code line)
     NodeLabel *labelJim = new  NodeLabel (jim, labelSize, nodeLabel );
     labelJim -> setDefaultTextColor (labelColor);
     labelJim -> setTextInteractionFlags(Qt::TextEditorInteraction);
     if (!showLabels) {
-        //qDebug()<<"GW: drawNode: hiding label for node " << num;
         labelJim->hide();
     }
 
-    // drawing node number
-    // label will be moved by the node movement (see last code line in this method)
+    // Draw node number
+    // label will be moved by node movement (see last code line)
     if (numberInsideNode)
         m_numberSize = m_nodeSize-2;
 
@@ -166,8 +165,10 @@ void GraphicsWidget::drawNode(const int &num, const int &nodeSize,
         numberJim->hide();
     }
 
-    nodeHash.insert(num, jim);//add new node to a container to ease finding, edge creation etc
-    jim -> setPos( p.x(), p.y());	//finally, move the node where it belongs!
+    //add new node to a container to ease finding, edge creation etc
+    nodeHash.insert(num, jim);
+    //finally, move the node where it belongs!
+    jim -> setPos( p.x(), p.y());
 }
 
 
@@ -917,7 +918,7 @@ void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
     qDebug()<< "GW::mouseDoubleClickEvent() - on empty space. "
             << " Signaling MW to create a new vertex in graph. e->pos() "
             << e->pos().x() << ","<< e->pos().y() << ", "<< p.x() << "," <<p.y();
-    emit userDoubleClicked(-1, p);
+    emit userDoubleClickNewNode(p);
     qDebug() << "GW::mouseDoubleClickEvent() "
              << "Scene items: "<< scene()->items().size()
              << " GW items: " << items().size();

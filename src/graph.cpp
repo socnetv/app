@@ -167,7 +167,7 @@ int Graph::relations(){
 */
 /**
  * @brief Graph::createVertex
- * Main node creation slot, associated with homonymous signal from Parser.
+ * Main vertex creation slot, associated with homonymous signal from Parser.
  * Adds a Vertex to the Graph and calls editNodeAdd of GraphicsWidget
  * The new Vertex is named i and stores its color, label, label color, shape and position p.
  * p holds the desired position of the new node.
@@ -210,13 +210,13 @@ void Graph::createVertex(const int &num, const int &size, const QString &nodeCol
 
 
 /**
-    auxilliary node creation slot.
+    auxilliary vertex creation slot.
     Called from GW, with i and p as parameters.
     p holds the desired position of the new node.
     Calls the main creation slot with init node values.
 */
-void Graph::createVertex(int i, QPointF p){
-    if ( i < 0 )  i = lastVertexNumber() +1;
+void Graph::createVertex(const QPointF &p){
+    int i = lastVertexNumber() +1;
     qDebug() << "Graph::createVertex() " << i << " fixed coords.";
     createVertex(	i, initVertexSize,  initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
@@ -229,7 +229,7 @@ void Graph::createVertex(int i, QPointF p){
 
 
 /**
-    second auxilliary node creation slot.
+    second auxilliary vertex creation slot.
     Called from MW only with parameter i.
     Calculates a random position p from canvasWidth and Height.
     Then calls the main creation slot with init node values.
@@ -292,8 +292,10 @@ void Graph::setMaximumSize(int w, int h){
  * @param drawArrows
  * @param bezier
  */
-void Graph::createEdge(int v1, int v2, float weight, QString color,
-                       int reciprocal=0, bool drawArrows=true, bool bezier=false){
+void Graph::createEdge( const int &v1, const int &v2, const float &weight,
+                        const QString &color,
+                        const int &reciprocal,
+                        const bool &drawArrows, const bool &bezier){
     qDebug()<<"-- Graph::createEdge() - " << v1 << " -> " << v2
            << " weight " << weight
               << " reciprocal " << reciprocal;
@@ -303,21 +305,19 @@ void Graph::createEdge(int v1, int v2, float weight, QString color,
         if ( reciprocal == 2) {
             qDebug()<< "-- Graph::createEdge() - "
                     << "Creating RECIPROCAL edge - emitting drawEdge signal to GW";
-            addEdge ( v1, v2, weight, color, reciprocal);
+            addEdge ( v1, v2, weight, color, 2);
             emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier);
         }
         else if (this->hasArc( v2, v1) )  {
             qDebug()<<"-- Graph::createEdge() - Opposite arc exists. "
                    << "  Emitting drawEdgeReciprocal to GW ";
-            reciprocal = 1;
-            addEdge ( v1, v2, weight, color, reciprocal);
+            addEdge ( v1, v2, weight, color, 1);
             emit drawEdgeReciprocal(v2, v1);
         }
         else {
             qDebug()<< "-- Graph::createEdge() - "
                        << "Opposite arc does not exist. Emitting drawEdge to GW...";
-            reciprocal = 0;
-            addEdge ( v1, v2, weight, color, reciprocal);
+            addEdge ( v1, v2, weight, color, 0);
             emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier);
         }
     }
@@ -337,8 +337,9 @@ void Graph::createEdge(int v1, int v2, float weight, QString color,
     Called (via MW::addLink()) from GW when user middle-clicks on two nodes.
     Calls the above createEdge() method with initEdgeColor to set the default edge color.
 */
-void Graph::createEdge(int v1, int v2, float weight, int reciprocal=0,
-                       bool drawArrows=true, bool bezier=false){
+void Graph::createEdge(const int &v1, const int &v2, const float &weight,
+                       const int &reciprocal,
+                       const bool &drawArrows, const bool &bezier){
     qDebug()<< "Graph::createEdge() - " << v1<< " -> " << v2 ;
     createEdge(v1, v2, (float) weight, initEdgeColor, reciprocal,
                drawArrows, bezier);
@@ -1036,7 +1037,12 @@ void Graph::setAllVerticesColor(const QString &color) {
 }
 
 
-
+/**
+ * @brief Graph::setInitEdgeColor
+ * Saves the default edge color
+ * Used by random network creation methods
+ * @param color
+ */
 void Graph::setInitEdgeColor(const QString &color){
     initEdgeColor=color;
 }
@@ -4866,14 +4872,14 @@ void Graph::createRandomNetErdos(  const int &vert,
                         qDebug() << "Graph::createRandomNetErdos() - "
                                     <<" create undirected Edge no "
                                     << edgeCount;
-                        createEdge(i+1, j+1, 1, "black", 2, true, false);
+                        createEdge(i+1, j+1, 1, initEdgeColor, 2, true, false);
                     }
                     else {
                         qDebug() << "Graph::createRandomNetErdos() - "
                                     <<" create directed Edge no "
                                     << edgeCount;
 
-                        createEdge(i+1, j+1, 1, "black", 0, true, false);
+                        createEdge(i+1, j+1, 1, initEdgeColor, 0, true, false);
                     }
                 }
                 else
@@ -4907,12 +4913,12 @@ void Graph::createRandomNetErdos(  const int &vert,
             if (mode == "graph") {
                 qDebug() << "Graph::createRandomNetErdos() - create "
                             << " undirected Edge no " << edgeCount;
-                createEdge(source, target, 1, "black", 2, true, false);
+                createEdge(source, target, 1, initEdgeColor, 2, true, false);
             }
             else {
                 qDebug() << "Graph::createRandomNetErdos() - create "
                             << " directed Edge no " << edgeCount;
-                createEdge(source, target, 1, "black", 0, true, false);
+                createEdge(source, target, 1, initEdgeColor, 0, true, false);
             }
           emit updateProgressDialog(++progressCounter );
         } while ( edgeCount != edges );
@@ -4956,14 +4962,14 @@ void Graph::createRandomNetRingLattice( const int &vert, const int &degree,
         qDebug("Graph: createPhysicistLatticeNetwork, new node i=%i, at x=%i, y=%i", i+1, x,y);
     }
     int target = 0;
-    for (register int i=0;i<vert; i++){
+    for (int i=0;i<vert; i++){
         qDebug("Creating links for node %i = ", i+1);
-        for (register int j=0; j< degree/2 ; j++) {
+        for (int j=0; j< degree/2 ; j++) {
             target = i + j+1 ;
             if ( target > (vert-1))
                 target = target-vert;
             qDebug("Creating Link between %i  and %i", i+1, target+1);
-            createEdge(i+1, target+1, 1, "black", true, true, false);
+            createEdge(i+1, target+1, 1, initEdgeColor, true, true, false);
         }
         emit updateProgressDialog( updateProgress ? ++progressCounter:0 );
     }
@@ -5001,7 +5007,7 @@ void Graph::createRandomNetScaleFree (const int &n,
 
     index.reserve( n );
 
-    for (register int i=0; i< m0 ; ++i) {
+    for (int i=0; i< m0 ; ++i) {
         x=x0 + radius * cos(i * rad);
         y=y0 + radius * sin(i * rad);
 
@@ -5015,12 +5021,12 @@ void Graph::createRandomNetScaleFree (const int &n,
                     );
     }
 
-    for (register int i=0; i < m0; ++i){
+    for (int i=0; i < m0; ++i){
         qDebug() << "Graph::createRandomNetScaleFree() - "
                    << " Creating all edges for initial node i " << i+1;
-        for (register int j=i+1; j< m0  ; ++j) {
+        for (int j=i+1; j< m0  ; ++j) {
             qDebug() << " --- Creating initial edge " << i+1 << " <-> " << j+1;
-            createEdge (i+1, j+1, 1, "black", 2, true, false);
+            createEdge (i+1, j+1, 1, initEdgeColor, 2, true, false);
         }
         emit updateProgressDialog( ++progressCounter );
     }
@@ -5029,7 +5035,7 @@ void Graph::createRandomNetScaleFree (const int &n,
                << " start network growth to " << n
                << " nodes with preferential attachment" << endl;
 
-    for (register int i= m0 ; i < n ; ++i) {
+    for (int i= m0 ; i < n ; ++i) {
 
         x=x0 + radius * cos(i * rad);
         y=y0 + radius * sin(i * rad);
@@ -5056,7 +5062,7 @@ void Graph::createRandomNetScaleFree (const int &n,
         for (;;)
         {	//do until we create m new edges
 
-            for (register int j=0; j < i  ; ++j) {
+            for (int j=0; j < i  ; ++j) {
                 qDebug() << "Graph::createRandomNetScaleFree() - "
                            << " preferential attachment test of new node i "
                            << i+1
@@ -5086,14 +5092,14 @@ void Graph::createRandomNetScaleFree (const int &n,
                     if ( mode == "graph") {
                         qDebug() << " --- Creating pref.att. reciprocal edge "
                                  <<  i+1 << " <-> " << j+1;
-                        createEdge (i+1, j+1, 1, "black", 2, true, false);
+                        createEdge (i+1, j+1, 1, initEdgeColor, 2, true, false);
                         newEdges ++;
 
                     }
                     else {
                         qDebug() << " --- Creating pref.att. directed edge "
                                  <<  i+1 << " <-> " << j+1;
-                        createEdge (i+1, j+1, 1, "black", 1, true, false);
+                        createEdge (i+1, j+1, 1, initEdgeColor, 1, true, false);
                         newEdges ++;
 
                     }
@@ -5124,8 +5130,8 @@ void Graph::createRandomNetSmallWorld (
 
     int candidate;
     int progressCounter=1;
-    for (register int i=1;i<vert; i++) {
-        for (register int j=i+1;j<vert; j++) {
+    for (int i=1;i<vert; i++) {
+        for (int j=i+1;j<vert; j++) {
             qDebug()<<">>>>> REWIRING: Check if  "<< i << " is linked to " << j;
             if ( this-> hasArc(i, j) ) {
                 qDebug()<<">>>>> REWIRING: They're linked. Do a random REWIRING "
@@ -5145,7 +5151,7 @@ void Graph::createRandomNetSmallWorld (
                             qDebug("<----> Random New Edge Experiment between %i and %i:", i, candidate);
                         if (rand() % 100 > 0.5) {
                             qDebug("Creating new link!");
-                            createEdge(i, candidate, 1, "black", true, true, false);
+                            createEdge(i, candidate, 1, initEdgeColor, true, true, false);
                             break;
                         }
                     }
@@ -5176,9 +5182,11 @@ void Graph::createSameDegreeRandomNetwork( const int &vert,
     makeThingsLookRandom();
     index.reserve(vert);
 
-    for (register int i=0; i< vert ; i++) {
-        int x=10+rand() % canvasWidth;
-        int y=10+rand() % canvasHeight;
+    int x = 0, y = 0 ;
+
+    for (int i=0; i< vert ; i++) {
+        x=10+rand() % canvasWidth;
+        y=10+rand() % canvasHeight;
         qDebug("Graph: createUniformRandomNetwork, new node i=%i, at x=%i, y=%i", i+1, x,y);
         createVertex(
                     i+1, initVertexSize,initVertexColor,
@@ -5188,14 +5196,14 @@ void Graph::createSameDegreeRandomNetwork( const int &vert,
                     );
     }
     int target = 0;
-    for (register int i=0;i<vert; i++){
+    for (int i=0;i<vert; i++){
         qDebug("Creating links for node %i = ", i+1);
-        for (register int j=0; j< degree/2 ; j++) {
+        for (int j=0; j< degree/2 ; j++) {
             target = i + j+1 ;
             if ( target > (vert-1))
                 target = target-vert;
             qDebug("Creating Link between %i  and %i", i+1, target+1);
-            createEdge(i+1, target+1, 1, "black", true, true, false);
+            createEdge(i+1, target+1, 1, initEdgeColor, true, true, false);
         }
         emit updateProgressDialog(++progressCounter );
     }

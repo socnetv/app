@@ -3062,8 +3062,10 @@ void MainWindow::initSignalSlots() {
     connect( graphicsWidget, SIGNAL( userClickOnEmptySpace() ),
                      this, SLOT( slotEditClickOnEmptySpace() ) ) ;
 
-    connect( graphicsWidget, SIGNAL( userDoubleClicked(int, QPointF) ),
-             this, SLOT( slotEditNodeAddWithMouse(int,QPointF) ) ) ;
+    connect( graphicsWidget, SIGNAL(
+                 userDoubleClickNewNode(const QPointF &) ),
+             this, SLOT(
+                 slotEditNodeAddWithMouse(const QPointF &) ) ) ;
 
     connect( graphicsWidget, SIGNAL( userMiddleClicked(int, int, float) ),
              this, SLOT( slotEditEdgeCreate(int, int, float) ) 	);
@@ -5685,14 +5687,13 @@ void MainWindow::slotEditNodeAdd() {
 
 /**
  * @brief MainWindow::slotEditNodeAddWithMouse
- * Called by GW when user double-clicks to add a new node
- * Calls Graph::createVertex method to add a new node into the activeGraph.
- * @param num
+ * Called by GW when user double-clicks at p to add a new node
+ * Calls Graph::createVertex method to add the new vertex into the activeGraph.
  * @param p
  */
-void MainWindow::slotEditNodeAddWithMouse(int num, QPointF p) {
-    qDebug("MW: slotEditNodeAddWithMouse(). Calling activeGraph::createVertex() for a vertex named %i", num);
-    activeGraph.createVertex(num, p);
+void MainWindow::slotEditNodeAddWithMouse( const QPointF &p) {
+    qDebug()<< "MW: slotEditNodeAddWithMouse(). Calling activeGraph::createVertex()";
+    activeGraph.createVertex(p);
     statusMessage( tr("New node (numbered %1) added.").arg(activeGraph.lastVertexNumber())  );
 }
 
@@ -6454,7 +6455,7 @@ void MainWindow::slotEditEdgeAdd(){
  * @param weight
  */
 void MainWindow::slotEditEdgeCreate (int v1, int v2, float weight) {
-    qDebug("MW: slotEditEdgeCreate() - setting user settings and calling Graph::createEdge(...)");
+    qDebug()<< "MW: slotEditEdgeCreate() - setting user settings and calling Graph::createEdge(...)";
     bool drawArrows=displayEdgesArrowsAct->isChecked();
     int reciprocal=0;
     bool bezier = false;
@@ -9101,7 +9102,7 @@ void MainWindow::slotOptionsEdgesBezier(bool toggle){
  * @param toggle
  */
 void MainWindow::slotOptionsEdgesThicknessPerWeight(bool toggle) {
-
+    Q_UNUSED(toggle);
 }
 
 

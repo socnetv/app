@@ -131,14 +131,19 @@ public slots:
     void terminateParserThreads (QString reason);
 
     /** Slots to signals from GraphicsWidget and Parser*/
-    void createEdge (int, int, float, QString, int, bool, bool);	//GW and Parser.
-    void createEdge (int, int, float, int, bool, bool);		//GW
+    void createEdge  (const int &v1, const int &v2, const float &weight,
+                      const QString &color ,
+                      const int &reciprocal=0,
+                      const bool &drawArrows=true, const bool &bezier=false);
+    void createEdge (const int &v1, const int &v2, const float &weight,
+                     const int &reciprocal=0,
+                     const bool &drawArrows=true, const bool &bezier=false);
     void createEdgeWebCrawler (int, int);					//WebCrawler
 
     void slotSetEdgeVisibility(int relation, int, int, bool);
 
     //auxiliary createVertex functions
-    void createVertex(int i, QPointF p); 				//Called by GW
+    void createVertex(const QPointF &p);
     void createVertex(int i, int canvasWidth, int canvasHeight); 	//Called by MW
     void createVertexWebCrawler(QString label, int i) ;
 

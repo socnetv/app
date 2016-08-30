@@ -137,7 +137,7 @@ public slots:
     void reset();
 
 signals:
-    void userDoubleClicked(int, QPointF);
+    void userDoubleClickNewNode(const QPointF &);
     void userMiddleClicked(int, int, float);
     void userClickOnEmptySpace();
     void openNodeMenu();

@@ -639,7 +639,7 @@ long int Vertex::localDegree(){
  * @param v2
  * @return
  */
-float Vertex::hasEdgeTo(long int v2){
+float Vertex::hasEdgeTo(const long int &v2){
 //    qDebug()<< "Vertex::hasEdgeTo() " << name() << " -> " << v2 ;
     float m_weight=0;
     bool edgeStatus=false;
@@ -677,7 +677,7 @@ float Vertex::hasEdgeTo(long int v2){
  * @param v2
  * @return
  */
-float Vertex::hasEdgeFrom(long int v2){
+float Vertex::hasEdgeFrom(const long int &v2){
     qDebug()<< "Vertex::hasEdgeFrom()" ;
     float m_weight=0;
     bool edgeStatus=false;

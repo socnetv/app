@@ -205,7 +205,7 @@ public slots:
     void slotEditNodeSelectNone();
 
     void slotEditNodeAdd();
-    void slotEditNodeAddWithMouse(int, QPointF);
+    void slotEditNodeAddWithMouse(const QPointF &);
     void slotEditNodeFind();
     void slotEditNodeRemove();
     void slotEditNodeOpenContextMenu();
