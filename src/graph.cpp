@@ -1050,17 +1050,27 @@ void Graph::setInitEdgeColor(const QString &color){
 
 
 
-//Returns the edgeColor
-QString Graph::edgeColor (const long &v1, const long &v2){
+/**
+ * @brief Graph::arcColor
+ * Returns a qstring color of the directed edge from v1 to v2
+ * @param v1
+ * @param v2
+ * @return
+ */
+QString Graph::arcColor (const long &v1, const long &v2){
     return m_graph[ index[v1] ]->outLinkColor(v2);
 }
 
 
+
 /**
-    Changes the color of all edges.
-*/
+ * @brief Graph::setAllEdgesColor
+ * Changes the color of all edges.
+ * @param color
+ * @return
+ */
 bool Graph::setAllEdgesColor(const QString &color){
-    qDebug()<< "\n\nGraph::setAllEdgesColor()" << color;
+    qDebug()<< "Graph::setAllEdgesColor() - new color: " << color;
     int target=0, source=0;
     setInitEdgeColor(color);
     QHash<int,float> *enabledOutEdges = new QHash<int,float>;
@@ -1075,10 +1085,10 @@ bool Graph::setAllEdgesColor(const QString &color){
         it1=enabledOutEdges->cbegin();
         while ( it1!=enabledOutEdges->cend() ){
             target = it1.key();
-//            qDebug() << "=== Graph::setAllEdgesColor() : "
-//                        << source << "->" << target << " new color " << color;
+            qDebug() << " Graph::setAllEdgesColor() : "
+                        << source << "->" << target << " new color " << color;
             (*it)->setOutLinkColor(target, color);
-            emit changeEdgeColor(source, target, color);
+            emit setEdgeColor(source, target, color);
             ++it1;
         }
     }
@@ -1093,15 +1103,15 @@ bool Graph::setAllEdgesColor(const QString &color){
 /**
     Changes the color of edge (s,t).
 */
-void Graph::setEdgeColor(const long &v1, const long &v2, const QString &color){
-    qDebug()<< "Graph::setEdgeColor() - "<< v1 << " -> "<< v2
+void Graph::setArcColor(const long &v1, const long &v2, const QString &color){
+    qDebug()<< "Graph::setArcColor() - "<< v1 << " -> "<< v2
             <<" index ("<< index[v1]<< " -> "<<index[v2]<<")"
            <<" new color "<< color;
     m_graph[ index[v1] ]->setOutLinkColor(v2, color);
-    emit changeEdgeColor(v1, v2, color);
+    emit setEdgeColor(v1, v2, color);
     if (isSymmetric()) {
         m_graph[ index[v2] ]->setOutLinkColor(v1, color);
-        emit changeEdgeColor(v2, v1, color);
+        emit setEdgeColor(v2, v1, color);
     }
     graphModified=true;
     emit graphChanged();

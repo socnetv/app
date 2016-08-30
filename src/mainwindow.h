@@ -225,10 +225,10 @@ public slots:
     void slotEditEdgeAdd();
     void slotEditEdgeCreate (int v1, int v2, float weight);
     void slotEditEdgeRemove();
-    void slotChangeEdgeLabel();
-    void slotChangeEdgeColor();
-    void slotChangeEdgeWeight();
-    void slotAllEdgesColor();
+    void slotEditEdgeLabel();
+    void slotEditEdgeColor();
+    void slotEditEdgeWeight();
+    void slotEditEdgeColorAll();
 
     void slotFilterNodes();
     void slotFilterIsolateNodes(bool checked);
@@ -429,10 +429,11 @@ private:
     QAction *editEdgeAddAct, *editEdgeRemoveAct;
     QAction *editNodeNumbersSizeAct, *editNodeLabelsSizeAct;
     QAction *editNodeSizeAllAct, *editNodeShapeAll;
-    QAction *changeEdgeLabelAct, *changeEdgeColorAct, *changeEdgeWeightAct;
-    QAction *filterNodesAct, *filterIsolateNodesAct, *filterEdgesAct, *transformNodes2EdgesAct, *symmetrizeAct;
-    QAction *changeBackColorAct, *editNodeColorAll, *changeAllEdgesColorAct, *editNodeNumbersColorAct,
-            *editNodeLabelsColorAct;
+    QAction *editEdgeLabelAct, *editEdgeColorAct, *editEdgeWeightAct;
+    QAction *filterNodesAct, *filterIsolateNodesAct, *filterEdgesAct,
+    *transformNodes2EdgesAct, *symmetrizeAct;
+    QAction *changeBackColorAct, *editNodeColorAll, *editEdgeColorAllAct,
+            *editNodeNumbersColorAct,*editNodeLabelsColorAct;
     QAction *drawEdgesWeightsAct, *displayEdgesWeightNumbersAct, *displayEdgesAct;
     QAction *displayEdgesArrowsAct, *drawEdgesBezier,*considerEdgeWeightsAct;
     QAction *backgroundImageAct,*helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;

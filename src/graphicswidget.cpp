@@ -176,41 +176,47 @@ void GraphicsWidget::drawNode(const int &num, const int &nodeSize,
 
 
 
-/** Draws an edge from source to target Node. 
-    This is used when we do not have references to nodes - only nodeNumbers:
-    a) when we load a network file (check = FALSE)
+
+/**
+ * @brief GraphicsWidget::drawEdge
+ * Draws an edge from source to target Node.
+ * Used when we do not have references to nodes but only nodeNumbers:
+    a) when we load a network file
     b) when the user clicks on the AddLink button on the MW.
-*/
-void GraphicsWidget::drawEdge(int i, int j, float weight, bool reciprocal, bool drawArrows, QString color, bool bezier){
+ * @param source
+ * @param target
+ * @param weight
+ * @param reciprocal
+ * @param drawArrows
+ * @param color
+ * @param bezier
+ */
+void GraphicsWidget::drawEdge(const int &source, const int &target,
+                              const float &weight,
+                              const bool &reciprocal,
+                              const bool &drawArrows,
+                              const QString &color, const bool &bezier){
 
     QString edgeName = QString::number(m_curRelation) + QString(":")
-            + QString::number(i) + QString(">")+ QString::number(j);
-    qDebug()<<"GW: drawEdge "<< edgeName << "weight "<<weight
+            + QString::number(source) + QString(">")+ QString::number(target);
+    qDebug()<<"GW: drawEdge "<< edgeName << " weight "<<weight
            << " - nodeHash reports "<< nodeHash.size()<<" nodes.";
-    if (i == j ) {
-        bezier = true;
-    }
-    //	qDebug()<< "GW: drawEdge() drawing edge now!"<< " From node "
-    //			<<  nodeHash.value(i)->nodeNumber()<< " to node "
-    //			<<  nodeHash.value(j)->nodeNumber() << " weight "
-    //			<< weight << " nodesize "
-    //			<<  m_nodeSize << " edgecolor "<< color ;
-    Edge *edge=new Edge (this, nodeHash.value(i), nodeHash.value(j),
-                         Qt::SolidLine,
-                         weight,
-                         m_nodeSize, color, reciprocal, drawArrows, bezier);
+
+    Edge *edge=new Edge (this, nodeHash.value(source), nodeHash.value(target),
+                         Qt::SolidLine, weight,
+                         m_nodeSize, color,
+                         reciprocal, drawArrows,
+                         (source==target) ? true: bezier );
     edge -> setZValue(253);		//Edges have lower z than nodes. Nodes always appear above edges.
     // Keep it here so that it doesnt interfere with dashed lines.
     edge->setBoundingRegionGranularity(0.05);	// Slows down the universe...Keep it 0.05...
     //edge->setCacheMode (QGraphicsItem::DeviceCoordinateCache);  //Also slows down the universe...
 
-    //    qDebug()<<"GW: drawEdge() - adding new edge between "<<i << " and "<< j
-    //           << " to edgesHash. Name: "<<edgeName.toUtf8();
     edgesHash.insert(edgeName, edge);
 
     //    qDebug()<< "GW: drawEdge(): drawing edge weight number...";
-    double x = ( (nodeHash.value(i))->x() + (nodeHash.value(j))->x() ) / 2.0;
-    double y = ( (nodeHash.value(i))->y() + (nodeHash.value(j))->y() ) / 2.0;
+    double x = ( (nodeHash.value(source))->x() + (nodeHash.value(target))->x() ) / 2.0;
+    double y = ( (nodeHash.value(source))->y() + (nodeHash.value(target))->y() ) / 2.0;
     //    qDebug()<< "GW: drawEdge(): edge weight will be at " << x << ", " << y;
     EdgeWeight *edgeWeight = new  EdgeWeight (edge, 7, QString::number(weight) );
     edgeWeight-> setPos(x,y);
@@ -534,20 +540,28 @@ void   GraphicsWidget::setNumbersInsideNodes(bool numIn){
 
 
 
-/** 
-    Changes/Sets the color of an edge.
-    Called from MW when the user changes the color of an edge (right-clicking).
-*/
 
-void GraphicsWidget::setEdgeColor(long int source, long int target, QString color){
+/**
+ * @brief GraphicsWidget::setEdgeColor
+ * Sets the color of an edge.
+ * Called from MW when the user changes the color of an edge (right-clicking).
+ * Also called from Graph when all edge colors need to be changed.
+ * @param source
+ * @param target
+ * @param color
+ */
+void GraphicsWidget::setEdgeColor(const long int &source,
+                                  const long int &target,
+                                  const QString &color){
 
     QString edgeName =  QString::number(m_curRelation) + QString(":") +
             QString::number( source ) + QString(">")+ QString::number( target );
 
-    qDebug()<<"GW::setEdgeColor() -" << edgeName << " to "  << color;;
+    qDebug()<<"GW::setEdgeColor() -" << edgeName <<  " new color "  << color;
+    if  ( edgesHash.contains (edgeName) ) {
+        edgesHash.value(edgeName) -> setColor(color);
+    }
 
-    //    if  ( edgesHash.contains (edgeName) ) { // VERY SLOW
-    edgesHash.value(edgeName) -> setColor(color);
 
 }
 

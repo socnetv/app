@@ -113,10 +113,14 @@ public slots:
     bool setNodeNumberSize(const long int &, const int &size=0);
     bool setNodeLabelSize(const long int &, const int &size=0);
 
-    void drawEdge(int, int, float, bool, bool, QString, bool);
+    void drawEdge(const int &source, const int &target,
+                  const float &weight,
+                  const bool &reciprocal,
+                  const bool &drawArrows,
+                  const QString &color, const bool &bezier);
     void eraseEdge(int, int);
     void setEdgeVisibility (int relation, int, int, bool);
-    void setEdgeColor(long int, long int, QString);
+    void setEdgeColor(const long int &, const long int&, const QString &);
     void edgeClicked(Edge *);
     void openEdgeContextMenu();
 

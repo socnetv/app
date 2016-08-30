@@ -169,9 +169,9 @@ public:
     void set_dispY (float y) { m_disp.ry() = y ; }
 
     //FIXME -- VERY SLOW?
-    void setOutLinkColor(const long int &v2, const QString &color) {
-        outLinkColors[v2]=color;
-    }
+    void setOutLinkColor(const long int &v2,
+                         const QString &color) { outLinkColors[v2]=color; }
+
     //FIXME: See MW line 1965 - FIXME MULTIGRAPH
     QString outLinkColor(const long int &v2) {
         if (outLinkColors.contains(v2))

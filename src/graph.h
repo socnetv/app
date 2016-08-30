@@ -182,7 +182,9 @@ signals:
                    const bool &numbersInside, const bool &showNumbers);
 
     void eraseNode (long int);						//erase node from GW
-    void drawEdge(int, int, float, bool, bool, QString, bool);	//call GW to draw an edge
+    //call GW to draw an edge
+    void drawEdge ( const int &, const int &, const float &,
+                    const bool &, const bool, const QString &, const bool &);
     void eraseEdge(int, int);					//emited from removeEdge() to GW to clear the edge item.
     void setEdgeVisibility (int, int, int, bool);			// emitted from each Vertex
     void setVertexVisibility(long int, bool);		//notifies GW to disable a node
@@ -194,7 +196,9 @@ signals:
     void setNodeLabelSize(const long int &, const int &);
 
     void drawEdgeReciprocal(int, int);				//call GW to draw the edge as symmetric one
-    void changeEdgeColor(long int, long int, QString);
+    void setEdgeColor(const long int &v1,
+                         const long int &v2,
+                         const QString &color);
     void addGuideCircle(int, int, int);				//call GW to draw a circular layout line somewhere.
     void addGuideHLine (int);					//call GW to draw a horizontal layout line somewhere.
     void moveNode(int, qreal, qreal);
@@ -319,8 +323,8 @@ public:
     void setArcWeight (const long int &v1, const long int &v2, const float &w);
     void setInitEdgeColor(const QString &);
 
-    void setEdgeColor(const long int &v1, const long int &v2, const QString &color);
-    QString edgeColor (const long int &v1, const long int &v2);
+    void setArcColor(const long int &v1, const long int &v2, const QString &color);
+    QString arcColor (const long int &v1, const long int &v2);
     bool setAllEdgesColor(const QString &color);
 
     float density();

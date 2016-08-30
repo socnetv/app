@@ -889,31 +889,43 @@ void MainWindow::initActions(){
 
     editEdgeAddAct = new QAction(QIcon(":/images/plines.png"), tr("Add Edge"),this);
     editEdgeAddAct->setShortcut(Qt::CTRL + Qt::Key_Slash);
-    editEdgeAddAct->setStatusTip(tr("Adds a directed edge from a node to another"));
+    editEdgeAddAct->setStatusTip(tr("Add a directed edge from a node to another"));
     editEdgeAddAct->setWhatsThis(tr("Add Edge\n\nAdds a directed edge from a node to another"));
     connect(editEdgeAddAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeAdd()));
 
     editEdgeRemoveAct = new QAction(QIcon(":/images/disconnect.png"), tr("Remove Edge"), this);
     editEdgeRemoveAct ->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_Slash);
-    editEdgeRemoveAct->setStatusTip(tr("Removes an Edge"));
-    editEdgeRemoveAct->setWhatsThis(tr("Remove Edge\n\nRemoves an Edge from the network"));
+    editEdgeRemoveAct->setStatusTip(tr("Remove an Edge"));
+    editEdgeRemoveAct->setWhatsThis(tr("Remove Edge\n\n"
+                                       "Removes an Edge from the network."
+                                       "If an edge has been clicked previously "
+                                       "it is removed. "
+                                       "Otherwise, it asks for source and target "
+                                       "nodes"));
     connect(editEdgeRemoveAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeRemove()));
 
-    changeEdgeLabelAct = new QAction(QIcon(":/images/letters.png"), tr("Change Edge Label"), this);
-    changeEdgeLabelAct->setStatusTip(tr("Changes the Label of an Edge"));
-    changeEdgeLabelAct->setWhatsThis(tr("Change Label\n\nChanges the label of an Edge"));
-    connect(changeEdgeLabelAct, SIGNAL(triggered()), this, SLOT(slotChangeEdgeLabel()));
-    changeEdgeLabelAct->setEnabled(false);
+    editEdgeLabelAct = new QAction(QIcon(":/images/letters.png"), tr("Change Edge Label"), this);
+    editEdgeLabelAct->setStatusTip(tr("Change the Label of an Edge"));
+    editEdgeLabelAct->setWhatsThis(tr("Change Label\n\nChanges the label of an Edge"));
+    connect(editEdgeLabelAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeLabel()));
+    editEdgeLabelAct->setEnabled(false);
 
-    changeEdgeColorAct = new QAction(QIcon(":/images/colorize.png"),tr("Change Edge Color"),	this);
-    changeEdgeColorAct->setStatusTip(tr("Changes the Color of an Edge"));
-    changeEdgeColorAct->setWhatsThis(tr("Change Color\n\nChanges the Color of an Edge"));
-    connect(changeEdgeColorAct, SIGNAL(triggered()), this, SLOT(slotChangeEdgeColor()));
+    editEdgeColorAct = new QAction(QIcon(":/images/colorize.png"),tr("Change Edge Color"),	this);
+    editEdgeColorAct->setStatusTip(tr("Changes the Color of an Edge"));
+    editEdgeColorAct->setWhatsThis(tr("Change Color\n\nChanges the Color of an Edge"));
+    connect(editEdgeColorAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeColor()));
 
-    changeEdgeWeightAct = new QAction(tr("Change Edge Weight"), this);
-    changeEdgeWeightAct->setStatusTip(tr("Changes the weight of an edge"));
-    changeEdgeWeightAct->setWhatsThis(tr("Change Value\n\nChanges the Weight of an Edge"));
-    connect(changeEdgeWeightAct, SIGNAL(triggered()), this, SLOT(slotChangeEdgeWeight()));
+    editEdgeWeightAct = new QAction(tr("Change Edge Weight"), this);
+    editEdgeWeightAct->setStatusTip(tr("Changes the weight of an edge"));
+    editEdgeWeightAct->setWhatsThis(tr("Change Value\n\nChanges the Weight of an Edge"));
+    connect(editEdgeWeightAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeWeight()));
+
+
+    editEdgeColorAllAct = new QAction( tr("Change all Edges Colors"), this);
+    editEdgeColorAllAct->setStatusTip(tr("Click to change the color of all Edges."));
+    editEdgeColorAllAct->setWhatsThis(tr("Background\n\nChanges all Edges color"));
+    connect(editEdgeColorAllAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeColorAll()));
+
 
     filterNodesAct = new QAction(tr("Filter Nodes"), this);
     filterNodesAct -> setEnabled(false);
@@ -942,14 +954,6 @@ void MainWindow::initActions(){
     changeBackColorAct->setStatusTip(tr("Click to change the background color"));
     changeBackColorAct->setWhatsThis(tr("Background\n\nChanges background color"));
     connect(changeBackColorAct, SIGNAL(triggered()), this, SLOT(slotBackgroundColor()));
-
-
-    changeAllEdgesColorAct = new QAction( tr("Change all Edges Colors"), this);
-    changeAllEdgesColorAct->setStatusTip(tr("Click to change the color of all Edges."));
-    changeAllEdgesColorAct->setWhatsThis(tr("Background\n\nChanges all Edges color"));
-    connect(changeAllEdgesColorAct, SIGNAL(triggered()), this, SLOT(slotAllEdgesColor()));
-
-
 
     transformNodes2EdgesAct = new QAction( tr("Transform Nodes to Edges"),this);
     transformNodes2EdgesAct->setStatusTip(tr("Transforms the network so that nodes become Edges and vice versa"));
@@ -2052,9 +2056,9 @@ void MainWindow::initMenuBar() {
     editEdgeMenu -> addAction(editEdgeAddAct);
     editEdgeMenu -> addAction(editEdgeRemoveAct);
     editEdgeMenu  ->addSeparator();
-    editEdgeMenu -> addAction(changeEdgeLabelAct);
-    editEdgeMenu -> addAction(changeEdgeColorAct);
-    editEdgeMenu -> addAction(changeEdgeWeightAct);
+    editEdgeMenu -> addAction(editEdgeLabelAct);
+    editEdgeMenu -> addAction(editEdgeColorAct);
+    editEdgeMenu -> addAction(editEdgeWeightAct);
     editEdgeMenu  ->addSeparator();
     //   transformNodes2EdgesAct -> addTo (editMenu);
     editEdgeMenu  -> addAction (symmetrizeAct);
@@ -2076,7 +2080,7 @@ void MainWindow::initMenuBar() {
     editMenu -> addMenu (colorOptionsMenu);
     colorOptionsMenu -> addAction (changeBackColorAct);
     colorOptionsMenu -> addAction (editNodeColorAll);
-    colorOptionsMenu -> addAction (changeAllEdgesColorAct);
+    colorOptionsMenu -> addAction (editEdgeColorAllAct);
     colorOptionsMenu -> addAction (editNodeNumbersColorAct);
     colorOptionsMenu -> addAction (editNodeLabelsColorAct);
 
@@ -3140,28 +3144,27 @@ void MainWindow::initSignalSlots() {
     connect( &activeGraph, SIGNAL( graphChanged() ),
              this, SLOT( slotNetworkChanged() ) ) ;
 
-    connect( &activeGraph,
-             SIGNAL(
-                 signalFileType(int , QString , int , int, bool) ),
-             this,
-             SLOT( fileType(int , QString , int , int, bool) )
-             ) ;
+    connect( &activeGraph, SIGNAL( signalFileType( int, QString,
+                                                   int , int, bool) ),
+             this, SLOT( fileType( int, QString, int , int, bool) ) ) ;
 
-    connect( &activeGraph,
-             SIGNAL(
-                 drawEdge( int, int, float, bool, bool, QString, bool)
-                 ),
-             graphicsWidget,
-             SLOT(
-                 drawEdge( int, int,float, bool, bool, QString, bool)
-                 )  ) ;
+    connect( &activeGraph, SIGNAL( drawEdge( const int&, const int&, const float &,
+                                             const bool&, const bool&,
+                                             const QString &, const bool&)),
+             graphicsWidget, SLOT( drawEdge( const int&, const int&, const float &,
+                                             const bool &, const bool&,
+                                             const QString &, const bool &) )  ) ;
 
     connect( &activeGraph, SIGNAL( drawEdgeReciprocal(int, int) ),
              graphicsWidget, SLOT( drawEdgeReciprocal(int, int) ) );
 
 
-    connect( &activeGraph, SIGNAL( changeEdgeColor(long int,long int,QString)),
-             graphicsWidget, SLOT( setEdgeColor(long int,long int,QString) ) );
+    connect( &activeGraph, SIGNAL( setEdgeColor(const long int &,
+                                                   const long int &,
+                                                   const QString &)),
+             graphicsWidget, SLOT( setEdgeColor(const long int &,
+                                                const long int &,
+                                                const QString &) ) );
 
 
 
@@ -5612,7 +5615,7 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
     options -> addAction (optionsNodeNumbersVisibilityAct);
     options -> addAction (optionsNodeLabelsVisibilityAct);
     options -> addSeparator();
-    options -> addAction (changeAllEdgesColorAct  );
+    options -> addAction (editEdgeColorAllAct  );
     options -> addSeparator();
     options -> addAction (changeBackColorAct  );
     options -> addAction (backgroundImageAct  );
@@ -6364,8 +6367,8 @@ void MainWindow::openEdgeContextMenu() {
     edgeContextMenu -> addAction( "## EDGE " + edgeName + " ##  ");
     edgeContextMenu -> addSeparator();
     edgeContextMenu -> addAction( editEdgeRemoveAct );
-    edgeContextMenu -> addAction( changeEdgeWeightAct );
-    edgeContextMenu -> addAction( changeEdgeColorAct );
+    edgeContextMenu -> addAction( editEdgeWeightAct );
+    edgeContextMenu -> addAction( editEdgeColorAct );
     edgeContextMenu -> exec(QCursor::pos() );
     delete  edgeContextMenu;
 }
@@ -6570,8 +6573,8 @@ void MainWindow::slotEditEdgeRemove(){
 
 
 
-//TODO slotChangeEdgeLabel
-void MainWindow::slotChangeEdgeLabel(){
+//TODO slotEditEdgeLabel
+void MainWindow::slotEditEdgeLabel(){
     slotNetworkChanged();
 }
 
@@ -6582,13 +6585,13 @@ void MainWindow::slotChangeEdgeLabel(){
 /**
 *  Changes the color of all edges
 */
-void MainWindow::slotAllEdgesColor(){
+void MainWindow::slotEditEdgeColorAll(){
     QColor color = QColorDialog::getColor( Qt::red, this,
                                            "Change the color of all nodes" );
     if (color.isValid()) {
         appSettings["initEdgeColor"]=color.name();
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        qDebug() << "MainWindow::slotAllEdgesColor() - new edge color: " << appSettings["initEdgeColor"];
+        qDebug() << "MainWindow::slotEditEdgeColorAll() - new edge color: " << appSettings["initEdgeColor"];
         //createProgressBar();
         activeGraph.setAllEdgesColor(appSettings["initEdgeColor"]);
         //destroyProgressBar();
@@ -6604,12 +6607,14 @@ void MainWindow::slotAllEdgesColor(){
 
 
 
+
 /**
-*	Changes the colour of the clicked edge.
-*	If no edge is clicked, then it asks the user to specify one.
-*/
-void MainWindow::slotChangeEdgeColor(){
-    qDebug() << "MW::slotChangeEdgeColor()";
+ * @brief MainWindow::slotEditEdgeColor
+ * Changes the colour of the clicked edge.
+ * If no edge is clicked, then it asks the user to specify one.
+ */
+void MainWindow::slotEditEdgeColor(){
+    qDebug() << "MW::slotEditEdgeColor()";
     if ( ( !fileLoaded && !networkModified) || activeEdges() ==0 )  {
         QMessageBox::critical(this, "Error",
                               tr("There are no edges! \nLoad a network file or create a new network first."), "OK",0);
@@ -6666,7 +6671,7 @@ void MainWindow::slotChangeEdgeColor(){
 
     if ( color.isValid()) {
         QString newColor=color.name();
-        qDebug() << "MW::slotChangeEdgeColor() - " << sourceNode << " -> "
+        qDebug() << "MW::slotEditEdgeColor() - " << sourceNode << " -> "
                     << targetNode << " newColor "
                  << newColor;
         activeGraph.setEdgeColor( sourceNode, targetNode, newColor);
@@ -6685,14 +6690,14 @@ void MainWindow::slotChangeEdgeColor(){
 *	Changes the weight of the clicked edge.
 *	If no edge is clicked, asks the user to specify an Edge.
 */
-void MainWindow::slotChangeEdgeWeight(){
+void MainWindow::slotEditEdgeWeight(){
     if ( ( !fileLoaded && !networkModified) || activeEdges() ==0 )  {
         QMessageBox::critical(this, "Error",tr("There are no edges! \nLoad a network file or create a new network first."), "OK",0);
         statusMessage( tr("No edges present...")  );
         return;
     }
 
-    qDebug("MW::slotChangeEdgeWeight()");
+    qDebug("MW::slotEditEdgeWeight()");
     int  sourceNode=-1, targetNode=-1;
     float newWeight=1.0;
     int min=activeGraph.firstVertexNumber();
@@ -6738,10 +6743,10 @@ void MainWindow::slotChangeEdgeWeight(){
             }
     }
     else {  //edgeClicked
-        qDebug() << "MW: slotChangeedgeWeight() - an Edge has already been clicked";
+        qDebug() << "MW: slotEditEdgeWeight() - an Edge has already been clicked";
         sourceNode=clickedEdge->sourceNodeNumber();
         targetNode=clickedEdge->targetNodeNumber();
-        qDebug() << "MW: slotChangeEdgeWeight() from "
+        qDebug() << "MW: slotEditEdgeWeight() from "
                  << sourceNode << " to " << targetNode;
         if ( activeGraph.symmetricEdge(sourceNode, targetNode) ) {
             QString s=QString::number(sourceNode);
@@ -6752,7 +6757,7 @@ void MainWindow::slotChangeEdgeWeight(){
                                               s+" -> "+ t, t+" -> "+s, tr("Both"), 0, 1 ))
             {
             case 0:
-                qDebug("MW: slotChangeEdgeWeight()  real edge %i -> %i", sourceNode, targetNode);
+                qDebug("MW: slotEditEdgeWeight()  real edge %i -> %i", sourceNode, targetNode);
                 newWeight=QInputDialog::getDouble(this,
                                                   "Change edge weight...",tr("New edge weight: "), 1.0, -100.0, 100.00 ,1, &ok) ;
                 if (ok) {
@@ -6769,7 +6774,7 @@ void MainWindow::slotChangeEdgeWeight(){
                 }
                 break;
             case 1:
-                qDebug("MW: slotChangeEdgeWeight() virtual edge %i -> %i",targetNode , sourceNode);
+                qDebug("MW: slotEditEdgeWeight() virtual edge %i -> %i",targetNode , sourceNode);
                 newWeight=(float) QInputDialog::getDouble(this,
                                                           "Change edge weight...",tr("New edge Weight: "), 1, -100, 100 ,1, &ok ) ;
                 if (ok) {
@@ -6784,7 +6789,7 @@ void MainWindow::slotChangeEdgeWeight(){
                 }
                 break;
             case 2:
-                qDebug("MW: slotChangeEdgeWeight()  both directions %i <-> %i",targetNode , sourceNode);
+                qDebug("MW: slotEditEdgeWeight()  both directions %i <-> %i",targetNode , sourceNode);
                 newWeight=(float) QInputDialog::getDouble(this,
                                                           "Change edge weight...",tr("New edge Weight: "), 1, -100, 100 ,1, &ok ) ;
 
@@ -6804,15 +6809,15 @@ void MainWindow::slotChangeEdgeWeight(){
             }
         }
         else {
-            qDebug() << "MW: slotChangeEdgeWeight()  real edge " << sourceNode
+            qDebug() << "MW: slotEditEdgeWeight()  real edge " << sourceNode
                      << " -> " <<targetNode;
             newWeight=QInputDialog::getDouble(this,
                                               "Change edge weight...",tr("New edge weight: "), 1.0, -100, 100 ,1, &ok) ;
             if (ok) {
-                qDebug() << "MW: slotChangeEdgeWeight()  setWeight to  "
+                qDebug() << "MW: slotEditEdgeWeight()  setWeight to  "
                          << newWeight;
                 clickedEdge->setWeight(newWeight);
-                qDebug() << "MW: slotChangeEdgeWeight()  calling update  ";
+                qDebug() << "MW: slotEditEdgeWeight()  calling update  ";
                 clickedEdge->update();
                 qDebug()<<"MW: newWeight will be "<< newWeight;
                 activeGraph.setArcWeight(sourceNode, targetNode, newWeight);
