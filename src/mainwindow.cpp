@@ -361,7 +361,7 @@ void MainWindow::slotOpenSettingsDialog() {
                  this, &MainWindow::slotOptionsEmbedLogoExporting);
 
     connect( m_settingsDialog, &SettingsDialog::setBgColor,
-                     this, &MainWindow::slotBackgroundColor);
+                     this, &MainWindow::slotOptionsBackgroundColor);
 
     connect( m_settingsDialog, &SettingsDialog::setBgImage,
                      this, &MainWindow::slotOptionsBackgroundImage);
@@ -950,10 +950,6 @@ void MainWindow::initActions(){
     filterEdgesAct -> setWhatsThis(tr("Filter Edges\n\nFilters Edge of some specific weight out of the network."));
     connect(filterEdgesAct , SIGNAL(triggered()), this, SLOT(slotShowFilterEdgesDialog()));
 
-    changeBackColorAct = new QAction(QIcon(":/images/color.png"), tr("Change Background Color"), this);
-    changeBackColorAct->setStatusTip(tr("Click to change the background color"));
-    changeBackColorAct->setWhatsThis(tr("Background\n\nChanges background color"));
-    connect(changeBackColorAct, SIGNAL(triggered()), this, SLOT(slotBackgroundColor()));
 
     transformNodes2EdgesAct = new QAction( tr("Transform Nodes to Edges"),this);
     transformNodes2EdgesAct->setStatusTip(tr("Transforms the network so that nodes become Edges and vice versa"));
@@ -1870,6 +1866,13 @@ void MainWindow::initActions(){
     connect(drawEdgesBezier, SIGNAL(toggled(bool)), this, SLOT(slotOptionsEdgesBezier(bool)) );
 
 
+    changeBackColorAct = new QAction(QIcon(":/images/color.png"), tr("Change Background Color"), this);
+    changeBackColorAct->setStatusTip(tr("Change the canvasbackground color"));
+    changeBackColorAct->setWhatsThis(tr("Background Color\n\n"
+                                        "Changes the background color of the canvas"));
+    connect(changeBackColorAct, SIGNAL(triggered()), this, SLOT(slotOptionsBackgroundColor()));
+
+
     backgroundImageAct = new QAction(tr("Background Image (this session)"),	this);
     backgroundImageAct->setStatusTip(
                 tr("Select and display a custom image in the background"
@@ -2055,11 +2058,13 @@ void MainWindow::initMenuBar() {
     editMenu-> addMenu (editEdgeMenu);
     editEdgeMenu -> addAction(editEdgeAddAct);
     editEdgeMenu -> addAction(editEdgeRemoveAct);
-    editEdgeMenu  ->addSeparator();
+    editEdgeMenu -> addSeparator();
     editEdgeMenu -> addAction(editEdgeLabelAct);
     editEdgeMenu -> addAction(editEdgeColorAct);
     editEdgeMenu -> addAction(editEdgeWeightAct);
-    editEdgeMenu  ->addSeparator();
+    editEdgeMenu -> addSeparator();
+    editEdgeMenu -> addAction (editEdgeColorAllAct);
+    editEdgeMenu -> addSeparator();
     //   transformNodes2EdgesAct -> addTo (editMenu);
     editEdgeMenu  -> addAction (symmetrizeAct);
 
@@ -2074,15 +2079,6 @@ void MainWindow::initMenuBar() {
     filterMenu -> addAction(filterEdgesAct );
 
 
-    editNodeMenu -> addSeparator();
-    colorOptionsMenu=new QMenu(tr("Colors"));
-    colorOptionsMenu -> setIcon(QIcon(":/images/colorize.png"));
-    editMenu -> addMenu (colorOptionsMenu);
-    colorOptionsMenu -> addAction (changeBackColorAct);
-    colorOptionsMenu -> addAction (editNodeColorAll);
-    colorOptionsMenu -> addAction (editEdgeColorAllAct);
-    colorOptionsMenu -> addAction (editNodeNumbersColorAct);
-    colorOptionsMenu -> addAction (editNodeLabelsColorAct);
 
 
 
@@ -2219,7 +2215,9 @@ void MainWindow::initMenuBar() {
     viewOptionsMenu = new QMenu (tr("&View..."));
     viewOptionsMenu -> setIcon(QIcon(":/images/view.png"));
     optionsMenu -> addMenu (viewOptionsMenu);
-    viewOptionsMenu-> addAction (backgroundImageAct);
+    viewOptionsMenu -> addAction (changeBackColorAct);
+    viewOptionsMenu -> addAction (backgroundImageAct);
+
 
 
 
@@ -9113,17 +9111,6 @@ void MainWindow::slotOptionsEdgesThicknessPerWeight(bool toggle) {
 }
 
 
-/**
-*  Changes the background color of the scene
-*/
-void MainWindow::slotBackgroundColor () {
-    qDebug() << "MW: slotBackgroundColor " << appSettings["initBackgroundColor"];
-    graphicsWidget ->setBackgroundBrush(
-                QBrush(QColor (appSettings["initBackgroundColor"]))
-            );
-    statusMessage( tr("Ready. ") );
-}
-
 
 
 
@@ -9209,6 +9196,34 @@ void MainWindow::slotOptionsDebugMessages(bool toggle){
 
 
 
+
+/**
+ * @brief MainWindow::slotOptionsBackgroundColor
+ * Called from Options menu and Settings dialog
+ * @param color QColor
+ */
+void MainWindow::slotOptionsBackgroundColor (QColor color){
+
+    if (!color.isValid()) {
+        color = QColorDialog::getColor( QColor ( appSettings["initBackgroundColor"] ),
+                                        this,
+                                               "Change the background color" );
+    }
+    if (color.isValid()) {
+        appSettings["initBackgroundColor"] = color.name();
+        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+        graphicsWidget ->setBackgroundBrush(
+                    QBrush(QColor (appSettings["initBackgroundColor"]))
+                );
+        QApplication::restoreOverrideCursor();
+        statusMessage( tr("Ready. ")  );
+    }
+    else {
+        // user pressed Cancel
+        statusMessage( tr("Invalid color. ") );
+    }
+
+}
 
 
 /**

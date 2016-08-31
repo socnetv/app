@@ -298,7 +298,7 @@ public slots:
     void slotOptionsEdgesVisibility(bool toggle);
     void slotOptionsEdgeArrrowsVisibility(bool toggle);
 
-    void slotBackgroundColor ();
+    void slotOptionsBackgroundColor(QColor color=QColor());
     void slotOptionsBackgroundImageSelect(bool toggle);
     void slotOptionsBackgroundImage();
 
