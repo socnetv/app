@@ -56,7 +56,9 @@ SettingsDialog::SettingsDialog(
                 (appSettings["showProgressBar"] == "true") ? true:false
                 );
 
-    //canvas options
+    /**
+     * canvas options
+     */
     ui->antialiasingChkBox->setChecked(
                 (appSettings["antialiasing"] == "true") ? true:false
                 );
@@ -71,7 +73,9 @@ SettingsDialog::SettingsDialog(
 
     ui->bgImageSelectEdit->setText((m_appSettings)["initBackgroundImage"]);
 
-    // window options
+    /**
+     * window options
+     */
     ui->leftPanelChkBox->setChecked(
                 ( appSettings["showLeftPanel"] == "true") ? true:false
                 );
@@ -80,13 +84,14 @@ SettingsDialog::SettingsDialog(
                 ( appSettings["showRightPanel"] == "true") ? true:false
                 );
 
-    // nodes options
+    /**
+     * node options
+     */
     m_nodeColor = QColor (m_appSettings["initNodeColor"]);
     m_pixmap = QPixmap(60,20) ;
     m_pixmap.fill( m_nodeColor );
     ui->nodeColorBtn->setIcon(QIcon(m_pixmap));
 
-    //m_nodeShape = m_appSettings["initNodeShape"];
     if (m_appSettings["initNodeShape"] == "box") {
         ui->nodeShapeRadioBox->setChecked(true);
     }
@@ -101,22 +106,21 @@ SettingsDialog::SettingsDialog(
     }
     else if (m_appSettings["initNodeShape"] == "triangle") {
         ui->nodeShapeRadioTriangle->setChecked(true);
-
     }
     else { // default
        ui->nodeShapeRadioCircle->setChecked(true);
     }
 
-
     ui->nodeSizeSpin->setValue( m_appSettings["initNodeSize"].toInt(0, 10) );
 
-
     ui->nodeNumbersChkBox->setChecked(
-                (m_appSettings["initNodeNumbersVisibility"] == "true" ) ? true:false
+                ( m_appSettings["initNodeNumbersVisibility"] == "true") ? true : false
                 );
+
     ui->nodeNumbersInsideChkBox->setChecked(
                 (m_appSettings["initNodeNumbersInside"] == "true" ) ? true:false
                 );
+
     ui->nodeNumberSizeSpin->setValue( m_appSettings["initNodeNumberSize"].toInt(0, 10) );
 
     m_nodeNumberColor = QColor (m_appSettings["initNodeNumberColor"]);
@@ -132,7 +136,26 @@ SettingsDialog::SettingsDialog(
     ui->nodeLabelColorBtn->setIcon(QIcon(m_pixmap));
 
 
-    // signals
+    /**
+     * edge options
+     */
+
+    ui->edgesChkBox-> setChecked(
+                (m_appSettings["initEdgeVisibility"] == "true") ? true: false
+                                                                  );
+    if (m_appSettings["initEdgeShape"] == "line") {
+        ui->edgeShapeRadioStraightLine->setChecked(true);
+    }
+    else if (m_appSettings["initEdgeShape"] == "bezier") {
+        ui->edgeShapeRadioBezier->setChecked(true);
+    }
+    else {
+        ui->edgeShapeRadioStraightLine->setChecked(true);
+    }
+
+    /**
+     * dialog signals to slots
+     */
     connect (ui->dataDirSelectButton, &QToolButton::clicked,
              this, &SettingsDialog::getDataDir);
 
@@ -189,17 +212,27 @@ SettingsDialog::SettingsDialog(
 
 
     connect (ui->nodeNumbersChkBox, &QCheckBox::stateChanged,
-                     this, &SettingsDialog::setNodeNumbersVisibility);
+                     this, &SettingsDialog::getNodeNumbersVisibility);
     connect (ui->nodeNumbersInsideChkBox, &QCheckBox::stateChanged,
-             this,  &SettingsDialog::setNodeNumbersInside);
+             this,  &SettingsDialog::getNodeNumbersInside);
     connect(ui->nodeNumberSizeSpin, SIGNAL(valueChanged(int)),
             this, SLOT(getNodeNumberSize(int)) );
     connect (ui->nodeNumberColorBtn, &QToolButton::clicked,
              this, &SettingsDialog::getNodeNumberColor);
 
 
+    connect(ui->nodeLabelSizeSpin, SIGNAL(valueChanged(int)),
+                this, SLOT(getNodeLabelSize(int)) );
+
     connect (ui->nodeLabelColorBtn, &QToolButton::clicked,
              this, &SettingsDialog::getNodeLabelColor);
+
+
+    connect (ui->edgeShapeRadioStraightLine, &QRadioButton::clicked,
+             this, &SettingsDialog::getEdgeShape);
+    connect (ui->edgeShapeRadioBezier, &QRadioButton::clicked,
+             this, &SettingsDialog::getEdgeShape);
+
 
 
 }
@@ -332,14 +365,29 @@ void SettingsDialog::getNodeSize( int size) {
 }
 
 
+/**
+ * @brief SettingsDialog::getNodeNumbersVisibility
+ * @param toggle
+ */
+void SettingsDialog::getNodeNumbersVisibility (bool toggle){
+    m_appSettings["initNodeNumbersVisibility"]= (toggle) ? "true" : "false";
+    emit setNodeNumbersVisibility(toggle);
+}
 
-
+/**
+ * @brief SettingsDialog::getNodeNumbersInside
+ * @param toggle
+ */
+void SettingsDialog::getNodeNumbersInside(bool toggle) {
+    m_appSettings["initNodeNumbersInside"]= (toggle) ? "true" : "false";
+    emit setNodeNumbersInside(toggle);
+}
 
 /**
  * @brief SettingsDialog::getNodeNumberSize
  * @param size
  */
-void SettingsDialog::getNodeNumberSize( int size) {
+void SettingsDialog::getNodeNumberSize( const int size) {
     m_appSettings["initNodeNumberSize"]= QString::number(size);
     emit setNodeNumberSize(0, size);
 }
@@ -381,6 +429,34 @@ void SettingsDialog::getNodeLabelColor(){
     else {
         // user pressed Cancel
     }
+}
+
+/**
+ * @brief SettingsDialog::getNodeLabelSize
+ * @param size
+ */
+void SettingsDialog::getNodeLabelSize( const int size) {
+    m_appSettings["initNodeLabelSize"]= QString::number(size);
+    emit setNodeLabelSize(0, size);
+}
+
+
+
+
+/**
+ * @brief SettingsDialog::getEdgeShape
+ */
+void SettingsDialog::getEdgeShape(){
+
+    if ( ui->edgeShapeRadioStraightLine->isChecked () ){
+       m_appSettings["initEdgeShape"]  = "line";
+    }
+    else if ( ui->edgeShapeRadioBezier->isChecked() ){
+       m_appSettings["initEdgeShape"]  = "bezier";
+    }
+    qDebug()<< "SettingsDialog::getEdgeShape() - new default shape " <<
+               m_appSettings["initEdgeShape"];
+    emit setEdgeShape(m_appSettings["initEdgeShape"], 0);
 }
 
 

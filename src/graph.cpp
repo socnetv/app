@@ -183,28 +183,33 @@ int Graph::relations(){
  * @param nodeShape
  * @param signalMW
  */
-void Graph::createVertex(const int &num, const int &size, const QString &nodeColor,
+void Graph::createVertex(const int &num, const int &nodeSize, const QString &nodeColor,
                          const QString &numColor, const int &numSize,
-                         const QString &label, const QString &lColor, const int &lSize,
+                         const QString &label, const QString &labelColor,
+                         const int &labelSize,
                          const QPointF &p, const QString &nodeShape,
                          const bool &signalMW){
     int value = 1;
 
-    addVertex ( num, value, size,  nodeColor,
+    addVertex ( num, value, nodeSize,  nodeColor,
                numColor, numSize,
-               label, lColor, lSize, p, nodeShape);
+               label, labelColor, labelSize, p, nodeShape);
 
-    emit drawNode( num, size,  nodeColor,
+
+    emit drawNode( num, nodeSize, nodeShape, nodeColor,
+                   initVertexNumbersVisibility, initNumbersInsideNodes,
                    numColor, numSize,
-                   label, lColor, lSize,p, nodeShape,
-                   initShowLabels, initNumbersInsideNodes, initShowNumbers);
+                   initVertexLabelsVisibility, label,
+                   labelColor, labelSize,
+                   p );
 
     if (signalMW)
         emit graphChanged();
+
     //draw new user-clicked nodes with the same color with that of the file loaded
     initVertexColor=nodeColor;
     initVertexShape=nodeShape;
-    initVertexSize=size;
+    initVertexSize=nodeSize;
 } 
 
 
@@ -948,6 +953,7 @@ void Graph::setVertexLabelSize(const long int &v1, const int &size) {
     qDebug()<< "Graph: setVertexLabelSize for "<< v1 << ", index "
             << index[v1]<< " with size "<< size;
     m_graph[ index[v1] ] -> setLabelSize ( size );
+    emit setNodeLabelSize ( v1, size);
     graphModified=true;
     emit graphChanged();
 
@@ -6632,7 +6638,7 @@ bool Graph::loadGraph (	const QString m_fileName,
                         const bool m_showLabels,
                         const int maxWidth, const int maxHeight,
                         const int fileFormat, const int two_sm_mode){
-    initShowLabels = m_showLabels;
+    initVertexLabelsVisibility = m_showLabels;
     qDebug() << "Graph::loadGraph() : "<< m_fileName
                 << " calling parser.load() from thread " << this->thread();
 
@@ -10665,30 +10671,30 @@ bool Graph::saveGraphToGraphMLFormat (
 
 
 /**
- * @brief Graph::setShowNumbers
+ * @brief Graph::setVertexNumbersVisibility
  * @param toggle
  */
-void Graph::setShowNumbers(bool toggle){
-    initShowNumbers=toggle;
+void Graph::setVertexNumbersVisibility(bool toggle){
+    initVertexNumbersVisibility=toggle;
 
 }
 
 
 /**
- * @brief Graph::setShowLabels
+ * @brief Graph::setVertexLabelsVisibility
  * @param toggle
  */
-void Graph::setShowLabels(bool toggle){
-    initShowLabels=toggle;
+void Graph::setVertexLabelsVisibility(bool toggle){
+    initVertexLabelsVisibility=toggle;
 
 }
 
 
 /**
- * @brief Graph::setShowNumbersInsideNodes
+ * @brief Graph::setVertexNumbersInsideNodes
  * @param toggle
  */
-void Graph::setShowNumbersInsideNodes(bool toggle){
+void Graph::setVertexNumbersInsideNodes(bool toggle){
     initNumbersInsideNodes=toggle;
 
 }

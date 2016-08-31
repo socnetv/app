@@ -119,10 +119,10 @@ public slots:
     /** Slots to signals from Parser */
 
     void addRelationFromParser(QString);
-    void createVertex( const int &num, const int &size, const QString &nodeColor,
+    void createVertex(const int &num, const int &size, const QString &nodeColor,
                        const QString &numColor, const int &numSize,
                        const QString &label, const QString &lColor,
-                       const int &lSize, const QPointF &p, const QString &nodeShape,
+                       const int &labelSize, const QPointF &p, const QString &nodeShape,
                        const bool &signalMW
                         );//Main vertex creation call
 
@@ -172,14 +172,14 @@ signals:
     void signalNodeSizesByInDegree(bool);
 
     /** Signals to GraphicsWidget */
-    void drawNode( const int &num, const int &size,
-                   const QString &nodeColor, const QString &numberColor,
-                   const int &numSize, const QString &label,
-                   const QString &labelColor,
-                   const int &labelSize,
-                   const QPointF &p, const QString &nodeShape,
-                   const bool &showLabels,
-                   const bool &numbersInside, const bool &showNumbers);
+    void drawNode( const int &num, const int &size, const QString &nodeShape,
+                   const QString &nodeColor,
+                   const bool &showNumbers,const bool &numbersInside,
+                   const QString &numberColor, const int &numSize,
+                   const bool &showLabels, const QString &label,
+                   const QString &labelColor, const int &labelSize,
+                   const QPointF &p
+                    );
 
     void eraseNode (long int);						//erase node from GW
     //call GW to draw an edge
@@ -219,9 +219,9 @@ public:
     void setSocNetV_Version (QString ver) { VERSION = ver; }
 
 
-    void setShowNumbersInsideNodes(bool toggle);
-    void setShowNumbers(bool toggle);
-    void setShowLabels(bool toggle);
+    void setVertexNumbersInsideNodes(bool toggle);
+    void setVertexNumbersVisibility(bool toggle);
+    void setVertexLabelsVisibility(bool toggle);
 
     /*FILES (READ AND WRITE)*/
     bool loadGraph (const QString, const QString m_codecName,
@@ -662,7 +662,8 @@ private:
     float averGraphDistance, nonZeroDistancesCounter;
     int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;
     int timerId,  canvasWidth, canvasHeight;
-    bool order, initShowLabels,initShowNumbers,  initNumbersInsideNodes;
+    bool order, initVertexLabelsVisibility,initVertexNumbersVisibility;
+    bool initNumbersInsideNodes;
     bool adjacencyMatrixCreated, symmetricAdjacencyMatrix, graphModified,
         distanceMatrixCreated;
     bool reachabilityMatrixCreated;

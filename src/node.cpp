@@ -87,43 +87,8 @@ Node::Node(GraphicsWidget* gw, const int &num, const int &size,
     if (!m_hasNumberInside && m_hasNumber) {
         addNumber();
     }
-    m_path = new QPainterPath;
-    if ( m_shape == "circle") {
-        m_path->addEllipse (-m_size, -m_size, 2*m_size, 2*m_size);
-        if (m_hasNumberInside && m_hasNumber)
-            m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
-    }
-    else if ( m_shape == "ellipse") {
-        m_path->addEllipse(-m_size, -m_size, 2*m_size, 1.5* m_size);
-        if (m_hasNumberInside && m_hasNumber)
-            m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
-    }
-    else if ( m_shape == "box" || m_shape == "rectangle"  ) {  //rectangle: for GraphML compliance
-        m_path->addRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size );
-        if (m_hasNumberInside && m_hasNumber)
-            m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
-    }
-    else if (m_shape == "roundrectangle"  ) {  //roundrectangle: GraphML only
-        m_path->addRoundedRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size, 60.0, 60.0, Qt::RelativeSize );
-        if (m_hasNumberInside && m_hasNumber)
-            m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
-    }
-    else if ( m_shape == "triangle") {
-        m_poly_t=new QPolygon(3);
-        m_poly_t -> setPoints (3,  0,-m_size,  -m_size,m_size, m_size,+m_size);
-        m_path->addPolygon(*m_poly_t);
-        if (m_hasNumberInside && m_hasNumber)
-        m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
-        m_path->closeSubpath();
-    }
-    else if ( m_shape == "diamond"){
-        m_poly_d=new QPolygon(4);
-        m_poly_d -> setPoints (4, 0,-m_size,  -m_size,0,       0,+m_size,     +m_size,0);
-        m_path->addPolygon(*m_poly_d);
-        if (m_hasNumberInside && m_hasNumber)
-            m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
-        m_path->closeSubpath();
-    }
+
+    setShape(m_shape);
 
     qDebug()<< "Node: constructor: initial position at: "
 			<< this->x()<<", "<<this->y()
@@ -195,24 +160,38 @@ void Node::setShape(const QString shape) {
     m_path = new QPainterPath;
     if ( m_shape == "circle") {
         m_path->addEllipse (-m_size, -m_size, 2*m_size, 2*m_size);
+        if (m_hasNumberInside && m_hasNumber)
+            m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
     }
     else if ( m_shape == "ellipse") {
         m_path->addEllipse(-m_size, -m_size, 2*m_size, 1.5* m_size);
+        if (m_hasNumberInside && m_hasNumber)
+            m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
     }
     else if ( m_shape == "box" || m_shape == "rectangle"  ) {  //rectangle: for GraphML compliance
         m_path->addRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size );
+        if (m_hasNumberInside && m_hasNumber)
+            m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
     }
     else if (m_shape == "roundrectangle"  ) {  //roundrectangle: GraphML only
         m_path->addRoundedRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size, 60.0, 60.0, Qt::RelativeSize );
+        if (m_hasNumberInside && m_hasNumber)
+            m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
     }
     else if ( m_shape == "triangle") {
+        m_poly_t=new QPolygon(3);
         m_poly_t -> setPoints (3,  0,-m_size,  -m_size,m_size, m_size,+m_size);
         m_path->addPolygon(*m_poly_t);
+        if (m_hasNumberInside && m_hasNumber)
+        m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
         m_path->closeSubpath();
     }
     else if ( m_shape == "diamond"){
+        m_poly_d=new QPolygon(4);
         m_poly_d -> setPoints (4, 0,-m_size,  -m_size,0,       0,+m_size,     +m_size,0);
         m_path->addPolygon(*m_poly_d);
+        if (m_hasNumberInside && m_hasNumber)
+            m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
         m_path->closeSubpath();
     }
     update();
@@ -277,31 +256,6 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 
 
 
-void Node::setLabelText ( QString label) {
-	prepareGeometryChange();
-	m_label->setPlainText(label);
-	m_hasLabel=true;
-}
-
-
-QString Node::labelText ( ) { 
-	if (m_hasLabel) {
-		return m_label->toPlainText();				
-	}	
-	else return "";
-}
-
-
-
-void Node::setNumberInside (const bool &toggle){
-
-    m_hasNumberInside = toggle;
-    if ( m_hasNumber )
-        deleteNumber();
-}
-
-
-
 
 /** 
  *	Propagates the changes to connected elements, i.e. edges, numbers, etc. 
@@ -324,10 +278,6 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
             if (!m_hasNumberInside) 	{ //move it outside
                 m_number -> setZValue(254);
                 m_number -> setPos( m_size+m_nd, 0);
-            }
-            else { 	//move it inside node
-                m_number -> setZValue(255);
-                m_number -> setPos(  - m_size, - m_size-3);
             }
         }
         if (m_hasLabel) {
@@ -435,8 +385,20 @@ void Node::addLabel ()  {
 }
 
 
+void Node::setLabelSize(const int &size) {
+    m_labelSize = size;
+    if (!m_hasLabel) {
+        addLabel();
+    }
+    m_label->setSize(m_labelSize);
+
+}
+
 NodeLabel* Node::label(){
-	return m_label;
+    if (!m_hasLabel) {
+        addLabel();
+    }
+    return m_label;
 }
 
 void Node::deleteLabel(){
@@ -447,8 +409,64 @@ void Node::deleteLabel(){
 }
 
 
+void Node::setLabelText ( QString label) {
+    prepareGeometryChange();
+    m_label->setPlainText(label);
+    m_hasLabel=true;
+}
 
 
+QString Node::labelText ( ) {
+    if (m_hasLabel) {
+        return m_label->toPlainText();
+    }
+    else return "";
+}
+
+
+void Node::setNumberVisibility(const bool &toggle) {
+    qDebug() << "Node::setNumberVisibility() " << toggle;
+    m_hasNumber=toggle;
+    if (toggle) { //show
+        if ( !m_hasNumberInside )
+            addNumber();
+        else {
+            setShape(m_shape);
+        }
+    }
+    else { // hide
+        deleteNumber();
+        setShape(m_shape);
+    }
+}
+
+void Node::setNumberInside (const bool &toggle){
+    qDebug()<<"Node::setNumberInside() " << toggle;
+    if (toggle) { // set number inside
+        deleteNumber();
+    }
+    else {
+        addNumber();
+    }
+    m_hasNumberInside = toggle;
+   setShape(m_shape);
+}
+
+
+
+void Node::setNumberSize(const int &size) {
+    m_numSize = size;
+    if (m_hasNumber && !m_hasNumberInside) {
+        m_number->setSize(m_numSize);
+    }
+    else if (m_hasNumber && m_hasNumberInside) {
+        setShape(m_shape);
+    }
+    else {
+        // create a nodeNumber ?
+    }
+
+}
 
 NodeNumber* Node::number(){
     return m_number;
@@ -456,6 +474,7 @@ NodeNumber* Node::number(){
 
 
 void Node::addNumber () {
+    qDebug()<<"Node::addNumber () " ;
     m_hasNumber=true;
     m_number= new  NodeNumber ( this, QString::number(m_num), m_numSize);
     m_number -> setDefaultTextColor (m_numColor);
@@ -464,9 +483,11 @@ void Node::addNumber () {
 
 
 void Node::deleteNumber( ){
-	qDebug ("Node: deleteNumber ");
-	m_number->hide();
-	graphicsWidget->removeItem(m_number);	
+    qDebug () << "Node: deleteNumber ";
+    if (m_hasNumber && !m_hasNumberInside) {
+        m_number->hide();
+        graphicsWidget->removeItem(m_number);
+    }
 }
 
 

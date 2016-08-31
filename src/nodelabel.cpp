@@ -41,7 +41,7 @@ NodeLabel::NodeLabel(Node *jim , const QString &text,  const int &size) :
 
 
 
-void NodeLabel::setSize(const int size) {
+void NodeLabel::setSize(const int &size) {
     prepareGeometryChange();
     setFont( QFont ("Times", size, QFont::Black, false) );
     //update();

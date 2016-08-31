@@ -51,9 +51,13 @@ public slots:
     void getNodeColor();
     void getNodeShape();
     void getNodeSize(int);
+    void getNodeNumbersVisibility (bool toggle);
+    void getNodeNumbersInside(bool toggle);
     void getNodeNumberColor();
-    void getNodeNumberSize(int);
+    void getNodeNumberSize(const int);
     void getNodeLabelColor();
+    void getNodeLabelSize(const int);
+    void getEdgeShape();
 
 signals:
     void setProgressBars(bool);
@@ -75,6 +79,7 @@ signals:
     void setNodeNumberColor(const QColor);
     void setNodeLabelColor(const QColor);
     void setNodeLabelSize(const int v, const int &);
+    void setEdgeShape(const QString, const long int);
     void saveSettings();
 private:
      QMap<QString, QString> &m_appSettings ;

@@ -125,8 +125,6 @@ MainWindow::MainWindow(const QString & m_fileName) {
     initSignalSlots();  //connect signals and slots between app components
 
     /*  load and initialise default network parameters  */
-    qDebug()<<"   initialise default network parameters";
-
     initNet();
 
     // Check if user-provided network file on startup
@@ -194,25 +192,30 @@ QMap<QString,QString> MainWindow::initSettings(){
 
 
     maxNodes=5000;		//Max nodes used by createRandomNetwork dialogues
-    labelDistance=8;
-    numberDistance=5;
-
-    bezier=false;
 
     // hard-coded initial settings to use only on first app load
     // when there are no user defined values
     appSettings["initNodeSize"]= "10";
     appSettings["initNodeColor"]="red";
     appSettings["initNodeShape"]="circle";
-    appSettings["initNodeLabelColor"]="darkblue";
-    appSettings["initNodeLabelSize"]="6";
+
+    appSettings["initNodeNumbersVisibility"] = "true";
     appSettings["initNodeNumberSize"]="6";
     appSettings["initNodeNumberColor"]="black";
-    appSettings["initNodeNumbersVisibility"] = "true";
-    appSettings["initNodeLabelsVisibility"] = "false";
     appSettings["initNodeNumbersInside"] = "false";
+    appSettings["initNodeNumberDistance"] = "5";
 
+    appSettings["initNodeLabelsVisibility"] = "false";
+    appSettings["initNodeLabelSize"]="6";
+    appSettings["initNodeLabelColor"]="darkblue";
+    appSettings["initNodeLabelDistance"] = "8";
+
+    appSettings["initEdgeVisibility"]="true";
+    appSettings["initEdgeShape"]="line"; //bezier
     appSettings["initEdgeColor"]="black";
+    appSettings["initEdgeArrows"]="true";
+    appSettings["initEdgeThicknessPerWeight"]="true";
+    appSettings["initEdgeWeightNumberVisibility"]="false";
     appSettings["considerWeights"]="false";
     appSettings["inverseWeights"]="false";
     appSettings["askedAboutWeights"]="false";
@@ -880,7 +883,7 @@ void MainWindow::initActions(){
                                            "Click to select and apply a new font-size to all node labels"
                                            "This setting will apply to this session only. \n"
                                            "To permanently change it, use Settings & Preferences"));
-    connect(editNodeLabelsSizeAct, SIGNAL(triggered()), this, SLOT(slotEditNodeLabelsSize()) );
+    connect(editNodeLabelsSizeAct, SIGNAL(triggered()), this, SLOT(slotEditNodeLabelSize()) );
 
     editNodeLabelsColorAct = new QAction( tr("Change All Node Labels Color (this session)"),	this);
     editNodeLabelsColorAct->setStatusTip(tr("Change the color of the labels of all nodes "
@@ -1755,7 +1758,7 @@ void MainWindow::initActions(){
     optionsNodeNumbersVisibilityAct->setCheckable (true);
     optionsNodeNumbersVisibilityAct->setChecked (
                 ( appSettings["initNodeNumbersVisibility"] == "true" ) ? true: false );
-    connect(optionsNodeNumbersVisibilityAct, SIGNAL(toggled(bool)),
+    connect(optionsNodeNumbersVisibilityAct, SIGNAL(triggered(bool)),
             this, SLOT(slotOptionsNodeNumbersVisibility(bool)));
 
 
@@ -1770,7 +1773,7 @@ void MainWindow::initActions(){
     optionsNodeNumbersInsideAct->setCheckable (true);
     optionsNodeNumbersInsideAct->setChecked(
                 ( appSettings["initNodeNumbersInside"] == "true" ) ? true: false );
-    connect(optionsNodeNumbersInsideAct, SIGNAL(toggled(bool)),
+    connect(optionsNodeNumbersInsideAct, SIGNAL(triggered(bool)),
             this, SLOT(slotOptionsNodeNumbersInside(bool)));
 
 
@@ -1797,22 +1800,26 @@ void MainWindow::initActions(){
                 "This setting will apply to this session only. \n"
                 "To permanently change it, use Settings & Preferences"));
     optionsEdgesVisibilityAct->setCheckable(true);
-    optionsEdgesVisibilityAct->setChecked(true);
-    connect(optionsEdgesVisibilityAct, SIGNAL(toggled(bool)),
+    optionsEdgesVisibilityAct->setChecked(
+                (appSettings["initEdgeVisibility"] == "true") ? true: false
+            );
+    connect(optionsEdgesVisibilityAct, SIGNAL(triggered(bool)),
             this, SLOT(slotOptionsEdgesVisibility(bool)) );
 
 
-    displayEdgesWeightNumbersAct = new QAction(tr("Display edge Weights"),	this);
-    displayEdgesWeightNumbersAct->setStatusTip(
+    optionsEdgeWeightNumbersAct = new QAction(tr("Display Edge Weights"),	this);
+    optionsEdgeWeightNumbersAct->setStatusTip(
                 tr("Toggle displaying of numbers of Edges weights (this session only)"));
-    displayEdgesWeightNumbersAct->setWhatsThis(
-                tr("Display edge Weights\n\n"
+    optionsEdgeWeightNumbersAct->setWhatsThis(
+                tr("Display Edge Weights\n\n"
                    "Enables or disables displaying edge weight numbers.\n"
                    "This setting will apply to this session only. \n"
                    "To permanently change it, use Settings & Preferences"));
-    displayEdgesWeightNumbersAct->setCheckable(true);
-    displayEdgesWeightNumbersAct->setChecked(false);
-    connect(displayEdgesWeightNumbersAct, SIGNAL(toggled(bool)),
+    optionsEdgeWeightNumbersAct->setCheckable(true);
+    optionsEdgeWeightNumbersAct->setChecked(
+                (appSettings["initEdgeWeightNumberVisibility"] == "true") ? true: false
+                );
+    connect(optionsEdgeWeightNumbersAct, SIGNAL(triggered(bool)),
             this, SLOT(slotOptionsEdgeWeightNumbersVisibility(bool)) );
 
     considerEdgeWeightsAct = new QAction(tr("Consider edge Weights in calculations"),	this);
@@ -1832,30 +1839,34 @@ void MainWindow::initActions(){
     connect(considerEdgeWeightsAct, SIGNAL(triggered(bool)),
             this, SLOT(slotOptionsEdgeWeightsDuringComputation(bool)) );
 
-    displayEdgesArrowsAct = new QAction( tr("Display edge Arrows"),this);
-    displayEdgesArrowsAct->setStatusTip(
+    optionsEdgeArrowsAct = new QAction( tr("Display Edge Arrows"),this);
+    optionsEdgeArrowsAct->setStatusTip(
                 tr("Toggle displaying directional Arrows on edges (this session only)"));
-    displayEdgesArrowsAct->setWhatsThis(
+    optionsEdgeArrowsAct->setWhatsThis(
                 tr("Display edge Arrows\n\n"
                    "Enables or disables displaying of arrows on edges.\n "
                    "Useful if all links are reciprocal (undirected graph).\n"
                    "This setting will apply to this session only. \n"
                    "To permanently change it, use Settings & Preferences"));
-    displayEdgesArrowsAct->setCheckable(true);
-    displayEdgesArrowsAct->setChecked(true);
-    connect(displayEdgesArrowsAct, SIGNAL(toggled(bool)),
-            this, SLOT(slotOptionsEdgeArrrowsVisibility(bool)) );
+    optionsEdgeArrowsAct->setCheckable(true);
+    optionsEdgeArrowsAct->setChecked(
+                (appSettings["initEdgeArrows"]=="true") ? true: false
+                );
+    connect(optionsEdgeArrowsAct, SIGNAL(triggered(bool)),
+            this, SLOT(slotOptionsEdgeArrowsVisibility(bool)) );
 
-    drawEdgesWeightsAct = new QAction( tr("Edge thickness reflects weight"), this);
-    drawEdgesWeightsAct->setStatusTip(tr("Draw edges as thick as their weights (if specified)"));
-    drawEdgesWeightsAct->setWhatsThis(
+    optionsEdgeThicknessPerWeightAct = new QAction( tr("Edge Thickness reflects Weight"), this);
+    optionsEdgeThicknessPerWeightAct->setStatusTip(tr("Draw edges as thick as their weights (if specified)"));
+    optionsEdgeThicknessPerWeightAct->setWhatsThis(
                 tr("Edge thickness reflects weight\n\n"
                    "Click to toggle having all edges as thick as their weight (if specified)"));
-    drawEdgesWeightsAct->setCheckable(true);
-    drawEdgesWeightsAct->setChecked(false);
-    drawEdgesWeightsAct->setEnabled(false);
-    connect(drawEdgesWeightsAct, SIGNAL(toggled(bool)),
-            this, SLOT(slotOptionsEdgesThicknessPerWeight()) );
+    optionsEdgeThicknessPerWeightAct->setCheckable(true);
+    optionsEdgeThicknessPerWeightAct->setChecked(
+                (appSettings["initEdgeThicknessPerWeight"]=="true") ? true: false
+                                                                      );
+    connect(optionsEdgeThicknessPerWeightAct, SIGNAL(triggered(bool)),
+            this, SLOT(slotOptionsEdgeThicknessPerWeight()) );
+    optionsEdgeThicknessPerWeightAct->setEnabled(false);
 
     drawEdgesBezier = new QAction( tr("Bezier Curves"),	this);
     drawEdgesBezier->setStatusTip(tr("Draw Edges as Bezier curves"));
@@ -1865,16 +1876,20 @@ void MainWindow::initActions(){
                    "This setting will apply to this session only. \n"
                    "To permanently change it, use Settings & Preferences"));
     drawEdgesBezier->setCheckable(true);
-    drawEdgesBezier->setChecked (false);
+    drawEdgesBezier->setChecked (
+                (appSettings["initEdgeShape"]=="bezier") ? true: false
+                );
     drawEdgesBezier->setEnabled(false);
-    connect(drawEdgesBezier, SIGNAL(toggled(bool)), this, SLOT(slotOptionsEdgesBezier(bool)) );
+    connect(drawEdgesBezier, SIGNAL(triggered(bool)),
+            this, SLOT(slotOptionsEdgesBezier(bool)) );
 
 
     changeBackColorAct = new QAction(QIcon(":/images/color.png"), tr("Change Background Color"), this);
     changeBackColorAct->setStatusTip(tr("Change the canvasbackground color"));
     changeBackColorAct->setWhatsThis(tr("Background Color\n\n"
                                         "Changes the background color of the canvas"));
-    connect(changeBackColorAct, SIGNAL(triggered()), this, SLOT(slotOptionsBackgroundColor()));
+    connect(changeBackColorAct, SIGNAL(triggered()),
+            this, SLOT(slotOptionsBackgroundColor()));
 
 
     backgroundImageAct = new QAction(tr("Background Image (this session)"),	this);
@@ -1889,7 +1904,8 @@ void MainWindow::initActions(){
                    "To permanently change it, use Settings & Preferences"));
     backgroundImageAct->setCheckable(true);
     backgroundImageAct->setChecked(false);
-    connect(backgroundImageAct, SIGNAL(toggled(bool)), this, SLOT(slotOptionsBackgroundImageSelect(bool)));
+    connect(backgroundImageAct, SIGNAL(triggered(bool)),
+            this, SLOT(slotOptionsBackgroundImageSelect(bool)));
 
     openSettingsAct = new QAction(QIcon(":/images/appsettings.png"), tr("Settings"),	this);
     openSettingsAct->setShortcut(Qt::CTRL + Qt::Key_Comma);
@@ -2208,11 +2224,11 @@ void MainWindow::initMenuBar() {
 
     optionsMenu -> addMenu (edgeOptionsMenu);
     edgeOptionsMenu -> addAction (optionsEdgesVisibilityAct);
-    edgeOptionsMenu -> addAction (displayEdgesWeightNumbersAct);
+    edgeOptionsMenu -> addAction (optionsEdgeWeightNumbersAct);
     edgeOptionsMenu -> addAction (considerEdgeWeightsAct);
-    edgeOptionsMenu -> addAction (displayEdgesArrowsAct );
+    edgeOptionsMenu -> addAction (optionsEdgeArrowsAct );
     edgeOptionsMenu -> addSeparator();
-    edgeOptionsMenu -> addAction (drawEdgesWeightsAct);
+    edgeOptionsMenu -> addAction (optionsEdgeThicknessPerWeightAct);
     edgeOptionsMenu -> addAction (drawEdgesBezier);
 
     viewOptionsMenu = new QMenu (tr("&View..."));
@@ -2849,7 +2865,7 @@ void MainWindow::initStatusBar() {
  * The latter is a QGraphicsView canvas which is the main widget of SocNetV.
  */
 void MainWindow::initView() {
-    qDebug ("MW initView()");
+    qDebug ()<< "MW::initView()";
     //create a scene
     scene=new QGraphicsScene();
 
@@ -3050,6 +3066,7 @@ void MainWindow::initWindowLayout() {
  *
  */
 void MainWindow::initSignalSlots() {
+    qDebug ()<< "MW::initSignalSlots()";
 
     // Signals from graphicsWidget to MainWindow
 
@@ -3121,21 +3138,29 @@ void MainWindow::initSignalSlots() {
              graphicsWidget, SLOT( moveNode(const int &, const qreal &, const qreal &) ) ) ;
 
 
+
+
     connect( &activeGraph,
              SIGNAL(
-                 drawNode( const int &, const int &,  const QString &,
-                           const QString &, const int &, const QString&,
+                 drawNode( const int &, const int &, const QString &,
                            const QString &,
-                           const int &, const QPointF &, const QString &,
-                           const bool &, const bool &, const bool &)
+                           const bool &,const bool &,
+                           const QString &, const int &,
+                           const bool &, const QString &,
+                           const QString &, const int &,
+                           const QPointF &
+                            )
                  ),
              graphicsWidget,
              SLOT(
-                 drawNode( const int & ,const int &,  const QString &,
-                           const QString &, const int &, const QString &,
+                 drawNode( const int &, const int &, const QString &,
                            const QString &,
-                           const int &, const QPointF &, const QString &,
-                           const bool &, const bool &, const bool&)
+                           const bool &,const bool &,
+                           const QString &, const int &,
+                           const bool &, const QString &,
+                           const QString &, const int &,
+                           const QPointF &
+                            )
                  )
              ) ;
 
@@ -3193,8 +3218,8 @@ void MainWindow::initSignalSlots() {
     connect( &activeGraph, &Graph::setNodeLabel ,
              graphicsWidget, &GraphicsWidget::setNodeLabel );
 
-    connect( &activeGraph, SIGNAL( setNodeLabelSize(long int, int)  ),
-             graphicsWidget, SLOT(  setNodeLabelSize (long int , int) ) );
+    connect( &activeGraph, SIGNAL( setNodeLabelSize(const long int &, const int &)  ),
+             graphicsWidget, SLOT(  setNodeLabelSize (const long int &, const int &) ) );
 
 
     connect( &activeGraph, SIGNAL( statusMessage (QString) ),
@@ -3286,7 +3311,7 @@ void MainWindow::initSignalSlots() {
  * Used on app start and especially when erasing a network to start a new one
  */
 void MainWindow::initNet(){
-    qDebug()<<"MW: initNet() START INITIALISATION";
+    qDebug()<<"MW::initNet() - START INITIALISATION";
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
     // Init basic variables
@@ -3338,13 +3363,13 @@ void MainWindow::initNet(){
 
     activeGraph.setInitEdgeColor(appSettings["initEdgeColor"]);
 
-    activeGraph.setShowLabels(
+    activeGraph.setVertexLabelsVisibility(
                 (appSettings["initNodeLabelsVisibility"] == "true" ) ? true: false
                 );
-    activeGraph.setShowNumbers(
+    activeGraph.setVertexNumbersVisibility(
                 ( appSettings["initNodeNumbersVisibility"] == "true" ) ? true: false
                 );
-    activeGraph.setShowNumbersInsideNodes(
+    activeGraph.setVertexNumbersInsideNodes(
                 ( appSettings["initNodeNumbersInside"] == "true" ) ? true: false
                 );
 
@@ -3372,19 +3397,29 @@ void MainWindow::initNet(){
     toolBoxLayoutForceDirectedSelect->setCurrentIndex(0);
     toolBoxNodeSizesByOutDegreeBx->setChecked(false);
     toolBoxNodeSizesByInDegreeBx->setChecked(false);
-    displayEdgesWeightNumbersAct->setChecked(false);
+
+    optionsEdgeWeightNumbersAct->setChecked(
+                (appSettings["initEdgeWeightNumberVisibility"] == "true") ? true:false
+                );
     considerEdgeWeightsAct->setChecked(false);
-    //displayEdgesArrowsAct->setChecked(false);		//FIXME: USER PREFS EMITTED TO GRAPH?
+    optionsEdgeArrowsAct->setChecked(
+                (appSettings["initEdgeArrows"] == "true") ? true: false
+            );
 
     filterIsolateNodesAct->setChecked(false); // re-init orphan nodes menu item
 
     editRelationChangeCombo->clear();
 
     graphicsWidget->setInitNodeColor(appSettings["initNodeColor"]);
-    graphicsWidget->setInitNumberDistance(numberDistance);
-    graphicsWidget->setInitLabelDistance(labelDistance);
+    graphicsWidget->setInitNumberDistance(
+                appSettings["initNodeNumberDistance"].toInt(0,10)
+            );
+    graphicsWidget->setInitLabelDistance(
+                appSettings["initNodeLabelDistance"].toInt(0,10)
+                );
     graphicsWidget->setInitZoomIndex(250);
     graphicsWidget->setInitNodeSize(appSettings["initNodeSize"].toInt(0, 10));
+
     if (appSettings["initBackgroundImage"] != ""
             && QFileInfo(appSettings["initBackgroundImage"]).exists()) {
         graphicsWidget->setBackgroundBrush(QImage(appSettings["initBackgroundImage"]));
@@ -6497,10 +6532,12 @@ void MainWindow::slotEditEdgeAdd(){
  */
 void MainWindow::slotEditEdgeCreate (int v1, int v2, float weight) {
     qDebug()<< "MW: slotEditEdgeCreate() - setting user settings and calling Graph::createEdge(...)";
-    bool drawArrows=displayEdgesArrowsAct->isChecked();
     int reciprocal=0;
     bool bezier = false;
-    activeGraph.createEdge(v1, v2, weight, reciprocal, drawArrows, bezier);
+    activeGraph.createEdge(
+                v1, v2, weight, reciprocal,
+                (appSettings["initEdgeArrows"] == "true") ? true: false
+            , bezier);
 
     if ( activeEdges() == 1 && editRelationChangeCombo->count() == 0 ) {
         slotEditRelationAdd();
@@ -6572,7 +6609,11 @@ void MainWindow::slotEditEdgeRemove(){
                 //make new edge
                 // 						graphicsWidget->unmakeEdgeReciprocal(clickedEdge->targetNodeNumber(), clickedEdge->sourceNodeNumber());
                 //FIXME weight should be the same
-                graphicsWidget->drawEdge(targetNode, sourceNode, 1, false, displayEdgesArrowsAct->isChecked(), appSettings["initEdgeColor"], false);
+                graphicsWidget->drawEdge(
+                            targetNode, sourceNode, 1, false,
+                            (appSettings["initEdgeArrows"] == "true") ? true: false,
+                            appSettings["initEdgeColor"], false
+                        );
 
                 break;
             case 1:
@@ -6979,7 +7020,7 @@ void MainWindow::slotLayoutRandom(){
     if (!fileLoaded && !networkModified  )  {
                 QMessageBox::critical(
                     this, "Error",
-                    tr("Sorry, I can't follow! "
+                    tr("Sorry, nothing to do! "
                        "\nLoad a network file or create a new network first. \n"
                        "Then we can talk about layouts!"), "OK",0);
         statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
@@ -8909,22 +8950,25 @@ void MainWindow::destroyProgressBar(){
  * @param toggle
  */
 void MainWindow::slotOptionsNodeNumbersVisibility(bool toggle) {
+    qDebug() << "MW::slotOptionsNodeNumbersVisibility()" << toggle;
     if (!fileLoaded && ! networkModified) {
-        QMessageBox::critical(this, "Error",tr("There are no nodes! \nLoad a network file or create a new network."), "OK",0);
+        QMessageBox::critical(this, "Error",
+                              tr("There are no nodes! \n"
+                                 "Load a network file or create a new network."), "OK",0);
         statusMessage( tr("Errr...no nodes here. Sorry!") );
         return;
     }
     statusMessage( tr("Toggle Nodes Numbers. Please wait...") );
     appSettings["initNodeNumbersVisibility"] = (toggle) ? "true":"false";
+    graphicsWidget->setNodeNumberVisibility(toggle);
     if (!toggle) {
-        graphicsWidget->setAllItemsVisibility(TypeNumber, false);
-        statusMessage( tr("Node Numbers are invisible now. Click the same option again to display them.") );
-        return;
+        statusMessage( tr("Node Numbers are invisible now. "
+                          "Click the same option again to display them.") );
     }
     else{
-        graphicsWidget->setAllItemsVisibility(TypeNumber, true);
         statusMessage( tr("Node Numbers are visible again...") );
     }
+    return;
 }
 
 
@@ -8936,6 +8980,8 @@ void MainWindow::slotOptionsNodeNumbersVisibility(bool toggle) {
  * @param toggle
  */
 void MainWindow::slotOptionsNodeNumbersInside(bool toggle){
+    qDebug() << "MW::slotOptionsNodeNumbersInside()" << toggle;
+
     statusMessage( tr("Toggle Numbers inside nodes. Please wait...") );
 
     // if node numbers are hidden, show them first.
@@ -8943,15 +8989,13 @@ void MainWindow::slotOptionsNodeNumbersInside(bool toggle){
         slotOptionsNodeNumbersVisibility(true);
 
     appSettings["initNodeNumbersInside"] = (toggle) ? "true":"false";
-    activeGraph.setShowNumbersInsideNodes(toggle);
+    activeGraph.setVertexNumbersInsideNodes(toggle);
     graphicsWidget -> setNumbersInsideNodes(toggle);
 
     if (toggle){
-      //  slotEditNodeNumberSize(0,3);
         statusMessage( tr("Numbers inside nodes...") );
     }
     else {
-        //slotEditNodeNumberSize(0,appSettings["initNodeNumberSize"].toInt());
         statusMessage( tr("Numbers outside nodes...") );
     }
 }
@@ -8982,7 +9026,7 @@ void MainWindow::slotOptionsNodeLabelsVisibility(bool toggle){
         graphicsWidget->setAllItemsVisibility(TypeLabel, true);
         statusMessage( tr("Node Labels are visible again...") );
     }
-    activeGraph.setShowLabels(toggle);
+    activeGraph.setVertexLabelsVisibility(toggle);
 }
 
 
@@ -8996,12 +9040,13 @@ void MainWindow::slotOptionsNodeLabelsVisibility(bool toggle){
  * @param toggle
  */
 void MainWindow::slotOptionsEdgeWeightNumbersVisibility(bool toggle) {
+    qDebug() << "MW::slotOptionsEdgeWeightNumbersVisibility - Toggling Edges Weights";
     if (!fileLoaded && ! networkModified) {
         QMessageBox::critical(this, "Error",tr("There are no edges! \nLoad a network file or create a new network first."), "OK",0);
         statusMessage( tr("No nodes or edges found. Sorry...") );
         return;
     }
-    qDebug() << "MW::slotOptionsEdgeWeightNumbersVisibility - Toggling Edges Weights. Please wait...";
+
     statusMessage( tr("Toggle Edges Weights. Please wait...") );
 
     if (!toggle) 	{
@@ -9013,7 +9058,7 @@ void MainWindow::slotOptionsEdgeWeightNumbersVisibility(bool toggle) {
         graphicsWidget->setAllItemsVisibility(TypeEdgeWeight, true);
         statusMessage( tr("Edge weights are visible again...") );
     }
-    activeGraph.setShowLabels(toggle);
+    activeGraph.setVertexLabelsVisibility(toggle);
 }
 
 
@@ -9048,11 +9093,13 @@ void MainWindow::slotOptionsEdgesVisibility(bool toggle){
     statusMessage( tr("Toggle Edges Arrows. Please wait...") );
 
     if (!toggle) 	{
+        appSettings["initEdgeVisibility"] = "false";
         graphicsWidget->setAllItemsVisibility(TypeEdge, false);
         statusMessage( tr("Edges are invisible now. Click again the same menu to display them.") );
         return;
     }
     else{
+        appSettings["initEdgeVisibility"] = "true";
         graphicsWidget->setAllItemsVisibility(TypeEdge, true);
         statusMessage( tr("Edges visible again...") );
     }
@@ -9061,10 +9108,13 @@ void MainWindow::slotOptionsEdgesVisibility(bool toggle){
 
 
 
+
 /**
-*  Turns on/off the arrows of edges
-*/
-void MainWindow::slotOptionsEdgeArrrowsVisibility(bool toggle){
+ * @brief MainWindow::slotOptionsEdgeArrowsVisibility
+ * Turns on/off the arrows of edges
+ * @param toggle
+ */
+void MainWindow::slotOptionsEdgeArrowsVisibility(bool toggle){
     if (!fileLoaded && ! networkModified) {
         QMessageBox::critical(this, "Error",tr("There are no edges! \nLoad a network file or create a new network first!"), "OK",0);
 
@@ -9074,6 +9124,7 @@ void MainWindow::slotOptionsEdgeArrrowsVisibility(bool toggle){
     statusMessage( tr("Toggle Edges Arrows. Please wait...") );
 
     if (!toggle) 	{
+        appSettings["initEdgeArrows"]="false";
         QList<QGraphicsItem *> list = scene->items();
         for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
             if ( (*item)->type() ==TypeEdge){
@@ -9084,6 +9135,7 @@ void MainWindow::slotOptionsEdgeArrrowsVisibility(bool toggle){
         return;
     }
     else{
+        appSettings["initEdgeArrows"]="true";
         QList<QGraphicsItem *> list = scene->items();
         for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++)
             if ( (*item)->type() ==TypeEdge){
@@ -9139,11 +9191,16 @@ void MainWindow::slotOptionsEdgesBezier(bool toggle){
 
 
 /**
- * @brief MainWindow::slotOptionsEdgesThicknessPerWeight
+ * @brief MainWindow::slotOptionsEdgeThicknessPerWeight
  * @param toggle
  */
-void MainWindow::slotOptionsEdgesThicknessPerWeight(bool toggle) {
-    Q_UNUSED(toggle);
+void MainWindow::slotOptionsEdgeThicknessPerWeight(bool toogle) {
+    if (toogle) {
+
+    }
+    else {
+
+    }
 }
 
 

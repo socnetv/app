@@ -291,12 +291,12 @@ public slots:
     void slotOptionsNodeNumbersVisibility(bool toggle);
     void slotOptionsNodeNumbersInside(bool toggle);
     void slotOptionsNodeLabelsVisibility(bool toggle);
-    void slotOptionsEdgesThicknessPerWeight(bool);
+    void slotOptionsEdgeThicknessPerWeight(bool toogle);
     void slotOptionsEdgesBezier(bool toggle);
     void slotOptionsEdgeWeightNumbersVisibility(bool toggle);
     void slotOptionsEdgeWeightsDuringComputation(bool);
     void slotOptionsEdgesVisibility(bool toggle);
-    void slotOptionsEdgeArrrowsVisibility(bool toggle);
+    void slotOptionsEdgeArrowsVisibility(bool toggle);
 
     void slotOptionsBackgroundColor(QColor color=QColor());
     void slotOptionsBackgroundImageSelect(bool toggle);
@@ -432,8 +432,8 @@ private:
     *transformNodes2EdgesAct, *symmetrizeAct;
     QAction *changeBackColorAct, *editNodeColorAll, *editEdgeColorAllAct,
             *editNodeNumbersColorAct,*editNodeLabelsColorAct;
-    QAction *drawEdgesWeightsAct, *displayEdgesWeightNumbersAct, *optionsEdgesVisibilityAct;
-    QAction *displayEdgesArrowsAct, *drawEdgesBezier,*considerEdgeWeightsAct;
+    QAction *optionsEdgeThicknessPerWeightAct, *optionsEdgeWeightNumbersAct, *optionsEdgesVisibilityAct;
+    QAction *optionsEdgeArrowsAct, *drawEdgesBezier,*considerEdgeWeightsAct;
     QAction *backgroundImageAct,*helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
     QAction *openSettingsAct;
     QAction *webCrawlerAct;
@@ -471,7 +471,7 @@ private:
     bool fileLoaded, checkSelectFileType;
     int fileFormat;
     bool networkModified;
-    bool bezier,  edgeClicked, nodeClicked, markedNodesExist, showProgressBar, firstTime;
+    bool edgeClicked, nodeClicked, markedNodesExist, showProgressBar, firstTime;
     bool considerWeights, inverseWeights, askedAboutWeights;
     float randomErdosEdgeProb;
     QString initFileCodec;

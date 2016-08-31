@@ -90,17 +90,14 @@ protected:
 public slots:
     void changeRelation(int relation);
 
-    void drawNode(const int &num, const int &nodeSize,
-                   const QString &nodeColor,
+    void drawNode( const int &num, const int &nodeSize,
+                   const QString &nodeShape, const QString &nodeColor,
+                   const bool &showNumbers,const bool &numberInsideNode,
                    const QString &numberColor, const int &numberSize,
-                   const QString &nodeLabel, const QString &labelColor,
-                   const int &labelSize,
-                   const QPointF &p,
-                   const QString &nodeShape,
-                   const bool &showLabels,
-                   const bool &numberInsideNode,
-                   const bool &showNumbers
-                   );
+                   const bool &showLabels, const QString &nodeLabel,
+                   const QString &labelColor, const int &labelSize,
+                   const QPointF &p
+                    );
     void eraseNode(long int doomedJim);
     void setNodeVisibility(long int, bool );	//Called from Graph via MW
     bool setNodeShape(const long int &nodeNumber, const QString &shape);
@@ -110,6 +107,7 @@ public slots:
     void moveNode(const int &num, const qreal &x, const qreal &y);	//Called from Graph when creating random nets.
     bool setNodeSize(long int, int size=0);
     void setAllNodeSize(int size=0);
+    void setNodeNumberVisibility(const bool &toggle);
     bool setNodeNumberSize(const long int &, const int &size=0);
     bool setNodeLabelSize(const long int &, const int &size=0);
 

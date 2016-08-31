@@ -76,7 +76,7 @@ void GraphicsWidget::paintEvent ( QPaintEvent * event ){
     Clears the scene
 */
 void GraphicsWidget::clear() {
-    qDebug() << " clear GW";
+    qDebug() << "GW::clear()";
     nodeHash.clear();
     edgesHash.clear();
     scene()->clear();
@@ -118,17 +118,14 @@ void GraphicsWidget::changeRelation(int relation) {
  * @param numberInsideNode
  * @param showNumbers
  */
-void GraphicsWidget::drawNode(const int &num, const int &nodeSize,
-                               const QString &nodeColor,
+void GraphicsWidget::drawNode( const int &num, const int &nodeSize,
+                               const QString &nodeShape, const QString &nodeColor,
+                               const bool &showNumbers,const bool &numberInsideNode,
                                const QString &numberColor, const int &numberSize,
-                               const QString &nodeLabel, const QString &labelColor,
-                               const int &labelSize,
-                               const QPointF &p,
-                               const QString &nodeShape,
-                               const bool &showLabels,
-                               const bool &numberInsideNode,
-                               const bool &showNumbers
-                               ) {
+                               const bool &showLabels, const QString &nodeLabel,
+                               const QString &labelColor, const int &labelSize,
+                               const QPointF &p
+                                ) {
     qDebug()<< "GW: drawNode(): drawing new node " << num
             << " at: " << p.x() << ", "<< p.y() ;
 
@@ -454,7 +451,7 @@ void GraphicsWidget::setInitNodeColor(QString color){
     Called from MW on startup and when user changes it.
 */
 void GraphicsWidget::setInitLinkColor(QString color){
-    qDebug("GW setting initLinkColor");
+    qDebug()<< "GW::setInitLinkColor";
     m_linkColor=color;
 }
 
@@ -470,7 +467,7 @@ void GraphicsWidget::setInitLinkColor(QString color){
  */
 bool GraphicsWidget::setNodeColor(const long int &nodeNumber,
                                   const QString &color){
-    qDebug() << "GraphicsWidget::setNodeColor() : " << color;
+    qDebug() << "GW::setNodeColor() : " << color;
     nodeHash.value(nodeNumber) -> setColor(color);
     return true;
 }
@@ -481,39 +478,51 @@ bool GraphicsWidget::setNodeColor(const long int &nodeNumber,
     Called from MW when the user changes the shape of a node
 */
 bool GraphicsWidget::setNodeShape(const long &nodeNumber, const QString &shape){
-    qDebug() << "GraphicsWidget::setNodeShape() : " << shape;
+    qDebug() << "GW::setNodeShape() : " << shape;
     nodeHash.value(nodeNumber) -> setShape(shape);
     return true;
 
 }
 
 
+
+
+
+void GraphicsWidget::setNodeNumberVisibility(const bool &toggle){
+    qDebug()<< "GW::setNodeNumberVisibility()" << toggle;
+    foreach ( Node *m_node, nodeHash) {
+        m_node->setNumberVisibility(toggle);
+    }
+}
+
+
 /**
-    Sets the label of an node.
-    Called from MW when the user changes it
-*/
+ * @brief GraphicsWidget::setNodeLabel
+ * Sets the label of an node. Called from MW.
+ * @param nodeNumber
+ * @param label
+ * @return
+ */
 bool GraphicsWidget::setNodeLabel(long int nodeNumber, QString label){
-    qDebug() << "GraphicsWidget::setNodeLabel() : " << label;
+    qDebug() << "GW::setNodeLabel() : " << label;
     nodeHash.value(nodeNumber) -> setLabelText (label);
     return true;
 
 }
 
 
-/** 
-    Makes node label appear inside node.
-    Called from MW on user request.
-*/
+
+/**
+ * @brief GraphicsWidget::setNumbersInsideNodes
+ * Toggles node numbers displayed inside or out of nodes
+ * Called from MW
+ * @param numIn
+ */
 void   GraphicsWidget::setNumbersInsideNodes(bool numIn){
-    qDebug("GW setting initNumberDistance");
+    qDebug()<< "GW::setNumbersInsideNodes" << numIn;
     foreach ( Node *m_node, nodeHash) {
         m_node->setNumberInside(numIn);
     }
-    if (numIn)
-        this->setInitNodeSize(m_nodeSize+5);
-    else
-        this->setInitNodeSize(m_nodeSize-5);
-
 }
 
 
@@ -551,6 +560,8 @@ void GraphicsWidget::setEdgeColor(const long int &source,
     Called from MW when the user changes the weight of an edge (right-clicking).
 */
 bool GraphicsWidget::setEdgeWeight(int source, int target, float weight){
+    qDebug() << "GW::setEdgeWeight() : " << source << "->" << target
+             << " = " << weight;
     QList<QGraphicsItem *> list=scene()->items();
     for (QList<QGraphicsItem *>::iterator it=list.begin(); it!= list.end() ; it++){
         if ( (*it)->type()==TypeEdge) {
@@ -709,14 +720,14 @@ bool GraphicsWidget::setNodeNumberSize(const long int &number, const int &size){
     if  ( nodeHash.contains (number) ) {
         if (size>0){
             qDebug() << "GW: setNodeNumberSize(): for "<< number << " to " << size ;
-            nodeHash.value(number) ->number()->setSize (size); // -> setNumberSize(size);
+            nodeHash.value(number) ->setNumberSize(size) ;
             return true;
 
         }
         else {
             qDebug() << "GW: setNodeNumberSize(): for "<< number
                      << " to initial size" << m_nodeSize;
-            nodeHash.value(number) ->number()->setSize (size);
+            nodeHash.value(number) ->setNumberSize(size);
             return true;
 
         }
@@ -738,14 +749,14 @@ bool GraphicsWidget::setNodeLabelSize(const long int &number, const int &size){
     if  ( nodeHash.contains (number) ) {
         if (size>0){
             qDebug() << "GW: setNodeLabelSize(): for "<< number << " to " << size ;
-            nodeHash.value(number) ->label()->setSize (size); // -> setLabelSize(size);
+            nodeHash.value(number) ->setLabelSize(size);
             return true;
 
         }
         else {
             qDebug() << "GW: setNodeLabelSize(): for "<< number
                      << " to initial size" << m_nodeSize;
-            nodeHash.value(number) ->label()->setSize (size);
+            nodeHash.value(number) ->setLabelSize(size);
             return true;
 
         }

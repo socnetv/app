@@ -87,11 +87,12 @@ public:
 	void setColor(QColor color);
 	QString color ();
 	
-    void setLabelText ( QString label) ;
-	QString labelText () ;						// Used by GW:: hasNode()
 	NodeLabel* label();
     void addLabel();
 	void deleteLabel();
+    void setLabelSize(const int &size);
+    void setLabelText ( QString label) ;
+    QString labelText () ;						// Used by GW:: hasNode()
 
 	void addInLink( Edge *edge ) ;
 	void deleteInLink(Edge*);
@@ -99,11 +100,13 @@ public:
 	void addOutLink( Edge *edge ) ;
 	void deleteOutLink(Edge*);
 	
+    void setNumberVisibility(const bool &toggle);
     void setNumberInside(const bool &toggle);
 
     void addNumber () ;
     NodeNumber* number();
 	void deleteNumber();
+    void setNumberSize(const int &size);
 	
 	void toggleAntialiasing(bool);
 	

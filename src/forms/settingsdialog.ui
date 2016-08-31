@@ -27,7 +27,7 @@
    <item row="1" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="generalTab">
       <attribute name="title">
@@ -1264,11 +1264,6 @@
            </layout>
           </item>
          </layout>
-         <zorder>label_13</zorder>
-         <zorder>layoutWidget</zorder>
-         <zorder>layoutWidget_2</zorder>
-         <zorder>edgesChkBox</zorder>
-         <zorder>layoutWidget_5</zorder>
         </widget>
        </item>
        <item row="1" column="0">
