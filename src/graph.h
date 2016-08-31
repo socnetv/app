@@ -218,8 +218,10 @@ public:
 
     void setSocNetV_Version (QString ver) { VERSION = ver; }
 
-    void setShowLabels(bool toggle);
+
     void setShowNumbersInsideNodes(bool toggle);
+    void setShowNumbers(bool toggle);
+    void setShowLabels(bool toggle);
 
     /*FILES (READ AND WRITE)*/
     bool loadGraph (const QString, const QString m_codecName,
@@ -660,7 +662,7 @@ private:
     float averGraphDistance, nonZeroDistancesCounter;
     int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;
     int timerId,  canvasWidth, canvasHeight;
-    bool order, initShowLabels, initNumbersInsideNodes;
+    bool order, initShowLabels,initShowNumbers,  initNumbersInsideNodes;
     bool adjacencyMatrixCreated, symmetricAdjacencyMatrix, graphModified,
         distanceMatrixCreated;
     bool reachabilityMatrixCreated;

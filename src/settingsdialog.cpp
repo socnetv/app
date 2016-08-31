@@ -107,12 +107,16 @@ SettingsDialog::SettingsDialog(
        ui->nodeShapeRadioCircle->setChecked(true);
     }
 
+
     ui->nodeSizeSpin->setValue( m_appSettings["initNodeSize"].toInt(0, 10) );
+
 
     ui->nodeNumbersChkBox->setChecked(
                 (m_appSettings["initNodeNumbersVisibility"] == "true" ) ? true:false
                 );
-
+    ui->nodeNumbersInsideChkBox->setChecked(
+                (m_appSettings["initNodeNumbersInside"] == "true" ) ? true:false
+                );
     ui->nodeNumberSizeSpin->setValue( m_appSettings["initNodeNumberSize"].toInt(0, 10) );
 
     m_nodeNumberColor = QColor (m_appSettings["initNodeNumberColor"]);
@@ -186,14 +190,13 @@ SettingsDialog::SettingsDialog(
 
     connect (ui->nodeNumbersChkBox, &QCheckBox::stateChanged,
                      this, &SettingsDialog::setNodeNumbersVisibility);
-
+    connect (ui->nodeNumbersInsideChkBox, &QCheckBox::stateChanged,
+             this,  &SettingsDialog::setNodeNumbersInside);
     connect(ui->nodeNumberSizeSpin, SIGNAL(valueChanged(int)),
             this, SLOT(getNodeNumberSize(int)) );
-
-
-
     connect (ui->nodeNumberColorBtn, &QToolButton::clicked,
              this, &SettingsDialog::getNodeNumberColor);
+
 
     connect (ui->nodeLabelColorBtn, &QToolButton::clicked,
              this, &SettingsDialog::getNodeLabelColor);

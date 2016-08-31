@@ -37,7 +37,7 @@ static const int TypeNumber=QGraphicsItem::UserType+3;
 
 class NodeNumber : public QGraphicsTextItem {
 public:
-    NodeNumber(Node * , int, QString);
+    NodeNumber(Node * ,  const QString &labelText, const int &size);
     enum { Type = UserType + 3 };
 	void removeRefs();
 	int type() const { return Type; }

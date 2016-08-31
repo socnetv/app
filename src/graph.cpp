@@ -197,7 +197,7 @@ void Graph::createVertex(const int &num, const int &size, const QString &nodeCol
     emit drawNode( num, size,  nodeColor,
                    numColor, numSize,
                    label, lColor, lSize,p, nodeShape,
-                   initShowLabels, initNumbersInsideNodes, true);
+                   initShowLabels, initNumbersInsideNodes, initShowNumbers);
 
     if (signalMW)
         emit graphChanged();
@@ -10661,6 +10661,17 @@ bool Graph::saveGraphToGraphMLFormat (
 }
 
 
+
+
+
+/**
+ * @brief Graph::setShowNumbers
+ * @param toggle
+ */
+void Graph::setShowNumbers(bool toggle){
+    initShowNumbers=toggle;
+
+}
 
 
 /**

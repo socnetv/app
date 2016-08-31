@@ -28,9 +28,10 @@
 #include "node.h"
 #include <QFont>
 
-NodeNumber::NodeNumber( Node *jim , int size, QString labelText) :QGraphicsTextItem(0) {
+
+NodeNumber::NodeNumber( Node *jim , const QString &labelText, const int &size)
+    :QGraphicsTextItem(jim) {
 	source=jim;
-	jim -> addNumber(this);
 	setParentItem(jim); //auto disables child items like this, when node is disabled.
 	setPlainText( labelText ); 
     setFont( QFont ("Times", size, QFont::Black, false) );

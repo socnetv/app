@@ -201,12 +201,12 @@ QMap<QString,QString> MainWindow::initSettings(){
 
     // hard-coded initial settings to use only on first app load
     // when there are no user defined values
-    appSettings["initNodeSize"]= "7";
+    appSettings["initNodeSize"]= "10";
     appSettings["initNodeColor"]="red";
     appSettings["initNodeShape"]="circle";
     appSettings["initNodeLabelColor"]="darkblue";
-    appSettings["initNodeLabelSize"]="7";
-    appSettings["initNodeNumberSize"]="7";
+    appSettings["initNodeLabelSize"]="6";
+    appSettings["initNodeNumberSize"]="6";
     appSettings["initNodeNumberColor"]="black";
     appSettings["initNodeNumbersVisibility"] = "true";
     appSettings["initNodeLabelsVisibility"] = "false";
@@ -389,6 +389,10 @@ void MainWindow::slotOpenSettingsDialog() {
 
     connect( m_settingsDialog, &SettingsDialog::setNodeNumbersVisibility,
              this, &MainWindow::slotOptionsNodeNumbersVisibility);
+
+    connect( m_settingsDialog, &SettingsDialog::setNodeNumbersInside,
+             this, &MainWindow::slotOptionsNodeNumbersInside);
+
 
     connect( m_settingsDialog, &SettingsDialog::setNodeNumberSize,
              this, &MainWindow::slotEditNodeNumberSize);
@@ -1785,16 +1789,16 @@ void MainWindow::initActions(){
             this, SLOT(slotOptionsNodeLabelsVisibility(bool)));
 
 
-    displayEdgesAct = new QAction(tr("Display Edges"), this);
-    displayEdgesAct->setStatusTip(tr("Toggle displaying edges (this session only)"));
-    displayEdgesAct->setWhatsThis(
+    optionsEdgesVisibilityAct = new QAction(tr("Display Edges"), this);
+    optionsEdgesVisibilityAct->setStatusTip(tr("Toggle displaying edges (this session only)"));
+    optionsEdgesVisibilityAct->setWhatsThis(
                 tr("Display Edges\n\n"
                 "Enables or disables displaying of edges"
                 "This setting will apply to this session only. \n"
                 "To permanently change it, use Settings & Preferences"));
-    displayEdgesAct->setCheckable(true);
-    displayEdgesAct->setChecked(true);
-    connect(displayEdgesAct, SIGNAL(toggled(bool)),
+    optionsEdgesVisibilityAct->setCheckable(true);
+    optionsEdgesVisibilityAct->setChecked(true);
+    connect(optionsEdgesVisibilityAct, SIGNAL(toggled(bool)),
             this, SLOT(slotOptionsEdgesVisibility(bool)) );
 
 
@@ -2041,7 +2045,6 @@ void MainWindow::initMenuBar() {
     editNodeMenu -> addAction (editNodePropertiesAct);
 
     editNodeMenu -> addSeparator();
-
     editNodeMenu -> addAction (editNodeColorAll);
     editNodeMenu -> addAction (editNodeSizeAllAct);
     editNodeMenu -> addAction (editNodeShapeAll);
@@ -2204,7 +2207,7 @@ void MainWindow::initMenuBar() {
     edgeOptionsMenu -> setIcon(QIcon(":/images/line.png"));
 
     optionsMenu -> addMenu (edgeOptionsMenu);
-    edgeOptionsMenu -> addAction (displayEdgesAct);
+    edgeOptionsMenu -> addAction (optionsEdgesVisibilityAct);
     edgeOptionsMenu -> addAction (displayEdgesWeightNumbersAct);
     edgeOptionsMenu -> addAction (considerEdgeWeightsAct);
     edgeOptionsMenu -> addAction (displayEdgesArrowsAct );
@@ -2655,28 +2658,28 @@ void MainWindow::initToolBox(){
 
 
     //create widgets for additional visualization options box
-    nodeSizesByOutDegreeBx = new QCheckBox(
+    toolBoxNodeSizesByOutDegreeBx = new QCheckBox(
                 tr("Node sizes by OutDegree") );
-    nodeSizesByOutDegreeBx ->setEnabled(true);
-    nodeSizesByOutDegreeBx
+    toolBoxNodeSizesByOutDegreeBx ->setEnabled(true);
+    toolBoxNodeSizesByOutDegreeBx
             ->setStatusTip(
                 tr("Enable to have all nodes resized so that their "
                    "size reflect their out-degree."));
 
-    nodeSizesByOutDegreeBx
+    toolBoxNodeSizesByOutDegreeBx
             ->setToolTip(
                 tr("If you enable this, all nodes will be resized so that their "
                    "size reflect their out-degree. \n"
                    "Nodes with more directed edges starting from them will be bigger..."));
 
-    nodeSizesByInDegreeBx = new QCheckBox(
+    toolBoxNodeSizesByInDegreeBx = new QCheckBox(
                 tr("Node sizes by InDegree") );
-    nodeSizesByInDegreeBx ->setEnabled(true);
-    nodeSizesByInDegreeBx
+    toolBoxNodeSizesByInDegreeBx ->setEnabled(true);
+    toolBoxNodeSizesByInDegreeBx
             ->setStatusTip(
                 tr("Enable to have all nodes resized so that their "
                    "size reflect their in-degree." ) );
-    nodeSizesByInDegreeBx
+    toolBoxNodeSizesByInDegreeBx
             ->setToolTip(
                 tr("If you enable this, all nodes will be resized so that their "
                    "size reflect their in-degree. \n"
@@ -2693,8 +2696,8 @@ void MainWindow::initToolBox(){
 
 
     QGridLayout *layoutOptionsGrid = new QGridLayout();
-    layoutOptionsGrid -> addWidget(nodeSizesByOutDegreeBx, 0,0);
-    layoutOptionsGrid -> addWidget(nodeSizesByInDegreeBx, 1,0);
+    layoutOptionsGrid -> addWidget(toolBoxNodeSizesByOutDegreeBx, 0,0);
+    layoutOptionsGrid -> addWidget(toolBoxNodeSizesByInDegreeBx, 1,0);
     layoutOptionsGrid -> addWidget(layoutGuidesBx, 2,0);
     layoutOptionsGrid->setSpacing(5);
     layoutOptionsGrid->setContentsMargins(5, 5, 5, 5);
@@ -2727,9 +2730,9 @@ void MainWindow::initToolBox(){
     leftPanel = new QGroupBox(tr("Control Panel"));
     leftPanel -> setLayout (editGrid);
 
-    connect(nodeSizesByOutDegreeBx , SIGNAL(clicked(bool)),
+    connect(toolBoxNodeSizesByOutDegreeBx , SIGNAL(clicked(bool)),
             this, SLOT(slotLayoutNodeSizesByOutDegree(bool)));
-    connect(nodeSizesByInDegreeBx , SIGNAL(clicked(bool)),
+    connect(toolBoxNodeSizesByInDegreeBx , SIGNAL(clicked(bool)),
             this, SLOT(slotLayoutNodeSizesByInDegree(bool)));
 
 
@@ -3338,6 +3341,9 @@ void MainWindow::initNet(){
     activeGraph.setShowLabels(
                 (appSettings["initNodeLabelsVisibility"] == "true" ) ? true: false
                 );
+    activeGraph.setShowNumbers(
+                ( appSettings["initNodeNumbersVisibility"] == "true" ) ? true: false
+                );
     activeGraph.setShowNumbersInsideNodes(
                 ( appSettings["initNodeNumbersInside"] == "true" ) ? true: false
                 );
@@ -3364,8 +3370,8 @@ void MainWindow::initNet(){
     toolBoxLayoutByIndexSelect->setCurrentIndex(0);
     toolBoxLayoutByIndexTypeSelect ->setCurrentIndex(0);
     toolBoxLayoutForceDirectedSelect->setCurrentIndex(0);
-    nodeSizesByOutDegreeBx->setChecked(false);
-    nodeSizesByInDegreeBx->setChecked(false);
+    toolBoxNodeSizesByOutDegreeBx->setChecked(false);
+    toolBoxNodeSizesByInDegreeBx->setChecked(false);
     displayEdgesWeightNumbersAct->setChecked(false);
     considerEdgeWeightsAct->setChecked(false);
     //displayEdgesArrowsAct->setChecked(false);		//FIXME: USER PREFS EMITTED TO GRAPH?
@@ -3637,9 +3643,9 @@ void MainWindow::toolBoxLayoutByIndexButtonPressed(){
             slotLayoutNodeSizesByProminenceIndex(selectedIndexText);
             // re-init other options for node sizes...
             nodeSizesByOutDegreeAct->setChecked(false);
-            nodeSizesByOutDegreeBx->setChecked(false);
+            toolBoxNodeSizesByOutDegreeBx->setChecked(false);
             nodeSizesByInDegreeAct->setChecked(false);
-            nodeSizesByInDegreeBx->setChecked(false);
+            toolBoxNodeSizesByInDegreeBx->setChecked(false);
         }
         break;
     };
@@ -6042,6 +6048,11 @@ void MainWindow::slotEditNodeSizeAllNormalized(int size) {
             size = 5;
         }
     }
+    nodeSizesByOutDegreeAct->setChecked(false);
+    toolBoxNodeSizesByOutDegreeBx->setChecked(false);
+    nodeSizesByInDegreeAct->setChecked(false);
+    toolBoxNodeSizesByInDegreeBx->setChecked(false);
+
     activeGraph.setAllVerticesSize(size);
 }
 
@@ -6194,25 +6205,40 @@ void MainWindow::slotEditNodeLabelSize(int v1, int newSize) {
 /**
  * @brief MainWindow::slotEditNodeNumbersColor
  * Changes the color of all nodes' numbers.
+ * Called from Edit menu option and Settings dialog.
  * Asks the user to enter a new node number color
  */
-void MainWindow::slotEditNodeNumbersColor(){
-
-    QColor textColor = QColorDialog::getColor( Qt::black, this );
-    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-    qDebug() << "MW:slotEditNodeNumbersColor() - change color ";
-    QList<QGraphicsItem *> list= scene->items();
-    for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
-        if ( (*it)->type() == TypeNumber) 		{
-            NodeNumber *jimNumber = (NodeNumber *) (*it);
-            jimNumber->update();
-            jimNumber->setDefaultTextColor(textColor);
-        }
+void MainWindow::slotEditNodeNumbersColor(QColor color){
+    qDebug() << "MW:slotEditNodeNumbersColor() - new color " << color;
+    if (!color.isValid()) {
+        color = QColorDialog::getColor( QColor ( appSettings["initNodeNumberColor"] ),
+                                        this,
+                                               "Change the color of all node numbers" );
     }
 
-    activeGraph.setInitVertexNumberColor( textColor.name() );
-    QApplication::restoreOverrideCursor();
-    statusMessage( tr("Numbers' colors changed. Ready. ")  );
+
+    if (color.isValid()) {
+        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+        QList<QGraphicsItem *> list= scene->items();
+        for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
+            if ( (*it)->type() == TypeNumber) 		{
+                NodeNumber *jimNumber = (NodeNumber *) (*it);
+                jimNumber->update();
+                jimNumber->setDefaultTextColor(color);
+            }
+        }
+        appSettings["initNodeNumberColor"] = color.name();
+        activeGraph.setInitVertexNumberColor( color.name() );
+        QApplication::restoreOverrideCursor();
+        statusMessage( tr("Numbers' colors changed. Ready. ")  );
+    }
+    else {
+        // user pressed Cancel
+        statusMessage( tr("Invalid color. ") );
+    }
+
+
+
 }
 
 
@@ -6222,22 +6248,33 @@ void MainWindow::slotEditNodeNumbersColor(){
  * Changes the color of all nodes' labels.
  * Asks the user to enter a new node label color
  */
-void MainWindow::slotEditNodeLabelsColor(){
-    QColor textColor = QColorDialog::getColor( Qt::black, this );
-    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-    qDebug ("MW: Will change label color");
-    QList<QGraphicsItem *> list= scene->items();
-    for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
-        if ( (*it)->type() == TypeNode ) 	{
-            Node *jim = (Node *) (*it);
-            jim->label()->update();
-            jim->label()->setDefaultTextColor(textColor);
-            qDebug ("MW: Changed color");
-            activeGraph.setVertexLabelColor (jim->nodeNumber(), textColor.name());
-        }
-    activeGraph.setInitVertexLabelColor(textColor.name());
-    QApplication::restoreOverrideCursor();
-    statusMessage( tr("Label colors changed. Ready. ")  );
+void MainWindow::slotEditNodeLabelsColor(QColor color){
+    qDebug() << "MW:slotEditNodeNumbersColor() - new color " << color;
+    if (!color.isValid()) {
+        color = QColorDialog::getColor( QColor ( appSettings["initNodeLabelColor"] ),
+                                        this,
+                                               "Change the color of all node labels" );
+    }
+    if (color.isValid()) {
+        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+        QList<QGraphicsItem *> list= scene->items();
+        for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
+            if ( (*it)->type() == TypeNode ) 	{
+                Node *jim = (Node *) (*it);
+                jim->label()->update();
+                jim->label()->setDefaultTextColor(color);
+                activeGraph.setVertexLabelColor (jim->nodeNumber(), color.name());
+            }
+        appSettings["initNodeLabelColor"] = color.name();
+        activeGraph.setInitVertexLabelColor(color.name());
+        optionsNodeLabelsVisibilityAct->setChecked(true);
+        QApplication::restoreOverrideCursor();
+        statusMessage( tr("Label colors changed. Ready. ")  );
+    }
+    else {
+        // user pressed Cancel
+        statusMessage( tr("Invalid color. ") );
+    }
 }
 
 
@@ -7068,7 +7105,7 @@ void MainWindow::slotLayoutNodeSizesByOutDegree(bool checked){
     if (checked != true) {
         qDebug("MW: slotLayoutNodeSizesByOutDegree() resetting size");
         nodeSizesByOutDegreeAct->setChecked(false);
-        nodeSizesByOutDegreeBx->setChecked(false);
+        toolBoxNodeSizesByOutDegreeBx->setChecked(false);
 
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
@@ -7080,9 +7117,9 @@ void MainWindow::slotLayoutNodeSizesByOutDegree(bool checked){
     }
     qDebug("MW: slotLayoutNodeSizesByOutDegree() setting size");
     nodeSizesByOutDegreeAct->setChecked(true);
-    nodeSizesByOutDegreeBx->setChecked(true);
+    toolBoxNodeSizesByOutDegreeBx->setChecked(true);
     nodeSizesByInDegreeAct->setChecked(false);
-    nodeSizesByInDegreeBx->setChecked(false);
+    toolBoxNodeSizesByInDegreeBx->setChecked(false);
 
     askAboutWeights();
 
@@ -7116,7 +7153,7 @@ void MainWindow::slotLayoutNodeSizesByInDegree(bool checked){
     if (checked != true) {
         qDebug("MW: slotLayoutNodeSizesByInDegree() resetting size");
         nodeSizesByInDegreeAct->setChecked(false);
-        nodeSizesByInDegreeBx->setChecked(false);
+        toolBoxNodeSizesByInDegreeBx->setChecked(false);
 
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
@@ -7128,9 +7165,9 @@ void MainWindow::slotLayoutNodeSizesByInDegree(bool checked){
     }
     qDebug("MW: slotLayoutNodeSizesByInDegree() setting size");
     nodeSizesByOutDegreeAct->setChecked(false);
-    nodeSizesByOutDegreeBx->setChecked(false);
+    toolBoxNodeSizesByOutDegreeBx->setChecked(false);
     nodeSizesByInDegreeAct->setChecked(true);
-    nodeSizesByInDegreeBx->setChecked(true);
+    toolBoxNodeSizesByInDegreeBx->setChecked(true);
 
     askAboutWeights();
 
@@ -8878,8 +8915,8 @@ void MainWindow::slotOptionsNodeNumbersVisibility(bool toggle) {
         return;
     }
     statusMessage( tr("Toggle Nodes Numbers. Please wait...") );
-
-    if (!toggle) 	{
+    appSettings["initNodeNumbersVisibility"] = (toggle) ? "true":"false";
+    if (!toggle) {
         graphicsWidget->setAllItemsVisibility(TypeNumber, false);
         statusMessage( tr("Node Numbers are invisible now. Click the same option again to display them.") );
         return;
@@ -8901,22 +8938,20 @@ void MainWindow::slotOptionsNodeNumbersVisibility(bool toggle) {
 void MainWindow::slotOptionsNodeNumbersInside(bool toggle){
     statusMessage( tr("Toggle Numbers inside nodes. Please wait...") );
 
-    if ( appSettings["initNodeNumbersVisibility"] != "true" )  	{
-        // ?
-    }
-    else{
+    // if node numbers are hidden, show them first.
+    if ( toggle && appSettings["initNodeNumbersVisibility"] != "true" )
         slotOptionsNodeNumbersVisibility(true);
-    }
 
+    appSettings["initNodeNumbersInside"] = (toggle) ? "true":"false";
     activeGraph.setShowNumbersInsideNodes(toggle);
     graphicsWidget -> setNumbersInsideNodes(toggle);
 
     if (toggle){
-
+      //  slotEditNodeNumberSize(0,3);
         statusMessage( tr("Numbers inside nodes...") );
     }
     else {
-
+        //slotEditNodeNumberSize(0,appSettings["initNodeNumberSize"].toInt());
         statusMessage( tr("Numbers outside nodes...") );
     }
 }

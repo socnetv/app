@@ -31,18 +31,25 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QStyleOption>
 #include <QPainter>
-#include <QtGlobal>  //for QT_VERSION
+#include <QtGlobal>
 #include <QDebug>
 #include "graphicswidget.h"
 #include "edge.h"
 #include "nodelabel.h"
 #include "nodenumber.h"
-#include <math.h> //sqrt
+#include <math.h>
 
-Node::Node( GraphicsWidget* gw, int num, int size, 
-			QString col, QString shape, bool numIn, 
-			int ldist, int ndist, QPointF p 
-			) : graphicsWidget (gw) 
+
+
+Node::Node(GraphicsWidget* gw, const int &num, const int &size,
+            const QString &color, const QString &shape,
+           const bool &showNumbers, const bool &numbersInside,
+           const QString &numberColor, const int &numberSize,
+           const int &numDistance,
+           const bool &showLabels,  const QString &label, const QString &labelColor,
+           const int &labelSize, const int &labelDistance,
+           QPointF p
+            ) : graphicsWidget (gw)
 {
 	Q_UNUSED(p);
 	graphicsWidget->scene()->addItem(this); //Without this nodes don't appear on the screen...
@@ -55,38 +62,66 @@ Node::Node( GraphicsWidget* gw, int num, int size,
 
 	m_num=num;
 	m_size=size;
-	m_hasLabel=false;
-	m_hasNumber=false;
-	m_isNumberInside = numIn;
-	m_shape=shape;
-	m_col_str=col;
-	m_col=QColor(col);
-	m_nd=ndist;
-	m_ld=ldist;
-	m_poly_t=new QPolygon(3);
-	m_poly_d=new QPolygon(4);
 
+	m_shape=shape;
+    m_col_str=color;
+    m_col=QColor(color);
+
+    m_hasNumber=showNumbers;
+    m_hasNumberInside = numbersInside;
+    m_numSize = numberSize;
+    m_numColor = numberColor;
+    m_nd=numDistance;
+
+    m_hasLabel=showLabels;
+    m_labelText = label;
+    m_labelSize = labelSize;
+    m_labelColor = labelColor;
+
+    m_ld=labelDistance;
+
+    if (m_hasLabel) {
+        addLabel();
+    }
+
+    if (!m_hasNumberInside && m_hasNumber) {
+        addNumber();
+    }
     m_path = new QPainterPath;
     if ( m_shape == "circle") {
         m_path->addEllipse (-m_size, -m_size, 2*m_size, 2*m_size);
+        if (m_hasNumberInside && m_hasNumber)
+            m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
     }
     else if ( m_shape == "ellipse") {
         m_path->addEllipse(-m_size, -m_size, 2*m_size, 1.5* m_size);
+        if (m_hasNumberInside && m_hasNumber)
+            m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
     }
     else if ( m_shape == "box" || m_shape == "rectangle"  ) {  //rectangle: for GraphML compliance
         m_path->addRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size );
+        if (m_hasNumberInside && m_hasNumber)
+            m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
     }
     else if (m_shape == "roundrectangle"  ) {  //roundrectangle: GraphML only
         m_path->addRoundedRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size, 60.0, 60.0, Qt::RelativeSize );
+        if (m_hasNumberInside && m_hasNumber)
+            m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
     }
     else if ( m_shape == "triangle") {
+        m_poly_t=new QPolygon(3);
         m_poly_t -> setPoints (3,  0,-m_size,  -m_size,m_size, m_size,+m_size);
         m_path->addPolygon(*m_poly_t);
+        if (m_hasNumberInside && m_hasNumber)
+        m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
         m_path->closeSubpath();
     }
     else if ( m_shape == "diamond"){
+        m_poly_d=new QPolygon(4);
         m_poly_d -> setPoints (4, 0,-m_size,  -m_size,0,       0,+m_size,     +m_size,0);
         m_path->addPolygon(*m_poly_d);
+        if (m_hasNumberInside && m_hasNumber)
+            m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
         m_path->closeSubpath();
     }
 
@@ -258,24 +293,11 @@ QString Node::labelText ( ) {
 
 
 
-void Node::setNumberInside (bool numIn){
+void Node::setNumberInside (const bool &toggle){
 
-	m_isNumberInside = numIn;
-	
-	//Move its graphic number
-	QPointF myPos = this->pos();
-	if ( m_hasNumber ) 
-			{
-				if (!m_isNumberInside) 	{ //move it outside
-						m_number -> setZValue(254);
-						m_number -> setPos( myPos.x()+m_nd, myPos.y() );
-					}	 
-					else { 		//move it inside node
-						this->setSize(m_size+2); //increase size to display nicely the number  
-						m_number -> setZValue(255);
-						m_number->setPos( myPos.x() - m_size-2, myPos.y() - m_size-2 );
-					}	 
-			}
+    m_hasNumberInside = toggle;
+    if ( m_hasNumber )
+        deleteNumber();
 }
 
 
@@ -299,7 +321,7 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
         //Move its graphic number
         if ( m_hasNumber )
         {
-            if (!m_isNumberInside) 	{ //move it outside
+            if (!m_hasNumberInside) 	{ //move it outside
                 m_number -> setZValue(254);
                 m_number -> setPos( m_size+m_nd, 0);
             }
@@ -406,10 +428,10 @@ void Node::deleteOutLink(Edge *link){
 
 
 
-void Node::addLabel (NodeLabel* gfxLabel  )  { 
-	//qDebug("NODE: add label");
-	m_label=gfxLabel ;
-	m_hasLabel=true;
+void Node::addLabel ()  {
+    //Draw node labels
+    m_label = new  NodeLabel (this, m_labelText, m_labelSize);
+    m_label -> setDefaultTextColor (m_labelColor);
 }
 
 
@@ -425,10 +447,6 @@ void Node::deleteLabel(){
 }
 
 
-void Node::clearLabel(){
-	m_hasLabel=false;
-}
-
 
 
 
@@ -436,9 +454,12 @@ NodeNumber* Node::number(){
     return m_number;
 }
 
-void Node::addNumber (NodeNumber *gfxNum ) {
-	 m_number=gfxNum ;
-	 m_hasNumber=true;
+
+void Node::addNumber () {
+    m_hasNumber=true;
+    m_number= new  NodeNumber ( this, QString::number(m_num), m_numSize);
+    m_number -> setDefaultTextColor (m_numColor);
+
 }
 
 
@@ -447,6 +468,8 @@ void Node::deleteNumber( ){
 	m_number->hide();
 	graphicsWidget->removeItem(m_number);	
 }
+
+
 
  Node::~Node(){
     qDebug() << "\n\n\n *** ~Node() "<< nodeNumber();
@@ -460,9 +483,10 @@ void Node::deleteNumber( ){
         //edge->remove();
         graphicsWidget->removeItem(edge);
     }
-
-    this->deleteNumber();
-    this->deleteLabel();
+    if ( m_hasNumber )
+        this->deleteNumber();
+    if ( m_hasLabel )
+        this->deleteLabel();
     inEdgeList.clear();
     outEdgeList.clear();
     this->hide();

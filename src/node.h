@@ -57,7 +57,14 @@ class Node :  public QObject,  public QGraphicsItem {
 	Q_INTERFACES (QGraphicsItem)
 
 public:
-	Node(GraphicsWidget*, int num, int size, QString col, QString shape, bool, int, int, QPointF p) ;
+    Node (GraphicsWidget* gw, const int &num, const int &size,
+               const QString &color, const QString &shape,
+               const bool &showNumbers, const bool &numbersInside,
+               const QString &numberColor, const int &numberSize, const int &numDistance,
+               const bool &showLabels, const QString &label, const QString &labelColor,
+               const int &labelSize, const int &labelDistance,
+               QPointF p
+                );
     ~Node();
 
 	enum { Type = UserType + 1 };
@@ -83,9 +90,8 @@ public:
     void setLabelText ( QString label) ;
 	QString labelText () ;						// Used by GW:: hasNode()
 	NodeLabel* label();
-	void addLabel (NodeLabel* gfxLabel  ) ;
+    void addLabel();
 	void deleteLabel();
-	void clearLabel();
 
 	void addInLink( Edge *edge ) ;
 	void deleteInLink(Edge*);
@@ -93,9 +99,9 @@ public:
 	void addOutLink( Edge *edge ) ;
 	void deleteOutLink(Edge*);
 	
-	void setNumberInside(bool);
+    void setNumberInside(const bool &toggle);
 
-	void addNumber (NodeNumber *gfxNum ) ;
+    void addNumber () ;
     NodeNumber* number();
 	void deleteNumber();
 	
@@ -120,11 +126,11 @@ private:
 	QPainterPath *m_path;
 	QPointF newPos;
 	QPolygon *m_poly_t, *m_poly_d;
-	int  m_size, m_nd, m_ld;
+    int  m_size, m_numSize, m_labelSize, m_nd, m_ld;
 	long int m_num;
-	QString  m_shape,  m_col_str, m_labelIn;
+    QString  m_shape,  m_col_str, m_numColor, m_labelText, m_labelColor;
 	QColor m_col;
-	bool m_hasNumber, m_hasLabel, m_isNumberInside;
+    bool m_hasNumber, m_hasLabel, m_hasNumberInside;
 	/**Lists of elements attached to this node */
     list<Edge*> inEdgeList, outEdgeList;
 	NodeLabel *m_label;

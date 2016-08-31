@@ -218,9 +218,9 @@ public slots:
     void slotEditNodeShapeAll();
     void slotEditNodeShape(const QString shape, const int vertex = 0);
     void slotEditNodeNumberSize(int v1=0, int newSize=0);
-    void slotEditNodeNumbersColor();
+    void slotEditNodeNumbersColor(QColor color=QColor());
     void slotEditNodeLabelSize(int v1=0, int newSize=0);
-    void slotEditNodeLabelsColor();
+    void slotEditNodeLabelsColor(QColor color=QColor());
 
     void slotEditEdgeAdd();
     void slotEditEdgeCreate (int v1, int v2, float weight);
@@ -393,7 +393,7 @@ private:
     QMenu *networkMenu, *randomNetworkMenu, *filterMenu;
     QMenu *randomLayoutMenu, *circleLayoutMenu, *levelLayoutMenu, *physicalLayoutMenu;
     QMenu *colorationMenu;
-    QCheckBox  *nodeSizesByOutDegreeBx,*nodeSizesByInDegreeBx, *layoutGuidesBx;
+    QCheckBox  *toolBoxNodeSizesByOutDegreeBx,*toolBoxNodeSizesByInDegreeBx, *layoutGuidesBx;
     QComboBox *toolBoxAnalysisGeodesicsSelect,*toolBoxAnalysisConnectivitySelect,
             *toolBoxAnalysisProminenceSelect, *toolBoxAnalysisClusterabilitySelect;
     QComboBox *toolBoxLayoutByIndexSelect, *toolBoxLayoutByIndexTypeSelect;
@@ -432,7 +432,7 @@ private:
     *transformNodes2EdgesAct, *symmetrizeAct;
     QAction *changeBackColorAct, *editNodeColorAll, *editEdgeColorAllAct,
             *editNodeNumbersColorAct,*editNodeLabelsColorAct;
-    QAction *drawEdgesWeightsAct, *displayEdgesWeightNumbersAct, *displayEdgesAct;
+    QAction *drawEdgesWeightsAct, *displayEdgesWeightNumbersAct, *optionsEdgesVisibilityAct;
     QAction *displayEdgesArrowsAct, *drawEdgesBezier,*considerEdgeWeightsAct;
     QAction *backgroundImageAct,*helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
     QAction *openSettingsAct;

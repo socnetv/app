@@ -132,38 +132,13 @@ void GraphicsWidget::drawNode(const int &num, const int &nodeSize,
     qDebug()<< "GW: drawNode(): drawing new node " << num
             << " at: " << p.x() << ", "<< p.y() ;
 
-    int m_nodeSize = nodeSize;
-    int m_numberSize = numberSize;
-
-    if (numberInsideNode)
-        m_nodeSize = m_nodeSize +3;
-
     //Draw node
     Node *jim= new Node (
                 this, num, nodeSize, nodeColor, nodeShape,
-                numberInsideNode, m_labelDistance, m_numberDistance,
+                showNumbers, numberInsideNode, numberColor, numberSize, m_numberDistance,
+                showLabels, nodeLabel, labelColor, labelSize, m_labelDistance,
                 p
                 );
-
-    //Draw node label
-    // label will be moved by node movement (see last code line)
-    NodeLabel *labelJim = new  NodeLabel (jim, labelSize, nodeLabel );
-    labelJim -> setDefaultTextColor (labelColor);
-    labelJim -> setTextInteractionFlags(Qt::TextEditorInteraction);
-    if (!showLabels) {
-        labelJim->hide();
-    }
-
-    // Draw node number
-    // label will be moved by node movement (see last code line)
-    if (numberInsideNode)
-        m_numberSize = m_nodeSize-2;
-
-    NodeNumber *numberJim = new  NodeNumber ( jim, m_numberSize, QString::number(num));
-    numberJim -> setDefaultTextColor (numberColor);
-    if (!showNumbers){
-        numberJim->hide();
-    }
 
     //add new node to a container to ease finding, edge creation etc
     nodeHash.insert(num, jim);
@@ -533,12 +508,12 @@ void   GraphicsWidget::setNumbersInsideNodes(bool numIn){
     qDebug("GW setting initNumberDistance");
     foreach ( Node *m_node, nodeHash) {
         m_node->setNumberInside(numIn);
-        if (numIn)
-            this->setInitNodeSize(m_nodeSize+2);
-        else
-            this->setInitNodeSize(m_nodeSize-2);
-
     }
+    if (numIn)
+        this->setInitNodeSize(m_nodeSize+5);
+    else
+        this->setInitNodeSize(m_nodeSize-5);
+
 }
 
 

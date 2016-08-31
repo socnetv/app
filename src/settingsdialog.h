@@ -70,6 +70,7 @@ signals:
     void setNodeShape(const QString, const long int);
     void setNodeSize(int);
     void setNodeNumbersVisibility(bool);
+    void setNodeNumbersInside(bool);
     void setNodeNumberSize(const int v, const int &);
     void setNodeNumberColor(const QColor);
     void setNodeLabelColor(const QColor);
