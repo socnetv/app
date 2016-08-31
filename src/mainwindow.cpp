@@ -823,7 +823,7 @@ void MainWindow::initActions(){
     connect(editNodePropertiesAct, SIGNAL(triggered()), this, SLOT(slotEditNodePropertiesDialog()));
 
 
-    editNodeColorAll = new QAction(QIcon(":/images/nodecolor.png"), tr("Change All Nodes Colors (this session)"),	this);
+    editNodeColorAll = new QAction(QIcon(":/images/nodecolor.png"), tr("Change All Nodes Color (this session)"),	this);
     editNodeColorAll->setStatusTip(tr("Choose a new color for all nodes (in this session only)."));
     editNodeColorAll->setWhatsThis(tr("Nodes Color\n\n"
                                       "Changes all nodes color at once. \n"
@@ -878,7 +878,7 @@ void MainWindow::initActions(){
                                            "To permanently change it, use Settings & Preferences"));
     connect(editNodeLabelsSizeAct, SIGNAL(triggered()), this, SLOT(slotEditNodeLabelsSize()) );
 
-    editNodeLabelsColorAct = new QAction( tr("Change All Labels Colors (this session)"),	this);
+    editNodeLabelsColorAct = new QAction( tr("Change All Node Labels Color (this session)"),	this);
     editNodeLabelsColorAct->setStatusTip(tr("Change the color of the labels of all nodes "
                                              "(for this session only)"));
     editNodeLabelsColorAct->setWhatsThis(tr("Labels Color\n\n"
@@ -887,10 +887,10 @@ void MainWindow::initActions(){
                                              "To permanently change it, use Settings & Preferences"));
     connect(editNodeLabelsColorAct, SIGNAL(triggered()), this, SLOT(slotEditNodeLabelsColor()));
 
-    editEdgeAddAct = new QAction(QIcon(":/images/plines.png"), tr("Add Edge"),this);
+    editEdgeAddAct = new QAction(QIcon(":/images/plines.png"), tr("Add Edge (arc)"),this);
     editEdgeAddAct->setShortcut(Qt::CTRL + Qt::Key_Slash);
-    editEdgeAddAct->setStatusTip(tr("Add a directed edge from a node to another"));
-    editEdgeAddAct->setWhatsThis(tr("Add Edge\n\nAdds a directed edge from a node to another"));
+    editEdgeAddAct->setStatusTip(tr("Add a directed edge (arc) from a node to another"));
+    editEdgeAddAct->setWhatsThis(tr("Add Edge\n\nAdds a directed edge (arc) from a node to another"));
     connect(editEdgeAddAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeAdd()));
 
     editEdgeRemoveAct = new QAction(QIcon(":/images/disconnect.png"), tr("Remove Edge"), this);
@@ -921,7 +921,7 @@ void MainWindow::initActions(){
     connect(editEdgeWeightAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeWeight()));
 
 
-    editEdgeColorAllAct = new QAction( tr("Change all Edges Colors"), this);
+    editEdgeColorAllAct = new QAction( tr("Change All Edges Color"), this);
     editEdgeColorAllAct->setStatusTip(tr("Click to change the color of all Edges."));
     editEdgeColorAllAct->setWhatsThis(tr("Background\n\nChanges all Edges color"));
     connect(editEdgeColorAllAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeColorAll()));
@@ -3082,8 +3082,8 @@ void MainWindow::initSignalSlots() {
     connect (graphicsWidget, &GraphicsWidget::openContextMenu,
              this, &MainWindow::slotEditOpenContextMenu);
 
-    connect( graphicsWidget, SIGNAL(updateNodeCoords(int, int, int)),
-             this, SLOT( updateNodeCoords(int, int, int) ) );
+    connect( graphicsWidget, SIGNAL(updateNodeCoords(const int &, const int &, const int &)),
+             this, SLOT( updateNodeCoords(const int &, const int &, const int &) ) );
 
 
     connect( graphicsWidget, SIGNAL(zoomChanged(const int &)),
@@ -3114,8 +3114,8 @@ void MainWindow::initSignalSlots() {
     connect( &activeGraph, SIGNAL( addGuideHLine(int) ),
              graphicsWidget, SLOT(  addGuideHLine(int) ) ) ;
 
-    connect( &activeGraph, SIGNAL( moveNode(int, qreal, qreal) ),
-             graphicsWidget, SLOT( moveNode(int, qreal, qreal) ) ) ;
+    connect( &activeGraph, SIGNAL( moveNode(const int &, const qreal &, const qreal &) ),
+             graphicsWidget, SLOT( moveNode(const int &, const qreal &, const qreal &) ) ) ;
 
 
     connect( &activeGraph,
@@ -3422,8 +3422,8 @@ void MainWindow::statusMessage(const QString message){
 
 /**
  * @brief MainWindow::showMessageToUser
- * @param message
  * Convenience method
+ * @param message
  */
 void MainWindow::showMessageToUser(const QString message) {
     QMessageBox::information(this, tr("Info"),
@@ -3436,13 +3436,14 @@ void MainWindow::showMessageToUser(const QString message) {
 
 /**
  * @brief MainWindow::updateNodeCoords
+ * Called from GraphicsWidget when a node moves to update vertex coordinates
+ * in Graph
  * @param nodeNumber
  * @param x
  * @param y
- * Called from GraphicsWidget when a node moves to update vertex coordinates
- *  in Graph
  */
-void MainWindow::updateNodeCoords(int nodeNumber, int x, int y){
+void MainWindow::updateNodeCoords(const int &nodeNumber,
+                                  const int &x, const int &y){
     //	qDebug("MW: updateNodeCoords() for %i with x %i and y %i", nodeNumber, x, y);
     activeGraph.updateVertCoords(nodeNumber, x, y);
 }
@@ -3453,9 +3454,9 @@ void MainWindow::updateNodeCoords(int nodeNumber, int x, int y){
 
 /**
  * @brief MainWindow::toolBoxAnalysisGeodesicsSelectChanged
- * @param selectedIndex
  * Called from MW, when user selects something in the Geodesics selectbox of
- *  toolbox
+ * toolbox
+ * @param selectedIndex
  */
 void MainWindow::toolBoxAnalysisGeodesicsSelectChanged(int selectedIndex) {
     qDebug()<< "MW::toolBoxAnalysisGeodesicsSelectChanged "
@@ -8853,10 +8854,10 @@ void MainWindow::destroyProgressBar(){
     qDebug () << "MainWindow::destroyProgressBar";
     QApplication::restoreOverrideCursor();
     qDebug () << "MainWindow::destroyProgressBar - check if a progressbar exists";
-    if ( ( appSettings["showProgressBar"] == "true" || activeEdges() > 2000 ) && progressDialog) {
-        qDebug () << "MainWindow::destroyProgressBar - progressbar exists. Dstroying";
-        progressDialog->deleteLater();
-    }
+//    if ( ( appSettings["showProgressBar"] == "true" || activeEdges() > 5000 ) ) {
+//        qDebug () << "MainWindow::destroyProgressBar - progressbar exists. Destroying";
+//        progressDialog->deleteLater();
+//    }
 
 
 }

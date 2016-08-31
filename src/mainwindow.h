@@ -324,9 +324,7 @@ public slots:
 
     void openEdgeContextMenu() ;
 
-
-    //Called by graphicswidget to update node coords in activeGraph
-    void updateNodeCoords(int no, int x, int y);
+    void updateNodeCoords(const int &nodeNumber, const int &x, const int &y);
 
 
     //Called by Graph on saving file. int is the network type saved.

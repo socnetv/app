@@ -346,27 +346,30 @@ void GraphicsWidget::openEdgeContextMenu(){
 
 /**
  * @brief GraphicsWidget::nodeMoved
+ * Called from each node when they move.
+ * Updates:
+    - node coordinates in activeGraph (via updateNodeCoords() signal)
  * @param number
  * @param x
  * @param y
- * Called from each node when they move.
- * Updates
-    - node coordinates in activeGraph (via updateNodeCoords() signal)
  */
-void GraphicsWidget::nodeMoved(int number, int x, int y){
+void GraphicsWidget::nodeMoved(const int &number, const int &x, const int &y){
     //qDebug ("GW: nodeMoved() for %i with %i, %i. Emitting updateNodeCoords() signal", number, x,y);
     emit updateNodeCoords(number, x, y);
 }
 
 
 
-/** 
-    Called from activeGraph to update node coordinates
-    on the canvas
-*/
-void GraphicsWidget::moveNode(int number, qreal x, qreal y){
-    qDebug() << "   GW: moveNode() " << number << ": " << x << y;
-    nodeHash.value(number)->setPos(x,y);
+/**
+ * @brief GraphicsWidget::moveNode
+ * Called from activeGraph to update node coordinates on the canvas
+ * @param num
+ * @param x
+ * @param y
+ */
+void GraphicsWidget::moveNode(const int &num, const qreal &x, const qreal &y){
+    qDebug() << "   GW: moveNode() " << num << ": " << x << y;
+    nodeHash.value(num)->setPos(x,y);
     //    qDebug() << "GW: moveNode() node reports x, y as "
     //             << nodeHash.value(number)->x() << nodeHash.value(number)->x();
 }

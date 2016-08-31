@@ -63,7 +63,7 @@ public:
     void removeItem(Node*);
     void removeItem(NodeNumber*);
     void removeItem(NodeLabel*);
-    void nodeMoved(int, int, int);
+    void nodeMoved(const int &number, const int &x, const int &y);
 
     void setInitNodeColor(QString);
     void setInitLinkColor(QString);
@@ -107,7 +107,7 @@ public slots:
     bool setNodeColor(const long int &, const QString &color);
     bool setNodeLabel(long int , QString );
     void nodeClicked(Node *);
-    void moveNode(int, qreal, qreal);	//Called from Graph when creating random nets.
+    void moveNode(const int &num, const qreal &x, const qreal &y);	//Called from Graph when creating random nets.
     bool setNodeSize(long int, int size=0);
     void setAllNodeSize(int size=0);
     bool setNodeNumberSize(const long int &, const int &size=0);
@@ -147,7 +147,7 @@ signals:
     void openNodeMenu();
     void openEdgeMenu();
     void openContextMenu(const QPointF p);
-    void updateNodeCoords(int, int, int);
+    void updateNodeCoords(const int &, const int &, const int &);
     void selectedNode(Node *);
     void selectedEdge(Edge *);
     void zoomChanged(const int);

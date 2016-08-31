@@ -201,7 +201,7 @@ signals:
                          const QString &color);
     void addGuideCircle(int, int, int);				//call GW to draw a circular layout line somewhere.
     void addGuideHLine (int);					//call GW to draw a horizontal layout line somewhere.
-    void moveNode(int, qreal, qreal);
+    void moveNode(const int &, const qreal &, const qreal &);
 
     /** Signals to Vertice */
     void relationChanged(int);
@@ -274,7 +274,7 @@ public:
     void setVertexLabelColor(int v1, QString color);
     QString vertexLabel(const long int &v1);
 
-    void updateVertCoords(int v, int x, int y);
+    void updateVertCoords(const int &v, const int &x, const int &y);
 
     int vertices(const bool dropIsolates=false, const bool countAll=false) ;
 

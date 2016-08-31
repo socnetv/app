@@ -1190,7 +1190,7 @@ void Graph::edges(){
 /**
     Called from MainWindow
 */
-void Graph::updateVertCoords(int v1, int  x, int y){
+void Graph::updateVertCoords(const int &v1, const int &x, const int &y){
     //qDebug("Graph: updateVertCoords() for %i with index %i with %i, %i", v1, index[v1], x,y);
     m_graph[ index[v1] ]->setX( x );
     m_graph[ index[v1] ]->setY( y );
