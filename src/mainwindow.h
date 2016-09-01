@@ -127,10 +127,12 @@ public:
 public slots:
     //NETWORK MENU
     void slotNetworkNew();
-    void slotNetworkFileChoose(QString m_fileName = QString::null);
+    void slotNetworkFileChoose(QString m_fileName = QString::null,
+                               int m_fileFormat = -1,
+                               const bool &checkSelectFileType = true);
     void slotNetworkFileRecentUpdateActions();
     void slotNetworkAvailableTextCodecs();
-    bool slotNetworkFilePreview(const QString , const int );
+    bool slotNetworkFilePreview(const QString &, const int &);
     bool slotNetworkFileLoad ( const QString, const QString, const int );
     void slotNetworkFileLoadRecent();
 
@@ -474,7 +476,7 @@ private:
     int fortuneCookiesCounter,  tipsCounter;
     //QString VERSION;
     bool pajekFileLoaded, adjacencyFileLoaded, dotFileLoaded, graphMLFileLoaded;
-    bool fileLoaded, checkSelectFileType;
+    bool fileLoaded;
     int fileFormat;
     bool networkModified;
     bool edgeClicked, nodeClicked, markedNodesExist, showProgressBar, firstTime;
