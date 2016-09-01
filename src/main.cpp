@@ -51,10 +51,10 @@ int main(int argc, char *argv[])
 	QString option;
     if ( argc > 1 )     {
         option = argv[1];
-			if (option=="--help" || option=="-h" || option=="--h" ) {
+            if (option=="--help" || option=="-h" || option=="--h" || option=="-help" ) {
 				cout<<"\nSocial Network Visualizer v." << qPrintable(VERSION)<< "\n"
 					<<"\nUsage: socnetv [flags] [file]\n"
-					<<"-h, --help 	Displayes this help message\n"
+                    <<"-h, --help 	Displays this help message\n"
 					<<"-V, --version	Displays version number\n\n"
 					<<"You can load a network from a file using \n"
 					<<"socnetv file.net \n"

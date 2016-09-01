@@ -131,9 +131,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
     qDebug() << "MW::MainWindow() Checking if user provided file on startup...";
     if (!m_fileName.isEmpty())
     {
-        fileName=m_fileName;
-        fileNameNoPath=fileName.split ("/");
-        slotNetworkFilePreview( fileName, 0 );
+        slotNetworkFileChoose( m_fileName );
     }
 
     graphicsWidget->setFocus();
@@ -3872,7 +3870,7 @@ void MainWindow::setLastPath(QString fileName) {
  * Prompts the user a directory dialogue to choose a file from.
  * Calls slotNetworkFilePreview()
  */
-void MainWindow::slotNetworkFileChoose() {
+void MainWindow::slotNetworkFileChoose(QString m_fileName) {
 
     if (firstTime && fileFormat == -500 ) {
         QMessageBox::information( this, "SocNetV",
@@ -3890,12 +3888,10 @@ void MainWindow::slotNetworkFileChoose() {
                                   "OK", 0 );
         firstTime=false;
     }
-    if ( fileFormat == -1 )
-        fileFormat = -1;
 
     bool a_file_was_already_loaded=fileLoaded;
     previous_fileName=fileName;
-    QString m_fileName, fileType_string;
+    QString fileType_string;
     int m_fileFormat=fileFormat;
 
     statusMessage( tr("Choose a network file..."));
@@ -3932,11 +3928,11 @@ void MainWindow::slotNetworkFileChoose() {
         break;
 
     }
-
-    m_fileName = QFileDialog::getOpenFileName(
-                this,
-                tr("Select one file to open"),
-                getLastPath(), fileType_string	);
+    if (m_fileName.isNull())
+        m_fileName = QFileDialog::getOpenFileName(
+                    this,
+                    tr("Select a network file to open"),
+                    getLastPath(), fileType_string);
 
     if (checkSelectFileType) {
         //check if user has changed the filetype filter and loaded other filetype
@@ -3979,9 +3975,9 @@ void MainWindow::slotNetworkFileChoose() {
         else
             fileFormat=m_fileFormat=-1;
     }
-    if (!m_fileName.isEmpty()) {
+    if (!m_fileName.isEmpty() && !m_fileName.isNull()) {
         if (m_fileFormat == -1) {
-            QMessageBox::critical(this, "Unrecognized file extension", tr("Error! \n"
+            QMessageBox::critical(this, "Unrecognized file", tr("Error! \n"
                                   "SocNetV supports the following network file"
                                   "formats. The filename you selected does not "
                                   "end with any of the following extensions:\n"
@@ -4389,7 +4385,10 @@ bool MainWindow::slotNetworkFilePreview(const QString m_fileName,
 
 
 
-
+/**
+ * @brief MainWindow::slotNetworkFileLoadRecent
+ * Called from any file entry in "Recent Files" menu
+ */
 void MainWindow::slotNetworkFileLoadRecent() {
     QAction *action = qobject_cast<QAction *>(sender());
     if (action) {

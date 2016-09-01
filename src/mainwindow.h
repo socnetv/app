@@ -127,7 +127,7 @@ public:
 public slots:
     //NETWORK MENU
     void slotNetworkNew();
-    void slotNetworkFileChoose();
+    void slotNetworkFileChoose(QString m_fileName = QString::null);
     void slotNetworkFileRecentUpdateActions();
     void slotNetworkAvailableTextCodecs();
     bool slotNetworkFilePreview(const QString , const int );
