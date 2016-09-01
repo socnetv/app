@@ -195,15 +195,15 @@ QMap<QString,QString> MainWindow::initSettings(){
     appSettings["initNodeShape"]="circle";
 
     appSettings["initNodeNumbersVisibility"] = "true";
-    appSettings["initNodeNumberSize"]="6";
+    appSettings["initNodeNumberSize"]="4";
     appSettings["initNodeNumberColor"]="black";
     appSettings["initNodeNumbersInside"] = "false";
-    appSettings["initNodeNumberDistance"] = "5";
+    appSettings["initNodeNumberDistance"] = "4";
 
     appSettings["initNodeLabelsVisibility"] = "false";
     appSettings["initNodeLabelSize"]="6";
     appSettings["initNodeLabelColor"]="darkblue";
-    appSettings["initNodeLabelDistance"] = "8";
+    appSettings["initNodeLabelDistance"] = "6";
 
     appSettings["initEdgeVisibility"]="true";
     appSettings["initEdgeShape"]="line"; //bezier

@@ -183,6 +183,9 @@ int Graph::relations(){
  * @param nodeShape
  * @param signalMW
  */
+
+
+
 void Graph::createVertex(const int &num, const int &nodeSize, const QString &nodeColor,
                          const QString &numColor, const int &numSize,
                          const QString &label, const QString &labelColor,
@@ -190,7 +193,7 @@ void Graph::createVertex(const int &num, const int &nodeSize, const QString &nod
                          const QPointF &p, const QString &nodeShape,
                          const bool &signalMW){
     int value = 1;
-
+    qDebug() << "Graph::createVertex() " << num ;
     addVertex ( num, value, nodeSize,  nodeColor,
                numColor, numSize,
                label, labelColor, labelSize, p, nodeShape);
@@ -263,7 +266,7 @@ void Graph::createVertex(int i, int cWidth, int cHeight){
 
 void Graph::createVertexWebCrawler(QString label, int i) {
     if ( i < 0 )  i = lastVertexNumber() +1;
-    qDebug() << "Graph::createVertexWebCrawler() " << i << " rand coords with label";
+    qDebug() << "Graph::createVertexWebCrawler() " << i << " label" << label;
     QPointF p;
     p.setX(rand()%canvasWidth);
     p.setY(rand()%canvasHeight);

@@ -443,10 +443,7 @@ void Node::setLabelSize(const int &size) {
  * @return QString
  */
 QString Node::labelText ( ) {
-    if (m_hasLabel) {
-        return m_label->toPlainText();
-    }
-    else return "";
+    return m_labelText;
 }
 
 
