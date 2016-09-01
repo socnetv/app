@@ -1983,6 +1983,8 @@ void MainWindow::initMenuBar() {
     for (int i = 0; i < MaxRecentFiles; ++i)
         recentFilesSubMenu->addAction(recentFileActs[i]);
 
+    slotNetworkFileRecentUpdateActions();
+
     networkMenu ->addMenu (recentFilesSubMenu );
     networkMenu -> addSeparator();
     importSubMenu = new QMenu(tr("Import ..."));

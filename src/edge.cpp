@@ -434,7 +434,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
                      );
          setZValue(255);
      }
-     setZValue(254);
+     setZValue(253);
     //	qDebug()<< "### Edge::paint(). DrawPath now....";
     painter->drawPath(*m_path);
 }
