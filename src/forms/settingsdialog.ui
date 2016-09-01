@@ -27,7 +27,7 @@
    <item row="1" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="generalTab">
       <attribute name="title">
@@ -765,6 +765,9 @@
               </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default number distance from node&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select the default distance of a number from the node.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing node numbers immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default distance from node.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="minimum">
+               <number>1</number>
               </property>
               <property name="value">
                <number>8</number>

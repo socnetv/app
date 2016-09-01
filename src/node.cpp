@@ -71,7 +71,7 @@ Node::Node(GraphicsWidget* gw, const int &num, const int &size,
     m_hasNumberInside = numbersInside;
     m_numSize = numberSize;
     m_numColor = numberColor;
-    m_nd=numDistance;
+    m_numberDistance=numDistance;
 
     m_hasLabel=showLabels;
     m_labelText = label;
@@ -93,8 +93,6 @@ Node::Node(GraphicsWidget* gw, const int &num, const int &size,
     qDebug()<< "Node: constructor: initial position at: "
 			<< this->x()<<", "<<this->y()
 			<< " Will move at: "<< p.x()<<", "<<p.y();;
-
-
 
 } 
 
@@ -277,7 +275,7 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
         {
             if (!m_hasNumberInside) 	{ //move it outside
                 m_number -> setZValue(254);
-                m_number -> setPos( m_size+m_nd, 0);
+                m_number -> setPos( m_size+m_numberDistance, 0);
             }
         }
         if (m_hasLabel) {
@@ -385,14 +383,6 @@ void Node::addLabel ()  {
 }
 
 
-void Node::setLabelSize(const int &size) {
-    m_labelSize = size;
-    if (!m_hasLabel) {
-        addLabel();
-    }
-    m_label->setSize(m_labelSize);
-
-}
 
 NodeLabel* Node::label(){
     if (!m_hasLabel) {
@@ -411,11 +401,47 @@ void Node::deleteLabel(){
 
 void Node::setLabelText ( QString label) {
     prepareGeometryChange();
-    m_label->setPlainText(label);
+    m_labelText = label;
+    if (m_hasLabel)
+        m_label->setPlainText(label);
+    else
+        addLabel();
     m_hasLabel=true;
 }
 
 
+
+void Node::setLabelVisibility(const bool &toggle) {
+    if (toggle){
+        if (m_hasLabel) {
+            m_label->show();
+        }
+        else {
+            addLabel();
+        }
+    }
+    else {
+        if (m_hasLabel) {
+            m_label->hide();
+        }
+    }
+
+    m_hasLabel=toggle;
+}
+
+void Node::setLabelSize(const int &size) {
+    m_labelSize = size;
+    if (!m_hasLabel) {
+        addLabel();
+    }
+    m_label->setSize(m_labelSize);
+
+}
+
+/**
+ * @brief Node::labelText
+ * @return QString
+ */
 QString Node::labelText ( ) {
     if (m_hasLabel) {
         return m_label->toPlainText();
@@ -424,20 +450,50 @@ QString Node::labelText ( ) {
 }
 
 
+
+
+void Node::addNumber () {
+    qDebug()<<"Node::addNumber () " ;
+    m_hasNumber=true;
+    m_hasNumberInside = false;
+    m_number= new  NodeNumber ( this, QString::number(m_num), m_numSize);
+    m_number -> setDefaultTextColor (m_numColor);
+    m_number -> setPos(m_size+m_numberDistance, 0);
+
+}
+
+NodeNumber* Node::number(){
+    return m_number;
+}
+
+
+void Node::deleteNumber( ){
+    qDebug () << "Node: deleteNumber ";
+    if (m_hasNumber && !m_hasNumberInside) {
+        m_number->hide();
+        graphicsWidget->removeItem(m_number);
+        m_hasNumber=false;
+    }
+}
+
 void Node::setNumberVisibility(const bool &toggle) {
     qDebug() << "Node::setNumberVisibility() " << toggle;
-    m_hasNumber=toggle;
     if (toggle) { //show
-        if ( !m_hasNumberInside )
-            addNumber();
-        else {
-            setShape(m_shape);
+        if (!m_hasNumber) {
+            m_hasNumber=toggle;
+            if ( !m_hasNumberInside )
+                addNumber();
+            else {
+                setShape(m_shape);
+            }
         }
     }
     else { // hide
         deleteNumber();
+        m_hasNumber=toggle;
         setShape(m_shape);
     }
+
 }
 
 void Node::setNumberInside (const bool &toggle){
@@ -448,12 +504,16 @@ void Node::setNumberInside (const bool &toggle){
     else {
         addNumber();
     }
-    m_hasNumberInside = toggle;
+   m_hasNumber = true;
+   m_hasNumberInside = toggle;
    setShape(m_shape);
 }
 
 
-
+/**
+ * @brief Node::setNumberSize
+ * @param size
+ */
 void Node::setNumberSize(const int &size) {
     m_numSize = size;
     if (m_hasNumber && !m_hasNumberInside) {
@@ -468,27 +528,43 @@ void Node::setNumberSize(const int &size) {
 
 }
 
-NodeNumber* Node::number(){
-    return m_number;
-}
 
-
-void Node::addNumber () {
-    qDebug()<<"Node::addNumber () " ;
-    m_hasNumber=true;
-    m_number= new  NodeNumber ( this, QString::number(m_num), m_numSize);
-    m_number -> setDefaultTextColor (m_numColor);
-
-}
-
-
-void Node::deleteNumber( ){
-    qDebug () << "Node: deleteNumber ";
-    if (m_hasNumber && !m_hasNumberInside) {
-        m_number->hide();
-        graphicsWidget->removeItem(m_number);
+/**
+ * @brief Node::setNumberColor
+ * @param color
+ */
+void Node::setNumberColor(const QString &color) {
+    m_numColor = color;
+    if (m_hasNumber){
+        if (m_hasNumberInside) {
+            setShape(m_shape);
+        }
+        else {
+           m_number -> setDefaultTextColor (m_numColor);
+        }
     }
+
 }
+
+/**
+ * @brief Node::setNumberDistance
+ * @param distance
+ */
+void Node::setNumberDistance(const int &distance) {
+    m_numberDistance = distance;
+    if (m_hasNumber && !m_hasNumberInside) {
+       m_number -> setPos( m_size+m_numberDistance, 0);
+    }
+    else if (m_hasNumber && m_hasNumberInside) {
+       // do nothing
+    }
+    else {
+        // create a nodeNumber ?
+    }
+
+}
+
+
 
 
 

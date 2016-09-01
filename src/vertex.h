@@ -145,6 +145,9 @@ public:
     void setNumberSize (const int &size) { m_numberSize=size; }
     int numberSize() const { return m_numberSize; }
 
+    void setNumberDistance (const int &distance) { m_numberDistance=distance; }
+    int numberDistance() const { return m_numberDistance; }
+
     void setLabel (const QString &label) { m_label=label; }
     QString label() const { return m_label; }
 
@@ -268,7 +271,7 @@ private:
     ilist myPs;
     long int m_name,  m_outEdgesCounter, m_inEdgesCounter, m_outDegree, m_inDegree, m_localDegree;
     float m_Eccentricity;
-    int m_value, m_size, m_labelSize, m_numberSize, m_curRelation;
+    int m_value, m_size, m_labelSize, m_numberSize, m_numberDistance, m_curRelation;
     H_StrToInt m_cliques;
     bool m_reciprocalLinked, m_enabled, m_hasCLC, m_isolated;
     QString m_color, m_numberColor, m_label, m_labelColor, m_shape;

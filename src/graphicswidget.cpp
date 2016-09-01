@@ -495,6 +495,13 @@ void GraphicsWidget::setNodeNumberVisibility(const bool &toggle){
     }
 }
 
+void GraphicsWidget::setNodeLabelsVisibility (const bool &toggle){
+    qDebug()<< "GW::setNodeLabelsVisibility()" << toggle;
+    foreach ( Node *m_node, nodeHash) {
+        m_node->setLabelVisibility(toggle);
+    }
+}
+
 
 /**
  * @brief GraphicsWidget::setNodeLabel
@@ -739,6 +746,36 @@ bool GraphicsWidget::setNodeNumberSize(const long int &number, const int &size){
 
 
 /**
+ * @brief GraphicsWidget::setNodeNumberDistance
+ * @param number
+ * @param distance
+ */
+bool GraphicsWidget::setNodeNumberDistance( const long int &number, const int &distance ){
+    qDebug () << " GraphicsWidget::setNodeNumberDistance() node number: "<< number
+              << " new number distance "<< distance;
+    if  ( nodeHash.contains (number) ) {
+        if (distance>0){
+            qDebug() << "GW: setNodeNumberDistance(): for "<< number
+                     << " to " << distance ;
+            nodeHash.value(number) ->setNumberDistance(distance) ;
+            return true;
+
+        }
+        else {
+            qDebug() << "GW: setNodeNumberSize(): for "<< number
+                     << " to initial size" << distance;
+            nodeHash.value(number) ->setNumberDistance(distance);
+            return true;
+
+        }
+    }
+    qDebug() << "GW: setNodeSize(): cannot find node " << number;
+    return false;
+}
+
+
+
+/**
  * @brief GraphicsWidget::setNodeLabelSize
  * @param number
  * @param size
@@ -912,6 +949,10 @@ void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
             node->setSelected(true);
             nodeClicked(node);
             startEdge(node);
+            QGraphicsView::mouseDoubleClickEvent(e);
+            return;
+        }
+        else if ( (*item).type() == TypeLabel){
             QGraphicsView::mouseDoubleClickEvent(e);
             return;
         }

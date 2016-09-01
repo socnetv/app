@@ -121,12 +121,18 @@ SettingsDialog::SettingsDialog(
                 (m_appSettings["initNodeNumbersInside"] == "true" ) ? true:false
                 );
 
-    ui->nodeNumberSizeSpin->setValue( m_appSettings["initNodeNumberSize"].toInt(0, 10) );
-
     m_nodeNumberColor = QColor (m_appSettings["initNodeNumberColor"]);
     m_pixmap = QPixmap(60,20) ;
     m_pixmap.fill( m_nodeNumberColor );
     ui->nodeNumberColorBtn->setIcon(QIcon(m_pixmap));
+
+    ui->nodeNumberSizeSpin->setValue( m_appSettings["initNodeNumberSize"].toInt(0, 10) );
+    ui->nodeNumberDistanceSpin->setValue( m_appSettings["initNodeNumberDistance"].toInt(0, 10) );
+
+
+    ui->nodeLabelsChkBox->setChecked(
+                ( m_appSettings["initNodeLabelsVisibility"] == "true") ? true : false
+                );
 
     ui->nodeLabelSizeSpin->setValue( m_appSettings["initNodeLabelSize"].toInt(0, 10) );
 
@@ -215,15 +221,17 @@ SettingsDialog::SettingsDialog(
                      this, &SettingsDialog::getNodeNumbersVisibility);
     connect (ui->nodeNumbersInsideChkBox, &QCheckBox::stateChanged,
              this,  &SettingsDialog::getNodeNumbersInside);
-    connect(ui->nodeNumberSizeSpin, SIGNAL(valueChanged(int)),
-            this, SLOT(getNodeNumberSize(int)) );
     connect (ui->nodeNumberColorBtn, &QToolButton::clicked,
              this, &SettingsDialog::getNodeNumberColor);
+    connect(ui->nodeNumberSizeSpin, SIGNAL(valueChanged(int)),
+            this, SLOT(getNodeNumberSize(int)) );
+    connect(ui->nodeNumberDistanceSpin, SIGNAL(valueChanged(int)),
+            this, SLOT(getNodeNumberDistance(int)) );
 
-
+    connect (ui->nodeLabelsChkBox, &QCheckBox::stateChanged,
+                     this, &SettingsDialog::getNodeLabelsVisibility);
     connect(ui->nodeLabelSizeSpin, SIGNAL(valueChanged(int)),
                 this, SLOT(getNodeLabelSize(int)) );
-
     connect (ui->nodeLabelColorBtn, &QToolButton::clicked,
              this, &SettingsDialog::getNodeLabelColor);
 
@@ -380,6 +388,7 @@ void SettingsDialog::getNodeNumbersVisibility (bool toggle){
  */
 void SettingsDialog::getNodeNumbersInside(bool toggle) {
     m_appSettings["initNodeNumbersInside"]= (toggle) ? "true" : "false";
+    ui->nodeNumbersChkBox->setChecked(true);
     emit setNodeNumbersInside(toggle);
 }
 
@@ -392,6 +401,11 @@ void SettingsDialog::getNodeNumberSize( const int size) {
     emit setNodeNumberSize(0, size);
 }
 
+
+void SettingsDialog::getNodeNumberDistance(const int distance) {
+    m_appSettings["initNodeNumberDistance"]= QString::number(distance);
+    emit setNodeNumberDistance(0, distance);
+}
 
 /**
  * @brief SettingsDialog::getNodeNumberColor
@@ -411,6 +425,17 @@ void SettingsDialog::getNodeNumberColor(){
     }
 }
 
+
+
+
+/**
+ * @brief SettingsDialog::getNodeLabelsVisibility
+ * @param toggle
+ */
+void SettingsDialog::getNodeLabelsVisibility (bool toggle){
+    m_appSettings["initNodeLabelsVisibility"]= (toggle) ? "true" : "false";
+    emit setNodeLabelsVisibility(toggle);
+}
 
 
 /**

@@ -896,8 +896,18 @@ void Graph::setInitVertexNumberSize (const int &size) {
     initVertexNumberSize = size;
 }
 
+//Changes the initial distance of vertices numbers
+void Graph::setInitVertexNumberDistance(const int &distance) {
+    initVertexNumberSize = distance;
+}
 
-//Changes the size.of vertex v number
+
+/**
+ * @brief Graph::setVertexNumberSize
+ * Changes the size.of vertex v number
+ * @param v
+ * @param size
+ */
 void Graph::setVertexNumberSize(const long int &v, const int &size) {
     m_graph[ index[v] ]->setNumberSize (size);
     graphModified=true;
@@ -924,6 +934,48 @@ void Graph::setVertexNumberSizeAll(const int &size) {
                      << " new size " << size;
             (*it)->setNumberSize(size) ;
             emit setNodeNumberSize ( (*it)-> name(), size);
+        }
+    }
+    graphModified=true;
+    emit graphChanged();
+}
+
+
+
+
+/**
+ * @brief Graph::setVertexNumberDistance
+ * Changes the distance.of vertex v number from the vertex
+ * @param v
+ * @param size
+ */
+void Graph::setVertexNumberDistance(const long int &v, const int &newDistance) {
+    m_graph[ index[v] ]->setNumberDistance (newDistance);
+    graphModified=true;
+    emit graphChanged();
+    emit setNodeNumberDistance(v, newDistance);
+}
+
+
+/**
+ * @brief Graph::setVertexNumberDistanceAll
+ * Changes the distance.of all vertex number from their vertices
+ * @param size
+ */
+void Graph::setVertexNumberDistanceAll(const int &newDistance) {
+    qDebug() << "*** Graph::setVertexNumberDistanceAll() "
+                << " to " << newDistance;
+    setInitVertexNumberDistance(newDistance);
+    QList<Vertex*>::const_iterator it;
+    for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( ! (*it)->isEnabled() ){
+            continue;
+        }
+        else {
+            qDebug() << "Graph::setVertexNumberSizeAll() Vertex " << (*it)->name()
+                     << " new size " << newDistance;
+            (*it)->setNumberDistance(newDistance) ;
+            emit setNodeNumberDistance ( (*it)-> name(), newDistance);
         }
     }
     graphModified=true;

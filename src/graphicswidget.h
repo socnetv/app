@@ -100,16 +100,23 @@ public slots:
                     );
     void eraseNode(long int doomedJim);
     void setNodeVisibility(long int, bool );	//Called from Graph via MW
-    bool setNodeShape(const long int &nodeNumber, const QString &shape);
-    bool setNodeColor(const long int &, const QString &color);
-    bool setNodeLabel(long int , QString );
     void nodeClicked(Node *);
     void moveNode(const int &num, const qreal &x, const qreal &y);	//Called from Graph when creating random nets.
+
     bool setNodeSize(long int, int size=0);
     void setAllNodeSize(int size=0);
+
+    bool setNodeShape(const long int &nodeNumber, const QString &shape);
+    bool setNodeColor(const long int &, const QString &color);
+
     void setNodeNumberVisibility(const bool &toggle);
     bool setNodeNumberSize(const long int &, const int &size=0);
+    bool setNodeNumberDistance(const long int &, const int &distance=0);
+
+    void setNodeLabelsVisibility(const bool &toggle);
     bool setNodeLabelSize(const long int &, const int &size=0);
+    bool setNodeLabel(long int , QString );
+
 
     void drawEdge(const int &source, const int &target,
                   const float &weight,

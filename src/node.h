@@ -53,91 +53,91 @@ static const int TypeNode = QGraphicsItem::UserType+1;
 //
 
 class Node :  public QObject,  public QGraphicsItem {
-	Q_OBJECT
-	Q_INTERFACES (QGraphicsItem)
+    Q_OBJECT
+    Q_INTERFACES (QGraphicsItem)
 
 public:
     Node (GraphicsWidget* gw, const int &num, const int &size,
-               const QString &color, const QString &shape,
-               const bool &showNumbers, const bool &numbersInside,
-               const QString &numberColor, const int &numberSize, const int &numDistance,
-               const bool &showLabels, const QString &label, const QString &labelColor,
-               const int &labelSize, const int &labelDistance,
-               QPointF p
-                );
+          const QString &color, const QString &shape,
+          const bool &showNumbers, const bool &numbersInside,
+          const QString &numberColor, const int &numberSize, const int &numDistance,
+          const bool &showLabels, const QString &label, const QString &labelColor,
+          const int &labelSize, const int &labelDistance,
+          QPointF p
+          );
     ~Node();
 
-	enum { Type = UserType + 1 };
-	int type() const { return Type; }
+    enum { Type = UserType + 1 };
+    int type() const { return Type; }
 
+    QRectF boundingRect() const;
+    QPainterPath shape() const;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
-	QRectF boundingRect() const;
-	QPainterPath shape() const;
-	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    long int nodeNumber() {return m_num;}
 
-	long int nodeNumber() {return m_num;}
+    void addInLink( Edge *edge ) ;
+    void deleteInLink(Edge*);
+    void addOutLink( Edge *edge ) ;
+    void deleteOutLink(Edge*);
 
-	void setSize(int);
-	int size();
+    void setSize(int);
+    int size();
 
     void setShape (const QString);
-	QString nodeShape() {return m_shape;}
+    QString nodeShape() {return m_shape;}
 
-	void setColor(QString str);
-	void setColor(QColor color);
-	QString color ();
-	
-	NodeLabel* label();
+    void setColor(QString str);
+    void setColor(QColor color);
+    QString color ();
+
     void addLabel();
-	void deleteLabel();
+    NodeLabel* label();
+    void deleteLabel();
+    void setLabelVisibility(const bool &toggle);
     void setLabelSize(const int &size);
     void setLabelText ( QString label) ;
-    QString labelText () ;						// Used by GW:: hasNode()
-
-	void addInLink( Edge *edge ) ;
-	void deleteInLink(Edge*);
-
-	void addOutLink( Edge *edge ) ;
-	void deleteOutLink(Edge*);
-	
-    void setNumberVisibility(const bool &toggle);
-    void setNumberInside(const bool &toggle);
+    QString labelText();
 
     void addNumber () ;
     NodeNumber* number();
-	void deleteNumber();
+    void deleteNumber();
+    void setNumberVisibility(const bool &toggle);
+    void setNumberInside(const bool &toggle);
     void setNumberSize(const int &size);
-	
-	void toggleAntialiasing(bool);
-	
+    void setNumberDistance(const int &distance);
+    void setNumberColor(const QString &color);
+
+    void toggleAntialiasing(bool);
+
 
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
-	void mousePressEvent(QGraphicsSceneMouseEvent *event);
-	void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
 signals: 
-	void nodeClicked(Node*);
-	void startEdge(Node *);
-	void adjustOutEdge();
-	void adjustInEdge();
-	void removeOutEdge();
-	void removeInEdge();
+    void nodeClicked(Node*);
+    void startEdge(Node *);
+    void adjustOutEdge();
+    void adjustInEdge();
+    void removeOutEdge();
+    void removeInEdge();
 private:
-	GraphicsWidget *graphicsWidget;
-	QPainterPath *m_path;
-	QPointF newPos;
-	QPolygon *m_poly_t, *m_poly_d;
-    int  m_size, m_numSize, m_labelSize, m_nd, m_ld;
-	long int m_num;
+    GraphicsWidget *graphicsWidget;
+    QPainterPath *m_path;
+    QPointF newPos;
+    QPolygon *m_poly_t, *m_poly_d;
+    int  m_size, m_numSize, m_labelSize, m_numberDistance, m_ld;
+    long int m_num;
     QString  m_shape,  m_col_str, m_numColor, m_labelText, m_labelColor;
-	QColor m_col;
+    QColor m_col;
     bool m_hasNumber, m_hasLabel, m_hasNumberInside;
-	/**Lists of elements attached to this node */
+    /**Lists of elements attached to this node */
     list<Edge*> inEdgeList, outEdgeList;
-	NodeLabel *m_label;
-	NodeNumber *m_number;
+    NodeLabel *m_label;
+    NodeNumber *m_number;
 };
 
 #endif

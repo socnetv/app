@@ -193,6 +193,7 @@ signals:
     void setNodeColor(const long int v, const QString &color);
     void setNodeLabel(long int, QString);
     void setNodeNumberSize(const long int &, const int &);
+    void setNodeNumberDistance(const long int &, const int &);
     void setNodeLabelSize(const long int &, const int &);
 
     void drawEdgeReciprocal(int, int);				//call GW to draw the edge as symmetric one
@@ -265,7 +266,10 @@ public:
     void setInitVertexNumberColor ( QString color);
     void setInitVertexNumberSize (const int &size);
     void setVertexNumberSize(const long int &v, const int &newsize );
-    void setVertexNumberSizeAll (const int &);
+    void setVertexNumberSizeAll (const int &size);
+    void setInitVertexNumberDistance (const int &distance);
+    void setVertexNumberDistance(const long int &v, const int &newDistance );
+    void setVertexNumberDistanceAll (const int &newDistance);
 
     void setInitVertexLabelSize(int newSize);
     void setVertexLabelSize(const long int &v, const int &newsize );
@@ -657,6 +661,7 @@ private:
 
     long int m_totalVertices, graphDiameter, initVertexSize;
     int initVertexLabelSize, initVertexNumberSize;
+    int initVertexNumberDistance;
 
     int isolatedVertices;
     float averGraphDistance, nonZeroDistancesCounter;

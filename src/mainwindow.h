@@ -128,9 +128,12 @@ public slots:
     //NETWORK MENU
     void slotNetworkNew();
     void slotNetworkFileChoose();
+    void slotNetworkFileRecentUpdateActions();
     void slotNetworkAvailableTextCodecs();
     bool slotNetworkFilePreview(const QString , const int );
     bool slotNetworkFileLoad ( const QString, const QString, const int );
+    void slotNetworkFileLoadRecent();
+
     void slotNetworkFileView();
     void slotNetworkImportGraphML();
     void slotNetworkImportPajek();
@@ -218,6 +221,7 @@ public slots:
     void slotEditNodeShapeAll();
     void slotEditNodeShape(const QString shape, const int vertex = 0);
     void slotEditNodeNumberSize(int v1=0, int newSize=0);
+    void slotEditNodeNumberDistance(int v1=0, int newSize=0);
     void slotEditNodeNumbersColor(QColor color=QColor());
     void slotEditNodeLabelSize(int v1=0, int newSize=0);
     void slotEditNodeLabelsColor(QColor color=QColor());
@@ -390,7 +394,7 @@ private:
     QMenu *importSubMenu, *exportSubMenu, *editMenu, *statMenu,  *helpMenu;
     QMenu *optionsMenu, *colorOptionsMenu, *edgeOptionsMenu, *nodeOptionsMenu, *viewOptionsMenu;
     QMenu *editNodeMenu, *editEdgeMenu, *centrlMenu, *layoutMenu;
-    QMenu *networkMenu, *randomNetworkMenu, *filterMenu;
+    QMenu *networkMenu, *randomNetworkMenu, *filterMenu, *recentFilesSubMenu;
     QMenu *randomLayoutMenu, *circleLayoutMenu, *levelLayoutMenu, *physicalLayoutMenu;
     QMenu *colorationMenu;
     QCheckBox  *toolBoxNodeSizesByOutDegreeBx,*toolBoxNodeSizesByInDegreeBx, *layoutGuidesBx;
@@ -458,11 +462,13 @@ private:
     QAction *springLayoutAct, *FRLayoutAct;
     QAction *nodeSizesByOutDegreeAct,  *nodeSizesByInDegreeAct;
     QAction *editRelationNextAct, *editRelationPreviousAct, *editRelationAddAct;
+    enum { MaxRecentFiles = 5 };
+    QAction *recentFileActs[MaxRecentFiles];
 
     QString fileName, networkName, previous_fileName;
     QString settingsFilePath, settingsDir ;
-    QStringList fileNameNoPath, fortuneCookie, rgbValues;
-    QStringList tempFileNameNoPath, tips;
+    QStringList fileNameNoPath, fortuneCookie;
+    QStringList tempFileNameNoPath, tips, recentFiles;
     int statusBarDuration, progressCounter;
     int maxNodes;
     int fortuneCookiesCounter,  tipsCounter;

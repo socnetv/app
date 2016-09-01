@@ -189,8 +189,6 @@ QMap<QString,QString> MainWindow::initSettings(){
     // initially they are the same, but dataDir may be changed by the user
     QString dataDir= settingsDir ;
 
-
-
     maxNodes=5000;		//Max nodes used by createRandomNetwork dialogues
 
     // hard-coded initial settings to use only on first app load
@@ -271,23 +269,18 @@ QMap<QString,QString> MainWindow::initSettings(){
             QString line = in.readLine();
             if (!line.isEmpty()) {
                 setting = line.simplified().split('=');
-                //qDebug() << "   setting: " <<  setting[0].simplified() << " = " << setting[1].simplified();
-                appSettings.insert (setting[0].simplified() , setting[1].simplified() );
+                qDebug() << "  read setting: " <<  setting[0].simplified() << " = " << setting[1].simplified();
+                if (setting[0].simplified().startsWith("recentFile_"))
+                    recentFiles += setting[1].simplified();
+                else
+                    appSettings.insert (setting[0].simplified() , setting[1].simplified() );
             }
         }
-
         file.close();
     }
-
+    qDebug () << "MW::initSettings() - Recent files count " << recentFiles.count() ;
     // restore user setting for debug messages
     printDebug = (appSettings["printDebug"] == "true") ? true:false;
-
-    qDebug() << "MW::initSettings - Final settings";
-    QMap<QString, QString>::const_iterator i = appSettings.constBegin();
-    while (i != appSettings.constEnd()) {
-        qDebug() << "setting: " <<  i.key() << " = " << i.value();
-        ++i;
-    }
 
     return appSettings;
 }
@@ -324,12 +317,21 @@ void MainWindow::saveSettings() {
     qDebug()<< "MW::saveSettings - settings file does not exist - Creating it";
     QTextStream out(&file);
     qDebug()<< "MW::saveSettings - writing settings to settings file first ";
-    QMap<QString, QString>::const_iterator i = appSettings.constBegin();
-    while (i != appSettings.constEnd()) {
-        qDebug() << "   setting: " <<  i.key() << " = " << i.value();
-        out << i.key() << " = " << i.value() << endl;
-        ++i;
+    QMap<QString, QString>::const_iterator it = appSettings.constBegin();
+    while (it != appSettings.constEnd()) {
+        qDebug() << "   setting: " <<  it.key() << " = " << it.value();
+        out << it.key() << " = " << it.value() << endl;
+        ++it;
     }
+
+
+    // save recent files
+    for (int i = 0 ; i < recentFiles.size() ; ++i) {
+         out << "recentFile_"+ QString::number(i+1)
+             << " = "
+             << recentFiles.at(i) << endl;
+    }
+
     file.close();
 
 }
@@ -396,12 +398,18 @@ void MainWindow::slotOpenSettingsDialog() {
     connect( m_settingsDialog, &SettingsDialog::setNodeNumbersInside,
              this, &MainWindow::slotOptionsNodeNumbersInside);
 
+    connect( m_settingsDialog, &SettingsDialog::setNodeNumberColor,
+             this, &MainWindow::slotEditNodeNumbersColor);
 
     connect( m_settingsDialog, &SettingsDialog::setNodeNumberSize,
              this, &MainWindow::slotEditNodeNumberSize);
 
-    connect( m_settingsDialog, &SettingsDialog::setNodeNumberColor,
-             this, &MainWindow::slotEditNodeNumbersColor);
+    connect( m_settingsDialog, &SettingsDialog::setNodeNumberDistance,
+             this, &MainWindow::slotEditNodeNumberDistance);
+
+
+    connect( m_settingsDialog, &SettingsDialog::setNodeLabelsVisibility,
+             this, &MainWindow::slotOptionsNodeLabelsVisibility);
 
     connect( m_settingsDialog, &SettingsDialog::setNodeLabelSize,
              this, &MainWindow::slotEditNodeLabelSize);
@@ -444,6 +452,14 @@ void MainWindow::initActions(){
     networkOpen->setWhatsThis(tr("Open\n\n"
                               "Opens a file of an existing network in GraphML format"));
     connect(networkOpen, SIGNAL(triggered()), this, SLOT(slotNetworkImportGraphML()));
+
+
+    for (int i = 0; i < MaxRecentFiles; ++i) {
+         recentFileActs[i] = new QAction(this);
+         recentFileActs[i]->setVisible(false);
+         connect(recentFileActs[i], SIGNAL(triggered()),
+                 this, SLOT(slotNetworkFileLoadRecent()));
+     }
 
 
     networkImportPajek = new QAction( QIcon(":/images/open.png"), tr("&Pajek"), this);
@@ -1962,6 +1978,13 @@ void MainWindow::initMenuBar() {
     networkMenu = menuBar()->addMenu(tr("&Network"));
     networkMenu -> addAction(networkNew);
     networkMenu -> addAction(networkOpen);
+    networkMenu -> addSeparator();
+    recentFilesSubMenu = new QMenu(tr("Recent files..."));
+    for (int i = 0; i < MaxRecentFiles; ++i)
+        recentFilesSubMenu->addAction(recentFileActs[i]);
+
+    networkMenu ->addMenu (recentFilesSubMenu );
+    networkMenu -> addSeparator();
     importSubMenu = new QMenu(tr("Import ..."));
     importSubMenu -> setIcon(QIcon(":/images/import.png"));
     importSubMenu -> addAction(networkImportPajek);
@@ -2904,9 +2927,9 @@ void MainWindow::initView() {
                                   "Inside this area you create and edit networks, "
                                   "load networks from files and visualize them \n"
                                   "according to selected metrics. \n\n"
-                                  " - To create a new node, double-click anywhere (Ctrl+X+A)\n"
+                                  " - To create a new node, double-click anywhere (Ctrl+.)\n"
                                   " - To add an arc between two nodes, double-click"
-                                  " on the first node then double-click on the second (Ctrl+E+A)\n"
+                                  " on the first node then double-click on the second (Ctrl+/)\n"
                                   " - To change network appearance, right click on empty space\n"
                                   " - To change/edit the properties of a node, right-click on it\n"
                                   " - To change/edit the properties of an edge, right-click on it."
@@ -3212,8 +3235,11 @@ void MainWindow::initSignalSlots() {
     connect( &activeGraph, SIGNAL( setNodeShape(long int,QString))  ,
              graphicsWidget, SLOT(  setNodeShape(long int, QString) ) );
 
-    connect( &activeGraph, SIGNAL( setNodeNumberSize(long int, int)  ),
-             graphicsWidget, SLOT(  setNodeNumberSize (long int , int) ) );
+    connect( &activeGraph, SIGNAL( setNodeNumberSize(const long int &, const int &)  ),
+             graphicsWidget, SLOT(  setNodeNumberSize (const long int &, const int &) ) );
+
+    connect( &activeGraph, SIGNAL( setNodeNumberDistance(const long int &, const int &)  ),
+             graphicsWidget, SLOT( setNodeNumberDistance (const long int &, const int &) ) );
 
     connect( &activeGraph, &Graph::setNodeLabel ,
              graphicsWidget, &GraphicsWidget::setNodeLabel );
@@ -3446,6 +3472,23 @@ void MainWindow::initNet(){
 }
 
 
+
+
+void MainWindow::slotNetworkFileRecentUpdateActions() {
+
+    int numRecentFiles = qMin(recentFiles.size(), (int)MaxRecentFiles);
+
+    for (int i = 0; i < numRecentFiles; ++i) {
+        QString text = tr("&%1  %2").arg(i + 1).arg(QFileInfo(recentFiles[i]).fileName());
+        recentFileActs[i]->setText(text);
+        recentFileActs[i]->setData(recentFiles[i]);
+        recentFileActs[i]->setVisible(true);
+    }
+    for (int j = numRecentFiles; j < MaxRecentFiles; ++j)
+        recentFileActs[j]->setVisible(false);
+
+    //separatorAct->setVisible(numRecentFiles > 0);
+}
 
 
 
@@ -3802,9 +3845,22 @@ QString MainWindow::getLastPath() {
  * sets the last path used by user to open/save something
  * @param filePath
  */
-void MainWindow::setLastPath(QString filePath) {
-    appSettings["lastUsedDirPath"] = filePath.left( filePath.lastIndexOf("/"));
+void MainWindow::setLastPath(QString fileName) {
+    appSettings["lastUsedDirPath"] = QFileInfo(fileName).dir().absolutePath();
+            // fileName.left( filePath.lastIndexOf("/"));
+    if (    QFileInfo(fileName).completeSuffix().toLower() != "bmp" &&
+            QFileInfo(fileName).completeSuffix().toLower() != "jpg" &&
+            QFileInfo(fileName).completeSuffix().toLower() != "png"  &&
+            QFileInfo(fileName).completeSuffix().toLower() != "pdf"
+            ) {
+        recentFiles.removeAll(fileName);
+        recentFiles.prepend(fileName);
+        while(recentFiles.size() > MaxRecentFiles )
+            recentFiles.removeLast();
+    }
+    slotNetworkFileRecentUpdateActions();
     saveSettings();
+
     qDebug() << appSettings["lastUsedDirPath"];
 }
 
@@ -3941,8 +3997,7 @@ void MainWindow::slotNetworkFileChoose() {
         }
         qDebug()<<"MW: file selected: " << m_fileName;
         fileNameNoPath=m_fileName.split ("/");
-        setLastPath(m_fileName); // store this path
-
+        setLastPath(m_fileName); // store this path and file
         slotNetworkFilePreview(m_fileName, m_fileFormat );
 
     }
@@ -4297,6 +4352,7 @@ void MainWindow::slotNetworkAvailableTextCodecs()
 }
 
 
+
 /**
  * @brief MainWindow::slotNetworkFilePreview
  * @param m_fileName
@@ -4327,6 +4383,18 @@ bool MainWindow::slotNetworkFilePreview(const QString m_fileName,
     }
     return true;
 }
+
+
+
+
+
+void MainWindow::slotNetworkFileLoadRecent() {
+    QAction *action = qobject_cast<QAction *>(sender());
+    if (action) {
+        slotNetworkFilePreview( action->data().toString(), 0 );
+    }
+}
+
 
 
 
@@ -5971,7 +6039,7 @@ void MainWindow::slotEditNodeProperties( const QString label, const int size,
                             label
                             );
 
-            if (appSettings["initNodeLabelsVisibility"] != "true")
+            if ( label !="" && appSettings["initNodeLabelsVisibility"] != "true")
                 slotOptionsNodeLabelsVisibility(true);
 
             qDebug () <<  clickedJimNumber;
@@ -6198,6 +6266,38 @@ void MainWindow::slotEditNodeNumberSize(int v1, int newSize) {
 }
 
 
+
+/**
+ * @brief MainWindow::slotEditNodeNumberDistance
+ * Changes the distance of one or all node numbers from their nodes.
+ * Called from Edit menu option and SettingsDialog
+ * if newDistance=0, asks the user to enter a new node number distance
+ * if v1=0, it changes all node number distances
+ * @param v1
+ * @param newDistance
+ */
+void MainWindow::slotEditNodeNumberDistance(int v1, int newDistance) {
+    bool ok=false;
+    qDebug() << "MW::slotEditNodeNumberDistance - newSize " << newDistance;
+    if (!newDistance) {
+        newDistance = QInputDialog::getInt(
+                    this, "Change node number distance",
+                    tr("Change all node numbers distance from their nodes to: (1-16)"),
+                    appSettings["initNodeNumberDistance"].toInt(0,10), 1, 16, 1, &ok );
+        if (!ok) {
+            statusMessage( tr("Change node number distance aborted.") );
+            return;
+        }
+    }
+    if (v1) { //change one node number distance only
+        activeGraph.setVertexNumberDistance(v1, newDistance);
+    }
+    else { //change all
+        appSettings["initNodeNumberDistance"] = QString::number(newDistance);
+        activeGraph.setVertexNumberDistanceAll(newDistance);
+    }
+    statusMessage( tr("Changed node number distance. Ready.") );
+}
 
 
 
@@ -8951,23 +9051,20 @@ void MainWindow::destroyProgressBar(){
  */
 void MainWindow::slotOptionsNodeNumbersVisibility(bool toggle) {
     qDebug() << "MW::slotOptionsNodeNumbersVisibility()" << toggle;
-    if (!fileLoaded && ! networkModified) {
-        QMessageBox::critical(this, "Error",
-                              tr("There are no nodes! \n"
-                                 "Load a network file or create a new network."), "OK",0);
-        statusMessage( tr("Errr...no nodes here. Sorry!") );
-        return;
-    }
+    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
     statusMessage( tr("Toggle Nodes Numbers. Please wait...") );
     appSettings["initNodeNumbersVisibility"] = (toggle) ? "true":"false";
     graphicsWidget->setNodeNumberVisibility(toggle);
     if (!toggle) {
+        optionsNodeNumbersVisibilityAct->setChecked ( false );
         statusMessage( tr("Node Numbers are invisible now. "
                           "Click the same option again to display them.") );
     }
     else{
+        optionsNodeNumbersVisibilityAct->setChecked ( true );
         statusMessage( tr("Node Numbers are visible again...") );
     }
+    QApplication::restoreOverrideCursor();
     return;
 }
 
@@ -8983,7 +9080,7 @@ void MainWindow::slotOptionsNodeNumbersInside(bool toggle){
     qDebug() << "MW::slotOptionsNodeNumbersInside()" << toggle;
 
     statusMessage( tr("Toggle Numbers inside nodes. Please wait...") );
-
+    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
     // if node numbers are hidden, show them first.
     if ( toggle && appSettings["initNodeNumbersVisibility"] != "true" )
         slotOptionsNodeNumbersVisibility(true);
@@ -8991,13 +9088,14 @@ void MainWindow::slotOptionsNodeNumbersInside(bool toggle){
     appSettings["initNodeNumbersInside"] = (toggle) ? "true":"false";
     activeGraph.setVertexNumbersInsideNodes(toggle);
     graphicsWidget -> setNumbersInsideNodes(toggle);
-
+    optionsNodeNumbersVisibilityAct->setChecked ( true );
     if (toggle){
         statusMessage( tr("Numbers inside nodes...") );
     }
     else {
         statusMessage( tr("Numbers outside nodes...") );
     }
+    QApplication::restoreOverrideCursor();
 }
 
 
@@ -9010,23 +9108,23 @@ void MainWindow::slotOptionsNodeNumbersInside(bool toggle){
  * @param toggle
  */
 void MainWindow::slotOptionsNodeLabelsVisibility(bool toggle){
-    if (!fileLoaded && ! networkModified) {
-        QMessageBox::critical(this, "Error",tr("There are no nodes! \nLoad a network file or create a new network first. "), "OK",0);
-        statusMessage( tr("No nodes found. Sorry...") );
-        return;
-    }
-    statusMessage( tr("Toggle Nodes Labels. Please wait...") );
+    qDebug() << "MW::slotOptionsNodeLabelsVisibility()" << toggle;
 
-    if (!toggle) 	{
-        graphicsWidget->setAllItemsVisibility(TypeLabel, false);
-        statusMessage( tr("Node Labels are invisible now. Click the same option again to display them.") );
-        return;
+    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+    statusMessage( tr("Toggle Nodes Labels. Please wait...") );
+    appSettings["initNodeLabelsVisibility"] = (toggle) ? "true":"false";
+    graphicsWidget->setNodeLabelsVisibility(toggle);
+    activeGraph.setVertexLabelsVisibility(toggle);
+    if (!toggle) {
+        optionsNodeLabelsVisibilityAct->setChecked ( false );
+        statusMessage( tr("Node Labels are invisible now. "
+                          "Click the same option again to display them.") );
     }
     else{
-        graphicsWidget->setAllItemsVisibility(TypeLabel, true);
+        optionsNodeLabelsVisibilityAct->setChecked ( true );
         statusMessage( tr("Node Labels are visible again...") );
     }
-    activeGraph.setVertexLabelsVisibility(toggle);
+    QApplication::restoreOverrideCursor();
 }
 
 
@@ -9041,12 +9139,6 @@ void MainWindow::slotOptionsNodeLabelsVisibility(bool toggle){
  */
 void MainWindow::slotOptionsEdgeWeightNumbersVisibility(bool toggle) {
     qDebug() << "MW::slotOptionsEdgeWeightNumbersVisibility - Toggling Edges Weights";
-    if (!fileLoaded && ! networkModified) {
-        QMessageBox::critical(this, "Error",tr("There are no edges! \nLoad a network file or create a new network first."), "OK",0);
-        statusMessage( tr("No nodes or edges found. Sorry...") );
-        return;
-    }
-
     statusMessage( tr("Toggle Edges Weights. Please wait...") );
 
     if (!toggle) 	{
@@ -9085,7 +9177,9 @@ void MainWindow::slotOptionsEdgeWeightsDuringComputation(bool toggle) {
  */
 void MainWindow::slotOptionsEdgesVisibility(bool toggle){
     if (!fileLoaded && ! networkModified) {
-        QMessageBox::critical(this, "Error",tr("There are no nodes nor edges! \nLoad a network file or create a new network first!"), "OK",0);
+        QMessageBox::critical(this, "Error",
+                              tr("There are no nodes nor edges! \n"
+                                 "Load a network file or create a new network first!"), "OK",0);
 
         statusMessage( tr("No edges found...") );
         return;

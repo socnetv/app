@@ -32,9 +32,9 @@
 NodeLabel::NodeLabel(Node *jim , const QString &text,  const int &size) :
     QGraphicsTextItem(jim) {
 
-	setParentItem(jim); //auto disables child items like this, when node is disabled.
+    //setParentItem(jim); //auto disables child items like this, when node is disabled.
     setPlainText( text );
-    setTextInteractionFlags(Qt::TextEditorInteraction);
+    //setTextInteractionFlags(Qt::TextEditorInteraction);
     setFont( QFont ("Times", size, QFont::Light, true) );
 	setZValue (253);
 }
