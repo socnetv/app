@@ -67,11 +67,9 @@ public:
 
     int sourceNodeNumber();
     int targetNodeNumber();
-    void setWeight( const float  &w) ;
 
+    void setWeight( const float  &w) ;
     float weight() const;
-    void addWeight (EdgeWeight* canvasWeight  ) ;
-    void clearWeightList();
 
     void showArrows(const bool &);
     void toggleAntialiasing(bool);
@@ -110,7 +108,7 @@ private:
     QPointF sourcePoint, targetPoint;
     qreal m_arrowSize, m_startOffset, m_endOffset;
     Qt::PenStyle m_style;
-    list<EdgeWeight*> weightList;
+    EdgeWeight* edgeWeight;
 
     QString m_color, m_tempColor;
     int eFrom, eTo;

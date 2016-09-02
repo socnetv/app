@@ -68,23 +68,27 @@ Edge::Edge(  GraphicsWidget *gw,
     m_reciprocal=reciprocal;
     m_startOffset=source->size();  //used to offset edge from the centre of node
     m_endOffset=target->size();  //used to offset edge from the centre of node
-    //	qDebug("Edge() m_startOffset %i",(int) m_startOffset);
-    //	qDebug("Edge() m_endOffset %i",(int) m_endOffset);
-
     m_arrowSize=4;		//controls the width of the edge arrow
-
     eFrom = source->nodeNumber() ;
     eTo = target->nodeNumber() ;
     m_weight = weight ;
     m_Bezier = bez;
+
+    // create edge weight item
+    double x = ( from->x() + to->x() ) / 2.0;
+    double y = ( from->y() + to->y() ) / 2.0;
+    edgeWeight = new  EdgeWeight (this, 7, QString::number(weight) );
+    edgeWeight-> setPos(x,y);
+    edgeWeight-> setDefaultTextColor (color);
+    edgeWeight-> hide();
+
     setAcceptHoverEvents(true);
 //    setFlags(QGraphicsItem::ItemIsSelectable);
 
     setZValue(253); //Edges have lower z than nodes. Nodes always appear above edges.
     // Keep it here so that it doesnt interfere with dashed lines.
     setBoundingRegionGranularity(0); // Slows down the universe
-    setCacheMode (QGraphicsItem::ItemCoordinateCache);
-
+    //setCacheMode (QGraphicsItem::ItemCoordinateCache);
 
     adjust();
 }
@@ -135,8 +139,7 @@ QString Edge::colorToPajek() {
  */
 void Edge::setWeight(const float &w) {
     m_weight = w;
-    foreach (EdgeWeight *wgt, weightList) 		///update the edgeWeight of this edge as well.
-        wgt->setPlainText (QString::number(w));
+    edgeWeight->setPlainText (QString::number(w));
 
 }
 
@@ -185,23 +188,6 @@ int Edge::targetNodeNumber() {
 
 
 /**
- * @brief Called from EdgeWeight objects to 'connect' them to this edge.
- * @param canvasWeight
- */
-void Edge::addWeight (EdgeWeight* canvasWeight  )  {
-    weightList.push_back( canvasWeight) ;
-}
-
-
-void Edge::clearWeightList(){
-    foreach (EdgeWeight *wgt, weightList) 		//Delete this weight
-        wgt->deleteLater();
-
-    weightList.clear();
-}
-
-
-/**
  * @brief Leaves some empty space (offset) from node -
  * make the edge weight appear on the centre of the edge
  */
@@ -226,12 +212,8 @@ void Edge::adjust(){
 
     sourcePoint = line.p1() + edgeOffset;
     targetPoint = line.p2() - edgeOffset;
-//    qDebug()<<"----Edge: adjust()  ("<< sourcePoint.x()<< ","<<sourcePoint.y() << ") -> ("
-//                                   << targetPoint.x()<< " "<<targetPoint.y() << ")";
-    foreach (EdgeWeight *wgt, weightList) 		//Move the weight of this edge
-        wgt->setPos( (source->x()+target->x())/2.0, (source->y()+target->y())/2.0 );
 
-
+    edgeWeight->setPos( (source->x()+target->x())/2.0, (source->y()+target->y())/2.0 );
 
     //Define the path upon which we' ll draw the line
     //QPainterPath line(sourcePoint);
@@ -495,7 +477,7 @@ void Edge::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 Edge::~Edge(){
     qDebug() << "\n\n\n *** ~EDGE() " << sourceNodeNumber()<< "->" << targetNodeNumber();
     removeRefs();
-    weightList.clear();
+    edgeWeight->deleteLater();
     this->hide();
 
 }
