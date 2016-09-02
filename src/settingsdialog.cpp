@@ -147,7 +147,7 @@ SettingsDialog::SettingsDialog(
      */
 
     ui->edgesChkBox-> setChecked(
-                (m_appSettings["initEdgeVisibility"] == "true") ? true: false
+                (m_appSettings["initEdgesVisibility"] == "true") ? true: false
                                                                   );
     if (m_appSettings["initEdgeShape"] == "line") {
         ui->edgeShapeRadioStraightLine->setChecked(true);
@@ -238,6 +238,8 @@ SettingsDialog::SettingsDialog(
             this, SLOT(getNodeLabelDistance(int)) );
 
 
+    connect (ui->edgesChkBox, &QCheckBox::stateChanged,
+                     this, &SettingsDialog::getEdgesVisibility);
     connect (ui->edgeShapeRadioStraightLine, &QRadioButton::clicked,
              this, &SettingsDialog::getEdgeShape);
     connect (ui->edgeShapeRadioBezier, &QRadioButton::clicked,
@@ -480,6 +482,17 @@ void SettingsDialog::getNodeLabelDistance(const int distance) {
     emit setNodeLabelDistance(0, distance);
 }
 
+
+
+
+/**
+ * @brief SettingsDialog::getEdgesVisibility
+ * @param toggle
+ */
+void SettingsDialog::getEdgesVisibility (const bool &toggle){
+    m_appSettings["initEdgesVisibility"]= (toggle) ? "true" : "false";
+    emit setEdgesVisibility(toggle);
+}
 
 
 /**

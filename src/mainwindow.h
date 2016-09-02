@@ -235,12 +235,13 @@ public slots:
     void slotEditEdgeColor();
     void slotEditEdgeWeight();
     void slotEditEdgeColorAll();
+    void slotEditEdgeSymmetrizeAll();
 
     void slotFilterNodes();
     void slotFilterIsolateNodes(bool checked);
     void slotShowFilterEdgesDialog();
     void slotTransformNodes2Edges();
-    void slotSymmetrize();
+
 
 
     // LAYOUT MENU
@@ -435,7 +436,7 @@ private:
     QAction *editNodeSizeAllAct, *editNodeShapeAll;
     QAction *editEdgeLabelAct, *editEdgeColorAct, *editEdgeWeightAct;
     QAction *filterNodesAct, *filterIsolateNodesAct, *filterEdgesAct,
-    *transformNodes2EdgesAct, *symmetrizeAct;
+    *transformNodes2EdgesAct, *editEdgeSymmetrizeAllAct;
     QAction *changeBackColorAct, *editNodeColorAll, *editEdgeColorAllAct,
             *editNodeNumbersColorAct,*editNodeLabelsColorAct;
     QAction *optionsEdgeThicknessPerWeightAct, *optionsEdgeWeightNumbersAct, *optionsEdgesVisibilityAct;

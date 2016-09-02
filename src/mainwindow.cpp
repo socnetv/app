@@ -205,7 +205,7 @@ QMap<QString,QString> MainWindow::initSettings(){
     appSettings["initNodeLabelColor"]="darkblue";
     appSettings["initNodeLabelDistance"] = "6";
 
-    appSettings["initEdgeVisibility"]="true";
+    appSettings["initEdgesVisibility"]="true";
     appSettings["initEdgeShape"]="line"; //bezier
     appSettings["initEdgeColor"]="black";
     appSettings["initEdgeArrows"]="true";
@@ -415,6 +415,10 @@ void MainWindow::slotOpenSettingsDialog() {
 
     connect( m_settingsDialog, &SettingsDialog::setNodeLabelDistance,
              this, &MainWindow::slotEditNodeLabelDistance);
+
+    connect( m_settingsDialog, &SettingsDialog::setEdgesVisibility,
+             this, &MainWindow::slotOptionsEdgesVisibility);
+
 
     // show settings dialog
     m_settingsDialog->exec();
@@ -835,12 +839,15 @@ void MainWindow::initActions(){
                                        "Removes an existing node from the network"));
     connect(editNodeRemoveAct, SIGNAL(triggered()), this, SLOT(slotEditNodeRemove()));
 
-    editNodePropertiesAct = new QAction(QIcon(":/images/properties.png"),tr("Node Properties"), this);
+    editNodePropertiesAct = new QAction(QIcon(":/images/properties.png"),tr("Selected Nodes Properties"), this);
     editNodePropertiesAct ->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_Period );
-    editNodePropertiesAct->setStatusTip(tr("Open node properties dialog -- "
+    editNodePropertiesAct->setStatusTip(tr("Change the basic properties of the selected node(s) -- "
                                            "There must be some nodes on the canvas!"));
-    editNodePropertiesAct->setWhatsThis(tr("Node Properties\n\n"
-                                           "Opens node properties dialog to edit label, size, color, shape etc"));
+    editNodePropertiesAct->setWhatsThis(tr("Selected Nodes Properties\n\n"
+                                           "If there are some nodes on the canvas, "
+                                           " opens a properties dialog to edit "
+                                           "their label, size, color, shape etc. \n"
+                                           "You must have some node selected."));
     connect(editNodePropertiesAct, SIGNAL(triggered()), this, SLOT(slotEditNodePropertiesDialog()));
 
 
@@ -941,11 +948,25 @@ void MainWindow::initActions(){
     editEdgeWeightAct->setWhatsThis(tr("Change Value\n\nChanges the Weight of an Edge"));
     connect(editEdgeWeightAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeWeight()));
 
-
     editEdgeColorAllAct = new QAction( tr("Change All Edges Color"), this);
     editEdgeColorAllAct->setStatusTip(tr("Click to change the color of all Edges."));
     editEdgeColorAllAct->setWhatsThis(tr("Background\n\nChanges all Edges color"));
     connect(editEdgeColorAllAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeColorAll()));
+
+    editEdgeSymmetrizeAllAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Symmetrize Edges"), this);
+    editEdgeSymmetrizeAllAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_S));
+    editEdgeSymmetrizeAllAct->setStatusTip(tr("Makes all edges reciprocal (thus, a symmetric graph)."));
+    editEdgeSymmetrizeAllAct->setWhatsThis(
+                tr("Symmetrize Edges\n\n"
+                   "Transforms all directed arcs to undirected edges. "
+                   "The result is a symmetric network"));
+    connect(editEdgeSymmetrizeAllAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeSymmetrizeAll()));
+
+    transformNodes2EdgesAct = new QAction( tr("Transform Nodes to Edges"),this);
+    transformNodes2EdgesAct->setStatusTip(tr("Transforms the network so that nodes become Edges and vice versa"));
+    transformNodes2EdgesAct->setWhatsThis(tr("Transform Nodes EdgesAct\n\nTransforms network so that nodes become Edges and vice versa"));
+    connect(transformNodes2EdgesAct, SIGNAL(triggered()), this, SLOT(slotTransformNodes2Edges()));
+
 
 
     filterNodesAct = new QAction(tr("Filter Nodes"), this);
@@ -964,7 +985,7 @@ void MainWindow::initActions(){
     filterIsolateNodesAct -> setWhatsThis(tr("Filter Isolate Nodes\n\n Enables or disables displaying of isolate nodes. Isolate nodes are those with no edges..."));
     connect(filterIsolateNodesAct, SIGNAL(toggled(bool)), this, SLOT(slotFilterIsolateNodes(bool)));
 
-    filterEdgesAct = new QAction(tr("Filter Edges by weight"), this);
+    filterEdgesAct = new QAction(tr("Filter Edges by Weight"), this);
     filterEdgesAct -> setEnabled(true);
     filterEdgesAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_F));
     filterEdgesAct -> setStatusTip(tr("Filters Edges of some weight out of the network"));
@@ -972,16 +993,6 @@ void MainWindow::initActions(){
     connect(filterEdgesAct , SIGNAL(triggered()), this, SLOT(slotShowFilterEdgesDialog()));
 
 
-    transformNodes2EdgesAct = new QAction( tr("Transform Nodes to Edges"),this);
-    transformNodes2EdgesAct->setStatusTip(tr("Transforms the network so that nodes become Edges and vice versa"));
-    transformNodes2EdgesAct->setWhatsThis(tr("Transform Nodes EdgesAct\n\nTransforms network so that nodes become Edges and vice versa"));
-    connect(transformNodes2EdgesAct, SIGNAL(triggered()), this, SLOT(slotTransformNodes2Edges()));
-
-    symmetrizeAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Symmetrize Edges"), this);
-    symmetrizeAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_S));
-    symmetrizeAct->setStatusTip(tr("Makes all edges reciprocal (thus, a symmetric graph)."));
-    symmetrizeAct->setWhatsThis(tr("Symmetrize Edges\n\nTransforms all directed arcs to undirected edges. The result is a symmetric network"));
-    connect(symmetrizeAct, SIGNAL(triggered()), this, SLOT(slotSymmetrize()));
 
 
 
@@ -1815,7 +1826,7 @@ void MainWindow::initActions(){
                 "To permanently change it, use Settings & Preferences"));
     optionsEdgesVisibilityAct->setCheckable(true);
     optionsEdgesVisibilityAct->setChecked(
-                (appSettings["initEdgeVisibility"] == "true") ? true: false
+                (appSettings["initEdgesVisibility"] == "true") ? true: false
             );
     connect(optionsEdgesVisibilityAct, SIGNAL(triggered(bool)),
             this, SLOT(slotOptionsEdgesVisibility(bool)) );
@@ -2067,7 +2078,7 @@ void MainWindow::initMenuBar() {
     editMenu -> addAction (editResetSlidersAct );
 
     editMenu -> addSeparator();
-    editNodeMenu = new QMenu(tr("Node..."));
+    editNodeMenu = new QMenu(tr("Nodes..."));
     editNodeMenu -> setIcon(QIcon(":/images/node.png"));
     editMenu -> addMenu ( editNodeMenu );
     editNodeMenu -> addAction (editNodeSelectAllAct);
@@ -2095,7 +2106,7 @@ void MainWindow::initMenuBar() {
     editNodeMenu -> addAction (editNodeLabelsColorAct);
 
 
-    editEdgeMenu = new QMenu(tr("Edge..."));
+    editEdgeMenu = new QMenu(tr("Edges..."));
     editEdgeMenu -> setIcon(QIcon(":/images/line.png"));
     editMenu-> addMenu (editEdgeMenu);
     editEdgeMenu -> addAction(editEdgeAddAct);
@@ -2108,7 +2119,7 @@ void MainWindow::initMenuBar() {
     editEdgeMenu -> addAction (editEdgeColorAllAct);
     editEdgeMenu -> addSeparator();
     //   transformNodes2EdgesAct -> addTo (editMenu);
-    editEdgeMenu  -> addAction (symmetrizeAct);
+    editEdgeMenu  -> addAction (editEdgeSymmetrizeAllAct);
 
 
     editMenu ->addSeparator();
@@ -7151,13 +7162,13 @@ void MainWindow::slotTransformNodes2Edges(){
 /**
 *	Converts all edges to double edges, so that the network becomes undirected (symmetric adjacency matrix).
 */
-void MainWindow::slotSymmetrize(){
+void MainWindow::slotEditEdgeSymmetrizeAll(){
     if ( ( !fileLoaded && !networkModified) || activeEdges() ==0 )  {
         QMessageBox::critical(this, "Error",tr("There are no edges! \nLoad a network file or create a new network first."), "OK",0);
         statusMessage( tr("No edges present...")  );
         return;
     }
-    qDebug("MW: slotSymmetrize() calling symmetrize");
+    qDebug("MW: slotEditEdgeSymmetrizeAll() calling symmetrize");
     activeGraph.symmetrize();
     QMessageBox::information(this, "Symmetrize",tr("All edges are reciprocal. \nYour network is symmetric..."), "OK",0);
     statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
@@ -9123,13 +9134,12 @@ void MainWindow::slotOptionsNodeNumbersVisibility(bool toggle) {
     statusMessage( tr("Toggle Nodes Numbers. Please wait...") );
     appSettings["initNodeNumbersVisibility"] = (toggle) ? "true":"false";
     graphicsWidget->setNodeNumberVisibility(toggle);
+    optionsNodeNumbersVisibilityAct->setChecked ( toggle );
     if (!toggle) {
-        optionsNodeNumbersVisibilityAct->setChecked ( false );
         statusMessage( tr("Node Numbers are invisible now. "
                           "Click the same option again to display them.") );
     }
     else{
-        optionsNodeNumbersVisibilityAct->setChecked ( true );
         statusMessage( tr("Node Numbers are visible again...") );
     }
     QApplication::restoreOverrideCursor();
@@ -9156,7 +9166,7 @@ void MainWindow::slotOptionsNodeNumbersInside(bool toggle){
     appSettings["initNodeNumbersInside"] = (toggle) ? "true":"false";
     activeGraph.setVertexNumbersInsideNodes(toggle);
     graphicsWidget -> setNumbersInsideNodes(toggle);
-    optionsNodeNumbersVisibilityAct->setChecked ( true );
+    optionsNodeNumbersVisibilityAct->setChecked (toggle);
     if (toggle){
         statusMessage( tr("Numbers inside nodes...") );
     }
@@ -9183,13 +9193,12 @@ void MainWindow::slotOptionsNodeLabelsVisibility(bool toggle){
     appSettings["initNodeLabelsVisibility"] = (toggle) ? "true":"false";
     graphicsWidget->setNodeLabelsVisibility(toggle);
     activeGraph.setVertexLabelsVisibility(toggle);
+    optionsNodeLabelsVisibilityAct->setChecked ( toggle );
     if (!toggle) {
-        optionsNodeLabelsVisibilityAct->setChecked ( false );
         statusMessage( tr("Node Labels are invisible now. "
                           "Click the same option again to display them.") );
     }
     else{
-        optionsNodeLabelsVisibilityAct->setChecked ( true );
         statusMessage( tr("Node Labels are visible again...") );
     }
     QApplication::restoreOverrideCursor();
@@ -9197,45 +9206,6 @@ void MainWindow::slotOptionsNodeLabelsVisibility(bool toggle){
 
 
 
-
-
-
-/**
- * @brief MainWindow::slotOptionsEdgeWeightNumbersVisibility
- * Turns on/off displaying edge weight numbers
- * @param toggle
- */
-void MainWindow::slotOptionsEdgeWeightNumbersVisibility(bool toggle) {
-    qDebug() << "MW::slotOptionsEdgeWeightNumbersVisibility - Toggling Edges Weights";
-    statusMessage( tr("Toggle Edges Weights. Please wait...") );
-
-    if (!toggle) 	{
-        graphicsWidget->setAllItemsVisibility(TypeEdgeWeight, false);
-        statusMessage( tr("Edge weights are invisible now. Click the same option again to display them.") );
-        return;
-    }
-    else{
-        graphicsWidget->setAllItemsVisibility(TypeEdgeWeight, true);
-        statusMessage( tr("Edge weights are visible again...") );
-    }
-    activeGraph.setVertexLabelsVisibility(toggle);
-}
-
-
-
-/**
- * @brief MainWindow::slotOptionsEdgeWeightsDuringComputation
- * @param toggle
- */
-void MainWindow::slotOptionsEdgeWeightsDuringComputation(bool toggle) {
-   if (toggle) {
-       considerWeights=true;
-       askedAboutWeights=false;
-        askAboutWeights(); // will only ask about inversion
-   }
-   else
-       considerWeights=false;
-}
 
 
 
@@ -9252,20 +9222,17 @@ void MainWindow::slotOptionsEdgesVisibility(bool toggle){
         statusMessage( tr("No edges found...") );
         return;
     }
+    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
     statusMessage( tr("Toggle Edges Arrows. Please wait...") );
-
+    appSettings["initEdgesVisibility"] = (toggle) ? "true": "false";
+    graphicsWidget->setAllItemsVisibility(TypeEdge, toggle);
     if (!toggle) 	{
-        appSettings["initEdgeVisibility"] = "false";
-        graphicsWidget->setAllItemsVisibility(TypeEdge, false);
         statusMessage( tr("Edges are invisible now. Click again the same menu to display them.") );
-        return;
     }
     else{
-        appSettings["initEdgeVisibility"] = "true";
-        graphicsWidget->setAllItemsVisibility(TypeEdge, true);
         statusMessage( tr("Edges visible again...") );
     }
-
+    QApplication::restoreOverrideCursor();
 }
 
 
@@ -9284,9 +9251,10 @@ void MainWindow::slotOptionsEdgeArrowsVisibility(bool toggle){
         return;
     }
     statusMessage( tr("Toggle Edges Arrows. Please wait...") );
+    appSettings["initEdgeArrows"]= (toggle) ? "true":"false";
 
     if (!toggle) 	{
-        appSettings["initEdgeArrows"]="false";
+
         QList<QGraphicsItem *> list = scene->items();
         for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
             if ( (*item)->type() ==TypeEdge){
@@ -9306,6 +9274,24 @@ void MainWindow::slotOptionsEdgeArrowsVisibility(bool toggle){
             }
     }
     statusMessage( tr("Ready."));
+}
+
+
+
+
+
+/**
+ * @brief MainWindow::slotOptionsEdgeWeightsDuringComputation
+ * @param toggle
+ */
+void MainWindow::slotOptionsEdgeWeightsDuringComputation(bool toggle) {
+   if (toggle) {
+       considerWeights=true;
+       askedAboutWeights=false;
+        askAboutWeights(); // will only ask about inversion
+   }
+   else
+       considerWeights=false;
 }
 
 
@@ -9365,6 +9351,32 @@ void MainWindow::slotOptionsEdgeThicknessPerWeight(bool toogle) {
     }
 }
 
+
+
+
+
+/**
+ * @brief MainWindow::slotOptionsEdgeWeightNumbersVisibility
+ * Turns on/off displaying edge weight numbers
+ * @param toggle
+ */
+void MainWindow::slotOptionsEdgeWeightNumbersVisibility(bool toggle) {
+    qDebug() << "MW::slotOptionsEdgeWeightNumbersVisibility - Toggling Edges Weights";
+    statusMessage( tr("Toggle Edges Weights. Please wait...") );
+
+    if (!toggle) {
+        optionsEdgeWeightNumbersAct->setChecked ( false );
+        graphicsWidget->setAllItemsVisibility(TypeEdgeWeight, false);
+        statusMessage( tr("Edge weights are invisible now. Click the same option again to display them.") );
+        return;
+    }
+    else{
+        optionsEdgeWeightNumbersAct->setChecked ( true );
+        graphicsWidget->setAllItemsVisibility(TypeEdgeWeight, true);
+        statusMessage( tr("Edge weights are visible again...") );
+    }
+    activeGraph.setVertexLabelsVisibility(toggle);
+}
 
 
 

@@ -182,14 +182,7 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
 
     edgesHash.insert(edgeName, edge);
 
-    //    qDebug()<< "GW: drawEdge(): drawing edge weight number...";
-    double x = ( (nodeHash.value(source))->x() + (nodeHash.value(target))->x() ) / 2.0;
-    double y = ( (nodeHash.value(source))->y() + (nodeHash.value(target))->y() ) / 2.0;
-    //    qDebug()<< "GW: drawEdge(): edge weight will be at " << x << ", " << y;
-    EdgeWeight *edgeWeight = new  EdgeWeight (edge, 7, QString::number(weight) );
-    edgeWeight-> setPos(x,y);
-    edgeWeight-> setDefaultTextColor (color);
-    edgeWeight-> hide();
+
 
     //	qDebug()<< "Scene items now: "<< scene()->items().size() << " - GW items now: "<< items().size();
 }
