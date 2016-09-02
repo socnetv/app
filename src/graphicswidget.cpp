@@ -179,10 +179,6 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
                          m_nodeSize, color,
                          reciprocal, drawArrows,
                          (source==target) ? true: bezier );
-    edge -> setZValue(253);		//Edges have lower z than nodes. Nodes always appear above edges.
-    // Keep it here so that it doesnt interfere with dashed lines.
-    edge->setBoundingRegionGranularity(0.05);	// Slows down the universe...Keep it 0.05...
-    //edge->setCacheMode (QGraphicsItem::DeviceCoordinateCache);  //Also slows down the universe...
 
     edgesHash.insert(edgeName, edge);
 

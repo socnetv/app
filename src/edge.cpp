@@ -79,6 +79,13 @@ Edge::Edge(  GraphicsWidget *gw,
     m_Bezier = bez;
     setAcceptHoverEvents(true);
 //    setFlags(QGraphicsItem::ItemIsSelectable);
+
+    setZValue(253); //Edges have lower z than nodes. Nodes always appear above edges.
+    // Keep it here so that it doesnt interfere with dashed lines.
+    setBoundingRegionGranularity(0); // Slows down the universe
+    setCacheMode (QGraphicsItem::ItemCoordinateCache);
+
+
     adjust();
 }
 

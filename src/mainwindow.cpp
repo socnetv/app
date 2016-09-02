@@ -160,7 +160,7 @@ MainWindow::~MainWindow() {
 QMap<QString,QString> MainWindow::initSettings(){
     qDebug()<< "MW::initSettings";
 
-    printDebug = true; // comment it to stop debug override
+    printDebug = false; // comment it to stop debug override
 
     firstTime=true;  // becomes false on user IO
 
@@ -6146,7 +6146,7 @@ void MainWindow::slotEditNodeColorAll(QColor color){
 void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized) {
     qDebug () << "MW: slotEditNodeSizeAll() - "
                  << " newSize " << newSize ;
-    if ( newSize == 0 ) {
+    if ( newSize == 0 && !normalized ) {
         bool ok=true;
         newSize = QInputDialog::getInt(
                     this,
