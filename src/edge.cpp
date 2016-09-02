@@ -66,6 +66,8 @@ Edge::Edge(  GraphicsWidget *gw,
     m_color=color;
     m_drawArrows=drawArrows;
     m_reciprocal=reciprocal;
+    m_reciprocal_first = false;
+    m_reciprocal_second = false;
     m_startOffset=source->size();  //used to offset edge from the centre of node
     m_endOffset=target->size();  //used to offset edge from the centre of node
     m_arrowSize=4;		//controls the width of the edge arrow
@@ -192,7 +194,7 @@ int Edge::targetNodeNumber() {
  * make the edge weight appear on the centre of the edge
  */
 void Edge::adjust(){
-    // qDebug("Edge: adjust()");
+    qDebug("Edge: adjust()");
     if (!source || !target)
         return;
     //QLineF line(mapFromItem(source, 0, 0), mapFromItem(target, 0, 0));
@@ -209,10 +211,12 @@ void Edge::adjust(){
     else edgeOffset = QPointF(0, 0);
 
     prepareGeometryChange();
-
-    sourcePoint = line.p1() + edgeOffset;
-    targetPoint = line.p2() - edgeOffset;
-
+    sourcePoint = line.p1() + edgeOffset + QPointF(4,4);
+    targetPoint = line.p2() - edgeOffset +  QPointF(4,4);
+    if (m_reciprocal ) {
+        sourcePoint  -= QPointF(4,4);
+        targetPoint -= QPointF(4,4);
+    }
     edgeWeight->setPos( (source->x()+target->x())/2.0, (source->y()+target->y())/2.0 );
 
     //Define the path upon which we' ll draw the line
@@ -275,17 +279,17 @@ void Edge::adjust(){
             if (m_reciprocal ) {
     //            qDebug() << "**** Edge::paint() This edge is SYMMETRIC! "
     //                     << " So, we need to create Arrow at src node as well";
-                QPointF srcArrowP1 = sourcePoint + QPointF(sin(angle +Pi / 3) * m_arrowSize,
-                                                           cos(angle +Pi / 3) * m_arrowSize);
-                QPointF srcArrowP2 = sourcePoint + QPointF(sin(angle +Pi - Pi  / 3) * m_arrowSize,
-                                                           cos(angle +Pi - Pi / 3) * m_arrowSize);
+//                QPointF srcArrowP1 = sourcePoint + QPointF(sin(angle +Pi / 3) * m_arrowSize,
+//                                                           cos(angle +Pi / 3) * m_arrowSize);
+//                QPointF srcArrowP2 = sourcePoint + QPointF(sin(angle +Pi - Pi  / 3) * m_arrowSize,
+//                                                           cos(angle +Pi - Pi / 3) * m_arrowSize);
 
-                m_path->addPolygon ( QPolygonF()
-                                     << sourcePoint
-                                     << srcArrowP1
-                                     << srcArrowP2
-                                     <<sourcePoint
-                                     );
+//                m_path->addPolygon ( QPolygonF()
+//                                     << sourcePoint
+//                                     << srcArrowP1
+//                                     << srcArrowP2
+//                                     <<sourcePoint
+//                                     );
 
             }
             else {
@@ -357,11 +361,23 @@ QRectF Edge::boundingRect() const {
 }
 
 
+void Edge::makeReciprocalFirst(){
+    qDebug()<< "Edge::makeReciprocalFirst()";
+    prepareGeometryChange();
+    m_reciprocal_first= true;
+}
+
+void Edge::makeReciprocalSecond(){
+    qDebug()<< "Edge::makeReciprocalSecond()";
+    prepareGeometryChange();
+    m_reciprocal_second= true;
+}
+
 
 void Edge::makeReciprocal(){
-    qDebug("Edge::makeReciprocal()");
+    qDebug()<< "Edge::makeReciprocal()";
     prepareGeometryChange();
-    m_reciprocal= true;
+    //m_reciprocal= true;
 }
 
 

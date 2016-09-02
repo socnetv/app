@@ -171,7 +171,7 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
 
     QString edgeName = QString::number(m_curRelation) + QString(":")
             + QString::number(source) + QString(">")+ QString::number(target);
-    qDebug()<<"GW: drawEdge "<< edgeName << " weight "<<weight
+    qDebug()<<"GW::drawEdge() - "<< edgeName << " weight "<<weight
            << " - nodeHash reports "<< nodeHash.size()<<" nodes.";
 
     Edge *edge=new Edge (this, nodeHash.value(source), nodeHash.value(target),
@@ -194,11 +194,19 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
     Called from Graph to make an existing arc symmetric (reciprocal)
 */
 void GraphicsWidget::drawEdgeReciprocal(int source, int target){
-    qDebug("GW: drawEdgeReciprocal ()");
+    qDebug() << "GW: drawEdgeReciprocal()" << source << " -> " << target;
     QString edgeName = QString::number(m_curRelation) + QString(":") +
-            QString::number(source) + QString(">")+ QString::number(target);
+            QString::number(target) + QString(">")+ QString::number(source);
     //    qDebug("GW: making existing edge between %i and %i reciprocal. Name: "+edgeName.toUtf8(), source, target );
     edgesHash.value(edgeName)->makeReciprocal();
+
+    Edge *edge=new Edge (this, nodeHash.value(target), nodeHash.value(source),
+                         Qt::SolidLine, 1,
+                         m_nodeSize, "red",
+                         true, true,
+                         false );
+
+
 }
 
 

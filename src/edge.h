@@ -78,6 +78,8 @@ public:
     void unmakeReciprocal();
     bool isReciprocal();
 
+    void makeReciprocalFirst();
+    void makeReciprocalSecond();
     float width() const;
 
     QPen pen() const;
@@ -116,7 +118,7 @@ private:
     int tox1, tox2, toy1, toy2, size;
     double rad, theta, theta1, theta2;
     qreal angle, line_length, line_dx, line_dy;
-    bool m_Bezier, m_drawArrows, m_reciprocal;
+    bool m_Bezier, m_drawArrows, m_reciprocal, m_reciprocal_first, m_reciprocal_second;
 };
 
 #endif

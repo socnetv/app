@@ -320,7 +320,8 @@ void Graph::createEdge( const int &v1, const int &v2, const float &weight,
             qDebug()<<"-- Graph::createEdge() - Opposite arc exists. "
                    << "  Emitting drawEdgeReciprocal to GW ";
             addEdge ( v1, v2, weight, color, 1);
-            emit drawEdgeReciprocal(v2, v1);
+            //emit drawEdgeReciprocal(v2, v1);
+            emit drawEdgeReciprocal(v1, v2);
         }
         else {
             qDebug()<< "-- Graph::createEdge() - "
