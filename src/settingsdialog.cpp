@@ -140,7 +140,7 @@ SettingsDialog::SettingsDialog(
     m_pixmap = QPixmap(60,20) ;
     m_pixmap.fill( m_nodeLabelColor );
     ui->nodeLabelColorBtn->setIcon(QIcon(m_pixmap));
-
+    ui->nodeLabelDistanceSpin->setValue( m_appSettings["initNodeLabelDistance"].toInt(0, 10) );
 
     /**
      * edge options
@@ -234,6 +234,8 @@ SettingsDialog::SettingsDialog(
                 this, SLOT(getNodeLabelSize(int)) );
     connect (ui->nodeLabelColorBtn, &QToolButton::clicked,
              this, &SettingsDialog::getNodeLabelColor);
+    connect(ui->nodeLabelDistanceSpin, SIGNAL(valueChanged(int)),
+            this, SLOT(getNodeLabelDistance(int)) );
 
 
     connect (ui->edgeShapeRadioStraightLine, &QRadioButton::clicked,
@@ -369,7 +371,7 @@ void SettingsDialog::getNodeShape(){
  */
 void SettingsDialog::getNodeSize( int size) {
     m_appSettings["initNodeSize"]= QString::number(size);
-    emit setNodeSize(size);
+    emit setNodeSize(size, false);
 }
 
 
@@ -401,7 +403,10 @@ void SettingsDialog::getNodeNumberSize( const int size) {
     emit setNodeNumberSize(0, size);
 }
 
-
+/**
+ * @brief SettingsDialog::getNodeNumberDistance
+ * @param distance
+ */
 void SettingsDialog::getNodeNumberDistance(const int distance) {
     m_appSettings["initNodeNumberDistance"]= QString::number(distance);
     emit setNodeNumberDistance(0, distance);
@@ -465,6 +470,15 @@ void SettingsDialog::getNodeLabelSize( const int size) {
     emit setNodeLabelSize(0, size);
 }
 
+
+/**
+ * @brief SettingsDialog::getNodeLabelDistance
+ * @param distance
+ */
+void SettingsDialog::getNodeLabelDistance(const int distance) {
+    m_appSettings["initNodeLabelDistance"]= QString::number(distance);
+    emit setNodeLabelDistance(0, distance);
+}
 
 
 

@@ -81,8 +81,8 @@ public:
     void addOutLink( Edge *edge ) ;
     void deleteOutLink(Edge*);
 
-    void setSize(int);
-    int size();
+    void setSize(const int &);
+    int size() const;
 
     void setShape (const QString);
     QString nodeShape() {return m_shape;}
@@ -98,6 +98,7 @@ public:
     void setLabelSize(const int &size);
     void setLabelText ( QString label) ;
     QString labelText();
+    void setLabelDistance(const int &distance);
 
     void addNumber () ;
     NodeNumber* number();
@@ -129,7 +130,7 @@ private:
     QPainterPath *m_path;
     QPointF newPos;
     QPolygon *m_poly_t, *m_poly_d;
-    int  m_size, m_numSize, m_labelSize, m_numberDistance, m_ld;
+    int  m_size, m_numSize, m_labelSize, m_numberDistance, m_labelDistance;
     long int m_num;
     QString  m_shape,  m_col_str, m_numColor, m_labelText, m_labelColor;
     QColor m_col;

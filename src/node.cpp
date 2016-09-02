@@ -78,7 +78,7 @@ Node::Node(GraphicsWidget* gw, const int &num, const int &size,
     m_labelSize = labelSize;
     m_labelColor = labelColor;
 
-    m_ld=labelDistance;
+    m_labelDistance=labelDistance;
 
     if (m_hasLabel) {
         addLabel();
@@ -124,7 +124,7 @@ QString Node::color() {
 
 
 /** Sets the size of the node */
-void Node::setSize(int size){
+void Node::setSize(const int &size){
 	qDebug("Node: setSize()");
  	prepareGeometryChange();
 	m_size=size;
@@ -142,7 +142,7 @@ void Node::setSize(int size){
 
 
 /**  Used by MainWindow::findNode() and Edge::Edge()  */
-int Node::size(){
+int Node::size() const{
 	qDebug("size()");
 	return m_size;  
 }
@@ -279,7 +279,7 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
             }
         }
         if (m_hasLabel) {
-            m_label->setPos( -2, m_ld+m_size);
+            m_label->setPos( -m_size, m_labelDistance+m_size);
         }
         if ( newPos.x() !=0 && newPos.y() != 0 ){
             graphicsWidget->nodeMoved(nodeNumber(), (int) newPos.x(), (int) newPos.y());
@@ -380,6 +380,7 @@ void Node::addLabel ()  {
     //Draw node labels
     m_label = new  NodeLabel (this, m_labelText, m_labelSize);
     m_label -> setDefaultTextColor (m_labelColor);
+    m_label -> setPos( m_size, m_labelDistance+m_size);
 }
 
 
@@ -445,6 +446,22 @@ void Node::setLabelSize(const int &size) {
 QString Node::labelText ( ) {
     return m_labelText;
 }
+
+
+
+/**
+ * @brief Node::setLabelDistance
+ * @param distance
+ */
+void Node::setLabelDistance(const int &distance) {
+    m_labelDistance = distance;
+    if (!m_hasLabel) {
+        addLabel();
+    }
+    m_label->setPos( -m_size,  m_size+m_labelDistance);;
+
+}
+
 
 
 

@@ -188,14 +188,14 @@ signals:
     void eraseEdge(int, int);					//emited from removeEdge() to GW to clear the edge item.
     void setEdgeVisibility (int, int, int, bool);			// emitted from each Vertex
     void setVertexVisibility(long int, bool);		//notifies GW to disable a node
-    void setNodeSize(long int, int);
+    void setNodeSize(const long int &v, const int &size);
     void setNodeShape(const long int v, const QString &shape);
     void setNodeColor(const long int v, const QString &color);
     void setNodeLabel(long int, QString);
     void setNodeNumberSize(const long int &, const int &);
     void setNodeNumberDistance(const long int &, const int &);
     void setNodeLabelSize(const long int &, const int &);
-
+    void setNodeLabelDistance(const long int &, const int &);
     void drawEdgeReciprocal(int, int);				//call GW to draw the edge as symmetric one
     void setEdgeColor(const long int &v1,
                          const long int &v2,
@@ -250,7 +250,7 @@ public:
 
     void setInitVertexSize (const long int);
     void setVertexSize(const long int &v, const int &newsize );
-    void setAllVerticesSize(const int &newsize);
+    void setAllVerticesSize(const int newsize);
     int vertexSize(const long int &v);
 
     void setInitVertexShape (const QString);
@@ -274,11 +274,14 @@ public:
     void setInitVertexLabelSize(int newSize);
     void setVertexLabelSize(const long int &v, const int &newsize );
     void setVertexLabelSizeAll (const int &);
-
     void setInitVertexLabelColor(QString color);
     void setVertexLabel(int v, QString label);
     void setVertexLabelColor(int v1, QString color);
     QString vertexLabel(const long int &v1);
+    void setInitVertexLabelDistance (const int &distance);
+    void setVertexLabelDistance(const long int &v, const int &newDistance );
+    void setVertexLabelDistanceAll (const int &newDistance);
+
 
     void updateVertCoords(const int &v, const int &x, const int &y);
 
@@ -661,7 +664,7 @@ private:
 
     long int m_totalVertices, graphDiameter, initVertexSize;
     int initVertexLabelSize, initVertexNumberSize;
-    int initVertexNumberDistance;
+    int initVertexNumberDistance, initVertexLabelDistance;
 
     int isolatedVertices;
     float averGraphDistance, nonZeroDistancesCounter;

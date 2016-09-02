@@ -673,7 +673,7 @@ void GraphicsWidget::setNodeVisibility(long int number, bool toggle){
  * @param size
  * @return
  */
-bool GraphicsWidget::setNodeSize(long int number, int size ){
+bool GraphicsWidget::setNodeSize(const long int &number, const int &size ){
     qDebug () << " GraphicsWidget::setNodeSize() node: "<< number
               << " new size "<< size;
     if  ( nodeHash.contains (number) ) {
@@ -700,7 +700,7 @@ bool GraphicsWidget::setNodeSize(long int number, int size ){
  * @param size
  * @return
  */
-void GraphicsWidget::setAllNodeSize(int size ){
+void GraphicsWidget::setAllNodeSize(const int &size ){
     qDebug() << "GW: setAllNodeSize() ";
     foreach ( Node *m_node, nodeHash ) {
         if (size>0){
@@ -801,6 +801,40 @@ bool GraphicsWidget::setNodeLabelSize(const long int &number, const int &size){
     qDebug() << "GW: setNodeSize(): cannot find node " << number;
     return false;
 }
+
+
+
+
+
+/**
+ * @brief GraphicsWidget::setNodeLabelDistance
+ * @param number
+ * @param distance
+ */
+bool GraphicsWidget::setNodeLabelDistance( const long int &number, const int &distance ){
+    qDebug () << " GraphicsWidget::setNodeLabelDistance() node number: "<< number
+              << " new label distance "<< distance;
+    if  ( nodeHash.contains (number) ) {
+        if (distance>0){
+            qDebug() << "GW: setNodeLabelDistance(): for "<< number
+                     << " to " << distance ;
+            nodeHash.value(number) ->setLabelDistance(distance) ;
+            return true;
+
+        }
+        else {
+            qDebug() << "GW: setNodeLabelDistance(): for "<< number
+                     << " to initial size" << distance;
+            nodeHash.value(number) ->setLabelDistance(distance);
+            return true;
+
+        }
+    }
+    qDebug() << "GW: setNodeSize(): cannot find node " << number;
+    return false;
+}
+
+
 
 /*
  * Used by findNode.

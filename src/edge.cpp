@@ -84,7 +84,7 @@ Edge::Edge(  GraphicsWidget *gw,
 
 
 
-void Edge::showArrows(bool drawArrows){
+void Edge::showArrows(const bool &drawArrows){
     prepareGeometryChange();
     m_drawArrows=drawArrows;
 }
@@ -138,7 +138,7 @@ float Edge::weight() const {
 }
 
 
-void Edge::setStartOffset(int offset){
+void Edge::setStartOffset(const int &offset){
     m_startOffset=offset;
 }
 

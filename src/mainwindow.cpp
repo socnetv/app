@@ -387,7 +387,7 @@ void MainWindow::slotOpenSettingsDialog() {
              this, &MainWindow::slotEditNodeShape);
 
     connect( m_settingsDialog, &SettingsDialog::setNodeSize,
-             this, &MainWindow::slotEditNodeSizeAllNormalized);
+             this, &MainWindow::slotEditNodeSizeAll);
 
     connect( m_settingsDialog, &SettingsDialog::setNodeNumbersVisibility,
              this, &MainWindow::slotOptionsNodeNumbersVisibility);
@@ -404,7 +404,6 @@ void MainWindow::slotOpenSettingsDialog() {
     connect( m_settingsDialog, &SettingsDialog::setNodeNumberDistance,
              this, &MainWindow::slotEditNodeNumberDistance);
 
-
     connect( m_settingsDialog, &SettingsDialog::setNodeLabelsVisibility,
              this, &MainWindow::slotOptionsNodeLabelsVisibility);
 
@@ -414,6 +413,8 @@ void MainWindow::slotOpenSettingsDialog() {
     connect( m_settingsDialog, &SettingsDialog::setNodeLabelColor,
              this, &MainWindow::slotEditNodeLabelsColor);
 
+    connect( m_settingsDialog, &SettingsDialog::setNodeLabelDistance,
+             this, &MainWindow::slotEditNodeLabelDistance);
 
     // show settings dialog
     m_settingsDialog->exec();
@@ -3225,8 +3226,8 @@ void MainWindow::initSignalSlots() {
     connect( &activeGraph, SIGNAL( setVertexVisibility(long int, bool)  ),
              graphicsWidget, SLOT(  setNodeVisibility (long int ,  bool) ) );
 
-    connect( &activeGraph, SIGNAL( setNodeSize(long int, int)  ),
-             graphicsWidget, SLOT(  setNodeSize (long int , int) ) );
+    connect( &activeGraph, SIGNAL( setNodeSize(const long int &, const int &)  ),
+             graphicsWidget, SLOT(  setNodeSize (const long int &, const int &) ) );
 
     connect( &activeGraph, SIGNAL( setNodeColor(long int,QString))  ,
              graphicsWidget, SLOT(  setNodeColor(long int, QString) ) );
@@ -3245,6 +3246,9 @@ void MainWindow::initSignalSlots() {
 
     connect( &activeGraph, SIGNAL( setNodeLabelSize(const long int &, const int &)  ),
              graphicsWidget, SLOT(  setNodeLabelSize (const long int &, const int &) ) );
+
+    connect( &activeGraph, SIGNAL( setNodeLabelDistance(const long int &, const int &)  ),
+             graphicsWidget, SLOT( setNodeLabelDistance (const long int &, const int &) ) );
 
 
     connect( &activeGraph, SIGNAL( statusMessage (QString) ),
@@ -5309,7 +5313,7 @@ void MainWindow::slotRandomErdosRenyi( const int newNodes,
 
     fileLoaded=false;
 
-    slotEditNodeSizeAllNormalized(0);
+    slotEditNodeSizeAll(0, true);
 
     slotNetworkChanged();
 
@@ -6128,64 +6132,66 @@ void MainWindow::slotEditNodeColorAll(QColor color){
 
 
 
+
 /**
  * @brief MainWindow::slotEditNodeSizeAll
- * Asks the user a new size for all nodes
- * Calls MW::slotEditNodeSizeAllNormalized to do the work.
- * Called when user clicks on relevant Edit menu option
+ * Changes the size of nodes to newSize.
+ * Calls activeGraph.setAllVerticesSize to do the work.
+ * Called from Edit menu item, SettingsDialog and MW::slotRandomErdosRenyi
+ * If newSize = 0 asks the user a new size for all nodes
+ * If normalized = true, changes node sizes according to their plethos
+ * @param newSize
+ * @param normalized
  */
-void MainWindow::slotEditNodeSizeAll() {
-    qDebug ("MW: slotEditNodeSizeAll:");
-    bool ok=false;
-    int newSize = QInputDialog::getInt(
-                this,
-                "Change node size",
-                tr("Select new size for all nodes: (1-16)"),
-                appSettings["initNodeSize"].toInt(0, 10), 1, 16, 1, &ok );
-    if (!ok) {
-        statusMessage( "Change node size operation cancelled." );
-        return;
+void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized) {
+    qDebug () << "MW: slotEditNodeSizeAll() - "
+                 << " newSize " << newSize ;
+    if ( newSize == 0 ) {
+        bool ok=true;
+        newSize = QInputDialog::getInt(
+                    this,
+                    "Change node size",
+                    tr("Select new size for all nodes: (1-16)"),
+                    appSettings["initNodeSize"].toInt(0, 10), 1, 16, 1, &ok );
+
+        if (!ok) {
+            statusMessage( "Change node size operation cancelled." );
+            return;
+        }
+    }
+
+    if ( normalized ) {
+        int N = activeNodes() ;
+        if ( N < 100) {
+            newSize = 8;
+        }
+        else if ( N < 200) {
+            newSize = 7;
+        }
+        if ( N >= 200 && N < 500){
+            newSize = 6;
+        }
+        else if ( N >= 500 && N < 1000) {
+            newSize = 6;
+        }
+        else if ( N  >= 1000) {
+            newSize = 5;
+        }
     }
     appSettings["initNodeSize"]= QString::number(newSize);
-    slotEditNodeSizeAllNormalized(newSize);
+    nodeSizesByOutDegreeAct->setChecked(false);
+    toolBoxNodeSizesByOutDegreeBx->setChecked(false);
+    nodeSizesByInDegreeAct->setChecked(false);
+    toolBoxNodeSizesByInDegreeBx->setChecked(false);
+
+    activeGraph.setAllVerticesSize(newSize);
+
     slotNetworkChanged();
     statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
     return;
 }
 
 
-
-/**
- * @brief MainWindow::slotEditNodeSizeAllNormalized
- * Changes the size of nodes to size.
- * Calls activeGraph.setAllVerticesSize to do the work.
- * Called from MainWindow::slotEditNodeSizeAll and MW::slotRandomErdosRenyi
- * as well as from SettingsDialog
- * @param size
- */
-void MainWindow::slotEditNodeSizeAllNormalized(int size) {
-    qDebug() << "MW: slotEditNodeSizeAllNormalized:" << size;
-    if (size == 0 ) {
-        if (activeNodes() < 200) {
-            return;
-        }
-        else if (activeNodes() >= 200 && activeNodes() < 500){
-            size = 6;
-        }
-        else if (activeNodes() >= 500 && activeNodes() < 1000) {
-            size = 6;
-        }
-        else if (activeNodes() >= 1000) {
-            size = 5;
-        }
-    }
-    nodeSizesByOutDegreeAct->setChecked(false);
-    toolBoxNodeSizesByOutDegreeBx->setChecked(false);
-    nodeSizesByInDegreeAct->setChecked(false);
-    toolBoxNodeSizesByInDegreeBx->setChecked(false);
-
-    activeGraph.setAllVerticesSize(size);
-}
 
 
 
@@ -6295,6 +6301,45 @@ void MainWindow::slotEditNodeNumberSize(int v1, int newSize) {
 
 
 
+
+/**
+ * @brief MainWindow::slotEditNodeNumbersColor
+ * Changes the color of all nodes' numbers.
+ * Called from Edit menu option and Settings dialog.
+ * Asks the user to enter a new node number color
+ */
+void MainWindow::slotEditNodeNumbersColor(QColor color){
+    qDebug() << "MW:slotEditNodeNumbersColor() - new color " << color;
+    if (!color.isValid()) {
+        color = QColorDialog::getColor( QColor ( appSettings["initNodeNumberColor"] ),
+                                        this,
+                                               "Change the color of all node numbers" );
+    }
+
+
+    if (color.isValid()) {
+        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+        QList<QGraphicsItem *> list= scene->items();
+        for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
+            if ( (*it)->type() == TypeNumber) 		{
+                NodeNumber *jimNumber = (NodeNumber *) (*it);
+                jimNumber->update();
+                jimNumber->setDefaultTextColor(color);
+            }
+        }
+        appSettings["initNodeNumberColor"] = color.name();
+        activeGraph.setInitVertexNumberColor( color.name() );
+        QApplication::restoreOverrideCursor();
+        statusMessage( tr("Numbers' colors changed. Ready. ")  );
+    }
+    else {
+        // user pressed Cancel
+        statusMessage( tr("Invalid color. ") );
+    }
+
+}
+
+
 /**
  * @brief MainWindow::slotEditNodeNumberDistance
  * Changes the distance of one or all node numbers from their nodes.
@@ -6365,46 +6410,6 @@ void MainWindow::slotEditNodeLabelSize(int v1, int newSize) {
 
 
 
-/**
- * @brief MainWindow::slotEditNodeNumbersColor
- * Changes the color of all nodes' numbers.
- * Called from Edit menu option and Settings dialog.
- * Asks the user to enter a new node number color
- */
-void MainWindow::slotEditNodeNumbersColor(QColor color){
-    qDebug() << "MW:slotEditNodeNumbersColor() - new color " << color;
-    if (!color.isValid()) {
-        color = QColorDialog::getColor( QColor ( appSettings["initNodeNumberColor"] ),
-                                        this,
-                                               "Change the color of all node numbers" );
-    }
-
-
-    if (color.isValid()) {
-        QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        QList<QGraphicsItem *> list= scene->items();
-        for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
-            if ( (*it)->type() == TypeNumber) 		{
-                NodeNumber *jimNumber = (NodeNumber *) (*it);
-                jimNumber->update();
-                jimNumber->setDefaultTextColor(color);
-            }
-        }
-        appSettings["initNodeNumberColor"] = color.name();
-        activeGraph.setInitVertexNumberColor( color.name() );
-        QApplication::restoreOverrideCursor();
-        statusMessage( tr("Numbers' colors changed. Ready. ")  );
-    }
-    else {
-        // user pressed Cancel
-        statusMessage( tr("Invalid color. ") );
-    }
-
-
-
-}
-
-
 
 /**
  * @brief MainWindow::slotEditNodeLabelsColor
@@ -6438,6 +6443,41 @@ void MainWindow::slotEditNodeLabelsColor(QColor color){
         // user pressed Cancel
         statusMessage( tr("Invalid color. ") );
     }
+}
+
+
+
+
+/**
+ * @brief MainWindow::slotEditNodeLabelDistance
+ * Changes the distance of one or all node label from their nodes.
+ * Called from Edit menu option and SettingsDialog
+ * if newDistance=0, asks the user to enter a new node label distance
+ * if v1=0, it changes all node label distances
+ * @param v1
+ * @param newDistance
+ */
+void MainWindow::slotEditNodeLabelDistance(int v1, int newDistance) {
+    bool ok=false;
+    qDebug() << "MW::slotEditNodeLabelDistance - newSize " << newDistance;
+    if (!newDistance) {
+        newDistance = QInputDialog::getInt(
+                    this, "Change node label distance",
+                    tr("Change all node labels distance from their nodes to: (1-16)"),
+                    appSettings["initNodeLabelDistance"].toInt(0,10), 1, 16, 1, &ok );
+        if (!ok) {
+            statusMessage( tr("Change node label distance aborted.") );
+            return;
+        }
+    }
+    if (v1) { //change one node label distance only
+        activeGraph.setVertexLabelDistance(v1, newDistance);
+    }
+    else { //change all
+        appSettings["initNodeLabelDistance"] = QString::number(newDistance);
+        activeGraph.setVertexLabelDistanceAll(newDistance);
+    }
+    statusMessage( tr("Changed node label distance. Ready.") );
 }
 
 

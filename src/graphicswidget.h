@@ -103,8 +103,8 @@ public slots:
     void nodeClicked(Node *);
     void moveNode(const int &num, const qreal &x, const qreal &y);	//Called from Graph when creating random nets.
 
-    bool setNodeSize(long int, int size=0);
-    void setAllNodeSize(int size=0);
+    bool setNodeSize(const long int &nodeNumber, const int &size=0);
+    void setAllNodeSize(const int &size=0);
 
     bool setNodeShape(const long int &nodeNumber, const QString &shape);
     bool setNodeColor(const long int &, const QString &color);
@@ -116,7 +116,7 @@ public slots:
     void setNodeLabelsVisibility(const bool &toggle);
     bool setNodeLabelSize(const long int &, const int &size=0);
     bool setNodeLabel(long int , QString );
-
+    bool setNodeLabelDistance(const long int &, const int &distance=0);
 
     void drawEdge(const int &source, const int &target,
                   const float &weight,

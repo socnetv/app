@@ -218,8 +218,7 @@ public slots:
     void slotEditNodeProperties( const QString, const int, const QString,
                              const QColor, const QString);
     void slotEditNodeColorAll(QColor color=QColor());
-    void slotEditNodeSizeAll();
-    void slotEditNodeSizeAllNormalized(int size);
+    void slotEditNodeSizeAll(int newSize=0, const bool &normalized=false);
     void slotEditNodeShapeAll();
     void slotEditNodeShape(const QString shape, const int vertex = 0);
     void slotEditNodeNumberSize(int v1=0, int newSize=0);
@@ -227,6 +226,7 @@ public slots:
     void slotEditNodeNumbersColor(QColor color=QColor());
     void slotEditNodeLabelSize(int v1=0, int newSize=0);
     void slotEditNodeLabelsColor(QColor color=QColor());
+    void slotEditNodeLabelDistance(int v1=0, int newSize=0);
 
     void slotEditEdgeAdd();
     void slotEditEdgeCreate (int v1, int v2, float weight);

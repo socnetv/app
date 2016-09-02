@@ -1,5 +1,5 @@
 /***************************************************************************
- SocNetV: Social Network Visualizer 
+ SocNetV: Social Network Visualizer
  version: 2.0
  Written in Qt
  
@@ -44,8 +44,8 @@ static const int TypeEdge= QGraphicsItem::UserType+2;
 
 
 class Edge : public QObject, public QGraphicsItem {
-	Q_OBJECT
-	Q_INTERFACES (QGraphicsItem)
+    Q_OBJECT
+    Q_INTERFACES (QGraphicsItem)
 
 public:
     Edge(GraphicsWidget *, Node*, Node*,
@@ -53,27 +53,27 @@ public:
          const float &, const int &, const QString &,
          const bool&, const bool&, const bool &);
     ~Edge();
-	enum { Type = UserType + 2 };
-	int type() const { return Type; }
-	Node *sourceNode() const;
-	void setSourceNode(Node *node);
+    enum { Type = UserType + 2 };
+    int type() const { return Type; }
+    Node *sourceNode() const;
+    void setSourceNode(Node *node);
 
-	Node *targetNode() const;
-	void setTargetNode(Node *node);
-	
-	void setStartOffset(int );
-	void setEndOffset(int );
-	void removeRefs();
+    Node *targetNode() const;
+    void setTargetNode(Node *node);
 
-	int sourceNodeNumber();
-	int targetNodeNumber();
+    void setStartOffset(const int & );
+    void setEndOffset(int );
+    void removeRefs();
+
+    int sourceNodeNumber();
+    int targetNodeNumber();
     void setWeight( const float  &w) ;
 
     float weight() const;
     void addWeight (EdgeWeight* canvasWeight  ) ;
     void clearWeightList();
 
-    void showArrows(bool);
+    void showArrows(const bool &);
     void toggleAntialiasing(bool);
 
     void makeReciprocal();
@@ -92,33 +92,33 @@ public:
 
     void highlight (const bool &flag);
 
-	QPainterPath shape() const;
+    QPainterPath shape() const;
 
 public slots:
-	void adjust ();
+    void adjust ();
 
 protected:
-	QRectF boundingRect() const;
-	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-	void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    QRectF boundingRect() const;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
 
 
 private:
-	GraphicsWidget *graphicsWidget;
-	Node *source, *target;
+    GraphicsWidget *graphicsWidget;
+    Node *source, *target;
     QPainterPath *m_path;
-	QPointF sourcePoint, targetPoint;
-	qreal m_arrowSize, m_startOffset, m_endOffset;
+    QPointF sourcePoint, targetPoint;
+    qreal m_arrowSize, m_startOffset, m_endOffset;
     Qt::PenStyle m_style;
-	list<EdgeWeight*> weightList;
+    list<EdgeWeight*> weightList;
 
     QString m_color, m_tempColor;
-	int eFrom, eTo;
+    int eFrom, eTo;
     float m_weight, m_tempweight;
-	int tox1, tox2, toy1, toy2, size;
-	double rad, theta, theta1, theta2;
-	qreal angle, line_length, line_dx, line_dy;
-	bool m_Bezier, m_drawArrows, m_reciprocal;
+    int tox1, tox2, toy1, toy2, size;
+    double rad, theta, theta1, theta2;
+    qreal angle, line_length, line_dx, line_dy;
+    bool m_Bezier, m_drawArrows, m_reciprocal;
 };
 
 #endif

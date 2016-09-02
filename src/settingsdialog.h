@@ -59,6 +59,7 @@ public slots:
     void getNodeLabelsVisibility (bool toggle);
     void getNodeLabelColor();
     void getNodeLabelSize(const int);
+    void getNodeLabelDistance(const int);
     void getEdgeShape();
 
 signals:
@@ -74,7 +75,7 @@ signals:
     void setLeftPanel(bool);
     void setNodeColor(QColor);
     void setNodeShape(const QString, const long int);
-    void setNodeSize(int);
+    void setNodeSize(int, const bool &);
     void setNodeNumbersVisibility(bool);
     void setNodeNumbersInside(bool);
     void setNodeNumberSize(const int v, const int &);
@@ -83,6 +84,7 @@ signals:
     void setNodeLabelsVisibility(const bool &);
     void setNodeLabelColor(const QColor);
     void setNodeLabelSize(const int v, const int &);
+    void setNodeLabelDistance(const int v, const int &);
     void setEdgeShape(const QString, const long int);
     void saveSettings();
 private:

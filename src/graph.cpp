@@ -835,7 +835,8 @@ int Graph::vertexSize(const long &v ) {
 }
 
 //Changes the size.of all vertices
-void Graph::setAllVerticesSize(const int &size) {
+void Graph::setAllVerticesSize(const int size) {
+    qDebug()<< "Graph::setAllVerticesSize() - new size" << size;
     setInitVertexSize(size);
     QList<Vertex*>::const_iterator it;
     for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -901,7 +902,7 @@ void Graph::setInitVertexNumberSize (const int &size) {
 
 //Changes the initial distance of vertices numbers
 void Graph::setInitVertexNumberDistance(const int &distance) {
-    initVertexNumberSize = distance;
+    initVertexNumberDistance = distance;
 }
 
 
@@ -1053,6 +1054,54 @@ void Graph::setInitVertexLabelColor(QString color){
 
 QString Graph::vertexLabel(const long int &v1){
     return m_graph[ index[v1] ]->label ();
+}
+
+
+
+/**
+ * @brief Graph::setVertexLabelDistance
+ * Changes the distance.of vertex v label from the vertex
+ * @param v
+ * @param size
+ */
+void Graph::setVertexLabelDistance(const long int &v, const int &newDistance) {
+    m_graph[ index[v] ]->setLabelDistance (newDistance);
+    graphModified=true;
+    emit graphChanged();
+    emit setNodeLabelDistance(v, newDistance);
+}
+
+
+/**
+ * @brief Graph::setVertexLabelDistanceAll
+ * Changes the distance.of all vertex labels from their vertices
+ * @param size
+ */
+void Graph::setVertexLabelDistanceAll(const int &newDistance) {
+    qDebug() << "*** Graph::setVertexLabelDistanceAll() "
+                << " to " << newDistance;
+    setInitVertexLabelDistance(newDistance);
+    QList<Vertex*>::const_iterator it;
+    for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( ! (*it)->isEnabled() ){
+            continue;
+        }
+        else {
+            qDebug() << "Graph::setVertexLabelDistanceAll() Vertex " << (*it)->name()
+                     << " new size " << newDistance;
+            (*it)->setLabelDistance(newDistance) ;
+            emit setNodeLabelDistance ( (*it)-> name(), newDistance);
+        }
+    }
+    graphModified=true;
+    emit graphChanged();
+}
+
+
+
+//Changes the initial distance of vertices labels
+void Graph::setInitVertexLabelDistance(const int &distance) {
+    initVertexLabelDistance = distance;
 }
 
 
