@@ -120,7 +120,7 @@ public slots:
 
     void drawEdge(const int &source, const int &target,
                   const float &weight,
-                  const bool &reciprocal,
+                  const int &reciprocal,
                   const bool &drawArrows,
                   const QString &color, const bool &bezier);
     void eraseEdge(int, int);
@@ -147,7 +147,7 @@ public slots:
 
 signals:
     void userDoubleClickNewNode(const QPointF &);
-    void userMiddleClicked(int, int, float);
+    void userMiddleClicked(const int &, const int &, const float &);
     void userClickOnEmptySpace();
     void openNodeMenu();
     void openEdgeMenu();

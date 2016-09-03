@@ -3123,7 +3123,7 @@ void MainWindow::initSignalSlots() {
              this, SLOT(
                  slotEditNodeAddWithMouse(const QPointF &) ) ) ;
 
-    connect( graphicsWidget, SIGNAL( userMiddleClicked(int, int, float) ),
+    connect( graphicsWidget, SIGNAL( userMiddleClicked(const int &, const int &, const float&) ),
              this, SLOT( slotEditEdgeCreate(int, int, float) ) 	);
 
 
@@ -3209,10 +3209,10 @@ void MainWindow::initSignalSlots() {
              this, SLOT( fileType( int, QString, int , int, bool) ) ) ;
 
     connect( &activeGraph, SIGNAL( drawEdge( const int&, const int&, const float &,
-                                             const bool&, const bool&,
+                                             const int&, const bool&,
                                              const QString &, const bool&)),
              graphicsWidget, SLOT( drawEdge( const int&, const int&, const float &,
-                                             const bool &, const bool&,
+                                             const int &, const bool&,
                                              const QString &, const bool &) )  ) ;
 
     connect( &activeGraph, SIGNAL( drawEdgeReciprocal(int, int) ),
@@ -6705,16 +6705,18 @@ void MainWindow::slotEditEdgeAdd(){
  * helper to slotEditEdgeAdd() above
  * Also called from GW::userMiddleClicked() signal when user creates edges with middle-clicks
  * Calls Graph::createEdge method to add the new edge to the active Graph
-  * @param v1
- * @param v2
+  * @param source
+ * @param target
  * @param weight
  */
-void MainWindow::slotEditEdgeCreate (int v1, int v2, float weight) {
+void MainWindow::slotEditEdgeCreate (const int &source, const int &target, const float &weight) {
     qDebug()<< "MW: slotEditEdgeCreate() - setting user settings and calling Graph::createEdge(...)";
     int reciprocal=0;
     bool bezier = false;
     activeGraph.createEdge(
-                v1, v2, weight, reciprocal,
+                source, target, weight,
+                appSettings["initEdgeColor"] ,
+                reciprocal,
                 (appSettings["initEdgeArrows"] == "true") ? true: false
             , bezier);
 
@@ -6789,7 +6791,7 @@ void MainWindow::slotEditEdgeRemove(){
                 // 						graphicsWidget->unmakeEdgeReciprocal(clickedEdge->targetNodeNumber(), clickedEdge->sourceNodeNumber());
                 //FIXME weight should be the same
                 graphicsWidget->drawEdge(
-                            targetNode, sourceNode, 1, false,
+                            targetNode, sourceNode, 1, 0,
                             (appSettings["initEdgeArrows"] == "true") ? true: false,
                             appSettings["initEdgeColor"], false
                         );

@@ -68,7 +68,6 @@ Graph::Graph() {
     m_precision = 5;
     m_curRelation=0;
 
-
     file_parser = 0;
     wc_parser = 0;
     wc_spider = 0;
@@ -77,11 +76,27 @@ Graph::Graph() {
     influenceDomains.reserve(1000);
     influenceRanges.reserve(1000);
 
-
-
-
-
 }
+
+
+
+
+
+
+/**
+ * @brief Graph::setMaximumSize
+ * Called when MW and GraphicsWidget resizes to update canvasWidth and canvasHeight
+ * @param w
+ * @param h
+ */
+void Graph::setMaximumSize(int w, int h){
+    qDebug() << "Graph:: setMaximumSize() - (" << w << ", " << h<<")";
+    canvasWidth = w;
+    canvasHeight= h;
+}
+
+
+
 
 
 /**
@@ -183,9 +198,6 @@ int Graph::relations(){
  * @param nodeShape
  * @param signalMW
  */
-
-
-
 void Graph::createVertex(const int &num, const int &nodeSize, const QString &nodeColor,
                          const QString &numColor, const int &numSize,
                          const QString &label, const QString &labelColor,
@@ -279,96 +291,6 @@ void Graph::createVertexWebCrawler(QString label, int i) {
 }
 
 
-void Graph::setMaximumSize(int w, int h){
-    qDebug() << "Graph:: setMaximumSize() - (" << w << ", " << h<<")";
-    canvasWidth = w;
-    canvasHeight= h;
-}
-
-
-/**
- * @brief Adds an Edge to the Graph, then emits drawEdge() which calls
-    GraphicsWidget::addEdge() to draw the new edge.
-    Called from homonymous signal of Parser class.
-    Also called from MW when user clicks on the "add link" button
-    Alse called from GW (via createEdge() below) when user middle-clicks.
- * @param v1
- * @param v2
- * @param weight
- * @param color
- * @param reciprocal
- * @param drawArrows
- * @param bezier
- */
-void Graph::createEdge( const int &v1, const int &v2, const float &weight,
-                        const QString &color,
-                        const int &reciprocal,
-                        const bool &drawArrows, const bool &bezier){
-    qDebug()<<"-- Graph::createEdge() - " << v1 << " -> " << v2
-           << " weight " << weight
-              << " reciprocal " << reciprocal;
-    // check whether there is already such an edge
-    // (see #713617 - https://bugs.launchpad.net/socnetv/+bug/713617)
-    if (!hasArc(v1,v2)){
-        if ( reciprocal == 2) {
-            qDebug()<< "-- Graph::createEdge() - "
-                    << "Creating RECIPROCAL edge - emitting drawEdge signal to GW";
-            addEdge ( v1, v2, weight, color, 2);
-            emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier);
-        }
-        else if (this->hasArc( v2, v1) )  {
-            qDebug()<<"-- Graph::createEdge() - Opposite arc exists. "
-                   << "  Emitting drawEdgeReciprocal to GW ";
-            addEdge ( v1, v2, weight, color, 1);
-            //emit drawEdgeReciprocal(v2, v1);
-            emit drawEdgeReciprocal(v1, v2);
-        }
-        else {
-            qDebug()<< "-- Graph::createEdge() - "
-                       << "Opposite arc does not exist. Emitting drawEdge to GW...";
-            addEdge ( v1, v2, weight, color, 0);
-            emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier);
-        }
-    }
-    else {
-        qDebug() << "-- Graph::createEdge() - "
-                    << "Edge " << v1 << " -> " << v2
-                 << " declared previously (exists) - nothing to do \n\n";
-    }
-    //draw new edges the same color with those of the file loaded,
-    // on user clicks on the canvas
-    initEdgeColor=color;
-    emit graphChanged();
-}
-
-
-/**
-    Called (via MW::addLink()) from GW when user middle-clicks on two nodes.
-    Calls the above createEdge() method with initEdgeColor to set the default edge color.
-*/
-void Graph::createEdge(const int &v1, const int &v2, const float &weight,
-                       const int &reciprocal,
-                       const bool &drawArrows, const bool &bezier){
-    qDebug()<< "Graph::createEdge() - " << v1<< " -> " << v2 ;
-    createEdge(v1, v2, (float) weight, initEdgeColor, reciprocal,
-               drawArrows, bezier);
-}
-
-
-/**
-    Called from WebCrawler when it finds an new link
-    Calls the above createEdge() method with initEdgeColor
-*/
-void Graph::createEdgeWebCrawler (int source, int target){
-    qDebug()<< " Graph::createEdgeWebCrawler() - from " << source << " to " << target ;
-    float weight = 1.0;
-    bool reciprocal=false;
-    bool drawArrows=true;
-    bool bezier=false;
-
-    createEdge(source, target, weight, initEdgeColor, reciprocal, drawArrows, bezier);
-}
-
 
 /**
  * @brief Deletes any dymmy nodes
@@ -430,19 +352,6 @@ void Graph::addVertex ( const int &v1, const int &val, const int &size,
 
 
 
-/**
-    Updates MW  with the file type (0=nofile, 1=Pajek, 2=Adjacency etc)
-*/
-void Graph::setFileType (
-        int type, QString networkName, int aNodes, int totalLinks, bool undirected)
-{
-    qDebug("Graph: setFileType %i", type);
-    m_undirected = undirected;
-    emit signalFileType (type, networkName, aNodes, totalLinks, m_undirected);
-    qDebug ()<< "Graph::setFileType()  -check parser if running...";
-
-}
-
 
 
 /**
@@ -456,7 +365,7 @@ int Graph::lastVertexNumber() {
 }
 
 
-/**	Returns the name of the first vertex. 
+/**	Returns the name of the first vertex.
     Used by slotRemoveNode of MW
 */
 int Graph::firstVertexNumber() {
@@ -467,7 +376,7 @@ int Graph::firstVertexNumber() {
 
 
 
-/**	Removes the vertex named Doomed from the graph 
+/**	Removes the vertex named Doomed from the graph
     First, it removes all edges to Doomed from other vertices
     Then it changes the index of all subsequent vertices inside m_graph
     Finally, it removes the vertex.
@@ -538,11 +447,87 @@ void Graph::removeVertex(long int Doomed){
 }
 
 
+/**
+ * @brief Adds an Edge to the Graph, then emits drawEdge() which calls
+    GraphicsWidget::addEdge() to draw the new edge.
+    Called from homonymous signal of Parser class.
+    Also called from MW when user clicks on the "add link" button
+    Also called (via MW) from GW when user middle-clicks on two nodes.
+ * @param v1
+ * @param v2
+ * @param weight
+ * @param color
+ * @param reciprocal
+ * @param drawArrows
+ * @param bezier
+ */
+void Graph::createEdge( const int &v1, const int &v2, const float &weight,
+                        const QString &color,
+                        const int &reciprocal,
+                        const bool &drawArrows, const bool &bezier){
+    qDebug()<<"-- Graph::createEdge() - " << v1 << " -> " << v2
+           << " weight " << weight
+              << " reciprocal " << reciprocal;
+    // check whether there is already such an edge
+    // (see #713617 - https://bugs.launchpad.net/socnetv/+bug/713617)
+    if (!hasArc(v1,v2)){
+        if ( reciprocal == EDGE_RECIPROCAL_UNDIRECTED ) {
+            qDebug()<< "-- Graph::createEdge() - "
+                    << "Creating RECIPROCAL edge - emitting drawEdge signal to GW";
+            addEdge ( v1, v2, weight, color, reciprocal );
+            emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier);
+        }
+        else if ( int opposite = hasArc( v2, v1) )  {
+            Q_UNUSED (opposite);
+            qDebug()<<"-- Graph::createEdge() - Opposite arc exists. "
+                   << "  Emitting drawEdgeReciprocal to GW ";
+            addEdge ( v1, v2, weight, color, EDGE_DIRECTED_OPPOSITE_EXISTS );
+            //emit drawEdgeReciprocal(v2, v1);
+            emit drawEdge(v1, v2, weight, EDGE_DIRECTED_OPPOSITE_EXISTS, drawArrows, color, bezier);
+        }
+        else {
+            qDebug()<< "-- Graph::createEdge() - "
+                       << "Opposite arc does not exist. Emitting drawEdge to GW...";
+            addEdge ( v1, v2, weight, color, EDGE_DIRECTED );
+            emit drawEdge(v1, v2, weight, EDGE_DIRECTED, drawArrows, color, bezier);
+        }
+    }
+    else {
+        qDebug() << "-- Graph::createEdge() - "
+                    << "Edge " << v1 << " -> " << v2
+                 << " declared previously (exists) - nothing to do \n\n";
+    }
+    //draw new edges the same color with those of the file loaded,
+    // on user clicks on the canvas
+    initEdgeColor=color;
+    emit graphChanged();
+}
+
+
+
+
+/**
+    Called from WebCrawler when it finds an new link
+    Calls the above createEdge() method with initEdgeColor
+*/
+void Graph::createEdgeWebCrawler (int source, int target){
+    qDebug()<< " Graph::createEdgeWebCrawler() - from " << source << " to " << target ;
+    float weight = 1.0;
+    bool reciprocal=false;
+    bool drawArrows=true;
+    bool bezier=false;
+
+    createEdge(source, target, weight, initEdgeColor, reciprocal, drawArrows, bezier);
+}
+
+
+
 
 /**
  * Creates an edge between v1 and v2
 */
-void Graph::addEdge (int v1, int v2, float weight, QString color, int reciprocal) {
+void Graph::addEdge (const int &v1, const int &v2, const float &weight,
+                     const QString &color, const int &type) {
 
     int source=index[v1];
     int target=index[v2];
@@ -552,23 +537,21 @@ void Graph::addEdge (int v1, int v2, float weight, QString color, int reciprocal
 
     m_graph [ source ]->addEdgeTo(v2, weight );
     m_graph [ target ]->addEdgeFrom(v1, weight);
+    m_graph[ source ]->setOutLinkColor(v2, color);
 
-    if (reciprocal == 1){
+
+    if (type == EDGE_DIRECTED_OPPOSITE_EXISTS ){
+        // make existing opposite edge reciprocal
         m_graph [ source ]->setReciprocalLinked(true);
         m_graph [ target ]->setReciprocalLinked(true);
     }
-    else if (reciprocal == 2){
+    else if (type == EDGE_RECIPROCAL_UNDIRECTED){
+        //create opposite edge and declare both reciprocal.
         m_graph [ source ]->setReciprocalLinked(true);
         m_graph [ target ]->setReciprocalLinked(true);
         m_graph [ target ]->addEdgeTo(v1, weight );
         m_graph [ source ]->addEdgeFrom(target, weight);
     }
-
-//    qDebug()<<"Graph: addEdge() now a("<< v1 << ","<< v2<< ") = " << weight
-//           << " with color "<<  color
-//           <<" . Storing edge color..." ;
-    m_graph[ source]->setOutLinkColor(v2, color);
-
     graphModified=true;
 }
 
@@ -1231,9 +1214,15 @@ void Graph::setArcColor(const long &v1, const long &v2, const QString &color){
 
 
 
-/**	Checks if there is a directed edge (arc) from v1 to v2
-    Complexity:  O(logN) for index retrieval + O(1) for QList index retrieval + O(logN) for checking edge(v2)
-*/
+
+/**
+ * @brief Graph::hasArc
+ * Checks if there is a directed edge (arc) from v1 to v2
+   Complexity:  O(logN) for index retrieval + O(1) for QList index retrieval + O(logN) for checking edge(v2)
+ * @param v1
+ * @param v2
+ * @return zero if arc does not exist or non-zero if arc exists
+ */
 float Graph::hasArc (const long int &v1, const long int &v2) {
     //qDebug() << "Graph::hasArc() " << v1 << " -> " << v2 << " ? " ;
     return m_graph[ index[v1] ]->hasEdgeTo(v2);
@@ -5220,7 +5209,7 @@ void Graph::createRandomNetScaleFree (const int &n,
                     else {
                         qDebug() << " --- Creating pref.att. directed edge "
                                  <<  i+1 << " <-> " << j+1;
-                        createEdge (i+1, j+1, 1, initEdgeColor, 1, true, false);
+                        createEdge (i+1, j+1, 1, initEdgeColor, 1, true, false); // BUG / FIXME RECIPROCAL WRONG?
                         newEdges ++;
 
                     }
@@ -5272,7 +5261,7 @@ void Graph::createRandomNetSmallWorld (
                             qDebug("<----> Random New Edge Experiment between %i and %i:", i, candidate);
                         if (rand() % 100 > 0.5) {
                             qDebug("Creating new link!");
-                            createEdge(i, candidate, 1, initEdgeColor, true, true, false);
+                            createEdge(i, candidate, 1, initEdgeColor, true, true, false); // FIXME / BUG ?
                             break;
                         }
                     }
@@ -6734,10 +6723,20 @@ int Graph:: factorial(int x) {
 
 
 
+
 /**
-    Our almost universal network loader. :)
-    Actually it calls the load() method of parser/qthread class.
-*/
+ * @brief Graph::loadGraph
+ * Our almost universal network loader. :)
+ * Actually it calls the load() method of parser/qthread class.
+ * @param m_fileName
+ * @param m_codecName
+ * @param m_showLabels
+ * @param maxWidth
+ * @param maxHeight
+ * @param fileFormat
+ * @param two_sm_mode
+ * @return
+ */
 bool Graph::loadGraph (	const QString m_fileName,
                         const QString m_codecName,
                         const bool m_showLabels,
@@ -6828,6 +6827,10 @@ bool Graph::loadGraph (	const QString m_fileName,
 }
 
 
+/**
+ * @brief Graph::terminateParserThreads
+ * @param reason
+ */
 void Graph::terminateParserThreads(QString reason) {
     qDebug() << "Graph::terminateParserThreads() - reason " << reason
                     <<" is file_parserThread running? ";
@@ -6841,6 +6844,30 @@ void Graph::terminateParserThreads(QString reason) {
     }
 
 }
+
+
+
+
+/**
+ * @brief Graph::setFileType
+ * Updates MW  with the file type (0=nofile, 1=Pajek, 2=Adjacency etc)
+ * Called from Parser when parsing network files.
+ * @param type
+ * @param networkName
+ * @param aNodes
+ * @param totalLinks
+ * @param undirected
+ */
+void Graph::setFileType (
+        int type, QString networkName, int aNodes, int totalLinks, bool undirected)
+{
+    qDebug("Graph: setFileType %i", type);
+    m_undirected = undirected;
+    emit signalFileType (type, networkName, aNodes, totalLinks, m_undirected);
+    qDebug ()<< "Graph::setFileType()  -check parser if running...";
+
+}
+
 
 /**
     Our almost universal graph saver. :)

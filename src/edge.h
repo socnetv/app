@@ -40,6 +40,9 @@ class Node;
 class EdgeWeight;
 
 
+
+
+
 static const int TypeEdge= QGraphicsItem::UserType+2;
 
 
@@ -51,7 +54,7 @@ public:
     Edge(GraphicsWidget *, Node*, Node*,
          const Qt::PenStyle &style,
          const float &, const int &, const QString &,
-         const bool&, const bool&, const bool &);
+         const int&, const bool&, const bool &);
     ~Edge();
     enum { Type = UserType + 2 };
     int type() const { return Type; }
@@ -79,7 +82,7 @@ public:
     bool isReciprocal();
 
     void makeReciprocalFirst();
-    void makeReciprocalSecond();
+
     float width() const;
 
     QPen pen() const;
@@ -116,9 +119,10 @@ private:
     int eFrom, eTo;
     float m_weight, m_tempweight;
     int tox1, tox2, toy1, toy2, size;
+    int m_reciprocal;
     double rad, theta, theta1, theta2;
     qreal angle, line_length, line_dx, line_dy;
-    bool m_Bezier, m_drawArrows, m_reciprocal, m_reciprocal_first, m_reciprocal_second;
+    bool m_Bezier, m_drawArrows, m_reciprocal_first;
 };
 
 #endif

@@ -45,10 +45,16 @@
 #include "parser.h"
 #include "webcrawler.h"
 
+
+
+static const int EDGE_DIRECTED = 0;
+static const int EDGE_DIRECTED_OPPOSITE_EXISTS = 1;
+static const int EDGE_RECIPROCAL_UNDIRECTED = 2;
+
 using namespace std;
 
-
 class QPointF;
+
 
 
 /**	This is the main class for a Graph, used in conjuction with Vertex, Parser and Matrix objects.
@@ -68,7 +74,6 @@ typedef QPair <float, bool> pair_f_b;
 typedef QPair <int, pair_f_b > rel_w_bool;
 typedef QHash < int, rel_w_bool > H_edges;
 typedef QHash<QString, bool> H_StrToBool;
-
 
 
 
@@ -135,9 +140,6 @@ public slots:
                       const QString &color ,
                       const int &reciprocal=0,
                       const bool &drawArrows=true, const bool &bezier=false);
-    void createEdge (const int &v1, const int &v2, const float &weight,
-                     const int &reciprocal=0,
-                     const bool &drawArrows=true, const bool &bezier=false);
     void createEdgeWebCrawler (int, int);					//WebCrawler
 
     void slotSetEdgeVisibility(int relation, int, int, bool);
@@ -184,7 +186,7 @@ signals:
     void eraseNode (long int);						//erase node from GW
     //call GW to draw an edge
     void drawEdge ( const int &, const int &, const float &,
-                    const bool &, const bool, const QString &, const bool &);
+                    const int &, const bool, const QString &, const bool &);
     void eraseEdge(int, int);					//emited from removeEdge() to GW to clear the edge item.
     void setEdgeVisibility (int, int, int, bool);			// emitted from each Vertex
     void setVertexVisibility(long int, bool);		//notifies GW to disable a node
@@ -578,7 +580,8 @@ private:
                       const QString &labelColor, const int &labelSize,
                       const QPointF &p, const QString &shape );
 
-    void addEdge (int v1, int v2, float w, QString color, int reciprocal);
+    void addEdge (const int &v1, const int &v2, const float &w,
+                  const QString &color, const int &type);
 
     /** methods used by createDistanceMatrix()  */
     void BFS(const int s, const bool computeCentralities,

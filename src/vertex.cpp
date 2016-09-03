@@ -299,14 +299,14 @@ void Vertex::filterEdgesByWeight(float m_threshold, bool overThreshold){
             weight = it.value().second.first;
             if (overThreshold) {
                 if ( weight >= m_threshold ) {
-                    qDebug() << "Vertex::filterEdgesByWeight(). Edge  to " << target
+                    qDebug() << "Vertex::filterEdgesByWeight() - edge  to " << target
                     << " has weight " << weight
                     << ". It will be disabled. Emitting signal to Graph....";
                     it.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, false) ));
                     emit setEdgeVisibility (m_curRelation, m_name, target, false );
                 }
                 else {
-                    qDebug() << "Vertex::filterEdgesByWeight(). Edge to " << target
+                    qDebug() << "Vertex::filterEdgesByWeight() - edge  to " << target
                     << " has weight " << weight << ". It will be enabled. Emitting signal to Graph....";
                     it.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, true) ));
                     emit setEdgeVisibility (m_curRelation, m_name, target, true );
@@ -314,13 +314,13 @@ void Vertex::filterEdgesByWeight(float m_threshold, bool overThreshold){
             }
             else {
                  if ( weight <= m_threshold ) {
-                    qDebug() << "Vertex::filterEdgesByWeight(). Edge  to " << target
+                    qDebug() << "Vertex::filterEdgesByWeight() - edge  to " << target
                     << " has weight " << weight << ". It will be disabled. Emitting signal to Graph....";
                     it.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, false) ));
                     emit setEdgeVisibility (m_curRelation, m_name, target, false );
                 }
                 else {
-                    qDebug() << "Vertex::filterEdgesByWeight(). Edge  to " << target
+                    qDebug() << "Vertex::filterEdgesByWeight() - edge  to " << target
                     << " has weight " << weight << ". It will be enabled. Emitting signal to Graph....";
                     it.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, true) ));
                     emit setEdgeVisibility (m_curRelation, m_name, target, true );

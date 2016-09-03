@@ -53,6 +53,7 @@
 static const QString VERSION="2.0";
 
 
+
 QT_BEGIN_NAMESPACE
 class QMenu;
 class QAction;
@@ -229,7 +230,7 @@ public slots:
     void slotEditNodeLabelDistance(int v1=0, int newSize=0);
 
     void slotEditEdgeAdd();
-    void slotEditEdgeCreate (int v1, int v2, float weight);
+    void slotEditEdgeCreate (const int &source, const int &target, const float &weight);
     void slotEditEdgeRemove();
     void slotEditEdgeLabel();
     void slotEditEdgeColor();

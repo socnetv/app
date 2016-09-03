@@ -165,14 +165,17 @@ void GraphicsWidget::drawNode( const int &num, const int &nodeSize,
  */
 void GraphicsWidget::drawEdge(const int &source, const int &target,
                               const float &weight,
-                              const bool &reciprocal,
+                              const int &reciprocal,
                               const bool &drawArrows,
                               const QString &color, const bool &bezier){
 
     QString edgeName = QString::number(m_curRelation) + QString(":")
             + QString::number(source) + QString(">")+ QString::number(target);
-    qDebug()<<"GW::drawEdge() - "<< edgeName << " weight "<<weight
+    qDebug()<<"GW::drawEdge() - "<< edgeName
+           << " weight "<<weight
+           << " reciprocal " << reciprocal
            << " - nodeHash reports "<< nodeHash.size()<<" nodes.";
+
 
     Edge *edge=new Edge (this, nodeHash.value(source), nodeHash.value(target),
                          Qt::SolidLine, weight,
@@ -181,9 +184,13 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
                          (source==target) ? true: bezier );
 
     edgesHash.insert(edgeName, edge);
+    if (reciprocal == EDGE_DIRECTED_OPPOSITE_EXISTS ) {
+        QString edgeName = QString::number(m_curRelation) + QString(":") +
+                QString::number(target) + QString(">")+ QString::number(source);
+        //    qDebug("GW: making existing edge between %i and %i reciprocal. Name: "+edgeName.toUtf8(), source, target );
+        edgesHash.value(edgeName)->makeReciprocalFirst();
 
-
-
+    }
     //	qDebug()<< "Scene items now: "<< scene()->items().size() << " - GW items now: "<< items().size();
 }
 

@@ -40,6 +40,9 @@
 static const double Pi = 3.14159265;
 static double TwoPi = 2.0 * Pi;
 
+static const int EDGE_DIRECTED = 0;
+static const int EDGE_DIRECTED_OPPOSITE_EXISTS = 1;
+static const int EDGE_RECIPROCAL_UNDIRECTED = 2;
 
 Edge::Edge(  GraphicsWidget *gw,
              Node *from,
@@ -48,7 +51,7 @@ Edge::Edge(  GraphicsWidget *gw,
              const float &weight,
              const int &nodeSize,
              const QString &color,
-             const bool &reciprocal,
+             const int &reciprocal,
              const bool &drawArrows,
              const bool &bez ) : graphicsWidget(gw)
 {
@@ -67,7 +70,7 @@ Edge::Edge(  GraphicsWidget *gw,
     m_drawArrows=drawArrows;
     m_reciprocal=reciprocal;
     m_reciprocal_first = false;
-    m_reciprocal_second = false;
+
     m_startOffset=source->size();  //used to offset edge from the centre of node
     m_endOffset=target->size();  //used to offset edge from the centre of node
     m_arrowSize=4;		//controls the width of the edge arrow
@@ -87,11 +90,13 @@ Edge::Edge(  GraphicsWidget *gw,
     setAcceptHoverEvents(true);
 //    setFlags(QGraphicsItem::ItemIsSelectable);
 
-    setZValue(253); //Edges have lower z than nodes. Nodes always appear above edges.
-    // Keep it here so that it doesnt interfere with dashed lines.
-    setBoundingRegionGranularity(0); // Slows down the universe
+    //Edges have lower z than nodes. Nodes always appear above edges.
+    setZValue(253);
+
+    setBoundingRegionGranularity(0);
     //setCacheMode (QGraphicsItem::ItemCoordinateCache);
 
+    qDebug() << "Edge::Edge() - reciprocal " << m_reciprocal;
     adjust();
 }
 
@@ -211,12 +216,23 @@ void Edge::adjust(){
     else edgeOffset = QPointF(0, 0);
 
     prepareGeometryChange();
-    sourcePoint = line.p1() + edgeOffset + QPointF(4,4);
-    targetPoint = line.p2() - edgeOffset +  QPointF(4,4);
-    if (m_reciprocal ) {
-        sourcePoint  -= QPointF(4,4);
-        targetPoint -= QPointF(4,4);
+
+    sourcePoint = line.p1() + edgeOffset ;
+    targetPoint = line.p2() - edgeOffset ;
+
+    if (m_reciprocal == EDGE_DIRECTED_OPPOSITE_EXISTS ) {
+        if (m_reciprocal_first ) {
+            sourcePoint -= QPointF(4,4);
+            targetPoint -= QPointF(4,4);
+        }
+        else {
+            sourcePoint += QPointF(4,4);
+            targetPoint += QPointF(4,4);
+
+        }
+
     }
+
     edgeWeight->setPos( (source->x()+target->x())/2.0, (source->y()+target->y())/2.0 );
 
     //Define the path upon which we' ll draw the line
@@ -276,20 +292,20 @@ void Edge::adjust(){
                                  << targetPoint
                                  );
 
-            if (m_reciprocal ) {
+            if (m_reciprocal == EDGE_RECIPROCAL_UNDIRECTED ) {
     //            qDebug() << "**** Edge::paint() This edge is SYMMETRIC! "
     //                     << " So, we need to create Arrow at src node as well";
-//                QPointF srcArrowP1 = sourcePoint + QPointF(sin(angle +Pi / 3) * m_arrowSize,
-//                                                           cos(angle +Pi / 3) * m_arrowSize);
-//                QPointF srcArrowP2 = sourcePoint + QPointF(sin(angle +Pi - Pi  / 3) * m_arrowSize,
-//                                                           cos(angle +Pi - Pi / 3) * m_arrowSize);
+                QPointF srcArrowP1 = sourcePoint + QPointF(sin(angle +Pi / 3) * m_arrowSize,
+                                                           cos(angle +Pi / 3) * m_arrowSize);
+                QPointF srcArrowP2 = sourcePoint + QPointF(sin(angle +Pi - Pi  / 3) * m_arrowSize,
+                                                           cos(angle +Pi - Pi / 3) * m_arrowSize);
 
-//                m_path->addPolygon ( QPolygonF()
-//                                     << sourcePoint
-//                                     << srcArrowP1
-//                                     << srcArrowP2
-//                                     <<sourcePoint
-//                                     );
+                m_path->addPolygon ( QPolygonF()
+                                     << sourcePoint
+                                     << srcArrowP1
+                                     << srcArrowP2
+                                     <<sourcePoint
+                                     );
 
             }
             else {
@@ -364,14 +380,11 @@ QRectF Edge::boundingRect() const {
 void Edge::makeReciprocalFirst(){
     qDebug()<< "Edge::makeReciprocalFirst()";
     prepareGeometryChange();
+    m_reciprocal = EDGE_DIRECTED_OPPOSITE_EXISTS;
     m_reciprocal_first= true;
 }
 
-void Edge::makeReciprocalSecond(){
-    qDebug()<< "Edge::makeReciprocalSecond()";
-    prepareGeometryChange();
-    m_reciprocal_second= true;
-}
+
 
 
 void Edge::makeReciprocal(){
