@@ -158,40 +158,44 @@ void Node::setShape(const QString shape) {
     m_path = new QPainterPath;
     if ( m_shape == "circle") {
         m_path->addEllipse (-m_size, -m_size, 2*m_size, 2*m_size);
-        if (m_hasNumberInside && m_hasNumber)
-            m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
     }
     else if ( m_shape == "ellipse") {
-        m_path->addEllipse(-m_size, -m_size, 2*m_size, 1.5* m_size);
-        if (m_hasNumberInside && m_hasNumber)
-            m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
+        m_path->addEllipse(-m_size, -m_size, 2*m_size, 1.7* m_size);
     }
     else if ( m_shape == "box" || m_shape == "rectangle"  ) {  //rectangle: for GraphML compliance
         m_path->addRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size );
-        if (m_hasNumberInside && m_hasNumber)
-            m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
     }
     else if (m_shape == "roundrectangle"  ) {  //roundrectangle: GraphML only
         m_path->addRoundedRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size, 60.0, 60.0, Qt::RelativeSize );
-        if (m_hasNumberInside && m_hasNumber)
-            m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
     }
     else if ( m_shape == "triangle") {
-        m_poly_t=new QPolygon(3);
-        m_poly_t -> setPoints (3,  0,-m_size,  -m_size,m_size, m_size,m_size);
-        m_path->addPolygon(*m_poly_t);
+        m_path->moveTo(-m_size,0.75* m_size) ;
+        m_path->lineTo(m_size,0.75*m_size);
+        m_path->lineTo( 0,-1.25*m_size);
+        m_path->lineTo(-m_size,0.75*m_size) ;
         m_path->closeSubpath();
-        if (m_hasNumberInside && m_hasNumber)
-        m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
+    }
+    else if ( m_shape == "star") {
+        m_path->setFillRule(Qt::WindingFill);
+        m_path->moveTo(-m_size,0.75* m_size) ;
+        m_path->lineTo(m_size,0.75*m_size);
+        m_path->lineTo( 0,-1.25*m_size);
+        m_path->lineTo(-m_size,0.75*m_size) ;
+        m_path->closeSubpath();
 
+        m_path->moveTo(0, 1.25* m_size) ;
+        m_path->lineTo(m_size,-0.75*m_size);
+        m_path->lineTo(-m_size,-0.75*m_size) ;
+        m_path->lineTo(0, 1.25* m_size);
+        m_path->closeSubpath();
     }
     else if ( m_shape == "diamond"){
-        m_poly_d=new QPolygon(4);
-        m_poly_d -> setPoints (4,  0,-m_size,  -m_size,0,  0,m_size,   m_size,0);
-        m_path->addPolygon(*m_poly_d);
+        m_path->moveTo(-m_size, 0);
+        m_path->lineTo( 0,-1.25*m_size);
+        m_path->lineTo( m_size, 0);
+        m_path->lineTo( 0, 1.25*m_size);
+        m_path->lineTo(-m_size, 0) ;
         m_path->closeSubpath();
-        if (m_hasNumberInside && m_hasNumber)
-            m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
     }
     update();
 }
@@ -247,9 +251,27 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 		setZValue(254);		
 		painter->setBrush(m_col);
 	}
-	painter->setPen(QPen(Qt::black, 0));
+    painter->setPen(QPen(QColor(m_col), 0));
 
 	painter->drawPath (*m_path);
+
+    if (m_hasNumberInside && m_hasNumber) {
+       // m_path->setFillRule(Qt::WindingFill);
+        painter->setPen(QPen(QColor(m_numColor), 0));
+        if (m_num < 10 ) {
+            painter->setFont(QFont("Times", m_numSize, QFont::Normal));
+            painter->drawText(-m_size/3,m_size/3,QString::number(m_num) );
+        }
+        else if (m_num < 100) {
+            painter->setFont(QFont("Times", m_numSize-1, QFont::Normal));
+             painter->drawText(-m_size/2,m_size/3, QString::number(m_num) );
+        }
+        else if (m_num < 1000) {
+            painter->setFont(QFont("Times", m_numSize-1, QFont::Normal));
+             painter->drawText(-m_size/2,m_size/3, QString::number(m_num) );
+        }
+    }
+
 }
 
 

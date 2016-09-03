@@ -195,8 +195,8 @@ QMap<QString,QString> MainWindow::initSettings(){
     appSettings["initNodeShape"]="circle";
 
     appSettings["initNodeNumbersVisibility"] = "true";
-    appSettings["initNodeNumberSize"]="5";
-    appSettings["initNodeNumberColor"]="#666";
+    appSettings["initNodeNumberSize"]="7";
+    appSettings["initNodeNumberColor"]="#333";
     appSettings["initNodeNumbersInside"] = "false";
     appSettings["initNodeNumberDistance"] = "2";
 

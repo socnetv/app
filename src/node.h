@@ -129,7 +129,7 @@ private:
     GraphicsWidget *graphicsWidget;
     QPainterPath *m_path;
     QPointF newPos;
-    QPolygon *m_poly_t, *m_poly_d;
+    QPolygonF *m_poly_t;
     int  m_size, m_numSize, m_labelSize, m_numberDistance, m_labelDistance;
     long int m_num;
     QString  m_shape,  m_col_str, m_numColor, m_labelText, m_labelColor;
