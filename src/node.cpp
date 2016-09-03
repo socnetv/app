@@ -178,19 +178,20 @@ void Node::setShape(const QString shape) {
     }
     else if ( m_shape == "triangle") {
         m_poly_t=new QPolygon(3);
-        m_poly_t -> setPoints (3,  0,-m_size,  -m_size,m_size, m_size,+m_size);
+        m_poly_t -> setPoints (3,  0,-m_size,  -m_size,m_size, m_size,m_size);
         m_path->addPolygon(*m_poly_t);
+        m_path->closeSubpath();
         if (m_hasNumberInside && m_hasNumber)
         m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
-        m_path->closeSubpath();
+
     }
     else if ( m_shape == "diamond"){
         m_poly_d=new QPolygon(4);
-        m_poly_d -> setPoints (4, 0,-m_size,  -m_size,0,       0,+m_size,     +m_size,0);
+        m_poly_d -> setPoints (4,  0,-m_size,  -m_size,0,  0,m_size,   m_size,0);
         m_path->addPolygon(*m_poly_d);
+        m_path->closeSubpath();
         if (m_hasNumberInside && m_hasNumber)
             m_path->addText(-m_size/2,m_size/2,QFont("Times", m_numSize, QFont::Normal), QString::number(m_num) );
-        m_path->closeSubpath();
     }
     update();
 }
