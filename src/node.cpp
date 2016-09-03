@@ -381,6 +381,7 @@ void Node::addLabel ()  {
     m_label = new  NodeLabel (this, m_labelText, m_labelSize);
     m_label -> setDefaultTextColor (m_labelColor);
     m_label -> setPos( m_size, m_labelDistance+m_size);
+    m_hasLabel = true;
 }
 
 
