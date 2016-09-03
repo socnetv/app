@@ -140,7 +140,9 @@ SettingsDialog::SettingsDialog(
     m_pixmap = QPixmap(60,20) ;
     m_pixmap.fill( m_nodeLabelColor );
     ui->nodeLabelColorBtn->setIcon(QIcon(m_pixmap));
+
     ui->nodeLabelDistanceSpin->setValue( m_appSettings["initNodeLabelDistance"].toInt(0, 10) );
+
 
     /**
      * edge options
@@ -149,6 +151,17 @@ SettingsDialog::SettingsDialog(
     ui->edgesChkBox-> setChecked(
                 (m_appSettings["initEdgesVisibility"] == "true") ? true: false
                                                                   );
+    m_edgeColor = QColor (m_appSettings["initEdgeColor"]);
+    m_pixmap = QPixmap(60,20) ;
+    m_pixmap.fill( m_edgeColor );
+    ui->edgeColorBtn->setIcon(QIcon(m_pixmap));
+
+    m_edgeColorNegative = QColor (m_appSettings["initEdgeColorNegative"]);
+    m_pixmap = QPixmap(60,20) ;
+    m_pixmap.fill( m_edgeColorNegative );
+    ui->edgeColorNegativeBtn ->setIcon(QIcon(m_pixmap));
+
+
     if (m_appSettings["initEdgeShape"] == "line") {
         ui->edgeShapeRadioStraightLine->setChecked(true);
     }
@@ -240,6 +253,10 @@ SettingsDialog::SettingsDialog(
 
     connect (ui->edgesChkBox, &QCheckBox::stateChanged,
                      this, &SettingsDialog::getEdgesVisibility);
+    connect (ui->edgeColorBtn, &QToolButton::clicked,
+             this, &SettingsDialog::getEdgeColor);
+    connect (ui->edgeColorNegativeBtn, &QToolButton::clicked,
+             this, &SettingsDialog::getEdgeColorNegative);
     connect (ui->edgeShapeRadioStraightLine, &QRadioButton::clicked,
              this, &SettingsDialog::getEdgeShape);
     connect (ui->edgeShapeRadioBezier, &QRadioButton::clicked,
@@ -283,7 +300,7 @@ void SettingsDialog::getDataDir(){
 void SettingsDialog::getBgColor(){
 
     m_bgColor = QColorDialog::getColor(
-                m_bgColor, this, tr("Select default canvas background color") );
+                m_bgColor, this, tr("Select a background color") );
     if ( m_bgColor.isValid()) {
         m_pixmap.fill(m_bgColor);
         ui->bgColorButton->setIcon(QIcon(m_pixmap));
@@ -304,7 +321,7 @@ void SettingsDialog::getBgColor(){
  */
 void SettingsDialog::getBgImage(){
     QString m_bgImage = QFileDialog::getOpenFileName(
-                this, tr("Select default canvas background image "), (m_appSettings)["lastUsedDirPath"],
+                this, tr("Select a background image "), (m_appSettings)["lastUsedDirPath"],
                 tr("All (*);;PNG (*.png);;JPG (*.jpg)")
                 );
     if (!m_bgImage.isEmpty() ) {
@@ -325,7 +342,7 @@ void SettingsDialog::getBgImage(){
  */
 void SettingsDialog::getNodeColor(){
     m_nodeColor = QColorDialog::getColor(
-                m_nodeColor, this, tr("Select default node color") );
+                m_nodeColor, this, tr("Select a color for Nodes") );
     if ( m_nodeColor.isValid()) {
         m_pixmap.fill(m_nodeColor);
         ui->nodeColorBtn->setIcon(QIcon(m_pixmap));
@@ -420,7 +437,7 @@ void SettingsDialog::getNodeNumberDistance(const int distance) {
  */
 void SettingsDialog::getNodeNumberColor(){
     m_nodeNumberColor = QColorDialog::getColor(
-                m_nodeColor, this, tr("Select default node number color") );
+                m_nodeNumberColor, this, tr("Select color for Node Numbers") );
     if ( m_nodeNumberColor.isValid()) {
         m_pixmap.fill(m_nodeNumberColor);
         ui->nodeNumberColorBtn->setIcon(QIcon(m_pixmap));
@@ -451,7 +468,7 @@ void SettingsDialog::getNodeLabelsVisibility (bool toggle){
  */
 void SettingsDialog::getNodeLabelColor(){
     m_nodeLabelColor = QColorDialog::getColor(
-                m_nodeColor, this, tr("Select default node Label color") );
+                m_nodeLabelColor, this, tr("Select color for Node Labels") );
     if ( m_nodeLabelColor.isValid()) {
         m_pixmap.fill(m_nodeLabelColor);
         ui->nodeLabelColorBtn->setIcon(QIcon(m_pixmap));
@@ -493,6 +510,45 @@ void SettingsDialog::getEdgesVisibility (const bool &toggle){
     m_appSettings["initEdgesVisibility"]= (toggle) ? "true" : "false";
     emit setEdgesVisibility(toggle);
 }
+
+
+/**
+ * @brief SettingsDialog::getEdgeColor
+ * * Opens a QColorDialog for the user to select a new edge color
+ */
+void SettingsDialog::getEdgeColor(){
+    m_edgeColor = QColorDialog::getColor(
+                m_edgeColor, this, tr("Select color for Edges ") );
+    if ( m_edgeColor.isValid()) {
+        m_pixmap.fill(m_edgeColor);
+        ui->edgeColorBtn->setIcon(QIcon(m_pixmap));
+        (m_appSettings)["initEdgeColor"] = m_edgeColor.name();
+        emit setEdgeColor(m_edgeColor);
+    }
+    else {
+        // user pressed Cancel
+    }
+}
+
+
+/**
+ * @brief SettingsDialog::getEdgeColorNegative
+ * * Opens a QColorDialog for the user to select a new edge color
+ */
+void SettingsDialog::getEdgeColorNegative(){
+    m_edgeColorNegative = QColorDialog::getColor(
+                m_edgeColorNegative, this, tr("Select default color for negative Edges") );
+    if ( m_edgeColorNegative.isValid()) {
+        m_pixmap.fill(m_edgeColorNegative);
+        ui->edgeColorNegativeBtn->setIcon(QIcon(m_pixmap));
+        (m_appSettings)["initEdgeColorNegative"] = m_edgeColorNegative.name();
+        emit setEdgeColorNegative(m_edgeColorNegative);
+    }
+    else {
+        // user pressed Cancel
+    }
+}
+
 
 
 /**

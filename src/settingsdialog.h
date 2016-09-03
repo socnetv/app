@@ -61,6 +61,8 @@ public slots:
     void getNodeLabelSize(const int);
     void getNodeLabelDistance(const int);
     void getEdgesVisibility (const bool &toggle);
+    void getEdgeColor();
+    void getEdgeColorNegative();
     void getEdgeShape();
 
 signals:
@@ -87,6 +89,8 @@ signals:
     void setNodeLabelSize(const int v, const int &);
     void setNodeLabelDistance(const int v, const int &);
     void setEdgesVisibility (const bool &toggle);
+    void setEdgeColor(const QColor);
+    void setEdgeColorNegative(const QColor);
     void setEdgeShape(const QString, const long int);
     void saveSettings();
 private:
@@ -95,6 +99,7 @@ private:
      QPixmap m_pixmap;
      //QString m_nodeShape;
      QColor m_bgColor, m_nodeColor, m_nodeNumberColor, m_nodeLabelColor;
+     QColor m_edgeColor, m_edgeColorNegative;
 };
 
 #endif // SETTINGSDIALOG_H

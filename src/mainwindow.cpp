@@ -196,18 +196,19 @@ QMap<QString,QString> MainWindow::initSettings(){
 
     appSettings["initNodeNumbersVisibility"] = "true";
     appSettings["initNodeNumberSize"]="5";
-    appSettings["initNodeNumberColor"]="black";
+    appSettings["initNodeNumberColor"]="#666";
     appSettings["initNodeNumbersInside"] = "false";
     appSettings["initNodeNumberDistance"] = "2";
 
     appSettings["initNodeLabelsVisibility"] = "false";
     appSettings["initNodeLabelSize"]="6";
-    appSettings["initNodeLabelColor"]="darkblue";
+    appSettings["initNodeLabelColor"]="#00aa00";
     appSettings["initNodeLabelDistance"] = "6";
 
     appSettings["initEdgesVisibility"]="true";
     appSettings["initEdgeShape"]="line"; //bezier
     appSettings["initEdgeColor"]="black";
+    appSettings["initEdgeColorNegative"]="red";
     appSettings["initEdgeArrows"]="true";
     appSettings["initEdgeThicknessPerWeight"]="true";
     appSettings["initEdgeWeightNumberVisibility"]="false";
@@ -7095,6 +7096,24 @@ void MainWindow::slotEditEdgeWeight(){
 
 
 
+/**
+ * @brief MainWindow::slotEditEdgeSymmetrizeAll
+ * Converts all arcs to reciprocal edges and the network becomes undirected
+ * with a symmetric adjacency matrix
+ */
+void MainWindow::slotEditEdgeSymmetrizeAll(){
+    if ( ( !fileLoaded && !networkModified) || activeEdges() ==0 )  {
+        QMessageBox::critical(this, "Error",tr("There are no edges! \nLoad a network file or create a new network first."), "OK",0);
+        statusMessage( tr("No edges present...")  );
+        return;
+    }
+    qDebug("MW: slotEditEdgeSymmetrizeAll() calling symmetrize");
+    activeGraph.symmetrize();
+    QMessageBox::information(this, "Symmetrize",tr("All edges are reciprocal. \nYour network is symmetric..."), "OK",0);
+    statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
+}
+
+
 
 /**
 *	Filters Nodes by their value   
@@ -7161,20 +7180,7 @@ void MainWindow::slotTransformNodes2Edges(){
 
 
 
-/**
-*	Converts all edges to double edges, so that the network becomes undirected (symmetric adjacency matrix).
-*/
-void MainWindow::slotEditEdgeSymmetrizeAll(){
-    if ( ( !fileLoaded && !networkModified) || activeEdges() ==0 )  {
-        QMessageBox::critical(this, "Error",tr("There are no edges! \nLoad a network file or create a new network first."), "OK",0);
-        statusMessage( tr("No edges present...")  );
-        return;
-    }
-    qDebug("MW: slotEditEdgeSymmetrizeAll() calling symmetrize");
-    activeGraph.symmetrize();
-    QMessageBox::information(this, "Symmetrize",tr("All edges are reciprocal. \nYour network is symmetric..."), "OK",0);
-    statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
-}
+
 
 
 

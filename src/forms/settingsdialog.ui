@@ -27,7 +27,7 @@
    <item row="1" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="generalTab">
       <attribute name="title">
@@ -111,7 +111,7 @@
           <item row="0" column="0">
            <widget class="QCheckBox" name="printDebugChkBox">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Debug Messages&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enables or disable debug messages to strerr.  &lt;/p&gt;&lt;p&gt;Once you enable this and press OK, you must close and run SocNetV again from the command line / terminal, in order to see the debug messages.&lt;/p&gt;&lt;p&gt;Enabling has a significant cpu cost but lets you know what SocNetV is actually doing.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and will be the default of the application every time you run SocNetV - until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Debug Messages&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable debug messages to strerr. &lt;/p&gt;&lt;p&gt;Once you enable this and press OK, you must close and run SocNetV again from the command line / terminal, in order to see the debug messages.&lt;/p&gt;&lt;p&gt;Enabling has a significant cpu cost but lets you know what SocNetV is actually doing.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and will be the default of the application every time you run SocNetV - until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="whatsThis">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Debug Messages&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enables or disable debug messages to strerr. &lt;/p&gt;&lt;p&gt;Enabling has a significant cpu cost but lets you know what SocNetV is actually doing.&lt;/p&gt;&lt;p&gt;This is a permanent setting, it will be the default of the application every time you run SocNetV. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -412,6 +412,9 @@
            <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
              <widget class="QLabel" name="label_6">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click the colored button to select a new color for all nodes.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default node color when creating new nodes (except when loading network files which declare specific node settings).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
                <string>Node color</string>
               </property>
@@ -454,7 +457,10 @@
                <cursorShape>PointingHandCursor</cursorShape>
               </property>
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default node color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click to select a new default node color.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default node color.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click this button to select a new node color for all nodes.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default node color when creating new nodes (except when loading network files which declare specific node settings).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="whatsThis">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click to select a new default node color.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default node color.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string>...</string>
@@ -474,7 +480,7 @@
             <item>
              <widget class="QLabel" name="label_5">
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default node shape&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click on any shape to select a new node shape for all nodes. This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the default node shape will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node shape&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click on any of the following shapes to select a new node shape for all nodes. &lt;/p&gt;&lt;p&gt;This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the default node shape will be saved and it will be used in all future SocNetV sessions when creating new nodes (except when loading network files which declare specific shapes for nodes).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string>Node shape</string>
@@ -509,7 +515,7 @@
                </font>
               </property>
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default node shape&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click on any shape to select a new node shape for all nodes. This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the default node shape will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node shape: Square&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Change all node shapes to &amp;quot;square&amp;quot; or &amp;quot;box&amp;quot;.&lt;/p&gt;&lt;p&gt;This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the &amp;quot;box&amp;quot; shape will be saved and it will be used in all future SocNetV sessions to create new nodes (except when loading network files which declare specific shapes for nodes).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="whatsThis">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default node shape&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click on any shape to select a new node shape for all nodes. This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the default node shape will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -532,7 +538,7 @@
                </font>
               </property>
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default node shape&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click on any shape to select a new node shape for all nodes. This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the default node shape will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node shape: Circle&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Change all node shapes to &amp;quot;circle&amp;quot;.&lt;/p&gt;&lt;p&gt;This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the &amp;quot;circle&amp;quot; shape will be saved and it will be used in all future SocNetV sessions to create new nodes (except when loading network files which declare specific shapes for nodes).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string/>
@@ -552,7 +558,7 @@
                </font>
               </property>
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default node shape&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click on any shape to select a new node shape for all nodes. This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the default node shape will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node shape: Diamond&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Change all node shapes to &amp;quot;diamond&amp;quot;.&lt;/p&gt;&lt;p&gt;This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the &amp;quot;diamond&amp;quot; shape will be saved and it will be used in all future SocNetV sessions to create new nodes (except when loading network files which declare specific shapes for nodes).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string/>
@@ -572,7 +578,7 @@
                </font>
               </property>
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default node shape&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click on any shape to select a new node shape for all nodes. This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the default node shape will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node shape: Ellipsis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Change all node shapes to &amp;quot;ellipsis&amp;quot;.&lt;/p&gt;&lt;p&gt;This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the &amp;quot;ellipsis&amp;quot; shape will be saved and it will be used in all future SocNetV sessions when creating new nodes (except when loading network files which declare specific shapes for nodes).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string/>
@@ -592,7 +598,7 @@
                </font>
               </property>
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default node shape&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click on any shape to select a new node shape. This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the default node shape will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node shape: Triangle&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Change all node shapes to &amp;quot;triangle&amp;quot;.&lt;/p&gt;&lt;p&gt;This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the &amp;quot;triangle&amp;quot; shape will be saved and it will be used in all future SocNetV sessions to create new nodes (except when loading network files which declare specific shapes for nodes).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string/>
@@ -609,6 +615,9 @@
            <layout class="QHBoxLayout" name="horizontalLayout_6">
             <item>
              <widget class="QLabel" name="label_3">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node size&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Use the spin box to select a new size (in pixels) for all nodes. &lt;/p&gt;&lt;p&gt;Actual node size will vary according to selected shape. For instance, if the selected shape is circle and the selected size is 8, then the circle will have a diameter of 16 pixels. &lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default node size when creating new nodes (except when loading network files which declare specific node settings).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
                <string>Node size</string>
               </property>
@@ -645,7 +654,7 @@
                <cursorShape>SizeVerCursor</cursorShape>
               </property>
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default node size&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select the default node size. &lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default node size.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node size&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select a new size for all nodes. Actual node size will vary according to selected shape. For instance, if the selected shape is circle  and the size is 8, then the circle will have a diameter of 16 pixels. &lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default node size.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="value">
                <number>8</number>
@@ -667,6 +676,9 @@
            <layout class="QHBoxLayout" name="horizontalLayout_11">
             <item>
              <widget class="QLabel" name="label_11">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node number color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Change the color for all node numbers. Click the colored button on the right corner to select a new color.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing node numbers immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default node number color when creating new nodes.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
                <string>Number color</string>
               </property>
@@ -709,7 +721,7 @@
                <cursorShape>PointingHandCursor</cursorShape>
               </property>
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default node number color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click to select a new default color for node numbers.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing node numbers immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default node number color.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node number color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click to select a new color for  all node numbers.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing node numbers immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default node number color when creating new nodes.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string>...</string>
@@ -728,6 +740,9 @@
            <layout class="QHBoxLayout" name="horizontalLayout_12">
             <item>
              <widget class="QLabel" name="label_12">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Number distance from node&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Change the distance of each number from the respective node. Use the spin box on the right to select a new distance (in pixels).&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing node numbers immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default distance from node.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
                <string>Number distance</string>
               </property>
@@ -764,7 +779,7 @@
                <cursorShape>SizeVerCursor</cursorShape>
               </property>
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default number distance from node&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select the default distance of a number from the node.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing node numbers immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default distance from node.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Number distance from nodes&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select a new distance (in pixels) of numbers from the respective nodes.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing node numbers immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default distance from node.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="minimum">
                <number>1</number>
@@ -781,6 +796,9 @@
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node numbers&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable displaying node numbers.&lt;/p&gt;&lt;p&gt;Any change will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, this setting will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
+            <property name="whatsThis">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node numbers&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable displaying node numbers.&lt;/p&gt;&lt;p&gt;Any change will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, this setting will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
             <property name="layoutDirection">
              <enum>Qt::LeftToRight</enum>
             </property>
@@ -793,6 +811,9 @@
            <layout class="QHBoxLayout" name="horizontalLayout_10">
             <item>
              <widget class="QLabel" name="label_10">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node number font size&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Change the font size (in pixels) of all node numbers. Use the spin box on the right to select a new font size (in pixels).&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing node numbers immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default node number size.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
                <string>Number font size</string>
               </property>
@@ -829,7 +850,7 @@
                <cursorShape>SizeVerCursor</cursorShape>
               </property>
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default node number size&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select the default font size for all node numbers.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing node numbers immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default node number size.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node number size&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select a new font size (in pixels) for node numbers. &lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing node numbers immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default node number size.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="value">
                <number>8</number>
@@ -841,6 +862,9 @@
           <item row="1" column="0">
            <widget class="QCheckBox" name="nodeNumbersInsideChkBox">
             <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node numbers inside shapes&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable displaying node numbers inside the node shapes&lt;/p&gt;&lt;p&gt;Any change will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, this setting will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="whatsThis">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node numbers inside shapes&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable displaying node numbers inside the node shapes&lt;/p&gt;&lt;p&gt;Any change will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, this setting will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="layoutDirection">
@@ -863,6 +887,9 @@
           <item row="0" column="0">
            <widget class="QCheckBox" name="nodeLabelsChkBox">
             <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node labels&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable displaying labels below the nodes.&lt;/p&gt;&lt;p&gt;Any change will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, this setting will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="whatsThis">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node labels&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable displaying labels below the nodes.&lt;/p&gt;&lt;p&gt;Any change will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, this setting will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="layoutDirection">
@@ -919,7 +946,7 @@
                <cursorShape>PointingHandCursor</cursorShape>
               </property>
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default node label color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click to select a new default color for node labels.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing node labels immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default node label color.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node label color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click to select a new color for node labels.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing node labels immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default node label color.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string>...</string>
@@ -974,7 +1001,7 @@
                <cursorShape>SizeVerCursor</cursorShape>
               </property>
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default node label size&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select the default font size for all node labels.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing node labels immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default node label size.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node label size&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select a new font size (in pixels) for all node labels.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing node labels immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default node label size.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="value">
                <number>8</number>
@@ -1023,7 +1050,7 @@
                <cursorShape>SizeVerCursor</cursorShape>
               </property>
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default label distance from node&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select the default distance of a label from the node.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing node labels immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default label distance from node.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Label distance from node&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Change the distance of labels from the respective nodes.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing node labels immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default label distance from node.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="value">
                <number>8</number>
@@ -1054,7 +1081,7 @@
           <item>
            <widget class="QCheckBox" name="edgesChkBox">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Edges &lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable displaying edges.&lt;/p&gt;&lt;p&gt;Any change will apply to all existing edgesimmediately.&lt;/p&gt;&lt;p&gt;Once you press OK, this setting will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Edges &lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable displaying edges.&lt;/p&gt;&lt;p&gt;Any change will apply to all existing edges immediately.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="layoutDirection">
              <enum>Qt::LeftToRight</enum>

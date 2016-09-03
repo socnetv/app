@@ -84,9 +84,13 @@
        <height>110</height>
       </size>
      </property>
+     <property name="font">
+      <font>
+       <pointsize>9</pointsize>
+      </font>
+     </property>
      <property name="text">
-      <string>SocNetV is able to automatically create known data sets, such as Padgett's florentine families etc. 
-Select the data set you want to re-create from the list: </string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SocNetV can automatically recreate and visualize known data sets, such as Padgett's florentine families etc. &lt;/p&gt;&lt;p&gt;Select the data set you want to re-create from the list.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
@@ -101,7 +105,7 @@ Select the data set you want to re-create from the list: </string>
      <property name="font">
       <font>
        <family>DejaVu Sans</family>
-       <pointsize>11</pointsize>
+       <pointsize>10</pointsize>
       </font>
      </property>
      <property name="text">
@@ -119,6 +123,11 @@ Select the data set you want to re-create from the list: </string>
        <width>300</width>
        <height>20</height>
       </size>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>9</pointsize>
+      </font>
      </property>
      <property name="cursor">
       <cursorShape>PointingHandCursor</cursorShape>
