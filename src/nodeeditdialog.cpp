@@ -113,6 +113,12 @@ void NodeEditDialog::gatherData(){
     else if ( ui.triangleRadio->isChecked() ){
         nodeShape  = "triangle";
     }
+    else if ( ui.starRadio->isChecked() ){
+        nodeShape  = "star";
+    }
+    else {
+        nodeShape  = "box";
+    }
 
     emit userChoices(nodeLabel,nodeSize,nodeValue,nodeColor,nodeShape);
 }

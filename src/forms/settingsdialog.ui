@@ -27,7 +27,7 @@
    <item row="1" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="generalTab">
       <attribute name="title">
@@ -407,8 +407,8 @@
          <property name="title">
           <string>Node settings</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_2">
-          <item>
+         <layout class="QGridLayout" name="gridLayout_11">
+          <item row="0" column="0">
            <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
              <widget class="QLabel" name="label_6">
@@ -475,7 +475,7 @@
             </item>
            </layout>
           </item>
-          <item>
+          <item row="1" column="0">
            <layout class="QHBoxLayout" name="horizontalLayout_5">
             <item>
              <widget class="QLabel" name="label_5">
@@ -598,7 +598,7 @@
                </font>
               </property>
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node shape: Triangle&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Change all node shapes to &amp;quot;triangle&amp;quot;.&lt;/p&gt;&lt;p&gt;This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the &amp;quot;triangle&amp;quot; shape will be saved and it will be used in all future SocNetV sessions to create new nodes (except when loading network files which declare specific shapes for nodes).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node shape: Star&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Change all node shapes to &amp;quot;star&amp;quot;.&lt;/p&gt;&lt;p&gt;This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the &amp;quot;star&amp;quot; shape will be saved and it will be used in all future SocNetV sessions to create new nodes (except when loading network files which declare specific shapes for nodes).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string/>
@@ -609,9 +609,29 @@
               </property>
              </widget>
             </item>
+            <item>
+             <widget class="QRadioButton" name="nodeShapeRadioStar">
+              <property name="font">
+               <font>
+                <family>DejaVu Sans</family>
+                <pointsize>11</pointsize>
+               </font>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node shape: Triangle&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Change all node shapes to &amp;quot;triangle&amp;quot;.&lt;/p&gt;&lt;p&gt;This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the &amp;quot;triangle&amp;quot; shape will be saved and it will be used in all future SocNetV sessions to create new nodes (except when loading network files which declare specific shapes for nodes).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="icon">
+               <iconset resource="../src.qrc">
+                <normaloff>:/images/star.png</normaloff>:/images/star.png</iconset>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
-          <item>
+          <item row="2" column="0">
            <layout class="QHBoxLayout" name="horizontalLayout_6">
             <item>
              <widget class="QLabel" name="label_3">

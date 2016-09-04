@@ -107,6 +107,9 @@ SettingsDialog::SettingsDialog(
     else if (m_appSettings["initNodeShape"] == "triangle") {
         ui->nodeShapeRadioTriangle->setChecked(true);
     }
+    else if (m_appSettings["initNodeShape"] == "star") {
+        ui->nodeShapeRadioStar->setChecked(true);
+    }
     else { // default
        ui->nodeShapeRadioCircle->setChecked(true);
     }
@@ -217,6 +220,8 @@ SettingsDialog::SettingsDialog(
     connect (ui->nodeShapeRadioEllipse, &QRadioButton::clicked,
              this, &SettingsDialog::getNodeShape);
     connect (ui->nodeShapeRadioTriangle, &QRadioButton::clicked,
+             this, &SettingsDialog::getNodeShape);
+    connect (ui->nodeShapeRadioStar, &QRadioButton::clicked,
              this, &SettingsDialog::getNodeShape);
 
 
@@ -375,6 +380,9 @@ void SettingsDialog::getNodeShape(){
     }
     else if ( ui->nodeShapeRadioTriangle->isChecked() ){
         m_appSettings["initNodeShape"]  = "triangle";
+    }
+    else if ( ui->nodeShapeRadioStar->isChecked() ){
+        m_appSettings["initNodeShape"]  = "star";
     }
     else {
         m_appSettings["initNodeShape"] = "box";

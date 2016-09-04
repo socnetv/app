@@ -32,7 +32,34 @@
    <string>Node Properties</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="0" colspan="2">
+   <item row="0" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="font">
+        <font>
+         <family>Sans Serif</family>
+         <pointsize>9</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Node label </string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="labelEdit">
+       <property name="font">
+        <font>
+         <family>Sans Serif</family>
+         <pointsize>9</pointsize>
+        </font>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="1" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QLabel" name="label_2">
@@ -81,7 +108,59 @@
      </item>
     </layout>
    </item>
-   <item row="3" column="0" colspan="2">
+   <item row="2" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="font">
+        <font>
+         <family>Sans Serif</family>
+         <pointsize>9</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Node value (disabled)</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="font">
+        <font>
+         <family>DejaVu Sans</family>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="valueEdit">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="font">
+        <font>
+         <family>DejaVu Sans</family>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="3" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
       <widget class="QLabel" name="label_4">
@@ -142,102 +221,7 @@
      </item>
     </layout>
    </item>
-   <item row="5" column="1">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>9</pointsize>
-      </font>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0" colspan="2">
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
-     <item>
-      <widget class="QLabel" name="label_3">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-         <pointsize>9</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>Node value (disabled)</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_2">
-       <property name="font">
-        <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-        </font>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="valueEdit">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="font">
-        <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-        </font>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="0" column="0" colspan="2">
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLabel" name="label">
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-         <pointsize>9</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>Node label </string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="labelEdit">
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-         <pointsize>9</pointsize>
-        </font>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="4" column="0" colspan="2">
+   <item row="4" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_5">
      <item>
       <widget class="QLabel" name="label_5">
@@ -356,7 +340,43 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QRadioButton" name="starRadio">
+       <property name="font">
+        <font>
+         <family>DejaVu Sans</family>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Node shape: Triangle&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Change all node shapes to &amp;quot;triangle&amp;quot;.&lt;/p&gt;&lt;p&gt;This will apply to all existing nodes immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the &amp;quot;triangle&amp;quot; shape will be saved and it will be used in all future SocNetV sessions to create new nodes (except when loading network files which declare specific shapes for nodes).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../src.qrc">
+         <normaloff>:/images/star.png</normaloff>:/images/star.png</iconset>
+       </property>
+      </widget>
+     </item>
     </layout>
+   </item>
+   <item row="5" column="0">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="font">
+      <font>
+       <family>Sans Serif</family>
+       <pointsize>9</pointsize>
+      </font>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

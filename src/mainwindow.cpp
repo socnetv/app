@@ -874,7 +874,7 @@ void MainWindow::initActions(){
                                       "Click to select and apply a new shape for all nodes at once."
                                       "This setting will apply to this session only. \n"
                                       "To permanently change it, use Settings & Preferences"));
-    connect(editNodeShapeAll, SIGNAL(triggered()), this, SLOT(slotEditNodeShapeAll()) );
+    connect(editNodeShapeAll, SIGNAL(triggered()), this, SLOT(slotEditNodeShape()) );
 
 
     editNodeNumbersSizeAct = new QAction( tr("Change All Node Numbers Size (this session)"),	this);
@@ -5325,7 +5325,7 @@ void MainWindow::slotRandomErdosRenyi( const int newNodes,
 
     fileLoaded=false;
 
-    slotEditNodeSizeAll(0, true);
+    //slotEditNodeSizeAll(0, true);
 
     slotNetworkChanged();
 
@@ -6207,74 +6207,44 @@ void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized) {
 
 
 
-/**
- * @brief MainWindow::slotEditNodeShapeAll
- * Called when user clicks on Edit -> Node > Change all nodes shapes
- * Offers the user a list of available node shapes to select.
- * Then changes the shape of all nodes/vertices accordingly.
- */
-void MainWindow::slotEditNodeShapeAll() {
-    bool ok=false;
-    QStringList lst;
-    lst << "box"<< "circle"<< "diamond"<< "ellipse"<< "triangle";
-    QString newShape = QInputDialog::getItem(this, "Node shapes", "Select a shape for all nodes: ", lst, 1, true, &ok);
-    if ( ok ) {
-        //user selected an item and pressed OK
-//        QList<QGraphicsItem *> list=scene->items();
-//        for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
-//            if ( (*it) -> type() == TypeNode ){
-//                Node *jim = (Node*) (*it);
-//                (*jim).setShape(newShape);
-//                activeGraph.setVertexShape ((*jim).nodeNumber(), newShape);
-//            }
-        slotNetworkChanged();
-        appSettings["initNodeShape"] = newShape;
-        activeGraph.setAllVerticesShape(newShape);
-        statusBar()->showMessage (QString(tr("All shapes have been changed. Ready")), statusBarDuration) ;
-    } else {
-        //user pressed Cancel
-        statusBar()->showMessage (QString(tr("Change node shapes aborted...")), statusBarDuration) ;
-    }
-
-}
-
 
 /**
  * @brief MainWindow::slotEditNodeShape
+ * If shape == null, prompts the user a list of available node shapes to select.
+ * Then changes the shape of all nodes/vertices accordingly.
+ * If vertex is non-zero, changes the shape of that node only.
+ * Called when user clicks on Edit -> Node > Change all nodes shapes
  * Called from SettingsDialog when the user has selected a new default node shape
  * Calls Graph::setAllVerticesShape(QString)
  * @param shape
- *
+ * @param vertex
  */
-void MainWindow::slotEditNodeShape(const QString shape, const int vertex) {
-
+void MainWindow::slotEditNodeShape(QString shape, const int vertex) {
     qDebug() << "MW::slotEditNodeShape() - vertex " << vertex
              << " (0 means all) - new shape " << shape;
 
+    if (shape==QString::null) {
+        bool ok=false;
+        QStringList lst;
+        lst << "box"<< "circle"<< "diamond"<< "ellipse"<< "triangle" << "star";
+        shape = QInputDialog::getItem(this, "Node shape", "Select a shape for all nodes: ", lst, 1, true, &ok);
+        if ( !ok ) {
+            //user pressed Cancel
+            statusBar()->showMessage (QString(tr("Change node shapes aborted...")), statusBarDuration) ;
+            return;
+        }
+    }
+
     if (vertex == 0) { //change all nodes shapes
-//        QList<QGraphicsItem *> list=scene->items();
-//        for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
-//            if ( (*it) -> type() == TypeNode ){
-//                Node *jim = (Node*) (*it);
-//                (*jim).setShape(shape);
-//                activeGraph.setVertexShape ((*jim).nodeNumber(), shape);
-//            }
         slotNetworkChanged();
         activeGraph.setAllVerticesShape(shape);
+        appSettings["initNodeShape"] = shape;
         statusBar()->showMessage (QString(tr("All shapes have been changed. Ready")), statusBarDuration) ;
 
     }
     else { //only one
-
        activeGraph.setVertexShape( vertex, shape);
-//       QList<QGraphicsItem *> list=scene->items();
-//       for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++)
-//           if ( (*it) -> type() == TypeNode ){
-//               Node *jim = (Node*) (*it);
-//               if ( (*jim).nodeNumber() ==  vertex ) {
-//                 (*jim).setShape(shape);
-//               }
-//           }
+       statusBar()->showMessage (QString(tr("Node shape has been changed. Ready")), statusBarDuration) ;
       }
 }
 
@@ -6327,7 +6297,6 @@ void MainWindow::slotEditNodeNumbersColor(QColor color){
                                         this,
                                                "Change the color of all node numbers" );
     }
-
 
     if (color.isValid()) {
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );

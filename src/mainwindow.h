@@ -220,8 +220,7 @@ public slots:
                              const QColor, const QString);
     void slotEditNodeColorAll(QColor color=QColor());
     void slotEditNodeSizeAll(int newSize=0, const bool &normalized=false);
-    void slotEditNodeShapeAll();
-    void slotEditNodeShape(const QString shape, const int vertex = 0);
+    void slotEditNodeShape(QString shape=QString::null, const int vertex = 0);
     void slotEditNodeNumberSize(int v1=0, int newSize=0);
     void slotEditNodeNumberDistance(int v1=0, int newSize=0);
     void slotEditNodeNumbersColor(QColor color=QColor());

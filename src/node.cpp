@@ -177,16 +177,16 @@ void Node::setShape(const QString shape) {
     }
     else if ( m_shape == "star") {
         m_path->setFillRule(Qt::WindingFill);
-        m_path->moveTo(-m_size,0.75* m_size) ;
-        m_path->lineTo(m_size,0.75*m_size);
-        m_path->lineTo( 0,-1.25*m_size);
-        m_path->lineTo(-m_size,0.75*m_size) ;
+        m_path->moveTo(-0.8*m_size,0.6* m_size) ;
+        m_path->lineTo(+0.8*m_size,0.6*m_size);
+        m_path->lineTo( 0,-1*m_size);
+        m_path->lineTo(-0.8*m_size,0.6*m_size) ;
         m_path->closeSubpath();
 
-        m_path->moveTo(0, 1.25* m_size) ;
-        m_path->lineTo(m_size,-0.75*m_size);
-        m_path->lineTo(-m_size,-0.75*m_size) ;
-        m_path->lineTo(0, 1.25* m_size);
+        m_path->moveTo(0, 1* m_size) ;
+        m_path->lineTo(+0.8*m_size,-0.6*m_size);
+        m_path->lineTo(-0.8*m_size,-0.6*m_size) ;
+        m_path->lineTo(0, 1* m_size);
         m_path->closeSubpath();
     }
     else if ( m_shape == "diamond"){
@@ -251,24 +251,28 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 		setZValue(254);		
 		painter->setBrush(m_col);
 	}
-    painter->setPen(QPen(QColor(m_col), 0));
+    painter->setPen(QPen(QColor("#222"), 0));
 
 	painter->drawPath (*m_path);
 
     if (m_hasNumberInside && m_hasNumber) {
        // m_path->setFillRule(Qt::WindingFill);
         painter->setPen(QPen(QColor(m_numColor), 0));
-        if (m_num < 10 ) {
+        if (m_num > 999) {
+            painter->setFont(QFont("Times", m_numSize-1, QFont::Normal));
+             painter->drawText(-0.8*m_size,m_size/3, QString::number(m_num) );
+        }
+        else if (m_num > 99) {
+            painter->setFont(QFont("Times", m_numSize-1, QFont::Normal));
+             painter->drawText(-0.6 * m_size,m_size/3, QString::number(m_num) );
+        }
+        else if (m_num > 9 ) {
             painter->setFont(QFont("Times", m_numSize, QFont::Normal));
-            painter->drawText(-m_size/3,m_size/3,QString::number(m_num) );
+            painter->drawText(-0.5*m_size,m_size/3,QString::number(m_num) );
         }
-        else if (m_num < 100) {
-            painter->setFont(QFont("Times", m_numSize-1, QFont::Normal));
-             painter->drawText(-m_size/2,m_size/3, QString::number(m_num) );
-        }
-        else if (m_num < 1000) {
-            painter->setFont(QFont("Times", m_numSize-1, QFont::Normal));
-             painter->drawText(-m_size/2,m_size/3, QString::number(m_num) );
+        else  {
+            painter->setFont(QFont("Times", m_numSize, QFont::Normal));
+            painter->drawText(-0.33*m_size,m_size/3,QString::number(m_num) );
         }
     }
 
@@ -278,9 +282,15 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 
 
 
-/** 
- *	Propagates the changes to connected elements, i.e. edges, numbers, etc. 
+
+/**
+ * @brief Node::itemChange
+ * Called when the node moves or becomes disabled or changes its visibility
+ * Propagates the changes to connected elements, i.e. edges, numbers, etc.
  *  Checks if the node is inside the scene.
+ * @param change
+ * @param value
+ * @return
  */
 QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
 	QPointF newPos = value.toPointF();
@@ -349,6 +359,11 @@ void Node::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 	QGraphicsItem::mouseReleaseEvent(event);
 }
 
+/**
+ * @brief Node::hoverEnterEvent
+ * on hover on node, it highlights all connected edges
+ * @param event
+ */
 void Node::hoverEnterEvent(QGraphicsSceneHoverEvent *event) {
     foreach (Edge *edge, inEdgeList)
         edge->highlight(true);
@@ -357,6 +372,11 @@ void Node::hoverEnterEvent(QGraphicsSceneHoverEvent *event) {
     QGraphicsItem::hoverEnterEvent(event);
 }
 
+/**
+ * @brief Node::hoverLeaveEvent
+ * Stops the connected edges highlighting
+ * @param event
+ */
 void Node::hoverLeaveEvent(QGraphicsSceneHoverEvent *event){
     foreach (Edge *edge, inEdgeList)
         edge->highlight(false);
@@ -366,6 +386,11 @@ void Node::hoverLeaveEvent(QGraphicsSceneHoverEvent *event){
 }
 
 
+/**
+ * @brief Node::addInLink
+ * Called from a new connected in-link to acknowloedge itself to this node.
+ * @param edge
+ */
 void Node::addInLink( Edge *edge ) {
 	qDebug() << "Node:  addInLink() for "<<  m_num;
 	inEdgeList.push_back( edge); 

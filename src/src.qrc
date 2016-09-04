@@ -79,5 +79,6 @@
         <file>images/pdf.png</file>
         <file>images/reset.png</file>
         <file>images/socnetv-logo.png</file>
+        <file>images/star.png</file>
     </qresource>
 </RCC>
