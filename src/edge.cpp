@@ -257,8 +257,9 @@ void Edge::adjust(){
         m_path->cubicTo( c1, c2, targetPoint);
     }
 
-    //Draw the arrows only if we have different nodes.
-    if (m_drawArrows && source!=target) {
+    //Draw the arrows only if we have different nodes
+    //and the nodes are enough far apart from each other
+    if (m_drawArrows && source!=target && line_length > 10) {
         angle = 0;
 //        line_length = m_path->length();
 //        line_dx = targetPoint.x()-sourcePoint.x();
@@ -270,7 +271,7 @@ void Edge::adjust(){
         if ( line_dy  >= 0)
             angle = TwoPi - angle;
 
-        if (line_length > 10) {
+
 //            qDebug() << "*** Edge::paint(). Constructing arrows. "
 //                        "First Arrow at target node"
 //                     << "target-source: " << line_dx
@@ -311,7 +312,7 @@ void Edge::adjust(){
             else {
                 // qDebug() << "*** Edge::paint() Not symmetric edge. Finish";
             }
-        }
+
 
     }
     else {
@@ -427,33 +428,26 @@ QPen Edge::pen() const {
 void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *){
     if (!source || !target)
         return;
-    Q_UNUSED(option);//painter->setClipRect( option->exposedRect );
-    // qDebug() <<"@@@ Edge::paint()";
 
-    //    qDebug()<<endl <<"@@@ Edge::paint() edge from "<< sourceNodeNumber()
-    //           << " at (" <<(sourceNode())->x() <<","<< (sourceNode())->y()
-    //           << ") to node "<<targetNodeNumber() << " at ("<<(targetNode())->x()
-    //           <<","<< (targetNode())->y() << ") of weight "<< m_weight;
+    // qDebug() <<"@@@ Edge::paint()";
 
      painter->setPen( pen() );
      // painter->setBrush(QColor(m_color));
 
      //if the edge is being dragged around, darken it!
      if (option->state & QStyle::State_Selected) {
-         //qDebug()<< " node : selected ";
          painter->setPen(
                      QPen(QColor("m_red"), width(), style(), Qt::RoundCap, Qt::RoundJoin)
                      );
      }
      else if (option->state & QStyle::State_MouseOver) {
-         //qDebug()<< " node : mouse over";
          painter->setPen(
                      QPen(QColor("red"), width()+5, style(), Qt::RoundCap, Qt::RoundJoin)
                      );
          setZValue(255);
      }
      setZValue(253);
-    //	qDebug()<< "### Edge::paint(). DrawPath now....";
+
     painter->drawPath(*m_path);
 }
 
@@ -485,6 +479,7 @@ void Edge::highlight(const bool &flag) {
     else setColor(m_tempColor);
     setWeight (m_tempweight);
 }
+
 
 /** handles the events of a click on an edge*/
 void Edge::mousePressEvent(QGraphicsSceneMouseEvent *event) {  

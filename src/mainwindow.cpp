@@ -197,7 +197,7 @@ QMap<QString,QString> MainWindow::initSettings(){
     appSettings["initNodeNumbersVisibility"] = "true";
     appSettings["initNodeNumberSize"]="7";
     appSettings["initNodeNumberColor"]="#333";
-    appSettings["initNodeNumbersInside"] = "false";
+    appSettings["initNodeNumbersInside"] = "true";
     appSettings["initNodeNumberDistance"] = "2";
 
     appSettings["initNodeLabelsVisibility"] = "false";
@@ -422,7 +422,6 @@ void MainWindow::slotOpenSettingsDialog() {
 
     connect( m_settingsDialog, &SettingsDialog::setEdgeColor,
              this, &MainWindow::slotEditEdgeColorAll);
-
 
 
     // show settings dialog
@@ -939,33 +938,50 @@ void MainWindow::initActions(){
 
     editEdgeLabelAct = new QAction(QIcon(":/images/letters.png"), tr("Change Edge Label"), this);
     editEdgeLabelAct->setStatusTip(tr("Change the Label of an Edge"));
-    editEdgeLabelAct->setWhatsThis(tr("Change Label\n\nChanges the label of an Edge"));
+    editEdgeLabelAct->setWhatsThis(tr("Change Edge Label\n\n"
+                                      "Changes the label of an Edge"));
     connect(editEdgeLabelAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeLabel()));
     editEdgeLabelAct->setEnabled(false);
 
     editEdgeColorAct = new QAction(QIcon(":/images/colorize.png"),tr("Change Edge Color"),	this);
-    editEdgeColorAct->setStatusTip(tr("Changes the Color of an Edge"));
-    editEdgeColorAct->setWhatsThis(tr("Change Color\n\nChanges the Color of an Edge"));
+    editEdgeColorAct->setStatusTip(tr("Change the Color of an Edge"));
+    editEdgeColorAct->setWhatsThis(tr("Change Edge Color\n\n"
+                                      "Changes the Color of an Edge"));
     connect(editEdgeColorAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeColor()));
 
     editEdgeWeightAct = new QAction(tr("Change Edge Weight"), this);
-    editEdgeWeightAct->setStatusTip(tr("Changes the weight of an edge"));
-    editEdgeWeightAct->setWhatsThis(tr("Change Value\n\nChanges the Weight of an Edge"));
+    editEdgeWeightAct->setStatusTip(tr("Change the weight of an Edge"));
+    editEdgeWeightAct->setWhatsThis(tr("Edge Weight\n\n"
+                                       "Changes the Weight of an Edge"));
     connect(editEdgeWeightAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeWeight()));
 
     editEdgeColorAllAct = new QAction( tr("Change All Edges Color"), this);
-    editEdgeColorAllAct->setStatusTip(tr("Click to change the color of all Edges."));
-    editEdgeColorAllAct->setWhatsThis(tr("Background\n\nChanges all Edges color"));
+    editEdgeColorAllAct->setStatusTip(tr("Change the color of all Edges."));
+    editEdgeColorAllAct->setWhatsThis(tr("All Edges Color\n\n"
+                                         "Changes the color of all Edges"));
     connect(editEdgeColorAllAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeColorAll()));
 
     editEdgeSymmetrizeAllAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Symmetrize Edges"), this);
     editEdgeSymmetrizeAllAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_S));
-    editEdgeSymmetrizeAllAct->setStatusTip(tr("Makes all edges reciprocal (thus, a symmetric graph)."));
+    editEdgeSymmetrizeAllAct->setStatusTip(tr("Make all arcs reciprocal (thus, a symmetric graph)."));
     editEdgeSymmetrizeAllAct->setWhatsThis(
                 tr("Symmetrize Edges\n\n"
-                   "Transforms all directed arcs to undirected edges. "
+                   "Makes all directed arcs reciprocal. \n"
+                   "If there is an arc from node A to node B \n"
+                   "then a new arc from node B to node A is created \n"
+                   "with the same weight"
                    "The result is a symmetric network"));
     connect(editEdgeSymmetrizeAllAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeSymmetrizeAll()));
+
+    editEdgeUndirectedAllAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Undirected Edges"), this);
+    editEdgeUndirectedAllAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_U));
+    editEdgeUndirectedAllAct->setStatusTip(tr("Tranform all arcs to undirected edges (thus, an undirected graph)."));
+    editEdgeUndirectedAllAct->setWhatsThis(
+                tr("Undirected Edges\n\n"
+                   "Tranforms all directed arcs to undirected edges. "
+                   "The result is a undirected and symmetric network"));
+    connect(editEdgeUndirectedAllAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeUndirectedAll()));
+
 
     transformNodes2EdgesAct = new QAction( tr("Transform Nodes to Edges"),this);
     transformNodes2EdgesAct->setStatusTip(tr("Transforms the network so that nodes become Edges and vice versa"));
@@ -6817,21 +6833,30 @@ void MainWindow::slotEditEdgeLabel(){
 
 /**
  * @brief MainWindow::slotEditEdgeColorAll
- * It changes the color of all edges to parameter color
+ * It changes the color of all edges weighted below threshold to parameter color
  * If color is not valid, it opens a QColorDialog
+ * If threshold == RAND_MAX it changes the color of all edges.
  * Called from Edit -> Edges menu option and Settings Dialog.
- * @param color
+ * @param color = QColor()
+ * @param threshold = RAND_MAX
  */
-void MainWindow::slotEditEdgeColorAll(QColor color){
+void MainWindow::slotEditEdgeColorAll(QColor color,const int &threshold){
     if (!color.isValid()) {
+        QString text;
+        if (threshold < RAND_MAX) {
+            text = "Change the color of edges weighted < "
+                    + QString::number(threshold) ;
+        }
+        else
+            text = "Change the color of all edges" ;
         color = QColorDialog::getColor( Qt::red, this,
-                                           "Change the color of all nodes" );
+                                           text);
     }
     if (color.isValid()) {
         appSettings["initEdgeColor"]=color.name();
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
         qDebug() << "MainWindow::slotEditEdgeColorAll() - new edge color: " << appSettings["initEdgeColor"];
-        activeGraph.setAllEdgesColor(appSettings["initEdgeColor"]);
+        activeGraph.setAllEdgesColor(appSettings["initEdgeColor"], threshold );
         QApplication::restoreOverrideCursor();
         slotNetworkChanged();
         statusMessage( tr("Ready. ")  );
@@ -6847,7 +6872,7 @@ void MainWindow::slotEditEdgeColorAll(QColor color){
 
 /**
  * @brief MainWindow::slotEditEdgeColor
- * Changes the colour of the clicked edge.
+ * Changes the color of the clicked edge.
  * If no edge is clicked, then it asks the user to specify one.
  */
 void MainWindow::slotEditEdgeColor(){
@@ -6924,9 +6949,10 @@ void MainWindow::slotEditEdgeColor(){
 
 
 /**
-*	Changes the weight of the clicked edge.
-*	If no edge is clicked, asks the user to specify an Edge.
-*/
+ * @brief MainWindow::slotEditEdgeWeight
+ * Changes the weight of the clicked edge.
+ * If no edge is clicked, asks the user to specify an Edge.
+ */
 void MainWindow::slotEditEdgeWeight(){
     if ( ( !fileLoaded && !networkModified) || activeEdges() ==0 )  {
         QMessageBox::critical(this, "Error",tr("There are no edges! \nLoad a network file or create a new network first."), "OK",0);
@@ -7076,7 +7102,10 @@ void MainWindow::slotEditEdgeWeight(){
 
 /**
  * @brief MainWindow::slotEditEdgeSymmetrizeAll
- * Converts all arcs to reciprocal edges and the network becomes undirected
+ * Symmetrize the ties between every two connected nodes.
+ * If there is an arc from Node A to Node B,
+ * then a new arc from Node B to Node is created of the same weight.
+ * Thus, all arcs become reciprocal and the network becomes symmetric
  * with a symmetric adjacency matrix
  */
 void MainWindow::slotEditEdgeSymmetrizeAll(){
@@ -7087,9 +7116,31 @@ void MainWindow::slotEditEdgeSymmetrizeAll(){
     }
     qDebug("MW: slotEditEdgeSymmetrizeAll() calling symmetrize");
     activeGraph.symmetrize();
-    QMessageBox::information(this, "Symmetrize",tr("All edges are reciprocal. \nYour network is symmetric..."), "OK",0);
+    QMessageBox::information(this, "Symmetrize",tr("All arcs are reciprocal. \n"
+                                                   "The network is symmetric."), "OK",0);
     statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
 }
+
+
+/**
+ * @brief MainWindow::slotEditEdgeUndirectedAll
+ * Tranforms all directed arcs to undirected edges.
+ * The result is a undirected and symmetric network
+ */
+void MainWindow::slotEditEdgeUndirectedAll(){
+    if ( ( !fileLoaded && !networkModified) || activeEdges() ==0 )  {
+        QMessageBox::critical(this, "Error",tr("There are no edges! \nLoad a network file or create a new network first."), "OK",0);
+        statusMessage( tr("No edges present...")  );
+        return;
+    }
+    qDebug("MW: slotEditEdgeSymmetrizeAll() calling symmetrize");
+    activeGraph.symmetrize();
+    QMessageBox::information(this, "Symmetrize",tr("All edges are now undirected. \n"
+                                                   "The network is symmetric and undirected."), "OK",0);
+    statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
+}
+
+
 
 
 

@@ -89,8 +89,7 @@ signals:
     void setNodeLabelSize(const int v, const int &);
     void setNodeLabelDistance(const int v, const int &);
     void setEdgesVisibility (const bool &toggle);
-    void setEdgeColor(const QColor);
-    void setEdgeColorNegative(const QColor);
+    void setEdgeColor(const QColor, const int &);
     void setEdgeShape(const QString, const long int);
     void saveSettings();
 private:

@@ -336,7 +336,7 @@ public:
 
     void setArcColor(const long int &v1, const long int &v2, const QString &color);
     QString arcColor (const long int &v1, const long int &v2);
-    bool setAllEdgesColor(const QString &color);
+    bool setAllEdgesColor(const QString &color, const int &threshold=RAND_MAX);
 
     float density();
 

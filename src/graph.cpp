@@ -800,6 +800,17 @@ int Graph::hasVertex(QString label){
 
 
 
+/**
+    Called from MainWindow
+*/
+void Graph::updateVertCoords(const int &v1, const int &x, const int &y){
+    //qDebug("Graph: updateVertCoords() for %i with index %i with %i, %i", v1, index[v1], x,y);
+    m_graph[ index[v1] ]->setX( x );
+    m_graph[ index[v1] ]->setY( y );
+    graphModified=true;
+}
+
+
 
 void Graph::setInitVertexSize (const long int size) {
     initVertexSize=size;
@@ -1131,85 +1142,6 @@ void Graph::setAllVerticesColor(const QString &color) {
 }
 
 
-/**
- * @brief Graph::setInitEdgeColor
- * Saves the default edge color
- * Used by random network creation methods
- * @param color
- */
-void Graph::setInitEdgeColor(const QString &color){
-    initEdgeColor=color;
-}
-
-
-
-
-/**
- * @brief Graph::arcColor
- * Returns a qstring color of the directed edge from v1 to v2
- * @param v1
- * @param v2
- * @return
- */
-QString Graph::arcColor (const long &v1, const long &v2){
-    return m_graph[ index[v1] ]->outLinkColor(v2);
-}
-
-
-
-/**
- * @brief Graph::setAllEdgesColor
- * Changes the color of all edges.
- * @param color
- * @return
- */
-bool Graph::setAllEdgesColor(const QString &color){
-    qDebug()<< "Graph::setAllEdgesColor() - new color: " << color;
-    int target=0, source=0;
-    setInitEdgeColor(color);
-    QHash<int,float> *enabledOutEdges = new QHash<int,float>;
-    QHash<int,float>::const_iterator it1;
-    QList<Vertex*>::const_iterator it;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        //updateProgressDialog(++count);
-        source = (*it)->name();
-        if ( ! (*it)->isEnabled() )
-            continue;
-        enabledOutEdges=(*it)->returnEnabledOutEdges();
-        it1=enabledOutEdges->cbegin();
-        while ( it1!=enabledOutEdges->cend() ){
-            target = it1.key();
-            qDebug() << " Graph::setAllEdgesColor() : "
-                        << source << "->" << target << " new color " << color;
-            (*it)->setOutLinkColor(target, color);
-            emit setEdgeColor(source, target, color);
-            ++it1;
-        }
-    }
-    delete enabledOutEdges;
-    graphModified=true;
-    emit graphChanged();
-    return true;
-
-}
-
-
-/**
-    Changes the color of edge (s,t).
-*/
-void Graph::setArcColor(const long &v1, const long &v2, const QString &color){
-    qDebug()<< "Graph::setArcColor() - "<< v1 << " -> "<< v2
-            <<" index ("<< index[v1]<< " -> "<<index[v2]<<")"
-           <<" new color "<< color;
-    m_graph[ index[v1] ]->setOutLinkColor(v2, color);
-    emit setEdgeColor(v1, v2, color);
-    if (isSymmetric()) {
-        m_graph[ index[v2] ]->setOutLinkColor(v1, color);
-        emit setEdgeColor(v2, v1, color);
-    }
-    graphModified=true;
-    emit graphChanged();
-}
 
 
 
@@ -1287,15 +1219,6 @@ void Graph::edges(){
 
 }
 
-/**
-    Called from MainWindow
-*/
-void Graph::updateVertCoords(const int &v1, const int &x, const int &y){
-    //qDebug("Graph: updateVertCoords() for %i with index %i with %i, %i", v1, index[v1], x,y);
-    m_graph[ index[v1] ]->setX( x );
-    m_graph[ index[v1] ]->setY( y );
-    graphModified=true;
-}
 
 
 
@@ -1321,6 +1244,105 @@ int Graph::inboundEdges (int v1) {
     qDebug("Graph: inboundEdges()");
     return m_graph[ index[v1] ]->inEdges();
 }
+
+
+/**
+ * @brief Graph::setInitEdgeColor
+ * Saves the default edge color
+ * Used by random network creation methods
+ * @param color
+ */
+void Graph::setInitEdgeColor(const QString &color){
+    initEdgeColor=color;
+}
+
+
+
+/**
+ * @brief Graph::arcColor
+ * Returns a qstring color of the directed edge from v1 to v2
+ * @param v1
+ * @param v2
+ * @return
+ */
+QString Graph::arcColor (const long &v1, const long &v2){
+    return m_graph[ index[v1] ]->outLinkColor(v2);
+}
+
+
+
+/**
+ * @brief Graph::setAllEdgesColor
+ * Changes the color of all edges.
+ * @param color
+ * @return
+ */
+bool Graph::setAllEdgesColor(const QString &color, const int &threshold){
+    qDebug()<< "Graph::setAllEdgesColor() - new color: " << color;
+    int target=0, source=0;
+    setInitEdgeColor(color);
+    QHash<int,float> *enabledOutEdges = new QHash<int,float>;
+    QHash<int,float>::const_iterator it1;
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        //updateProgressDialog(++count);
+        source = (*it)->name();
+        if ( ! (*it)->isEnabled() )
+            continue;
+        enabledOutEdges=(*it)->returnEnabledOutEdges();
+        it1=enabledOutEdges->cbegin();
+        while ( it1!=enabledOutEdges->cend() ){
+            target = it1.key();
+            if (threshold != RAND_MAX ) {
+                if ( it1.value() < threshold ) {
+                    qDebug() << " Graph::setAllEdgesColor() below weight threshold "
+                             << threshold << " - edge "
+                                << source << "->" << target << " new color " << color;
+                    (*it)->setOutLinkColor(target, color);
+                    emit setEdgeColor(source, target, color);
+
+                }
+            }
+            else {
+                qDebug() << " Graph::setAllEdgesColor() : "
+                            << source << "->" << target << " new color " << color;
+                (*it)->setOutLinkColor(target, color);
+                emit setEdgeColor(source, target, color);
+
+            }
+            ++it1;
+        }
+    }
+    delete enabledOutEdges;
+    graphModified=true;
+    emit graphChanged();
+    return true;
+
+}
+
+
+
+
+/**
+    Changes the color of edge (s,t).
+*/
+void Graph::setArcColor(const long &v1, const long &v2, const QString &color){
+    qDebug()<< "Graph::setArcColor() - "<< v1 << " -> "<< v2
+            <<" index ("<< index[v1]<< " -> "<<index[v2]<<")"
+           <<" new color "<< color;
+    m_graph[ index[v1] ]->setOutLinkColor(v2, color);
+    emit setEdgeColor(v1, v2, color);
+    if (isSymmetric()) {
+        m_graph[ index[v2] ]->setOutLinkColor(v1, color);
+        emit setEdgeColor(v2, v1, color);
+    }
+    graphModified=true;
+    emit graphChanged();
+}
+
+
+
+
 
 
 
