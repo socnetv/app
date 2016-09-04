@@ -420,6 +420,10 @@ void MainWindow::slotOpenSettingsDialog() {
     connect( m_settingsDialog, &SettingsDialog::setEdgesVisibility,
              this, &MainWindow::slotOptionsEdgesVisibility);
 
+    connect( m_settingsDialog, &SettingsDialog::setEdgeColor,
+             this, &MainWindow::slotEditEdgeColorAll);
+
+
 
     // show settings dialog
     m_settingsDialog->exec();
@@ -6810,19 +6814,24 @@ void MainWindow::slotEditEdgeLabel(){
 
 
 
+
 /**
-*  Changes the color of all edges
-*/
-void MainWindow::slotEditEdgeColorAll(){
-    QColor color = QColorDialog::getColor( Qt::red, this,
+ * @brief MainWindow::slotEditEdgeColorAll
+ * It changes the color of all edges to parameter color
+ * If color is not valid, it opens a QColorDialog
+ * Called from Edit -> Edges menu option and Settings Dialog.
+ * @param color
+ */
+void MainWindow::slotEditEdgeColorAll(QColor color){
+    if (!color.isValid()) {
+        color = QColorDialog::getColor( Qt::red, this,
                                            "Change the color of all nodes" );
+    }
     if (color.isValid()) {
         appSettings["initEdgeColor"]=color.name();
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
         qDebug() << "MainWindow::slotEditEdgeColorAll() - new edge color: " << appSettings["initEdgeColor"];
-        //createProgressBar();
         activeGraph.setAllEdgesColor(appSettings["initEdgeColor"]);
-        //destroyProgressBar();
         QApplication::restoreOverrideCursor();
         slotNetworkChanged();
         statusMessage( tr("Ready. ")  );

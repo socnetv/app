@@ -234,7 +234,7 @@ public slots:
     void slotEditEdgeLabel();
     void slotEditEdgeColor();
     void slotEditEdgeWeight();
-    void slotEditEdgeColorAll();
+    void slotEditEdgeColorAll(QColor color=QColor());
     void slotEditEdgeSymmetrizeAll();
 
     void slotFilterNodes();
