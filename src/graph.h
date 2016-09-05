@@ -111,8 +111,16 @@ class CompareDistances {
 
 
 
+// TODO:
+// 1. Apply a simple naming convention for signals and slots
+// 2. Refactor most-used functions to have reference parameters.
+// 3. Execute all options/commands from MW and propagate them to GW via signals
+// 4. Fix bug with wrong default edge colors (not the ones used by Settings) after loading GraphML files.
 
 
+/**
+ * @brief The Graph class
+ */
 class Graph:  public QObject{
     Q_OBJECT
     QThread file_parserThread;
