@@ -35,7 +35,7 @@
 
 class GraphicsWidget;
 
-static const int TypeGuide = QGraphicsItem::UserType+6;
+static const int TypeGuide = QGraphicsItem::UserType+7;
 
 class Guide : public QObject, public  QGraphicsItem {
 	Q_OBJECT
@@ -44,7 +44,7 @@ class Guide : public QObject, public  QGraphicsItem {
 public:
     Guide(GraphicsWidget *, int, int, int );
     Guide(GraphicsWidget *, int, int );
-	enum { Type = UserType + 6 };
+    enum { Type = UserType + 7 };
 	int type() const { return Type; }
 	void die();
 	

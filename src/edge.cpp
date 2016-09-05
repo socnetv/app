@@ -35,6 +35,7 @@
 #include "edge.h"
 #include "node.h"
 #include "edgeweight.h"
+#include "edgelabel.h"
 
 
 static const double Pi = 3.14159265;
@@ -78,6 +79,8 @@ Edge::Edge(  GraphicsWidget *gw,
     m_weight = weight ;
     m_Bezier = bez;
 
+    m_label = "test";
+
     m_drawWeightNumber = drawWeightNumbers;
 
     qDebug()<< "Edge: Edge() - " << eFrom << "->" << eTo <<
@@ -86,7 +89,7 @@ Edge::Edge(  GraphicsWidget *gw,
     if (m_drawWeightNumber) {
         addWeightNumber();
     }
-
+    addLabel();
 
     setAcceptHoverEvents(true);
 //    setFlags(QGraphicsItem::ItemIsSelectable);
@@ -183,6 +186,52 @@ void Edge::setWeightNumberVisibility (const bool &toggle) {
 
 }
 
+
+
+
+/**
+ * @brief Called from MW when user wants to change an edge's label
+
+ * @param label
+ */
+void Edge::setLabel(const QString &label) {
+    qDebug() << "Edge::setLabel() " << label;
+    prepareGeometryChange();
+    m_label = label;
+    if (m_drawLabel)
+        edgeLabel->setPlainText (m_label);
+}
+
+QString Edge::label() const {
+    return m_label;
+}
+
+
+void Edge::addLabel (){
+    // create edge label item
+    double x = ( source->x() + target->x() ) / 2.0;
+    double y = ( source->y() + target->y() ) / 2.0;
+    edgeLabel = new  EdgeLabel (this, 7, m_label );
+    edgeLabel-> setPos(x,y);
+    edgeLabel-> setDefaultTextColor (m_color);
+    m_drawLabel = true;
+}
+
+void Edge::setLabelVisibility (const bool &toggle) {
+    if (m_drawLabel) {
+        if (toggle)
+            edgeLabel ->show();
+        else
+            edgeLabel ->hide();
+    }
+    else{
+        if (toggle)
+            addLabel();
+    }
+
+}
+
+
 void Edge::setStartOffset(const int &offset){
     m_startOffset=offset;
 }
@@ -262,6 +311,9 @@ void Edge::adjust(){
     }
     if (m_drawWeightNumber)
         weightNumber->setPos( (source->x()+target->x())/2.0, (source->y()+target->y())/2.0 );
+
+    if (m_drawLabel)
+        edgeLabel->setPos( (source->x()+target->x())/2.0, (source->y()+target->y())/2.0 );
 
     //Define the path upon which we' ll draw the line
     //QPainterPath line(sourcePoint);
@@ -529,6 +581,8 @@ Edge::~Edge(){
     removeRefs();
     if (m_drawWeightNumber)
         weightNumber->deleteLater();
+    if (m_drawLabel)
+        edgeLabel->deleteLater();
     this->hide();
 
 }

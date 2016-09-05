@@ -38,7 +38,7 @@ class GraphicsWidget;
 class QGraphicsSceneMouseEvent;
 class Node;
 class EdgeWeight;
-
+class EdgeLabel;
 
 
 
@@ -76,6 +76,11 @@ public:
     float weight() const;
     void addWeightNumber ();
     void setWeightNumberVisibility  (const bool &toggle);
+
+    void setLabel( const QString &label) ;
+    QString label() const;
+    void addLabel();
+    void setLabelVisibility  (const bool &toggle);
 
     void showArrows(const bool &);
     void toggleAntialiasing(bool);
@@ -117,8 +122,9 @@ private:
     qreal m_arrowSize, m_startOffset, m_endOffset;
     Qt::PenStyle m_style;
     EdgeWeight* weightNumber;
+    EdgeLabel* edgeLabel;
 
-    QString m_color, m_tempColor, m_colorNegative;
+    QString m_color, m_tempColor, m_colorNegative, m_label;
     int eFrom, eTo;
     float m_weight, m_tempweight;
     int tox1, tox2, toy1, toy2, size;
@@ -126,6 +132,7 @@ private:
     double rad, theta, theta1, theta2;
     qreal angle, line_length, line_dx, line_dy;
     bool m_Bezier, m_drawArrows, m_reciprocal_first, m_drawWeightNumber;
+    bool m_drawLabel;
 };
 
 #endif

@@ -53,6 +53,7 @@ HEADERS += src/guide.h \
            src/graphicswidget.h \
            src/edge.h \
            src/edgeweight.h \
+           src/edgelabel.h \
            src/graph.h \
            src/mainwindow.h \
            src/matrix.h \
@@ -77,6 +78,7 @@ SOURCES += src/guide.cpp \
            src/graphicswidget.cpp \
            src/edge.cpp \
            src/edgeweight.cpp \
+           src/edgelabel.cpp \
            src/graph.cpp \
            src/main.cpp \
            src/mainwindow.cpp \
