@@ -10844,7 +10844,7 @@ bool Graph::saveGraphToGraphMLFormat (
                         << "\" target=\"" << target << "\"";
 
                 openToken = true;
-                if (weight > 1) {
+                if ( weight !=0 ) {
                     outText << "> \n";
                     outText << "      <data key=\"d8\">" << weight<<"</data>" <<" \n";
                     openToken=false;
