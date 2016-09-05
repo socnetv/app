@@ -512,14 +512,17 @@ bool Parser::loadPajek(){
     nodeColor="";
     edgeColor="";
     nodeShape="";
+    initEdgeLabel = QString::null;
     QStringList lineElement;
     bool ok=false, intOk=false, check1=false, check2=false;
     bool nodes_flag=false, edges_flag=false, arcs_flag=false, arcslist_flag=false, matrix_flag=false;
     fileContainsNodeColors=false;
     fileContainsNodeCoords=false;
     fileContainsLinkColors=false;
+    fileContainsLinkLabels=false;
     bool zero_flag=false;
-    int   i=0, j=0, miss=0, source= -1, target=-1, nodeNum, colorIndex=-1, coordIndex=-1;
+    int   i=0, j=0, miss=0, source= -1, target=-1, nodeNum, colorIndex=-1;
+    int coordIndex=-1, labelIndex=-1;
     unsigned long int lineCounter=0;
     int pos=-1, relationCounter=0;
     float weight=1;
@@ -790,7 +793,7 @@ bool Parser::loadPajek(){
                 j=aNodes;
             }
             if (edges_flag && !arcs_flag)   {  /**EDGES */
-                //qDebug("Parser-loadPajek(): ==== Reading edges ====");
+                qDebug("Parser-loadPajek(): ==== Reading edges ====");
                 qDebug()<<lineElement;
                 source =  lineElement[0].toInt(&ok, 10);
                 target = lineElement[1].toInt(&ok,10);
@@ -815,7 +818,7 @@ bool Parser::loadPajek(){
                 if (lineElement.contains("c", Qt::CaseSensitive ) ) {
                     //qDebug("Parser-loadPajek(): file with link colours");
                     fileContainsLinkColors=true;
-                    colorIndex=lineElement.indexOf( QRegExp("[c]"), 0 )  +1;
+                    colorIndex=lineElement.indexOf( QRegExp("[c]"), 0 ) + 1;
                     if (colorIndex >= lineElement.count()) edgeColor=initEdgeColor;
                     else 	edgeColor=lineElement [ colorIndex ];
                     if (edgeColor.contains (".") )  edgeColor=initEdgeColor;
@@ -825,11 +828,28 @@ bool Parser::loadPajek(){
                     //qDebug("Parser-loadPajek(): file with no link colours");
                     edgeColor=initEdgeColor;
                 }
+
+                if (lineElement.contains("l", Qt::CaseSensitive ) ) {
+                    qDebug("Parser-loadPajek(): file with link labels");
+                    fileContainsLinkLabels=true;
+                    labelIndex=lineElement.indexOf( QRegExp("[l]"), 0 ) + 1;
+                    if (labelIndex >= lineElement.count()) edgeLabel=initEdgeLabel;
+                    else 	edgeLabel=lineElement [ labelIndex ];
+                    if (edgeLabel.contains (".") )  edgeLabel=initEdgeLabel;
+                    qDebug()<< " edge label "<< edgeLabel;
+                }
+                else  {
+                    //qDebug("Parser-loadPajek(): file with no link labels");
+                    edgeLabel=initEdgeLabel;
+                }
+
+
                 undirected=2;
                 arrows=true;
                 bezier=false;
                 qDebug()<< "Parser-loadPajek(): EDGES: Create edge between " << source << " - "<< target;
-                emit createEdge(source, target, edgeWeight, edgeColor, undirected, arrows, bezier);
+                emit createEdge(source, target, edgeWeight, edgeColor,
+                                undirected, arrows, bezier, edgeLabel);
                 totalLinks=totalLinks+2;
 
             } //end if EDGES
@@ -862,11 +882,26 @@ bool Parser::loadPajek(){
                     //qDebug("Parser-loadPajek(): file with no link colours");
                     edgeColor=initEdgeColor;
                 }
+
+                if (lineElement.contains("l", Qt::CaseSensitive ) ) {
+                    qDebug("Parser-loadPajek(): file with link labels");
+                    fileContainsLinkLabels=true;
+                    labelIndex=lineElement.indexOf( QRegExp("[l]"), 0 ) + 1;
+                    if (labelIndex >= lineElement.count()) edgeLabel=initEdgeLabel;
+                    else 	edgeLabel=lineElement.at ( labelIndex );
+                    //if (edgeLabel.contains (".") )  edgeLabel=initEdgeLabel;
+                    qDebug()<< " edge label "<< edgeLabel;
+                }
+                else  {
+                    //qDebug("Parser-loadPajek(): file with no link labels");
+                    edgeLabel=initEdgeLabel;
+                }
                 undirected=0;
                 arrows=true;
                 bezier=false;
                 qDebug()<<"Parser-loadPajek(): ARCS: Creating arc from node "<< source << " to node "<< target << " with weight "<< weight;
-                emit createEdge(source, target, edgeWeight , edgeColor, undirected, arrows, bezier);
+                emit createEdge(source, target, edgeWeight , edgeColor,
+                                undirected, arrows, bezier, edgeLabel);
                 totalLinks++;
             } //else if ARCS
             else if (arcslist_flag)   {  /** ARCSlist */

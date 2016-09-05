@@ -299,11 +299,12 @@ public slots:
     void slotOptionsNodeNumbersVisibility(bool toggle);
     void slotOptionsNodeNumbersInside(bool toggle);
     void slotOptionsNodeLabelsVisibility(bool toggle);
-    void slotOptionsEdgeThicknessPerWeight(bool toogle);
-    void slotOptionsEdgesBezier(bool toggle);
+    void slotOptionsEdgesVisibility(bool toggle);
+    void slotOptionsEdgeLabelsVisibility(bool toggle);
     void slotOptionsEdgeWeightNumbersVisibility(bool toggle);
     void slotOptionsEdgeWeightsDuringComputation(bool);
-    void slotOptionsEdgesVisibility(bool toggle);
+    void slotOptionsEdgeThicknessPerWeight(bool toogle);
+    void slotOptionsEdgesBezier(bool toggle);
     void slotOptionsEdgeArrowsVisibility(bool toggle);
 
     void slotOptionsBackgroundColor(QColor color=QColor());
@@ -442,6 +443,7 @@ private:
             *editNodeNumbersColorAct,*editNodeLabelsColorAct;
     QAction *optionsEdgeThicknessPerWeightAct, *optionsEdgeWeightNumbersAct, *optionsEdgesVisibilityAct;
     QAction *optionsEdgeArrowsAct, *drawEdgesBezier,*considerEdgeWeightsAct;
+    QAction *optionsEdgeLabelsAct;
     QAction *backgroundImageAct,*helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
     QAction *openSettingsAct;
     QAction *webCrawlerAct;

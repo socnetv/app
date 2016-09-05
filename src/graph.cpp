@@ -461,37 +461,39 @@ void Graph::removeVertex(long int Doomed){
  * @param drawArrows
  * @param bezier
  */
-void Graph::createEdge( const int &v1, const int &v2, const float &weight,
+void Graph::createEdge(const int &v1, const int &v2, const float &weight,
                         const QString &color,
-                        const int &reciprocal,
-                        const bool &drawArrows, const bool &bezier){
-    qDebug()<<"-- Graph::createEdge() - " << v1 << " -> " << v2
+                        const int &type,
+                        const bool &drawArrows, const bool &bezier,
+                        const QString &label){
+    qDebug() <<"-- Graph::createEdge() - " << v1 << " -> " << v2
            << " weight " << weight
-              << " reciprocal " << reciprocal;
+           << " type " << type
+           << " label " << label;
     // check whether there is already such an edge
     // (see #713617 - https://bugs.launchpad.net/socnetv/+bug/713617)
     if (!hasArc(v1,v2)){
-        if ( reciprocal == EDGE_RECIPROCAL_UNDIRECTED ) {
+        if ( type == EDGE_RECIPROCAL_UNDIRECTED ) {
             qDebug()<< "-- Graph::createEdge() - "
                     << "Creating RECIPROCAL edge - emitting drawEdge signal to GW";
-            addEdge ( v1, v2, weight, color, reciprocal );
-            emit drawEdge(v1, v2, weight, reciprocal,
-                          drawArrows, color, bezier, initEdgeWeightNumbers);
+            addEdge ( v1, v2, weight, label, color, type );
+            emit drawEdge(v1, v2, weight, label, color, type,
+                          drawArrows, bezier, initEdgeWeightNumbers);
         }
         else if ( int opposite = hasArc( v2, v1) )  {
             Q_UNUSED (opposite);
             qDebug()<<"-- Graph::createEdge() - Opposite arc exists. "
                    << "  Emitting drawEdge to GW ";
-            addEdge ( v1, v2, weight, color, EDGE_DIRECTED_OPPOSITE_EXISTS );
-            emit drawEdge(v1, v2, weight, EDGE_DIRECTED_OPPOSITE_EXISTS,
-                          drawArrows, color, bezier, initEdgeWeightNumbers);
+            addEdge ( v1, v2, weight, label, color, EDGE_DIRECTED_OPPOSITE_EXISTS );
+            emit drawEdge(v1, v2, weight, label, color, EDGE_DIRECTED_OPPOSITE_EXISTS,
+                          drawArrows, bezier, initEdgeWeightNumbers);
         }
         else {
             qDebug()<< "-- Graph::createEdge() - "
                        << "Opposite arc does not exist. Emitting drawEdge to GW...";
-            addEdge ( v1, v2, weight, color, EDGE_DIRECTED );
-            emit drawEdge(v1, v2, weight, EDGE_DIRECTED,
-                          drawArrows, color, bezier, initEdgeWeightNumbers);
+            addEdge ( v1, v2, weight, label, color,  EDGE_DIRECTED );
+            emit drawEdge(v1, v2, weight, label, color, EDGE_DIRECTED,
+                          drawArrows, bezier, initEdgeWeightNumbers);
         }
     }
     else {
@@ -529,18 +531,21 @@ void Graph::createEdgeWebCrawler (int source, int target){
  * Creates an edge between v1 and v2
 */
 void Graph::addEdge (const int &v1, const int &v2, const float &weight,
-                     const QString &color, const int &type) {
+                     const QString &label,
+                     const QString &color,
+                     const int &type) {
 
     int source=index[v1];
     int target=index[v2];
 
     qDebug()<< "Graph: addEdge() from vertex "<< v1 << "["<< source
-            << "] to vertex "<< v2 << "["<< target << "] of weight "<<weight;
+            << "] to vertex "<< v2 << "["<< target << "] of weight "<<weight
+            << " and label " << label;
 
     m_graph [ source ]->addEdgeTo(v2, weight );
     m_graph [ target ]->addEdgeFrom(v1, weight);
     m_graph[ source ]->setOutLinkColor(v2, color);
-
+    m_graph[ source ]->setOutEdgeLabel(v2, label);
 
     if (type == EDGE_DIRECTED_OPPOSITE_EXISTS ){
         // make existing opposite edge reciprocal
@@ -560,22 +565,6 @@ void Graph::addEdge (const int &v1, const int &v2, const float &weight,
 
 
 
-/**
- * @brief Graph::setArcWeight
- * Changes the weight of an edge (arc) between v1 and v2
- * @param v1
- * @param v2
- * @param weight
- */
-void Graph::setArcWeight (const long &v1, const long &v2, const float &weight) {
-    qDebug() << "Graph::setArcWeight between " << v1 << "[" << index[v1]
-                << "] and " << v2 << "[" << index[v2] << "]" << " = " << weight;
-    m_graph [ index[v1] ]->changeOutEdgeWeight(v2, weight);
-    graphModified=true;
-    emit setEdgeWeight(v1,v2, weight);
-    emit graphChanged();
-
-}
 
 
 /** 	Removes the edge (arc) between v1 and v2
@@ -1254,6 +1243,50 @@ int Graph::inboundEdges (int v1) {
 }
 
 
+
+
+/**
+ * @brief Graph::setArcWeight
+ * Changes the weight of an edge (arc) between v1 and v2
+ * @param v1
+ * @param v2
+ * @param weight
+ */
+void Graph::setArcWeight (const long &v1, const long &v2, const float &weight) {
+    qDebug() << "Graph::setArcWeight between " << v1 << "[" << index[v1]
+                << "] and " << v2 << "[" << index[v2] << "]" << " = " << weight;
+    m_graph [ index[v1] ]->changeOutEdgeWeight(v2, weight);
+    graphModified=true;
+    emit setEdgeWeight(v1,v2, weight);
+    emit graphChanged();
+
+}
+
+
+
+
+
+/**
+ * @brief Graph::edgeLabelSet
+ * Changes the label of an edge (arc) between v1 and v2
+ * @param v1
+ * @param v2
+ * @param weight
+ */
+void Graph::edgeLabelSet (const long &v1, const long &v2, const QString &label) {
+    qDebug() << "Graph::edgeLabelSet()  " << v1 << "[" << index[v1]
+                << "] -> " << v2 << "[" << index[v2] << "]" << " label " << label;
+    m_graph[ index[v1] ]->setOutEdgeLabel(v2, label);
+    graphModified=true;
+    emit setEdgeLabel(v1,v2, label);
+    emit graphChanged();
+
+}
+
+QString Graph::edgeLabel (const long int &v1, const long int &v2) const {
+   return m_graph [ index[v1] ]->outEdgeLabel(v2);
+}
+
 /**
  * @brief Graph::setInitEdgeColor
  * Saves the default edge color
@@ -1269,15 +1302,9 @@ void Graph::setEdgeWeightNumbersVisibility (const bool &toggle) {
 }
 
 
-/**
- * @brief Graph::arcColor
- * Returns a qstring color of the directed edge from v1 to v2
- * @param v1
- * @param v2
- * @return
- */
-QString Graph::arcColor (const long &v1, const long &v2){
-    return m_graph[ index[v1] ]->outLinkColor(v2);
+
+void Graph::setEdgeLabelsVisibility (const bool &toggle) {
+    initEdgeLabels = toggle;
 }
 
 
@@ -1353,6 +1380,17 @@ void Graph::setArcColor(const long &v1, const long &v2, const QString &color){
 
 
 
+
+/**
+ * @brief Graph::arcColor
+ * Returns a qstring color of the directed edge from v1 to v2
+ * @param v1
+ * @param v2
+ * @return
+ */
+QString Graph::arcColor (const long &v1, const long &v2){
+    return m_graph[ index[v1] ]->outLinkColor(v2);
+}
 
 
 
@@ -6831,8 +6869,12 @@ bool Graph::loadGraph (	const QString m_fileName,
                 ) ;
 
     connect (
-                file_parser, SIGNAL(createEdge (int, int, float, QString, int, bool, bool)),
-                this, SLOT(createEdge (int, int, float, QString, int, bool, bool) )
+                file_parser, SIGNAL(
+                    createEdge (int, int, float, QString,
+                                int, bool, bool, QString)),
+                this, SLOT(
+                    createEdge (int, int, float, QString,
+                                int, bool, bool, QString) )
                 );
 
     connect (
@@ -6988,7 +7030,8 @@ bool Graph::saveGraphToPajekFormat (
                   &&   ( this->hasArc((*jt)->name(), (*it)->name())) == 0
                   )
             {
-                qDebug()<<"Graph::saveGraphToPajekFormat  weight "<< weight << " color "<<  (*it)->outLinkColor( (*jt)->name() ) ;
+                qDebug()<<"Graph::saveGraphToPajekFormat  weight "<< weight
+                       << " color "<<  (*it)->outLinkColor( (*jt)->name() ) ;
                 t << (*it)->name() <<" "<<(*jt)->name()<< " "<<weight;
                 //FIXME bug in outLinkColor() when we remove then add many nodes from the end
                 t<< " c "<< (*it)->outLinkColor( (*jt)->name() );

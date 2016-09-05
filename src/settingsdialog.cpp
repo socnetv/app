@@ -186,6 +186,10 @@ SettingsDialog::SettingsDialog(
 
     ui->edgeWeightNumberSizeSpin->setValue( m_appSettings["initEdgeWeightNumberSize"].toInt(0, 10) );
 
+
+    ui->edgeLabelsChkBox-> setChecked(
+                (m_appSettings["initEdgeLabelsVisibility"] == "true") ? true: false
+                                                                        );
     /**
      * dialog signals to slots
      */
@@ -280,6 +284,10 @@ SettingsDialog::SettingsDialog(
 
     connect (ui->edgeWeightNumbersChkBox, &QCheckBox::stateChanged,
                      this, &SettingsDialog::getEdgeWeightNumbersVisibility);
+
+
+    connect (ui->edgeLabelsChkBox, &QCheckBox::stateChanged,
+                     this, &SettingsDialog::getEdgeLabelsVisibility);
 
 }
 
@@ -598,6 +606,16 @@ void SettingsDialog::getEdgeWeightNumbersVisibility(const bool &toggle){
     emit setEdgeWeightNumbersVisibility(toggle);
 }
 
+
+
+/**
+ * @brief SettingsDialog::getEdgeLabelsVisibility
+ * @param toggle
+ */
+void SettingsDialog::getEdgeLabelsVisibility(const bool &toggle){
+    m_appSettings["initEdgeLabelsVisibility"]= (toggle) ? "true" : "false";
+    emit setEdgeLabelsVisibility(toggle);
+}
 
 
 

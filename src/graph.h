@@ -138,8 +138,9 @@ public slots:
     /** Slots to signals from GraphicsWidget and Parser*/
     void createEdge  (const int &v1, const int &v2, const float &weight,
                       const QString &color ,
-                      const int &reciprocal=0,
-                      const bool &drawArrows=true, const bool &bezier=false);
+                      const int &type=0,
+                      const bool &drawArrows=true, const bool &bezier=false,
+                      const QString &label=QString::null);
     void createEdgeWebCrawler (int, int);					//WebCrawler
 
     void slotSetEdgeVisibility(int relation, int, int, bool);
@@ -185,9 +186,11 @@ signals:
 
     void eraseNode (long int);						//erase node from GW
     //call GW to draw an edge
-    void drawEdge ( const int &, const int &, const float &,
-                    const int &, const bool, const QString &,
-                    const bool &,  const bool &);
+    void drawEdge ( const int &v1, const int &v2, const float &weight,
+                    const QString &label="",
+                    const QString &color="black",
+                    const int &type=0, const bool arrows=true,
+                    const bool &bezier=false,  const bool &weightNumbers=false);
     void eraseEdge(int, int);					//emited from removeEdge() to GW to clear the edge item.
     void setEdgeVisibility (int, int, int, bool);			// emitted from each Vertex
     void setVertexVisibility(long int, bool);		//notifies GW to disable a node
@@ -204,6 +207,9 @@ signals:
     void setEdgeColor(const long int &v1,
                          const long int &v2,
                          const QString &color);
+    void setEdgeLabel (const long int &v1,
+                       const long int &v2,
+                       const QString &label);
     void addGuideCircle(int, int, int);				//call GW to draw a circular layout line somewhere.
     void addGuideHLine (int);					//call GW to draw a horizontal layout line somewhere.
     void moveNode(const int &, const qreal &, const qreal &);
@@ -336,13 +342,16 @@ public:
     void setArcWeight (const long int &v1, const long int &v2, const float &w);
     void setInitEdgeColor(const QString &);
 
+    void edgeLabelSet(const long int &v1, const long int &v2, const QString &label);
+    QString edgeLabel (const long int &v1, const long int &v2) const;
+
     void setArcColor(const long int &v1, const long int &v2, const QString &color);
     QString arcColor (const long int &v1, const long int &v2);
     bool setAllEdgesColor(const QString &color, const int &threshold=RAND_MAX);
 
 
     void setEdgeWeightNumbersVisibility (const bool &toggle);
-
+    void setEdgeLabelsVisibility (const bool &toggle);
     float density();
 
     bool symmetricEdge(int v1, int v2);
@@ -585,8 +594,10 @@ private:
                       const QString &labelColor, const int &labelSize,
                       const QPointF &p, const QString &shape );
 
-    void addEdge (const int &v1, const int &v2, const float &w,
-                  const QString &color, const int &type);
+    void addEdge (const int &v1, const int &v2, const float &weight,
+                  const QString &label,
+                  const QString &color,
+                  const int &type);
 
     /** methods used by createDistanceMatrix()  */
     void BFS(const int s, const bool computeCentralities,
@@ -684,7 +695,7 @@ private:
         distanceMatrixCreated;
     bool reachabilityMatrixCreated;
     bool m_undirected;
-    bool initEdgeWeightNumbers;
+    bool initEdgeWeightNumbers, initEdgeLabels;
 
     QString VERSION, networkName, initEdgeColor, initVertexColor,
         initVertexNumberColor, initVertexLabelColor, initVertexShape;

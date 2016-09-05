@@ -185,6 +185,16 @@ public:
         else return "black";
     }
 
+
+    void setOutEdgeLabel(const long int &v2,
+                         const QString &label) { m_outEdgeLabels[v2]=label; }
+    QString outEdgeLabel(const long int &v2) const {
+        if (m_outEdgeLabels.contains(v2))
+            return m_outEdgeLabels.value(v2);
+        else return QString::null;
+    }
+
+
     void setDelta (float c){ m_delta=c;} 		/* Sets vertex pair dependancy */
     float delta() { return m_delta;}		/* Returns vertex pair dependancy */
 
@@ -280,8 +290,7 @@ private:
     bool m_reciprocalLinked, m_enabled, m_hasCLC, m_isolated;
     QString m_color, m_numberColor, m_label, m_labelColor, m_shape;
     QPointF m_disp;
-    //QString *outLinkColors;
-    H_IntToStr outLinkColors;
+    H_IntToStr outLinkColors, m_outEdgeLabels;
     //FIXME vertex coords
 
     double m_x, m_y;

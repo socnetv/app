@@ -48,16 +48,16 @@ static const int EDGE_RECIPROCAL_UNDIRECTED = 2;
 Edge::Edge(  GraphicsWidget *gw,
              Node *from,
              Node *to,
-             const Qt::PenStyle &style,
              const float &weight,
-             const int &nodeSize,
+             const QString &label,
              const QString &color,
-             const int &reciprocal,
+             const Qt::PenStyle &style,
+             const int &type,
              const bool &drawArrows,
-             const bool &bez,
-             const bool &drawWeightNumbers) : graphicsWidget(gw)
+             const bool &bezier,
+             const bool &weightNumbers) : graphicsWidget(gw)
 {
-    Q_UNUSED(nodeSize);
+
     graphicsWidget->scene()->addItem(this);  //add edge to scene to be displayed
 
     from->addOutLink( this );	//adds this Edge to sourceNode
@@ -68,7 +68,7 @@ Edge::Edge(  GraphicsWidget *gw,
     m_style = style;
     m_color=color;
     m_drawArrows=drawArrows;
-    m_reciprocal=reciprocal;
+    m_reciprocal=type;
     m_reciprocal_first = false;
 
     m_startOffset=source->size();  //used to offset edge from the centre of node
@@ -77,19 +77,22 @@ Edge::Edge(  GraphicsWidget *gw,
     eFrom = source->nodeNumber() ;
     eTo = target->nodeNumber() ;
     m_weight = weight ;
-    m_Bezier = bez;
+    m_Bezier = bezier;
 
-    m_label = "test";
+    m_label = label;
+    m_drawLabel = !m_label.isEmpty();
+    m_drawWeightNumber = weightNumbers;
 
-    m_drawWeightNumber = drawWeightNumbers;
-
-    qDebug()<< "Edge: Edge() - " << eFrom << "->" << eTo <<
-               " = " << m_weight;
+    qDebug()<< "Edge::Edge():  " << eFrom << "->" << eTo
+            <<" = " << m_weight
+            <<" label " << m_label
+            <<" reciprocal " << m_reciprocal;
 
     if (m_drawWeightNumber) {
         addWeightNumber();
     }
-    addLabel();
+    if (m_drawLabel)
+        addLabel();
 
     setAcceptHoverEvents(true);
 //    setFlags(QGraphicsItem::ItemIsSelectable);
@@ -100,7 +103,6 @@ Edge::Edge(  GraphicsWidget *gw,
     setBoundingRegionGranularity(0);
     //setCacheMode (QGraphicsItem::ItemCoordinateCache);
 
-    qDebug() << "Edge::Edge() - reciprocal " << m_reciprocal;
     adjust();
 }
 
@@ -164,8 +166,8 @@ float Edge::weight() const {
 
 void Edge::addWeightNumber (){
     // create edge weight item
-    double x = ( source->x() + target->x() ) / 2.0;
-    double y = ( source->y() + target->y() ) / 2.0;
+    double x = -20 + ( source->x() + target->x() ) / 2.0;
+    double y = -20 + ( source->y() + target->y() ) / 2.0;
     weightNumber = new  EdgeWeight (this, 7, QString::number(m_weight) );
     weightNumber-> setPos(x,y);
     weightNumber-> setDefaultTextColor (m_color);
@@ -209,8 +211,8 @@ QString Edge::label() const {
 
 void Edge::addLabel (){
     // create edge label item
-    double x = ( source->x() + target->x() ) / 2.0;
-    double y = ( source->y() + target->y() ) / 2.0;
+    double x =  5+ ( source->x() + target->x() ) / 2.0;
+    double y =  5+ ( source->y() + target->y() ) / 2.0;
     edgeLabel = new  EdgeLabel (this, 7, m_label );
     edgeLabel-> setPos(x,y);
     edgeLabel-> setDefaultTextColor (m_color);
@@ -276,7 +278,7 @@ int Edge::targetNodeNumber() {
  * make the edge weight appear on the centre of the edge
  */
 void Edge::adjust(){
-    qDebug("Edge: adjust()");
+    qDebug() << "Edge::adjust()";
     if (!source || !target)
         return;
     //QLineF line(mapFromItem(source, 0, 0), mapFromItem(target, 0, 0));
@@ -310,10 +312,14 @@ void Edge::adjust(){
 
     }
     if (m_drawWeightNumber)
-        weightNumber->setPos( (source->x()+target->x())/2.0, (source->y()+target->y())/2.0 );
+        weightNumber->setPos(
+                    -20 + (source->x()+target->x())/2.0,
+                    -20+ (source->y()+target->y())/2.0 );
 
     if (m_drawLabel)
-        edgeLabel->setPos( (source->x()+target->x())/2.0, (source->y()+target->y())/2.0 );
+        edgeLabel->setPos(
+                    5+ (source->x()+target->x())/2.0,
+                    5+ (source->y()+target->y())/2.0 );
 
     //Define the path upon which we' ll draw the line
     //QPainterPath line(sourcePoint);

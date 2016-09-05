@@ -165,9 +165,10 @@ void GraphicsWidget::drawNode( const int &num, const int &nodeSize,
  */
 void GraphicsWidget::drawEdge(const int &source, const int &target,
                               const float &weight,
-                              const int &reciprocal,
-                              const bool &drawArrows,
+                              const QString &label,
                               const QString &color,
+                              const int &type,
+                              const bool &drawArrows,
                               const bool &bezier,
                               const bool &weightNumbers){
 
@@ -175,19 +176,23 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
             + QString::number(source) + QString(">")+ QString::number(target);
     qDebug()<<"GW::drawEdge() - "<< edgeName
            << " weight "<<weight
-           << " reciprocal " << reciprocal
+           << " label " << label
+           << " type " << type
+
            << " - nodeHash reports "<< nodeHash.size()<<" nodes.";
 
 
-    Edge *edge=new Edge (this, nodeHash.value(source), nodeHash.value(target),
-                         Qt::SolidLine, weight,
-                         m_nodeSize, color,
-                         reciprocal, drawArrows,
+    Edge *edge=new Edge (this,
+                         nodeHash.value(source), nodeHash.value(target),
+                         weight, label, color,
+                         Qt::SolidLine,
+                         type,
+                         drawArrows,
                          (source==target) ? true: bezier,
                          weightNumbers);
 
     edgesHash.insert(edgeName, edge);
-    if (reciprocal == EDGE_DIRECTED_OPPOSITE_EXISTS ) {
+    if (type == EDGE_DIRECTED_OPPOSITE_EXISTS ) {
         QString edgeName = QString::number(m_curRelation) + QString(":") +
                 QString::number(target) + QString(">")+ QString::number(source);
         //    qDebug("GW: making existing edge between %i and %i reciprocal. Name: "+edgeName.toUtf8(), source, target );
@@ -210,11 +215,7 @@ void GraphicsWidget::drawEdgeReciprocal(int source, int target){
     //    qDebug("GW: making existing edge between %i and %i reciprocal. Name: "+edgeName.toUtf8(), source, target );
     edgesHash.value(edgeName)->makeReciprocal();
 
-    Edge *edge=new Edge (this, nodeHash.value(target), nodeHash.value(source),
-                         Qt::SolidLine, 1,
-                         m_nodeSize, "red",
-                         true, true,
-                         false);
+
 
 
 }
@@ -542,6 +543,32 @@ void   GraphicsWidget::setNumbersInsideNodes(bool numIn){
 
 
 
+
+
+
+/**
+ * @brief GraphicsWidget::setEdgeLabel
+ * Sets the label of an edge.
+ * Called from MW when the user changes the label of an edge (right-clicking).
+  * @param source
+ * @param target
+ * @param label
+ */
+void GraphicsWidget::setEdgeLabel(const long int &source,
+                                  const long int &target,
+                                  const QString &label){
+
+    QString edgeName =  QString::number(m_curRelation) + QString(":") +
+            QString::number( source ) + QString(">")+ QString::number( target );
+
+    qDebug()<<"GW::setEdgeLabel() -" << edgeName <<  " new label "  << label;
+    if  ( edgesHash.contains (edgeName) ) {
+        edgesHash.value(edgeName) -> setLabel(label);
+    }
+
+
+}
+
 /**
  * @brief GraphicsWidget::setEdgeColor
  * Sets the color of an edge.
@@ -597,6 +624,16 @@ void GraphicsWidget::setEdgeWeightNumbersVisibility (const bool &toggle){
     qDebug()<< "GW::setEdgeWeightNumbersVisibility()" << toggle;
     foreach ( Edge *m_edge, edgesHash) {
         m_edge->setWeightNumberVisibility(toggle);
+    }
+}
+
+
+
+
+void GraphicsWidget::setEdgeLabelsVisibility (const bool &toggle){
+    qDebug()<< "GW::setEdgeLabelsVisibility()" << toggle;
+    foreach ( Edge *m_edge, edgesHash) {
+        m_edge->setLabelVisibility(toggle);
     }
 }
 

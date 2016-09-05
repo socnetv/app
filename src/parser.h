@@ -97,7 +97,8 @@ signals:
 
     void createEdge (const int &source, const int &target, const float &weight,
                      const QString &color, const int &undirected,
-                     const bool &arrows, const bool &bezier);
+                     const bool &arrows, const bool &bezier,
+                     const QString &edgeLabel=QString::null);
 	void fileType(int, QString, int, int, bool);
 	void removeDummyNode (int);
     void finished(QString);
@@ -120,6 +121,7 @@ private:
 	int gwWidth, gwHeight;
 	int totalLinks, aNodes, fileFormat, two_sm_mode, undirected;
     int initNodeSize,  initNodeNumberSize, nodeNumberSize, initNodeLabelSize;
+    QString initEdgeLabel;
     int nodeLabelSize, source, target, nodeSize;
 	float initEdgeWeight, edgeWeight, arrowSize;
 	float bez_p1_x,bez_p1_y, bez_p2_x, bez_p2_y;
@@ -127,6 +129,7 @@ private:
 	bool arrows, bezier, conv_OK;
     bool bool_key, bool_node, bool_edge, fileContainsNodeColors;
     bool fileContainsNodeCoords, fileContainsLinkColors;
+    bool fileContainsLinkLabels;
 	double randX, randY;
 };
 

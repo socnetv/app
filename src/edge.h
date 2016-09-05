@@ -51,11 +51,11 @@ class Edge : public QObject, public QGraphicsItem {
     Q_INTERFACES (QGraphicsItem)
 
 public:
-    Edge(GraphicsWidget *, Node*, Node*,
+    Edge(GraphicsWidget *, Node*, Node*, const float &weight,
+         const QString &label, const QString &color,
          const Qt::PenStyle &style,
-         const float &, const int &, const QString &,
-         const int&, const bool&, const bool &,
-         const bool &drawWeightNumbers=false);
+         const int&type, const bool & drawArrows, const bool &bezier,
+         const bool &weightNumbers=false);
     ~Edge();
     enum { Type = UserType + 2 };
     int type() const { return Type; }

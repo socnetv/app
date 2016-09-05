@@ -58,9 +58,8 @@ Vertex::Vertex(Graph* parent,
 	m_x=p.x();
 	m_y=p.y();
 	//FIXME outLinkColors list need update when we remove vertices/edges
-//	outLinkColors=new  QString[1500];
-    //Q_CHECK_PTR(outLinkColors);
     //outLinkColors.reserve(2000);
+    m_outEdgeLabels.reserve(100);
     m_outEdges.reserve(100);
     m_inEdges.reserve(100);
     m_outEdgesCounter=0;
@@ -452,7 +451,7 @@ QHash<int,float>* Vertex::returnReciprocalEdges(){
             edgeStatus=it1.value().second.second;
             if ( edgeStatus == true) {
                 m_weight=it1.value().second.first;
-                if (this->hasEdgeFrom (it1.key()) )
+                if (this->hasEdgeFrom (it1.key()) == m_weight )
                     reciprocalEdges->insertMulti(it1.key(), m_weight);
             }
         }
@@ -801,6 +800,7 @@ Vertex::~Vertex() {
     qDebug() << " Vertex:: destroying my data";
     m_outEdges.clear();
     outLinkColors.clear();
+    m_outEdgeLabels.clear();
     clearPs();
     m_outEdges.clear();
     m_inEdges.clear();

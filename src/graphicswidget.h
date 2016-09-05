@@ -118,18 +118,21 @@ public slots:
 
     void drawEdge(const int &source, const int &target,
                   const float &weight,
-                  const int &reciprocal,
-                  const bool &drawArrows,
-                  const QString &color,
-                  const bool &bezier,
+                  const QString &label="",
+                  const QString &color="black",
+                  const int &type=0,
+                  const bool &drawArrows=true,
+                  const bool &bezier=false,
                   const bool &weightNumbers=false);
     void eraseEdge(int, int);
     void setEdgeVisibility (int relation, int, int, bool);
     bool setEdgeWeight(const long int &, const long int &, const float &);
+    void setEdgeLabel(const long int &, const long int&, const QString &);
     void setEdgeColor(const long int &, const long int&, const QString &);
     void edgeClicked(Edge *);
     void openEdgeContextMenu();
     void setEdgeWeightNumbersVisibility (const bool &toggle);
+    void setEdgeLabelsVisibility(const bool &toggle);
 
     void startEdge(Node *node);
     void drawEdgeReciprocal(int, int);

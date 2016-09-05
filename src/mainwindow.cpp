@@ -213,7 +213,7 @@ QMap<QString,QString> MainWindow::initSettings(){
     appSettings["initEdgeThicknessPerWeight"]="true";
     appSettings["initEdgeWeightNumbersVisibility"]="false";
     appSettings["initEdgeWeightNumberSize"] = "7";
-
+    appSettings["initEdgeLabelsVisibility"] = "false";
     appSettings["considerWeights"]="false";
     appSettings["inverseWeights"]="false";
     appSettings["askedAboutWeights"]="false";
@@ -427,6 +427,10 @@ void MainWindow::slotOpenSettingsDialog() {
 
     connect( m_settingsDialog, &SettingsDialog::setEdgeWeightNumbersVisibility,
              this, &MainWindow::slotOptionsEdgeWeightNumbersVisibility);
+
+    connect( m_settingsDialog, &SettingsDialog::setEdgeLabelsVisibility,
+             this, &MainWindow::slotOptionsEdgeLabelsVisibility);
+
 
     // show settings dialog
     m_settingsDialog->exec();
@@ -945,7 +949,7 @@ void MainWindow::initActions(){
     editEdgeLabelAct->setWhatsThis(tr("Change Edge Label\n\n"
                                       "Changes the label of an Edge"));
     connect(editEdgeLabelAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeLabel()));
-    editEdgeLabelAct->setEnabled(false);
+
 
     editEdgeColorAct = new QAction(QIcon(":/images/colorize.png"),tr("Change Edge Color"),	this);
     editEdgeColorAct->setStatusTip(tr("Change the Color of an Edge"));
@@ -1889,6 +1893,23 @@ void MainWindow::initActions(){
     connect(considerEdgeWeightsAct, SIGNAL(triggered(bool)),
             this, SLOT(slotOptionsEdgeWeightsDuringComputation(bool)) );
 
+
+    optionsEdgeLabelsAct = new QAction(tr("Display Edge Labels"),	this);
+    optionsEdgeLabelsAct->setStatusTip(
+                tr("Toggle displaying of Edge labels, if any (this session only)"));
+    optionsEdgeLabelsAct->setWhatsThis(
+                tr("Display Edge Labes\n\n"
+                   "Enables or disables displaying edge labels.\n"
+                   "This setting will apply to this session only. \n"
+                   "To permanently change it, use Settings & Preferences"));
+    optionsEdgeLabelsAct->setCheckable(true);
+    optionsEdgeLabelsAct->setChecked(
+                (appSettings["initEdgeLabelsVisibility"] == "true") ? true: false
+                );
+    connect(optionsEdgeLabelsAct, SIGNAL(triggered(bool)),
+            this, SLOT(slotOptionsEdgeLabelsVisibility(bool)) );
+
+
     optionsEdgeArrowsAct = new QAction( tr("Display Edge Arrows"),this);
     optionsEdgeArrowsAct->setStatusTip(
                 tr("Toggle displaying directional Arrows on edges (this session only)"));
@@ -2283,11 +2304,15 @@ void MainWindow::initMenuBar() {
 
     optionsMenu -> addMenu (edgeOptionsMenu);
     edgeOptionsMenu -> addAction (optionsEdgesVisibilityAct);
+    edgeOptionsMenu -> addSeparator();
     edgeOptionsMenu -> addAction (optionsEdgeWeightNumbersAct);
     edgeOptionsMenu -> addAction (considerEdgeWeightsAct);
+    edgeOptionsMenu -> addAction (optionsEdgeThicknessPerWeightAct);
+    edgeOptionsMenu -> addSeparator();
+    edgeOptionsMenu -> addAction (optionsEdgeLabelsAct);
+    edgeOptionsMenu -> addSeparator();
     edgeOptionsMenu -> addAction (optionsEdgeArrowsAct );
     edgeOptionsMenu -> addSeparator();
-    edgeOptionsMenu -> addAction (optionsEdgeThicknessPerWeightAct);
     edgeOptionsMenu -> addAction (drawEdgesBezier);
 
     viewOptionsMenu = new QMenu (tr("&View..."));
@@ -3234,13 +3259,14 @@ void MainWindow::initSignalSlots() {
              this, SLOT( fileType( int, QString, int , int, bool) ) ) ;
 
     connect( &activeGraph, SIGNAL( drawEdge( const int&, const int&, const float &,
+                                             const QString &, const QString &,
                                              const int&, const bool&,
-                                             const QString &,
                                              const bool&,
                                              const bool&)),
              graphicsWidget, SLOT( drawEdge( const int&, const int&, const float &,
+                                             const QString &,const QString &,
                                              const int &, const bool&,
-                                             const QString &, const bool &,
+                                             const bool &,
                                              const bool&) )  ) ;
 
     connect( &activeGraph, SIGNAL( drawEdgeReciprocal(int, int) ),
@@ -3262,6 +3288,13 @@ void MainWindow::initSignalSlots() {
                                                 const long int &,
                                                 const QString &) ) );
 
+
+    connect( &activeGraph, SIGNAL( setEdgeLabel(const long int &,
+                                                   const long int &,
+                                                   const QString &)),
+             graphicsWidget, SLOT( setEdgeLabel(const long int &,
+                                                const long int &,
+                                                const QString &) ) );
 
 
     connect( &activeGraph, SIGNAL( eraseNode(long int) ),
@@ -3481,6 +3514,10 @@ void MainWindow::initNet(){
                 (appSettings["initEdgeArrows"] == "true") ? true: false
             );
 
+    optionsEdgeLabelsAct->setChecked (
+                (appSettings["initEdgeLabelsVisibility"] == "true") ? true: false
+
+                );
     filterIsolateNodesAct->setChecked(false); // re-init orphan nodes menu item
 
     editRelationChangeCombo->clear();
@@ -6623,6 +6660,7 @@ void MainWindow::openEdgeContextMenu() {
     edgeContextMenu -> addSeparator();
     edgeContextMenu -> addAction( editEdgeRemoveAct );
     edgeContextMenu -> addAction( editEdgeWeightAct );
+    edgeContextMenu -> addAction( editEdgeLabelAct );
     edgeContextMenu -> addAction( editEdgeColorAct );
     edgeContextMenu -> exec(QCursor::pos() );
     delete  edgeContextMenu;
@@ -6796,10 +6834,10 @@ void MainWindow::slotEditEdgeRemove(){
                 // 						graphicsWidget->unmakeEdgeReciprocal(clickedEdge->targetNodeNumber(), clickedEdge->sourceNodeNumber());
                 //FIXME weight should be the same
                 graphicsWidget->drawEdge(
-                            targetNode, sourceNode, 1, 0,
-                            (appSettings["initEdgeArrows"] == "true") ? true: false,
-                            appSettings["initEdgeColor"], false
-                        );
+                            targetNode, sourceNode, 1,
+                            QString::null, appSettings["initEdgeColor"], 0,
+                        (appSettings["initEdgeArrows"] == "true") ? true: false,
+                        false, false);
 
                 break;
             case 1:
@@ -6836,9 +6874,77 @@ void MainWindow::slotEditEdgeRemove(){
 
 
 
-//TODO slotEditEdgeLabel
+
+/**
+ * @brief MainWindow::slotEditEdgeLabel
+ */
 void MainWindow::slotEditEdgeLabel(){
-    slotNetworkChanged();
+    qDebug() << "MW::slotEditEdgeLabel()";
+    if ( ( !fileLoaded && !networkModified) || activeEdges() ==0 )  {
+        QMessageBox::critical(this, "Error",
+                              tr("There are no edges! \n"
+                                 "Load a network file or create a new network first."), "OK",0);
+        statusMessage( tr("No edges present...")  );
+        return;
+    }
+
+    int sourceNode=-1, targetNode=-1;
+    bool ok=false;
+
+    int min=activeGraph.firstVertexNumber();
+    int max=activeGraph.lastVertexNumber();
+
+    if (!edgeClicked)
+    {	//no edge clicked. Ask user to define an edge.
+        sourceNode=QInputDialog::getInt(this,
+                                        "Change edge label",
+                                        tr("Select edge source node:  ("+
+                                           QString::number(min).toLatin1()+
+                                           "..."+QString::number(max).toLatin1()+
+                                           "):"), min, 1, max , 1, &ok)   ;
+        if (!ok) {
+            statusMessage( "Change edge label operation cancelled." );
+            return;
+        }
+        targetNode=QInputDialog::getInt(this,
+                                        "Change edge label...",
+                                        tr("Select edge target node:  ("+
+                                         QString::number(min).toLatin1()+"..." +
+                                         QString::number(max).toLatin1()+"):"),
+                                        min, 1, max , 1, &ok  )   ;
+        if (!ok) {
+            statusMessage( "Change edge label operation cancelled." );
+            return;
+        }
+
+        if ( ! activeGraph.hasArc (sourceNode, targetNode ) )  {
+             statusMessage( tr("There is no such edge. ") );
+             QMessageBox::critical(this, "Error",
+                                   tr("No edge! \nNo such edge found in current network."), "OK",0);
+
+             return;
+        }
+
+    }
+    else
+    {	//edge has been clicked.
+         sourceNode = clickedEdge->sourceNodeNumber();
+         targetNode = clickedEdge->targetNodeNumber();
+    }
+
+    QString label = QInputDialog::getText( this, tr("Change edge label"),
+                                          tr("Enter label: ") );
+
+    if ( !label.isEmpty()) {
+        qDebug() << "MW::slotEditEdgeLabel() - " << sourceNode << " -> "
+                    << targetNode << " new label " << label;
+        activeGraph.edgeLabelSet( sourceNode, targetNode, label);
+        slotOptionsEdgeLabelsVisibility(true);
+        statusMessage( tr("Ready. ")  );
+    }
+    else {
+        statusMessage( tr("Change edge label aborted. ") );
+    }
 }
 
 
@@ -6951,7 +7057,7 @@ void MainWindow::slotEditEdgeColor(){
         qDebug() << "MW::slotEditEdgeColor() - " << sourceNode << " -> "
                     << targetNode << " newColor "
                  << newColor;
-        activeGraph.setEdgeColor( sourceNode, targetNode, newColor);
+        activeGraph.setArcColor( sourceNode, targetNode, newColor);
         statusMessage( tr("Ready. ")  );
     }
     else {
@@ -9375,6 +9481,33 @@ void MainWindow::slotOptionsEdgeWeightNumbersVisibility(bool toggle) {
 
 
 
+
+
+
+/**
+ * @brief MainWindow::slotOptionsEdgeLabelsVisibility
+ * Turns on/off displaying edge labels
+ * @param toggle
+ */
+void MainWindow::slotOptionsEdgeLabelsVisibility(bool toggle) {
+    qDebug() << "MW::slotOptionsEdgeLabelsVisibility - Toggling Edges Weights";
+    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+    statusMessage( tr("Toggle Edges Labels. Please wait...") );
+
+    appSettings["initEdgeLabelsVisibility"] = (toggle) ? "true":"false";
+    graphicsWidget->setEdgeLabelsVisibility(toggle);
+    activeGraph.setEdgeLabelsVisibility(toggle);
+    optionsEdgeLabelsAct->setChecked ( toggle );
+    if (!toggle) {
+        statusMessage( tr("Edge labels are invisible now. "
+                          "Click the same option again to display them.") );
+    }
+    else{
+        statusMessage( tr("Edge labels are visible again...") );
+    }
+    QApplication::restoreOverrideCursor();
+
+}
 
 
 /**
