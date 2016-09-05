@@ -570,23 +570,32 @@ void GraphicsWidget::setEdgeColor(const long int &source,
     Changes/Sets the weight of an edge.
     Called from MW when the user changes the weight of an edge (right-clicking).
 */
-bool GraphicsWidget::setEdgeWeight(int source, int target, float weight){
+bool GraphicsWidget::setEdgeWeight(const long int &source,
+                                   const long int &target,
+                                   const float &weight){
     qDebug() << "GW::setEdgeWeight() : " << source << "->" << target
              << " = " << weight;
-    QList<QGraphicsItem *> list=scene()->items();
-    for (QList<QGraphicsItem *>::iterator it=list.begin(); it!= list.end() ; it++){
-        if ( (*it)->type()==TypeEdge) {
-            Edge *edge=(Edge*) (*it);
-            if ( edge->sourceNodeNumber()==source && edge->targetNodeNumber()==target ) {
-                edge->setWeight(weight);
-                edge->update();
-                return true;
-            }
-        }
+
+    QString edgeName =  QString::number(m_curRelation) + QString(":") +
+            QString::number( source ) + QString(">")+ QString::number( target );
+
+    qDebug()<<"GW::setEdgeWeight() -" << edgeName <<  " new weight "  << weight;
+    if  ( edgesHash.contains (edgeName) ) {
+        edgesHash.value(edgeName) -> setWeight(weight);
+        return true;
     }
     return false;
+
 }
 
+
+
+void GraphicsWidget::setEdgeWeightNumbersVisibility (const bool &toggle){
+    qDebug()<< "GW::setEdgeWeightNumbersVisibility()" << toggle;
+    foreach ( Edge *m_edge, edgesHash) {
+        m_edge->setWeightNumberVisibility(toggle);
+    }
+}
 
 
 /** 

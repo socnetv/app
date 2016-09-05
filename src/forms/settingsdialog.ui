@@ -27,7 +27,7 @@
    <item row="1" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="generalTab">
       <attribute name="title">
@@ -1116,13 +1116,13 @@
             <item>
              <widget class="QLabel" name="label_13">
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default edge color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click the colored button to select a new default edge color.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing edge immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default edge color. Until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Edge color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click the colored button on the right to select a new color for all edges.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing edges immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default edge color. Until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="whatsThis">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default edge color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click the colored button to select a new default edge color.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing edge immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default edge color. Until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Edge color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click the colored button on the right to select a new color for all edges.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing edges immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default edge color. Until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
-               <string>Edge color (positive weights)</string>
+               <string>Edge color</string>
               </property>
              </widget>
             </item>
@@ -1163,10 +1163,10 @@
                <cursorShape>PointingHandCursor</cursorShape>
               </property>
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default edge color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click to select a new default color for edges with positive weights..&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing &amp;quot;positive&amp;quot; edge immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default edge color. Until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Edge color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click to select a new color for all edges.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing edges immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default edge color. Until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="whatsThis">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default edge color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click to select a new default color for edges with positive weights..&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing &amp;quot;positive&amp;quot; edge immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default edge color. Until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Edge color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click to select a new color for all edges.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing edges immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default edge color. Until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string>...</string>
@@ -1186,10 +1186,10 @@
             <item>
              <widget class="QLabel" name="label_17">
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default negative edge color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click the colored button at the right corner to select a new default edge color for negative weighted edges.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing edges immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default edge color for &amp;quot;negative&amp;quot; edges. Until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Negative edge color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click the colored button at the right corner to select a new color for negative weighted edges.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing &amp;quot;negative&amp;quot; edges immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default edge color for &amp;quot;negative&amp;quot; edges. Until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="whatsThis">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default negative edge color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click the colored button at the right corner to select a new default edge color for negative weighted edges.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing edges immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default edge color for &amp;quot;negative&amp;quot; edges. Until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Negative edge color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click the colored button at the right corner to select a new color for negative weighted edges.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing &amp;quot;negative&amp;quot; edges immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default edge color for &amp;quot;negative&amp;quot; edges. Until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string>Edge color (negative weights)</string>
@@ -1233,10 +1233,10 @@
                <cursorShape>PointingHandCursor</cursorShape>
               </property>
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default negative edge color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click this to select a new default edge color for all negative weighted edges.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing &amp;quot;negative&amp;quot; edges immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default color for &amp;quot;negative&amp;quot; edges. Until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Negative edge color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click this button to select a new default edge color for all negative weighted edges.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing &amp;quot;negative&amp;quot; edges immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default color for &amp;quot;negative&amp;quot; edges. Until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="whatsThis">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default negative edge color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click this to select a new default edge color for all negative weighted edges.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing &amp;quot;negative&amp;quot; edges immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default color for &amp;quot;negative&amp;quot; edges. Until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Negative edge color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click this button to select a new default edge color for all negative weighted edges.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing &amp;quot;negative&amp;quot; edges immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default color for &amp;quot;negative&amp;quot; edges. Until you change it again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string>...</string>
@@ -1319,34 +1319,28 @@
        <item row="1" column="0">
         <widget class="QGroupBox" name="groupBox_10">
          <property name="title">
-          <string>Edge filtering settings</string>
+          <string>Weight number settings</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_3">
-          <item>
-           <widget class="QCheckBox" name="edgeFilteringChkBox">
+         <layout class="QGridLayout" name="gridLayout_12">
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="edgeWeightNumbersChkBox">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Edge filtering&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable edge filtering by weight.&lt;/p&gt;&lt;p&gt;Enable to only show edges with weights over or under a given threshold.&lt;/p&gt;&lt;p&gt;Any change will apply to all existing edges immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, this setting will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="whatsThis">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Edge filtering&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable edge filtering by weight.&lt;/p&gt;&lt;p&gt;Enable to only show edges with weights over or under a given threshold.&lt;/p&gt;&lt;p&gt;Any change will apply to all existing edges immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, this setting will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Edge weight numbers&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable edge weight numbers. When enabled, a number will be displayed along every edge indicating the edge weight.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing weight numbers immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default when creating new edges.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="layoutDirection">
              <enum>Qt::LeftToRight</enum>
             </property>
             <property name="text">
-             <string>Edge filtering (by weight)</string>
+             <string>Display edge weight numbers</string>
             </property>
            </widget>
           </item>
-          <item>
+          <item row="1" column="0">
            <layout class="QHBoxLayout" name="horizontalLayout_19">
             <item>
              <widget class="QLabel" name="label_19">
-              <property name="whatsThis">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Edge weight threshold&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select a weight threshold value to filter edges by their weight.&lt;/p&gt;&lt;p&gt;Any change will apply to all existing edges immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, this setting will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
               <property name="text">
-               <string>Weight threshold</string>
+               <string>Weight number color</string>
               </property>
              </widget>
             </item>
@@ -1370,7 +1364,13 @@
              </spacer>
             </item>
             <item>
-             <widget class="QSpinBox" name="edgeFilteringThresholdSpin">
+             <widget class="QToolButton" name="edgeWeightNumberColorBtn">
+              <property name="minimumSize">
+               <size>
+                <width>60</width>
+                <height>25</height>
+               </size>
+              </property>
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>
@@ -1378,33 +1378,33 @@
                </font>
               </property>
               <property name="cursor">
-               <cursorShape>SizeVerCursor</cursorShape>
+               <cursorShape>PointingHandCursor</cursorShape>
               </property>
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Edge weight threshold&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select a weight threshold value to filter edges by their weight.&lt;/p&gt;&lt;p&gt;Any change will apply to all existing edges immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, this setting will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Edge weight number color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click to select a new color for all edge weight numbers.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing weight numbers immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default edge weight number color when creating new edges.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
-              <property name="readOnly">
-               <bool>false</bool>
+              <property name="whatsThis">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Edge weight number color&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click to select a new color for all edge weight numbers.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing weight numbers immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default edge weight number color when creating new edges.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
-              <property name="value">
-               <number>0</number>
+              <property name="text">
+               <string>...</string>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>60</width>
+                <height>20</height>
+               </size>
               </property>
              </widget>
             </item>
            </layout>
           </item>
-          <item>
+          <item row="2" column="0">
            <layout class="QHBoxLayout" name="horizontalLayout_18">
             <item>
              <widget class="QLabel" name="label_18">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Edge filtering type&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select which edges to show; those with weights over or under the given threshold.&lt;/p&gt;&lt;p&gt;Any change will apply to all existing edges immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, this setting will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="whatsThis">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default edge shape&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select the default edge shape for all edges. &lt;/p&gt;&lt;p&gt;Edges can be either straight lines (default) or bezier curves.&lt;/p&gt;&lt;p&gt;This will apply to all existing edgesimmediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the default edge shape will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
               <property name="text">
-               <string>Filter edges...</string>
+               <string>Weight number font size</string>
               </property>
              </widget>
             </item>
@@ -1428,34 +1428,24 @@
              </spacer>
             </item>
             <item>
-             <widget class="QRadioButton" name="edgeFilteringRadioOver">
+             <widget class="QSpinBox" name="edgeWeightNumberSizeSpin">
+              <property name="font">
+               <font>
+                <family>DejaVu Sans</family>
+                <pointsize>11</pointsize>
+               </font>
+              </property>
               <property name="cursor">
-               <cursorShape>PointingHandCursor</cursorShape>
+               <cursorShape>SizeVerCursor</cursorShape>
               </property>
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Edge filtering type&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select this to only show edges with weights over the given threshold.&lt;/p&gt;&lt;p&gt;Any change will apply to all existing edges immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, this setting will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Edge weight number text size&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click to select a new text size (in pixels) for all edge weight numbers.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing weight numbers immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default edge weight number size when creating new edges.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="whatsThis">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Edge filtering type&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select this to only show edges with weights over the given threshold.&lt;/p&gt;&lt;p&gt;Any change will apply to all existing edges immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, this setting will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Edge weight number text size&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click to select a new text size (in pixels) for all edge weight numbers.&lt;/p&gt;&lt;p&gt;Any change to this setting will apply to all existing weight numbers immediately.&lt;/p&gt;&lt;p&gt;This is a permanent setting. Once you press OK, it will be saved and used in all future SocNetV sessions as default edge weight number size when creating new edges.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
-              <property name="text">
-               <string>Over threshold</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="edgeFilteringRadioUnder">
-              <property name="cursor">
-               <cursorShape>PointingHandCursor</cursorShape>
-              </property>
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Edge filtering type&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select this to only show edges with weights under the given threshold.&lt;/p&gt;&lt;p&gt;Any change will apply to all existing edges immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, this setting will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="whatsThis">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Edge filtering type&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select this to only show edges with weights under the given threshold.&lt;/p&gt;&lt;p&gt;Any change will apply to all existing edges immediately.&lt;/p&gt;&lt;p&gt;Once you press OK, this setting will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="text">
-               <string>Under threshold</string>
+              <property name="value">
+               <number>8</number>
               </property>
              </widget>
             </item>

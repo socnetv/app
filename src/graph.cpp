@@ -558,14 +558,19 @@ void Graph::addEdge (const int &v1, const int &v2, const float &weight,
 
 
 
-/**	
-    Change edge (arc) weight between v1 and v2
-*/
+/**
+ * @brief Graph::setArcWeight
+ * Changes the weight of an edge (arc) between v1 and v2
+ * @param v1
+ * @param v2
+ * @param weight
+ */
 void Graph::setArcWeight (const long &v1, const long &v2, const float &weight) {
     qDebug() << "Graph::setArcWeight between " << v1 << "[" << index[v1]
                 << "] and " << v2 << "[" << index[v2] << "]" << " = " << weight;
     m_graph [ index[v1] ]->changeOutEdgeWeight(v2, weight);
     graphModified=true;
+    emit setEdgeWeight(v1,v2, weight);
     emit graphChanged();
 
 }
@@ -764,6 +769,7 @@ void Graph::slotSetEdgeVisibility ( int relation,  int source, int target, bool 
     //qDebug() << "Graph: slotSetEdgeVisibility  - emitting signal to GW";
     emit setEdgeVisibility ( relation, source, target, visible);
 }
+
 
 
 /**	Checks if there is a specific vertex in the graph
@@ -1256,6 +1262,9 @@ void Graph::setInitEdgeColor(const QString &color){
     initEdgeColor=color;
 }
 
+void Graph::setEdgeWeightNumbersVisibility (const bool &toggle) {
+    initEdgeWeightNumbers = toggle;
+}
 
 
 /**

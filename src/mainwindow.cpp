@@ -211,7 +211,9 @@ QMap<QString,QString> MainWindow::initSettings(){
     appSettings["initEdgeColorNegative"]="red";
     appSettings["initEdgeArrows"]="true";
     appSettings["initEdgeThicknessPerWeight"]="true";
-    appSettings["initEdgeWeightNumberVisibility"]="false";
+    appSettings["initEdgeWeightNumbersVisibility"]="false";
+    appSettings["initEdgeWeightNumberSize"] = "7";
+
     appSettings["considerWeights"]="false";
     appSettings["inverseWeights"]="false";
     appSettings["askedAboutWeights"]="false";
@@ -423,6 +425,8 @@ void MainWindow::slotOpenSettingsDialog() {
     connect( m_settingsDialog, &SettingsDialog::setEdgeColor,
              this, &MainWindow::slotEditEdgeColorAll);
 
+    connect( m_settingsDialog, &SettingsDialog::setEdgeWeightNumbersVisibility,
+             this, &MainWindow::slotOptionsEdgeWeightNumbersVisibility);
 
     // show settings dialog
     m_settingsDialog->exec();
@@ -1863,7 +1867,7 @@ void MainWindow::initActions(){
                    "To permanently change it, use Settings & Preferences"));
     optionsEdgeWeightNumbersAct->setCheckable(true);
     optionsEdgeWeightNumbersAct->setChecked(
-                (appSettings["initEdgeWeightNumberVisibility"] == "true") ? true: false
+                (appSettings["initEdgeWeightNumbersVisibility"] == "true") ? true: false
                 );
     connect(optionsEdgeWeightNumbersAct, SIGNAL(triggered(bool)),
             this, SLOT(slotOptionsEdgeWeightNumbersVisibility(bool)) );
@@ -3240,6 +3244,14 @@ void MainWindow::initSignalSlots() {
              graphicsWidget, SLOT( drawEdgeReciprocal(int, int) ) );
 
 
+    connect( &activeGraph, SIGNAL( setEdgeWeight(const long int &,
+                                                   const long int &,
+                                                   const float &)),
+             graphicsWidget, SLOT( setEdgeWeight(const long int &,
+                                                const long int &,
+                                                const float &) ) );
+
+
     connect( &activeGraph, SIGNAL( setEdgeColor(const long int &,
                                                    const long int &,
                                                    const QString &)),
@@ -3459,7 +3471,7 @@ void MainWindow::initNet(){
     toolBoxNodeSizesByInDegreeBx->setChecked(false);
 
     optionsEdgeWeightNumbersAct->setChecked(
-                (appSettings["initEdgeWeightNumberVisibility"] == "true") ? true:false
+                (appSettings["initEdgeWeightNumbersVisibility"] == "true") ? true:false
                 );
     considerEdgeWeightsAct->setChecked(false);
     optionsEdgeArrowsAct->setChecked(
@@ -6955,7 +6967,10 @@ void MainWindow::slotEditEdgeColor(){
  */
 void MainWindow::slotEditEdgeWeight(){
     if ( ( !fileLoaded && !networkModified) || activeEdges() ==0 )  {
-        QMessageBox::critical(this, "Error",tr("There are no edges! \nLoad a network file or create a new network first."), "OK",0);
+        QMessageBox::critical(
+                    this, "Error",
+                    tr("There are no edges! \n"
+                       "Load a network file or create a new network first."), "OK",0);
         statusMessage( tr("No edges present...")  );
         return;
     }
@@ -6968,13 +6983,25 @@ void MainWindow::slotEditEdgeWeight(){
 
     bool ok=false;
     if (!edgeClicked) {
-        sourceNode=QInputDialog::getInt(this, "Change edge weight",tr("Select edge source node:  ("+QString::number(min).toLatin1()+"..."+QString::number(max).toLatin1()+"):"), min, 1, max , 1, &ok)   ;
+        sourceNode=QInputDialog::getInt(
+                    this,
+                    "Change edge weight",
+                    tr("Select edge source node:  ("+
+                       QString::number(min).toLatin1()+"..."+
+                       QString::number(max).toLatin1()+"):"),
+                    min, 1, max , 1, &ok)   ;
         if (!ok) {
             statusMessage( "Change edge weight operation cancelled." );
             return;
         }
 
-        targetNode=QInputDialog::getInt(this, "Change edge weight...", tr("Select edge target node:  ("+QString::number(min).toLatin1()+"..."+QString::number(max).toLatin1()+"):"),min, 1, max , 1, &ok  )   ;
+        targetNode=QInputDialog::getInt(
+                    this,
+                    "Change edge weight...",
+                    tr("Select edge target node:  ("+
+                       QString::number(min).toLatin1()+"..."+
+                       QString::number(max).toLatin1()+"):"),
+                    min, 1, max , 1, &ok  )   ;
         if (!ok) {
             statusMessage( "Change edge weight operation cancelled." );
             return;
@@ -6982,28 +7009,18 @@ void MainWindow::slotEditEdgeWeight(){
 
         qDebug("source %i target %i",sourceNode, targetNode);
 
-        QList<QGraphicsItem *> list=scene->items();
-        for (QList<QGraphicsItem *>::iterator it=list.begin(); it!= list.end() ; it++)
-            if ( (*it)->type()==TypeEdge) {
-                Edge *edge=(Edge*) (*it);
-                qDebug ("MW: searching edge...");
-                if ( edge->sourceNodeNumber()==sourceNode && edge->targetNodeNumber()==targetNode ) {
-                    qDebug("MW: edge found");
-                    newWeight=(float) QInputDialog::getDouble(this,
-                                                              "Change edge weight...",tr("New edge Weight: "), 1, -100, 100 ,1, &ok ) ;
-                    if (ok) {
-                        edge->setWeight(newWeight);
-                        edge->update();
-                        activeGraph.setArcWeight(sourceNode, targetNode, newWeight);
-                        statusMessage(  QString(tr("Ready."))  );
-                        return;
-                    }
-                    else {
-                        statusMessage(  QString(tr("input error. Abort."))  );
-                        return;
-                    }
-                }
-            }
+        newWeight=(float) QInputDialog::getDouble(
+                    this,
+                    "Change edge weight...",
+                    tr("New edge Weight: "),
+                    1, -100, 100 ,1, &ok ) ;
+        if (ok) {
+              activeGraph.setArcWeight(sourceNode, targetNode, newWeight);
+        }
+        else {
+            statusMessage(  QString(tr("input error. Abort."))  );
+            return;
+        }
     }
     else {  //edgeClicked
         qDebug() << "MW: slotEditEdgeWeight() - an Edge has already been clicked";
@@ -7011,88 +7028,23 @@ void MainWindow::slotEditEdgeWeight(){
         targetNode=clickedEdge->targetNodeNumber();
         qDebug() << "MW: slotEditEdgeWeight() from "
                  << sourceNode << " to " << targetNode;
-        if ( activeGraph.symmetricEdge(sourceNode, targetNode) ) {
-            QString s=QString::number(sourceNode);
-            QString t=QString::number(targetNode);
-            switch (QMessageBox::information( this, tr("Change edge weight"),
-                                              tr("This edge is reciprocal. \n") +
-                                              tr("Select what Direction to change or Both..."),
-                                              s+" -> "+ t, t+" -> "+s, tr("Both"), 0, 1 ))
-            {
-            case 0:
-                qDebug("MW: slotEditEdgeWeight()  real edge %i -> %i", sourceNode, targetNode);
-                newWeight=QInputDialog::getDouble(this,
-                                                  "Change edge weight...",tr("New edge weight: "), 1.0, -100.0, 100.00 ,1, &ok) ;
-                if (ok) {
-                    clickedEdge->setWeight(newWeight);
-                    clickedEdge->update();
-                    qDebug()<<"MW: newWeight will be "<< newWeight;
-                    activeGraph.setArcWeight(sourceNode, targetNode, newWeight);
-                    statusMessage(  QString(tr("Ready."))  );
-                    return;
-                }
-                else {
-                    statusMessage(  QString(tr("Change edge weight cancelled."))  );
-                    return;
-                }
-                break;
-            case 1:
-                qDebug("MW: slotEditEdgeWeight() virtual edge %i -> %i",targetNode , sourceNode);
-                newWeight=(float) QInputDialog::getDouble(this,
-                                                          "Change edge weight...",tr("New edge Weight: "), 1, -100, 100 ,1, &ok ) ;
-                if (ok) {
-                    qDebug()<<"MW: newWeight will be "<< newWeight;
-                    activeGraph.setArcWeight( targetNode, sourceNode, newWeight);
-                    statusMessage(  QString(tr("Ready."))  );
-                    return;
-                }
-                else {
-                    statusMessage(  QString(tr("Change edge weight cancelled."))  );
-                    return;
-                }
-                break;
-            case 2:
-                qDebug("MW: slotEditEdgeWeight()  both directions %i <-> %i",targetNode , sourceNode);
-                newWeight=(float) QInputDialog::getDouble(this,
-                                                          "Change edge weight...",tr("New edge Weight: "), 1, -100, 100 ,1, &ok ) ;
+        newWeight=(float) QInputDialog::getDouble(
+                    this,
+                    "Change edge weight...",
+                    tr("New edge Weight: "),
+                    1, -100, 100 ,1, &ok ) ;
 
-                if (ok) {
-                    qDebug()<<"MW: Changing first direction. NewWeight will be "<< newWeight;
-                    activeGraph.setArcWeight(sourceNode, targetNode, newWeight);
-                    qDebug()<<"MW: Changing opposite direction. NewWeight will be "<< newWeight;
-                    activeGraph.setArcWeight( targetNode, sourceNode, newWeight);
-                    statusMessage(  QString(tr("Ready."))  );
-                    return;
-                }
-                else {
-                    statusMessage(  QString(tr("Change edge weight cancelled."))  );
-                    return;
-                }
-                break;
-            }
+        if (ok) {
+            activeGraph.setArcWeight(sourceNode, targetNode, newWeight);
         }
         else {
-            qDebug() << "MW: slotEditEdgeWeight()  real edge " << sourceNode
-                     << " -> " <<targetNode;
-            newWeight=QInputDialog::getDouble(this,
-                                              "Change edge weight...",tr("New edge weight: "), 1.0, -100, 100 ,1, &ok) ;
-            if (ok) {
-                qDebug() << "MW: slotEditEdgeWeight()  setWeight to  "
-                         << newWeight;
-                clickedEdge->setWeight(newWeight);
-                qDebug() << "MW: slotEditEdgeWeight()  calling update  ";
-                clickedEdge->update();
-                qDebug()<<"MW: newWeight will be "<< newWeight;
-                activeGraph.setArcWeight(sourceNode, targetNode, newWeight);
-                statusMessage(  QString(tr("Ready."))  );
-                return;
-            }
-            else {
-                statusMessage(  QString(tr("Change edge weight cancelled."))  );
-                return;
-            }
-
+            statusMessage(  QString(tr("Change edge weight cancelled."))  );
+            return;
         }
+
+        if ( activeGraph.symmetricEdge(sourceNode, targetNode) ) {
+        }
+
         edgeClicked=false;
     }
 
@@ -9399,20 +9351,22 @@ void MainWindow::slotOptionsEdgeThicknessPerWeight(bool toogle) {
  */
 void MainWindow::slotOptionsEdgeWeightNumbersVisibility(bool toggle) {
     qDebug() << "MW::slotOptionsEdgeWeightNumbersVisibility - Toggling Edges Weights";
+    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
     statusMessage( tr("Toggle Edges Weights. Please wait...") );
 
+    appSettings["initEdgeWeighNumbersVisibility"] = (toggle) ? "true":"false";
+    graphicsWidget->setEdgeWeightNumbersVisibility(toggle);
+    activeGraph.setEdgeWeightNumbersVisibility(toggle);
+    optionsEdgeWeightNumbersAct->setChecked ( toggle );
     if (!toggle) {
-        optionsEdgeWeightNumbersAct->setChecked ( false );
-        graphicsWidget->setAllItemsVisibility(TypeEdgeWeight, false);
-        statusMessage( tr("Edge weights are invisible now. Click the same option again to display them.") );
-        return;
+        statusMessage( tr("Edge weights are invisible now. "
+                          "Click the same option again to display them.") );
     }
     else{
-        optionsEdgeWeightNumbersAct->setChecked ( true );
-        graphicsWidget->setAllItemsVisibility(TypeEdgeWeight, true);
         statusMessage( tr("Edge weights are visible again...") );
     }
-    activeGraph.setVertexLabelsVisibility(toggle);
+    QApplication::restoreOverrideCursor();
+
 }
 
 

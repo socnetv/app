@@ -175,6 +175,17 @@ SettingsDialog::SettingsDialog(
         ui->edgeShapeRadioStraightLine->setChecked(true);
     }
 
+
+    ui->edgeWeightNumbersChkBox-> setChecked(
+                (m_appSettings["initEdgeWeightNumberVisibility"] == "true") ? true: false
+                                                                  );
+    m_edgeWeightNumberColor = QColor (m_appSettings["initEdgeWeightNumberVisibility"]);
+    m_pixmap = QPixmap(60,20) ;
+    m_pixmap.fill( m_edgeWeightNumberColor );
+    ui->edgeWeightNumberColorBtn->setIcon(QIcon(m_pixmap));
+
+    ui->edgeWeightNumberSizeSpin->setValue( m_appSettings["initEdgeWeightNumberSize"].toInt(0, 10) );
+
     /**
      * dialog signals to slots
      */
@@ -267,7 +278,8 @@ SettingsDialog::SettingsDialog(
     connect (ui->edgeShapeRadioBezier, &QRadioButton::clicked,
              this, &SettingsDialog::getEdgeShape);
 
-
+    connect (ui->edgeWeightNumbersChkBox, &QCheckBox::stateChanged,
+                     this, &SettingsDialog::getEdgeWeightNumbersVisibility);
 
 }
 
@@ -574,6 +586,18 @@ void SettingsDialog::getEdgeShape(){
                m_appSettings["initEdgeShape"];
     emit setEdgeShape(m_appSettings["initEdgeShape"], 0);
 }
+
+
+
+/**
+ * @brief SettingsDialog::getEdgeWeightNumbersVisibility
+ * @param toggle
+ */
+void SettingsDialog::getEdgeWeightNumbersVisibility(const bool &toggle){
+    m_appSettings["initEdgeWeightNumbersVisibility"]= (toggle) ? "true" : "false";
+    emit setEdgeWeightNumbersVisibility(toggle);
+}
+
 
 
 

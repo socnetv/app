@@ -73,6 +73,8 @@ public:
 
     void setWeight( const float  &w) ;
     float weight() const;
+    void addWeightNumber ();
+    void setWeightNumberVisibility  (const bool &toggle);
 
     void showArrows(const bool &);
     void toggleAntialiasing(bool);
@@ -113,16 +115,16 @@ private:
     QPointF sourcePoint, targetPoint;
     qreal m_arrowSize, m_startOffset, m_endOffset;
     Qt::PenStyle m_style;
-    EdgeWeight* edgeWeight;
+    EdgeWeight* weightNumber;
 
-    QString m_color, m_tempColor;
+    QString m_color, m_tempColor, m_colorNegative;
     int eFrom, eTo;
     float m_weight, m_tempweight;
     int tox1, tox2, toy1, toy2, size;
     int m_reciprocal;
     double rad, theta, theta1, theta2;
     qreal angle, line_length, line_dx, line_dy;
-    bool m_Bezier, m_drawArrows, m_reciprocal_first;
+    bool m_Bezier, m_drawArrows, m_reciprocal_first, m_drawWeightNumber;
 };
 
 #endif

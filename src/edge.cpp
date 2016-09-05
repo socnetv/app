@@ -79,13 +79,11 @@ Edge::Edge(  GraphicsWidget *gw,
     m_weight = weight ;
     m_Bezier = bez;
 
-    // create edge weight item
-    double x = ( from->x() + to->x() ) / 2.0;
-    double y = ( from->y() + to->y() ) / 2.0;
-    edgeWeight = new  EdgeWeight (this, 7, QString::number(weight) );
-    edgeWeight-> setPos(x,y);
-    edgeWeight-> setDefaultTextColor (color);
-    edgeWeight-> hide();
+    m_drawWeightNumber = false;
+
+    if (m_drawWeightNumber) {
+        addWeightNumber();
+    }
 
     setAcceptHoverEvents(true);
 //    setFlags(QGraphicsItem::ItemIsSelectable);
@@ -141,19 +139,45 @@ QString Edge::colorToPajek() {
 
 /**
  * @brief Called from MW when user wants to change an edge's weight.
-    Updates both the width and the EdgeWeight
+    Updates both the width and the weightNumber
  * @param w
  */
 void Edge::setWeight(const float &w) {
+    prepareGeometryChange();
     m_weight = w;
-    edgeWeight->setPlainText (QString::number(w));
-
+    if (m_drawWeightNumber)
+        weightNumber->setPlainText (QString::number(w));
 }
 
 float Edge::weight() const {
     return m_weight;
 }
 
+
+
+void Edge::addWeightNumber (){
+    // create edge weight item
+    double x = ( source->x() + target->x() ) / 2.0;
+    double y = ( source->y() + target->y() ) / 2.0;
+    weightNumber = new  EdgeWeight (this, 7, QString::number(m_weight) );
+    weightNumber-> setPos(x,y);
+    weightNumber-> setDefaultTextColor (m_color);
+    m_drawWeightNumber = true;
+}
+
+void Edge::setWeightNumberVisibility (const bool &toggle) {
+    if (m_drawWeightNumber) {
+        if (toggle)
+            weightNumber ->show();
+        else
+            weightNumber ->hide();
+    }
+    else{
+        if (toggle)
+            addWeightNumber();
+    }
+
+}
 
 void Edge::setStartOffset(const int &offset){
     m_startOffset=offset;
@@ -232,8 +256,8 @@ void Edge::adjust(){
         }
 
     }
-
-    edgeWeight->setPos( (source->x()+target->x())/2.0, (source->y()+target->y())/2.0 );
+    if (m_drawWeightNumber)
+        weightNumber->setPos( (source->x()+target->x())/2.0, (source->y()+target->y())/2.0 );
 
     //Define the path upon which we' ll draw the line
     //QPainterPath line(sourcePoint);
@@ -418,7 +442,7 @@ Qt::PenStyle Edge::style() const{
 
 QPen Edge::pen() const {
     if (m_weight < 0 ){
-        return  QPen(QColor("red"), width(), Qt::DashLine, Qt::RoundCap, Qt::RoundJoin);
+        return  QPen(QColor(m_color), width(), Qt::DashLine, Qt::RoundCap, Qt::RoundJoin);
     }
     return QPen(QColor(m_color), width(), style(), Qt::RoundCap, Qt::RoundJoin);
 }
@@ -501,7 +525,8 @@ void Edge::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 Edge::~Edge(){
     qDebug() << "\n\n\n *** ~EDGE() " << sourceNodeNumber()<< "->" << targetNodeNumber();
     removeRefs();
-    edgeWeight->deleteLater();
+    if (m_drawWeightNumber)
+        weightNumber->deleteLater();
     this->hide();
 
 }

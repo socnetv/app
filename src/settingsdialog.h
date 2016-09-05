@@ -64,6 +64,7 @@ public slots:
     void getEdgeColor();
     void getEdgeColorNegative();
     void getEdgeShape();
+    void getEdgeWeightNumbersVisibility(const bool &toggle);
 
 signals:
     void setProgressBars(bool);
@@ -91,6 +92,7 @@ signals:
     void setEdgesVisibility (const bool &toggle);
     void setEdgeColor(const QColor, const int &);
     void setEdgeShape(const QString, const long int);
+    void setEdgeWeightNumbersVisibility(const bool &toggle);
     void saveSettings();
 private:
      QMap<QString, QString> &m_appSettings ;
@@ -98,7 +100,7 @@ private:
      QPixmap m_pixmap;
      //QString m_nodeShape;
      QColor m_bgColor, m_nodeColor, m_nodeNumberColor, m_nodeLabelColor;
-     QColor m_edgeColor, m_edgeColorNegative;
+     QColor m_edgeColor, m_edgeColorNegative, m_edgeWeightNumberColor;
 };
 
 #endif // SETTINGSDIALOG_H

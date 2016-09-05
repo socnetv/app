@@ -199,6 +199,7 @@ signals:
     void setNodeLabelSize(const long int &, const int &);
     void setNodeLabelDistance(const long int &, const int &);
     void drawEdgeReciprocal(int, int);				//call GW to draw the edge as symmetric one
+    void setEdgeWeight (const long int &v1, const long int &v2, const float &weight);
     void setEdgeColor(const long int &v1,
                          const long int &v2,
                          const QString &color);
@@ -337,6 +338,9 @@ public:
     void setArcColor(const long int &v1, const long int &v2, const QString &color);
     QString arcColor (const long int &v1, const long int &v2);
     bool setAllEdgesColor(const QString &color, const int &threshold=RAND_MAX);
+
+
+    void setEdgeWeightNumbersVisibility (const bool &toggle);
 
     float density();
 
@@ -679,6 +683,7 @@ private:
         distanceMatrixCreated;
     bool reachabilityMatrixCreated;
     bool m_undirected;
+    bool initEdgeWeightNumbers;
 
     QString VERSION, networkName, initEdgeColor, initVertexColor,
         initVertexNumberColor, initVertexLabelColor, initVertexShape;

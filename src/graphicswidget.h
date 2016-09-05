@@ -74,8 +74,6 @@ public:
 
     void setNumbersInsideNodes(bool);
 
-    bool setEdgeWeight(int, int, float);
-
     void setAllItemsVisibility(int, bool);
 
     void removeAllItems(int);
@@ -125,9 +123,11 @@ public slots:
                   const QString &color, const bool &bezier);
     void eraseEdge(int, int);
     void setEdgeVisibility (int relation, int, int, bool);
+    bool setEdgeWeight(const long int &, const long int &, const float &);
     void setEdgeColor(const long int &, const long int&, const QString &);
     void edgeClicked(Edge *);
     void openEdgeContextMenu();
+    void setEdgeWeightNumbersVisibility (const bool &toggle);
 
     void startEdge(Node *node);
     void drawEdgeReciprocal(int, int);
