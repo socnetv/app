@@ -167,7 +167,9 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
                               const float &weight,
                               const int &reciprocal,
                               const bool &drawArrows,
-                              const QString &color, const bool &bezier){
+                              const QString &color,
+                              const bool &bezier,
+                              const bool &weightNumbers){
 
     QString edgeName = QString::number(m_curRelation) + QString(":")
             + QString::number(source) + QString(">")+ QString::number(target);
@@ -181,7 +183,8 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
                          Qt::SolidLine, weight,
                          m_nodeSize, color,
                          reciprocal, drawArrows,
-                         (source==target) ? true: bezier );
+                         (source==target) ? true: bezier,
+                         weightNumbers);
 
     edgesHash.insert(edgeName, edge);
     if (reciprocal == EDGE_DIRECTED_OPPOSITE_EXISTS ) {
@@ -211,7 +214,7 @@ void GraphicsWidget::drawEdgeReciprocal(int source, int target){
                          Qt::SolidLine, 1,
                          m_nodeSize, "red",
                          true, true,
-                         false );
+                         false);
 
 
 }

@@ -53,10 +53,9 @@ Edge::Edge(  GraphicsWidget *gw,
              const QString &color,
              const int &reciprocal,
              const bool &drawArrows,
-             const bool &bez ) : graphicsWidget(gw)
+             const bool &bez,
+             const bool &drawWeightNumbers) : graphicsWidget(gw)
 {
-
-    qDebug("Edge: Edge()");
     Q_UNUSED(nodeSize);
     graphicsWidget->scene()->addItem(this);  //add edge to scene to be displayed
 
@@ -79,11 +78,15 @@ Edge::Edge(  GraphicsWidget *gw,
     m_weight = weight ;
     m_Bezier = bez;
 
-    m_drawWeightNumber = false;
+    m_drawWeightNumber = drawWeightNumbers;
+
+    qDebug()<< "Edge: Edge() - " << eFrom << "->" << eTo <<
+               " = " << m_weight;
 
     if (m_drawWeightNumber) {
         addWeightNumber();
     }
+
 
     setAcceptHoverEvents(true);
 //    setFlags(QGraphicsItem::ItemIsSelectable);
@@ -143,6 +146,7 @@ QString Edge::colorToPajek() {
  * @param w
  */
 void Edge::setWeight(const float &w) {
+    qDebug() << "Edge::setWeight() " << w;
     prepareGeometryChange();
     m_weight = w;
     if (m_drawWeightNumber)
@@ -480,7 +484,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     Controls the width of the edge; is a function of edge weight
 */
 float Edge::width() const{
-    // qDebug()<< "Edge::width() will return "<< fabs(m_weight);
+    qDebug()<< "Edge::width() will return "<< fabs(m_weight);
     if ( fabs(m_weight) > 1  )
         return  1  + fabs(m_weight)/10;
     return 1;	//	Default, if  m_weight in (-1, 1) space
@@ -493,15 +497,13 @@ float Edge::width() const{
  * @param flag
  */
 void Edge::highlight(const bool &flag) {
-    qDebug()<< "highlight " << flag;
+    qDebug()<< "Edge::highlight() - " << flag;
     if (flag) {
         m_tempColor = m_color;
         m_tempweight = m_weight;
         setColor("red");
-        setWeight (m_weight+5);
     }
     else setColor(m_tempColor);
-    setWeight (m_tempweight);
 }
 
 

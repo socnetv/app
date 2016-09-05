@@ -475,21 +475,23 @@ void Graph::createEdge( const int &v1, const int &v2, const float &weight,
             qDebug()<< "-- Graph::createEdge() - "
                     << "Creating RECIPROCAL edge - emitting drawEdge signal to GW";
             addEdge ( v1, v2, weight, color, reciprocal );
-            emit drawEdge(v1, v2, weight, reciprocal, drawArrows, color, bezier);
+            emit drawEdge(v1, v2, weight, reciprocal,
+                          drawArrows, color, bezier, initEdgeWeightNumbers);
         }
         else if ( int opposite = hasArc( v2, v1) )  {
             Q_UNUSED (opposite);
             qDebug()<<"-- Graph::createEdge() - Opposite arc exists. "
-                   << "  Emitting drawEdgeReciprocal to GW ";
+                   << "  Emitting drawEdge to GW ";
             addEdge ( v1, v2, weight, color, EDGE_DIRECTED_OPPOSITE_EXISTS );
-            //emit drawEdgeReciprocal(v2, v1);
-            emit drawEdge(v1, v2, weight, EDGE_DIRECTED_OPPOSITE_EXISTS, drawArrows, color, bezier);
+            emit drawEdge(v1, v2, weight, EDGE_DIRECTED_OPPOSITE_EXISTS,
+                          drawArrows, color, bezier, initEdgeWeightNumbers);
         }
         else {
             qDebug()<< "-- Graph::createEdge() - "
                        << "Opposite arc does not exist. Emitting drawEdge to GW...";
             addEdge ( v1, v2, weight, color, EDGE_DIRECTED );
-            emit drawEdge(v1, v2, weight, EDGE_DIRECTED, drawArrows, color, bezier);
+            emit drawEdge(v1, v2, weight, EDGE_DIRECTED,
+                          drawArrows, color, bezier, initEdgeWeightNumbers);
         }
     }
     else {

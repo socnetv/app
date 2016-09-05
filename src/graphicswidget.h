@@ -120,7 +120,9 @@ public slots:
                   const float &weight,
                   const int &reciprocal,
                   const bool &drawArrows,
-                  const QString &color, const bool &bezier);
+                  const QString &color,
+                  const bool &bezier,
+                  const bool &weightNumbers=false);
     void eraseEdge(int, int);
     void setEdgeVisibility (int relation, int, int, bool);
     bool setEdgeWeight(const long int &, const long int &, const float &);

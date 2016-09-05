@@ -186,7 +186,8 @@ signals:
     void eraseNode (long int);						//erase node from GW
     //call GW to draw an edge
     void drawEdge ( const int &, const int &, const float &,
-                    const int &, const bool, const QString &, const bool &);
+                    const int &, const bool, const QString &,
+                    const bool &,  const bool &);
     void eraseEdge(int, int);					//emited from removeEdge() to GW to clear the edge item.
     void setEdgeVisibility (int, int, int, bool);			// emitted from each Vertex
     void setVertexVisibility(long int, bool);		//notifies GW to disable a node

@@ -3235,10 +3235,13 @@ void MainWindow::initSignalSlots() {
 
     connect( &activeGraph, SIGNAL( drawEdge( const int&, const int&, const float &,
                                              const int&, const bool&,
-                                             const QString &, const bool&)),
+                                             const QString &,
+                                             const bool&,
+                                             const bool&)),
              graphicsWidget, SLOT( drawEdge( const int&, const int&, const float &,
                                              const int &, const bool&,
-                                             const QString &, const bool &) )  ) ;
+                                             const QString &, const bool &,
+                                             const bool&) )  ) ;
 
     connect( &activeGraph, SIGNAL( drawEdgeReciprocal(int, int) ),
              graphicsWidget, SLOT( drawEdgeReciprocal(int, int) ) );
