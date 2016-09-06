@@ -109,10 +109,6 @@ public:
     void setEccentricity (float c){ m_Eccentricity=c;}
     float eccentricity() { return m_Eccentricity;}
 
-    /* Returns true if there is a reciprocal link from this vertex */
-    bool isReciprocalLinked() { return m_reciprocalLinked;}
-    void setReciprocalLinked(bool reciprocal) { m_reciprocalLinked=reciprocal;}
-
     /* Returns true if there is an outLink from this vertex */
     bool isOutLinked() { return (outEdges() > 0) ? true:false;}
     /* Returns the weight of the link to vertex V, otherwise zero*/

@@ -68,8 +68,8 @@ Edge::Edge(  GraphicsWidget *gw,
     m_style = style;
     m_color=color;
     m_drawArrows=drawArrows;
-    m_reciprocal=type;
-    m_reciprocal_first = false;
+    m_edgeType=type;
+    m_directed_first = false;
 
     m_startOffset=source->size();  //used to offset edge from the centre of node
     m_endOffset=target->size();  //used to offset edge from the centre of node
@@ -86,7 +86,7 @@ Edge::Edge(  GraphicsWidget *gw,
     qDebug()<< "Edge::Edge():  " << eFrom << "->" << eTo
             <<" = " << m_weight
             <<" label " << m_label
-            <<" reciprocal " << m_reciprocal;
+            <<" edgeType " << m_edgeType;
 
     if (m_drawWeightNumber) {
         addWeightNumber();
@@ -299,8 +299,8 @@ void Edge::adjust(){
     sourcePoint = line.p1() + edgeOffset ;
     targetPoint = line.p2() - edgeOffset ;
 
-    if (m_reciprocal == EDGE_DIRECTED_OPPOSITE_EXISTS ) {
-        if (m_reciprocal_first ) {
+    if (m_edgeType == EDGE_DIRECTED_OPPOSITE_EXISTS ) {
+        if (m_directed_first ) {
             sourcePoint -= QPointF(4,4);
             targetPoint -= QPointF(4,4);
         }
@@ -379,7 +379,7 @@ void Edge::adjust(){
                                  << targetPoint
                                  );
 
-            if (m_reciprocal == EDGE_RECIPROCAL_UNDIRECTED ) {
+            if (m_edgeType == EDGE_RECIPROCAL_UNDIRECTED ) {
     //            qDebug() << "**** Edge::paint() This edge is SYMMETRIC! "
     //                     << " So, we need to create Arrow at src node as well";
                 QPointF srcArrowP1 = sourcePoint + QPointF(sin(angle +Pi / 3) * m_arrowSize,
@@ -464,32 +464,26 @@ QRectF Edge::boundingRect() const {
 }
 
 
-void Edge::makeReciprocalFirst(){
-    qDebug()<< "Edge::makeReciprocalFirst()";
+void Edge::setDirectedWithOpposite(){
+    qDebug()<< "Edge::setDirectedWithOpposite()";
     prepareGeometryChange();
-    m_reciprocal = EDGE_DIRECTED_OPPOSITE_EXISTS;
-    m_reciprocal_first= true;
+    m_edgeType = EDGE_DIRECTED_OPPOSITE_EXISTS;
+    m_directed_first= true;
 }
 
 
 
 
-void Edge::makeReciprocal(){
-    qDebug()<< "Edge::makeReciprocal()";
+void Edge::setUndirected(){
+    qDebug()<< "Edge::setUndirected()";
     prepareGeometryChange();
-    //m_reciprocal= true;
+    m_edgeType = EDGE_RECIPROCAL_UNDIRECTED;
+    m_directed_first= false;
 }
 
 
-
-void Edge::unmakeReciprocal(){
-    qDebug("Edge::unmakeReciprocal()");
-    prepareGeometryChange();
-    m_reciprocal= false;
-}
-
-bool Edge::isReciprocal() {
-    return m_reciprocal;
+bool Edge::isUndirected() {
+    return ( m_edgeType == EDGE_RECIPROCAL_UNDIRECTED ) ? true:false;
 }
 
 

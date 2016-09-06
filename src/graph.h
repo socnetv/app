@@ -193,7 +193,7 @@ signals:
                     const QString &color="black",
                     const int &type=0, const bool arrows=true,
                     const bool &bezier=false,  const bool &weightNumbers=false);
-    void eraseEdge(int, int);					//emited from edgeRemove() to GW to clear the edge item.
+    void eraseEdge(const long int &, const long int &);					//emited from edgeRemove() to GW to clear the edge item.
     void setEdgeVisibility (int, int, int, bool);			// emitted from each Vertex
     void setVertexVisibility(long int, bool);		//notifies GW to disable a node
     void setNodeSize(const long int &v, const int &size);
@@ -204,8 +204,9 @@ signals:
     void setNodeNumberDistance(const long int &, const int &);
     void setNodeLabelSize(const long int &, const int &);
     void setNodeLabelDistance(const long int &, const int &);
-    void drawEdgeReciprocal(int, int);				//call GW to draw the edge as symmetric one
+
     void setEdgeWeight (const long int &v1, const long int &v2, const float &weight);
+    void setEdgeUndirected(const long int &v1, const long int &v2, const float &weight);
     void setEdgeColor(const long int &v1,
                          const long int &v2,
                          const QString &color);
@@ -341,6 +342,8 @@ public:
 
     void edgeRemove (int v1, int v2);
     bool edgeSymmetric(int v1, int v2);
+    void edgeUndirectedSet(const long int &v1, const long int &v2, const float &w);
+
     void edgeWeightSet (const long int &v1, const long int &v2, const float &w);
     void edgeWeightNumbersVisibilitySet (const bool &toggle);
 
@@ -353,11 +356,15 @@ public:
     QString edgeColor (const long int &v1, const long int &v2);
     bool edgeColorAllSet(const QString &color, const int &threshold=RAND_MAX);
 
-
+    //GRAPH methods
     float density();
     bool isWeighted();
+
     bool isSymmetric();
     void symmetrize();
+
+    void undirectedSet();
+
 
     void adjacencyMatrixCreate(const bool dropIsolates=false,
                                const bool considerWeights=true,
@@ -595,9 +602,10 @@ private:
                       const QPointF &p, const QString &shape );
 
     void edgeAdd (const int &v1, const int &v2, const float &weight,
+                  const int &type,
                   const QString &label,
-                  const QString &color,
-                  const int &type);
+                  const QString &color
+                  );
 
     /** methods used by distanceMatrixCreate()  */
     void BFS(const int s, const bool computeCentralities,

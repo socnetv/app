@@ -72,7 +72,6 @@ Vertex::Vertex(Graph* parent,
     m_SC=0; m_SSC=0; m_IRCC=0; m_SIRCC=0;
     m_CLC=0; m_hasCLC=false;
     m_curRelation=relation;
-    m_reciprocalLinked=false;
     m_enabled = true;
 
     connect (this, SIGNAL (setEdgeVisibility ( int, int, int, bool) ),
@@ -96,7 +95,6 @@ Vertex::Vertex(const long int &name) {
     m_DC=0; m_SDC=0; m_DP=0; m_SDP=0; m_CC=0; m_SCC=0; m_BC=0; m_SBC=0;
     m_IRCC=0; m_SIRCC=0; m_SC=0; m_SSC=0;
     m_curRelation=0;
-    m_reciprocalLinked=false;
 }
 
 

@@ -196,42 +196,13 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
         QString edgeName = QString::number(m_curRelation) + QString(":") +
                 QString::number(target) + QString(">")+ QString::number(source);
         //    qDebug("GW: making existing edge between %i and %i reciprocal. Name: "+edgeName.toUtf8(), source, target );
-        edgesHash.value(edgeName)->makeReciprocalFirst();
+        edgesHash.value(edgeName)->setDirectedWithOpposite();
 
     }
     //	qDebug()<< "Scene items now: "<< scene()->items().size() << " - GW items now: "<< items().size();
 }
 
 
-
-
-/**
-    Called from Graph to make an existing arc symmetric (reciprocal)
-*/
-void GraphicsWidget::drawEdgeReciprocal(int source, int target){
-    qDebug() << "GW: drawEdgeReciprocal()" << source << " -> " << target;
-    QString edgeName = QString::number(m_curRelation) + QString(":") +
-            QString::number(target) + QString(">")+ QString::number(source);
-    //    qDebug("GW: making existing edge between %i and %i reciprocal. Name: "+edgeName.toUtf8(), source, target );
-    edgesHash.value(edgeName)->makeReciprocal();
-
-
-
-
-}
-
-
-
-/**
-    Called from Graph to unmake an existing symmetric (reciprocal) edge to one-directed only.
-*/
-void GraphicsWidget::unmakeEdgeReciprocal(int source, int target){
-    qDebug("GW: unmakeEdgeReciprocal ()");
-    QString edgeName =  QString::number(m_curRelation) + QString(":") +
-            QString::number(source) + QString(">")+ QString::number(target);
-    //    qDebug("GW: removing edge between %i and %i. Name: "+edgeName.toUtf8(), source, target );
-    edgesHash.value(edgeName)->unmakeReciprocal();
-}
 
 
 
@@ -377,10 +348,16 @@ void GraphicsWidget::eraseNode(long int doomedJim){
 
 
 
+
 /**
-    Called from MainWindow when erasing edges using vertex numbers
-*/
-void GraphicsWidget::eraseEdge(int sourceNode, int targetNode){
+ * @brief GraphicsWidget::eraseEdge
+ * Called from MW/Graph when erasing edges using vertex numbers
+ * Also called when transforming directed edges to undirected.
+ * @param sourceNode
+ * @param targetNode
+ */
+void GraphicsWidget::eraseEdge(const long int &sourceNode, const long int &targetNode){
+    qDebug() << "GW::eraseEdge()" << sourceNode << " -> " << targetNode;
     qDebug("GW: Scene items= %i - View items : %i",scene()->items().size(), items().size());
     QList<QGraphicsItem *>  list=scene()->items();
     for (QList<QGraphicsItem *>::iterator it=list.begin(); it!= list.end() ; it++){
@@ -408,6 +385,8 @@ void GraphicsWidget::eraseEdge(int sourceNode, int targetNode){
 */
 void GraphicsWidget::removeItem( Node *node){
     long int i=node->nodeNumber();
+    qDebug() << "GW::removeItem (node) - number: " <<  i;
+
     foreach ( Node *candidate, nodeHash) {
         if ( candidate->nodeNumber() == i )
             nodeHash.remove( i );
@@ -421,8 +400,19 @@ void GraphicsWidget::removeItem( Node *node){
 
 /** Called from Node::die() to remove Edge edge ... */
 void GraphicsWidget::removeItem( Edge * edge){
-    //edge->remove();
-    delete (edge);
+
+    QString edgeName =  QString::number(m_curRelation) + QString(":") +
+            QString::number( edge->sourceNodeNumber() )
+            + QString(">")
+            + QString::number( edge->targetNodeNumber());
+    qDebug() << "GW::removeItem (edge) - name: " <<  edgeName;
+    if  ( edgesHash.contains (edgeName) ) {
+        edgesHash.remove(edgeName)  ;
+    }
+
+    edge->deleteLater();
+
+    //delete (edge);
 }
 
 
@@ -593,6 +583,43 @@ void GraphicsWidget::setEdgeColor(const long int &source,
 
 }
 
+
+
+
+
+
+/**
+ * @brief GraphicsWidget::setEdgeWeight
+ * Makes an edge undirected
+ * @param source
+ * @param target
+ * @param weight
+ * @return
+ */
+bool GraphicsWidget::setEdgeUndirected(const long int &source,
+                                       const long int &target,
+                                       const float &weight){
+    qDebug() << "GW::setEdgeUndirected() : " << source << "->" << target
+             << " = " << weight;
+
+    QString edgeName =  QString::number(m_curRelation) + QString(":") +
+            QString::number( source ) + QString(">")+ QString::number( target );
+
+    qDebug()<<"GW::setEdgeUndirected() -" << edgeName ;
+    if  ( edgesHash.contains (edgeName) ) {
+        edgesHash.value(edgeName) -> setUndirected();
+
+        QString oppositeEdgeName =  QString::number(m_curRelation) + QString(":") +
+                QString::number( target ) + QString(">")+ QString::number( source);
+
+        qDebug()<<"GW::setEdgeUndirected() - removing opposite " << oppositeEdgeName ;
+        removeItem ( edgesHash.value(oppositeEdgeName)  );
+
+        return true;
+    }
+    return false;
+
+}
 
 
 

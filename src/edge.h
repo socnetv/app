@@ -85,11 +85,9 @@ public:
     void showArrows(const bool &);
     void toggleAntialiasing(bool);
 
-    void makeReciprocal();
-    void unmakeReciprocal();
-    bool isReciprocal();
-
-    void makeReciprocalFirst();
+    void setUndirected();
+    bool isUndirected();
+    void setDirectedWithOpposite();
 
     float width() const;
 
@@ -128,10 +126,10 @@ private:
     int eFrom, eTo;
     float m_weight, m_tempweight;
     int tox1, tox2, toy1, toy2, size;
-    int m_reciprocal;
+    int m_edgeType;
     double rad, theta, theta1, theta2;
     qreal angle, line_length, line_dx, line_dy;
-    bool m_Bezier, m_drawArrows, m_reciprocal_first, m_drawWeightNumber;
+    bool m_Bezier, m_drawArrows, m_directed_first, m_drawWeightNumber;
     bool m_drawLabel;
 };
 

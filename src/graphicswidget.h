@@ -124,8 +124,9 @@ public slots:
                   const bool &drawArrows=true,
                   const bool &bezier=false,
                   const bool &weightNumbers=false);
-    void eraseEdge(int, int);
+    void eraseEdge(const long int &, const long int &);
     void setEdgeVisibility (int relation, int, int, bool);
+    bool setEdgeUndirected(const long int &, const long int &, const float &);
     bool setEdgeWeight(const long int &, const long int &, const float &);
     void setEdgeLabel(const long int &, const long int&, const QString &);
     void setEdgeColor(const long int &, const long int&, const QString &);
@@ -135,8 +136,6 @@ public slots:
     void setEdgeLabelsVisibility(const bool &toggle);
 
     void startEdge(Node *node);
-    void drawEdgeReciprocal(int, int);
-    void unmakeEdgeReciprocal(int, int);
 
     void clearGuides();
     void addGuideCircle( int x0, int y0, int radius);

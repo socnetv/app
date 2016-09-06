@@ -45,6 +45,11 @@
 
 static qreal Pi = 3.14159265;
 
+
+/**
+ * @brief Graph::Graph
+ * constructor
+ */
 Graph::Graph() {
     m_totalVertices=0;
     outboundEdgesVert=0;
@@ -77,7 +82,6 @@ Graph::Graph() {
     influenceRanges.reserve(1000);
 
 }
-
 
 
 
@@ -405,7 +409,6 @@ void Graph::vertexRemove(long int Doomed){
                     << (*it)->outEdges() << " and " <<  (*it)->degreeOut() ;
             if ( (*it)->outEdges() == 1 && (*it)->hasEdgeFrom(Doomed) != 0 )	{
                // qDebug() << "Graph: decreasing reciprocalEdgesVert";
-                (*it)->setReciprocalLinked(false);
             }
             (*it)->edgeRemoveTo(Doomed) ;
         }
@@ -1069,21 +1072,21 @@ void Graph::edgeCreate(const int &v1, const int &v2, const float &weight,
         if ( type == EDGE_RECIPROCAL_UNDIRECTED ) {
             qDebug()<< "-- Graph::edgeCreate() - "
                     << "Creating RECIPROCAL edge - emitting drawEdge signal to GW";
-            edgeAdd ( v1, v2, weight, label, color, type );
+            edgeAdd ( v1, v2, weight, type, label, color );
             emit drawEdge(v1, v2, weight, label, color, type,
                           drawArrows, bezier, initEdgeWeightNumbers);
         }
         else if ( edgeExists( v2, v1) )  {
             qDebug()<<"-- Graph::edgeCreate() - Opposite arc exists. "
                    << "  Emitting drawEdge to GW ";
-            edgeAdd ( v1, v2, weight, label, color, EDGE_DIRECTED_OPPOSITE_EXISTS );
+            edgeAdd ( v1, v2, weight, EDGE_DIRECTED_OPPOSITE_EXISTS , label, color);
             emit drawEdge(v1, v2, weight, label, color, EDGE_DIRECTED_OPPOSITE_EXISTS,
                           drawArrows, bezier, initEdgeWeightNumbers);
         }
         else {
             qDebug()<< "-- Graph::edgeCreate() - "
                        << "Opposite arc does not exist. Emitting drawEdge to GW...";
-            edgeAdd ( v1, v2, weight, label, color,  EDGE_DIRECTED );
+            edgeAdd ( v1, v2, weight, EDGE_DIRECTED, label, color   );
             emit drawEdge(v1, v2, weight, label, color, EDGE_DIRECTED,
                           drawArrows, bezier, initEdgeWeightNumbers);
         }
@@ -1134,9 +1137,9 @@ void Graph::edgeCreateWebCrawler (int source, int target){
  * @param type
  */
 void Graph::edgeAdd (const int &v1, const int &v2, const float &weight,
+                     const int &type,
                      const QString &label,
-                     const QString &color,
-                     const int &type) {
+                     const QString &color) {
 
     int source=index[v1];
     int target=index[v2];
@@ -1152,13 +1155,10 @@ void Graph::edgeAdd (const int &v1, const int &v2, const float &weight,
 
     if (type == EDGE_DIRECTED_OPPOSITE_EXISTS ){
         // make existing opposite edge reciprocal
-        m_graph [ source ]->setReciprocalLinked(true);
-        m_graph [ target ]->setReciprocalLinked(true);
+
     }
     else if (type == EDGE_RECIPROCAL_UNDIRECTED){
         //create opposite edge and declare both reciprocal.
-        m_graph [ source ]->setReciprocalLinked(true);
-        m_graph [ target ]->setReciprocalLinked(true);
         m_graph [ target ]->edgeAddTo(v1, weight );
         m_graph [ source ]->edgeAddFrom(target, weight);
     }
@@ -1616,12 +1616,14 @@ float Graph::density() {
 }
 
 
+
 /**
+ * @brief Graph::isWeighted
  *  Checks if the graph is weighted, i.e. if any e in |E| has value > 1
- *  O(n^2)
+ *  Complexity: O(n^2)
+ * @return
  */
 bool Graph::isWeighted(){
-    qDebug("Graph: isWeighted()");
     QList<Vertex*>::const_iterator it, it1;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
@@ -1631,6 +1633,7 @@ bool Graph::isWeighted(){
             }
         }
     }
+    qDebug()<< "Graph: isWeighted() - false";
     return false;
 }
 
@@ -1913,7 +1916,7 @@ bool Graph::isSymmetric(){
 
 /**
  * @brief Graph::symmetrize
- * Transforms the digraph to symmetric directed graph (all edges reciprocal)
+ * Transforms the graph to symmetric (all edges reciprocal)
  */
 void Graph::symmetrize(){
     qDebug("Graph: symmetrize");
@@ -1958,8 +1961,70 @@ void Graph::symmetrize(){
 
 
 
+/**
+ * @brief Graph::undirected
+ * Transforms the graph to undirected
+ */
+void Graph::undirectedSet(){
+    qDebug() << "Graph::undirectedSet()";
+    QList<Vertex*>::const_iterator it;
+    int v2=0, v1=0, weight;
+    QHash<int,float> *enabledOutEdges = new QHash<int,float>;
+    QHash<int,float>::const_iterator it1;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        v1 = (*it)->name();
+        qDebug() << "Graph::undirectedSet() - iterate over edges of v1 " << v1;
+        enabledOutEdges=(*it)->returnEnabledOutEdges();
+        it1=enabledOutEdges->cbegin();
+        while ( it1!=enabledOutEdges->cend() ){
+            v2 = it1.key();
+            weight = it1.value();
+
+            qDebug() << "Graph::undirectedSet() - "
+                     << " v1 " << v1
+                     << " -> " << v2 << " = "
+                     << " weight " << weight;
+            edgeUndirectedSet(v1,v2, weight);
+            ++it1;
+        }
+    }
+    delete enabledOutEdges;
+    graphModified=true;
+    symmetricAdjacencyMatrix=true;
+    emit graphChanged();
+}
 
 
+/**
+ * @brief Graph::edgeUndirectedSet
+ * Tranforms an edge to undirected
+ * Emits setEdgeUndirected to GW
+ * @param v1
+ * @param v2
+ * @param weight
+ */
+void Graph::edgeUndirectedSet(const long int &v1, const long int &v2,
+                              const float &weight) {
+    qDebug() << "Graph::edgeUndirectedSet(): " << v1
+             << " -> " <<  v2  ;
+    int y=index[ v2 ];
+    float invertWeight = m_graph[y]->hasEdgeTo( v1 ) ;
+    if ( invertWeight == 0 ) {
+        qDebug() << "Graph::edgeUndirectedSet(): opposite  " << v1
+                 << " <- " <<  v2 << " does not exist - Add it to Graph." ;
+        edgeAdd(v2,v1, weight, EDGE_DIRECTED_OPPOSITE_EXISTS, "", initEdgeColor);
+    }
+    else {
+        qDebug() << "Graph::edgeUndirectedSet(): opposite  " << v1
+                 << " <- " <<  v2 << " exists - Making weights equal." ;
+        if (weight!= invertWeight )
+            edgeWeightSet(v2,v1,weight);
+    }
+    emit setEdgeUndirected(v1, v2, weight);
+
+    graphModified=true;
+
+}
 
 
 /**
@@ -6258,6 +6323,11 @@ void Graph::writeCliqueCensus(
 
 
 
+/**
+ * @brief Graph::cliqueAdd
+ * @param list
+ * @return
+ */
 bool Graph:: cliqueAdd(const QList<int> &list){
     qDebug() << "*** Graph::cliqueAdd()" <<
                 list.count();

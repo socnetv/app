@@ -981,7 +981,7 @@ void MainWindow::initActions(){
                    "The result is a symmetric network"));
     connect(editEdgeSymmetrizeAllAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeSymmetrizeAll()));
 
-    editEdgeUndirectedAllAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Undirected Edges"), this);
+    editEdgeUndirectedAllAct= new QAction(QIcon(":/images/line.png"), tr("Undirected Edges"), this);
     editEdgeUndirectedAllAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_U));
     editEdgeUndirectedAllAct->setStatusTip(tr("Tranform all arcs to undirected edges (thus, an undirected graph)."));
     editEdgeUndirectedAllAct->setWhatsThis(
@@ -2164,9 +2164,10 @@ void MainWindow::initMenuBar() {
     editEdgeMenu -> addSeparator();
     editEdgeMenu -> addAction (editEdgeColorAllAct);
     editEdgeMenu -> addSeparator();
-    //   transformNodes2EdgesAct -> addTo (editMenu);
-    editEdgeMenu  -> addAction (editEdgeSymmetrizeAllAct);
+    editEdgeMenu -> addAction (editEdgeSymmetrizeAllAct);
+    editEdgeMenu -> addAction (editEdgeUndirectedAllAct);
 
+    //   transformNodes2EdgesAct -> addTo (editMenu);
 
     editMenu ->addSeparator();
     filterMenu = new QMenu ( tr("Filter..."));
@@ -2618,9 +2619,9 @@ void MainWindow::initToolBox(){
     toolBoxLayoutByIndexSelect->setToolTip(tr("Apply a prominence-based layout model"));
     toolBoxLayoutByIndexSelect->setWhatsThis(
                 tr("Visualize by prominence index\n\n"
-                   "Apply a prominence-based layout model to the network "
+                   "Apply a prominence-based layout model to the network. \n "
                    "For instance, you can apply a degree centrality layout. "
-                   "For each prominence index, you can select a cicular or level layout."));
+                   "For each prominence index, you can select a circular or level layout."));
     QStringList indicesList;
     indicesList << "None"<< "Random"
                 << "Degree Centrality" << "Closeness Centrality"
@@ -3248,8 +3249,8 @@ void MainWindow::initSignalSlots() {
                  )
              ) ;
 
-    connect( &activeGraph, SIGNAL( eraseEdge(int, int)),
-             graphicsWidget, SLOT( eraseEdge(int, int) ) );
+    connect( &activeGraph, SIGNAL( eraseEdge(const long int &, const long int &)),
+             graphicsWidget, SLOT( eraseEdge(const long int &, const long int &) ) );
 
     connect( &activeGraph, SIGNAL( graphChanged() ),
              this, SLOT( slotNetworkChanged() ) ) ;
@@ -3269,9 +3270,6 @@ void MainWindow::initSignalSlots() {
                                              const bool &,
                                              const bool&) )  ) ;
 
-    connect( &activeGraph, SIGNAL( drawEdgeReciprocal(int, int) ),
-             graphicsWidget, SLOT( drawEdgeReciprocal(int, int) ) );
-
 
     connect( &activeGraph, SIGNAL( setEdgeWeight(const long int &,
                                                    const long int &,
@@ -3279,6 +3277,14 @@ void MainWindow::initSignalSlots() {
              graphicsWidget, SLOT( setEdgeWeight(const long int &,
                                                 const long int &,
                                                 const float &) ) );
+
+    connect( &activeGraph, SIGNAL( setEdgeUndirected(const long int &,
+                                                   const long int &,
+                                                   const float &)),
+             graphicsWidget, SLOT( setEdgeUndirected(const long int &,
+                                                const long int &,
+                                                const float &) ) );
+
 
 
     connect( &activeGraph, SIGNAL( setEdgeColor(const long int &,
@@ -6604,7 +6610,7 @@ void MainWindow::edgeInfoStatusBar (Edge* edge) {
     edgeClicked=true;
     nodeClicked=false;
 
-    if (edge->isReciprocal()) {
+    if (edge->isUndirected()) {
             statusMessage(  QString
                         (tr("Symmetric edge %1 <--> %2 of weight %3 has been selected. "
                                    "Click again to unselect it."))
@@ -6786,9 +6792,6 @@ void MainWindow::slotEditEdgeRemove(){
             return;
         }
         if ( activeGraph.edgeExists(sourceNode, targetNode)!=0 ) {
-            if (activeGraph.edgeSymmetric(sourceNode, targetNode) )
-                graphicsWidget->unmakeEdgeReciprocal(targetNode, sourceNode);
-            graphicsWidget->eraseEdge(sourceNode, targetNode);
             activeGraph.edgeRemove(sourceNode, targetNode);
         }
         else {
@@ -6814,7 +6817,7 @@ void MainWindow::slotEditEdgeRemove(){
                 graphicsWidget->removeItem(clickedEdge);
                 activeGraph.edgeRemove(sourceNode, targetNode);
                 //make new edge
-                // 						graphicsWidget->unmakeEdgeReciprocal(clickedEdge->targetNodeNumber(), clickedEdge->sourceNodeNumber());
+
                 //FIXME weight should be the same
                 graphicsWidget->drawEdge(
                             targetNode, sourceNode, 1,
@@ -6824,10 +6827,7 @@ void MainWindow::slotEditEdgeRemove(){
 
                 break;
             case 1:
-                clickedEdge->unmakeReciprocal();
-                //graphicsWidget->removeItem(clickedEdge);
                 activeGraph.edgeRemove(targetNode, sourceNode);
-                //						graphicsWidget->drawEdge(i, j, false, drawArrowsAct->isChecked(), appSettings["initEdgeColor"], false);
                 break;
             case 2:
                 graphicsWidget->removeItem(clickedEdge);
@@ -7160,8 +7160,10 @@ void MainWindow::slotEditEdgeSymmetrizeAll(){
     }
     qDebug("MW: slotEditEdgeSymmetrizeAll() calling symmetrize");
     activeGraph.symmetrize();
-    QMessageBox::information(this, "Symmetrize",tr("All arcs are reciprocal. \n"
-                                                   "The network is symmetric."), "OK",0);
+    QMessageBox::information(this,
+                             "Symmetrize",
+                             tr("All arcs are reciprocal. \n"
+                                "The network is symmetric."), "OK",0);
     statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
 }
 
@@ -7173,14 +7175,19 @@ void MainWindow::slotEditEdgeSymmetrizeAll(){
  */
 void MainWindow::slotEditEdgeUndirectedAll(){
     if ( ( !fileLoaded && !networkModified) || activeEdges() ==0 )  {
-        QMessageBox::critical(this, "Error",tr("There are no edges! \nLoad a network file or create a new network first."), "OK",0);
+        QMessageBox::critical(this,
+                              "Error",
+                              tr("There are no edges! \n"
+                                 "Load a network file or create a new network first."), "OK",0);
         statusMessage( tr("No edges present...")  );
         return;
     }
-    qDebug("MW: slotEditEdgeSymmetrizeAll() calling symmetrize");
-    activeGraph.symmetrize();
-    QMessageBox::information(this, "Symmetrize",tr("All edges are now undirected. \n"
-                                                   "The network is symmetric and undirected."), "OK",0);
+    qDebug("MW: slotEditEdgeUndirectedAll() calling Graph::undirectedSet()");
+    activeGraph.undirectedSet();
+    QMessageBox::information(this,
+                             "Undirected edges",
+                             tr("All edges are now undirected. \n"
+                                "The network is symmetric and undirected."), "OK",0);
     statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
 }
 
