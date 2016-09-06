@@ -80,14 +80,14 @@ public:
 	void readGraphMLElementDefaultValue(QXmlStreamReader &);
 	void readGraphMLElementNodeGraphics (QXmlStreamReader &);
 	void readGraphMLElementEdgeGraphics (QXmlStreamReader &);
-    void createEdgesMissingNodes();
+    void createMissingNodeEdges();
 
 	bool isComment(QString str);  
     void createRandomNodes(int, QString, int);
 
 signals:
     void addRelation( QString );
-    void changeRelation( int );
+    void relationSet( int );
 	void createNode( 
             const int &num, const int &size, const QString &color,
             const QString &numColor, const int &numSize,
@@ -95,7 +95,7 @@ signals:
             const QPointF &p,
             const QString &shape, const bool &signalMW);
 
-    void createEdge (const int &source, const int &target, const float &weight,
+    void edgeCreate (const int &source, const int &target, const float &weight,
                      const QString &color, const int &undirected,
                      const bool &arrows, const bool &bezier,
                      const QString &edgeLabel=QString::null);

@@ -76,7 +76,7 @@ Vertex::Vertex(Graph* parent,
     m_enabled = true;
 
     connect (this, SIGNAL (setEdgeVisibility ( int, int, int, bool) ),
-             parent, SLOT (slotSetEdgeVisibility (int, int, int, bool)) );
+             parent, SLOT (edgeVisibilitySet (int, int, int, bool)) );
 
 }
 
@@ -101,16 +101,16 @@ Vertex::Vertex(const long int &name) {
 
 
 /**
-* @brief Vertex::changeRelation
+* @brief Vertex::relationSet
 * @param relation
 */
-void Vertex::changeRelation(int relation) {
-    qDebug() << "Vertex::changeRelation() - Current: " << m_curRelation
+void Vertex::relationSet(int relation) {
+    qDebug() << "Vertex::relationSet() - Current: " << m_curRelation
                 << " new: " << relation;
     // first make false all edges of current relation
-    filterEdgesByRelation(m_curRelation, false);
+    edgeFilterByRelation(m_curRelation, false);
     // then make true all edges of new relation
-    filterEdgesByRelation(relation, true);
+    edgeFilterByRelation(relation, true);
     // update current relation
     m_curRelation=relation;
 }
@@ -126,13 +126,13 @@ QString Vertex::colorToPajek(){
 
 
 /**
- * @brief Vertex::addEdgeTo
+ * @brief Vertex::edgeAddTo
  * Adds an outLink to target with weight w
  * @param target
  * @param weight
  */
-void Vertex::addEdgeTo (const long &v2, const float &weight) {
-    qDebug() <<"Vertex::addEdgeTo() - new link "
+void Vertex::edgeAddTo (const long &v2, const float &weight) {
+    qDebug() <<"Vertex::edgeAddTo() - new link "
             << name() << " -> "<< v2 << " weight "<< weight
                << " relation " << m_curRelation;
     // do not use [] operator - silently creates an item if key do not exist
@@ -177,12 +177,12 @@ void Vertex::setOutEdgeEnabled (long int target, bool status){
 
 
 /**
- * @brief Vertex::addEdgeFrom
+ * @brief Vertex::edgeAddFrom
  * @param source
  * @param weight
  */
-void Vertex::addEdgeFrom (const long int &v1, const float &weight) {
-//    qDebug() <<"Vertex: "<< name() << " addEdgeFrom() "<< source;
+void Vertex::edgeAddFrom (const long int &v1, const float &weight) {
+//    qDebug() <<"Vertex: "<< name() << " edgeAddFrom() "<< source;
     m_inEdges.insertMulti(
                 v1, rel_w_bool (m_curRelation, pair_f_b(weight, true) ) );
 }
@@ -213,12 +213,12 @@ void Vertex::changeOutEdgeWeight(long int target, float weight){
 
 
 /**
- * @brief Vertex::removeEdgeTo
+ * @brief Vertex::edgeRemoveTo
  * finds and removes a link to vertex v2
  * @param v2
  */
-void Vertex::removeEdgeTo (long int v2) {
-    qDebug() << "Vertex: removeEdgeTo() - vertex " << m_name
+void Vertex::edgeRemoveTo (long int v2) {
+    qDebug() << "Vertex: edgeRemoveTo() - vertex " << m_name
              << " has " <<outEdges() << " out-links. Removing link to "<< v2 ;
 
     if (outEdges()>0) {
@@ -246,11 +246,11 @@ void Vertex::removeEdgeTo (long int v2) {
 
 
 /**
- * @brief Vertex::removeEdgeFrom
+ * @brief Vertex::edgeRemoveFrom
  * @param v2
  */
-void Vertex::removeEdgeFrom(long int v2){
-    qDebug() << "Vertex: removeEdgeFrom() vertex " << m_name
+void Vertex::edgeRemoveFrom(long int v2){
+    qDebug() << "Vertex: edgeRemoveFrom() vertex " << m_name
              << " has " <<  inEdges() << "  in-edges. RemovingEdgeFrom " << v2 ;
 
     if (inEdges()>0) {
@@ -280,14 +280,14 @@ void Vertex::removeEdgeFrom(long int v2){
 
 
 /**
- * @brief Vertex::filterEdgesByWeight
+ * @brief Vertex::edgeFilterByWeight
    Called from Graph parent
     to filter edges over or under a specified weight (m_threshold)
  * @param m_threshold
  * @param overThreshold
  */
-void Vertex::filterEdgesByWeight(float m_threshold, bool overThreshold){
-	qDebug() << "Vertex::filterEdgesByWeight of vertex " << this->m_name;
+void Vertex::edgeFilterByWeight(float m_threshold, bool overThreshold){
+	qDebug() << "Vertex::edgeFilterByWeight of vertex " << this->m_name;
 	int target=0;
     float weight=0;
     QMutableHashIterator < int, rel_w_bool > it (m_outEdges);
@@ -298,14 +298,14 @@ void Vertex::filterEdgesByWeight(float m_threshold, bool overThreshold){
             weight = it.value().second.first;
             if (overThreshold) {
                 if ( weight >= m_threshold ) {
-                    qDebug() << "Vertex::filterEdgesByWeight() - edge  to " << target
+                    qDebug() << "Vertex::edgeFilterByWeight() - edge  to " << target
                     << " has weight " << weight
                     << ". It will be disabled. Emitting signal to Graph....";
                     it.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, false) ));
                     emit setEdgeVisibility (m_curRelation, m_name, target, false );
                 }
                 else {
-                    qDebug() << "Vertex::filterEdgesByWeight() - edge  to " << target
+                    qDebug() << "Vertex::edgeFilterByWeight() - edge  to " << target
                     << " has weight " << weight << ". It will be enabled. Emitting signal to Graph....";
                     it.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, true) ));
                     emit setEdgeVisibility (m_curRelation, m_name, target, true );
@@ -313,13 +313,13 @@ void Vertex::filterEdgesByWeight(float m_threshold, bool overThreshold){
             }
             else {
                  if ( weight <= m_threshold ) {
-                    qDebug() << "Vertex::filterEdgesByWeight() - edge  to " << target
+                    qDebug() << "Vertex::edgeFilterByWeight() - edge  to " << target
                     << " has weight " << weight << ". It will be disabled. Emitting signal to Graph....";
                     it.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, false) ));
                     emit setEdgeVisibility (m_curRelation, m_name, target, false );
                 }
                 else {
-                    qDebug() << "Vertex::filterEdgesByWeight() - edge  to " << target
+                    qDebug() << "Vertex::edgeFilterByWeight() - edge  to " << target
                     << " has weight " << weight << ". It will be enabled. Emitting signal to Graph....";
                     it.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, true) ));
                     emit setEdgeVisibility (m_curRelation, m_name, target, true );
@@ -334,12 +334,12 @@ void Vertex::filterEdgesByWeight(float m_threshold, bool overThreshold){
 
 
 /**
- * @brief Vertex::filterEdgesByRelation
+ * @brief Vertex::edgeFilterByRelation
  * Called from Graph to filter out all edges of a given relation
  * @param relation
  */
-void Vertex::filterEdgesByRelation(int relation, bool status ){
-    qDebug() << "Vertex::filterEdgesByRelation() - Vertex " << this->m_name
+void Vertex::edgeFilterByRelation(int relation, bool status ){
+    qDebug() << "Vertex::edgeFilterByRelation() - Vertex " << this->m_name
                 << " filtering edges of relation " << relation << " to " << status;
     int target=0;
     float weight =0;
@@ -542,12 +542,12 @@ long int Vertex::inEdgesConst() const {
 
 
 /**
- * @brief Vertex::outDegree
- * Returns the outDegree (the sum of all enabled outEdges weights) of this vertex
+ * @brief Vertex::degreeOut
+ * Returns the degreeOut (the sum of all enabled outEdges weights) of this vertex
  * @return long int
  */
-long int Vertex::outDegree() {
-    qDebug() << "Vertex::outDegree()";
+long int Vertex::degreeOut() {
+    qDebug() << "Vertex::degreeOut()";
     m_outDegree=0;
     float m_weight=0;
     int relation = 0;
@@ -572,12 +572,12 @@ long int Vertex::outDegreeConst() {
 }
 
 /**
- * @brief Vertex::inDegree
- * Returns the inDegree (the sum of all enabled inEdges weights) of this vertex
+ * @brief Vertex::degreeIn
+ * Returns the degreeIn (the sum of all enabled inEdges weights) of this vertex
  * @return long int
  */
-long int Vertex::inDegree() {
-    qDebug() << "Vertex::inDegree()";
+long int Vertex::degreeIn() {
+    qDebug() << "Vertex::degreeIn()";
     m_inDegree=0;
     float m_weight=0;
     int relation = 0;
@@ -605,13 +605,13 @@ long int Vertex::inDegreeConst() {
 
 
 /**
- 	localDegree is the outDegree + inDegree minus the edges counted twice.
+    localDegree is the degreeOut + degreeIn minus the edges counted twice.
 */
 long int Vertex::localDegree(){
 	long int v2=0;
     int relation = 0;
     bool edgeStatus=false;
-    m_localDegree = (outDegree() + inDegree() );
+    m_localDegree = (degreeOut() + degreeIn() );
 
     H_edges::const_iterator it1=m_outEdges.constBegin();
     while (it1 != m_outEdges.constEnd() ) {
@@ -716,7 +716,7 @@ int Vertex::cliques (const int &size)
     return count ;
 }
 
-bool Vertex::addClique (const QString &clique, const int &size) {
+bool Vertex::cliqueAdd (const QString &clique, const int &size) {
     QStringList members = clique.split(",");
     switch (size) {
     case 2:

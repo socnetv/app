@@ -2583,7 +2583,7 @@ void MainWindow::initToolBox(){
                        << "Betweenness Centrality"
                        << "Stress Centrality" << "Eccentricity Centrality"
                        << "Power Centrality" << "Information Centrality"
-                       << "Degree Prestige (inDegree)"  << "PageRank Prestige"
+                       << "Degree Prestige (in-Degree)"  << "PageRank Prestige"
                        << "Proximity Prestige";
     toolBoxAnalysisProminenceSelect->addItems(prominenceCommands);
     toolBoxAnalysisProminenceSelect->setMinimumWidth(115);
@@ -2628,7 +2628,7 @@ void MainWindow::initToolBox(){
                 << "Betweenness Centrality"
                 << "Stress Centrality" << "Eccentricity Centrality"
                 << "Power Centrality" << "Information Centrality"
-                << "Degree Prestige (inDegree)"  << "PageRank Prestige"
+                << "Degree Prestige (in-Degree)"  << "PageRank Prestige"
                 << "Proximity Prestige";
     toolBoxLayoutByIndexSelect->addItems(indicesList);
     toolBoxLayoutByIndexSelect->setMinimumHeight(20);
@@ -3155,7 +3155,7 @@ void MainWindow::initSignalSlots() {
     // Signals from graphicsWidget to MainWindow
 
     connect( graphicsWidget, SIGNAL( resized(int, int)),
-                &activeGraph, SLOT( setMaximumSize(int,int)) ) ;
+                &activeGraph, SLOT( canvasSizeSet(int,int)) ) ;
 
     connect( graphicsWidget, SIGNAL( selectedNode(Node*) ),
              this, SLOT( nodeInfoStatusBar(Node*) ) 	);
@@ -3360,19 +3360,19 @@ void MainWindow::initSignalSlots() {
     connect( editRelationAddAct, SIGNAL(triggered()), this, SLOT( slotEditRelationAdd() ) );
 
     connect( editRelationChangeCombo , SIGNAL( currentIndexChanged(int) ) ,
-             &activeGraph, SLOT( changeRelation(int) ) );
+             &activeGraph, SLOT( relationSet(int) ) );
 
     connect( this , SIGNAL(addRelationToGraph(QString)),
-             &activeGraph, SLOT( addRelationFromUser(QString) ) );
+             &activeGraph, SLOT( relationAddFromUser(QString) ) );
 
     connect ( &activeGraph, SIGNAL(addRelationToMW(QString)),
               this, SLOT(slotEditRelationAdd(QString)));
 
     connect( &activeGraph, SIGNAL(relationChanged(int)),
-             graphicsWidget, SLOT( changeRelation(int))  ) ;
+             graphicsWidget, SLOT( relationSet(int))  ) ;
 
-    connect( &m_filterEdgesByWeightDialog, SIGNAL( userChoices( float, bool) ),
-             &activeGraph, SLOT( filterEdgesByWeight (float, bool) ) );
+    connect( &m_DialogEdgeFilterByWeight, SIGNAL( userChoices( float, bool) ),
+             &activeGraph, SLOT( edgeFilterByWeight (float, bool) ) );
 
 
     connect( &m_WebCrawlerDialog, &WebCrawlerDialog::userChoices,
@@ -3459,25 +3459,25 @@ void MainWindow::initNet(){
     activeGraph.clear();
     activeGraph.setSocNetV_Version(VERSION);
 
-    activeGraph.setInitVertexShape(appSettings["initNodeShape"]);
-    activeGraph.setInitVertexSize(appSettings["initNodeSize"].toInt(0, 10));
-    activeGraph.setInitVertexColor( appSettings["initNodeColor"] );
+    activeGraph.vertexShapeInit(appSettings["initNodeShape"]);
+    activeGraph.vertexSizeInit(appSettings["initNodeSize"].toInt(0, 10));
+    activeGraph.vertexColorInit( appSettings["initNodeColor"] );
 
-    activeGraph.setInitVertexNumberSize(appSettings["initNodeNumberSize"].toInt(0,10));
-    activeGraph.setInitVertexNumberColor(appSettings["initNodeNumberColor"]);
+    activeGraph.vertexNumberSizeInit(appSettings["initNodeNumberSize"].toInt(0,10));
+    activeGraph.vertexNumberColorInit(appSettings["initNodeNumberColor"]);
 
-    activeGraph.setInitVertexLabelColor(appSettings["initNodeLabelColor"]);
-    activeGraph.setInitVertexLabelSize(appSettings["initNodeLabelSize"].toInt(0,10));
+    activeGraph.vertexLabelColorInit(appSettings["initNodeLabelColor"]);
+    activeGraph.vertexLabelSizeInit(appSettings["initNodeLabelSize"].toInt(0,10));
 
-    activeGraph.setInitEdgeColor(appSettings["initEdgeColor"]);
+    activeGraph.edgeColorInit(appSettings["initEdgeColor"]);
 
-    activeGraph.setVertexLabelsVisibility(
+    activeGraph.vertexLabelsVisibilitySet(
                 (appSettings["initNodeLabelsVisibility"] == "true" ) ? true: false
                 );
-    activeGraph.setVertexNumbersVisibility(
+    activeGraph.vertexNumbersVisibilitySet(
                 ( appSettings["initNodeNumbersVisibility"] == "true" ) ? true: false
                 );
-    activeGraph.setVertexNumbersInsideNodes(
+    activeGraph.vertexNumbersInsideNodesSet(
                 ( appSettings["initNodeNumbersInside"] == "true" ) ? true: false
                 );
 
@@ -3615,7 +3615,7 @@ void MainWindow::showMessageToUser(const QString message) {
 void MainWindow::updateNodeCoords(const int &nodeNumber,
                                   const int &x, const int &y){
     //	qDebug("MW: updateNodeCoords() for %i with x %i and y %i", nodeNumber, x, y);
-    activeGraph.updateVertCoords(nodeNumber, x, y);
+    activeGraph.vertexPosSet(nodeNumber, x, y);
 }
 
 
@@ -4721,7 +4721,7 @@ void MainWindow::fileType (
 /**
  * @brief MainWindow::slotEditRelationPrev
  * Decreases the index of editRelationChangeCombo
- * which signals to Graph::changeRelation()
+ * which signals to Graph::relationSet()
  */
 void MainWindow::slotEditRelationPrev(){
     qDebug() << "MW::slotEditRelationPrev()";
@@ -4736,7 +4736,7 @@ void MainWindow::slotEditRelationPrev(){
 /**
  * @brief MainWindow::slotEditRelationNext
  * Increases the index of editRelationChangeCombo
- * which signals to Graph::changeRelation()
+ * which signals to Graph::relationSet()
  */
 void MainWindow::slotEditRelationNext(){
     qDebug() << "MW::slotEditRelationNext()";
@@ -4754,7 +4754,7 @@ void MainWindow::slotEditRelationNext(){
 
 /**
  * @brief MainWindow::slotEditRelationAdd
- * called from activeGraph::addRelationFromGraph(QString) when the parser or a
+ * called from activeGraph::relationAddFromGraph(QString) when the parser or a
  * Graph method demands a new relation to be added in the Combobox.
  * @param relationName (NULL)
  */
@@ -5386,7 +5386,7 @@ void MainWindow::slotRandomErdosRenyi( const int newNodes,
     appSettings["randomErdosEdgeProbability"] = QString::number(eprob);
 
 
-    activeGraph.createRandomNetErdos ( newNodes,
+    activeGraph.randomNetErdosCreate ( newNodes,
                                        model,
                                        edges,
                                        eprob,
@@ -5488,7 +5488,7 @@ void MainWindow::slotRandomRegularNetwork(){
             "Please wait (or disable progress bars from Options -> Settings).";
     createProgressBar(newNodes, msg);
 
-    activeGraph.createSameDegreeRandomNetwork (newNodes,
+    activeGraph.randomNetSameDegreeCreate (newNodes,
                                                degree);
 
     destroyProgressBar();
@@ -5557,7 +5557,7 @@ void MainWindow::slotRandomScaleFree ( const int &nodes,
             "Please wait (or disable progress bars from Options -> Settings).";
     createProgressBar(nodes, msg);
 
-    activeGraph.createRandomNetScaleFree( nodes,
+    activeGraph.randomNetScaleFreeCreate( nodes,
                                           power,
                                           initialNodes,
                                           edgesPerStep,
@@ -5576,7 +5576,7 @@ void MainWindow::slotRandomScaleFree ( const int &nodes,
     statusMessage( tr("Scale-free random network created: ")
                    + QString::number(activeNodes())
                    + " nodes, "+QString::number( activeEdges())+" edges");
-    //float avGraphDistance=activeGraph.averageGraphDistance();
+    //float avGraphDistance=activeGraph.distanceGraphAverage();
     float clucof=activeGraph.clusteringCoefficient();
     QMessageBox::information(this, "New scale-free network",
                              tr("Scale-free random network created.\n")+
@@ -5636,7 +5636,7 @@ void MainWindow::slotRandomSmallWorld(const int &nodes,
             "Please wait (or disable progress bars from Options -> Settings).";
     createProgressBar(nodes, msg);
 
-    activeGraph.createRandomNetSmallWorld(nodes, degree, beta, x0, y0, radius);
+    activeGraph.randomNetSmallWorldCreate(nodes, degree, beta, x0, y0, radius);
     activeGraph.symmetrize();
 
     destroyProgressBar();
@@ -5646,7 +5646,7 @@ void MainWindow::slotRandomSmallWorld(const int &nodes,
     slotNetworkChanged();
     setWindowTitle("Untitled");
     statusMessage( tr("Small world random network created: ")+QString::number(activeNodes())+" nodes, "+QString::number( activeEdges())+" edges");
-    //float avGraphDistance=activeGraph.averageGraphDistance();
+    //float avGraphDistance=activeGraph.distanceGraphAverage();
     float clucof=activeGraph.clusteringCoefficient();
     QMessageBox::information(this, "New Small World",
                              tr("Small world network created.\n")+
@@ -5708,7 +5708,7 @@ void MainWindow::slotRandomRingLattice(){
             "Please wait (or disable progress bars from Options -> Settings).";
     createProgressBar(newNodes, msg);
 
-    activeGraph.createRandomNetRingLattice(newNodes, degree, x0, y0, radius, false );
+    activeGraph.randomNetRingLatticeCreate(newNodes, degree, x0, y0, radius, false );
 
     destroyProgressBar();
 
@@ -5724,7 +5724,7 @@ void MainWindow::slotRandomRingLattice(){
                    QString::number( activeEdges())+" edges");
 
     setWindowTitle("Untitled");
-    //float avGraphDistance=activeGraph.averageGraphDistance();
+    //float avGraphDistance=activeGraph.distanceGraphAverage();
     //float clucof=activeGraph.clusteringCoefficient();
     QMessageBox::information(this, "Ring Lattice",
                              tr("Ring lattice network created.\n")+
@@ -5900,16 +5900,16 @@ void MainWindow::slotEditNodeSelectNone(){
 
 /**
  * @brief MainWindow::slotEditNodeAdd
- * Calls Graph::createVertex method to add a new RANDOM node into the activeGraph.
+ * Calls Graph::vertexCreate method to add a new RANDOM node into the activeGraph.
  * Called when "Add Node" button is clicked on the Main Window.
  */
 void MainWindow::slotEditNodeAdd() {
     qDebug() << "MW::slotEditNodeAdd() ";
     // minus a  screen edge offset...
-    activeGraph.createVertex (
+    activeGraph.vertexCreate (
                 -1, graphicsWidget->width()-10,  graphicsWidget->height()-10);
     statusMessage( tr("New node (numbered %1) added.")
-                   .arg(activeGraph.lastVertexNumber())  );
+                   .arg(activeGraph.vertexLastNumber())  );
 }
 
 
@@ -5917,13 +5917,13 @@ void MainWindow::slotEditNodeAdd() {
 /**
  * @brief MainWindow::slotEditNodeAddWithMouse
  * Called by GW when user double-clicks at p to add a new node
- * Calls Graph::createVertex method to add the new vertex into the activeGraph.
+ * Calls Graph::vertexCreate method to add the new vertex into the activeGraph.
  * @param p
  */
 void MainWindow::slotEditNodeAddWithMouse( const QPointF &p) {
-    qDebug()<< "MW: slotEditNodeAddWithMouse(). Calling activeGraph::createVertex()";
-    activeGraph.createVertex(p);
-    statusMessage( tr("New node (numbered %1) added.").arg(activeGraph.lastVertexNumber())  );
+    qDebug()<< "MW: slotEditNodeAddWithMouse(). Calling activeGraph::vertexCreate()";
+    activeGraph.vertexCreate(p);
+    statusMessage( tr("New node (numbered %1) added.").arg(activeGraph.vertexLastNumber())  );
 }
 
 
@@ -6009,8 +6009,8 @@ void MainWindow::slotEditNodeRemove() {
     int doomedJim=-1, min=-1, max=-1;
     bool ok=false;
 
-    min = activeGraph.firstVertexNumber();
-    max = activeGraph.lastVertexNumber();
+    min = activeGraph.vertexFirstNumber();
+    max = activeGraph.vertexLastNumber();
     qDebug("MW: min is %i and max is %i", min, max);
     if (min==-1 || max==-1 ) {
         qDebug("ERROR in finding min max nodeNumbers. Abort");
@@ -6028,7 +6028,7 @@ void MainWindow::slotEditNodeRemove() {
         }
     }
     qDebug ("MW: removing vertex with number %i from Graph", doomedJim);
-    activeGraph.removeVertex(doomedJim);
+    activeGraph.vertexRemove(doomedJim);
     clickedJimNumber=-1;
     nodeClicked=false;
     slotNetworkChanged();
@@ -6064,8 +6064,8 @@ void MainWindow::slotEditNodePropertiesDialog() {
 
 
     if ( selectedNodes().count() == 0) {
-        min = activeGraph.firstVertexNumber();
-        max = activeGraph.lastVertexNumber();
+        min = activeGraph.vertexFirstNumber();
+        max = activeGraph.vertexLastNumber();
         qDebug("MW: min is %i and max is %i", min, max);
         if (min==-1 || max==-1 ) {
             qDebug("ERROR in finding min max nodeNumbers. Abort");
@@ -6144,13 +6144,13 @@ void MainWindow::slotEditNodeProperties( const QString label, const int size,
             clickedJimNumber = clickedJim->nodeNumber();
             if ( selectedNodes().count() > 1 )
             {
-                activeGraph.setVertexLabel(
+                activeGraph.vertexLabelSet(
                             clickedJimNumber,
                             label + QString::number(clickedJimNumber)
                             );
             }
             else
-                activeGraph.setVertexLabel(
+                activeGraph.vertexLabelSet(
                             clickedJimNumber,
                             label
                             );
@@ -6160,11 +6160,11 @@ void MainWindow::slotEditNodeProperties( const QString label, const int size,
 
             qDebug () <<  clickedJimNumber;
             qDebug()<<"MW: updating color ";
-            activeGraph.setVertexColor( clickedJimNumber, color.name());
+            activeGraph.vertexColorSet( clickedJimNumber, color.name());
             qDebug()<<"MW: updating size ";
-            activeGraph.setVertexSize(clickedJimNumber,size);
+            activeGraph.vertexSizeSet(clickedJimNumber,size);
             qDebug()<<"MW: updating shape ";
-            activeGraph.setVertexShape( clickedJimNumber, shape);
+            activeGraph.vertexShapeSet( clickedJimNumber, shape);
             clickedJim->setShape(shape);
         }
     }
@@ -6187,7 +6187,7 @@ void MainWindow::slotEditNodeProperties( const QString label, const int size,
 /**
  * @brief MainWindow::slotEditNodeColorAll
  * Changes the color of all nodes to parameter color
- * Calls  activeGraph.setAllVerticesColor to do the work
+ * Calls  activeGraph.vertexColorAllSet to do the work
  * If parameter color is invalid, opens a QColorDialog to
  * select a new node color for all nodes.
  * Called from Settings Dialog and Edit menu option
@@ -6204,7 +6204,7 @@ void MainWindow::slotEditNodeColorAll(QColor color){
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
         qDebug() << "MW::slotEditNodeColorAll() : "
                  << appSettings["initNodeColor"];
-        activeGraph.setAllVerticesColor(appSettings["initNodeColor"]);
+        activeGraph.vertexColorAllSet(appSettings["initNodeColor"]);
         QApplication::restoreOverrideCursor();
         statusMessage( tr("Ready. ")  );
     }
@@ -6220,7 +6220,7 @@ void MainWindow::slotEditNodeColorAll(QColor color){
 /**
  * @brief MainWindow::slotEditNodeSizeAll
  * Changes the size of nodes to newSize.
- * Calls activeGraph.setAllVerticesSize to do the work.
+ * Calls activeGraph.vertexSizeAllSet to do the work.
  * Called from Edit menu item, SettingsDialog and MW::slotRandomErdosRenyi
  * If newSize = 0 asks the user a new size for all nodes
  * If normalized = true, changes node sizes according to their plethos
@@ -6268,7 +6268,7 @@ void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized) {
     nodeSizesByInDegreeAct->setChecked(false);
     toolBoxNodeSizesByInDegreeBx->setChecked(false);
 
-    activeGraph.setAllVerticesSize(newSize);
+    activeGraph.vertexSizeAllSet(newSize);
 
     slotNetworkChanged();
     statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
@@ -6287,7 +6287,7 @@ void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized) {
  * If vertex is non-zero, changes the shape of that node only.
  * Called when user clicks on Edit -> Node > Change all nodes shapes
  * Called from SettingsDialog when the user has selected a new default node shape
- * Calls Graph::setAllVerticesShape(QString)
+ * Calls Graph::vertexShapeAllSet(QString)
  * @param shape
  * @param vertex
  */
@@ -6309,13 +6309,13 @@ void MainWindow::slotEditNodeShape(QString shape, const int vertex) {
 
     if (vertex == 0) { //change all nodes shapes
         slotNetworkChanged();
-        activeGraph.setAllVerticesShape(shape);
+        activeGraph.vertexShapeAllSet(shape);
         appSettings["initNodeShape"] = shape;
         statusBar()->showMessage (QString(tr("All shapes have been changed. Ready")), statusBarDuration) ;
 
     }
     else { //only one
-       activeGraph.setVertexShape( vertex, shape);
+       activeGraph.vertexShapeSet( vertex, shape);
        statusBar()->showMessage (QString(tr("Node shape has been changed. Ready")), statusBarDuration) ;
       }
 }
@@ -6344,11 +6344,11 @@ void MainWindow::slotEditNodeNumberSize(int v1, int newSize) {
         }
     }
     if (v1) { //change one node number only
-        activeGraph.setVertexNumberSize(v1, newSize);
+        activeGraph.vertexNumberSizeSet(v1, newSize);
     }
     else { //change all
         appSettings["initNodeNumberSize"] = QString::number(newSize);
-        activeGraph.setVertexNumberSizeAll(newSize);
+        activeGraph.vertexNumberSizeSetAll(newSize);
     }
     statusMessage( tr("Changed node numbers size. Ready.") );
 }
@@ -6381,7 +6381,7 @@ void MainWindow::slotEditNodeNumbersColor(QColor color){
             }
         }
         appSettings["initNodeNumberColor"] = color.name();
-        activeGraph.setInitVertexNumberColor( color.name() );
+        activeGraph.vertexNumberColorInit( color.name() );
         QApplication::restoreOverrideCursor();
         statusMessage( tr("Numbers' colors changed. Ready. ")  );
     }
@@ -6416,11 +6416,11 @@ void MainWindow::slotEditNodeNumberDistance(int v1, int newDistance) {
         }
     }
     if (v1) { //change one node number distance only
-        activeGraph.setVertexNumberDistance(v1, newDistance);
+        activeGraph.vertexNumberDistanceSet(v1, newDistance);
     }
     else { //change all
         appSettings["initNodeNumberDistance"] = QString::number(newDistance);
-        activeGraph.setVertexNumberDistanceAll(newDistance);
+        activeGraph.vertexNumberDistanceSetAll(newDistance);
     }
     statusMessage( tr("Changed node number distance. Ready.") );
 }
@@ -6449,11 +6449,11 @@ void MainWindow::slotEditNodeLabelSize(int v1, int newSize) {
         }
     }
     if (v1) { //change one node Label only
-        activeGraph.setVertexLabelSize(v1, newSize);
+        activeGraph.vertexLabelSizeSet(v1, newSize);
     }
     else { //change all
         appSettings["initNodeLabelSize"] = QString::number(newSize);
-        activeGraph.setVertexLabelSizeAll(newSize);
+        activeGraph.vertexLabelSizeAllSet(newSize);
     }
     statusMessage( tr("Changed node label size. Ready.") );
 }
@@ -6484,10 +6484,10 @@ void MainWindow::slotEditNodeLabelsColor(QColor color){
                 Node *jim = (Node *) (*it);
                 jim->label()->update();
                 jim->label()->setDefaultTextColor(color);
-                activeGraph.setVertexLabelColor (jim->nodeNumber(), color.name());
+                activeGraph.vertexLabelColorSet (jim->nodeNumber(), color.name());
             }
         appSettings["initNodeLabelColor"] = color.name();
-        activeGraph.setInitVertexLabelColor(color.name());
+        activeGraph.vertexLabelColorInit(color.name());
         optionsNodeLabelsVisibilityAct->setChecked(true);
         QApplication::restoreOverrideCursor();
         statusMessage( tr("Label colors changed. Ready. ")  );
@@ -6524,11 +6524,11 @@ void MainWindow::slotEditNodeLabelDistance(int v1, int newDistance) {
         }
     }
     if (v1) { //change one node label distance only
-        activeGraph.setVertexLabelDistance(v1, newDistance);
+        activeGraph.vertexLabelDistanceSet(v1, newDistance);
     }
     else { //change all
         appSettings["initNodeLabelDistance"] = QString::number(newDistance);
-        activeGraph.setVertexLabelDistanceAll(newDistance);
+        activeGraph.vertexLabelDistanceAllSet(newDistance);
     }
     statusMessage( tr("Changed node label distance. Ready.") );
 }
@@ -6580,13 +6580,13 @@ void MainWindow::nodeInfoStatusBar ( Node *jim) {
     nodeClicked=true;
     clickedJim=jim;
     clickedJimNumber=clickedJim->nodeNumber();
-    int inDegree=activeGraph.inDegree(clickedJimNumber);
-    int outDegree=activeGraph.outDegree(clickedJimNumber);
+    int inDegree=activeGraph.vertexDegreeIn(clickedJimNumber);
+    int outDegree=activeGraph.vertexDegreeOut(clickedJimNumber);
     selectedNodeLCD->display (clickedJimNumber);
     inDegreeLCD->display (inDegree);
     outDegreeLCD->display (outDegree);
     if (activeGraph.vertices() < 500)
-        clucofLCD->display(activeGraph.localClusteringCoefficient(clickedJimNumber));
+        clucofLCD->display(activeGraph.clusteringCoefficientLocal(clickedJimNumber));
 
     statusMessage(  QString(tr("(%1, %2);  Node %3, label %4 - "
                                "In-Degree: %5, Out-Degree: %6")).arg( ceil( clickedJim->x() ) )
@@ -6605,28 +6605,11 @@ void MainWindow::edgeInfoStatusBar (Edge* edge) {
     nodeClicked=false;
 
     if (edge->isReciprocal()) {
-        float outbound = activeGraph.hasArc
-                (edge->sourceNodeNumber(), edge->targetNodeNumber());
-        float inbound = activeGraph.hasArc
-                (edge->targetNodeNumber(), edge->sourceNodeNumber());
-        if (outbound==inbound)
             statusMessage(  QString
                         (tr("Symmetric edge %1 <--> %2 of weight %3 has been selected. "
                                    "Click again to unselect it."))
                     .arg( edge->sourceNodeNumber() ).arg(edge->targetNodeNumber())
-                    .arg(edge->weight()) ) ;
-        else
-            statusMessage(  QString
-                        (tr("Arc %1 --> %2 of weight %3 "
-                            " and Arc %4 --> %5 of weight %6"
-                            " have been selected. "
-                                   "Click again to unselect them."))
-                            .arg(edge->sourceNodeNumber() )
-                            .arg(edge->targetNodeNumber())
-                            .arg(outbound)
-                            .arg( edge->targetNodeNumber() )
-                            .arg(edge->sourceNodeNumber())
-                            .arg(inbound) ) ;
+                    .arg( edge->weight()) ) ;
 
     }
     else {
@@ -6683,8 +6666,8 @@ void MainWindow::slotEditEdgeAdd(){
     int sourceNode=-1, targetNode=-1, sourceIndex=-1, targetIndex=-1;
     float weight=1; 	//weight of this new edge should be one...
     bool ok=false;
-    int min=activeGraph.firstVertexNumber();
-    int max=activeGraph.lastVertexNumber();
+    int min=activeGraph.vertexFirstNumber();
+    int max=activeGraph.vertexLastNumber();
 
     if (min==max) return;		//if there is only one node -> no edge
 
@@ -6697,7 +6680,7 @@ void MainWindow::slotEditEdgeAdd(){
     }
     else sourceNode=clickedJimNumber;
     qDebug () << "sourceNode=clickedJimNumber " << clickedJimNumber;
-    if ( (sourceIndex =activeGraph.hasVertex(sourceNode)) ==-1 ) {
+    if ( (sourceIndex =activeGraph.vertexExists(sourceNode)) ==-1 ) {
         statusMessage( tr("Aborting. ")  );
         QMessageBox::critical(this,"Error","No such node.", "OK",0);
         qDebug ("MW: slotEditEdgeAdd: Cant find sourceNode %i.", sourceNode);
@@ -6713,7 +6696,7 @@ void MainWindow::slotEditEdgeAdd(){
         statusMessage( "Add edge target operation cancelled." );
         return;
     }
-    if ( (targetIndex=activeGraph.hasVertex(targetNode)) ==-1 ) {
+    if ( (targetIndex=activeGraph.vertexExists(targetNode)) ==-1 ) {
         statusMessage( tr("Aborting. ")  );
         QMessageBox::critical(this,"Error","No such node.", "OK",0);
         qDebug ("MW: slotEditEdgeAdd: Cant find targetNode %i",targetNode);
@@ -6729,7 +6712,7 @@ void MainWindow::slotEditEdgeAdd(){
         return;
     }
     //Check if this edge already exists...
-    if (activeGraph.hasArc(sourceNode, targetNode)!=0 ) {
+    if (activeGraph.edgeExists(sourceNode, targetNode)!=0 ) {
         qDebug("edge exists. Aborting");
         statusMessage( tr("Aborting. ")  );
         QMessageBox::critical(this,"Error","edge already exists.", "OK",0);
@@ -6747,16 +6730,16 @@ void MainWindow::slotEditEdgeAdd(){
  * @brief MainWindow::slotEditEdgeCreate
  * helper to slotEditEdgeAdd() above
  * Also called from GW::userMiddleClicked() signal when user creates edges with middle-clicks
- * Calls Graph::createEdge method to add the new edge to the active Graph
+ * Calls Graph::edgeCreate method to add the new edge to the active Graph
   * @param source
  * @param target
  * @param weight
  */
 void MainWindow::slotEditEdgeCreate (const int &source, const int &target, const float &weight) {
-    qDebug()<< "MW: slotEditEdgeCreate() - setting user settings and calling Graph::createEdge(...)";
+    qDebug()<< "MW: slotEditEdgeCreate() - setting user settings and calling Graph::edgeCreate(...)";
     int reciprocal=0;
     bool bezier = false;
-    activeGraph.createEdge(
+    activeGraph.edgeCreate(
                 source, target, weight,
                 appSettings["initEdgeColor"] ,
                 reciprocal,
@@ -6784,8 +6767,8 @@ void MainWindow::slotEditEdgeRemove(){
 
     int min=0, max=0, sourceNode=-1, targetNode=-1;
     bool ok=false;
-    min=activeGraph.firstVertexNumber();
-    max=activeGraph.lastVertexNumber();
+    min=activeGraph.vertexFirstNumber();
+    max=activeGraph.vertexLastNumber();
 
     if (!edgeClicked) {
         sourceNode=QInputDialog::getInt(
@@ -6802,11 +6785,11 @@ void MainWindow::slotEditEdgeRemove(){
             statusMessage( "Remove edge operation cancelled." );
             return;
         }
-        if ( activeGraph.hasArc(sourceNode, targetNode)!=0 ) {
-            if (activeGraph.symmetricEdge(sourceNode, targetNode) )
+        if ( activeGraph.edgeExists(sourceNode, targetNode)!=0 ) {
+            if (activeGraph.edgeSymmetric(sourceNode, targetNode) )
                 graphicsWidget->unmakeEdgeReciprocal(targetNode, sourceNode);
             graphicsWidget->eraseEdge(sourceNode, targetNode);
-            activeGraph.removeEdge(sourceNode, targetNode);
+            activeGraph.edgeRemove(sourceNode, targetNode);
         }
         else {
             QMessageBox::critical(this, "Remove edge",tr("There is no such edge."), "OK",0);
@@ -6818,7 +6801,7 @@ void MainWindow::slotEditEdgeRemove(){
     else {
         sourceNode = clickedEdge->sourceNodeNumber();
         targetNode = clickedEdge->targetNodeNumber();
-        if (activeGraph.symmetricEdge(sourceNode, targetNode) ) {
+        if (activeGraph.edgeSymmetric(sourceNode, targetNode) ) {
             QString s=QString::number(sourceNode);
             QString t=QString::number(targetNode);
             switch (QMessageBox::information( this, tr("Remove edge"),
@@ -6829,7 +6812,7 @@ void MainWindow::slotEditEdgeRemove(){
             {
             case 0:
                 graphicsWidget->removeItem(clickedEdge);
-                activeGraph.removeEdge(sourceNode, targetNode);
+                activeGraph.edgeRemove(sourceNode, targetNode);
                 //make new edge
                 // 						graphicsWidget->unmakeEdgeReciprocal(clickedEdge->targetNodeNumber(), clickedEdge->sourceNodeNumber());
                 //FIXME weight should be the same
@@ -6843,20 +6826,20 @@ void MainWindow::slotEditEdgeRemove(){
             case 1:
                 clickedEdge->unmakeReciprocal();
                 //graphicsWidget->removeItem(clickedEdge);
-                activeGraph.removeEdge(targetNode, sourceNode);
+                activeGraph.edgeRemove(targetNode, sourceNode);
                 //						graphicsWidget->drawEdge(i, j, false, drawArrowsAct->isChecked(), appSettings["initEdgeColor"], false);
                 break;
             case 2:
                 graphicsWidget->removeItem(clickedEdge);
-                activeGraph.removeEdge(sourceNode, targetNode);
-                activeGraph.removeEdge(targetNode, sourceNode);
+                activeGraph.edgeRemove(sourceNode, targetNode);
+                activeGraph.edgeRemove(targetNode, sourceNode);
             }
 
 
         }
         else {
             graphicsWidget->removeItem(clickedEdge);
-            activeGraph.removeEdge(sourceNode, targetNode);
+            activeGraph.edgeRemove(sourceNode, targetNode);
 
         }
 
@@ -6891,8 +6874,8 @@ void MainWindow::slotEditEdgeLabel(){
     int sourceNode=-1, targetNode=-1;
     bool ok=false;
 
-    int min=activeGraph.firstVertexNumber();
-    int max=activeGraph.lastVertexNumber();
+    int min=activeGraph.vertexFirstNumber();
+    int max=activeGraph.vertexLastNumber();
 
     if (!edgeClicked)
     {	//no edge clicked. Ask user to define an edge.
@@ -6917,7 +6900,7 @@ void MainWindow::slotEditEdgeLabel(){
             return;
         }
 
-        if ( ! activeGraph.hasArc (sourceNode, targetNode ) )  {
+        if ( ! activeGraph.edgeExists (sourceNode, targetNode ) )  {
              statusMessage( tr("There is no such edge. ") );
              QMessageBox::critical(this, "Error",
                                    tr("No edge! \nNo such edge found in current network."), "OK",0);
@@ -6977,7 +6960,7 @@ void MainWindow::slotEditEdgeColorAll(QColor color,const int &threshold){
         appSettings["initEdgeColor"]=color.name();
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
         qDebug() << "MainWindow::slotEditEdgeColorAll() - new edge color: " << appSettings["initEdgeColor"];
-        activeGraph.setAllEdgesColor(appSettings["initEdgeColor"], threshold );
+        activeGraph.edgeColorAllSet(appSettings["initEdgeColor"], threshold );
         QApplication::restoreOverrideCursor();
         slotNetworkChanged();
         statusMessage( tr("Ready. ")  );
@@ -7008,8 +6991,8 @@ void MainWindow::slotEditEdgeColor(){
     int sourceNode=-1, targetNode=-1;
     bool ok=false;
 
-    int min=activeGraph.firstVertexNumber();
-    int max=activeGraph.lastVertexNumber();
+    int min=activeGraph.vertexFirstNumber();
+    int max=activeGraph.vertexLastNumber();
 
     if (!edgeClicked)
     {	//no edge clicked. Ask user to define an edge.
@@ -7034,7 +7017,7 @@ void MainWindow::slotEditEdgeColor(){
             return;
         }
 
-        if ( ! activeGraph.hasArc (sourceNode, targetNode ) )  {
+        if ( ! activeGraph.edgeExists(sourceNode, targetNode ) )  {
              statusMessage( tr("There is no such edge. ") );
              QMessageBox::critical(this, "Error",
                                    tr("No edge! \nNo such edge found in current network."), "OK",0);
@@ -7057,7 +7040,7 @@ void MainWindow::slotEditEdgeColor(){
         qDebug() << "MW::slotEditEdgeColor() - " << sourceNode << " -> "
                     << targetNode << " newColor "
                  << newColor;
-        activeGraph.setArcColor( sourceNode, targetNode, newColor);
+        activeGraph.edgeColorSet( sourceNode, targetNode, newColor);
         statusMessage( tr("Ready. ")  );
     }
     else {
@@ -7087,8 +7070,8 @@ void MainWindow::slotEditEdgeWeight(){
     qDebug("MW::slotEditEdgeWeight()");
     int  sourceNode=-1, targetNode=-1;
     float newWeight=1.0;
-    int min=activeGraph.firstVertexNumber();
-    int max=activeGraph.lastVertexNumber();
+    int min=activeGraph.vertexFirstNumber();
+    int max=activeGraph.vertexLastNumber();
 
     bool ok=false;
     if (!edgeClicked) {
@@ -7124,7 +7107,7 @@ void MainWindow::slotEditEdgeWeight(){
                     tr("New edge Weight: "),
                     1, -100, 100 ,1, &ok ) ;
         if (ok) {
-              activeGraph.setArcWeight(sourceNode, targetNode, newWeight);
+              activeGraph.edgeWeightSet(sourceNode, targetNode, newWeight);
         }
         else {
             statusMessage(  QString(tr("input error. Abort."))  );
@@ -7144,14 +7127,14 @@ void MainWindow::slotEditEdgeWeight(){
                     1, -100, 100 ,1, &ok ) ;
 
         if (ok) {
-            activeGraph.setArcWeight(sourceNode, targetNode, newWeight);
+            activeGraph.edgeWeightSet(sourceNode, targetNode, newWeight);
         }
         else {
             statusMessage(  QString(tr("Change edge weight cancelled."))  );
             return;
         }
 
-        if ( activeGraph.symmetricEdge(sourceNode, targetNode) ) {
+        if ( activeGraph.edgeSymmetric(sourceNode, targetNode) ) {
         }
 
         edgeClicked=false;
@@ -7222,7 +7205,7 @@ void MainWindow::slotFilterNodes(){
 
 /**
  * @brief MainWindow::slotFilterIsolateNodes
- *Calls Graph::filterIsolateVertices to toggle visibility of isolated vertices
+ *Calls Graph::vertexIsolateFilter to toggle visibility of isolated vertices
  */
 void MainWindow::slotFilterIsolateNodes(bool checked){
     Q_UNUSED(checked);
@@ -7232,7 +7215,7 @@ void MainWindow::slotFilterIsolateNodes(bool checked){
         return;
     }
     qDebug()<< "MW: slotFilterIsolateNodes";
-    activeGraph.filterIsolateVertices( ! filterIsolateNodesAct->isChecked() );
+    activeGraph.vertexIsolateFilter( ! filterIsolateNodesAct->isChecked() );
     statusMessage(  QString(tr("Isolate nodes visibility toggled!"))  );
 }
 
@@ -7247,7 +7230,7 @@ void MainWindow::slotShowFilterEdgesDialog() {
         statusMessage(  QString(tr("Load a network file first. \nThen you may ask me to compute something!"))  );
         return;
     }
-    m_filterEdgesByWeightDialog.exec() ;
+    m_DialogEdgeFilterByWeight.exec() ;
 }
 
 
@@ -8071,7 +8054,7 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
 */
 int MainWindow::activeEdges(){
     qDebug () << "MW::activeEdges()";
-    return activeGraph.enabledEdges();
+    return activeGraph.edgesEnabled();
 }
 
 
@@ -8127,12 +8110,12 @@ void MainWindow::slotInvertAdjMatrix(){
     }
     int aNodes=activeNodes();
     statusBar() ->  showMessage ( QString (tr ("inverting adjacency adjacency matrix of %1 nodes")).arg(aNodes) );
-    qDebug ("MW: calling Graph::writeInvertAdjacencyMatrix with %i nodes", aNodes);
+    qDebug ("MW: calling Graph::writeAdjacencyMatrixInvert with %i nodes", aNodes);
     QString fn = appSettings["dataDir"] + "socnetv-report-invert-adjacency-matrix.dat";
 
     QTime timer;
     timer.start();
-    activeGraph.writeInvertAdjacencyMatrix(fn, networkName, QString("lu")) ;
+    activeGraph.writeAdjacencyMatrixInvert(fn, networkName, QString("lu")) ;
     int msecs = timer.elapsed();
     statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
     //Open a text editor window for the new file created by graph class
@@ -8400,7 +8383,7 @@ void MainWindow::slotAverageGraphDistance() {
 
     createProgressBar();
 
-    float averGraphDistance=activeGraph.averageGraphDistance(
+    float averGraphDistance=activeGraph.distanceGraphAverage(
                 considerWeights, inverseWeights,  filterIsolateNodesAct->isChecked() );
 
     destroyProgressBar();
@@ -8528,7 +8511,7 @@ void MainWindow::slotWalksOfGivenLength(){
         return;
     }
 
-    activeGraph.writeNumberOfWalksMatrix(fn, networkName, length);
+    activeGraph.writeWalksOfLengthMatrix(fn, networkName, length);
 
     destroyProgressBar();
 
@@ -8542,7 +8525,7 @@ void MainWindow::slotWalksOfGivenLength(){
 
 /**
  * @brief MainWindow::slotTotalWalks
-*  Calls Graph:: writeTotalNumberOfWalksMatrix() to calculate and print
+*  Calls Graph:: writeWalksTotalMatrix() to calculate and print
 *  the total number of walks of any length , between each pair of nodes.
  */
 void MainWindow::slotTotalWalks(){
@@ -8568,7 +8551,7 @@ void MainWindow::slotTotalWalks(){
     QString fn = appSettings["dataDir"] + "socnetv-report-total-number-of-walks.dat";
     int maxLength=activeNodes()-1;
     createProgressBar(maxLength,"Computing total walks. Please wait...");
-    activeGraph.writeTotalNumberOfWalksMatrix(fn, networkName, maxLength);
+    activeGraph.writeWalksTotalMatrix(fn, networkName, maxLength);
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
@@ -9262,7 +9245,7 @@ void MainWindow::slotOptionsNodeNumbersInside(bool toggle){
         slotOptionsNodeNumbersVisibility(true);
 
     appSettings["initNodeNumbersInside"] = (toggle) ? "true":"false";
-    activeGraph.setVertexNumbersInsideNodes(toggle);
+    activeGraph.vertexNumbersInsideNodesSet(toggle);
     graphicsWidget -> setNumbersInsideNodes(toggle);
     optionsNodeNumbersVisibilityAct->setChecked (toggle);
     if (toggle){
@@ -9290,7 +9273,7 @@ void MainWindow::slotOptionsNodeLabelsVisibility(bool toggle){
     statusMessage( tr("Toggle Nodes Labels. Please wait...") );
     appSettings["initNodeLabelsVisibility"] = (toggle) ? "true":"false";
     graphicsWidget->setNodeLabelsVisibility(toggle);
-    activeGraph.setVertexLabelsVisibility(toggle);
+    activeGraph.vertexLabelsVisibilitySet(toggle);
     optionsNodeLabelsVisibilityAct->setChecked ( toggle );
     if (!toggle) {
         statusMessage( tr("Node Labels are invisible now. "
@@ -9465,7 +9448,7 @@ void MainWindow::slotOptionsEdgeWeightNumbersVisibility(bool toggle) {
 
     appSettings["initEdgeWeighNumbersVisibility"] = (toggle) ? "true":"false";
     graphicsWidget->setEdgeWeightNumbersVisibility(toggle);
-    activeGraph.setEdgeWeightNumbersVisibility(toggle);
+    activeGraph.edgeWeightNumbersVisibilitySet(toggle);
     optionsEdgeWeightNumbersAct->setChecked ( toggle );
     if (!toggle) {
         statusMessage( tr("Edge weights are invisible now. "
@@ -9496,7 +9479,7 @@ void MainWindow::slotOptionsEdgeLabelsVisibility(bool toggle) {
 
     appSettings["initEdgeLabelsVisibility"] = (toggle) ? "true":"false";
     graphicsWidget->setEdgeLabelsVisibility(toggle);
-    activeGraph.setEdgeLabelsVisibility(toggle);
+    activeGraph.edgeLabelsVisibilitySet(toggle);
     optionsEdgeLabelsAct->setChecked ( toggle );
     if (!toggle) {
         statusMessage( tr("Edge labels are invisible now. "

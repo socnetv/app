@@ -78,17 +78,17 @@ public:
     void setEnabled (const bool &flag ) { m_enabled=flag; }
     bool isEnabled () const { return m_enabled; }
 
-    void changeRelation(int) ;
+    void relationSet(int) ;
 
-    void addEdgeTo (const long int &v2, const float &weight);
-    void addEdgeFrom(const long int &v1, const float &weight);
+    void edgeAddTo (const long int &v2, const float &weight);
+    void edgeAddFrom(const long int &v1, const float &weight);
 
     void changeOutEdgeWeight (long int target, float weight);
 
     void setOutEdgeEnabled (long int, bool);
 
-    void removeEdgeTo (long int target);
-    void removeEdgeFrom(long int source);
+    void edgeRemoveTo (long int target);
+    void edgeRemoveFrom(long int source);
 
     QHash<int,float>* returnEnabledOutEdges();
     QHash<int,float>* returnReciprocalEdges();
@@ -99,9 +99,9 @@ public:
     long int inEdges();
     long int inEdgesConst() const ;
 
-    long int outDegree();
+    long int degreeOut();
     long int outDegreeConst();
-    long int inDegree();
+    long int degreeIn();
     long int inDegreeConst();
     long int localDegree();
 
@@ -125,9 +125,9 @@ public:
     bool isIsolated() { return !(isOutLinked() | isInLinked()) ; }
     void setIsolated(bool isolated) {m_isolated = isolated; }
 
-    void filterEdgesByWeight(float m_threshold, bool overThreshold);
+    void edgeFilterByWeight(float m_threshold, bool overThreshold);
     //	void filterEdgesByColor(float m_threshold, bool overThreshold);
-    void filterEdgesByRelation(int relation, bool status);
+    void edgeFilterByRelation(int relation, bool status);
 
     void setSize(const int &size ) { m_size=size; }
     int size()  const { return m_size; }
@@ -265,7 +265,7 @@ public:
 
     int cliques (const int &size);
 
-    bool addClique (const QString &clique, const int &size);
+    bool cliqueAdd (const QString &clique, const int &size);
 
     void clearCliques() {
         m_cliques.clear();

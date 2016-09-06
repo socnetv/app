@@ -86,7 +86,7 @@ protected:
     void paintEvent ( QPaintEvent * event );
 
 public slots:
-    void changeRelation(int relation);
+    void relationSet(int relation);
 
     void drawNode( const int &num, const int &nodeSize,
                    const QString &nodeShape, const QString &nodeColor,

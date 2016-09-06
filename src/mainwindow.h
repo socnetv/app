@@ -369,7 +369,7 @@ private:
     QMap<QString,QString> appSettings;
     QGraphicsScene *scene;
 
-    FilterEdgesByWeightDialog m_filterEdgesByWeightDialog;
+    FilterEdgesByWeightDialog m_DialogEdgeFilterByWeight;
     WebCrawlerDialog m_WebCrawlerDialog;
 
     NodeEditDialog *m_nodeEditDialog;

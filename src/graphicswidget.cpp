@@ -87,12 +87,12 @@ void GraphicsWidget::clear() {
 }
 
 /**
- * @brief GraphicsWidget::changeRelation
+ * @brief GraphicsWidget::relationSet
  * Called from Graph::relationChanged(int) signal
  * @param relation
  */
-void GraphicsWidget::changeRelation(int relation) {
-    qDebug() << "GraphicsWidget::changeRelation() to " << relation;
+void GraphicsWidget::relationSet(int relation) {
+    qDebug() << "GraphicsWidget::relationSet() to " << relation;
     m_curRelation = relation;
 }
 
@@ -101,9 +101,9 @@ void GraphicsWidget::changeRelation(int relation) {
 /**
  * @brief GraphicsWidget::drawNode
  * Adds a new node onto the scene
- * Called from Graph::createVertex method primarily when we load files
+ * Called from Graph::vertexCreate method primarily when we load files
  * It is also called in the end when the user presses "Add Node" button or
- * the user double clicks (mouseDoubleClickEvent() calls Graph::createVertex)
+ * the user double clicks (mouseDoubleClickEvent() calls Graph::vertexCreate)
  * @param num
  * @param nodeSize
  * @param nodeColor
@@ -1024,7 +1024,7 @@ QList<QGraphicsItem *> GraphicsWidget::selectedItems(){
     Starts a new node when the user double-clicks somewhere
     Emits userDoubleClicked to MW::slotEditNodeAddWithMouse() which
         - displays node info on MW status bar and
-        - calls Graph::createVertex(), which in turn calls this->drawNode()...
+        - calls Graph::vertexCreate(), which in turn calls this->drawNode()...
         Yes, we make a full circle! :)
 */
 void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {

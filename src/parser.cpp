@@ -404,7 +404,7 @@ bool Parser::loadDL(){
                          << " source node counter is " << source
                          << " and relation to " << relation<< ": "
                          << relationCounter;
-                emit changeRelation (relationCounter);
+                emit relationSet (relationCounter);
             }
             else if (source>aNodes) {
                 source=1;
@@ -414,7 +414,7 @@ bool Parser::loadDL(){
                          << " init source node counter to " << source
                          << " and relation to " << relation << ": "
                          << relationCounter;
-                emit changeRelation (relationCounter);
+                emit relationSet (relationCounter);
             }
             else {
                 qDebug() << "source node counter is " << source;
@@ -429,12 +429,12 @@ bool Parser::loadDL(){
                              << " found edge from "
                              << source << " to " << target
                              << " weight " << edgeWeight
-                             << " emitting createEdge() to parent" ;
+                             << " emitting edgeCreate() to parent" ;
 
                     undirected=0;
                     arrows=true;
                     bezier=false;
-                    emit createEdge( source, target, edgeWeight, initEdgeColor, undirected, arrows, bezier);
+                    emit edgeCreate( source, target, edgeWeight, initEdgeColor, undirected, arrows, bezier);
                     totalLinks++;
                     qDebug() << "TotalLinks= " << totalLinks;
 
@@ -478,7 +478,7 @@ bool Parser::loadDL(){
             qDebug()<< "	Parser::loadDL() - Creating link "
                     << source << " -> "<< target << " weight= "<< edgeWeight
                     <<  " TotalLinks=  " << totalLinks+1;
-            emit createEdge(source, target, edgeWeight, initEdgeColor, undirected, arrows, bezier);
+            emit edgeCreate(source, target, edgeWeight, initEdgeColor, undirected, arrows, bezier);
             totalLinks++;
         }
     }
@@ -490,7 +490,7 @@ bool Parser::loadDL(){
     }
     //The network has been loaded. Tell MW the statistics and network type
     // 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List
-    emit changeRelation (0);
+    emit relationSet (0);
     emit fileType(5, networkName, aNodes, totalLinks, undirected);
     qDebug() << "Parser-loadDL() clearing";
     lineElement.clear(); labelsList.clear(); relationsList.clear();
@@ -627,8 +627,8 @@ bool Parser::loadPajek(){
                 if (relationCounter > 0) {
                     qDebug () << "Parser::loadPajek() relationCounter "
                               << relationCounter
-                              << "emitting changeRelation";
-                    emit changeRelation(relationCounter);
+                              << "emitting relationSet";
+                    emit relationSet(relationCounter);
                     i=0; // reset the source node index
                 }
                 relationCounter++;
@@ -848,7 +848,7 @@ bool Parser::loadPajek(){
                 arrows=true;
                 bezier=false;
                 qDebug()<< "Parser-loadPajek(): EDGES: Create edge between " << source << " - "<< target;
-                emit createEdge(source, target, edgeWeight, edgeColor,
+                emit edgeCreate(source, target, edgeWeight, edgeColor,
                                 undirected, arrows, bezier, edgeLabel);
                 totalLinks=totalLinks+2;
 
@@ -900,7 +900,7 @@ bool Parser::loadPajek(){
                 arrows=true;
                 bezier=false;
                 qDebug()<<"Parser-loadPajek(): ARCS: Creating arc from node "<< source << " to node "<< target << " with weight "<< weight;
-                emit createEdge(source, target, edgeWeight , edgeColor,
+                emit edgeCreate(source, target, edgeWeight , edgeColor,
                                 undirected, arrows, bezier, edgeLabel);
                 totalLinks++;
             } //else if ARCS
@@ -916,7 +916,7 @@ bool Parser::loadPajek(){
                 for (register int index = 1; index < lineElement.size(); index++) {
                     target = lineElement.at(index).toInt(&ok,10);
                     qDebug()<<"Parser-loadPajek(): ARCS LIST: Creating ARC source "<< source << " target "<< target << " with weight "<< weight;
-                    emit createEdge(source, target, edgeWeight, edgeColor, undirected, arrows, bezier);
+                    emit edgeCreate(source, target, edgeWeight, edgeColor, undirected, arrows, bezier);
                     totalLinks++;
                 }
             } //else if ARCSLIST
@@ -935,7 +935,7 @@ bool Parser::loadPajek(){
                         qDebug()<<"Parser-loadPajek():  MATRIX: Creating arc source "
                                << source << " target "<< target +1
                                << " with weight "<< weight;
-                        emit createEdge(source, target+1, edgeWeight, edgeColor,
+                        emit edgeCreate(source, target+1, edgeWeight, edgeColor,
                                         undirected, arrows, bezier);
                         totalLinks++;
                     }
@@ -959,7 +959,7 @@ bool Parser::loadPajek(){
     qDebug("Parser-loadPajek(): Clearing DumiesList from Pajek");
     listDummiesPajek.clear();
     relationsList.clear();
-    emit changeRelation (0);
+    emit relationSet (0);
 
     return true;
 
@@ -1067,7 +1067,7 @@ bool Parser::loadAdjacency(){
                 undirected=0;
                 arrows=true;
                 bezier=false;
-                emit createEdge(i+1, j+1, edgeWeight, initEdgeColor, undirected, arrows, bezier);
+                emit edgeCreate(i+1, j+1, edgeWeight, initEdgeColor, undirected, arrows, bezier);
                 totalLinks++;
                 qDebug() << "Parser-loadAdjacency(): Link from i=" << i+1 << " to j=" <<  j+1
                          << "weight=" << edgeWeight << ". TotalLinks= " << totalLinks;
@@ -1166,7 +1166,7 @@ bool Parser::loadTwoModeSociomatrix(){
                         bezier=false;
                         edgeWeight = 1;
                         qDebug() << " Actor " << i << " on the same event as actor " << k << ". Creating edge ";
-                        emit createEdge(i, k, edgeWeight, initEdgeColor, undirected, arrows, bezier);
+                        emit edgeCreate(i, k, edgeWeight, initEdgeColor, undirected, arrows, bezier);
                         totalLinks++;
                     }
                 }
@@ -1372,8 +1372,8 @@ void Parser::readGraphML(QXmlStreamReader &xml){
                 endGraphMLElementEdge(xml);
         }
     }
-    // call createEdgesMissingNodes() to create any edges with missing nodes
-    createEdgesMissingNodes();
+    // call createMissingNodeEdges() to create any edges with missing nodes
+    createMissingNodeEdges();
 
 
 }
@@ -1605,10 +1605,10 @@ void Parser::endGraphMLElementEdge(QXmlStreamReader &xml){
                << " postponing edge creation signal";
         return;
     }
-    qDebug()<<"   Parser: endGraphMLElementEdge() *** signal createEdge "
+    qDebug()<<"   Parser: endGraphMLElementEdge() *** signal edgeCreate "
            << source << " -> " << target << " undirected value " << undirected;
     //FIXME need to return edge label as well!
-    emit createEdge(source, target, edgeWeight, edgeColor, undirected, arrows, bezier);
+    emit edgeCreate(source, target, edgeWeight, edgeColor, undirected, arrows, bezier);
     totalLinks++;
     bool_edge= false;
 }
@@ -1905,14 +1905,14 @@ void Parser::readGraphMLElementUnknown(QXmlStreamReader &xml) {
 }
 
 
-void Parser::createEdgesMissingNodes(){
+void Parser::createMissingNodeEdges(){
     int count=0;
     bool ok;
     edgeWeight = initEdgeWeight;
     edgeColor = initEdgeColor;
     undirected = 0;
     if ( (count = edgesMissingNodesHash.size()) > 0 ) {
-        qDebug()<<"Parser::createEdgesMissingNodes() - edges to create " << count;
+        qDebug()<<"Parser::createMissingNodeEdges() - edges to create " << count;
         QHash<QString, QString>::const_iterator it =
                 edgesMissingNodesHash.constBegin();
         while (it != edgesMissingNodesHash.constEnd()) {
@@ -1938,10 +1938,10 @@ void Parser::createEdgesMissingNodes(){
                         undirected=2;
 
                 }
-                qDebug()<<"   Parser: createEdgesMissingNodesHash() *** signal createEdge "
+                qDebug()<<"   Parser: createMissingNodeEdgesHash() *** signal edgeCreate "
                        << source << " -> " << target << " undirected value " << undirected;
                 //FIXME need to return edge label as well!
-                emit createEdge(source, target, edgeWeight, edgeColor, undirected, arrows, bezier);
+                emit edgeCreate(source, target, edgeWeight, edgeColor, undirected, arrows, bezier);
 
             }
             ++it;
@@ -2291,7 +2291,7 @@ bool Parser::loadDot(){
                     target=aNodes;
                     if (it!=nodeSequence.begin()) {
                         qDebug()<<"-- Drawing Link between node "<< source<< " and node " <<target;
-                        emit createEdge(source,target, edgeWeight, edgeColor, undirected, arrows, bezier);
+                        emit edgeCreate(source,target, edgeWeight, edgeColor, undirected, arrows, bezier);
                     }
                 }
                 else {
@@ -2299,7 +2299,7 @@ bool Parser::loadDot(){
                     qDebug("# Node already exists. Vector num: %i ",target);
                     if (it!=nodeSequence.begin()) {
                         qDebug()<<"-- Drawing Link between node "<<source<<" and node " << target;
-                        emit createEdge(source,target, edgeWeight , edgeColor, undirected, arrows, bezier);
+                        emit edgeCreate(source,target, edgeWeight , edgeColor, undirected, arrows, bezier);
                     }
                 }
                 source=target;
@@ -2545,7 +2545,7 @@ bool Parser::loadWeighedList(){
         }
         qDebug()<< "	Parser-loadWeighedList(): Creating link now... "
                 << " link from i= " << source << " to j= "<< target << " weight= "<< edgeWeight <<  " TotalLinks=  " << totalLinks+1;
-        emit createEdge(source, target, edgeWeight, initEdgeColor, undirected, arrows, bezier);
+        emit edgeCreate(source, target, edgeWeight, initEdgeColor, undirected, arrows, bezier);
         totalLinks++;
     } //end ts.stream while here
     file.close();
@@ -2669,7 +2669,7 @@ bool Parser::loadSimpleList(){
             }
             if ( i != 0) {
                 qDebug("	there is a link here");
-                emit createEdge(source, target, initEdgeWeight, initEdgeColor, undirected, arrows, bezier);
+                emit edgeCreate(source, target, initEdgeWeight, initEdgeColor, undirected, arrows, bezier);
                 totalLinks++;
                 qDebug() << "link from Node i= "<< source  << "  to j = " <<  target << " weight = "<< initEdgeWeight<< ". TotalLinks =  " << totalLinks;
             }

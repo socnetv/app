@@ -55,16 +55,6 @@ using namespace std;
 
 class QPointF;
 
-
-
-/**	This is the main class for a Graph, used in conjuction with Vertex, Parser and Matrix objects.
-
-    Graph class has the interface and the various network algorithms
-    Vertex class holds each vertex data (colors, strings, statistics, etc)
-    Matrix class holds the adjacency matrix of the network.
-    Parser class loads files of networks.
-*/
-
 typedef QList<Vertex*> Vertices;
 
 typedef QHash <QString, int> H_StrToInt;
@@ -112,7 +102,6 @@ class CompareDistances {
 
 
 // TODO:
-// 1. Apply a simple naming convention for signals and slots
 // 2. Refactor most-used functions to have reference parameters.
 // 3. Execute all options/commands from MW and propagate them to GW via signals
 // 4. Fix bug with wrong default edge colors (not the ones used by Settings) after loading GraphML files.
@@ -121,6 +110,11 @@ class CompareDistances {
 
 /**
  * @brief The Graph class
+ * This is the main class for a Graph, used in conjuction with Vertex, Parser and Matrix objects.
+ *   Graph class methods are the interface to various analysis algorithms
+ *   Vertex class holds each vertex data (colors, strings, statistics, etc)
+ *   Matrix class holds the adjacency matrix of the network.
+ *   Parser class loads files of networks.
  */
 class Graph:  public QObject{
     Q_OBJECT
@@ -128,12 +122,12 @@ class Graph:  public QObject{
     QThread wc_parserThread;
     QThread wc_spiderThread;
 public slots:
-    int currentRelation();
+    int relationCurrent();
 
     /** Slots to signals from Parser */
 
-    void addRelationFromParser(QString);
-    void createVertex(const int &num, const int &size, const QString &nodeColor,
+    void relationAddFromParser(QString);
+    void vertexCreate(const int &num, const int &size, const QString &nodeColor,
                        const QString &numColor, const int &numSize,
                        const QString &label, const QString &lColor,
                        const int &labelSize, const QPointF &p, const QString &nodeShape,
@@ -141,34 +135,33 @@ public slots:
                         );//Main vertex creation call
 
     void setFileType(int, QString, int,int, bool);
-    void removeDummyNode(int);
+    void vertexRemoveDummyNode(int);
     void terminateParserThreads (QString reason);
 
     /** Slots to signals from GraphicsWidget and Parser*/
-    void createEdge  (const int &v1, const int &v2, const float &weight,
+    void edgeCreate  (const int &v1, const int &v2, const float &weight,
                       const QString &color ,
                       const int &type=0,
                       const bool &drawArrows=true, const bool &bezier=false,
                       const QString &label=QString::null);
-    void createEdgeWebCrawler (int, int);					//WebCrawler
+    void edgeCreateWebCrawler (int, int);
 
-    void slotSetEdgeVisibility(int relation, int, int, bool);
+    void edgeVisibilitySet(int relation, int, int, bool);
 
-    //auxiliary createVertex functions
-    void createVertex(const QPointF &p);
-    void createVertex(int i, int canvasWidth, int canvasHeight); 	//Called by MW
-    void createVertexWebCrawler(QString label, int i) ;
+    //auxiliary vertexCreate functions
+    void vertexCreate(const QPointF &p);
+    void vertexCreate(int i, int canvasWidth, int canvasHeight); 	//Called by MW
+    void vertexCreateWebCrawler(QString label, int i) ;
 
     /** Slots to signals from MainWindow */
-    void changeRelation(int);
-    void addRelationFromUser(QString relation);
-    void setMaximumSize(int w, int h);
-    void filterIsolateVertices ( bool );		//Called by MW to filter orphan vertices
-    void filterEdgesByWeight (float, bool);		//Called by MW to filter edges over/under a weight
-    void filterEdgesByRelation(int relation, bool status);
+    void relationSet(int);
+    void relationAddFromUser(QString relation);
+    void canvasSizeSet(int w, int h);
+    void vertexIsolateFilter ( bool );		//Called by MW to filter orphan vertices
+    void edgeFilterByWeight (float, bool);		//Called by MW to filter edges over/under a weight
+    void edgeFilterByRelation(int relation, bool status);
 
     void webCrawl(QString, int, int, bool extLinks, bool intLinks);	//Called by MW to start a web crawler...
-    void setGraphChanged(bool changed) { graphModified = changed; }
 
 
 signals:
@@ -200,7 +193,7 @@ signals:
                     const QString &color="black",
                     const int &type=0, const bool arrows=true,
                     const bool &bezier=false,  const bool &weightNumbers=false);
-    void eraseEdge(int, int);					//emited from removeEdge() to GW to clear the edge item.
+    void eraseEdge(int, int);					//emited from edgeRemove() to GW to clear the edge item.
     void setEdgeVisibility (int, int, int, bool);			// emitted from each Vertex
     void setVertexVisibility(long int, bool);		//notifies GW to disable a node
     void setNodeSize(const long int &v, const int &size);
@@ -239,10 +232,6 @@ public:
     void setSocNetV_Version (QString ver) { VERSION = ver; }
 
 
-    void setVertexNumbersInsideNodes(bool toggle);
-    void setVertexNumbersVisibility(bool toggle);
-    void setVertexLabelsVisibility(bool toggle);
-
     /*FILES (READ AND WRITE)*/
     bool loadGraph (const QString, const QString m_codecName,
                     const bool,
@@ -259,58 +248,65 @@ public:
     bool saveGraphToDotFormat (QString fileName, QString networkName, int maxWidth, int maxHeight);
     bool saveGraphToGraphMLFormat (QString fileName,QString networkName,  int maxWidth, int maxHeight);
 
+    /* RELATIONS */
+    int relations();
+    void relationAddFromGraph(QString relationName);
+
+
     /* VERTICES */
-    int lastVertexNumber();
-    int firstVertexNumber();
+    int vertexLastNumber();
+    int vertexFirstNumber();
 
-    int hasVertex(long int );
-    int hasVertex(QString);
-    void removeVertex (long int );
+    int vertexDegreeOut(int);
+    int vertexDegreeIn(int);
 
-    void setInitVertexSize (const long int);
-    void setVertexSize(const long int &v, const int &newsize );
-    void setAllVerticesSize(const int newsize);
+    int vertexExists(long int );
+    int vertexExists(QString);
+    void vertexRemove (long int );
+
+    void vertexSizeInit (const long int);
+    void vertexSizeSet(const long int &v, const int &newsize );
+    void vertexSizeAllSet(const int newsize);
     int vertexSize(const long int &v);
 
-    void setInitVertexShape (const QString);
-    void setVertexShape(const int v, const QString shape);
-    void setAllVerticesShape(const QString shape);
+    void vertexShapeInit (const QString);
+    void vertexShapeSet(const int v, const QString shape);
+    void vertexShapeAllSet(const QString shape);
     QString vertexShape(const int &v);
 
-    void setInitVertexColor (const QString &color);
-    void setVertexColor(const long &v, const QString &color);
-    void setAllVerticesColor(const QString &color);
+    void vertexColorInit (const QString &color);
+    void vertexColorSet(const long &v, const QString &color);
+    void vertexColorAllSet(const QString &color);
     QColor vertexColor(const long int &v);
 
-    void setInitVertexNumberColor ( QString color);
-    void setInitVertexNumberSize (const int &size);
-    void setVertexNumberSize(const long int &v, const int &newsize );
-    void setVertexNumberSizeAll (const int &size);
-    void setInitVertexNumberDistance (const int &distance);
-    void setVertexNumberDistance(const long int &v, const int &newDistance );
-    void setVertexNumberDistanceAll (const int &newDistance);
+    void vertexNumberColorInit ( QString color);
+    void vertexNumberSizeInit (const int &size);
+    void vertexNumberSizeSet(const long int &v, const int &newsize );
+    void vertexNumberSizeSetAll (const int &size);
+    void vertexNumberDistanceInit (const int &distance);
+    void vertexNumberDistanceSet(const long int &v, const int &newDistance );
+    void vertexNumberDistanceSetAll (const int &newDistance);
+    void vertexNumbersInsideNodesSet(bool toggle);
+    void vertexNumbersVisibilitySet(bool toggle);
 
-    void setInitVertexLabelSize(int newSize);
-    void setVertexLabelSize(const long int &v, const int &newsize );
-    void setVertexLabelSizeAll (const int &);
-    void setInitVertexLabelColor(QString color);
-    void setVertexLabel(int v, QString label);
-    void setVertexLabelColor(int v1, QString color);
+    void vertexLabelsVisibilitySet(bool toggle);
+    void vertexLabelSizeInit(int newSize);
+    void vertexLabelSizeSet(const long int &v, const int &newsize );
+    void vertexLabelSizeAllSet (const int &);
+    void vertexLabelColorInit(QString color);
+    void vertexLabelSet(int v, QString label);
+    void vertexLabelColorSet(int v1, QString color);
     QString vertexLabel(const long int &v1);
-    void setInitVertexLabelDistance (const int &distance);
-    void setVertexLabelDistance(const long int &v, const int &newDistance );
-    void setVertexLabelDistanceAll (const int &newDistance);
+    void vertexLabelDistanceInit (const int &distance);
+    void vertexLabelDistanceSet(const long int &v, const int &newDistance );
+    void vertexLabelDistanceAllSet (const int &newDistance);
 
-
-    void updateVertCoords(const int &v, const int &x, const int &y);
+    void vertexPosSet(const int &v, const int &x, const int &y);
 
     int vertices(const bool dropIsolates=false, const bool countAll=false) ;
 
-    int outboundEdges (int i) ;
-    int inboundEdges (int i) ;
-
-    int outDegree(int);
-    int inDegree(int);
+    int edgesOutbound (int i) ;
+    int edgesInbound (int i) ;
 
     int verticesWithOutboundEdges();
     int verticesWithInboundEdges();
@@ -318,8 +314,8 @@ public:
 
     QList<int> verticesIsolated();
 
-    qreal euclideian_distance(const QPointF &a, const QPointF &b);
-    qreal euclideian_distance(const QPointF &a);
+    qreal length(const QPointF &a, const QPointF &b);
+    qreal length(const QPointF &a);
     int sign(const qreal &D);
 
     qreal layoutForceDirected_F_rep(const QString model, const qreal &dist,
@@ -340,38 +336,34 @@ public:
                          qreal &degrees2 );
 
     /* EDGES */
-    int enabledEdges();
-    void edges();
-    float hasArc (const long &v1, const long &v2);
-    bool hasEdge (const int &v1, const long int &v2);
-    void removeEdge (int v1, int v2);
+    int edgesEnabled();
+    float edgeExists(const long &v1, const long &v2, const bool &undirected=false);
 
-    bool isWeighted();
-
-    void setArcWeight (const long int &v1, const long int &v2, const float &w);
-    void setInitEdgeColor(const QString &);
+    void edgeRemove (int v1, int v2);
+    bool edgeSymmetric(int v1, int v2);
+    void edgeWeightSet (const long int &v1, const long int &v2, const float &w);
+    void edgeWeightNumbersVisibilitySet (const bool &toggle);
 
     void edgeLabelSet(const long int &v1, const long int &v2, const QString &label);
     QString edgeLabel (const long int &v1, const long int &v2) const;
+    void edgeLabelsVisibilitySet (const bool &toggle);
 
-    void setArcColor(const long int &v1, const long int &v2, const QString &color);
-    QString arcColor (const long int &v1, const long int &v2);
-    bool setAllEdgesColor(const QString &color, const int &threshold=RAND_MAX);
+    void edgeColorInit(const QString &);
+    void edgeColorSet(const long int &v1, const long int &v2, const QString &color);
+    QString edgeColor (const long int &v1, const long int &v2);
+    bool edgeColorAllSet(const QString &color, const int &threshold=RAND_MAX);
 
 
-    void setEdgeWeightNumbersVisibility (const bool &toggle);
-    void setEdgeLabelsVisibility (const bool &toggle);
     float density();
-
-    bool symmetricEdge(int v1, int v2);
+    bool isWeighted();
     bool isSymmetric();
     void symmetrize();
 
-    void createAdjacencyMatrix(const bool dropIsolates=false,
+    void adjacencyMatrixCreate(const bool dropIsolates=false,
                                const bool considerWeights=true,
                                const bool inverseWeights=false,
                                const bool symmetrize=false );
-    bool invertAdjacencyMatrix(const QString &method);
+    bool adjacencyMatrixInvert(const QString &method);
 
 
     /* PRINT OUT TO FILES*/
@@ -380,7 +372,7 @@ public:
     void writeAdjacencyMatrixTo(QTextStream& os);
     void writeAdjacencyMatrix(const QString, const char*);
 
-    void writeInvertAdjacencyMatrix(const QString &filename,
+    void writeAdjacencyMatrixInvert(const QString &filename,
                                     const QString &,
                                     const QString &);
     void writeDistanceMatrix(const QString fn, const char*,
@@ -446,11 +438,11 @@ public:
     int distance(const int, const int,
                  const bool considerWeights, const bool inverseWeights);
     int diameter(const bool considerWeights, const bool inverseWeights);
-    float averageGraphDistance(const bool considerWeights,
+    float distanceGraphAverage(const bool considerWeights,
                                const bool inverseWeights, const bool dropIsolates);
     int connectedness();
 
-    void createDistanceMatrix(const bool centralities=false,
+    void distanceMatrixCreate(const bool centralities=false,
                               const bool considerWeights=false,
                               const bool inverseWeights=true,
                               const bool dropIsolates=false);
@@ -468,14 +460,14 @@ public:
                            const bool dropIsolates=false);
 
     /* REACHABILTY AND WALKS */
-    int numberOfWalks(int v1, int v2,int length);
-    void createNumberOfWalksMatrix(const int length,
+    int walksBetween(int v1, int v2,int length);
+    void walksMatrixCreate(const int length,
                                    const bool updateProgress=false);
-    void writeTotalNumberOfWalksMatrix(QString fn, QString netName, int length);
-    void writeNumberOfWalksMatrix(QString fn, QString netName, int length);
+    void writeWalksTotalMatrix(QString fn, QString netName, int length);
+    void writeWalksOfLengthMatrix(QString fn, QString netName, int length);
     int reachable(int v1, int v2) ;
-    QList<int> influenceRange(int v1);
-    QList<int> influenceDomain(int v2);
+    QList<int> vertexinfluenceRange(int v1);
+    QList<int> vertexinfluenceDomain(int v2);
     void reachabilityMatrix(const bool considerWeights=false,
                             const bool inverseWeights=false,
                             const bool dropIsolates=false,
@@ -485,15 +477,16 @@ public:
 
 
     float numberOfTriples(int v1);
-    float countCliquesWith(int source, int size=0);
 
-    bool addClique (const QList<int> &list);
-    float countCliquesOfSize(int size );
-    float localClusteringCoefficient(const long int &v1);
+
+    bool  cliqueAdd (const QList<int> &list);
+    float cliquesContaining(int source, int size=0);
+    float cliquesOfSize(int size );
+    float clusteringCoefficientLocal(const long int &v1);
     float clusteringCoefficient (const bool updateProgress=false);
 
     bool triadCensus();
-    void examine_MAN_label(int, int, int, Vertex*,  Vertex*, Vertex* );
+    void triadType_examine_MAN_label(int, int, int, Vertex*,  Vertex*, Vertex* );
     //	void eccentr_JordanCenter(); 				// TODO
 
 
@@ -523,29 +516,29 @@ public:
     void layoutForceDirectedFruchtermanReingold(const int maxIterations);
 
     void layoutForceDirectedKamadaKawai(const int maxIterations);
+
     /* CRAWLER */
-    void terminateCrawlerThreads (QString reason);
+    void webCrawlTerminateThreads (QString reason);
 
     /**RANDOM NETWORKS*/
-    void makeThingsLookRandom();
+    void randomizeThings();
 
-
-    void createRandomNetErdos (  const int &vert,
+    void randomNetErdosCreate (  const int &vert,
                                  const QString &model,
                                  const int &edges,
                                  const float &eprob,
                                  const QString &mode,
                                  const bool &diag);
 
-    void createRandomNetRingLattice ( const int &vert, const int &degree,
+    void randomNetRingLatticeCreate ( const int &vert, const int &degree,
                                       const double &x0, const double &y0,
                                       const double &radius,
                                       const bool updateProgress=false);
 
-    void createSameDegreeRandomNetwork (const int &,
+    void randomNetSameDegreeCreate (const int &,
                                          const int &);
 
-    void createRandomNetScaleFree (const int &n,
+    void randomNetScaleFreeCreate (const int &n,
                                     const int &power,
                                     const int &m0,
                                     const int &m,
@@ -555,14 +548,12 @@ public:
                                     const double &y0,
                                     const double &radius);
 
-    void createRandomNetSmallWorld(const int &vert, const int &degree,
+    void randomNetSmallWorldCreate(const int &vert, const int &degree,
                                    const double &beta, const double &x0,
                                    const double &y0, const double &radius);
 
     int factorial (int);
 
-    int relations();
-    void addRelationFromGraph(QString relationName);
 
     /**  index stores the real position of each vertex inside m_graph.
      *  It starts at zero (0).
@@ -597,18 +588,18 @@ private:
     WebCrawler_Spider *wc_spider;
 
     /** private member functions */
-    void addVertex  ( const int &v1, const int &val, const int &size,
+    void vertexAdd  ( const int &v1, const int &val, const int &size,
                       const QString &color, const QString &numColor,
                       const int &numSize, const QString &label,
                       const QString &labelColor, const int &labelSize,
                       const QPointF &p, const QString &shape );
 
-    void addEdge (const int &v1, const int &v2, const float &weight,
+    void edgeAdd (const int &v1, const int &v2, const float &weight,
                   const QString &label,
                   const QString &color,
                   const int &type);
 
-    /** methods used by createDistanceMatrix()  */
+    /** methods used by distanceMatrixCreate()  */
     void BFS(const int s, const bool computeCentralities,
              const bool dropIsolates);
     void dijkstra(const int s,const bool computeCentralities,
@@ -639,7 +630,7 @@ private:
     Matrix XM, XSM, XRM;
     stack<int> Stack;
 
-    /** used in resolveClasses and createDistanceMatrix() */
+    /** used in resolveClasses and distanceMatrixCreate() */
     H_StrToInt discreteDPs, discreteDCs, discreteCCs, discreteBCs, discreteSCs;
     H_StrToInt discreteIRCCs, discreteECs, discreteEccentricities;
     H_StrToInt discretePCs, discreteICs,  discretePRPs, discretePPs;
@@ -649,6 +640,7 @@ private:
     bool calculatedTriad;
 
     int m_precision, m_curRelation;
+    float edgeWeightTemp;
     float meanDC, varianceDC;
     float meanCC, varianceCC;
     float meanIRCC, varianceIRCC;
