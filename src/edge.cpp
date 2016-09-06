@@ -116,7 +116,6 @@ void Edge::showArrows(const bool &drawArrows){
 
 
 void Edge::removeRefs(){
-    //FIXME Need to disconnect signals from node to this "erased" edge
     qDebug("Edge: removeRefs()");
     source->deleteOutLink(this);
     target->deleteInLink(this);
@@ -577,13 +576,21 @@ void Edge::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 
 
 Edge::~Edge(){
-    qDebug() << "\n\n\n *** ~EDGE() " << sourceNodeNumber()<< "->" << targetNodeNumber();
+    qDebug() << "*** ~Edge() " << sourceNodeNumber()<< "->" << targetNodeNumber();
     removeRefs();
-    if (m_drawWeightNumber)
-        weightNumber->deleteLater();
-    if (m_drawLabel)
-        edgeLabel->deleteLater();
-    this->hide();
 
+
+//    if ( m_drawWeightNumber )
+//        deleteWeightNumber();
+//    if ( m_drawLabel )
+//        deleteLabel();
+
+    if (m_drawWeightNumber)
+        graphicsWidget->removeItem(weightNumber);
+    if (m_drawLabel)
+        graphicsWidget->removeItem(edgeLabel);
+
+    this->hide();
+    graphicsWidget->removeItem(this);
 }
 

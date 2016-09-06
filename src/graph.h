@@ -340,7 +340,7 @@ public:
     int edgesEnabled();
     float edgeExists(const long &v1, const long &v2, const bool &undirected=false);
 
-    void edgeRemove (int v1, int v2);
+    void edgeRemove (const long int &v1, const long int &v2, const bool &undirected=false);
     bool edgeSymmetric(int v1, int v2);
     void edgeUndirectedSet(const long int &v1, const long int &v2, const float &w);
 

@@ -39,6 +39,7 @@ class NodeNumber;
 class NodeLabel;
 class Guide;
 class EdgeWeight;
+class EdgeLabel;
 
 typedef QHash<QString, Edge*> H_StrToEdge;
 typedef QHash <long int, Node*> H_NumToNode;
@@ -60,9 +61,12 @@ public:
     void selectNone();
 
     void removeItem(Edge*);
+    void removeItem(EdgeWeight *edgeWeight);
+    void removeItem(EdgeLabel *edgeLabel);
     void removeItem(Node*);
     void removeItem(NodeNumber*);
     void removeItem(NodeLabel*);
+
     void nodeMoved(const int &number, const int &x, const int &y);
 
     void setInitNodeColor(QString);
@@ -96,7 +100,7 @@ public slots:
                    const QString &labelColor, const int &labelSize,
                    const QPointF &p
                     );
-    void eraseNode(long int doomedJim);
+    void eraseNode(const long int &number);
     void setNodeVisibility(long int, bool );	//Called from Graph via MW
     void nodeClicked(Node *);
     void moveNode(const int &num, const qreal &x, const qreal &y);	//Called from Graph when creating random nets.
@@ -124,7 +128,7 @@ public slots:
                   const bool &drawArrows=true,
                   const bool &bezier=false,
                   const bool &weightNumbers=false);
-    void eraseEdge(const long int &, const long int &);
+    void eraseEdge(const long int &source, const long int &target);
     void setEdgeVisibility (int relation, int, int, bool);
     bool setEdgeUndirected(const long int &, const long int &, const float &);
     bool setEdgeWeight(const long int &, const long int &, const float &);

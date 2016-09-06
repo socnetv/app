@@ -1175,18 +1175,22 @@ void Graph::edgeAdd (const int &v1, const int &v2, const float &weight,
  * Removes the edge (arc) between v1 and v2
  * @param v1
  * @param v2
+ * @param undirected if true it also removes the opposite edge
  */
-void Graph::edgeRemove (int v1, int v2) {
+void Graph::edgeRemove (const long int &v1, const long int &v2, const bool &undirected) {
     qDebug ()<< "Graph::edgeRemove() - edge " << v1 << " index " << index[v1]
                 << " ->" << v2 << " to be removed from graph";
     m_graph [ index[v1] ]->edgeRemoveTo(v2);
     m_graph [ index[v2] ]->edgeRemoveFrom(v1);
-//    qDebug()<< "Graph: edgeRemove between " << v1 << " i " << index[v1]
-//               << " and " << v2 << " i "<< index[v2]
-//               << "  NOW vertex v1 reports edge weight "
-//               << m_graph [ index[v1] ]->hasEdgeTo(v2) ;
-    if ( edgeExists(v2,v1) !=0)
+
+    if ( edgeExists(v2,v1) !=0) {
         symmetricAdjacencyMatrix=false;
+        if (undirected) { // remove opposite edge
+            m_graph [ index[v2] ]->edgeRemoveTo(v1);
+            m_graph [ index[v1] ]->edgeRemoveFrom(v2);
+            symmetricAdjacencyMatrix=true;
+        }
+    }
 
     graphModified=true;
 
@@ -1266,6 +1270,7 @@ void Graph::edgeFilterByRelation(int relation, bool status){
    Complexity:  O(logN) for index retrieval + O(1) for QList index retrieval + O(logN) for checking edge(v2)
  * @param v1
  * @param v2
+ * @param undirected if true, check if there is an undirected edge v1<->v2
  * @return zero if arc does not exist or non-zero if arc exists
  */
 float Graph::edgeExists (const long int &v1, const long int &v2, const bool &undirected) {
@@ -5735,8 +5740,7 @@ void Graph::randomNetSmallWorldCreate (
                        << " Beta parameter is " << beta;
                 if (rand() % 100 < (beta * 100))  {
                     qDebug(">>>>> REWIRING: We'l break this edge!");
-                    edgeRemove(i, j);
-                    edgeRemove(j, i);
+                    edgeRemove(i, j, true);
                     qDebug()<<">>>>> REWIRING: OK. Let's create a new edge!";
                     for (;;) {	//do until we create a new edge
                         candidate=rand() % (vert+1) ;		//pick another vertex.

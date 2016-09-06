@@ -40,6 +40,7 @@
 #include "nodelabel.h"
 #include "guide.h"
 #include "edgeweight.h"
+#include "edgelabel.h"
 
 /** 
     Constructor method. Called when a GraphicsWidget object is created in MW
@@ -329,21 +330,24 @@ void GraphicsWidget::moveNode(const int &num, const qreal &x, const qreal &y){
 /**
     Called from Graph signal eraseNode(int)
 */
-void GraphicsWidget::eraseNode(long int doomedJim){
-    qDebug() << "GW: Deleting node "<< doomedJim;
-    QList<QGraphicsItem *> list=scene()->items();
-    qDebug("GW: Scene items= %i - View items : %i",scene()->items().size(), items().size());
-    for (QList<QGraphicsItem *>::iterator it=list.begin(); it!=list.end(); it++) {
-        if ( (*it)->type()==TypeNode) {
-            Node *jim=(Node*) (*it);
-            if ( jim->nodeNumber()==doomedJim)	{
-                qDebug() << "GW: found doomedJim " <<  jim->nodeNumber() << " Demanding node->die() :)" ;
-                delete *it;
-                break;
-            }
-        }
+void GraphicsWidget::eraseNode(const long int &number){
+        qDebug() << "GW::eraseNode() - node " << number
+                 << " scene items: " << scene()->items().size()
+                 << " view items: " << items().size()
+                 << " nodeHash items: "<< nodeHash.count();
+
+    if ( nodeHash.contains(number) ) {
+        qDebug() << "GW::eraseNode() - found number "
+                 <<  number<< " Deleting :)" ;
+        delete nodeHash.value(number);
+        nodeHash.remove(number);
     }
-    qDebug("GW: Scene items now= %i - View items now= %i ", scene()->items().size(), items().size() );
+
+    qDebug() << "GW::eraseNode() - node erased! "
+             << " scene items now: " << scene()->items().size()
+             << " view items: " << items().size()
+             << " nodeHash items: "<< nodeHash.count();
+
 }
 
 
@@ -356,20 +360,29 @@ void GraphicsWidget::eraseNode(long int doomedJim){
  * @param sourceNode
  * @param targetNode
  */
-void GraphicsWidget::eraseEdge(const long int &sourceNode, const long int &targetNode){
-    qDebug() << "GW::eraseEdge()" << sourceNode << " -> " << targetNode;
-    qDebug("GW: Scene items= %i - View items : %i",scene()->items().size(), items().size());
-    QList<QGraphicsItem *>  list=scene()->items();
-    for (QList<QGraphicsItem *>::iterator it=list.begin(); it!= list.end() ; it++){
-        if ( (*it)->type()==TypeEdge ) {
-            Edge *edge=(Edge*) (*it);
-            if ( edge->sourceNodeNumber()==sourceNode && edge->targetNodeNumber()==targetNode ) {
-                removeItem(edge);
-                break;
-            }
-        }
+void GraphicsWidget::eraseEdge(const long int &source, const long int &target){
+    qDebug() << "GW::eraseEdge(): " << source << " -> " << target
+             << " scene items: " << scene()->items().size()
+             << " view items: " << items().size()
+             << " edgesHash.count: " << edgesHash.count();
+
+
+    QString edgeName =  QString::number(m_curRelation) + QString(":") +
+            QString::number( source )
+            + QString(">")
+            + QString::number( target );
+
+    if ( edgesHash.contains(edgeName) ) {
+        delete edgesHash.value(edgeName);
+        edgesHash.remove(edgeName);
     }
-    qDebug("GW: Scene items now= %i - View items now= %i ", scene()->items().size(), items().size() );
+
+
+    qDebug() << "GW::eraseEdge() - deleted "
+             << " scene items: " << scene()->items().size()
+             << " view items: " << items().size()
+             << " edgesHash.count: " << edgesHash.count();
+
 }
 
 
@@ -385,14 +398,13 @@ void GraphicsWidget::eraseEdge(const long int &sourceNode, const long int &targe
 */
 void GraphicsWidget::removeItem( Node *node){
     long int i=node->nodeNumber();
-    qDebug() << "GW::removeItem (node) - number: " <<  i;
+    qDebug() << "GW::removeItem(node) - number: " <<  i;
 
-    foreach ( Node *candidate, nodeHash) {
-        if ( candidate->nodeNumber() == i )
-            nodeHash.remove( i );
-    }
+    scene()->removeItem(node);
     node->deleteLater ();
-    qDebug() << "GW items now:  " << items().size();
+    qDebug() << "GW::removeItem(node) - node erased! "
+             << " scene items now: " << scene()->items().size()
+             << " view items: " << items().size();
 }
 
 
@@ -400,32 +412,67 @@ void GraphicsWidget::removeItem( Node *node){
 
 /** Called from Node::die() to remove Edge edge ... */
 void GraphicsWidget::removeItem( Edge * edge){
-
-    QString edgeName =  QString::number(m_curRelation) + QString(":") +
-            QString::number( edge->sourceNodeNumber() )
-            + QString(">")
-            + QString::number( edge->targetNodeNumber());
-    qDebug() << "GW::removeItem (edge) - name: " <<  edgeName;
-    if  ( edgesHash.contains (edgeName) ) {
-        edgesHash.remove(edgeName)  ;
-    }
-
+    qDebug() << "GW::removeItem(edge)" ;
+    scene()->removeItem(edge);
     edge->deleteLater();
+    qDebug() << "GW::removeItem(edge) - edge erased! "
+             << " scene items now: " << scene()->items().size()
+             << " view items: " << items().size();
+}
 
-    //delete (edge);
+
+/**
+ * @brief GraphicsWidget::removeItem
+ * @param edgeWeight
+ */
+void GraphicsWidget::removeItem( EdgeWeight *edgeWeight){
+    qDebug() << "GW::removeItem(edgeWeight) -  of edge"
+             << "GW items now:  " << items().size();
+    scene()->removeItem(edgeWeight);
+    edgeWeight->deleteLater();
+    qDebug() << "GW::removeItem(edgeWeight) - edgeWeight erased! "
+             << " scene items now: " << scene()->items().size()
+             << " view items: " << items().size();
+}
+
+/**
+ * @brief GraphicsWidget::removeItem
+ * @param edgeLabel
+ */
+void GraphicsWidget::removeItem( EdgeLabel *edgeLabel){
+    qDebug() << "GW::removeItem(edgeLabel) -  of edge"
+             << "GW items now:  " << items().size();
+    scene()->removeItem(edgeLabel);
+    edgeLabel->deleteLater();
+    qDebug() << "GW::removeItem(edgeLabel) - edgeLabel erased! "
+             << " scene items now: " << scene()->items().size()
+             << " view items: " << items().size();
 }
 
 
 void GraphicsWidget::removeItem( NodeLabel *nodeLabel){
-    qDebug() << "GW items now:  " << items().size();
-    delete (nodeLabel);
-    qDebug() << "GW items now:  " << items().size();
+    qDebug() << "GW::removeItem(label) -  of node " <<  nodeLabel->node()->nodeNumber()
+             << "GW items now:  " << items().size();
+    scene()->removeItem(nodeLabel);
+    nodeLabel->deleteLater();
+    qDebug() << "GW::removeItem(label) - label erased! "
+             << " scene items now: " << scene()->items().size()
+             << " view items: " << items().size();
+
+
 }
 
 
 
 void GraphicsWidget::removeItem( NodeNumber *nodeNumber){
-    delete (nodeNumber);
+    qDebug() << "GW::removeItem(number) -  of node " <<  nodeNumber->node()->nodeNumber()
+             << "GW items now:  " << items().size();
+    scene()->removeItem(nodeNumber);
+    nodeNumber->deleteLater();
+    qDebug() << "GW::removeItem(number) - number erased! "
+             << " scene items now: " << scene()->items().size()
+             << " view items: " << items().size();
+
 }
 
 
@@ -589,7 +636,7 @@ void GraphicsWidget::setEdgeColor(const long int &source,
 
 
 /**
- * @brief GraphicsWidget::setEdgeWeight
+ * @brief GraphicsWidget::setEdgeUndirected
  * Makes an edge undirected
  * @param source
  * @param target
@@ -605,14 +652,15 @@ bool GraphicsWidget::setEdgeUndirected(const long int &source,
     QString edgeName =  QString::number(m_curRelation) + QString(":") +
             QString::number( source ) + QString(">")+ QString::number( target );
 
-    qDebug()<<"GW::setEdgeUndirected() -" << edgeName ;
+    qDebug()<<"GW::setEdgeUndirected() - checking edgesHash for:" << edgeName ;
     if  ( edgesHash.contains (edgeName) ) {
         edgesHash.value(edgeName) -> setUndirected();
 
         QString oppositeEdgeName =  QString::number(m_curRelation) + QString(":") +
                 QString::number( target ) + QString(">")+ QString::number( source);
 
-        qDebug()<<"GW::setEdgeUndirected() - removing opposite " << oppositeEdgeName ;
+        qDebug()<<"GW::setEdgeUndirected() - removing opposite edge "
+               << oppositeEdgeName ;
         removeItem ( edgesHash.value(oppositeEdgeName)  );
 
         return true;

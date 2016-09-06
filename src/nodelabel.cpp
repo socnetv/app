@@ -1,5 +1,5 @@
 /***************************************************************************
- SocNetV: Social Network Visualizer 
+ SocNetV: Social Network Visualizer
  version: 2.0
  Written in Qt
 
@@ -31,14 +31,13 @@
 
 NodeLabel::NodeLabel(Node *jim , const QString &text,  const int &size) :
     QGraphicsTextItem(jim) {
-
-    //setParentItem(jim); //auto disables child items like this, when node is disabled.
+    source=jim;
+    setParentItem(jim); //auto disables child items like this, when node is disabled.
     setPlainText( text );
-    //setTextInteractionFlags(Qt::TextEditorInteraction);
     setFont( QFont ("Times", size, QFont::Light, true) );
-	setZValue (253);
+    setZValue (253);
+    setAcceptHoverEvents(false);
 }
-
 
 
 void NodeLabel::setSize(const int &size) {
@@ -48,8 +47,7 @@ void NodeLabel::setSize(const int &size) {
 }
 
 void NodeLabel::removeRefs(){
-	source->deleteLabel();
-
+    source->deleteLabel();
 }
 
 

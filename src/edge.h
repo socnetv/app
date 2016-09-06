@@ -75,11 +75,13 @@ public:
     void setWeight( const float  &w) ;
     float weight() const;
     void addWeightNumber ();
+    //void deleteWeightNumber();
     void setWeightNumberVisibility  (const bool &toggle);
 
     void setLabel( const QString &label) ;
     QString label() const;
     void addLabel();
+    //void deleteLabel();
     void setLabelVisibility  (const bool &toggle);
 
     void showArrows(const bool &);

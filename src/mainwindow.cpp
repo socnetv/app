@@ -6786,7 +6786,11 @@ void MainWindow::slotEditEdgeRemove(){
             return;
         }
 
-        targetNode=QInputDialog::getInt(this, tr("Remove edge"), tr("Target node:  (")+QString::number(min)+"..."+QString::number(max)+"):",min, 1, max , 1, &ok )   ;
+        targetNode=QInputDialog::getInt(
+                    this,
+                    tr("Remove edge"),
+                    tr("Target node:  (")+QString::number(min)+"..."+
+                    QString::number(max)+"):",min, 1, max , 1, &ok )   ;
         if (!ok) {
             statusMessage( "Remove edge operation cancelled." );
             return;
@@ -6795,7 +6799,9 @@ void MainWindow::slotEditEdgeRemove(){
             activeGraph.edgeRemove(sourceNode, targetNode);
         }
         else {
-            QMessageBox::critical(this, "Remove edge",tr("There is no such edge."), "OK",0);
+            QMessageBox::critical(
+                        this,
+                        "Remove edge",tr("There is no such edge."), "OK",0);
             statusMessage( tr("There are no nodes yet...")  );
             return;
         }
@@ -6804,45 +6810,7 @@ void MainWindow::slotEditEdgeRemove(){
     else {
         sourceNode = clickedEdge->sourceNodeNumber();
         targetNode = clickedEdge->targetNodeNumber();
-        if (activeGraph.edgeSymmetric(sourceNode, targetNode) ) {
-            QString s=QString::number(sourceNode);
-            QString t=QString::number(targetNode);
-            switch (QMessageBox::information( this, tr("Remove edge"),
-                                              tr("This edge is directed. \n") +
-                                              tr("Select what Direction to delete or Both..."),
-                                              s+" -> "+ t, t+" -> "+s, tr("Both"), 0, 1 ))
-
-            {
-            case 0:
-                graphicsWidget->removeItem(clickedEdge);
-                activeGraph.edgeRemove(sourceNode, targetNode);
-                //make new edge
-
-                //FIXME weight should be the same
-                graphicsWidget->drawEdge(
-                            targetNode, sourceNode, 1,
-                            QString::null, appSettings["initEdgeColor"], 0,
-                        (appSettings["initEdgeArrows"] == "true") ? true: false,
-                        false, false);
-
-                break;
-            case 1:
-                activeGraph.edgeRemove(targetNode, sourceNode);
-                break;
-            case 2:
-                graphicsWidget->removeItem(clickedEdge);
-                activeGraph.edgeRemove(sourceNode, targetNode);
-                activeGraph.edgeRemove(targetNode, sourceNode);
-            }
-
-
-        }
-        else {
-            graphicsWidget->removeItem(clickedEdge);
-            activeGraph.edgeRemove(sourceNode, targetNode);
-
-        }
-
+        activeGraph.edgeRemove(sourceNode, targetNode);
 
     }
     slotNetworkChanged();

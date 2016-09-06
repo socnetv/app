@@ -399,10 +399,11 @@ void Node::addInLink( Edge *edge ) {
 
 
 void Node::deleteInLink( Edge *link ){
-	qDebug () << "Node:  deleteInLink for "<< m_num;
-	//qDebug ("Node: %i inEdgeList has %i edges", m_num, inEdgeList.size());
-    inEdgeList.remove( link);
-	//qDebug ("Node:  %i inEdgeList has now %i edges", m_num, inEdgeList.size());
+    qDebug () << "Node::deleteInLink() - to " <<  m_num
+              << " inEdgeList size: " << inEdgeList.size();
+    inEdgeList.remove( link );
+    qDebug () << "Node::deleteInLink() - deleted to " <<  m_num
+              << " inEdgeList size: " << inEdgeList.size();
 }
 
 
@@ -416,16 +417,17 @@ void Node::addOutLink( Edge *edge ) {
 
 
 void Node::deleteOutLink(Edge *link){
-	qDebug () << "Node: deleteOutLink() from " <<  m_num;
-    qDebug ("Node: %i outEdgeList has %i edges", m_num, outEdgeList.size());
+    qDebug () << "Node::deleteOutLink() - from " <<  m_num
+              << " outEdgeList size: " << outEdgeList.size();
     outEdgeList.remove( link);
-    qDebug ("Node: %i outEdgeList has now %i edges", m_num, outEdgeList.size());
+    qDebug () << "Node::deleteOutLink() - deleted from " <<  m_num
+              << " outEdgeList size now: " << outEdgeList.size();
 }
 
 
 
 void Node::addLabel ()  {
-    //Draw node labels
+    qDebug()<< "Node::addLabel()" ;
     m_label = new  NodeLabel (this, m_labelText, m_labelSize);
     m_label -> setDefaultTextColor (m_labelColor);
     m_label -> setPos( m_size, m_labelDistance+m_size);
@@ -443,13 +445,18 @@ NodeLabel* Node::label(){
 
 void Node::deleteLabel(){
 	qDebug ("Node: deleteLabel ");
-	m_hasLabel=false;
-	m_label->hide();
-	graphicsWidget->removeItem(m_label);		
+    if (m_hasLabel) {
+        m_hasLabel=false;
+        m_label->hide();
+        graphicsWidget->removeItem(m_label);
+    }
+    qDebug () << "Node::deleteLabel() - finished";
+
 }
 
 
 void Node::setLabelText ( QString label) {
+    qDebug()<< "Node::setLabelText()";
     prepareGeometryChange();
     m_labelText = label;
     if (m_hasLabel)
@@ -531,12 +538,13 @@ NodeNumber* Node::number(){
 
 
 void Node::deleteNumber( ){
-    qDebug () << "Node: deleteNumber ";
+    qDebug () << "Node::deleteNumber()";
     if (m_hasNumber && !m_hasNumberInside) {
         m_number->hide();
         graphicsWidget->removeItem(m_number);
         m_hasNumber=false;
     }
+    qDebug () << "Node::deleteNumber() - finished";
 }
 
 void Node::setNumberVisibility(const bool &toggle) {
@@ -632,21 +640,21 @@ void Node::setNumberDistance(const int &distance) {
 
 
  Node::~Node(){
-    qDebug() << "\n\n\n *** ~Node() "<< nodeNumber();
+    qDebug() << "*** ~Node() "<< nodeNumber();
     foreach (Edge *edge, inEdgeList) {
         qDebug("~Node: removing edges in inEdgeList");
-        //edge->remove();
-        graphicsWidget->removeItem(edge);
+        delete edge;
+        //graphicsWidget->removeItem(edge);
     }
     foreach (Edge *edge, outEdgeList) {
         qDebug("~Node: removing edges in outEdgeList");
-        //edge->remove();
-        graphicsWidget->removeItem(edge);
+        delete edge;
+        //graphicsWidget->removeItem(edge);
     }
     if ( m_hasNumber )
-        this->deleteNumber();
+        deleteNumber();
     if ( m_hasLabel )
-        this->deleteLabel();
+        deleteLabel();
     inEdgeList.clear();
     outEdgeList.clear();
     this->hide();
