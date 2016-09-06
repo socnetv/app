@@ -6006,40 +6006,60 @@ void MainWindow::slotEditNodeRemove() {
                        "This a network with more than 1 relations. If you remove "
                        "a node from the active relation, and then ask me to go "
                        "to the previous or the next relation, then I would crash "
-                       "because I would try to display edges from a delete node."
-                       "You can only add nodes in multirelational networks."),
+                       "because I would try to display edges from a deleted node."
+                       "You cannot remove nodes in multirelational networks."),
                     "OK",0);
         statusMessage( tr("Nothing to remove.")  );
         return;
     }
-    int doomedJim=-1, min=-1, max=-1;
-    bool ok=false;
 
-    min = activeGraph.vertexFirstNumber();
-    max = activeGraph.vertexLastNumber();
-    qDebug("MW: min is %i and max is %i", min, max);
-    if (min==-1 || max==-1 ) {
-        qDebug("ERROR in finding min max nodeNumbers. Abort");
-        return;
+    // if there are already multiple nodes selected, erase them
+    if (selectedNodes().count() > 1) {
+        int removeCounter = 0;
+        qDebug() << "MW: removeNode() multiple selected to remove";
+        foreach (QGraphicsItem *item, selectedNodes() ) {
+           if ( (clickedJim = qgraphicsitem_cast<Node *>(item) )) {
+               activeGraph.vertexRemove(clickedJim->nodeNumber());
+               ++removeCounter ;
+           }
+        }
+        statusMessage( tr("Removed nodes. Ready. ") );
     }
-    else if (nodeClicked && clickedJimNumber >= 0 && clickedJimNumber<= max ) {
-        doomedJim=clickedJimNumber ;
-    }
-    else if (!nodeClicked ) {
-        doomedJim =  QInputDialog::getInt(this,"Remove node",tr("Choose a node to remove between ("
-                                                                + QString::number(min).toLatin1()+"..."+QString::number(max).toLatin1()+"):"),min, 1, max, 1, &ok);
-        if (!ok) {
-            statusMessage( "Remove node operation cancelled." );
+
+    else {
+
+
+        int doomedJim=-1, min=-1, max=-1;
+        bool ok=false;
+
+        min = activeGraph.vertexFirstNumber();
+        max = activeGraph.vertexLastNumber();
+        qDebug("MW: min is %i and max is %i", min, max);
+        if (min==-1 || max==-1 ) {
+            qDebug("ERROR in finding min max nodeNumbers. Abort");
             return;
         }
+        else if (nodeClicked && clickedJimNumber >= 0 && clickedJimNumber<= max ) {
+            doomedJim=clickedJimNumber ;
+        }
+        else if (!nodeClicked ) {
+            doomedJim =  QInputDialog::getInt(this,"Remove node",tr("Choose a node to remove between ("
+                                                                    + QString::number(min).toLatin1()+"..."+QString::number(max).toLatin1()+"):"),min, 1, max, 1, &ok);
+            if (!ok) {
+                statusMessage( "Remove node operation cancelled." );
+                return;
+            }
+        }
+        qDebug ("MW: removing vertex with number %i from Graph", doomedJim);
+        activeGraph.vertexRemove(doomedJim);
+        qDebug("MW: removeNode() completed. Node %i removed completely.",doomedJim);
+        statusMessage( tr("Node removed completely. Ready. ") );
     }
-    qDebug ("MW: removing vertex with number %i from Graph", doomedJim);
-    activeGraph.vertexRemove(doomedJim);
     clickedJimNumber=-1;
     nodeClicked=false;
     slotNetworkChanged();
-    qDebug("MW: removeNode() completed. Node %i removed completely.",doomedJim);
-    statusMessage( tr("Node removed completely. Ready. ") );
+
+
 }
 
 
@@ -6557,7 +6577,10 @@ void MainWindow::slotEditNodeOpenContextMenu() {
         nodeContextMenu -> addAction( tr("## NODE ") + QString::number(clickedJimNumber) + " ##  ");
     }
     else {
-        nodeContextMenu -> addAction( tr("## NODE ") + QString::number(clickedJimNumber) + " ##  " + tr(" (selected nodes: ") + QString::number (selectedNodes().count() ) + ")");
+        nodeContextMenu -> addAction(
+                    tr("## NODE ") + QString::number(clickedJimNumber)
+                    + " ##  " + tr(" (selected nodes: ")
+                    + QString::number (selectedNodes().count() ) + ")");
     }
 
     nodeContextMenu -> addSeparator();
