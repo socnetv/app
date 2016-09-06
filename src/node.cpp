@@ -417,9 +417,9 @@ void Node::addOutLink( Edge *edge ) {
 
 void Node::deleteOutLink(Edge *link){
 	qDebug () << "Node: deleteOutLink() from " <<  m_num;
-//	qDebug ("Node: %i outEdgeList has %i edges", m_num, outEdgeList.size());
+    qDebug ("Node: %i outEdgeList has %i edges", m_num, outEdgeList.size());
     outEdgeList.remove( link);
-//	qDebug ("Node: %i outEdgeList has now %i edges", m_num, outEdgeList.size());
+    qDebug ("Node: %i outEdgeList has now %i edges", m_num, outEdgeList.size());
 }
 
 
