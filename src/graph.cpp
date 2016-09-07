@@ -2045,7 +2045,7 @@ void Graph::edgeUndirectedSet(const long int &v1, const long int &v2,
     emit setEdgeUndirected(v1, v2, weight);
 
     graphModified=true;
-
+    m_undirected = true;
 }
 
 
