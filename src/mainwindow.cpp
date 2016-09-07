@@ -7091,19 +7091,6 @@ void MainWindow::slotEditEdgeWeight(){
         }
 
         qDebug("source %i target %i",sourceNode, targetNode);
-
-        newWeight=(float) QInputDialog::getDouble(
-                    this,
-                    "Change edge weight...",
-                    tr("New edge Weight: "),
-                    1, -100, 100 ,1, &ok ) ;
-        if (ok) {
-              activeGraph.edgeWeightSet(sourceNode, targetNode, newWeight);
-        }
-        else {
-            statusMessage(  QString(tr("input error. Abort."))  );
-            return;
-        }
     }
     else {  //edgeClicked
         qDebug() << "MW: slotEditEdgeWeight() - an Edge has already been clicked";
@@ -7111,11 +7098,16 @@ void MainWindow::slotEditEdgeWeight(){
         targetNode=clickedEdge->targetNodeNumber();
         qDebug() << "MW: slotEditEdgeWeight() from "
                  << sourceNode << " to " << targetNode;
+
+    }
+
+    float oldWeight= 0;
+    if ( ( oldWeight= activeGraph.edgeWeight(sourceNode, targetNode)) != 0 ) {
         newWeight=(float) QInputDialog::getDouble(
                     this,
                     "Change edge weight...",
                     tr("New edge Weight: "),
-                    1, -100, 100 ,1, &ok ) ;
+                    oldWeight, -100, 100 ,1, &ok ) ;
 
         if (ok) {
             activeGraph.edgeWeightSet(sourceNode, targetNode, newWeight);
@@ -7124,13 +7116,11 @@ void MainWindow::slotEditEdgeWeight(){
             statusMessage(  QString(tr("Change edge weight cancelled."))  );
             return;
         }
-
-        if ( activeGraph.edgeSymmetric(sourceNode, targetNode) ) {
-        }
-
-        edgeClicked=false;
+    }
+    if ( activeGraph.edgeSymmetric(sourceNode, targetNode) ) {
     }
 
+        //edgeClicked=false;
 }
 
 

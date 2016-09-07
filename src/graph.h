@@ -345,6 +345,7 @@ public:
     void edgeUndirectedSet(const long int &v1, const long int &v2, const float &w);
 
     void edgeWeightSet (const long int &v1, const long int &v2, const float &w);
+    float edgeWeight(const long int &v1, const long int &v2) const;
     void edgeWeightNumbersVisibilitySet (const bool &toggle);
 
     void edgeLabelSet(const long int &v1, const long int &v2, const QString &label);

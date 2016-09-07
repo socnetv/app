@@ -1373,6 +1373,23 @@ void Graph::edgeWeightSet (const long &v1, const long &v2, const float &weight) 
 }
 
 
+
+
+
+/**
+ * @brief Graph::edgeWeight
+ * Returns the color qstring of the directed edge v1 -> v2
+ * @param v1
+ * @param v2
+ * @return
+ */
+float Graph::edgeWeight (const long &v1, const long &v2) const{
+    return m_graph[ index[v1] ]->hasEdgeTo(v2);
+}
+
+
+
+
 /**
  * @brief Graph::edgeWeightNumbersVisibilitySet
  * Changes the visibility of edge weight numbers
@@ -7497,7 +7514,7 @@ bool Graph::saveGraphToPajekFormat (
         for (jt=m_graph.begin(); jt!=m_graph.end(); jt++){
             qDebug() << "Graph::saveGraphToPajekFormat:  it=" << (*it)->name() << ", jt=" << (*jt)->name() ;
             if  ( (weight=edgeExists ( (*it)->name(), (*jt)->name())) !=0
-                  &&   ( edgeExists ((*jt)->name(), (*it)->name())) == 0
+                  &&   ( edgeExists ((*jt)->name(), (*it)->name())) != weight
                   )
             {
                 qDebug()<<"Graph::saveGraphToPajekFormat  weight "<< weight
