@@ -9786,21 +9786,21 @@ void MainWindow::slotHelpCreateTips(){
 */
 void MainWindow::slotHelp(){
 
-    QString helpPath;
+    QString helpPath = "";
     bool manualFound = false;
     QDir d( QCoreApplication::applicationDirPath() );
     qDebug()<< QCoreApplication::applicationDirPath().toLatin1();
 
-    if ( d.exists("manual.html") ) {
-        helpPath=d.filePath("manual.html");
+    if ( d.exists("index.html") ) {
+        helpPath=d.filePath("index.html");
     }
     else {
         if (d.dirName()=="bin") {
             d.cdUp();
         }
         if (d.cd("./manual") ) {
-            if ( d.exists("manual.html") ) {
-                helpPath=d.filePath("manual.html");
+            if ( d.exists("index.html") ) {
+                helpPath=d.filePath("index.html");
                 manualFound = true;
             }
             else 	{
@@ -9811,8 +9811,8 @@ void MainWindow::slotHelp(){
         // MacOS: assumes manual dir in socnetv.app/Contents/
         // before deploy copy there the manual dir
         if (d.cd("../manual") ) {         // for Mac
-            if ( d.exists("manual.html") ) {
-                helpPath=d.filePath("manual.html");
+            if ( d.exists("index.html") ) {
+                helpPath=d.filePath("index.html");
                 manualFound = true;
             }
             else 	{
@@ -9822,8 +9822,8 @@ void MainWindow::slotHelp(){
         }
 
         if (!manualFound && d.cd("../trunk/manual") ) {
-            if ( d.exists("manual.html") ) {
-                helpPath=d.filePath("manual.html");
+            if ( d.exists("index.html") ) {
+                helpPath=d.filePath("index.html");
                 manualFound = true;
             }
             else 	{
@@ -9833,8 +9833,8 @@ void MainWindow::slotHelp(){
         }
         if ( !manualFound && d.cd("/usr/local/share/doc/socnetv/") ) {			//for compile installation
             if (d.exists("manual/")) d.cd("manual/");
-            if ( d.exists("manual.html") ) {
-                helpPath=d.filePath("manual.html");
+            if ( d.exists("index.html") ) {
+                helpPath=d.filePath("index.html");
                 qDebug()<< "path" << helpPath.toLatin1();
                 manualFound = true;
             }
@@ -9845,8 +9845,8 @@ void MainWindow::slotHelp(){
         }
         if (!manualFound && d.cd("/usr/share/doc/socnetv/") ) {     //for Debian Ubuntu
             if (d.exists("manual/")) d.cd("manual/");
-            if ( d.exists("manual.html") ) {
-                helpPath=d.filePath("manual.html");
+            if ( d.exists("index.html") ) {
+                helpPath=d.filePath("index.html");
                 manualFound = true;
             }
             else {
@@ -9857,8 +9857,8 @@ void MainWindow::slotHelp(){
         if ( !manualFound && d.cd("/usr/share/doc/packages/socnetv/") ) {  //for opensuse file hierarchy
             if (d.exists("manual/"))
                 d.cd("manual/");
-            if ( d.exists("manual.html") ) {
-                helpPath=d.filePath("manual.html");
+            if ( d.exists("index.html") ) {
+                helpPath=d.filePath("index.html");
                 manualFound = true;
             }
             else {
@@ -9869,8 +9869,8 @@ void MainWindow::slotHelp(){
         if ( !manualFound && d.cd(fedoraPath) ) {  //for Fedora file hierarchy
             if (d.exists("manual/"))
                 d.cd("manual/");
-            if ( d.exists("manual.html") ) {
-                helpPath=d.filePath("manual.html");
+            if ( d.exists("index.html") ) {
+                helpPath=d.filePath("index.html");
                 manualFound = true;
             }
             else {
@@ -9881,8 +9881,10 @@ void MainWindow::slotHelp(){
     }
     qDebug () << "help path is: " << helpPath.toLatin1();
 
-    QDesktopServices::openUrl(QUrl::fromLocalFile(helpPath));
-
+    if ( manualFound == true)
+        QDesktopServices::openUrl(QUrl::fromLocalFile(helpPath));
+    else
+        QDesktopServices::openUrl(QUrl("http://socnetv.sourceforge.net/docs/index.html"));
 }
 
 
