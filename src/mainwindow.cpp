@@ -6358,10 +6358,10 @@ void MainWindow::slotEditNodeShape(QString shape, const int vertex) {
  * @param v1
  * @param newSize
  */
-void MainWindow::slotEditNodeNumberSize(int v1, int newSize) {
+void MainWindow::slotEditNodeNumberSize(int v1, int newSize, const bool prompt) {
     bool ok=false;
     qDebug() << "MW::slotEditNodeNumberSize - newSize " << newSize;
-    if (!newSize) {
+    if (prompt) {
         newSize = QInputDialog::getInt(this, "Change text size",
                                        tr("Change all node numbers size to: (1-16)"),appSettings["initNodeNumberSize"].toInt(0,10), 1, 16, 1, &ok );
         if (!ok) {
@@ -7432,7 +7432,10 @@ void MainWindow::slotLayoutNodeSizesByOutDegree(bool checked){
  */
 void MainWindow::slotLayoutNodeSizesByInDegree(bool checked){
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("You must be dreaming! \nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
+        QMessageBox::critical(this,
+                              "Error",
+                              tr("Load a network file or create a new network first. \n"
+                                 "Then we can talk about layouts!"), "OK",0);
         statusMessage( tr("I am really sorry. You must really load a file first... ")  );
         return;
     }

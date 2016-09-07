@@ -57,7 +57,7 @@ Graph::Graph() {
     reciprocalEdgesVert=0;
     order=true;		//returns true if the indexes of the list is ordered.
     graphModified=false;
-    m_undirected=false;
+    m_undirected=true;
     symmetricAdjacencyMatrix=true;
     adjacencyMatrixCreated=false;
     reachabilityMatrixCreated=false;
@@ -280,13 +280,13 @@ void Graph::vertexCreate(int i, int cWidth, int cHeight){
     Then calls the main creation slot with init node values.
 */
 
-void Graph::vertexCreateWebCrawler(QString label, int i) {
-    if ( i < 0 )  i = vertexLastNumber() +1;
+void Graph::vertexCreateWebCrawler(const QString &label, const int &i) {
+
     qDebug() << "Graph::vertexCreateWebCrawler() " << i << " label" << label;
     QPointF p;
     p.setX(rand()%canvasWidth);
     p.setY(rand()%canvasHeight);
-    vertexCreate(	i, initVertexSize,  initVertexColor,
+    vertexCreate( (i<0)?vertexLastNumber() +1:i, initVertexSize,  initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
                     label, initVertexLabelColor,  initVertexLabelSize,
                     p, initVertexShape, true
@@ -1082,6 +1082,7 @@ void Graph::edgeCreate(const int &v1, const int &v2, const float &weight,
             edgeAdd ( v1, v2, weight, EDGE_DIRECTED_OPPOSITE_EXISTS , label, color);
             emit drawEdge(v1, v2, weight, label, color, EDGE_DIRECTED_OPPOSITE_EXISTS,
                           drawArrows, bezier, initEdgeWeightNumbers);
+            m_undirected = false;
         }
         else {
             qDebug()<< "-- Graph::edgeCreate() - "
@@ -1089,6 +1090,7 @@ void Graph::edgeCreate(const int &v1, const int &v2, const float &weight,
             edgeAdd ( v1, v2, weight, EDGE_DIRECTED, label, color   );
             emit drawEdge(v1, v2, weight, label, color, EDGE_DIRECTED,
                           drawArrows, bezier, initEdgeWeightNumbers);
+            m_undirected = false;
         }
     }
     else {
@@ -1113,14 +1115,13 @@ void Graph::edgeCreate(const int &v1, const int &v2, const float &weight,
  * @param source
  * @param target
  */
-void Graph::edgeCreateWebCrawler (int source, int target){
+void Graph::edgeCreateWebCrawler (const int &source, const int &target){
     qDebug()<< " Graph::edgeCreateWebCrawler() - from " << source << " to " << target ;
     float weight = 1.0;
-    bool reciprocal=false;
     bool drawArrows=true;
     bool bezier=false;
 
-    edgeCreate(source, target, weight, initEdgeColor, reciprocal, drawArrows, bezier);
+    edgeCreate(source, target, weight, initEdgeColor, EDGE_DIRECTED, drawArrows, bezier);
 }
 
 
@@ -1750,7 +1751,7 @@ void Graph::clear() {
     reciprocalEdgesVert=0;
 
     order=true;		//returns true if the indexes of the list is ordered.
-    m_undirected=false;
+    m_undirected=true;
     calculatedDP=false;
     calculatedDC=false;
     calculatedIC=false;

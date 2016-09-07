@@ -169,10 +169,10 @@ void Node::setShape(const QString shape) {
         m_path->addRoundedRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size, 60.0, 60.0, Qt::RelativeSize );
     }
     else if ( m_shape == "triangle") {
-        m_path->moveTo(-m_size,0.75* m_size) ;
-        m_path->lineTo(m_size,0.75*m_size);
-        m_path->lineTo( 0,-1.25*m_size);
-        m_path->lineTo(-m_size,0.75*m_size) ;
+        m_path->moveTo(-m_size,0.95* m_size) ;
+        m_path->lineTo(m_size,0.95*m_size);
+        m_path->lineTo( 0,-1*m_size);
+        m_path->lineTo(-m_size,0.95*m_size) ;
         m_path->closeSubpath();
     }
     else if ( m_shape == "star") {
@@ -217,7 +217,7 @@ QPainterPath Node::shape() const {
  *  That is the rectangle where all painting will take place.
  */
 QRectF Node::boundingRect() const {
-    qreal adjust = 6;
+    qreal adjust = 5;
     return QRectF(-m_size -adjust , -m_size-adjust , 2*m_size+adjust , 2*m_size +adjust);
 }
 
@@ -263,19 +263,19 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
         // m_path->setFillRule(Qt::WindingFill);
         painter->setPen(QPen(QColor(m_numColor), 0));
         if (m_num > 999) {
-            painter->setFont(QFont("Times", m_numSize-1, QFont::Normal));
+            painter->setFont(QFont("Times", (m_numSize)? m_numSize-1: 0.66*m_size, QFont::Normal));
             painter->drawText(-0.8*m_size,m_size/3, QString::number(m_num) );
         }
         else if (m_num > 99) {
-            painter->setFont(QFont("Times", m_numSize-1, QFont::Normal));
+            painter->setFont(QFont("Times", (m_numSize)? m_numSize-1: 0.66*m_size, QFont::Normal));
             painter->drawText(-0.6 * m_size,m_size/3, QString::number(m_num) );
         }
         else if (m_num > 9 ) {
-            painter->setFont(QFont("Times", m_numSize, QFont::Normal));
+            painter->setFont(QFont("Times", (m_numSize)? m_numSize: 0.66*m_size, QFont::Normal));
             painter->drawText(-0.5*m_size,m_size/3,QString::number(m_num) );
         }
         else  {
-            painter->setFont(QFont("Times", m_numSize, QFont::Normal));
+            painter->setFont(QFont("Times", (m_numSize)? m_numSize: 0.66*m_size, QFont::Normal));
             painter->drawText(-0.33*m_size,m_size/3,QString::number(m_num) );
         }
     }

@@ -447,7 +447,7 @@ void SettingsDialog::getNodeNumbersInside(bool toggle) {
  */
 void SettingsDialog::getNodeNumberSize( const int size) {
     m_appSettings["initNodeNumberSize"]= QString::number(size);
-    emit setNodeNumberSize(0, size);
+    emit setNodeNumberSize(0, size, false);
 }
 
 /**

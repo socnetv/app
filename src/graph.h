@@ -144,14 +144,14 @@ public slots:
                       const int &type=0,
                       const bool &drawArrows=true, const bool &bezier=false,
                       const QString &label=QString::null);
-    void edgeCreateWebCrawler (int, int);
+    void edgeCreateWebCrawler (const int &source, const int &target);
 
     void edgeVisibilitySet(int relation, int, int, bool);
 
     //auxiliary vertexCreate functions
     void vertexCreate(const QPointF &p);
     void vertexCreate(int i, int canvasWidth, int canvasHeight); 	//Called by MW
-    void vertexCreateWebCrawler(QString label, int i) ;
+    void vertexCreateWebCrawler(const QString &label, const int &i) ;
 
     /** Slots to signals from MainWindow */
     void relationSet(int);

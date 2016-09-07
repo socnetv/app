@@ -83,7 +83,7 @@ signals:
     void setNodeSize(int, const bool &);
     void setNodeNumbersVisibility(bool);
     void setNodeNumbersInside(bool);
-    void setNodeNumberSize(const int v, const int &);
+    void setNodeNumberSize(const int v, const int &size, const bool prompt);
     void setNodeNumberDistance(const int v, const int &);
     void setNodeNumberColor(const QColor);
     void setNodeLabelsVisibility(const bool &);

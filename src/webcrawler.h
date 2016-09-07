@@ -47,8 +47,8 @@ public slots:
     void parse(QNetworkReply *reply);
     void newLink(int s, QUrl target, bool enqueue_to_frontier);
 signals:
-    void signalCreateNode(QString url, int no);
-    void signalCreateEdge (int source, int target);
+    void signalCreateNode(const QString &url, const int &no);
+    void signalCreateEdge (const int &source, const int &target);
     void startSpider();
     void finished (QString);
 private:
