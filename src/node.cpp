@@ -1,5 +1,5 @@
 /***************************************************************************
- SocNetV: Social Network Visualizer 
+ SocNetV: Social Network Visualizer
  version: 2.0
  Written in Qt
 
@@ -42,28 +42,28 @@
 
 
 Node::Node(GraphicsWidget* gw, const int &num, const int &size,
-            const QString &color, const QString &shape,
+           const QString &color, const QString &shape,
            const bool &showNumbers, const bool &numbersInside,
            const QString &numberColor, const int &numberSize,
            const int &numDistance,
            const bool &showLabels,  const QString &label, const QString &labelColor,
            const int &labelSize, const int &labelDistance,
            QPointF p
-            ) : graphicsWidget (gw)
+           ) : graphicsWidget (gw)
 {
-	Q_UNUSED(p);
-	graphicsWidget->scene()->addItem(this); //Without this nodes don't appear on the screen...
+    Q_UNUSED(p);
+    graphicsWidget->scene()->addItem(this); //Without this nodes don't appear on the screen...
 
     setFlags(ItemSendsGeometryChanges | ItemIsSelectable | ItemIsMovable );
     //setCacheMode(QGraphicsItem::ItemCoordinateCache); //QT < 4.6 if a cache mode is set, nodes do not respond to hover events
 
-	setCacheMode(QGraphicsItem::NoCache); //QT < 4.6 if a cache mode is set, nodes do not respond to hover events
+    setCacheMode(QGraphicsItem::NoCache); //QT < 4.6 if a cache mode is set, nodes do not respond to hover events
     setAcceptHoverEvents(true);
 
-	m_num=num;
-	m_size=size;
+    m_num=num;
+    m_size=size;
 
-	m_shape=shape;
+    m_shape=shape;
     m_col_str=color;
     m_col=QColor(color);
 
@@ -91,19 +91,19 @@ Node::Node(GraphicsWidget* gw, const int &num, const int &size,
     setShape(m_shape);
 
     qDebug()<< "Node: constructor: initial position at: "
-			<< this->x()<<", "<<this->y()
-			<< " Will move at: "<< p.x()<<", "<<p.y();;
+            << this->x()<<", "<<this->y()
+            << " Will move at: "<< p.x()<<", "<<p.y();;
 
 } 
 
 
 
 /** 
-	Used by MW::slotChangeNodeColor
+    Used by MW::slotChangeNodeColor
 */
 void Node::setColor(QString str) {
-	prepareGeometryChange();
-	m_col=QColor(str);
+    prepareGeometryChange();
+    m_col=QColor(str);
     update();
 }
 
@@ -112,48 +112,48 @@ void Node::setColor(QString str) {
 */
 void Node::setColor(QColor color){
     prepareGeometryChange();
-	m_col=color;
+    m_col=color;
     m_col_str = m_col.name();
     update();
 }
 
 
 QString Node::color() {
-	return m_col_str;
+    return m_col_str;
 }
 
 
 /** Sets the size of the node */
 void Node::setSize(const int &size){
-	qDebug("Node: setSize()");
- 	prepareGeometryChange();
-	m_size=size;
-	foreach (Edge *edge, inEdgeList) {
-		qDebug("Node: updating edges in inEdgeList");
-		edge->setEndOffset(size);
-	}
-	foreach (Edge *edge, outEdgeList) {
-		qDebug("Node: updating edges in outEdgeList");
-		edge->setStartOffset(size);
-	}
-	setShape(m_shape);
+    qDebug("Node: setSize()");
+    prepareGeometryChange();
+    m_size=size;
+    foreach (Edge *edge, inEdgeList) {
+        qDebug("Node: updating edges in inEdgeList");
+        edge->setEndOffset(size);
+    }
+    foreach (Edge *edge, outEdgeList) {
+        qDebug("Node: updating edges in outEdgeList");
+        edge->setStartOffset(size);
+    }
+    setShape(m_shape);
 }
 
 
 
 /**  Used by MainWindow::findNode() and Edge::Edge()  */
 int Node::size() const{
-	qDebug("size()");
-	return m_size;  
+    qDebug("size()");
+    return m_size;
 }
 
 
 /**  Called every time the user needs to change the shape of an node. */
 void Node::setShape(const QString shape) {
-	qDebug("Node: setShape()");
-	prepareGeometryChange();
-	m_shape=shape;
-	qDebug ("Node: setShape(): node is at x=%f and y=%f", x(), y());
+    qDebug("Node: setShape()");
+    prepareGeometryChange();
+    m_shape=shape;
+    qDebug ("Node: setShape(): node is at x=%f and y=%f", x(), y());
 
     m_path = new QPainterPath;
     if ( m_shape == "circle") {
@@ -191,9 +191,9 @@ void Node::setShape(const QString shape) {
     }
     else if ( m_shape == "diamond"){
         m_path->moveTo(-m_size, 0);
-        m_path->lineTo( 0,-1.25*m_size);
+        m_path->lineTo( 0,-1*m_size);
         m_path->lineTo( m_size, 0);
-        m_path->lineTo( 0, 1.25*m_size);
+        m_path->lineTo( 0, 1*m_size);
         m_path->lineTo(-m_size, 0) ;
         m_path->closeSubpath();
     }
@@ -207,8 +207,8 @@ void Node::setShape(const QString shape) {
 *	Used by the collision algorithm in collidesWithItem() 
 */
 QPainterPath Node::shape() const {
- 	//qDebug ("Node: shape()");
-	return (*m_path);
+    //qDebug ("Node: shape()");
+    return (*m_path);
 }
 
 
@@ -217,54 +217,58 @@ QPainterPath Node::shape() const {
  *  That is the rectangle where all painting will take place.
  */
 QRectF Node::boundingRect() const {
-	qreal adjust = 6;
-	return QRectF(-m_size -adjust , -m_size-adjust , 2*m_size+adjust , 2*m_size +adjust);
-	
-
+    qreal adjust = 6;
+    return QRectF(-m_size -adjust , -m_size-adjust , 2*m_size+adjust , 2*m_size +adjust);
 }
 
 
 /** 
-	Does the actual painting. 
-	Called by GraphicsView in every update() 
+
 */
+/**
+ * @brief Node::paint
+ * Does the actual painting using the QPainterPath created by the setShape()
+ * Called by GraphicsView and Node methods in every update()
+ * @param painter
+ * @param option
+ */
 void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) {
-//	painter->setClipRect( option->exposedRect );
+    //	painter->setClipRect( option->exposedRect );
 
     //if the node is being dragged around, darken it!
-	if (option->state & QStyle::State_Selected) {
-		//qDebug()<< " node : selected ";
-		painter->setBrush(m_col.dark(150));
-	}
-	else if (option->state & QStyle::State_MouseOver) {
-		//qDebug()<< " node : mouse over";	
-		painter->setBrush(m_col.dark(150));
-		setZValue(255);		
-	}
-	//else if (option->state & QStyle::State_Sunken) {
-		//qDebug()<< " node : sunken ";
-		//setZValue(255);
-		//painter->setBrush(m_col_dark.dark(160));
-	//}
- 	else { //no, just paint it with the usual color.
- 		//qDebug()<< " node : nothing";
-		setZValue(254);		
-		painter->setBrush(m_col);
-	}
+    if (option->state & QStyle::State_Selected) {
+        //qDebug()<< " node : selected ";
+        painter->setBrush(m_col.dark(150));
+    }
+    else if (option->state & QStyle::State_MouseOver) {
+        //qDebug()<< " node : mouse over";
+        painter->setBrush(m_col.dark(150));
+        setZValue(255);
+    }
+    //else if (option->state & QStyle::State_Sunken) {
+    //qDebug()<< " node : sunken ";
+    //setZValue(255);
+    //painter->setBrush(m_col_dark.dark(160));
+    //}
+    else { //no, just paint it with the usual color.
+        //qDebug()<< " node : nothing";
+        setZValue(254);
+        painter->setBrush(m_col);
+    }
     painter->setPen(QPen(QColor("#222"), 0));
 
-	painter->drawPath (*m_path);
+    painter->drawPath (*m_path);
 
     if (m_hasNumberInside && m_hasNumber) {
-       // m_path->setFillRule(Qt::WindingFill);
+        // m_path->setFillRule(Qt::WindingFill);
         painter->setPen(QPen(QColor(m_numColor), 0));
         if (m_num > 999) {
             painter->setFont(QFont("Times", m_numSize-1, QFont::Normal));
-             painter->drawText(-0.8*m_size,m_size/3, QString::number(m_num) );
+            painter->drawText(-0.8*m_size,m_size/3, QString::number(m_num) );
         }
         else if (m_num > 99) {
             painter->setFont(QFont("Times", m_numSize-1, QFont::Normal));
-             painter->drawText(-0.6 * m_size,m_size/3, QString::number(m_num) );
+            painter->drawText(-0.6 * m_size,m_size/3, QString::number(m_num) );
         }
         else if (m_num > 9 ) {
             painter->setFont(QFont("Times", m_numSize, QFont::Normal));
@@ -293,7 +297,7 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
  * @return
  */
 QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
-	QPointF newPos = value.toPointF();
+    QPointF newPos = value.toPointF();
 
     switch (change) {
     case ItemPositionHasChanged :
@@ -355,8 +359,8 @@ void Node::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 
 
 void Node::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
-	update();
-	QGraphicsItem::mouseReleaseEvent(event);
+    update();
+    QGraphicsItem::mouseReleaseEvent(event);
 }
 
 /**
@@ -392,9 +396,9 @@ void Node::hoverLeaveEvent(QGraphicsSceneHoverEvent *event){
  * @param edge
  */
 void Node::addInLink( Edge *edge ) {
-	qDebug() << "Node:  addInLink() for "<<  m_num;
-	inEdgeList.push_back( edge); 
-	//qDebug ("Node:  %i inEdgeList has now %i edges", m_num, inEdgeList.size());
+    qDebug() << "Node:  addInLink() for "<<  m_num;
+    inEdgeList.push_back( edge);
+    //qDebug ("Node:  %i inEdgeList has now %i edges", m_num, inEdgeList.size());
 }
 
 
@@ -409,9 +413,9 @@ void Node::deleteInLink( Edge *link ){
 
 
 void Node::addOutLink( Edge *edge ) {
-	qDebug("Node: addOutLink()");
-	outEdgeList.push_back( edge); 
-//	qDebug ("Node: outEdgeList has now %i edges", outEdgeList.size());
+    qDebug("Node: addOutLink()");
+    outEdgeList.push_back( edge);
+    //	qDebug ("Node: outEdgeList has now %i edges", outEdgeList.size());
 }
 
 
@@ -444,7 +448,7 @@ NodeLabel* Node::label(){
 }
 
 void Node::deleteLabel(){
-	qDebug ("Node: deleteLabel ");
+    qDebug ("Node: deleteLabel ");
     if (m_hasLabel) {
         m_hasLabel=false;
         m_label->hide();
@@ -575,9 +579,9 @@ void Node::setNumberInside (const bool &toggle){
     else {
         addNumber();
     }
-   m_hasNumber = true;
-   m_hasNumberInside = toggle;
-   setShape(m_shape);
+    m_hasNumber = true;
+    m_hasNumberInside = toggle;
+    setShape(m_shape);
 }
 
 
@@ -611,7 +615,7 @@ void Node::setNumberColor(const QString &color) {
             setShape(m_shape);
         }
         else {
-           m_number -> setDefaultTextColor (m_numColor);
+            m_number -> setDefaultTextColor (m_numColor);
         }
     }
 
@@ -624,10 +628,10 @@ void Node::setNumberColor(const QString &color) {
 void Node::setNumberDistance(const int &distance) {
     m_numberDistance = distance;
     if (m_hasNumber && !m_hasNumberInside) {
-       m_number -> setPos( m_size+m_numberDistance, 0);
+        m_number -> setPos( m_size+m_numberDistance, 0);
     }
     else if (m_hasNumber && m_hasNumberInside) {
-       // do nothing
+        // do nothing
     }
     else {
         // create a nodeNumber ?
@@ -639,7 +643,7 @@ void Node::setNumberDistance(const int &distance) {
 
 
 
- Node::~Node(){
+Node::~Node(){
     qDebug() << "*** ~Node() "<< nodeNumber();
     foreach (Edge *edge, inEdgeList) {
         qDebug("~Node: removing edges in inEdgeList");
@@ -660,5 +664,5 @@ void Node::setNumberDistance(const int &distance) {
     this->hide();
     graphicsWidget->removeItem(this);
 
- }
+}
 
