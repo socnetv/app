@@ -981,14 +981,16 @@ void MainWindow::initActions(){
                    "The result is a symmetric network"));
     connect(editEdgeSymmetrizeAllAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeSymmetrizeAll()));
 
-    editEdgeUndirectedAllAct= new QAction(QIcon(":/images/line.png"), tr("Undirected Edges"), this);
+    editEdgeUndirectedAllAct= new QAction( tr("Undirected Edges"), this);
     editEdgeUndirectedAllAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_U));
     editEdgeUndirectedAllAct->setStatusTip(tr("Tranform all arcs to undirected edges (thus, an undirected graph)."));
     editEdgeUndirectedAllAct->setWhatsThis(
                 tr("Undirected Edges\n\n"
                    "Tranforms all directed arcs to undirected edges. "
                    "The result is a undirected and symmetric network"));
-    connect(editEdgeUndirectedAllAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeUndirectedAll()));
+    editEdgeUndirectedAllAct -> setCheckable(true);
+    editEdgeUndirectedAllAct -> setChecked(false);
+    connect(editEdgeUndirectedAllAct, SIGNAL(toggled(bool)), this, SLOT(slotEditEdgeUndirectedAll(bool)));
 
 
     transformNodes2EdgesAct = new QAction( tr("Transform Nodes to Edges"),this);
@@ -2840,8 +2842,8 @@ void MainWindow::initToolBox(){
     //create widgets for Properties/Statistics group/tab
     QLabel *labelNodesLCD = new QLabel;
     labelNodesLCD->setText(tr("Total Nodes"));
-    QLabel *labelEdgesLCD = new QLabel;
-    labelEdgesLCD->setText(tr("Total Edges (Arcs)"));
+    labelEdgesLCD = new QLabel;
+    labelEdgesLCD->setText(tr("Total Arcs"));
     nodesLCD=new QLCDNumber(7);
     nodesLCD->setSegmentStyle(QLCDNumber::Flat);
     nodesLCD->setToolTip(tr("Counts how many nodes (vertices) exist in the whole network."));
@@ -3494,6 +3496,11 @@ void MainWindow::initNet(){
 
     /** Clear LCDs **/
     nodesLCD->display(activeGraph.vertices());
+    if (activeGraph.isUndirected()) {
+        labelEdgesLCD->setText(tr("Total Edges"));
+    }
+    else
+        labelEdgesLCD->setText(tr("Total Arcs"));
     edgesLCD->display(activeEdges());
     densityLCD->display(activeGraph.density());
     inDegreeLCD->display(0);
@@ -3511,6 +3518,7 @@ void MainWindow::initNet(){
     toolBoxLayoutForceDirectedSelect->setCurrentIndex(0);
     toolBoxNodeSizesByOutDegreeBx->setChecked(false);
     toolBoxNodeSizesByInDegreeBx->setChecked(false);
+    editEdgeUndirectedAllAct->setChecked(false);
 
     optionsEdgeWeightNumbersAct->setChecked(
                 (appSettings["initEdgeWeightNumbersVisibility"] == "true") ? true:false
@@ -5798,6 +5806,11 @@ void MainWindow::slotNetworkChanged(){
     networkSave->setEnabled(true);
 
     nodesLCD->display(activeGraph.vertices());
+    if (activeGraph.isUndirected()) {
+        labelEdgesLCD->setText(tr("Total Edges"));
+    }
+    else
+        labelEdgesLCD->setText(tr("Total Arcs"));
     edgesLCD->display(activeEdges());
     densityLCD->display( activeGraph.density() );
 }
@@ -6767,13 +6780,14 @@ void MainWindow::slotEditEdgeAdd(){
  */
 void MainWindow::slotEditEdgeCreate (const int &source, const int &target, const float &weight) {
     qDebug()<< "MW: slotEditEdgeCreate() - setting user settings and calling Graph::edgeCreate(...)";
-    int reciprocal=0;
+    //int reciprocal=0;
     bool bezier = false;
     activeGraph.edgeCreate(
                 source, target, weight,
                 appSettings["initEdgeColor"] ,
-                reciprocal,
-                (appSettings["initEdgeArrows"] == "true") ? true: false
+                ( editEdgeUndirectedAllAct->isChecked() ) ? 2:0,
+                ( editEdgeUndirectedAllAct->isChecked() ) ? false :
+                 ( (appSettings["initEdgeArrows"] == "true") ? true: false)
             , bezier);
 
     if ( activeEdges() == 1 && editRelationChangeCombo->count() == 0 ) {
@@ -6949,10 +6963,14 @@ void MainWindow::slotEditEdgeColorAll(QColor color,const int &threshold){
                                            text);
     }
     if (color.isValid()) {
-        appSettings["initEdgeColor"]=color.name();
+        if (threshold < 0 ) {
+            appSettings["initEdgeColorNegative"]=color.name();
+        }
+        else
+            appSettings["initEdgeColor"]=color.name();
         QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        qDebug() << "MainWindow::slotEditEdgeColorAll() - new edge color: " << appSettings["initEdgeColor"];
-        activeGraph.edgeColorAllSet(appSettings["initEdgeColor"], threshold );
+        qDebug() << "MainWindow::slotEditEdgeColorAll() - new edge color: " << color.name();
+        activeGraph.edgeColorAllSet(color.name(), threshold );
         QApplication::restoreOverrideCursor();
         slotNetworkChanged();
         statusMessage( tr("Ready. ")  );
@@ -7155,21 +7173,29 @@ void MainWindow::slotEditEdgeSymmetrizeAll(){
  * Tranforms all directed arcs to undirected edges.
  * The result is a undirected and symmetric network
  */
-void MainWindow::slotEditEdgeUndirectedAll(){
-    if ( ( !fileLoaded && !networkModified) || activeEdges() ==0 )  {
-        QMessageBox::critical(this,
-                              "Error",
-                              tr("There are no edges! \n"
-                                 "Load a network file or create a new network first."), "OK",0);
-        statusMessage( tr("No edges present...")  );
-        return;
+void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
+
+    if (toggle) {
+        qDebug("MW: slotEditEdgeUndirectedAll() calling Graph::undirectedSet()");
+        activeGraph.undirectedSet();
+        optionsEdgeArrowsAct->setChecked(false);
+        if (activeEdges() !=0 )
+            QMessageBox::information(this,
+                                 "Undirected edges",
+                                 tr("All edges are now undirected. \n"
+                                    "The network is symmetric and undirected."), "OK",0);
+
     }
-    qDebug("MW: slotEditEdgeUndirectedAll() calling Graph::undirectedSet()");
-    activeGraph.undirectedSet();
-    QMessageBox::information(this,
-                             "Undirected edges",
-                             tr("All edges are now undirected. \n"
-                                "The network is symmetric and undirected."), "OK",0);
+    else {
+        optionsEdgeArrowsAct->trigger();
+        optionsEdgeArrowsAct->setChecked(true);
+        if (activeEdges() !=0 )
+            QMessageBox::information(this,
+                                 "Directed edges",
+                                 tr("All edges are now directed. \n"
+                                    ""), "OK",0);
+
+    }
     statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
 }
 

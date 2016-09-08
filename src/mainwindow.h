@@ -236,7 +236,7 @@ public slots:
     void slotEditEdgeWeight();
     void slotEditEdgeColorAll(QColor color=QColor(), const int &threshold=RAND_MAX);
     void slotEditEdgeSymmetrizeAll();
-    void slotEditEdgeUndirectedAll();
+    void slotEditEdgeUndirectedAll(const bool &toggle);
 
     void slotFilterNodes();
     void slotFilterIsolateNodes(bool checked);
@@ -489,6 +489,7 @@ private:
     QString initFileCodec;
     QColor initBackgroundColor;
     QPointF cursorPosGW;	//Carries the position of the cursor in graphicsWidget coordinates
+    QLabel *labelEdgesLCD ;
     QLCDNumber  *inDegreeLCD, *outDegreeLCD , *selectedNodeLCD, *clucofLCD;
     QLCDNumber *nodesLCD, *edgesLCD, *densityLCD;
     QDateTime actualDateTime, actualDate, actualTime;

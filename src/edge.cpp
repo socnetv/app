@@ -112,6 +112,7 @@ Edge::Edge(  GraphicsWidget *gw,
 void Edge::showArrows(const bool &drawArrows){
     prepareGeometryChange();
     m_drawArrows=drawArrows;
+    adjust();
 }
 
 

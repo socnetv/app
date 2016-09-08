@@ -1324,7 +1324,7 @@ int Graph::edgesEnabled() {
     }
     qDebug() << "Graph::edgesEnabled() - edges recounted: " <<  recountedEdges;
 
-    return recountedEdges;
+    return (isUndirected()) ? recountedEdges / 2 : recountedEdges;
 }
 
 
@@ -1636,10 +1636,12 @@ QList<int> Graph::verticesIsolated(){
  * @return
  */
 float Graph::density() {
-    qDebug("Graph: density()");
+    qDebug()<< "Graph: density()";
     int vert=vertices();
     if (vert!=0 && vert!=1)
-        return  (float) edgesEnabled() / (float)(vert*(vert-1.0));
+        return  (isUndirected()) ?
+                    (float) 2* edgesEnabled() / (float)(vert*(vert-1.0)) :
+                    (float) edgesEnabled() / (float)(vert*(vert-1.0)) ;
     else return 0;
 }
 
@@ -5671,9 +5673,9 @@ void Graph::randomNetScaleFreeCreate (const int &n,
 
         emit updateProgressDialog( ++progressCounter );
 
-        // no need to multiply by 2, since edgesEnabled already reports
-        // twice the current number of edges in the network
-        sumDegrees =  edgesEnabled();
+        // need to multiply by 2, since we have a undirected graph
+        // and edgesEnabled reports edges/2
+        sumDegrees =  2 * edgesEnabled();
 
         newEdges = 0;
 
@@ -5710,14 +5712,14 @@ void Graph::randomNetScaleFreeCreate (const int &n,
                     if ( mode == "graph") {
                         qDebug() << " --- Creating pref.att. reciprocal edge "
                                  <<  i+1 << " <-> " << j+1;
-                        edgeCreate (i+1, j+1, 1, initEdgeColor, 2, true, false);
+                        edgeCreate (i+1, j+1, 1, initEdgeColor, 2 , true, false);
                         newEdges ++;
 
                     }
                     else {
                         qDebug() << " --- Creating pref.att. directed edge "
                                  <<  i+1 << " <-> " << j+1;
-                        edgeCreate (i+1, j+1, 1, initEdgeColor, 1, true, false); // BUG / FIXME RECIPROCAL WRONG?
+                        edgeCreate (i+1, j+1, 1, initEdgeColor, 1, true, false);
                         newEdges ++;
 
                     }
