@@ -7110,14 +7110,14 @@ void MainWindow::slotEditEdgeWeight(){
                     oldWeight, -100, 100 ,1, &ok ) ;
 
         if (ok) {
-            activeGraph.edgeWeightSet(sourceNode, targetNode, newWeight);
+            activeGraph.edgeWeightSet(sourceNode, targetNode, newWeight,
+                                      activeGraph.isUndirected()
+                                      );
         }
         else {
             statusMessage(  QString(tr("Change edge weight cancelled."))  );
             return;
         }
-    }
-    if ( activeGraph.edgeSymmetric(sourceNode, targetNode) ) {
     }
 
         //edgeClicked=false;

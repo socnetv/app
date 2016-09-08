@@ -1386,10 +1386,12 @@ void Parser::readGraphMLElementGraph(QXmlStreamReader &xml){
     QString defaultDirection = xmlStreamAttr.value("edgedefault").toString();
     qDebug()<< "    edgedefault "<< defaultDirection;
     if (defaultDirection=="undirected"){
+        qDebug()<< "    this is an undirected graph ";
         undirected = 2;
         arrows=false;
     }
     else {
+        qDebug()<< "    this is a directed graph ";
         undirected = 0;
         arrows=true;
     }
@@ -1905,12 +1907,14 @@ void Parser::readGraphMLElementUnknown(QXmlStreamReader &xml) {
 
 
 void Parser::createMissingNodeEdges(){
+    qDebug()<<"Parser::createMissingNodeEdges() ";
     int count=0;
-    bool ok;
-    edgeWeight = initEdgeWeight;
-    edgeColor = initEdgeColor;
-    undirected = 0;
     if ( (count = edgesMissingNodesHash.size()) > 0 ) {
+
+        bool ok;
+        edgeWeight = initEdgeWeight;
+        edgeColor = initEdgeColor;
+        undirected = 0;
         qDebug()<<"Parser::createMissingNodeEdges() - edges to create " << count;
         QHash<QString, QString>::const_iterator it =
                 edgesMissingNodesHash.constBegin();
@@ -1945,6 +1949,9 @@ void Parser::createMissingNodeEdges(){
             }
             ++it;
         }
+    }
+    else {
+        qDebug()<<"Parser::createMissingNodeEdges() - nothing to do";
     }
 }
 

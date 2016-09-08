@@ -1363,10 +1363,15 @@ int Graph::edgesInbound (int v1) {
  * @param v2
  * @param weight
  */
-void Graph::edgeWeightSet (const long &v1, const long &v2, const float &weight) {
-    qDebug() << "Graph::edgeWeightSet between " << v1 << "[" << index[v1]
-                << "] and " << v2 << "[" << index[v2] << "]" << " = " << weight;
+void Graph::edgeWeightSet (const long &v1, const long &v2,
+                           const float &weight, const bool &undirected) {
+    qDebug() << "Graph::edgeWeightSet() - " << v1 << "[" << index[v1]
+                << "] ->" << v2 << "[" << index[v2] << "]" << " = " << weight;
     m_graph [ index[v1] ]->changeOutEdgeWeight(v2, weight);
+    if (undirected) {
+        qDebug() << "Graph::edgeWeightSet() - changing opposite edge weight too";
+        m_graph [ index[v2] ]->changeOutEdgeWeight(v1, weight);
+    }
     graphModified=true;
     emit setEdgeWeight(v1,v2, weight);
     emit graphChanged();
@@ -7425,10 +7430,15 @@ void Graph::terminateParserThreads(QString reason) {
  * @param totalLinks
  * @param undirected
  */
-void Graph::setFileType (
-        int type, QString networkName, int aNodes, int totalLinks, bool undirected)
+void Graph::setFileType ( int type, QString networkName,
+                          int aNodes, int totalLinks, bool undirected)
 {
-    qDebug("Graph: setFileType %i", type);
+    qDebug() << "Graph::setFileType() - "
+                << " type " << type
+                << " name " << networkName
+                << " nodes " << aNodes
+                << " links " << totalLinks
+                << " undirected " << undirected;
     m_undirected = undirected;
     emit signalFileType (type, networkName, aNodes, totalLinks, m_undirected);
     qDebug ()<< "Graph::setFileType()  -check parser if running...";
@@ -7437,10 +7447,17 @@ void Graph::setFileType (
 
 
 /**
-    Our almost universal graph saver. :)
-    Actually it just checks the requested file type and
-    calls the right saveGraphTo...() method
-*/
+ * @brief Graph::saveGraph
+ * Our almost universal graph saver. :)
+ * Actually it just checks the requested file type and
+ * calls the right saveGraphTo...() method
+ * @param fileName
+ * @param fileType
+ * @param networkName
+ * @param maxWidth
+ * @param maxHeight
+ * @return
+ */
 bool Graph::saveGraph ( 
         QString fileName, int fileType,
         QString networkName, int maxWidth, int maxHeight )

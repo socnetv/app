@@ -69,6 +69,7 @@ Edge::Edge(  GraphicsWidget *gw,
     m_color=color;
     m_drawArrows=drawArrows;
     m_edgeType=type;
+
     m_directed_first = false;
 
     m_startOffset=source->size();  //used to offset edge from the centre of node

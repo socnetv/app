@@ -344,7 +344,9 @@ public:
     bool edgeSymmetric(int v1, int v2);
     void edgeUndirectedSet(const long int &v1, const long int &v2, const float &w);
 
-    void edgeWeightSet (const long int &v1, const long int &v2, const float &w);
+    void edgeWeightSet (const long int &v1, const long int &v2,
+                        const float &w,
+                        const bool &undirected=false);
     float edgeWeight(const long int &v1, const long int &v2) const;
     void edgeWeightNumbersVisibilitySet (const bool &toggle);
 
