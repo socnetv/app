@@ -1157,7 +1157,6 @@ bool Parser::loadTwoModeSociomatrix(){
                 qDebug() << "Parser-loadTwoModeSociomatrix(): there is an 1 from "<< i << " to "<<  j;
                 firstModeMultiMap.insert(i, j);
                 secondModeMultiMap.insert(j, i);
-                QList<int> values;
                 for (int k = 1; k < i ; ++k) {
                     qDebug() << "Checking earlier discovered actor k = " << k;
                     if ( firstModeMultiMap.contains(k, j) ) {
@@ -2053,12 +2052,14 @@ bool Parser::loadDot(){
 
             if ( str.contains("digraph", Qt::CaseInsensitive) ) {
                 lineElement=str.split(" ");
+                undirected = 0;
                 if (lineElement[1]!="{" ) networkName=lineElement[1];
                 qDebug() << "This is a DOT DIGRAPH named " << networkName;
                 continue;
             }
             else if ( str.contains("graph", Qt::CaseInsensitive) ) {
                 lineElement=str.split(" ");
+                undirected = 2;
                 if (lineElement[1] !="{" ) networkName=lineElement[1];
                 qDebug() << "This is a DOT GRAPH named " << networkName;
                 continue;
@@ -2575,7 +2576,7 @@ bool Parser::loadSimpleList(){
     bool nodeNumberingZero = false;
     initEdgeWeight=1.0;
 
-    undirected=false;
+    undirected=0;
     arrows=true;
     bezier=false;
 

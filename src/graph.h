@@ -105,7 +105,7 @@ class CompareDistances {
 // 2. Refactor most-used functions to have reference parameters.
 // 3. Execute all options/commands from MW and propagate them to GW via signals
 // 4. Fix bug with wrong default edge colors (not the ones used by Settings) after loading GraphML files.
-// 5. Implement a "directed to undirected" method
+
 
 
 /**
