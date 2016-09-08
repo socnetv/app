@@ -3941,10 +3941,10 @@ void MainWindow::setLastPath(QString fileName) {
     qDebug()<< "MW::setLastPath() for " << fileName;
     appSettings["lastUsedDirPath"] = QFileInfo(fileName).dir().absolutePath();
             // fileName.left( filePath.lastIndexOf("/"));
-    if (    QFileInfo(fileName).completeSuffix().toLower() != "bmp" &&
-            QFileInfo(fileName).completeSuffix().toLower() != "jpg" &&
-            QFileInfo(fileName).completeSuffix().toLower() != "png"  &&
-            QFileInfo(fileName).completeSuffix().toLower() != "pdf"
+    if (    !QFileInfo(fileName).completeSuffix().toLower().contains( "bmp" ) &&
+            !QFileInfo(fileName).completeSuffix().toLower().contains( "jpg" ) &&
+            !QFileInfo(fileName).completeSuffix().toLower().contains( "png" ) &&
+            !QFileInfo(fileName).completeSuffix().toLower().contains( "pdf" )
             ) {
         recentFiles.removeAll(fileName);
         recentFiles.prepend(fileName);
@@ -4979,6 +4979,7 @@ bool MainWindow::slotNetworkExportPDF(){
         if (QFileInfo(m_fileName).suffix().isEmpty())
             m_fileName.append(".pdf");
 
+        // dont set to HighResolution - it breaks pdf export
         QPrinter printer(QPrinter::ScreenResolution);
         printer.setOutputFormat(QPrinter::PdfFormat);
         printer.setOutputFileName(m_fileName);
