@@ -4979,7 +4979,7 @@ bool MainWindow::slotNetworkExportPDF(){
         if (QFileInfo(m_fileName).suffix().isEmpty())
             m_fileName.append(".pdf");
 
-        QPrinter printer(QPrinter::HighResolution);
+        QPrinter printer(QPrinter::ScreenResolution);
         printer.setOutputFormat(QPrinter::PdfFormat);
         printer.setOutputFileName(m_fileName);
         QPainter p;
