@@ -665,10 +665,11 @@ bool Parser::loadPajek(){
                     label=label.remove('\"');
                 //qDebug()<<"node label now: " << label.toLatin1();
 
-                /** NODESHAPE: There are four possible . */
+                /** NODESHAPE: There are five possible . */
                 if (str.contains("Ellipse", Qt::CaseInsensitive) ) nodeShape="ellipse";
                 else if (str.contains("circle", Qt::CaseInsensitive) ) nodeShape="circle";
                 else if (str.contains("box", Qt::CaseInsensitive) ) nodeShape="box";
+                else if (str.contains("star", Qt::CaseInsensitive) ) nodeShape="star";
                 else if (str.contains("triangle", Qt::CaseInsensitive) ) nodeShape="triangle";
                 else nodeShape="diamond";
                 /** NODECOLORS */
@@ -845,7 +846,7 @@ bool Parser::loadPajek(){
 
 
                 undirected=2;
-                arrows=true;
+                arrows=false;
                 bezier=false;
                 qDebug()<< "Parser-loadPajek(): EDGES: Create edge between " << source << " - "<< target;
                 emit edgeCreate(source, target, edgeWeight, edgeColor,
@@ -1396,6 +1397,7 @@ void Parser::readGraphMLElementGraph(QXmlStreamReader &xml){
         arrows=true;
     }
     networkName = xmlStreamAttr.value("id").toString();
+    emit addRelation( networkName);
     qDebug()<< "    graph id  "  << networkName; //store graph id to return it afterwards
 }
 
@@ -1558,6 +1560,7 @@ void Parser::readGraphMLElementEdge(QXmlStreamAttributes &xmlStreamAttr){
     missingNode=false;
     edgeWeight=initEdgeWeight;
     edgeColor=initEdgeColor;
+    edgeLabel = "";
     bool_edge= true;
 
     if ( ((xmlStreamAttr.value("directed")).toString()).contains("false"),Qt::CaseInsensitive ) {
@@ -1608,8 +1611,7 @@ void Parser::endGraphMLElementEdge(QXmlStreamReader &xml){
     }
     qDebug()<<"   Parser: endGraphMLElementEdge() *** signal edgeCreate "
            << source << " -> " << target << " undirected value " << undirected;
-    //FIXME need to return edge label as well!
-    emit edgeCreate(source, target, edgeWeight, edgeColor, undirected, arrows, bezier);
+    emit edgeCreate(source, target, edgeWeight, edgeColor, undirected, arrows, bezier, edgeLabel);
     totalLinks++;
     bool_edge= false;
 }
@@ -1943,8 +1945,8 @@ void Parser::createMissingNodeEdges(){
                 }
                 qDebug()<<"   Parser: createMissingNodeEdgesHash() *** signal edgeCreate "
                        << source << " -> " << target << " undirected value " << undirected;
-                //FIXME need to return edge label as well!
-                emit edgeCreate(source, target, edgeWeight, edgeColor, undirected, arrows, bezier);
+
+                emit edgeCreate(source, target, edgeWeight, edgeColor, undirected, arrows, bezier, edgeLabel);
 
             }
             ++it;

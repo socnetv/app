@@ -134,7 +134,7 @@ public slots:
                        const bool &signalMW
                         );//Main vertex creation call
 
-    void setFileType(int, QString, int,int, bool);
+    void setFileType(int, QString netName, int, int, bool);
     void vertexRemoveDummyNode(int);
     void terminateParserThreads (QString reason);
 
@@ -366,7 +366,7 @@ public:
     bool isSymmetric();
     void symmetrize();
 
-    void undirectedSet();
+    void undirectedSet(const bool &toggle);
     bool isUndirected();
 
     void adjacencyMatrixCreate(const bool dropIsolates=false,

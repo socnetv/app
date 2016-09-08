@@ -57,7 +57,7 @@ Graph::Graph() {
     reciprocalEdgesVert=0;
     order=true;		//returns true if the indexes of the list is ordered.
     graphModified=false;
-    m_undirected=true;
+    m_undirected=false;
     symmetricAdjacencyMatrix=true;
     adjacencyMatrixCreated=false;
     reachabilityMatrixCreated=false;
@@ -1758,7 +1758,7 @@ void Graph::clear() {
     reciprocalEdgesVert=0;
 
     order=true;		//returns true if the indexes of the list is ordered.
-    m_undirected=true;
+    m_undirected=false;
     calculatedDP=false;
     calculatedDC=false;
     calculatedIC=false;
@@ -1995,8 +1995,13 @@ void Graph::symmetrize(){
  * @brief Graph::undirected
  * Transforms the graph to undirected
  */
-void Graph::undirectedSet(){
+void Graph::undirectedSet(const bool &toggle){
     qDebug() << "Graph::undirectedSet()";
+    if (!toggle) {
+        m_undirected=false;
+        emit graphChanged();
+        return;
+    }
     QList<Vertex*>::const_iterator it;
     int v2=0, v1=0, weight;
     QHash<int,float> *enabledOutEdges = new QHash<int,float>;
@@ -2020,7 +2025,7 @@ void Graph::undirectedSet(){
     }
     delete enabledOutEdges;
     graphModified=true;
-    symmetricAdjacencyMatrix=true;
+    symmetricAdjacencyMatrix=m_undirected=true;
     emit graphChanged();
 }
 
@@ -5441,6 +5446,9 @@ void Graph::randomNetErdosCreate(  const int &vert,
                 << " canvasWidth " <<canvasWidth
                 << "canvasHeigt " << canvasHeight;
 
+    if (mode=="graph") {
+        undirectedSet(true);
+    }
     index.reserve(vert);
 
     randomizeThings();
@@ -5484,7 +5492,7 @@ void Graph::randomNetErdosCreate(  const int &vert,
                         qDebug() << "Graph::randomNetErdosCreate() - "
                                     <<" create undirected Edge no "
                                     << edgeCount;
-                        edgeCreate(i+1, j+1, 1, initEdgeColor, 2, true, false);
+                        edgeCreate(i+1, j+1, 1, initEdgeColor, 2, false, false);
                     }
                     else {
                         qDebug() << "Graph::randomNetErdosCreate() - "
@@ -5537,7 +5545,7 @@ void Graph::randomNetErdosCreate(  const int &vert,
 
     }
 
-    relationAddFromGraph(tr("erdos-renyi")); //FIXME
+    relationAddFromGraph(tr("1"));
 
     emit graphChanged();
 }
@@ -5593,7 +5601,7 @@ void Graph::randomNetRingLatticeCreate( const int &vert, const int &degree,
         }
         emit updateProgressDialog( updateProgress ? ++progressCounter:0 );
     }
-    relationAddFromGraph(tr("ring lattice"));
+    relationAddFromGraph(tr("1"));
 
     emit graphChanged();
 }
@@ -5730,7 +5738,7 @@ void Graph::randomNetScaleFreeCreate (const int &n,
         }
     }
 
-    relationAddFromGraph(tr("scale-free"));
+    relationAddFromGraph(tr("1"));
     emit signalNodeSizesByInDegree(true);
     emit graphChanged();
 
@@ -5840,7 +5848,7 @@ void Graph::randomNetSameDegreeCreate( const int &vert,
         }
         emit updateProgressDialog(++progressCounter );
     }
-    relationAddFromGraph(tr("random"));
+    relationAddFromGraph(tr("1"));
     emit graphChanged();
 }
 
@@ -7432,7 +7440,7 @@ void Graph::terminateParserThreads(QString reason) {
  * @param totalLinks
  * @param undirected
  */
-void Graph::setFileType ( int type, QString networkName,
+void Graph::setFileType ( int type, QString netName,
                           int aNodes, int totalLinks, bool undirected)
 {
     qDebug() << "Graph::setFileType() - "
@@ -7441,6 +7449,7 @@ void Graph::setFileType ( int type, QString networkName,
                 << " nodes " << aNodes
                 << " links " << totalLinks
                 << " undirected " << undirected;
+    networkName = netName;
     m_undirected = undirected;
     emit signalFileType (type, networkName, aNodes, totalLinks, m_undirected);
     qDebug ()<< "Graph::setFileType()  -check parser if running...";
@@ -11242,10 +11251,14 @@ bool Graph::saveGraphToGraphMLFormat (
                 "    <default>" << initEdgeColor << "</default> \n"
                 "  </key> \n";
 
+    outText <<	"  <key id=\"d10\" for=\"edge\" attr.name=\"label\" attr.type=\"string\"> \n"
+                "    <default>" << ""<< "</default> \n"
+                "  </key> \n";
+
     qDebug()<< "		... writing graph tag";
     if (networkName == "")
         networkName = "G";
-    if (m_undirected)
+    if (isUndirected())
         outText << "  <graph id=\""<< networkName << "\" edgedefault=\"undirected\"> \n";
     else
         outText << "  <graph id=\""<< networkName << "\" edgedefault=\"directed\"> \n";
@@ -11322,11 +11335,12 @@ bool Graph::saveGraphToGraphMLFormat (
             {
                 source=(*it)->name();
                 target=(*jt)->name();
-
+                m_label = "";
                 if  ( 	(weight= edgeExists( source,target ) ) !=0 )
                 {
                     ++edgeCount;
                     m_color = (*it)->outLinkColor( target );
+                    m_label = edgeLabel(source, target);
                     qDebug()<< "				edge no "<< edgeCount
                             << " from n1=" << source << " to n2=" << target
                             << " with weight " << weight
@@ -11347,6 +11361,13 @@ bool Graph::saveGraphToGraphMLFormat (
                         outText << "      <data key=\"d9\">" << m_color <<"</data>" <<" \n";
                         openToken=false;
                     }
+                    if (  !m_label.isEmpty()) {
+                        if (openToken)
+                            outText << "> \n";
+                        outText << "      <data key=\"d10\">" << m_label<<"</data>" <<" \n";
+                        openToken=false;
+                    }
+
                     if (openToken)
                         outText << "/> \n";
                     else

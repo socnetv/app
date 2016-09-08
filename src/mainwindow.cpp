@@ -986,17 +986,21 @@ void MainWindow::initActions(){
     editEdgeUndirectedAllAct->setStatusTip(tr("Tranform all arcs to undirected edges (thus, an undirected graph)."));
     editEdgeUndirectedAllAct->setWhatsThis(
                 tr("Undirected Edges\n\n"
-                   "Tranforms all directed arcs to undirected edges. "
+                   "Tranforms all directed arcs to undirected edges. \n"
                    "The result is a undirected and symmetric network"));
     editEdgeUndirectedAllAct -> setCheckable(true);
     editEdgeUndirectedAllAct -> setChecked(false);
-    connect(editEdgeUndirectedAllAct, SIGNAL(toggled(bool)), this, SLOT(slotEditEdgeUndirectedAll(bool)));
+    connect(editEdgeUndirectedAllAct, SIGNAL(toggled(bool)),
+            this, SLOT(slotEditEdgeUndirectedAll(bool)));
 
 
     transformNodes2EdgesAct = new QAction( tr("Transform Nodes to Edges"),this);
-    transformNodes2EdgesAct->setStatusTip(tr("Transforms the network so that nodes become Edges and vice versa"));
-    transformNodes2EdgesAct->setWhatsThis(tr("Transform Nodes EdgesAct\n\nTransforms network so that nodes become Edges and vice versa"));
-    connect(transformNodes2EdgesAct, SIGNAL(triggered()), this, SLOT(slotTransformNodes2Edges()));
+    transformNodes2EdgesAct->setStatusTip(tr("Transforms the network so that "
+                                             "nodes become Edges and vice versa"));
+    transformNodes2EdgesAct->setWhatsThis(tr("Transform Nodes EdgesAct\n\n"
+                                             "Transforms network so that nodes become Edges and vice versa"));
+    connect(transformNodes2EdgesAct, SIGNAL(triggered()),
+            this, SLOT(slotTransformNodes2Edges()));
 
 
 
@@ -1004,7 +1008,8 @@ void MainWindow::initActions(){
     filterNodesAct -> setEnabled(false);
     //filterNodesAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_F));
     filterNodesAct->setStatusTip(tr("Filters Nodes of some value out of the network"));
-    filterNodesAct->setWhatsThis(tr("Filter Nodes\n\nFilters Nodes of some value out of the network."));
+    filterNodesAct->setWhatsThis(tr("Filter Nodes\n\n"
+                                    "Filters Nodes of some value out of the network."));
     connect(filterNodesAct, SIGNAL(triggered()), this, SLOT(slotFilterNodes()));
 
     filterIsolateNodesAct = new QAction(tr("Filter Isolate Nodes"), this);
@@ -1013,15 +1018,19 @@ void MainWindow::initActions(){
     filterIsolateNodesAct -> setChecked(false);
     filterIsolateNodesAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_F));
     filterIsolateNodesAct -> setStatusTip(tr("Filters nodes with no edges"));
-    filterIsolateNodesAct -> setWhatsThis(tr("Filter Isolate Nodes\n\n Enables or disables displaying of isolate nodes. Isolate nodes are those with no edges..."));
-    connect(filterIsolateNodesAct, SIGNAL(toggled(bool)), this, SLOT(slotFilterIsolateNodes(bool)));
+    filterIsolateNodesAct -> setWhatsThis(tr("Filter Isolate Nodes\n\n "
+                                             "Enables or disables displaying of isolate nodes. Isolate nodes are those with no edges..."));
+    connect(filterIsolateNodesAct, SIGNAL(toggled(bool)),
+            this, SLOT(slotFilterIsolateNodes(bool)));
 
     filterEdgesAct = new QAction(tr("Filter Edges by Weight"), this);
     filterEdgesAct -> setEnabled(true);
     filterEdgesAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_F));
     filterEdgesAct -> setStatusTip(tr("Filters Edges of some weight out of the network"));
-    filterEdgesAct -> setWhatsThis(tr("Filter Edges\n\nFilters Edge of some specific weight out of the network."));
-    connect(filterEdgesAct , SIGNAL(triggered()), this, SLOT(slotShowFilterEdgesDialog()));
+    filterEdgesAct -> setWhatsThis(tr("Filter Edges\n\n"
+                                      "Filters Edge of some specific weight out of the network."));
+    connect(filterEdgesAct , SIGNAL(triggered()),
+            this, SLOT(slotShowFilterEdgesDialog()));
 
 
 
@@ -2771,9 +2780,9 @@ void MainWindow::initToolBox(){
 
     toolBoxNodeSizesByOutDegreeBx
             ->setToolTip(
-                tr("If you enable this, all nodes will be resized so that their "
-                   "size reflect their out-degree. \n"
-                   "Nodes with more directed edges starting from them will be bigger..."));
+                tr("If you enable this, all nodes will be resized "
+                   "so that their size reflect their out-degree. \n"
+                   "Nodes with more outbound directed edges will be bigger..."));
 
     toolBoxNodeSizesByInDegreeBx = new QCheckBox(
                 tr("Node sizes by InDegree") );
@@ -2784,9 +2793,9 @@ void MainWindow::initToolBox(){
                    "size reflect their in-degree." ) );
     toolBoxNodeSizesByInDegreeBx
             ->setToolTip(
-                tr("If you enable this, all nodes will be resized so that their "
-                   "size reflect their in-degree. \n"
-                   "Nodes with more directed edges ending at them will be bigger..."));
+                tr("If you enable this, all nodes will be resized "
+                   "so that their size reflect their in-degree. \n"
+                   "Nodes with more inbound directed edges them will be bigger..."));
 
     layoutGuidesBx = new QCheckBox(
                 tr("Layout guidelines") );
@@ -2833,12 +2842,6 @@ void MainWindow::initToolBox(){
     leftPanel = new QGroupBox(tr("Control Panel"));
     leftPanel -> setLayout (editGrid);
 
-    connect(toolBoxNodeSizesByOutDegreeBx , SIGNAL(clicked(bool)),
-            this, SLOT(slotLayoutNodeSizesByOutDegree(bool)));
-    connect(toolBoxNodeSizesByInDegreeBx , SIGNAL(clicked(bool)),
-            this, SLOT(slotLayoutNodeSizesByInDegree(bool)));
-
-
     //create widgets for Properties/Statistics group/tab
     QLabel *labelNodesLCD = new QLabel;
     labelNodesLCD->setText(tr("Total Nodes"));
@@ -2862,9 +2865,16 @@ void MainWindow::initToolBox(){
     propertiesGrid -> setColumnMinimumWidth(0, 10);
     propertiesGrid -> setColumnMinimumWidth(1, 10);
 
-    QLabel *networkLabel = new QLabel;
-    networkLabel-> setText ("Network");
+    networkLabel = new QLabel;
+    networkLabel-> setText ("Network Type: Undirected");
+    networkLabel->setToolTip(tr("The loaded network, if any, is directed and \n"
+                                "any link you add between nodes will be a directed arc.\n"
+                                "If you want to work with undirected edges and/or \n"
+                                "transform the loaded network (if any) to undirected \n"
+                                "toggle the option Edit -> Edges -> Undirected \n"
+                                "or press CTRL+E+U"));
     networkLabel ->setFont(QFont("sans-serif", 10, QFont::Bold));
+    networkLabel ->setFixedWidth(195);
     propertiesGrid -> addWidget(networkLabel , 0,0);
     propertiesGrid -> addWidget(labelNodesLCD, 1,0);
     propertiesGrid -> addWidget(nodesLCD,1,1);
@@ -3405,6 +3415,13 @@ void MainWindow::initSignalSlots() {
             this, SLOT(toolBoxAnalysisProminenceSelectChanged(int) ) );
 
 
+
+    connect(toolBoxNodeSizesByOutDegreeBx , SIGNAL(clicked(bool)),
+            this, SLOT(slotLayoutNodeSizesByOutDegree(bool)));
+    connect(toolBoxNodeSizesByInDegreeBx , SIGNAL(clicked(bool)),
+            this, SLOT(slotLayoutNodeSizesByInDegree(bool)));
+
+
     connect(toolBoxLayoutByIndexButton, SIGNAL (clicked() ),
             this, SLOT(toolBoxLayoutByIndexButtonPressed() ) );
 
@@ -3497,10 +3514,27 @@ void MainWindow::initNet(){
     /** Clear LCDs **/
     nodesLCD->display(activeGraph.vertices());
     if (activeGraph.isUndirected()) {
+        editEdgeUndirectedAllAct->setChecked(true);
+        networkLabel->setToolTip(tr("The loaded network, if any, is undirected and \n"
+                                    "any edge you add between nodes will be undirected.\n"
+                                    "If you want to work with directed edges and/or \n"
+                                    "transform the loaded network (if any) to directed \n"
+                                    "disable the option Edit -> Edges -> Undirected \n"
+                                    "or press CTRL+E+U"));
+        networkLabel-> setText ("Network Type: Undirected");
         labelEdgesLCD->setText(tr("Total Edges"));
     }
-    else
+    else {
+        editEdgeUndirectedAllAct->setChecked(false);
+        networkLabel->setToolTip(tr("The loaded network, if any, is directed and \n"
+                                    "any link you add between nodes will be a directed arc.\n"
+                                    "If you want to work with undirected edges and/or \n"
+                                    "transform the loaded network (if any) to undirected \n"
+                                    "enable the option Edit -> Edges -> Undirected \n"
+                                    "or press CTRL+E+U"));
+        networkLabel-> setText ("Network Type: Directed");
         labelEdgesLCD->setText(tr("Total Arcs"));
+    }
     edgesLCD->display(activeEdges());
     densityLCD->display(activeGraph.density());
     inDegreeLCD->display(0);
@@ -3518,7 +3552,7 @@ void MainWindow::initNet(){
     toolBoxLayoutForceDirectedSelect->setCurrentIndex(0);
     toolBoxNodeSizesByOutDegreeBx->setChecked(false);
     toolBoxNodeSizesByInDegreeBx->setChecked(false);
-    editEdgeUndirectedAllAct->setChecked(false);
+
 
     optionsEdgeWeightNumbersAct->setChecked(
                 (appSettings["initEdgeWeightNumbersVisibility"] == "true") ? true:false
@@ -5807,10 +5841,27 @@ void MainWindow::slotNetworkChanged(){
 
     nodesLCD->display(activeGraph.vertices());
     if (activeGraph.isUndirected()) {
+        networkLabel->setToolTip(tr("The loaded network, if any, is undirected and \n"
+                                    "any edge you add between nodes will be undirected.\n"
+                                    "If you want to work with directed edges and/or \n"
+                                    "transform the loaded network (if any) to directed \n"
+                                    "disable the option Edit -> Edges -> Undirected \n"
+                                    "or press CTRL+E+U"));
+        networkLabel-> setText ("Network Type: Undirected");
         labelEdgesLCD->setText(tr("Total Edges"));
+        editEdgeUndirectedAllAct->setChecked(true);
     }
-    else
+    else {
+        networkLabel->setToolTip(tr("The loaded network, if any, is directed and \n"
+                                    "any link you add between nodes will be a directed arc.\n"
+                                    "If you want to work with undirected edges and/or \n"
+                                    "transform the loaded network (if any) to undirected \n"
+                                    "enable the option Edit -> Edges -> Undirected \n"
+                                    "or press CTRL+E+U"));
+        networkLabel-> setText ("Network Type: Directed");
         labelEdgesLCD->setText(tr("Total Arcs"));
+        editEdgeUndirectedAllAct->setChecked(false);
+    }
     edgesLCD->display(activeEdges());
     densityLCD->display( activeGraph.density() );
 }
@@ -7177,26 +7228,32 @@ void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
 
     if (toggle) {
         qDebug("MW: slotEditEdgeUndirectedAll() calling Graph::undirectedSet()");
-        activeGraph.undirectedSet();
+        activeGraph.undirectedSet(toggle);
         optionsEdgeArrowsAct->setChecked(false);
         if (activeEdges() !=0 )
             QMessageBox::information(this,
                                  "Undirected edges",
-                                 tr("All edges are now undirected. \n"
-                                    "The network is symmetric and undirected."), "OK",0);
+                                 tr("All existing edges transformed to undirected. \n"
+                                    "Any edge you create will be undirected too. \n"
+                                    "The network is symmetric."),
+                                     "OK",0);
 
+        statusBar()->showMessage (QString(tr("Undirected data mode selected. Ready")), statusBarDuration) ;
     }
     else {
+        activeGraph.undirectedSet(toggle);
         optionsEdgeArrowsAct->trigger();
         optionsEdgeArrowsAct->setChecked(true);
         if (activeEdges() !=0 )
             QMessageBox::information(this,
                                  "Directed edges",
-                                 tr("All edges are now directed. \n"
-                                    ""), "OK",0);
+                                 tr("All existing edges transformed to directed. \n"
+                                    "Any edge you create will be directed too."),
+                                     "OK",0);
 
+        statusBar()->showMessage (QString(tr("Directed data mode selected mode. Ready")), statusBarDuration) ;
     }
-    statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
+
 }
 
 
@@ -8521,14 +8578,13 @@ void MainWindow::slotWalksOfGivenLength(){
 
     QString fn = appSettings["dataDir"] + "socnetv-report-number-of-walks.dat";
      bool ok=false;
-    createProgressBar();
 
     int length = QInputDialog::getInt(this, "Number of walks", tr("Select desired length of walk: (2 to %1)").arg(activeNodes()-1),2, 2, activeNodes()-1, 1, &ok );
     if (!ok) {
         statusMessage( "Cancelled." );
         return;
     }
-
+    createProgressBar();
     activeGraph.writeWalksOfLengthMatrix(fn, networkName, length);
 
     destroyProgressBar();
