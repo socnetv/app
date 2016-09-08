@@ -2018,6 +2018,10 @@ void Graph::undirectedSet(){
 }
 
 
+bool Graph::isUndirected() {
+    return m_undirected;
+}
+
 /**
  * @brief Graph::edgeUndirectedSet
  * Tranforms an edge to undirected
@@ -2039,7 +2043,7 @@ void Graph::edgeUndirectedSet(const long int &v1, const long int &v2,
     }
     else {
         qDebug() << "Graph::edgeUndirectedSet(): opposite  " << v1
-                 << " <- " <<  v2 << " exists - Making weights equal." ;
+                 << " <- " <<  v2 << " exists - Checking if edge weights not equal." ;
         if (weight!= invertWeight )
             edgeWeightSet(v2,v1,weight);
     }
@@ -11292,46 +11296,91 @@ bool Graph::saveGraphToGraphMLFormat (
 
     qDebug() << "		... writing edges data";
     edgeCount=0;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
-    {
-        for (jt=m_graph.begin(); jt!=m_graph.end(); jt++)
+    if (!isUndirected()) {
+        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
         {
-            source=(*it)->name();
-            target=(*jt)->name();
-
-            if  ( 	(weight= edgeExists( source,target ) ) !=0 )
+            for (jt=m_graph.begin(); jt!=m_graph.end(); jt++)
             {
-                ++edgeCount;
-                m_color = (*it)->outLinkColor( target );
-                qDebug()<< "				edge no "<< edgeCount
-                        << " from n1=" << source << " to n2=" << target
-                        << " with weight " << weight
-                        << " and color " << m_color.toUtf8() ;
-                outText << "    <edge id=\""<< "e"+QString::number(edgeCount)
-                        << "\" directed=\"" << "true" << "\" source=\"" << source
-                        << "\" target=\"" << target << "\"";
+                source=(*it)->name();
+                target=(*jt)->name();
 
-                openToken = true;
-                if ( weight !=0 ) {
-                    outText << "> \n";
-                    outText << "      <data key=\"d8\">" << weight<<"</data>" <<" \n";
-                    openToken=false;
-                }
-                if (  QString::compare ( initEdgeColor, m_color,  Qt::CaseInsensitive) != 0) {
-                    if (openToken)
+                if  ( 	(weight= edgeExists( source,target ) ) !=0 )
+                {
+                    ++edgeCount;
+                    m_color = (*it)->outLinkColor( target );
+                    qDebug()<< "				edge no "<< edgeCount
+                            << " from n1=" << source << " to n2=" << target
+                            << " with weight " << weight
+                            << " and color " << m_color.toUtf8() ;
+                    outText << "    <edge id=\""<< "e"+QString::number(edgeCount)
+                            << "\" directed=\"" << "true" << "\" source=\"" << source
+                            << "\" target=\"" << target << "\"";
+
+                    openToken = true;
+                    if ( weight !=0 ) {
                         outText << "> \n";
-                    outText << "      <data key=\"d9\">" << m_color <<"</data>" <<" \n";
-                    openToken=false;
+                        outText << "      <data key=\"d8\">" << weight<<"</data>" <<" \n";
+                        openToken=false;
+                    }
+                    if (  QString::compare ( initEdgeColor, m_color,  Qt::CaseInsensitive) != 0) {
+                        if (openToken)
+                            outText << "> \n";
+                        outText << "      <data key=\"d9\">" << m_color <<"</data>" <<" \n";
+                        openToken=false;
+                    }
+                    if (openToken)
+                        outText << "/> \n";
+                    else
+                        outText << "    </edge>\n";
+
                 }
-                if (openToken)
-                    outText << "/> \n";
-                else
-                    outText << "    </edge>\n";
 
             }
-
         }
     }
+    else {
+        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
+        {
+            for (jt=it; jt!=m_graph.end(); jt++)
+            {
+                source=(*it)->name();
+                target=(*jt)->name();
+
+                if  ( 	(weight= edgeExists( source,target, true ) ) !=0 )
+                {
+                    ++edgeCount;
+                    m_color = (*it)->outLinkColor( target );
+                    qDebug()<< "				edge no "<< edgeCount
+                            << " from n1=" << source << " to n2=" << target
+                            << " with weight " << weight
+                            << " and color " << m_color.toUtf8() ;
+                    outText << "    <edge id=\""<< "e"+QString::number(edgeCount)
+                            << "\" directed=\"" << "false" << "\" source=\"" << source
+                            << "\" target=\"" << target << "\"";
+
+                    openToken = true;
+                    if ( weight !=0 ) {
+                        outText << "> \n";
+                        outText << "      <data key=\"d8\">" << weight<<"</data>" <<" \n";
+                        openToken=false;
+                    }
+                    if (  QString::compare ( initEdgeColor, m_color,  Qt::CaseInsensitive) != 0) {
+                        if (openToken)
+                            outText << "> \n";
+                        outText << "      <data key=\"d9\">" << m_color <<"</data>" <<" \n";
+                        openToken=false;
+                    }
+                    if (openToken)
+                        outText << "/> \n";
+                    else
+                        outText << "    </edge>\n";
+
+                }
+
+            }
+        }
+    }
+
     outText << "  </graph>\n";
     outText << "</graphml>\n";
 

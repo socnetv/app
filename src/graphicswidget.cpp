@@ -654,14 +654,13 @@ bool GraphicsWidget::setEdgeUndirected(const long int &source,
 
     qDebug()<<"GW::setEdgeUndirected() - checking edgesHash for:" << edgeName ;
     if  ( edgesHash.contains (edgeName) ) {
+        qDebug()<<"GW::setEdgeUndirected() - edge exists in edgesHash. "
+                  << " Transforming it to undirected";
         edgesHash.value(edgeName) -> setUndirected();
 
-        QString oppositeEdgeName =  QString::number(m_curRelation) + QString(":") +
-                QString::number( target ) + QString(">")+ QString::number( source);
-
         qDebug()<<"GW::setEdgeUndirected() - removing opposite edge "
-               << oppositeEdgeName ;
-        removeItem ( edgesHash.value(oppositeEdgeName)  );
+               << target << " -> " << source ;
+        eraseEdge(target, source);
 
         return true;
     }

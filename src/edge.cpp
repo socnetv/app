@@ -478,6 +478,8 @@ void Edge::setUndirected(){
     prepareGeometryChange();
     m_edgeType = EDGE_RECIPROCAL_UNDIRECTED;
     m_directed_first= false;
+    m_drawArrows = false;
+    adjust();
 }
 
 

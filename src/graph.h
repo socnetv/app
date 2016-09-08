@@ -365,7 +365,7 @@ public:
     void symmetrize();
 
     void undirectedSet();
-
+    bool isUndirected();
 
     void adjacencyMatrixCreate(const bool dropIsolates=false,
                                const bool considerWeights=true,
