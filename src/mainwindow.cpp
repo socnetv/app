@@ -9651,8 +9651,7 @@ void MainWindow::slotOptionsEdgeWeightNumbersVisibility(bool toggle) {
     qDebug() << "MW::slotOptionsEdgeWeightNumbersVisibility - Toggling Edges Weights";
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
     statusMessage( tr("Toggle Edges Weights. Please wait...") );
-
-    appSettings["initEdgeWeighNumbersVisibility"] = (toggle) ? "true":"false";
+    appSettings["initEdgeWeightNumbersVisibility"] = (toggle) ? "true":"false";
     graphicsWidget->setEdgeWeightNumbersVisibility(toggle);
     activeGraph.edgeWeightNumbersVisibilitySet(toggle);
     optionsEdgeWeightNumbersAct->setChecked ( toggle );

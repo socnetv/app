@@ -177,7 +177,7 @@ SettingsDialog::SettingsDialog(
 
 
     ui->edgeWeightNumbersChkBox-> setChecked(
-                (m_appSettings["initEdgeWeightNumberVisibility"] == "true") ? true: false
+                (m_appSettings["initEdgeWeightNumbersVisibility"] == "true") ? true: false
                                                                   );
     m_edgeWeightNumberColor = QColor (m_appSettings["initEdgeWeightNumberVisibility"]);
     m_pixmap = QPixmap(60,20) ;
