@@ -28,11 +28,6 @@
     <height>539</height>
    </size>
   </property>
-  <property name="font">
-   <font>
-    <family>DejaVu Sans</family>
-   </font>
-  </property>
   <property name="windowTitle">
    <string>Erdős–Rényi network generator</string>
   </property>
