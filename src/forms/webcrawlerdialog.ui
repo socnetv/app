@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>500</width>
-    <height>310</height>
+    <height>334</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,19 +19,18 @@
   <property name="minimumSize">
    <size>
     <width>500</width>
-    <height>310</height>
+    <height>330</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>627</width>
-    <height>350</height>
+    <height>380</height>
    </size>
   </property>
   <property name="font">
    <font>
-    <family>DejaVu Sans Mono</family>
-    <pointsize>12</pointsize>
+    <pointsize>10</pointsize>
    </font>
   </property>
   <property name="windowTitle">
@@ -55,11 +54,12 @@
      <property name="font">
       <font>
        <family>Sans Serif</family>
-       <pointsize>9</pointsize>
+       <pointsize>10</pointsize>
+       <stylestrategy>PreferDefault</stylestrategy>
       </font>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SocNetV includes a simple web crawler. It scans the HTML code of a given initial URL (i.e. a website) and maps all internal or external links to other pages found there. As new urls are discovered, the crawler follows them to scan their HTML code for links as well. For more details, see the Manual.&lt;/p&gt;&lt;p&gt;Enter the initial URL below and change crawling parameters if you like.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SocNetV includes a simple web crawler. It scans the HTML code of a given initial URL (i.e. a website) and maps all internal or external links to other pages found there. As new urls are discovered, the crawler follows them to scan their HTML code for links as well. For more details, see the Manual. &lt;/p&gt;&lt;p&gt;Enter the initial URL below and change crawling parameters if you like.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
@@ -90,7 +90,7 @@
       <property name="font">
        <font>
         <family>Sans Serif</family>
-        <pointsize>9</pointsize>
+        <pointsize>10</pointsize>
        </font>
       </property>
       <property name="text">
@@ -161,7 +161,7 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
-         <pointsize>9</pointsize>
+         <pointsize>10</pointsize>
         </font>
        </property>
        <property name="toolTip">
@@ -236,7 +236,7 @@ In this case SocNetV will follow and crawl each one link found in a page.</strin
        <property name="font">
         <font>
          <family>Sans Serif</family>
-         <pointsize>9</pointsize>
+         <pointsize>10</pointsize>
         </font>
        </property>
        <property name="toolTip">
@@ -298,7 +298,7 @@ p, li { white-space: pre-wrap; }
      <property name="font">
       <font>
        <family>Sans Serif</family>
-       <pointsize>9</pointsize>
+       <pointsize>10</pointsize>
       </font>
      </property>
      <property name="focusPolicy">
@@ -326,7 +326,7 @@ p, li { white-space: pre-wrap; }
      <property name="font">
       <font>
        <family>Sans Serif</family>
-       <pointsize>9</pointsize>
+       <pointsize>10</pointsize>
       </font>
      </property>
      <property name="focusPolicy">
