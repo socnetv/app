@@ -5504,7 +5504,7 @@ void Graph::randomNetErdosCreate(  const int &vert,
                         qDebug() << "Graph::randomNetErdosCreate() - "
                                     <<" create undirected Edge no "
                                     << edgeCount;
-                        edgeCreate(i+1, j+1, 1, initEdgeColor, EDGE_RECIPROCAL_UNDIRECTEDi, false, false);
+                        edgeCreate(i+1, j+1, 1, initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED, false, false);
                     }
                     else {
                         qDebug() << "Graph::randomNetErdosCreate() - "
@@ -5741,7 +5741,7 @@ void Graph::randomNetScaleFreeCreate (const int &n,
                     if ( mode == "graph") {
                         qDebug() << " --- Creating pref.att. reciprocal edge "
                                  <<  i+1 << " <-> " << j+1;
-                        edgeCreate (i+1, j+1, 1, initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED , false, false);
+                        edgeCreate (i+1, j+1, 1, initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED, false, false);
                         newEdges ++;
 
                     }
