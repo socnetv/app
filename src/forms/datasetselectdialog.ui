@@ -9,20 +9,26 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>422</width>
-    <height>168</height>
+    <width>490</width>
+    <height>170</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
-    <width>400</width>
-    <height>160</height>
+    <width>460</width>
+    <height>170</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>600</width>
-    <height>195</height>
+    <width>490</width>
+    <height>185</height>
    </size>
   </property>
   <property name="font">
@@ -33,7 +39,7 @@
   <property name="windowTitle">
    <string>Select Data Set</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
+  <layout class="QFormLayout" name="formLayout">
    <item row="0" column="0">
     <widget class="QLabel" name="description_image">
      <property name="minimumSize">
@@ -74,14 +80,14 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>350</width>
-       <height>40</height>
+       <width>400</width>
+       <height>60</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
        <width>0</width>
-       <height>140</height>
+       <height>100</height>
       </size>
      </property>
      <property name="font">
@@ -98,19 +104,6 @@
      </property>
      <property name="wordWrap">
       <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="selectLabel">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>10</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string>Select</string>
      </property>
     </widget>
    </item>
@@ -143,8 +136,7 @@
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="font">
       <font>
-       <family>DejaVu Sans</family>
-       <pointsize>11</pointsize>
+       <pointsize>10</pointsize>
       </font>
      </property>
      <property name="orientation">
@@ -152,6 +144,19 @@
      </property>
      <property name="standardButtons">
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="selectLabel">
+     <property name="font">
+      <font>
+       <family>Sans Serif</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Select</string>
      </property>
     </widget>
    </item>
