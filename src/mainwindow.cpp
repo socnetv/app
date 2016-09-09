@@ -2658,7 +2658,7 @@ void MainWindow::initToolBox(){
     toolBoxLayoutByIndexTypeSelect->setWhatsThis(
                 tr("Layout Type\n\n"
                    "Select a layout type (circular or level) for the selected prominence-based model "
-                   "you want to apply to the network.)"));
+                   "you want to apply to the network."));
     QStringList layoutTypes;
     layoutTypes << "Circular" << "On Levels" << "Nodal size";
     toolBoxLayoutByIndexTypeSelect->addItems(layoutTypes);
@@ -2845,20 +2845,30 @@ void MainWindow::initToolBox(){
     //create widgets for Properties/Statistics group/tab
     QLabel *labelNodesLCD = new QLabel;
     labelNodesLCD->setText(tr("Total Nodes"));
+    labelNodesLCD->setToolTip(tr("The total number of nodes (vertices) in the network."));
     labelEdgesLCD = new QLabel;
     labelEdgesLCD->setText(tr("Total Arcs"));
+    labelEdgesLCD->setToolTip(tr("The total number of directed edges in the network."));
+
     nodesLCD=new QLCDNumber(7);
     nodesLCD->setSegmentStyle(QLCDNumber::Flat);
-    nodesLCD->setToolTip(tr("Counts how many nodes (vertices) exist in the whole network."));
+    nodesLCD->setToolTip(tr("The total number of nodes (vertices) in the network."));
     edgesLCD=new QLCDNumber(7);
     edgesLCD->setSegmentStyle(QLCDNumber::Flat);
-    edgesLCD->setToolTip(tr("Counts how many edges (arcs) exist in the whole network."));
+    edgesLCD->setStatusTip(tr("Shows the total number of directed edges in the network."));
+    edgesLCD->setToolTip(tr("The total number of directed edges in the network."));
 
     QLabel *labelDensityLCD = new QLabel;
     labelDensityLCD->setText(tr("Density"));
+    labelDensityLCD->setToolTip(tr("The density of a network is the ratio of existing \n"
+                                  "edges to all possible edges ( n*(n-1) ) between nodes."));
     densityLCD=new QLCDNumber(7);
     densityLCD->setSegmentStyle(QLCDNumber::Flat);
-    densityLCD->setToolTip(tr("The density of a network is the ratio of existing edges to all possible edges ( n*(n-1) ) between nodes."));
+    densityLCD->setStatusTip(tr("Shows the network density, the ratio of existing "
+                                "edges to all possible edges ( n*(n-1) ) between nodes."));
+    densityLCD->setToolTip(tr("This is the density of the network. \n"
+                              "The density of a network is the ratio of existing \n"
+                              "edges to all possible edges ( n*(n-1) ) between nodes."));
 
     //create a grid layout
     QGridLayout *propertiesGrid = new QGridLayout();
@@ -2867,7 +2877,15 @@ void MainWindow::initToolBox(){
 
     networkLabel = new QLabel;
     networkLabel-> setText ("Network Type: Undirected");
+    networkLabel->setStatusTip(tr("Directed data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
+
     networkLabel->setToolTip(tr("The loaded network, if any, is directed and \n"
+                                "any link you add between nodes will be a directed arc.\n"
+                                "If you want to work with undirected edges and/or \n"
+                                "transform the loaded network (if any) to undirected \n"
+                                "toggle the option Edit -> Edges -> Undirected \n"
+                                "or press CTRL+E+U"));
+    networkLabel->setWhatsThis(tr("The loaded network, if any, is directed and \n"
                                 "any link you add between nodes will be a directed arc.\n"
                                 "If you want to work with undirected edges and/or \n"
                                 "transform the loaded network (if any) to undirected \n"
@@ -2898,23 +2916,66 @@ void MainWindow::initToolBox(){
 
     QLabel *labelInDegreeLCD = new QLabel;
     labelInDegreeLCD -> setText (tr("In-Degree:"));
-    labelInDegreeLCD -> setToolTip (tr("The sum of all in-edge weights of the node you clicked.."));
+    labelInDegreeLCD -> setToolTip (tr("The inDegree of a node is the sum of all inbound edge weights."));
     inDegreeLCD=new QLCDNumber(5);
     inDegreeLCD -> setSegmentStyle(QLCDNumber::Flat);
-    inDegreeLCD -> setToolTip (tr("The sum of all in-edge weights of the node you clicked."));
+    inDegreeLCD -> setToolTip (tr("The sum of all inbound edge weights of the node you clicked."));
+    inDegreeLCD -> setStatusTip (tr("The sum of all inbound edge weights of the node you clicked."));
     QLabel *labelOutDegreeLCD = new QLabel;
     labelOutDegreeLCD -> setText (tr("Out-Degree:"));
-    labelOutDegreeLCD -> setToolTip (tr("The sum of all out-edge weights of the node you clicked."));
+    labelOutDegreeLCD -> setToolTip (tr("The outDegree of a node is the sum of all outbound edge weights."));
     outDegreeLCD=new QLCDNumber(5);
     outDegreeLCD -> setSegmentStyle(QLCDNumber::Flat);
-    outDegreeLCD -> setToolTip (tr("The sum of all out-edge weights of the node you clicked."));
+    outDegreeLCD -> setStatusTip (tr("The sum of all outbound edge weights of the node you clicked."));
+    outDegreeLCD -> setToolTip (tr("The sum of all outbound edge weights of the node you clicked."));
 
     QLabel *labelClucofLCD  = new QLabel;
     labelClucofLCD -> setText (tr("Clu.Coef."));
-    labelClucofLCD -> setToolTip (tr("The Clustering Coefficient quantifies how close the clicked vertex and its neighbors are to being a clique. \nThe value is the proportion of Edges between the vertices within the neighbourhood of the clicked vertex,\n divided by the number of Edges that could possibly exist between them. \n\n WARNING: This value is automatically calculated only if vertices < 500.\n If your network is larger than 500 vertices, compute CluCof from the menu Analysis > Clustering Coefficient "));
+    labelClucofLCD -> setWhatsThis(
+                tr("The Clustering Coefficient quantifies how close the clicked \n"
+                   "vertex and its neighbors are to being a clique. \n"
+                   "The value is the proportion of Edges between the vertices \n"
+                   "within the neighbourhood of the clicked vertex, \n"
+                   "divided by the number of Edges that could possibly exist "
+                   "between them. \n\n "
+                   "This value is automatically calculated only if vertices < 500.\n"
+                   "If your network is larger than 500 vertices, compute CluCof "
+                   "from the menu Analysis > Clustering Coefficient "));
+    labelClucofLCD -> setToolTip (
+                tr("The Clustering Coefficient quantifies how close the clicked \n"
+                   "vertex and its neighbors are to being a clique. \n"
+                   "The value is the proportion of Edges between the vertices \n"
+                   "within the neighbourhood of the clicked vertex, \n"
+                   "divided by the number of Edges that could possibly exist "
+                   "between them. \n\n "
+                   "This value is automatically calculated only if vertices < 500.\n"
+                   "If your network is larger than 500 vertices, compute CluCof "
+                   "from the menu Analysis > Clustering Coefficient "));
     clucofLCD = new QLCDNumber(5);
     clucofLCD -> setSegmentStyle(QLCDNumber::Flat);
-    clucofLCD  -> setToolTip (tr("The Clustering Coefficient quantifies how close the clicked vertex and its neighbors are to being a clique. \nThe value is the proportion of Edges between the vertices within the neighbourhood of the clicked vertex,\n divided by the number of Edges that could possibly exist between them. \n\n This value is automatically calculated only if vertices < 500.\n If your network is larger than 500 vertices, compute CluCof from the menu Analysis > Clustering Coefficient "));
+    clucofLCD -> setStatusTip( tr("The Clustering Coefficient of the active node."));
+    clucofLCD -> setWhatsThis(
+                tr("The Clustering Coefficient of the active node. \n"
+                   "The Clustering Coefficient quantifies how close the clicked \n"
+                       "vertex and its neighbors are to being a clique. \n"
+                       "The value is the proportion of Edges between the vertices \n"
+                       "within the neighbourhood of the clicked vertex, \n"
+                       "divided by the number of Edges that could possibly exist "
+                       "between them. \n\n "
+                       "This value is automatically calculated only if vertices < 500.\n"
+                       "If your network is larger than 500 vertices, compute CluCof "
+                       "from the menu Analysis > Clustering Coefficient "));
+    clucofLCD  -> setToolTip (
+                tr("The Clustering Coefficient of the active node. \n"
+                   "The Clustering Coefficient quantifies how close the clicked \n"
+                   "vertex and its neighbors are to being a clique. \n"
+                   "The value is the proportion of Edges between the vertices \n"
+                   "within the neighbourhood of the clicked vertex, \n"
+                   "divided by the number of Edges that could possibly exist "
+                   "between them. \n\n "
+                   "This value is automatically calculated only if vertices < 500.\n"
+                   "If your network is larger than 500 vertices, compute CluCof "
+                   "from the menu Analysis > Clustering Coefficient "));
 
 
     propertiesGrid -> addWidget(dummyLabel, 6,0);
@@ -3515,7 +3576,16 @@ void MainWindow::initNet(){
     nodesLCD->display(activeGraph.vertices());
     if (activeGraph.isUndirected()) {
         editEdgeUndirectedAllAct->setChecked(true);
+        edgesLCD->setStatusTip(tr("Shows the total number of undirected edges in the network."));
+        edgesLCD->setToolTip(tr("The total number of undirected edges in the network."));
+        networkLabel->setStatusTip(tr("Undirected data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
         networkLabel->setToolTip(tr("The loaded network, if any, is undirected and \n"
+                                    "any edge you add between nodes will be undirected.\n"
+                                    "If you want to work with directed edges and/or \n"
+                                    "transform the loaded network (if any) to directed \n"
+                                    "disable the option Edit -> Edges -> Undirected \n"
+                                    "or press CTRL+E+U"));
+        networkLabel->setWhatsThis(tr("The loaded network, if any, is undirected and \n"
                                     "any edge you add between nodes will be undirected.\n"
                                     "If you want to work with directed edges and/or \n"
                                     "transform the loaded network (if any) to directed \n"
@@ -3526,12 +3596,22 @@ void MainWindow::initNet(){
     }
     else {
         editEdgeUndirectedAllAct->setChecked(false);
+        edgesLCD->setStatusTip(tr("Shows the total number of directed edges in the network."));
+        edgesLCD->setToolTip(tr("The total number of directed edges in the network."));
+        networkLabel->setStatusTip(tr("Directed data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
         networkLabel->setToolTip(tr("The loaded network, if any, is directed and \n"
                                     "any link you add between nodes will be a directed arc.\n"
                                     "If you want to work with undirected edges and/or \n"
                                     "transform the loaded network (if any) to undirected \n"
                                     "enable the option Edit -> Edges -> Undirected \n"
                                     "or press CTRL+E+U"));
+        networkLabel->setWhatsThis(tr("The loaded network, if any, is directed and \n"
+                                    "any link you add between nodes will be a directed arc.\n"
+                                    "If you want to work with undirected edges and/or \n"
+                                    "transform the loaded network (if any) to undirected \n"
+                                    "enable the option Edit -> Edges -> Undirected \n"
+                                    "or press CTRL+E+U"));
+
         networkLabel-> setText ("Network Type: Directed");
         labelEdgesLCD->setText(tr("Total Arcs"));
     }
@@ -5841,23 +5921,43 @@ void MainWindow::slotNetworkChanged(){
 
     nodesLCD->display(activeGraph.vertices());
     if (activeGraph.isUndirected()) {
+        edgesLCD->setStatusTip(tr("Shows the total number of undirected edges in the network."));
+        edgesLCD->setToolTip(tr("The total number of undirected edges in the network."));
+        networkLabel->setStatusTip(tr("Undirected data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
         networkLabel->setToolTip(tr("The loaded network, if any, is undirected and \n"
                                     "any edge you add between nodes will be undirected.\n"
                                     "If you want to work with directed edges and/or \n"
                                     "transform the loaded network (if any) to directed \n"
                                     "disable the option Edit -> Edges -> Undirected \n"
                                     "or press CTRL+E+U"));
+        networkLabel->setWhatsThis(tr("The loaded network, if any, is undirected and \n"
+                                    "any edge you add between nodes will be undirected.\n"
+                                    "If you want to work with directed edges and/or \n"
+                                    "transform the loaded network (if any) to directed \n"
+                                    "disable the option Edit -> Edges -> Undirected \n"
+                                    "or press CTRL+E+U"));
+
         networkLabel-> setText ("Network Type: Undirected");
         labelEdgesLCD->setText(tr("Total Edges"));
         editEdgeUndirectedAllAct->setChecked(true);
     }
     else {
+        edgesLCD->setStatusTip(tr("Shows the total number of directed edges in the network."));
+        edgesLCD->setToolTip(tr("The total number of directed edges in the network."));
+        networkLabel->setStatusTip(tr("Directed data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
         networkLabel->setToolTip(tr("The loaded network, if any, is directed and \n"
                                     "any link you add between nodes will be a directed arc.\n"
                                     "If you want to work with undirected edges and/or \n"
                                     "transform the loaded network (if any) to undirected \n"
                                     "enable the option Edit -> Edges -> Undirected \n"
                                     "or press CTRL+E+U"));
+        networkLabel->setWhatsThis(tr("The loaded network, if any, is directed and \n"
+                                    "any link you add between nodes will be a directed arc.\n"
+                                    "If you want to work with undirected edges and/or \n"
+                                    "transform the loaded network (if any) to undirected \n"
+                                    "enable the option Edit -> Edges -> Undirected \n"
+                                    "or press CTRL+E+U"));
+
         networkLabel-> setText ("Network Type: Directed");
         labelEdgesLCD->setText(tr("Total Arcs"));
         editEdgeUndirectedAllAct->setChecked(false);
