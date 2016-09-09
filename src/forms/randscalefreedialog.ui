@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>580</width>
-    <height>500</height>
+    <height>530</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,18 +19,18 @@
   <property name="minimumSize">
    <size>
     <width>580</width>
-    <height>500</height>
+    <height>530</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>600</width>
-    <height>530</height>
+    <height>580</height>
    </size>
   </property>
   <property name="font">
    <font>
-    <family>DejaVu Sans</family>
+    <family>Sans Serif</family>
    </font>
   </property>
   <property name="windowTitle">

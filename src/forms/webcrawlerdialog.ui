@@ -55,7 +55,7 @@
      <property name="font">
       <font>
        <family>Sans Serif</family>
-       <pointsize>10</pointsize>
+       <pointsize>9</pointsize>
       </font>
      </property>
      <property name="text">
@@ -90,7 +90,7 @@
       <property name="font">
        <font>
         <family>Sans Serif</family>
-        <pointsize>10</pointsize>
+        <pointsize>9</pointsize>
        </font>
       </property>
       <property name="text">
@@ -119,7 +119,8 @@
       <property name="font">
        <font>
         <family>Sans Serif</family>
-        <pointsize>10</pointsize>
+        <pointsize>9</pointsize>
+        <stylestrategy>PreferAntialias</stylestrategy>
        </font>
       </property>
       <property name="toolTip">
@@ -160,7 +161,7 @@
        <property name="font">
         <font>
          <family>Sans Serif</family>
-         <pointsize>10</pointsize>
+         <pointsize>9</pointsize>
         </font>
        </property>
        <property name="toolTip">
@@ -235,7 +236,7 @@ In this case SocNetV will follow and crawl each one link found in a page.</strin
        <property name="font">
         <font>
          <family>Sans Serif</family>
-         <pointsize>10</pointsize>
+         <pointsize>9</pointsize>
         </font>
        </property>
        <property name="toolTip">
@@ -297,7 +298,7 @@ p, li { white-space: pre-wrap; }
      <property name="font">
       <font>
        <family>Sans Serif</family>
-       <pointsize>10</pointsize>
+       <pointsize>9</pointsize>
       </font>
      </property>
      <property name="focusPolicy">
@@ -325,7 +326,7 @@ p, li { white-space: pre-wrap; }
      <property name="font">
       <font>
        <family>Sans Serif</family>
-       <pointsize>10</pointsize>
+       <pointsize>9</pointsize>
       </font>
      </property>
      <property name="focusPolicy">
@@ -352,9 +353,8 @@ p, li { white-space: pre-wrap; }
      </property>
      <property name="font">
       <font>
-       <family>DejaVu Sans</family>
-       <pointsize>11</pointsize>
-       <stylestrategy>PreferAntialias</stylestrategy>
+       <family>Sans Serif</family>
+       <pointsize>10</pointsize>
       </font>
      </property>
      <property name="orientation">
