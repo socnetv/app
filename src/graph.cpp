@@ -5470,7 +5470,7 @@ void Graph::randomNetErdosCreate(  const int &vert,
 
     qDebug() << "Graph::randomNetErdosCreate() - Creating nodes...";
 
-    for (register int i=0; i< vert ; i++)
+    for (int i=0; i< vert ; i++)
     {
         int x=10+rand() %canvasWidth;
         int y=10+rand() %canvasHeight;
@@ -5487,8 +5487,8 @@ void Graph::randomNetErdosCreate(  const int &vert,
     if ( model == "G(n,p)")
     {
         qDebug() << "Graph::randomNetErdosCreate() - G(n,p) model...";
-        for (register int i=0;i<vert; i++) {
-            for (register int j=0; j<vert; j++) {
+        for (int i=0;i<vert; i++) {
+            for (int j=0; j<vert; j++) {
                 qDebug() << "Graph::randomNetErdosCreate() - Bernoulli trial "
                        << "for edge " <<  i+1 << " -> " << j+1;
                 if (!diag && i==j) {
@@ -5596,7 +5596,7 @@ void Graph::randomNetRingLatticeCreate( const int &vert, const int &degree,
 
     index.reserve(vert);
 
-    for (register int i=0; i< vert ; i++) {
+    for (int i=0; i< vert ; i++) {
         x=x0 + radius * cos(i * rad);
         y=y0 + radius * sin(i * rad);
         vertexCreate(	i+1,initVertexSize,initVertexColor,
@@ -11975,8 +11975,10 @@ void Graph::layoutForceDirected_Eades_moveNodes(const qreal &c4) {
 
          //fix Qt error a positive QPoint to the floor
         // when we ask for moveNode to happen.
-         xvel < 1 && xvel > 0 ? xvel = 1 : xvel = xvel;
-         yvel < 1 && yvel > 0 ? yvel = 1 : yvel = yvel;
+        if ( xvel < 1 && xvel > 0 )
+            xvel = 1 ;
+        if ( yvel < 1 && yvel > 0 )
+            yvel = 1 ;
 
         //Move source node to new position according to overall velocity
         newPos = QPointF( (qreal) (*v1)->x() + xvel, (qreal) (*v1)->y() + yvel);

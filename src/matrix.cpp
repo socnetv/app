@@ -44,7 +44,7 @@
 Matrix::Matrix (int rowDim, int colDim)  : m_rows (rowDim), m_cols(colDim) {
     row = new (nothrow) Row[ m_rows ];
     Q_CHECK_PTR( row );
-    for (register int i=0;i<m_rows; i++) {
+    for (int i=0;i<m_rows; i++) {
         row[i].resize( m_cols );
     }
 }
@@ -64,10 +64,10 @@ Matrix::Matrix(const Matrix &b) {
     m_cols=b.m_cols ;
     row = new Row[m_rows];
     Q_CHECK_PTR( row );
-    for (register int i=0;i<m_rows; i++) {
+    for (int i=0;i<m_rows; i++) {
         row[i].resize( m_cols );
     }
-    for (register int i=0; i<m_rows; i++) {
+    for (int i=0; i<m_rows; i++) {
         row[i]=b.row[i];
     }
 }
@@ -109,7 +109,7 @@ void Matrix::resize (const int m, const int n) {
     row = new (nothrow) Row [ m_rows  ];
     Q_CHECK_PTR( row );
     qDebug() << "Matrix: resize() -- resizing each row";
-    for (register int i=0;i<m_rows; i++) {
+    for (int i=0;i<m_rows; i++) {
         row[i].resize( m_cols );  // CHECK ME
     }
 }
@@ -154,8 +154,8 @@ Matrix& Matrix::operator = (Matrix & a) {
 */
   Matrix& Matrix::operator +(Matrix & a) {
       qDebug()<< "Matrix::operator addition";
-      for (register int i=0;i< rows();i++)
-          for (register int j=0;j<cols();j++)
+      for (int i=0;i< rows();i++)
+          for (int j=0;j<cols();j++)
               setItem(i,j, item(i,j)+a.item(i,j));
       return *this;
  }
@@ -194,7 +194,7 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
         fieldWidth = 7;
 
     os << qSetFieldWidth(fieldWidth) << right <<  QString("v |");
-    for (register int r = 0; r < m.cols(); ++r) {
+    for (int r = 0; r < m.cols(); ++r) {
         newFieldWidth = fieldWidth;
         actorNumber = r+1;
         if ( actorNumber > 99999)
@@ -212,7 +212,7 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
     os<<endl;
     os.setFieldAlignment(QTextStream::AlignCenter);
     os.setPadChar('-');
-    for (register int r = 0; r < m.cols()+1; ++r) {
+    for (int r = 0; r < m.cols()+1; ++r) {
         if ( r > 99999)
             newFieldWidth = fieldWidth -6;
         else if ( r > 9999)
@@ -228,7 +228,7 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
     os << qSetFieldWidth(1) << QString("-");
     os.setPadChar(' ');
     os<<endl;
-    for (register int r = 0; r < m.rows(); ++r) {
+    for (int r = 0; r < m.rows(); ++r) {
         actorNumber = r+1;
         if ( actorNumber > 99999)
             newFieldWidth = fieldWidth -5;
@@ -243,7 +243,7 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
         else
             newFieldWidth = fieldWidth;
         os << qSetFieldWidth(newFieldWidth) << right << QString("%1 |").arg(actorNumber) ;
-        for (register int c = 0; c < m.cols(); ++c) {
+        for (int c = 0; c < m.cols(); ++c) {
             element = m(r,c) ;
             newFieldWidth = fieldWidth;
             if ( element == RAND_MAX )
@@ -295,8 +295,8 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
 void Matrix::findMinMaxValues (float & maxVal, float &minVal){
     maxVal=0;
     minVal=RAND_MAX;
-    for (register int r = 0; r < rows(); ++r) {
-        for (register int c = 0; c < cols(); ++c) {
+    for (int r = 0; r < rows(); ++r) {
+        for (int c = 0; c < cols(); ++c) {
             if ( item(r,c) > maxVal)
                 maxVal = item(r,c) ;
             if ( item(r,c) < minVal){
@@ -365,7 +365,7 @@ int Matrix::edgesFrom(int r){
 
 int Matrix::edgesTo(const int t){
     int m_inEdges=0;
-    for (register int i = 0; i < rows(); ++i) {
+    for (int i = 0; i < rows(); ++i) {
         if ( item(i, t) != 0 )
             m_inEdges++;
     }
@@ -376,7 +376,7 @@ int Matrix::edgesTo(const int t){
 
 int Matrix::totalEdges(){
     int m_totalEdges=0;
-    for (register int r = 0; r < rows(); ++r) {
+    for (int r = 0; r < rows(); ++r) {
         m_totalEdges+=edgesFrom(r);
     }
     qDebug() << "Matrix: totalEdges " << m_totalEdges;
@@ -386,8 +386,8 @@ int Matrix::totalEdges(){
 
 bool Matrix::printMatrixConsole(){
     qDebug() << "Matrix: printMatrixConsole";
-    for (register int r = 0; r < rows(); ++r) {
-        for (register int c = 0; c < cols(); ++c)
+    for (int r = 0; r < rows(); ++r) {
+        for (int c = 0; c < cols(); ++c)
             QTextStream(stdout) << item(r,c) <<' ';
         QTextStream(stdout) <<'\n';
     }
@@ -402,8 +402,8 @@ void Matrix::deleteRowColumn(int erased){
 
     --m_rows;
     qDebug() << "Matrix: m_rows now " << m_rows << ". Resizing...";
-    for (register int i=0;i<m_rows+1; i++) {
-        for (register int j=0;j<m_rows+1; j++) {
+    for (int i=0;i<m_rows+1; i++) {
+        for (int j=0;j<m_rows+1; j++) {
             qDebug() << "Matrix: (" <<  i << ", " << j << ")="<< item(i, j) ;
             if ( j==erased && item(i,erased) ){
                 clearItem(i,j);
@@ -431,7 +431,7 @@ void Matrix::deleteRowColumn(int erased){
             qDebug() << "Matrix: new value (" <<  i << ", " << j << ")="<< item(i, j) ;
         }
     }
-    for (register int i=0;i<m_rows; i++)
+    for (int i=0;i<m_rows; i++)
         row[i].updateOutEdges();
 
 }
@@ -452,10 +452,10 @@ void Matrix::fillMatrix(float value )   {
 // Beware: do not use it as B.product(A,B) because it will destroy B on the way.
 Matrix& Matrix::product( Matrix &a, Matrix & b, bool symmetry)  {
     qDebug()<< "Matrix::product()";
-    for (register int i=0;i< rows();i++)
-        for (register int j=0;j<cols();j++) {
+    for (int i=0;i< rows();i++)
+        for (int j=0;j<cols();j++) {
             setItem(i,j,0);
-            for (register int k=0;k<m_rows;k++) {
+            for (int k=0;k<m_rows;k++) {
                 qDebug() << "Matrix::product() - a("<< i+1 << ","<< k+1 << ")="
                          << a.item(i,k) << "* b("<< k+1 << ","<< j+1 << ")="
                          << b.item(k,j)  << " gives "  << a.item(i,k)*b.item(k,j);
@@ -475,11 +475,11 @@ Matrix& Matrix::product( Matrix &a, Matrix & b, bool symmetry)  {
 		
 //takes two ( N x N ) matrices (symmetric) and outputs an upper triangular matrix
 Matrix& Matrix::productSym( Matrix &a, Matrix & b)  {
-    for (register int i=0;i<rows();i++)
-        for (register int j=0;j<cols();j++) {
+    for (int i=0;i<rows();i++)
+        for (int j=0;j<cols();j++) {
 			setItem(i,j,0);
 			if (i>=j) continue;
-            for (register int k=0;k<m_rows;k++)
+            for (int k=0;k<m_rows;k++)
 				if  ( k > j ) {
 					if (a.item(i,k)!=0 && b.item(j,k)!=0)
 						setItem(i,j, item(i,j)+a.item(i,k)*b.item(j,k));
@@ -499,7 +499,7 @@ Matrix& Matrix::productSym( Matrix &a, Matrix & b)  {
 	
 Matrix& Matrix::pow (int power, bool symmetry)  {
 	Matrix t=*this;
-	for (register int k=1; k<power; k++){
+    for (int k=1; k<power; k++){
 		product(*this, t, symmetry);
 	}
 	return *this;
@@ -508,8 +508,8 @@ Matrix& Matrix::pow (int power, bool symmetry)  {
 
 //takes two (nxn) matrices and returns their product as a reference to this
 Matrix& Matrix::sum( Matrix &a, Matrix & b)  {
-	for (register int i=0;i< rows();i++)
-		for (register int j=0;j<cols();j++)
+    for (int i=0;i< rows();i++)
+        for (int j=0;j<cols();j++)
 		    setItem(i,j, a.item(i,j)*b.item(i,j));
 	return *this;
 }
@@ -517,8 +517,8 @@ Matrix& Matrix::sum( Matrix &a, Matrix & b)  {
 
 
 Matrix& Matrix::subtractFromI ()  {
-    for (register int i=0;i< rows();i++)
-        for (register int j=0;j<cols();j++) {
+    for (int i=0;i< rows();i++)
+        for (int j=0;j<cols();j++) {
             if (i==j)
                 setItem(i,j, 1.0 - item(i,j));
             else
@@ -533,7 +533,7 @@ void Matrix::swapRows(int rowA,int rowB){
     qDebug()<<"   swapRow() "<< rowA+1 << " with " << rowB+1;
     float *tempRow = new  (nothrow) float [ rows() ];
     Q_CHECK_PTR(tempRow);
-    for ( register int j=0; j<  rows(); j++) {
+    for ( int j=0; j<  rows(); j++) {
 	  tempRow[j] = item (rowB, j);
 	  setItem ( rowB, j, item ( rowA, j ) );
 	  setItem ( rowA, j,  tempRow[j] );
@@ -547,7 +547,7 @@ void Matrix::swapRows(int rowA,int rowB){
 /* Multiply every element of row A by value */
 void Matrix::multiplyRow(int row, float value) {
     qDebug()<<"   multiplyRow() "<< row+1 << " by value " << value;
-    for ( register int j=0; j<  rows(); j++) {
+    for ( int j=0; j<  rows(); j++) {
         setItem ( row, j,  value * item (row, j) );
         qDebug()<<"   item("<< row+1 << ","<< j+1 << ") = " <<  item(row,j);
     }
@@ -577,13 +577,13 @@ Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
 	int l=0, m_pivotLine=0;
 	float m_pivot=0, temp_pivot=0, elim_coef=0;
 
-	for ( register int j=0; j< n; j++) { // for n, it is the last diagonal element of A
+    for ( int j=0; j< n; j++) { // for n, it is the last diagonal element of A
 	    l=j+1;
 	    m_pivotLine=-1;
 	    m_pivot = A.item(j,j);
 	    qDebug() << "inverseByGaussJordanElimination() at column " << j+1
 		    << " Initial pivot " << m_pivot ;
-        for ( register int i=l; i<n; i++) {
+        for ( int i=l; i<n; i++) {
             temp_pivot = A.item(i,j);
             if ( qFabs( temp_pivot ) > qFabs ( m_pivot ) ) {
                 qDebug() << " A("<< i+1 << ","<< j+1  << ") = " <<  temp_pivot
@@ -600,7 +600,7 @@ Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
 
 
 	    qDebug()<<"   multiplyRow() "<< j+1 << " by value " << 1/m_pivot ;
-        for ( register int k=0; k<  rows(); k++) {
+        for ( int k=0; k<  rows(); k++) {
             A.setItem ( j, k,  (1/m_pivot) * A.item (j, k) );
             setItem ( j, k,  (1/m_pivot) * item (j, k) );
             qDebug()<<"   A.item("<< j+1 << ","<< k+1 << ") = " <<  A.item(j,k);
@@ -608,7 +608,7 @@ Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
         }
 
 	    qDebug() << "eliminate variables FromRowsBelow()" << j+1 ;
-	    for ( register int i=0; i<  rows(); i++) {
+        for ( int i=0; i<  rows(); i++) {
 		 qDebug()<<"   Eliminating item("<< i+1 << ","<< j+1 << ") = "
 			 <<  A.item(i,j) << " while at column j="<<j+1;
 		 if ( A.item(i,j)==0 ){
@@ -620,7 +620,7 @@ Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
 		    continue;
 		}
 		elim_coef=A.item (i, j);
-		for ( register int k=0; k<  cols(); k++) {
+        for ( int k=0; k<  cols(); k++) {
 		    qDebug()<<"   A.item("<< i+1 << ","<< k+1 << ") = " <<  A.item(i,k)
 			    << " will be subtracted by " << " A.item ("<< i+1
 			    << ", "<< j+1 << ") x A.item(" << j+1 << ","<<k+1

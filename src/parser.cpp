@@ -39,6 +39,8 @@
 #include <list>
 #include "graph.h"	//needed for setParent
 
+using namespace std;
+
 Parser::Parser( const QString fn,
                    const QString m_codec,
                    const int iNS, const QString iNC, const QString iNSh,
@@ -675,7 +677,7 @@ bool Parser::loadPajek(){
                 /** NODECOLORS */
                 //if there is an "ic" tag, a specific NodeColor for this node follows...
                 if (str.contains("ic",Qt::CaseInsensitive)) {
-                    for (register int c=0; c< lineElement.count(); c++) {
+                    for (int c=0; c< lineElement.count(); c++) {
                         if (lineElement[c] == "ic") {
                             //the colourname is at c+1 position.
                             nodeColor=lineElement[c+1];
@@ -696,7 +698,7 @@ bool Parser::loadPajek(){
                 }
                 /**READ NODE COORDINATES */
                 if ( str.contains(".",Qt::CaseInsensitive) ) {
-                    for (register int c=0; c< lineElement.count(); c++)   {
+                    for (int c=0; c< lineElement.count(); c++)   {
                         temp=lineElement.at(c);
                         //		qDebug()<< temp.toLatin1();
                         if ((coordIndex=temp.indexOf(".", Qt::CaseInsensitive)) != -1 ){
@@ -914,7 +916,7 @@ bool Parser::loadPajek(){
                 undirected=0;
                 arrows=true;
                 bezier=false;
-                for (register int index = 1; index < lineElement.size(); index++) {
+                for (int index = 1; index < lineElement.size(); index++) {
                     target = lineElement.at(index).toInt(&ok,10);
                     qDebug()<<"Parser-loadPajek(): ARCS LIST: Creating ARC source "<< source << " target "<< target << " with weight "<< weight;
                     emit edgeCreate(source, target, edgeWeight, edgeColor, undirected, arrows, bezier);
@@ -1410,7 +1412,7 @@ void Parser::readGraphMLElementGraph(QXmlStreamReader &xml){
 bool Parser::xmlStreamHasAttribute( QXmlStreamAttributes &xmlStreamAttr, QString str) const
 {
     int size = xmlStreamAttr.size();
-    for (register int  i = 0 ; i < size ; i++) {
+    for (int  i = 0 ; i < size ; i++) {
         qDebug() << "		xmlStreamHasAttribute(): "
                  << xmlStreamAttr.at(i).name().toString() << endl;
         if ( xmlStreamAttr.at(i).name() == str)
@@ -2080,7 +2082,7 @@ bool Parser::loadDot(){
         }
 
         if (  str.contains("graph [" ,Qt::CaseInsensitive) ) {
-                netProperties == true;
+                netProperties = true;
                 Q_UNUSED(netProperties);
         }
 

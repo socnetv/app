@@ -27,8 +27,6 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-using namespace std;
-
 #include <QThread>
 #include <QHash>
 #include <QStringList>

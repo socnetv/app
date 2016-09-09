@@ -44,7 +44,7 @@ public:
     Row (int cols=0) {
         cell=new (nothrow) float [m_cols=cols];
 		Q_CHECK_PTR( cell );
-        for (register int i=0;i<m_cols; i++) {
+        for (int i=0;i<m_cols; i++) {
             cell[i]=0;
         }
 		m_outEdges=0;
