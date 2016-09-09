@@ -5609,7 +5609,7 @@ void Graph::randomNetRingLatticeCreate( const int &vert, const int &degree,
             if ( target > (vert-1))
                 target = target-vert;
             qDebug("Creating Link between %i  and %i", i+1, target+1);
-            edgeCreate(i+1, target+1, 1, initEdgeColor, true, true, false);
+            edgeCreate(i+1, target+1, 1, initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED, false, false);
         }
         emit updateProgressDialog( updateProgress ? ++progressCounter:0 );
     }
@@ -5636,6 +5636,11 @@ void Graph::randomNetScaleFreeCreate (const int &n,
     int progressCounter=0;
 
     randomizeThings();
+
+
+    if (mode=="graph") {
+        undirectedSet(true);
+    }
 
     int x=0;
     int y=0;
@@ -5666,7 +5671,7 @@ void Graph::randomNetScaleFreeCreate (const int &n,
                    << " Creating all edges for initial node i " << i+1;
         for (int j=i+1; j< m0  ; ++j) {
             qDebug() << " --- Creating initial edge " << i+1 << " <-> " << j+1;
-            edgeCreate (i+1, j+1, 1, initEdgeColor, 2, true, false);
+            edgeCreate (i+1, j+1, 1, initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED, false, false);
         }
         emit updateProgressDialog( ++progressCounter );
     }
@@ -5732,14 +5737,14 @@ void Graph::randomNetScaleFreeCreate (const int &n,
                     if ( mode == "graph") {
                         qDebug() << " --- Creating pref.att. reciprocal edge "
                                  <<  i+1 << " <-> " << j+1;
-                        edgeCreate (i+1, j+1, 1, initEdgeColor, 2 , true, false);
+                        edgeCreate (i+1, j+1, 1, initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED , true, false);
                         newEdges ++;
 
                     }
                     else {
                         qDebug() << " --- Creating pref.att. directed edge "
                                  <<  i+1 << " <-> " << j+1;
-                        edgeCreate (i+1, j+1, 1, initEdgeColor, 1, true, false);
+                        edgeCreate (i+1, j+1, 1, initEdgeColor, EDGE_DIRECTED_OPPOSITE_EXISTS, true, false);
                         newEdges ++;
 
                     }
@@ -5812,6 +5817,7 @@ void Graph::randomNetSmallWorldCreate (
     }
 
     emit signalNodeSizesByInDegree(true);
+    emit graphChanged();
 }
 
 

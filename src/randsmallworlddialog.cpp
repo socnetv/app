@@ -33,6 +33,7 @@
 #include <QPushButton>
 #include <QDoubleSpinBox>
 #include <QGraphicsColorizeEffect>
+#include <QtMath>
 
 #include "randsmallworlddialog.h"
 
@@ -43,8 +44,8 @@ RandSmallWorldDialog::RandSmallWorldDialog(QWidget *parent) :
 
     ui.setupUi(this);
 
-    nodes = 0;
-    degree = 0;
+    nodes = 100;
+    degree = qCeil ( qLn (nodes) );
     bprob = 0;
     mode = "";
     diag = false;
@@ -53,8 +54,6 @@ RandSmallWorldDialog::RandSmallWorldDialog(QWidget *parent) :
               this, &RandSmallWorldDialog::gatherData );
 
     ui.buttonBox -> button (QDialogButtonBox::Ok) -> setDefault(true);
-
-    (ui.nodesSpinBox )->setFocus();
 
     ui.probDoubleSpinBox->setEnabled(true);
     ui.degreeSpinBox-> setEnabled(true);
@@ -70,8 +69,21 @@ RandSmallWorldDialog::RandSmallWorldDialog(QWidget *parent) :
 
     connect ( ui.diagCheckBox,&QCheckBox::clicked,
               this, &RandSmallWorldDialog::setDiag);
+
+    connect(ui.nodesSpinBox, SIGNAL(valueChanged(int)),
+            this, SLOT(modifyDegree(int)));
+
+    ui.nodesSpinBox->setFocus();
+    ui.nodesSpinBox->setValue(nodes);
+    ui.degreeSpinBox->setValue( degree );
+
 }
 
+
+void RandSmallWorldDialog::modifyDegree(int value) {
+    ui.degreeSpinBox->setValue( qCeil ( qLn (value) ));
+    ui.degreeSpinBox->setMaximum( value );
+}
 
 void RandSmallWorldDialog::setModeDirected (){
     ui.directedRadioButton->setChecked(true) ;

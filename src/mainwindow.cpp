@@ -5527,8 +5527,6 @@ void MainWindow::slotRandomErdosRenyi( const int newNodes,
 
     fileLoaded=false;
 
-    //slotEditNodeSizeAll(0, true);
-
     slotNetworkChanged();
 
     setWindowTitle("Untitled");
@@ -5543,7 +5541,7 @@ void MainWindow::slotRandomErdosRenyi( const int newNodes,
                     "New Random Network",
                     tr("Random network created. \n")+
                     tr("\nNodes: ")+ QString::number(activeNodes())+
-                    tr("\nEdges: ")+  QString::number( (mode == "graph") ? activeEdges()/2.0 : activeEdges() ) +
+                    tr("\nEdges: ")+  QString::number( activeEdges() ) +
                     //tr("\nAverage path length: ") + QString::number(avGraphDistance)+
                     tr("\nClustering coefficient: ")+QString::number(clucof)+
                     tr("\n\nOn the average, edges should be ") +
@@ -5558,7 +5556,7 @@ void MainWindow::slotRandomErdosRenyi( const int newNodes,
                     "New Random Network",
                     tr("Random network created. \n")+
                     tr("\nNodes: ")+ QString::number(activeNodes())+
-                    tr("\nEdges: ")+  QString::number(  (mode == "graph") ? activeEdges()/2.0 : activeEdges()  )+
+                    tr("\nEdges: ")+  QString::number(  activeEdges()  )+
                     //tr("\nAverage path length: ") + QString::number(avGraphDistance)+
                     tr("\nClustering coefficient: ")+QString::number(clucof)+
                     tr("\n\nOn the average, edges should be ")
@@ -5712,7 +5710,7 @@ void MainWindow::slotRandomScaleFree ( const int &nodes,
                              tr("Scale-free random network created.\n")+
                              tr("\nNodes: ")+ QString::number(activeNodes())+
                              tr("\nEdges: ")
-                             +  QString::number( (mode == "graph" ) ? activeEdges()/2.0 : activeEdges())
+                             +  QString::number( activeEdges() )
                              //+  tr("\nAverage path length: ") + QString::number(avGraphDistance)
                              + tr("\nClustering coefficient: ")+QString::number(clucof)
                              , "OK",0);
@@ -5782,7 +5780,7 @@ void MainWindow::slotRandomSmallWorld(const int &nodes,
                              tr("Small world network created.\n")+
                              tr("\nNodes: ")+ QString::number(activeNodes())+
                              tr("\nEdges: ")
-                              +  QString::number( (mode == "graph" ) ? activeEdges()/2.0 : activeEdges())
+                              +  QString::number( activeEdges() )
                              //+  tr("\nAverage path length: ") + QString::number(avGraphDistance)
                              + tr("\nClustering coefficient: ")+QString::number(clucof)
                              , "OK",0);
@@ -5859,7 +5857,7 @@ void MainWindow::slotRandomRingLattice(){
     QMessageBox::information(this, "Ring Lattice",
                              tr("Ring lattice network created.\n")+
                              tr("\nNodes: ")+ QString::number(activeNodes())+
-                             tr("\nEdges: ")+  QString::number( activeEdges()/2.0)
+                             tr("\nEdges: ")+  QString::number( activeEdges() )
                              // + tr("\nAverage path length: ") + QString::number(avGraphDistance)
                              //+ tr("\nClustering coefficient: ")+QString::number(clucof)
                              , "OK",0);

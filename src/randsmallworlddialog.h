@@ -46,6 +46,7 @@ public slots:
     void setModeDirected();
     void setModeUndirected();
     void setDiag();
+    void modifyDegree(int value);
 
 signals:
     void userChoices( const int nodes,
