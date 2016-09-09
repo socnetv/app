@@ -48,13 +48,11 @@
      </property>
      <property name="font">
       <font>
-       <family>Sans Serif</family>
        <pointsize>10</pointsize>
-       <stylestrategy>PreferDefault</stylestrategy>
       </font>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SocNetV includes a simple web crawler. It scans the HTML code of a given initial URL (i.e. a website) and maps all internal or external links to other pages found there. As new urls are discovered, the crawler follows them to scan their HTML code for links as well. For more details, see the Manual. Enter the initial URL below and change crawling parameters if you like.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SocNetV includes a simple web crawler. It scans the HTML code of a given initial URL (i.e. a website) and maps all internal or external links to other pages found there. As new urls are discovered, the crawler follows them to scan their HTML code for links as well. For more details, see the Manual. &lt;/p&gt;&lt;p&gt;Enter the initial URL below and change crawling parameters if you like.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
@@ -84,7 +82,6 @@
       </property>
       <property name="font">
        <font>
-        <family>Sans Serif</family>
         <pointsize>10</pointsize>
        </font>
       </property>
@@ -111,13 +108,6 @@
         <height>32</height>
        </size>
       </property>
-      <property name="font">
-       <font>
-        <family>Sans Serif</family>
-        <pointsize>9</pointsize>
-        <stylestrategy>PreferAntialias</stylestrategy>
-       </font>
-      </property>
       <property name="toolTip">
        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the initial url/domain to start crawling from, i.e. http://www.iefimerida.gr  &lt;/p&gt;&lt;p&gt;You may omit http:// if you want. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
@@ -136,7 +126,6 @@
        </property>
        <property name="font">
         <font>
-         <family>Sans Serif</family>
          <pointsize>10</pointsize>
         </font>
        </property>
@@ -178,7 +167,6 @@ Set value to 0, if you don't want any limits...</string>
        </property>
        <property name="font">
         <font>
-         <family>Sans Serif</family>
          <pointsize>10</pointsize>
         </font>
        </property>
@@ -215,7 +203,6 @@ Set value to 0, if you don't want any limits...</string>
        </property>
        <property name="font">
         <font>
-         <family>Sans Serif</family>
          <pointsize>10</pointsize>
         </font>
        </property>
@@ -292,7 +279,6 @@ In this case SocNetV will follow and crawl each one link found in a page.</strin
      </property>
      <property name="font">
       <font>
-       <family>Sans Serif</family>
        <pointsize>10</pointsize>
       </font>
      </property>
@@ -320,7 +306,6 @@ In this case SocNetV will follow and crawl each one link found in a page.</strin
     <widget class="QCheckBox" name="intLinksCheckBox">
      <property name="font">
       <font>
-       <family>Sans Serif</family>
        <pointsize>10</pointsize>
       </font>
      </property>
