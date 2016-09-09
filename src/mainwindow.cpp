@@ -2898,7 +2898,10 @@ void MainWindow::initToolBox(){
                                 "transform the loaded network (if any) to undirected \n"
                                 "toggle the option Edit -> Edges -> Undirected \n"
                                 "or press CTRL+E+U"));
-    networkLabel ->setFont(QFont("sans-serif", 10, QFont::Bold));
+
+    QFont labelFont = networkLabel ->font();
+    labelFont.setWeight(QFont::Bold);
+    networkLabel ->setFont(labelFont);
     networkLabel ->setFixedWidth(195);
     propertiesGrid -> addWidget(networkLabel , 0,0);
     propertiesGrid -> addWidget(labelNodesLCD, 1,0);
