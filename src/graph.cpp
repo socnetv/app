@@ -2321,7 +2321,8 @@ void Graph::writeEccentricity(
 
     outText << "\n\n";
     outText << tr("Eccentricity report, \n");
-    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime()
+    outText << tr("Created by SocNetV ") << VERSION << ": "
+            << actualDateTime.currentDateTime()
                .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
@@ -3343,7 +3344,8 @@ void Graph::writeCentralityInformation(const QString fileName,
 
 
     outText << tr("Information Centrality report, \n");
-    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime()
+    outText << tr("Created by SocNetV ") << VERSION << ": "
+            << actualDateTime.currentDateTime()
                .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
@@ -3571,7 +3573,8 @@ void Graph::writeCentralityDegree ( const QString fileName,
 
     outText << "\n\n";
     outText << tr("Degree Centrality (Out-Degree) Report, \n");
-    outText << tr("created by SocNetV: ")<< actualDateTime.currentDateTime()
+    outText << tr("Created by SocNetV ") << VERSION << ": "
+            << actualDateTime.currentDateTime()
                .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
@@ -3743,7 +3746,8 @@ void Graph::writeCentralityCloseness(
                 << tr("Use variance instead.");
     outText << "\n\n";
     outText << tr("Closeness Centrality report, \n");
-    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime()
+    outText << tr("Created by SocNetV ") << VERSION << ": "
+            << actualDateTime.currentDateTime()
                .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
@@ -3809,7 +3813,8 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
 
     outText << "\n\n";
     outText << tr("InfluenceRange Closeness Centrality report, \n");
-    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().
+    outText << tr("Created by SocNetV ") << VERSION << ": "
+            << actualDateTime.currentDateTime().
                toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
@@ -3890,7 +3895,8 @@ void Graph::writeCentralityBetweenness(const QString fileName,
 
     outText << "\n\n";
     outText << tr("Betweenness Centrality report, \n");
-    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime()
+    outText << tr("Created by SocNetV ") << VERSION << ": "
+            << actualDateTime.currentDateTime()
                .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
@@ -3970,7 +3976,8 @@ void Graph::writeCentralityStress( const QString fileName,
 
     outText << "\n\n";
     outText << tr("Stress Centrality report, \n");
-    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime()
+    outText << tr("Created by SocNetV ") << VERSION << ": "
+            << actualDateTime.currentDateTime()
                .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
@@ -4036,7 +4043,8 @@ void Graph::writeCentralityEccentricity(const QString fileName,
 
     outText << "\n\n";
     outText << tr("Eccentricity Centrality report, \n");
-    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime()
+    outText << tr("Created by SocNetV ") << VERSION << ": "
+            << actualDateTime.currentDateTime()
                .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
@@ -4124,7 +4132,8 @@ void Graph::writeCentralityPower(const QString fileName,
 
     outText << "\n\n";
     outText << tr("Power Centrality report, \n");
-    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime()
+    outText << tr("Created by SocNetV ") << VERSION << ": "
+            << actualDateTime.currentDateTime()
                .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
@@ -4331,7 +4340,8 @@ void Graph::writePrestigeDegree (const QString fileName,
 
     outText << "\n\n";
     outText << tr("Degree Prestige Report, \n");
-    outText << tr("created by SocNetV: ")<< actualDateTime.currentDateTime()
+    outText << tr("Created by SocNetV ") << VERSION << ": "
+            << actualDateTime.currentDateTime()
                .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
@@ -4509,7 +4519,8 @@ void Graph::writePrestigeProximity( const QString fileName,
 
     outText << "\n\n";
     outText << tr("Proximity Prestige report, \n");
-    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime()
+    outText << tr("Created by SocNetV ") << VERSION << ": "
+            << actualDateTime.currentDateTime()
                .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
@@ -4796,7 +4807,9 @@ void Graph::writePrestigePageRank(const QString fileName, const bool dropIsolate
     outText << tr("PRP' Variance = ") << variancePRP << endl<< endl;
 
     outText << tr("PageRank Prestige report, \n");
-    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime().toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
+    outText << tr("Created by SocNetV ") << VERSION << ": "
+            << actualDateTime.currentDateTime()
+               .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
 }
@@ -6211,7 +6224,8 @@ void Graph::writeClusteringCoefficient(
 
     outText <<"\n\n" ;
     outText << tr("Clustering Coefficient Report,\n");
-    outText << tr("created by SocNetV: ")<< actualDateTime.currentDateTime()
+    outText << tr("Created by SocNetV ") << VERSION << ": "
+            << actualDateTime.currentDateTime()
                .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
 
     file.close();
@@ -6268,7 +6282,8 @@ void Graph::writeTriadCensus(
 
     outText << "\n\n";
     outText << tr("Triad Census report, \n");
-    outText << tr("created by SocNetV on: ")<< actualDateTime.currentDateTime()
+    outText << tr("Created by SocNetV ") << VERSION << ": "
+            << actualDateTime.currentDateTime()
                .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
@@ -6356,7 +6371,8 @@ void Graph::writeCliqueCensus(
 
     outText <<"\n\n" ;
     outText << tr("Clique Census Report,\n");
-    outText << tr("created by SocNetV: ")<< actualDateTime.currentDateTime().
+    outText << tr("Created by SocNetV ") << VERSION << ": "
+            << actualDateTime.currentDateTime().
                toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
 
     file.close();
@@ -11206,7 +11222,7 @@ bool Graph::saveGraphToGraphMLFormat (
 
     qDebug()<< "		... writing xml version";
     outText << "<?xml version=\"1.0\" encoding=\"" << outText.codec()->name() << "\"?> \n";
-    outText << " <!-- Created by SocNetV v."<<  VERSION << " --> \n" ;
+    outText << " <!-- Created by SocNetV "<<  VERSION << " --> \n" ;
     outText << "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" "
                "      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance \" "
                "      xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns "

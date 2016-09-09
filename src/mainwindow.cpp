@@ -7230,28 +7230,39 @@ void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
         qDebug("MW: slotEditEdgeUndirectedAll() calling Graph::undirectedSet()");
         activeGraph.undirectedSet(toggle);
         optionsEdgeArrowsAct->setChecked(false);
-        if (activeEdges() !=0 )
-            QMessageBox::information(this,
-                                 "Undirected edges",
-                                 tr("All existing edges transformed to undirected. \n"
-                                    "Any edge you create will be undirected too. \n"
-                                    "The network is symmetric."),
-                                     "OK",0);
+        if (activeEdges() !=0 ) {
+            statusBar()->showMessage (
+                        QString(
+                            tr("Undirected data mode. "
+                               "All existing directed edges transformed to "
+                               "undirected. Ready")), statusBarDuration) ;
 
-        statusBar()->showMessage (QString(tr("Undirected data mode selected. Ready")), statusBarDuration) ;
+        }
+        else {
+            statusBar()->showMessage (
+                        QString(
+                            tr("Undirected data mode. "
+                               "Any edge you add will be undirected. Ready")), statusBarDuration) ;
+        }
     }
     else {
         activeGraph.undirectedSet(toggle);
         optionsEdgeArrowsAct->trigger();
         optionsEdgeArrowsAct->setChecked(true);
-        if (activeEdges() !=0 )
-            QMessageBox::information(this,
-                                 "Directed edges",
-                                 tr("All existing edges transformed to directed. \n"
-                                    "Any edge you create will be directed too."),
-                                     "OK",0);
+        if (activeEdges() !=0 ) {
+            statusBar()->showMessage (
+                        QString(
+                            tr("Directed data mode. "
+                               "All existing undirected edges transformed to "
+                               "directed. Ready")), statusBarDuration) ;
 
-        statusBar()->showMessage (QString(tr("Directed data mode selected mode. Ready")), statusBarDuration) ;
+        }
+        else {
+            statusBar()->showMessage (
+                        QString(
+                            tr("Directed data mode. "
+                               "Any edge you add will be directed. Ready")), statusBarDuration) ;
+        }
     }
 
 }
