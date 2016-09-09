@@ -2915,7 +2915,7 @@ void MainWindow::initToolBox(){
     dummyLabel-> setText ("");
     QLabel *labelNode = new QLabel;
     labelNode-> setText (tr("Active Node"));
-    labelNode ->setFont(QFont("sans-serif", 10, QFont::Bold));
+    labelNode->setFont(labelFont);
 
     QLabel *labelSelectedNodeLCD = new QLabel;
     labelSelectedNodeLCD -> setText (tr("Number:"));
