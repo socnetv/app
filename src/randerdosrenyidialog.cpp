@@ -64,11 +64,11 @@ RandErdosRenyiDialog::RandErdosRenyiDialog(QWidget *parent, const float eprob) :
     connect (ui.gnmRadioButton, &QRadioButton::clicked,
              this, &RandErdosRenyiDialog::checkErrors);
 
-    //ui.gnpRadioButton->setChecked(true);
+    ui.gnpRadioButton->setChecked(true);
     ui.probDoubleSpinBox->setEnabled(true);
     ui.edgesSpinBox-> setDisabled(true);
     ui.undirectedRadioButton->setChecked(true);
-    ui.diagCheckBox ->setChecked(true);
+    ui.diagCheckBox ->setChecked(false);
 
 
     connect (ui.gnpRadioButton, &QRadioButton::clicked,
@@ -129,13 +129,13 @@ void RandErdosRenyiDialog::checkErrors() {
         ui.gnpRadioButton->setGraphicsEffect(effect);
         ui.gnmRadioButton->setGraphicsEffect(effect2);
         (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
+        return;
     }
     else {
         ui.gnpRadioButton->setGraphicsEffect(0);
         ui.gnmRadioButton->setGraphicsEffect(0);
         (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);
     }
-    //gatherData();
 }
 
 void RandErdosRenyiDialog::gatherData() {

@@ -237,6 +237,9 @@ p, li { white-space: pre-wrap; }
          <property name="text">
           <string>G(n, M)</string>
          </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
          <property name="autoExclusive">
           <bool>false</bool>
          </property>
@@ -431,7 +434,7 @@ p, li { white-space: pre-wrap; }
           <string>Undirected</string>
          </property>
          <property name="checked">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
          <property name="autoExclusive">
           <bool>false</bool>
@@ -459,6 +462,9 @@ p, li { white-space: pre-wrap; }
          </property>
          <property name="text">
           <string>Directed</string>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
          </property>
          <property name="autoExclusive">
           <bool>false</bool>
@@ -527,7 +533,7 @@ p, li { white-space: pre-wrap; }
           <string>Yes, allow</string>
          </property>
          <property name="checked">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
         </widget>
        </item>

@@ -5504,7 +5504,7 @@ void Graph::randomNetErdosCreate(  const int &vert,
                         qDebug() << "Graph::randomNetErdosCreate() - "
                                     <<" create undirected Edge no "
                                     << edgeCount;
-                        edgeCreate(i+1, j+1, 1, initEdgeColor, 2, false, false);
+                        edgeCreate(i+1, j+1, 1, initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED, false, false);
                     }
                     else {
                         qDebug() << "Graph::randomNetErdosCreate() - "
@@ -5545,7 +5545,7 @@ void Graph::randomNetErdosCreate(  const int &vert,
             if (mode == "graph") {
                 qDebug() << "Graph::randomNetErdosCreate() - create "
                             << " undirected Edge no " << edgeCount;
-                edgeCreate(source, target, 1, initEdgeColor, 2, true, false);
+                edgeCreate(source, target, 1, initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED, false, false);
             }
             else {
                 qDebug() << "Graph::randomNetErdosCreate() - create "
@@ -5587,6 +5587,10 @@ void Graph::randomNetRingLatticeCreate( const int &vert, const int &degree,
     int progressCounter=0;
 
     double rad= (2.0* Pi/ vert );
+
+//    if (mode=="graph") {
+        undirectedSet(true);
+//    }
 
     randomizeThings();
 
