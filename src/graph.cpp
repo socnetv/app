@@ -303,7 +303,7 @@ void Graph::vertexCreateWebCrawler(const QString &label, const int &i) {
  * @param [in] i number of node
  */
 void Graph::vertexRemoveDummyNode(int i){
-    qDebug("**Graph: vertexRemoveDummyNode %i", i);
+    qDebug("**Graph::vertexRemoveDummyNode %i", i);
     vertexRemove(i);
 
 }
@@ -395,48 +395,47 @@ int Graph::vertexFirstNumber() {
  * @param Doomed
  */
 void Graph::vertexRemove(long int Doomed){
-    qDebug() << "Graph: vertexRemove - Doomed: "
+    qDebug() << "Graph::vertexRemove() - doomed: "
              << m_graph[ index[Doomed] ]->name()
-             << "  indexOfDoomed= " << index[Doomed] ;
+             << "  index: " << index[Doomed]
+                << " Removing all inbound and outbound edges ";
     long int indexOfDoomed=index[Doomed];
 
     //Remove links to Doomed from each other vertex
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if  ( (*it)->hasEdgeTo(Doomed) != 0) {
-            qDebug()<< "Graph: Vertex " << (*it)->name()
-                    << " is linked to doomed "<< Doomed << " and has "
-                    << (*it)->outEdges() << " and " <<  (*it)->degreeOut() ;
-            if ( (*it)->outEdges() == 1 && (*it)->hasEdgeFrom(Doomed) != 0 )	{
-               // qDebug() << "Graph: decreasing reciprocalEdgesVert";
-            }
+            qDebug()<< "Graph::vertexRemove() - vertex " << (*it)->name()
+                    << " has outbound Edge to "<< Doomed << ". Removing it.";
             (*it)->edgeRemoveTo(Doomed) ;
         }
         if (  (*it)->hasEdgeFrom(Doomed) != 0 ) {
+            qDebug()<< "Graph::vertexRemove() - vertex " << (*it)->name()
+                    << " has inbound Edge from "<< Doomed << ". Removing it.";
             (*it)->edgeRemoveFrom(Doomed);
         }
     }
 
-    qDebug()<< "Graph: Finished with vertices. Update the index which maps vertices inside m_graph " ;
+    qDebug()<< "Graph::vertexRemove() - Finished with vertices. Update the index which maps vertices inside m_graph " ;
     long int prevIndex=indexOfDoomed;
 
-    qDebug () << " Updating index of all subsequent vertices ";
+    qDebug()<< "Graph::vertexRemove() - Updating index of all subsequent vertices ";
     H_Int::const_iterator it1=index.cbegin();
     while (it1 != index.cend()){
         if ( it1.value() > indexOfDoomed ) {
             prevIndex = it1.value();
-            qDebug() << "Graph::vertexRemove - vertex " << it1.key()
+            qDebug() << "Graph::vertexRemove() - vertex " << it1.key()
                      << " had prevIndex: " << prevIndex
                      << " > indexOfDoomed " << indexOfDoomed
                      << " Setting new index. Index size was: "<< index.size();
             index.insert( it1.key(), --prevIndex)  ;
-            qDebug() << "Graph::vertexRemove - vertex " << it1.key()
+            qDebug() << "Graph::vertexRemove() - vertex " << it1.key()
                      << " new index: " << index.value( it1.key(), -666)
                      << " Index size now: "<< index.size();
 
         }
         else {
-            qDebug() << "Graph::vertexRemove " << it1.key() << " with index "
+            qDebug() << "Graph::vertexRemove() " << it1.key() << " with index "
                      << it1.value() << " < indexOfDoomed. CONTINUE";
 
         }
@@ -444,11 +443,11 @@ void Graph::vertexRemove(long int Doomed){
     }
 
     //Now remove vertex Doomed from m_graph
-    qDebug() << "Graph: graph vertices=size="<< vertices() << "="
+    qDebug()<< "Graph::vertexRemove() -  graph vertices=size="<< vertices() << "="
              << m_graph.size() <<  " removing vertex at index " << indexOfDoomed ;
     m_graph.removeAt( indexOfDoomed ) ;
     m_totalVertices--;
-    qDebug() << "Graph: Now graph vertices=size="<< vertices() << "="
+    qDebug()<< "Graph::vertexRemove() - Now graph vertices=size="<< vertices() << "="
              << m_graph.size() <<  " total edges now  " << edgesEnabled();
 
     order=false;

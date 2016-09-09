@@ -178,6 +178,7 @@ private:
     int m_currentRotationAngle;
     int m_zoomIndex, markedNodeOrigSize,markedEdgeSourceOrigSize, markedEdgeTargetOrigSize;
     QString m_nodeLabel, m_numberColor, m_nodeColor, m_labelColor, m_linkColor;
+    QString edgeName;
     bool secondDoubleClick, markedNodeExist, markedEdgeExist;
     QGraphicsItem *moving;
     QPointF startPoint, endPoint;

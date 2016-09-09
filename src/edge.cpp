@@ -580,14 +580,8 @@ void Edge::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 
 
 Edge::~Edge(){
-    qDebug() << "*** ~Edge() " << sourceNodeNumber()<< "->" << targetNodeNumber();
+    qDebug() << "*** ~Edge() - edge " << sourceNodeNumber()<< "->" << targetNodeNumber();
     removeRefs();
-
-
-//    if ( m_drawWeightNumber )
-//        deleteWeightNumber();
-//    if ( m_drawLabel )
-//        deleteLabel();
 
     if (m_drawWeightNumber)
         graphicsWidget->removeItem(weightNumber);

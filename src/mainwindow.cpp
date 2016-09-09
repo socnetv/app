@@ -851,11 +851,11 @@ void MainWindow::initActions(){
                                        "Removes an existing node from the network"));
     connect(editNodeRemoveAct, SIGNAL(triggered()), this, SLOT(slotEditNodeRemove()));
 
-    editNodePropertiesAct = new QAction(QIcon(":/images/properties.png"),tr("Selected Nodes Properties"), this);
+    editNodePropertiesAct = new QAction(QIcon(":/images/properties.png"),tr("Selected Node Properties"), this);
     editNodePropertiesAct ->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_Period );
     editNodePropertiesAct->setStatusTip(tr("Change the basic properties of the selected node(s) -- "
                                            "There must be some nodes on the canvas!"));
-    editNodePropertiesAct->setWhatsThis(tr("Selected Nodes Properties\n\n"
+    editNodePropertiesAct->setWhatsThis(tr("Selected Node Properties\n\n"
                                            "If there are some nodes on the canvas, "
                                            " opens a properties dialog to edit "
                                            "their label, size, color, shape etc. \n"
@@ -5990,11 +5990,23 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
                               + QString::number(  selectedNodes().count() ) + " ##  ");
 
     contextMenu -> addSeparator();
-
-    if (selectedNodes().count()) {
+    int nodeCount = selectedNodes().count();
+    if (nodeCount > 0) {
         contextMenu -> addAction(editNodePropertiesAct );
         contextMenu -> addSeparator();
+
+        contextMenu -> addAction(editNodeRemoveAct );
+
+        if (nodeCount > 1 ){
+            editNodeRemoveAct->setText(tr("Remove ")
+                                       + QString::number(nodeCount)
+                                       + tr(" nodes"));
+            contextMenu -> addSeparator();
+        }
+
+
     }
+
 
     contextMenu -> addAction( editNodeAddAct );
     contextMenu -> addAction( editEdgeAddAct );
@@ -6180,7 +6192,8 @@ void MainWindow::slotEditNodeRemove() {
     }
 
     // if there are already multiple nodes selected, erase them
-    if (selectedNodes().count() > 1) {
+    int nodeCount = selectedNodes().count();
+    if ( nodeCount > 1) {
         int removeCounter = 0;
         qDebug() << "MW: removeNode() multiple selected to remove";
         foreach (QGraphicsItem *item, selectedNodes() ) {
@@ -6189,7 +6202,8 @@ void MainWindow::slotEditNodeRemove() {
                ++removeCounter ;
            }
         }
-        statusMessage( tr("Removed nodes. Ready. ") );
+        editNodeRemoveAct->setText(tr("Remove Node"));
+        statusMessage( tr("Removed ") + nodeCount + tr(" nodes. Ready. ") );
     }
 
     else {
@@ -6739,7 +6753,8 @@ void MainWindow::slotEditNodeOpenContextMenu() {
 
     QMenu *nodeContextMenu = new QMenu(QString::number(clickedJimNumber), this);
     Q_CHECK_PTR( nodeContextMenu );  //displays "out of memory" if needed
-    if ( selectedNodes().count() == 1) {
+    int nodeCount = selectedNodes().count();
+    if ( nodeCount == 1) {
         nodeContextMenu -> addAction( tr("## NODE ") + QString::number(clickedJimNumber) + " ##  ");
     }
     else {
@@ -6753,6 +6768,11 @@ void MainWindow::slotEditNodeOpenContextMenu() {
     nodeContextMenu -> addAction(editEdgeAddAct);
     nodeContextMenu -> addAction(editNodeRemoveAct );
     nodeContextMenu -> addAction(editNodePropertiesAct );
+    if (nodeCount > 1 ){
+        editNodeRemoveAct->setText(tr("Remove ")
+                                   + QString::number(nodeCount)
+                                   + tr(" nodes"));
+    }
     //QCursor::pos() is good only for menus not related with node coordinates
     nodeContextMenu -> exec(QCursor::pos() );
     delete  nodeContextMenu;

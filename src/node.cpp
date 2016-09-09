@@ -644,7 +644,10 @@ void Node::setNumberDistance(const int &distance) {
 
 
 Node::~Node(){
-    qDebug() << "*** ~Node() "<< nodeNumber();
+    qDebug() << "*** ~Node() - node "<< nodeNumber()
+                << "inEdgeList.size = " << inEdgeList.size()
+                << "outEdgeList.size = " << outEdgeList.size();
+
     foreach (Edge *edge, inEdgeList) {
         qDebug("~Node: removing edges in inEdgeList");
         delete edge;

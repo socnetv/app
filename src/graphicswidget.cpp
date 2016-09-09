@@ -173,7 +173,7 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
                               const bool &bezier,
                               const bool &weightNumbers){
 
-    QString edgeName = QString::number(m_curRelation) + QString(":")
+    edgeName = QString::number(m_curRelation) + QString(":")
             + QString::number(source) + QString(">")+ QString::number(target);
     qDebug()<<"GW::drawEdge() - "<< edgeName
            << " weight "<<weight
@@ -194,7 +194,7 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
 
     edgesHash.insert(edgeName, edge);
     if (type == EDGE_DIRECTED_OPPOSITE_EXISTS ) {
-        QString edgeName = QString::number(m_curRelation) + QString(":") +
+        edgeName = QString::number(m_curRelation) + QString(":") +
                 QString::number(target) + QString(">")+ QString::number(source);
         //    qDebug("GW: making existing edge between %i and %i reciprocal. Name: "+edgeName.toUtf8(), source, target );
         edgesHash.value(edgeName)->setDirectedWithOpposite();
@@ -327,9 +327,12 @@ void GraphicsWidget::moveNode(const int &num, const qreal &x, const qreal &y){
 }
 
 
+
 /**
-    Called from Graph signal eraseNode(int)
-*/
+ * @brief GraphicsWidget::eraseNode
+ * Called from Graph signal eraseNode(int)
+ * @param number
+ */
 void GraphicsWidget::eraseNode(const long int &number){
         qDebug() << "GW::eraseNode() - node " << number
                  << " scene items: " << scene()->items().size()
@@ -346,8 +349,8 @@ void GraphicsWidget::eraseNode(const long int &number){
     qDebug() << "GW::eraseNode() - node erased! "
              << " scene items now: " << scene()->items().size()
              << " view items: " << items().size()
-             << " nodeHash items: "<< nodeHash.count();
-
+             << " nodeHash items: "<< nodeHash.count()
+             << " edgesHash items: "<< edgesHash.count() ;
 }
 
 
@@ -367,14 +370,13 @@ void GraphicsWidget::eraseEdge(const long int &source, const long int &target){
              << " edgesHash.count: " << edgesHash.count();
 
 
-    QString edgeName =  QString::number(m_curRelation) + QString(":") +
+    edgeName =  QString::number(m_curRelation) + QString(":") +
             QString::number( source )
             + QString(">")
             + QString::number( target );
 
     if ( edgesHash.contains(edgeName) ) {
         delete edgesHash.value(edgeName);
-        edgesHash.remove(edgeName);
     }
 
 
@@ -413,6 +415,11 @@ void GraphicsWidget::removeItem( Node *node){
 /** Called from Node::die() to remove Edge edge ... */
 void GraphicsWidget::removeItem( Edge * edge){
     qDebug() << "GW::removeItem(edge)" ;
+    edgeName =  QString::number(m_curRelation) + QString(":") +
+            QString::number( edge->sourceNodeNumber() )
+            + QString(">")
+            + QString::number( edge->targetNodeNumber() );
+    edgesHash.remove(edgeName);
     scene()->removeItem(edge);
     edge->deleteLater();
     qDebug() << "GW::removeItem(edge) - edge erased! "
@@ -705,7 +712,8 @@ void GraphicsWidget::setEdgeWeightNumbersVisibility (const bool &toggle){
 
 
 void GraphicsWidget::setEdgeLabelsVisibility (const bool &toggle){
-    qDebug()<< "GW::setEdgeLabelsVisibility()" << toggle;
+    qDebug()<< "GW::setEdgeLabelsVisibility()" << toggle
+               << "edgesHash.count: " << edgesHash.count();
     foreach ( Edge *m_edge, edgesHash) {
         m_edge->setLabelVisibility(toggle);
     }

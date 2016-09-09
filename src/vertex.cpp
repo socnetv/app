@@ -220,25 +220,25 @@ void Vertex::edgeRemoveTo (long int v2) {
              << " has " <<outEdges() << " out-links. Removing link to "<< v2 ;
 
     if (outEdges()>0) {
-        qDebug () << "checking all_outEdges";
+        qDebug() << "Vertex::edgeRemoveTo() - checking all_outEdges";
         H_edges::iterator it1=m_outEdges.find(v2);
         while (it1 != m_outEdges.end() && it1.key() == v2 ) {
             if ( it1.value().first == m_curRelation ) {
                 qDebug() << " *** vertex " << m_name << " connected to "
                          << it1.key() << " relation " << it1.value().first
                          << " weight " << it1.value().second.first
-                         << " enabled ? " << it1.value().second.second;
-                qDebug() << " *** erasing outEdge from m_outEdges ";
+                         << " enabled ? " << it1.value().second.second
+                         << " Erasing outEdge from m_outEdges ";
                 it1=m_outEdges.erase(it1);
             }
             else {
                 ++it1;
             }
         }
-        qDebug() << "Vertex: vertex " <<  m_name << " now has " <<  outEdges() << " out-edges";
+        qDebug() << "Vertex::edgeRemoveTo() - vertex " <<  m_name << " now has " <<  outEdges() << " out-edges";
 	}
 	else {
-		qDebug() << "Vertex: vertex " <<  m_name << " has no edges" ;
+        qDebug() << "Vertex::edgeRemoveTo() - vertex " <<  m_name << " has no edges" ;
 	}
 }
 
@@ -248,30 +248,30 @@ void Vertex::edgeRemoveTo (long int v2) {
  * @param v2
  */
 void Vertex::edgeRemoveFrom(long int v2){
-    qDebug() << "Vertex: edgeRemoveFrom() vertex " << m_name
+    qDebug() << "Vertex::edgeRemoveFrom() - vertex " << m_name
              << " has " <<  inEdges() << "  in-edges. RemovingEdgeFrom " << v2 ;
 
     if (inEdges()>0) {
-        qDebug () << "checking all_inEdges";
+        qDebug() << "Vertex::edgeRemoveFrom() - checking all_inEdges";
         H_edges::iterator it=m_inEdges.find(v2);
         while (it != m_inEdges.end() ) {
             if ( it.key() == v2 && it.value().first == m_curRelation ) {
                 qDebug() << " *** vertex " << m_name << " connected from  "
                          << it.key() << " relation " << it.value().first
                          << " weight " << it.value().second.first
-                         << " enabled ? " << it.value().second.second;
-                qDebug() << " *** erasing inEdge from m_inEdges ";
+                         << " enabled ? " << it.value().second.second
+                         << " Erasing inEdge from m_inEdges ";
                 it=m_inEdges.erase(it);
             }
             else {
                 ++it;
             }
         }
-        qDebug() << "Vertex: vertex " << m_name << " now has "
+        qDebug() << "Vertex::edgeRemoveFrom() - vertex " << m_name << " now has "
                  << inEdges() << " in-links"  ;
 	}
 	else {
-		qDebug() << "Vertex: vertex " << m_name << " has no edges";
+        qDebug() << "Vertex::edgeRemoveFrom() - vertex " << m_name << " has no edges";
 	}
 }
 
@@ -637,7 +637,6 @@ long int Vertex::localDegree(){
  * @return
  */
 float Vertex::hasEdgeTo(const long int &v2){
-//    qDebug()<< "Vertex::hasEdgeTo() " << name() << " -> " << v2 ;
     float m_weight=0;
     bool edgeStatus=false;
     H_edges::iterator it1=m_outEdges.find(v2);
@@ -646,23 +645,20 @@ float Vertex::hasEdgeTo(const long int &v2){
             edgeStatus=it1.value().second.second;
             if ( edgeStatus == true) {
                 m_weight=it1.value().second.first;
-//                qDebug()<< "***** Vertex::hasEdgeTo() - relation "
-//                           << it1.value().first
-//                        <<" link "  <<  this->name()
-//                        << " -> " << v2 << "exists, weight "<< m_weight;
+                qDebug()<< "Vertex::hasEdgeTo() - a ("  <<  this->name()
+                        << ", " << v2 << ") = "<< m_weight;
                 return m_weight;
             }
             else
-                qDebug()<< "Vertex::hasEdgeTo() - relation "
-                           << it1.value().first
-                        <<" link "  <<  this->name()
-                        << " -> " << v2 << "exists, weight "<< m_weight
+                qDebug()<< "Vertex::hasEdgeTo() - a ("  <<  this->name()
+                        << ", " << v2 << ") = "<< m_weight
                         << " but edgeStatus " << edgeStatus;
                 return 0;
         }
         ++it1;
     }
-   // qDebug()<< "Vertex::hasEdgeTo() - INEXISTENT LINK IN RELATION " << m_curRelation;
+//    qDebug()<< "Vertex::hasEdgeTo() - a ("  <<  this->name()
+//            << ", " << v2 << ") = "<< m_weight;
 	return 0;
 }
 
@@ -675,7 +671,6 @@ float Vertex::hasEdgeTo(const long int &v2){
  * @return
  */
 float Vertex::hasEdgeFrom(const long int &v2){
-    qDebug()<< "Vertex::hasEdgeFrom()" ;
     float m_weight=0;
     bool edgeStatus=false;
     H_edges::iterator it1=m_inEdges.find(v2);
@@ -684,20 +679,20 @@ float Vertex::hasEdgeFrom(const long int &v2){
             edgeStatus=it1.value().second.second;
             if ( edgeStatus == true) {
                 m_weight=it1.value().second.first;
-                qDebug()<< "Vertex::hasEdgeFrom() - a ("  <<  this->name()
-                        << ", " << v2 << ") = "<< m_weight;
+                qDebug()<< "Vertex::hasEdgeFrom() - a ("  <<  v2
+                        << ", " << this->name() << ") = "<< m_weight;
                 return m_weight;
             }
             else
-                qDebug()<< "Vertex::hasEdgeFrom() - a ("  <<  this->name()
-                        << ", " << v2 << ") = "<< m_weight
+                qDebug()<< "Vertex::hasEdgeFrom() - a ("  <<  v2
+                        << ", " << this->name() << ") = "<< m_weight
                         << " but edgeStatus " << edgeStatus;
                 return 0;
 
         }
         ++it1;
     }
-    qDebug()<< "Vertex::hasEdgeFrom() - a ("  <<  this->name()  << ", " << v2 << ") = 0 ";
+    //qDebug()<< "Vertex::hasEdgeFrom() - a ("  <<  this->name()  << ", " << v2 << ") = 0 ";
     return 0;
 }
 
