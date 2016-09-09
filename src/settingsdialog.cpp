@@ -123,7 +123,11 @@ SettingsDialog::SettingsDialog(
     ui->nodeNumbersInsideChkBox->setChecked(
                 (m_appSettings["initNodeNumbersInside"] == "true" ) ? true:false
                 );
+    if (m_appSettings["initNodeNumbersInside"] == "true") {
+        ui->nodeNumberDistanceSpin->setEnabled(false);
+        ui->nodeNumberSizeSpin->setValue( 0 );
 
+    }
     m_nodeNumberColor = QColor (m_appSettings["initNodeNumberColor"]);
     m_pixmap = QPixmap(60,20) ;
     m_pixmap.fill( m_nodeNumberColor );
@@ -330,7 +334,8 @@ void SettingsDialog::getBgColor(){
         m_pixmap.fill(m_bgColor);
         ui->bgColorButton->setIcon(QIcon(m_pixmap));
         ui->bgImageSelectEdit->setText("");
-        (m_appSettings)["initBackgroundColor"] = m_bgColor.name();
+        m_appSettings["initBackgroundColor"] = m_bgColor.name();
+        m_appSettings["initBackgroundImage"] = "";
         emit setBgColor(m_bgColor);
     }
     else {
@@ -438,6 +443,8 @@ void SettingsDialog::getNodeNumbersVisibility (bool toggle){
 void SettingsDialog::getNodeNumbersInside(bool toggle) {
     m_appSettings["initNodeNumbersInside"]= (toggle) ? "true" : "false";
     ui->nodeNumbersChkBox->setChecked(true);
+    ui->nodeNumberDistanceSpin->setEnabled(!toggle);
+    ui->nodeNumberSizeSpin->setValue( ( (toggle) ? 0 : 7) );
     emit setNodeNumbersInside(toggle);
 }
 
