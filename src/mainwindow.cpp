@@ -2811,10 +2811,17 @@ void MainWindow::initToolBox(){
 
     toolBoxLayoutGuidesBx = new QCheckBox(
                 tr("Layout guidelines") );
+    toolBoxLayoutGuidesBx->setToolTip(
+                tr("Toggle layout guidelines on or off."));
+
+    toolBoxLayoutGuidesBx ->setStatusTip(tr("Toggle layout guidelines on or off."));
+    toolBoxLayoutGuidesBx->setWhatsThis(tr("Layout Guidelines\n\n"
+                                     "Layout Guidelines are circular or horizontal lines \n"
+                                     "usually created when embedding prominence-based \n"
+                                     "visualization models on the network.\n"
+                                     "Disable this checkbox to hide guidelines"));
     toolBoxLayoutGuidesBx ->setEnabled(true);
     toolBoxLayoutGuidesBx ->setChecked(true);
-    toolBoxLayoutGuidesBx->setToolTip(
-                tr("Disable to not display layout guidelines"));
 
 
 
