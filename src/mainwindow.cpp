@@ -1768,7 +1768,14 @@ void MainWindow::initActions(){
     cInformationAct->setShortcut(tr("Ctrl+8"));
     cInformationAct->setEnabled(true);
     cInformationAct->setStatusTip(tr("Calculate and display Information Centrality indices and group Information Centralization"));
-    cInformationAct->setWhatsThis(tr("Information Centrality (IC)\n\n Information centrality counts all paths between nodes weighted by strength of tie and distance. This centrality  measure developed by Stephenson and Zelen (1989) focuses on how information might flow through many different paths. \n\nThis index should be calculated only for  graphs. \n\n Note: To compute this index, SocNetV drops all isolated nodes."));
+    cInformationAct->setWhatsThis(
+                tr("Information Centrality (IC)\n\n "
+                   "Information centrality counts all paths between "
+                   "nodes weighted by strength of tie and distance. "
+                   "This centrality  measure developed by Stephenson and Zelen (1989) "
+                   "focuses on how information might flow through many different paths. \n\n"
+                   "This index should be calculated only for  graphs. \n\n "
+                   "Note: To compute this index, SocNetV drops all isolated nodes."));
     connect(cInformationAct, SIGNAL(triggered()), this, SLOT(slotCentralityInformation()));
 
     cInDegreeAct = new QAction(tr("Degree Prestige (DP)"),	 this);
@@ -5512,7 +5519,7 @@ void MainWindow::slotRandomErdosRenyi( const int newNodes,
 
     QString msg = "Creating random Erdos-Renyi network. \n "
                 " Please wait (or disable progress bars from Options -> Settings).";
-    createProgressBar( edges != 0 ? edges:newNodes, msg);
+    createProgressBar( (edges != 0 ? edges:newNodes), msg);
     appSettings["randomErdosEdgeProbability"] = QString::number(eprob);
 
 
@@ -5563,7 +5570,6 @@ void MainWindow::slotRandomErdosRenyi( const int newNodes,
                     + QString::number(eprob * newNodes*(newNodes-1)) +
                     tr("\nThis graph is almost surely not connected because: \nprobability < ln(n)/n, that is: \n") +
                     QString::number(eprob)+ " smaller than "+ QString::number(threshold) , "OK",0);
-
 
     statusMessage( "Random network created. ");
 
@@ -9953,7 +9959,7 @@ void MainWindow::slotOptionsRightPanelVisibility(bool toggle) {
 *  Displays a random tip
 */
 void MainWindow::slotHelpTips() {
-    int randomTip=rand()%tipsCounter; //Pick a tip.
+    int randomTip=rand() % (tips.count()); //Pick a tip.
     QMessageBox::about( this, tr("Tip Of The Day"), tips[randomTip]);
 }
 
@@ -9963,24 +9969,80 @@ void MainWindow::slotHelpTips() {
     Creates our tips.
 */
 void MainWindow::slotHelpCreateTips(){
-    tips+=tr("You can add a new node by double-clicking on the scene.");
-    tips+=tr("You can add a new node by clicking on Add button.");
-    tips+=tr("You can remove a node by clicking on Remove button.");
-    tips+=tr("You can rotate the network by selecting a new angle on the dock.");
-    tips+=tr("You can add a new edge between two nodes, by middle-clicking (or pressing both mouse buttons simultanesously) on the first and then on the second node.");
-    tips+=tr("You can remove a node by right-clicking on it and selecting Remove.");
-    tips+=tr("You can change background color (from the menu Edit > Colors).");
-    tips+=tr("Nodes can have the colors of your choice. Just right-click on a node and then select > Options > Change Color. You can select every color supported by the X.org palette.");
-    tips+=tr("The tabs on the left dock show information about the network (nodes, edges, density, etc) as well as information about any node you clicked on (inDegrees, outDegrees, clustering).");
-    tips+=tr("You can move a node easily by dragging it with your mouse.");
-    tips+=tr("SocNetV can save the positions of the nodes in a network, if you save it in Pajek/GraphML format.");
-    tips+=tr("You can apply layout algorithms on the network from the menu Layout or by clicking on the Dock > Layout tab checkboxes");
-    tips+=tr("You can change the label of node by right-clicking on it, and selecting Options > Change Label.");
-    tips+=tr("All basic operations of SocNetV are available from the dock on the left, or by right-clicking on a node or an Edge.");
-    tips+=tr("Node information is displayed on the Status bar, when you left-click on it.");
+    tips+=tr("To create a new node: \n"
+             "- double-click somewhere on the canvas \n"
+             "- or press the keyboard shortcut CTRL+. (dot)\n"
+             "- or press the Add Node button on the left panel");
+    tips+=tr("SocNetV supports working with either undirected or directed data. "
+             "When you start SocNetV for the first time, the application uses "
+             "the 'directed data' mode; every edge you create is directed. "
+             "To enter the 'undirected data' mode, press CTRL+E+U or enable the "
+             "menu option Edit -> Edges -> Undirected Edges ");
+    tips+=tr("If your screen is small, and the canvas appears even smaller "
+             "hide the Control and/or Statistics panel. Then the canvas "
+             "will expand to the whole application window. "
+             "Open the Settings/Preferences dialog -> Window options and "
+             "disable the two panels.");
+    tips+=tr("A scale-free network is a network whose degree distribution follows a power law. "
+             "SocNetV generates random scale-free networks according to the "
+             "Barabási–Albert (BA) model using a preferential attachment mechanism.");
+    tips+=tr("To delete a node permanently: \n"
+             "- right-click on it and select Remove Node \n"
+             "- or press CTRL+ALT+. and enter its number\n"
+             "- or press the Remove Node button on the Control Panel");
+    tips+=tr("To rotate the network: \n"
+             " - drag the bottom slider to left or right \n"
+             " - or click the buttons on the corners of the bottom slider\n"
+             " - or press CTRL and the left or right arrow.");
+    tips+=tr("To create a new edge between nodes A and B: \n"
+             "- double-click on node A, then double-click on node B.\n"
+             "- or middle-click on node A, and again on node B.\n"
+             "- or right-click on the node, then select Add Edge from the popup.\n"
+             "- or press the keyboard shortcut CTRL+/ \n"
+             "- or press the Add Edge button on the Control Panel");
+    tips+=tr("Add a label to an edge by right-clicking on it "
+             "and selecting Change Label.");
+    tips+=tr("You can change the background color of the canvas. "
+             "Do it from the menu Options > View or "
+             "permanently save this setting in Settins/Preferences.");
+    tips+=tr("Default node colors, shapes and sizes can be changed. "
+             "Open the Settings/Preferences dialog and use the "
+             "options on the Node tab.");
+    tips+=tr("The Statistics Panel shows network-level information (i.e. density) "
+             "as well as info about any node you clicked on (inDegrees, "
+             "outDegrees, clustering).");
+    tips+=tr("You can move any node by left-clicking and dragging it with your mouse. "
+             "If you want you can move multiple nodes at once. Left-click on empty space "
+             "on the canvas and drag to create a rectangle selection around them. "
+             "Then right-click on one of the selected nodes and drag it.");
+    tips+=tr("To save the node positions in a network, you need to save your data "
+             "in a format which supports node positions, suchs as GraphML or Pajek.");
+    tips+=tr("Embed visualization models on the network from the options in "
+             "the Layout menu or the select boxes on the left Control Panel. ");
+    tips+=tr("To change the label of a node right-click on it, and click "
+             "Selected Node Properties from the popup menu.");
+    tips+=tr("All basic operations of SocNetV are available from the left Control panel "
+             "or by right-clicking on a Node or an Edge or on canvas empty space.");
+    tips+=tr("Node info (number, position, degree, etc) is displayed on the Status bar, "
+             "when you left-click on it.");
     tips+=tr("Edge information is displayed on the Status bar, when you left-click on it.");
 
-    tipsCounter = 16;
+    tips+=tr("The Closeness Centrality (CC) of a node v, is the inverse sum of "
+       "the shortest distances between v and every other node. CC is "
+       "interpreted as the ability to access information through the "
+       "\'grapevine\' of network members. Nodes with high closeness "
+       "centrality are those who can reach many other nodes in few steps. "
+       "This index can be calculated in both graphs and digraphs. "
+       "It can also be calculated in weighted graphs although the weight of "
+       "each edge (v,u) in E is always considered to be 1. ");
+
+    tips+=tr("The Information Centrality (IC) index counts all paths between "
+       "nodes weighted by strength of tie and distance. "
+       "This centrality  measure developed by Stephenson and Zelen (1989) "
+       "focuses on how information might flow through many different paths. "
+       "This index should be calculated only for undirected graphs. "
+       "Note: To compute this index, SocNetV drops all isolated nodes.");
+
 }
 
 
@@ -10098,7 +10160,7 @@ void MainWindow::slotHelp(){
     Displays the following message!!
 */
 void MainWindow::slotHelpAbout(){
-    int randomCookie=rand()%fortuneCookiesCounter;//createFortuneCookies();
+    int randomCookie=rand()%fortuneCookie.count();
 QString BUILD="Thu Nov 21 01:42:08 EEST 2015";
     QMessageBox::about( this, "About SocNetV",
                         "<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
@@ -10125,24 +10187,30 @@ QString BUILD="Thu Nov 21 01:42:08 EEST 2015";
     Creates the fortune cookies displayed on the above message.
 */
 void MainWindow::createFortuneCookies(){
-    fortuneCookie+="sic itur ad astra / sic transit gloria mundi ? <br /> --Unknown";
-    fortuneCookie+="losers of yesterday, the winners of tomorrow... <br /> --B.Brecht";
-    fortuneCookie+="Patriotism is the virtue of the wicked... <br /> --O. Wilde";
-
+    fortuneCookie+="sic itur ad astra / sic transit gloria mundi ? <br /> "
+                   "--Unknown";
+    fortuneCookie+="Losers of yesterday, the winners of tomorrow... <br /> "
+                   "--B.Brecht";
+    fortuneCookie+="Patriotism is the virtue of the wicked... <br /> "
+                   "--O. Wilde";
     fortuneCookie+="No tengo nunca mas, no tengo siempre. En la arena <br />"
             "la victoria dejo sus piers perdidos.<br />"
             "Soy un pobre hombre dispuesto a amar a sus semejantes.<br />"
-            "No se quien eres. Te amo. No doy, no vendo espinas. <br /> --Pablo Neruda"  ;
-    fortuneCookie+="I will never apologize for the United States of America. I don't care what it has done. I don't care what the facts are. <br> --Vice President George H.W. Bush, after the Iranian airliner flight IR655 (an Airbus A300) was shot down by a U.S. missile cruiser (USS Vincennes), killing all 290 civilian passengers...";
-    fortuneCookie+="Man must not check reason by tradition, but contrawise, must check tradition by reason.<br> --Leo Tolstoy";
-    fortuneCookie+="Only after the last tree has been cut down, <br>only after the last river has been poisoned,<br> only after the last fish has been caught,<br>only then will you realize that money cannot be eaten. <br> --The Cree People";
-    fortuneCookie+="Stat rosa pristina nomine, nomina nuda tenemus <br > --Unknown";
+            "No se quien eres. Te amo. No doy, no vendo espinas. <br /> "
+                   "--Pablo Neruda"  ;
+    fortuneCookie+="Man must not check reason by tradition, but contrawise, "
+                   "must check tradition by reason.<br> --Leo Tolstoy";
+    fortuneCookie+="Only after the last tree has been cut down, <br>"
+                   "only after the last river has been poisoned,<br> "
+                   "only after the last fish has been caught,<br>"
+                   "only then will you realize that money cannot be eaten. <br> "
+                   "--The Cree People";
+    fortuneCookie+="Stat rosa pristina nomine, nomina nuda tenemus <br >"
+                   " --Unknown";
     fortuneCookie+="Jupiter and Saturn, Oberon, Miranda <br />"
             "And Titania, Neptune, Titan. <br />"
             "Stars can frighten. <br /> Syd Barrett";
 
-    fortuneCookiesCounter=9;
-    //   return fortuneCookie.count();
 }
 
 

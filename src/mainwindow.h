@@ -477,7 +477,7 @@ private:
     QStringList tempFileNameNoPath, tips, recentFiles;
     int statusBarDuration, progressCounter;
     int maxNodes;
-    int fortuneCookiesCounter,  tipsCounter;
+    int fortuneCookiesCounter;
     //QString VERSION;
     bool pajekFileLoaded, adjacencyFileLoaded, dotFileLoaded, graphMLFileLoaded;
     bool fileLoaded;
