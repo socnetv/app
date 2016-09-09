@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>570</width>
-    <height>390</height>
+    <height>410</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -27,11 +27,6 @@
     <width>580</width>
     <height>410</height>
    </size>
-  </property>
-  <property name="font">
-   <font>
-    <family>DejaVu Sans</family>
-   </font>
   </property>
   <property name="windowTitle">
    <string>Small-World network generator</string>
