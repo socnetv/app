@@ -1269,12 +1269,15 @@ void MainWindow::initActions(){
 
 
 
-    layoutGuidesAct = new QAction(QIcon(":/images/gridlines.png"), tr("Remove Layout GuideLines"), this);
-    layoutGuidesAct ->setStatusTip(tr("Removes all layout guideLines from the canvas."));
-    layoutGuidesAct->setWhatsThis(tr("Remove GuideLines\n\n "
-                                    "Removes any guidelines (circles or horizontal lines) "
-                                    "created for the network layout."));
-
+    layoutGuidesAct = new QAction(QIcon(":/images/gridlines.png"), tr("Layout GuideLines"), this);
+    layoutGuidesAct ->setStatusTip(tr("Toggles layout guidelines on or off."));
+    layoutGuidesAct->setWhatsThis(tr("Layout Guidelines\n\n"
+                                     "Layout Guidelines are circular or horizontal lines \n"
+                                     "usually created when embedding prominence-based \n"
+                                     "visualization models on the network.\n"
+                                     "Disable this checkbox to hide guidelines"));
+    layoutGuidesAct->setCheckable(true);
+    layoutGuidesAct->setChecked(true);
 
 
 
