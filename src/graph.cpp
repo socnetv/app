@@ -95,8 +95,8 @@ Graph::Graph() {
  */
 void Graph::canvasSizeSet(int w, int h){
     qDebug() << "Graph:: canvasSizeSet() - (" << w << ", " << h<<")";
-    canvasWidth = w;
-    canvasHeight= h;
+    canvasWidth = w-50;
+    canvasHeight= h-50;
 }
 
 
@@ -258,12 +258,12 @@ void Graph::vertexCreate(const QPointF &p){
     Calculates a random position p from canvasWidth and Height.
     Then calls the main creation slot with init node values.
 */
-void Graph::vertexCreate(int i, int cWidth, int cHeight){
+void Graph::vertexCreate(int i){
     if ( i < 0 )  i = vertexLastNumber() +1;
     qDebug() << "Graph::vertexCreate() " << i << " random coords.";
     QPointF p;
-    p.setX(rand()%cWidth);
-    p.setY(rand()%cHeight);
+    p.setX(10 + rand()%canvasWidth);
+    p.setY(10 + rand()%canvasWidth);
     vertexCreate(	i, initVertexSize, initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
                     QString::number(i), initVertexLabelColor, initVertexLabelSize,
@@ -284,8 +284,8 @@ void Graph::vertexCreateWebCrawler(const QString &label, const int &i) {
 
     qDebug() << "Graph::vertexCreateWebCrawler() " << i << " label" << label;
     QPointF p;
-    p.setX(rand()%canvasWidth);
-    p.setY(rand()%canvasHeight);
+    p.setX(10 + rand()%canvasWidth);
+    p.setY(10 + rand()%canvasHeight);
     vertexCreate( (i<0)?vertexLastNumber() +1:i, initVertexSize,  initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
                     label, initVertexLabelColor,  initVertexLabelSize,
@@ -5017,8 +5017,8 @@ void Graph::layoutRandom(double maxWidth, double maxHeight){
     qDebug("Graph: layoutRandom...");
     double new_x=0, new_y=0;
     for (Vertices::iterator it=m_graph.begin(); it!=m_graph.end(); it++){
-        new_x= rand() % ( static_cast<int> (maxWidth) );
-        new_y= rand() % ( static_cast<int> (maxHeight) );
+        new_x= 10 + rand() % ( static_cast<int> (maxWidth) );
+        new_y= 10 + rand() % ( static_cast<int> (maxHeight) );
         (*it)->setX( new_x );
         (*it)->setY( new_y );
         qDebug()<< "Graph: Emitting moveNode to move Vertice " << (*it)->name()
@@ -11991,10 +11991,10 @@ void Graph::layoutForceDirected_Eades_moveNodes(const qreal &c4) {
 
         // check if new pos is out of screen and adjust
         newPos.rx() = qMin (
-                    canvasWidth - 42.0 , qMax (42.0 , newPos.x() )
+                    canvasWidth - 50.0 , qMax (50.0 , newPos.x() )
                     );
         newPos.ry() = qMin (
-                    canvasHeight -42.0 , qMax (42.0 , newPos.y() )
+                    canvasHeight -50.0 , qMax (50.0 , newPos.y() )
                     );
 
         qDebug() << "  Final new pos (" <<  newPos.x() << ","
@@ -12030,18 +12030,12 @@ void Graph::layoutForceDirected_FR_moveNodes(const qreal &temperature) {
                 << newPos.y()<< ")";
 
         newPos.rx() = qMin (
-                    canvasWidth - 42.0 , qMax (42.0 , newPos.x() )
+                    canvasWidth - 50.0 , qMax (50.0 , newPos.x() )
                     );
         newPos.ry() = qMin (
-                    canvasHeight -42.0 , qMax (42.0 , newPos.y() )
+                    canvasHeight -50.0 , qMax (50.0 , newPos.y() )
                     );
         //Move node to new position
-        if ( newPos.x() < 5.0  ||newPos.y() < 5.0   ||
-                newPos.x() >= (canvasWidth -5)||
-                newPos.y() >= (canvasHeight-5)||
-                ((*v1)->x() == newPos.x() && (*v1)->y() == newPos.y() )
-                )
-            continue;
         qDebug()<< " final new pos "
                 <<  newPos.x() << ","
                 << newPos.y()<< ")";

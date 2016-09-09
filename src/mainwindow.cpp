@@ -1269,9 +1269,11 @@ void MainWindow::initActions(){
 
 
 
-    clearGuidesAct = new QAction(QIcon(":/images/gridlines.png"), tr("Remove Layout GuideLines"), this);
-    clearGuidesAct ->setStatusTip(tr("Removes all layout guideLines from the canvas."));
-    clearGuidesAct->setWhatsThis(tr("Remove GuideLines\n\n Removes any guidelines (circles or horizontal lines) created for the network layout."));
+    layoutGuidesAct = new QAction(QIcon(":/images/gridlines.png"), tr("Remove Layout GuideLines"), this);
+    layoutGuidesAct ->setStatusTip(tr("Removes all layout guideLines from the canvas."));
+    layoutGuidesAct->setWhatsThis(tr("Remove GuideLines\n\n "
+                                    "Removes any guidelines (circles or horizontal lines) "
+                                    "created for the network layout."));
 
 
 
@@ -2304,7 +2306,7 @@ void MainWindow::initMenuBar() {
     layoutMenu->addAction(nodeSizesByOutDegreeAct);
     layoutMenu->addAction(nodeSizesByInDegreeAct);
     layoutMenu->addSeparator();
-    layoutMenu -> addAction (clearGuidesAct);
+    layoutMenu -> addAction (layoutGuidesAct);
 
 
 
@@ -2804,11 +2806,11 @@ void MainWindow::initToolBox(){
                    "so that their size reflect their in-degree. \n"
                    "Nodes with more inbound directed edges them will be bigger..."));
 
-    layoutGuidesBx = new QCheckBox(
+    toolBoxLayoutGuidesBx = new QCheckBox(
                 tr("Layout guidelines") );
-    layoutGuidesBx ->setEnabled(true);
-    layoutGuidesBx ->setChecked(true);
-    layoutGuidesBx->setToolTip(
+    toolBoxLayoutGuidesBx ->setEnabled(true);
+    toolBoxLayoutGuidesBx ->setChecked(true);
+    toolBoxLayoutGuidesBx->setToolTip(
                 tr("Disable to not display layout guidelines"));
 
 
@@ -2817,7 +2819,7 @@ void MainWindow::initToolBox(){
     QGridLayout *layoutOptionsGrid = new QGridLayout();
     layoutOptionsGrid -> addWidget(toolBoxNodeSizesByOutDegreeBx, 0,0);
     layoutOptionsGrid -> addWidget(toolBoxNodeSizesByInDegreeBx, 1,0);
-    layoutOptionsGrid -> addWidget(layoutGuidesBx, 2,0);
+    layoutOptionsGrid -> addWidget(toolBoxLayoutGuidesBx, 2,0);
     layoutOptionsGrid->setSpacing(5);
     layoutOptionsGrid->setContentsMargins(5, 5, 5, 5);
 
@@ -3471,10 +3473,10 @@ void MainWindow::initSignalSlots() {
     connect( &m_datasetSelectDialog, SIGNAL( userChoices( QString) ),
              this, SLOT( slotNetworkDataSetRecreate(QString) ) );
 
-    connect( clearGuidesAct, SIGNAL(triggered()),
-             graphicsWidget, SLOT(clearGuides()));
+    connect( layoutGuidesAct, SIGNAL(triggered(bool)),
+             graphicsWidget, SLOT(slotLayoutGuides(bool)));
 
-    connect(toolBoxAnalysisGeodesicsSelect, SIGNAL (currentIndexChanged(int) ),
+        connect(toolBoxAnalysisGeodesicsSelect, SIGNAL (currentIndexChanged(int) ),
             this, SLOT(toolBoxAnalysisGeodesicsSelectChanged(int) ) );
 
     connect(toolBoxAnalysisConnectivitySelect, SIGNAL (currentIndexChanged(int) ),
@@ -3500,8 +3502,8 @@ void MainWindow::initSignalSlots() {
     connect(toolBoxLayoutForceDirectedButton, SIGNAL (clicked() ),
             this, SLOT(toolBoxLayoutForceDirectedButtonPressed() ) );
 
-    connect( layoutGuidesBx, SIGNAL(stateChanged(int)),
-             this, SLOT(slotLayoutGuides(int)));
+    connect( toolBoxLayoutGuidesBx, SIGNAL(clicked(bool)),
+             this, SLOT(slotLayoutGuides(bool)));
 
 }
 
@@ -3972,9 +3974,11 @@ void MainWindow::toolBoxLayoutForceDirectedButtonPressed(){
     case 0:
         break;
     case 1:
+        slotLayoutGuides(false);
         slotLayoutSpringEmbedder();
         break;
     case 2:
+        slotLayoutGuides(false);
         slotLayoutFruchterman();
         break;
     default:
@@ -3994,7 +3998,7 @@ void MainWindow::toolBoxLayoutForceDirectedButtonPressed(){
  */
 void MainWindow::resizeEvent( QResizeEvent * ){
 
-    qDebug ("MW resizeEvent():  window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",
+    qDebug ("MW::resizeEvent():  window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",
             width(),height(),
             graphicsWidget->width(),graphicsWidget->height(),
             graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
@@ -5515,6 +5519,7 @@ void MainWindow::slotRandomErdosRenyi( const int newNodes,
     qDebug() << "MW::slotRandomErdosRenyi()";
 
     statusMessage( tr("Erasing any existing network."));
+
     initNet();
 
     statusMessage( tr("Creating random network. Please wait... ")  );
@@ -5539,7 +5544,7 @@ void MainWindow::slotRandomErdosRenyi( const int newNodes,
 
     slotNetworkChanged();
 
-    setWindowTitle("Untitled");
+    setWindowTitle("Untitled Erdos-Renyi random network");
 
     double threshold = log(newNodes)/newNodes;
 
@@ -5548,7 +5553,7 @@ void MainWindow::slotRandomErdosRenyi( const int newNodes,
     if ( (eprob ) > threshold )
         QMessageBox::information(
                     this,
-                    "New Random Network",
+                    "New Erdos-Renyi Random Network",
                     tr("Random network created. \n")+
                     tr("\nNodes: ")+ QString::number(activeNodes())+
                     tr("\nEdges: ")+  QString::number( activeEdges() ) +
@@ -5563,7 +5568,7 @@ void MainWindow::slotRandomErdosRenyi( const int newNodes,
     else
         QMessageBox::information(
                     this,
-                    "New Random Network",
+                    "New Erdos-Renyi Random Network",
                     tr("Random network created. \n")+
                     tr("\nNodes: ")+ QString::number(activeNodes())+
                     tr("\nEdges: ")+  QString::number(  activeEdges()  )+
@@ -5574,79 +5579,13 @@ void MainWindow::slotRandomErdosRenyi( const int newNodes,
                     tr("\nThis graph is almost surely not connected because: \nprobability < ln(n)/n, that is: \n") +
                     QString::number(eprob)+ " smaller than "+ QString::number(threshold) , "OK",0);
 
-    statusMessage( "Random network created. ");
+    statusMessage( "Erdos-Renyi random network created. ");
 
 }
 
 
 
 
-
-
-/**
- * @brief MainWindow::slotRandomRegularNetwork
- * Creates a pseudo-random network where every node has the same degree
- */
-void MainWindow::slotRandomRegularNetwork(){
-    bool ok;
-
-    statusMessage( "Creating a pseudo-random network where each node has the same degree... ");
-    int newNodes= QInputDialog::getInt(
-                       this,
-                       tr("Create k-regular network"),
-                       tr("This will create a network with nodes of the same degree d.")
-                          + tr("\nPlease enter the number of nodes:"),
-                       100, 1, maxNodes, 1, &ok
-                ) ;
-    if (!ok) {
-        statusMessage( "You did not enter an integer. Aborting.");
-        return;
-    }
-    int degree = QInputDialog::getInt(
-                this,
-                tr("Create k-regular network..."),
-                tr("Now, select an even number d. \nThis will be the degree (number of edges) of each node:"),
-                2, 2, newNodes-1, 2, &ok
-                );
-
-    if ( (degree% 2)==1 ) {
-        QMessageBox::critical(
-                    this,
-                    "Error",
-                    tr(" Sorry. I cannot create such a network. Degree must be even number"),
-                    "OK",0 );
-        return;
-    }
-    statusMessage( "Erasing any existing network. ");
-    initNet();
-    statusMessage( "Creating a pseudo-random network where each node has the same degree... ");
-
-    QString msg = "Creating random k-regular network. \n"
-            "Please wait (or disable progress bars from Options -> Settings).";
-    createProgressBar(newNodes, msg);
-
-    activeGraph.randomNetSameDegreeCreate (newNodes,
-                                               degree);
-
-    destroyProgressBar();
-
-    fileLoaded=false;
-
-    slotNetworkChanged();
-    setWindowTitle("Untitled");
-    statusMessage( "Uniform random network created: "
-                   +QString::number(activeNodes())+" Nodes, "
-                   +QString::number( activeEdges())+" Edges");
-
-}
-
-
-
-
-void MainWindow::slotRandomGaussian(){
-    slotNetworkChanged();
-
-}
 
 
 
@@ -5684,7 +5623,7 @@ void MainWindow::slotRandomScaleFree ( const int &nodes,
     qDebug() << "MW;:slotRandomScaleFree()";
     statusMessage( tr("Erasing any existing network. "));
     initNet();
-    statusMessage( tr("Creating small world network. Please wait..."));
+    statusMessage( tr("Creating scale free network. Please wait..."));
 
     double x0=scene->width()/2.0;
     double y0=scene->height()/2.0;
@@ -5709,7 +5648,7 @@ void MainWindow::slotRandomScaleFree ( const int &nodes,
     fileLoaded=false;
 
     slotNetworkChanged();
-    setWindowTitle("Untitled");
+    setWindowTitle("Untitled scale-free network");
     statusMessage( tr("Scale-free random network created: ")
                    + QString::number(activeNodes())
                    + " nodes, "+QString::number( activeEdges())+" edges");
@@ -5774,18 +5713,17 @@ void MainWindow::slotRandomSmallWorld(const int &nodes,
     createProgressBar(nodes, msg);
 
     activeGraph.randomNetSmallWorldCreate(nodes, degree, beta, mode, x0, y0, radius);
-    //activeGraph.symmetrize();
 
     destroyProgressBar();
 
     fileLoaded=false;
 
     slotNetworkChanged();
-    setWindowTitle("Untitled");
+    setWindowTitle("Untitled small-world network");
     statusMessage( tr("Small world random network created: ")+QString::number(activeNodes())+" nodes, "+QString::number( activeEdges())+" edges");
     //float avGraphDistance=activeGraph.distanceGraphAverage();
     float clucof=activeGraph.clusteringCoefficient();
-    QMessageBox::information(this, "New Small World",
+    QMessageBox::information(this, "New Small World network",
                              tr("Small world network created.\n")+
                              tr("\nNodes: ")+ QString::number(activeNodes())+
                              tr("\nEdges: ")
@@ -5802,9 +5740,75 @@ void MainWindow::slotRandomSmallWorld(const int &nodes,
 
 
 /**
+ * @brief MainWindow::slotRandomRegularNetwork
+ * Creates a pseudo-random k-regular network where every node has the same degree
+ */
+void MainWindow::slotRandomRegularNetwork(){
+    bool ok;
+
+    statusMessage( "Creating a pseudo-random network where each node has the same degree... ");
+    int newNodes= QInputDialog::getInt(
+                       this,
+                       tr("Create k-regular network"),
+                       tr("This will create a network with nodes of the same degree d.")
+                          + tr("\nPlease enter the number of nodes:"),
+                       100, 1, maxNodes, 1, &ok
+                ) ;
+    if (!ok) {
+        statusMessage( "You did not enter an integer. Aborting.");
+        return;
+    }
+    int degree = QInputDialog::getInt(
+                this,
+                tr("Create k-regular network..."),
+                tr("Now, select an even number d. \nThis will be the degree (number of edges) of each node:"),
+                2, 2, newNodes-1, 2, &ok
+                );
+
+    if ( (degree% 2)==1 ) {
+        QMessageBox::critical(
+                    this,
+                    "Error",
+                    tr(" Sorry. I cannot create such a network. Degree must be even number"),
+                    "OK",0 );
+        return;
+    }
+    statusMessage( "Erasing any existing network. ");
+    initNet();
+    statusMessage( "Creating a pseudo-random k-regular network where each node "
+                   "has the same degree... ");
+
+    QString msg = "Creating random k-regular network. \n"
+            "Please wait (or disable progress bars from Options -> Settings).";
+    createProgressBar(newNodes, msg);
+
+    activeGraph.randomNetSameDegreeCreate (newNodes,degree);
+
+    destroyProgressBar();
+
+    fileLoaded=false;
+
+    slotNetworkChanged();
+    setWindowTitle("Untitled d-regular network");
+    statusMessage( "d-regular network created: "
+                   +QString::number(activeNodes())+" Nodes, "
+                   +QString::number( activeEdges())+" Edges");
+
+}
+
+
+
+
+void MainWindow::slotRandomGaussian(){
+    slotNetworkChanged();
+
+}
+
+
+/**
  * @brief MainWindow::slotRandomRingLattice
  * Creates a lattice network, i.e. a connected network where every node
-    has the same degree and is Edgeed with its neighborhood.
+    has the same degree and is connected with its neighborhood.
  */
 void MainWindow::slotRandomRingLattice(){
     bool ok;
@@ -5849,9 +5853,6 @@ void MainWindow::slotRandomRingLattice(){
 
     destroyProgressBar();
 
-    if (appSettings["showProgressBar"] == "true" && newNodes > 100)
-        progressDialog->deleteLater();
-
     fileLoaded=false;
 
     //	slotNetworkChanged();
@@ -5860,10 +5861,10 @@ void MainWindow::slotRandomRingLattice(){
                    QString::number(activeNodes())+" nodes, "+
                    QString::number( activeEdges())+" edges");
 
-    setWindowTitle("Untitled");
+    setWindowTitle("Untitled ring-lattice network");
     //float avGraphDistance=activeGraph.distanceGraphAverage();
     //float clucof=activeGraph.clusteringCoefficient();
-    QMessageBox::information(this, "Ring Lattice",
+    QMessageBox::information(this, "New Ring Lattice",
                              tr("Ring lattice network created.\n")+
                              tr("\nNodes: ")+ QString::number(activeNodes())+
                              tr("\nEdges: ")+  QString::number( activeEdges() )
@@ -6097,8 +6098,7 @@ void MainWindow::slotEditNodeSelectNone(){
 void MainWindow::slotEditNodeAdd() {
     qDebug() << "MW::slotEditNodeAdd() ";
     // minus a  screen edge offset...
-    activeGraph.vertexCreate (
-                -1, graphicsWidget->width()-10,  graphicsWidget->height()-10);
+    activeGraph.vertexCreate (-1);
     statusMessage( tr("New node (numbered %1) added.")
                    .arg(activeGraph.vertexLastNumber())  );
 }
@@ -6434,7 +6434,7 @@ void MainWindow::slotEditNodeColorAll(QColor color){
  * @brief MainWindow::slotEditNodeSizeAll
  * Changes the size of nodes to newSize.
  * Calls activeGraph.vertexSizeAllSet to do the work.
- * Called from Edit menu item, SettingsDialog and MW::slotRandomErdosRenyi
+ * Called from Edit menu item, SettingsDialog
  * If newSize = 0 asks the user a new size for all nodes
  * If normalized = true, changes node sizes according to their plethos
  * @param newSize
@@ -7701,22 +7701,29 @@ void MainWindow::slotLayoutNodeSizesByInDegree(bool checked){
 /**
  * @brief
  * Enables/disables layout guides
+ * Called from
  * @param state
  */
-void MainWindow::slotLayoutGuides(int state){
+void MainWindow::slotLayoutGuides(const bool &toggle){
     qDebug()<< "MW:slotLayoutGuides()";
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are node nodes yet!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
+        QMessageBox::critical(this, "Error",
+                              tr("There are node nodes yet!\n"
+                                 "Load a network file or create a new network first."), "OK",0);
         statusMessage( tr("I am really sorry. You must really load a file first... ")  );
-        //layoutGuidesBx->setCheckState(Qt::Unchecked);
+        //toolBoxLayoutGuidesBx->setCheckState(Qt::Unchecked);
         return;
     }
 
-    if (state){
+    if (toggle){
+        toolBoxLayoutGuidesBx->setCheckState(Qt::Checked);
+        layoutGuidesAct->setChecked(true);
         qDebug()<< "MW:slotLayoutGuides() - will be displayed";
         statusMessage( tr("Layout Guides will be displayed") );
     }
     else {
+        toolBoxLayoutGuidesBx->setCheckState(Qt::Unchecked);
+        layoutGuidesAct->setChecked(false);
         qDebug()<< "MW:slotLayoutGuides() - will NOT be displayed";
         graphicsWidget->clearGuides();
         statusMessage( tr("Layout Guides will not be displayed") );
@@ -7772,7 +7779,7 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
     }
     int userChoice = 0;
     QString prominenceIndexName = choice;
-
+    slotLayoutGuides(true);
     if ( prominenceIndexName.contains("Degree Centrality") )
         userChoice=1;
     else if ( prominenceIndexName == "Closeness Centrality")
@@ -8125,7 +8132,7 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
     }
     int userChoice = 0;
     QString prominenceIndexName = choice;
-
+    slotLayoutGuides(true);
     if (prominenceIndexName == "Degree Centrality")
         userChoice=1;
     else if (prominenceIndexName == "Closeness Centrality")

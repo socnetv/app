@@ -151,7 +151,7 @@ public slots:
 
     //auxiliary vertexCreate functions
     void vertexCreate(const QPointF &p);
-    void vertexCreate(int i, int canvasWidth, int canvasHeight); 	//Called by MW
+    void vertexCreate(int i);
     void vertexCreateWebCrawler(const QString &label, const int &i) ;
 
     /** Slots to signals from MainWindow */

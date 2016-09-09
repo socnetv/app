@@ -255,7 +255,7 @@ public slots:
     void slotLayoutNodeSizesByProminenceIndex(QString);
     void slotLayoutLevelByProminenceIndex();
     void slotLayoutLevelByProminenceIndex(QString);
-    void slotLayoutGuides(int);
+    void slotLayoutGuides(const bool &toggle);
     void slotLayoutSpringEmbedder();
     void slotLayoutFruchterman();
     void slotLayoutNodeSizesByOutDegree(bool);
@@ -402,7 +402,7 @@ private:
     QMenu *networkMenu, *randomNetworkMenu, *filterMenu, *recentFilesSubMenu;
     QMenu *randomLayoutMenu, *circleLayoutMenu, *levelLayoutMenu, *physicalLayoutMenu;
     QMenu *colorationMenu;
-    QCheckBox  *toolBoxNodeSizesByOutDegreeBx,*toolBoxNodeSizesByInDegreeBx, *layoutGuidesBx;
+    QCheckBox  *toolBoxNodeSizesByOutDegreeBx,*toolBoxNodeSizesByInDegreeBx, *toolBoxLayoutGuidesBx;
     QComboBox *toolBoxAnalysisGeodesicsSelect,*toolBoxAnalysisConnectivitySelect,
             *toolBoxAnalysisProminenceSelect, *toolBoxAnalysisClusterabilitySelect;
     QComboBox *toolBoxLayoutByIndexSelect, *toolBoxLayoutByIndexTypeSelect;
@@ -455,7 +455,7 @@ private:
     QAction *cDegreeAct, *cInDegreeAct, *cClosenessAct, *cInfluenceRangeClosenessAct,
             *cBetweennessAct, *cInformationAct, *cPageRankAct, *cStressAct,
             *cPowerAct, *cEccentAct, *cProximityPrestigeAct;
-    QAction *randLayoutAct, *randCircleLayoutAct, *clearGuidesAct;
+    QAction *randLayoutAct, *randCircleLayoutAct, *layoutGuidesAct;
     QAction *layoutCircular_DC_Act, *layoutCircular_DP_Act,
     *layoutCircular_CC_Act, *layoutCircular_SC_Act, *layoutCircular_EC_Act,
     *layoutCircular_PC_Act, *layoutCircular_BC_Act, *layoutCircular_IC_Act,
