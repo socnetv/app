@@ -47,7 +47,7 @@ RandSmallWorldDialog::RandSmallWorldDialog(QWidget *parent) :
     nodes = 100;
     degree = qCeil ( qLn (nodes) );
     bprob = 0;
-    mode = "";
+    mode = "undirected";
     diag = false;
 
     connect ( ui.buttonBox, &QDialogButtonBox::accepted,

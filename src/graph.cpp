@@ -5773,11 +5773,21 @@ void Graph::randomNetScaleFreeCreate (const int &n,
  * @param y0
  * @param radius
  */
-void Graph::randomNetSmallWorldCreate (
-        const int &vert, const int &degree, const double &beta,
-        const double &x0, const double &y0, const double &radius)
+void Graph::randomNetSmallWorldCreate (const int &vert, const int &degree,
+                                       const double &beta, const QString &mode,
+                                       const double &x0, const double &y0,
+                                       const double &radius)
 {
-    qDebug("Graph: randomNetSmallWorldCreate. First creating a ring lattice");
+    qDebug() << "Graph:randomNetSmallWorldCreate() -. "
+             << "vertices: " << vert
+             << "degree: " << degree
+             << "beta: " << beta
+             << "mode: " << mode
+             << "First creating a ring lattice";
+
+    if (mode=="graph") {
+        undirectedSet(true);
+    }
 
     randomNetRingLatticeCreate(vert, degree, x0, y0, radius, false);
 
@@ -5805,7 +5815,8 @@ void Graph::randomNetSmallWorldCreate (
                             qDebug("<----> Random New Edge Experiment between %i and %i:", i, candidate);
                         if (rand() % 100 > 0.5) {
                             qDebug("Creating new link!");
-                            edgeCreate(i, candidate, 1, initEdgeColor, true, true, false); // FIXME / BUG ?
+                            edgeCreate(i, candidate, 1, initEdgeColor,
+                                       EDGE_RECIPROCAL_UNDIRECTED, false, false);
                             break;
                         }
                     }

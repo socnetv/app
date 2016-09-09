@@ -5764,8 +5764,8 @@ void MainWindow::slotRandomSmallWorld(const int &nodes,
             "Please wait (or disable progress bars from Options -> Settings).";
     createProgressBar(nodes, msg);
 
-    activeGraph.randomNetSmallWorldCreate(nodes, degree, beta, x0, y0, radius);
-    activeGraph.symmetrize();
+    activeGraph.randomNetSmallWorldCreate(nodes, degree, beta, mode, x0, y0, radius);
+    //activeGraph.symmetrize();
 
     destroyProgressBar();
 

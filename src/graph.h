@@ -559,7 +559,8 @@ public:
                                     const double &radius);
 
     void randomNetSmallWorldCreate(const int &vert, const int &degree,
-                                   const double &beta, const double &x0,
+                                   const double &beta, const QString &mode,
+                                   const double &x0,
                                    const double &y0, const double &radius);
 
     int factorial (int);
