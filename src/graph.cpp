@@ -2191,7 +2191,7 @@ int Graph::connectedness() {
 /**
 *  Writes the matrix of distances to a file
 */
-void Graph::writeDistanceMatrix (QString fn, const char* netName,
+void Graph::writeDistanceMatrix (QString fn, QString netName,
                                  const bool considerWeights,
                                  const bool inverseWeights,
                                  const bool dropIsolates) {
@@ -2213,9 +2213,9 @@ void Graph::writeDistanceMatrix (QString fn, const char* netName,
     QTextStream outText(&file);
     outText.setCodec("UTF-8");
     outText.setRealNumberPrecision(m_precision);
-    outText << "-Social Network Visualizer- \n";
-    if (!netName) netName="Unnamed network";
-    outText << "Distance matrix of "<< netName<<": \n";
+    outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
+    outText << "Network name: "<<  ((netName.isEmpty()) ? "Unnamed" : netName) <<" \n";
+    outText << "Distance matrix: \n";
 
     outText << DM ;
 
@@ -2228,7 +2228,7 @@ void Graph::writeDistanceMatrix (QString fn, const char* netName,
 *
 */
 void Graph::writeNumberOfGeodesicsMatrix(const QString fn,
-                                         const char* netName,
+                                         const QString &netName,
                                          const bool considerWeights,
                                          const bool inverseWeights) {
     qDebug ("Graph::writeDistanceMatrix()");
@@ -2248,9 +2248,9 @@ void Graph::writeNumberOfGeodesicsMatrix(const QString fn,
 
     QTextStream outText(&file);
     outText.setCodec("UTF-8");
-    outText << "-Social Network Visualizer- \n";
-    if (!netName) netName="Unnamed network";
-    outText << "Number of geodesics matrix of  "<< netName<<": \n";
+    outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
+    outText << "Network name: "<< ((netName.isEmpty()) ? "Unnamed" : netName )<<" \n";
+    outText << "Number of geodesics matrix: \n";
 
     outText << TM ;
 
@@ -5955,8 +5955,8 @@ void Graph::writeWalksTotalMatrix(QString fn, QString netName, int length){
 
     QTextStream outText(&file);
     outText.setCodec("UTF-8");
-    outText << "-Social Network Visualizer- \n";
-    outText << "Network name "<< netName<<": \n";
+    outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
+    outText << "Network name: "<< ( (netName.isEmpty()) ? "Unnamed" : netName )<<" \n";
     outText << "Total number of walks of any length less than or equal to "<< length
         <<" between each pair of nodes \n\n";
     outText << "Warning: Walk counts consider unordered pairs of nodes\n\n";
@@ -5981,8 +5981,8 @@ void Graph::writeWalksOfLengthMatrix(QString fn, QString netName, int length){
 
     QTextStream outText(&file);
     outText.setCodec("UTF-8");
-    outText << "-Social Network Visualizer- \n";
-    outText << "Network name "<< netName<<": \n";
+    outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
+    outText << "Network name: "<< ((netName.isEmpty()) ? "Unnamed" : netName)<<" \n";
     outText << "Number of walks of length "<< length <<" between each pair of nodes \n\n";
 
     walksMatrixCreate(length, true);
@@ -6144,8 +6144,8 @@ void Graph::writeReachabilityMatrix(QString fn, QString netName,
 
     QTextStream outText(&file);
 
-    outText << "-Social Network Visualizer- \n";
-    outText << "Network name: "<< netName<<" \n";
+    outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
+    outText << "Network name: "<< ( (netName.isEmpty()) ? "Unnamed" : netName )<<" \n";
     outText << "Reachability Matrix (XR) \n";
     outText << "Two nodes are reachable if there is a walk between them (their geodesic distance is non-zero). \n";
     outText << "If nodes i and j are reachable then XR(i,j)=1 otherwise XR(i,j)=0.\n\n";
@@ -10989,7 +10989,7 @@ void Graph::writeAdjacencyMatrixTo(QTextStream& os){
     This is called by MainWindow::slotViewAdjacencyMatrix()
     The resulting matrix HAS NO spaces between elements.
 */
-void Graph::writeAdjacencyMatrix (const QString fn, const char* netName) {
+void Graph::writeAdjacencyMatrix (const QString fn, QString netName) {
     qDebug()<<"Graph::writeAdjacencyMatrix() to : " << fn;
     QFile file( fn );
     if ( !file.open( QIODevice::WriteOnly ) )  {
@@ -11000,8 +11000,9 @@ void Graph::writeAdjacencyMatrix (const QString fn, const char* netName) {
     outText.setCodec("UTF-8");
     int sum=0;
     float weight=0;
-    outText << "-Social Network Visualizer- \n";
-    outText << "Adjacency matrix of "<< netName<<": \n\n";
+    outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
+    outText << "Network name: "<< ((netName.isEmpty()) ? "Unnamed" : netName )<<" \n";
+    outText << "Adjacency matrix: \n\n";
     QList<Vertex*>::const_iterator it, it1;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() ) continue;
@@ -11159,8 +11160,9 @@ void Graph::writeAdjacencyMatrixInvert(const QString &fn,
     }
     QTextStream outText( &file );
     outText.setCodec("UTF-8");
-    outText << "-Social Network Visualizer- \n";
-    outText << "Invert Matrix of network named: "<< netName<< endl;
+    outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
+    outText << "Network name: "<< ( (netName.isEmpty()) ? "Unnamed" : netName )<<" \n";
+    outText << "Inverse Matrix: \n";
     if (!adjacencyMatrixInvert(method)) {
             outText << endl<< " The adjacency matrix is singular.";
             file.close();

@@ -59,10 +59,7 @@
      </property>
      <property name="font">
       <font>
-       <family>DejaVu Sans</family>
-       <pointsize>11</pointsize>
-       <weight>50</weight>
-       <bold>false</bold>
+       <family>Sans Serif</family>
       </font>
      </property>
      <property name="frameShape">
@@ -107,10 +104,7 @@
        </property>
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
@@ -134,10 +128,7 @@
        </property>
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="minimum">
@@ -178,10 +169,7 @@
        </property>
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
@@ -201,10 +189,7 @@
          </property>
          <property name="font">
           <font>
-           <family>DejaVu Sans</family>
-           <pointsize>11</pointsize>
-           <weight>50</weight>
-           <bold>false</bold>
+           <family>Sans Serif</family>
           </font>
          </property>
          <property name="toolTip">
@@ -243,10 +228,7 @@ p, li { white-space: pre-wrap; }
          </property>
          <property name="font">
           <font>
-           <family>DejaVu Sans</family>
-           <pointsize>11</pointsize>
-           <weight>50</weight>
-           <bold>false</bold>
+           <family>Sans Serif</family>
           </font>
          </property>
          <property name="toolTip">
@@ -292,10 +274,7 @@ p, li { white-space: pre-wrap; }
        </property>
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
@@ -313,10 +292,7 @@ p, li { white-space: pre-wrap; }
        </property>
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="minimum">
@@ -354,10 +330,7 @@ p, li { white-space: pre-wrap; }
        </property>
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
@@ -381,10 +354,7 @@ p, li { white-space: pre-wrap; }
        </property>
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="minimum">
@@ -428,10 +398,7 @@ p, li { white-space: pre-wrap; }
        </property>
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
@@ -457,13 +424,7 @@ p, li { white-space: pre-wrap; }
          </property>
          <property name="font">
           <font>
-           <family>DejaVu Sans</family>
-           <pointsize>11</pointsize>
-           <weight>50</weight>
-           <italic>false</italic>
-           <bold>false</bold>
-           <underline>false</underline>
-           <strikeout>false</strikeout>
+           <family>Sans Serif</family>
           </font>
          </property>
          <property name="text">
@@ -493,10 +454,7 @@ p, li { white-space: pre-wrap; }
          </property>
          <property name="font">
           <font>
-           <family>DejaVu Sans</family>
-           <pointsize>11</pointsize>
-           <weight>50</weight>
-           <bold>false</bold>
+           <family>Sans Serif</family>
           </font>
          </property>
          <property name="text">
@@ -536,10 +494,7 @@ p, li { white-space: pre-wrap; }
        </property>
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
@@ -565,10 +520,7 @@ p, li { white-space: pre-wrap; }
          </property>
          <property name="font">
           <font>
-           <family>DejaVu Sans</family>
-           <pointsize>11</pointsize>
-           <weight>50</weight>
-           <bold>false</bold>
+           <family>Sans Serif</family>
           </font>
          </property>
          <property name="text">

@@ -2630,9 +2630,9 @@ void MainWindow::initToolBox(){
     toolBoxLayoutByIndexSelect->setToolTip(tr("Apply a prominence-based layout model"));
     toolBoxLayoutByIndexSelect->setWhatsThis(
                 tr("Visualize by prominence index\n\n"
-                   "Apply a prominence-based layout model to the network. \n "
+                   "Apply a prominence-based layout model to the network. \n"
                    "For instance, you can apply a degree centrality layout. "
-                   "For each prominence index, you can select a circular or level layout."));
+                   "For each prominence index, you can select a circular or level layout type."));
     QStringList indicesList;
     indicesList << "None"<< "Random"
                 << "Degree Centrality" << "Closeness Centrality"
@@ -2992,6 +2992,7 @@ void MainWindow::initToolBox(){
 
     //create a panel with title
     rightPanel = new QGroupBox(tr("Statistics Panel"));
+    rightPanel->setMaximumWidth(210);
     rightPanel -> setLayout (propertiesGrid);
 
 }

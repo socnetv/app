@@ -380,16 +380,16 @@ public:
 
     void writeDataSetToFile(const QString dir, const QString );
     void writeAdjacencyMatrixTo(QTextStream& os);
-    void writeAdjacencyMatrix(const QString, const char*);
+    void writeAdjacencyMatrix(const QString fileName, QString netName);
 
     void writeAdjacencyMatrixInvert(const QString &filename,
-                                    const QString &,
-                                    const QString &);
-    void writeDistanceMatrix(const QString fn, const char*,
+                                    const QString &netName,
+                                    const QString &method);
+    void writeDistanceMatrix(const QString fn, QString netName,
                              const bool considerWeights,
                              const bool inverseWeights,
                              const bool dropIsolates);
-    void writeNumberOfGeodesicsMatrix(const QString fn, const char*,
+    void writeNumberOfGeodesicsMatrix(const QString fn, const QString &,
                                       const bool considerWeights,
                                       const bool inverseWeights);
     void writeEccentricity(const QString, const bool considerWeights,

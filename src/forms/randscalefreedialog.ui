@@ -59,11 +59,7 @@
      </property>
      <property name="font">
       <font>
-       <pointsize>11</pointsize>
-       <weight>50</weight>
-       <italic>false</italic>
-       <bold>false</bold>
-       <underline>false</underline>
+       <family>Sans Serif</family>
       </font>
      </property>
      <property name="frameShape">
@@ -108,11 +104,15 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Nodes &lt;span style=&quot; font-style:italic;&quot;&gt;n&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Nodes &lt;span style=&quot; font-style:italic;&quot;&gt;n&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
@@ -132,7 +132,7 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="toolTip">
@@ -179,15 +179,15 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'DejaVu Sans'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Power of preferential attachment &lt;span style=&quot; font-style:italic;&quot;&gt;p &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Power of preferential attachment &lt;span style=&quot; font-style:italic;&quot;&gt;p&lt;/span&gt; &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
@@ -201,7 +201,7 @@ p, li { white-space: pre-wrap; }
        </property>
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="toolTip">
@@ -251,15 +251,15 @@ p, li { white-space: pre-wrap; }
        </property>
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'DejaVu Sans'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Initial connected nodes &lt;span style=&quot; font-style:italic;&quot;&gt;m&lt;/span&gt;&lt;span style=&quot; font-style:italic; vertical-align:sub;&quot;&gt;0&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Initial connected nodes &lt;span style=&quot; font-style:italic;&quot;&gt;m0&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
@@ -273,7 +273,7 @@ p, li { white-space: pre-wrap; }
        </property>
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="toolTip">
@@ -323,15 +323,15 @@ p, li { white-space: pre-wrap; }
        </property>
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'DejaVu Sans'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Edges to add in each step &lt;span style=&quot; font-style:italic;&quot;&gt;m&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Edges to add in each step &lt;span style=&quot; font-style:italic;&quot;&gt;m&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
@@ -345,7 +345,7 @@ p, li { white-space: pre-wrap; }
        </property>
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="toolTip">
@@ -395,14 +395,14 @@ p, li { white-space: pre-wrap; }
        </property>
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'DejaVu Sans'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Zero appeal &lt;span style=&quot; font-style:italic;&quot;&gt;α&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
@@ -417,7 +417,7 @@ p, li { white-space: pre-wrap; }
        </property>
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="toolTip">
@@ -464,9 +464,7 @@ p, li { white-space: pre-wrap; }
        </property>
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
@@ -492,10 +490,7 @@ p, li { white-space: pre-wrap; }
          </property>
          <property name="font">
           <font>
-           <pointsize>11</pointsize>
-           <italic>false</italic>
-           <underline>false</underline>
-           <strikeout>false</strikeout>
+           <family>Sans Serif</family>
           </font>
          </property>
          <property name="text">
@@ -525,7 +520,7 @@ p, li { white-space: pre-wrap; }
          </property>
          <property name="font">
           <font>
-           <pointsize>11</pointsize>
+           <family>Sans Serif</family>
           </font>
          </property>
          <property name="text">
@@ -565,7 +560,7 @@ p, li { white-space: pre-wrap; }
        </property>
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
@@ -591,7 +586,7 @@ p, li { white-space: pre-wrap; }
          </property>
          <property name="font">
           <font>
-           <pointsize>11</pointsize>
+           <family>Sans Serif</family>
           </font>
          </property>
          <property name="toolTip">

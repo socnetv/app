@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>422</width>
-    <height>160</height>
+    <height>168</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -67,7 +67,7 @@
    <item row="0" column="1">
     <widget class="QLabel" name="description">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -81,16 +81,17 @@
      <property name="maximumSize">
       <size>
        <width>0</width>
-       <height>110</height>
+       <height>140</height>
       </size>
      </property>
      <property name="font">
       <font>
-       <pointsize>9</pointsize>
+       <family>Sans Serif</family>
+       <pointsize>10</pointsize>
       </font>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SocNetV can automatically recreate and visualize known data sets, such as Padgett's florentine families etc. &lt;/p&gt;&lt;p&gt;Select the data set you want to re-create from the list.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SocNetV can automatically recreate and visualize known data sets, such as Padgett's florentine families, Zachary's Karate Club etc.&lt;/p&gt;&lt;p&gt;Select the data set you want to re-create from the list.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
@@ -104,7 +105,7 @@
     <widget class="QLabel" name="selectLabel">
      <property name="font">
       <font>
-       <family>DejaVu Sans</family>
+       <family>Sans Serif</family>
        <pointsize>10</pointsize>
       </font>
      </property>
@@ -126,6 +127,7 @@
      </property>
      <property name="font">
       <font>
+       <family>Sans Serif</family>
        <pointsize>9</pointsize>
       </font>
      </property>
