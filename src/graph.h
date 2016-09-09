@@ -101,10 +101,11 @@ class CompareDistances {
 
 
 
-// TODO:
-// 2. Refactor most-used functions to have reference parameters.
-// 3. Execute all options/commands from MW and propagate them to GW via signals
-// 4. Fix bug with wrong default edge colors (not the ones used by Settings) after loading GraphML files.
+// TODO & KNOWN BUGS:
+// - Refactor most-used functions to have reference parameters.
+// - Execute all options/commands from MW and propagate them to GW via signals
+// - BUG: wrong default edge colors (not the ones used by Settings) after loading GraphML files.
+// - BUG: Resizing the MW view does not resize/reposition the layout guides
 
 
 
