@@ -120,8 +120,6 @@ public:
     int activeEdges();
     int activeNodes();
 
-    int clickedJimNumber; //it is public because we need to be visible from activegraph.
-
     void createProgressBar(int max=0, QString msg="Please wait...");
     void destroyProgressBar();
 
@@ -393,7 +391,7 @@ private:
 
     QProgressDialog *progressDialog;
 
-    Node *clickedJim;
+    Node *clickedNode;
     Edge *clickedEdge;
 
     QMenu *importSubMenu, *exportSubMenu, *editMenu, *statMenu,  *helpMenu;
@@ -475,6 +473,7 @@ private:
     QString settingsFilePath, settingsDir ;
     QStringList fileNameNoPath, fortuneCookie;
     QStringList tempFileNameNoPath, tips, recentFiles;
+    int clickedNodeNumber;
     int statusBarDuration, progressCounter;
     int maxNodes;
     int fortuneCookiesCounter;

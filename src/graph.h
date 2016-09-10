@@ -263,8 +263,8 @@ public:
     int vertexDegreeOut(int);
     int vertexDegreeIn(int);
 
-    int vertexExists(long int );
-    int vertexExists(QString);
+    int vertexExists(const long int &v1 );
+    int vertexExists(const QString &label);
     void vertexRemove (long int );
 
     void vertexSizeInit (const long int);
@@ -343,7 +343,7 @@ public:
     float edgeExists(const long &v1, const long &v2, const bool &undirected=false);
 
     void edgeRemove (const long int &v1, const long int &v2, const bool &undirected=false);
-    bool edgeSymmetric(int v1, int v2);
+    bool edgeSymmetric(const long &v1, const long &v2);
     void edgeUndirectedSet(const long int &v1, const long int &v2, const float &w);
 
     void edgeWeightSet (const long int &v1, const long int &v2,
@@ -504,7 +504,7 @@ public:
 
     /* LAYOUTS */
 
-    void layoutRandom( double maxWidth, double maxHeight );
+    void layoutRandom();
 
     void layoutCircularRandom(double x0, double y0, double maxRadius);
 

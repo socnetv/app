@@ -502,22 +502,28 @@ void Graph::vertexIsolateFilter(bool filterFlag){
  * @param num
  * @return
  */
-int Graph::vertexExists(long int num){
-    qDebug () << "Graph: vertexExists() v: " << num <<  " with index " << index[num]  << " named " << m_graph[ index[num]] ->name();
-    if (  m_graph[ index[num]] ->name() == num)
-        return index[num];
+int Graph::vertexExists(const long int &v1){
+    qDebug () << "Graph: vertexExists() v: " << v1
+              <<  " with index " << index[v1]
+                  << " named " << m_graph[ index[v1] ] ->name();
+    if (  m_graph[ index[v1] ] ->name() == v1)
+        return index[v1];
     else
         return -1;
 }
 
 
 
-/**	Checks if there is a vertex with a specific label in the graph
-    Returns the index or -1
-    Complexity:  O(N)
-*/
-int Graph::vertexExists(QString label){
-    qDebug ()<<"Graph: vertexExists( "<< label.toUtf8() <<" ) ?" ;
+/**
+ * @brief Graph::vertexExists
+ * Checks if there is a vertex with a specific label in the graph
+ * Returns the index or -1
+ * Complexity:  O(N)
+ * @param label
+ * @return index or -1
+ */
+int Graph::vertexExists(const QString &label){
+    qDebug ()<<"Graph: vertexExists() - check for label "<< label.toUtf8()  ;
     QList<Vertex*>::const_iterator it;
     int i=0;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -1301,7 +1307,7 @@ float Graph::edgeExists (const long int &v1, const long int &v2, const bool &und
  * @param v2
  * @return
  */
-bool Graph::edgeSymmetric(int v1, int v2){
+bool Graph::edgeSymmetric(const long int &v1, const long int &v2){
     qDebug("***Graph: edgeSymmetric()");
     if ( ( edgeExists( v1, v2 , true) ) !=0 ) {
         return true;
@@ -5018,15 +5024,17 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
  * @param maxWidth
  * @param maxHeight
  */
-void Graph::layoutRandom(double maxWidth, double maxHeight){	
-    qDebug("Graph: layoutRandom...");
+void Graph::layoutRandom(){
+    qDebug()<< "Graph::layoutRandom() ";
     double new_x=0, new_y=0;
-    for (Vertices::iterator it=m_graph.begin(); it!=m_graph.end(); it++){
-        new_x= 10 + rand() % ( static_cast<int> (maxWidth) );
-        new_y= 10 + rand() % ( static_cast<int> (maxHeight) );
+    Vertices::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        new_x= 10 + rand() % ( canvasWidth );
+        new_y= 10 + rand() % ( canvasHeight );
         (*it)->setX( new_x );
         (*it)->setY( new_y );
-        qDebug()<< "Graph: Emitting moveNode to move Vertice " << (*it)->name()
+        qDebug()<< "Graph::layoutRandom() - "
+                   "Emitting moveNode to move vertex " << (*it)->name()
                    //<< "indexed " << index((*it)->name())
                 << " to new position " << new_x << " , "<< new_y;
         emit moveNode((*it)->name(),  new_x,  new_y);
@@ -11549,7 +11557,7 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations){
     QList<Vertex*>::const_iterator v2;
 
     /* apply an inital random layout */
-    layoutRandom(canvasWidth, canvasHeight);
+    layoutRandom();
 
     /**
      * compute max spring length as function of canvas area divided by the
@@ -11686,7 +11694,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
 
 
     /* apply an inital random layout */
-    layoutRandom(canvasWidth, canvasHeight);
+    layoutRandom();
 
     qDebug() << "Graph: layoutForceDirectedFruchtermanReingold() ";
     qDebug () << "Graph: Setting optimalDistance = "<<  optimalDistance
