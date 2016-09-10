@@ -213,6 +213,7 @@ QMap<QString,QString> MainWindow::initSettings(){
     appSettings["initEdgeThicknessPerWeight"]="true";
     appSettings["initEdgeWeightNumbersVisibility"]="false";
     appSettings["initEdgeWeightNumberSize"] = "7";
+    appSettings["initEdgeWeightNumberColor"] = "#00aa00";
     appSettings["initEdgeLabelsVisibility"] = "false";
     appSettings["considerWeights"]="false";
     appSettings["inverseWeights"]="false";
@@ -3652,7 +3653,6 @@ void MainWindow::initNet(){
     toolBoxLayoutForceDirectedSelect->setCurrentIndex(0);
     toolBoxNodeSizesByOutDegreeBx->setChecked(false);
     toolBoxNodeSizesByInDegreeBx->setChecked(false);
-
 
     optionsEdgeWeightNumbersAct->setChecked(
                 (appSettings["initEdgeWeightNumbersVisibility"] == "true") ? true:false
