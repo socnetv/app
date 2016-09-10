@@ -3260,8 +3260,6 @@ void MainWindow::initSignalSlots() {
     connect( graphicsWidget, SIGNAL( selectedEdge(Edge*) ),
              this, SLOT ( edgeInfoStatusBar(Edge*) )  );
 
-
-
     connect( graphicsWidget, SIGNAL( userClickOnEmptySpace() ),
                      this, SLOT( slotEditClickOnEmptySpace() ) ) ;
 
@@ -3317,7 +3315,6 @@ void MainWindow::initSignalSlots() {
 
     connect( &activeGraph, SIGNAL( moveNode(const int &, const qreal &, const qreal &) ),
              graphicsWidget, SLOT( moveNode(const int &, const qreal &, const qreal &) ) ) ;
-
 
 
 
@@ -4012,6 +4009,8 @@ void MainWindow::resizeEvent( QResizeEvent * ){
             width(),height(),
             graphicsWidget->width(),graphicsWidget->height(),
             graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
+
+    activeGraph.canvasSizeSet(graphicsWidget->width(),graphicsWidget->height());
     statusMessage(
                 QString(
                     tr("Window resized to (%1, %2)px. Canvas size: (%3, %4) px"))
@@ -6066,6 +6065,7 @@ void MainWindow::slotEditClickOnEmptySpace() {
     inDegreeLCD->display (0);
     outDegreeLCD->display (0);
     clucofLCD->display(0);
+    nodeClicked = false;
 }
 
 
@@ -6793,9 +6793,6 @@ void MainWindow::slotEditNodeOpenContextMenu() {
 
 
 
-
-
-
 /**
 *	When the user clicks on a node, displays some information about it on the status bar.
 */
@@ -6848,12 +6845,6 @@ void MainWindow::edgeInfoStatusBar (Edge* edge) {
                     .arg(edge->weight()) ) ;
     }
 }
-
-
-
-
-
-
 
 
 

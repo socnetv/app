@@ -93,10 +93,10 @@ Graph::Graph() {
  * @param w
  * @param h
  */
-void Graph::canvasSizeSet(int w, int h){
+void Graph::canvasSizeSet(const int w, const int h){
     qDebug() << "Graph:: canvasSizeSet() - (" << w << ", " << h<<")";
-    canvasWidth = w-50;
-    canvasHeight= h-50;
+    canvasWidth = w-20;
+    canvasHeight= h-20;
 }
 
 
@@ -5034,9 +5034,8 @@ void Graph::layoutRandom(){
         (*it)->setX( new_x );
         (*it)->setY( new_y );
         qDebug()<< "Graph::layoutRandom() - "
-                   "Emitting moveNode to move vertex " << (*it)->name()
-                   //<< "indexed " << index((*it)->name())
-                << " to new position " << new_x << " , "<< new_y;
+                << " vertex " << (*it)->name()
+                   << " emitting moveNode to new pos " << new_x << " , "<< new_y;
         emit moveNode((*it)->name(),  new_x,  new_y);
     }
     graphModified=true;

@@ -158,7 +158,7 @@ public slots:
     /** Slots to signals from MainWindow */
     void relationSet(int);
     void relationAddFromUser(QString relation);
-    void canvasSizeSet(int w, int h);
+    void canvasSizeSet(const int w, const int h);
     void vertexIsolateFilter ( bool );		//Called by MW to filter orphan vertices
     void edgeFilterByWeight (float, bool);		//Called by MW to filter edges over/under a weight
     void edgeFilterByRelation(int relation, bool status);
@@ -169,7 +169,7 @@ public slots:
 signals:
     /** Signals to MainWindow */
     void updateProgressDialog(int );
-    void graphChanged();					//call to update MW widgets
+    void graphChanged();  //call to update MW widgets
 
     void signalFileType (int, QString, int,int, bool);	//notifies MW what we have loaded.
     void statusMessage (QString message);			//updates statusbar message
