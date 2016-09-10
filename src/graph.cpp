@@ -5663,7 +5663,6 @@ void Graph::randomNetScaleFreeCreate (const int &n,
 
     randomizeThings();
 
-
     if (mode=="graph") {
         undirectedSet(true);
     }
@@ -5788,7 +5787,7 @@ void Graph::randomNetScaleFreeCreate (const int &n,
     }
 
     relationAddFromGraph(tr("1"));
-    emit signalNodeSizesByInDegree(true);
+    emit signalNodeSizesByInDegree(true); //FIXME
     emit graphChanged();
 
 }
