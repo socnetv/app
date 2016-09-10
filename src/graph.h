@@ -144,7 +144,8 @@ public slots:
                       const QString &color ,
                       const int &type=0,
                       const bool &drawArrows=true, const bool &bezier=false,
-                      const QString &label=QString::null);
+                      const QString &label=QString::null,
+                      const bool &signalMW=true);
     void edgeCreateWebCrawler (const int &source, const int &target);
 
     void edgeVisibilitySet(int relation, int, int, bool);

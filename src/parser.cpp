@@ -436,7 +436,8 @@ bool Parser::loadDL(){
                     undirected=0;
                     arrows=true;
                     bezier=false;
-                    emit edgeCreate( source, target, edgeWeight, initEdgeColor, undirected, arrows, bezier);
+                    emit edgeCreate( source, target, edgeWeight, initEdgeColor,
+                                     undirected, arrows, bezier);
                     totalLinks++;
                     qDebug() << "TotalLinks= " << totalLinks;
 

@@ -91,12 +91,13 @@ signals:
             const QString &numColor, const int &numSize,
             const QString &label, const QString &lColor, const int &lSize,
             const QPointF &p,
-            const QString &shape, const bool &signalMW);
+            const QString &shape, const bool &signalMW=false);
 
     void edgeCreate (const int &source, const int &target, const float &weight,
                      const QString &color, const int &undirected,
                      const bool &arrows, const bool &bezier,
-                     const QString &edgeLabel=QString::null);
+                     const QString &edgeLabel=QString::null,
+                     const bool &signalMW=false);
 	void fileType(int, QString, int, int, bool);
 	void removeDummyNode (int);
     void finished(QString);

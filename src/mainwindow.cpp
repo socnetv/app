@@ -4656,7 +4656,8 @@ bool MainWindow::slotNetworkFilePreview(const QString &m_fileName,
 
 /**
  * @brief MainWindow::slotNetworkFileLoadRecent
- * Called from any file entry in "Recent Files" menu
+ * Called on click on any file entry in "Recent Files" menu
+ * Calls slotNetworkFileChoose() which checks file type and calls slotNetworkFilePreview
  */
 void MainWindow::slotNetworkFileLoadRecent() {
     QAction *action = qobject_cast<QAction *>(sender());
@@ -4729,6 +4730,7 @@ bool MainWindow::slotNetworkFileLoad(const QString m_fileName,
         setLastPath(m_fileName); // store this path and file
         QString message=tr("Loaded network: ")+fileNameNoPath.last();
         statusMessage( message );
+        slotNetworkChanged();
     }
     else {
         statusMessage( tr("Error loading requested file. Aborted."));
@@ -5552,13 +5554,11 @@ void MainWindow::slotRandomErdosRenyi( const int newNodes,
 
     fileLoaded=false;
 
-    slotNetworkChanged();
-
     setWindowTitle("Untitled Erdos-Renyi random network");
 
     double threshold = log(newNodes)/newNodes;
 
-    float clucof=activeGraph.clusteringCoefficient();
+    //float clucof=activeGraph.clusteringCoefficient();
 
     if ( (eprob ) > threshold )
         QMessageBox::information(
@@ -5568,7 +5568,7 @@ void MainWindow::slotRandomErdosRenyi( const int newNodes,
                     tr("\nNodes: ")+ QString::number(activeNodes())+
                     tr("\nEdges: ")+  QString::number( activeEdges() ) +
                     //tr("\nAverage path length: ") + QString::number(avGraphDistance)+
-                    tr("\nClustering coefficient: ")+QString::number(clucof)+
+                    //tr("\nClustering coefficient: ")+QString::number(clucof)+
                     tr("\n\nOn the average, edges should be ") +
                     QString::number( eprob * newNodes*(newNodes-1)) +
                     tr("\nThis graph is almost surely connected because: \nprobability > ln(n)/n, that is: \n")
@@ -5583,7 +5583,7 @@ void MainWindow::slotRandomErdosRenyi( const int newNodes,
                     tr("\nNodes: ")+ QString::number(activeNodes())+
                     tr("\nEdges: ")+  QString::number(  activeEdges()  )+
                     //tr("\nAverage path length: ") + QString::number(avGraphDistance)+
-                    tr("\nClustering coefficient: ")+QString::number(clucof)+
+                    //tr("\nClustering coefficient: ")+QString::number(clucof)+
                     tr("\n\nOn the average, edges should be ")
                     + QString::number(eprob * newNodes*(newNodes-1)) +
                     tr("\nThis graph is almost surely not connected because: \nprobability < ln(n)/n, that is: \n") +
@@ -5637,7 +5637,7 @@ void MainWindow::slotRandomScaleFree ( const int &nodes,
 
     double x0=scene->width()/2.0;
     double y0=scene->height()/2.0;
-    double radius=(graphicsWidget->height()/2.0)-50;          //pixels
+    double radius=(graphicsWidget->height()/2.0)-50;
 
     QString msg = "Creating random scale-free network. \n"
             "Please wait (or disable progress bars from Options -> Settings).";
@@ -5657,20 +5657,19 @@ void MainWindow::slotRandomScaleFree ( const int &nodes,
 
     fileLoaded=false;
 
-    slotNetworkChanged();
     setWindowTitle("Untitled scale-free network");
     statusMessage( tr("Scale-free random network created: ")
                    + QString::number(activeNodes())
                    + " nodes, "+QString::number( activeEdges())+" edges");
     //float avGraphDistance=activeGraph.distanceGraphAverage();
-    float clucof=activeGraph.clusteringCoefficient();
+    //float clucof=activeGraph.clusteringCoefficient();
     QMessageBox::information(this, "New scale-free network",
                              tr("Scale-free random network created.\n")+
                              tr("\nNodes: ")+ QString::number(activeNodes())+
                              tr("\nEdges: ")
                              +  QString::number( activeEdges() )
                              //+  tr("\nAverage path length: ") + QString::number(avGraphDistance)
-                             + tr("\nClustering coefficient: ")+QString::number(clucof)
+                             //+ tr("\nClustering coefficient: ")+QString::number(clucof)
                              , "OK",0);
 
 }
@@ -5728,18 +5727,17 @@ void MainWindow::slotRandomSmallWorld(const int &nodes,
 
     fileLoaded=false;
 
-    slotNetworkChanged();
     setWindowTitle("Untitled small-world network");
     statusMessage( tr("Small world random network created: ")+QString::number(activeNodes())+" nodes, "+QString::number( activeEdges())+" edges");
     //float avGraphDistance=activeGraph.distanceGraphAverage();
-    float clucof=activeGraph.clusteringCoefficient();
+    //float clucof=activeGraph.clusteringCoefficient();
     QMessageBox::information(this, "New Small World network",
                              tr("Small world network created.\n")+
                              tr("\nNodes: ")+ QString::number(activeNodes())+
                              tr("\nEdges: ")
                               +  QString::number( activeEdges() )
                              //+  tr("\nAverage path length: ") + QString::number(avGraphDistance)
-                             + tr("\nClustering coefficient: ")+QString::number(clucof)
+                             //+ tr("\nClustering coefficient: ")+QString::number(clucof)
                              , "OK",0);
 
 }
@@ -5798,7 +5796,6 @@ void MainWindow::slotRandomRegularNetwork(){
 
     fileLoaded=false;
 
-    slotNetworkChanged();
     setWindowTitle("Untitled d-regular network");
     statusMessage( "d-regular network created: "
                    +QString::number(activeNodes())+" Nodes, "

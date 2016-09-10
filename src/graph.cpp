@@ -1060,7 +1060,7 @@ void Graph::edgeCreate(const int &v1, const int &v2, const float &weight,
                         const QString &color,
                         const int &type,
                         const bool &drawArrows, const bool &bezier,
-                        const QString &label){
+                        const QString &label, const bool &signalMW){
     qDebug() <<"-- Graph::edgeCreate() - " << v1 << " -> " << v2
            << " weight " << weight
            << " type " << type
@@ -1100,7 +1100,11 @@ void Graph::edgeCreate(const int &v1, const int &v2, const float &weight,
     //draw new edges the same color with those of the file loaded,
     // on user clicks on the canvas
     initEdgeColor=color;
-    emit graphChanged();
+
+
+    if (signalMW)
+        emit graphChanged();
+
 }
 
 
@@ -1970,7 +1974,8 @@ void Graph::symmetrize(){
             if ( invertWeight == 0 ) {
                 qDebug() << "Graph:symmetrize(): s = " << v1
                          << " is NOT inLinked from y = " <<  v2  ;
-                edgeCreate( v2, v1, weight, initEdgeColor, false, true, false);
+                edgeCreate( v2, v1, weight, initEdgeColor, false, true, false,
+                            QString::null, false);
             }
             else {
                 qDebug() << "Graph: symmetrize(): v1 = " << v1
@@ -5504,14 +5509,18 @@ void Graph::randomNetErdosCreate(  const int &vert,
                         qDebug() << "Graph::randomNetErdosCreate() - "
                                     <<" create undirected Edge no "
                                     << edgeCount;
-                        edgeCreate(i+1, j+1, 1, initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED, false, false);
+                        edgeCreate(i+1, j+1, 1, initEdgeColor,
+                                   EDGE_RECIPROCAL_UNDIRECTED, false, false,
+                                   QString::null, false);
                     }
                     else {
                         qDebug() << "Graph::randomNetErdosCreate() - "
                                     <<" create directed Edge no "
                                     << edgeCount;
 
-                        edgeCreate(i+1, j+1, 1, initEdgeColor, 0, true, false);
+                        edgeCreate(i+1, j+1, 1, initEdgeColor,
+                                   EDGE_DIRECTED, true, false,
+                                   QString::null, false);
                     }
                 }
                 else
@@ -5545,12 +5554,16 @@ void Graph::randomNetErdosCreate(  const int &vert,
             if (mode == "graph") {
                 qDebug() << "Graph::randomNetErdosCreate() - create "
                             << " undirected Edge no " << edgeCount;
-                edgeCreate(source, target, 1, initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED, false, false);
+                edgeCreate(source, target, 1, initEdgeColor,
+                           EDGE_RECIPROCAL_UNDIRECTED, false, false,
+                           QString::null, false);
             }
             else {
                 qDebug() << "Graph::randomNetErdosCreate() - create "
                             << " directed Edge no " << edgeCount;
-                edgeCreate(source, target, 1, initEdgeColor, 0, true, false);
+                edgeCreate(source, target, 1, initEdgeColor,
+                           EDGE_DIRECTED, true, false,
+                           QString::null, false);
             }
           emit updateProgressDialog(++progressCounter );
         } while ( edgeCount != edges );
@@ -5613,7 +5626,9 @@ void Graph::randomNetRingLatticeCreate( const int &vert, const int &degree,
             if ( target > (vert-1))
                 target = target-vert;
             qDebug("Creating Link between %i  and %i", i+1, target+1);
-            edgeCreate(i+1, target+1, 1, initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED, false, false);
+            edgeCreate(i+1, target+1, 1, initEdgeColor,
+                       EDGE_RECIPROCAL_UNDIRECTED, false, false,
+                       QString::null, false);
         }
         emit updateProgressDialog( updateProgress ? ++progressCounter:0 );
     }
@@ -5675,7 +5690,9 @@ void Graph::randomNetScaleFreeCreate (const int &n,
                    << " Creating all edges for initial node i " << i+1;
         for (int j=i+1; j< m0  ; ++j) {
             qDebug() << " --- Creating initial edge " << i+1 << " <-> " << j+1;
-            edgeCreate (i+1, j+1, 1, initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED, false, false);
+            edgeCreate (i+1, j+1, 1, initEdgeColor,
+                        EDGE_RECIPROCAL_UNDIRECTED, false, false,
+                        QString::null, false);
         }
         emit updateProgressDialog( ++progressCounter );
     }
@@ -5741,14 +5758,18 @@ void Graph::randomNetScaleFreeCreate (const int &n,
                     if ( mode == "graph") {
                         qDebug() << " --- Creating pref.att. reciprocal edge "
                                  <<  i+1 << " <-> " << j+1;
-                        edgeCreate (i+1, j+1, 1, initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED, false, false);
+                        edgeCreate (i+1, j+1, 1, initEdgeColor,
+                                    EDGE_RECIPROCAL_UNDIRECTED, false, false,
+                                    QString::null, false);
                         newEdges ++;
 
                     }
                     else {
                         qDebug() << " --- Creating pref.att. directed edge "
                                  <<  i+1 << " <-> " << j+1;
-                        edgeCreate (i+1, j+1, 1, initEdgeColor, EDGE_DIRECTED_OPPOSITE_EXISTS, true, false);
+                        edgeCreate (i+1, j+1, 1, initEdgeColor,
+                                    EDGE_DIRECTED_OPPOSITE_EXISTS, true, false,
+                                    QString::null, false);
                         newEdges ++;
 
                     }
@@ -5820,7 +5841,8 @@ void Graph::randomNetSmallWorldCreate (const int &vert, const int &degree,
                         if (rand() % 100 > 0.5) {
                             qDebug("Creating new link!");
                             edgeCreate(i, candidate, 1, initEdgeColor,
-                                       EDGE_RECIPROCAL_UNDIRECTED, false, false);
+                                       EDGE_RECIPROCAL_UNDIRECTED, false, false,
+                                       QString::null, false);
                             break;
                         }
                     }
@@ -5877,7 +5899,9 @@ void Graph::randomNetSameDegreeCreate( const int &vert,
             if ( target > (vert-1))
                 target = target-vert;
             qDebug("Creating Link between %i  and %i", i+1, target+1);
-            edgeCreate(i+1, target+1, 1, initEdgeColor, true, true, false);
+            edgeCreate(i+1, target+1, 1, initEdgeColor,
+                       EDGE_DIRECTED, true, false,
+                       QString::null, false);
         }
         emit updateProgressDialog(++progressCounter );
     }
@@ -7413,11 +7437,15 @@ bool Graph::loadGraph (	const QString m_fileName,
 
     connect (
                 file_parser, SIGNAL(
-                    edgeCreate (int, int, float, QString,
-                                int, bool, bool, QString)),
+                    edgeCreate (const int&, const int&, const float&,
+                                const QString&, const int&,
+                                const bool&, const bool&,
+                                const QString&, const bool&)),
                 this, SLOT(
-                    edgeCreate (int, int, float, QString,
-                                int, bool, bool, QString) )
+                    edgeCreate (const int&, const int&, const float&,
+                                const QString&, const int&,
+                                const bool&, const bool&,
+                                const QString&, const bool&) )
                 );
 
     connect (
