@@ -5787,8 +5787,8 @@ void Graph::randomNetScaleFreeCreate (const int &n,
     }
 
     relationAddFromGraph(tr("1"));
-    emit signalNodeSizesByInDegree(true); //FIXME
     emit graphChanged();
+    emit signalNodeSizesByInDegree(true); //FIXME
 
 }
 
@@ -5949,7 +5949,7 @@ int Graph::walksBetween(int v1, int v2, int length) {
  * @param length
  * @param updateProgress
  */
-void Graph::walksMatrixCreate(const int length, const bool updateProgress) {
+void Graph::walksMatrixCreate(const int maxPower, const bool updateProgress) {
     qDebug()<<"Graph::walksBetween() - first create the Adjacency Matrix AM";
 
     bool dropIsolates=false;
@@ -5958,7 +5958,6 @@ void Graph::walksMatrixCreate(const int length, const bool updateProgress) {
     bool symmetrize=false;
     adjacencyMatrixCreate(dropIsolates, considerWeights, inverseWeights, symmetrize);
     int size = vertices();
-    int maxPower = length;
 
     XM = AM;   // XM will be the product matrix
     XSM = AM;  // XSM is the sum of product matrices
@@ -5974,13 +5973,16 @@ void Graph::walksMatrixCreate(const int length, const bool updateProgress) {
     }
     if (updateProgress)
         emit updateProgressDialog (1);
-    qDebug()<< "Graph::writeWalksOfLengthMatrix() calculating sociomatrix powers up to " << maxPower;
-    for (int i=2; i <= maxPower ; i++) {
+    qDebug()<< "Graph::writeWalksOfLengthMatrix() - "
+               "Calculating sociomatrix powers up to "  << maxPower;
+    for (int i=2; i <= maxPower ; ++i) {
         PM.product(XM,AM, false);
         XM=PM;
         XSM = XSM+XM;
-        if (updateProgress)
+        if (updateProgress) {
             emit updateProgressDialog (i);
+        }
+
     }
 
 }

@@ -222,7 +222,7 @@ QMap<QString,QString> MainWindow::initSettings(){
     appSettings["initBackgroundColor"]="white"; //"gainsboro";
     appSettings["initBackgroundImage"]="";
     appSettings["printDebug"] = (printDebug) ? "true" : "false";
-    appSettings["showProgressBar"] = "false";
+    appSettings["showProgressBar"] = "true";
     appSettings["showToolBar"] = "true";
     appSettings["showStatusBar"] = "true";
     appSettings["antialiasing"] = "true";
@@ -5543,12 +5543,11 @@ void MainWindow::slotRandomErdosRenyi( const int newNodes,
 
     initNet();
 
-    statusMessage( tr("Creating random network. Please wait... ")  );
+    statusMessage( tr("Creating Erdos-Renyi Random Network. Please wait... ")  );
 
-
-    QString msg = "Creating random Erdos-Renyi network. \n "
+    progressMsg  = "Creating Erdos-Renyi Random Network. \n "
                 " Please wait (or disable progress bars from Options -> Settings).";
-    createProgressBar( (edges != 0 ? edges:newNodes), msg);
+    createProgressBar( (edges != 0 ? edges:newNodes), progressMsg );
     appSettings["randomErdosEdgeProbability"] = QString::number(eprob);
 
 
@@ -5559,7 +5558,7 @@ void MainWindow::slotRandomErdosRenyi( const int newNodes,
                                        mode,
                                        diag);
 
-    destroyProgressBar();
+    destroyProgressBar( (edges != 0 ? edges:newNodes) );
 
     fileLoaded=false;
 
@@ -5574,8 +5573,6 @@ void MainWindow::slotRandomErdosRenyi( const int newNodes,
                     this,
                     "New Erdos-Renyi Random Network",
                     tr("Random network created. \n")+
-                    tr("\nNodes: ")+ QString::number(activeNodes())+
-                    tr("\nEdges: ")+  QString::number( activeEdges() ) +
                     //tr("\nAverage path length: ") + QString::number(avGraphDistance)+
                     //tr("\nClustering coefficient: ")+QString::number(clucof)+
                     tr("\n\nOn the average, edges should be ") +
@@ -5589,8 +5586,6 @@ void MainWindow::slotRandomErdosRenyi( const int newNodes,
                     this,
                     "New Erdos-Renyi Random Network",
                     tr("Random network created. \n")+
-                    tr("\nNodes: ")+ QString::number(activeNodes())+
-                    tr("\nEdges: ")+  QString::number(  activeEdges()  )+
                     //tr("\nAverage path length: ") + QString::number(avGraphDistance)+
                     //tr("\nClustering coefficient: ")+QString::number(clucof)+
                     tr("\n\nOn the average, edges should be ")
@@ -5598,7 +5593,7 @@ void MainWindow::slotRandomErdosRenyi( const int newNodes,
                     tr("\nThis graph is almost surely not connected because: \nprobability < ln(n)/n, that is: \n") +
                     QString::number(eprob)+ " smaller than "+ QString::number(threshold) , "OK",0);
 
-    statusMessage( "Erdos-Renyi random network created. ");
+    statusMessage( tr("Erdos-Renyi Random Network created. ") ) ;
 
 }
 
@@ -5632,7 +5627,7 @@ void MainWindow::slotRandomScaleFreeDialog() {
  * @param zeroAppeal
  * @param mode
  */
-void MainWindow::slotRandomScaleFree ( const int &nodes,
+void MainWindow::slotRandomScaleFree ( const int &newNodes,
                                           const int &power,
                                           const int &initialNodes,
                                           const int &edgesPerStep,
@@ -5642,17 +5637,17 @@ void MainWindow::slotRandomScaleFree ( const int &nodes,
     qDebug() << "MW;:slotRandomScaleFree()";
     statusMessage( tr("Erasing any existing network. "));
     initNet();
-    statusMessage( tr("Creating scale free network. Please wait..."));
 
     double x0=scene->width()/2.0;
     double y0=scene->height()/2.0;
     double radius=(graphicsWidget->height()/2.0)-50;
 
-    QString msg = "Creating random scale-free network. \n"
+    statusMessage( tr("Creating Scale-Free Random Network. Please wait..."));
+    progressMsg = "Creating Scale-Free Random Network. \n"
             "Please wait (or disable progress bars from Options -> Settings).";
-    createProgressBar(nodes, msg);
+    createProgressBar(newNodes, progressMsg );
 
-    activeGraph.randomNetScaleFreeCreate( nodes,
+    activeGraph.randomNetScaleFreeCreate( newNodes,
                                           power,
                                           initialNodes,
                                           edgesPerStep,
@@ -5662,24 +5657,23 @@ void MainWindow::slotRandomScaleFree ( const int &nodes,
                                           y0,
                                           radius);
 
-    destroyProgressBar();
+    destroyProgressBar(newNodes);
 
     fileLoaded=false;
 
     setWindowTitle("Untitled scale-free network");
-    statusMessage( tr("Scale-free random network created: ")
-                   + QString::number(activeNodes())
-                   + " nodes, "+QString::number( activeEdges())+" edges");
+
     //float avGraphDistance=activeGraph.distanceGraphAverage();
     //float clucof=activeGraph.clusteringCoefficient();
     QMessageBox::information(this, "New scale-free network",
-                             tr("Scale-free random network created.\n")+
-                             tr("\nNodes: ")+ QString::number(activeNodes())+
-                             tr("\nEdges: ")
-                             +  QString::number( activeEdges() )
+                             tr("Scale-free random network created.\n")
+//                             +tr("\nNodes: ")+ QString::number(nodeCount)+
+//                             tr("\nEdges: ") +  QString::number( edgeCount )
                              //+  tr("\nAverage path length: ") + QString::number(avGraphDistance)
                              //+ tr("\nClustering coefficient: ")+QString::number(clucof)
                              , "OK",0);
+
+    statusMessage( tr("Scale-Free Random Network created: ") );
 
 }
 
@@ -5710,7 +5704,7 @@ void MainWindow::slotRandomSmallWorldDialog()
  * @param mode
  * @param diag
  */
-void MainWindow::slotRandomSmallWorld(const int &nodes,
+void MainWindow::slotRandomSmallWorld(const int &newNodes,
                                             const int &degree,
                                             const float &beta,
                                             const QString &mode,
@@ -5720,35 +5714,36 @@ void MainWindow::slotRandomSmallWorld(const int &nodes,
     qDebug() << "MW::slotRandomSmallWorld()";
     statusMessage( tr("Erasing any existing network. "));
     initNet();
-    statusMessage( tr("Creating small world network. Please wait..."));
 
     double x0=scene->width()/2.0;
     double y0=scene->height()/2.0;
     double radius=(graphicsWidget->height()/2.0)-50;          //pixels
 
-    QString msg = "Creating random small-world network. \n"
+    statusMessage( tr("Creating Small-World Random Network. Please wait..."));
+    progressMsg  = "Creating Small-World Random Network. \n"
             "Please wait (or disable progress bars from Options -> Settings).";
-    createProgressBar(nodes, msg);
+    createProgressBar(newNodes, progressMsg );
 
-    activeGraph.randomNetSmallWorldCreate(nodes, degree, beta, mode, x0, y0, radius);
+    activeGraph.randomNetSmallWorldCreate(newNodes, degree, beta, mode, x0, y0, radius);
 
-    destroyProgressBar();
+    destroyProgressBar(newNodes);
 
     fileLoaded=false;
 
     setWindowTitle("Untitled small-world network");
-    statusMessage( tr("Small world random network created: ")+QString::number(activeNodes())+" nodes, "+QString::number( activeEdges())+" edges");
+
     //float avGraphDistance=activeGraph.distanceGraphAverage();
     //float clucof=activeGraph.clusteringCoefficient();
     QMessageBox::information(this, "New Small World network",
-                             tr("Small world network created.\n")+
-                             tr("\nNodes: ")+ QString::number(activeNodes())+
-                             tr("\nEdges: ")
-                              +  QString::number( activeEdges() )
+                             tr("Small world network created.\n")
+//                             +tr("\nNodes: ")+ QString::number(nodeCount)+
+//                             tr("\nEdges: ") +  QString::number( edgeCount )
                              //+  tr("\nAverage path length: ") + QString::number(avGraphDistance)
                              //+ tr("\nClustering coefficient: ")+QString::number(clucof)
                              , "OK",0);
 
+
+    statusMessage( tr("Small World Random Network created. ") );
 }
 
 
@@ -5766,7 +5761,7 @@ void MainWindow::slotRandomRegularNetwork(){
     statusMessage( "Creating a pseudo-random network where each node has the same degree... ");
     int newNodes= QInputDialog::getInt(
                        this,
-                       tr("Create k-regular network"),
+                       tr("Create d-regular network"),
                        tr("This will create a network with nodes of the same degree d.")
                           + tr("\nPlease enter the number of nodes:"),
                        100, 1, maxNodes, 1, &ok
@@ -5777,8 +5772,9 @@ void MainWindow::slotRandomRegularNetwork(){
     }
     int degree = QInputDialog::getInt(
                 this,
-                tr("Create k-regular network..."),
-                tr("Now, select an even number d. \nThis will be the degree (number of edges) of each node:"),
+                tr("Create d-regular network..."),
+                tr("Now, select an even number d. \n"
+                   "This will be the degree (number of edges) of each node:"),
                 2, 2, newNodes-1, 2, &ok
                 );
 
@@ -5792,23 +5788,21 @@ void MainWindow::slotRandomRegularNetwork(){
     }
     statusMessage( "Erasing any existing network. ");
     initNet();
-    statusMessage( "Creating a pseudo-random k-regular network where each node "
+    statusMessage( "Creating a pseudo-random d-regular network where each node "
                    "has the same degree... ");
 
-    QString msg = "Creating random k-regular network. \n"
+    progressMsg  = "Creating pseudo-random d-regular network. \n"
             "Please wait (or disable progress bars from Options -> Settings).";
-    createProgressBar(newNodes, msg);
+    createProgressBar(newNodes, progressMsg );
 
     activeGraph.randomNetSameDegreeCreate (newNodes,degree);
 
-    destroyProgressBar();
+    destroyProgressBar(newNodes);
 
     fileLoaded=false;
 
     setWindowTitle("Untitled d-regular network");
-    statusMessage( "d-regular network created: "
-                   +QString::number(activeNodes())+" Nodes, "
-                   +QString::number( activeEdges())+" Edges");
+    statusMessage( tr( "d-regular network created. " ) );
 
 }
 
@@ -5855,38 +5849,34 @@ void MainWindow::slotRandomRingLattice(){
 
     statusMessage( "Erasing any existing network. ");
     initNet();
-    statusMessage( "Creating ring lattice network. Please wait...");
+
     double x0=scene->width()/2.0;
     double y0=scene->height()/2.0;
     double radius=(graphicsWidget->height()/2.0)-50;          //pixels
 
-
-    QString msg = "Creating random ring-lattice network. \n"
+    statusMessage( "Creating ring lattice network. Please wait...");
+    progressMsg  = "Creating ring-lattice network. \n"
             "Please wait (or disable progress bars from Options -> Settings).";
-    createProgressBar(newNodes, msg);
+    createProgressBar(newNodes, progressMsg );
 
-    activeGraph.randomNetRingLatticeCreate(newNodes, degree, x0, y0, radius, false );
+    activeGraph.randomNetRingLatticeCreate(newNodes, degree, x0, y0, radius, true );
 
-    destroyProgressBar();
+    destroyProgressBar(newNodes);
 
     fileLoaded=false;
-
-    //	slotNetworkChanged();
-
-    statusMessage( "Ring lattice random network created: "+
-                   QString::number(activeNodes())+" nodes, "+
-                   QString::number( activeEdges())+" edges");
 
     setWindowTitle("Untitled ring-lattice network");
     //float avGraphDistance=activeGraph.distanceGraphAverage();
     //float clucof=activeGraph.clusteringCoefficient();
     QMessageBox::information(this, "New Ring Lattice",
-                             tr("Ring lattice network created.\n")+
-                             tr("\nNodes: ")+ QString::number(activeNodes())+
-                             tr("\nEdges: ")+  QString::number( activeEdges() )
+                             tr("Ring lattice network created.\n")
+//                             +tr("\nNodes: ")+ QString::number(activeNodes())+
+//                             tr("\nEdges: ")+  QString::number( activeEdges() )
                              // + tr("\nAverage path length: ") + QString::number(avGraphDistance)
                              //+ tr("\nClustering coefficient: ")+QString::number(clucof)
                              , "OK",0);
+
+    statusMessage( tr("Ring lattice random network created: " ));
 }
 
 
@@ -7515,12 +7505,18 @@ void MainWindow::slotLayoutRandom(){
         statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
         return;
     }
-    statusMessage(  QString(tr("Randomizing nodes positions. Please wait...")) );
+
     graphicsWidget->clearGuides();
-    createProgressBar(0);
+    statusMessage(  tr("Embedding Random Layout. Please wait...") );
+    progressMsg = tr("Embedding Random Layout. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+    createProgressBar(0,progressMsg);
+
     activeGraph.layoutRandom();
+
     destroyProgressBar();
-    statusMessage( tr("Node positions are now randomized.") );
+
+    statusMessage( tr("Nodes in random positions.") );
 }
 
 
@@ -7543,11 +7539,15 @@ void MainWindow::slotLayoutCircularRandom(){
     double x0=scene->width()/2.0;
     double y0=scene->height()/2.0;
     double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
-    graphicsWidget->clearGuides();
-    createProgressBar();
+
+    slotLayoutGuides(false);
+    statusMessage(  QString(tr("Embedding Random Circular model. Please wait...")) );
+    progressMsg = "Embedding Random Circular model. \n"
+            "Please wait (or disable progress bars from Options -> Settings).";
+    createProgressBar(0,progressMsg );
     activeGraph.layoutCircularRandom(x0, y0, maxRadius);
     destroyProgressBar();
+    slotLayoutGuides(true);
     statusMessage( tr("Nodes in random circles.") );
 }
 
@@ -7564,20 +7564,20 @@ void MainWindow::slotLayoutCircularRandom(){
 void MainWindow::slotLayoutSpringEmbedder(){
     qDebug()<< "MW:slotLayoutSpringEmbedder";
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are node nodes yet!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
+        QMessageBox::critical(this, "Error",tr("There are node nodes yet!\n"
+                                               "Load a network file or create a new network first. \n"
+                                               "Then we can talk about layouts!"), "OK",0);
         statusMessage( tr("I am really sorry. You must really load a file first... ")  );
-
         return;
     }
 
-    statusMessage( tr("Embedding a spring-gravitational model on the network.... ")  );
-    //scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
-    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-    createProgressBar(0);
+    statusMessage( tr("Embedding Spring-Gravitational model (Eades).... ")  );
+    progressMsg  = "Embedding Spring-Gravitational model (Eades). \n"
+            "Please wait (or disable progress bars from Options -> Settings).";
+    createProgressBar(0,progressMsg );
     activeGraph.layoutForceDirectedSpringEmbedder(100);
     destroyProgressBar();
-    QApplication::restoreOverrideCursor();
-    //scene->setItemIndexMethod (QGraphicsScene::BspTreeIndex); //best when not moving items
+    statusMessage( tr("Spring-Gravitational (Eades) model embedded.") );
 }
 
 
@@ -7593,21 +7593,23 @@ void MainWindow::slotLayoutSpringEmbedder(){
 void MainWindow::slotLayoutFruchterman(){
     qDebug("MW: slotLayoutFruchterman ()");
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes yet!\nLoad a network file or create a new network first. \nThen we can talk about layouts!"), "OK",0);
+        QMessageBox::critical(this, "Error",tr("There are no nodes yet!\n"
+                                               "Load a network file or create a new network first. \n"
+                                               "Then we can talk about layouts!"), "OK",0);
         statusMessage( tr("I am really sorry. You must really load a file first... ")  );
         return;
     }
 
-    statusMessage( tr("Embedding a repelling-attracting forces model on the network.... ")  );
-    //scene->setItemIndexMethod (QGraphicsScene::NoIndex); //best when moving items
-    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-    createProgressBar();
+    statusMessage( tr("Embedding a repelling-attracting forces model "
+                      "(Fruchterman & Reingold) on the network.... ")  );
+    progressMsg = "Embedding a repelling-attracting forces model "
+                  "(Fruchterman & Reingold) \n"
+            "Please wait (or disable progress bars from Options -> Settings).";
+    createProgressBar(0,progressMsg );
     activeGraph.layoutForceDirectedFruchtermanReingold(100);
 
     destroyProgressBar();
-    QApplication::restoreOverrideCursor();
-    //scene->setItemIndexMethod (QGraphicsScene::BspTreeIndex); //best when not moving items
-
+    statusMessage( tr("Fruchterman & Reingold model embedded.") );
 }
 
 
@@ -7729,7 +7731,6 @@ void MainWindow::slotLayoutGuides(const bool &toggle){
                               tr("There are node nodes yet!\n"
                                  "Load a network file or create a new network first."), "OK",0);
         statusMessage( tr("I am really sorry. You must really load a file first... ")  );
-        //toolBoxLayoutGuidesBx->setCheckState(Qt::Unchecked);
         return;
     }
 
@@ -7925,9 +7926,15 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
     double x0=scene->width()/2.0;
     double y0=scene->height()/2.0;
     double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
-    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
+
     graphicsWidget->clearGuides();
-    createProgressBar();
+
+    statusMessage(  tr("Embedding Prominence Index Circular Layout. Please wait...") );
+    progressMsg = tr("Embedding Prominence Index Circular Layout. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
+
     activeGraph.layoutCircularByProminenceIndex(
                 x0, y0, maxRadius, userChoice,
                 considerWeights, inverseWeights,
@@ -8082,9 +8089,13 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
 
     askAboutWeights();
 
-    statusMessage(  QString(tr("Calculating new node sizes. Please wait...")) );
     graphicsWidget->clearGuides();
-    createProgressBar();
+    statusMessage(  tr("Embedding Prominence Index Node Layout. Please wait...") );
+    progressMsg = tr("Embedding Prominence Index Node Layout. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
+
     activeGraph.layoutVerticesSizeByProminenceIndex(
                 userChoice, considerWeights,
                 inverseWeights, filterIsolateNodesAct->isChecked() || dropIsolates);
@@ -8274,18 +8285,26 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
     }
 
     askAboutWeights();
+
     double maxWidth=scene->width();
-    double maxHeight=scene->height(); //pixels
-    statusMessage(  QString(tr("Calculating new nodes positions. Please wait...")) );
+
+    double maxHeight=scene->height();
+
     graphicsWidget->clearGuides();
-    createProgressBar();
+
+    statusMessage(  tr("Embedding Prominence Index Level Layout. Please wait...") );
+    progressMsg = tr("Embedding Prominence Index Level Layout. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
+
     activeGraph.layoutLevelByProminenceIndex(
                 maxWidth, maxHeight, userChoice,
                 considerWeights, inverseWeights,
                 filterIsolateNodesAct->isChecked() || dropIsolates);
     destroyProgressBar();
     statusMessage( tr("Nodes in upper levels are more prominent. ") );
-    }
+}
 
 
 /**
@@ -8475,9 +8494,19 @@ void MainWindow::slotGraphDistance(){
 
     askAboutWeights();
 
+
+    statusMessage(  QString(tr("Computing Graph Distance. Please wait...")) );
+    progressMsg = tr("Computing Graph Distance. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
+
      int distance = activeGraph.distance(i,j,
                                          considerWeights,
                                          inverseWeights);
+
+     destroyProgressBar();
+
     if ( distance > 0 && distance < RAND_MAX)
         QMessageBox::information(this, tr("Distance"), tr("Network distance (")
                                  +QString::number(i)+", "+QString::number(j)
@@ -8509,17 +8538,21 @@ void MainWindow::slotDistancesMatrix(){
 
     askAboutWeights();
 
-    createProgressBar();
+    statusMessage(  tr("Computing Distances Matrix. Please wait...") );
+    progressMsg = tr("Computing Distances Matrix. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
+
     activeGraph.writeDistanceMatrix(fn, networkName.toLocal8Bit(),
                                     considerWeights, inverseWeights,
                                     filterIsolateNodesAct->isChecked());
 
     destroyProgressBar();
 
-    //Open a text editor window for the new file created by graph class
     TextEditor *ed = new TextEditor(fn);
     ed->show();
-    QApplication::restoreOverrideCursor();
+
     statusMessage(tr("Distance matrix saved as: ")+fn);
 }
 
@@ -8541,19 +8574,20 @@ void MainWindow::slotGeodesicsMatrix(){
 
     askAboutWeights();
 
-    statusMessage( tr("Creating number of geodesics matrix. Please wait...") );
-    createProgressBar();
+    statusMessage(  tr("Computing Geodesics Matrix. Please wait...") );
+    progressMsg = tr("Computing Geodesics Matrix. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
 
     activeGraph.writeNumberOfGeodesicsMatrix(fn, networkName.toLocal8Bit(),
                                              considerWeights, inverseWeights);
 
     destroyProgressBar();
 
-    //Open a text editor window for the new file created by graph class
-
     TextEditor *ed = new TextEditor(fn);
     ed->show();
-    QApplication::restoreOverrideCursor();
+
     statusMessage(tr("Matrix of geodesic path counts saved as: ") + fn);
 }
 
@@ -8574,7 +8608,11 @@ void MainWindow::slotDiameter() {
 
     askAboutWeights();
 
-    createProgressBar();
+    statusMessage(  QString(tr("Computing Graph Diameter. Please wait...")) );
+    progressMsg = tr("Computing Graph Diameter. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
 
     int netDiameter=activeGraph.diameter(considerWeights, inverseWeights);
 
@@ -8601,8 +8639,7 @@ void MainWindow::slotDiameter() {
                                  tr("\n\nSince this is a non-weighted network, \n"
                                  "the diameter is always less than N-1."),
                                  "OK",0);
-    statusMessage( tr("Diameter calculated. Ready.") );
-
+    statusMessage( tr("Graph Diameter computed. Ready.") );
 }
 
 
@@ -8620,14 +8657,21 @@ void MainWindow::slotAverageGraphDistance() {
 
     askAboutWeights();
 
-    createProgressBar();
+    statusMessage(  QString(tr("Computing Average Graph Distance. Please wait...")) );
+    progressMsg = tr("Computing Average Graph Distance. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
 
     float averGraphDistance=activeGraph.distanceGraphAverage(
                 considerWeights, inverseWeights,  filterIsolateNodesAct->isChecked() );
 
     destroyProgressBar();
 
-    QMessageBox::information(this, "Average Graph Distance", "The average shortest path length is  = " + QString::number(averGraphDistance), "OK",0);
+    QMessageBox::information(this,
+                             "Average Graph Distance",
+                             "The average shortest path length is  = " +
+                             QString::number(averGraphDistance), "OK",0);
     statusMessage( tr("Average distance calculated. Ready.") );
 
 }
@@ -8646,9 +8690,12 @@ void MainWindow::slotEccentricity(){
     QString fn = appSettings["dataDir"] + "socnetv-report-eccentricity.dat";
 
     askAboutWeights();
-    statusMessage(  QString(tr(" Please wait...")));
 
-    createProgressBar();
+    statusMessage(  QString(tr("Computing Eccentricity. Please wait...")) );
+    progressMsg = tr("Computing Eccentricity. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
     activeGraph.writeEccentricity(
                 fn, considerWeights, inverseWeights,
                 filterIsolateNodesAct->isChecked());
@@ -8656,7 +8703,7 @@ void MainWindow::slotEccentricity(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     ed->show();
-    QApplication::restoreOverrideCursor();
+
     statusMessage(tr("Eccentricity report saved as: ") + fn );
 }
 
@@ -8675,7 +8722,11 @@ void MainWindow::slotConnectedness(){
         return;
     }
 
-    createProgressBar();
+    statusMessage(  QString(tr("Computing Connectedness. Please wait...")) );
+    progressMsg = tr("Computing Connectedness. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
 
     int connectedness=activeGraph.connectedness();
 
@@ -8748,14 +8799,19 @@ void MainWindow::slotWalksOfGivenLength(){
         statusMessage( "Cancelled." );
         return;
     }
-    createProgressBar();
+    statusMessage(  QString(tr("Computing Walks of given length Matrix. Please wait...")) );
+    progressMsg = tr("Computing Walks of given length Matrix. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
+
     activeGraph.writeWalksOfLengthMatrix(fn, networkName, length);
 
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     ed->show();
-    QApplication::restoreOverrideCursor();
+
     statusMessage(tr("Number of walks saved as: ") + fn );
 }
 
@@ -8768,12 +8824,24 @@ void MainWindow::slotWalksOfGivenLength(){
  */
 void MainWindow::slotTotalWalks(){
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
+        QMessageBox::critical(this, "Error",
+                              tr("Nothing to do! \n"
+                                 "Load a network file or create a new network. \n"
+                                 "Then ask me to compute something!"), "OK",0);
+        statusMessage(  QString(tr("Nothing to do."))  );
         return;
     }
     if (activeNodes() > 50) {
-        switch( QMessageBox::critical(this, "Slow function warning",tr("Please note that this function is VERY SLOW on large networks (n>50), since it will calculate all powers of the sociomatrix up to n-1 in order to find out all possible walks. \n\nIf you need to make a simple reachability test, we advise to use the Reachability Matrix function instead. \n\n Are you sure you want to continue?"), QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
+        switch( QMessageBox::critical(
+                    this,
+                    "Slow function warning",
+                    tr("Please note that this function is VERY SLOW on large networks (n>50), "
+                       "since it will calculate all powers of the sociomatrix up to n-1 "
+                       "in order to find out all possible walks. \n\n"
+                       "If you need to make a simple reachability test, "
+                       "we advise to use the Reachability Matrix function instead. \n\n "
+                       "Are you sure you want to continue?"),
+                    QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Cancel) ) {
         case QMessageBox::Ok:
             break;
 
@@ -8788,13 +8856,19 @@ void MainWindow::slotTotalWalks(){
     }
     QString fn = appSettings["dataDir"] + "socnetv-report-total-number-of-walks.dat";
     int maxLength=activeNodes()-1;
-    createProgressBar(maxLength,"Computing total walks. Please wait...");
+
+    statusMessage(  QString(tr("Computing Total Walks Matrix. Please wait...")) );
+    progressMsg = tr("Computing Total Walks Matrix. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(maxLength,progressMsg);
+
     activeGraph.writeWalksTotalMatrix(fn, networkName, maxLength);
-    destroyProgressBar();
+    destroyProgressBar(maxLength); // do not check for progress bar
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     ed->show();
-    QApplication::restoreOverrideCursor();
+
     statusMessage("Total number of walks saved as: " + fn);
 
 }
@@ -8807,14 +8881,21 @@ void MainWindow::slotTotalWalks(){
 */
 void MainWindow::slotReachabilityMatrix(){
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
+        QMessageBox::critical(this, "Error",
+                              tr("Nothing to do! \n"
+                                 "Load a network file or create a new network. \n"
+                                 "Then ask me to compute something!"), "OK",0);
+        statusMessage(  QString(tr("Nothing to do."))  );
         return;
     }
 
     QString fn = appSettings["dataDir"] + "socnetv-report-reachability-matrix.dat";
 
-    createProgressBar();
+    statusMessage(  QString(tr("Computing Reachability Matrix. Please wait...")) );
+    progressMsg = tr("Computing Reachability Matrix. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
 
     activeGraph.writeReachabilityMatrix(fn, networkName);
 
@@ -8822,7 +8903,7 @@ void MainWindow::slotReachabilityMatrix(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     ed->show();
-    QApplication::restoreOverrideCursor();
+
     statusMessage("Reachability Matrix saved as: " + fn );
 }
 
@@ -8832,14 +8913,21 @@ void MainWindow::slotReachabilityMatrix(){
 */
 void MainWindow::slotCliqueCensus(){
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        QMessageBox::critical(this, "Error",
+                              tr("Nothing to do! \n"
+                                 "Load a network file or create a new network. \n"
+                                 "Then ask me to compute something!"), "OK",0);
         statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
         return;
     }
     QString fn = appSettings["dataDir"] + "socnetv-report-clique-census.dat";
     bool considerWeights=true;
 
-    createProgressBar( 0 , "Computing number of cliques. Please wait... ");
+    statusMessage(  QString(tr("Computing Clique Census. Please wait...")) );
+    progressMsg = tr("Computing Clique Census. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
 
     activeGraph.writeCliqueCensus(fn, considerWeights);
 
@@ -8847,7 +8935,7 @@ void MainWindow::slotCliqueCensus(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     ed->show();
-    QApplication::restoreOverrideCursor();
+
     statusMessage("Clique Census saved as: " + fn);
 }
 
@@ -8861,14 +8949,21 @@ void MainWindow::slotCliqueCensus(){
 */
 void MainWindow::slotClusteringCoefficient (){
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        QMessageBox::critical(this, "Error",
+                              tr("Nothing to do! \n"
+                                 "Load a network file or create a new network. \n"
+                                 "Then ask me to compute something!"), "OK",0);
         statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
         return;
     }
     QString fn = appSettings["dataDir"] + "socnetv-report-clustering-coefficients.dat";
     bool considerWeights=true;
 
-    createProgressBar( 0 , "Computing clustering coefficient. Please wait... ");
+    statusMessage(  QString(tr("Computing Clustering Coefficient. Please wait...")) );
+    progressMsg = tr("Computing Clustering Coefficient. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
 
     activeGraph.writeClusteringCoefficient(fn, considerWeights);
 
@@ -8876,7 +8971,7 @@ void MainWindow::slotClusteringCoefficient (){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     ed->show();
-    QApplication::restoreOverrideCursor();
+
     statusMessage("Clustering Coefficients saved as: " + fn);
 }
 
@@ -8889,14 +8984,21 @@ void MainWindow::slotClusteringCoefficient (){
 void MainWindow::slotTriadCensus() {
 
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        QMessageBox::critical(this, "Error",
+                              tr("Nothing to do! \n"
+                                 "Load a network file or create a new network. \n"
+                                 "Then ask me to compute something!"), "OK",0);
         statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
         return;
     }
     QString fn = appSettings["dataDir"] + "socnetv-report-triad-census.dat";
     bool considerWeights=true;
 
-    createProgressBar(0, "Computing triad census. Please wait... ");
+    statusMessage(  QString(tr("Computing Triad Census. Please wait...")) );
+    progressMsg = tr("Computing Triad Census. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
 
     activeGraph.writeTriadCensus(fn, considerWeights);
 
@@ -8904,7 +9006,7 @@ void MainWindow::slotTriadCensus() {
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     ed->show();
-    QApplication::restoreOverrideCursor();
+
     statusMessage("Triad Census saved as: " + fn);
 }
 
@@ -8914,7 +9016,10 @@ void MainWindow::slotTriadCensus() {
 */
 void MainWindow::slotCentralityDegree(){
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to do! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        QMessageBox::critical(this, "Error",
+                              tr("Nothing to do! \n"
+                                 "Load a network file or create a new network. \n"
+                                 "Then ask me to compute something!"), "OK",0);
         statusMessage(  QString(tr(" No network here. Sorry. Nothing to do."))  );
         return;
     }
@@ -8940,7 +9045,11 @@ void MainWindow::slotCentralityDegree(){
     }
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-out-degree.dat";
 
-    createProgressBar();
+    statusMessage(  QString(tr("Computing Degree Centrality. Please wait...")) );
+    progressMsg = tr("Computing Degree Centrality. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
 
     activeGraph.writeCentralityDegree(fn, considerWeights,
                                       filterIsolateNodesAct->isChecked() );
@@ -8949,7 +9058,7 @@ void MainWindow::slotCentralityDegree(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     ed->show();
-    QApplication::restoreOverrideCursor();
+
     statusMessage(tr("Out-Degree Centralities saved as: ") + fn);
 }
 
@@ -8961,9 +9070,10 @@ void MainWindow::slotCentralityDegree(){
 */
 void MainWindow::slotCentralityCloseness(){
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network"
-                                               " file or create a new network manually. "
-                                               "\nThen ask me to compute something!"), "OK",0);
+        QMessageBox::critical(this, "Error",
+                              tr("Nothing to do! \n"
+                                 "Load a network file or create a new network. \n"
+                                 "Then ask me to compute something!"), "OK",0);
         statusMessage(  QString(tr("Nothing to do..."))  );
         return;
     }
@@ -9035,7 +9145,11 @@ void MainWindow::slotCentralityCloseness(){
 
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality_closeness.dat";
 
-    createProgressBar();
+    statusMessage(  QString(tr("Computing Closeness Centrality. Please wait...")) );
+    progressMsg = tr("Computing Closeness Centrality. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
 
     activeGraph.writeCentralityCloseness(
                 fn, considerWeights, inverseWeights,
@@ -9045,7 +9159,7 @@ void MainWindow::slotCentralityCloseness(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     ed->show();
-    QApplication::restoreOverrideCursor();
+
     statusMessage(tr("Closeness Centralities  saved as: ") + fn);
 }
 
@@ -9059,19 +9173,23 @@ void MainWindow::slotCentralityCloseness(){
  */
 void MainWindow::slotCentralityClosenessInfluenceRange(){
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network"
-                                               " file or create a new network manually. "
-                                               "\nThen ask me to compute something!"), "OK",0);
+        QMessageBox::critical(this, "Error",
+                              tr("Nothing to do! \n"
+                                 "Load a network file or create a new network. \n"
+                                 "Then ask me to compute something!"), "OK",0);
         statusMessage(  QString(tr("Nothing to do..."))  );
         return;
     }
 
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality_closeness_influence_range.dat";
 
-
     askAboutWeights();
 
-    createProgressBar();
+    statusMessage(  QString(tr("Computing Influence Range Centrality. Please wait...")) );
+    progressMsg = tr("Computing Influence Range Centrality. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
 
     activeGraph.writeCentralityClosenessInfluenceRange(
                 fn, considerWeights,inverseWeights,
@@ -9083,7 +9201,7 @@ void MainWindow::slotCentralityClosenessInfluenceRange(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     ed->show();
-    QApplication::restoreOverrideCursor();
+
     statusMessage(tr("Influence Range Closeness Centrality saved as: ")+fn);
 }
 
@@ -9095,28 +9213,32 @@ void MainWindow::slotCentralityClosenessInfluenceRange(){
 */
 void MainWindow::slotCentralityBetweenness(){
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-
+        QMessageBox::critical(this, "Error",
+                              tr("Nothing to do! \n"
+                                 "Load a network file or create a new network. \n"
+                                 "Then ask me to compute something!"), "OK",0);
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
     }
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality_betweenness.dat";
 
-
     askAboutWeights();
 
-    statusMessage(  QString(tr(" Please wait...")));
-    createProgressBar();
+    statusMessage(  QString(tr("Computing Betweenness Centrality. Please wait...")) );
+    progressMsg = tr("Computing Betweenness Centrality. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
+
     activeGraph.writeCentralityBetweenness(
                 fn, considerWeights, inverseWeights,
                 filterIsolateNodesAct->isChecked());
-    destroyProgressBar();
 
-    statusMessage( QString(tr(" displaying file...")));
+    destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     ed->show();
-    QApplication::restoreOverrideCursor();
+
     statusMessage(tr("Betweenness Centralities saved as: ")+fn);
 }
 
@@ -9129,7 +9251,10 @@ void MainWindow::slotCentralityBetweenness(){
 */
 void MainWindow::slotPrestigeDegree(){
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to do!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        QMessageBox::critical(this, "Error",
+                              tr("Nothing to do! \n"
+                                 "Load a network file or create a new network. \n"
+                                 "Then ask me to compute something!"), "OK",0);
         statusMessage(  QString(tr("Nothing to do..."))  );
         return;
     }
@@ -9166,7 +9291,11 @@ void MainWindow::slotPrestigeDegree(){
     }
     QString fn = appSettings["dataDir"] + "socnetv-report-degree-prestige.dat";
 
-    createProgressBar();
+    statusMessage(  QString(tr("Computing Degree Prestige . Please wait...")) );
+    progressMsg = tr("Computing Degree Prestige. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
 
     activeGraph.writePrestigeDegree(fn, considerWeights,
                                     filterIsolateNodesAct->isChecked() );
@@ -9175,7 +9304,7 @@ void MainWindow::slotPrestigeDegree(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     ed->show();
-    QApplication::restoreOverrideCursor();
+
     statusMessage(tr("Degree Prestige (in-degree) saved as: ") + fn);
 }
 
@@ -9186,7 +9315,10 @@ void MainWindow::slotPrestigeDegree(){
 */
 void MainWindow::slotPrestigePageRank(){
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        QMessageBox::critical(this, "Error",
+                              tr("Nothing to do! \n"
+                                 "Load a network file or create a new network. \n"
+                                 "Then ask me to compute something!"), "OK",0);
 
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
@@ -9196,22 +9328,29 @@ void MainWindow::slotPrestigePageRank(){
 
     askAboutWeights();
 
-    statusMessage(  QString(tr(" Please wait...")));
 
-    createProgressBar();
+    statusMessage(  QString(tr("Computing PageRank Prestige. Please wait...")) );
+    progressMsg = tr("Computing PageRank Prestige. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
+
     activeGraph.writePrestigePageRank(fn, filterIsolateNodesAct->isChecked());
+
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     ed->show();
-    QApplication::restoreOverrideCursor();
+
     statusMessage(tr("PageRank Prestige indices saved as: ")+ fn);
 }
 
 
+
 /**
-*	Writes Proximity Prestige indices into a file, then displays them.
-*/
+ * @brief MainWindow::slotPrestigeProximity
+ * Writes Proximity Prestige indices into a file, then displays them.
+ */
 void MainWindow::slotPrestigeProximity(){
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical(
@@ -9227,8 +9366,12 @@ void MainWindow::slotPrestigeProximity(){
 
     askAboutWeights();
 
-    statusMessage(  QString(tr(" Please wait...")));
-    createProgressBar();
+    statusMessage(  QString(tr("Computing Proximity Prestige. Please wait...")) );
+    progressMsg = tr("Computing Proximity Prestige. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
+
     activeGraph.writePrestigeProximity(fn, true, false ,
                                        filterIsolateNodesAct->isChecked());
     destroyProgressBar();
@@ -9237,7 +9380,7 @@ void MainWindow::slotPrestigeProximity(){
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     ed->show();
-    QApplication::restoreOverrideCursor();
+
     statusMessage(tr("Proximity Prestige Centralities saved as: ")+ fn);
 }
 
@@ -9245,16 +9388,15 @@ void MainWindow::slotPrestigeProximity(){
 
 
 /**
-*	Writes Informational Centralities into a file, then displays it.	
-*/
+ * @brief MainWindow::slotCentralityInformation
+ * Writes Informational Centralities into a file, then displays it.
+ */
 void MainWindow::slotCentralityInformation(){
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(
-                    this,
-                    "Error",
-                    tr("There are no nodes!\n"
-                       "Load a network file or create a new network. \n"
-                       "Then ask me to compute something!"), "OK",0);
+        QMessageBox::critical(this, "Error",
+                              tr("Nothing to do! \n"
+                                 "Load a network file or create a new network. \n"
+                                 "Then ask me to compute something!"), "OK",0);
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
     }
@@ -9287,109 +9429,137 @@ void MainWindow::slotCentralityInformation(){
     statusMessage(  QString(tr(" Please wait...")));
 
     askAboutWeights();
-    createProgressBar();
+
+    statusMessage(  QString(tr("Computing Information Centrality. Please wait...")) );
+    progressMsg = tr("Computing Information Centrality. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
+
     activeGraph.writeCentralityInformation(fn,considerWeights, inverseWeights);
+
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);
     ed->show();
-    QApplication::restoreOverrideCursor();
+
     statusMessage(tr("Information Centralities saved as: ")+ fn);
 }
 
 
 
 
+
 /**
-*	Writes Stress Centralities into a file, then displays it.
-*/
+ * @brief MainWindow::slotCentralityStress
+ * Writes Stress Centralities into a file, then displays it.
+ */
 void MainWindow::slotCentralityStress(){
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(
-                    this,
-                    "Error",
-                    tr("There are no nodes!\n"
-                       "Load a network file or create a new network. \n"
-                       "Then ask me to compute something!"), "OK",0);
+        QMessageBox::critical(this, "Error",
+                              tr("Nothing to do! \n"
+                                 "Load a network file or create a new network. \n"
+                                 "Then ask me to compute something!"), "OK",0);
 
         statusMessage(  QString(tr(" Nothing to do! Why don't you try creating something first?"))  );
         return;
     }
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality_stress.dat";
 
-
     askAboutWeights();
 
-    statusMessage(  QString(tr(" Please wait...")));
-    createProgressBar();
+    statusMessage(  QString(tr("Computing Stress Centrality. Please wait...")) );
+    progressMsg = tr("Computing Stress Centrality. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+    createProgressBar(0,progressMsg);
+
     activeGraph.writeCentralityStress(
                 fn, considerWeights, inverseWeights,
                 filterIsolateNodesAct->isChecked());
+
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     ed->show();
-    QApplication::restoreOverrideCursor();
+
     statusMessage(tr("Stress Centralities saved as: ")+ fn);
 }
 
 
 
 
+
 /**
-*	Writes Power Centralities into a file, then displays it.
-*/
+ * @brief MainWindow::slotCentralityPower
+ * Writes Power Centralities into a file, then displays it.
+ */
 void MainWindow::slotCentralityPower(){
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        QMessageBox::critical(this, "Error",
+                              tr("Nothing to do! \n"
+                                 "Load a network file or create a new network. \n"
+                                 "Then ask me to compute something!"), "OK",0);
 
         statusMessage(  QString(tr(" Nothing to do! Why don't you try creating something first?"))  );
         return;
     }
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality_power.dat";
 
-
     askAboutWeights();
 
-    statusMessage(  QString(tr(" Please wait...")));
-    createProgressBar();
+    statusMessage(  QString(tr("Computing Power Centrality. Please wait...")) );
+    progressMsg = tr("Computing Power Centrality. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
+
     activeGraph.writeCentralityPower(
                 fn, considerWeights, inverseWeights,
                 filterIsolateNodesAct->isChecked());
+
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     ed->show();
-    QApplication::restoreOverrideCursor();
     statusMessage(tr("Stress Centralities saved as: ")+ fn);
 }
 
 
+
+
 /**
-*	Writes Eccentricity Centralities into a file, then displays it.
-*/
+ * @brief MainWindow::slotCentralityEccentricity
+ * Writes Eccentricity Centralities into a file, then displays it.
+ */
 void MainWindow::slotCentralityEccentricity(){
     if (!fileLoaded && !networkModified  )  {
-        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        QMessageBox::critical(this, "Error",
+                              tr("Nothing to do! \n"
+                                 "Load a network file or create a new network. \n"
+                                 "Then ask me to compute something!"), "OK",0);
 
         statusMessage(  QString(tr(" Nothing to do..."))  );
         return;
     }
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality_eccentricity.dat";
 
-
     askAboutWeights();
 
-    statusMessage(  QString(tr(" Please wait...")));
-    createProgressBar(0);
+    statusMessage(  QString(tr("Computing Eccentricity Centrality. Please wait...")) );
+    progressMsg = tr("Computing Eccentricity Centrality. \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
+
     activeGraph.writeCentralityEccentricity(
                 fn, considerWeights, inverseWeights,
                 filterIsolateNodesAct->isChecked());
+
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
     ed->show();
-    QApplication::restoreOverrideCursor();
+
     statusMessage(tr("Eccentricity Centralities saved as: ")+ fn);
 }
 
@@ -9402,16 +9572,15 @@ void MainWindow::slotCentralityEccentricity(){
  * Creates a Qt Progress Dialog
  * if max = 0, then max becomes equal to active vertices*
  */
-void MainWindow::createProgressBar(int max, QString msg){
-
+void MainWindow::createProgressBar(const int &max, const QString &msg){
     qDebug() << "MW::createProgressBar" ;
-    if ( max == 0 ) {
-            max = activeGraph.vertices();
-        }
 
-    if ( ( appSettings["showProgressBar"] == "true"  && max > 100 )
-         || activeEdges() > 5000 ){
-        progressDialog= new QProgressDialog(msg, "Cancel", 0, max, this);
+    if (   appSettings["showProgressBar"] == "true"  ){
+        progressDialog = new QProgressDialog(msg,
+                                            "Cancel",
+                                            0,
+                                            (max==0) ? activeGraph.vertices(): max
+                                            , this);
         progressDialog -> setWindowModality(Qt::WindowModal);
         connect( &activeGraph, SIGNAL( updateProgressDialog(int) ),
                  progressDialog, SLOT(setValue(int) ) ) ;
@@ -9426,16 +9595,16 @@ void MainWindow::createProgressBar(int max, QString msg){
 /**
  * @brief MainWindow::destroyProgressBar
  */
-void MainWindow::destroyProgressBar(){
+void MainWindow::destroyProgressBar(int max){
     qDebug () << "MainWindow::destroyProgressBar";
     QApplication::restoreOverrideCursor();
     qDebug () << "MainWindow::destroyProgressBar - check if a progressbar exists";
-//    if ( ( appSettings["showProgressBar"] == "true" || activeEdges() > 5000 ) ) {
-//        qDebug () << "MainWindow::destroyProgressBar - progressbar exists. Destroying";
-//        progressDialog->deleteLater();
-//    }
-
-
+    if (  appSettings["showProgressBar"] == "true" && max > -1 ) {
+        if ( progressDialog->value() != 0  ) {
+            qDebug () << "MainWindow::destroyProgressBar - progressbar exists. Destroying";
+            progressDialog->deleteLater();
+        }
+    }
 }
 
 

@@ -120,8 +120,8 @@ public:
     int activeEdges();
     int activeNodes();
 
-    void createProgressBar(int max=0, QString msg="Please wait...");
-    void destroyProgressBar();
+    void createProgressBar(const int &max=0, const QString &msg="Please wait...");
+    void destroyProgressBar(int max=0);
 
 public slots:
     //NETWORK MENU
@@ -175,7 +175,7 @@ public slots:
 
     void slotRandomScaleFreeDialog();
 
-    void slotRandomScaleFree(const int &nodes,
+    void slotRandomScaleFree(const int &newNodes,
                                  const int &power,
                                  const int &initialNodes,
                                  const int &edgesPerStep,
@@ -184,7 +184,7 @@ public slots:
 
     void slotRandomSmallWorldDialog();
 
-    void slotRandomSmallWorld  (const int &nodes,
+    void slotRandomSmallWorld  (const int &newNodes,
                                    const int &degree,
                                    const float &beta,
                                    const QString &mode,
@@ -471,7 +471,7 @@ private:
     enum { MaxRecentFiles = 5 };
     QAction *recentFileActs[MaxRecentFiles];
 
-    QString fileName, networkName, previous_fileName;
+    QString fileName, networkName, previous_fileName, progressMsg;
     QString settingsFilePath, settingsDir ;
     QStringList fileNameNoPath, fortuneCookie;
     QStringList tempFileNameNoPath, tips, recentFiles;
