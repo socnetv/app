@@ -321,6 +321,7 @@ public slots:
     //HELP MENU
     void slotHelpTips();
     void slotHelp();
+    void slotHelpCheckUpdates();
     void slotHelpAbout();
     void slotAboutQt();
 
@@ -443,6 +444,7 @@ private:
     QAction *optionsEdgeArrowsAct, *drawEdgesBezier,*considerEdgeWeightsAct;
     QAction *optionsEdgeLabelsAct;
     QAction *backgroundImageAct,*helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
+    QAction *helpCheckUpdatesApp;
     QAction *openSettingsAct;
     QAction *webCrawlerAct;
 

@@ -2032,6 +2032,16 @@ void MainWindow::initActions(){
     tipsApp->setWhatsThis(tr("Quick Tips\n\nDisplays some useful and quick tips"));
     connect(tipsApp, SIGNAL(triggered()), this, SLOT(slotHelpTips()));
 
+
+    helpCheckUpdatesApp = new QAction(
+                QIcon(":/images/help.png"), tr("Check Updates"),	this);
+    helpCheckUpdatesApp->setStatusTip(tr("Open a browser to SocNetV website..."));
+    helpCheckUpdatesApp->setWhatsThis(tr("Check Updates\n\n"
+                                         "Open a browser to SocNetV website so "
+                                         "that you can check yourself for updates"));
+    connect(helpCheckUpdatesApp, SIGNAL(triggered()),
+            this, SLOT(slotHelpCheckUpdates()));
+
     helpAboutApp = new QAction(tr("About SocNetV"), this);
     helpAboutApp->setStatusTip(tr("About SocNetV"));
     helpAboutApp->setWhatsThis(tr("About\n\nBasic information about SocNetV"));
@@ -2347,8 +2357,6 @@ void MainWindow::initMenuBar() {
     viewOptionsMenu -> addAction (backgroundImageAct);
 
 
-
-
     optionsMenu -> addSeparator();
     optionsMenu -> addAction (openSettingsAct);
 
@@ -2358,6 +2366,8 @@ void MainWindow::initMenuBar() {
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu -> addAction (helpApp);
     helpMenu -> addAction (tipsApp);
+    helpMenu -> addSeparator();
+    helpMenu -> addAction (helpCheckUpdatesApp);
     helpMenu -> addSeparator();
     helpMenu-> addAction (helpAboutApp);
     helpMenu-> addAction (helpAboutQt);
@@ -10173,6 +10183,16 @@ void MainWindow::slotHelp(){
 }
 
 
+
+
+/**
+ * @brief MainWindow::slotHelpCheckUpdates
+ * Opens a web browser to SocNetV website.
+ */
+void MainWindow::slotHelpCheckUpdates() {
+    statusMessage( tr("Opening SocNetV website in your default web browser....") );
+    QDesktopServices::openUrl(QUrl("http://socnetv.sourceforge.net/downloads?app=" + VERSION));
+}
 
 /**
     Displays the following message!!
