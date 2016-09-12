@@ -1306,6 +1306,9 @@
             </item>
             <item>
              <widget class="QRadioButton" name="edgeShapeRadioBezier">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default edge shape&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select the default edge shape for all edges. &lt;/p&gt;&lt;p&gt;Edges can be either straight lines (default) or bezier curves.&lt;/p&gt;&lt;p&gt;This will apply to all existing edgesimmediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the default edge shape will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -1509,6 +1512,9 @@
             </item>
             <item>
              <widget class="QToolButton" name="edgeLabelColorBtn">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="minimumSize">
                <size>
                 <width>60</width>
@@ -1570,6 +1576,9 @@
             </item>
             <item>
              <widget class="QSpinBox" name="edgeLabelSizeSpin">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="font">
                <font>
                 <family>DejaVu Sans</family>

@@ -85,5 +85,13 @@
         <file>images/edgeweight.png</file>
         <file>images/qt.png</file>
         <file>images/download.png</file>
+        <file>images/nodelabel.png</file>
+        <file>images/nodelabelsize.png</file>
+        <file>images/nodenumber.png</file>
+        <file>images/nodenumbercolor.png</file>
+        <file>images/nodeshape.png</file>
+        <file>images/nodelabelcolor.png</file>
+        <file>images/nodenumbersize.png</file>
+        <file>images/edgecolor.png</file>
     </qresource>
 </RCC>

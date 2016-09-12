@@ -880,7 +880,7 @@ void MainWindow::initActions(){
                                         "To permanently change it, use Settings & Preferences"));
     connect(editNodeSizeAllAct, SIGNAL(triggered()), this, SLOT(slotEditNodeSizeAll()) );
 
-    editNodeShapeAll = new QAction( tr("Change All Nodes Shape (this session)"),	this);
+    editNodeShapeAll = new QAction(QIcon(":/images/nodeshape.png"), tr("Change All Nodes Shape (this session)"),	this);
     editNodeShapeAll->setStatusTip(tr("Change the shape of all nodes (this session only)"));
     editNodeShapeAll->setWhatsThis(tr("Nodes Shape\n\n"
                                       "Click to select and apply a new shape for all nodes at once."
@@ -889,7 +889,8 @@ void MainWindow::initActions(){
     connect(editNodeShapeAll, SIGNAL(triggered()), this, SLOT(slotEditNodeShape()) );
 
 
-    editNodeNumbersSizeAct = new QAction( tr("Change All Node Numbers Size (this session)"),	this);
+    editNodeNumbersSizeAct = new QAction(QIcon(":/images/nodenumbersize.png"),
+                                         tr("Change All Node Numbers Size (this session)"),	this);
     editNodeNumbersSizeAct->setStatusTip(tr("Change the font size of the numbers of all nodes"
                                             "(in this session only)"));
     editNodeNumbersSizeAct->setWhatsThis(tr("Node Numbers Size\n\n"
@@ -900,7 +901,8 @@ void MainWindow::initActions(){
             this, SLOT( slotEditNodeNumberSize(  )) );
 
 
-    editNodeNumbersColorAct = new QAction( tr("Change All Node Numbers Color (this session)"),	this);
+    editNodeNumbersColorAct = new QAction(QIcon(":/images/nodenumbercolor.png"),
+                                          tr("Change All Node Numbers Color (this session)"),	this);
     editNodeNumbersColorAct->setStatusTip(tr("Change the color of the numbers of all nodes."
                                               "(in this session only)"));
     editNodeNumbersColorAct->setWhatsThis(tr("Node Numbers Color\n\n"
@@ -910,7 +912,7 @@ void MainWindow::initActions(){
                                               "To permanently change it, use Settings & Preferences"));
     connect(editNodeNumbersColorAct, SIGNAL(triggered()), this, SLOT(slotEditNodeNumbersColor()));
 
-    editNodeLabelsSizeAct = new QAction( tr("Change All Node Labels Size (this session)"), this);
+    editNodeLabelsSizeAct = new QAction(QIcon(":/images/nodelabelsize.png"), tr("Change All Node Labels Size (this session)"), this);
     editNodeLabelsSizeAct->setStatusTip(tr("Change the font size of the labels of all nodes"
                                            "(this session only)"));
     editNodeLabelsSizeAct->setWhatsThis(tr("Node Labels Size\n\n"
@@ -919,7 +921,7 @@ void MainWindow::initActions(){
                                            "To permanently change it, use Settings & Preferences"));
     connect(editNodeLabelsSizeAct, SIGNAL(triggered()), this, SLOT(slotEditNodeLabelSize()) );
 
-    editNodeLabelsColorAct = new QAction( tr("Change All Node Labels Color (this session)"),	this);
+    editNodeLabelsColorAct = new QAction(QIcon(":/images/nodelabelcolor.png"), tr("Change All Node Labels Color (this session)"),	this);
     editNodeLabelsColorAct->setStatusTip(tr("Change the color of the labels of all nodes "
                                              "(for this session only)"));
     editNodeLabelsColorAct->setWhatsThis(tr("Labels Color\n\n"
@@ -964,7 +966,7 @@ void MainWindow::initActions(){
                                        "Changes the Weight of an Edge"));
     connect(editEdgeWeightAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeWeight()));
 
-    editEdgeColorAllAct = new QAction( tr("Change All Edges Color"), this);
+    editEdgeColorAllAct = new QAction(QIcon(":/images/edgecolor.png"), tr("Change All Edges Color"), this);
     editEdgeColorAllAct->setStatusTip(tr("Change the color of all Edges."));
     editEdgeColorAllAct->setWhatsThis(tr("All Edges Color\n\n"
                                          "Changes the color of all Edges"));
@@ -10269,110 +10271,14 @@ void MainWindow::slotHelpCreateTips(){
 
 
 
+
 /**
-    Loads the HTML Help file and displays it via system browser
-*/
+ * @brief MainWindow::slotHelp
+ * Opens the system web browser to load the online Manual
+ */
 void MainWindow::slotHelp(){
-
-    QString helpPath = "";
-    bool manualFound = false;
-    QDir d( QCoreApplication::applicationDirPath() );
-    qDebug()<< QCoreApplication::applicationDirPath().toLatin1();
-
-    if ( d.exists("index.html") ) {
-        helpPath=d.filePath("index.html");
-    }
-    else {
-        if (d.dirName()=="bin") {
-            d.cdUp();
-        }
-        if (d.cd("./manual") ) {
-            if ( d.exists("index.html") ) {
-                helpPath=d.filePath("index.html");
-                manualFound = true;
-            }
-            else 	{
-                qDebug()<< "help file does not exist here.";
-                manualFound = false;
-            }
-        }
-        // MacOS: assumes manual dir in socnetv.app/Contents/
-        // before deploy copy there the manual dir
-        if (d.cd("../manual") ) {         // for Mac
-            if ( d.exists("index.html") ) {
-                helpPath=d.filePath("index.html");
-                manualFound = true;
-            }
-            else 	{
-                qDebug()<< "help file does not exist here.";
-                manualFound = false;
-            }
-        }
-
-        if (!manualFound && d.cd("../trunk/manual") ) {
-            if ( d.exists("index.html") ) {
-                helpPath=d.filePath("index.html");
-                manualFound = true;
-            }
-            else 	{
-                qDebug()<< "help file does not exist here.";
-                manualFound = false;
-            }
-        }
-        if ( !manualFound && d.cd("/usr/local/share/doc/socnetv/") ) {			//for compile installation
-            if (d.exists("manual/")) d.cd("manual/");
-            if ( d.exists("index.html") ) {
-                helpPath=d.filePath("index.html");
-                qDebug()<< "path" << helpPath.toLatin1();
-                manualFound = true;
-            }
-            else {
-                qDebug()<< "help file does not exist.";
-                manualFound = false;
-            }
-        }
-        if (!manualFound && d.cd("/usr/share/doc/socnetv/") ) {     //for Debian Ubuntu
-            if (d.exists("manual/")) d.cd("manual/");
-            if ( d.exists("index.html") ) {
-                helpPath=d.filePath("index.html");
-                manualFound = true;
-            }
-            else {
-                qDebug("help file does not exist in /usr/share/doc/socnetv/.");
-                manualFound = false;
-            }
-        }
-        if ( !manualFound && d.cd("/usr/share/doc/packages/socnetv/") ) {  //for opensuse file hierarchy
-            if (d.exists("manual/"))
-                d.cd("manual/");
-            if ( d.exists("index.html") ) {
-                helpPath=d.filePath("index.html");
-                manualFound = true;
-            }
-            else {
-                qDebug("help file does not exist.");
-            }
-        }
-        QString fedoraPath = "/usr/share/doc/socnetv-" + VERSION;
-        if ( !manualFound && d.cd(fedoraPath) ) {  //for Fedora file hierarchy
-            if (d.exists("manual/"))
-                d.cd("manual/");
-            if ( d.exists("index.html") ) {
-                helpPath=d.filePath("index.html");
-                manualFound = true;
-            }
-            else {
-                qDebug("help file does not exist.");
-            }
-        }
-
-    }
-    qDebug () << "help path is: " << helpPath.toLatin1();
-
-    if ( manualFound == true)
-        QDesktopServices::openUrl(QUrl::fromLocalFile(helpPath));
-    else
-        QDesktopServices::openUrl(QUrl("http://socnetv.sourceforge.net/docs/index.html"));
+    statusMessage( tr("Opening the SocNetV Manual in your default web browser....") );
+    QDesktopServices::openUrl(QUrl("http://socnetv.sourceforge.net/docs/index.html"));
 }
 
 
@@ -10393,23 +10299,34 @@ void MainWindow::slotHelpCheckUpdates() {
 void MainWindow::slotHelpAbout(){
     int randomCookie=rand()%fortuneCookie.count();
     QString BUILD="Mon Sep 12 10:36:40 EEST 2016";
-    QMessageBox::about( this, "About SocNetV",
-                        "<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
-                        "<p><b>Version</b>: " + VERSION + "</p>"
-                        "<p><b>Build</b>: "  + BUILD + " </p>"
+    QMessageBox::about(
+                this, tr("About SocNetV"),
+                        tr("<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)") +
+                        tr("<p><b>Version</b>: ") + VERSION + "</p>" +
+                        tr("<p><b>Build</b>: ")  + BUILD + " </p>" +
 
-                        "<p>(C) 2005-2016 by Dimitris V. Kalamaras"
-                        "<br> dimitris.kalamaras@gmail.com"
+                        tr("<p>(C) 2005-2016 by Dimitris V. Kalamaras")+
+                        tr("<br> dimitris.kalamaras@gmail.com")+
 
-                        "<p><b>Fortune cookie: </b><br> \""  + fortuneCookie[randomCookie]  +"\""
+                        tr("<p><b>Fortune cookie: </b><br> \"")  + fortuneCookie[randomCookie]  + "\"" +
 
-                        "<p><b>License:</b><br>"
+                        tr("<p><b>License:</b><p>") +
 
-                        "This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>"
+                        tr("<p>This program is free software; you can redistribute it "
+                           "and/or modify it under the terms of the GNU General "
+                           "Public License as published by the Free Software Foundation; "
+                           "either version 3 of the License, or (at your option) "
+                           "any later version.</p>") +
 
-                        "<p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</p>"
+                        tr("<p>This program is distributed in the hope that it "
+                           "will be useful, but WITHOUT ANY WARRANTY; "
+                           "without even the implied warranty of MERCHANTABILITY "
+                           "or FITNESS FOR A PARTICULAR PURPOSE. "
+                           "See the GNU General Public License for more details.</p>") +
 
-                        "<p>You should have received a copy of the GNU General Public License along with this program; If not, see http://www.gnu.org/licenses/</p>");
+                        tr("<p>You should have received a copy of the GNU "
+                           "General Public License along with this program; "
+                           "If not, see http://www.gnu.org/licenses/</p>"));
 }
 
 
