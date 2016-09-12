@@ -114,7 +114,7 @@ Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 
 %prep
 %setup 
-chmod -R a-x+X COPYING changelog.gz INSTALL NEWS README TODO manual man nets src
+chmod -R a-x+X COPYING changelog.gz INSTALL NEWS README.md TODO man nets src
 chmod 644 nets/*
 find . -type f -name '*~' -delete
 find . -type f -name '*.bak' -delete
