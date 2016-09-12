@@ -176,7 +176,7 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
     float element;
 
     #ifdef Q_OS_WIN32
-    QString infinity = QString::number(-1);
+    QString infinity = static_cast<unsigned char>(236);
     #else
     QString infinity = QString("\xE2\x88\x9E") ;
     #endif
