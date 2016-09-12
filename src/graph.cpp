@@ -95,11 +95,14 @@ Graph::Graph() {
  */
 void Graph::canvasSizeSet(const int w, const int h){
     qDebug() << "Graph:: canvasSizeSet() - (" << w << ", " << h<<")";
-    canvasWidth = w-20;
-    canvasHeight= h-20;
+    canvasWidth = w-50;
+    canvasHeight= h-50;
 }
 
 
+double Graph::canvasMinDimension () const {
+    return ( canvasHeight < canvasWidth ) ? canvasHeight / 2.0 -20 : canvasWidth/2.0 - 20;
+}
 
 
 
@@ -4853,6 +4856,7 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
                 << "prominenceIndex index = " << prominenceIndex;
     //first calculate centrality indices if needed
 
+    maxRadius = canvasMinDimension();
     if ( prominenceIndex == 1) {
             if (graphModified || !calculatedDC )
                 centralityDegree(true, dropIsolates);
@@ -5050,6 +5054,7 @@ void Graph::layoutCircularRandom(double x0, double y0, double maxRadius){
     qDebug() << "Graph::layoutCircularRandom - ";
     double rad=0, new_radius=0, new_x=0, new_y=0;
     double i=0;
+    maxRadius = canvasMinDimension();
     //offset controls how far from the centre the central nodes be positioned
     float offset=0.06, randomDecimal=0;
     int vert=vertices();

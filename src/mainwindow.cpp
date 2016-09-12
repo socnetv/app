@@ -7949,7 +7949,7 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
 
     double x0=scene->width()/2.0;
     double y0=scene->height()/2.0;
-    double maxRadius=(graphicsWidget->height()/2.0)-50;          //pixels
+    double maxRadius=(graphicsWidget->height()/2.0)-80;          //pixels
 
     graphicsWidget->clearGuides();
 

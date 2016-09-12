@@ -108,7 +108,7 @@ class CompareDistances {
 // - BUG: Fruchterman-Reingold model fixes some nodes to (1,1) breaking the layout
 // - TODO: Enrich Node properties dialog
 // - BUG: Rubber band selection does not always work on large nets where nodes been removed.
-// - TODO: Add missing icons.
+
 
 
 
@@ -162,6 +162,7 @@ public slots:
     void relationSet(int);
     void relationAddFromUser(QString relation);
     void canvasSizeSet(const int w, const int h);
+    double canvasMinDimension() const;
     void vertexIsolateFilter ( bool );		//Called by MW to filter orphan vertices
     void edgeFilterByWeight (float, bool);		//Called by MW to filter edges over/under a weight
     void edgeFilterByRelation(int relation, bool status);
