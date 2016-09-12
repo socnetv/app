@@ -5,7 +5,7 @@
 
                         nodelabel.cpp  -  description
                              -------------------
-    copyright            : (C) 2005-2015 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 

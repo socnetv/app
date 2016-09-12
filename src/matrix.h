@@ -5,7 +5,7 @@
 
                           matrix.h  -  description
                              -------------------
-    copyright            : (C) 2005-2015 by dimitris kalamaras
+    copyright            : (C) 2005-2016 by dimitris kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 

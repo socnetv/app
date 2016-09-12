@@ -5,7 +5,7 @@
 
 -                           mainwindow.cpp  -  description
                              -------------------
-    copyright            : (C) 2005-2015 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -10389,13 +10389,13 @@ void MainWindow::slotHelpCheckUpdates() {
 */
 void MainWindow::slotHelpAbout(){
     int randomCookie=rand()%fortuneCookie.count();
-QString BUILD="Thu Nov 21 01:42:08 EEST 2015";
+QString BUILD="Mon Sep 12 10:36:40 EEST 2016";
     QMessageBox::about( this, "About SocNetV",
                         "<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)"
                         "<p><b>Version</b>: " + VERSION + "</p>"
                         "<p><b>Build</b>: "  + BUILD + " </p>"
 
-                        "<p>(C) 2005-2015 by Dimitris V. Kalamaras"
+                        "<p>(C) 2005-2016 by Dimitris V. Kalamaras"
                         "<br> dimitris.kalamaras@gmail.com"
 
                         "<p><b>Fortune cookie: </b><br> \""  + fortuneCookie[randomCookie]  +"\""
