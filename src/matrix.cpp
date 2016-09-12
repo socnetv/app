@@ -175,11 +175,11 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
     float element;
 
     if (maxVal == -1 ||  maxVal==RAND_MAX )
-         os << " max Value = " <<  QString("\xE2\x88\x9E") << endl;
+         os << " max Value = " <<  QChar (0x221E) << endl; //QString("\xE2\x88\x9E") << endl;
         else
         os << " max Value = " << maxVal<< endl;
     if (minVal == -1 ||  minVal==RAND_MAX )
-         os << " min Value = " <<  QString("\xE2\x88\x9E") << endl;
+         os << " min Value = " <<  QChar (0x221E) << endl; // QString("\xE2\x88\x9E") << endl;
     else
         os << " min Value = " << minVal<< endl<<endl;
     if (maxVal > 999999 )
@@ -281,7 +281,7 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
             else
                 newFieldWidth = fieldWidth;
             if ( element == -1 || element == RAND_MAX)  // we print infinity symbol instead of -1 (distances matrix).
-                os << qSetFieldWidth(newFieldWidth) << right << QString("\xE2\x88\x9E");
+                os << qSetFieldWidth(newFieldWidth) << right << QChar (0x221E) ; // QString("\xE2\x88\x9E");
             else
                 os << qSetFieldWidth(newFieldWidth)
                    << right << element;
