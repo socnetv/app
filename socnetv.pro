@@ -20,7 +20,7 @@ translations.path = $$[INSTALLPATH]usr/share/socnetv
 translations.files = translations
 
 doc.path = $$[INSTALLPATH]usr/share/doc/socnetv
-doc.files = license changelog.gz NEWS README TODO COPYING AUTHORS INSTALL
+doc.files = license changelog.gz NEWS README.md TODO COPYING AUTHORS INSTALL
 
 INSTALLS += target pixmap documentation manpage translations doc
 
@@ -113,8 +113,6 @@ SOURCES += src/guide.cpp \
 #  QMAKE_CXXFLAGS += -msse  -ffast-math 
 #}
 
-INCLUDEPATH +=  /usr/local/include /usr/include /usr/include/qt5 /usr/share/qt5/include 
-INCLUDEPATH +=  /usr/local/include /usr/include /usr/include/qt  /usr/include/qt5 /usr/share/qt5/include
 
 RESOURCES = src/src.qrc
 win32 {
