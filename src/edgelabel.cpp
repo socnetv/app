@@ -40,9 +40,6 @@ EdgeLabel::EdgeLabel( Edge *link , int size, QString labelText)
     setZValue(253);
 }
 
-void EdgeLabel::move(double x, double y) {
-    move(x,y);
-}
 
 EdgeLabel::~EdgeLabel()
 {

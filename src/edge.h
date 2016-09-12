@@ -27,7 +27,6 @@
 #ifndef EDGE_H
 #define EDGE_H
 
-using namespace std;
 
 #include <QGraphicsItem>
 #include <QObject>
@@ -40,7 +39,7 @@ class Node;
 class EdgeWeight;
 class EdgeLabel;
 
-
+using namespace std;
 
 
 static const int TypeEdge= QGraphicsItem::UserType+2;

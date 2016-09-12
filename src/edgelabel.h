@@ -1,5 +1,5 @@
 /***************************************************************************
- SocNetV: Social Network Visualizer 
+ SocNetV: Social Network Visualizer
  version: 2.0
  Written in Qt
                          edgelabel.h  -  description
@@ -38,11 +38,10 @@ class EdgeLabel: public QGraphicsTextItem
 {
 public:
     EdgeLabel(Edge * , int, QString);
-	void removeRefs();
-	void move(double x, double y);
+    void removeRefs();
 
     enum { Type = UserType + 6 };
-	int type() const { return Type; }
+    int type() const { return Type; }
 
     ~EdgeLabel();
 private:

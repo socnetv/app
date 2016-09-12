@@ -27,7 +27,6 @@
 #ifndef NODE_H
 #define NODE_H
 
-using namespace std;
 
 #include <QGraphicsItem>
 #include <QObject>
@@ -39,7 +38,7 @@ class Edge;
 class NodeLabel;
 class NodeNumber;
 
-
+using namespace std;
 
 static const int TypeNode = QGraphicsItem::UserType+1;
 

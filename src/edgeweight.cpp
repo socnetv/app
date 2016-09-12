@@ -40,9 +40,6 @@ EdgeWeight::EdgeWeight( Edge *link , int size, QString labelText)
     setZValue(253);
 }
 
-void EdgeWeight::move(double x, double y) {
-	this -> move(x,y);
-}
 
 EdgeWeight::~EdgeWeight()
 {

@@ -27,14 +27,13 @@
 #ifndef WEBCRAWLER_H
 #define WEBCRAWLER_H
 
-using namespace std;
-
 #include <QNetworkReply>
 #include <QUrl>
 
 class QNetworkAccessManager;
 class QNetworkRequest;
 
+using namespace std;
 
 
 class WebCrawler_Parser : public QObject  {

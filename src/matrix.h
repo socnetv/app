@@ -33,8 +33,6 @@
 
 #include <QtGlobal>
 
-
-
 #include <utility>      // std::pair, std::make_pair
 
 using namespace std; //or else compiler groans for nothrow

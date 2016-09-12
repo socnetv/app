@@ -1,5 +1,5 @@
 /***************************************************************************
- SocNetV: Social Network Visualizer 
+ SocNetV: Social Network Visualizer
  version: 2.0
  Written in Qt
                          edgeweight.h  -  description
@@ -38,13 +38,12 @@ class EdgeWeight: public QGraphicsTextItem
 {
 public:
     EdgeWeight(Edge * , int, QString);
-	void removeRefs();
-	void move(double x, double y);
+    void removeRefs();
 
-	enum { Type = UserType + 5 };
-	int type() const { return Type; }
+    enum { Type = UserType + 5 };
+    int type() const { return Type; }
 
-	~EdgeWeight();
+    ~EdgeWeight();
 private:
 };
 

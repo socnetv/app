@@ -45,13 +45,11 @@
 #include "parser.h"
 #include "webcrawler.h"
 
-
+using namespace std;
 
 static const int EDGE_DIRECTED = 0;
 static const int EDGE_DIRECTED_OPPOSITE_EXISTS = 1;
 static const int EDGE_RECIPROCAL_UNDIRECTED = 2;
-
-using namespace std;
 
 class QPointF;
 
