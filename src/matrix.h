@@ -31,13 +31,15 @@
 
 
 
-#include <QtGlobal>		//used for qDebug function
-#include <QDebug>
-#include <QTextStream>
+#include <QtGlobal>
+
+
 
 #include <utility>      // std::pair, std::make_pair
 
 using namespace std; //or else compiler groans for nothrow
+
+class QTextStream;
 
 class Row {
 public:

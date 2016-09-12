@@ -31,8 +31,9 @@
 #define TINY 1.0e-20
 
 #include <cstdlib>		//allows the use of RAND_MAX macro
+#include <QDebug>
 #include <QtMath>		//needed for fabs, qFloor etc
-
+#include <QTextStream>
 
 
 /**
@@ -174,12 +175,19 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
     m.findMinMaxValues(maxVal,minVal);
     float element;
 
+    #ifdef Q_OS_WIN32
+    QString infinity = QString::number(-1);
+    #else
+    QString infinity = QString("\xE2\x88\x9E") ;
+    #endif
+
+
     if (maxVal == -1 ||  maxVal==RAND_MAX )
-         os << " max Value = " <<  QChar (0x221E) << endl; //QString("\xE2\x88\x9E") << endl;
+         os << " max Value = " <<  infinity << endl;
         else
         os << " max Value = " << maxVal<< endl;
     if (minVal == -1 ||  minVal==RAND_MAX )
-         os << " min Value = " <<  QChar (0x221E) << endl; // QString("\xE2\x88\x9E") << endl;
+         os << " min Value = " <<  infinity << endl;
     else
         os << " min Value = " << minVal<< endl<<endl;
     if (maxVal > 999999 )
@@ -281,7 +289,7 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
             else
                 newFieldWidth = fieldWidth;
             if ( element == -1 || element == RAND_MAX)  // we print infinity symbol instead of -1 (distances matrix).
-                os << qSetFieldWidth(newFieldWidth) << right << QChar (0x221E) ; // QString("\xE2\x88\x9E");
+                os << qSetFieldWidth(newFieldWidth) << right << infinity;
             else
                 os << qSetFieldWidth(newFieldWidth)
                    << right << element;
