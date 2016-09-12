@@ -170,7 +170,7 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 %{_datadir}/applications/%{name}.desktop
 %{_datadir}/pixmaps/%{name}.png
 %{_mandir}/man1/*
-%doc changelog.gz NEWS README.md TODO COPYING AUTHORS INSTALL src/manual
+%doc changelog.gz NEWS README.md TODO COPYING AUTHORS INSTALL 
 
 
 
@@ -178,6 +178,8 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 #CHANGELOG SECTION
 #
 %changelog
+* Tue Sep 13 2016 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.0-2
+- Spec patch for Buildservice
 * Mon Sep 12 2016 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.0-1
 - Synced with new stable version from upstream.
 * Tue Jun 23 2015 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 1.9-1
