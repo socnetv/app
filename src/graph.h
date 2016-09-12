@@ -106,6 +106,9 @@ class CompareDistances {
 // - BUG: wrong default edge colors (not the ones used by Settings) after loading GraphML files.
 // - BUG: Resizing the MW view does not resize/reposition the layout guides
 // - BUG: Fruchterman-Reingold model fixes some nodes to (1,1) breaking the layout
+// - TODO: Enrich Node properties dialog
+// - BUG: Rubber band selection does not always work on large nets where nodes been removed.
+// - TODO: Add missing icons.
 
 
 
