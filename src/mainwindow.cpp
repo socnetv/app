@@ -2538,7 +2538,7 @@ void MainWindow::initToolBox(){
                    "Compute basic graph-theoretic features of the network "
                    "i.e. diameter, eccentricity, distances etc."));
     QStringList geodesicsCommandsList;
-    geodesicsCommandsList << "None selected"
+    geodesicsCommandsList << "Select"
                           << "Distance" << "Average Distance"
                           << "Distances Matrix" << "Geodesics Matrix"
                           << "Eccentricity" << "Diameter";
@@ -2560,7 +2560,7 @@ void MainWindow::initToolBox(){
                    "Compute 'connectivity' metrics such as network connectedness, "
                    "walks, reachability etc."));
     QStringList connectivityCommands;
-    connectivityCommands << "None selected"
+    connectivityCommands << "Select"
                          << "Connectedness" << "Walks of given length"
                          << "Total Walks" << "Reachability Matrix";
     toolBoxAnalysisConnectivitySelect->addItems(connectivityCommands);
@@ -2579,7 +2579,7 @@ void MainWindow::initToolBox(){
                         tr("Analyze Clusterability\n\n"
                            "Compute 'clusterability' metrics, such as cliques"));
     QStringList clusterabilityCommands;
-    clusterabilityCommands << "None selected"
+    clusterabilityCommands << "Select"
                          << "Cliques"
                          << "Clustering Coefficient"
                          << "Triad Census";
@@ -2615,7 +2615,7 @@ void MainWindow::initToolBox(){
                 "Prestige indices are suitable (and can be calculated only) on directed graphs.")
                 );
     QStringList prominenceCommands;
-    prominenceCommands << "None selected"
+    prominenceCommands << "Select"
                        << "Degree Centrality" << "Closeness Centrality"
                        << "Influence Range Closeness Centrality"
                        << "Betweenness Centrality"
