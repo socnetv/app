@@ -5998,26 +5998,31 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
     QMenu *contextMenu = new QMenu(" Menu",this);
     Q_CHECK_PTR( contextMenu );  //displays "out of memory" if needed
 
+    int nodeCount = selectedNodes().count();
     contextMenu -> addAction( "## Selected nodes: "
-                              + QString::number(  selectedNodes().count() ) + " ##  ");
+                              + QString::number(  nodeCount ) + " ##  ");
 
     contextMenu -> addSeparator();
-    int nodeCount = selectedNodes().count();
+
     if (nodeCount > 0) {
         contextMenu -> addAction(editNodePropertiesAct );
         contextMenu -> addSeparator();
-
         contextMenu -> addAction(editNodeRemoveAct );
-
         if (nodeCount > 1 ){
             editNodeRemoveAct->setText(tr("Remove ")
                                        + QString::number(nodeCount)
                                        + tr(" nodes"));
-            contextMenu -> addSeparator();
         }
+        else {
+            editNodeRemoveAct->setText(tr("Remove ")
+                                       + QString::number(nodeCount)
+                                       + tr(" node"));
+        }
+        contextMenu -> addSeparator();
     }
 
     contextMenu -> addAction( editNodeAddAct );
+    contextMenu -> addSeparator();
     contextMenu -> addAction( editEdgeAddAct );
     contextMenu -> addSeparator();
 
@@ -6775,14 +6780,30 @@ void MainWindow::slotEditNodeOpenContextMenu() {
     }
 
     nodeContextMenu -> addSeparator();
-    nodeContextMenu -> addAction(editEdgeAddAct);
-    nodeContextMenu -> addAction(editNodeRemoveAct );
+
     nodeContextMenu -> addAction(editNodePropertiesAct );
+
+    nodeContextMenu -> addSeparator();
+
+    nodeContextMenu -> addAction(editEdgeAddAct);
+
+    nodeContextMenu -> addSeparator();
+
+    nodeContextMenu -> addAction(editNodeRemoveAct );
+
     if (nodeCount > 1 ){
         editNodeRemoveAct->setText(tr("Remove ")
                                    + QString::number(nodeCount)
                                    + tr(" nodes"));
     }
+    else {
+        editNodeRemoveAct->setText(tr("Remove ")
+                                   + QString::number(nodeCount)
+                                   + tr(" node"));
+    }
+    nodeContextMenu -> addSeparator();
+
+
     //QCursor::pos() is good only for menus not related with node coordinates
     nodeContextMenu -> exec(QCursor::pos() );
     delete  nodeContextMenu;
