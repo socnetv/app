@@ -51,7 +51,6 @@ Node::Node(GraphicsWidget* gw, const int &num, const int &size,
            QPointF p
            ) : graphicsWidget (gw)
 {
-    Q_UNUSED(p);
     graphicsWidget->scene()->addItem(this); //Without this nodes don't appear on the screen...
 
     setFlags(ItemSendsGeometryChanges | ItemIsSelectable | ItemIsMovable );
@@ -90,9 +89,9 @@ Node::Node(GraphicsWidget* gw, const int &num, const int &size,
 
     setShape(m_shape);
 
+    setPos(p);
     qDebug()<< "Node: constructor: initial position at: "
-            << this->x()<<", "<<this->y()
-            << " Will move at: "<< p.x()<<", "<<p.y();;
+            << this->x()<<", "<<this->y();
 
 } 
 

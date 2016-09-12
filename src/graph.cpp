@@ -5005,11 +5005,7 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
         //Move node to new position
         emit moveNode((*it)->name(),  new_x,  new_y);
         i++;
-        emit addGuideCircle (
-                    static_cast<int> (x0),
-                    static_cast<int> (y0),
-                    static_cast<int> (new_radius)
-                    );
+        emit addGuideCircle ( x0, y0, new_radius );
     }
     graphModified=true;
 }
@@ -5078,11 +5074,7 @@ void Graph::layoutCircularRandom(double x0, double y0, double maxRadius){
         //Move node to new position
         emit moveNode((*it)->name(),  new_x,  new_y);
         i++;
-        emit addGuideCircle (
-                    static_cast<int> (x0),
-                    static_cast<int> (y0),
-                    static_cast<int> (new_radius)
-                    );
+        emit addGuideCircle ( x0, y0, new_radius );
     }
     graphModified=true;
 }
@@ -5254,7 +5246,7 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
         //Move node to new position
         emit moveNode((*it)->name(),  new_x,  new_y);
         i++;
-        emit addGuideHLine(static_cast<int> ( new_y ) );
+        emit addGuideHLine(new_y);
     }
 //    graphModified=true;
 //    emit graphChanged();

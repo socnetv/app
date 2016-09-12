@@ -218,8 +218,8 @@ signals:
     void setEdgeLabel (const long int &v1,
                        const long int &v2,
                        const QString &label);
-    void addGuideCircle(int, int, int);				//call GW to draw a circular layout line somewhere.
-    void addGuideHLine (int);					//call GW to draw a horizontal layout line somewhere.
+    void addGuideCircle(const double&, const double&, const double&);
+    void addGuideHLine (const double&y0);
     void moveNode(const int &, const qreal &, const qreal &);
 
     /** Signals to Vertice */

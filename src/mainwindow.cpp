@@ -3319,11 +3319,13 @@ void MainWindow::initSignalSlots() {
 
 
     // Signals from activeGraph to graphicsWidget
-    connect( &activeGraph, SIGNAL( addGuideCircle(int, int, int) ),
-             graphicsWidget, SLOT(  addGuideCircle(int, int, int) ) ) ;
+    connect( &activeGraph,
+             SIGNAL( addGuideCircle(const double&, const double&, const double&) ),
+             graphicsWidget,
+             SLOT(  addGuideCircle(const double&, const double&, const double&) ) ) ;
 
-    connect( &activeGraph, SIGNAL( addGuideHLine(int) ),
-             graphicsWidget, SLOT(  addGuideHLine(int) ) ) ;
+    connect( &activeGraph, SIGNAL( addGuideHLine(const double&) ),
+             graphicsWidget, SLOT(  addGuideHLine(const double&) ) ) ;
 
     connect( &activeGraph, SIGNAL( moveNode(const int &, const qreal &, const qreal &) ),
              graphicsWidget, SLOT( moveNode(const int &, const qreal &, const qreal &) ) ) ;

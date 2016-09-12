@@ -140,8 +140,6 @@ void GraphicsWidget::drawNode( const int &num, const int &nodeSize,
 
     //add new node to a container to ease finding, edge creation etc
     nodeHash.insert(num, jim);
-    //finally, move the node where it belongs!
-    jim -> setPos( p.x(), p.y());
 }
 
 
@@ -1036,15 +1034,17 @@ void GraphicsWidget::setAllItemsVisibility(int type, bool visible){
 
 
 
-void GraphicsWidget::addGuideCircle( int x0, int y0, int radius){
+void GraphicsWidget::addGuideCircle( const double&x0,
+                                     const double&y0,
+                                     const double&radius){
     Guide *circ=new Guide (this, x0, y0, radius);
     circ->show();
 
 }
 
 
-void GraphicsWidget::addGuideHLine( int y0){
-    Guide *line=new Guide (this, y0, 	this->width());
+void GraphicsWidget::addGuideHLine(const double &y0){
+    Guide *line=new Guide (this, y0, this->width());
     line->show();
 }
 
@@ -1374,9 +1374,9 @@ void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
     int h=e->size().height();
     int w0=e->oldSize().width();
     int h0=e->oldSize().height();
-    qreal fX=  (double)(w)/(double)(w0);
-    qreal fY= (double)(h)/(double)(h0);
-
+    fX=  (double)(w)/(double)(w0);
+    fY= (double)(h)/(double)(h0);
+    factor = ( fX < fY ) ? fX: fY;
     qDebug () << "GW::resizeEvent - old size: ("
               << w0 << "," << h0
               << ") - new size: (" << w << "," << h << ")"
@@ -1387,8 +1387,42 @@ void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
                     << " original position ("
                     <<  item->x() << "," << item->y()
                      << ") - will move to ("
-                     << item->x()*fX << ", " << item->y()*fY << ")" ;
+                     << item->x()*fX  << ", " << item->y()*fY  << ")" ;
             node->setPos(mapToScene(item->x()*fX, item->y()*fY));
+        }
+        if ( (item)->type() == TypeGuide ){
+            if (Guide *guide = qgraphicsitem_cast<Guide *>  (item) ) {
+                if (guide->isCircle()) {
+                    guide->die();
+                    guide->deleteLater ();
+                    delete item;
+
+//                    qDebug()<< "GW::resizeEvent - Circle Guide "
+//                            << " original position ("
+//                            <<  guide->x() << "," << guide->y()
+//                             << ") - radius " << guide->radius()
+//                             << ") - will move to ("
+//                             << guide->x()*fX << ", " << guide->y()*fY << ")"
+//                                << " new radius " << guide->radius() * factor;
+//                    guide->setCircle(
+//                                mapToScene(guide->pos().x()*fX,
+//                                           guide->pos().y()*fY),
+//                                guide->radius() * factor);
+                }
+                else {
+                    qDebug()<< "GW::resizeEvent - Horizontal Guide "
+                            << " original position ("
+                            <<  guide->x() << "," << guide->y()
+                             << ") - width " << guide->width()
+                             << ") - will move to ("
+                             << guide->x()*fX << ", " << guide->y()*fY << ")"
+                                << " new width " << (int) ceil( (guide->width() *fX ));
+                    guide->setHorizontalLine(
+                                mapToScene(guide->pos().x()*fX,
+                                           guide->pos().y()*fY),
+                                (int) ceil( (guide->width() *fX )));
+                }
+            }
         }
         //else 	item->setPos(mapToScene(item->x()*fX, item->y()*fY));
     }

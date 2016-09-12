@@ -142,8 +142,8 @@ public slots:
     void startEdge(Node *node);
 
     void clearGuides();
-    void addGuideCircle( int x0, int y0, int radius);
-    void addGuideHLine(int y0);
+    void addGuideCircle( const double&x0, const double&y0, const double&radius);
+    void addGuideHLine(const double &y0);
 
     void zoomIn(int level = 1);
     void zoomOut(int level = 1);
@@ -175,13 +175,13 @@ private:
     int m_curRelation;
     int  m_nodeSize, m_numberDistance, m_labelDistance;
     double m_currentScaleFactor;
+    qreal fX,fY, factor;
     int m_currentRotationAngle;
     int m_zoomIndex, markedNodeOrigSize,markedEdgeSourceOrigSize, markedEdgeTargetOrigSize;
     QString m_nodeLabel, m_numberColor, m_nodeColor, m_labelColor, m_linkColor;
     QString edgeName;
     bool secondDoubleClick, markedNodeExist, markedEdgeExist;
     QGraphicsItem *moving;
-    QPointF startPoint, endPoint;
     Node *firstNode, *secondNode, *markedNode1, *markedEdgeSource;
     Node *markedEdgeTarget, *tempNode ;
     bool transformationActive;
