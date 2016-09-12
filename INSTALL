@@ -3,11 +3,49 @@ Installation
 
 Binaries
 
-SocNetV binary packages are available for Windows, Mac OS X and Linux distros. 
-You can download a binary package for your Operating System from the project 
-webpage at: http://socnetv.sourceforge.net
+SocNetV binary packages are available for Windows, Mac OS X and Linux distros.
+
+You can download a binary package for your Operating System from the project
+webpage at: http://socnetv.sourceforge.net/downloads
 
 If there is no package for your OS, please download and compile the source code.
+
+Windows
+
+To run SocNetV in Windows, download the latest SocNetV zip for Windows from the 
+Downloads page, unzip it, and double-click on the socnetv executable.
+The program will run immediately.
+
+Mac OS X
+
+If you are a Mac user, you can download and run SocNetV from a disk image (dmg file). 
+From the Downloads page, download the Mac OS .dmg file. 
+Once downloaded, double click on it and a new window will appear. 
+To run the application, double click on the SocNetV icon holding down the META key.
+To install SocNetV, drag the SocNetV icon to your Applications.
+
+Linux
+
+SocNetV is available in most Linux distributions, although not the latest version. 
+
+To install the latest and greatest SocNetV version, users of openSUSE, Fedora and 
+Ubuntu/Debian are advised to add our own repositories to their systems.
+
+In Debian and Ubuntu, install SocNetV from our repos with these commands:
+
+sudo add-apt-repository ppa:dimitris-kalamaras/ppa
+sudo apt-get update
+sudo apt-get install socnetv
+
+In Fedora and openSUSE, choose and add the correct repository from here:
+http://download.opensuse.org/repositories/home:/oxy86/ 
+
+Once you add the repo, install SocNetV using the command (Fedora):
+sudo yum install socnetv
+
+or (openSUSE):
+sudo zypper in socnetv
+
 
 Compile from source code
 
