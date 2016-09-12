@@ -170,7 +170,7 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 %{_datadir}/applications/%{name}.desktop
 %{_datadir}/pixmaps/%{name}.png
 %{_mandir}/man1/*
-%doc changelog.gz NEWS README TODO COPYING AUTHORS INSTALL manual
+%doc changelog.gz NEWS README.md TODO COPYING AUTHORS INSTALL src/manual
 
 
 
