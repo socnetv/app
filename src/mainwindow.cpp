@@ -958,7 +958,7 @@ void MainWindow::initActions(){
                                       "Changes the Color of an Edge"));
     connect(editEdgeColorAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeColor()));
 
-    editEdgeWeightAct = new QAction(tr("Change Edge Weight"), this);
+    editEdgeWeightAct = new QAction(QIcon(":/images/edgeweight.png") ,tr("Change Edge Weight"), this);
     editEdgeWeightAct->setStatusTip(tr("Change the weight of an Edge"));
     editEdgeWeightAct->setWhatsThis(tr("Edge Weight\n\n"
                                        "Changes the Weight of an Edge"));
@@ -2027,15 +2027,16 @@ void MainWindow::initActions(){
     helpApp->setWhatsThis(tr("Manual\n\nDisplays the documentation of SocNetV"));
     connect(helpApp, SIGNAL(triggered()), this, SLOT(slotHelp()));
 
-    tipsApp = new QAction(tr("Tip of the Day"), this);
+    tipsApp = new QAction(QIcon(":/images/help-hint.png"), tr("Tip of the Day"), this);
     tipsApp->setStatusTip(tr("Read useful tips"));
     tipsApp->setWhatsThis(tr("Quick Tips\n\nDisplays some useful and quick tips"));
     connect(tipsApp, SIGNAL(triggered()), this, SLOT(slotHelpTips()));
 
 
     helpCheckUpdatesApp = new QAction(
-                QIcon(":/images/help.png"), tr("Check Updates"),	this);
-    helpCheckUpdatesApp->setStatusTip(tr("Open a browser to SocNetV website..."));
+                QIcon(":/images/download.png"), tr("Check for Updates"),	this);
+    helpCheckUpdatesApp->setStatusTip(tr("Open a browser to SocNetV website "
+                                         "to check for a new version..."));
     helpCheckUpdatesApp->setWhatsThis(tr("Check Updates\n\n"
                                          "Open a browser to SocNetV website so "
                                          "that you can check yourself for updates"));
@@ -2049,7 +2050,7 @@ void MainWindow::initActions(){
 
 
 
-    helpAboutQt = new QAction(tr("About Qt"), this);
+    helpAboutQt = new QAction(QIcon(":/images/qt.png"), tr("About Qt"), this);
     helpAboutQt->setStatusTip(tr("About Qt"));
     helpAboutQt->setWhatsThis(tr("About\n\nAbout Qt"));
     connect(helpAboutQt, SIGNAL(triggered()), this, SLOT(slotAboutQt() ) );

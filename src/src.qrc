@@ -80,5 +80,10 @@
         <file>images/reset.png</file>
         <file>images/socnetv-logo.png</file>
         <file>images/star.png</file>
+        <file>images/help-hint.png</file>
+        <file>images/bugs.png</file>
+        <file>images/edgeweight.png</file>
+        <file>images/qt.png</file>
+        <file>images/download.png</file>
     </qresource>
 </RCC>
