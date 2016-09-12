@@ -18,7 +18,7 @@
   </property>
   <property name="font">
    <font>
-    <family>DejaVu Sans</family>
+    <pointsize>10</pointsize>
    </font>
   </property>
   <property name="windowTitle">
@@ -29,8 +29,7 @@
     <widget class="QLabel" name="label_2">
      <property name="font">
       <font>
-       <family>DejaVu Sans</family>
-       <pointsize>11</pointsize>
+       <family>Sans Serif</family>
       </font>
      </property>
      <property name="text">
@@ -62,8 +61,7 @@
       <widget class="QLabel" name="label">
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
@@ -75,8 +73,8 @@
       <widget class="QDoubleSpinBox" name="weightThreshold">
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
+         <family>Sans Serif</family>
+         <pointsize>10</pointsize>
         </font>
        </property>
        <property name="decimals">
@@ -93,8 +91,7 @@
     <widget class="QRadioButton" name="overThresholdBt">
      <property name="font">
       <font>
-       <family>DejaVu Sans</family>
-       <pointsize>11</pointsize>
+       <family>Sans Serif</family>
       </font>
      </property>
      <property name="text">
@@ -106,8 +103,7 @@
     <widget class="QRadioButton" name="belowThresholdBt">
      <property name="font">
       <font>
-       <family>DejaVu Sans</family>
-       <pointsize>11</pointsize>
+       <family>Sans Serif</family>
       </font>
      </property>
      <property name="text">
@@ -117,12 +113,6 @@
    </item>
    <item row="4" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="font">
-      <font>
-       <family>DejaVu Sans</family>
-       <pointsize>11</pointsize>
-      </font>
-     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>

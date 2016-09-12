@@ -5,7 +5,7 @@
  
                          mainwindow.h  -  description
                              -------------------
-    copyright            : (C) 2005-2015 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
     website:             : http://dimitris.apeiro.gr
     project site         : http://socnetv.sourceforge.net
@@ -53,8 +53,8 @@
 static const QString VERSION="2.0";
 
 
-using namespace std;
 
+QT_BEGIN_NAMESPACE
 class QMenu;
 class QAction;
 class QCheckBox;
@@ -63,17 +63,22 @@ class Edge;
 class Node;
 
 class QPushButton;
+class QToolButton;
 class QLCDNumber;
 class QSlider;
-class QComboBox;	
+class QComboBox;
 class QGroupBox;
 class QTabWidget;
 class QSpinBox;
-class PreviewForm;
+QT_END_NAMESPACE
 
+using namespace std;
+
+class PreviewForm;
 class RandErdosRenyiDialog;
 class RandSmallWorldDialog;
 class RandScaleFreeDialog;
+class SettingsDialog;
 
 
 /**
@@ -100,134 +105,143 @@ public:
     void initToolBar();
     void initToolBox();
     void initStatusBar();
-    void initNet();
     void initView();
+    void initWindowLayout();
+    void initSignalSlots();
+    QMap<QString, QString> initSettings();
+    void saveSettings();
+    void initNet();
 
     void setLastPath(QString filePath);
     QString getLastPath();
     void createFortuneCookies();
-    void createTips();
-
-    bool showLabels();
-    bool showNumbersInsideNodes();
-    bool showNumbers();
-
-
-    /// \brief  Main network file loader methods
-    bool previewNetworkFile(QString , int );
-
-    ///
-    /// \brief Main network file loader method
-    /// First, inits everything to default values.
-    /// Then calls activeGraph::loadGraph to actually load the network...
-    /// \param m_fileName
-    /// \param m_fileFormat
-    bool loadNetworkFile ( const QString, const QString, const int );
+    void slotHelpCreateTips();
 
     int activeEdges();
     int activeNodes();
 
-    void openContextMenu(const QPointF & mPos);
-
-    void changeAllNodesSize(int size);
-
-    QString initNodeColor;
-    int clickedJimNumber; //it is public because we need to be visible from activegraph.
-
-    void createProgressBar();
-    void destroyProgressBar();
+    void createProgressBar(const int &max=0, const QString &msg="Please wait...");
+    void destroyProgressBar(int max=0);
 
 public slots:
-    //FILE MENU
-
-    /// \brief        Creates a new network
-    void slotCreateNew();
-
-    /// \brief  Prompts the user a directory dialogue to choose a file from.
-    /// Calls previewNetworkFile()
-    void slotChooseFile();
-    void slotImportGraphML();
-    void slotImportPajek();
-    void slotImportSM();
-    void slotImportDot();
-    void slotImportGML();
-    void slotImportDL();
-    void slotImportEdgeList();
-    void slotImportTwoModeSM();
-    void slotFileSave();
-    void slotFileSaveAs();
-    void slotFileClose();
-    void slotPrintView();
-    bool slotExportBMP();
-    bool slotExportPNG();
-    bool slotExportPDF();
-    void slotExportPajek();
-    void slotExportSM();
-    bool slotExportDL();
-    bool slotExportGW();
-    bool slotExportList();
     //NETWORK MENU
-    void slotOpenTextEditor();
-    void slotViewNetworkFile();
+    void slotNetworkNew();
+    void slotNetworkFileChoose(QString m_fileName = QString::null,
+                               int m_fileFormat = -1,
+                               const bool &checkSelectFileType = true);
+    void slotNetworkFileRecentUpdateActions();
+    void slotNetworkAvailableTextCodecs();
+    bool slotNetworkFilePreview(const QString &, const int &);
+    bool slotNetworkFileLoad ( const QString, const QString, const int );
+    void slotNetworkFileLoadRecent();
 
-    void findCodecs();
-    void userCodec(const QString, const QString, const int );
+    void slotNetworkFileView();
+    void slotNetworkImportGraphML();
+    void slotNetworkImportPajek();
+    void slotNetworkImportSM();
+    void slotNetworkImportDot();
+    void slotNetworkImportGML();
+    void slotNetworkImportDL();
+    void slotNetworkImportEdgeList();
+    void slotNetworkImportTwoModeSM();
+    void slotNetworkChanged();
+    void slotNetworkSave();
+    void slotNetworkSaveAs();
+    void slotNetworkClose();
+    void slotNetworkPrint();
+    void slotNetworkViewSociomatrix();
+    bool slotNetworkExportBMP();
+    bool slotNetworkExportPNG();
+    bool slotNetworkExportPDF();
+    void slotNetworkExportPajek();
+    void slotNetworkExportSM();
+    bool slotNetworkExportDL();
+    bool slotNetworkExportGW();
+    bool slotNetworkExportList();
+    void slotNetworkTextEditor();
+    void slotNetworkDataSetSelect();
+    void slotNetworkDataSetRecreate(const QString);
 
-    void slotViewAdjacencyMatrix();
-    void slotShowDataSetSelectDialog();
-    void slotRecreateDataSet(QString);
-    void slotCreateRandomErdosRenyi();
-    void createRandomNetErdos( const int N,
+    void slotRandomErdosRenyiDialog();
+    void slotRandomErdosRenyi( const int N,
                                const QString model,
                                const int edges,
                                const float eprob,
                                const QString mode,
                                const bool diag) ;
-    void slotCreateRegularRandomNetwork();
-    void slotCreateRandomGaussian();
-    void slotCreateRandomRingLattice();
-    void slotCreateRandomScaleFree();
+    void slotRandomRegularNetwork();
 
-    void createScaleFreeNetwork (const int &nodes,
+    void slotRandomGaussian();
+
+    void slotRandomScaleFreeDialog();
+
+    void slotRandomScaleFree(const int &newNodes,
                                  const int &power,
                                  const int &initialNodes,
                                  const int &edgesPerStep,
                                  const float &zeroAppeal,
                                  const QString &mode);
 
-    void slotCreateRandomSmallWorld();
+    void slotRandomSmallWorldDialog();
 
-    void createSmallWorldNetwork (const int &nodes,
+    void slotRandomSmallWorld  (const int &newNodes,
                                    const int &degree,
                                    const float &beta,
                                    const QString &mode,
                                    const bool &diag);
-    void slotShowWebCrawlerDialog();
-    void slotWebCrawl(QString, int, int, bool, bool);
 
-    void prevRelation();
-    void nextRelation();
-    void addRelation();
-    void addRelation(QString relationName);
+    void slotRandomRingLattice();
+
+    void slotNetworkWebCrawlerDialog();
+    void slotNetworkWebCrawler(QString, int, int, bool, bool);
 
     //EDIT MENU
-    void slotSelectAll();
-    void slotSelectNone();
-    void slotFindNode();
-    void slotAddEdge();
-    void slotRemoveNode();
-    void slotNodeProperties( const QString, const int, const QString,
+    void slotEditRelationPrev();
+    void slotEditRelationNext();
+    void slotEditRelationAdd();
+    void slotEditRelationAdd(QString relationName);
+
+    void slotEditOpenContextMenu(const QPointF & mPos);
+
+    void slotEditClickOnEmptySpace ();
+
+    void slotEditNodeSelectAll();
+    void slotEditNodeSelectNone();
+
+    void slotEditNodeAdd();
+    void slotEditNodeAddWithMouse(const QPointF &);
+    void slotEditNodeFind();
+    void slotEditNodeRemove();
+    void slotEditNodeOpenContextMenu();
+    void slotEditNodePropertiesDialog();
+    void slotEditNodeProperties( const QString, const int, const QString,
                              const QColor, const QString);
-    void slotRemoveEdge();
-    void slotChangeNodeProperties();
-    void slotChangeEdgeLabel();
-    void slotChangeEdgeColor();
-    void slotChangeEdgeWeight();
+    void slotEditNodeColorAll(QColor color=QColor());
+    void slotEditNodeSizeAll(int newSize=0, const bool &normalized=false);
+    void slotEditNodeShape(QString shape=QString::null, const int vertex = 0);
+    void slotEditNodeNumberSize(int v1=0, int newSize=0, const bool prompt=true);
+    void slotEditNodeNumberDistance(int v1=0, int newSize=0);
+    void slotEditNodeNumbersColor(QColor color=QColor());
+    void slotEditNodeLabelSize(int v1=0, int newSize=0);
+    void slotEditNodeLabelsColor(QColor color=QColor());
+    void slotEditNodeLabelDistance(int v1=0, int newSize=0);
+
+    void slotEditEdgeAdd();
+    void slotEditEdgeCreate (const int &source, const int &target, const float &weight);
+    void slotEditEdgeRemove();
+    void slotEditEdgeLabel();
+    void slotEditEdgeColor();
+    void slotEditEdgeWeight();
+    void slotEditEdgeColorAll(QColor color=QColor(), const int &threshold=RAND_MAX);
+    void slotEditEdgeSymmetrizeAll();
+    void slotEditEdgeUndirectedAll(const bool &toggle);
+
     void slotFilterNodes();
     void slotFilterIsolateNodes(bool checked);
     void slotShowFilterEdgesDialog();
     void slotTransformNodes2Edges();
-    void slotSymmetrize();
+
+
 
     // LAYOUT MENU
     void slotColorationStrongStructural();
@@ -239,15 +253,11 @@ public slots:
     void slotLayoutNodeSizesByProminenceIndex(QString);
     void slotLayoutLevelByProminenceIndex();
     void slotLayoutLevelByProminenceIndex(QString);
-    void slotLayoutGuides(int);
-
-
-    void slotLayoutSpringEmbedder(bool);
+    void slotLayoutGuides(const bool &toggle);
+    void slotLayoutSpringEmbedder();
     void slotLayoutFruchterman();
-    void layoutFruchterman(int);
-
-    void  slotLayoutNodeSizesByOutDegree(bool);
-    void  slotLayoutNodeSizesByInDegree(bool);
+    void slotLayoutNodeSizesByOutDegree(bool);
+    void slotLayoutNodeSizesByInDegree(bool);
 
     //STATISTICS MENU
     void askAboutWeights();
@@ -283,56 +293,47 @@ public slots:
     void slotPrestigeProximity();
 
     //OPTIONS MENU
-    void slotDisplayNodeNumbers(bool toggle);
-    void slotDisplayNodeLabels(bool toggle);
-    void slotDisplayNumbersInsideNodes(bool toggle);
-    void slotChangeAllNodesSize();
-    void slotChangeAllNodesShape();
-    void slotChangeNumbersSize();
-    void slotChangeLabelsSize();
-    void slotDrawEdgesThickAsWeights();
-    void slotDrawEdgesBezier(bool toggle);
-    void slotDisplayEdgesWeightNumbers(bool toggle);
-    void slotConsiderEdgeWeights(bool);
-    void slotDisplayEdges(bool toggle);
-    void slotDisplayEdgesArrows(bool toggle);
+    void slotOpenSettingsDialog();
+    void slotOptionsNodeNumbersVisibility(bool toggle);
+    void slotOptionsNodeNumbersInside(bool toggle);
+    void slotOptionsNodeLabelsVisibility(bool toggle);
+    void slotOptionsEdgesVisibility(bool toggle);
+    void slotOptionsEdgeLabelsVisibility(bool toggle);
+    void slotOptionsEdgeWeightNumbersVisibility(bool toggle);
+    void slotOptionsEdgeWeightsDuringComputation(bool);
+    void slotOptionsEdgeThicknessPerWeight(bool toogle);
+    void slotOptionsEdgesBezier(bool toggle);
+    void slotOptionsEdgeArrowsVisibility(bool toggle);
 
-    void slotBackgroundColor ();
-    void slotAllNodesColor();
-    void slotAllEdgesColor();
-    void slotAllNumbersColor();
-    void slotAllLabelsColor();
+    void slotOptionsBackgroundColor(QColor color=QColor());
+    void slotOptionsBackgroundImageSelect(bool toggle);
+    void slotOptionsBackgroundImage();
 
-    //VIEW MENU
-    void slotAntialiasing(bool );
-    void slotShowProgressBar(bool toggle);
-    void slotPrintDebug(bool toggle);
-    void slotViewToolBar(bool toggle);
-    void slotViewStatusBar(bool toggle);
-    void slotBackgroundImage(bool toggle);
+    void slotOptionsAntialiasing(bool );
+    void slotOptionsEmbedLogoExporting(bool toggle);
+    void slotOptionsProgressBarVisibility(bool toggle);
+    void slotOptionsToolbarVisibility(bool toggle);
+    void slotOptionsStatusBarVisibility(bool toggle);
+    void slotOptionsLeftPanelVisibility(bool toggle);
+    void slotOptionsRightPanelVisibility(bool toggle);
+    void slotOptionsDebugMessages(bool toggle);
 
     //HELP MENU
-    void slotTips();
+    void slotHelpTips();
     void slotHelp();
+    void slotHelpCheckUpdates();
     void slotHelpAbout();
     void slotAboutQt();
+
+
     //PUBLICLY AVAILABLE SLOTS. CALLED FROM GRAPHICSVIEW
     void nodeInfoStatusBar(Node*);
     void edgeInfoStatusBar (Edge*);
-    void openNodeContextMenu();
+
     void openEdgeContextMenu() ;
-    void windowInfoStatusBar(int, int);
-    void graphChanged();
 
-    //Called by graphicswidget to update node coords in activeGraph
-    void updateNodeCoords(int no, int x, int y);
+    void updateNodeCoords(const int &nodeNumber, const int &x, const int &y);
 
-    //Called when user pushes the New Node button on the MW
-    void addNode();
-    //Called by graphicswidget when the user middle-clicks
-    void addEdge (int v1, int v2, float weight);
-    //Called by graphicswidget when the user double-clicks
-    void addNodeWithMouse(int, QPointF);
 
     //Called by Graph on saving file. int is the network type saved.
     void networkSaved(int);
@@ -350,6 +351,7 @@ public slots:
     void toolBoxAnalysisProminenceSelectChanged(int);
     void toolBoxAnalysisClusterabilitySelectChanged(int);
     void toolBoxLayoutByIndexButtonPressed();
+    void toolBoxLayoutForceDirectedButtonPressed();
 
     QList<QGraphicsItem *> selectedNodes();
 
@@ -363,10 +365,10 @@ signals:
     void addRelationToGraph(QString);
 
 private:
-
+    QMap<QString,QString> appSettings;
     QGraphicsScene *scene;
 
-    FilterEdgesByWeightDialog m_filterEdgesByWeightDialog;
+    FilterEdgesByWeightDialog m_DialogEdgeFilterByWeight;
     WebCrawlerDialog m_WebCrawlerDialog;
 
     NodeEditDialog *m_nodeEditDialog;
@@ -374,6 +376,7 @@ private:
     RandErdosRenyiDialog *m_randErdosRenyiDialog;
     RandSmallWorldDialog *m_randSmallWorldDialog;
     RandScaleFreeDialog *m_randScaleFreeDialog;
+    SettingsDialog *m_settingsDialog;
 
     PreviewForm *previewForm;
     QList<QTextCodec *> codecs;
@@ -382,55 +385,67 @@ private:
     Graph activeGraph;
     QPrinter *printer;
     QToolBar *toolBar;
-    QComboBox *zoomCombo, *changeRelationCombo;
-    QTabWidget *toolBox;
+
+    QGroupBox *leftPanel, *rightPanel ;
+
+    QComboBox *editRelationChangeCombo;
 
     QProgressDialog *progressDialog;
 
-    Node *clickedJim;
+    Node *clickedNode;
     Edge *clickedEdge;
 
     QMenu *importSubMenu, *exportSubMenu, *editMenu, *statMenu,  *helpMenu;
     QMenu *optionsMenu, *colorOptionsMenu, *edgeOptionsMenu, *nodeOptionsMenu, *viewOptionsMenu;
     QMenu *editNodeMenu, *editEdgeMenu, *centrlMenu, *layoutMenu;
-    QMenu *networkMenu, *randomNetworkMenu, *filterMenu;
+    QMenu *networkMenu, *randomNetworkMenu, *filterMenu, *recentFilesSubMenu;
     QMenu *randomLayoutMenu, *circleLayoutMenu, *levelLayoutMenu, *physicalLayoutMenu;
     QMenu *colorationMenu;
-    QCheckBox *layoutEadesBx, *layoutFruchtermanBx, *layoutKamandaBx,
-    *nodeSizesByOutDegreeBx,*nodeSizesByInDegreeBx,
-    *layoutGuidesBx;
+    QCheckBox  *toolBoxNodeSizesByOutDegreeBx,*toolBoxNodeSizesByInDegreeBx, *toolBoxLayoutGuidesBx;
     QComboBox *toolBoxAnalysisGeodesicsSelect,*toolBoxAnalysisConnectivitySelect,
             *toolBoxAnalysisProminenceSelect, *toolBoxAnalysisClusterabilitySelect;
     QComboBox *toolBoxLayoutByIndexSelect, *toolBoxLayoutByIndexTypeSelect;
+    QComboBox *toolBoxLayoutForceDirectedSelect;
 
-    QPushButton *addNodeBt, *addEdgeBt, *removeNodeBt, *removeEdgeBt,
-    *toolBoxLayoutByIndexButton;
+    QPushButton *editNodeAddBt, *editEdgeAddBt, *removeNodeBt, *editEdgeRemoveBt;
+    QPushButton *toolBoxLayoutByIndexButton, *toolBoxLayoutForceDirectedButton;
 
-    QSpinBox *rotateSpinBox ;
+    QAction *zoomInAct,*zoomOutAct,*editRotateRightAct,*editRotateLeftAct, *editResetSlidersAct ;
+    QToolButton *zoomInBtn,*zoomOutBtn,*rotateLeftBtn,*rotateRightBtn, *resetSlidersBtn ;
 
-    QAction *fileNew, *fileOpen, *fileSave, *fileSaveAs,*fileClose, *printNetwork,*fileQuit;
-    QAction *exportBMP, *exportPNG, *exportPajek, *exportPDF, *exportDL, *exportGW, *exportSM, *exportList;
-    QAction *importPajek,*importSM, *importList,  *importDot , *importDL, *importTwoModeSM;
+    QSlider *zoomSlider, *rotateSlider;
 
-    QAction *viewNetworkFileAct, *openTextEditorAct, *viewSociomatrixAct, *recreateDataSetAct;
+    QAction *networkNew, *networkOpen, *networkSave, *networkSaveAs,
+    *networkClose, *networkPrint,*networkQuit;
+    QAction *networkExportBMP, *networkExportPNG, *networkExportPajek,
+    *networkExportPDF, *networkExportDL, *networkExportGW, *networkExportSM,
+    *networkExportList;
+    QAction *networkImportPajek,*networkImportSM, *networkImportList,
+    *networkImportDot , *networkImportDL, *networkImportTwoModeSM;
+    QAction *networkViewFileAct, *openTextEditorAct, *networkViewSociomatrixAct,
+    *networkDataSetSelectAct;
 
     QAction *createErdosRenyiRandomNetworkAct, *createGaussianRandomNetworkAct;
     QAction *createLatticeNetworkAct, *createScaleFreeRandomNetworkAct;
     QAction *createSmallWorldRandomNetworkAct, *createRegularRandomNetworkAct;
 
-    QAction *displayNodeNumbersAct, *displayNodeLabelsAct, *displayNumbersInsideNodesAct;
-    QAction *selectNoneAct, *selectAllAct;
-    QAction *findNodeAct,*addNodeAct, *addEdgeAct, *removeNodeAct, *propertiesNodeAct, *removeEdgeAct;
-    QAction *changeNumbersSizeAct;
-    QAction *changeLabelsSizeAct, *changeAllNodesSizeAct, *changeAllNodesShapeAct;
-    QAction *changeEdgeLabelAct, *changeEdgeColorAct, *changeEdgeWeightAct;
-    QAction *filterNodesAct, *filterIsolateNodesAct, *filterEdgesAct, *transformNodes2EdgesAct, *symmetrizeAct;
-    QAction *changeBackColorAct, *changeAllNodesColorAct, *changeAllEdgesColorAct, *changeAllNumbersColorAct,
-            *changeAllLabelsColorAct;
-    QAction *drawEdgesWeightsAct, *displayEdgesWeightNumbersAct, *displayEdgesAct;
-    QAction *displayEdgesArrowsAct, *drawEdgesBezier,*considerEdgeWeightsAct;
-    QAction *backgroundImageAct, *viewToolBar, *viewStatusBar, *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
-    QAction *antialiasingAct;
+    QAction *optionsNodeNumbersVisibilityAct, *optionsNodeLabelsVisibilityAct, *optionsNodeNumbersInsideAct;
+    QAction *editNodeSelectNoneAct, *editNodeSelectAllAct;
+    QAction *editNodeFindAct,*editNodeAddAct, *editNodeRemoveAct, *editNodePropertiesAct;
+    QAction *editEdgeAddAct, *editEdgeRemoveAct;
+    QAction *editNodeNumbersSizeAct, *editNodeLabelsSizeAct;
+    QAction *editNodeSizeAllAct, *editNodeShapeAll;
+    QAction *editEdgeLabelAct, *editEdgeColorAct, *editEdgeWeightAct;
+    QAction *filterNodesAct, *filterIsolateNodesAct, *filterEdgesAct;
+    QAction *transformNodes2EdgesAct, *editEdgeSymmetrizeAllAct, *editEdgeUndirectedAllAct;
+    QAction *changeBackColorAct, *editNodeColorAll, *editEdgeColorAllAct,
+            *editNodeNumbersColorAct,*editNodeLabelsColorAct;
+    QAction *optionsEdgeThicknessPerWeightAct, *optionsEdgeWeightNumbersAct, *optionsEdgesVisibilityAct;
+    QAction *optionsEdgeArrowsAct, *drawEdgesBezier,*considerEdgeWeightsAct;
+    QAction *optionsEdgeLabelsAct;
+    QAction *backgroundImageAct,*helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
+    QAction *helpCheckUpdatesApp;
+    QAction *openSettingsAct;
     QAction *webCrawlerAct;
 
     QAction *netDensity, *symmetryAct, *graphDistanceAct, *averGraphDistanceAct,
@@ -440,7 +455,7 @@ private:
     QAction *cDegreeAct, *cInDegreeAct, *cClosenessAct, *cInfluenceRangeClosenessAct,
             *cBetweennessAct, *cInformationAct, *cPageRankAct, *cStressAct,
             *cPowerAct, *cEccentAct, *cProximityPrestigeAct;
-    QAction *randLayoutAct, *randCircleLayoutAct, *clearGuidesAct;
+    QAction *randLayoutAct, *randCircleLayoutAct, *layoutGuidesAct;
     QAction *layoutCircular_DC_Act, *layoutCircular_DP_Act,
     *layoutCircular_CC_Act, *layoutCircular_SC_Act, *layoutCircular_EC_Act,
     *layoutCircular_PC_Act, *layoutCircular_BC_Act, *layoutCircular_IC_Act,
@@ -449,34 +464,35 @@ private:
     *layoutLevel_CC_Act, *layoutLevel_SC_Act, *layoutLevel_EC_Act,
     *layoutLevel_PC_Act, *layoutLevel_BC_Act, *layoutLevel_IC_Act,
     *layoutLevel_IRCC_Act,*layoutLevel_PRP_Act, *layoutLevel_PP_Act;
-    QAction *strongColorationAct, *regularColorationAct, *showProgressBarAct, *printDebugAct;
+    QAction *strongColorationAct, *regularColorationAct;
     QAction *springLayoutAct, *FRLayoutAct;
     QAction *nodeSizesByOutDegreeAct,  *nodeSizesByInDegreeAct;
-    QAction *zoomInAct, *zoomOutAct ;
-    QAction *nextRelationAct, *prevRelationAct, *addRelationAct;
+    QAction *editRelationNextAct, *editRelationPreviousAct, *editRelationAddAct;
+    enum { MaxRecentFiles = 5 };
+    QAction *recentFileActs[MaxRecentFiles];
 
-    QString fileName, networkName, previous_fileName;
-    QString dataDir, lastUsedDirPath;
-    QStringList fileNameNoPath, fortuneCookie, rgbValues;
-    QStringList tempFileNameNoPath, colorList, tips;
-    int statusBarDuration,  minDuration, progressCounter;
+    QString fileName, networkName, previous_fileName, progressMsg;
+    QString settingsFilePath, settingsDir ;
+    QStringList fileNameNoPath, fortuneCookie;
+    QStringList tempFileNameNoPath, tips, recentFiles;
+    int clickedNodeNumber;
+    int statusBarDuration, progressCounter;
     int maxNodes;
-    int initNodeSize, labelDistance, numberDistance,initNumberSize, initLabelSize;
-    int fortuneCookiesCounter,  tipsCounter;
+    int fortuneCookiesCounter;
     //QString VERSION;
     bool pajekFileLoaded, adjacencyFileLoaded, dotFileLoaded, graphMLFileLoaded;
-    bool fileLoaded, checkSelectFileType;
+    bool fileLoaded;
     int fileFormat;
     bool networkModified;
-    bool bezier,  edgeClicked, nodeClicked, markedNodesExist, showProgressBar, firstTime;
+    bool edgeClicked, nodeClicked, markedNodesExist, showProgressBar, firstTime;
     bool considerWeights, inverseWeights, askedAboutWeights;
+    float randomErdosEdgeProb;
     QString initFileCodec;
-    QString initEdgeColor, initNumberColor,  initNodeShape, initLabelColor;
     QColor initBackgroundColor;
     QPointF cursorPosGW;	//Carries the position of the cursor in graphicsWidget coordinates
+    QLabel *labelEdgesLCD, *networkLabel ;
     QLCDNumber  *inDegreeLCD, *outDegreeLCD , *selectedNodeLCD, *clucofLCD;
     QLCDNumber *nodesLCD, *edgesLCD, *densityLCD;
-
     QDateTime actualDateTime, actualDate, actualTime;
     QTime eTime;     //used  to time algorithms.
 

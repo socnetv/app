@@ -6,31 +6,31 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>528</width>
-    <height>330</height>
+    <width>570</width>
+    <height>420</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+   <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
-    <width>500</width>
-    <height>330</height>
+    <width>570</width>
+    <height>400</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>550</width>
-    <height>350</height>
+    <width>580</width>
+    <height>420</height>
    </size>
   </property>
   <property name="font">
    <font>
-    <family>DejaVu Sans</family>
+    <pointsize>10</pointsize>
    </font>
   </property>
   <property name="windowTitle">
@@ -40,7 +40,7 @@
    <item row="0" column="0">
     <widget class="QLabel" name="label_2">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -48,16 +48,18 @@
      <property name="minimumSize">
       <size>
        <width>450</width>
-       <height>50</height>
+       <height>70</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>75</height>
       </size>
      </property>
      <property name="font">
       <font>
-       <pointsize>11</pointsize>
-       <weight>50</weight>
-       <italic>false</italic>
-       <bold>false</bold>
-       <underline>false</underline>
+       <family>Sans Serif</family>
       </font>
      </property>
      <property name="frameShape">
@@ -67,10 +69,7 @@
       <enum>QFrame::Sunken</enum>
      </property>
      <property name="text">
-      <string>Generate random network according to the Watts &amp; Strogatz model.
- This model produces graphs with small-world properties, including
- short average path lengths and high clustering.
-</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Generate random network according to the &lt;span style=&quot; font-style:italic;&quot;&gt;Watts &amp;amp; Strogatz&lt;/span&gt; model.&lt;/p&gt;&lt;p&gt;This model produces graphs with small-world properties, including short average path lengths and high clustering. Read more in the manual.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
@@ -81,6 +80,13 @@
     </widget>
    </item>
    <item row="1" column="0">
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QLabel" name="nodesLabel">
@@ -98,7 +104,7 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
@@ -116,13 +122,13 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>100</width>
+         <width>110</width>
          <height>0</height>
         </size>
        </property>
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="toolTip">
@@ -141,7 +147,14 @@
      </item>
     </layout>
    </item>
-   <item row="2" column="0">
+   <item row="3" column="0">
+    <widget class="Line" name="line_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_6">
      <property name="sizeConstraint">
       <enum>QLayout::SetMinimumSize</enum>
@@ -162,7 +175,7 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
@@ -174,13 +187,13 @@
       <widget class="QSpinBox" name="degreeSpinBox">
        <property name="minimumSize">
         <size>
-         <width>100</width>
+         <width>110</width>
          <height>0</height>
         </size>
        </property>
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="toolTip">
@@ -202,7 +215,14 @@
      </item>
     </layout>
    </item>
-   <item row="3" column="0">
+   <item row="5" column="0">
+    <widget class="Line" name="line_3">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLabel" name="probLabel">
@@ -220,7 +240,7 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
@@ -238,13 +258,13 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>100</width>
+         <width>110</width>
          <height>0</height>
         </size>
        </property>
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="minimum">
@@ -257,13 +277,20 @@
         <double>0.010000000000000</double>
        </property>
        <property name="value">
-        <double>0.500000000000000</double>
+        <double>0.300000000000000</double>
        </property>
       </widget>
      </item>
     </layout>
    </item>
-   <item row="4" column="0">
+   <item row="7" column="0">
+    <widget class="Line" name="line_4">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
       <widget class="QLabel" name="label">
@@ -281,9 +308,7 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
@@ -303,16 +328,13 @@
          </property>
          <property name="minimumSize">
           <size>
-           <width>100</width>
+           <width>110</width>
            <height>0</height>
           </size>
          </property>
          <property name="font">
           <font>
-           <pointsize>11</pointsize>
-           <italic>false</italic>
-           <underline>false</underline>
-           <strikeout>false</strikeout>
+           <family>Sans Serif</family>
           </font>
          </property>
          <property name="text">
@@ -342,7 +364,7 @@
          </property>
          <property name="font">
           <font>
-           <pointsize>11</pointsize>
+           <family>Sans Serif</family>
           </font>
          </property>
          <property name="text">
@@ -357,7 +379,14 @@
      </item>
     </layout>
    </item>
-   <item row="5" column="0">
+   <item row="9" column="0">
+    <widget class="Line" name="line_5">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
       <widget class="QLabel" name="label_3">
@@ -375,7 +404,7 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
@@ -395,13 +424,13 @@
          </property>
          <property name="minimumSize">
           <size>
-           <width>100</width>
+           <width>110</width>
            <height>0</height>
           </size>
          </property>
          <property name="font">
           <font>
-           <pointsize>11</pointsize>
+           <family>Sans Serif</family>
           </font>
          </property>
          <property name="toolTip">
@@ -419,11 +448,20 @@
      </item>
     </layout>
    </item>
-   <item row="6" column="0">
+   <item row="11" column="0">
+    <widget class="Line" name="line_6">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="font">
       <font>
-       <pointsize>11</pointsize>
+       <family>Sans Serif</family>
+       <pointsize>10</pointsize>
+       <stylestrategy>PreferDefault</stylestrategy>
       </font>
      </property>
      <property name="orientation">

@@ -5,7 +5,7 @@
 
                          previewform.h  -  description
                              -------------------
-    copyright            : (C) 2005-2015 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
     website:             : http://dimitris.apeiro.gr
     project site         : http://socnetv.sourceforge.net
@@ -48,7 +48,7 @@ public:
     void setEncodedData(const QByteArray &data, const QString, const int );
     QString decodedString() const { return decodedStr; }
 signals:
-    void userCodec(const QString, const QString, const int);
+    void loadNetworkFileWithCodec(const QString, const QString, const int);
 private slots:
     void updateTextEdit();
     void accept();

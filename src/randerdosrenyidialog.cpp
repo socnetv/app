@@ -5,7 +5,7 @@
 
                          randerdosrenyidialog.h  -  description
                              -------------------
-    copyright            : (C) 2005-2015 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
     website:             : http://dimitris.apeiro.gr
     project site         : http://socnetv.sourceforge.net
@@ -36,7 +36,7 @@
 
 #include "randerdosrenyidialog.h"
 
-RandErdosRenyiDialog::RandErdosRenyiDialog(QWidget *parent ) :
+RandErdosRenyiDialog::RandErdosRenyiDialog(QWidget *parent, const float eprob) :
 
     QDialog(parent)
 {
@@ -47,7 +47,7 @@ RandErdosRenyiDialog::RandErdosRenyiDialog(QWidget *parent ) :
     nodes = 0;
     model = "";
     edges = 0;
-    eprob = 0;
+    ui.probDoubleSpinBox->setValue(eprob);
     mode = "";
     diag = false;
 
@@ -64,11 +64,11 @@ RandErdosRenyiDialog::RandErdosRenyiDialog(QWidget *parent ) :
     connect (ui.gnmRadioButton, &QRadioButton::clicked,
              this, &RandErdosRenyiDialog::checkErrors);
 
-    //ui.gnpRadioButton->setChecked(true);
+    ui.gnpRadioButton->setChecked(true);
     ui.probDoubleSpinBox->setEnabled(true);
     ui.edgesSpinBox-> setDisabled(true);
     ui.undirectedRadioButton->setChecked(true);
-    ui.diagCheckBox ->setChecked(true);
+    ui.diagCheckBox ->setChecked(false);
 
 
     connect (ui.gnpRadioButton, &QRadioButton::clicked,
@@ -129,13 +129,13 @@ void RandErdosRenyiDialog::checkErrors() {
         ui.gnpRadioButton->setGraphicsEffect(effect);
         ui.gnmRadioButton->setGraphicsEffect(effect2);
         (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(false);
+        return;
     }
     else {
         ui.gnpRadioButton->setGraphicsEffect(0);
         ui.gnmRadioButton->setGraphicsEffect(0);
         (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setEnabled(true);
     }
-    //gatherData();
 }
 
 void RandErdosRenyiDialog::gatherData() {
@@ -143,7 +143,7 @@ void RandErdosRenyiDialog::gatherData() {
     nodes = ui.nodesSpinBox->value();
     model = ( ui.gnpRadioButton->isChecked() ) ? "G(n,p)" : "G(n,M)";
     if (  ui.gnpRadioButton->isChecked() ) {
-        eprob = ui.probDoubleSpinBox->value();
+//        eprob = ui.probDoubleSpinBox->value();
     }
     else {
         edges = ui.edgesSpinBox->value();
@@ -152,10 +152,10 @@ void RandErdosRenyiDialog::gatherData() {
     diag = (ui.diagCheckBox -> isChecked() ? true : false);
     qDebug() << "nodes " << nodes ;
     qDebug() << "model " << model;
-    qDebug() << "eprob " << eprob;
+    qDebug() << "eprob " << ui.probDoubleSpinBox->value();
     qDebug() << "edges " << edges;
     qDebug() << "mode " << mode;
     qDebug() << "diag " << diag;
-    emit userChoices(nodes, model, edges, eprob, mode, diag);
+    emit userChoices(nodes, model, edges, ui.probDoubleSpinBox->value(), mode, diag);
 
 }

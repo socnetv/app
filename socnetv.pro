@@ -46,12 +46,14 @@ FORMS += src/forms/filteredgesbyweightdialog.ui \
         src/forms/datasetselectdialog.ui \
         src/forms/randsmallworlddialog.ui \
         src/forms/randscalefreedialog.ui \
-        src/forms/randerdosrenyidialog.ui
+        src/forms/randerdosrenyidialog.ui \
+        src/forms/settingsdialog.ui
 
 HEADERS += src/guide.h \
            src/graphicswidget.h \
            src/edge.h \
            src/edgeweight.h \
+           src/edgelabel.h \
            src/graph.h \
            src/mainwindow.h \
            src/matrix.h \
@@ -69,12 +71,14 @@ HEADERS += src/guide.h \
     src/nodeeditdialog.h \
     src/randerdosrenyidialog.h \
     src/randsmallworlddialog.h \
-    src/randscalefreedialog.h
+    src/randscalefreedialog.h \
+    src/settingsdialog.h
 
 SOURCES += src/guide.cpp \
            src/graphicswidget.cpp \
            src/edge.cpp \
            src/edgeweight.cpp \
+           src/edgelabel.cpp \
            src/graph.cpp \
            src/main.cpp \
            src/mainwindow.cpp \
@@ -93,20 +97,21 @@ SOURCES += src/guide.cpp \
     src/nodeeditdialog.cpp \
     src/randerdosrenyidialog.cpp \
     src/randsmallworlddialog.cpp \
-    src/randscalefreedialog.cpp
+    src/randscalefreedialog.cpp \
+    src/settingsdialog.cpp
 
 
 
 # Extra optimization flags
-win32 {
-  QMAKE_CXXFLAGS += -msse -mfpmath=sse -ffast-math  
-}
-unix:!macx{
-  QMAKE_CXXFLAGS += -ffast-math  
-}
-macx {
-  QMAKE_CXXFLAGS += -msse  -ffast-math 
-}
+#win32 {
+#  QMAKE_CXXFLAGS += -msse -mfpmath=sse -ffast-math  
+#}
+#unix:!macx{
+#  QMAKE_CXXFLAGS += -ffast-math  
+#}
+#macx {
+#  QMAKE_CXXFLAGS += -msse  -ffast-math 
+#}
 
 INCLUDEPATH +=  /usr/local/include /usr/include /usr/include/qt5 /usr/share/qt5/include 
 INCLUDEPATH +=  /usr/local/include /usr/include /usr/include/qt  /usr/include/qt5 /usr/share/qt5/include

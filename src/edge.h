@@ -1,11 +1,11 @@
 /***************************************************************************
- SocNetV: Social Network Visualizer 
+ SocNetV: Social Network Visualizer
  version: 2.0
  Written in Qt
  
                          edge.h  -  description
                              -------------------
-    copyright            : (C) 2005-2015 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -38,47 +38,58 @@ class GraphicsWidget;
 class QGraphicsSceneMouseEvent;
 class Node;
 class EdgeWeight;
+class EdgeLabel;
+
+
 
 
 static const int TypeEdge= QGraphicsItem::UserType+2;
 
 
 class Edge : public QObject, public QGraphicsItem {
-	Q_OBJECT
-	Q_INTERFACES (QGraphicsItem)
+    Q_OBJECT
+    Q_INTERFACES (QGraphicsItem)
 
 public:
-    Edge(GraphicsWidget *, Node*, Node*,
+    Edge(GraphicsWidget *, Node*, Node*, const float &weight,
+         const QString &label, const QString &color,
          const Qt::PenStyle &style,
-         const float &, const int &, const QString &,
-         const bool&, const bool&, const bool &);
+         const int&type, const bool & drawArrows, const bool &bezier,
+         const bool &weightNumbers=false);
     ~Edge();
-	enum { Type = UserType + 2 };
-	int type() const { return Type; }
-	Node *sourceNode() const;
-	void setSourceNode(Node *node);
+    enum { Type = UserType + 2 };
+    int type() const { return Type; }
+    Node *sourceNode() const;
+    void setSourceNode(Node *node);
 
-	Node *targetNode() const;
-	void setTargetNode(Node *node);
-	
-	void setStartOffset(int );
-	void setEndOffset(int );
-	void removeRefs();
+    Node *targetNode() const;
+    void setTargetNode(Node *node);
 
-	int sourceNodeNumber();
-	int targetNodeNumber();
+    void setStartOffset(const int & );
+    void setEndOffset(int );
+    void removeRefs();
+
+    int sourceNodeNumber();
+    int targetNodeNumber();
+
     void setWeight( const float  &w) ;
-
     float weight() const;
-    void addWeight (EdgeWeight* canvasWeight  ) ;
-    void clearWeightList();
+    void addWeightNumber ();
+    //void deleteWeightNumber();
+    void setWeightNumberVisibility  (const bool &toggle);
 
-    void showArrows(bool);
+    void setLabel( const QString &label) ;
+    QString label() const;
+    void addLabel();
+    //void deleteLabel();
+    void setLabelVisibility  (const bool &toggle);
+
+    void showArrows(const bool &);
     void toggleAntialiasing(bool);
 
-    void makeReciprocal();
-    void unmakeReciprocal();
-    bool isReciprocal();
+    void setUndirected();
+    bool isUndirected();
+    void setDirectedWithOpposite();
 
     float width() const;
 
@@ -90,31 +101,38 @@ public:
     QString color() const ;
     QString colorToPajek();
 
-	QPainterPath shape() const;
+    void highlight (const bool &flag);
+
+    QPainterPath shape() const;
 
 public slots:
-	void adjust ();
+    void adjust ();
 
 protected:
-	QRectF boundingRect() const;
-	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-	void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    QRectF boundingRect() const;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
 
 
 private:
-	GraphicsWidget *graphicsWidget;
-	Node *source, *target;
-	QPointF sourcePoint, targetPoint;
-	qreal m_arrowSize, m_startOffset, m_endOffset;
+    GraphicsWidget *graphicsWidget;
+    Node *source, *target;
+    QPainterPath *m_path;
+    QPointF sourcePoint, targetPoint;
+    qreal m_arrowSize, m_startOffset, m_endOffset;
     Qt::PenStyle m_style;
-	list<EdgeWeight*> weightList;
-	QString m_color;
-	int eFrom, eTo;
-	float m_weight;
-	int tox1, tox2, toy1, toy2, size;
-	double rad, theta, theta1, theta2;
-	qreal angle, line_length, line_dx, line_dy;
-	bool m_Bezier, m_drawArrows, m_reciprocal;
+    EdgeWeight* weightNumber;
+    EdgeLabel* edgeLabel;
+
+    QString m_color, m_tempColor, m_colorNegative, m_label;
+    int eFrom, eTo;
+    float m_weight, m_tempweight;
+    int tox1, tox2, toy1, toy2, size;
+    int m_edgeType;
+    double rad, theta, theta1, theta2;
+    qreal angle, line_length, line_dx, line_dy;
+    bool m_Bezier, m_drawArrows, m_directed_first, m_drawWeightNumber;
+    bool m_drawLabel;
 };
 
 #endif

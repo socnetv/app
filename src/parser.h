@@ -5,7 +5,7 @@
  
                          parser.h  -  description
                              -------------------
-    copyright            : (C) 2005-2015 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -26,8 +26,6 @@
 
 #ifndef PARSER_H
 #define PARSER_H
-
-using namespace std;
 
 #include <QThread>
 #include <QHash>
@@ -80,22 +78,26 @@ public:
 	void readGraphMLElementDefaultValue(QXmlStreamReader &);
 	void readGraphMLElementNodeGraphics (QXmlStreamReader &);
 	void readGraphMLElementEdgeGraphics (QXmlStreamReader &);
-    void createEdgesMissingNodes();
+    void createMissingNodeEdges();
 
 	bool isComment(QString str);  
     void createRandomNodes(int, QString, int);
 
 signals:
     void addRelation( QString );
-    void changeRelation( int );
+    void relationSet( int );
 	void createNode( 
-			int num, int size, QString color,
-			QString numColor, int numSize,
-			QString label, QString lColor, int lSize,
-			QPointF p,
-			QString shape, bool signalMW);
+            const int &num, const int &size, const QString &color,
+            const QString &numColor, const int &numSize,
+            const QString &label, const QString &lColor, const int &lSize,
+            const QPointF &p,
+            const QString &shape, const bool &signalMW=false);
 
-	void createEdge (int, int, float, QString, int, bool, bool);
+    void edgeCreate (const int &source, const int &target, const float &weight,
+                     const QString &color, const int &undirected,
+                     const bool &arrows, const bool &bezier,
+                     const QString &edgeLabel=QString::null,
+                     const bool &signalMW=false);
 	void fileType(int, QString, int, int, bool);
 	void removeDummyNode (int);
     void finished(QString);
@@ -118,6 +120,7 @@ private:
 	int gwWidth, gwHeight;
 	int totalLinks, aNodes, fileFormat, two_sm_mode, undirected;
     int initNodeSize,  initNodeNumberSize, nodeNumberSize, initNodeLabelSize;
+    QString initEdgeLabel;
     int nodeLabelSize, source, target, nodeSize;
 	float initEdgeWeight, edgeWeight, arrowSize;
 	float bez_p1_x,bez_p1_y, bez_p2_x, bez_p2_y;
@@ -125,6 +128,7 @@ private:
 	bool arrows, bezier, conv_OK;
     bool bool_key, bool_node, bool_edge, fileContainsNodeColors;
     bool fileContainsNodeCoords, fileContainsLinkColors;
+    bool fileContainsLinkLabels;
 	double randX, randY;
 };
 

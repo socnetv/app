@@ -4,11 +4,14 @@ Social Networks Visualiser (SocNetV)
 SocNetV News
 -==========-
 
-July 2015
-=========
-- Version 2.0 development starts.
-- New doxygen source documentation 
-- New Windows Installer
+Sep 2016
+========
+ - Version 2.0 released with major code overhaul, new GUI layout and lots of bugfixes and improvements.
+   The new version brings stability, great performance boost, and nice new features such as separate modes
+   for graphs and digraphs, permanent settings/preferences functionality, edge labeling, recent files, 
+   keyboard shortcuts, etc. Also there are improvements in Force-Directed layouts, i.e. Fructherman-Reingold.
+   See ChangeLog for a complete overview of the new features.
+-  The SocNetV Manual is now build with Doxygen and it is available at http://socnetv.sf.net/documentation
 
 June 2015
 =========

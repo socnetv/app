@@ -59,10 +59,10 @@ The documentation is also Free, licensed under the Free Documentation License (F
 Official Website: http://socnetv.sourceforge.net
 
 Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
-My Blog:   http://dimitris.apeiro.gr
+Blog:   http://dimitris.apeiro.gr
 
 SocNetV is a cross-platform application, developed in C++ language 
-using the Qt5 multiplatform library and tools.
+using the Qt5 cross-platform libraries and tools.
 
 This means you can compile and run SocNetV on Linux, Mac and Windows. 
 
@@ -79,75 +79,92 @@ See section 6 (bug reporting) below.
 3. Installation
 ---------------
 
-You can install SocNetV by:
+You can install SocNetV :
 
-a) compiling it from source or 
 b) using binary packages.
+a) compiling it from source or
 
-In either case, you need Qt 5 for versions 1.x 
-Most Linux Distros have Qt installed by default.
-Windows and OS X users please go to http://qt-project.org to download Qt5 library.
- 
 
-If you cannot install Qt5 you can try the 0.x series of SocNetV which work with Qt4. 
-Please note that SocNetV uses QtWebKit to display online help. 
-QtWebKit has been added to Qt from version 4.4, which means you can't compile 
-SocNetV in distros with older releases of Qt.
+## a) Install a binary package or executable (Linux/Mac/Windows)
 
-## a) Compile from Source Code
-	
-To compile from source code, download the tarball archive with the source code 
-of the latest SocNetV version (you probably already have this :P). 
-Then, untar (decompress) the archive using a command like this:
+SocNetV binary packages are available for Windows, Mac OS X and Linux distros.
 
-tar zxfv SocNetV-1.X.tar.gz
+You can download a binary package for your Operating System from the project
+webpage at: http://socnetv.sourceforge.net/downloads
 
-Then enter the new directory and compile with these commands:
+If there is no package for your OS, please download and compile the source code.
 
-cd socnetv-1.XX
-qmake (or qmake-qt5)
-make
+Windows
 
-Now you can install it using:
+To run SocNetV in Windows, download the latest SocNetV zip for Windows from the 
+Downloads page, unzip it, and double-click on the socnetv executable. 
+The program will run immediately.
 
-su -c 'make install' 
+Mac OS X
 
-or 
+If you are a Mac user, you can download and run SocNetV from a disk image (dmg file). 
+From the Downloads page, download the Mac OS .dmg file. 
+Once downloaded, double click on it and a new window will appear. 
+To run the application, double click on the SocNetV icon holding down the META key.
+To install SocNetV, drag the SocNetV icon to your Applications.
 
-sudo make install 
+Linux
 
-If everything is ok, then you can run SocNetV by entering:
+SocNetV is available in most Linux distributions, although not the latest version. 
+
+To install the latest and greatest SocNetV version, users of openSUSE, Fedora and 
+Ubuntu/Debian are advised to add our own repositories to their systems.
+
+In Debian and Ubuntu, install SocNetV from our repos with these commands:
+
+sudo add-apt-repository ppa:dimitris-kalamaras/ppa
+sudo apt-get update
+sudo apt-get install socnetv
+
+In Fedora and openSUSE, choose and add the correct repository from here: 
+http://download.opensuse.org/repositories/home:/oxy86/ 
+
+Once you add the repo, install SocNetV using the command (Fedora):
+sudo yum install socnetv
+
+or (openSUSE): 
+sudo zypper in socnetv
+
+
+
+## b) Compile from Source Code
+
+To compile and install SocNetV from source you need the Qt5 toolkit development 
+libraries. Qt is an open source C++ toolkit published under the GPL. 
+Qt5 is preinstalled in most Linux distributions and it is available for
+Windows and Mac OS X.  If you do not have Qt5 installed, please download and
+install it from https://www.qt.io/developers
+
+Once you have Qt5 installed in your OS, you are ready to compile SocNetV from source.
+Download the tarball archive with the source code of the latest SocNetV version 
+(you probably already have this :P). 
+
+All you have to do is to type in the following commands in order to decompress the
+SocNetV tarball and build it. Replace 2.X with the version you downloaded.
+
+1) untar zxfv SocNetV-2.X.tar.gz
+
+2) cd socnetv-2.X
+
+3) qmake
+
+4) make
+
+5) sudo make install or su -c 'make install'
+
+Probably you have already done the first 2 steps, so just type in 'qmake' or 'qmake-qt5'.
+
+When you finish compiling and installing, run the application typing:
 
 socnetv
 
+or go to Start Menu > Mathematics  > SocNetV.
 
-## b) Install a binary package or executable (Linux/Mac/Windows)
-
-To install SocNetV from a binary package for Linux or an executable for 
-Windows, check http://socnetv.sourceforge.net/downloads.html and see if 
-there is a package of the latest version for your operating system. 
-
-Please note that SocNetV is also available in most Linux distributions,
-although not always the latest version.
-
-In Debian and Ubuntu, install SocNetV from repos with:
-
-sudo apt-get install socnetv
-
-In Fedora, use the command:
-sudo yum install socnetv
-
-In openSUSE:
-sudo zypper in socnetv
-
-Mac OS users may download the disk image of the latest version from 
-http://socnetv.sourceforge.net/downloads.html.
-
-Double click on the .img file, then on the new window click socnetv icon 
-while pressing down the meta key.
-
-You can also find versions for Mac on the Internet, although these are 
-not supported. See: http://pdb.finkproject.org/pdb/package.php/socnetv-mac
 
 
 # 4. Command Line Options
@@ -155,13 +172,9 @@ not supported. See: http://pdb.finkproject.org/pdb/package.php/socnetv-mac
 SocNetV is primarily a GUI program. Nevertheless, some command line options 
 are available. Type:
 
-1) ./socnetv filename.net
-   to start snv with network named filename.net loaded.
-2) ./socnetv -v
-   to print version of snv and exit.
-3) ./socnetv -d 
-   to enable debugging mode, in which snv prints comprehensive messages about 
-   what it is doing.
+./socnetv filename.net
+
+to start socnetv with network named filename.net loaded.
 
 
 
@@ -170,9 +183,6 @@ are available. Type:
 For usage documentation, see online help.
 
 Or, when running SocNetV, press F1 to display the SocNetV Manual.
-
-There are some example networks inside the /usr/local/doc/socnetv/net folder.
-Just press Ctrl+O, go there  and choose one file.
 
 
 # 6. Bug reporting

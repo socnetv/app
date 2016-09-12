@@ -6,38 +6,38 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>610</width>
-    <height>371</height>
+    <width>560</width>
+    <height>520</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+   <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
-    <width>610</width>
-    <height>365</height>
+    <width>560</width>
+    <height>520</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>650</width>
-    <height>400</height>
+    <height>539</height>
    </size>
   </property>
   <property name="font">
    <font>
-    <family>DejaVu Sans</family>
+    <pointsize>10</pointsize>
    </font>
   </property>
   <property name="windowTitle">
    <string>Erdős–Rényi network generator</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
+  <layout class="QVBoxLayout" name="verticalLayout_4">
+   <item>
     <widget class="QLabel" name="label_2">
      <property name="sizePolicy">
       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
@@ -47,16 +47,19 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>560</width>
-       <height>50</height>
+       <width>540</width>
+       <height>85</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>96</height>
       </size>
      </property>
      <property name="font">
       <font>
-       <family>DejaVu Sans</family>
-       <pointsize>11</pointsize>
-       <weight>50</weight>
-       <bold>false</bold>
+       <family>Sans Serif</family>
       </font>
      </property>
      <property name="frameShape">
@@ -66,10 +69,7 @@
       <enum>QFrame::Sunken</enum>
      </property>
      <property name="text">
-      <string>Generate random network according to Erdős–Rényi (ER) model.
-In fact, there are two models: in G(n,p) edges are created with Bernoulli trials, 
-while in G(n,M) a graph is randomly selected from all graphs with
- n nodes and M edges</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Generate random network according to Erdős–Rényi (ER) model. &lt;/p&gt;&lt;p&gt;In fact, there are two models: in &lt;span style=&quot; font-style:italic;&quot;&gt;G(n,p)&lt;/span&gt; edges are created with Bernoulli trials, while in &lt;span style=&quot; font-style:italic;&quot;&gt;G(n,M) &lt;/span&gt;a graph is randomly selected from all graphs with &lt;span style=&quot; font-style:italic;&quot;&gt;n&lt;/span&gt; nodes and &lt;span style=&quot; font-style:italic;&quot;&gt;M&lt;/span&gt; edges.  Read more in the manual.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
@@ -79,7 +79,14 @@ while in G(n,M) a graph is randomly selected from all graphs with
      </property>
     </widget>
    </item>
-   <item row="1" column="0">
+   <item>
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QLabel" name="nodesLabel">
@@ -91,16 +98,13 @@ while in G(n,M) a graph is randomly selected from all graphs with
        </property>
        <property name="minimumSize">
         <size>
-         <width>380</width>
+         <width>350</width>
          <height>0</height>
         </size>
        </property>
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
@@ -118,16 +122,13 @@ while in G(n,M) a graph is randomly selected from all graphs with
        </property>
        <property name="minimumSize">
         <size>
-         <width>100</width>
+         <width>120</width>
          <height>0</height>
         </size>
        </property>
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="minimum">
@@ -143,7 +144,14 @@ while in G(n,M) a graph is randomly selected from all graphs with
      </item>
     </layout>
    </item>
-   <item row="2" column="0">
+   <item>
+    <widget class="Line" name="line_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout_5">
      <item>
       <widget class="QLabel" name="modelLabel">
@@ -155,16 +163,13 @@ while in G(n,M) a graph is randomly selected from all graphs with
        </property>
        <property name="minimumSize">
         <size>
-         <width>380</width>
+         <width>350</width>
          <height>0</height>
         </size>
        </property>
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
@@ -178,16 +183,13 @@ while in G(n,M) a graph is randomly selected from all graphs with
         <widget class="QRadioButton" name="gnpRadioButton">
          <property name="minimumSize">
           <size>
-           <width>100</width>
+           <width>120</width>
            <height>0</height>
           </size>
          </property>
          <property name="font">
           <font>
-           <family>DejaVu Sans</family>
-           <pointsize>11</pointsize>
-           <weight>50</weight>
-           <bold>false</bold>
+           <family>Sans Serif</family>
           </font>
          </property>
          <property name="toolTip">
@@ -226,10 +228,7 @@ p, li { white-space: pre-wrap; }
          </property>
          <property name="font">
           <font>
-           <family>DejaVu Sans</family>
-           <pointsize>11</pointsize>
-           <weight>50</weight>
-           <bold>false</bold>
+           <family>Sans Serif</family>
           </font>
          </property>
          <property name="toolTip">
@@ -237,6 +236,9 @@ p, li { white-space: pre-wrap; }
          </property>
          <property name="text">
           <string>G(n, M)</string>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
          </property>
          <property name="autoExclusive">
           <bool>false</bool>
@@ -247,7 +249,14 @@ p, li { white-space: pre-wrap; }
      </item>
     </layout>
    </item>
-   <item row="3" column="0">
+   <item>
+    <widget class="Line" name="line_3">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout_6">
      <property name="sizeConstraint">
       <enum>QLayout::SetMinimumSize</enum>
@@ -262,16 +271,13 @@ p, li { white-space: pre-wrap; }
        </property>
        <property name="minimumSize">
         <size>
-         <width>380</width>
+         <width>350</width>
          <height>0</height>
         </size>
        </property>
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
@@ -283,16 +289,13 @@ p, li { white-space: pre-wrap; }
       <widget class="QSpinBox" name="edgesSpinBox">
        <property name="minimumSize">
         <size>
-         <width>100</width>
+         <width>120</width>
          <height>0</height>
         </size>
        </property>
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="minimum">
@@ -305,7 +308,14 @@ p, li { white-space: pre-wrap; }
      </item>
     </layout>
    </item>
-   <item row="4" column="0">
+   <item>
+    <widget class="Line" name="line_4">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLabel" name="probLabel">
@@ -317,16 +327,13 @@ p, li { white-space: pre-wrap; }
        </property>
        <property name="minimumSize">
         <size>
-         <width>380</width>
+         <width>350</width>
          <height>0</height>
         </size>
        </property>
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
@@ -344,16 +351,13 @@ p, li { white-space: pre-wrap; }
        </property>
        <property name="minimumSize">
         <size>
-         <width>100</width>
+         <width>120</width>
          <height>0</height>
         </size>
        </property>
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="minimum">
@@ -372,7 +376,14 @@ p, li { white-space: pre-wrap; }
      </item>
     </layout>
    </item>
-   <item row="5" column="0">
+   <item>
+    <widget class="Line" name="line_5">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
       <widget class="QLabel" name="label">
@@ -384,16 +395,13 @@ p, li { white-space: pre-wrap; }
        </property>
        <property name="minimumSize">
         <size>
-         <width>380</width>
+         <width>350</width>
          <height>0</height>
         </size>
        </property>
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
@@ -413,26 +421,20 @@ p, li { white-space: pre-wrap; }
          </property>
          <property name="minimumSize">
           <size>
-           <width>100</width>
+           <width>120</width>
            <height>0</height>
           </size>
          </property>
          <property name="font">
           <font>
-           <family>DejaVu Sans</family>
-           <pointsize>11</pointsize>
-           <weight>50</weight>
-           <italic>false</italic>
-           <bold>false</bold>
-           <underline>false</underline>
-           <strikeout>false</strikeout>
+           <family>Sans Serif</family>
           </font>
          </property>
          <property name="text">
           <string>Undirected</string>
          </property>
          <property name="checked">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
          <property name="autoExclusive">
           <bool>false</bool>
@@ -449,20 +451,20 @@ p, li { white-space: pre-wrap; }
          </property>
          <property name="minimumSize">
           <size>
-           <width>100</width>
+           <width>120</width>
            <height>0</height>
           </size>
          </property>
          <property name="font">
           <font>
-           <family>DejaVu Sans</family>
-           <pointsize>11</pointsize>
-           <weight>50</weight>
-           <bold>false</bold>
+           <family>Sans Serif</family>
           </font>
          </property>
          <property name="text">
           <string>Directed</string>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
          </property>
          <property name="autoExclusive">
           <bool>false</bool>
@@ -473,7 +475,14 @@ p, li { white-space: pre-wrap; }
      </item>
     </layout>
    </item>
-   <item row="6" column="0">
+   <item>
+    <widget class="Line" name="line_6">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
       <widget class="QLabel" name="label_3">
@@ -485,16 +494,13 @@ p, li { white-space: pre-wrap; }
        </property>
        <property name="minimumSize">
         <size>
-         <width>380</width>
+         <width>350</width>
          <height>0</height>
         </size>
        </property>
        <property name="font">
         <font>
-         <family>DejaVu Sans</family>
-         <pointsize>11</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
+         <family>Sans Serif</family>
         </font>
        </property>
        <property name="text">
@@ -514,23 +520,20 @@ p, li { white-space: pre-wrap; }
          </property>
          <property name="minimumSize">
           <size>
-           <width>100</width>
+           <width>120</width>
            <height>0</height>
           </size>
          </property>
          <property name="font">
           <font>
-           <family>DejaVu Sans</family>
-           <pointsize>11</pointsize>
-           <weight>50</weight>
-           <bold>false</bold>
+           <family>Sans Serif</family>
           </font>
          </property>
          <property name="text">
           <string>Yes, allow</string>
          </property>
          <property name="checked">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
         </widget>
        </item>
@@ -538,12 +541,19 @@ p, li { white-space: pre-wrap; }
      </item>
     </layout>
    </item>
-   <item row="7" column="0">
+   <item>
+    <widget class="Line" name="line_7">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="font">
       <font>
-       <family>DejaVu Sans</family>
-       <pointsize>11</pointsize>
+       <family>Sans Serif</family>
+       <pointsize>10</pointsize>
        <weight>50</weight>
        <bold>false</bold>
       </font>

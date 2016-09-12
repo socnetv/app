@@ -1,11 +1,11 @@
 /***************************************************************************
- SocNetV: Social Network Visualizer 
+ SocNetV: Social Network Visualizer
  version: 2.0
  Written in Qt
 
                         nodenumber.cpp  -  description
                              -------------------
-    copyright            : (C) 2005-2015 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -28,17 +28,25 @@
 #include "node.h"
 #include <QFont>
 
-NodeNumber::NodeNumber( Node *jim , int size, QString labelText) :QGraphicsTextItem(0) {
-	source=jim;
-	jim -> addNumber(this);
-	setParentItem(jim); //auto disables child items like this, when node is disabled.
-	setPlainText( labelText ); 
+
+NodeNumber::NodeNumber( Node *jim , const QString &labelText, const int &size)
+    :QGraphicsTextItem(jim) {
+    source=jim;
+    setParentItem(jim); //auto disables child items like this, when node is disabled.
+    setPlainText( labelText );
     setFont( QFont ("Times", size, QFont::Black, false) );
-	setZValue(254);
+    setZValue(254);
+    setAcceptHoverEvents(false);
+}
+
+void NodeNumber::setSize(const int size) {
+    prepareGeometryChange();
+    setFont( QFont ("Times", size, QFont::Black, false) );
+    //update();
 }
 
 void NodeNumber::removeRefs(){
-	source->deleteNumber();
+    source->deleteNumber();
 
 }
 

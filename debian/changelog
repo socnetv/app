@@ -1,8 +1,8 @@
-socnetv (2.0-1-dev) trusty; urgency=medium
+socnetv (2.0-1) trusty; urgency=medium
 
-  * Development 2.0 snapshots
+  * New upstream version 1.9. See http://socnetv.sf.net/ChangeLog
 
- -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Thu, 25 Jun 2015 10:13:03 +0300
+ -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Mon, 12 Sep 2016 10:13:03 +0300
 
 socnetv (1.9-3) trusty; urgency=medium
 

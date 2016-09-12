@@ -1,13 +1,67 @@
 Installation
 ============
 
-To install SocNetV 1.x you need Qt5 development libraries. Qt is a C++ toolkit published under GPL. Most modern Linux distros, especially those providing KDE as their default desktop environment, include Qt. So if you have one of openSUSE, Mandriva, Fedora, Kubuntu, Slackware, etc, you dont need to download Qt. It should be already installed.
+Binaries
 
-If you have Qt5 installed, all you have to do is to type in the following commands in order to decompress the SocNetV tarball and build it. Replace 1.X with the versionyou downloaded...
+SocNetV binary packages are available for Windows, Mac OS X and Linux distros.
 
-1) untar zxfv SocNetV-1.X.tar.gz 
+You can download a binary package for your Operating System from the project
+webpage at: http://socnetv.sourceforge.net/downloads
 
-2) cd socnetv-1.X
+If there is no package for your OS, please download and compile the source code.
+
+Windows
+
+To run SocNetV in Windows, download the latest SocNetV zip for Windows from the 
+Downloads page, unzip it, and double-click on the socnetv executable.
+The program will run immediately.
+
+Mac OS X
+
+If you are a Mac user, you can download and run SocNetV from a disk image (dmg file). 
+From the Downloads page, download the Mac OS .dmg file. 
+Once downloaded, double click on it and a new window will appear. 
+To run the application, double click on the SocNetV icon holding down the META key.
+To install SocNetV, drag the SocNetV icon to your Applications.
+
+Linux
+
+SocNetV is available in most Linux distributions, although not the latest version. 
+
+To install the latest and greatest SocNetV version, users of openSUSE, Fedora and 
+Ubuntu/Debian are advised to add our own repositories to their systems.
+
+In Debian and Ubuntu, install SocNetV from our repos with these commands:
+
+sudo add-apt-repository ppa:dimitris-kalamaras/ppa
+sudo apt-get update
+sudo apt-get install socnetv
+
+In Fedora and openSUSE, choose and add the correct repository from here:
+http://download.opensuse.org/repositories/home:/oxy86/ 
+
+Once you add the repo, install SocNetV using the command (Fedora):
+sudo yum install socnetv
+
+or (openSUSE):
+sudo zypper in socnetv
+
+
+Compile from source code
+
+To compile and install SocNetV from source you need the Qt5 toolkit 
+development libraries. Qt is an open source C++ toolkit published under the GPL.
+Qt5 is preinstalled in most Linux distributions and it is available for 
+Windows and Mac OS X.  If you do not have Qt5 installed, please download and 
+install it from https://www.qt.io/developers
+
+Once you have Qt5 installed in your OS, you are ready to compile SocNetV from source.
+All you have to do is to type in the following commands in order to decompress the 
+SocNetV tarball and build it. Replace 2.X with the version you downloaded.
+
+1) untar zxfv SocNetV-2.X.tar.gz 
+
+2) cd socnetv-2.X
 
 3) qmake
 
@@ -16,7 +70,6 @@ If you have Qt5 installed, all you have to do is to type in the following comman
 5) sudo make install
 
 Probably you have already done the first 2 steps, so just type in 'qmake' or 'qmake-qt5'.
-If Qt5 is not installed, the script will let you know...
 
 When you finish compiling and installing, run the application typing: 
 

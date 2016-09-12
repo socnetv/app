@@ -71,5 +71,19 @@
         <file>images/import.png</file>
         <file>images/force.png</file>
         <file>images/scalefree.png</file>
+        <file>images/rotateleft.png</file>
+        <file>images/rotateright.png</file>
+        <file>images/appsettings.png</file>
+        <file>images/spider.png</file>
+        <file>images/image.png</file>
+        <file>images/pdf.png</file>
+        <file>images/reset.png</file>
+        <file>images/socnetv-logo.png</file>
+        <file>images/star.png</file>
+        <file>images/help-hint.png</file>
+        <file>images/bugs.png</file>
+        <file>images/edgeweight.png</file>
+        <file>images/qt.png</file>
+        <file>images/download.png</file>
     </qresource>
 </RCC>

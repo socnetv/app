@@ -1,6 +1,6 @@
 # spec file for package socnetv
 #
-# Copyright (c) 2014 Dimitris Kalamaras dimitris.kalamaras@gmail.com
+# Copyright (c) 2016 Dimitris Kalamaras dimitris.kalamaras@gmail.com
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -46,7 +46,7 @@
 
 %if %{is_fedora}
 %define distr Fedora
-%define breqr qt5-qtbase,qt5-qtbase-devel, qt5-qttools, qt5-qtwebkit, qt5-qtwebkit-devel, fedora-release, desktop-file-utils
+%define breqr qt5-qtbase,qt5-qtbase-devel, qt5-qttools, fedora-release, desktop-file-utils
 %define qmake /usr/bin/qmake-qt5
 %define lrelease /usr/bin/lrelease
 %endif
@@ -55,7 +55,7 @@
 
 %if %{is_suse}
 %define distr SUSE	# %(head -1 /etc/SuSE-release)
-%define breqr libqt5-qtbase, libqt5-qtbase-devel, libqt5-qttools, libQt5WebKit5, libQt5WebKit5-devel, update-desktop-files
+%define breqr libqt5-qtbase, libqt5-qtbase-devel, libqt5-qttools, update-desktop-files
 %define qmake /usr/bin/qmake-qt5
 %define lrelease /usr/bin/lrelease
 %endif
@@ -71,7 +71,6 @@ License:	GPL-3.0
 Group:		Productivity/Scientific/Math 
 URL:		http://socnetv.sourceforge.net/
 Vendor: 	Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
-#Packager:	Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>  # Removed for OBS warnings...
 Source0:	SocNetV-%{version}.tar.bz2
 Distribution:   %{distr}
 Prefix:		%{prefix}
@@ -81,7 +80,6 @@ BuildRequires:  pkgconfig(Qt5Gui)
 BuildRequires:  pkgconfig(Qt5PrintSupport)
 BuildRequires:  pkgconfig(Qt5Widgets)
 BuildRequires:  pkgconfig(Qt5Network)
-#BuildRequires:  pkgconfig(Qt5WebKitWidgets)
 
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
@@ -180,8 +178,8 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 #CHANGELOG SECTION
 #
 %changelog
-* Fri Jul 31 2015 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.0-1
-- Synced with DEV version from upstream.
+* Mon Sep 12 2016 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.0-1
+- Synced with new stable version from upstream.
 * Tue Jun 23 2015 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 1.9-1
 - Synced with DEV version from upstream.
 * Fri Jun 05 2015 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 1.8-1

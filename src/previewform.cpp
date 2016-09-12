@@ -5,7 +5,7 @@
 
                          previewform.cpp  -  description
                              -------------------
-    copyright            : (C) 2005-2015 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
     website:             : http://dimitris.apeiro.gr
     project site         : http://socnetv.sourceforge.net
@@ -105,7 +105,7 @@ void PreviewForm::accept() {
                       encodingComboBox->currentIndex()).toInt();
     QTextCodec *codec = QTextCodec::codecForMib(mib);
     qDebug () << " PreviewForm::accept() returning codec name " << codec->name();
-    emit userCodec(fileName, codec->name(), format);
+    emit loadNetworkFileWithCodec(fileName, codec->name(), format);
     QDialog::accept();
 
 }

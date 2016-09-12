@@ -5,7 +5,7 @@
  
                          Guide.h  -  description
                              -------------------
-    copyright            : (C) 2005-2015 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -35,16 +35,23 @@
 
 class GraphicsWidget;
 
-static const int TypeGuide = QGraphicsItem::UserType+6;
+static const int TypeGuide = QGraphicsItem::UserType+7;
 
-class Guide : public QObject, public  QGraphicsItem {
-	Q_OBJECT
-	Q_INTERFACES (QGraphicsItem)
+class Guide :  public QObject, public QGraphicsItem {
+    Q_OBJECT
+    Q_INTERFACES (QGraphicsItem)
 
 public:
-    Guide(GraphicsWidget *, int, int, int );
-    Guide(GraphicsWidget *, int, int );
-	enum { Type = UserType + 6 };
+    Guide(GraphicsWidget *,
+          const double &x0, const double &y0, const double &radius );
+    Guide(GraphicsWidget *,
+          const double &y0, const int &width);
+    bool isCircle();
+    void setCircle(const QPointF &center, const double &radius) ;
+    void setHorizontalLine(const QPointF &origin, const int &width) ;
+    double radius();
+    int width();
+    enum { Type = UserType + 7 };
 	int type() const { return Type; }
 	void die();
 	
@@ -55,7 +62,8 @@ protected:
 
 private: 
 	GraphicsWidget *graphicsWidget;
-	int m_x0, m_y0, m_radius, width;
+    double m_radius;
+    int m_width;
 	bool circle;
 
 };

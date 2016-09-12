@@ -6,7 +6,7 @@
                          nodelabel.h  -  description
                              -------------------
 
-    copyright            : (C) 2005-2015 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -35,11 +35,12 @@ static const int TypeLabel = QGraphicsItem::UserType+4;
 
 class NodeLabel : public QGraphicsTextItem{
 public: 
-    NodeLabel(Node * , int size,  QString);
+    NodeLabel(Node * , const QString &text, const int &size  );
 	
 	void removeRefs();
  	enum { Type = UserType + 4 };
 	int type() const { return Type; }
+    void setSize(const int &size);
 	~NodeLabel();
 	Node* node() { return source; }
 private:

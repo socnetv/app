@@ -5,7 +5,7 @@
  
                          vertex.h  -  description
                              -------------------
-    copyright            : (C) 2005-2015 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -78,17 +78,17 @@ public:
     void setEnabled (const bool &flag ) { m_enabled=flag; }
     bool isEnabled () const { return m_enabled; }
 
-    void changeRelation(int) ;
+    void relationSet(int) ;
 
-    void addEdgeTo (const long int &v2, const float &weight);
-    void addEdgeFrom(const long int &v1, const float &weight);
+    void edgeAddTo (const long int &v2, const float &weight);
+    void edgeAddFrom(const long int &v1, const float &weight);
 
     void changeOutEdgeWeight (long int target, float weight);
 
     void setOutEdgeEnabled (long int, bool);
 
-    void removeEdgeTo (long int target);
-    void removeEdgeFrom(long int source);
+    void edgeRemoveTo (long int target);
+    void edgeRemoveFrom(long int source);
 
     QHash<int,float>* returnEnabledOutEdges();
     QHash<int,float>* returnReciprocalEdges();
@@ -99,9 +99,9 @@ public:
     long int inEdges();
     long int inEdgesConst() const ;
 
-    long int outDegree();
+    long int degreeOut();
     long int outDegreeConst();
-    long int inDegree();
+    long int degreeIn();
     long int inDegreeConst();
     long int localDegree();
 
@@ -109,25 +109,21 @@ public:
     void setEccentricity (float c){ m_Eccentricity=c;}
     float eccentricity() { return m_Eccentricity;}
 
-    /* Returns true if there is a reciprocal link from this vertex */
-    bool isReciprocalLinked() { return m_reciprocalLinked;}
-    void setReciprocalLinked(bool reciprocal) { m_reciprocalLinked=reciprocal;}
-
     /* Returns true if there is an outLink from this vertex */
     bool isOutLinked() { return (outEdges() > 0) ? true:false;}
     /* Returns the weight of the link to vertex V, otherwise zero*/
-    float hasEdgeTo(long int V);
+    float hasEdgeTo(const long int &v);
 
     /* Returns true if there is an outLink from this vertex */
     bool isInLinked() { return  (inEdges() > 0) ? true:false;}
-    float hasEdgeFrom (long int v);
+    float hasEdgeFrom (const long int &v);
 
     bool isIsolated() { return !(isOutLinked() | isInLinked()) ; }
     void setIsolated(bool isolated) {m_isolated = isolated; }
 
-    void filterEdgesByWeight(float m_threshold, bool overThreshold);
+    void edgeFilterByWeight(float m_threshold, bool overThreshold);
     //	void filterEdgesByColor(float m_threshold, bool overThreshold);
-    void filterEdgesByRelation(int relation, bool status);
+    void edgeFilterByRelation(int relation, bool status);
 
     void setSize(const int &size ) { m_size=size; }
     int size()  const { return m_size; }
@@ -145,14 +141,20 @@ public:
     void setNumberSize (const int &size) { m_numberSize=size; }
     int numberSize() const { return m_numberSize; }
 
+    void setNumberDistance (const int &distance) { m_numberDistance=distance; }
+    int numberDistance() const { return m_numberDistance; }
+
     void setLabel (const QString &label) { m_label=label; }
     QString label() const { return m_label; }
 
     void setLabelColor (const QString &labelColor) { m_labelColor=labelColor; }
     QString labelColor() const { return m_labelColor; }
 
-    void setLabelSize(const int &newSize) { m_labelSize=newSize; }
+    void setLabelSize(const int &size) { m_labelSize=size; }
     int labelSize() const { return m_labelSize; }
+
+    void setLabelDistance (const int &distance) { m_labelDistance=distance; }
+    int labelDistance() const { return m_labelDistance; }
 
     void setX(const float &x) { m_x=x; }
     float x() const { return m_x; }
@@ -169,15 +171,25 @@ public:
     void set_dispY (float y) { m_disp.ry() = y ; }
 
     //FIXME -- VERY SLOW?
-    void setOutLinkColor(const long int &v2, const QString &color) {
-        outLinkColors[v2]=color;
-    }
+    void setOutLinkColor(const long int &v2,
+                         const QString &color) { outLinkColors[v2]=color; }
+
     //FIXME: See MW line 1965 - FIXME MULTIGRAPH
     QString outLinkColor(const long int &v2) {
         if (outLinkColors.contains(v2))
             return outLinkColors.value(v2);
         else return "black";
     }
+
+
+    void setOutEdgeLabel(const long int &v2,
+                         const QString &label) { m_outEdgeLabels[v2]=label; }
+    QString outEdgeLabel(const long int &v2) const {
+        if (m_outEdgeLabels.contains(v2))
+            return m_outEdgeLabels.value(v2);
+        else return QString::null;
+    }
+
 
     void setDelta (float c){ m_delta=c;} 		/* Sets vertex pair dependancy */
     float delta() { return m_delta;}		/* Returns vertex pair dependancy */
@@ -249,7 +261,7 @@ public:
 
     int cliques (const int &size);
 
-    bool addClique (const QString &clique, const int &size);
+    bool cliqueAdd (const QString &clique, const int &size);
 
     void clearCliques() {
         m_cliques.clear();
@@ -268,13 +280,13 @@ private:
     ilist myPs;
     long int m_name,  m_outEdgesCounter, m_inEdgesCounter, m_outDegree, m_inDegree, m_localDegree;
     float m_Eccentricity;
-    int m_value, m_size, m_labelSize, m_numberSize, m_curRelation;
+    int m_value, m_size, m_labelSize, m_numberSize, m_numberDistance, m_labelDistance;
+    int m_curRelation;
     H_StrToInt m_cliques;
     bool m_reciprocalLinked, m_enabled, m_hasCLC, m_isolated;
     QString m_color, m_numberColor, m_label, m_labelColor, m_shape;
     QPointF m_disp;
-    //QString *outLinkColors;
-    H_IntToStr outLinkColors;
+    H_IntToStr outLinkColors, m_outEdgeLabels;
     //FIXME vertex coords
 
     double m_x, m_y;

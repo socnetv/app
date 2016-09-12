@@ -5,7 +5,7 @@
 
                           matrix.h  -  description
                              -------------------
-    copyright            : (C) 2005-2015 by dimitris kalamaras
+    copyright            : (C) 2005-2016 by dimitris kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -31,20 +31,22 @@
 
 
 
-#include <QtGlobal>		//used for qDebug function
-#include <QDebug>
-#include <QTextStream>
+#include <QtGlobal>
+
+
 
 #include <utility>      // std::pair, std::make_pair
 
 using namespace std; //or else compiler groans for nothrow
+
+class QTextStream;
 
 class Row {
 public:
     Row (int cols=0) {
         cell=new (nothrow) float [m_cols=cols];
 		Q_CHECK_PTR( cell );
-        for (register int i=0;i<m_cols; i++) {
+        for (int i=0;i<m_cols; i++) {
             cell[i]=0;
         }
 		m_outEdges=0;

@@ -5,7 +5,7 @@
  
                          nodenumber.h  -  description
                              -------------------
-    copyright            : (C) 2005-2015 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
  ***************************************************************************/
 
@@ -37,11 +37,12 @@ static const int TypeNumber=QGraphicsItem::UserType+3;
 
 class NodeNumber : public QGraphicsTextItem {
 public:
-    NodeNumber(Node * , int, QString);
+    NodeNumber(Node * ,  const QString &labelText, const int &size);
+    enum { Type = UserType + 3 };
 	void removeRefs();
-	enum { Type = UserType + 3 };
 	int type() const { return Type; }
 	Node* node() { return source; }
+    void setSize(const int size);
 	~NodeNumber();
 private:
 	Node *source;

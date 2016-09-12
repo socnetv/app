@@ -5,7 +5,7 @@
 
                          nodeeditdialog.cpp  -  description
                              -------------------
-    copyright            : (C) 2005-2015 by Dimitris B. Kalamaras
+    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
     website:             : http://dimitris.apeiro.gr
     project site         : http://socnetv.sourceforge.net
@@ -112,6 +112,12 @@ void NodeEditDialog::gatherData(){
     }
     else if ( ui.triangleRadio->isChecked() ){
         nodeShape  = "triangle";
+    }
+    else if ( ui.starRadio->isChecked() ){
+        nodeShape  = "star";
+    }
+    else {
+        nodeShape  = "box";
     }
 
     emit userChoices(nodeLabel,nodeSize,nodeValue,nodeColor,nodeShape);

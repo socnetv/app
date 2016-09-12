@@ -31,34 +31,34 @@ Many thanks to:
 - Martin Hohenberg	
 - Victor Cardoso
 - Paul Johnson
-- David de Ugarte, for an older Spanish translation
 
 
 
 \section References References
 
-- Anthonisse, .I. M.(1971) The Rush in a Graph. Amsterdam: Mathematisch Centrum
+- Anthonisse, .I. M.(1971). <em>The Rush in a Graph</em>. Amsterdam: Mathematisch Centrum
 - Brandes, U. (2001). A Faster Algorithm for Betweenness Centrality. <em>Journal of Mathematical Sociology</em>  25(2), pp.163-177.
-- Brandes, U. (2001). Drawing on Physical Analogies.<em>In M. Kaufmann and D. Wagner (Eds.): Drawing Graphs: Methods and Models. </em> LNCS Tutorial 2025, pp. 71-86. 
-- Brin, S. and Page, L. (1998) <em>The Anatomy of a Large-Scale Hypertextual Web Search Engine</em>. In: Seventh International World-Wide Web Conference (WWW 1998), April 14-18, 1998, Brisbane, Australia.
+- Brandes, U. (2001). Drawing on Physical Analogies. <em>In M. Kaufmann and D. Wagner (Eds.): Drawing Graphs: Methods and Models. </em> LNCS Tutorial 2025, pp. 71-86.
+- Brin, S. and Page, L. (1998). The Anatomy of a Large-Scale Hypertextual Web Search Engine. <em>In: Seventh International World-Wide Web Conference (WWW 1998)</em>, April 14-18, 1998, Brisbane, Australia.
 - Dasgupta S., Papadimitriou C.H. & Vazirani U.V. (2006). <em>Algorithms.</em>
 - Davis, J. A. &amp; Leinhardt S. (1972). The Structure of Positive Relations in Small Groups.<em>In J. Berger (Ed.), Sociological Theories in Progress</em> , vol. 2. pp. 218-51. Boston, MA: Houghton Mifflin.
 - Eades, P, (1984). A Heuristic for Graph Drawing. <em>Congressus Numerantuum</em>, 42:149-160.
 - Erdos, P. and Renyi, A. (1959). On Random Graphs. I. <em>Publicationes Mathematicae</em> 6: 290-297.
 - Erdos, P. and Renyi, A. (1960). The Evolution of Random Graphs.<em> Magyar Tud. Akad. Mat. Kutat Int.</em> Kol. 5: 17-61.
-- Freeman  L. C. (1979). Centrality in Social Networks Conceptual Clarification. Social Networks, 1 (1978/79), pp. 215-239
-- Fruchterman, T.M.J. & Reingold, E.M. (1991). Graph Drawing by Force-Directed Placement. <em>Software-Practice & Experience.</em> Vol. 21, Is. 11, pp. 1129-1164.
-- Gil, J. and Schmidt, S., (1996a). <em>The origin of the Mexican network of power</em>. In: International Social Network Conference, Charleston, SC, USA, pp. 22–25 
-- Gil, J. and Schmidt, S., (1996b). <em>The political network in Mexico</em>. Social Networks 18, 355–381
+- Freeman  L. C. (1979). Centrality in Social Networks Conceptual Clarification. <em>Social Networks</em>, 1 (1978/79), pp. 215-239
+- Fruchterman, T.M.J. &amp; Reingold, E.M. (1991). Graph Drawing by Force-Directed Placement. <em>Software-Practice & Experience.</em> Vol. 21, Is. 11, pp. 1129-1164.
+- Gil, J. &amp; Schmidt, S., (1996a). The origin of the Mexican network of power. <em>International Social Network Conference</em>, Charleston, SC, USA, pp. 22–25
+- Gil, J. &amp; Schmidt, S., (1996b). The political network in Mexico. <em>Social Networks</em> 18, 355–381
 - Holland, P.W. &amp; Leinhardt. S. (1970). A Method for Detecting Structure in Sociometric Data. <em>American Journal of Sociology</em>  70: 492-513.
-- Holland, P.W. &amp; S. Leinhardt. (1971). Transitivity in Structural Models of Small Groups.<em> Comparative Group Studies</em>  2:107-124. 
+- Holland, P.W. &amp; S. Leinhardt. (1971). Transitivity in Structural Models of Small Groups. <em>Comparative Group Studies</em>  2:107-124.
 - Holland, P.W. &amp; S. Leinhardt. (1975). Local Structure in Social Networks. <em>Sociological Methodology<.em> 1976: 1-45</em>.
+- Kamada T. &amp; Kawai S. (1989). An algorithm for drawing general undirected graphs. <em>Information Processing Letters</em> 31 (1989) 7-15.
 - Liu, C.L. (2000). <em>Elements of Discrete Mathematics</em> 2nd Edition. Greek Translation.
-- Page L., Brin S., Motwani R., Winograd T. (1998). <em>The PageRank Citation Ranking: Bringing Order to the Web</em> 
+- Page L., Brin S., Motwani R., Winograd T. (1998). <em>The PageRank Citation Ranking: Bringing Order to the Web</em>. Stanford University. Technical Report.
 - Press W., Teukolsky S., Vetterling W. & Flannery B. (1992). <em>Numerical Recipes in C, the art of scientific computing.</em>
 - Sabidussi, G. (1966). <em>The centrality index of a graph</em>. Psychometrika 31, pp 581–603.
-- Schank, T and Wagner. D (2005). Approximating Clustering Coefficient and Transitivity. <em>J. Graph Algorithms Appl.</em> 9(2): 265-275
-- Stephenson K. and Zelen M. (1989). <em>Rethinking Centrality: Methods and examples</em>. Social Networks 11 1-37.
+- Schank, T &amp; Wagner. D (2005). Approximating Clustering Coefficient and Transitivity. <em>J. Graph Algorithms Appl.</em> 9(2): 265-275
+- Stephenson K. &amp; Zelen M. (1989). <em>Rethinking Centrality: Methods and examples</em>. Social Networks 11 1-37.
 - Stroustrup B. (1997). <em>The C++ Programming Language.</em> 
 - Scott, J. (2000). <em>Social Network Analysis, A handbook.</em> 
 - Qt Project (2014). <em>Qt5: A cross-platform application and UI framework for developers using C++ or QML.</em> https://qt-project.org
