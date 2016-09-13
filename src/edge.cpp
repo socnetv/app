@@ -556,9 +556,15 @@ void Edge::highlight(const bool &flag) {
     if (flag) {
         m_tempColor = m_color;
         m_tempweight = m_weight;
+        m_weight +=10;
         setColor("red");
+        setZValue(255);
     }
-    else setColor(m_tempColor);
+    else {
+        m_weight = m_tempweight;
+        setColor(m_tempColor);
+        setZValue(253);
+    }
 }
 
 
