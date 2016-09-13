@@ -11804,7 +11804,8 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
 void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
     Q_UNUSED(maxIterations);
     // compute dij for 1 <= i!=j <= n
-
+    bool considerWeights=false, inverseWeights=false, dropIsolates=false;
+    distanceMatrixCreate(false,considerWeights,inverseWeights, dropIsolates);
     // compute lij for 1 <= i!=j <= n
 
     // compute kij for 1 <= i!=j <= n
