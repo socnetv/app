@@ -36,25 +36,20 @@
   <property name="windowTitle">
    <string>Generate network from web links</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <widget class="QLabel" name="description">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="maximumSize">
       <size>
-       <width>450</width>
-       <height>80</height>
+       <width>500</width>
+       <height>500</height>
       </size>
      </property>
-     <property name="font">
-      <font>
-       <pointsize>10</pointsize>
-      </font>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
      </property>
      <property name="text">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SocNetV includes a simple web crawler. It scans the HTML code of a given initial URL (i.e. a website) and maps all internal or external links to other pages found there. As new urls are discovered, the crawler follows them to scan their HTML code for links as well. For more details, see the Manual. &lt;/p&gt;&lt;p&gt;Enter the initial URL below and change crawling parameters if you like.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -67,65 +62,73 @@
      </property>
     </widget>
    </item>
-   <item>
-    <widget class="QSplitter" name="splitter">
-     <property name="font">
-      <font>
-       <pointsize>11</pointsize>
-       <stylestrategy>PreferAntialias</stylestrategy>
-      </font>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <widget class="QLabel" name="label">
-      <property name="minimumSize">
-       <size>
-        <width>100</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>10</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>Initial URL</string>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="seedUrlEdit">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>250</width>
-        <height>26</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>400</width>
-        <height>32</height>
-       </size>
-      </property>
-      <property name="toolTip">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the initial url/domain to start crawling from, i.e. http://www.iefimerida.gr  &lt;/p&gt;&lt;p&gt;You may omit http:// if you want. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-      </property>
-     </widget>
-    </widget>
+   <item row="1" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Initial URL</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="seedUrlEdit">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>250</width>
+         <height>22</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>400</width>
+         <height>24</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the initial url/domain to start crawling from, i.e. http://www.iefimerida.gr  &lt;/p&gt;&lt;p&gt;You may omit http:// if you want. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
-   <item>
+   <item row="2" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLabel" name="label_4">
        <property name="minimumSize">
         <size>
-         <width>230</width>
+         <width>100</width>
          <height>0</height>
         </size>
        </property>
@@ -196,7 +199,7 @@ Set value to 0, if you don't want any limits...</string>
      </item>
     </layout>
    </item>
-   <item>
+   <item row="3" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QLabel" name="label_3">
@@ -274,7 +277,7 @@ In this case SocNetV will follow and crawl each one link found in a page.</strin
      </item>
     </layout>
    </item>
-   <item>
+   <item row="4" column="0">
     <widget class="QCheckBox" name="extLinksCheckBox">
      <property name="minimumSize">
       <size>
@@ -307,7 +310,7 @@ In this case SocNetV will follow and crawl each one link found in a page.</strin
      </property>
     </widget>
    </item>
-   <item>
+   <item row="5" column="0">
     <widget class="QCheckBox" name="intLinksCheckBox">
      <property name="font">
       <font>
@@ -331,7 +334,7 @@ In this case SocNetV will follow and crawl each one link found in a page.</strin
      </property>
     </widget>
    </item>
-   <item>
+   <item row="6" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="enabled">
       <bool>true</bool>
