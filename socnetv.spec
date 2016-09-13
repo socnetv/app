@@ -16,7 +16,7 @@
 
 
 %define name    socnetv
-%define version 2.0
+%define version 2.1
 %define release 1
 %define prefix  /usr/local
 %define lastrev %(LANG=en_US.UTF-8 && date +"%a %b %e %Y")
@@ -178,6 +178,8 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 #CHANGELOG SECTION
 #
 %changelog
+* Tue Sep 13 2016 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.1-1
+- Synced with DEV version from upstream.
 * Tue Sep 13 2016 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.0-2
 - Spec patch for Buildservice
 * Mon Sep 12 2016 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.0-1
