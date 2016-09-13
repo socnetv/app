@@ -262,19 +262,19 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
         // m_path->setFillRule(Qt::WindingFill);
         painter->setPen(QPen(QColor(m_numColor), 0));
         if (m_num > 999) {
-            painter->setFont(QFont("Sans Serif", (m_numSize)? m_numSize-1: 0.66*m_size, QFont::Medium));
+            painter->setFont(QFont("Sans Serif", (m_numSize)? m_numSize-1: 0.66*m_size, QFont::Normal));
             painter->drawText(-0.8*m_size,m_size/3, QString::number(m_num) );
         }
         else if (m_num > 99) {
-            painter->setFont(QFont("Sans Serif", (m_numSize)? m_numSize-1: 0.66*m_size, QFont::Medium));
+            painter->setFont(QFont("Sans Serif", (m_numSize)? m_numSize-1: 0.66*m_size, QFont::Normal));
             painter->drawText(-0.6 * m_size,m_size/3, QString::number(m_num) );
         }
         else if (m_num > 9 ) {
-            painter->setFont(QFont("Sans Serif", (m_numSize)? m_numSize: 0.66*m_size, QFont::Medium));
+            painter->setFont(QFont("Sans Serif", (m_numSize)? m_numSize: 0.66*m_size, QFont::Normal));
             painter->drawText(-0.5*m_size,m_size/3,QString::number(m_num) );
         }
         else  {
-            painter->setFont(QFont("Sans Serif", (m_numSize)? m_numSize: 0.66*m_size, QFont::Medium));
+            painter->setFont(QFont("Sans Serif", (m_numSize)? m_numSize: 0.66*m_size, QFont::Normal));
             painter->drawText(-0.33*m_size,m_size/3,QString::number(m_num) );
         }
     }
