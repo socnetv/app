@@ -51,13 +51,14 @@ static const int EDGE_DIRECTED = 0;
 static const int EDGE_DIRECTED_OPPOSITE_EXISTS = 1;
 static const int EDGE_RECIPROCAL_UNDIRECTED = 2;
 
+
+
 class QPointF;
 
-typedef QList<Vertex*> Vertices;
 
+typedef QList<Vertex*> Vertices;
 typedef QHash <QString, int> H_StrToInt;
 typedef QHash <long int, long int> H_Int;
-
 typedef QPair <float, bool> pair_f_b;
 typedef QPair <int, pair_f_b > rel_w_bool;
 typedef QHash < int, rel_w_bool > H_edges;

@@ -95,6 +95,7 @@ void Matrix::clear() {
     }
 }
 
+
 /**
  * @brief Matrix::resize
  * Resize this matrix to m x n
@@ -115,6 +116,384 @@ void Matrix::resize (const int m, const int n) {
     }
 }
 
+
+
+
+/**
+ * @brief Matrix::findMinMaxValues
+ * @param maxVal
+ * @param minVal
+ */
+void Matrix::findMinMaxValues (float & maxVal, float &minVal){
+    maxVal=0;
+    minVal=RAND_MAX;
+    for (int r = 0; r < rows(); ++r) {
+        for (int c = 0; c < cols(); ++c) {
+            if ( item(r,c) > maxVal)
+                maxVal = item(r,c) ;
+            if ( item(r,c) < minVal){
+                minVal= item(r,c) ;
+            }
+        }
+    }
+}
+
+
+
+
+/**
+ * @brief Matrix::identityMatrix
+ * makes this square matrix the identity square matrix I
+ * @param dim
+ */
+void Matrix::identityMatrix(int dim) {
+    qDebug() << "Matrix: identityMatrix() -- deleting old rows";
+    clear();
+    m_rows=dim;
+    m_cols=dim;
+    row = new (nothrow) Row [m_rows];
+    Q_CHECK_PTR( row );
+    qDebug() << "Matrix: resize() -- resizing each row";
+    for (int i=0;i<m_rows; i++) {
+        row[i].resize(m_rows);
+        setItem(i,i, 1);
+    }
+}
+
+
+
+/**
+ * @brief Matrix::zeroMatrix
+ * makes this matrix the zero matrix of size mxn
+ * @param m
+ * @param n
+ */
+void Matrix::zeroMatrix(const int m, const int n) {
+    qDebug() << "Matrix:: zeroMatrix() m " << m << " n " << n;
+    clear();
+    m_rows=m;
+    m_cols=n;
+    row = new (nothrow) Row [m_rows];
+    Q_CHECK_PTR( row );
+    qDebug() << "Matrix::zeroMatrix - resizing each row";
+    for (int i=0;i<m_rows; i++) {
+        row[i].resize(m_cols);
+        setItem(i,i, 0);
+    }
+
+}
+
+
+/**
+ * @brief Matrix::item
+ * returns the (r,c) matrix element
+ * @param r
+ * @param c
+ * @return
+ */
+float Matrix::item( int r, int c ){
+    return row[r].column(c);
+}
+
+
+
+/**
+ * @brief Matrix::setItem
+ * sets the (r,c) matrix element calling the setColumn method
+ * @param r
+ * @param c
+ * @param elem
+ */
+void Matrix::setItem( const int r, const int c, const float elem ) {
+    row [ r ].setColumn(c, elem);
+}
+
+
+/**
+ * @brief Matrix::clearItem
+ * clears the (r,c) matrix element
+ * @param r
+ * @param c
+ */
+void Matrix::clearItem( int r, int c ) 	{
+    row[r].clearColumn(c);
+}
+
+
+/**
+ * @brief Matrix::edgesFrom
+ * returns the number of edges starting from r
+ * @param r
+ * @return
+ */
+int Matrix::edgesFrom(int r){
+    qDebug() << "Matrix: edgesFrom() " << r << " = "<< row[r].outEdges();
+    return row[r].outEdges();
+}
+
+
+/**
+ * @brief Matrix::edgesTo
+ * @param t
+ * @return
+ */
+int Matrix::edgesTo(const int t){
+    int m_inEdges=0;
+    for (int i = 0; i < rows(); ++i) {
+        if ( item(i, t) != 0 )
+            m_inEdges++;
+    }
+    qDebug()<< "Matrix: edgesTo() " << t << " = " << m_inEdges;
+    return m_inEdges;
+}
+
+
+/**
+ * @brief Matrix::totalEdges
+ * @return
+ */
+int Matrix::totalEdges(){
+    int m_totalEdges=0;
+    for (int r = 0; r < rows(); ++r) {
+        m_totalEdges+=edgesFrom(r);
+    }
+    qDebug() << "Matrix: totalEdges " << m_totalEdges;
+    return m_totalEdges;
+}
+
+
+/**
+ * @brief Matrix::deleteRowColumn
+ * @param erased
+ */
+void Matrix::deleteRowColumn(int erased){
+    qDebug() << "Matrix: deleteRowColumn() : "<< erased;
+    qDebug() << "Matrix: m_rows before " <<  m_rows;
+
+    --m_rows;
+    qDebug() << "Matrix: m_rows now " << m_rows << ". Resizing...";
+    for (int i=0;i<m_rows+1; i++) {
+        for (int j=0;j<m_rows+1; j++) {
+            qDebug() << "Matrix: (" <<  i << ", " << j << ")="<< item(i, j) ;
+            if ( j==erased && item(i,erased) ){
+                clearItem(i,j);
+                qDebug() << i << "  connected to " << erased << ". Clearing..." ;
+            }
+            if (i<erased && j< erased) {
+                qDebug() << "i, j < erased. Skipping. Item remains";
+            }
+            if (i<erased && j>=erased) {
+                setItem( i, j, item(i,j+1) ) ;
+                qDebug() << "case 2";
+            }
+            if (i>=erased && j<erased) {
+                setItem( i, j, item(i+1,j) ) ;
+                qDebug() <<"case 3";
+            }
+            if (i>=erased && j>=erased) {
+                setItem( i, j, item(i+1,j+1) ) ;
+                qDebug() <<"case 4";
+            }
+            if (i>=m_rows || j>=m_rows) {
+                setItem( i, j, 0) ;
+                qDebug() <<"case 5 (border)";
+            }
+            qDebug() << "Matrix: new value (" <<  i << ", " << j << ")="<< item(i, j) ;
+        }
+    }
+    for (int i=0;i<m_rows; i++)
+        row[i].updateOutEdges();
+
+}
+
+
+/**
+ * @brief Matrix::fillMatrix
+ * fills a matrix with a given value
+ * @param value
+ */
+void Matrix::fillMatrix(float value )   {
+    for (int i=0;i< rows() ; i++)
+        for (int j=0;j< cols(); j++)
+            setItem(i,j, value);
+}
+
+
+
+/**
+ * @brief Matrix::subtractFromI
+ * @return
+ */
+Matrix& Matrix::subtractFromI ()  {
+    for (int i=0;i< rows();i++)
+        for (int j=0;j<cols();j++) {
+            if (i==j)
+                setItem(i,j, 1.0 - item(i,j));
+            else
+                setItem(i,j, item(i,j));
+        }
+    return *this;
+}
+
+
+
+
+/**
+ * @brief Matrix::swapRows
+ * Swaps row A with row B of this matrix
+ * @param rowA
+ * @param rowB
+ */
+void Matrix::swapRows(int rowA,int rowB){
+    qDebug()<<"   swapRow() "<< rowA+1 << " with " << rowB+1;
+    float *tempRow = new  (nothrow) float [ rows() ];
+    Q_CHECK_PTR(tempRow);
+    for ( int j=0; j<  rows(); j++) {
+      tempRow[j] = item (rowB, j);
+      setItem ( rowB, j, item ( rowA, j ) );
+      setItem ( rowA, j,  tempRow[j] );
+      }
+    delete [] tempRow;
+}
+
+
+
+
+
+/**
+* @brief Matrix::multiplyScalar
+  * Scalar Multiplication
+  * Multiplies this by float f and returns the product matrix of the same dim
+  * Allows to use P.multiplyScalar(f)
+  * @param f
+*/
+void Matrix::multiplyScalar (const float & f) {
+        qDebug()<< "Matrix::multiplyScalar() with f " << f;
+        for (int i=0;i< rows();i++) {
+            for (int j=0;j<cols();j++) {
+                setItem(i,j, item(i,j) * f );
+            }
+        }
+}
+
+
+/**
+ * @brief Matrix::multiplyRow
+ * Multiply every element of row A by value
+ * @param row
+ * @param value
+ */
+void Matrix::multiplyRow(int row, float value) {
+    qDebug()<<"   multiplyRow() "<< row+1 << " by value " << value;
+    for ( int j=0; j<  rows(); j++) {
+        setItem ( row, j,  value * item (row, j) );
+        qDebug()<<"   item("<< row+1 << ","<< j+1 << ") = " <<  item(row,j);
+    }
+}
+
+
+
+
+
+/**
+ * @brief Matrix::product
+ * Matrix Multiplication
+ * Allows P = a * b where P, a and b are not the same initially.
+ * Takes two matrices a and b of the same dimension
+ * and returns their product as a reference to the calling object
+ * NOTE: do not use it as B.product(A,B) because it will destroy B on the way.
+ * @param a
+ * @param b
+ * @param symmetry
+ * @return
+ */
+Matrix& Matrix::product( Matrix &a, Matrix & b, bool symmetry)  {
+    qDebug()<< "Matrix::product()";
+    for (int i=0;i< rows();i++)
+        for (int j=0;j<cols();j++) {
+            setItem(i,j,0);
+            for (int k=0;k<m_rows;k++) {
+                qDebug() << "Matrix::product() - a("<< i+1 << ","<< k+1 << ")="
+                         << a.item(i,k) << "* b("<< k+1 << ","<< j+1 << ")="
+                         << b.item(k,j)  << " gives "  << a.item(i,k)*b.item(k,j);
+                if  ( k > j && symmetry) {
+                    if (a.item(i,k)!=0 && b.item(j,k)!=0)
+                        setItem(i,j, item(i,j)+a.item(i,k)*b.item(j,k));
+                }
+                else{
+                    setItem(i,j, item(i,j)+a.item(i,k)*b.item(k,j));
+                }
+            }
+            qDebug() << "Matrix::product() - ("<< i+1 << ","<< j+1 << ") = "
+                     << item(i,j);
+        }
+    return *this;
+}
+
+
+/**
+ * @brief Matrix::productSym
+ * takes two ( N x N ) matrices (symmetric) and outputs an upper triangular matrix
+ * @param a
+ * @param b
+ * @return
+ */
+Matrix& Matrix::productSym( Matrix &a, Matrix & b)  {
+    for (int i=0;i<rows();i++)
+        for (int j=0;j<cols();j++) {
+            setItem(i,j,0);
+            if (i>=j) continue;
+            for (int k=0;k<m_rows;k++)
+                if  ( k > j ) {
+                    if (a.item(i,k)!=0 && b.item(j,k)!=0)
+                        setItem(i,j, item(i,j)+a.item(i,k)*b.item(j,k));
+                }
+                else  //k <= j  && i<j
+                    if ( i>k ) {
+                        if (a.item(k,i)!=0 && b.item(k,j)!=0)
+                            setItem(i,j, item(i,j)+a.item(k,i)*b.item(k,j));
+                        }
+                        else {
+                            if (a.item(i,k)!=0 && b.item(k,j)!=0)
+                                setItem(i,j, item(i,j)+a.item(i,k)*b.item(k,j));
+                        }
+        }
+        return *this;
+}
+
+
+/**
+ * @brief Matrix::pow
+ * @param power
+ * @param symmetry
+ * @return
+ */
+Matrix& Matrix::pow (int power, bool symmetry)  {
+    Matrix t=*this;
+    for (int k=1; k<power; k++){
+        product(*this, t, symmetry);
+    }
+    return *this;
+}
+
+
+
+/**
+ * @brief Matrix::sum
+ * Matrix addition
+ * Takes two (nxn) matrices and returns their product as a reference to this
+ * Same algorithm as operator +, just different interface.
+ * In this case, you use something like: c.sum(a,b)
+ * @param a
+ * @param b
+ * @return
+ */
+Matrix& Matrix::sum( Matrix &a, Matrix & b)  {
+    for (int i=0;i< rows();i++)
+        for (int j=0;j<cols();j++)
+            setItem(i,j, a.item(i,j)+b.item(i,j));
+    return *this;
+}
 
 
 
@@ -148,17 +527,18 @@ Matrix& Matrix::operator = (Matrix & a) {
 /**
 * @brief Matrix::operator +
 * Matrix addition: +
-* Adds two matrices of the same dim and returns the sum matrix.
-* Allows to sum two matrices using c=a+b
+* Adds this matrix with b of the same dim
+* Allows a+b
 * @param a
 * @return
 */
-  Matrix& Matrix::operator +(Matrix & a) {
+  Matrix& Matrix::operator +(Matrix & b) {
       qDebug()<< "Matrix::operator addition";
       for (int i=0;i< rows();i++)
           for (int j=0;j<cols();j++)
-              setItem(i,j, item(i,j)+a.item(i,j));
+              setItem(i,j, item(i,j)+b.item(i,j));
       return *this;
+
  }
 
 
@@ -166,8 +546,13 @@ Matrix& Matrix::operator = (Matrix & a) {
 
 
 
-/**  	Outputs matrix m to a text str
-*/
+/**
+ * @brief operator <<
+ * Outputs matrix m to a text str
+ * @param os
+ * @param m
+ * @return
+ */
 QTextStream& operator <<  (QTextStream& os, Matrix& m){
     qDebug() << "Matrix: << Matrix";
     int fieldWidth = 8, newFieldWidth = 8, actorNumber=1;
@@ -175,11 +560,6 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
     m.findMinMaxValues(maxVal,minVal);
     float element;
 
-    #ifdef Q_OS_WIN32
-    QString infinity = QString::number( INFINITY) ;
-    #else
-    QString infinity = QString("\xE2\x88\x9E") ;
-    #endif
 
 
     if (maxVal == -1 ||  maxVal==RAND_MAX )
@@ -300,266 +680,32 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
 }
 
 
-void Matrix::findMinMaxValues (float & maxVal, float &minVal){
-    maxVal=0;
-    minVal=RAND_MAX;
-    for (int r = 0; r < rows(); ++r) {
-        for (int c = 0; c < cols(); ++c) {
-            if ( item(r,c) > maxVal)
-                maxVal = item(r,c) ;
-            if ( item(r,c) < minVal){
-                minVal= item(r,c) ;
-            }
-        }
-    }
-}
 
 
-
-// makes this square matrix the identity square matrix I
-void Matrix::identityMatrix(int dim) {
-    qDebug() << "Matrix: identityMatrix() -- deleting old rows";
-    clear();
-    m_rows=dim;
-    m_cols=dim;
-    row = new (nothrow) Row [m_rows];
-    Q_CHECK_PTR( row );
-    qDebug() << "Matrix: resize() -- resizing each row";
-    for (int i=0;i<m_rows; i++) {
-        row[i].resize(m_rows);
-        setItem(i,i, 1);
-    }
-}
-
-
-// makes this matrix the zero matrix of size mxn
-void Matrix::zeroMatrix(const int m, const int n) {
-    qDebug() << "Matrix:: zeroMatrix() m " << m << " n " << n;
-    clear();
-    m_rows=m;
-    m_cols=n;
-    row = new (nothrow) Row [m_rows];
-    Q_CHECK_PTR( row );
-    qDebug() << "Matrix::zeroMatrix - resizing each row";
-    for (int i=0;i<m_rows; i++) {
-        row[i].resize(m_cols);
-        setItem(i,i, 0);
-    }
-
-}
-
-// returns the (r,c) matrix element
-float Matrix::item( int r, int c ){
-    return row[r].column(c);
-}
-
-// sets the (r,c) matrix element calling the setColumn method
-void Matrix::setItem( const int r, const int c, const float elem ) {
-    row [ r ].setColumn(c, elem);
-}
-
-// clears the (r,c) matrix element
-void Matrix::clearItem( int r, int c ) 	{
-	row[r].clearColumn(c); 
-}
-
-
-//returns the number of edges starting from r
-int Matrix::edgesFrom(int r){
-    qDebug() << "Matrix: edgesFrom() " << r << " = "<< row[r].outEdges();
-    return row[r].outEdges();
-}
-
-
-int Matrix::edgesTo(const int t){
-    int m_inEdges=0;
-    for (int i = 0; i < rows(); ++i) {
-        if ( item(i, t) != 0 )
-            m_inEdges++;
-    }
-    qDebug()<< "Matrix: edgesTo() " << t << " = " << m_inEdges;
-    return m_inEdges;
-}
-
-
-int Matrix::totalEdges(){
-    int m_totalEdges=0;
-    for (int r = 0; r < rows(); ++r) {
-        m_totalEdges+=edgesFrom(r);
-    }
-    qDebug() << "Matrix: totalEdges " << m_totalEdges;
-    return m_totalEdges;
-}
-
-
-bool Matrix::printMatrixConsole(){
+/**
+ * @brief Matrix::printMatrixConsole
+ * @return
+ */
+bool Matrix::printMatrixConsole(bool debug){
     qDebug() << "Matrix: printMatrixConsole";
     for (int r = 0; r < rows(); ++r) {
-        for (int c = 0; c < cols(); ++c)
-            QTextStream(stdout) << item(r,c) <<' ';
-        QTextStream(stdout) <<'\n';
+        for (int c = 0; c < cols(); ++c) {
+            if ( item(r,c) < RAND_MAX  ) {
+                QTextStream( (debug ? stderr : stdout) ) << item(r,c) << ' ';
+            }
+            else {
+                QTextStream( (debug ? stderr : stdout) ) << "X" << ' ';
+            }
+
+//            QTextStream( (debug ? stderr : stdout) )
+//                    << ( (item(r,c) < RAND_MAX ) ? item(r,c) : INFINITY  )<<' ';
+        }
+        QTextStream( (debug ? stderr : stdout)  ) <<'\n';
     }
     return true;
 }
 
 
-
-void Matrix::deleteRowColumn(int erased){
-    qDebug() << "Matrix: deleteRowColumn() : "<< erased;
-    qDebug() << "Matrix: m_rows before " <<  m_rows;
-
-    --m_rows;
-    qDebug() << "Matrix: m_rows now " << m_rows << ". Resizing...";
-    for (int i=0;i<m_rows+1; i++) {
-        for (int j=0;j<m_rows+1; j++) {
-            qDebug() << "Matrix: (" <<  i << ", " << j << ")="<< item(i, j) ;
-            if ( j==erased && item(i,erased) ){
-                clearItem(i,j);
-                qDebug() << i << "  connected to " << erased << ". Clearing..." ;
-            }
-            if (i<erased && j< erased) {
-                qDebug() << "i, j < erased. Skipping. Item remains";
-            }
-            if (i<erased && j>=erased) {
-                setItem( i, j, item(i,j+1) ) ;
-                qDebug() << "case 2";
-            }
-            if (i>=erased && j<erased) {
-                setItem( i, j, item(i+1,j) ) ;
-                qDebug() <<"case 3";
-            }
-            if (i>=erased && j>=erased) {
-                setItem( i, j, item(i+1,j+1) ) ;
-                qDebug() <<"case 4";
-            }
-            if (i>=m_rows || j>=m_rows) {
-                setItem( i, j, 0) ;
-                qDebug() <<"case 5 (border)";
-            }
-            qDebug() << "Matrix: new value (" <<  i << ", " << j << ")="<< item(i, j) ;
-        }
-    }
-    for (int i=0;i<m_rows; i++)
-        row[i].updateOutEdges();
-
-}
-
-
-/**
- * @brief Matrix::fillMatrix
- * fills a matrix with a given value
- * @param value
- */
-void Matrix::fillMatrix(float value )   {
-    for (int i=0;i< rows() ; i++)
-        for (int j=0;j< cols(); j++)
-            setItem(i,j, value);
-}
-
-// takes two matrices of the same size and returns their product as a reference to the calling object
-// Beware: do not use it as B.product(A,B) because it will destroy B on the way.
-Matrix& Matrix::product( Matrix &a, Matrix & b, bool symmetry)  {
-    qDebug()<< "Matrix::product()";
-    for (int i=0;i< rows();i++)
-        for (int j=0;j<cols();j++) {
-            setItem(i,j,0);
-            for (int k=0;k<m_rows;k++) {
-                qDebug() << "Matrix::product() - a("<< i+1 << ","<< k+1 << ")="
-                         << a.item(i,k) << "* b("<< k+1 << ","<< j+1 << ")="
-                         << b.item(k,j)  << " gives "  << a.item(i,k)*b.item(k,j);
-                if  ( k > j && symmetry) {
-                    if (a.item(i,k)!=0 && b.item(j,k)!=0)
-                        setItem(i,j, item(i,j)+a.item(i,k)*b.item(j,k));
-                }
-                else{
-                    setItem(i,j, item(i,j)+a.item(i,k)*b.item(k,j));
-                }
-            }
-            qDebug() << "Matrix::product() - ("<< i+1 << ","<< j+1 << ") = "
-                     << item(i,j);
-        }
-    return *this;
-}
-		
-//takes two ( N x N ) matrices (symmetric) and outputs an upper triangular matrix
-Matrix& Matrix::productSym( Matrix &a, Matrix & b)  {
-    for (int i=0;i<rows();i++)
-        for (int j=0;j<cols();j++) {
-			setItem(i,j,0);
-			if (i>=j) continue;
-            for (int k=0;k<m_rows;k++)
-				if  ( k > j ) {
-					if (a.item(i,k)!=0 && b.item(j,k)!=0)
-						setItem(i,j, item(i,j)+a.item(i,k)*b.item(j,k));
-				}
-				else  //k <= j  && i<j
-					if ( i>k ) {
-						if (a.item(k,i)!=0 && b.item(k,j)!=0)
-							setItem(i,j, item(i,j)+a.item(k,i)*b.item(k,j));
-						}
-						else {
-							if (a.item(i,k)!=0 && b.item(k,j)!=0)
-								setItem(i,j, item(i,j)+a.item(i,k)*b.item(k,j));
-						}
-	    }
-	    return *this;
-}
-	
-Matrix& Matrix::pow (int power, bool symmetry)  {
-	Matrix t=*this;
-    for (int k=1; k<power; k++){
-		product(*this, t, symmetry);
-	}
-	return *this;
-}
-
-
-//takes two (nxn) matrices and returns their product as a reference to this
-Matrix& Matrix::sum( Matrix &a, Matrix & b)  {
-    for (int i=0;i< rows();i++)
-        for (int j=0;j<cols();j++)
-		    setItem(i,j, a.item(i,j)*b.item(i,j));
-	return *this;
-}
-
-
-
-Matrix& Matrix::subtractFromI ()  {
-    for (int i=0;i< rows();i++)
-        for (int j=0;j<cols();j++) {
-            if (i==j)
-                setItem(i,j, 1.0 - item(i,j));
-            else
-                setItem(i,j, item(i,j));
-        }
-    return *this;
-}
-
-
-/* Swaps row A with row B of this matrix */
-void Matrix::swapRows(int rowA,int rowB){
-    qDebug()<<"   swapRow() "<< rowA+1 << " with " << rowB+1;
-    float *tempRow = new  (nothrow) float [ rows() ];
-    Q_CHECK_PTR(tempRow);
-    for ( int j=0; j<  rows(); j++) {
-	  tempRow[j] = item (rowB, j);
-	  setItem ( rowB, j, item ( rowA, j ) );
-	  setItem ( rowA, j,  tempRow[j] );
-      }
-    delete [] tempRow;
-}
-
-
-
-
-/* Multiply every element of row A by value */
-void Matrix::multiplyRow(int row, float value) {
-    qDebug()<<"   multiplyRow() "<< row+1 << " by value " << value;
-    for ( int j=0; j<  rows(); j++) {
-        setItem ( row, j,  value * item (row, j) );
-        qDebug()<<"   item("<< row+1 << ","<< j+1 << ") = " <<  item(row,j);
-    }
-}
 
 
 
@@ -822,6 +968,11 @@ void Matrix::lubksb(Matrix &a, const int &n, int indx[], float b[])
     }
 }
 
+/**
+ * @brief Matrix::inverse
+ * @param a
+ * @return
+ */
 Matrix& Matrix::inverse(Matrix &a)
 {
     int i,j, n=a.rows();

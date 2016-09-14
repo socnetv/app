@@ -5975,7 +5975,8 @@ void Graph::walksMatrixCreate(const int maxPower, const bool updateProgress) {
     for (int i=2; i <= maxPower ; ++i) {
         PM.product(XM,AM, false);
         XM=PM;
-        XSM = XSM+XM;
+        XSM+XM; // XSM becomes XSM+XM
+        //XSM.sum(XSM,XM);
         if (updateProgress) {
             emit updateProgressDialog (i);
         }
@@ -11807,7 +11808,19 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
     bool considerWeights=false, inverseWeights=false, dropIsolates=false;
     distanceMatrixCreate(false,considerWeights,inverseWeights, dropIsolates);
     // compute lij for 1 <= i!=j <= n
+    TM.zeroMatrix(DM.rows(), DM.cols());
 
+    qDebug() << " DM : ";
+    DM.printMatrixConsole();
+    qDebug() << " DM+DM: ";
+    TM.sum(DM,DM);
+    TM.printMatrixConsole();
+
+    qDebug() << " 2*DM: ";
+
+    TM=DM;
+    TM.multiplyScalar(2);
+    TM.printMatrixConsole();
     // compute kij for 1 <= i!=j <= n
 
     // initialize p1, p2, ... pn;

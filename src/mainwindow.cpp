@@ -4003,6 +4003,10 @@ void MainWindow::toolBoxLayoutForceDirectedButtonPressed(){
         slotLayoutGuides(false);
         slotLayoutFruchterman();
         break;
+    case 3:
+        slotLayoutGuides(false);
+        slotLayoutKamadaKawai();
+        break;
     default:
         toolBoxLayoutForceDirectedSelect->setCurrentIndex(0);
         break;
@@ -7636,6 +7640,38 @@ void MainWindow::slotLayoutFruchterman(){
 
     destroyProgressBar();
     statusMessage( tr("Fruchterman & Reingold model embedded.") );
+}
+
+
+
+
+
+/**
+ * @brief MainWindow::slotLayoutKamadaKawai
+ * Calls Graph::layoutForceDirectedKamadaKawai to embed
+ * a repelling-attracting forces model.
+ * Called from menu or toolbox
+ */
+void MainWindow::slotLayoutKamadaKawai(){
+    qDebug()<< "MW::slotLayoutKamadaKawai ()";
+    if (!fileLoaded && !networkModified  )  {
+        QMessageBox::critical(this, "Error",tr("There are no nodes yet!\n"
+                                               "Load a network file or create a new network first. \n"
+                                               "Then we can talk about layouts!"), "OK",0);
+        statusMessage( tr("I am really sorry. You must really load a file first... ")  );
+        return;
+    }
+
+    statusMessage( tr("Embedding a dynamic spring model "
+                      "(Kamada & Kawai) on the network.... ")  );
+    progressMsg = "Embedding a dynamic spring model "
+                  "(Kamada & Kawai) \n"
+            "Please wait (or disable progress bars from Options -> Settings).";
+    createProgressBar(0,progressMsg );
+    activeGraph.layoutForceDirectedKamadaKawai(10);
+
+    destroyProgressBar();
+    statusMessage( tr("Kamada & Kawai model embedded.") );
 }
 
 

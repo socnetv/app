@@ -30,12 +30,19 @@
 #define MATRIX_H
 
 
-
 #include <QtGlobal>
-
+#include <QString>  //for static const QString declares below
 #include <utility>      // std::pair, std::make_pair
 
 using namespace std; //or else compiler groans for nothrow
+
+
+#ifdef Q_OS_WIN32
+static const QString infinity = QString::number( INFINITY) ;
+#else
+static const QString infinity = QString("\xE2\x88\x9E") ;
+#endif
+
 
 class QTextStream;
 
@@ -160,7 +167,7 @@ public:
 
     int totalEdges();
 
-    bool printMatrixConsole();
+    bool printMatrixConsole(bool debug=true);
 
     void identityMatrix (int dim);
 
@@ -171,8 +178,6 @@ public:
     Matrix& operator =(Matrix & a);
 
     Matrix& operator +(Matrix & b);
-
-    Matrix operator *(Matrix & b);	    // undefined
 
     friend QTextStream& operator <<  (QTextStream& os, Matrix& m);
 
@@ -195,13 +200,16 @@ public:
     Matrix& inverse(Matrix &a);
 
     void swapRows(int rowA,int rowB);		/* elementary matrix algebra */
-    void multiplyRow(int row, float value);		/* Multiply every elememt of row A by value */
+
+    void multiplyScalar(const float &f);
+    void multiplyRow(int row, float value);
 
 private:
     Row *row;
     int m_Actors;
     int m_rows;
     int m_cols;
+
 };
 
 

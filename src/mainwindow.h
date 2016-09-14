@@ -256,6 +256,7 @@ public slots:
     void slotLayoutGuides(const bool &toggle);
     void slotLayoutSpringEmbedder();
     void slotLayoutFruchterman();
+    void slotLayoutKamadaKawai();
     void slotLayoutNodeSizesByOutDegree(bool);
     void slotLayoutNodeSizesByInDegree(bool);
 
