@@ -99,11 +99,21 @@ void Graph::canvasSizeSet(const int w, const int h){
     canvasHeight= h-50;
 }
 
-
-double Graph::canvasMinDimension () const {
+/**
+ * @brief Graph::canvasMaxRadius
+ * @return
+ */
+double Graph::canvasMaxRadius () const {
     return ( canvasHeight < canvasWidth ) ? canvasHeight / 2.0 -20 : canvasWidth/2.0 - 20;
 }
 
+/**
+ * @brief Graph::canvasMinDimension
+ * @return
+ */
+float Graph::canvasMinDimension() const {
+    return ( canvasHeight < canvasWidth ) ? canvasHeight-20 : canvasWidth-20;
+}
 
 
 /**
@@ -2091,7 +2101,9 @@ void Graph::edgeUndirectedSet(const long int &v1, const long int &v2,
 int Graph::distance(const int i, const int j,
                     const bool considerWeights,
                     const bool inverseWeights){
+    qDebug() <<"Graph::distance()";
     if ( !distanceMatrixCreated || graphModified ) {
+        qDebug() <<"Graph::distance() - graphModified - recomputing DM";
         emit statusMessage ( (tr("Calculating shortest paths")) );
         distanceMatrixCreate(false, considerWeights, inverseWeights, false);
     }
@@ -2110,8 +2122,10 @@ int Graph::distance(const int i, const int j,
  */
 int Graph::diameter(const bool considerWeights,
                     const bool inverseWeights){
+    qDebug () << "Graph::diameter()" ;
     if ( !distanceMatrixCreated || graphModified ) {
-        emit statusMessage ( (tr("Calculating shortest paths")) );
+        qDebug() <<"Graph::distance() - graphModified. Recomputing DM";
+        emit statusMessage ( (tr("Computing Diameter - Distance Matrix creation...")) );
         distanceMatrixCreate(false, considerWeights, inverseWeights, false);
     }
     return graphDiameter;
@@ -2130,7 +2144,9 @@ int Graph::diameter(const bool considerWeights,
 float Graph::distanceGraphAverage(const bool considerWeights,
                                   const bool inverseWeights,
                                   const bool dropIsolates){
+    qDebug() <<"Graph::distanceGraphAverage() ";
     if ( !distanceMatrixCreated || graphModified ) {
+        qDebug() <<"Graph::distanceGraphAverage() - graphModified. Recomputing DM";
         emit statusMessage ( (tr("Calculating shortest paths")) );
         distanceMatrixCreate(false, considerWeights, inverseWeights,dropIsolates);
     }
@@ -4856,7 +4872,7 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
                 << "prominenceIndex index = " << prominenceIndex;
     //first calculate centrality indices if needed
 
-    maxRadius = canvasMinDimension();
+    maxRadius = canvasMaxRadius();
     if ( prominenceIndex == 1) {
             if (graphModified || !calculatedDC )
                 centralityDegree(true, dropIsolates);
@@ -5054,7 +5070,7 @@ void Graph::layoutCircularRandom(double x0, double y0, double maxRadius){
     qDebug() << "Graph::layoutCircularRandom - ";
     double rad=0, new_radius=0, new_x=0, new_y=0;
     double i=0;
-    maxRadius = canvasMinDimension();
+    maxRadius = canvasMaxRadius();
     //offset controls how far from the centre the central nodes be positioned
     float offset=0.06, randomDecimal=0;
     int vert=vertices();
@@ -7455,8 +7471,8 @@ bool Graph::loadGraph (	const QString m_fileName,
                 );
 
     connect (
-                file_parser, SIGNAL(fileType(int, QString, int, int, bool)),
-                this, SLOT(setFileType(int, QString, int, int, bool))
+                file_parser, SIGNAL(networkFileLoaded(int, QString, int, int, bool)),
+                this, SLOT(graphLoaded(int, QString, int, int, bool))
                 );
 
     connect (
@@ -7501,19 +7517,19 @@ void Graph::terminateParserThreads(QString reason) {
 
 
 /**
- * @brief Graph::setFileType
+ * @brief Graph::graphLoaded
  * Updates MW  with the file type (0=nofile, 1=Pajek, 2=Adjacency etc)
- * Called from Parser when parsing network files.
+ * Called from Parser on file parsing end .
  * @param type
  * @param networkName
  * @param aNodes
  * @param totalLinks
  * @param undirected
  */
-void Graph::setFileType ( int type, QString netName,
+void Graph::graphLoaded ( int type, QString netName,
                           int aNodes, int totalLinks, bool undirected)
 {
-    qDebug() << "Graph::setFileType() - "
+    qDebug() << "Graph::graphLoaded() - "
                 << " type " << type
                 << " name " << networkName
                 << " nodes " << aNodes
@@ -7521,8 +7537,9 @@ void Graph::setFileType ( int type, QString netName,
                 << " undirected " << undirected;
     networkName = netName;
     m_undirected = undirected;
-    emit signalFileType (type, networkName, aNodes, totalLinks, m_undirected);
-    qDebug ()<< "Graph::setFileType()  -check parser if running...";
+    graphModified=false;
+    emit signalGraphLoaded (type, networkName, aNodes, totalLinks, m_undirected);
+    qDebug ()<< "Graph::graphLoaded()  -check parser if running...";
 
 }
 
@@ -11792,8 +11809,8 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
 /**
  * @brief Graph::layoutForceDirectedKamadaKawai
  * In this model, the graph is considered to be a dynamic system
- * where every two vertices are connected  by a 'spring' of a
- * desirable length, which corresponds to their graph theoretic
+ * where every two vertices are connected  by a 'spring'. Each spring
+ * has a desirable length, which corresponds to their graph theoretic
  * distance. In this way, the optimal layout of the graph
  * is the state with the minimum imbalance. The degree of
  * imbalance is formulated as the total spring energy:
@@ -11803,25 +11820,31 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations){
  */
 
 void Graph::layoutForceDirectedKamadaKawai(const int maxIterations){
+    qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - "
+               << "maxIter " << maxIterations;
     Q_UNUSED(maxIterations);
-    // compute dij for 1 <= i!=j <= n
+
+    // Compute dij for 1 <= i!=j <= n
     bool considerWeights=false, inverseWeights=false, dropIsolates=false;
     distanceMatrixCreate(false,considerWeights,inverseWeights, dropIsolates);
-    // compute lij for 1 <= i!=j <= n
-    TM.zeroMatrix(DM.rows(), DM.cols());
-
     qDebug() << " DM : ";
     DM.printMatrixConsole();
-    qDebug() << " DM+DM: ";
-    TM.sum(DM,DM);
-    TM.printMatrixConsole();
 
-    qDebug() << " 2*DM: ";
-
+    // Compute lij for 1 <= i!=j <= n using the formula:
+    // lij = L x dij
+    // where L the desirable length of a single edge in the display pane
+    // Since we are on a restricted display (a canvas), L depends on the
+    // diameter D of the graph and the length L of a side of the display square:
+    // L = L0 / D
+    float L = canvasMinDimension() / (float) diameter(considerWeights,inverseWeights);
+    TM.zeroMatrix(DM.rows(), DM.cols());
     TM=DM;
-    TM.multiplyScalar(2);
+    TM.multiplyScalar(L);
     TM.printMatrixConsole();
-    // compute kij for 1 <= i!=j <= n
+
+    // Compute kij for 1 <= i!=j <= n using the formula:
+    // ki
+    // kij is the strength of the spring between pi and pj
 
     // initialize p1, p2, ... pn;
 

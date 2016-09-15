@@ -494,7 +494,7 @@ bool Parser::loadDL(){
     //The network has been loaded. Tell MW the statistics and network type
     // 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List
     emit relationSet (0);
-    emit fileType(5, networkName, aNodes, totalLinks, undirected);
+    emit networkFileLoaded(5, networkName, aNodes, totalLinks, undirected);
     qDebug() << "Parser-loadDL() clearing";
     lineElement.clear(); labelsList.clear(); relationsList.clear();
     return true;
@@ -951,7 +951,7 @@ bool Parser::loadPajek(){
     if (j==0) return false;
     //The network has been loaded. Tell MW the statistics and network type
     // 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List
-    emit fileType(2, networkName, aNodes, totalLinks, undirected);
+    emit networkFileLoaded(2, networkName, aNodes, totalLinks, undirected);
 
     qDebug("Parser-loadPajek(): Removing all dummy aNodes, if any");
     if (listDummiesPajek.size() > 0 ) {
@@ -1085,7 +1085,7 @@ bool Parser::loadAdjacency(){
 
     // 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List
     qDebug() << "Parser: SM network has been loaded. Tell MW the statistics and network type";
-    emit fileType(3, networkName, aNodes, totalLinks, undirected);
+    emit networkFileLoaded(3, networkName, aNodes, totalLinks, undirected);
 
     return true;
 
@@ -1181,7 +1181,7 @@ bool Parser::loadTwoModeSociomatrix(){
     file.close();
     // 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List, 8 List, 9, TwoModeSociomatrix
     qDebug() << "Parser: Two-mode SM network has been loaded. Tell MW the statistics and network type";
-    emit fileType(9, networkName, aNodes, totalLinks, undirected);
+    emit networkFileLoaded(9, networkName, aNodes, totalLinks, undirected);
 
     return true;
 
@@ -1287,7 +1287,7 @@ bool Parser::loadGraphML(){
 
     //The network has been loaded. Tell MW the statistics and network type
     // 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List
-    emit fileType(1, networkName, aNodes, totalLinks, undirected);
+    emit networkFileLoaded(1, networkName, aNodes, totalLinks, undirected);
     //clear our mess - remove every hash element...
     keyFor.clear();
     keyName.clear();
@@ -2002,7 +2002,7 @@ bool Parser::loadGML(){
     }
     //The network has been loaded. Tell MW the statistics and network type
     // 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List
-    emit fileType(6, networkName, aNodes, totalLinks, undirected);
+    emit networkFileLoaded(6, networkName, aNodes, totalLinks, undirected);
     qDebug() << "Parser-loadGML()";
     return true;
 }
@@ -2368,7 +2368,7 @@ bool Parser::loadDot(){
     file.close();
     //The network has been loaded. Tell MW the statistics and network type
     // 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List
-    emit fileType(4, networkName, aNodes, totalLinks, undirected);
+    emit networkFileLoaded(4, networkName, aNodes, totalLinks, undirected);
     return true;
 }
 
@@ -2565,7 +2565,7 @@ bool Parser::loadWeighedList(){
 
     //The network has been loaded. Tell MW the statistics and network type
     // 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: PlainList, 8: WeightedList
-    emit fileType(7, networkName, aNodes, totalLinks, undirected);
+    emit networkFileLoaded(7, networkName, aNodes, totalLinks, undirected);
     qDebug() << "Parser-loadWeighedList() ending and returning...";
     return true;
 
@@ -2693,7 +2693,7 @@ bool Parser::loadSimpleList(){
     file.close();
     //The network has been loaded. Tell MW the statistics and network type
     // 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: Weighted List, 8: simple list
-    emit fileType(8, networkName, aNodes, totalLinks, undirected);
+    emit networkFileLoaded(8, networkName, aNodes, totalLinks, undirected);
     qDebug() << "Parser-loadSimpleList() ending and returning...";
     return true;
 

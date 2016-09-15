@@ -3364,9 +3364,9 @@ void MainWindow::initSignalSlots() {
     connect( &activeGraph, SIGNAL( graphChanged() ),
              this, SLOT( slotNetworkChanged() ) ) ;
 
-    connect( &activeGraph, SIGNAL( signalFileType( int, QString,
+    connect( &activeGraph, SIGNAL( signalGraphLoaded( int, QString,
                                                    int , int, bool) ),
-             this, SLOT( fileType( int, QString, int , int, bool) ) ) ;
+             this, SLOT( slotNetworkFileLoaded( int, QString, int , int, bool) ) ) ;
 
     connect( &activeGraph, SIGNAL( drawEdge( const int&, const int&, const float &,
                                              const QString &, const QString &,
@@ -4746,9 +4746,9 @@ bool MainWindow::slotNetworkFileLoad(const QString m_fileName,
         Q_ASSERT_X( !fileNameNoPath.isEmpty(),  "not empty filename ", "empty filename " );
         setWindowTitle("SocNetV "+ VERSION +" - "+fileNameNoPath.last());
         setLastPath(m_fileName); // store this path and file
-        QString message=tr("Loaded network: ")+fileNameNoPath.last();
-        statusMessage( message );
-        slotNetworkChanged();
+//        QString message=tr("Loaded network: ")+fileNameNoPath.last();
+//        statusMessage( message );
+        //slotNetworkChanged();
     }
     else {
         statusMessage( tr("Error loading requested file. Aborted."));
@@ -4766,7 +4766,7 @@ bool MainWindow::slotNetworkFileLoad(const QString m_fileName,
 
 
 /**
- * @brief MainWindow::fileType
+ * @brief MainWindow::slotNetworkFileLoaded
  * Called from Parser/Graph when a network file is loaded.
  * It informs the MW about the type of the network so that it can display the appropiate message.
  * @param type
@@ -4775,10 +4775,10 @@ bool MainWindow::slotNetworkFileLoad(const QString m_fileName,
  * @param totalEdges
  * @param undirected
  */
-void MainWindow::fileType (
+void MainWindow::slotNetworkFileLoaded (
         int type, QString netName, int aNodes, int totalEdges, bool undirected)
 {
-    qDebug()<< "MW: fileType() networkName is: " << netName << " type " << type;
+    qDebug()<< "MW::slotNetworkFileLoaded() - mnetworkName is: " << netName << " type " << type;
     Q_UNUSED (undirected);
     if (netName != "")
         networkName=netName ;
@@ -4787,12 +4787,14 @@ void MainWindow::fileType (
     fileFormat=type;
     switch( type ) 	{
     case 0:
+        slotNetworkChanged();
         pajekFileLoaded=false;
         adjacencyFileLoaded=false;
         graphMLFileLoaded=false;
         fileLoaded=false;
         break;
     case 1:
+        slotNetworkChanged();
         pajekFileLoaded=false;
         adjacencyFileLoaded=false;
         dotFileLoaded=false;
@@ -4803,6 +4805,7 @@ void MainWindow::fileType (
         break;
 
     case 2:
+        slotNetworkChanged();
         pajekFileLoaded=true;
         adjacencyFileLoaded=false;
         graphMLFileLoaded=false;
@@ -4812,6 +4815,7 @@ void MainWindow::fileType (
         break;
 
     case 3:
+        slotNetworkChanged();
         pajekFileLoaded=false;
         adjacencyFileLoaded=true;
         graphMLFileLoaded=false;
@@ -4821,6 +4825,7 @@ void MainWindow::fileType (
         break;
 
     case 4:
+        slotNetworkChanged();
         pajekFileLoaded=false;
         adjacencyFileLoaded=false;
         dotFileLoaded=true;
@@ -4831,6 +4836,7 @@ void MainWindow::fileType (
         break;
 
     case 5:
+        slotNetworkChanged();
         pajekFileLoaded=false;
         adjacencyFileLoaded=false;
         dotFileLoaded=false;
@@ -4840,6 +4846,7 @@ void MainWindow::fileType (
         statusMessage( QString(tr("DL-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
         break;
     case 6:
+        slotNetworkChanged();
         pajekFileLoaded=false;
         adjacencyFileLoaded=false;
         dotFileLoaded=false;
@@ -4849,6 +4856,7 @@ void MainWindow::fileType (
         statusMessage( QString(tr("GML-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
         break;
     case 7:
+        slotNetworkChanged();
         pajekFileLoaded=false;
         adjacencyFileLoaded=false;
         dotFileLoaded=false;
@@ -4858,6 +4866,7 @@ void MainWindow::fileType (
         statusMessage( QString(tr("Weighted list-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
         break;
     case 8:
+        slotNetworkChanged();
         pajekFileLoaded=false;
         adjacencyFileLoaded=false;
         dotFileLoaded=false;
@@ -4867,6 +4876,7 @@ void MainWindow::fileType (
         statusMessage( QString(tr("Simple list-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
         break;
     case 9:
+        slotNetworkChanged();
         pajekFileLoaded=false;
         adjacencyFileLoaded=false;
         dotFileLoaded=false;
@@ -4885,7 +4895,6 @@ void MainWindow::fileType (
                               " which is the file-format using Import Menu.","OK",0);
         break;
     }
-    slotNetworkChanged();
     networkSave->setIcon(QIcon(":/images/saved.png"));
     networkSave->setEnabled(false);
 }

@@ -367,7 +367,7 @@ void Matrix::swapRows(int rowA,int rowB){
   * Allows to use P.multiplyScalar(f)
   * @param f
 */
-void Matrix::multiplyScalar (const float & f) {
+void Matrix::multiplyScalar (const float  & f) {
         qDebug()<< "Matrix::multiplyScalar() with f " << f;
         for (int i=0;i< rows();i++) {
             for (int j=0;j<cols();j++) {
@@ -687,7 +687,7 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
  * @return
  */
 bool Matrix::printMatrixConsole(bool debug){
-    qDebug() << "Matrix: printMatrixConsole";
+    qDebug() << "Matrix::printMatrixConsole() debug " << debug ;
     for (int r = 0; r < rows(); ++r) {
         for (int c = 0; c < cols(); ++c) {
             if ( item(r,c) < RAND_MAX  ) {

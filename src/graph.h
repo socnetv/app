@@ -137,7 +137,7 @@ public slots:
                        const bool &signalMW
                         );//Main vertex creation call
 
-    void setFileType(int, QString netName, int, int, bool);
+    void graphLoaded(int, QString netName, int, int, bool);
     void vertexRemoveDummyNode(int);
     void terminateParserThreads (QString reason);
 
@@ -161,7 +161,8 @@ public slots:
     void relationSet(int);
     void relationAddFromUser(QString relation);
     void canvasSizeSet(const int w, const int h);
-    double canvasMinDimension() const;
+    double canvasMaxRadius() const;
+    float canvasMinDimension() const;
     void vertexIsolateFilter ( bool );		//Called by MW to filter orphan vertices
     void edgeFilterByWeight (float, bool);		//Called by MW to filter edges over/under a weight
     void edgeFilterByRelation(int relation, bool status);
@@ -174,7 +175,7 @@ signals:
     void updateProgressDialog(int );
     void graphChanged();  //call to update MW widgets
 
-    void signalFileType (int, QString, int,int, bool);	//notifies MW what we have loaded.
+    void signalGraphLoaded (int, QString, int,int, bool);	//notifies MW what we have loaded.
     void statusMessage (QString message);			//updates statusbar message
     void addRelationToMW(QString newRelation);
     void describeDataset(QString);
