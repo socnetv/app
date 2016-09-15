@@ -3781,6 +3781,7 @@ void MainWindow::updateNodeCoords(const int &nodeNumber,
     activeGraph.vertexPosSet(nodeNumber, x, y);
     if (!networkModified) {
         networkModified=true;
+        networkSave->setIcon(QIcon(":/images/save.png"));
         networkSave->setEnabled(true);
     }
 }
