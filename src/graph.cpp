@@ -77,7 +77,7 @@ Graph::Graph() {
     wc_parser = 0;
     wc_spider = 0;
 
- //   edgesHash.reserve(40000);
+//   edgesHash.reserve(40000);
     influenceDomains.reserve(1000);
     influenceRanges.reserve(1000);
 
@@ -6842,7 +6842,7 @@ float Graph::numberOfTriples(int v1){
  * @param v1
  * @return
  */
-float Graph:: clusteringCoefficientLocal(const long int &v1){
+float Graph::clusteringCoefficientLocal(const long int &v1){
     if ( !graphModified && (m_graph[ index [v1] ] -> hasCLC() ) )  {
         float clucof=m_graph[ index [v1] ] ->CLC();
         qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") - "
@@ -6868,12 +6868,9 @@ float Graph:: clusteringCoefficientLocal(const long int &v1){
     H_StrToBool neighborhoodEdges;
     neighborhoodEdges.clear();
 
-    qDebug() << "Graph::clusteringCoefficientLocal() - vertex " << v1
-             << "[" << index[v1] << "] ";
-
-
-    qDebug () << "Graph::clusteringCoefficientLocal() - "
-              << " Checking edges adjacent to " << v1;
+    qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") - vertex " << v1
+             << "[" << index[v1] << "] "
+             << " Checking adjacent edges " ;
 
     QHash<int,float> *reciprocalEdges = new QHash<int,float>;
     reciprocalEdges = m_graph [ index[v1] ] -> returnReciprocalEdges();
@@ -6887,42 +6884,47 @@ float Graph:: clusteringCoefficientLocal(const long int &v1){
     {
         u1 = it1.key();
 
-        qDebug() << "Graph::clusteringCoefficientLocal() - "
-                 << " edge with neighbor "
+        qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
+                 << v1
+                 << "<->"
                  << u1
-                 << " [" << index[u1] << "] "
-                 << " weight " << it1.value();
+                 << "[" << index[u1] << "] exists"
+                 << "weight " << it1.value();
 
         if ( v1 == u1 ) {
-            qDebug() << "Graph::clusteringCoefficientLocal() - "
-                     << " v1 == u1 - CONTINUE";
+            qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
+                     << "v1 == u1 - CONTINUE";
             ++it1;
             continue;
         }
 
         it2=reciprocalEdges->cbegin();
+        qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
+                 << "Checking if neighbor " << u1
+                 << "is connected to other neighbors of " << v1;
 
         while ( it2 != reciprocalEdges->cend() ){
 
             u2 = it2.key();
 
-            qDebug() << "Graph::clusteringCoefficientLocal() - "
-                     << " cross-checking edge with neighbor "
-                     << u2
-                     << " [" << index[u2] << "] "
-                     << " weight " << it2.value();
+            qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
+                     << "Other neighbor " << u2
+                     << "Check if there is an edge "
+                     << u1
+                     << "[" << index[u1] << "]"
+                        << "->" << u2 ;
 
             if ( u1 == u2 ) {
-                qDebug() << "Graph::clusteringCoefficientLocal() - "
-                         << " u1 == u2 - CONTINUE";
+                qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
+                         << "u1 == u2 - CONTINUE";
                 ++it2;
                 continue;
             }
 
             if ( edgeExists( u1, u2 ) != 0 )
             {
-                qDebug() << "Graph::clusteringCoefficientLocal() - "
-                         << " connected neighbors: "
+                qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
+                         << "Connected neighbors: "
                          << u1 << " -> " << u2;
 
                 QString edge = QString::number(u1) + "->" + QString::number(u2);
@@ -6933,22 +6935,22 @@ float Graph:: clusteringCoefficientLocal(const long int &v1){
                      )
                 {
                     neighborhoodEdges.insert(edge, true);
-                    qDebug() << "Graph::clusteringCoefficientLocal() - "
-                             << " adding edge to neighborhoodEdges ";
+                    qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
+                             << "Edge added to neighborhoodEdges : " << edge;
 
                 }
                 else {
-                    qDebug() << "Graph::clusteringCoefficientLocal() - "
-                             << " edge discovered previously... ";
+                    qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
+                             << "Edge not added, discovered previously : " << edge;
                 }
             }
             if ( ! graphSymmetric )
             {
                 if (  edgeExists( u2, u1 ) != 0   )
                 {
-                    qDebug() << "Graph::clusteringCoefficientLocal() - "
-                             << " graph not symmetric  "
-                             << " connected neighbors: "
+                    qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
+                             << "Graph not symmetric  "
+                             << "Connected neighbors: "
                              << u2 << " -> " << u1;
 
                     QString edge = QString::number(u2) + "->" + QString::number(u1);
@@ -6956,13 +6958,13 @@ float Graph:: clusteringCoefficientLocal(const long int &v1){
                     if ( ! neighborhoodEdges.contains(edge) )
                     {
                         neighborhoodEdges.insert(edge, true);
-                        qDebug() << "Graph::clusteringCoefficientLocal() - "
-                                 << " adding edge to neighborhoodEdges ";
+                        qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
+                                 << "Edge added to neighborhoodEdges : " << edge;
 
                     }
                     else {
-                        qDebug() << "Graph::clusteringCoefficientLocal() - "
-                                 << " edge discovered previously... ";
+                        qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
+                                 << "Edge not added, discovered previously : " << edge;
                     }
                 }
 
@@ -6974,19 +6976,19 @@ float Graph:: clusteringCoefficientLocal(const long int &v1){
 
     nom=neighborhoodEdges.count();
 
-    qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") - "
-            << " actual edges in neighborhood " <<  nom;
+    qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
+            << "neighborhoodEdges.count() =" <<  nom;
 
     if ( nom == 0)
         return 0;	//stop if we're at a leaf.
 
     if ( graphSymmetric ){
-        k=reciprocalEdges->count();
+        k=reciprocalEdges->count();  //k_{i} is the number of neighbours of a vertex
         denom =	k * (k -1.0) / 2.0;
 
-        qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") - "
-                    << " symmetric graph. "
-                    << " max edges in neighborhood" << denom ;
+        qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
+                    << "Symmetric graph. "
+                    << "Max edges in neighborhood" << denom ;
 
     }
     else {
@@ -6996,17 +6998,18 @@ float Graph:: clusteringCoefficientLocal(const long int &v1){
         denom = k * (k -1.0);
 
         qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") - "
-                    << " not symmetric graph. "
-                    << " max edges in neighborhood" << denom ;
+                    << "Not symmetric graph. "
+                    << "Max edges in neighborhood" << denom ;
     }
 
     clucof = nom / denom;
 
-    qDebug() << "=== Graph::clusteringCoefficientLocal("<< v1 << ") - "
-             << " CLUCOF = "<< clucof;
+    qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") -"
+             << "CLUCOF = "<< clucof;
 
     m_graph[ index [v1] ] -> setCLC(clucof);
 
+    reciprocalEdges->clear();
     neighborhoodEdges.clear();
     return clucof;
 }

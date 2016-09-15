@@ -62,6 +62,7 @@ Vertex::Vertex(Graph* parent,
     m_outEdgeLabels.reserve(100);
     m_outEdges.reserve(100);
     m_inEdges.reserve(100);
+    m_reciprocalEdges = new QHash<int,float>;
     m_outEdgesCounter=0;
     m_inEdgesCounter=0;
     m_outDegree=0;
@@ -437,30 +438,38 @@ QHash<int,float>* Vertex::returnEnabledOutEdges(){
  * @return  QHash<int,float>*
  */
 QHash<int,float>* Vertex::returnReciprocalEdges(){
-//    qDebug() << "Vertex::returnReciprocalEdges() - vertex " << this->name();
-    QHash<int,float> *reciprocalEdges = new QHash<int,float>;
+    m_reciprocalEdges->clear();
     float m_weight=0;
     int relation = 0;
     bool edgeStatus=false;
     H_edges::const_iterator it1=m_outEdges.constBegin();
+    qDebug() << "Vertex::returnReciprocalEdges() - of vertex "
+             << this->name()
+                << " - outEdges " <<  m_outEdges.count()
+                << " - Checking all edges for reciprocality";
+
     while (it1 != m_outEdges.constEnd() ) {
         relation = it1.value().first;
         if ( relation == m_curRelation ) {
             edgeStatus=it1.value().second.second;
             if ( edgeStatus == true) {
                 m_weight=it1.value().second.first;
-                if (this->hasEdgeFrom (it1.key()) == m_weight )
-                    reciprocalEdges->insertMulti(it1.key(), m_weight);
+                if (this->hasEdgeFrom (it1.key()) == m_weight ) {
+                    qDebug() << "Vertex::returnReciprocalEdges() - of vertex "
+                             << this->name()
+                             << "Found reciprocal edge with   " << it1.key();
+                    m_reciprocalEdges->insertMulti(it1.key(), m_weight);
+                }
             }
         }
         ++it1;
     }
 
     qDebug() << "Vertex::returnReciprocalEdges() - vertex " << this->name()
-             <<  " = "
-              << reciprocalEdges->count();
+             <<  "reciprocalEdges:  "
+              << m_reciprocalEdges->count();
 
-    return reciprocalEdges;
+    return m_reciprocalEdges;
 }
 
 
@@ -797,6 +806,7 @@ Vertex::~Vertex() {
     clearPs();
     m_outEdges.clear();
     m_inEdges.clear();
+    m_reciprocalEdges->clear();
 }
 
 

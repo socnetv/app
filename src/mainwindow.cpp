@@ -3779,6 +3779,10 @@ void MainWindow::updateNodeCoords(const int &nodeNumber,
                                   const int &x, const int &y){
     //	qDebug("MW: updateNodeCoords() for %i with x %i and y %i", nodeNumber, x, y);
     activeGraph.vertexPosSet(nodeNumber, x, y);
+    if (!networkModified) {
+        networkModified=true;
+        networkSave->setEnabled(true);
+    }
 }
 
 
