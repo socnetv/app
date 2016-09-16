@@ -98,7 +98,10 @@ signals:
                      const bool &arrows, const bool &bezier,
                      const QString &edgeLabel=QString::null,
                      const bool &signalMW=false);
-    void networkFileLoaded(int, QString, int, int, bool);
+    void networkFileLoaded(int fileType, QString fileName,
+                           QString netName,
+                           int totalNodes, int totalLinks,
+                           bool undirected);
 	void removeDummyNode (int);
     void finished(QString);
 	

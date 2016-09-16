@@ -58,6 +58,7 @@ Graph::Graph() {
     order=true;		//returns true if the indexes of the list is ordered.
     graphModified=false;
     m_undirected=false;
+    fileName ="";
     symmetricAdjacencyMatrix=true;
     adjacencyMatrixCreated=false;
     reachabilityMatrixCreated=false;
@@ -7479,8 +7480,10 @@ bool Graph::loadGraph (	const QString m_fileName,
                 );
 
     connect (
-                file_parser, SIGNAL(networkFileLoaded(int, QString, int, int, bool)),
-                this, SLOT(graphLoaded(int, QString, int, int, bool))
+                file_parser, SIGNAL(networkFileLoaded(int, QString, QString,
+                                                      int, int, bool)),
+                this, SLOT(graphLoaded(int, QString, QString,
+                                       int, int, bool))
                 );
 
     connect (
@@ -7534,19 +7537,24 @@ void Graph::terminateParserThreads(QString reason) {
  * @param totalLinks
  * @param undirected
  */
-void Graph::graphLoaded ( int type, QString netName,
-                          int aNodes, int totalLinks, bool undirected)
+void Graph::graphLoaded (int fileType, QString fName, QString netName,
+                          int totalNodes, int totalLinks, bool undirected)
 {
-    qDebug() << "Graph::graphLoaded() - "
-                << " type " << type
-                << " name " << networkName
-                << " nodes " << aNodes
-                << " links " << totalLinks
-                << " undirected " << undirected;
+    fileName = fName;
     networkName = netName;
     m_undirected = undirected;
     graphModified=false;
-    emit signalGraphLoaded (type, networkName, aNodes, totalLinks, m_undirected);
+
+    qDebug() << "Graph::graphLoaded() - "
+                << " type " << fileType
+                << " filename " << fileName
+                << " name " << networkName
+                << " nodes " << totalNodes
+                << " links " << totalLinks
+                << " undirected " << undirected;
+
+    emit signalGraphLoaded (fileType, fileName, networkName,
+                            totalNodes, totalLinks, m_undirected);
     qDebug ()<< "Graph::graphLoaded()  -check parser if running...";
 
 }
@@ -7570,7 +7578,7 @@ void Graph::saveGraph(
 {
     qDebug() << "Graph::saveGraph to ...";
     switch (fileType) {
-    case 1 : {			//Pajek
+    case FILE_PAJEK : {
         qDebug() << " 	... Pajek formatted file";
         if ( saveGraphToPajekFormat(fileName, networkName, maxWidth, maxHeight) ) {
             signalGraphSaved(fileType);
@@ -7580,7 +7588,7 @@ void Graph::saveGraph(
         }
         break;
     }
-    case 2: {			// Adjacency
+    case FILE_ADJACENCY: {
         qDebug() << " 	... Adjacency formatted file";
         if ( saveGraphToAdjacencyFormat(fileName) ) {
            signalGraphSaved(fileType);
@@ -7590,8 +7598,8 @@ void Graph::saveGraph(
         }
         break;
     }
-    case 3: {			// Dot
-        qDebug() << " 	... Dot formatted file";
+    case FILE_GRAPHVIZ: {
+        qDebug() << " 	... GraphViz/Dot formatted file";
         if ( saveGraphToDotFormat(fileName, networkName, maxWidth, maxHeight) ) {
             signalGraphSaved(fileType);
          }
@@ -7600,7 +7608,7 @@ void Graph::saveGraph(
          }
         break;
     }
-    case 4: {			// GraphML
+    case FILE_GRAPHML: {			// GraphML
         qDebug() << " 	... GraphML formatted file";
         if ( saveGraphToGraphMLFormat(fileName, networkName, maxWidth, maxHeight) ) {
             signalGraphSaved(fileType);

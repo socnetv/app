@@ -111,69 +111,70 @@ bool Parser::run()  {
             << " fileFormat "<< fileFormat ;
 
     switch (fileFormat){
-    case 1:	//GraphML
+    case FILE_GRAPHML:
         if (loadGraphML()){
             qDebug("* Parser: that was  a GraphML network");
         }
-        else fileFormat=-1;
+        else fileFormat=FILE_UNRECOGNIZED;
         break;
-    case 2: //Pajek
+    case FILE_PAJEK:
         if ( loadPajek() ) {
             qDebug("* Parser: that was a Pajek network");
         }
-        else fileFormat=-1;
+        else fileFormat=FILE_UNRECOGNIZED;
         break;
-    case 3: //Adjacency
+    case FILE_ADJACENCY:
         if (loadAdjacency() ) {
             qDebug("* Parser: that was an adjacency-matrix network");
         }
-        else fileFormat=-1;
+        else fileFormat=FILE_UNRECOGNIZED;
         break;
-    case 4: //Dot
+    case FILE_GRAPHVIZ:
         if (loadDot() ) {
             qDebug("* Parser: that was a GraphViz (dot) network");
         }
-        else fileFormat=-1;
+        else fileFormat=FILE_UNRECOGNIZED;
         break;
-    case 5:	//GML
-        if (loadGML() ){
-            qDebug("* Parser: that was a GML (gml) network");
-        }
-        else fileFormat=-1;
-        break;
-    case 6: //DL
+    case FILE_UCINET:
         if (loadDL() ){
             qDebug("Parser: this is a DL formatted (.dl) network");
         }
-        else fileFormat=-1;
+        else fileFormat=FILE_UNRECOGNIZED;
         break;
 
-    case 7:	// Weighted List
+    case FILE_GML:
+        if (loadGML() ){
+            qDebug("* Parser: that was a GML (gml) network");
+        }
+        else fileFormat=FILE_UNRECOGNIZED;
+        break;
+
+    case FILE_WLIST:
         if (loadWeighedList() ){
             qDebug("Parser: this is a weighted list formatted (.list) network");
         }
-        else fileFormat=-1;
+        else fileFormat=FILE_UNRECOGNIZED;
         break;
 
-    case 8:	// List
+    case FILE_LIST:
         if (loadSimpleList() ){
             qDebug("Parser: this is a simple list formatted (.list) network");
         }
-        else fileFormat=-1;
+        else fileFormat=FILE_UNRECOGNIZED;
         break;
 
-    case 9:	// twomode sociomatrix, affiliation network matrix
+    case FILE_TWOMODE:
         if (loadTwoModeSociomatrix() ){
             qDebug("Parser: OK, this is a two-mode sociomatrix (.tsm) network");
         }
-        else fileFormat=-1;
+        else fileFormat=FILE_UNRECOGNIZED;
         break;
 
     default:	//GraphML
         if (loadGraphML() ){
             qDebug("Parser: this is a GraphML network");
         }
-        else fileFormat=-1;
+        else fileFormat=FILE_UNRECOGNIZED;
         break;
     }
 
@@ -181,7 +182,7 @@ bool Parser::run()  {
                         << " fileFormat now "<< fileFormat ;
 
     emit finished ("Parser::run() - reach end");
-    return (fileFormat==-1) ? false: true;
+    return (fileFormat==FILE_UNRECOGNIZED) ? false: true;
 }
 
 
@@ -492,9 +493,8 @@ bool Parser::loadDL(){
         return false;
     }
     //The network has been loaded. Tell MW the statistics and network type
-    // 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List
     emit relationSet (0);
-    emit networkFileLoaded(5, networkName, aNodes, totalLinks, undirected);
+    emit networkFileLoaded(FILE_UCINET, fileName, networkName, aNodes, totalLinks, undirected);
     qDebug() << "Parser-loadDL() clearing";
     lineElement.clear(); labelsList.clear(); relationsList.clear();
     return true;
@@ -950,8 +950,7 @@ bool Parser::loadPajek(){
     file.close();
     if (j==0) return false;
     //The network has been loaded. Tell MW the statistics and network type
-    // 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List
-    emit networkFileLoaded(2, networkName, aNodes, totalLinks, undirected);
+    emit networkFileLoaded(FILE_PAJEK, fileName, networkName, aNodes, totalLinks, undirected);
 
     qDebug("Parser-loadPajek(): Removing all dummy aNodes, if any");
     if (listDummiesPajek.size() > 0 ) {
@@ -1083,9 +1082,8 @@ bool Parser::loadAdjacency(){
     }
     file.close();
 
-    // 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List
     qDebug() << "Parser: SM network has been loaded. Tell MW the statistics and network type";
-    emit networkFileLoaded(3, networkName, aNodes, totalLinks, undirected);
+    emit networkFileLoaded(FILE_ADJACENCY, fileName, networkName, aNodes, totalLinks, undirected);
 
     return true;
 
@@ -1179,9 +1177,9 @@ bool Parser::loadTwoModeSociomatrix(){
         }
     }
     file.close();
-    // 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List, 8 List, 9, TwoModeSociomatrix
+
     qDebug() << "Parser: Two-mode SM network has been loaded. Tell MW the statistics and network type";
-    emit networkFileLoaded(9, networkName, aNodes, totalLinks, undirected);
+    emit networkFileLoaded(FILE_TWOMODE, fileName,networkName, aNodes, totalLinks, undirected);
 
     return true;
 
@@ -1286,8 +1284,7 @@ bool Parser::loadGraphML(){
     }
 
     //The network has been loaded. Tell MW the statistics and network type
-    // 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List
-    emit networkFileLoaded(1, networkName, aNodes, totalLinks, undirected);
+    emit networkFileLoaded(FILE_GRAPHML, fileName, networkName, aNodes, totalLinks, undirected);
     //clear our mess - remove every hash element...
     keyFor.clear();
     keyName.clear();
@@ -2001,8 +1998,7 @@ bool Parser::loadGML(){
         }
     }
     //The network has been loaded. Tell MW the statistics and network type
-    // 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List
-    emit networkFileLoaded(6, networkName, aNodes, totalLinks, undirected);
+    emit networkFileLoaded(FILE_GML, fileName, networkName, aNodes, totalLinks, undirected);
     qDebug() << "Parser-loadGML()";
     return true;
 }
@@ -2367,8 +2363,7 @@ bool Parser::loadDot(){
     }
     file.close();
     //The network has been loaded. Tell MW the statistics and network type
-    // 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: List
-    emit networkFileLoaded(4, networkName, aNodes, totalLinks, undirected);
+    emit networkFileLoaded(FILE_GRAPHVIZ, fileName, networkName, aNodes, totalLinks, undirected);
     return true;
 }
 
@@ -2564,8 +2559,7 @@ bool Parser::loadWeighedList(){
     file.close();
 
     //The network has been loaded. Tell MW the statistics and network type
-    // 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: PlainList, 8: WeightedList
-    emit networkFileLoaded(7, networkName, aNodes, totalLinks, undirected);
+    emit networkFileLoaded(FILE_WLIST, fileName, networkName, aNodes, totalLinks, undirected);
     qDebug() << "Parser-loadWeighedList() ending and returning...";
     return true;
 
@@ -2692,8 +2686,7 @@ bool Parser::loadSimpleList(){
     } //end ts.stream while here
     file.close();
     //The network has been loaded. Tell MW the statistics and network type
-    // 0: no format, 1: GraphML, 2:Pajek, 3:Adjacency, 4: Dot, 5:DL, 6:GML, 7: Weighted List, 8: simple list
-    emit networkFileLoaded(8, networkName, aNodes, totalLinks, undirected);
+    emit networkFileLoaded(FILE_LIST, fileName, networkName, aNodes, totalLinks, undirected);
     qDebug() << "Parser-loadSimpleList() ending and returning...";
     return true;
 

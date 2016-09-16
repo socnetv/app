@@ -60,6 +60,7 @@ static const int FILE_GML         = 6;  // .GML
 static const int FILE_WLIST       = 7;  // .WLST
 static const int FILE_LIST        = 8;  // .LST .CSV
 static const int FILE_TWOMODE     = 9;  // .2SM .AFF
+static const int FILE_UNRECOGNIZED=-1;  // UNRECOGNIZED FILE FORMAT
 
 class QPointF;
 
@@ -144,7 +145,8 @@ public slots:
                        const bool &signalMW
                         );//Main vertex creation call
 
-    void graphLoaded(int, QString netName, int, int, bool);
+    void graphLoaded(int fileType, QString fName, QString netName,
+                     int totalNodes, int totalLinks, bool undirected);
     void vertexRemoveDummyNode(int);
     void terminateParserThreads (QString reason);
 
@@ -182,7 +184,8 @@ signals:
     void updateProgressDialog(int );
     void graphChanged();  //call to update MW widgets
 
-    void signalGraphLoaded (int, QString, int,int, bool);
+    void signalGraphLoaded (int fileType, QString fileName, QString netName,
+                            int totalNodes,int totalLinks, bool undirected);
     void signalGraphSaved(const int &status);
 
     void statusMessage (QString message);			//updates statusbar message
@@ -725,7 +728,7 @@ private:
     bool m_undirected;
     bool initEdgeWeightNumbers, initEdgeLabels;
 
-    QString VERSION, networkName, initEdgeColor, initVertexColor,
+    QString VERSION, fileName, networkName, initEdgeColor, initVertexColor,
         initVertexNumberColor, initVertexLabelColor, initVertexShape;
 
     QDateTime actualDateTime;
