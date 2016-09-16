@@ -7272,9 +7272,12 @@ void MainWindow::slotEditEdgeColor(){
          sourceNode = clickedEdge->sourceNodeNumber();
          targetNode = clickedEdge->targetNodeNumber();
     }
-
+    QString curColor = activeGraph.edgeColor(sourceNode, targetNode);
+    if (!QColor(curColor).isValid()) {
+        curColor=appSettings["initEdgeColor"];
+    }
     QColor color = QColorDialog::getColor(
-                Qt::black, this, tr("Select new color....") );
+                curColor, this, tr("Select new color....") );
 
     if ( color.isValid()) {
         QString newColor=color.name();
