@@ -6542,8 +6542,16 @@ void MainWindow::slotEditNodeShape(QString shape, const int vertex) {
     if (shape==QString::null) {
         bool ok=false;
         QStringList lst;
-        lst << "box"<< "circle"<< "diamond"<< "ellipse"<< "triangle" << "star";
-        shape = QInputDialog::getItem(this, "Node shape", "Select a shape for all nodes: ", lst, 1, true, &ok);
+        lst << "box"<< "circle"<< "diamond"
+            << "ellipse"<< "triangle" << "star";
+        int curShapeIndex = lst.indexOf(appSettings["initNodeShape"]);
+        if ( curShapeIndex == -1 ) {
+            curShapeIndex=1;
+        }
+        shape = QInputDialog::getItem(this,
+                                      "Node shape",
+                                      "Select a shape for all nodes: ",
+                                      lst, curShapeIndex, true, &ok);
         if ( !ok ) {
             //user pressed Cancel
             statusBar()->showMessage (QString(tr("Change node shapes aborted...")), statusBarDuration) ;
@@ -7190,7 +7198,7 @@ void MainWindow::slotEditEdgeColorAll(QColor color,const int &threshold){
         }
         else
             text = "Change the color of all edges" ;
-        color = QColorDialog::getColor( Qt::red, this,
+        color = QColorDialog::getColor( appSettings["initEdgeColor"], this,
                                            text);
     }
     if (color.isValid()) {
