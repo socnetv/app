@@ -7564,7 +7564,7 @@ void Graph::graphLoaded ( int type, QString netName,
  * @param maxHeight
  * @return
  */
-bool Graph::saveGraph ( 
+void Graph::saveGraph(
         QString fileName, int fileType,
         QString networkName, int maxWidth, int maxHeight )
 {
@@ -7572,31 +7572,51 @@ bool Graph::saveGraph (
     switch (fileType) {
     case 1 : {			//Pajek
         qDebug() << " 	... Pajek formatted file";
-        return saveGraphToPajekFormat(fileName, networkName, maxWidth, maxHeight);
+        if ( saveGraphToPajekFormat(fileName, networkName, maxWidth, maxHeight) ) {
+            signalGraphSaved(fileType);
+        }
+        else {
+            signalGraphSaved(0);
+        }
         break;
     }
     case 2: {			// Adjacency
         qDebug() << " 	... Adjacency formatted file";
-        return saveGraphToAdjacencyFormat(fileName);
+        if ( saveGraphToAdjacencyFormat(fileName) ) {
+           signalGraphSaved(fileType);
+        }
+        else {
+            signalGraphSaved(0);
+        }
         break;
     }
     case 3: {			// Dot
         qDebug() << " 	... Dot formatted file";
-        return saveGraphToDotFormat(fileName, networkName, maxWidth, maxHeight);
+        if ( saveGraphToDotFormat(fileName, networkName, maxWidth, maxHeight) ) {
+            signalGraphSaved(fileType);
+         }
+         else {
+             signalGraphSaved(0);
+         }
         break;
     }
     case 4: {			// GraphML
         qDebug() << " 	... GraphML formatted file";
-        return saveGraphToGraphMLFormat(fileName, networkName, maxWidth, maxHeight);
+        if ( saveGraphToGraphMLFormat(fileName, networkName, maxWidth, maxHeight) ) {
+            signalGraphSaved(fileType);
+         }
+         else {
+             signalGraphSaved(0);
+         }
         break;
     }
     default: {
         qDebug() << " 	... Error! What format number is this anyway?";
+        signalGraphSaved(0);
         break;
     }
     };
     graphModified=false;
-    return true;
 }
 
 

@@ -47,14 +47,21 @@
 
 using namespace std;
 
-static const int EDGE_DIRECTED = 0;
+static const int EDGE_DIRECTED                 = 0;
 static const int EDGE_DIRECTED_OPPOSITE_EXISTS = 1;
-static const int EDGE_RECIPROCAL_UNDIRECTED = 2;
+static const int EDGE_RECIPROCAL_UNDIRECTED    = 2;
 
-
+static const int FILE_GRAPHML     = 1;  // .GRAPHML .XML
+static const int FILE_PAJEK       = 2;  // .PAJ .NET
+static const int FILE_ADJACENCY   = 3;  // .ADJ .CSV .SM
+static const int FILE_GRAPHVIZ    = 4;  // .DOT
+static const int FILE_UCINET      = 5;  // .DL .DAT
+static const int FILE_GML         = 6;  // .GML
+static const int FILE_WLIST       = 7;  // .WLST
+static const int FILE_LIST        = 8;  // .LST .CSV
+static const int FILE_TWOMODE     = 9;  // .2SM .AFF
 
 class QPointF;
-
 
 typedef QList<Vertex*> Vertices;
 typedef QHash <QString, int> H_StrToInt;
@@ -175,7 +182,9 @@ signals:
     void updateProgressDialog(int );
     void graphChanged();  //call to update MW widgets
 
-    void signalGraphLoaded (int, QString, int,int, bool);	//notifies MW what we have loaded.
+    void signalGraphLoaded (int, QString, int,int, bool);
+    void signalGraphSaved(const int &status);
+
     void statusMessage (QString message);			//updates statusbar message
     void addRelationToMW(QString newRelation);
     void describeDataset(QString);
@@ -247,7 +256,7 @@ public:
                     const int format,
                     const int two_sm_mode);
 
-    bool saveGraph( QString fileName, int fileType,
+    void saveGraph( QString fileName, int fileType,
                     QString networkName, int maxWidth, int maxHeight
                     );
     bool saveGraphToPajekFormat (QString fileName,QString networkName,  int maxWidth, int maxHeight);

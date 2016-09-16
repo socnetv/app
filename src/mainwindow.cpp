@@ -3368,6 +3368,11 @@ void MainWindow::initSignalSlots() {
                                                    int , int, bool) ),
              this, SLOT( slotNetworkFileLoaded( int, QString, int , int, bool) ) ) ;
 
+
+    connect( &activeGraph, SIGNAL( signalGraphSaved( const int &) ),
+             this, SLOT( slotNetworkSaved( const int &) ) ) ;
+
+
     connect( &activeGraph, SIGNAL( drawEdge( const int&, const int&, const float &,
                                              const QString &, const QString &,
                                              const int&, const bool&,
@@ -4321,24 +4326,15 @@ void MainWindow::slotNetworkSave() {
     fileNameNoPath=fileName.split ("/");
     if (pajekFileLoaded)
     {
-        if ( activeGraph.saveGraph(fileName, 1, networkName, maxWidth,maxHeight) )
-            networkSaved(1);
-        else
-            networkSaved(0);
+        activeGraph.saveGraph(fileName, 1, networkName, maxWidth,maxHeight) ;
     }
     else if (adjacencyFileLoaded)
     {
-        if ( activeGraph.saveGraph(fileName, 2, networkName, maxWidth,maxHeight) )
-            networkSaved(2);
-        else
-            networkSaved(0);
+        activeGraph.saveGraph(fileName, 2, networkName, maxWidth,maxHeight);
     }
     else if (graphMLFileLoaded || ( !fileLoaded && networkModified) )
     {	//new file or GraphML
-        if ( activeGraph.saveGraph(fileName, 4, networkName, maxWidth,maxHeight) )
-            networkSaved(4);
-        else
-            networkSaved(0);
+        activeGraph.saveGraph(fileName, 4, networkName, maxWidth,maxHeight);
     }
     else
     {
@@ -4350,10 +4346,7 @@ void MainWindow::slotNetworkSave() {
                 )
         {
         case 0:
-            if ( activeGraph.saveGraph(fileName, 4, networkName, maxWidth,maxHeight) )
-                networkSaved(4);
-            else
-                networkSaved(0);
+             activeGraph.saveGraph(fileName, 4, networkName, maxWidth,maxHeight);
             break;
         case 1:
             statusMessage( tr("Save aborted...") );
@@ -4400,13 +4393,13 @@ void MainWindow::slotNetworkSaveAs() {
 
 
 /**
- * @brief MainWindow::networkSaved
+ * @brief MainWindow::slotNetworkSaved
  * @param saved_ok
  * Called from Graph when we try to save file
  */
-void MainWindow::networkSaved(int saved_ok)
+void MainWindow::slotNetworkSaved(const int &status)
 {
-    if (saved_ok <= 0)
+    if (status <= 0)
     {
         slotNetworkChanged();
         statusMessage( tr("Error! Could not save this file... ")+fileNameNoPath.last()+tr(".") );
@@ -4418,7 +4411,7 @@ void MainWindow::networkSaved(int saved_ok)
         fileLoaded=true; networkModified=false;
         setWindowTitle( fileNameNoPath.last() );
         statusMessage( tr("Network saved under filename: ")+fileNameNoPath.last()+tr(".") );
-        switch (saved_ok){
+        switch (status){
         case 1:
             adjacencyFileLoaded=false;
             pajekFileLoaded=true;
@@ -5220,10 +5213,7 @@ void MainWindow::slotNetworkExportPajek()
     int maxWidth=scene->width();
     int maxHeight=scene->height();
 
-    if ( activeGraph.saveGraph(fileName, 1, networkName, maxWidth,maxHeight ) )
-        networkSaved(1);
-    else
-        networkSaved(0);
+    activeGraph.saveGraph(fileName, 1, networkName, maxWidth,maxHeight );
 }
 
 
@@ -5263,10 +5253,8 @@ void MainWindow::slotNetworkExportSM(){
     int maxWidth=scene->width();
     int maxHeight=scene->height();
 
-    if ( activeGraph.saveGraph(fileName, 2, networkName,maxWidth,maxHeight ) )
-        networkSaved(1);
-    else
-        networkSaved(0);
+    activeGraph.saveGraph(fileName, 2, networkName,maxWidth,maxHeight ) ;
+
 }
 
 

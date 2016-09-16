@@ -135,7 +135,7 @@ public slots:
     bool slotNetworkFileLoad ( const QString, const QString, const int );
     void slotNetworkFileLoaded(int, QString , int, int, bool);
     void slotNetworkFileLoadRecent();
-
+    void slotNetworkSaved(const int &status);
     void slotNetworkFileView();
     void slotNetworkImportGraphML();
     void slotNetworkImportPajek();
@@ -335,10 +335,6 @@ public slots:
     void openEdgeContextMenu() ;
 
     void updateNodeCoords(const int &nodeNumber, const int &x, const int &y);
-
-
-    //Called by Graph on saving file. int is the network type saved.
-    void networkSaved(int);
 
     //Called by Graph to display some message to the user
     void statusMessage(const QString);
