@@ -3855,7 +3855,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
                                         const bool considerWeights,
                                         const bool inverseWeights,
                                        const bool dropIsolates) {
-     QFile file ( fileName );
+    QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
         emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
@@ -3863,13 +3863,18 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-
     if (graphModified || !calculatedCentralities ) {
+        qDebug() << "Graph::writeCentralityBetweenness() -"
+                    "Recomputing Distances/Centralities."
+                    << "graphModified " << graphModified
+                       << "calculatedCentralities " << calculatedCentralities ;
+
         emit statusMessage ( (tr("Calculating shortest paths")) );
         distanceMatrixCreate(true, considerWeights, inverseWeights, dropIsolates);
     }
     else {
-        qDebug() << " graph not modified, and centralities calculated. Returning";
+        qDebug() << "Graph::writeCentralityBetweenness() -"
+                    "No need to recompute Distances/Centralities. Writing file.";
     }
 
     emit statusMessage ( QString(tr("Writing betweenness indices to file:"))

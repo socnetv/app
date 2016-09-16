@@ -3497,7 +3497,7 @@ void MainWindow::initSignalSlots() {
              this, SLOT( slotNetworkDataSetRecreate(QString) ) );
 
     connect( layoutGuidesAct, SIGNAL(triggered(bool)),
-             graphicsWidget, SLOT(slotLayoutGuides(bool)));
+             this, SLOT(slotLayoutGuides(bool)));
 
         connect(toolBoxAnalysisGeodesicsSelect, SIGNAL (currentIndexChanged(int) ),
             this, SLOT(toolBoxAnalysisGeodesicsSelectChanged(int) ) );
@@ -8475,6 +8475,7 @@ void MainWindow::slotInvertAdjMatrix(){
 
 
 void MainWindow::askAboutWeights(){
+    qDebug() << "MW::askAboutWeights() - check if Graph weighted.";
     if (!activeGraph.isWeighted()  ){
         considerWeights=false;
         return;
