@@ -1962,7 +1962,7 @@ void MainWindow::initActions(){
                 (appSettings["initEdgeThicknessPerWeight"]=="true") ? true: false
                                                                       );
     connect(optionsEdgeThicknessPerWeightAct, SIGNAL(triggered(bool)),
-            this, SLOT(slotOptionsEdgeThicknessPerWeight()) );
+            this, SLOT(slotOptionsEdgeThicknessPerWeight(bool)) );
     optionsEdgeThicknessPerWeightAct->setEnabled(false);
 
     drawEdgesBezier = new QAction( tr("Bezier Curves"),	this);
