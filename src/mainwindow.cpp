@@ -5622,10 +5622,6 @@ void MainWindow::slotRandomScaleFree ( const int &newNodes,
     statusMessage( tr("Erasing any existing network. "));
     initNet();
 
-    double x0=scene->width()/2.0;
-    double y0=scene->height()/2.0;
-    double radius=(graphicsWidget->height()/2.0)-50;
-
     statusMessage( tr("Creating Scale-Free Random Network. Please wait..."));
     progressMsg = "Creating Scale-Free Random Network. \n"
             "Please wait (or disable progress bars from Options -> Settings).";
@@ -5636,10 +5632,7 @@ void MainWindow::slotRandomScaleFree ( const int &newNodes,
                                           initialNodes,
                                           edgesPerStep,
                                           zeroAppeal,
-                                          mode,
-                                          x0,
-                                          y0,
-                                          radius);
+                                          mode);
 
     destroyProgressBar(newNodes);
 
@@ -5657,7 +5650,7 @@ void MainWindow::slotRandomScaleFree ( const int &newNodes,
                              //+ tr("\nClustering coefficient: ")+QString::number(clucof)
                              , "OK",0);
 
-    statusMessage( tr("Scale-Free Random Network created: ") );
+    statusMessage( tr("Scale-Free Random Network created. ") );
 
 }
 
@@ -5699,16 +5692,12 @@ void MainWindow::slotRandomSmallWorld(const int &newNodes,
     statusMessage( tr("Erasing any existing network. "));
     initNet();
 
-    double x0=scene->width()/2.0;
-    double y0=scene->height()/2.0;
-    double radius=(graphicsWidget->height()/2.0)-50;          //pixels
-
     statusMessage( tr("Creating Small-World Random Network. Please wait..."));
     progressMsg  = "Creating Small-World Random Network. \n"
             "Please wait (or disable progress bars from Options -> Settings).";
     createProgressBar(newNodes, progressMsg );
 
-    activeGraph.randomNetSmallWorldCreate(newNodes, degree, beta, mode, x0, y0, radius);
+    activeGraph.randomNetSmallWorldCreate(newNodes, degree, beta, mode);
 
     destroyProgressBar(newNodes);
 
@@ -5834,16 +5823,12 @@ void MainWindow::slotRandomRingLattice(){
     statusMessage( "Erasing any existing network. ");
     initNet();
 
-    double x0=scene->width()/2.0;
-    double y0=scene->height()/2.0;
-    double radius=(graphicsWidget->height()/2.0)-50;          //pixels
-
     statusMessage( "Creating ring lattice network. Please wait...");
     progressMsg  = "Creating ring-lattice network. \n"
             "Please wait (or disable progress bars from Options -> Settings).";
     createProgressBar(newNodes, progressMsg );
 
-    activeGraph.randomNetRingLatticeCreate(newNodes, degree, x0, y0, radius, true );
+    activeGraph.randomNetRingLatticeCreate(newNodes, degree, true );
 
     destroyProgressBar(newNodes);
 

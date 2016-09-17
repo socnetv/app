@@ -96,8 +96,8 @@ Graph::Graph() {
  */
 void Graph::canvasSizeSet(const int w, const int h){
     qDebug() << "Graph:: canvasSizeSet() - (" << w << ", " << h<<")";
-    canvasWidth = w-50;
-    canvasHeight= h-50;
+    canvasWidth = w;
+    canvasHeight= h;
 }
 
 /**
@@ -116,6 +116,30 @@ float Graph::canvasMinDimension() const {
     return ( canvasHeight < canvasWidth ) ? canvasHeight-20 : canvasWidth-20;
 }
 
+/**
+ * @brief Graph::canvasVisibleX
+ * @param x
+ * @return
+ * Returns a visible x-coordinate inside the canvas
+ */
+double Graph::canvasVisibleX(const double &x)  const {
+    return qMin (
+                canvasWidth - 20.0 , qMax (20.0 , x )
+                );
+}
+
+
+/**
+ * @brief Graph::canvasVisibleY
+ * @param y
+ * @return
+ * Returns a visible y-coordinate inside the canvas
+ */
+double Graph::canvasVisibleY(const double &y) const {
+    return qMin (
+                canvasHeight - 20.0 , qMax (20.0 , y )
+                );
+}
 
 /**
  * @brief Graph::relationSet
@@ -276,8 +300,8 @@ void Graph::vertexCreate(int i){
     if ( i < 0 )  i = vertexLastNumber() +1;
     qDebug() << "Graph::vertexCreate() " << i << " random coords.";
     QPointF p;
-    p.setX(10 + rand()%canvasWidth);
-    p.setY(10 + rand()%canvasWidth);
+    p.setX( canvasVisibleX ( rand()%canvasWidth ) );
+    p.setY( canvasVisibleY ( rand()%canvasHeight) );
     vertexCreate(	i, initVertexSize, initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
                     QString::number(i), initVertexLabelColor, initVertexLabelSize,
@@ -5616,8 +5640,6 @@ void Graph::randomNetErdosCreate(  const int &vert,
  * @param updateProgress
  */
 void Graph::randomNetRingLatticeCreate( const int &vert, const int &degree,
-                                        const double &x0, const double &y0,
-                                        const double &radius,
                                         const bool updateProgress)
 {
     qDebug("Graph: createRingLatticeNetwork");
@@ -5625,6 +5647,9 @@ void Graph::randomNetRingLatticeCreate( const int &vert, const int &degree,
     int y=0;
     int progressCounter=0;
 
+    double x0 = canvasWidth/2.0;
+    double y0 =canvasHeight/2.0;
+    double radius = canvasMaxRadius();
     double rad= (2.0* Pi/ vert );
 
 //    if (mode=="graph") {
@@ -5638,7 +5663,7 @@ void Graph::randomNetRingLatticeCreate( const int &vert, const int &degree,
     for (int i=0; i< vert ; i++) {
         x=x0 + radius * cos(i * rad);
         y=y0 + radius * sin(i * rad);
-        vertexCreate(	i+1,initVertexSize,initVertexColor,
+        vertexCreate( i+1,initVertexSize,initVertexColor,
                         initVertexNumberColor, initVertexNumberSize,
                         QString::number (i+1), initVertexLabelColor,  initVertexLabelSize,
                         QPoint(x, y), initVertexShape, false);
@@ -5670,14 +5695,8 @@ void Graph::randomNetScaleFreeCreate (const int &n,
                                        const int &m0,
                                        const int &m,
                                        const float &alpha,
-                                       const QString &mode,
-                                       const double &x0,
-                                       const double &y0,
-                                       const double &radius)
+                                       const QString &mode)
 {
-    qDebug() << "Graph::randomNetScaleFreeCreate() - "
-                << "Create initial connected net of m0 nodes";
-
     int progressCounter=0;
 
     randomizeThings();
@@ -5691,10 +5710,20 @@ void Graph::randomNetScaleFreeCreate (const int &n,
     int newEdges = 0;
     double sumDegrees=0;
     double k_j;
+    double x0 = canvasWidth/2.0;
+    double y0 =canvasHeight/2.0;
+    double radius = canvasMaxRadius();
     double rad= (2.0* Pi/ n );
     double  prob_j = 0, prob=0;
 
     index.reserve( n );
+
+    qDebug() << "Graph::randomNetScaleFreeCreate() - "
+             << " canvasWidth " << canvasWidth
+             << " canvasHeight " << canvasHeight
+             << " radius " << radius
+             << "Create initial connected net of m0 nodes";
+
 
     for (int i=0; i< m0 ; ++i) {
         x=x0 + radius * cos(i * rad);
@@ -5819,14 +5848,9 @@ void Graph::randomNetScaleFreeCreate (const int &n,
  * @param vert
  * @param degree
  * @param beta
- * @param x0
- * @param y0
- * @param radius
  */
 void Graph::randomNetSmallWorldCreate (const int &vert, const int &degree,
-                                       const double &beta, const QString &mode,
-                                       const double &x0, const double &y0,
-                                       const double &radius)
+                                       const double &beta, const QString &mode)
 {
     qDebug() << "Graph:randomNetSmallWorldCreate() -. "
              << "vertices: " << vert
@@ -5839,7 +5863,7 @@ void Graph::randomNetSmallWorldCreate (const int &vert, const int &degree,
         undirectedSet(true);
     }
 
-    randomNetRingLatticeCreate(vert, degree, x0, y0, radius, false);
+    randomNetRingLatticeCreate(vert, degree, false);
 
     qDebug("******** Graph: REWIRING starts...");
 
@@ -12095,13 +12119,9 @@ void Graph::layoutForceDirected_Eades_moveNodes(const qreal &c4) {
                     << " Possible new pos (" <<  newPos.x()
                     << " , " <<  newPos.y();
 
-        // check if new pos is out of screen and adjust
-        newPos.rx() = qMin (
-                    canvasWidth - 50.0 , qMax (50.0 , newPos.x() )
-                    );
-        newPos.ry() = qMin (
-                    canvasHeight -50.0 , qMax (50.0 , newPos.y() )
-                    );
+        // check if new pos is out of usable screen and adjust
+        newPos.rx() = canvasVisibleX(newPos.x());
+        newPos.ry() = canvasVisibleY(newPos.y());
 
         qDebug() << "  Final new pos (" <<  newPos.x() << ","
                  << newPos.y()<< ")";

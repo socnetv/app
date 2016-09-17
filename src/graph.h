@@ -172,6 +172,8 @@ public slots:
     void canvasSizeSet(const int w, const int h);
     double canvasMaxRadius() const;
     float canvasMinDimension() const;
+    double canvasVisibleX(const double &x) const ;
+    double canvasVisibleY(const double &y) const ;
     void vertexIsolateFilter ( bool );		//Called by MW to filter orphan vertices
     void edgeFilterByWeight (float, bool);		//Called by MW to filter edges over/under a weight
     void edgeFilterByRelation(int relation, bool status);
@@ -558,9 +560,7 @@ public:
                                  const QString &mode,
                                  const bool &diag);
 
-    void randomNetRingLatticeCreate ( const int &vert, const int &degree,
-                                      const double &x0, const double &y0,
-                                      const double &radius,
+    void randomNetRingLatticeCreate (const int &vert, const int &degree,
                                       const bool updateProgress=false);
 
     void randomNetSameDegreeCreate (const int &,
@@ -571,15 +571,10 @@ public:
                                     const int &m0,
                                     const int &m,
                                     const float &alpha,
-                                    const QString &mode,
-                                    const double &x0,
-                                    const double &y0,
-                                    const double &radius);
+                                    const QString &mode);
 
     void randomNetSmallWorldCreate(const int &vert, const int &degree,
-                                   const double &beta, const QString &mode,
-                                   const double &x0,
-                                   const double &y0, const double &radius);
+                                   const double &beta, const QString &mode);
 
     int factorial (int);
 
