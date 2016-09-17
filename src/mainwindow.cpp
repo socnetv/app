@@ -116,8 +116,6 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     initToolBar();      //build the toolbar
 
-    initStatusBar();    //add the status bar
-
     initToolBox();      //build the toolbox
 
     initWindowLayout();   //init the application window, set layout etc
@@ -231,6 +229,7 @@ QMap<QString,QString> MainWindow::initSettings(){
     appSettings["showRightPanel"] = "true";
     appSettings["showLeftPanel"] = "true";
     appSettings["printLogo"] = "true";
+    appSettings["initStatusBarDuration"] = "5000";
     appSettings["randomErdosEdgeProbability"] = "0.04";
 
     // Try to load settings configuration file
@@ -285,6 +284,7 @@ QMap<QString,QString> MainWindow::initSettings(){
 
     return appSettings;
 }
+
 
 
 
@@ -3035,21 +3035,6 @@ void MainWindow::initToolBox(){
 
 
 
-
-
-/**
- * @brief MainWindow::initStatusBar
- * Initializes the status bar
- */
-void MainWindow::initStatusBar() {
-    statusBarDuration=3000;
-    statusMessage( tr("Ready."));
-}
-
-
-
-
-
 /**
  * @brief MainWindow::initView
  * Initializes the scene and the corresponding graphicsWidget,
@@ -3749,7 +3734,7 @@ void MainWindow::slotNetworkFileRecentUpdateActions() {
  * Slot called by Graph::statusMessage to display some message to the user
  */
 void MainWindow::statusMessage(const QString message){
-    statusBar()->showMessage( message, statusBarDuration );
+    statusBar()->showMessage( message, appSettings["initStatusBarDuration"].toInt(0));
 }
 
 
@@ -6491,7 +6476,7 @@ void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized) {
     activeGraph.vertexSizeAllSet(newSize);
 
     slotNetworkChanged();
-    statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
+    statusMessage(tr("Ready"));
     return;
 }
 
@@ -6530,7 +6515,7 @@ void MainWindow::slotEditNodeShape(QString shape, const int vertex) {
                                       lst, curShapeIndex, true, &ok);
         if ( !ok ) {
             //user pressed Cancel
-            statusBar()->showMessage (QString(tr("Change node shapes aborted...")), statusBarDuration) ;
+            statusMessage(tr("Change node shapes aborted."));
             return;
         }
     }
@@ -6539,13 +6524,12 @@ void MainWindow::slotEditNodeShape(QString shape, const int vertex) {
         slotNetworkChanged();
         activeGraph.vertexShapeAllSet(shape);
         appSettings["initNodeShape"] = shape;
-        statusBar()->showMessage (QString(tr("All shapes have been changed. Ready")), statusBarDuration) ;
-
+        statusMessage(tr("All shapes have been changed. Ready."));
     }
     else { //only one
        activeGraph.vertexShapeSet( vertex, shape);
-       statusBar()->showMessage (QString(tr("Node shape has been changed. Ready")), statusBarDuration) ;
-      }
+       statusMessage(tr("Node shape has been changed. Ready."));
+    }
 }
 
 
@@ -7382,7 +7366,7 @@ void MainWindow::slotEditEdgeSymmetrizeAll(){
                              "Symmetrize",
                              tr("All arcs are reciprocal. \n"
                                 "The network is symmetric."), "OK",0);
-    statusBar()->showMessage (QString(tr("Ready")), statusBarDuration) ;
+    statusMessage(tr("All arcs are now reciprocal. Thus a symmetric network. Ready."));
 }
 
 
@@ -7398,18 +7382,14 @@ void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
         activeGraph.undirectedSet(toggle);
         optionsEdgeArrowsAct->setChecked(false);
         if (activeEdges() !=0 ) {
-            statusBar()->showMessage (
-                        QString(
-                            tr("Undirected data mode. "
+            statusMessage(tr("Undirected data mode. "
                                "All existing directed edges transformed to "
-                               "undirected. Ready")), statusBarDuration) ;
+                               "undirected. Ready") ) ;
 
         }
         else {
-            statusBar()->showMessage (
-                        QString(
-                            tr("Undirected data mode. "
-                               "Any edge you add will be undirected. Ready")), statusBarDuration) ;
+            statusMessage( tr("Undirected data mode. "
+                               "Any edge you add will be undirected. Ready")) ;
         }
     }
     else {
@@ -7417,18 +7397,14 @@ void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
         optionsEdgeArrowsAct->trigger();
         optionsEdgeArrowsAct->setChecked(true);
         if (activeEdges() !=0 ) {
-            statusBar()->showMessage (
-                        QString(
-                            tr("Directed data mode. "
+            statusMessage ( tr("Directed data mode. "
                                "All existing undirected edges transformed to "
-                               "directed. Ready")), statusBarDuration) ;
+                               "directed. Ready")) ;
 
         }
         else {
-            statusBar()->showMessage (
-                        QString(
-                            tr("Directed data mode. "
-                               "Any edge you add will be directed. Ready")), statusBarDuration) ;
+            statusMessage ( tr("Directed data mode. "
+                               "Any new edge you add will be directed. Ready")) ;
         }
     }
 
@@ -7447,7 +7423,6 @@ void MainWindow::slotFilterNodes(){
 
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical(this, "Error",tr("Nothing to filter! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-
         statusMessage(  QString(tr("Nothing to filter!"))  );
         return;
     }

@@ -104,7 +104,6 @@ public:
     void initMenuBar();
     void initToolBar();
     void initToolBox();
-    void initStatusBar();
     void initView();
     void initWindowLayout();
     void initSignalSlots();
