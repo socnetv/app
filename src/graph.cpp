@@ -1328,7 +1328,7 @@ void Graph::edgeFilterByWeight(float m_threshold, bool overThreshold){
     }
     graphModified=true;
     emit graphChanged();
-    emit statusMessage("Edges have been filtered.");
+    emit statusMessage(tr("Edges have been filtered."));
 }
 
 
@@ -2169,7 +2169,8 @@ int Graph::distance(const int i, const int j,
     qDebug() <<"Graph::distance()";
     if ( !distanceMatrixCreated || graphModified ) {
         qDebug() <<"Graph::distance() - graphModified - recomputing DM";
-        emit statusMessage ( (tr("Calculating shortest paths")) );
+        emit statusMessage ( tr("Computing Distance: "
+                                "Need to recompute Distances. Please wait...") );
         distanceMatrixCreate(false, considerWeights, inverseWeights, false);
     }
     return DM.item(index[i],index[j]);
@@ -2190,7 +2191,8 @@ int Graph::diameter(const bool considerWeights,
     qDebug () << "Graph::diameter()" ;
     if ( !distanceMatrixCreated || graphModified ) {
         qDebug() <<"Graph::distance() - graphModified. Recomputing DM";
-        emit statusMessage ( (tr("Computing Diameter - Distance Matrix creation...")) );
+        emit statusMessage ( tr("Computing Diameter: "
+                                "Need to recompute Distances. Please wait...") );
         distanceMatrixCreate(false, considerWeights, inverseWeights, false);
     }
     return graphDiameter;
@@ -2212,7 +2214,8 @@ float Graph::distanceGraphAverage(const bool considerWeights,
     qDebug() <<"Graph::distanceGraphAverage() ";
     if ( !distanceMatrixCreated || graphModified ) {
         qDebug() <<"Graph::distanceGraphAverage() - graphModified. Recomputing DM";
-        emit statusMessage ( (tr("Calculating shortest paths")) );
+        emit statusMessage ( tr("Computing Average Distance: "
+                                "Need to recompute Distances. Please wait...") );
         distanceMatrixCreate(false, considerWeights, inverseWeights,dropIsolates);
     }
     return averGraphDistance;
@@ -2292,7 +2295,8 @@ void Graph::writeDistanceMatrix (QString fn, QString netName,
     qDebug ("Graph::writeDistanceMatrix()");
 
     if ( !distanceMatrixCreated || graphModified ) {
-        emit statusMessage ( (tr("Calculating shortest paths")) );
+        emit statusMessage ( tr("Writing Distance Matrix: "
+                                "Need to recompute Distances. Please wait...") );
         distanceMatrixCreate(false, considerWeights, inverseWeights, dropIsolates);
     }
 
@@ -2301,7 +2305,7 @@ void Graph::writeDistanceMatrix (QString fn, QString netName,
     QFile file (fn);
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fn) );
+        emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
     QTextStream outText(&file);
@@ -2325,18 +2329,19 @@ void Graph::writeNumberOfGeodesicsMatrix(const QString fn,
                                          const QString &netName,
                                          const bool considerWeights,
                                          const bool inverseWeights) {
-    qDebug ("Graph::writeDistanceMatrix()");
+    qDebug ("Graph::writeNumberOfGeodesicsMatrix()");
     if ( !distanceMatrixCreated || graphModified ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
         distanceMatrixCreate(false, considerWeights, inverseWeights, false);
     }
 
-    qDebug ("Graph::writeDistanceMatrix() writing to file");
+    qDebug () << "Graph::writeNumberOfGeodesicsMatrix() - Distance matrix created. "
+                 "Writing geoderics matrix to file";
 
     QFile file (fn);
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fn) );
+        emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
 
@@ -2368,7 +2373,7 @@ void Graph::writeEccentricity(
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
     QTextStream outText ( &file );
@@ -2378,7 +2383,7 @@ void Graph::writeEccentricity(
         distanceMatrixCreate(true, considerWeights,
                              inverseWeights, dropIsolates);
     }
-    emit statusMessage ( QString(tr("Writing eccentricity to file:")).arg(fileName) );
+    emit statusMessage ( tr("Writing eccentricity to file:") + fileName );
 
     outText << tr("ECCENTRICITY (e)") << endl << endl;
     outText << tr("The eccentricity e of a node is the maximum geodesic distance "
@@ -3376,7 +3381,7 @@ void Graph::writeCentralityInformation(const QString fileName,
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
     QTextStream outText ( &file );
@@ -3591,7 +3596,7 @@ void Graph::writeCentralityDegree ( const QString fileName,
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
     QTextStream outText ( &file );
@@ -3768,7 +3773,7 @@ void Graph::writeCentralityCloseness(
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
@@ -3859,7 +3864,7 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
@@ -3923,7 +3928,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
@@ -3942,8 +3947,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
                     "No need to recompute Distances/Centralities. Writing file.";
     }
 
-    emit statusMessage ( QString(tr("Writing betweenness indices to file:"))
-                         .arg(fileName) );
+    emit statusMessage ( tr("Writing betweenness indices to file:") +  fileName );
     outText.setRealNumberPrecision(m_precision);
     outText << tr("BETWEENESS CENTRALITY (BC)")<<"\n";
     outText << tr("The BC index of a node u is the sum of delta (s,t,u) for all s,t in V")<<"\n";
@@ -4011,7 +4015,7 @@ void Graph::writeCentralityStress( const QString fileName,
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
@@ -4024,8 +4028,7 @@ void Graph::writeCentralityStress( const QString fileName,
         qDebug() << " graph not modified, and centralities calculated. Returning";
     }
 
-    emit statusMessage ( QString(tr("Writing stress indices to file:"))
-                         .arg(fileName) );
+    emit statusMessage ( tr("Writing stress indices to file:") + fileName );
     outText.setRealNumberPrecision(m_precision);
     outText << tr("STRESS CENTRALITY (SC)")<<"\n";
     outText << tr("The SC index of each node u is the sum of sigma(s,t,u): "
@@ -4097,7 +4100,7 @@ void Graph::writeCentralityEccentricity(const QString fileName,
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
@@ -4165,7 +4168,7 @@ void Graph::writeCentralityPower(const QString fileName,
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
@@ -4372,7 +4375,7 @@ void Graph::writePrestigeDegree (const QString fileName,
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
@@ -4574,7 +4577,7 @@ void Graph::writePrestigeProximity( const QString fileName,
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
@@ -4861,7 +4864,7 @@ void Graph::writePrestigePageRank(const QString fileName, const bool dropIsolate
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
@@ -6080,7 +6083,7 @@ void Graph::writeWalksTotalMatrix(QString fn, QString netName, int length){
     QFile file (fn);
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fn) );
+        emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
 
@@ -6106,7 +6109,7 @@ void Graph::writeWalksOfLengthMatrix(QString fn, QString netName, int length){
     QFile file (fn);
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fn) );
+        emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
 
@@ -6269,7 +6272,7 @@ void Graph::writeReachabilityMatrix(QString fn, QString netName,
 
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fn) );
+        emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
 
@@ -6309,7 +6312,7 @@ void Graph::writeClusteringCoefficient(
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
@@ -6318,7 +6321,7 @@ void Graph::writeClusteringCoefficient(
 
     averageCLC= clusteringCoefficient(true);
 
-    emit statusMessage ( QString(tr("Writing clustering coefficients to file: "))
+    emit statusMessage ( tr("Writing clustering coefficients to file: ")
                          + fileName );
 
     outText.setRealNumberPrecision(m_precision);
@@ -6373,7 +6376,7 @@ void Graph::writeTriadCensus(
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
 
@@ -6388,7 +6391,7 @@ void Graph::writeTriadCensus(
         }
     }
 
-    emit statusMessage ( QString(tr("Writing triad census to file: ")) +
+    emit statusMessage ( tr("Writing triad census to file: ") +
                          fileName );
 
     outText << tr("TRIAD CENSUS (TRC)\n\n");
@@ -6432,7 +6435,7 @@ void Graph::writeCliqueCensus(
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName) );
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
 
@@ -6449,7 +6452,7 @@ void Graph::writeCliqueCensus(
 
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
-    emit statusMessage ( QString(tr("Writing clique census to file: ")).arg(fileName) );
+    emit statusMessage ( tr("Writing clique census to file: ") + fileName );
 
     outText << tr("CLIQUE CENSUS (CLQs)") << endl<<endl;
 
@@ -7702,7 +7705,7 @@ bool Graph::saveGraphToPajekFormat (
 
     QFile f( fileName );
     if ( !f.open( QIODevice::WriteOnly ) )  {
-        emit statusMessage (QString(tr("Could not write to %1")).arg(fileName));
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return false;
     }
     QTextStream t( &f );
@@ -7778,7 +7781,7 @@ bool Graph::saveGraphToPajekFormat (
 bool Graph::saveGraphToAdjacencyFormat (QString fileName){
     QFile file( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
-        emit statusMessage(QString(tr("Could not write to %1")).arg(fileName));
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return false;
     }
     QTextStream outText( &file );
@@ -7805,7 +7808,7 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
     qDebug() << "Graph::writeDataSetToFile() to " << dir+fileName;
     QFile file( dir+fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
-        emit statusMessage( QString(tr("Could not write to %1")).arg(fileName) );
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return;
     }
     QTextStream outText( &file );
@@ -11159,7 +11162,7 @@ void Graph::writeAdjacencyMatrix (const QString fn, QString netName) {
     qDebug()<<"Graph::writeAdjacencyMatrix() to : " << fn;
     QFile file( fn );
     if ( !file.open( QIODevice::WriteOnly ) )  {
-        emit statusMessage( QString(tr("Could not write to %1")).arg(fn) );
+        emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
     QTextStream outText( &file );
@@ -11321,7 +11324,7 @@ void Graph::writeAdjacencyMatrixInvert(const QString &fn,
     QList<Vertex*>::const_iterator it, it1;
     QFile file( fn );
     if ( !file.open( QIODevice::WriteOnly ) )  {
-        emit statusMessage( QString(tr("Could not write to %1")).arg(fn) );
+        emit statusMessage ( tr("Error. Could not write to ") + fn );
         return;
     }
     QTextStream outText( &file );
@@ -11380,8 +11383,7 @@ bool Graph::saveGraphToGraphMLFormat (
     bool openToken;
     QFile f( fileName );
     if ( !f.open( QIODevice::WriteOnly ) )  {
-
-        emit statusMessage( QString(tr("Could not write to %1")).arg(fileName) );
+emit statusMessage ( tr("Error. Could not write to ") + fileName );
         return false;
     }
     QTextStream outText( &f );

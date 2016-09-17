@@ -192,7 +192,7 @@ signals:
                             int totalNodes,int totalLinks, bool undirected);
     void signalGraphSaved(const int &status);
 
-    void statusMessage (QString message);			//updates statusbar message
+    void statusMessage (const QString &message);			//updates statusbar message
     void addRelationToMW(QString newRelation);
     void describeDataset(QString);
     void signalNodeSizesByOutDegree(bool);
