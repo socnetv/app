@@ -105,7 +105,7 @@ void Graph::canvasSizeSet(const int w, const int h){
  * @return
  */
 double Graph::canvasMaxRadius () const {
-    return ( canvasHeight < canvasWidth ) ? canvasHeight / 2.0 -20 : canvasWidth/2.0 - 20;
+    return ( canvasHeight < canvasWidth ) ? canvasHeight / 2.0 -30 : canvasWidth/2.0 - 30;
 }
 
 /**
@@ -113,18 +113,20 @@ double Graph::canvasMaxRadius () const {
  * @return
  */
 float Graph::canvasMinDimension() const {
-    return ( canvasHeight < canvasWidth ) ? canvasHeight-20 : canvasWidth-20;
+    return ( canvasHeight < canvasWidth ) ? canvasHeight-30 : canvasWidth-30;
 }
+
 
 /**
  * @brief Graph::canvasVisibleX
  * @param x
  * @return
- * Returns a visible x-coordinate inside the canvas
+ * Checks if x is visible inside the canvas usable area
+ * and if not returns an adjusted x-coordinate
  */
 double Graph::canvasVisibleX(const double &x)  const {
     return qMin (
-                canvasWidth - 20.0 , qMax (20.0 , x )
+                canvasWidth - 30.0 , qMax (30.0 , x )
                 );
 }
 
@@ -133,13 +135,45 @@ double Graph::canvasVisibleX(const double &x)  const {
  * @brief Graph::canvasVisibleY
  * @param y
  * @return
- * Returns a visible y-coordinate inside the canvas
+ * Checks if y is visible inside the canvas usable area
+ * and if not returns an adjusted y-coordinate
  */
 double Graph::canvasVisibleY(const double &y) const {
     return qMin (
-                canvasHeight - 20.0 , qMax (20.0 , y )
+                canvasHeight - 30.0 , qMax (30.0 , y )
                 );
 }
+
+
+
+/**
+ * @brief Graph::canvasRandomX
+ * @return
+ * Returns a random x-coordinate adjusted to be visible
+ * inside the canvas usable area
+ */
+double Graph::canvasRandomX()  const {
+    return qMin (
+                canvasWidth - 30.0 , qMax (30.0 , (double) (rand()%canvasWidth) )
+                );
+}
+
+
+/**
+ * @brief Graph::canvasRandomY
+ * @return
+ * Returns a random y-coordinate adjusted to be visible
+ * inside the canvas usable area
+ */
+double Graph::canvasRandomY() const {
+    return qMin (
+                canvasHeight - 30.0 , qMax (30.0 , (double) (rand()%canvasHeight) )
+                );
+}
+
+
+
+
 
 /**
  * @brief Graph::relationSet
@@ -272,11 +306,12 @@ void Graph::vertexCreate(const int &num, const int &nodeSize, const QString &nod
 
 
 /**
-    auxilliary vertex creation slot.
-    Called from GW, with i and p as parameters.
-    p holds the desired position of the new node.
-    Calls the main creation slot with init node values.
-*/
+ * @brief Graph::vertexCreate
+ * @param p  The clicked pos of the new node.
+ * Auxilliary vertex creation slot.
+ * Called from GW, with i and p as parameters.
+ * Calls the main creation slot with init node values.
+ */
 void Graph::vertexCreate(const QPointF &p){
     int i = vertexLastNumber() +1;
     qDebug() << "Graph::vertexCreate() " << i << " fixed coords.";
@@ -290,18 +325,21 @@ void Graph::vertexCreate(const QPointF &p){
 
 
 
+
 /**
-    second auxilliary vertex creation slot.
-    Called from MW only with parameter i.
-    Calculates a random position p from canvasWidth and Height.
-    Then calls the main creation slot with init node values.
-*/
+ * @brief Graph::vertexCreate
+ * @param i
+ * Second auxilliary vertex creation slot.
+ * Called from MW only with parameter i.
+ * Computes a random position p the useable canvas area
+ * Then calls the main creation slot with init node values.
+ */
 void Graph::vertexCreate(int i){
     if ( i < 0 )  i = vertexLastNumber() +1;
     qDebug() << "Graph::vertexCreate() " << i << " random coords.";
     QPointF p;
-    p.setX( canvasVisibleX ( rand()%canvasWidth ) );
-    p.setY( canvasVisibleY ( rand()%canvasHeight) );
+    p.setX( canvasRandomX());
+    p.setY( canvasRandomX() );
     vertexCreate(	i, initVertexSize, initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
                     QString::number(i), initVertexLabelColor, initVertexLabelSize,
@@ -312,18 +350,20 @@ void Graph::vertexCreate(int i){
 
 
 /**
-    third auxilliary node creation slot.
-    Called from WebCrawler with parameter i.
-    Calculates a random position p from canvasWidth and Height.
-    Then calls the main creation slot with init node values.
-*/
-
+ * @brief Graph::vertexCreateWebCrawler
+ * @param label
+ * @param i
+ * Third auxilliary node creation slot.
+ * Called from WebCrawler with parameter i.
+ * Computes a random position p the useable canvas area
+ * Then calls the main creation slot with init node values.
+ */
 void Graph::vertexCreateWebCrawler(const QString &label, const int &i) {
 
     qDebug() << "Graph::vertexCreateWebCrawler() " << i << " label" << label;
     QPointF p;
-    p.setX(10 + rand()%canvasWidth);
-    p.setY(10 + rand()%canvasHeight);
+    p.setX(canvasRandomX());
+    p.setY(canvasRandomY());
     vertexCreate( (i<0)?vertexLastNumber() +1:i, initVertexSize,  initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
                     label, initVertexLabelColor,  initVertexLabelSize,
@@ -5075,8 +5115,8 @@ void Graph::layoutRandom(){
     double new_x=0, new_y=0;
     Vertices::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        new_x= 10 + rand() % ( canvasWidth );
-        new_y= 10 + rand() % ( canvasHeight );
+        new_x= canvasRandomX();
+        new_y= canvasRandomY();
         (*it)->setX( new_x );
         (*it)->setY( new_y );
         qDebug()<< "Graph::layoutRandom() - "
@@ -5509,9 +5549,7 @@ void Graph::randomNetErdosCreate(  const int &vert,
                 << " edges " << edges
                 << " edge probability " << eprob
                 << " graph mode " << mode
-                << " diag " << diag
-                << " canvasWidth " <<canvasWidth
-                << "canvasHeigt " << canvasHeight;
+                << " diag " << diag;
 
     if (mode=="graph") {
         undirectedSet(true);
@@ -5527,8 +5565,8 @@ void Graph::randomNetErdosCreate(  const int &vert,
 
     for (int i=0; i< vert ; i++)
     {
-        int x=10+rand() %canvasWidth;
-        int y=10+rand() %canvasHeight;
+        int x=canvasRandomX();
+        int y=canvasRandomY();
         qDebug("Graph: randomNetErdosCreate, new node i=%i, at x=%i, y=%i", i+1, x,y);
         vertexCreate (
                     i+1, initVertexSize, initVertexColor,
@@ -5719,9 +5757,6 @@ void Graph::randomNetScaleFreeCreate (const int &n,
     index.reserve( n );
 
     qDebug() << "Graph::randomNetScaleFreeCreate() - "
-             << " canvasWidth " << canvasWidth
-             << " canvasHeight " << canvasHeight
-             << " radius " << radius
              << "Create initial connected net of m0 nodes";
 
 
@@ -12155,12 +12190,14 @@ void Graph::layoutForceDirected_FR_moveNodes(const qreal &temperature) {
                 << "Possible new pos (" <<  newPos.x() << ","
                 << newPos.y()<< ")";
 
-        newPos.rx() = qMin (
-                    canvasWidth - 50.0 , qMax (50.0 , newPos.x() )
-                    );
-        newPos.ry() = qMin (
-                    canvasHeight -50.0 , qMax (50.0 , newPos.y() )
-                    );
+        newPos.rx() = canvasVisibleX (newPos.x());
+//                qMin (
+//                    canvasWidth - 50.0 , qMax (50.0 , newPos.x() )
+//                    );
+        newPos.ry() = canvasVisibleY (newPos.y());
+//                qMin (
+//                    canvasHeight -50.0 , qMax (50.0 , newPos.y() )
+//                    );
         //Move node to new position
         qDebug()<< " final new pos "
                 <<  newPos.x() << ","

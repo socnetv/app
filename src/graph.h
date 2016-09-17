@@ -174,6 +174,8 @@ public slots:
     float canvasMinDimension() const;
     double canvasVisibleX(const double &x) const ;
     double canvasVisibleY(const double &y) const ;
+    double canvasRandomX()  const;
+    double canvasRandomY()  const;
     void vertexIsolateFilter ( bool );		//Called by MW to filter orphan vertices
     void edgeFilterByWeight (float, bool);		//Called by MW to filter edges over/under a weight
     void edgeFilterByRelation(int relation, bool status);
