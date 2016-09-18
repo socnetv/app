@@ -234,7 +234,7 @@ void Parser::createRandomNodes(int nodeNum=1,QString label=NULL, int totalNodes=
 */
 bool Parser::loadDL(){
 
-    qDebug () << "\n\nParser: loadDL (UCINET)";
+    qDebug() << "Parser::loadDL() - Reading UCINET formatted file ";
     QFile file ( fileName );
     if ( ! file.open(QIODevice::ReadOnly )) return false;
     QTextStream ts( &file );
@@ -255,16 +255,15 @@ bool Parser::loadDL(){
         str= ts.readLine();
         str=str.simplified();
         lineCounter++;
-        qDebug() << "Parser: loadDL - lineCounter: " << lineCounter
-                 << "\n  str: " << str
-                 << "\n  removing whitespaces from str "<< str;
+        qDebug() << "Parser::loadDL() - lineCounter "
+                 << "str.simplified: \n" << str;
 
         if ( isComment(str) )
             continue;
 
         if ( (lineCounter == 1) &&
              (!str.startsWith("DL",Qt::CaseInsensitive)  ) ) {
-            qDebug("*** Parser-loadDL(): not a DL file. Aborting!");
+            qDebug() << "Parser::loadDL() - Not a DL file. Aborting!";
             file.close();
             return false;
         }
@@ -272,10 +271,11 @@ bool Parser::loadDL(){
         if (str.startsWith( "N=", Qt::CaseInsensitive)
                 ||  str.startsWith( "N =", Qt::CaseInsensitive) )  {
             mark=str.indexOf("=");
-            qDebug() << "Network size is declared here - check if NM exists";
+            qDebug() << "Parser::loadDL() - Network size N declared here. "
+                        "Check if NM exists";
             if ( (mark2=str.indexOf("NM", Qt::CaseInsensitive)) != -1 ) {
                 nm_str = str.right(str.size() - mark2 );
-                qDebug() << " NM exists at " << mark2
+                qDebug() << "Parser::loadDL() - NM exists at " << mark2
                          << " contains " << nm_str;
                 nm_str = nm_str.simplified();
                 nm_str.remove(0,2);
@@ -283,27 +283,26 @@ bool Parser::loadDL(){
                 if (nm_str.startsWith("="))
                     nm_str.remove(0,1);
                 nm = nm_str.toInt(&intOK,10);
-                qDebug() << " NM str: " << nm_str
-                         << " and toInt:"<<nm ;
+                qDebug() << "Parser::loadDL() - NM str: " << nm_str
+                         << " and toInt:"<< nm ;
                 if (!intOK) {
-                    qDebug() <<
-                                "Parser: loadDL(): NM conversion error..." ;
+                    qDebug() << "Parser::loadDL() - NM conversion error..." ;
                     //emit something here...
                     return false;
                 }
                 str.truncate(mark2);
                 str=str.trimmed();
-                qDebug() << " rest str becomes: " << str;
+                qDebug() << "Parser::loadDL() -rest str becomes: " << str;
             }
             str=str.right(str.size()-mark-1);
-            qDebug()<< "N is declared to be : " << str.toLatin1() ;
+            qDebug() << "Parser::loadDL() - N is declared to be : "
+                     << str.toLatin1() ;
             aNodes=str.toInt(&intOK,10);
             if (!intOK) {
-                qDebug() <<
-                            "Parser: loadDL(): N conversion error..." ;
+                qDebug() << "Parser::loadDL() - N conversion error..." ;
                 return false;
             }
-            qDebug() << " FINALLY N="<<aNodes << "NM="<<nm;
+            qDebug() << "Parser::loadDL() - Finally N=" << aNodes << "NM=" <<nm;
             continue;
         }
 
@@ -312,7 +311,7 @@ bool Parser::loadDL(){
             mark=str.indexOf("=");
             str=str.right(str.size()-mark-1);
             str=str.trimmed();
-            qDebug()<<  "FORMAT = : " <<  str.toLatin1() ;
+            qDebug() << "Parser::loadDL() -FORMAT = : " <<  str.toLatin1() ;
             if (str.contains("FULLMATRIX",Qt::CaseInsensitive)) {
                 fullmatrixFormat=true;
             }
@@ -324,27 +323,30 @@ bool Parser::loadDL(){
         else if (str.startsWith( "labels", Qt::CaseInsensitive)
                  || str.startsWith( "row labels", Qt::CaseInsensitive)) {
             labels_flag=true; data_flag=false;relation_flag=false;
-            qDebug() << " START LABELS RECOGNITION AND NODE CREATION";
+            qDebug() << "Parser::loadDL() -START LABELS RECOGNITION "
+                         "AND NODE CREATION";
             continue;
         }
         else if (str.startsWith( "COLUMN LABELS", Qt::CaseInsensitive)) {
             labels_flag=true; data_flag=false;relation_flag=false;
-            qDebug() << " START COLUMN LABELS RECOGNITION AND NODE CREATION";
+            qDebug() << "Parser::loadDL() -START COLUMN LABELS RECOGNITION "
+                        "AND NODE CREATION";
             continue;
         }
         else if ( str.startsWith( "data:", Qt::CaseInsensitive)
                   || str.startsWith( "data :", Qt::CaseInsensitive) ) {
             data_flag=true; labels_flag=false;relation_flag=false;
-            qDebug() << " START DATA RECOGNITION AND EDGE CREATION";
+            qDebug() << "Parser::loadDL() -START DATA RECOGNITION "
+                        "AND EDGE CREATION";
             continue;
         }
         else if (str.startsWith( "LEVEL LABELS", Qt::CaseInsensitive) ) {
             relation_flag=true; data_flag=false; labels_flag=false;
-            qDebug() << " START RELATIONS RECOGNITION";
+            qDebug() << "Parser::loadDL() -START RELATIONS RECOGNITION";
             continue;
         }
         else if (str.isEmpty()){
-            qDebug() << " EMPTY STRING - CONTINUE";
+            qDebug() << "Parser::loadDL() -EMPTY STRING - CONTINUE";
             continue;
         }
 
@@ -352,11 +354,12 @@ bool Parser::loadDL(){
         if (labels_flag) {  //read a label and create a node in a random position
             label=str;
             if ( labelsList.contains(label) ) {
-                qDebug() << " label exists. CONTINUE";
+                qDebug() << "Parser::loadDL() - label exists. CONTINUE";
                 continue;
             }
             else{
-                qDebug() << "adding label " << label << " to labelList";
+                qDebug() << "Parser::loadDL() -adding label " << label
+                         << " to labelList";
                 labelsList << label;
             }
             nodeSum++;
@@ -366,11 +369,11 @@ bool Parser::loadDL(){
         if ( relation_flag){
             relation=str;
             if ( relationsList.contains(relation) ) {
-                qDebug() << " relation exists. CONTINUE";
+                qDebug() << "Parser::loadDL() -relation exists. CONTINUE";
                 continue;
             }
             else{
-                qDebug() << "adding relation "<< relation
+                qDebug() << "Parser::loadDL() - adding relation "<< relation
                          << " to relationsList and emitting addRelation ";
                 relationsList << relation;
                 emit addRelation( relation );
@@ -379,7 +382,7 @@ bool Parser::loadDL(){
         if ( data_flag && fullmatrixFormat){		//read edges in matrix format
             // check if we haven't created any nodes...
             if ( nodeSum < aNodes ){
-                qDebug() << " nodes have not been created yet. "
+                qDebug() << "Parser::loadDL() -nodes have not been created yet. "
                          << " calling createRandomNodes()" ;
                 createRandomNodes(1, QString::null, aNodes);
                 nodeSum = aNodes;
@@ -387,15 +390,17 @@ bool Parser::loadDL(){
             //SPLIT EACH LINE (ON EMPTY SPACE CHARACTERS)
             if (!prevLineStr.isEmpty()) {
                 str=(prevLineStr.append(" ")).append(str) ;
-                qDebug() << " prevLineStr not empty - prepending it to str - "
-                         << " new str: \n" << str;
+                qDebug() << "Parser::loadDL() -prevLineStr not empty - "
+                            "prepending it to str - new str: \n" << str;
                 str=str.simplified();
             }
             lineElement=str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
 
             if (lineElement.count() < aNodes ) {
-                qDebug() << "This line has " << lineElement.count()
-                         << " elements, expected " << aNodes << " - appending next line";
+                qDebug() << "Parser::loadDL() -This line has "
+                         << lineElement.count()
+                         << " elements, expected "
+                         << aNodes << " - appending next line";
                 prevLineStr=str;
                 continue;
             }
@@ -403,7 +408,8 @@ bool Parser::loadDL(){
             target=1;
             if (source==1){
                 relation = relationsList[ relationCounter ];
-                qDebug() << " WE ARE THE FIRST DATASET/MATRIX"
+                qDebug() << "Parser::loadDL() - "
+                            "WE ARE THE FIRST DATASET/MATRIX"
                          << " source node counter is " << source
                          << " and relation to " << relation<< ": "
                          << relationCounter;
@@ -413,21 +419,22 @@ bool Parser::loadDL(){
                 source=1;
                 relationCounter++;
                 relation = relationsList[ relationCounter ];
-                qDebug() << " LOOKS LIKE WE ENTERED A NEW DATASET/MATRIX "
+                qDebug() << "Parser::loadDL() - "
+                            "LOOKS LIKE WE ENTERED A NEW DATASET/MATRIX "
                          << " init source node counter to " << source
                          << " and relation to " << relation << ": "
                          << relationCounter;
                 emit relationSet (relationCounter);
             }
             else {
-                qDebug() << "source node counter is " << source;
+                qDebug() << "Parser::loadDL() - source node counter is " << source;
             }
 
             for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
                 //qDebug()<< (*it1).toLatin1() ;
                 if ( (*it1)!="0"){
                     edgeWeight=(*it1).toFloat(&floatOK);
-                    qDebug()<<  "Parser-loadDL(): relation "
+                    qDebug() << "Parser::loadDL() - relation "
                              << relationCounter
                              << " found edge from "
                              << source << " to " << target
@@ -440,7 +447,7 @@ bool Parser::loadDL(){
                     emit edgeCreate( source, target, edgeWeight, initEdgeColor,
                                      undirected, arrows, bezier);
                     totalLinks++;
-                    qDebug() << "TotalLinks= " << totalLinks;
+                    qDebug() << "Parser::loadDL() - TotalLinks= " << totalLinks;
 
                 }
                 target++;
@@ -452,7 +459,7 @@ bool Parser::loadDL(){
         if (data_flag && edgelist1Format) { //read edges in edgelist1 format
             // check if we haven't created any nodes...
             if ( nodeSum < aNodes ){
-                qDebug() << " nodes have not been created yet. "
+                qDebug() << "Parser::loadDL() - nodes have not been created yet. "
                          << " calling createRandomNodes()" ;
                 createRandomNodes(1, QString::null, aNodes);
                 nodeSum = aNodes;
@@ -460,7 +467,8 @@ bool Parser::loadDL(){
             lineElement=str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
 
             if ( lineElement.count() != 3 ) {
-                qDebug()<< "*** Parser:loadDL(): Not an edgelist1 UCINET formatted file. Aborting!!";
+                qDebug() << "Parser::loadDL() - Not an edgelist1 UCINET "
+                            "formatted file. Aborting!!";
                 file.close();
                 //emit something...
                 return false;
@@ -468,18 +476,20 @@ bool Parser::loadDL(){
 
             source =  (lineElement[0]).toInt(&intOK);
             target =  (lineElement[1]).toInt(&intOK);
-            qDebug() << "	source node " << source  << " target node " << target;
+            qDebug() << "Parser::loadDL() - source node "
+                     << source  << " target node " << target;
 
             edgeWeight=(lineElement[2]).toDouble(&intOK);
             if (intOK) {
-                qDebug () << "	list file declares edge weight: " << edgeWeight;
+                qDebug() << "Parser::loadDL() -list file declares edge weight: "
+                         << edgeWeight;
             }
             else {
                 edgeWeight=1.0;
                 qDebug () << "	list file NOT declaring edge weight. Setting default: " << edgeWeight;
             }
 
-            qDebug()<< "	Parser::loadDL() - Creating link "
+            qDebug() << "Parser::loadDL() - Creating link "
                     << source << " -> "<< target << " weight= "<< edgeWeight
                     <<  " TotalLinks=  " << totalLinks+1;
             emit edgeCreate(source, target, edgeWeight, initEdgeColor, undirected, arrows, bezier);
@@ -494,12 +504,18 @@ bool Parser::loadDL(){
     }
     //The network has been loaded. Tell MW the statistics and network type
     emit relationSet (0);
+    qDebug() << "Parser::loadDL() - FINISHED - "
+                "emitting networkFileLoaded() and clearing arrays";
     emit networkFileLoaded(FILE_UCINET, fileName, networkName, aNodes, totalLinks, undirected);
-    qDebug() << "Parser-loadDL() clearing";
+
     lineElement.clear(); labelsList.clear(); relationsList.clear();
     return true;
 
 }
+
+
+
+
 
 /**
     Tries to load the file as Pajek-formatted network. If not it returns -1
