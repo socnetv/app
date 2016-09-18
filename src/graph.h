@@ -162,9 +162,9 @@ public slots:
     void edgeVisibilitySet(int relation, int, int, bool);
 
     //auxiliary vertexCreate functions
-    void vertexCreate(const QPointF &p);
-    void vertexCreate(int i);
-    void vertexCreateWebCrawler(const QString &label, const int &i) ;
+    void vertexCreateAtPos(const QPointF &p);
+    void vertexCreateAtPosRandom();
+    void vertexCreateAtPosRandomWithLabel(const int &i, const QString &label) ;
 
     /** Slots to signals from MainWindow */
     void relationSet(int);

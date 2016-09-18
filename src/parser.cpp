@@ -187,43 +187,30 @@ bool Parser::run()  {
 
 
 
-void Parser::createRandomNodes(int nodeNum=1,QString label=NULL, int totalNodes=1){
-    if (totalNodes != 1 ) {
-        int i=0;
-        for (i=0; i<totalNodes; i++) {
-            randX=rand()%gwWidth;
-            randY=rand()%gwHeight;
-            nodeLabel = QString::number(i+1);
-            qDebug()<<"Creating node: "<< i+1
-                   << " with label: " << nodeLabel
-                   << " at "<< randX<<","<< randY;
-            emit createNode(
-                        i+1, initNodeSize,initNodeColor,
-                        initNodeNumberColor, initNodeNumberSize,
-                        nodeLabel, initNodeLabelColor, initNodeLabelSize,
-                        QPointF(randX, randY),
-                        initNodeShape, false
-                        );
+/**
+ * @brief Parser::createRandomNodes
+ * @param fixedNum
+ * @param label
+ * @param newNodes
+ * Creates either a new node numbered fixedNum
+ * or newNodes nodes numbered from 1 to to newNodes
+ */
+void Parser::createRandomNodes(const int &fixedNum,
+                               const QString &label,
+                               const int &newNodes){
+    qDebug() << "Parser::createRandomNodes()";
+    if (newNodes != 1 ) {
+        for (int i=0; i<newNodes; i++) {
+            qDebug() << "Parser::createRandomNodes() - Multiple nodes. "
+                        "Creating node: "<< i+1;
+            emit createNodeAtPosRandom();
         }
     }
     else {
-        randX=rand()%gwWidth;
-        randY=rand()%gwHeight;
-        if (label.isEmpty()) {
-            nodeLabel= QString::number(nodeNum+1);
-        }
-        else
-            nodeLabel=label;
-        qDebug()<<"Creating node: "<< nodeNum
-               << " with label: " << nodeLabel
-               << " at "<< randX<<","<< randY;
-        emit createNode(
-                    nodeNum, initNodeSize,initNodeColor,
-                    initNodeNumberColor, initNodeNumberSize,
-                    nodeLabel, initNodeLabelColor, initNodeLabelSize,
-                    QPointF(randX, randY),
-                    initNodeShape, false
-                    );
+        qDebug() << "Parser::createRandomNodes() - Single node. "
+                    "Creating node: "<< fixedNum
+               << " with label: " << label;
+        emit createNodeAtPosRandomWithLabel( fixedNum, label );
 
     }
 }
@@ -255,7 +242,7 @@ bool Parser::loadDL(){
         str= ts.readLine();
         str=str.simplified();
         lineCounter++;
-        qDebug() << "Parser::loadDL() - lineCounter "
+        qDebug() << "Parser::loadDL() - lineCount " << lineCounter
                  << "str.simplified: \n" << str;
 
         if ( isComment(str) )
@@ -311,7 +298,7 @@ bool Parser::loadDL(){
             mark=str.indexOf("=");
             str=str.right(str.size()-mark-1);
             str=str.trimmed();
-            qDebug() << "Parser::loadDL() -FORMAT = : " <<  str.toLatin1() ;
+            qDebug() << "Parser::loadDL() - FORMAT = : " <<  str.toLatin1() ;
             if (str.contains("FULLMATRIX",Qt::CaseInsensitive)) {
                 fullmatrixFormat=true;
             }
@@ -323,30 +310,30 @@ bool Parser::loadDL(){
         else if (str.startsWith( "labels", Qt::CaseInsensitive)
                  || str.startsWith( "row labels", Qt::CaseInsensitive)) {
             labels_flag=true; data_flag=false;relation_flag=false;
-            qDebug() << "Parser::loadDL() -START LABELS RECOGNITION "
+            qDebug() << "Parser::loadDL() - START LABELS RECOGNITION "
                          "AND NODE CREATION";
             continue;
         }
         else if (str.startsWith( "COLUMN LABELS", Qt::CaseInsensitive)) {
             labels_flag=true; data_flag=false;relation_flag=false;
-            qDebug() << "Parser::loadDL() -START COLUMN LABELS RECOGNITION "
+            qDebug() << "Parser::loadDL() - START COLUMN LABELS RECOGNITION "
                         "AND NODE CREATION";
             continue;
         }
         else if ( str.startsWith( "data:", Qt::CaseInsensitive)
                   || str.startsWith( "data :", Qt::CaseInsensitive) ) {
             data_flag=true; labels_flag=false;relation_flag=false;
-            qDebug() << "Parser::loadDL() -START DATA RECOGNITION "
+            qDebug() << "Parser::loadDL() - START DATA RECOGNITION "
                         "AND EDGE CREATION";
             continue;
         }
         else if (str.startsWith( "LEVEL LABELS", Qt::CaseInsensitive) ) {
             relation_flag=true; data_flag=false; labels_flag=false;
-            qDebug() << "Parser::loadDL() -START RELATIONS RECOGNITION";
+            qDebug() << "Parser::loadDL() - START RELATIONS RECOGNITION";
             continue;
         }
         else if (str.isEmpty()){
-            qDebug() << "Parser::loadDL() -EMPTY STRING - CONTINUE";
+            qDebug() << "Parser::loadDL() - EMPTY STRING - CONTINUE";
             continue;
         }
 
@@ -358,7 +345,7 @@ bool Parser::loadDL(){
                 continue;
             }
             else{
-                qDebug() << "Parser::loadDL() -adding label " << label
+                qDebug() << "Parser::loadDL() - Adding label " << label
                          << " to labelList";
                 labelsList << label;
             }

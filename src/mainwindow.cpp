@@ -6073,9 +6073,8 @@ void MainWindow::slotEditNodeSelectNone(){
  */
 void MainWindow::slotEditNodeAdd() {
     qDebug() << "MW::slotEditNodeAdd() ";
-    // minus a  screen edge offset...
-    activeGraph.vertexCreate (-1);
-    statusMessage( tr("New node (numbered %1) added.")
+    activeGraph.vertexCreateAtPosRandom();
+    statusMessage( tr("New random positioned node (numbered %1) added.")
                    .arg(activeGraph.vertexLastNumber())  );
 }
 
@@ -6084,13 +6083,18 @@ void MainWindow::slotEditNodeAdd() {
 /**
  * @brief MainWindow::slotEditNodeAddWithMouse
  * Called by GW when user double-clicks at p to add a new node
- * Calls Graph::vertexCreate method to add the new vertex into the activeGraph.
+ * Calls Graph::vertexCreateAtPos() method to add the new vertex
  * @param p
  */
 void MainWindow::slotEditNodeAddWithMouse( const QPointF &p) {
-    qDebug()<< "MW: slotEditNodeAddWithMouse(). Calling activeGraph::vertexCreate()";
-    activeGraph.vertexCreate(p);
-    statusMessage( tr("New node (numbered %1) added.").arg(activeGraph.vertexLastNumber())  );
+    qDebug()<< "MW::slotEditNodeAddWithMouse() - "
+               "Calling activeGraph::vertexCreateAtPos()";
+    activeGraph.vertexCreateAtPos(p);
+    statusMessage(  tr("New node (numbered %1) added at position (%2,%3)")
+                   .arg(activeGraph.vertexLastNumber())
+                   .arg( p.x() )
+                   .arg( p.y() )
+                   ) ;
 }
 
 

@@ -306,18 +306,18 @@ void Graph::vertexCreate(const int &num, const int &nodeSize, const QString &nod
 
 
 /**
- * @brief Graph::vertexCreate
+ * @brief Graph::vertexCreateAtPos
  * @param p  The clicked pos of the new node.
- * Auxilliary vertex creation slot.
+
  * Called from GW, with i and p as parameters.
  * Calls the main creation slot with init node values.
  */
-void Graph::vertexCreate(const QPointF &p){
+void Graph::vertexCreateAtPos(const QPointF &p){
     int i = vertexLastNumber() +1;
     qDebug() << "Graph::vertexCreate() " << i << " fixed coords.";
     vertexCreate(	i, initVertexSize,  initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
-                    QString::number(i), initVertexLabelColor, initVertexLabelSize,
+                    QString::null, initVertexLabelColor, initVertexLabelSize,
                     p, initVertexShape, true
                     );
 }
@@ -327,22 +327,21 @@ void Graph::vertexCreate(const QPointF &p){
 
 
 /**
- * @brief Graph::vertexCreate
+ * @brief Graph::vertexCreateAtPosRandom
  * @param i
- * Second auxilliary vertex creation slot.
- * Called from MW only with parameter i.
- * Computes a random position p the useable canvas area
+ * Creates a new random positioned vertex
+ * Called from MW only
+ * Computes a random position p inside the useable canvas area
  * Then calls the main creation slot with init node values.
  */
-void Graph::vertexCreate(int i){
-    if ( i < 0 )  i = vertexLastNumber() +1;
-    qDebug() << "Graph::vertexCreate() " << i << " random coords.";
+void Graph::vertexCreateAtPosRandom(){
+    qDebug() << "Graph::vertexCreateAtPosRandom() ";
     QPointF p;
     p.setX( canvasRandomX());
     p.setY( canvasRandomX() );
-    vertexCreate(	i, initVertexSize, initVertexColor,
+    vertexCreate( vertexLastNumber()+1, initVertexSize, initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
-                    QString::number(i), initVertexLabelColor, initVertexLabelSize,
+                    QString::null, initVertexLabelColor, initVertexLabelSize,
                     p, initVertexShape, true
                     );
 }
@@ -350,17 +349,18 @@ void Graph::vertexCreate(int i){
 
 
 /**
- * @brief Graph::vertexCreateWebCrawler
- * @param label
+ * @brief Graph::vertexCreateAtPosRandomWithLabel
  * @param i
- * Third auxilliary node creation slot.
- * Called from WebCrawler with parameter i.
+ * @param label
+ * Creates a new random positioned vertex with number i and label
+ * Called from WebCrawler and Parser with parameters label and i.
  * Computes a random position p the useable canvas area
  * Then calls the main creation slot with init node values.
  */
-void Graph::vertexCreateWebCrawler(const QString &label, const int &i) {
+void Graph::vertexCreateAtPosRandomWithLabel(const int &i, const QString &label) {
 
-    qDebug() << "Graph::vertexCreateWebCrawler() " << i << " label" << label;
+    qDebug() << "Graph::vertexCreateAtPosRandomWithLabel() - vertex " << i
+             << " label" << label;
     QPointF p;
     p.setX(canvasRandomX());
     p.setY(canvasRandomY());
@@ -1941,7 +1941,7 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
              wc_spider, &WebCrawler_Spider::get);
 
     connect(wc_parser, &WebCrawler_Parser::signalCreateNode,
-            this, &Graph::vertexCreateWebCrawler);
+            this, &Graph::vertexCreateAtPosRandomWithLabel);
 
     connect(wc_parser, &WebCrawler_Parser::signalCreateEdge,
             this, &Graph::edgeCreateWebCrawler);
@@ -1964,7 +1964,7 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
     wc_spiderThread.start();
 
     qDebug() << "Graph::webCrawl()  Creating initial node 1, url: " << seed;
-    vertexCreateWebCrawler(seed, 1);
+    vertexCreateAtPosRandomWithLabel(1, seed);
 
     qDebug() << "Graph::webCrawl()  calling spider get() for that url!";
     emit operateSpider();
@@ -7527,6 +7527,16 @@ bool Graph::loadGraph (	const QString m_fileName,
                                           const QPointF &, const QString &,
                                           const bool &) )
                 ) ;
+
+    connect (
+                file_parser, SIGNAL (createNodeAtPosRandom()),
+                this, SLOT(vertexCreateAtPosRandom())
+                );
+
+    connect (
+                file_parser, SIGNAL (createNodeAtPosRandomWithLabel(const int ,const QString &)),
+                this, SLOT(vertexCreateAtPosRandomWithLabel(const int &,const QString &) )
+                );
 
     connect (
                 file_parser, SIGNAL(

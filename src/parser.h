@@ -81,7 +81,8 @@ public:
     void createMissingNodeEdges();
 
 	bool isComment(QString str);  
-    void createRandomNodes(int, QString, int);
+    void createRandomNodes(const int &fixedNum=1,const QString &label=QString::null,
+                           const int &newNodes=1);
 
 signals:
     void addRelation( QString );
@@ -92,6 +93,8 @@ signals:
             const QString &label, const QString &lColor, const int &lSize,
             const QPointF &p,
             const QString &shape, const bool &signalMW=false);
+    void createNodeAtPosRandom();
+    void createNodeAtPosRandomWithLabel (const int &num, const QString &label);
 
     void edgeCreate (const int &source, const int &target, const float &weight,
                      const QString &color, const int &undirected,
