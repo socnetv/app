@@ -8113,6 +8113,93 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                   "0 1 1 0 0 0 0 0 0 0 0 0 1 0 0" << endl <<
                   "0 1 1 0 0 0 0 0 0 0 0 1 0 0 0";
     }
+    else if (fileName== "Thurman_Office_Networks_Coalitions.dl" ) {
+        datasetDescription=tr("In the late 70s, B. Thurman spent 16 months "
+                              "observing the interactions among employees in "
+                              "the overseas office of a large international "
+                              "corporation. \n"
+                              "During this time, two major disputes erupted "
+                              "in a subgroup of fifteen people. \n"
+                              "Thurman analyzed the outcome of these disputes "
+                              "in terms of the network of formal and informal "
+                              "associations among those involved.\n"
+                              "\n"
+                              "This labeled dataset contains two relations (15x15 matrices): \n"
+                              "THURA is a 15x15 non-symmetric, binary matrix showing "
+                              "the formal organizational chart of the employees.\n\n"
+                              "THURM is a 15x15 symmetric binary matrix which "
+                              "shows the actors linked by multiplex ties. \n\n"
+                              "Thurman B. (1979). In the office: Networks and coalitions. Social Networks, 2, 47-63");
+        outText << "DL"<<endl<<
+                   "N=15 NM=2"<<endl<<
+                   "FORMAT = FULLMATRIX DIAGONAL PRESENT"<<endl<<
+                   "ROW LABELS:"<<endl<<
+                   "ANN"<<endl<<
+                   "AMY"<<endl<<
+                   "KATY"<<endl<<
+                   "BILL"<<endl<<
+                   "PETE"<<endl<<
+                   "TINA"<<endl<<
+                   "ANDY"<<endl<<
+                   "LISA"<<endl<<
+                   "PRESIDENT"<<endl<<
+                   "MINNA"<<endl<<
+                   "MARY"<<endl<<
+                   "EMMA"<<endl<<
+                   "ROSE"<<endl<<
+                   "MIKE"<<endl<<
+                   "PEG"<<endl<<
+                   "COLUMN LABELS:"<<endl<<
+                   "ANN"<<endl<<
+                   "AMY"<<endl<<
+                   "KATY"<<endl<<
+                   "BILL"<<endl<<
+                   "PETE"<<endl<<
+                   "TINA"<<endl<<
+                   "ANDY"<<endl<<
+                   "LISA"<<endl<<
+                   "PRESIDENT"<<endl<<
+                   "MINNA"<<endl<<
+                   "MARY"<<endl<<
+                   "EMMA"<<endl<<
+                   "ROSE"<<endl<<
+                   "MIKE"<<endl<<
+                   "PEG"<<endl<<
+                   "LEVEL LABELS:"<<endl<<
+                   "THURA"<<endl<<
+                   "THURM"<<endl<<
+                   "DATA:"<<endl<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<endl<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<endl<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<endl<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<endl<<
+                   " 1 1 1 1 0 1 1 1 0 1 1 1 1 1 1"<<endl<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<endl<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<endl<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<endl<<
+                   " 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1"<<endl<<
+                   " 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0"<<endl<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<endl<<
+                   " 0 0 0 0 0 1 0 0 0 0 1 0 1 1 1"<<endl<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<endl<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<endl<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<<endl<<
+                   " 0 1 1 0 1 1 0 1 1 0 1 0 1 0 0"<<endl<<
+                   " 1 0 1 1 1 1 0 1 0 0 0 0 0 0 0"<<endl<<
+                   " 1 1 0 0 1 1 0 1 0 0 0 0 0 0 0"<<endl<<
+                   " 0 1 0 0 0 0 1 0 0 1 0 0 0 0 0"<<endl<<
+                   " 1 1 1 0 0 1 1 1 1 0 0 1 0 0 0"<<endl<<
+                   " 1 1 1 0 1 0 0 1 0 0 0 0 0 0 0"<<endl<<
+                   " 0 0 0 1 1 0 0 0 0 1 0 0 0 0 0"<<endl<<
+                   " 1 1 1 0 1 1 0 0 1 0 0 1 0 0 0"<<endl<<
+                   " 1 0 0 0 1 0 0 1 0 0 0 1 0 0 0"<<endl<<
+                   " 0 0 0 1 0 0 1 0 0 0 0 1 0 0 0"<<endl<<
+                   " 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0"<<endl<<
+                   " 0 0 0 0 1 0 0 1 1 1 1 0 1 1 1"<<endl<<
+                   " 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0"<<endl<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0"<<endl<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0";
+    }
     else if (fileName == "Bernard_Killworth_Fraternity.dl"){
         datasetDescription =
                 tr("Bernard & Killworth recorded the interactions among students living in a fraternity at "

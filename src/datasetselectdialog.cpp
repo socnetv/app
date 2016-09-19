@@ -47,6 +47,7 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
             << "Zachary: Karate Club (simple ties), 34 actors"
             << "Zachary: Karate Club (weighted ties), 34 actors"
             << "Bernard: Killworth Fraternity (multirelational), 58 actors"
+            << "Thurman: In the office: Networks and Coalitions, 15 actors"
             << "Galaskiewicz: CEOs and clubs (affiliation data)"
             << "Freeman's EIES networks (multirelational, 32 actors)"
             << "Freeman: EIES network, at time-1, 48 actors"
@@ -55,9 +56,9 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
             << "Freeman: The 34 possible graphs with N=5 (as multirelational), 5 actors"
             << "Mexican Power Network in the 1940s (list format)"
             << "Knocke: Bureacracies Information Exchange Network, 10 actors"
-            <<"Stephenson and Zelen (1989): Network of 40 AIDS patiens (sex relationship)"
+            << "Stephenson and Zelen (1989): Network of 40 AIDS patiens (sex relationship)"
             << "Stephenson and Zelen (1989): Information Centrality test dataset, 5 actors"
-            <<"Wasserman and Faust: star, circle and line graphs of 7 actors (multirelational)"
+            << "Wasserman and Faust: star, circle and line graphs of 7 actors (multirelational)"
             << "Wasserman and Faust: Countries Trade (basic manufactured goods), 24 actors";
 
     datasets_filenames
@@ -69,6 +70,7 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
             << "Zachary_Karate_Club_Simple_Ties.sm"
             << "Zachary_Karate_Club_Weighted_Ties.sm"
             << "Bernard_Killworth_Fraternity.dl"
+            << "Thurman_Office_Networks_Coalitions.dl"
             << "Galaskiewicz_CEOs_and_clubs_affiliation_network_data.2sm"
             << "Freeman_EIES_networks_32actors.dl"
             << "Freeman_EIES_network_48actors_Acquaintanceship_at_time-1.dl"
@@ -77,9 +79,9 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
             << "Freeman_34_possible_graphs_with_N_5_multirelational.paj"
             << "Mexican_Power_Network_1940s.lst"
             << "Knocke_Bureacracies_Information_Exchange_Network.pajek"
-            <<"Stephenson&Zelen_40_AIDS_patiens_sex_contact.paj"
+            << "Stephenson&Zelen_40_AIDS_patiens_sex_contact.paj"
             << "Stephenson&Zelen_5actors_6edges_IC_test_dataset.paj"
-            <<"Wasserman_Faust_7actors_star_circle_line_graphs.paj"
+            << "Wasserman_Faust_7actors_star_circle_line_graphs.paj"
             << "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek";
 
     (ui.selectBox) -> insertItems( 1, datasets_list );
