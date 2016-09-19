@@ -472,7 +472,7 @@ void WebCrawler_Parser::newLink(int s, QUrl target,  bool enqueue_to_frontier) {
 
     m_discoveredNodes++;
     knownUrls[target]=m_discoveredNodes;
-    emit signalCreateNode( m_discoveredNodes, target.toString());
+    emit signalCreateNode( m_discoveredNodes, target.toString(), false);
     qDebug()<< "**   wc_parser::newLink(): Creating node " << m_discoveredNodes
             << " url "<< target.toString();
 

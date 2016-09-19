@@ -93,8 +93,11 @@ signals:
             const QString &label, const QString &lColor, const int &lSize,
             const QPointF &p,
             const QString &shape, const bool &signalMW=false);
-    void createNodeAtPosRandom();
-    void createNodeAtPosRandomWithLabel (const int &num, const QString &label);
+    void createNodeAtPosRandom(const bool &signalMW=false);
+    void createNodeAtPosRandomWithLabel (const int &num,
+                                         const QString &label,
+                                         const bool &signalMW=false
+                                         );
 
     void edgeCreate (const int &source, const int &target, const float &weight,
                      const QString &color, const int &undirected,

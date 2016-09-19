@@ -314,7 +314,7 @@ void Graph::vertexCreate(const int &num, const int &nodeSize, const QString &nod
  */
 void Graph::vertexCreateAtPos(const QPointF &p){
     int i = vertexLastNumber() +1;
-    qDebug() << "Graph::vertexCreate() " << i << " fixed coords.";
+    qDebug() << "Graph::vertexCreateAtPos() - vertex " << i << " pos " << p;
     vertexCreate(	i, initVertexSize,  initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
                     QString::null, initVertexLabelColor, initVertexLabelSize,
@@ -334,7 +334,7 @@ void Graph::vertexCreateAtPos(const QPointF &p){
  * Computes a random position p inside the useable canvas area
  * Then calls the main creation slot with init node values.
  */
-void Graph::vertexCreateAtPosRandom(){
+void Graph::vertexCreateAtPosRandom(const bool &signalMW){
     qDebug() << "Graph::vertexCreateAtPosRandom() ";
     QPointF p;
     p.setX( canvasRandomX());
@@ -342,7 +342,7 @@ void Graph::vertexCreateAtPosRandom(){
     vertexCreate( vertexLastNumber()+1, initVertexSize, initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
                     QString::null, initVertexLabelColor, initVertexLabelSize,
-                    p, initVertexShape, true
+                    p, initVertexShape, signalMW
                     );
 }
 
@@ -357,7 +357,9 @@ void Graph::vertexCreateAtPosRandom(){
  * Computes a random position p the useable canvas area
  * Then calls the main creation slot with init node values.
  */
-void Graph::vertexCreateAtPosRandomWithLabel(const int &i, const QString &label) {
+void Graph::vertexCreateAtPosRandomWithLabel(const int &i,
+                                             const QString &label,
+                                             const bool &signalMW) {
 
     qDebug() << "Graph::vertexCreateAtPosRandomWithLabel() - vertex " << i
              << " label" << label;
@@ -367,7 +369,7 @@ void Graph::vertexCreateAtPosRandomWithLabel(const int &i, const QString &label)
     vertexCreate( (i<0)?vertexLastNumber() +1:i, initVertexSize,  initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
                     label, initVertexLabelColor,  initVertexLabelSize,
-                    p, initVertexShape, true
+                    p, initVertexShape, signalMW
                     );
 
 }
@@ -1964,7 +1966,7 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
     wc_spiderThread.start();
 
     qDebug() << "Graph::webCrawl()  Creating initial node 1, url: " << seed;
-    vertexCreateAtPosRandomWithLabel(1, seed);
+    vertexCreateAtPosRandomWithLabel(1, seed, false);
 
     qDebug() << "Graph::webCrawl()  calling spider get() for that url!";
     emit operateSpider();
@@ -7529,13 +7531,15 @@ bool Graph::loadGraph (	const QString m_fileName,
                 ) ;
 
     connect (
-                file_parser, SIGNAL (createNodeAtPosRandom()),
-                this, SLOT(vertexCreateAtPosRandom())
+                file_parser, SIGNAL (createNodeAtPosRandom(const bool &)),
+                this, SLOT(vertexCreateAtPosRandom(const bool &))
                 );
 
     connect (
-                file_parser, SIGNAL (createNodeAtPosRandomWithLabel(const int ,const QString &)),
-                this, SLOT(vertexCreateAtPosRandomWithLabel(const int &,const QString &) )
+                file_parser, SIGNAL (createNodeAtPosRandomWithLabel(
+                                         const int ,const QString &, const bool &)),
+                this, SLOT(vertexCreateAtPosRandomWithLabel(
+                               const int &,const QString &, const bool &) )
                 );
 
     connect (

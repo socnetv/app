@@ -203,14 +203,14 @@ void Parser::createRandomNodes(const int &fixedNum,
         for (int i=0; i<newNodes; i++) {
             qDebug() << "Parser::createRandomNodes() - Multiple nodes. "
                         "Creating node: "<< i+1;
-            emit createNodeAtPosRandom();
+            emit createNodeAtPosRandom(false);
         }
     }
     else {
         qDebug() << "Parser::createRandomNodes() - Single node. "
                     "Creating node: "<< fixedNum
                << " with label: " << label;
-        emit createNodeAtPosRandomWithLabel( fixedNum, label );
+        emit createNodeAtPosRandomWithLabel( fixedNum, label, false );
 
     }
 }
@@ -226,7 +226,7 @@ bool Parser::loadDL(){
     if ( ! file.open(QIODevice::ReadOnly )) return false;
     QTextStream ts( &file );
     ts.setCodec(userSelectedCodecName.toUtf8());
-    QString str, label, nm_str, relation, prevLineStr;
+    QString str, label, nm_str, relation, prevLineStr=QString::null;
 
     int source=1, target=1, nm=0,lineCounter=0, mark=0, mark2=0, nodeSum=0;
     int relationCounter=0;
@@ -298,12 +298,14 @@ bool Parser::loadDL(){
             mark=str.indexOf("=");
             str=str.right(str.size()-mark-1);
             str=str.trimmed();
-            qDebug() << "Parser::loadDL() - FORMAT = : " <<  str.toLatin1() ;
+            qDebug() << "Parser::loadDL() - FORMAT : " <<  str.toLatin1() ;
             if (str.contains("FULLMATRIX",Qt::CaseInsensitive)) {
                 fullmatrixFormat=true;
+                qDebug() << "Parser::loadDL() - FORMAT fullmatrix detected" ;
             }
             else if (str.contains("edgelist",Qt::CaseInsensitive) ){
                 edgelist1Format=true;
+                qDebug() << "Parser::loadDL() - FORMAT edgelist detected" ;
             }
             continue;
         }
@@ -366,7 +368,8 @@ bool Parser::loadDL(){
                 emit addRelation( relation );
             }
         }
-        if ( data_flag && fullmatrixFormat){		//read edges in matrix format
+        if ( data_flag && fullmatrixFormat){
+            qDebug() << "Parser::loadDL() - reading edges in fullmatrix format";
             // check if we haven't created any nodes...
             if ( nodeSum < aNodes ){
                 qDebug() << "Parser::loadDL() -nodes have not been created yet. "
@@ -381,8 +384,9 @@ bool Parser::loadDL(){
                             "prepending it to str - new str: \n" << str;
                 str=str.simplified();
             }
+            qDebug() << "Parser::loadDL() - splitting str to elements ";
             lineElement=str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
-
+            qDebug() << "Parser::loadDL() - line elements " << lineElement.count();
             if (lineElement.count() < aNodes ) {
                 qDebug() << "Parser::loadDL() -This line has "
                          << lineElement.count()
@@ -393,7 +397,9 @@ bool Parser::loadDL(){
             }
             prevLineStr.clear();
             target=1;
-            if (source==1){
+            if (source==1 && relationCounter>0){
+                qDebug() << "Parser::loadDL() - we are at source 1. "
+                            "Checking relationList";
                 relation = relationsList[ relationCounter ];
                 qDebug() << "Parser::loadDL() - "
                             "WE ARE THE FIRST DATASET/MATRIX"

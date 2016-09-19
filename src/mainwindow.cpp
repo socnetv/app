@@ -6073,7 +6073,7 @@ void MainWindow::slotEditNodeSelectNone(){
  */
 void MainWindow::slotEditNodeAdd() {
     qDebug() << "MW::slotEditNodeAdd() ";
-    activeGraph.vertexCreateAtPosRandom();
+    activeGraph.vertexCreateAtPosRandom(true);
     statusMessage( tr("New random positioned node (numbered %1) added.")
                    .arg(activeGraph.vertexLastNumber())  );
 }

@@ -163,8 +163,10 @@ public slots:
 
     //auxiliary vertexCreate functions
     void vertexCreateAtPos(const QPointF &p);
-    void vertexCreateAtPosRandom();
-    void vertexCreateAtPosRandomWithLabel(const int &i, const QString &label) ;
+    void vertexCreateAtPosRandom(const bool &signalMW=false);
+    void vertexCreateAtPosRandomWithLabel(const int &i,
+                                          const QString &label,
+                                          const bool &signalMW=false) ;
 
     /** Slots to signals from MainWindow */
     void relationSet(int);
