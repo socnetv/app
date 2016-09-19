@@ -4167,13 +4167,13 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
             fileType_string = tr("Pajek (*.net *.paj *.pajek);;All (*)");
             break;
         case FILE_ADJACENCY:
-            fileType_string = tr("Adjacency (*.csv *.sm *.adj);;All (*)");
+            fileType_string = tr("Adjacency (*.csv *.sm *.adj *.txt);;All (*)");
             break;
         case FILE_GRAPHVIZ:
             fileType_string = tr("GraphViz (*.dot);;All (*)");
             break;
         case FILE_UCINET:
-            fileType_string = tr("DL (*.dl);;All (*)");
+            fileType_string = tr("UCINET (*.dl *.dat);;All (*)");
             break;
         case FILE_GML:
             fileType_string = tr("GML (*.gml);;All (*)");
@@ -4189,7 +4189,13 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
             fileType_string = tr("Two-Mode Sociomatrix (*.2sm *.aff);;All (*)");
             break;
         default:	//All
-            fileType_string = tr("GraphML (*.graphml *.xml);;Pajek (*.net *.pajek *.paj);;DL (*.dl *.dat);;Adjacency (*.csv *.adj *.sm);;GraphViz (*.dot);;List (*.lst *.csv *.list);;Weighted List (*.wlst *.wlist);;All (*)");
+            fileType_string = tr("GraphML (*.graphml *.xml);;"
+                                 "Pajek (*.net *.pajek *.paj);;"
+                                 "DL (*.dl *.dat);;"
+                                 "Adjacency (*.csv *.adj *.sm *.txt);;"
+                                 "GraphViz (*.dot);;"
+                                 "List (*.lst *.csv *.list);;"
+                                 "Weighted List (*.wlst *.wlist);;All (*)");
             break;
 
         }
@@ -4212,8 +4218,11 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
                  m_fileName.endsWith(".pajek",Qt::CaseInsensitive ) ) {
             m_fileFormat=FILE_PAJEK;
         }
+        else if (m_fileName.endsWith(".dl",Qt::CaseInsensitive ) ||
+                 m_fileName.endsWith(".dat",Qt::CaseInsensitive ) ) {
+            m_fileFormat=FILE_UCINET;
+        }
         else if (m_fileName.endsWith(".sm",Qt::CaseInsensitive ) ||
-                 m_fileName.endsWith(".dat",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".csv",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".adj",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".txt",Qt::CaseInsensitive )) {
@@ -4224,10 +4233,6 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
         }
         else if (m_fileName.endsWith(".gml",Qt::CaseInsensitive ) ) {
             m_fileFormat=FILE_GML;
-        }
-        else if (m_fileName.endsWith(".dl",Qt::CaseInsensitive ) ||
-                 m_fileName.endsWith(".dat",Qt::CaseInsensitive ) ) {
-            m_fileFormat=FILE_UCINET;
         }
         else if (m_fileName.endsWith(".list",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".lst",Qt::CaseInsensitive )  ) {
@@ -4252,7 +4257,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
                                   "end with any of the following extensions:\n"
                                   "- GraphML (.graphml or .xml)\n"
                                   "- Pajek (.paj or .pajek or .net)\n"
-                                  "- UCINET (.dl) \n"
+                                  "- UCINET (.dl .dat) \n"
                                   "- GraphViz (.dot)\n"
                                   "- Adjacency Matrix (.sm or .adj or .csv)\n"
                                   "- List (.list or .lst)\n"
