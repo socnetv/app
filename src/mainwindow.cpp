@@ -4172,12 +4172,13 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
         case 4: //Dot
             fileType_string = tr("GraphViz (*.dot);;All (*)");
             break;
-        case 5:	//GML
-            fileType_string = tr("GML (*.gml);;All (*)");
-            break;
-        case 6: //DL
+        case 5: //UCINET
             fileType_string = tr("DL (*.dl);;All (*)");
             break;
+        case 6:	//GML
+            fileType_string = tr("GML (*.gml);;All (*)");
+            break;
+
         case 7:	// Weighted List
             fileType_string = tr("Weighted List (*.wlst *.wlist);;All (*)");
             break;
