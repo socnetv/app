@@ -4160,32 +4160,32 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
 
         // prepare supported extensions strings
         switch (m_fileFormat){
-        case 1:	//GraphML
+        case FILE_GRAPHML:
             fileType_string = tr("GraphML (*.graphml *.xml);;All (*)");
             break;
-        case 2: //Pajek
+        case FILE_PAJEK:
             fileType_string = tr("Pajek (*.net *.paj *.pajek);;All (*)");
             break;
-        case 3: //Adjacency
+        case FILE_ADJACENCY:
             fileType_string = tr("Adjacency (*.csv *.sm *.adj);;All (*)");
             break;
-        case 4: //Dot
+        case FILE_GRAPHVIZ:
             fileType_string = tr("GraphViz (*.dot);;All (*)");
             break;
-        case 5: //UCINET
+        case FILE_UCINET:
             fileType_string = tr("DL (*.dl);;All (*)");
             break;
-        case 6:	//GML
+        case FILE_GML:
             fileType_string = tr("GML (*.gml);;All (*)");
             break;
 
-        case 7:	// Weighted List
+        case FILE_WLIST:
             fileType_string = tr("Weighted List (*.wlst *.wlist);;All (*)");
             break;
-        case 8:	// Simple List
+        case FILE_LIST:
             fileType_string = tr("List (*.lst *.csv *.list);;All (*)");
             break;
-        case 9:	// Two mode sm
+        case FILE_TWOMODE:
             fileType_string = tr("Two-Mode Sociomatrix (*.2sm *.aff);;All (*)");
             break;
         default:	//All
@@ -4225,7 +4225,8 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
         else if (m_fileName.endsWith(".gml",Qt::CaseInsensitive ) ) {
             m_fileFormat=FILE_GML;
         }
-        else if (m_fileName.endsWith(".dl",Qt::CaseInsensitive ) ) {
+        else if (m_fileName.endsWith(".dl",Qt::CaseInsensitive ) ||
+                 m_fileName.endsWith(".dat",Qt::CaseInsensitive ) ) {
             m_fileFormat=FILE_UCINET;
         }
         else if (m_fileName.endsWith(".list",Qt::CaseInsensitive ) ||
