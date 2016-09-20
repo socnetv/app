@@ -1267,18 +1267,23 @@ void Graph::edgeAdd (const int &v1, const int &v2, const float &weight,
  * @param v2
  * @param undirected if true it also removes the opposite edge
  */
-void Graph::edgeRemove (const long int &v1, const long int &v2, const bool &undirected) {
+void Graph::edgeRemove (const long int &v1,
+                        const long int &v2,
+                        const bool &removeOpposite) {
     qDebug ()<< "Graph::edgeRemove() - edge " << v1 << " index " << index[v1]
                 << " ->" << v2 << " to be removed from graph";
     m_graph [ index[v1] ]->edgeRemoveTo(v2);
     m_graph [ index[v2] ]->edgeRemoveFrom(v1);
 
-    if ( edgeExists(v2,v1) !=0) {
-        symmetricAdjacencyMatrix=false;
-        if (undirected) { // remove opposite edge
-            m_graph [ index[v2] ]->edgeRemoveTo(v1);
-            m_graph [ index[v1] ]->edgeRemoveFrom(v2);
-            symmetricAdjacencyMatrix=true;
+
+    if (isUndirected() || removeOpposite ) { // remove opposite edge
+        m_graph [ index[v2] ]->edgeRemoveTo(v1);
+        m_graph [ index[v1] ]->edgeRemoveFrom(v2);
+        symmetricAdjacencyMatrix=true;
+    }
+    else {
+        if ( edgeExists(v2,v1) !=0) {
+            symmetricAdjacencyMatrix=false;
         }
     }
 
