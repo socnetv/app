@@ -181,7 +181,9 @@ void Vertex::setOutEdgeEnabled (long int target, bool status){
  * @param weight
  */
 void Vertex::edgeAddFrom (const long int &v1, const float &weight) {
-//    qDebug() <<"Vertex: "<< name() << " edgeAddFrom() "<< source;
+    qDebug() <<"Vertex::edgeAddFrom() - new inlink "
+            << name() << " <- "<< v2 << " weight "<< weight
+               << " relation " << m_curRelation;
     m_inEdges.insertMulti(
                 v1, rel_w_bool (m_curRelation, pair_f_b(weight, true) ) );
 }

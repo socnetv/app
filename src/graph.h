@@ -567,7 +567,7 @@ public:
     void randomNetRingLatticeCreate (const int &vert, const int &degree,
                                       const bool updateProgress=false);
 
-    void randomNetSameDegreeCreate (const int &vert,
+    void randomNetRegularCreate (const int &vert,
                                     const int &degree,
                                     const QString &mode,
                                     const bool &diag);

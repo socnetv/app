@@ -5768,7 +5768,7 @@ void MainWindow::slotNetworkRandomRegular(const int &newNodes, const int &degree
             "Please wait (or disable progress bars from Options -> Settings).";
     createProgressBar(newNodes, progressMsg );
 
-    activeGraph.randomNetSameDegreeCreate (newNodes,degree, mode, diag);
+    activeGraph.randomNetRegularCreate (newNodes,degree, mode, diag);
 
     destroyProgressBar(newNodes);
 

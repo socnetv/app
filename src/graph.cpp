@@ -5952,15 +5952,15 @@ void Graph::randomNetSmallWorldCreate (const int &vert, const int &degree,
 
 
 /**
- * @brief Graph::randomNetSameDegreeCreate
+ * @brief Graph::randomNetRegularCreate
  * Creates a random network where nodes have the same degree.
  * @param vert
  * @param degree
  */
-void Graph::randomNetSameDegreeCreate(const int &vert,
+void Graph::randomNetRegularCreate(const int &vert,
                                       const int &degree,
                                       const QString &mode, const bool &diag){
-    qDebug("Graph: randomNetSameDegreeCreate");
+    qDebug() << "Graph::randomNetRegularCreate()";
 
     int progressCounter=0;
 
@@ -5970,9 +5970,11 @@ void Graph::randomNetSameDegreeCreate(const int &vert,
     int x = 0, y = 0 ;
 
     for (int i=0; i< vert ; i++) {
-        x=10+rand() % canvasWidth;
-        y=10+rand() % canvasHeight;
-        qDebug("Graph: createUniformRandomNetwork, new node i=%i, at x=%i, y=%i", i+1, x,y);
+        x=canvasRandomX();
+        y=canvasRandomY();
+        qDebug() << "Graph::randomNetRegularCreate() - creating new vertex at "
+                    << x << "," << y;
+
         vertexCreate(
                     i+1, initVertexSize,initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
@@ -5981,19 +5983,95 @@ void Graph::randomNetSameDegreeCreate(const int &vert,
                     );
     }
     int target = 0;
-    for (int i=0;i<vert; i++){
-        qDebug("Creating links for node %i = ", i+1);
-        for (int j=0; j< degree/2 ; j++) {
-            target = i + j+1 ;
-            if ( target > (vert-1))
-                target = target-vert;
-            qDebug("Creating Link between %i  and %i", i+1, target+1);
-            edgeCreate(i+1, target+1, 1, initEdgeColor,
-                       EDGE_DIRECTED, true, false,
-                       QString::null, false);
+    int edgeCount = 0;
+    for (int source=1;source<=vert; source++){
+        edgeCount = 0;
+        qDebug() << "Graph::randomNetRegularCreate() - Creating edges for vertex"
+                    << source;
+        if (mode == "graph") {
+            m_undirected = true;
+            do {
+                target =  rand() % vert + 1;
+                        qDebug() << "Graph::randomNetRegularCreate() - random target "
+                         << target
+                         << "Checking if edge " << source << "-" << target
+                            << "feasible";
+                if (!diag && source == target ) {
+                    qDebug() << "Graph::randomNetRegularCreate() - self loop edge. Skipping as requested.";
+                    continue;
+                }
+                if ( edgeExists(source, target, true ) ) {
+                    qDebug() << "Graph::randomNetRegularCreate() - edge exists. Skipping edge ";
+                    continue;
+                }
+                if ( vertexDegreeIn(target) == degree ) {
+                    qDebug() << "Graph::randomNetRegularCreate() - target already at d degree. Skipping edge";
+                    continue;
+
+                }
+                edgeCount ++;
+                qDebug() << "Graph::randomNetRegularCreate() - create "
+                         << " undirected Edge no " << edgeCount;
+                edgeCreate(source, target, 1, initEdgeColor,
+                           EDGE_RECIPROCAL_UNDIRECTED, false, false,
+                           QString::null, false);
+
+
+            } while ( edgeCount != degree );
+
+        }
+        else {
+            m_undirected = false;
+            do {
+                target =  rand() % vert + 1;
+                qDebug() << "Graph::randomNetRegularCreate() - random pair "
+                         << " " << source
+                         << " , " << target ;
+                if (!diag && source == target ) {
+                    qDebug() << "Graph::randomNetRegularCreate() - skip self loop pair ";
+                    continue;
+                }
+                if ( edgeExists(source, target) ) {
+                    qDebug() << "Graph::randomNetRegularCreate() -  skip pair - exists";
+                    continue;
+                }
+                edgeCount ++;
+                qDebug() << "Graph::randomNetRegularCreate() - create "
+                             << " directed Edge no " << edgeCount;
+                    edgeCreate(source, target, 1, initEdgeColor,
+                               EDGE_DIRECTED, true, false,
+                               QString::null, false);
+
+            } while ( edgeCount != degree/2 );
+
+            do {
+                target =  rand() % vert + 1;
+                qDebug() << "Graph::randomNetRegularCreate() - random pair "
+                         << " " << source
+                         << " , " << target ;
+                if (!diag && source == target ) {
+                    qDebug() << "Graph::randomNetRegularCreate() - skip self loop pair ";
+                    continue;
+                }
+                if ( edgeExists(target, source) ) {
+                    qDebug() << "Graph::randomNetRegularCreate() - skip pair - exists";
+                    continue;
+                }
+                edgeCount ++;
+                qDebug() << "Graph::randomNetRegularCreate() - create "
+                             << " directed Edge no " << edgeCount;
+                    edgeCreate(target, source, 1, initEdgeColor,
+                               EDGE_DIRECTED, true, false,
+                               QString::null, false);
+
+            } while ( edgeCount != degree/2 );
+
+
         }
         emit updateProgressDialog(++progressCounter );
     }
+
+
     relationAddFromGraph(tr("1"));
     emit graphChanged();
 }
