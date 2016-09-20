@@ -78,6 +78,7 @@ class PreviewForm;
 class RandErdosRenyiDialog;
 class RandSmallWorldDialog;
 class RandScaleFreeDialog;
+class RandRegularDialog;
 class SettingsDialog;
 
 
@@ -162,35 +163,37 @@ public slots:
     void slotNetworkDataSetSelect();
     void slotNetworkDataSetRecreate(const QString);
 
-    void slotRandomErdosRenyiDialog();
-    void slotRandomErdosRenyi( const int N,
+    void slotNetworkRandomErdosRenyiDialog();
+    void slotNetworkRandomErdosRenyi( const int N,
                                const QString model,
                                const int edges,
                                const float eprob,
                                const QString mode,
                                const bool diag) ;
-    void slotRandomRegularNetwork();
+    void slotNetworkRandomRegularDialog();
+    void slotNetworkRandomRegular(const int &newNodes, const int &degree,
+                                  const QString &mode, const bool &diag);
 
-    void slotRandomGaussian();
+    void slotNetworkRandomGaussian();
 
-    void slotRandomScaleFreeDialog();
+    void slotNetworkRandomScaleFreeDialog();
 
-    void slotRandomScaleFree(const int &newNodes,
+    void slotNetworkRandomScaleFree(const int &newNodes,
                                  const int &power,
                                  const int &initialNodes,
                                  const int &edgesPerStep,
                                  const float &zeroAppeal,
                                  const QString &mode);
 
-    void slotRandomSmallWorldDialog();
+    void slotNetworkRandomSmallWorldDialog();
 
-    void slotRandomSmallWorld  (const int &newNodes,
+    void slotNetworkRandomSmallWorld  (const int &newNodes,
                                    const int &degree,
                                    const float &beta,
                                    const QString &mode,
                                    const bool &diag);
 
-    void slotRandomRingLattice();
+    void slotNetworkRandomRingLattice();
 
     void slotNetworkWebCrawlerDialog();
     void slotNetworkWebCrawler(QString, int, int, bool, bool);
@@ -371,6 +374,7 @@ private:
     RandErdosRenyiDialog *m_randErdosRenyiDialog;
     RandSmallWorldDialog *m_randSmallWorldDialog;
     RandScaleFreeDialog *m_randScaleFreeDialog;
+    RandRegularDialog *m_randRegularDialog;
     SettingsDialog *m_settingsDialog;
 
     PreviewForm *previewForm;

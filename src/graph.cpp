@@ -5957,9 +5957,9 @@ void Graph::randomNetSmallWorldCreate (const int &vert, const int &degree,
  * @param vert
  * @param degree
  */
-void Graph::randomNetSameDegreeCreate( const int &vert,
-                                           const int &degree
-                                           ){
+void Graph::randomNetSameDegreeCreate(const int &vert,
+                                      const int &degree,
+                                      const QString &mode, const bool &diag){
     qDebug("Graph: randomNetSameDegreeCreate");
 
     int progressCounter=0;
