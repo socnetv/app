@@ -8200,6 +8200,142 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                    " 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0"<<endl<<
                    " 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0";
     }
+    else if (fileName == "Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl" ) {
+        datasetDescription = tr("A 16x16 symmetric, binary matrix."
+                                "This data represent corporate interlocks among "
+                                "the major business entities in the Netherlands. "
+                                "The data were gathered during a 6-year research "
+                                "project which was concluded in 1976 in nine "
+                                "European countries and the USA \n\n"
+                                "Stokman F., Wasseur F. and Elsas D. (1985). "
+                                "The Dutch network: "
+                                "Types of interlocks and network structure. "
+                                "In F. Stokman, R. Ziegler & J. Scott (eds), "
+                                "Networks of corporate power. Cambridge: Polity Press, 1985");
+        outText << "DL"<<endl<<
+                   "N=16"<<endl<<
+                   "FORMAT = FULLMATRIX DIAGONAL PRESENT"<<endl<<
+                   "ROW LABELS:"<<endl<<
+                   "ABN"<<endl<<
+                   "AMRO"<<endl<<
+                   "ENNIA"<<endl<<
+                   "NS"<<endl<<
+                   "BUHRT"<<endl<<
+                   "AGO"<<endl<<
+                   "AKZO"<<endl<<
+                   "NB"<<endl<<
+                   "SHV"<<endl<<
+                   "FGH"<<endl<<
+                   "HEINK"<<endl<<
+                   "PHLPS"<<endl<<
+                   "NATND"<<endl<<
+                   "OGEM"<<endl<<
+                   "RSV"<<endl<<
+                   "NSU"<<endl<<
+                   "COLUMN LABELS:"<<endl<<
+                   "ABN"<<endl<<
+                   "AMRO"<<endl<<
+                   "ENNIA"<<endl<<
+                   "NS"<<endl<<
+                   "BUHRT"<<endl<<
+                   "AGO"<<endl<<
+                   "AKZO"<<endl<<
+                   "NB"<<endl<<
+                   "SHV"<<endl<<
+                   "FGH"<<endl<<
+                   "HEINK"<<endl<<
+                   "PHLPS"<<endl<<
+                   "NATND"<<endl<<
+                   "OGEM"<<endl<<
+                   "RSV"<<endl<<
+                   "NSU"<<endl<<
+                   "DATA:"<<endl<<
+                   " 0 0 0 1 2 1 2 1 1 1 2 1 4 0 0 0"<<endl<<
+                   " 0 0 3 2 1 2 1 2 2 0 3 1 2 1 2 0"<<endl<<
+                   " 0 3 0 3 1 0 1 0 1 0 0 0 0 1 1 0"<<endl<<
+                   " 1 2 3 0 0 0 1 1 2 0 0 0 1 0 2 0"<<endl<<
+                   " 2 1 1 0 0 0 1 0 0 1 0 0 0 1 0 0"<<endl<<
+                   " 1 2 0 0 0 0 0 2 1 0 1 1 0 0 0 0"<<endl<<
+                   " 2 1 1 1 1 0 0 1 2 1 0 1 1 0 2 0"<<endl<<
+                   " 1 2 0 1 0 2 1 0 1 0 1 1 1 0 0 0"<<endl<<
+                   " 1 2 1 2 0 1 2 1 0 0 0 0 1 0 1 0"<<endl<<
+                   " 1 0 0 0 1 0 1 0 0 0 0 1 0 1 0 0"<<endl<<
+                   " 2 3 0 0 0 1 0 1 0 0 0 1 0 1 1 0"<<endl<<
+                   " 1 1 0 0 0 1 1 1 0 1 1 0 1 0 1 0"<<endl<<
+                   " 4 2 0 1 0 0 1 1 1 0 0 1 0 0 0 0"<<endl<<
+                   " 0 1 1 0 1 0 0 0 0 1 1 0 0 0 1 0"<<endl<<
+                   " 0 2 1 2 0 0 2 0 1 0 1 1 0 1 0 0"<<endl<<
+                   " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0";
+
+    }
+
+    else if (fileName == "Stokman_Ziegler_Corporate_Interlocks_West_Germany.dl" ) {
+        datasetDescription = tr("A 15x15 symmetric, binary matrix."
+                                "This data represent corporate interlocks among "
+                                "the major business entities in the West Germany. "
+                                "The data were gathered during a 6-year research "
+                                "project which was concluded in 1976 in nine "
+                                "European countries and the USA \n\n"
+                                "Ziegler R., Bender R. and Biehler H. (1985). "
+                                "Industry and banking in the German corporate "
+                                "network. "
+                                "In F. Stokman, R. Ziegler & J. Scott (eds), "
+                                "Networks of corporate  power. Cambridge: Polity Press, 1985. ");
+        outText <<"DL"<<endl<<
+                  "N=15"<<endl<<
+                  "FORMAT = FULLMATRIX DIAGONAL PRESENT"<<endl<<
+                  "ROW LABELS:"<<endl<<
+                  "VAG"<<endl<<
+                  "DEUBK"<<endl<<
+                  "ALINZ"<<endl<<
+                  "SIEMN"<<endl<<
+                  "RUHRK"<<endl<<
+                  "DIMLR"<<endl<<
+                  "HAPAG"<<endl<<
+                  "KRUPP"<<endl<<
+                  "RWE"<<endl<<
+                  "KREDT"<<endl<<
+                  "THYSN"<<endl<<
+                  "MANES"<<endl<<
+                  "DRESB"<<endl<<
+                  "KARST"<<endl<<
+                  "VEBA"<<endl<<
+                  "COLUMN LABELS:"<<endl<<
+                  "VAG"<<endl<<
+                  "DEUBK"<<endl<<
+                  "ALINZ"<<endl<<
+                  "SIEMN"<<endl<<
+                  "RUHRK"<<endl<<
+                  "DIMLR"<<endl<<
+                  "HAPAG"<<endl<<
+                  "KRUPP"<<endl<<
+                  "RWE"<<endl<<
+                  "KREDT"<<endl<<
+                  "THYSN"<<endl<<
+                  "MANES"<<endl<<
+                  "DRESB"<<endl<<
+                  "KARST"<<endl<<
+                  "VEBA"<<endl<<
+                  "DATA:"<<endl<<
+                  " 0 2 1 0 2 0 0 2 2 2 2 1 1 1 0"<<endl<<
+                  " 2 0 3 3 1 4 2 0 2 1 1 2 0 2 0"<<endl<<
+                  " 1 3 0 6 1 2 2 1 2 0 2 2 1 1 0"<<endl<<
+                  " 0 3 6 0 2 2 1 0 0 0 4 3 1 0 0"<<endl<<
+                  " 2 1 1 2 0 1 1 2 1 1 2 1 1 0 0"<<endl<<
+                  " 0 4 2 2 1 0 1 2 2 0 2 0 1 0 0"<<endl<<
+                  " 0 2 2 1 1 1 0 1 1 0 1 0 2 1 0"<<endl<<
+                  " 2 0 1 0 2 2 1 0 2 1 2 0 2 0 0"<<endl<<
+                  " 2 2 2 0 1 2 1 2 0 3 3 0 1 1 0"<<endl<<
+                  " 2 1 0 0 1 0 0 1 3 0 3 1 0 1 0"<<endl<<
+                  " 2 1 2 4 2 2 1 2 3 3 0 0 1 0 0"<<endl<<
+                  " 1 2 2 3 1 0 0 0 0 1 0 0 0 0 0"<<endl<<
+                  " 1 0 1 1 1 1 2 2 1 0 1 0 0 1 0"<<endl<<
+                  " 1 2 1 0 0 0 1 0 1 1 0 0 1 0 0"<<endl<<
+                  " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0";
+
+    }
+
+
     else if (fileName == "Bernard_Killworth_Fraternity.dl"){
         datasetDescription =
                 tr("Bernard & Killworth recorded the interactions among students living in a fraternity at "
