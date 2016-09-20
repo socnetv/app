@@ -1250,7 +1250,7 @@ void Graph::edgeAdd (const int &v1, const int &v2, const float &weight,
     else if (type == EDGE_RECIPROCAL_UNDIRECTED){
         //create opposite edge and declare both reciprocal.
         m_graph [ target ]->edgeAddTo(v1, weight );
-        m_graph [ source ]->edgeAddFrom(target, weight);
+        m_graph [ source ]->edgeAddFrom(v2, weight);
     }
     graphModified=true;
 }
@@ -5985,7 +5985,7 @@ void Graph::randomNetRegularCreate(const int &vert,
     int target = 0;
     int edgeCount = 0;
     for (int source=1;source<=vert; source++){
-        edgeCount = 0;
+        edgeCount = vertexDegreeOut(source);
         qDebug() << "Graph::randomNetRegularCreate() - Creating edges for vertex"
                     << source;
         if (mode == "graph") {
@@ -6017,7 +6017,7 @@ void Graph::randomNetRegularCreate(const int &vert,
                            QString::null, false);
 
 
-            } while ( edgeCount != degree );
+            } while ( edgeCount < degree );
 
         }
         else {

@@ -131,7 +131,7 @@ QString Vertex::colorToPajek(){
  * @param weight
  */
 void Vertex::edgeAddTo (const long &v2, const float &weight) {
-    qDebug() <<"Vertex::edgeAddTo() - new link "
+    qDebug() <<"Vertex::edgeAddTo() - new outbound edge"
             << name() << " -> "<< v2 << " weight "<< weight
                << " relation " << m_curRelation;
     // do not use [] operator - silently creates an item if key do not exist
@@ -146,7 +146,7 @@ void Vertex::edgeAddTo (const long &v2, const float &weight) {
  * @param status
  */
 void Vertex::setOutEdgeEnabled (long int target, bool status){
-    qDebug () << "Vertex::setOutEdgeEnabled - set outLink to " << target
+    qDebug () << "Vertex::setOutEdgeEnabled - set outEdge to " << target
               << " as " << status
                  << ". Finding outLink...";
     QMutableHashIterator < int, rel_w_bool > it1 (m_outEdges);
@@ -181,7 +181,7 @@ void Vertex::setOutEdgeEnabled (long int target, bool status){
  * @param weight
  */
 void Vertex::edgeAddFrom (const long int &v1, const float &weight) {
-    qDebug() <<"Vertex::edgeAddFrom() - new inlink "
+    qDebug() <<"Vertex::edgeAddFrom() - new inbound edge"
             << name() << " <- "<< v1 << " weight "<< weight
                << " relation " << m_curRelation;
     m_inEdges.insertMulti(
