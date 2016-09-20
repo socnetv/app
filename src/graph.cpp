@@ -5989,13 +5989,33 @@ void Graph::randomNetRegularCreate(const int &vert,
     }
     int target = 0;
     int edgeCount = 0;
+    QHash<int,int> m_edges;
+    for (int i=0;i<vert; i++){
+        qDebug("Creating links for node %i = ", i+1);
+        for (int j=0; j< degree/2 ; j++) {
+            target = i + j+1 ;
+            if ( target > (vert-1))
+                target = target-vert;
+            qDebug("Creating Link between %i  and %i", i+1, target+1);
+            m_edges.insert(i+1, target+1);
+        }
+    }
+    //take randomly two edges, of different vertices
+    int source1 =  rand() % vert + 1;
+    int source2 = source1;
+    while (source1 == source2 && m_edges.value(source1) == m_edges.value(source2) )
+        source2 =  rand() % vert + 1;
+
+
     for (int source=1;source<=vert; source++){
         edgeCount = vertexDegreeOut(source);
         qDebug() << "Graph::randomNetRegularCreate() - Creating edges for vertex"
-                    << source;
+                    << source
+                    << "vertexDegreeOut: " <<edgeCount ;
+
         if (mode == "graph") {
             m_undirected = true;
-            do {
+            while ( edgeCount < degree ) {
                 target =  rand() % vert + 1;
                         qDebug() << "Graph::randomNetRegularCreate() - random target "
                          << target
@@ -6020,9 +6040,7 @@ void Graph::randomNetRegularCreate(const int &vert,
                 edgeCreate(source, target, 1, initEdgeColor,
                            EDGE_RECIPROCAL_UNDIRECTED, false, false,
                            QString::null, false);
-
-
-            } while ( edgeCount < degree );
+            }
 
         }
         else {
