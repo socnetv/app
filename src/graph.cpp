@@ -6054,7 +6054,9 @@ void Graph::randomNetRegularCreate(const int &vert,
                firstEdgeVertices[1] == secondEdgeVertices[1] ||
                secondEdgeVertices[0] == secondEdgeVertices[1] ||
                m_edges.contains( firstEdgeVertices[0] + "->" + secondEdgeVertices[1] ) ||
-               m_edges.contains( secondEdgeVertices[0] + "->" + firstEdgeVertices[1] ) ) {
+               m_edges.contains( secondEdgeVertices[0] + "->" + firstEdgeVertices[1] ) ||
+               (m_undirected && m_edges.contains( secondEdgeVertices[1] + "->" + firstEdgeVertices[0]) )||
+               (m_undirected && m_edges.contains( firstEdgeVertices[1] + "->" + secondEdgeVertices[0] ) ) ) {
 
             firstEdge = m_edges.at(rand() % m_edges.size()) ;
             firstEdgeVertices = firstEdge.split("->");
