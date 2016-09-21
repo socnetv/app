@@ -213,14 +213,15 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
 */
 void GraphicsWidget::startEdge(Node *node){
     if (secondDoubleClick){
-        qDebug("GW: startEdge(): this is the second double click. Emitting userMiddleClicked() to create edge");
+        qDebug()<< "GW::startEdge() - this is the second double click. "
+                   "Emitting userMiddleClicked() to create edge";
         secondNode=node;
         emit userMiddleClicked(firstNode->nodeNumber(), secondNode->nodeNumber(), 1.0);
         ( (MainWindow*)parent() )->setCursor(Qt::ArrowCursor);
         secondDoubleClick=false;
     }
     else{
-        qDebug("GW: startEdge(): this is the first double click.");
+        qDebug()<<"GW::startEdge() - this is the first double click.";
         firstNode=node;
         secondDoubleClick=true;
         ( (MainWindow*)parent() )->setCursor( Qt::PointingHandCursor);

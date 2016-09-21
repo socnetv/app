@@ -56,7 +56,6 @@ RandRegularDialog::RandRegularDialog(QWidget *parent) :
 
     ui.degreeSpinBox-> setEnabled(true);
     ui.undirectedRadioButton->setChecked(true);
-    ui.directedRadioButton->setEnabled(false);
     ui.diagCheckBox ->setChecked(false);
     ui.diagCheckBox -> setEnabled(false);
 

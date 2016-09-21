@@ -6980,7 +6980,7 @@ void MainWindow::slotEditEdgeAdd(){
  * @param weight
  */
 void MainWindow::slotEditEdgeCreate (const int &source, const int &target, const float &weight) {
-    qDebug()<< "MW: slotEditEdgeCreate() - setting user settings and calling Graph::edgeCreate(...)";
+    qDebug()<< "MW::slotEditEdgeCreate() - setting user settings and calling Graph::edgeCreate(...)";
     //int reciprocal=0;
     bool bezier = false;
     activeGraph.edgeCreate(
