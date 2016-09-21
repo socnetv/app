@@ -6007,16 +6007,18 @@ void Graph::randomNetRegularCreate(const int &vert,
     }
     qDebug()<< "Graph::randomNetRegularCreate() - Edges created: " << edgeCount
                << "Edge list count " << m_edges.count()
-               << "Now reordering edges in pairs...";
+               << "Now reordering all edges in pairs...";
 
     //take randomly two edges, of different vertices
-    firstEdgeVertices << "";
-    firstEdgeVertices << "";
-    secondEdgeVertices << "";
-    secondEdgeVertices << "";
+
     for (int i = 1 ; i< m_edges.count(); ++i) {
-
-
+        edgeCount = 0;
+        firstEdgeVertices.clear();
+        secondEdgeVertices.clear();
+        firstEdgeVertices << "";
+        firstEdgeVertices << "";
+        secondEdgeVertices << "";
+        secondEdgeVertices << "";
         while (firstEdgeVertices[0] == firstEdgeVertices[1] ||
                firstEdgeVertices[0] == secondEdgeVertices[0] ||
                firstEdgeVertices[0] == secondEdgeVertices[1] ||
