@@ -6014,42 +6014,50 @@ void Graph::randomNetRegularCreate(const int &vert,
     firstEdgeVertices << "";
     secondEdgeVertices << "";
     secondEdgeVertices << "";
-    while (firstEdgeVertices[0] == firstEdgeVertices[1] ||
-           firstEdgeVertices[0] == secondEdgeVertices[0] ||
-           firstEdgeVertices[0] == secondEdgeVertices[1] ||
-           firstEdgeVertices[1] == secondEdgeVertices[0] ||
-           firstEdgeVertices[1] == secondEdgeVertices[1] ||
-           secondEdgeVertices[0] == secondEdgeVertices[1]) {
+    for (int i = 1 ; i< m_edges.count(); ++i) {
 
-        firstEdge = m_edges.at(rand() % m_edges.count()) ;
-        firstEdgeVertices = firstEdge.split("->");
-        secondEdge = m_edges.at(rand() % m_edges.count()) ;
-        secondEdgeVertices = secondEdge.split("->");
+
+        while (firstEdgeVertices[0] == firstEdgeVertices[1] ||
+               firstEdgeVertices[0] == secondEdgeVertices[0] ||
+               firstEdgeVertices[0] == secondEdgeVertices[1] ||
+               firstEdgeVertices[1] == secondEdgeVertices[0] ||
+               firstEdgeVertices[1] == secondEdgeVertices[1] ||
+               secondEdgeVertices[0] == secondEdgeVertices[1]) {
+
+            firstEdge = m_edges.at(rand() % m_edges.count()) ;
+            firstEdgeVertices = firstEdge.split("->");
+            secondEdge = m_edges.at(rand() % m_edges.count()) ;
+            secondEdgeVertices = secondEdge.split("->");
+        }
+        m_edges.removeAll(firstEdge);
+        m_edges.removeAll(secondEdge);
+        qDebug()<< "Graph::randomNetRegularCreate() - 2 edges deleted for reordering"
+                << firstEdgeVertices[0] << "->" << firstEdgeVertices[1]
+                << secondEdgeVertices[0] << "->" << secondEdgeVertices[1]
+                << "edge list count " << m_edges.count();
+
+        m_edges.append(firstEdgeVertices[0]+"->"+secondEdgeVertices[0]);
+        m_edges.append(firstEdgeVertices[1]+"->"+secondEdgeVertices[1]);
+        qDebug()<< "Graph::randomNetRegularCreate() - 2 new edges added "
+                << firstEdgeVertices[0] << "->" << secondEdgeVertices[0]
+                << firstEdgeVertices[1] << "->" << secondEdgeVertices[1]
+                << "final edge list count " << m_edges.count();
     }
-    m_edges.removeAll(firstEdge);
-    m_edges.removeAll(secondEdge);
-    qDebug()<< "Graph::randomNetRegularCreate() - 2 edges deleted for reordering"
-            << firstEdgeVertices[0] << "->" << firstEdgeVertices[1]
-            << secondEdgeVertices[0] << "->" << secondEdgeVertices[1]
-               << "edge list count " << m_edges.count();
-
-    m_edges.append(firstEdgeVertices[0]+"->"+secondEdgeVertices[0]);
-    m_edges.append(firstEdgeVertices[1]+"->"+secondEdgeVertices[1]);
-    qDebug()<< "Graph::randomNetRegularCreate() - 2 new edges added "
-            << firstEdgeVertices[0] << "->" << secondEdgeVertices[0]
-            << firstEdgeVertices[1] << "->" << secondEdgeVertices[1]
-               << "final edge list count " << m_edges.count();
-
 
     edgeCount = 1;
     for (int i = 0; i < m_edges.size(); ++i) {
         m_edge = m_edges.at(i).split("->");
         qDebug() << "Graph::randomNetRegularCreate() - create "
                  << " undirected Edge no " << edgeCount;
-        edgeCreate(m_edge[0].toInt(0), m_edge[1].toInt(0), 1, initEdgeColor,
-                   EDGE_RECIPROCAL_UNDIRECTED, false, false,
-                   QString::null, false);
-        edgeCount++;
+        if (mode == "graph") {
+                    m_undirected = true;
+                    edgeCreate(m_edge[0].toInt(0), m_edge[1].toInt(0), 1,
+                            initEdgeColor,
+                            EDGE_RECIPROCAL_UNDIRECTED, false, false,
+                            QString::null, false);
+            edgeCount++;
+        }
+
     }
 
 
