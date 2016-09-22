@@ -90,8 +90,7 @@ Node::Node(GraphicsWidget* gw, const int &num, const int &size,
     setShape(m_shape);
 
     setPos(p);
-    qDebug()<< "Node: constructor: initial position at: "
-            << this->x()<<", "<<this->y();
+    qDebug()<< "Node::Node() - Node created at position:"  << x()<<","<<y();
 
 } 
 
@@ -149,10 +148,11 @@ int Node::size() const{
 
 /**  Called every time the user needs to change the shape of an node. */
 void Node::setShape(const QString shape) {
-    qDebug("Node: setShape()");
     prepareGeometryChange();
     m_shape=shape;
-    qDebug ("Node: setShape(): node is at x=%f and y=%f", x(), y());
+    qDebug()<< "Node::setShape() - Node " << nodeNumber()
+            << "shape" << m_shape
+            << "pos "<<  x() << "," <<  y();
 
     m_path = new QPainterPath;
     if ( m_shape == "circle") {

@@ -89,6 +89,96 @@ Graph::Graph() {
 
 
 /**
+    Clears all vertices
+*/
+void Graph::clear() {
+   qDebug("Graph::clear() m_graph reports size %i", m_graph.size());
+    qDeleteAll(m_graph.begin(), m_graph.end());
+    m_graph.clear();
+    index.clear();
+    //clear relations
+    m_relationsList.clear();
+    m_curRelation=0;
+
+    discreteDPs.clear(); discreteDCs.clear(); discreteCCs.clear();
+    discreteBCs.clear(); discreteSCs.clear(); discreteIRCCs.clear();
+    discreteECs.clear(); discreteEccentricities.clear();
+    discretePCs.clear(); discreteICs.clear();  discretePRPs.clear();
+    discretePPs.clear();
+    if ( DM.size() > 0) {
+        qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+        DM.clear();
+    }
+    if ( TM.size() > 0) {
+                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+        TM.clear();
+    }
+    if ( sumM.size() > 0) {
+                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+        sumM.clear();
+    }
+    if ( invAM.size() > 0) {
+                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+        invAM.clear();
+    }
+    if ( AM.size() > 0) {
+                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+        AM.clear();
+    }
+    if ( invM.size() > 0) {
+                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+        invM.clear();
+    }
+    if ( XM.size() > 0) {
+                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+        XM.clear();
+    }
+    if ( XSM.size() > 0) {
+                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+        XSM.clear();
+    }
+    if ( XRM.size() > 0) {
+                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
+        XRM.clear();
+    }
+
+
+    m_isolatedVerticesList.clear();
+    disconnectedVertices.clear();
+    unilaterallyConnectedVertices.clear();
+    influenceDomains.clear();
+    influenceRanges.clear();
+    triadTypeFreqs.clear();
+
+    m_totalVertices=0;
+    outboundEdgesVert=0;
+    inboundEdgesVert=0;
+    reciprocalEdgesVert=0;
+
+    order=true;		//returns true if the indexes of the list is ordered.
+    m_undirected=false;
+    calculatedDP=false; calculatedDC=false;
+    calculatedIC=false; calculatedCentralities=false;
+    calculatedIRCC=false; calculatedPP=false;
+    calculatedPRP=false; calculatedTriad=false;
+    adjacencyMatrixCreated=false;
+    reachabilityMatrixCreated=false;
+    symmetricAdjacencyMatrix=true;
+
+    graphModified=false;
+
+    qDebug ()<< "Graph::clear()  -Do parser threads run ?";
+    terminateParserThreads("Graph::initNet()");
+
+    qDebug ()<< "Graph::clear()  -Do web crawler threads run ?";
+    webCrawlTerminateThreads("Graph::initNet");
+
+
+    qDebug("Graph: m_graph cleared. Now reports size %i", m_graph.size());
+}
+
+
+/**
  * @brief Graph::canvasSizeSet
  * Called when MW and GraphicsWidget resizes to update canvasWidth and canvasHeight
  * @param w
@@ -1782,98 +1872,6 @@ int Graph::verticesWithInboundEdges(){
 */
 int Graph:: verticesWithReciprocalEdges(){
     return reciprocalEdgesVert;
-}
-
-/** 
-    Clears all vertices
-*/
-void Graph::clear() {
-   qDebug("Graph::clear() m_graph reports size %i", m_graph.size());
-    qDeleteAll(m_graph.begin(), m_graph.end());
-    m_graph.clear();
-    index.clear();
-    //clear relations
-    m_relationsList.clear();
-    m_curRelation=0;
-
-    discreteDPs.clear(); discreteDCs.clear(); discreteCCs.clear();
-    discreteBCs.clear(); discreteSCs.clear(); discreteIRCCs.clear();
-    discreteECs.clear(); discreteEccentricities.clear();
-    discretePCs.clear(); discreteICs.clear();  discretePRPs.clear();
-    discretePPs.clear();
-    if ( DM.size() > 0) {
-        qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
-        DM.clear();
-    }
-    if ( TM.size() > 0) {
-                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
-        TM.clear();
-    }
-    if ( sumM.size() > 0) {
-                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
-        sumM.clear();
-    }
-    if ( invAM.size() > 0) {
-                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
-        invAM.clear();
-    }
-    if ( AM.size() > 0) {
-                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
-        AM.clear();
-    }
-    if ( invM.size() > 0) {
-                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
-        invM.clear();
-    }
-    if ( XM.size() > 0) {
-                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
-        XM.clear();
-    }
-    if ( XSM.size() > 0) {
-                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
-        XSM.clear();
-    }
-    if ( XRM.size() > 0) {
-                qDebug() << "\n\n\n\n Graph::clear()  clearing DM\n\n\n";
-        XRM.clear();
-    }
-
-
-    m_isolatedVerticesList.clear();
-    disconnectedVertices.clear();
-    unilaterallyConnectedVertices.clear();
-    influenceDomains.clear();
-    influenceRanges.clear();
-    triadTypeFreqs.clear();
-
-    m_totalVertices=0;
-    outboundEdgesVert=0;
-    inboundEdgesVert=0;
-    reciprocalEdgesVert=0;
-
-    order=true;		//returns true if the indexes of the list is ordered.
-    m_undirected=false;
-    calculatedDP=false;
-    calculatedDC=false;
-    calculatedIC=false;
-    calculatedCentralities=false;
-    calculatedIRCC=false;
-    calculatedPP=false;
-    calculatedPRP=false;
-    calculatedTriad=false;
-    adjacencyMatrixCreated=false;
-    reachabilityMatrixCreated=false;
-    graphModified=false;
-    symmetricAdjacencyMatrix=true;
-
-    qDebug ()<< "Graph::clear()  -Do parser threads run ?";
-    terminateParserThreads("Graph::initNet()");
-
-    qDebug ()<< "Graph::clear()  -Do web crawler threads run ?";
-    webCrawlTerminateThreads("Graph::initNet");
-
-
-    qDebug("Graph: m_graph cleared. Now reports size %i", m_graph.size());
 }
 
 

@@ -456,9 +456,11 @@ void MainWindow::initActions(){
     */
     networkNew = new QAction(QIcon(":/images/new.png"), tr("&New"),  this);
     networkNew->setShortcut(Qt::CTRL+Qt::Key_N);
-    networkNew->setStatusTip(tr("Creates a new network"));
+    networkNew->setStatusTip(tr("Create a new network"));
     networkNew->setToolTip(tr("New network"));
-    networkNew->setWhatsThis(tr("New\n\nCreates a new network"));
+    networkNew->setWhatsThis(tr("New\n\n"
+                                "Creates a new network. "
+                                "Firtst, checks if current network needs to be saved."));
     connect(networkNew, SIGNAL(triggered()), this, SLOT(slotNetworkNew()));
 
     networkOpen = new QAction(QIcon(":/images/open.png"), tr("&Open"), this);
@@ -6085,7 +6087,7 @@ void MainWindow::slotEditNodeSelectNone(){
  * Called when "Add Node" button is clicked on the Main Window.
  */
 void MainWindow::slotEditNodeAdd() {
-    qDebug() << "MW::slotEditNodeAdd() ";
+    qDebug() << "MW::slotEditNodeAdd() - calling Graph::vertexCreateAtPosRandom ";
     activeGraph.vertexCreateAtPosRandom(true);
     statusMessage( tr("New random positioned node (numbered %1) added.")
                    .arg(activeGraph.vertexLastNumber())  );
