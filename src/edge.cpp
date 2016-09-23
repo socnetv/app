@@ -97,13 +97,14 @@ Edge::Edge(  GraphicsWidget *gw,
         addLabel();
 
     setAcceptHoverEvents(true);
-//    setFlags(QGraphicsItem::ItemIsSelectable);
+    setFlags(QGraphicsItem::ItemIsSelectable);
 
     //Edges have lower z than nodes. Nodes always appear above edges.
     setZValue(253);
 
     setBoundingRegionGranularity(0);
     //setCacheMode (QGraphicsItem::ItemCoordinateCache);
+
 
     adjust();
 }
@@ -501,8 +502,8 @@ QPen Edge::pen() const {
 
 }
 
-void Edge::setPen(const int &state) {
-    prepareGeometryChange();
+void Edge::setState(const int &state) {
+    //NOTE: DO NOT USE HERE: prepareGeometryChange()
     m_state=state;
 }
 
@@ -514,15 +515,18 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 
      //if the edge is being dragged around, darken it!
      if (option->state & QStyle::State_Selected) {
-         setPen(EDGE_STATE_HIGHLIGHT);
+         setState(EDGE_STATE_HOVER);
          setZValue(255);
      }
      else if (option->state & QStyle::State_MouseOver) {
-         setPen(EDGE_STATE_HOVER);
+         setState(EDGE_STATE_HOVER);
          setZValue(255);
      }
+     else if (m_state==EDGE_STATE_HIGHLIGHT){
+         setState(EDGE_STATE_HIGHLIGHT);
+     }
      else {
-         setPen(EDGE_STATE_REGULAR);
+         setState(EDGE_STATE_REGULAR);
          setZValue(253);
      }
     // set painter pen to correct edge pen
@@ -555,13 +559,13 @@ float Edge::width() const{
 void Edge::highlight(const bool &flag) {
     qDebug()<< "Edge::highlight() - " << flag;
     if (flag) {
-
-        setPen(EDGE_STATE_HIGHLIGHT);
+        prepareGeometryChange();
+        setState(EDGE_STATE_HIGHLIGHT);
         setZValue(255);
     }
     else {
         prepareGeometryChange();
-        setPen(EDGE_STATE_REGULAR);
+        setState(EDGE_STATE_REGULAR);
         setZValue(253);
     }
 }
@@ -569,16 +573,8 @@ void Edge::highlight(const bool &flag) {
 
 /** handles the events of a click on an edge*/
 void Edge::mousePressEvent(QGraphicsSceneMouseEvent *event) {  
-    qDebug("Edge: pressEvent() emitting edgeClicked");
-    graphicsWidget->edgeClicked(this);
-    if ( event->button()==Qt::LeftButton ) {
-        qDebug() << "Edge: edge pressEvent() left click > ";
-        //	graphicsWidget->startNodeMovement(0);
-    }
-    if ( event->button()==Qt::RightButton ) {
-        qDebug("Edge: Right-click on an edge,  at %i, %i", event->screenPos().x(), event->screenPos().y());
-        graphicsWidget->openEdgeContextMenu();
-    }
+    qDebug() <<"Edge::mousePressEvent()";
+    QGraphicsItem::mousePressEvent(event);
 }
 
 

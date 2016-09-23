@@ -96,7 +96,7 @@ public:
     float width() const;
 
     QPen pen() const;
-    void setPen(const int &state);
+    void setState(const int &state);
 
     void setStyle( const Qt::PenStyle  &style);
     Qt::PenStyle style() const;

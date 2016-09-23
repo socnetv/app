@@ -3349,7 +3349,7 @@ void MainWindow::initSignalSlots() {
              graphicsWidget, SLOT( eraseEdge(const long int &, const long int &) ) );
 
     connect( &activeGraph,
-             SIGNAL( graphChanged(const int &, const bool &,
+             SIGNAL( signalGraphModified(const int &, const bool &,
                                   const int &, const int &,
                                   const float &) ),
              this,
@@ -3447,7 +3447,7 @@ void MainWindow::initSignalSlots() {
     connect( &activeGraph, SIGNAL( statusMessage (QString) ),
              this, SLOT( statusMessage (QString) ) ) ;
 
-    connect( &activeGraph, SIGNAL( describeDataset (QString) ),
+    connect( &activeGraph, SIGNAL( signalDatasetDescription (QString) ),
              this, SLOT( showMessageToUser (QString) ) ) ;
 
     connect( &activeGraph, &Graph::signalNodeSizesByInDegree,
@@ -3478,7 +3478,7 @@ void MainWindow::initSignalSlots() {
     connect( this , SIGNAL(addRelationToGraph(QString)),
              &activeGraph, SLOT( relationAddFromUser(QString) ) );
 
-    connect ( &activeGraph, SIGNAL(addRelationToMW(QString)),
+    connect ( &activeGraph, SIGNAL(signalRelationAddToMW(QString)),
               this, SLOT(slotEditRelationAdd(QString)));
 
     connect( &activeGraph, SIGNAL(relationChanged(int)),
@@ -6055,6 +6055,7 @@ void MainWindow::slotEditClickOnEmptySpace() {
     outDegreeLCD->display (0);
     clucofLCD->display(0);
     nodeClicked = false;
+    edgeClicked=false;
 }
 
 

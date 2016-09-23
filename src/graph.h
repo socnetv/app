@@ -63,14 +63,16 @@ static const int FILE_TWOMODE     = 9;  // .2SM .AFF
 static const int FILE_UNRECOGNIZED=-1;  // UNRECOGNIZED FILE FORMAT
 
 
-static const int GRAPH_CHANGED_VERTICES = 1;
-static const int GRAPH_CHANGED_EDGES = 2;
-static const int GRAPH_CHANGED_VERTICES_AND_EDGES = 3;
-static const int GRAPH_CHANGED_VERTICES_METADATA = 4;
-static const int GRAPH_CHANGED_POSITIONS = 5;
-static const int GRAPH_CHANGED_EDGES_METADATA = 6;
-static const int GRAPH_CHANGED_MINOR_OPTIONS = 7;
-static const int GRAPH_CHANGED_NEW = 8;
+static const int GRAPH_CHANGED_NONE = 0;
+static const int GRAPH_CHANGED_MINOR_OPTIONS = 1;
+static const int GRAPH_CHANGED_VERTICES_METADATA = 2;
+static const int GRAPH_CHANGED_EDGES_METADATA = 3;
+static const int GRAPH_CHANGED_POSITIONS = 4;
+static const int GRAPH_CHANGED_VERTICES = 11;
+static const int GRAPH_CHANGED_EDGES = 12;
+static const int GRAPH_CHANGED_VERTICES_AND_EDGES = 13;
+static const int GRAPH_CHANGED_NEW = 14;
+
 
 class QPointF;
 
@@ -198,7 +200,7 @@ public slots:
 signals:
     /** Signals to MainWindow */
     void updateProgressDialog(int );
-    void graphChanged(const int &graphStatus,
+    void signalGraphModified(const int &graphStatus,
                       const bool &undirected,
                       const int &vertices,
                       const int &edges,
@@ -209,8 +211,8 @@ signals:
     void signalGraphSaved(const int &status);
 
     void statusMessage (const QString &message);			//updates statusbar message
-    void addRelationToMW(QString newRelation);
-    void describeDataset(QString);
+    void signalRelationAddToMW(QString newRelation);
+    void signalDatasetDescription(QString);
     void signalNodeSizesByOutDegree(bool);
     void signalNodeSizesByInDegree(bool);
 
@@ -399,7 +401,9 @@ public:
     bool edgeColorAllSet(const QString &color, const int &threshold=RAND_MAX);
 
     //GRAPH methods
-    void graphChangedSet(const int &graphChangedFlag, const bool&signalMW=true);
+    void graphModifiedSet(const int &graphChangedFlag, const bool&signalMW=true);
+    int graphModified() const ;
+
     float density();
     bool isWeighted();
 
@@ -729,7 +733,7 @@ private:
 
     /** General & initialisation variables */
 
-    int graphModified;
+    int graphModifiedFlag;
     long int m_totalVertices, m_totalEdges, graphDiameter, initVertexSize;
     int initVertexLabelSize, initVertexNumberSize;
     int initVertexNumberDistance, initVertexLabelDistance;

@@ -1175,7 +1175,16 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
         }
         if (Edge *edge= qgraphicsitem_cast<Edge *>(item)) {
             qDebug() << "GW::mousePressEvent() - single click on an edge ";
-            Q_UNUSED(edge);
+            edgeClicked(edge);
+            if ( e->button()==Qt::LeftButton ) {
+                qDebug() << "GW::mousePressEvent() - left click on an edge ";
+                //	graphicsWidget->startNodeMovement(0);
+            }
+            else if ( e->button()==Qt::RightButton ) {
+                qDebug() << "GW::mousePressEvent() - right click on an edge."
+                         << "Emitting openEdgeContextMenu()";
+                openEdgeMenu();
+            }
             QGraphicsView::mousePressEvent(e);
             return;
         }
