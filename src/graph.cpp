@@ -52,6 +52,7 @@ static qreal Pi = 3.14159265;
  */
 Graph::Graph() {
     m_totalVertices=0;
+    m_totalEdges=0;
     outboundEdgesVert=0;
     inboundEdgesVert=0;
     reciprocalEdgesVert=0;
@@ -151,6 +152,7 @@ void Graph::clear() {
     triadTypeFreqs.clear();
 
     m_totalVertices=0;
+    m_totalEdges=0;
     outboundEdgesVert=0;
     inboundEdgesVert=0;
     reciprocalEdgesVert=0;
@@ -289,8 +291,9 @@ void Graph::relationSet(int relation){
     }
     m_curRelation = relation;
     emit relationChanged(m_curRelation);
-    graphModified=true;
-    emit graphChanged();
+
+    //graphModified=true;
+    graphChangedSet(GRAPH_CHANGED_EDGES);
 }
 
 
@@ -384,8 +387,7 @@ void Graph::vertexCreate(const int &num, const int &nodeSize, const QString &nod
                    labelColor, labelSize,
                    p );
 
-    if (signalMW)
-        emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_VERTICES, signalMW);
 
     //draw new user-clicked nodes with the same color with that of the file loaded
     initVertexColor=nodeColor;
@@ -520,7 +522,7 @@ void Graph::vertexAdd ( const int &v1, const int &val, const int &size,
 //             << " appended with index= "<<index[v1]
 //             << " Now, m_graph size " << m_graph.size()
 //             << ". New vertex position: " << p.x() << "," << p.y();
-    graphModified=true;
+
 }
 
 
@@ -621,9 +623,10 @@ void Graph::vertexRemove(long int Doomed){
              << m_graph.size() <<  " total edges now  " << edgesEnabled();
 
     order=false;
-    graphModified=true;
 
-    emit graphChanged();
+    //graphModified=true;
+    graphChangedSet(GRAPH_CHANGED_VERTICES);
+
     emit eraseNode(Doomed);
 }
 
@@ -652,8 +655,8 @@ void Graph::vertexIsolateFilter(bool filterFlag){
             qDebug() << "Graph::filterOrphanNodes() Vertex " << (*it)->name()
                      << " isolate. Toggling it and emitting setVertexVisibility signal to GW...";
             (*it)->setEnabled (filterFlag) ;
-            graphModified=true;
-            emit graphChanged();
+//            graphModified=true;
+            graphChangedSet(GRAPH_CHANGED_VERTICES);
             emit setVertexVisibility( (*it)-> name(), filterFlag );
         }
     }
@@ -745,8 +748,8 @@ void Graph::vertexSizeInit (const long int size) {
  */
 void Graph::vertexSizeSet(const long int &v, const int &size) {
     m_graph[ index[v] ]->setSize(size);
-    graphModified=true;
-    emit graphChanged();
+//    graphModified=true;
+    graphChangedSet(GRAPH_CHANGED_VERTICES_METADATA);
     emit setNodeSize(v, size);
 }
 
@@ -778,8 +781,8 @@ void Graph::vertexSizeAllSet(const int size) {
             emit setNodeSize((*it)->name(), size);
         }
     }
-    graphModified=true;
-    emit graphChanged();
+//    graphModified=true;
+    graphChangedSet(GRAPH_CHANGED_VERTICES_METADATA);
 }
 
 
@@ -803,8 +806,8 @@ void Graph::vertexShapeInit(const QString shape) {
 void Graph::vertexShapeSet(const int v1, const QString shape){
     m_graph[ index[v1] ]->setShape(shape);
     emit setNodeShape(v1, shape);
-    graphModified=true;
-    emit graphChanged();
+//    graphModified=true;
+    graphChangedSet(GRAPH_CHANGED_VERTICES_METADATA);
 }
 
 
@@ -839,8 +842,8 @@ void Graph::vertexShapeAllSet(const QString shape) {
             emit setNodeShape((*it)->name(), shape);
         }
     }
-    graphModified=true;
-    emit graphChanged();
+//    graphModified=true;
+    graphChangedSet(GRAPH_CHANGED_VERTICES_METADATA);
 }
 
 
@@ -857,8 +860,8 @@ void Graph::vertexColorSet(const long int &v1, const QString &color){
     qDebug()<< "Graph: vertexColorSet for "<< v1 << ", index " << index[v1]<< " with color "<< color;
     m_graph[ index[v1] ]->setColor ( color );
     emit setNodeColor ( m_graph[ index[v1] ]-> name(), color );
-    graphModified=true;
-    emit graphChanged();
+//    graphModified=true;
+    graphChangedSet(GRAPH_CHANGED_VERTICES_METADATA);
 }
 
 /**
@@ -903,8 +906,9 @@ void Graph::vertexColorAllSet(const QString &color) {
             emit setNodeColor ( (*it)-> name(), color );
         }
     }
-    graphModified=true;
-    emit graphChanged();
+    //graphModified=true;
+    //emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_VERTICES_METADATA);
 
 }
 
@@ -941,9 +945,9 @@ void Graph::vertexNumberSizeInit (const int &size) {
  */
 void Graph::vertexNumberSizeSet(const long int &v, const int &size) {
     m_graph[ index[v] ]->setNumberSize (size);
-    graphModified=true;
-    emit graphChanged();
-    emit setNodeNumberSize(v, size);
+    //graphModified=true;
+    //emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_MINOR_OPTIONS);
 }
 
 
@@ -967,8 +971,9 @@ void Graph::vertexNumberSizeSetAll(const int &size) {
             emit setNodeNumberSize ( (*it)-> name(), size);
         }
     }
-    graphModified=true;
-    emit graphChanged();
+//    graphModified=true;
+//    emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_MINOR_OPTIONS);
 }
 
 
@@ -986,8 +991,9 @@ void Graph::vertexNumberDistanceInit(const int &distance) {
  */
 void Graph::vertexNumberDistanceSet(const long int &v, const int &newDistance) {
     m_graph[ index[v] ]->setNumberDistance (newDistance);
-    graphModified=true;
-    emit graphChanged();
+//    graphModified=true;
+//    emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_MINOR_OPTIONS);
     emit setNodeNumberDistance(v, newDistance);
 }
 
@@ -1013,8 +1019,9 @@ void Graph::vertexNumberDistanceSetAll(const int &newDistance) {
             emit setNodeNumberDistance ( (*it)-> name(), newDistance);
         }
     }
-    graphModified=true;
-    emit graphChanged();
+//    graphModified=true;
+//    emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_MINOR_OPTIONS);
 }
 
 
@@ -1052,8 +1059,9 @@ void Graph::vertexLabelSet(int v1, QString label){
     qDebug()<< "Graph: vertexLabelSet for "<< v1 << ", index " << index[v1]<< " with label"<< label;
     m_graph[ index[v1] ]->setLabel ( label);
     emit setNodeLabel ( m_graph[ index[v1] ]-> name(), label);
-    graphModified=true;
-    emit graphChanged();
+//    graphModified=true;
+//    emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_VERTICES_METADATA);
 }
 
 
@@ -1100,8 +1108,9 @@ void Graph::vertexLabelSizeSet(const long int &v1, const int &size) {
             << index[v1]<< " with size "<< size;
     m_graph[ index[v1] ] -> setLabelSize ( size );
     emit setNodeLabelSize ( v1, size);
-    graphModified=true;
-    emit graphChanged();
+//    graphModified=true;
+//    emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_MINOR_OPTIONS);
 
 }
 
@@ -1128,8 +1137,9 @@ void Graph::vertexLabelSizeAllSet(const int &size) {
             emit setNodeLabelSize ( (*it)-> name(), size);
         }
     }
-    graphModified=true;
-    emit graphChanged();
+//    graphModified=true;
+//    emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_MINOR_OPTIONS);
 }
 
 
@@ -1141,8 +1151,9 @@ void Graph::vertexLabelSizeAllSet(const int &size) {
  */
 void Graph::vertexLabelColorSet(int v1, QString color){
     m_graph[ index[v1] ]->setLabelColor(color);
-    graphModified=true;
-    emit graphChanged();
+//    graphModified=true;
+//    emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_MINOR_OPTIONS);
 }
 
 
@@ -1166,8 +1177,9 @@ void Graph::vertexLabelColorInit(QString color){
  */
 void Graph::vertexLabelDistanceSet(const long int &v, const int &newDistance) {
     m_graph[ index[v] ]->setLabelDistance (newDistance);
-    graphModified=true;
-    emit graphChanged();
+//    graphModified=true;
+//    emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_MINOR_OPTIONS);
     emit setNodeLabelDistance(v, newDistance);
 }
 
@@ -1193,8 +1205,9 @@ void Graph::vertexLabelDistanceAllSet(const int &newDistance) {
             emit setNodeLabelDistance ( (*it)-> name(), newDistance);
         }
     }
-    graphModified=true;
-    emit graphChanged();
+//    graphModified=true;
+//    emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_MINOR_OPTIONS);
 }
 
 
@@ -1278,8 +1291,10 @@ void Graph::edgeCreate(const int &v1, const int &v2, const float &weight,
     initEdgeColor=color;
 
 
-    if (signalMW)
-        emit graphChanged();
+//    if (signalMW)
+//        emit graphChanged();
+
+    graphChangedSet(GRAPH_CHANGED_EDGES, signalMW);
 
 }
 
@@ -1342,7 +1357,7 @@ void Graph::edgeAdd (const int &v1, const int &v2, const float &weight,
         m_graph [ target ]->edgeAddTo(v1, weight );
         m_graph [ source ]->edgeAddFrom(v2, weight);
     }
-    graphModified=true;
+    //graphModified=true;
 }
 
 
@@ -1377,10 +1392,11 @@ void Graph::edgeRemove (const long int &v1,
         }
     }
 
-    graphModified=true;
-
+//    graphModified=true;
+//    emit graphChanged();
     emit eraseEdge(v1,v2);
-    emit graphChanged();
+
+    graphChangedSet(GRAPH_CHANGED_EDGES);
 }
 
 
@@ -1423,8 +1439,9 @@ void Graph::edgeFilterByWeight(float m_threshold, bool overThreshold){
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
             (*it)->edgeFilterByWeight ( m_threshold, overThreshold );
     }
-    graphModified=true;
-    emit graphChanged();
+//    graphModified=true;
+//    emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_EDGES);
     emit statusMessage(tr("Edges have been filtered."));
 }
 
@@ -1501,14 +1518,23 @@ bool Graph::edgeSymmetric(const long int &v1, const long int &v2){
  */
 int Graph::edgesEnabled() {
 
-    int recountedEdges=0;
+    if ( graphModified!=GRAPH_CHANGED_EDGES &&
+         graphModified!=GRAPH_CHANGED_VERTICES_AND_EDGES &&
+         graphModified!=GRAPH_CHANGED_NEW) {
+        qDebug()<< "Graph::edgesEnabled() - Graph unchanged, edges: "
+                   <<     ((isUndirected()) ? m_totalEdges / 2 : m_totalEdges);
+       return (isUndirected()) ? m_totalEdges / 2 : m_totalEdges;
+    }
+
+    m_totalEdges = 0;
+
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        recountedEdges+=(*it)->outEdges();
+        m_totalEdges+=(*it)->outEdges();
     }
-    qDebug() << "Graph::edgesEnabled() - edges recounted: " <<  recountedEdges;
+    qDebug() << "Graph::edgesEnabled() - edges recounted: " <<  m_totalEdges;
 
-    return (isUndirected()) ? recountedEdges / 2 : recountedEdges;
+    return (isUndirected()) ? m_totalEdges / 2 : m_totalEdges;
 }
 
 
@@ -1556,9 +1582,11 @@ void Graph::edgeWeightSet (const long &v1, const long &v2,
         qDebug() << "Graph::edgeWeightSet() - changing opposite edge weight too";
         m_graph [ index[v2] ]->changeOutEdgeWeight(v1, weight);
     }
-    graphModified=true;
+
     emit setEdgeWeight(v1,v2, weight);
-    emit graphChanged();
+    //graphModified=true;
+    //emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_EDGES);
 
 }
 
@@ -1647,8 +1675,9 @@ bool Graph::edgeColorAllSet(const QString &color, const int &threshold){
         }
     }
     delete enabledOutEdges;
-    graphModified=true;
-    emit graphChanged();
+//    graphModified=true;
+//    emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_EDGES_METADATA);
     return true;
 
 }
@@ -1673,8 +1702,9 @@ void Graph::edgeColorSet(const long &v1, const long &v2, const QString &color){
         m_graph[ index[v2] ]->setOutLinkColor(v1, color);
         emit setEdgeColor(v2, v1, color);
     }
-    graphModified=true;
-    emit graphChanged();
+//    graphModified=true;
+//    emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_EDGES_METADATA);
 }
 
 
@@ -1705,10 +1735,11 @@ void Graph::edgeLabelSet (const long &v1, const long &v2, const QString &label) 
     qDebug() << "Graph::edgeLabelSet()  " << v1 << "[" << index[v1]
                 << "] -> " << v2 << "[" << index[v2] << "]" << " label " << label;
     m_graph[ index[v1] ]->setOutEdgeLabel(v2, label);
-    graphModified=true;
-    emit setEdgeLabel(v1,v2, label);
-    emit graphChanged();
 
+    emit setEdgeLabel(v1,v2, label);
+    //graphModified=true;
+    //emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_EDGES_METADATA);
 }
 
 /**
@@ -1770,7 +1801,14 @@ int Graph::vertexDegreeIn (int v1) {
  * @return
  */
 int Graph::vertices(const bool dropIsolates, const bool countAll) {
-    qDebug("Graph: vertices()");
+
+    if ( graphModified!=GRAPH_CHANGED_VERTICES &&
+         graphModified!=GRAPH_CHANGED_VERTICES_AND_EDGES &&
+         graphModified!=GRAPH_CHANGED_NEW) {
+        qDebug()<< "Graph::vertices() - Graph unchanged, vertices: "
+                   << m_totalVertices;
+        return m_totalVertices;
+    }
     m_totalVertices=0;
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -1778,11 +1816,14 @@ int Graph::vertices(const bool dropIsolates, const bool countAll) {
             ++m_totalVertices;
         }
         else {
-            if (dropIsolates && (*it)->isIsolated())
+            if (dropIsolates && (*it)->isIsolated()){
                 continue;
-                ++m_totalVertices;
+            }
+            ++m_totalVertices;
         }
     }
+    qDebug()<< "Graph::vertices() - Graph changed, vertices: "
+               << m_totalVertices;
     return m_totalVertices;
 }
 
@@ -1813,6 +1854,26 @@ QList<int> Graph::verticesIsolated(){
 }
 
 
+/**
+ * @brief Graph::graphChangedSet
+ * @param graphChangedFlag
+ * @param signalMW
+ */
+void Graph::graphChangedSet(const int &graphStatusFlag, const bool &signalMW){
+    qDebug()<<"Graph::graphChangedSet() ";
+    graphModified=graphStatusFlag;
+
+    if (signalMW) {
+        qDebug()<<"Graph::graphChangedSet() -"
+                  << "graphModified" << graphModified
+                  << "Emitting signal graphChanged()";
+        emit graphChanged(graphModified, isUndirected(), vertices(), edgesEnabled(),density());
+        return;
+    }
+    qDebug()<<"Graph::graphChangedSet() -"
+              << "graphModified" << graphModified
+              << "Not emitting any signal to MW";
+}
 
 /**
  * @brief Graph::density
@@ -1821,6 +1882,7 @@ QList<int> Graph::verticesIsolated(){
  */
 float Graph::density() {
     qDebug()<< "Graph: density()";
+
     int vert=vertices();
     if (vert!=0 && vert!=1)
         return  (isUndirected()) ?
@@ -2079,9 +2141,11 @@ void Graph::symmetrize(){
         }
     }
     delete enabledOutEdges;
-    graphModified=true;
+
     symmetricAdjacencyMatrix=true;
-    emit graphChanged();
+//    graphModified=true;
+//    emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_EDGES);
 }
 
 
@@ -2094,7 +2158,8 @@ void Graph::undirectedSet(const bool &toggle){
     qDebug() << "Graph::undirectedSet()";
     if (!toggle) {
         m_undirected=false;
-        emit graphChanged();
+        //emit graphChanged();
+        graphChangedSet(GRAPH_CHANGED_EDGES);
         return;
     }
     QList<Vertex*>::const_iterator it;
@@ -2119,9 +2184,11 @@ void Graph::undirectedSet(const bool &toggle){
         }
     }
     delete enabledOutEdges;
-    graphModified=true;
+
     symmetricAdjacencyMatrix=m_undirected=true;
-    emit graphChanged();
+//    graphModified=true;
+//    emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_EDGES);
 }
 
 
@@ -5107,7 +5174,8 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
         i++;
         emit addGuideCircle ( x0, y0, new_radius );
     }
-    graphModified=true;
+//    graphModified=true;
+    graphChangedSet(GRAPH_CHANGED_POSITIONS);
 }
 
 
@@ -5134,7 +5202,8 @@ void Graph::layoutRandom(){
                    << " emitting moveNode to new pos " << new_x << " , "<< new_y;
         emit moveNode((*it)->name(),  new_x,  new_y);
     }
-    graphModified=true;
+//    graphModified=true;
+    graphChangedSet(GRAPH_CHANGED_POSITIONS);
 }
 
 
@@ -5177,7 +5246,8 @@ void Graph::layoutCircularRandom(double x0, double y0, double maxRadius){
         i++;
         emit addGuideCircle ( x0, y0, new_radius );
     }
-    graphModified=true;
+//    graphModified=true;
+    graphChangedSet(GRAPH_CHANGED_POSITIONS);
 }
 
 
@@ -5351,6 +5421,7 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
     }
 //    graphModified=true;
 //    emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_POSITIONS);
 }
 
 
@@ -5517,6 +5588,7 @@ void Graph::layoutVerticesSizeByProminenceIndex (int prominenceIndex,
     }
 //    graphModified=true;
 //    emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_POSITIONS);
 }
 
 
@@ -5670,7 +5742,8 @@ void Graph::randomNetErdosCreate(  const int &vert,
 
     relationAddFromGraph(tr("1"));
 
-    emit graphChanged();
+//    emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
 }
 
 
@@ -5733,7 +5806,8 @@ void Graph::randomNetRingLatticeCreate( const int &vert, const int &degree,
     }
     relationAddFromGraph(tr("1"));
 
-    emit graphChanged();
+//    emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_VERTICES_AND_EDGES, updateProgress);
 }
 
 
@@ -5880,7 +5954,8 @@ void Graph::randomNetScaleFreeCreate (const int &n,
     }
 
     relationAddFromGraph(tr("1"));
-    emit graphChanged();
+    //emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
     emit signalNodeSizesByInDegree(true); //FIXME
 
 }
@@ -5948,7 +6023,8 @@ void Graph::randomNetSmallWorldCreate (const int &vert, const int &degree,
     }
 
     emit signalNodeSizesByInDegree(true);
-    emit graphChanged();
+    //emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
 }
 
 
@@ -6112,7 +6188,9 @@ void Graph::randomNetRegularCreate(const int &vert,
 
 
     relationAddFromGraph(tr("1"));
-    emit graphChanged();
+
+    //emit graphChanged();
+    graphChangedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
 }
 
 
@@ -7746,6 +7824,7 @@ void Graph::graphLoaded (int fileType, QString fName, QString netName,
                 << " links " << totalLinks
                 << " undirected " << undirected;
 
+    graphChangedSet(GRAPH_CHANGED_NEW);
     emit signalGraphLoaded (fileType, fileName, networkName,
                             totalNodes, totalLinks, m_undirected);
     qDebug ()<< "Graph::graphLoaded()  -check parser if running...";

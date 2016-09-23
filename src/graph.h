@@ -62,6 +62,16 @@ static const int FILE_LIST        = 8;  // .LST .CSV
 static const int FILE_TWOMODE     = 9;  // .2SM .AFF
 static const int FILE_UNRECOGNIZED=-1;  // UNRECOGNIZED FILE FORMAT
 
+
+static const int GRAPH_CHANGED_VERTICES = 1;
+static const int GRAPH_CHANGED_EDGES = 2;
+static const int GRAPH_CHANGED_VERTICES_AND_EDGES = 3;
+static const int GRAPH_CHANGED_VERTICES_METADATA = 4;
+static const int GRAPH_CHANGED_POSITIONS = 5;
+static const int GRAPH_CHANGED_EDGES_METADATA = 6;
+static const int GRAPH_CHANGED_MINOR_OPTIONS = 7;
+static const int GRAPH_CHANGED_NEW = 8;
+
 class QPointF;
 
 typedef QList<Vertex*> Vertices;
@@ -188,7 +198,11 @@ public slots:
 signals:
     /** Signals to MainWindow */
     void updateProgressDialog(int );
-    void graphChanged();  //call to update MW widgets
+    void graphChanged(const int &graphStatus,
+                      const bool &undirected,
+                      const int &vertices,
+                      const int &edges,
+                      const float &density);
 
     void signalGraphLoaded (int fileType, QString fileName, QString netName,
                             int totalNodes,int totalLinks, bool undirected);
@@ -385,6 +399,7 @@ public:
     bool edgeColorAllSet(const QString &color, const int &threshold=RAND_MAX);
 
     //GRAPH methods
+    void graphChangedSet(const int &graphChangedFlag, const bool&signalMW=true);
     float density();
     bool isWeighted();
 
@@ -714,17 +729,19 @@ private:
 
     /** General & initialisation variables */
 
-    long int m_totalVertices, graphDiameter, initVertexSize;
+    int graphModified;
+    long int m_totalVertices, m_totalEdges, graphDiameter, initVertexSize;
     int initVertexLabelSize, initVertexNumberSize;
     int initVertexNumberDistance, initVertexLabelDistance;
 
     int isolatedVertices;
+
     float averGraphDistance, nonZeroDistancesCounter;
     int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;
     int timerId,  canvasWidth, canvasHeight;
     bool order, initVertexLabelsVisibility,initVertexNumbersVisibility;
     bool initNumbersInsideNodes;
-    bool adjacencyMatrixCreated, symmetricAdjacencyMatrix, graphModified,
+    bool adjacencyMatrixCreated, symmetricAdjacencyMatrix,
         distanceMatrixCreated;
     bool reachabilityMatrixCreated;
     bool m_undirected;

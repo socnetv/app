@@ -66,6 +66,7 @@ Edge::Edge(  GraphicsWidget *gw,
     source=from;			//saves the sourceNode
     target=to;			//Saves the targetNode
     m_style = style;
+    m_state = EDGE_STATE_REGULAR ;
     m_color=color;
     m_drawArrows=drawArrows;
     m_edgeType=type;
@@ -160,6 +161,7 @@ void Edge::setWeight(const float &w) {
 }
 
 float Edge::weight() const {
+    qDebug() << "Edge::weight() " << m_weight;
     return m_weight;
 }
 
@@ -421,19 +423,6 @@ void Edge::adjust(){
  */
 QPainterPath Edge::shape () const {
     //qDebug()<<"Edge::shape()";		//too many debug messages...
-//    QPainterPath path;
-//    qreal extra = ( width() + m_arrowSize);
-//    QLineF line(sourcePoint, targetPoint);
-//    QPolygonF poly;
-//    line.translate(extra,extra);
-//    poly.push_back(line.p1());
-//    poly.push_back(line.p2());
-//    line.translate(-extra,-extra);
-//    poly.push_back(line.p1());
-//    poly.push_back(line.p2());
-//    path.addPolygon(poly);
-//    path.closeSubpath();
-//    return path;
     return *m_path;
 } 
 
@@ -447,20 +436,6 @@ QPainterPath Edge::shape () const {
 QRectF Edge::boundingRect() const {
     if (!source || !target)
         return QRectF();
-//    qreal penWidth = 1;
-//    qreal extra = ( penWidth + m_arrowSize) / 2.0;
-//    QRectF a = QRectF (
-//                sourcePoint,
-//                QSizeF(
-//                    targetPoint.x() - sourcePoint.x(), targetPoint.y() - sourcePoint.y())
-//                ).normalized().adjusted(-extra, -extra, extra, extra);
-//    //qDebug()<<"Edge::boundingRect() extra = " << extra << "QSizeF width "<< a.width() << " QSizeF height "<< a.height();
-//    if (source==target) {		//self-edge has different bounding rect.
-//        return QRectF (
-//                    sourcePoint-QPointF(30,30),
-//                    QSizeF(60,30)).normalized().adjusted(-extra, -extra, extra, extra);
-//    }
-//    return a;
     return m_path->controlPointRect();
 }
 
@@ -499,37 +474,59 @@ Qt::PenStyle Edge::style() const{
 
 }
 
+/**
+ * @brief Edge::pen
+ * @return
+ */
 QPen Edge::pen() const {
-    if (m_weight < 0 ){
-        return  QPen(QColor(m_color), width(), Qt::DashLine, Qt::RoundCap, Qt::RoundJoin);
+
+    switch (m_state) {
+    case EDGE_STATE_REGULAR:
+        qDebug() << "Edge::pen() - returning pen for state REGULAR"  ;
+        if (m_weight < 0 ){
+            return  QPen(QColor(m_color), width(), Qt::DashLine, Qt::RoundCap, Qt::RoundJoin);
+        }
+        return QPen(QColor(m_color), width(), style(), Qt::RoundCap, Qt::RoundJoin);
+        break;
+    case EDGE_STATE_HIGHLIGHT: // selected
+        qDebug() << "Edge::pen() - returning pen for state HIGHLIGHTED"  ;
+        return QPen(QColor("red"), width(), style(), Qt::RoundCap, Qt::RoundJoin);
+    case EDGE_STATE_HOVER: // hover
+        qDebug() << "Edge::pen() - returning pen for state HOVER"  ;
+        return QPen(QColor("red"), width()+1, style(), Qt::RoundCap, Qt::RoundJoin);
+    default:
+        qDebug() << "Edge::pen() - returning pen for state DEFAULT"  ;
+        return QPen(QColor(m_color), width(), style(), Qt::RoundCap, Qt::RoundJoin);
     }
-    return QPen(QColor(m_color), width(), style(), Qt::RoundCap, Qt::RoundJoin);
+
 }
 
-
+void Edge::setPen(const int &state) {
+    prepareGeometryChange();
+    m_state=state;
+}
 
 void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *){
     if (!source || !target)
         return;
 
-    // qDebug() <<"@@@ Edge::paint()";
-
-     painter->setPen( pen() );
-     // painter->setBrush(QColor(m_color));
+    qDebug() <<"@@@ Edge::paint()";
 
      //if the edge is being dragged around, darken it!
      if (option->state & QStyle::State_Selected) {
-         painter->setPen(
-                     QPen(QColor("m_red"), width(), style(), Qt::RoundCap, Qt::RoundJoin)
-                     );
-     }
-     else if (option->state & QStyle::State_MouseOver) {
-         painter->setPen(
-                     QPen(QColor("red"), width()+5, style(), Qt::RoundCap, Qt::RoundJoin)
-                     );
+         setPen(EDGE_STATE_HIGHLIGHT);
          setZValue(255);
      }
-     setZValue(253);
+     else if (option->state & QStyle::State_MouseOver) {
+         setPen(EDGE_STATE_HOVER);
+         setZValue(255);
+     }
+     else {
+         //setPen(EDGE_STATE_REGULAR);
+         setZValue(253);
+     }
+    // set painter pen to correct edge pen
+    painter->setPen(pen());
 
     painter->drawPath(*m_path);
 }
@@ -539,10 +536,14 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     Controls the width of the edge; is a function of edge weight
 */
 float Edge::width() const{
-    qDebug()<< "Edge::width() will return "<< fabs(m_weight);
-    if ( fabs(m_weight) > 1  )
+    if ( fabs(m_weight) > 1  )  {
+        qDebug()<< "Edge::width() -"
+                   << "m_weight" << m_weight
+                   <<"Returning "<< 1  + fabs(m_weight)/10;
         return  1  + fabs(m_weight)/10;
-    return 1;	//	Default, if  m_weight in (-1, 1) space
+    }
+    qDebug()<< "Edge::width() - Returning"<< m_weight;
+    return m_weight;	//	Default, if  m_weight in (-1, 1) space
 }
 
 
@@ -554,15 +555,13 @@ float Edge::width() const{
 void Edge::highlight(const bool &flag) {
     qDebug()<< "Edge::highlight() - " << flag;
     if (flag) {
-        m_tempColor = m_color;
-        m_tempweight = m_weight;
-        m_weight +=10;
-        setColor("red");
+
+        setPen(EDGE_STATE_HIGHLIGHT);
         setZValue(255);
     }
     else {
-        m_weight = m_tempweight;
-        setColor(m_tempColor);
+        prepareGeometryChange();
+        setPen(EDGE_STATE_REGULAR);
         setZValue(253);
     }
 }

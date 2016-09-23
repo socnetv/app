@@ -155,7 +155,7 @@ public slots:
 
 signals:
     void userDoubleClickNewNode(const QPointF &);
-    void userMiddleClicked(const int &, const int &, const float &);
+    void userMiddleClicked(const int &, const int &);
     void userClickOnEmptySpace();
     void openNodeMenu();
     void openEdgeMenu();

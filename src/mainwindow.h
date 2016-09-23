@@ -145,7 +145,9 @@ public slots:
     void slotNetworkImportDL();
     void slotNetworkImportEdgeList();
     void slotNetworkImportTwoModeSM();
-    void slotNetworkChanged();
+    void slotNetworkChanged(const int &graphStatus, const bool &undirected,
+                            const int &vertices, const int &edges,
+                            const float &density);
     void slotNetworkSave();
     void slotNetworkSaveAs();
     void slotNetworkClose();
@@ -230,7 +232,8 @@ public slots:
     void slotEditNodeLabelDistance(int v1=0, int newSize=0);
 
     void slotEditEdgeAdd();
-    void slotEditEdgeCreate (const int &source, const int &target, const float &weight);
+    void slotEditEdgeCreate (const int &source, const int &target,
+                             const float &weight=1);
     void slotEditEdgeRemove();
     void slotEditEdgeLabel();
     void slotEditEdgeColor();

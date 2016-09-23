@@ -44,6 +44,9 @@ using namespace std;
 
 static const int TypeEdge= QGraphicsItem::UserType+2;
 
+static const int EDGE_STATE_REGULAR = 0;
+static const int EDGE_STATE_HIGHLIGHT = 1;
+static const int EDGE_STATE_HOVER = 2;
 
 class Edge : public QObject, public QGraphicsItem {
     Q_OBJECT
@@ -93,6 +96,8 @@ public:
     float width() const;
 
     QPen pen() const;
+    void setPen(const int &state);
+
     void setStyle( const Qt::PenStyle  &style);
     Qt::PenStyle style() const;
 
@@ -120,12 +125,13 @@ private:
     QPointF sourcePoint, targetPoint;
     qreal m_arrowSize, m_startOffset, m_endOffset;
     Qt::PenStyle m_style;
+    int m_state;
     EdgeWeight* weightNumber;
     EdgeLabel* edgeLabel;
 
-    QString m_color, m_tempColor, m_colorNegative, m_label;
+    QString m_color, m_colorNegative, m_label;
     int eFrom, eTo;
-    float m_weight, m_tempweight;
+    float m_weight;
     int tox1, tox2, toy1, toy2, size;
     int m_edgeType;
     double rad, theta, theta1, theta2;

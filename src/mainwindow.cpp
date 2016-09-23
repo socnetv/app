@@ -3269,8 +3269,8 @@ void MainWindow::initSignalSlots() {
              this, SLOT(
                  slotEditNodeAddWithMouse(const QPointF &) ) ) ;
 
-    connect( graphicsWidget, SIGNAL( userMiddleClicked(const int &, const int &, const float&) ),
-             this, SLOT( slotEditEdgeCreate(int, int, float) ) 	);
+    connect( graphicsWidget, SIGNAL( userMiddleClicked(const int &, const int &) ),
+             this, SLOT( slotEditEdgeCreate(const int &, const int &) ) 	);
 
 
     connect( graphicsWidget, SIGNAL( openNodeMenu() ),
@@ -3348,8 +3348,14 @@ void MainWindow::initSignalSlots() {
     connect( &activeGraph, SIGNAL( eraseEdge(const long int &, const long int &)),
              graphicsWidget, SLOT( eraseEdge(const long int &, const long int &) ) );
 
-    connect( &activeGraph, SIGNAL( graphChanged() ),
-             this, SLOT( slotNetworkChanged() ) ) ;
+    connect( &activeGraph,
+             SIGNAL( graphChanged(const int &, const bool &,
+                                  const int &, const int &,
+                                  const float &) ),
+             this,
+             SLOT( slotNetworkChanged(const int &, const bool &,
+                                      const int &, const int &,
+                                      const float &) ) ) ;
 
     connect( &activeGraph, SIGNAL( signalGraphLoaded( int, QString, QString,
                                                    int , int, bool) ),
@@ -4397,7 +4403,7 @@ void MainWindow::slotNetworkSaved(const int &status)
 {
     if (status <= 0)
     {
-        slotNetworkChanged();
+        //slotNetworkChanged();
         statusMessage( tr("Error! Could not save this file... ")+fileNameNoPath.last()+tr(".") );
     }
     else
@@ -4771,14 +4777,12 @@ void MainWindow::slotNetworkFileLoaded (
 
     switch( type ) 	{
     case 0:
-        slotNetworkChanged();
         pajekFileLoaded=false;
         adjacencyFileLoaded=false;
         graphMLFileLoaded=false;
         fileLoaded=false;
         break;
     case 1:
-        slotNetworkChanged();
         pajekFileLoaded=false;
         adjacencyFileLoaded=false;
         dotFileLoaded=false;
@@ -4789,7 +4793,6 @@ void MainWindow::slotNetworkFileLoaded (
         break;
 
     case 2:
-        slotNetworkChanged();
         pajekFileLoaded=true;
         adjacencyFileLoaded=false;
         graphMLFileLoaded=false;
@@ -4799,7 +4802,6 @@ void MainWindow::slotNetworkFileLoaded (
         break;
 
     case 3:
-        slotNetworkChanged();
         pajekFileLoaded=false;
         adjacencyFileLoaded=true;
         graphMLFileLoaded=false;
@@ -4809,7 +4811,6 @@ void MainWindow::slotNetworkFileLoaded (
         break;
 
     case 4:
-        slotNetworkChanged();
         pajekFileLoaded=false;
         adjacencyFileLoaded=false;
         dotFileLoaded=true;
@@ -4820,7 +4821,6 @@ void MainWindow::slotNetworkFileLoaded (
         break;
 
     case 5:
-        slotNetworkChanged();
         pajekFileLoaded=false;
         adjacencyFileLoaded=false;
         dotFileLoaded=false;
@@ -4830,7 +4830,6 @@ void MainWindow::slotNetworkFileLoaded (
         statusMessage( QString(tr("DL-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
         break;
     case 6:
-        slotNetworkChanged();
         pajekFileLoaded=false;
         adjacencyFileLoaded=false;
         dotFileLoaded=false;
@@ -4840,7 +4839,6 @@ void MainWindow::slotNetworkFileLoaded (
         statusMessage( QString(tr("GML-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
         break;
     case 7:
-        slotNetworkChanged();
         pajekFileLoaded=false;
         adjacencyFileLoaded=false;
         dotFileLoaded=false;
@@ -4850,7 +4848,6 @@ void MainWindow::slotNetworkFileLoaded (
         statusMessage( QString(tr("Weighted list-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
         break;
     case 8:
-        slotNetworkChanged();
         pajekFileLoaded=false;
         adjacencyFileLoaded=false;
         dotFileLoaded=false;
@@ -4860,7 +4857,6 @@ void MainWindow::slotNetworkFileLoaded (
         statusMessage( QString(tr("Simple list-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
         break;
     case 9:
-        slotNetworkChanged();
         pajekFileLoaded=false;
         adjacencyFileLoaded=false;
         dotFileLoaded=false;
@@ -5798,7 +5794,7 @@ void MainWindow::slotNetworkRandomRegular(const int &newNodes, const int &degree
 
 
 void MainWindow::slotNetworkRandomGaussian(){
-    slotNetworkChanged();
+    //slotNetworkChanged();
 
 }
 
@@ -5912,14 +5908,18 @@ void MainWindow::slotNetworkWebCrawler ( QString  seed, int maxNodes, int maxRec
  * Makes the networkSave icon active and refreshes any LCD values.
  * Also called from activeGraph and graphicsWidget.
  */
-void MainWindow::slotNetworkChanged(){
-    qDebug("MW: slotNetworkChanged");
-    networkModified=true;
-    networkSave->setIcon(QIcon(":/images/save.png"));
-    networkSave->setEnabled(true);
-
-    nodesLCD->display(activeGraph.vertices());
-    if (activeGraph.isUndirected()) {
+void MainWindow::slotNetworkChanged(const int &graphStatus,
+                                    const bool &undirected,
+                                    const int &vertices, const int &edges,
+                                    const float &density){
+    qDebug()<<"MW::slotNetworkChanged()";
+    if (graphStatus) {
+        networkModified=true;
+        networkSave->setIcon(QIcon(":/images/save.png"));
+        networkSave->setEnabled(true);
+    }
+    nodesLCD->display(vertices);
+    if ( undirected ) {
         edgesLCD->setStatusTip(tr("Shows the total number of undirected edges in the network."));
         edgesLCD->setToolTip(tr("The total number of undirected edges in the network."));
         networkLabel->setStatusTip(tr("Undirected data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
@@ -5961,8 +5961,8 @@ void MainWindow::slotNetworkChanged(){
         labelEdgesLCD->setText(tr("Total Arcs"));
         editEdgeUndirectedAllAct->setChecked(false);
     }
-    edgesLCD->display(activeEdges());
-    densityLCD->display( activeGraph.density() );
+    edgesLCD->display(edges);
+    densityLCD->display( density );
 }
 
 
@@ -6240,7 +6240,7 @@ void MainWindow::slotEditNodeRemove() {
     }
     clickedNodeNumber=-1;
     nodeClicked=false;
-    slotNetworkChanged();
+    //slotNetworkChanged();
 
 
 }
@@ -6380,7 +6380,7 @@ void MainWindow::slotEditNodeProperties( const QString label, const int size,
     clickedNode=0;
     clickedNodeNumber=-1;
 
-    slotNetworkChanged();
+    //slotNetworkChanged();
     statusMessage( tr("Ready. "));
 
 }
@@ -6479,7 +6479,7 @@ void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized) {
 
     activeGraph.vertexSizeAllSet(newSize);
 
-    slotNetworkChanged();
+    //slotNetworkChanged();
     statusMessage(tr("Ready"));
     return;
 }
@@ -6525,7 +6525,7 @@ void MainWindow::slotEditNodeShape(QString shape, const int vertex) {
     }
 
     if (vertex == 0) { //change all nodes shapes
-        slotNetworkChanged();
+        //slotNetworkChanged();
         activeGraph.vertexShapeAllSet(shape);
         appSettings["initNodeShape"] = shape;
         statusMessage(tr("All shapes have been changed. Ready."));
@@ -6966,7 +6966,7 @@ void MainWindow::slotEditEdgeAdd(){
     }
 
     slotEditEdgeCreate(sourceNode, targetNode, weight);
-    slotNetworkChanged();
+    //slotNetworkChanged();
     statusMessage( tr("Ready. ")  );
 }
 
@@ -6981,8 +6981,11 @@ void MainWindow::slotEditEdgeAdd(){
  * @param target
  * @param weight
  */
-void MainWindow::slotEditEdgeCreate (const int &source, const int &target, const float &weight) {
-    qDebug()<< "MW::slotEditEdgeCreate() - setting user settings and calling Graph::edgeCreate(...)";
+void MainWindow::slotEditEdgeCreate (const int &source, const int &target,
+                                     const float &weight) {
+    qDebug()<< "MW::slotEditEdgeCreate() - edge"
+            << source << "->" << target << "weight" << weight
+            << "Setting user settings and calling Graph::edgeCreate(...)";
     //int reciprocal=0;
     bool bezier = false;
     activeGraph.edgeCreate(
@@ -7054,7 +7057,7 @@ void MainWindow::slotEditEdgeRemove(){
         activeGraph.edgeRemove(sourceNode, targetNode);
 
     }
-    slotNetworkChanged();
+    //slotNetworkChanged();
     qDebug("MW: View items now: %i ", graphicsWidget->items().size());
     qDebug("MW: Scene items now: %i ", scene->items().size());
 }
@@ -7175,7 +7178,7 @@ void MainWindow::slotEditEdgeColorAll(QColor color,const int &threshold){
         qDebug() << "MainWindow::slotEditEdgeColorAll() - new edge color: " << color.name();
         activeGraph.edgeColorAllSet(color.name(), threshold );
         QApplication::restoreOverrideCursor();
-        slotNetworkChanged();
+        //slotNetworkChanged();
         statusMessage( tr("Ready. ")  );
     }
     else {
@@ -7474,7 +7477,7 @@ void MainWindow::slotShowFilterEdgesDialog() {
     TODO slotTransformNodes2Edges
 */
 void MainWindow::slotTransformNodes2Edges(){
-    slotNetworkChanged();
+    //slotNetworkChanged();
 
 }
 
