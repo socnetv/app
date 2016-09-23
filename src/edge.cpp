@@ -522,7 +522,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
          setZValue(255);
      }
      else {
-         //setPen(EDGE_STATE_REGULAR);
+         setPen(EDGE_STATE_REGULAR);
          setZValue(253);
      }
     // set painter pen to correct edge pen
