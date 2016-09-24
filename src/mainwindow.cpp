@@ -3712,6 +3712,9 @@ void MainWindow::initNet(){
     setWindowTitle(tr("Social Network Visualizer ")+VERSION);
 
     QApplication::restoreOverrideCursor();
+
+    setCursor(Qt::ArrowCursor);
+
     statusMessage( tr("Ready"));
     qDebug("MW: initNet() INITIALISATION END");
 

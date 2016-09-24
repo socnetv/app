@@ -650,12 +650,10 @@ Node::~Node(){
     foreach (Edge *edge, inEdgeList) {
         qDebug("~Node: removing edges in inEdgeList");
         delete edge;
-        //graphicsWidget->removeItem(edge);
     }
     foreach (Edge *edge, outEdgeList) {
         qDebug("~Node: removing edges in outEdgeList");
         delete edge;
-        //graphicsWidget->removeItem(edge);
     }
     if ( m_hasNumber )
         deleteNumber();

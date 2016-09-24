@@ -84,6 +84,8 @@ void GraphicsWidget::clear() {
     m_curRelation=0;
     markedNodeExist=false;
     markedEdgeExist = false;
+    firstNode=false;
+    secondDoubleClick=false;
 
 }
 
@@ -342,7 +344,7 @@ void GraphicsWidget::eraseNode(const long int &number){
         qDebug() << "GW::eraseNode() - found number "
                  <<  number<< " Deleting :)" ;
         delete nodeHash.value(number);
-        nodeHash.remove(number);
+//        nodeHash.remove(number);
     }
 
     qDebug() << "GW::eraseNode() - node erased! "
@@ -393,14 +395,22 @@ void GraphicsWidget::eraseEdge(const long int &source, const long int &target){
 
 
 
-/** 
-    Called from Node::die() to removeItem from nodeHash...
-    FIXME : Do we use it ????
-*/
+/**
+ * @brief GraphicsWidget::removeItem
+ * @param node
+ * Called from Node::~Node() to remove itself from nodeHash, scene and
+ * be deleted
+ */
 void GraphicsWidget::removeItem( Node *node){
     long int i=node->nodeNumber();
     qDebug() << "GW::removeItem(node) - number: " <<  i;
-
+    if (firstNode == node) {
+        qDebug() << "GW::removeItem(node) - number: " <<  i
+                 << "previously set as source node for a new edge. Unsetting.";
+        secondDoubleClick = false;
+        ( (MainWindow*)parent() )->setCursor(Qt::ArrowCursor);
+    }
+    nodeHash.remove(i);
     scene()->removeItem(node);
     node->deleteLater ();
     qDebug() << "GW::removeItem(node) - node erased! "
@@ -411,7 +421,13 @@ void GraphicsWidget::removeItem( Node *node){
 
 
 
-/** Called from Node::die() to remove Edge edge ... */
+
+/**
+ * @brief GraphicsWidget::removeItem
+ * @param edge
+ * Called from Edge::~Edge() to remove itself from edgesHash and scene and
+ * be deleted
+ */
 void GraphicsWidget::removeItem( Edge * edge){
     qDebug() << "GW::removeItem(edge)" ;
     edgeName =  QString::number(m_curRelation) + QString(":") +
@@ -455,7 +471,10 @@ void GraphicsWidget::removeItem( EdgeLabel *edgeLabel){
              << " view items: " << items().size();
 }
 
-
+/**
+ * @brief GraphicsWidget::removeItem
+ * @param nodeLabel
+ */
 void GraphicsWidget::removeItem( NodeLabel *nodeLabel){
     qDebug() << "GW::removeItem(label) -  of node " <<  nodeLabel->node()->nodeNumber()
              << "GW items now:  " << items().size();
@@ -469,7 +488,10 @@ void GraphicsWidget::removeItem( NodeLabel *nodeLabel){
 }
 
 
-
+/**
+ * @brief GraphicsWidget::removeItem
+ * @param nodeNumber
+ */
 void GraphicsWidget::removeItem( NodeNumber *nodeNumber){
     qDebug() << "GW::removeItem(number) -  of node " <<  nodeNumber->node()->nodeNumber()
              << "GW items now:  " << items().size();
