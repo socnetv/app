@@ -749,10 +749,10 @@ private:
     int timerId,  canvasWidth, canvasHeight;
     bool order, initVertexLabelsVisibility,initVertexNumbersVisibility;
     bool initNumbersInsideNodes;
-    bool adjacencyMatrixCreated, symmetricAdjacencyMatrix,
+    bool adjacencyMatrixCreated,
         distanceMatrixCreated;
     bool reachabilityMatrixCreated;
-    bool m_undirected, m_isWeighted;
+    bool m_undirected, m_symmetric, m_isWeighted;
     bool initEdgeWeightNumbers, initEdgeLabels;
 
     QString VERSION, fileName, m_graphName, initEdgeColor, initVertexColor,

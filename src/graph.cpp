@@ -60,11 +60,11 @@ Graph::Graph() {
     graphModifiedFlag=false;
     m_undirected=false;
     m_isWeighted=false;
-    fileName ="";
     m_graphName="";
     m_curRelation=0;
     m_fileFormat=FILE_UNRECOGNIZED;
-    symmetricAdjacencyMatrix=true;
+    m_symmetric=true;
+    fileName ="";
     adjacencyMatrixCreated=false;
     reachabilityMatrixCreated=false;
     distanceMatrixCreated=false;
@@ -170,7 +170,7 @@ void Graph::clear() {
     calculatedPRP=false; calculatedTriad=false;
     adjacencyMatrixCreated=false;
     reachabilityMatrixCreated=false;
-    symmetricAdjacencyMatrix=true;
+    m_symmetric=true;
 
     graphModifiedFlag=false;
 
@@ -1272,6 +1272,7 @@ void Graph::edgeCreate(const int &v1, const int &v2, const float &weight,
             emit drawEdge(v1, v2, weight, label, color, EDGE_DIRECTED,
                           drawArrows, bezier, initEdgeWeightNumbers);
             m_undirected = false;
+            m_symmetric=false;
         }
     }
     else {
@@ -1380,11 +1381,11 @@ void Graph::edgeRemove (const long int &v1,
     if (isUndirected() || removeOpposite ) { // remove opposite edge
         m_graph [ index[v2] ]->edgeRemoveTo(v1);
         m_graph [ index[v1] ]->edgeRemoveFrom(v2);
-        symmetricAdjacencyMatrix=true;
+        m_symmetric=true;
     }
     else {
         if ( edgeExists(v2,v1) !=0) {
-            symmetricAdjacencyMatrix=false;
+            m_symmetric=false;
         }
     }
 
@@ -2059,10 +2060,10 @@ bool Graph::isSymmetric(){
     qDebug() << "Graph::isSymmetric() ";
     if (!graphModified()){
         qDebug() << "Graph::isSymmetric() - graph not modified. Return "
-                 << symmetricAdjacencyMatrix;
-        return symmetricAdjacencyMatrix;
+                 << m_symmetric;
+        return m_symmetric;
     }
-    symmetricAdjacencyMatrix=true;
+    m_symmetric=true;
     int y=0, v2=0, v1=0;
 
     QHash<int,float> *enabledOutEdges = new QHash<int,float>;
@@ -2089,7 +2090,7 @@ bool Graph::isSymmetric(){
             y=index[ v2 ];
             float weight = hit.value();
             if (  m_graph[y]->hasEdgeTo( v1) != weight) {
-                symmetricAdjacencyMatrix=false;
+                m_symmetric=false;
 //                qDebug() <<"Graph::isSymmetric() - "
 //                         << " graph not symmetric because "
 //                         << v1 << " -> " << v2 << " weight " << weight
@@ -2101,8 +2102,8 @@ bool Graph::isSymmetric(){
         }
     }
     delete enabledOutEdges;
-    qDebug() << "Graph: isSymmetric() -"  << symmetricAdjacencyMatrix;
-    return symmetricAdjacencyMatrix;
+    qDebug() << "Graph: isSymmetric() -"  << m_symmetric;
+    return m_symmetric;
 }
 
 
@@ -2150,7 +2151,7 @@ void Graph::symmetrize(){
     }
     delete enabledOutEdges;
 
-    symmetricAdjacencyMatrix=true;
+    m_symmetric=true;
 
     graphModifiedSet(GRAPH_CHANGED_EDGES);
 }
@@ -2192,7 +2193,7 @@ void Graph::undirectedSet(const bool &toggle){
     }
     delete enabledOutEdges;
 
-    symmetricAdjacencyMatrix=m_undirected=true;
+    m_symmetric=m_undirected=true;
 
     graphModifiedSet(GRAPH_CHANGED_EDGES);
 }
@@ -2535,12 +2536,12 @@ void Graph::distanceMatrixCreate(const bool &centralities,
                                  const bool &dropIsolates) {
     qDebug ("Graph::distanceMatrixCreate()");
     if ( !graphModified() && distanceMatrixCreated && !centralities)  {
-        qDebug("Graph: distanceMatrix not mofified. Escaping.");
+        qDebug() << "Graph::distanceMatrixCreate() - not modified. Return.";
         return;
     }
     //Create a NxN DistanceMatrix. Initialise values to zero.
     m_totalVertices = vertices(false,true);
-    qDebug() << "Graph::distanceMatrixCreate() Resizing Matrices to hold "
+    qDebug() << "Graph::distanceMatrixCreate() - Resizing Matrices to hold "
              << m_totalVertices << " vertices";
     DM.resize(m_totalVertices, m_totalVertices);
     TM.resize(m_totalVertices, m_totalVertices);
@@ -2550,7 +2551,12 @@ void Graph::distanceMatrixCreate(const bool &centralities,
     //drop isolated vertices from calculations (i.e. std C and group C).
     int aVertices=vertices(dropIsolates);
 
-    symmetricAdjacencyMatrix = isSymmetric();
+    qDebug() << "Graph::distanceMatrixCreate() - m_symmetric: "
+                << m_symmetric
+                   << "Calling isSymmetric()";
+    m_symmetric = isSymmetric();
+    qDebug() << "Graph::distanceMatrixCreate() - now m_symmetric: "
+                << m_symmetric ;
 
     if ( aEdges == 0 )
         DM.fillMatrix(RAND_MAX);
@@ -2580,12 +2586,12 @@ void Graph::distanceMatrixCreate(const bool &centralities,
 
         qDebug() << "Graph: distanceMatrixCreate() - "
                     " initialising variables for maximum centrality indeces";
-        if (symmetricAdjacencyMatrix) {
+        if (m_symmetric) {
             maxIndexBC=( aVertices-1.0) *  (aVertices-2.0)  / 2.0;
             maxIndexSC=( aVertices-1.0) *  (aVertices-2.0) / 2.0;
             maxIndexCC=aVertices-1.0;
             maxIndexPC=aVertices-1.0;
-            qDebug("############# symmetricAdjacencyMatrix - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
+            qDebug("############# m_symmetric - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
         }
         else {
             maxIndexBC=( aVertices-1.0) *  (aVertices-2.0) ;
@@ -2795,7 +2801,7 @@ void Graph::distanceMatrixCreate(const bool &centralities,
                 minmax( SPC, (*it), maxPC, minPC, maxNodePC, minNodePC) ;
 
                 // Compute std BC, classes and min/maxBC
-                if (symmetricAdjacencyMatrix) {
+                if (m_symmetric) {
                     qDebug()<< "Betweenness centrality must be divided by"
                             <<" two if the graph is undirected";
                     (*it)->setBC ( (*it)->BC()/2.0);
@@ -2817,7 +2823,7 @@ void Graph::distanceMatrixCreate(const bool &centralities,
 
                 //prepare to compute stdSC
                 SC=(*it)->SC();
-                if (symmetricAdjacencyMatrix){
+                if (m_symmetric){
                     (*it)->setSC(SC/2.0);
                     SC=(*it)->SC();
                     qDebug() << "SC of " <<(*it)->name()
@@ -3572,7 +3578,7 @@ void Graph::centralityDegree(const bool weights, const bool dropIsolates){
 
                     //check here if the matrix is symmetric - we need this below
                     if (  edgeExists ( (*it1)->name(), (*it)->name() , true ) == 0   )
-                        symmetricAdjacencyMatrix = false;
+                        m_symmetric = false;
                 }
             }
         }
@@ -3646,7 +3652,7 @@ void Graph::centralityDegree(const bool weights, const bool dropIsolates){
     varianceDC=varianceDC/(float) vert;
 
 //    qDebug() << "Graph::centralityDegree() - variance = " << varianceDC;
-    if (symmetricAdjacencyMatrix)
+    if (m_symmetric)
         denom=(vert-1.0)*(vert-2.0);
     else
         denom=(vert-1.0)*(vert-1.0);
@@ -4358,7 +4364,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
     discreteDPs.clear();
     varianceDP=0;
     meanDP=0;
-    symmetricAdjacencyMatrix = true;
+    m_symmetric = true;
     QList<Vertex*>::const_iterator it, it1;
     H_StrToInt::iterator it2;
     int vert=vertices(dropIsolates);
@@ -4374,7 +4380,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
                 }
                 //check if the matrix is symmetric - we need this below
                 if (  edgeExists ( (*it1)->name(), (*it)->name() , true) == 0  )
-                    symmetricAdjacencyMatrix = false;
+                    m_symmetric = false;
             }
         }
         (*it) -> setDP ( DP ) ;		//Set DP
@@ -4431,7 +4437,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
     }
     varianceDP=varianceDP/(float) vert;
 
-    if (symmetricAdjacencyMatrix)
+    if (m_symmetric)
         denom=(vert-1.0)*(vert-2.0);
     else
         denom=(vert-1.0)*(vert-1.0);
