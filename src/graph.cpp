@@ -170,6 +170,7 @@ void Graph::clear() {
     calculatedPRP=false; calculatedTriad=false;
     adjacencyMatrixCreated=false;
     reachabilityMatrixCreated=false;
+    distanceMatrixCreated=false;
     m_symmetric=true;
 
     graphModifiedFlag=false;
@@ -1874,11 +1875,11 @@ void Graph::graphModifiedSet(const int &graphChangedFlag, const bool &signalMW){
 
 /**
  * @brief Graph::graphModified
- * Returns the mofification status of the Graph
- * Or 0 if the Graph is not modified
+ * Returns true of graph is modified (edges/vertices added/removed).
+ * else false
  * @return
  */
-int Graph::graphModified() const {
+bool Graph::graphModified() const {
     return (graphModifiedFlag > 10 ) ? true: false;
 }
 
@@ -2299,14 +2300,32 @@ int Graph::diameter(const bool considerWeights,
 float Graph::distanceGraphAverage(const bool considerWeights,
                                   const bool inverseWeights,
                                   const bool dropIsolates){
-    qDebug() <<"Graph::distanceGraphAverage() ";
-    if ( !distanceMatrixCreated || graphModified() ) {
+    qDebug() <<"Graph::distanceGraphAverage() - reachabilityMatrixCreated "
+            <<reachabilityMatrixCreated
+              << "graphModified()" <<graphModified();
+               ;
+    if (!reachabilityMatrixCreated || graphModified())  {
         qDebug() <<"Graph::distanceGraphAverage() - graphModified(). Recomputing DM";
         emit statusMessage ( tr("Computing Average Distance: "
                                 "Need to recompute Distances. Please wait...") );
-        distanceMatrixCreate(false, considerWeights, inverseWeights,dropIsolates);
+        reachabilityMatrix(considerWeights, inverseWeights,dropIsolates,false);
+        //distanceMatrixCreate(false, considerWeights, inverseWeights,dropIsolates);
     }
-    return m_graphAverageDistance;
+
+    qDebug() <<"Graph::distanceGraphAverage() - disconnectedVertices " <<
+               disconnectedVertices.count();
+    int aVertices=vertices(dropIsolates);
+    if (m_graphAverageDistance!=0) {
+        if (disconnectedVertices.count()==0) {
+            return m_graphAverageDistance / ( aVertices * ( aVertices-1.0 ) );
+        }
+        else {
+            return m_graphAverageDistance / graphPathsExistingCount();
+        }
+    }
+    else return 0;
+
+
 }
 
 
@@ -2584,8 +2603,8 @@ void Graph::distanceMatrixCreate(const bool &centralities,
         m_graphAverageDistance=0;
         nonZeroDistancesCounter=0;
 
-        qDebug() << "	m_graphDiameter "<< m_graphDiameter << " m_graphAverageDistance "
-                 <<m_graphAverageDistance;
+        qDebug() << "	m_graphDiameter "<< m_graphDiameter
+                 << " m_graphAverageDistance " <<m_graphAverageDistance;
         qDebug() << "	reciprocalEdgesVert "<< reciprocalEdgesVert
                  << " inboundEdgesVert " << inboundEdgesVert
                  << " outboundEdgesVert "<<  outboundEdgesVert;
@@ -2785,9 +2804,6 @@ void Graph::distanceMatrixCreate(const bool &centralities,
             }
         }
 
-        if (m_graphAverageDistance!=0) {
-             m_graphAverageDistance = m_graphAverageDistance / ( aVertices * ( aVertices-1.0 ) );
-        }
 
 
         if (centralities) {
@@ -3050,7 +3066,6 @@ void Graph::BFS(const int &s, const bool &computeCentralities,
                 XRM.setItem(s,w,1);
                 influenceRanges.insert(s,w);
                 influenceDomains.insert(w,s);
-//                disconnectedVertices
 
                 if (computeCentralities){
                     qDebug()<<"BFS: Calculate PC: store the number of nodes at distance " << dist_w << "from s";
@@ -3261,7 +3276,6 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
                 XRM.setItem(s,w,1);
                 influenceRanges.insert(s,w);
                 influenceDomains.insert(w,s);
-//                disconnectedVertices
 
 
                 if (s!=w) {
@@ -6478,6 +6492,12 @@ QList<int> Graph::vertexinfluenceDomain(int v1){
 }
 
 
+int Graph::graphPathsExistingCount()  {
+    if (!reachabilityMatrixCreated || graphModified()) {
+        reachabilityMatrix();
+    }
+    return m_graphPathsExistingCount;
+}
 
 /**
     Calculates the reachability matrix X^R of the graph
@@ -6503,13 +6523,15 @@ void Graph::reachabilityMatrix(const bool &considerWeights,
 
         distanceMatrixCreate(false, considerWeights,inverseWeights,dropIsolates);
         int size = vertices(false,false), i=0, j=0;
+        m_graphPathsExistingCount=0;
         qDebug()<< "Graph::reachabilityMatrix() - calculating XRM..." ;
         influenceRanges.clear();
         influenceDomains.clear();
         disconnectedVertices.clear();
-        bool isolateVertex=true; Q_UNUSED(isolateVertex);
         for (i=0; i < size ; i++) {
             for (j=i+1; j < size ; j++) {
+                qDebug()<< "Graph::reachabilityMatrix() - d("<<i+1<<","
+                        <<j+1<<")=" << DM.item(i,j);
                 if ( XRM.item(i,j) ==1 ) {
                     qDebug()<< "Graph::reachabilityMatrix() - d("<<i+1<<","
                             <<j+1<<")=" << DM.item(i,j)
@@ -6519,7 +6541,7 @@ void Graph::reachabilityMatrix(const bool &considerWeights,
                            << " to inflDomain I of "<< j+1 ;
                     influenceRanges.insertMulti(i,j);
                     influenceDomains.insertMulti(j,i);
-                    isolateVertex=false;
+                    m_graphPathsExistingCount++;
                     if ( XRM.item(j,i) ==1 ) {
                         qDebug()<< "Graph::reachabilityMatrix() - inverse path d("
                                 <<j+1<<","<<i+1<<")="
@@ -6528,6 +6550,7 @@ void Graph::reachabilityMatrix(const bool &considerWeights,
                                << " - and " << i+1 << " to influence Range J of " << j+1 ;
                         influenceDomains.insertMulti(i,j);
                         influenceRanges.insertMulti(j,i);
+                        m_graphPathsExistingCount++;
                     }
                     else {
                         qDebug()<< "Graph::reachabilityMatrix() - ("
@@ -6545,6 +6568,7 @@ void Graph::reachabilityMatrix(const bool &considerWeights,
                         qDebug()<< "Graph::reachabilityMatrix() - ("
                                 <<j+1<<","<<i+1<<") unilaterallyConnectedVertices";
                         unilaterallyConnectedVertices.insertMulti(j,i);
+                        m_graphPathsExistingCount++;
                     }
                 }
             }

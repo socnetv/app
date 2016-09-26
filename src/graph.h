@@ -405,9 +405,9 @@ public:
 
     //GRAPH methods
     void graphModifiedSet(const int &graphChangedFlag, const bool&signalMW=true);
-    int graphModified() const ;
+    bool graphModified() const ;
 
-
+    int graphPathsExistingCount();
 
     float density();
     bool isWeighted();
@@ -744,7 +744,7 @@ private:
 
     int isolatedVertices;
 
-    float m_graphAverageDistance, nonZeroDistancesCounter;
+    float m_graphAverageDistance, nonZeroDistancesCounter, m_graphPathsExistingCount;
     int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;
     int timerId,  canvasWidth, canvasHeight;
     bool order, initVertexLabelsVisibility,initVertexNumbersVisibility;
