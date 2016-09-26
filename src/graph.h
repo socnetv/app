@@ -128,12 +128,14 @@ class CompareDistances {
 // - TODO: Enrich Node properties dialog
 // - BUG: Rubber band selection does not always work on large nets where nodes been removed.
 
-// CHECK BFS and dijkstra methods for regressions due to recent change in parameters
+
 // CHECK weighted networks results (IRCC and distance matrix with other combinations)
 // CHECK isWeighted corner case results, when !graphModified.
 
 // CHECK connectedness() algorithm implementation (unilaterallyConnectedVertices)
 
+// BUG: GraphML files containing special chars (i.e. & ) in networkName not readable.
+   // need to escape them while saving and reading graphML files.
 
 /**
  * @brief The Graph class
