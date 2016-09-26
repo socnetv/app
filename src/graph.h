@@ -132,6 +132,7 @@ class CompareDistances {
 // CHECK weighted networks results (IRCC and distance matrix with other combinations)
 // CHECK isWeighted corner case results, when !graphModified.
 
+// CHECK connectedness() algorithm implementation (unilaterallyConnectedVertices)
 
 
 /**
