@@ -274,20 +274,20 @@ public:
 
 
     /*FILES (READ AND WRITE)*/
-    bool loadGraph (const QString, const QString m_codecName,
+    QString graphName() const;
+    bool graphLoad (const QString, const QString m_codecName,
                     const bool,
                     const int maxWidth,
                     const int maxHeight,
                     const int format,
                     const int two_sm_mode);
 
-    void saveGraph( QString fileName, int fileType,
-                    QString networkName, int maxWidth, int maxHeight
-                    );
-    bool saveGraphToPajekFormat (QString fileName,QString networkName,  int maxWidth, int maxHeight);
-    bool saveGraphToAdjacencyFormat (QString fileName);
-    bool saveGraphToDotFormat (QString fileName, QString networkName, int maxWidth, int maxHeight);
-    bool saveGraphToGraphMLFormat (QString fileName,QString networkName,  int maxWidth, int maxHeight);
+    void graphSave(QString fileName, int fileType);
+    bool graphSaveToPajekFormat (QString fileName,QString networkName,  int maxWidth, int maxHeight);
+    bool graphSaveToAdjacencyFormat (QString fileName);
+    bool graphSaveToDotFormat (QString fileName, QString networkName, int maxWidth, int maxHeight);
+    bool graphSaveToGraphMLFormat (QString fileName,QString networkName,  int maxWidth, int maxHeight);
+    int graphFileFormat() const;
 
     /* RELATIONS */
     int relations();
@@ -404,6 +404,8 @@ public:
     void graphModifiedSet(const int &graphChangedFlag, const bool&signalMW=true);
     int graphModified() const ;
 
+
+
     float density();
     bool isWeighted();
 
@@ -424,18 +426,17 @@ public:
 
     void writeDataSetToFile(const QString dir, const QString );
     void writeAdjacencyMatrixTo(QTextStream& os);
-    void writeAdjacencyMatrix(const QString fileName, QString netName);
+    void writeAdjacencyMatrix(const QString fileName);
 
     void writeAdjacencyMatrixInvert(const QString &filename,
-                                    const QString &netName,
                                     const QString &method);
-    void writeDistanceMatrix(const QString fn, QString netName,
+    void writeDistanceMatrix(const QString fn,
                              const bool considerWeights,
                              const bool inverseWeights,
                              const bool dropIsolates);
-    void writeNumberOfGeodesicsMatrix(const QString fn, const QString &,
-                                      const bool considerWeights,
-                                      const bool inverseWeights);
+    void writeNumberOfGeodesicsMatrix(const QString &fn,
+                                      const bool &considerWeights,
+                                      const bool &inverseWeights);
     void writeEccentricity(const QString, const bool considerWeights,
                            const bool inverseWeights, const bool dropIsolates);
 
@@ -496,10 +497,10 @@ public:
                                const bool inverseWeights, const bool dropIsolates);
     int connectedness();
 
-    void distanceMatrixCreate(const bool centralities=false,
-                              const bool considerWeights=false,
-                              const bool inverseWeights=true,
-                              const bool dropIsolates=false);
+    void distanceMatrixCreate(const bool &centralities=false,
+                              const bool &considerWeights=false,
+                              const bool &inverseWeights=true,
+                              const bool &dropIsolates=false);
     void centralityDegree(const bool weights, const bool dropIsolates=false);
     void centralityInformation(const bool considerWeights=false,
                                const bool inverseWeights=false);
@@ -507,27 +508,26 @@ public:
                                            const bool inverseWeights=false,
                                            const bool dropIsolates=false);
 
-    void prestigeDegree(bool, bool);
-    void prestigePageRank(const bool dropIsolates=false);
+    void prestigeDegree(const bool &weights, const bool &dropIsolates=false);
+    void prestigePageRank(const bool &dropIsolates=false);
     void prestigeProximity(const bool considerWeights=false,
                            const bool inverseWeights=false,
                            const bool dropIsolates=false);
 
     /* REACHABILTY AND WALKS */
     int walksBetween(int v1, int v2,int length);
-    void walksMatrixCreate(const int length,
-                                   const bool updateProgress=false);
-    void writeWalksTotalMatrix(QString fn, QString netName, int length);
-    void writeWalksOfLengthMatrix(QString fn, QString netName, int length);
-    int reachable(int v1, int v2) ;
+    void walksMatrixCreate(const int &length,
+                                   const bool &updateProgress=false);
+    void writeWalksTotalMatrix(const QString &fn, const int &length);
+    void writeWalksOfLengthMatrix(const QString &fn, const int &length);
+    int reachable(const int &v1, const int &v2) ;
     QList<int> vertexinfluenceRange(int v1);
     QList<int> vertexinfluenceDomain(int v2);
-    void reachabilityMatrix(const bool considerWeights=false,
-                            const bool inverseWeights=false,
-                            const bool dropIsolates=false,
-                            const bool updateProgress=false);
-    void writeReachabilityMatrix(QString fn, QString netName,
-                                 const bool dropIsolates=false);
+    void reachabilityMatrix(const bool &considerWeights=false,
+                            const bool &inverseWeights=false,
+                            const bool &dropIsolates=false,
+                            const bool &updateProgress=false);
+    void writeReachabilityMatrix(const QString &fn, const bool &dropIsolates=false);
 
 
     float numberOfTriples(int v1);
@@ -651,10 +651,11 @@ private:
                   );
 
     /** methods used by distanceMatrixCreate()  */
-    void BFS(const int s, const bool computeCentralities,
-             const bool dropIsolates);
-    void dijkstra(const int s,const bool computeCentralities,
-                  const bool inverseWeights, const bool dropIsolates);
+    void BFS(const int &s, const bool &computeCentralities=false,
+             const bool &dropIsolates=false);
+    void dijkstra(const int &s, const bool &computeCentralities=false,
+                  const bool &inverseWeights=false,
+                  const bool &dropIsolates=false);
     void minmax(
                 float C, Vertex *v, float &max, float &min,
                 int &maxNode, int &minNode
@@ -690,7 +691,7 @@ private:
     bool calculatedPP, calculatedIRCC, calculatedIC, calculatedPRP;
     bool calculatedTriad;
 
-    int m_precision, m_curRelation;
+    int m_precision, m_curRelation, m_fileFormat;
     float edgeWeightTemp;
     float meanDC, varianceDC;
     float meanCC, varianceCC;
@@ -748,10 +749,10 @@ private:
     bool adjacencyMatrixCreated, symmetricAdjacencyMatrix,
         distanceMatrixCreated;
     bool reachabilityMatrixCreated;
-    bool m_undirected;
+    bool m_undirected, m_isWeighted;
     bool initEdgeWeightNumbers, initEdgeLabels;
 
-    QString VERSION, fileName, networkName, initEdgeColor, initVertexColor,
+    QString VERSION, fileName, m_graphName, initEdgeColor, initVertexColor,
         initVertexNumberColor, initVertexLabelColor, initVertexShape;
 
     QDateTime actualDateTime;

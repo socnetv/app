@@ -3556,11 +3556,7 @@ void MainWindow::initNet(){
     previous_fileName=fileName;
     fileName="";
 
-    pajekFileLoaded=false;
-    adjacencyFileLoaded=false;
-    fileFormat = -1;
     initFileCodec= "UTF-8";
-    dotFileLoaded=false;
     fileLoaded=false;
 
     networkModified=false;
@@ -4290,7 +4286,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
             return;
         }
         qDebug()<<"MW::slotNetworkFileChoose() - selected file: " << m_fileName
-                  << " fileFormat " << m_fileFormat;
+                  << " file format " << m_fileFormat;
 
         slotNetworkFilePreview(m_fileName, m_fileFormat );
 
@@ -4325,21 +4321,18 @@ void MainWindow::slotNetworkSave() {
         slotNetworkSaveAs();
         return;
     }
-
-    int maxWidth=scene->width();
-    int maxHeight=scene->height();
     fileNameNoPath=fileName.split ("/");
-    if (pajekFileLoaded)
+    if (activeGraph.graphFileFormat()==FILE_PAJEK)
     {
-        activeGraph.saveGraph(fileName, FILE_PAJEK, networkName, maxWidth,maxHeight) ;
+        activeGraph.graphSave(fileName, FILE_PAJEK) ;
     }
-    else if (adjacencyFileLoaded)
+    else if (activeGraph.graphFileFormat()==FILE_ADJACENCY)
     {
-        activeGraph.saveGraph(fileName, FILE_ADJACENCY, networkName, maxWidth,maxHeight);
+        activeGraph.graphSave(fileName, FILE_ADJACENCY);
     }
-    else if (graphMLFileLoaded || ( !fileLoaded && networkModified) )
+    else if (activeGraph.graphFileFormat()==FILE_GRAPHML || ( !fileLoaded && networkModified) )
     {	//new file or GraphML
-        activeGraph.saveGraph(fileName, FILE_GRAPHML, networkName, maxWidth,maxHeight);
+        activeGraph.graphSave(fileName, FILE_GRAPHML);
     }
     else
     {
@@ -4351,7 +4344,7 @@ void MainWindow::slotNetworkSave() {
                 )
         {
         case 0:
-             activeGraph.saveGraph(fileName, FILE_GRAPHML, networkName, maxWidth,maxHeight);
+             activeGraph.graphSave(fileName, FILE_GRAPHML);
             break;
         case 1:
             statusMessage( tr("Save aborted...") );
@@ -4383,9 +4376,6 @@ void MainWindow::slotNetworkSaveAs() {
         fileName=fn;
         fileNameNoPath=fileName.split ("/");
         setLastPath(fileName); // store this path
-        adjacencyFileLoaded=false;
-        pajekFileLoaded=false;
-        graphMLFileLoaded=false;
         slotNetworkSave();
     }
     else  {
@@ -4416,28 +4406,6 @@ void MainWindow::slotNetworkSaved(const int &status)
         fileLoaded=true; networkModified=false;
         setWindowTitle( fileNameNoPath.last() );
         statusMessage( tr("Network saved under filename: ")+fileNameNoPath.last()+tr(".") );
-        switch (status){
-        case 1:
-            adjacencyFileLoaded=false;
-            pajekFileLoaded=true;
-            graphMLFileLoaded=false;
-            break;
-        case 2:
-            adjacencyFileLoaded=true;
-            pajekFileLoaded=false;
-            graphMLFileLoaded=false;
-            break;
-        case 3:
-            adjacencyFileLoaded=false;
-            pajekFileLoaded=false;
-            graphMLFileLoaded=false;
-            break;
-        case 4:
-            adjacencyFileLoaded=false;
-            pajekFileLoaded=false;
-            graphMLFileLoaded=true;
-            break;
-        }
     }
 }
 
@@ -4687,7 +4655,7 @@ void MainWindow::slotNetworkFileLoadRecent() {
  * Main network file loader method
  * Called from previewForm and slotNetworkDataSetRecreate
  * Calls initNet to init to default values.
- * Then calls activeGraph::loadGraph to actually load the network...
+ * Then calls activeGraph::graphLoad to actually load the network...
  */
 bool MainWindow::slotNetworkFileLoad(const QString m_fileName,
                                  const QString m_codecName,
@@ -4719,8 +4687,8 @@ bool MainWindow::slotNetworkFileLoad(const QString m_fileName,
     }
 
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-    qDebug() << "MW::slotNetworkFileLoad() : calling activeGraph.loadGraph() ";
-    bool loadGraphStatus = activeGraph.loadGraph (
+    qDebug() << "MW::slotNetworkFileLoad() : calling activeGraph.graphLoad() ";
+    bool loadGraphStatus = activeGraph.graphLoad (
                 m_fileName,
                 m_codecName,
                 (appSettings["initNodeLabelsVisibility"] == "true" ) ? true: false,
@@ -4753,21 +4721,19 @@ void MainWindow::slotNetworkFileLoaded (
     Q_UNUSED (undirected);
 
     if (type > 0) {
-        fileFormat=type;
         fileName=fName;
         previous_fileName=fileName;
         fileNameNoPath = fileName.split("/");
         Q_ASSERT_X( !fileNameNoPath.isEmpty(),  "not empty filename ", "empty filename " );
-        if (netName != "")
-            networkName=netName ;
-        else
-            networkName=fileNameNoPath.last();
 
         setWindowTitle("SocNetV "+ VERSION +" - "+fileNameNoPath.last());
         setLastPath(fileName); // store this path and file
+        fileLoaded=true;
+        networkModified=false;
 
     }
     else {
+        fileLoaded =false;
         statusMessage( tr("Error loading requested file. Aborted."));
         QMessageBox::critical( this, "SocNetV",
                                tr("Error! \n")+
@@ -4777,102 +4743,59 @@ void MainWindow::slotNetworkFileLoaded (
                                "OK", 0 );
     }
 
-
     switch( type ) 	{
     case 0:
-        pajekFileLoaded=false;
-        adjacencyFileLoaded=false;
-        graphMLFileLoaded=false;
         fileLoaded=false;
         break;
     case 1:
-        pajekFileLoaded=false;
-        adjacencyFileLoaded=false;
-        dotFileLoaded=false;
-        graphMLFileLoaded=true;
         fileLoaded=true;
         networkModified=false;
-        statusMessage( QString(tr("GraphML formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
+        statusMessage( tr("GraphML formatted network, named %1, loaded with %2 Nodes and %3 total Edges.").arg( networkName ).arg( aNodes ).arg(totalEdges ) );
         break;
 
     case 2:
-        pajekFileLoaded=true;
-        adjacencyFileLoaded=false;
-        graphMLFileLoaded=false;
         fileLoaded=true;
         networkModified=false;
         statusMessage( QString(tr("Pajek formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ));
         break;
 
     case 3:
-        pajekFileLoaded=false;
-        adjacencyFileLoaded=true;
-        graphMLFileLoaded=false;
         fileLoaded=true;
         networkModified=false;
         statusMessage( QString(tr("Adjacency formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
         break;
 
     case 4:
-        pajekFileLoaded=false;
-        adjacencyFileLoaded=false;
-        dotFileLoaded=true;
-        graphMLFileLoaded=false;
         fileLoaded=true;
         networkModified=false;
         statusMessage( QString(tr("Dot formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
         break;
 
     case 5:
-        pajekFileLoaded=false;
-        adjacencyFileLoaded=false;
-        dotFileLoaded=false;
-        graphMLFileLoaded=false;
         fileLoaded=true;
         networkModified=false;
         statusMessage( QString(tr("DL-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
         break;
     case 6:
-        pajekFileLoaded=false;
-        adjacencyFileLoaded=false;
-        dotFileLoaded=false;
-        graphMLFileLoaded=false;
-        fileLoaded=true;
-        networkModified=false;
         statusMessage( QString(tr("GML-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
         break;
     case 7:
-        pajekFileLoaded=false;
-        adjacencyFileLoaded=false;
-        dotFileLoaded=false;
-        graphMLFileLoaded=false;
         fileLoaded=true;
         networkModified=false;
         statusMessage( QString(tr("Weighted list-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
         break;
     case 8:
-        pajekFileLoaded=false;
-        adjacencyFileLoaded=false;
-        dotFileLoaded=false;
-        graphMLFileLoaded=false;
         fileLoaded=true;
         networkModified=false;
         statusMessage( QString(tr("Simple list-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
         break;
     case 9:
-        pajekFileLoaded=false;
-        adjacencyFileLoaded=false;
-        dotFileLoaded=false;
-        graphMLFileLoaded=false;
         fileLoaded=true;
         networkModified=false;
         statusMessage( QString(tr("Two-mode affiliation network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
         break;
 
     default: // just for sanity
-        pajekFileLoaded=false;
-        adjacencyFileLoaded=false;
-        graphMLFileLoaded=false;
         fileLoaded=false;
         QMessageBox::critical(this, "Error","Unrecognized format. \nPlease specify"
                               " which is the file-format using Import Menu.","OK",0);
@@ -5195,10 +5118,7 @@ void MainWindow::slotNetworkExportPajek()
         return;
     }
 
-    int maxWidth=scene->width();
-    int maxHeight=scene->height();
-
-    activeGraph.saveGraph(fileName, FILE_PAJEK, networkName, maxWidth,maxHeight );
+    activeGraph.graphSave(fileName, FILE_PAJEK);
 }
 
 
@@ -5235,10 +5155,8 @@ void MainWindow::slotNetworkExportSM(){
     }
 
     QMessageBox::information(this, "Warning",tr("Note that exporting to an adjacency matrix does not save floating-point weight values; adjacency matrices consist of integers, only. \n If your network had any floating point weights in some edges, these are being truncated to the nearest integer or 1."), "OK",0);
-    int maxWidth=scene->width();
-    int maxHeight=scene->height();
 
-    activeGraph.saveGraph(fileName, FILE_ADJACENCY, networkName,maxWidth,maxHeight ) ;
+    activeGraph.graphSave(fileName, FILE_ADJACENCY ) ;
 
 }
 
@@ -5415,7 +5333,7 @@ void MainWindow::slotNetworkViewSociomatrix(){
     qDebug ("MW: calling Graph::writeAdjacencyMatrix with %i nodes", aNodes);
     QString fn = appSettings["dataDir"] + "socnetv-report-adjacency-matrix.dat";
 
-    activeGraph.writeAdjacencyMatrix(fn, networkName.toLocal8Bit()) ;
+    activeGraph.writeAdjacencyMatrix(fn) ;
 
     //Open a text editor window for the new file created by graph class
     TextEditor *ed = new TextEditor(fn);
@@ -8422,7 +8340,7 @@ void MainWindow::slotInvertAdjMatrix(){
 
     QTime timer;
     timer.start();
-    activeGraph.writeAdjacencyMatrixInvert(fn, networkName, QString("lu")) ;
+    activeGraph.writeAdjacencyMatrixInvert(fn, QString("lu")) ;
     int msecs = timer.elapsed();
     statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
     //Open a text editor window for the new file created by graph class
@@ -8594,7 +8512,7 @@ void MainWindow::slotDistancesMatrix(){
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.writeDistanceMatrix(fn, networkName.toLocal8Bit(),
+    activeGraph.writeDistanceMatrix(fn,
                                     considerWeights, inverseWeights,
                                     filterIsolateNodesAct->isChecked());
 
@@ -8630,7 +8548,7 @@ void MainWindow::slotGeodesicsMatrix(){
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.writeNumberOfGeodesicsMatrix(fn, networkName.toLocal8Bit(),
+    activeGraph.writeNumberOfGeodesicsMatrix(fn,
                                              considerWeights, inverseWeights);
 
     destroyProgressBar();
@@ -8855,7 +8773,7 @@ void MainWindow::slotWalksOfGivenLength(){
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.writeWalksOfLengthMatrix(fn, networkName, length);
+    activeGraph.writeWalksOfLengthMatrix(fn, length);
 
     destroyProgressBar();
 
@@ -8913,7 +8831,7 @@ void MainWindow::slotTotalWalks(){
 
     createProgressBar(maxLength,progressMsg);
 
-    activeGraph.writeWalksTotalMatrix(fn, networkName, maxLength);
+    activeGraph.writeWalksTotalMatrix(fn, maxLength);
     destroyProgressBar(maxLength); // do not check for progress bar
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
@@ -8947,7 +8865,7 @@ void MainWindow::slotReachabilityMatrix(){
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.writeReachabilityMatrix(fn, networkName);
+    activeGraph.writeReachabilityMatrix(fn);
 
     destroyProgressBar();
 
@@ -8956,6 +8874,8 @@ void MainWindow::slotReachabilityMatrix(){
 
     statusMessage("Reachability Matrix saved as: " + fn );
 }
+
+
 
 /**
 *	Calls Graph:: writeCliqueCensus() to write the number of cliques (triangles)

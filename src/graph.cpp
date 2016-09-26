@@ -59,7 +59,11 @@ Graph::Graph() {
     order=true;		//returns true if the indexes of the list is ordered.
     graphModifiedFlag=false;
     m_undirected=false;
+    m_isWeighted=false;
     fileName ="";
+    m_graphName="";
+    m_curRelation=0;
+    m_fileFormat=FILE_UNRECOGNIZED;
     symmetricAdjacencyMatrix=true;
     adjacencyMatrixCreated=false;
     reachabilityMatrixCreated=false;
@@ -73,7 +77,6 @@ Graph::Graph() {
     calculatedPRP=false;
     calculatedTriad=false;
     m_precision = 5;
-    m_curRelation=0;
 
     file_parser = 0;
     wc_parser = 0;
@@ -100,6 +103,7 @@ void Graph::clear() {
     //clear relations
     m_relationsList.clear();
     m_curRelation=0;
+    m_fileFormat=FILE_UNRECOGNIZED;
 
     discreteDPs.clear(); discreteDCs.clear(); discreteCCs.clear();
     discreteBCs.clear(); discreteSCs.clear(); discreteIRCCs.clear();
@@ -159,6 +163,7 @@ void Graph::clear() {
 
     order=true;		//returns true if the indexes of the list is ordered.
     m_undirected=false;
+    m_isWeighted=false;
     calculatedDP=false; calculatedDC=false;
     calculatedIC=false; calculatedCentralities=false;
     calculatedIRCC=false; calculatedPP=false;
@@ -1336,6 +1341,9 @@ void Graph::edgeAdd (const int &v1, const int &v2, const float &weight,
     m_graph[ source ]->setOutLinkColor(v2, color);
     m_graph[ source ]->setOutEdgeLabel(v2, label);
 
+    if ( weight != 1 && weight!=0) {
+        m_isWeighted=true; //not binary graph
+    }
     if (type == EDGE_DIRECTED_OPPOSITE_EXISTS ){
         // make existing opposite edge reciprocal
 
@@ -1894,17 +1902,23 @@ float Graph::density() {
  * @return
  */
 bool Graph::isWeighted(){
+    if ( ! graphModified() )
+    {
+        qDebug()<< "Graph: isWeighted() - graph not modified. Return " << m_isWeighted;
+        return m_isWeighted;
+    }
     QList<Vertex*>::const_iterator it, it1;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
             if ( ( edgeExists ( (*it1)->name(), (*it)->name() ) )  > 1  )   {
+                qDebug()<< "Graph: isWeighted() - true";
                 //FIXME What about negative weights?? or 0 < w < 1 ?
-                return true;
+                return m_isWeighted=true;
             }
         }
     }
     qDebug()<< "Graph: isWeighted() - false";
-    return false;
+    return m_isWeighted=false;
 }
 
 
@@ -2354,7 +2368,7 @@ int Graph::connectedness() {
 /**
 *  Writes the matrix of distances to a file
 */
-void Graph::writeDistanceMatrix (QString fn, QString netName,
+void Graph::writeDistanceMatrix (QString fn,
                                  const bool considerWeights,
                                  const bool inverseWeights,
                                  const bool dropIsolates) {
@@ -2377,8 +2391,8 @@ void Graph::writeDistanceMatrix (QString fn, QString netName,
     QTextStream outText(&file);
     outText.setCodec("UTF-8");
     outText.setRealNumberPrecision(m_precision);
-    outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
-    outText << "Network name: "<<  ((netName.isEmpty()) ? "Unnamed" : netName) <<" \n";
+    outText << "-Social Network Visualizer "<<  VERSION <<endl;
+    outText << tr("Network name: ")<< graphName()<< endl<<endl;
     outText << "Distance matrix: \n";
 
     outText << DM ;
@@ -2391,10 +2405,9 @@ void Graph::writeDistanceMatrix (QString fn, QString netName,
 *  Saves the number of geodesic distances matrix TM to a file
 *
 */
-void Graph::writeNumberOfGeodesicsMatrix(const QString fn,
-                                         const QString &netName,
-                                         const bool considerWeights,
-                                         const bool inverseWeights) {
+void Graph::writeNumberOfGeodesicsMatrix(const QString &fn,
+                                         const bool &considerWeights,
+                                         const bool &inverseWeights) {
     qDebug ("Graph::writeNumberOfGeodesicsMatrix()");
     if ( !distanceMatrixCreated || graphModified() ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
@@ -2414,7 +2427,7 @@ void Graph::writeNumberOfGeodesicsMatrix(const QString fn,
     QTextStream outText(&file);
     outText.setCodec("UTF-8");
     outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
-    outText << "Network name: "<< ((netName.isEmpty()) ? "Unnamed" : netName )<<" \n";
+    outText << tr("Network name: ")<< graphName() <<" \n\n";
     outText << "Number of geodesics matrix: \n";
 
     outText << TM ;
@@ -2435,7 +2448,7 @@ void Graph::writeEccentricity(
         const QString fileName, const bool considerWeights=false,
         const bool inverseWeights=false, const bool dropIsolates=false)
 {
-
+    qDebug() << "Graph::writeEccentricity";
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
@@ -2444,14 +2457,15 @@ void Graph::writeEccentricity(
     }
     QTextStream outText ( &file );
     outText.setCodec("UTF-8");
-    if ( !distanceMatrixCreated || graphModified() ) {
+    if ( !distanceMatrixCreated || !calculatedCentralities || graphModified() ) {
         emit statusMessage ( (tr("Calculating shortest paths")) );
         distanceMatrixCreate(true, considerWeights,
                              inverseWeights, dropIsolates);
     }
     emit statusMessage ( tr("Writing eccentricity to file:") + fileName );
 
-    outText << tr("ECCENTRICITY (e)") << endl << endl;
+    outText << tr("ECCENTRICITY (e)") << endl ;
+    outText << tr("Network name: ")<< graphName()<< endl<<endl;
     outText << tr("The eccentricity e of a node is the maximum geodesic distance "
                   " from that node to all other nodes in the network.") ;
     outText << endl  ;
@@ -2515,10 +2529,10 @@ void Graph::writeEccentricity(
         - Power:
  * @param computeCentralities
  */
-void Graph::distanceMatrixCreate(const bool centralities,
-                                 const bool considerWeights,
-                                 const bool inverseWeights,
-                                 const bool dropIsolates) {
+void Graph::distanceMatrixCreate(const bool &centralities,
+                                 const bool &considerWeights,
+                                 const bool &inverseWeights,
+                                 const bool &dropIsolates) {
     qDebug ("Graph::distanceMatrixCreate()");
     if ( !graphModified() && distanceMatrixCreated && !centralities)  {
         qDebug("Graph: distanceMatrix not mofified. Escaping.");
@@ -2953,8 +2967,8 @@ void Graph::distanceMatrixCreate(const bool centralities,
             c) Each vertex u popped from Q is pushed to a stack Stack
 
 */ 
-void Graph::BFS(int s, const bool computeCentralities=false,
-                const bool dropIsolates=false){
+void Graph::BFS(const int &s, const bool &computeCentralities,
+                const bool &dropIsolates){
     Q_UNUSED(dropIsolates);
     int u,w, dist_u=0, temp=0, dist_w=0;
     int relation=0, target=0;
@@ -3098,9 +3112,9 @@ void Graph::BFS(int s, const bool computeCentralities=false,
             c) Each vertex u popped from Q is pushed to a stack Stack
 
 */
-void Graph::dijkstra(int s, const bool computeCentralities=false,
-                     const bool inverseWeights=false,
-                     const bool dropIsolates=false){
+void Graph::dijkstra(const int &s, const bool &computeCentralities,
+                     const bool &inverseWeights,
+                     const bool &dropIsolates){
     Q_UNUSED(dropIsolates);
     int u,w,v, temp=0;
     int relation=0, target=0;
@@ -3460,7 +3474,8 @@ void Graph::writeCentralityInformation(const QString fileName,
     emit statusMessage ( QString(tr("Writing information centralities to file: "))
                          .arg(fileName) );
     outText.setRealNumberPrecision(m_precision);
-    outText << tr("INFORMATION CENTRALITY (IC)")<<"\n";
+    outText << tr("INFORMATION CENTRALITY (IC)")<<endl;
+    outText << tr("Network name: ")<< graphName()<< endl<<endl;
     outText << tr("The IC index measures the information flow through "
                   "all paths between actors weighted by strength of tie and distance\n");
     outText << tr("IC' is the standardized IC (IC divided by the sumIC).") <<"\n"
@@ -3675,7 +3690,8 @@ void Graph::writeCentralityDegree ( const QString fileName,
     float maximumIndexValue=vertices(dropIsolates)-1.0;
 
     outText.setRealNumberPrecision(m_precision);
-    outText << tr("DEGREE CENTRALITY (DC)\n");
+    outText << tr("DEGREE CENTRALITY (DC)")<<endl;
+    outText << tr("Network name: ")<< graphName()<< endl<<endl;
     outText << tr("In undirected graphs, the DC index is the sum of edges "
                   "attached to a node u.\n");
     outText << tr("In digraphs, the index is the sum of outbound arcs from "
@@ -3856,7 +3872,8 @@ void Graph::writeCentralityCloseness(
     emit statusMessage ( QString(tr("Writing closeness indices to file:"))
                          .arg(fileName) );
     outText.setRealNumberPrecision(m_precision);
-    outText << tr("CLOSENESS CENTRALITY (CC)")<<"\n";
+    outText << tr("CLOSENESS CENTRALITY (CC)")<<endl;
+    outText << tr("Network name: ")<< graphName()<< endl<<endl;
     outText << tr("The CC index is the inverted sum of geodesic distances "
                   " from each node u to all other nodes.")<<"\n";
     outText << tr("CC' is the standardized CC (multiplied by N-1 minus isolates).")
@@ -3942,7 +3959,8 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
     emit statusMessage ( QString(tr("Writing IR closeness indices to file:")
                          .arg(fileName) ));
     outText.setRealNumberPrecision(m_precision);
-    outText << tr("INFLUENCE RANGE CLOSENESS CENTRALITY (IRCC)")<<"\n";
+    outText << tr("INFLUENCE RANGE CLOSENESS CENTRALITY (IRCC)")<<endl;
+    outText << tr("Network name: ")<< graphName()<< endl<<endl;
     outText << tr("The IRCC index is the ratio of the fraction of nodes "
                    "reachable by each node u to the average distance of these nodes from u.\n"
                    "This index is optimized for graphs and directed graphs which "
@@ -4014,7 +4032,8 @@ void Graph::writeCentralityBetweenness(const QString fileName,
 
     emit statusMessage ( tr("Writing betweenness indices to file:") +  fileName );
     outText.setRealNumberPrecision(m_precision);
-    outText << tr("BETWEENESS CENTRALITY (BC)")<<"\n";
+    outText << tr("BETWEENESS CENTRALITY (BC)")<<endl;
+    outText << tr("Network name: ")<< graphName()<< endl<<endl;
     outText << tr("The BC index of a node u is the sum of delta (s,t,u) for all s,t in V")<<"\n";
     outText << tr("where delta (s,t,u) is the ratio of all geodesics between "
                   "s and t which run through u. Read the Manual for more.")<<"\n";
@@ -4095,7 +4114,8 @@ void Graph::writeCentralityStress( const QString fileName,
 
     emit statusMessage ( tr("Writing stress indices to file:") + fileName );
     outText.setRealNumberPrecision(m_precision);
-    outText << tr("STRESS CENTRALITY (SC)")<<"\n";
+    outText << tr("STRESS CENTRALITY (SC)")<<endl;
+    outText << tr("Network name: ")<< graphName()<< endl<<endl;
     outText << tr("The SC index of each node u is the sum of sigma(s,t,u): "
                   "the number of geodesics from s to t through u.")<<"\n";
 
@@ -4180,7 +4200,8 @@ void Graph::writeCentralityEccentricity(const QString fileName,
     emit statusMessage ( QString(tr("Writing eccentricity indices to file:"))
                          .arg(fileName) );
     outText.setRealNumberPrecision(m_precision);
-    outText << tr("ECCENTRICITY CENTRALITY (EC)") << "\n";
+    outText << tr("ECCENTRICITY CENTRALITY (EC)") << endl;
+    outText << tr("Network name: ")<< graphName()<< endl<<endl;
     outText << tr("The EC index of a node u is the inverse maximum geodesic distance "
                   " from u to all other nodes in the network.") << "\n";
 
@@ -4249,7 +4270,8 @@ void Graph::writeCentralityPower(const QString fileName,
                          .arg(fileName) );
     outText.setRealNumberPrecision(m_precision);
 
-    outText << tr("POWER CENTRALITY (PC)") << "\n";
+    outText << tr("POWER CENTRALITY (PC)") << endl;
+    outText << tr("Network name: ")<< graphName()<< endl<<endl;
     outText << tr("The PC index of a node u is the sum of the sizes of all Nth-order "
                   "neighbourhoods with weight 1/n.") << "\n";
 
@@ -4319,7 +4341,7 @@ void Graph::writeCentralityPower(const QString fileName,
  * @param weights
  * @param dropIsolates
  */
-void Graph::prestigeDegree(bool weights, bool dropIsolates=false){
+void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
     qDebug()<< "Graph::prestigeDegree()";
     if (!graphModified() && calculatedDP ) {
         qDebug() << "Graph::prestigeDegree() - "
@@ -4449,7 +4471,8 @@ void Graph::writePrestigeDegree (const QString fileName,
 
     float maximumIndexValue=vertices()-1.0;
     outText.setRealNumberPrecision(m_precision);
-    outText << tr("DEGREE PRESTIGE (DP)\n");
+    outText << tr("DEGREE PRESTIGE (DP)") << endl;
+    outText << tr("Network name: ")<< graphName()<< endl<<endl;
     outText << tr("The DP index of a node u is the sum of inbound edges to "
                   "that node from all adjacent nodes.\n");
     outText << tr("If the network is weighted, DP is the sum of inbound arc "
@@ -4652,8 +4675,9 @@ void Graph::writePrestigeProximity( const QString fileName,
     emit statusMessage ( QString(tr("Writing proximity prestige indices to file:"))
                          .arg(fileName) );
     outText.setRealNumberPrecision(m_precision);
-    outText << tr("PROXIMITY PRESTIGE (PP)\n"
-                  "The PP index of a node u is the ratio of the proportion of "
+    outText << tr("PROXIMITY PRESTIGE (PP)") << endl;
+    outText << tr("Network name: ")<< graphName()<< endl<<endl;
+    outText << tr("The PP index of a node u is the ratio of the proportion of "
                   "nodes who can reach u to the average distance these nodes are "
                   "from u. Read the Manual for more.") <<"\n\n";
 
@@ -4702,7 +4726,7 @@ void Graph::writePrestigeProximity( const QString fileName,
  * Calculates the PageRank Prestige of each vertex
  * @param dropIsolates
  */
-void Graph::prestigePageRank(const bool dropIsolates){
+void Graph::prestigePageRank(const bool &dropIsolates){
     qDebug()<< "Graph::prestigePageRank()";
     if (! graphModified() && calculatedPRP ) {
         qDebug() << " graph not changed - return ";
@@ -4941,8 +4965,8 @@ void Graph::writePrestigePageRank(const QString fileName, const bool dropIsolate
     emit statusMessage ( QString(tr("Writing PageRank indices to file: %1"))
                          .arg(fileName) );
     outText.setRealNumberPrecision(m_precision);
-    outText << tr("PAGERANK PRESTIGE (PRP)")<<"\n";
-    outText << tr("")<<"\n";
+    outText << tr("PAGERANK PRESTIGE (PRP)")<<endl;
+    outText << tr("Network name: ")<< graphName()<< endl<<endl;
     outText << tr("PRP  range: (1-d)/N = ") << ( 1- d_factor ) / vertices()
             << " < PRP" << endl;
     outText << " d =" << d_factor   << endl;
@@ -6217,7 +6241,7 @@ int Graph::walksBetween(int v1, int v2, int length) {
  * @param length
  * @param updateProgress
  */
-void Graph::walksMatrixCreate(const int maxPower, const bool updateProgress) {
+void Graph::walksMatrixCreate(const int &maxPower, const bool &updateProgress) {
     qDebug()<<"Graph::walksBetween() - first create the Adjacency Matrix AM";
 
     bool dropIsolates=false;
@@ -6264,7 +6288,7 @@ void Graph::walksMatrixCreate(const int maxPower, const bool updateProgress) {
  * @param netName
  * @param length
  */
-void Graph::writeWalksTotalMatrix(QString fn, QString netName, int length){
+void Graph::writeWalksTotalMatrix(const QString &fn, const int &length){
     qDebug("Graph::writeWalksTotalMatrix() ");
 
     QFile file (fn);
@@ -6276,8 +6300,8 @@ void Graph::writeWalksTotalMatrix(QString fn, QString netName, int length){
 
     QTextStream outText(&file);
     outText.setCodec("UTF-8");
-    outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
-    outText << "Network name: "<< ( (netName.isEmpty()) ? "Unnamed" : netName )<<" \n";
+    outText << "-Social Network Visualizer "<<  VERSION <<endl;
+    outText << tr("Network name: ")<< graphName()<<endl<<endl;
     outText << "Total number of walks of any length less than or equal to "<< length
         <<" between each pair of nodes \n\n";
     outText << "Warning: Walk counts consider unordered pairs of nodes\n\n";
@@ -6290,7 +6314,13 @@ void Graph::writeWalksTotalMatrix(QString fn, QString netName, int length){
 
 }
 
-void Graph::writeWalksOfLengthMatrix(QString fn, QString netName, int length){
+
+/**
+ * @brief Graph::writeWalksOfLengthMatrix
+ * @param fn
+ * @param length
+ */
+void Graph::writeWalksOfLengthMatrix(const QString &fn, const int &length){
     qDebug("Graph::writeWalksOfLengthMatrix() ");
 
     QFile file (fn);
@@ -6303,7 +6333,7 @@ void Graph::writeWalksOfLengthMatrix(QString fn, QString netName, int length){
     QTextStream outText(&file);
     outText.setCodec("UTF-8");
     outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
-    outText << "Network name: "<< ((netName.isEmpty()) ? "Unnamed" : netName)<<" \n";
+    outText << "Network name: "<< graphName()<<" \n";
     outText << "Number of walks of length "<< length <<" between each pair of nodes \n\n";
 
     walksMatrixCreate(length, true);
@@ -6322,7 +6352,7 @@ void Graph::writeWalksOfLengthMatrix(QString fn, QString netName, int length){
     This method is actually a reachability test (if it returns non-zero)
 
 */
-int Graph::reachable(int v1, int v2) {
+int Graph::reachable(const int &v1, const int &v2) {
     qDebug()<< "Graph::reachable()";
     if (!distanceMatrixCreated || graphModified() )
         distanceMatrixCreate(false);
@@ -6379,10 +6409,10 @@ QList<int> Graph::vertexinfluenceDomain(int v1){
     In the process, this function creates the InfluenceRange and InfluenceDomain
     of each node.
 */
-void Graph::reachabilityMatrix(const bool considerWeights,
-                               const bool inverseWeights,
-                               const bool dropIsolates,
-                               const bool updateProgress) {
+void Graph::reachabilityMatrix(const bool &considerWeights,
+                               const bool &inverseWeights,
+                               const bool &dropIsolates,
+                               const bool &updateProgress) {
     qDebug()<< "Graph::reachabilityMatrix()";
 
     if (reachabilityMatrixCreated && !graphModified()) {
@@ -6451,8 +6481,7 @@ void Graph::reachabilityMatrix(const bool considerWeights,
 /**
     Writes the reachability matrix X^R of the graph to a file
 */
-void Graph::writeReachabilityMatrix(QString fn, QString netName,
-                                   const bool dropIsolates) {
+void Graph::writeReachabilityMatrix(const QString &fn, const bool &dropIsolates) {
     qDebug("Graph::writeReachabilityMatrix() ");
 
     QFile file (fn);
@@ -6465,8 +6494,8 @@ void Graph::writeReachabilityMatrix(QString fn, QString netName,
 
     QTextStream outText(&file);
 
-    outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
-    outText << "Network name: "<< ( (netName.isEmpty()) ? "Unnamed" : netName )<<" \n";
+    outText << "-Social Network Visualizer "<<  VERSION <<endl;
+    outText << tr("Network name: ")<< graphName()<< endl<<endl;
     outText << "Reachability Matrix (XR) \n";
     outText << "Two nodes are reachable if there is a walk between them (their geodesic distance is non-zero). \n";
     outText << "If nodes i and j are reachable then XR(i,j)=1 otherwise XR(i,j)=0.\n\n";
@@ -6513,7 +6542,8 @@ void Graph::writeClusteringCoefficient(
 
     outText.setRealNumberPrecision(m_precision);
 
-    outText << tr("CLUSTERING COEFFICIENT (CLC) REPORT") << endl << endl;
+    outText << tr("CLUSTERING COEFFICIENT (CLC) REPORT") << endl;
+    outText << tr("Network name: ")<< graphName()<< endl<<endl;
 
     outText << tr("Local CLC  range: 0 < C < 1") << endl<<endl;
     outText << "Node"<<"\tLocal CLC\n";
@@ -6581,8 +6611,8 @@ void Graph::writeTriadCensus(
     emit statusMessage ( tr("Writing triad census to file: ") +
                          fileName );
 
-    outText << tr("TRIAD CENSUS (TRC)\n\n");
-
+    outText << tr("TRIAD CENSUS (TRC)")<<endl;
+    outText << tr("Network name: ")<< graphName()<< endl<<endl;
     outText << "Type\t\tCensus\t\tExpected Value" << "\n";
     outText << "003" << "\t\t" << triadTypeFreqs[0] << "\n";
     outText << "012" << "\t\t" <<triadTypeFreqs[1] <<"\n";
@@ -6641,7 +6671,8 @@ void Graph::writeCliqueCensus(
 
     emit statusMessage ( tr("Writing clique census to file: ") + fileName );
 
-    outText << tr("CLIQUE CENSUS (CLQs)") << endl<<endl;
+    outText << tr("CLIQUE CENSUS (CLQs)") << endl;
+    outText << tr("Network name: ")<< graphName()<< endl<<endl;
 
     outText << tr("CLIQUE COUNTS BY VERTEX") << endl;
     outText << tr("Node")<<"\t"<< tr("2-Vertex") << "\t" << tr("3-Vertex")
@@ -7641,9 +7672,17 @@ int Graph:: factorial(int x) {
 
 
 
+/**
+ * @brief Graph::graphName
+ * @return
+ */
+QString Graph::graphName() const {
+    return ((m_graphName.isEmpty()) ? "Unnamed" : m_graphName ) ;
+}
+
 
 /**
- * @brief Graph::loadGraph
+ * @brief Graph::graphLoad
  * Our almost universal network loader. :)
  * Actually it calls the load() method of parser/qthread class.
  * @param m_fileName
@@ -7655,13 +7694,13 @@ int Graph:: factorial(int x) {
  * @param two_sm_mode
  * @return
  */
-bool Graph::loadGraph (	const QString m_fileName,
+bool Graph::graphLoad (	const QString m_fileName,
                         const QString m_codecName,
                         const bool m_showLabels,
                         const int maxWidth, const int maxHeight,
                         const int fileFormat, const int two_sm_mode){
     initVertexLabelsVisibility = m_showLabels;
-    qDebug() << "Graph::loadGraph() : "<< m_fileName
+    qDebug() << "Graph::graphLoad() : "<< m_fileName
                 << " calling parser.load() from thread " << this->thread();
 
     Parser *file_parser = new Parser(
@@ -7677,14 +7716,14 @@ bool Graph::loadGraph (	const QString m_fileName,
                 two_sm_mode
                 );
 
-    qDebug () << "Graph::loadGraph() file_parser thread  " << file_parser->thread()
+    qDebug () << "Graph::graphLoad() file_parser thread  " << file_parser->thread()
                  << " moving it to new thread ";
 
     file_parser->moveToThread(&file_parserThread);
 
-    qDebug () << "Graph::loadGraph() file_parser thread now " << file_parser->thread();
+    qDebug () << "Graph::graphLoad() file_parser thread now " << file_parser->thread();
 
-    qDebug () << "Graph::loadGraph()  connecting file_parser signals ";
+    qDebug () << "Graph::graphLoad()  connecting file_parser signals ";
 
     connect(&file_parserThread, &QThread::finished,
             file_parser, &QObject::deleteLater);
@@ -7757,12 +7796,12 @@ bool Graph::loadGraph (	const QString m_fileName,
                 this, &Graph::terminateParserThreads
                 );
 
-    qDebug() << "Graph::loadGraph()  Starting file_parserThread ";
+    qDebug() << "Graph::graphLoad()  Starting file_parserThread ";
 
     file_parserThread.start();
 
     bool loadGraphStatus = file_parser->run();
-    qDebug() << "Graph::loadGraph() : loadGraphStatus "<< loadGraphStatus;
+    qDebug() << "Graph::graphLoad() : loadGraphStatus "<< loadGraphStatus;
     return loadGraphStatus;
 }
 
@@ -7793,7 +7832,7 @@ void Graph::terminateParserThreads(QString reason) {
  * Updates MW  with the file type (0=nofile, 1=Pajek, 2=Adjacency etc)
  * Called from Parser on file parsing end .
  * @param type
- * @param networkName
+ * @param netName
  * @param aNodes
  * @param totalLinks
  * @param undirected
@@ -7802,19 +7841,25 @@ void Graph::graphLoaded (int fileType, QString fName, QString netName,
                           int totalNodes, int totalLinks, bool undirected)
 {
     fileName = fName;
-    networkName = netName;
+    if (netName != "")
+        m_graphName=netName ;
+    else
+        m_graphName=fileName.split("/").last();
+
     m_undirected = undirected;
+    m_fileFormat = fileType;
 
     qDebug() << "Graph::graphLoaded() - "
                 << " type " << fileType
                 << " filename " << fileName
-                << " name " << networkName
+                << " name " << graphName()
                 << " nodes " << totalNodes
                 << " links " << totalLinks
                 << " undirected " << undirected;
 
     graphModifiedSet(GRAPH_CHANGED_NEW);
-    emit signalGraphLoaded (fileType, fileName, networkName,
+
+    emit signalGraphLoaded (fileType, fileName, graphName(),
                             totalNodes, totalLinks, m_undirected);
     graphModifiedSet(GRAPH_CHANGED_NONE);
     qDebug ()<< "Graph::graphLoaded()  -check parser if running...";
@@ -7822,74 +7867,62 @@ void Graph::graphLoaded (int fileType, QString fName, QString netName,
 }
 
 
+
 /**
- * @brief Graph::saveGraph
+ * @brief graphFileFormat
+ * @return
+ */
+int Graph::graphFileFormat() const {
+    return m_fileFormat;
+}
+
+
+
+/**
+ * @brief Graph::graphSave
  * Our almost universal graph saver. :)
  * Actually it just checks the requested file type and
  * calls the right saveGraphTo...() method
  * @param fileName
  * @param fileType
- * @param networkName
- * @param maxWidth
- * @param maxHeight
- * @return
+  * @return
  */
-void Graph::saveGraph(
-        QString fileName, int fileType,
-        QString networkName, int maxWidth, int maxHeight )
+void Graph::graphSave( QString fileName, int fileType )
 {
-    qDebug() << "Graph::saveGraph to ...";
+    qDebug() << "Graph::graphSave()";
+    bool saved = false;
     switch (fileType) {
     case FILE_PAJEK : {
-        qDebug() << " 	... Pajek formatted file";
-        if ( saveGraphToPajekFormat(fileName, networkName, maxWidth, maxHeight) ) {
-            graphModifiedSet(GRAPH_CHANGED_NONE);
-            signalGraphSaved(fileType);
-        }
-        else {
-            signalGraphSaved(0);
-        }
+        qDebug() << "Graph::graphSave() - Pajek formatted file";
+        saved=graphSaveToPajekFormat(fileName, graphName(), canvasWidth, canvasHeight) ;
         break;
     }
     case FILE_ADJACENCY: {
-        qDebug() << " 	... Adjacency formatted file";
-        if ( saveGraphToAdjacencyFormat(fileName) ) {
-            graphModifiedSet(GRAPH_CHANGED_NONE);
-           signalGraphSaved(fileType);
-        }
-        else {
-            signalGraphSaved(0);
-        }
+        qDebug() << "Graph::graphSave() - Adjacency formatted file";
+        saved=graphSaveToAdjacencyFormat(fileName) ;
         break;
     }
     case FILE_GRAPHVIZ: {
-        qDebug() << " 	... GraphViz/Dot formatted file";
-        if ( saveGraphToDotFormat(fileName, networkName, maxWidth, maxHeight) ) {
-            graphModifiedSet(GRAPH_CHANGED_NONE);
-            signalGraphSaved(fileType);
-         }
-         else {
-             signalGraphSaved(0);
-         }
-        break;
+        qDebug() << "Graph::graphSave() - GraphViz/Dot formatted file";
+        saved=graphSaveToDotFormat(fileName, graphName(), canvasWidth, canvasHeight);
     }
     case FILE_GRAPHML: {			// GraphML
-        qDebug() << " 	... GraphML formatted file";
-        if ( saveGraphToGraphMLFormat(fileName, networkName, maxWidth, maxHeight) ) {
-            graphModifiedSet(GRAPH_CHANGED_NONE);
-            signalGraphSaved(fileType);
-         }
-         else {
-             signalGraphSaved(0);
-         }
+        qDebug() << "Graph::graphSave() - GraphML formatted file";
+        saved=graphSaveToGraphMLFormat(fileName, graphName(), canvasWidth, canvasHeight);
         break;
     }
     default: {
-        qDebug() << " 	... Error! What format number is this anyway?";
-        signalGraphSaved(0);
+        qDebug() << "Graph::graphSave() - Error! Unrecognized fileType";
         break;
     }
     };
+    if (saved) {
+        graphModifiedSet(GRAPH_CHANGED_NONE);
+        signalGraphSaved(fileType);
+    }
+    else {
+         signalGraphSaved(0);
+    }
 
 }
 
@@ -7900,13 +7933,12 @@ void Graph::saveGraph(
     Saves the active graph to a Pajek-formatted file
     Preserves node properties (positions, colours, etc)
 */
-bool Graph::saveGraphToPajekFormat (
+bool Graph::graphSaveToPajekFormat (
         QString fileName, QString networkName, int maxWidth, int maxHeight)
 {
-    qDebug () << " Graph::saveGraphToPajekFormat to file: " << fileName.toUtf8();
+    qDebug () << " Graph::graphSaveToPajekFormat to file: " << fileName.toUtf8();
 
     int weight=0;
-
     QFile f( fileName );
     if ( !f.open( QIODevice::WriteOnly ) )  {
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
@@ -7931,15 +7963,15 @@ bool Graph::saveGraphToPajekFormat (
     }
 
     t<<"*Arcs \n";
-    qDebug()<< "Graph::saveGraphToPajekFormat: Arcs";
+    qDebug()<< "Graph::graphSaveToPajekFormat: Arcs";
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         for (jt=m_graph.begin(); jt!=m_graph.end(); jt++){
-            qDebug() << "Graph::saveGraphToPajekFormat:  it=" << (*it)->name() << ", jt=" << (*jt)->name() ;
+            qDebug() << "Graph::graphSaveToPajekFormat:  it=" << (*it)->name() << ", jt=" << (*jt)->name() ;
             if  ( (weight=edgeExists ( (*it)->name(), (*jt)->name())) !=0
                   &&   ( edgeExists ((*jt)->name(), (*it)->name())) != weight
                   )
             {
-                qDebug()<<"Graph::saveGraphToPajekFormat  weight "<< weight
+                qDebug()<<"Graph::graphSaveToPajekFormat  weight "<< weight
                        << " color "<<  (*it)->outLinkColor( (*jt)->name() ) ;
                 t << (*it)->name() <<" "<<(*jt)->name()<< " "<<weight;
                 //FIXME bug in outLinkColor() when we remove then add many nodes from the end
@@ -7951,10 +7983,10 @@ bool Graph::saveGraphToPajekFormat (
     }
 
     t<<"*Edges \n";
-    qDebug() << "Graph::saveGraphToPajekFormat: Edges";
+    qDebug() << "Graph::graphSaveToPajekFormat: Edges";
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         for (jt=m_graph.begin(); jt!=m_graph.end(); jt++){
-            qDebug() << "Graph::saveGraphToPajekFormat:  it=" <<  (*it)->name() << ", jt=" <<(*jt)->name() ;
+            qDebug() << "Graph::graphSaveToPajekFormat:  it=" <<  (*it)->name() << ", jt=" <<(*jt)->name() ;
             if  ( ( weight=edgeExists((*it)->name(), (*jt)->name(), true) )!=0 )  {
                 if ( (*it)->name() > (*jt)->name() )
                     continue;
@@ -7976,13 +8008,13 @@ bool Graph::saveGraphToPajekFormat (
 
 
 /**
- * @brief Graph::saveGraphToAdjacencyFormat
+ * @brief Graph::graphSaveToAdjacencyFormat
  * @param fileName
  * @param maxWidth
  * @param maxHeight
  * @return
  */
-bool Graph::saveGraphToAdjacencyFormat (QString fileName){
+bool Graph::graphSaveToAdjacencyFormat (QString fileName){
     QFile file( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
@@ -7990,7 +8022,7 @@ bool Graph::saveGraphToAdjacencyFormat (QString fileName){
     }
     QTextStream outText( &file );
     outText.setCodec("UTF-8");
-    qDebug("Graph: saveGraphToAdjacencyFormat() for %i vertices", vertices());
+    qDebug("Graph: graphSaveToAdjacencyFormat() for %i vertices", vertices());
 
     writeAdjacencyMatrixTo(outText);
 
@@ -11585,7 +11617,7 @@ void Graph::writeAdjacencyMatrixTo(QTextStream& os){
     This is called by MainWindow::slotViewAdjacencyMatrix()
     The resulting matrix HAS NO spaces between elements.
 */
-void Graph::writeAdjacencyMatrix (const QString fn, QString netName) {
+void Graph::writeAdjacencyMatrix (const QString fn) {
     qDebug()<<"Graph::writeAdjacencyMatrix() to : " << fn;
     QFile file( fn );
     if ( !file.open( QIODevice::WriteOnly ) )  {
@@ -11597,7 +11629,7 @@ void Graph::writeAdjacencyMatrix (const QString fn, QString netName) {
     int sum=0;
     float weight=0;
     outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
-    outText << "Network name: "<< ((netName.isEmpty()) ? "Unnamed" : netName )<<" \n";
+    outText << "Network name: "<< graphName() <<" \n";
     outText << "Adjacency matrix: \n\n";
     QList<Vertex*>::const_iterator it, it1;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -11743,7 +11775,6 @@ bool Graph::adjacencyMatrixInvert(const QString &method){
 
 
 void Graph::writeAdjacencyMatrixInvert(const QString &fn,
-                                       const QString &netName,
                                        const QString &method)
 {
     qDebug("Graph::writeAdjacencyMatrixInvert() ");
@@ -11756,8 +11787,8 @@ void Graph::writeAdjacencyMatrixInvert(const QString &fn,
     }
     QTextStream outText( &file );
     outText.setCodec("UTF-8");
-    outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
-    outText << "Network name: "<< ( (netName.isEmpty()) ? "Unnamed" : netName )<<" \n";
+    outText << "-Social Network Visualizer "<<  VERSION <<endl;
+    outText << tr("Network name: ")<< graphName()<< endl<<endl;
     outText << "Inverse Matrix: \n";
     if (!adjacencyMatrixInvert(method)) {
             outText << endl<< " The adjacency matrix is singular.";
@@ -11787,7 +11818,7 @@ void Graph::writeAdjacencyMatrixInvert(const QString &fn,
 }
 
 
-bool Graph::saveGraphToDotFormat (
+bool Graph::graphSaveToDotFormat (
         QString fileName, QString networkName, int maxWidth, int maxHeight)
 {
     Q_UNUSED(fileName);
@@ -11800,10 +11831,10 @@ bool Graph::saveGraphToDotFormat (
 
 
 
-bool Graph::saveGraphToGraphMLFormat (
+bool Graph::graphSaveToGraphMLFormat (
         QString fileName, QString networkName, int maxWidth, int maxHeight)
 {
-    qDebug () << " Graph::saveGraphToGraphMLFormat to file: " << fileName.toUtf8();
+    qDebug () << " Graph::graphSaveToGraphMLFormat to file: " << fileName.toUtf8();
 
     int weight=0, source=0, target=0, edgeCount=0, m_size=1, m_labelSize;
     QString m_color, m_labelColor, m_label;

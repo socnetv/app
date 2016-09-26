@@ -482,9 +482,8 @@ private:
     int maxNodes;
     int fortuneCookiesCounter;
     //QString VERSION;
-    bool pajekFileLoaded, adjacencyFileLoaded, dotFileLoaded, graphMLFileLoaded;
     bool fileLoaded;
-    int fileFormat;
+
     bool networkModified;
     bool edgeClicked, nodeClicked, markedNodesExist, showProgressBar, firstTime;
     bool considerWeights, inverseWeights, askedAboutWeights;

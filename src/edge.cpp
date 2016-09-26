@@ -138,7 +138,7 @@ QString Edge::color() const{
 }
 
 /**
- * @brief Called from Graph::saveGraphToPajekFormat()
+ * @brief Called from Graph::graphSaveToPajekFormat()
  * @return
  */
 QString Edge::colorToPajek() {

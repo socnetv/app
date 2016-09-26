@@ -84,7 +84,7 @@ void GraphicsWidget::clear() {
     m_curRelation=0;
     markedNodeExist=false;
     markedEdgeExist = false;
-    firstNode=false;
+    firstNode=0;
     secondDoubleClick=false;
 
 }
