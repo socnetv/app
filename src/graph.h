@@ -738,19 +738,18 @@ private:
     /** General & initialisation variables */
 
     int graphModifiedFlag;
-    long int m_totalVertices, m_totalEdges, graphDiameter, initVertexSize;
+    long int m_totalVertices, m_totalEdges, m_graphDiameter, initVertexSize;
     int initVertexLabelSize, initVertexNumberSize;
     int initVertexNumberDistance, initVertexLabelDistance;
 
     int isolatedVertices;
 
-    float averGraphDistance, nonZeroDistancesCounter;
+    float m_graphAverageDistance, nonZeroDistancesCounter;
     int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;
     int timerId,  canvasWidth, canvasHeight;
     bool order, initVertexLabelsVisibility,initVertexNumbersVisibility;
     bool initNumbersInsideNodes;
-    bool adjacencyMatrixCreated,
-        distanceMatrixCreated;
+    bool adjacencyMatrixCreated,distanceMatrixCreated;
     bool reachabilityMatrixCreated;
     bool m_undirected, m_symmetric, m_isWeighted;
     bool initEdgeWeightNumbers, initEdgeLabels;

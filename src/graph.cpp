@@ -2276,7 +2276,7 @@ int Graph::diameter(const bool considerWeights,
                                 "Need to recompute Distances. Please wait...") );
         distanceMatrixCreate(false, considerWeights, inverseWeights, false);
     }
-    return graphDiameter;
+    return m_graphDiameter;
 }
 
 
@@ -2299,7 +2299,7 @@ float Graph::distanceGraphAverage(const bool considerWeights,
                                 "Need to recompute Distances. Please wait...") );
         distanceMatrixCreate(false, considerWeights, inverseWeights,dropIsolates);
     }
-    return averGraphDistance;
+    return m_graphAverageDistance;
 }
 
 
@@ -2520,7 +2520,7 @@ void Graph::writeEccentricity(
     OUTPUT:
         DM(i,j)=geodesic distance between vertex i and vertex j
         TM(i,j)=number of shortest paths from vertex i to vertex j, called sigma(i,j).
-        graphDiameter is set to the length of the longest shortest path between every (i,j)
+        m_graphDiameter is set to the length of the longest shortest path between every (i,j)
         Eccentricity(i) is set to the length of the longest shortest path from i to every j
         Also, if computeCentralities==true, it calculates the centralities for every u in V:
         - Betweenness: BC(u) = Sum ( sigma(i,j,u)/sigma(i,j) ) for every s,t in V
@@ -2572,13 +2572,13 @@ void Graph::distanceMatrixCreate(const bool &centralities,
         float d_sw=0, d_su=0;
         int progressCounter=0;
 
-        graphDiameter=0;
+        m_graphDiameter=0;
         distanceMatrixCreated = false;
-        averGraphDistance=0;
+        m_graphAverageDistance=0;
         nonZeroDistancesCounter=0;
 
-        qDebug() << "	graphDiameter "<< graphDiameter << " averGraphDistance "
-                 <<averGraphDistance;
+        qDebug() << "	m_graphDiameter "<< m_graphDiameter << " m_graphAverageDistance "
+                 <<m_graphAverageDistance;
         qDebug() << "	reciprocalEdgesVert "<< reciprocalEdgesVert
                  << " inboundEdgesVert " << inboundEdgesVert
                  << " outboundEdgesVert "<<  outboundEdgesVert;
@@ -2778,8 +2778,8 @@ void Graph::distanceMatrixCreate(const bool &centralities,
             }
         }
 
-        if (averGraphDistance!=0) {
-             averGraphDistance = averGraphDistance / ( aVertices * ( aVertices-1.0 ) );
+        if (m_graphAverageDistance!=0) {
+             m_graphAverageDistance = m_graphAverageDistance / ( aVertices * ( aVertices-1.0 ) );
         }
 
 
@@ -3029,7 +3029,7 @@ void Graph::BFS(const int &s, const bool &computeCentralities,
                 dist_w = dist_u + 1;
                 qDebug("BFS: Setting distance of w=%i from s=%i equal to distance(s,u) plus 1. New distance = %i",w,s, dist_w );
                 DM.setItem(s, w, dist_w);
-                averGraphDistance += dist_w;
+                m_graphAverageDistance += dist_w;
                 nonZeroDistancesCounter++;
 
 
@@ -3058,10 +3058,10 @@ void Graph::BFS(const int &s, const bool &computeCentralities,
                         m_graph [s]->setEccentricity(dist_w);
 
                 }
-//                qDebug("BFS: Checking graphDiameter");
-                if ( dist_w > graphDiameter){
-                    graphDiameter=dist_w;
-//                    qDebug() << "BFS: new graphDiameter = " <<  graphDiameter ;
+//                qDebug("BFS: Checking m_graphDiameter");
+                if ( dist_w > m_graphDiameter){
+                    m_graphDiameter=dist_w;
+//                    qDebug() << "BFS: new m_graphDiameter = " <<  m_graphDiameter ;
                 }
             }
 
@@ -3240,7 +3240,7 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
                          << ","<< w
                          << ") = "<< dist_w ;
                 DM.setItem(s, w, dist_w);
-                averGraphDistance += dist_w;
+                m_graphAverageDistance += dist_w;
                 nonZeroDistancesCounter++;
 
 
@@ -3283,10 +3283,10 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
                               <<  m_graph [s]->eccentricity();
                 }
 
-                qDebug("dijkstra/graphDiameter");
-                if ( dist_w > graphDiameter){
-                    graphDiameter=dist_w;
-                    qDebug() << "dijkstra: new graphDiameter = " << graphDiameter ;
+                qDebug("dijkstra/m_graphDiameter");
+                if ( dist_w > m_graphDiameter){
+                    m_graphDiameter=dist_w;
+                    qDebug() << "dijkstra: new m_graphDiameter = " << m_graphDiameter ;
                 }
 
             }
