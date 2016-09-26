@@ -4308,9 +4308,11 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
 
 /**
  * @brief MainWindow::slotNetworkSave
- * Saves the network in the same file
+ * Saves the network in the same file.
+ * Only GraphML is supported.
+ * For other exporing options the user is informed to use the export menu.
  */
-void MainWindow::slotNetworkSave() {
+void MainWindow::slotNetworkSave(const int &fileFormat) {
     statusMessage( tr("Saving file..."));
 
     if (!fileLoaded && !networkModified ) {
@@ -4322,25 +4324,33 @@ void MainWindow::slotNetworkSave() {
         return;
     }
     fileNameNoPath=fileName.split ("/");
-    if (activeGraph.graphFileFormat()==FILE_PAJEK)
+
+    if ( activeGraph.graphFileFormatExportSupported( fileFormat ) )
     {
-        activeGraph.graphSave(fileName, FILE_PAJEK) ;
+        activeGraph.graphSave(fileName, fileFormat ) ;
     }
-    else if (activeGraph.graphFileFormat()==FILE_ADJACENCY)
-    {
-        activeGraph.graphSave(fileName, FILE_ADJACENCY);
-    }
-    else if (activeGraph.graphFileFormat()==FILE_GRAPHML || ( !fileLoaded && networkModified) )
+    else if (activeGraph.graphFileFormat()==FILE_GRAPHML ||
+            ( !fileLoaded && networkModified) )
     {	//new file or GraphML
         activeGraph.graphSave(fileName, FILE_GRAPHML);
     }
+
+    else if ( activeGraph.graphFileFormatExportSupported(
+                  activeGraph.graphFileFormat()
+                  ) )
+    {
+        activeGraph.graphSave(fileName, activeGraph.graphFileFormat() ) ;
+    }
     else
     {
-        switch( QMessageBox::information( this, "GraphML File Format",
-                                          tr("This network will be saved in GraphML format. \n")+
-                                          tr("Is this OK? \n\n") +
-                                          tr("If not, press Cancel, then go to Network > Export menu..."),
-                                          "Yes", "No",0,1 )
+        switch( QMessageBox::information(
+                    this, "Default File Format: GraphML ",
+                    tr("This imported network will be saved in GraphML format ")+
+                    tr("which is the default file format of SocNetV. \n\n")+
+                    tr("Is this OK? \n\n") +
+                    tr("If not, press Cancel, then go to Network > Export menu "
+                       "to see other supported formats to export your data to."),
+                    "Yes", "No",0,1 )
                 )
         {
         case 0:
@@ -4362,21 +4372,31 @@ void MainWindow::slotNetworkSave() {
  * Saves the network in a new file
  */
 void MainWindow::slotNetworkSaveAs() {
-    statusMessage( tr("Saving network under new filename..."));
+    qDebug() << "MW::slotNetworkSaveAs()";
+    statusMessage( tr("Enter or select a filename to save the network..."));
 
     QString fn =  QFileDialog::getSaveFileName(
                 this,
-                tr("Save GraphML Network to File Named..."),
+                tr("Save Network to GraphML File Named..."),
                 getLastPath(), tr("GraphML (*.graphml *.xml);;All (*)") );
     if (!fn.isEmpty())  {
         if  ( QFileInfo(fn).suffix().isEmpty() ){
-            QMessageBox::information(this, "Missing Extension ",tr("File extension was missing! \nI am appending a standard .graphml to the given filename."), "OK",0);
+            QMessageBox::information(
+                        this, "Missing Extension ",
+                        tr("File extension was missing! \n"
+                           "Appending a standard .graphml to the given filename."), "OK",0);
             fn.append(".graphml");
+        }
+        //TODO. Perhaps change the suffix automatically to graphML
+        // even if the user has selected other?
+        if ( !QFileInfo(fn).suffix().contains("graphML") ||
+             !QFileInfo(fn).suffix().contains("xml") ) {
+            //fn = QFileInfo(fn).absoluteDir() + QFileInfo(fn).baseName()
         }
         fileName=fn;
         fileNameNoPath=fileName.split ("/");
         setLastPath(fileName); // store this path
-        slotNetworkSave();
+        slotNetworkSave(FILE_GRAPHML);
     }
     else  {
         statusMessage( tr("Saving aborted"));
@@ -5094,7 +5114,9 @@ void MainWindow::slotNetworkExportPajek()
     qDebug () << "MW::slotNetworkExportPajek";
 
     if (!fileLoaded && !networkModified )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to export! \nLoad a network file or create a new network first."), "OK",0);
+        QMessageBox::critical(this, "Error",
+                              tr("Nothing to export! \n"
+                                 "Load a network file or create a new network first."), "OK",0);
         statusMessage( tr("Cannot export to Pajek.")  );
         return;
     }
@@ -5106,7 +5128,9 @@ void MainWindow::slotNetworkExportPajek()
                 getLastPath(), tr("Pajek (*.paj *.net *.pajek);;All (*)") );
     if (!fn.isEmpty())  {
         if  ( QFileInfo(fn).suffix().isEmpty() ){
-            QMessageBox::information(this, "Missing Extension ",tr("File extension was missing! \nI am appending a standard .paj to the given filename."), "OK",0);
+            QMessageBox::information(this, "Missing Extension ",
+                                     tr("File extension was missing! \n"
+                                        "Appending a standard .paj to the given filename."), "OK",0);
             fn.append(".paj");
         }
         fileName=fn;
@@ -5131,7 +5155,8 @@ void MainWindow::slotNetworkExportPajek()
 void MainWindow::slotNetworkExportSM(){
     qDebug("MW: slotNetworkExportSM()");
     if (!fileLoaded && !networkModified )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to export!\nLoad a network file or create a new network first."), "OK",0);
+        QMessageBox::critical(this, "Error",tr("Nothing to export!\n"
+                                               "Load a network file or create a new network first."), "OK",0);
         statusMessage( tr("Cannot export to Adjacency Matrix.")  );
         return;
     }
@@ -5142,7 +5167,9 @@ void MainWindow::slotNetworkExportSM(){
                 getLastPath(), tr("Adjacency (*.adj *.sm *.txt *.csv *.net);;All (*)") );
     if (!fn.isEmpty())  {
         if  ( QFileInfo(fn).suffix().isEmpty() ){
-            QMessageBox::information(this, "Missing Extension ",tr("File extension was missing! \nI am appending a standard .adj to the given filename."), "OK",0);
+            QMessageBox::information(this, "Missing Extension ",
+                                     tr("File extension was missing! \n"
+                                        "Appending a standard .adj to the given filename."), "OK",0);
             fn.append(".adj");
         }
         fileName=fn;

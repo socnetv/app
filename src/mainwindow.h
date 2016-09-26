@@ -148,7 +148,7 @@ public slots:
     void slotNetworkChanged(const int &graphStatus, const bool &undirected,
                             const int &vertices, const int &edges,
                             const float &density);
-    void slotNetworkSave();
+    void slotNetworkSave(const int &fileFormat=-1);
     void slotNetworkSaveAs();
     void slotNetworkClose();
     void slotNetworkPrint();

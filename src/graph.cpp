@@ -86,6 +86,10 @@ Graph::Graph() {
     influenceDomains.reserve(1000);
     influenceRanges.reserve(1000);
 
+    m_graphFileFormatExportSupported<< FILE_GRAPHML
+                               << FILE_PAJEK
+                               << FILE_ADJACENCY;
+
 }
 
 
@@ -100,10 +104,6 @@ void Graph::clear() {
     qDeleteAll(m_graph.begin(), m_graph.end());
     m_graph.clear();
     index.clear();
-    //clear relations
-    m_relationsList.clear();
-    m_curRelation=0;
-    m_fileFormat=FILE_UNRECOGNIZED;
 
     discreteDPs.clear(); discreteDCs.clear(); discreteCCs.clear();
     discreteBCs.clear(); discreteSCs.clear(); discreteIRCCs.clear();
@@ -155,6 +155,12 @@ void Graph::clear() {
     influenceRanges.clear();
     triadTypeFreqs.clear();
 
+    //clear relations
+    m_relationsList.clear();
+    m_curRelation=0;
+    m_fileFormat=FILE_UNRECOGNIZED;
+
+    m_graphName="";
     m_totalVertices=0;
     m_totalEdges=0;
     outboundEdgesVert=0;
@@ -7947,7 +7953,7 @@ void Graph::graphLoaded (int fileType, QString fName, QString netName,
     if (netName != "")
         m_graphName=netName ;
     else
-        m_graphName=fileName.split("/").last();
+        m_graphName=(fileName.split("/").last()).split("/").first();
 
     m_undirected = undirected;
     m_fileFormat = fileType;
@@ -7980,6 +7986,17 @@ int Graph::graphFileFormat() const {
 }
 
 
+/**
+ * @brief Graph::graphFileFormatExportSupported
+ * @param fileFormat
+ * @return
+ */
+bool Graph::graphFileFormatExportSupported(const int &fileFormat) const {
+    if (m_graphFileFormatExportSupported.contains(fileFormat)) {
+        return true;
+    }
+    return false;
+}
 
 /**
  * @brief Graph::graphSave

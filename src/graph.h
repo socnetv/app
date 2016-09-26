@@ -292,6 +292,7 @@ public:
     bool graphSaveToDotFormat (QString fileName, QString networkName, int maxWidth, int maxHeight);
     bool graphSaveToGraphMLFormat (QString fileName,QString networkName,  int maxWidth, int maxHeight);
     int graphFileFormat() const;
+    bool graphFileFormatExportSupported(const int &fileFormat) const;
 
     /* RELATIONS */
     int relations();
@@ -673,7 +674,7 @@ private:
 
     QList<QString> m_relationsList;
     QList<int>  triadTypeFreqs; 	//stores triad type frequencies
-    QList<int>  m_isolatedVerticesList;
+    QList<int>  m_isolatedVerticesList, m_graphFileFormatExportSupported;
     QHash <int, int> influenceRanges, influenceDomains;
     QHash <int, int> disconnectedVertices;
     QHash <int, int> unilaterallyConnectedVertices;
