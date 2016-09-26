@@ -11476,9 +11476,9 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                   " 10 7  1";
                     qDebug()<< "		Knocke_Bureacracies_Information_Exchange_Network.pajek written... ";
     }
-    else if (fileName=="Stephenson&Zelen_40_AIDS_patiens_sex_contact.paj"){
+    else if (fileName=="Stephenson&Zelen_40_AIDS_patients_sex_contact.paj"){
         qDebug()<<"Stephenson&Zelen_40_AIDS_patiens";
-        outText << "*Network Stephenson&Zelen_40_AIDS_patiens"<<endl<<
+        outText << "*Network Stephenson&Zelen_40_AIDS_patients"<<endl<<
                    "*Vertices 40"<<endl<<
                    "1 \"1\" ic red		0.15899 	0.150442	circle"<<endl<<
                    "2 \"2\" ic red		0.178306 	0.210914	circle"<<endl<<

@@ -58,7 +58,7 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
             << "Freeman: The 34 possible graphs with N=5 (as multirelational), 5 actors"
             << "Mexican Power Network in the 1940s (list format)"
             << "Knocke: Bureacracies Information Exchange Network, 10 actors"
-            << "Stephenson and Zelen (1989): Network of 40 AIDS patiens (sex relationship)"
+            << "Stephenson and Zelen (1989): Network of 40 AIDS patients (sex relationship)"
             << "Stephenson and Zelen (1989): Information Centrality test dataset, 5 actors"
             << "Wasserman and Faust: star, circle and line graphs of 7 actors (multirelational)"
             << "Wasserman and Faust: Countries Trade (basic manufactured goods), 24 actors";
@@ -83,7 +83,7 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
             << "Freeman_34_possible_graphs_with_N_5_multirelational.paj"
             << "Mexican_Power_Network_1940s.lst"
             << "Knocke_Bureacracies_Information_Exchange_Network.pajek"
-            << "Stephenson&Zelen_40_AIDS_patiens_sex_contact.paj"
+            << "Stephenson&Zelen_40_AIDS_patients_sex_contact.paj"
             << "Stephenson&Zelen_5actors_6edges_IC_test_dataset.paj"
             << "Wasserman_Faust_7actors_star_circle_line_graphs.paj"
             << "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek";
