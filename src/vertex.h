@@ -91,6 +91,7 @@ public:
     void edgeRemoveFrom(long int source);
 
     QHash<int,float>* returnEnabledOutEdges();
+    QHash<int,float>* returnEnabledInEdges();
     QHash<int,float>* returnReciprocalEdges();
 
     long int outEdges();

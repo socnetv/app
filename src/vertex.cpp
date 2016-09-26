@@ -538,6 +538,39 @@ long int Vertex::inEdges() {
 }
 
 
+
+
+
+
+/**
+ * @brief Vertex::returnEnabledInEdges
+ * Returns a qhash of all enabled inEdges in the active relation
+ * @return  QHash<int,float>*
+ */
+QHash<int,float>* Vertex::returnEnabledInEdges() {
+    qDebug() << "Vertex::returnEnabledInEdges()";
+    QHash<int,float> *enabledInEdges = new QHash<int,float>;
+    float m_weight=0;
+    int relation = 0;
+    bool edgeStatus=false;
+    H_edges::const_iterator it1=m_inEdges.constBegin();
+    while (it1 != m_inEdges.constEnd() ) {
+        relation = it1.value().first;
+        if ( relation == m_curRelation ) {
+            edgeStatus=it1.value().second.second;
+            if ( edgeStatus == true) {
+                m_weight=it1.value().second.first;
+                enabledInEdges->insert(it1.key(), m_weight);
+            }
+        }
+        ++it1;
+    }
+
+    return enabledInEdges;
+}
+
+
+
 /**
  * @brief Vertex::inEdgesConst
  * Returns the number of active inbound arcs

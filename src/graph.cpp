@@ -1471,16 +1471,24 @@ void Graph::edgeFilterByRelation(int relation, bool status){
  * @return zero if arc does not exist or non-zero if arc exists
  */
 float Graph::edgeExists (const long int &v1, const long int &v2, const bool &undirected) {
-    //qDebug() << "Graph::edgeExists() " << v1 << " -> " << v2 << " ? " ;
-    if (!undirected)
+
+    if (!undirected) {
+        qDebug() << "Graph::edgeExists() - directed" << v1 << "->" << v2
+                 << "=" << m_graph[ index[v1] ]->hasEdgeTo(v2);
         return m_graph[ index[v1] ]->hasEdgeTo(v2);
+    }
     else { //undirected
+        qDebug() << "Graph::edgeExists() - undirected" << v1 << " <-> " << v2 << " ? " ;
        edgeWeightTemp = 0;
        edgeWeightTemp = m_graph[ index[v1] ]->hasEdgeTo(v2);
        if  ( edgeWeightTemp!=0  &&
-             (  edgeWeightTemp ==  m_graph[ index[v2] ]->hasEdgeTo(v1)  ) )
+             (  edgeWeightTemp ==  m_graph[ index[v2] ]->hasEdgeTo(v1)  ) ){
+                qDebug() << "Graph::edgeExists() - undirected" << v1 << "<->" << v2 << "="
+                            <<edgeWeightTemp;
                return edgeWeightTemp;
+       }
     }
+    qDebug() << "Graph::edgeExists() - undirected" << v1 << "<->" << v2 << "= 0";
     return 0;
 }
 
@@ -1792,9 +1800,7 @@ int Graph::vertexDegreeIn (int v1) {
  */
 int Graph::vertices(const bool dropIsolates, const bool countAll) {
 
-    if ( graphModified()!=GRAPH_CHANGED_VERTICES &&
-         graphModified()!=GRAPH_CHANGED_VERTICES_AND_EDGES &&
-         graphModified()!=GRAPH_CHANGED_NEW) {
+    if ( !graphModified() ) {
         qDebug()<< "Graph::vertices() - Graph unchanged, vertices: "
                    << m_totalVertices;
         return m_totalVertices;
@@ -1850,7 +1856,7 @@ QList<int> Graph::verticesIsolated(){
  * @param signalMW
  */
 void Graph::graphModifiedSet(const int &graphChangedFlag, const bool &signalMW){
-    qDebug()<<"Graph::graphModifiedSet() ";
+    qDebug()<<"Graph::graphModifiedSet() - m_symmetric " << m_symmetric;
     graphModifiedFlag=graphChangedFlag;
 
     if (signalMW) {
@@ -1903,9 +1909,10 @@ float Graph::density() {
  * @return
  */
 bool Graph::isWeighted(){
+    qDebug()<< "Graph::isWeighted()";
     if ( ! graphModified() )
     {
-        qDebug()<< "Graph: isWeighted() - graph not modified. Return " << m_isWeighted;
+        qDebug()<< "Graph::isWeighted() - graph not modified. Return " << m_isWeighted;
         return m_isWeighted;
     }
     QList<Vertex*>::const_iterator it, it1;
@@ -1918,7 +1925,7 @@ bool Graph::isWeighted(){
             }
         }
     }
-    qDebug()<< "Graph: isWeighted() - false";
+    qDebug()<< "Graph::isWeighted() - false";
     return m_isWeighted=false;
 }
 
@@ -2059,7 +2066,7 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
 bool Graph::isSymmetric(){
     qDebug() << "Graph::isSymmetric() ";
     if (!graphModified()){
-        qDebug() << "Graph::isSymmetric() - graph not modified. Return "
+        qDebug() << "Graph::isSymmetric() - graph not modified. Returning: "
                  << m_symmetric;
         return m_symmetric;
     }
@@ -4354,6 +4361,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
                     " graph not changed - returning";
         return;
     }
+    qDebug()<< "Graph::prestigeDegree() - graph modified. Recomputing...";
     float DP=0, SDP=0, nom=0, denom=0;
     float weight;
     classesDP=0;
@@ -4365,29 +4373,93 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
     varianceDP=0;
     meanDP=0;
     m_symmetric = true;
-    QList<Vertex*>::const_iterator it, it1;
+    QList<Vertex*>::const_iterator it; //, it1;
     H_StrToInt::iterator it2;
+
     int vert=vertices(dropIsolates);
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+
+    int v2=0, v1=0;
+
+    QHash<int,float> *enabledInEdges = new QHash<int,float>;
+    QHash<int,float>::const_iterator hit;
+
+
+    for ( it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    {
+        v1 = (*it) -> name();
+        qDebug()<< "Graph::prestigeDegree() - computing DP for vertex" << v1 ;
+
         DP=0;
-        if (!(*it)->isIsolated()) {
-            for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
-                if ( (weight=edgeExists( (*it1)->name(), (*it)->name() ) ) !=0  )   {
-                    if (weights)
-                        DP+=weight;
-                    else
-                        DP++;
-                }
-                //check if the matrix is symmetric - we need this below
-                if (  edgeExists ( (*it1)->name(), (*it)->name() , true) == 0  )
-                    m_symmetric = false;
-            }
+
+        if ( ! (*it)->isEnabled() ) {
+            qDebug()<< "Graph::prestigeDegree() - vertex disabled. Continue.";
+            continue;
         }
+
+        qDebug() << "Graph::prestigeDegree() - Iterate over inbound edges of "
+                 << v1 ;
+
+
+        enabledInEdges=(*it)->returnEnabledInEdges();
+
+        hit=enabledInEdges->cbegin();
+
+        while ( hit!=enabledInEdges->cend() ){
+
+            v2 = hit.key();
+            qDebug() << "Graph::prestigeDegree() - inbound edge from" << v2;
+            y=index[ v2 ];
+            if (  ! edgeExists ( v2, v1)  ) {
+                //sanity check
+                qDebug() << "Graph::prestigeDegree() - Cannot verify inbound edge"
+                         << v2 << "CONTINUE" ;
+                ++hit;
+                continue;
+            }
+            weight = hit.value();
+            if (weights)
+                DP+=weight;
+            else
+                DP++;
+            if (  edgeExists ( v1, v2)  != weight) {
+                m_symmetric=false;
+            }
+            ++hit;
+        }
+
         (*it) -> setDP ( DP ) ;		//Set DP
         t_sumDP += DP;
         qDebug() << "Graph: prestigeDegree() vertex " <<  (*it)->name()
                  << " DP "  << DP;
+
     }
+
+
+//    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+//        qDebug()<< "Graph::prestigeDegree() - computing DP for vertex" <<(*it)->name() ;
+//        DP=0;
+//        if (!(*it)->isIsolated()) {
+
+//            for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
+//                qDebug()<< "Graph::prestigeDegree() - check inbound edge "
+//                        <<(*it)->name() << "<-" << (*it1)->name();
+//                if ( (weight=edgeExists( (*it1)->name(), (*it)->name() ) ) !=0  )   {
+//                    if (weights)
+//                        DP+=weight;
+//                    else
+//                        DP++;
+//                }
+
+//                //check if the matrix is symmetric - we need this below
+//                if (  edgeExists ( (*it1)->name(), (*it)->name() , true) == 0  )
+//                    m_symmetric = false;
+//            }
+//        }
+//        (*it) -> setDP ( DP ) ;		//Set DP
+//        t_sumDP += DP;
+//        qDebug() << "Graph: prestigeDegree() vertex " <<  (*it)->name()
+//                 << " DP "  << DP;
+//    }
 
     // Calculate std DP, min,max, mean
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -4450,6 +4522,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
         qDebug("Graph: varianceDP = %f, groupDP = %f", varianceDP, groupDP);
     }
 
+    delete enabledInEdges;
     calculatedDP=true;
 }
 
@@ -5974,7 +6047,8 @@ void Graph::randomNetScaleFreeCreate (const int &n,
     }
 
     relationAddFromGraph(tr("1"));
-    //emit signalGraphModified();
+    qDebug() << "Graph::randomNetScaleFreeCreate() - finished. Calling "
+                "graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES)";
     graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
     emit signalNodeSizesByInDegree(true); //FIXME
 
