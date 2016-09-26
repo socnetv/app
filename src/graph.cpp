@@ -4408,7 +4408,6 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
 
             v2 = hit.key();
             qDebug() << "Graph::prestigeDegree() - inbound edge from" << v2;
-            y=index[ v2 ];
             if (  ! edgeExists ( v2, v1)  ) {
                 //sanity check
                 qDebug() << "Graph::prestigeDegree() - Cannot verify inbound edge"
