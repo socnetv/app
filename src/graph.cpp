@@ -7808,6 +7808,7 @@ QString Graph::graphName() const {
             return relationCurrentName();
         }
         else {
+            //TODO: Maybe we should use m_filename in this case?
             return "noname";
         }
 
