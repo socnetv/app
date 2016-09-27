@@ -5929,7 +5929,7 @@ void Graph::randomNetRingLatticeCreate( const int &vert, const int &degree,
         }
         emit updateProgressDialog( updateProgress ? ++progressCounter:0 );
     }
-    relationAddFromGraph(tr("1"));
+    relationAddFromGraph(tr("ring-lattice"));
 
 //    emit signalGraphModified();
     graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES, updateProgress);
@@ -6078,7 +6078,7 @@ void Graph::randomNetScaleFreeCreate (const int &n,
         }
     }
 
-    relationAddFromGraph(tr("1"));
+    relationAddFromGraph(tr("scale-free"));
     qDebug() << "Graph::randomNetScaleFreeCreate() - finished. Calling "
                 "graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES)";
     graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
@@ -6313,7 +6313,7 @@ void Graph::randomNetRegularCreate(const int &vert,
     }
 
 
-    relationAddFromGraph(tr("1"));
+    relationAddFromGraph(tr("d-regular"));
 
     //emit signalGraphModified();
     graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
