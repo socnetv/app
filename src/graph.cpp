@@ -1305,9 +1305,6 @@ void Graph::edgeCreate(const int &v1, const int &v2, const float &weight,
     initEdgeColor=color;
 
 
-//    if (signalMW)
-//        emit signalGraphModified();
-
     graphModifiedSet(GRAPH_CHANGED_EDGES, signalMW);
 
 }
@@ -1996,7 +1993,7 @@ void Graph::webCrawlTerminateThreads (QString reason){
         qDebug() << "Graph::webCrawlTerminateThreads() - deleting wc_spider pointer";
         delete wc_spider;
         wc_spider= 0;  // see why here: https://goo.gl/tQxpGA
-
+        relationAddFromGraph(tr("web"));
         emit signalNodeSizesByInDegree(true);
      }
 
@@ -2193,7 +2190,6 @@ void Graph::undirectedSet(const bool &toggle){
     qDebug() << "Graph::undirectedSet()";
     if (!toggle) {
         m_undirected=false;
-        //emit signalGraphModified();
         graphModifiedSet(GRAPH_CHANGED_EDGES);
         return;
     }
@@ -5865,9 +5861,8 @@ void Graph::randomNetErdosCreate(  const int &vert,
 
     }
 
-    relationAddFromGraph(tr("1"));
+    relationAddFromGraph(tr("erdos-renyi"));
 
-//    emit signalGraphModified();
     graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
 }
 
@@ -5929,9 +5924,9 @@ void Graph::randomNetRingLatticeCreate( const int &vert, const int &degree,
         }
         emit updateProgressDialog( updateProgress ? ++progressCounter:0 );
     }
-    relationAddFromGraph(tr("ring-lattice"));
+    if (updateProgress)
+        relationAddFromGraph(tr("ring-lattice"));
 
-//    emit signalGraphModified();
     graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES, updateProgress);
 }
 
@@ -6148,8 +6143,8 @@ void Graph::randomNetSmallWorldCreate (const int &vert, const int &degree,
         emit updateProgressDialog( ++progressCounter );
     }
 
+    relationAddFromGraph(tr("small-world"));
     emit signalNodeSizesByInDegree(true);
-    //emit signalGraphModified();
     graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
 }
 
@@ -6312,10 +6307,8 @@ void Graph::randomNetRegularCreate(const int &vert,
 
     }
 
-
     relationAddFromGraph(tr("d-regular"));
 
-    //emit signalGraphModified();
     graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
 }
 

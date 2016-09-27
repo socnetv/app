@@ -134,8 +134,6 @@ class CompareDistances {
 
 // CHECK connectedness() algorithm implementation (unilaterallyConnectedVertices)
 
-// BUG: GraphML files containing special chars (i.e. & ) in networkName not readable.
-   // need to escape them while saving and reading graphML files.
 
 /**
  * @brief The Graph class
