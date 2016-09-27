@@ -119,21 +119,25 @@ class CompareDistances {
 
 
 
+/*
+ TODO & KNOWN BUGS:
 
-// TODO & KNOWN BUGS:
-// - Execute all options/commands from MW and propagate them to GW via signals
-// - BUG: wrong default edge colors (not the ones used by Settings) after loading GraphML files.
-// - BUG: Resizing the MW view does not resize/reposition the layout guides
-// - BUG: Fruchterman-Reingold model fixes some nodes to (1,1) breaking the layout
-// - TODO: Enrich Node properties dialog
-// - BUG: Rubber band selection does not always work on large nets where nodes been removed.
+ - BUG: Crash on Graphml files with textlabels instead of nodenumbers (i.e. nets/killer.graphml)
+ - BUG: Edges weighted >50 are displayed with enormous width. Perhaps the
+   edge width should be normalized for each net? or just change the max...
+-  BUG: wrong default edge colors (not the ones used by Settings) after loading GraphML files.
+ - BUG: Resizing the MW view does not resize/reposition the layout guides
+ - BUG: Fruchterman-Reingold model fixes some nodes to (1,1) breaking the layout
+ - BUG: Rubber band selection does not always work on large nets where nodes been removed.
+ - BUG/WONTFIX: Crash on Graphml files with html special chars in node/edge labels
 
+ - TODO: Enrich Node properties dialog
+ - TODO: Update app icons
 
-// CHECK weighted networks results (IRCC and distance matrix with other combinations)
-// CHECK isWeighted corner case results, when !graphModified.
-
-// CHECK connectedness() algorithm implementation (unilaterallyConnectedVertices)
-
+ - CHECK weighted networks results (IRCC and distance matrix with other combinations)
+ - CHECK isWeighted corner case results, when !graphModified.
+ - CHECK connectedness() algorithm implementation (unilaterallyConnectedVertices)
+*/
 
 /**
  * @brief The Graph class
