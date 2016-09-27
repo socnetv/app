@@ -11,10 +11,10 @@
     <default>0.0</default> 
   </key> 
   <key id="d3" for="node" attr.name="size" attr.type="double"> 
-    <default>10</default> 
+    <default>9</default> 
   </key> 
   <key id="d4" for="node" attr.name="color" attr.type="string"> 
-    <default>turquoise</default> 
+    <default>#eeff2b</default> 
   </key> 
   <key id="d5" for="node" attr.name="shape" attr.type="string"> 
     <default>circle</default> 
@@ -29,87 +29,269 @@
     <default>1.0</default> 
   </key> 
   <key id="d9" for="edge" attr.name="color" attr.type="string"> 
-    <default></default> 
+    <default>#000000</default> 
   </key> 
   <key id="d10" for="edge" attr.name="label" attr.type="string"> 
     <default></default> 
   </key> 
-  <graph id="G" edgedefault="undirected"> 
+  <graph id="2-3 tree" edgedefault="directed"> 
     <node id="1"> 
-      <data key="d0">n0</data>
-      <data key="d1">0.628369</data>
-      <data key="d2">0.946738</data>
-      <data key="d4">green</data>
-      <data key="d5">circle</data>
-      <data key="d6">darkblue</data>
-      <data key="d7">8</data>
+      <data key="d0">root</data>
+      <data key="d1">0.456738</data>
+      <data key="d2">0.825566</data>
+      <data key="d3">12</data>
+      <data key="d4">#ffffff</data>
+      <data key="d5">box</data>
     </node>
     <node id="2"> 
-      <data key="d0">n1</data>
-      <data key="d1">0.211348</data>
-      <data key="d2">0.933422</data>
-      <data key="d4">yellow</data>
+      <data key="d0">option2</data>
+      <data key="d1">0.390071</data>
+      <data key="d2">0.715047</data>
+      <data key="d4">#ff0000</data>
       <data key="d5">circle</data>
-      <data key="d6">darkblue</data>
-      <data key="d7">8</data>
     </node>
     <node id="3"> 
-      <data key="d0">n2</data>
-      <data key="d1">0.635461</data>
-      <data key="d2">0.567244</data>
-      <data key="d4">blue</data>
+      <data key="d0">option3</data>
+      <data key="d1">0.52766</data>
+      <data key="d2">0.71771</data>
+      <data key="d4">#ff0000</data>
       <data key="d5">circle</data>
-      <data key="d6">darkblue</data>
-      <data key="d7">8</data>
     </node>
     <node id="4"> 
-      <data key="d0">n3</data>
-      <data key="d1">0.22695</data>
-      <data key="d2">0.581891</data>
-      <data key="d4">red</data>
+      <data key="d0">grandchild_4</data>
+      <data key="d1">0.625532</data>
+      <data key="d2">0.609854</data>
+      <data key="d4">#d6d6d6</data>
       <data key="d5">circle</data>
-      <data key="d6">darkblue</data>
-      <data key="d7">8</data>
     </node>
     <node id="5"> 
-      <data key="d0">n4</data>
-      <data key="d1">0.634043</data>
-      <data key="d2">0.177097</data>
-      <data key="d4">yellow</data>
+      <data key="d0">grandchild_5</data>
+      <data key="d1">0.486525</data>
+      <data key="d2">0.596538</data>
+      <data key="d4">#d6d6d6</data>
       <data key="d5">circle</data>
-      <data key="d6">darkblue</data>
-      <data key="d7">8</data>
     </node>
     <node id="6"> 
-      <data key="d0">n5</data>
-      <data key="d1">0.211348</data>
-      <data key="d2">0.173103</data>
+      <data key="d0">grandchild_6</data>
+      <data key="d1">0.324823</data>
+      <data key="d2">0.59787</data>
+      <data key="d4">#d6d6d6</data>
       <data key="d5">circle</data>
-      <data key="d6">darkblue</data>
-      <data key="d7">8</data>
     </node>
-    <edge id="e1" directed="false" source="1" target="2"> 
+    <node id="7"> 
+      <data key="d0">grand-grandchild_7</data>
+      <data key="d1">0.202837</data>
+      <data key="d2">0.464714</data>
+      <data key="d4">#ff0000</data>
+      <data key="d5">diamond</data>
+    </node>
+    <node id="8"> 
+      <data key="d0">grand-grandchild_8</data>
+      <data key="d1">0.344681</data>
+      <data key="d2">0.467377</data>
+      <data key="d4">#ff0000</data>
+      <data key="d5">diamond</data>
+    </node>
+    <node id="9"> 
+      <data key="d0">grand-grandchild_9</data>
+      <data key="d1">0.466667</data>
+      <data key="d2">0.446072</data>
+      <data key="d4">#ff0000</data>
+      <data key="d5">diamond</data>
+    </node>
+    <node id="10"> 
+      <data key="d0">grand-grandchild_10</data>
+      <data key="d1">0.641135</data>
+      <data key="d2">0.428762</data>
+      <data key="d4">#ff0000</data>
+      <data key="d5">diamond</data>
+    </node>
+    <node id="11"> 
+      <data key="d0">grand-grandchild_11</data>
+      <data key="d1">0.747518</data>
+      <data key="d2">0.446072</data>
+      <data key="d4">#ff0000</data>
+      <data key="d5">diamond</data>
+    </node>
+    <node id="12"> 
+      <data key="d0">LABEL_12</data>
+      <data key="d1">0.0524823</data>
+      <data key="d2">0.328895</data>
+      <data key="d5">circle</data>
+    </node>
+    <node id="13"> 
+      <data key="d0">LABEL_13</data>
+      <data key="d1">0.185816</data>
+      <data key="d2">0.316911</data>
+      <data key="d5">circle</data>
+    </node>
+    <node id="14"> 
+      <data key="d0">LABEL_14</data>
+      <data key="d1">0.32766</data>
+      <data key="d2">0.311585</data>
+      <data key="d5">circle</data>
+    </node>
+    <node id="15"> 
+      <data key="d0">LABEL_15</data>
+      <data key="d1">0.395745</data>
+      <data key="d2">0.302264</data>
+      <data key="d5">circle</data>
+    </node>
+    <node id="16"> 
+      <data key="d0">LABEL_16</data>
+      <data key="d1">0.50922</data>
+      <data key="d2">0.295606</data>
+      <data key="d5">circle</data>
+    </node>
+    <node id="17"> 
+      <data key="d0">LABEL_17</data>
+      <data key="d1">0.625532</data>
+      <data key="d2">0.299601</data>
+      <data key="d5">circle</data>
+    </node>
+    <node id="18"> 
+      <data key="d0">LABEL_18</data>
+      <data key="d1">0.760284</data>
+      <data key="d2">0.283622</data>
+      <data key="d5">circle</data>
+    </node>
+    <node id="19"> 
+      <data key="d0">LABEL_19</data>
+      <data key="d1">0.828369</data>
+      <data key="d2">0.29028</data>
+      <data key="d5">circle</data>
+    </node>
+    <edge id="e1" directed="true" source="1" target="2"> 
       <data key="d8">1</data> 
     </edge>
-    <edge id="e2" directed="false" source="1" target="3"> 
+    <edge id="e2" directed="true" source="1" target="3"> 
       <data key="d8">1</data> 
     </edge>
-    <edge id="e3" directed="false" source="2" target="4"> 
-      <data key="d8">2</data> 
-    </edge>
-    <edge id="e4" directed="false" source="3" target="4"> 
-      <data key="d8">1</data> 
-      <data key="d9">black</data> 
-    </edge>
-    <edge id="e5" directed="false" source="3" target="5"> 
+    <edge id="e3" directed="true" source="2" target="1"> 
       <data key="d8">1</data> 
     </edge>
-    <edge id="e6" directed="false" source="4" target="6"> 
+    <edge id="e4" directed="true" source="2" target="5"> 
       <data key="d8">1</data> 
     </edge>
-    <edge id="e7" directed="false" source="5" target="6"> 
+    <edge id="e5" directed="true" source="2" target="6"> 
       <data key="d8">1</data> 
-      <data key="d9">black</data> 
+    </edge>
+    <edge id="e6" directed="true" source="3" target="1"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e7" directed="true" source="3" target="4"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e8" directed="true" source="3" target="5"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e9" directed="true" source="4" target="3"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e10" directed="true" source="4" target="10"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e11" directed="true" source="4" target="11"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e12" directed="true" source="5" target="2"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e13" directed="true" source="5" target="3"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e14" directed="true" source="5" target="9"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e15" directed="true" source="5" target="10"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e16" directed="true" source="6" target="2"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e17" directed="true" source="6" target="7"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e18" directed="true" source="6" target="8"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e19" directed="true" source="7" target="6"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e20" directed="true" source="7" target="12"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e21" directed="true" source="7" target="13"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e22" directed="true" source="8" target="6"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e23" directed="true" source="8" target="14"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e24" directed="true" source="8" target="15"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e25" directed="true" source="9" target="5"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e26" directed="true" source="9" target="15"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e27" directed="true" source="9" target="16"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e28" directed="true" source="10" target="4"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e29" directed="true" source="10" target="5"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e30" directed="true" source="10" target="17"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e31" directed="true" source="10" target="18"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e32" directed="true" source="11" target="4"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e33" directed="true" source="11" target="18"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e34" directed="true" source="11" target="19"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e35" directed="true" source="12" target="7"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e36" directed="true" source="13" target="7"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e37" directed="true" source="14" target="8"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e38" directed="true" source="15" target="8"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e39" directed="true" source="15" target="9"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e40" directed="true" source="16" target="9"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e41" directed="true" source="17" target="10"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e42" directed="true" source="18" target="10"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e43" directed="true" source="18" target="11"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e44" directed="true" source="19" target="11"> 
+      <data key="d8">1</data> 
     </edge>
   </graph>
 </graphml>
