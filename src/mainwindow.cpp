@@ -2723,8 +2723,8 @@ void MainWindow::initToolBox(){
     QStringList modelsList;
     modelsList << tr("None")
                 << tr("Spring Embedder (Eades)")
-                << tr("Fruchterman-Reingold")
-                << tr("Kamada-Kawai") ;
+                << tr("Fruchterman-Reingold");
+               // << tr("Kamada-Kawai") ;
 
     toolBoxLayoutForceDirectedSelect->addItems(modelsList);
     toolBoxLayoutForceDirectedSelect->setMinimumHeight(20);
@@ -10198,7 +10198,7 @@ void MainWindow::slotHelpCreateTips(){
              "and selecting Change Label.");
     tips+=tr("You can change the background color of the canvas. "
              "Do it from the menu Options > View or "
-             "permanently save this setting in Settins/Preferences.");
+             "permanently save this setting in Settings/Preferences.");
     tips+=tr("Default node colors, shapes and sizes can be changed. "
              "Open the Settings/Preferences dialog and use the "
              "options on the Node tab.");
@@ -10208,7 +10208,7 @@ void MainWindow::slotHelpCreateTips(){
     tips+=tr("You can move any node by left-clicking and dragging it with your mouse. "
              "If you want you can move multiple nodes at once. Left-click on empty space "
              "on the canvas and drag to create a rectangle selection around them. "
-             "Then right-click on one of the selected nodes and drag it.");
+             "Then left-click on one of the selected nodes and drag it.");
     tips+=tr("To save the node positions in a network, you need to save your data "
              "in a format which supports node positions, suchs as GraphML or Pajek.");
     tips+=tr("Embed visualization models on the network from the options in "
@@ -10220,6 +10220,10 @@ void MainWindow::slotHelpCreateTips(){
     tips+=tr("Node info (number, position, degree, etc) is displayed on the Status bar, "
              "when you left-click on it.");
     tips+=tr("Edge information is displayed on the Status bar, when you left-click on it.");
+    tips+=tr("Save your work often, especially when working with large data sets. "
+             "SocNetV alogorithms are faster when working with saved data. "
+             "For most time-consuming metrics, once you compute one, all other "
+             "metric are computed almost instantly.");
 
     tips+=tr("The Closeness Centrality (CC) of a node v, is the inverse sum of "
        "the shortest distances between v and every other node. CC is "
