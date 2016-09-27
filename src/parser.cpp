@@ -1309,7 +1309,7 @@ bool Parser::loadGraphML(){
  * This method checks the xml token name and calls the appropriate function.
  */
 void Parser::readGraphML(QXmlStreamReader &xml){
-    qDebug()<< " Parser: readGraphML()";
+    qDebug()<< " Parser::readGraphML() " ;
     bool_node=false;
     bool_edge=false;
     bool_key=false;
@@ -1318,8 +1318,13 @@ void Parser::readGraphML(QXmlStreamReader &xml){
     while (!xml.atEnd()) { //start reading until QXmlStreamReader end().
         xml.readNext();	//read next token
 
+        qDebug()<< " Parser::readGraphML() - line:" << xml.lineNumber();
+        if (xml.hasError())
+            qDebug()<< " Parser::readGraphML() - ERROR:" << xml.errorString();
+
         if (xml.isStartElement()) {	//new token (graph, node, or edge) here
-            qDebug()<< "\n  readGraphML(): start of element: "<< xml.name().toString() ;
+            qDebug()<< " Parser::readGraphML() - start of element: "
+                    << xml.name().toString() ;
             if (xml.name() == "graph")	//graph definition token
                 readGraphMLElementGraph(xml);
 

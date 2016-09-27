@@ -150,8 +150,11 @@ class Graph:  public QObject{
     QThread file_parserThread;
     QThread wc_parserThread;
     QThread wc_spiderThread;
+
 public slots:
+
     int relationCurrent();
+    QString relationCurrentName() const;
 
     /** Slots to signals from Parser */
 
@@ -202,6 +205,7 @@ public slots:
 
     void webCrawl(QString, int, int, bool extLinks, bool intLinks);	//Called by MW to start a web crawler...
 
+    QString htmlEscaped (QString str) const;
 
 signals:
     /** Signals to MainWindow */
@@ -289,10 +293,15 @@ public:
                     const int two_sm_mode);
 
     void graphSave(QString fileName, int fileType);
-    bool graphSaveToPajekFormat (QString fileName,QString networkName,  int maxWidth, int maxHeight);
+    bool graphSaveToPajekFormat (const QString &fileName,
+                                 QString networkName="",
+                                 int maxWidth=0, int maxHeight=0);
     bool graphSaveToAdjacencyFormat (QString fileName);
-    bool graphSaveToDotFormat (QString fileName, QString networkName, int maxWidth, int maxHeight);
-    bool graphSaveToGraphMLFormat (QString fileName,QString networkName,  int maxWidth, int maxHeight);
+
+    bool graphSaveToGraphMLFormat (const QString &fileName,
+                                   QString networkName="",
+                                   int maxWidth=0, int maxHeight=0);
+    bool graphSaveToDotFormat (QString fileName);
     int graphFileFormat() const;
     bool graphFileFormatExportSupported(const int &fileFormat) const;
 

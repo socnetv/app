@@ -351,6 +351,19 @@ int Graph::relationCurrent(){
 }
 
 
+/**
+ * @brief Returns current relation
+ * @return string current relation name
+ */
+QString Graph::relationCurrentName() const{
+    return m_relationsList.value(m_curRelation);
+}
+
+
+/**
+ * @brief Graph::relations
+ * @return
+ */
 int Graph::relations(){
     //qDebug () << " relations count " << m_relationsList.count();
     return m_relationsList.count();
@@ -7783,10 +7796,23 @@ int Graph:: factorial(int x) {
 
 /**
  * @brief Graph::graphName
+ * If m_graphName is set on file loading, it returns that.
+ * If m_graphName is empty, then returns current relation name
+ * If m_graphName is empty and there is no current relation name,
+ * then returns "noname"
  * @return
  */
 QString Graph::graphName() const {
-    return ((m_graphName.isEmpty()) ? "Unnamed" : m_graphName ) ;
+    if (m_graphName.isEmpty() ) {
+        if ( !( relationCurrentName().isEmpty()) )  {
+            return relationCurrentName();
+        }
+        else {
+            return "noname";
+        }
+
+    }
+    return m_graphName;
 }
 
 
@@ -8024,11 +8050,11 @@ void Graph::graphSave( QString fileName, int fileType )
     }
     case FILE_GRAPHVIZ: {
         qDebug() << "Graph::graphSave() - GraphViz/Dot formatted file";
-        saved=graphSaveToDotFormat(fileName, graphName(), canvasWidth, canvasHeight);
+        saved=graphSaveToDotFormat(fileName);
     }
     case FILE_GRAPHML: {			// GraphML
         qDebug() << "Graph::graphSave() - GraphML formatted file";
-        saved=graphSaveToGraphMLFormat(fileName, graphName(), canvasWidth, canvasHeight);
+        saved=graphSaveToGraphMLFormat(fileName);
         break;
     }
     default: {
@@ -8053,12 +8079,19 @@ void Graph::graphSave( QString fileName, int fileType )
     Saves the active graph to a Pajek-formatted file
     Preserves node properties (positions, colours, etc)
 */
-bool Graph::graphSaveToPajekFormat (
-        QString fileName, QString networkName, int maxWidth, int maxHeight)
+bool Graph::graphSaveToPajekFormat (const QString &fileName, \
+                                    QString networkName,
+                                    int maxWidth, int maxHeight
+                                    )
 {
     qDebug () << " Graph::graphSaveToPajekFormat to file: " << fileName.toUtf8();
 
+    networkName  = (networkName == "") ? graphName().toHtmlEscaped(): networkName;
+    maxWidth = (maxWidth == 0) ? canvasWidth:maxWidth ;
+    maxHeight= (maxHeight== 0) ? canvasHeight:maxHeight;
+
     int weight=0;
+
     QFile f( fileName );
     if ( !f.open( QIODevice::WriteOnly ) )  {
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
@@ -8152,6 +8185,279 @@ bool Graph::graphSaveToAdjacencyFormat (QString fileName){
     return true;
 }
 
+
+
+/**
+ * @brief Graph::htmlEscaped
+ * returns a nice qstring where all html special chars are encoded
+ * @param str
+ * @return
+ */
+QString Graph::htmlEscaped(QString str) const {
+    str=str.simplified();
+    if (str.contains('&') ){
+        str=str.replace('&',"&amp;");
+    }
+    if (str.contains('<') ){
+        str=str.replace('<',"&lt;");
+    }
+    if (str.contains('>') ){
+        str=str.replace('>',"&gt;");
+    }
+    if (str.contains('\"') ){
+        str=str.replace('\"',"&quot;");
+    }
+    if (str.contains('\'') ){
+        str=str.replace('\'',"&apos;");
+    }
+    return str;
+
+}
+
+
+bool Graph::graphSaveToDotFormat (QString fileName)
+{
+    Q_UNUSED(fileName);
+
+    return true;
+}
+
+
+
+bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
+                                      QString networkName,
+                                      int maxWidth, int maxHeight)
+{
+    qDebug () << " Graph::graphSaveToGraphMLFormat to file: " << fileName.toUtf8();
+
+    int weight=0, source=0, target=0, edgeCount=0, m_size=1, m_labelSize;
+    QString m_color, m_labelColor, m_label;
+    bool openToken;
+
+    networkName  = (networkName == "") ? graphName().toHtmlEscaped(): networkName;
+    maxWidth = (maxWidth == 0) ? canvasWidth:maxWidth ;
+    maxHeight= (maxHeight== 0) ? canvasHeight:maxHeight;
+
+    QFile f( fileName );
+    if ( !f.open( QIODevice::WriteOnly ) )  {
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
+        return false;
+    }
+    QTextStream outText( &f );
+    outText.setCodec("UTF-8");
+    qDebug () << " codec used for saving stream: " << outText.codec()->name();
+
+    qDebug()<< "		... writing xml version";
+    outText << "<?xml version=\"1.0\" encoding=\"" << outText.codec()->name() << "\"?> \n";
+    outText << " <!-- Created by SocNetV "<<  VERSION << " --> \n" ;
+    outText << "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" "
+               "      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance \" "
+               "      xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns "
+               "      http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">"
+               "\n";
+
+    qDebug()<< "		... writing keys ";
+
+    outText <<	"  <key id=\"d0\" for=\"node\" attr.name=\"label\" attr.type=\"string\"> \n"
+                "    <default>" "</default> \n"
+                "  </key> \n";
+
+    outText <<	"  <key id=\"d1\" for=\"node\" attr.name=\"x_coordinate\" attr.type=\"double\"> \n"
+                "    <default>" << "0.0" << "</default> \n"
+                "  </key> \n";
+
+    outText <<	"  <key id=\"d2\" for=\"node\" attr.name=\"y_coordinate\" attr.type=\"double\"> \n"
+                "    <default>" << "0.0" << "</default> \n"
+                "  </key> \n";
+    outText <<	"  <key id=\"d3\" for=\"node\" attr.name=\"size\" attr.type=\"double\"> \n"
+                "    <default>"<< initVertexSize << "</default> \n"
+                "  </key> \n";
+
+    outText <<	"  <key id=\"d4\" for=\"node\" attr.name=\"color\" attr.type=\"string\"> \n"
+                "    <default>" << initVertexColor << "</default> \n"
+                "  </key> \n";
+
+    outText <<	"  <key id=\"d5\" for=\"node\" attr.name=\"shape\" attr.type=\"string\"> \n"
+                "    <default>" << initVertexShape << "</default> \n"
+                "  </key> \n";
+    outText <<	"  <key id=\"d6\" for=\"node\" attr.name=\"label.color\" attr.type=\"string\"> \n"
+                "    <default>" << initVertexLabelColor << "</default> \n"
+                "  </key> \n";
+    outText <<	"  <key id=\"d7\" for=\"node\" attr.name=\"label.size\" attr.type=\"string\"> \n"
+                "    <default>" << initVertexLabelSize << "</default> \n"
+                "  </key> \n";
+    outText <<	"  <key id=\"d8\" for=\"edge\" attr.name=\"weight\" attr.type=\"double\"> \n"
+                "    <default>1.0</default> \n"
+                "  </key> \n";
+
+    outText <<	"  <key id=\"d9\" for=\"edge\" attr.name=\"color\" attr.type=\"string\"> \n"
+                "    <default>" << initEdgeColor << "</default> \n"
+                "  </key> \n";
+
+    outText <<	"  <key id=\"d10\" for=\"edge\" attr.name=\"label\" attr.type=\"string\"> \n"
+                "    <default>" << ""<< "</default> \n"
+                "  </key> \n";
+
+    qDebug()<< "		... writing graph tag";
+
+    if (isUndirected())
+        outText << "  <graph id=\""<< networkName << "\" edgedefault=\"undirected\"> \n";
+    else
+        outText << "  <graph id=\""<< networkName << "\" edgedefault=\"directed\"> \n";
+
+    QList<Vertex*>::const_iterator it;
+    QList<Vertex*>::const_iterator jt;
+
+    qDebug()<< "		    writing nodes data";
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( ! (*it)->isEnabled () )
+            continue;
+        qDebug() << " 	Node id: "<<  (*it)->name()  ;
+        outText << "    <node id=\"" << (*it)->name() << "\"> \n";
+        m_color = (*it)->color();
+        m_size = (*it)->size() ;
+        m_labelSize=(*it)->labelSize() ;
+        m_labelColor=(*it)->labelColor() ;
+        m_label=(*it)->label();
+        m_label = htmlEscaped(m_label);
+
+
+        outText << "      <data key=\"d0\">" << m_label <<"</data>\n";
+
+        qDebug()<<" 		... Coordinates x " << (*it)->x()<< " "<<maxWidth
+               <<" y " << (*it)->y()<< " "<<maxHeight;
+
+        outText << "      <data key=\"d1\">" << (*it)->x()/(maxWidth) <<"</data>\n";
+        outText << "      <data key=\"d2\">" << (*it)->y()/(maxHeight) <<"</data>\n";
+
+        if (  initVertexSize != m_size ) {
+            outText << "      <data key=\"d3\">" << m_size  <<"</data>\n";
+        }
+
+        if (  QString::compare ( initVertexColor, m_color,  Qt::CaseInsensitive) != 0) {
+            outText << "      <data key=\"d4\">" << m_color <<"</data>\n";
+        }
+
+        outText << "      <data key=\"d5\">" << (*it)->shape() <<"</data>\n";
+
+
+        if (  QString::compare ( initVertexLabelColor, m_labelColor,  Qt::CaseInsensitive) != 0) {
+            outText << "      <data key=\"d6\">" << m_labelColor <<"</data>\n";
+        }
+
+        if (  initVertexLabelSize != m_labelSize ) {
+            outText << "      <data key=\"d7\">" << m_labelSize <<"</data>\n";
+        }
+
+        outText << "    </node>\n";
+
+    }
+
+    qDebug() << "		... writing edges data";
+    edgeCount=0;
+    if (!isUndirected()) {
+        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
+        {
+            for (jt=m_graph.begin(); jt!=m_graph.end(); jt++)
+            {
+                source=(*it)->name();
+                target=(*jt)->name();
+                m_label = "";
+                if  ( 	(weight= edgeExists( source,target ) ) !=0 )
+                {
+                    ++edgeCount;
+                    m_color = (*it)->outLinkColor( target );
+                    m_label = edgeLabel(source, target);
+                    m_label=htmlEscaped(m_label);
+                    qDebug()<< "				edge no "<< edgeCount
+                            << " from n1=" << source << " to n2=" << target
+                            << " with weight " << weight
+                            << " and color " << m_color.toUtf8() ;
+                    outText << "    <edge id=\""<< "e"+QString::number(edgeCount)
+                            << "\" directed=\"" << "true" << "\" source=\"" << source
+                            << "\" target=\"" << target << "\"";
+
+                    openToken = true;
+                    if ( weight !=0 ) {
+                        outText << "> \n";
+                        outText << "      <data key=\"d8\">" << weight<<"</data>" <<" \n";
+                        openToken=false;
+                    }
+                    if (  QString::compare ( initEdgeColor, m_color,  Qt::CaseInsensitive) != 0) {
+                        if (openToken)
+                            outText << "> \n";
+                        outText << "      <data key=\"d9\">" << m_color <<"</data>" <<" \n";
+                        openToken=false;
+                    }
+                    if (  !m_label.isEmpty()) {
+                        if (openToken)
+                            outText << "> \n";
+                        outText << "      <data key=\"d10\">" << m_label<<"</data>" <<" \n";
+                        openToken=false;
+                    }
+
+                    if (openToken)
+                        outText << "/> \n";
+                    else
+                        outText << "    </edge>\n";
+
+                }
+
+            }
+        }
+    }
+    else {
+        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
+        {
+            for (jt=it; jt!=m_graph.end(); jt++)
+            {
+                source=(*it)->name();
+                target=(*jt)->name();
+
+                if  ( 	(weight= edgeExists( source,target, true ) ) !=0 )
+                {
+                    ++edgeCount;
+                    m_color = (*it)->outLinkColor( target );
+                    qDebug()<< "				edge no "<< edgeCount
+                            << " from n1=" << source << " to n2=" << target
+                            << " with weight " << weight
+                            << " and color " << m_color.toUtf8() ;
+                    outText << "    <edge id=\""<< "e"+QString::number(edgeCount)
+                            << "\" directed=\"" << "false" << "\" source=\"" << source
+                            << "\" target=\"" << target << "\"";
+
+                    openToken = true;
+                    if ( weight !=0 ) {
+                        outText << "> \n";
+                        outText << "      <data key=\"d8\">" << weight<<"</data>" <<" \n";
+                        openToken=false;
+                    }
+                    if (  QString::compare ( initEdgeColor, m_color,  Qt::CaseInsensitive) != 0) {
+                        if (openToken)
+                            outText << "> \n";
+                        outText << "      <data key=\"d9\">" << m_color <<"</data>" <<" \n";
+                        openToken=false;
+                    }
+                    if (openToken)
+                        outText << "/> \n";
+                    else
+                        outText << "    </edge>\n";
+
+                }
+
+            }
+        }
+    }
+
+    outText << "  </graph>\n";
+    outText << "</graphml>\n";
+
+    f.close();
+    QString fileNameNoPath=fileName.split("/").last();
+    emit statusMessage( QString(tr( "File %1 saved" ) ).arg( fileNameNoPath ) );
+
+    return true;
+}
 
 
 
@@ -11935,264 +12241,6 @@ void Graph::writeAdjacencyMatrixInvert(const QString &fn,
     }
 
     file.close();
-}
-
-
-bool Graph::graphSaveToDotFormat (
-        QString fileName, QString networkName, int maxWidth, int maxHeight)
-{
-    Q_UNUSED(fileName);
-    Q_UNUSED(networkName);
-    Q_UNUSED(maxWidth);
-    Q_UNUSED(maxHeight);
-
-    return true;
-}
-
-
-
-bool Graph::graphSaveToGraphMLFormat (
-        QString fileName, QString networkName, int maxWidth, int maxHeight)
-{
-    qDebug () << " Graph::graphSaveToGraphMLFormat to file: " << fileName.toUtf8();
-
-    int weight=0, source=0, target=0, edgeCount=0, m_size=1, m_labelSize;
-    QString m_color, m_labelColor, m_label;
-    bool openToken;
-    QFile f( fileName );
-    if ( !f.open( QIODevice::WriteOnly ) )  {
-emit statusMessage ( tr("Error. Could not write to ") + fileName );
-        return false;
-    }
-    QTextStream outText( &f );
-    outText.setCodec("UTF-8");
-    qDebug () << " codec used for saving stream: " << outText.codec()->name();
-
-    qDebug()<< "		... writing xml version";
-    outText << "<?xml version=\"1.0\" encoding=\"" << outText.codec()->name() << "\"?> \n";
-    outText << " <!-- Created by SocNetV "<<  VERSION << " --> \n" ;
-    outText << "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" "
-               "      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance \" "
-               "      xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns "
-               "      http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">"
-               "\n";
-
-    qDebug()<< "		... writing keys ";
-
-    outText <<	"  <key id=\"d0\" for=\"node\" attr.name=\"label\" attr.type=\"string\"> \n"
-                "    <default>" "</default> \n"
-                "  </key> \n";
-
-    outText <<	"  <key id=\"d1\" for=\"node\" attr.name=\"x_coordinate\" attr.type=\"double\"> \n"
-                "    <default>" << "0.0" << "</default> \n"
-                "  </key> \n";
-
-    outText <<	"  <key id=\"d2\" for=\"node\" attr.name=\"y_coordinate\" attr.type=\"double\"> \n"
-                "    <default>" << "0.0" << "</default> \n"
-                "  </key> \n";
-    outText <<	"  <key id=\"d3\" for=\"node\" attr.name=\"size\" attr.type=\"double\"> \n"
-                "    <default>"<< initVertexSize << "</default> \n"
-                "  </key> \n";
-
-    outText <<	"  <key id=\"d4\" for=\"node\" attr.name=\"color\" attr.type=\"string\"> \n"
-                "    <default>" << initVertexColor << "</default> \n"
-                "  </key> \n";
-
-    outText <<	"  <key id=\"d5\" for=\"node\" attr.name=\"shape\" attr.type=\"string\"> \n"
-                "    <default>" << initVertexShape << "</default> \n"
-                "  </key> \n";
-    outText <<	"  <key id=\"d6\" for=\"node\" attr.name=\"label.color\" attr.type=\"string\"> \n"
-                "    <default>" << initVertexLabelColor << "</default> \n"
-                "  </key> \n";
-    outText <<	"  <key id=\"d7\" for=\"node\" attr.name=\"label.size\" attr.type=\"string\"> \n"
-                "    <default>" << initVertexLabelSize << "</default> \n"
-                "  </key> \n";
-    outText <<	"  <key id=\"d8\" for=\"edge\" attr.name=\"weight\" attr.type=\"double\"> \n"
-                "    <default>1.0</default> \n"
-                "  </key> \n";
-
-    outText <<	"  <key id=\"d9\" for=\"edge\" attr.name=\"color\" attr.type=\"string\"> \n"
-                "    <default>" << initEdgeColor << "</default> \n"
-                "  </key> \n";
-
-    outText <<	"  <key id=\"d10\" for=\"edge\" attr.name=\"label\" attr.type=\"string\"> \n"
-                "    <default>" << ""<< "</default> \n"
-                "  </key> \n";
-
-    qDebug()<< "		... writing graph tag";
-    if (networkName == "")
-        networkName = "G";
-    if (isUndirected())
-        outText << "  <graph id=\""<< networkName << "\" edgedefault=\"undirected\"> \n";
-    else
-        outText << "  <graph id=\""<< networkName << "\" edgedefault=\"directed\"> \n";
-
-    QList<Vertex*>::const_iterator it;
-    QList<Vertex*>::const_iterator jt;
-
-    qDebug()<< "		    writing nodes data";
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( ! (*it)->isEnabled () )
-            continue;
-        qDebug() << " 	Node id: "<<  (*it)->name()  ;
-        outText << "    <node id=\"" << (*it)->name() << "\"> \n";
-        m_color = (*it)->color();
-        m_size = (*it)->size() ;
-        m_labelSize=(*it)->labelSize() ;
-        m_labelColor=(*it)->labelColor() ;
-        m_label=(*it)->label();
-
-        if (m_label.contains('&') ){
-            m_label=m_label.replace('&',"&amp;");
-        }
-        if (m_label.contains('<') ){
-            m_label=m_label.replace('<',"&lt;");
-        }
-        if (m_label.contains('>') ){
-            m_label=m_label.replace('>',"&gt;");
-        }
-        if (m_label.contains('\"') ){
-            m_label=m_label.replace('\"',"&quot;");
-        }
-        if (m_label.contains('\'') ){
-            m_label=m_label.replace('\'',"&apos;");
-        }
-
-
-        outText << "      <data key=\"d0\">" << m_label <<"</data>\n";
-
-        qDebug()<<" 		... Coordinates x " << (*it)->x()<< " "<<maxWidth
-               <<" y " << (*it)->y()<< " "<<maxHeight;
-
-        outText << "      <data key=\"d1\">" << (*it)->x()/(maxWidth) <<"</data>\n";
-        outText << "      <data key=\"d2\">" << (*it)->y()/(maxHeight) <<"</data>\n";
-
-        if (  initVertexSize != m_size ) {
-            outText << "      <data key=\"d3\">" << m_size  <<"</data>\n";
-        }
-
-        if (  QString::compare ( initVertexColor, m_color,  Qt::CaseInsensitive) != 0) {
-            outText << "      <data key=\"d4\">" << m_color <<"</data>\n";
-        }
-
-        outText << "      <data key=\"d5\">" << (*it)->shape() <<"</data>\n";
-
-
-        if (  QString::compare ( initVertexLabelColor, m_labelColor,  Qt::CaseInsensitive) != 0) {
-            outText << "      <data key=\"d6\">" << m_labelColor <<"</data>\n";
-        }
-
-        if (  initVertexLabelSize != m_labelSize ) {
-            outText << "      <data key=\"d7\">" << m_labelSize <<"</data>\n";
-        }
-
-        outText << "    </node>\n";
-
-    }
-
-    qDebug() << "		... writing edges data";
-    edgeCount=0;
-    if (!isUndirected()) {
-        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
-        {
-            for (jt=m_graph.begin(); jt!=m_graph.end(); jt++)
-            {
-                source=(*it)->name();
-                target=(*jt)->name();
-                m_label = "";
-                if  ( 	(weight= edgeExists( source,target ) ) !=0 )
-                {
-                    ++edgeCount;
-                    m_color = (*it)->outLinkColor( target );
-                    m_label = edgeLabel(source, target);
-                    qDebug()<< "				edge no "<< edgeCount
-                            << " from n1=" << source << " to n2=" << target
-                            << " with weight " << weight
-                            << " and color " << m_color.toUtf8() ;
-                    outText << "    <edge id=\""<< "e"+QString::number(edgeCount)
-                            << "\" directed=\"" << "true" << "\" source=\"" << source
-                            << "\" target=\"" << target << "\"";
-
-                    openToken = true;
-                    if ( weight !=0 ) {
-                        outText << "> \n";
-                        outText << "      <data key=\"d8\">" << weight<<"</data>" <<" \n";
-                        openToken=false;
-                    }
-                    if (  QString::compare ( initEdgeColor, m_color,  Qt::CaseInsensitive) != 0) {
-                        if (openToken)
-                            outText << "> \n";
-                        outText << "      <data key=\"d9\">" << m_color <<"</data>" <<" \n";
-                        openToken=false;
-                    }
-                    if (  !m_label.isEmpty()) {
-                        if (openToken)
-                            outText << "> \n";
-                        outText << "      <data key=\"d10\">" << m_label<<"</data>" <<" \n";
-                        openToken=false;
-                    }
-
-                    if (openToken)
-                        outText << "/> \n";
-                    else
-                        outText << "    </edge>\n";
-
-                }
-
-            }
-        }
-    }
-    else {
-        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
-        {
-            for (jt=it; jt!=m_graph.end(); jt++)
-            {
-                source=(*it)->name();
-                target=(*jt)->name();
-
-                if  ( 	(weight= edgeExists( source,target, true ) ) !=0 )
-                {
-                    ++edgeCount;
-                    m_color = (*it)->outLinkColor( target );
-                    qDebug()<< "				edge no "<< edgeCount
-                            << " from n1=" << source << " to n2=" << target
-                            << " with weight " << weight
-                            << " and color " << m_color.toUtf8() ;
-                    outText << "    <edge id=\""<< "e"+QString::number(edgeCount)
-                            << "\" directed=\"" << "false" << "\" source=\"" << source
-                            << "\" target=\"" << target << "\"";
-
-                    openToken = true;
-                    if ( weight !=0 ) {
-                        outText << "> \n";
-                        outText << "      <data key=\"d8\">" << weight<<"</data>" <<" \n";
-                        openToken=false;
-                    }
-                    if (  QString::compare ( initEdgeColor, m_color,  Qt::CaseInsensitive) != 0) {
-                        if (openToken)
-                            outText << "> \n";
-                        outText << "      <data key=\"d9\">" << m_color <<"</data>" <<" \n";
-                        openToken=false;
-                    }
-                    if (openToken)
-                        outText << "/> \n";
-                    else
-                        outText << "    </edge>\n";
-
-                }
-
-            }
-        }
-    }
-
-    outText << "  </graph>\n";
-    outText << "</graphml>\n";
-
-    f.close();
-    QString fileNameNoPath=fileName.split("/").last();
-    emit statusMessage( QString(tr( "File %1 saved" ) ).arg( fileNameNoPath ) );
-
-    return true;
 }
 
 
