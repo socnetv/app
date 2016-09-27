@@ -3,9 +3,7 @@ KNOWN BUGS
 
 1: Negative weights break centralities
 2: UCINET (DL) files in nodelist1 format (one-mode) are not supported.  
-3: Some Graphviz (dot) files do not load. See test2.dot. Cant read when one line and nodes dont appear...
-4: closeness reports wrong indices in digraphs, where one actor has only one outLink
-5: fix other related indices for digraphs when d(i,j) = inf
+3. GraphML files containing special HTML chars (i.e. & ) in labels are not readable.
 
 
 TODO

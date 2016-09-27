@@ -7,8 +7,8 @@ SocNetV -A Social Network Visualizer
 1. Overview
 ------------
 
-Social Network Visualizer (SocNetV) is a cross-platform, user-friendly tool 
-for the analysis and visualization of Social Networks. 
+Social Network Visualizer (SocNetV) is a cross-platform, user-friendly and free
+software application for social network analysis and visualization.
 
 It lets you construct social networks (mathematical graphs) with a few clicks 
 on a virtual canvas or load social network data of various formats (GraphML, 
@@ -183,6 +183,7 @@ to start socnetv with network named filename.net loaded.
 For usage documentation, see online help.
 
 Or, when running SocNetV, press F1 to display the SocNetV Manual.
+The manual is also available at the project's website.
 
 
 # 6. Bug reporting
@@ -191,7 +192,3 @@ Please, file any bug reports in our bug tracker:
 https://bugs.launchpad.net/socnetv/+filebug
 
 
-# 7. Note to packagers
-
-Packagers: please note that the SocNetV manual is copied to 
-$(DESTDIR)$(prefix)/doc/$(name)/manual
