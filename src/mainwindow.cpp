@@ -2108,9 +2108,9 @@ void MainWindow::initMenuBar() {
     randomNetworkMenu -> addAction (createScaleFreeRandomNetworkAct);
     randomNetworkMenu -> addAction (createSmallWorldRandomNetworkAct);
     randomNetworkMenu -> addAction (createErdosRenyiRandomNetworkAct );
-    // createGaussianRandomNetworkAct -> addTo(randomNetworkMenu);
-    randomNetworkMenu -> addAction (createLatticeNetworkAct);
     randomNetworkMenu -> addAction (createRegularRandomNetworkAct);
+    randomNetworkMenu -> addAction (createLatticeNetworkAct);
+    // createGaussianRandomNetworkAct -> addTo(randomNetworkMenu);
     networkMenu->addSeparator();
 
     networkMenu  -> addAction(webCrawlerAct);
