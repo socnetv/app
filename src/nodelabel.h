@@ -32,6 +32,7 @@
 class Node;
 
 static const int TypeLabel = QGraphicsItem::UserType+4;
+static const int ZValueNodeLabel = 80;
 
 class NodeLabel : public QGraphicsTextItem{
 public: 

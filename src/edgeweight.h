@@ -33,6 +33,7 @@
 class Edge;
 
 static const int TypeEdgeWeight = QGraphicsItem::UserType+5;
+static const int ZValueEdgeWeight = 80;
 
 class EdgeWeight: public QGraphicsTextItem
 {

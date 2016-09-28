@@ -43,6 +43,8 @@ using namespace std;
 
 
 static const int TypeEdge= QGraphicsItem::UserType+2;
+static const int ZValueEdge = 50;
+static const int ZValueEdgeHighlighted = 99;
 
 static const int EDGE_STATE_REGULAR = 0;
 static const int EDGE_STATE_HIGHLIGHT = 1;

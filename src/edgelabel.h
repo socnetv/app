@@ -33,6 +33,7 @@
 class Edge;
 
 static const int TypeEdgeLabel = QGraphicsItem::UserType+6;
+static const int ZValueEdgeLabel = 80;
 
 class EdgeLabel: public QGraphicsTextItem
 {

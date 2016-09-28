@@ -35,7 +35,7 @@ NodeNumber::NodeNumber( Node *jim , const QString &labelText, const int &size)
     setParentItem(jim); //auto disables child items like this, when node is disabled.
     setPlainText( labelText );
     setFont( QFont ("Times", size, QFont::Black, false) );
-    setZValue(254);
+    setZValue(ZValueNodeNumber);
     setAcceptHoverEvents(false);
 }
 

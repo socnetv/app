@@ -41,7 +41,8 @@ class NodeNumber;
 using namespace std;
 
 static const int TypeNode = QGraphicsItem::UserType+1;
-
+static const int ZValueNode = 100;
+static const int ZValueNodeHighlighted = 110;
 
 /**
 *  This is actually a container-class.

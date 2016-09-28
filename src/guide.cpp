@@ -33,7 +33,7 @@ Guide::Guide ( GraphicsWidget *gw,
                const double &radius ) : graphicsWidget ( gw ){
     graphicsWidget->scene()->addItem ( this );
     m_radius=radius;
-    setZValue ( 250 );
+    setZValue(ZValueGuide);
     circle=true;
     setPos(x0, y0);
 }
@@ -46,7 +46,7 @@ Guide::Guide ( GraphicsWidget *gw,
     graphicsWidget->scene()->addItem ( this );
     setPos(0, y0);
     m_width= width;
-    setZValue ( 250 );
+    setZValue(ZValueGuide);
     circle=false;
 }
 

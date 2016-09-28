@@ -33,7 +33,7 @@ class Node;
 
 
 static const int TypeNumber=QGraphicsItem::UserType+3;
-
+static const int ZValueNodeNumber = 90;
 
 class NodeNumber : public QGraphicsTextItem {
 public:

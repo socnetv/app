@@ -37,7 +37,7 @@ EdgeWeight::EdgeWeight( Edge *link , int size, QString labelText)
 	setPlainText( labelText );
     setParentItem(link); //auto disables child items like this, when link is disabled.
     this->setFont( QFont ("Courier", size, QFont::Light, true) );
-    setZValue(253);
+    setZValue(ZValueEdgeWeight);
 }
 
 

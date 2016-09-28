@@ -36,6 +36,7 @@
 class GraphicsWidget;
 
 static const int TypeGuide = QGraphicsItem::UserType+7;
+static const int ZValueGuide = 10;
 
 class Guide :  public QObject, public QGraphicsItem {
     Q_OBJECT

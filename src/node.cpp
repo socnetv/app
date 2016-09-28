@@ -238,20 +238,20 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     if (option->state & QStyle::State_Selected) {
         //qDebug()<< " node : selected ";
         painter->setBrush(m_col.dark(150));
+        setZValue(ZValueNodeHighlighted);
     }
     else if (option->state & QStyle::State_MouseOver) {
         //qDebug()<< " node : mouse over";
         painter->setBrush(m_col.dark(150));
-        setZValue(255);
+        setZValue(ZValueNodeHighlighted);
     }
     //else if (option->state & QStyle::State_Sunken) {
     //qDebug()<< " node : sunken ";
-    //setZValue(255);
     //painter->setBrush(m_col_dark.dark(160));
     //}
     else { //no, just paint it with the usual color.
         //qDebug()<< " node : nothing";
-        setZValue(254);
+        setZValue(ZValueNode);
         painter->setBrush(m_col);
     }
     painter->setPen(QPen(QColor("#222"), 0));
@@ -310,7 +310,7 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
         if ( m_hasNumber )
         {
             if (!m_hasNumberInside) 	{ //move it outside
-                m_number -> setZValue(254);
+                m_number -> setZValue(ZValueNodeNumber);
                 m_number -> setPos( m_size+m_numberDistance, 0);
             }
         }
