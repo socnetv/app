@@ -100,7 +100,7 @@ Edge::Edge(  GraphicsWidget *gw,
     //setFlags(QGraphicsItem::ItemIsSelectable);
 
     //Edges have lower z than nodes. Nodes always appear above edges.
-    setZValue(253);
+    setZValue(ZValueEdge);
 
     setBoundingRegionGranularity(0);
     //setCacheMode (QGraphicsItem::ItemCoordinateCache);
@@ -491,6 +491,7 @@ QPen Edge::pen() const {
         break;
     case EDGE_STATE_HIGHLIGHT: // selected
         qDebug() << "Edge::pen() - returning pen for state HIGHLIGHTED"  ;
+
         return QPen(QColor("red"), width(), style(), Qt::RoundCap, Qt::RoundJoin);
     case EDGE_STATE_HOVER: // hover
         qDebug() << "Edge::pen() - returning pen for state HOVER"  ;
@@ -515,19 +516,19 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 
      //if the edge is being dragged around, darken it!
      if (option->state & QStyle::State_Selected) {
+         setZValue(ZValueEdgeHighlighted);
          setState(EDGE_STATE_HOVER);
-         setZValue(255);
      }
      else if (option->state & QStyle::State_MouseOver) {
+         setZValue(ZValueEdgeHighlighted);
          setState(EDGE_STATE_HOVER);
-         setZValue(255);
      }
      else if (m_state==EDGE_STATE_HIGHLIGHT){
          setState(EDGE_STATE_HIGHLIGHT);
      }
      else {
+         setZValue(ZValueEdge);
          setState(EDGE_STATE_REGULAR);
-         setZValue(253);
      }
     // set painter pen to correct edge pen
     painter->setPen(pen());
@@ -543,8 +544,8 @@ float Edge::width() const{
     if ( fabs(m_weight) > 1  )  {
         qDebug()<< "Edge::width() -"
                    << "m_weight" << m_weight
-                   <<"Returning "<< 1  + fabs(m_weight)/10;
-        return  1  + fabs(m_weight)/10;
+                  <<"Returning "<< 1  +  log(fabs(m_weight)) ;
+        return 1+log(fabs(m_weight)) ;
     }
     qDebug()<< "Edge::width() - Returning"<< m_weight;
     return m_weight;	//	Default, if  m_weight in (-1, 1) space
@@ -561,12 +562,10 @@ void Edge::highlight(const bool &flag) {
     if (flag) {
         prepareGeometryChange();
         setState(EDGE_STATE_HIGHLIGHT);
-        setZValue(255);
     }
     else {
         prepareGeometryChange();
         setState(EDGE_STATE_REGULAR);
-        setZValue(253);
     }
 }
 
