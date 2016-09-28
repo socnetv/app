@@ -1133,11 +1133,13 @@ QList<QGraphicsItem *> GraphicsWidget::selectedItems(){
         Yes, we make a full circle! :)
 */
 void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
-    qDebug() << "GW: mouseDoubleClickEvent()";
+
     if ( QGraphicsItem *item= itemAt(e->pos() ) ) {
         if (Node *node = qgraphicsitem_cast<Node *>(item)) {
             qDebug() << "GW: mouseDoubleClickEvent() - on a node!"
-                     << " Starting new edge!";
+                     << "Scene items: "<< scene()->items().size()
+                     << "GW items: " << items().size()
+                     << "Starting new edge!";
             node->setSelected(true);
             nodeClicked(node);
             startEdge(node);
@@ -1148,16 +1150,20 @@ void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
             QGraphicsView::mouseDoubleClickEvent(e);
             return;
         }
+        qDebug() << "GW: mouseDoubleClickEvent() - on something, not a node!"
+                 << "Scene items: "<< scene()->items().size()
+                 << "GW items: " << items().size();
+
     }
 
     QPointF p = mapToScene(e->pos());
     qDebug()<< "GW::mouseDoubleClickEvent() - on empty space. "
+            << "Scene items: "<< scene()->items().size()
+            << " GW items: " << items().size()
             << " Signaling MW to create a new vertex in graph. e->pos() "
             << e->pos().x() << ","<< e->pos().y() << ", "<< p.x() << "," <<p.y();
     emit userDoubleClickNewNode(p);
-    qDebug() << "GW::mouseDoubleClickEvent() "
-             << "Scene items: "<< scene()->items().size()
-             << " GW items: " << items().size();
+
 }
 
 
@@ -1243,7 +1249,8 @@ void GraphicsWidget::mouseReleaseEvent( QMouseEvent * e ) {
     if ( QGraphicsItem *item= itemAt(e->pos() ) ) {
         if (Node *node = qgraphicsitem_cast<Node *>(item)) {
             qDebug() << "GW::mouseReleaseEvent() on a node ";
-            Q_UNUSED(node);
+            //Q_UNUSED(node);
+            emit updateNodeCoords(node->nodeNumber(), p.x(), p.y());
             QGraphicsView::mouseReleaseEvent(e);
         }
         if (Edge *edge= qgraphicsitem_cast<Edge *>(item)) {

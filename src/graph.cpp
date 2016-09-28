@@ -398,7 +398,9 @@ void Graph::vertexCreate(const int &num, const int &nodeSize, const QString &nod
                          const QPointF &p, const QString &nodeShape,
                          const bool &signalMW){
     int value = 1;
-    qDebug() << "Graph::vertexCreate() " << num ;
+    qDebug() << "Graph::vertexCreate() - vertex number" << num
+                << "signalMW" << signalMW
+                   << "call vertexAdd() and emitting drawNode() to GW";
     vertexAdd ( num, value, nodeSize,  nodeColor,
                numColor, numSize,
                label, labelColor, labelSize, p, nodeShape);
@@ -1873,17 +1875,21 @@ QList<int> Graph::verticesIsolated(){
  * @param signalMW
  */
 void Graph::graphModifiedSet(const int &graphChangedFlag, const bool &signalMW){
-    qDebug()<<"Graph::graphModifiedSet() - m_symmetric " << m_symmetric;
+
     graphModifiedFlag=graphChangedFlag;
 
     if (signalMW) {
-        qDebug()<<"Graph::graphModifiedSet() -"
+        qDebug()<<"Graph::graphModifiedSet() - m_symmetric " << m_symmetric
                   << "graphModifiedFlag" << graphModifiedFlag
                   << "Emitting signal signalGraphModified()";
-        emit signalGraphModified(graphModifiedFlag, isUndirected(), vertices(), edgesEnabled(),density());
+        emit signalGraphModified(graphModifiedFlag,
+                                 isUndirected(),
+                                 vertices(),
+                                 edgesEnabled(),
+                                 density());
         return;
     }
-    qDebug()<<"Graph::graphModifiedSet() -"
+    qDebug()<<"Graph::graphModifiedSet() - m_symmetric " << m_symmetric
               << "graphModifiedFlag" << graphModifiedFlag
               << "Not emitting any signal to MW";
 }
