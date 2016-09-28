@@ -2081,7 +2081,7 @@ bool Parser::loadDot(){
         fileLine++;
 
         qDebug ()<<"Reading fileLine "<< fileLine;
-
+        qDebug ()<< str;
         if ( fileLine == 1 ) {
             if ( str.contains("vertices",Qt::CaseInsensitive) 	//Pajek
                  || str.contains("network",Qt::CaseInsensitive)	//Pajek?
@@ -2189,7 +2189,7 @@ bool Parser::loadDot(){
                   && !netProperties
                   )
         {
-            qDebug()<< "* A node definition must be here ..." << str;
+            qDebug()<< "* A node definition must be here: \n" << str;
             end=str.indexOf('[');
             if (end!=-1) {
                 temp=str.right(str.size()-end-1); //keep the properties
@@ -2226,9 +2226,10 @@ bool Parser::loadDot(){
                 target=aNodes;
 
             }
-            else
-                end=str.indexOf(';');
-            qDebug ("* Finished node!");
+            else {
+                    qDebug ("* ERROR!");
+
+            }
         }
         else if ( !str.contains('[', Qt::CaseInsensitive)
                   && !str.contains("node", Qt::CaseInsensitive)
@@ -2239,17 +2240,13 @@ bool Parser::loadDot(){
                   && !netProperties
                   )
         {
-            qDebug()<< "* A node definition must be here ..." << str;
+            qDebug()<< "* A node definition without properties must be here ..." << str;
             end=str.indexOf(';');
             if (end!=-1) {
-                temp=str.right(str.size()-end-1); //keep the properties
-                temp=temp.remove(']');
-                temp=temp.remove(';');
-                node=str.left(end-1);
-                node=node.remove('\"');
+                node=str.left(str.size()-end); //keep the properties
                 qDebug()<<"node named "<<node.toLatin1();
-                qDebug()<<"node properties "<<temp.toLatin1();
-                nodeLabel=node;  //Will change only if label exists in dotProperties
+                node=node.remove(']').remove(';').remove('\"');
+                qDebug()<<"node named "<<node.toLatin1();
                 nodeLabel=node;
                 aNodes++;
                 randX=rand()%gwWidth;
@@ -2287,33 +2284,42 @@ bool Parser::loadDot(){
             end=str.indexOf('[');
             if (end!=-1) {
                 temp=str.right(str.size()-end-1); //keep the properties
+                qDebug("* Edge definition found - reading properties...");
                 temp=temp.remove(']');
                 temp=temp.remove(';');
                 qDebug()<<"edge properties "<<temp.toLatin1();
                 dotProperties(temp, edgeWeight, edgeLabel, edgeShape, edgeColor, fontName, fontColor );
             }
-            else
+            else{
+                qDebug("* Edge definition found - no properties...");
+                edgeLabel="";
+                edgeColor=initEdgeColor;
+                edgeWeight=initEdgeWeight;
                 end=str.indexOf(';');
+            }
 
             //FIXME Cannot parse nodes named with '-' character
             str=str.mid(0, end).remove('\"');  //keep only edges
 
-            qDebug()<<"edges "<<str.toLatin1();
+            qDebug()<<"edge "<<str.toLatin1();
 
             if (!str.contains("->",Qt::CaseInsensitive) ){  //non directed = symmetric links
                 if ( str.contains("--",Qt::CaseInsensitive) )
                     nodeSequence=str.split("--");
                 else
                     nodeSequence=str.split("-");
+                edgeDirType=EDGE_RECIPROCAL_UNDIRECTED;
             }
             else { 											//is directed
                 nodeSequence=str.split("->");
+                edgeDirType=EDGE_DIRECTED;
             }
             //Create all nodes defined in nodeSequence
             for ( QList<QString>::iterator it=nodeSequence.begin(); it!=nodeSequence.end(); it++ )  {
                 node=(*it).simplified();
                 qDebug () << " nodeSequence node "<< node;
                 if ( (aNum=nodesDiscovered.indexOf( node ) ) == -1) {
+                    //node not discovered before
                     aNodes++;
                     randX=rand()%gwWidth;
                     randY=rand()%gwHeight;
@@ -2345,6 +2351,7 @@ bool Parser::loadDot(){
                     }
                 }
                 else {
+                    //node discovered before
                     target=aNum+1;
                     qDebug("# Node already exists. Vector num: %i ",target);
                     if (it!=nodeSequence.begin()) {
