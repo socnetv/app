@@ -4,22 +4,18 @@ Social Networks Visualiser (SocNetV)
 SocNetV News
 -==========-
 
-Oct 2016
+Sep 2016
 ========
 - Version 2.1 released with a few new features but lots of bug fixes.
   This version brings a new algorithm for d-regular random network generation,
   and also a nice new dialog to control it.
   See ChangeLog for a complete log of new features and bugfixes.
-
-
-Sep 2016
-========
- - Version 2.0 released with major code overhaul, new GUI layout and lots of bugfixes and improvements.
-   The new version brings stability, great performance boost, and nice new features such as separate modes
-   for graphs and digraphs, permanent settings/preferences functionality, edge labeling, recent files, 
-   keyboard shortcuts, etc. Also there are improvements in Force-Directed layouts, i.e. Fructherman-Reingold.
-   See ChangeLog for a complete overview of the new features.
--  The SocNetV Manual is now build with Doxygen and it is available at http://socnetv.sf.net/documentation
+- Version 2.0 released with major code overhaul, new GUI layout and lots of bugfixes and improvements.
+  The new version brings stability, great performance boost, and nice new features such as separate modes
+  for graphs and digraphs, permanent settings/preferences functionality, edge labeling, recent files, 
+  keyboard shortcuts, etc. Also there are improvements in Force-Directed layouts, i.e. Fructherman-Reingold.
+  See ChangeLog for a complete overview of the new features.
+- The SocNetV Manual is now build with Doxygen and it is available at http://socnetv.sf.net/documentation
 
 June 2015
 =========
