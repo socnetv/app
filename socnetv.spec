@@ -92,18 +92,26 @@ BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 
 %description
-SocNetV (Social Network Visualiser) is a flexible and 
-user-friendly tool for Social Networks Analysis and Visualisation. 
+SocNetV (Social Network Visualiser) is a flexible, user-friendly 
+free software application for social network analysis and 
+visualisation. 
+
 It lets you create new networks (graphs) with a few clicks on a 
 virtual canvas or load networks of various formats (GraphViz, 
 GraphML, Adjacency, Pajek, etc) and modify them to suit your needs.
 
-The application can compute network properties, such as density, 
-diameter and distances, as well as node and network centralities. 
+The application computes network metrics, such as density, 
+diameter and distances (shortest paths) in directed and undirected,
+weighted or non weighted graphs. It also computes node and 
+network centrality and prestige indices, such as closeness, 
+betweeness, information, power centralities and pagerank prestige. 
+
 Various layout algorithms (i.e. Spring-embedder, circular and in 
-levels according to centralities) are supported for meaningful 
-visualisations of your networks. Furthermore, simple random 
-networks (lattice, same degree, etc) can be created. 
+levels according to centrality or prestige) are supported for 
+meaningful visualisations of your networks. 
+
+Furthermore, SocNetV generates random networks using various models
+such as Erdos-Renyi, Scale-Free, Small-World, d-regular etc.
 
 Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 
@@ -178,8 +186,8 @@ rm -rf %{buildroot}/%{_datadir}/doc/%{name}
 #CHANGELOG SECTION
 #
 %changelog
-* Tue Sep 13 2016 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.1-1
-- Synced with DEV version from upstream.
+* Wed Sep 28 2016 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.1-1
+- Synced with new stable version from upstream.
 * Tue Sep 13 2016 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.0-2
 - Spec patch for Buildservice
 * Mon Sep 12 2016 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 2.0-1

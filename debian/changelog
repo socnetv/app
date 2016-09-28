@@ -1,8 +1,8 @@
 socnetv (2.1-1) vivid; urgency=medium
 
-  * Version 2.1 development 
+  * New upstream version 2.1. See http://socnetv.sf.net/ChangeLog  
 
- -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Tue, 13 Sep 2016 10:13:03 +0300
+ -- Dimitris V. Kalamaras <dimitris_kalamaras@yahoo.gr>  Wed, 28 Sep 2016 22:13:03 +0300
 
 socnetv (2.0-4) vivid; urgency=medium
 
