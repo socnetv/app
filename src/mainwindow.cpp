@@ -1891,7 +1891,7 @@ void MainWindow::initActions(){
 
     optionsEdgeWeightNumbersAct = new QAction(tr("Display Edge Weights"),	this);
     optionsEdgeWeightNumbersAct->setStatusTip(
-                tr("Toggle displaying of numbers of Edges weights (this session only)"));
+                tr("Toggle displaying of numbers of edge weights (this session only)"));
     optionsEdgeWeightNumbersAct->setWhatsThis(
                 tr("Display Edge Weights\n\n"
                    "Enables or disables displaying edge weight numbers.\n"
@@ -1904,14 +1904,14 @@ void MainWindow::initActions(){
     connect(optionsEdgeWeightNumbersAct, SIGNAL(triggered(bool)),
             this, SLOT(slotOptionsEdgeWeightNumbersVisibility(bool)) );
 
-    considerEdgeWeightsAct = new QAction(tr("Consider edge Weights in calculations"),	this);
+    considerEdgeWeightsAct = new QAction(tr("Consider Edge Weights in Calculations"),	this);
     considerEdgeWeightsAct->
             setStatusTip(
-                tr("Toggle considering edge Weights during calculations "
+                tr("Toggle considering edge weights during calculations "
                    "(i.e. distances, centrality, etc) (this session only)"));
     considerEdgeWeightsAct->
             setWhatsThis(
-                tr("Consider edge weights in calculations\n\n"
+                tr("Consider Edge Weights in Calculations\n\n"
                    "Enables or disables considering edge weights during "
                    "calculations (i.e. distances, centrality, etc).\n"
                    "This setting will apply to this session only. \n"
@@ -9773,10 +9773,12 @@ void MainWindow::slotOptionsEdgeWeightsDuringComputation(bool toggle) {
    if (toggle) {
        considerWeights=true;
        askedAboutWeights=false;
-        askAboutWeights(); // will only ask about inversion
+       askAboutWeights(); // will only ask about inversion
    }
-   else
+   else {
        considerWeights=false;
+   }
+   activeGraph.graphModifiedSet(GRAPH_CHANGED_EDGES);
 }
 
 

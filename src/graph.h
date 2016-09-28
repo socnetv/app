@@ -123,8 +123,6 @@ class CompareDistances {
  TODO & KNOWN BUGS:
 
  - BUG: Crash on Graphml files with textlabels instead of nodenumbers (i.e. nets/killer.graphml)
- - BUG: Edges weighted >50 are displayed with enormous width. Perhaps the
-   edge width should be normalized for each net? or just change the max...
 -  BUG: wrong default edge colors (not the ones used by Settings) after loading GraphML files.
  - BUG: Resizing the MW view does not resize/reposition the layout guides
  - BUG: Fruchterman-Reingold model fixes some nodes to (1,1) breaking the layout

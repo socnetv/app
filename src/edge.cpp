@@ -524,6 +524,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
          setState(EDGE_STATE_HOVER);
      }
      else if (m_state==EDGE_STATE_HIGHLIGHT){
+         setZValue(ZValueEdgeHighlighted);
          setState(EDGE_STATE_HIGHLIGHT);
      }
      else {

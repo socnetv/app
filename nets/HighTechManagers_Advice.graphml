@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
- <!-- Created by SocNetV v.0.80 --> 
+ <!-- Created by SocNetV 2.1 --> 
 <graphml xmlns="http://graphml.graphdrawing.org/xmlns"       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance "       xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns       http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
   <key id="d0" for="node" attr.name="label" attr.type="string"> 
     <default></default> 
@@ -11,7 +11,7 @@
     <default>0.0</default> 
   </key> 
   <key id="d3" for="node" attr.name="size" attr.type="double"> 
-    <default>4</default> 
+    <default>10</default> 
   </key> 
   <key id="d4" for="node" attr.name="color" attr.type="string"> 
     <default>gold</default> 
@@ -20,209 +20,276 @@
     <default>diamond</default> 
   </key> 
   <key id="d6" for="node" attr.name="label.color" attr.type="string"> 
-    <default>darkblue</default> 
+    <default>#00aa00</default> 
   </key> 
   <key id="d7" for="node" attr.name="label.size" attr.type="string"> 
-    <default>8</default> 
+    <default>6</default> 
   </key> 
   <key id="d8" for="edge" attr.name="weight" attr.type="double"> 
     <default>1.0</default> 
   </key> 
   <key id="d9" for="edge" attr.name="color" attr.type="string"> 
-    <default>grey</default> 
+    <default>#000000</default> 
+  </key> 
+  <key id="d10" for="edge" attr.name="label" attr.type="string"> 
+    <default></default> 
   </key> 
   <graph id="Messages" edgedefault="directed"> 
     <node id="1"> 
       <data key="d0">v1</data>
-      <data key="d1">0.378472</data>
-      <data key="d2">0.531197</data>
+      <data key="d1">0.655319</data>
+      <data key="d2">0.498711</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="2"> 
       <data key="d0">v2</data>
-      <data key="d1">0.927083</data>
-      <data key="d2">0.940978</data>
+      <data key="d1">0.720567</data>
+      <data key="d2">0.53866</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="3"> 
       <data key="d0">v3</data>
-      <data key="d1">0.0486111</data>
-      <data key="d2">0.541315</data>
+      <data key="d1">0.903546</data>
+      <data key="d2">0.650773</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="4"> 
       <data key="d0">v4</data>
-      <data key="d1">0.232639</data>
-      <data key="d2">0.827993</data>
+      <data key="d1">0.761702</data>
+      <data key="d2">0.658505</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="5"> 
       <data key="d0">v5</data>
-      <data key="d1">0.984375</data>
-      <data key="d2">0.956155</data>
+      <data key="d1">0.774468</data>
+      <data key="d2">0.75</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="6"> 
       <data key="d0">v6</data>
-      <data key="d1">0.180556</data>
-      <data key="d2">0.676223</data>
+      <data key="d1">0.673759</data>
+      <data key="d2">0.738402</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="7"> 
       <data key="d0">v7</data>
-      <data key="d1">0.928819</data>
-      <data key="d2">0.952782</data>
+      <data key="d1">0.634043</data>
+      <data key="d2">0.796392</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="8"> 
       <data key="d0">v8</data>
-      <data key="d1">0.140625</data>
-      <data key="d2">0.470489</data>
+      <data key="d1">0.553191</data>
+      <data key="d2">0.752577</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="9"> 
       <data key="d0">v9</data>
-      <data key="d1">0.807292</data>
-      <data key="d2">0.010118</data>
+      <data key="d1">0.497872</data>
+      <data key="d2">0.791237</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="10"> 
       <data key="d0">v10</data>
-      <data key="d1">0.435764</data>
-      <data key="d2">0.591906</data>
+      <data key="d1">0.436879</data>
+      <data key="d2">0.778351</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="11"> 
       <data key="d0">v11</data>
-      <data key="d1">0.442708</data>
-      <data key="d2">0.915683</data>
+      <data key="d1">0.392908</data>
+      <data key="d2">0.726804</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="12"> 
       <data key="d0">v12</data>
-      <data key="d1">0.612847</data>
-      <data key="d2">0.816189</data>
+      <data key="d1">0.260993</data>
+      <data key="d2">0.819588</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="13"> 
       <data key="d0">v13</data>
-      <data key="d1">0.953125</data>
-      <data key="d2">0.812816</data>
+      <data key="d1">0.2</data>
+      <data key="d2">0.768041</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="14"> 
       <data key="d0">v14</data>
-      <data key="d1">0.140625</data>
-      <data key="d2">1.00169</data>
+      <data key="d1">0.215603</data>
+      <data key="d2">0.668814</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="15"> 
       <data key="d0">v15</data>
-      <data key="d1">0.494792</data>
-      <data key="d2">0.428331</data>
+      <data key="d1">0.268085</data>
+      <data key="d2">0.585052</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="16"> 
       <data key="d0">v16</data>
-      <data key="d1">0.461806</data>
-      <data key="d2">0.0472175</data>
+      <data key="d1">0.214184</data>
+      <data key="d2">0.548969</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="17"> 
       <data key="d0">v17</data>
-      <data key="d1">0.493056</data>
-      <data key="d2">0.104553</data>
+      <data key="d1">0.195745</data>
+      <data key="d2">0.498711</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="18"> 
       <data key="d0">v18</data>
-      <data key="d1">0.135417</data>
-      <data key="d2">0.322091</data>
+      <data key="d1">0.217021</data>
+      <data key="d2">0.447165</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="19"> 
       <data key="d0">v19</data>
-      <data key="d1">0.263889</data>
-      <data key="d2">0.839798</data>
+      <data key="d1">0.107801</data>
+      <data key="d2">0.351804</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="20"> 
       <data key="d0">v20</data>
-      <data key="d1">0.302083</data>
-      <data key="d2">0.20742</data>
+      <data key="d1">0.249645</data>
+      <data key="d2">0.346649</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="21"> 
       <data key="d0">v21</data>
-      <data key="d1">0.456597</data>
-      <data key="d2">0.394604</data>
+      <data key="d1">0.224113</data>
+      <data key="d2">0.25</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="22"> 
       <data key="d0">v22</data>
-      <data key="d1">0.470486</data>
-      <data key="d2">0.214165</data>
+      <data key="d1">0.286525</data>
+      <data key="d2">0.21134</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="23"> 
       <data key="d0">v23</data>
-      <data key="d1">0.166667</data>
-      <data key="d2">0.979764</data>
+      <data key="d1">0.33617</data>
+      <data key="d2">0.14433</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="24"> 
       <data key="d0">v24</data>
-      <data key="d1">0.96875</data>
-      <data key="d2">0.200675</data>
+      <data key="d1">0.429787</data>
+      <data key="d2">0.189433</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="25"> 
       <data key="d0">v25</data>
-      <data key="d1">0.923611</data>
-      <data key="d2">0.768971</data>
+      <data key="d1">0.497872</data>
+      <data key="d2">0.248711</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="26"> 
       <data key="d0">v26</data>
-      <data key="d1">0.53125</data>
-      <data key="d2">0.546374</data>
+      <data key="d1">0.55461</data>
+      <data key="d2">0.237113</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="27"> 
       <data key="d0">v27</data>
-      <data key="d1">0.206597</data>
-      <data key="d2">0.421585</data>
+      <data key="d1">0.608511</data>
+      <data key="d2">0.255155</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="28"> 
       <data key="d0">v28</data>
-      <data key="d1">0.329861</data>
-      <data key="d2">0.588533</data>
+      <data key="d1">0.710638</data>
+      <data key="d2">0.208763</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="29"> 
       <data key="d0">v29</data>
-      <data key="d1">0.642361</data>
-      <data key="d2">0.0455312</data>
+      <data key="d1">0.51773</data>
+      <data key="d2">0.48067</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="30"> 
       <data key="d0">v30</data>
-      <data key="d1">0.317708</data>
-      <data key="d2">0.897133</data>
+      <data key="d1">0.785816</data>
+      <data key="d2">0.323454</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="31"> 
       <data key="d0">v31</data>
-      <data key="d1">0.909722</data>
-      <data key="d2">0.753794</data>
+      <data key="d1">0.639716</data>
+      <data key="d2">0.444588</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <node id="32"> 
       <data key="d0">v32</data>
-      <data key="d1">0.96875</data>
-      <data key="d2">0.416526</data>
+      <data key="d1">0.758865</data>
+      <data key="d2">0.451031</data>
       <data key="d5">diamond</data>
+      <data key="d6">darkblue</data>
+      <data key="d7">8</data>
     </node>
     <edge id="e1" directed="true" source="1" target="1"> 
       <data key="d8">24</data> 

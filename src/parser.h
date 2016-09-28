@@ -100,14 +100,14 @@ signals:
                                          );
 
     void edgeCreate (const int &source, const int &target, const float &weight,
-                     const QString &color, const int &undirected,
+                     const QString &color, const int &edgeDirType,
                      const bool &arrows, const bool &bezier,
                      const QString &edgeLabel=QString::null,
                      const bool &signalMW=false);
     void networkFileLoaded(int fileType, QString fileName,
                            QString netName,
                            int totalNodes, int totalLinks,
-                           bool undirected);
+                           bool edgeDirType);
 	void removeDummyNode (int);
     void finished(QString);
 	
@@ -125,9 +125,9 @@ private:
     QString nodeColor, edgeColor, edgeType, nodeShape, nodeLabel, edgeLabel;
     QString nodeNumberColor, nodeLabelColor;
     QString key_id, key_value, key_name, key_what, key_type;
-    QString node_id, edge_id, edge_source, edge_target;
+    QString node_id, edge_id, edge_source, edge_target, edge_directed;
 	int gwWidth, gwHeight;
-	int totalLinks, aNodes, fileFormat, two_sm_mode, undirected;
+    int totalLinks, aNodes, fileFormat, two_sm_mode, edgeDirType;
     int initNodeSize,  initNodeNumberSize, nodeNumberSize, initNodeLabelSize;
     QString initEdgeLabel;
     int nodeLabelSize, source, target, nodeSize;
