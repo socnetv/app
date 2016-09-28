@@ -89,12 +89,14 @@ void RandRegularDialog::modifyDegree(int value) {
 void RandRegularDialog::setModeDirected (){
     ui.directedRadioButton->setChecked(true) ;
     ui.undirectedRadioButton->setChecked(false) ;
+    ui.degreeLabel->setText("inDegree=outDegree <em>d</em>");
 
 }
 
 void RandRegularDialog::setModeUndirected (){
     ui.directedRadioButton->setChecked(false) ;
     ui.undirectedRadioButton->setChecked(true) ;
+    ui.degreeLabel->setText("Degree <em>d</em>");
 }
 
 void RandRegularDialog::setDiag (){
