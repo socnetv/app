@@ -10,7 +10,7 @@ SocNetV -A Social Network Visualizer
 Social Network Visualizer (SocNetV) is a cross-platform, user-friendly and free
 software application for social network analysis and visualization.
 
-It lets you construct social networks (mathematical graphs) with a few clicks 
+Using SocNetV you draw social networks (mathematical graphs) with a few clicks 
 on a virtual canvas or load social network data of various formats (GraphML, 
 GraphViz, Adjacency, Pajek, UCINET, etc).
 
@@ -36,10 +36,10 @@ recreated.
 SocNetV also offers a built-in web crawler, allowing you to automatically create 
 networks from links found in a given initial URL.
 
-SocNetV offers various layout algorithms based on either prominence indices 
-(i.e. circular, level and nodal sizes by centrality score) or force-directed 
-models (i.e. Eades, Fruchterman-Reingold, etc) for meaningful visualizations 
-of the social networks.
+The application supports various layout algorithms based on either prominence indices 
+(i.e. circular, level and nodal sizes by centrality score) or force-directed models 
+(i.e. Eades, Fruchterman-Reingold, etc) for meaningful visualizations of your social 
+network data.
 
 There is also comprehensive documentation, both online and while running the 
 application, which explains each feature and algorithm of SocNetV in detail.
@@ -96,17 +96,18 @@ If there is no package for your OS, please download and compile the source code.
 
 Windows
 
-To run SocNetV in Windows, download the latest SocNetV zip for Windows from the 
-Downloads page, unzip it, and double-click on the socnetv executable. 
-The program will run immediately.
+To run SocNetV in Windows, download the latest SocNetV Windows installer from the 
+project's Downloads page and double-click on the executable to start the installation.
+The program will be installed in the usual Windows Program Files directory and a new 
+Start Menu shortcut will be created. Click on that shortcut to start SocNetV immediately.
 
 Mac OS X
 
-If you are a Mac user, you can download and run SocNetV from a disk image (dmg file). 
+If you are a Mac user, you can download a SocNetV disk image (dmg file) to install it. 
 From the Downloads page, download the Mac OS .dmg file. 
-Once downloaded, double click on it and a new window will appear. 
+Once downloaded, double click on it and a new window will appear. Drag the SocNetV icon
+into your Applications folder to install it.
 To run the application, double click on the SocNetV icon holding down the META key.
-To install SocNetV, drag the SocNetV icon to your Applications.
 
 Linux
 
