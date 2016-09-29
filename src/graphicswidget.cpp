@@ -1249,8 +1249,8 @@ void GraphicsWidget::mouseReleaseEvent( QMouseEvent * e ) {
     if ( QGraphicsItem *item= itemAt(e->pos() ) ) {
         if (Node *node = qgraphicsitem_cast<Node *>(item)) {
             qDebug() << "GW::mouseReleaseEvent() on a node ";
-            //Q_UNUSED(node);
-            emit updateNodeCoords(node->nodeNumber(), p.x(), p.y());
+            Q_UNUSED(node);
+            //emit updateNodeCoords(node->nodeNumber(), p.x(), p.y());
             QGraphicsView::mouseReleaseEvent(e);
         }
         if (Edge *edge= qgraphicsitem_cast<Edge *>(item)) {
