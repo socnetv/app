@@ -56,6 +56,8 @@ public:
     bool setMarkedNode(QString text);
 
     QList<QGraphicsItem *> selectedItems();
+    QList<int> selectedNodes();
+    QList<QString> selectedEdges();
 
     void selectAll();
     void selectNone();
@@ -66,8 +68,6 @@ public:
     void removeItem(Node*);
     void removeItem(NodeNumber*);
     void removeItem(NodeLabel*);
-
-    void nodeMoved(const int &number, const int &x, const int &y);
 
     void setInitNodeColor(QString);
     void setInitLinkColor(QString);
@@ -172,6 +172,8 @@ signals:
 private:
     H_NumToNode nodeHash;	//This is used in drawEdge() method
     H_StrToEdge edgesHash; // helper hash to easily find edges
+    QList<int> m_selectedNodes;
+    QList<QString> m_selectedEdges;
     int m_curRelation;
     int  m_nodeSize, m_numberDistance, m_labelDistance;
     double m_currentScaleFactor;

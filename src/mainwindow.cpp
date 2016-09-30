@@ -3316,7 +3316,7 @@ void MainWindow::initSignalSlots() {
     connect( &activeGraph, SIGNAL( addGuideHLine(const double&) ),
              graphicsWidget, SLOT(  addGuideHLine(const double&) ) ) ;
 
-    connect( &activeGraph, SIGNAL( moveNode(const int &, const qreal &, const qreal &) ),
+    connect( &activeGraph, SIGNAL( setNodePos(const int &, const qreal &, const qreal &) ),
              graphicsWidget, SLOT( moveNode(const int &, const qreal &, const qreal &) ) ) ;
 
 
@@ -4416,7 +4416,6 @@ void MainWindow::slotNetworkSaved(const int &status)
 {
     if (status <= 0)
     {
-        //slotNetworkChanged();
         statusMessage( tr("Error! Could not save this file... ")+fileNameNoPath.last()+tr(".") );
     }
     else
@@ -5742,7 +5741,6 @@ void MainWindow::slotNetworkRandomRegular(const int &newNodes, const int &degree
 
 
 void MainWindow::slotNetworkRandomGaussian(){
-    //slotNetworkChanged();
 
 }
 
@@ -5987,8 +5985,8 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
  * Returns a QList of all selected nodes
  * @return
  */
-QList<QGraphicsItem *> MainWindow::selectedNodes() {
-    return graphicsWidget->selectedItems();
+QList<int> MainWindow::selectedNodes() {
+    return graphicsWidget->selectedNodes();
 
 }
 
@@ -6145,22 +6143,19 @@ void MainWindow::slotEditNodeRemove() {
 
     // if there are already multiple nodes selected, erase them
     int nodeCount = selectedNodes().count();
-    if ( nodeCount > 1) {
+    if ( nodeCount > 0) {
         int removeCounter = 0;
         qDebug() << "MW: removeNode() multiple selected to remove";
-        foreach (QGraphicsItem *item, selectedNodes() ) {
-           if ( (clickedNode = qgraphicsitem_cast<Node *>(item) )) {
-               activeGraph.vertexRemove(clickedNode->nodeNumber());
+        foreach (int nodeNumber, selectedNodes() ) {
+               activeGraph.vertexRemove(nodeNumber);
                ++removeCounter ;
-           }
         }
+
         editNodeRemoveAct->setText(tr("Remove Node"));
         statusMessage( tr("Removed ") + nodeCount + tr(" nodes. Ready. ") );
     }
 
     else {
-
-
         int doomedJim=-1, min=-1, max=-1;
         bool ok=false;
 
@@ -6171,12 +6166,13 @@ void MainWindow::slotEditNodeRemove() {
             qDebug("ERROR in finding min max nodeNumbers. Abort");
             return;
         }
-        else if (nodeClicked && clickedNodeNumber >= 0 && clickedNodeNumber<= max ) {
-            doomedJim=clickedNodeNumber ;
-        }
-        else if (!nodeClicked ) {
-            doomedJim =  QInputDialog::getInt(this,"Remove node",tr("Choose a node to remove between ("
-                                                                    + QString::number(min).toLatin1()+"..."+QString::number(max).toLatin1()+"):"),min, 1, max, 1, &ok);
+        else  {
+            doomedJim =  QInputDialog::getInt(
+                        this,
+                        tr("Remove node"),
+                        tr("Choose a node to remove between ("
+                           + QString::number(min).toLatin1()+"..."+
+                           QString::number(max).toLatin1()+"):"),min, 1, max, 1, &ok);
             if (!ok) {
                 statusMessage( "Remove node operation cancelled." );
                 return;
@@ -6189,7 +6185,6 @@ void MainWindow::slotEditNodeRemove() {
     }
     clickedNodeNumber=-1;
     nodeClicked=false;
-    //slotNetworkChanged();
 
 
 }
@@ -6224,7 +6219,10 @@ void MainWindow::slotEditNodePropertiesDialog() {
     if ( selectedNodes().count() == 0) {
         min = activeGraph.vertexFirstNumber();
         max = activeGraph.vertexLastNumber();
-        qDebug("MW: min is %i and max is %i", min, max);
+        qDebug() << "MW::slotEditNodePropertiesDialog() - no node selected"
+                    << "min node number " << min
+                       << "max node number " << max
+                          << "opening inputdialog";
         if (min==-1 || max==-1 ) {
             qDebug("ERROR in finding min max nodeNumbers. Abort");
             return;
@@ -6243,25 +6241,25 @@ void MainWindow::slotEditNodePropertiesDialog() {
         }
     }
     else   {
-        foreach (QGraphicsItem *item, selectedNodes() ) {
-           if ( (clickedNode = qgraphicsitem_cast<Node *>(item) )) {
-               if ( selectedNodes().count() > 1 ) {
-                   clickedNodeNumber = clickedNode->nodeNumber();
-                   color = activeGraph.vertexColor( clickedNodeNumber );
-                   shape = activeGraph.vertexShape( clickedNodeNumber);
-                   size = activeGraph.vertexSize ( clickedNodeNumber);
-               }
-               else {
-                    clickedNodeNumber = clickedNode->nodeNumber();
-                    label = activeGraph.vertexLabel( clickedNodeNumber );
-                    color = activeGraph.vertexColor( clickedNodeNumber );
-                    shape = activeGraph.vertexShape( clickedNodeNumber);
-                    size = activeGraph.vertexSize ( clickedNodeNumber);
-               }
-           }
+        foreach (clickedNodeNumber, selectedNodes() ) {
+            qDebug() << "MW::slotEditNodePropertiesDialog() "
+                        "changing properties for selected node "
+                     << clickedNodeNumber ;
+            if ( selectedNodes().count() > 1 ) {
+                color = activeGraph.vertexColor( clickedNodeNumber );
+                shape = activeGraph.vertexShape( clickedNodeNumber);
+                size = activeGraph.vertexSize ( clickedNodeNumber);
+            }
+            else {
+                label = activeGraph.vertexLabel( clickedNodeNumber );
+                color = activeGraph.vertexColor( clickedNodeNumber );
+                shape = activeGraph.vertexShape( clickedNodeNumber);
+                size = activeGraph.vertexSize ( clickedNodeNumber);
+            }
         }
     }
-    qDebug ()<< "MW: changing properties for "<< clickedNodeNumber ;
+
+    //@todo add some grouping function here?
 
     m_nodeEditDialog = new NodeEditDialog(this, label, size, color, shape) ;
 
@@ -6287,7 +6285,7 @@ void MainWindow::slotEditNodePropertiesDialog() {
 void MainWindow::slotEditNodeProperties( const QString label, const int size,
                                      const QString value, const QColor color,
                                      const QString shape) {
-    qDebug()<< "MW::slotEditNodeProperties() "
+    qDebug()<< "MW::slotEditNodeProperties() - new properties: "
             << " label " << label
             << " size " << size
             << "value " << value
@@ -6296,10 +6294,25 @@ void MainWindow::slotEditNodeProperties( const QString label, const int size,
                << " clickedNodeNumber " <<clickedNodeNumber
                   << " selectedNodes " << selectedNodes().count();
 
-    foreach (QGraphicsItem *item, selectedNodes() ) {
-        if ( (clickedNode = qgraphicsitem_cast<Node *>(item) )) {
+    if ( selectedNodes().count() == 0 && clickedNodeNumber != -1) {
+        // no node selected but user entered a node number in a dialog
+        if ( label !="" && appSettings["initNodeLabelsVisibility"] != "true")
+            slotOptionsNodeLabelsVisibility(true);
+        qDebug()<< "MW::slotEditNodeProperties() - updating label ";
+        activeGraph.vertexLabelSet( clickedNodeNumber, label );
+        qDebug()<< "MW::slotEditNodeProperties() - updating color ";
+        activeGraph.vertexColorSet( clickedNodeNumber, color.name());
+        qDebug()<< "MW::slotEditNodeProperties() - updating size ";
+        activeGraph.vertexSizeSet(clickedNodeNumber,size);
+        qDebug()<< "MW::slotEditNodeProperties() - updating shape ";
+        activeGraph.vertexShapeSet( clickedNodeNumber, shape);
+    }
+    else {
+        //some nodes are selected
 
-            clickedNodeNumber = clickedNode->nodeNumber();
+        foreach (clickedNodeNumber, selectedNodes() ) {
+            qDebug()<< "MW::slotEditNodeProperties() - node " << clickedNodeNumber;
+            qDebug()<< "MW::slotEditNodeProperties() - updating label ";
             if ( selectedNodes().count() > 1 )
             {
                 activeGraph.vertexLabelSet(
@@ -6308,30 +6321,26 @@ void MainWindow::slotEditNodeProperties( const QString label, const int size,
                             );
             }
             else
-                activeGraph.vertexLabelSet(
-                            clickedNodeNumber,
-                            label
-                            );
+                activeGraph.vertexLabelSet( clickedNodeNumber, label );
 
             if ( label !="" && appSettings["initNodeLabelsVisibility"] != "true")
                 slotOptionsNodeLabelsVisibility(true);
 
-            qDebug () <<  clickedNodeNumber;
-            qDebug()<<"MW: updating color ";
+
+            qDebug()<< "MW::slotEditNodeProperties() - updating color ";
             activeGraph.vertexColorSet( clickedNodeNumber, color.name());
-            qDebug()<<"MW: updating size ";
+            qDebug()<< "MW::slotEditNodeProperties() - updating size ";
             activeGraph.vertexSizeSet(clickedNodeNumber,size);
-            qDebug()<<"MW: updating shape ";
+            qDebug()<< "MW::slotEditNodeProperties() - updating shape ";
             activeGraph.vertexShapeSet( clickedNodeNumber, shape);
-            clickedNode->setShape(shape);
+            //clickedNode->setShape(shape);
         }
     }
+
     clickedNode=0;
     clickedNodeNumber=-1;
 
-    //slotNetworkChanged();
     statusMessage( tr("Ready. "));
-
 }
 
 
@@ -6428,7 +6437,6 @@ void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized) {
 
     activeGraph.vertexSizeAllSet(newSize);
 
-    //slotNetworkChanged();
     statusMessage(tr("Ready"));
     return;
 }
@@ -6474,7 +6482,6 @@ void MainWindow::slotEditNodeShape(QString shape, const int vertex) {
     }
 
     if (vertex == 0) { //change all nodes shapes
-        //slotNetworkChanged();
         activeGraph.vertexShapeAllSet(shape);
         appSettings["initNodeShape"] = shape;
         statusMessage(tr("All shapes have been changed. Ready."));
@@ -6915,7 +6922,6 @@ void MainWindow::slotEditEdgeAdd(){
     }
 
     slotEditEdgeCreate(sourceNode, targetNode, weight);
-    //slotNetworkChanged();
     statusMessage( tr("Ready. ")  );
 }
 
@@ -7006,9 +7012,9 @@ void MainWindow::slotEditEdgeRemove(){
         activeGraph.edgeRemove(sourceNode, targetNode);
 
     }
-    //slotNetworkChanged();
-    qDebug("MW: View items now: %i ", graphicsWidget->items().size());
-    qDebug("MW: Scene items now: %i ", scene->items().size());
+    qDebug()<< "MW::slotEditEdgeRemove() -"
+              << "View items now:"<< graphicsWidget->items().size()
+               << "Scene items now:"<< scene->items().size();
 }
 
 
@@ -7127,7 +7133,6 @@ void MainWindow::slotEditEdgeColorAll(QColor color,const int &threshold){
         qDebug() << "MainWindow::slotEditEdgeColorAll() - new edge color: " << color.name();
         activeGraph.edgeColorAllSet(color.name(), threshold );
         QApplication::restoreOverrideCursor();
-        //slotNetworkChanged();
         statusMessage( tr("Ready. ")  );
     }
     else {
@@ -7426,7 +7431,7 @@ void MainWindow::slotShowFilterEdgesDialog() {
     TODO slotTransformNodes2Edges
 */
 void MainWindow::slotTransformNodes2Edges(){
-    //slotNetworkChanged();
+
 
 }
 
@@ -9074,7 +9079,11 @@ void MainWindow::slotCentralityCloseness(){
         statusMessage(  QString(tr("Nothing to do..."))  );
         return;
     }
+    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+    statusMessage(  tr("Please wait while computing connectedness...")  );
     int connectedness=activeGraph.connectedness();
+    QApplication::restoreOverrideCursor();
+
     bool dropIsolates=false;
     switch ( connectedness ) {
     case 1:

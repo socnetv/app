@@ -354,7 +354,7 @@ public slots:
     void toolBoxLayoutByIndexButtonPressed();
     void toolBoxLayoutForceDirectedButtonPressed();
 
-    QList<QGraphicsItem *> selectedNodes();
+    QList<int> selectedNodes();
 
 protected:
     void resizeEvent( QResizeEvent * );

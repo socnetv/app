@@ -297,20 +297,6 @@ void GraphicsWidget::openEdgeContextMenu(){
 
 
 
-/**
- * @brief GraphicsWidget::nodeMoved
- * Called from each node when they move.
- * Updates:
-    - node coordinates in activeGraph (via updateNodeCoords() signal)
- * @param number
- * @param x
- * @param y
- */
-void GraphicsWidget::nodeMoved(const int &number, const int &x, const int &y){
-    //qDebug ("GW: nodeMoved() for %i with %i, %i. Emitting updateNodeCoords() signal", number, x,y);
-    emit updateNodeCoords(number, x, y);
-}
-
 
 
 /**
@@ -1101,11 +1087,10 @@ void GraphicsWidget::clearGuides(){
 /* Called from MW */
 void GraphicsWidget::selectAll()
 {
-    qDebug() << "GraphicsWidget::selectAll()";
     QPainterPath path;
     path.addRect(0,0, this->scene()->width() , this->scene()->height());
     this->scene()->setSelectionArea(path);
-    qDebug() << "selected items now: "
+    qDebug() << "GraphicsWidget::selectAll() - selected items now: "
              << selectedItems().count();
 }
 
@@ -1119,11 +1104,51 @@ void GraphicsWidget::selectNone()
 
 }
 
-/* Called from MW */
-QList<QGraphicsItem *> GraphicsWidget::selectedItems(){
-     return this->scene()->selectedItems();
 
+/**
+ * @brief GraphicsWidget::selectedItems
+ * @return a QList of all selected QGraphicsItem(s)
+ */
+QList<QGraphicsItem *> GraphicsWidget::selectedItems(){
+    qDebug() <<"GW::selectedItems()";
+    return this->scene()->selectedItems();
 }
+
+/**
+ * @brief GraphicsWidget::selectedNodes
+ *
+ * @return a QList of selected node numbers
+ */
+QList<int> GraphicsWidget::selectedNodes() {
+        m_selectedNodes.clear();
+        foreach (QGraphicsItem *item, scene()->selectedItems()) {
+            if (Node *node = qgraphicsitem_cast<Node *>(item) ) {
+                m_selectedNodes.append(node->nodeNumber());
+            }
+        }
+        return m_selectedNodes;
+}
+
+
+/**
+ * @brief GraphicsWidget::selectedEdges
+ *
+ * @return a QList of selected directed edges strings in the form of "a->b"
+ */
+QList<QString> GraphicsWidget::selectedEdges() {
+        m_selectedEdges.clear();
+        foreach (QGraphicsItem *item, scene()->selectedItems()) {
+            if (Edge *edge= qgraphicsitem_cast<Edge *>(item) ) {
+                m_selectedEdges.append(
+                            QString::number(edge->sourceNodeNumber())+"->"+
+                            QString::number(edge->targetNodeNumber())
+                            );
+            }
+        }
+        return m_selectedEdges;
+}
+
+
 
 /** 	
     Starts a new node when the user double-clicks somewhere
@@ -1248,9 +1273,16 @@ void GraphicsWidget::mouseReleaseEvent( QMouseEvent * e ) {
 
     if ( QGraphicsItem *item= itemAt(e->pos() ) ) {
         if (Node *node = qgraphicsitem_cast<Node *>(item)) {
-            qDebug() << "GW::mouseReleaseEvent() on a node ";
+            qDebug() << "GW::mouseReleaseEvent() -on a node "
+                        << "Emitting updateNodeCoords() for all selected nodes";
             Q_UNUSED(node);
-            //emit updateNodeCoords(node->nodeNumber(), p.x(), p.y());
+            foreach (QGraphicsItem *item, scene()->selectedItems()) {
+                if (Node *nodeSelected = qgraphicsitem_cast<Node *>(item) ) {
+                    emit updateNodeCoords(nodeSelected->nodeNumber(),
+                                          nodeSelected->x(),
+                                          nodeSelected->y());
+                }
+            }
             QGraphicsView::mouseReleaseEvent(e);
         }
         if (Edge *edge= qgraphicsitem_cast<Edge *>(item)) {
@@ -1415,38 +1447,17 @@ void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
     int h0=e->oldSize().height();
     fX=  (double)(w)/(double)(w0);
     fY= (double)(h)/(double)(h0);
-    factor = ( fX < fY ) ? fX: fY;
     qDebug () << "GW::resizeEvent - old size: ("
               << w0 << "," << h0
               << ") - new size: (" << w << "," << h << ")"
               << " fX,fY " <<  fX << ","<< fY;
     foreach (QGraphicsItem *item, scene()->items()) {
-        if (Node *node = qgraphicsitem_cast<Node *>(item) ) {
-            qDebug()<< "GW::resizeEvent - Node " << node->nodeNumber()
-                    << " original position ("
-                    <<  item->x() << "," << item->y()
-                     << ") - will move to ("
-                     << item->x()*fX  << ", " << item->y()*fY  << ")" ;
-            node->setPos(mapToScene(item->x()*fX, item->y()*fY));
-        }
         if ( (item)->type() == TypeGuide ){
             if (Guide *guide = qgraphicsitem_cast<Guide *>  (item) ) {
                 if (guide->isCircle()) {
                     guide->die();
                     guide->deleteLater ();
                     delete item;
-
-//                    qDebug()<< "GW::resizeEvent - Circle Guide "
-//                            << " original position ("
-//                            <<  guide->x() << "," << guide->y()
-//                             << ") - radius " << guide->radius()
-//                             << ") - will move to ("
-//                             << guide->x()*fX << ", " << guide->y()*fY << ")"
-//                                << " new radius " << guide->radius() * factor;
-//                    guide->setCircle(
-//                                mapToScene(guide->pos().x()*fX,
-//                                           guide->pos().y()*fY),
-//                                guide->radius() * factor);
                 }
                 else {
                     qDebug()<< "GW::resizeEvent - Horizontal Guide "
@@ -1463,7 +1474,6 @@ void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
                 }
             }
         }
-        //else 	item->setPos(mapToScene(item->x()*fX, item->y()*fY));
     }
 
     //update the scene width and height with that of the graphicsWidget
@@ -1479,5 +1489,6 @@ void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
     Destructor.
 */
 GraphicsWidget::~GraphicsWidget(){
+    clear();
 }
 

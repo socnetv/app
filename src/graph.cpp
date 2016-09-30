@@ -199,9 +199,24 @@ void Graph::clear() {
  * @param h
  */
 void Graph::canvasSizeSet(const int w, const int h){
-    qDebug() << "Graph:: canvasSizeSet() - (" << w << ", " << h<<")";
+    qDebug() << "Graph:: canvasSizeSet() - new size (" << w << ", " << h<<")";
+    float fX=  (float)(w)/(float)(canvasWidth);
+    float fY= (float)(h)/(float)(canvasHeight);
+    float newX, newY;
+
+    QList<Vertex*>::const_iterator it;
+    for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        newX = (*it)->x() * fX ;
+        newY = (*it)->y() * fY ;
+        (*it)->setX( newX ) ;
+        (*it)->setY( newY );
+        emit setNodePos((*it)->name(), newX , newY);
+        graphModifiedSet(GRAPH_CHANGED_POSITIONS,false);
+    }
+
     canvasWidth = w;
     canvasHeight= h;
+
 }
 
 /**
@@ -1077,7 +1092,9 @@ void Graph::vertexNumbersVisibilitySet(bool toggle){
  * @param label
  */
 void Graph::vertexLabelSet(int v1, QString label){
-    qDebug()<< "Graph: vertexLabelSet for "<< v1 << ", index " << index[v1]<< " with label"<< label;
+    qDebug()<< "Graph::vertexLabelSet() - vertex "<< v1
+            << "index " << index[v1]
+               << "new label"<< label;
     m_graph[ index[v1] ]->setLabel ( label);
     emit setNodeLabel ( m_graph[ index[v1] ]-> name(), label);
 
@@ -1913,7 +1930,7 @@ bool Graph::graphModified() const {
  * @return
  */
 float Graph::density() {
-    qDebug()<< "Graph: density()";
+    qDebug()<< "Graph::density()";
 
     int vert=vertices();
     if (vert!=0 && vert!=1)
@@ -3917,7 +3934,7 @@ void Graph::writeCentralityCloseness(
         qDebug() << " graph not modified, and centralities calculated. Returning";
     }
 
-    emit statusMessage ( QString(tr("Writing closeness indices to file:"))
+    emit statusMessage ( tr("Writing closeness indices to file %s:")
                          .arg(fileName) );
     outText.setRealNumberPrecision(m_precision);
     outText << tr("CLOSENESS CENTRALITY (CC)")<<endl;
@@ -5204,9 +5221,9 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
             }
             case 3 : {
                 qDebug("Layout according to IRCC");
-                qDebug() << "Layout according to IRCC C = " << (*it)->IRCC();
-                qDebug() << "Layout according to IRCC std = " << (*it)->SIRCC();
-                qDebug() << "Layout according to IRCC maxC= " << maxIRCC;
+                qDebug() << "Layout according to IRCC C = " << (*it)->IRCC()
+                            << "std = " << (*it)->SIRCC()
+                            << "maxC= " << maxIRCC;
                 C=(*it)->IRCC();
                 std= (*it)->SIRCC();
                 maxC=maxIRCC;
@@ -5271,10 +5288,10 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
             }
         };
         qDebug () << "Vertice " << (*it)->name() << " at x=" << (*it)->x()
-                  << ", y= "<< (*it)->y() << ": C=" << C << ", stdC=" << std
-                  << ", maxradius " <<  maxRadius
-                  << ", maxC " << maxC << ", C/maxC " << (C/maxC)
-                  << ", newradius " << (std/maxC - offset)*maxRadius;
+                  << "y= "<< (*it)->y() << ": C" << C << "stdC" << std
+                  << "maxradius" <<  maxRadius
+                  << "maxC" << maxC << "C/maxC" << (C/maxC)
+                  << "newradius" << maxRadius - (std/maxC - offset)*maxRadius;
         switch (static_cast<int> (ceil(maxC)) ){
         case 0: {
             qDebug("maxC=0.   Using maxHeight");
@@ -5287,8 +5304,6 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
         }
         };
 
-        qDebug ("new radius %f", new_radius);
-
         //Calculate new position
         rad= (2.0* Pi/ vert );
         new_x=x0 + new_radius * cos(i * rad);
@@ -5298,7 +5313,7 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
         qDebug("Finished Calculation. Vertice will move to x=%f and y=%f ",
                new_x, new_y);
         //Move node to new position
-        emit moveNode((*it)->name(),  new_x,  new_y);
+        emit setNodePos((*it)->name(),  new_x,  new_y);
         i++;
         emit addGuideCircle ( x0, y0, new_radius );
     }
@@ -5312,7 +5327,7 @@ void Graph::layoutCircularByProminenceIndex(double x0, double y0,
 /**
  * @brief Graph::layoutRandom
   Repositions all nodes on different random positions
- * Emits moveNode(i, x,y) to tell GW that the node item should be moved.
+ * Emits setNodePos(i, x,y) to tell GW that the node item should be moved.
  * @param maxWidth
  * @param maxHeight
  */
@@ -5327,8 +5342,8 @@ void Graph::layoutRandom(){
         (*it)->setY( new_y );
         qDebug()<< "Graph::layoutRandom() - "
                 << " vertex " << (*it)->name()
-                   << " emitting moveNode to new pos " << new_x << " , "<< new_y;
-        emit moveNode((*it)->name(),  new_x,  new_y);
+                   << " emitting setNodePos to new pos " << new_x << " , "<< new_y;
+        emit setNodePos((*it)->name(),  new_x,  new_y);
     }
 
     graphModifiedSet(GRAPH_CHANGED_POSITIONS);
@@ -5370,7 +5385,7 @@ void Graph::layoutCircularRandom(double x0, double y0, double maxRadius){
         (*it)->setY( new_y );
         qDebug("Vertice will move to x=%f and y=%f ", new_x, new_y);
         //Move node to new position
-        emit moveNode((*it)->name(),  new_x,  new_y);
+        emit setNodePos((*it)->name(),  new_x,  new_y);
         i++;
         emit addGuideCircle ( x0, y0, new_radius );
     }
@@ -5384,7 +5399,7 @@ void Graph::layoutCircularRandom(double x0, double y0, double maxRadius){
 /**
  * @brief Graph::layoutLevelByProminenceIndex
  * Repositions all nodes on different top-down levels according to their centrality
- * Emits moveNode(i, x,y) to tell GW that the node item should be moved.
+ * Emits setNodePos(i, x,y) to tell GW that the node item should be moved.
  * @param maxWidth
  * @param maxHeight
  * @param prominenceIndex
@@ -5543,7 +5558,7 @@ void Graph::layoutLevelByProminenceIndex(double maxWidth, double maxHeight,
         qDebug() << "Finished Calculation. "
                     "Vertice will move to x="<< new_x << " and y= " << new_y;
         //Move node to new position
-        emit moveNode((*it)->name(),  new_x,  new_y);
+        emit setNodePos((*it)->name(),  new_x,  new_y);
         i++;
         emit addGuideHLine(new_y);
     }
@@ -12767,7 +12782,7 @@ void Graph::layoutForceDirected_Eades_moveNodes(const qreal &c4) {
                  << " xvel,yvel = ("<< xvel << ", "<< yvel << ")";
 
          //fix Qt error a positive QPoint to the floor
-        // when we ask for moveNode to happen.
+        // when we ask for setNodePos to happen.
         if ( xvel < 1 && xvel > 0 )
             xvel = 1 ;
         if ( yvel < 1 && yvel > 0 )
@@ -12788,7 +12803,7 @@ void Graph::layoutForceDirected_Eades_moveNodes(const qreal &c4) {
 
         qDebug() << "  Final new pos (" <<  newPos.x() << ","
                  << newPos.y()<< ")";
-        emit moveNode((*v1)->name(),  newPos.x(),  newPos.y());
+        emit setNodePos((*v1)->name(),  newPos.x(),  newPos.y());
 
     }
 
@@ -12830,7 +12845,7 @@ void Graph::layoutForceDirected_FR_moveNodes(const qreal &temperature) {
         qDebug()<< " final new pos "
                 <<  newPos.x() << ","
                 << newPos.y()<< ")";
-        emit moveNode((*v1)->name(),  newPos.x(),  newPos.y());
+        emit setNodePos((*v1)->name(),  newPos.x(),  newPos.y());
     }
 }
 

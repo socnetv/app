@@ -246,6 +246,7 @@ signals:
     void eraseEdge(const long int &, const long int &);					//emited from edgeRemove() to GW to clear the edge item.
     void setEdgeVisibility (int, int, int, bool);			// emitted from each Vertex
     void setVertexVisibility(long int, bool);		//notifies GW to disable a node
+    void setNodePos(const int &, const qreal &, const qreal &);
     void setNodeSize(const long int &v, const int &size);
     void setNodeShape(const long int v, const QString &shape);
     void setNodeColor(const long int v, const QString &color);
@@ -265,7 +266,7 @@ signals:
                        const QString &label);
     void addGuideCircle(const double&, const double&, const double&);
     void addGuideHLine (const double&y0);
-    void moveNode(const int &, const qreal &, const qreal &);
+
 
     /** Signals to Vertice */
     void relationChanged(int);

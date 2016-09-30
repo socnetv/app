@@ -297,7 +297,6 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
  * @return
  */
 QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
-    QPointF newPos = value.toPointF();
 
     switch (change) {
     case ItemPositionHasChanged :
@@ -318,11 +317,7 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
         if (m_hasLabel) {
             m_label->setPos( -m_size, m_labelDistance+m_size);
         }
-        if ( newPos.x() !=0 && newPos.y() != 0 ){
-            graphicsWidget->nodeMoved(nodeNumber(), (int) newPos.x(), (int) newPos.y());
-        }
-//        else qDebug()<<  "Node: ItemChange():  Not emitting nodeMoved. Node "
-//                      << nodeNumber()<<" is at 0,0";
+
         break;
     }
     case ItemEnabledHasChanged:{
