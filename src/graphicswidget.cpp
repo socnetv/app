@@ -66,9 +66,11 @@ GraphicsWidget::GraphicsWidget( QGraphicsScene *sc, MainWindow* par)  : QGraphic
     http://thesmithfam.org/blog/2007/02/03/qt-improving-qgraphicsview-performance/#comment-7215
 */
 void GraphicsWidget::paintEvent ( QPaintEvent * event ){
-    QPaintEvent *newEvent=new QPaintEvent(event->region().boundingRect());
-    QGraphicsView::paintEvent(newEvent);
-    delete newEvent;
+//    qDebug()<<"GraphicsWidget::paintEvent ";
+//    QPaintEvent *newEvent=new QPaintEvent(event->region().boundingRect());
+//    QGraphicsView::paintEvent(newEvent);
+//    delete newEvent;
+     QGraphicsView::paintEvent(event);
 }
 
 
@@ -330,7 +332,6 @@ void GraphicsWidget::eraseNode(const long int &number){
         qDebug() << "GW::eraseNode() - found number "
                  <<  number<< " Deleting :)" ;
         delete nodeHash.value(number);
-//        nodeHash.remove(number);
     }
 
     qDebug() << "GW::eraseNode() - node erased! "
@@ -1264,7 +1265,14 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
 
 
 
-
+/**
+ * @brief GraphicsWidget::mouseReleaseEvent
+ * @param e
+ * Called when user releases a mouse button, after a click.
+ * First sees what was in the canvas position where the user clicked
+ * If a node was underneath, it calls updateNodeCoords() signal for every node
+ * in scene selectedItems
+ */
 void GraphicsWidget::mouseReleaseEvent( QMouseEvent * e ) {
     QPointF p = mapToScene(e->pos());
     qDebug() << "GW::mouseReleaseEvent() at "
@@ -1301,8 +1309,6 @@ void GraphicsWidget::mouseReleaseEvent( QMouseEvent * e ) {
              << selectedItems().count();
 
 }
-
-
 
 
 
@@ -1390,12 +1396,18 @@ void GraphicsWidget::changeMatrixScale(int value) {
 }
 
 
-
+/**
+ * @brief GraphicsWidget::rotateLeft
+ */
 void GraphicsWidget::rotateLeft(){
     m_currentRotationAngle-=5;
     emit rotationChanged(m_currentRotationAngle);
 }
 
+
+/**
+ * @brief GraphicsWidget::rotateRight
+ */
 void GraphicsWidget::rotateRight() {
     m_currentRotationAngle+=5;
     emit rotationChanged(m_currentRotationAngle);
@@ -1434,7 +1446,8 @@ void GraphicsWidget::reset() {
 /**
  * @brief GraphicsWidget::resizeEvent
  * @param e
- * Resizing the view causes a repositioning of the nodes maintaining proportions
+ * Repositions guides then emits resized() signal to MW and eventually Graph
+ * which does the node repositioning maintaining proportions
  */
 void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
     if (transformationActive)  {
