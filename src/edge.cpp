@@ -97,7 +97,7 @@ Edge::Edge(  GraphicsWidget *gw,
         addLabel();
 
     setAcceptHoverEvents(true);
-    //setFlags(QGraphicsItem::ItemIsSelectable);
+    setFlags(QGraphicsItem::ItemIsSelectable);
 
     //Edges have lower z than nodes. Nodes always appear above edges.
     setZValue(ZValueEdge);
