@@ -58,6 +58,12 @@ GraphicsWidget::GraphicsWidget( QGraphicsScene *sc, MainWindow* par)  : QGraphic
     markedEdgeExist = false; //used in selecting and edge
     edgesHash.reserve(1000);
     nodeHash.reserve(1000);
+
+
+    connect ( sc , &QGraphicsScene::selectionChanged,
+                 this, &GraphicsWidget::getSelectedItems);
+
+
 }
 
 
@@ -1107,6 +1113,21 @@ void GraphicsWidget::selectNone()
 
 
 /**
+ * @brief GraphicsWidget::getSelectedItems
+ * Called by QGraphicsScene::selectionChanged signal whenever the user
+ * makes a selection on the canvas.
+ * Counts selected nodes and edges and emits these numbers
+ * to MW::slotEditSelectionChanged which displays them on the status bar.
+ */
+void GraphicsWidget::getSelectedItems() {
+    int nodes=selectedNodes().count();
+    int edges=selectedEdges().count();
+    qDebug() <<"GW::getSelectedItems() - nodes" << nodes<<"edges"<<edges;
+    //emit selected nodes/edges signal to MW ?
+    emit userSelectedItems(nodes, edges);
+}
+
+/**
  * @brief GraphicsWidget::selectedItems
  * @return a QList of all selected QGraphicsItem(s)
  */
@@ -1117,7 +1138,7 @@ QList<QGraphicsItem *> GraphicsWidget::selectedItems(){
 
 /**
  * @brief GraphicsWidget::selectedNodes
- *
+ * Called by GW::getSelectedItems and MW::selectedNodes
  * @return a QList of selected node numbers
  */
 QList<int> GraphicsWidget::selectedNodes() {
@@ -1270,7 +1291,7 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
  * @param e
  * Called when user releases a mouse button, after a click.
  * First sees what was in the canvas position where the user clicked
- * If a node was underneath, it calls updateNodeCoords() signal for every node
+ * If a node was underneath, it calls userNodeMoved() signal for every node
  * in scene selectedItems
  */
 void GraphicsWidget::mouseReleaseEvent( QMouseEvent * e ) {
@@ -1282,11 +1303,11 @@ void GraphicsWidget::mouseReleaseEvent( QMouseEvent * e ) {
     if ( QGraphicsItem *item= itemAt(e->pos() ) ) {
         if (Node *node = qgraphicsitem_cast<Node *>(item)) {
             qDebug() << "GW::mouseReleaseEvent() -on a node "
-                        << "Emitting updateNodeCoords() for all selected nodes";
+                        << "Emitting userNodeMoved() for all selected nodes";
             Q_UNUSED(node);
             foreach (QGraphicsItem *item, scene()->selectedItems()) {
                 if (Node *nodeSelected = qgraphicsitem_cast<Node *>(item) ) {
-                    emit updateNodeCoords(nodeSelected->nodeNumber(),
+                    emit userNodeMoved(nodeSelected->nodeNumber(),
                                           nodeSelected->x(),
                                           nodeSelected->y());
                 }
