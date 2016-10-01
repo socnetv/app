@@ -51,8 +51,15 @@ public:
     ~GraphicsWidget();
     void clear();
 
+    void setInitNodeColor(QString);
+    void setInitLinkColor(QString);
+    void setInitNodeSize(int);
+    void setInitNumberDistance(int);
+    void setInitLabelDistance(int);
+    void setInitZoomIndex (int);
+
+
     Node* hasNode(QString text);
-    //	Node* hasNode(int number);
     bool setMarkedNode(QString text);
 
     QList<QGraphicsItem *> selectedItems();
@@ -69,13 +76,6 @@ public:
     void removeItem(NodeNumber*);
     void removeItem(NodeLabel*);
 
-    void setInitNodeColor(QString);
-    void setInitLinkColor(QString);
-    void setInitNodeSize(int);
-    void setInitNumberDistance(int);
-    void setInitLabelDistance(int);
-    void setInitZoomIndex (int);
-
     void setNumbersInsideNodes(bool);
 
     void setAllItemsVisibility(int, bool);
@@ -90,6 +90,9 @@ protected:
     void paintEvent ( QPaintEvent * event );
 
 public slots:
+
+    void getSelectedItems();
+
     void relationSet(int relation);
 
     void drawNode( const int &num, const int &nodeSize,
@@ -160,7 +163,8 @@ signals:
     void openNodeMenu();
     void openEdgeMenu();
     void openContextMenu(const QPointF p);
-    void updateNodeCoords(const int &, const int &, const int &);
+    void userNodeMoved(const int &, const int &, const int &);
+    void userSelectedItems(const int nodes, const int edges);
     void selectedNode(Node *);
     void selectedEdge(Edge *);
     void zoomChanged(const int);
