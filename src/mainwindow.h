@@ -207,12 +207,14 @@ public slots:
     void slotEditRelationAdd(QString relationName);
 
     void slotEditOpenContextMenu(const QPointF & mPos);
+    void slotEditSelectionChanged (const int nodes, const int edges);
 
     void slotEditClickOnEmptySpace ();
 
     void slotEditNodeSelectAll();
     void slotEditNodeSelectNone();
-
+    void slotEditNodeInfoStatusBar(Node*);
+    void slotEditNodePosition(const int &nodeNumber, const int &x, const int &y);
     void slotEditNodeAdd();
     void slotEditNodeAddWithMouse(const QPointF &);
     void slotEditNodeFind();
@@ -231,6 +233,9 @@ public slots:
     void slotEditNodeLabelsColor(QColor color=QColor());
     void slotEditNodeLabelDistance(int v1=0, int newSize=0);
 
+    void slotEditEdgeInfoStatusBar (Edge*);
+
+    void slotEditEdgeOpenContextMenu() ;
     void slotEditEdgeAdd();
     void slotEditEdgeCreate (const int &source, const int &target,
                              const float &weight=1);
@@ -333,13 +338,6 @@ public slots:
     void slotAboutQt();
 
 
-    //PUBLICLY AVAILABLE SLOTS. CALLED FROM GRAPHICSVIEW
-    void nodeInfoStatusBar(Node*);
-    void edgeInfoStatusBar (Edge*);
-
-    void openEdgeContextMenu() ;
-
-    void updateNodeCoords(const int &nodeNumber, const int &x, const int &y);
 
     //Called by Graph to display some message to the user
     void statusMessage(const QString);

@@ -3256,10 +3256,10 @@ void MainWindow::initSignalSlots() {
                 &activeGraph, SLOT( canvasSizeSet(int,int)) ) ;
 
     connect( graphicsWidget, SIGNAL( selectedNode(Node*) ),
-             this, SLOT( nodeInfoStatusBar(Node*) ) 	);
+             this, SLOT( slotEditNodeInfoStatusBar(Node*) ) 	);
 
     connect( graphicsWidget, SIGNAL( selectedEdge(Edge*) ),
-             this, SLOT ( edgeInfoStatusBar(Edge*) )  );
+             this, SLOT ( slotEditEdgeInfoStatusBar(Edge*) )  );
 
     connect( graphicsWidget, SIGNAL( userClickOnEmptySpace() ),
                      this, SLOT( slotEditClickOnEmptySpace() ) ) ;
@@ -3277,14 +3277,17 @@ void MainWindow::initSignalSlots() {
              this, SLOT( slotEditNodeOpenContextMenu() ) ) ;
 
     connect( graphicsWidget, SIGNAL( openEdgeMenu() ),
-             this, SLOT( openEdgeContextMenu() ) ) ;
+             this, SLOT( slotEditEdgeOpenContextMenu() ) ) ;
 
     connect (graphicsWidget, &GraphicsWidget::openContextMenu,
              this, &MainWindow::slotEditOpenContextMenu);
 
     connect( graphicsWidget, SIGNAL(updateNodeCoords(const int &, const int &, const int &)),
-             this, SLOT( updateNodeCoords(const int &, const int &, const int &) ) );
+             this, SLOT( slotEditNodePosition(const int &, const int &, const int &) ) );
 
+
+    connect( graphicsWidget, &GraphicsWidget::userSelectedItems,
+                     this, &MainWindow::slotEditSelectionChanged);
 
     connect( graphicsWidget, SIGNAL(zoomChanged(const int &)),
              zoomSlider, SLOT( setValue(const int &)) );
@@ -3763,25 +3766,6 @@ void MainWindow::showMessageToUser(const QString message) {
 
 
 
-
-/**
- * @brief MainWindow::updateNodeCoords
- * Called from GraphicsWidget when a node moves to update vertex coordinates
- * in Graph
- * @param nodeNumber
- * @param x
- * @param y
- */
-void MainWindow::updateNodeCoords(const int &nodeNumber,
-                                  const int &x, const int &y){
-    qDebug("MW: updateNodeCoords() for %i with x %i and y %i", nodeNumber, x, y);
-    activeGraph.vertexPosSet(nodeNumber, x, y);
-    if (!networkModified) {
-        networkModified=true;
-        networkSave->setIcon(QIcon(":/images/save.png"));
-        networkSave->setEnabled(true);
-    }
-}
 
 
 
@@ -5982,7 +5966,10 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
 
 /**
  * @brief MainWindow::selectedNodes
- * Returns a QList of all selected nodes
+ * Returns a QList of all selected nodes.
+ * Called by MW::slotEditOpenContextMenu, MW::slotEditNodeRemove,
+ * MW::slotEditNodePropertiesDialog, MW::slotEditNodeProperties and
+ * MW::slotEditNodeOpenContextMenu
  * @return
  */
 QList<int> MainWindow::selectedNodes() {
@@ -6025,6 +6012,27 @@ void MainWindow::slotEditNodeSelectNone(){
     qDebug() << "MainWindow::slotEditNodeSelectNone()";
     graphicsWidget->selectNone();
     statusMessage( QString(tr("Selection cleared") ) );
+}
+
+
+
+/**
+ * @brief MainWindow::slotEditNodePosition
+ * Called from GraphicsWidget when a node moves to update vertex coordinates
+ * in Graph
+ * @param nodeNumber
+ * @param x
+ * @param y
+ */
+void MainWindow::slotEditNodePosition(const int &nodeNumber,
+                                  const int &x, const int &y){
+    qDebug("MW: slotEditNodePosition() for %i with x %i and y %i", nodeNumber, x, y);
+    activeGraph.vertexPosSet(nodeNumber, x, y);
+    if (!networkModified) {
+        networkModified=true;
+        networkSave->setIcon(QIcon(":/images/save.png"));
+        networkSave->setEnabled(true);
+    }
 }
 
 
@@ -6333,7 +6341,6 @@ void MainWindow::slotEditNodeProperties( const QString label, const int size,
             activeGraph.vertexSizeSet(clickedNodeNumber,size);
             qDebug()<< "MW::slotEditNodeProperties() - updating shape ";
             activeGraph.vertexShapeSet( clickedNodeNumber, shape);
-            //clickedNode->setShape(shape);
         }
     }
 
@@ -6727,7 +6734,7 @@ void MainWindow::slotEditNodeOpenContextMenu() {
         nodeContextMenu -> addAction(
                     tr("## NODE ") + QString::number(clickedNodeNumber)
                     + " ##  " + tr(" (selected nodes: ")
-                    + QString::number (selectedNodes().count() ) + ")");
+                    + QString::number ( nodeCount ) + ")");
     }
 
     nodeContextMenu -> addSeparator();
@@ -6742,16 +6749,7 @@ void MainWindow::slotEditNodeOpenContextMenu() {
 
     nodeContextMenu -> addAction(editNodeRemoveAct );
 
-    if (nodeCount > 1 ){
-        editNodeRemoveAct->setText(tr("Remove ")
-                                   + QString::number(nodeCount)
-                                   + tr(" nodes"));
-    }
-    else {
-        editNodeRemoveAct->setText(tr("Remove ")
-                                   + QString::number(nodeCount)
-                                   + tr(" node"));
-    }
+
     nodeContextMenu -> addSeparator();
 
 
@@ -6763,13 +6761,39 @@ void MainWindow::slotEditNodeOpenContextMenu() {
 
 
 
+/**
+ * @brief MainWindow::slotEditSelectionChanged
+ * @param nodes
+ * @param edges
+ */
+void MainWindow::slotEditSelectionChanged(const int nodes, const int edges) {
+    qDebug()<< "MW::slotEditSelectionChanged()";
+    statusMessage(  tr("Selected %1 nodes, %2 edges")
+                    .arg( nodes )
+                    .arg( edges ));
+
+    if (nodes > 1 ){
+        editNodeRemoveAct->setText(tr("Remove ")
+                                   + QString::number(nodes)
+                                   + tr(" nodes"));
+    }
+    else {
+        editNodeRemoveAct->setText(tr("Remove ")
+                                   + QString::number(nodes)
+                                   + tr(" node"));
+    }
+}
+
 
 
 /**
-*	When the user clicks on a node, displays some information about it on the status bar.
-*/
-void MainWindow::nodeInfoStatusBar ( Node *jim) {
-    qDebug ("MW: NodeInfoStatusBar()");
+ * @brief MainWindow::slotEditNodeInfoStatusBar
+ * Called by GW::selectedNode() signal, when the user clicks on a node.
+ * It displays information about the node on the statusbar.
+ * @param jim
+ */
+void MainWindow::slotEditNodeInfoStatusBar ( Node *jim) {
+    qDebug ("MW: slotEditNodeInfoStatusBar()");
     edgeClicked=false;
     nodeClicked=true;
     clickedNode=jim;
@@ -6792,12 +6816,12 @@ void MainWindow::nodeInfoStatusBar ( Node *jim) {
 
 
 /**
- * @brief MainWindow::edgeInfoStatusBar
- * Displays information on the status bar about and edge clicked by the user
- * Called by GW::selectedEdge signal
+ * @brief MainWindow::slotEditEdgeInfoStatusBar
+ * Called by GW::selectedEdge signal when the user clickes on an edge
+ * Displays information about the clicked edge on the statusbar
  * @param edge
  */
-void MainWindow::edgeInfoStatusBar (Edge* edge) {
+void MainWindow::slotEditEdgeInfoStatusBar (Edge* edge) {
     clickedEdge=edge;
     edgeClicked=true;
     nodeClicked=false;
@@ -6822,12 +6846,14 @@ void MainWindow::edgeInfoStatusBar (Edge* edge) {
 
 
 /**
-     Popups a context menu with some options when the user right-clicks on an Edge
-*/
-void MainWindow::openEdgeContextMenu() {
+ * @brief MainWindow::slotEditEdgeOpenContextMenu
+ * Called by GW::openEdgeMenu when the user right-clicks on an edge
+ * Popups a context menu with edge- related options
+ */
+void MainWindow::slotEditEdgeOpenContextMenu() {
     int source=clickedEdge->sourceNodeNumber();
     int target=clickedEdge->targetNodeNumber();
-    qDebug("MW: openEdgeContextMenu() for edge %i-%i at %i, %i",source, target, QCursor::pos().x(), QCursor::pos().y());
+    qDebug("MW: slotEditEdgeOpenContextMenu() for edge %i-%i at %i, %i",source, target, QCursor::pos().x(), QCursor::pos().y());
     QString edgeName=QString::number(source)+QString("->")+QString::number(target);
     //make the menu
     QMenu *edgeContextMenu = new QMenu(edgeName, this);
