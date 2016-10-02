@@ -128,9 +128,13 @@ class CompareDistances {
  - BUG: Fruchterman-Reingold model fixes some nodes to (1,1) breaking the layout
  - BUG: Rubber band selection does not always work on large nets where nodes been removed.
  - BUG/WONTFIX: Crash on Graphml files with html special chars in node/edge labels
+ - BUG: Pajek files with no ic / label in nodes are displayed without colors???
 
  - TODO: Enrich Node properties dialog
  - TODO: Update app icons
+
+ - TODO: Group edge editing: i.e. change weight or color.
+ - TODO: Control Panel Options should be dropped (break the panel layout in laptops).
 
  - CHECK weighted networks results (IRCC and distance matrix with other combinations)
  - CHECK isWeighted corner case results, when !graphModified.
