@@ -122,6 +122,7 @@ class CompareDistances {
 /*
  TODO & KNOWN BUGS:
 
+ - BUG: Create d-regular, undirected, ask for closeness, it says we are on a disconnected graph
  - BUG: Crash on Graphml files with textlabels instead of nodenumbers (i.e. nets/killer.graphml)
 -  BUG: wrong default edge colors (not the ones used by Settings) after loading GraphML files.
  - BUG: Resizing the MW view does not resize/reposition the layout guides
