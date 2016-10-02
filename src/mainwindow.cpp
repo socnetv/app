@@ -644,7 +644,7 @@ void MainWindow::initActions(){
     connect(networkViewSociomatrixAct, SIGNAL(triggered()),
             this, SLOT(slotNetworkViewSociomatrix()));
 
-    networkDataSetSelectAct = new QAction(QIcon(":/images/sm.png"),
+    networkDataSetSelectAct = new QAction(QIcon(":/images/petersengraph.png"),
                                      tr("Create Known Data Sets"),  this);
     networkDataSetSelectAct ->setShortcut(Qt::Key_F7);
     networkDataSetSelectAct->setStatusTip(tr("Recreate a variety of known data sets."));
@@ -3282,7 +3282,7 @@ void MainWindow::initSignalSlots() {
     connect (graphicsWidget, &GraphicsWidget::openContextMenu,
              this, &MainWindow::slotEditOpenContextMenu);
 
-    connect( graphicsWidget, SIGNAL(updateNodeCoords(const int &, const int &, const int &)),
+    connect( graphicsWidget, SIGNAL(userNodeMoved(const int &, const int &, const int &)),
              this, SLOT( slotEditNodePosition(const int &, const int &, const int &) ) );
 
 
