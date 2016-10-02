@@ -61,7 +61,8 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
             << "Stephenson and Zelen (1989): Network of 40 AIDS patients (sex relationship)"
             << "Stephenson and Zelen (1989): Information Centrality test dataset, 5 actors"
             << "Wasserman and Faust: star, circle and line graphs of 7 actors (multirelational)"
-            << "Wasserman and Faust: Countries Trade (basic manufactured goods), 24 actors";
+            << "Wasserman and Faust: Countries Trade (basic manufactured goods), 24 actors"
+            << "Petersen graph: a non-planar, undirected graph with 10 vertices and 15 edges";
 
     datasets_filenames
             << "Krackhardt_High-tech_managers_Advice_relation.sm"
@@ -86,7 +87,8 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
             << "Stephenson&Zelen_40_AIDS_patients_sex_contact.paj"
             << "Stephenson&Zelen_5actors_6edges_IC_test_dataset.paj"
             << "Wasserman_Faust_7actors_star_circle_line_graphs.paj"
-            << "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek";
+            << "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek"
+            << "Petersen_Graph.paj";
 
     (ui.selectBox) -> insertItems( 1, datasets_list );
 }

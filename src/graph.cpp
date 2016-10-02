@@ -12016,6 +12016,45 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                    "1 1 0 1 1 0 1 1 1 0 1 1 1 0 0 1 1 1 1 1 1 1 1 0";
                     qDebug()<< "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek written... ";
     }
+    else if (fileName == "Petersen_Graph.paj") {
+        qDebug()<< "		Petersen_Graph.paj written... ";
+        datasetDescription=tr("This data set is just a famous non-planar mathematical graph, \n"
+                              "named after Julius Petersen, who constructed it in 1898.\n"
+                "The Petersen graph is undirected with 10 vertices and 15 edges \n"
+                 "and the smallest bridgeless cubic graph with no three-edge-coloring.\n"
+                "This small graph serves as a useful example and counterexample \n"
+                              "for many problems in graph theory. ");
+
+        outText<< "*Network petersen"<<endl<<
+                  "*Vertices 10"<<endl<<
+                  "1 \"blue\" ic RGB5555FF      0.301331  0.398259  circle"<<endl<<
+                  "2 \"red\" ic red             0.474335  0.238302  circle"<<endl<<
+                  "3 \"blue\" ic RGB5555FF      0.652082  0.407722  circle"<<endl<<
+                  "4 \"green\" ic RGB00FF00     0.601418  0.681758  circle"<<endl<<
+                  "5 \"red\" ic red             0.348936  0.677763  circle"<<endl<<
+                  "6 \"green\" ic RGB00FF00     0.410646  0.581066  circle"<<endl<<
+                  "7 \"red\" ic red             0.534221  0.583243  circle"<<endl<<
+                  "8 \"red\" ic red             0.561787  0.437432  circle"<<endl<<
+                  "9 \"blue\" ic RGB5555FF      0.475285  0.351469  circle"<<endl<<
+                  "10 \"green\" ic RGB00FF00    0.38308   0.436344  circle"<<endl<<
+                  "*Arcs "<<endl<<
+                  "*Edges "<<endl<<
+                  "1 2 1 c black"<<endl<<
+                  "1 5 1 c black"<<endl<<
+                  "1 10 1 c black"<<endl<<
+                  "2 3 1 c black"<<endl<<
+                  "2 9 1 c black"<<endl<<
+                  "3 4 1 c black"<<endl<<
+                  "3 8 1 c black"<<endl<<
+                  "4 5 1 c black"<<endl<<
+                  "4 7 1 c black"<<endl<<
+                  "5 6 1 c black"<<endl<<
+                  "6 8 1 c black"<<endl<<
+                  "6 9 1 c black"<<endl<<
+                  "7 9 1 c black"<<endl<<
+                  "7 10 1 c black"<<endl<<
+                  "8 10 1 c black";
+    }
     file.close();
     if ( !datasetDescription.isEmpty() ) {
         emit signalDatasetDescription(datasetDescription);
