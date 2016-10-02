@@ -93,5 +93,6 @@
         <file>images/nodelabelcolor.png</file>
         <file>images/nodenumbersize.png</file>
         <file>images/edgecolor.png</file>
+        <file>images/petersengraph.png</file>
     </qresource>
 </RCC>
