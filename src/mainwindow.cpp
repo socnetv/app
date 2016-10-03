@@ -4293,7 +4293,10 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
 /**
  * @brief MainWindow::slotNetworkSave
  * Saves the network in the same file.
- * Only GraphML is supported.
+ * First check if a fileName is currently used
+ * If not, calls slotNetworkSaveAs (which prompts for a fileName before returning here)
+ * If a fileName is currently set, it checks if fileFormat is supported for export
+ * If not supported, and the file is new, just tries to save in GraphML
  * For other exporing options the user is informed to use the export menu.
  */
 void MainWindow::slotNetworkSave(const int &fileFormat) {
@@ -4371,8 +4374,9 @@ void MainWindow::slotNetworkSaveAs() {
                            "Appending a standard .graphml to the given filename."), "OK",0);
             fn.append(".graphml");
         }
-        //TODO. Perhaps change the suffix automatically to graphML
-        // even if the user has selected other?
+        /** \todo  Change the suffix automatically to graphML even if the user
+         * has selected other?
+         */
         if ( !QFileInfo(fn).suffix().contains("graphML") ||
              !QFileInfo(fn).suffix().contains("xml") ) {
             //fn = QFileInfo(fn).absoluteDir() + QFileInfo(fn).baseName()
