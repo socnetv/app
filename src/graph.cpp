@@ -1944,7 +1944,7 @@ float Graph::density() {
 
 /**
  * @brief Graph::isWeighted
- *  Checks if the graph is weighted, i.e. if any e in |E| has value > 1
+ *  Checks if the graph is weighted, i.e. if any e in |E| has value not 0 or 1
  *  Complexity: O(n^2)
  * @return
  */
