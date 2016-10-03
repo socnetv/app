@@ -118,29 +118,27 @@ class CompareDistances {
 };
 
 
+/**
+  TODO & KNOWN BUGS:
+    \todo Group edge editing: i.e. change weight or color.
+    \todo Enrich Node properties dialog
+    \todo Update app icons
+    \todo Control Panel Options should be dropped (break the panel layout in laptops).
+    \todo - CHECK weighted networks results (IRCC and distance matrix with other combinations)
+    \todo - CHECK isWeighted corner case results, when !graphModified.
+    \todo - CHECK connectedness() algorithm implementation (unilaterallyConnectedVertices)
 
-/*
- TODO & KNOWN BUGS:
+  \bug Create d-regular, undirected, ask for closeness, it says we are on a disconnected graph
+  \bug Crash on Graphml files with textlabels instead of nodenumbers (i.e. nets/killer.graphml)
+  \bug Pajek files with no ic / label in nodes are displayed without colors???
+  \bug wrong default edge colors (not the ones used by Settings) after loading GraphML files.
+  \bug Resizing the MW view does not resize/reposition the layout guides
+  \bug Fruchterman-Reingold model fixes some nodes to (1,1) breaking the layout
+  \bug Rubber band selection does not always work on large nets where nodes been removed.?
+  \bug wontfix Crash on Graphml files with html special chars in node/edge labels
 
- - BUG: Create d-regular, undirected, ask for closeness, it says we are on a disconnected graph
- - BUG: Crash on Graphml files with textlabels instead of nodenumbers (i.e. nets/killer.graphml)
--  BUG: wrong default edge colors (not the ones used by Settings) after loading GraphML files.
- - BUG: Resizing the MW view does not resize/reposition the layout guides
- - BUG: Fruchterman-Reingold model fixes some nodes to (1,1) breaking the layout
- - BUG: Rubber band selection does not always work on large nets where nodes been removed.
- - BUG/WONTFIX: Crash on Graphml files with html special chars in node/edge labels
- - BUG: Pajek files with no ic / label in nodes are displayed without colors???
+  */
 
- - TODO: Enrich Node properties dialog
- - TODO: Update app icons
-
- - TODO: Group edge editing: i.e. change weight or color.
- - TODO: Control Panel Options should be dropped (break the panel layout in laptops).
-
- - CHECK weighted networks results (IRCC and distance matrix with other combinations)
- - CHECK isWeighted corner case results, when !graphModified.
- - CHECK connectedness() algorithm implementation (unilaterallyConnectedVertices)
-*/
 
 /**
  * @brief The Graph class

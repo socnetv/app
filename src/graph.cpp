@@ -1949,18 +1949,19 @@ float Graph::density() {
  * @return
  */
 bool Graph::isWeighted(){
-    qDebug()<< "Graph::isWeighted()";
     if ( ! graphModified() )
     {
-        qDebug()<< "Graph::isWeighted() - graph not modified. Return " << m_isWeighted;
+        qDebug()<< "Graph::isWeighted() - graph not modified. Return: "
+                << m_isWeighted;
         return m_isWeighted;
     }
+    float m_weight=0;
     QList<Vertex*>::const_iterator it, it1;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
-            if ( ( edgeExists ( (*it1)->name(), (*it)->name() ) )  > 1  )   {
+           m_weight = edgeExists ( (*it1)->name(), (*it)->name() ) ;
+            if ( m_weight  != 1  && m_weight  != 0 )   {
                 qDebug()<< "Graph: isWeighted() - true";
-                //FIXME What about negative weights?? or 0 < w < 1 ?
                 return m_isWeighted=true;
             }
         }
@@ -8178,8 +8179,6 @@ bool Graph::graphSaveToPajekFormat (const QString &fileName, \
 /**
  * @brief Graph::graphSaveToAdjacencyFormat
  * @param fileName
- * @param maxWidth
- * @param maxHeight
  * @return
  */
 bool Graph::graphSaveToAdjacencyFormat (QString fileName){
@@ -12077,7 +12076,8 @@ void Graph::writeAdjacencyMatrixTo(QTextStream& os){
         for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
             if ( ! (*it1)->isEnabled() ) continue;
             if ( (weight = edgeExists( (*it)->name(), (*it1)->name() )  ) !=0 ) {
-                os << static_cast<int> (weight) << " ";
+                //os << static_cast<int> (weight) << " ";
+                os << weight << " ";
             }
             else
                 os << "0 ";
