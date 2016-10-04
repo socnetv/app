@@ -422,10 +422,10 @@ void Graph::vertexCreate(const int &num, const int &nodeSize, const QString &nod
 
 
     emit drawNode( num, nodeSize, nodeShape, nodeColor,
-                   initVertexNumbersVisibility, initNumbersInsideNodes,
-                   numColor, numSize,
+                   initVertexNumbersVisibility, initVertexNumberInside,
+                   numColor, numSize, initVertexNumberDistance,
                    initVertexLabelsVisibility, label,
-                   labelColor, labelSize,
+                   labelColor, labelSize, initVertexLabelDistance,
                    p );
 
     graphModifiedSet(GRAPH_CHANGED_VERTICES, signalMW);
@@ -1067,7 +1067,7 @@ void Graph::vertexNumberDistanceSetAll(const int &newDistance) {
  * @param toggle
  */
 void Graph::vertexNumbersInsideNodesSet(bool toggle){
-    initNumbersInsideNodes=toggle;
+    initVertexNumberInside=toggle;
 
 }
 

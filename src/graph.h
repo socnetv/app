@@ -234,8 +234,10 @@ signals:
                    const QString &nodeColor,
                    const bool &showNumbers,const bool &numbersInside,
                    const QString &numberColor, const int &numSize,
+                   const int &numDistance,
                    const bool &showLabels, const QString &label,
                    const QString &labelColor, const int &labelSize,
+                   const int &labelDistance,
                    const QPointF &p
                     );
 
@@ -758,14 +760,13 @@ private:
     long int m_totalVertices, m_totalEdges, m_graphDiameter, initVertexSize;
     int initVertexLabelSize, initVertexNumberSize;
     int initVertexNumberDistance, initVertexLabelDistance;
-
+    bool initVertexNumberInside;
     int isolatedVertices;
-
     float m_graphAverageDistance, nonZeroDistancesCounter, m_graphPathsExistingCount;
     int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;
     int timerId,  canvasWidth, canvasHeight;
     bool order, initVertexLabelsVisibility,initVertexNumbersVisibility;
-    bool initNumbersInsideNodes;
+
     bool adjacencyMatrixCreated,distanceMatrixCreated;
     bool reachabilityMatrixCreated;
     bool m_undirected, m_symmetric, m_isWeighted;
