@@ -490,6 +490,7 @@ private:
     QColor initBackgroundColor;
     QPointF cursorPosGW;	//Carries the position of the cursor in graphicsWidget coordinates
     QLabel *rightPanelEdgesLabel, *rightPanelSelectedEdgesLabel, *rightPanelNetworkTypeLabel ;
+    QLabel *rightPanelClickedEdgeHeaderLabel;
     QLCDNumber *rightPanelClickedNodeInDegreeLCD, *rightPanelClickedNodeOutDegreeLCD;
     QLCDNumber *rightPanelClickedNodeLCD, *rightPanelClickedNodeClucofLCD;
     QLCDNumber *rightPanelNodesLCD, *rightPanelEdgesLCD, *rightPanelDensityLCD;

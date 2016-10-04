@@ -3042,7 +3042,7 @@ void MainWindow::initToolBox(){
     QLabel *verticalSpaceLabel3 = new QLabel;
     verticalSpaceLabel3-> setText ("");
 
-    QLabel *rightPanelClickedEdgeHeaderLabel = new QLabel;
+    rightPanelClickedEdgeHeaderLabel = new QLabel;
     rightPanelClickedEdgeHeaderLabel-> setText (tr("Clicked Edge"));
     rightPanelClickedEdgeHeaderLabel->setFont(labelFont);
 
@@ -3077,14 +3077,14 @@ void MainWindow::initToolBox(){
 
     propertiesGrid -> addWidget(verticalSpaceLabel1, 4,0);
 
-    propertiesGrid -> addWidget(rightPanelSelectedHeaderLabel , 5,0);
+    propertiesGrid -> addWidget(rightPanelSelectedHeaderLabel, 5,0,1,2);
     propertiesGrid -> addWidget(rightPanelSelectedNodesLabel , 6,0);
     propertiesGrid -> addWidget(rightPanelSelectedNodesLCD ,6,1);
     propertiesGrid -> addWidget(rightPanelSelectedEdgesLabel, 7,0);
     propertiesGrid -> addWidget(rightPanelSelectedEdgesLCD, 7,1);
 
     propertiesGrid -> addWidget(verticalSpaceLabel2, 8,0);
-    propertiesGrid -> addWidget(rightPanelClickedNodeHeaderLabel, 9,0);
+    propertiesGrid -> addWidget(rightPanelClickedNodeHeaderLabel, 9,0,1,2);
     propertiesGrid -> addWidget(rightPanelClickedNodeLabel , 10,0);
     propertiesGrid -> addWidget(rightPanelClickedNodeLCD ,10,1);
     propertiesGrid -> addWidget(rightPanelClickedNodeInDegreeLabel, 11,0);
@@ -3095,7 +3095,7 @@ void MainWindow::initToolBox(){
     propertiesGrid -> addWidget(rightPanelClickedNodeClucofLCD,13,1);
 
     propertiesGrid -> addWidget(verticalSpaceLabel3, 15,0);
-    propertiesGrid -> addWidget(rightPanelClickedEdgeHeaderLabel, 16,0);
+    propertiesGrid -> addWidget(rightPanelClickedEdgeHeaderLabel, 16,0,1,2);
     propertiesGrid -> addWidget(rightPanelClickedEdgeSourceLabel , 17,0);
     propertiesGrid -> addWidget(rightPanelClickedEdgeSourceLCD ,17,1);
     propertiesGrid -> addWidget(rightPanelClickedEdgeTargetLabel , 18,0);
@@ -6846,9 +6846,8 @@ void MainWindow::slotEditNodeOpenContextMenu() {
  */
 void MainWindow::slotEditSelectionChanged(const int nodes, const int edges) {
     qDebug()<< "MW::slotEditSelectionChanged()";
-    statusMessage(  tr("Selected %1 nodes, %2 edges")
-                    .arg( nodes )
-                    .arg( edges ));
+    rightPanelSelectedNodesLCD->display(nodes);
+    rightPanelSelectedEdgesLCD->display(edges);
 
     if (nodes > 1 ){
         editNodeRemoveAct->setText(tr("Remove ")
@@ -6904,19 +6903,25 @@ void MainWindow::slotEditEdgeInfoStatusBar (Edge* edge) {
     edgeClicked=true;
     nodeClicked=false;
 
+
+    rightPanelClickedEdgeSourceLCD->display(edge->sourceNodeNumber());
+    rightPanelClickedEdgeTargetLCD->display(edge->targetNodeNumber());
+    rightPanelClickedEdgeWeightLCD->display(edge->weight());
+
     if (edge->isUndirected()) {
             statusMessage(  QString
                         (tr("Symmetric edge %1 <--> %2 of weight %3 has been selected. "
                                    "Click again to unselect it."))
                     .arg( edge->sourceNodeNumber() ).arg(edge->targetNodeNumber())
                     .arg( edge->weight()) ) ;
-
+            rightPanelClickedEdgeHeaderLabel->setText(tr("Clicked Edge"));
     }
     else {
         statusMessage(  QString(tr("Arc %1 --> %2 of weight %3 has been selected. "
                                    "Click again to unselect it."))
                     .arg( edge->sourceNodeNumber() ).arg(edge->targetNodeNumber())
                     .arg(edge->weight()) ) ;
+        rightPanelClickedEdgeHeaderLabel->setText(tr("Clicked Directed Edge"));
     }
 }
 
