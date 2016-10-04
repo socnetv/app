@@ -51,11 +51,7 @@ public:
     ~GraphicsWidget();
     void clear();
 
-    void setInitNodeColor(QString);
-    void setInitLinkColor(QString);
     void setInitNodeSize(int);
-    void setInitNumberDistance(int);
-    void setInitLabelDistance(int);
     void setInitZoomIndex (int);
 
 
@@ -95,12 +91,14 @@ public slots:
 
     void relationSet(int relation);
 
-    void drawNode( const int &num, const int &nodeSize,
+    void drawNode(const int &num, const int &nodeSize,
                    const QString &nodeShape, const QString &nodeColor,
-                   const bool &showNumbers,const bool &numberInsideNode,
+                   const bool &showNumbers, const bool &numberInsideNode,
                    const QString &numberColor, const int &numberSize,
+                  const int &numberDistance,
                    const bool &showLabels, const QString &nodeLabel,
                    const QString &labelColor, const int &labelSize,
+                  const int &labelDistance,
                    const QPointF &p
                     );
     void eraseNode(const long int &number);
@@ -178,13 +176,12 @@ private:
     H_StrToEdge edgesHash; // helper hash to easily find edges
     QList<int> m_selectedNodes;
     QList<QString> m_selectedEdges;
-    int m_curRelation;
-    int  m_nodeSize, m_numberDistance, m_labelDistance;
+    int m_curRelation, m_nodeSize;
     double m_currentScaleFactor;
     qreal fX,fY, factor;
     int m_currentRotationAngle;
     int m_zoomIndex, markedNodeOrigSize,markedEdgeSourceOrigSize, markedEdgeTargetOrigSize;
-    QString m_nodeLabel, m_numberColor, m_nodeColor, m_labelColor, m_linkColor;
+    QString m_nodeLabel, m_numberColor, m_labelColor;
     QString edgeName;
     bool secondDoubleClick, markedNodeExist, markedEdgeExist;
     QGraphicsItem *moving;

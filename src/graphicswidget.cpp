@@ -133,8 +133,10 @@ void GraphicsWidget::drawNode( const int &num, const int &nodeSize,
                                const QString &nodeShape, const QString &nodeColor,
                                const bool &showNumbers,const bool &numberInsideNode,
                                const QString &numberColor, const int &numberSize,
+                               const int &numberDistance,
                                const bool &showLabels, const QString &nodeLabel,
                                const QString &labelColor, const int &labelSize,
+                               const int &labelDistance,
                                const QPointF &p
                                 ) {
     qDebug()<< "GW: drawNode(): drawing new node " << num
@@ -143,8 +145,8 @@ void GraphicsWidget::drawNode( const int &num, const int &nodeSize,
     //Draw node
     Node *jim= new Node (
                 this, num, nodeSize, nodeColor, nodeShape,
-                showNumbers, numberInsideNode, numberColor, numberSize, m_numberDistance,
-                showLabels, nodeLabel, labelColor, labelSize, m_labelDistance,
+                showNumbers, numberInsideNode, numberColor, numberSize, numberDistance,
+                showLabels, nodeLabel, labelColor, labelSize, labelDistance,
                 p
                 );
 
@@ -501,26 +503,6 @@ void GraphicsWidget::removeItem( NodeNumber *nodeNumber){
 
 
 
-/** 
-    Accepts initial node color from MW.
-    It is called from MW on startup and when user changes it.
-*/
-void GraphicsWidget::setInitNodeColor(QString color){
-    qDebug("GW setting initNodeColor");
-    m_nodeColor=color;
-}
-
-
-
-/** 
-    Sets initial edge color.
-    Called from MW on startup and when user changes it.
-*/
-void GraphicsWidget::setInitLinkColor(QString color){
-    qDebug()<< "GW::setInitLinkColor";
-    m_linkColor=color;
-}
-
 
 
 /**
@@ -734,7 +716,7 @@ void GraphicsWidget::setEdgeLabelsVisibility (const bool &toggle){
 }
 
 
-/** 
+/**
     Sets initial node size from MW.
     It is Called from MW on startup and when user changes it.
 */
@@ -746,24 +728,7 @@ void GraphicsWidget::setInitNodeSize(int size){
 
 
 
-/** 
-    Sets initial number distance from node
-    Called from MW on startup and when user changes it.
-*/
-void GraphicsWidget::setInitNumberDistance(int numberDistance){
-    qDebug("GW setting initNumberDistance");
-    m_numberDistance=numberDistance;
-}
 
-
-/** 
-    Passes initial label distance from node
-    It is called from MW on startup and when user changes it.
-*/
-void GraphicsWidget::setInitLabelDistance(int labelDistance){
-    qDebug("GW setting initLabelDistance");
-    m_labelDistance=labelDistance;
-}
 
 
 /**
@@ -880,13 +845,6 @@ bool GraphicsWidget::setNodeNumberSize(const long int &number, const int &size){
             return true;
 
         }
-        else {
-            qDebug() << "GW: setNodeNumberSize(): for "<< number
-                     << " to initial size" << m_nodeSize;
-            nodeHash.value(number) ->setNumberSize(size);
-            return true;
-
-        }
     }
     qDebug() << "GW: setNodeSize(): cannot find node " << number;
     return false;
@@ -900,25 +858,18 @@ bool GraphicsWidget::setNodeNumberSize(const long int &number, const int &size){
  * @param distance
  */
 bool GraphicsWidget::setNodeNumberDistance( const long int &number, const int &distance ){
-    qDebug () << " GraphicsWidget::setNodeNumberDistance() node number: "<< number
+    qDebug () << "GW::setNodeNumberDistance() node number: "<< number
               << " new number distance "<< distance;
     if  ( nodeHash.contains (number) ) {
-        if (distance>0){
-            qDebug() << "GW: setNodeNumberDistance(): for "<< number
+        if (distance>=0){
+            qDebug() << "GW::setNodeNumberDistance(): for "<< number
                      << " to " << distance ;
             nodeHash.value(number) ->setNumberDistance(distance) ;
             return true;
 
         }
-        else {
-            qDebug() << "GW: setNodeNumberSize(): for "<< number
-                     << " to initial size" << distance;
-            nodeHash.value(number) ->setNumberDistance(distance);
-            return true;
-
-        }
     }
-    qDebug() << "GW: setNodeSize(): cannot find node " << number;
+    qDebug() << "GW::setNodeNumberSize(): cannot find node " << number;
     return false;
 }
 
@@ -930,24 +881,17 @@ bool GraphicsWidget::setNodeNumberDistance( const long int &number, const int &d
  * @param size
  */
 bool GraphicsWidget::setNodeLabelSize(const long int &number, const int &size){
-    qDebug () << " GraphicsWidget::setNodeLabelSize() node number: "<< number
+    qDebug () << "GW::setNodeLabelSize() - node number: "<< number
               << " new Label size "<< size;
     if  ( nodeHash.contains (number) ) {
         if (size>0){
-            qDebug() << "GW: setNodeLabelSize(): for "<< number << " to " << size ;
-            nodeHash.value(number) ->setLabelSize(size);
-            return true;
-
-        }
-        else {
-            qDebug() << "GW: setNodeLabelSize(): for "<< number
-                     << " to initial size" << m_nodeSize;
+            qDebug() << "GW::setNodeLabelSize(): for "<< number << " to " << size ;
             nodeHash.value(number) ->setLabelSize(size);
             return true;
 
         }
     }
-    qDebug() << "GW: setNodeSize(): cannot find node " << number;
+    qDebug() << "GW:setNodeLabelSize() - cannot find node " << number;
     return false;
 }
 
@@ -961,25 +905,17 @@ bool GraphicsWidget::setNodeLabelSize(const long int &number, const int &size){
  * @param distance
  */
 bool GraphicsWidget::setNodeLabelDistance( const long int &number, const int &distance ){
-    qDebug () << " GraphicsWidget::setNodeLabelDistance() node number: "<< number
+    qDebug () << "GW::setNodeLabelDistance() - node number: "<< number
               << " new label distance "<< distance;
     if  ( nodeHash.contains (number) ) {
-        if (distance>0){
-            qDebug() << "GW: setNodeLabelDistance(): for "<< number
+        if (distance>=0){
+            qDebug() << "GW::setNodeLabelDistance(): for "<< number
                      << " to " << distance ;
             nodeHash.value(number) ->setLabelDistance(distance) ;
             return true;
-
-        }
-        else {
-            qDebug() << "GW: setNodeLabelDistance(): for "<< number
-                     << " to initial size" << distance;
-            nodeHash.value(number) ->setLabelDistance(distance);
-            return true;
-
         }
     }
-    qDebug() << "GW: setNodeSize(): cannot find node " << number;
+    qDebug() << "GW::setNodeLabelDistance() - cannot find node " << number;
     return false;
 }
 
