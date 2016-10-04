@@ -489,9 +489,13 @@ private:
     QString initFileCodec;
     QColor initBackgroundColor;
     QPointF cursorPosGW;	//Carries the position of the cursor in graphicsWidget coordinates
-    QLabel *labelEdgesLCD, *networkLabel ;
-    QLCDNumber  *inDegreeLCD, *outDegreeLCD , *selectedNodeLCD, *clucofLCD;
-    QLCDNumber *nodesLCD, *edgesLCD, *densityLCD;
+    QLabel *rightPanelEdgesLabel, *rightPanelSelectedEdgesLabel, *rightPanelNetworkTypeLabel ;
+    QLCDNumber *rightPanelClickedNodeInDegreeLCD, *rightPanelClickedNodeOutDegreeLCD;
+    QLCDNumber *rightPanelClickedNodeLCD, *rightPanelClickedNodeClucofLCD;
+    QLCDNumber *rightPanelNodesLCD, *rightPanelEdgesLCD, *rightPanelDensityLCD;
+    QLCDNumber *rightPanelSelectedNodesLCD, *rightPanelSelectedEdgesLCD;
+    QLCDNumber *rightPanelClickedEdgeSourceLCD, *rightPanelClickedEdgeTargetLCD;
+    QLCDNumber *rightPanelClickedEdgeWeightLCD;
     QDateTime actualDateTime, actualDate, actualTime;
     QTime eTime;     //used  to time algorithms.
 
