@@ -1851,6 +1851,9 @@ int Graph::vertices(const bool dropIsolates, const bool countAll) {
             if (dropIsolates && (*it)->isIsolated()){
                 continue;
             }
+            if ( !(*it)->isEnabled()) {
+                continue;
+            }
             ++m_totalVertices;
         }
     }
@@ -7015,10 +7018,11 @@ bool Graph:: cliqueAdd(const QList<int> &list){
 
 int Graph::cliques(const int source, const QList<int>neighborsList, const int &size ) {
 
-    if (m_graph [ index[source] ]->inEdges() < size)
+    if (source!=0 && m_graph [ index[source] ]->inEdges() < size)
         return 0;
 
-
+    //first time
+    vertices();
     if (source == 0) {
         QList<Vertex*>::const_iterator it;
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
