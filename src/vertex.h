@@ -90,9 +90,9 @@ public:
     void edgeRemoveTo (long int target);
     void edgeRemoveFrom(long int source);
 
-    QHash<int,float>* returnEnabledOutEdges();
-    QHash<int,float>* returnEnabledInEdges();
-    QHash<int,float>* returnReciprocalEdges();
+    QHash<int,float>* outEdgesEnabledHash();
+    QHash<int,float>* inEdgesEnabledHash();
+    QHash<int,float>* reciprocalEdgesHash();
 
     long int outEdges();
     long int outEdgesConst() const ;
@@ -171,24 +171,18 @@ public:
     void set_dispX (float x) { m_disp.rx() = x ; }
     void set_dispY (float y) { m_disp.ry() = y ; }
 
-    //FIXME -- VERY SLOW?
+
     void setOutLinkColor(const long int &v2,
                          const QString &color) { outLinkColors[v2]=color; }
-
-    //FIXME: See MW line 1965 - FIXME MULTIGRAPH
     QString outLinkColor(const long int &v2) {
-        if (outLinkColors.contains(v2))
-            return outLinkColors.value(v2);
-        else return "black";
+        return ( outLinkColors.contains(v2) ) ? outLinkColors.value(v2) : "black";
     }
 
 
     void setOutEdgeLabel(const long int &v2,
                          const QString &label) { m_outEdgeLabels[v2]=label; }
     QString outEdgeLabel(const long int &v2) const {
-        if (m_outEdgeLabels.contains(v2))
-            return m_outEdgeLabels.value(v2);
-        else return QString::null;
+        return ( m_outEdgeLabels.contains(v2) ) ? m_outEdgeLabels.value(v2) : QString::null;
     }
 
 

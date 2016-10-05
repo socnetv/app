@@ -1687,7 +1687,7 @@ bool Graph::edgeColorAllSet(const QString &color, const int &threshold){
         source = (*it)->name();
         if ( ! (*it)->isEnabled() )
             continue;
-        enabledOutEdges=(*it)->returnEnabledOutEdges();
+        enabledOutEdges=(*it)->outEdgesEnabledHash();
         it1=enabledOutEdges->cbegin();
         while ( it1!=enabledOutEdges->cend() ){
             target = it1.key();
@@ -1829,8 +1829,11 @@ int Graph::vertexDegreeIn (int v1) {
 
 /**
  * @brief Graph::vertices
- *     Returns |V| of graph
- * @param dropIsolates
+ * Returns |V| of graph
+ * If countAll = true, returns |V| where V the set of all enabled or not vertices
+ * If countAll = false, it skips disabled vertices
+ * If countAll = false and dropIsolates = true, it skips both disabled and isolated vertices
+  * @param dropIsolates
  * @param countAll
  * @return
  */
@@ -2132,7 +2135,7 @@ bool Graph::isSymmetric(){
         qDebug() << "Graph::isSymmetric() - Graph modified! " <<
                     " Iterate over all edges of " << v1 ;
 
-        enabledOutEdges=(*lit)->returnEnabledOutEdges();
+        enabledOutEdges=(*lit)->outEdgesEnabledHash();
 
         hit=enabledOutEdges->cbegin();
 
@@ -2174,7 +2177,7 @@ void Graph::symmetrize(){
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         v1 = (*it)->name();
         qDebug() << "Graph:symmetrize() - iterate over edges of v1 " << v1;
-        enabledOutEdges=(*it)->returnEnabledOutEdges();
+        enabledOutEdges=(*it)->outEdgesEnabledHash();
         it1=enabledOutEdges->cbegin();
         while ( it1!=enabledOutEdges->cend() ){
             v2 = it1.key();
@@ -2227,7 +2230,7 @@ void Graph::undirectedSet(const bool &toggle){
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         v1 = (*it)->name();
         qDebug() << "Graph::undirectedSet() - iterate over edges of v1 " << v1;
-        enabledOutEdges=(*it)->returnEnabledOutEdges();
+        enabledOutEdges=(*it)->outEdgesEnabledHash();
         it1=enabledOutEdges->cbegin();
         while ( it1!=enabledOutEdges->cend() ){
             v2 = it1.key();
@@ -4456,7 +4459,7 @@ void Graph::prestigeDegree(const bool &weights, const bool &dropIsolates){
                  << v1 ;
 
 
-        enabledInEdges=(*it)->returnEnabledInEdges();
+        enabledInEdges=(*it)->inEdgesEnabledHash();
 
         hit=enabledInEdges->cbegin();
 
@@ -7016,68 +7019,70 @@ bool Graph:: cliqueAdd(const QList<int> &list){
 }
 
 
-int Graph::cliques(const int source, const QList<int>neighborsList, const int &size ) {
+//called as cliques(0, QHash<int,float>(), 0)
+int Graph::cliques(const int &source, QHash<int, float> neighbors, const int &size ) {
 
-    if (source!=0 && m_graph [ index[source] ]->inEdges() < size)
+    if (source!=0 && m_graph [ index[source] ]->outEdges() < size)
         return 0;
 
-    //first time
-    vertices();
+    //run first time only
     if (source == 0) {
+
+        int size = vertices(); // the size of the graph, excluding disabled vertices
+
+        QHash<int,float> *m_neighbors = new QHash<int,float>;
+
         QList<Vertex*>::const_iterator it;
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-            cliques ( (*it)->name(), QList<int>(), size-1 );
+            // take all outbound edges
+            m_neighbors=(*it)->outEdgesEnabledHash();
+            m_neighbors->remove( (*it)->name() );
+            //search if all neighbors form a clique of size = |neighborhood|
+            if ( cliques ( (*it)->name(), *m_neighbors, m_neighbors->size() ) > 0 ) {
+                // count cliques
+                //(*it)->cliq
+            }
         }
-        // count cliques
-        return;
+        return 1;
     }
-    int neighbor=-1;
-    QList<int>::const_iterator jt;
-    while (jt!=neighborsList.cend()) {
-        cliques ( neighborsList);
-        ++jt;
-        //QSET ???
+
+
+    QHash<int,float>::const_iterator it1, it2;
+    it1=neighbors.cbegin();
+
+    while ( it1!=neighbors.cend() ){
+
+        neighbors.remove(it1.key());
+        if (neighbors.size() > 1) {
+            if ( cliques ( it1.key(), neighbors, neighbors.size()) > 0 ) {
+                // count cliques
+                it2=neighbors.cbegin();
+                while ( it2!=neighbors.cend() ){
+                    if (  ! edgeExists( it1.key(), it2.key()) ) {
+                        return 0;
+                    }
+                    //skip same as source (self link) or duplicate vertices
+                    if ( it1.key() == source || it1.key() == it2.key() ) {
+                        continue;
+                    }
+                    ++it2;
+                }
+
+            }
+        }
+        else {
+            it2=neighbors.cbegin();
+            if ( edgeExists(it1.key(), it2.key()) ) {
+                qDebug () << " Graph::cliques - 2-clique found!";
+                // ADD THEM SOMEWHERE
+                return 1;
+            }
+        }
+
+    ++it1;
     }
-    H_edges::const_iterator it1;
-    while ( it1!=m_graph [ index[source] ] -> m_inEdges.cend() ){
-        relation = it1.value().first;
-        if ( relation != relationCurrent() ) {
-            ++it1;
-            continue;
-        }
-        edgeStatus=it1.value().second.second;
-        if ( edgeStatus != true) {
-            ++it1;
-            continue;
-        }
-        neighbor = it1.key();
-        //            weight = it1.value().second.first;
-        qDebug() << "Graph::cliquesContaining() - inLink from 1st neighbor "
-                 << neighbor
-                 << "[" << index[neighbor] << "] ";
-
-        if (source == neighbor) {
-            qDebug() << "Graph::cliquesContaining() -     It's the source - CONTINUE";
-            ++it1;
-            continue;
-        }
 
 
-        if ( edgeExists( source, neighbor )  == 0 )  {
-            qDebug() << "Graph::cliquesContaining() - incomplete 2v-subgraph - CONTINUE";
-            ++it1;
-            continue;
-
-        }
-
-        qDebug() << "Graph::cliquesContaining() - complete 2v-subgraph ";
-
-        //add each connected neighbor to the list
-        neighborsList << neighbor;
-        ++it1;
-
-    }
-        return cliques (neighborsList, size-1);
 }
 
 /**
@@ -7364,7 +7369,7 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
              << " Checking adjacent edges " ;
 
     QHash<int,float> *reciprocalEdges = new QHash<int,float>;
-    reciprocalEdges = m_graph [ index[v1] ] -> returnReciprocalEdges();
+    reciprocalEdges = m_graph [ index[v1] ] -> reciprocalEdgesHash();
 
     QHash<int,float>::const_iterator it1;
     QHash<int,float>::const_iterator it2;

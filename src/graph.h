@@ -555,9 +555,12 @@ public:
     float numberOfTriples(int v1);
 
 
+    int cliques(const int &source=0, QHash<int, float> neighbors=QHash<int,float>(),
+                const int &size=0 );
     bool  cliqueAdd (const QList<int> &list);
     float cliquesContaining(int source, int size=0);
     float cliquesOfSize(int size );
+
     float clusteringCoefficientLocal(const long int &v1);
     float clusteringCoefficient (const bool updateProgress=false);
 

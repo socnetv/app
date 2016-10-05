@@ -402,12 +402,12 @@ long int Vertex::outEdgesConst() const {
 
 
 /**
- * @brief Vertex::returnEnabledOutEdges
+ * @brief Vertex::outEdgesEnabledHash
  * Returns a qhash of all enabled outEdges in the active relation
  * @return  QHash<int,float>*
  */
-QHash<int,float>* Vertex::returnEnabledOutEdges(){
-    //qDebug() << " Vertex::returnEnabledOutEdges() vertex " << this->name();
+QHash<int,float>* Vertex::outEdgesEnabledHash(){
+    //qDebug() << " Vertex::outEdgesEnabledHash() vertex " << this->name();
     QHash<int,float> *enabledOutEdges = new QHash<int,float>;
     float m_weight=0;
     int relation = 0;
@@ -420,13 +420,13 @@ QHash<int,float>* Vertex::returnEnabledOutEdges(){
             if ( edgeStatus == true) {
                 m_weight=it1.value().second.first;
                 enabledOutEdges->insert(it1.key(), m_weight);
-//                qDebug() <<  " Vertex::returnEnabledOutEdges() count:"
+//                qDebug() <<  " Vertex::outEdgesEnabledHash() count:"
 //                             << enabledOutEdges->count();
             }
         }
         ++it1;
     }
-//    qDebug() << " Vertex::returnEnabledOutEdges() vertex " << this->name()
+//    qDebug() << " Vertex::outEdgesEnabledHash() vertex " << this->name()
 //                << " outEdges count:"
 //                 << enabledOutEdges->count();
     return enabledOutEdges;
@@ -439,13 +439,13 @@ QHash<int,float>* Vertex::returnEnabledOutEdges(){
  * Returns a qhash of all reciprocal edges to neighbors in the active relation
  * @return  QHash<int,float>*
  */
-QHash<int,float>* Vertex::returnReciprocalEdges(){
+QHash<int,float>* Vertex::reciprocalEdgesHash(){
     m_reciprocalEdges->clear();
     float m_weight=0;
     int relation = 0;
     bool edgeStatus=false;
     H_edges::const_iterator it1=m_outEdges.constBegin();
-    qDebug() << "Vertex::returnReciprocalEdges() - of vertex "
+    qDebug() << "Vertex::reciprocalEdgesHash() - of vertex "
              << this->name()
                 << " - outEdges " <<  m_outEdges.count()
                 << " - Checking all edges for reciprocality";
@@ -457,7 +457,7 @@ QHash<int,float>* Vertex::returnReciprocalEdges(){
             if ( edgeStatus == true) {
                 m_weight=it1.value().second.first;
                 if (this->hasEdgeFrom (it1.key()) == m_weight ) {
-                    qDebug() << "Vertex::returnReciprocalEdges() - of vertex "
+                    qDebug() << "Vertex::reciprocalEdgesHash() - of vertex "
                              << this->name()
                              << "Found reciprocal edge with   " << it1.key();
                     m_reciprocalEdges->insertMulti(it1.key(), m_weight);
@@ -467,7 +467,7 @@ QHash<int,float>* Vertex::returnReciprocalEdges(){
         ++it1;
     }
 
-    qDebug() << "Vertex::returnReciprocalEdges() - vertex " << this->name()
+    qDebug() << "Vertex::reciprocalEdgesHash() - vertex " << this->name()
              <<  "reciprocalEdges:  "
               << m_reciprocalEdges->count();
 
@@ -496,7 +496,7 @@ QHash<int,float>* Vertex::returnReciprocalEdges(){
 //                m_weight=it1.value().second.first;
 //                if (this->hasEdgeFrom (it1.key()) )
 //                    neighbors->insertMulti(it1.key(), m_weight);
-//                qDebug() <<  " Vertex::returnReciprocalEdges() count:"
+//                qDebug() <<  " Vertex::reciprocalEdgesHash() count:"
 //                             << reciprocalEdges->count();
 //            }
 //        }
@@ -504,10 +504,10 @@ QHash<int,float>* Vertex::returnReciprocalEdges(){
 //    }
 
 
-//    qDebug() <<  " Vertex::returnReciprocalEdges() total "
+//    qDebug() <<  " Vertex::reciprocalEdgesHash() total "
 //                 << reciprocalEdges->count();
 
-//    qDebug() <<  " Vertex::returnReciprocalEdges() localDegree "
+//    qDebug() <<  " Vertex::reciprocalEdgesHash() localDegree "
 //                 << this->localDegree();
 //    return reciprocalEdges;
 //}
@@ -543,12 +543,12 @@ long int Vertex::inEdges() {
 
 
 /**
- * @brief Vertex::returnEnabledInEdges
+ * @brief Vertex::inEdgesEnabledHash
  * Returns a qhash of all enabled inEdges in the active relation
  * @return  QHash<int,float>*
  */
-QHash<int,float>* Vertex::returnEnabledInEdges() {
-    qDebug() << "Vertex::returnEnabledInEdges()";
+QHash<int,float>* Vertex::inEdgesEnabledHash() {
+    qDebug() << "Vertex::inEdgesEnabledHash()";
     QHash<int,float> *enabledInEdges = new QHash<int,float>;
     float m_weight=0;
     int relation = 0;
@@ -741,7 +741,12 @@ float Vertex::hasEdgeFrom(const long int &v2){
 }
 
 
-
+/**
+ * @brief Vertex::cliques
+ * Returns the number of cliques sized size this vertex belongs to
+ * @param size
+ * @return
+ */
 int Vertex::cliques (const int &size)
 {
     int count = 0;
