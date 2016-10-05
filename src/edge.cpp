@@ -105,6 +105,8 @@ Edge::Edge(  GraphicsWidget *gw,
     setBoundingRegionGranularity(0);
     //setCacheMode (QGraphicsItem::ItemCoordinateCache);
 
+    m_path = new QPainterPath;
+    m_path_shape = new QPainterPath;
 
     adjust();
 }
@@ -327,7 +329,7 @@ void Edge::adjust(){
 
     //Define the path upon which we' ll draw the line
     //QPainterPath line(sourcePoint);
-    m_path = new QPainterPath(sourcePoint);
+    m_path =  new QPainterPath(sourcePoint);
 
     //Construct the path
     if (source!=target) {
@@ -424,7 +426,10 @@ void Edge::adjust(){
  */
 QPainterPath Edge::shape () const {
     //qDebug()<<"Edge::shape()";		//too many debug messages...
-    return *m_path;
+    *m_path_shape= QPainterPath(*m_path);
+    m_path_shape->addPath(m_path->translated(1,1));
+    m_path_shape->addPath(m_path->translated(-1,-1));
+    return *m_path_shape;
 } 
 
 
@@ -583,13 +588,17 @@ void Edge::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 Edge::~Edge(){
     qDebug() << "*** ~Edge() - edge " << sourceNodeNumber()<< "->" << targetNodeNumber();
     removeRefs();
-
     if (m_drawWeightNumber)
         graphicsWidget->removeItem(weightNumber);
     if (m_drawLabel)
         graphicsWidget->removeItem(edgeLabel);
 
     this->hide();
+
     graphicsWidget->removeItem(this);
+
+    if ( ! m_path->isEmpty())
+         delete m_path;
+
 }
 

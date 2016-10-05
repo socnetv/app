@@ -123,7 +123,7 @@ protected:
 private:
     GraphicsWidget *graphicsWidget;
     Node *source, *target;
-    QPainterPath *m_path;
+    QPainterPath *m_path, *m_path_up, *m_path_down, *m_path_shape;
     QPointF sourcePoint, targetPoint;
     qreal m_arrowSize, m_startOffset, m_endOffset;
     Qt::PenStyle m_style;
