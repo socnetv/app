@@ -7012,6 +7012,70 @@ bool Graph:: cliqueAdd(const QList<int> &list){
     return false;
 }
 
+
+int Graph::cliques(const int source, const QList<int>neighborsList, const int &size ) {
+
+    if (m_graph [ index[source] ]->inEdges() < size)
+        return 0;
+
+
+    if (source == 0) {
+        QList<Vertex*>::const_iterator it;
+        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+            cliques ( (*it)->name(), QList<int>(), size-1 );
+        }
+        // count cliques
+        return;
+    }
+    int neighbor=-1;
+    QList<int>::const_iterator jt;
+    while (jt!=neighborsList.cend()) {
+        cliques ( neighborsList);
+        ++jt;
+        //QSET ???
+    }
+    H_edges::const_iterator it1;
+    while ( it1!=m_graph [ index[source] ] -> m_inEdges.cend() ){
+        relation = it1.value().first;
+        if ( relation != relationCurrent() ) {
+            ++it1;
+            continue;
+        }
+        edgeStatus=it1.value().second.second;
+        if ( edgeStatus != true) {
+            ++it1;
+            continue;
+        }
+        neighbor = it1.key();
+        //            weight = it1.value().second.first;
+        qDebug() << "Graph::cliquesContaining() - inLink from 1st neighbor "
+                 << neighbor
+                 << "[" << index[neighbor] << "] ";
+
+        if (source == neighbor) {
+            qDebug() << "Graph::cliquesContaining() -     It's the source - CONTINUE";
+            ++it1;
+            continue;
+        }
+
+
+        if ( edgeExists( source, neighbor )  == 0 )  {
+            qDebug() << "Graph::cliquesContaining() - incomplete 2v-subgraph - CONTINUE";
+            ++it1;
+            continue;
+
+        }
+
+        qDebug() << "Graph::cliquesContaining() - complete 2v-subgraph ";
+
+        //add each connected neighbor to the list
+        neighborsList << neighbor;
+        ++it1;
+
+    }
+        return cliques (neighborsList, size-1);
+}
+
 /**
     Calculates and returns the number of cliques which include given vertex 'source'
     A clique is a complete subgraph of N vertices.
