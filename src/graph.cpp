@@ -1495,8 +1495,15 @@ void Graph::edgeFilterByRelation(int relation, bool status){
     }
 }
 
-
-
+void Graph::edgeFilterUnilateral(bool toggle) {
+    qDebug() << "Graph::edgeFilterUnilateral() " ;
+    QList<Vertex*>::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+            (*it)->edgeFilterUnilateral ( toggle);
+    }
+    graphModifiedSet(GRAPH_CHANGED_EDGES);
+    emit statusMessage(tr("Unilateral edges have been temporarily disabled."));
+}
 
 /**
  * @brief Graph::edgeExists
@@ -11867,9 +11874,17 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                   "37 8 36" << endl <<
                   "25 10 11 8";
     }
-    else if (fileName == "Knocke_Bureacracies_Information_Exchange_Network.pajek"){
+    else if (fileName == "Knocke_Bureacracies_Network.pajek"){
+        datasetDescription=tr("In 1978, Knoke & Wood collected data from workers at 95 organizations in Indianapolis. "
+                              "Respondents indicated with which other organizations their own organization had any "
+                              "of 13 different types of relationships. \n"
+                              "Knoke and Kuklinski (1982) selected a subset of 10 organizations and two relationships: "
+                              "information exchange and money exchange.\n"
+                              "This dataset is directed and not symmetric.\n"
+                              "Information exchange is recorded in KNOKI relation while money exchange in KNOKM .");
+
         qDebug()<< "		Knocke_Bureacracies_Information_Exchange_Network.pajek written... ";
-        outText<< "*Network KNOKI " << endl <<
+        outText<< "*Network knokbur " << endl <<
                   "*Vertices 10" << endl <<
                    "1 \"COUN\" 0.1000    0.5000    0.5000" << endl <<
                    "2 \"COMM\" 0.1764    0.2649    0.5000" << endl <<
@@ -11881,56 +11896,29 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                    "8 \"UWAY\" 0.6236    0.8804    0.5000" << endl <<
                    "9 \"WELF\" 0.3764    0.8804    0.5000" << endl <<
                    "10 \"WEST\" 0.1764    0.7351    0.5000" << endl <<
-                  "*Arcs" << endl <<
-                  " 1 2  1" << endl <<
-                  " 1 5  1" << endl <<
-                  " 1 7  1" << endl <<
-                  " 1 9  1" << endl <<
-                  " 2 1  1" << endl <<
-                  " 2 3  1" << endl <<
-                  " 2 4  1" << endl <<
-                  " 2 5  1" << endl <<
-                  " 2 7  1" << endl <<
-                  " 2 8  1" << endl <<
-                  " 2 9  1" << endl <<
-                  " 3 2  1" << endl <<
-                  " 3 4  1" << endl <<
-                  " 3 5  1" << endl <<
-                  " 3 6  1" << endl <<
-                  " 3 7  1" << endl <<
-                  " 3 10  1" << endl <<
-                  " 4 1  1" << endl <<
-                  " 4 2  1" << endl <<
-                  " 4 5  1" << endl <<
-                  " 4 7  1" << endl <<
-                  " 5 1  1" << endl <<
-                  " 5 2  1" << endl <<
-                  " 5 3  1" << endl <<
-                  " 5 4  1" << endl <<
-                  " 5 7  1" << endl <<
-                  " 5 8  1" << endl <<
-                  " 5 9  1" << endl <<
-                  " 5 10  1" << endl <<
-                  " 6 3  1" << endl <<
-                  " 6 7  1" << endl <<
-                  " 6 9  1" << endl <<
-                  " 7 2  1" << endl <<
-                  " 7 4  1" << endl <<
-                  " 7 5  1" << endl <<
-                  " 8 1  1" << endl <<
-                  " 8 2  1" << endl <<
-                  " 8 4  1" << endl <<
-                  " 8 5  1" << endl <<
-                  " 8 7  1" << endl <<
-                  " 8 9  1" << endl <<
-                  " 9 2  1" << endl <<
-                  " 9 5  1" << endl <<
-                  " 9 7  1" << endl <<
-                  " 10 1  1" << endl <<
-                  " 10 2  1" << endl <<
-                  " 10 3  1" << endl <<
-                  " 10 5  1" << endl <<
-                  " 10 7  1";
+                  "*Matrix :1 \"Information exchange\"" << endl <<
+                  "0 1 0 0 1 0 1 0 1 0 " << endl <<
+                  "1 0 1 1 1 0 1 1 1 0 " << endl <<
+                  "0 1 0 1 1 1 1 0 0 1 " << endl <<
+                  "1 1 0 0 1 0 1 0 0 0 " << endl <<
+                  "1 1 1 1 0 0 1 1 1 1 " << endl <<
+                  "0 0 1 0 0 0 1 0 1 0 " << endl <<
+                  "0 1 0 1 1 0 0 0 0 0 " << endl <<
+                  "1 1 0 1 1 0 1 0 1 0 " << endl <<
+                  "0 1 0 0 1 0 1 0 0 0 " << endl <<
+                  "1 1 1 0 1 0 1 0 0 0 " << endl <<
+                  "*Matrix :2 \"Money exchange\"" << endl <<
+                  "0 0 1 0 1 0 0 1 1 1 " << endl <<
+                  "0 0 1 0 0 0 0 0 0 0 " << endl <<
+                  "0 0 0 0 0 0 0 1 0 0 " << endl <<
+                  "0 1 1 0 0 0 1 1 1 0 " << endl <<
+                  "0 1 1 0 0 0 0 1 1 0 " << endl <<
+                  "0 0 0 0 0 0 0 0 0 0 " << endl <<
+                  "0 1 0 0 0 0 0 1 0 0 " << endl <<
+                  "0 0 0 0 0 0 0 0 1 1 " << endl <<
+                  "0 0 1 0 0 0 0 1 0 0 " << endl <<
+                  "0 0 0 0 0 0 0 0 0 0 ";
+
                     qDebug()<< "		Knocke_Bureacracies_Information_Exchange_Network.pajek written... ";
     }
     else if (fileName=="Stephenson&Zelen_40_AIDS_patients_sex_contact.paj"){

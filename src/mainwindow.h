@@ -251,6 +251,7 @@ public slots:
     void slotFilterIsolateNodes(bool checked);
     void slotShowFilterEdgesDialog();
     void slotTransformNodes2Edges();
+    void slotEditFilterEdgesUnilateral(bool checked);
 
 
 
@@ -437,6 +438,7 @@ private:
     QAction *editNodeSizeAllAct, *editNodeShapeAll;
     QAction *editEdgeLabelAct, *editEdgeColorAct, *editEdgeWeightAct;
     QAction *filterNodesAct, *filterIsolateNodesAct, *filterEdgesAct;
+    QAction *editFilterEdgesUnilateralAct;
     QAction *transformNodes2EdgesAct, *editEdgeSymmetrizeAllAct, *editEdgeUndirectedAllAct;
     QAction *changeBackColorAct, *editNodeColorAll, *editEdgeColorAllAct,
             *editNodeNumbersColorAct,*editNodeLabelsColorAct;

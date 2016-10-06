@@ -639,8 +639,8 @@ void MainWindow::initActions(){
                                         "Displays the adjacency matrix of the active network. \n\n"
                                         "The adjacency matrix of a network is a matrix "
                                         "where each element a(i,j) is equal to the weight "
-                                        "of the arc from node i to node j. "
-                                        "If the nodes are not connected, then a(i,j)=0. "));
+                                        "of the arc from actor (node) i to actor j. "
+                                        "If the actors are not connected, then a(i,j)=0. "));
     connect(networkViewSociomatrixAct, SIGNAL(triggered()),
             this, SLOT(slotNetworkViewSociomatrix()));
 
@@ -679,7 +679,7 @@ void MainWindow::initActions(){
     createLatticeNetworkAct->setStatusTip(tr("Create a ring lattice random network"));
     createLatticeNetworkAct->setWhatsThis(
                 tr("Ring Lattice \n\n")+
-                tr("A ring lattice is a graph with N nodes each connected to d neighbors, d / 2 on each side."));
+                tr("A ring lattice is a graph with N vertices each connected to d neighbors, d / 2 on each side."));
     connect(createLatticeNetworkAct, SIGNAL(triggered()), this, SLOT(slotNetworkRandomRingLattice()));
 
     createRegularRandomNetworkAct = new QAction(QIcon(":/images/net.png"), tr("d-Regular"), this);
@@ -687,7 +687,7 @@ void MainWindow::initActions(){
                         QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_R)
                         );
     createRegularRandomNetworkAct->setStatusTip(
-                tr("Create a random network where every node has the same degree d."));
+                tr("Create a random network where every actor (node) has the same degree d."));
     createRegularRandomNetworkAct->setWhatsThis(
                 tr("d-Regular \n\n") +
                 tr("Creates a random network where each node have the same "
@@ -836,7 +836,9 @@ void MainWindow::initActions(){
     editNodeFindAct->setShortcut(Qt::CTRL + Qt::Key_F);
     editNodeFindAct->setStatusTip(tr("Find and highlight a node by number or label. "
                                  "Press Ctrl+F again to undo."));
-    editNodeFindAct->setWhatsThis(tr("Find Node\n\nFinds a node with a given number or label and doubles its size. Ctrl+F again resizes back the node"));
+    editNodeFindAct->setWhatsThis(tr("Find Node\n\n"
+                                     "Finds a node with a given number or label and doubles its size. "
+                                     "Ctrl+F again resizes back the node"));
     connect(editNodeFindAct, SIGNAL(triggered()), this, SLOT(slotEditNodeFind()) );
 
     editNodeAddAct = new QAction(QIcon(":/images/add.png"), tr("Add Node"), this);
@@ -1017,12 +1019,12 @@ void MainWindow::initActions(){
                                     "Filters Nodes of some value out of the network."));
     connect(filterNodesAct, SIGNAL(triggered()), this, SLOT(slotFilterNodes()));
 
-    filterIsolateNodesAct = new QAction(tr("Filter Isolate Nodes"), this);
+    filterIsolateNodesAct = new QAction(tr("Disable Isolate Nodes"), this);
     filterIsolateNodesAct -> setEnabled(true);
     filterIsolateNodesAct -> setCheckable(true);
     filterIsolateNodesAct -> setChecked(false);
     filterIsolateNodesAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_F));
-    filterIsolateNodesAct -> setStatusTip(tr("Filters nodes with no edges"));
+    filterIsolateNodesAct -> setStatusTip(tr("Temporarily filter out nodes with no edges"));
     filterIsolateNodesAct -> setWhatsThis(tr("Filter Isolate Nodes\n\n "
                                              "Enables or disables displaying of isolate nodes. Isolate nodes are those with no edges..."));
     connect(filterIsolateNodesAct, SIGNAL(toggled(bool)),
@@ -1031,12 +1033,27 @@ void MainWindow::initActions(){
     filterEdgesAct = new QAction(tr("Filter Edges by Weight"), this);
     filterEdgesAct -> setEnabled(true);
     filterEdgesAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_F));
-    filterEdgesAct -> setStatusTip(tr("Filters Edges of some weight out of the network"));
+    filterEdgesAct -> setStatusTip(tr("Temporarily filter edges of some weight out of the network"));
     filterEdgesAct -> setWhatsThis(tr("Filter Edges\n\n"
                                       "Filters Edge of some specific weight out of the network."));
     connect(filterEdgesAct , SIGNAL(triggered()),
             this, SLOT(slotShowFilterEdgesDialog()));
 
+    editFilterEdgesUnilateralAct = new QAction(tr("Disable unilateral edges"), this);
+    editFilterEdgesUnilateralAct -> setEnabled(true);
+    editFilterEdgesUnilateralAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_R));
+    editFilterEdgesUnilateralAct -> setStatusTip(tr("Temporarily disable all unilateral (non-reciprocal) edges."));
+    editFilterEdgesUnilateralAct -> setWhatsThis(tr("Unilateral edges\n\n"
+                                      "In directed networks, a tie between two actors "
+                                      "is unilateral when only one actor identifies the other "
+                                      "as connected (i.e. friend, vote, etc). "
+                                      "A unilateral tie is depicted as a single arc."
+                                      "These ties are considered weak, as opposed to "
+                                      "reciprocal ties where both actors identify each other as connected. "
+                                      "Strong ties are depicted as either a single undirected edge "
+                                      "or as two reciprocated arcs between two nodes"));
+    connect(editFilterEdgesUnilateralAct , SIGNAL(triggered()),
+            this, SLOT(slotEditFilterEdgesUnilateral()));
 
 
 
@@ -2216,6 +2233,7 @@ void MainWindow::initMenuBar() {
     filterMenu -> addAction(filterNodesAct );
     filterMenu -> addAction(filterIsolateNodesAct );
     filterMenu -> addAction(filterEdgesAct );
+    filterMenu -> addAction(editFilterEdgesUnilateralAct);
 
 
 
@@ -2531,10 +2549,10 @@ void MainWindow::initToolBox(){
     toolBoxAnalysisGeodesicsSelectLabel->setMinimumWidth(115);
     toolBoxAnalysisGeodesicsSelect = new QComboBox;
     toolBoxAnalysisGeodesicsSelect -> setStatusTip(
-                tr("Basic graph-theoretic metrics i.e. diameter."));
+                tr("Select a basic graph-theoretic metric to compute, i.e. diameter."));
     toolBoxAnalysisGeodesicsSelect -> setToolTip(
-                tr("Compute basic graph-theoretic features of the network, "
-                   "i.e. diameter."));
+                tr("Basic graph-theoretic metrics of a social network, "
+                   "such as distances (shortest paths), diameter, ."));
     toolBoxAnalysisGeodesicsSelect -> setWhatsThis(
                 tr("Analyze Distances\n\n"
                    "Compute basic graph-theoretic features of the network "
@@ -2553,7 +2571,7 @@ void MainWindow::initToolBox(){
     toolBoxAnalysisConnectivitySelectLabel->setMinimumWidth(115);
     toolBoxAnalysisConnectivitySelect = new QComboBox;
     toolBoxAnalysisConnectivitySelect->setStatusTip(
-                tr("'Connectivity' metrics i.e. connectedness, walks, etc."));
+                tr("Select a 'connectivity' metric to compute i.e. connectedness, walks, etc."));
     toolBoxAnalysisConnectivitySelect->setToolTip(
                 tr("Compute 'connectivity' metrics such as network connectedness, "
                    "walks, reachability etc."));
@@ -2574,12 +2592,17 @@ void MainWindow::initToolBox(){
     toolBoxAnalysisClusterabilitySelectLabel->setMinimumWidth(115);
     toolBoxAnalysisClusterabilitySelect = new QComboBox;
     toolBoxAnalysisClusterabilitySelect->setStatusTip(
-                tr("'Clusterability' metrics, i.e. cliques"));
+                tr("'Select a clusterability metric, i.e. cliques"));
     toolBoxAnalysisClusterabilitySelect->setToolTip(
-                tr("Compute 'clusterability' metrics, such as cliques"));
+                tr("Select which 'clusterability' metric to compute, such as cliques"));
             toolBoxAnalysisClusterabilitySelect->setWhatsThis(
                         tr("Analyze Clusterability\n\n"
-                           "Compute 'clusterability' metrics, such as cliques"));
+                           "'Clusterability' analysis includes metrics and indices, "
+                           "such as cliques, which primary focus is to identify "
+                           "clusters or meaningful subgraphs in the graph."
+                           "For instance, select cliques to count and identify "
+                           "all cliques of actors in the network. A clique is a "
+                           "maximal connected subgraph."));
     QStringList clusterabilityCommands;
     clusterabilityCommands << "Select"
                          << "Cliques"
@@ -2594,10 +2617,10 @@ void MainWindow::initToolBox(){
     toolBoxAnalysisProminenceSelectLabel->setMinimumWidth(115);
     toolBoxAnalysisProminenceSelect = new QComboBox;
     toolBoxAnalysisProminenceSelect -> setStatusTip(
-                tr("Metrics of how 'prominent' or important each node is.")
+                tr("Select a prominence metric to compute for each actor and the whole network. ")
                 );
     toolBoxAnalysisProminenceSelect -> setToolTip(
-                tr("Compute metrics to see how 'prominent' or "
+                tr("Metrics to understand how 'prominent' or "
                    "important each actor (node) is inside the network.")
                 );
     toolBoxAnalysisProminenceSelect -> setWhatsThis(
@@ -2612,7 +2635,7 @@ void MainWindow::initToolBox(){
                 "Centrality metrics quantify how central is each node by examining "
                    "its ties and its geodesic distances (shortest path lengths) to other nodes. "
                 "Most Centrality indices were designed for undirected graphs.\n\n"
-                "Prestige indices focus on \"choices received\" to a node. \n"
+                "Prestige indices focus on \"choices received\" to a node. "
                 "These indices measure the nominations or ties to each node from all others (or inLinks). "
                 "Prestige indices are suitable (and can be calculated only) on directed graphs.")
                 );
@@ -2732,48 +2755,46 @@ void MainWindow::initToolBox(){
     toolBoxLayoutForceDirectedSelect->setStatusTip (
                             tr("Select a Force-Directed layout model. "));
     toolBoxLayoutForceDirectedSelect->setToolTip (
-                tr("Select a Force-Directed layout model to embed to the network\n\n"
-                   "Available models: \n"
-                   "Eades:\n"
-                   "A spring-gravitational model, where each node is \n"
-                   "regarded as physical object (ring) repeling all other \n"
-                   "nodes, while springs between connected nodes attract them. \n\n"
+                tr("Select a Force-Directed layout model to embed to the network.\n"
+                   "Available models: \n\n"
+                   "Eades: A spring-gravitational model, where connected nodes \n"
+                   "attract each other and all nodes repel all other non-adjacent \n"
+                   "nodes. \n\n"
 
-                   "Fruchterman-Reingold: Vertices that are neighbours "
-                   "attract each other but, unlike Eades Spring "
-                   "Embedder, all vertices repel each other.\n\n"
+                   "Fruchterman-Reingold: Again adjacent vertices attract each \n"
+                   "each other but, unlike Eades Spring Embedder, all vertices \n"
+                   "repel each other.\n\n"
+
                    "Kamada-Kawai\n"
-                   "Every two vertices are connected  by a 'spring' of a \n"
-                   "desirable length, which corresponds to their graph theoretic \n"
-                   "distance. In this way, the optimal layout of the graph \n"
-                   "is the state with the minimum imbalance. The degree of \n"
-                   "imbalance is formulated as the total spring energy: \n"
+                   "Another spring embedder model, where the optimal layout is \n"
+                   "that of minimum total spring energy, which is computed as \n"
                    "the square summation of the differences between desirable \n"
                    "distances and real ones for all pairs of vertices"
                    )
                 );
     toolBoxLayoutForceDirectedSelect->setWhatsThis(
                 tr("Visualize by a Force-Directed layout model.\n\n"
-                   "Available models: \n\n "
+                   "Available models: \n\n"
                    "Eades model\n "
-                   "A spring-gravitational model, where each node is \n"
-                   "regarded as physical object (ring) repeling all other \n"
+                   "A spring-gravitational model, where each node is "
+                   "regarded as physical object (ring) repeling all other non-adjacent"
                    "nodes, while springs between connected nodes attract them. \n\n"
 
                    "Fruchterman-Reingold\n"
-                   "In this model, the vertices behave as atomic particles \n"
-                   "or celestial bodies, exerting attractive and repulsive \n"
-                   "forces to each other. Again, only vertices that are \n"
-                   "neighbours  attract each other but, unlike Eades Spring \n"
+                   "In this model, the vertices behave as atomic particles "
+                   "or celestial bodies, exerting attractive and repulsive "
+                   "forces to each other. Again, only vertices that are "
+                   "neighbours  attract each other but, unlike Eades Spring "
                    "Embedder, all vertices repel each other.\n\n"
+
                    "Kamada-Kawai\n"
-                   "In this model, the graph is considered to be a dynamic system \n"
-                   "where every two vertices are connected  by a 'spring' of a \n"
-                   "desirable length, which corresponds to their graph theoretic \n"
-                   "distance. In this way, the optimal layout of the graph \n"
-                   "is the state with the minimum imbalance. The degree of \n"
-                   "imbalance is formulated as the total spring energy: \n"
-                   "the square summation of the differences between desirable \n"
+                   "Another variant of Eades model. In this the graph is considered to be a dynamic system "
+                   "where every two vertices are connected  by a 'spring' of a "
+                   "desirable length, which corresponds to their graph theoretic "
+                   "distance. In this way, the optimal layout of the graph "
+                   "is the state with the minimum imbalance. The degree of "
+                   "imbalance is formulated as the total spring energy: "
+                   "the square summation of the differences between desirable "
                    "distances and real ones for all pairs of vertices"
                    )
                 );
@@ -7493,7 +7514,7 @@ void MainWindow::slotFilterNodes(){
 
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical(this, "Error",tr("Nothing to filter! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to filter!"))  );
+        statusMessage( tr("Nothing to filter!")  );
         return;
     }
 }
@@ -7506,12 +7527,12 @@ void MainWindow::slotFilterIsolateNodes(bool checked){
     Q_UNUSED(checked);
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical(this, "Error",tr("Nothing to filter! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to filter!"))  );
+        statusMessage(  tr("Nothing to filter!")  );
         return;
     }
     qDebug()<< "MW: slotFilterIsolateNodes";
     activeGraph.vertexIsolateFilter( ! filterIsolateNodesAct->isChecked() );
-    statusMessage(  QString(tr("Isolate nodes visibility toggled!"))  );
+    statusMessage(  tr("Isolate nodes visibility toggled!")  );
 }
 
 
@@ -7531,7 +7552,18 @@ void MainWindow::slotShowFilterEdgesDialog() {
 
 
 
-
+void MainWindow::slotEditFilterEdgesUnilateral(bool checked) {
+    Q_UNUSED(checked);
+    if (!fileLoaded && !networkModified  )  {
+        QMessageBox::critical(this, "Error",tr("Nothing to filter! \n"
+                                               "Load a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
+        statusMessage(  QString(tr("Nothing to filter!"))  );
+        return;
+    }
+    qDebug()<< "MW: slotEditFilterEdgesUnilateral";
+    activeGraph.edgeFilterUnilateral( ! editFilterEdgesUnilateralAct->isChecked() );
+    statusMessage(  tr("Isolate nodes visibility toggled!")  );
+}
 
 
 
