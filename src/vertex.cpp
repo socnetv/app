@@ -336,6 +336,46 @@ void Vertex::edgeFilterByWeight(float m_threshold, bool overThreshold){
 
 
 
+
+
+
+/**
+ * @brief Vertex::edgeFilterUnilateral
+   Called from Graph to filter non-reciprocal edges
+ * @param toggle
+ */
+
+void Vertex::edgeFilterUnilateral(bool toggle){
+    qDebug() << "Vertex::edgeFilterUnilateral() of vertex " << this->m_name;
+    int target=0;
+    float weight=0;
+    QMutableHashIterator < int, rel_w_bool > it (m_outEdges);
+    while ( it.hasNext()) {
+        it.next();
+        if ( it.value().first == m_curRelation ) {
+            target=it.key();
+            weight = it.value().second.first;
+            if (hasEdgeFrom(target)==0) {   // \todo != weight would be more precise?
+                    if ( !toggle ) {
+                        qDebug() << "Vertex::edgeFilterUnilateral() - unilateral edge to " << target
+                        << " has weight " << weight
+                        << ". It will be disabled. Emitting signal to Graph....";
+                        it.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, false) ));
+                        emit setEdgeVisibility (m_curRelation, m_name, target, false );
+                    }
+                    else {
+                        qDebug() << "Vertex::edgeFilterUnilateral() - unilateral edge to " << target
+                        << " has weight " << weight << ". It will be enabled. Emitting signal to Graph....";
+                        it.setValue(rel_w_bool(m_curRelation, pair_f_b(weight, true) ));
+                        emit setEdgeVisibility (m_curRelation, m_name, target, true );
+                    }
+            }
+        }
+    }
+}
+
+
+
 /**
  * @brief Vertex::edgeFilterByRelation
  * Called from Graph to filter out all edges of a given relation
