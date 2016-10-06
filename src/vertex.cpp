@@ -345,7 +345,7 @@ void Vertex::edgeFilterByWeight(float m_threshold, bool overThreshold){
  * @param toggle
  */
 
-void Vertex::edgeFilterUnilateral(bool toggle){
+void Vertex::edgeFilterUnilateral(const bool &toggle){
     qDebug() << "Vertex::edgeFilterUnilateral() of vertex " << this->m_name;
     int target=0;
     float weight=0;
