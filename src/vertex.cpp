@@ -62,7 +62,9 @@ Vertex::Vertex(Graph* parent,
     m_outEdgeLabels.reserve(100);
     m_outEdges.reserve(100);
     m_inEdges.reserve(100);
+    m_neighborhoodList.reserve(100);
     m_reciprocalEdges = new QHash<int,float>;
+
     m_outEdgesCounter=0;
     m_inEdgesCounter=0;
     m_outDegree=0;
@@ -477,40 +479,47 @@ QHash<int,float>* Vertex::reciprocalEdgesHash(){
 
 
 /**
- * @brief Vertex::neighborhood
- * Returns a qhash of all neighbors in the active relation
- * @return  QHash<int,float>*
+ * @brief Vertex::neighborhoodList
+ * Returns a list of all neighbors mutually connected to this vertex in the active relation
+ * Same as calling Vertex::reciprocalEdgesHash().keys() which returns a QList of int keys,
+ * where each key is a vertex reciprocally connected to this one.
+ * @return  QList<int>
  */
-//QHash<int,float>* Vertex::neighborhood(){
-//    qDebug() << " Vertex::neighborhood() vertex " << this->name();
-//    QHash<int,float> *neighbors = new QHash<int,float>;
-//    float m_weight=0;
-//    int relation = 0;
-//    bool edgeStatus=false;
-//    H_edges::const_iterator it1=m_outEdges.constBegin();
-//    while (it1 != m_outEdges.constEnd() ) {
-//        relation = it1.value().first;
-//        if ( relation == m_curRelation ) {
-//            edgeStatus=it1.value().second.second;
-//            if ( edgeStatus == true) {
-//                m_weight=it1.value().second.first;
-//                if (this->hasEdgeFrom (it1.key()) )
-//                    neighbors->insertMulti(it1.key(), m_weight);
-//                qDebug() <<  " Vertex::reciprocalEdgesHash() count:"
-//                             << reciprocalEdges->count();
-//            }
-//        }
-//        ++it1;
-//    }
+QList<int> Vertex::neighborhoodList(){
+    qDebug() << "Vertex::neighborhoodList() - of vertex " << this->name();
+    m_neighborhoodList.clear();
+    float m_weight=0;
+    int relation = 0;
+    bool edgeStatus=false;
+    H_edges::const_iterator it1=m_outEdges.constBegin();
+    while (it1 != m_outEdges.constEnd() ) {
+        relation = it1.value().first;
+        if ( relation == m_curRelation ) {
+            edgeStatus=it1.value().second.second;
+            if ( edgeStatus == true) {
+                m_weight=it1.value().second.first;
+                if (this->hasEdgeFrom (it1.key()) == m_weight ) {
+                    m_neighborhoodList << it1.key();
+//                qDebug() <<  "Vertex::neighborhoodList() - mutually connected neighbor="
+//                          << it1.key()
+//                          << " m_neighborhoodList.count()"
+//                          << m_neighborhoodList.count();
+                }
+            }
+        }
+        ++it1;
+    }
 
+    qDebug() << "Vertex::neighborhoodList() - of vertex " << this->name()
+             <<  "final list"
+              <<m_neighborhoodList
+                 <<" count"
+                 << m_neighborhoodList.count();
 
-//    qDebug() <<  " Vertex::reciprocalEdgesHash() total "
-//                 << reciprocalEdges->count();
-
-//    qDebug() <<  " Vertex::reciprocalEdgesHash() localDegree "
+//    qDebug() <<  "Vertex::neighborhoodList() - reporting localDegree "
 //                 << this->localDegree();
-//    return reciprocalEdges;
-//}
+    return m_neighborhoodList;
+}
 
 
 /**
@@ -723,8 +732,8 @@ float Vertex::hasEdgeFrom(const long int &v2){
             edgeStatus=it1.value().second.second;
             if ( edgeStatus == true) {
                 m_weight=it1.value().second.first;
-                qDebug()<< "Vertex::hasEdgeFrom() - a ("  <<  v2
-                        << ", " << this->name() << ") = "<< m_weight;
+//                qDebug()<< "Vertex::hasEdgeFrom() - a ("  <<  v2
+//                        << ", " << this->name() << ") = "<< m_weight;
                 return m_weight;
             }
             else

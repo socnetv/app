@@ -93,6 +93,7 @@ public:
     QHash<int,float>* outEdgesEnabledHash();
     QHash<int,float>* inEdgesEnabledHash();
     QHash<int,float>* reciprocalEdgesHash();
+    QList<int> neighborhoodList();
 
     long int outEdges();
     long int outEdgesConst() const ;
@@ -278,6 +279,7 @@ private:
     int m_curRelation;
     H_StrToInt m_cliques;
     QHash<int,float>* m_reciprocalEdges;
+    QList<int> m_neighborhoodList;
     bool m_reciprocalLinked, m_enabled, m_hasCLC, m_isolated;
     QString m_color, m_numberColor, m_label, m_labelColor, m_shape;
     QPointF m_disp;
