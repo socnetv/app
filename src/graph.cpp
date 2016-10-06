@@ -1495,7 +1495,14 @@ void Graph::edgeFilterByRelation(int relation, bool status){
     }
 }
 
-void Graph::edgeFilterUnilateral(bool toggle) {
+/**
+ * @brief Graph::edgeFilterUnilateral
+ * Filters (enables/disables) unilateral edges in current relationship.
+ * If toggle=true, all non-reciprocal edges are disabled, effectively making
+ * the network symmetric.
+ * @param toggle
+ */
+void Graph::edgeFilterUnilateral(const bool &toggle) {
     qDebug() << "Graph::edgeFilterUnilateral() " ;
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){

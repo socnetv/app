@@ -205,7 +205,7 @@ public slots:
     void vertexIsolateFilter ( bool );		//Called by MW to filter orphan vertices
     void edgeFilterByWeight (float, bool);		//Called by MW to filter edges over/under a weight
     void edgeFilterByRelation(int relation, bool status);
-
+    void edgeFilterUnilateral(const bool &toggle);
     void webCrawl(QString, int, int, bool extLinks, bool intLinks);	//Called by MW to start a web crawler...
 
     QString htmlEscaped (QString str) const;
