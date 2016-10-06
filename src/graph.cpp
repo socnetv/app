@@ -147,7 +147,8 @@ void Graph::clear() {
         XRM.clear();
     }
 
-
+    m_verticesList.clear();
+    m_verticesSet.clear();
     m_isolatedVerticesList.clear();
     disconnectedVertices.clear();
     unilaterallyConnectedVertices.clear();
@@ -1805,7 +1806,7 @@ void Graph::edgeLabelsVisibilitySet (const bool &toggle) {
  * @return
  */
 int Graph::vertexDegreeOut (int v1) {
-    qDebug("Graph: vertexDegreeOut()");
+    qDebug()<< "Graph: vertexDegreeOut()";
     return m_graph[ index[v1] ]->degreeOut();
 }
 
@@ -1818,12 +1819,19 @@ int Graph::vertexDegreeOut (int v1) {
  * @return
  */
 int Graph::vertexDegreeIn (int v1) {
-    qDebug("Graph: vertexDegreeIn()");
+    qDebug()<< "Graph: vertexDegreeIn()";
     return m_graph[ index[v1] ]-> degreeIn();
 }
 
-
-
+/**
+ * @brief Graph::vertexNeighborhoodList
+ * @param v1
+ * @return  QList<int>
+ */
+QList<int> Graph::vertexNeighborhoodList(const int &v1) {
+    qDebug()<< "Graph::vertexNeighborhoodList()";
+    return m_graph[ index[v1] ]-> neighborhoodList();
+}
 
 
 
@@ -1839,7 +1847,7 @@ int Graph::vertexDegreeIn (int v1) {
  */
 int Graph::vertices(const bool dropIsolates, const bool countAll) {
 
-    if ( !graphModified() ) {
+    if ( !graphModified() && m_totalVertices!=0 ) {
         qDebug()<< "Graph::vertices() - Graph unchanged, vertices: "
                    << m_totalVertices;
         return m_totalVertices;
@@ -1868,13 +1876,13 @@ int Graph::vertices(const bool dropIsolates, const bool countAll) {
 
 
 /**
- * @brief Graph::verticesIsolated
+ * @brief Graph::verticesListIsolated
  * Returns a list of all isolated vertices inside the graph
  * @return
  */
-QList<int> Graph::verticesIsolated(){
-    qDebug()<< "Graph::verticesIsolated()";
-    if (!graphModified()){
+QList<int> Graph::verticesListIsolated(){
+    qDebug()<< "Graph::verticesListIsolated()";
+    if (!graphModified() && m_isolatedVerticesList.isEmpty() ){
         return m_isolatedVerticesList;
     }
     QList<Vertex*>::const_iterator it;
@@ -1884,11 +1892,55 @@ QList<int> Graph::verticesIsolated(){
 //            continue;
         if ((*it)->isIsolated()) {
             m_isolatedVerticesList << (*it)->name();
-            qDebug()<< "Graph::verticesIsolated() - node " << (*it)->name()
+            qDebug()<< "Graph::verticesListIsolated() - node " << (*it)->name()
                     << " is isolated. Marking it." ;
         }
     }
     return m_isolatedVerticesList ;
+}
+
+
+
+/**
+ * @brief Graph::verticesList
+ * Returns a list of all vertices numbers inside the graph
+ * @return
+ */
+QList<int> Graph::verticesList(){
+    qDebug()<< "Graph::verticesList()";
+    if (!graphModified() && !m_verticesList.isEmpty() ){
+        return m_verticesList;
+    }
+    QList<Vertex*>::const_iterator it;
+    m_verticesList.clear();
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( ! (*it)->isEnabled() )
+            continue;
+        m_verticesList << (*it)->name();
+    }
+    return m_verticesList ;
+}
+
+
+
+/**
+ * @brief Graph::verticesSet
+ * Returns a QSet of all vertices numbers inside the graph
+ * @return
+ */
+QSet<int> Graph::verticesSet(){
+    qDebug()<< "Graph::verticesSet()";
+    if (!graphModified() && !m_verticesSet.isEmpty() ){
+        return m_verticesSet;
+    }
+    QList<Vertex*>::const_iterator it;
+    m_verticesSet.clear();
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( ! (*it)->isEnabled() )
+            continue;
+        m_verticesSet << (*it)->name();
+    }
+    return m_verticesSet ;
 }
 
 
@@ -2391,7 +2443,7 @@ int Graph::connectedness() {
     if (!reachabilityMatrixCreated || graphModified()) {
         reachabilityMatrix();
     }
-    isolatedVertices=verticesIsolated().count();
+    isolatedVertices=verticesListIsolated().count();
     if ( isSymmetric() ) {
         qDebug() << "Graph::connectedness() IS SYMMETRIC";
         if ( disconnectedVertices.size() != 0 ) {
@@ -3449,7 +3501,7 @@ void Graph::centralityInformation(const bool considerWeights,
     classesIC=0;
     varianceIC=0;
 
-    isolatedVertices=verticesIsolated().count();
+    isolatedVertices=verticesListIsolated().count();
     int i=0, j=0, n=vertices();
     float m_weight=0, weightSum=1, diagonalEntriesSum=0, rowSum=0;
     float IC=0, SIC=0;
@@ -6791,6 +6843,8 @@ void Graph::writeCliqueCensus(
         const QString fileName, const bool considerWeights)
 {
     qDebug()<< "Graph::writeCliqueCensus() ";
+    cliques();
+    return;
     Q_UNUSED(considerWeights);
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
@@ -7019,68 +7073,61 @@ bool Graph:: cliqueAdd(const QList<int> &list){
 }
 
 
-//called as cliques(0, QHash<int,float>(), 0)
-int Graph::cliques(const int &source, QHash<int, float> neighbors, const int &size ) {
+/**
+ * @brief Graph::cliques
+ * Finds all maximal cliques in an undirected (?) graph.
+ * Implements the Bron–Kerbosch algorithm
+ * @param R
+ * @param P
+ * @param X
+ */
+void Graph::cliques(QSet<int> R, QSet<int> P, QSet<int> X) {
 
-    if (source!=0 && m_graph [ index[source] ]->outEdges() < size)
-        return 0;
-
-    //run first time only
-    if (source == 0) {
-
-        int size = vertices(); // the size of the graph, excluding disabled vertices
-
-        QHash<int,float> *m_neighbors = new QHash<int,float>;
-
-        QList<Vertex*>::const_iterator it;
-        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-            // take all outbound edges
-            m_neighbors=(*it)->outEdgesEnabledHash();
-            m_neighbors->remove( (*it)->name() );
-            //search if all neighbors form a clique of size = |neighborhood|
-            if ( cliques ( (*it)->name(), *m_neighbors, m_neighbors->size() ) > 0 ) {
-                // count cliques
-                //(*it)->cliq
-            }
-        }
-        return 1;
+    qDebug () << "Graph::cliques() - check if we are at initialization step";
+    if (R.isEmpty() && P.isEmpty() && X.isEmpty()){
+        qDebug() << "Graph::cliques() - initialization step. R, X empty and P=V(G)";
+        int V = vertices() ;
+        P.reserve( V );
+        R.reserve( V );
+        X.reserve( V );
+        P=verticesSet();
     }
 
-
-    QHash<int,float>::const_iterator it1, it2;
-    it1=neighbors.cbegin();
-
-    while ( it1!=neighbors.cend() ){
-
-        neighbors.remove(it1.key());
-        if (neighbors.size() > 1) {
-            if ( cliques ( it1.key(), neighbors, neighbors.size()) > 0 ) {
-                // count cliques
-                it2=neighbors.cbegin();
-                while ( it2!=neighbors.cend() ){
-                    if (  ! edgeExists( it1.key(), it2.key()) ) {
-                        return 0;
-                    }
-                    //skip same as source (self link) or duplicate vertices
-                    if ( it1.key() == source || it1.key() == it2.key() ) {
-                        continue;
-                    }
-                    ++it2;
-                }
-
-            }
-        }
-        else {
-            it2=neighbors.cbegin();
-            if ( edgeExists(it1.key(), it2.key()) ) {
-                qDebug () << " Graph::cliques - 2-clique found!";
-                // ADD THEM SOMEWHERE
-                return 1;
-            }
-        }
-
-    ++it1;
+    qDebug() << "Graph::cliques() - check if P and X are both empty";
+    if (P.isEmpty() && X.isEmpty()) {
+        qDebug() << "Graph::cliques() - P and X are both empty. Maximal clique R=" << R;
     }
+    int v;
+    QSet<int> N;
+
+    QSet<int>::iterator i = P.begin();
+    while( i != P.end()) {
+        v = *i;
+        qDebug() << "Graph::cliques() - v=" << v
+                 << " P=" << P << " P.count=" <<P.count()
+                 << " R=" << R
+                 << " X=" << X ;
+        N = vertexNeighborhoodList(v).toSet(); //fixme
+        qDebug() << "Graph::cliques() - v=" << v
+                    << "Recursive call to cliques() with v "
+                       "added to R and P,X restricted to the neighborhood N(v) of v";
+        QSet<int> addv; addv.insert(v); // dummy set with just v
+        cliques( R+addv, P&N, X&N );
+        qDebug() << "Graph::cliques() - v=" << v
+                  << "Returned from recursive call. Moving v="<<  v
+                  <<" from P to X to be excluded in the future.";
+        // P = P \ v
+        i=P.erase(i);    //P-=v;
+        // X = X + v
+        X.insert(v);
+        qDebug() << "Graph::cliques() - v=" << v << "FINISHED"
+                 << " P=" << P << " P.count=" <<P.count()
+                 << " R=" << R << " R.count=" <<R.count()
+                 << " X=" << X << " X.count=" <<X.count()
+                 << " Continuing with next v in P";
+        //++i;
+    }
+
 
 
 }
@@ -12222,7 +12269,7 @@ void Graph::adjacencyMatrixCreate(const bool dropIsolates,
     int i=0, j=0;
     if (dropIsolates){
         qDebug() << "Graph::adjacencyMatrixCreate() - Find and drop possible isolates";
-        isolatedVertices = verticesIsolated().count();
+        isolatedVertices = verticesListIsolated().count();
         int m = m_totalVertices-isolatedVertices;
         AM.resize( m , m);
     }
@@ -12348,7 +12395,7 @@ void Graph::writeAdjacencyMatrixInvert(const QString &fn,
             file.close();
             return;
     }
-    if ( verticesIsolated().count() > 0  )
+    if ( verticesListIsolated().count() > 0  )
             outText << endl<< "Dropped "<< isolatedVertices << " isolated vertices"
                     << endl<< endl;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){

@@ -322,6 +322,7 @@ public:
 
     int vertexDegreeOut(int);
     int vertexDegreeIn(int);
+    QList<int> vertexNeighborhoodList(const int &v1);
 
     int vertexExists(const long int &v1 );
     int vertexExists(const QString &label);
@@ -375,7 +376,9 @@ public:
     int verticesWithInboundEdges();
     int verticesWithReciprocalEdges();
 
-    QList<int> verticesIsolated();
+    QList<int> verticesListIsolated();
+    QList<int> verticesList();
+    QSet<int> verticesSet();
 
     qreal length(const QPointF &a, const QPointF &b);
     qreal length(const QPointF &a);
@@ -555,8 +558,7 @@ public:
     float numberOfTriples(int v1);
 
 
-    int cliques(const int &source=0, QHash<int, float> neighbors=QHash<int,float>(),
-                const int &size=0 );
+    void cliques(QSet<int> R=QSet<int>(), QSet<int> P=QSet<int>(), QSet<int> X=QSet<int>() );
     bool  cliqueAdd (const QList<int> &list);
     float cliquesContaining(int source, int size=0);
     float cliquesOfSize(int size );
@@ -694,7 +696,8 @@ private:
 
     QList<QString> m_relationsList;
     QList<int>  triadTypeFreqs; 	//stores triad type frequencies
-    QList<int>  m_isolatedVerticesList, m_graphFileFormatExportSupported;
+    QList<int>  m_isolatedVerticesList,m_verticesList, m_graphFileFormatExportSupported;
+    QSet<int> m_verticesSet;
     QHash <int, int> influenceRanges, influenceDomains;
     QHash <int, int> disconnectedVertices;
     QHash <int, int> unilaterallyConnectedVertices;
