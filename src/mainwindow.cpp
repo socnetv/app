@@ -1041,6 +1041,8 @@ void MainWindow::initActions(){
 
     editFilterEdgesUnilateralAct = new QAction(tr("Disable unilateral edges"), this);
     editFilterEdgesUnilateralAct -> setEnabled(true);
+    editFilterEdgesUnilateralAct -> setCheckable(true);
+    editFilterEdgesUnilateralAct -> setChecked(false);
     editFilterEdgesUnilateralAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_R));
     editFilterEdgesUnilateralAct -> setStatusTip(tr("Temporarily disable all unilateral (non-reciprocal) edges."));
     editFilterEdgesUnilateralAct -> setWhatsThis(tr("Unilateral edges\n\n"
@@ -1052,8 +1054,8 @@ void MainWindow::initActions(){
                                       "reciprocal ties where both actors identify each other as connected. "
                                       "Strong ties are depicted as either a single undirected edge "
                                       "or as two reciprocated arcs between two nodes"));
-    connect(editFilterEdgesUnilateralAct , SIGNAL(triggered()),
-            this, SLOT(slotEditFilterEdgesUnilateral()));
+    connect(editFilterEdgesUnilateralAct , SIGNAL(toggled(bool)),
+            this, SLOT(slotEditFilterEdgesUnilateral(bool)));
 
 
 
