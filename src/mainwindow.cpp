@@ -661,7 +661,7 @@ void MainWindow::initActions(){
     createErdosRenyiRandomNetworkAct -> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_E)
                 );
-    createErdosRenyiRandomNetworkAct->setStatusTip(tr("Creates a random network "
+    createErdosRenyiRandomNetworkAct->setStatusTip(tr("Create a random network "
                                                       "according to the Erdős–Rényi model"));
     createErdosRenyiRandomNetworkAct->setWhatsThis(
                 tr("Erdős–Rényi \n\n"
@@ -676,7 +676,7 @@ void MainWindow::initActions(){
     createLatticeNetworkAct -> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_L)
                 );
-    createLatticeNetworkAct->setStatusTip(tr("Create a ring lattice random network"));
+    createLatticeNetworkAct->setStatusTip(tr("Create a ring lattice random network."));
     createLatticeNetworkAct->setWhatsThis(
                 tr("Ring Lattice \n\n")+
                 tr("A ring lattice is a graph with N vertices each connected to d neighbors, d / 2 on each side."));
@@ -687,10 +687,10 @@ void MainWindow::initActions(){
                         QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_R)
                         );
     createRegularRandomNetworkAct->setStatusTip(
-                tr("Create a random network where every actor (node) has the same degree d."));
+                tr("Create a d-regular random network, where every actor has the same degree d."));
     createRegularRandomNetworkAct->setWhatsThis(
                 tr("d-Regular \n\n") +
-                tr("Creates a random network where each node have the same "
+                tr("A random network where each actor has the same "
                    "number d of neighbours, aka the same degree d "));
     connect(createRegularRandomNetworkAct, SIGNAL(triggered()),
             this, SLOT(slotNetworkRandomRegularDialog()));
@@ -699,7 +699,7 @@ void MainWindow::initActions(){
     createGaussianRandomNetworkAct -> setShortcut(
                     QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_G)
                     );
-    createGaussianRandomNetworkAct->setStatusTip(tr("Create a Gaussian distributed random network"));
+    createGaussianRandomNetworkAct->setStatusTip(tr("Create a Gaussian distributed random network."));
     createGaussianRandomNetworkAct->setWhatsThis(tr("Gaussian \n\nCreates a random network of Gaussian distribution"));
     connect(createGaussianRandomNetworkAct, SIGNAL(triggered()), this, SLOT(slotNetworkRandomGaussian()));
 
@@ -707,7 +707,7 @@ void MainWindow::initActions(){
     createSmallWorldRandomNetworkAct-> setShortcut(
                 QKeySequence(Qt::CTRL + Qt::Key_R, Qt::CTRL + Qt::Key_W)
                 );
-    createSmallWorldRandomNetworkAct->setStatusTip(tr("Create a random network with small world properties"));
+    createSmallWorldRandomNetworkAct->setStatusTip(tr("Create a small-world random network."));
     createSmallWorldRandomNetworkAct ->
             setWhatsThis(
                 tr("Small World \n\n") +
@@ -727,7 +727,7 @@ void MainWindow::initActions(){
             setWhatsThis(
                 tr("Scale-free (power-law)\n\n") +
                 tr("A scale-free network is a network whose degree distribution follows a power law."
-                   " This method generates random scale-free networks according to the "
+                   " SocNetV generates random scale-free networks according to the "
                    " Barabási–Albert (BA) model using a preferential attachment mechanism."));
     connect(createScaleFreeRandomNetworkAct, SIGNAL(triggered()),
             this, SLOT(slotNetworkRandomScaleFreeDialog()));
@@ -834,7 +834,7 @@ void MainWindow::initActions(){
 
     editNodeFindAct = new QAction(QIcon(":/images/find.png"), tr("Find Node"), this);
     editNodeFindAct->setShortcut(Qt::CTRL + Qt::Key_F);
-    editNodeFindAct->setStatusTip(tr("Find and highlight a node by number or label. "
+    editNodeFindAct->setStatusTip(tr("Find and highlight an actor by number or label. "
                                  "Press Ctrl+F again to undo."));
     editNodeFindAct->setWhatsThis(tr("Find Node\n\n"
                                      "Finds a node with a given number or label and doubles its size. "
@@ -976,11 +976,11 @@ void MainWindow::initActions(){
                                          "Changes the color of all Edges"));
     connect(editEdgeColorAllAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeColorAll()));
 
-    editEdgeSymmetrizeAllAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Symmetrize Edges"), this);
+    editEdgeSymmetrizeAllAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Symmetrize Directed Edges"), this);
     editEdgeSymmetrizeAllAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_S));
     editEdgeSymmetrizeAllAct->setStatusTip(tr("Make all arcs reciprocal (thus, a symmetric graph)."));
     editEdgeSymmetrizeAllAct->setWhatsThis(
-                tr("Symmetrize Edges\n\n"
+                tr("Symmetrize Directed Edges\n\n"
                    "Makes all directed arcs reciprocal. \n"
                    "If there is an arc from node A to node B \n"
                    "then a new arc from node B to node A is created \n"
@@ -990,11 +990,13 @@ void MainWindow::initActions(){
 
     editEdgeUndirectedAllAct= new QAction( tr("Undirected Edges"), this);
     editEdgeUndirectedAllAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_U));
-    editEdgeUndirectedAllAct->setStatusTip(tr("Tranform all arcs to undirected edges (thus, an undirected graph)."));
+    editEdgeUndirectedAllAct->setStatusTip(tr("Enable to tranform all arcs to undirected edges and hereafter work with undirected edges ."));
     editEdgeUndirectedAllAct->setWhatsThis(
                 tr("Undirected Edges\n\n"
-                   "Tranforms all directed arcs to undirected edges. \n"
-                   "The result is a undirected and symmetric network"));
+                   "If you enable this, it tranforms all directed arcs to undirected edges. \n"
+                   "The result is a undirected and symmetric network."
+                   "After that, every new edge you add, will be undirected too."
+                   "If you disable this, then all edges become directed again."));
     editEdgeUndirectedAllAct -> setCheckable(true);
     editEdgeUndirectedAllAct -> setChecked(false);
     connect(editEdgeUndirectedAllAct, SIGNAL(toggled(bool)),
@@ -1019,25 +1021,25 @@ void MainWindow::initActions(){
                                     "Filters Nodes of some value out of the network."));
     connect(filterNodesAct, SIGNAL(triggered()), this, SLOT(slotFilterNodes()));
 
-    filterIsolateNodesAct = new QAction(tr("Disable Isolate Nodes"), this);
-    filterIsolateNodesAct -> setEnabled(true);
-    filterIsolateNodesAct -> setCheckable(true);
-    filterIsolateNodesAct -> setChecked(false);
-    filterIsolateNodesAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_F));
-    filterIsolateNodesAct -> setStatusTip(tr("Temporarily filter out nodes with no edges"));
-    filterIsolateNodesAct -> setWhatsThis(tr("Filter Isolate Nodes\n\n "
+    editFilterNodesIsolatesAct = new QAction(tr("Disable Isolate Nodes"), this);
+    editFilterNodesIsolatesAct -> setEnabled(true);
+    editFilterNodesIsolatesAct -> setCheckable(true);
+    editFilterNodesIsolatesAct -> setChecked(false);
+    editFilterNodesIsolatesAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_F));
+    editFilterNodesIsolatesAct -> setStatusTip(tr("Temporarily filter out nodes with no edges"));
+    editFilterNodesIsolatesAct -> setWhatsThis(tr("Filter Isolate Nodes\n\n "
                                              "Enables or disables displaying of isolate nodes. Isolate nodes are those with no edges..."));
-    connect(filterIsolateNodesAct, SIGNAL(toggled(bool)),
-            this, SLOT(slotFilterIsolateNodes(bool)));
+    connect(editFilterNodesIsolatesAct, SIGNAL(toggled(bool)),
+            this, SLOT(slotEditFilterNodesIsolates(bool)));
 
-    filterEdgesAct = new QAction(tr("Filter Edges by Weight"), this);
-    filterEdgesAct -> setEnabled(true);
-    filterEdgesAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_F));
-    filterEdgesAct -> setStatusTip(tr("Temporarily filter edges of some weight out of the network"));
-    filterEdgesAct -> setWhatsThis(tr("Filter Edges\n\n"
+    editFilterEdgesByWeightAct = new QAction(tr("Filter Edges by Weight"), this);
+    editFilterEdgesByWeightAct -> setEnabled(true);
+    editFilterEdgesByWeightAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_F));
+    editFilterEdgesByWeightAct -> setStatusTip(tr("Temporarily filter edges of some weight out of the network"));
+    editFilterEdgesByWeightAct -> setWhatsThis(tr("Filter Edges\n\n"
                                       "Filters Edge of some specific weight out of the network."));
-    connect(filterEdgesAct , SIGNAL(triggered()),
-            this, SLOT(slotShowFilterEdgesDialog()));
+    connect(editFilterEdgesByWeightAct , SIGNAL(triggered()),
+            this, SLOT(slotEditFilterEdgesByWeightDialog()));
 
     editFilterEdgesUnilateralAct = new QAction(tr("Disable unilateral edges"), this);
     editFilterEdgesUnilateralAct -> setEnabled(true);
@@ -1562,7 +1564,7 @@ void MainWindow::initActions(){
     symmetryAct = new QAction(
                 QIcon(":/images/symmetry.png"), tr("Symmetry Test"), this);
     symmetryAct ->setShortcut(tr("Shift+S"));
-    symmetryAct->setStatusTip(tr("Checks whether the network is symmetric or not"));
+    symmetryAct->setStatusTip(tr("Check whether the network is symmetric or not"));
     symmetryAct->setWhatsThis(
                 tr("Symmetry\n\n "
                    "Checks whether the network is symmetric or not. \n"
@@ -1575,8 +1577,9 @@ void MainWindow::initActions(){
     invertAdjMatrixAct = new QAction(
                 QIcon(":/images/symmetry.png"), tr("Invert Adjacency Matrix"), this);
     invertAdjMatrixAct ->setShortcut(tr("Shift+I"));
-    invertAdjMatrixAct->setStatusTip(tr("Inverts the adjacency matrix"));
-    invertAdjMatrixAct->setWhatsThis(tr("Invert  Adjacency Matrix \n\n Inverts the adjacency matrix using linear algebra methods."));
+    invertAdjMatrixAct->setStatusTip(tr("Invert the adjacency matrix, if possible"));
+    invertAdjMatrixAct->setWhatsThis(tr("Invert  Adjacency Matrix "
+                                        "\n\n Inverts the adjacency matrix using linear algebra methods."));
     connect(invertAdjMatrixAct, SIGNAL(triggered()), this, SLOT(slotInvertAdjMatrix()));
 
     graphDistanceAct = new QAction(
@@ -1584,7 +1587,7 @@ void MainWindow::initActions(){
                 );
     graphDistanceAct ->setShortcut(tr("Ctrl+G"));
     graphDistanceAct->setStatusTip(
-                tr("Calculates the length of the shortest path between two nodes..."));
+                tr("Compute the length of the shortest path (geodesic distance) between two nodes."));
     graphDistanceAct->setWhatsThis(
                 tr("Distance\n\n "
                    "In graph theory, the distance (geodesic distance) of two "
@@ -1597,7 +1600,7 @@ void MainWindow::initActions(){
     distanceMatrixAct ->setShortcut(tr("Ctrl+Shift+G"));
     distanceMatrixAct->
             setStatusTip(
-                tr("The matrix of geodesic distances between all pair of nodes.")
+                tr("Compute the matrix of geodesic distances between all pair of nodes.")
                 );
     distanceMatrixAct->
             setWhatsThis(
@@ -1612,7 +1615,7 @@ void MainWindow::initActions(){
 
     geodesicsMatrixAct = new QAction(QIcon(":/images/dm.png"), tr("Geodesics Matrix"),this);
     geodesicsMatrixAct ->setShortcut(tr("Ctrl+Alt+G"));
-    geodesicsMatrixAct->setStatusTip(tr("The number of geodesic paths between each pair of nodes "));
+    geodesicsMatrixAct->setStatusTip(tr("Compute the number of geodesic paths between each pair of nodes "));
     geodesicsMatrixAct->setWhatsThis(
                 tr(
                     "Geodesics Matrix\n\n"
@@ -1625,7 +1628,7 @@ void MainWindow::initActions(){
 
     diameterAct = new QAction(QIcon(":/images/diameter.png"), tr("Diameter"),this);
     diameterAct ->setShortcut(tr("Ctrl+D"));
-    diameterAct->setStatusTip(tr("The diameter of the network."));
+    diameterAct->setStatusTip(tr("Compute the diameter of this social network."));
     diameterAct->setWhatsThis(tr("Diameter\n\n The Diameter of a network is the maximum graph distance (maximum shortest path length) between any two nodes of the network."));
     connect(diameterAct, SIGNAL(triggered()), this, SLOT(slotDiameter()));
 
@@ -1638,14 +1641,15 @@ void MainWindow::initActions(){
 
     eccentricityAct = new QAction(QIcon(":/images/eccentricity.png"), tr("Eccentricity"),this);
     eccentricityAct->setShortcut(tr(""));
-    eccentricityAct->setStatusTip(tr("Eccentricity indices for each node and group Eccentricity"));
-    eccentricityAct->setWhatsThis(tr("Eccentricity\n\n The eccentricity or association number of each node i is the largest geodesic distance (i,j) between node i and every other node j. Therefore, it reflects how far, at most, is each node from every other node. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
+    eccentricityAct->setStatusTip(tr("Compute the Eccentricity indices for each node and group Eccentricity"));
+    eccentricityAct->setWhatsThis(tr("Eccentricity\n\n "
+                                     "The eccentricity or association number of each node i is the largest geodesic distance (i,j) between node i and every other node j. Therefore, it reflects how far, at most, is each node from every other node. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
     connect(eccentricityAct, SIGNAL(triggered()), this, SLOT(slotEccentricity()));
 
 
     connectednessAct = new QAction(QIcon(":/images/distance.png"),  tr("Connectedness"), this);
     connectednessAct ->setShortcut(tr("Ctrl+Shift+C"));
-    connectednessAct->setStatusTip(tr("Checks whether the network is a connected "
+    connectednessAct->setStatusTip(tr("Check whether the network is a connected "
                                       "graph, a weakly connected digraph or "
                                       "a disconnected graph/digraph..."));
     connectednessAct->setWhatsThis(tr("Connectedness\n\n In graph theory, a "
@@ -1664,47 +1668,73 @@ void MainWindow::initActions(){
 
     walksAct = new QAction(QIcon(":/images/walk.png"), tr("Walks of a given length"),this);
     walksAct->setShortcut(tr("Ctrl+W"));
-    walksAct->setStatusTip(tr("The number of walks of a given length between any nodes."));
-    walksAct->setWhatsThis(tr("Walks of a given length\n\n A walk is a sequence of alternating vertices and edges such as v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>, where each edge, e<sub>i</sub> is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. This function counts the number of walks of a given length between each pair of nodes, by studying the powers of the sociomatrix.\n "));
+    walksAct->setStatusTip(tr("Compute the number of walks of a given length between any nodes."));
+    walksAct->setWhatsThis(tr("Walks of a given length\n\n "
+                              "A walk is a sequence of alternating vertices and edges "
+                              "such as v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, "
+                              "v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>, "
+                              "where each edge, e<sub>i</sub> is defined as "
+                              "e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. "
+                              "This function counts the number of walks of a given "
+                              "length between each pair of nodes, by studying the powers of the sociomatrix.\n "));
     connect(walksAct, SIGNAL(triggered()), this, SLOT(slotWalksOfGivenLength() )  );
 
     totalWalksAct = new QAction(QIcon(":/images/walk.png"), tr("Total Walks"),this);
     totalWalksAct->setShortcut(tr("Ctrl+Shift+W"));
-    totalWalksAct->setStatusTip(tr("Calculates the total number of walks of every possible length between all nodes"));
-    totalWalksAct->setWhatsThis(tr("Total Walks\n\n A walk is a sequence of alternating vertices and edges such as v<sub>0</sub>e<sub>1</sub>, v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, e<sub>k</sub>v<sub>k</sub>, where each edge, e<sub>i</sub> is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. This function counts the number of walks of any length between each pair of nodes, by studying the powers of the sociomatrix\n "));
+    totalWalksAct->setStatusTip(tr("Calculate the total number of walks of every possible length between all nodes"));
+    totalWalksAct->setWhatsThis(tr("Total Walks\n\n "
+                                   "A walk is a sequence of alternating vertices "
+                                   "and edges such as v<sub>0</sub>e<sub>1</sub>, "
+                                   "v<sub>1</sub>e<sub>2</sub>, v<sub>2</sub>e<sub>3</sub>, …, "
+                                   "e<sub>k</sub>v<sub>k</sub>, where each edge, e<sub>i</sub> "
+                                   "is defined as e<sub>i</sub> = {v<sub>i-1</sub>, v<sub>i</sub>}. "
+                                   "This function counts the number of walks of any length "
+                                   "between each pair of nodes, by studying the powers of the sociomatrix\n "));
     connect(totalWalksAct, SIGNAL(triggered()), this, SLOT(slotTotalWalks() )  );
 
 
     reachabilityMatrixAct = new QAction(QIcon(":/images/walk.png"), tr("Reachability Matrix"),this);
     reachabilityMatrixAct->setShortcut(tr("Ctrl+Shift+R"));
-    reachabilityMatrixAct->setStatusTip(tr("Calculates the Reachability Matrix for the loaded network."));
-    reachabilityMatrixAct->setWhatsThis(tr("Reachability Matrix\n\n     Calculates the reachability matrix X<sup>R</sup> of the graph where the {i,j} element is 1 if the vertices i and j are reachable. \n\n Actually, this just checks whether the corresponding element of Distances matrix is not zero.\n "));
+    reachabilityMatrixAct->setStatusTip(tr("Compute the Reachability Matrix of the network."));
+    reachabilityMatrixAct->setWhatsThis(tr("Reachability Matrix\n\n"
+                                           "Calculates the reachability matrix X<sup>R</sup> of "
+                                           "the graph where the {i,j} element is 1 if "
+                                           "the vertices i and j are reachable. \n\n"
+                                           "Actually, this just checks whether the corresponding element "
+                                           "of Distances matrix is not zero.\n "));
     connect(reachabilityMatrixAct, SIGNAL(triggered()), this, SLOT(slotReachabilityMatrix() )  );
 
     cliquesAct = new QAction(QIcon(":/images/clique.png"), tr("Clique Census (clique number <= 4) "),this);
     cliquesAct->setShortcut(tr("Ctrl+T"));
-    cliquesAct->setStatusTip(tr("Computes a partial clique census report (for cliques up to 4 vertices)."));
-    cliquesAct->setWhatsThis(tr("Clique Census\n\n Computes aggregate counts of cliques (up to clique number 4), along with disaggregation by vertex and co-membership information. "));
+    cliquesAct->setStatusTip(tr("Compute the clique census for all actors and display it."));
+    cliquesAct->setWhatsThis(tr("Clique Census\n\n "
+                                "Computes aggregate counts of cliques (maximal connected subgraphs), "
+                                "along with disaggregation by actor and co-membership information. "));
     connect(cliquesAct, SIGNAL(triggered()), this, SLOT(slotCliqueCensus() )  );
 
 
     clusteringCoefAct = new QAction(QIcon(":/images/clique.png"), tr("Clustering Coefficient"),this);
     clusteringCoefAct ->setShortcut(tr("Ctrl+C"));
-    clusteringCoefAct->setStatusTip(tr("The average Clustering Coefficient of the network."));
-    clusteringCoefAct->setWhatsThis(tr("Clustering Coefficient\n\n The Clustering Coefficient of a vertex quantifies how close the vertex and its neighbors are to being a clique. \n "));
+    clusteringCoefAct->setStatusTip(tr("Compute the Clustering Coefficient for every actor and the network average."));
+    clusteringCoefAct->setWhatsThis(tr("Clustering Coefficient\n\n "
+                                       "The Clustering Coefficient of an actor quantifies how close "
+                                       "the actor and her neighbors are to being a clique. \n "));
     connect(clusteringCoefAct, SIGNAL(triggered()), this, SLOT(slotClusteringCoefficient() )  );
 
 
     triadCensusAct = new QAction(QIcon(":/images/triad.png"), tr("Triad Census"),this);
     triadCensusAct->setShortcut(tr("Ctrl+Shift+T"));
-    triadCensusAct->setStatusTip(tr("Conducts a triad census for the active network."));
-    triadCensusAct->setWhatsThis(tr("Triad Census\n\n A triad census counts all the different kinds of observed triads within a network and codes them according to their number of mutual, asymmetric and non-existent dyads. \n "));
+    triadCensusAct->setStatusTip(tr("Calculate the triad census for all actors."));
+    triadCensusAct->setWhatsThis(tr("Triad Census\n\n "
+                                    "A triad census counts all the different kinds of observed triads "
+                                    "within a network and codes them according to their number of mutual, "
+                                    "asymmetric and non-existent dyads. \n "));
     connect(triadCensusAct, SIGNAL(triggered()), this, SLOT(slotTriadCensus() )  );
 
     cDegreeAct = new QAction(tr("Degree Centrality (DC)"),this);
     cDegreeAct->setShortcut(tr("Ctrl+1"));
     cDegreeAct
-            ->setStatusTip(tr("Degree Centrality indices and group Degree Centralization."));
+            ->setStatusTip(tr("Compute Degree Centrality indices for every actor and group Degree Centralization."));
     cDegreeAct
             ->setWhatsThis(
                 tr( "Degree Centrality (DC)\n\n "
@@ -1725,7 +1755,7 @@ void MainWindow::initActions(){
     cClosenessAct
             ->setStatusTip(
                 tr(
-                    "Closeness Centrality indices and group Closeness Centralization."));
+                    "Compute Closeness Centrality indices for every actor and group Closeness Centralization."));
     cClosenessAct
             ->setWhatsThis(
                 tr("Closeness Centrality (CC)\n\n "
@@ -1743,8 +1773,9 @@ void MainWindow::initActions(){
     cInfluenceRangeClosenessAct->setShortcut(tr("Ctrl+3"));
     cInfluenceRangeClosenessAct
             ->setStatusTip(
-                tr("Closeness Centrality indices focusing on how proximate each node is"
-                   "to the nodes in its influence range"));
+                tr("Compute Influence Range Closeness Centrality indices for every actor "
+                   "focusing on how proximate each one is"
+                   "to others in its influence range"));
     cInfluenceRangeClosenessAct
             ->setWhatsThis(
                 tr("Influence Range Closeness Centrality (IRCC)\n\n "
@@ -1761,20 +1792,38 @@ void MainWindow::initActions(){
 
     cBetweennessAct = new QAction(tr("Betweenness Centrality (BC)"), this);
     cBetweennessAct->setShortcut(tr("Ctrl+4"));
-    cBetweennessAct->setWhatsThis(tr("Betweenness Centrality (BC)\n\n For each node v, BC is the ratio of all geodesics between pairs of nodes which run through v. It reflects how often an node lies on the geodesics between the other nodes of the network. It can be interpreted as a measure of control. A node which lies between many others is assumed to have a higher likelihood of being able to control information flow in the network. \n\n Note that betweenness centrality assumes that all geodesics have equal weight or are equally likely to be chosen for the flow of information between any two nodes. This is reasonable only on \"regular\" networks where all nodes have similar degrees. On networks with significant degree variance you might want to try informational centrality instead. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
-    cBetweennessAct->setStatusTip(tr("Betweenness Centrality indices and group Betweenness Centralization."));
+    cBetweennessAct->setWhatsThis(tr("Betweenness Centrality (BC)\n\n "
+                                     "For each node v, BC is the ratio of all geodesics between pairs of nodes which run through v. "
+                                     "It reflects how often an node lies on the geodesics between the other nodes of the network. "
+                                     "It can be interpreted as a measure of control. "
+                                     "A node which lies between many others is assumed to have a higher likelihood of being able "
+                                     "to control information flow in the network. \n\n "
+                                     "Note that betweenness centrality assumes that all geodesics "
+                                     "have equal weight or are equally likely to be chosen for the flow of information "
+                                     "between any two nodes. This is reasonable only on \"regular\" networks where all "
+                                     "nodes have similar degrees. On networks with significant degree variance you might want "
+                                     "to try informational centrality instead. \n\nThis index can be calculated in both graphs "
+                                     "and digraphs but is usually best suited for undirected graphs. It can also be calculated"
+                                     " in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
+    cBetweennessAct->setStatusTip(tr("Compute Betweenness Centrality indices and group Betweenness Centralization."));
     connect(cBetweennessAct, SIGNAL(triggered()), this, SLOT(slotCentralityBetweenness()));
 
     cStressAct = new QAction(tr("Stress Centrality (SC)"), this);
     cStressAct->setShortcut(tr("Ctrl+5"));
-    cStressAct->setStatusTip(tr("Stress Centrality indices and group Stress Centralization."));
-    cStressAct->setWhatsThis(tr("Stress Centrality (SC)\n\n For each node v, SC is the total number of geodesics between all other nodes which run through v. A node with high SC is considered 'stressed', since it is traversed by a high number of geodesics. When one node falls on all other geodesics between all the remaining (N-1) nodes, then we have a star graph with maximum Stress Centrality. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
+    cStressAct->setStatusTip(tr("Compute Stress Centrality indices for every actor and group Stress Centralization."));
+    cStressAct->setWhatsThis(tr("Stress Centrality (SC)\n\n "
+                                "For each node v, SC is the total number of geodesics between all other nodes which run through v. "
+                                "A node with high SC is considered 'stressed', since it is traversed by a high number of geodesics. "
+                                "When one node falls on all other geodesics between all the remaining (N-1) nodes, "
+                                "then we have a star graph with maximum Stress Centrality. \n\n"
+                                "This index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. "
+                                "It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1."));
     connect(cStressAct, SIGNAL(triggered()), this, SLOT(slotCentralityStress()));
 
 
     cEccentAct = new QAction(tr("Eccentricity Centrality (EC)"), this);
     cEccentAct->setShortcut(tr("Ctrl+6"));
-    cEccentAct->setStatusTip(tr("Eccentricity Centrality indices for each node."));
+    cEccentAct->setStatusTip(tr("Compute Eccentricity Centrality indices for each node."));
     cEccentAct->setWhatsThis(
                 tr("Eccentricity Centrality (EC)\n\n For each node i, "
                    "the EC is the inverse of the maximum geodesic distance "
@@ -1788,7 +1837,7 @@ void MainWindow::initActions(){
 
     cPowerAct = new QAction(tr("Power Centrality (PC)"), this);
     cPowerAct->setShortcut(tr("Ctrl+7"));
-    cPowerAct->setStatusTip(tr("Calculate and display Power Centrality indices (aka Gil-Schmidt Power Centrality) and group Power Centralization"));
+    cPowerAct->setStatusTip(tr("Compute Power Centrality indices (aka Gil-Schmidt Power Centrality) for every actor and group Power Centralization"));
     cPowerAct->setWhatsThis(tr("Power Centrality (PC)\n\n For each node v, this index sums its degree (with weight 1), with the size of the 2nd-order neighbourhood (with weight 2), and in general, with the size of the kth order neighbourhood (with weight k). Thus, for each node in the network the most important other nodes are its immediate neighbours and then in decreasing importance the nodes of the 2nd-order neighbourhood, 3rd-order neighbourhood etc. For each node, the sum obtained is normalised by the total numbers of nodes in the same component minus 1. Power centrality has been devised by Gil-Schmidt. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for undirected graphs. It can also be calculated in weighted graphs although the weight of each edge (v,u) in E is always considered to be 1 (therefore not considered)."));
     connect(cPowerAct, SIGNAL(triggered()), this, SLOT(slotCentralityPower()));
 
@@ -1796,7 +1845,7 @@ void MainWindow::initActions(){
     cInformationAct = new QAction(tr("Information Centrality (IC)"),	this);
     cInformationAct->setShortcut(tr("Ctrl+8"));
     cInformationAct->setEnabled(true);
-    cInformationAct->setStatusTip(tr("Calculate and display Information Centrality indices and group Information Centralization"));
+    cInformationAct->setStatusTip(tr("Compute Information Centrality indices and group Information Centralization"));
     cInformationAct->setWhatsThis(
                 tr("Information Centrality (IC)\n\n "
                    "Information centrality counts all paths between "
@@ -1808,7 +1857,7 @@ void MainWindow::initActions(){
     connect(cInformationAct, SIGNAL(triggered()), this, SLOT(slotCentralityInformation()));
 
     cInDegreeAct = new QAction(tr("Degree Prestige (DP)"),	 this);
-    cInDegreeAct->setStatusTip(tr("Degree Prestige (InDegree) indices "));
+    cInDegreeAct->setStatusTip(tr("Compute Degree Prestige (InDegree) indices "));
     cInDegreeAct->setShortcut(tr("Ctrl+I"));
     cInDegreeAct->setWhatsThis(tr("InDegree (Degree Prestige)\n\n For each node k, this the number of arcs ending at k. Nodes with higher in-degree are considered more prominent among others. In directed graphs, this index measures the prestige of each node/actor. Thus it is called Degree Prestige. Nodes who are prestigious tend to receive many nominations or choices (in-links). The largest the index is, the more prestigious is the node. \n\nThis index can be calculated only for digraphs. In weighted relations, DP is the sum of weights of all arcs/inLinks ending at node v."));
     connect(cInDegreeAct, SIGNAL(triggered()), this, SLOT(slotPrestigeDegree()));
@@ -1816,7 +1865,7 @@ void MainWindow::initActions(){
     cPageRankAct = new QAction(tr("PageRank Prestige (PRP)"),	this);
     cPageRankAct->setShortcut(tr("Ctrl+K"));
     cPageRankAct->setEnabled(true);
-    cPageRankAct->setStatusTip(tr("Calculate and display PageRank Prestige"));
+    cPageRankAct->setStatusTip(tr("Compute PageRank Prestige indices for every actor"));
     cPageRankAct->setWhatsThis(tr("PageRank Prestige\n\n An importance ranking for each node based on the link structure of the network. PageRank, developed by Page and Brin (1997), focuses on how nodes are connected to each other, treating each edge from a node as a citation/backlink/vote to another. In essence, for each node PageRank counts all backlinks to it, but it does so by not counting all edges equally while it normalizes each edge from a node by the total number of edges from it. PageRank is calculated iteratively and it corresponds to the principal eigenvector of the normalized link matrix. \n\nThis index can be calculated in both graphs and digraphs but is usually best suited for directed graphs since it is a prestige measure. It can also be calculated in weighted graphs. In weighted relations, each backlink to a node v from another node u is considered to have weight=1 but it is normalized by the sum of outLinks weights (outDegree) of u. Therefore, nodes with high outLink weights give smaller percentage of their PR to node v."));
     connect(cPageRankAct, SIGNAL(triggered()), this, SLOT(slotPrestigePageRank()));
 
@@ -2233,8 +2282,8 @@ void MainWindow::initMenuBar() {
     editMenu ->addMenu(filterMenu);
 
     filterMenu -> addAction(filterNodesAct );
-    filterMenu -> addAction(filterIsolateNodesAct );
-    filterMenu -> addAction(filterEdgesAct );
+    filterMenu -> addAction(editFilterNodesIsolatesAct );
+    filterMenu -> addAction(editFilterEdgesByWeightAct );
     filterMenu -> addAction(editFilterEdgesUnilateralAct);
 
 
@@ -3781,7 +3830,7 @@ void MainWindow::initNet(){
                 (appSettings["initEdgeLabelsVisibility"] == "true") ? true: false
 
                 );
-    filterIsolateNodesAct->setChecked(false); // re-init orphan nodes menu item
+    editFilterNodesIsolatesAct->setChecked(false); // re-init orphan nodes menu item
 
     editRelationChangeCombo->clear();
 
@@ -4920,7 +4969,7 @@ void MainWindow::slotEditRelationPrev(){
     int index=editRelationChangeCombo->currentIndex();
     if (index>0){
         --index;
-        filterIsolateNodesAct->setChecked(false);
+        editFilterNodesIsolatesAct->setChecked(false);
         editRelationChangeCombo->setCurrentIndex(index);
     }
 }
@@ -4936,7 +4985,7 @@ void MainWindow::slotEditRelationNext(){
     int relationsCounter=editRelationChangeCombo->count();
     if (index< (relationsCounter -1 )){
         ++index;
-        filterIsolateNodesAct->setChecked(false);
+        editFilterNodesIsolatesAct->setChecked(false);
         editRelationChangeCombo->setCurrentIndex(index);
     }
 
@@ -7522,18 +7571,18 @@ void MainWindow::slotFilterNodes(){
 }
 
 /**
- * @brief MainWindow::slotFilterIsolateNodes
+ * @brief MainWindow::slotEditFilterNodesIsolates
  *Calls Graph::vertexIsolateFilter to toggle visibility of isolated vertices
  */
-void MainWindow::slotFilterIsolateNodes(bool checked){
+void MainWindow::slotEditFilterNodesIsolates(bool checked){
     Q_UNUSED(checked);
     if (!fileLoaded && !networkModified  )  {
         QMessageBox::critical(this, "Error",tr("Nothing to filter! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
         statusMessage(  tr("Nothing to filter!")  );
         return;
     }
-    qDebug()<< "MW: slotFilterIsolateNodes";
-    activeGraph.vertexIsolateFilter( ! filterIsolateNodesAct->isChecked() );
+    qDebug()<< "MW: slotEditFilterNodesIsolates";
+    activeGraph.vertexIsolateFilter( ! editFilterNodesIsolatesAct->isChecked() );
     statusMessage(  tr("Isolate nodes visibility toggled!")  );
 }
 
@@ -7543,7 +7592,7 @@ void MainWindow::slotFilterIsolateNodes(bool checked){
 *	filter edges according to their weight 
 *	All edges weighted more (or less) than the specified weight  will be disabled.
 */ 
-void MainWindow::slotShowFilterEdgesDialog() {
+void MainWindow::slotEditFilterEdgesByWeightDialog() {
     if (!fileLoaded && !networkModified  )   {
         statusMessage(  QString(tr("Load a network file first. \nThen you may ask me to compute something!"))  );
         return;
@@ -7802,7 +7851,7 @@ void MainWindow::slotLayoutNodeSizesByOutDegree(bool checked){
 
     activeGraph.layoutVerticesSizeByProminenceIndex(
                 1,considerWeights,inverseWeights,
-                filterIsolateNodesAct->isChecked());
+                editFilterNodesIsolatesAct->isChecked());
 
     QApplication::restoreOverrideCursor( );
 }
@@ -7853,7 +7902,7 @@ void MainWindow::slotLayoutNodeSizesByInDegree(bool checked){
 
     activeGraph.layoutVerticesSizeByProminenceIndex(
                 9, considerWeights, inverseWeights,
-                filterIsolateNodesAct->isChecked());
+                editFilterNodesIsolatesAct->isChecked());
 
     QApplication::restoreOverrideCursor( );
 
@@ -8080,7 +8129,7 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
     activeGraph.layoutCircularByProminenceIndex(
                 x0, y0, maxRadius, userChoice,
                 considerWeights, inverseWeights,
-                filterIsolateNodesAct->isChecked() || dropIsolates);
+                editFilterNodesIsolatesAct->isChecked() || dropIsolates);
     destroyProgressBar();
     statusMessage( tr("Nodes in inner circles have greater prominence index.") );
 }
@@ -8240,7 +8289,7 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
 
     activeGraph.layoutVerticesSizeByProminenceIndex(
                 userChoice, considerWeights,
-                inverseWeights, filterIsolateNodesAct->isChecked() || dropIsolates);
+                inverseWeights, editFilterNodesIsolatesAct->isChecked() || dropIsolates);
     destroyProgressBar();
     statusMessage( tr("Bigger nodes have greater prominence index.") );
 }
@@ -8443,7 +8492,7 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
     activeGraph.layoutLevelByProminenceIndex(
                 maxWidth, maxHeight, userChoice,
                 considerWeights, inverseWeights,
-                filterIsolateNodesAct->isChecked() || dropIsolates);
+                editFilterNodesIsolatesAct->isChecked() || dropIsolates);
     destroyProgressBar();
     statusMessage( tr("Nodes in upper levels are more prominent. ") );
 }
@@ -8689,7 +8738,7 @@ void MainWindow::slotDistancesMatrix(){
 
     activeGraph.writeDistanceMatrix(fn,
                                     considerWeights, inverseWeights,
-                                    filterIsolateNodesAct->isChecked());
+                                    editFilterNodesIsolatesAct->isChecked());
 
     destroyProgressBar();
 
@@ -8807,7 +8856,7 @@ void MainWindow::slotAverageGraphDistance() {
     createProgressBar(0,progressMsg);
 
     float averGraphDistance=activeGraph.distanceGraphAverage(
-                considerWeights, inverseWeights,  filterIsolateNodesAct->isChecked() );
+                considerWeights, inverseWeights,  editFilterNodesIsolatesAct->isChecked() );
 
     destroyProgressBar();
 
@@ -8841,7 +8890,7 @@ void MainWindow::slotEccentricity(){
     createProgressBar(0,progressMsg);
     activeGraph.writeEccentricity(
                 fn, considerWeights, inverseWeights,
-                filterIsolateNodesAct->isChecked());
+                editFilterNodesIsolatesAct->isChecked());
     destroyProgressBar();
 
     TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
@@ -9197,7 +9246,7 @@ void MainWindow::slotCentralityDegree(){
     createProgressBar(0,progressMsg);
 
     activeGraph.writeCentralityDegree(fn, considerWeights,
-                                      filterIsolateNodesAct->isChecked() );
+                                      editFilterNodesIsolatesAct->isChecked() );
 
     destroyProgressBar();
 
@@ -9302,7 +9351,7 @@ void MainWindow::slotCentralityCloseness(){
 
     activeGraph.writeCentralityCloseness(
                 fn, considerWeights, inverseWeights,
-                filterIsolateNodesAct->isChecked() || dropIsolates);
+                editFilterNodesIsolatesAct->isChecked() || dropIsolates);
 
     destroyProgressBar();
 
@@ -9342,7 +9391,7 @@ void MainWindow::slotCentralityClosenessInfluenceRange(){
 
     activeGraph.writeCentralityClosenessInfluenceRange(
                 fn, considerWeights,inverseWeights,
-                filterIsolateNodesAct->isChecked());
+                editFilterNodesIsolatesAct->isChecked());
 
     destroyProgressBar();
 
@@ -9381,7 +9430,7 @@ void MainWindow::slotCentralityBetweenness(){
 
     activeGraph.writeCentralityBetweenness(
                 fn, considerWeights, inverseWeights,
-                filterIsolateNodesAct->isChecked());
+                editFilterNodesIsolatesAct->isChecked());
 
     destroyProgressBar();
 
@@ -9447,7 +9496,7 @@ void MainWindow::slotPrestigeDegree(){
     createProgressBar(0,progressMsg);
 
     activeGraph.writePrestigeDegree(fn, considerWeights,
-                                    filterIsolateNodesAct->isChecked() );
+                                    editFilterNodesIsolatesAct->isChecked() );
 
     destroyProgressBar();
 
@@ -9484,7 +9533,7 @@ void MainWindow::slotPrestigePageRank(){
 
     createProgressBar(0,progressMsg);
 
-    activeGraph.writePrestigePageRank(fn, filterIsolateNodesAct->isChecked());
+    activeGraph.writePrestigePageRank(fn, editFilterNodesIsolatesAct->isChecked());
 
     destroyProgressBar();
 
@@ -9522,7 +9571,7 @@ void MainWindow::slotPrestigeProximity(){
     createProgressBar(0,progressMsg);
 
     activeGraph.writePrestigeProximity(fn, true, false ,
-                                       filterIsolateNodesAct->isChecked());
+                                       editFilterNodesIsolatesAct->isChecked());
     destroyProgressBar();
 
     statusMessage( QString(tr(" displaying file...")));
@@ -9624,7 +9673,7 @@ void MainWindow::slotCentralityStress(){
 
     activeGraph.writeCentralityStress(
                 fn, considerWeights, inverseWeights,
-                filterIsolateNodesAct->isChecked());
+                editFilterNodesIsolatesAct->isChecked());
 
     destroyProgressBar();
 
@@ -9664,7 +9713,7 @@ void MainWindow::slotCentralityPower(){
 
     activeGraph.writeCentralityPower(
                 fn, considerWeights, inverseWeights,
-                filterIsolateNodesAct->isChecked());
+                editFilterNodesIsolatesAct->isChecked());
 
     destroyProgressBar();
 
@@ -9702,7 +9751,7 @@ void MainWindow::slotCentralityEccentricity(){
 
     activeGraph.writeCentralityEccentricity(
                 fn, considerWeights, inverseWeights,
-                filterIsolateNodesAct->isChecked());
+                editFilterNodesIsolatesAct->isChecked());
 
     destroyProgressBar();
 
