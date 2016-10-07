@@ -223,6 +223,7 @@ public slots:
     void slotEditNodePropertiesDialog();
     void slotEditNodeProperties( const QString, const int, const QString,
                              const QColor, const QString);
+    void slotEditNodeSelectedToConnectedSubgraph();
     void slotEditNodeColorAll(QColor color=QColor());
     void slotEditNodeSizeAll(int newSize=0, const bool &normalized=false);
     void slotEditNodeShape(QString shape=QString::null, const int vertex = 0);
@@ -431,8 +432,9 @@ private:
     QAction *createSmallWorldRandomNetworkAct, *createRegularRandomNetworkAct;
 
     QAction *optionsNodeNumbersVisibilityAct, *optionsNodeLabelsVisibilityAct, *optionsNodeNumbersInsideAct;
-    QAction *editNodeSelectNoneAct, *editNodeSelectAllAct;
-    QAction *editNodeFindAct,*editNodeAddAct, *editNodeRemoveAct, *editNodePropertiesAct;
+    QAction *editNodeSelectNoneAct, *editNodeSelectAllAct, *editNodeSelectedToConnectedSubgraphAct;
+    QAction *editNodeFindAct,*editNodeAddAct, *editNodeRemoveAct;
+    QAction *editNodePropertiesAct;
     QAction *editEdgeAddAct, *editEdgeRemoveAct;
     QAction *editNodeNumbersSizeAct, *editNodeLabelsSizeAct;
     QAction *editNodeSizeAllAct, *editNodeShapeAll;

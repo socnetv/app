@@ -868,6 +868,20 @@ void MainWindow::initActions(){
     connect(editNodePropertiesAct, SIGNAL(triggered()), this, SLOT(slotEditNodePropertiesDialog()));
 
 
+    editNodeSelectedToConnectedSubgraphAct = new QAction(QIcon(":/images/properties.png"),
+                                               tr("Connect all Selected Nodes"), this);
+    editNodeSelectedToConnectedSubgraphAct ->setShortcut(Qt::CTRL + Qt::Key_I );
+    editNodeSelectedToConnectedSubgraphAct->setStatusTip(tr("Connect all selected nodes to create a clique -- "
+                                           "There must be some nodes selected!"));
+    editNodeSelectedToConnectedSubgraphAct->setWhatsThis(tr("Connect all Selected Nodes\n\n"
+                                           "If there are selected nodes, "
+                                           "it connects all of them to each other. "
+                                           "The result is a connected subgraph (clique) \n"
+                                           "You must have some nodes selected."));
+    connect(editNodeSelectedToConnectedSubgraphAct, SIGNAL(triggered()),
+            this, SLOT(slotEditNodeSelectedToConnectedSubgraph()));
+
+
     editNodeColorAll = new QAction(QIcon(":/images/nodecolor.png"), tr("Change All Nodes Color (this session)"),	this);
     editNodeColorAll->setStatusTip(tr("Choose a new color for all nodes (in this session only)."));
     editNodeColorAll->setWhatsThis(tr("Nodes Color\n\n"
@@ -2248,6 +2262,11 @@ void MainWindow::initMenuBar() {
     editNodeMenu -> addAction (editNodePropertiesAct);
 
     editNodeMenu -> addSeparator();
+
+    editNodeMenu -> addAction (editNodeSelectedToConnectedSubgraphAct);
+
+    editNodeMenu -> addSeparator();
+
     editNodeMenu -> addAction (editNodeColorAll);
     editNodeMenu -> addAction (editNodeSizeAllAct);
     editNodeMenu -> addAction (editNodeShapeAll);
@@ -6508,7 +6527,9 @@ void MainWindow::slotEditNodeProperties( const QString label, const int size,
 
 
 
+void MainWindow::slotEditNodeSelectedToConnectedSubgraph () {
 
+}
 
 
 
