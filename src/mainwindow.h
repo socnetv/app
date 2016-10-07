@@ -248,8 +248,8 @@ public slots:
     void slotEditEdgeUndirectedAll(const bool &toggle);
 
     void slotFilterNodes();
-    void slotFilterIsolateNodes(bool checked);
-    void slotShowFilterEdgesDialog();
+    void slotEditFilterNodesIsolates(bool checked);
+    void slotEditFilterEdgesByWeightDialog();
     void slotTransformNodes2Edges();
     void slotEditFilterEdgesUnilateral(bool checked);
 
@@ -437,7 +437,7 @@ private:
     QAction *editNodeNumbersSizeAct, *editNodeLabelsSizeAct;
     QAction *editNodeSizeAllAct, *editNodeShapeAll;
     QAction *editEdgeLabelAct, *editEdgeColorAct, *editEdgeWeightAct;
-    QAction *filterNodesAct, *filterIsolateNodesAct, *filterEdgesAct;
+    QAction *filterNodesAct, *editFilterNodesIsolatesAct, *editFilterEdgesByWeightAct;
     QAction *editFilterEdgesUnilateralAct;
     QAction *transformNodes2EdgesAct, *editEdgeSymmetrizeAllAct, *editEdgeUndirectedAllAct;
     QAction *changeBackColorAct, *editNodeColorAll, *editEdgeColorAllAct,
