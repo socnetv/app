@@ -3344,6 +3344,7 @@ void MainWindow::initWindowLayout() {
     resetSlidersBtn = new QToolButton;
     resetSlidersBtn->setText(tr("Reset"));
     resetSlidersBtn->setShortcut(Qt::CTRL + Qt::Key_0);
+    resetSlidersBtn->setStatusTip(tr("Reset zoom and rotation to zero (or press Ctrl+0)"));
     resetSlidersBtn->setToolTip(tr("Reset zoom and rotation to zero (Ctrl+0)"));
     resetSlidersBtn->setWhatsThis(tr("Reset zoom and rotation to zero (Ctrl+0)"));
     resetSlidersBtn->setIcon(QPixmap(":/images/reset.png"));
@@ -3778,6 +3779,7 @@ void MainWindow::initNet(){
                                     "or press CTRL+E+U"));
         rightPanelNetworkTypeLabel-> setText ("Network Type: Undirected");
         rightPanelEdgesLabel->setText(tr("Total Edges"));
+        rightPanelSelectedEdgesLabel->setText(tr("Selected Edges"));
     }
     else {
         editEdgeUndirectedAllAct->setChecked(false);
@@ -3799,6 +3801,7 @@ void MainWindow::initNet(){
 
         rightPanelNetworkTypeLabel-> setText ("Network Type: Directed");
         rightPanelEdgesLabel->setText(tr("Total Arcs"));
+        rightPanelSelectedEdgesLabel->setText(tr("Selected Arcs"));
     }
     rightPanelEdgesLCD->display(activeEdges());
     rightPanelDensityLCD->display(activeGraph.density());
@@ -6018,6 +6021,7 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
 
         rightPanelNetworkTypeLabel-> setText ("Network Type: Undirected");
         rightPanelEdgesLabel->setText(tr("Total Edges"));
+        rightPanelSelectedEdgesLabel->setText(tr("Selected Edges"));
         editEdgeUndirectedAllAct->setChecked(true);
     }
     else {
@@ -6039,6 +6043,7 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
 
         rightPanelNetworkTypeLabel-> setText ("Network Type: Directed");
         rightPanelEdgesLabel->setText(tr("Total Arcs"));
+        rightPanelSelectedEdgesLabel->setText(tr("Selected Arcs"));
         editEdgeUndirectedAllAct->setChecked(false);
     }
     rightPanelEdgesLCD->display(edges);
@@ -6957,7 +6962,8 @@ void MainWindow::slotEditNodeInfoStatusBar ( Node *jim) {
 
     statusMessage(  QString(tr("(%1, %2);  Node %3, label %4 - "
                                "In-Degree: %5, Out-Degree: %6")).arg( ceil( clickedNode->x() ) )
-                    .arg( ceil( clickedNode->y() )).arg( clickedNodeNumber ).arg( clickedNode->labelText() )
+                    .arg( ceil( clickedNode->y() )).arg( clickedNodeNumber )
+                    .arg( (clickedNode->labelText() == "") ? "unset" : clickedNode->labelText() )
                     .arg(inDegree).arg(outDegree) );
 }
 
