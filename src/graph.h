@@ -437,7 +437,7 @@ public:
     bool isSymmetric();
     void symmetrize();
 
-    void undirectedSet(const bool &toggle);
+    void undirectedSet(const bool &toggle, const bool &signalMW=true);
     bool isUndirected();
 
     void adjacencyMatrixCreate(const bool dropIsolates=false,

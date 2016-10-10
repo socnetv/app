@@ -100,7 +100,7 @@ Graph::Graph() {
     Clears all vertices
 */
 void Graph::clear() {
-   qDebug("Graph::clear() m_graph reports size %i", m_graph.size());
+   qDebug()<< "Graph::clear() - m_graph reports size "<<m_graph.size();
     qDeleteAll(m_graph.begin(), m_graph.end());
     m_graph.clear();
     index.clear();
@@ -189,7 +189,7 @@ void Graph::clear() {
     webCrawlTerminateThreads("Graph::initNet");
 
 
-    qDebug("Graph: m_graph cleared. Now reports size %i", m_graph.size());
+    qDebug("Graph::clear() - m_graph cleared. Now reports size %i", m_graph.size());
 }
 
 
@@ -2282,11 +2282,11 @@ void Graph::symmetrize(){
  * @brief Graph::undirected
  * Transforms the graph to undirected
  */
-void Graph::undirectedSet(const bool &toggle){
+void Graph::undirectedSet(const bool &toggle, const bool &signalMW){
     qDebug() << "Graph::undirectedSet()";
     if (!toggle) {
         m_undirected=false;
-        graphModifiedSet(GRAPH_CHANGED_EDGES);
+        graphModifiedSet(GRAPH_CHANGED_EDGES, signalMW);
         return;
     }
     QList<Vertex*>::const_iterator it;
@@ -2314,7 +2314,7 @@ void Graph::undirectedSet(const bool &toggle){
 
     m_symmetric=m_undirected=true;
 
-    graphModifiedSet(GRAPH_CHANGED_EDGES);
+    graphModifiedSet(GRAPH_CHANGED_EDGES, signalMW);
 }
 
 
