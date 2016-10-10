@@ -3718,11 +3718,9 @@ void MainWindow::initNet(){
 
     // Init basic variables
 
-
     considerWeights=false;
     inverseWeights=false;
     askedAboutWeights=false;
-
 
     networkName="";
 
@@ -3780,7 +3778,7 @@ void MainWindow::initNet(){
     /** Clear LCDs **/
     rightPanelNodesLCD->display(activeGraph.vertices());
     if (activeGraph.isUndirected()) {
-        editEdgeUndirectedAllAct->setChecked(true);
+        activeGraph.undirectedSet(true);
         rightPanelEdgesLCD->setStatusTip(tr("Shows the total number of undirected edges in the network."));
         rightPanelEdgesLCD->setToolTip(tr("The total number of undirected edges in the network."));
         rightPanelNetworkTypeLabel->setStatusTip(tr("Undirected data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
@@ -3801,7 +3799,7 @@ void MainWindow::initNet(){
         rightPanelSelectedEdgesLabel->setText(tr("Selected Edges"));
     }
     else {
-        editEdgeUndirectedAllAct->setChecked(false);
+        activeGraph.undirectedSet(false,false);
         rightPanelEdgesLCD->setStatusTip(tr("Shows the total number of directed edges in the network."));
         rightPanelEdgesLCD->setToolTip(tr("The total number of directed edges in the network."));
         rightPanelNetworkTypeLabel->setStatusTip(tr("Directed data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
@@ -3850,7 +3848,6 @@ void MainWindow::initNet(){
 
     optionsEdgeLabelsAct->setChecked (
                 (appSettings["initEdgeLabelsVisibility"] == "true") ? true: false
-
                 );
     editFilterNodesIsolatesAct->setChecked(false); // re-init orphan nodes menu item
 
@@ -3873,8 +3870,6 @@ void MainWindow::initNet(){
     }
 
 
-
-
     /** set window title **/
     setWindowTitle(tr("Social Network Visualizer ")+VERSION);
 
@@ -3883,7 +3878,7 @@ void MainWindow::initNet(){
     setCursor(Qt::ArrowCursor);
 
     statusMessage( tr("Ready"));
-    qDebug("MW: initNet() INITIALISATION END");
+    qDebug("MW: initNet() - INITIALISATION END");
 
 
 }
@@ -3921,6 +3916,8 @@ void MainWindow::statusMessage(const QString message){
 
 
 
+
+
 /**
  * @brief MainWindow::slotHelpMessageToUser
  * Convenience method
@@ -3946,12 +3943,16 @@ void MainWindow::slotHelpMessageToUser(const QString msg, const QString statusMs
                                  "Load social network data or create a new social network first. \n"), "OK",0);
         statusMessage(  tr("Nothing to do! Load or create a social network first")  );
         break;
+    case USER_MSG_CRITICAL_NO_EDGES:
+        QMessageBox::critical(this, "Error",
+                              tr("No edges! \n"
+                                 "Load social network data or create some edges first. \n"), "OK",0);
+        statusMessage(  tr("Nothing to do! Load social network data or create edges first")  );
+        break;
+
     default:
             break;
     }
-
-
-
 
 }
 
@@ -5505,10 +5506,7 @@ void MainWindow::slotNetworkTextEditor(){
  */
 void MainWindow::slotNetworkViewSociomatrix(){
     if ( !activeNodes() ) {
-        QMessageBox::critical (this, "Error",
-                               tr("Empty network! \nLoad a network file or create something by double-clicking on the canvas!"), "OK",0);
-
-        statusMessage(  tr("Nothing to show!") );
+        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
         return;
     }
     int aNodes=activeNodes();
@@ -6252,10 +6250,7 @@ void MainWindow::slotEditNodeAddWithMouse( const QPointF &p) {
 void MainWindow::slotEditNodeFind(){
     qDebug ("MW: slotEditNodeFind()");
     if ( !activeNodes() ) {
-        QMessageBox::critical( this, tr("Find Node"),
-                               tr("No nodes present! \nLoad a network file first or create some nodes..."),
-                               tr("OK"),0 );
-        statusMessage(  QString(tr("Nothing to find!"))  );
+        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
         return;
     }
 
@@ -6301,13 +6296,8 @@ void MainWindow::slotEditNodeFind(){
  */
 void MainWindow::slotEditNodeRemove() {
     qDebug() << "MW: slotEditNodeRemove()";
-    if (!activeGraph.vertices())  {
-        QMessageBox::critical(
-                    this,
-                    "Error",
-                    tr("Nothing to do! \n"
-                       "Load a network file or add some nodes first."), "OK",0);
-        statusMessage( tr("Nothing to remove.")  );
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
         return;
     }
     if (activeGraph.relations() > 1){
@@ -6383,12 +6373,7 @@ void MainWindow::slotEditNodePropertiesDialog() {
 
     qDebug() << "MW::slotEditNodePropertiesDialog()";
     if ( !activeNodes() )  {
-        QMessageBox::critical(
-                    this,
-                    "Error",
-                    tr("Nothing to do! \n"
-                       "Load a network file or add some nodes first."), "OK",0);
-        statusMessage( tr("Nothing to remove.")  );
+        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
         return;
     }
     int min=-1, max=-1, size = appSettings["initNodeSize"].toInt(0, 10);
@@ -6529,13 +6514,8 @@ void MainWindow::slotEditNodeProperties( const QString label, const int size,
 
 void MainWindow::slotEditNodeSelectedToConnectedSubgraph () {
     qDebug() << "MW::slotEditNodeSelectedToConnectedSubgraph()";
-    if (!activeGraph.vertices())  {
-        QMessageBox::critical(
-                    this,
-                    "Error",
-                    tr("Nothing to do! \n"
-                       "Load a network file or add some nodes first."), "OK",0);
-        statusMessage( tr("Nothing to remove.")  );
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
         return;
     }
 }
@@ -7067,9 +7047,7 @@ void MainWindow::slotEditEdgeOpenContextMenu() {
 void MainWindow::slotEditEdgeAdd(){
     qDebug ("MW: slotEditEdgeAdd()");
     if ( !activeNodes() )  {
-        QMessageBox::critical(this, "Error",tr("No nodes!! \n"
-                                               "Create some nodes first."), "OK",0);
-        statusMessage( tr("There are no nodes yet...")  );
+        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
         return;
     }
 
@@ -7183,10 +7161,7 @@ void MainWindow::slotEditEdgeCreate (const int &source, const int &target,
  */
 void MainWindow::slotEditEdgeRemove(){
     if ( !activeNodes() || activeEdges() ==0 )  {
-        QMessageBox::critical(this, "Error",
-                              tr("There are no edges! \n"
-                                 "Load a network file or create a new network first."), "OK",0);
-        statusMessage( tr("No edges to remove - sorry.")  );
+        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_EDGES );
         return;
     }
 
@@ -7251,10 +7226,7 @@ void MainWindow::slotEditEdgeRemove(){
 void MainWindow::slotEditEdgeLabel(){
     qDebug() << "MW::slotEditEdgeLabel()";
     if ( !activeEdges() )  {
-        QMessageBox::critical(this, "Error",
-                              tr("There are no edges! \n"
-                                 "Load a network file or create a new network first."), "OK",0);
-        statusMessage( tr("No edges present...")  );
+        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_EDGES );
         return;
     }
 
@@ -7372,10 +7344,7 @@ void MainWindow::slotEditEdgeColorAll(QColor color,const int &threshold){
 void MainWindow::slotEditEdgeColor(){
     qDebug() << "MW::slotEditEdgeColor()";
     if (  !activeEdges() )  {
-        QMessageBox::critical(this, "Error",
-                              tr("There are no edges! \n"
-                                 "Load a network file or create a new network first."), "OK",0);
-        statusMessage( tr("No edges present...")  );
+        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_EDGES );
         return;
     }
 
@@ -7453,11 +7422,7 @@ void MainWindow::slotEditEdgeColor(){
  */
 void MainWindow::slotEditEdgeWeight(){
     if (  !activeEdges()  )  {
-        QMessageBox::critical(
-                    this, "Error",
-                    tr("There are no edges! \n"
-                       "Load a network file or create a new network first."), "OK",0);
-        statusMessage( tr("No edges present...")  );
+        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_EDGES );
         return;
     }
 
@@ -7538,10 +7503,7 @@ void MainWindow::slotEditEdgeWeight(){
  */
 void MainWindow::slotEditEdgeSymmetrizeAll(){
     if ( activeEdges() ==0 )  {
-        QMessageBox::critical(this, "Error",
-                              tr("There are no edges! \n"
-                                 "Load a network file or create a new network first."), "OK",0);
-        statusMessage( tr("No edges present...")  );
+        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_EDGES );
         return;
     }
     qDebug("MW: slotEditEdgeSymmetrizeAll() calling symmetrize");
@@ -7560,9 +7522,8 @@ void MainWindow::slotEditEdgeSymmetrizeAll(){
  * The result is a undirected and symmetric network
  */
 void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
-
+    qDebug()<<"MW: slotEditEdgeUndirectedAll() - calling Graph::undirectedSet()";
     if (toggle) {
-        qDebug("MW: slotEditEdgeUndirectedAll() calling Graph::undirectedSet()");
         activeGraph.undirectedSet(toggle);
         optionsEdgeArrowsAct->setChecked(false);
         if (activeEdges() !=0 ) {
@@ -7606,8 +7567,7 @@ void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
 void MainWindow::slotFilterNodes(){
 
     if ( !activeNodes() )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to filter! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-        statusMessage( tr("Nothing to filter!")  );
+        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
         return;
     }
 }
@@ -7619,8 +7579,7 @@ void MainWindow::slotFilterNodes(){
 void MainWindow::slotEditFilterNodesIsolates(bool checked){
     Q_UNUSED(checked);
     if ( !activeNodes()   )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to filter! \nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-        statusMessage(  tr("Nothing to filter!")  );
+        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
         return;
     }
     qDebug()<< "MW: slotEditFilterNodesIsolates";
@@ -7648,9 +7607,7 @@ void MainWindow::slotEditFilterEdgesByWeightDialog() {
 void MainWindow::slotEditFilterEdgesUnilateral(bool checked) {
     Q_UNUSED(checked);
     if ( !activeEdges()  )  {
-        QMessageBox::critical(this, "Error",tr("Nothing to filter! \n"
-                                               "Load a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr("No edges. "))  );
+        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_EDGES );
         return;
     }
     qDebug()<< "MW: slotEditFilterEdgesUnilateral";
@@ -7722,11 +7679,8 @@ void MainWindow::slotLayoutRandom(){
  */
 void MainWindow::slotLayoutCircularRandom(){
     qDebug() << "MainWindow::slotLayoutCircularRandom()";
-    if ( !activeNodes()   )  {
-        QMessageBox::critical(this, "Error",
-                              tr("No network! \n"
-                                 "Load social network data or create a new social network first. \n"), "OK",0);
-        statusMessage(  tr("Nothing to do! Load or create a social network first")  );
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
         return;
     }
 
@@ -7757,11 +7711,8 @@ void MainWindow::slotLayoutCircularRandom(){
  */
 void MainWindow::slotLayoutSpringEmbedder(){
     qDebug()<< "MW:slotLayoutSpringEmbedder";
-    if ( !activeNodes()   )  {
-        QMessageBox::critical(this, "Error",
-                              tr("No network! \n"
-                                 "Load social network data or create a new social network first. \n"), "OK",0);
-        statusMessage(  tr("Nothing to do! Load or create a social network first")  );
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
         return;
     }
 
@@ -7786,11 +7737,8 @@ void MainWindow::slotLayoutSpringEmbedder(){
  */
 void MainWindow::slotLayoutFruchterman(){
     qDebug("MW: slotLayoutFruchterman ()");
-    if ( !activeNodes()   )  {
-        QMessageBox::critical(this, "Error",
-                              tr("No network! \n"
-                                 "Load social network data or create a new social network first. \n"), "OK",0);
-        statusMessage(  tr("Nothing to do! Load or create a social network first")  );
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
         return;
     }
 
@@ -7818,11 +7766,8 @@ void MainWindow::slotLayoutFruchterman(){
  */
 void MainWindow::slotLayoutKamadaKawai(){
     qDebug()<< "MW::slotLayoutKamadaKawai ()";
-    if ( !activeNodes()   )  {
-        QMessageBox::critical(this, "Error",
-                              tr("No network! \n"
-                                 "Load social network data or create a new social network first. \n"), "OK",0);
-        statusMessage(  tr("Nothing to do! Load or create a social network first")  );
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
         return;
     }
 
@@ -7971,13 +7916,8 @@ void MainWindow::slotLayoutGuides(const bool &toggle){
  */
 void MainWindow::slotLayoutCircularByProminenceIndex(){
     qDebug() << "MainWindow::slotLayoutCircularByProminenceIndex()";
-    if ( !activeNodes()   )  {
-                QMessageBox::critical(
-                    this, "Error",
-                    tr("Sorry, I can't follow! "
-                       "\nLoad a network file or create a new network first. \n"
-                       "Then we can talk about layouts!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
         return;
     }
     QAction *menuitem=(QAction *) sender();
@@ -8001,13 +7941,8 @@ void MainWindow::slotLayoutCircularByProminenceIndex(){
  */
 void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
         qDebug() << "MainWindow::slotLayoutCircularByProminenceIndex() ";
-    if ( !activeNodes()   )  {
-                QMessageBox::critical(
-                    this, "Error",
-                    tr("Sorry, I can't follow! "
-                       "\nLoad a network file or create a new network first. \n"
-                       "Then we can talk about layouts!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
         return;
     }
     int userChoice = 0;
@@ -8167,13 +8102,8 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
  */
 void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
         qDebug() << "MainWindow::slotLayoutNodeSizesByProminenceIndex() ";
-    if ( !activeNodes()   )  {
-                QMessageBox::critical(
-                    this, "Error",
-                    tr("Sorry, I can't follow! "
-                       "\nLoad a network file or create a new network first. \n"
-                       "Then we can talk about layouts!"), "OK",0);
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
         return;
     }
     int userChoice = 0;
@@ -8327,16 +8257,7 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
   */
 void MainWindow::slotLayoutLevelByProminenceIndex(){
     if ( !activeNodes()   )  {
-        QMessageBox::critical
-                (this,
-                 "Error",
-                 tr("Sorry, I can't follow! "
-                    "\nLoad a network file or create a new network first. "
-                    "\nThen we can talk about layouts!"
-                    ),
-                 "OK",0
-                 );
-        statusMessage(  QString(tr("Nothing to layout! Are you dreaming?"))  );
+        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
         return;
     }
     QAction *menuitem=(QAction *) sender();
@@ -8542,9 +8463,8 @@ int MainWindow::activeNodes(){
 */
 
 void MainWindow::slotCheckSymmetry(){
-    if ( !activeNodes()   )   {
-        QMessageBox::critical(this, "Error",tr("There are no nodes!\nLoad a network file or create a new network. \nThen ask me to compute something!"), "OK",0);
-        statusMessage(  QString(tr("There is no network!"))  );
+    if ( !activeNodes() )   {
+        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
         return;
     }
     if (activeGraph.isSymmetric())
@@ -8564,11 +8484,8 @@ void MainWindow::slotCheckSymmetry(){
 
 
 void MainWindow::slotInvertAdjMatrix(){
-    if (  !activeNodes() ) {
-        QMessageBox::critical (this, "Error",
-                               tr("Empty network! \nLoad a network file or create something by double-clicking on the canvas!"), "OK",0);
-
-        statusMessage(  tr("Nothing to show!") );
+    if ( !activeNodes() ) {
+        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
         return;
     }
     int aNodes=activeNodes();

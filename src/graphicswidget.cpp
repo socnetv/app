@@ -85,7 +85,7 @@ void GraphicsWidget::paintEvent ( QPaintEvent * event ){
     Clears the scene
 */
 void GraphicsWidget::clear() {
-    qDebug() << "GW::clear()";
+    qDebug() << "GW::clear() - start clearing hashes";
     nodeHash.clear();
     edgesHash.clear();
     scene()->clear();
@@ -94,7 +94,7 @@ void GraphicsWidget::clear() {
     markedEdgeExist = false;
     firstNode=0;
     secondDoubleClick=false;
-
+    qDebug() << "GW::clear() - finished.";
 }
 
 /**
