@@ -52,6 +52,10 @@
 
 static const QString VERSION="2.2";
 
+static const int USER_MSG_INFO=0;
+static const int USER_MSG_CRITICAL=1;
+static const int USER_MSG_CRITICAL_NO_NETWORK=2;
+static const int USER_MSG_CRITICAL_NO_EDGES=3;
 
 
 QT_BEGIN_NAMESPACE
@@ -115,7 +119,6 @@ public:
     void setLastPath(QString filePath);
     QString getLastPath();
     void createFortuneCookies();
-    void slotHelpCreateTips();
 
     int activeEdges();
     int activeNodes();
@@ -336,14 +339,17 @@ public slots:
     void slotHelpTips();
     void slotHelp();
     void slotHelpCheckUpdates();
+    void slotHelpCreateTips();
     void slotHelpAbout();
     void slotAboutQt();
+    void slotHelpMessageToUser(const QString msg=QString::null,
+                               const QString statusMsg=QString::null,
+                               const int type=0);
 
 
 
     //Called by Graph to display some message to the user
     void statusMessage(const QString);
-    void showMessageToUser(const QString);
 
 
     //Called from MW, when user highlights something in the toolbox Comboboxes
