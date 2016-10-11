@@ -868,18 +868,18 @@ void MainWindow::initActions(){
     connect(editNodePropertiesAct, SIGNAL(triggered()), this, SLOT(slotEditNodePropertiesDialog()));
 
 
-    editNodeSelectedToConnectedSubgraphAct = new QAction(QIcon(":/images/properties.png"),
-                                               tr("Connect all Selected Nodes"), this);
-    editNodeSelectedToConnectedSubgraphAct ->setShortcut(Qt::CTRL + Qt::Key_I );
-    editNodeSelectedToConnectedSubgraphAct->setStatusTip(tr("Connect all selected nodes to create a clique -- "
+    editNodeSelectedToCliqueAct = new QAction(QIcon(":/images/properties.png"),
+                                               tr("Create a clique from selected nodes "), this);
+    editNodeSelectedToCliqueAct ->setShortcut(Qt::CTRL + Qt::Key_I );
+    editNodeSelectedToCliqueAct->setStatusTip(tr("Connect all selected nodes with edges to create a clique -- "
                                            "There must be some nodes selected!"));
-    editNodeSelectedToConnectedSubgraphAct->setWhatsThis(tr("Connect all Selected Nodes\n\n"
-                                           "If there are selected nodes, "
-                                           "it connects all of them to each other. "
-                                           "The result is a connected subgraph (clique) \n"
+    editNodeSelectedToCliqueAct->setWhatsThis(tr("Clique from Selected Nodes\n\n"
+                                           "Adds all possible edges between selected nodes, "
+                                           "so that they become a clique, a complete subgraph \n"
+                                           ""
                                            "You must have some nodes selected."));
-    connect(editNodeSelectedToConnectedSubgraphAct, SIGNAL(triggered()),
-            this, SLOT(slotEditNodeSelectedToConnectedSubgraph()));
+    connect(editNodeSelectedToCliqueAct, SIGNAL(triggered()),
+            this, SLOT(slotEditNodeSelectedToClique()));
 
 
     editNodeColorAll = new QAction(QIcon(":/images/nodecolor.png"), tr("Change All Nodes Color (this session)"),	this);
@@ -2263,7 +2263,7 @@ void MainWindow::initMenuBar() {
 
     editNodeMenu -> addSeparator();
 
-    editNodeMenu -> addAction (editNodeSelectedToConnectedSubgraphAct);
+    editNodeMenu -> addAction (editNodeSelectedToCliqueAct);
 
     editNodeMenu -> addSeparator();
 
@@ -6211,6 +6211,9 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
             editNodeRemoveAct->setText(tr("Remove ")
                                        + QString::number(nodeCount)
                                        + tr(" nodes"));
+            contextMenu -> addSeparator();
+            contextMenu -> addAction(editNodeSelectedToCliqueAct);
+
         }
         else {
             editNodeRemoveAct->setText(tr("Remove ")
@@ -6624,12 +6627,13 @@ void MainWindow::slotEditNodeProperties( const QString label, const int size,
 
 
 
-void MainWindow::slotEditNodeSelectedToConnectedSubgraph () {
-    qDebug() << "MW::slotEditNodeSelectedToConnectedSubgraph()";
+void MainWindow::slotEditNodeSelectedToClique () {
+    qDebug() << "MW::slotEditNodeSelectedToClique()";
     if ( !activeNodes() )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
+    activeGraph.cliqueCreate( selectedNodes() );
 }
 
 
@@ -7052,11 +7056,20 @@ void MainWindow::slotEditSelectionChanged(const int nodes, const int edges) {
         editNodeRemoveAct->setText(tr("Remove ")
                                    + QString::number(nodes)
                                    + tr(" nodes"));
+        editNodeSelectedToCliqueAct->setEnabled(true);
+        editNodeSelectedToCliqueAct->setText(tr("Create a clique from ")
+                                             + QString::number(nodes)
+                                             + tr(" selected nodes"));
     }
     else {
         editNodeRemoveAct->setText(tr("Remove ")
                                    + QString::number(nodes)
                                    + tr(" node"));
+        editNodeSelectedToCliqueAct->setText(tr("Create a clique from ")
+                                             + QString::number(0)
+                                             + tr(" selected nodes"));
+        editNodeSelectedToCliqueAct->setEnabled(false);
+
     }
 }
 
