@@ -379,6 +379,7 @@ QString Graph::relationCurrentName() const{
 /**
  * @brief Graph::relations
  * @return
+ * Returns the number of relationships in this Graph
  */
 int Graph::relations(){
     //qDebug () << " relations count " << m_relationsList.count();
@@ -1502,15 +1503,17 @@ void Graph::edgeFilterByRelation(int relation, bool status){
  * the network symmetric.
  * @param toggle
  */
-void Graph::edgeFilterUnilateral(const bool &toggle) {
+void Graph::edgeFilterUnilateral(const bool &toggle, const bool &allRelations) {
     qDebug() << "Graph::edgeFilterUnilateral() " ;
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-            (*it)->edgeFilterUnilateral ( toggle);
+            (*it)->edgeFilterUnilateral ( toggle, allRelations );
     }
     graphModifiedSet(GRAPH_CHANGED_EDGES);
     emit statusMessage(tr("Unilateral edges have been temporarily disabled."));
 }
+
+
 
 /**
  * @brief Graph::edgeExists

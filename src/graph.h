@@ -205,7 +205,8 @@ public slots:
     void vertexIsolateFilter ( bool );		//Called by MW to filter orphan vertices
     void edgeFilterByWeight (float, bool);		//Called by MW to filter edges over/under a weight
     void edgeFilterByRelation(int relation, bool status);
-    void edgeFilterUnilateral(const bool &toggle);
+    void edgeFilterUnilateral(const bool &toggle,
+                              const bool &allRelations=false);
     void webCrawl(QString, int, int, bool extLinks, bool intLinks);	//Called by MW to start a web crawler...
 
     QString htmlEscaped (QString str) const;
@@ -223,7 +224,7 @@ signals:
                             int totalNodes,int totalLinks, bool undirected);
     void signalGraphSaved(const int &status);
 
-    void statusMessage (const QString &message);			//updates statusbar message
+    void statusMessage (const QString &message);
     void signalRelationAddToMW(QString newRelation);
     void signalDatasetDescription(QString);
     void signalNodeSizesByOutDegree(bool);
