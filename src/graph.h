@@ -558,6 +558,7 @@ public:
 
     float numberOfTriples(int v1);
 
+    void cliqueCreate(const QList<int> &verticesList);
 
     void cliques(QSet<int> R=QSet<int>(), QSet<int> P=QSet<int>(), QSet<int> X=QSet<int>() );
     bool  cliqueAdd (const QList<int> &list);

@@ -6853,6 +6853,27 @@ void Graph::writeTriadCensus(
 }
 
 
+void Graph::cliqueCreate(const QList<int> &vList) {
+    qDebug()<<"Graph::cliqueCreate() - list:" << vList;
+
+    int weight;
+    for (int i=0; i < vList.count(); ++i ) {
+            for (int j=i+1; j < vList.count(); ++j ) {
+                if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
+                    edgeCreate(vList.value(i), vList.value(j),1.0,
+                               initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED );
+                }
+                else {
+                    edgeUndirectedSet(vList.value(i), vList.value(j), weight);
+                }
+
+            }
+
+    }
+
+
+}
+
 /**
 *	Writes the number of cliques (triangles) of each vertex into a given file.
 */
