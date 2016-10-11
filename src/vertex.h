@@ -126,7 +126,8 @@ public:
     void edgeFilterByWeight(float m_threshold, bool overThreshold);
     //	void filterEdgesByColor(float m_threshold, bool overThreshold);
     void edgeFilterByRelation(int relation, bool status);
-    void edgeFilterUnilateral(const bool &toggle=false);
+    void edgeFilterUnilateral(const bool &toggle=false,
+                              const bool &allRelations=false);
 
     void setSize(const int &size ) { m_size=size; }
     int size()  const { return m_size; }

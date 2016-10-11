@@ -342,10 +342,12 @@ void Vertex::edgeFilterByWeight(float m_threshold, bool overThreshold){
 /**
  * @brief Vertex::edgeFilterUnilateral
    Called from Graph to filter non-reciprocal edges
+   If allRelations is true, then all relations are checked
  * @param toggle
+ * @param allRelations
  */
 
-void Vertex::edgeFilterUnilateral(const bool &toggle){
+void Vertex::edgeFilterUnilateral(const bool &toggle, const bool &allRelations){
     qDebug() << "Vertex::edgeFilterUnilateral() of vertex " << this->m_name;
     int target=0;
     float weight=0;
