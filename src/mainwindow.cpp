@@ -3923,36 +3923,124 @@ void MainWindow::statusMessage(const QString message){
  * Convenience method
  * @param message
  */
-void MainWindow::slotHelpMessageToUser(const QString msg, const QString statusMsg, const int type) {
+int MainWindow::slotHelpMessageToUser(const int type,
+                                      const QString statusMsg,
+                                      const QString text,
+                                      const QString info,
+                                      QMessageBox::StandardButtons buttons,
+                                      QMessageBox::StandardButton defBtn,
+                                      const QString btn1,
+                                      const QString btn2
+                                      ) {
+    int response=0;
+    QMessageBox msgBox;
+    QPushButton *pbtn1, *pbtn2;
+
     switch (type) {
     case USER_MSG_INFO:
-        QMessageBox::information(this, tr("Info"),
-                                 msg,
-                                 QMessageBox::Ok, 0);
+        if (!statusMsg.isNull()) statusMessage(  statusMsg  );
+
+        msgBox.setText(text);
+        if (!info.isNull()) msgBox.setInformativeText(info);
+        msgBox.setIcon(QMessageBox::Information);
+        if (buttons==QMessageBox::NoButton) {
+            msgBox.setStandardButtons(QMessageBox::Ok);
+            msgBox.setDefaultButton(QMessageBox::Ok);
+        }
+        else {
+            msgBox.setStandardButtons(buttons);
+            msgBox.setDefaultButton(defBtn);
+        }
+        msgBox.setDefaultButton(defBtn);
+        response = msgBox.exec();
 
         break;
+
     case USER_MSG_CRITICAL:
-        QMessageBox::critical(this, tr("Error"),
-                              msg,
-                              QMessageBox::Ok, 0);
+        if (!statusMsg.isNull()) statusMessage(  statusMsg  );
+
+        msgBox.setText(text);
+        if (!info.isNull()) msgBox.setInformativeText(info);
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        response = msgBox.exec();
 
         break;
+
     case USER_MSG_CRITICAL_NO_NETWORK:
-        QMessageBox::critical(this, "Error",
-                              tr("No network! \n"
-                                 "Load social network data or create a new social network first. \n"), "OK",0);
         statusMessage(  tr("Nothing to do! Load or create a social network first")  );
-        break;
-    case USER_MSG_CRITICAL_NO_EDGES:
-        QMessageBox::critical(this, "Error",
-                              tr("No edges! \n"
-                                 "Load social network data or create some edges first. \n"), "OK",0);
-        statusMessage(  tr("Nothing to do! Load social network data or create edges first")  );
+
+        msgBox.setText(
+                    tr("No network! \n"
+                       "Load social network data or create a new social network first. \n")
+                    );
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        response = msgBox.exec();
+
         break;
 
-    default:
-            break;
+    case USER_MSG_CRITICAL_NO_EDGES:
+        statusMessage(  tr("Nothing to do! Load social network data or create edges first")  );
+
+        msgBox.setText(
+                    tr("No edges! \n"
+                       "Load social network data or create some edges first. \n")
+                    );
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        response = msgBox.exec();
+
+        break;
+
+    case USER_MSG_QUESTION:
+        if (!statusMsg.isNull()) statusMessage(  statusMsg  );
+
+        msgBox.setText( text );
+        if (!info.isNull()) msgBox.setInformativeText(info);
+        if (buttons==QMessageBox::NoButton) {
+            msgBox.setStandardButtons(QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel);
+            msgBox.setDefaultButton(QMessageBox::Yes);
+        }
+        else {
+            msgBox.setStandardButtons(buttons);
+            msgBox.setDefaultButton(defBtn);
+        }
+
+        msgBox.setIcon(QMessageBox::Question);
+        response = msgBox.exec();
+
+        break;
+
+    case USER_MSG_QUESTION_CUSTOM:
+        if (!statusMsg.isNull()) statusMessage(  statusMsg  );
+
+        msgBox.setText( text );
+        if (!info.isNull()) msgBox.setInformativeText(info);
+        pbtn1 = msgBox.addButton(btn1, QMessageBox::ActionRole);
+        pbtn2 = msgBox.addButton(btn2, QMessageBox::ActionRole);
+        msgBox.setIcon(QMessageBox::Question);
+        response = msgBox.exec();
+        if (msgBox.clickedButton() == pbtn1 ) {
+            response=0;
+        }
+        else if (msgBox.clickedButton() == pbtn2 ) {
+            response=1;
+        }
+        break;
+    default: //just for sanity
+        if (!statusMsg.isNull()) statusMessage(  statusMsg  );
+        msgBox.setText( text );
+        msgBox.setIcon(QMessageBox::Information);
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        response = msgBox.exec();
+        break;
     }
+    return response;
 
 }
 
@@ -4230,20 +4318,23 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
         ce->accept();
         return;
     }
-    switch( QMessageBox::information( this, "Save file",
-                                      tr("Do you want to save the changes") +
-                                      tr(" to the network file?"),
-                                      tr("Yes"), tr("No"), tr("Cancel"),
-                                      0, 1 ) )
+
+    switch( slotHelpMessageToUser(
+                USER_MSG_QUESTION,
+                tr("Save changes?"),
+                tr("Network changed!"),
+                tr("Do you want to save the changes to the network file?"),
+                 QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel, QMessageBox::Cancel
+                ) )
     {
-    case 0:
+    case QMessageBox::Yes:
         slotNetworkSave();
         ce->accept();
         break;
-    case 1:
+    case QMessageBox::No:
         ce->accept();
         break;
-    case 2:
+    case QMessageBox::NoButton:
     default: // just for sanity
         ce->ignore();
         break;
@@ -4320,20 +4411,22 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
              << " m_fileName: " << m_fileName
              << " m_fileFormat " << m_fileFormat
              << " checkSelectFileType " << checkSelectFileType;
-    if (firstTime && m_fileFormat == -500 ) {
-        QMessageBox::information( this, "SocNetV",
-                                  tr("Attention: \n")+
-                                  tr("This menu option is more suitable for loading "
-                                     "a network file in GraphML format (.graphml), "
-                                     "which is the default format of SocNetV. \n"
-                                     "Nevertheless, if you select other supported "
-                                     "filetype SocNetV will attempt to load it.\n")+
+    if (firstTime && m_fileName.isNull() && m_fileFormat == FILE_UNRECOGNIZED ) {
 
-                                  tr("If your file is not GraphML but you know its "
-                                     "format is supported (i.e. Pajek, UCINET, GraphViz, etc), ")+
-                                  tr("please use the options in the Import sub menu. They are more safe.\n")+
-                                  tr("\n This warning message will not appear again."),
-                                  "OK", 0 );
+        slotHelpMessageToUser(
+                        USER_MSG_INFO,
+                        tr("Useful information"),
+                    tr("This menu option is more suitable for loading "
+                       "a network file in GraphML format (.graphml), "
+                       "which is the default format of SocNetV. \n"
+                       "Nevertheless, if you select other supported "
+                       "filetype SocNetV will attempt to load it.\n"
+                       "If your file is not GraphML but you know its "
+                       "format is supported (i.e. Pajek, UCINET, GraphViz, etc), "
+                       "please use the options in the Import sub menu. They are more safe.\n"
+                       "\n This warning message will not appear again.")
+                        );
+
         firstTime=false;
     }
 
@@ -4522,20 +4615,23 @@ void MainWindow::slotNetworkSave(const int &fileFormat) {
     }
     else
     {
-        switch( QMessageBox::information(
-                    this, "Default File Format: GraphML ",
-                    tr("This imported network will be saved in GraphML format ")+
-                    tr("which is the default file format of SocNetV. \n\n")+
-                    tr("Is this OK? \n\n") +
-                    tr("If not, press Cancel, then go to Network > Export menu "
-                       "to see other supported formats to export your data to."),
-                    "Yes", "No",0,1 )
-                )
+        switch(
+               slotHelpMessageToUser (USER_MSG_QUESTION,
+                                      tr("Save to GraphML?"),
+                                      tr("Default File Format: GraphML "),
+                                      tr("This network will be saved in GraphML format "
+                                         "which is the default file format of SocNetV. \n\n"
+                                         "Is this OK? \n\n"
+                                         "If not, press Cancel, then go to Network > Export menu "
+                                         "to see other supported formats to export your data to.")
+                                      )
+               )
         {
-        case 0:
+        case QMessageBox::Yes:
              activeGraph.graphSave(fileName, FILE_GRAPHML);
             break;
-        case 1:
+        case QMessageBox::Cancel:
+        case QMessageBox::No:
             statusMessage( tr("Save aborted...") );
             break;
         }
@@ -4560,10 +4656,12 @@ void MainWindow::slotNetworkSaveAs() {
                 getLastPath(), tr("GraphML (*.graphml *.xml);;All (*)") );
     if (!fn.isEmpty())  {
         if  ( QFileInfo(fn).suffix().isEmpty() ){
-            QMessageBox::information(
-                        this, "Missing Extension ",
-                        tr("File extension was missing! \n"
-                           "Appending a standard .graphml to the given filename."), "OK",0);
+            slotHelpMessageToUser (
+                        USER_MSG_INFO,
+                        tr("Appending .graphml"),
+                        tr("Missing Extension. \n"
+                           "Appending a standard .graphml to the given filename.")
+                        );
             fn.append(".graphml");
         }
         /** \todo  Change the suffix automatically to graphML even if the user
@@ -4618,13 +4716,18 @@ void MainWindow::slotNetworkClose() {
     qDebug()<<"slotNetworkClose()";
     statusMessage( tr("Closing network file..."));
     if (networkModified) {
-        switch ( QMessageBox::information (this,
-                                           "Closing Network...",
-                                           tr("Network has not been saved. \nDo you want to save before closing it?"),
-                                           "Yes", "No",0,1))
+        switch (
+                slotHelpMessageToUser (
+                            USER_MSG_QUESTION,
+                            tr("Closing Network..."),
+                            tr("Network has not been saved. \n"
+                               "Do you want to save before closing it?")
+                            )
+                )
         {
-        case 0: slotNetworkSave(); break;
-        case 1: break;
+        case QMessageBox::Yes: slotNetworkSave(); break;
+        case QMessageBox::No: break;
+        case QMessageBox::Cancel: return; break;
         }
     }
     statusMessage( tr("Erasing old network data...."));
@@ -4870,12 +4973,21 @@ bool MainWindow::slotNetworkFileLoad(const QString m_fileName,
     int two_sm_mode = 0;
 
     if ( m_fileFormat == FILE_TWOMODE ) {
-        switch( QMessageBox::information( this, "Two-mode sociomatrix",
-                                          tr("If this file is in two-mode sociomatrix format, \n")+
-                                          tr("please specify which mode to open \n\n") +
-                                          tr("1st mode: rows are nodes \n") +
-                                          tr("2nd mode: columns are nodes"),
-                                          tr("1st Mode"), tr("2nd mode"), 0,1 ) ) {
+        switch(
+               slotHelpMessageToUser (
+                   USER_MSG_QUESTION_CUSTOM,
+                   tr("Two-mode sociomatrix. Select mode..."),
+                   tr("Two-mode sociomatrix"),
+                   tr("If this file is in two-mode sociomatrix format, "
+                      "please specify which mode to open \n\n"
+                      "1st mode: rows are nodes \n"
+                      "2nd mode: columns are nodes"),
+                   QMessageBox::NoButton,
+                   QMessageBox::Ok,
+                   tr("1st Mode"),tr("2nd mode")
+
+                           )
+               ) {
         case 0:
             two_sm_mode = 1;
             break;
@@ -5116,7 +5228,7 @@ void MainWindow::slotEditRelationAdd(){
 bool MainWindow::slotNetworkExportPNG(){
     qDebug()<< "MW::slotNetworkExportPNG";
     if ( !activeNodes() )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return false;
     }
     QString fn = QFileDialog::getSaveFileName(
@@ -5173,7 +5285,7 @@ bool MainWindow::slotNetworkExportPNG(){
 bool MainWindow::slotNetworkExportBMP(){
     qDebug(	"slotNetworkExportBMP()");
     if ( !activeNodes() )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return false;
     }
     QString format="bmp";
@@ -5232,7 +5344,7 @@ bool MainWindow::slotNetworkExportBMP(){
 bool MainWindow::slotNetworkExportPDF(){
     qDebug()<< "MW::slotNetworkExportPDF()";
     if ( !activeNodes() )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return false;
     }
 
@@ -5280,7 +5392,7 @@ void MainWindow::slotNetworkExportPajek()
     qDebug () << "MW::slotNetworkExportPajek";
 
     if ( !activeNodes() )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -5318,7 +5430,7 @@ void MainWindow::slotNetworkExportPajek()
 void MainWindow::slotNetworkExportSM(){
     qDebug("MW: slotNetworkExportSM()");
     if ( !activeNodes() )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     statusMessage( tr("Exporting active network under new filename..."));
@@ -5359,7 +5471,7 @@ void MainWindow::slotNetworkExportSM(){
  */
 bool MainWindow::slotNetworkExportDL(){
     if ( !activeNodes() )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return false;
     }
 
@@ -5388,7 +5500,7 @@ bool MainWindow::slotNetworkExportDL(){
 */ 
 bool MainWindow::slotNetworkExportGW(){
     if ( !activeNodes() )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return false;
     }
 
@@ -5472,7 +5584,7 @@ void MainWindow::slotNetworkFileView(){
         slotNetworkFileView();
     }
     else	{
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
     }
 }
 
@@ -5506,7 +5618,7 @@ void MainWindow::slotNetworkTextEditor(){
  */
 void MainWindow::slotNetworkViewSociomatrix(){
     if ( !activeNodes() ) {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     int aNodes=activeNodes();
@@ -6250,7 +6362,7 @@ void MainWindow::slotEditNodeAddWithMouse( const QPointF &p) {
 void MainWindow::slotEditNodeFind(){
     qDebug ("MW: slotEditNodeFind()");
     if ( !activeNodes() ) {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -6297,7 +6409,7 @@ void MainWindow::slotEditNodeFind(){
 void MainWindow::slotEditNodeRemove() {
     qDebug() << "MW: slotEditNodeRemove()";
     if ( !activeNodes() )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     if (activeGraph.relations() > 1){
@@ -6373,7 +6485,7 @@ void MainWindow::slotEditNodePropertiesDialog() {
 
     qDebug() << "MW::slotEditNodePropertiesDialog()";
     if ( !activeNodes() )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     int min=-1, max=-1, size = appSettings["initNodeSize"].toInt(0, 10);
@@ -6515,7 +6627,7 @@ void MainWindow::slotEditNodeProperties( const QString label, const int size,
 void MainWindow::slotEditNodeSelectedToConnectedSubgraph () {
     qDebug() << "MW::slotEditNodeSelectedToConnectedSubgraph()";
     if ( !activeNodes() )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 }
@@ -7047,7 +7159,7 @@ void MainWindow::slotEditEdgeOpenContextMenu() {
 void MainWindow::slotEditEdgeAdd(){
     qDebug ("MW: slotEditEdgeAdd()");
     if ( !activeNodes() )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -7161,7 +7273,7 @@ void MainWindow::slotEditEdgeCreate (const int &source, const int &target,
  */
 void MainWindow::slotEditEdgeRemove(){
     if ( !activeNodes() || activeEdges() ==0 )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_EDGES );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
 
@@ -7226,7 +7338,7 @@ void MainWindow::slotEditEdgeRemove(){
 void MainWindow::slotEditEdgeLabel(){
     qDebug() << "MW::slotEditEdgeLabel()";
     if ( !activeEdges() )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_EDGES );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
 
@@ -7344,7 +7456,7 @@ void MainWindow::slotEditEdgeColorAll(QColor color,const int &threshold){
 void MainWindow::slotEditEdgeColor(){
     qDebug() << "MW::slotEditEdgeColor()";
     if (  !activeEdges() )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_EDGES );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
 
@@ -7422,7 +7534,7 @@ void MainWindow::slotEditEdgeColor(){
  */
 void MainWindow::slotEditEdgeWeight(){
     if (  !activeEdges()  )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_EDGES );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
 
@@ -7503,7 +7615,7 @@ void MainWindow::slotEditEdgeWeight(){
  */
 void MainWindow::slotEditEdgeSymmetrizeAll(){
     if ( activeEdges() ==0 )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_EDGES );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
     qDebug("MW: slotEditEdgeSymmetrizeAll() calling symmetrize");
@@ -7567,7 +7679,7 @@ void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
 void MainWindow::slotFilterNodes(){
 
     if ( !activeNodes() )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 }
@@ -7579,7 +7691,7 @@ void MainWindow::slotFilterNodes(){
 void MainWindow::slotEditFilterNodesIsolates(bool checked){
     Q_UNUSED(checked);
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     qDebug()<< "MW: slotEditFilterNodesIsolates";
@@ -7603,12 +7715,20 @@ void MainWindow::slotEditFilterEdgesByWeightDialog() {
 
 
 
-
+/**
+ * @brief MainWindow::slotEditFilterEdgesUnilateral
+ * @param checked
+ * Calls Graph::edgeFilterUnilateral( bool). If bool==true, all unilateral
+ * edges are filtered out.
+ */
 void MainWindow::slotEditFilterEdgesUnilateral(bool checked) {
     Q_UNUSED(checked);
     if ( !activeEdges()  )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_EDGES );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
+    }
+    if (activeGraph.relations()>1) {
+
     }
     qDebug()<< "MW: slotEditFilterEdgesUnilateral";
     activeGraph.edgeFilterUnilateral( ! editFilterEdgesUnilateralAct->isChecked() );
@@ -7655,7 +7775,7 @@ void MainWindow::slotColorationRegular() {
  */
 void MainWindow::slotLayoutRandom(){
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -7680,7 +7800,7 @@ void MainWindow::slotLayoutRandom(){
 void MainWindow::slotLayoutCircularRandom(){
     qDebug() << "MainWindow::slotLayoutCircularRandom()";
     if ( !activeNodes() )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -7712,7 +7832,7 @@ void MainWindow::slotLayoutCircularRandom(){
 void MainWindow::slotLayoutSpringEmbedder(){
     qDebug()<< "MW:slotLayoutSpringEmbedder";
     if ( !activeNodes() )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -7738,7 +7858,7 @@ void MainWindow::slotLayoutSpringEmbedder(){
 void MainWindow::slotLayoutFruchterman(){
     qDebug("MW: slotLayoutFruchterman ()");
     if ( !activeNodes() )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -7767,7 +7887,7 @@ void MainWindow::slotLayoutFruchterman(){
 void MainWindow::slotLayoutKamadaKawai(){
     qDebug()<< "MW::slotLayoutKamadaKawai ()";
     if ( !activeNodes() )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -7794,7 +7914,7 @@ void MainWindow::slotLayoutKamadaKawai(){
  */
 void MainWindow::slotLayoutNodeSizesByOutDegree(bool checked){
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -7841,7 +7961,7 @@ void MainWindow::slotLayoutNodeSizesByOutDegree(bool checked){
  */
 void MainWindow::slotLayoutNodeSizesByInDegree(bool checked){
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -7889,7 +8009,7 @@ void MainWindow::slotLayoutNodeSizesByInDegree(bool checked){
 void MainWindow::slotLayoutGuides(const bool &toggle){
     qDebug()<< "MW:slotLayoutGuides()";
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -7917,7 +8037,7 @@ void MainWindow::slotLayoutGuides(const bool &toggle){
 void MainWindow::slotLayoutCircularByProminenceIndex(){
     qDebug() << "MainWindow::slotLayoutCircularByProminenceIndex()";
     if ( !activeNodes() )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     QAction *menuitem=(QAction *) sender();
@@ -7942,7 +8062,7 @@ void MainWindow::slotLayoutCircularByProminenceIndex(){
 void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
         qDebug() << "MainWindow::slotLayoutCircularByProminenceIndex() ";
     if ( !activeNodes() )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     int userChoice = 0;
@@ -8103,7 +8223,7 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
 void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
         qDebug() << "MainWindow::slotLayoutNodeSizesByProminenceIndex() ";
     if ( !activeNodes() )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     int userChoice = 0;
@@ -8257,7 +8377,7 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
   */
 void MainWindow::slotLayoutLevelByProminenceIndex(){
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     QAction *menuitem=(QAction *) sender();
@@ -8282,7 +8402,7 @@ void MainWindow::slotLayoutLevelByProminenceIndex(){
  */
 void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     int userChoice = 0;
@@ -8464,7 +8584,7 @@ int MainWindow::activeNodes(){
 
 void MainWindow::slotCheckSymmetry(){
     if ( !activeNodes() )   {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     if (activeGraph.isSymmetric())
@@ -8485,7 +8605,7 @@ void MainWindow::slotCheckSymmetry(){
 
 void MainWindow::slotInvertAdjMatrix(){
     if ( !activeNodes() ) {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     int aNodes=activeNodes();
@@ -8574,7 +8694,7 @@ void MainWindow::askAboutWeights(){
 */
 void MainWindow::slotGraphDistance(){
     if ( !activeNodes() || !activeEdges()  )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     bool ok=false;
@@ -8650,7 +8770,7 @@ void MainWindow::slotGraphDistance(){
 void MainWindow::slotDistancesMatrix(){
     qDebug("MW: slotDistancesMatrix()");
     if ( !activeNodes()    )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     statusMessage( tr("Creating distance matrix. Please wait...") );
@@ -8686,7 +8806,7 @@ void MainWindow::slotDistancesMatrix(){
 void MainWindow::slotGeodesicsMatrix(){
     qDebug("MW: slotViewNumberOfGeodesics()");
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -8716,7 +8836,7 @@ void MainWindow::slotGeodesicsMatrix(){
 /**  Displays the network diameter (largest geodesic) */
 void MainWindow::slotDiameter() {
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -8764,7 +8884,7 @@ void MainWindow::slotDiameter() {
 /**  Displays the  average shortest path length (average graph distance) */
 void MainWindow::slotAverageGraphDistance() {
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -8795,7 +8915,7 @@ void MainWindow::slotAverageGraphDistance() {
 */
 void MainWindow::slotEccentricity(){
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     QString fn = appSettings["dataDir"] + "socnetv-report-eccentricity.dat";
@@ -8827,7 +8947,7 @@ void MainWindow::slotEccentricity(){
  */
 void MainWindow::slotConnectedness(){
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -8895,7 +9015,7 @@ void MainWindow::slotConnectedness(){
 */
 void MainWindow::slotWalksOfGivenLength(){
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -8932,7 +9052,7 @@ void MainWindow::slotWalksOfGivenLength(){
  */
 void MainWindow::slotTotalWalks(){
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     if (activeNodes() > 50) {
@@ -8985,7 +9105,7 @@ void MainWindow::slotTotalWalks(){
 */
 void MainWindow::slotReachabilityMatrix(){
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -9015,7 +9135,7 @@ void MainWindow::slotReachabilityMatrix(){
 */
 void MainWindow::slotCliqueCensus(){
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     QString fn = appSettings["dataDir"] + "socnetv-report-clique-census.dat";
@@ -9047,7 +9167,7 @@ void MainWindow::slotCliqueCensus(){
 */
 void MainWindow::slotClusteringCoefficient (){
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     QString fn = appSettings["dataDir"] + "socnetv-report-clustering-coefficients.dat";
@@ -9078,7 +9198,7 @@ void MainWindow::slotClusteringCoefficient (){
 void MainWindow::slotTriadCensus() {
 
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     QString fn = appSettings["dataDir"] + "socnetv-report-triad-census.dat";
@@ -9106,20 +9226,28 @@ void MainWindow::slotTriadCensus() {
 */
 void MainWindow::slotCentralityDegree(){
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     bool considerWeights=false;
     if ( activeGraph.isWeighted()) {
-        switch( QMessageBox::information( this, "Centrality Out-Degree",
-                                          tr("Graph edges have weights. \nTake weights into account (Default: No)?"),
-                                          tr("Yes"), tr("No"),
-                                          0, 1 ) )
+
+//        QMessageBox::information( this, "Centrality Out-Degree",
+//                                                 tr("Graph edges have weights. \nTake weights into account (Default: No)?"),
+//                                                 tr("Yes"), tr("No"),
+//                                                 0, 1 )
+        switch( slotHelpMessageToUser(
+                    USER_MSG_QUESTION,
+                    tr("Consider weights?") ,
+                    tr("Graph edges have weights. \n"
+                       "Take weights into account (Default: No)?")
+                    )
+                )
         {
-        case 0:
+        case QMessageBox::Yes:
             considerWeights=true;
             break;
-        case 1:
+        case QMessageBox::No:
             considerWeights=false;
             break;
         default: // just for sanity
@@ -9156,7 +9284,7 @@ void MainWindow::slotCentralityDegree(){
 */
 void MainWindow::slotCentralityCloseness(){
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
@@ -9259,7 +9387,7 @@ void MainWindow::slotCentralityCloseness(){
  */
 void MainWindow::slotCentralityClosenessInfluenceRange(){
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
@@ -9295,7 +9423,7 @@ void MainWindow::slotCentralityClosenessInfluenceRange(){
 */
 void MainWindow::slotCentralityBetweenness(){
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality_betweenness.dat";
@@ -9329,7 +9457,7 @@ void MainWindow::slotCentralityBetweenness(){
 */
 void MainWindow::slotPrestigeDegree(){
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     if (activeGraph.isSymmetric()) {
@@ -9389,7 +9517,7 @@ void MainWindow::slotPrestigeDegree(){
 */
 void MainWindow::slotPrestigePageRank(){
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     QString fn = appSettings["dataDir"] + "socnetv-report-prestige_pagerank.dat";
@@ -9422,7 +9550,7 @@ void MainWindow::slotPrestigePageRank(){
  */
 void MainWindow::slotPrestigeProximity(){
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality_proximity_prestige.dat";
@@ -9456,7 +9584,7 @@ void MainWindow::slotPrestigeProximity(){
  */
 void MainWindow::slotCentralityInformation(){
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     if (activeNodes() > 200) {
@@ -9515,7 +9643,7 @@ void MainWindow::slotCentralityInformation(){
  */
 void MainWindow::slotCentralityStress(){
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality_stress.dat";
@@ -9549,7 +9677,7 @@ void MainWindow::slotCentralityStress(){
  */
 void MainWindow::slotCentralityPower(){
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality_power.dat";
@@ -9582,7 +9710,7 @@ void MainWindow::slotCentralityPower(){
  */
 void MainWindow::slotCentralityEccentricity(){
     if ( !activeNodes()   )  {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality_eccentricity.dat";
@@ -9747,7 +9875,7 @@ void MainWindow::slotOptionsNodeLabelsVisibility(bool toggle){
  */
 void MainWindow::slotOptionsEdgesVisibility(bool toggle){
     if ( !activeEdges() ) {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
@@ -9773,7 +9901,7 @@ void MainWindow::slotOptionsEdgesVisibility(bool toggle){
  */
 void MainWindow::slotOptionsEdgeArrowsVisibility(bool toggle){
     if ( !activeNodes() ) {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     statusMessage( tr("Toggle Edges Arrows. Please wait...") );
@@ -9829,7 +9957,7 @@ void MainWindow::slotOptionsEdgeWeightsDuringComputation(bool toggle) {
 */
 void MainWindow::slotOptionsEdgesBezier(bool toggle){
     if ( !activeNodes() ) {
-        slotHelpMessageToUser(QString::null,QString::null, USER_MSG_CRITICAL_NO_NETWORK );
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     statusMessage( tr("Toggle edges bezier. Please wait...") );

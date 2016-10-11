@@ -39,6 +39,7 @@
 #include <QMainWindow>
 #include <QGraphicsScene>
 #include <QPrinter>
+#include <QMessageBox>
 
 /** SocNetV specific includes*/
 
@@ -56,7 +57,8 @@ static const int USER_MSG_INFO=0;
 static const int USER_MSG_CRITICAL=1;
 static const int USER_MSG_CRITICAL_NO_NETWORK=2;
 static const int USER_MSG_CRITICAL_NO_EDGES=3;
-
+static const int USER_MSG_QUESTION=4;
+static const int USER_MSG_QUESTION_CUSTOM=5;
 
 QT_BEGIN_NAMESPACE
 class QMenu;
@@ -342,9 +344,15 @@ public slots:
     void slotHelpCreateTips();
     void slotHelpAbout();
     void slotAboutQt();
-    void slotHelpMessageToUser(const QString msg=QString::null,
-                               const QString statusMsg=QString::null,
-                               const int type=0);
+    int slotHelpMessageToUser(const int type=0,
+                              const QString statusMsg=QString::null,
+                              const QString text=QString::null,
+                              const QString info=QString::null,
+                              QMessageBox::StandardButtons buttons=QMessageBox::NoButton,
+                              QMessageBox::StandardButton defBtn=QMessageBox::Ok,
+                              const QString btn1=QString::null,
+                              const QString btn2=QString::null
+                               );
 
 
 
