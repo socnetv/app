@@ -135,7 +135,6 @@ class CompareDistances {
   \bug wrong default edge colors (not the ones used by Settings) after loading GraphML files.
   \bug Resizing the MW view does not resize/reposition the layout guides
   \bug Fruchterman-Reingold model fixes some nodes to (1,1) breaking the layout
-  \bug Rubber band selection does not always work on large nets where nodes been removed.?
 
 
   */
