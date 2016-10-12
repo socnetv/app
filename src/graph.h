@@ -130,12 +130,13 @@ class CompareDistances {
 
   \bug Create d-regular, undirected, ask for closeness, it says we are on a disconnected graph
   \bug Crash on Graphml files with textlabels instead of nodenumbers (i.e. nets/killer.graphml)
+  \bug wontfix Crash on Graphml files with html special chars in node/edge labels
   \bug Pajek files with no ic / label in nodes are displayed without colors???
   \bug wrong default edge colors (not the ones used by Settings) after loading GraphML files.
   \bug Resizing the MW view does not resize/reposition the layout guides
   \bug Fruchterman-Reingold model fixes some nodes to (1,1) breaking the layout
   \bug Rubber band selection does not always work on large nets where nodes been removed.?
-  \bug wontfix Crash on Graphml files with html special chars in node/edge labels
+
 
   */
 
