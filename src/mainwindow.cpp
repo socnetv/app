@@ -1060,16 +1060,17 @@ void MainWindow::initActions(){
     editFilterEdgesUnilateralAct -> setCheckable(true);
     editFilterEdgesUnilateralAct -> setChecked(false);
     editFilterEdgesUnilateralAct -> setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_R));
-    editFilterEdgesUnilateralAct -> setStatusTip(tr("Temporarily disable all unilateral (non-reciprocal) edges."));
+    editFilterEdgesUnilateralAct -> setStatusTip(tr("Temporarily disable all unilateral (non-reciprocal) edges in this relation. Keeps only \"strong\" ties."));
     editFilterEdgesUnilateralAct -> setWhatsThis(tr("Unilateral edges\n\n"
                                       "In directed networks, a tie between two actors "
                                       "is unilateral when only one actor identifies the other "
                                       "as connected (i.e. friend, vote, etc). "
-                                      "A unilateral tie is depicted as a single arc."
+                                      "A unilateral tie is depicted as a single arc. "
                                       "These ties are considered weak, as opposed to "
                                       "reciprocal ties where both actors identify each other as connected. "
                                       "Strong ties are depicted as either a single undirected edge "
-                                      "or as two reciprocated arcs between two nodes"));
+                                      "or as two reciprocated arcs between two nodes. "
+                                       "By selecting this option, all unilateral edges in this relation will be disabled."));
     connect(editFilterEdgesUnilateralAct , SIGNAL(toggled(bool)),
             this, SLOT(slotEditFilterEdgesUnilateral(bool)));
 
@@ -6637,6 +6638,14 @@ void MainWindow::slotEditNodeSelectedToClique () {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
+    if ( selectedNodes().count() == 0 ) {
+        slotHelpMessageToUser(USER_MSG_INFO,tr("No nodes selected."),
+                              tr("Cannot create new clique. No nodes are selected."),
+                              tr("Select some nodes first.")
+                              );
+        return;
+
+    }
     activeGraph.cliqueCreate( selectedNodes() );
     slotHelpMessageToUser(USER_MSG_INFO,tr("Clique created."),
                           tr("A new clique has been created from ") + QString::number(selectedNodes().count())
@@ -7744,16 +7753,16 @@ void MainWindow::slotEditFilterEdgesByWeightDialog() {
  */
 void MainWindow::slotEditFilterEdgesUnilateral(bool checked) {
     Q_UNUSED(checked);
-    if ( !activeEdges()  )  {
+    if ( !activeEdges() && editFilterEdgesUnilateralAct->isChecked() )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
     if (activeGraph.relations()>1) {
 
     }
-    qDebug()<< "MW: slotEditFilterEdgesUnilateral";
+    qDebug()<< "MW::slotEditFilterEdgesUnilateral";
     activeGraph.edgeFilterUnilateral( ! editFilterEdgesUnilateralAct->isChecked() );
-    statusMessage(  tr("Isolate nodes visibility toggled!")  );
+    statusMessage(  tr("Unilateral (weak) edges visibility toggled!")  );
 }
 
 
