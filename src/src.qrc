@@ -94,5 +94,6 @@
         <file>images/nodenumbersize.png</file>
         <file>images/edgecolor.png</file>
         <file>images/petersengraph.png</file>
+        <file>images/cliquenew.png</file>
     </qresource>
 </RCC>
