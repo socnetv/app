@@ -90,6 +90,7 @@ Graph::Graph() {
                                << FILE_PAJEK
                                << FILE_ADJACENCY;
 
+    randomizeThings();
 }
 
 
@@ -200,11 +201,13 @@ void Graph::clear() {
  * @param h
  */
 void Graph::canvasSizeSet(const int w, const int h){
-    qDebug() << "Graph:: canvasSizeSet() - new size (" << w << ", " << h<<")";
+
     float fX=  (float)(w)/(float)(canvasWidth);
     float fY= (float)(h)/(float)(canvasHeight);
     float newX, newY;
 
+    qDebug() << "Graph::canvasSizeSet() - new size (" << w << ", " << h<<")"
+             << "adjusting node positions if any.";
     QList<Vertex*>::const_iterator it;
     for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         newX = (*it)->x() * fX ;
@@ -214,10 +217,8 @@ void Graph::canvasSizeSet(const int w, const int h){
         emit setNodePos((*it)->name(), newX , newY);
         graphModifiedSet(GRAPH_CHANGED_POSITIONS,false);
     }
-
     canvasWidth = w;
     canvasHeight= h;
-
 }
 
 /**
@@ -470,10 +471,11 @@ void Graph::vertexCreateAtPos(const QPointF &p){
  * Then calls the main creation slot with init node values.
  */
 void Graph::vertexCreateAtPosRandom(const bool &signalMW){
-    qDebug() << "Graph::vertexCreateAtPosRandom() ";
+
     QPointF p;
     p.setX( canvasRandomX());
-    p.setY( canvasRandomX() );
+    p.setY( canvasRandomY() );
+    qDebug() << "Graph::vertexCreateAtPosRandom()" << p;
     vertexCreate( vertexLastNumber()+1, initVertexSize, initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
                     QString::null, initVertexLabelColor, initVertexLabelSize,
