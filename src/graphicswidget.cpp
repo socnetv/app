@@ -1164,8 +1164,7 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
 
   //  emit selectedItems(m_selectedItems);
 
-    if ( QGraphicsItem *item= itemAt(e->pos() ) ) {
-
+    if ( QGraphicsItem *item= itemAt(e->pos() )   ) {
         if (Node *node = qgraphicsitem_cast<Node *>(item)) {
             qDebug() << "GW::mousePressEvent() - single click on a node. "
                      << "Setting selected and emitting nodeClicked";
@@ -1200,7 +1199,7 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
             return;
         }
     }
-    else{
+
         qDebug() << "GW::mousePressEvent()  click on empty space. ";
 
         if ( selectedItems().count() > 0 && ctrlKey ) {
@@ -1216,7 +1215,7 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
             emit userClickOnEmptySpace();
         }
         QGraphicsView::mousePressEvent(e);
-    }
+
 
 }
 
