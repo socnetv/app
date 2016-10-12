@@ -868,7 +868,7 @@ void MainWindow::initActions(){
     connect(editNodePropertiesAct, SIGNAL(triggered()), this, SLOT(slotEditNodePropertiesDialog()));
 
 
-    editNodeSelectedToCliqueAct = new QAction(QIcon(":/images/properties.png"),
+    editNodeSelectedToCliqueAct = new QAction(QIcon(":/images/cliquenew.png"),
                                                tr("Create a clique from selected nodes "), this);
     editNodeSelectedToCliqueAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_C));
     editNodeSelectedToCliqueAct->setStatusTip(tr("Connect all selected nodes with edges to create a clique -- "
@@ -7079,12 +7079,8 @@ void MainWindow::slotEditSelectionChanged(const int nodes, const int edges) {
                                              + tr(" selected nodes"));
     }
     else {
-        editNodeRemoveAct->setText(tr("Remove ")
-                                   + QString::number(nodes)
-                                   + tr(" node"));
-        editNodeSelectedToCliqueAct->setText(tr("Create a clique from ")
-                                             + QString::number(0)
-                                             + tr(" selected nodes"));
+        editNodeRemoveAct->setText(tr("Remove Node"));
+        editNodeSelectedToCliqueAct->setText(tr("Create a clique from selected nodes"));
         editNodeSelectedToCliqueAct->setEnabled(false);
 
     }
