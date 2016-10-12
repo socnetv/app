@@ -870,7 +870,7 @@ void MainWindow::initActions(){
 
     editNodeSelectedToCliqueAct = new QAction(QIcon(":/images/properties.png"),
                                                tr("Create a clique from selected nodes "), this);
-    editNodeSelectedToCliqueAct ->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_T );
+    editNodeSelectedToCliqueAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_C));
     editNodeSelectedToCliqueAct->setStatusTip(tr("Connect all selected nodes with edges to create a clique -- "
                                            "There must be some nodes selected!"));
     editNodeSelectedToCliqueAct->setWhatsThis(tr("Clique from Selected Nodes\n\n"
