@@ -77,6 +77,7 @@ Graph::Graph() {
     calculatedPRP=false;
     calculatedTriad=false;
     m_precision = 5;
+    m_vertexClicked = -1;
 
     file_parser = 0;
     wc_parser = 0;
@@ -168,6 +169,7 @@ void Graph::clear() {
     outboundEdgesVert=0;
     inboundEdgesVert=0;
     reciprocalEdgesVert=0;
+    m_vertexClicked = -1;
 
     order=true;		//returns true if the indexes of the list is ordered.
     m_undirected=false;
@@ -771,6 +773,32 @@ void Graph::vertexPosSet(const int &v1, const int &x, const int &y){
     graphModifiedSet(GRAPH_CHANGED_POSITIONS,false);
 }
 
+
+/**
+ * @brief Graph::vertexPos
+ * @param v1
+ * @return
+ */
+QPointF Graph::vertexPos(const int &v1){
+    return m_graph[ index[v1] ]->pos();
+}
+
+/**
+ * @brief Graph::vertexClickedSet
+ * @param v1
+ */
+void Graph::vertexClickedSet(const int &v1) {
+    m_vertexClicked = v1;
+
+    signalNodeClickedInfo( v1,
+                           vertexPos(v1),
+                           vertexLabel(v1),
+                           vertexDegreeIn(v1),
+                           vertexDegreeOut(v1),
+                           ( vertices() < 500 ) ? clusteringCoefficientLocal(v1): 0
+                                                  );
+
+}
 
 
 /**
@@ -2297,8 +2325,8 @@ void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
     QHash<int,float>::const_iterator it1;
     QHash<QString,float>::const_iterator it2;
     relationAddFromGraph("Strong Ties");
-    if (1==1) return;
-    //relationSet(m_relationsList.count());
+    //if (1==1) return;
+    relationSet(m_relationsList.count());
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         v1 = (*it)->name();
         qDebug() << "Graph::graphSymmetrizeStrongTies() - v1" << v1

@@ -191,8 +191,10 @@ public slots:
     void vertexCreateAtPosRandomWithLabel(const int &i,
                                           const QString &label,
                                           const bool &signalMW=false) ;
+    void vertexClickedSet(const int &v);
 
     /** Slots to signals from MainWindow */
+
     void relationSet(int);
     void relationAddFromUser(QString relation);
     void canvasSizeSet(const int w, const int h);
@@ -229,6 +231,12 @@ signals:
     void signalDatasetDescription(QString);
     void signalNodeSizesByOutDegree(bool);
     void signalNodeSizesByInDegree(bool);
+    void signalNodeClickedInfo(const long int &number,
+                                    const QPointF &p,
+                                    const QString &label,
+                                    const int &inDegree,
+                                    const int &outDegree,
+                                    const float &clc=0);
 
     /** Signals to GraphicsWidget */
     void drawNode( const int &num, const int &size, const QString &nodeShape,
@@ -367,6 +375,9 @@ public:
     void vertexLabelDistanceAllSet (const int &newDistance);
 
     void vertexPosSet(const int &v, const int &x, const int &y);
+    QPointF vertexPos(const int &v1);
+
+
 
     int vertices(const bool dropIsolates=false, const bool countAll=false) ;
 
@@ -722,7 +733,7 @@ private:
     bool calculatedPP, calculatedIRCC, calculatedIC, calculatedPRP;
     bool calculatedTriad;
 
-    int m_precision, m_curRelation, m_fileFormat;
+    int m_precision, m_curRelation, m_fileFormat, m_vertexClicked;
     float edgeWeightTemp;
     float meanDC, varianceDC;
     float meanCC, varianceCC;
