@@ -726,17 +726,17 @@ long int Vertex::localDegree(){
 
 /**
  * @brief Vertex::hasEdgeTo
- * Checks if this vertex is outlinked to v2 and returns the weight of the link
- * only if the outLink is enabled.
+ * Checks if this vertex is outlinked to v2 and returns the weight of the edge
+ * only if the outbound edge is enabled.
  * @param v2
  * @return
  */
-float Vertex::hasEdgeTo(const long int &v2){
+float Vertex::hasEdgeTo(const long int &v2, const bool &allRelations){
     float m_weight=0;
     bool edgeStatus=false;
     H_edges::iterator it1=m_outEdges.find(v2);
     while (it1 != m_outEdges.end() && it1.key() == v2 ) {
-        if ( it1.value().first == m_curRelation ) {
+        if ( it1.value().first == m_curRelation && !allRelations ) {
             edgeStatus=it1.value().second.second;
             if ( edgeStatus == true) {
                 m_weight=it1.value().second.first;
@@ -744,11 +744,27 @@ float Vertex::hasEdgeTo(const long int &v2){
                         << ", " << v2 << ") = "<< m_weight;
                 return m_weight;
             }
-            else
+            else {
                 qDebug()<< "Vertex::hasEdgeTo() - a ("  <<  this->name()
                         << ", " << v2 << ") = "<< m_weight
                         << " but edgeStatus " << edgeStatus;
                 return 0;
+            }
+        }
+        else {
+            edgeStatus=it1.value().second.second;
+            if ( edgeStatus == true) {
+                m_weight=it1.value().second.first;
+                qDebug()<< "Vertex::hasEdgeTo() - a ("  <<  this->name()
+                        << ", " << v2 << ") = "<< m_weight;
+                return m_weight;
+            }
+            else {
+                qDebug()<< "Vertex::hasEdgeTo() - a ("  <<  this->name()
+                        << ", " << v2 << ") = "<< m_weight
+                        << " but edgeStatus " << edgeStatus;
+                return 0;
+            }
         }
         ++it1;
     }
@@ -765,12 +781,12 @@ float Vertex::hasEdgeTo(const long int &v2){
  * @param v2
  * @return
  */
-float Vertex::hasEdgeFrom(const long int &v2){
+float Vertex::hasEdgeFrom(const long int &v2, const bool &allRelations){
     float m_weight=0;
     bool edgeStatus=false;
     H_edges::iterator it1=m_inEdges.find(v2);
     while (it1 != m_inEdges.end() && it1.key() == v2) {
-        if ( it1.value().first == m_curRelation ) {
+        if ( it1.value().first == m_curRelation && !allRelations ) {
             edgeStatus=it1.value().second.second;
             if ( edgeStatus == true) {
                 m_weight=it1.value().second.first;
@@ -778,11 +794,28 @@ float Vertex::hasEdgeFrom(const long int &v2){
 //                        << ", " << this->name() << ") = "<< m_weight;
                 return m_weight;
             }
-            else
+            else {
                 qDebug()<< "Vertex::hasEdgeFrom() - a ("  <<  v2
                         << ", " << this->name() << ") = "<< m_weight
                         << " but edgeStatus " << edgeStatus;
                 return 0;
+            }
+
+        }
+        else {
+            edgeStatus=it1.value().second.second;
+            if ( edgeStatus == true) {
+                m_weight=it1.value().second.first;
+//                qDebug()<< "Vertex::hasEdgeFrom() - a ("  <<  v2
+//                        << ", " << this->name() << ") = "<< m_weight;
+                return m_weight;
+            }
+            else {
+                qDebug()<< "Vertex::hasEdgeFrom() - a ("  <<  v2
+                        << ", " << this->name() << ") = "<< m_weight
+                        << " but edgeStatus " << edgeStatus;
+                return 0;
+            }
 
         }
         ++it1;

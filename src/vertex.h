@@ -113,12 +113,11 @@ public:
 
     /* Returns true if there is an outLink from this vertex */
     bool isOutLinked() { return (outEdges() > 0) ? true:false;}
-    /* Returns the weight of the link to vertex V, otherwise zero*/
-    float hasEdgeTo(const long int &v);
+    float hasEdgeTo(const long int &v, const bool &allRelations=false);
 
     /* Returns true if there is an outLink from this vertex */
     bool isInLinked() { return  (inEdges() > 0) ? true:false;}
-    float hasEdgeFrom (const long int &v);
+    float hasEdgeFrom (const long int &v, const bool &allRelations=false);
 
     bool isIsolated() { return !(isOutLinked() | isInLinked()) ; }
     void setIsolated(bool isolated) {m_isolated = isolated; }
