@@ -244,13 +244,13 @@ void GraphicsWidget::startEdge(Node *node){
 
 /** 
     This is called from each node when the user clicks on it.
-    It emits the selectedNode signal to MW which is used to
+    It emits the userClickedNode signal to MW which is used to
     - display node info on the status bar
     - notify context menus for the clicked node.
 */
 void GraphicsWidget::nodeClicked(Node *node){
-    qDebug ("GW: Emitting selectedNode()");
-    emit selectedNode(node);
+    qDebug ("GW: Emitting userClickedNode()");
+    emit userClickedNode(node->nodeNumber());
 }
 
 

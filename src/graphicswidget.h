@@ -163,7 +163,7 @@ signals:
     void openContextMenu(const QPointF p);
     void userNodeMoved(const int &, const int &, const int &);
     void userSelectedItems(const int nodes, const int edges);
-    void selectedNode(Node *);
+    void userClickedNode(const int &nodeNumber);
     void selectedEdge(Edge *);
     void zoomChanged(const int);
     void rotationChanged(const int);
