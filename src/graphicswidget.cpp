@@ -206,7 +206,7 @@ void GraphicsWidget::drawEdge(const int &source, const int &target,
     if (type == EDGE_DIRECTED_OPPOSITE_EXISTS ) {
         edgeName = QString::number(m_curRelation) + QString(":") +
                 QString::number(target) + QString(">")+ QString::number(source);
-        //    qDebug("GW: making existing edge between %i and %i reciprocal. Name: "+edgeName.toUtf8(), source, target );
+        qDebug("GW::drawEdge() - making existing edge between %i and %i reciprocal. Name: "+edgeName.toUtf8(), source, target );
         edgesHash.value(edgeName)->setDirectedWithOpposite();
 
     }
