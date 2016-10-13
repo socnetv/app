@@ -232,10 +232,10 @@ signals:
     void signalNodeSizesByOutDegree(bool);
     void signalNodeSizesByInDegree(bool);
     void signalNodeClickedInfo(const long int &number,
-                                    const QPointF &p,
-                                    const QString &label,
-                                    const int &inDegree,
-                                    const int &outDegree,
+                                    const QPointF &p=QPointF(),
+                                    const QString &label=QString::null,
+                                    const int &inDegree=0,
+                                    const int &outDegree=0,
                                     const float &clc=0);
 
     /** Signals to GraphicsWidget */

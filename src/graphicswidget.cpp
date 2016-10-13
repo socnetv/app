@@ -1042,7 +1042,7 @@ void GraphicsWidget::selectAll()
 void GraphicsWidget::selectNone()
 {
     qDebug() << "GraphicsWidget::selectNone()";
-
+    emit userClickedNode(0);
     this->scene()->clearSelection();
 
 }

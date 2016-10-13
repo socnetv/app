@@ -3760,7 +3760,7 @@ void MainWindow::initNet(){
     markedNodesExist=false;	//used by slotEditNodeFind()
 
     cursorPosGW=QPointF(-1,-1);
-    clickedNodeNumber=-1;
+    clickedNodeNumber=0;
     edgeClicked=false;
     nodeClicked=false;
 
@@ -6492,7 +6492,7 @@ void MainWindow::slotEditNodeRemove() {
         qDebug("MW: removeNode() completed. Node %i removed completely.",doomedJim);
         statusMessage( tr("Node removed completely. Ready. ") );
     }
-    clickedNodeNumber=-1;
+    clickedNodeNumber=0;
     nodeClicked=false;
 
 
@@ -6597,7 +6597,7 @@ void MainWindow::slotEditNodeProperties( const QString label, const int size,
                << " clickedNodeNumber " <<clickedNodeNumber
                   << " selectedNodes " << selectedNodes().count();
 
-    if ( selectedNodes().count() == 0 && clickedNodeNumber != -1) {
+    if ( selectedNodes().count() == 0 && clickedNodeNumber != 0) {
         // no node selected but user entered a node number in a dialog
         if ( label !="" && appSettings["initNodeLabelsVisibility"] != "true")
             slotOptionsNodeLabelsVisibility(true);
@@ -6640,7 +6640,7 @@ void MainWindow::slotEditNodeProperties( const QString label, const int size,
     }
 
 //    clickedNode=0;
-    clickedNodeNumber=-1;
+    clickedNodeNumber=0;
 
     statusMessage( tr("Ready. "));
 }
@@ -7074,7 +7074,7 @@ void MainWindow::slotEditNodeOpenContextMenu() {
     //QCursor::pos() is good only for menus not related with node coordinates
     nodeContextMenu -> exec(QCursor::pos() );
     delete  nodeContextMenu;
-    clickedNodeNumber=-1;    //undo node selection
+    clickedNodeNumber=0;    //undo node selection
 }
 
 
@@ -7110,7 +7110,7 @@ void MainWindow::slotEditSelectionChanged(const int nodes, const int edges) {
 
 /**
  * @brief MainWindow::slotEditNodeInfoStatusBar
- * Called by GW::userClickedNode() signal, when the user clicks on a node.
+ * Called by Graph::userClickedNode() signal, when the user clicks on a node.
  * It displays information about the node on the statusbar.
  * @param jim
  */
@@ -7120,22 +7120,29 @@ void MainWindow::slotEditNodeInfoStatusBar ( const long int &number,
                                              const int &inDegree,
                                              const int &outDegree,
                                              const float &clc) {
-    qDebug ("MW: slotEditNodeInfoStatusBar()");
-    edgeClicked=false;
-    nodeClicked=true;
-    //clickedNode=jim;
+    qDebug()<<"MW::slotEditNodeInfoStatusBar()";
     clickedNodeNumber=number;
     rightPanelClickedNodeLCD->display (clickedNodeNumber);
     rightPanelClickedNodeInDegreeLCD->display (inDegree);
     rightPanelClickedNodeOutDegreeLCD->display (outDegree);
     rightPanelClickedNodeClucofLCD->display(clc);
 
-    statusMessage(  QString(tr("(%1, %2);  Node %3, label %4 - "
+    if (number!=0)  {
+        edgeClicked=false;
+        nodeClicked=true;
+        //clickedNode=jim;
+
+        statusMessage(  QString(tr("(%1, %2);  Node %3, label %4 - "
                                "In-Degree: %5, Out-Degree: %6"))
                     .arg( ceil( p.x() ) )
                     .arg( ceil( p.y() )).arg( clickedNodeNumber )
                     .arg( ( label == "") ? "unset" : label )
                     .arg(inDegree).arg(outDegree) );
+    }
+    else {
+        edgeClicked=false;
+        nodeClicked=false;
+    }
 }
 
 
@@ -7220,7 +7227,7 @@ void MainWindow::slotEditEdgeAdd(){
 
     if (min==max) return;		//if there is only one node -> no edge
 
-    if ( !nodeClicked || clickedNodeNumber == -1 ) {
+    if ( !nodeClicked || clickedNodeNumber == 0 ) {
         sourceNode=QInputDialog::getInt(
                     this,
                     "Create new edge, Step 1",

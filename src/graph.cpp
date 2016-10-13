@@ -789,14 +789,18 @@ QPointF Graph::vertexPos(const int &v1){
  */
 void Graph::vertexClickedSet(const int &v1) {
     m_vertexClicked = v1;
-
-    signalNodeClickedInfo( v1,
+    if (v1 == 0) {
+        signalNodeClickedInfo(0);
+    }
+    else {
+        signalNodeClickedInfo( v1,
                            vertexPos(v1),
                            vertexLabel(v1),
                            vertexDegreeIn(v1),
                            vertexDegreeOut(v1),
                            ( vertices() < 500 ) ? clusteringCoefficientLocal(v1): 0
                                                   );
+    }
 
 }
 
