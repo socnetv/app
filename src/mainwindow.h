@@ -221,7 +221,12 @@ public slots:
 
     void slotEditNodeSelectAll();
     void slotEditNodeSelectNone();
-    void slotEditNodeInfoStatusBar(Node*);
+    void slotEditNodeInfoStatusBar(const long int &number,
+                                   const QPointF &p,
+                                   const QString &label,
+                                   const int &inDegree,
+                                   const int &outDegree,
+                                   const float &clc=0);
     void slotEditNodePosition(const int &nodeNumber, const int &x, const int &y);
     void slotEditNodeAdd();
     void slotEditNodeAddWithMouse(const QPointF &);

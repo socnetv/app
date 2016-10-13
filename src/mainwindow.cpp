@@ -3443,9 +3443,6 @@ void MainWindow::initSignalSlots() {
     connect( graphicsWidget, SIGNAL( resized(int, int)),
                 &activeGraph, SLOT( canvasSizeSet(int,int)) ) ;
 
-    connect( graphicsWidget, SIGNAL( selectedNode(Node*) ),
-             this, SLOT( slotEditNodeInfoStatusBar(Node*) ) 	);
-
     connect( graphicsWidget, SIGNAL( selectedEdge(Edge*) ),
              this, SLOT ( slotEditEdgeInfoStatusBar(Edge*) )  );
 
@@ -3633,6 +3630,14 @@ void MainWindow::initSignalSlots() {
 
     connect( &activeGraph, SIGNAL( setNodeLabelDistance(const long int &, const int &)  ),
              graphicsWidget, SLOT( setNodeLabelDistance (const long int &, const int &) ) );
+
+
+
+    connect( graphicsWidget, &GraphicsWidget::userClickedNode,
+             &activeGraph, &Graph::vertexClickedSet );
+
+    connect( &activeGraph, &Graph::signalNodeClickedInfo ,
+             this, &MainWindow::slotEditNodeInfoStatusBar );
 
 
     connect( &activeGraph, SIGNAL( statusMessage (QString) ),
@@ -4339,8 +4344,8 @@ void MainWindow::closeEvent( QCloseEvent* ce ) {
 
     switch( slotHelpMessageToUser(
                 USER_MSG_QUESTION,
-                tr("Save changes?"),
-                tr("Network changed!"),
+                tr("Save changes"),
+                tr("Modified network has not been saved!"),
                 tr("Do you want to save the changes to the network file?"),
                  QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel, QMessageBox::Cancel
                 ) )
@@ -5886,7 +5891,7 @@ void MainWindow::slotNetworkRandomScaleFree ( const int &newNodes,
     //float clucof=activeGraph.clusteringCoefficient();
     QMessageBox::information(this, "New scale-free network",
                              tr("Scale-free random network created.\n")
-//                             +tr("\nNodes: ")+ QString::number(nodeCount)+
+//                             +tr("\nNodes: ")+ QString::number(nodesSelected)+
 //                             tr("\nEdges: ") +  QString::number( edgeCount )
                              //+  tr("\nAverage path length: ") + QString::number(avGraphDistance)
                              //+ tr("\nClustering coefficient: ")+QString::number(clucof)
@@ -6215,19 +6220,19 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
     QMenu *contextMenu = new QMenu(" Menu",this);
     Q_CHECK_PTR( contextMenu );  //displays "out of memory" if needed
 
-    int nodeCount = selectedNodes().count();
+    int nodesSelected = selectedNodes().count();
     contextMenu -> addAction( "## Selected nodes: "
-                              + QString::number(  nodeCount ) + " ##  ");
+                              + QString::number(  nodesSelected ) + " ##  ");
 
     contextMenu -> addSeparator();
 
-    if (nodeCount > 0) {
+    if (nodesSelected > 0) {
         contextMenu -> addAction(editNodePropertiesAct );
         contextMenu -> addSeparator();
         contextMenu -> addAction(editNodeRemoveAct );
-        if (nodeCount > 1 ){
+        if (nodesSelected > 1 ){
             editNodeRemoveAct->setText(tr("Remove ")
-                                       + QString::number(nodeCount)
+                                       + QString::number(nodesSelected)
                                        + tr(" nodes"));
             contextMenu -> addSeparator();
             contextMenu -> addAction(editNodeSelectedToCliqueAct);
@@ -6235,7 +6240,7 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
         }
         else {
             editNodeRemoveAct->setText(tr("Remove ")
-                                       + QString::number(nodeCount)
+                                       + QString::number(nodesSelected)
                                        + tr(" node"));
         }
         contextMenu -> addSeparator();
@@ -6428,7 +6433,7 @@ void MainWindow::slotEditNodeFind(){
  * Called from nodeContextMenu
  */
 void MainWindow::slotEditNodeRemove() {
-    qDebug() << "MW: slotEditNodeRemove()";
+    qDebug() << "MW::slotEditNodeRemove()";
     if ( !activeNodes() )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -6448,23 +6453,21 @@ void MainWindow::slotEditNodeRemove() {
     }
 
     // if there are already multiple nodes selected, erase them
-    int nodeCount = selectedNodes().count();
-    if ( nodeCount > 0) {
+    int nodesSelected = selectedNodes().count();
+    if ( nodesSelected > 0) {
         int removeCounter = 0;
-        qDebug() << "MW: removeNode() multiple selected to remove";
+        qDebug() << "MW::removeNode() multiple selected to remove";
         foreach (int nodeNumber, selectedNodes() ) {
                activeGraph.vertexRemove(nodeNumber);
                ++removeCounter ;
         }
-
         editNodeRemoveAct->setText(tr("Remove Node"));
-        statusMessage( tr("Removed ") + nodeCount + tr(" nodes. Ready. ") );
+        statusMessage( tr("Removed ") + nodesSelected + tr(" nodes. Ready. ") );
     }
 
     else {
         int doomedJim=-1, min=-1, max=-1;
         bool ok=false;
-
         min = activeGraph.vertexFirstNumber();
         max = activeGraph.vertexLastNumber();
         qDebug("MW: min is %i and max is %i", min, max);
@@ -6636,7 +6639,7 @@ void MainWindow::slotEditNodeProperties( const QString label, const int size,
         }
     }
 
-    clickedNode=0;
+//    clickedNode=0;
     clickedNodeNumber=-1;
 
     statusMessage( tr("Ready. "));
@@ -7035,21 +7038,21 @@ void MainWindow::slotEditNodeLabelDistance(int v1, int newDistance) {
  * Opens a node context menu with some options when the user right-clicks on a node
  */
 void MainWindow::slotEditNodeOpenContextMenu() {
-    clickedNodeNumber=clickedNode->nodeNumber();
+    //clickedNodeNumber=clickedNode->nodeNumber();
     qDebug("MW: slotEditNodeOpenContextMenu() for node %i at %i, %i",
            clickedNodeNumber, QCursor::pos().x(), QCursor::pos().y());
 
     QMenu *nodeContextMenu = new QMenu(QString::number(clickedNodeNumber), this);
     Q_CHECK_PTR( nodeContextMenu );  //displays "out of memory" if needed
-    int nodeCount = selectedNodes().count();
-    if ( nodeCount == 1) {
+    int nodesSelected = selectedNodes().count();
+    if ( nodesSelected == 1) {
         nodeContextMenu -> addAction( tr("## NODE ") + QString::number(clickedNodeNumber) + " ##  ");
     }
     else {
         nodeContextMenu -> addAction(
                     tr("## NODE ") + QString::number(clickedNodeNumber)
                     + " ##  " + tr(" (selected nodes: ")
-                    + QString::number ( nodeCount ) + ")");
+                    + QString::number ( nodesSelected ) + ")");
     }
 
     nodeContextMenu -> addSeparator();
@@ -7107,28 +7110,31 @@ void MainWindow::slotEditSelectionChanged(const int nodes, const int edges) {
 
 /**
  * @brief MainWindow::slotEditNodeInfoStatusBar
- * Called by GW::selectedNode() signal, when the user clicks on a node.
+ * Called by GW::userClickedNode() signal, when the user clicks on a node.
  * It displays information about the node on the statusbar.
  * @param jim
  */
-void MainWindow::slotEditNodeInfoStatusBar ( Node *jim) {
+void MainWindow::slotEditNodeInfoStatusBar ( const long int &number,
+                                             const QPointF &p,
+                                             const QString &label,
+                                             const int &inDegree,
+                                             const int &outDegree,
+                                             const float &clc) {
     qDebug ("MW: slotEditNodeInfoStatusBar()");
     edgeClicked=false;
     nodeClicked=true;
-    clickedNode=jim;
-    clickedNodeNumber=clickedNode->nodeNumber();
-    int inDegree=activeGraph.vertexDegreeIn(clickedNodeNumber);
-    int outDegree=activeGraph.vertexDegreeOut(clickedNodeNumber);
+    //clickedNode=jim;
+    clickedNodeNumber=number;
     rightPanelClickedNodeLCD->display (clickedNodeNumber);
     rightPanelClickedNodeInDegreeLCD->display (inDegree);
     rightPanelClickedNodeOutDegreeLCD->display (outDegree);
-    if (activeGraph.vertices() < 500)
-        rightPanelClickedNodeClucofLCD->display(activeGraph.clusteringCoefficientLocal(clickedNodeNumber));
+    rightPanelClickedNodeClucofLCD->display(clc);
 
     statusMessage(  QString(tr("(%1, %2);  Node %3, label %4 - "
-                               "In-Degree: %5, Out-Degree: %6")).arg( ceil( clickedNode->x() ) )
-                    .arg( ceil( clickedNode->y() )).arg( clickedNodeNumber )
-                    .arg( (clickedNode->labelText() == "") ? "unset" : clickedNode->labelText() )
+                               "In-Degree: %5, Out-Degree: %6"))
+                    .arg( ceil( p.x() ) )
+                    .arg( ceil( p.y() )).arg( clickedNodeNumber )
+                    .arg( ( label == "") ? "unset" : label )
                     .arg(inDegree).arg(outDegree) );
 }
 
