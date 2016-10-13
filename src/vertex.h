@@ -90,7 +90,8 @@ public:
     void edgeRemoveTo (long int target);
     void edgeRemoveFrom(long int source);
 
-    QHash<int,float>* outEdgesEnabledHash();
+    QHash<int,float>* outEdgesEnabledHash(const bool &allRelations=false);
+    QHash<int,float>* outEdgesAllRelationsUniqueHash();
     QHash<int,float>* inEdgesEnabledHash();
     QHash<int,float>* reciprocalEdgesHash();
     QList<int> neighborhoodList();
@@ -125,8 +126,7 @@ public:
     void edgeFilterByWeight(float m_threshold, bool overThreshold);
     //	void filterEdgesByColor(float m_threshold, bool overThreshold);
     void edgeFilterByRelation(int relation, bool status);
-    void edgeFilterUnilateral(const bool &toggle=false,
-                              const bool &allRelations=false);
+    void edgeFilterUnilateral(const bool &toggle=false);
 
     void setSize(const int &size ) { m_size=size; }
     int size()  const { return m_size; }
