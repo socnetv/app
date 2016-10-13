@@ -1418,7 +1418,7 @@ void Graph::edgeRemove (const long int &v1,
     m_graph [ index[v2] ]->edgeRemoveFrom(v1);
 
 
-    if (isUndirected() || removeOpposite ) { // remove opposite edge
+    if (graphUndirected() || removeOpposite ) { // remove opposite edge
         m_graph [ index[v2] ]->edgeRemoveTo(v1);
         m_graph [ index[v1] ]->edgeRemoveFrom(v2);
         m_symmetric=true;
@@ -1509,7 +1509,7 @@ void Graph::edgeFilterUnilateral(const bool &toggle, const bool &allRelations) {
     qDebug() << "Graph::edgeFilterUnilateral() " ;
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-            (*it)->edgeFilterUnilateral ( toggle, allRelations );
+            (*it)->edgeFilterUnilateral ( toggle );
     }
     graphModifiedSet(GRAPH_CHANGED_EDGES);
     emit statusMessage(tr("Unilateral edges have been temporarily disabled."));
@@ -1579,8 +1579,8 @@ int Graph::edgesEnabled() {
 
     if ( !graphModified() ) {
         qDebug()<< "Graph::edgesEnabled() - Graph unchanged, edges: "
-                   <<     ((isUndirected()) ? m_totalEdges / 2 : m_totalEdges);
-       return (isUndirected()) ? m_totalEdges / 2 : m_totalEdges;
+                   <<     ((graphUndirected()) ? m_totalEdges / 2 : m_totalEdges);
+       return (graphUndirected()) ? m_totalEdges / 2 : m_totalEdges;
     }
 
     m_totalEdges = 0;
@@ -1591,32 +1591,32 @@ int Graph::edgesEnabled() {
     }
     qDebug() << "Graph::edgesEnabled() - edges recounted: " <<  m_totalEdges;
 
-    return (isUndirected()) ? m_totalEdges / 2 : m_totalEdges;
+    return (graphUndirected()) ? m_totalEdges / 2 : m_totalEdges;
 }
 
 
 
 
 /**
- * @brief Graph::edgesOutbound
+ * @brief Graph::vertexEdgesOutbound
  * *Returns the number of outbound edges (arcs) from vertex v1
  * @param v1
  * @return
  */
-int Graph::edgesOutbound(int v1) {
-    qDebug("Graph: edgesOutbound()");
+int Graph::vertexEdgesOutbound(int v1) {
+    qDebug("Graph: vertexEdgesOutbound()");
     return m_graph[ index[v1] ]->outEdges();
 }
 
 
 /**
- * @brief Graph::edgesInbound
+ * @brief Graph::vertexEdgesInbound
  * Returns the number of inbound edges (arcs) to vertex v1
  * @param v1
  * @return int
  */
-int Graph::edgesInbound (int v1) {
-    qDebug("Graph: edgesInbound()");
+int Graph::vertexEdgesInbound (int v1) {
+    qDebug("Graph: vertexEdgesInbound()");
     return m_graph[ index[v1] ]->inEdges();
 }
 
@@ -1754,7 +1754,7 @@ void Graph::edgeColorSet(const long &v1, const long &v2, const QString &color){
            <<" new color "<< color;
     m_graph[ index[v1] ]->setOutLinkColor(v2, color);
     emit setEdgeColor(v1, v2, color);
-    if (isSymmetric()) {
+    if (graphSymmetric()) {
         m_graph[ index[v2] ]->setOutLinkColor(v1, color);
         emit setEdgeColor(v2, v1, color);
     }
@@ -1977,10 +1977,10 @@ void Graph::graphModifiedSet(const int &graphChangedFlag, const bool &signalMW){
                   << "graphModifiedFlag" << graphModifiedFlag
                   << "Emitting signal signalGraphModified()";
         emit signalGraphModified(graphModifiedFlag,
-                                 isUndirected(),
+                                 graphUndirected(),
                                  vertices(),
                                  edgesEnabled(),
-                                 density());
+                                 graphDensity());
         return;
     }
     qDebug()<<"Graph::graphModifiedSet() - m_symmetric " << m_symmetric
@@ -2002,16 +2002,16 @@ bool Graph::graphModified() const {
 
 
 /**
- * @brief Graph::density
+ * @brief Graph::graphDensity
  *  Returns ratio of present edges to total possible edges.
  * @return
  */
-float Graph::density() {
-    qDebug()<< "Graph::density()";
+float Graph::graphDensity() {
+    qDebug()<< "Graph::graphDensity()";
 
     int vert=vertices();
     if (vert!=0 && vert!=1)
-        return  (isUndirected()) ?
+        return  (graphUndirected()) ?
                     (float) 2* edgesEnabled() / (float)(vert*(vert-1.0)) :
                     (float) edgesEnabled() / (float)(vert*(vert-1.0)) ;
     else return 0;
@@ -2020,15 +2020,15 @@ float Graph::density() {
 
 
 /**
- * @brief Graph::isWeighted
+ * @brief Graph::graphWeighted
  *  Checks if the graph is weighted, i.e. if any e in |E| has value not 0 or 1
  *  Complexity: O(n^2)
  * @return
  */
-bool Graph::isWeighted(){
+bool Graph::graphWeighted(){
     if ( ! graphModified() )
     {
-        qDebug()<< "Graph::isWeighted() - graph not modified. Return: "
+        qDebug()<< "Graph::graphWeighted() - graph not modified. Return: "
                 << m_isWeighted;
         return m_isWeighted;
     }
@@ -2038,12 +2038,12 @@ bool Graph::isWeighted(){
        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
            m_weight = edgeExists ( (*it1)->name(), (*it)->name() ) ;
             if ( m_weight  != 1  && m_weight  != 0 )   {
-                qDebug()<< "Graph: isWeighted() - true";
+                qDebug()<< "Graph: graphWeighted() - true";
                 return m_isWeighted=true;
             }
         }
     }
-    qDebug()<< "Graph::isWeighted() - false";
+    qDebug()<< "Graph::graphWeighted() - false";
     return m_isWeighted=false;
 }
 
@@ -2177,14 +2177,14 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
 
 
 /**
- * @brief Graph::isSymmetric
+ * @brief Graph::graphSymmetric
  * Returns TRUE if the adjacency matrix of the current relation is symmetric
  * @return bool
  */
-bool Graph::isSymmetric(){
-    qDebug() << "Graph::isSymmetric() ";
+bool Graph::graphSymmetric(){
+    qDebug() << "Graph::graphSymmetric() ";
     if (!graphModified()){
-        qDebug() << "Graph::isSymmetric() - graph not modified. Returning: "
+        qDebug() << "Graph::graphSymmetric() - graph not modified. Returning: "
                  << m_symmetric;
         return m_symmetric;
     }
@@ -2203,7 +2203,7 @@ bool Graph::isSymmetric(){
 
         if ( ! (*lit)->isEnabled() )
             continue;
-        qDebug() << "Graph::isSymmetric() - Graph modified! " <<
+        qDebug() << "Graph::graphSymmetric() - Graph modified! " <<
                     " Iterate over all edges of " << v1 ;
 
         enabledOutEdges=(*lit)->outEdgesEnabledHash();
@@ -2216,7 +2216,7 @@ bool Graph::isSymmetric(){
             float weight = hit.value();
             if (  m_graph[y]->hasEdgeTo( v1) != weight) {
                 m_symmetric=false;
-//                qDebug() <<"Graph::isSymmetric() - "
+//                qDebug() <<"Graph::graphSymmetric() - "
 //                         << " graph not symmetric because "
 //                         << v1 << " -> " << v2 << " weight " << weight
 //                         << " differs from " << v2 << " -> " << v1 ;
@@ -2227,7 +2227,7 @@ bool Graph::isSymmetric(){
         }
     }
     delete enabledOutEdges;
-    qDebug() << "Graph: isSymmetric() -"  << m_symmetric;
+    qDebug() << "Graph: graphSymmetric() -"  << m_symmetric;
     return m_symmetric;
 }
 
@@ -2235,11 +2235,11 @@ bool Graph::isSymmetric(){
 
 
 /**
- * @brief Graph::symmetrize
+ * @brief Graph::graphSymmetrize
  * Transforms the graph to symmetric (all edges reciprocal)
  */
-void Graph::symmetrize(){
-    qDebug("Graph: symmetrize");
+void Graph::graphSymmetrize(){
+    qDebug()<< "Graph::graphSymmetrize";
     QList<Vertex*>::const_iterator it;
     int y=0, v2=0, v1=0, weight;
     float invertWeight=0;
@@ -2247,25 +2247,25 @@ void Graph::symmetrize(){
     QHash<int,float>::const_iterator it1;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         v1 = (*it)->name();
-        qDebug() << "Graph:symmetrize() - iterate over edges of v1 " << v1;
+        qDebug() << "Graph:graphSymmetrize() - iterate over edges of v1 " << v1;
         enabledOutEdges=(*it)->outEdgesEnabledHash();
         it1=enabledOutEdges->cbegin();
         while ( it1!=enabledOutEdges->cend() ){
             v2 = it1.key();
             weight = it1.value();
             y=index[ v2 ];
-            qDebug() << "Graph:symmetrize() - "
+            qDebug() << "Graph:graphSymmetrize() - "
                      << " v1 " << v1
                      << " outLinked to " << v2 << " weight " << weight;
             invertWeight = m_graph[y]->hasEdgeTo( v1 ) ;
             if ( invertWeight == 0 ) {
-                qDebug() << "Graph:symmetrize(): s = " << v1
+                qDebug() << "Graph:graphSymmetrize(): s = " << v1
                          << " is NOT inLinked from y = " <<  v2  ;
                 edgeCreate( v2, v1, weight, initEdgeColor, false, true, false,
                             QString::null, false);
             }
             else {
-                qDebug() << "Graph: symmetrize(): v1 = " << v1
+                qDebug() << "Graph: graphSymmetrize(): v1 = " << v1
                          << " is already inLinked from v2 = " << v2 ;
                 if (weight!= invertWeight )
                     edgeWeightSet(v2,v1,weight);
@@ -2284,11 +2284,83 @@ void Graph::symmetrize(){
 
 
 /**
+ * @brief Graph::graphSymmetrizeStrongTies
+ * @param allRelations
+ */
+void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
+    qDebug()<< "Graph::graphSymmetrizeStrongTies()";
+    QList<Vertex*>::const_iterator it;
+    int y=0, v2=0, v1=0, weight;
+    float invertWeight=0;
+    QHash<int,float> *outEdgesAll = new QHash<int,float>;
+    QHash<QString,float> *strongTies = new QHash<QString,float>;
+    QHash<int,float>::const_iterator it1;
+    QHash<QString,float>::const_iterator it2;
+    relationAddFromGraph("Strong Ties");
+    if (1==1) return;
+    //relationSet(m_relationsList.count());
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        v1 = (*it)->name();
+        qDebug() << "Graph::graphSymmetrizeStrongTies() - v1" << v1
+                    << "iterate over outEdges in all relations";
+        outEdgesAll=(*it)->outEdgesAllRelationsUniqueHash();
+        it1=outEdgesAll->cbegin();
+        while ( it1!=outEdgesAll->cend() ){
+            v2 = it1.key();
+            weight = it1.value();
+            y=index[ v2 ];
+            qDebug() << "Graph::graphSymmetrizeStrongTies() - "
+                     << " found edge" << v1
+                     << "->" << v2 << "=" << weight;
+            invertWeight = m_graph[y]->hasEdgeTo( v1,allRelations ) ;
+            if ( invertWeight == 0 ) {
+                qDebug() << "Graph::graphSymmetrizeStrongTies() - " << v1
+                         << "<-" <<  v2 << " does not exist. Weak tie. Continue." ;
+            }
+            else {
+                if (!strongTies->contains(QString::number(v1)+"-"+QString::number(v2))){
+                    qDebug() << "Graph::graphSymmetrizeStrongTies() - " << v1
+                             << "<-" << v2 << " exists. Strong Tie. Adding";
+                    strongTies->insert(QString::number(v1)+"-"+QString::number(v2), 1);
+                }
+                else {
+                    qDebug() << "Graph::graphSymmetrizeStrongTies() - " << v1
+                             << "<-" << v2 << " exists. Strong Tie already found. Continue";
+                }
+            }
+            ++it1;
+        }
+    }
+
+    it2=strongTies->cbegin();
+    QStringList vertices;
+    while ( it2!=strongTies->cend() ){
+        vertices = it2.key().split("-");
+        v1 = vertices.at(0).toInt();
+        v2 = vertices.at(1).toInt();
+        qDebug() << "Graph::graphSymmetrizeStrongTies() - calling edgeCreate for"
+                 << v1 << "-"<<v2;
+        edgeCreate( v1, v2, 1, initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED, true, false,
+                    QString::null, false);
+        ++it2;
+    }
+
+    delete outEdgesAll;
+    delete strongTies;
+    m_symmetric=true;
+
+    graphModifiedSet(GRAPH_CHANGED_EDGES);
+
+}
+
+
+
+/**
  * @brief Graph::undirected
  * Transforms the graph to undirected
  */
-void Graph::undirectedSet(const bool &toggle, const bool &signalMW){
-    qDebug() << "Graph::undirectedSet()";
+void Graph::graphUndirectedSet(const bool &toggle, const bool &signalMW){
+    qDebug() << "Graph::graphUndirectedSet()";
     if (!toggle) {
         m_undirected=false;
         graphModifiedSet(GRAPH_CHANGED_EDGES, signalMW);
@@ -2300,14 +2372,14 @@ void Graph::undirectedSet(const bool &toggle, const bool &signalMW){
     QHash<int,float>::const_iterator it1;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         v1 = (*it)->name();
-        qDebug() << "Graph::undirectedSet() - iterate over edges of v1 " << v1;
+        qDebug() << "Graph::graphUndirectedSet() - iterate over edges of v1 " << v1;
         enabledOutEdges=(*it)->outEdgesEnabledHash();
         it1=enabledOutEdges->cbegin();
         while ( it1!=enabledOutEdges->cend() ){
             v2 = it1.key();
             weight = it1.value();
 
-            qDebug() << "Graph::undirectedSet() - "
+            qDebug() << "Graph::graphUndirectedSet() - "
                      << " v1 " << v1
                      << " -> " << v2 << " = "
                      << " weight " << weight;
@@ -2323,7 +2395,7 @@ void Graph::undirectedSet(const bool &toggle, const bool &signalMW){
 }
 
 
-bool Graph::isUndirected() {
+bool Graph::graphUndirected() {
     return m_undirected;
 }
 
@@ -2463,7 +2535,7 @@ int Graph::connectedness() {
         reachabilityMatrix();
     }
     isolatedVertices=verticesListIsolated().count();
-    if ( isSymmetric() ) {
+    if ( graphSymmetric() ) {
         qDebug() << "Graph::connectedness() IS SYMMETRIC";
         if ( disconnectedVertices.size() != 0 ) {
             if (isolatedVertices!=0 ) {
@@ -2695,8 +2767,8 @@ void Graph::distanceMatrixCreate(const bool &centralities,
 
     qDebug() << "Graph::distanceMatrixCreate() - m_symmetric: "
                 << m_symmetric
-                   << "Calling isSymmetric()";
-    m_symmetric = isSymmetric();
+                   << "Calling graphSymmetric()";
+    m_symmetric = graphSymmetric();
     qDebug() << "Graph::distanceMatrixCreate() - now m_symmetric: "
                 << m_symmetric ;
 
@@ -5854,7 +5926,7 @@ void Graph::randomNetErdosCreate(  const int &vert,
                 << " diag " << diag;
 
     if (mode=="graph") {
-        undirectedSet(true);
+        graphUndirectedSet(true);
     }
     index.reserve(vert);
 
@@ -5993,7 +6065,7 @@ void Graph::randomNetRingLatticeCreate( const int &vert, const int &degree,
     double rad= (2.0* Pi/ vert );
 
 //    if (mode=="graph") {
-        undirectedSet(true);
+        graphUndirectedSet(true);
 //    }
 
     randomizeThings();
@@ -6043,7 +6115,7 @@ void Graph::randomNetScaleFreeCreate (const int &n,
     randomizeThings();
 
     if (mode=="graph") {
-        undirectedSet(true);
+        graphUndirectedSet(true);
     }
 
     int x=0;
@@ -6200,7 +6272,7 @@ void Graph::randomNetSmallWorldCreate (const int &vert, const int &degree,
              << "First creating a ring lattice";
 
     if (mode=="graph") {
-        undirectedSet(true);
+        graphUndirectedSet(true);
     }
 
     randomNetRingLatticeCreate(vert, degree, false);
@@ -7191,8 +7263,8 @@ float Graph:: cliquesContaining(int source, int size){
     QList<int> dyad, triad, quad;
 
     qDebug() << "Graph::cliquesContaining() Source vertex " << source
-             << "[" << index[source] << "] has inEdges " << edgesInbound(source)
-             << " and outEdges "<< edgesOutbound(source);
+             << "[" << index[source] << "] has inEdges " << vertexEdgesInbound(source)
+             << " and outEdges "<< vertexEdgesOutbound(source);
 
 
     qDebug () << "Graph::cliquesContaining() - Checking inEdges to " << source;
@@ -7405,11 +7477,11 @@ float Graph::cliquesOfSize(int size){
 */
 float Graph::numberOfTriples(int v1){
     float totalDegree=0;
-    if (isSymmetric()){
-        totalDegree=edgesOutbound(v1);
+    if (graphSymmetric()){
+        totalDegree=vertexEdgesOutbound(v1);
         return totalDegree * (totalDegree -1.0) / 2.0;
     }
-    totalDegree=edgesOutbound(v1) + edgesInbound(v1);  //FIXEM
+    totalDegree=vertexEdgesOutbound(v1) + vertexEdgesInbound(v1);  //FIXEM
     return	totalDegree * (totalDegree -1.0);
 }
 
@@ -7436,13 +7508,13 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
     qDebug() << "Graph::clusteringCoefficientLocal("<< v1 << ") - "
             << " Graph changed or clucof not calculated.";
 
-    bool graphSymmetric = false;
+    bool graphIsSymmetric = false;
 
-    if ( isSymmetric() ) {
-        graphSymmetric = true;
+    if ( graphSymmetric() ) {
+        graphIsSymmetric = true;
     }
     else {
-        graphSymmetric = false;
+        graphIsSymmetric = false;
     }
 
     float clucof=0, denom = 0 , nom = 0;
@@ -7514,7 +7586,7 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
                 QString revedge = QString::number(u2) + "->" + QString::number(u1);
 
                 if ( ! neighborhoodEdges.contains(edge) &&
-                     ( graphSymmetric && ! neighborhoodEdges.contains(revedge) )
+                     ( graphIsSymmetric && ! neighborhoodEdges.contains(revedge) )
                      )
                 {
                     neighborhoodEdges.insert(edge, true);
@@ -7527,7 +7599,7 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
                              << "Edge not added, discovered previously : " << edge;
                 }
             }
-            if ( ! graphSymmetric )
+            if ( ! graphIsSymmetric )
             {
                 if (  edgeExists( u2, u1 ) != 0   )
                 {
@@ -7565,7 +7637,7 @@ float Graph::clusteringCoefficientLocal(const long int &v1){
     if ( nom == 0)
         return 0;	//stop if we're at a leaf.
 
-    if ( graphSymmetric ){
+    if ( graphIsSymmetric ){
         k=reciprocalEdges->count();  //k_{i} is the number of neighbours of a vertex
         denom =	k * (k -1.0) / 2.0;
 
@@ -8474,7 +8546,7 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
 
     qDebug()<< "		... writing graph tag";
 
-    if (isUndirected())
+    if (graphUndirected())
         outText << "  <graph id=\""<< networkName << "\" edgedefault=\"undirected\"> \n";
     else
         outText << "  <graph id=\""<< networkName << "\" edgedefault=\"directed\"> \n";
@@ -8529,7 +8601,7 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
 
     qDebug() << "		... writing edges data";
     edgeCount=0;
-    if (!isUndirected()) {
+    if (!graphUndirected()) {
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
         {
             for (jt=m_graph.begin(); jt!=m_graph.end(); jt++)

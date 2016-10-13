@@ -125,7 +125,7 @@ class CompareDistances {
     \todo Update app icons
     \todo Control Panel Options should be dropped (break the panel layout in laptops).
     \todo - CHECK weighted networks results (IRCC and distance matrix with other combinations)
-    \todo - CHECK isWeighted corner case results, when !graphModified.
+    \todo - CHECK graphWeighted corner case results, when !graphModified.
     \todo - CHECK connectedness() algorithm implementation (unilaterallyConnectedVertices)
 
   \bug Create d-regular, undirected, ask for closeness, it says we are on a disconnected graph
@@ -370,8 +370,8 @@ public:
 
     int vertices(const bool dropIsolates=false, const bool countAll=false) ;
 
-    int edgesOutbound (int i) ;
-    int edgesInbound (int i) ;
+    int vertexEdgesOutbound (int i) ;
+    int vertexEdgesInbound (int i) ;
 
     int verticesWithOutboundEdges();
     int verticesWithInboundEdges();
@@ -432,14 +432,15 @@ public:
 
     int graphPathsExistingCount();
 
-    float density();
-    bool isWeighted();
+    float graphDensity();
+    bool graphWeighted();
 
-    bool isSymmetric();
-    void symmetrize();
+    bool graphSymmetric();
+    void graphSymmetrize();
+    void graphSymmetrizeStrongTies(const bool &allRelations=false);
 
-    void undirectedSet(const bool &toggle, const bool &signalMW=true);
-    bool isUndirected();
+    void graphUndirectedSet(const bool &toggle, const bool &signalMW=true);
+    bool graphUndirected();
 
     void adjacencyMatrixCreate(const bool dropIsolates=false,
                                const bool considerWeights=true,
