@@ -3443,9 +3443,6 @@ void MainWindow::initSignalSlots() {
     connect( graphicsWidget, SIGNAL( resized(int, int)),
                 &activeGraph, SLOT( canvasSizeSet(int,int)) ) ;
 
-    connect( graphicsWidget, SIGNAL( selectedEdge(Edge*) ),
-             this, SLOT ( slotEditEdgeInfoStatusBar(Edge*) )  );
-
     connect( graphicsWidget, SIGNAL( userClickOnEmptySpace() ),
                      this, SLOT( slotEditClickOnEmptySpace() ) ) ;
 
@@ -3638,6 +3635,12 @@ void MainWindow::initSignalSlots() {
 
     connect( &activeGraph, &Graph::signalNodeClickedInfo ,
              this, &MainWindow::slotEditNodeInfoStatusBar );
+
+    connect( graphicsWidget, &GraphicsWidget::userClickedEdge,
+             &activeGraph, &Graph::edgeClickedSet );
+
+    connect ( &activeGraph, &Graph::signalEdgeClickedInfo,
+             this, &MainWindow::slotEditEdgeInfoStatusBar );
 
 
     connect( &activeGraph, SIGNAL( statusMessage (QString) ),
@@ -7154,29 +7157,33 @@ void MainWindow::slotEditNodeInfoStatusBar ( const long int &number,
  * Displays information about the clicked edge on the statusbar
  * @param edge
  */
-void MainWindow::slotEditEdgeInfoStatusBar (Edge* edge) {
-    clickedEdge=edge;
+void MainWindow::slotEditEdgeInfoStatusBar (const int &v1,
+                                            const  int &v2,
+                                            const float &weight,
+                                            const bool &undirected) {
+   // clickedEdge=edge;
     edgeClicked=true;
     nodeClicked=false;
 
+    rightPanelClickedEdgeSourceLCD->display(v1);
+    rightPanelClickedEdgeTargetLCD->display(v2);
+    rightPanelClickedEdgeWeightLCD->display(weight);
 
-    rightPanelClickedEdgeSourceLCD->display(edge->sourceNodeNumber());
-    rightPanelClickedEdgeTargetLCD->display(edge->targetNodeNumber());
-    rightPanelClickedEdgeWeightLCD->display(edge->weight());
-
-    if (edge->isUndirected()) {
+    if ( undirected ) {
             statusMessage(  QString
                         (tr("Symmetric edge %1 <--> %2 of weight %3 has been selected. "
                                    "Click again to unselect it."))
-                    .arg( edge->sourceNodeNumber() ).arg(edge->targetNodeNumber())
-                    .arg( edge->weight()) ) ;
+                    .arg( v1 ).arg( v2 )
+                    .arg( weight )
+                            );
             rightPanelClickedEdgeHeaderLabel->setText(tr("Clicked Edge"));
     }
     else {
         statusMessage(  QString(tr("Arc %1 --> %2 of weight %3 has been selected. "
                                    "Click again to unselect it."))
-                    .arg( edge->sourceNodeNumber() ).arg(edge->targetNodeNumber())
-                    .arg(edge->weight()) ) ;
+                        .arg( v1 ).arg( v2 )
+                        .arg( weight )
+                        );
         rightPanelClickedEdgeHeaderLabel->setText(tr("Clicked Directed Edge"));
     }
 }

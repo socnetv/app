@@ -77,7 +77,9 @@ Graph::Graph() {
     calculatedPRP=false;
     calculatedTriad=false;
     m_precision = 5;
-    m_vertexClicked = -1;
+    m_vertexClicked = 0;
+    m_clickedEdge.v1=0;
+    m_clickedEdge.v2=0;
 
     file_parser = 0;
     wc_parser = 0;
@@ -169,7 +171,10 @@ void Graph::clear() {
     outboundEdgesVert=0;
     inboundEdgesVert=0;
     reciprocalEdgesVert=0;
-    m_vertexClicked = -1;
+    m_vertexClicked = 0;
+    m_clickedEdge.v1=0;
+    m_clickedEdge.v2=0;
+
 
     order=true;		//returns true if the indexes of the list is ordered.
     m_undirected=false;
@@ -801,7 +806,6 @@ void Graph::vertexClickedSet(const int &v1) {
                            ( vertices() < 500 ) ? clusteringCoefficientLocal(v1): 0
                                                   );
     }
-
 }
 
 
@@ -1548,6 +1552,33 @@ void Graph::edgeFilterUnilateral(const bool &toggle, const bool &allRelations) {
 }
 
 
+
+
+/**
+ * @brief Graph::vertexClickedSet
+ * @param v1
+ */
+void Graph::edgeClickedSet(const int &v1, const int &v2) {
+    m_clickedEdge.v1=v1;
+    m_clickedEdge.v2=v2;
+
+    if (m_clickedEdge.v1 == 0 && m_clickedEdge.v2==0) {
+        signalEdgeClickedInfo();
+    }
+    else {
+        float weight = m_graph[ index[ m_clickedEdge.v1] ]->hasEdgeTo(m_clickedEdge.v2);
+        bool undirected=false;
+        if ( edgeExists(m_clickedEdge.v1,m_clickedEdge.v2, true) && graphUndirected() )
+            undirected=true;
+        signalEdgeClickedInfo( m_clickedEdge.v1 ,m_clickedEdge.v2, weight, undirected);
+    }
+
+}
+
+
+ClickedEdge Graph::edgeClicked() {
+    return m_clickedEdge;
+}
 
 /**
  * @brief Graph::edgeExists

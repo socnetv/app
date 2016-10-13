@@ -247,7 +247,10 @@ public slots:
     void slotEditNodeLabelsColor(QColor color=QColor());
     void slotEditNodeLabelDistance(int v1=0, int newSize=0);
 
-    void slotEditEdgeInfoStatusBar (Edge*);
+    void slotEditEdgeInfoStatusBar (const int &v1,
+                                    const int &v2,
+                                    const float &weight,
+                                    const bool &undirected);
 
     void slotEditEdgeOpenContextMenu() ;
     void slotEditEdgeAdd();

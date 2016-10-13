@@ -164,7 +164,7 @@ signals:
     void userNodeMoved(const int &, const int &, const int &);
     void userSelectedItems(const int nodes, const int edges);
     void userClickedNode(const int &nodeNumber);
-    void selectedEdge(Edge *);
+    void userClickedEdge(const int &source, const int &target);
     void zoomChanged(const int);
     void rotationChanged(const int);
     void resized(const int, const int);

@@ -85,6 +85,12 @@ typedef QHash < int, rel_w_bool > H_edges;
 typedef QHash<QString, bool> H_StrToBool;
 
 
+struct ClickedEdge {
+    int v1;
+    int v2;
+};
+
+
 
 class Distance
 {
@@ -191,8 +197,6 @@ public slots:
     void vertexCreateAtPosRandomWithLabel(const int &i,
                                           const QString &label,
                                           const bool &signalMW=false) ;
-    void vertexClickedSet(const int &v);
-
     /** Slots to signals from MainWindow */
 
     void relationSet(int);
@@ -205,6 +209,8 @@ public slots:
     double canvasRandomX()  const;
     double canvasRandomY()  const;
     void vertexIsolateFilter ( bool );		//Called by MW to filter orphan vertices
+    void vertexClickedSet(const int &v);
+    void edgeClickedSet(const int &v1, const int &v2) ;
     void edgeFilterByWeight (float, bool);		//Called by MW to filter edges over/under a weight
     void edgeFilterByRelation(int relation, bool status);
     void edgeFilterUnilateral(const bool &toggle,
@@ -231,13 +237,16 @@ signals:
     void signalDatasetDescription(QString);
     void signalNodeSizesByOutDegree(bool);
     void signalNodeSizesByInDegree(bool);
-    void signalNodeClickedInfo(const long int &number,
+    void signalNodeClickedInfo(const long int &number=0,
                                     const QPointF &p=QPointF(),
                                     const QString &label=QString::null,
                                     const int &inDegree=0,
                                     const int &outDegree=0,
                                     const float &clc=0);
-
+    void signalEdgeClickedInfo (const long int &v1=0,
+                                const long int &v2=0,
+                                const float &weight=0,
+                                const bool &undirected=false);
     /** Signals to GraphicsWidget */
     void drawNode( const int &num, const int &size, const QString &nodeShape,
                    const QString &nodeColor,
@@ -376,8 +385,7 @@ public:
 
     void vertexPosSet(const int &v, const int &x, const int &y);
     QPointF vertexPos(const int &v1);
-
-
+    int vertexClicked() { return m_vertexClicked;}
 
     int vertices(const bool dropIsolates=false, const bool countAll=false) ;
 
@@ -415,6 +423,7 @@ public:
 
     /* EDGES */
     int edgesEnabled();
+    ClickedEdge edgeClicked();
     float edgeExists(const long &v1, const long &v2, const bool &undirected=false);
 
     void edgeRemove (const long int &v1, const long int &v2,
@@ -734,6 +743,7 @@ private:
     bool calculatedTriad;
 
     int m_precision, m_curRelation, m_fileFormat, m_vertexClicked;
+    ClickedEdge m_clickedEdge;
     float edgeWeightTemp;
     float meanDC, varianceDC;
     float meanCC, varianceCC;

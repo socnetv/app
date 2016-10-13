@@ -257,13 +257,13 @@ void GraphicsWidget::nodeClicked(Node *node){
 
 /** 
     This is called from each edge when the user clicks on it.
-    It emits the selectedEdge signal to MW which is used to
+    It emits the userClickedEdge signal to Graph which is used to
     - display edge info on the status bar
     - notify context menus for the clicked edge.
     Also, it makes source and target nodes to stand out of other nodes.
 */
 void GraphicsWidget::edgeClicked(Edge *edge){
-    qDebug ("GW: Emitting selectedEdge()");
+    qDebug() <<"GW::edgeCliced()";
     if (markedEdgeExist) {
         //unselect them, restore their color
         markedEdgeSource->setSelected(false);
@@ -286,7 +286,10 @@ void GraphicsWidget::edgeClicked(Edge *edge){
     //now, make them larger
     markedEdgeSource->setSize(2*markedEdgeSourceOrigSize-1);
     markedEdgeTarget->setSize(2*markedEdgeTargetOrigSize-1);
-    emit selectedEdge(edge);
+
+    emit userClickedEdge(edge->sourceNode()->nodeNumber(),
+                         edge->targetNode()->nodeNumber()
+                         );
 }
 
 
@@ -296,7 +299,7 @@ void GraphicsWidget::edgeClicked(Edge *edge){
 /**
     On the event of a right-click on an edge, the edge calls this function
     to emit a signal to MW to open a context menu at the mouse position.
-    Edge is already passed with selectedEdge(Node *) signal
+    Edge is already passed with userClickedEdge() signal
     The position of the menu is determined by QMouse:pos()...
 */
 void GraphicsWidget::openEdgeContextMenu(){
