@@ -992,15 +992,31 @@ void MainWindow::initActions(){
 
     editEdgeSymmetrizeAllAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Symmetrize Directed Edges"), this);
     editEdgeSymmetrizeAllAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_S));
-    editEdgeSymmetrizeAllAct->setStatusTip(tr("Make all arcs reciprocal (thus, a symmetric graph)."));
+    editEdgeSymmetrizeAllAct->setStatusTip(tr("Make all arcs in this relation reciprocal (thus, a symmetric graph)."));
     editEdgeSymmetrizeAllAct->setWhatsThis(
                 tr("Symmetrize Directed Edges\n\n"
-                   "Makes all directed arcs reciprocal. \n"
+                   "Makes all directed arcs in this relation reciprocal. \n"
                    "If there is an arc from node A to node B \n"
                    "then a new arc from node B to node A is created \n"
                    "with the same weight"
                    "The result is a symmetric network"));
     connect(editEdgeSymmetrizeAllAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeSymmetrizeAll()));
+
+
+    editEdgeSymmetrizeStrongTiesAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Symmetrize Edges by Strong Ties"), this);
+    editEdgeSymmetrizeStrongTiesAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_T));
+    editEdgeSymmetrizeStrongTiesAct->setStatusTip(tr("Create a new symmetric relation where all ties are reciprocated (strong ties)."));
+    editEdgeSymmetrizeStrongTiesAct->setWhatsThis(
+                tr("Symmetrize Edges (Strong Ties)\n\n"
+                   "Create a new symmetric relation where all ties are reciprocated. \n"
+                   "That is, a strong tie exists between actor A and actor B \n"
+                   "only when both arcs A -> B and B -> A are present. \n"
+                   "If the network is multi-relational, it asks you whether \n"
+                   "the current relation or all relations are to be considered. \n"
+                   "The resulting relation is symmetric."));
+    connect(editEdgeSymmetrizeStrongTiesAct, SIGNAL(triggered()),
+            this, SLOT(slotEditEdgeSymmetrizeStrongTies()));
+
 
     editEdgeUndirectedAllAct= new QAction( tr("Undirected Edges"), this);
     editEdgeUndirectedAllAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_U));
@@ -2292,6 +2308,7 @@ void MainWindow::initMenuBar() {
     editEdgeMenu -> addAction (editEdgeColorAllAct);
     editEdgeMenu -> addSeparator();
     editEdgeMenu -> addAction (editEdgeSymmetrizeAllAct);
+    editEdgeMenu -> addAction (editEdgeSymmetrizeStrongTiesAct);
     editEdgeMenu -> addAction (editEdgeUndirectedAllAct);
 
     //   transformNodes2EdgesAct -> addTo (editMenu);
@@ -3778,8 +3795,8 @@ void MainWindow::initNet(){
 
     /** Clear LCDs **/
     rightPanelNodesLCD->display(activeGraph.vertices());
-    if (activeGraph.isUndirected()) {
-        activeGraph.undirectedSet(true);
+    if (activeGraph.graphUndirected()) {
+        activeGraph.graphUndirectedSet(true);
         rightPanelEdgesLCD->setStatusTip(tr("Shows the total number of undirected edges in the network."));
         rightPanelEdgesLCD->setToolTip(tr("The total number of undirected edges in the network."));
         rightPanelNetworkTypeLabel->setStatusTip(tr("Undirected data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
@@ -3800,7 +3817,7 @@ void MainWindow::initNet(){
         rightPanelSelectedEdgesLabel->setText(tr("Selected Edges"));
     }
     else {
-        activeGraph.undirectedSet(false,false);
+        activeGraph.graphUndirectedSet(false,false);
         rightPanelEdgesLCD->setStatusTip(tr("Shows the total number of directed edges in the network."));
         rightPanelEdgesLCD->setToolTip(tr("The total number of directed edges in the network."));
         rightPanelNetworkTypeLabel->setStatusTip(tr("Directed data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
@@ -3822,7 +3839,7 @@ void MainWindow::initNet(){
         rightPanelSelectedEdgesLabel->setText(tr("Selected Arcs"));
     }
     rightPanelEdgesLCD->display(activeEdges());
-    rightPanelDensityLCD->display(activeGraph.density());
+    rightPanelDensityLCD->display(activeGraph.graphDensity());
     rightPanelClickedNodeInDegreeLCD->display(0);
     rightPanelClickedNodeOutDegreeLCD->display(0);
     rightPanelClickedNodeClucofLCD->display(0);
@@ -7617,7 +7634,7 @@ void MainWindow::slotEditEdgeWeight(){
 
         if (ok) {
             activeGraph.edgeWeightSet(sourceNode, targetNode, newWeight,
-                                      activeGraph.isUndirected()
+                                      activeGraph.graphUndirected()
                                       );
         }
         else {
@@ -7644,8 +7661,8 @@ void MainWindow::slotEditEdgeSymmetrizeAll(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
-    qDebug("MW: slotEditEdgeSymmetrizeAll() calling symmetrize");
-    activeGraph.symmetrize();
+    qDebug("MW: slotEditEdgeSymmetrizeAll() calling graphSymmetrize()");
+    activeGraph.graphSymmetrize();
     QMessageBox::information(this,
                              "Symmetrize",
                              tr("All arcs are reciprocal. \n"
@@ -7654,15 +7671,42 @@ void MainWindow::slotEditEdgeSymmetrizeAll(){
 }
 
 
+
+
+void MainWindow::slotEditEdgeSymmetrizeStrongTies(){
+    if ( activeEdges() ==0 )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
+        return;
+    }
+    qDebug()<< "MW: slotEditEdgeSymmetrizeStrongTies() calling graphSymmetrizeStrongTies()";
+    if (activeGraph.relations()>0) {
+        slotHelpMessageToUser(USER_MSG_QUESTION_CUSTOM, tr("Select"),
+                              tr("multirelational graph"),
+                              tr("Symmetrize ties across all relations or just the current relation"),
+                              QMessageBox::NoButton, QMessageBox::NoButton,
+                              tr("all relations"), tr("current relation")
+                              );
+        activeGraph.graphSymmetrizeStrongTies(true);
+    }
+    else {
+        activeGraph.graphSymmetrizeStrongTies(false);
+    }
+    QMessageBox::information(this,
+                             "Symmetrize Strong Ties",
+                             tr("All edges are strong ties. \n"
+                                "The network is symmetric."), "OK",0);
+    statusMessage(tr("All edges are strong ties. Thus a symmetric network. Ready."));
+}
+
 /**
  * @brief MainWindow::slotEditEdgeUndirectedAll
  * Tranforms all directed arcs to undirected edges.
  * The result is a undirected and symmetric network
  */
 void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
-    qDebug()<<"MW: slotEditEdgeUndirectedAll() - calling Graph::undirectedSet()";
+    qDebug()<<"MW: slotEditEdgeUndirectedAll() - calling Graph::graphUndirectedSet()";
     if (toggle) {
-        activeGraph.undirectedSet(toggle);
+        activeGraph.graphUndirectedSet(toggle);
         optionsEdgeArrowsAct->setChecked(false);
         if (activeEdges() !=0 ) {
             statusMessage(tr("Undirected data mode. "
@@ -7676,7 +7720,7 @@ void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle){
         }
     }
     else {
-        activeGraph.undirectedSet(toggle);
+        activeGraph.graphUndirectedSet(toggle);
         optionsEdgeArrowsAct->trigger();
         optionsEdgeArrowsAct->setChecked(true);
         if (activeEdges() !=0 ) {
@@ -8613,7 +8657,7 @@ void MainWindow::slotCheckSymmetry(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    if (activeGraph.isSymmetric())
+    if (activeGraph.graphSymmetric())
         QMessageBox::information(this,
                                  "Symmetry",
                                  tr("The adjacency matrix is symmetric."
@@ -8657,7 +8701,7 @@ void MainWindow::slotInvertAdjMatrix(){
 
 void MainWindow::askAboutWeights(){
     qDebug() << "MW::askAboutWeights() - check if Graph weighted.";
-    if (!activeGraph.isWeighted()  ){
+    if (!activeGraph.graphWeighted()  ){
         considerWeights=false;
         return;
     }
@@ -8755,7 +8799,7 @@ void MainWindow::slotGraphDistance(){
 
     qDebug() << "source " << i  << " target" <<  j;
 
-    if (activeGraph.isSymmetric() && i>j) {
+    if (activeGraph.graphSymmetric() && i>j) {
         qSwap(i,j);
     }
 
@@ -8879,14 +8923,14 @@ void MainWindow::slotDiameter() {
 
     destroyProgressBar();
 
-    if ( activeGraph.isWeighted() && considerWeights )
+    if ( activeGraph.graphWeighted() && considerWeights )
         QMessageBox::information(this, "Diameter",
                                  tr("Diameter =  ")
                                  + QString::number(netDiameter) +
                                  tr("\n\nSince this is a weighted network \n"
                                  "the diameter can be more than N"),
                                  "OK",0);
-    else if ( activeGraph.isWeighted() && !considerWeights )
+    else if ( activeGraph.graphWeighted() && !considerWeights )
         QMessageBox::information(this, "Diameter",
                                  tr("Diameter =  ")
                                  + QString::number(netDiameter) +
@@ -9256,7 +9300,7 @@ void MainWindow::slotCentralityDegree(){
         return;
     }
     bool considerWeights=false;
-    if ( activeGraph.isWeighted()) {
+    if ( activeGraph.graphWeighted()) {
 
 //        QMessageBox::information( this, "Centrality Out-Degree",
 //                                                 tr("Graph edges have weights. \nTake weights into account (Default: No)?"),
@@ -9486,7 +9530,7 @@ void MainWindow::slotPrestigeDegree(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    if (activeGraph.isSymmetric()) {
+    if (activeGraph.graphSymmetric()) {
         QMessageBox::warning(
                     this,
                     "Warning",
@@ -9498,7 +9542,7 @@ void MainWindow::slotPrestigeDegree(){
     }
 
     bool considerWeights=false;
-    if ( activeGraph.isWeighted()) {
+    if ( activeGraph.graphWeighted()) {
         switch( QMessageBox::information( this, "Degree Prestige (In-Degree)",
                                           tr("Graph edges have weights. \nTake weights into account (Default: No)?"),
                                           tr("Yes"), tr("No"),

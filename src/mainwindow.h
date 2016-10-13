@@ -254,6 +254,7 @@ public slots:
     void slotEditEdgeWeight();
     void slotEditEdgeColorAll(QColor color=QColor(), const int &threshold=RAND_MAX);
     void slotEditEdgeSymmetrizeAll();
+    void slotEditEdgeSymmetrizeStrongTies();
     void slotEditEdgeUndirectedAll(const bool &toggle);
 
     void slotFilterNodes();
@@ -457,7 +458,8 @@ private:
     QAction *editEdgeLabelAct, *editEdgeColorAct, *editEdgeWeightAct;
     QAction *filterNodesAct, *editFilterNodesIsolatesAct, *editFilterEdgesByWeightAct;
     QAction *editFilterEdgesUnilateralAct;
-    QAction *transformNodes2EdgesAct, *editEdgeSymmetrizeAllAct, *editEdgeUndirectedAllAct;
+    QAction *transformNodes2EdgesAct, *editEdgeSymmetrizeAllAct;
+    QAction *editEdgeSymmetrizeStrongTiesAct, *editEdgeUndirectedAllAct;
     QAction *changeBackColorAct, *editNodeColorAll, *editEdgeColorAllAct,
             *editNodeNumbersColorAct,*editNodeLabelsColorAct;
     QAction *optionsEdgeThicknessPerWeightAct, *optionsEdgeWeightNumbersAct, *optionsEdgesVisibilityAct;
