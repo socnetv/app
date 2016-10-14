@@ -199,7 +199,7 @@ public slots:
                                           const bool &signalMW=false) ;
     /** Slots to signals from MainWindow */
 
-    void relationSet(int);
+    void relationSet(int index);
     void relationAddFromUser(QString relation);
     void canvasSizeSet(const int w, const int h);
     double canvasMaxRadius() const;
@@ -232,7 +232,6 @@ signals:
     void signalGraphSaved(const int &status);
 
     void statusMessage (const QString &message);
-    void signalRelationAddToMW(QString newRelation);
     void signalDatasetDescription(QString);
     void signalNodeSizesByOutDegree(bool);
     void signalNodeSizesByInDegree(bool);
@@ -246,6 +245,10 @@ signals:
                                 const long int &v2=0,
                                 const float &weight=0,
                                 const bool &undirected=false);
+    void signalRelationAddToMW(QString newRelation);
+    void signalRelationChanged(int);
+    void signalRelationChangeToMW(const int &relIndex=RAND_MAX);
+
     /** Signals to GraphicsWidget */
     void drawNode( const int &num, const int &size, const QString &nodeShape,
                    const QString &nodeColor,
@@ -291,8 +294,7 @@ signals:
     void addGuideHLine (const double&y0);
 
 
-    /** Signals to Vertice */
-    void relationChanged(int);
+
 
     /** Signals to Crawler threads */
     void  operateSpider();
@@ -331,9 +333,9 @@ public:
 
     /* RELATIONS */
     int relations();
-    void relationAddFromGraph(QString relationName);
-
-
+    void relationAddFromGraph(QString newRelation);
+    void relationAddFromGraphChange(const QString &newRelation);
+    void relationChange(const int &relIndex=RAND_MAX);
     /* VERTICES */
     int vertexNumberMax();
     int vertexNumberMin();

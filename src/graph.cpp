@@ -302,20 +302,24 @@ double Graph::canvasRandomY() const {
 
 
 
-
 /**
  * @brief Graph::relationSet
  * Called from MW and Parser
- * @param relation
+ * Changes m_curRelation to index , then calls Vertex::relationSet() for all
+ * enabled vertices, which disables the edges of the old relation and enables the
+ * edges of the new relation
+ * Then, it signals signalRelationChanged(int) to GW, which accordingly disables/
+ * enables the on screen edges.
+ * @param index
  */
-void Graph::relationSet(int relation){
-    qDebug() << "++ Graph::relationSet(int) to relation " << relation
+void Graph::relationSet(int index){
+    qDebug() << "++ Graph::relationSet(int) to relation " << index
              << " current relation is " << m_curRelation ;
-    if (m_curRelation == relation ) {
+    if (m_curRelation == index ) {
         qDebug() << "++ Graph::relationSet(int) - same relation - END";
         return;
     }
-    if ( relation < 0) {
+    if ( index < 0) {
         qDebug() << "++ Graph::relationSet(int) - negative relation - END ";
         return;
     }
@@ -323,10 +327,10 @@ void Graph::relationSet(int relation){
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() )
             continue;
-       (*it)->relationSet(relation);
+       (*it)->relationSet(index);
     }
-    m_curRelation = relation;
-    emit relationChanged(m_curRelation);
+    m_curRelation = index;
+    emit signalRelationChanged(m_curRelation);
 
     graphModifiedSet(GRAPH_CHANGED_EDGES);
 }
@@ -353,6 +357,18 @@ void Graph::relationAddFromGraph(QString newRelation) {
     qDebug() << "Graph::relationAddFromGraph(string) " << newRelation;
     m_relationsList << newRelation;
     emit signalRelationAddToMW(newRelation);
+}
+
+
+void Graph::relationAddFromGraphChange(const QString &newRelation) {
+    qDebug() << "Graph::relationAddFromGraphChange(string) " << newRelation;
+    relationAddFromGraph(newRelation);
+    emit signalRelationChangeToMW();
+}
+
+void Graph::relationChange(const int &relIndex) {
+    qDebug() << "Graph::relationChange()" << relIndex;
+    emit signalRelationChangeToMW(relIndex);
 }
 
 /**
@@ -2394,20 +2410,21 @@ void Graph::graphSymmetrize(){
  * @param allRelations
  */
 void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
-    qDebug()<< "Graph::graphSymmetrizeStrongTies()";
-    QList<Vertex*>::const_iterator it;
+    qDebug()<< "Graph::graphSymmetrizeStrongTies()"
+            << "initial relations"<<relations();
     int y=0, v2=0, v1=0, weight;
     float invertWeight=0;
+
+    QList<Vertex*>::const_iterator it;
+
     QHash<int,float> *outEdgesAll = new QHash<int,float>;
-    QHash<QString,float> *strongTies = new QHash<QString,float>;
     QHash<int,float>::const_iterator it1;
-    QHash<QString,float>::const_iterator it2;
-    relationAddFromGraph("Strong Ties");
-    //if (1==1) return;
-    relationSet(m_relationsList.count());
+
+    QHash<QString,float> *strongTies = new QHash<QString,float>;
+
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         v1 = (*it)->name();
-        qDebug() << "Graph::graphSymmetrizeStrongTies() - v1" << v1
+        qDebug() << "Graph::graphSymmetrizeStrongTies() - v" << v1
                     << "iterate over outEdges in all relations";
         outEdgesAll=(*it)->outEdgesAllRelationsUniqueHash();
         it1=outEdgesAll->cbegin();
@@ -2416,36 +2433,45 @@ void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
             weight = it1.value();
             y=index[ v2 ];
             qDebug() << "Graph::graphSymmetrizeStrongTies() - "
-                     << " found edge" << v1
-                     << "->" << v2 << "=" << weight;
+                     << v1 << "->" << v2 << "=" << weight << "Checking opposite.";
             invertWeight = m_graph[y]->hasEdgeTo( v1,allRelations ) ;
             if ( invertWeight == 0 ) {
                 qDebug() << "Graph::graphSymmetrizeStrongTies() - " << v1
                          << "<-" <<  v2 << " does not exist. Weak tie. Continue." ;
             }
             else {
-                if (!strongTies->contains(QString::number(v1)+"-"+QString::number(v2))){
+                if (!strongTies->contains(QString::number(v1)+"--"+QString::number(v2)) &&
+                    !strongTies->contains(QString::number(v2)+"--"+QString::number(v1)) ){
                     qDebug() << "Graph::graphSymmetrizeStrongTies() - " << v1
-                             << "<-" << v2 << " exists. Strong Tie. Adding";
-                    strongTies->insert(QString::number(v1)+"-"+QString::number(v2), 1);
+                             << "--" << v2 << " exists. Strong Tie. Adding";
+                    strongTies->insert(QString::number(v1)+"--"+QString::number(v2), 1);
                 }
                 else {
                     qDebug() << "Graph::graphSymmetrizeStrongTies() - " << v1
-                             << "<-" << v2 << " exists. Strong Tie already found. Continue";
+                             << "--" << v2 << " exists. Strong Tie already found. Continue";
                 }
             }
             ++it1;
         }
     }
+//    relationAddFromGraph("Strong Ties");
+//    relationSet(m_relationsList.indexOf("Strong Ties"));
 
-    it2=strongTies->cbegin();
+    relationAddFromGraphChange("Strong Ties");
+
+    QHash<QString,float>::const_iterator it2;
+    it2=strongTies->constBegin();
     QStringList vertices;
-    while ( it2!=strongTies->cend() ){
-        vertices = it2.key().split("-");
-        v1 = vertices.at(0).toInt();
-        v2 = vertices.at(1).toInt();
+    qDebug() << "Graph::graphSymmetrizeStrongTies() - creating strong tie edges";
+    while ( it2!=strongTies->constEnd() ){
+        vertices = it2.key().split("--");
+        qDebug() << "Graph::graphSymmetrizeStrongTies() - tie " <<it2.key()
+                 << "vertices.at(0)" << vertices.at(0)
+                 << "vertices.at(1)" << vertices.at(1);
+        v1 = (vertices.at(0)).toInt();
+        v2 = (vertices.at(1)).toInt();
         qDebug() << "Graph::graphSymmetrizeStrongTies() - calling edgeCreate for"
-                 << v1 << "-"<<v2;
+                 << v1 << "--"<<v2;
         edgeCreate( v1, v2, 1, initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED, true, false,
                     QString::null, false);
         ++it2;
@@ -2454,9 +2480,11 @@ void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
     delete outEdgesAll;
     delete strongTies;
     m_symmetric=true;
-
+    //emit relationSet(0);
+    relationChange(0);
     graphModifiedSet(GRAPH_CHANGED_EDGES);
-
+    qDebug()<< "Graph::graphSymmetrizeStrongTies()"
+            << "finaly relations"<<relations();
 }
 
 
