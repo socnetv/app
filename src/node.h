@@ -97,6 +97,7 @@ public:
     void setLabelVisibility(const bool &toggle);
     void setLabelSize(const int &size);
     void setLabelText ( QString label) ;
+    void setLabelColor (const QString &color) ;
     QString labelText();
     void setLabelDistance(const int &distance);
 

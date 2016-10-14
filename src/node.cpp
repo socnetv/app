@@ -467,6 +467,18 @@ void Node::setLabelText ( QString label) {
 
 
 
+void Node::setLabelColor ( const QString &color) {
+    qDebug()<< "Node::setLabelColor()";
+    prepareGeometryChange();
+    m_labelColor= color;
+    if (m_hasLabel)
+        m_label->setDefaultTextColor(color);
+    else
+        addLabel();
+    m_hasLabel=true;
+}
+
+
 void Node::setLabelVisibility(const bool &toggle) {
     if (toggle){
         if (m_hasLabel) {
