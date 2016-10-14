@@ -55,7 +55,7 @@ GraphicsWidget::GraphicsWidget( QGraphicsScene *sc, MainWindow* par)  : QGraphic
     m_currentScaleFactor = 1;
     m_currentRotationAngle = 0;
     markedNodeExist=false; //used in findNode()
-    markedEdgeExist = false; //used in selecting and edge
+    markedEdgeExists = false; //used in selecting and edge
     edgesHash.reserve(1000);
     nodeHash.reserve(1000);
 
@@ -91,7 +91,7 @@ void GraphicsWidget::clear() {
     scene()->clear();
     m_curRelation=0;
     markedNodeExist=false;
-    markedEdgeExist = false;
+    markedEdgeExists = false;
     firstNode=0;
     secondDoubleClick=false;
     qDebug() << "GW::clear() - finished.";
@@ -250,6 +250,7 @@ void GraphicsWidget::startEdge(Node *node){
 */
 void GraphicsWidget::nodeClicked(Node *node){
     qDebug ("GW: Emitting userClickedNode()");
+    if (markedEdgeExists) edgeClicked(0);
     emit userClickedNode(node->nodeNumber());
 }
 
@@ -264,19 +265,19 @@ void GraphicsWidget::nodeClicked(Node *node){
 */
 void GraphicsWidget::edgeClicked(Edge *edge){
     qDebug() <<"GW::edgeCliced()";
-    if (markedEdgeExist) {
+    if (markedEdgeExists) {
         //unselect them, restore their color
         markedEdgeSource->setSelected(false);
         markedEdgeTarget->setSelected(false);
         //restore their size
         markedEdgeSource->setSize(markedEdgeSourceOrigSize);
         markedEdgeTarget->setSize(markedEdgeTargetOrigSize);
-        markedEdgeExist=false;
+        markedEdgeExists=false;
         return;
     }
     markedEdgeSource=edge->sourceNode();
     markedEdgeTarget=edge->targetNode();
-    markedEdgeExist=true;
+    markedEdgeExists=true;
     // select nodes to change their color
     markedEdgeSource->setSelected(true);
     markedEdgeTarget->setSelected(true);
@@ -295,17 +296,6 @@ void GraphicsWidget::edgeClicked(Edge *edge){
 
 
 
-
-/**
-    On the event of a right-click on an edge, the edge calls this function
-    to emit a signal to MW to open a context menu at the mouse position.
-    Edge is already passed with userClickedEdge() signal
-    The position of the menu is determined by QMouse:pos()...
-*/
-void GraphicsWidget::openEdgeContextMenu(){
-    qDebug("GW: emitting openEdgeMenu()");
-    emit openEdgeMenu();
-}
 
 
 
@@ -878,6 +868,26 @@ bool GraphicsWidget::setNodeNumberDistance( const long int &number, const int &d
 
 
 
+
+/**
+ * @brief GraphicsWidget::setNodeLabelColor
+ * @param number
+ * @param color
+ */
+bool GraphicsWidget::setNodeLabelColor(const long int &number, const QString &color){
+    qDebug () << "GW::setNodeLabelColor() - node number: "<< number
+              << " new Label color"<< color;
+    if  ( nodeHash.contains (number) ) {
+            nodeHash.value(number) ->setLabelColor(color);
+            return true;
+    }
+    qDebug() << "GW:setNodeLabelColor() - cannot find node " << number;
+    return false;
+}
+
+
+
+
 /**
  * @brief GraphicsWidget::setNodeLabelSize
  * @param number
@@ -1206,7 +1216,7 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
             else if ( e->button()==Qt::RightButton ) {
                 qDebug() << "GW::mousePressEvent() - right click on an edge."
                          << "Emitting openEdgeContextMenu()";
-                openEdgeMenu();
+                emit openEdgeMenu();
             }
             QGraphicsView::mousePressEvent(e);
             return;
@@ -1225,7 +1235,7 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
             emit openContextMenu(p);
         }
         else {
-            emit userClickOnEmptySpace();
+            emit userClickOnEmptySpace(p);
         }
         QGraphicsView::mousePressEvent(e);
 

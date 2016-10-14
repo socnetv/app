@@ -117,6 +117,7 @@ public slots:
     bool setNodeNumberDistance(const long int &, const int &distance=0);
 
     void setNodeLabelsVisibility(const bool &toggle);
+    bool setNodeLabelColor(const long int &number, const QString &color="green");
     bool setNodeLabelSize(const long int &, const int &size=0);
     bool setNodeLabel(long int , QString );
     bool setNodeLabelDistance(const long int &, const int &distance=0);
@@ -136,7 +137,6 @@ public slots:
     void setEdgeLabel(const long int &, const long int&, const QString &);
     void setEdgeColor(const long int &, const long int&, const QString &);
     void edgeClicked(Edge *);
-    void openEdgeContextMenu();
     void setEdgeWeightNumbersVisibility (const bool &toggle);
     void setEdgeLabelsVisibility(const bool &toggle);
 
@@ -157,7 +157,7 @@ public slots:
 signals:
     void userDoubleClickNewNode(const QPointF &);
     void userMiddleClicked(const int &, const int &);
-    void userClickOnEmptySpace();
+    void userClickOnEmptySpace(const QPointF &p);
     void openNodeMenu();
     void openEdgeMenu();
     void openContextMenu(const QPointF p);
@@ -183,7 +183,7 @@ private:
     int m_zoomIndex, markedNodeOrigSize,markedEdgeSourceOrigSize, markedEdgeTargetOrigSize;
     QString m_nodeLabel, m_numberColor, m_labelColor;
     QString edgeName;
-    bool secondDoubleClick, markedNodeExist, markedEdgeExist;
+    bool secondDoubleClick, markedNodeExist, markedEdgeExists;
     QGraphicsItem *moving;
     Node *firstNode, *secondNode, *markedNode1, *markedEdgeSource;
     Node *markedEdgeTarget, *tempNode ;
