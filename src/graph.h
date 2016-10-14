@@ -213,8 +213,7 @@ public slots:
     void edgeClickedSet(const int &v1, const int &v2) ;
     void edgeFilterByWeight (float, bool);		//Called by MW to filter edges over/under a weight
     void edgeFilterByRelation(int relation, bool status);
-    void edgeFilterUnilateral(const bool &toggle,
-                              const bool &allRelations=false);
+    void edgeFilterUnilateral(const bool &toggle);
     void webCrawl(QString, int, int, bool extLinks, bool intLinks);	//Called by MW to start a web crawler...
 
     QString htmlEscaped (QString str) const;
@@ -237,7 +236,7 @@ signals:
     void signalDatasetDescription(QString);
     void signalNodeSizesByOutDegree(bool);
     void signalNodeSizesByInDegree(bool);
-    void signalNodeClickedInfo(const long int &number=0,
+    void signalNodeClickedInfo(const int &number=0,
                                     const QPointF &p=QPointF(),
                                     const QString &label=QString::null,
                                     const int &inDegree=0,
@@ -277,6 +276,7 @@ signals:
     void setNodeNumberSize(const long int &, const int &);
     void setNodeNumberDistance(const long int &, const int &);
     void setNodeLabelSize(const long int &, const int &);
+    void setNodeLabelColor(const long int &, const QString &color);
     void setNodeLabelDistance(const long int &, const int &);
 
     void setEdgeWeight (const long int &v1, const long int &v2, const float &weight);
@@ -335,8 +335,8 @@ public:
 
 
     /* VERTICES */
-    int vertexLastNumber();
-    int vertexFirstNumber();
+    int vertexNumberMax();
+    int vertexNumberMin();
 
     int vertexDegreeOut(int);
     int vertexDegreeIn(int);
@@ -378,6 +378,7 @@ public:
     void vertexLabelColorInit(QString color);
     void vertexLabelSet(int v, QString label);
     void vertexLabelColorSet(int v1, QString color);
+    void vertexLabelColorAllSet(const QString &color);
     QString vertexLabel(const long int &v1);
     void vertexLabelDistanceInit (const int &distance);
     void vertexLabelDistanceSet(const long int &v, const int &newDistance );
@@ -385,7 +386,7 @@ public:
 
     void vertexPosSet(const int &v, const int &x, const int &y);
     QPointF vertexPos(const int &v1);
-    int vertexClicked() { return m_vertexClicked;}
+    int vertexClicked() const;
 
     int vertices(const bool dropIsolates=false, const bool countAll=false) ;
 

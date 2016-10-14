@@ -456,7 +456,7 @@ void Graph::vertexCreate(const int &num, const int &nodeSize, const QString &nod
  * Calls the main creation slot with init node values.
  */
 void Graph::vertexCreateAtPos(const QPointF &p){
-    int i = vertexLastNumber() +1;
+    int i = vertexNumberMax() +1;
     qDebug() << "Graph::vertexCreateAtPos() - vertex " << i << " pos " << p;
     vertexCreate(	i, initVertexSize,  initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
@@ -483,7 +483,7 @@ void Graph::vertexCreateAtPosRandom(const bool &signalMW){
     p.setX( canvasRandomX());
     p.setY( canvasRandomY() );
     qDebug() << "Graph::vertexCreateAtPosRandom()" << p;
-    vertexCreate( vertexLastNumber()+1, initVertexSize, initVertexColor,
+    vertexCreate( vertexNumberMax()+1, initVertexSize, initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
                     QString::null, initVertexLabelColor, initVertexLabelSize,
                     p, initVertexShape, signalMW
@@ -510,7 +510,7 @@ void Graph::vertexCreateAtPosRandomWithLabel(const int &i,
     QPointF p;
     p.setX(canvasRandomX());
     p.setY(canvasRandomY());
-    vertexCreate( (i<0)?vertexLastNumber() +1:i, initVertexSize,  initVertexColor,
+    vertexCreate( (i<0)?vertexNumberMax() +1:i, initVertexSize,  initVertexColor,
                     initVertexNumberColor, initVertexNumberSize,
                     label, initVertexLabelColor,  initVertexLabelSize,
                     p, initVertexShape, signalMW
@@ -584,11 +584,11 @@ void Graph::vertexAdd ( const int &v1, const int &val, const int &size,
 
 
 /**
- * @brief Graph::vertexLastNumber
+ * @brief Graph::vertexNumberMax
  * Returns the name of the last vertex.  Used by slotEditNodeRemove of MW
  * @return  int
  */
-int Graph::vertexLastNumber() {
+int Graph::vertexNumberMax() {
     if (m_totalVertices>0)
         return m_graph.back()->name();
     else return 0;
@@ -597,11 +597,11 @@ int Graph::vertexLastNumber() {
 
 
 /**
- * @brief Graph::vertexFirstNumber
+ * @brief Graph::vertexNumberMin
  * Returns the name of the first vertex.  Used by slotRemoveNode of MW
  * @return int
  */
-int Graph::vertexFirstNumber() {
+int Graph::vertexNumberMin() {
     if (m_totalVertices>0)
         return m_graph.front()->name();
     else return 0;
@@ -675,6 +675,9 @@ void Graph::vertexRemove(long int Doomed){
              << m_graph.size() <<  " total edges now  " << edgesEnabled();
 
     order=false;
+
+    if (vertexClicked()==Doomed)
+        vertexClickedSet(0);
 
     graphModifiedSet(GRAPH_CHANGED_VERTICES);
 
@@ -791,6 +794,9 @@ QPointF Graph::vertexPos(const int &v1){
 /**
  * @brief Graph::vertexClickedSet
  * @param v1
+ * Called from GW::userClickedNode(int) to update clicked vertex number and
+ * signal signalNodeClickedInfo(node info) to MW which shows node info on the
+ * status bar.
  */
 void Graph::vertexClickedSet(const int &v1) {
     m_vertexClicked = v1;
@@ -798,6 +804,7 @@ void Graph::vertexClickedSet(const int &v1) {
         signalNodeClickedInfo(0);
     }
     else {
+        edgeClickedSet(0,0);
         signalNodeClickedInfo( v1,
                            vertexPos(v1),
                            vertexLabel(v1),
@@ -808,6 +815,13 @@ void Graph::vertexClickedSet(const int &v1) {
     }
 }
 
+/**
+ * @brief Graph::vertexClicked
+ * @return  int
+ */
+int Graph::vertexClicked() const {
+    return m_vertexClicked;
+}
 
 /**
  * @brief Graph::vertexSizeInit
@@ -1218,6 +1232,35 @@ void Graph::vertexLabelSizeAllSet(const int &size) {
 }
 
 
+
+
+
+/**
+ * @brief Graph::vertexLabelColorAllSet
+ * Changes the label color of all vertices
+ * @param size
+ */
+void Graph::vertexLabelColorAllSet(const QString &color) {
+    qDebug() << "*** Graph::vertexLabelColorAllSet() "
+                << " to " << color;
+    vertexLabelColorInit(color);
+    QList<Vertex*>::const_iterator it;
+    for ( it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( ! (*it)->isEnabled() ){
+            continue;
+        }
+        else {
+            qDebug() << "Graph::vertexLabelColorAllSet() Vertex " << (*it)->name()
+                     << " new color" << color;
+            (*it)->setLabelColor(color);
+            emit setNodeLabelColor( (*it)-> name(), color);
+        }
+    }
+
+    graphModifiedSet(GRAPH_CHANGED_MINOR_OPTIONS);
+}
+
+
 /**
  * @brief Graph::vertexLabelColorSet
  * Changes the label color of vertex v1
@@ -1226,7 +1269,7 @@ void Graph::vertexLabelSizeAllSet(const int &size) {
  */
 void Graph::vertexLabelColorSet(int v1, QString color){
     m_graph[ index[v1] ]->setLabelColor(color);
-
+    emit setNodeLabelColor(v1, color);
     graphModifiedSet(GRAPH_CHANGED_MINOR_OPTIONS);
 }
 
@@ -1541,7 +1584,7 @@ void Graph::edgeFilterByRelation(int relation, bool status){
  * the network symmetric.
  * @param toggle
  */
-void Graph::edgeFilterUnilateral(const bool &toggle, const bool &allRelations) {
+void Graph::edgeFilterUnilateral(const bool &toggle) {
     qDebug() << "Graph::edgeFilterUnilateral() " ;
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
