@@ -213,6 +213,7 @@ public slots:
     void slotEditRelationNext();
     void slotEditRelationAdd();
     void slotEditRelationAdd(QString relationName);
+    void slotEditRelationChange(const int relIndex=RAND_MAX);
 
     void slotEditOpenContextMenu(const QPointF & mPos);
     void slotEditSelectionChanged (const int nodes, const int edges);

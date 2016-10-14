@@ -3681,10 +3681,14 @@ void MainWindow::initSignalSlots() {
     connect( this , SIGNAL(addRelationToGraph(QString)),
              &activeGraph, SLOT( relationAddFromUser(QString) ) );
 
+
+    connect ( &activeGraph, &Graph::signalRelationChangeToMW,
+                      this, &MainWindow::slotEditRelationChange );
+
     connect ( &activeGraph, SIGNAL(signalRelationAddToMW(QString)),
               this, SLOT(slotEditRelationAdd(QString)));
 
-    connect( &activeGraph, SIGNAL(relationChanged(int)),
+    connect( &activeGraph, SIGNAL(signalRelationChanged(int)),
              graphicsWidget, SLOT( relationSet(int))  ) ;
 
     connect( &m_DialogEdgeFilterByWeight, SIGNAL( userChoices( float, bool) ),
@@ -5190,6 +5194,19 @@ void MainWindow::slotEditRelationAdd(QString relationName){
     }
 }
 
+
+void MainWindow::slotEditRelationChange(const int relIndex) {
+    qDebug() << "MW::slotEditRelationChange(int)" << relIndex;
+    int relationsCounter=editRelationChangeCombo->count();
+    if ( relIndex == RAND_MAX){
+        editRelationChangeCombo->setCurrentIndex(relationsCounter-1);
+    }
+    else {
+        editRelationChangeCombo->setCurrentIndex(relIndex);
+    }
+
+}
+
 /**
  * @brief MainWindow::slotEditRelationAdd
  * Called from MW when user clicks New Relation btn
@@ -6151,7 +6168,13 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
                                     const bool &undirected,
                                     const int &vertices, const int &edges,
                                     const float &density){
-    qDebug()<<"MW::slotNetworkChanged()";
+    qDebug()<<"MW::slotNetworkChanged()"
+           <<"graphStatus" << graphStatus
+             <<"undirected" << undirected
+            <<"vertices" << vertices
+           <<"edges" <<edges
+          << "density"<<density;
+
     if (graphStatus) {
         networkModified=true;
         networkSave->setIcon(QIcon(":/images/save.png"));
@@ -6204,6 +6227,7 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
     }
     rightPanelEdgesLCD->display(edges);
     rightPanelDensityLCD->display( density );
+    qDebug()<<"MW::slotNetworkChanged() - finished updating LCDs";
 }
 
 
@@ -7681,7 +7705,7 @@ void MainWindow::slotEditEdgeSymmetrizeStrongTies(){
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
-    qDebug()<< "MW: slotEditEdgeSymmetrizeStrongTies() calling graphSymmetrizeStrongTies()";
+    qDebug()<< "MW::slotEditEdgeSymmetrizeStrongTies() - calling graphSymmetrizeStrongTies()";
     if (activeGraph.relations()>0) {
         slotHelpMessageToUser(USER_MSG_QUESTION_CUSTOM, tr("Select"),
                               tr("multirelational graph"),

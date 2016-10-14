@@ -99,7 +99,7 @@ void GraphicsWidget::clear() {
 
 /**
  * @brief GraphicsWidget::relationSet
- * Called from Graph::relationChanged(int) signal
+ * Called from Graph::signalRelationChanged(int) signal
  * @param relation
  */
 void GraphicsWidget::relationSet(int relation) {
