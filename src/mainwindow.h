@@ -217,11 +217,11 @@ public slots:
     void slotEditOpenContextMenu(const QPointF & mPos);
     void slotEditSelectionChanged (const int nodes, const int edges);
 
-    void slotEditClickOnEmptySpace ();
+    void slotEditClickOnEmptySpace (const QPointF &p);
 
     void slotEditNodeSelectAll();
     void slotEditNodeSelectNone();
-    void slotEditNodeInfoStatusBar(const long int &number,
+    void slotEditNodeInfoStatusBar(const int &number,
                                    const QPointF &p,
                                    const QString &label,
                                    const int &inDegree,
@@ -419,9 +419,6 @@ private:
 
     QProgressDialog *progressDialog;
 
-    Node *clickedNode;
-    Edge *clickedEdge;
-
     QMenu *importSubMenu, *exportSubMenu, *editMenu, *statMenu,  *helpMenu;
     QMenu *optionsMenu, *colorOptionsMenu, *edgeOptionsMenu, *nodeOptionsMenu, *viewOptionsMenu;
     QMenu *editNodeMenu, *editEdgeMenu, *centrlMenu, *layoutMenu;
@@ -505,7 +502,6 @@ private:
     QString settingsFilePath, settingsDir ;
     QStringList fileNameNoPath, fortuneCookie;
     QStringList tempFileNameNoPath, tips, recentFiles;
-    int clickedNodeNumber;
     int statusBarDuration, progressCounter;
     int maxNodes;
     int fortuneCookiesCounter;
@@ -513,7 +509,7 @@ private:
     bool fileLoaded;
 
     bool networkModified;
-    bool edgeClicked, nodeClicked, markedNodesExist, showProgressBar, firstTime;
+    bool markedNodesExist, showProgressBar, firstTime;
     bool considerWeights, inverseWeights, askedAboutWeights;
     float randomErdosEdgeProb;
     QString initFileCodec;
