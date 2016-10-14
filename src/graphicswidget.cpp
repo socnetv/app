@@ -1030,20 +1030,30 @@ void GraphicsWidget::clearGuides(){
 
 
 
-/* Called from MW */
-void GraphicsWidget::selectAll()
-{
+/**
+ * @brief GraphicsWidget::selectAll
+ * Called from MW. Clears any clickedNode info and sets a selection rect
+ * in the scene, which signals QGraphicsScene::selectionChanged signal to update
+ * selectedNodes and selectedEdges.
+ */
+void GraphicsWidget::selectAll(){
     QPainterPath path;
     path.addRect(0,0, this->scene()->width() , this->scene()->height());
     this->scene()->setSelectionArea(path);
+    emit userClickedNode(0);
     qDebug() << "GraphicsWidget::selectAll() - selected items now: "
              << selectedItems().count();
 }
 
 
-/* Called from MW */
-void GraphicsWidget::selectNone()
-{
+
+/**
+ * @brief GraphicsWidget::selectNone
+ * Called from MW. Clears any clickedNode info and any previous selection rect
+ * in the scene, which again signals selectionChanged() to update selectedNodes
+ * and selectedEdges to zero.
+ */
+void GraphicsWidget::selectNone(){
     qDebug() << "GraphicsWidget::selectNone()";
     emit userClickedNode(0);
     this->scene()->clearSelection();
