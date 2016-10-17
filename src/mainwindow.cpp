@@ -1005,14 +1005,14 @@ void MainWindow::initActions(){
 
     editEdgeSymmetrizeStrongTiesAct= new QAction(QIcon(":/images/symmetrize.png"), tr("Symmetrize Edges by Strong Ties"), this);
     editEdgeSymmetrizeStrongTiesAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::CTRL + Qt::Key_T));
-    editEdgeSymmetrizeStrongTiesAct->setStatusTip(tr("Create a new symmetric relation where all ties are reciprocated (strong ties)."));
+    editEdgeSymmetrizeStrongTiesAct->setStatusTip(tr("Create a new symmetric relation by counting reciprocated ties only (strong ties)."));
     editEdgeSymmetrizeStrongTiesAct->setWhatsThis(
-                tr("Symmetrize Edges (Strong Ties)\n\n"
-                   "Create a new symmetric relation where all ties are reciprocated. \n"
+                tr("Symmetrize Edges by examing Strong Ties\n\n"
+                   "Create a new symmetric relation by keeping strong ties only. \n"
                    "That is, a strong tie exists between actor A and actor B \n"
                    "only when both arcs A -> B and B -> A are present. \n"
                    "If the network is multi-relational, it asks you whether \n"
-                   "the current relation or all relations are to be considered. \n"
+                   "ties in the current relation or all relations are to be considered. \n"
                    "The resulting relation is symmetric."));
     connect(editEdgeSymmetrizeStrongTiesAct, SIGNAL(triggered()),
             this, SLOT(slotEditEdgeSymmetrizeStrongTies()));
@@ -3438,7 +3438,7 @@ void MainWindow::initWindowLayout() {
 void MainWindow::initSignalSlots() {
     qDebug ()<< "MW::initSignalSlots()";
 
-    // Signals from graphicsWidget to MainWindow
+    // Signals between graphicsWidget and MainWindow
 
     connect( graphicsWidget, SIGNAL( resized(int, int)),
                 &activeGraph, SLOT( canvasSizeSet(int,int)) ) ;
@@ -3492,7 +3492,7 @@ void MainWindow::initSignalSlots() {
     connect(resetSlidersBtn, SIGNAL(clicked()), graphicsWidget, SLOT(reset()));
 
 
-    // Signals from activeGraph to graphicsWidget
+    // Signals between activeGraph and graphicsWidget
     connect( &activeGraph,
              SIGNAL( addGuideCircle(const double&, const double&, const double&) ),
              graphicsWidget,
@@ -3503,8 +3503,6 @@ void MainWindow::initSignalSlots() {
 
     connect( &activeGraph, SIGNAL( setNodePos(const int &, const qreal &, const qreal &) ),
              graphicsWidget, SLOT( moveNode(const int &, const qreal &, const qreal &) ) ) ;
-
-
 
     connect( &activeGraph,
              SIGNAL(
@@ -3533,23 +3531,6 @@ void MainWindow::initSignalSlots() {
     connect( &activeGraph, SIGNAL( eraseEdge(const long int &, const long int &)),
              graphicsWidget, SLOT( eraseEdge(const long int &, const long int &) ) );
 
-    connect( &activeGraph,
-             SIGNAL( signalGraphModified(const int &, const bool &,
-                                  const int &, const int &,
-                                  const float &) ),
-             this,
-             SLOT( slotNetworkChanged(const int &, const bool &,
-                                      const int &, const int &,
-                                      const float &) ) ) ;
-
-    connect( &activeGraph, SIGNAL( signalGraphLoaded( int, QString, QString,
-                                                   int , int, bool) ),
-             this, SLOT( slotNetworkFileLoaded( int, QString, QString, int , int, bool) ) ) ;
-
-
-    connect( &activeGraph, SIGNAL( signalGraphSaved( const int &) ),
-             this, SLOT( slotNetworkSaved( const int &) ) ) ;
-
 
     connect( &activeGraph, SIGNAL( drawEdge( const int&, const int&, const float &,
                                              const QString &, const QString &,
@@ -3577,8 +3558,6 @@ void MainWindow::initSignalSlots() {
                                                 const long int &,
                                                 const float &) ) );
 
-
-
     connect( &activeGraph, SIGNAL( setEdgeColor(const long int &,
                                                    const long int &,
                                                    const QString &)),
@@ -3593,7 +3572,6 @@ void MainWindow::initSignalSlots() {
              graphicsWidget, SLOT( setEdgeLabel(const long int &,
                                                 const long int &,
                                                 const QString &) ) );
-
 
     connect( &activeGraph, SIGNAL( eraseNode(long int) ),
              graphicsWidget, SLOT(  eraseNode(long int) ) );
@@ -3633,19 +3611,39 @@ void MainWindow::initSignalSlots() {
              graphicsWidget, SLOT( setNodeLabelDistance (const long int &, const int &) ) );
 
 
-
     connect( graphicsWidget, &GraphicsWidget::userClickedNode,
              &activeGraph, &Graph::vertexClickedSet );
-
-    connect( &activeGraph, &Graph::signalNodeClickedInfo ,
-             this, &MainWindow::slotEditNodeInfoStatusBar );
 
     connect( graphicsWidget, &GraphicsWidget::userClickedEdge,
              &activeGraph, &Graph::edgeClickedSet );
 
+    connect( &activeGraph, SIGNAL(signalRelationChanged(int)),
+             graphicsWidget, SLOT( relationSet(int))  ) ;
+
+
+    //SIGNALS BETWEEN ACTIVEGRAPH AND MAINWINDOW
+    connect( &activeGraph, &Graph::signalNodeClickedInfo ,
+             this, &MainWindow::slotEditNodeInfoStatusBar );
+
     connect ( &activeGraph, &Graph::signalEdgeClickedInfo,
              this, &MainWindow::slotEditEdgeInfoStatusBar );
 
+    connect( &activeGraph,
+             SIGNAL( signalGraphModified(const int &, const bool &,
+                                  const int &, const int &,
+                                  const float &) ),
+             this,
+             SLOT( slotNetworkChanged(const int &, const bool &,
+                                      const int &, const int &,
+                                      const float &) ) ) ;
+
+    connect( &activeGraph, SIGNAL( signalGraphLoaded( int, QString, QString,
+                                                   int , int, bool) ),
+             this, SLOT( slotNetworkFileLoaded( int, QString, QString, int , int, bool) ) ) ;
+
+
+    connect( &activeGraph, SIGNAL( signalGraphSaved( const int &) ),
+             this, SLOT( slotNetworkSaved( const int &) ) ) ;
 
     connect( &activeGraph, SIGNAL( statusMessage (QString) ),
              this, SLOT( statusMessage (QString) ) ) ;
@@ -3656,6 +3654,19 @@ void MainWindow::initSignalSlots() {
     connect( &activeGraph, &Graph::signalNodeSizesByInDegree,
              this, &MainWindow::slotLayoutNodeSizesByInDegree );
 
+
+    connect( editRelationChangeCombo , SIGNAL( currentIndexChanged(int) ) ,
+             &activeGraph, SLOT( relationSet(int) ) );
+
+    connect( this , SIGNAL(addRelationToGraph(QString)),
+             &activeGraph, SLOT( relationAddFromUser(QString) ) );
+
+
+    connect ( &activeGraph, &Graph::signalRelationChangeToMW,
+                      this, &MainWindow::slotEditRelationChange );
+
+    connect ( &activeGraph, SIGNAL(signalRelationAddToMW(QString)),
+              this, SLOT(slotEditRelationAdd(QString)));
 
 
 
@@ -3675,21 +3686,6 @@ void MainWindow::initSignalSlots() {
              this, SLOT( slotEditRelationPrev() ) );
     connect( editRelationAddAct, SIGNAL(triggered()), this, SLOT( slotEditRelationAdd() ) );
 
-    connect( editRelationChangeCombo , SIGNAL( currentIndexChanged(int) ) ,
-             &activeGraph, SLOT( relationSet(int) ) );
-
-    connect( this , SIGNAL(addRelationToGraph(QString)),
-             &activeGraph, SLOT( relationAddFromUser(QString) ) );
-
-
-    connect ( &activeGraph, &Graph::signalRelationChangeToMW,
-                      this, &MainWindow::slotEditRelationChange );
-
-    connect ( &activeGraph, SIGNAL(signalRelationAddToMW(QString)),
-              this, SLOT(slotEditRelationAdd(QString)));
-
-    connect( &activeGraph, SIGNAL(signalRelationChanged(int)),
-             graphicsWidget, SLOT( relationSet(int))  ) ;
 
     connect( &m_DialogEdgeFilterByWeight, SIGNAL( userChoices( float, bool) ),
              &activeGraph, SLOT( edgeFilterByWeight (float, bool) ) );
@@ -3715,7 +3711,6 @@ void MainWindow::initSignalSlots() {
 
     connect(toolBoxAnalysisProminenceSelect, SIGNAL (currentIndexChanged(int) ),
             this, SLOT(toolBoxAnalysisProminenceSelectChanged(int) ) );
-
 
 
     connect(toolBoxNodeSizesByOutDegreeBx , SIGNAL(clicked(bool)),
@@ -4045,7 +4040,7 @@ int MainWindow::slotHelpMessageToUser(const int type,
 
         break;
 
-    case USER_MSG_QUESTION_CUSTOM:
+    case USER_MSG_QUESTION_CUSTOM: // a custom question with just two buttons
         if (!statusMsg.isNull()) statusMessage(  statusMsg  );
 
         msgBox.setText( text );
@@ -4055,10 +4050,10 @@ int MainWindow::slotHelpMessageToUser(const int type,
         msgBox.setIcon(QMessageBox::Question);
         response = msgBox.exec();
         if (msgBox.clickedButton() == pbtn1 ) {
-            response=0;
+            response=1;
         }
         else if (msgBox.clickedButton() == pbtn2 ) {
-            response=1;
+            response=2;
         }
         break;
     default: //just for sanity
@@ -5018,10 +5013,10 @@ bool MainWindow::slotNetworkFileLoad(const QString m_fileName,
 
                            )
                ) {
-        case 0:
+        case 1:
             two_sm_mode = 1;
             break;
-        case 1:
+        case 2:
             two_sm_mode = 2;
             break;
         }
@@ -7699,30 +7694,46 @@ void MainWindow::slotEditEdgeSymmetrizeAll(){
 
 
 
-
+/**
+ * @brief MainWindow::slotEditEdgeSymmetrizeStrongTies
+ */
 void MainWindow::slotEditEdgeSymmetrizeStrongTies(){
     if ( activeEdges() ==0 )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
     qDebug()<< "MW::slotEditEdgeSymmetrizeStrongTies() - calling graphSymmetrizeStrongTies()";
-    if (activeGraph.relations()>0) {
-        slotHelpMessageToUser(USER_MSG_QUESTION_CUSTOM, tr("Select"),
-                              tr("multirelational graph"),
-                              tr("Symmetrize ties across all relations or just the current relation"),
+    int oldRelationsCounter=activeGraph.relations();
+    int answer=0;
+    if (oldRelationsCounter>0) {
+        switch (
+        answer=slotHelpMessageToUser(USER_MSG_QUESTION_CUSTOM, tr("Select"),
+                              tr("Symmetrize social network by examining strong ties"),
+                              tr("This network has multiple relations. "
+                                 "Symmetrize by examining reciprocated ties across all relations or just the current relation?"),
                               QMessageBox::NoButton, QMessageBox::NoButton,
                               tr("all relations"), tr("current relation")
-                              );
-        activeGraph.graphSymmetrizeStrongTies(true);
+                              )
+                ){
+        case 1:
+            activeGraph.graphSymmetrizeStrongTies(true);
+            break;
+        case 2:
+            activeGraph.graphSymmetrizeStrongTies(false);
+            break;
+        }
+
+
     }
     else {
         activeGraph.graphSymmetrizeStrongTies(false);
     }
-    QMessageBox::information(this,
-                             "Symmetrize Strong Ties",
-                             tr("All edges are strong ties. \n"
-                                "The network is symmetric."), "OK",0);
-    statusMessage(tr("All edges are strong ties. Thus a symmetric network. Ready."));
+    slotHelpMessageToUser(USER_MSG_INFO,tr("New symmetric relation created from strong ties"),
+                          tr("New relation created from strong ties"),
+                             tr("A new relation \"%1\" has been added to the network. "
+                                "by counting reciprocated ties only. "
+                             "This relation is binary and symmetric. ").arg("Strong Ties"));
+
 }
 
 /**

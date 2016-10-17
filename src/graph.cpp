@@ -360,12 +360,25 @@ void Graph::relationAddFromGraph(QString newRelation) {
 }
 
 
+/**
+ * @brief Graph::relationAddFromGraphChange
+ * @param newRelation
+ * Helper method to add a new relation from Graph and change to it (so that
+ * it can be used, add new edges etc).
+ * It is essentially the same as
+ * calling  Graph::relationAddFromGraph(str) and then
+ * emitting Graph::signalRelationChangeToMW(relIndex)
+ */
 void Graph::relationAddFromGraphChange(const QString &newRelation) {
     qDebug() << "Graph::relationAddFromGraphChange(string) " << newRelation;
     relationAddFromGraph(newRelation);
     emit signalRelationChangeToMW();
 }
 
+/**
+ * @brief Graph::relationChange
+ * @param relIndex
+ */
 void Graph::relationChange(const int &relIndex) {
     qDebug() << "Graph::relationChange()" << relIndex;
     emit signalRelationChangeToMW(relIndex);
@@ -2426,7 +2439,7 @@ void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
         v1 = (*it)->name();
         qDebug() << "Graph::graphSymmetrizeStrongTies() - v" << v1
                     << "iterate over outEdges in all relations";
-        outEdgesAll=(*it)->outEdgesAllRelationsUniqueHash();
+        outEdgesAll=(*it)->outEdgesEnabledHash(allRelations); //outEdgesAllRelationsUniqueHash();
         it1=outEdgesAll->cbegin();
         while ( it1!=outEdgesAll->cend() ){
             v2 = it1.key();
@@ -2481,7 +2494,7 @@ void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
     delete strongTies;
     m_symmetric=true;
     //emit relationSet(0);
-    relationChange(0);
+    relationChange(relations()-1);
     graphModifiedSet(GRAPH_CHANGED_EDGES);
     qDebug()<< "Graph::graphSymmetrizeStrongTies()"
             << "finaly relations"<<relations();
