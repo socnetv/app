@@ -117,7 +117,7 @@ private:
 	QHash<QString, int> nodeNumber;
 	QHash<QString, QString> keyFor, keyName, keyType, keyDefaultValue ;
     QHash<QString, QString> edgesMissingNodesHash;
-    QStringList edgeMissingNodesList,edgeMissingNodesListData;
+    QStringList edgeMissingNodesList,edgeMissingNodesListData, relationsList;
 	QMultiMap<int, int> firstModeMultiMap, secondModeMultiMap;
 	QXmlStreamReader *xml;
     QString fileName, userSelectedCodecName, networkName, initNodeColor;

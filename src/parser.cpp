@@ -237,7 +237,8 @@ bool Parser::loadDL(){
     bool relation_flag=false;
     bool fullmatrixFormat=false;
     bool edgelist1Format=false;
-    QStringList lineElement, labelsList, relationsList;
+    QStringList lineElement, labelsList;
+    relationsList.clear();
     totalLinks=0;
     arrows=true;
     bezier=false;
@@ -550,7 +551,7 @@ bool Parser::loadPajek(){
     j=0;  //counts how many real nodes exist in the file
     miss=0; //counts missing nodeNumbers.
     //if j + miss < nodeNum, it creates (nodeNum-miss) dummy nodes which are deleted in the end.
-    QStringList relationsList;
+    relationsList.clear();
 
 
     while ( !ts.atEnd() )   {
@@ -1213,6 +1214,8 @@ bool Parser::loadGraphML(){
     aNodes=0;
     totalLinks=0;
     nodeNumber.clear();
+    relationsList.clear();
+
     bool_key=false; bool_node=false; bool_edge=false;
     key_id = "";
     key_name = "";
@@ -1299,6 +1302,7 @@ bool Parser::loadGraphML(){
         }
     }
 
+    emit relationSet (0);
     //The network has been loaded. Tell MW the statistics and network type
     emit networkFileLoaded(FILE_GRAPHML, fileName, networkName,
                            aNodes, totalLinks,
@@ -1420,7 +1424,15 @@ void Parser::readGraphMLElementGraph(QXmlStreamReader &xml){
         arrows=true;
     }
     networkName = xmlStreamAttr.value("id").toString();
+    relationsList << networkName;
     emit addRelation( networkName);
+    int relationCounter = relationsList.count() - 1; //zero indexed
+    if (relationCounter > 0) {
+        qDebug () << "Parser: readGraphMLElementGraph() relations now "
+                  << relationCounter
+                  << "emitting relationSet";
+        emit relationSet(relationCounter);
+    }
     qDebug()<< "    graph id  "  << networkName; //store graph id to return it afterwards
 }
 
