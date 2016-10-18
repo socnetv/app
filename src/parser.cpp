@@ -1229,22 +1229,22 @@ bool Parser::loadGraphML(){
 
     QXmlStreamReader *xml = new QXmlStreamReader();
 
-    qDebug() << " loadGraphML(): read file to a byte array";
+    qDebug() << " Parser::loadGraphML(): read file to a byte array";
     QByteArray encodedData = file.readAll();
     QByteArray userSelectedCodec =userSelectedCodecName.toLatin1();
     xml->addData(encodedData);
 
-    qDebug() << " loadGraphML(): test if XML document encoding == userCodec";
+    qDebug() << " Parser::loadGraphML(): test if XML document encoding == userCodec";
 
     xml->readNext();
     if (xml->isStartDocument()) {
-        qDebug()<< " loadGraphML(): Testing XML document " << " version "
+        qDebug()<< " Parser::loadGraphML(): Testing XML document " << " version "
                 << xml->documentVersion()
                 << " encoding " << xml->documentEncoding()
                 << " userSelectedCodecName.toUtf8() "
                 << userSelectedCodecName.toUtf8();
          if ( xml->documentEncoding().toString() != userSelectedCodecName) {
-                qDebug() << " loadGraphML(): Conflicting encodings. "
+                qDebug() << " Parser::loadGraphML(): Conflicting encodings. "
                          << " Re-reading data with userCodec";
                 xml->clear();
                 QTextStream in(&encodedData);
@@ -1255,7 +1255,7 @@ bool Parser::loadGraphML(){
                 xml->addData(decodedData);
          }
          else {
-             qDebug() << " loadGraphML(): Testing XML: OK";
+             qDebug() << " Parser::loadGraphML(): Testing XML: OK";
              xml->clear();
              xml->addData(encodedData);
          }
@@ -1264,19 +1264,20 @@ bool Parser::loadGraphML(){
 
     while (!xml->atEnd()) {
         xml->readNext();
-        qDebug()<< " loadGraphML(): xml->token "<< xml->tokenString();
+        qDebug()<< " Parser::loadGraphML(): xml->token "<< xml->tokenString();
         if (xml->isStartDocument()) {
-            qDebug()<< " loadGraphML(): xml startDocument" << " version "
+            qDebug()<< " Parser::loadGraphML(): xml startDocument" << " version "
                     << xml->documentVersion()
                     << " encoding " << xml->documentEncoding();
         }
 
         if (xml->isStartElement()) {
-            qDebug()<< " loadGraphML(): element name "<< xml->name().toString();
+            qDebug()<< " Parser::loadGraphML(): element name "<< xml->name().toString();
 
             if (xml->name() == "graphml") {
-                qDebug()<< " loadGraphML(): OK. NamespaceUri is "
-                        << xml->namespaceUri().toString();
+                qDebug()<< " Parser::loadGraphML(): GraphML start. NamespaceUri is "
+                        << xml->namespaceUri().toString()
+                        << "Calling readGraphML()";
                 readGraphML(*xml);
             }
             else {	//not a GraphML doc, return false.
@@ -1408,8 +1409,8 @@ void Parser::readGraphMLElementGraph(QXmlStreamReader &xml){
     QXmlStreamAttributes xmlStreamAttr = xml.attributes();
     QString defaultDirection = xmlStreamAttr.value("edgedefault").toString();
     qDebug()<< "    edgedefault "<< defaultDirection;
-    if (defaultDirection=="edgeDirType"){
-        qDebug()<< "    this is an edgeDirType graph ";
+    if (defaultDirection=="undirected"){
+        qDebug()<< "    this is an undirected graph ";
         edgeDirType=EDGE_RECIPROCAL_UNDIRECTED;
         arrows=false;
     }
