@@ -8691,158 +8691,164 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
                 "    <default>" << ""<< "</default> \n"
                 "  </key> \n";
 
-    qDebug()<< "		... writing graph tag";
-
-    if (graphUndirected())
-        outText << "  <graph id=\""<< networkName << "\" edgedefault=\"undirected\"> \n";
-    else
-        outText << "  <graph id=\""<< networkName << "\" edgedefault=\"directed\"> \n";
-
     QList<Vertex*>::const_iterator it;
     QList<Vertex*>::const_iterator jt;
+    QString  relation;
+    foreach (relation , m_relationsList)    {
+        qDebug()<< "		... writing graph tag - relation" << relation ;
 
-    qDebug()<< "		    writing nodes data";
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-        if ( ! (*it)->isEnabled () )
-            continue;
-        qDebug() << " 	Node id: "<<  (*it)->name()  ;
-        outText << "    <node id=\"" << (*it)->name() << "\"> \n";
-        m_color = (*it)->color();
-        m_size = (*it)->size() ;
-        m_labelSize=(*it)->labelSize() ;
-        m_labelColor=(*it)->labelColor() ;
-        m_label=(*it)->label();
-        m_label = htmlEscaped(m_label);
+        if (graphUndirected())
+            outText << "  <graph id=\""
+                    << (( m_relationsList.count()==1 ) ? networkName : relation)
+                                                      << "\" edgedefault=\"undirected\"> \n";
+        else
+            outText << "  <graph id=\""
+                    << ((m_relationsList.count()==1) ? networkName : relation )
+                                                      << "\" edgedefault=\"directed\"> \n";
+
+        qDebug()<< "		    writing nodes data";
+        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+            if ( ! (*it)->isEnabled () )
+                continue;
+            qDebug() << " 	Node id: "<<  (*it)->name()  ;
+            outText << "    <node id=\"" << (*it)->name() << "\"> \n";
+            m_color = (*it)->color();
+            m_size = (*it)->size() ;
+            m_labelSize=(*it)->labelSize() ;
+            m_labelColor=(*it)->labelColor() ;
+            m_label=(*it)->label();
+            m_label = htmlEscaped(m_label);
 
 
-        outText << "      <data key=\"d0\">" << m_label <<"</data>\n";
+            outText << "      <data key=\"d0\">" << m_label <<"</data>\n";
 
-        qDebug()<<" 		... Coordinates x " << (*it)->x()<< " "<<maxWidth
-               <<" y " << (*it)->y()<< " "<<maxHeight;
+            qDebug()<<" 		... Coordinates x " << (*it)->x()<< " "<<maxWidth
+                   <<" y " << (*it)->y()<< " "<<maxHeight;
 
-        outText << "      <data key=\"d1\">" << (*it)->x()/(maxWidth) <<"</data>\n";
-        outText << "      <data key=\"d2\">" << (*it)->y()/(maxHeight) <<"</data>\n";
+            outText << "      <data key=\"d1\">" << (*it)->x()/(maxWidth) <<"</data>\n";
+            outText << "      <data key=\"d2\">" << (*it)->y()/(maxHeight) <<"</data>\n";
 
-        if (  initVertexSize != m_size ) {
-            outText << "      <data key=\"d3\">" << m_size  <<"</data>\n";
+            if (  initVertexSize != m_size ) {
+                outText << "      <data key=\"d3\">" << m_size  <<"</data>\n";
+            }
+
+            if (  QString::compare ( initVertexColor, m_color,  Qt::CaseInsensitive) != 0) {
+                outText << "      <data key=\"d4\">" << m_color <<"</data>\n";
+            }
+
+            outText << "      <data key=\"d5\">" << (*it)->shape() <<"</data>\n";
+
+
+            if (  QString::compare ( initVertexLabelColor, m_labelColor,  Qt::CaseInsensitive) != 0) {
+                outText << "      <data key=\"d6\">" << m_labelColor <<"</data>\n";
+            }
+
+            if (  initVertexLabelSize != m_labelSize ) {
+                outText << "      <data key=\"d7\">" << m_labelSize <<"</data>\n";
+            }
+
+            outText << "    </node>\n";
+
         }
 
-        if (  QString::compare ( initVertexColor, m_color,  Qt::CaseInsensitive) != 0) {
-            outText << "      <data key=\"d4\">" << m_color <<"</data>\n";
-        }
-
-        outText << "      <data key=\"d5\">" << (*it)->shape() <<"</data>\n";
-
-
-        if (  QString::compare ( initVertexLabelColor, m_labelColor,  Qt::CaseInsensitive) != 0) {
-            outText << "      <data key=\"d6\">" << m_labelColor <<"</data>\n";
-        }
-
-        if (  initVertexLabelSize != m_labelSize ) {
-            outText << "      <data key=\"d7\">" << m_labelSize <<"</data>\n";
-        }
-
-        outText << "    </node>\n";
-
-    }
-
-    qDebug() << "		... writing edges data";
-    edgeCount=0;
-    if (!graphUndirected()) {
-        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
-        {
-            for (jt=m_graph.begin(); jt!=m_graph.end(); jt++)
+        qDebug() << "		... writing edges data";
+        edgeCount=0;
+        if (!graphUndirected()) {
+            for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
             {
-                source=(*it)->name();
-                target=(*jt)->name();
-                m_label = "";
-                if  ( 	(weight= edgeExists( source,target ) ) !=0 )
+                for (jt=m_graph.begin(); jt!=m_graph.end(); jt++)
                 {
-                    ++edgeCount;
-                    m_color = (*it)->outLinkColor( target );
-                    m_label = edgeLabel(source, target);
-                    m_label=htmlEscaped(m_label);
-                    qDebug()<< "				edge no "<< edgeCount
-                            << " from n1=" << source << " to n2=" << target
-                            << " with weight " << weight
-                            << " and color " << m_color.toUtf8() ;
-                    outText << "    <edge id=\""<< "e"+QString::number(edgeCount)
-                            << "\" directed=\"" << "true" << "\" source=\"" << source
-                            << "\" target=\"" << target << "\"";
+                    source=(*it)->name();
+                    target=(*jt)->name();
+                    m_label = "";
+                    if  ( 	(weight= edgeExists( source,target ) ) !=0 )
+                    {
+                        ++edgeCount;
+                        m_color = (*it)->outLinkColor( target );
+                        m_label = edgeLabel(source, target);
+                        m_label=htmlEscaped(m_label);
+                        qDebug()<< "				edge no "<< edgeCount
+                                << " from n1=" << source << " to n2=" << target
+                                << " with weight " << weight
+                                << " and color " << m_color.toUtf8() ;
+                        outText << "    <edge id=\""<< "e"+QString::number(edgeCount)
+                                << "\" directed=\"" << "true" << "\" source=\"" << source
+                                << "\" target=\"" << target << "\"";
 
-                    openToken = true;
-                    if ( weight !=0 ) {
-                        outText << "> \n";
-                        outText << "      <data key=\"d8\">" << weight<<"</data>" <<" \n";
-                        openToken=false;
-                    }
-                    if (  QString::compare ( initEdgeColor, m_color,  Qt::CaseInsensitive) != 0) {
-                        if (openToken)
+                        openToken = true;
+                        if ( weight !=0 ) {
                             outText << "> \n";
-                        outText << "      <data key=\"d9\">" << m_color <<"</data>" <<" \n";
-                        openToken=false;
-                    }
-                    if (  !m_label.isEmpty()) {
-                        if (openToken)
-                            outText << "> \n";
-                        outText << "      <data key=\"d10\">" << m_label<<"</data>" <<" \n";
-                        openToken=false;
-                    }
+                            outText << "      <data key=\"d8\">" << weight<<"</data>" <<" \n";
+                            openToken=false;
+                        }
+                        if (  QString::compare ( initEdgeColor, m_color,  Qt::CaseInsensitive) != 0) {
+                            if (openToken)
+                                outText << "> \n";
+                            outText << "      <data key=\"d9\">" << m_color <<"</data>" <<" \n";
+                            openToken=false;
+                        }
+                        if (  !m_label.isEmpty()) {
+                            if (openToken)
+                                outText << "> \n";
+                            outText << "      <data key=\"d10\">" << m_label<<"</data>" <<" \n";
+                            openToken=false;
+                        }
 
-                    if (openToken)
-                        outText << "/> \n";
-                    else
-                        outText << "    </edge>\n";
+                        if (openToken)
+                            outText << "/> \n";
+                        else
+                            outText << "    </edge>\n";
+
+                    }
 
                 }
-
             }
         }
-    }
-    else {
-        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
-        {
-            for (jt=it; jt!=m_graph.end(); jt++)
+        else {
+            for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
             {
-                source=(*it)->name();
-                target=(*jt)->name();
-
-                if  ( 	(weight= edgeExists( source,target, true ) ) !=0 )
+                for (jt=it; jt!=m_graph.end(); jt++)
                 {
-                    ++edgeCount;
-                    m_color = (*it)->outLinkColor( target );
-                    qDebug()<< "				edge no "<< edgeCount
-                            << " from n1=" << source << " to n2=" << target
-                            << " with weight " << weight
-                            << " and color " << m_color.toUtf8() ;
-                    outText << "    <edge id=\""<< "e"+QString::number(edgeCount)
-                            << "\" directed=\"" << "false" << "\" source=\"" << source
-                            << "\" target=\"" << target << "\"";
+                    source=(*it)->name();
+                    target=(*jt)->name();
 
-                    openToken = true;
-                    if ( weight !=0 ) {
-                        outText << "> \n";
-                        outText << "      <data key=\"d8\">" << weight<<"</data>" <<" \n";
-                        openToken=false;
-                    }
-                    if (  QString::compare ( initEdgeColor, m_color,  Qt::CaseInsensitive) != 0) {
-                        if (openToken)
+                    if  ( 	(weight= edgeExists( source,target, true ) ) !=0 )
+                    {
+                        ++edgeCount;
+                        m_color = (*it)->outLinkColor( target );
+                        qDebug()<< "				edge no "<< edgeCount
+                                << " from n1=" << source << " to n2=" << target
+                                << " with weight " << weight
+                                << " and color " << m_color.toUtf8() ;
+                        outText << "    <edge id=\""<< "e"+QString::number(edgeCount)
+                                << "\" directed=\"" << "false" << "\" source=\"" << source
+                                << "\" target=\"" << target << "\"";
+
+                        openToken = true;
+                        if ( weight !=0 ) {
                             outText << "> \n";
-                        outText << "      <data key=\"d9\">" << m_color <<"</data>" <<" \n";
-                        openToken=false;
+                            outText << "      <data key=\"d8\">" << weight<<"</data>" <<" \n";
+                            openToken=false;
+                        }
+                        if (  QString::compare ( initEdgeColor, m_color,  Qt::CaseInsensitive) != 0) {
+                            if (openToken)
+                                outText << "> \n";
+                            outText << "      <data key=\"d9\">" << m_color <<"</data>" <<" \n";
+                            openToken=false;
+                        }
+                        if (openToken)
+                            outText << "/> \n";
+                        else
+                            outText << "    </edge>\n";
+
                     }
-                    if (openToken)
-                        outText << "/> \n";
-                    else
-                        outText << "    </edge>\n";
 
                 }
-
             }
         }
-    }
 
-    outText << "  </graph>\n";
+        outText << "  </graph>\n";
+    }
     outText << "</graphml>\n";
 
     f.close();
