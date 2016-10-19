@@ -8693,17 +8693,19 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
 
     QList<Vertex*>::const_iterator it;
     QList<Vertex*>::const_iterator jt;
-    QString  relation;
-    foreach (relation , m_relationsList)    {
-        qDebug()<< "		... writing graph tag - relation" << relation ;
+    QString  relationName;
+    for (int i = 0; i < m_relationsList.size(); ++i) {
+        relationName = m_relationsList.at(i);
+        relationSet( i );
+        qDebug()<< "		... writing graph tag - relation" << relationName ;
 
         if (graphUndirected())
             outText << "  <graph id=\""
-                    << (( m_relationsList.count()==1 ) ? networkName : relation)
+                    << (( m_relationsList.count()==1 ) ? networkName : relationName)
                                                       << "\" edgedefault=\"undirected\"> \n";
         else
             outText << "  <graph id=\""
-                    << ((m_relationsList.count()==1) ? networkName : relation )
+                    << ((m_relationsList.count()==1) ? networkName : relationName )
                                                       << "\" edgedefault=\"directed\"> \n";
 
         qDebug()<< "		    writing nodes data";
