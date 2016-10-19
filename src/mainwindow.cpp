@@ -5028,8 +5028,8 @@ bool MainWindow::slotNetworkFileLoad(const QString m_fileName,
                 m_fileName,
                 m_codecName,
                 (appSettings["initNodeLabelsVisibility"] == "true" ) ? true: false,
-                graphicsWidget->width(),
-                graphicsWidget->height(),
+//                graphicsWidget->width(),
+//                graphicsWidget->height(),
                 m_fileFormat, two_sm_mode
                 );
     qDebug() << "MW::slotNetworkFileLoad() : loadGraphStatus " << loadGraphStatus;

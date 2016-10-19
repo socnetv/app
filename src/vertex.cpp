@@ -394,7 +394,8 @@ void Vertex::edgeFilterByRelation(int relation, bool status ){
         if ( edgeRelation == relation ) {
             target=it1.key();
             weight = it1.value().second.first;
-            qDebug() << "*** outLink " << m_name << " -> " << target
+            qDebug() << "Vertex::edgeFilterByRelation() - outLink "
+                     << m_name << " -> " << target
                         << "  - emitting to GW to be " << status ;
             it1.setValue(rel_w_bool(relation, pair_f_b(weight, status) ));
             emit setEdgeVisibility ( relation, m_name, target, status );

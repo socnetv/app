@@ -311,10 +311,8 @@ public:
 
     /*FILES (READ AND WRITE)*/
     QString graphName() const;
-    bool graphLoad (const QString, const QString m_codecName,
-                    const bool,
-                    const int maxWidth,
-                    const int maxHeight,
+    bool graphLoad (const QString m_fileName, const QString m_codecName,
+                    const bool m_showLabels,
                     const int format,
                     const int two_sm_mode);
 

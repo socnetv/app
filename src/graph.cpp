@@ -8227,7 +8227,7 @@ QString Graph::graphName() const {
 bool Graph::graphLoad (	const QString m_fileName,
                         const QString m_codecName,
                         const bool m_showLabels,
-                        const int maxWidth, const int maxHeight,
+//                        const int maxWidth, const int maxHeight,
                         const int fileFormat, const int two_sm_mode){
     initVertexLabelsVisibility = m_showLabels;
     qDebug() << "Graph::graphLoad() : "<< m_fileName
@@ -8241,7 +8241,7 @@ bool Graph::graphLoad (	const QString m_fileName,
                 initVertexNumberColor, initVertexNumberSize,
                 initVertexLabelColor, initVertexLabelSize,
                 initEdgeColor,
-                maxWidth, maxHeight,
+                canvasWidth, canvasHeight,
                 fileFormat,
                 two_sm_mode
                 );
@@ -8621,7 +8621,7 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
                                       QString networkName,
                                       int maxWidth, int maxHeight)
 {
-    qDebug () << " Graph::graphSaveToGraphMLFormat to file: " << fileName.toUtf8();
+    qDebug () << "Graph::graphSaveToGraphMLFormat() - file: " << fileName.toUtf8();
 
     int weight=0, source=0, target=0, edgeCount=0, m_size=1, m_labelSize;
     QString m_color, m_labelColor, m_label;
@@ -8638,9 +8638,10 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
     }
     QTextStream outText( &f );
     outText.setCodec("UTF-8");
-    qDebug () << " codec used for saving stream: " << outText.codec()->name();
+    qDebug () << "Graph::graphSaveToGraphMLFormat() - codec used for saving stream: "
+              << outText.codec()->name();
 
-    qDebug()<< "		... writing xml version";
+    qDebug()<< "Graph::graphSaveToGraphMLFormat() -  writing xml version";
     outText << "<?xml version=\"1.0\" encoding=\"" << outText.codec()->name() << "\"?> \n";
     outText << " <!-- Created by SocNetV "<<  VERSION << " --> \n" ;
     outText << "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" "
@@ -8649,7 +8650,7 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
                "      http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">"
                "\n";
 
-    qDebug()<< "		... writing keys ";
+    qDebug()<< "Graph::graphSaveToGraphMLFormat() - writing keys ";
 
     outText <<	"  <key id=\"d0\" for=\"node\" attr.name=\"label\" attr.type=\"string\"> \n"
                 "    <default>" "</default> \n"
@@ -8694,10 +8695,11 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
     QList<Vertex*>::const_iterator it;
     QList<Vertex*>::const_iterator jt;
     QString  relationName;
+    int relationPrevious = relationCurrent();
     for (int i = 0; i < m_relationsList.size(); ++i) {
         relationName = m_relationsList.at(i);
         relationSet( i );
-        qDebug()<< "		... writing graph tag - relation" << relationName ;
+        qDebug()<< "Graph::graphSaveToGraphMLFormat() - writing graph tag. Relation" << relationName ;
 
         if (graphUndirected())
             outText << "  <graph id=\""
@@ -8708,11 +8710,12 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
                     << ((m_relationsList.count()==1) ? networkName : relationName )
                                                       << "\" edgedefault=\"directed\"> \n";
 
-        qDebug()<< "		    writing nodes data";
+        qDebug()<< "Graph::graphSaveToGraphMLFormat() - writing nodes data";
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
             if ( ! (*it)->isEnabled () )
                 continue;
-            qDebug() << " 	Node id: "<<  (*it)->name()  ;
+            qDebug() << "Graph::graphSaveToGraphMLFormat() - Node id: "
+                     <<  (*it)->name()  ;
             outText << "    <node id=\"" << (*it)->name() << "\"> \n";
             m_color = (*it)->color();
             m_size = (*it)->size() ;
@@ -8724,7 +8727,8 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
 
             outText << "      <data key=\"d0\">" << m_label <<"</data>\n";
 
-            qDebug()<<" 		... Coordinates x " << (*it)->x()<< " "<<maxWidth
+            qDebug()<<"Graph::graphSaveToGraphMLFormat() - Coordinates x "
+                   << (*it)->x()<< " "<<maxWidth
                    <<" y " << (*it)->y()<< " "<<maxHeight;
 
             outText << "      <data key=\"d1\">" << (*it)->x()/(maxWidth) <<"</data>\n";
@@ -8753,7 +8757,7 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
 
         }
 
-        qDebug() << "		... writing edges data";
+        qDebug() << "Graph::graphSaveToGraphMLFormat() - writing edges data";
         edgeCount=0;
         if (!graphUndirected()) {
             for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
@@ -8769,7 +8773,8 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
                         m_color = (*it)->outLinkColor( target );
                         m_label = edgeLabel(source, target);
                         m_label=htmlEscaped(m_label);
-                        qDebug()<< "				edge no "<< edgeCount
+                        qDebug()<< "Graph::graphSaveToGraphMLFormat() - edge no "
+                                << edgeCount
                                 << " from n1=" << source << " to n2=" << target
                                 << " with weight " << weight
                                 << " and color " << m_color.toUtf8() ;
@@ -8818,7 +8823,8 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
                     {
                         ++edgeCount;
                         m_color = (*it)->outLinkColor( target );
-                        qDebug()<< "				edge no "<< edgeCount
+                        qDebug()<< "Graph::graphSaveToGraphMLFormat() - edge no "
+                                << edgeCount
                                 << " from n1=" << source << " to n2=" << target
                                 << " with weight " << weight
                                 << " and color " << m_color.toUtf8() ;
@@ -8854,6 +8860,7 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
     outText << "</graphml>\n";
 
     f.close();
+    relationSet(relationPrevious);
     QString fileNameNoPath=fileName.split("/").last();
     emit statusMessage( QString(tr( "File %1 saved" ) ).arg( fileNameNoPath ) );
 
