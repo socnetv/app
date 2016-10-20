@@ -186,6 +186,7 @@ public:
     Matrix & productSym( Matrix &a, Matrix & b)  ;
 
     Matrix & pow (int power, bool symmetry)  ;
+    Matrix & expBySquaring2 ( Matrix &y, int power);
 
     Matrix& subtractFromI () ;
 

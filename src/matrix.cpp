@@ -468,7 +468,7 @@ Matrix& Matrix::productSym( Matrix &a, Matrix & b)  {
  * @param symmetry
  * @return
  */
-Matrix& Matrix::pow (int power, bool symmetry)  {
+Matrix& Matrix::pow2 (int power, bool symmetry)  {
     Matrix t=*this;
     for (int k=1; k<power; k++){
         product(*this, t, symmetry);
@@ -476,7 +476,22 @@ Matrix& Matrix::pow (int power, bool symmetry)  {
     return *this;
 }
 
+//Matrix& Matrix::expBySquaring ( Matrix &a, int power) {
+//    this->identityMatrix();
+//    expBySquaring2( *this, a, power );
 
+//}
+
+//Matrix& Matrix::expBySquaring2 ( Matrix &a, Matrix &b, int power) {
+//    if (power==1) {
+//        return a*b;
+//    }
+//    else if ( power%2 == 1 ) { //odd
+
+//    }
+//    else if ( power%2 == 0 ) { //even
+//    }
+//}
 
 /**
  * @brief Matrix::sum
