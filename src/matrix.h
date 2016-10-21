@@ -181,12 +181,12 @@ public:
 
     friend QTextStream& operator <<  (QTextStream& os, Matrix& m);
 
-    Matrix & product( Matrix &a, Matrix & b, bool symmetry) ;
+    Matrix & product( Matrix &a, Matrix & b, bool symmetry=false) ;
 
     Matrix & productSym( Matrix &a, Matrix & b)  ;
 
-    Matrix & pow (int power, bool symmetry)  ;
-    Matrix & expBySquaring2 ( Matrix &y, int power);
+    Matrix & pow (int n, bool symmetry=false)  ;
+    Matrix & expBySquaring2 (Matrix &Y, Matrix &X, int n, bool symmetry=false);
 
     Matrix& subtractFromI () ;
 

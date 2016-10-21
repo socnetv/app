@@ -398,7 +398,7 @@ void Matrix::multiplyRow(int row, float value) {
 /**
  * @brief Matrix::product
  * Matrix Multiplication
- * Allows P = a * b where P, a and b are not the same initially.
+ * Allows P = product(a * b) where P, a and b are not the same initially.
  * Takes two matrices a and b of the same dimension
  * and returns their product as a reference to the calling object
  * NOTE: do not use it as B.product(A,B) because it will destroy B on the way.
@@ -464,40 +464,70 @@ Matrix& Matrix::productSym( Matrix &a, Matrix & b)  {
 
 /**
  * @brief Matrix::pow
- * @param power
+ * @param n
  * @param symmetry
  * @return
+ * Returns the n power of this matrix
  */
-Matrix& Matrix::pow (int power, bool symmetry)  {
-//    Matrix t=*this;
-//    for (int k=1; k<power; k++){
-//        product(*this, t, symmetry);
-//    }
-//    return *this;
-
-    Matrix y;
-    y.identityMatrix(;);
-    expBySquaring2 (*y, power);
+Matrix& Matrix::pow (int n, bool symmetry)  {
+    if (rows()!= cols()) {
+        qDebug()<< "Matrix::pow() - Error. This works only for square matrix";
+        return *this;
+    }
+    qDebug()<< "Matrix::pow() ";
+    Matrix x, y; //auxilliary matrices
+    x=*this; //x = this
+    x.printMatrixConsole(true);
+    y.identityMatrix( rows() ); // y=I
+    y.printMatrixConsole(true);
+    this->expBySquaring2 (y, x, n, symmetry);
 
     return *this;
 
 }
 
-//Matrix& Matrix::expBySquaring ( Matrix &a, int power) {
-//    this->identityMatrix();
-//    expBySquaring2( *this, a, power );
 
-//}
-
-Matrix& Matrix::expBySquaring2 ( Matrix &y, int power) {
-    if (power==1) {
-        return product(*this, t, false);
+/**
+ * @brief Matrix::expBySquaring2
+ * @param Y must be the Identity matrix  on first call
+ * @param X the matrix to be powered
+ * @param n the power
+ * @param symmetry
+ * @return Matrix&
+ * Recursive algorithm implementing "Exponentiation by squaring".
+ * On first call, parameters must be: Y=I, X the orginal matrix to power and n the power.
+ * Returns the power of matrix X to this object.
+ * Also known as Fast Modulo Multiplication, this algorithm allows
+ * fast computation of a large power n of square matrix X
+ * For n > 4 it is more efficient than naively multiplying the base with itself repeatedly.
+ */
+Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
+    qDebug()<<"Matrix::expBySquaring2() - n =" << n;
+    if (n==1) {
+        qDebug()<<"Matrix::expBySquaring2() - n = 1, return X*Y" ;
+        Matrix PM; PM.zeroMatrix(rows(), cols());
+        return PM.product(X, Y, symmetry);
     }
-    else if ( power%2 == 1 ) { //odd
-        product(*this, *this, false);
-        return expBySquaring2 ( *y, (power-1)/2);
+    else if ( n%2 == 0 ) { //even
+        qDebug()<<"Matrix::expBySquaring2() - even n =" << n;
+        Matrix PM; PM.zeroMatrix(rows(), cols());
+        PM.product(X,X,symmetry);
+        qDebug()<<"Matrix::expBySquaring2() - even n =" << n << "PM is:" ;
+        PM.printMatrixConsole();
+        return expBySquaring2 ( Y, PM, n/2 );
     }
-    else if ( power%2 == 0 ) { //even
+    else  { //odd
+        qDebug()<<"Matrix::expBySquaring2() - odd n =" << n;
+        Matrix PM, PM2;
+        PM.zeroMatrix(rows(), cols());
+        PM2.zeroMatrix(rows(), cols());
+        PM.product(X,Y,symmetry);
+        qDebug()<<"Matrix::expBySquaring2() - odd n =" << n << "PM is:" ;
+        PM.printMatrixConsole();
+        PM2.product(X,X,symmetry);
+        qDebug()<<"Matrix::expBySquaring2() - odd n =" << n << "PM2 is:" ;
+        PM2.printMatrixConsole();
+        return expBySquaring2 ( PM, PM2, (n-1)/2 );
     }
 }
 

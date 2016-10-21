@@ -6679,27 +6679,28 @@ void Graph::walksMatrixCreate(const int &maxPower, const bool &updateProgress) {
     Matrix PM; // temp matrix
     PM.zeroMatrix(size, size);
 
-    qDebug()<< "Graph::writeWalksOfLengthMatrix() XM is  " ;
-    for (int i=0; i < size ; i++) {
-        for (int j=0; j < size ; j++) {
-            qDebug() << XM.item(i,j) <<  " ";
-        }
-        qDebug()<< endl;
-    }
+    qDebug()<< "Graph::writeWalksOfLengthMatrix() - XM is  " ;
+    XM.printMatrixConsole(true);
     if (updateProgress)
         emit updateProgressDialog (1);
     qDebug()<< "Graph::writeWalksOfLengthMatrix() - "
                "Calculating sociomatrix powers up to "  << maxPower;
-    for (int i=2; i <= maxPower ; ++i) {
-        PM.product(XM,AM, false);
-        XM=PM;
-        XSM+XM; // XSM becomes XSM+XM
-        //XSM.sum(XSM,XM);
-        if (updateProgress) {
-            emit updateProgressDialog (i);
-        }
 
-    }
+    XM.pow(maxPower, false);
+    emit updateProgressDialog (maxPower);
+
+     //@TODO  UNCOMMENT
+
+//    for (int i=2; i <= maxPower ; ++i) {
+//        PM.product(XM,AM, false);
+//        XM=PM;
+//        XSM+XM; // XSM becomes XSM+XM
+//        //XSM.sum(XSM,XM);
+//        if (updateProgress) {
+//            emit updateProgressDialog (i);
+//        }
+
+//    }
 
 }
 
