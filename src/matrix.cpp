@@ -147,13 +147,13 @@ void Matrix::findMinMaxValues (float & maxVal, float &minVal){
  * @param dim
  */
 void Matrix::identityMatrix(int dim) {
-    qDebug() << "Matrix: identityMatrix() -- deleting old rows";
+    qDebug() << "Matrix::identityMatrix() -- deleting old rows";
     clear();
     m_rows=dim;
     m_cols=dim;
     row = new (nothrow) Row [m_rows];
     Q_CHECK_PTR( row );
-    qDebug() << "Matrix: resize() -- resizing each row";
+    //qDebug() << "Matrix: resize() -- resizing each row";
     for (int i=0;i<m_rows; i++) {
         row[i].resize(m_rows);
         setItem(i,i, 1);
@@ -169,13 +169,13 @@ void Matrix::identityMatrix(int dim) {
  * @param n
  */
 void Matrix::zeroMatrix(const int m, const int n) {
-    qDebug() << "Matrix:: zeroMatrix() m " << m << " n " << n;
+    qDebug() << "Matrix::zeroMatrix() m " << m << " n " << n;
     clear();
     m_rows=m;
     m_cols=n;
     row = new (nothrow) Row [m_rows];
     Q_CHECK_PTR( row );
-    qDebug() << "Matrix::zeroMatrix - resizing each row";
+    //qDebug() << "Matrix::zeroMatrix - resizing each row";
     for (int i=0;i<m_rows; i++) {
         row[i].resize(m_cols);
         setItem(i,i, 0);
@@ -407,27 +407,24 @@ void Matrix::multiplyRow(int row, float value) {
  * @param symmetry
  * @return
  */
-Matrix& Matrix::product( Matrix &a, Matrix & b, bool symmetry)  {
+void Matrix::product( Matrix &a, Matrix & b, bool symmetry)  {
     qDebug()<< "Matrix::product()";
     for (int i=0;i< rows();i++)
         for (int j=0;j<cols();j++) {
             setItem(i,j,0);
+            if (symmetry && i > j ) continue;
             for (int k=0;k<m_rows;k++) {
-                qDebug() << "Matrix::product() - a("<< i+1 << ","<< k+1 << ")="
-                         << a.item(i,k) << "* b("<< k+1 << ","<< j+1 << ")="
-                         << b.item(k,j)  << " gives "  << a.item(i,k)*b.item(k,j);
-                if  ( k > j && symmetry) {
-                    if (a.item(i,k)!=0 && b.item(j,k)!=0)
-                        setItem(i,j, item(i,j)+a.item(i,k)*b.item(j,k));
-                }
-                else{
-                    setItem(i,j, item(i,j)+a.item(i,k)*b.item(k,j));
-                }
+//                qDebug() << "Matrix::product() - a("<< i+1 << ","<< k+1 << ")="
+//                         << a.item(i,k) << "* b("<< k+1 << ","<< j+1 << ")="
+//                         << b.item(k,j)  << " gives "  << a.item(i,k)*b.item(k,j);
+                setItem(i,j, item(i,j)+a.item(i,k)*b.item(k,j));
+            }
+            if (symmetry) {
+                item(j,i) = item(i,j);
             }
             qDebug() << "Matrix::product() - ("<< i+1 << ","<< j+1 << ") = "
                      << item(i,j);
         }
-    return *this;
 }
 
 
@@ -475,14 +472,14 @@ Matrix& Matrix::pow (int n, bool symmetry)  {
         return *this;
     }
     qDebug()<< "Matrix::pow() ";
-    Matrix x, y; //auxilliary matrices
-    x=*this; //x = this
-    x.printMatrixConsole(true);
-    y.identityMatrix( rows() ); // y=I
-    y.printMatrixConsole(true);
-    this->expBySquaring2 (y, x, n, symmetry);
-
-    return *this;
+    Matrix X, Y; //auxilliary matrices
+    qDebug()<< "Matrix::pow() - creating X = this";
+    X=*this; //X = this
+    X.printMatrixConsole(true);
+    qDebug()<< "Matrix::pow() - creating Y = I";
+    Y.identityMatrix( rows() ); // y=I
+    Y.printMatrixConsole(true);
+    return expBySquaring2 (Y, X, n, symmetry);
 
 }
 
@@ -502,30 +499,40 @@ Matrix& Matrix::pow (int n, bool symmetry)  {
  * For n > 4 it is more efficient than naively multiplying the base with itself repeatedly.
  */
 Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
-    qDebug()<<"Matrix::expBySquaring2() - n =" << n;
     if (n==1) {
-        qDebug()<<"Matrix::expBySquaring2() - n = 1, return X*Y" ;
-        Matrix PM; PM.zeroMatrix(rows(), cols());
-        return PM.product(X, Y, symmetry);
+        qDebug() <<"Matrix::expBySquaring2() - n = 1. Computing PM = X*Y where "
+                   "X = " ;
+        X.printMatrixConsole();
+        qDebug() <<"Matrix::expBySquaring2() - n = 1. And Y = ";
+        Y.printMatrixConsole();
+        Matrix *PM = new Matrix; PM->zeroMatrix(rows(), cols());
+        PM->product(X, Y, symmetry);
+        qDebug()<<"Matrix::expBySquaring2() - n = 1. PM = X*Y ="  ;
+        PM->printMatrixConsole();
+        return *PM;
     }
     else if ( n%2 == 0 ) { //even
-        qDebug()<<"Matrix::expBySquaring2() - even n =" << n;
+        qDebug()<<"Matrix::expBySquaring2() - even n =" << n
+               << "Computing PM = X * X";
         Matrix PM; PM.zeroMatrix(rows(), cols());
         PM.product(X,X,symmetry);
-        qDebug()<<"Matrix::expBySquaring2() - even n =" << n << "PM is:" ;
+        qDebug()<<"Matrix::expBySquaring2() - even n =" << n << ". PM = X * X = " ;
         PM.printMatrixConsole();
         return expBySquaring2 ( Y, PM, n/2 );
     }
     else  { //odd
-        qDebug()<<"Matrix::expBySquaring2() - odd n =" << n;
+        qDebug()<<"Matrix::expBySquaring2() - odd n =" << n
+               << "First compute PM = X * Y";
         Matrix PM, PM2;
         PM.zeroMatrix(rows(), cols());
         PM2.zeroMatrix(rows(), cols());
         PM.product(X,Y,symmetry);
-        qDebug()<<"Matrix::expBySquaring2() - odd n =" << n << "PM is:" ;
+        qDebug()<<"Matrix::expBySquaring2() - odd n =" << n << ". PM = X * Y = " ;
         PM.printMatrixConsole();
+        qDebug()<<"Matrix::expBySquaring2() - odd n =" << n
+               << "Now compute PM2 = X * X";
         PM2.product(X,X,symmetry);
-        qDebug()<<"Matrix::expBySquaring2() - odd n =" << n << "PM2 is:" ;
+        qDebug()<<"Matrix::expBySquaring2() - odd n =" << n << ". PM2 = X * X = " ;
         PM2.printMatrixConsole();
         return expBySquaring2 ( PM, PM2, (n-1)/2 );
     }
@@ -534,18 +541,17 @@ Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
 /**
  * @brief Matrix::sum
  * Matrix addition
- * Takes two (nxn) matrices and returns their product as a reference to this
+ * Takes two (nxn) matrices and returns their sum as a reference to this
  * Same algorithm as operator +, just different interface.
  * In this case, you use something like: c.sum(a,b)
  * @param a
  * @param b
  * @return
  */
-Matrix& Matrix::sum( Matrix &a, Matrix & b)  {
+void Matrix::sum( Matrix &a, Matrix & b)  {
     for (int i=0;i< rows();i++)
         for (int j=0;j<cols();j++)
             setItem(i,j, a.item(i,j)+b.item(i,j));
-    return *this;
 }
 
 
@@ -578,23 +584,74 @@ Matrix& Matrix::operator = (Matrix & a) {
 
 
 /**
-* @brief Matrix::operator +
-* Matrix addition: +
-* Adds this matrix with b of the same dim
-* Allows a+b
-* @param a
+* @brief Matrix::operator +=
+* Matrix add another matrix: +=
+* Adds to this matrix another matrix B of the same dim and returns to this
+* Allows A+=B
+* @param b
+* @return this
+*/
+void Matrix::operator +=(Matrix & b) {
+    qDebug()<< "Matrix::operator +=";
+    for (int i=0;i< rows();i++)
+        for (int j=0;j<cols();j++)
+            setItem(i,j, item(i,j)+b.item(i,j));
+
+
+}
+
+
+/**
+  * @brief Matrix::operator +
+  * Matrix addition: +
+  * Adds this matrix and B of the same dim and returns the sum S
+  * Allows S = A+B
+  * @param b
+  * @return Matrix S
+*/
+Matrix& Matrix::operator +(Matrix & b) {
+    Matrix *S = new Matrix();
+    S->zeroMatrix(rows(), cols());
+    qDebug()<< "Matrix::operator +";
+    for (int i=0;i< rows();i++)
+        for (int j=0;j<cols();j++)
+            S->setItem(i,j, item(i,j)+b.item(i,j));
+    return *S;
+}
+
+
+
+/*
+ * @brief Matrix::operator *
+ * Matrix Multiplication
+* Allows P = A * B where A,B of same dimension
+* and returns product as a reference to the calling object
+* NOTE: do not use it as B.product(A,B) because it will destroy B on the way.
+* @param b
+* @param symmetry
 * @return
 */
-  Matrix& Matrix::operator +(Matrix & b) {
-      qDebug()<< "Matrix::operator addition";
-      for (int i=0;i< rows();i++)
-          for (int j=0;j<cols();j++)
-              setItem(i,j, item(i,j)+b.item(i,j));
-      return *this;
+Matrix& Matrix::operator *(Matrix & b) {
 
- }
+    qDebug()<< "Matrix::operator *";
+    Matrix *P = new Matrix();
+    P->zeroMatrix(rows(), cols());
 
+    for (int i=0;i< rows();i++)
+        for (int j=0;j<cols();j++) {
+            P->setItem(i,j,0);
+            for (int k=0;k<m_rows;k++) {
+//                qDebug() << "Matrix::product() - a("<< i+1 << ","<< k+1 << ")="
+//                         << a.item(i,k) << "* b("<< k+1 << ","<< j+1 << ")="
+//                         << b.item(k,j)  << " gives "  << a.item(i,k)*b.item(k,j);
+                    P->setItem(i,j, P->item(i,j) + item(i,k)*b.item(k,j) );
 
+            }
+            qDebug() << "Matrix::operator * - ("<< i+1 << ","<< j+1 << ") = "
+                     << P->item(i,j);
+        }
+    return *P;
+}
 
 
 
@@ -740,7 +797,7 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
  * @return
  */
 bool Matrix::printMatrixConsole(bool debug){
-    qDebug() << "Matrix::printMatrixConsole() debug " << debug ;
+    //qDebug() << "Matrix::printMatrixConsole() debug " << debug ;
     for (int r = 0; r < rows(); ++r) {
         for (int c = 0; c < cols(); ++c) {
             if ( item(r,c) < RAND_MAX  ) {
