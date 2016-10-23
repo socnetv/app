@@ -6679,15 +6679,34 @@ void Graph::walksMatrixCreate(const int &maxPower, const bool &updateProgress) {
     Matrix PM; // temp matrix
     PM.zeroMatrix(size, size);
 
-    qDebug()<< "Graph::writeWalksOfLengthMatrix() - XM is  " ;
+    qDebug()<< "Graph::writeWalksOfLengthMatrix() - XM = AM = " ;
     XM.printMatrixConsole(true);
     if (updateProgress)
         emit updateProgressDialog (1);
     qDebug()<< "Graph::writeWalksOfLengthMatrix() - "
                "Calculating sociomatrix powers up to "  << maxPower;
 
-    XM.pow(maxPower, false);
+    XM = AM.pow(maxPower, false);
+    qDebug()<< "Graph::writeWalksOfLengthMatrix() - XM = ";
+    XM.printMatrixConsole(true);
     emit updateProgressDialog (maxPower);
+
+//    qDebug()<< "AM + AM = ";
+//    (AM+AM).printMatrixConsole(true);
+
+//    qDebug()<< "AM += AM = ";
+//    AM+=AM;
+//    (AM).printMatrixConsole(true);
+
+
+//    qDebug()<< "XSM.product (AM,AM) ";
+//    XSM.product (AM, AM);
+//    (XSM).printMatrixConsole(true);
+
+//    qDebug()<< "XSM = AM * AM ";
+//    XSM = AM * AM;
+//    (XSM).printMatrixConsole(true);
+
 
      //@TODO  UNCOMMENT
 
@@ -6745,7 +6764,7 @@ void Graph::writeWalksTotalMatrix(const QString &fn, const int &length){
  * @param length
  */
 void Graph::writeWalksOfLengthMatrix(const QString &fn, const int &length){
-    qDebug("Graph::writeWalksOfLengthMatrix() ");
+    qDebug()<<"Graph::writeWalksOfLengthMatrix() ";
 
     QFile file (fn);
     if ( !file.open( QIODevice::WriteOnly ) )  {
@@ -6761,7 +6780,7 @@ void Graph::writeWalksOfLengthMatrix(const QString &fn, const int &length){
     outText << "Number of walks of length "<< length <<" between each pair of nodes \n\n";
 
     walksMatrixCreate(length, true);
-
+    qDebug()<<"Graph::writeWalksOfLengthMatrix() - Writing XM to file";
     outText << XM ;
 
     file.close();
@@ -12514,7 +12533,8 @@ void Graph::writeAdjacencyMatrix (const QString fn) {
  *  Creates an adjacency matrix AM
  *  where AM(i,j)=1 if i is connected to j
  *  and AM(i,j)=0 if i not connected to j
- *  Used in Graph::centralityInformation() and Graph::adjacencyMatrixInvert()
+ *  Used in Graph::centralityInformation(), Graph::walksMatrixCreate
+ * and Graph::adjacencyMatrixInvert()
  */
 void Graph::adjacencyMatrixCreate(const bool dropIsolates,
                                   const bool considerWeights,
