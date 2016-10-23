@@ -177,11 +177,15 @@ public:
 
     Matrix& operator =(Matrix & a);
 
+    void operator +=(Matrix & b);
+
     Matrix& operator +(Matrix & b);
+
+    Matrix& operator *(Matrix & b);
 
     friend QTextStream& operator <<  (QTextStream& os, Matrix& m);
 
-    Matrix & product( Matrix &a, Matrix & b, bool symmetry=false) ;
+    void product( Matrix &a, Matrix & b, bool symmetry=false) ;
 
     Matrix & productSym( Matrix &a, Matrix & b)  ;
 
@@ -190,7 +194,7 @@ public:
 
     Matrix& subtractFromI () ;
 
-    Matrix& sum (Matrix &a, Matrix &b) ;
+    void sum(Matrix &a, Matrix &b) ;
 
     bool ludcmp (Matrix &a, const int &n, int indx[], float &d ) ;
 
