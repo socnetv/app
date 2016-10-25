@@ -420,7 +420,7 @@ void Matrix::product( Matrix &a, Matrix & b, bool symmetry)  {
                 setItem(i,j, item(i,j)+a.item(i,k)*b.item(k,j));
             }
             if (symmetry) {
-                item(j,i) = item(i,j);
+                setItem(j,i, item(i,j) );
             }
             qDebug() << "Matrix::product() - ("<< i+1 << ","<< j+1 << ") = "
                      << item(i,j);

@@ -8787,7 +8787,12 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
                     source=(*it)->name();
                     target=(*jt)->name();
                     m_label = "";
-                    if  ( 	(weight= edgeExists( source,target ) ) !=0 )
+                    weight= edgeExists( source,target ) ;
+                    qDebug()<< "Graph::graphSaveToGraphMLFormat() - edge no "
+                            << edgeCount
+                            << " from n1=" << source << " to n2=" << target
+                            << "  weight " << weight;
+                    if  (  weight !=0 )
                     {
                         ++edgeCount;
                         m_color = (*it)->outLinkColor( target );
@@ -8838,11 +8843,14 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
                 {
                     source=(*it)->name();
                     target=(*jt)->name();
-
-                    if  ( 	(weight= edgeExists( source,target, true ) ) !=0 )
+                    weight= edgeExists( source,target );
+                    m_label = "";
+                    if  (  weight  !=0 )
                     {
                         ++edgeCount;
                         m_color = (*it)->outLinkColor( target );
+                        m_label = edgeLabel(source, target);
+                        m_label=htmlEscaped(m_label);
                         qDebug()<< "Graph::graphSaveToGraphMLFormat() - edge no "
                                 << edgeCount
                                 << " from n1=" << source << " to n2=" << target
@@ -8862,6 +8870,12 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
                             if (openToken)
                                 outText << "> \n";
                             outText << "      <data key=\"d9\">" << m_color <<"</data>" <<" \n";
+                            openToken=false;
+                        }
+                        if (  !m_label.isEmpty()) {
+                            if (openToken)
+                                outText << "> \n";
+                            outText << "      <data key=\"d10\">" << m_label<<"</data>" <<" \n";
                             openToken=false;
                         }
                         if (openToken)
