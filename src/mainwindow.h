@@ -214,6 +214,7 @@ public slots:
     void slotEditRelationAdd();
     void slotEditRelationAdd(QString relationName);
     void slotEditRelationChange(const int relIndex=RAND_MAX);
+    void slotEditRelationRename(QString newName=QString::null);
 
     void slotEditOpenContextMenu(const QPointF & mPos);
     void slotEditSelectionChanged (const int nodes, const int edges);
@@ -496,6 +497,7 @@ private:
     QAction *springLayoutAct, *FRLayoutAct;
     QAction *nodeSizesByOutDegreeAct,  *nodeSizesByInDegreeAct;
     QAction *editRelationNextAct, *editRelationPreviousAct, *editRelationAddAct;
+    QAction *editRelationRenameAct;
     enum { MaxRecentFiles = 5 };
     QAction *recentFileActs[MaxRecentFiles];
 

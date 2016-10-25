@@ -164,6 +164,7 @@ public slots:
 
     int relationCurrent();
     QString relationCurrentName() const;
+    void relationCurrentRename(QString newName);
 
     /** Slots to signals from Parser */
 

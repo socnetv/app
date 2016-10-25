@@ -761,7 +761,7 @@ void MainWindow::initActions(){
                                   tr("Next Relation"),  this);
     editRelationNextAct->setShortcut(Qt::ALT + Qt::Key_Right);
     editRelationNextAct->setToolTip(tr("Goto next graph relation (ALT+Right)"));
-    editRelationNextAct->setStatusTip(tr("Loads the next relation of the network (if any)."));
+    editRelationNextAct->setStatusTip(tr("Load the next relation of the network (if any)."));
     editRelationNextAct->setWhatsThis(tr("Next Relation\n\nLoads the next relation of the network (if any)"));
 
     editRelationPreviousAct = new QAction(QIcon(":/images/prevrelation.png"),
@@ -770,7 +770,7 @@ void MainWindow::initActions(){
     editRelationPreviousAct->setToolTip(
                 tr("Goto previous graph relation (ALT+Left)"));
     editRelationPreviousAct->setStatusTip(
-                tr("Loads the previous relation of the network (if any)."));
+                tr("Load the previous relation of the network (if any)."));
     editRelationPreviousAct->setWhatsThis(
                 tr("Previous Relation\n\n"
                    "Loads the previous relation of the network (if any)"));
@@ -781,12 +781,19 @@ void MainWindow::initActions(){
     editRelationAddAct->setToolTip(
                 tr("Add a new relation to the active graph (Ctrl+Shift+N)"));
     editRelationAddAct->setStatusTip(
-                tr("Adds a new relation to the network. "
+                tr("Add a new relation to the network. "
                    "Nodes will be preserved, edges will be removed. "));
     editRelationAddAct->setWhatsThis(
                 tr("Add New Relation\n\n"
                    "Adds a new relation to the active network. "
                    "Nodes will be preserved, edges will be removed. "));
+
+    editRelationRenameAct = new QAction(QIcon(":/images/nextrelation.png"),
+                                  tr("Rename Relation"),  this);
+    editRelationRenameAct->setToolTip(tr("Rename current relation"));
+    editRelationRenameAct->setStatusTip(tr("Rename the current relation of the network (if any)."));
+    editRelationRenameAct->setWhatsThis(tr("Rename Relation\n\n"
+                                           "Renames the current relation of the network (if any)."));
 
 
     zoomInAct = new QAction(QIcon(":/images/zoomin.png"), tr("Zoom In"), this);
@@ -2247,6 +2254,7 @@ void MainWindow::initMenuBar() {
     editMenu -> addAction (editRelationPreviousAct);
     editMenu -> addAction (editRelationNextAct);
     editMenu -> addAction (editRelationAddAct);
+    editMenu -> addAction (editRelationRenameAct);
 
     editMenu -> addSeparator();
 
@@ -3685,6 +3693,7 @@ void MainWindow::initSignalSlots() {
     connect( editRelationPreviousAct, SIGNAL(triggered()),
              this, SLOT( slotEditRelationPrev() ) );
     connect( editRelationAddAct, SIGNAL(triggered()), this, SLOT( slotEditRelationAdd() ) );
+    connect( editRelationRenameAct, SIGNAL(triggered()), this, SLOT( slotEditRelationRename()) ) ;
 
 
     connect( &m_DialogEdgeFilterByWeight, SIGNAL( userChoices( float, bool) ),
@@ -5176,31 +5185,7 @@ void MainWindow::slotEditRelationNext(){
 
 
 
-/**
- * @brief MainWindow::slotEditRelationAdd
- * called from activeGraph::relationAddFromGraph(QString) when the parser or a
- * Graph method demands a new relation to be added in the Combobox.
- * @param relationName (NULL)
- */
-void MainWindow::slotEditRelationAdd(QString relationName){
-    qDebug() << "MW::slotEditRelationAdd(string)" << relationName;
-    if ( !relationName.isNull() ){
-        editRelationChangeCombo->addItem(relationName);
-    }
-}
 
-
-void MainWindow::slotEditRelationChange(const int relIndex) {
-    qDebug() << "MW::slotEditRelationChange(int)" << relIndex;
-    int relationsCounter=editRelationChangeCombo->count();
-    if ( relIndex == RAND_MAX){
-        editRelationChangeCombo->setCurrentIndex(relationsCounter-1);
-    }
-    else {
-        editRelationChangeCombo->setCurrentIndex(relIndex);
-    }
-
-}
 
 /**
  * @brief MainWindow::slotEditRelationAdd
@@ -5250,6 +5235,69 @@ void MainWindow::slotEditRelationAdd(){
     }
     statusMessage( QString(tr("New relation named %1, added."))
                    .arg( newRelationName ) );
+}
+
+
+
+/**
+ * @brief MainWindow::slotEditRelationAdd
+ * called from activeGraph::relationAddFromGraph(QString) when the parser or a
+ * Graph method demands a new relation to be added in the Combobox.
+ * @param relationName (NULL)
+ */
+void MainWindow::slotEditRelationAdd(QString relationName){
+    qDebug() << "MW::slotEditRelationAdd(string)" << relationName;
+    if ( !relationName.isNull() ){
+        editRelationChangeCombo->addItem(relationName);
+    }
+}
+
+
+
+
+
+/**
+ * @brief MainWindow::slotEditRelationRename
+ * @param newName
+ */
+void MainWindow::slotEditRelationRename(QString newName) {
+    bool ok=false;
+    if (newName.isNull() || newName.isEmpty()) {
+        newName = QInputDialog::getText(
+                    this,
+                    tr("Rename current relation"),
+                    tr("Enter a new name for this relation."),
+                              QLineEdit::Normal, QString::null, &ok );
+        if ( newName.isEmpty() || !ok ){
+            slotHelpMessageToUser(USER_MSG_CRITICAL,
+                                  tr("Not a valid name."),
+                                  tr("Error"),
+                                  tr("You did not enter a valid name for this relation.")
+                                  );
+            return;
+        }
+    }
+    editRelationChangeCombo->setCurrentText(newName);
+    activeGraph.relationCurrentRename(newName);
+
+}
+
+/**
+ * @brief MainWindow::slotEditRelationChange
+ * @param relIndex
+ * Called from Graph::relationAddFromGraphChange
+ * via signal Graph::signalRelationChangeToMW()
+ */
+void MainWindow::slotEditRelationChange(const int relIndex) {
+    qDebug() << "MW::slotEditRelationChange(int)" << relIndex;
+    int relationsCounter=editRelationChangeCombo->count();
+    if ( relIndex == RAND_MAX){
+        editRelationChangeCombo->setCurrentIndex(relationsCounter-1);
+    }
+    else {
+        editRelationChangeCombo->setCurrentIndex(relIndex);
+    }
+
 }
 
 
@@ -6697,7 +6745,15 @@ void MainWindow::slotEditNodeSelectedToClique () {
         return;
 
     }
+    if ( activeGraph.relations() == 0 ) {
+        QString newRelationName = QString::number ( selectedNodes().count() ) + tr("-clique");
+        editRelationChangeCombo->addItem(newRelationName);
+        emit addRelationToGraph(newRelationName);
+    }
+
     activeGraph.cliqueCreate( selectedNodes() );
+
+
     slotHelpMessageToUser(USER_MSG_INFO,tr("Clique created."),
                           tr("A new clique has been created from ") + QString::number(selectedNodes().count())
                           + tr(" nodes")

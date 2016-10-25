@@ -378,6 +378,7 @@ void Graph::relationAddFromGraphChange(const QString &newRelation) {
 /**
  * @brief Graph::relationChange
  * @param relIndex
+ * Called from Graph::graphSymmetrizeStrongTies()
  */
 void Graph::relationChange(const int &relIndex) {
     qDebug() << "Graph::relationChange()" << relIndex;
@@ -412,6 +413,13 @@ QString Graph::relationCurrentName() const{
     return m_relationsList.value(m_curRelation);
 }
 
+/**
+ * @brief Graph::relationCurrentRename
+ * @param newName
+ */
+void Graph::relationCurrentRename(QString newName) {
+    m_relationsList[m_curRelation] = newName;
+}
 
 /**
  * @brief Graph::relations
