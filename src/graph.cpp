@@ -8505,7 +8505,7 @@ bool Graph::graphSaveToPajekFormat (const QString &fileName, \
     maxWidth = (maxWidth == 0) ? canvasWidth:maxWidth ;
     maxHeight= (maxHeight== 0) ? canvasHeight:maxHeight;
 
-    int weight=0;
+    float weight=0;
 
     QFile f( fileName );
     if ( !f.open( QIODevice::WriteOnly ) )  {
@@ -8643,7 +8643,8 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
 {
     qDebug () << "Graph::graphSaveToGraphMLFormat() - file: " << fileName.toUtf8();
 
-    int weight=0, source=0, target=0, edgeCount=0, m_size=1, m_labelSize;
+    float weight=0;
+    int source=0, target=0, edgeCount=0, m_size=1, m_labelSize;
     QString m_color, m_labelColor, m_label;
     bool openToken;
 
@@ -8788,10 +8789,6 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
                     target=(*jt)->name();
                     m_label = "";
                     weight= edgeExists( source,target ) ;
-                    qDebug()<< "Graph::graphSaveToGraphMLFormat() - edge no "
-                            << edgeCount
-                            << " from n1=" << source << " to n2=" << target
-                            << "  weight " << weight;
                     if  (  weight !=0 )
                     {
                         ++edgeCount;

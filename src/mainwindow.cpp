@@ -5492,7 +5492,19 @@ void MainWindow::slotNetworkExportSM(){
         return;
     }
 
-    QMessageBox::information(this, "Warning",tr("Note that exporting to an adjacency matrix does not save floating-point weight values; adjacency matrices consist of integers, only. \n If your network had any floating point weights in some edges, these are being truncated to the nearest integer or 1."), "OK",0);
+    slotHelpMessageToUser(USER_MSG_INFO,
+                          tr("Adjacency matrix with floating-point weights"),
+                          tr("Network with floating-point edge weights"),
+                          tr("This social network has some edges with negative weights."
+                             "In theory, an adjacency matrix is a square | V | × | V | matrix "
+                             "such that Aij = 1 when there is an edge from vertex i to vertex j, "
+                             "and Aij = 0 when there is no edge."
+                             "Therefore, an adjacency matrix can not have floating-point weight values. \n"
+                             "Nevertheless @todo"
+                             "If your network had any floating point weights in some edges, "
+                             "these are being truncated to the nearest integer or 1.")
+                          );
+
 
     activeGraph.graphSave(fileName, FILE_ADJACENCY ) ;
 
