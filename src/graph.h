@@ -167,8 +167,6 @@ public slots:
     void relationCurrentRename(QString newName);
 
     /** Slots to signals from Parser */
-
-    void relationAddFromParser(QString);
     void vertexCreate(const int &num, const int &size, const QString &nodeColor,
                        const QString &numColor, const int &numSize,
                        const QString &label, const QString &lColor,
@@ -200,8 +198,9 @@ public slots:
                                           const bool &signalMW=false) ;
     /** Slots to signals from MainWindow */
 
-    void relationSet(int index);
-    void relationAddFromUser(QString relation);
+    void relationSet(int index=RAND_MAX, const bool notifyMW=true);
+    void relationNext();
+    void relationPrev();
     void canvasSizeSet(const int w, const int h);
     double canvasMaxRadius() const;
     float canvasMinDimension() const;
@@ -247,8 +246,9 @@ signals:
                                 const float &weight=0,
                                 const bool &undirected=false);
     void signalRelationAddToMW(QString newRelation);
-    void signalRelationChanged(int);
-    void signalRelationChangeToMW(const int &relIndex=RAND_MAX);
+    void signalRelationRenamedToMW(const QString newRelName);
+    void signalRelationChangedToGW(int);
+    void signalRelationChangedToMW(const int &relIndex=RAND_MAX);
 
     /** Signals to GraphicsWidget */
     void drawNode( const int &num, const int &size, const QString &nodeShape,
@@ -332,9 +332,8 @@ public:
 
     /* RELATIONS */
     int relations();
-    void relationAddFromGraph(QString newRelation);
-    void relationAddFromGraphChange(const QString &newRelation);
-    void relationChange(const int &relIndex=RAND_MAX);
+    void relationAdd(QString relName);
+    void relationAddAndChangeTo(const QString &newRelation);
     /* VERTICES */
     int vertexNumberMax();
     int vertexNumberMin();

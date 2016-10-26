@@ -123,8 +123,7 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
     initSignalSlots();  //connect signals and slots between app components
 
-    /*  load and initialise default network parameters  */
-    initNet();
+    initApp();          //  load and initialise default app parameters
 
     // Check if user-provided network file on startup
     qDebug() << "MW::MainWindow() Checking if user provided file on startup...";
@@ -788,7 +787,7 @@ void MainWindow::initActions(){
                    "Adds a new relation to the active network. "
                    "Nodes will be preserved, edges will be removed. "));
 
-    editRelationRenameAct = new QAction(QIcon(":/images/nextrelation.png"),
+    editRelationRenameAct = new QAction(QIcon(":/images/edit-rename.png"),
                                   tr("Rename Relation"),  this);
     editRelationRenameAct->setToolTip(tr("Rename current relation"));
     editRelationRenameAct->setStatusTip(tr("Rename the current relation of the network (if any)."));
@@ -2475,10 +2474,8 @@ void MainWindow::initMenuBar() {
     viewOptionsMenu -> addAction (changeBackColorAct);
     viewOptionsMenu -> addAction (backgroundImageAct);
 
-
     optionsMenu -> addSeparator();
     optionsMenu -> addAction (openSettingsAct);
-
 
 
     /**  menuBar entry helpMenu */
@@ -3625,7 +3622,7 @@ void MainWindow::initSignalSlots() {
     connect( graphicsWidget, &GraphicsWidget::userClickedEdge,
              &activeGraph, &Graph::edgeClickedSet );
 
-    connect( &activeGraph, SIGNAL(signalRelationChanged(int)),
+    connect( &activeGraph, SIGNAL(signalRelationChangedToGW(int)),
              graphicsWidget, SLOT( relationSet(int))  ) ;
 
 
@@ -3663,18 +3660,27 @@ void MainWindow::initSignalSlots() {
              this, &MainWindow::slotLayoutNodeSizesByInDegree );
 
 
-    connect( editRelationChangeCombo , SIGNAL( currentIndexChanged(int) ) ,
+    connect( editRelationChangeCombo , SIGNAL( activated(int) ) ,
              &activeGraph, SLOT( relationSet(int) ) );
 
-    connect( this , SIGNAL(addRelationToGraph(QString)),
-             &activeGraph, SLOT( relationAddFromUser(QString) ) );
+    connect( this , &MainWindow::addRelationToGraph,
+             &activeGraph, &Graph::relationAddAndChangeTo );
 
+    connect( editRelationNextAct, &QAction::triggered,
+             &activeGraph, &Graph::relationNext );
 
-    connect ( &activeGraph, &Graph::signalRelationChangeToMW,
+    connect( editRelationPreviousAct, &QAction::triggered,
+             &activeGraph, &Graph::relationPrev );
+
+    connect ( &activeGraph, &Graph::signalRelationChangedToMW,
                       this, &MainWindow::slotEditRelationChange );
 
-    connect ( &activeGraph, SIGNAL(signalRelationAddToMW(QString)),
-              this, SLOT(slotEditRelationAdd(QString)));
+    connect ( &activeGraph, &Graph::signalRelationAddToMW,
+              this, &MainWindow::slotEditRelationAdd  );
+
+    connect ( &activeGraph, &Graph::signalRelationRenamedToMW,
+                      this, &MainWindow::slotEditRelationRename );
+
 
 
 
@@ -3687,13 +3693,11 @@ void MainWindow::initSignalSlots() {
 
     connect( editEdgeRemoveBt,SIGNAL(clicked()), this, SLOT( slotEditEdgeRemove() ) );
 
+    connect( editRelationAddAct, SIGNAL(triggered()),
+             this, SLOT(slotEditRelationAdd()) );
 
-    connect( editRelationNextAct, SIGNAL(triggered()),
-             this, SLOT( slotEditRelationNext() ) );
-    connect( editRelationPreviousAct, SIGNAL(triggered()),
-             this, SLOT( slotEditRelationPrev() ) );
-    connect( editRelationAddAct, SIGNAL(triggered()), this, SLOT( slotEditRelationAdd() ) );
-    connect( editRelationRenameAct, SIGNAL(triggered()), this, SLOT( slotEditRelationRename()) ) ;
+    connect( editRelationRenameAct,SIGNAL(triggered()),
+             this, SLOT(slotEditRelationRename()) ) ;
 
 
     connect( &m_DialogEdgeFilterByWeight, SIGNAL( userChoices( float, bool) ),
@@ -3746,12 +3750,12 @@ void MainWindow::initSignalSlots() {
 
 
 /**
- * @brief MainWindow::initNet
+ * @brief MainWindow::initApp
  * Initializes the default network parameters.
  * Used on app start and especially when erasing a network to start a new one
  */
-void MainWindow::initNet(){
-    qDebug()<<"MW::initNet() - START INITIALISATION";
+void MainWindow::initApp(){
+    qDebug()<<"MW::initApp() - START INITIALISATION";
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
     // Init basic variables
@@ -3759,8 +3763,6 @@ void MainWindow::initNet(){
     considerWeights=false;
     inverseWeights=false;
     askedAboutWeights=false;
-
-    networkName="";
 
     previous_fileName=fileName;
     fileName="";
@@ -3774,7 +3776,42 @@ void MainWindow::initNet(){
 
     markedNodesExist=false;	//used by slotEditNodeFind()
 
-    cursorPosGW=QPointF(-1,-1);
+
+    /** Clear LCDs **/
+    rightPanelClickedNodeInDegreeLCD->display(0);
+    rightPanelClickedNodeOutDegreeLCD->display(0);
+    rightPanelClickedNodeClucofLCD->display(0);
+    rightPanelClickedNodeLCD->display(0);
+    rightPanelClickedEdgeSourceLCD->display(0);
+    rightPanelClickedEdgeTargetLCD->display(0);
+    rightPanelClickedEdgeWeightLCD->display(0);
+
+    /** Clear toolbox and menu checkboxes **/
+    toolBoxAnalysisClusterabilitySelect->setCurrentIndex(0);
+    toolBoxAnalysisConnectivitySelect->setCurrentIndex(0);
+    toolBoxAnalysisGeodesicsSelect->setCurrentIndex(0);
+    toolBoxAnalysisProminenceSelect->setCurrentIndex(0);
+    toolBoxLayoutByIndexSelect->setCurrentIndex(0);
+    toolBoxLayoutByIndexTypeSelect ->setCurrentIndex(0);
+    toolBoxLayoutForceDirectedSelect->setCurrentIndex(0);
+    toolBoxNodeSizesByOutDegreeBx->setChecked(false);
+    toolBoxNodeSizesByInDegreeBx->setChecked(false);
+
+    optionsEdgeWeightNumbersAct->setChecked(
+                (appSettings["initEdgeWeightNumbersVisibility"] == "true") ? true:false
+                );
+    considerEdgeWeightsAct->setChecked(false);
+    optionsEdgeArrowsAct->setChecked(
+                (appSettings["initEdgeArrows"] == "true") ? true: false
+            );
+
+    optionsEdgeLabelsAct->setChecked (
+                (appSettings["initEdgeLabelsVisibility"] == "true") ? true: false
+                );
+    editFilterNodesIsolatesAct->setChecked(false); // re-init orphan nodes menu item
+
+    editRelationChangeCombo->clear();
+
 
     /** Clear previous network data */
     activeGraph.clear();
@@ -3809,84 +3846,6 @@ void MainWindow::initNet(){
     rotateSlider->setValue(0);
     zoomSlider->setValue(250);
 
-    /** Clear LCDs **/
-    rightPanelNodesLCD->display(activeGraph.vertices());
-    if (activeGraph.graphUndirected()) {
-        activeGraph.graphUndirectedSet(true);
-        rightPanelEdgesLCD->setStatusTip(tr("Shows the total number of undirected edges in the network."));
-        rightPanelEdgesLCD->setToolTip(tr("The total number of undirected edges in the network."));
-        rightPanelNetworkTypeLabel->setStatusTip(tr("Undirected data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
-        rightPanelNetworkTypeLabel->setToolTip(tr("The loaded network, if any, is undirected and \n"
-                                    "any edge you add between nodes will be undirected.\n"
-                                    "If you want to work with directed edges and/or \n"
-                                    "transform the loaded network (if any) to directed \n"
-                                    "disable the option Edit -> Edges -> Undirected \n"
-                                    "or press CTRL+E+U"));
-        rightPanelNetworkTypeLabel->setWhatsThis(tr("The loaded network, if any, is undirected and \n"
-                                    "any edge you add between nodes will be undirected.\n"
-                                    "If you want to work with directed edges and/or \n"
-                                    "transform the loaded network (if any) to directed \n"
-                                    "disable the option Edit -> Edges -> Undirected \n"
-                                    "or press CTRL+E+U"));
-        rightPanelNetworkTypeLabel-> setText ("Network Type: Undirected");
-        rightPanelEdgesLabel->setText(tr("Total Edges"));
-        rightPanelSelectedEdgesLabel->setText(tr("Selected Edges"));
-    }
-    else {
-        activeGraph.graphUndirectedSet(false,false);
-        rightPanelEdgesLCD->setStatusTip(tr("Shows the total number of directed edges in the network."));
-        rightPanelEdgesLCD->setToolTip(tr("The total number of directed edges in the network."));
-        rightPanelNetworkTypeLabel->setStatusTip(tr("Directed data mode. Toggle the menu option Edit -> Edges -> Undirected Edges to change it"));
-        rightPanelNetworkTypeLabel->setToolTip(tr("The loaded network, if any, is directed and \n"
-                                    "any link you add between nodes will be a directed arc.\n"
-                                    "If you want to work with undirected edges and/or \n"
-                                    "transform the loaded network (if any) to undirected \n"
-                                    "enable the option Edit -> Edges -> Undirected \n"
-                                    "or press CTRL+E+U"));
-        rightPanelNetworkTypeLabel->setWhatsThis(tr("The loaded network, if any, is directed and \n"
-                                    "any link you add between nodes will be a directed arc.\n"
-                                    "If you want to work with undirected edges and/or \n"
-                                    "transform the loaded network (if any) to undirected \n"
-                                    "enable the option Edit -> Edges -> Undirected \n"
-                                    "or press CTRL+E+U"));
-
-        rightPanelNetworkTypeLabel-> setText ("Network Type: Directed");
-        rightPanelEdgesLabel->setText(tr("Total Arcs"));
-        rightPanelSelectedEdgesLabel->setText(tr("Selected Arcs"));
-    }
-    rightPanelEdgesLCD->display(activeEdges());
-    rightPanelDensityLCD->display(activeGraph.graphDensity());
-    rightPanelClickedNodeInDegreeLCD->display(0);
-    rightPanelClickedNodeOutDegreeLCD->display(0);
-    rightPanelClickedNodeClucofLCD->display(0);
-    rightPanelClickedNodeLCD->display(0);
-
-    /** Clear toolbox and menu checkboxes **/
-    toolBoxAnalysisClusterabilitySelect->setCurrentIndex(0);
-    toolBoxAnalysisConnectivitySelect->setCurrentIndex(0);
-    toolBoxAnalysisGeodesicsSelect->setCurrentIndex(0);
-    toolBoxAnalysisProminenceSelect->setCurrentIndex(0);
-    toolBoxLayoutByIndexSelect->setCurrentIndex(0);
-    toolBoxLayoutByIndexTypeSelect ->setCurrentIndex(0);
-    toolBoxLayoutForceDirectedSelect->setCurrentIndex(0);
-    toolBoxNodeSizesByOutDegreeBx->setChecked(false);
-    toolBoxNodeSizesByInDegreeBx->setChecked(false);
-
-    optionsEdgeWeightNumbersAct->setChecked(
-                (appSettings["initEdgeWeightNumbersVisibility"] == "true") ? true:false
-                );
-    considerEdgeWeightsAct->setChecked(false);
-    optionsEdgeArrowsAct->setChecked(
-                (appSettings["initEdgeArrows"] == "true") ? true: false
-            );
-
-    optionsEdgeLabelsAct->setChecked (
-                (appSettings["initEdgeLabelsVisibility"] == "true") ? true: false
-                );
-    editFilterNodesIsolatesAct->setChecked(false); // re-init orphan nodes menu item
-
-    editRelationChangeCombo->clear();
-
     graphicsWidget->setInitZoomIndex(250);
 
     graphicsWidget->setInitNodeSize(appSettings["initNodeSize"].toInt(0, 10));
@@ -3912,7 +3871,7 @@ void MainWindow::initNet(){
     setCursor(Qt::ArrowCursor);
 
     statusMessage( tr("Ready"));
-    qDebug("MW: initNet() - INITIALISATION END");
+    qDebug("MW: initApp() - INITIALISATION END");
 
 
 }
@@ -4765,7 +4724,7 @@ void MainWindow::slotNetworkClose() {
         }
     }
     statusMessage( tr("Erasing old network data...."));
-    initNet();
+    initApp();
     statusMessage( tr("Ready."));
 }
 
@@ -4990,7 +4949,7 @@ void MainWindow::slotNetworkFileLoadRecent() {
  * @return
  * Main network file loader method
  * Called from previewForm and slotNetworkDataSetRecreate
- * Calls initNet to init to default values.
+ * Calls initApp to init to default values.
  * Then calls activeGraph::graphLoad to actually load the network...
  */
 bool MainWindow::slotNetworkFileLoad(const QString m_fileName,
@@ -5000,7 +4959,7 @@ bool MainWindow::slotNetworkFileLoad(const QString m_fileName,
     qDebug() << "MW::slotNetworkFileLoad() : "<< m_fileName
                     << " m_codecName " << m_codecName
                     << " m_fileFormat " << m_fileFormat;
-    initNet();
+    initApp();
 
     userSelectedCodecName = m_codecName; //var for future use in a Settings dialog
 
@@ -5095,49 +5054,49 @@ void MainWindow::slotNetworkFileLoaded (
     case 1:
         fileLoaded=true;
         networkModified=false;
-        statusMessage( tr("GraphML formatted network, named %1, loaded with %2 Nodes and %3 total Edges.").arg( networkName ).arg( aNodes ).arg(totalEdges ) );
+        statusMessage( tr("GraphML formatted network, named %1, loaded with %2 Nodes and %3 total Edges.").arg( netName ).arg( aNodes ).arg(totalEdges ) );
         break;
 
     case 2:
         fileLoaded=true;
         networkModified=false;
-        statusMessage( QString(tr("Pajek formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ));
+        statusMessage( QString(tr("Pajek formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( aNodes ).arg(totalEdges ));
         break;
 
     case 3:
         fileLoaded=true;
         networkModified=false;
-        statusMessage( QString(tr("Adjacency formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("Adjacency formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( aNodes ).arg(totalEdges ) );
         break;
 
     case 4:
         fileLoaded=true;
         networkModified=false;
-        statusMessage( QString(tr("Dot formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("Dot formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( aNodes ).arg(totalEdges ) );
         break;
 
     case 5:
         fileLoaded=true;
         networkModified=false;
-        statusMessage( QString(tr("DL-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("DL-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( aNodes ).arg(totalEdges ) );
         break;
     case 6:
-        statusMessage( QString(tr("GML-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("GML-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( aNodes ).arg(totalEdges ) );
         break;
     case 7:
         fileLoaded=true;
         networkModified=false;
-        statusMessage( QString(tr("Weighted list-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("Weighted list-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( aNodes ).arg(totalEdges ) );
         break;
     case 8:
         fileLoaded=true;
         networkModified=false;
-        statusMessage( QString(tr("Simple list-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("Simple list-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( aNodes ).arg(totalEdges ) );
         break;
     case 9:
         fileLoaded=true;
         networkModified=false;
-        statusMessage( QString(tr("Two-mode affiliation network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( networkName ).arg( aNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("Two-mode affiliation network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( aNodes ).arg(totalEdges ) );
         break;
 
     default: // just for sanity
@@ -5151,38 +5110,6 @@ void MainWindow::slotNetworkFileLoaded (
 }
 
 
-/**
- * @brief MainWindow::slotEditRelationPrev
- * Decreases the index of editRelationChangeCombo
- * which signals to Graph::relationSet()
- */
-void MainWindow::slotEditRelationPrev(){
-    qDebug() << "MW::slotEditRelationPrev()";
-    int index=editRelationChangeCombo->currentIndex();
-    if (index>0){
-        --index;
-        editFilterNodesIsolatesAct->setChecked(false);
-        editRelationChangeCombo->setCurrentIndex(index);
-    }
-}
-
-/**
- * @brief MainWindow::slotEditRelationNext
- * Increases the index of editRelationChangeCombo
- * which signals to Graph::relationSet()
- */
-void MainWindow::slotEditRelationNext(){
-    qDebug() << "MW::slotEditRelationNext()";
-    int index=editRelationChangeCombo->currentIndex();
-    int relationsCounter=editRelationChangeCombo->count();
-    if (index< (relationsCounter -1 )){
-        ++index;
-        editFilterNodesIsolatesAct->setChecked(false);
-        editRelationChangeCombo->setCurrentIndex(index);
-    }
-
-}
-
 
 
 
@@ -5191,13 +5118,24 @@ void MainWindow::slotEditRelationNext(){
  * @brief MainWindow::slotEditRelationAdd
  * Called from MW when user clicks New Relation btn
  * or when the user creates the first edge visually.
+ *  * called from activeGraph::relationAdd(QString)
+ * via signal Graph::signalRelationChangedToMW() when the parser or a
+ * Graph method demands a new relation to be added in the Combobox.
+
+ *
  */
-void MainWindow::slotEditRelationAdd(){
-    qDebug() << "MW::slotEditRelationAdd()";
+void MainWindow::slotEditRelationAdd(QString newRelationName){
+    qDebug() << "MW::slotEditRelationAdd(string)" << newRelationName;
+    if (!newRelationName.isNull()) {
+        editRelationChangeCombo->addItem(newRelationName);
+        editRelationChangeCombo->setCurrentIndex(
+                    editRelationChangeCombo->currentIndex()+1
+                    );
+        return;
+    }
     bool ok;
-    QString newRelationName;
-    int relationsCounter=editRelationChangeCombo->count();
-    if (relationsCounter==0) {
+    int relationsCounter=activeGraph.relations();
+    if (relationsCounter==1 && activeGraph.vertices()==0 ) {
         newRelationName = QInputDialog::getText(
                     this,
                     tr("Add new relation"),
@@ -5216,12 +5154,12 @@ void MainWindow::slotEditRelationAdd(){
                     QLineEdit::Normal,QString::null, &ok );
     }
     if (ok && !newRelationName.isEmpty()){
-        editRelationChangeCombo->addItem(newRelationName);
+        //editRelationChangeCombo->addItem(newRelationName);
         emit addRelationToGraph(newRelationName);
-        if (relationsCounter != 0){ //dont do it if its the first relation added
-            qDebug() << "MW::slotEditRelationAdd() - updating combo index";
-            editRelationChangeCombo->setCurrentIndex(relationsCounter);
-        }
+//        if (relationsCounter != 0){ //dont do it if its the first relation added
+//            qDebug() << "MW::slotEditRelationAdd() - updating combo index";
+//            editRelationChangeCombo->setCurrentIndex(relationsCounter);
+//        }
     }
     else if ( newRelationName.isEmpty() && ok ){
         QMessageBox::critical(this, tr("Error"),
@@ -5239,19 +5177,6 @@ void MainWindow::slotEditRelationAdd(){
 
 
 
-/**
- * @brief MainWindow::slotEditRelationAdd
- * called from activeGraph::relationAddFromGraph(QString) when the parser or a
- * Graph method demands a new relation to be added in the Combobox.
- * @param relationName (NULL)
- */
-void MainWindow::slotEditRelationAdd(QString relationName){
-    qDebug() << "MW::slotEditRelationAdd(string)" << relationName;
-    if ( !relationName.isNull() ){
-        editRelationChangeCombo->addItem(relationName);
-    }
-}
-
 
 
 
@@ -5261,6 +5186,7 @@ void MainWindow::slotEditRelationAdd(QString relationName){
  * @param newName
  */
 void MainWindow::slotEditRelationRename(QString newName) {
+    qDebug()<<"MW::slotEditRelationRename() -" << newName;
     bool ok=false;
     if (newName.isNull() || newName.isEmpty()) {
         newName = QInputDialog::getText(
@@ -5276,17 +5202,22 @@ void MainWindow::slotEditRelationRename(QString newName) {
                                   );
             return;
         }
+        else {
+            activeGraph.relationCurrentRename(newName);
+        }
     }
-    editRelationChangeCombo->setCurrentText(newName);
-    activeGraph.relationCurrentRename(newName);
+    else {
+        qDebug()<<"MW::slotEditRelationRename() - updating combo name to" << newName;
+        editRelationChangeCombo->setCurrentText(newName);
+    }
 
 }
 
 /**
  * @brief MainWindow::slotEditRelationChange
  * @param relIndex
- * Called from Graph::relationAddFromGraphChange
- * via signal Graph::signalRelationChangeToMW()
+ * Called from Graph::relationAddAndChangeTo
+ * via signal Graph::signalRelationChangedToMW()
  */
 void MainWindow::slotEditRelationChange(const int relIndex) {
     qDebug() << "MW::slotEditRelationChange(int)" << relIndex;
@@ -5755,7 +5686,7 @@ void MainWindow::slotNetworkDataSetRecreate (const QString m_fileName) {
     int m_fileFormat=0;
     qDebug()<< "MW::slotNetworkDataSetRecreate() fileName: " << m_fileName;
 
-    //initNet();
+    //initApp();
 
     qDebug()<< "MW::slotNetworkDataSetRecreate() datadir+fileName: "
             << appSettings["dataDir"]+m_fileName;
@@ -5846,7 +5777,7 @@ void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
 
     statusMessage( tr("Erasing any existing network."));
 
-    initNet();
+    initApp();
 
     statusMessage( tr("Creating Erdos-Renyi Random Network. Please wait... ")  );
 
@@ -5942,7 +5873,7 @@ void MainWindow::slotNetworkRandomScaleFree ( const int &newNodes,
 {
     qDebug() << "MW::slotNetworkRandomScaleFree()";
     statusMessage( tr("Erasing any existing network. "));
-    initNet();
+    initApp();
 
     statusMessage( tr("Creating Scale-Free Random Network. Please wait..."));
     progressMsg = "Creating Scale-Free Random Network. \n"
@@ -6013,7 +5944,7 @@ void MainWindow::slotNetworkRandomSmallWorld(const int &newNodes,
     Q_UNUSED(diag);
     qDebug() << "MW::slotNetworkRandomSmallWorld()";
     statusMessage( tr("Erasing any existing network. "));
-    initNet();
+    initApp();
 
     statusMessage( tr("Creating Small-World Random Network. Please wait..."));
     progressMsg  = "Creating Small-World Random Network. \n"
@@ -6070,7 +6001,7 @@ void MainWindow::slotNetworkRandomRegular(const int &newNodes, const int &degree
                                           const QString &mode, const bool &diag){
 
     statusMessage( "Erasing any existing network. ");
-    initNet();
+    initApp();
     statusMessage( "Creating a pseudo-random d-regular network where each node "
                    "has the same degree... ");
 
@@ -6143,7 +6074,7 @@ void MainWindow::slotNetworkRandomRingLattice(){
     }
 
     statusMessage( "Erasing any existing network. ");
-    initNet();
+    initApp();
 
     statusMessage( "Creating ring lattice network. Please wait...");
     progressMsg  = "Creating ring-lattice network. \n"
@@ -6298,7 +6229,7 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
  * @param mPos
  */
 void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
-    cursorPosGW=mPos;
+    Q_UNUSED(mPos);
     QMenu *contextMenu = new QMenu(" Menu",this);
     Q_CHECK_PTR( contextMenu );  //displays "out of memory" if needed
 
@@ -6352,7 +6283,6 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
     //QCursor::pos() is good only for menus not related with node coordinates
     contextMenu -> exec(QCursor::pos() );
     delete  contextMenu;
-    cursorPosGW=QPoint(-1,-1);
 }
 
 
@@ -6743,16 +6673,9 @@ void MainWindow::slotEditNodeSelectedToClique () {
                               tr("Select some nodes first.")
                               );
         return;
-
-    }
-    if ( activeGraph.relations() == 0 ) {
-        QString newRelationName = QString::number ( selectedNodes().count() ) + tr("-clique");
-        editRelationChangeCombo->addItem(newRelationName);
-        emit addRelationToGraph(newRelationName);
     }
 
     activeGraph.cliqueCreate( selectedNodes() );
-
 
     slotHelpMessageToUser(USER_MSG_INFO,tr("Clique created."),
                           tr("A new clique has been created from ") + QString::number(selectedNodes().count())

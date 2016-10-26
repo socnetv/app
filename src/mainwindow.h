@@ -116,7 +116,7 @@ public:
     void initSignalSlots();
     QMap<QString, QString> initSettings();
     void saveSettings();
-    void initNet();
+    void initApp();
 
     void setLastPath(QString filePath);
     QString getLastPath();
@@ -209,10 +209,7 @@ public slots:
     void slotNetworkWebCrawler(QString, int, int, bool, bool);
 
     //EDIT MENU
-    void slotEditRelationPrev();
-    void slotEditRelationNext();
-    void slotEditRelationAdd();
-    void slotEditRelationAdd(QString relationName);
+    void slotEditRelationAdd(QString newRelationName=QString::null);
     void slotEditRelationChange(const int relIndex=RAND_MAX);
     void slotEditRelationRename(QString newName=QString::null);
 
@@ -501,7 +498,7 @@ private:
     enum { MaxRecentFiles = 5 };
     QAction *recentFileActs[MaxRecentFiles];
 
-    QString fileName, networkName, previous_fileName, progressMsg;
+    QString fileName, previous_fileName, progressMsg;
     QString settingsFilePath, settingsDir ;
     QStringList fileNameNoPath, fortuneCookie;
     QStringList tempFileNameNoPath, tips, recentFiles;
@@ -517,7 +514,7 @@ private:
     float randomErdosEdgeProb;
     QString initFileCodec;
     QColor initBackgroundColor;
-    QPointF cursorPosGW;	//Carries the position of the cursor in graphicsWidget coordinates
+
     QLabel *rightPanelEdgesLabel, *rightPanelSelectedEdgesLabel, *rightPanelNetworkTypeLabel ;
     QLabel *rightPanelClickedEdgeHeaderLabel;
     QLCDNumber *rightPanelClickedNodeInDegreeLCD, *rightPanelClickedNodeOutDegreeLCD;
