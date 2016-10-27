@@ -351,6 +351,7 @@ void Graph::relationSet(int index, const bool notifyMW){
         emit signalRelationChangedToMW(m_curRelation);
         //notify GW to disable/enable the on screen edges.
         emit signalRelationChangedToGW(m_curRelation);
+        qDebug()<<"Graph::relationSet() - emitting graphModifiedSet(GRAPH_CHANGED_EDGES)";
         graphModifiedSet(GRAPH_CHANGED_EDGES);
     }
 }
@@ -434,10 +435,20 @@ QString Graph::relationCurrentName() const{
  * @param newName
  */
 void Graph::relationCurrentRename(const QString &newName, const bool &notifyMW) {
-    qDebug()<< "Graph::relationCurrentRename() - m_curRelation"
+
+    if (newName.isEmpty()) {
+        qDebug()<< "Graph::relationCurrentRename() - m_curRelation"
+                   <<m_curRelation<<
+                     "newName"<<newName
+                     << "is empty - Returning";
+
+        return;
+    }
+    qDebug()<< "Graph::relationCurrentRename() - m_relationsList["
                <<m_curRelation<<
-                 "newName"<<newName
-                 << "notifyMW" <<notifyMW;
+                 "]="<<newName
+                 << " - notifyMW" <<notifyMW;
+
     m_relationsList[m_curRelation] = newName;
     if (notifyMW)
         emit signalRelationRenamedToMW(newName);
@@ -462,11 +473,14 @@ int Graph::relations(){
  * Clears relationships in this Graph
  */
 void Graph::relationsClear(){
-    qDebug () << "Graph::relationsClear() - before" << m_relationsList.count();
+    qDebug () << "Graph::relationsClear() - relations" << m_relationsList.count();
     m_relationsList.clear();
     m_curRelation=0;
+    qDebug () << "Graph::relationsClear() - cleared. Relations now "
+              << m_relationsList.count()
+              <<"Emitting signalRelationsClear()";
     emit signalRelationsClear();
-    qDebug () << "Graph::relationsClear() - now " << m_relationsList.count();
+
 }
 
 /**

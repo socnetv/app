@@ -962,10 +962,6 @@ bool Parser::loadPajek(){
     } //end WHILE
     file.close();
     if (j==0) return false;
-    //The network has been loaded. Tell MW the statistics and network type
-    emit networkFileLoaded(FILE_PAJEK, fileName, networkName,
-                           aNodes, totalLinks,
-                           ( (has_arcs) ? EDGE_DIRECTED: EDGE_RECIPROCAL_UNDIRECTED));
 
     qDebug("Parser-loadPajek(): Removing all dummy aNodes, if any");
     if (listDummiesPajek.size() > 0 ) {
@@ -978,6 +974,12 @@ bool Parser::loadPajek(){
     listDummiesPajek.clear();
     relationsList.clear();
     emit relationSet (0);
+
+    //The network has been loaded. Tell MW the statistics and network type
+    emit networkFileLoaded(FILE_PAJEK, fileName, networkName,
+                           aNodes, totalLinks,
+                           ( (has_arcs) ? EDGE_DIRECTED: EDGE_RECIPROCAL_UNDIRECTED));
+
 
     return true;
 
@@ -1428,10 +1430,6 @@ void Parser::readGraphMLElementGraph(QXmlStreamReader &xml){
     networkName = xmlStreamAttr.value("id").toString();
     relationsList << networkName;
     qDebug()<< "Parser::readGraphMLElementGraph() - emit addRelation()" <<networkName;
-    if (relationsList.count() == 1)
-    {
-//        emit renameRelation
-    }
     emit addRelation( networkName);
     int relationCounter = relationsList.count() - 1; //zero indexed
     if (relationCounter > 0) {

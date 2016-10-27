@@ -423,6 +423,9 @@ void MainWindow::slotOpenSettingsDialog() {
     connect( m_settingsDialog, &SettingsDialog::setEdgesVisibility,
              this, &MainWindow::slotOptionsEdgesVisibility);
 
+    connect( m_settingsDialog, &SettingsDialog::setEdgeArrowsVisibility,
+             this, &MainWindow::slotOptionsEdgeArrowsVisibility);
+
     connect( m_settingsDialog, &SettingsDialog::setEdgeColor,
              this, &MainWindow::slotEditEdgeColorAll);
 
@@ -2973,7 +2976,7 @@ void MainWindow::initToolBox(){
     QVBoxLayout *visualizationBoxLayout = new QVBoxLayout;
     visualizationBoxLayout -> addWidget(layoutByIndexBox);
     visualizationBoxLayout -> addWidget(layoutDynamicBox);
-    visualizationBoxLayout -> addWidget(visualizeOptionsBox);
+    //visualizationBoxLayout -> addWidget(visualizeOptionsBox);
 
     QGroupBox *visualizationBox= new QGroupBox(tr("Visualize"));
     visualizationBox->setMaximumWidth(280);
@@ -5145,7 +5148,7 @@ void MainWindow::slotEditRelationAdd(QString newRelationName, const bool &change
     int comboItemsBefore = editRelationChangeCombo->count();
     int relationsCounter=activeGraph.relations();
 
-    qDebug() << "MW::slotEditRelationAdd(string) - relation"
+    qDebug() << "MW::slotEditRelationAdd(string) - adding"
              << newRelationName
              <<"comboItemsBefore "
             << comboItemsBefore
@@ -5167,7 +5170,7 @@ void MainWindow::slotEditRelationAdd(QString newRelationName, const bool &change
             }
 
         }
-        qDebug() << "MW::slotEditRelationAdd(string) - added relation"
+        qDebug() << "MW::slotEditRelationAdd(string) - added"
                  << newRelationName
                  <<"comboItemsBefore "
                 << comboItemsBefore
