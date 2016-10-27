@@ -164,7 +164,7 @@ public slots:
 
     int relationCurrent();
     QString relationCurrentName() const;
-    void relationCurrentRename(QString newName);
+    void relationCurrentRename(const QString &newName, const bool &notifyMW=false);
 
     /** Slots to signals from Parser */
     void vertexCreate(const int &num, const int &size, const QString &nodeColor,
@@ -245,7 +245,8 @@ signals:
                                 const long int &v2=0,
                                 const float &weight=0,
                                 const bool &undirected=false);
-    void signalRelationAddToMW(QString newRelation);
+    void signalRelationAddToMW(const QString &newRelation, const bool &changeRelation=true);
+    void signalRelationsClear();
     void signalRelationRenamedToMW(const QString newRelName);
     void signalRelationChangedToGW(int);
     void signalRelationChangedToMW(const int &relIndex=RAND_MAX);
@@ -332,8 +333,9 @@ public:
 
     /* RELATIONS */
     int relations();
-    void relationAdd(QString relName);
-    void relationAddAndChangeTo(const QString &newRelation);
+    void relationsClear();
+    void relationAdd(const QString &relName, const bool &changeRelation=false);
+
     /* VERTICES */
     int vertexNumberMax();
     int vertexNumberMin();

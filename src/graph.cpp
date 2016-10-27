@@ -161,10 +161,8 @@ void Graph::clear() {
     triadTypeFreqs.clear();
 
     //clear relations
-    m_relationsList.clear();
-    //m_relationsList << "unnamed";
-    m_curRelation=0;
-    relationAdd(("unnamed"));
+    relationsClear();
+    relationAdd(tr(("unnamed")));
 
     m_fileFormat=FILE_UNRECOGNIZED;
 
@@ -333,13 +331,14 @@ void Graph::relationSet(int index, const bool notifyMW){
         qDebug() << "++ Graph::relationSet(int) - negative relation - END ";
         return;
     }
+    else if (index==RAND_MAX) {
+        index=relations() -1;
+    }
     else if (index> relations() -1) {
         qDebug() << "++ Graph::relationSet(int) - not existing relation - END ";
         return;
     }
-    else if (index==RAND_MAX) {
-        index=relations() -1;
-    }
+
     QList<Vertex*>::const_iterator it;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() )
@@ -393,33 +392,22 @@ void Graph::relationNext(){
 
 /**
  * @brief Graph::relationAdd
- * Adds a new relation named relName WITHOUT changing to it.
+ * Adds a new relation named relName
  * Called by file parser to add a new relation
- * Called from MW. Also called when creating random networks
+ * Also called from MW.
  * emits signalRelationAddToMW
  * @param relName
  */
-void Graph::relationAdd(QString relName) {
-    qDebug() << "Graph::relationAdd(string) " << relName;
+void Graph::relationAdd(const QString &relName, const bool &changeRelation) {
+    qDebug() << "Graph::relationAdd(QString) " << relName;
     m_relationsList << relName;
     // add new relation to MW combo box
-    emit signalRelationAddToMW(relName);
+    emit signalRelationAddToMW(relName, false);
+    if (changeRelation)
+        relationSet();
 }
 
 
-/**
- * @brief Graph::relationAddAndChangeTo
- * @param newRelation
- * Helper method to add a new relation from Graph and change to it (so that
- * it can be used, add new edges etc).
- * It is essentially the same as
- * calling  Graph::relationAdd(str) and then relationSet()
- */
-void Graph::relationAddAndChangeTo(const QString &newRelation) {
-    qDebug() << "Graph::relationAddAndChangeTo(string) " << newRelation;
-    relationAdd(newRelation);
-    relationSet( );
-}
 
 
 /**
@@ -445,12 +433,14 @@ QString Graph::relationCurrentName() const{
  * @brief Graph::relationCurrentRename
  * @param newName
  */
-void Graph::relationCurrentRename(QString newName) {
+void Graph::relationCurrentRename(const QString &newName, const bool &notifyMW) {
     qDebug()<< "Graph::relationCurrentRename() - m_curRelation"
                <<m_curRelation<<
-                 "newName"<<newName;
+                 "newName"<<newName
+                 << "notifyMW" <<notifyMW;
     m_relationsList[m_curRelation] = newName;
-    emit signalRelationRenamedToMW(newName);
+    if (notifyMW)
+        emit signalRelationRenamedToMW(newName);
 }
 
 
@@ -464,6 +454,20 @@ int Graph::relations(){
     return m_relationsList.count();
 }
 
+
+
+/**
+ * @brief Graph::relationsClear
+ * @return
+ * Clears relationships in this Graph
+ */
+void Graph::relationsClear(){
+    qDebug () << "Graph::relationsClear() - before" << m_relationsList.count();
+    m_relationsList.clear();
+    m_curRelation=0;
+    emit signalRelationsClear();
+    qDebug () << "Graph::relationsClear() - now " << m_relationsList.count();
+}
 
 /**
 
@@ -2283,7 +2287,7 @@ void Graph::webCrawlTerminateThreads (QString reason){
 void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
                       bool extLinks, bool intLinks){
 
-    relationCurrentRename(tr("web"));
+    relationCurrentRename(tr("web"), true);
 
     qDebug() << "Graph::webCrawl() - seed " << seed ;
     //WebCrawler *crawler = new WebCrawler;
@@ -2511,7 +2515,7 @@ void Graph::graphSymmetrizeStrongTies(const bool &allRelations){
     }
 
 
-    relationAddAndChangeTo("Strong Ties");
+    relationAdd("Strong Ties",true);
 
     QHash<QString,float>::const_iterator it2;
     it2=strongTies->constBegin();
@@ -6219,7 +6223,7 @@ void Graph::randomNetErdosCreate(  const int &vert,
 
     }
 
-    relationCurrentRename(tr("erdos-renyi"));
+    relationCurrentRename(tr("erdos-renyi"), true);
 
     graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
 }
@@ -6283,7 +6287,7 @@ void Graph::randomNetRingLatticeCreate( const int &vert, const int &degree,
         emit updateProgressDialog( updateProgress ? ++progressCounter:0 );
     }
     if (updateProgress)
-        relationCurrentRename(tr("ring-lattice"));
+        relationCurrentRename(tr("ring-lattice"), true);
 
     graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES, updateProgress);
 }
@@ -6431,7 +6435,7 @@ void Graph::randomNetScaleFreeCreate (const int &n,
         }
     }
 
-    relationCurrentRename(tr("scale-free"));
+    relationCurrentRename(tr("scale-free"),true);
     qDebug() << "Graph::randomNetScaleFreeCreate() - finished. Calling "
                 "graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES)";
     graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
@@ -6501,7 +6505,7 @@ void Graph::randomNetSmallWorldCreate (const int &vert, const int &degree,
         emit updateProgressDialog( ++progressCounter );
     }
 
-    relationCurrentRename(tr("small-world"));
+    relationCurrentRename(tr("small-world"), true);
     emit signalNodeSizesByInDegree(true);
     graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
 }
@@ -6665,7 +6669,7 @@ void Graph::randomNetRegularCreate(const int &vert,
 
     }
 
-    relationCurrentRename(tr("d-regular"));
+    relationCurrentRename(tr("d-regular"), true);
 
     graphModifiedSet(GRAPH_CHANGED_VERTICES_AND_EDGES);
 }
@@ -7144,7 +7148,7 @@ void Graph::cliqueCreate(const QList<int> &vList) {
 
     if ( relations() == 1 && edgesEnabled()==0 ) {
         QString newRelationName = QString::number ( vList.count() ) + tr("-clique");
-        relationCurrentRename(newRelationName);
+        relationCurrentRename(newRelationName, true);
     }
 
     int weight;
@@ -8297,6 +8301,8 @@ bool Graph::graphLoad (	const QString m_fileName,
 //                        const int maxWidth, const int maxHeight,
                         const int fileFormat, const int two_sm_mode){
     initVertexLabelsVisibility = m_showLabels;
+
+    relationsClear();
     qDebug() << "Graph::graphLoad() : "<< m_fileName
                 << " calling parser.load() from thread " << this->thread();
 
@@ -8325,10 +8331,8 @@ bool Graph::graphLoad (	const QString m_fileName,
     connect(&file_parserThread, &QThread::finished,
             file_parser, &QObject::deleteLater);
 
-    connect (
-                file_parser, SIGNAL( addRelation (QString) ),
-                this, SLOT(relationAdd(QString) )
-                ) ;
+    connect(file_parser, &Parser::addRelation,
+            this, &Graph::relationAdd);
 
     connect (
                 file_parser, SIGNAL( relationSet (int) ),

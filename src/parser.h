@@ -85,7 +85,7 @@ public:
                            const int &newNodes=1);
 
 signals:
-    void addRelation( QString );
+    void addRelation( const QString & relName, const bool &changeRelation=false);
     void relationSet( int );
 	void createNode( 
             const int &num, const int &size, const QString &color,

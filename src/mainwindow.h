@@ -209,7 +209,9 @@ public slots:
     void slotNetworkWebCrawler(QString, int, int, bool, bool);
 
     //EDIT MENU
-    void slotEditRelationAdd(QString newRelationName=QString::null);
+    void slotEditRelationsClear();
+    void slotEditRelationAdd(QString newRelationName=QString::null,
+                             const bool &changeRelation=true);
     void slotEditRelationChange(const int relIndex=RAND_MAX);
     void slotEditRelationRename(QString newName=QString::null);
 
@@ -355,6 +357,7 @@ public slots:
     void slotHelpCreateTips();
     void slotHelpAbout();
     void slotAboutQt();
+    void slotHelpMessageToUserInfo(const QString text=QString::null);
     int slotHelpMessageToUser(const int type=0,
                               const QString statusMsg=QString::null,
                               const QString text=QString::null,
@@ -387,7 +390,7 @@ protected:
 
     //	void myMessageOutput(QtMsgType type, const char *msg);
 signals:
-    void addRelationToGraph(QString);
+    void signalRelationAddAndChange(const QString &relName, const bool &changeRelation=true);
 
 private:
     QMap<QString,QString> appSettings;

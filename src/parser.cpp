@@ -1427,6 +1427,11 @@ void Parser::readGraphMLElementGraph(QXmlStreamReader &xml){
     }
     networkName = xmlStreamAttr.value("id").toString();
     relationsList << networkName;
+    qDebug()<< "Parser::readGraphMLElementGraph() - emit addRelation()" <<networkName;
+    if (relationsList.count() == 1)
+    {
+//        emit renameRelation
+    }
     emit addRelation( networkName);
     int relationCounter = relationsList.count() - 1; //zero indexed
     if (relationCounter > 0) {

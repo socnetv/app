@@ -2331,10 +2331,6 @@ void MainWindow::initMenuBar() {
     filterMenu -> addAction(editFilterEdgesUnilateralAct);
 
 
-
-
-
-
     /** menuBar entry: analyze menu */
     statMenu = menuBar()->addMenu(tr("&Analyze"));
     statMenu -> addAction (symmetryAct);
@@ -2441,7 +2437,6 @@ void MainWindow::initMenuBar() {
     layoutMenu -> addAction (layoutGuidesAct);
 
 
-
     /** menuBar entry optionsMenu  */
     optionsMenu = menuBar()->addMenu(tr("&Options"));
     nodeOptionsMenu=new QMenu(tr("Nodes..."));
@@ -2488,7 +2483,6 @@ void MainWindow::initMenuBar() {
     helpMenu-> addAction (helpAboutApp);
     helpMenu-> addAction (helpAboutQt);
 
-
 }
 
 
@@ -2516,15 +2510,20 @@ void MainWindow::initToolBar(){
     toolBar -> addWidget (labelRelationSelect);
     toolBar -> addAction (editRelationPreviousAct);
     editRelationChangeCombo = new QComboBox;
+    editRelationChangeCombo ->setEditable(true);
+    editRelationChangeCombo ->setInsertPolicy(QComboBox::InsertAtCurrent);
     editRelationChangeCombo->setMinimumWidth(180);
     editRelationChangeCombo->setCurrentIndex(0);
     editRelationChangeCombo->setToolTip(
-                tr("Displays current relation - Click to change graph relation"));
+                tr("Current relation. To rename it, write new name and press Enter."));
     editRelationChangeCombo->setStatusTip(
-                tr("Displays current relation - Click to change graph relation"));
+                tr("Name of the current relation. "
+                   "To rename it, write a new name and press Enter. To select another relation use Down arrow)"));
     editRelationChangeCombo->setWhatsThis(
-                tr("Previous Relation\n\n"
-                   "Displays current relation - Click to change graph relation (if any)"));
+                tr("Relations combo\n\n"
+                   "This combo box displays the current relation. \n"
+                   "To rename the current relation, write a new name and press Enter. "
+                   "To select another relation (if any), click the Down arrow."));
 
     toolBar -> addWidget(editRelationChangeCombo);
     toolBar -> addAction (editRelationNextAct);
@@ -3654,7 +3653,7 @@ void MainWindow::initSignalSlots() {
              this, SLOT( statusMessage (QString) ) ) ;
 
     connect( &activeGraph, SIGNAL( signalDatasetDescription (QString) ),
-             this, SLOT( slotHelpMessageToUser (QString) ) ) ;
+             this, SLOT( slotHelpMessageToUserInfo (QString) ) ) ;
 
     connect( &activeGraph, &Graph::signalNodeSizesByInDegree,
              this, &MainWindow::slotLayoutNodeSizesByInDegree );
@@ -3663,8 +3662,11 @@ void MainWindow::initSignalSlots() {
     connect( editRelationChangeCombo , SIGNAL( activated(int) ) ,
              &activeGraph, SLOT( relationSet(int) ) );
 
-    connect( this , &MainWindow::addRelationToGraph,
-             &activeGraph, &Graph::relationAddAndChangeTo );
+    connect( editRelationChangeCombo , SIGNAL( currentTextChanged(QString) ),
+             &activeGraph, SLOT( relationCurrentRename(QString) )  );
+
+    connect( this , &MainWindow::signalRelationAddAndChange,
+             &activeGraph, &Graph::relationAdd );
 
     connect( editRelationNextAct, &QAction::triggered,
              &activeGraph, &Graph::relationNext );
@@ -3674,6 +3676,9 @@ void MainWindow::initSignalSlots() {
 
     connect ( &activeGraph, &Graph::signalRelationChangedToMW,
                       this, &MainWindow::slotEditRelationChange );
+
+    connect ( &activeGraph, &Graph::signalRelationsClear,
+              this, &MainWindow::slotEditRelationsClear );
 
     connect ( &activeGraph, &Graph::signalRelationAddToMW,
               this, &MainWindow::slotEditRelationAdd  );
@@ -3810,7 +3815,7 @@ void MainWindow::initApp(){
                 );
     editFilterNodesIsolatesAct->setChecked(false); // re-init orphan nodes menu item
 
-    editRelationChangeCombo->clear();
+    //editRelationChangeCombo->clear();
 
 
     /** Clear previous network data */
@@ -3909,7 +3914,14 @@ void MainWindow::statusMessage(const QString message){
 
 
 
-
+/**
+ * @brief MainWindow::slotHelpMessageToUserInfo
+ * @param text
+ * Helper function to display a useful info message
+ */
+void MainWindow::slotHelpMessageToUserInfo(const QString text) {
+    slotHelpMessageToUser(USER_MSG_INFO,tr("Useful information"), text  );
+}
 
 /**
  * @brief MainWindow::slotHelpMessageToUser
@@ -5111,8 +5123,13 @@ void MainWindow::slotNetworkFileLoaded (
 
 
 
-
-
+/**
+ * @brief MainWindow::slotEditRelationsClear
+ * Called from Graph::relationsClear()
+ */
+void MainWindow::slotEditRelationsClear(){
+    editRelationChangeCombo->clear();
+}
 
 /**
  * @brief MainWindow::slotEditRelationAdd
@@ -5124,22 +5141,52 @@ void MainWindow::slotNetworkFileLoaded (
 
  *
  */
-void MainWindow::slotEditRelationAdd(QString newRelationName){
-    qDebug() << "MW::slotEditRelationAdd(string)" << newRelationName;
+void MainWindow::slotEditRelationAdd(QString newRelationName, const bool &changeRelation){
+    int comboItemsBefore = editRelationChangeCombo->count();
+    int relationsCounter=activeGraph.relations();
+
+    qDebug() << "MW::slotEditRelationAdd(string) - relation"
+             << newRelationName
+             <<"comboItemsBefore "
+            << comboItemsBefore
+            << "currentIndex"
+            <<editRelationChangeCombo->currentIndex()
+           << "relationsCounter"
+           <<relationsCounter;
+
     if (!newRelationName.isNull()) {
+
         editRelationChangeCombo->addItem(newRelationName);
-        editRelationChangeCombo->setCurrentIndex(
-                    editRelationChangeCombo->currentIndex()+1
-                    );
+
+        if (changeRelation) {
+            if ( comboItemsBefore == 0 ) { // only at startup
+                slotEditRelationChange(0);
+            }
+            else {
+                slotEditRelationChange();
+            }
+
+        }
+        qDebug() << "MW::slotEditRelationAdd(string) - added relation"
+                 << newRelationName
+                 <<"comboItemsBefore "
+                << comboItemsBefore
+                <<"comboItems Now "
+               << editRelationChangeCombo->count()
+                << "currentIndex now"
+                <<editRelationChangeCombo->currentIndex()
+               << "relationsCounter"
+               <<relationsCounter;
         return;
     }
+
     bool ok;
-    int relationsCounter=activeGraph.relations();
+
     if (relationsCounter==1 && activeGraph.vertices()==0 ) {
         newRelationName = QInputDialog::getText(
                     this,
                     tr("Add new relation"),
-                    tr("Enter a name for this new relation between the actors.\n"
+                    tr("Enter a name for a new relation between the actors.\n"
                         "A relation is a collection of ties of a "
                         "specific kind between the network actors.\n"
                         "For instance, enter \"friendship\" if the "
@@ -5154,20 +5201,18 @@ void MainWindow::slotEditRelationAdd(QString newRelationName){
                     QLineEdit::Normal,QString::null, &ok );
     }
     if (ok && !newRelationName.isEmpty()){
-        //editRelationChangeCombo->addItem(newRelationName);
-        emit addRelationToGraph(newRelationName);
-//        if (relationsCounter != 0){ //dont do it if its the first relation added
-//            qDebug() << "MW::slotEditRelationAdd() - updating combo index";
-//            editRelationChangeCombo->setCurrentIndex(relationsCounter);
-//        }
+        // user pressed OK, name entered
+        emit signalRelationAddAndChange(newRelationName);
     }
     else if ( newRelationName.isEmpty() && ok ){
+        // user pressed OK, no name entered
         QMessageBox::critical(this, tr("Error"),
                               tr("You did not type a name for this new relation"),
                               QMessageBox::Ok, 0);
         slotEditRelationAdd();
     }
     else {
+        //user pressed Cancel
         statusMessage( QString(tr("New relation cancelled.")) );
         return;
     }
@@ -5177,6 +5222,28 @@ void MainWindow::slotEditRelationAdd(QString newRelationName){
 
 
 
+
+/**
+ * @brief MainWindow::slotEditRelationChange
+ * @param relIndex
+ * if relIndex==RAND_MAX changes combo box index to last relation index
+ * else it changes the combo box index to relIndex
+ * Called from Graph::relationAddAndChangeTo
+ * via signal Graph::signalRelationChangedToMW()
+ */
+void MainWindow::slotEditRelationChange(const int relIndex) {
+    if ( relIndex == RAND_MAX){
+        qDebug() << "MW::slotEditRelationChange(int) - RANDMAX. Change to last relation";
+        editRelationChangeCombo->setCurrentIndex(
+                     ( editRelationChangeCombo->count()-1 )
+                    );
+    }
+    else {
+        qDebug() << "MW::slotEditRelationChange(int) - to index" << relIndex;
+        editRelationChangeCombo->setCurrentIndex(relIndex);
+    }
+
+}
 
 
 
@@ -5189,6 +5256,7 @@ void MainWindow::slotEditRelationRename(QString newName) {
     qDebug()<<"MW::slotEditRelationRename() -" << newName;
     bool ok=false;
     if (newName.isNull() || newName.isEmpty()) {
+        qDebug()<<"MW::slotEditRelationRename() - prompt to enter new name";
         newName = QInputDialog::getText(
                     this,
                     tr("Rename current relation"),
@@ -5203,30 +5271,13 @@ void MainWindow::slotEditRelationRename(QString newName) {
             return;
         }
         else {
-            activeGraph.relationCurrentRename(newName);
+            activeGraph.relationCurrentRename(newName, true);
         }
     }
     else {
+        qDebug()<<"MW::slotEditRelationRename() - current text " << editRelationChangeCombo->currentText();
         qDebug()<<"MW::slotEditRelationRename() - updating combo name to" << newName;
         editRelationChangeCombo->setCurrentText(newName);
-    }
-
-}
-
-/**
- * @brief MainWindow::slotEditRelationChange
- * @param relIndex
- * Called from Graph::relationAddAndChangeTo
- * via signal Graph::signalRelationChangedToMW()
- */
-void MainWindow::slotEditRelationChange(const int relIndex) {
-    qDebug() << "MW::slotEditRelationChange(int)" << relIndex;
-    int relationsCounter=editRelationChangeCombo->count();
-    if ( relIndex == RAND_MAX){
-        editRelationChangeCombo->setCurrentIndex(relationsCounter-1);
-    }
-    else {
-        editRelationChangeCombo->setCurrentIndex(relIndex);
     }
 
 }
