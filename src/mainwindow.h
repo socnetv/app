@@ -137,6 +137,8 @@ public slots:
     void slotNetworkFileChoose(QString m_fileName = QString::null,
                                int m_fileFormat = -1,
                                const bool &checkSelectFileType = true);
+    void slotNetworkFileSelected(const QString &fileName);
+    void slotNetworkFileFilterSelected(const QString &filter);
     void slotNetworkFileRecentUpdateActions();
     void slotNetworkAvailableTextCodecs();
     bool slotNetworkFilePreview(const QString &, const int &);

@@ -4440,7 +4440,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
 
     bool a_file_was_already_loaded=fileLoaded;
     previous_fileName=fileName;
-    QString fileType_string;
+    QString fileType_filter;
 
     // prepare and open a file selection dialog
     if (m_fileName.isNull()) {
@@ -4449,48 +4449,65 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
         // prepare supported extensions strings
         switch (m_fileFormat){
         case FILE_GRAPHML:
-            fileType_string = tr("GraphML (*.graphml *.xml);;All (*)");
+            fileType_filter = tr("GraphML (*.graphml *.xml);;All (*)");
             break;
         case FILE_PAJEK:
-            fileType_string = tr("Pajek (*.net *.paj *.pajek);;All (*)");
+            fileType_filter = tr("Pajek (*.net *.paj *.pajek);;All (*)");
             break;
         case FILE_ADJACENCY:
-            fileType_string = tr("Adjacency (*.csv *.sm *.adj *.txt);;All (*)");
+            fileType_filter = tr("Adjacency (*.csv *.sm *.adj *.txt);;All (*)");
             break;
         case FILE_GRAPHVIZ:
-            fileType_string = tr("GraphViz (*.dot);;All (*)");
+            fileType_filter = tr("GraphViz (*.dot);;All (*)");
             break;
         case FILE_UCINET:
-            fileType_string = tr("UCINET (*.dl *.dat);;All (*)");
+            fileType_filter = tr("UCINET (*.dl *.dat);;All (*)");
             break;
         case FILE_GML:
-            fileType_string = tr("GML (*.gml);;All (*)");
+            fileType_filter = tr("GML (*.gml);;All (*)");
             break;
 
         case FILE_EDGELIST_WEIGHTED:
-            fileType_string = tr("Weighted Edge List (.csv .txt .list .lst .wlst);;All (*)");
+            fileType_filter = tr("Weighted Edge List (.csv .txt .list .lst .wlst);;All (*)");
             break;
         case FILE_EDGELIST_SIMPLE:
-            fileType_string = tr("Simple Edge List (.csv .txt .list .lst .wlst);;All (*)");
+            fileType_filter = tr("Simple Edge List (.csv .txt .list .lst);;All (*)");
             break;
         case FILE_TWOMODE:
-            fileType_string = tr("Two-Mode Sociomatrix (*.2sm *.aff);;All (*)");
+            fileType_filter = tr("Two-Mode Sociomatrix (*.2sm *.aff);;All (*)");
             break;
         default:	//All
-            fileType_string = tr("GraphML (*.graphml *.xml);;"
+            fileType_filter = tr("GraphML (*.graphml *.xml);;"
                                  "Pajek (*.net *.pajek *.paj);;"
                                  "DL (*.dl *.dat);;"
                                  "Adjacency (*.csv *.adj *.sm *.txt);;"
                                  "GraphViz (*.dot);;"
-                                 "List (*.lst *.csv *.list);;"
-                                 "Weighted List (*.wlst *.wlist);;All (*)");
+                                 "Weighted Edge List (.csv .txt .list .lst .wlst);;"
+                                 "Simple Edge List (.csv .txt .list .lst);;"
+                                 "Two-Mode Sociomatrix (*.2sm *.aff);;"
+                                  "All (*)");
             break;
 
         }
-        m_fileName = QFileDialog::getOpenFileName(
-                    this,
-                    tr("Select a network file to open"),
-                    getLastPath(), fileType_string);
+
+        QFileDialog *fileDialog = new QFileDialog(this);
+        fileDialog->setFileMode(QFileDialog::ExistingFile);
+        fileDialog->setNameFilter(fileType_filter);
+        fileDialog->setViewMode(QFileDialog::Detail);
+        fileDialog->setDirectory(getLastPath());
+
+        connect ( fileDialog, &QFileDialog::filterSelected,
+                  this, &MainWindow::slotNetworkFileFilterSelected);
+        connect ( fileDialog, &QFileDialog::fileSelected,
+                  this, &MainWindow::slotNetworkFileSelected);
+
+        if (fileDialog->exec()) {
+            m_fileName = (fileDialog->selectedFiles()).at(0);
+        }
+//        m_fileName = QFileDialog::getOpenFileName(
+//                    this,
+//                    tr("Select a network file to open"),
+//                    getLastPath(), fileType_filter);
 
     }
     qDebug() << "MW::slotNetworkFileChoose() - "
@@ -4581,6 +4598,14 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
 
 
 
+void MainWindow::slotNetworkFileFilterSelected(const QString &filter) {
+    qDebug() << "MW::slotNetworkFileFilterSelected() - filter" << filter;
+}
+
+
+void MainWindow::slotNetworkFileSelected(const QString &fileName) {
+    qDebug() << "MW::slotNetworkFileSelected() - filter" << fileName;
+}
 
 
 /**
