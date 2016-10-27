@@ -4467,11 +4467,11 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
             fileType_string = tr("GML (*.gml);;All (*)");
             break;
 
-        case FILE_WLIST:
-            fileType_string = tr("Weighted List (*.wlst *.wlist);;All (*)");
+        case FILE_EDGELIST_WEIGHTED:
+            fileType_string = tr("Weighted Edge List (.csv .txt .list .lst .wlst);;All (*)");
             break;
-        case FILE_LIST:
-            fileType_string = tr("List (*.lst *.csv *.list);;All (*)");
+        case FILE_EDGELIST_SIMPLE:
+            fileType_string = tr("Simple Edge List (.csv .txt .list .lst .wlst);;All (*)");
             break;
         case FILE_TWOMODE:
             fileType_string = tr("Two-Mode Sociomatrix (*.2sm *.aff);;All (*)");
@@ -4524,11 +4524,11 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
         }
         else if (m_fileName.endsWith(".list",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".lst",Qt::CaseInsensitive )  ) {
-            m_fileFormat=FILE_LIST;
+            m_fileFormat=FILE_EDGELIST_SIMPLE;
         }
         else if (m_fileName.endsWith(".wlist",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".wlst",Qt::CaseInsensitive )  ) {
-            m_fileFormat=FILE_WLIST;
+            m_fileFormat=FILE_EDGELIST_WEIGHTED;
         }
         else if (m_fileName.endsWith(".2sm",Qt::CaseInsensitive ) ||
                  m_fileName.endsWith(".aff",Qt::CaseInsensitive )  ) {
@@ -4839,21 +4839,39 @@ void MainWindow::slotNetworkImportDL(){
  */
 void MainWindow::slotNetworkImportEdgeList(){
     bool m_checkSelectFileType = false;
-    switch( QMessageBox::question( this, "Type of list format",
-                                   tr("I can parse two kinds of lists: \n\n")+
-                                   tr("A. Weighted lists, with each line having exactly 3 columns (source, target, weight), i.e.\n  1 2 5 \n \n")+
-                                   tr("B. Simple edge lists, with each line having 2 or more columns (source, target1, target2, ... etc)\n\n")+
-                                   tr("Please select the appropriate type of list format for the file you want to load:"),
-                                   "Weighted", "Simple",0,1 )
-            )
+
+    switch(
+           slotHelpMessageToUser(USER_MSG_QUESTION_CUSTOM,
+                                 tr("Select type of edge list format..."),
+                                 tr("Select type of edge list format"),
+                                 tr("SocNetV can parse two kinds of edgelist formats: \n\n"
+                                    "A. Edge lists with edge weights, "
+                                    "where each line has exactly 3 columns: "
+                                    "source, target, weight, i.e.:\n"
+                                    "1 2 1 \n "
+                                    "2 3 1 \n "
+                                    "3 4 2 \n "
+                                    "4 5 1 \n\n "
+                                    "B. Simple edge lists without weights, where each line "
+                                    "has two or more columns in the form: source, target1, target2, ... , i.e.:\n"
+                                    "1 2 3 4 5 6\n"
+                                    "2 3 4 \n"
+                                    "3 5 8 7\n\n"
+                                 "Please select the appropriate type of edge list format of "
+                                 "the file you want to load:"),
+                                 QMessageBox::NoButton, QMessageBox::NoButton,
+                                 tr("Weighted"), tr("Simple non-weighted")
+
+                                 )
+           )
     {
     case 0:
         qDebug() << "***  MW::slotNetworkImportEdgeList - Weighted list selected! " ;
-        slotNetworkFileChoose( QString::null, FILE_WLIST, m_checkSelectFileType);
+        slotNetworkFileChoose( QString::null, FILE_EDGELIST_WEIGHTED, m_checkSelectFileType);
         break;
     case 1:
         qDebug() << "***  MW: slotNetworkImportEdgeList - Simple list selected! " ;
-        slotNetworkFileChoose( QString::null, FILE_LIST, m_checkSelectFileType);
+        slotNetworkFileChoose( QString::null, FILE_EDGELIST_SIMPLE, m_checkSelectFileType);
         break;
     }
 }
@@ -5766,10 +5784,10 @@ void MainWindow::slotNetworkDataSetRecreate (const QString m_fileName) {
         m_fileFormat=FILE_GML;
     }
     else if (m_fileName.endsWith(".wlst")) {
-        m_fileFormat=FILE_WLIST;
+        m_fileFormat=FILE_EDGELIST_WEIGHTED;
     }
     else if (m_fileName.endsWith(".lst")) {
-        m_fileFormat=FILE_LIST;
+        m_fileFormat=FILE_EDGELIST_SIMPLE;
     }
     else if (m_fileName.endsWith(".2sm")) {
         m_fileFormat=FILE_TWOMODE;

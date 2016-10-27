@@ -51,16 +51,16 @@ static const int EDGE_DIRECTED                 = 0;
 static const int EDGE_DIRECTED_OPPOSITE_EXISTS = 1;
 static const int EDGE_RECIPROCAL_UNDIRECTED    = 2;
 
-static const int FILE_GRAPHML     = 1;  // .GRAPHML .XML
-static const int FILE_PAJEK       = 2;  // .PAJ .NET
-static const int FILE_ADJACENCY   = 3;  // .ADJ .CSV .SM
-static const int FILE_GRAPHVIZ    = 4;  // .DOT
-static const int FILE_UCINET      = 5;  // .DL .DAT
-static const int FILE_GML         = 6;  // .GML
-static const int FILE_WLIST       = 7;  // .WLST
-static const int FILE_LIST        = 8;  // .LST .CSV
-static const int FILE_TWOMODE     = 9;  // .2SM .AFF
-static const int FILE_UNRECOGNIZED=-1;  // UNRECOGNIZED FILE FORMAT
+static const int FILE_GRAPHML           = 1;  // .GRAPHML .XML
+static const int FILE_PAJEK             = 2;  // .PAJ .NET
+static const int FILE_ADJACENCY         = 3;  // .ADJ .CSV .SM
+static const int FILE_GRAPHVIZ          = 4;  // .DOT
+static const int FILE_UCINET            = 5;  // .DL .DAT
+static const int FILE_GML               = 6;  // .GML
+static const int FILE_EDGELIST_WEIGHTED = 7;  // .CSV, .TXT, .LIST, LST, WLST
+static const int FILE_EDGELIST_SIMPLE   = 8;  // .CSV, .TXT, .LIST, LST
+static const int FILE_TWOMODE           = 9;  // .2SM .AFF
+static const int FILE_UNRECOGNIZED      =-1;  // UNRECOGNIZED FILE FORMAT
 
 
 static const int GRAPH_CHANGED_NONE = 0;

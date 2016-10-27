@@ -151,14 +151,14 @@ bool Parser::run()  {
         else fileFormat=FILE_UNRECOGNIZED;
         break;
 
-    case FILE_WLIST:
+    case FILE_EDGELIST_WEIGHTED:
         if (loadWeighedList() ){
             qDebug("Parser: this is a weighted list formatted (.list) network");
         }
         else fileFormat=FILE_UNRECOGNIZED;
         break;
 
-    case FILE_LIST:
+    case FILE_EDGELIST_SIMPLE:
         if (loadSimpleList() ){
             qDebug("Parser: this is a simple list formatted (.list) network");
         }
@@ -2682,7 +2682,7 @@ bool Parser::loadWeighedList(){
     file.close();
 
     //The network has been loaded. Tell MW the statistics and network type
-    emit networkFileLoaded(FILE_WLIST, fileName, networkName, aNodes, totalLinks, edgeDirType);
+    emit networkFileLoaded(FILE_EDGELIST_WEIGHTED, fileName, networkName, aNodes, totalLinks, edgeDirType);
     qDebug() << "Parser-loadWeighedList() ending and returning...";
     return true;
 
@@ -2809,7 +2809,7 @@ bool Parser::loadSimpleList(){
     } //end ts.stream while here
     file.close();
     //The network has been loaded. Tell MW the statistics and network type
-    emit networkFileLoaded(FILE_LIST, fileName, networkName, aNodes, totalLinks, edgeDirType);
+    emit networkFileLoaded(FILE_EDGELIST_SIMPLE, fileName, networkName, aNodes, totalLinks, edgeDirType);
     qDebug() << "Parser-loadSimpleList() ending and returning...";
     return true;
 
