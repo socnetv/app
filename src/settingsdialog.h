@@ -61,6 +61,7 @@ public slots:
     void getNodeLabelSize(const int);
     void getNodeLabelDistance(const int);
     void getEdgesVisibility (const bool &toggle);
+    void getEdgeArrowsVisibility (const bool &toggle);
     void getEdgeColor();
     void getEdgeColorNegative();
     void getEdgeShape();
@@ -91,6 +92,7 @@ signals:
     void setNodeLabelSize(const int v, const int &);
     void setNodeLabelDistance(const int v, const int &);
     void setEdgesVisibility (const bool &toggle);
+    void setEdgeArrowsVisibility (const bool &toggle);
     void setEdgeColor(const QColor, const int &);
     void setEdgeShape(const QString, const long int);
     void setEdgeWeightNumbersVisibility(const bool &toggle);

@@ -158,6 +158,11 @@ SettingsDialog::SettingsDialog(
     ui->edgesChkBox-> setChecked(
                 (m_appSettings["initEdgesVisibility"] == "true") ? true: false
                                                                   );
+
+    ui->edgeArrowsChkBox-> setChecked(
+                (m_appSettings["initEdgeArrows"] == "true") ? true: false
+                                                                   );
+
     m_edgeColor = QColor (m_appSettings["initEdgeColor"]);
     m_pixmap = QPixmap(60,20) ;
     m_pixmap.fill( m_edgeColor );
@@ -277,6 +282,8 @@ SettingsDialog::SettingsDialog(
 
     connect (ui->edgesChkBox, &QCheckBox::stateChanged,
                      this, &SettingsDialog::getEdgesVisibility);
+    connect (ui->edgeArrowsChkBox, &QCheckBox::stateChanged,
+                     this, &SettingsDialog::getEdgeArrowsVisibility);
     connect (ui->edgeColorBtn, &QToolButton::clicked,
              this, &SettingsDialog::getEdgeColor);
     connect (ui->edgeColorNegativeBtn, &QToolButton::clicked,
@@ -545,6 +552,19 @@ void SettingsDialog::getEdgesVisibility (const bool &toggle){
     m_appSettings["initEdgesVisibility"]= (toggle) ? "true" : "false";
     emit setEdgesVisibility(toggle);
 }
+
+
+
+
+/**
+ * @brief SettingsDialog::getEdgeArrowsVisibility
+ * @param toggle
+ */
+void SettingsDialog::getEdgeArrowsVisibility(const bool &toggle){
+    m_appSettings["initEdgeArrows"]= (toggle) ? "true" : "false";
+    emit setEdgeArrowsVisibility(toggle);
+}
+
 
 
 /**
