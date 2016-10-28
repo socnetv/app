@@ -2190,9 +2190,28 @@ void Graph::graphModifiedSet(const int &graphChangedFlag, const bool &signalMW){
  * @return
  */
 bool Graph::graphModified() const {
+    qDebug() << "Graph::graphModified() - " << graphModifiedFlag ;
     return (graphModifiedFlag > 10 ) ? true: false;
 }
 
+/**
+ * @brief Graph::graphSaved
+ * @return
+ */
+bool Graph::graphSaved() const {
+    qDebug() << "Graph::graphSaved() - " << graphModifiedFlag ;
+    return (graphModifiedFlag == 0 ) ? true: false;
+}
+
+
+/**
+ * @brief Graph::graphLoaded
+ * @return
+ */
+bool Graph::graphLoaded() const {
+    qDebug() << "Graph::graphLoaded() - " << (( graphFileFormat() != FILE_UNRECOGNIZED ) ? true: false );
+    return ( graphFileFormat() != FILE_UNRECOGNIZED ) ? true: false;
+}
 
 
 /**
@@ -8397,7 +8416,7 @@ bool Graph::graphLoad (	const QString m_fileName,
     connect (
                 file_parser, SIGNAL(networkFileLoaded(int, QString, QString,
                                                       int, int, bool)),
-                this, SLOT(graphLoaded(int, QString, QString,
+                this, SLOT(graphFileLoaded(int, QString, QString,
                                        int, int, bool))
                 );
 
@@ -8443,7 +8462,7 @@ void Graph::terminateParserThreads(QString reason) {
 
 
 /**
- * @brief Graph::graphLoaded
+ * @brief Graph::graphFileLoaded
  * Updates MW  with the file type (0=nofile, 1=Pajek, 2=Adjacency etc)
  * Called from Parser on file parsing end .
  * @param type
@@ -8452,7 +8471,7 @@ void Graph::terminateParserThreads(QString reason) {
  * @param totalLinks
  * @param undirected
  */
-void Graph::graphLoaded (int fileType, QString fName, QString netName,
+void Graph::graphFileLoaded (int fileType, QString fName, QString netName,
                           int totalNodes, int totalLinks, bool undirected)
 {
     fileName = fName;
@@ -8464,7 +8483,7 @@ void Graph::graphLoaded (int fileType, QString fName, QString netName,
     m_undirected = undirected;
     m_fileFormat = fileType;
 
-    qDebug() << "Graph::graphLoaded() - "
+    qDebug() << "Graph::graphFileLoaded() - "
                 << " type " << fileType
                 << " filename " << fileName
                 << " name " << graphName()
@@ -8477,7 +8496,7 @@ void Graph::graphLoaded (int fileType, QString fName, QString netName,
     emit signalGraphLoaded (fileType, fileName, graphName(),
                             totalNodes, totalLinks, m_undirected);
     graphModifiedSet(GRAPH_CHANGED_NONE);
-    qDebug ()<< "Graph::graphLoaded()  -check parser if running...";
+    qDebug ()<< "Graph::graphFileLoaded()  -check parser if running...";
 
 }
 
@@ -8486,6 +8505,7 @@ void Graph::graphLoaded (int fileType, QString fName, QString netName,
 /**
  * @brief graphFileFormat
  * @return
+ * Returns the format of the last file opened
  */
 int Graph::graphFileFormat() const {
     return m_fileFormat;
@@ -8517,6 +8537,7 @@ void Graph::graphSave( QString fileName, int fileType )
 {
     qDebug() << "Graph::graphSave()";
     bool saved = false;
+    m_fileFormat = fileType;
     switch (fileType) {
     case FILE_PAJEK : {
         qDebug() << "Graph::graphSave() - Pajek formatted file";
@@ -8538,6 +8559,7 @@ void Graph::graphSave( QString fileName, int fileType )
         break;
     }
     default: {
+        m_fileFormat = FILE_UNRECOGNIZED;
         qDebug() << "Graph::graphSave() - Error! Unrecognized fileType";
         break;
     }

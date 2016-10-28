@@ -174,7 +174,7 @@ public slots:
                        const bool &signalMW
                         );//Main vertex creation call
 
-    void graphLoaded(int fileType, QString fName, QString netName,
+    void graphFileLoaded(int fileType, QString fName, QString netName,
                      int totalNodes, int totalLinks, bool undirected);
     void vertexRemoveDummyNode(int);
     void terminateParserThreads (QString reason);
@@ -452,6 +452,8 @@ public:
     //GRAPH methods
     void graphModifiedSet(const int &graphChangedFlag, const bool&signalMW=true);
     bool graphModified() const ;
+    bool graphSaved() const;
+    bool graphLoaded() const;
 
     int graphPathsExistingCount();
 

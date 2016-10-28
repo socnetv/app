@@ -1041,7 +1041,7 @@ void MainWindow::initActions(){
                    "If you disable this, then all edges become directed again."));
     editEdgeUndirectedAllAct -> setCheckable(true);
     editEdgeUndirectedAllAct -> setChecked(false);
-    connect(editEdgeUndirectedAllAct, SIGNAL(toggled(bool)),
+    connect(editEdgeUndirectedAllAct, SIGNAL(triggered(bool)),
             this, SLOT(slotEditEdgeUndirectedAll(bool)));
 
 
@@ -4722,10 +4722,16 @@ void MainWindow::slotNetworkFileDialogFileSelected(const QString &fileName) {
 void MainWindow::slotNetworkSave(const int &fileFormat) {
     statusMessage( tr("Saving file..."));
 
-    if (!fileLoaded && !networkModified ) {
-        statusMessage(  QString(tr("No network loaded.")) );
-        return;
+    if (activeGraph.vertices() == 0) {
+        statusMessage(  QString(tr("Nothing to save. There are no vertices.")) );
     }
+    if (activeGraph.graphSaved()) {
+        statusMessage(  QString(tr("Graph already saved.")) );
+    }
+//    if (!fileLoaded && !networkModified ) {
+//        statusMessage(  QString(tr("No network loaded.")) );
+//        return;
+//    }
     if ( fileName.isEmpty() ) {
         slotNetworkSaveAs();
         return;
@@ -4737,7 +4743,9 @@ void MainWindow::slotNetworkSave(const int &fileFormat) {
         activeGraph.graphSave(fileName, fileFormat ) ;
     }
     else if (activeGraph.graphFileFormat()==FILE_GRAPHML ||
-            ( !fileLoaded && networkModified) )
+             ( activeGraph.graphModified() && !activeGraph.graphLoaded() )
+//            ( !fileLoaded && networkModified)
+             )
     {	//new file or GraphML
         activeGraph.graphSave(fileName, FILE_GRAPHML);
     }
@@ -5787,28 +5795,39 @@ bool MainWindow::slotNetworkExportList(){
  */
 void MainWindow::slotNetworkFileView(){
     qDebug() << "slotNetworkFileView() : " << fileName.toLatin1();
-    if ( fileLoaded && !networkModified ) { //file network unmodified
+    if ( activeGraph.graphLoaded() && activeGraph.graphSaved()  ) {
+        //network unmodified, read loaded file again.
         QFile f( fileName );
         if ( !f.open( QIODevice::ReadOnly ) ) {
             qDebug ("Error in open!");
             return;
         }
         TextEditor *ed = new TextEditor(fileName);//OPEN A TEXT EDITOR WINDOW
-        ed->setWindowTitle(tr("Viewing network file - ") + fileNameNoPath.last() );
+        ed->setWindowTitle(fileNameNoPath.last() );
         ed->show();
-        statusMessage(  tr("Loaded network text file " )+ fileNameNoPath.last()  );
+        statusMessage(  tr("Displaying network data file " )+ fileNameNoPath.last()  );
     }
-    else if (fileName.isEmpty() && networkModified)     {  //New network + something
-        QMessageBox::information (this, "Viewing network file",
-                                  tr("This network has not been saved yet. \nI will open a dialog for you to save it now. \nPlease choose a filename..."), "OK",0);
-        slotNetworkSaveAs();
-    }
-    else if (fileLoaded && networkModified ) {   //file network + modified
-        QMessageBox::information (this, "Viewing network file",
-                                  //FIXME maybe better to save automagically rather than asking?
-                                  tr("The network has been modified. \nI will save it to the original file for you now."), "OK",0);
-        networkModified = false;
-        slotNetworkSave();
+
+    else if (!activeGraph.graphSaved() ) {   //file network + modified
+        if ( !activeGraph.graphLoaded() ) {
+            slotHelpMessageToUser(USER_MSG_INFO,
+                                  tr("Social network not saved. Enter a filename to save..."),
+                                  tr("Network not saved yet"),
+                                  tr("I will open a dialog for you to save the network.")
+                                  );
+            slotNetworkSaveAs();
+        }
+        else {
+            slotHelpMessageToUser(USER_MSG_QUESTION,
+                                  tr("Network modified. Save to the original file?"),
+                                  tr("Network modified!"),
+                                  tr("Your network data has been modified. "
+                                     "Do you want to save it to the original file?")
+                                  );
+
+            slotNetworkSave();
+        }
+
         slotNetworkFileView();
     }
     else	{
