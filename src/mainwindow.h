@@ -137,8 +137,9 @@ public slots:
     void slotNetworkFileChoose(QString m_fileName = QString::null,
                                int m_fileFormat = -1,
                                const bool &checkSelectFileType = true);
-    void slotNetworkFileSelected(const QString &fileName);
-    void slotNetworkFileFilterSelected(const QString &filter);
+    void slotNetworkFileDialogFileSelected(const QString &fileName);
+    void slotNetworkFileDialogFilterSelected(const QString &filter);
+    void slotNetworkFileDialogRejected();
     void slotNetworkFileRecentUpdateActions();
     void slotNetworkAvailableTextCodecs();
     bool slotNetworkFilePreview(const QString &, const int &);
@@ -508,7 +509,7 @@ private:
     QStringList fileNameNoPath, fortuneCookie;
     QStringList tempFileNameNoPath, tips, recentFiles;
     int statusBarDuration, progressCounter;
-    int maxNodes;
+    int fileType, maxNodes;
     int fortuneCookiesCounter;
     //QString VERSION;
     bool fileLoaded;

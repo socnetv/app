@@ -616,7 +616,7 @@ void MainWindow::initActions(){
     openTextEditorAct = new QAction(QIcon(":/images/texteditor.png"),
                                     tr("Open Text Editor"),this);
     openTextEditorAct ->setShortcut(Qt::SHIFT+Qt::Key_F5);
-    openTextEditorAct->setStatusTip(tr("Opens a simple text editor "
+    openTextEditorAct->setStatusTip(tr("Open a text editor "
                                        "to take notes, copy/paste network data, etc"));
     openTextEditorAct->setWhatsThis(tr("Open Text Editor\n\n"
                                        "Opens the SocNetV text editor where you can "
@@ -628,7 +628,7 @@ void MainWindow::initActions(){
     networkViewFileAct = new QAction(QIcon(":/images/networkfile.png"),
                                      tr("View Loaded File"),this);
     networkViewFileAct ->setShortcut(Qt::Key_F5);
-    networkViewFileAct->setStatusTip(tr("Displays the loaded network file"));
+    networkViewFileAct->setStatusTip(tr("Display the loaded social network file"));
     networkViewFileAct->setWhatsThis(tr("View Loaded File\n\n"
                                         "Displays the file of the loaded network"));
     connect(networkViewFileAct, SIGNAL(triggered()), this, SLOT(slotNetworkFileView()));
@@ -647,13 +647,16 @@ void MainWindow::initActions(){
             this, SLOT(slotNetworkViewSociomatrix()));
 
     networkDataSetSelectAct = new QAction(QIcon(":/images/petersengraph.png"),
-                                     tr("Create Known Data Sets"),  this);
+                                     tr("Create From Known Data Sets"),  this);
     networkDataSetSelectAct ->setShortcut(Qt::Key_F7);
-    networkDataSetSelectAct->setStatusTip(tr("Recreate a variety of known data sets."));
+    networkDataSetSelectAct->setStatusTip(tr("Create a social network using one of the \'famous\' "
+                                             "social network data sets included in SocNetV."));
     networkDataSetSelectAct->setWhatsThis(tr("Known Data Sets\n\n"
-                                        "Recreates some of the most widely used "
-                                        "data sets in network analysis studies, i.e. "
-                                        "Krackhardt's high-tech managers"));
+                                        "SocNetV includes a number of known "
+                                        "(also called famous) data sets in Social Network Analysis, "
+                                        "such as Krackhardt's high-tech managers, etc. "
+                                             "Click this menu item or press F7 to select a data set.  "
+                                        ""));
     connect(networkDataSetSelectAct, SIGNAL(triggered()),
             this, SLOT(slotNetworkDataSetSelect()));
 
@@ -2560,15 +2563,15 @@ void MainWindow::initToolBox(){
     editNodeAddBt->setMinimumWidth(100);
     editNodeAddBt->setStatusTip( tr("Add a new node to the network.") ) ;
     editNodeAddBt->setToolTip(
-                tr("Add a new node to the network (Ctrl+.). \n\n "
+                tr("Add a new node to the network (Ctrl+.). \n\n"
                    "You can also create a new node \n"
-                   "in a specific position by double-clicking \n")
+                   "in a specific position by double-clicking.")
                 );
     editNodeAddBt->setWhatsThis(
                 tr("Add new node\n\n"
-                   "Adds a new node to the network (Ctrl+.). \n\n "
-                   "Alternately, you can create a new node \n"
-                   "in a specific position by double-clicking \n"
+                   "Adds a new node to the network (Ctrl+.). \n\n"
+                   "Alternately, you can create a new node "
+                   "in a specific position by double-clicking "
                    "on that spot of the canvas.")
                 );
 
@@ -2582,8 +2585,8 @@ void MainWindow::initToolBox(){
 
     removeNodeBt->setWhatsThis(
                 tr("Remove node\n\n"
-                   "Removes a node from the network (Ctrl+Alt+.). \n\n "
-                   "Alternately, you can remove a node \n"
+                   "Removes a node from the network (Ctrl+Alt+.). \n\n"
+                   "Alternately, you can remove a node "
                    "by right-clicking on it.")
                 );
 
@@ -2594,14 +2597,14 @@ void MainWindow::initToolBox(){
                 tr("Add a new Edge from a node to another. ")
                 );
     editEdgeAddBt->setToolTip(
-                tr("Add a new Edge from a node to another (Ctrl+/).\n\n "
-                   "You can also create an edge between two nodes\n"
+                tr("Add a new Edge from a node to another (Ctrl+/).\n\n"
+                   "You can also create an edge between two nodes \n"
                    "by double-clicking or middle-clicking on them consecutively.")
                 );
     editEdgeAddBt->setWhatsThis(
                 tr("Add edge\n\n"
-                   "Adds a new Edge from a node to another (Ctrl+/).\n\n "
-                   "Alternately, you can create a new edge between two nodes\n"
+                   "Adds a new Edge from a node to another (Ctrl+/).\n\n"
+                   "Alternately, you can create a new edge between two nodes "
                    "by double-clicking or middle-clicking on them consecutively.")
                 );
 
@@ -2615,8 +2618,8 @@ void MainWindow::initToolBox(){
                 );
     editEdgeRemoveBt->setWhatsThis(
                 tr("Remove edge\n\n"
-                   "Removes an Edge from the network  (Ctrl+Alt+/)."
-                   "Alternately, you can remove an Edge \n"
+                   "Removes an Edge from the network  (Ctrl+Alt+/).\n\n"
+                   "Alternately, you can remove an Edge "
                    "by right-clicking on it."
                    )
                 );
@@ -4415,38 +4418,49 @@ void MainWindow::setLastPath(QString filePath) {
 void MainWindow::slotNetworkFileChoose(QString m_fileName,
                                        int m_fileFormat,
                                        const bool &checkSelectFileType) {
-    qDebug() << "MW::slotNetworkFileChoose() start - "
+    qDebug() << "MW::slotNetworkFileChoose() - "
              << " m_fileName: " << m_fileName
              << " m_fileFormat " << m_fileFormat
              << " checkSelectFileType " << checkSelectFileType;
-    if (firstTime && m_fileName.isNull() && m_fileFormat == FILE_UNRECOGNIZED ) {
-
-        slotHelpMessageToUser(
-                        USER_MSG_INFO,
-                        tr("Useful information"),
-                    tr("This menu option is more suitable for loading "
-                       "a network file in GraphML format (.graphml), "
-                       "which is the default format of SocNetV. \n"
-                       "Nevertheless, if you select other supported "
-                       "filetype SocNetV will attempt to load it.\n"
-                       "If your file is not GraphML but you know its "
-                       "format is supported (i.e. Pajek, UCINET, GraphViz, etc), "
-                       "please use the options in the Import sub menu. They are more safe.\n"
-                       "\n This warning message will not appear again.")
-                        );
-
-        firstTime=false;
-    }
 
     bool a_file_was_already_loaded=fileLoaded;
     previous_fileName=fileName;
     QString fileType_filter;
 
-    // prepare and open a file selection dialog
-    if (m_fileName.isNull()) {
-        statusMessage( tr("Choose a network file..."));
+    /*
+     * CASE 1: No filename provided. This happens when:
+     * - User clicked Open Network File or
+     * - User clicked Import Network
+     *
+     * Prepare known filetypes and
+     * Open a file selection dialog for the user
+     *
+     */
+    if (m_fileName.isNull() || m_fileName.isEmpty() ) {
 
-        // prepare supported extensions strings
+        fileType=m_fileFormat;
+
+        if (firstTime && m_fileFormat == FILE_UNRECOGNIZED ) {
+            // This happens only the first time the user clicks Open File
+            // It displays a informative text.
+            slotHelpMessageToUser(
+                            USER_MSG_INFO,
+                            tr("Useful information"),
+                        tr("This menu option is more suitable for loading "
+                           "a network file in GraphML format (.graphml), "
+                           "which is the default format of SocNetV. \n"
+                           "Nevertheless, if you select other supported "
+                           "filetype SocNetV will attempt to load it.\n"
+                           "If your file is not GraphML but you know its "
+                           "format is supported (i.e. Pajek, UCINET, GraphViz, etc), "
+                           "please use the options in the Import sub menu. They are more safe.\n"
+                           "\n This warning message will not appear again.")
+                            );
+
+            firstTime=false;
+        }
+
+        // prepare supported filetype extensions
         switch (m_fileFormat){
         case FILE_GRAPHML:
             fileType_filter = tr("GraphML (*.graphml *.xml);;All (*)");
@@ -4489,31 +4503,51 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
             break;
 
         }
-
+        //prepare the filedialog
         QFileDialog *fileDialog = new QFileDialog(this);
         fileDialog->setFileMode(QFileDialog::ExistingFile);
         fileDialog->setNameFilter(fileType_filter);
         fileDialog->setViewMode(QFileDialog::Detail);
         fileDialog->setDirectory(getLastPath());
 
+        //connect its signals to our slots
         connect ( fileDialog, &QFileDialog::filterSelected,
-                  this, &MainWindow::slotNetworkFileFilterSelected);
+                  this, &MainWindow::slotNetworkFileDialogFilterSelected);
         connect ( fileDialog, &QFileDialog::fileSelected,
-                  this, &MainWindow::slotNetworkFileSelected);
+                  this, &MainWindow::slotNetworkFileDialogFileSelected);
+        connect ( fileDialog, &QFileDialog::rejected ,
+                  this, &MainWindow::slotNetworkFileDialogRejected);
 
+        //open the filedialog
+        statusMessage( tr("Choose a network file..."));
         if (fileDialog->exec()) {
             m_fileName = (fileDialog->selectedFiles()).at(0);
+            qDebug() << "MW::slotNetworkFileChoose() - m_fileName " << m_fileName;
+
         }
-//        m_fileName = QFileDialog::getOpenFileName(
-//                    this,
-//                    tr("Select a network file to open"),
-//                    getLastPath(), fileType_filter);
+        else {
+            //display some error
+            statusMessage( tr("Error opening file dialog..."));
+        }
+        return;
 
     }
-    qDebug() << "MW::slotNetworkFileChoose() - "
-             << " m_fileName: " << m_fileName;
+
+
+    /*
+     * CASE 2: Filename provided. This happens when:
+     * - Application starts from command line with filename parameter or
+     * - User selects a Recent File or
+     * - User selects a file in a previous slotNetworkFileChoose call
+     *
+     * Check
+     *
+     *
+     */
+
     if (checkSelectFileType) {
-        //check if user has changed the filetype filter and loaded other filetype
+        // This happens only on application startup or on loading a recent file.
+        // @TODO In the case of a recent file we should probably save the filetype as well?
         if (m_fileName.endsWith(".graphml",Qt::CaseInsensitive ) ||
                 m_fileName.endsWith(".xml",Qt::CaseInsensitive ) ) {
             m_fileFormat=FILE_GRAPHML;
@@ -4554,57 +4588,125 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
         else
             m_fileFormat=FILE_UNRECOGNIZED;
     }
-    if (!m_fileName.isEmpty() && !m_fileName.isNull()) {
-        if (m_fileFormat == FILE_UNRECOGNIZED) {
-            QMessageBox::critical(this, "Unrecognized file", tr("Error! \n"
-                                  "SocNetV supports the following network file"
-                                  "formats. The filename you selected does not "
-                                  "end with any of the following extensions:\n"
-                                  "- GraphML (.graphml or .xml)\n"
-                                  "- Pajek (.paj or .pajek or .net)\n"
-                                  "- UCINET (.dl .dat) \n"
-                                  "- GraphViz (.dot)\n"
-                                  "- Adjacency Matrix (.sm or .adj or .csv)\n"
-                                  "- List (.list or .lst)\n"
-                                  "- Weighted List (.wlist or .wlst)\n"
-                                  "- Two-Mode / affiliation (.2sm or .aff) \n\n"
-                                  "If you are sure the file is of a supported "
-                                  "format, perhaps you should just change its extension..."),
-                                  QMessageBox::Ok, 0);
-            statusMessage( tr("Error: Unrecognized file. "));
-            //if a file was previously opened, get back to it.
-            if (a_file_was_already_loaded)	{
-                fileLoaded=true;
-                fileName=previous_fileName;
-            }
-            return;
-        }
-        qDebug()<<"MW::slotNetworkFileChoose() - selected file: " << m_fileName
-                  << " file format " << m_fileFormat;
 
-        slotNetworkFilePreview(m_fileName, m_fileFormat );
-
-
-    }
-    else  {
-        statusMessage( tr("Opening aborted"));
+    if (m_fileFormat == FILE_UNRECOGNIZED) {
+        QMessageBox::critical(this,
+                              "Unrecognized file",
+                              tr("Error! \n"
+                                 "SocNetV supports the following network file"
+                                 "formats. The filename you selected does not "
+                                 "end with any of the following extensions:\n"
+                                 "- GraphML (.graphml or .xml)\n"
+                                 "- Pajek (.paj or .pajek or .net)\n"
+                                 "- UCINET (.dl .dat) \n"
+                                 "- GraphViz (.dot)\n"
+                                 "- Adjacency Matrix (.sm or .adj or .csv)\n"
+                                 "- List (.list or .lst)\n"
+                                 "- Weighted List (.wlist or .wlst)\n"
+                                 "- Two-Mode / affiliation (.2sm or .aff) \n\n"
+                                 "If you are sure the file is of a supported "
+                                 "format, perhaps you should just change its extension..."),
+                              QMessageBox::Ok, 0);
+        statusMessage( tr("Error: Unrecognized file. "));
         //if a file was previously opened, get back to it.
         if (a_file_was_already_loaded)	{
             fileLoaded=true;
             fileName=previous_fileName;
         }
+        return;
     }
+
+    qDebug()<<"MW::slotNetworkFileChoose() - Calling slotNetworkFilePreview"
+           << "with m_fileName" << m_fileName
+           << "and m_fileFormat " << m_fileFormat;
+
+    slotNetworkFilePreview(m_fileName, m_fileFormat );
+
+
 }
 
 
 
-void MainWindow::slotNetworkFileFilterSelected(const QString &filter) {
-    qDebug() << "MW::slotNetworkFileFilterSelected() - filter" << filter;
+
+void MainWindow::slotNetworkFileDialogRejected() {
+    qDebug() << "MW::slotNetworkFileDialogRejected() - if a file was previously opened, get back to it.";
+    statusMessage( tr("Opening aborted"));
+
+//    if (a_file_was_already_loaded)	{
+//        fileLoaded=true;
+//        fileName=previous_fileName;
+//    }
+
+
 }
 
 
-void MainWindow::slotNetworkFileSelected(const QString &fileName) {
-    qDebug() << "MW::slotNetworkFileSelected() - filter" << fileName;
+/**
+ * @brief MainWindow::slotNetworkFileDialogFilterSelected
+ * @param filter
+ * Called when user selects a file filter (i.e. GraphML) in the fileDialog
+ */
+void MainWindow::slotNetworkFileDialogFilterSelected(const QString &filter) {
+    qDebug() << "MW::slotNetworkFileDialogFilterSelected() - filter" << filter;
+    if (filter.startsWith("GraphML",Qt::CaseInsensitive ) ) {
+        fileType=FILE_GRAPHML;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_GRAPHML";
+    }
+    else if (filter.contains("PAJEK",Qt::CaseInsensitive ) ) {
+        fileType=FILE_PAJEK;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_PAJEK";
+    }
+    else if (filter.contains("DL",Qt::CaseInsensitive ) ||
+             filter.contains("UCINET",Qt::CaseInsensitive ) ) {
+        fileType=FILE_UCINET;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_UCINET";
+    }
+    else if (filter.contains("Adjancency",Qt::CaseInsensitive ) ) {
+        fileType=FILE_ADJACENCY;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_ADJACENCY";
+    }
+    else if (filter.contains("GraphViz",Qt::CaseInsensitive ) ) {
+        fileType=FILE_GRAPHVIZ;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_GRAPHVIZ";
+    }
+    else if (filter.contains("GML",Qt::CaseInsensitive ) ) {
+        fileType=FILE_GML;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_GML";
+    }
+    else if (filter.contains("Simple Edge List",Qt::CaseInsensitive ) ) {
+        fileType=FILE_EDGELIST_SIMPLE;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_EDGELIST_SIMPLE";
+    }
+    else if (filter.contains("Weighted Edge List",Qt::CaseInsensitive ) ) {
+        fileType=FILE_EDGELIST_WEIGHTED;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_EDGELIST_WEIGHTED";
+    }
+    else if (filter.contains("Two-Mode",Qt::CaseInsensitive )  ) {
+        fileType=FILE_TWOMODE;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_TWOMODE";
+    }
+    else {
+        fileType=FILE_UNRECOGNIZED;
+        qDebug() << "MW::slotNetworkFileDialogFilterSelected() - fileType FILE_UNRECOGNIZED";
+    }
+
+
+}
+
+
+/**
+ * @brief MainWindow::slotNetworkFileDialogFileSelected
+ * @param fileName
+ * Called when user selects a file in the fileDialog
+ * Calls slotNetworkFileChoose() again.
+ */
+void MainWindow::slotNetworkFileDialogFileSelected(const QString &fileName) {
+    qDebug() << "MW::slotNetworkFileDialogFileSelected() - filename " << fileName
+             << "calling slotNetworkFileChoose() with fileType" << fileType;
+    slotNetworkFileChoose( fileName,
+                           fileType,
+                           (  (fileType==FILE_UNRECOGNIZED) ? true : false )
+                           );
 }
 
 
