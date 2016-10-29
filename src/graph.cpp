@@ -6334,6 +6334,11 @@ void Graph::randomNetScaleFreeCreate (const int &n,
                                        const float &alpha,
                                        const QString &mode)
 {
+    qDebug() << "Graph::randomNetScaleFreeCreate() - max nodes n" << n
+             << "power" << power
+             <<"edges added in every round m" <<m
+            <<"alpha" <<alpha
+           <<"mode"<<mode;
     int progressCounter=0;
 
     randomizeThings();
@@ -6358,7 +6363,6 @@ void Graph::randomNetScaleFreeCreate (const int &n,
     qDebug() << "Graph::randomNetScaleFreeCreate() - "
              << "Create initial connected net of m0 nodes";
 
-
     for (int i=0; i< m0 ; ++i) {
         x=x0 + radius * cos(i * rad);
         y=y0 + radius * sin(i * rad);
@@ -6377,7 +6381,8 @@ void Graph::randomNetScaleFreeCreate (const int &n,
         qDebug() << "Graph::randomNetScaleFreeCreate() - "
                    << " Creating all edges for initial node i " << i+1;
         for (int j=i+1; j< m0  ; ++j) {
-            qDebug() << " --- Creating initial edge " << i+1 << " <-> " << j+1;
+            qDebug() << "Graph::randomNetScaleFreeCreate() ---- "
+                        "Creating initial edge " << i+1 << " <-> " << j+1;
             edgeCreate (i+1, j+1, 1, initEdgeColor,
                         EDGE_RECIPROCAL_UNDIRECTED, false, false,
                         QString::null, false);
@@ -6385,18 +6390,18 @@ void Graph::randomNetScaleFreeCreate (const int &n,
         emit updateProgressDialog( ++progressCounter );
     }
 
-    qDebug()<< endl << "Graph::randomNetScaleFreeCreate() - "
+    qDebug()<< "Graph::randomNetScaleFreeCreate() - @@@@ "
                << " start network growth to " << n
-               << " nodes with preferential attachment" << endl;
+               << " nodes with preferential attachment" ;
 
     for (int i= m0 ; i < n ; ++i) {
 
         x=x0 + radius * cos(i * rad);
         y=y0 + radius * sin(i * rad);
 
-        qDebug() << "Graph::randomNetScaleFreeCreate() - "
+        qDebug() << "Graph::randomNetScaleFreeCreate() - ++++"
                     << " adding new node i " << i+1
-                    << " pos " << x << "," << y << endl;
+                    << " pos " << x << "," << y ;
 
         vertexCreate(
                     i+1, initVertexSize,initVertexColor,
@@ -6413,6 +6418,8 @@ void Graph::randomNetScaleFreeCreate (const int &n,
 
         newEdges = 0;
 
+        qDebug()<< "Graph::randomNetScaleFreeCreate() - repeat until we reach"
+                << m << "new edges for node" <<i+1;
         for (;;)
         {	//do until we create m new edges
 
@@ -6444,7 +6451,8 @@ void Graph::randomNetScaleFreeCreate (const int &n,
 
                 if ( prob  <=  prob_j )  {
                     if ( mode == "graph") {
-                        qDebug() << " --- Creating pref.att. reciprocal edge "
+                        qDebug() << "Graph::randomNetScaleFreeCreate()  <-----> "
+                                    "Creating pref.att. reciprocal edge "
                                  <<  i+1 << " <-> " << j+1;
                         edgeCreate (i+1, j+1, 1, initEdgeColor,
                                     EDGE_RECIPROCAL_UNDIRECTED, false, false,
@@ -6453,7 +6461,8 @@ void Graph::randomNetScaleFreeCreate (const int &n,
 
                     }
                     else {
-                        qDebug() << " --- Creating pref.att. directed edge "
+                        qDebug() << "Graph::randomNetScaleFreeCreate()  -----> "
+                                    "Creating pref.att. directed edge "
                                  <<  i+1 << " <-> " << j+1;
                         edgeCreate (i+1, j+1, 1, initEdgeColor,
                                     EDGE_DIRECTED_OPPOSITE_EXISTS, true, false,
@@ -6466,6 +6475,8 @@ void Graph::randomNetScaleFreeCreate (const int &n,
             if ( newEdges == m )
                 break;
         }
+        qDebug()<< "Graph::randomNetScaleFreeCreate() - " << m << "edges reached "
+                "for node" << i+1;
     }
 
     relationCurrentRename(tr("scale-free"),true);

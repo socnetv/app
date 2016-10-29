@@ -512,14 +512,11 @@ private:
     int fileType, maxNodes;
     int fortuneCookiesCounter;
     //QString VERSION;
-    bool fileLoaded;
 
-    bool networkModified;
     bool markedNodesExist, showProgressBar, firstTime;
     bool considerWeights, inverseWeights, askedAboutWeights;
     float randomErdosEdgeProb;
     QString initFileCodec;
-    QColor initBackgroundColor;
 
     QLabel *rightPanelEdgesLabel, *rightPanelSelectedEdgesLabel, *rightPanelNetworkTypeLabel ;
     QLabel *rightPanelClickedEdgeHeaderLabel;

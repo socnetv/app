@@ -3779,9 +3779,7 @@ void MainWindow::initApp(){
     fileName="";
 
     initFileCodec= "UTF-8";
-    fileLoaded=false;
 
-    networkModified=false;
     networkSave->setIcon(QIcon(":/images/saved.png"));
     networkSave->setEnabled(true);
 
@@ -4325,7 +4323,8 @@ void MainWindow::resizeEvent( QResizeEvent * ){
  * Closes the application. Asks to write any unsaved network data.
  */
 void MainWindow::closeEvent( QCloseEvent* ce ) {
-    if ( !networkModified )       {
+    qDebug() << "MW::closeEvent()";
+    if ( activeGraph.graphSaved()  )  {
         ce->accept();
         return;
     }
@@ -4423,7 +4422,6 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
              << " m_fileFormat " << m_fileFormat
              << " checkSelectFileType " << checkSelectFileType;
 
-    bool a_file_was_already_loaded=fileLoaded;
     previous_fileName=fileName;
     QString fileType_filter;
 
@@ -4609,8 +4607,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
                               QMessageBox::Ok, 0);
         statusMessage( tr("Error: Unrecognized file. "));
         //if a file was previously opened, get back to it.
-        if (a_file_was_already_loaded)	{
-            fileLoaded=true;
+        if (activeGraph.graphLoaded())	{
             fileName=previous_fileName;
         }
         return;
@@ -4631,13 +4628,6 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
 void MainWindow::slotNetworkFileDialogRejected() {
     qDebug() << "MW::slotNetworkFileDialogRejected() - if a file was previously opened, get back to it.";
     statusMessage( tr("Opening aborted"));
-
-//    if (a_file_was_already_loaded)	{
-//        fileLoaded=true;
-//        fileName=previous_fileName;
-//    }
-
-
 }
 
 
@@ -4728,10 +4718,6 @@ void MainWindow::slotNetworkSave(const int &fileFormat) {
     if (activeGraph.graphSaved()) {
         statusMessage(  QString(tr("Graph already saved.")) );
     }
-//    if (!fileLoaded && !networkModified ) {
-//        statusMessage(  QString(tr("No network loaded.")) );
-//        return;
-//    }
     if ( fileName.isEmpty() ) {
         slotNetworkSaveAs();
         return;
@@ -4743,8 +4729,7 @@ void MainWindow::slotNetworkSave(const int &fileFormat) {
         activeGraph.graphSave(fileName, fileFormat ) ;
     }
     else if (activeGraph.graphFileFormat()==FILE_GRAPHML ||
-             ( activeGraph.graphModified() && !activeGraph.graphLoaded() )
-//            ( !fileLoaded && networkModified)
+             ( activeGraph.graphSaved() && !activeGraph.graphLoaded() )
              )
     {	//new file or GraphML
         activeGraph.graphSave(fileName, FILE_GRAPHML);
@@ -4831,19 +4816,17 @@ void MainWindow::slotNetworkSaveAs() {
 /**
  * @brief MainWindow::slotNetworkSaved
  * @param saved_ok
- * Called from Graph when we try to save file
+ * Called from Graph when we save file.
+ * Updates Save icon and window title.
  */
 void MainWindow::slotNetworkSaved(const int &status)
 {
-    if (status <= 0)
-    {
+    if (status <= 0) {
         statusMessage( tr("Error! Could not save this file... ")+fileNameNoPath.last()+tr(".") );
     }
-    else
-    {
+    else {
         networkSave->setIcon(QIcon(":/images/saved.png"));
         networkSave->setEnabled(false);
-        fileLoaded=true; networkModified=false;
         setWindowTitle( fileNameNoPath.last() );
         statusMessage( tr("Network saved under filename: ")+fileNameNoPath.last()+tr(".") );
     }
@@ -4858,7 +4841,7 @@ void MainWindow::slotNetworkSaved(const int &status)
 void MainWindow::slotNetworkClose() {
     qDebug()<<"slotNetworkClose()";
     statusMessage( tr("Closing network file..."));
-    if (networkModified) {
+    if (!activeGraph.graphSaved()) {
         switch (
                 slotHelpMessageToUser (
                             USER_MSG_QUESTION,
@@ -5200,12 +5183,8 @@ void MainWindow::slotNetworkFileLoaded (
 
         setWindowTitle("SocNetV "+ VERSION +" - "+fileNameNoPath.last());
         setLastPath(fileName); // store this path and file
-        fileLoaded=true;
-        networkModified=false;
-
     }
     else {
-        fileLoaded =false;
         statusMessage( tr("Error loading requested file. Aborted."));
         QMessageBox::critical( this, "SocNetV",
                                tr("Error! \n")+
@@ -5217,59 +5196,41 @@ void MainWindow::slotNetworkFileLoaded (
 
     switch( type ) 	{
     case 0:
-        fileLoaded=false;
         break;
     case 1:
-        fileLoaded=true;
-        networkModified=false;
         statusMessage( tr("GraphML formatted network, named %1, loaded with %2 Nodes and %3 total Edges.").arg( netName ).arg( aNodes ).arg(totalEdges ) );
         break;
 
     case 2:
-        fileLoaded=true;
-        networkModified=false;
         statusMessage( QString(tr("Pajek formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( aNodes ).arg(totalEdges ));
         break;
 
     case 3:
-        fileLoaded=true;
-        networkModified=false;
         statusMessage( QString(tr("Adjacency formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( aNodes ).arg(totalEdges ) );
         break;
 
     case 4:
-        fileLoaded=true;
-        networkModified=false;
         statusMessage( QString(tr("Dot formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( aNodes ).arg(totalEdges ) );
         break;
 
     case 5:
-        fileLoaded=true;
-        networkModified=false;
         statusMessage( QString(tr("DL-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( aNodes ).arg(totalEdges ) );
         break;
     case 6:
         statusMessage( QString(tr("GML-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( aNodes ).arg(totalEdges ) );
         break;
     case 7:
-        fileLoaded=true;
-        networkModified=false;
         statusMessage( QString(tr("Weighted list-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( aNodes ).arg(totalEdges ) );
         break;
     case 8:
-        fileLoaded=true;
-        networkModified=false;
         statusMessage( QString(tr("Simple list-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( aNodes ).arg(totalEdges ) );
         break;
     case 9:
-        fileLoaded=true;
-        networkModified=false;
         statusMessage( QString(tr("Two-mode affiliation network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( aNodes ).arg(totalEdges ) );
         break;
 
     default: // just for sanity
-        fileLoaded=false;
-        QMessageBox::critical(this, "Error","Unrecognized format. \nPlease specify"
+         QMessageBox::critical(this, "Error","Unrecognized format. \nPlease specify"
                               " which is the file-format using Import Menu.","OK",0);
         break;
     }
@@ -5808,26 +5769,40 @@ void MainWindow::slotNetworkFileView(){
         statusMessage(  tr("Displaying network data file " )+ fileNameNoPath.last()  );
     }
 
-    else if (!activeGraph.graphSaved() ) {   //file network + modified
+    else if (!activeGraph.graphSaved() ) {
+
         if ( !activeGraph.graphLoaded() ) {
-            slotHelpMessageToUser(USER_MSG_INFO,
-                                  tr("Social network not saved. Enter a filename to save..."),
-                                  tr("Network not saved yet"),
-                                  tr("I will open a dialog for you to save the network.")
-                                  );
-            slotNetworkSaveAs();
+            // new network, not saved yet
+            int response = slotHelpMessageToUser(USER_MSG_QUESTION,
+                                              tr("New network not saved yet. You might want to save it first."),
+                                              tr("This new network you created has not been saved yet."),
+                                              tr("Do you want to open a file dialog to save your work "
+                                                 "(then I will display the file)?"),
+                                                   QMessageBox::Yes|QMessageBox::No,QMessageBox::Yes
+                                              );
+            if (  response == QMessageBox::Yes ) {
+                slotNetworkSaveAs();
+            }
+            else { return; }
         }
         else {
-            slotHelpMessageToUser(USER_MSG_QUESTION,
-                                  tr("Network modified. Save to the original file?"),
-                                  tr("Network modified!"),
-                                  tr("Your network data has been modified. "
-                                     "Do you want to save it to the original file?")
-                                  );
+            // loaded network, but modified
+            int response = slotHelpMessageToUser(USER_MSG_QUESTION,
+                                              tr("Current network has been modified. Save to the original file?"),
+                                              tr("Current social network has been modified since last save."),
+                                              tr("Do you want to save it to the original file?"),
+                                              QMessageBox::Yes|QMessageBox::No,QMessageBox::Yes
+                                              );
+            if ( response ==  QMessageBox::Yes ){
+                slotNetworkSave();
+            }else if (response ==QMessageBox::No ) {
+                slotNetworkSaveAs();
+            }
+            else { // user pressed Cancel
+                return;
+            }
 
-            slotNetworkSave();
         }
-
         slotNetworkFileView();
     }
     else	{
@@ -6014,8 +5989,6 @@ void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
 
     destroyProgressBar( (edges != 0 ? edges:newNodes) );
 
-    fileLoaded=false;
-
     setWindowTitle("Untitled Erdos-Renyi random network");
 
     double threshold = log(newNodes)/newNodes;
@@ -6107,8 +6080,6 @@ void MainWindow::slotNetworkRandomScaleFree ( const int &newNodes,
 
     destroyProgressBar(newNodes);
 
-    fileLoaded=false;
-
     setWindowTitle("Untitled scale-free network");
 
     //float avGraphDistance=activeGraph.distanceGraphAverage();
@@ -6173,8 +6144,6 @@ void MainWindow::slotNetworkRandomSmallWorld(const int &newNodes,
 
     destroyProgressBar(newNodes);
 
-    fileLoaded=false;
-
     setWindowTitle("Untitled small-world network");
 
     //float avGraphDistance=activeGraph.distanceGraphAverage();
@@ -6230,8 +6199,6 @@ void MainWindow::slotNetworkRandomRegular(const int &newNodes, const int &degree
     activeGraph.randomNetRegularCreate (newNodes,degree, mode, diag);
 
     destroyProgressBar(newNodes);
-
-    fileLoaded=false;
 
     setWindowTitle("Untitled d-regular network");
 
@@ -6302,8 +6269,6 @@ void MainWindow::slotNetworkRandomRingLattice(){
     activeGraph.randomNetRingLatticeCreate(newNodes, degree, true );
 
     destroyProgressBar(newNodes);
-
-    fileLoaded=false;
 
     setWindowTitle("Untitled ring-lattice network");
     //float avGraphDistance=activeGraph.distanceGraphAverage();
@@ -6380,7 +6345,6 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
           << "density"<<density;
 
     if (graphStatus) {
-        networkModified=true;
         networkSave->setIcon(QIcon(":/images/save.png"));
         networkSave->setEnabled(true);
     }
@@ -6572,8 +6536,7 @@ void MainWindow::slotEditNodePosition(const int &nodeNumber,
                                   const int &x, const int &y){
     qDebug("MW: slotEditNodePosition() for %i with x %i and y %i", nodeNumber, x, y);
     activeGraph.vertexPosSet(nodeNumber, x, y);
-    if (!networkModified) {
-        networkModified=true;
+    if (!activeGraph.graphSaved()) {
         networkSave->setIcon(QIcon(":/images/save.png"));
         networkSave->setEnabled(true);
     }
