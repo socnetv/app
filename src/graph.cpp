@@ -8342,12 +8342,14 @@ QString Graph::graphName() const {
 bool Graph::graphLoad (	const QString m_fileName,
                         const QString m_codecName,
                         const bool m_showLabels,
-//                        const int maxWidth, const int maxHeight,
-                        const int fileFormat, const int two_sm_mode){
+                        const int fileFormat,
+                        const int two_sm_mode,
+                        const QString delimiter){
     initVertexLabelsVisibility = m_showLabels;
 
+    qDebug() << "Graph::graphLoad() - clearing relations ";
     relationsClear();
-    qDebug() << "Graph::graphLoad() : "<< m_fileName
+    qDebug() << "Graph::graphLoad() - "<< m_fileName
                 << " calling parser.load() from thread " << this->thread();
 
     Parser *file_parser = new Parser(
@@ -8360,17 +8362,18 @@ bool Graph::graphLoad (	const QString m_fileName,
                 initEdgeColor,
                 canvasWidth, canvasHeight,
                 fileFormat,
-                two_sm_mode
+                two_sm_mode,
+                delimiter
                 );
 
-    qDebug () << "Graph::graphLoad() file_parser thread  " << file_parser->thread()
+    qDebug () << "Graph::graphLoad() - file_parser thread  " << file_parser->thread()
                  << " moving it to new thread ";
 
     file_parser->moveToThread(&file_parserThread);
 
-    qDebug () << "Graph::graphLoad() file_parser thread now " << file_parser->thread();
+    qDebug () << "Graph::graphLoad() - file_parser thread now " << file_parser->thread();
 
-    qDebug () << "Graph::graphLoad()  connecting file_parser signals ";
+    qDebug () << "Graph::graphLoad() - connecting file_parser signals ";
 
     connect(&file_parserThread, &QThread::finished,
             file_parser, &QObject::deleteLater);
@@ -8441,12 +8444,13 @@ bool Graph::graphLoad (	const QString m_fileName,
                 this, &Graph::terminateParserThreads
                 );
 
-    qDebug() << "Graph::graphLoad()  Starting file_parserThread ";
+    qDebug() << "Graph::graphLoad() - Starting file_parserThread ";
 
     file_parserThread.start();
 
     bool loadGraphStatus = file_parser->run();
-    qDebug() << "Graph::graphLoad() : loadGraphStatus "<< loadGraphStatus;
+    qDebug() << "Graph::graphLoad() - Finished file_parser->run(). "
+                "loadGraphStatus "<< loadGraphStatus;
     return loadGraphStatus;
 }
 

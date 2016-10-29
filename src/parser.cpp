@@ -41,16 +41,16 @@
 
 using namespace std;
 
-Parser::Parser( const QString fn,
-                   const QString m_codec,
-                   const int iNS, const QString iNC, const QString iNSh,
-                   const QString iNNC, const int iNNS,
-                   const QString iNLC, const int iNLS ,
-                   const QString iEC,
-                   const int width, const int height,
-                   const int fFormat,
-                   const int sm_mode
-                   )
+Parser::Parser(const QString fn,
+               const QString m_codec,
+               const int iNS, const QString iNC, const QString iNSh,
+               const QString iNNC, const int iNNS,
+               const QString iNLC, const int iNLS ,
+               const QString iEC,
+               const int width, const int height,
+               const int fFormat,
+               const int sm_mode,
+               const QString delim)
 {
     qDebug() << "Parser::load() fn: " << fn
                 << "running on thread "  << this->thread() ;
@@ -76,6 +76,10 @@ Parser::Parser( const QString fn,
     randY=0;
     fileFormat= fFormat;
     two_sm_mode = sm_mode;
+    if (!delim.isNull() && !delim.isEmpty())
+        delimiter = delim;
+    else delimiter=" ";
+    qDebug() << "Parser::load() - delim" << delim << "delimiter"<<delimiter;
     xml=0;
 
 }
@@ -152,7 +156,7 @@ bool Parser::run()  {
         break;
 
     case FILE_EDGELIST_WEIGHTED:
-        if (loadWeighedList() ){
+        if (loadWeighedList(delimiter) ){
             qDebug("Parser: this is a weighted list formatted (.list) network");
         }
         else fileFormat=FILE_UNRECOGNIZED;
@@ -2582,8 +2586,9 @@ void Parser::dotProperties(QString str, float &nValue, QString &label, QString &
 
 
 
-bool Parser::loadWeighedList(){
-    qDebug() << "Parser: loadWeighedList()";
+bool Parser::loadWeighedList(const QString &delimiter){
+    qDebug() << "Parser::loadWeighedList() - delimiter" << delimiter ;
+
     QFile file ( fileName );
     if ( ! file.open(QIODevice::ReadOnly ))
         return false;
@@ -2616,37 +2621,37 @@ bool Parser::loadWeighedList(){
              || str.contains("graphml",Qt::CaseInsensitive)
              || str.contains("xml",Qt::CaseInsensitive)
              ) {
-            qDebug()<< "*** Parser:loadWeighedList(): Not a Weighted list-formatted file. Aborting!!";
+            qDebug()<< "*** Parser::loadWeighedList() - Not a Weighted list-formatted file. Aborting!!";
             file.close();
             return false;
         }
 
-        lineElement=str.split(" ");
+        lineElement=str.split(delimiter);
         newCount = lineElement.count();
 
         if ( newCount != 3 ) {
-            qDebug()<< "*** Parser:loadWeighedList(): Not a Weighted list-formatted file. Aborting!!";
+            qDebug()<< "*** Parser::loadWeighedList() - Not a Weighted list-formatted file. Aborting!!";
             file.close();
             return false;
         }
 
         source =  (lineElement[0]).toInt(&intOK);
         target =  (lineElement[1]).toInt(&intOK);
-        qDebug() << "	source node " << source  << " target node " << target;
+        qDebug() << "Parser::loadWeighedList()- edge " << source  << "->" << target;
 
         edgeWeight=(lineElement[2]).toDouble(&intOK);
         if (intOK) {
-            qDebug () << "	list file declares edge weight: " << edgeWeight;
+            qDebug () << "Parser::loadWeighedList() - edge weight" << edgeWeight;
         }
         else {
             edgeWeight=1.0;
-            qDebug () << "	list file NOT declaring edge weight. Setting default: " << edgeWeight;
+            qDebug () << "Parser::loadWeighedList() - edge weight not found. Using default weight " << edgeWeight;
         }
         if (maxNodeCreated < source ) {
             for ( j = maxNodeCreated ; j != source ; j++ ) {
                 randX=rand()%gwWidth;
                 randY=rand()%gwHeight;
-                qDebug()<< "	source node " << source
+                qDebug()<< "Parser::loadWeighedList() - source " << source
                         << "is less than maxNodeCreated - creating node "<< j+1
                         << "using random coords "<<randX << " "<< randY;
                 emit createNode( j+1, initNodeSize,  initNodeColor,
@@ -2662,7 +2667,7 @@ bool Parser::loadWeighedList(){
             for ( j = maxNodeCreated ; j != target; j++ ) {
                 randX=rand()%gwWidth;
                 randY=rand()%gwHeight;
-                qDebug()<< "	target node " << target
+                qDebug()<< "Parser::loadWeighedList() - target " << target
                         << "is less than maxNodeCreated - creating node "<< j+1
                         <<" using random coords "<<randX << " "<< randY;
                 emit createNode( j+1, initNodeSize,  initNodeColor,
@@ -2674,8 +2679,8 @@ bool Parser::loadWeighedList(){
             }
             maxNodeCreated = target ;
         }
-        qDebug()<< "	Parser-loadWeighedList(): Creating link now... "
-                << " link from i= " << source << " to j= "<< target << " weight= "<< edgeWeight <<  " TotalLinks=  " << totalLinks+1;
+        qDebug()<< "Parser::loadWeighedList() - Creating edge "
+                << "i= " << source << " to j= "<< target << " weight= "<< edgeWeight <<  " TotalLinks=  " << totalLinks+1;
         emit edgeCreate(source, target, edgeWeight, initEdgeColor, edgeDirType, arrows, bezier);
         totalLinks++;
     } //end ts.stream while here
@@ -2683,7 +2688,7 @@ bool Parser::loadWeighedList(){
 
     //The network has been loaded. Tell MW the statistics and network type
     emit networkFileLoaded(FILE_EDGELIST_WEIGHTED, fileName, networkName, aNodes, totalLinks, edgeDirType);
-    qDebug() << "Parser-loadWeighedList() ending and returning...";
+    qDebug() << "Parser::loadWeighedList() - END. Returning.";
     return true;
 
 }

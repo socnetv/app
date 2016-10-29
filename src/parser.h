@@ -48,7 +48,8 @@ public:
               const QString iNC, const QString iNSh, const QString iNNC,
               const int iNNS, const QString iNLC, const int iNLS ,
               const QString iEC, const int w, const int h, const int format,
-              const int sm_mode);
+              const int sm_mode,
+           const QString delim=QString::null);
     ~Parser();
     bool run();
 	bool loadPajek();
@@ -59,7 +60,7 @@ public:
 	bool loadGW();
 	bool loadDL();
 	bool loadSimpleList();
-	bool loadWeighedList();
+    bool loadWeighedList(const QString &delimiter);
 	bool loadTwoModeSociomatrix();
 
     void dotProperties(QString str, float &, QString &label,
@@ -122,6 +123,7 @@ private:
 	QXmlStreamReader *xml;
     QString fileName, userSelectedCodecName, networkName, initNodeColor;
     QString initEdgeColor, initNodeShape, initNodeNumberColor, initNodeLabelColor;
+    QString initEdgeLabel, delimiter;
     QString nodeColor, edgeColor, edgeType, nodeShape, nodeLabel, edgeLabel;
     QString nodeNumberColor, nodeLabelColor;
     QString key_id, key_value, key_name, key_what, key_type;
@@ -129,7 +131,7 @@ private:
 	int gwWidth, gwHeight;
     int totalLinks, aNodes, fileFormat, two_sm_mode, edgeDirType;
     int initNodeSize,  initNodeNumberSize, nodeNumberSize, initNodeLabelSize;
-    QString initEdgeLabel;
+
     int nodeLabelSize, source, target, nodeSize;
 	float initEdgeWeight, edgeWeight, arrowSize;
 	float bez_p1_x,bez_p1_y, bez_p2_x, bez_p2_y;

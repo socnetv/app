@@ -4438,7 +4438,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
 
         fileType=m_fileFormat;
 
-        if (firstTime && m_fileFormat == FILE_UNRECOGNIZED ) {
+        if (firstTime && fileType == FILE_UNRECOGNIZED ) {
             // This happens only the first time the user clicks Open File
             // It displays a informative text.
             slotHelpMessageToUser(
@@ -4459,7 +4459,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
         }
 
         // prepare supported filetype extensions
-        switch (m_fileFormat){
+        switch (fileType){
         case FILE_GRAPHML:
             fileType_filter = tr("GraphML (*.graphml *.xml);;All (*)");
             break;
@@ -4480,10 +4480,10 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
             break;
 
         case FILE_EDGELIST_WEIGHTED:
-            fileType_filter = tr("Weighted Edge List (.csv .txt .list .lst .wlst);;All (*)");
+            fileType_filter = tr("Weighted Edge List (*.csv *.txt *.list *.edgelist *.lst *.wlst);;All (*)");
             break;
         case FILE_EDGELIST_SIMPLE:
-            fileType_filter = tr("Simple Edge List (.csv .txt .list .lst);;All (*)");
+            fileType_filter = tr("Simple Edge List (*.csv *.txt *.list *.edgelist *.lst);;All (*)");
             break;
         case FILE_TWOMODE:
             fileType_filter = tr("Two-Mode Sociomatrix (*.2sm *.aff);;All (*)");
@@ -4494,8 +4494,8 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
                                  "DL (*.dl *.dat);;"
                                  "Adjacency (*.csv *.adj *.sm *.txt);;"
                                  "GraphViz (*.dot);;"
-                                 "Weighted Edge List (.csv .txt .list .lst .wlst);;"
-                                 "Simple Edge List (.csv .txt .list .lst);;"
+                                 "Weighted Edge List (*.csv *.txt *.edgelist *.list *.lst *.wlst);;"
+                                 "Simple Edge List (*.csv *.txt *.edgelist *.list *.lst);;"
                                  "Two-Mode Sociomatrix (*.2sm *.aff);;"
                                   "All (*)");
             break;
@@ -4538,15 +4538,103 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
      * - User selects a Recent File or
      * - User selects a file in a previous slotNetworkFileChoose call
      *
-     * Check
+     * If checkSelectFileType==TRUE (that is on app start or Recent File),
+     * it tries to understand fileType by file extension. If file has unknown
+     * file extension or an ambiguous file extension used by many different file
+     * formats, then it asks the user to provide the fileType. Then it loads the
+     * file
      *
+     * If checkSelectFileType==FALSE, then it loads the file with given fileType.
      *
      */
-
-    if (checkSelectFileType) {
+    if (checkSelectFileType || m_fileFormat==FILE_UNRECOGNIZED) {
         // This happens only on application startup or on loading a recent file.
-        // @TODO In the case of a recent file we should probably save the filetype as well?
-        if (m_fileName.endsWith(".graphml",Qt::CaseInsensitive ) ||
+        if ( ! m_fileName.endsWith(".graphml",Qt::CaseInsensitive ) &&
+             ! m_fileName.endsWith(".net",Qt::CaseInsensitive ) &&
+             ! m_fileName.endsWith(".paj",Qt::CaseInsensitive )  &&
+             ! m_fileName.endsWith(".pajek",Qt::CaseInsensitive ) &&
+             ! m_fileName.endsWith(".dl",Qt::CaseInsensitive ) &&
+             ! m_fileName.endsWith(".gml",Qt::CaseInsensitive ) &&
+             ! m_fileName.endsWith(".wlst",Qt::CaseInsensitive ) &&
+             ! m_fileName.endsWith(".wlist",Qt::CaseInsensitive )&&
+             ! m_fileName.endsWith(".2sm",Qt::CaseInsensitive ) &&
+             ! m_fileName.endsWith(".aff",Qt::CaseInsensitive )) {
+            //ambigious
+
+            tempFileNameNoPath=m_fileName.split ("/");
+            QStringList fileTypes;
+            fileTypes << tr("GraphML")
+                  << tr("Pajek")
+                  << tr("UCINET")
+                  << tr("Adjacency")
+                  << tr("GraphViz")
+                  << tr("Edge List (weighted)")
+                  << tr("Edge List (simple, non-weighted)")
+                   << tr("Two-mode sociomatrix") ;
+
+            bool ok;
+            QString userFileType= QInputDialog::getItem(
+                        this,
+                        tr("Selected file has ambiguous file extension!"),
+                        tr("You selected: %1 \n"
+
+                           "The name of this file has either an unknown extension \n"
+                           "or an extension used by different network file formats.\n\n"
+
+                           "SocNetV supports the following social network file "
+                           "formats. \nIn parentheses the expected extension. \n"
+                        "- GraphML (.graphml or .xml)\n"
+                        "- Pajek (.paj or .pajek or .net)\n"
+                        "- UCINET (.dl .dat) \n"
+                        "- GraphViz (.dot)\n"
+                        "- Adjacency Matrix (.sm or .adj or .csv or .txt)\n"
+                        "- Simple Edge List (.list or .lst)\n"
+                        "- Weighted Edge List (.wlist or .wlst)\n"
+                        "- Two-Mode / affiliation (.2sm or .aff) \n\n"
+
+                        "If you are sure the file is of a supported format, please \n"
+                           "select the right format from the list below.").
+                        arg(tempFileNameNoPath.last()),
+                        fileTypes, 0, false, &ok);
+            if (ok && !userFileType.isEmpty()) {
+                if (userFileType == "GraphML") {
+                    m_fileFormat=FILE_GRAPHML;
+                }
+                else if (userFileType == "GraphML") {
+                    m_fileFormat=FILE_PAJEK;
+                }
+                else if (userFileType == "UCINET") {
+                    m_fileFormat=FILE_UCINET;
+                }
+                else if (userFileType == "Adjacency") {
+                    m_fileFormat=FILE_ADJACENCY;
+                }
+                else if (userFileType == "GraphViz") {
+                    m_fileFormat=FILE_GRAPHVIZ;
+                }
+                else if (userFileType == "Edge List (weighted)") {
+                    m_fileFormat=FILE_EDGELIST_WEIGHTED;
+                }
+                else if (userFileType == "Edge List (simple, non-weighted)") {
+                    m_fileFormat=FILE_EDGELIST_SIMPLE;
+                }
+                else if (userFileType == "Two-mode sociomatrix") {
+                    m_fileFormat=FILE_TWOMODE;
+                }
+
+            }
+            else {
+                statusMessage( tr("Opening network file aborted."));
+                //if a file was previously opened, get back to it.
+                if (activeGraph.graphLoaded())	{
+                    fileName=previous_fileName;
+                }
+                return;
+            }
+
+        }
+
+        else if (m_fileName.endsWith(".graphml",Qt::CaseInsensitive ) ||
                 m_fileName.endsWith(".xml",Qt::CaseInsensitive ) ) {
             m_fileFormat=FILE_GRAPHML;
         }
@@ -4587,31 +4675,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
             m_fileFormat=FILE_UNRECOGNIZED;
     }
 
-    if (m_fileFormat == FILE_UNRECOGNIZED) {
-        QMessageBox::critical(this,
-                              "Unrecognized file",
-                              tr("Error! \n"
-                                 "SocNetV supports the following network file"
-                                 "formats. The filename you selected does not "
-                                 "end with any of the following extensions:\n"
-                                 "- GraphML (.graphml or .xml)\n"
-                                 "- Pajek (.paj or .pajek or .net)\n"
-                                 "- UCINET (.dl .dat) \n"
-                                 "- GraphViz (.dot)\n"
-                                 "- Adjacency Matrix (.sm or .adj or .csv)\n"
-                                 "- List (.list or .lst)\n"
-                                 "- Weighted List (.wlist or .wlst)\n"
-                                 "- Two-Mode / affiliation (.2sm or .aff) \n\n"
-                                 "If you are sure the file is of a supported "
-                                 "format, perhaps you should just change its extension..."),
-                              QMessageBox::Ok, 0);
-        statusMessage( tr("Error: Unrecognized file. "));
-        //if a file was previously opened, get back to it.
-        if (activeGraph.graphLoaded())	{
-            fileName=previous_fileName;
-        }
-        return;
-    }
+
 
     qDebug()<<"MW::slotNetworkFileChoose() - Calling slotNetworkFilePreview"
            << "with m_fileName" << m_fileName
@@ -4965,7 +5029,7 @@ void MainWindow::slotNetworkImportEdgeList(){
                                  tr("SocNetV can parse two kinds of edgelist formats: \n\n"
                                     "A. Edge lists with edge weights, "
                                     "where each line has exactly 3 columns: "
-                                    "source, target, weight, i.e.:\n"
+                                    "source  target  weight, i.e.:\n"
                                     "1 2 1 \n "
                                     "2 3 1 \n "
                                     "3 4 2 \n "
@@ -5113,7 +5177,7 @@ bool MainWindow::slotNetworkFileLoad(const QString m_fileName,
     initApp();
 
     userSelectedCodecName = m_codecName; //var for future use in a Settings dialog
-
+    QString delimiter=QString::null;
     int two_sm_mode = 0;
 
     if ( m_fileFormat == FILE_TWOMODE ) {
@@ -5141,15 +5205,34 @@ bool MainWindow::slotNetworkFileLoad(const QString m_fileName,
         }
     }
 
+    if ( m_fileFormat == FILE_EDGELIST_SIMPLE ||
+            m_fileFormat == FILE_EDGELIST_WEIGHTED ) {
+        bool ok;
+        QString delimiter =
+                QInputDialog::getText(this, tr("Enter column delimiter"),
+                                      tr("SocNetV supports edge list formatted files"
+                                         "with arbitrary column delimiters. \n"
+                                         "The default delimiter is one or more spaces.\n"
+                                         "If the column delimiter in this file is "
+                                         "other than simple space or TAB, \n"
+                                         "please enter it below.\n"
+                                         "For instance, if the delimiter is a "
+                                         "comma or pipe enter \",\" or \"|\" respectively.\n"
+                                         "Leave empty to use space or TAB as delimiter."),
+                                      QLineEdit::Normal,
+                                      QString(""), &ok);
+        if (!ok || delimiter.isEmpty() || delimiter.isNull() ) {
+            delimiter=" ";
+        }
+        qDebug()<<"MW::slotNetworkFileLoad() - delimiter\"" << delimiter<<"\"";
+    }
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
     qDebug() << "MW::slotNetworkFileLoad() : calling activeGraph.graphLoad() ";
     bool loadGraphStatus = activeGraph.graphLoad (
                 m_fileName,
                 m_codecName,
                 (appSettings["initNodeLabelsVisibility"] == "true" ) ? true: false,
-//                graphicsWidget->width(),
-//                graphicsWidget->height(),
-                m_fileFormat, two_sm_mode
+                m_fileFormat, two_sm_mode, delimiter
                 );
     qDebug() << "MW::slotNetworkFileLoad() : loadGraphStatus " << loadGraphStatus;
 

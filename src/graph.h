@@ -316,7 +316,8 @@ public:
     bool graphLoad (const QString m_fileName, const QString m_codecName,
                     const bool m_showLabels,
                     const int format,
-                    const int two_sm_mode);
+                    const int two_sm_mode,
+                    const QString delimiter=QString::null);
 
     void graphSave(QString fileName, int fileType);
     bool graphSaveToPajekFormat (const QString &fileName,
