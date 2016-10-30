@@ -33,13 +33,39 @@
 #include <QPointF>
 #include <QObject>
 #include <QMultiMap>
-
+#include <QDebug>
 class QXmlStreamReader;
 class QXmlStreamAttributes;
-/** 	
-	Main class for network file parsing and loading
-	Currently, it supports Pajek, Adjacency, Graphviz, GraphML
-*/
+
+
+
+
+
+struct Actor {
+    QString key;
+    int value;
+};
+
+// implement a min-priority queue
+class CompareActors {
+    public:
+    bool operator()(Actor& t1, Actor& t2)
+    {
+       if (t1.value== t2.value)
+            return t1.key  > t2.key ;
+//       qDebug () << t1.value << " > " << t2.value << "?"
+//                 << ( t1.value > t2.value ) ;
+       return t1.value > t2.value;  //minimum priority
+       // Returns true if t2.value smaller than t1.value
+    }
+};
+
+
+/**
+ * @brief The Parser class
+ * Main class for network file parsing and loading
+ * Supports GraphML, Pajek, Adjacency, Graphviz, UCINET, EdgeLists etc
+ */
 class Parser :  public QObject {
 	Q_OBJECT
 public:
@@ -115,7 +141,7 @@ signals:
 protected:
 
 private: 
-	QHash<QString, int> nodeNumber;
+    QHash<QString, int> nodeHash;
 	QHash<QString, QString> keyFor, keyName, keyType, keyDefaultValue ;
     QHash<QString, QString> edgesMissingNodesHash;
     QStringList edgeMissingNodesList,edgeMissingNodesListData, relationsList;
@@ -127,11 +153,10 @@ private:
     QString nodeColor, edgeColor, edgeType, nodeShape, nodeLabel, edgeLabel;
     QString nodeNumberColor, nodeLabelColor;
     QString key_id, key_value, key_name, key_what, key_type;
-    QString node_id, edge_id, edge_source, edge_target, edge_directed;
+    QString node_id, edge_id, edge_source, edge_target, edge_weight, edge_directed;
 	int gwWidth, gwHeight;
-    int totalLinks, aNodes, fileFormat, two_sm_mode, edgeDirType;
+    int totalLinks, totalNodes, fileFormat, two_sm_mode, edgeDirType;
     int initNodeSize,  initNodeNumberSize, nodeNumberSize, initNodeLabelSize;
-
     int nodeLabelSize, source, target, nodeSize;
 	float initEdgeWeight, edgeWeight, arrowSize;
 	float bez_p1_x,bez_p1_y, bez_p2_x, bez_p2_y;

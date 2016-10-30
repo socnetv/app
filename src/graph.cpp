@@ -3115,7 +3115,8 @@ void Graph::distanceMatrixCreate(const bool &centralities,
                 dijkstra(s, centralities, inverseWeights, dropIsolates);
 
 
-            qDebug("***** FINISHED PHASE 1 (SSSP) BFS ALGORITHM. Continuing to calculate centralities");
+            qDebug("***** FINISHED PHASE 1 (SSSP) BFS / DIJKSTRA ALGORITHM. "
+                   "Continuing to calculate centralities");
 
             if (centralities){
                 qDebug() << "Set CC for source vertex " << (*it)->name()
@@ -3531,17 +3532,19 @@ void Graph::BFS(const int &s, const bool &computeCentralities,
 
 
 /**
-*	Breadth-First Search (BFS) method for unweighted graphs (directed or not)
+*	Dijkstra's algorithm for the SSSP in weighted graphs (directed or not)
+*   It uses a min-priority queue to provide constant time lookup of the minimum
+*   distance. The min-priority queue is implemented with std::priority_queue
 
     INPUT:
         a 'source' vertex with index s and a boolean computeCentralities.
-        (Implicitly, BFS uses the m_graph structure)
+        (Implicitly, the algorithm uses the m_graph structure)
 
     OUTPUT:
         For every vertex t: DM(s, t) is set to the distance of each t from s
         For every vertex t: TM(s, t) is set to the number of shortest paths between s and t
 
-        Also, if computeCentralities is true then BFS does extra operations:
+        Also, if computeCentralities is true then it does extra operations:
             a) For source vertex s:
                 it calculates CC(s) as the sum of its distances from every other vertex.
                 it calculates eccentricity(s) as the maximum distance from all other vertices.

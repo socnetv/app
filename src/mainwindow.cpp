@@ -5224,7 +5224,7 @@ bool MainWindow::slotNetworkFileLoad(const QString m_fileName,
         if (!ok || delimiter.isEmpty() || delimiter.isNull() ) {
             delimiter=" ";
         }
-        qDebug()<<"MW::slotNetworkFileLoad() - delimiter\"" << delimiter<<"\"";
+        qDebug()<<"MW::slotNetworkFileLoad() - delimiter" << delimiter;
     }
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
     qDebug() << "MW::slotNetworkFileLoad() : calling activeGraph.graphLoad() ";

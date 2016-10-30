@@ -36,7 +36,10 @@
 #include <QPointF>
 #include <QMessageBox>
 #include <QTextCodec>
-#include <list>
+#include <QRegularExpression>
+#include <list>  // used as list<int> listDummiesPajek
+#include <queue>		//for priority queue
+
 #include "graph.h"	//needed for setParent
 
 using namespace std;
@@ -89,7 +92,7 @@ Parser::Parser(const QString fn,
 Parser::~Parser () {
     qDebug()<< "**** Parser::~Parser() destructor " << this->thread()
                 <<" clearing hashes... ";
-    nodeNumber.clear();
+    nodeHash.clear();
     keyFor.clear();
     keyName.clear();
     keyType.clear();
@@ -294,12 +297,12 @@ bool Parser::loadDL(){
             str=str.right(str.size()-mark-1);
             qDebug() << "Parser::loadDL() - N is declared to be : "
                      << str.toLatin1() ;
-            aNodes=str.toInt(&intOK,10);
+            totalNodes=str.toInt(&intOK,10);
             if (!intOK) {
                 qDebug() << "Parser::loadDL() - N conversion error..." ;
                 return false;
             }
-            qDebug() << "Parser::loadDL() - Finally N=" << aNodes << "NM=" <<nm;
+            qDebug() << "Parser::loadDL() - Finally N=" << totalNodes << "NM=" <<nm;
             continue;
         }
 
@@ -381,11 +384,11 @@ bool Parser::loadDL(){
         if ( data_flag && fullmatrixFormat){
             qDebug() << "Parser::loadDL() - reading edges in fullmatrix format";
             // check if we haven't created any nodes...
-            if ( nodeSum < aNodes ){
+            if ( nodeSum < totalNodes ){
                 qDebug() << "Parser::loadDL() -nodes have not been created yet. "
                          << " calling createRandomNodes()" ;
-                createRandomNodes(1, QString::null, aNodes);
-                nodeSum = aNodes;
+                createRandomNodes(1, QString::null, totalNodes);
+                nodeSum = totalNodes;
             }
             //SPLIT EACH LINE (ON EMPTY SPACE CHARACTERS)
             if (!prevLineStr.isEmpty()) {
@@ -397,11 +400,11 @@ bool Parser::loadDL(){
             qDebug() << "Parser::loadDL() - splitting str to elements ";
             lineElement=str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
             qDebug() << "Parser::loadDL() - line elements " << lineElement.count();
-            if (lineElement.count() < aNodes ) {
+            if (lineElement.count() < totalNodes ) {
                 qDebug() << "Parser::loadDL() -This line has "
                          << lineElement.count()
                          << " elements, expected "
-                         << aNodes << " - appending next line";
+                         << totalNodes << " - appending next line";
                 prevLineStr=str;
                 continue;
             }
@@ -418,7 +421,7 @@ bool Parser::loadDL(){
                          << relationCounter;
                 emit relationSet (relationCounter);
             }
-            else if (source>aNodes) {
+            else if (source>totalNodes) {
                 source=1;
                 relationCounter++;
                 relation = relationsList[ relationCounter ];
@@ -458,11 +461,11 @@ bool Parser::loadDL(){
         }
         if (data_flag && edgelist1Format) { //read edges in edgelist1 format
             // check if we haven't created any nodes...
-            if ( nodeSum < aNodes ){
+            if ( nodeSum < totalNodes ){
                 qDebug() << "Parser::loadDL() - nodes have not been created yet. "
                          << " calling createRandomNodes()" ;
-                createRandomNodes(1, QString::null, aNodes);
-                nodeSum = aNodes;
+                createRandomNodes(1, QString::null, totalNodes);
+                nodeSum = totalNodes;
             }
             lineElement=str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
 
@@ -498,7 +501,7 @@ bool Parser::loadDL(){
         }
     }
     //sanity check
-    if (nodeSum != aNodes) {
+    if (nodeSum != totalNodes) {
         qDebug()<< "Error: aborting";
         //emit something
         return false;
@@ -508,7 +511,7 @@ bool Parser::loadDL(){
     qDebug() << "Parser::loadDL() - FINISHED - "
                 "emitting networkFileLoaded() and clearing arrays";
     emit networkFileLoaded(FILE_UCINET, fileName, networkName,
-                           aNodes, totalLinks, EDGE_DIRECTED);
+                           totalNodes, totalLinks, EDGE_DIRECTED);
 
     lineElement.clear(); labelsList.clear(); relationsList.clear();
     return true;
@@ -551,7 +554,7 @@ bool Parser::loadPajek(){
     QString relation;
     list<int> listDummiesPajek;
     totalLinks=0;
-    aNodes=0;
+    totalNodes=0;
     j=0;  //counts how many real nodes exist in the file
     miss=0; //counts missing nodeNumbers.
     //if j + miss < nodeNum, it creates (nodeNum-miss) dummy nodes which are deleted in the end.
@@ -611,8 +614,8 @@ bool Parser::loadPajek(){
             }
             if (str.contains( "vertices", Qt::CaseInsensitive) )  {
                 lineElement=str.split(QRegExp("\\s+"));
-                if (!lineElement[1].isEmpty()) 	aNodes=lineElement[1].toInt(&intOk,10);
-                qDebug ("Parser-loadPajek(): Vertices %i.",aNodes);
+                if (!lineElement[1].isEmpty()) 	totalNodes=lineElement[1].toInt(&intOk,10);
+                qDebug ("Parser-loadPajek(): Vertices %i.",totalNodes);
                 continue;
             }
             qDebug("Parser-loadPajek(): headlines end here");
@@ -794,13 +797,13 @@ bool Parser::loadPajek(){
         // NODES CREATED. CREATE EDGES/ARCS NOW.
         // first check that all nodes are already created
         else {
-            if (j && j!=aNodes)  {  //if there were more or less nodes than the file declared
-                qDebug()<<"*** WARNING ***: The Pajek file declares " << aNodes <<"  nodes, but I found " <<  j << " nodes...." ;
-                aNodes=j;
+            if (j && j!=totalNodes)  {  //if there were more or less nodes than the file declared
+                qDebug()<<"*** WARNING ***: The Pajek file declares " << totalNodes <<"  nodes, but I found " <<  j << " nodes...." ;
+                totalNodes=j;
             }
             else if (j==0) {  //if there were no nodes at all, we need to create them now.
-                qDebug()<< "The Pajek file declares "<< aNodes<< " but I didnt found any nodes. I will create them....";
-                for (int num=j+1; num<= aNodes; num++) {
+                qDebug()<< "The Pajek file declares "<< totalNodes<< " but I didnt found any nodes. I will create them....";
+                for (int num=j+1; num<= totalNodes; num++) {
                     qDebug() << "Parser-loadPajek(): Creating node number i = "<< num;
                     randX=rand()%gwWidth;
                     randY=rand()%gwHeight;
@@ -812,7 +815,7 @@ bool Parser::loadPajek(){
                                 initNodeShape, false
                                 );
                 }
-                j=aNodes;
+                j=totalNodes;
             }
             if (edges_flag && !arcs_flag)   {  /**EDGES */
                 qDebug("Parser-loadPajek(): ==== Reading edges ====");
@@ -967,7 +970,7 @@ bool Parser::loadPajek(){
     file.close();
     if (j==0) return false;
 
-    qDebug("Parser-loadPajek(): Removing all dummy aNodes, if any");
+    qDebug("Parser-loadPajek(): Removing all dummy nodes, if any");
     if (listDummiesPajek.size() > 0 ) {
         qDebug("Trying to delete the dummies now");
         for ( list<int>::iterator it=listDummiesPajek.begin(); it!=listDummiesPajek.end(); it++ ) {
@@ -981,7 +984,7 @@ bool Parser::loadPajek(){
 
     //The network has been loaded. Tell MW the statistics and network type
     emit networkFileLoaded(FILE_PAJEK, fileName, networkName,
-                           aNodes, totalLinks,
+                           totalNodes, totalLinks,
                            ( (has_arcs) ? EDGE_DIRECTED: EDGE_RECIPROCAL_UNDIRECTED));
 
 
@@ -1005,7 +1008,8 @@ bool Parser::loadAdjacency(){
     ts.setCodec(userSelectedCodecName.toUtf8());
     QString str;
     QStringList lineElement;
-    int i=0, j=0,  aNodes=0, newCount=0, lastCount=0;
+    int i=0, j=0, newCount=0, lastCount=0;
+    totalNodes=0;
     edgeWeight=1.0;
     bool intOK=false;
     totalLinks=0;
@@ -1065,9 +1069,9 @@ bool Parser::loadAdjacency(){
         else
             lineElement=str.split(" ");
         if (i == 0 ) {
-            aNodes=lineElement.count();
-            qDebug("Parser-loadAdjacency(): There are %i nodes in this file", aNodes);
-            for (j=0; j<aNodes; j++) {
+            totalNodes=lineElement.count();
+            qDebug("Parser-loadAdjacency(): There are %i nodes in this file", totalNodes);
+            for (j=0; j<totalNodes; j++) {
 
                 randX=rand()%gwWidth;
                 randY=rand()%gwHeight;
@@ -1083,7 +1087,7 @@ bool Parser::loadAdjacency(){
             }
         }
         qDebug("Parser-loadAdjacency(): Finished creation of nodes");
-        if ( aNodes != (int) lineElement.count() ) return false;
+        if ( totalNodes != (int) lineElement.count() ) return false;
         j=0;
         for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
             if ( (*it1)!="0"){
@@ -1104,7 +1108,7 @@ bool Parser::loadAdjacency(){
 
     qDebug() << "Parser: SM network has been loaded. Tell MW the statistics and network type";
     emit networkFileLoaded(FILE_ADJACENCY, fileName, networkName,
-                           aNodes, totalLinks, EDGE_DIRECTED);
+                           totalNodes, totalLinks, EDGE_DIRECTED);
 
     return true;
 
@@ -1125,7 +1129,8 @@ bool Parser::loadTwoModeSociomatrix(){
     ts.setCodec(userSelectedCodecName.toUtf8());
     QString str;
     QStringList lineElement;
-    int i=0, j=0,  aNodes=0, newCount=0, lastCount=0;
+    int i=0, j=0,  newCount=0, lastCount=0;
+    totalNodes=0;
     edgeWeight=1.0;
 
     while (  !ts.atEnd() )  {
@@ -1201,7 +1206,7 @@ bool Parser::loadTwoModeSociomatrix(){
 
     qDebug() << "Parser: Two-mode SM network has been loaded. Tell MW the statistics and network type";
     emit networkFileLoaded(FILE_TWOMODE, fileName,networkName,
-                           aNodes, totalLinks, EDGE_RECIPROCAL_UNDIRECTED);
+                           totalNodes, totalLinks, EDGE_RECIPROCAL_UNDIRECTED);
 
     return true;
 
@@ -1217,9 +1222,9 @@ bool Parser::loadTwoModeSociomatrix(){
 bool Parser::loadGraphML(){
 
     qDebug("\n\nParser: loadGraphML()");
-    aNodes=0;
+    totalNodes=0;
     totalLinks=0;
-    nodeNumber.clear();
+    nodeHash.clear();
     relationsList.clear();
 
     bool_key=false; bool_node=false; bool_edge=false;
@@ -1311,14 +1316,14 @@ bool Parser::loadGraphML(){
     emit relationSet (0);
     //The network has been loaded. Tell MW the statistics and network type
     emit networkFileLoaded(FILE_GRAPHML, fileName, networkName,
-                           aNodes, totalLinks,
+                           totalNodes, totalLinks,
                            edgeDirType);
     //clear our mess - remove every hash element...
     keyFor.clear();
     keyName.clear();
     keyType.clear();
     keyDefaultValue.clear();
-    nodeNumber.clear();
+    nodeHash.clear();
     return true;
 }
 
@@ -1437,11 +1442,11 @@ void Parser::readGraphMLElementGraph(QXmlStreamReader &xml){
     emit addRelation( networkName);
     int relationCounter = relationsList.count() - 1; //zero indexed
     if (relationCounter > 0) {
-        aNodes=0;
+        totalNodes=0;
         qDebug () << "Parser::readGraphMLElementGraph() - relations now "
                   << relationCounter
                   << "emitting relationSet to change to the new relation"
-                  << "and setting aNodes to " <<aNodes;
+                  << "and setting totalNodes to " <<totalNodes;
         emit relationSet(relationCounter);
     }
     qDebug()<< "Parser::readGraphMLElementGraph() - graph id  "  << networkName; //store graph id to return it afterwards
@@ -1564,11 +1569,11 @@ void Parser::readGraphMLElementDefaultValue(QXmlStreamReader &xml) {
 void Parser::readGraphMLElementNode(QXmlStreamReader &xml){
     QXmlStreamAttributes xmlStreamAttr = xml.attributes();
     node_id = (xmlStreamAttr.value("id")).toString();
-    aNodes++;
+    totalNodes++;
     qDebug()<<"Parser::readGraphMLElementNode() - node id "<<  node_id
-           << " index " << aNodes << " added to nodeNumber map";
+           << " index " << totalNodes << " added to nodeHash ";
 
-    nodeNumber[node_id]=aNodes;
+    nodeHash[node_id]=totalNodes;
 
     //copy default node attribute values.
     //Some might change when reading element data, some will stay the same...
@@ -1600,10 +1605,10 @@ void Parser::endGraphMLElementNode(QXmlStreamReader &xml){
         return;
     }
     qDebug()<<"Parser::endGraphMLElementNode() - signal to create node "
-           << " nodenumber "<< aNodes  << " id " << node_id
+           << " nodenumber "<< totalNodes  << " id " << node_id
            << " label " << nodeLabel << " coords " <<randX << ", " <<randY;
     emit createNode(
-                aNodes, nodeSize, nodeColor,
+                totalNodes, nodeSize, nodeColor,
                 nodeNumberColor, nodeNumberSize,
                 nodeLabel, nodeLabelColor, nodeLabelSize,
                 QPointF(randX,randY),
@@ -1641,7 +1646,7 @@ void Parser::readGraphMLElementEdge(QXmlStreamAttributes &xmlStreamAttr){
         edgeDirType=EDGE_DIRECTED;
         qDebug()<< "Parser::readGraphMLElementEdge() - DIRECTED";
     }
-    if (!nodeNumber.contains(edge_source)) {
+    if (!nodeHash.contains(edge_source)) {
         qDebug() << "Parser::readGraphMLElementEdge() - source node id "
                  << edge_source
                  << "for edge from " << edge_source << " to " << edge_target
@@ -1652,7 +1657,7 @@ void Parser::readGraphMLElementEdge(QXmlStreamAttributes &xmlStreamAttr){
                                      +"|"+QString::number(edgeDirType));
         missingNode=true;
     }
-    if (!nodeNumber.contains(edge_target)) {
+    if (!nodeHash.contains(edge_target)) {
         qDebug() << "Parser::readGraphMLElementEdge() - target node id "
                  << edge_target
                  << "for edge from " << edge_source << " to " << edge_target
@@ -1668,8 +1673,8 @@ void Parser::readGraphMLElementEdge(QXmlStreamAttributes &xmlStreamAttr){
         return;
     }
 
-    source = nodeNumber [edge_source];
-    target = nodeNumber [edge_target];
+    source = nodeHash [edge_source];
+    target = nodeHash [edge_target];
     qDebug()<< "Parser::readGraphMLElementEdge() - source "<< edge_source
             << " num "<< source
             <<" - target "<< edge_target << " num "<< target
@@ -2037,8 +2042,8 @@ void Parser::createMissingNodeEdges(){
             edgeMissingNodesList = (it.key()).split("===>");
             if (! ((edgeMissingNodesList[0]).isEmpty() )
                     && !((edgeMissingNodesList[1]).isEmpty()) ) {
-                source = nodeNumber.value(edgeMissingNodesList[0], -666);
-                target = nodeNumber.value(edgeMissingNodesList[1], -666);
+                source = nodeHash.value(edgeMissingNodesList[0], -666);
+                target = nodeHash.value(edgeMissingNodesList[1], -666);
                 if (source == -666 || target == -666 ) {
                     //emit something that this node has not been declared
                     continue;
@@ -2110,7 +2115,7 @@ bool Parser::loadGML(){
         }
     }
     //The network has been loaded. Tell MW the statistics and network type
-    emit networkFileLoaded(FILE_GML, fileName, networkName, aNodes, totalLinks, edgeDirType);
+    emit networkFileLoaded(FILE_GML, fileName, networkName, totalNodes, totalLinks, edgeDirType);
     qDebug() << "Parser-loadGML()";
     return true;
 }
@@ -2145,7 +2150,7 @@ bool Parser::loadDot(){
     if ( ! file.open(QIODevice::ReadOnly )) return false;
     QTextStream ts( &file );
     ts.setCodec(userSelectedCodecName.toUtf8());
-    aNodes=0;
+    totalNodes=0;
     while (!ts.atEnd() )   {
         str= ts.readLine() ;
         str=str.simplified();
@@ -2278,10 +2283,10 @@ bool Parser::loadDot(){
                 nodeLabel=node;  //Will change only if label exists in dotProperties
                 dotProperties(temp, nodeValue, nodeLabel, initNodeShape, initNodeColor, fontName, fontColor );
                 if (nodeLabel=="") nodeLabel=node;
-                aNodes++;
+                totalNodes++;
                 randX=rand()%gwWidth;
                 randY=rand()%gwHeight;
-                qDebug()<<" *** Creating node "<< aNodes
+                qDebug()<<" *** Creating node "<< totalNodes
                        << " at "<< randX <<","<< randY
                        <<" label "<<node.toLatin1()
                       << " colored "<< initNodeColor
@@ -2291,15 +2296,15 @@ bool Parser::loadDot(){
                       << "initNodeLabelColor " << initNodeLabelColor
                       << "nodeShape" <<  initNodeShape;
                 emit createNode(
-                            aNodes, initNodeSize, initNodeColor,
+                            totalNodes, initNodeSize, initNodeColor,
                             initNodeNumberColor, initNodeNumberSize,
                             nodeLabel , initNodeLabelColor, initNodeLabelSize,
                             QPointF(randX,randY),
                             initNodeShape, false
                             );
                 nodesDiscovered.push_back( node  );			// Note that we push the numbered nodelabel whereas we create the node with its file specified node label.
-                qDebug()<<" * Total aNodes " << aNodes<< " nodesDiscovered  "<< nodesDiscovered.size() ;
-                target=aNodes;
+                qDebug()<<" * Total totalNodes " << totalNodes<< " nodesDiscovered  "<< nodesDiscovered.size() ;
+                target=totalNodes;
 
             }
             else {
@@ -2324,10 +2329,10 @@ bool Parser::loadDot(){
                 node=node.remove(']').remove(';').remove('\"');
                 qDebug()<<"node named "<<node.toLatin1();
                 nodeLabel=node;
-                aNodes++;
+                totalNodes++;
                 randX=rand()%gwWidth;
                 randY=rand()%gwHeight;
-                qDebug()<<" *** Creating node "<< aNodes
+                qDebug()<<" *** Creating node "<< totalNodes
                        << " at "<< randX <<","<< randY
                        <<" label "<<node.toLatin1()
                       << " colored "<< initNodeColor
@@ -2337,15 +2342,15 @@ bool Parser::loadDot(){
                       << "initNodeLabelColor " << initNodeLabelColor
                       << "nodeShape" <<  initNodeShape;
                 emit createNode(
-                            aNodes, initNodeSize, initNodeColor,
+                            totalNodes, initNodeSize, initNodeColor,
                             initNodeNumberColor, initNodeNumberSize,
                             nodeLabel , initNodeLabelColor, initNodeLabelSize,
                             QPointF(randX,randY),
                             initNodeShape, false
                             );
                 nodesDiscovered.push_back( node  );			// Note that we push the numbered nodelabel whereas we create the node with its file specified node label.
-                qDebug()<<" * Total aNodes " << aNodes<< " nodesDiscovered  "<< nodesDiscovered.size() ;
-                target=aNodes;
+                qDebug()<<" * Total nodes" << totalNodes<< " nodesDiscovered  "<< nodesDiscovered.size() ;
+                target=totalNodes;
 
             }
             else
@@ -2396,10 +2401,10 @@ bool Parser::loadDot(){
                 qDebug () << " nodeSequence node "<< node;
                 if ( (aNum=nodesDiscovered.indexOf( node ) ) == -1) {
                     //node not discovered before
-                    aNodes++;
+                    totalNodes++;
                     randX=rand()%gwWidth;
                     randY=rand()%gwHeight;
-                    qDebug()<<" *** Creating node "<< aNodes
+                    qDebug()<<" *** Creating node "<< totalNodes
                            << " at "<< randX <<","<< randY
                            <<" label "<<node.toLatin1()
                           << " colored "<< nodeColor
@@ -2409,16 +2414,16 @@ bool Parser::loadDot(){
                           << "initNodeLabelColor " << initNodeLabelColor
                           << "nodeShape" <<  initNodeShape;
                     emit createNode(
-                                aNodes, initNodeSize, nodeColor,
+                                totalNodes, initNodeSize, nodeColor,
                                 initNodeNumberColor, initNodeNumberSize,
                                 node , initNodeLabelColor, initNodeLabelSize,
                                 QPointF(randX,randY),
                                 initNodeShape, false
                                 );
                     nodesDiscovered.push_back( node  );
-                    qDebug()<<" * Total aNodes "
-                           << aNodes<< " nodesDiscovered  "<< nodesDiscovered.size() ;
-                    target=aNodes;
+                    qDebug()<<" * Total totalNodes "
+                           << totalNodes<< " nodesDiscovered  "<< nodesDiscovered.size() ;
+                    target=totalNodes;
                     if (it!=nodeSequence.begin()) {
                         qDebug()<<"-- Drawing Link between node "
                                << source<< " and node " <<target;
@@ -2462,20 +2467,20 @@ bool Parser::loadDot(){
                 qDebug()<<"node label: "<<node.toLatin1()<<"." ;
                 if (!nodesDiscovered.contains(node)) {
                     qDebug("not discovered node");
-                    aNodes++;
+                    totalNodes++;
                     randX=rand()%gwWidth;
                     randY=rand()%gwHeight;
                     qDebug()<<"***  Creating node at "<<  randX << " "<< randY<< " label "<<node.toLatin1() << " colored "<< nodeColor;
                     emit createNode(
-                                aNodes, initNodeSize, nodeColor,
+                                totalNodes, initNodeSize, nodeColor,
                                 initNodeNumberColor, initNodeNumberSize,
                                 label, initNodeLabelColor, initNodeLabelSize,
                                 QPointF(randX,randY),
                                 nodeShape, false
                                 );
-                    aNum=aNodes;
+                    aNum=totalNodes;
                     nodesDiscovered.push_back( node);
-                    qDebug()<<" Total aNodes: "<<  aNodes<< " nodesDiscovered = "<< nodesDiscovered.size();
+                    qDebug()<<" Total totalNodes: "<<  totalNodes<< " nodesDiscovered = "<< nodesDiscovered.size();
                 }
                 else {
                     qDebug("discovered node - skipping it!");
@@ -2490,7 +2495,7 @@ bool Parser::loadDot(){
     file.close();
     //The network has been loaded. Tell MW the statistics and network type
     emit networkFileLoaded(FILE_GRAPHVIZ, fileName, networkName,
-                           aNodes, totalLinks, edgeDirType);
+                           totalNodes, totalLinks, edgeDirType);
     return true;
 }
 
@@ -2586,29 +2591,73 @@ void Parser::dotProperties(QString str, float &nValue, QString &label, QString &
 
 
 
+template<typename T> void print_queue(T& q) {
+    qDebug() << "print_queue() ";
+    while(!q.empty()) {
+        qDebug() << q.top().key << " value: " << q.top().value << " ";
+        q.pop();
+    }
+    qDebug() << endl;
+}
+
+
+
+
+/**
+ * @brief A method to load a weighted edge list formatted file.
+ * @param delimiter
+ * @return
+ * This method can read and parse edgelist formated files
+ * where edge source and target are either named with numbers or with labels
+ * That is the following formats can be parsed:
+# edgelist with node numbers
+1 2 1
+1 3 2
+1 6 2
+1 8 2
+...
+
+# edgelist with node labels
+actor1 actor2 1
+actor2 actor4 2
+actor1 actor3 1
+actorX actorY 3
+name othername 1
+othername somename 2
+....
+ */
 bool Parser::loadWeighedList(const QString &delimiter){
-    qDebug() << "Parser::loadWeighedList() - delimiter" << delimiter ;
+    qDebug() << "Parser::loadWeighedList() - column delimiter" << delimiter ;
 
     QFile file ( fileName );
     if ( ! file.open(QIODevice::ReadOnly ))
         return false;
     QTextStream ts( &file );
     ts.setCodec(userSelectedCodecName.toUtf8());
-    QString str;
-    QStringList lineElement;
-    int  j=0,  source=0, target=0, newCount=0,  maxNodeCreated=0;
-    bool intOK=false;
 
+    QMap<QString, int> nodeMap;
+    priority_queue<Actor, vector<Actor>, CompareActors> nodeQ;
+    QHash<QString, float> edgeList;
+    QString str, edgeKey,edgeKeyDelimiter="====>" ;
+    QStringList lineElement, edgeElement;
+    bool intOK=false;
+    bool nodesWithLabels = false;
+    bool floatOK = false;
+    totalNodes=0;
     edgeWeight=1.0;
     edgeDirType=EDGE_DIRECTED;
     arrows=true;
     bezier=false;
 
+    qDebug()<< "*** Parser::loadWeighedList() - Initial file parsing "
+               "to test integrity";
     while ( !ts.atEnd() )   {
         str= ts.readLine() ;
-        qDebug()<< " str " << str;
-        str=str.simplified();
 
+        qDebug()<< "Parser::loadWeighedList() - str" << str;
+
+        str=str.simplified();
+        qDebug()<< "Parser::loadWeighedList() - simplified str" << str;
         if ( isComment(str) )
             continue;
 
@@ -2621,73 +2670,228 @@ bool Parser::loadWeighedList(const QString &delimiter){
              || str.contains("graphml",Qt::CaseInsensitive)
              || str.contains("xml",Qt::CaseInsensitive)
              ) {
-            qDebug()<< "*** Parser::loadWeighedList() - Not a Weighted list-formatted file. Aborting!!";
+            qDebug()<< "Parser::loadWeighedList() - "
+                       "Not a Weighted list-formatted file. Aborting!!";
             file.close();
             return false;
         }
 
         lineElement=str.split(delimiter);
-        newCount = lineElement.count();
 
-        if ( newCount != 3 ) {
-            qDebug()<< "*** Parser::loadWeighedList() - Not a Weighted list-formatted file. Aborting!!";
+        if ( lineElement.count()  != 3 ) {
+            qDebug()<< "*** Parser::loadWeighedList() - "
+                       "Not a Weighted list-formatted file. Aborting!!";
             file.close();
             return false;
         }
 
-        source =  (lineElement[0]).toInt(&intOK);
-        target =  (lineElement[1]).toInt(&intOK);
-        qDebug() << "Parser::loadWeighedList()- edge " << source  << "->" << target;
+        edge_source = lineElement[0];
+        edge_target = lineElement[1];
+        edge_weight = lineElement[2];
+        qDebug()<< "Parser::loadWeighedList() - Dissecting line - "
+                   "source:"
+                << edge_source
+                << "target:"
+                << edge_target
+                << "weight:"
+                << edge_weight;
 
-        edgeWeight=(lineElement[2]).toDouble(&intOK);
-        if (intOK) {
-            qDebug () << "Parser::loadWeighedList() - edge weight" << edgeWeight;
+
+        // one or more digits
+        QRegularExpression onlyDigitsExp("^\\d+$");
+
+
+        if (!edge_source.contains(onlyDigitsExp)) {
+            qDebug()<< "Parser::loadWeighedList() - node named by non-digit only string. "
+                       "nodesWithLabels = true";
+            nodesWithLabels = true;
+        }
+
+        if (!edge_target.contains(onlyDigitsExp)) {
+            qDebug()<< "Parser::loadWeighedList() - node named by non-digit only string. "
+                       "nodesWithLabels = true";
+            nodesWithLabels = true;
+        }
+
+    }
+
+    ts.seek(0);
+
+    qDebug()<< "*** Parser::loadWeighedList() - Initial file parsing finished. "
+               "This is really a weighted edge list. Proceed to main parsing";
+
+    while ( !ts.atEnd() )   {
+        str= ts.readLine() ;
+
+        qDebug()<< "Parser::loadWeighedList() - str" << str;
+
+        str=str.simplified();
+        qDebug()<< "Parser::loadWeighedList() - simplified str" << str;
+
+        if ( isComment(str) )
+            continue;
+
+        lineElement=str.split(delimiter);
+
+        edge_source = lineElement[0];
+        edge_target = lineElement[1];
+        edge_weight = lineElement[2];
+        qDebug()<< "Parser::loadWeighedList() - Dissecting line - "
+                   "source:"
+                << edge_source
+                << "target:"
+                << edge_target
+                << "weight:"
+                << edge_weight;
+
+        if ( ! nodeMap.contains(edge_source) ) {
+            totalNodes++;
+            if (nodesWithLabels) {
+                nodeQ.push( { edge_source, totalNodes } );
+                nodeMap.insert(edge_source, totalNodes);
+            }
+            else {
+                nodeQ.push( { edge_source, edge_source.toInt()} );
+                nodeMap.insert(edge_source, edge_source.toInt() );
+            }
+            qDebug()<< "Parser::loadWeighedList() - source, new node named"
+                    << edge_source
+                    << "totalNodes" << totalNodes
+                    << "nodeMap.count"
+                    << nodeMap.count();
+
         }
         else {
-            edgeWeight=1.0;
-            qDebug () << "Parser::loadWeighedList() - edge weight not found. Using default weight " << edgeWeight;
+            qDebug()<< "Parser::loadWeighedList() - source already found, continue";
         }
-        if (maxNodeCreated < source ) {
-            for ( j = maxNodeCreated ; j != source ; j++ ) {
-                randX=rand()%gwWidth;
-                randY=rand()%gwHeight;
-                qDebug()<< "Parser::loadWeighedList() - source " << source
-                        << "is less than maxNodeCreated - creating node "<< j+1
-                        << "using random coords "<<randX << " "<< randY;
-                emit createNode( j+1, initNodeSize,  initNodeColor,
-                                 initNodeNumberColor, initNodeNumberSize,
-                                 QString::number(j+1), initNodeLabelColor, initNodeLabelSize,
-                                 QPointF(randX, randY),
-                                 initNodeShape, false
-                                 );
+        if ( ! nodeMap.contains(edge_target) ) {
+            totalNodes++;
+            if (nodesWithLabels) {
+                nodeQ.push( { edge_target, totalNodes } );
+                nodeMap.insert(edge_target, totalNodes);
             }
-            maxNodeCreated = source ;
-        }
-        if (maxNodeCreated < target ) {
-            for ( j = maxNodeCreated ; j != target; j++ ) {
-                randX=rand()%gwWidth;
-                randY=rand()%gwHeight;
-                qDebug()<< "Parser::loadWeighedList() - target " << target
-                        << "is less than maxNodeCreated - creating node "<< j+1
-                        <<" using random coords "<<randX << " "<< randY;
-                emit createNode( j+1, initNodeSize,  initNodeColor,
-                                 initNodeNumberColor, initNodeNumberSize,
-                                 QString::number(j+1), initNodeLabelColor, initNodeLabelSize,
-                                 QPointF(randX, randY),
-                                 initNodeShape, false
-                                 );
+            else {
+                nodeQ.push( { edge_target, edge_target.toInt()} );
+                nodeMap.insert(edge_target, edge_target.toInt() );
             }
-            maxNodeCreated = target ;
+            qDebug()<< "Parser::loadWeighedList() - target, new node named"
+                    << edge_target
+                    << "totalNodes" << totalNodes
+                    << "nodeMap.count"
+                    << nodeMap.count();
+
         }
-        qDebug()<< "Parser::loadWeighedList() - Creating edge "
-                << "i= " << source << " to j= "<< target << " weight= "<< edgeWeight <<  " TotalLinks=  " << totalLinks+1;
-        emit edgeCreate(source, target, edgeWeight, initEdgeColor, edgeDirType, arrows, bezier);
-        totalLinks++;
+        else {
+            qDebug()<< "Parser::loadWeighedList() - target already found, continue";
+        }
+
+        edgeWeight = edge_weight.toFloat(&floatOK);
+        if (floatOK) {
+            qDebug()<< "Parser::loadWeighedList() - read edge weight"
+                    << edgeWeight;
+        }
+        else {
+            edgeWeight = 1.0;
+            qDebug()<< "Parser::loadWeighedList() - error reading edge weight."
+                       "Using default edgeWeight"
+                    << edgeWeight;
+        }
+        edgeKey = edge_source + edgeKeyDelimiter + edge_target;
+        if ( ! edgeList.contains( edgeKey ) ) {
+            qDebug()<< "Parser::loadWeighedList() - inserting edgeKey"
+                    << edgeKey
+                    << "in edgeList with weight" << edgeWeight;
+            edgeList.insert( edgeKey, edgeWeight );
+            totalLinks++;
+        }
+
+
     } //end ts.stream while here
     file.close();
 
+    qDebug() << "Parser::loadWeighedList() - finished reading file, "
+                "start creating nodes and edges";
+
+    //print_queue(nodeQ);
+
+    // create nodes one by one
+    while (!nodeQ.empty()) {
+
+        Actor node = nodeQ.top();
+         nodeQ.pop();
+         randX=rand()%gwWidth;
+         randY=rand()%gwHeight;
+
+         if (nodesWithLabels) {
+             qDebug() << "Parser::loadWeighedList() - creating node named"
+                      << node.key << "numbered" << node.value
+                      << "at position" << QPointF(randX, randY);
+             emit createNode( node.value,
+                              initNodeSize,
+                              initNodeColor,
+                              initNodeNumberColor,
+                              initNodeNumberSize,
+                              node.key,
+                              initNodeLabelColor, initNodeLabelSize,
+                              QPointF(randX, randY),
+                              initNodeShape,
+                              false
+                              );
+         }
+         else {
+
+             qDebug() << "Parser::loadWeighedList() - creating node named"
+                      << node.key << "numbered" << node.key.toInt()
+                      << "at position" << QPointF(randX, randY);
+             emit createNode( node.key.toInt(),
+                              initNodeSize,
+                              initNodeColor,
+                              initNodeNumberColor,
+                              initNodeNumberSize,
+                              node.key,
+                              initNodeLabelColor, initNodeLabelSize,
+                              QPointF(randX, randY),
+                              initNodeShape,
+                              false
+                              );
+
+         }
+
+     }
+
+     //create edges one by one
+     QHash<QString, float>::const_iterator edge = edgeList.constBegin();
+      while (edge!= edgeList.constEnd()) {
+
+          qDebug() << "Parser::loadWeighedList() - creating edge named"
+                   << edge.key() << " weight " << edge.value();
+
+          edgeElement=edge.key().split(edgeKeyDelimiter);
+          if (nodesWithLabels) {
+              source = nodeMap.value( edgeElement[0] ) ;
+              target = nodeMap.value( edgeElement[1] ) ;
+          }
+          else {
+              source = edgeElement[0].toInt() ;
+              target = edgeElement[1].toInt() ;
+          }
+
+          emit edgeCreate(source,
+                          target,
+                          edgeWeight,
+                          initEdgeColor,
+                          edgeDirType,
+                          arrows,
+                          bezier);
+
+          ++edge;
+      }
+
+
+
     //The network has been loaded. Tell MW the statistics and network type
-    emit networkFileLoaded(FILE_EDGELIST_WEIGHTED, fileName, networkName, aNodes, totalLinks, edgeDirType);
+    emit networkFileLoaded(FILE_EDGELIST_WEIGHTED, fileName, networkName,
+                           totalNodes, totalLinks, edgeDirType);
     qDebug() << "Parser::loadWeighedList() - END. Returning.";
     return true;
 
@@ -2814,7 +3018,7 @@ bool Parser::loadSimpleList(){
     } //end ts.stream while here
     file.close();
     //The network has been loaded. Tell MW the statistics and network type
-    emit networkFileLoaded(FILE_EDGELIST_SIMPLE, fileName, networkName, aNodes, totalLinks, edgeDirType);
+    emit networkFileLoaded(FILE_EDGELIST_SIMPLE, fileName, networkName, totalNodes, totalLinks, edgeDirType);
     qDebug() << "Parser-loadSimpleList() ending and returning...";
     return true;
 
@@ -2833,7 +3037,8 @@ bool Parser::isComment(QString str){
          || str.startsWith("//", Qt::CaseInsensitive)
          || str.isEmpty()
          ) {
-        qDebug () << " Parser: a comment or an empty line was found. Skipping...";
+        qDebug () << "Parser::isComment() - Comment or an empty line was found. "
+                     "Skipping...";
         return true;
     }
     return false;
