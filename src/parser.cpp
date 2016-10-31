@@ -187,8 +187,10 @@ bool Parser::run()  {
         break;
     }
 
-    qDebug()<< "**** Parser::run() - we return back to Graph and MW! "
+    qDebug()<< "**** Parser::run() - on thread " << this->thread()
+               << "End. Return back to Graph and MW! "
                         << " fileFormat now "<< fileFormat ;
+
 
     emit finished ("Parser::run() - reach end");
     return (fileFormat==FILE_UNRECOGNIZED) ? false: true;
