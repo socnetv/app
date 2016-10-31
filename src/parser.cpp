@@ -159,14 +159,14 @@ bool Parser::run()  {
         break;
 
     case FILE_EDGELIST_WEIGHTED:
-        if (loadWeighedList(delimiter) ){
+        if (loadEdgeListWeighed(delimiter) ){
             qDebug("Parser: this is a weighted list formatted (.list) network");
         }
         else fileFormat=FILE_UNRECOGNIZED;
         break;
 
     case FILE_EDGELIST_SIMPLE:
-        if (loadSimpleList() ){
+        if (loadEdgeListSimple() ){
             qDebug("Parser: this is a simple list formatted (.list) network");
         }
         else fileFormat=FILE_UNRECOGNIZED;
@@ -195,6 +195,22 @@ bool Parser::run()  {
 }
 
 
+/**
+ * @brief Parser::networkFileLoadError
+ * @param errorMessage
+ * Called when Parser cannot read or parse correctly a file.
+ * It informs the Graph and then MW with the error message
+ */
+void Parser::networkFileLoadError(const QString &errorMessage) {
+    emit networkFileLoaded(FILE_UNRECOGNIZED,
+                           QString::null,
+                           QString::null,
+                           0,
+                           0,
+                           false,
+                           errorMessage
+                           );
+}
 
 /**
  * @brief Parser::createRandomNodes
@@ -232,7 +248,10 @@ bool Parser::loadDL(){
 
     qDebug() << "Parser::loadDL() - Reading UCINET formatted file ";
     QFile file ( fileName );
-    if ( ! file.open(QIODevice::ReadOnly )) return false;
+    if ( ! file.open(QIODevice::ReadOnly )) {
+        networkFileLoadError(tr("Cannot open UCINET file "));
+        return false;
+    }
     QTextStream ts( &file );
     ts.setCodec(userSelectedCodecName.toUtf8());
     QString str, label, nm_str, relation, prevLineStr=QString::null;
@@ -264,6 +283,7 @@ bool Parser::loadDL(){
         if ( (lineCounter == 1) &&
              (!str.startsWith("DL",Qt::CaseInsensitive)  ) ) {
             qDebug() << "Parser::loadDL() - Not a DL file. Aborting!";
+            networkFileLoadError(tr("File does not start with DL in line 1"));
             file.close();
             return false;
         }
@@ -288,6 +308,7 @@ bool Parser::loadDL(){
                 if (!intOK) {
                     qDebug() << "Parser::loadDL() - NM conversion error..." ;
                     //emit something here...
+                    networkFileLoadError(tr("Cannot convert NM value to integer"));
                     return false;
                 }
                 str.truncate(mark2);
@@ -300,6 +321,7 @@ bool Parser::loadDL(){
             totalNodes=str.toInt(&intOK,10);
             if (!intOK) {
                 qDebug() << "Parser::loadDL() - N conversion error..." ;
+                networkFileLoadError(tr("Cannot convert N value to integer"));
                 return false;
             }
             qDebug() << "Parser::loadDL() - Finally N=" << totalNodes << "NM=" <<nm;
@@ -474,6 +496,8 @@ bool Parser::loadDL(){
                             "formatted file. Aborting!!";
                 file.close();
                 //emit something...
+                networkFileLoadError(tr("UCINET file declared as edgelist "
+                                        "but I found a line which did not have 3 elements (source, target, weight)"));
                 return false;
             }
 
@@ -504,6 +528,7 @@ bool Parser::loadDL(){
     if (nodeSum != totalNodes) {
         qDebug()<< "Error: aborting";
         //emit something
+        networkFileLoadError(tr("UCINET declared N actors initially but I found a different number of actors"));
         return false;
     }
     //The network has been loaded. Tell MW the statistics and network type
@@ -529,7 +554,10 @@ bool Parser::loadPajek(){
 
     qDebug ("\n\nParser: loadPajek");
     QFile file ( fileName );
-    if ( ! file.open(QIODevice::ReadOnly )) return false;
+    if ( ! file.open(QIODevice::ReadOnly ))  {
+        networkFileLoadError(tr("Cannot open Pajek file"));
+        return false;
+    }
     QTextStream ts( &file );
     ts.setCodec(userSelectedCodecName.toUtf8());
     QString str, label, temp;
@@ -584,6 +612,8 @@ bool Parser::loadPajek(){
                  ) {
                 qDebug()<< "*** Parser:loadPajek(): Not a Pajek-formatted file. Aborting!!";
                 file.close();
+                networkFileLoadError(tr("Not a Pajek-formatted file. "
+                                        "First not-comment line does not start with Network or Vertices"));
                 return false;
             }
         }
@@ -597,6 +627,7 @@ bool Parser::loadPajek(){
                 )
             {
                 qDebug("*** Parser-loadPajek(): Not a Pajek file. Aborting!");
+                networkFileLoadError(tr("Not a Pajek-formatted file. First not-comment line does not start with Network or Vertices"));
                 file.close();
                 return false;
             }
@@ -782,6 +813,7 @@ bool Parser::loadPajek(){
             }
             else if ( j > nodeNum ) {
                 qDebug ("Error: This Pajek net declares this node with nodeNumber smaller than previous nodes. Aborting");
+                networkFileLoadError(tr("Pajek-formatted file declares a node with nodeNumber smaller than previous nodes."));
                 return false;
             }
 
@@ -822,7 +854,12 @@ bool Parser::loadPajek(){
                 qDebug()<<lineElement;
                 source =  lineElement[0].toInt(&ok, 10);
                 target = lineElement[1].toInt(&ok,10);
-                if (source == 0 || target == 0 ) return false;  //  i --> (i-1)   internally
+                if (source == 0 || target == 0 ) {
+                    networkFileLoadError(tr("Pajek-formatted file declares edge "
+                                            "with a zero source or target nodeNumber. "
+                                            "Each node should have a nodeNumber > 0."));
+                    return false;  //  i --> (i-1)   internally
+                }
                 else if (source < 0 && target >0  ) {  //weights come first...
                     edgeWeight  = lineElement[0].toFloat(&ok);
                     source=  lineElement[1].toInt(&ok, 10);
@@ -880,7 +917,12 @@ bool Parser::loadPajek(){
                 //qDebug("Parser-loadPajek(): === Reading arcs ===");
                 source=  lineElement[0].toInt(&ok, 10);
                 target = lineElement[1].toInt(&ok,10);
-                if (source == 0 || target == 0 ) return false;   //  i --> (i-1)   internally
+                if (source == 0 || target == 0 ) {
+                    networkFileLoadError(tr("Pajek-formatted file declares arc "
+                                            "with a zero source or target nodeNumber. "
+                                            "Each node should have a nodeNumber > 0."));
+                    return false;   //  i --> (i-1)   internally
+                }
                 else if (source < 0 && target >0 ) {  //weights come first...
                     edgeWeight  = lineElement[0].toFloat(&ok);
                     source=  lineElement[1].toInt(&ok, 10);
@@ -968,7 +1010,10 @@ bool Parser::loadPajek(){
         } //end if BOTH ARCS AND EDGES
     } //end WHILE
     file.close();
-    if (j==0) return false;
+    if (j==0) {
+        networkFileLoadError(tr("Could not find node declarations in this Pajek-formatted file."));
+        return false;
+    }
 
     qDebug("Parser-loadPajek(): Removing all dummy nodes, if any");
     if (listDummiesPajek.size() > 0 ) {
@@ -1003,15 +1048,17 @@ bool Parser::loadPajek(){
 bool Parser::loadAdjacency(){
     qDebug("\n\nParser: loadAdjacency()");
     QFile file ( fileName );
-    if ( ! file.open(QIODevice::ReadOnly )) return false;
+    if ( ! file.open(QIODevice::ReadOnly )) {
+        return false;
+    }
     QTextStream ts( &file );
     ts.setCodec(userSelectedCodecName.toUtf8());
     QString str;
     QStringList lineElement;
     int i=0, j=0, newCount=0, lastCount=0;
+    bool intOK=false;
     totalNodes=0;
     edgeWeight=1.0;
-    bool intOK=false;
     totalLinks=0;
     i=1;
     while ( i < 11 &&  !ts.atEnd() )   {
@@ -1032,6 +1079,9 @@ bool Parser::loadAdjacency(){
              ) {
             qDebug()<< "*** Parser:loadAdjacency(): Not an Adjacency-formatted file. Aborting!!";
             file.close();
+            networkFileLoadError(tr("Not an Adjacency-formatted file. "
+                                    "A non-comment line includes prohibited strings (i.e GraphML), "
+                                    "not only numbers and delimiters as expected."));
             return false;
         }
         if ( str.contains (","))
@@ -1044,6 +1094,8 @@ bool Parser::loadAdjacency(){
             // line element count differ, therefore this can't be an adjacency matrix
             qDebug()<< "*** Parser:loadAdjacency(): Not an Adjacency-formatted file. Aborting!!";
             file.close();
+            networkFileLoadError(tr("Error reading Adjacency-formatted file. "
+                                    "Matrix row %i has different number of elements from previous row.").arg(i));
             return false;
         }
 
@@ -1087,7 +1139,11 @@ bool Parser::loadAdjacency(){
             }
         }
         qDebug("Parser-loadAdjacency(): Finished creation of nodes");
-        if ( totalNodes != (int) lineElement.count() ) return false;
+        if ( totalNodes != (int) lineElement.count() )  {
+            networkFileLoadError(tr("Error reading Adjacency-formatted file. "
+                                    "Matrix row %i has different number of elements from previous row.").arg(i));
+            return false;
+        }
         j=0;
         for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
             if ( (*it1)!="0"){
@@ -1123,8 +1179,10 @@ bool Parser::loadAdjacency(){
 bool Parser::loadTwoModeSociomatrix(){
     qDebug("\n\nParser: loadTwoModeSociomatrix()");
     QFile file ( fileName );
-    if ( ! file.open(QIODevice::ReadOnly ))
+    if ( ! file.open(QIODevice::ReadOnly )) {
+        networkFileLoadError(tr("Cannot open two-mode sociomatrix file. ") );
         return false;
+    }
     QTextStream ts( &file );
     ts.setCodec(userSelectedCodecName.toUtf8());
     QString str;
@@ -1150,6 +1208,9 @@ bool Parser::loadTwoModeSociomatrix(){
              ) {
             qDebug()<< "*** Parser:loadTwoModeSociomatrix(): Not a two mode sociomatrix-formatted file. Aborting!!";
             file.close();
+            networkFileLoadError(tr("Not a two-mode sociomatrix formatted file. "
+                                    "A non-comment line includes prohibited strings (i.e GraphML), "
+                                    "not only numbers and delimiters as expected."));
             return false;
         }
         if ( str.contains (",")){
@@ -1165,6 +1226,7 @@ bool Parser::loadTwoModeSociomatrix(){
         if  ( (newCount != lastCount && i>1 )  ) { // line element count differ
             qDebug()<< "*** Parser:loadTwoModeSociomatrix(): Not a Sociomatrix-formatted file. Aborting!!";
             file.close();
+            networkFileLoadError(tr("Row %i has fewer or more elements than previous line.").arg(i));
             return false;
         }
         lastCount=newCount;
@@ -1238,8 +1300,9 @@ bool Parser::loadGraphML(){
     arrows=true;
     edgeDirType=EDGE_DIRECTED;
     QFile file ( fileName );
-    if ( ! file.open(QIODevice::ReadOnly ))
+    if ( ! file.open(QIODevice::ReadOnly )) {
         return false;
+    }
 
     QXmlStreamReader *xml = new QXmlStreamReader();
 
@@ -1292,7 +1355,9 @@ bool Parser::loadGraphML(){
                 qDebug()<< " Parser::loadGraphML(): GraphML start. NamespaceUri is "
                         << xml->namespaceUri().toString()
                         << "Calling readGraphML()";
-                readGraphML(*xml);
+                if (! readGraphML(*xml) ) {
+                    return false;
+                }
             }
             else {	//not a GraphML doc, return false.
                 xml->raiseError(
@@ -1300,6 +1365,7 @@ bool Parser::loadGraphML(){
                 qDebug()<< "*** loadGraphML(): Error in startElement "
                         << " The file is not an GraphML version 1.0 file ";
                 file.close();
+                networkFileLoadError(tr("XML at startElement but element name not graphml."));
                 return false;
             }
         }
@@ -1309,6 +1375,7 @@ bool Parser::loadGraphML(){
             qDebug()<< "*** loadGraphML(): Cannot find  startElement"
                     << " The file is not valid GraphML or has invalid encoding";
             file.close();
+            networkFileLoadError(tr("XML tokenString at line %1 invalid.").arg(xml->lineNumber()));
             return false;
         }
     }
@@ -1332,7 +1399,7 @@ bool Parser::loadGraphML(){
  * Called from loadGraphML
  * This method checks the xml token name and calls the appropriate function.
  */
-void Parser::readGraphML(QXmlStreamReader &xml){
+bool Parser::readGraphML(QXmlStreamReader &xml){
     qDebug()<< " Parser::readGraphML() " ;
     bool_node=false;
     bool_edge=false;
@@ -1343,8 +1410,16 @@ void Parser::readGraphML(QXmlStreamReader &xml){
         xml.readNext();	//read next token
 
         qDebug()<< "Parser::readGraphML() - line:" << xml.lineNumber();
-        if (xml.hasError())
+        if (xml.hasError()) {
             qDebug()<< "Parser::readGraphML() - ERROR:" << xml.errorString();
+            networkFileLoadError(
+                        tr("XML has error at line %1, token name %2:\n%3")
+                        .arg(xml.lineNumber())
+                        .arg(xml.name().toString())
+                        .arg(xml.errorString())
+                        );
+            return false;
+        }
 
         if (xml.isStartElement()) {	//new token (graph, node, or edge) here
             qDebug()<< "Parser::readGraphML() - start of element: "
@@ -1414,7 +1489,7 @@ void Parser::readGraphML(QXmlStreamReader &xml){
     // call createMissingNodeEdges() to create any edges with missing nodes
     createMissingNodeEdges();
 
-
+    return true;
 }
 
 
@@ -2087,7 +2162,9 @@ bool Parser::loadGML(){
     Q_UNUSED(start);
     Q_UNUSED(end);
 
-    if ( ! file.open(QIODevice::ReadOnly )) return false;
+    if ( ! file.open(QIODevice::ReadOnly )) {
+        return false;
+    }
     QTextStream ts( &file );
     ts.setCodec(userSelectedCodecName.toUtf8());
     while (!ts.atEnd() )   {
@@ -2099,6 +2176,8 @@ bool Parser::loadGML(){
             if ( !str.startsWith("graph", Qt::CaseInsensitive) ) {
                 qDebug() << "*** Parser:loadGML(): Not an GML-formatted file. Aborting";
                 file.close();
+                networkFileLoadError(tr("Not an GML-formatted file. "
+                                        "A non-comment line includes prohibited strings (i.e GraphML)"));
                 return false;
             }
 
@@ -2174,6 +2253,8 @@ bool Parser::loadDot(){
                  ) {
                 qDebug() << "*** Parser:loadDot(): Not an GraphViz -formatted file. Aborting";
                 file.close();
+                networkFileLoadError(tr("Not a GraphViz-formatted file. "
+                                        "First non-comment line includes prohibited strings (i.e GraphML)."));
                 return false;
             }
 
@@ -2192,7 +2273,10 @@ bool Parser::loadDot(){
                 continue;
             }
             else {
-                qDebug()<<" *** Parser:loadDot(): Not a GraphViz file. Abort: dot format can only start with \" (di)graph netname {\"";
+                qDebug()<<" *** Parser:loadDot(): Not a GraphViz file. "
+                          "Abort: dot format can only start with \" (di)graph netname {\"";
+                networkFileLoadError(tr("Not properly GraphViz-formatted file. "
+                                        "First non-comment line should start with \" (di)graph netname {\""));
                 return false;
             }
         }
@@ -2309,6 +2393,9 @@ bool Parser::loadDot(){
             }
             else {
                     qDebug ("* ERROR!");
+                    networkFileLoadError(tr("Not properly GraphViz-formatted file. "
+                                            "Node definition without opening ["));
+                    return false;
 
             }
         }
@@ -2590,7 +2677,9 @@ void Parser::dotProperties(QString str, float &nValue, QString &label, QString &
 
 
 
-
+/**
+ * Debugging only - Used in loadEdgeListWeighed
+ */
 template<typename T> void print_queue(T& q) {
     qDebug() << "print_queue() ";
     while(!q.empty()) {
@@ -2626,8 +2715,8 @@ name othername 1
 othername somename 2
 ....
  */
-bool Parser::loadWeighedList(const QString &delimiter){
-    qDebug() << "Parser::loadWeighedList() - column delimiter" << delimiter ;
+bool Parser::loadEdgeListWeighed(const QString &delimiter){
+    qDebug() << "Parser::loadEdgeListWeighed() - column delimiter" << delimiter ;
 
     QFile file ( fileName );
     if ( ! file.open(QIODevice::ReadOnly ))
@@ -2636,6 +2725,9 @@ bool Parser::loadWeighedList(const QString &delimiter){
     ts.setCodec(userSelectedCodecName.toUtf8());
 
     QMap<QString, int> nodeMap;
+    // use a minimum priority queue to order Actors<QString key, int value> by their value
+    // so that we can create the discovered nodes by either their increasing nodeNumber
+    // (if nodesWithLabels == true) or by their actual number in the file (if nodesWithLabels == false).
     priority_queue<Actor, vector<Actor>, CompareActors> nodeQ;
     QHash<QString, float> edgeList;
     QString str, edgeKey,edgeKeyDelimiter="====>" ;
@@ -2643,21 +2735,22 @@ bool Parser::loadWeighedList(const QString &delimiter){
     bool intOK=false;
     bool nodesWithLabels = false;
     bool floatOK = false;
+    int rowCount = 1;
     totalNodes=0;
     edgeWeight=1.0;
     edgeDirType=EDGE_DIRECTED;
     arrows=true;
     bezier=false;
 
-    qDebug()<< "*** Parser::loadWeighedList() - Initial file parsing "
+    qDebug()<< "*** Parser::loadEdgeListWeighed() - Initial file parsing "
                "to test integrity";
     while ( !ts.atEnd() )   {
         str= ts.readLine() ;
 
-        qDebug()<< "Parser::loadWeighedList() - str" << str;
+        qDebug()<< "Parser::loadEdgeListWeighed() - str" << str;
 
         str=str.simplified();
-        qDebug()<< "Parser::loadWeighedList() - simplified str" << str;
+        qDebug()<< "Parser::loadEdgeListWeighed() - simplified str" << str;
         if ( isComment(str) )
             continue;
 
@@ -2670,25 +2763,30 @@ bool Parser::loadWeighedList(const QString &delimiter){
              || str.contains("graphml",Qt::CaseInsensitive)
              || str.contains("xml",Qt::CaseInsensitive)
              ) {
-            qDebug()<< "Parser::loadWeighedList() - "
+            qDebug()<< "Parser::loadEdgeListWeighed() - "
                        "Not a Weighted list-formatted file. Aborting!!";
             file.close();
+            networkFileLoadError(tr("Not an EdgeList-formatted file. "
+                                    "A non-comment line includes prohibited strings (i.e GraphML)"));
             return false;
         }
 
         lineElement=str.split(delimiter);
 
         if ( lineElement.count()  != 3 ) {
-            qDebug()<< "*** Parser::loadWeighedList() - "
+            qDebug()<< "*** Parser::loadEdgeListWeighed() - "
                        "Not a Weighted list-formatted file. Aborting!!";
             file.close();
+            networkFileLoadError(tr("Not a properly EdgeList-formatted file. "
+                                    "Row %1 has not 3 elements as expected (i.e. source, target, weight)")
+                                 .arg(rowCount));
             return false;
         }
 
         edge_source = lineElement[0];
         edge_target = lineElement[1];
         edge_weight = lineElement[2];
-        qDebug()<< "Parser::loadWeighedList() - Dissecting line - "
+        qDebug()<< "Parser::loadEdgeListWeighed() - Dissecting line - "
                    "source:"
                 << edge_source
                 << "target:"
@@ -2702,31 +2800,31 @@ bool Parser::loadWeighedList(const QString &delimiter){
 
 
         if (!edge_source.contains(onlyDigitsExp)) {
-            qDebug()<< "Parser::loadWeighedList() - node named by non-digit only string. "
+            qDebug()<< "Parser::loadEdgeListWeighed() - node named by non-digit only string. "
                        "nodesWithLabels = true";
             nodesWithLabels = true;
         }
 
         if (!edge_target.contains(onlyDigitsExp)) {
-            qDebug()<< "Parser::loadWeighedList() - node named by non-digit only string. "
+            qDebug()<< "Parser::loadEdgeListWeighed() - node named by non-digit only string. "
                        "nodesWithLabels = true";
             nodesWithLabels = true;
         }
-
+        rowCount ++;
     }
 
     ts.seek(0);
 
-    qDebug()<< "*** Parser::loadWeighedList() - Initial file parsing finished. "
+    qDebug()<< "*** Parser::loadEdgeListWeighed() - Initial file parsing finished. "
                "This is really a weighted edge list. Proceed to main parsing";
 
     while ( !ts.atEnd() )   {
         str= ts.readLine() ;
 
-        qDebug()<< "Parser::loadWeighedList() - str" << str;
+        qDebug()<< "Parser::loadEdgeListWeighed() - str" << str;
 
         str=str.simplified();
-        qDebug()<< "Parser::loadWeighedList() - simplified str" << str;
+        qDebug()<< "Parser::loadEdgeListWeighed() - simplified str" << str;
 
         if ( isComment(str) )
             continue;
@@ -2736,7 +2834,7 @@ bool Parser::loadWeighedList(const QString &delimiter){
         edge_source = lineElement[0];
         edge_target = lineElement[1];
         edge_weight = lineElement[2];
-        qDebug()<< "Parser::loadWeighedList() - Dissecting line - "
+        qDebug()<< "Parser::loadEdgeListWeighed() - Dissecting line - "
                    "source:"
                 << edge_source
                 << "target:"
@@ -2746,15 +2844,21 @@ bool Parser::loadWeighedList(const QString &delimiter){
 
         if ( ! nodeMap.contains(edge_source) ) {
             totalNodes++;
+            Actor sourceActor;
+            sourceActor.key = edge_source;
             if (nodesWithLabels) {
-                nodeQ.push( { edge_source, totalNodes } );
+                sourceActor.value = totalNodes;
+                // order by an increasing totalNodes index
+                nodeQ.push( sourceActor );
                 nodeMap.insert(edge_source, totalNodes);
             }
             else {
-                nodeQ.push( { edge_source, edge_source.toInt()} );
+                sourceActor.value = edge_source.toInt();
+                // order by the actual actor number in the file
+                nodeQ.push( sourceActor );
                 nodeMap.insert(edge_source, edge_source.toInt() );
             }
-            qDebug()<< "Parser::loadWeighedList() - source, new node named"
+            qDebug()<< "Parser::loadEdgeListWeighed() - source, new node named"
                     << edge_source
                     << "totalNodes" << totalNodes
                     << "nodeMap.count"
@@ -2762,19 +2866,25 @@ bool Parser::loadWeighedList(const QString &delimiter){
 
         }
         else {
-            qDebug()<< "Parser::loadWeighedList() - source already found, continue";
+            qDebug()<< "Parser::loadEdgeListWeighed() - source already found, continue";
         }
         if ( ! nodeMap.contains(edge_target) ) {
             totalNodes++;
+            Actor targetActor;
+            targetActor.key = edge_target;
             if (nodesWithLabels) {
-                nodeQ.push( { edge_target, totalNodes } );
+                targetActor.value = totalNodes ;
+                // order by an increasing totalNodes index
+                nodeQ.push( targetActor );
                 nodeMap.insert(edge_target, totalNodes);
             }
             else {
-                nodeQ.push( { edge_target, edge_target.toInt()} );
+                targetActor.value = edge_target.toInt();
+                // order by the actual actor number in the file
+                nodeQ.push( targetActor );
                 nodeMap.insert(edge_target, edge_target.toInt() );
             }
-            qDebug()<< "Parser::loadWeighedList() - target, new node named"
+            qDebug()<< "Parser::loadEdgeListWeighed() - target, new node named"
                     << edge_target
                     << "totalNodes" << totalNodes
                     << "nodeMap.count"
@@ -2782,23 +2892,23 @@ bool Parser::loadWeighedList(const QString &delimiter){
 
         }
         else {
-            qDebug()<< "Parser::loadWeighedList() - target already found, continue";
+            qDebug()<< "Parser::loadEdgeListWeighed() - target already found, continue";
         }
 
         edgeWeight = edge_weight.toFloat(&floatOK);
         if (floatOK) {
-            qDebug()<< "Parser::loadWeighedList() - read edge weight"
+            qDebug()<< "Parser::loadEdgeListWeighed() - read edge weight"
                     << edgeWeight;
         }
         else {
             edgeWeight = 1.0;
-            qDebug()<< "Parser::loadWeighedList() - error reading edge weight."
+            qDebug()<< "Parser::loadEdgeListWeighed() - error reading edge weight."
                        "Using default edgeWeight"
                     << edgeWeight;
         }
         edgeKey = edge_source + edgeKeyDelimiter + edge_target;
         if ( ! edgeList.contains( edgeKey ) ) {
-            qDebug()<< "Parser::loadWeighedList() - inserting edgeKey"
+            qDebug()<< "Parser::loadEdgeListWeighed() - inserting edgeKey"
                     << edgeKey
                     << "in edgeList with weight" << edgeWeight;
             edgeList.insert( edgeKey, edgeWeight );
@@ -2809,7 +2919,7 @@ bool Parser::loadWeighedList(const QString &delimiter){
     } //end ts.stream while here
     file.close();
 
-    qDebug() << "Parser::loadWeighedList() - finished reading file, "
+    qDebug() << "Parser::loadEdgeListWeighed() - finished reading file, "
                 "start creating nodes and edges";
 
     //print_queue(nodeQ);
@@ -2823,7 +2933,7 @@ bool Parser::loadWeighedList(const QString &delimiter){
          randY=rand()%gwHeight;
 
          if (nodesWithLabels) {
-             qDebug() << "Parser::loadWeighedList() - creating node named"
+             qDebug() << "Parser::loadEdgeListWeighed() - creating node named"
                       << node.key << "numbered" << node.value
                       << "at position" << QPointF(randX, randY);
              emit createNode( node.value,
@@ -2840,7 +2950,7 @@ bool Parser::loadWeighedList(const QString &delimiter){
          }
          else {
 
-             qDebug() << "Parser::loadWeighedList() - creating node named"
+             qDebug() << "Parser::loadEdgeListWeighed() - creating node named"
                       << node.key << "numbered" << node.key.toInt()
                       << "at position" << QPointF(randX, randY);
              emit createNode( node.key.toInt(),
@@ -2863,7 +2973,7 @@ bool Parser::loadWeighedList(const QString &delimiter){
      QHash<QString, float>::const_iterator edge = edgeList.constBegin();
       while (edge!= edgeList.constEnd()) {
 
-          qDebug() << "Parser::loadWeighedList() - creating edge named"
+          qDebug() << "Parser::loadEdgeListWeighed() - creating edge named"
                    << edge.key() << " weight " << edge.value();
 
           edgeElement=edge.key().split(edgeKeyDelimiter);
@@ -2892,7 +3002,7 @@ bool Parser::loadWeighedList(const QString &delimiter){
     //The network has been loaded. Tell MW the statistics and network type
     emit networkFileLoaded(FILE_EDGELIST_WEIGHTED, fileName, networkName,
                            totalNodes, totalLinks, edgeDirType);
-    qDebug() << "Parser::loadWeighedList() - END. Returning.";
+    qDebug() << "Parser::loadEdgeListWeighed() - END. Returning.";
     return true;
 
 }
@@ -2900,8 +3010,8 @@ bool Parser::loadWeighedList(const QString &delimiter){
 
 
 
-bool Parser::loadSimpleList(){
-    qDebug() << "Parser: loadSimpleList()";
+bool Parser::loadEdgeListSimple(){
+    qDebug() << "Parser: loadEdgeListSimple()";
     QFile file ( fileName );
     if ( ! file.open(QIODevice::ReadOnly ))
         return false;
@@ -2918,10 +3028,10 @@ bool Parser::loadSimpleList(){
     arrows=true;
     bezier=false;
 
-    qDebug () << "Parser::loadSimpleList() - check node numbering...";
+    qDebug () << "Parser::loadEdgeListSimple() - check node numbering...";
     while ( !ts.atEnd() )   {
         str= ts.readLine() ;
-        qDebug()<< "Parser::loadSimpleList() - line: " << endl << str;
+        qDebug()<< "Parser::loadEdgeListSimple() - line: " << endl << str;
         str=str.simplified();
 
         if ( isComment(str) )
@@ -2936,7 +3046,7 @@ bool Parser::loadSimpleList(){
              || str.contains("graphml",Qt::CaseInsensitive)
              || str.contains("xml",Qt::CaseInsensitive)
              ) {
-            qDebug()<< "*** Parser:loadSimpleList(): Not an Adjacency-formatted file. Aborting!!";
+            qDebug()<< "*** Parser:loadEdgeListSimple(): Not an Adjacency-formatted file. Aborting!!";
             file.close();
             return false;
         }
@@ -2951,21 +3061,21 @@ bool Parser::loadSimpleList(){
     }
 
     if (nodeNumberingZero) {
-        qDebug()<< "Parser::loadSimpleList() - node numbers start from zero ";
+        qDebug()<< "Parser::loadEdgeListSimple() - node numbers start from zero ";
     }
     else
-        qDebug()<< "Parser::loadSimpleList() - node numbers start from one ";
+        qDebug()<< "Parser::loadEdgeListSimple() - node numbers start from one ";
 
     ts.seek(0);
 
-    qDebug () << "Parser::loadSimpleList() - reset and read lines...";
+    qDebug () << "Parser::loadEdgeListSimple() - reset and read lines...";
 
     while ( !ts.atEnd() )   {
         str= ts.readLine() ;
 
         str=str.simplified();
 
-        qDebug()<< "Parser::loadSimpleList() - line: " << endl << str;
+        qDebug()<< "Parser::loadEdgeListSimple() - line: " << endl << str;
 
         if ( isComment(str) )
             continue;
@@ -3019,7 +3129,7 @@ bool Parser::loadSimpleList(){
     file.close();
     //The network has been loaded. Tell MW the statistics and network type
     emit networkFileLoaded(FILE_EDGELIST_SIMPLE, fileName, networkName, totalNodes, totalLinks, edgeDirType);
-    qDebug() << "Parser-loadSimpleList() ending and returning...";
+    qDebug() << "Parser-loadEdgeListSimple() ending and returning...";
     return true;
 
 }

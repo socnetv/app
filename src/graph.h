@@ -174,8 +174,14 @@ public slots:
                        const bool &signalMW
                         );//Main vertex creation call
 
-    void graphFileLoaded(int fileType, QString fName, QString netName,
-                     int totalNodes, int totalLinks, bool undirected);
+    void graphFileLoaded(const int &fileType,
+                         const QString &fName=QString::null,
+                         const QString &netName=QString::null,
+                         const int &totalNodes=0,
+                         const int &totalLinks=0,
+                         const bool &undirected=false,
+                         const QString &message=QString::null);
+
     void vertexRemoveDummyNode(int);
     void terminateParserThreads (QString reason);
 
@@ -227,8 +233,13 @@ signals:
                       const int &edges,
                       const float &density);
 
-    void signalGraphLoaded (int fileType, QString fileName, QString netName,
-                            int totalNodes,int totalLinks, bool undirected);
+    void signalGraphLoaded (const int &fileType,
+                            const QString &fileName=QString::null,
+                            const QString &netName=QString::null,
+                            const int &totalNodes=0,
+                            const int &totalLinks=0,
+                            const QString &message=QString::null
+            );
     void signalGraphSaved(const int &status);
 
     void statusMessage (const QString &message);

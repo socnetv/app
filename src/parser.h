@@ -40,13 +40,21 @@ class QXmlStreamAttributes;
 
 
 
-
+/**
+ * @brief The Actor struct
+ * Used in loadEdgeListWeighed
+ */
 struct Actor {
     QString key;
     int value;
 };
 
-// implement a min-priority queue
+
+/**
+ * @brief The CompareActors class
+ * Implements a min-priority queue
+ * Used in loadEdgeListWeighed
+ */
 class CompareActors {
     public:
     bool operator()(Actor& t1, Actor& t2)
@@ -85,14 +93,14 @@ public:
 	bool loadGML();
 	bool loadGW();
 	bool loadDL();
-	bool loadSimpleList();
-    bool loadWeighedList(const QString &delimiter);
+    bool loadEdgeListSimple();
+    bool loadEdgeListWeighed(const QString &delimiter);
 	bool loadTwoModeSociomatrix();
 
     void dotProperties(QString str, float &, QString &label,
                        QString &shape, QString &color, QString &fontName,
                        QString &fontColor );
-	void readGraphML (QXmlStreamReader &);
+    bool readGraphML(QXmlStreamReader &);
 	void readGraphMLElementGraph(QXmlStreamReader &);
 	void readGraphMLElementNode (QXmlStreamReader &);
 	void endGraphMLElementNode (QXmlStreamReader &);
@@ -110,6 +118,8 @@ public:
 	bool isComment(QString str);  
     void createRandomNodes(const int &fixedNum=1,const QString &label=QString::null,
                            const int &newNodes=1);
+
+    void networkFileLoadError(const QString &errorMessage);
 
 signals:
     void addRelation( const QString & relName, const bool &changeRelation=false);
@@ -131,10 +141,15 @@ signals:
                      const bool &arrows, const bool &bezier,
                      const QString &edgeLabel=QString::null,
                      const bool &signalMW=false);
-    void networkFileLoaded(int fileType, QString fileName,
+    void networkFileLoaded(int fileType,
+                           QString fileName,
                            QString netName,
-                           int totalNodes, int totalLinks,
-                           bool edgeDirType);
+                           int totalNodes,
+                           int totalLinks,
+                           bool edgeDirType,
+                           const QString &message=QString::null);
+
+
 	void removeDummyNode (int);
     void finished(QString);
 	

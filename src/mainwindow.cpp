@@ -3647,10 +3647,21 @@ void MainWindow::initSignalSlots() {
                                       const int &, const int &,
                                       const float &) ) ) ;
 
-    connect( &activeGraph, SIGNAL( signalGraphLoaded( int, QString, QString,
-                                                   int , int, bool) ),
-             this, SLOT( slotNetworkFileLoaded( int, QString, QString, int , int, bool) ) ) ;
-
+    connect( &activeGraph, SIGNAL( signalGraphLoaded( const int &,
+                                                      const QString &,
+                                                      const QString &,
+                                                      const int &,
+                                                      const int &,
+                                                      const QString &)
+                                   ),
+             this, SLOT( slotNetworkFileLoaded( const int &,
+                                                const QString &,
+                                                const QString &,
+                                                const int &,
+                                                const int &,
+                                                const QString &)
+                         )
+             ) ;
 
     connect( &activeGraph, SIGNAL( signalGraphSaved( const int &) ),
              this, SLOT( slotNetworkSaved( const int &) ) ) ;
@@ -3927,6 +3938,17 @@ void MainWindow::slotHelpMessageToUserInfo(const QString text) {
     slotHelpMessageToUser(USER_MSG_INFO,tr("Useful information"), text  );
 }
 
+
+/**
+ * @brief MainWindow::slotHelpMessageToUserError
+ * @param text
+ * Helper function to display a useful error message
+ */
+void MainWindow::slotHelpMessageToUserError(const QString text) {
+    slotHelpMessageToUser(USER_MSG_CRITICAL ,tr("Error"), text  );
+}
+
+
 /**
  * @brief MainWindow::slotHelpMessageToUser
  * Convenience method
@@ -3970,6 +3992,7 @@ int MainWindow::slotHelpMessageToUser(const int type,
 
         msgBox.setText(text);
         if (!info.isNull()) msgBox.setInformativeText(info);
+        //msgBox.setTextFormat(Qt::RichText);
         msgBox.setIcon(QMessageBox::Critical);
         msgBox.setStandardButtons(QMessageBox::Ok);
         msgBox.setDefaultButton(QMessageBox::Ok);
@@ -5242,6 +5265,8 @@ bool MainWindow::slotNetworkFileLoad(const QString m_fileName,
 }
 
 
+
+
 /**
  * @brief MainWindow::slotNetworkFileLoaded
  * Called from Parser/Graph when a network file is loaded.
@@ -5250,13 +5275,15 @@ bool MainWindow::slotNetworkFileLoad(const QString m_fileName,
  * @param netName
  * @param aNodes
  * @param totalEdges
- * @param undirected
  */
-void MainWindow::slotNetworkFileLoaded (
-        int type, QString fName, QString netName, int aNodes, int totalEdges, bool undirected)
+void MainWindow::slotNetworkFileLoaded (const int &type,
+                                        const QString &fName,
+                                        const QString &netName,
+                                        const int &totalNodes,
+                                        const int &totalEdges,
+                                        const QString &message)
 {
-    qDebug()<< "MW::slotNetworkFileLoaded() - mnetworkName is: " << netName << " type " << type;
-    Q_UNUSED (undirected);
+    qDebug()<< "MW::slotNetworkFileLoaded() - type " << type;
 
     if (type > 0) {
         fileName=fName;
@@ -5268,48 +5295,61 @@ void MainWindow::slotNetworkFileLoaded (
         setLastPath(fileName); // store this path and file
     }
     else {
+        initApp();
+        qDebug()<< "MW::slotNetworkFileLoaded() - UNRECOGNIZED FILE. "
+                   "Message from Parser: "
+                << message;
         statusMessage( tr("Error loading requested file. Aborted."));
-        QMessageBox::critical( this, "SocNetV",
-                               tr("Error! \n")+
-                               tr("Sorry, the selected file is not in valid format or encoding. \n")+
-                               tr("Try a different codec in the preview window or if you are trying to import legacy formats (i.e. Pajek, UCINET, dot, etc), ")+
-                               tr("please use the options in the Import sub menu. \n"),
-                               "OK", 0 );
+        slotHelpMessageToUser(USER_MSG_CRITICAL,
+                              tr("Error loading network file"),
+                              tr("Error loading network file"),
+                              tr("Sorry, the selected file is not in a supported format or encoding, "
+                                 "or contains formatting errors. \n\n"
+                                 "The error message was: \n\n"
+                                 "%1"
+                                 "\n\n"
+                              "What now? Review the message above to see if it helps you to fix the data file. "
+                                 "Try a different codec in the preview window "
+                                 "or if the file is of a legacy format (i.e. Pajek, UCINET, GraphViz, etc), "
+                              "please use the options in the Import sub menu. \n").arg(message)
+                              );
+
+        return;
     }
 
     switch( type ) 	{
     case 0:
         break;
     case 1:
-        statusMessage( tr("GraphML formatted network, named %1, loaded with %2 Nodes and %3 total Edges.").arg( netName ).arg( aNodes ).arg(totalEdges ) );
+        statusMessage( tr("GraphML formatted network, named %1, loaded with %2 Nodes and %3 total Edges.").arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
 
     case 2:
-        statusMessage( QString(tr("Pajek formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( aNodes ).arg(totalEdges ));
+        statusMessage( QString(tr("Pajek formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ));
         break;
 
     case 3:
-        statusMessage( QString(tr("Adjacency formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( aNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("Adjacency formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
 
     case 4:
-        statusMessage( QString(tr("Dot formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( aNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("Dot formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
 
     case 5:
-        statusMessage( QString(tr("DL-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( aNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("DL-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
     case 6:
-        statusMessage( QString(tr("GML-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( aNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("GML-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
     case 7:
-        statusMessage( QString(tr("Weighted list-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( aNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("Weighted list-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
     case 8:
-        statusMessage( QString(tr("Simple list-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( aNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("Simple list-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
     case 9:
-        statusMessage( QString(tr("Two-mode affiliation network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( aNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("Two-mode affiliation network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
 
     default: // just for sanity

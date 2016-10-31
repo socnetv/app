@@ -144,7 +144,12 @@ public slots:
     void slotNetworkAvailableTextCodecs();
     bool slotNetworkFilePreview(const QString &, const int &);
     bool slotNetworkFileLoad ( const QString, const QString, const int );
-    void slotNetworkFileLoaded(int , QString fName, QString , int, int, bool);
+    void slotNetworkFileLoaded(const int &type,
+                               const QString &fName=QString::null,
+                               const QString &netName=QString::null,
+                               const int &totalNodes=0,
+                               const int &totalEdges=0,
+                               const QString &message=QString::null);
     void slotNetworkFileLoadRecent();
     void slotNetworkSaved(const int &status);
     void slotNetworkFileView();
@@ -361,6 +366,7 @@ public slots:
     void slotHelpAbout();
     void slotAboutQt();
     void slotHelpMessageToUserInfo(const QString text=QString::null);
+    void slotHelpMessageToUserError(const QString text=QString::null);
     int slotHelpMessageToUser(const int type=0,
                               const QString statusMsg=QString::null,
                               const QString text=QString::null,

@@ -8431,11 +8431,24 @@ bool Graph::graphLoad (	const QString m_fileName,
                 );
 
     connect (
-                file_parser, SIGNAL(networkFileLoaded(int, QString, QString,
-                                                      int, int, bool)),
-                this, SLOT(graphFileLoaded(int, QString, QString,
-                                       int, int, bool))
+                file_parser, SIGNAL(networkFileLoaded(int,
+                                                      QString,
+                                                      QString,
+                                                      int,
+                                                      int,
+                                                      bool,
+                                                      const QString &)
+                                    ),
+                this, SLOT(graphFileLoaded( const int &,
+                                            const QString &,
+                                            const QString &,
+                                            const int &,
+                                            const int&,
+                                            const bool&,
+                                            const QString &)
+                           )
                 );
+
 
     connect (
                 file_parser, SIGNAL(removeDummyNode(int)),
@@ -8479,19 +8492,35 @@ void Graph::terminateParserThreads(QString reason) {
 
 
 
+
 /**
  * @brief Graph::graphFileLoaded
- * Updates MW  with the file type (0=nofile, 1=Pajek, 2=Adjacency etc)
- * Called from Parser on file parsing end .
+ * Updates MW  with the loaded file type (0=nofile, 1=Pajek, 2=Adjacency etc)
+ * Called from Parser on file parsing end or file error.
  * @param type
  * @param netName
  * @param aNodes
  * @param totalLinks
  * @param undirected
  */
-void Graph::graphFileLoaded (int fileType, QString fName, QString netName,
-                          int totalNodes, int totalLinks, bool undirected)
+void Graph::graphFileLoaded (const int &fileType,
+                             const QString &fName,
+                             const QString &netName,
+                             const int &totalNodes,
+                             const int &totalLinks,
+                             const bool &undirected,
+                             const QString &message)
 {
+    if ( fileType == FILE_UNRECOGNIZED ) {
+        emit signalGraphLoaded (fileType,
+                                QString::null,
+                                QString::null,
+                                0,
+                                0,
+                                message);
+        return;
+
+    }
     fileName = fName;
     if (netName != "")
         m_graphName=netName ;
@@ -8511,8 +8540,13 @@ void Graph::graphFileLoaded (int fileType, QString fName, QString netName,
 
     graphModifiedSet(GRAPH_CHANGED_NEW);
 
-    emit signalGraphLoaded (fileType, fileName, graphName(),
-                            totalNodes, totalLinks, m_undirected);
+    emit signalGraphLoaded (fileType,
+                            fileName,
+                            graphName(),
+                            totalNodes,
+                            totalLinks,
+                            message);
+
     graphModifiedSet(GRAPH_CHANGED_NONE);
     qDebug ()<< "Graph::graphFileLoaded()  -check parser if running...";
 
