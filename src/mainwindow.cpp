@@ -470,7 +470,7 @@ void MainWindow::initActions(){
     networkOpen->setToolTip(tr("Open network"));
     networkOpen->setStatusTip(tr("Open GraphML-formatted file of an existing network"));
     networkOpen->setWhatsThis(tr("Open\n\n"
-                              "Opens a file of an existing network in GraphML format"));
+                              "Opens a file of an existing social network in GraphML format"));
     connect(networkOpen, SIGNAL(triggered()), this, SLOT(slotNetworkFileChoose()));
 
 
@@ -481,31 +481,38 @@ void MainWindow::initActions(){
                  this, SLOT(slotNetworkFileLoadRecent()));
      }
 
+    networkImportGML = new QAction( QIcon(":/images/open.png"), tr("&GML"), this);
+    networkImportGML->setStatusTip(tr("Import GML-formatted file"));
+    networkImportGML->setWhatsThis(tr("Import GML\n\n"
+                                 "Imports a social network from a GML-formatted file"));
+    connect(networkImportGML, SIGNAL(triggered()), this, SLOT(slotNetworkImportGML()));
+
 
     networkImportPajek = new QAction( QIcon(":/images/open.png"), tr("&Pajek"), this);
     networkImportPajek->setStatusTip(tr("Import Pajek-formatted file"));
     networkImportPajek->setWhatsThis(tr("Import Pajek \n\n"
-                                 "Imports a network from a Pajek-formatted file"));
+                                 "Imports a social network from a Pajek-formatted file"));
     connect(networkImportPajek, SIGNAL(triggered()), this, SLOT(slotNetworkImportPajek()));
 
 
     networkImportSM = new QAction( QIcon(":/images/open.png"), tr("&Adjacency Matrix"), this);
     networkImportSM->setStatusTip(tr("Import Adjacency matrix"));
     networkImportSM->setWhatsThis(tr("Import Sociomatrix \n\n"
-                              "Imports a network from an Adjacency matrix-formatted file"));
+                              "Imports a social network from an Adjacency matrix-formatted file"));
     connect(networkImportSM, SIGNAL(triggered()), this, SLOT(slotNetworkImportSM()));
 
     networkImportDot = new QAction( QIcon(":/images/open.png"), tr("GraphViz (.dot)"), this);
     networkImportDot->setStatusTip(tr("Import dot file"));
     networkImportDot->setWhatsThis(tr("Import GraphViz \n\n "
-                               "Imports a network from an GraphViz formatted file"));
+                               "Imports a social network from an GraphViz formatted file"));
     connect(networkImportDot, SIGNAL(triggered()),
             this, SLOT(slotNetworkImportDot()));
 
 
     networkImportDL = new QAction( QIcon(":/images/open.png"), tr("UCINET (.dl)..."), this);
     networkImportDL->setStatusTip(tr("ImportDL-formatted file (UCINET)"));
-    networkImportDL->setWhatsThis(tr("Import UCINET\n\nImports a network from a DL-formatted file"));
+    networkImportDL->setWhatsThis(tr("Import UCINET\n\n"
+                                     "Imports social network data from a DL-formatted file"));
     connect(networkImportDL, SIGNAL(triggered()), this, SLOT(slotNetworkImportDL()));
 
 
@@ -2194,6 +2201,7 @@ void MainWindow::initMenuBar() {
     networkMenu -> addSeparator();
     importSubMenu = new QMenu(tr("Import ..."));
     importSubMenu -> setIcon(QIcon(":/images/import.png"));
+    importSubMenu -> addAction(networkImportGML);
     importSubMenu -> addAction(networkImportPajek);
     importSubMenu -> addAction(networkImportSM);
     importSubMenu -> addAction(networkImportTwoModeSM);
@@ -4541,6 +4549,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
             break;
         default:	//All
             fileType_filter = tr("GraphML (*.graphml *.xml);;"
+                                 "GML (*.gml *.xml);;"
                                  "Pajek (*.net *.pajek *.paj);;"
                                  "DL (*.dl *.dat);;"
                                  "Adjacency (*.csv *.adj *.sm *.txt);;"
@@ -4615,13 +4624,14 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
             tempFileNameNoPath=m_fileName.split ("/");
             QStringList fileTypes;
             fileTypes << tr("GraphML")
-                  << tr("Pajek")
-                  << tr("UCINET")
-                  << tr("Adjacency")
-                  << tr("GraphViz")
-                  << tr("Edge List (weighted)")
-                  << tr("Edge List (simple, non-weighted)")
-                   << tr("Two-mode sociomatrix") ;
+                      << tr("GML")
+                      << tr("Pajek")
+                      << tr("UCINET")
+                      << tr("Adjacency")
+                      << tr("GraphViz")
+                      << tr("Edge List (weighted)")
+                      << tr("Edge List (simple, non-weighted)")
+                      << tr("Two-mode sociomatrix") ;
 
             bool ok;
             QString userFileType= QInputDialog::getItem(
@@ -4635,6 +4645,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
                            "SocNetV supports the following social network file "
                            "formats. \nIn parentheses the expected extension. \n"
                         "- GraphML (.graphml or .xml)\n"
+                           "- GML (.gml or .xml)\n"
                         "- Pajek (.paj or .pajek or .net)\n"
                         "- UCINET (.dl .dat) \n"
                         "- GraphViz (.dot)\n"
@@ -4653,6 +4664,9 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
                 }
                 else if (userFileType == "GraphML") {
                     m_fileFormat=FILE_PAJEK;
+                }
+                else if (userFileType == "GML") {
+                    m_fileFormat=FILE_GML;
                 }
                 else if (userFileType == "UCINET") {
                     m_fileFormat=FILE_UCINET;
@@ -5006,6 +5020,14 @@ void MainWindow::slotNetworkImportGraphML(){
 
 
 
+/**
+ * @brief MainWindow::slotNetworkImportGML
+ * Imports a network from a GML formatted file
+ */
+void MainWindow::slotNetworkImportGML(){
+    bool m_checkSelectFileType = false;
+    slotNetworkFileChoose( QString::null, FILE_GML, m_checkSelectFileType);
+}
 
 /**
  * @brief MainWindow::slotNetworkImportPajek
@@ -5042,14 +5064,6 @@ void MainWindow::slotNetworkImportDot(){
 
 
 
-/**
- * @brief MainWindow::slotNetworkImportGML
- * Imports a network from a GML formatted file
- */
-void MainWindow::slotNetworkImportGML(){
-    bool m_checkSelectFileType = false;
-    slotNetworkFileChoose( QString::null, FILE_GML, m_checkSelectFileType);
-}
 
 
 

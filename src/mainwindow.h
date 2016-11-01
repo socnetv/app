@@ -455,7 +455,7 @@ private:
     QAction *networkExportBMP, *networkExportPNG, *networkExportPajek,
     *networkExportPDF, *networkExportDL, *networkExportGW, *networkExportSM,
     *networkExportList;
-    QAction *networkImportPajek,*networkImportSM, *networkImportList,
+    QAction *networkImportPajek, *networkImportGML, *networkImportSM, *networkImportList,
     *networkImportDot , *networkImportDL, *networkImportTwoModeSM;
     QAction *networkViewFileAct, *openTextEditorAct, *networkViewSociomatrixAct,
     *networkDataSetSelectAct;

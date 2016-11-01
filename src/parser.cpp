@@ -2172,44 +2172,199 @@ void Parser::createMissingNodeEdges(){
     Tries to load a file as GML formatted network. If not it returns -1
 */
 bool Parser::loadGML(){
+    qDebug()<< "Parser::loadGML()";
 
-    qDebug("\n\nParser: loadGML()");
     QFile file ( fileName );
-    QString str, temp;
-    int fileLine=0, start=0, end=0;
-    Q_UNUSED(start);
-    Q_UNUSED(end);
-
     if ( ! file.open(QIODevice::ReadOnly )) {
         return false;
     }
     QTextStream ts( &file );
     ts.setCodec(userSelectedCodecName.toUtf8());
-    while (!ts.atEnd() )   {
-        str= ts.readLine() ;
-        fileLine++;
-        qDebug ()<<"Reading fileLine "<< fileLine;
-        if ( fileLine == 1 ) {
-            qDebug ()<<"Reading fileLine = "<< fileLine;
-            if ( !str.startsWith("graph", Qt::CaseInsensitive) ) {
-                qDebug() << "*** Parser:loadGML(): Not an GML-formatted file. Aborting";
-                file.close();
-                errorMessage = tr("Not an GML-formatted file. "
-                                  "A non-comment line includes prohibited strings (i.e GraphML)");
-                return false;
-            }
 
+    QString str;
+    int fileLine=0;
+    bool isPlanar = false, graphKey=false, graphicsKey=false, edgeKey=false, nodeKey=false;
+
+    node_id= QString::null;
+    arrows=true;
+    bezier=false;
+    edgeDirType=EDGE_RECIPROCAL_UNDIRECTED;
+
+    while (!ts.atEnd() )   {
+
+        fileLine++;
+        str= ts.readLine() ;
+
+        str=str.simplified();
+
+        qDebug()<< "Parser::loadGML() - line"  << fileLine <<":"
+                << str;
+
+        if ( isComment(str) )
+            continue;
+
+        if ( fileLine == 1 &&
+             ( str.contains("vertices",Qt::CaseInsensitive)
+             || str.contains("network",Qt::CaseInsensitive)
+             || str.contains("digraph",Qt::CaseInsensitive)
+             || str.contains("DL",Qt::CaseInsensitive)
+             || str.contains("list",Qt::CaseInsensitive)
+             || str.contains("graphml",Qt::CaseInsensitive)
+             || str.contains("xml",Qt::CaseInsensitive)
+             )
+               ) {
+            qDebug()<< "*** Parser::loadGML(): Not a GML-formatted file. Aborting!!";
+            errorMessage = tr("Not an GML-formatted file. "
+                              "Non-comment line %1 includes prohibited strings (i.e GraphML)")
+                    .arg(fileLine);
+            file.close();
+            return false;
         }
-        if ( str.startsWith("directed",Qt::CaseInsensitive) ) { 	 //key declarations
+
+        if  ( str.startsWith("comment",Qt::CaseInsensitive) ) {
+                qDebug()<< "Parser::loadGML() - This is a comment. Continue.";
+                continue;
+        }
+        if  ( str.startsWith("creator",Qt::CaseInsensitive) ) {
+                qDebug()<< "Parser::loadGML() - This is a creator description. Continue.";
+                continue;
+        }
+        else if  ( str.startsWith("graph",Qt::CaseInsensitive) ) {
+            //describe a graph
+            qDebug()<< "Parser::loadGML() - graph description list start";
+            graphKey = true;
+        }
+        else if ( str.startsWith("directed",Qt::CaseInsensitive) ) {
+            //graph attribute declarations
+            if (graphKey) {
+                if ( str.contains("1")) {
+                    qDebug()<< "Parser::loadGML() - graph directed 1. A directed graph.";
+                    edgeDirType=EDGE_DIRECTED;
+                }
+                else {
+                    qDebug()<< "Parser::loadGML() - graph directed 0. An undirected graph.";
+                }
+            }
+        }
+        else if ( str.startsWith("isPlanar",Qt::CaseInsensitive) ) {
+            //key declarations
+            if (graphKey) {
+                if ( str.contains("1")) {
+                    qDebug()<< "Parser::loadGML() - graph isPlanar 1. Planar graph.";
+                    isPlanar = true;
+                }
+                else {
+                    isPlanar = false;
+                }
+            }
+        }
+
+        else if ( str.startsWith("node",Qt::CaseInsensitive) ) {
+            //node declarations
+            qDebug()<< "Parser::loadGML() - node description list starts";
+            nodeKey = true;
+        }
+        else if ( str.startsWith("id",Qt::CaseInsensitive) ) {
+            //describes identification number for an object
+            if ( nodeKey ) {
+                totalNodes++;
+                node_id = str.split(" ",QString::SkipEmptyParts).last();
+                qDebug()<< "Parser::loadGML() - id description "
+                           << "This node" << totalNodes
+                              <<"id"<< node_id;
+            }
+        }
+
+        else if ( str.startsWith("label ",Qt::CaseInsensitive) ) {
+            //describes label
+            if ( nodeKey ) {
+                nodeLabel = str.split(" ",QString::SkipEmptyParts).last();
+                qDebug()<< "Parser::loadGML() - node label definition"
+                           << "node" << totalNodes
+                              <<"id"<< node_id
+                                << "label" << nodeLabel;
+            }
+            else if ( edgeKey ) {
+                edgeLabel = str.split(" ",QString::SkipEmptyParts).last();
+                qDebug()<< "Parser::loadGML() - edge label definition"
+                           << "edge" << totalLinks
+                                << "label" << edgeLabel;
+            }
+        }
+
+
+        else if ( str.startsWith("edge",Qt::CaseInsensitive) ) {
+            //edge declarations
+            qDebug()<< "Parser::loadGML() - edge description list start";
+            edgeKey = true;
+            totalLinks++;
+        }
+        else if ( str.startsWith("source ",Qt::CaseInsensitive) ) {
+            if (edgeKey) {
+                edge_source = str.split(" ",QString::SkipEmptyParts).last();
+                source = edge_source.toInt(0);
+                qDebug()<< "Parser::loadGML() - edge source definition"
+                           << "edge source" << edge_source;
+            }
+        }
+        else if ( str.startsWith("target ",Qt::CaseInsensitive) ) {
+            if (edgeKey) {
+                edge_target = str.split(" ",QString::SkipEmptyParts).last();
+                target = edge_target.toInt(0);
+                qDebug()<< "Parser::loadGML() - edge target definition"
+                           << "edge target" << edge_target;
+            }
+        }
+        else if ( str.startsWith("graphics",Qt::CaseInsensitive) ) {
+            //Describes graphics which are used to draw a particular object.
+            if (nodeKey)  {
+                qDebug()<< "Parser::loadGML() - node graphics description list start";
+            }
+            else if (edgeKey) {
+                qDebug()<< "Parser::loadGML() - edge graphics description list start";
+            }
+            graphicsKey = true;
         }
         else if ( str.startsWith("id",Qt::CaseInsensitive) ) {
         }
         else if ( str.startsWith("label",Qt::CaseInsensitive) ) {
         }
-        else if ( str.startsWith("node",Qt::CaseInsensitive) ) { 	 //node declarations
+        else if ( str.startsWith("]",Qt::CaseInsensitive) ) {
+            if (nodeKey) {
+                qDebug()<< "Parser::loadGML() - node description list ends";
+                nodeKey = false;
+                randX=rand()%gwWidth;
+                randY=rand()%gwHeight;
+                qDebug()<<" *** Creating node "<< node_id
+                       << " at "<< randX <<","<< randY
+                       <<" label "<<nodeLabel;
+                emit createNode(
+                            node_id.toInt(0), initNodeSize, initNodeColor,
+                            initNodeNumberColor, initNodeNumberSize,
+                            nodeLabel , initNodeLabelColor, initNodeLabelSize,
+                            QPointF(randX,randY),
+                            initNodeShape, false
+                            );
+
+            }
+            if (edgeKey) {
+                qDebug()<< "Parser::loadGML() - edge description list ends";
+                edgeKey = false;
+                edgeWeight = 1;
+                edgeColor = "black";
+                emit edgeCreate(source,target, edgeWeight, edgeColor,
+                                edgeDirType, arrows, bezier);
+            }
+            if (graphicsKey) {
+                qDebug()<< "Parser::loadGML() - edge description list ends";
+                graphicsKey = false;
+            }
+            if (graphKey) {
+                qDebug()<< "Parser::loadGML() - graph description list ends";
+                graphKey = false;
+            }
         }
-        else if ( str.startsWith("edge",Qt::CaseInsensitive) ) { 	 //edge declarations
-        }
+
     }
     //The network has been loaded. Tell MW the statistics and network type
     emit networkFileLoaded(FILE_GML, fileName, networkName, totalNodes, totalLinks, edgeDirType);
@@ -2761,7 +2916,7 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
     bool intOK=false;
     bool nodesWithLabels = false;
     bool floatOK = false;
-    int rowCount = 1;
+    int fileLine = 1;
     totalNodes=0;
     edgeWeight=1.0;
     edgeDirType=EDGE_DIRECTED;
@@ -2805,7 +2960,7 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
             file.close();
             errorMessage = tr("Not a properly EdgeList-formatted file. "
                               "Row %1 has not 3 elements as expected (i.e. source, target, weight)")
-                    .arg(rowCount);
+                    .arg(fileLine);
             return false;
         }
 
@@ -2831,7 +2986,7 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
                        "nodesWithLabels = true";
             nodesWithLabels = true;
         }
-        rowCount ++;
+        fileLine ++;
     }
 
     ts.seek(0);
@@ -3041,7 +3196,7 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
     QString str, edgeKey,edgeKeyDelimiter="====>" ;
     QStringList lineElement,edgeElement;
     int columnCount=0;
-    int rowCount = 0;
+    int fileLine = 0;
     bool nodeNumberingZero = false, nodesWithLabels= false;
     QMap<QString, int> nodeMap;
     // use a minimum priority queue to order Actors<QString key, int value> by their value
@@ -3063,9 +3218,9 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
                "to test integrity and edge naming scheme";
 
     while ( !ts.atEnd() )   {
-        rowCount++;
+        fileLine++;
         str= ts.readLine() ;
-        qDebug()<< "Parser::loadEdgeListSimple() - line "  << rowCount
+        qDebug()<< "Parser::loadEdgeListSimple() - line "  << fileLine
                 << endl << str;
         str=str.simplified();
 
@@ -3081,10 +3236,10 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
              || str.contains("graphml",Qt::CaseInsensitive)
              || str.contains("xml",Qt::CaseInsensitive)
              ) {
-            qDebug()<< "*** Parser:loadEdgeListSimple(): Not an Adjacency-formatted file. Aborting!!";
+            qDebug()<< "*** Parser:loadEdgeListSimple(): Not an EdgeList-formatted file. Aborting!!";
             errorMessage = tr("Not an EdgeList-formatted file. "
                               "Non-comment line %1 includes prohibited strings (i.e GraphML)")
-                    .arg(rowCount);
+                    .arg(fileLine);
             file.close();
             return false;
         }
@@ -3104,18 +3259,18 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
 
 
     ts.seek(0);
-    rowCount = 0;
+    fileLine = 0;
 
     qDebug () << "Parser::loadEdgeListSimple() - Reset and read lines. nodesWithLabels"
                  << nodesWithLabels;
 
     while ( !ts.atEnd() )   {
-        rowCount++;
+        fileLine++;
         str= ts.readLine() ;
 
         str=str.simplified();
 
-        qDebug()<< "Parser::loadEdgeListSimple() - line" << rowCount
+        qDebug()<< "Parser::loadEdgeListSimple() - line" << fileLine
                 << endl << str;
 
         if ( isComment(str) )
@@ -3140,7 +3295,7 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
                         errorMessage = tr("Line %1, column %2 has a node with "
                                           "value 0, although other nodes are "
                                           "named by strings.")
-                                .arg(rowCount).arg(columnCount);
+                                .arg(fileLine).arg(columnCount);
                         return false;
                     }
 
@@ -3185,7 +3340,7 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
                         errorMessage = tr("Line %1, column %2 has a node with "
                                           "value 0, although other nodes are "
                                           "named by strings.")
-                                .arg(rowCount).arg(columnCount);
+                                .arg(fileLine).arg(columnCount);
                         return false;
                     }
 
@@ -3225,6 +3380,16 @@ bool Parser::loadEdgeListSimple(const QString &delimiter){
                             << "in edgeList with initial weight" << initEdgeWeight;
                     edgeList.insert( edgeKey, initEdgeWeight );
                     totalLinks++;
+                }
+                else { // if edge already discovered, then increase its weight by 1
+                    edgeWeight = edgeList.value(edgeKey);
+                    edgeWeight = edgeWeight + 1;
+                    qDebug()<< "Parser::loadEdgeListSimple() - edgeKey"
+                            << edgeKey
+                            << "found before, adding in edgeList with increased weight"
+                            << edgeWeight;
+
+                    edgeList.insert( edgeKey, edgeWeight );
                 }
             }
 
