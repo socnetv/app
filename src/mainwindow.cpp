@@ -3089,25 +3089,35 @@ void MainWindow::initToolBox(){
 
     QLabel *rightPanelClickedNodeLabel = new QLabel;
     rightPanelClickedNodeLabel -> setText (tr("Number:"));
-    rightPanelClickedNodeLabel -> setToolTip (tr("This is the number of the last clicked node."));
+    rightPanelClickedNodeLabel -> setToolTip (tr("The node number of the last clicked node."));
+    rightPanelClickedNodeLabel -> setStatusTip( tr("The node number of the last clicked node. Zero means no node clicked."));
     rightPanelClickedNodeLCD =new QLCDNumber(5);
     rightPanelClickedNodeLCD ->setSegmentStyle(QLCDNumber::Flat);
+    rightPanelClickedNodeLCD -> setToolTip (tr("This is the number of the last clicked node. "
+                                               "Becomes zero when you click on something other than a node."));
+    rightPanelClickedNodeLCD -> setStatusTip( tr("The number of the last clicked node. Zero if you clicked something else."));
 
     QLabel *rightPanelClickedNodeInDegreeLabel = new QLabel;
     rightPanelClickedNodeInDegreeLabel -> setText (tr("In-Degree:"));
     rightPanelClickedNodeInDegreeLabel -> setToolTip (tr("The inDegree of a node is the sum of all inbound edge weights."));
+    rightPanelClickedNodeInDegreeLabel -> setStatusTip (tr("The inDegree of a node is the sum of all inbound edge weights."));
     rightPanelClickedNodeInDegreeLCD=new QLCDNumber(5);
     rightPanelClickedNodeInDegreeLCD -> setSegmentStyle(QLCDNumber::Flat);
-    rightPanelClickedNodeInDegreeLCD -> setToolTip (tr("The sum of all inbound edge weights of the node you clicked."));
-    rightPanelClickedNodeInDegreeLCD -> setStatusTip (tr("The sum of all inbound edge weights of the node you clicked."));
+    rightPanelClickedNodeInDegreeLCD -> setStatusTip (tr("The sum of all inbound edge weights of the last clicked node. "
+                                                       "Zero if you clicked something else."));
+    rightPanelClickedNodeInDegreeLCD -> setToolTip (tr("This is the sum of all inbound edge weights of last clicked node."
+                                                         "Becomes zero when you click on something other than a node."));
 
     QLabel *rightPanelClickedNodeOutDegreeLabel = new QLabel;
     rightPanelClickedNodeOutDegreeLabel -> setText (tr("Out-Degree:"));
     rightPanelClickedNodeOutDegreeLabel -> setToolTip (tr("The outDegree of a node is the sum of all outbound edge weights."));
+    rightPanelClickedNodeOutDegreeLabel -> setStatusTip (tr("The outDegree of a node is the sum of all outbound edge weights."));
     rightPanelClickedNodeOutDegreeLCD=new QLCDNumber(5);
     rightPanelClickedNodeOutDegreeLCD -> setSegmentStyle(QLCDNumber::Flat);
-    rightPanelClickedNodeOutDegreeLCD -> setStatusTip (tr("The sum of all outbound edge weights of the node you clicked."));
-    rightPanelClickedNodeOutDegreeLCD -> setToolTip (tr("The sum of all outbound edge weights of the node you clicked."));
+    rightPanelClickedNodeOutDegreeLCD -> setStatusTip (tr("The sum of all outbound edge weights of the last clicked node."
+                                                          "Zero if you clicked something else."));
+    rightPanelClickedNodeOutDegreeLCD -> setToolTip (tr("This is the sum of all outbound edge weights of the last clicked node. "
+                                                        "Becomes zero when you click on something other than a node."));
 
     QLabel *rightPanelClickedNodeClucofLabel  = new QLabel;
     rightPanelClickedNodeClucofLabel -> setText (tr("Clu.Coef."));
@@ -3133,7 +3143,8 @@ void MainWindow::initToolBox(){
                    "from the menu Analysis > Clustering Coefficient "));
     rightPanelClickedNodeClucofLCD = new QLCDNumber(5);
     rightPanelClickedNodeClucofLCD -> setSegmentStyle(QLCDNumber::Flat);
-    rightPanelClickedNodeClucofLCD -> setStatusTip( tr("The Clustering Coefficient of the active node."));
+    rightPanelClickedNodeClucofLCD -> setStatusTip( tr("The Clustering Coefficient of the last clicked node. "
+                                                       "Zero when you click on something else."));
     rightPanelClickedNodeClucofLCD -> setWhatsThis(
                 tr("The Clustering Coefficient of the active node. \n"
                    "The Clustering Coefficient quantifies how close the clicked \n"
@@ -3167,19 +3178,31 @@ void MainWindow::initToolBox(){
 
     QLabel *rightPanelClickedEdgeSourceLabel = new QLabel;
     rightPanelClickedEdgeSourceLabel -> setText (tr("Edge source:"));
-    rightPanelClickedEdgeSourceLabel -> setToolTip (tr("The number of the source node."));
+    rightPanelClickedEdgeSourceLabel -> setToolTip (tr("The number of the last clicked edge source node."));
     rightPanelClickedEdgeSourceLCD =new QLCDNumber(5);
     rightPanelClickedEdgeSourceLCD ->setSegmentStyle(QLCDNumber::Flat);
+    rightPanelClickedEdgeSourceLCD -> setToolTip (tr("This is the node number of the last clicked edge source node. "
+                                                     "Becomes zero when you click on something other than an edge"));
+    rightPanelClickedEdgeSourceLCD -> setStatusTip (tr("The node number of the last clicked edge source node."
+                                                       "Zero when you click on something else."));
     QLabel *rightPanelClickedEdgeTargetLabel = new QLabel;
     rightPanelClickedEdgeTargetLabel -> setText (tr("Edge target:"));
     rightPanelClickedEdgeTargetLabel -> setToolTip (tr("The number of the target node."));
     rightPanelClickedEdgeTargetLCD =new QLCDNumber(5);
     rightPanelClickedEdgeTargetLCD ->setSegmentStyle(QLCDNumber::Flat);
+    rightPanelClickedEdgeTargetLCD -> setToolTip (tr("This is the node number of the last clicked edge target node. "
+                                                     "Becomes zero when you click on something other than an edge"));
+    rightPanelClickedEdgeTargetLCD -> setStatusTip (tr("The node number of the last clicked edge target node."
+                                                       "Zero when you click on something else."));
     QLabel *rightPanelClickedEdgeWeightLabel = new QLabel;
     rightPanelClickedEdgeWeightLabel -> setText (tr("Edge weight:"));
     rightPanelClickedEdgeWeightLabel -> setToolTip (tr("The weight of the clicked edge."));
     rightPanelClickedEdgeWeightLCD =new QLCDNumber(5);
     rightPanelClickedEdgeWeightLCD ->setSegmentStyle(QLCDNumber::Flat);
+    rightPanelClickedEdgeWeightLabel -> setToolTip (tr("This is the weight of the last clicked edge. "
+                                                       "Becomes zero when you click on something other than an edge"));
+    rightPanelClickedEdgeWeightLabel -> setStatusTip (tr("The weight of the last clicked edge. "
+                                                         "Zero when you click on something else."));
 
     //create a grid layout
     QGridLayout *propertiesGrid = new QGridLayout();
