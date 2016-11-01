@@ -93,7 +93,7 @@ public:
 	bool loadGML();
 	bool loadGW();
 	bool loadDL();
-    bool loadEdgeListSimple();
+    bool loadEdgeListSimple(const QString &delimiter);
     bool loadEdgeListWeighed(const QString &delimiter);
 	bool loadTwoModeSociomatrix();
 

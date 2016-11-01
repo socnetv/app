@@ -170,7 +170,7 @@ void Parser::run()  {
 
     case FILE_EDGELIST_SIMPLE:
         qDebug()<< "Parser::run() - calling loadEdgeListSimple()";
-        if (loadEdgeListSimple() ){
+        if (loadEdgeListSimple(delimiter) ){
             qDebug()<< "Parser::run() - that was simple EDGELIST-formatted file";
         }
         break;
@@ -2755,6 +2755,9 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
     QHash<QString, float> edgeList;
     QString str, edgeKey,edgeKeyDelimiter="====>" ;
     QStringList lineElement, edgeElement;
+    // one or more digits
+    QRegularExpression onlyDigitsExp("^\\d+$");
+
     bool intOK=false;
     bool nodesWithLabels = false;
     bool floatOK = false;
@@ -2766,7 +2769,7 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
     bezier=false;
 
     qDebug()<< "*** Parser::loadEdgeListWeighed() - Initial file parsing "
-               "to test integrity";
+               "to test integrity and edge naming scheme";
     while ( !ts.atEnd() )   {
         str= ts.readLine() ;
 
@@ -2816,11 +2819,6 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
                 << edge_target
                 << "weight:"
                 << edge_weight;
-
-
-        // one or more digits
-        QRegularExpression onlyDigitsExp("^\\d+$");
-
 
         if (!edge_source.contains(onlyDigitsExp)) {
             qDebug()<< "Parser::loadEdgeListWeighed() - node named by non-digit only string. "
@@ -3008,7 +3006,7 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
               source = edgeElement[0].toInt() ;
               target = edgeElement[1].toInt() ;
           }
-
+          edgeWeight = edge.value();
           emit edgeCreate(source,
                           target,
                           edgeWeight,
@@ -3033,28 +3031,42 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
 
 
 
-bool Parser::loadEdgeListSimple(){
-    qDebug() << "Parser: loadEdgeListSimple()";
+bool Parser::loadEdgeListSimple(const QString &delimiter){
+    qDebug() << "Parser::loadEdgeListSimple() - column delimiter" << delimiter ;
     QFile file ( fileName );
     if ( ! file.open(QIODevice::ReadOnly ))
         return false;
     QTextStream ts( &file );
     ts.setCodec(userSelectedCodecName.toUtf8());  // set the userselectedCodec
-    QString str;
-    QStringList lineElement;
-    int i=0, j=0, num=0, source=0, target=0, maxNodeCreated=0;
-    bool intOK=false;
-    bool nodeNumberingZero = false;
+    QString str, edgeKey,edgeKeyDelimiter="====>" ;
+    QStringList lineElement,edgeElement;
+    int columnCount=0;
+    int rowCount = 0;
+    bool nodeNumberingZero = false, nodesWithLabels= false;
+    QMap<QString, int> nodeMap;
+    // use a minimum priority queue to order Actors<QString key, int value> by their value
+    // so that we can create the discovered nodes by either their increasing nodeNumber
+    // (if nodesWithLabels == true) or by their actual number in the file (if nodesWithLabels == false).
+    priority_queue<Actor, vector<Actor>, CompareActors> nodeQ;
+    QHash<QString, float> edgeList;
+
+    QRegularExpression onlyDigitsExp("^\\d+$");
+
+    totalNodes = 0;
     initEdgeWeight=1.0;
 
     edgeDirType=EDGE_DIRECTED;
     arrows=true;
     bezier=false;
 
-    qDebug () << "Parser::loadEdgeListSimple() - check node numbering...";
+    qDebug()<< "*** Parser::loadEdgeListSimple() - Initial file parsing "
+               "to test integrity and edge naming scheme";
+
     while ( !ts.atEnd() )   {
+        rowCount++;
         str= ts.readLine() ;
-        qDebug()<< "Parser::loadEdgeListSimple() - line: " << endl << str;
+        qDebug()<< "Parser::loadEdgeListSimple() - line "  << rowCount
+                << endl << str;
         str=str.simplified();
 
         if ( isComment(str) )
@@ -3070,86 +3082,233 @@ bool Parser::loadEdgeListSimple(){
              || str.contains("xml",Qt::CaseInsensitive)
              ) {
             qDebug()<< "*** Parser:loadEdgeListSimple(): Not an Adjacency-formatted file. Aborting!!";
+            errorMessage = tr("Not an EdgeList-formatted file. "
+                              "Non-comment line %1 includes prohibited strings (i.e GraphML)")
+                    .arg(rowCount);
             file.close();
             return false;
         }
 
-        lineElement=str.split(" ");
+        lineElement=str.split(delimiter);
 
-        if (lineElement.contains("0")) {
-            nodeNumberingZero = true;
-            break;
+        for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
+            edge_source = (*it1);
+            if (!edge_source.contains(onlyDigitsExp)) {
+                qDebug()<< "Parser::loadEdgeListSimple() - node named by non-digit only string. "
+                           "nodesWithLabels = true";
+                nodesWithLabels = true;
+            }
         }
 
     }
 
-    if (nodeNumberingZero) {
-        qDebug()<< "Parser::loadEdgeListSimple() - node numbers start from zero ";
-    }
-    else
-        qDebug()<< "Parser::loadEdgeListSimple() - node numbers start from one ";
 
     ts.seek(0);
+    rowCount = 0;
 
-    qDebug () << "Parser::loadEdgeListSimple() - reset and read lines...";
+    qDebug () << "Parser::loadEdgeListSimple() - Reset and read lines. nodesWithLabels"
+                 << nodesWithLabels;
 
     while ( !ts.atEnd() )   {
+        rowCount++;
         str= ts.readLine() ;
 
         str=str.simplified();
 
-        qDebug()<< "Parser::loadEdgeListSimple() - line: " << endl << str;
+        qDebug()<< "Parser::loadEdgeListSimple() - line" << rowCount
+                << endl << str;
 
         if ( isComment(str) )
             continue;
 
-        lineElement=str.split(" ");
+        lineElement=str.split(delimiter);
 
-        i=0;
+        columnCount = 0;
         for (QStringList::Iterator it1 = lineElement.begin(); it1!=lineElement.end(); ++it1)   {
-            num = (*it1).toInt(&intOK);
-            if ( !intOK  ) {
-                qDebug()<< "Error! Error occured during a string conversion to integer...";
-                file.close();
-                return false;
-            }
-            if (nodeNumberingZero)
-               num =  num + 1;
+            columnCount ++;
+            if (columnCount == 1) {  // source node
+                edge_source = (*it1);
+                qDebug()<< "Parser::loadEdgeListSimple() - Dissecting line - "
+                           "source node:"
+                        << edge_source;
 
-            if (i==0){
-                source = num;
-                qDebug() << "	source node: " << source;
-            }
-            else {
-                target = num;
-                qDebug() << "	target node: " << target;
-            }
+                if ( ! nodeMap.contains(edge_source) ) {
+                    if ( edge_source == "0" && !nodesWithLabels ) {
+                        nodeNumberingZero = true;
+                    }
+                    else if (edge_source == "0" && nodesWithLabels){
+                        errorMessage = tr("Line %1, column %2 has a node with "
+                                          "value 0, although other nodes are "
+                                          "named by strings.")
+                                .arg(rowCount).arg(columnCount);
+                        return false;
+                    }
 
-            if (maxNodeCreated < num ) {
-                for ( j = maxNodeCreated ; j != num ; j++ ) {
-                    randX=rand()%gwWidth;
-                    randY=rand()%gwHeight;
-                    qDebug()<<"		random coords "<<randX << " "<< randY;
-                    emit createNode( j+1, initNodeSize,  initNodeColor,
-                                     initNodeNumberColor, initNodeNumberSize,
-                                     QString::number(j+1), initNodeLabelColor, initNodeLabelSize,
-                                     QPointF(randX, randY),
-                                     initNodeShape, false
-                                     );
+                    totalNodes++;
+                    Actor sourceActor;
+                    sourceActor.key = edge_source;
+                    if (nodesWithLabels) {
+                        sourceActor.value = totalNodes;
+                        // order by an increasing totalNodes index
+                        nodeQ.push( sourceActor );
+                        nodeMap.insert(edge_source, totalNodes);
+                    }
+                    else {
+                        sourceActor.value = edge_source.toInt();
+                        // order by the actual actor number in the file
+                        nodeQ.push( sourceActor );
+                        nodeMap.insert(edge_source, edge_source.toInt() );
+                    }
+                    qDebug()<< "Parser::loadEdgeListSimple() - source, new node named"
+                            << edge_source
+                            << "totalNodes" << totalNodes
+                            << "nodeMap.count"
+                            << nodeMap.count();
+
                 }
-                maxNodeCreated = num ;
+                else {
+                    qDebug()<< "Parser::loadEdgeListWeighed() - source already found, continue";
+                }
             }
-            if ( i != 0) {
-                qDebug("	there is a link here");
-                emit edgeCreate(source, target, initEdgeWeight, initEdgeColor, edgeDirType, arrows, bezier);
-                totalLinks++;
-                qDebug() << "link from Node i= "<< source  << "  to j = " <<  target << " weight = "<< initEdgeWeight<< ". TotalLinks =  " << totalLinks;
+            else { // target nodes
+                edge_target= (*it1);
+                qDebug()<< "Parser::loadEdgeListSimple() - Dissecting line - "
+                           "target node:"
+                        << edge_target;
+
+                if ( ! nodeMap.contains(edge_target) ) {
+
+                    if ( edge_target == "0" && !nodesWithLabels ) {
+                        nodeNumberingZero = true;
+                    }
+                    else if (edge_target == "0" && nodesWithLabels){
+                        errorMessage = tr("Line %1, column %2 has a node with "
+                                          "value 0, although other nodes are "
+                                          "named by strings.")
+                                .arg(rowCount).arg(columnCount);
+                        return false;
+                    }
+
+                    totalNodes++;
+                    Actor targetActor;
+                    targetActor.key = edge_target;
+                    if (nodesWithLabels) {
+                        targetActor.value = totalNodes ;
+                        // order by an increasing totalNodes index
+                        nodeQ.push( targetActor );
+                        nodeMap.insert(edge_target, totalNodes);
+                    }
+                    else {
+                        targetActor.value = edge_target.toInt();
+                        // order by the actual actor number in the file
+                        nodeQ.push( targetActor );
+                        nodeMap.insert(edge_target, edge_target.toInt() );
+                    }
+                    qDebug()<< "Parser::loadEdgeListSimple() - target, new node named"
+                            << edge_target
+                            << "totalNodes" << totalNodes
+                            << "nodeMap.count"
+                            << nodeMap.count();
+
+                }
+                else {
+                    qDebug()<< "Parser::loadEdgeListSimple() - target already found, continue";
+                }
+
             }
-            i++;
-        }
+
+            if (columnCount > 1)  {
+                edgeKey = edge_source + edgeKeyDelimiter + edge_target;
+                if ( ! edgeList.contains( edgeKey ) ) {
+                    qDebug()<< "Parser::loadEdgeListSimple() - inserting edgeKey"
+                            << edgeKey
+                            << "in edgeList with initial weight" << initEdgeWeight;
+                    edgeList.insert( edgeKey, initEdgeWeight );
+                    totalLinks++;
+                }
+            }
+
+        }  // end for QStringList::Iterator
 
     } //end ts.stream while here
     file.close();
+
+
+    // create nodes one by one
+    while (!nodeQ.empty()) {
+
+        Actor node = nodeQ.top();
+         nodeQ.pop();
+         randX=rand()%gwWidth;
+         randY=rand()%gwHeight;
+
+         if (nodesWithLabels) {
+             qDebug() << "Parser::loadEdgeListSimple() - creating node named"
+                      << node.key << "numbered" << node.value
+                      << "at position" << QPointF(randX, randY);
+             emit createNode( node.value,
+                              initNodeSize,
+                              initNodeColor,
+                              initNodeNumberColor,
+                              initNodeNumberSize,
+                              node.key,
+                              initNodeLabelColor, initNodeLabelSize,
+                              QPointF(randX, randY),
+                              initNodeShape,
+                              false
+                              );
+         }
+         else {
+
+             qDebug() << "Parser::loadEdgeListSimple() - creating node named"
+                      << node.key << "numbered" << node.key.toInt()
+                      << "at position" << QPointF(randX, randY);
+             emit createNode( node.key.toInt(),
+                              initNodeSize,
+                              initNodeColor,
+                              initNodeNumberColor,
+                              initNodeNumberSize,
+                              node.key,
+                              initNodeLabelColor, initNodeLabelSize,
+                              QPointF(randX, randY),
+                              initNodeShape,
+                              false
+                              );
+
+         }
+
+     }
+
+
+
+    //create edges one by one
+    QHash<QString, float>::const_iterator edge = edgeList.constBegin();
+     while (edge!= edgeList.constEnd()) {
+
+         qDebug() << "Parser::loadEdgeListWeighed() - creating edge named"
+                  << edge.key() << " weight " << edge.value();
+
+         edgeElement=edge.key().split(edgeKeyDelimiter);
+         if (nodesWithLabels) {
+             source = nodeMap.value( edgeElement[0] ) ;
+             target = nodeMap.value( edgeElement[1] ) ;
+         }
+         else {
+             source = edgeElement[0].toInt() ;
+             target = edgeElement[1].toInt() ;
+         }
+         edgeWeight = edge.value();
+         emit edgeCreate(source,
+                         target,
+                         edgeWeight,
+                         initEdgeColor,
+                         edgeDirType,
+                         arrows,
+                         bezier);
+
+         ++edge;
+     }
+
     //The network has been loaded. Tell MW the statistics and network type
     emit networkFileLoaded(FILE_EDGELIST_SIMPLE, fileName, networkName, totalNodes, totalLinks, edgeDirType);
     qDebug() << "Parser-loadEdgeListSimple() ending and returning...";
