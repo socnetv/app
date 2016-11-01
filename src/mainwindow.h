@@ -143,7 +143,7 @@ public slots:
     void slotNetworkFileRecentUpdateActions();
     void slotNetworkAvailableTextCodecs();
     bool slotNetworkFilePreview(const QString &, const int &);
-    bool slotNetworkFileLoad ( const QString, const QString, const int );
+    void slotNetworkFileLoad ( const QString, const QString, const int );
     void slotNetworkFileLoaded(const int &type,
                                const QString &fName=QString::null,
                                const QString &netName=QString::null,

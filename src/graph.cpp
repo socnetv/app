@@ -192,7 +192,7 @@ void Graph::clear() {
     graphModifiedFlag=false;
 
     qDebug ()<< "Graph::clear()  -Do parser threads run ?";
-    terminateParserThreads("Graph::initNet()");
+    terminateParserThreads("Graph::clear()");
 
     qDebug ()<< "Graph::clear()  -Do web crawler threads run ?";
     webCrawlTerminateThreads("Graph::initNet");
@@ -8332,7 +8332,10 @@ QString Graph::graphName() const {
 /**
  * @brief Graph::graphLoad
  * Our almost universal network loader. :)
- * Actually it calls the load() method of parser/qthread class.
+ * It creates a new Parser object,
+ * moves it to a another thread,
+ * connects signals and slots and
+ * calls its run() method.
  * @param m_fileName
  * @param m_codecName
  * @param m_showLabels
@@ -8342,7 +8345,7 @@ QString Graph::graphName() const {
  * @param two_sm_mode
  * @return
  */
-bool Graph::graphLoad (	const QString m_fileName,
+void Graph::graphLoad (	const QString m_fileName,
                         const QString m_codecName,
                         const bool m_showLabels,
                         const int fileFormat,
@@ -8464,10 +8467,10 @@ bool Graph::graphLoad (	const QString m_fileName,
 
     file_parserThread.start();
 
-    bool loadGraphStatus = file_parser->run();
-    qDebug() << "Graph::graphLoad() - Finished file_parser->run(). "
-                "loadGraphStatus "<< loadGraphStatus;
-    return loadGraphStatus;
+    qDebug() << "Graph::graphLoad() - calling file_parser->run() ";
+    file_parser->run();
+
+
 }
 
 
@@ -8477,9 +8480,10 @@ bool Graph::graphLoad (	const QString m_fileName,
  */
 void Graph::terminateParserThreads(QString reason) {
     qDebug() << "Graph::terminateParserThreads() - reason " << reason
-                    <<" is file_parserThread running? ";
+                    <<" Checking if file_parserThread is running...";
     if (file_parserThread.isRunning() ) {
-         qDebug() << "Graph::terminateParserThreads()  file_parserThread quit";
+         qDebug() << "Graph::terminateParserThreads() - file_parserThread running."
+                     "Calling file_parserThread.quit();";
         file_parserThread.quit();
         qDebug() << "Graph::terminateParserThreads() - deleting file_parser pointer";
         delete file_parser;
@@ -8512,6 +8516,9 @@ void Graph::graphFileLoaded (const int &fileType,
                              const QString &message)
 {
     if ( fileType == FILE_UNRECOGNIZED ) {
+        qDebug() << "Graph::graphFileLoaded() - FILE_UNRECOGNIZED. "
+                    "Emitting signalGraphLoaded with error message "
+                 << message;
         emit signalGraphLoaded (fileType,
                                 QString::null,
                                 QString::null,

@@ -85,7 +85,7 @@ public:
               const int sm_mode,
            const QString delim=QString::null);
     ~Parser();
-    bool run();
+    void run();
 	bool loadPajek();
 	bool loadAdjacency();
 	bool loadDot();
@@ -164,7 +164,7 @@ private:
 	QXmlStreamReader *xml;
     QString fileName, userSelectedCodecName, networkName, initNodeColor;
     QString initEdgeColor, initNodeShape, initNodeNumberColor, initNodeLabelColor;
-    QString initEdgeLabel, delimiter;
+    QString initEdgeLabel, delimiter, errorMessage;
     QString nodeColor, edgeColor, edgeType, nodeShape, nodeLabel, edgeLabel;
     QString nodeNumberColor, nodeLabelColor;
     QString key_id, key_value, key_name, key_what, key_type;

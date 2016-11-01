@@ -4699,7 +4699,6 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
     }
 
 
-
     qDebug()<<"MW::slotNetworkFileChoose() - Calling slotNetworkFilePreview"
            << "with m_fileName" << m_fileName
            << "and m_fileFormat " << m_fileFormat;
@@ -5141,18 +5140,19 @@ void MainWindow::slotNetworkAvailableTextCodecs()
  */
 bool MainWindow::slotNetworkFilePreview(const QString &m_fileName,
                                     const int &m_fileFormat ){
-    qDebug() << "MW::slotNetworkFilePreview() : "<< m_fileName;
+    qDebug() << "MW::slotNetworkFilePreview() - file: "<< m_fileName;
 
     if (!m_fileName.isEmpty()) {
         QFile file(m_fileName);
         if (!file.open(QFile::ReadOnly)) {
-            QMessageBox::warning(this, tr("Network File Previewer"),
-                                 tr("Cannot read file %1:\n%2")
-                                 .arg(m_fileName)
-                                 .arg(file.errorString()));
+            slotHelpMessageToUserError(
+                        tr("Cannot read file %1:\n%2")
+                        .arg(m_fileName)
+                        .arg(file.errorString())
+                                       );
             return false;
         }
-        qDebug() << "MW::slotNetworkFilePreview() reading the file now... " ;
+        qDebug() << "MW::slotNetworkFilePreview() - reading file... " ;
         QByteArray data = file.readAll();
 
         previewForm->setEncodedData(data,m_fileName, m_fileFormat);
@@ -5190,7 +5190,7 @@ void MainWindow::slotNetworkFileLoadRecent() {
  * Calls initApp to init to default values.
  * Then calls activeGraph::graphLoad to actually load the network...
  */
-bool MainWindow::slotNetworkFileLoad(const QString m_fileName,
+void MainWindow::slotNetworkFileLoad(const QString m_fileName,
                                  const QString m_codecName,
                                  const int m_fileFormat )
 {
@@ -5251,17 +5251,18 @@ bool MainWindow::slotNetworkFileLoad(const QString m_fileName,
     }
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
     qDebug() << "MW::slotNetworkFileLoad() : calling activeGraph.graphLoad() ";
-    bool loadGraphStatus = activeGraph.graphLoad (
+
+    activeGraph.graphLoad (
                 m_fileName,
                 m_codecName,
-                (appSettings["initNodeLabelsVisibility"] == "true" ) ? true: false,
-                m_fileFormat, two_sm_mode, delimiter
-                );
-    qDebug() << "MW::slotNetworkFileLoad() : loadGraphStatus " << loadGraphStatus;
+                ((appSettings["initNodeLabelsVisibility"] == "true" ) ? true: false),
+            m_fileFormat,
+            two_sm_mode,
+            delimiter
+            );
 
     QApplication::restoreOverrideCursor();
 
-    return loadGraphStatus;
 }
 
 
@@ -5300,19 +5301,19 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
                    "Message from Parser: "
                 << message;
         statusMessage( tr("Error loading requested file. Aborted."));
-        slotHelpMessageToUser(USER_MSG_CRITICAL,
-                              tr("Error loading network file"),
-                              tr("Error loading network file"),
-                              tr("Sorry, the selected file is not in a supported format or encoding, "
-                                 "or contains formatting errors. \n\n"
-                                 "The error message was: \n\n"
-                                 "%1"
-                                 "\n\n"
-                              "What now? Review the message above to see if it helps you to fix the data file. "
-                                 "Try a different codec in the preview window "
-                                 "or if the file is of a legacy format (i.e. Pajek, UCINET, GraphViz, etc), "
-                              "please use the options in the Import sub menu. \n").arg(message)
-                              );
+//        slotHelpMessageToUser(USER_MSG_CRITICAL,
+//                              tr("Error loading network file"),
+//                              tr("Error loading network file"),
+//                              tr("Sorry, the selected file is not in a supported format or encoding, "
+//                                 "or contains formatting errors. \n\n"
+//                                 "The error message was: \n\n"
+//                                 "%1"
+//                                 "\n\n"
+//                              "What now? Review the message above to see if it helps you to fix the data file. "
+//                                 "Try a different codec in the preview window "
+//                                 "or if the file is of a legacy format (i.e. Pajek, UCINET, GraphViz, etc), "
+//                              "please use the options in the Import sub menu. \n").arg(message)
+//                              );
 
         return;
     }
@@ -6036,17 +6037,20 @@ void MainWindow::slotNetworkDataSetRecreate (const QString m_fileName) {
     else if (m_fileName.endsWith(".2sm")) {
         m_fileFormat=FILE_TWOMODE;
     }
-    if ( slotNetworkFileLoad(appSettings["dataDir"]+m_fileName, "UTF-8", m_fileFormat) ) {
-        qDebug() << "slotNetworkDataSetRecreate() loaded file " << m_fileName;
-        fileName=m_fileName;
-        previous_fileName=fileName;
-        setWindowTitle("SocNetV "+ VERSION +" - "+fileName);
-        QString message=tr("Dataset loaded. Dataset file saved as ") + fileName;
-        statusMessage( message );
-    }
-    else {
-        statusMessage( "Could not read new network data file. Aborting.");
-    }
+
+    slotNetworkFileLoad(appSettings["dataDir"]+m_fileName, "UTF-8", m_fileFormat);
+
+//    if ( slotNetworkFileLoad(appSettings["dataDir"]+m_fileName, "UTF-8", m_fileFormat) ) {
+//        qDebug() << "slotNetworkDataSetRecreate() loaded file " << m_fileName;
+//        fileName=m_fileName;
+//        previous_fileName=fileName;
+//        setWindowTitle("SocNetV "+ VERSION +" - "+fileName);
+//        QString message=tr("Dataset loaded. Dataset file saved as ") + fileName;
+//        statusMessage( message );
+//    }
+//    else {
+//        statusMessage( "Could not read new network data file. Aborting.");
+//    }
 }
 
 

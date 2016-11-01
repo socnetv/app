@@ -55,7 +55,7 @@ Parser::Parser(const QString fn,
                const int sm_mode,
                const QString delim)
 {
-    qDebug() << "Parser::load() fn: " << fn
+    qDebug() << "Parser::Parser() fn: " << fn
                 << "running on thread "  << this->thread() ;
     initNodeSize=iNS;
     initNodeColor=iNC;
@@ -82,8 +82,9 @@ Parser::Parser(const QString fn,
     if (!delim.isNull() && !delim.isEmpty())
         delimiter = delim;
     else delimiter=" ";
-    qDebug() << "Parser::load() - delim" << delim << "delimiter"<<delimiter;
+    qDebug() << "Parser::Parser() - delim" << delim << "delimiter"<<delimiter;
     xml=0;
+    errorMessage=QString::null;
 
 }
 
@@ -114,96 +115,107 @@ Parser::~Parser () {
 
 /** starts the new thread calling the load* methods
 */
-bool Parser::run()  {
-    qDebug()<< "**** Parser:: run(). on a new thread " << this->thread()
+void Parser::run()  {
+    qDebug()<< "**** Parser::run() - On a new thread " << this->thread()
             << " networkName "<< networkName
             << " fileFormat "<< fileFormat ;
 
+    errorMessage=QString::null;
+
     switch (fileFormat){
     case FILE_GRAPHML:
+        qDebug()<< "Parser::run() - calling loadGraphML()";
         if (loadGraphML()){
-            qDebug("* Parser: that was  a GraphML network");
+            qDebug()<< "Parser::run() - that was GRAPHML-formatted file";
         }
-        else fileFormat=FILE_UNRECOGNIZED;
         break;
     case FILE_PAJEK:
+        qDebug()<< "Parser::run() - calling loadPajek()";
         if ( loadPajek() ) {
-            qDebug("* Parser: that was a Pajek network");
+            qDebug()<< "Parser::run() - that was PAJEK formatted file";
         }
-        else fileFormat=FILE_UNRECOGNIZED;
         break;
     case FILE_ADJACENCY:
+        qDebug()<< "Parser::run() - calling loadAdjacency()";
         if (loadAdjacency() ) {
-            qDebug("* Parser: that was an adjacency-matrix network");
+            qDebug()<< "Parser::run() - that was ADJACENCY-formatted file";
         }
-        else fileFormat=FILE_UNRECOGNIZED;
         break;
     case FILE_GRAPHVIZ:
+        qDebug()<< "Parser::run() - calling loadDot()";
         if (loadDot() ) {
-            qDebug("* Parser: that was a GraphViz (dot) network");
+           qDebug()<< "Parser::run() - that was GRAPHVIZ-formatted file";
         }
-        else fileFormat=FILE_UNRECOGNIZED;
         break;
     case FILE_UCINET:
+        qDebug()<< "Parser::run() - calling loadDL()";
         if (loadDL() ){
-            qDebug("Parser: this is a DL formatted (.dl) network");
+            qDebug()<< "Parser::run() - that was UCINET-formatted file";
         }
-        else fileFormat=FILE_UNRECOGNIZED;
         break;
 
     case FILE_GML:
+        qDebug()<< "Parser::run() - calling loadGML()";
         if (loadGML() ){
-            qDebug("* Parser: that was a GML (gml) network");
+            qDebug()<< "Parser::run() - that was GML-formatted file";
         }
-        else fileFormat=FILE_UNRECOGNIZED;
         break;
 
     case FILE_EDGELIST_WEIGHTED:
+        qDebug()<< "Parser::run() - calling loadEdgeListWeighted()";
         if (loadEdgeListWeighed(delimiter) ){
-            qDebug("Parser: this is a weighted list formatted (.list) network");
-        }
-        else fileFormat=FILE_UNRECOGNIZED;
+            qDebug()<< "Parser::run() - that was weighted EDGELIST-formatted file";
+                    }
         break;
 
     case FILE_EDGELIST_SIMPLE:
+        qDebug()<< "Parser::run() - calling loadEdgeListSimple()";
         if (loadEdgeListSimple() ){
-            qDebug("Parser: this is a simple list formatted (.list) network");
+            qDebug()<< "Parser::run() - that was simple EDGELIST-formatted file";
         }
-        else fileFormat=FILE_UNRECOGNIZED;
         break;
 
     case FILE_TWOMODE:
+        qDebug()<< "Parser::run() - calling loadTwoModeSociomatrix()";
         if (loadTwoModeSociomatrix() ){
-            qDebug("Parser: OK, this is a two-mode sociomatrix (.tsm) network");
+            qDebug()<< "Parser::run() - that was weigted TWOMODE-formatted file";
         }
-        else fileFormat=FILE_UNRECOGNIZED;
         break;
 
     default:	//GraphML
+        qDebug()<< "Parser::run() - default case - calling loadGraphML()";
         if (loadGraphML() ){
-            qDebug("Parser: this is a GraphML network");
+            qDebug()<< "Parser::run() - that was GRAPHML-formatted file";
         }
-        else fileFormat=FILE_UNRECOGNIZED;
         break;
     }
 
-    qDebug()<< "**** Parser::run() - on thread " << this->thread()
-               << "End. Return back to Graph and MW! "
-                        << " fileFormat now "<< fileFormat ;
+    if (errorMessage!=QString::null) {
+        networkFileLoadError(errorMessage);
+        return;
+    }
 
+
+    qDebug()<< "**** Parser::run() - on thread " << this->thread()
+               << "Reached end. "
+                  "Emitting finished() calling networkFileLoadError() if any"
+               << " fileFormat now "<< fileFormat ;
 
     emit finished ("Parser::run() - reach end");
-    return (fileFormat==FILE_UNRECOGNIZED) ? false: true;
+
+
 }
 
 
 /**
  * @brief Parser::networkFileLoadError
  * @param errorMessage
- * Called when Parser cannot read or parse correctly a file.
- * It informs the Graph and then MW with the error message
+ * Called when some Parser method cannot read or parse correctly a file.
+ * It informs the Graph and then MW with an error message
  */
 void Parser::networkFileLoadError(const QString &errorMessage) {
+    qDebug()<<"Parser::networkFileLoadError() - errorMessage:"
+           <<errorMessage;
     emit networkFileLoaded(FILE_UNRECOGNIZED,
                            QString::null,
                            QString::null,
@@ -251,7 +263,7 @@ bool Parser::loadDL(){
     qDebug() << "Parser::loadDL() - Reading UCINET formatted file ";
     QFile file ( fileName );
     if ( ! file.open(QIODevice::ReadOnly )) {
-        networkFileLoadError(tr("Cannot open UCINET file "));
+        errorMessage = tr("Cannot open UCINET file ");
         return false;
     }
     QTextStream ts( &file );
@@ -285,7 +297,7 @@ bool Parser::loadDL(){
         if ( (lineCounter == 1) &&
              (!str.startsWith("DL",Qt::CaseInsensitive)  ) ) {
             qDebug() << "Parser::loadDL() - Not a DL file. Aborting!";
-            networkFileLoadError(tr("File does not start with DL in line 1"));
+            errorMessage = tr("File does not start with DL in line 1");
             file.close();
             return false;
         }
@@ -310,7 +322,7 @@ bool Parser::loadDL(){
                 if (!intOK) {
                     qDebug() << "Parser::loadDL() - NM conversion error..." ;
                     //emit something here...
-                    networkFileLoadError(tr("Cannot convert NM value to integer"));
+                    errorMessage = tr("Cannot convert NM value to integer");
                     return false;
                 }
                 str.truncate(mark2);
@@ -323,7 +335,7 @@ bool Parser::loadDL(){
             totalNodes=str.toInt(&intOK,10);
             if (!intOK) {
                 qDebug() << "Parser::loadDL() - N conversion error..." ;
-                networkFileLoadError(tr("Cannot convert N value to integer"));
+                errorMessage = tr("Cannot convert N value to integer");
                 return false;
             }
             qDebug() << "Parser::loadDL() - Finally N=" << totalNodes << "NM=" <<nm;
@@ -498,8 +510,8 @@ bool Parser::loadDL(){
                             "formatted file. Aborting!!";
                 file.close();
                 //emit something...
-                networkFileLoadError(tr("UCINET file declared as edgelist "
-                                        "but I found a line which did not have 3 elements (source, target, weight)"));
+                errorMessage = tr("UCINET file declared as edgelist but I found "
+                                  "a line which did not have 3 elements (source, target, weight)");
                 return false;
             }
 
@@ -530,7 +542,8 @@ bool Parser::loadDL(){
     if (nodeSum != totalNodes) {
         qDebug()<< "Error: aborting";
         //emit something
-        networkFileLoadError(tr("UCINET declared N actors initially but I found a different number of actors"));
+        errorMessage = tr("UCINET declared N actors initially, "
+                          "but I found a different number of actors");
         return false;
     }
     //The network has been loaded. Tell MW the statistics and network type
@@ -557,7 +570,7 @@ bool Parser::loadPajek(){
     qDebug ("\n\nParser: loadPajek");
     QFile file ( fileName );
     if ( ! file.open(QIODevice::ReadOnly ))  {
-        networkFileLoadError(tr("Cannot open Pajek file"));
+        errorMessage = tr("Cannot open Pajek file");
         return false;
     }
     QTextStream ts( &file );
@@ -614,8 +627,9 @@ bool Parser::loadPajek(){
                  ) {
                 qDebug()<< "*** Parser:loadPajek(): Not a Pajek-formatted file. Aborting!!";
                 file.close();
-                networkFileLoadError(tr("Not a Pajek-formatted file. "
-                                        "First not-comment line does not start with Network or Vertices"));
+                errorMessage = tr("Not a Pajek-formatted file. "
+                                  "First not-comment line does not start with "
+                                  "Network or Vertices");
                 return false;
             }
         }
@@ -629,7 +643,9 @@ bool Parser::loadPajek(){
                 )
             {
                 qDebug("*** Parser-loadPajek(): Not a Pajek file. Aborting!");
-                networkFileLoadError(tr("Not a Pajek-formatted file. First not-comment line does not start with Network or Vertices"));
+                errorMessage = tr("Not a Pajek-formatted file. "
+                                  "First not-comment line does not start with "
+                                  "Network or Vertices");
                 file.close();
                 return false;
             }
@@ -815,7 +831,8 @@ bool Parser::loadPajek(){
             }
             else if ( j > nodeNum ) {
                 qDebug ("Error: This Pajek net declares this node with nodeNumber smaller than previous nodes. Aborting");
-                networkFileLoadError(tr("Pajek-formatted file declares a node with nodeNumber smaller than previous nodes."));
+                errorMessage = tr("Pajek-formatted file declares a node with "
+                                  "nodeNumber smaller than previous nodes.");
                 return false;
             }
 
@@ -857,9 +874,9 @@ bool Parser::loadPajek(){
                 source =  lineElement[0].toInt(&ok, 10);
                 target = lineElement[1].toInt(&ok,10);
                 if (source == 0 || target == 0 ) {
-                    networkFileLoadError(tr("Pajek-formatted file declares edge "
+                    errorMessage = tr("Pajek-formatted file declares edge "
                                             "with a zero source or target nodeNumber. "
-                                            "Each node should have a nodeNumber > 0."));
+                                            "Each node should have a nodeNumber > 0.");
                     return false;  //  i --> (i-1)   internally
                 }
                 else if (source < 0 && target >0  ) {  //weights come first...
@@ -920,9 +937,9 @@ bool Parser::loadPajek(){
                 source=  lineElement[0].toInt(&ok, 10);
                 target = lineElement[1].toInt(&ok,10);
                 if (source == 0 || target == 0 ) {
-                    networkFileLoadError(tr("Pajek-formatted file declares arc "
+                    errorMessage = tr("Pajek-formatted file declares arc "
                                             "with a zero source or target nodeNumber. "
-                                            "Each node should have a nodeNumber > 0."));
+                                            "Each node should have a nodeNumber > 0.");
                     return false;   //  i --> (i-1)   internally
                 }
                 else if (source < 0 && target >0 ) {  //weights come first...
@@ -1013,7 +1030,7 @@ bool Parser::loadPajek(){
     } //end WHILE
     file.close();
     if (j==0) {
-        networkFileLoadError(tr("Could not find node declarations in this Pajek-formatted file."));
+        errorMessage = tr("Could not find node declarations in this Pajek-formatted file.");
         return false;
     }
 
@@ -1081,9 +1098,9 @@ bool Parser::loadAdjacency(){
              ) {
             qDebug()<< "*** Parser:loadAdjacency(): Not an Adjacency-formatted file. Aborting!!";
             file.close();
-            networkFileLoadError(tr("Not an Adjacency-formatted file. "
+            errorMessage = tr("Not an Adjacency-formatted file. "
                                     "A non-comment line includes prohibited strings (i.e GraphML), "
-                                    "not only numbers and delimiters as expected."));
+                                    "not only numbers and delimiters as expected.");
             return false;
         }
         if ( str.contains (","))
@@ -1096,8 +1113,8 @@ bool Parser::loadAdjacency(){
             // line element count differ, therefore this can't be an adjacency matrix
             qDebug()<< "*** Parser:loadAdjacency(): Not an Adjacency-formatted file. Aborting!!";
             file.close();
-            networkFileLoadError(tr("Error reading Adjacency-formatted file. "
-                                    "Matrix row %i has different number of elements from previous row.").arg(i));
+            errorMessage = tr("Error reading Adjacency-formatted file. "
+                              "Matrix row %1 has different number of elements from previous row.").arg(i);
             return false;
         }
 
@@ -1142,8 +1159,8 @@ bool Parser::loadAdjacency(){
         }
         qDebug("Parser-loadAdjacency(): Finished creation of nodes");
         if ( totalNodes != (int) lineElement.count() )  {
-            networkFileLoadError(tr("Error reading Adjacency-formatted file. "
-                                    "Matrix row %i has different number of elements from previous row.").arg(i));
+            errorMessage = tr("Error reading Adjacency-formatted file. "
+                                    "Matrix row %1 has different number of elements from previous row.").arg(i);
             return false;
         }
         j=0;
@@ -1182,7 +1199,7 @@ bool Parser::loadTwoModeSociomatrix(){
     qDebug("\n\nParser: loadTwoModeSociomatrix()");
     QFile file ( fileName );
     if ( ! file.open(QIODevice::ReadOnly )) {
-        networkFileLoadError(tr("Cannot open two-mode sociomatrix file. ") );
+        errorMessage = tr("Cannot open two-mode sociomatrix file. ") ;
         return false;
     }
     QTextStream ts( &file );
@@ -1210,9 +1227,9 @@ bool Parser::loadTwoModeSociomatrix(){
              ) {
             qDebug()<< "*** Parser:loadTwoModeSociomatrix(): Not a two mode sociomatrix-formatted file. Aborting!!";
             file.close();
-            networkFileLoadError(tr("Not a two-mode sociomatrix formatted file. "
-                                    "A non-comment line includes prohibited strings (i.e GraphML), "
-                                    "not only numbers and delimiters as expected."));
+            errorMessage = tr("Not a two-mode sociomatrix formatted file. "
+                              "A non-comment line includes prohibited strings (i.e GraphML), "
+                              "not only numbers and delimiters as expected.");
             return false;
         }
         if ( str.contains (",")){
@@ -1228,7 +1245,7 @@ bool Parser::loadTwoModeSociomatrix(){
         if  ( (newCount != lastCount && i>1 )  ) { // line element count differ
             qDebug()<< "*** Parser:loadTwoModeSociomatrix(): Not a Sociomatrix-formatted file. Aborting!!";
             file.close();
-            networkFileLoadError(tr("Row %i has fewer or more elements than previous line.").arg(i));
+            errorMessage = tr("Row %1 has fewer or more elements than previous line.").arg(i);
             return false;
         }
         lastCount=newCount;
@@ -1367,7 +1384,7 @@ bool Parser::loadGraphML(){
                 qDebug()<< "*** loadGraphML(): Error in startElement "
                         << " The file is not an GraphML version 1.0 file ";
                 file.close();
-                networkFileLoadError(tr("XML at startElement but element name not graphml."));
+                errorMessage = tr("XML at startElement but element name not graphml.");
                 return false;
             }
         }
@@ -1377,7 +1394,7 @@ bool Parser::loadGraphML(){
             qDebug()<< "*** loadGraphML(): Cannot find  startElement"
                     << " The file is not valid GraphML or has invalid encoding";
             file.close();
-            networkFileLoadError(tr("XML tokenString at line %1 invalid.").arg(xml->lineNumber()));
+            errorMessage = tr("XML tokenString at line %1 invalid.").arg(xml->lineNumber());
             return false;
         }
     }
@@ -1413,13 +1430,12 @@ bool Parser::readGraphML(QXmlStreamReader &xml){
 
         qDebug()<< "Parser::readGraphML() - line:" << xml.lineNumber();
         if (xml.hasError()) {
-            qDebug()<< "Parser::readGraphML() - ERROR:" << xml.errorString();
-            networkFileLoadError(
+            qDebug()<< "Parser::readGraphML() - xml.hasError():" << xml.errorString();
+            errorMessage =
                         tr("XML has error at line %1, token name %2:\n%3")
                         .arg(xml.lineNumber())
                         .arg(xml.name().toString())
-                        .arg(xml.errorString())
-                        );
+                        .arg(xml.errorString());
             return false;
         }
 
@@ -2178,8 +2194,8 @@ bool Parser::loadGML(){
             if ( !str.startsWith("graph", Qt::CaseInsensitive) ) {
                 qDebug() << "*** Parser:loadGML(): Not an GML-formatted file. Aborting";
                 file.close();
-                networkFileLoadError(tr("Not an GML-formatted file. "
-                                        "A non-comment line includes prohibited strings (i.e GraphML)"));
+                errorMessage = tr("Not an GML-formatted file. "
+                                  "A non-comment line includes prohibited strings (i.e GraphML)");
                 return false;
             }
 
@@ -2255,8 +2271,8 @@ bool Parser::loadDot(){
                  ) {
                 qDebug() << "*** Parser:loadDot(): Not an GraphViz -formatted file. Aborting";
                 file.close();
-                networkFileLoadError(tr("Not a GraphViz-formatted file. "
-                                        "First non-comment line includes prohibited strings (i.e GraphML)."));
+                errorMessage = tr("Not a GraphViz-formatted file. "
+                                  "First non-comment line includes prohibited strings (i.e GraphML).");
                 return false;
             }
 
@@ -2277,8 +2293,8 @@ bool Parser::loadDot(){
             else {
                 qDebug()<<" *** Parser:loadDot(): Not a GraphViz file. "
                           "Abort: dot format can only start with \" (di)graph netname {\"";
-                networkFileLoadError(tr("Not properly GraphViz-formatted file. "
-                                        "First non-comment line should start with \" (di)graph netname {\""));
+                errorMessage = tr("Not properly GraphViz-formatted file. "
+                                  "First non-comment line should start with \" (di)graph netname {\"");
                 return false;
             }
         }
@@ -2388,15 +2404,18 @@ bool Parser::loadDot(){
                             QPointF(randX,randY),
                             initNodeShape, false
                             );
-                nodesDiscovered.push_back( node  );			// Note that we push the numbered nodelabel whereas we create the node with its file specified node label.
-                qDebug()<<" * Total totalNodes " << totalNodes<< " nodesDiscovered  "<< nodesDiscovered.size() ;
+                // Note that we push the numbered nodelabel whereas we create
+                // the node with its file specified node label.
+                nodesDiscovered.push_back( node  );
+                qDebug()<<" * Total totalNodes " << totalNodes
+                       << " nodesDiscovered  "<< nodesDiscovered.size() ;
                 target=totalNodes;
 
             }
             else {
                     qDebug ("* ERROR!");
-                    networkFileLoadError(tr("Not properly GraphViz-formatted file. "
-                                            "Node definition without opening ["));
+                    errorMessage = tr("Not properly GraphViz-formatted file. "
+                                      "Node definition without opening [");
                     return false;
 
             }
@@ -2768,8 +2787,8 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
             qDebug()<< "Parser::loadEdgeListWeighed() - "
                        "Not a Weighted list-formatted file. Aborting!!";
             file.close();
-            networkFileLoadError(tr("Not an EdgeList-formatted file. "
-                                    "A non-comment line includes prohibited strings (i.e GraphML)"));
+            errorMessage = tr("Not an EdgeList-formatted file. "
+                              "A non-comment line includes prohibited strings (i.e GraphML)");
             return false;
         }
 
@@ -2779,9 +2798,9 @@ bool Parser::loadEdgeListWeighed(const QString &delimiter){
             qDebug()<< "*** Parser::loadEdgeListWeighed() - "
                        "Not a Weighted list-formatted file. Aborting!!";
             file.close();
-            networkFileLoadError(tr("Not a properly EdgeList-formatted file. "
-                                    "Row %1 has not 3 elements as expected (i.e. source, target, weight)")
-                                 .arg(rowCount));
+            errorMessage = tr("Not a properly EdgeList-formatted file. "
+                              "Row %1 has not 3 elements as expected (i.e. source, target, weight)")
+                    .arg(rowCount);
             return false;
         }
 
