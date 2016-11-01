@@ -886,6 +886,7 @@ QPointF Graph::vertexPos(const int &v1){
  * status bar.
  */
 void Graph::vertexClickedSet(const int &v1) {
+    qDebug()<<"Graph::vertexClickedSet() - " << v1;
     m_vertexClicked = v1;
     if (v1 == 0) {
         signalNodeClickedInfo(0);

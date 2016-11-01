@@ -5296,24 +5296,29 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
         setLastPath(fileName); // store this path and file
     }
     else {
-        initApp();
+
         qDebug()<< "MW::slotNetworkFileLoaded() - UNRECOGNIZED FILE. "
                    "Message from Parser: "
-                << message;
+                << message
+                   << "Calling initApp()";
+
         statusMessage( tr("Error loading requested file. Aborted."));
-//        slotHelpMessageToUser(USER_MSG_CRITICAL,
-//                              tr("Error loading network file"),
-//                              tr("Error loading network file"),
-//                              tr("Sorry, the selected file is not in a supported format or encoding, "
-//                                 "or contains formatting errors. \n\n"
-//                                 "The error message was: \n\n"
-//                                 "%1"
-//                                 "\n\n"
-//                              "What now? Review the message above to see if it helps you to fix the data file. "
-//                                 "Try a different codec in the preview window "
-//                                 "or if the file is of a legacy format (i.e. Pajek, UCINET, GraphViz, etc), "
-//                              "please use the options in the Import sub menu. \n").arg(message)
-//                              );
+
+        slotHelpMessageToUser(USER_MSG_CRITICAL,
+                              tr("Error loading network file"),
+                              tr("Error loading network file"),
+                              tr("Sorry, the selected file is not in a supported format or encoding, "
+                                 "or contains formatting errors. \n\n"
+                                 "The error message was: \n\n"
+                                 "%1"
+                                 "\n\n"
+                              "What now? Review the message above to see if it helps you to fix the data file. "
+                                 "Try a different codec in the preview window "
+                                 "or if the file is of a legacy format (i.e. Pajek, UCINET, GraphViz, etc), "
+                              "please use the options in the Import sub menu. \n").arg(message)
+                              );
+
+        initApp();
 
         return;
     }

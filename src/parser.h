@@ -97,7 +97,7 @@ public:
     bool loadEdgeListWeighed(const QString &delimiter);
 	bool loadTwoModeSociomatrix();
 
-    void dotProperties(QString str, float &, QString &label,
+    void readDotProperties(QString str, float &, QString &label,
                        QString &shape, QString &color, QString &fontName,
                        QString &fontColor );
     bool readGraphML(QXmlStreamReader &);
@@ -119,7 +119,7 @@ public:
     void createRandomNodes(const int &fixedNum=1,const QString &label=QString::null,
                            const int &newNodes=1);
 
-    void networkFileLoadError(const QString &errorMessage);
+    void loadFileError(const QString &errorMessage);
 
 signals:
     void addRelation( const QString & relName, const bool &changeRelation=false);

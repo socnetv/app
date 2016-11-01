@@ -191,14 +191,14 @@ void Parser::run()  {
     }
 
     if (errorMessage!=QString::null) {
-        networkFileLoadError(errorMessage);
+        loadFileError(errorMessage);
         return;
     }
 
 
     qDebug()<< "**** Parser::run() - on thread " << this->thread()
                << "Reached end. "
-                  "Emitting finished() calling networkFileLoadError() if any"
+                  "Emitting finished() calling loadFileError() if any"
                << " fileFormat now "<< fileFormat ;
 
     emit finished ("Parser::run() - reach end");
@@ -208,13 +208,13 @@ void Parser::run()  {
 
 
 /**
- * @brief Parser::networkFileLoadError
+ * @brief Parser::loadFileError
  * @param errorMessage
  * Called when some Parser method cannot read or parse correctly a file.
  * It informs the Graph and then MW with an error message
  */
-void Parser::networkFileLoadError(const QString &errorMessage) {
-    qDebug()<<"Parser::networkFileLoadError() - errorMessage:"
+void Parser::loadFileError(const QString &errorMessage) {
+    qDebug()<<"Parser::loadFileError() - errorMessage:"
            <<errorMessage;
     emit networkFileLoaded(FILE_UNRECOGNIZED,
                            QString::null,
@@ -2347,7 +2347,7 @@ bool Parser::loadDot(){
             qDebug()<<str.toLatin1();
             start=0;
             end=str.count();
-            dotProperties(str, nodeValue, nodeLabel, initNodeShape, initNodeColor, fontName, fontColor );
+            readDotProperties(str, nodeValue, nodeLabel, initNodeShape, initNodeColor, fontName, fontColor );
             qDebug ("* Finished NODE PROPERTIES");
         }
         else if ( str.startsWith("edge",Qt::CaseInsensitive) ) { //Default edge properties
@@ -2382,8 +2382,8 @@ bool Parser::loadDot(){
                 node=node.remove('\"');
                 qDebug()<<"node named "<<node.toLatin1();
                 qDebug()<<"node properties "<<temp.toLatin1();
-                nodeLabel=node;  //Will change only if label exists in dotProperties
-                dotProperties(temp, nodeValue, nodeLabel, initNodeShape, initNodeColor, fontName, fontColor );
+                nodeLabel=node;  //Will change only if label exists in readDotProperties
+                readDotProperties(temp, nodeValue, nodeLabel, initNodeShape, initNodeColor, fontName, fontColor );
                 if (nodeLabel=="") nodeLabel=node;
                 totalNodes++;
                 randX=rand()%gwWidth;
@@ -2477,7 +2477,7 @@ bool Parser::loadDot(){
                 temp=temp.remove(']');
                 temp=temp.remove(';');
                 qDebug()<<"edge properties "<<temp.toLatin1();
-                dotProperties(temp, edgeWeight, edgeLabel, edgeShape, edgeColor, fontName, fontColor );
+                readDotProperties(temp, edgeWeight, edgeLabel, edgeShape, edgeColor, fontName, fontColor );
             }
             else{
                 qDebug("* Edge definition found - no properties...");
@@ -2567,7 +2567,7 @@ bool Parser::loadDot(){
             qDebug()<<"Properties start at "<< start<< " and end at " << end;
             temp=temp.simplified();
             qDebug()<<temp.toLatin1();
-            dotProperties(temp, nodeValue, label, nodeShape, nodeColor, fontName, fontColor );
+            readDotProperties(temp, nodeValue, label, nodeShape, nodeColor, fontName, fontColor );
             qDebug ("Finished the properties!");
 
             if (start > 2 ) {//there is a node definition here
@@ -2611,7 +2611,9 @@ bool Parser::loadDot(){
 
 
 
-void Parser::dotProperties(QString str, float &nValue, QString &label, QString &shape, QString &color, QString &fontName, QString &fontColor ){
+void Parser::readDotProperties(QString str, float &nValue, QString &label,
+                           QString &shape, QString &color, QString &fontName,
+                           QString &fontColor ){
     int next=0;
     QString prop, value;
 
