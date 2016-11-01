@@ -81,20 +81,23 @@ void GraphicsWidget::paintEvent ( QPaintEvent * event ){
 
 
 
-/** 
-    Clears the scene
-*/
+
+/**
+ * @brief GraphicsWidget::clear
+ * Clears the scene and all hashes, lists, var etc
+ */
 void GraphicsWidget::clear() {
-    qDebug() << "GW::clear() - start clearing hashes";
     nodeHash.clear();
     edgesHash.clear();
+    m_selectedNodes.clear();
+    m_selectedEdges.clear();
     scene()->clear();
     m_curRelation=0;
     markedNodeExist=false;
     markedEdgeExists = false;
     firstNode=0;
     secondDoubleClick=false;
-    qDebug() << "GW::clear() - finished.";
+    qDebug() << "GW::clear() - finished clearing hashes";
 }
 
 /**
@@ -714,7 +717,7 @@ void GraphicsWidget::setEdgeLabelsVisibility (const bool &toggle){
     It is Called from MW on startup and when user changes it.
 */
 void GraphicsWidget::setInitNodeSize(int size){
-    qDebug("GW setting initNodeSize");
+    qDebug()<< "GW::setInitNodeSize() " << size;
     m_nodeSize=size;
 }
 
@@ -810,14 +813,8 @@ bool GraphicsWidget::setNodeSize(const long int &number, const int &size ){
 void GraphicsWidget::setAllNodeSize(const int &size ){
     qDebug() << "GW: setAllNodeSize() ";
     foreach ( Node *m_node, nodeHash ) {
-        if (size>0){
             qDebug() << "GW: setAllNodeSize(): "<< m_node->nodeNumber() << " to new size " << size ;
             m_node -> setSize(size);
-        }
-        else {
-            qDebug() << "GW: setAllNodeSize(): "<< m_node->nodeNumber() << " to initial size " << m_nodeSize;
-            m_node -> setSize(m_nodeSize);
-        }
     }
 }
 
@@ -1178,18 +1175,17 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
 
     QPointF p = mapToScene(e->pos());
 
-    bool ctrlKey = (e->modifiers() == Qt::ControlModifier);
-
-    qDebug() << "GW::mousePressEvent() - click at "
-                << e->pos().x() << ","<< e->pos().y()
-                << " or "<<  p.x() << ","<< p.y()
-                << " selectedItems " << selectedItems().count();
+   // bool ctrlKey = (e->modifiers() == Qt::ControlModifier);
 
   //  emit selectedItems(m_selectedItems);
 
     if ( QGraphicsItem *item= itemAt(e->pos() )   ) {
         if (Node *node = qgraphicsitem_cast<Node *>(item)) {
-            qDebug() << "GW::mousePressEvent() - single click on a node. "
+            qDebug() << "GW::mousePressEvent() - click at "
+                        << e->pos().x() << ","<< e->pos().y()
+                        << " or "<<  p.x() << ","<< p.y()
+                        << " selectedItems " << selectedItems().count()
+                        << "Single click on a node. "
                      << "Setting selected and emitting nodeClicked";
             node->setSelected(true);
             nodeClicked(node);
@@ -1207,7 +1203,12 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
             return;
         }
         if (Edge *edge= qgraphicsitem_cast<Edge *>(item)) {
-            qDebug() << "GW::mousePressEvent() - single click on an edge ";
+            qDebug() << "GW::mousePressEvent() - click at "
+                        << e->pos().x() << ","<< e->pos().y()
+                        << " or "<<  p.x() << ","<< p.y()
+                        << " selectedItems " << selectedItems().count()
+                        << "Single click on an edge. "
+                     << "Emitting edgeClicked";
             edgeClicked(edge);
             if ( e->button()==Qt::LeftButton ) {
                 qDebug() << "GW::mousePressEvent() - left click on an edge ";
@@ -1223,18 +1224,25 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
         }
     }
 
-        qDebug() << "GW::mousePressEvent()  click on empty space. ";
-
-        if ( selectedItems().count() > 0 && ctrlKey ) {
-            qDebug() << " opening selection context menu ";
-            emit openContextMenu(p);
-        }
+//        if ( selectedItems().count() > 0 && ctrlKey ) {
+//            qDebug() << "GW::mousePressEvent() - opening selection context menu ";
+//            emit openContextMenu(p);
+//        }
 
         else if ( e->button()==Qt::RightButton   ) {
-            qDebug() << "GW::mousePressEvent() Right-click on empty space ";
+        qDebug() << "GW::mousePressEvent() - click at "
+                << e->pos().x() << ","<< e->pos().y()
+                << " or "<<  p.x() << ","<< p.y()
+                << " selectedItems " << selectedItems().count()
+                   << "Right click on empty space. Emitting openContextMenu()";
             emit openContextMenu(p);
         }
         else {
+        qDebug() << "GW::mousePressEvent() - click at "
+                << e->pos().x() << ","<< e->pos().y()
+                << " or "<<  p.x() << ","<< p.y()
+                << " selectedItems " << selectedItems().count()
+                   << "Right click on empty space. Emitting userClickOnEmptySpace()";
             emit userClickOnEmptySpace(p);
         }
         QGraphicsView::mousePressEvent(e);
@@ -1254,14 +1262,15 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
  */
 void GraphicsWidget::mouseReleaseEvent( QMouseEvent * e ) {
     QPointF p = mapToScene(e->pos());
-    qDebug() << "GW::mouseReleaseEvent() at "
-             << e->pos().x() << ","<< e->pos().y()
-             << " or "<<  p.x() << ","<<p.y();
 
     if ( QGraphicsItem *item= itemAt(e->pos() ) ) {
         if (Node *node = qgraphicsitem_cast<Node *>(item)) {
-            qDebug() << "GW::mouseReleaseEvent() -on a node "
-                        << "Emitting userNodeMoved() for all selected nodes";
+            qDebug() << "GW::mouseReleaseEvent() at "
+                     << e->pos().x() << ","<< e->pos().y()
+                     << " or "<<  p.x() << ","<<p.y()
+                     << "On a node. Selected items: "
+                     << selectedItems().count()
+                     << "Emitting userNodeMoved() for all selected nodes";
             Q_UNUSED(node);
             foreach (QGraphicsItem *item, scene()->selectedItems()) {
                 if (Node *nodeSelected = qgraphicsitem_cast<Node *>(item) ) {
@@ -1274,18 +1283,24 @@ void GraphicsWidget::mouseReleaseEvent( QMouseEvent * e ) {
         }
         if (Edge *edge= qgraphicsitem_cast<Edge *>(item)) {
             Q_UNUSED(edge);
-            qDebug() << "GW::mouseReleaseEvent() on an edge ";
+            qDebug() << "GW::mouseReleaseEvent() at "
+                     << e->pos().x() << ","<< e->pos().y()
+                     << " or "<<  p.x() << ","<<p.y()
+                     << "On an edge. Selected items: "
+                     << selectedItems().count();
             QGraphicsView::mouseReleaseEvent(e);
             return;
         }
     }
     else{
-        qDebug() << "GW::mouseReleaseEvent() on empty space. ";
+        qDebug() << "GW::mouseReleaseEvent() at "
+                 << e->pos().x() << ","<< e->pos().y()
+                 << " or "<<  p.x() << ","<<p.y()
+                 <<"on empty space. Selected items: "
+                << selectedItems().count();
 
     }
 
-    qDebug() << "GW::mouseReleaseEvent() - selected items now: "
-             << selectedItems().count();
 
 }
 
@@ -1439,10 +1454,6 @@ void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
     int h0=e->oldSize().height();
     fX=  (double)(w)/(double)(w0);
     fY= (double)(h)/(double)(h0);
-    qDebug () << "GW::resizeEvent - old size: ("
-              << w0 << "," << h0
-              << ") - new size: (" << w << "," << h << ")"
-              << " fX,fY " <<  fX << ","<< fY;
     foreach (QGraphicsItem *item, scene()->items()) {
         if ( (item)->type() == TypeGuide ){
             if (Guide *guide = qgraphicsitem_cast<Guide *>  (item) ) {
@@ -1452,7 +1463,7 @@ void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
                     delete item;
                 }
                 else {
-                    qDebug()<< "GW::resizeEvent - Horizontal Guide "
+                    qDebug()<< "GW::resizeEvent() - Horizontal Guide "
                             << " original position ("
                             <<  guide->x() << "," << guide->y()
                              << ") - width " << guide->width()
@@ -1470,8 +1481,14 @@ void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
 
     //update the scene width and height with that of the graphicsWidget
     scene()->setSceneRect(0, 0, (qreal) ( w ), (qreal) ( h  ) );
-    qDebug() << "GW::resizeEvent - scene: ("
+
+    qDebug () << "GW::resizeEvent() - old size: ("
+              << w0 << "," << h0
+              << ") - new size: (" << w << "," << h << ")"
+              << " fX,fY: (" <<  fX << ","<< fY
+              << ") scene size: ("
              << scene()->width() << "," << scene()->height() << ")";
+
     emit resized( w ,  h );
 }
 

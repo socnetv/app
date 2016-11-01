@@ -3865,9 +3865,7 @@ void MainWindow::initApp(){
     graphicsWidget->clear();
     rotateSlider->setValue(0);
     zoomSlider->setValue(250);
-
     graphicsWidget->setInitZoomIndex(250);
-
     graphicsWidget->setInitNodeSize(appSettings["initNodeSize"].toInt(0, 10));
 
     if (appSettings["initBackgroundImage"] != ""
@@ -3879,7 +3877,7 @@ void MainWindow::initApp(){
     else {
         graphicsWidget->setBackgroundBrush(
                     QBrush(QColor (appSettings["initBackgroundColor"]))
-                    ); //Qt::gray
+                    );
     }
 
 
@@ -3891,7 +3889,7 @@ void MainWindow::initApp(){
     setCursor(Qt::ArrowCursor);
 
     statusMessage( tr("Ready"));
-    qDebug("MW: initApp() - INITIALISATION END");
+    qDebug()<< "MW::initApp() - INITIALISATION END";
 
 
 }
@@ -4322,12 +4320,14 @@ void MainWindow::toolBoxLayoutForceDirectedButtonPressed(){
  */
 void MainWindow::resizeEvent( QResizeEvent * ){
 
-    qDebug ("MW::resizeEvent():  window size %i, %i, graphicsWidget size %i, %i, scene %f,%f",
-            width(),height(),
-            graphicsWidget->width(),graphicsWidget->height(),
-            graphicsWidget->scene()->width(), graphicsWidget->scene()->height());
+    qDebug() << "MW::resizeEvent():  Window resized to"
+             << width()
+             << ","
+             << height()
+             <<"Calling activeGraph.canvasSizeSet() to set canvas width and height";
 
     activeGraph.canvasSizeSet(graphicsWidget->width(),graphicsWidget->height());
+
     statusMessage(
                 QString(
                     tr("Window resized to (%1, %2)px. Canvas size: (%3, %4) px"))
@@ -5366,9 +5366,10 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
 
 /**
  * @brief MainWindow::slotEditRelationsClear
- * Called from Graph::relationsClear()
+ * Called from Graph::relationsClear() to clear the relations combo.
  */
 void MainWindow::slotEditRelationsClear(){
+    qDebug() << "MW::slotEditRelationsClear() - clearing combo";
     editRelationChangeCombo->clear();
 }
 
@@ -5386,13 +5387,13 @@ void MainWindow::slotEditRelationAdd(QString newRelationName, const bool &change
     int comboItemsBefore = editRelationChangeCombo->count();
     int relationsCounter=activeGraph.relations();
 
-    qDebug() << "MW::slotEditRelationAdd(string) - adding"
+    qDebug() << "MW::slotEditRelationAdd() - adding relation:"
              << newRelationName
-             <<"comboItemsBefore "
+             <<"to relations combo. Before this, combo items:"
             << comboItemsBefore
-            << "currentIndex"
+            << "and currentIndex:"
             <<editRelationChangeCombo->currentIndex()
-           << "relationsCounter"
+           << "relationsCounter:"
            <<relationsCounter;
 
     if (!newRelationName.isNull()) {
@@ -5408,13 +5409,11 @@ void MainWindow::slotEditRelationAdd(QString newRelationName, const bool &change
             }
 
         }
-        qDebug() << "MW::slotEditRelationAdd(string) - added"
+        qDebug() << "MW::slotEditRelationAdd() - added relation:"
                  << newRelationName
-                 <<"comboItemsBefore "
-                << comboItemsBefore
-                <<"comboItems Now "
+                <<"now combo items:"
                << editRelationChangeCombo->count()
-                << "currentIndex now"
+                << "now currentIndex:"
                 <<editRelationChangeCombo->currentIndex()
                << "relationsCounter"
                <<relationsCounter;
@@ -6522,7 +6521,6 @@ void MainWindow::slotNetworkChanged(const int &graphStatus,
     }
     rightPanelEdgesLCD->display(edges);
     rightPanelDensityLCD->display( density );
-    qDebug()<<"MW::slotNetworkChanged() - finished updating LCDs";
 }
 
 
@@ -7038,6 +7036,7 @@ void MainWindow::slotEditNodeColorAll(QColor color){
  * @param normalized
  */
 void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized) {
+    Q_UNUSED(normalized);
     qDebug () << "MW: slotEditNodeSizeAll() - "
                  << " newSize " << newSize ;
     if ( newSize == 0 && !normalized ) {
@@ -7045,8 +7044,8 @@ void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized) {
         newSize = QInputDialog::getInt(
                     this,
                     "Change node size",
-                    tr("Select new size for all nodes: (1-16)"),
-                    appSettings["initNodeSize"].toInt(0, 10), 1, 16, 1, &ok );
+                    tr("Select new size for all nodes:"),
+                    appSettings["initNodeSize"].toInt(0, 10), 1, 100, 1, &ok );
 
         if (!ok) {
             statusMessage( "Change node size operation cancelled." );
@@ -7054,24 +7053,6 @@ void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized) {
         }
     }
 
-    if ( normalized ) {
-        int N = activeNodes() ;
-        if ( N < 100) {
-            newSize = 8;
-        }
-        else if ( N < 200) {
-            newSize = 7;
-        }
-        if ( N >= 200 && N < 500){
-            newSize = 6;
-        }
-        else if ( N >= 500 && N < 1000) {
-            newSize = 6;
-        }
-        else if ( N  >= 1000) {
-            newSize = 5;
-        }
-    }
     appSettings["initNodeSize"]= QString::number(newSize);
     nodeSizesByOutDegreeAct->setChecked(false);
     toolBoxNodeSizesByOutDegreeBx->setChecked(false);
@@ -7416,6 +7397,11 @@ void MainWindow::slotEditSelectionChanged(const int nodes, const int edges) {
         editNodeSelectedToCliqueAct->setEnabled(false);
 
     }
+
+    statusMessage(  tr("Selected %1 nodes and %2 edges")
+                     .arg( nodes )
+                     .arg( edges )
+                     );
 }
 
 

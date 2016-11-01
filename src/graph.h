@@ -183,7 +183,7 @@ public slots:
                          const QString &message=QString::null);
 
     void vertexRemoveDummyNode(int);
-    void terminateParserThreads (QString reason);
+    void graphLoadedTerminateParserThreads (QString reason);
 
     /** Slots to signals from GraphicsWidget and Parser*/
     void edgeCreate  (const int &v1, const int &v2, const float &weight,

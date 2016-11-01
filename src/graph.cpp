@@ -191,12 +191,9 @@ void Graph::clear() {
 
     graphModifiedFlag=false;
 
-    qDebug ()<< "Graph::clear()  -Do parser threads run ?";
-    terminateParserThreads("Graph::clear()");
+    graphLoadedTerminateParserThreads("Graph::clear()");
 
-    qDebug ()<< "Graph::clear()  -Do web crawler threads run ?";
-    webCrawlTerminateThreads("Graph::initNet");
-
+    webCrawlTerminateThreads("Graph::clear()");
 
     qDebug()<< "Graph::clear() - m_graph cleared. Now reports size"
             << m_graph.size()
@@ -400,7 +397,7 @@ void Graph::relationNext(){
  * @param relName
  */
 void Graph::relationAdd(const QString &relName, const bool &changeRelation) {
-    qDebug() << "Graph::relationAdd(QString) " << relName;
+    qDebug() << "Graph::relationAdd() - relation name" << relName;
     m_relationsList << relName;
     // add new relation to MW combo box
     emit signalRelationAddToMW(relName, false);
@@ -473,12 +470,14 @@ int Graph::relations(){
  * Clears relationships in this Graph
  */
 void Graph::relationsClear(){
-    qDebug () << "Graph::relationsClear() - relations" << m_relationsList.count();
+    int oldRelationsCounter = m_relationsList.count();
     m_relationsList.clear();
     m_curRelation=0;
-    qDebug () << "Graph::relationsClear() - cleared. Relations now "
-              << m_relationsList.count()
-              <<"Emitting signalRelationsClear()";
+    qDebug () << "Graph::relationsClear() - cleared"
+                 << oldRelationsCounter
+                 << "relation(s). New relations count:"
+                 << m_relationsList.count()
+                 <<"Emitting signalRelationsClear()";
     emit signalRelationsClear();
 
 }
@@ -964,7 +963,6 @@ void Graph::vertexSizeAllSet(const int size) {
             emit setNodeSize((*it)->name(), size);
         }
     }
-
     graphModifiedSet(GRAPH_CHANGED_VERTICES_METADATA);
 }
 
@@ -2290,17 +2288,8 @@ int Graph:: verticesWithReciprocalEdges(){
 //called from Graph, when closing network, to terminate all processes
 //also called indirectly when wc_spider finishes
 void Graph::webCrawlTerminateThreads (QString reason){
-    qDebug() << "Graph::webCrawlTerminateThreads() - reason " << reason;
-    qDebug() << "Graph::webCrawlTerminateThreads()  check if wc_parserThread is running...";
-    if (wc_parserThread.isRunning() ) {
-         qDebug() << "Graph::webCrawlTerminateThreads()  parser thread quit";
-        wc_parserThread.quit();
-        qDebug() << "Graph::webCrawlTerminateThreads() - deleting wc_parser pointer";
-        delete wc_parser;
-        wc_parser = 0;  // see why here: https://goo.gl/tQxpGA
-
-    }
-    qDebug() << "Graph::webCrawlTerminateThreads()  check if wc_spiderThread is running...";
+    qDebug() << "Graph::webCrawlTerminateThreads() - reason " << reason
+                << "Checking if wc_spiderThread is running...";
     if (wc_spiderThread.isRunning() ) {
         qDebug() << "Graph::webCrawlTerminateThreads()  spider thread quit";
         wc_spiderThread.quit();
@@ -8460,7 +8449,7 @@ void Graph::graphLoad (	const QString m_fileName,
 
     connect (
                 file_parser, &Parser::finished,
-                this, &Graph::terminateParserThreads
+                this, &Graph::graphLoadedTerminateParserThreads
                 );
 
     qDebug() << "Graph::graphLoad() - Starting file_parserThread ";
@@ -8475,22 +8464,20 @@ void Graph::graphLoad (	const QString m_fileName,
 
 
 /**
- * @brief Graph::terminateParserThreads
+ * @brief Graph::graphLoadedTerminateParserThreads
  * @param reason
  */
-void Graph::terminateParserThreads(QString reason) {
-    qDebug() << "Graph::terminateParserThreads() - reason " << reason
+void Graph::graphLoadedTerminateParserThreads(QString reason) {
+    qDebug() << "Graph::graphLoadedTerminateParserThreads() - reason " << reason
                     <<" Checking if file_parserThread is running...";
     if (file_parserThread.isRunning() ) {
-         qDebug() << "Graph::terminateParserThreads() - file_parserThread running."
+         qDebug() << "Graph::graphLoadedTerminateParserThreads() - file_parserThread running."
                      "Calling file_parserThread.quit();";
         file_parserThread.quit();
-        qDebug() << "Graph::terminateParserThreads() - deleting file_parser pointer";
+        qDebug() << "Graph::graphLoadedTerminateParserThreads() - deleting file_parser pointer";
         delete file_parser;
         file_parser = 0;  // see why here: https://goo.gl/tQxpGA
-
     }
-
 }
 
 
