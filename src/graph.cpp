@@ -8852,7 +8852,7 @@ bool Graph::graphSaveToGraphMLFormat (const QString &fileName,
     QString  relationName;
     int relationPrevious = relationCurrent();
     for (int i = 0; i < relations(); ++i) {
-        relationName = m_relationsList.at(i);
+        relationName = (m_relationsList.at(i).simplified()).remove("\"");
         relationSet( i , false);
         qDebug()<< "Graph::graphSaveToGraphMLFormat() - writing graph tag. Relation" << relationName ;
 

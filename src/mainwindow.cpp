@@ -2524,7 +2524,7 @@ void MainWindow::initToolBar(){
                 tr("Current relation. To rename it, write new name and press Enter."));
     editRelationChangeCombo->setStatusTip(
                 tr("Name of the current relation. "
-                   "To rename it, write a new name and press Enter. To select another relation use Down arrow)"));
+                   "To rename it, write a new name and press Enter. To select another relation use Down arrow"));
     editRelationChangeCombo->setWhatsThis(
                 tr("Relations combo\n\n"
                    "This combo box displays the current relation. \n"
@@ -3023,31 +3023,36 @@ void MainWindow::initToolBox(){
 
     QLabel *rightPanelNodesLabel = new QLabel;
     rightPanelNodesLabel->setText(tr("Total Nodes"));
-    rightPanelNodesLabel->setStatusTip(tr("The total number of nodes (vertices) in the network."));
-    rightPanelNodesLabel->setToolTip(tr("The total number of nodes (vertices) in the network."));
+    rightPanelNodesLabel->setStatusTip(tr("The total number of actors (nodes or vertices) in the social network."));
+    rightPanelNodesLabel->setToolTip(tr("The total number of actors \n"
+                                        "(nodes or vertices) in the social network."));
 
     rightPanelNodesLCD=new QLCDNumber(7);
     rightPanelNodesLCD->setSegmentStyle(QLCDNumber::Flat);
-    rightPanelNodesLCD->setStatusTip(tr("The total number of nodes (vertices) in the network."));
-    rightPanelNodesLCD->setToolTip(tr("The total number of nodes (vertices) in the network."));
+    rightPanelNodesLCD->setStatusTip(tr("The total number of actors (nodes or vertices) in the social network."));
+    rightPanelNodesLCD->setToolTip(tr("This is the total number of actors \n"
+                                      "(nodes or vertices) in the social network."));
 
     rightPanelEdgesLabel = new QLabel;
     rightPanelEdgesLabel->setText(tr("Total Arcs"));
-    rightPanelEdgesLabel->setStatusTip(tr("The total number of edges (links between actors) in the network."));
-    rightPanelEdgesLabel->setToolTip(tr("The total number of edges (links between actors) in the network."));
+    rightPanelEdgesLabel->setStatusTip(tr("The total number of edges (links between actors) in the social network."));
+    rightPanelEdgesLabel->setToolTip(tr("This is the total number of edges \n"
+                                        "(links between actors) in the social network."));
 
     rightPanelEdgesLCD=new QLCDNumber(7);
     rightPanelEdgesLCD->setSegmentStyle(QLCDNumber::Flat);
-    rightPanelEdgesLCD->setStatusTip(tr("The total number of directed edges in the network."));
-    rightPanelEdgesLCD->setToolTip(tr("The total number of directed edges in the network."));
+    rightPanelEdgesLCD->setStatusTip(tr("The total number of directed edges in the social network."));
+    rightPanelEdgesLCD->setToolTip(tr("This is the total number of directed edges \n"
+                                        "(links between actors) in the social network."));
+
 
     QLabel *rightPanelDensityLabel = new QLabel;
     rightPanelDensityLabel->setText(tr("Density"));
-    rightPanelDensityLabel->setToolTip(tr("The density of a network is the ratio of existing \n"
+    rightPanelDensityLabel->setToolTip(tr("The density of a social network is the ratio of existing \n"
                                   "edges to all possible edges ( n*(n-1) ) between nodes."));
     rightPanelDensityLCD=new QLCDNumber(7);
     rightPanelDensityLCD->setSegmentStyle(QLCDNumber::Flat);
-    rightPanelDensityLCD->setStatusTip(tr("Shows the network density, the ratio of existing "
+    rightPanelDensityLCD->setStatusTip(tr("The network density, the ratio of existing "
                                 "edges to all possible edges ( n*(n-1) ) between nodes."));
     rightPanelDensityLCD->setToolTip(tr("This is the density of the network. \n"
                               "The density of a network is the ratio of existing \n"
@@ -3093,9 +3098,9 @@ void MainWindow::initToolBox(){
     rightPanelClickedNodeLabel -> setStatusTip( tr("The node number of the last clicked node. Zero means no node clicked."));
     rightPanelClickedNodeLCD =new QLCDNumber(5);
     rightPanelClickedNodeLCD ->setSegmentStyle(QLCDNumber::Flat);
-    rightPanelClickedNodeLCD -> setToolTip (tr("This is the number of the last clicked node. "
+    rightPanelClickedNodeLCD -> setToolTip (tr("This is the node number of the last clicked node. \n"
                                                "Becomes zero when you click on something other than a node."));
-    rightPanelClickedNodeLCD -> setStatusTip( tr("The number of the last clicked node. Zero if you clicked something else."));
+    rightPanelClickedNodeLCD -> setStatusTip( tr("The node number of the last clicked node. Zero if you clicked something else."));
 
     QLabel *rightPanelClickedNodeInDegreeLabel = new QLabel;
     rightPanelClickedNodeInDegreeLabel -> setText (tr("In-Degree:"));
@@ -3105,7 +3110,7 @@ void MainWindow::initToolBox(){
     rightPanelClickedNodeInDegreeLCD -> setSegmentStyle(QLCDNumber::Flat);
     rightPanelClickedNodeInDegreeLCD -> setStatusTip (tr("The sum of all inbound edge weights of the last clicked node. "
                                                        "Zero if you clicked something else."));
-    rightPanelClickedNodeInDegreeLCD -> setToolTip (tr("This is the sum of all inbound edge weights of last clicked node."
+    rightPanelClickedNodeInDegreeLCD -> setToolTip (tr("This is the sum of all inbound edge weights of last clicked node. \n"
                                                          "Becomes zero when you click on something other than a node."));
 
     QLabel *rightPanelClickedNodeOutDegreeLabel = new QLabel;
@@ -3114,9 +3119,9 @@ void MainWindow::initToolBox(){
     rightPanelClickedNodeOutDegreeLabel -> setStatusTip (tr("The outDegree of a node is the sum of all outbound edge weights."));
     rightPanelClickedNodeOutDegreeLCD=new QLCDNumber(5);
     rightPanelClickedNodeOutDegreeLCD -> setSegmentStyle(QLCDNumber::Flat);
-    rightPanelClickedNodeOutDegreeLCD -> setStatusTip (tr("The sum of all outbound edge weights of the last clicked node."
+    rightPanelClickedNodeOutDegreeLCD -> setStatusTip (tr("The sum of all outbound edge weights of the last clicked node. "
                                                           "Zero if you clicked something else."));
-    rightPanelClickedNodeOutDegreeLCD -> setToolTip (tr("This is the sum of all outbound edge weights of the last clicked node. "
+    rightPanelClickedNodeOutDegreeLCD -> setToolTip (tr("This is the sum of all outbound edge weights of the last clicked node. \n"
                                                         "Becomes zero when you click on something other than a node."));
 
     QLabel *rightPanelClickedNodeClucofLabel  = new QLabel;
@@ -3133,10 +3138,10 @@ void MainWindow::initToolBox(){
                    "from the menu Analysis > Clustering Coefficient "));
     rightPanelClickedNodeClucofLabel -> setToolTip (
                 tr("The Clustering Coefficient quantifies how close the clicked \n"
-                   "vertex and its neighbors are to being a clique. \n"
+                   "vertex and its neighbors are to being a clique. \n\n"
                    "The value is the proportion of Edges between the vertices \n"
                    "within the neighbourhood of the clicked vertex, \n"
-                   "divided by the number of Edges that could possibly exist "
+                   "divided by the number of Edges that could possibly exist \n"
                    "between them. \n\n "
                    "This value is automatically calculated only if vertices < 500.\n"
                    "If your network is larger than 500 vertices, compute CluCof "
@@ -3165,7 +3170,7 @@ void MainWindow::initToolBox(){
                    "divided by the number of Edges that could possibly exist "
                    "between them. \n\n "
                    "This value is automatically calculated only if vertices < 500.\n"
-                   "If your network is larger than 500 vertices, compute CluCof "
+                   "If your network is larger than 500 vertices, compute CluCof  \n"
                    "from the menu Analysis > Clustering Coefficient "));
 
 
@@ -3181,8 +3186,8 @@ void MainWindow::initToolBox(){
     rightPanelClickedEdgeSourceLabel -> setToolTip (tr("The number of the last clicked edge source node."));
     rightPanelClickedEdgeSourceLCD =new QLCDNumber(5);
     rightPanelClickedEdgeSourceLCD ->setSegmentStyle(QLCDNumber::Flat);
-    rightPanelClickedEdgeSourceLCD -> setToolTip (tr("This is the node number of the last clicked edge source node. "
-                                                     "Becomes zero when you click on something other than an edge"));
+    rightPanelClickedEdgeSourceLCD -> setToolTip (tr("This is the node number of the last clicked edge source node. \n"
+                                                     "Becomes zero when you click on somethingto other than an edge"));
     rightPanelClickedEdgeSourceLCD -> setStatusTip (tr("The node number of the last clicked edge source node."
                                                        "Zero when you click on something else."));
     QLabel *rightPanelClickedEdgeTargetLabel = new QLabel;
@@ -3190,7 +3195,7 @@ void MainWindow::initToolBox(){
     rightPanelClickedEdgeTargetLabel -> setToolTip (tr("The number of the target node."));
     rightPanelClickedEdgeTargetLCD =new QLCDNumber(5);
     rightPanelClickedEdgeTargetLCD ->setSegmentStyle(QLCDNumber::Flat);
-    rightPanelClickedEdgeTargetLCD -> setToolTip (tr("This is the node number of the last clicked edge target node. "
+    rightPanelClickedEdgeTargetLCD -> setToolTip (tr("This is the node number of the last clicked edge target node. \n"
                                                      "Becomes zero when you click on something other than an edge"));
     rightPanelClickedEdgeTargetLCD -> setStatusTip (tr("The node number of the last clicked edge target node."
                                                        "Zero when you click on something else."));
@@ -3199,9 +3204,9 @@ void MainWindow::initToolBox(){
     rightPanelClickedEdgeWeightLabel -> setToolTip (tr("The weight of the clicked edge."));
     rightPanelClickedEdgeWeightLCD =new QLCDNumber(5);
     rightPanelClickedEdgeWeightLCD ->setSegmentStyle(QLCDNumber::Flat);
-    rightPanelClickedEdgeWeightLabel -> setToolTip (tr("This is the weight of the last clicked edge. "
+    rightPanelClickedEdgeWeightLCD -> setToolTip (tr("This is the weight of the last clicked edge. \n"
                                                        "Becomes zero when you click on something other than an edge"));
-    rightPanelClickedEdgeWeightLabel -> setStatusTip (tr("The weight of the last clicked edge. "
+    rightPanelClickedEdgeWeightLCD -> setStatusTip (tr("The weight of the last clicked edge. "
                                                          "Zero when you click on something else."));
 
     //create a grid layout
