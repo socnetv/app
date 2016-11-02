@@ -2181,9 +2181,13 @@ bool Parser::loadGML(){
     QTextStream ts( &file );
     ts.setCodec(userSelectedCodecName.toUtf8());
 
+    QRegularExpression onlyDigitsExp("^\\d+$");
+    QStringList tempList;
     QString str;
     int fileLine=0;
-    bool isPlanar = false, graphKey=false, graphicsKey=false, edgeKey=false, nodeKey=false;
+    bool floatOK= false;
+    bool isPlanar = false, graphKey=false, graphicsKey=false,
+            edgeKey=false, nodeKey=false, graphicsCenterKey=false;
 
     node_id= QString::null;
     arrows=true;
@@ -2191,7 +2195,8 @@ bool Parser::loadGML(){
     edgeDirType=EDGE_RECIPROCAL_UNDIRECTED;
 
     while (!ts.atEnd() )   {
-
+        floatOK= false;
+        fileContainsNodeCoords = false;
         fileLine++;
         str= ts.readLine() ;
 
@@ -2269,6 +2274,12 @@ bool Parser::loadGML(){
             if ( nodeKey ) {
                 totalNodes++;
                 node_id = str.split(" ",QString::SkipEmptyParts).last();
+                if (!node_id.contains(onlyDigitsExp)) {
+                    errorMessage = tr("Not a proper GML-formatted file. "
+                                      "Node id tag at line %1 has non-arithmetic value.")
+                            .arg(fileLine);
+                    return false;
+                }
                 qDebug()<< "Parser::loadGML() - id description "
                            << "This node" << totalNodes
                               <<"id"<< node_id;
@@ -2278,11 +2289,13 @@ bool Parser::loadGML(){
         else if ( str.startsWith("label ",Qt::CaseInsensitive) ) {
             //describes label
             if ( nodeKey ) {
-                nodeLabel = str.split(" ",QString::SkipEmptyParts).last();
+                nodeLabel = str.split(" ",QString::SkipEmptyParts).last().remove("\"");
                 qDebug()<< "Parser::loadGML() - node label definition"
                            << "node" << totalNodes
                               <<"id"<< node_id
                                 << "label" << nodeLabel;
+
+                //FIXME REMOVE ANY "
             }
             else if ( edgeKey ) {
                 edgeLabel = str.split(" ",QString::SkipEmptyParts).last();
@@ -2293,7 +2306,7 @@ bool Parser::loadGML(){
         }
 
 
-        else if ( str.startsWith("edge",Qt::CaseInsensitive) ) {
+        else if ( str.startsWith("edge ",Qt::CaseInsensitive) ) {
             //edge declarations
             qDebug()<< "Parser::loadGML() - edge description list start";
             edgeKey = true;
@@ -2302,6 +2315,13 @@ bool Parser::loadGML(){
         else if ( str.startsWith("source ",Qt::CaseInsensitive) ) {
             if (edgeKey) {
                 edge_source = str.split(" ",QString::SkipEmptyParts).last();
+                //if edge_source
+                if (!edge_source.contains(onlyDigitsExp)) {
+                    errorMessage = tr("Not a proper GML-formatted file. "
+                                      "Edge source tag at line %1 has non-arithmetic value.")
+                            .arg(fileLine);
+                    return false;
+                }
                 source = edge_source.toInt(0);
                 qDebug()<< "Parser::loadGML() - edge source definition"
                            << "edge source" << edge_source;
@@ -2310,6 +2330,13 @@ bool Parser::loadGML(){
         else if ( str.startsWith("target ",Qt::CaseInsensitive) ) {
             if (edgeKey) {
                 edge_target = str.split(" ",QString::SkipEmptyParts).last();
+                if (!edge_source.contains(onlyDigitsExp)) {
+                    errorMessage = tr("Not a proper GML-formatted file. "
+                                      "Edge target tag at line %1 has non-arithmetic value.")
+                            .arg(fileLine);
+                    return false;
+                }
+
                 target = edge_target.toInt(0);
                 qDebug()<< "Parser::loadGML() - edge target definition"
                            << "edge target" << edge_target;
@@ -2325,16 +2352,56 @@ bool Parser::loadGML(){
             }
             graphicsKey = true;
         }
-        else if ( str.startsWith("id",Qt::CaseInsensitive) ) {
+        else if ( str.startsWith("center",Qt::CaseInsensitive) ) {
+            if (graphicsKey && nodeKey)  {
+                qDebug()<< "Parser::loadGML() - node graphics center start";
+                if ( str.contains("[", Qt::CaseInsensitive) ) {
+                    if ( str.contains("]", Qt::CaseInsensitive) &&
+                         str.contains("x", Qt::CaseInsensitive) &&
+                         str.contains("y", Qt::CaseInsensitive)) {
+                        str.remove("center");
+                        str.remove("[");
+                        str.remove("]");
+                        str = str.simplified();
+                        tempList = str.split(" ",QString::SkipEmptyParts);
+                        randX = (tempList.at(1)).toFloat(&floatOK);
+                        if (!floatOK) {
+
+                        }
+                        randY = tempList.at(3).toFloat(&floatOK);
+                        if (!floatOK) {
+
+                        }
+                        qDebug()<< "Parser::loadGML() - node graphics center"
+                                << "x" << randX
+                                << "y" << randY;
+                        fileContainsNodeCoords = true;
+                    }
+                    else {
+                        graphicsCenterKey = true;
+                    }
+                }
+            }
         }
-        else if ( str.startsWith("label",Qt::CaseInsensitive) ) {
+        else if ( str.startsWith("center",Qt::CaseInsensitive) &&
+                  nodeKey && graphicsKey && graphicsCenterKey ) {
         }
         else if ( str.startsWith("]",Qt::CaseInsensitive) ) {
-            if (nodeKey) {
+            if (nodeKey && graphicsKey && graphicsCenterKey ) {
+                qDebug()<< "Parser::loadGML() - node graphics center ends";
+                graphicsCenterKey = false;
+            }
+            else if (graphicsKey) {
+                qDebug()<< "Parser::loadGML() - graphics list ends";
+                graphicsKey = false;
+            }
+            else if (nodeKey && !graphicsKey) {
                 qDebug()<< "Parser::loadGML() - node description list ends";
                 nodeKey = false;
-                randX=rand()%gwWidth;
-                randY=rand()%gwHeight;
+                if (!fileContainsNodeCoords) {
+                    randX=rand()%gwWidth;
+                    randY=rand()%gwHeight;
+                }
                 qDebug()<<" *** Creating node "<< node_id
                        << " at "<< randX <<","<< randY
                        <<" label "<<nodeLabel;
@@ -2347,19 +2414,19 @@ bool Parser::loadGML(){
                             );
 
             }
-            if (edgeKey) {
+            else if (edgeKey && !graphicsKey) {
                 qDebug()<< "Parser::loadGML() - edge description list ends";
                 edgeKey = false;
                 edgeWeight = 1;
                 edgeColor = "black";
+                if (edgeLabel==QString::null) {
+                    edgeLabel = edge_source + "->" + edge_target;
+                }
                 emit edgeCreate(source,target, edgeWeight, edgeColor,
-                                edgeDirType, arrows, bezier);
+                                edgeDirType, arrows, bezier, edgeLabel);
             }
-            if (graphicsKey) {
-                qDebug()<< "Parser::loadGML() - edge description list ends";
-                graphicsKey = false;
-            }
-            if (graphKey) {
+
+            else if (graphKey) {
                 qDebug()<< "Parser::loadGML() - graph description list ends";
                 graphKey = false;
             }
