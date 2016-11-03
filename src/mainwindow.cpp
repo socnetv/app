@@ -4551,7 +4551,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
             fileType_filter = tr("GraphML (*.graphml *.xml);;"
                                  "GML (*.gml *.xml);;"
                                  "Pajek (*.net *.pajek *.paj);;"
-                                 "DL (*.dl *.dat);;"
+                                 "UCINET (*.dl *.dat);;"
                                  "Adjacency (*.csv *.adj *.sm *.txt);;"
                                  "GraphViz (*.dot);;"
                                  "Weighted Edge List (*.csv *.txt *.edgelist *.list *.lst *.wlst);;"
@@ -4585,7 +4585,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
         }
         else {
             //display some error
-            statusMessage( tr("Error opening file dialog..."));
+            statusMessage( tr("Nothing to do..."));
         }
         return;
 
@@ -5381,20 +5381,20 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
         break;
 
     case 4:
-        statusMessage( QString(tr("Dot formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("GraphViz (Dot) formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
 
     case 5:
-        statusMessage( QString(tr("DL-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("UCINET formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
     case 6:
-        statusMessage( QString(tr("GML-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("GML formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
     case 7:
-        statusMessage( QString(tr("Weighted list-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("Weighted list formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
     case 8:
-        statusMessage( QString(tr("Simple list-formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
+        statusMessage( QString(tr("Simple list formatted network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
         break;
     case 9:
         statusMessage( QString(tr("Two-mode affiliation network, named %1, loaded with %2 Nodes and %3 total Edges.")).arg( netName ).arg( totalNodes ).arg(totalEdges ) );
