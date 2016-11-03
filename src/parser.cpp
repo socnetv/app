@@ -2193,10 +2193,13 @@ bool Parser::loadGML(){
     arrows=true;
     bezier=false;
     edgeDirType=EDGE_RECIPROCAL_UNDIRECTED;
-
+    totalNodes=0;
     while (!ts.atEnd() )   {
         floatOK= false;
         fileContainsNodeCoords = false;
+        nodeShape = initNodeShape;
+        nodeColor = true;
+
         fileLine++;
         str= ts.readLine() ;
 
@@ -2366,11 +2369,17 @@ bool Parser::loadGML(){
                         tempList = str.split(" ",QString::SkipEmptyParts);
                         randX = (tempList.at(1)).toFloat(&floatOK);
                         if (!floatOK) {
-
+                            errorMessage = tr("Not a proper GML-formatted file. "
+                                              "Node center tag at line %1 cannot be converted to float.")
+                                    .arg(fileLine);
+                            return false;
                         }
                         randY = tempList.at(3).toFloat(&floatOK);
                         if (!floatOK) {
-
+                            errorMessage = tr("Not a proper GML-formatted file. "
+                                              "Node center tag at line %1 cannot be converted to float.")
+                                    .arg(fileLine);
+                            return false;
                         }
                         qDebug()<< "Parser::loadGML() - node graphics center"
                                 << "x" << randX
@@ -2385,6 +2394,32 @@ bool Parser::loadGML(){
         }
         else if ( str.startsWith("center",Qt::CaseInsensitive) &&
                   nodeKey && graphicsKey && graphicsCenterKey ) {
+            //this is the case where the bracker [ is below the center tag
+        }
+        else if ( str.startsWith("type",Qt::CaseInsensitive) ) {
+            if (graphicsKey && nodeKey)  {
+                qDebug()<< "Parser::loadGML() - node graphics type start";
+                nodeShape = str.split(" ",QString::SkipEmptyParts).last();
+                if (nodeShape.isNull() || nodeShape.isEmpty() ) {
+                    errorMessage = tr("Not a proper GML-formatted file. "
+                                      "Node type tag at line %1 has no value.")
+                            .arg(fileLine);
+                    return false;
+                }
+                nodeShape.remove("\"");
+            }
+        }
+        else if ( str.startsWith("fill",Qt::CaseInsensitive) ) {
+            if (graphicsKey && nodeKey)  {
+                qDebug()<< "Parser::loadGML() - node graphics fill start";
+                nodeColor = str.split(" ",QString::SkipEmptyParts).last();
+                if (nodeColor.isNull() || nodeColor.isEmpty() ) {
+                    errorMessage = tr("Not a proper GML-formatted file. "
+                                      "Node fill tag at line %1 has no value.")
+                            .arg(fileLine);
+                    return false;
+                }
+            }
         }
         else if ( str.startsWith("]",Qt::CaseInsensitive) ) {
             if (nodeKey && graphicsKey && graphicsCenterKey ) {
@@ -2406,11 +2441,11 @@ bool Parser::loadGML(){
                        << " at "<< randX <<","<< randY
                        <<" label "<<nodeLabel;
                 emit createNode(
-                            node_id.toInt(0), initNodeSize, initNodeColor,
+                            node_id.toInt(0), initNodeSize, nodeColor,
                             initNodeNumberColor, initNodeNumberSize,
                             nodeLabel , initNodeLabelColor, initNodeLabelSize,
                             QPointF(randX,randY),
-                            initNodeShape, false
+                            nodeShape, false
                             );
 
             }

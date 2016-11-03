@@ -162,7 +162,7 @@ void Node::setShape(const QString shape) {
     else if ( m_shape == "ellipse") {
         m_path->addEllipse(-m_size, -m_size, 2*m_size, 1.7* m_size);
     }
-    else if ( m_shape == "box" || m_shape == "rectangle"  ) {  //rectangle: for GraphML compliance
+    else if ( m_shape == "box" || m_shape == "rectangle"  ) {  //rectangle: for GraphML/GML compliance
         m_path->addRect (-m_size , -m_size , 1.8*m_size , 1.8*m_size );
     }
     else if (m_shape == "roundrectangle"  ) {  //roundrectangle: GraphML only

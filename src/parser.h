@@ -42,7 +42,7 @@ class QXmlStreamAttributes;
 
 /**
  * @brief The Actor struct
- * Used in loadEdgeListWeighed
+ * Used in loadEdgeListWeighed and loadEdgeListSimple
  */
 struct Actor {
     QString key;
