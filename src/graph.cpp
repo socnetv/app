@@ -9050,9 +9050,48 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
     outText.setCodec("UTF-8");
     QString datasetDescription=QString::null;
     qDebug()<< "		... writing dataset ";
-    if ( fileName == "Krackhardt_High-tech_managers_Advice_relation.sm" ) {
+
+
+    if ( fileName == "Krackhardt_High-tech_managers.paj" ) {
         qDebug()<< "		... to  " << fileName;
-        outText <<
+        datasetDescription = "Krackhardt's High-tech Managers is a famous social network "
+                             "of 21 managers of a high-tech US company. \n\n"
+                             "The company manufactured high-tech equipment "
+                             "and had just over 100 employees with 21 managers. "
+                             "David Krackhardt collected the data to assess the effects "
+                             "of a recent management intervention program. \n\n"
+                             "The network consists of 3 relations:\n"
+                             "- Advice\n"
+                             "- Friendship\n"
+                             "- Reports To\n    "
+                             "Each manager was asked to whom do you go to for advice and who is your friend. "
+                             "Data for the \"whom do you report\" relation was taken from company documents. \n\n"
+                             "This data is used by Wasserman and Faust in their seminal network analysis book.\n"
+                             "Krackhardt D. (1987). Cognitive social structures. Social Networks, 9, 104-134.";
+        outText << "*Network  Krackhardt's High-tech managers"<< endl <<
+                   "*Vertices      21"<< endl <<
+                     "1 \"v1\"       0.6226    0.7207" << endl <<
+                     "2 \"v2\"       0.6000    0.5533" << endl <<
+                     "3 \"v3\"       0.6722    0.3928" << endl <<
+                     "4 \"v4\"       0.7646    0.6000" << endl <<
+                     "5 \"v5\"       0.3518    0.4775" << endl <<
+                     "6 \"v6\"       0.7583    0.0784" << endl <<
+                     "7 \"v7\"       0.6692    0.2475" << endl <<
+                     "8 \"v8\"       0.7349    0.5030" << endl <<
+                     "9 \"v9\"       0.5325    0.3892" << endl <<
+                    "10 \"v10\"      0.5846    0.6311" << endl <<
+                    "11 \"v11\"      0.4600    0.4733" << endl <<
+                    "12 \"v12\"      0.8855    0.2566" << endl <<
+                    "13 \"v13\"      0.1145    0.4786" << endl <<
+                    "14 \"v14\"      0.3838    0.3270" << endl <<
+                    "15 \"v15\"      0.5349    0.4455" << endl <<
+                    "16 \"v16\"      0.6117    0.9216" << endl <<
+                    "17 \"v17\"      0.7041    0.4144" << endl <<
+                    "18 \"v18\"      0.4864    0.5808" << endl <<
+                    "19 \"v19\"      0.5728    0.4802" << endl <<
+                    "20 \"v20\"      0.6640    0.5041" << endl <<
+                    "21 \"v21\"      0.7846    0.3329" << endl <<
+                   "*Matrix :1 gives_advice_to"<< endl <<
                    "0 1 0 1 0 0 0 1 0 0 0 0 0 0 0 1 0 1 0 0 1" << endl <<
                    "0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1" << endl <<
                    "1 1 0 1 0 1 1 1 1 1 1 1 0 1 0 0 1 1 0 1 1" << endl <<
@@ -9073,11 +9112,9 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                    "1 1 1 1 1 0 1 1 1 1 1 0 1 1 1 1 0 0 1 1 1" << endl <<
                    "1 1 1 0 1 0 1 0 0 1 1 0 0 1 1 0 0 1 0 1 0" << endl <<
                    "1 1 0 0 0 1 0 1 0 0 1 1 0 1 1 1 1 1 0 0 1" << endl <<
-                   "0 1 1 1 0 1 1 1 0 0 0 1 0 1 0 0 1 1 0 1 0";
-
-    }
-    else if (fileName == "Krackhardt_High-tech_managers_Friendship_relation.sm"){
-        outText<< "0 1 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 0 0" << endl <<
+                   "0 1 1 1 0 1 1 1 0 0 0 1 0 1 0 0 1 1 0 1 0"<< endl <<
+                   "*Matrix :2 is_friend_of" <<endl <<
+                  "0 1 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 0 0" << endl <<
                   "1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1" << endl <<
                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0" << endl <<
                   "1 1 0 0 0 0 0 1 0 0 0 1 0 0 0 1 1 0 0 0 0" << endl <<
@@ -9097,10 +9134,9 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                   "0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
                   "1 1 1 0 1 0 0 0 0 0 1 1 0 1 1 0 0 0 0 1 0" << endl <<
                   "0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0" << endl <<
-                  "0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0" ;
-    }
-    else if (fileName == "Krackhardt_High-tech_managers_ReportsTo_relation.sm"){
-        outText<< "0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
+                  "0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0" << endl <<
+                  "*Matrix :3 reports_to" <<endl <<
+                  "0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
                   "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << endl <<
                   "0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
@@ -9122,6 +9158,8 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                   "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0" << endl <<
                   "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0";
     }
+
+
     else if (fileName == "Padgett_Florentine_Families_Marital_relation.net"){
         outText<< "*Network Padgett's Florentine Families Marital Relation" << endl <<
                   "*Vertices      16" << endl <<
@@ -9234,8 +9272,26 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                    "14  9 1" << endl <<
                    "16  9 1";
     }
-    else if (fileName == "Zachary_Karate_Club_Simple_Ties.sm"){
-        outText<< "0 1 1 1 1 1 1 1 1 0 1 1 1 1 0 0 0 1 0 1 0 1 0 0 0 0 0 0 0 0 0 1 0 0" << endl <<
+    else if (fileName == "Zachary_Karate_Club.dl"){
+        datasetDescription = ""
+                             "The Zachary Karate Club is a well-known social network of 34 members"
+                             " of a university karate club studied by Wayne W. Zachary from 1970 to 1972.\n\n"
+                             "During the study, disputes among two members led to club splitting into two groups. "
+                             "Zachary documented 78 ties between members who interacted outside the club and "
+                             "used the collected data and an information flow model to explain the split-up. \n\n"
+                             "There are two relations (matrices) in this network:"
+                             "The ZACHE relation represents the presence or absence of ties among the actors. "
+                             "The ZACHC relation indicates the relative strength of their associations "
+                             "(number of situations in and outside the club in which interactions occurred).\n\n"
+                             "Zachary W. (1977). An information flow model for conflict and fission in small groups. Journal of Anthropological Research, 33, 452-473. ";
+        outText<< "DL"<< endl <<
+                  "N=34 NM=2"<< endl <<
+                  "FORMAT = FULLMATRIX DIAGONAL PRESENT"<< endl <<
+                  "LEVEL LABELS:"<< endl <<
+                  "ZACHE"<< endl <<
+                  "ZACHC"<< endl <<
+                  "DATA:"<< endl <<
+                  "0 1 1 1 1 1 1 1 1 0 1 1 1 1 0 0 0 1 0 1 0 1 0 0 0 0 0 0 0 0 0 1 0 0" << endl <<
                   "1 0 1 1 0 0 0 1 0 0 0 0 0 1 0 0 0 1 0 1 0 1 0 0 0 0 0 0 0 0 1 0 0 0" << endl <<
                   "1 1 0 1 0 0 0 1 1 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 1 0" << endl <<
                   "1 1 1 0 0 0 0 1 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
@@ -9268,10 +9324,8 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                   "0 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1" << endl <<
                   "1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 1 0 0 0 1 1" << endl <<
                   "0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 1 0 0 1 0 1 0 1 1 0 0 0 0 0 1 1 1 0 1" << endl <<
-                  "0 0 0 0 0 0 0 0 1 1 0 0 0 1 1 1 0 0 1 1 1 0 1 1 0 0 1 1 1 1 1 1 1 0" ;
-    }
-    else if (fileName == "Zachary_Karate_Club_Weighted_Ties.sm"){
-        outText<< "0 4 5 3 3 3 3 2 2 0 2 3 1 3 0 0 0 2 0 2 0 2 0 0 0 0 0 0 0 0 0 2 0 0" << endl <<
+                  "0 0 0 0 0 0 0 0 1 1 0 0 0 1 1 1 0 0 1 1 1 0 1 1 0 0 1 1 1 1 1 1 1 0" << endl <<
+                  "0 4 5 3 3 3 3 2 2 0 2 3 1 3 0 0 0 2 0 2 0 2 0 0 0 0 0 0 0 0 0 2 0 0" << endl <<
                   "4 0 6 3 0 0 0 4 0 0 0 0 0 5 0 0 0 1 0 2 0 2 0 0 0 0 0 0 0 0 2 0 0 0" << endl <<
                   "5 6 0 3 0 0 0 4 5 1 0 0 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 2 2 0 0 0 2 0" << endl <<
                   "3 3 3 0 0 0 0 3 0 0 0 0 3 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" << endl <<
@@ -9307,6 +9361,15 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                   "0 0 0 0 0 0 0 0 4 2 0 0 0 3 2 4 0 0 2 1 1 0 3 4 0 0 2 4 2 2 3 4 5 0";
     }
     else if (fileName == "Galaskiewicz_CEOs_and_clubs_affiliation_network_data.2sm"){
+        datasetDescription = tr("The affiliation network of the chief executive officers "
+                                "and their spouses from 26 corporations and banks in 15 clubs, "
+                                "corporate and cultural boards. "
+                                "Membership was during the period 1978-1981\n\n"
+                                "This is a 26x15 affiliation matrix, where the rows "
+                                "correspond to the 26 CEOs and the columns to the 15 clubs. \n\n"
+                                "This data  was originally collected by Galaskiewicz (1985) "
+                                "and is used by Wasserman and Faust in Social Network Analysis: Methods and Applications (1994).\n"
+                                "Galaskiewicz, J. (1985). Social Organization of an Urban Grants Economy. New York: Academic Press. ");
         outText<< "0 0 1 1 0 0 0 0 1 0 0 0 0 0 0" << endl <<
                   "0 0 1 0 1 0 1 0 0 0 0 0 0 0 0" << endl <<
                   "0 0 1 0 0 0 0 0 0 0 0 1 0 0 0" << endl <<
@@ -9561,11 +9624,14 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
         datasetDescription =
                 tr("Bernard & Killworth recorded the interactions among students living in a fraternity at "
                    "a West Virginia college. Subjects had been residents in the fraternity from 3 months to 3 years. "
-                   "This network dataset contains two relations: \n"
+                   "This network dataset contains two relations: \n\n"
                    "The BKFRAB relation is symmetric and valued. It counts the number of times a pair of subjects were "
-                   "seen in conversation by an unobtrusive observer (observation time: 21 hours a day, for five days). \n"
+                   "seen in conversation by an unobtrusive observer (observation time: 21 hours a day, for five days). \n\n"
                    "The BKFRAC relation is non-symmetric and valued. Contains rankings made by the subjects themselves of "
-                   "how frequently they interacted with other subjects in the observation week.");
+                   "how frequently they interacted with other subjects in the observation week. \n\n"
+                   "Knoke D. and Wood J. (1981). Organized for action: Commitment in voluntary associations. "
+                   "New Brunswick, NJ: Rutgers University Press. Knoke D. and Kuklinski J. (1982). "
+                   "Network analysis, Beverly Hills, CA: Sage");
         outText << "DL"<<endl<<
                    "N=58 NM=2"<<endl<<
                    "FORMAT = FULLMATRIX DIAGONAL PRESENT"<<endl<<
