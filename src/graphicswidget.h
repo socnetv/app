@@ -177,17 +177,16 @@ private:
     QList<int> m_selectedNodes;
     QList<QString> m_selectedEdges;
     int m_curRelation, m_nodeSize;
-    double m_currentScaleFactor;
-    qreal fX,fY, factor;
     int m_currentRotationAngle;
     int m_zoomIndex, markedNodeOrigSize,markedEdgeSourceOrigSize, markedEdgeTargetOrigSize;
+    double m_currentScaleFactor;
+    qreal fX,fY, factor;
     QString m_nodeLabel, m_numberColor, m_labelColor;
     QString edgeName;
-    bool secondDoubleClick, markedNodeExist, markedEdgeExists;
-    QGraphicsItem *moving;
+    bool transformationActive;
+    bool secondDoubleClick, markedNodeExist, clickedEdgeExists;
     Node *firstNode, *secondNode, *markedNode1, *markedEdgeSource;
     Node *markedEdgeTarget, *tempNode ;
-    bool transformationActive;
 };
 
 #endif

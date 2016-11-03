@@ -39,13 +39,10 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
     (ui.buttonBox) -> button (QDialogButtonBox::Ok) -> setDefault(true);
 
     datasets_list
-            << "Krackhardt: High-tech managers (advice), 24 actors"
-            << "Krackhardt: High-tech managers (friendship), 24 actors"
-            << "Krackhardt: High-tech managers (Reports To), 24 actors"
+            << "Krackhardt: High-tech managers (multirelational), 24 actors"
             << "Padgett: Florentine Families (marital relationship), 16 actors"
             << "Padgett: Florentine Families (business relationship), 16 actors"
-            << "Zachary: Karate Club (simple ties), 34 actors"
-            << "Zachary: Karate Club (weighted ties), 34 actors"
+            << "Zachary: Karate Club (binary & valued ties), 34 actors"
             << "Bernard: Killworth Fraternity (multirelational), 58 actors"
             << "Thurman: In the office: Networks and Coalitions, 15 actors"
             << "Stokman-Ziegler: Corporate Interlocks in Netherlands, 16 actors"
@@ -65,13 +62,10 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
             << "Petersen graph: a non-planar, undirected graph with 10 vertices and 15 edges";
 
     datasets_filenames
-            << "Krackhardt_High-tech_managers_Advice_relation.sm"
-            << "Krackhardt_High-tech_managers_Friendship_relation.sm"
-            << "Krackhardt_High-tech_managers_ReportsTo_relation.sm"
+            << "Krackhardt_High-tech_managers.paj"
             << "Padgett_Florentine_Families_Marital_relation.net"
             << "Padgett_Florentine_Families_Business_relation.paj"
-            << "Zachary_Karate_Club_Simple_Ties.sm"
-            << "Zachary_Karate_Club_Weighted_Ties.sm"
+            << "Zachary_Karate_Club.dl"
             << "Bernard_Killworth_Fraternity.dl"
             << "Thurman_Office_Networks_Coalitions.dl"
             << "Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl"

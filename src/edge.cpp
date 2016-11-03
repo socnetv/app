@@ -488,21 +488,20 @@ QPen Edge::pen() const {
 
     switch (m_state) {
     case EDGE_STATE_REGULAR:
-        qDebug() << "Edge::pen() - returning pen for state REGULAR"  ;
+        //qDebug() << "Edge::pen() - returning pen for state REGULAR"  ;
         if (m_weight < 0 ){
             return  QPen(QColor(m_color), width(), Qt::DashLine, Qt::RoundCap, Qt::RoundJoin);
         }
         return QPen(QColor(m_color), width(), style(), Qt::RoundCap, Qt::RoundJoin);
         break;
     case EDGE_STATE_HIGHLIGHT: // selected
-        qDebug() << "Edge::pen() - returning pen for state HIGHLIGHTED"  ;
-
+        //qDebug() << "Edge::pen() - returning pen for state HIGHLIGHTED"  ;
         return QPen(QColor("red"), width(), style(), Qt::RoundCap, Qt::RoundJoin);
     case EDGE_STATE_HOVER: // hover
-        qDebug() << "Edge::pen() - returning pen for state HOVER"  ;
+        //qDebug() << "Edge::pen() - returning pen for state HOVER"  ;
         return QPen(QColor("red"), width()+1, style(), Qt::RoundCap, Qt::RoundJoin);
     default:
-        qDebug() << "Edge::pen() - returning pen for state DEFAULT"  ;
+        //qDebug() << "Edge::pen() - returning pen for state DEFAULT"  ;
         return QPen(QColor(m_color), width(), style(), Qt::RoundCap, Qt::RoundJoin);
     }
 
@@ -517,7 +516,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     if (!source || !target)
         return;
 
-    qDebug() <<"@@@ Edge::paint()";
+    //qDebug() <<"@@@ Edge::paint()";
 
      //if the edge is being dragged around, darken it!
      if (option->state & QStyle::State_Selected) {
@@ -548,12 +547,12 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 */
 float Edge::width() const{
     if ( fabs(m_weight) > 1  )  {
-        qDebug()<< "Edge::width() -"
-                   << "m_weight" << m_weight
-                  <<"Returning "<< 1  +  log(fabs(m_weight)) ;
+//        qDebug()<< "Edge::width() -"
+//                   << "m_weight" << m_weight
+//                  <<"Returning "<< 1  +  log(fabs(m_weight)) ;
         return 1+log(fabs(m_weight)) ;
     }
-    qDebug()<< "Edge::width() - Returning"<< m_weight;
+//    qDebug()<< "Edge::width() - Returning"<< m_weight;
     return m_weight;	//	Default, if  m_weight in (-1, 1) space
 }
 
@@ -564,7 +563,7 @@ float Edge::width() const{
  * @param flag
  */
 void Edge::highlight(const bool &flag) {
-    qDebug()<< "Edge::highlight() - " << flag;
+    //qDebug()<< "Edge::highlight() - " << flag;
     if (flag) {
         prepareGeometryChange();
         setState(EDGE_STATE_HIGHLIGHT);

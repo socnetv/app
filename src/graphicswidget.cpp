@@ -49,13 +49,12 @@ GraphicsWidget::GraphicsWidget( QGraphicsScene *sc, MainWindow* par)  : QGraphic
     setScene(sc);
     secondDoubleClick=false;
     transformationActive = false;
-    moving=0;
     m_nodeLabel="";
     m_zoomIndex=250;
     m_currentScaleFactor = 1;
     m_currentRotationAngle = 0;
     markedNodeExist=false; //used in findNode()
-    markedEdgeExists = false; //used in selecting and edge
+    clickedEdgeExists = false; //used in selecting and edge
     edgesHash.reserve(1000);
     nodeHash.reserve(1000);
 
@@ -94,7 +93,7 @@ void GraphicsWidget::clear() {
     scene()->clear();
     m_curRelation=0;
     markedNodeExist=false;
-    markedEdgeExists = false;
+    clickedEdgeExists = false;
     firstNode=0;
     secondDoubleClick=false;
     qDebug() << "GW::clear() - finished clearing hashes";
@@ -252,8 +251,8 @@ void GraphicsWidget::startEdge(Node *node){
     - notify context menus for the clicked node.
 */
 void GraphicsWidget::nodeClicked(Node *node){
-    qDebug ("GW: Emitting userClickedNode()");
-    if (markedEdgeExists) edgeClicked(0);
+    qDebug () << "GW::nodeClicked() - Emitting userClickedNode()";
+    if (clickedEdgeExists) edgeClicked(0);
     emit userClickedNode(node->nodeNumber());
 }
 
@@ -267,20 +266,20 @@ void GraphicsWidget::nodeClicked(Node *node){
     Also, it makes source and target nodes to stand out of other nodes.
 */
 void GraphicsWidget::edgeClicked(Edge *edge){
-    qDebug() <<"GW::edgeCliced()";
-    if (markedEdgeExists) {
+    //qDebug() <<"GW::edgeClicked()";
+    if (clickedEdgeExists) {
         //unselect them, restore their color
         markedEdgeSource->setSelected(false);
         markedEdgeTarget->setSelected(false);
         //restore their size
         markedEdgeSource->setSize(markedEdgeSourceOrigSize);
         markedEdgeTarget->setSize(markedEdgeTargetOrigSize);
-        markedEdgeExists=false;
+        clickedEdgeExists=false;
         return;
     }
     markedEdgeSource=edge->sourceNode();
     markedEdgeTarget=edge->targetNode();
-    markedEdgeExists=true;
+    clickedEdgeExists=true;
     // select nodes to change their color
     markedEdgeSource->setSelected(true);
     markedEdgeTarget->setSelected(true);
@@ -1080,7 +1079,8 @@ void GraphicsWidget::getSelectedItems() {
     int edges=selectedEdges().count();
     qDebug() <<"GW::getSelectedItems() - nodes" << nodes<<"edges"<<edges;
     //emit selected nodes/edges signal to MW ?
-    emit userSelectedItems(nodes, edges);
+    if (!clickedEdgeExists)
+        emit userSelectedItems(nodes, edges);
 }
 
 /**

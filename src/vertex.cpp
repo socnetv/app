@@ -523,10 +523,10 @@ QHash<int,float>* Vertex::reciprocalEdgesHash(){
     int relation = 0;
     bool edgeStatus=false;
     H_edges::const_iterator it1=m_outEdges.constBegin();
-    qDebug() << "Vertex::reciprocalEdgesHash() - of vertex "
-             << this->name()
-                << " - outEdges " <<  m_outEdges.count()
-                << " - Checking all edges for reciprocality";
+//    qDebug() << "Vertex::reciprocalEdgesHash() - of vertex "
+//             << this->name()
+//                << " - outEdges " <<  m_outEdges.count()
+//                << " - Checking all edges for reciprocality";
 
     while (it1 != m_outEdges.constEnd() ) {
         relation = it1.value().first;
@@ -535,9 +535,9 @@ QHash<int,float>* Vertex::reciprocalEdgesHash(){
             if ( edgeStatus == true) {
                 m_weight=it1.value().second.first;
                 if (this->hasEdgeFrom (it1.key()) == m_weight ) {
-                    qDebug() << "Vertex::reciprocalEdgesHash() - of vertex "
-                             << this->name()
-                             << "Found reciprocal edge with   " << it1.key();
+//                    qDebug() << "Vertex::reciprocalEdgesHash() - of vertex "
+//                             << this->name()
+//                             << "Found reciprocal edge with   " << it1.key();
                     m_reciprocalEdges->insertMulti(it1.key(), m_weight);
                 }
             }
@@ -545,8 +545,8 @@ QHash<int,float>* Vertex::reciprocalEdgesHash(){
         ++it1;
     }
 
-    qDebug() << "Vertex::reciprocalEdgesHash() - vertex " << this->name()
-             <<  "reciprocalEdges:  "
+    qDebug() << "Vertex::reciprocalEdgesHash() - vertex" << this->name()
+             <<  "reciprocalEdges:"
               << m_reciprocalEdges->count();
 
     return m_reciprocalEdges;
