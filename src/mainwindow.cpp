@@ -160,8 +160,6 @@ QMap<QString,QString> MainWindow::initSettings(){
 
     printDebug = false; // comment it to stop debug override
 
-    firstTime=true;  // becomes false on user IO
-
     // Create fortune cookies and tips
     createFortuneCookies();
     slotHelpCreateTips();
@@ -461,16 +459,16 @@ void MainWindow::initActions(){
     networkNew->setStatusTip(tr("Create a new network"));
     networkNew->setToolTip(tr("New network"));
     networkNew->setWhatsThis(tr("New\n\n"
-                                "Creates a new network. "
+                                "Creates a new social network. "
                                 "Firtst, checks if current network needs to be saved."));
     connect(networkNew, SIGNAL(triggered()), this, SLOT(slotNetworkNew()));
 
     networkOpen = new QAction(QIcon(":/images/open.png"), tr("&Open"), this);
     networkOpen->setShortcut(Qt::CTRL+Qt::Key_O);
     networkOpen->setToolTip(tr("Open network"));
-    networkOpen->setStatusTip(tr("Open GraphML-formatted file of an existing network"));
+    networkOpen->setStatusTip(tr("Open a GraphML formatted file of social network data."));
     networkOpen->setWhatsThis(tr("Open\n\n"
-                              "Opens a file of an existing social network in GraphML format"));
+                              "Opens a file of a social network in GraphML format"));
     connect(networkOpen, SIGNAL(triggered()), this, SLOT(slotNetworkFileChoose()));
 
 
@@ -539,45 +537,48 @@ void MainWindow::initActions(){
 
     networkSave = new QAction(QIcon(":/images/save.png"), tr("&Save"),  this);
     networkSave->setShortcut(Qt::CTRL+Qt::Key_S);
-    networkSave->setStatusTip(tr("Save to the current file"));
+    networkSave->setStatusTip(tr("Save social network to a file"));
     networkSave->setWhatsThis(tr("Save.\n\n"
-                              "Saves the actual network to the current file"));
+                              "Saves the social network to file"));
     connect(networkSave, SIGNAL(triggered()), this, SLOT(slotNetworkSave()));
 
     networkSaveAs = new QAction(QIcon(":/images/save.png"), tr("Save &As..."),  this);
     networkSaveAs->setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_S);
-    networkSaveAs->setStatusTip(tr("Save under a new filename"));
+    networkSaveAs->setStatusTip(tr("Save network under a new filename"));
     networkSaveAs->setWhatsThis(tr("Save As\n\n"
-                                "Saves the actual network under a new filename"));
+                                "Saves the social network under a new filename"));
     connect(networkSaveAs, SIGNAL(triggered()), this, SLOT(slotNetworkSaveAs()));
 
     networkExportBMP = new QAction(QIcon(":/images/image.png"), tr("&BMP..."), this);
-    networkExportBMP->setStatusTip(tr("Export to BMP image"));
-    networkExportBMP->setWhatsThis(tr("Export BMP \n\n Exports the network to a BMP image"));
+    networkExportBMP->setStatusTip(tr("Export social network to BMP image"));
+    networkExportBMP->setWhatsThis(tr("Export BMP\n\n"
+                                      "Exports the social network to a BMP image"));
     connect(networkExportBMP, SIGNAL(triggered()), this, SLOT(slotNetworkExportBMP()));
 
     networkExportPNG = new QAction( QIcon(":/images/image.png"), tr("&PNG..."), this);
-    networkExportPNG->setStatusTip(tr("Export to PNG image"));
-    networkExportPNG->setWhatsThis(tr("Export PNG \n\n Exports the network to a PNG image"));
+    networkExportPNG->setStatusTip(tr("Export social network to PNG image"));
+    networkExportPNG->setWhatsThis(tr("Export PNG \n\n"
+                                      "Exports the social network to a PNG image"));
     connect(networkExportPNG, SIGNAL(triggered()), this, SLOT(slotNetworkExportPNG()));
 
 
     networkExportPDF = new QAction( QIcon(":/images/pdf.png"), tr("&PDF..."), this);
-    networkExportPDF->setStatusTip(tr("Export to PDF"));
-    networkExportPDF->setWhatsThis(tr("Export PDF\n\n Exports the network to a PDF document"));
+    networkExportPDF->setStatusTip(tr("Export social network to PDF"));
+    networkExportPDF->setWhatsThis(tr("Export PDF\n\n "
+                                      "Exports the social network to a PDF document"));
     connect(networkExportPDF, SIGNAL(triggered()), this, SLOT(slotNetworkExportPDF()));
 
     networkExportSM = new QAction( QIcon(":/images/save.png"), tr("&Adjacency Matrix"), this);
-    networkExportSM->setStatusTip(tr("Export to adjacency matrix file"));
-    networkExportSM->setWhatsThis(tr("Export Sociomatrix \n\n"
-                              "Exports the network to an "
+    networkExportSM->setStatusTip(tr("Export social network to an adjacency/sociomatrix file"));
+    networkExportSM->setWhatsThis(tr("Export network to Adjacency format\n\n"
+                              "Exports the social network to an "
                               "adjacency matrix-formatted file"));
     connect(networkExportSM, SIGNAL(triggered()), this, SLOT(slotNetworkExportSM()));
 
     networkExportPajek = new QAction( QIcon(":/images/save.png"), tr("&Pajek"), this);
-    networkExportPajek->setStatusTip(tr("Export to Pajek-formatted file"));
-    networkExportPajek->setWhatsThis(tr("Export Pajek \n\n "
-                                 "Exports the network to a Pajek-formatted file"));
+    networkExportPajek->setStatusTip(tr("Export social network to a Pajek-formatted file"));
+    networkExportPajek->setWhatsThis(tr("Export Pajek \n\n"
+                                 "Exports the social network to a Pajek-formatted file"));
     connect(networkExportPajek, SIGNAL(triggered()), this, SLOT(slotNetworkExportPajek()));
 
 
@@ -588,8 +589,8 @@ void MainWindow::initActions(){
     connect(networkExportList, SIGNAL(triggered()), this, SLOT(slotNetworkExportList()));
 
     networkExportDL = new QAction( QIcon(":/images/save.png"), tr("&DL..."), this);
-    networkExportDL->setStatusTip(tr("Export to DL-formatted file"));
-    networkExportDL->setWhatsThis(tr("Export DL\n\n"
+    networkExportDL->setStatusTip(tr("Export network to UCINET-formatted file"));
+    networkExportDL->setWhatsThis(tr("Export UCINET\n\n"
                                      "Exports the active network to a DL-formatted"));
     connect(networkExportDL, SIGNAL(triggered()), this, SLOT(slotNetworkExportDL()));
 
@@ -606,17 +607,19 @@ void MainWindow::initActions(){
 
     networkPrint = new QAction(QIcon(":/images/print.png"), tr("&Print"), this);
     networkPrint->setShortcut(Qt::CTRL+Qt::Key_P);
-    networkPrint->setStatusTip(tr("Send the network to the printer"));
-    networkPrint->setWhatsThis(tr("Printing \n\n"
+    networkPrint->setStatusTip(tr("Send the currrent social network to the printer"));
+    networkPrint->setWhatsThis(tr("Print \n\n"
                                   "This function prints whatever is viewable on "
-                                  "the canvas. \nTo print the whole network, "
+                                  "the canvas. \n"
+                                  "To print the whole social network, "
                                   "you might want to zoom-out."));
     connect(networkPrint, SIGNAL(triggered()), this, SLOT(slotNetworkPrint()));
 
     networkQuit = new QAction(QIcon(":/images/exit.png"), tr("E&xit"), this);
     networkQuit->setShortcut(Qt::CTRL+Qt::Key_Q);
-    networkQuit->setStatusTip(tr("Quits the application"));
-    networkQuit->setWhatsThis(tr("Exit\n\nQuits the application"));
+    networkQuit->setStatusTip(tr("Quit SocNetV. Are you sure?"));
+    networkQuit->setWhatsThis(tr("Exit\n\n"
+                                 "Quits the application"));
     connect(networkQuit, SIGNAL(triggered()), this, SLOT(close()));
 
 
@@ -635,9 +638,9 @@ void MainWindow::initActions(){
     networkViewFileAct = new QAction(QIcon(":/images/networkfile.png"),
                                      tr("View Loaded File"),this);
     networkViewFileAct ->setShortcut(Qt::Key_F5);
-    networkViewFileAct->setStatusTip(tr("Display the loaded social network file"));
+    networkViewFileAct->setStatusTip(tr("Display the loaded social network file."));
     networkViewFileAct->setWhatsThis(tr("View Loaded File\n\n"
-                                        "Displays the file of the loaded network"));
+                                        "Displays the loaded social network file "));
     connect(networkViewFileAct, SIGNAL(triggered()), this, SLOT(slotNetworkFileView()));
 
     networkViewSociomatrixAct = new QAction(QIcon(":/images/sm.png"),
@@ -646,7 +649,7 @@ void MainWindow::initActions(){
     networkViewSociomatrixAct->setStatusTip(tr("Display the adjacency matrix of the network."));
     networkViewSociomatrixAct->setWhatsThis(tr("View Adjacency Matrix\n\n"
                                         "Displays the adjacency matrix of the active network. \n\n"
-                                        "The adjacency matrix of a network is a matrix "
+                                        "The adjacency matrix of a social network is a matrix "
                                         "where each element a(i,j) is equal to the weight "
                                         "of the arc from actor (node) i to actor j. "
                                         "If the actors are not connected, then a(i,j)=0. "));
@@ -4496,26 +4499,6 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
     if (m_fileName.isNull() || m_fileName.isEmpty() ) {
 
         fileType=m_fileFormat;
-
-        if (firstTime && fileType == FILE_UNRECOGNIZED ) {
-            // This happens only the first time the user clicks Open File
-            // It displays a informative text.
-            slotHelpMessageToUser(
-                            USER_MSG_INFO,
-                            tr("Useful information"),
-                        tr("This menu option is more suitable for loading "
-                           "a network file in GraphML format (.graphml), "
-                           "which is the default format of SocNetV. \n"
-                           "Nevertheless, if you select other supported "
-                           "filetype SocNetV will attempt to load it.\n"
-                           "If your file is not GraphML but you know its "
-                           "format is supported (i.e. Pajek, UCINET, GraphViz, etc), "
-                           "please use the options in the Import sub menu. They are more safe.\n"
-                           "\n This warning message will not appear again.")
-                            );
-
-            firstTime=false;
-        }
 
         // prepare supported filetype extensions
         switch (fileType){
