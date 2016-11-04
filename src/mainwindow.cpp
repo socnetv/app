@@ -9700,6 +9700,7 @@ void MainWindow::slotCentralityDegree(){
 *	Writes Closeness Centralities into a file, then displays it.
 */
 void MainWindow::slotCentralityCloseness(){
+    qDebug() << "MW::slotCentralityCloseness()";
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;

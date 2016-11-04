@@ -2753,17 +2753,18 @@ int Graph::connectedness() {
         qDebug() << "Graph::connectedness() IS SYMMETRIC";
         if ( disconnectedVertices.size() != 0 ) {
             if (isolatedVertices!=0 ) {
-                qDebug() << "undirected graph is disconnected  (has isolates)" ;
+                qDebug() << "Graph::connectedness() - undirected graph is disconnected  (has isolates)" ;
                 return -1;
 
             }
             else
             {
-                qDebug() << " undirected graph is disconnected (no isolates)";
+                qDebug() << "Graph::connectedness() - undirected graph is "
+                            "disconnected (no isolates)";
                 return 0;
             }
         }
-        qDebug() << " undirected graph is connected ";
+        qDebug() << "Graph::connectedness() - undirected graph is connected ";
         return 1;
     }
     else {
@@ -2771,20 +2772,23 @@ int Graph::connectedness() {
         if ( disconnectedVertices.size() != 0 ) {
             if ( unilaterallyConnectedVertices.size() == 0 ) {
                 if (isolatedVertices!=0) {
-                    qDebug() << " directed graph is disconnected (has isolates)";
+                    qDebug() << "Graph::connectedness() - directed graph is "
+                                "disconnected (has isolates)";
                     return -3; // - can be connected directed if we remove isolate nodes
                 }
             }
-            qDebug () << " directed graph is disconnected (no isolates)";
+            qDebug () << "Graph::connectedness() - directed graph is disconnected "
+                         "(no isolates)";
             return -4;
         }
         else {
             if ( unilaterallyConnectedVertices.size() != 0 ) {
-                qDebug () << " directed graph is unilaterally connected";
+                qDebug () << "Graph::connectedness() - directed graph is "
+                             "unilaterally connected";
                 return -2; // (exists path only from i to j or from j to i, not both)
             }
             else{
-                qDebug () << " directed graph is connected ";
+                qDebug () << "Graph::connectedness() - directed graph is connected ";
                 return 2;
             }
         }
