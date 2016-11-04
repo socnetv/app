@@ -40,8 +40,7 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
 
     datasets_list
             << "Krackhardt: High-tech managers (multirelational), 24 actors"
-            << "Padgett: Florentine Families (marital relationship), 16 actors"
-            << "Padgett: Florentine Families (business relationship), 16 actors"
+            << "Padgett: Florentine Families (marital and business relations), 16 actors"
             << "Zachary: Karate Club (binary & valued ties), 34 actors"
             << "Bernard: Killworth Fraternity (multirelational), 58 actors"
             << "Thurman: In the office: Networks and Coalitions, 15 actors"
@@ -63,8 +62,7 @@ DataSetSelectDialog::DataSetSelectDialog (QWidget *parent) : QDialog (parent)
 
     datasets_filenames
             << "Krackhardt_High-tech_managers.paj"
-            << "Padgett_Florentine_Families_Marital_relation.net"
-            << "Padgett_Florentine_Families_Business_relation.paj"
+            << "Padgett_Florentine_Families.paj"
             << "Zachary_Karate_Club.dl"
             << "Bernard_Killworth_Fraternity.dl"
             << "Thurman_Office_Networks_Coalitions.dl"

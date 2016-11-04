@@ -677,7 +677,27 @@ bool Parser::loadPajek(){
             continue;
         }
         else if ( str.contains( "*arcs", Qt::CaseInsensitive) ) {
-            arcs_flag=true; edges_flag=false; arcslist_flag=false; matrix_flag=false;
+            arcs_flag=true; edges_flag=false; arcslist_flag=false;
+            matrix_flag=false;
+            //check if row has label for arcs data,
+            // and use it as relation name
+            if ( (pos = str.indexOf(":")) != -1 ) {
+                relation = str.right(str.size() - pos -1) ;
+                relation = relation.simplified();
+                qDebug() << "Parser::loadPajek() - adding relation "<< relation
+                         << " to relationsList and emitting addRelation ";
+                relationsList << relation;
+                emit addRelation( relation );
+                if (relationCounter > 0) {
+                    qDebug () << "Parser::loadPajek() relationCounter "
+                              << relationCounter
+                              << "emitting relationSet";
+                    emit relationSet(relationCounter);
+                    i=0; // reset the source node index
+                }
+                relationCounter++;
+            }
+
             continue;
         }
         else if ( str.contains( "*arcslist", Qt::CaseInsensitive) ) {
@@ -688,9 +708,9 @@ bool Parser::loadPajek(){
             qDebug() << str ;
             arcs_flag=false; edges_flag=false; arcslist_flag=false;
             matrix_flag=true;
-            //check if pajek file has label for matrix data,
+            //check if row has label for matrix data,
             // and use it as relation name
-            if ( (pos = str.indexOf(":")) == 8 ) {
+            if ( (pos = str.indexOf(":")) != -1 ) {
                 relation = str.right(str.size() - pos -1) ;
                 relation = relation.simplified();
                 qDebug() << "Parser::loadPajek() - adding relation "<< relation

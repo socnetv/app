@@ -9054,7 +9054,7 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
 
     if ( fileName == "Krackhardt_High-tech_managers.paj" ) {
         qDebug()<< "		... to  " << fileName;
-        datasetDescription = "Krackhardt's High-tech Managers is a famous social network "
+        datasetDescription = tr("Krackhardt's High-tech Managers is a famous social network "
                              "of 21 managers of a high-tech US company. \n\n"
                              "The company manufactured high-tech equipment "
                              "and had just over 100 employees with 21 managers. "
@@ -9063,11 +9063,11 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                              "The network consists of 3 relations:\n"
                              "- Advice\n"
                              "- Friendship\n"
-                             "- Reports To\n    "
+                             "- Reports To\n"
                              "Each manager was asked to whom do you go to for advice and who is your friend. "
                              "Data for the \"whom do you report\" relation was taken from company documents. \n\n"
-                             "This data is used by Wasserman and Faust in their seminal network analysis book.\n"
-                             "Krackhardt D. (1987). Cognitive social structures. Social Networks, 9, 104-134.";
+                             "This data is used by Wasserman and Faust in their seminal network analysis book.\n\n"
+                             "Krackhardt D. (1987). Cognitive social structures. Social Networks, 9, 104-134.");
         outText << "*Network  Krackhardt's High-tech managers"<< endl <<
                    "*Vertices      21"<< endl <<
                      "1 \"v1\"       0.6226    0.7207" << endl <<
@@ -9160,8 +9160,25 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
     }
 
 
-    else if (fileName == "Padgett_Florentine_Families_Marital_relation.net"){
-        outText<< "*Network Padgett's Florentine Families Marital Relation" << endl <<
+    else if (fileName == "Padgett_Florentine_Families.paj"){
+        datasetDescription = tr("This famous data set includes 16 families who were fighting \n"
+                                "each other to gain political control of the city of Florence \n"
+                                "circa 1430. Among the 16 families, the Medicis and the Strozzis \n"
+                                "were the two most prominent with factions formed around them.\n\n"
+
+                                "The data set is actually a subset of the original data on social \n"
+                                "relations among 116 Renaissance Florentine Families collected \n"
+                                "by John Padgett. This subset was used by Breiger & Pattison (1986)\n"
+                                "in their paper about local role analysis.\n\n"
+
+                                "Padgett researched historical documents to code two relations: \n"
+                                "Business ties (loans, credits, partnerships)\n"
+                                "Marrital ties (marriage alliances).\n\n"
+
+                                "Breiger R. and Pattison P. (1986). Cumulated social roles: The \n"
+                                "duality of persons and their algebras. Social Networks, 8, 215-256. "
+                             "");
+        outText<< "*Network Padgett's Florentine Families" << endl <<
                   "*Vertices      16" << endl <<
                     "1 \"Acciaiuoli\"         0.2024    0.1006" << endl <<
                     "2 \"Albizzi\"            0.3882    0.4754" << endl <<
@@ -9179,101 +9196,116 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                    "14 \"Salviati\"           0.0734    0.4455" << endl <<
                    "15 \"Strozzi\"            0.8639    0.5832" << endl <<
                    "16 \"Tornabuoni\"         0.5633    0.3713" << endl <<
-                  "*Arcs \"Marital\""<< endl <<
-                    "1  9 1" << endl <<
-                    "2  6 1" << endl <<
-                    "2  7 1" << endl <<
-                    "2  9 1" << endl <<
-                    "3  5 1" << endl <<
-                    "3  9 1" << endl <<
-                    "4  7 1" << endl <<
-                    "4 11 1" << endl <<
-                    "4 15 1" << endl <<
-                    "5  3 1" << endl <<
-                    "5 11 1" << endl <<
-                    "5 15 1" << endl <<
-                    "6  2 1" << endl <<
-                    "7  2 1" << endl <<
-                    "7  4 1" << endl <<
-                    "7  8 1" << endl <<
-                    "7 16 1" << endl <<
-                    "8  7 1" << endl <<
-                    "9  1 1" << endl <<
-                    "9  2 1" << endl <<
-                    "9  3 1" << endl <<
-                    "9 13 1" << endl <<
-                    "9 14 1" << endl <<
-                    "9 16 1" << endl <<
-                   "10 14 1" << endl <<
-                   "11  4 1" << endl <<
-                   "11  5 1" << endl <<
-                   "11 15 1" << endl <<
-                   "13  9 1" << endl <<
-                   "13 15 1" << endl <<
-                   "13 16 1" << endl <<
-                   "14  9 1" << endl <<
-                   "14 10 1" << endl <<
-                   "15  4 1" << endl <<
-                   "15  5 1" << endl <<
-                   "15 11 1" << endl <<
-                   "15 13 1" << endl <<
-                   "16  7 1" << endl <<
-                   "16  9 1" << endl <<
-                  "16 13 1" ;
-    }
-    else if (fileName == "Padgett_Florentine_Families_Business_relation.paj"){
-        outText<< "*Network Padgett's Florentine Families Business Relation" << endl <<
-                  "*Vertices      16" << endl <<
-                    "1 \"Acciaiuoli\"         0.2024    0.1006" << endl <<
-                    "2 \"Albizzi\"            0.3882    0.4754" << endl <<
-                    "3 \"Barbadori\"          0.1633    0.7413" << endl <<
-                    "4 \"Bischeri\"           0.6521    0.5605" << endl <<
-                    "5 \"Castellani\"         0.6178    0.9114" << endl <<
-                    "6 \"Ginori\"             0.3018    0.5976" << endl <<
-                    "7 \"Guadagni\"           0.5219    0.5006" << endl <<
-                    "8 \"Lamberteschi\"       0.4533    0.6299" << endl <<
-                    "9 \"Medici\"             0.2876    0.3521" << endl <<
-                   "10 \"Pazzi\"              0.0793    0.2587" << endl <<
-                   "11 \"Peruzzi\"            0.6509    0.7365" << endl <<
-                   "12 \"Pucci\"              0.4083    0.1186" << endl <<
-                   "13 \"Ridolfi\"            0.6308    0.2060" << endl <<
-                   "14 \"Salviati\"           0.0734    0.4455" << endl <<
-                   "15 \"Strozzi\"            0.8639    0.5832" << endl <<
-                   "16 \"Tornabuoni\"         0.5633    0.3713" << endl <<
-                  "*Arcs \"Business\""<< endl <<
-                    "3  5 1" << endl <<
-                    "3  6 1" << endl <<
-                    "3  9 1" << endl <<
-                    "3 11 1" << endl <<
-                    "4  7 1" << endl <<
-                    "4  8 1" << endl <<
-                    "4 11 1" << endl <<
-                    "5  3 1" << endl <<
-                    "5  8 1" << endl <<
-                    "5 11 1" << endl <<
-                    "6  3 1" << endl <<
-                    "6  9 1" << endl <<
-                    "7  4 1" << endl <<
-                    "7  8 1" << endl <<
-                    "8  4 1" << endl <<
-                    "8  5 1" << endl <<
-                    "8  7 1" << endl <<
-                    "8 11 1" << endl <<
-                    "9  3 1" << endl <<
-                    "9  6 1" << endl <<
-                    "9 10 1" << endl <<
-                    "9 14 1" << endl <<
-                    "9 16 1" << endl <<
-                   "10  9 1" << endl <<
-                   "11  3 1" << endl <<
-                   "11  4 1" << endl <<
-                   "11  5 1" << endl <<
-                   "11  8 1" << endl <<
-                   "14  9 1" << endl <<
-                   "16  9 1";
+                  "*Matrix 1: \"Marital\""<< endl <<
+                  "0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 0 0 1 1 0 1 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 0 0 0 1 0 0 0 1 0 0 0 1 0"<< endl <<
+                  "0 0 1 0 0 0 0 0 0 0 1 0 0 0 1 0"<< endl <<
+                  "0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< endl <<
+                  "0 1 0 1 0 0 0 1 0 0 0 0 0 0 0 1"<< endl <<
+                  "0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0"<< endl <<
+                  "1 1 1 0 0 0 0 0 0 0 0 0 1 1 0 1"<< endl <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0"<< endl <<
+                  "0 0 0 1 1 0 0 0 0 0 0 0 0 0 1 0"<< endl <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 1"<< endl <<
+                  "0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 1 1 0 0 0 0 0 1 0 1 0 0 0"<< endl <<
+                  "0 0 0 0 0 0 1 0 1 0 0 0 1 0 0 0"<< endl <<
+                  "*Matrix 2: \"Business\""<< endl <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 0 1 1 0 0 1 0 1 0 0 0 0 0"<< endl <<
+                  "0 0 0 0 0 0 1 1 0 0 1 0 0 0 0 0"<< endl <<
+                  "0 0 1 0 0 0 0 1 0 0 1 0 0 0 0 0"<< endl <<
+                  "0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 1 1 0 1 0 0 0 1 0 0 0 0 0"<< endl <<
+                  "0 0 1 0 0 1 0 0 0 1 0 0 0 1 0 1"<< endl <<
+                  "0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 1 1 1 0 0 1 0 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"<< endl <<
+                  "0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0";
+
+//                  "*Arcs 1: \"Marital\""<< endl <<
+//                    "1  9 1" << endl <<
+//                    "2  6 1" << endl <<
+//                    "2  7 1" << endl <<
+//                    "2  9 1" << endl <<
+//                    "3  5 1" << endl <<
+//                    "3  9 1" << endl <<
+//                    "4  7 1" << endl <<
+//                    "4 11 1" << endl <<
+//                    "4 15 1" << endl <<
+//                    "5  3 1" << endl <<
+//                    "5 11 1" << endl <<
+//                    "5 15 1" << endl <<
+//                    "6  2 1" << endl <<
+//                    "7  2 1" << endl <<
+//                    "7  4 1" << endl <<
+//                    "7  8 1" << endl <<
+//                    "7 16 1" << endl <<
+//                    "8  7 1" << endl <<
+//                    "9  1 1" << endl <<
+//                    "9  2 1" << endl <<
+//                    "9  3 1" << endl <<
+//                    "9 13 1" << endl <<
+//                    "9 14 1" << endl <<
+//                    "9 16 1" << endl <<
+//                   "10 14 1" << endl <<
+//                   "11  4 1" << endl <<
+//                   "11  5 1" << endl <<
+//                   "11 15 1" << endl <<
+//                   "13  9 1" << endl <<
+//                   "13 15 1" << endl <<
+//                   "13 16 1" << endl <<
+//                   "14  9 1" << endl <<
+//                   "14 10 1" << endl <<
+//                   "15  4 1" << endl <<
+//                   "15  5 1" << endl <<
+//                   "15 11 1" << endl <<
+//                   "15 13 1" << endl <<
+//                   "16  7 1" << endl <<
+//                   "16  9 1" << endl <<
+//                  "16 13 1"  << endl <<
+//                  "*Arcs 2: \"Business\""<< endl <<
+//                    "3  5 1" << endl <<
+//                    "3  6 1" << endl <<
+//                    "3  9 1" << endl <<
+//                    "3 11 1" << endl <<
+//                    "4  7 1" << endl <<
+//                    "4  8 1" << endl <<
+//                    "4 11 1" << endl <<
+//                    "5  3 1" << endl <<
+//                    "5  8 1" << endl <<
+//                    "5 11 1" << endl <<
+//                    "6  3 1" << endl <<
+//                    "6  9 1" << endl <<
+//                    "7  4 1" << endl <<
+//                    "7  8 1" << endl <<
+//                    "8  4 1" << endl <<
+//                    "8  5 1" << endl <<
+//                    "8  7 1" << endl <<
+//                    "8 11 1" << endl <<
+//                    "9  3 1" << endl <<
+//                    "9  6 1" << endl <<
+//                    "9 10 1" << endl <<
+//                    "9 14 1" << endl <<
+//                    "9 16 1" << endl <<
+//                   "10  9 1" << endl <<
+//                   "11  3 1" << endl <<
+//                   "11  4 1" << endl <<
+//                   "11  5 1" << endl <<
+//                   "11  8 1" << endl <<
+//                   "14  9 1" << endl <<
+//                   "16  9 1";
     }
     else if (fileName == "Zachary_Karate_Club.dl"){
-        datasetDescription = ""
+        datasetDescription = tr(
                              "The Zachary Karate Club is a well-known social network of 34 members"
                              " of a university karate club studied by Wayne W. Zachary from 1970 to 1972.\n\n"
                              "During the study, disputes among two members led to club splitting into two groups. "
@@ -9283,7 +9315,8 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                              "The ZACHE relation represents the presence or absence of ties among the actors. "
                              "The ZACHC relation indicates the relative strength of their associations "
                              "(number of situations in and outside the club in which interactions occurred).\n\n"
-                             "Zachary W. (1977). An information flow model for conflict and fission in small groups. Journal of Anthropological Research, 33, 452-473. ";
+                             "Zachary W. (1977). An information flow model for conflict and fission in small groups. "
+                             "Journal of Anthropological Research, 33, 452-473. ");
         outText<< "DL"<< endl <<
                   "N=34 NM=2"<< endl <<
                   "FORMAT = FULLMATRIX DIAGONAL PRESENT"<< endl <<
@@ -9368,7 +9401,7 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
                                 "This is a 26x15 affiliation matrix, where the rows "
                                 "correspond to the 26 CEOs and the columns to the 15 clubs. \n\n"
                                 "This data  was originally collected by Galaskiewicz (1985) "
-                                "and is used by Wasserman and Faust in Social Network Analysis: Methods and Applications (1994).\n"
+                                "and is used by Wasserman and Faust in Social Network Analysis: Methods and Applications (1994).\n\n"
                                 "Galaskiewicz, J. (1985). Social Organization of an Urban Grants Economy. New York: Academic Press. ");
         outText<< "0 0 1 1 0 0 0 0 1 0 0 0 0 0 0" << endl <<
                   "0 0 1 0 1 0 1 0 0 0 0 0 0 0 0" << endl <<
@@ -9933,20 +9966,28 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
     }
     else if ( fileName == "Freeman_EIES_networks_32actors.dl" ) {
         qDebug()<< "		... to  " << fileName;
-        datasetDescription ="Freeman's_EIES includes the following three 32x32 relations: \n"
-        "TIME_1 non-symmetric, valued\n"
-        "TIME_2 non-symmetric, valued\n"
-        "NUMBER_OF_MESSAGES non-symmetric, valued\n"
-        "This data comes from an early experiment on computer mediated communication. \n"
-        "Fifty academics were allowed to contact each other via an "
-        "Electronic Information Exchange System (EIES). "
-        "The data collected consisted of all messages sent plus acquaintance "
-        "relationships at two time periods.\n "
-        "The data includes the 32 actors who completed the study. \n"
-        "TIME_1 and TIME_2 give the acquaintance information at the beginning "
-        "and end of the study. This is coded as follows: \n"
-        "4 = close personal fiend, 3= friend, 2= person I've met, 1 = person I've heard of but not met, and 0 = person unknown to me (or no reply). \n"
-        "NUMBER_OF MESSAGES is the total number of messages person i sent to j over the entire period of the study. ";
+        datasetDescription = tr(
+                    "This data comes from an early experiment on computer mediated communication. \n"
+                    "Fifty academics were allowed to contact each other via an "
+                    "Electronic Information Exchange System (EIES). "
+                    "The data collected consisted of all messages sent plus acquaintance "
+                    "relationships at two time periods.\n\n"
+
+                    "The data includes the 32 actors who completed the study and \n"
+                    "the following three 32x32 relations: \n\n"
+                    "TIME_1 non-symmetric, valued\n"
+                    "TIME_2 non-symmetric, valued\n"
+                    "NUMBER_OF_MESSAGES non-symmetric, valued\n\n"
+
+                    "TIME_1 and TIME_2 give the acquaintance information at the beginning "
+                    "and end of the study. This is coded as follows: \n"
+                    "4 = close personal fiend, \n"
+                    "3 = friend, \n"
+                    "2= person I've met, \n"
+                    "1 = person I've heard of but not met, and \n"
+                    "0 = person unknown to me (or no reply). \n\n"
+                    "NUMBER_OF MESSAGES is the total number of messages person i \n"
+                    "sent to j over the entire period of the study. ");
         outText <<"DL"<<endl<<
                   "N=32 NM=3"<<endl<<
                   "FORMAT = FULLMATRIX DIAGONAL PRESENT"<<endl<<
