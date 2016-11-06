@@ -755,10 +755,6 @@ private:
     H_StrToInt discreteIRCCs, discreteECs, discreteEccentricities;
     H_StrToInt discretePCs, discreteICs,  discretePRPs, discretePPs;
 
-    bool calculatedDP, calculatedDC, calculatedCentralities;
-    bool calculatedPP, calculatedIRCC, calculatedIC, calculatedPRP;
-    bool calculatedTriad;
-
     int m_precision, m_curRelation, m_fileFormat, m_vertexClicked;
     ClickedEdge m_clickedEdge;
     float edgeWeightTemp;
@@ -810,12 +806,17 @@ private:
     bool initVertexNumberInside;
     int isolatedVertices;
     float m_graphAverageDistance, nonZeroDistancesCounter, m_graphPathsExistingCount;
+    float m_graphDensity;
     int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;
     int timerId,  canvasWidth, canvasHeight;
+    bool calculatedVertices;
+    bool calculatedDP, calculatedDC, calculatedCentralities;
+    bool calculatedPP, calculatedIRCC, calculatedIC, calculatedPRP;
+    bool calculatedTriad;
+    bool calculatedAdjacencyMatrix,calculatedDistances, calculatedDensity ;
+    bool calculatedReachability, calculatedSymmetry, calculatedIsolates;
     bool order, initVertexLabelsVisibility,initVertexNumbersVisibility;
 
-    bool adjacencyMatrixCreated,distanceMatrixCreated;
-    bool reachabilityMatrixCreated;
     bool m_undirected, m_symmetric, m_isWeighted;
     bool initEdgeWeightNumbers, initEdgeLabels;
 
