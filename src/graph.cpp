@@ -3515,8 +3515,8 @@ void Graph::BFS(const int &s, const bool &computeCentralities,
                        << " - and " << s
                        << " to inflDomain I of "<< w;
                 XRM.setItem(s,w,1);
-                influenceRanges.insert(s,w);
-                influenceDomains.insert(w,s);
+                influenceRanges.insertMulti(s,w);
+                influenceDomains.insertMulti(w,s);
 
                 if (computeCentralities){
                     qDebug()<<"BFS: Calculate PC: store the number of nodes at distance " << dist_w << "from s";
@@ -3727,8 +3727,8 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
                        << " - and " << s
                        << " to inflDomain I of "<< w;
                 XRM.setItem(s,w,1);
-                influenceRanges.insert(s,w);
-                influenceDomains.insert(w,s);
+                influenceRanges.insertMulti(s,w);
+                influenceDomains.insertMulti(w,s);
 
 
                 if (s!=w) {
@@ -5106,11 +5106,18 @@ void Graph::prestigeProximity( const bool considerWeights,
                     " graph not changed - returning";
         return;
     }
-    if (!calculatedReachability || graphModified()) {
+//    if (!calculatedReachability || graphModified()) {
+//        qDebug()<< "Graph::prestigeProximity() - "
+//                   "call reachabilityMatrix()";
+//        reachabilityMatrix(considerWeights, inverseWeights, dropIsolates, false);
+//    }
+    if (!calculatedDistances || graphModified()) {
         qDebug()<< "Graph::prestigeProximity() - "
-                   "call reachabilityMatrix()";
-        reachabilityMatrix(considerWeights, inverseWeights, dropIsolates, false);
+                   "call distanceMatrixCreate()";
+        distanceMatrixCreate(considerWeights, considerWeights,inverseWeights,false);
     }
+
+
     // calculate centralities
     QList<Vertex*>::const_iterator it;
     float PP=0;
@@ -5130,6 +5137,10 @@ void Graph::prestigeProximity( const bool considerWeights,
         if (!(*it)->isIsolated()){
             // find connected nodes
             QList<int> influencerVertices = influenceDomains.values((*it)->name()-1);
+            qDebug()<< "Graph::prestigeProximity() - vertex"
+                    << (*it)->name()
+                    <<"influencerVertices"
+                     << influencerVertices;
             Ii=influencerVertices.size();
             qDebug()<< "Graph::PP - vertex " <<  (*it)->name()
                     << " Ii size: " << Ii;
