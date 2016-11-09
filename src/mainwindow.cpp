@@ -9789,7 +9789,7 @@ void MainWindow::slotCentralityCloseness(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    TextEditor *ed = new TextEditor(fn, this);        //OPEN A TEXT EDITOR WINDOW
     ed->show();
 
     statusMessage(tr("Closeness Centralities  saved as: ") + fn);

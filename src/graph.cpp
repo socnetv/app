@@ -2753,7 +2753,7 @@ float Graph::distanceGraphAverage(const bool considerWeights,
 
     qDebug() <<"Graph::distanceGraphAverage() - disconnectedVertices " <<
                disconnectedVertices.count();
-    int aVertices=vertices(dropIsolates);
+    int aVertices=vertices(dropIsolates);//TOFIX
     if (m_graphAverageDistance!=0) {
         if (disconnectedVertices.count()==0) {
             return m_graphAverageDistance / ( aVertices * ( aVertices-1.0 ) );
@@ -2793,7 +2793,7 @@ int Graph::connectedness() {
     if (!calculatedReachability || graphModified()) {
         reachabilityMatrix();
     }
-    isolatedVertices=verticesListIsolated().count();
+    int isolatedVertices=verticesListIsolated().count();
     if ( graphSymmetric() ) {
         qDebug() << "Graph::connectedness() IS SYMMETRIC";
         if ( disconnectedVertices.size() != 0 ) {
@@ -3027,7 +3027,7 @@ void Graph::distanceMatrixCreate(const bool &centralities,
 
     int aEdges = edgesEnabled();
     //drop isolated vertices from calculations (i.e. std C and group C).
-    int aVertices=vertices(dropIsolates);
+    int aVertices=(dropIsolates) ?  (m_totalVertices - verticesListIsolated().count()):m_totalVertices;
 
     qDebug() << "Graph::distanceMatrixCreate() -Calling graphSymmetric()";
     m_symmetric = graphSymmetric();
@@ -3857,7 +3857,7 @@ void Graph::centralityInformation(const bool considerWeights,
     classesIC=0;
     varianceIC=0;
 
-    isolatedVertices=verticesListIsolated().count();
+    int isolatedVertices=verticesListIsolated().count();
     int i=0, j=0, n=vertices();
     float m_weight=0, weightSum=1, diagonalEntriesSum=0, rowSum=0;
     float IC=0, SIC=0;
@@ -3867,7 +3867,7 @@ void Graph::centralityInformation(const bool considerWeights,
     bool symmetrize=true;
     adjacencyMatrixCreate(dropIsolates, considerWeights, inverseWeights, symmetrize);
 
-    n-=isolatedVertices;  //isolatedVertices updated in adjacencyMatrixCreate
+    n-=isolatedVertices;
 
     TM.resize(n, n);
     invM.resize(n, n);
@@ -4326,12 +4326,18 @@ void Graph::centralityClosenessInfluenceRange(const bool considerWeights,
     calculatedIRCC=true;
 }
 
-//Writes the closeness centralities to a file
+/**
+ * Writes the closeness centralities to a file
+ */
 void Graph::writeCentralityCloseness(
         const QString fileName,
         const bool considerWeights,
         const bool inverseWeights,
         const bool dropIsolates) {
+    qDebug() << "Graph::writeCentralityCloseness()"
+             << "considerWeights"<<considerWeights
+             << "inverseWeights"<<inverseWeights
+             << "dropIsolates" << dropIsolates;
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         qDebug()<< "Error opening file!";
@@ -4346,7 +4352,8 @@ void Graph::writeCentralityCloseness(
                                  inverseWeights, dropIsolates);
     }
     else {
-        qDebug() << " graph not modified, and centralities calculated. Returning";
+        qDebug() << "Graph::writeCentralityCloseness() - graph not modified, "
+                    "and centralities calculated. Writing file...";
     }
 
     emit statusMessage ( tr("Writing closeness indices to file %1:")
@@ -8678,6 +8685,22 @@ void Graph::graphSave( QString fileName, int fileType )
     }
     };
     if (saved) {
+        if (graphModified()) {
+            calculatedVertices = false;
+            calculatedSymmetry = false;
+            calculatedIsolates = false;
+            calculatedDensity = false;
+            calculatedAdjacencyMatrix = false;
+            calculatedDistances = false;
+            calculatedReachability = false;
+            calculatedCentralities = false;
+            calculatedDP = false;
+            calculatedDC = false;
+            calculatedPP = false;
+            calculatedIRCC = false;
+            calculatedIC = false;
+            calculatedPRP = false;
+        }
         graphModifiedSet(GRAPH_CHANGED_NONE);
         signalGraphSaved(fileType);
     }
@@ -12864,12 +12887,11 @@ void Graph::adjacencyMatrixCreate(const bool dropIsolates,
     int i=0, j=0;
     if (dropIsolates){
         qDebug() << "Graph::adjacencyMatrixCreate() - Find and drop possible isolates";
-        isolatedVertices = verticesListIsolated().count();
-        int m = m_totalVertices-isolatedVertices;
+        int m = vertices()- verticesListIsolated().count();
         AM.resize( m , m);
     }
     else
-        AM.resize(m_totalVertices, m_totalVertices);
+        AM.resize(vertices(), vertices());
     QList<Vertex*>::const_iterator it, it1;
     //qDebug() << "Graph::adjacencyMatrixCreate() - creating new adjacency matrix ";
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
@@ -12933,12 +12955,13 @@ bool Graph::adjacencyMatrixInvert(const QString &method){
     bool considerWeights=false;
     long int i=0, j=0;
     bool isSingular=true;
-
+    int  m = vertices();
+    int isolatedVertices = verticesListIsolated().count();
     bool dropIsolates=true; // always drop isolates else AM will be singular
 
     adjacencyMatrixCreate(dropIsolates, considerWeights);
 
-    int  m = m_totalVertices-isolatedVertices;
+    m-=isolatedVertices;
 
     invAM.resize(m,m);
 
@@ -12990,8 +13013,10 @@ void Graph::writeAdjacencyMatrixInvert(const QString &fn,
             file.close();
             return;
     }
-    if ( verticesListIsolated().count() > 0  )
-            outText << endl<< "Dropped "<< isolatedVertices << " isolated vertices"
+    int isolatedVertices = verticesListIsolated().count();
+    if (  isolatedVertices  > 0  )
+            outText << endl<< "Dropped "<< isolatedVertices
+                    << " isolated vertices"
                     << endl<< endl;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() || (*it)->isIsolated() )

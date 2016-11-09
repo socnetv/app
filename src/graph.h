@@ -803,22 +803,20 @@ private:
     long int m_totalVertices, m_totalEdges, m_graphDiameter, initVertexSize;
     int initVertexLabelSize, initVertexNumberSize;
     int initVertexNumberDistance, initVertexLabelDistance;
-    bool initVertexNumberInside;
-    int isolatedVertices;
+    bool order, initVertexLabelsVisibility,initVertexNumbersVisibility;
+    bool initVertexNumberInside, initEdgeWeightNumbers, initEdgeLabels;
     float m_graphAverageDistance, nonZeroDistancesCounter, m_graphPathsExistingCount;
     float m_graphDensity;
     int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;
     int timerId,  canvasWidth, canvasHeight;
     bool calculatedVertices;
-    bool calculatedDP, calculatedDC, calculatedCentralities;
-    bool calculatedPP, calculatedIRCC, calculatedIC, calculatedPRP;
+    bool calculatedAdjacencyMatrix, calculatedSymmetry, calculatedDensity ;
+    bool calculatedDistances, calculatedCentralities;
+    bool calculatedReachability,  calculatedIsolates;
+    bool calculatedDP, calculatedDC, calculatedPP;
+    bool calculatedIRCC, calculatedIC, calculatedPRP;
     bool calculatedTriad;
-    bool calculatedAdjacencyMatrix,calculatedDistances, calculatedDensity ;
-    bool calculatedReachability, calculatedSymmetry, calculatedIsolates;
-    bool order, initVertexLabelsVisibility,initVertexNumbersVisibility;
-
     bool m_undirected, m_symmetric, m_isWeighted;
-    bool initEdgeWeightNumbers, initEdgeLabels;
 
     QString VERSION, fileName, m_graphName, initEdgeColor, initVertexColor,
         initVertexNumberColor, initVertexLabelColor, initVertexShape;
