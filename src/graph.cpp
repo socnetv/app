@@ -4261,11 +4261,18 @@ void Graph::centralityClosenessInfluenceRange(const bool considerWeights,
                     " graph not changed - returning";
         return;
     }
-     if (!calculatedReachability || graphModified()) {
+//     if (!calculatedReachability || graphModified()) {
+//         qDebug()<< "Graph::centralityClosenessImproved() - "
+//                    "call reachabilityMatrix()";
+//        reachabilityMatrix(considerWeights, inverseWeights, dropIsolates);
+//     }
+
+     if (!calculatedDistances || graphModified()) {
          qDebug()<< "Graph::centralityClosenessImproved() - "
-                    "call reachabilityMatrix()";
-        reachabilityMatrix(considerWeights, inverseWeights, dropIsolates);
+                    "call distanceMatrixCreate()";
+         distanceMatrixCreate(false,considerWeights, inverseWeights,inverseWeights);
      }
+
     // calculate centralities
     QList<Vertex*>::const_iterator it;
     float IRCC=0,SIRCC=0;
@@ -5114,7 +5121,7 @@ void Graph::prestigeProximity( const bool considerWeights,
     if (!calculatedDistances || graphModified()) {
         qDebug()<< "Graph::prestigeProximity() - "
                    "call distanceMatrixCreate()";
-        distanceMatrixCreate(considerWeights, considerWeights,inverseWeights,false);
+        distanceMatrixCreate(false,considerWeights, inverseWeights,inverseWeights);
     }
 
 
