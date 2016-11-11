@@ -132,7 +132,7 @@ class CompareDistances {
     \todo Control Panel Options should be dropped (break the panel layout in laptops).
     \todo - CHECK weighted networks results (IRCC and distance matrix with other combinations)
     \todo - CHECK graphWeighted corner case results, when !graphModified.
-    \todo - CHECK connectedness() algorithm implementation (unilaterallyConnectedVertices)
+    \todo - CHECK connectedness() algorithm implementation (m_vertexPairsUnilaterallyConnected)
 
   \bug Create d-regular, undirected, ask for closeness, it says we are on a disconnected graph
   \bug Crash on Graphml files with textlabels instead of nodenumbers (i.e. nets/killer.graphml)
@@ -467,7 +467,8 @@ public:
     bool graphSaved() const;
     bool graphLoaded() const;
 
-    int graphPathsExistingCount();
+    int graphPathsExistingCount(const bool &dropIsolates=false,
+                                const bool &updateProgress=false);
 
     float graphDensity();
     bool graphWeighted();
@@ -587,10 +588,7 @@ public:
     int reachable(const int &v1, const int &v2) ;
     QList<int> vertexinfluenceRange(int v1);
     QList<int> vertexinfluenceDomain(int v2);
-    void reachabilityMatrix(const bool &considerWeights=false,
-                            const bool &inverseWeights=false,
-                            const bool &dropIsolates=false,
-                            const bool &updateProgress=false);
+
     void writeReachabilityMatrix(const QString &fn, const bool &dropIsolates=false);
 
 
@@ -739,8 +737,8 @@ private:
     QList<int>  m_isolatedVerticesList,m_verticesList, m_graphFileFormatExportSupported;
     QSet<int> m_verticesSet;
     QHash <int, int> influenceRanges, influenceDomains;
-    QHash <int, int> disconnectedVertices;
-    QHash <int, int> unilaterallyConnectedVertices;
+    QHash <int, int> m_vertexPairsNotConnected;
+    QHash <int, int> m_vertexPairsUnilaterallyConnected;
 
     H_StrToBool cliques_2_Vertex;
     H_StrToBool cliques_3_Vertex;
@@ -809,13 +807,14 @@ private:
     float m_graphDensity;
     int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;
     int timerId,  canvasWidth, canvasHeight;
-    bool calculatedVertices;
-    bool calculatedAdjacencyMatrix, calculatedSymmetry, calculatedDensity ;
-    bool calculatedDistances, calculatedCentralities;
-    bool calculatedReachability,  calculatedIsolates;
+    bool calculatedEdges;
+    bool calculatedVertices, calculatedVerticesList, calculatedVerticesSet;
+    bool calculatedAdjacencyMatrix, calculatedDistances, calculatedCentralities;
+    bool calculatedIsolates;
     bool calculatedDP, calculatedDC, calculatedPP;
     bool calculatedIRCC, calculatedIC, calculatedPRP;
     bool calculatedTriad;
+    bool calculatedGraphSymmetry, calculatedGraphDensity, calculatedGraphWeighted;
     bool m_undirected, m_symmetric, m_isWeighted;
 
     QString VERSION, fileName, m_graphName, initEdgeColor, initVertexColor,

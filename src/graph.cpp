@@ -67,12 +67,17 @@ Graph::Graph() {
     m_symmetric=true;
     m_graphDensity = -1;
     fileName ="";
+
+    calculatedGraphSymmetry = false;
+    calculatedGraphWeighted = false;
+    calculatedGraphDensity = false;
+    calculatedEdges = false;
     calculatedVertices=false;
+    calculatedVerticesList = false;
+    calculatedVerticesSet = false;
     calculatedAdjacencyMatrix=false;
-    calculatedReachability=false;
+
     calculatedDistances=false;
-    calculatedDensity = false;
-    calculatedSymmetry = false;
     calculatedIsolates = false;
     calculatedDP=false;
     calculatedDC=false;
@@ -160,8 +165,8 @@ void Graph::clear() {
     m_verticesList.clear();
     m_verticesSet.clear();
     m_isolatedVerticesList.clear();
-    disconnectedVertices.clear();
-    unilaterallyConnectedVertices.clear();
+    m_vertexPairsNotConnected.clear();
+    m_vertexPairsUnilaterallyConnected.clear();
     influenceDomains.clear();
     influenceRanges.clear();
     triadTypeFreqs.clear();
@@ -190,17 +195,27 @@ void Graph::clear() {
     m_symmetric=true;
     m_graphDensity = -1;
 
-    calculatedDP=false; calculatedDC=false;
-    calculatedIC=false; calculatedCentralities=false;
-    calculatedIRCC=false; calculatedPP=false;
-    calculatedPRP=false; calculatedTriad=false;
+    calculatedGraphSymmetry = false;
+    calculatedGraphWeighted = false;
+    calculatedGraphDensity = false;
+    calculatedEdges = false;
     calculatedVertices=false;
+    calculatedVerticesList = false;
+    calculatedVerticesSet = false;
     calculatedAdjacencyMatrix=false;
-    calculatedReachability=false;
+
     calculatedDistances=false;
     calculatedIsolates = false;
-    calculatedSymmetry = false;
-    calculatedDensity = false;
+
+    calculatedCentralities=false;
+    calculatedDP=false;
+    calculatedDC=false;
+    calculatedIC=false;
+    calculatedIRCC=false;
+    calculatedPP=false;
+    calculatedPRP=false;
+    calculatedTriad=false;
+
     graphModifiedFlag=false;
 
     graphLoadedTerminateParserThreads("Graph::clear()");
@@ -1782,7 +1797,7 @@ bool Graph::edgeSymmetric(const long int &v1, const long int &v2){
  */
 int Graph::edgesEnabled() {
 
-    if ( !graphModified() ) {
+    if ( !graphModified() && calculatedEdges ) {
         qDebug()<< "Graph::edgesEnabled() - Graph unchanged, edges: "
                    <<     ((graphUndirected()) ? m_totalEdges / 2 : m_totalEdges);
        return (graphUndirected()) ? m_totalEdges / 2 : m_totalEdges;
@@ -1795,7 +1810,7 @@ int Graph::edgesEnabled() {
         m_totalEdges+=(*it)->outEdges();
     }
     qDebug() << "Graph::edgesEnabled() - edges recounted: " <<  m_totalEdges;
-
+    calculatedEdges = true;
     return (graphUndirected()) ? m_totalEdges / 2 : m_totalEdges;
 }
 
@@ -2072,7 +2087,7 @@ QList<int> Graph::vertexNeighborhoodList(const int &v1) {
 int Graph::vertices(const bool dropIsolates, const bool countAll) {
 
     if ( !graphModified() && m_totalVertices!=0 && calculatedVertices ) {
-        qDebug()<< "Graph::vertices() - Graph unchanged, vertices: "
+        qDebug()<< "Graph::vertices() - Graph not modified, vertices: "
                    << m_totalVertices;
         return m_totalVertices;
     }
@@ -2094,7 +2109,7 @@ int Graph::vertices(const bool dropIsolates, const bool countAll) {
             ++m_totalVertices;
         }
     }
-    qDebug()<< "Graph::vertices() - Graph changed, vertices: "
+    qDebug()<< "Graph::vertices() - Graph modified, vertices: "
                << m_totalVertices;
     calculatedVertices=true;
     return m_totalVertices;
@@ -2115,12 +2130,12 @@ int Graph::vertices(const bool dropIsolates, const bool countAll) {
  */
 QList<int> Graph::verticesListIsolated(){
     if (!graphModified() && calculatedIsolates ){
-        qDebug()<< "Graph::verticesListIsolated() - graph not modifed and "
+        qDebug()<< "Graph::verticesListIsolated() - graph not modified and "
                    "already calculated isolates. Returning list as is:"
                 <<m_isolatedVerticesList;
         return m_isolatedVerticesList;
     }
-    qDebug()<< "Graph::verticesListIsolated() - graph modifed or "
+    qDebug()<< "Graph::verticesListIsolated() - graph modified or "
                "isolated vertices list empty. Computing list.";
     QList<Vertex*>::const_iterator it;
     m_isolatedVerticesList.clear();
@@ -2148,7 +2163,7 @@ QList<int> Graph::verticesListIsolated(){
  */
 QList<int> Graph::verticesList(){
     qDebug()<< "Graph::verticesList()";
-    if (!graphModified() && !m_verticesList.isEmpty() ){
+    if (!graphModified() && !m_verticesList.isEmpty() && calculatedVerticesList ){
         return m_verticesList;
     }
     QList<Vertex*>::const_iterator it;
@@ -2158,6 +2173,7 @@ QList<int> Graph::verticesList(){
             continue;
         m_verticesList << (*it)->name();
     }
+    calculatedVerticesList = true;
     return m_verticesList ;
 }
 
@@ -2170,7 +2186,7 @@ QList<int> Graph::verticesList(){
  */
 QSet<int> Graph::verticesSet(){
     qDebug()<< "Graph::verticesSet()";
-    if (!graphModified() && !m_verticesSet.isEmpty() ){
+    if (!graphModified() && !m_verticesSet.isEmpty() && calculatedVerticesSet ){
         return m_verticesSet;
     }
     QList<Vertex*>::const_iterator it;
@@ -2180,6 +2196,7 @@ QSet<int> Graph::verticesSet(){
             continue;
         m_verticesSet << (*it)->name();
     }
+    calculatedVerticesSet = true;
     return m_verticesSet ;
 }
 
@@ -2247,7 +2264,7 @@ bool Graph::graphLoaded() const {
  * @return
  */
 float Graph::graphDensity() {
-    if (!graphModified() && calculatedDensity) {
+    if (!graphModified() && calculatedGraphDensity) {
         qDebug()<< "Graph::graphDensity() - graph not modified and"
                    "already calculated density. Returning last value:"
                 << m_graphDensity;
@@ -2263,6 +2280,7 @@ float Graph::graphDensity() {
     else {
         m_graphDensity = 0;
     }
+    calculatedGraphDensity = true;
     return m_graphDensity ;
 }
 
@@ -2275,7 +2293,7 @@ float Graph::graphDensity() {
  * @return
  */
 bool Graph::graphWeighted(){
-    if ( ! graphModified() )
+    if ( ! graphModified() && calculatedGraphWeighted )
     {
         qDebug()<< "Graph::graphWeighted() - graph not modified. Return: "
                 << m_isWeighted;
@@ -2292,6 +2310,7 @@ bool Graph::graphWeighted(){
             }
         }
     }
+    calculatedGraphWeighted = true;
     qDebug()<< "Graph::graphWeighted() - false";
     return m_isWeighted=false;
 }
@@ -2424,7 +2443,7 @@ void Graph::webCrawl( QString seed, int maxNodes, int maxRecursion,
  */
 bool Graph::graphSymmetric(){
     qDebug() << "Graph::graphSymmetric() ";
-    if (!graphModified() && calculatedSymmetry){
+    if (!graphModified() && calculatedGraphSymmetry){
         qDebug() << "Graph::graphSymmetric() - graph not modified and "
                     "already calculated symmetry. Returning previous result: "
                  << m_symmetric;
@@ -2470,7 +2489,7 @@ bool Graph::graphSymmetric(){
     }
     delete enabledOutEdges;
     qDebug() << "Graph: graphSymmetric() -"  << m_symmetric;
-    calculatedSymmetry = true;
+    calculatedGraphSymmetry = true;
     return m_symmetric;
 }
 
@@ -2741,21 +2760,21 @@ int Graph::diameter(const bool considerWeights,
 float Graph::distanceGraphAverage(const bool considerWeights,
                                   const bool inverseWeights,
                                   const bool dropIsolates){
-               ;
-    if (!calculatedReachability || graphModified())  {
+
+    if (!calculatedDistances || graphModified())  {
         qDebug() <<"Graph::distanceGraphAverage() - reachability matrix not created "
                    "or graph modified. Recomputing XRM";
         emit statusMessage ( tr("Computing Average Distance: "
                                 "Need to recompute Distances. Please wait...") );
-        reachabilityMatrix(considerWeights, inverseWeights,dropIsolates,false);
-        //distanceMatrixCreate(false, considerWeights, inverseWeights,dropIsolates);
-    }
+        graphPathsExistingCount();
 
-    qDebug() <<"Graph::distanceGraphAverage() - disconnectedVertices " <<
-               disconnectedVertices.count();
+    }
+    //TODO Need a way to ask the user what to with not connected pairs (make either M or drop?)
+    qDebug() <<"Graph::distanceGraphAverage() - m_vertexPairsNotConnected " <<
+               m_vertexPairsNotConnected.count();
     int aVertices=vertices(dropIsolates);//TOFIX
     if (m_graphAverageDistance!=0) {
-        if (disconnectedVertices.count()==0) {
+        if (m_vertexPairsNotConnected.count()==0) {
             return m_graphAverageDistance / ( aVertices * ( aVertices-1.0 ) );
         }
         else {
@@ -2790,13 +2809,13 @@ float Graph::distanceGraphAverage(const bool considerWeights,
  */
 int Graph::connectedness() {
     qDebug() << "Graph::connectedness() ";
-    if (!calculatedReachability || graphModified()) {
-        reachabilityMatrix();
+    if (!calculatedDistances || graphModified()) {
+        distanceMatrixCreate(false,false,false, false);
     }
     int isolatedVertices=verticesListIsolated().count();
     if ( graphSymmetric() ) {
         qDebug() << "Graph::connectedness() IS SYMMETRIC";
-        if ( disconnectedVertices.size() != 0 ) {
+        if ( m_vertexPairsNotConnected.size() != 0 ) {
             if (isolatedVertices!=0 ) {
                 qDebug() << "Graph::connectedness() - undirected graph is "
                             "disconnected  (has isolates)" ;
@@ -2815,8 +2834,8 @@ int Graph::connectedness() {
     }
     else {
         qDebug() << "Graph::connectedness() NOT SYMMETRIC";
-        if ( disconnectedVertices.size() != 0 ) {
-            if ( unilaterallyConnectedVertices.size() == 0 ) {
+        if ( m_vertexPairsNotConnected.size() != 0 ) {
+            if ( m_vertexPairsUnilaterallyConnected.size() == 0 ) {
                 if (isolatedVertices!=0) {
                     qDebug() << "Graph::connectedness() - directed graph is "
                                 "disconnected (has isolates)";
@@ -2828,7 +2847,7 @@ int Graph::connectedness() {
             return -4;
         }
         else {
-            if ( unilaterallyConnectedVertices.size() != 0 ) {
+            if ( m_vertexPairsUnilaterallyConnected.size() != 0 ) {
                 qDebug () << "Graph::connectedness() - directed graph is "
                              "unilaterally connected";
                 return -2; // (exists path only from i to j or from j to i, not both)
@@ -2988,25 +3007,31 @@ void Graph::writeEccentricity(
 
 
 
+
 /**
  * @brief Graph::distanceMatrixCreate
-  Creates a matrix DM which stores geodesic distances between all vertices
-    INPUT:
-        boolean computeCentralities
-        boolean considerWeights
-        bool inverseWeights
-    OUTPUT:
-        DM(i,j)=geodesic distance between vertex i and vertex j
-        TM(i,j)=number of shortest paths from vertex i to vertex j, called sigma(i,j).
-        m_graphDiameter is set to the length of the longest shortest path between every (i,j)
-        Eccentricity(i) is set to the length of the longest shortest path from i to every j
-        Also, if computeCentralities==true, it calculates the centralities for every u in V:
-        - Betweenness: BC(u) = Sum ( sigma(i,j,u)/sigma(i,j) ) for every s,t in V
-        - Stress: SC(u) = Sum ( sigma(i,j) ) for every s,t in V
-        - Eccentricity: EC(u) =  1/maxDistance(u,t)  for some t in V
-        - Closeness: CC(u) =  1 / Sum( DM(u,t) )  for every  t in V
-        - Power:
- * @param computeCentralities
+ * Computes the distance matrix, DM, with geodesic distances between all vertices:
+ * DM(i,j)=geodesic distance between vertex i and vertex j
+ * In the process, it also computes many other matrices and metrics:
+ * * The so-called sigma matrix, named TM, where TM(i,j) is the number of shortest paths
+ *   from vertex i to vertex j, called sigma(i,j).
+ * * The reachability matrix X^R where the {i,j} element is 1 if the vertices i
+ *   and j are reachable, otherwise 0.
+ * * The Diameter of the graph, m_graphDiameter, which is the length of the longest
+ *   shortest path between every (i,j)
+ * * The Eccentricity of every node i which is the length of the longest shortest
+ *   path from i to every other node j
+ * * The InfluenceRange and InfluenceDomain of each node.
+ * * The centralities for every u in V (if centralities=true):
+ *   - Betweenness: BC(u) = Sum ( sigma(i,j,u)/sigma(i,j) ) for every s,t in V
+ *   - Stress: SC(u) = Sum ( sigma(i,j) ) for every s,t in V
+ *   - Eccentricity: EC(u) =  1/maxDistance(u,t)  for some t in V
+ *   - Closeness: CC(u) =  1 / Sum( DM(u,t) )  for every  t in V
+ *   - Power:
+ * @param centralities
+ * @param considerWeights
+ * @param inverseWeights
+ * @param dropIsolates
  */
 void Graph::distanceMatrixCreate(const bool &centralities,
                                  const bool &considerWeights,
@@ -3117,12 +3142,13 @@ void Graph::distanceMatrixCreate(const bool &centralities,
             }
         qDebug("MAIN LOOP: for every s in V solve the Single Source Shortest Path problem...");
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
-            progressCounter++;
-            emit updateProgressDialog( progressCounter );
+
+            emit updateProgressDialog( ++progressCounter );
+
             //isolates are dropped by default in the beginning
-            //
 //            if ( ! (*it)->isEnabled() )
 //                continue;
+
             s=index[(*it)->name()];
             qDebug() << "Source vertex s = " << (*it)->name()
                      << " of BFS algorithm has index " << s
@@ -3845,7 +3871,7 @@ void Graph::resolveClasses(float C, H_StrToInt &discreteClasses, int &classes, i
  */
 void Graph::centralityInformation(const bool considerWeights,
                                   const bool inverseWeights){
-    qDebug()<< "Graph:: centralityInformation()";
+    qDebug()<< "Graph::centralityInformation()";
     if (calculatedIC && !graphModified()) {
         return;
     }
@@ -4261,11 +4287,6 @@ void Graph::centralityClosenessInfluenceRange(const bool considerWeights,
                     " graph not changed - returning";
         return;
     }
-//     if (!calculatedReachability || graphModified()) {
-//         qDebug()<< "Graph::centralityClosenessImproved() - "
-//                    "call reachabilityMatrix()";
-//        reachabilityMatrix(considerWeights, inverseWeights, dropIsolates);
-//     }
 
      if (!calculatedDistances || graphModified()) {
          qDebug()<< "Graph::centralityClosenessImproved() - "
@@ -5113,11 +5134,7 @@ void Graph::prestigeProximity( const bool considerWeights,
                     " graph not changed - returning";
         return;
     }
-//    if (!calculatedReachability || graphModified()) {
-//        qDebug()<< "Graph::prestigeProximity() - "
-//                   "call reachabilityMatrix()";
-//        reachabilityMatrix(considerWeights, inverseWeights, dropIsolates, false);
-//    }
+
     if (!calculatedDistances || graphModified()) {
         qDebug()<< "Graph::prestigeProximity() - "
                    "call distanceMatrixCreate()";
@@ -6813,8 +6830,7 @@ int Graph::walksBetween(int v1, int v2, int length) {
 
     NOTE: This function is VERY SLOW on large networks (n>50), since it will
     calculate all powers of the sociomatrix up to n-1 in order to find out all
-    possible walks. If you need to make a simple reachability test, we advise to
-    use the reachabilityMatrix() function instead.
+    possible walks.
  * @param length
  * @param updateProgress
  */
@@ -6966,10 +6982,10 @@ int Graph::reachable(const int &v1, const int &v2) {
  */
 QList<int> Graph::vertexinfluenceRange(int v1){
     qDebug() << "Graph::vertexinfluenceRange() ";
-    if (!calculatedReachability || graphModified()) {
+    if (!calculatedDistances|| graphModified()) {
         // Construct a list of influence ranges
         // for each node
-        reachabilityMatrix();
+        distanceMatrixCreate(false, false,false,false);
     }
     return influenceRanges.values(v1);
 }
@@ -6982,14 +6998,15 @@ QList<int> Graph::vertexinfluenceRange(int v1){
  *  Returns the influence domain of vertex v1, namely the set of nodes who can
  *  reach v1
  *  This function applies to digraphs only
+ * used by distanceGraphAverage
  * @param v1
  * @return
  */
 QList<int> Graph::vertexinfluenceDomain(int v1){
     qDebug() << "Graph::vertexinfluenceDomain() ";
-    if (!calculatedReachability || graphModified()) {
+    if (!calculatedDistances || graphModified()) {
         // Construct a list of influence domains for each node
-        reachabilityMatrix();
+        distanceMatrixCreate(false, false,false,false);
     }
     return influenceDomains.values(v1);
 }
@@ -7000,96 +7017,47 @@ QList<int> Graph::vertexinfluenceDomain(int v1){
  * Used in Graph::distanceGraphAverage()
  * @return
  */
-int Graph::graphPathsExistingCount()  {
-    if (!calculatedReachability || graphModified()) {
-        reachabilityMatrix();
-    }
-    return m_graphPathsExistingCount;
-}
+int Graph::graphPathsExistingCount(const bool &dropIsolates,
+                                   const bool &updateProgress)  {
 
-
-/**
-    Calculates the reachability matrix X^R of the graph
-    where the {i,j} element is 1 if the vertices i and j are reachable
-    Actually, this just checks the corresponding element of Distance Matrix,
-    If d(i,j) is non-zero, then the two nodes are reachable
-
-    In the process, this function creates the InfluenceRange and InfluenceDomain
-    of each node.
-
-    Used by
-    Graph::prestigeProximity()
-    Graph::centralityClosenessInfluenceRange()
-    Graph::distanceGraphAverage()
-    Graph::connectedness()
-*/
-void Graph::reachabilityMatrix(const bool &considerWeights,
-                               const bool &inverseWeights,
-                               const bool &dropIsolates,
-                               const bool &updateProgress) {
-    qDebug()<< "Graph::reachabilityMatrix()";
-
-    if (calculatedReachability && !graphModified()) {
-        qDebug()<< "Graph::reachabilityMatrix() - "
+    if (calculatedDistances && !graphModified()) {
+        qDebug()<< "Graph::graphPathsExistingCount() - "
                    "XRM calculated and graph unmodified. Returning..." ;
-        return;
+        return m_graphPathsExistingCount;
     }
     else {
 
-        distanceMatrixCreate(false, considerWeights,inverseWeights,dropIsolates);
+        distanceMatrixCreate(false, false,false,dropIsolates);
         int size = vertices(false,false), i=0, j=0;
         m_graphPathsExistingCount=0;
-        qDebug()<< "Graph::reachabilityMatrix() - calculating XRM..." ;
-        //influenceRanges.clear();
-        //influenceDomains.clear();
-        disconnectedVertices.clear();
+        m_vertexPairsNotConnected.clear();
         for (i=0; i < size ; i++) {
-            qDebug() << "Graph::reachabilityMatrix() - node "
-                     << i+1
-                     << "influenceRange"
-                     <<influenceRanges.value(i)
-                    << "influenceDomain"
-                    <<influenceDomains.value(i) ;
-
             for (j=i+1; j < size ; j++) {
-                qDebug()<< "Graph::reachabilityMatrix() - d("<<i+1<<","
-                        <<j+1<<")=" << DM.item(i,j);
                 if ( XRM.item(i,j) ==1 ) {
-                    qDebug()<< "Graph::reachabilityMatrix() - d("<<i+1<<","
-                            <<j+1<<")=" << DM.item(i,j)
-                           << " - inserting " << j+1
-                           << " to inflRange J of " << i+1
-                           << " - and " << i+1
-                           << " to inflDomain I of "<< j+1 ;
-                    //influenceRanges.insertMulti(i,j);
-                    //influenceDomains.insertMulti(j,i);
                     m_graphPathsExistingCount++;
                     if ( XRM.item(j,i) ==1 ) {
-                        qDebug()<< "Graph::reachabilityMatrix() - inverse path d("
-                                <<j+1<<","<<i+1<<")="
-                               << DM.item(j,i)
-                               << " - inserting " << j+1 << " to vertexinfluenceDomain " << i+1
-                               << " - and " << i+1 << " to influence Range J of " << j+1 ;
-//                        influenceDomains.insertMulti(i,j);
-//                        influenceRanges.insertMulti(j,i);
+                        qDebug()<< "Graph::graphPathsExistingCount() - vertices"
+                                <<i+1<<","
+                                <<j+1<<"connected"
+                               << "increasing m_graphPathsExistingCount";
                         m_graphPathsExistingCount++;
                     }
                     else {
-                        qDebug()<< "Graph::reachabilityMatrix() - ("
-                                <<i+1<<","<<j+1<<") unilaterallyConnectedVertices";
-                        unilaterallyConnectedVertices.insertMulti(i,j);
+                        qDebug()<< "Graph::graphPathsExistingCount() - vertices"
+                                <<i+1<<","<<j+1<<"unilaterally connected";
+                        m_vertexPairsUnilaterallyConnected.insertMulti(i,j);
                     }
                 }
                 else {
                     if ( XRM.item(j,i) == 0 ) {
-                        qDebug()<< "Graph::reachabilityMatrix() - ("
-                                <<j+1<<","<<i+1<<") disConnectedVertices";
-                        disconnectedVertices.insertMulti(i,j);
+                        qDebug()<< "Graph::graphPathsExistingCount() - vertices"
+                                <<i+1<<","<<j+1<<"not connected";
+                        m_vertexPairsNotConnected.insertMulti(i,j);
                     }
                     else {
-                        qDebug()<< "Graph::reachabilityMatrix() - ("
-                                <<j+1<<","<<i+1<<") unilaterallyConnectedVertices";
-                        unilaterallyConnectedVertices.insertMulti(j,i);
+                        qDebug()<< "Graph::graphPathsExistingCount() - vertices"
+                                <<j+1<<","<<i+1<<"unilaterally connected";
+                        m_vertexPairsUnilaterallyConnected.insertMulti(j,i);
                         m_graphPathsExistingCount++;
                     }
                 }
@@ -7098,9 +7066,13 @@ void Graph::reachabilityMatrix(const bool &considerWeights,
                 emit updateProgressDialog(i+1);
         }
 
-        calculatedReachability=true;
     }
+
+    return m_graphPathsExistingCount;
 }
+
+
+
 
 
 /**
@@ -7125,8 +7097,8 @@ void Graph::writeReachabilityMatrix(const QString &fn, const bool &dropIsolates)
     outText << "Two nodes are reachable if there is a walk between them (their geodesic distance is non-zero). \n";
     outText << "If nodes i and j are reachable then XR(i,j)=1 otherwise XR(i,j)=0.\n\n";
 
-    if (!calculatedReachability || graphModified()) {
-        reachabilityMatrix(false, false, dropIsolates, true);
+    if (!calculatedDistances || graphModified()) {
+        distanceMatrixCreate(false,false,false,dropIsolates);
     }
 
     outText << XRM ;
@@ -8704,13 +8676,16 @@ void Graph::graphSave( QString fileName, int fileType )
     };
     if (saved) {
         if (graphModified()) {
+            calculatedGraphWeighted = false;
+            calculatedGraphDensity = false;
+            calculatedEdges = false;
             calculatedVertices = false;
-            calculatedSymmetry = false;
+            calculatedVerticesList=false;
+            calculatedVerticesSet = false;
+            calculatedGraphSymmetry = false;
             calculatedIsolates = false;
-            calculatedDensity = false;
             calculatedAdjacencyMatrix = false;
             calculatedDistances = false;
-            calculatedReachability = false;
             calculatedCentralities = false;
             calculatedDP = false;
             calculatedDC = false;
