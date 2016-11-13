@@ -1700,12 +1700,12 @@ void MainWindow::initActions(){
     connect(eccentricityAct, SIGNAL(triggered()), this, SLOT(slotEccentricity()));
 
 
-    connectednessAct = new QAction(QIcon(":/images/distance.png"),  tr("Connectedness"), this);
-    connectednessAct -> setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_C);
-    connectednessAct->setStatusTip(tr("Check whether the network is a connected "
+    connectivityAct = new QAction(QIcon(":/images/distance.png"),  tr("Connectivity"), this);
+    connectivityAct -> setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_C);
+    connectivityAct->setStatusTip(tr("Check whether the network is a connected "
                                       "graph, a weakly connected digraph or "
                                       "a disconnected graph/digraph..."));
-    connectednessAct->setWhatsThis(tr("Connectedness\n\n In graph theory, a "
+    connectivityAct->setWhatsThis(tr("Connectivity\n\n In graph theory, a "
                                       "graph is <b>connected</b> if there is a "
                                       "path between every pair of nodes. \n"
                                       "A digraph is <b>strongly connected</b> "
@@ -1716,7 +1716,7 @@ void MainWindow::initActions(){
                                       "A digraph or a graph is disconnected if "
                                       "at least one node is isolate."
                                       ));
-    connect(connectednessAct, SIGNAL(triggered()), this, SLOT(slotConnectedness()));
+    connect(connectivityAct, SIGNAL(triggered()), this, SLOT(slotconnectivity()));
 
 
     walksAct = new QAction(QIcon(":/images/walk.png"), tr("Walks of a given length"),this);
@@ -2365,7 +2365,7 @@ void MainWindow::initMenuBar() {
 
 
     statMenu -> addSeparator();
-    statMenu -> addAction(connectednessAct);
+    statMenu -> addAction(connectivityAct);
     statMenu -> addAction (walksAct);
     statMenu -> addAction (totalWalksAct);
     statMenu -> addAction (reachabilityMatrixAct);
@@ -2680,18 +2680,20 @@ void MainWindow::initToolBox(){
     toolBoxAnalysisConnectivitySelectLabel->setMinimumWidth(115);
     toolBoxAnalysisConnectivitySelect = new QComboBox;
     toolBoxAnalysisConnectivitySelect->setStatusTip(
-                tr("Select a 'connectivity' metric to compute i.e. connectedness, walks, etc."));
+                tr("Select a 'connectivity' metric to compute i.e. connectivity, walks, etc."));
     toolBoxAnalysisConnectivitySelect->setToolTip(
-                tr("Compute 'connectivity' metrics such as network connectedness, "
+                tr("Compute 'connectivity' metrics such as network connectivity, "
                    "walks, reachability etc."));
     toolBoxAnalysisConnectivitySelect->setWhatsThis(
                 tr("Analyze Connectivity\\n\n"
-                   "Compute 'connectivity' metrics such as network connectedness, "
+                   "Compute 'connectivity' metrics such as network connectivity, "
                    "walks, reachability etc."));
     QStringList connectivityCommands;
     connectivityCommands << "Select"
-                         << "Connectedness" << "Walks of given length"
-                         << "Total Walks" << "Reachability Matrix";
+                         << "Connectivity"
+                         << "Walks of given length"
+                         << "Total Walks"
+                         << "Reachability Matrix";
     toolBoxAnalysisConnectivitySelect->addItems(connectivityCommands);
     toolBoxAnalysisConnectivitySelect->setMinimumWidth(115);
 
@@ -2714,9 +2716,9 @@ void MainWindow::initToolBox(){
                            "maximal connected subgraph."));
     QStringList clusterabilityCommands;
     clusterabilityCommands << "Select"
-                         << "Cliques"
-                         << "Clustering Coefficient"
-                         << "Triad Census";
+                           << "Cliques"
+                           << "Clustering Coefficient"
+                           << "Triad Census";
     toolBoxAnalysisClusterabilitySelect->addItems(clusterabilityCommands);
     toolBoxAnalysisClusterabilitySelect->setMinimumWidth(115);
 
@@ -2750,12 +2752,16 @@ void MainWindow::initToolBox(){
                 );
     QStringList prominenceCommands;
     prominenceCommands << "Select"
-                       << "Degree Centrality" << "Closeness Centrality"
+                       << "Degree Centrality"
+                       << "Closeness Centrality"
                        << "Influence Range Closeness Centrality"
                        << "Betweenness Centrality"
-                       << "Stress Centrality" << "Eccentricity Centrality"
-                       << "Power Centrality" << "Information Centrality"
-                       << "Degree Prestige (in-Degree)"  << "PageRank Prestige"
+                       << "Stress Centrality"
+                       << "Eccentricity Centrality"
+                       << "Power Centrality"
+                       << "Information Centrality"
+                       << "Degree Prestige (in-Degree)"
+                       << "PageRank Prestige"
                        << "Proximity Prestige";
     toolBoxAnalysisProminenceSelect->addItems(prominenceCommands);
     toolBoxAnalysisProminenceSelect->setMinimumWidth(115);
@@ -4172,8 +4178,8 @@ void MainWindow::toolBoxAnalysisConnectivitySelectChanged(int selectedIndex) {
     case 0:
         break;
     case 1:
-        qDebug()<< "Connectedness";
-        slotConnectedness();
+        qDebug()<< "connectivity";
+        slotConnectivity();
         break;
     case 2:
         qDebug()<< "Walks of given length";
@@ -8524,8 +8530,8 @@ void MainWindow::slotLayoutCircularByProminenceIndex(QString choice=""){
     bool dropIsolates=false;
     //check if CC was selected and the graph is disconnected.
     if (userChoice == 2 ) {
-        int connectedness=activeGraph.connectedness();
-        switch ( connectedness ) {
+        int connectivity=activeGraph.graphConnectivity();
+        switch ( connectivity ) {
         case 1:
             break;
         case 2:
@@ -8685,8 +8691,8 @@ void MainWindow::slotLayoutNodeSizesByProminenceIndex(QString choice=""){
     //check if CC was selected and the graph is disconnected.
     bool dropIsolates=false;
     if (userChoice == 2 ) {
-        int connectedness=activeGraph.connectedness();
-        switch ( connectedness ) {
+        int connectivity=activeGraph.graphConnectivity();
+        switch ( connectivity ) {
         case 1:
             break;
         case 2:
@@ -8864,8 +8870,8 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString choice=""){
     bool dropIsolates=false;
     //check if CC was selected and the graph is disconnected.
     if (userChoice == 2 ) {
-        int connectedness=activeGraph.connectedness();
-        switch ( connectedness ) {
+        int connectivity=activeGraph.graphConnectivity();
+        switch ( connectivity ) {
         case 1:
             break;
         case 2:
@@ -9360,46 +9366,46 @@ void MainWindow::slotEccentricity(){
 
 
 /**
- * @brief MainWindow::slotConnectedness
+ * @brief MainWindow::slotConnectivity
  */
-void MainWindow::slotConnectedness(){
+void MainWindow::slotConnectivity(){
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
-    statusMessage(  QString(tr("Computing Connectedness. Please wait...")) );
-    progressMsg = tr("Computing Connectedness. \n"
+    statusMessage(  QString(tr("Computing Connectivity. Please wait...")) );
+    progressMsg = tr("Computing Connectivity. \n"
             "Please wait (or disable progress bars from Options -> Settings).");
 
     createProgressBar(0,progressMsg);
 
-    int connectedness=activeGraph.connectedness();
+    int connectivity=activeGraph.graphConnectivity();
 
-    qDebug () << "MW::connectedness result " << connectedness;
+    qDebug () << "MW::slotConnectivity result " << connectivity;
 
     destroyProgressBar();
 
-    switch ( connectedness ) {
+    switch ( connectivity ) {
     case 1:
-        QMessageBox::information(this, "Connectedness", "This undirected graph "
+        QMessageBox::information(this, "Connectivity", "This undirected graph "
                                  "is connected.", "OK",0);
         break;
     case 0:
-        QMessageBox::information(this, "Connectedness", tr("This undirected graph "
+        QMessageBox::information(this, "Connectivity", tr("This undirected graph "
                                  " is not connected."), "OK",0);
         break;
     case 2:
-        QMessageBox::information(this, "Connectedness", tr("This directed graph "
+        QMessageBox::information(this, "Connectivity", tr("This directed graph "
                                  "is strongly connected."), "OK",0);
         break;
     case -1:
-        QMessageBox::information(this, "Connectedness", tr("This undirected graph "
+        QMessageBox::information(this, "Connectivity", tr("This undirected graph "
                                  "is disconnected because isolate nodes exist. \n"
                                  "It can become connected by dropping isolates."), "OK",0);
         break;
     case -2:
-        QMessageBox::information(this, "Connectedness", tr("This directed graph "
+        QMessageBox::information(this, "Connectivity", tr("This directed graph "
                                  "is unilaterally connected. \n"
                                                            "For every pair of "
                                  "nodes (u,v) there is a path either from u to v or "
@@ -9407,21 +9413,21 @@ void MainWindow::slotConnectedness(){
         break;
 
     case -3:
-        QMessageBox::information(this, "Connectedness", "This directed graph "
+        QMessageBox::information(this, "Connectivity", "This directed graph "
                                  "is disconnected because isolate nodes exist. \n"
                                  "It can become strongly connected by dropping isolates.", "OK",0);
         break;
     case -4:
-        QMessageBox::information(this, "Connectedness", "This directed graph "
+        QMessageBox::information(this, "Connectivity", "This directed graph "
                                  "is disconnected. \nThere are pairs of nodes that "
                                  "are disconnected.", "OK",0);
         break;
 
     default:
-        QMessageBox::critical(this, "Connectedness", "Something went wrong!.", "OK",0);
+        QMessageBox::critical(this, "Connectivity", "Something went wrong!.", "OK",0);
         break;
     };
-    statusMessage( tr("Connectedness calculated. Ready.") );
+    statusMessage( tr("Connectivity calculated. Ready.") );
 
 }
 
@@ -9706,12 +9712,12 @@ void MainWindow::slotCentralityCloseness(){
         return;
     }
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-    statusMessage(  tr("Please wait while computing connectedness...")  );
-    int connectedness=activeGraph.connectedness();
+    statusMessage(  tr("Please wait while computing Connectivity...")  );
+    int connectivity=activeGraph.graphConnectivity();
     QApplication::restoreOverrideCursor();
 
     bool dropIsolates=false;
-    switch ( connectedness ) {
+    switch ( connectivity ) {
     case 1:
         break;
     case 2:

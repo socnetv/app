@@ -311,7 +311,7 @@ public slots:
     void slotWalksOfGivenLength();
     void slotTotalWalks();
     void slotReachabilityMatrix();
-    void slotConnectedness();
+    void slotConnectivity();
 
     void slotCliqueCensus();
     void slotClusteringCoefficient();
@@ -488,7 +488,7 @@ private:
 
     QAction *netDensity, *symmetryAct, *graphDistanceAct, *averGraphDistanceAct,
             *distanceMatrixAct, *geodesicsMatrixAct, *diameterAct, *eccentricityAct;
-    QAction *walksAct,*totalWalksAct, *reachabilityMatrixAct, *connectednessAct;
+    QAction *walksAct,*totalWalksAct, *reachabilityMatrixAct, *connectivityAct;
     QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct, *invertAdjMatrixAct;
     QAction *cDegreeAct, *cInDegreeAct, *cClosenessAct, *cInfluenceRangeClosenessAct,
             *cBetweennessAct, *cInformationAct, *cPageRankAct, *cStressAct,

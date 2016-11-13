@@ -132,7 +132,7 @@ class CompareDistances {
     \todo Control Panel Options should be dropped (break the panel layout in laptops).
     \todo - CHECK weighted networks results (IRCC and distance matrix with other combinations)
     \todo - CHECK graphWeighted corner case results, when !graphModified.
-    \todo - CHECK connectedness() algorithm implementation (m_vertexPairsUnilaterallyConnected)
+    \todo - CHECK graphConnectivity() algorithm implementation (m_vertexPairsUnilaterallyConnected)
 
   \bug Create d-regular, undirected, ask for closeness, it says we are on a disconnected graph
   \bug Crash on Graphml files with textlabels instead of nodenumbers (i.e. nets/killer.graphml)
@@ -467,7 +467,7 @@ public:
     bool graphSaved() const;
     bool graphLoaded() const;
 
-    int graphPathsExistingCount(const bool &dropIsolates=false,
+    int graphConnectivityPathsAndPairs(const bool &dropIsolates=false,
                                 const bool &updateProgress=false);
 
     float graphDensity();
@@ -560,7 +560,7 @@ public:
     int diameter(const bool considerWeights, const bool inverseWeights);
     float distanceGraphAverage(const bool considerWeights,
                                const bool inverseWeights, const bool dropIsolates);
-    int connectedness();
+    int graphConnectivity();
 
     void distanceMatrixCreate(const bool &centralities=false,
                               const bool &considerWeights=false,
