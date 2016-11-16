@@ -833,7 +833,19 @@ void Graph::vertexIsolateFilter(bool filterFlag){
 
 
 
-
+/**
+ * @brief Graph::vertexIsolated
+ * @param v1
+ * @return
+ */
+bool Graph::vertexIsolated(const long int &v1) const{
+    if (  m_graph[ index[v1] ] -> isIsolated() ) {
+        qDebug()<<"Graph::vertexIsolated() - true";
+        return true;
+    }
+    qDebug()<<"Graph::vertexIsolated() - false";
+    return false;
+}
 
 
 /**
@@ -2766,22 +2778,42 @@ float Graph::distanceGraphAverage(const bool considerWeights,
                    "or graph modified. Recomputing XRM";
         emit statusMessage ( tr("Computing Average Distance: "
                                 "Need to recompute Distances. Please wait...") );
-        graphConnectivityPathsAndPairs();
+        graphConnectivity();
 
     }
     //TODO Need a way to ask the user what to with not connected pairs (make either M or drop?)
     qDebug() <<"Graph::distanceGraphAverage() - m_vertexPairsNotConnected " <<
                m_vertexPairsNotConnected.count();
-    int aVertices=vertices(dropIsolates);//TOFIX
+    int N=vertices(dropIsolates);//TOFIX
     if (m_graphAverageDistance!=0) {
         if (m_vertexPairsNotConnected.count()==0) {
-            return m_graphAverageDistance / ( aVertices * ( aVertices-1.0 ) );
+            return m_graphAverageDistance / ( N * ( N-1.0 ) );
         }
         else {
-            return m_graphAverageDistance / m_graphPathsExistingCount;
+            return m_graphAverageDistance / m_graphGeodesicsCount;
         }
     }
     else return 0;
+
+
+}
+
+
+
+
+/**
+ * @brief Graph::graphGeodesics
+ * Returns the number of geodesics (shortest-paths) in the graph.
+  * @return
+ */
+int Graph::graphGeodesics()  {
+    if (!calculatedDistances || graphModified()) {
+        qDebug()<< "Graph::graphGeodesics() - "
+                   "graph modified. Calling distanceMatrixCreate()..." ;
+        distanceMatrixCreate(false, false,false,false);
+    }
+    qDebug()<< "Graph::graphGeodesics() - geodesics:" << m_graphGeodesicsCount;
+    return m_graphGeodesicsCount;
 
 
 }
@@ -2807,59 +2839,115 @@ float Graph::distanceGraphAverage(const bool considerWeights,
  * MW::slotLayoutLevelByProminenceIndex(QString )
  *
  */
-int Graph::graphConnectivity() {
+int Graph::graphConnectivity(const bool updateProgress) {
     qDebug() << "Graph::graphConnectivity() ";
-    if (!calculatedDistances || graphModified()) {
-        //distanceMatrixCreate(false,false,false, false);
-        graphConnectivityPathsAndPairs(false, false);
+
+
+    if (calculatedDistances && !graphModified()) {
+        qDebug()<< "Graph::graphConnectivity() - graph unmodified. Returning:"
+                << m_graphConnectivity;
+        return m_graphConnectivity;
     }
-    int isolatedVertices=verticesListIsolated().count();
+    //initially if graph is undirected, assume it is connected.
+    // if is directed, assume it is strongly connected.
     if ( graphUndirected() ) {
-        qDebug() << "Graph::graphConnectivity() - graph undirected";
-        if ( m_vertexPairsNotConnected.size() != 0 ) {
-                if (isolatedVertices!=0 ) {
-                    qDebug() << "Graph::graphConnectivity() - undirected graph is "
-                                "disconnected (has disconnected pairs but no isolates)" ;
-                    return -1;
-                }
-                else {
-                    qDebug() << "Graph::graphConnectivity() - undirected graph is "
-                                "disconnected (has unconnected pairs, "
-                                "and isolates)" ;
-                    return 0;
-                }
-        }
-        qDebug() << "Graph::graphConnectivity() - undirected graph is connected ";
-        return 1;
+        m_graphConnectivity = 1;
     }
     else {
-        qDebug() << "Graph::graphConnectivity() - graph directed";
-        if ( m_vertexPairsNotConnected.size() != 0 ) {
-            qDebug () << "Graph::graphConnectivity() - directed graph is disconnected "
-                         "(has unconnected pairs)";
-            return -4;
-        }
-        else {
-            if ( m_vertexPairsUnilaterallyConnected.size() != 0 ) {
-                if (isolatedVertices!=0) {
-                    qDebug () << "Graph::graphConnectivity() - directed graph is disconnected "
-                                 "(has unilaterally pairs and aisolates)";
-                    return -4; // - can be unconnected if we remove isolate nodes
+        m_graphConnectivity = 2;
+    }
+
+    distanceMatrixCreate(false, false,false,false);
+    int size = vertices(false,false), i=0, j=0;
+
+    m_vertexPairsNotConnected.clear();
+    m_vertexPairsUnilaterallyConnected.clear();
+
+    int isolatedVertices=verticesListIsolated().count();
+    bool pairUnconnected = false;
+    bool pairUnilateralyConnected = false;
+    bool isolated = false;
+
+    for (i=0; i < size ; i++) {
+        for (j=i+1; j < size ; j++) {
+
+            if ( graphUndirected() ) {
+                if ( XRM.item(i,j) == 0 ) {
+                    // not connected because there is no path connecting (i,j)
+                    pairUnconnected = true;
+                    m_vertexPairsNotConnected.insertMulti(i,j);
+                    //m_vertexPairsNotConnected.insertMulti(j,i);
+                    if (vertexIsolated(i) ) {
+                        isolated = true;
+                    }
                 }
             }
             else {
-                qDebug () << "Graph::graphConnectivity() - directed graph is disconnected "
-                             "(unilaterally pairs and also isolates)";
-                return -2; // (exists path only from i to j or from j to i, not both)
+                if ( XRM.item(i,j) != 0 ) {
+                    if ( XRM.item(j,i) == 0 ) {
+                        // unilaterly connected because there is only a path i -> j
+                        pairUnilateralyConnected = true;
+                        m_vertexPairsUnilaterallyConnected.insertMulti(i,j);
+                        m_vertexPairsNotConnected.insertMulti(j,i);
+                    }
+                    else {
+                        //strongly connected pair
+                    }
+
+                }
+                else {
+                    if ( XRM.item(j,i) == 0 ) {
+                        //  not connected because there is no path connecting (i,j) or (j,i)
+                        pairUnconnected = true;
+                        m_vertexPairsNotConnected.insertMulti(i,j);
+                        m_vertexPairsNotConnected.insertMulti(j,i);
+                        if (vertexIsolated(i) ) {
+                            isolated = true;
+                        }
+                    }
+                    else {
+                        // unilaterly connected because there is only a path j -> i
+                        pairUnilateralyConnected = true;
+                        m_vertexPairsUnilaterallyConnected.insertMulti(j,i);
+                        m_vertexPairsNotConnected.insertMulti(i,j);
+                    }
+
+                }
+
             }
 
-            qDebug () << "Graph::graphConnectivity() - directed graph is connected ";
-            return 2;
+
         }
+        if (updateProgress)
+            emit updateProgressDialog(i+1);
+    }
+
+
+    if ( graphUndirected() ) {
+        if (pairUnconnected) {
+            m_graphConnectivity = -1;
+        }
+        else
+            m_graphConnectivity = 1;
 
     }
-    return -666; // for sanity check :P
+    else {
+        if (pairUnconnected) {
+            m_graphConnectivity = -3;
+        }
+        else if (pairUnilateralyConnected) {
+            m_graphConnectivity = -2;
+        }
+        else
+            m_graphConnectivity = 2;
+    }
+
+
+
+    return m_graphConnectivity;
 }
+
+
 
 
 /**
@@ -3075,7 +3163,7 @@ void Graph::distanceMatrixCreate(const bool &centralities,
         m_graphDiameter=0;
         calculatedDistances = false;
         m_graphAverageDistance=0;
-        nonZeroDistancesCounter=0;
+        m_graphGeodesicsCount = 0; //non zero distances
 
         qDebug() << "	m_graphDiameter "<< m_graphDiameter
                  << " m_graphAverageDistance " <<m_graphAverageDistance;
@@ -3529,7 +3617,7 @@ void Graph::BFS(const int &s, const bool &computeCentralities,
                 qDebug("BFS: Setting distance of w=%i from s=%i equal to distance(s,u) plus 1. New distance = %i",w,s, dist_w );
                 DM.setItem(s, w, dist_w);
                 m_graphAverageDistance += dist_w;
-                nonZeroDistancesCounter++;
+                m_graphGeodesicsCount++;
 
 
                 qDebug()<< "Graph::BFS()  - d("
@@ -3741,7 +3829,7 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
                          << ") = "<< dist_w ;
                 DM.setItem(s, w, dist_w);
                 m_graphAverageDistance += dist_w;
-                nonZeroDistancesCounter++;
+                m_graphGeodesicsCount++;
 
 
                 qDebug()<< "Graph::dijkstra()  - d("
@@ -6997,7 +7085,6 @@ QList<int> Graph::vertexinfluenceRange(int v1){
  *  Returns the influence domain of vertex v1, namely the set of nodes who can
  *  reach v1
  *  This function applies to digraphs only
- * used by distanceGraphAverage
  * @param v1
  * @return
  */
@@ -7011,65 +7098,7 @@ QList<int> Graph::vertexinfluenceDomain(int v1){
 }
 
 
-/**
- * @brief Graph::graphConnectivityPathsAndPairs
- * Used in Graph::distanceGraphAverage()
- * @return
- */
-int Graph::graphConnectivityPathsAndPairs(const bool &dropIsolates,
-                                   const bool &updateProgress)  {
 
-    if (calculatedDistances && !graphModified()) {
-        qDebug()<< "Graph::graphConnectivityPathsAndPairs() - "
-                   "XRM calculated and graph unmodified. Returning..." ;
-        return m_graphPathsExistingCount;
-    }
-    else {
-
-        distanceMatrixCreate(false, false,false,dropIsolates);
-        int size = vertices(false,false), i=0, j=0;
-        m_graphPathsExistingCount=0;
-        m_vertexPairsNotConnected.clear();
-        for (i=0; i < size ; i++) {
-            for (j=i+1; j < size ; j++) {
-                if ( XRM.item(i,j) ==1 ) {
-                    m_graphPathsExistingCount++;
-                    if ( XRM.item(j,i) ==1 ) {
-                        qDebug()<< "Graph::graphConnectivityPathsAndPairs() -"
-                                << "vertices"
-                                <<i+1<<","
-                                <<j+1<<"connected"
-                               << "increasing m_graphPathsExistingCount";
-                        m_graphPathsExistingCount++;
-                    }
-                    else {
-                        qDebug()<< "Graph::graphConnectivityPathsAndPairs() - vertices"
-                                <<i+1<<","<<j+1<<"unilaterally connected";
-                        m_vertexPairsUnilaterallyConnected.insertMulti(i,j);
-                    }
-                }
-                else {
-                    if ( XRM.item(j,i) == 0 ) {
-                        qDebug()<< "Graph::graphConnectivityPathsAndPairs() - vertices"
-                                <<i+1<<","<<j+1<<"not connected";
-                        m_vertexPairsNotConnected.insertMulti(i,j);
-                    }
-                    else {
-                        qDebug()<< "Graph::graphConnectivityPathsAndPairs() - vertices"
-                                <<j+1<<","<<i+1<<"unilaterally connected";
-                        m_vertexPairsUnilaterallyConnected.insertMulti(j,i);
-                        m_graphPathsExistingCount++;
-                    }
-                }
-            }
-            if (updateProgress)
-                emit updateProgressDialog(i+1);
-        }
-
-    }
-
-    return m_graphPathsExistingCount;
-}
 
 
 

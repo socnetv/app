@@ -1716,7 +1716,7 @@ void MainWindow::initActions(){
                                       "A digraph or a graph is disconnected if "
                                       "at least one node is isolate."
                                       ));
-    connect(connectivityAct, SIGNAL(triggered()), this, SLOT(slotconnectivity()));
+    connect(connectivityAct, SIGNAL(triggered()), this, SLOT(slotConnectivity()));
 
 
     walksAct = new QAction(QIcon(":/images/walk.png"), tr("Walks of a given length"),this);

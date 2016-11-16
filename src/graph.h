@@ -356,6 +356,8 @@ public:
     int vertexDegreeIn(int);
     QList<int> vertexNeighborhoodList(const int &v1);
 
+    bool vertexIsolated(const long int &v1) const;
+
     int vertexExists(const long int &v1 );
     int vertexExists(const QString &label);
     void vertexRemove (long int );
@@ -467,8 +469,7 @@ public:
     bool graphSaved() const;
     bool graphLoaded() const;
 
-    int graphConnectivityPathsAndPairs(const bool &dropIsolates=false,
-                                const bool &updateProgress=false);
+    int graphGeodesics();
 
     float graphDensity();
     bool graphWeighted();
@@ -560,7 +561,7 @@ public:
     int diameter(const bool considerWeights, const bool inverseWeights);
     float distanceGraphAverage(const bool considerWeights,
                                const bool inverseWeights, const bool dropIsolates);
-    int graphConnectivity();
+    int graphConnectivity(const bool updateProgress=false) ;
 
     void distanceMatrixCreate(const bool &centralities=false,
                               const bool &considerWeights=false,
@@ -803,8 +804,9 @@ private:
     int initVertexNumberDistance, initVertexLabelDistance;
     bool order, initVertexLabelsVisibility,initVertexNumbersVisibility;
     bool initVertexNumberInside, initEdgeWeightNumbers, initEdgeLabels;
-    float m_graphAverageDistance, nonZeroDistancesCounter, m_graphPathsExistingCount;
+    float m_graphAverageDistance, m_graphGeodesicsCount;
     float m_graphDensity;
+    int m_graphConnectivity;
     int outboundEdgesVert, inboundEdgesVert, reciprocalEdgesVert;
     int timerId,  canvasWidth, canvasHeight;
     bool calculatedEdges;
