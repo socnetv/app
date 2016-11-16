@@ -2246,7 +2246,7 @@ void Graph::graphModifiedSet(const int &graphChangedFlag, const bool &signalMW){
  * @return
  */
 bool Graph::graphModified() const {
-    qDebug() << "Graph::graphModified() - " << graphModifiedFlag ;
+    qDebug() << "Graph::graphModified() - graphModifiedFlag:" << graphModifiedFlag ;
     return (graphModifiedFlag > 10 ) ? true: false;
 }
 
@@ -2255,7 +2255,7 @@ bool Graph::graphModified() const {
  * @return
  */
 bool Graph::graphSaved() const {
-    qDebug() << "Graph::graphSaved() - " << graphModifiedFlag ;
+    qDebug() << "Graph::graphSaved() - graphModifiedFlag:" << graphModifiedFlag ;
     return (graphModifiedFlag == 0 ) ? true: false;
 }
 
