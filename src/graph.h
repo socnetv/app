@@ -464,7 +464,7 @@ public:
     bool edgeColorAllSet(const QString &color, const int &threshold=RAND_MAX);
 
     //GRAPH methods
-    void graphModifiedSet(const int &graphChangedFlag, const bool&signalMW=true);
+    void graphModifiedSet(const int &graphNewStatus, const bool&signalMW=true);
     bool graphModified() const ;
     bool graphSaved() const;
     bool graphLoaded() const;
