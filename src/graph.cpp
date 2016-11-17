@@ -2218,9 +2218,15 @@ QSet<int> Graph::verticesSet(){
  * @param graphChangedFlag
  * @param signalMW
  */
-void Graph::graphModifiedSet(const int &graphChangedFlag, const bool &signalMW){
+void Graph::graphModifiedSet(const int &graphNewStatus, const bool &signalMW){
 
-    graphModifiedFlag=graphChangedFlag;
+    if (graphNewStatus >0 && graphNewStatus < 10){ //minor changes, i.e. vertex positions, labels, etc
+        graphModifiedFlag = (graphModifiedFlag > 10 ) ? graphModifiedFlag : graphNewStatus ;
+    }
+    else {
+        graphModifiedFlag=graphNewStatus;
+    }
+
 
     if (signalMW) {
         qDebug()<<"Graph::graphModifiedSet() - m_symmetric " << m_symmetric
