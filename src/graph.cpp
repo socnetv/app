@@ -840,10 +840,10 @@ void Graph::vertexIsolateFilter(bool filterFlag){
  */
 bool Graph::vertexIsolated(const long int &v1) const{
     if (  m_graph[ index[v1] ] -> isIsolated() ) {
-        qDebug()<<"Graph::vertexIsolated() - true";
+        qDebug()<<"Graph::vertexIsolated() - vertex:"<< v1 << "isolated";
         return true;
     }
-    qDebug()<<"Graph::vertexIsolated() - false";
+    qDebug()<<"Graph::vertexIsolated() - vertex:"<< v1 << "not isolated";
     return false;
 }
 
@@ -2869,8 +2869,6 @@ int Graph::graphConnectivity(const bool updateProgress) {
     m_vertexPairsUnilaterallyConnected.clear();
 
    // int isolatedVertices=verticesListIsolated().count();
-    bool pairUnconnected = false;
-    bool pairUnilateralyConnected = false;
     bool isolatedVertices = false;
 
     for (i=0; i < size ; i++) {
@@ -2880,10 +2878,9 @@ int Graph::graphConnectivity(const bool updateProgress) {
 
                 if ( XRM.item(i,j) == 0 ) {
                     // not connected because there is no path connecting (i,j)
-                    pairUnconnected = true;
                     m_vertexPairsNotConnected.insertMulti(i,j);
                     //m_vertexPairsNotConnected.insertMulti(j,i);
-                    if (vertexIsolated(i) ) {
+                    if (vertexIsolated(i+1) || vertexIsolated(j+1)) {
                         isolatedVertices = true;
                     }
                 }
@@ -2894,7 +2891,6 @@ int Graph::graphConnectivity(const bool updateProgress) {
                 if ( XRM.item(i,j) != 0 ) {
                     if ( XRM.item(j,i) == 0 ) {
                         // unilaterly connected because there is only a path i -> j
-                        pairUnilateralyConnected = true;
                         m_vertexPairsUnilaterallyConnected.insertMulti(i,j);
                         //m_vertexPairsNotConnected.insertMulti(j,i);
                     }
@@ -2906,16 +2902,14 @@ int Graph::graphConnectivity(const bool updateProgress) {
                 else {
                     if ( XRM.item(j,i) == 0 ) {
                         //  not connected because there is no path connecting (i,j) or (j,i)
-                        pairUnconnected = true;
                         m_vertexPairsNotConnected.insertMulti(i,j);
                         //m_vertexPairsNotConnected.insertMulti(j,i);
-                        if (vertexIsolated(i) ) {
+                        if (vertexIsolated(i+1) || vertexIsolated(j+1)) {
                             isolatedVertices = true;
                         }
                     }
                     else {
                         // unilaterly connected because there is only a path j -> i
-                        pairUnilateralyConnected = true;
                         m_vertexPairsUnilaterallyConnected.insertMulti(j,i);
                         //m_vertexPairsNotConnected.insertMulti(i,j);
                     }
