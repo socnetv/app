@@ -6695,7 +6695,7 @@ void MainWindow::slotEditNodeSelectNone(){
  */
 void MainWindow::slotEditNodePosition(const int &nodeNumber,
                                   const int &x, const int &y){
-    qDebug("MW: slotEditNodePosition() for %i with x %i and y %i", nodeNumber, x, y);
+    qDebug("MW::slotEditNodePosition() for %i with x %i and y %i", nodeNumber, x, y);
     activeGraph.vertexPosSet(nodeNumber, x, y);
     if (!activeGraph.graphSaved()) {
         networkSave->setIcon(QIcon(":/images/save.png"));
