@@ -9369,6 +9369,7 @@ void MainWindow::slotEccentricity(){
  * @brief MainWindow::slotConnectivity
  */
 void MainWindow::slotConnectivity(){
+    qDebug () << "MW::slotConnectivity()" ;
     if ( !activeNodes()   )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
