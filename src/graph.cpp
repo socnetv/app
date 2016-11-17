@@ -2828,8 +2828,8 @@ int Graph::graphGeodesics()  {
  * 0: not connected undirected graph no isolates
  * -1: not connected undirected graph with isolates
  * -2: unilaterally connected digraph (exists path only from i to j or from j to i, not both)
- * -3  disconnected digraph (with isolates).
- * -4  disconnected digraph (there are pairs not connected at all).
+ * -3  disconnected digraph (there are unconnected pairs, with isolates).
+ * -4  disconnected digraph (there are unconnected pairs, no isolates).
  *
  * Used by
  * MW::slotConnectedness()
@@ -2841,7 +2841,6 @@ int Graph::graphGeodesics()  {
  */
 int Graph::graphConnectivity(const bool updateProgress) {
     qDebug() << "Graph::graphConnectivity() ";
-
 
     if (calculatedDistances && !graphModified()) {
         qDebug()<< "Graph::graphConnectivity() - graph unmodified. Returning:"
@@ -2863,32 +2862,35 @@ int Graph::graphConnectivity(const bool updateProgress) {
     m_vertexPairsNotConnected.clear();
     m_vertexPairsUnilaterallyConnected.clear();
 
-    int isolatedVertices=verticesListIsolated().count();
+   // int isolatedVertices=verticesListIsolated().count();
     bool pairUnconnected = false;
     bool pairUnilateralyConnected = false;
-    bool isolated = false;
+    bool isolatedVertices = false;
 
     for (i=0; i < size ; i++) {
         for (j=i+1; j < size ; j++) {
 
             if ( graphUndirected() ) {
+
                 if ( XRM.item(i,j) == 0 ) {
                     // not connected because there is no path connecting (i,j)
                     pairUnconnected = true;
                     m_vertexPairsNotConnected.insertMulti(i,j);
                     //m_vertexPairsNotConnected.insertMulti(j,i);
                     if (vertexIsolated(i) ) {
-                        isolated = true;
+                        isolatedVertices = true;
                     }
                 }
+
             }
             else {
+
                 if ( XRM.item(i,j) != 0 ) {
                     if ( XRM.item(j,i) == 0 ) {
                         // unilaterly connected because there is only a path i -> j
                         pairUnilateralyConnected = true;
                         m_vertexPairsUnilaterallyConnected.insertMulti(i,j);
-                        m_vertexPairsNotConnected.insertMulti(j,i);
+                        //m_vertexPairsNotConnected.insertMulti(j,i);
                     }
                     else {
                         //strongly connected pair
@@ -2900,16 +2902,16 @@ int Graph::graphConnectivity(const bool updateProgress) {
                         //  not connected because there is no path connecting (i,j) or (j,i)
                         pairUnconnected = true;
                         m_vertexPairsNotConnected.insertMulti(i,j);
-                        m_vertexPairsNotConnected.insertMulti(j,i);
+                        //m_vertexPairsNotConnected.insertMulti(j,i);
                         if (vertexIsolated(i) ) {
-                            isolated = true;
+                            isolatedVertices = true;
                         }
                     }
                     else {
                         // unilaterly connected because there is only a path j -> i
                         pairUnilateralyConnected = true;
                         m_vertexPairsUnilaterallyConnected.insertMulti(j,i);
-                        m_vertexPairsNotConnected.insertMulti(i,j);
+                        //m_vertexPairsNotConnected.insertMulti(i,j);
                     }
 
                 }
@@ -2924,18 +2926,24 @@ int Graph::graphConnectivity(const bool updateProgress) {
 
 
     if ( graphUndirected() ) {
-        if (pairUnconnected) {
-            m_graphConnectivity = -1;
+        if ( m_vertexPairsNotConnected.count()>0) {
+            if (isolatedVertices)
+                m_graphConnectivity = -1;
+            else
+                m_graphConnectivity = 0;
         }
         else
             m_graphConnectivity = 1;
 
     }
     else {
-        if (pairUnconnected) {
-            m_graphConnectivity = -3;
+        if (m_vertexPairsNotConnected.count()>0) {
+            if (isolatedVertices)
+                m_graphConnectivity = -3;
+            else
+                m_graphConnectivity = -4;
         }
-        else if (pairUnilateralyConnected) {
+        else if (m_vertexPairsUnilaterallyConnected.count() > 0) {
             m_graphConnectivity = -2;
         }
         else
