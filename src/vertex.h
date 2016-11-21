@@ -43,7 +43,7 @@ class Graph;
 
 
 typedef QHash<int,QString> H_IntToStr;
-typedef QList<int> ilist;
+typedef QList<int> L_int;
 typedef QPair <float, bool> pair_f_b;
 typedef QPair <int, pair_f_b > rel_w_bool;
 typedef QHash < int, rel_w_bool > H_edges;
@@ -195,7 +195,7 @@ public:
     void clearPs()	;
 
     void appendToPs(long  int vertex ) ;
-    ilist Ps(void);
+    L_int Ps(void);
 
     void setDC (float c){ m_DC=c;} 	/* Sets vertex Degree Centrality*/
     void setSDC (float c ) { m_SDC=c;}	/* Sets standard vertex Degree Centrality*/
@@ -257,9 +257,9 @@ public:
     bool hasCLC() { 	return m_hasCLC; }
 
 
-    int cliques (const int &size);
+    int cliques (const int &ofSize);
 
-    bool cliqueAdd (const QString &clique, const int &size);
+    void cliqueAdd (const int &ofSize, const QList<int> &clique);
 
     void clearCliques() {
         m_cliques.clear();
@@ -274,26 +274,27 @@ protected:
 
 private:
     Graph *parentGraph;
-    ilist myPs;
     long int m_name,  m_outEdgesCounter, m_inEdgesCounter, m_outDegree, m_inDegree, m_localDegree;
-    float m_Eccentricity;
     int m_value, m_size, m_labelSize, m_numberSize, m_numberDistance, m_labelDistance;
     int m_curRelation;
-    H_StrToInt m_cliques;
-    QHash<int,float>* m_reciprocalEdges;
-    QList<int> m_neighborhoodList;
     bool m_reciprocalLinked, m_enabled, m_hasCLC, m_isolated;
-    QString m_color, m_numberColor, m_label, m_labelColor, m_shape;
-    QPointF m_disp;
-    H_IntToStr outLinkColors, m_outEdgeLabels;
-    //FIXME vertex coords
-
     double m_x, m_y;
-    float m_CLC;
+    float m_Eccentricity, m_CLC;
     float m_delta, m_EC, m_SEC;
     float m_DC, m_SDC, m_DP, m_SDP, m_CC, m_SCC, m_BC, m_SBC, m_IRCC, m_SIRCC, m_SC, m_SSC;
     float m_PC, m_SPC, m_SIC, m_IC, m_SPRC, m_PRC;
     float m_PP, m_SPP;
+    QString m_color, m_numberColor, m_label, m_labelColor, m_shape;
+    QPointF m_disp;
+
+    QHash<int,float>* m_reciprocalEdges;
+    L_int myPs;
+    L_int m_neighborhoodList;
+    H_IntToStr outLinkColors, m_outEdgeLabels;
+    QHash <int, L_int> m_cliques;
+    //FIXME vertex coords
+
+
 
 };
 

@@ -855,76 +855,13 @@ float Vertex::hasEdgeFrom(const long int &v2, const bool &allRelations){
  * @param size
  * @return
  */
-int Vertex::cliques (const int &size)
+int Vertex::cliques (const int &ofSize)
 {
-    int count = 0;
-    foreach (int value, m_cliques) {
-        if ( value == size ) {
-            count ++;
-        }
-    }
-    return count ;
+    return m_cliques.values( ofSize ).size();
 }
 
-bool Vertex::cliqueAdd (const QString &clique, const int &size) {
-    QStringList members = clique.split(",");
-    switch (size) {
-    case 2:
-    {
-        m_cliques.insert( clique, size);
-        break;
-    }
-    case 3:
-    {
-        if (! m_cliques.contains( clique) &&
-            ! m_cliques.contains( QString::number (this->name()) +
-                                  "," + members[2] +
-                                  "," + members[1] ) )
-        {
-            m_cliques.insert( clique, size);
-            return true ;
-        }
-        else
-            return false;
-        break;
-    }
-    case 4:
-    {
-        if (! m_cliques.contains( clique) &&
-                ! m_cliques.contains(  QString::number (this->name()) +
-                                       "," + members[1] +
-                                       "," + members[3] +
-                                       "," + members[2] ) &&
-                ! m_cliques.contains(  QString::number (this->name()) +
-                                       "," + members[2] +
-                                       "," + members[1] +
-                                       "," + members[3] ) &&
-                ! m_cliques.contains(  QString::number (this->name()) +
-                                       "," + members[2] +
-                                       "," + members[3] +
-                                       "," + members[1] ) &&
-                ! m_cliques.contains(  QString::number (this->name()) +
-                                       "," + members[3] +
-                                       "," + members[1] +
-                                       "," + members[2] ) &&
-                ! m_cliques.contains(  QString::number (this->name()) +
-                                       "," + members[3] +
-                                       "," + members[2] +
-                                       "," + members[1] )
-                )
-        {
-            m_cliques.insert( clique, size);
-            return true ;
-        }
-        else
-        {
-            return false;
-        }
-
-        break;
-    }
-    };
-    return false;
+void Vertex::cliqueAdd (const int &ofSize, const QList<int> &clique) {
+    m_cliques.insertMulti(ofSize, clique);
 }
 
 
@@ -940,7 +877,7 @@ void Vertex::appendToPs(long  int vertex ) {
 }
 
 
-ilist Vertex::Ps(void) {
+L_int Vertex::Ps(void) {
 	 return myPs;
 }
 

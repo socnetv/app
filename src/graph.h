@@ -82,7 +82,7 @@ typedef QPair <float, bool> pair_f_b;
 typedef QPair <int, pair_f_b > rel_w_bool;
 typedef QHash < int, rel_w_bool > H_edges;
 typedef QHash<QString, bool> H_StrToBool;
-
+typedef QList<int> L_int;
 
 struct ClickedEdge {
     int v1;
@@ -740,12 +740,10 @@ private:
     QHash <int, int> m_vertexPairsNotConnected;
     QHash <int, int> m_vertexPairsUnilaterallyConnected;
 
-    H_StrToBool cliques_2_Vertex;
-    H_StrToBool cliques_3_Vertex;
-    H_StrToBool cliques_4_Vertex;
+    QHash <int, L_int > m_cliques;
 
     Matrix  TM, DM, sumM, invAM, AM, invM;
-    Matrix XM, XSM, XRM;
+    Matrix XM, XSM, XRM, CLQM;
     stack<int> Stack;
 
     /** used in resolveClasses and distanceMatrixCreate() */
