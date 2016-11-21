@@ -6,8 +6,6 @@
                          randsmallworlddialog.h  -  description
                              -------------------
     copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
-    email                : dimitris.kalamaras@gmail.com
-    website:             : http://dimitris.apeiro.gr
     project site         : http://socnetv.org
 
  ***************************************************************************/

@@ -5,9 +5,9 @@
 
                         main.cpp  -  description
                              -------------------
-    begin                : 9 21:10:04 EET 2005
-    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
-    email                : dimitris.kalamaras@gmail.com
+    copyright         : (C) 2005-2016 by Dimitris B. Kalamaras
+    project site      : http://socnetv.org
+
  ***************************************************************************/
 
 /*******************************************************************************

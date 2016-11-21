@@ -5,8 +5,10 @@
 
 -                           mainwindow.cpp  -  description
                              -------------------
-    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
-    email                : dimitris.kalamaras@gmail.com
+    copyright         : (C) 2005-2016 by Dimitris B. Kalamaras
+    blog              : http://dimitris.apeiro.gr
+    project site      : http://socnetv.org
+
  ***************************************************************************/
 
 /*******************************************************************************
@@ -10874,8 +10876,10 @@ QString BUILD="Fri Sep 30 00:32:25 EEST 2016";
                         tr("<p><b>Version</b>: ") + VERSION + "</p>" +
                         tr("<p><b>Build</b>: ")  + BUILD + " </p>" +
 
-                        tr("<p>(C) 2005-2016 by Dimitris V. Kalamaras")+
-                        tr("<br> dimitris.kalamaras@gmail.com")+
+                        tr("<p>Website: <a href=\"http://socnetv.org\">http://socnetv.org</a></p>")+
+
+                        tr("<p>(C) 2005-2016 by Dimitris V. Kalamaras</p>")+
+                        tr("<p><a href=\"http://socnetv.org/contact\">Contact me</a></p>")+
 
                         tr("<p><b>Fortune cookie: </b><br> \"")  + fortuneCookie[randomCookie]  + "\"" +
 

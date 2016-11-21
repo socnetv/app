@@ -5,10 +5,10 @@
  
                          mainwindow.h  -  description
                              -------------------
-    copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
-    email                : dimitris.kalamaras@gmail.com
-    website:             : http://dimitris.apeiro.gr
-    project site         : http://socnetv.org
+    copyright         : (C) 2005-2016 by Dimitris B. Kalamaras
+    blog              : http://dimitris.apeiro.gr
+    project site      : http://socnetv.org
+
  ***************************************************************************/
 
 /*******************************************************************************
