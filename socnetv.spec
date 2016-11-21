@@ -69,7 +69,7 @@ Release:	%{release}
 Summary:	A Social Networks Analyser and Visualiser
 License:	GPL-3.0	
 Group:		Productivity/Scientific/Math 
-URL:		http://socnetv.sourceforge.net/
+URL:		http://socnetv.org/
 Vendor: 	Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 Source0:	SocNetV-%{version}.tar.bz2
 Distribution:   %{distr}

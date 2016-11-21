@@ -10847,7 +10847,7 @@ void MainWindow::slotHelpCreateTips(){
  */
 void MainWindow::slotHelp(){
     statusMessage( tr("Opening the SocNetV Manual in your default web browser....") );
-    QDesktopServices::openUrl(QUrl("http://socnetv.sourceforge.net/docs/index.html"));
+    QDesktopServices::openUrl(QUrl("http://socnetv.org/docs/index.html"));
 }
 
 
@@ -10859,7 +10859,7 @@ void MainWindow::slotHelp(){
  */
 void MainWindow::slotHelpCheckUpdates() {
     statusMessage( tr("Opening SocNetV website in your default web browser....") );
-    QDesktopServices::openUrl(QUrl("http://socnetv.sourceforge.net/downloads?app=" + VERSION));
+    QDesktopServices::openUrl(QUrl("http://socnetv.org/downloads?app=" + VERSION));
 }
 
 /**

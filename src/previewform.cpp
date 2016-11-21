@@ -8,7 +8,7 @@
     copyright            : (C) 2005-2016 by Dimitris B. Kalamaras
     email                : dimitris.kalamaras@gmail.com
     website:             : http://dimitris.apeiro.gr
-    project site         : http://socnetv.sourceforge.net
+    project site         : http://socnetv.org
 
     comment              : code borrowed from Qt5 codecs example
 

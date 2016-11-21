@@ -56,7 +56,7 @@ The documentation is also Free, licensed under the Free Documentation License (F
 2. Availability & License
 -------------------------
 
-Official Website: http://socnetv.sourceforge.net
+Official Website: http://socnetv.org
 
 Author: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 Blog:   http://dimitris.apeiro.gr
@@ -90,7 +90,7 @@ a) compiling it from source or
 SocNetV binary packages are available for Windows, Mac OS X and Linux distros.
 
 You can download a binary package for your Operating System from the project
-webpage at: http://socnetv.sourceforge.net/downloads
+webpage at: http://socnetv.org/downloads
 
 If there is no package for your OS, please download and compile the source code.
 

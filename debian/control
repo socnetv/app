@@ -5,8 +5,8 @@ Maintainer: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 XSBC-Original-Maintainer: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
 Build-Depends: debhelper (>= 9), qt5-default
 Standards-Version: 3.9.5
-Homepage: http://socnetv.sourceforge.net
-Vcs-Git: https://sourceforge.net/p/socnetv/git/ci/master/tree/trunk/ 
+Homepage: http://socnetv.org
+Vcs-Git: https://github.com/socnetv/app/tree/master/ 
 
 Package: socnetv
 Architecture: any
