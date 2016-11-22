@@ -597,7 +597,7 @@ public:
     void cliqueCreate(const QList<int> &verticesList);
 
     void cliques(QSet<int> R=QSet<int>(), QSet<int> P=QSet<int>(), QSet<int> X=QSet<int>() );
-    bool  cliqueAdd (const QList<int> &list);
+    bool  cliqueAdd (const QList<int> &clique);
     float cliquesContaining(int source, int size=0);
     float cliquesOfSize(int size );
 

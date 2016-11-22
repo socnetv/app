@@ -7311,8 +7311,7 @@ void Graph::writeCliqueCensus(
         const QString fileName, const bool considerWeights)
 {
     qDebug()<< "Graph::writeCliqueCensus() ";
-    cliques();
-    return;
+
     Q_UNUSED(considerWeights);
     QFile file ( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
@@ -7324,10 +7323,8 @@ void Graph::writeCliqueCensus(
     long int N = vertices();
 
     QList<Vertex*>::const_iterator it;
-    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)
-    {
-        (*it)->clearCliques();
-    }
+
+    cliques();
 
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
@@ -7336,18 +7333,51 @@ void Graph::writeCliqueCensus(
     outText << tr("CLIQUE CENSUS (CLQs)") << endl;
     outText << tr("Network name: ")<< graphName()<< endl<<endl;
 
-//    outText << tr("CLIQUE COUNTS BY VERTEX") << endl;
-//    outText << tr("Node")<<"\t"<< tr("2-Vertex") << "\t" << tr("3-Vertex")
-//            << "\t" << tr("4-Vertex") << endl;
 
-//    long int progressCounter = 0;
-//    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
-//        cliquesContaining ((*it)->name());
-//        outText << (*it)->name()<<"\t"<< (*it)->cliques(2)
-//                << "\t" <<  (*it)->cliques(3)
-//                << "\t"<<  (*it)->cliques(4)  <<endl;
-//        emit updateProgressDialog(++progressCounter);
-//    }
+    outText << tr("%1 cliques found:").arg(m_cliques.count()) << endl<< endl ;
+    int cliqueCounter=0;
+    QString listString;
+    long int progressCounter = 0;
+    foreach (QList<int> clique, m_cliques) {
+        listString.truncate(0);
+        while (!clique.empty()) {
+            listString += QString::number (clique.takeFirst());
+            if (!clique.empty()) listString += " ";
+        }
+        outText << ( (cliqueCounter < 10) ? qSetFieldWidth(5) : qSetFieldWidth(4) )<< right
+                << ++cliqueCounter
+                << qSetFieldWidth(4) << left << ":"
+                << qSetFieldWidth(0)
+                << listString << endl;
+    }
+
+    outText << endl<< endl
+            << tr("Actor by clique analysis: Proportion of clique members adjacent")
+            << endl<< endl ;
+
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        outText <<  ( (cliqueCounter < 10) ? qSetFieldWidth(5) : qSetFieldWidth(4) ) << right
+                 << (*it)->name()
+                 << endl ;
+        emit updateProgressDialog(++progressCounter);
+    }
+
+    outText << endl<< endl
+            << tr("Actor by actor analysis: Co-membership matrix:")
+            << endl<< endl ;
+
+    outText << endl<< endl
+            << tr("Hierarchical clustering of overlap matrix: Actors")
+            << endl<< endl ;
+
+    outText << endl<< endl
+            << tr("Clique by clique analysis: Co-membership matrix:")
+            << endl<< endl ;
+
+    outText << endl<< endl
+            << tr("Hierarchical clustering of overlap matrix: Clique")
+            << endl<< endl ;
+
 
 //    outText << endl<< endl << tr("AGGREGATE COUNTS OF CLIQUES")<< endl;
 
@@ -7359,29 +7389,7 @@ void Graph::writeCliqueCensus(
 //            << "\t (max: " << ( N * (N-1) * (N-2) * (N-3)  ) /24  << ")\n";
 
 
-//    outText << endl<< endl << tr("CLIQUE ENUMERATION BY THEIR SIZE")<< endl;
-//    QHash<QString, bool>::const_iterator i;
 
-//    outText << endl << tr("2-Vertex cliques") << endl ;
-
-//    for (i = cliques_2_Vertex.constBegin(); i != cliques_2_Vertex.constEnd(); ++i) {
-//        outText << i.key() << endl;
-//    }
-
-
-//    outText << endl << tr("3-Vertex cliques") << endl ;
-
-//    for (i = cliques_3_Vertex.constBegin(); i != cliques_3_Vertex.constEnd(); ++i) {
-//        outText << i.key() << endl;
-//    }
-
-//    outText << endl << tr("4-Vertex cliques") << endl ;
-
-
-//    for (i = cliques_4_Vertex.constBegin(); i != cliques_4_Vertex.constEnd(); ++i) {
-//        outText << i.key() << endl;
-
-//    }
 
     outText <<"\n\n" ;
     outText << tr("Clique Census Report,\n");
@@ -7399,11 +7407,26 @@ void Graph::writeCliqueCensus(
  * @param list
  * @return
  */
-bool Graph:: cliqueAdd(const QList<int> &list){
-    qDebug() << "*** Graph::cliqueAdd()" <<
-                list.count();
+bool Graph:: cliqueAdd(const QList<int> &clique){
 
-    return false;
+
+    m_cliques.insertMulti(clique.count(), clique);
+
+    qDebug() << "Graph::cliqueAdd() - added clique:"
+             << clique
+             << "of size"
+             << clique.count()
+             << "total cliques:"
+             << m_cliques.count();
+
+    foreach (int actor, clique) {
+       qDebug() << "Graph::cliqueAdd() - actor:"
+                << actor
+                << "index:"
+                << index[actor];
+       m_graph[ index[actor] ]->cliqueAdd(clique);
+    }
+
 }
 
 
@@ -7445,11 +7468,21 @@ void Graph::cliques(QSet<int> R, QSet<int> P, QSet<int> X) {
         X.reserve( V );
         P=verticesSet();
         CLQM.zeroMatrix(V,V);
+        m_cliques.clear();
+        QList<Vertex*>::const_iterator it;
+        for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)     {
+            (*it)->clearCliques();
+        }
+
     }
 
     qDebug() << "Graph::cliques() - check if P and X are both empty";
     if (P.isEmpty() && X.isEmpty()) {
         qDebug() << "Graph::cliques() - P and X are both empty. MAXIMAL clique R=" << R;
+
+        QList<int> clique = R.toList();
+        cliqueAdd(clique);
+
     }
     int v;
     QSet<int> N;
@@ -7459,16 +7492,16 @@ void Graph::cliques(QSet<int> R, QSet<int> P, QSet<int> X) {
     QSet<int>::iterator i = P.begin();
     while( i != P.end()) {
         v = *i;
-        qDebug() << "Graph::cliques() - v=" << v
-                 << " P=" << P << " P.count=" <<P.count()
-                 << " R=" << R
-                 << " X=" << X ;
+        qDebug() << "Graph::cliques() - v:" << v
+                 << " P:" << P << " P.count=" <<P.count()
+                 << " R:" << R
+                 << " X:" << X ;
         N = vertexNeighborhoodList(v).toSet(); //fixme
         QSet<int> addv; addv.insert(v); // dummy set with just v
         temp = R+addv;
         temp1 = P&N;
         temp2 = X&N;
-        qDebug() << "Graph::cliques() - v=" << v
+        qDebug() << "Graph::cliques() - v:" << v
                     << "Recursive call to cliques ( R ⋃ {v}, P ⋂ N(v), X ⋂ N(v) )"
                     << endl << "N(v):" << N
                     << endl << "R ⋃ {v}:" << temp
@@ -7477,17 +7510,17 @@ void Graph::cliques(QSet<int> R, QSet<int> P, QSet<int> X) {
 
         // find all clique extensions of R that contain v
         cliques( R+addv, P&N, X&N );
-        qDebug() << "Graph::cliques() - v=" << v
-                  << "Returned from recursive call. Moving v="<<  v
+        qDebug() << "Graph::cliques() - v:" << v
+                  << "Returned from recursive call. Moving v:"<<  v
                   <<" from P to X to be excluded in the future.";
         // P = P \ v
         i=P.erase(i);    //P-=v;
         // X = X + v
         X.insert(v);
-        qDebug() << "Graph::cliques() - v=" << v << "FINISHED"
-                 << " P=" << P << " P.count=" <<P.count()
-                 << " R=" << R << " R.count=" <<R.count()
-                 << " X=" << X << " X.count=" <<X.count()
+        qDebug() << "Graph::cliques() - v:" << v << "FINISHED"
+                 << " P=" << P << " P.count:" <<P.count()
+                 << " R=" << R << " R.count:" <<R.count()
+                 << " X=" << X << " X.count:" <<X.count()
                  << " Continuing with next v in P";
         //++i;
     }

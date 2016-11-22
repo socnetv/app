@@ -259,7 +259,7 @@ public:
 
     int cliques (const int &ofSize);
 
-    void cliqueAdd (const int &ofSize, const QList<int> &clique);
+    void cliqueAdd (const QList<int> &clique);
 
     void clearCliques() {
         m_cliques.clear();

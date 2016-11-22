@@ -860,13 +860,23 @@ int Vertex::cliques (const int &ofSize)
     return m_cliques.values( ofSize ).size();
 }
 
-void Vertex::cliqueAdd (const int &ofSize, const QList<int> &clique) {
-    m_cliques.insertMulti(ofSize, clique);
+/**
+ * @brief Vertex::cliqueAdd
+ * @param clique
+ */
+void Vertex::cliqueAdd (const QList<int> &clique) {
+    qDebug()<<"Vertex::cliqueAdd() - vertex:"
+           << name()
+           << "in a clique with:"
+           << clique;
+    m_cliques.insertMulti(clique.size(), clique);
 }
 
 
 
-
+/**
+ * @brief Vertex::clearPs
+ */
 void Vertex::clearPs()	{  
 	myPs.clear();
 }
