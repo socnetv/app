@@ -7336,15 +7336,19 @@ void Graph::writeCliqueCensus(
 
     outText << tr("%1 cliques found:").arg(m_cliques.count()) << endl<< endl ;
     int cliqueCounter=0;
+    int cliqueSize = 0;
+    int actor2 = 0, actor1=0;
+    float numerator = 0;
     QString listString;
     long int progressCounter = 0;
+
     foreach (QList<int> clique, m_cliques) {
         listString.truncate(0);
         while (!clique.empty()) {
             listString += QString::number (clique.takeFirst());
             if (!clique.empty()) listString += " ";
         }
-        outText << ( (cliqueCounter < 10) ? qSetFieldWidth(5) : qSetFieldWidth(4) )<< right
+        outText << ( (cliqueCounter < 9) ? qSetFieldWidth(5) : qSetFieldWidth(4) )<< right
                 << ++cliqueCounter
                 << qSetFieldWidth(4) << left << ":"
                 << qSetFieldWidth(0)
@@ -7356,9 +7360,29 @@ void Graph::writeCliqueCensus(
             << endl<< endl ;
 
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        actor1 = (*it)->name();
         outText <<  ( (cliqueCounter < 10) ? qSetFieldWidth(5) : qSetFieldWidth(4) ) << right
-                 << (*it)->name()
-                 << endl ;
+                 << (*it)->name() << qSetFieldWidth(3) <<"" << qSetFieldWidth(7) << fixed;
+
+        foreach (QList<int> clique, m_cliques) {
+            numerator = 0;
+            if (clique.contains( actor1 )){
+                outText << "1.000" ;
+            }
+            else {
+                cliqueSize = clique.size();
+                while (!clique.empty()) {
+                    actor2 = clique.takeFirst();
+                    if (  edgeExists( actor1, actor2) ) {
+                        numerator++;
+                    }
+
+                }
+                outText << qSetRealNumberPrecision(3) << (numerator/cliqueSize);
+            }
+        }
+        outText << endl ;
+
         emit updateProgressDialog(++progressCounter);
     }
 
@@ -7431,7 +7455,7 @@ bool Graph:: cliqueAdd(const QList<int> &clique){
 
 
 /**
- * @brief Graph::cliques
+ * @brief Graph::cliques()
  * Finds all maximal cliques in an undirected (?) graph.
  * Implements the Bron–Kerbosch algorithm, a recursive backtracking algorithm
  * that searches for all maximal cliques in a given graph G.
