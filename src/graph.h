@@ -72,6 +72,10 @@ static const int GRAPH_CHANGED_EDGES = 12;
 static const int GRAPH_CHANGED_VERTICES_AND_EDGES = 13;
 static const int GRAPH_CHANGED_NEW = 14;
 
+static const int CLUSTERING_SINGLE_LINKAGE = 0; //"single-link" or minimum
+static const int CLUSTERING_COMPLETE_LINKAGE = 1; // "complete-link or maximum
+static const int CLUSTERING_AVERAGE_LINKAGE = 2;
+
 
 class QPointF;
 
@@ -601,7 +605,7 @@ public:
     int graphCliquesContaining(const int &actor, const int &size=0);
     int graphCliquesOfSize(const int &size );
 
-    void graphClusteringHierarchical(const QString &type, Matrix &DSM);
+    void graphClusteringHierarchical(const int &type, Matrix &DSM);
     float clusteringCoefficientLocal(const long int &v1);
     float clusteringCoefficient (const bool updateProgress=false);
 

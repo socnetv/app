@@ -7438,7 +7438,7 @@ void Graph::writeCliqueCensus(
     outText << endl<< endl
             << tr("Hierarchical clustering of overlap matrix: Actors")
             << endl<< endl ;
-    graphClusteringHierarchical("single-link", CLQM);
+    graphClusteringHierarchical(CLUSTERING_SINGLE_LINKAGE, CLQM);
 
     emit updateProgressDialog(3 * N / 5);
     outText << endl<< endl
@@ -7654,7 +7654,7 @@ int Graph::graphCliquesOfSize(const int &size){
  * @param DSM
 
  */
-void Graph::graphClusteringHierarchical(const QString &type, Matrix &DSM) {
+void Graph::graphClusteringHierarchical(const int &type, Matrix &DSM) {
     int N = DSM.rows();
     qDebug() << "Graph::graphClusteringHierarchical() - type:"
              << type
@@ -7680,13 +7680,13 @@ void Graph::graphClusteringHierarchical(const QString &type, Matrix &DSM) {
 
 
     switch (type) {
-    case 0: //"single-link":
+    case CLUSTERING_SINGLE_LINKAGE: //"single-link":
 
         break;
-    case 1: // "complete-link":
+    case CLUSTERING_COMPLETE_LINKAGE: // "complete-link":
 
         break;
-    case 2: //"average-link":
+    case CLUSTERING_AVERAGE_LINKAGE: //"average-link":
 
         break;
     default:
