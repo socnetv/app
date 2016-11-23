@@ -7304,6 +7304,8 @@ void Graph::cliqueCreate(const QList<int> &vList) {
 }
 
 
+
+
 /**
 *	Writes the number of cliques (triangles) of each vertex into a given file.
 */
@@ -7343,26 +7345,46 @@ void Graph::writeCliqueCensus(
     long int progressCounter = 0;
 
     foreach (QList<int> clique, m_cliques) {
+        ++cliqueCounter;
         listString.truncate(0);
         while (!clique.empty()) {
             listString += QString::number (clique.takeFirst());
             if (!clique.empty()) listString += " ";
         }
-        outText << ( (cliqueCounter < 9) ? qSetFieldWidth(5) : qSetFieldWidth(4) )<< right
-                << ++cliqueCounter
+        outText << ( (cliqueCounter < 10) ? qSetFieldWidth(7) : qSetFieldWidth(6) )<< right
+                << cliqueCounter
                 << qSetFieldWidth(4) << left << ":"
                 << qSetFieldWidth(0)
-                << listString << endl;
+                << listString
+                << endl;
     }
 
     outText << endl<< endl
             << tr("Actor by clique analysis: Proportion of clique members adjacent")
             << endl<< endl ;
 
+     outText << qSetFieldWidth(11) << fixed << "";
+     outText << qSetFieldWidth(10) << fixed;
+     for (int listIndex=0; listIndex<cliqueCounter; listIndex++ ) {
+         if ( listIndex+1 > 9 ) {
+             outText << qFloor ((listIndex+1) / 10 ) ;
+         }
+         else {
+             outText << "";
+         }
+     }
+     outText << qSetFieldWidth(0) << endl;
+     outText << qSetFieldWidth(20) << fixed << "";
+     outText << qSetFieldWidth(10) << fixed;
+    for (int listIndex=0; listIndex<cliqueCounter; listIndex++ ) {
+        outText << listIndex+1;
+    }
+    outText << qSetFieldWidth(0)<< endl;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         actor1 = (*it)->name();
-        outText <<  ( (cliqueCounter < 10) ? qSetFieldWidth(5) : qSetFieldWidth(4) ) << right
-                 << (*it)->name() << qSetFieldWidth(3) <<"" << qSetFieldWidth(7) << fixed;
+
+        outText <<  ( (actor1 < 10) ? qSetFieldWidth(7) : qSetFieldWidth(6) ) << fixed
+                 << actor1 << qSetFieldWidth(3) <<"" << qSetFieldWidth(7) << fixed;
 
         foreach (QList<int> clique, m_cliques) {
             numerator = 0;
@@ -7431,8 +7453,7 @@ void Graph::writeCliqueCensus(
  * @param list
  * @return
  */
-bool Graph:: cliqueAdd(const QList<int> &clique){
-
+void Graph:: cliqueAdd(const QList<int> &clique){
 
     m_cliques.insertMulti(clique.count(), clique);
 
@@ -7554,42 +7575,38 @@ void Graph::cliques(QSet<int> R, QSet<int> P, QSet<int> X) {
 }
 
 /**
-    Calculates and returns the number of cliques which include given vertex 'source'
-    A clique is a complete subgraph
+    Returns the number of maximal cliques which include a given actor
 */	
-float Graph:: cliquesContaining(int source, int size){
-    qDebug() << "*** Graph::cliquesContaining(" <<  source << ")";
+int Graph::cliquesContaining(const int &actor, const int &size){
+    qDebug() << "*** Graph::cliquesContaining(" <<  actor << ")";
+    int cliqueCounter = 0;
+    foreach (QList<int> clique, m_cliques) {
+        if ( size!=0  )  {
+            if ( clique.size() != size)
+                continue;
+        }
+        if (clique.contains( actor )){
+            cliqueCounter++;
+        }
+    }
+    return cliqueCounter;
 
-    //TODO
 }
 
 
 
 /**
  * @brief Graph::cliquesOfSize
- *  Calculates and returns the total number of cliques in the graph.
- *  Calls cliquesContaining(v1) to calculate the number of cliques of each vertex v1,
- *  sums the total number, then divides it by 3 because each vertex has been counted three times.
+ * Returns the number of maximal cliques of a given size
  * @param size
  * @return
  */
-float Graph::cliquesOfSize(int size){
-    qDebug("Graph::cliquesOfSize()");
-    float cliques=0;
+int Graph::cliquesOfSize(const int &size){
+    qDebug() << "Graph::cliquesOfSize()";
+    int cliqueCounter = 0;
 
-    QList<Vertex*>::const_iterator v1;
+    return m_cliques.values(size).count();
 
-    for (v1=m_graph.cbegin(); v1!=m_graph.cend(); ++v1)
-    {
-        cliques += cliquesContaining( (*v1) -> name(), size );
-    }
-    cliques = cliques / size;
-
-    //actually we can just return cliques_*_Vertex.count();
-
-    qDebug() << "Graph::cliquesOfSize - Dividing by size we get "<< cliques ;
-
-    return cliques ;
 }
 
 

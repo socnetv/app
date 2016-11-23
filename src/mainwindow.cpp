@@ -1759,11 +1759,11 @@ void MainWindow::initActions(){
                                            "of Distances matrix is not zero.\n "));
     connect(reachabilityMatrixAct, SIGNAL(triggered()), this, SLOT(slotReachabilityMatrix() )  );
 
-    cliquesAct = new QAction(QIcon(":/images/clique.png"), tr("Clique Census (clique number <= 4) "),this);
+    cliquesAct = new QAction(QIcon(":/images/clique.png"), tr("Clique Census"),this);
     cliquesAct-> setShortcut(Qt::CTRL + Qt::Key_T);
-    cliquesAct->setStatusTip(tr("Compute the clique census for all actors and display it."));
+    cliquesAct->setStatusTip(tr("Compute the clique census: find all maximal connected subgraphs."));
     cliquesAct->setWhatsThis(tr("Clique Census\n\n "
-                                "Computes aggregate counts of cliques (maximal connected subgraphs), "
+                                "Produces the census of network cliques (maximal connected subgraphs), "
                                 "along with disaggregation by actor and co-membership information. "));
     connect(cliquesAct, SIGNAL(triggered()), this, SLOT(slotCliqueCensus() )  );
 
@@ -9609,7 +9609,7 @@ void MainWindow::slotClusteringCoefficient (){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    TextEditor *ed = new TextEditor(fn,this);
     ed->show();
 
     statusMessage("Clustering Coefficients saved as: " + fn);
