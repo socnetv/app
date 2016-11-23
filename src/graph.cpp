@@ -7307,8 +7307,11 @@ void Graph::cliqueCreate(const QList<int> &vList) {
 
 
 /**
-*	Writes the number of cliques (triangles) of each vertex into a given file.
-*/
+ * @brief Graph::writeCliqueCensus
+ * Writes the number of cliques (maximal connected subgraphs) of each vertex into a given file.
+ * @param fileName
+ * @param considerWeights
+ */
 void Graph::writeCliqueCensus(
         const QString fileName, const bool considerWeights)
 {
@@ -7324,7 +7327,7 @@ void Graph::writeCliqueCensus(
 
     long int N = vertices();
 
-    QList<Vertex*>::const_iterator it;
+    QList<Vertex*>::const_iterator it, it2;
 
     cliques();
 
@@ -7336,10 +7339,10 @@ void Graph::writeCliqueCensus(
     outText << tr("Network name: ")<< graphName()<< endl<<endl;
 
 
-    outText << tr("%1 cliques found:").arg(m_cliques.count()) << endl<< endl ;
+    outText << tr("%1 maximal cliques found:").arg(m_cliques.count()) << endl<< endl ;
     int cliqueCounter=0;
     int cliqueSize = 0;
-    int actor2 = 0, actor1=0;
+    int actor2 = 0, actor1=0, index1=0, index2=0;
     float numerator = 0;
     QString listString;
     long int progressCounter = 0;
@@ -7361,25 +7364,17 @@ void Graph::writeCliqueCensus(
 
     outText << endl<< endl
             << tr("Actor by clique analysis: Proportion of clique members adjacent")
-            << endl<< endl ;
+            << endl ;
 
-     outText << qSetFieldWidth(11) << fixed << "";
-     outText << qSetFieldWidth(10) << fixed;
-     for (int listIndex=0; listIndex<cliqueCounter; listIndex++ ) {
-         if ( listIndex+1 > 9 ) {
-             outText << qFloor ((listIndex+1) / 10 ) ;
-         }
-         else {
-             outText << "";
-         }
-     }
-     outText << qSetFieldWidth(0) << endl;
-     outText << qSetFieldWidth(20) << fixed << "";
-     outText << qSetFieldWidth(10) << fixed;
+
+    outText << qSetFieldWidth(0) << endl;
+     outText << qSetFieldWidth(11) << fixed << right << "";
     for (int listIndex=0; listIndex<cliqueCounter; listIndex++ ) {
-        outText << listIndex+1;
+        outText <<  ( ( (listIndex+1) < 10) ? qSetFieldWidth(10) : qSetFieldWidth(9) )
+                 << fixed
+                 << (listIndex+1);
     }
-    outText << qSetFieldWidth(0)<< endl;
+    outText << qSetFieldWidth(7)<< endl;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         actor1 = (*it)->name();
 
@@ -7389,7 +7384,7 @@ void Graph::writeCliqueCensus(
         foreach (QList<int> clique, m_cliques) {
             numerator = 0;
             if (clique.contains( actor1 )){
-                outText << "1.000" ;
+                outText << qSetRealNumberPrecision(3) << "1.000" ;
             }
             else {
                 cliqueSize = clique.size();
@@ -7405,37 +7400,59 @@ void Graph::writeCliqueCensus(
         }
         outText << endl ;
 
-        emit updateProgressDialog(++progressCounter);
+
     }
+    emit updateProgressDialog(N / 5);
+
 
     outText << endl<< endl
-            << tr("Actor by actor analysis: Co-membership matrix:")
-            << endl<< endl ;
+            << tr("Actor by actor analysis: Co-membership matrix")
+            << endl;
+
+    outText << qSetFieldWidth(0) << endl;
+    outText << qSetFieldWidth(11) << fixed << right << "";
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        actor1 = (*it)->name();
+        outText <<  ( (actor1 < 10) ? qSetFieldWidth(7) : qSetFieldWidth(6) ) << fixed
+                 << actor1 ;
+    }
+    outText << qSetFieldWidth(0) << endl;
+
+    outText << qSetFieldWidth(7)<< endl;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        actor1 = (*it)->name();
+        index1 = index[actor1];
+        outText <<  ( (actor1 < 10) ? qSetFieldWidth(7) : qSetFieldWidth(6) ) << fixed
+                 << actor1 << qSetFieldWidth(3) <<"" << qSetFieldWidth(7) << fixed;
+
+        for (it2=m_graph.cbegin(); it2!=m_graph.cend(); ++it2){
+            actor2 =  (*it2)->name();
+            index2 = index[actor2];
+            outText << qSetRealNumberPrecision(0)<< CLQM.item(index1, index2) ;
+        }
+
+        outText << endl ;
+
+        emit updateProgressDialog(2 * N / 5);
+    }
 
     outText << endl<< endl
             << tr("Hierarchical clustering of overlap matrix: Actors")
             << endl<< endl ;
 
+    emit updateProgressDialog(3 * N / 5);
     outText << endl<< endl
-            << tr("Clique by clique analysis: Co-membership matrix:")
+            << tr("Clique by clique analysis: Co-membership matrix")
             << endl<< endl ;
+
+    emit updateProgressDialog(4 * N / 5);
 
     outText << endl<< endl
             << tr("Hierarchical clustering of overlap matrix: Clique")
             << endl<< endl ;
 
 
-//    outText << endl<< endl << tr("AGGREGATE COUNTS OF CLIQUES")<< endl;
-
-//    outText << "2-Vertex cliques" <<"\t " << cliques_2_Vertex.count()
-//            << "\t (max: " << ( N * (N-1)  ) /2  << ")\n";
-//    outText << "3-Vertex cliques" <<"\t " << cliques_3_Vertex.count()
-//            << "\t (max: " << ( N * (N-1) * (N-2)  ) /6  << ")\n";
-//    outText << "4-Vertex cliques" <<"\t " << cliques_4_Vertex.count()
-//            << "\t (max: " << ( N * (N-1) * (N-2) * (N-3)  ) /24  << ")\n";
-
-
-
+    emit updateProgressDialog(N);
 
     outText <<"\n\n" ;
     outText << tr("Clique Census Report,\n");
@@ -7463,13 +7480,28 @@ void Graph:: cliqueAdd(const QList<int> &clique){
              << clique.count()
              << "total cliques:"
              << m_cliques.count();
-
-    foreach (int actor, clique) {
-       qDebug() << "Graph::cliqueAdd() - actor:"
-                << actor
+    int index1=0, index2=0, cliqueCount=0;
+    foreach (int actor1, clique) {
+       index1 = index[actor1];
+       qDebug() << "Graph::cliqueAdd() - updating cliques in actor1:"
+                << actor1
                 << "index:"
-                << index[actor];
-       m_graph[ index[actor] ]->cliqueAdd(clique);
+                << index1;
+       m_graph[ index1 ]->cliqueAdd(clique);
+       foreach (int actor2, clique) {
+           index2 = index[actor2];
+           cliqueCount = CLQM.item(index1, index2);
+           CLQM.setItem( index1, index2, ( cliqueCount + 1)  );
+           qDebug() << "Graph::cliqueAdd() - upd. co-membership matrix CLQM"
+                    << "actor1:"
+                    << actor1
+                    << "actor2:"
+                    << actor2
+                    <<"old matrix element: ("
+                    << index1<<","<<index2 <<")="<<cliqueCount
+                    <<"upd:"
+                    << CLQM.item(index1, index2);
+       }
     }
 
 }
@@ -7529,6 +7561,7 @@ void Graph::cliques(QSet<int> R, QSet<int> P, QSet<int> X) {
         cliqueAdd(clique);
 
     }
+
     int v;
     QSet<int> N;
 
