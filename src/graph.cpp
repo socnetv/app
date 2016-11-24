@@ -7236,8 +7236,8 @@ void Graph::writeTriadCensus(
 
     emit statusMessage ( (tr("Conducting triad census. Please wait....")) );
     if (graphModified() || !calculatedTriad) {
-        if (!triadCensus()){
-            qDebug() << "Error in triadCensus(). Exiting...";
+        if (!graphTriadCensus()){
+            qDebug() << "Error in graphTriadCensus(). Exiting...";
             file.close();
             return;
         }
@@ -7329,7 +7329,7 @@ void Graph::writeCliqueCensus(
 
     QList<Vertex*>::const_iterator it, it2;
 
-    cliques();
+    graphCliques();
 
     QTextStream outText ( &file ); outText.setCodec("UTF-8");
 
@@ -7339,13 +7339,12 @@ void Graph::writeCliqueCensus(
     outText << tr("Network name: ")<< graphName()<< endl<<endl;
 
 
-    outText << tr("%1 maximal cliques found:").arg(m_cliques.count()) << endl<< endl ;
+    outText << tr("%1 maximal cliques found (ordered by size):").arg(m_cliques.count()) << endl<< endl ;
     int cliqueCounter=0;
     int cliqueSize = 0;
     int actor2 = 0, actor1=0, index1=0, index2=0;
     float numerator = 0;
     QString listString;
-    long int progressCounter = 0;
 
     foreach (QList<int> clique, m_cliques) {
         ++cliqueCounter;
@@ -7439,6 +7438,7 @@ void Graph::writeCliqueCensus(
     outText << endl<< endl
             << tr("Hierarchical clustering of overlap matrix: Actors")
             << endl<< endl ;
+    graphClusteringHierarchical(CLUSTERING_SINGLE_LINKAGE, CLQM);
 
     emit updateProgressDialog(3 * N / 5);
     outText << endl<< endl
@@ -7466,15 +7466,15 @@ void Graph::writeCliqueCensus(
 
 
 /**
- * @brief Graph::cliqueAdd
+ * @brief Graph::graphCliqueAdd
  * @param list
  * @return
  */
-void Graph:: cliqueAdd(const QList<int> &clique){
+void Graph:: graphCliqueAdd(const QList<int> &clique){
 
     m_cliques.insertMulti(clique.count(), clique);
 
-    qDebug() << "Graph::cliqueAdd() - added clique:"
+    qDebug() << "Graph::graphCliqueAdd() - added clique:"
              << clique
              << "of size"
              << clique.count()
@@ -7483,7 +7483,7 @@ void Graph:: cliqueAdd(const QList<int> &clique){
     int index1=0, index2=0, cliqueCount=0;
     foreach (int actor1, clique) {
        index1 = index[actor1];
-       qDebug() << "Graph::cliqueAdd() - updating cliques in actor1:"
+       qDebug() << "Graph::graphCliqueAdd() - updating cliques in actor1:"
                 << actor1
                 << "index:"
                 << index1;
@@ -7492,7 +7492,7 @@ void Graph:: cliqueAdd(const QList<int> &clique){
            index2 = index[actor2];
            cliqueCount = CLQM.item(index1, index2);
            CLQM.setItem( index1, index2, ( cliqueCount + 1)  );
-           qDebug() << "Graph::cliqueAdd() - upd. co-membership matrix CLQM"
+           qDebug() << "Graph::graphCliqueAdd() - upd. co-membership matrix CLQM"
                     << "actor1:"
                     << actor1
                     << "actor2:"
@@ -7508,7 +7508,7 @@ void Graph:: cliqueAdd(const QList<int> &clique){
 
 
 /**
- * @brief Graph::cliques()
+ * @brief Graph::graphCliques()
  * Finds all maximal cliques in an undirected (?) graph.
  * Implements the Bron–Kerbosch algorithm, a recursive backtracking algorithm
  * that searches for all maximal cliques in a given graph G.
@@ -7534,11 +7534,11 @@ void Graph:: cliqueAdd(const QList<int> &clique){
  * @param P
  * @param X
  */
-void Graph::cliques(QSet<int> R, QSet<int> P, QSet<int> X) {
+void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X) {
 
-    qDebug () << "Graph::cliques() - check if we are at initialization step";
+    qDebug () << "Graph::graphCliques() - check if we are at initialization step";
     if (R.isEmpty() && P.isEmpty() && X.isEmpty()){
-        qDebug() << "Graph::cliques() - initialization step. R, X empty and P=V(G)";
+        qDebug() << "Graph::graphCliques() - initialization step. R, X empty and P=V(G)";
         int V = vertices() ;
         P.reserve( V );
         R.reserve( V );
@@ -7550,15 +7550,14 @@ void Graph::cliques(QSet<int> R, QSet<int> P, QSet<int> X) {
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it)     {
             (*it)->clearCliques();
         }
-
     }
 
-    qDebug() << "Graph::cliques() - check if P and X are both empty";
+    qDebug() << "Graph::graphCliques() - check if P and X are both empty";
     if (P.isEmpty() && X.isEmpty()) {
-        qDebug() << "Graph::cliques() - P and X are both empty. MAXIMAL clique R=" << R;
+        qDebug() << "Graph::graphCliques() - P and X are both empty. MAXIMAL clique R=" << R;
 
         QList<int> clique = R.toList();
-        cliqueAdd(clique);
+        graphCliqueAdd(clique);
 
     }
 
@@ -7570,7 +7569,7 @@ void Graph::cliques(QSet<int> R, QSet<int> P, QSet<int> X) {
     QSet<int>::iterator i = P.begin();
     while( i != P.end()) {
         v = *i;
-        qDebug() << "Graph::cliques() - v:" << v
+        qDebug() << "Graph::graphCliques() - v:" << v
                  << " P:" << P << " P.count=" <<P.count()
                  << " R:" << R
                  << " X:" << X ;
@@ -7579,23 +7578,23 @@ void Graph::cliques(QSet<int> R, QSet<int> P, QSet<int> X) {
         temp = R+addv;
         temp1 = P&N;
         temp2 = X&N;
-        qDebug() << "Graph::cliques() - v:" << v
-                    << "Recursive call to cliques ( R ⋃ {v}, P ⋂ N(v), X ⋂ N(v) )"
+        qDebug() << "Graph::graphCliques() - v:" << v
+                    << "Recursive call to graphCliques ( R ⋃ {v}, P ⋂ N(v), X ⋂ N(v) )"
                     << endl << "N(v):" << N
                     << endl << "R ⋃ {v}:" << temp
                     << endl << "P ⋂ N(v):" << temp1
                     << endl << "X ⋂ N(v):" << temp2;
 
         // find all clique extensions of R that contain v
-        cliques( R+addv, P&N, X&N );
-        qDebug() << "Graph::cliques() - v:" << v
+        graphCliques( R+addv, P&N, X&N );
+        qDebug() << "Graph::graphCliques() - v:" << v
                   << "Returned from recursive call. Moving v:"<<  v
                   <<" from P to X to be excluded in the future.";
         // P = P \ v
         i=P.erase(i);    //P-=v;
         // X = X + v
         X.insert(v);
-        qDebug() << "Graph::cliques() - v:" << v << "FINISHED"
+        qDebug() << "Graph::graphCliques() - v:" << v << "FINISHED"
                  << " P=" << P << " P.count:" <<P.count()
                  << " R=" << R << " R.count:" <<R.count()
                  << " X=" << X << " X.count:" <<X.count()
@@ -7610,8 +7609,8 @@ void Graph::cliques(QSet<int> R, QSet<int> P, QSet<int> X) {
 /**
     Returns the number of maximal cliques which include a given actor
 */	
-int Graph::cliquesContaining(const int &actor, const int &size){
-    qDebug() << "*** Graph::cliquesContaining(" <<  actor << ")";
+int Graph::graphCliquesContaining(const int &actor, const int &size){
+    qDebug() << "*** Graph::graphCliquesContaining(" <<  actor << ")";
     int cliqueCounter = 0;
     foreach (QList<int> clique, m_cliques) {
         if ( size!=0  )  {
@@ -7629,16 +7628,70 @@ int Graph::cliquesContaining(const int &actor, const int &size){
 
 
 /**
- * @brief Graph::cliquesOfSize
+ * @brief Graph::graphCliquesOfSize
  * Returns the number of maximal cliques of a given size
  * @param size
  * @return
  */
-int Graph::cliquesOfSize(const int &size){
-    qDebug() << "Graph::cliquesOfSize()";
-    int cliqueCounter = 0;
+int Graph::graphCliquesOfSize(const int &size){
+    qDebug() << "Graph::graphCliquesOfSize()";
 
     return m_cliques.values(size).count();
+
+}
+
+
+/**
+ * @brief Graph::graphClusteringHierarchical
+ * Performs an hierarchical clustering process (Johnson, 167) on the given
+ * NxN distance or similarity matrix DSM.
+* The type parameter defines how to compute distances (similarities) between
+ * a new cluster and each of the old ones. Valid values can be:
+ * - 0: "single-link" or "connectedness" or "minimum"
+ * - 1: "complete-link" or "diameter" or "maximum"
+ * - 2: "average-link"
+ * @param type
+ * @param DSM
+
+ */
+void Graph::graphClusteringHierarchical(const int &type, Matrix &DSM) {
+    int N = DSM.rows();
+    qDebug() << "Graph::graphClusteringHierarchical() - type:"
+             << type
+             << "matrix DSM.size:"
+             << N;
+    m_clusters.clear();
+
+    //1. Assign each of the N items to its own cluster. We have N unit clusters
+    QList<int> list;
+    list << 0;
+    for (int i=0; i<N; i++){
+        list[0] = i+1;
+        m_clusters.insert("Level_0_"+QString::number(i+1), list);
+    }
+
+    //2. Find the most similar pair of clusters. Merge them into one cluster.
+
+
+
+    //3. Compute distances or similarities between the new cluster and the old clusters
+
+    //4. Repeat steps 2 and 3 until all item are clustered to a single cluster size N
+
+
+    switch (type) {
+    case CLUSTERING_SINGLE_LINKAGE: //"single-link":
+
+        break;
+    case CLUSTERING_COMPLETE_LINKAGE: // "complete-link":
+
+        break;
+    case CLUSTERING_AVERAGE_LINKAGE: //"average-link":
+
+        break;
+    default:
+        break;
+    }
 
 }
 
@@ -7884,19 +7937,19 @@ float Graph::clusteringCoefficient (const bool updateProgress){
 
 
 /**
- * @brief Graph::triadCensus
+ * @brief Graph::graphTriadCensus
  *  Conducts a triad census and updates QList::triadTypeFreqs,
  * 		which is the list carrying all triad type frequencies
  *  Complexity:O(n!)
  * @return
  */
-bool Graph::triadCensus(){
+bool Graph::graphTriadCensus(){
     int mut=0, asy=0, nul =0;
     int temp_mut=0, temp_asy=0, temp_nul =0, counter_021=0;
     int ver1, ver2, ver3;
     int progressCounter = 0;
 
-    qDebug() << "Graph::triadCensus()";
+    qDebug() << "Graph::graphTriadCensus()";
     /*
      * QList::triadTypeFreqs stores triad type frequencies with the following order:
      * 0	1	2	3		4	5	6	7	8		9	10	11	12		13	14	15

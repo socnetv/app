@@ -72,6 +72,10 @@ static const int GRAPH_CHANGED_EDGES = 12;
 static const int GRAPH_CHANGED_VERTICES_AND_EDGES = 13;
 static const int GRAPH_CHANGED_NEW = 14;
 
+static const int CLUSTERING_SINGLE_LINKAGE = 0; //"single-link" or minimum
+static const int CLUSTERING_COMPLETE_LINKAGE = 1; // "complete-link or maximum
+static const int CLUSTERING_AVERAGE_LINKAGE = 2;
+
 
 class QPointF;
 
@@ -596,15 +600,16 @@ public:
 
     void cliqueCreate(const QList<int> &verticesList);
 
-    void cliques(QSet<int> R=QSet<int>(), QSet<int> P=QSet<int>(), QSet<int> X=QSet<int>() );
-    void  cliqueAdd (const QList<int> &clique);
-    int cliquesContaining(const int &actor, const int &size=0);
-    int cliquesOfSize(const int &size );
+    void graphCliques(QSet<int> R=QSet<int>(), QSet<int> P=QSet<int>(), QSet<int> X=QSet<int>() );
+    void graphCliqueAdd (const QList<int> &clique);
+    int graphCliquesContaining(const int &actor, const int &size=0);
+    int graphCliquesOfSize(const int &size );
 
+    void graphClusteringHierarchical(const int &type, Matrix &DSM);
     float clusteringCoefficientLocal(const long int &v1);
     float clusteringCoefficient (const bool updateProgress=false);
 
-    bool triadCensus();
+    bool graphTriadCensus();
     void triadType_examine_MAN_label(int, int, int, Vertex*,  Vertex*, Vertex* );
     //	void eccentr_JordanCenter(); 				// TODO
 
@@ -740,7 +745,8 @@ private:
     QHash <int, int> m_vertexPairsNotConnected;
     QHash <int, int> m_vertexPairsUnilaterallyConnected;
 
-    QHash <int, L_int > m_cliques;
+    QMap <int, L_int > m_cliques;
+    QMap <QString, L_int> m_clusters;
 
     Matrix  TM, DM, sumM, invAM, AM, invM;
     Matrix XM, XSM, XRM, CLQM;
