@@ -313,6 +313,7 @@ public slots:
     void slotReachabilityMatrix();
     void slotConnectivity();
 
+    void slotClusteringHierarchical();
     void slotCliqueCensus();
     void slotClusteringCoefficient();
     void slotTriadCensus();
@@ -433,6 +434,7 @@ private:
     QMenu *importSubMenu, *exportSubMenu, *editMenu, *statMenu,  *helpMenu;
     QMenu *optionsMenu, *colorOptionsMenu, *edgeOptionsMenu, *nodeOptionsMenu, *viewOptionsMenu;
     QMenu *editNodeMenu, *editEdgeMenu, *centrlMenu, *layoutMenu;
+    QMenu *clusterAnalysisMenu;
     QMenu *networkMenu, *randomNetworkMenu, *filterMenu, *recentFilesSubMenu;
     QMenu *randomLayoutMenu, *circleLayoutMenu, *levelLayoutMenu, *physicalLayoutMenu;
     QMenu *colorationMenu;
@@ -490,6 +492,7 @@ private:
             *distanceMatrixAct, *geodesicsMatrixAct, *diameterAct, *eccentricityAct;
     QAction *walksAct,*totalWalksAct, *reachabilityMatrixAct, *connectivityAct;
     QAction *cliquesAct, *clusteringCoefAct, *triadCensusAct, *invertAdjMatrixAct;
+    QAction *clusteringHierarchicalAct;
     QAction *cDegreeAct, *cInDegreeAct, *cClosenessAct, *cInfluenceRangeClosenessAct,
             *cBetweennessAct, *cInformationAct, *cPageRankAct, *cStressAct,
             *cPowerAct, *cEccentAct, *cProximityPrestigeAct;

@@ -1759,6 +1759,32 @@ void MainWindow::initActions(){
                                            "of Distances matrix is not zero.\n "));
     connect(reachabilityMatrixAct, SIGNAL(triggered()), this, SLOT(slotReachabilityMatrix() )  );
 
+
+
+    clusteringHierarchicalAct = new QAction(QIcon(":/images/clusteringhierarchical.png"), tr("Hierarchical clustering"),this);
+    clusteringHierarchicalAct-> setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_C);
+    clusteringHierarchicalAct->setStatusTip(tr("Perform agglomerative cluster analysis of the actors in the social network"));
+    clusteringHierarchicalAct->setWhatsThis(
+                tr("Hierarchical clustering\n\n "
+                   "Hierarchical clustering (or hierarchical cluster analysis, HCA) "
+                   "is a method of cluster analysis which builds a hierarchy "
+                   "of clusters. In SNA context these clusters consist of network actors. \n"
+                   "This method takes the distance matrix as input and uses "
+                   "the Agglomerative \"bottom up\" approach where each "
+                   "actor starts in its own cluster. Gradually, pairs of clusters "
+                   "are merged as we moves up the hierarchy."
+
+                   "To decide which clusters should be combined at each level, a measure of "
+                   "dissimilarity between sets of observations is required. "
+                   "This measure consists of a metric for the distance between actors "
+                   "(i.e. manhattan distance) and a linkage criterion (i.e. single-linkage clustering). "
+
+                   "Note that the complexity of agglomerative clustering is O( n^2 log(n) ), "
+                   "therefore is too slow for large data sets."
+                   ));
+    connect(clusteringHierarchicalAct, SIGNAL(triggered()), this, SLOT(slotClusteringHierarchical() )  );
+
+
     cliquesAct = new QAction(QIcon(":/images/clique.png"), tr("Clique Census"),this);
     cliquesAct-> setShortcut(Qt::CTRL + Qt::Key_T);
     cliquesAct->setStatusTip(tr("Compute the clique census: find all maximal connected subgraphs."));
@@ -2373,6 +2399,10 @@ void MainWindow::initMenuBar() {
     statMenu -> addAction (reachabilityMatrixAct);
 
     statMenu -> addSeparator();
+    clusterAnalysisMenu = new QMenu(tr("Cluster Analysis..."));
+    clusterAnalysisMenu -> setIcon(QIcon(":/images/clusteranalysis.png"));
+    statMenu -> addMenu(clusterAnalysisMenu);
+    clusterAnalysisMenu -> addAction (clusteringHierarchicalAct);
     statMenu -> addAction (cliquesAct);
     statMenu -> addAction (clusteringCoefAct);
 
@@ -9097,8 +9127,9 @@ void MainWindow::askAboutWeights(){
         switch( QMessageBox::information
                 ( this, "Edge weights and Distances",
                   tr("Inverse edge weights during calculations? (Default: Yes)?\n\n"
-                     "If the weights denote cost (i.e. ), press No, since the "
-                     "distance between two nodes should be the quickest or cheaper one. \n\n"
+                     "If the weights denote cost or real distances (i.e. miles between cities), "
+                     "press No, since the distance between two nodes should be "
+                     "the quickest or cheaper one. \n\n"
                      "If the weights denote value or strength (i.e. votes or interaction), "
                      "press Yes to inverse the weights, since the distance between two "
                      "nodes should be the most valuable one."),
@@ -9554,6 +9585,83 @@ void MainWindow::slotReachabilityMatrix(){
 }
 
 
+/**
+ * @brief MainWindow::slotClusteringHierarchical
+ */
+void MainWindow::slotClusteringHierarchical(){
+    if ( !activeNodes()   )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+    QString fn = appSettings["dataDir"] + "socnetv-report-clustering-hierarchical.dat";
+
+    bool considerWeights=true;
+    bool inverseWeights=false;
+    bool dropIsolates=false;
+    bool ok;
+    int clusteringMethod = 0;
+
+    QStringList clusteringCriteria;
+    clusteringCriteria
+              << tr("Single-linkage (minimum)")
+              << tr("Complete-linkage (maximum)")
+              << tr("Average-linkage (UPGMA)");
+
+
+    QString userSelection = QInputDialog::getItem(
+                this,
+                tr("Hierarchical Clustering"),
+                tr("Select a method (criterion) for the hiearchical cluster analysis.\n"
+
+                 "Essentially, you are selecting the criterion by which pairs of clusters \n"
+                   "are going to be combined into larger clusters. \n"
+
+                   "In single-linkage clustering the distance between two clusters is equal to the "
+                   "shortest distance between any members of the clusters. \n"
+
+                   "In complete-linkage the distance between two clusters is equal to the "
+                     "longest distance between any members of the clusters. \n"
+                   ),
+
+                clusteringCriteria, 0, false, &ok);
+    if (ok ) {
+        if (userSelection == "Single-linkage (minimum)") {
+            clusteringMethod=CLUSTERING_SINGLE_LINKAGE;
+        }
+        else if (userSelection == "Complete-linkage (maximum)") {
+            clusteringMethod=CLUSTERING_COMPLETE_LINKAGE;
+        }
+        else if (userSelection == "Average-linkage (UPGMA)") {
+            clusteringMethod=CLUSTERING_AVERAGE_LINKAGE;
+       }
+
+    }
+    else {
+        statusMessage( tr("Aborted."));
+        return;
+    }
+
+
+    statusMessage(  tr("Computing Hierarchical Cluster Analysis. Please wait...") );
+    progressMsg = tr("Hierarchical Cluster Analysis... \n"
+            "Please wait (or disable progress bars from Options -> Settings).");
+
+    createProgressBar(0,progressMsg);
+
+    activeGraph.writeClusteringHierarchical(fn,
+                                            clusteringMethod,
+                                            considerWeights,
+                                            inverseWeights,
+                                            dropIsolates);
+
+    destroyProgressBar();
+
+    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    ed->show();
+
+    statusMessage("Hierarchical cluster analysis saved as: " + fn);
+
+}
 
 /**
 *	Calls Graph:: writeCliqueCensus() to write the number of cliques (triangles)

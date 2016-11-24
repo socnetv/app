@@ -549,6 +549,11 @@ public:
     void writePrestigePageRank(const QString, const bool Isolates=false);
 
 
+    void writeClusteringHierarchical(const QString &fileName,
+                                     const int &method=CLUSTERING_SINGLE_LINKAGE ,
+                                     const bool &considerWeights=true,
+                                     const bool &inverseWeights=false,
+                                     const bool &dropIsolates=false);
     void writeCliqueCensus(
             const QString fileName, const bool considerWeights
             );
@@ -605,7 +610,7 @@ public:
     int graphCliquesContaining(const int &actor, const int &size=0);
     int graphCliquesOfSize(const int &size );
 
-    void graphClusteringHierarchical(const int &type, Matrix &DSM);
+    void graphClusteringHierarchical(const int &method, Matrix &DSM);
     float clusteringCoefficientLocal(const long int &v1);
     float clusteringCoefficient (const bool updateProgress=false);
 

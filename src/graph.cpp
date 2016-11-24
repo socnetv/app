@@ -7641,25 +7641,68 @@ int Graph::graphCliquesOfSize(const int &size){
 }
 
 
+void Graph::writeClusteringHierarchical(const QString &fileName,
+                                        const int &method,
+                                        const bool &considerWeights,
+                                        const bool &inverseWeights,
+                                        const bool &dropIsolates) {
+
+    qDebug()<< "Graph::writeClusteringHierarchical() - method:"
+            << method
+            << "considerWeights:"<<considerWeights
+            << "inverseWeights:"<<inverseWeights
+            << "dropIsolates:" << dropIsolates;
+
+
+    QFile file ( fileName );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        qDebug()<< "Error opening file!";
+        emit statusMessage ( tr("Error. Could not write to ") + fileName );
+        return;
+    }
+
+    //long int N = vertices();
+
+    //QList<Vertex*>::const_iterator it, it2;
+    distanceMatrixCreate(false, considerWeights, inverseWeights, dropIsolates);
+    Matrix CLM;
+    CLM = DM;
+    graphClusteringHierarchical(method, CLM);
+
+    QTextStream outText ( &file ); outText.setCodec("UTF-8");
+
+    emit statusMessage ( tr("Writing hierarchical cluster analysis to file: ") + fileName );
+
+    outText << tr("HIERARCHICAL CLUSTERING (HCA)") << endl;
+    outText << tr("Network name: ")<< graphName()<< endl<<endl;
+
+
+    outText << tr("%1 maximal cliques found (ordered by size):").arg(m_cliques.count()) << endl<< endl ;
+
+}
+
 /**
  * @brief Graph::graphClusteringHierarchical
  * Performs an hierarchical clustering process (Johnson, 167) on the given
  * NxN distance or similarity matrix DSM.
-* The type parameter defines how to compute distances (similarities) between
+* The method parameter defines how to compute distances (similarities) between
  * a new cluster and each of the old ones. Valid values can be:
- * - 0: "single-link" or "connectedness" or "minimum"
- * - 1: "complete-link" or "diameter" or "maximum"
- * - 2: "average-link"
- * @param type
+ * - CLUSTERING_SINGLE_LINKAGE: "single-link" or "connectedness" or "minimum"
+ * - CLUSTERING_COMPLETE_LINKAGE: "complete-link" or "diameter" or "maximum"
+ * - CLUSTERING_AVERAGE_LINKAGE: "average-link" or UPGMA
+ * @param method
  * @param DSM
 
  */
-void Graph::graphClusteringHierarchical(const int &type, Matrix &DSM) {
+void Graph::graphClusteringHierarchical(const int &method, Matrix &DSM) {
     int N = DSM.rows();
     qDebug() << "Graph::graphClusteringHierarchical() - type:"
-             << type
+             << method
              << "matrix DSM.size:"
-             << N;
+             << N
+             <<"matrix DSM";
+    DSM.printMatrixConsole();
+
     m_clusters.clear();
 
     //1. Assign each of the N items to its own cluster. We have N unit clusters
@@ -7679,14 +7722,14 @@ void Graph::graphClusteringHierarchical(const int &type, Matrix &DSM) {
     //4. Repeat steps 2 and 3 until all item are clustered to a single cluster size N
 
 
-    switch (type) {
+    switch (method) {
     case CLUSTERING_SINGLE_LINKAGE: //"single-link":
 
         break;
     case CLUSTERING_COMPLETE_LINKAGE: // "complete-link":
 
         break;
-    case CLUSTERING_AVERAGE_LINKAGE: //"average-link":
+    case CLUSTERING_AVERAGE_LINKAGE: //mean or "average-link" or UPGMA
 
         break;
     default:
