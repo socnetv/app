@@ -55,10 +55,9 @@ public:
         for (int i=0;i<m_cols; i++) {
             cell[i]=0;
         }
-		m_outEdges=0;
 	}
 
-    ~Row() { m_cols=0, m_outEdges=0 ; delete [] cell;}
+    ~Row() { m_cols=0 ; delete [] cell;}
 	
     Row& operator =(Row & a) {
         if (this != &a){
@@ -84,25 +83,12 @@ public:
 	
 	void setColumn (int index, float elem) {
 		cell[index]=elem;
-		if (elem!=0)
-			m_outEdges++;
 	}
 
 	void clearColumn(int index){
-		if (cell[index]!=0)
-			m_outEdges--;
 		cell[index]=0;
 	}	
 
-
-	//FIXME 
-	void updateOutEdges(){
-		m_outEdges=0;
-        for (int i=0;i<m_cols; i++) {
-			if (cell[i])
-			    m_outEdges++;
-		}
-	}
 
     void resize(int cols) {
 		delete [] cell;
@@ -111,18 +97,15 @@ public:
         for (int i=0;i<m_cols; i++) {
 			cell[i]=0;
 		}
-		m_outEdges=0;
-	}
+    }
 	
     void setSize(int cols){
         m_cols=cols;
-		//FIXME Matrix.row setSize m_outEdges should be zero
-	}
-	int outEdges () { return m_outEdges;}
+    }
 
 private:
 	float *cell;
-    int m_cols, m_outEdges;
+    int m_cols;
 };
 
 
@@ -165,12 +148,6 @@ public:
                           int &imax, int &jmax);
 
     void deleteRowColumn(int i);	/* deletes row i and column i */
-
-    int edgesFrom(int Actor);
-
-    int edgesTo(const int Actor);
-
-    int totalEdges();
 
     bool printMatrixConsole(bool debug=true);
 
