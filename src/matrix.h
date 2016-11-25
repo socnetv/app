@@ -160,7 +160,7 @@ public:
 
     void findMinMaxValues(float&min,float&max);
 
-    void findMinMaxValues(float&min,float&max,
+    void NeighboursNearestFarthest(float&min,float&max,
                           int &imin, int &jmin,
                           int &imax, int &jmax);
 

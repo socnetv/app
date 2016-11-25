@@ -7702,16 +7702,17 @@ void Graph::graphClusteringHierarchical(const int &method, Matrix &DSM) {
     float min=RAND_MAX;
     float max=0;
     int clusters = N;
-    int seq = 0 ; //clustering stage/level counter
+    int seq = 0 ; //clustering stage/level sequence number
     int imin, jmin, imax, jmax;
     QList <int> clusteringLevel;
 
     m_clusters.clear();
 
-    qDebug() << "Graph::graphClusteringHierarchical() - Level sequence:"
-             <<clusteringLevel.size()
-            << "Level"
-            << clusteringLevel
+    qDebug() << "Graph::graphClusteringHierarchical() -"
+             <<"Clustering seq:"
+             << seq
+            << "Level:"
+            << clusteringLevel.value(seq)
             << "Clusters:"
             <<clusters;
 
@@ -7726,12 +7727,16 @@ void Graph::graphClusteringHierarchical(const int &method, Matrix &DSM) {
 
     while (clusters > 1) {
         //2. Find the most similar pair of clusters. Merge them into one cluster.
-        DSM.findMinMaxValues(min, max, imin, jmin, imax, jmax);
+        DSM.NeighboursNearestFarthest(min, max, imin, jmin, imax, jmax);
         qDebug() << "Graph::graphClusteringHierarchical() -"
-                 << "min:" << min
-                 << "at ("<< imin <<","<<jmin<<")"
-                 << "max:" << max
-                    << "at ("<< imax <<","<<jmax<<")";
+                 << "Clustering seq:"
+                 << seq
+                 << "Level:" << min
+                 << "neareast neighbors ("<< imin+1 <<","<<jmin+1<<")"
+                 << "minimum/distance:" << min
+                 << "farthest neighbors ("<< imax <<","<<jmax<<")"
+                 << "maximum/distance:" << max
+                  << "Merge them into one cluster";
 
         //3. Compute distances or similarities between the new cluster and the old clusters
 
