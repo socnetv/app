@@ -87,6 +87,7 @@ typedef QPair <int, pair_f_b > rel_w_bool;
 typedef QHash < int, rel_w_bool > H_edges;
 typedef QHash<QString, bool> H_StrToBool;
 typedef QList<int> L_int;
+typedef QVector<int> V_int;
 
 struct ClickedEdge {
     int v1;
@@ -751,7 +752,7 @@ private:
     QHash <int, int> m_vertexPairsUnilaterallyConnected;
 
     QMap <int, L_int > m_cliques;
-    QMap <QString, L_int> m_clusters;
+    QMap <float, V_int> m_clusters;
 
     Matrix  TM, DM, sumM, invAM, AM, invM;
     Matrix XM, XSM, XRM, CLQM;

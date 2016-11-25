@@ -7438,7 +7438,7 @@ void Graph::writeCliqueCensus(
     outText << endl<< endl
             << tr("Hierarchical clustering of overlap matrix: Actors")
             << endl<< endl ;
-    graphClusteringHierarchical(CLUSTERING_SINGLE_LINKAGE, CLQM);
+   // graphClusteringHierarchical(CLUSTERING_SINGLE_LINKAGE, CLQM); //uncomment when ready.
 
     emit updateProgressDialog(3 * N / 5);
     outText << endl<< endl
@@ -7673,14 +7673,25 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
     outText << tr("HIERARCHICAL CLUSTERING (HCA)") << endl;
     outText << tr("Network name: ")<< graphName()<< endl<<endl;
 
+    outText <<"Level" << "\t"<< "Actors" <<endl;
+    QMap<float, V_int>::const_iterator i;
+    for ( i= m_clusters.constBegin() ; i != m_clusters.constEnd(); ++i) {
+         outText << i.key() << "\t" ;
 
-    outText << tr("%1 maximal cliques found (ordered by size):").arg(m_cliques.count()) << endl<< endl ;
+         foreach (int item, i.value() ) {
+             outText << item << " " ;
+         }
+         outText << endl;
+
+     }
 
 }
 
+
+
 /**
  * @brief Graph::graphClusteringHierarchical
- * Performs an hierarchical clustering process (Johnson, 167) on the given
+ * Performs an hierarchical clustering process (Johnson, 1967) on the given
  * NxN distance/dissimilarity or similarity matrix DSM.
 * The method parameter defines how to compute distances (similarities) between
  * a new cluster and each of the old ones. Valid values can be:
@@ -7701,107 +7712,27 @@ void Graph::graphClusteringHierarchical(const int &method, Matrix &DSM) {
     DSM.printMatrixConsole();
     float min=RAND_MAX;
     float max=0;
-    int clusters = N;
-    int seq = 0 ; //clustering stage/level sequence number
-    int imin, jmin, imax, jmax, newClusterIndex, deletedClusterIndex ;
+    int imin, jmin, imax, jmax, mergedClusterIndex, deletedClusterIndex ;
     float distanceNewCluster;
+
     QList <int> clusteringLevel;
+    QVector<int> clusteredItems;  //to store cluster members at each clustering level
+    clusteredItems.reserve(N);
 
     m_clusters.clear();
 
-    qDebug() << "Graph::graphClusteringHierarchical() -"
-             <<"Clustering seq:"
-             << seq
-            << "Level:"
-            << clusteringLevel.value(seq)
-            << "Clusters:"
-            <<clusters;
-
-    //1. Assign each of the N items to its own cluster. We have N unit clusters
-    QList<int> list;
-    clusteringLevel << 0; // L(0) = 0;
-    list << 0;
-    for (int i=0; i<N; i++){
-        list[0] = i+1;
-        m_clusters.insert("Level_0_"+QString::number(i+1), list);
+    //
+    //Step 1: Assign each of the N items to its own cluster.
+    //        We have N unit clusters
+    //
+    int clustersLeft = N;
+    int seq = 0 ; //clustering stage/level sequence number
+    QVector<int> originalItem; // keeps track of the original item indices
+    for (int i = 0 ; i< N ; i ++ ) {
+        originalItem << i+1;
     }
 
-    while (clusters > 1) {
-        //2. Find the most similar pair of clusters. Merge them into one cluster.
-        DSM.NeighboursNearestFarthest(min, max, imin, jmin, imax, jmax);
-        newClusterIndex = (imin < jmin ) ? imin : jmin;
-        deletedClusterIndex =  (newClusterIndex  == imin ) ? jmin : imin;
-        qDebug() << "Graph::graphClusteringHierarchical() -"
-                 << "Clustering seq:"
-                 << seq
-                 << "Level:" << min
-                 << "neareast neighbors: ("<< imin+1 <<","<<jmin+1<<")"
-                 << "minimum/distance:" << min
-                 << "farthest neighbors: ("<< imax <<","<<jmax<<")"
-                 << "maximum/distance:" << max
-                  << "Merge neighbors into new cluster:"
-                  << newClusterIndex +1
-                  <<"and compute distances "
-                     "between the new cluster and the old ones";
-
-        //3. Compute distances or similarities between the new cluster and the old clusters
-        for (int i = 0 ; i< clusters; i ++ ) {
-            if (i == deletedClusterIndex  ) {
-                qDebug() << "Graph::graphClusteringHierarchical() -"
-                         << "i"<<i+1
-                          << "= deletedClusterIndex"<< deletedClusterIndex +1
-                          <<"SKIP this as it is one of the merged clusters.";
-                continue;
-
-            }
-
-            for (int j = 0 ; j< clusters; j ++ ) {
-                if (j == newClusterIndex ) {
-                    distanceNewCluster= (DSM.item(i,imin) < DSM.item(i,jmin) ) ? DSM.item(i,imin) : DSM.item(i,jmin);
-                    qDebug() << "Graph::graphClusteringHierarchical() -"
-                             << "i"<<i+1
-                             <<"j"<<j+1
-                             <<"= newClusterIndex"<<newClusterIndex
-                             << "DSM.item(i,imin)"<<DSM.item(i,imin)
-                                << "DSM.item(i,jmin)"<<DSM.item(i,jmin)
-                             << "distanceNewCluster"<< distanceNewCluster;
-                    DSM.setItem(i, j, distanceNewCluster);
-
-                }
-                else {
-                    if (j == deletedClusterIndex  ) {
-                        qDebug() << "Graph::graphClusteringHierarchical() -"
-                                 << "i"<<i+1
-                                 << "j"<<j+1
-                                 << "= deletedClusterIndex"<< deletedClusterIndex  +1
-                                 <<"SKIP as it is one of the merged clusters";
-                        continue;
-
-                    }
-
-                    qDebug() << "Graph::graphClusteringHierarchical() -"
-                             << "i"<<i+1
-                             << "j"<<j+1
-                             << "!= newClusterIndex"<< newClusterIndex+1
-                             <<"SKIP as distance to this cluster should remain the same";
-                    continue;
-
-                }
-            }
-        }
-
-
-//        clusters = DSM.rows();
-        clusters --;
-        seq ++;
-        clusteringLevel << min;
-        DSM.deleteRowColumn(deletedClusterIndex);
-        DSM.printMatrixConsole();
-        //4. Repeat steps 2 and 3 until all item are clustered to a single cluster size N
-    }
-
-
-
+    //@TODO
     switch (method) {
     case CLUSTERING_SINGLE_LINKAGE: //"single-link":
 
@@ -7815,6 +7746,114 @@ void Graph::graphClusteringHierarchical(const int &method, Matrix &DSM) {
     default:
         break;
     }
+
+
+    while (clustersLeft > 1) {
+        //
+        //Step 2. Find the most similar pair of clusters.
+        //        Merge them into a single new cluster.
+        //
+        DSM.NeighboursNearestFarthest(min, max, imin, jmin, imax, jmax);
+        mergedClusterIndex = (imin < jmin ) ? imin : jmin;
+        deletedClusterIndex =  (mergedClusterIndex  == imin ) ? jmin : imin;
+        if ( !clusteredItems.contains( originalItem.at (mergedClusterIndex ) )) {
+            clusteredItems<< originalItem.at (mergedClusterIndex );
+        }
+        if (!clusteredItems.contains( originalItem.at(deletedClusterIndex)  )) {
+            clusteredItems<< originalItem.at(deletedClusterIndex);
+        }
+        originalItem.remove(deletedClusterIndex);
+
+        clusteringLevel << min;
+        m_clusters.insert( min, clusteredItems);
+        qDebug() << "Graph::graphClusteringHierarchical() -"
+                 << "Clustering seq:"
+                 << seq
+                 << "Level:" << min
+                 << "neareast neighbors: ("<< imin+1 <<","<<jmin+1<<")"
+                 << "minimum/distance:" << min
+                 << "farthest neighbors: ("<< imax+1 <<","<<jmax+1<<")"
+                 << "maximum/distance:" << max
+                  << "Merge neighbors into a single new cluster:"
+                  << mergedClusterIndex +1
+                  <<"and compute distances "
+                     "between the new cluster and the old ones";
+
+        //
+        //Step 3. Compute distances (or similarities) between
+        //        the single new cluster and the old clusters
+        //
+        for (int i = 0 ; i< clustersLeft; i ++ ) {
+            if (i == deletedClusterIndex  ) {
+                qDebug() << "Graph::graphClusteringHierarchical() -"
+                         << "i"<<i+1
+                          << "= deletedClusterIndex"<< deletedClusterIndex +1
+                          <<"SKIP this as it is one of the merged clusters.";
+                continue;
+
+            }
+
+            for (int j = 0 ; j< clustersLeft; j ++ ) {
+                if (j == mergedClusterIndex ) {
+                    distanceNewCluster= (DSM.item(i,imin) < DSM.item(i,jmin) ) ? DSM.item(i,imin) : DSM.item(i,jmin);
+                    qDebug() << "Graph::graphClusteringHierarchical() -"
+                             << "i"<<i+1
+                             <<"j"<<j+1
+                             <<"= mergedClusterIndex"<<mergedClusterIndex
+                             << "DSM.item(i,imin)"<<DSM.item(i,imin)
+                                << "DSM.item(i,jmin)"<<DSM.item(i,jmin)
+                             << "distanceNewCluster"<< distanceNewCluster;
+                    DSM.setItem(i, j, distanceNewCluster);
+                    DSM.setItem(j, i, distanceNewCluster);
+
+                    DSM.setItem(deletedClusterIndex, j, RAND_MAX);
+                    DSM.setItem(j, deletedClusterIndex, RAND_MAX);
+
+                }
+                else {
+                    if (j == deletedClusterIndex  ) {
+                        qDebug() << "Graph::graphClusteringHierarchical() -"
+                                 << "i"<<i+1
+                                 << "j"<<j+1
+                                 << "= deletedClusterIndex"<< deletedClusterIndex  +1
+                                 <<"SKIP as it is one of the merged clusters";
+
+                        DSM.setItem(i, j, RAND_MAX);
+                        DSM.setItem(j, i, RAND_MAX);
+
+                        continue;
+
+                    }
+
+                    qDebug() << "Graph::graphClusteringHierarchical() -"
+                             << "i"<<i+1
+                             << "j"<<j+1
+                             << "!= mergedClusterIndex"<< mergedClusterIndex+1
+                             <<"SKIP as distance to this cluster should remain the same";
+                    continue;
+
+                }
+            }
+        }
+
+
+        qDebug() << "Graph::graphClusteringHierarchical() - Finished."
+                 << "Clustering seq:"
+                 << seq
+                 << "Level:" << min
+                 << "Resizing old DSM matrix";
+        DSM.printMatrixConsole();
+        DSM.deleteRowColumn(deletedClusterIndex);
+
+        clustersLeft --;
+        seq ++;
+        //
+        //Step 4. Repeat steps 2 and 3 until all remaining items/clusters
+        //        are clustered into a single cluster of size N
+        //
+    }
+
+
 
 }
 

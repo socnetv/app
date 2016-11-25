@@ -266,51 +266,47 @@ void Matrix::deleteRowColumn(int erased){
              << "m_rows before" <<  m_rows;
 
     --m_rows;
+    m_cols = m_rows;
     qDebug() << "Matrix:deleteRowColumn() - m_rows now " << m_rows << ". Resizing...";
     for (int i=0;i<m_rows+1; i++) {
         for (int j=0;j<m_rows+1; j++) {
             qDebug() << "Matrix:deleteRowColumn() -"
                         <<"item ("<< i+1 << "," << j+1 << ") ="<< item(i, j) ;
-            if ( j==erased && item(i,erased) ){
-                clearItem(i,j);
+            if (i>=m_rows || j>=m_rows) {
+                setItem( i, j, RAND_MAX) ;
                 qDebug() << "Matrix:deleteRowColumn() -"
-                         << i+1 << "connected to" << erased << ". Clearing..." ;
+                         <<"both i,j>=m_rows, corner case (will be deleted). Settting to RAND_MAX."
+                        << "New item value (" <<  i+1 << ", " << j+1 << ") ="<< item(i, j) ;
             }
             else if (i<erased && j< erased) {
                 qDebug() << "Matrix:deleteRowColumn() -"
                          << "i, j < erased. Skipping. Item unchanged.";
                 continue;
             }
-            if (i<erased && j>=erased) {
+            else if (i<erased && j>=erased) {
                 setItem( i, j, item(i,j+1) ) ;
                 qDebug() << "Matrix:deleteRowColumn() -"
                             <<"j>=erased, shifting column left"
                            << "New item value (" <<  i+1 << ", " << j+1 << ") ="<< item(i, j) ;
             }
-            if (i>=erased && j<erased) {
+            else if (i>=erased && j<erased) {
                 setItem( i, j, item(i+1,j) ) ;
                 qDebug() << "Matrix:deleteRowColumn() -"
                          <<"i>=erased, shifting rows up."
                         << "New item value (" <<  i+1 << ", " << j+1 << ") ="<< item(i, j) ;
             }
-            if (i>=erased && j>=erased) {
+            else if (i>=erased && j>=erased) {
                 setItem( i, j, item(i+1,j+1) ) ;
                 qDebug() << "Matrix:deleteRowColumn() -"
                          <<"both i,j>=erased, shifting row up and column left."
                         << "New item value (" <<  i+1 << ", " << j+1 << ") ="<< item(i, j) ;
             }
-            if (i>=m_rows || j>=m_rows) {
-                setItem( i, j, 0) ;
-                qDebug() << "Matrix:deleteRowColumn() -"
-                         <<"both i,j>=m_rows, corner case. Settting item to 0."
-                        << "New item value (" <<  i+1 << ", " << j+1 << ") ="<< item(i, j) ;
-            }
 
         }
+        row[i].setSize(m_cols);
     }
-    //qDebug() << "Matrix:deleteRowColumn() - calling updateOutEdges() for this row" <<i+1;
-//    for (int i=0;i<m_rows; i++)
-//        row[i].updateOutEdges();
+    qDebug() << "Matrix:deleteRowColumn() - finished, new matrix:";
+    printMatrixConsole(true); // @TODO comment out to release
 
 }
 
