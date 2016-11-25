@@ -7703,7 +7703,8 @@ void Graph::graphClusteringHierarchical(const int &method, Matrix &DSM) {
     float max=0;
     int clusters = N;
     int seq = 0 ; //clustering stage/level sequence number
-    int imin, jmin, imax, jmax;
+    int imin, jmin, imax, jmax, newClusterIndex, deletedClusterIndex ;
+    float distanceNewCluster;
     QList <int> clusteringLevel;
 
     m_clusters.clear();
@@ -7728,24 +7729,77 @@ void Graph::graphClusteringHierarchical(const int &method, Matrix &DSM) {
     while (clusters > 1) {
         //2. Find the most similar pair of clusters. Merge them into one cluster.
         DSM.NeighboursNearestFarthest(min, max, imin, jmin, imax, jmax);
+        newClusterIndex = (imin < jmin ) ? imin : jmin;
+        deletedClusterIndex =  (newClusterIndex  == imin ) ? jmin : imin;
         qDebug() << "Graph::graphClusteringHierarchical() -"
                  << "Clustering seq:"
                  << seq
                  << "Level:" << min
-                 << "neareast neighbors ("<< imin+1 <<","<<jmin+1<<")"
+                 << "neareast neighbors: ("<< imin+1 <<","<<jmin+1<<")"
                  << "minimum/distance:" << min
-                 << "farthest neighbors ("<< imax <<","<<jmax<<")"
+                 << "farthest neighbors: ("<< imax <<","<<jmax<<")"
                  << "maximum/distance:" << max
-                  << "Merge them into one cluster";
+                  << "Merge neighbors into new cluster:"
+                  << newClusterIndex +1
+                  <<"and compute distances "
+                     "between the new cluster and the old ones";
 
         //3. Compute distances or similarities between the new cluster and the old clusters
+        for (int i = 0 ; i< clusters; i ++ ) {
+            if (i == deletedClusterIndex  ) {
+                qDebug() << "Graph::graphClusteringHierarchical() -"
+                         << "i"<<i+1
+                          << "= deletedClusterIndex"<< deletedClusterIndex +1
+                          <<"SKIP this as it is one of the merged clusters.";
+                continue;
+
+            }
+
+            for (int j = 0 ; j< clusters; j ++ ) {
+                if (j == newClusterIndex ) {
+                    distanceNewCluster= (DSM.item(i,imin) < DSM.item(i,jmin) ) ? DSM.item(i,imin) : DSM.item(i,jmin);
+                    qDebug() << "Graph::graphClusteringHierarchical() -"
+                             << "i"<<i+1
+                             <<"j"<<j+1
+                             <<"= newClusterIndex"<<newClusterIndex
+                             << "DSM.item(i,imin)"<<DSM.item(i,imin)
+                                << "DSM.item(i,jmin)"<<DSM.item(i,jmin)
+                             << "distanceNewCluster"<< distanceNewCluster;
+                    DSM.setItem(i, j, distanceNewCluster);
+
+                }
+                else {
+                    if (j == deletedClusterIndex  ) {
+                        qDebug() << "Graph::graphClusteringHierarchical() -"
+                                 << "i"<<i+1
+                                 << "j"<<j+1
+                                 << "= deletedClusterIndex"<< deletedClusterIndex  +1
+                                 <<"SKIP as it is one of the merged clusters";
+                        continue;
+
+                    }
+
+                    qDebug() << "Graph::graphClusteringHierarchical() -"
+                             << "i"<<i+1
+                             << "j"<<j+1
+                             << "!= newClusterIndex"<< newClusterIndex+1
+                             <<"SKIP as distance to this cluster should remain the same";
+                    continue;
+
+                }
+            }
+        }
+
 
 //        clusters = DSM.rows();
         clusters --;
         seq ++;
         clusteringLevel << min;
+        DSM.deleteRowColumn(deletedClusterIndex);
+        DSM.printMatrixConsole();
+        //4. Repeat steps 2 and 3 until all item are clustered to a single cluster size N
     }
-    //4. Repeat steps 2 and 3 until all item are clustered to a single cluster size N
+
 
 
     switch (method) {
