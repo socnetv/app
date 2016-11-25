@@ -7661,9 +7661,6 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
         return;
     }
 
-    //long int N = vertices();
-
-    //QList<Vertex*>::const_iterator it, it2;
     distanceMatrixCreate(false, considerWeights, inverseWeights, dropIsolates);
     Matrix CLM;
     CLM = DM;
@@ -7684,7 +7681,7 @@ void Graph::writeClusteringHierarchical(const QString &fileName,
 /**
  * @brief Graph::graphClusteringHierarchical
  * Performs an hierarchical clustering process (Johnson, 167) on the given
- * NxN distance or similarity matrix DSM.
+ * NxN distance/dissimilarity or similarity matrix DSM.
 * The method parameter defines how to compute distances (similarities) between
  * a new cluster and each of the old ones. Valid values can be:
  * - CLUSTERING_SINGLE_LINKAGE: "single-link" or "connectedness" or "minimum"
@@ -7702,23 +7699,47 @@ void Graph::graphClusteringHierarchical(const int &method, Matrix &DSM) {
              << N
              <<"matrix DSM";
     DSM.printMatrixConsole();
+    float min=RAND_MAX;
+    float max=0;
+    int clusters = N;
+    int seq = 0 ; //clustering stage/level counter
+    int imin, jmin, imax, jmax;
+    QList <int> clusteringLevel;
 
     m_clusters.clear();
 
+    qDebug() << "Graph::graphClusteringHierarchical() - Level sequence:"
+             <<clusteringLevel.size()
+            << "Level"
+            << clusteringLevel
+            << "Clusters:"
+            <<clusters;
+
     //1. Assign each of the N items to its own cluster. We have N unit clusters
     QList<int> list;
+    clusteringLevel << 0; // L(0) = 0;
     list << 0;
     for (int i=0; i<N; i++){
         list[0] = i+1;
         m_clusters.insert("Level_0_"+QString::number(i+1), list);
     }
 
-    //2. Find the most similar pair of clusters. Merge them into one cluster.
+    while (clusters > 1) {
+        //2. Find the most similar pair of clusters. Merge them into one cluster.
+        DSM.findMinMaxValues(min, max, imin, jmin, imax, jmax);
+        qDebug() << "Graph::graphClusteringHierarchical() -"
+                 << "min:" << min
+                 << "at ("<< imin <<","<<jmin<<")"
+                 << "max:" << max
+                    << "at ("<< imax <<","<<jmax<<")";
 
+        //3. Compute distances or similarities between the new cluster and the old clusters
 
-
-    //3. Compute distances or similarities between the new cluster and the old clusters
-
+//        clusters = DSM.rows();
+        clusters --;
+        seq ++;
+        clusteringLevel << min;
+    }
     //4. Repeat steps 2 and 3 until all item are clustered to a single cluster size N
 
 

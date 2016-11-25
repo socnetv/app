@@ -1768,16 +1768,23 @@ void MainWindow::initActions(){
                 tr("Hierarchical clustering\n\n "
                    "Hierarchical clustering (or hierarchical cluster analysis, HCA) "
                    "is a method of cluster analysis which builds a hierarchy "
-                   "of clusters. In SNA context these clusters consist of network actors. \n"
-                   "This method takes the distance matrix as input and uses "
+                   "of clusters, based on their elements dissimilarity. "
+                   "In SNA context these clusters usually consist of "
+                   "network actors. \n"
+
+                   "This method takes the social network distance matrix as input and uses "
                    "the Agglomerative \"bottom up\" approach where each "
-                   "actor starts in its own cluster. Gradually, pairs of clusters "
-                   "are merged as we moves up the hierarchy."
+                   "actor starts in its own cluster (Level 0). In each subsequent Level, "
+                   "as we move up the clustering hierarchy, a pair of clusters "
+                   "are merged into a larger cluster, until "
+                   "all actors end up in the same cluster. "
 
                    "To decide which clusters should be combined at each level, a measure of "
                    "dissimilarity between sets of observations is required. "
                    "This measure consists of a metric for the distance between actors "
                    "(i.e. manhattan distance) and a linkage criterion (i.e. single-linkage clustering). "
+                   "This linkage criterion (essentially a definition of distance between clusters), "
+                   "differentiates between the different HCA methods."
 
                    "Note that the complexity of agglomerative clustering is O( n^2 log(n) ), "
                    "therefore is too slow for large data sets."
@@ -9613,13 +9620,14 @@ void MainWindow::slotClusteringHierarchical(){
                 tr("Hierarchical Clustering"),
                 tr("Select a method (criterion) for the hiearchical cluster analysis.\n"
 
-                 "Essentially, you are selecting the criterion by which pairs of clusters \n"
+                 "Essentially, this is the criterion by which pairs of clusters \n"
                    "are going to be combined into larger clusters. \n"
 
-                   "In single-linkage clustering the distance between two clusters is equal to the "
-                   "shortest distance between any members of the clusters. \n"
+                   "In single-linkage (minimum) clustering the distance between \n"
+                   "two clusters is equal to the shortest distance between any \n"
+                   "members of the clusters. \n"
 
-                   "In complete-linkage the distance between two clusters is equal to the "
+                   "In complete-linkage the distance between two clusters is equal to the \n"
                      "longest distance between any members of the clusters. \n"
                    ),
 

@@ -158,7 +158,11 @@ public:
 
     int  size() { return m_rows * m_cols; }
 
-    void findMinMaxValues(float&,float&);
+    void findMinMaxValues(float&min,float&max);
+
+    void findMinMaxValues(float&min,float&max,
+                          int &imin, int &jmin,
+                          int &imax, int &jmax);
 
     void deleteRowColumn(int i);	/* deletes row i and column i */
 

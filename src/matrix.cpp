@@ -122,18 +122,20 @@ void Matrix::resize (const int m, const int n) {
 
 /**
  * @brief Matrix::findMinMaxValues
- * @param maxVal
- * @param minVal
+ * @param min value in the matrix
+ * @param max value
+ * Complexity: O(n^2)
  */
-void Matrix::findMinMaxValues (float & maxVal, float &minVal){
-    maxVal=0;
-    minVal=RAND_MAX;
+void Matrix::findMinMaxValues (float &min, float & max){
+    max=0;
+    min=RAND_MAX;
     for (int r = 0; r < rows(); ++r) {
         for (int c = 0; c < cols(); ++c) {
-            if ( item(r,c) > maxVal)
-                maxVal = item(r,c) ;
-            if ( item(r,c) < minVal){
-                minVal= item(r,c) ;
+            if ( item(r,c) > max) {
+                max = item(r,c) ;
+            }
+            if ( item(r,c) < min){
+                min = item(r,c) ;
             }
         }
     }
@@ -141,6 +143,30 @@ void Matrix::findMinMaxValues (float & maxVal, float &minVal){
 
 
 
+/**
+ * @brief Matrix::findMinMaxValues
+ * @param min value in the matrix
+ * @param max value
+ * Complexity: O(n^2)
+ */
+void Matrix::findMinMaxValues (float &min, float & max,
+                               int &imin, int &jmin,
+                               int &imax, int &jmax){
+    max=0;
+    min=RAND_MAX;
+    for (int r = 0; r < rows(); ++r) {
+        for (int c = 0; c < cols(); ++c) {
+            if ( item(r,c) > max) {
+                max = item(r,c) ;
+                imax = r; jmax=c;
+            }
+            if ( item(r,c) < min){
+                min = item(r,c) ;
+                imin = r; jmin=c;
+            }
+        }
+    }
+}
 
 /**
  * @brief Matrix::identityMatrix
@@ -668,7 +694,7 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
     qDebug() << "Matrix: << Matrix";
     int fieldWidth = 8, newFieldWidth = 8, actorNumber=1;
     float maxVal, minVal;
-    m.findMinMaxValues(maxVal,minVal);
+    m.findMinMaxValues(minVal, maxVal);
     float element;
 
 
