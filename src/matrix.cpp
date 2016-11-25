@@ -144,18 +144,22 @@ void Matrix::findMinMaxValues (float &min, float & max){
 
 
 /**
- * @brief Matrix::findMinMaxValues
- * @param min value in the matrix
+ * @brief Matrix::NeighboursNearestFarthest
+ *
+ * Like Matrix::findMinMaxValues only it skips r==c
+ *
+ * @param min value. If (r,c) = minimum, it mean that neighbors r and c are the nearest in the matrix/network
  * @param max value
  * Complexity: O(n^2)
  */
-void Matrix::findMinMaxValues (float &min, float & max,
+void Matrix::NeighboursNearestFarthest (float &min, float & max,
                                int &imin, int &jmin,
                                int &imax, int &jmax){
     max=0;
     min=RAND_MAX;
     for (int r = 0; r < rows(); ++r) {
         for (int c = 0; c < cols(); ++c) {
+            if (r==c) continue;
             if ( item(r,c) > max) {
                 max = item(r,c) ;
                 imax = r; jmax=c;
@@ -825,19 +829,26 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
  */
 bool Matrix::printMatrixConsole(bool debug){
     //qDebug() << "Matrix::printMatrixConsole() debug " << debug ;
+    QTextStream out ( (debug ? stderr : stdout) );
+
     for (int r = 0; r < rows(); ++r) {
         for (int c = 0; c < cols(); ++c) {
+
             if ( item(r,c) < RAND_MAX  ) {
-                QTextStream( (debug ? stderr : stdout) ) << item(r,c) << ' ';
+                out <<  qSetFieldWidth(12) << qSetRealNumberPrecision(3)
+                     <<  forcepoint << fixed<<right
+                        << item(r,c);
             }
             else {
-                QTextStream( (debug ? stderr : stdout) ) << "X" << ' ';
+                out <<  qSetFieldWidth(12) << qSetRealNumberPrecision(3)
+                     <<  forcepoint << fixed<<right
+                        << "x";
             }
 
 //            QTextStream( (debug ? stderr : stdout) )
 //                    << ( (item(r,c) < RAND_MAX ) ? item(r,c) : INFINITY  )<<' ';
         }
-        QTextStream( (debug ? stderr : stdout)  ) <<'\n';
+        out <<qSetFieldWidth(0)<< endl;
     }
     return true;
 }
