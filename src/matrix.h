@@ -141,7 +141,7 @@ public:
 
     int  size() { return m_rows * m_cols; }
 
-    void findMinMaxValues(float&min,float&max);
+    void findMinMaxValues(float&min, float&max, bool &hasRealNumbers);
 
     void NeighboursNearestFarthest(float&min,float&max,
                           int &imin, int &jmin,
