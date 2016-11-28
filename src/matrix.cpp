@@ -126,11 +126,15 @@ void Matrix::resize (const int m, const int n) {
  * @param max value
  * Complexity: O(n^2)
  */
-void Matrix::findMinMaxValues (float &min, float & max){
+void Matrix::findMinMaxValues (float &min, float & max, bool &hasRealNumbers){
     max=0;
     min=RAND_MAX;
+    hasRealNumbers = false;
     for (int r = 0; r < rows(); ++r) {
         for (int c = 0; c < cols(); ++c) {
+            if ( fmod (item(r,c), 1.0)  != 0 )  {
+                hasRealNumbers = true;
+            }
             if ( item(r,c) > max) {
                 max = item(r,c) ;
             }
@@ -669,126 +673,109 @@ Matrix& Matrix::operator *(Matrix & b) {
  */
 QTextStream& operator <<  (QTextStream& os, Matrix& m){
     qDebug() << "Matrix: << Matrix";
-    int fieldWidth = 8, newFieldWidth = 8, actorNumber=1;
-    float maxVal, minVal;
-    m.findMinMaxValues(minVal, maxVal);
-    float element;
+    int actorNumber=1, fieldWidth = 13;
+    float maxVal, minVal, maxAbsVal, element;
+    bool hasRealNumbers=false;
+
+    m.findMinMaxValues(minVal, maxVal, hasRealNumbers);
+
+    maxAbsVal = ( fabs(minVal) > fabs(maxVal) ) ? fabs(minVal) : fabs(maxVal) ;
 
 
+    os << qSetFieldWidth(0) << endl ;
+
+    os << "- Values:        "
+       << ( (hasRealNumbers) ? ("real numbers (printed decimals 3)") : ("integers only" ) ) << endl;
+
+    os << "- Max value:  ";
 
     if (maxVal == -1 ||  maxVal==RAND_MAX )
-         os << " max Value = " <<  infinity << endl;
-        else
-        os << " max Value = " << maxVal<< endl;
-    if (minVal == -1 ||  minVal==RAND_MAX )
-         os << " min Value = " <<  infinity << endl;
+        os <<  infinity ;
     else
-        os << " min Value = " << minVal<< endl<<endl;
-    if (maxVal > 999999 )
-        fieldWidth = 14;
-    else if (maxVal > 99999 )
-        fieldWidth = 13;
-    else if (maxVal > 9999 )
-        fieldWidth = 12;
-    else if  (maxVal > 999 )
-        fieldWidth = 8;
-    else if  (maxVal > 99 )
-        fieldWidth = 7;
+        os <<   maxVal;
 
-    os << qSetFieldWidth(fieldWidth) << right <<  QString("v |");
+    os << qSetFieldWidth(0) << endl ;
+
+    os << "- Min value:   ";
+
+    if (minVal == -1 ||  minVal==RAND_MAX )
+        os << infinity;
+    else
+        os << minVal;
+
+
+    os << qSetFieldWidth(0) << endl << endl;
+
+    os << qSetFieldWidth(7) << fixed << right << "v"<< qSetFieldWidth(3) << "" ;
+
+    os <<  ( (hasRealNumbers) ? qSetRealNumberPrecision(3) : qSetRealNumberPrecision(0) ) ;
+
+    // Note: In the case of Distance Matrix,
+    // if there is DM(i,j)=RAND_MAX (not connected), we always use fieldWidth  = 13
+    if ( maxAbsVal  > 999)
+        fieldWidth  = 13 ;
+    else if  ( maxAbsVal > 99)
+        fieldWidth  = 10 ;
+    else if ( maxAbsVal > 9   )
+        fieldWidth  = 9 ;
+    else
+        fieldWidth  = 8 ;
+
+    // print first/header row
     for (int r = 0; r < m.cols(); ++r) {
-        newFieldWidth = fieldWidth;
         actorNumber = r+1;
-        if ( actorNumber > 99999)
-            newFieldWidth = fieldWidth -5;
-        else if ( actorNumber > 9999)
-            newFieldWidth = fieldWidth -4;
-        else if ( actorNumber > 999)
-            newFieldWidth = fieldWidth -3;
-        else if ( actorNumber > 99)
-            newFieldWidth = fieldWidth -2;
+
+        if ( actorNumber > 999)
+            os << qSetFieldWidth(fieldWidth-3) ;
+        else if  ( actorNumber > 99)
+            os << qSetFieldWidth(fieldWidth-2) ;
         else if ( actorNumber > 9)
-            newFieldWidth = fieldWidth -1;
-        os << qSetFieldWidth(newFieldWidth) << right  << QString("%1").arg(actorNumber) ;
+            os << qSetFieldWidth(fieldWidth-1) ;
+        else
+            os << qSetFieldWidth(fieldWidth) ;
+
+        os <<  fixed << actorNumber;
     }
-    os<<endl;
-    os.setFieldAlignment(QTextStream::AlignCenter);
-    os.setPadChar('-');
-    for (int r = 0; r < m.cols()+1; ++r) {
-        if ( r > 99999)
-            newFieldWidth = fieldWidth -6;
-        else if ( r > 9999)
-            newFieldWidth = fieldWidth -5;
-        else if ( r > 999)
-            newFieldWidth = fieldWidth -4;
-        else if ( r > 99)
-            newFieldWidth = fieldWidth -3;
-        else if ( r > 9)
-            newFieldWidth = fieldWidth -2 ;
-        os << qSetFieldWidth(newFieldWidth) <<  QString("-") ;
-    }
-    os << qSetFieldWidth(1) << QString("-");
-    os.setPadChar(' ');
-    os<<endl;
+
+    os << qSetFieldWidth(0) << endl;
+
+    os << qSetFieldWidth(7)<< endl;
+
+    // print rows
     for (int r = 0; r < m.rows(); ++r) {
         actorNumber = r+1;
-        if ( actorNumber > 99999)
-            newFieldWidth = fieldWidth -5;
-        else if ( actorNumber > 9999)
-            newFieldWidth = fieldWidth -4;
-        else if ( actorNumber > 999)
-            newFieldWidth = fieldWidth -3;
-        else if ( actorNumber > 99)
-            newFieldWidth = fieldWidth -2;
+
+        if ( actorNumber > 999)
+            os << qSetFieldWidth(4) ;
+        else if  ( actorNumber > 99)
+            os << qSetFieldWidth(5) ;
         else if ( actorNumber > 9)
-            newFieldWidth = fieldWidth -1;
+            os << qSetFieldWidth(6) ;
         else
-            newFieldWidth = fieldWidth;
-        os << qSetFieldWidth(newFieldWidth) << right << QString("%1 |").arg(actorNumber) ;
+            os << qSetFieldWidth(7) ;
+
+
+        os <<  fixed << actorNumber
+            << qSetFieldWidth(3) <<"" ;
+
         for (int c = 0; c < m.cols(); ++c) {
             element = m(r,c) ;
-            newFieldWidth = fieldWidth;
-            if ( element == RAND_MAX )
-                newFieldWidth = fieldWidth;
-            else if ( element > 9999)
-                newFieldWidth = fieldWidth -5;
-            else if ( element > 9999)
-                newFieldWidth = fieldWidth -4;
-            else if ( element > 999)
-                newFieldWidth = fieldWidth -3;
-            else if ( element > 99)
-                newFieldWidth = fieldWidth -2;
-            else if ( element > 9)
-                newFieldWidth = fieldWidth -1;
-            else if ( (element - floor (element) ) != 0  ) {
-                if ( element *10 == qFloor(10* element)  )
-                newFieldWidth = fieldWidth-1;
-                else if (element *100 == qFloor(100* element)  )
-                newFieldWidth = fieldWidth-1;
-                else if (element *1000 == qFloor(1000* element)  )
-                newFieldWidth = fieldWidth-2;
-                else
-                    newFieldWidth = fieldWidth-2;
-            }
-            else if (element < 1.0 ) {
-                if ( element *10 == qFloor(10* element)  )
-                newFieldWidth = fieldWidth-1;
-                else if (element *100 == qFloor(100* element)  )
-                newFieldWidth = fieldWidth-1;
-                else if (element *1000 == qFloor(1000* element)  )
-                newFieldWidth = fieldWidth-2;
-                else
-                    newFieldWidth = fieldWidth-2;
-            }
-            else
-                newFieldWidth = fieldWidth;
+            os << qSetFieldWidth(fieldWidth) << fixed << right;
             if ( element == -1 || element == RAND_MAX)  // we print infinity symbol instead of -1 (distances matrix).
-                os << qSetFieldWidth(newFieldWidth) << right << infinity;
-            else
-                os << qSetFieldWidth(newFieldWidth)
-                   << right << element;
+                os << fixed << right << qSetFieldWidth(fieldWidth) << INFINITY ; // do not use var "infinity" as it breaks formatting;
+            else {
+                if ( element > 999)
+                    os << qSetFieldWidth(fieldWidth-3) ;
+                else if  ( element > 99)
+                    os << qSetFieldWidth(fieldWidth-2) ;
+                else if ( element > 9)
+                    os << qSetFieldWidth(fieldWidth-1) ;
+                else
+                    os << qSetFieldWidth(fieldWidth) ;
+                os <<  element;
+            }
         }
-        os << '\n';
+        os << qSetFieldWidth(0) << endl;
     }
     return os;
 }
