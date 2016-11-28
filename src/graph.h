@@ -500,10 +500,10 @@ public:
 
     void writeAdjacencyMatrixInvert(const QString &filename,
                                     const QString &method);
-    void writeDistanceMatrix(const QString fn,
-                             const bool considerWeights,
-                             const bool inverseWeights,
-                             const bool dropIsolates);
+    void writeDistanceMatrix(const QString &fn,
+                             const bool &considerWeights,
+                             const bool &inverseWeights,
+                             const bool &dropIsolates);
     void writeNumberOfGeodesicsMatrix(const QString &fn,
                                       const bool &considerWeights,
                                       const bool &inverseWeights);
@@ -572,7 +572,7 @@ public:
                                const bool inverseWeights, const bool dropIsolates);
     int graphConnectivity(const bool updateProgress=false) ;
 
-    void distanceMatrixCreate(const bool &centralities=false,
+    void distanceMatrixCreate(const bool &computeCentralities=false,
                               const bool &considerWeights=false,
                               const bool &inverseWeights=true,
                               const bool &dropIsolates=false);
