@@ -44,7 +44,10 @@ TextEditor::TextEditor(const QString &fileName, QWidget *parent) : QMainWindow(p
 
 	connect(textEdit->document(), SIGNAL(contentsChanged()), this, SLOT(documentWasModified()));
 
-    resize( 800,600 );
+    resize( 1024,768 );
+
+    setWindowState(Qt::WindowMaximized|Qt::WindowActive);
+
 	if (!fileName.isEmpty())
 		loadFile(fileName);
 	else 
