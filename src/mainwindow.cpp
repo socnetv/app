@@ -9098,7 +9098,7 @@ void MainWindow::slotInvertAdjMatrix(){
 
 
 void MainWindow::askAboutWeights(){
-    qDebug() << "MW::askAboutWeights() - check if Graph weighted.";
+    qDebug() << "MW::askAboutWeights() - checking if graph weighted.";
     if (!activeGraph.graphWeighted()  ){
         considerWeights=false;
         return;
@@ -9107,11 +9107,14 @@ void MainWindow::askAboutWeights(){
         return;
 
     if ( ! considerEdgeWeightsAct->isChecked() && !considerWeights){
-        switch( QMessageBox::information(
-                    this, "Edge weights and Distances",
-                    tr("This network is weighted.\n"
-                       "Take edge weights into account (Default: No)?"),
-                    QMessageBox::Yes|QMessageBox::No, QMessageBox::No) )
+        switch(
+               slotHelpMessageToUser(USER_MSG_QUESTION, tr("Network is edge-weighted. Consider edge weights?"),
+                                     tr("Edge-weighted network. Consider edge weights?"),
+                                     tr("The edges in this network have weights (non-unit values). "
+                                        "Take these edge weights into account to compute distances?"),
+                                     QMessageBox::Yes|QMessageBox::No, QMessageBox::Yes)
+
+               )
         {
         case QMessageBox::Yes:
             considerWeights=true;
@@ -9131,16 +9134,20 @@ void MainWindow::askAboutWeights(){
     }
 
     if (considerWeights){
-        switch( QMessageBox::information
-                ( this, "Edge weights and Distances",
-                  tr("Inverse edge weights during calculations? (Default: Yes)?\n\n"
-                     "If the weights denote cost or real distances (i.e. miles between cities), "
-                     "press No, since the distance between two nodes should be "
-                     "the quickest or cheaper one. \n\n"
-                     "If the weights denote value or strength (i.e. votes or interaction), "
-                     "press Yes to inverse the weights, since the distance between two "
-                     "nodes should be the most valuable one."),
-                  QMessageBox::Yes|QMessageBox::No, QMessageBox::Yes) )
+        switch(
+
+               slotHelpMessageToUser(
+                   USER_MSG_QUESTION, tr("Inverse edge weights during calculations? "),
+                   tr("Inverse edge weights during calculations? "),
+                   tr("If the edge weights denote cost or real distances (i.e. miles between cities), "
+                      "press No, since the distance between two nodes should be the quickest "
+                      "or cheaper one. \n\n"
+                      "If the weights denote value or strength (i.e. votes or interaction), "
+                      "press Yes to inverse the weights, since the distance between two "
+                      "nodes should be the most valuable one."),
+                   QMessageBox::Yes|QMessageBox::No, QMessageBox::Yes)
+
+               )
         {
         case QMessageBox::Yes:
             inverseWeights=true;
@@ -9231,7 +9238,7 @@ void MainWindow::slotGraphDistance(){
 *  Invokes calculation of the matrix of geodesic distances for the loaded network, then displays it.
 */
 void MainWindow::slotDistancesMatrix(){
-    qDebug("MW: slotDistancesMatrix()");
+    qDebug() << "MW::slotDistancesMatrix()";
     if ( !activeNodes()    )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
@@ -9421,7 +9428,7 @@ void MainWindow::slotConnectivity(){
 
     createProgressBar(0,progressMsg);
 
-    int connectivity=activeGraph.graphConnectivity();
+    int connectivity=activeGraph.graphConnectivity(true);
 
     qDebug () << "MW::slotConnectivity result " << connectivity;
 

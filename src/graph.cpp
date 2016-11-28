@@ -3764,18 +3764,18 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
     while ( !Q.empty() ) {
         u=Q.top().target;
         qDebug()<< "    *** dijkstra: take u = "<< u
-                   << " from Q which has minimum distance from s = " << s;
+                   << " from Q which has minimum distance from s =" << s;
          Q.pop();
 
         if ( ! m_graph [ u ]->isEnabled() )
             continue ;
 
         if (computeCentralities){
-            qDebug()<< "    dijkstra: We will calculate centralities, push u="<< u
+            qDebug()<< "    dijkstra: We will calculate centralities, push u ="<< u
                     << " to global stack Stack ";
             Stack.push(u);
         }
-        qDebug() << "    *** dijkstra: LOOP over every edge ("<< u <<",w) e E, "
+        qDebug() << "    *** dijkstra: LOOP over every edge ("<< u <<", w) e E, "
                  <<  "that is for each neighbor w of u";
         it1=m_graph [ u ] ->m_outEdges.cbegin();
         while ( it1!=m_graph [ u ] -> m_outEdges.cend() ) {
@@ -3792,58 +3792,58 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
             target = it1.key();
             weight = it1.value().second.first;
             w=index[ target ];
-            qDebug()<<"       dijkstra: u="<< u << " --> w="<< w << " (node "<< target
+            qDebug()<<"        -- u ="<< u << " -> w ="<< w << " (node "<< target
                    << ") of weight "<<  weight;
             if (inverseWeights) { //only invert if user asked to do so
                 weight = 1.0 / weight;
                 qDebug () << "       inverting weight to " << weight;
             }
 
-            qDebug() <<"       dijkstra: Start path discovery";
+            qDebug() <<"        Start path discovery";
 
             dist_u=DM.item(s,u);
             if (dist_u == RAND_MAX || dist_u < 0) {
                 dist_w = RAND_MAX;
-                qDebug() << "       dijkstra: dist_w = RAND_MAX " << RAND_MAX;
+                qDebug() << "        dist_w = RAND_MAX " << RAND_MAX;
 
             }
             else {
                 dist_w = dist_u + weight;
-                qDebug() << "       dijkstra: dist_w = dist_u + weight = "
-                         << dist_u << " + " << weight <<  " = " <<dist_w ;
+                qDebug() << "        dist_w = dist_u + weight = "
+                         << dist_u << "+" << weight <<  "=" <<dist_w ;
             }
-            qDebug() << "       dijkstra: RELAXATION : check if dist_w=" << dist_w
+            qDebug() << "        RELAXATION: check if dist_w =" << dist_w
                      <<  " is shorter than current DM(s,w)";
             if  (dist_w == DM.item(s, w)  && dist_w < RAND_MAX) {
-                qDebug() << "       dijkstra: dist_w : " << dist_w
+                qDebug() <<"        dist_w : " << dist_w
                          <<  " ==  DM(s,w) : " << DM.item(s, w);
                 temp= TM.item(s,w)+TM.item(s,u);
-                qDebug()<<"       dijkstra: Found another SP from s=" << s
-                       << " to w=" << w << " via u="<< u
-                       << " - Setting Sigma(s, w) = "<< temp;
+                qDebug() <<"        Found ANOTHER SP from s =" << s
+                        << " to w=" << w << " via u="<< u
+                        << " - Setting Sigma(s, w) = "<< temp;
                 if (s!=w)
                     TM.setItem(s,w, temp);
                 if (computeCentralities){
-                    qDebug()<< "       dijkstra/SC:";
+
                     if ( s!=w && s != u && u!=w ) {
-                        qDebug() << "       dijkstra: Calculate SC: setSC of u="<<u
+                        qDebug() << "        Calculate SC: setSC of u ="<<u
                                  <<" to "<<m_graph[u]->SC()+1;
                         m_graph[u]->setSC(m_graph[u]->SC()+1);
                     }
                     else {
-                        qDebug() << "       dijkstra/SC: skipping setSC of u, because s="
+                        qDebug() << "        Skipping setSC of u, because s="
                                  <<s<<" w="<< w << " u="<< u;
                     }
-                    qDebug() << "       dijkstra/SC: SC is " << m_graph[u]->SC();
+                    qDebug() << "        SC is " << m_graph[u]->SC();
 
-                    qDebug() << "       dijkstra: appending u="<< u << " to list Ps[w=" << w
+                    qDebug() << "        Appending u="<< u << " to list Ps[w =" << w
                              << "] with the predecessors of w on all shortest paths from s ";
                     m_graph[w]->appendToPs(u);
                 }
             }
 
             else if (dist_w > 0 && dist_w < DM.item(s, w)  ) {
-                qDebug() << "       dijkstra: Found new smaller SP! Set DM (s,w) = DM(" << s
+                qDebug() << "        Found new smaller SP! Will set DM (s,w) = DM(" << s
                          << ","<< w
                          << ") = "<< dist_w ;
                 DM.setItem(s, w, dist_w);
@@ -3851,13 +3851,13 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
                 m_graphGeodesicsCount++;
 
 
-                qDebug()<< "       dijkstra:  d("
+                qDebug()<< "         Verifying: d("
                         << s <<"," << w
                         <<")=" << DM.item(s,w)
-                       << " - inserting " << w
-                       << " to inflRange J of " << s
+                       << ". Also inserting " << w
+                       << " to inflRange J of" << s
                        << " - and " << s
-                       << " to inflDomain I of "<< w;
+                       << " to inflDomain I of"<< w;
 
                 XRM.setItem(s,w,1);
                 influenceRanges.insertMulti(s,w);
@@ -3865,8 +3865,8 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
 
 
                 if (s!=w) {
-                    qDebug()<<"       dijkstra: Found NEW SP from s=" << s
-                           << " to w=" << w << " via u="<< u
+                    qDebug()<<"        Found NEW SP from s =" << s
+                           << " to w =" << w << " via u ="<< u
                            << " - Setting Sigma(s, w) = 1 ";
                     TM.setItem(s,w, 1);
                 }
@@ -3876,29 +3876,28 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
                                 dist_w,
                                 sizeOfNthOrderNeighborhood.value(dist_w)+1
                                 );
-                    qDebug()<<"       dijkstra/PC: number of nodes at distance "
+                    qDebug()<<"        For PC: number of nodes at distance "
                            << dist_w << "from s is "
                            <<  sizeOfNthOrderNeighborhood.value(dist_w);
 
                     m_graph [s]->setCC (m_graph [s]->CC() + dist_w);
-                    qDebug()<<"       dijkstra/CC: sum of distances = "
+                    qDebug()<<"        For CC: sum of distances ="
                            <<  m_graph [s]->CC() << " (will invert it l8r)";
 
                     if (m_graph [s]->eccentricity() < dist_w )
                         m_graph [s]->setEccentricity(dist_w);
-                    qDebug()<<"       dijkstra/EC: max distance  = "
+                    qDebug()<<"        For EC: max distance ="
                               <<  m_graph [s]->eccentricity();
                 }
 
-                qDebug()<< "       dijkstra/graphDiameter";
                 if ( dist_w > m_graphDiameter){
                     m_graphDiameter=dist_w;
-                    qDebug() << "    dijkstra: new m_graphDiameter = " << m_graphDiameter ;
+                    qDebug() << "        New graph diameter =" << m_graphDiameter ;
                 }
 
             }
             else
-                qDebug() << "    dijkstra: NO";
+                qDebug() << "        Not a new SP";
 
 
 //            qDebug()<< "### dijkstra: Start path counting";
@@ -3911,6 +3910,7 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
         }
 
     }
+    qDebug() << "### dijkstra: LOOP END. Q is empty - Returning.";
 }
 
 
@@ -4417,7 +4417,7 @@ void Graph::centralityClosenessInfluenceRange(const bool considerWeights,
         IRCC=0;
         if (!(*it)->isIsolated()) {
             // find connected nodes
-            QList<int> influencedVertices = influenceRanges.values((*it)->name()-1);
+            QList<int> influencedVertices = influenceRanges.values(index[(*it)->name()]);
             Ji=influencedVertices.size();
             for (int i = 0; i < Ji; ++i) {
                 qDebug() << "Graph:: centralityClosenessImproved - vertex " <<  (*it)->name()
@@ -5267,7 +5267,7 @@ void Graph::prestigeProximity( const bool considerWeights,
         PP=0; i=0;
         if (!(*it)->isIsolated()){
             // find connected nodes
-            QList<int> influencerVertices = influenceDomains.values((*it)->name()-1);
+            QList<int> influencerVertices = influenceDomains.values(index[(*it)->name()]);
             qDebug()<< "Graph::prestigeProximity() - vertex"
                     << (*it)->name()
                     <<"influencerVertices"

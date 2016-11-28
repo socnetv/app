@@ -690,7 +690,7 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
     os << "- Max value:  ";
 
     if (maxVal == -1 ||  maxVal==RAND_MAX )
-        os <<  infinity ;
+        os <<  infinity << " (=not connected nodes, in distance matrix)";
     else
         os <<   maxVal;
 
