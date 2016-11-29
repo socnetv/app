@@ -3701,8 +3701,8 @@ void Graph::BFS(const int &s, const bool &computeCentralities,
 
 /**
 *	Dijkstra's algorithm for the SSSP in weighted graphs (directed or not)
-*   It uses a min-priority queue to provide constant time lookup of the minimum
-*   distance. The min-priority queue is implemented with std::priority_queue
+*   It uses a min-priority queue prQ to provide constant time lookup of the minimum
+*   distance. The priority queue is implemented with std::priority_queue
 
     INPUT:
         a 'source' vertex with index s and a boolean computeCentralities.
@@ -3720,7 +3720,7 @@ void Graph::BFS(const int &s, const bool &computeCentralities,
             b) For every vertex u:
                 it increases SC(u) by one, when it finds a new shor. path from s to t through u.
                 appends each neighbor y of u to the list Ps, thus Ps stores all predecessors of y on all all shortest paths from s
-            c) Each vertex u popped from Q is pushed to a stack Stack
+            c) Each vertex u popped from prQ is pushed to a stack Stack
 
 */
 void Graph::dijkstra(const int &s, const bool &computeCentralities,
@@ -3733,8 +3733,8 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
     bool edgeStatus=false;
     H_edges::const_iterator it1;
 
-    qDebug() << "dijkstra: Construct a priority queue Q of all vertices-distances";
-    priority_queue<Distance, vector<Distance>, CompareDistances> Q;
+    qDebug() << "dijkstra: Construct a priority queue prQ of all vertices-distances";
+    priority_queue<Distance, vector<Distance>, CompareDistances> prQ;
 
     //set distance of s from s equal to 0
     DM.setItem(s,s,0);
@@ -3745,27 +3745,28 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it) {
         v=index[ (*it)->name() ];
         if (v != s ){
-            // DM initialization to RAND_MAX already done in distanceMatrixCreate
-            //DM.setItem(s,v,RAND_MAX);
-            qDebug() << " push " << v << " to Q with infinite distance from s";
-            Q.push(Distance(v,RAND_MAX));
+            // NOTE: DM(i,j) init to RAND_MAX already done in distanceMatrixCreate
+            // Not needed here: DM.setItem(s,v,RAND_MAX);
+//            qDebug() << " push " << v << " to prQ with infinite distance from s";
+//            prQ.push(Distance(v,RAND_MAX));
             //TODO // Previous node in optimal path from source
             //    previous[v]  := undefined
         }
     }
-    qDebug() << " finally push source " << s << " to Q with 0 distance from s";
+    qDebug() << " push source " << s << " to prQ with 0 distance from s";
 
-    //crucial: without it the priority Q would pop arbitrary node at first loop
-    Q.push(Distance(s,0));
+    //crucial: without it the priority prQ would pop arbitrary node at first loop
+    prQ.push(Distance(s,0));
 
-    qDebug()<<"dijkstra: Q size "<< Q.size();
+    qDebug()<<"dijkstra: prQ size "<< prQ.size();
 
-    qDebug() << "### dijkstra: LOOP: While Q not empty ";
-    while ( !Q.empty() ) {
-        u=Q.top().target;
+
+    qDebug() << "### dijkstra: LOOP: While prQ not empty ";
+    while ( !prQ.empty() ) {
+        u=prQ.top().target;
         qDebug()<< "    *** dijkstra: take u = "<< u
-                   << " from Q which has minimum distance from s =" << s;
-         Q.pop();
+                   << " from prQ which has minimum distance from s =" << s;
+         prQ.pop();
 
         if ( ! m_graph [ u ]->isEnabled() )
             continue ;
@@ -3775,8 +3776,8 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
                     << " to global stack Stack ";
             Stack.push(u);
         }
-        qDebug() << "    *** dijkstra: LOOP over every edge ("<< u <<", w) e E, "
-                 <<  "that is for each neighbor w of u";
+        qDebug() << "    *** dijkstra: LOOP over every edge ("<< u <<", w ) e E, "
+                 <<  "for each neighbor w of u";
         it1=m_graph [ u ] ->m_outEdges.cbegin();
         while ( it1!=m_graph [ u ] -> m_outEdges.cend() ) {
             relation = it1.value().first;
@@ -3792,8 +3793,8 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
             target = it1.key();
             weight = it1.value().second.first;
             w=index[ target ];
-            qDebug()<<"        -- u ="<< u << " -> w ="<< w << " (node "<< target
-                   << ") of weight "<<  weight;
+            qDebug()<<"        -- (u, w) = ("<< u << ","<< w << ") =" << weight
+                   <<"( node"<< target << ")";
             if (inverseWeights) { //only invert if user asked to do so
                 weight = 1.0 / weight;
                 qDebug () << "       inverting weight to " << weight;
@@ -3802,6 +3803,7 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
             qDebug() <<"        Start path discovery";
 
             dist_u=DM.item(s,u);
+
             if (dist_u == RAND_MAX || dist_u < 0) {
                 dist_w = RAND_MAX;
                 qDebug() << "        dist_w = RAND_MAX " << RAND_MAX;
@@ -3813,7 +3815,8 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
                          << dist_u << "+" << weight <<  "=" <<dist_w ;
             }
             qDebug() << "        RELAXATION: check if dist_w =" << dist_w
-                     <<  " is shorter than current DM(s,w)";
+                     <<  " is shorter than current DM(s,w) = DM("
+                      << s <<","<<w <<")" <<DM.item(s, w) ;
             if  (dist_w == DM.item(s, w)  && dist_w < RAND_MAX) {
                 qDebug() <<"        dist_w : " << dist_w
                          <<  " ==  DM(s,w) : " << DM.item(s, w);
@@ -3843,26 +3846,28 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
             }
 
             else if (dist_w > 0 && dist_w < DM.item(s, w)  ) {
-                qDebug() << "        Found new smaller SP! Will set DM (s,w) = DM(" << s
-                         << ","<< w
-                         << ") = "<< dist_w ;
+
+                prQ.push(Distance(w,dist_w)); //@FIXME: w might have been already visited?
+                //If so, we might use QMap<int> which is sorted (minimum)
+                // and also provides contain()
                 DM.setItem(s, w, dist_w);
+
                 m_graphAverageDistance += dist_w;
                 m_graphGeodesicsCount++;
 
-
-                qDebug()<< "         Verifying: d("
-                        << s <<"," << w
-                        <<")=" << DM.item(s,w)
-                       << ". Also inserting " << w
-                       << " to inflRange J of" << s
-                       << " - and " << s
-                       << " to inflDomain I of"<< w;
+                qDebug() << "        Found new smaller SP! Set DM (s,w) = DM("
+                         << s << ","<< w
+                         << ") = "<< dist_w << "="<< DM.item(s,w)
+                         << " m_graphAverageDistance ="
+                         << m_graphAverageDistance
+                       << "Inserting" << w
+                       << "to inflRange J of" << s
+                       << "and" << s
+                       << "to inflDomain I of"<< w;
 
                 XRM.setItem(s,w,1);
                 influenceRanges.insertMulti(s,w);
                 influenceDomains.insertMulti(w,s);
-
 
                 if (s!=w) {
                     qDebug()<<"        Found NEW SP from s =" << s
@@ -3910,7 +3915,7 @@ void Graph::dijkstra(const int &s, const bool &computeCentralities,
         }
 
     }
-    qDebug() << "### dijkstra: LOOP END. Q is empty - Returning.";
+    qDebug() << "### dijkstra: LOOP END. prQ is empty - Returning.";
 }
 
 
