@@ -925,11 +925,49 @@ void MainWindow::initActions(){
                                            "There must be some nodes selected!"));
     editNodeSelectedToCliqueAct->setWhatsThis(tr("Clique from Selected Nodes\n\n"
                                            "Adds all possible edges between selected nodes, "
-                                           "so that they become a clique, a complete subgraph \n"
-                                           ""
+                                           "so that they become a complete subgraph (clique)\n"
                                            "You must have some nodes selected."));
     connect(editNodeSelectedToCliqueAct, SIGNAL(triggered()),
             this, SLOT(slotEditNodeSelectedToClique()));
+
+
+    editNodeSelectedToStarAct = new QAction(QIcon(":/images/subgraphstar.png"),
+                                               tr("Create a star from selected nodes "), this);
+    editNodeSelectedToStarAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_S));
+    editNodeSelectedToStarAct->setStatusTip(tr("Connect selected nodes with edges/arcs to create a star -- "
+                                           "There must be some nodes selected!"));
+    editNodeSelectedToStarAct->setWhatsThis(tr("Star from Selected Nodes\n\n"
+                                           "Adds edges between selected nodes, "
+                                           "so that they become a star subgraph.\n"
+                                           "You must have some nodes selected."));
+    connect(editNodeSelectedToStarAct, SIGNAL(triggered()),
+            this, SLOT(slotEditNodeSelectedToStar()));
+
+
+    editNodeSelectedToCycleAct = new QAction(QIcon(":/images/subgraphcycle.png"),
+                                               tr("Create a cycle from selected nodes "), this);
+    editNodeSelectedToCycleAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_Y));
+    editNodeSelectedToCycleAct->setStatusTip(tr("Connect selected nodes with edges/arcs to create a star -- "
+                                           "There must be some nodes selected!"));
+    editNodeSelectedToCycleAct->setWhatsThis(tr("Cycle from Selected Nodes\n\n"
+                                           "Adds edges between selected nodes, "
+                                           "so that they become a cycle subgraph.\n"
+                                           "You must have some nodes selected."));
+    connect(editNodeSelectedToCycleAct, SIGNAL(triggered()),
+            this, SLOT(slotEditNodeSelectedToCycle()));
+
+
+    editNodeSelectedToLineAct = new QAction(QIcon(":/images/subgraphline.png"),
+                                               tr("Create a line from selected nodes "), this);
+    editNodeSelectedToLineAct ->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_Y));
+    editNodeSelectedToLineAct->setStatusTip(tr("Connect selected nodes with edges/arcs to create a line-- "
+                                           "There must be some nodes selected!"));
+    editNodeSelectedToLineAct->setWhatsThis(tr("Line from Selected Nodes\n\n"
+                                           "Adds edges between selected nodes, "
+                                           "so that they become a line subgraph.\n"
+                                           "You must have some nodes selected."));
+    connect(editNodeSelectedToLineAct, SIGNAL(triggered()),
+            this, SLOT(slotEditNodeSelectedToLine()));
 
 
     editNodeColorAll = new QAction(QIcon(":/images/nodecolor.png"), tr("Change All Nodes Color (this session)"),	this);
@@ -2367,6 +2405,9 @@ void MainWindow::initMenuBar() {
     editNodeMenu -> addSeparator();
 
     editNodeMenu -> addAction (editNodeSelectedToCliqueAct);
+    editNodeMenu -> addAction (editNodeSelectedToStarAct);
+    editNodeMenu -> addAction (editNodeSelectedToCycleAct);
+    editNodeMenu -> addAction (editNodeSelectedToLineAct);
 
     editNodeMenu -> addSeparator();
 
@@ -6709,6 +6750,9 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
                                        + tr(" nodes"));
             contextMenu -> addSeparator();
             contextMenu -> addAction(editNodeSelectedToCliqueAct);
+            contextMenu -> addAction(editNodeSelectedToStarAct);
+            contextMenu -> addAction(editNodeSelectedToCycleAct);
+            contextMenu -> addAction(editNodeSelectedToLineAct);
 
         }
         else {
@@ -7116,9 +7160,8 @@ void MainWindow::slotEditNodeProperties( const QString label, const int size,
 
 
 /**
- * @brief MainWindow::slotEditNodeSelectedToClique
- * Creates a clique (complete subgraph) from selected nodes.
- * Calls Graph::cliqueCreate()
+ * @brief Creates a complete subgraph (clique) from selected nodes.
+ * Calls Graph::verticesSelectedCreateClique()
  */
 void MainWindow::slotEditNodeSelectedToClique () {
     qDebug() << "MW::slotEditNodeSelectedToClique()";
@@ -7134,7 +7177,7 @@ void MainWindow::slotEditNodeSelectedToClique () {
         return;
     }
 
-    activeGraph.cliqueCreate( selectedNodes() );
+    activeGraph.verticesSelectedCreateClique( selectedNodes() );
 
     slotHelpMessageToUser(USER_MSG_INFO,tr("Clique created."),
                           tr("A new clique has been created from ") + QString::number(selectedNodes().count())
@@ -7142,6 +7185,91 @@ void MainWindow::slotEditNodeSelectedToClique () {
                           );
 }
 
+
+
+/**
+ * @brief Creates a star subgraph from selected nodes.
+ * User must choose a central actor.
+ * Calls Graph::slotEditNodeSelectedToStar()
+ */
+void MainWindow::slotEditNodeSelectedToStar() {
+    qDebug() << "MW::slotEditNodeSelectedToStar()";
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+    if ( selectedNodes().count() == 0 ) {
+        slotHelpMessageToUser(USER_MSG_INFO,tr("No nodes selected."),
+                              tr("Cannot create star subgraph. No nodes are selected."),
+                              tr("Select some nodes first.")
+                              );
+        return;
+    }
+    int center;
+
+    activeGraph.verticesSelectedCreateStar( selectedNodes(), center);
+
+    slotHelpMessageToUser(USER_MSG_INFO,tr("Star subgraph created."),
+                          tr("A new star subgraph has been created from ") + QString::number(selectedNodes().count())
+                          + tr(" nodes")
+                          );
+}
+
+
+
+/**
+ * @brief Creates a cycle subgraph from selected nodes.
+ * Calls Graph::verticesSelectedCreateCycle()
+ */
+void MainWindow::slotEditNodeSelectedToCycle() {
+    qDebug() << "MW::slotEditNodeSelectedToCycle()";
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+    if ( selectedNodes().count() == 0 ) {
+        slotHelpMessageToUser(USER_MSG_INFO,tr("No nodes selected."),
+                              tr("Cannot create cycle subgraph. No nodes are selected."),
+                              tr("Select some nodes first.")
+                              );
+        return;
+    }
+
+    activeGraph.verticesSelectedCreateCycle( selectedNodes() );
+
+    slotHelpMessageToUser(USER_MSG_INFO,tr("Cycle subgraph created."),
+                          tr("A new cycle subgraph has been created from ") + QString::number(selectedNodes().count())
+                          + tr(" nodes")
+                          );
+}
+
+
+
+/**
+ * @brief Creates a line subgraph from selected nodes.
+ * Calls Graph::verticesSelectedCreateLine()
+ */
+void MainWindow::slotEditNodeSelectedToLine() {
+    qDebug() << "MW::slotEditNodeSelectedToLine()";
+    if ( !activeNodes() )  {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+    if ( selectedNodes().count() == 0 ) {
+        slotHelpMessageToUser(USER_MSG_INFO,tr("No nodes selected."),
+                              tr("Cannot create line subgraph. No nodes are selected."),
+                              tr("Select some nodes first.")
+                              );
+        return;
+    }
+
+    activeGraph.verticesSelectedCreateLine( selectedNodes() );
+
+    slotHelpMessageToUser(USER_MSG_INFO,tr("Line subgraph created."),
+                          tr("A new line subgraph has been created from ") + QString::number(selectedNodes().count())
+                          + tr(" nodes")
+                          );
+}
 
 
 
@@ -7543,11 +7671,29 @@ void MainWindow::slotEditSelectionChanged(const int nodes, const int edges) {
         editNodeSelectedToCliqueAct->setText(tr("Create a clique from ")
                                              + QString::number(nodes)
                                              + tr(" selected nodes"));
+        editNodeSelectedToStarAct->setEnabled(true);
+        editNodeSelectedToStarAct->setText(tr("Create a star from ")
+                                             + QString::number(nodes)
+                                             + tr(" selected nodes"));
+        editNodeSelectedToCycleAct->setEnabled(true);
+        editNodeSelectedToCycleAct->setText(tr("Create a cycle from ")
+                                             + QString::number(nodes)
+                                             + tr(" selected nodes"));
+        editNodeSelectedToLineAct->setEnabled(true);
+        editNodeSelectedToLineAct->setText(tr("Create a line from ")
+                                             + QString::number(nodes)
+                                             + tr(" selected nodes"));
     }
     else {
         editNodeRemoveAct->setText(tr("Remove Node"));
         editNodeSelectedToCliqueAct->setText(tr("Create a clique from selected nodes"));
         editNodeSelectedToCliqueAct->setEnabled(false);
+        editNodeSelectedToStarAct->setText(tr("Create a star from selected nodes"));
+        editNodeSelectedToStarAct->setEnabled(false);
+        editNodeSelectedToCycleAct->setText(tr("Create a cycle from selected nodes"));
+        editNodeSelectedToCycleAct->setEnabled(false);
+        editNodeSelectedToLineAct->setText(tr("Create a line from selected nodes"));
+        editNodeSelectedToLineAct->setEnabled(false);
 
     }
 

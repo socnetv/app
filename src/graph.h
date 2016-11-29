@@ -424,6 +424,11 @@ public:
     QList<int> verticesList();
     QSet<int> verticesSet();
 
+    void verticesSelectedCreateClique(const QList<int> &verticesList);
+    void verticesSelectedCreateStar(const QList<int> &verticesList, const int &center);
+    void verticesSelectedCreateCycle(const QList<int> &verticesList);
+    void verticesSelectedCreateLine(const QList<int> &verticesList);
+
     qreal length(const QPointF &a, const QPointF &b);
     qreal length(const QPointF &a);
     int sign(const qreal &D);
@@ -608,8 +613,6 @@ public:
 
 
     float numberOfTriples(int v1);
-
-    void cliqueCreate(const QList<int> &verticesList);
 
     void graphCliques(QSet<int> R=QSet<int>(), QSet<int> P=QSet<int>(), QSet<int> X=QSet<int>() );
     void graphCliqueAdd (const QList<int> &clique);

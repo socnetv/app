@@ -96,5 +96,8 @@
         <file>images/petersengraph.png</file>
         <file>images/cliquenew.png</file>
         <file>images/edit-rename.png</file>
+        <file>images/subgraphstar.png</file>
+        <file>images/subgraphline.png</file>
+        <file>images/subgraphcycle.png</file>
     </qresource>
 </RCC>

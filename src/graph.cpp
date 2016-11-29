@@ -2214,6 +2214,123 @@ QSet<int> Graph::verticesSet(){
 }
 
 
+
+
+
+
+/**
+ * @brief Creates a clique (connected subgraph) with all vertices in vList
+ * @param vList
+ */
+void Graph::verticesSelectedCreateClique(const QList<int> &vList) {
+    qDebug()<<"Graph::verticesSelectedCreateClique() - list:" << vList;
+
+    if ( relations() == 1 && edgesEnabled()==0 ) {
+        QString newRelationName = QString::number ( vList.count() ) + tr("-clique");
+        relationCurrentRename(newRelationName, true);
+    }
+
+    int weight;
+    for (int i=0; i < vList.count(); ++i ) {
+            for (int j=i+1; j < vList.count(); ++j ) {
+                if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
+                    edgeCreate(vList.value(i), vList.value(j),1.0,
+                               initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED );
+                }
+                else {
+                    edgeUndirectedSet(vList.value(i), vList.value(j), weight);
+                }
+            }
+    }
+}
+
+
+
+
+/**
+ * @brief Creates a star subgraph with all vertices in vList
+ * @param vList
+ */
+void Graph::verticesSelectedCreateStar(const QList<int> &vList, const int &center) {
+    qDebug()<<"Graph::verticesSelectedCreateStar() - list:" << vList;
+
+    if ( relations() == 1 && edgesEnabled()==0 ) {
+        QString newRelationName = QString::number ( vList.count() ) + tr("-clique");
+        relationCurrentRename(newRelationName, true);
+    }
+
+    int weight;
+    for (int i=0; i < vList.count(); ++i ) {
+            for (int j=i+1; j < vList.count(); ++j ) {
+                if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
+                    edgeCreate(vList.value(i), vList.value(j),1.0,
+                               initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED );
+                }
+                else {
+                    edgeUndirectedSet(vList.value(i), vList.value(j), weight);
+                }
+            }
+    }
+}
+
+
+
+/**
+ * @brief Creates a cycle subgraph with all vertices in vList
+ * @param vList
+ */
+void Graph::verticesSelectedCreateCycle(const QList<int> &vList) {
+    qDebug()<<"Graph::verticesSelectedCreateCycle() - list:" << vList;
+
+    if ( relations() == 1 && edgesEnabled()==0 ) {
+        QString newRelationName = QString::number ( vList.count() ) + tr("-clique");
+        relationCurrentRename(newRelationName, true);
+    }
+
+    int weight;
+    for (int i=0; i < vList.count(); ++i ) {
+            for (int j=i+1; j < vList.count(); ++j ) {
+                if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
+                    edgeCreate(vList.value(i), vList.value(j),1.0,
+                               initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED );
+                }
+                else {
+                    edgeUndirectedSet(vList.value(i), vList.value(j), weight);
+                }
+            }
+    }
+}
+
+
+
+/**
+ * @brief Creates a line subgraph with all vertices in vList
+ * @param vList
+ */
+void Graph::verticesSelectedCreateLine(const QList<int> &vList) {
+    qDebug()<<"Graph::verticesSelectedCreateLine() - list:" << vList;
+
+    if ( relations() == 1 && edgesEnabled()==0 ) {
+        QString newRelationName = QString::number ( vList.count() ) + tr("-clique");
+        relationCurrentRename(newRelationName, true);
+    }
+
+    int weight;
+    for (int i=0; i < vList.count(); ++i ) {
+            for (int j=i+1; j < vList.count(); ++j ) {
+                if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
+                    edgeCreate(vList.value(i), vList.value(j),1.0,
+                               initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED );
+                }
+                else {
+                    edgeUndirectedSet(vList.value(i), vList.value(j), weight);
+                }
+            }
+    }
+}
+
+
+
 /**
  * @brief Graph::graphModifiedSet
  * @param graphChangedFlag
@@ -7289,34 +7406,6 @@ void Graph::writeTriadCensus(
                .toString ( QString ("ddd, dd.MMM.yyyy hh:mm:ss")) << "\n\n";
     file.close();
 
-}
-
-
-/**
- * @brief Graph::cliqueCreate
- * @param vList
- * Creates a clique (connected subgraph) with all vertices in vList
- */
-void Graph::cliqueCreate(const QList<int> &vList) {
-    qDebug()<<"Graph::cliqueCreate() - list:" << vList;
-
-    if ( relations() == 1 && edgesEnabled()==0 ) {
-        QString newRelationName = QString::number ( vList.count() ) + tr("-clique");
-        relationCurrentRename(newRelationName, true);
-    }
-
-    int weight;
-    for (int i=0; i < vList.count(); ++i ) {
-            for (int j=i+1; j < vList.count(); ++j ) {
-                if ( ! (weight=edgeExists( vList.value(i), vList.value(j) ) ) ) {
-                    edgeCreate(vList.value(i), vList.value(j),1.0,
-                               initEdgeColor, EDGE_RECIPROCAL_UNDIRECTED );
-                }
-                else {
-                    edgeUndirectedSet(vList.value(i), vList.value(j), weight);
-                }
-            }
-    }
 }
 
 
