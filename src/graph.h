@@ -334,11 +334,14 @@ public:
                     const int two_sm_mode,
                     const QString delimiter=QString::null);
 
-    void graphSave(QString fileName, int fileType);
+    void graphSave(const QString &fileName,
+                   const int &fileType,
+                   const bool &saveEdgeWeights=true);
     bool graphSaveToPajekFormat (const QString &fileName,
                                  QString networkName="",
                                  int maxWidth=0, int maxHeight=0);
-    bool graphSaveToAdjacencyFormat (QString fileName);
+    bool graphSaveToAdjacencyFormat (const QString &fileName,
+                                     const bool &saveEdgeWeights=true);
 
     bool graphSaveToGraphMLFormat (const QString &fileName,
                                    QString networkName="",
@@ -495,8 +498,10 @@ public:
     /* PRINT OUT TO FILES*/
 
     void writeDataSetToFile(const QString dir, const QString );
-    void writeAdjacencyMatrixTo(QTextStream& os);
+    void writeAdjacencyMatrixTo(QTextStream& os,
+                                const bool &saveEdgeWeights=true);
     void writeAdjacencyMatrix(const QString fileName);
+    void writeAdjacencyMatrixPlotText(const QString fileName);
 
     void writeAdjacencyMatrixInvert(const QString &filename,
                                     const QString &method);

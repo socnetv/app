@@ -8729,7 +8729,9 @@ bool Graph::graphFileFormatExportSupported(const int &fileFormat) const {
  * @param fileType
   * @return
  */
-void Graph::graphSave( QString fileName, int fileType )
+void Graph::graphSave(const QString &fileName,
+                      const int &fileType ,
+                      const bool &saveEdgeWeights)
 {
     qDebug() << "Graph::graphSave()";
     bool saved = false;
@@ -8742,7 +8744,7 @@ void Graph::graphSave( QString fileName, int fileType )
     }
     case FILE_ADJACENCY: {
         qDebug() << "Graph::graphSave() - Adjacency formatted file";
-        saved=graphSaveToAdjacencyFormat(fileName) ;
+        saved=graphSaveToAdjacencyFormat(fileName, saveEdgeWeights) ;
         break;
     }
     case FILE_GRAPHVIZ: {
@@ -8882,7 +8884,8 @@ bool Graph::graphSaveToPajekFormat (const QString &fileName, \
  * @param fileName
  * @return
  */
-bool Graph::graphSaveToAdjacencyFormat (QString fileName){
+bool Graph::graphSaveToAdjacencyFormat (const QString &fileName,
+                                        const bool &saveEdgeWeights){
     QFile file( fileName );
     if ( !file.open( QIODevice::WriteOnly ) )  {
         emit statusMessage ( tr("Error. Could not write to ") + fileName );
@@ -8892,7 +8895,7 @@ bool Graph::graphSaveToAdjacencyFormat (QString fileName){
     outText.setCodec("UTF-8");
     qDebug("Graph: graphSaveToAdjacencyFormat() for %i vertices", vertices());
 
-    writeAdjacencyMatrixTo(outText);
+    writeAdjacencyMatrixTo(outText, saveEdgeWeights);
 
     file.close();
     QString fileNameNoPath=fileName.split("/").last();
@@ -12882,7 +12885,8 @@ void Graph::writeDataSetToFile (const QString dir, const QString fileName) {
 /** 
     Exports the adjacency matrix to a given textstream
 */
-void Graph::writeAdjacencyMatrixTo(QTextStream& os){
+void Graph::writeAdjacencyMatrixTo(QTextStream& os,
+                                   const bool &saveEdgeWeights){
     qDebug("Graph: adjacencyMatrix(), writing matrix with %i vertices", vertices());
     QList<Vertex*>::const_iterator it, it1;
     float weight=-1;
@@ -12892,7 +12896,7 @@ void Graph::writeAdjacencyMatrixTo(QTextStream& os){
             if ( ! (*it1)->isEnabled() ) continue;
             if ( (weight = edgeExists( (*it)->name(), (*it1)->name() )  ) !=0 ) {
                 //os << static_cast<int> (weight) << " ";
-                os << weight << " ";
+                os << ((saveEdgeWeights) ? weight : 1 ) << " ";
             }
             else
                 os << "0 ";
@@ -12910,7 +12914,6 @@ void Graph::writeAdjacencyMatrixTo(QTextStream& os){
 /** 
     Writes the adjacency matrix of G to a specified file fn
     This is called by MainWindow::slotViewAdjacencyMatrix()
-    The resulting matrix HAS NO spaces between elements.
 */
 void Graph::writeAdjacencyMatrix (const QString fn) {
     qDebug()<<"Graph::writeAdjacencyMatrix() to : " << fn;
@@ -12926,6 +12929,7 @@ void Graph::writeAdjacencyMatrix (const QString fn) {
     outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
     outText << "Network name: "<< graphName() <<" \n";
     outText << "Adjacency matrix: \n\n";
+    outText << fixed;
     QList<Vertex*>::const_iterator it, it1;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() ) continue;
@@ -12949,13 +12953,58 @@ void Graph::writeAdjacencyMatrix (const QString fn) {
 }
 
 
+
+/**
+    Writes a visual representation of the adjacency matrix of G
+    to a specified file fn
+    This is called by MainWindow::slotViewAdjacencyMatrixPlotText()
+    The resulting matrix HAS NO spaces between elements.
+*/
+void Graph::writeAdjacencyMatrixPlotText (const QString fn) {
+    qDebug()<<"Graph::writeAdjacencyMatrix() to : " << fn;
+    QFile file( fn );
+    if ( !file.open( QIODevice::WriteOnly ) )  {
+        emit statusMessage ( tr("Error. Could not write to ") + fn );
+        return;
+    }
+    QTextStream outText( &file );
+    outText.setCodec("UTF-8");
+    int sum=0;
+    float weight=0;
+    outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
+    outText << "Network name: "<< graphName() <<" \n";
+    outText << "Adjacency matrix visual representation: \n\n";
+    outText << fixed;
+    QList<Vertex*>::const_iterator it, it1;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( ! (*it)->isEnabled() ) continue;
+        for (it1=m_graph.cbegin(); it1!=m_graph.cend(); ++it1){
+            if ( ! (*it1)->isEnabled() ) continue;
+            if ( (weight =  edgeExists ( (*it)->name(), (*it1)->name() )  )!=0 ) {
+                sum++;
+                outText << QString("\xe2\x96\xa0");
+            }
+            else
+                outText << QString("\xe2\x96\xa1");
+        }
+        outText << endl;
+    }
+
+    qDebug("Graph: Found a total of %i edge",sum);
+    if ( sum != edgesEnabled() ) qDebug ("Error in edge count found!!!");
+    else qDebug("Edge count OK!");
+
+    file.close();
+}
+
+
 /*
  *  Creates an adjacency matrix AM
  *  where AM(i,j)=1 if i is connected to j
  *  and AM(i,j)=0 if i not connected to j
  *
  *  Used in Graph::centralityInformation(), Graph::walksMatrixCreate
- * and Graph::adjacencyMatrixInvert()
+ *  and Graph::adjacencyMatrixInvert()
  */
 void Graph::adjacencyMatrixCreate(const bool dropIsolates,
                                   const bool considerWeights,
