@@ -670,7 +670,7 @@ void MainWindow::initActions(){
 
     networkViewSociomatrixPlotAct = new QAction(QIcon(":/images/sm.png"),
                                      tr("Plot Adjacency Matrix (text)"),  this);
-    networkViewSociomatrixPlotAct ->setShortcut(Qt::Key_F6);
+    networkViewSociomatrixPlotAct ->setShortcut(Qt::SHIFT + Qt::Key_F6);
     networkViewSociomatrixPlotAct->setStatusTip(tr("Plots the adjacency matrix in a text file using unicode characters."));
     networkViewSociomatrixPlotAct->setWhatsThis(
                 tr("Plot Adjacency Matrix (text)\n\n"
