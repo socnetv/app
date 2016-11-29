@@ -86,6 +86,7 @@ class RandSmallWorldDialog;
 class RandScaleFreeDialog;
 class RandRegularDialog;
 class SettingsDialog;
+class TextEditor;
 
 
 /**
@@ -403,6 +404,7 @@ signals:
     void signalRelationAddAndChange(const QString &relName, const bool &changeRelation=true);
 
 private:
+    QList<TextEditor *> m_textEditors;
     QMap<QString,QString> appSettings;
     QGraphicsScene *scene;
 

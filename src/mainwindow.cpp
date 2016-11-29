@@ -141,11 +141,20 @@ MainWindow::MainWindow(const QString & m_fileName) {
 
 
 
+/**
+ * @brief Deletes variables on MW closing
+ */
 MainWindow::~MainWindow() {
     qDebug() << "MW::~MainWindow() Destruct function running...";
     delete printer;
     delete scene;
     delete graphicsWidget;
+    foreach ( TextEditor *ed, m_textEditors) {
+        ed->close();
+        delete ed;
+
+    }
+    m_textEditors.clear();
     qDebug() << "MW::~MainWindow() Destruct function finished - bye!";
 }
 
@@ -3964,6 +3973,14 @@ void MainWindow::initApp(){
                     );
     }
 
+    qDebug()<<"MW::initApp() - Clearing my"
+           <<m_textEditors.size()
+          <<"textEditors";
+    foreach ( TextEditor *ed, m_textEditors) {
+        ed->close();
+        delete ed;
+    }
+    m_textEditors.clear();
 
     /** set window title **/
     setWindowTitle(tr("Social Network Visualizer ")+VERSION);
@@ -5961,9 +5978,10 @@ void MainWindow::slotNetworkFileView(){
             qDebug ("Error in open!");
             return;
         }
-        TextEditor *ed = new TextEditor(fileName);//OPEN A TEXT EDITOR WINDOW
+        TextEditor *ed = new TextEditor(fileName);
         ed->setWindowTitle(fileNameNoPath.last() );
         ed->show();
+        m_textEditors << ed;
         statusMessage(  tr("Displaying network data file " )+ fileNameNoPath.last()  );
     }
 
@@ -6021,6 +6039,7 @@ void MainWindow::slotNetworkTextEditor(){
     TextEditor *ed = new TextEditor("", this);
     ed->setWindowTitle(tr("New Network File"));
     ed->show();
+    m_textEditors << ed;
     statusMessage(  tr("Enter your network data here" ) );
 }
 
@@ -6048,10 +6067,10 @@ void MainWindow::slotNetworkViewSociomatrix(){
 
     activeGraph.writeAdjacencyMatrix(fn) ;
 
-    //Open a text editor window for the new file created by graph class
     TextEditor *ed = new TextEditor(fn);
     ed->show();
-    statusMessage(tr("Adjacency Matrix saved as ") + fn);
+    m_textEditors << ed;
+    statusMessage(tr("Adjacency matrix saved as ") + fn);
 }
 
 
@@ -9086,12 +9105,12 @@ void MainWindow::slotInvertAdjMatrix(){
     activeGraph.writeAdjacencyMatrixInvert(fn, QString("lu")) ;
     int msecs = timer.elapsed();
     statusMessage (QString(tr("Ready.")) + QString(" Time: ") + QString::number(msecs) );
-    //Open a text editor window for the new file created by graph class
+
     TextEditor *ed = new TextEditor(fn);
     ed->setWindowTitle(tr("Inverse adjacency matrix saved as ") + fn);
     ed->show();
-
-
+    m_textEditors << ed;
+    statusMessage(tr("Inverse matrix saved as: ")+fn);
 }
 
 
@@ -9263,7 +9282,7 @@ void MainWindow::slotDistancesMatrix(){
 
     TextEditor *ed = new TextEditor(fn);
     ed->show();
-
+    m_textEditors << ed;
     statusMessage(tr("Distance matrix saved as: ")+fn);
 }
 
@@ -9297,7 +9316,7 @@ void MainWindow::slotGeodesicsMatrix(){
 
     TextEditor *ed = new TextEditor(fn);
     ed->show();
-
+    m_textEditors << ed;
     statusMessage(tr("Matrix of geodesic path counts saved as: ") + fn);
 }
 
@@ -9402,9 +9421,9 @@ void MainWindow::slotEccentricity(){
                 editFilterNodesIsolatesAct->isChecked());
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    TextEditor *ed = new TextEditor(fn);
     ed->show();
-
+    m_textEditors << ed;
     statusMessage(tr("Eccentricity report saved as: ") + fn );
 }
 
@@ -9508,9 +9527,9 @@ void MainWindow::slotWalksOfGivenLength(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    TextEditor *ed = new TextEditor(fn);
     ed->show();
-
+    m_textEditors << ed;
     statusMessage(tr("Number of walks saved as: ") + fn );
 }
 
@@ -9561,9 +9580,9 @@ void MainWindow::slotTotalWalks(){
     activeGraph.writeWalksTotalMatrix(fn, maxLength);
     destroyProgressBar(maxLength); // do not check for progress bar
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    TextEditor *ed = new TextEditor(fn);
     ed->show();
-
+    m_textEditors << ed;
     statusMessage("Total number of walks saved as: " + fn);
 
 }
@@ -9592,9 +9611,9 @@ void MainWindow::slotReachabilityMatrix(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    TextEditor *ed = new TextEditor(fn);
     ed->show();
-
+    m_textEditors << ed;
     statusMessage("Reachability Matrix saved as: " + fn );
 }
 
@@ -9671,9 +9690,9 @@ void MainWindow::slotClusteringHierarchical(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    TextEditor *ed = new TextEditor(fn);
     ed->show();
-
+    m_textEditors << ed;
     statusMessage("Hierarchical cluster analysis saved as: " + fn);
 
 }
@@ -9700,9 +9719,9 @@ void MainWindow::slotCliqueCensus(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    TextEditor *ed = new TextEditor(fn);
     ed->show();
-
+    m_textEditors << ed;
     statusMessage("Clique Census saved as: " + fn);
 }
 
@@ -9734,7 +9753,7 @@ void MainWindow::slotClusteringCoefficient (){
 
     TextEditor *ed = new TextEditor(fn,this);
     ed->show();
-
+    m_textEditors << ed;
     statusMessage("Clustering Coefficients saved as: " + fn);
 }
 
@@ -9763,9 +9782,9 @@ void MainWindow::slotTriadCensus() {
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    TextEditor *ed = new TextEditor(fn);
     ed->show();
-
+    m_textEditors << ed;
     statusMessage("Triad Census saved as: " + fn);
 }
 
@@ -9819,9 +9838,9 @@ void MainWindow::slotCentralityDegree(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    TextEditor *ed = new TextEditor(fn);
     ed->show();
-
+    m_textEditors << ed;
     statusMessage(tr("Out-Degree Centralities saved as: ") + fn);
 }
 
@@ -9921,9 +9940,9 @@ void MainWindow::slotCentralityCloseness(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn, this);        //OPEN A TEXT EDITOR WINDOW
+    TextEditor *ed = new TextEditor(fn, this);
     ed->show();
-
+    m_textEditors << ed;
     statusMessage(tr("Closeness Centralities  saved as: ") + fn);
 }
 
@@ -9959,9 +9978,9 @@ void MainWindow::slotCentralityClosenessInfluenceRange(){
 
     statusMessage( QString(tr(" displaying file...")));
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    TextEditor *ed = new TextEditor(fn);
     ed->show();
-
+    m_textEditors << ed;
     statusMessage(tr("Influence Range Closeness Centrality saved as: ")+fn);
 }
 
@@ -9992,9 +10011,9 @@ void MainWindow::slotCentralityBetweenness(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    TextEditor *ed = new TextEditor(fn);
     ed->show();
-
+    m_textEditors << ed;
     statusMessage(tr("Betweenness Centralities saved as: ")+fn);
 }
 
@@ -10024,7 +10043,8 @@ void MainWindow::slotPrestigeDegree(){
     bool considerWeights=false;
     if ( activeGraph.graphWeighted()) {
         switch( QMessageBox::information( this, "Degree Prestige (In-Degree)",
-                                          tr("Graph edges have weights. \nTake weights into account (Default: No)?"),
+                                          tr("Graph edges have weights. \n"
+                                             "Take weights into account (Default: No)?"),
                                           tr("Yes"), tr("No"),
                                           0, 1 ) )
         {
@@ -10054,9 +10074,9 @@ void MainWindow::slotPrestigeDegree(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    TextEditor *ed = new TextEditor(fn);
     ed->show();
-
+    m_textEditors << ed;
     statusMessage(tr("Degree Prestige (in-degree) saved as: ") + fn);
 }
 
@@ -10086,9 +10106,9 @@ void MainWindow::slotPrestigePageRank(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    TextEditor *ed = new TextEditor(fn);
     ed->show();
-
+    m_textEditors << ed;
     statusMessage(tr("PageRank Prestige indices saved as: ")+ fn);
 }
 
@@ -10119,9 +10139,9 @@ void MainWindow::slotPrestigeProximity(){
 
     statusMessage( QString(tr(" displaying file...")));
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    TextEditor *ed = new TextEditor(fn);
     ed->show();
-
+    m_textEditors << ed;
     statusMessage(tr("Proximity Prestige Centralities saved as: ")+ fn);
 }
 
@@ -10179,7 +10199,7 @@ void MainWindow::slotCentralityInformation(){
 
     TextEditor *ed = new TextEditor(fn);
     ed->show();
-
+    m_textEditors << ed;
     statusMessage(tr("Information Centralities saved as: ")+ fn);
 }
 
@@ -10211,9 +10231,9 @@ void MainWindow::slotCentralityStress(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    TextEditor *ed = new TextEditor(fn);
     ed->show();
-
+    m_textEditors << ed;
     statusMessage(tr("Stress Centralities saved as: ")+ fn);
 }
 
@@ -10246,8 +10266,9 @@ void MainWindow::slotCentralityPower(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    TextEditor *ed = new TextEditor(fn);
     ed->show();
+    m_textEditors << ed;
     statusMessage(tr("Stress Centralities saved as: ")+ fn);
 }
 
@@ -10279,8 +10300,9 @@ void MainWindow::slotCentralityEccentricity(){
 
     destroyProgressBar();
 
-    TextEditor *ed = new TextEditor(fn);        //OPEN A TEXT EDITOR WINDOW
+    TextEditor *ed = new TextEditor(fn);
     ed->show();
+    m_textEditors << ed;
 
     statusMessage(tr("Eccentricity Centralities saved as: ")+ fn);
 }
