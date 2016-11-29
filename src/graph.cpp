@@ -12929,7 +12929,7 @@ void Graph::writeAdjacencyMatrix (const QString fn) {
     outText << "-Social Network Visualizer "<<  VERSION <<"- \n";
     outText << "Network name: "<< graphName() <<" \n";
     outText << "Adjacency matrix: \n\n";
-    outText << fixed;
+
     QList<Vertex*>::const_iterator it, it1;
     for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
         if ( ! (*it)->isEnabled() ) continue;
